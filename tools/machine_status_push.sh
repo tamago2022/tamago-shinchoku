@@ -6,7 +6,7 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 
 REPO="/Users/mac/Desktop/tamago-shinchoku"
 OUT="$REPO/status/machine.json"
-LOADSH="/Users/mac/Desktop/machine_load.sh"
+LOADSH="/Users/mac/Documents/AI作業/2026-09-02/スクリプト/machine_load.sh"
 mkdir -p "$REPO/status"
 
 # 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
@@ -34,8 +34,13 @@ fi
 
 # 2026-09-02 見張り番：止まっている子セッションを検知して claude -p --resume で自動再開（判定は factory_status の分類。負荷ゲートあり）
 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
+# 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く
+python3 /Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py sync >/dev/null 2>&1 || true
 
 cd "$REPO" || exit 0
+
+# 2026-09-03 たまごさんの優先度（PWA→Obsidian経由）を取り込み、priority.json とホワイトボードに反映
+python3 "$REPO/tools/priority_ingest.py" >/dev/null 2>&1 || true
 
 # 2026-09-02 PWA第3段階：セッションごとの航跡を1行ずつ積む（何時に始まり・何時に止まり・誰が起こしたか、を後から数えるため）
 python3 - "$OUT" "$REPO/status/history.jsonl" <<'PY' 2>/dev/null || true
@@ -73,10 +78,14 @@ CURR=$(strip < "$OUT")
 LAST=$(git log -1 --format=%ct -- status/machine.json 2>/dev/null); LAST=${LAST:-0}
 AGE=$(( $(date +%s) - LAST ))
 # 数字が同じでも20分以上経っていれば鮮度のために push する
-HIST_CHANGED=0; git diff --quiet -- status/history.jsonl 2>/dev/null || HIST_CHANGED=1
-[ -f status/history.jsonl ] && ! git ls-files --error-unmatch status/history.jsonl >/dev/null 2>&1 && HIST_CHANGED=1
+HIST_CHANGED=0
+for f in status/history.jsonl status/whiteboard.json status/priority.json; do
+  [ -f "$f" ] || continue
+  git ls-files --error-unmatch "$f" >/dev/null 2>&1 || HIST_CHANGED=1
+  git diff --quiet -- "$f" 2>/dev/null || HIST_CHANGED=1
+done
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then exit 0; fi
 
-git add status/machine.json status/history.jsonl >/dev/null 2>&1
+git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json >/dev/null 2>&1
 git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || exit 0
 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1

@@ -84,6 +84,14 @@
   .c.blue{border-left-color:var(--blue);}
   .c.blue .s i{background:var(--blue);}
   .c.gray{opacity:0.62;}
+  .c.hot{box-shadow:inset 0 0 0 1px var(--kinari);}          /* ★4以上：枠を生成りで一段強く */
+  .pv{margin-left:auto; color:var(--kinari); font-weight:600; font-size:0.85rem; letter-spacing:0.02em;}
+  .pk{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:2px 0 10px; color:var(--sub); font-size:0.8rem;}
+  .pk button{min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--ink); font:inherit; font-size:1rem; font-weight:600;}
+  .pk button.on{background:var(--kinari); color:var(--bg); border-color:var(--kinari);}
+  .pk button.off{min-width:52px; font-size:0.8rem; font-weight:500; color:var(--sub);}
+  .sendbar{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; padding:8px 12px; border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:var(--sub);}
+  .sendbar a{display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:10px; background:var(--kinari); color:var(--bg); text-decoration:none; font-weight:600; white-space:nowrap;}
   .c .t{
     font-size:0.86rem; font-weight:600; line-height:1.35;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
@@ -152,7 +160,11 @@
 <details class="sec"><summary>Today（北極星・最重要3件）</summary><div class="in today" id="today"></div></details>
 <details class="sec"><summary>旧・進捗表の依頼31件 <small id="listMeta"></small></summary><div class="in" id="list"></div></details>
 
-<div class="label"><b>未処理の依頼</b>判断待ちが先頭 <small id="allMeta"></small></div>
+<div class="label"><b>ホワイトボード</b>セッションが上から取る順・P1が最優先 <small id="wbMeta"></small></div>
+<div class="sendbar" id="sendbar" hidden></div>
+<div class="g" id="wb"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+
+<div class="label"><b>未処理の依頼</b>判断待ちが先頭・Pは優先度（タップで開いて付ける） <small id="allMeta"></small></div>
 <div class="sum" id="allSummary"></div>
 <div class="g" id="all"></div>
 
@@ -189,13 +201,57 @@ document.addEventListener("click", e=>{
   const c = e.target.closest(".c"); if(!c) return;
   c.classList.toggle("open");
 });
-function card(color, title, stateLabel, extra, detailHtml){
-  return `<div class="c ${color}"><span class="more">▼</span>
+function card(color, title, stateLabel, extra, detailHtml, prioKey){
+  const p = prioKey != null ? prioOf(prioKey) : 0;
+  const star = prioKey != null ? `<span class="pv" data-k="${esc(prioKey)}">${p ? "P" + p : ""}</span>` : "";
+  const picker = prioKey != null ? `<div class="pk" data-k="${esc(prioKey)}">優先度（1＝今すぐ） ${[1,2,3,4,5].map(n=>`<button type="button" class="${p===n?"on":""}" data-p="${n}">${n}</button>`).join("")}<button type="button" class="off" data-p="0">なし</button></div>` : "";
+  return `<div class="c ${color}${p && p<=2 ? " hot" : ""}" ${prioKey != null ? `data-prio="${p}"` : ""}><span class="more">▼</span>
     <div class="t">${esc(title)}</div>
-    <div class="s"><i></i><span>${esc(stateLabel)}</span>${extra || ""}</div>
-    <div class="d">${detailHtml}</div>
+    <div class="s"><i></i><span>${esc(stateLabel)}</span>${extra || ""}${star}</div>
+    <div class="d">${picker}${detailHtml}</div>
   </div>`;
 }
+
+/* ───── 優先度（たまごさんが1タップで付ける。5が最優先） ─────
+   保存：まず端末内（localStorage）。「Obsidianへ送る」で Vault に1ファイル書き、Mac側が5分おきに取り込んで
+   status/priority.json（全端末で共有）とホワイトボードの優先列に反映する。 */
+const PRIO_KEY = "shinchoku.prio.v1";
+let PRIO = {};       // {番号: {p, t}}
+let PRIO_REMOTE = {};
+function loadPrio(){ try { PRIO = JSON.parse(localStorage.getItem(PRIO_KEY) || "{}") || {}; } catch(e){ PRIO = {}; } }
+function savePrio(){ try { localStorage.setItem(PRIO_KEY, JSON.stringify(PRIO)); } catch(e){} }
+function mergePrio(remote){
+  // 新しい方が勝つ
+  for(const k in (remote||{})){ const r = remote[k]; if(!r) continue;
+    if(!PRIO[k] || String(r.t||"") > String(PRIO[k].t||"")) PRIO[k] = {p:+r.p||0, t:r.t||""}; }
+  savePrio();
+}
+function prioOf(k){ const v = PRIO[String(k)]; return v ? (+v.p || 0) : 0; }
+function setPrio(k, p){
+  PRIO[String(k)] = {p:+p, t:new Date().toISOString()}; savePrio();
+  document.querySelectorAll(`.pv[data-k="${CSS.escape(String(k))}"]`).forEach(el=>{ el.textContent = p ? "P" + p : ""; });
+  document.querySelectorAll(`.pk[data-k="${CSS.escape(String(k))}"] button`).forEach(b=>{ b.classList.toggle("on", +b.dataset.p === +p && +p > 0); });
+  document.querySelectorAll(`.pk[data-k="${CSS.escape(String(k))}"]`).forEach(pk=>{ const c = pk.closest(".c"); if(c){ c.dataset.prio = p; c.classList.toggle("hot", p > 0 && p <= 2); } });
+  updateSendBar();
+}
+function pendingCount(){ // 端末内にあって、共有側（priority.json）と違うもの
+  let n = 0; for(const k in PRIO){ const r = PRIO_REMOTE[k]; if(!r || +r.p !== +PRIO[k].p) n++; } return n;
+}
+function obsidianSendUrl(){
+  const payload = {updatedAt:new Date().toISOString(), prio:PRIO};
+  const body = "たまごさんがPWAで付けた優先度。手で編集しない。Mac側の priority_ingest.py が5分おきに読む。\n\n```json\n" + JSON.stringify(payload) + "\n```\n";
+  return "obsidian://new?vault=tamago_brain&file=" + encodeURIComponent("AI出力/_ルール/優先度_受信") + "&overwrite=true&silent=true&content=" + encodeURIComponent(body);
+}
+function updateSendBar(){
+  const bar = document.getElementById("sendbar"); if(!bar) return;
+  const n = pendingCount(), total = Object.keys(PRIO).filter(k=>PRIO[k].p>0).length;
+  bar.hidden = total === 0;
+  bar.innerHTML = `<span>優先度を付けた ${total}件${n ? `・未送信 ${n}件` : "・共有済み"}</span><a href="${obsidianSendUrl()}">Obsidianへ送る →</a>`;
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".pk button"); if(!b) return;
+  e.stopPropagation(); setPrio(b.closest(".pk").dataset.k, +b.dataset.p);
+});
 
 /* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */
 const KIND_LABEL = {working:"作業中", asked:"判断待ち", stuck_tool:"承認待ち", idle_done:"終了・待機", unknown:"不明"};
@@ -268,6 +324,28 @@ function renderSessions(m){
   }).join("");
 }
 
+/* ───── ホワイトボード（ai-brain/live/whiteboard.md の写し status/whiteboard.json。セッションはこの順に取る） ───── */
+const WB_COLOR = {"作業中":"green", "判断待ち":"yellow", "検証待ち":"blue", "完了":"gray", "未着手":"gray"};
+function renderWhiteboard(w){
+  const box = document.getElementById("wb");
+  const rows = (w && w.rows) || [];
+  document.getElementById("wbMeta").textContent = w && w.updatedAt ? `${rows.length}件・${w.updatedAt.slice(5)}` : "";
+  if(!rows.length){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">ホワイトボードの写しがまだ無い（Mac側 whiteboard.py sync が5分おきに書く）</div>`; return; }
+  const order = {"作業中":0, "判断待ち":1, "検証待ち":2, "未着手":3, "完了":4};
+  const num = r => String(parseInt(String(r.id).replace(/^T/,""), 10));
+  const sorted = [...rows].sort((a,b)=> (a.priority||3)-(b.priority||3) || (a.rank||999)-(b.rank||999));
+  box.innerHTML = sorted.map(r=>{
+    const color = WB_COLOR[r.state] || "gray";
+    const extra = (r.count && r.count !== "台帳" ? `<span class="n">${esc(r.count)}回</span>` : "") + (r.stale ? `<span class="sk">💀</span>` : "");
+    const d = `<p>状態 <b>${esc(r.state)}</b>　担当 <b>${esc(r.owner || "空き")}</b>　順位 <b>${r.rank ?? "—"}</b>　更新 <b>${esc(r.updatedAt||"")}</b></p>
+      <p>${esc(r.note||"")}</p>
+      ${linksHtml([{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${encodeURIComponent(r.task||"")}`}])}`;
+    return card(color, `${num(r)}. ${r.task}`, r.state + (r.owner ? "・" + r.owner.slice(0,14) : ""), extra, d, num(r));
+  }).join("");
+}
+fetch("status/whiteboard.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderWhiteboard).catch(()=>renderWhiteboard(null));
+
 /* ───── 未処理の依頼（225件） ───── */
 const ALL_META = {
   "⏸":{label:"判断待ち", color:"yellow", order:0},
@@ -290,10 +368,12 @@ function renderAll(){
   keys.forEach(k=>{
     const m = ALL_META[k];
     h += `<div class="gh ${m.color}" id="a-${m.order}">${k} <b>${m.label}</b> ${groups[k].length}件</div>`;
-    groups[k].forEach(it=>{
+    // たまごさんの★が高い順 → 元の緊急度順
+    const rank = it => prioOf(it.no) || 9;   // 1が最優先。未設定は後ろ
+    [...groups[k]].sort((a,b)=> rank(a) - rank(b)).forEach(it=>{
       const times = timesOf(it);
       const d = it.body.map(x=>`<p>${esc(x)}</p>`).join("") + (it.src ? `<p class="src">出典：${esc(it.src)}</p>` : "");
-      h += card(m.color, `${it.no}. ${it.title}`, m.label, times ? `<span class="n">${esc(times)}</span>` : "", d);
+      h += card(m.color, `${it.no}. ${it.title}`, m.label, times ? `<span class="n">${esc(times)}</span>` : "", d, it.no);
     });
   });
   h += `<div class="gh" id="a-old">旧台帳のみ（2026-07・更新停止） ${A.old.length}件</div>`;
@@ -328,11 +408,24 @@ function renderList(){
   document.getElementById("list").innerHTML = sorted.map(r=>`<div class="row">${STATUS_META[r.status]}　${esc(r.content)}<div class="meta">依頼 ${formatStamp(r.orderedAt)}　担当 ${esc(r.owner||"-")}${r.note ? "　" + esc(r.note) : ""}</div></div>`).join("");
 }
 
+loadPrio();
+// 共有側（priority.json：Mac側が Obsidian 経由で取り込んだもの）を先に読んでから描く
+const prioReady = fetch("status/priority.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(j => {
+    if(!j) return;
+    // Mac側の形 {"priority":{"T004":1}, "stamps":{"T004":"ISO"}} を端末内の形 {"4":{p,t}} に直す
+    const rem = {};
+    for(const k in (j.priority||{})){ const n = String(parseInt(k.replace(/^T/,""),10)); rem[n] = {p:+j.priority[k], t:(j.stamps||{})[k] || j.updatedAt || ""}; }
+    PRIO_REMOTE = rem; mergePrio(rem);
+  }).catch(()=>{});
 window.__dataReady = function(){
+  prioReady.then(__dataReady2);
+};
+function __dataReady2(){
   D = window.SHINCHOKU;
   if(!D){ document.getElementById("updated").textContent = "データを読み込めませんでした。開き直してください。"; return; }
   document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
-  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList();
+  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar();
 };
 if(window.SHINCHOKU && window.SHINCHOKU_ALL) window.__dataReady();
 
