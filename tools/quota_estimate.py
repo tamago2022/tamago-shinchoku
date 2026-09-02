@@ -175,6 +175,13 @@ def main():
         fable_level = "stop"
     elif over_pct is not None and over_pct > -10 and fable_level == "ok":
         fable_level = "warn"
+    # 2026-09-03 訂正（たまごさん本人）：週枠は「余らせるのが正解」ではなく「火曜17:59直前に99%で走り切る」のが正解。
+    # 曲線から**大きく下振れ**（使わなさすぎ）も**上振れ**（使いすぎ）も同じく失点。判定は両側にする。
+    CURVE_BAND = 10  # このポイント差までは「曲線内」とみなす
+    fable_curve_state = ("over" if over_pct is not None and over_pct > CURVE_BAND else
+                          "under" if over_pct is not None and over_pct < -CURVE_BAND else
+                          "on_track" if over_pct is not None else "unknown")
+    fable_headroom_pct = round(-over_pct, 1) if (over_pct is not None and over_pct < 0) else 0.0
     # 1日あたりの許容量（残り%÷残り日数）と今日（直近24h）の実消費。今日の消費が許容量を超えていれば絞る
     day = {}
     if fable_pct is not None:
@@ -193,6 +200,13 @@ def main():
     ceiling_days = None
     if proj.get("hoursToCeiling_recentPace"):
         ceiling_days = round(proj["hoursToCeiling_recentPace"] / 24, 1)
+    # 2026-09-03 全モデル週枠は Fable と別計算・別判定（混ぜない）。曲線は「経過日数÷7日」の直線（火曜17:59直前に99%）。
+    # Fable専用の曲線（水30/木45/…）は本人の個人的なFableの使い方の感覚値なので、全モデルには流用しない。
+    all_linear_target = round(min(99.0, (days_elapsed / 7.0) * 100.0), 1)
+    all_over_pct = round(all_pct - all_linear_target, 1) if all_pct is not None else None
+    all_curve_state = ("over" if all_over_pct is not None and all_over_pct > CURVE_BAND else
+                        "under" if all_over_pct is not None and all_over_pct < -CURVE_BAND else
+                        "on_track" if all_over_pct is not None else "unknown")
 
     # ---- 5時間セッション枠（週枠とは別物・ローリング）2026-09-03 ----
     # 週枠＝余らせるのが正解。5時間枠＝使い切らないと消える（たまごさん指摘）。
@@ -230,19 +244,29 @@ def main():
            "resetAt": time.strftime("%Y-%m-%d %H:%M", time.localtime(next_reset)),
            "daysLeft": round(hours_left / 24, 1), "hoursLeft": round(hours_left, 1),
            "fableLevel": fable_level, "allLevel": all_level, "warnPct": WARN_PCT, "stopPct": STOP_PCT, "daily": day,
-           "policy": ("Fable＝マガジン記事執筆のみ。他は全部Sonnet。75%%か曜日目標(%s)超過のどちらかでFableゼロ(新規停止・走行中もSonnetへ交代)、85%%でも同様。"
-                      "本数は減らさない（週枠は余らせてよい・5時間枠は使い切る）") % WEEKDAY_TARGET_TABLE,
+           "policy": ("Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝"
+                      "曲線(" + WEEKDAY_TARGET_TABLE + ")から" + str(CURVE_BAND) + "pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。"
+                      "全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。"
+                      "本数は減らさない・増やす方向のみ"),
            "fableWeightedTokensSinceReset": int(fable_now), "allWeightedTokensSinceReset": int(all_now),
            "last6h": {"fable": int(f6), "all": int(a6)},
            "projection": proj, **est,
            "weekdayTarget": weekday_target, "weekdayTargetTable": WEEKDAY_TARGET_TABLE,
            "overPct": over_pct, "daysElapsedSinceReset": days_elapsed, "ceilingDaysAtRecentPace": ceiling_days,
+           "fableCurve": {"target": weekday_target, "overPct": over_pct, "state": fable_curve_state,
+                          "headroomPct": fable_headroom_pct, "band": CURVE_BAND,
+                          "note": "state=over→Fableゼロで絞る／under→Fable投入・本数増加の余地あり／on_track→曲線どおり"},
+           "allCurve": {"target": all_linear_target, "overPct": all_over_pct, "state": all_curve_state, "band": CURVE_BAND,
+                        "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"},
            "session5h": session5h,
-           "line": ("Fable週枠 %s%%（今日の目標%s%%・%s%s） ／ 全モデル %s%% ／ リセットまで %.1f日%s ／ 5時間枠 %s" % (
+           "line": ("Fable週枠 %s%%（今日の目標%s%%・%s） ／ 全モデル %s%%（曲線目標%s%%・%s） ／ リセットまで %.1f日%s ／ 5時間枠 %s" % (
                "?" if fable_pct is None else round(fable_pct), weekday_target,
-               "超過なし" if (over_pct is None or over_pct <= 0) else ("%.1fpt超過" % over_pct),
-               ("・このペースで%.1f日で天井" % ceiling_days) if ceiling_days else "",
-               "?" if all_pct is None else round(all_pct), hours_left / 24,
+               {"over": "%.1fpt上振れ→絞る" % over_pct if over_pct else "", "under": "%.1fpt下振れ→投入余地あり" % (-over_pct) if over_pct else "",
+                "on_track": "曲線どおり", "unknown": "?"}.get(fable_curve_state, "?"),
+               "?" if all_pct is None else round(all_pct), all_linear_target,
+               {"over": "%.1fpt上振れ" % all_over_pct if all_over_pct else "", "under": "%.1fpt下振れ→本数増やす余地" % (-all_over_pct) if all_over_pct else "",
+                "on_track": "曲線どおり", "unknown": "?"}.get(all_curve_state, "?"),
+               hours_left / 24,
                ("（このペースだと%.0f時間で天井）" % proj["hoursToCeiling_recentPace"]) if proj.get("hoursToCeiling_recentPace") else "",
                ("%s%%・残%.1fh%s" % (session5h["pct"], session5h["hoursLeft"],
                                       "・もったいない（%.0f%%余る見込み→本数増やす）" % session5h["wasteRiskPct"] if session5h["mottainai"] else "")

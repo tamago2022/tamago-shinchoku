@@ -338,7 +338,7 @@ REPORT_HOURS = 3  # これ以上「報告」（assistantの文章）が無けれ
 def transcript_stats(path):
     """会話ログ全体を1回なめて、PWAが要る数字を出す（開始・最後の報告・押された回数・誰が押したか・成果URL・完了報告か）"""
     st = {"firstAt": None, "lastReportAt": None, "lastReportText": "", "humanPushes": 0, "dispatchPushes": 0,
-          "watchdogResumes": 0, "urls": [], "done": False, "failed": False}
+          "watchdogResumes": 0, "urls": [], "done": False, "failed": False, "model": None}
     if not path:
         return st
     try:
@@ -378,6 +378,9 @@ def transcript_stats(path):
             else:
                 st["humanPushes"] += 1
         elif e.get("type") == "assistant" and isinstance(c, list):
+            mdl = m.get("model")
+            if mdl:
+                st["model"] = mdl
             text = "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
             if text.strip() and m.get("stop_reason") == "end_turn":
                 st["lastReportAt"] = ts
@@ -459,6 +462,7 @@ def sessions():
             "idleMin": round(s["idle"], 1) if s.get("idle") is not None else None,
             "kind": kind,
             "tail": tail,
+            "model": st.get("model"),
             # 2026-09-02 PWA第2段階：開始時刻（ps の lstart）と会話ログID。経過時間・3h/6h札は画面側で計算
             "startedAt": session_started_at(s),
             "cli": os.path.splitext(os.path.basename(s["transcript"]))[0] if s.get("transcript") else None,
@@ -558,15 +562,21 @@ def build():
     if sm < SAFE_FLOOR and pressure != "red":
         sm = SAFE_FLOOR
     target = min(target, cap)
-    # 2026-09-03 5時間セッション枠：週枠と逆で「使い切らないと消える」（たまごさん指摘）。
-    # 余る見込みが大きい（もったいない度高）なら、安全上限(cap)の範囲内で本数を増やす方向に倒す。
+    # 2026-09-03 枠の下振れ＝失点（たまごさん訂正：週枠も「使い切ったら終わり」ではなく火曜17:59直前99%が正解。
+    # 曲線を大きく下回るのも上回るのと同じく損）。5時間枠のもったいない度、または全モデル週枠の曲線下振れがあれば、
+    # 安全上限(cap)の範囲内で本数を増やす方向に倒す。上振れ側は本数を減らさない（Fableを絞るのはmodel_for()側の役目）
     try:
-        q5 = (json.load(open(os.path.join(REPO, "status", "quota.json"), encoding="utf-8")).get("session5h") or {})
+        qj = json.load(open(os.path.join(REPO, "status", "quota.json"), encoding="utf-8"))
     except Exception:
-        q5 = {}
+        qj = {}
+    q5 = qj.get("session5h") or {}
+    all_curve = qj.get("allCurve") or {}
     if q5.get("mottainai") and cap > target:
         target = cap
         reasons.append("5時間枠もったいない度%s%%→本数を上限%d本まで増やす" % (q5.get("wasteRiskPct"), cap))
+    elif all_curve.get("state") == "under" and cap > target:
+        target = cap
+        reasons.append("週枠(全モデル)が曲線を%spt下振れ→本数を上限%d本まで増やす" % (-(all_curve.get("overPct") or 0), cap))
     # 落とすなら誰か：Dispatch発で「終わって待機」のもの（会話は残る・--resume で戻せる）。動いているものは落とさない
     shed = [s for s in ss if s["kind"] == "idle_done" and s.get("dispatch")]
     shed.sort(key=lambda x: -(x["idleMin"] or 0))
@@ -619,6 +629,12 @@ def build():
         "sessionList": [{k: v for k, v in s.items() if k != "tail"} for s in ss],
         "line": line,
     })
+    # 2026-09-03 モデル選択の判断材料：走行中セッションのモデル別本数（machine.jsonで見える化。quotaの曲線判定と突き合わせる）
+    mc = {}
+    for s in ss:
+        mdl = s.get("model") or "不明"
+        mc[mdl] = mc.get(mdl, 0) + 1
+    d["modelCounts"] = mc
     d["note"] = "上限%d本・あと%d本OK" % (sm, more_ok) + ("（%s）" % d["blockReason"] if reasons else "")
     done = [s for s in ss if s.get("done")]
     auto = [s for s in done if (s.get("humanPushes", 0) + s.get("dispatchPushes", 0)) == 0]
