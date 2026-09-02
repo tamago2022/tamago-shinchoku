@@ -58,6 +58,9 @@
   .meter .mtitle b{color:var(--ink); font-weight:500; font-size:0.8rem;}
   .meter .mtitle .val{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap;}
   .meter .val.green{color:var(--green);} .meter .val.yellow{color:var(--yellow);} .meter .val.red{color:var(--red);}
+  .meter .mtitle .fresh{font-size:0.68rem; color:var(--dim); font-variant-numeric:tabular-nums;}
+  .meter .mtitle .fresh.stale{color:var(--red); font-weight:600;}
+  .meter.stale .fill{opacity:0.35;}
   .meter .track{position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,0.055); overflow:visible;}
   .meter .fill{height:100%; border-radius:7px 0 0 7px; min-width:2%; overflow:hidden;}
   .meter .fill.green{background:var(--green);}
@@ -68,6 +71,8 @@
   .meter .msub.mottainai{color:var(--yellow);}
   #machineAge{color:var(--sub);}
   #machineAge.stale{color:var(--red);}
+  .sum span.red{color:var(--red); border-color:var(--red);}
+  .sum span.yellow{color:var(--yellow); border-color:var(--yellow);}
 
   /* モデルバッジ：状態色と混同しないよう枠線のみ・静かに */
   .mbadge{display:inline-flex; align-items:center; height:18px; padding:0 6px; margin-left:6px; border:1px solid var(--line); border-radius:5px; font-size:0.66rem; font-weight:600; color:var(--sub); vertical-align:1px; white-space:nowrap;}
@@ -114,7 +119,10 @@
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
   .c.open .t{-webkit-line-clamp:unset;}
-  .c .s{display:flex; align-items:center; gap:6px; font-size:0.72rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-top:auto;}
+  .c .act{font-size:0.68rem; color:var(--dim); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .c .act.stale{color:var(--red);}
+  .c .s{display:flex; align-items:center; flex-wrap:wrap; row-gap:4px; gap:6px; font-size:0.72rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-top:auto;}
+  .c .s .lbl{white-space:nowrap;}
   .c .s i{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--gray); flex:none;}
   .c.green .s i{background:var(--green);} .c.yellow .s i{background:var(--yellow);} .c.red .s i{background:var(--red);}
   .c.red .s{color:var(--ink);}
@@ -214,6 +222,17 @@ function formatStamp(iso){
   return `${mm}-${dd} ${hh}:${mi}`;
 }
 function fmtDur(min){ if(min == null) return "—"; const h = Math.floor(min/60), m = Math.round(min%60); return h ? `${h}時間${m}分` : `${m}分`; }
+// 2026-09-03 リアルタイム化：数字に必ず「いつ時点か」を添え、5分超は古いと分かるようにする。新しい顔で嘘をつかない
+const STALE_MIN = 5;
+function freshness(iso){
+  if(!iso) return {text:"—", stale:true, mins:null};
+  // "2026-09-03 07:15" のようなスペース区切りはSafariがパース失敗することがあるのでT区切りに直す
+  const s = String(iso).includes("T") ? iso : String(iso).replace(" ", "T");
+  const d = new Date(s); if(isNaN(d)) return {text:"—", stale:true, mins:null};
+  const mins = Math.max(0, Math.round((Date.now() - d.getTime())/60000));
+  const text = mins < 1 ? "いま" : mins < 60 ? `${mins}分前` : mins < 1440 ? `${Math.floor(mins/60)}時間前` : `${Math.floor(mins/1440)}日前`;
+  return {text, stale: mins > STALE_MIN, mins};
+}
 function linksHtml(links){
   if(!links || !links.length) return "";
   return `<div class="links">` + links.map(l=>`<a href="${esc(l.url)}">${esc(l.label)}</a>`).join("") + `</div>`;
@@ -224,13 +243,14 @@ document.addEventListener("click", e=>{
   const c = e.target.closest(".c"); if(!c) return;
   c.classList.toggle("open");
 });
-function card(color, title, stateLabel, extra, detailHtml, prioKey){
+function card(color, title, stateLabel, extra, detailHtml, prioKey, subLine){
   const p = prioKey != null ? prioOf(prioKey) : 0;
   const star = prioKey != null ? `<span class="pv" data-k="${esc(prioKey)}">${p ? "P" + p : ""}</span>` : "";
   const picker = prioKey != null ? `<div class="pk" data-k="${esc(prioKey)}">優先度（1＝今すぐ） ${[1,2,3,4,5].map(n=>`<button type="button" class="${p===n?"on":""}" data-p="${n}">${n}</button>`).join("")}<button type="button" class="off" data-p="0">なし</button></div>` : "";
   return `<div class="c ${color}${p && p<=2 ? " hot" : ""}" ${prioKey != null ? `data-prio="${p}"` : ""}><span class="more">▼</span>
     <div class="t">${esc(title)}</div>
-    <div class="s"><i></i><span>${esc(stateLabel)}</span>${extra || ""}${star}</div>
+    ${subLine ? `<div class="act">${subLine}</div>` : ""}
+    <div class="s"><i></i><span class="lbl">${esc(stateLabel)}</span>${extra || ""}${star}</div>
     <div class="d">${picker}${detailHtml}</div>
   </div>`;
 }
@@ -295,8 +315,11 @@ function renderHealth(h){
     return card(color, it.label, it.effect, it.safe ? "" : `<span class="n">要判断</span>`, d);
   }).join("");
 }
-fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
-  .then(r => r.ok ? r.json() : null).then(renderHealth).catch(()=>renderHealth(null));
+function refreshHealth(){
+  return fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(renderHealth).catch(()=>renderHealth(null));
+}
+refreshHealth();
 
 /* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */
 const KIND_LABEL = {working:"作業中", asked:"判断待ち", stuck_tool:"承認待ち", idle_done:"終了・待機", unknown:"不明"};
@@ -383,7 +406,12 @@ function renderSessions(m){
     const mLbl = modelLabel(s.model);
     const extra = (mLbl ? `<span class="mbadge${mLbl==="Opus"?" opus":""}">${esc(mLbl)}</span>` : "")
       + (st.skull ? `<span class="sk">💀</span>` : "") + (pushed ? `<span class="chip" title="起こされた回数">🔁${pushed}</span>` : "");
-    return card(st.color, jaTitle(s.title), st.label, extra, d);
+    // 1行で分かるように：最後に発言した時刻＋ターン数（「着手中」だけでは動いてるか分からない、への直接対応）
+    const actFresh = s.lastActivityAt ? freshness(s.lastActivityAt) : null;
+    const subLine = (actFresh || s.turns != null)
+      ? `${actFresh ? `🗣️${esc(actFresh.text)}に発言` : ""}${actFresh && s.turns != null ? " / " : ""}${s.turns != null ? `${s.turns}ターン` : ""}`
+      : "";
+    return card(st.color, jaTitle(s.title), st.label, extra, d, undefined, subLine);
   }).join("");
 }
 
@@ -444,8 +472,11 @@ function renderWhiteboard(w){
     return card(e.color, `${num(r)}. ${r.task}`, e.label, extra, d, num(r));
   }).join("");
 }
-fetch("status/whiteboard.json?t=" + Date.now(), {cache:"no-store"})
-  .then(r => r.ok ? r.json() : null).then(renderWhiteboard).catch(()=>renderWhiteboard(null));
+function refreshWhiteboard(){
+  return fetch("status/whiteboard.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(w => { window.__wbData = w; renderWhiteboard(w); }).catch(()=>renderWhiteboard(null));
+}
+refreshWhiteboard();
 
 /* ───── 未処理の依頼（225件） ───── */
 // 台帳の札 → 実態の状態。「着手中」は今動いているセッションが無ければ止まっている（赤）。動いているものはホワイトボード側で緑になる
@@ -559,11 +590,13 @@ function renderMachine(m){
    5時間枠・週Fable・週全モデル・マシン負荷の4本。5時間枠だけ「使い切らないと消える」ので
    危険（赤）の意味が逆＝余らせすぎ（もったいない）を黄で警告する。
    Fable/全モデルは曜日ごとの目標曲線（曲線位置に▲マーカー）に対して上振れ／下振れも出す。 */
-function meterHTML(title, pct, level, valText, subText, subCls, curveTarget){
+function meterHTML(title, pct, level, valText, subText, subCls, curveTarget, freshIso){
   const w = pct == null ? 0 : Math.max(2, Math.min(100, pct));
   const mk = curveTarget != null ? `<div class="mk curve" style="left:${Math.max(0,Math.min(100,curveTarget))}%" title="曜日目標${curveTarget}%"></div>` : "";
-  return `<div class="meter">
-    <div class="mtitle"><b>${esc(title)}</b><span class="val ${level}">${esc(valText)}</span></div>
+  const fr = freshIso !== undefined ? freshness(freshIso) : null;
+  const frHtml = fr ? `<span class="fresh${fr.stale ? " stale" : ""}">${esc(fr.text)}</span>` : "";
+  return `<div class="meter${fr && fr.stale ? " stale" : ""}">
+    <div class="mtitle"><b>${esc(title)}</b>${frHtml}<span class="val ${level}">${esc(valText)}</span></div>
     <div class="track"><div class="fill ${level}" style="width:${w}%"></div>${mk}</div>
     ${subText ? `<div class="msub${subCls ? " " + subCls : ""}">${esc(subText)}</div>` : ""}
   </div>`;
@@ -580,41 +613,64 @@ function renderMeters(m){
   const q = m.quota || {};
   const s5 = q.session5h || {};
   const lvlMap = {ok:"green", warn:"yellow", stop:"red"};
+  const qFresh = q.updatedAt || m.measuredAt;
   const parts = [];
   if(s5.pct != null){
     const lvl = s5.mottainai ? "yellow" : "green";
     const sub = s5.mottainai
       ? `もったいない：残り${s5.hoursLeft}h・このままだと約${s5.wasteRiskPct}%余る見込み。使えるうちに使う`
       : `残り${s5.hoursLeft}h・${s5.resetAt}にリセット（使い切らないと消える）`;
-    parts.push(meterHTML("5時間枠", s5.pct, lvl, `${s5.pct}%`, sub, s5.mottainai ? "mottainai" : ""));
+    parts.push(meterHTML("5時間枠", s5.pct, lvl, `${s5.pct}%`, sub, s5.mottainai ? "mottainai" : "", undefined, qFresh));
   }
   if(q.fablePct != null){
     const base = `${q.resetAt || "火曜17:59"}まで${q.daysLeft != null ? q.daysLeft + "日" : ""}`;
     parts.push(meterHTML("週枠・Fable", q.fablePct, lvlMap[q.fableLevel] || "green", `${q.fablePct}%`,
-      curveSub(q.fableCurve, base), q.fableCurve && q.fableCurve.state === "over" ? "mottainai" : "", q.fableCurve && q.fableCurve.target));
+      curveSub(q.fableCurve, base), q.fableCurve && q.fableCurve.state === "over" ? "mottainai" : "", q.fableCurve && q.fableCurve.target, qFresh));
   }
   if(q.allPct != null){
     const base = `${q.resetAt || "火曜17:59"}まで${q.daysLeft != null ? q.daysLeft + "日" : ""}`;
     parts.push(meterHTML("週枠・全モデル", q.allPct, lvlMap[q.allLevel] || "green", `${q.allPct}%`,
-      curveSub(q.allCurve, base), q.allCurve && q.allCurve.state === "over" ? "mottainai" : "", q.allCurve && q.allCurve.target));
+      curveSub(q.allCurve, base), q.allCurve && q.allCurve.state === "over" ? "mottainai" : "", q.allCurve && q.allCurve.target, qFresh));
   }
   if(m.load != null){
     const lvl = m.load >= 90 ? "red" : m.load >= 70 ? "yellow" : "green";
     const more = m.sessions != null && m.safeMax != null && m.sessions > m.safeMax
       ? `上限${m.safeMax}本に対し${m.sessions - m.safeMax}本超過（畳む判断が要る）`
       : (m.moreOK > 0 ? `あと${m.moreOK}本OK` : `上限${m.safeMax ?? "?"}本内（これ以上は増やさない）`);
-    parts.push(meterHTML("マシン負荷（何%で固まるか）", m.load, lvl, `${m.load}%`, more));
+    parts.push(meterHTML("マシン負荷（何%で固まるか）", m.load, lvl, `${m.load}%`, more, "", undefined, m.measuredAt));
   }
-  // ディスク・セッション本数のミニ行（統合。healthSumと合わせて1カード扱い）
+  // ディスク・セッション本数・ネットワーク（有線/Wi-Fi）のミニ行（統合。healthSumと合わせて1カード扱い）
   const diskWarn = m.diskFreeGB != null && m.diskFreeGB < 20;
   const over = (m.sessions || 0) - (m.safeMax || 0);
+  const net = m.network || {};
+  let netHtml = "";
+  if(net.wired != null || net.pingMs != null){
+    const pingWarn = net.pingMs != null && net.pingMs >= 300 ? "red" : net.pingMs != null && net.pingMs >= 100 ? "yellow" : "";
+    const wifiWarn = net.wired === false ? "yellow" : "";
+    const label = net.wired === true ? "🔌有線" : net.wired === false ? "📶Wi-Fi" : "—";
+    netHtml = `<span class="${wifiWarn || pingWarn}">${esc(label)}${net.pingMs != null ? `・${net.pingMs}ms` : ""}${net.wired === false ? "（有線が抜けています）" : ""}</span>`;
+  }
   document.getElementById("healthSum").innerHTML =
     `<span class="${diskWarn ? "red" : ""}">ディスク空き<b>${m.diskFreeGB ?? "—"}GB</b></span>`
-    + `<span class="${over > 0 ? "red" : ""}">セッション<b>${m.sessions ?? "—"}本／上限${m.safeMax ?? "—"}${over > 0 ? `・${over}本超過` : m.moreOK != null ? `・あと${m.moreOK}本` : ""}</b></span>`;
+    + `<span class="${over > 0 ? "red" : ""}">セッション<b>${m.sessions ?? "—"}本／上限${m.safeMax ?? "—"}${over > 0 ? `・${over}本超過` : m.moreOK != null ? `・あと${m.moreOK}本` : ""}</b></span>`
+    + netHtml;
   el.innerHTML = parts.length ? parts.join("") : "";
 }
-fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
-  .then(r => r.ok ? r.json() : null).then(m => { window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
+function refreshMachine(){
+  return fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(m => {
+      window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m);
+      // machine.json のセッション生存情報が変わったので、実態判定(緑=今動いている)を使う
+      // ホワイトボード・225件セクションも同じデータで引き直す
+      if(window.__wbData) renderWhiteboard(window.__wbData);
+      if(window.SHINCHOKU_ALL) renderAll();
+    }).catch(()=>{ renderSessions(null); });
+}
+refreshMachine();
+// 2026-09-03 リアルタイム化：開いている間、30秒おきに全部取り直す。手動リロード不要。新しい顔で古い数字を出さない
+const REFRESH_MS = 30000;
+setInterval(()=>{ if(document.visibilityState === "visible"){ refreshMachine(); refreshWhiteboard(); refreshHealth(); } }, REFRESH_MS);
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "visible"){ refreshMachine(); refreshWhiteboard(); refreshHealth(); } });
 
 /* ───── 弱点の自動集計（history.jsonl） ───── */
 function renderStats(text){

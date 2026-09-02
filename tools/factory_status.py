@@ -170,6 +170,35 @@ def io_mbs():
         return None
 
 
+def network_status():
+    """2026-09-03 有線LAN診断：デフォルトルートのインターフェース名→サービス名を逆引きし、
+    Wi-Fiかそれ以外（有線）かを判定。en0/en1は機種でWi-Fi/Ethernetが入れ替わるのでサービス名で見る。
+    ping 5発の平均msも測る（100ms超で黄、300ms超で赤の目安。表示側で判定）。"""
+    result = {"iface": None, "serviceName": None, "wired": None, "pingMs": None}
+    try:
+        m = re.search(r"interface:\s*(\S+)", run(["route", "get", "default"], timeout=5))
+        iface = m.group(1) if m else None
+        result["iface"] = iface
+        if iface:
+            order = run(["networksetup", "-listnetworkserviceorder"], timeout=5)
+            # "(1) Ethernet\n(Hardware Port: Ethernet, Device: en0)" のペアをブロックごとに突合
+            blocks = re.findall(r"\(\d+\)\s+(.+?)\n\(Hardware Port: .+?, Device: (\w+)\)", order)
+            svc = next((name for name, dev in blocks if dev == iface), None)
+            result["serviceName"] = svc
+            if svc:
+                result["wired"] = "wi-fi" not in svc.lower()
+    except Exception:
+        pass
+    try:
+        out = run(["ping", "-c", "5", "-t", "3", "1.1.1.1"], timeout=8)
+        m = re.search(r"= [\d.]+/([\d.]+)/", out)  # min/avg/max/stddev の avg
+        if m:
+            result["pingMs"] = round(float(m.group(1)), 1)
+    except Exception:
+        pass
+    return result
+
+
 # ---------- セッション状態 ----------
 def tail_text(path, chunk=200000):
     try:
@@ -341,7 +370,8 @@ DEPLOY_PAT = re.compile(r"(公開|反映|デプロイ|Publish|Pages|本番|x-dep
 def transcript_stats(path):
     """会話ログ全体を1回なめて、PWAが要る数字を出す（開始・最後の報告・押された回数・誰が押したか・成果URL・完了報告か）"""
     st = {"firstAt": None, "lastReportAt": None, "lastReportText": "", "humanPushes": 0, "dispatchPushes": 0,
-          "watchdogResumes": 0, "urls": [], "done": False, "failed": False, "model": None}
+          "watchdogResumes": 0, "urls": [], "done": False, "failed": False, "model": None,
+          "turns": 0, "lastActivityAt": None}
     if not path:
         return st
     try:
@@ -385,6 +415,9 @@ def transcript_stats(path):
             mdl = m.get("model")
             if mdl:
                 st["model"] = mdl
+            st["turns"] += 1
+            if ts:
+                st["lastActivityAt"] = ts
             text = "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
             if text.strip():
                 all_text_parts.append(text)
@@ -479,6 +512,8 @@ def sessions():
             "kind": kind,
             "tail": tail,
             "model": st.get("model"),
+            "turns": st.get("turns", 0),
+            "lastActivityAt": st.get("lastActivityAt"),
             # 2026-09-02 PWA第2段階：開始時刻（ps の lstart）と会話ログID。経過時間・3h/6h札は画面側で計算
             "startedAt": session_started_at(s),
             "cli": os.path.splitext(os.path.basename(s["transcript"]))[0] if s.get("transcript") else None,
@@ -542,6 +577,7 @@ def build():
     pressure = mem_pressure(); avail = mem_avail_mb()
     swap_gb, swap_up = swap_trend()
     iomb = io_mbs()
+    net = network_status()
     ss = sessions()
     # 上限は5分平均ロード（la[1]）で決める。1分平均は瞬間的に跳ねて上限が0↔6と暴れるため。1分平均はJSONに load1 として残す
     sm, reasons, alive, working = safe_max(base, ss, la[1] if la[1] is not None else la[0], cores, pressure, avail, swap_up, iomb)
@@ -640,6 +676,7 @@ def build():
         "swapGB": swap_gb if swap_gb is not None else base.get("swapGB"),
         "swapIncreasing": swap_up,
         "ioMBs": iomb,
+        "network": net,
         "stalledList": [{k: s[k] for k in ("pid", "title", "kind", "idleMin", "dispatch")} for s in stalled],
         # 2026-09-02 PWA用の全項目（名前/ID・開始・最後の報告・経過・状態色・成果URL・押された回数/再開回数）。tail（本文断片）だけ落とす
         "sessionList": [{k: v for k, v in s.items() if k != "tail"} for s in ss],
