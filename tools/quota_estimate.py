@@ -36,6 +36,73 @@ WARN_PCT, STOP_PCT = 75, 85
 # 曜日ごとの目標上限（たまごさん指定・2026-09-03）。tm_wday: 月0/火1/水2/木3/金4/土5/日6
 WEEKDAY_TARGET = {2: 30, 3: 45, 4: 55, 5: 70, 6: 80, 0: 90, 1: 100}
 WEEKDAY_TARGET_TABLE = "水30/木45/金55/土70/日80/月90/火100(17:59まで)"
+# 2026-09-03 Claudeアプリ自身が書いている本物の使用率（%）。読める間は推定をやめてこちらを正とする。
+# fh=5時間セッション枠の使用%／sd=週間・全モデルの使用%。Fableとの内訳だけは会話ログのトークン比で分配する（本物が無い唯一の数字）
+PLAN_USAGE = os.path.expanduser("~/Library/Application Support/Claude/plan-usage-history.json")
+REAL_DATA_MAX_AGE_MIN = 60  # これより古いサンプルしか無ければ実測を諦めて推定へフォールバック
+# 2026-09-03 Claude公式告知：「Claude Codeの週間制限が2026-09-13まで50%高くなっています」。期間中だけ曲線目標を引き上げ、
+# 過ぎたら自動で元に戻る（ハードコードで曲線数値自体は書き換えない。倍率を掛けるだけ）
+BOOST_UNTIL = "2026-09-13"
+BOOST_FACTOR = 1.5
+
+
+def boost_active(now):
+    try:
+        until = time.mktime(time.strptime(BOOST_UNTIL + " 23:59:59", "%Y-%m-%d %H:%M:%S"))
+    except Exception:
+        return False
+    return now <= until
+
+
+def real_usage(now):
+    """本物の使用率。plan-usage-history.json（Claudeアプリが自分で15分おき程度に書いている）の最新サンプルを読む。
+    5時間枠のリセット時刻は直近8時間を遡って「fhが大きく下がった瞬間」を探して求める（サーバがresetAtを教えてくれないため）。"""
+    try:
+        d = json.load(open(PLAN_USAGE, encoding="utf-8"))
+    except Exception:
+        return None
+    samples = d.get("samples") or []
+    if not samples:
+        return None
+    last = samples[-1]
+    last_t = last.get("t", 0) / 1000.0
+    age_min = (now - last_t) / 60.0
+    if age_min > REAL_DATA_MAX_AGE_MIN or age_min < -5:
+        return None  # アプリが閉じている等で古すぎる／未来時刻なら実測を諦める
+    fh_now = (last.get("u") or {}).get("fh")
+    sd_now = (last.get("u") or {}).get("sd")
+    if fh_now is None or sd_now is None:
+        return None
+    lookback = [s for s in samples if last_t - s.get("t", 0) / 1000.0 <= 8 * 3600]
+    window_start_raw = None
+    for i in range(len(lookback) - 1, 0, -1):
+        cur = (lookback[i].get("u") or {}).get("fh")
+        prev = (lookback[i - 1].get("u") or {}).get("fh")
+        if cur is None or prev is None:
+            continue
+        if cur <= 15 and prev - cur >= 15:
+            window_start_raw = lookback[i]["t"] / 1000.0
+            break
+    window_start, fh_at_start = window_start_raw, 0
+    if window_start_raw is not None:
+        # Claudeアプリがサンプリングを休んでいる間（例：深夜）にリセットが起きると、drop検知点は実際のリセット時刻より遅れる。
+        # window内の各点(t, fh)へ最小二乗で直線を引き、fh=0になる時刻へ外挿してリセット時刻を補正する
+        pts = [(s["t"] / 1000.0, (s.get("u") or {}).get("fh")) for s in lookback
+               if s["t"] / 1000.0 >= window_start_raw and (s.get("u") or {}).get("fh") is not None]
+        if len(pts) >= 2:
+            n = len(pts)
+            mean_t = sum(p[0] for p in pts) / n
+            mean_v = sum(p[1] for p in pts) / n
+            den = sum((p[0] - mean_t) ** 2 for p in pts)
+            num = sum((p[0] - mean_t) * (p[1] - mean_v) for p in pts)
+            slope = num / den if den > 0 else 0
+            if slope > 0:
+                refined = mean_t - mean_v / slope
+                if refined <= last_t:  # 未来に外挿してしまう異常値は捨てて生の検知点を使う
+                    window_start = refined
+    return {"fh": float(fh_now), "sd": float(sd_now), "asOfT": last_t,
+            "asOf": time.strftime("%H:%M:%S", time.localtime(last_t)), "ageMin": round(age_min, 1),
+            "windowStart": window_start, "fhAtWindowStart": fh_at_start}
 
 
 def last_reset(now=None):
@@ -162,16 +229,23 @@ def main():
     cum = lambda upto, key: sum(v[key] for k, v in buckets.items() if int(k) <= upto)
     total_between = lambda lo, hi: sum(v["fable"] + v["other"] for k, v in buckets.items() if lo <= int(k) <= hi)
     fable_now, all_now = cum(now, "fable"), cum(now, "fable") + cum(now, "other")
-    anchor = load(ANCHOR, {})
-    est = {"method": "推定（会話ログのトークン量×アンカー実測で目盛り合わせ）", "anchor": anchor}
-    a_t = ts_epoch(anchor.get("t", "")) if anchor else None
-    if a_t and a_t >= since:
-        fa, aa = cum(a_t, "fable"), cum(a_t, "fable") + cum(a_t, "other")
-        fable_pct = anchor["fablePct"] * (fable_now / fa) if fa > 0 else None
-        all_pct = anchor["allPct"] * (all_now / aa) if aa > 0 else None
+    real = real_usage(now)
+    if real:
+        all_pct = real["sd"]
+        fable_pct = round(all_pct * (fable_now / all_now), 1) if all_now > 0 else None
+        est = {"method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
+               "source": "plan-usage-history.json", "asOf": real["asOf"], "ageMin": real["ageMin"]}
     else:
-        fable_pct = all_pct = None
-        est["method"] = "推定不可（アンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）"
+        anchor = load(ANCHOR, {})
+        est = {"method": "推定（実測ファイルが読めないためフォールバック：会話ログのトークン量×アンカー実測で目盛り合わせ）", "anchor": anchor}
+        a_t = ts_epoch(anchor.get("t", "")) if anchor else None
+        if a_t and a_t >= since:
+            fa, aa = cum(a_t, "fable"), cum(a_t, "fable") + cum(a_t, "other")
+            fable_pct = anchor["fablePct"] * (fable_now / fa) if fa > 0 else None
+            all_pct = anchor["allPct"] * (all_now / aa) if aa > 0 else None
+        else:
+            fable_pct = all_pct = None
+            est["method"] = "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）"
     # ペース：直近6時間
     six = now - 6 * 3600
     f6 = sum(v["fable"] for k, v in buckets.items() if int(k) >= six)
@@ -191,7 +265,9 @@ def main():
         fable_level = "warn"  # このペースだとリセット前に天井
     # 2026-09-03 曜日ごとの目標カーブ（たまごさん指定：水30/木45/金55/土70/日80/月90/火100）で日次予算を超えていれば
     # 75/85%の絶対閾値に届いていなくても「今日はもう使わない」として stop にする（例：今週は木金ゼロ・土日月10%ずつの計画）
-    weekday_target = WEEKDAY_TARGET[time.localtime(now).tm_wday]
+    is_boost = boost_active(now)
+    weekday_target_base = WEEKDAY_TARGET[time.localtime(now).tm_wday]
+    weekday_target = min(99.0, round(weekday_target_base * (BOOST_FACTOR if is_boost else 1.0), 1))
     over_pct = round(fable_pct - weekday_target, 1) if fable_pct is not None else None
     if over_pct is not None and over_pct > 0:
         fable_level = "stop"
@@ -224,7 +300,8 @@ def main():
         ceiling_days = round(proj["hoursToCeiling_recentPace"] / 24, 1)
     # 2026-09-03 全モデル週枠は Fable と別計算・別判定（混ぜない）。曲線は「経過日数÷7日」の直線（火曜17:59直前に99%）。
     # Fable専用の曲線（水30/木45/…）は本人の個人的なFableの使い方の感覚値なので、全モデルには流用しない。
-    all_linear_target = round(min(99.0, (days_elapsed / 7.0) * 100.0), 1)
+    all_linear_target_base = round(min(99.0, (days_elapsed / 7.0) * 100.0), 1)
+    all_linear_target = min(99.0, round(all_linear_target_base * (BOOST_FACTOR if is_boost else 1.0), 1))
     all_over_pct = round(all_pct - all_linear_target, 1) if all_pct is not None else None
     all_curve_state = ("over" if all_over_pct is not None and all_over_pct > CURVE_BAND else
                         "under" if all_over_pct is not None and all_over_pct < -CURVE_BAND else
@@ -234,32 +311,50 @@ def main():
     # 週枠＝余らせるのが正解。5時間枠＝使い切らないと消える（たまごさん指摘）。
     # なのでこちらは「このままだと何%余る見込みか（もったいない度）」を出す。本数を増やす判断は factory_status.py が使う。
     session5h = None
-    sa = load(SESSION5H_ANCHOR, {})
-    if sa.get("t") is not None and sa.get("remainMin") is not None:
-        anchor_t5 = ts_epoch(sa["t"])
-        if anchor_t5:
-            elapsed_at_anchor_h = SESSION5H_HOURS - sa["remainMin"] / 60
-            window_start = anchor_t5 - elapsed_at_anchor_h * 3600
-            reset_at5 = window_start + SESSION5H_HOURS * 3600
-            tok_at_anchor = total_between(window_start, anchor_t5)
-            tok_now = total_between(window_start, now)
-            pct5 = sa["pct"] * (tok_now / tok_at_anchor) if tok_at_anchor > 0 else sa["pct"]
-            hours_left5 = max(0.0, (reset_at5 - now) / 3600)
-            elapsed_since_anchor_h = (now - anchor_t5) / 3600
-            elapsed_in_window_h = max(1e-9, (now - window_start) / 3600)
-            avg_pace_in_window = pct5 / elapsed_in_window_h
-            rate5 = ((pct5 - sa["pct"]) / elapsed_since_anchor_h) if elapsed_since_anchor_h >= 0.1 else avg_pace_in_window
-            rate5 = max(0.0, rate5)
-            projected5 = min(999.0, pct5 + rate5 * hours_left5)
-            waste_pct = max(0.0, 100.0 - projected5) if hours_left5 > 0 else 0.0
-            mottainai = hours_left5 > 0 and waste_pct >= 20
-            session5h = {
-                "pct": round(pct5, 1), "resetAt": time.strftime("%Y-%m-%d %H:%M", time.localtime(reset_at5)),
-                "hoursLeft": round(hours_left5, 2), "recentPacePctPerHour": round(rate5, 2),
-                "projectedPctAtReset": round(projected5, 1), "wasteRiskPct": round(waste_pct, 1),
-                "mottainai": mottainai, "anchor": sa,
-                "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）",
-            }
+    if real and real.get("windowStart"):
+        window_start = real["windowStart"]
+        reset_at5 = window_start + SESSION5H_HOURS * 3600
+        hours_left5 = max(0.0, (reset_at5 - now) / 3600)
+        pct5 = real["fh"]
+        elapsed_h = max(1e-9, (now - window_start) / 3600)
+        rate5 = max(0.0, (pct5 - real.get("fhAtWindowStart", 0)) / elapsed_h)
+        projected5 = min(999.0, pct5 + rate5 * hours_left5)
+        waste_pct = max(0.0, 100.0 - projected5) if hours_left5 > 0 else 0.0
+        mottainai = hours_left5 > 0 and waste_pct >= 20
+        session5h = {
+            "pct": round(pct5, 1), "resetAt": time.strftime("%Y-%m-%d %H:%M", time.localtime(reset_at5)),
+            "hoursLeft": round(hours_left5, 2), "recentPacePctPerHour": round(rate5, 2),
+            "projectedPctAtReset": round(projected5, 1), "wasteRiskPct": round(waste_pct, 1),
+            "mottainai": mottainai, "source": "実測(plan-usage-history.json)", "asOf": real["asOf"], "ageMin": real["ageMin"],
+            "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）",
+        }
+    else:
+        sa = load(SESSION5H_ANCHOR, {})
+        if sa.get("t") is not None and sa.get("remainMin") is not None:
+            anchor_t5 = ts_epoch(sa["t"])
+            if anchor_t5:
+                elapsed_at_anchor_h = SESSION5H_HOURS - sa["remainMin"] / 60
+                window_start = anchor_t5 - elapsed_at_anchor_h * 3600
+                reset_at5 = window_start + SESSION5H_HOURS * 3600
+                tok_at_anchor = total_between(window_start, anchor_t5)
+                tok_now = total_between(window_start, now)
+                pct5 = sa["pct"] * (tok_now / tok_at_anchor) if tok_at_anchor > 0 else sa["pct"]
+                hours_left5 = max(0.0, (reset_at5 - now) / 3600)
+                elapsed_since_anchor_h = (now - anchor_t5) / 3600
+                elapsed_in_window_h = max(1e-9, (now - window_start) / 3600)
+                avg_pace_in_window = pct5 / elapsed_in_window_h
+                rate5 = ((pct5 - sa["pct"]) / elapsed_since_anchor_h) if elapsed_since_anchor_h >= 0.1 else avg_pace_in_window
+                rate5 = max(0.0, rate5)
+                projected5 = min(999.0, pct5 + rate5 * hours_left5)
+                waste_pct = max(0.0, 100.0 - projected5) if hours_left5 > 0 else 0.0
+                mottainai = hours_left5 > 0 and waste_pct >= 20
+                session5h = {
+                    "pct": round(pct5, 1), "resetAt": time.strftime("%Y-%m-%d %H:%M", time.localtime(reset_at5)),
+                    "hoursLeft": round(hours_left5, 2), "recentPacePctPerHour": round(rate5, 2),
+                    "projectedPctAtReset": round(projected5, 1), "wasteRiskPct": round(waste_pct, 1),
+                    "mottainai": mottainai, "source": "推定(フォールバック)", "anchor": sa,
+                    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）",
+                }
 
     # ---- 自動制御の心臓部（2026-09-03）：「セッション1本を1時間動かすと全モデル週枠が何%進むか」 ----
     # 直近6時間の全モデル消費ペース(%/h) ÷ 直近6時間の平均生存本数 = 1本1時間あたりの消費%。
@@ -282,16 +377,20 @@ def main():
             need_weekly = (target_all_reset - (all_pct or 0)) / (pct_per_session_hour * days_left_w * 24) if days_left_w > 0 else None
             benchmark["sonnetSessionsForWeeklyCurve"] = round(need_weekly, 1) if need_weekly and need_weekly > 0 else None
 
-    out = {"updatedAt": time.strftime("%Y-%m-%d %H:%M"), "estimated": True,
+    out = {"updatedAt": time.strftime("%Y-%m-%d %H:%M"), "estimated": real is None,
            "fablePct": round(fable_pct, 1) if fable_pct is not None else None,
            "allPct": round(all_pct, 1) if all_pct is not None else None,
+           "allPctAsOf": real["asOf"] if real else None, "allPctAgeMin": real["ageMin"] if real else None,
            "resetAt": time.strftime("%Y-%m-%d %H:%M", time.localtime(next_reset)),
            "daysLeft": round(hours_left / 24, 1), "hoursLeft": round(hours_left, 1),
            "fableLevel": fable_level, "allLevel": all_level, "warnPct": WARN_PCT, "stopPct": STOP_PCT, "daily": day,
+           "boost": {"active": is_boost, "factor": BOOST_FACTOR, "until": BOOST_UNTIL,
+                     "note": ("Claude公式告知：週間制限が%s 23:59まで%d%%引き上げ中→曲線目標を%.1f倍にして反映（過ぎたら自動で元に戻る）" %
+                              (BOOST_UNTIL, round((BOOST_FACTOR - 1) * 100), BOOST_FACTOR)) if is_boost else "通常期間（引き上げなし）"},
            "policy": ("Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝"
                       "曲線(" + WEEKDAY_TARGET_TABLE + ")から" + str(CURVE_BAND) + "pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。"
                       "全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。"
-                      "本数は減らさない・増やす方向のみ"),
+                      "本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定"),
            "costNote": ("2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。"
                         "1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方"
                         "（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。"
@@ -299,7 +398,7 @@ def main():
            "fableWeightedTokensSinceReset": int(fable_now), "allWeightedTokensSinceReset": int(all_now),
            "last6h": {"fable": int(f6), "all": int(a6)},
            "projection": proj, **est,
-           "weekdayTarget": weekday_target, "weekdayTargetTable": WEEKDAY_TARGET_TABLE,
+           "weekdayTarget": weekday_target, "weekdayTargetBase": weekday_target_base, "weekdayTargetTable": WEEKDAY_TARGET_TABLE,
            "overPct": over_pct, "daysElapsedSinceReset": days_elapsed, "ceilingDaysAtRecentPace": ceiling_days,
            "fableCurve": {"target": weekday_target, "overPct": over_pct, "state": fable_curve_state,
                           "headroomPct": fable_headroom_pct, "band": CURVE_BAND,
@@ -308,18 +407,21 @@ def main():
                         "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"},
            "session5h": session5h,
            "benchmark": benchmark,
-           "line": ("Fable週枠 %s%%（今日の目標%s%%・%s） ／ 全モデル %s%%（曲線目標%s%%・%s） ／ リセットまで %.1f日%s ／ 5時間枠 %s" % (
+           "line": ("Fable週枠 %s%%（今日の目標%s%%%s・%s） ／ 全モデル %s%%（%s時点・曲線目標%s%%%s・%s） ／ リセットまで %.1f日%s ／ 5時間枠 %s%s" % (
                "?" if fable_pct is None else round(fable_pct), weekday_target,
+               "＝%.0f×1.5" % weekday_target_base if is_boost else "",
                {"over": "%.1fpt上振れ→絞る" % over_pct if over_pct else "", "under": "%.1fpt下振れ→投入余地あり" % (-over_pct) if over_pct else "",
                 "on_track": "曲線どおり", "unknown": "?"}.get(fable_curve_state, "?"),
-               "?" if all_pct is None else round(all_pct), all_linear_target,
+               "?" if all_pct is None else round(all_pct), (real["asOf"] if real else "推定"), all_linear_target,
+               "＝%.0f×1.5" % all_linear_target_base if is_boost else "",
                {"over": "%.1fpt上振れ" % all_over_pct if all_over_pct else "", "under": "%.1fpt下振れ→本数増やす余地" % (-all_over_pct) if all_over_pct else "",
                 "on_track": "曲線どおり", "unknown": "?"}.get(all_curve_state, "?"),
                hours_left / 24,
                ("（このペースだと%.0f時間で天井）" % proj["hoursToCeiling_recentPace"]) if proj.get("hoursToCeiling_recentPace") else "",
                ("%s%%・残%.1fh%s" % (session5h["pct"], session5h["hoursLeft"],
                                       "・もったいない（%.0f%%余る見込み→本数増やす）" % session5h["wasteRiskPct"] if session5h["mottainai"] else "")
-                ) if session5h else "未計測（session5h_anchor.py未設定）"))}
+                ) if session5h else "未計測",
+               ("（%s時点）" % session5h["asOf"]) if session5h and session5h.get("asOf") else ""))}
     save(OUT, out)
     if "--quiet" not in sys.argv:
         print(json.dumps(out, ensure_ascii=False, indent=1))
