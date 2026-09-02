@@ -1,13 +1,13 @@
 {
- "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 23% / スワップ 7.51GB / ディスク空き 50GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 15% / メモリ圧迫 24% / スワップ 7.41GB / ディスク空き 50GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 7,
- "mem": 23,
- "swapGB": 7691.25,
+ "cpu": 15,
+ "mem": 24,
+ "swapGB": 7595.25,
  "diskFreeGB": 50.0,
  "sessions": 2,
- "note": "上限2本・あと0本OK（5分平均ロード10.3（コア8×0.8超））",
- "measuredAt": "2026-09-03T05:17:34+09:00",
+ "note": "上限2本・あと0本OK（5分平均ロード10.0（コア8×0.8超））",
+ "measuredAt": "2026-09-03T05:22:52+09:00",
  "working": 1,
  "stalled": 1,
  "waiting": 0,
@@ -22,22 +22,22 @@
  "predict": [],
  "shedCandidates": [],
  "below": 0,
- "blockReason": "5分平均ロード10.3（コア8×0.8超）",
- "load1": 9.3,
- "load5": 10.31,
- "load15": 14.96,
+ "blockReason": "5分平均ロード10.0（コア8×0.8超）",
+ "load1": 9.63,
+ "load5": 10.0,
+ "load15": 13.42,
  "cores": 8,
- "loadRatio": 1.16,
+ "loadRatio": 1.2,
  "memPressure": "green",
- "memAvailGB": 6.8,
+ "memAvailGB": 6.4,
  "swapIncreasing": false,
- "ioMBs": 18.79,
+ "ioMBs": 3.56,
  "stalledList": [
   {
    "pid": 94641,
    "title": "（不明）",
    "kind": "asked",
-   "idleMin": 15.2,
+   "idleMin": 20.5,
    "dispatch": false
   }
  ],
@@ -46,7 +46,7 @@
    "cli": "0aca635e-2c9b-466b-aa60-f964663ca641",
    "localId": null,
    "startedAt": "2026-09-03T04:35:08+0900",
-   "elapsedMin": 42,
+   "elapsedMin": 48,
    "lastReportAt": "2026-09-02T20:02:23.912Z",
    "lastReport": "op UI操作が必要（たまごさん本人、またはcomputer-use/claude-in-chrome MCP接続セッション）。対象は30分おきの軽量パトロール1本のみで実害は小さく、緊急対応は不要。",
    "status": "止まっている",
@@ -62,7 +62,7 @@
    "title": "（不明）",
    "dispatch": false,
    "mb": 559,
-   "idleMin": 15.2,
+   "idleMin": 20.5,
    "kind": "asked",
    "model": "claude-sonnet-5"
   },
@@ -70,7 +70,7 @@
    "cli": "8adf8b73-6d03-40ab-9cbe-17b4168e58d0",
    "localId": "local_fd5bb777-e704-44f9-9dbc-9f1cb9ff42ee",
    "startedAt": "2026-09-03T05:14:36+0900",
-   "elapsedMin": 2,
+   "elapsedMin": 8,
    "lastReportAt": "2026-09-02T20:17:11.868Z",
    "lastReport": "・司令塔HTML再生成OK・ログ追記済み。 問題：メモリ verdict=red（swap 83.5%・空き0.8GB）＋負荷100%で上限2本＝余枠ゼロのため、今回は着火を見送り。 判断待ち：なし。",
    "status": "完了",
@@ -85,8 +85,8 @@
    "pid": 3329,
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
-   "mb": 316,
-   "idleMin": 0.4,
+   "mb": 317,
+   "idleMin": 5.7,
    "kind": "working",
    "model": "claude-opus-5"
   }
@@ -104,8 +104,17 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 05:17",
-  "resumed": [],
+  "lastRun": "2026-09-03 05:22",
+  "resumed": [
+   {
+    "pid": 94641,
+    "cli": "0aca635e-2c9b-466b-aa60-f964663ca641",
+    "title": "引き継ぎ子:枠を自動制御する（夜通し）",
+    "why": "質問して停止",
+    "try": 2,
+    "resumePid": 4890
+   }
+  ],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
@@ -117,18 +126,11 @@
    "below": 0,
    "line": "現在2本／上限2本／目標2本／あと0本いける"
   },
-  "stalledSkipped": [
-   {
-    "pid": 94641,
-    "title": "引き継ぎ子:枠を自動制御する（夜通し）",
-    "kind": "asked",
-    "why": "再開直後（20分以内）"
-   }
-  ]
+  "stalledSkipped": []
  },
  "metrics": {
-  "stalls": 28,
-  "autoResumes": 12,
+  "stalls": 29,
+  "autoResumes": 13,
   "handoffs": 4,
   "ignitions": 0,
   "gated": 0,
@@ -140,13 +142,13 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-03 05:17",
+  "updatedAt": "2026-09-03 05:22",
   "estimated": true,
   "fablePct": 65.7,
   "allPct": 55.9,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 5.5,
-  "hoursLeft": 132.7,
+  "hoursLeft": 132.6,
   "fableLevel": "stop",
   "allLevel": "ok",
   "warnPct": 75,
@@ -167,8 +169,8 @@
    "all": 112502376
   },
   "projection": {
-   "fablePctAtReset_avgPace": 312.5,
-   "fablePctAtReset_recentPace": 291.0,
+   "fablePctAtReset_avgPace": 311.7,
+   "fablePctAtReset_recentPace": 290.8,
    "hoursToCeiling_recentPace": 20.2,
    "recentPacePctPerHour": 1.7
   },
@@ -204,7 +206,7 @@
    "pct": 33.5,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 4.19,
+   "recentPacePctPerHour": 4.08,
    "projectedPctAtReset": 33.5,
    "wasteRiskPct": 0.0,
    "mottainai": false,
@@ -220,11 +222,11 @@
   },
   "benchmark": {
    "allPacePctPerHour6h": 2.671,
-   "aliveAvgLast6h": 5.4,
-   "pctPerSessionHour": 0.4924,
+   "aliveAvgLast6h": 5.3,
+   "pctPerSessionHour": 0.5008,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
-   "sonnetSessionsForWeeklyCurve": 0.7
+   "sonnetSessionsForWeeklyCurve": 0.6
   },
   "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 56%（曲線目標21.4%・34.5pt上振れ） ／ リセットまで 5.5日（このペースだと20時間で天井） ／ 5時間枠 33.5%・残0.0h",
   "switches": [
