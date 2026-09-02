@@ -62,6 +62,30 @@
   .machine .quota.warn{color:var(--yellow);}
   .machine .quota.stop{color:var(--red);}
 
+  /* メーター（ゲージ）：数字より感覚。緑＝余裕／黄＝考える／赤＝止める判断 */
+  .meters{margin:0 0 14px;}
+  .meter{margin-bottom:12px;}
+  .meter:last-child{margin-bottom:0;}
+  .meter .mtitle{display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:0.76rem; color:var(--sub); margin-bottom:5px;}
+  .meter .mtitle b{color:var(--ink); font-weight:500; font-size:0.8rem;}
+  .meter .mtitle .val{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap;}
+  .meter .val.green{color:var(--green);} .meter .val.yellow{color:var(--yellow);} .meter .val.red{color:var(--red);}
+  .meter .track{position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,0.055); overflow:hidden;}
+  .meter .fill{height:100%; border-radius:7px 0 0 7px; min-width:2%;}
+  .meter .fill.green{background:var(--green);}
+  .meter .fill.yellow{background:var(--yellow);}
+  .meter .fill.red{background:var(--red);}
+  .meter .mk{position:absolute; top:-2px; bottom:-2px; width:1px; background:rgba(0,0,0,0.35);}
+  .meter .msub{font-size:0.72rem; color:var(--dim); margin-top:4px;}
+  .meter .msub.mottainai{color:var(--yellow);}
+
+  /* モデルバッジ：状態色と混同しないよう枠線のみ・静かに */
+  .mbadge{display:inline-flex; align-items:center; height:18px; padding:0 6px; margin-left:6px; border:1px solid var(--line); border-radius:5px; font-size:0.66rem; font-weight:600; color:var(--sub); vertical-align:1px; white-space:nowrap;}
+  .mbadge.opus{color:var(--kinari); border-color:var(--kinari);}
+  .modelSum{display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:0.74rem; color:var(--sub); margin:8px 0 10px;}
+  .modelSum span{border:1px solid var(--line); border-radius:6px; padding:2px 8px;}
+  .modelSum span:first-child{border:none; padding:0; color:var(--dim);}
+
   /* 見出し */
   .label{display:flex; align-items:baseline; gap:8px; color:var(--sub); font-size:0.72rem; letter-spacing:0.12em; margin:18px 0 8px;}
   .label b{color:var(--ink); font-weight:500; letter-spacing:0.08em;}
@@ -150,6 +174,7 @@
 <h1>進捗表</h1>
 <div class="updated" id="updated">読み込み中…</div>
 <div class="machine" id="machine" hidden></div>
+<div class="meters" id="meters"></div>
 
 <div class="label"><b>Macの健康</b>止まる＝全部止まる <small id="healthMeta"></small></div>
 <div class="sum" id="healthSum"></div>
@@ -158,6 +183,7 @@
 <div class="label"><b>走行状況</b>自動・5分おき <small id="sessMeta"></small></div>
 <div class="legend"><span><i style="background:var(--green)"></i>今動いている</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>止まっている（動いていない＝台帳が着手中でも赤）</span></div>
 <div class="sum" id="sessSum"></div>
+<div class="modelSum" id="modelSum"></div>
 <div class="g" id="sessions"></div>
 
 
@@ -318,6 +344,14 @@ function jaTitle(t){
   const k = Object.keys(JA_TITLE).find(x => t.toLowerCase().startsWith(x.toLowerCase()));
   return k ? JA_TITLE[k] : t;
 }
+function modelLabel(m){
+  const s = String(m||"").toLowerCase();
+  if(s.includes("opus")) return "Opus";
+  if(s.includes("fable")) return "Fable";
+  if(s.includes("sonnet")) return "Sonnet";
+  if(s.includes("haiku")) return "Haiku";
+  return null;
+}
 function urlLinks(urls){
   return (urls || []).map((u,i)=> typeof u === "string" ? {label:`成果 ${i+1}`, url:u} : {label:u.label || `成果 ${i+1}`, url:u.url}).filter(l=>l.url);
 }
@@ -339,6 +373,14 @@ function renderSessions(m){
     `<span class="green">走行中<b>${cnt.green}</b></span><span class="red">止まり<b>${cnt.red}</b></span><span class="yellow">待ち<b>${cnt.yellow}</b></span><span class="blue">完了<b>${cnt.blue||0}</b></span><span>待機<b>${cnt.gray}</b></span>`
     + `<span title="人に押されずに完了した割合">自走完了率<b>${au.ratio != null ? Math.round(au.ratio*100) + "%" : "—"}</b></span>`
     + (wd.lastRun ? `<span>見張り番 ${esc(wd.lastRun.slice(5))}<b>再開${nRes}${nHand ? `・引き継ぎ${nHand}` : ""}${nUnrec ? `・復旧不能${nUnrec}` : ""}</b></span>` : `<span>見張り番<b>未稼働</b></span>`);
+  // モデル別本数（今動いているものだけ）：「今日Fable1本くらい使えるな」の判断材料
+  const modelCnt = {};
+  items.forEach(({s, st}) => { if(st.color === "green"){ const lbl = modelLabel(s.model) || "不明"; modelCnt[lbl] = (modelCnt[lbl]||0) + 1; } });
+  const mOrder = {Opus:0, Sonnet:1, Fable:2, Haiku:3, 不明:9};
+  const mKeys = Object.keys(modelCnt).sort((a,b)=>(mOrder[a]??9)-(mOrder[b]??9));
+  document.getElementById("modelSum").innerHTML = mKeys.length
+    ? `<span>今動いているモデル：</span>` + mKeys.map(k=>`<span>${esc(k)} <b>${modelCnt[k]}</b>本</span>`).join("")
+    : "";
   box.innerHTML = items.map(({s, st})=>{
     const q = encodeURIComponent(s.title || "");
     const pushes = (s.humanPushes != null || s.dispatchPushes != null || s.watchdogResumes != null)
@@ -351,7 +393,9 @@ function renderSessions(m){
       <p class="src">判定：3時間で報告が無ければ赤。6時間で💀。止まり（質問・承認待ち）は黄。</p>
       ${linksHtml([...urlLinks(s.urls), {label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${q}`}])}`;
     const pushed = (s.humanPushes||0) + (s.dispatchPushes||0) + (s.watchdogResumes||0);
-    const extra = (st.skull ? `<span class="sk">💀</span>` : "") + (pushed ? `<span class="chip" title="起こされた回数">🔁${pushed}</span>` : "");
+    const mLbl = modelLabel(s.model);
+    const extra = (mLbl ? `<span class="mbadge${mLbl==="Opus"?" opus":""}">${esc(mLbl)}</span>` : "")
+      + (st.skull ? `<span class="sk">💀</span>` : "") + (pushed ? `<span class="chip" title="起こされた回数">🔁${pushed}</span>` : "");
     return card(st.color, jaTitle(s.title), st.label, extra, d);
   }).join("");
 }
@@ -532,8 +576,50 @@ function renderMachine(m){
   el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span><span>${sess}</span>${lim}<span class="sep">｜</span><span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span><span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>${qLine}`;
   el.hidden = false;
 }
+/* ───── メーター（ゲージ）：数字ではなく感覚で。緑＝余裕／黄＝考える／赤＝止める判断 ─────
+   5時間枠・週Fable・週全モデル・マシン負荷の4本。5時間枠だけ「使い切らないと消える」ので
+   危険（赤）の意味が逆＝余らせすぎ（もったいない）を黄で警告する。 */
+function meterHTML(title, pct, level, valText, subText, subCls){
+  const w = pct == null ? 0 : Math.max(2, Math.min(100, pct));
+  return `<div class="meter">
+    <div class="mtitle"><b>${esc(title)}</b><span class="val ${level}">${esc(valText)}</span></div>
+    <div class="track"><div class="fill ${level}" style="width:${w}%"></div><div class="mk" style="left:75%"></div><div class="mk" style="left:85%"></div></div>
+    ${subText ? `<div class="msub${subCls ? " " + subCls : ""}">${esc(subText)}</div>` : ""}
+  </div>`;
+}
+function renderMeters(m){
+  const el = document.getElementById("meters");
+  if(!m){ el.innerHTML = ""; return; }
+  const q = m.quota || {};
+  const s5 = q.session5h || {};
+  const lvlMap = {ok:"green", warn:"yellow", stop:"red"};
+  const parts = [];
+  if(s5.pct != null){
+    const lvl = s5.mottainai ? "yellow" : "green";
+    const sub = s5.mottainai
+      ? `もったいない：残り${s5.hoursLeft}h・このままだと約${s5.wasteRiskPct}%余る見込み。使えるうちに使う`
+      : `残り${s5.hoursLeft}h・${s5.resetAt}にリセット（使い切らないと消える）`;
+    parts.push(meterHTML("5時間枠", s5.pct, lvl, `${s5.pct}%`, sub, s5.mottainai ? "mottainai" : ""));
+  }
+  if(q.fablePct != null){
+    parts.push(meterHTML("週枠・Fable", q.fablePct, lvlMap[q.fableLevel] || "green", `${q.fablePct}%`,
+      `${q.resetAt || "火曜17:59"}にリセットまで${q.daysLeft != null ? q.daysLeft + "日" : ""}${q.weekdayTarget != null ? `・今日の目標${q.weekdayTarget}%` : ""}`));
+  }
+  if(q.allPct != null){
+    parts.push(meterHTML("週枠・全モデル", q.allPct, lvlMap[q.allLevel] || "green", `${q.allPct}%`,
+      `${q.resetAt || "火曜17:59"}にリセットまで${q.daysLeft != null ? q.daysLeft + "日" : ""}`));
+  }
+  if(m.load != null){
+    const lvl = m.load >= 90 ? "red" : m.load >= 70 ? "yellow" : "green";
+    const more = m.sessions != null && m.safeMax != null && m.sessions > m.safeMax
+      ? `上限${m.safeMax}本に対し${m.sessions - m.safeMax}本超過（畳む判断が要る）`
+      : (m.moreOK > 0 ? `あと${m.moreOK}本OK` : `上限${m.safeMax ?? "?"}本内（これ以上は増やさない）`);
+    parts.push(meterHTML("マシン負荷（何%で固まるか）", m.load, lvl, `${m.load}%`, more));
+  }
+  el.innerHTML = parts.length ? parts.join("") : "";
+}
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
-  .then(r => r.ok ? r.json() : null).then(m => { window.__machine = m; renderMachine(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
+  .then(r => r.ok ? r.json() : null).then(m => { window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
 
 /* ───── 弱点の自動集計（history.jsonl） ───── */
 function renderStats(text){
