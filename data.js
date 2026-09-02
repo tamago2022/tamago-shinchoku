@@ -6,17 +6,23 @@ window.SHINCHOKU = {
   generatedAt: "2026-09-01T00:20:00+09:00",
 
   // ── 今動いているもの（手更新。リアルタイム連携ではない）──
-  runningUpdatedAt: "2026-09-02T09:30:00+09:00",
+  runningUpdatedAt: "2026-09-02T12:50:00+09:00",
   running: [
-    {lane:1, title:"iMacの音楽ライブラリ841フォルダをGoogleドライブへ転送（完走まで）", who:"転送セッション", state:"走行中", progress:"進捗ログ gdrive_music_progress.log の行数＝完了数", links:[
+    {lane:1, title:"iMacの音楽ライブラリ841フォルダをGoogleドライブへ複製（60件完了→61件目から再開指示）", who:"転送セッション", state:"再開指示済み（11:35）", progress:"進捗ログ gdrive_music_progress.log の行数＝完了数。空き5GB未満で待機する安全弁つき", links:[
       {label:"作業キュー", url:"obsidian://open?vault=tamago_brain&file=AI%E5%87%BA%E5%8A%9B%2F_%E3%83%AB%E3%83%BC%E3%83%AB%2F%E4%BD%9C%E6%A5%AD%E3%82%AD%E3%83%A5%E3%83%BC"}
     ]},
-    {lane:2, title:"溜まっている案件から「今すぐ着火できる10本」を出す（優先順位はたまごさん）", who:"Dispatch子セッション", state:"走行中", progress:"受付台帳・カンバン・引き継ぎを洗い出し中", links:[
+    {lane:2, title:"ミュージックアプリの「ファイルが見つからない」を直す（iMac HDDへのシンボリックリンク）", who:"Dispatch子セッション", state:"指示済み（11:22）・結果未確認", progress:"", links:[]},
+    {lane:3, title:"溜まっている案件から「今すぐ着火できる10本」を出す（優先順位はたまごさん）", who:"Dispatch子セッション", state:"指示済み（09:19）・結果未確認", progress:"受付台帳・カンバン・引き継ぎを洗い出し", links:[
       {label:"受付台帳（自動記録）", url:"obsidian://open?vault=tamago_brain&file=AI%E5%87%BA%E5%8A%9B%2F_%E3%83%AB%E3%83%BC%E3%83%AB%2F%E5%8F%97%E4%BB%98%E5%8F%B0%E5%B8%B3_%E8%87%AA%E5%8B%95%E8%A8%98%E9%8C%B2"},
       {label:"引き継ぎ", url:"obsidian://open?vault=tamago_brain&file=AI%E5%87%BA%E5%8A%9B%2F_%E3%83%AB%E3%83%BC%E3%83%AB%2F%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E"}
     ]},
-    {lane:3, title:"この進捗表をスマホのアイコンから開けるアプリにする", who:"スマホ化セッション", state:"完了（この画面）", progress:"公開URLを渡した時点で完了", links:[
-      {label:"元の進捗表（Vault）", url:"obsidian://open?vault=tamago_brain&file=AI%E5%87%BA%E5%8A%9B%2F_%E3%83%AB%E3%83%BC%E3%83%AB%2F%E9%80%B2%E6%8D%97%E8%A1%A8.html"}
+    {lane:4, title:"Eagleに Claude専用フォルダを作って出力物を格納（＋ライブラリの場所・容量調査）", who:"Dispatch子セッション", state:"指示済み（11:10／11:22）・結果未確認", progress:"", links:[]},
+    {lane:5, title:"falで前回生成した動画（200円分）の所在確認と受け渡し", who:"Dispatch子セッション", state:"指示済み（11:15）・結果未確認", progress:"", links:[]},
+    {lane:6, title:"補給所のスマホ操作（タップできない・重い・編集できない）を直す", who:"joy-relief-station系", state:"指示済み（09:04）・結果未確認", progress:"", links:[]},
+    {lane:7, title:"棒人間を卒業する素材の供給ライン調査（イケハヤ級デザインへ）", who:"Dispatch子セッション", state:"指示済み（11:34）・結果未確認", progress:"", links:[]},
+    {lane:8, title:"この進捗表をスマホのアイコンから開けるアプリにする＋共有資料ページ", who:"スマホ化セッション", state:"公開済み（この画面）", progress:"GitHub Pages版は本人の3行実行待ち", links:[
+      {label:"引き継ぎメモ", url:"obsidian://open?vault=tamago_brain&file=AI%E5%87%BA%E5%8A%9B%2F_%E3%83%AB%E3%83%BC%E3%83%AB%2F%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E%2F%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E_%E9%80%B2%E6%8D%97%E8%A1%A8%E3%82%B9%E3%83%9E%E3%83%9B%E3%82%A2%E3%83%97%E3%83%AA_2026-09-02"},
+      {label:"なんでやねん検討資料", url:"https://claude.ai/code/artifact/1fc65096-db6b-41b6-bebe-990120233ab8"}
     ]}
   ],
 
