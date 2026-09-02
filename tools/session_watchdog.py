@@ -58,6 +58,8 @@ STANDARD_MD = os.path.join(VAULT, "AI出力", "_ルール", "セッション標�
 CLAUDE = os.environ.get("CLAUDE_BIN") or (os.path.expanduser("~/.local/bin/claude")
         if os.path.exists(os.path.expanduser("~/.local/bin/claude")) else "claude")
 
+EFFORT_DEFAULT = "high"   # 2026-09-03 公式推奨：普段はhigh。max常用をやめる
+EFFORT_STUCK = "xhigh"    # 詰まって再開する時だけxhigh
 STALL_MIN = 15
 MAX_TRIES = 3
 MAX_PER_RUN = 2
@@ -75,7 +77,11 @@ MANUAL_ESSENTIALS = ("マニュアルの要点：①たまごさんに質問し�
                      "⑧完了していないのに止まらない。同じ経路で2回失敗したら次へ移る（1引数/ツールを変える→2CLI⇄API⇄ブラウザを乗り換える→"
                      "3問題を分割する→4別Agentに委任→5公式ドキュメントを読む→6目的に戻って迂回する）。"
                      "全部試して1行ずつ結果を書けて初めて『袋小路：◯◯（試した経路：1→…／2→…）』で判断待ちにできる。書式の無い「できません」は差し戻す。"
-                     "⑨3時間か100ターンを超えたら休んでよい：最後の報告に「どこまで終わったか／次に何をするか／何を試して何がダメだったか」を書いて終了する（次の人が続ける）。")
+                     "⑨3時間か100ターンを超えたら休んでよい：最後の報告に「どこまで終わったか／次に何をするか／何を試して何がダメだったか」を書いて終了する（次の人が続ける）。"
+                     "⑩(公式推奨・2026-09-02) Before you start, say in a line what you're about to do; brief updates while you work. "
+                     "Close with a short recap that stands on its own."
+                     "⑪(公式推奨・クレジット節約) when it will not affect the end result, try to surgically edit a file rather than rewrite the entire thing."
+                     "⑫(公式推奨・ツール呼び出し) First privately list what you need next; then request every item that doesn't depend on another's result in this one response.")
 RESUME_MSG = ("【見張り番・自動再開】止まっていたので続けます。止まらずに最後まで走り切ること。" + MANUAL_ESSENTIALS +
               " もし作業が本当に終わっているなら「完了：」で始まる3行の最終報告だけ書いて終了する。")
 DONE_PAT = re.compile(r"(完了[：:]|^完了|判断待ち[：:]\s*なし|畳みます|ここで畳|終了します|以上です|報告は以上|完了／問題／判断待ち)")
@@ -355,7 +361,7 @@ def spawn(cmd, cwd, log_name, tag):
 
 
 def resume(cli, cwd):
-    cmd = [CLAUDE, "-p", "--resume", cli, "--permission-mode", "auto", "--output-format", "json"]
+    cmd = [CLAUDE, "-p", "--resume", cli, "--permission-mode", "auto", "--output-format", "json", "--effort", EFFORT_STUCK]
     if quota().get("fableLevel") == "stop":
         cmd += ["--model", SONNET]  # 枠が苦しい時は再開もSonnetで（止めるのではなく置き換える）
     return spawn(cmd + [RESUME_MSG], cwd, "watchdog-resume-%s.log" % cli[:8], "resume " + cli)
@@ -393,7 +399,8 @@ def handoff(s, meta, scan, why):
               % (title, why, path, body, standard_six(), me_new, WHITEBOARD, me_new, me_new, MANUAL_ESSENTIALS))
     model, mwhy = model_for(title + " " + (rows[0]["task"] if rows else "") + " " + scan.get("firstUser", "")[:200])
     append(LOG_MD, "- %s 🎛 引き継ぎ先のモデル: %s（%s）" % (now(), model, mwhy))
-    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--model", model, "--permission-mode", "auto", "--output-format", "json", prompt],
+    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--model", model, "--effort", EFFORT_DEFAULT,
+                "--permission-mode", "auto", "--output-format", "json", prompt],
                 meta.get("cwd"), "watchdog-handoff-%s.log" % new_id[:8], "handoff from " + cli)
     return new_id, pid, path
 
@@ -423,7 +430,8 @@ def ignite(machine):
     cwd = "/Users/mac/Desktop/joy-relief-station" if "joy-relief-station" in note or "本番" in note else os.path.expanduser("~/Desktop")
     model, mwhy = model_for(row + " " + note)
     append(LOG_MD, "- %s 🎛 着火のモデル: %s（%s）" % (now(), model, mwhy))
-    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--model", model, "--permission-mode", "auto", "--output-format", "json", prompt],
+    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--model", model, "--effort", EFFORT_DEFAULT,
+                "--permission-mode", "auto", "--output-format", "json", prompt],
                 cwd, "watchdog-ignite-%s.log" % new_id[:8], "ignite " + tid)
     if not pid:
         subprocess.run(["python3", WHITEBOARD, "release", tid, "--me", me_new, "--note", note], capture_output=True, timeout=20)

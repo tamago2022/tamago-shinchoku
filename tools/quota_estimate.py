@@ -292,6 +292,10 @@ def main():
                       "曲線(" + WEEKDAY_TARGET_TABLE + ")から" + str(CURVE_BAND) + "pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。"
                       "全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。"
                       "本数は減らさない・増やす方向のみ"),
+           "costNote": ("2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。"
+                        "1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方"
+                        "（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。"
+                        "effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない"),
            "fableWeightedTokensSinceReset": int(fable_now), "allWeightedTokensSinceReset": int(all_now),
            "last6h": {"fable": int(f6), "all": int(a6)},
            "projection": proj, **est,
