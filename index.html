@@ -181,6 +181,9 @@
 <div class="label">走行状況（セッションごと・自動） <small id="sessMeta"></small></div>
 <div id="sessions"><div class="card" style="color:var(--sub)">読み込み中…</div></div>
 
+<div class="label">この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></div>
+<div class="card" id="stats" style="color:var(--sub)">読み込み中…</div>
+
 <div class="label">いま動いているもの <small id="runUpdated"></small></div>
 <div id="running"></div>
 
@@ -444,6 +447,47 @@ function renderSessions(m){
 }
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.json() : null).then(m => { renderMachine(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
+
+// 第3段階：航跡 status/history.jsonl（5分おきに1行/セッション）から、この運用の弱点を数える
+function renderStats(text){
+  const el = document.getElementById("stats");
+  const rows = (text || "").split("\n").filter(Boolean).map(l => { try { return JSON.parse(l); } catch(e){ return null; } }).filter(Boolean);
+  if(!rows.length){ el.textContent = "まだ航跡が溜まっていない（5分おきに積み始めたところ）。"; return; }
+  const S = {};
+  rows.forEach(r=>{
+    const key = r.cli || ("pid" + r.pid);
+    const s = S[key] ||= {title:r.title, start:r.start, first:r.t, last:r.t, kinds:[], stops:0, resumes:0, prev:null};
+    if(r.t < s.first) s.first = r.t; if(r.t > s.last) s.last = r.t;
+    const stopped = r.kind === "asked" || r.kind === "stuck_tool";
+    if(stopped && !s.prev) s.stops++;        // 動いていた→止まった、の回数
+    if(r.resumed) s.resumes++;               // 見張り番に起こされた回数
+    s.prev = stopped; s.lastKind = r.kind; s.kinds.push(r.kind);
+  });
+  const list = Object.values(S);
+  const n = list.length;
+  const finished = list.filter(s => s.lastKind === "idle_done");
+  const selfRun = finished.filter(s => s.stops === 0 && s.resumes === 0);
+  const stops = list.reduce((a,s)=>a+s.stops,0), resumes = list.reduce((a,s)=>a+s.resumes,0);
+  const stuckNow = list.filter(s => s.lastKind === "asked" || s.lastKind === "stuck_tool").length;
+  const durs = list.map(s => s.start ? (new Date(s.last) - new Date(s.start))/3600000 : null).filter(x => x != null);
+  const avgH = durs.length ? (durs.reduce((a,b)=>a+b,0)/durs.length) : null;
+  const pct = (a,b) => b ? Math.round(a*100/b) + "%" : "—";
+  const t0 = rows.reduce((a,r)=>r.t<a?r.t:a, rows[0].t), t1 = rows.reduce((a,r)=>r.t>a?r.t:a, rows[0].t);
+  document.getElementById("statMeta").textContent = `${formatStamp(t0)}〜${formatStamp(t1)}`;
+  el.style.color = "";
+  el.innerHTML = `<div class="sessum">
+      <span>見たセッション<b>${n}</b></span>
+      <span>止まらず走り切った<b>${selfRun.length}／${finished.length}（${pct(selfRun.length, finished.length)}）</b></span>
+      <span>止まった回数<b>${stops}</b></span>
+      <span>起こされた回数<b>${resumes}</b></span>
+      <span>いま止まっている<b>${stuckNow}</b></span>
+      <span>平均の長さ<b>${avgH != null ? avgH.toFixed(1) + "時間" : "—"}</b></span>
+    </div>
+    <div class="note" style="margin-top:8px">読み方：「止まらず走り切った」が低いほど、人や見張り番が起こさないと終わらない運用になっている。止まった回数が多い題名を直すのが近道。</div>
+    ${list.filter(s=>s.stops>0).sort((a,b)=>b.stops-a.stops).slice(0,5).map(s=>`<div class="old">${esc(s.title||"（不明）")}<span class="dim" style="color:var(--sub)">　止まり${s.stops}回・起こされ${s.resumes}回</span></div>`).join("")}`;
+}
+fetch("status/history.jsonl?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.text() : "").then(renderStats).catch(()=>renderStats(""));
 </script>
 </body>
 </html>
