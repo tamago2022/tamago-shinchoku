@@ -21,18 +21,21 @@
     --ink:#e9e2d3;       /* 生成り */
     --sub:#9aa1ad;
     --dim:#6b7280;
-    --aka:#c4483a;       /* 朱。差し色はこれ1点 */
-    --aka-bg:#3a2320;
     --kinari:#d6cdba;
+    --green:#6f9c7a;     /* 作業中（くすんだ緑） */
+    --yellow:#c9a24a;    /* 承認待ち（くすんだ黄） */
+    --red:#d24d3e;       /* 異常。ここだけ強い */
+    --red-bg:#3a2320;
+    --gray:#4b5364;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html{background:var(--bg);}
   body{
     margin:0;
-    padding:calc(env(safe-area-inset-top) + 14px) calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 32px) calc(env(safe-area-inset-left) + 16px);
+    padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 32px) calc(env(safe-area-inset-left) + 12px);
     background:var(--bg); color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
-    font-size:16px; line-height:1.55;
+    font-size:16px; line-height:1.5;
     -webkit-text-size-adjust:100%;
     max-width:640px; margin-left:auto; margin-right:auto;
     overflow-x:hidden;
@@ -40,170 +43,117 @@
   a{color:inherit;}
   h1{
     font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
-    font-weight:400; font-size:1.35rem; letter-spacing:0.12em;
-    margin:8px 0 2px;
+    font-weight:400; font-size:1.2rem; letter-spacing:0.12em;
+    margin:6px 0 0;
   }
-  .updated{color:var(--sub); font-size:0.8rem; margin-bottom:22px;}
+  .updated{color:var(--sub); font-size:0.72rem; margin:0 0 10px;}
 
-  /* Macの状態（1行） */
-  .machine{
-    display:flex; align-items:center; flex-wrap:wrap; gap:0 6px;
-    margin:-8px 0 22px; padding:10px 12px; border:1px solid var(--line); border-radius:10px;
-    font-size:0.85rem; color:var(--kinari); font-variant-numeric:tabular-nums; line-height:1.5;
-  }
+  /* Macの状態（1行・小さく） */
+  .machine{display:flex; align-items:center; flex-wrap:wrap; gap:0 6px; margin:0 0 16px; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; font-size:0.76rem; color:var(--sub); font-variant-numeric:tabular-nums;}
   .machine .sep{color:var(--dim);}
-  .machine .age{color:var(--sub);}
-  .machine .age.stale{color:var(--aka);}
-  .machine.warn{border-color:var(--aka); color:var(--ink);}
-  .machine.warn .load{color:var(--aka);}
-  .machine .dim{color:var(--sub);}
-  .machine .stalled{flex-basis:100%; margin-top:4px; color:var(--aka); font-size:0.8rem;}
+  .machine .age.stale{color:var(--red);}
+  .machine.warn{border-color:var(--red);}
+  .machine.warn .load{color:var(--red);}
+  .machine .dim{color:var(--dim);}
+  .machine .stalled{flex-basis:100%; color:var(--red);}
 
-  .label{
-    color:var(--sub); font-size:0.72rem; letter-spacing:0.14em;
-    margin:26px 0 10px; text-transform:uppercase;
+  /* 見出し */
+  .label{display:flex; align-items:baseline; gap:8px; color:var(--sub); font-size:0.72rem; letter-spacing:0.12em; margin:18px 0 8px;}
+  .label b{color:var(--ink); font-weight:500; letter-spacing:0.08em;}
+  .label small{letter-spacing:0; font-size:0.7rem; color:var(--dim); margin-left:auto;}
+
+  /* 凡例（3色） */
+  .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:0.72rem; color:var(--sub); margin:-2px 0 8px;}
+  .legend i{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:1px;}
+
+  /* 縦2列の一覧 */
+  .g{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .gh{grid-column:1/-1; color:var(--sub); font-size:0.74rem; letter-spacing:0.06em; margin:6px 0 -2px; display:flex; align-items:baseline; gap:6px;}
+  .gh b{color:var(--ink); font-weight:500;}
+  .gh.yellow b{color:var(--yellow);}
+  .c{
+    position:relative; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--gray);
+    border-radius:10px; padding:9px 10px 8px; min-height:44px; cursor:pointer;
+    display:flex; flex-direction:column; gap:6px;
   }
-  .label:first-of-type{margin-top:0;}
-  .label small{letter-spacing:0; margin-left:8px; font-size:0.72rem; color:var(--dim);}
-
-  .card{
-    background:var(--card); border:1px solid var(--line); border-radius:12px;
-    padding:14px 15px; margin-bottom:10px;
+  .c.green{border-left-color:var(--green);}
+  .c.yellow{border-left-color:var(--yellow);}
+  .c.red{border-left-color:var(--red); background:var(--red-bg);}
+  .c.gray{opacity:0.62;}
+  .c .t{
+    font-size:0.86rem; font-weight:600; line-height:1.35;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
+  .c.open .t{-webkit-line-clamp:unset;}
+  .c .s{display:flex; align-items:center; gap:6px; font-size:0.72rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-top:auto;}
+  .c .s i{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--gray); flex:none;}
+  .c.green .s i{background:var(--green);} .c.yellow .s i{background:var(--yellow);} .c.red .s i{background:var(--red);}
+  .c.red .s{color:var(--ink);}
+  .c .s .n{margin-left:auto; padding:0 7px; border:1px solid var(--line); border-radius:999px; white-space:nowrap; color:var(--kinari);}
+  .c .s .sk{font-size:0.9rem; line-height:1;}
+  .c .d{display:none; border-top:1px solid var(--line); padding-top:8px; margin-top:2px; font-size:0.84rem; color:var(--sub); line-height:1.55; cursor:auto;}
+  .c .d p{margin:0 0 6px;} .c .d p:last-child{margin-bottom:0;}
+  .c .d b{color:var(--kinari); font-weight:500;}
+  .c .d .src{font-size:0.74rem; color:var(--dim); word-break:break-all;}
+  .c.open{grid-column:1/-1;}
+  .c.open .d{display:block;}
+  .c .more{position:absolute; right:9px; top:8px; color:var(--dim); font-size:0.7rem;}
+  .c.open .more{transform:rotate(180deg);}
 
-  /* 走行状況（セッションごと） */
-  .sess{border-left:3px solid var(--line);}
-  .sess.working{border-left-color:var(--kinari);}
-  .sess.warn{border-left-color:var(--aka);}
-  .sess.over{border-left-color:var(--aka); background:var(--aka-bg);}
-  .sess .head{display:flex; gap:8px; align-items:baseline;}
-  .sess .mark{flex:none; font-size:1rem;}
-  .sess .title{font-weight:600; line-height:1.45;}
-  .sess .meta{color:var(--sub); font-size:0.8rem; display:flex; gap:12px; flex-wrap:wrap; margin-top:6px; font-variant-numeric:tabular-nums;}
-  .sess .meta b{color:var(--kinari); font-weight:500;}
-  .sess.over .meta b.elapsed, .sess.warn .meta b.elapsed{color:var(--aka);}
-  .sess .tail{color:var(--sub); font-size:0.82rem; margin-top:4px;}
-  .sessum{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 8px;}
-  .sessum span{display:inline-flex; align-items:center; min-height:32px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:0.8rem; color:var(--sub);}
-  .sessum span b{color:var(--ink); font-weight:600; margin-left:5px;}
-
-  /* 今動いているもの */
-  .run .head{display:flex; gap:10px; align-items:baseline;}
-  .run .lane{color:var(--dim); font-size:0.75rem; font-variant-numeric:tabular-nums; flex:none;}
-  .run .title{font-weight:600; line-height:1.45;}
-  .run .who{color:var(--sub); font-size:0.82rem; margin-top:6px;}
-  .run .who b{font-weight:500; color:var(--kinari);}
-  .run .progress{color:var(--sub); font-size:0.85rem; margin-top:4px;}
-
-  /* リンク（タップできる。44px以上） */
-  .links{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
-  .links a{
-    display:inline-flex; align-items:center; min-height:44px; padding:0 14px;
-    border:1px solid var(--line); border-radius:10px; text-decoration:none;
-    color:var(--kinari); font-size:0.88rem; background:rgba(255,255,255,0.02);
-  }
+  /* リンク（44px以上） */
+  .links{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .links a{display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border:1px solid var(--line); border-radius:10px; text-decoration:none; color:var(--kinari); font-size:0.86rem;}
   .links a::after{content:"→"; margin-left:8px; color:var(--sub);}
-  .links a:active{background:rgba(255,255,255,0.06);}
 
-  /* 言ったこと */
-  .saidbox{padding:4px 15px;}
-  .said{padding:11px 0; border-bottom:1px solid var(--line);}
-  .said:last-child{border-bottom:none;}
-  .said .when{color:var(--sub); font-size:0.75rem; font-variant-numeric:tabular-nums; margin-bottom:2px;}
-  .said .text{font-size:0.95rem; line-height:1.55;}
-  .saidbox details summary{
-    list-style:none; cursor:pointer; min-height:44px; display:flex; align-items:center;
-    color:var(--kinari); font-size:0.88rem;
-  }
-  .saidbox details summary::-webkit-details-marker{display:none;}
-  .saidbox details summary::after{content:"↓"; margin-left:8px; color:var(--sub);}
-  .saidbox details[open] summary::after{content:"↑";}
+  /* 集計チップ */
+  .sum{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 8px;}
+  .sum a, .sum span{display:inline-flex; align-items:center; min-height:34px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:0.76rem; color:var(--sub); text-decoration:none; font-variant-numeric:tabular-nums;}
+  .sum b{color:var(--ink); font-weight:600; margin-left:5px;}
+  .sum .red b{color:var(--red);} .sum .yellow b{color:var(--yellow);} .sum .green b{color:var(--green);}
 
-  /* TODAY */
-  .today .block{margin-bottom:14px;}
-  .today .block:last-child{margin-bottom:0;}
-  .today .blabel{color:var(--sub); font-size:0.72rem; letter-spacing:0.08em; margin-bottom:5px;}
-  .today .northstar{font-size:0.95rem; line-height:1.6;}
-  .today ul{margin:0; padding-left:1.15em;}
-  .today li{margin-bottom:5px; line-height:1.5;}
-  .today .dontdo li{color:var(--kinari);}
-  .today .dontdo li::marker{color:var(--aka);}
-  .today .kpi{color:var(--sub); font-size:0.85rem;}
-
-  /* 集計（タップで該当セクションへ） */
-  .summary{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 6px;}
-  .summary a{
-    display:inline-flex; align-items:center; min-height:44px; padding:0 12px;
-    border-radius:10px; border:1px solid var(--line); text-decoration:none;
-    font-size:0.85rem; color:var(--ink); background:var(--card);
-    font-variant-numeric:tabular-nums;
-  }
-  .summary a b{font-weight:600; margin-left:6px;}
-
-  /* 依頼一覧 */
-  .section-label{color:var(--sub); font-size:0.78rem; letter-spacing:0.06em; margin:22px 0 8px; scroll-margin-top:12px;}
-  .row{
-    background:var(--card); border:1px solid var(--line); border-left:3px solid var(--line);
-    border-radius:12px; padding:13px 15px; margin-bottom:9px;
-  }
-  .row.red, .row.hold{border-left-color:var(--aka);}
-  .row.wip{border-left-color:var(--kinari);}
-  .row.done, .row.cannot{opacity:0.55;}
-  .row .content{font-weight:600; line-height:1.45;}
-  .row .meta{color:var(--sub); font-size:0.8rem; display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;}
-  .row .meta b{color:var(--kinari); font-weight:500;}
-  .row .elapsed{font-variant-numeric:tabular-nums;}
-  .row .note{font-size:0.86rem; color:var(--sub); margin-top:6px; line-height:1.5;}
-  .row.hold .note, .row.red .note{color:var(--kinari);}
-  .row .evi{font-size:0.8rem; color:var(--sub); margin-top:6px; word-break:break-all;}
-
-  /* 未処理の依頼・全件 */
-  .row .no{display:inline-block; min-width:1.6em; color:var(--sub); font-weight:500; font-variant-numeric:tabular-nums; margin-right:6px;}
-  .row.hold .content .no{color:var(--aka);}
-  .row .times{display:inline-block; margin-left:8px; padding:1px 8px; border:1px solid var(--line); border-radius:999px; font-size:0.75rem; font-weight:500; color:var(--sub); white-space:nowrap; vertical-align:2px;}
-  details.more summary{list-style:none; cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--kinari); font-size:0.85rem;}
-  details.more summary::-webkit-details-marker{display:none;}
-  details.more summary::after{content:"↓"; margin-left:8px; color:var(--sub);}
-  details.more[open] summary::after{content:"↑";}
-  .oldlist{padding:6px 15px;}
-  .old{padding:9px 0; border-bottom:1px solid var(--line); font-size:0.9rem; line-height:1.5;}
-  .old:last-child{border-bottom:none;}
-
-  footer{color:var(--dim); font-size:0.75rem; margin-top:36px; line-height:1.6;}
+  /* 畳んである節 */
+  details.sec{border:1px solid var(--line); border-radius:10px; margin-top:10px; background:rgba(255,255,255,0.015);}
+  details.sec summary{list-style:none; cursor:pointer; min-height:44px; display:flex; align-items:center; gap:8px; padding:0 12px; color:var(--kinari); font-size:0.86rem;}
+  details.sec summary::-webkit-details-marker{display:none;}
+  details.sec summary small{color:var(--dim); font-size:0.72rem;}
+  details.sec summary::after{content:"↓"; margin-left:auto; color:var(--sub);}
+  details.sec[open] summary::after{content:"↑";}
+  details.sec .in{padding:4px 12px 12px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 13px; margin-bottom:8px;}
+  .note{font-size:0.84rem; color:var(--sub); line-height:1.5;}
+  .row{border-bottom:1px solid var(--line); padding:9px 0; font-size:0.9rem;}
+  .row:last-child{border-bottom:none;}
+  .row .when{color:var(--sub); font-size:0.72rem; font-variant-numeric:tabular-nums;}
+  .row .meta{color:var(--sub); font-size:0.78rem; margin-top:3px;}
+  .today .bl{color:var(--sub); font-size:0.72rem; letter-spacing:0.06em; margin:10px 0 4px;}
+  .today ul{margin:0; padding-left:1.1em;} .today li{margin-bottom:4px;}
+  footer{color:var(--dim); font-size:0.72rem; margin-top:28px; line-height:1.6;}
 </style>
 </head>
 <body>
 
 <h1>進捗表</h1>
-<div class="updated" id="updated">最終更新：読み込み中…</div>
+<div class="updated" id="updated">読み込み中…</div>
 <div class="machine" id="machine" hidden></div>
 
-<div class="label">走行状況（セッションごと・自動） <small id="sessMeta"></small></div>
-<div id="sessions"><div class="card" style="color:var(--sub)">読み込み中…</div></div>
+<div class="label"><b>走行状況</b>自動・5分おき <small id="sessMeta"></small></div>
+<div class="legend"><span><i style="background:var(--green)"></i>作業中</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>3時間報告なし／止まり／失敗</span></div>
+<div class="sum" id="sessSum"></div>
+<div class="g" id="sessions"></div>
 
-<div class="label">この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></div>
-<div class="card" id="stats" style="color:var(--sub)">読み込み中…</div>
+<div class="label"><b>未処理の依頼</b>判断待ちが先頭 <small id="allMeta"></small></div>
+<div class="sum" id="allSummary"></div>
+<div class="g" id="all"></div>
 
-<div class="label">いま動いているもの <small id="runUpdated"></small></div>
-<div id="running"></div>
-
-<div class="label">言ったこと（直近・埋もれ防止） <small id="saidCount"></small></div>
-<div id="said"></div>
-
-<div class="label">未処理の依頼・全件 <small id="allMeta"></small></div>
-<div class="summary" id="allSummary"></div>
-<div id="all"></div>
-
-<div class="label">Today</div>
-<div class="card today" id="today"></div>
-
-<div class="label">依頼一覧</div>
-<div class="summary" id="summary"></div>
-<div id="list"></div>
+<details class="sec"><summary>言ったこと（直近・埋もれ防止） <small id="saidCount"></small></summary><div class="in" id="said"></div></details>
+<details class="sec"><summary>いま動いているもの（手更新） <small id="runUpdated"></small></summary><div class="in" id="running"></div></details>
+<details class="sec"><summary>この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></summary><div class="in" id="stats">読み込み中…</div></details>
+<details class="sec"><summary>Today（北極星・最重要3件）</summary><div class="in today" id="today"></div></details>
+<details class="sec"><summary>旧・進捗表の依頼31件 <small id="listMeta"></small></summary><div class="in" id="list"></div></details>
 
 <footer>
-  この画面はスマホから見るための写し。正本は Obsidian の <code>AI出力/_ルール/進捗表.html</code>。<br>
-  「いま動いているもの」は手で更新している（自動連携ではない）。
+  正本は Obsidian の <code>AI出力/_ルール/未処理の依頼_全件_2026-09-02.md</code> と <code>進捗表.html</code>。カードをタップすると詳細が開く。
 </footer>
 
 <script>
@@ -217,238 +167,157 @@
 </script>
 <script>
 let D = null;
-
-const STATUS_META = {
-  hold:   {mark:"⏸",  label:"判断待ち（たまごさん）", order:0},
-  red:    {mark:"🔴", label:"止まっている", order:1},
-  wip:    {mark:"🟡", label:"作業中", order:2},
-  done:   {mark:"🟢", label:"完了", order:3},
-  cannot: {mark:"❌", label:"できない", order:4},
-};
-
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-
-function formatElapsed(orderedAt){
-  const ms = Date.now() - new Date(orderedAt).getTime();
-  if(ms < 0) return "未来?";
-  const totalMin = Math.floor(ms/60000);
-  const days = Math.floor(totalMin/1440);
-  const hours = Math.floor((totalMin%1440)/60);
-  const mins = totalMin%60;
-  if(days > 0) return `${days}日${hours}時間経過`;
-  if(hours > 0) return `${hours}時間${mins}分経過`;
-  return `${mins}分経過`;
+function formatStamp(iso){
+  const d = new Date(iso); if(isNaN(d)) return "—";
+  const mm = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
+  const hh = String(d.getHours()).padStart(2,"0"), mi = String(d.getMinutes()).padStart(2,"0");
+  return `${mm}-${dd} ${hh}:${mi}`;
 }
-function formatStamp(iso, withTime=true){
-  const d = new Date(iso);
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const dd = String(d.getDate()).padStart(2,"0");
-  const hh = String(d.getHours()).padStart(2,"0");
-  const mi = String(d.getMinutes()).padStart(2,"0");
-  return withTime ? `${mm}-${dd} ${hh}:${mi}` : `${mm}-${dd}`;
-}
+function fmtDur(min){ if(min == null) return "—"; const h = Math.floor(min/60), m = Math.round(min%60); return h ? `${h}時間${m}分` : `${m}分`; }
 function linksHtml(links){
   if(!links || !links.length) return "";
   return `<div class="links">` + links.map(l=>`<a href="${esc(l.url)}">${esc(l.label)}</a>`).join("") + `</div>`;
 }
-
-function renderRunning(){
-  document.getElementById("runUpdated").textContent = `手更新 ${formatStamp(D.runningUpdatedAt)}`;
-  const box = document.getElementById("running");
-  if(!D.running.length){ box.innerHTML = `<div class="card" style="color:var(--sub)">いまは何も走っていない</div>`; return; }
-  box.innerHTML = D.running.map(r=>`
-    <div class="card run">
-      <div class="head"><span class="lane">レーン${r.lane}</span><span class="title">${esc(r.title)}</span></div>
-      <div class="who">担当 <b>${esc(r.who)}</b>　状態 <b>${esc(r.state)}</b></div>
-      ${r.progress ? `<div class="progress">${esc(r.progress)}</div>` : ""}
-      ${linksHtml(r.links)}
-    </div>`).join("");
+// カードのトグル（リンクのタップは通す）
+document.addEventListener("click", e=>{
+  if(e.target.closest("a")) return;
+  const c = e.target.closest(".c"); if(!c) return;
+  c.classList.toggle("open");
+});
+function card(color, title, stateLabel, extra, detailHtml){
+  return `<div class="c ${color}"><span class="more">▼</span>
+    <div class="t">${esc(title)}</div>
+    <div class="s"><i></i><span>${esc(stateLabel)}</span>${extra || ""}</div>
+    <div class="d">${detailHtml}</div>
+  </div>`;
 }
 
-function renderSaid(){
-  const S = window.SHINCHOKU_SAID || [];
-  const box = document.getElementById("said");
-  const SHOW = 8;
-  document.getElementById("saidCount").textContent = `${S.length}件`;
-  const item = s => `<div class="said"><div class="when">${esc(s.when)}</div><div class="text">${esc(s.said)}</div></div>`;
-  box.innerHTML = `<div class="card saidbox">` + S.slice(0,SHOW).map(item).join("")
-    + (S.length > SHOW ? `<details><summary>もっと見る（残り${S.length-SHOW}件）</summary>${S.slice(SHOW).map(item).join("")}</details>` : "")
-    + `</div>`;
+/* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */
+const KIND_LABEL = {working:"作業中", asked:"判断待ち", stuck_tool:"承認待ち", idle_done:"終了・待機", unknown:"不明"};
+const RED_H = 3, SKULL_H = 6;
+function sessState(s, measured){
+  const started = s.startedAt ? new Date(s.startedAt).getTime() : null;
+  const elapsedMin = started ? (measured - started)/60000 : null;
+  const skull = elapsedMin != null && elapsedMin >= SKULL_H*60 && s.kind !== "idle_done";
+  let color = "gray", label = KIND_LABEL[s.kind] || "不明";
+  if(s.kind === "working") { color = "green"; }
+  if(s.kind === "asked" || s.kind === "stuck_tool") { color = "yellow"; }
+  if(s.kind === "unknown") { color = "red"; }
+  if(s.kind !== "idle_done" && elapsedMin != null && elapsedMin >= RED_H*60){ color = "red"; label = `${Math.floor(elapsedMin/60)}時間 報告なし`; }
+  return {color, label, elapsedMin, skull, started};
+}
+function renderSessions(m){
+  const box = document.getElementById("sessions");
+  const list = (m && m.sessionList) || [];
+  const measured = m && m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now();
+  document.getElementById("sessMeta").textContent = m && m.measuredAt ? `${list.length}本・${formatStamp(m.measuredAt)}` : "";
+  if(!list.length){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">いまは何も走っていない（または未計測）</div>`; document.getElementById("sessSum").innerHTML = ""; return; }
+  const cnt = {green:0, yellow:0, red:0, gray:0};
+  const items = list.map(s => { const st = sessState(s, measured); cnt[st.color]++; return {s, st}; });
+  const order = {red:0, yellow:1, green:2, gray:3};
+  items.sort((a,b)=> order[a.st.color]-order[b.st.color] || (b.st.elapsedMin||0)-(a.st.elapsedMin||0));
+  document.getElementById("sessSum").innerHTML =
+    `<span class="red">赤<b>${cnt.red}</b></span><span class="yellow">黄<b>${cnt.yellow}</b></span><span class="green">緑<b>${cnt.green}</b></span><span>終了<b>${cnt.gray}</b></span>`;
+  box.innerHTML = items.map(({s, st})=>{
+    const q = encodeURIComponent(s.title || "");
+    const d = `<p>状態 <b>${esc(KIND_LABEL[s.kind] || "不明")}</b>　開始 <b>${st.started ? formatStamp(s.startedAt) : "不明"}</b></p>
+      <p>経過 <b>${fmtDur(st.elapsedMin)}</b>${s.idleMin != null ? `　無応答 <b>${fmtDur(s.idleMin)}</b>` : ""}${s.dispatch === false ? "　手動起動" : ""}</p>
+      ${s.tail ? `<p>${esc(s.tail)}</p>` : ""}
+      <p class="src">判定：3時間で報告が無ければ赤。6時間で💀。止まり（質問・承認待ち）は黄。</p>
+      ${linksHtml([{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${q}`}])}`;
+    const extra = st.skull ? `<span class="sk">💀</span>` : "";
+    return card(st.color, s.title || "（不明）", st.label, extra, d);
+  }).join("");
 }
 
+/* ───── 未処理の依頼（225件） ───── */
 const ALL_META = {
-  "⏸":{label:"判断待ち（たまごさん）", cls:"hold", order:0},
-  "🔴":{label:"未着手", cls:"red", order:1},
-  "🟠":{label:"着手中", cls:"wip", order:2},
-  "🟡":{label:"実装済（本番未確認）", cls:"wip", order:3},
-  "❓":{label:"完了か不明", cls:"cannot", order:4},
-  "🔵":{label:"別AIが検証中", cls:"wip", order:5},
-  "✅":{label:"完了", cls:"done", order:6},
+  "⏸":{label:"判断待ち", color:"yellow", order:0},
+  "🔴":{label:"未着手",   color:"gray",   order:1},
+  "🟠":{label:"着手中",   color:"green",  order:2},
+  "🟡":{label:"実装済・未検証", color:"green", order:3},
+  "🔵":{label:"検証中",   color:"green",  order:4},
+  "❓":{label:"完了か不明", color:"gray", order:5},
+  "✅":{label:"完了",     color:"gray",   order:6},
 };
+function timesOf(it){ const m = (it.body && it.body[0] || "").match(/／\s*(\d+回[^（｜／]*)/); return m ? m[1].trim() : ""; }
 function renderAll(){
   const A = window.SHINCHOKU_ALL; if(!A) return;
-  document.getElementById("allMeta").textContent = `${A.items.length + A.old.length}件・${A.generatedAt} 掘り出し`;
-  const groups = {};
-  A.items.forEach(it=>{ (groups[it.badge] ||= []).push(it); });
+  document.getElementById("allMeta").textContent = `${A.items.length + A.old.length}件・${A.generatedAt}`;
+  const groups = {}; A.items.forEach(it=>{ (groups[it.badge] ||= []).push(it); });
   const keys = Object.keys(ALL_META).sort((a,b)=>ALL_META[a].order-ALL_META[b].order).filter(k=>groups[k]);
-  document.getElementById("allSummary").innerHTML = keys.map(k=>`<a href="#a-${ALL_META[k].cls}-${ALL_META[k].order}">${k} ${ALL_META[k].label}<b>${groups[k].length}</b></a>`).join("")
-    + `<a href="#a-old">旧台帳のみ<b>${A.old.length}</b></a>`;
-  const box = document.getElementById("all"); let h = "";
+  document.getElementById("allSummary").innerHTML = keys.map(k=>`<a class="${ALL_META[k].color}" href="#a-${ALL_META[k].order}">${k} ${ALL_META[k].label}<b>${groups[k].length}</b></a>`).join("")
+    + `<a href="#a-old">旧台帳<b>${A.old.length}</b></a>`;
+  let h = "";
   keys.forEach(k=>{
     const m = ALL_META[k];
-    h += `<div class="section-label" id="a-${m.cls}-${m.order}">${k} ${m.label}（${groups[k].length}）</div>`;
+    h += `<div class="gh ${m.color}" id="a-${m.order}">${k} <b>${m.label}</b> ${groups[k].length}件</div>`;
     groups[k].forEach(it=>{
-      const first = it.body[0] || "";
-      const rest = it.body.slice(1);
-      h += `<div class="row ${m.cls}">
-        <div class="content"><span class="no">${it.no}</span>${esc(it.title)}${it.times ? `<span class="times">${esc(it.times)}</span>` : ""}</div>
-        <div class="note">${esc(first)}</div>
-        ${rest.length || it.src ? `<details class="more"><summary>くわしく</summary>${rest.map(x=>`<div class="note">${esc(x)}</div>`).join("")}${it.src ? `<div class="evi">出典：${esc(it.src)}</div>` : ""}</details>` : ""}
-      </div>`;
+      const times = timesOf(it);
+      const d = it.body.map(x=>`<p>${esc(x)}</p>`).join("") + (it.src ? `<p class="src">出典：${esc(it.src)}</p>` : "");
+      h += card(m.color, `${it.no}. ${it.title}`, m.label, times ? `<span class="n">${esc(times)}</span>` : "", d);
     });
   });
-  h += `<div class="section-label" id="a-old">旧台帳のみに残る案件（2026-07・更新停止）（${A.old.length}）</div><div class="card oldlist">`
-     + A.old.map(o=>`<div class="old">${o.badge} ${esc(o.title)}</div>`).join("") + `</div>`;
-  box.innerHTML = h;
+  h += `<div class="gh" id="a-old">旧台帳のみ（2026-07・更新停止） ${A.old.length}件</div>`;
+  A.old.forEach(o=>{ const m = ALL_META[o.badge] || ALL_META["❓"]; h += card(m.color, o.title, m.label, "", `<p>旧 task-ledger.json 由来。更新は8/7で停止。</p>`); });
+  document.getElementById("all").innerHTML = h;
 }
 
+/* ───── 畳んである節 ───── */
+function renderSaid(){
+  const S = window.SHINCHOKU_SAID || [];
+  document.getElementById("saidCount").textContent = `${S.length}件`;
+  document.getElementById("said").innerHTML = S.map(s=>`<div class="row"><div class="when">${esc(s.when)}</div>${esc(s.said)}</div>`).join("");
+}
+function renderRunning(){
+  document.getElementById("runUpdated").textContent = `手更新 ${formatStamp(D.runningUpdatedAt)}`;
+  document.getElementById("running").innerHTML = D.running.map(r=>`<div class="row"><b>${esc(r.title)}</b><div class="meta">担当 ${esc(r.who)}　状態 ${esc(r.state)}${r.progress ? "　" + esc(r.progress) : ""}</div>${linksHtml(r.links)}</div>`).join("");
+}
 function renderToday(){
   const t = D.today;
   document.getElementById("today").innerHTML = `
-    <div class="block"><div class="blabel">北極星</div><div class="northstar">${esc(t.northstar)}</div></div>
-    <div class="block"><div class="blabel">今日の最重要3件（たまごさんの判断が要るもの）</div>
-      <ul>${t.top3.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-    <div class="block dontdo"><div class="blabel">今日やらないこと</div>
-      <ul>${t.dontdo.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-    <div class="block"><div class="blabel">Taste Gate（案の1タップ選択）</div>
-      ${linksHtml([{label:"Taste_Gate.md を開く", url:t.tasteGate}])}</div>
-    <div class="block"><div class="blabel">今月のKPI</div><div class="kpi">${esc(t.kpi)}</div></div>`;
+    <div class="bl">北極星</div><div>${esc(t.northstar)}</div>
+    <div class="bl">今日の最重要3件（たまごさんの判断が要るもの）</div><ul>${t.top3.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <div class="bl">今日やらないこと</div><ul>${t.dontdo.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    ${linksHtml([{label:"Taste_Gate.md を開く", url:t.tasteGate}])}
+    <div class="bl">今月のKPI</div><div class="note">${esc(t.kpi)}</div>`;
 }
-
+const STATUS_META = {hold:"⏸ 判断待ち", red:"🔴 止まっている", wip:"🟡 作業中", done:"🟢 完了", cannot:"❌ できない"};
 function renderList(){
-  const sorted = [...D.requests].sort((a,b)=>{
-    const oa = STATUS_META[a.status].order, ob = STATUS_META[b.status].order;
-    if(oa !== ob) return oa - ob;
-    return new Date(b.orderedAt) - new Date(a.orderedAt);
-  });
-  const counts = {}; for(const k in STATUS_META) counts[k]=0;
-  sorted.forEach(r=>counts[r.status]++);
-
-  document.getElementById("summary").innerHTML = Object.keys(STATUS_META).map(k=>{
-    const m = STATUS_META[k];
-    return `<a href="#s-${k}">${m.mark} ${m.label}<b>${counts[k]}</b></a>`;
-  }).join("");
-
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-  let lastOrder = -1;
-  sorted.forEach(r=>{
-    const m = STATUS_META[r.status];
-    if(m.order !== lastOrder){
-      const label = document.createElement("div");
-      label.className = "section-label"; label.id = `s-${r.status}`;
-      label.textContent = `${m.mark} ${m.label}`;
-      list.appendChild(label); lastOrder = m.order;
-    }
-    const row = document.createElement("div");
-    row.className = `row ${r.status}`;
-    row.innerHTML = `
-      <div class="content">${esc(r.content)}</div>
-      <div class="meta">
-        <span>依頼 <b>${formatStamp(r.orderedAt)}</b></span>
-        <span class="elapsed">${formatElapsed(r.orderedAt)}</span>
-        <span>担当 <b>${esc(r.owner||"-")}</b></span>
-      </div>
-      ${r.note ? `<div class="note">${esc(r.note)}</div>` : ""}
-      ${r.evidence ? `<div class="evi">証拠：${esc(r.evidence)}</div>` : ""}
-      ${linksHtml(r.links)}`;
-    list.appendChild(row);
-  });
+  const order = ["hold","red","wip","done","cannot"];
+  const sorted = [...D.requests].sort((a,b)=> order.indexOf(a.status)-order.indexOf(b.status) || (new Date(b.orderedAt)-new Date(a.orderedAt)));
+  document.getElementById("listMeta").textContent = `${sorted.length}件・${formatStamp(D.generatedAt)}`;
+  document.getElementById("list").innerHTML = sorted.map(r=>`<div class="row">${STATUS_META[r.status]}　${esc(r.content)}<div class="meta">依頼 ${formatStamp(r.orderedAt)}　担当 ${esc(r.owner||"-")}${r.note ? "　" + esc(r.note) : ""}</div></div>`).join("");
 }
 
 window.__dataReady = function(){
   D = window.SHINCHOKU;
   if(!D){ document.getElementById("updated").textContent = "データを読み込めませんでした。開き直してください。"; return; }
-  document.getElementById("updated").textContent = `最終更新：${formatStamp(D.generatedAt)}（依頼一覧の正本時刻）`;
-  renderRunning(); renderSaid(); renderAll(); renderToday(); renderList();
+  document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
+  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList();
 };
 if(window.SHINCHOKU && window.SHINCHOKU_ALL) window.__dataReady();
 
-// Macの状態（status/machine.json を読む。5分おきに書き出される）
+/* ───── Macの状態1行 ───── */
 function renderMachine(m){
   const el = document.getElementById("machine");
   if(!m || !m.measuredAt){ el.hidden = true; return; }
   const mins = Math.max(0, Math.round((Date.now() - new Date(m.measuredAt).getTime())/60000));
   const age = mins < 1 ? "いま" : mins < 60 ? `${mins}分前` : mins < 1440 ? `${Math.floor(mins/60)}時間前` : `${Math.floor(mins/1440)}日前`;
   const stale = mins > 20;
-  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10)
-    || (m.stalled != null && m.stalled > 0) || (m.safeMax != null && m.sessions > m.safeMax);
+  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10);
   const v = (x, unit) => x == null ? "測定不可" : `${x}${unit}`;
   el.className = "machine" + (warn ? " warn" : "");
-  // 2026-09-02 止まらない工場：作業中／止まり本数と安全上限（factory_status.py が出す）。旧形式のJSONでも動く
-  const sess = m.working != null
-    ? `セッション${v(m.sessions,"本")}<span class="dim">（作業中${m.working}・止まり${m.stalled ?? 0}）</span>`
-    : `セッション${v(m.sessions,"本")}`;
-  const cap = m.safeMax != null
-    ? (m.sessions > m.safeMax ? `<span class="load">上限${m.safeMax}本・${m.sessions - m.safeMax}本超過</span>`
-       : m.moreOK > 0 ? `上限${m.safeMax}本・あと${m.moreOK}本OK` : `<span class="load">上限${m.safeMax}本・増やすな</span>`)
-    : null;
-  const stalledNames = (m.stalledList || []).slice(0,3).map(s => `${s.kind === "asked" ? "質問で停止" : "承認待ち"}：${s.title}（${Math.round(s.idleMin||0)}分）`).join(" ／ ");
-  el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span>`
-    + `<span>${sess}</span><span class="sep">｜</span>`
-    + (cap ? `<span>${cap}</span><span class="sep">｜</span>` : "")
-    + `<span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span>`
-    + `<span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>`
-    + (stalledNames ? `<div class="stalled">⚠ ${stalledNames}</div>` : "");
+  const sess = m.working != null ? `セッション${v(m.sessions,"本")}<span class="dim">（作業中${m.working}・止まり${m.stalled ?? 0}）</span>` : `セッション${v(m.sessions,"本")}`;
+  const lim = m.safeMax != null ? `<span class="sep">｜</span><span>上限${m.safeMax}本${m.sessions > m.safeMax ? `・${m.sessions - m.safeMax}本超過` : ""}</span>` : "";
+  el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span><span>${sess}</span>${lim}<span class="sep">｜</span><span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span><span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>`;
   el.hidden = false;
-}
-// 走行状況（セッションごと）。machine.json の sessionList（止まらない工場 factory_status.py が5分おきに書く）を読むだけ
-const KIND = {
-  working:   {mark:"🟢", label:"作業中"},
-  asked:     {mark:"🟡", label:"質問して停止"},
-  stuck_tool:{mark:"🔴", label:"承認待ち／固まり"},
-  idle_done: {mark:"⚪", label:"終わって待機"},
-  unknown:   {mark:"？", label:"不明"},
-};
-const WARN_H = 3, OVER_H = 6;
-function fmtDur(min){ if(min == null) return "—"; const h = Math.floor(min/60), m = Math.round(min%60); return h ? `${h}時間${m}分` : `${m}分`; }
-function renderSessions(m){
-  const box = document.getElementById("sessions");
-  const list = (m && m.sessionList) || [];
-  const measured = m && m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now();
-  document.getElementById("sessMeta").textContent = m && m.measuredAt ? `${list.length}本・${formatStamp(m.measuredAt)} 時点（5分おき自動）` : "";
-  if(!list.length){ box.innerHTML = `<div class="card" style="color:var(--sub)">いまは何も走っていない（または未計測）</div>`; return; }
-  let nWork=0, nStop=0, nOver=0, nWarn=0;
-  const rows = list.map(s=>{
-    const k = KIND[s.kind] || KIND.unknown;
-    const started = s.startedAt ? new Date(s.startedAt).getTime() : null;
-    const elapsedMin = started ? (measured - started)/60000 : null;
-    const over = elapsedMin != null && elapsedMin >= OVER_H*60;
-    const warn = !over && elapsedMin != null && elapsedMin >= WARN_H*60;
-    const stopped = s.kind === "asked" || s.kind === "stuck_tool";
-    if(s.kind === "working") nWork++; if(stopped) nStop++; if(over) nOver++; if(warn) nWarn++;
-    const mark = over ? "💀" : (warn ? "⚠️" : k.mark);
-    const q = encodeURIComponent(s.title || "");
-    const links = [{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${q}`}];
-    return `<div class="card sess ${s.kind}${over ? " over" : warn ? " warn" : ""}">
-      <div class="head"><span class="mark">${mark}</span><span class="title">${esc(s.title || "（不明）")}</span></div>
-      <div class="meta">
-        <span>状態 <b>${k.label}${over ? "・6時間超" : warn ? "・3時間超" : ""}</b></span>
-        <span>開始 <b>${started ? formatStamp(s.startedAt) : "不明"}</b></span>
-        <span>経過 <b class="elapsed">${fmtDur(elapsedMin)}</b></span>
-        ${s.idleMin != null ? `<span>無応答 <b>${fmtDur(s.idleMin)}</b></span>` : ""}
-        ${s.dispatch === false ? `<span>手動起動</span>` : ""}
-      </div>
-      ${s.tail ? `<div class="tail">${esc(s.tail)}</div>` : ""}
-      ${linksHtml(links)}
-    </div>`;
-  });
-  box.innerHTML = `<div class="sessum"><span>作業中<b>${nWork}</b></span><span>止まり<b>${nStop}</b></span><span>⚠️3時間超<b>${nWarn}</b></span><span>💀6時間超<b>${nOver}</b></span></div>` + rows.join("");
 }
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.json() : null).then(m => { renderMachine(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
 
-// 第3段階：航跡 status/history.jsonl（5分おきに1行/セッション）から、この運用の弱点を数える
+/* ───── 弱点の自動集計（history.jsonl） ───── */
 function renderStats(text){
   const el = document.getElementById("stats");
   const rows = (text || "").split("\n").filter(Boolean).map(l => { try { return JSON.parse(l); } catch(e){ return null; } }).filter(Boolean);
@@ -456,35 +325,29 @@ function renderStats(text){
   const S = {};
   rows.forEach(r=>{
     const key = r.cli || ("pid" + r.pid);
-    const s = S[key] ||= {title:r.title, start:r.start, first:r.t, last:r.t, kinds:[], stops:0, resumes:0, prev:null};
+    const s = S[key] ||= {title:r.title, start:r.start, first:r.t, last:r.t, stops:0, resumes:0, prev:null};
     if(r.t < s.first) s.first = r.t; if(r.t > s.last) s.last = r.t;
     const stopped = r.kind === "asked" || r.kind === "stuck_tool";
-    if(stopped && !s.prev) s.stops++;        // 動いていた→止まった、の回数
-    if(r.resumed) s.resumes++;               // 見張り番に起こされた回数
-    s.prev = stopped; s.lastKind = r.kind; s.kinds.push(r.kind);
+    if(stopped && !s.prev) s.stops++;
+    if(r.resumed) s.resumes++;
+    s.prev = stopped; s.lastKind = r.kind;
   });
-  const list = Object.values(S);
-  const n = list.length;
+  const list = Object.values(S), n = list.length;
   const finished = list.filter(s => s.lastKind === "idle_done");
   const selfRun = finished.filter(s => s.stops === 0 && s.resumes === 0);
   const stops = list.reduce((a,s)=>a+s.stops,0), resumes = list.reduce((a,s)=>a+s.resumes,0);
   const stuckNow = list.filter(s => s.lastKind === "asked" || s.lastKind === "stuck_tool").length;
   const durs = list.map(s => s.start ? (new Date(s.last) - new Date(s.start))/3600000 : null).filter(x => x != null);
-  const avgH = durs.length ? (durs.reduce((a,b)=>a+b,0)/durs.length) : null;
+  const avgH = durs.length ? durs.reduce((a,b)=>a+b,0)/durs.length : null;
   const pct = (a,b) => b ? Math.round(a*100/b) + "%" : "—";
   const t0 = rows.reduce((a,r)=>r.t<a?r.t:a, rows[0].t), t1 = rows.reduce((a,r)=>r.t>a?r.t:a, rows[0].t);
   document.getElementById("statMeta").textContent = `${formatStamp(t0)}〜${formatStamp(t1)}`;
-  el.style.color = "";
-  el.innerHTML = `<div class="sessum">
-      <span>見たセッション<b>${n}</b></span>
-      <span>止まらず走り切った<b>${selfRun.length}／${finished.length}（${pct(selfRun.length, finished.length)}）</b></span>
-      <span>止まった回数<b>${stops}</b></span>
-      <span>起こされた回数<b>${resumes}</b></span>
-      <span>いま止まっている<b>${stuckNow}</b></span>
-      <span>平均の長さ<b>${avgH != null ? avgH.toFixed(1) + "時間" : "—"}</b></span>
-    </div>
-    <div class="note" style="margin-top:8px">読み方：「止まらず走り切った」が低いほど、人や見張り番が起こさないと終わらない運用になっている。止まった回数が多い題名を直すのが近道。</div>
-    ${list.filter(s=>s.stops>0).sort((a,b)=>b.stops-a.stops).slice(0,5).map(s=>`<div class="old">${esc(s.title||"（不明）")}<span class="dim" style="color:var(--sub)">　止まり${s.stops}回・起こされ${s.resumes}回</span></div>`).join("")}`;
+  el.innerHTML = `<div class="sum">
+      <span>見たセッション<b>${n}</b></span><span>止まらず走り切った<b>${selfRun.length}／${finished.length}（${pct(selfRun.length, finished.length)}）</b></span>
+      <span>止まった回数<b>${stops}</b></span><span>起こされた回数<b>${resumes}</b></span><span>いま止まっている<b>${stuckNow}</b></span>
+      <span>平均の長さ<b>${avgH != null ? avgH.toFixed(1) + "時間" : "—"}</b></span></div>
+    <div class="note">「止まらず走り切った」が低いほど、人や見張り番が起こさないと終わらない運用。止まった回数が多い題名を直すのが近道。</div>
+    ${list.filter(s=>s.stops>0).sort((a,b)=>b.stops-a.stops).slice(0,5).map(s=>`<div class="row">${esc(s.title||"（不明）")}<div class="meta">止まり${s.stops}回・起こされ${s.resumes}回</div></div>`).join("")}`;
 }
 fetch("status/history.jsonl?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.text() : "").then(renderStats).catch(()=>renderStats(""));
