@@ -114,6 +114,13 @@
   .pk button.off{min-width:52px; font-size:0.8rem; font-weight:500; color:var(--sub);}
   .sendbar{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; padding:8px 12px; border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:var(--sub);}
   .sendbar a{display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:10px; background:var(--kinari); color:var(--bg); text-decoration:none; font-weight:600; white-space:nowrap;}
+  /* リモコンボタン（▶️動かす／⏸止める／🔁引き継ぐ／閉じる） */
+  .cmdrow{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:6px 0;}
+  .cmdbtn{min-height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--ink); font:inherit; font-size:0.82rem; font-weight:600;}
+  .cmdbtn:active{background:var(--line);}
+  .cmdst{font-size:0.72rem; color:var(--dim);}
+  .cmdst.ok{color:var(--green);} .cmdst.err{color:var(--red);} .cmdst.warn{color:var(--yellow);} .cmdst.pending{color:var(--sub);}
+  .excluded{font-size:0.72rem; color:var(--dim);}
   .c .t{
     font-size:0.86rem; font-weight:600; line-height:1.35;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
@@ -296,6 +303,49 @@ document.addEventListener("click", e=>{
   e.stopPropagation(); setPrio(b.closest(".pk").dataset.k, +b.dataset.p);
 });
 
+/* ───── リモコン（▶️動かす／⏸止める／🔁引き継ぐ／重いアプリを閉じる） ─────
+   GitHub Pagesは静的で直接コマンドを打てないので、優先度と同じ経路を使う：
+   obsidian://new で Vault に1件1ファイル書く → iCloud同期 → Mac側 command_ingest.py が
+   30秒おきに拾って実行 → status/commands.json に結果を書く → ここが読んで表示を差し替える。 */
+const CMD_KEY = "shinchoku.cmds.v1";
+let SENT_CMDS = {}; let CMD_RESULTS = {};
+function loadCmds(){ try { SENT_CMDS = JSON.parse(localStorage.getItem(CMD_KEY) || "{}") || {}; } catch(e){ SENT_CMDS = {}; } }
+function saveCmds(){ try { localStorage.setItem(CMD_KEY, JSON.stringify(SENT_CMDS)); } catch(e){} }
+function refreshCommands(){
+  return fetch("status/commands.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(d => {
+      CMD_RESULTS = {}; (d && d.results || []).forEach(r => { CMD_RESULTS[r.id] = r; });
+      renderCmdStatus();
+    }).catch(()=>{});
+}
+function cmdStatusHtml(id){
+  const r = CMD_RESULTS[id];
+  if(r) return r.status === "done" ? `<span class="cmdst ok">実行しました ${esc(formatStamp(r.doneAt))}</span>`
+    : r.status === "skipped" ? `<span class="cmdst warn">実行しませんでした：${esc(r.message||"")}</span>`
+    : `<span class="cmdst err">失敗：${esc(r.message||"")}</span>`;
+  const s = SENT_CMDS[id];
+  return s ? `<span class="cmdst pending">送信済み・実行待ち（30〜60秒）</span>` : "";
+}
+function renderCmdStatus(){
+  document.querySelectorAll("[data-cmdid]").forEach(el=>{ el.innerHTML = cmdStatusHtml(el.dataset.cmdid); });
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".cmdbtn"); if(!b) return;
+  e.stopPropagation();
+  const id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const holder = b.closest(".cmdrow")?.querySelector("[data-cmdid-slot]");
+  sendCommandWithId(id, b.dataset.action, b.dataset.target, b.dataset.label);
+  if(holder){ holder.dataset.cmdid = id; holder.removeAttribute("data-cmdid-slot"); renderCmdStatus(); }
+});
+function sendCommandWithId(id, action, target, label){
+  SENT_CMDS[id] = {action, target, label, sentAt: new Date().toISOString()};
+  saveCmds();
+  const payload = {id, action, target, label, requestedAt: new Date().toISOString()};
+  const body = "PWAからのリモコン指示。手で編集しない。Mac側の command_ingest.py が実行する。\n\n```json\n" + JSON.stringify(payload) + "\n```\n";
+  const url = "obsidian://new?vault=tamago_brain&file=" + encodeURIComponent("AI出力/_ルール/コマンド_受信/" + id) + "&silent=true&content=" + encodeURIComponent(body);
+  window.location.href = url;
+}
+
 /* ───── Macの健康（status/health.json：何を閉じれば／消せば楽になるか。実測のみ） ───── */
 function renderHealth(h){
   const box = document.getElementById("health");
@@ -309,11 +359,19 @@ function renderHealth(h){
     : "";
   const items = h.items || [];
   if(!items.length){ box.innerHTML = shedNote || `<div class="card note" style="grid-column:1/-1">いま閉じる・消すと楽になるものは見当たらない</div>`; return; }
+  const EXCLUDED_APPS = new Set(["Brave Browser", "Google Chrome"]); // 絶対に閉じない（Happy Place Station | LovableのChromeを巻き込むため）
   box.innerHTML = shedNote + items.map(it=>{
     const color = it.safe ? "green" : "yellow";
-    const d = `<p>${esc(it.how || "")}</p><p class="src">${it.safe ? "安全：作り直せる／閉じれば戻る。実行はMac側（セッションか本人）" : "要判断：戻らない・作業中を止める。本人の一言が要る"}</p>`;
+    let btnHtml = "";
+    if(it.kind === "mem" && it.app){
+      btnHtml = EXCLUDED_APPS.has(it.app)
+        ? `<p class="excluded">🔒 除外対象：Brave・Chromeは自動で閉じません</p>`
+        : `<div class="cmdrow"><button type="button" class="cmdbtn" data-action="close_app" data-target="${esc(it.app)}" data-label="${esc(it.label)}">🗑 閉じる</button><span data-cmdid-slot></span></div>`;
+    }
+    const d = `<p>${esc(it.how || "")}</p><p class="src">${it.safe ? "安全：作り直せる／閉じれば戻る。未保存の書類があれば保存待ちで失敗になる" : "要判断：戻らない・作業中を止める。本人の一言が要る"}</p>${btnHtml}`;
     return card(color, it.label, it.effect, it.safe ? "" : `<span class="n">要判断</span>`, d);
   }).join("");
+  renderCmdStatus();
 }
 function refreshHealth(){
   return fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
@@ -396,11 +454,17 @@ function renderSessions(m){
     const pushes = (s.humanPushes != null || s.dispatchPushes != null || s.watchdogResumes != null)
       ? `<p>押された回数：人 <b>${s.humanPushes ?? 0}</b>・Dispatch <b>${s.dispatchPushes ?? 0}</b>・見張り番 <b>${s.watchdogResumes ?? 0}</b></p>` : "";
     const report = s.lastReportAt ? `<p>最後の報告 <b>${formatStamp(s.lastReportAt)}</b>${s.lastReport ? `：${esc(String(s.lastReport).slice(0,160))}` : ""}</p>` : "";
+    // リモコン：止まっていれば動かす、動いていれば止める、3時間超なら引き継ぐ
+    const cmdBtns = [];
+    if(st.color === "red" && s.cli) cmdBtns.push(`<div class="cmdrow"><button type="button" class="cmdbtn" data-action="resume" data-target="${esc(s.cli)}" data-label="${esc(jaTitle(s.title))}">▶️ 動かす</button><span data-cmdid-slot></span></div>`);
+    if(st.color === "green" && s.pid) cmdBtns.push(`<div class="cmdrow"><button type="button" class="cmdbtn" data-action="stop" data-target="${esc(String(s.pid))}" data-label="${esc(jaTitle(s.title))}">⏸ 止める</button><span data-cmdid-slot></span></div>`);
+    if((st.elapsedMin||0) >= 180 && st.color !== "blue" && s.cli) cmdBtns.push(`<div class="cmdrow"><button type="button" class="cmdbtn" data-action="handoff" data-target="${esc(s.cli)}" data-label="${esc(jaTitle(s.title))}">🔁 引き継ぐ</button><span data-cmdid-slot></span></div>`);
     const d = `<p>状態 <b>${esc(s.status || KIND_LABEL[s.kind] || "不明")}</b>　開始 <b>${st.started ? formatStamp(s.startedAt) : "不明"}</b></p>
       <p>経過 <b>${fmtDur(st.elapsedMin)}</b>${s.idleMin != null ? `　無応答 <b>${fmtDur(s.idleMin)}</b>` : ""}${s.dispatch === false ? "　手動起動" : ""}</p>
       ${report}${pushes}
       ${!report && s.tail ? `<p>${esc(s.tail)}</p>` : ""}
       <p class="src">判定：3時間で報告が無ければ赤。6時間で💀。止まり（質問・承認待ち）は黄。</p>
+      ${cmdBtns.join("")}
       ${linksHtml([...urlLinks(s.urls), {label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${q}`}])}`;
     const pushed = (s.humanPushes||0) + (s.dispatchPushes||0) + (s.watchdogResumes||0);
     const mLbl = modelLabel(s.model);
@@ -413,6 +477,7 @@ function renderSessions(m){
       : "";
     return card(st.color, jaTitle(s.title), st.label, extra, d, undefined, subLine);
   }).join("");
+  renderCmdStatus();
 }
 
 /* ───── ホワイトボード（ai-brain/live/whiteboard.md の写し status/whiteboard.json。セッションはこの順に取る） ───── */
@@ -556,6 +621,7 @@ function renderList(){
 }
 
 loadPrio();
+loadCmds();
 // 共有側（priority.json：Mac側が Obsidian 経由で取り込んだもの）を先に読んでから描く
 const prioReady = fetch("status/priority.json?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.json() : null).then(j => {
@@ -667,10 +733,12 @@ function refreshMachine(){
     }).catch(()=>{ renderSessions(null); });
 }
 refreshMachine();
+refreshCommands();
 // 2026-09-03 リアルタイム化：開いている間、30秒おきに全部取り直す。手動リロード不要。新しい顔で古い数字を出さない
 const REFRESH_MS = 30000;
-setInterval(()=>{ if(document.visibilityState === "visible"){ refreshMachine(); refreshWhiteboard(); refreshHealth(); } }, REFRESH_MS);
-document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "visible"){ refreshMachine(); refreshWhiteboard(); refreshHealth(); } });
+function refreshAllLive(){ refreshMachine(); refreshWhiteboard(); refreshHealth(); refreshCommands(); }
+setInterval(()=>{ if(document.visibilityState === "visible") refreshAllLive(); }, REFRESH_MS);
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "visible") refreshAllLive(); });
 
 /* ───── 弱点の自動集計（history.jsonl） ───── */
 function renderStats(text){

@@ -117,10 +117,11 @@ def main():
 
     items = []
     # ── メモリ（毎回測る・閉じれば戻る＝安全） ──
-    for label, pat in (("Braveを閉じる", "Brave Browser"), ("Chromeを閉じる", "Google Chrome"), ("Spotifyを閉じる", "Spotify"), ("Notionを閉じる", "Notion"), ("LINEを閉じる", "LINE")):
+    for label, pat, app in (("Braveを閉じる", "Brave Browser", "Brave Browser"), ("Chromeを閉じる", "Google Chrome", "Google Chrome"),
+                             ("Spotifyを閉じる", "Spotify", "Spotify"), ("Notionを閉じる", "Notion", "Notion"), ("LINEを閉じる", "LINE", "LINE")):
         gb, n = rss_gb(pat)
         if n and gb >= 0.3:
-            items.append({"label": label, "effect": f"メモリ {gb}GB", "gb": gb, "kind": "mem", "safe": True,
+            items.append({"label": label, "effect": f"メモリ {gb}GB", "gb": gb, "kind": "mem", "safe": True, "app": app,
                           "how": f"{n}プロセス。閉じれば戻る。作業中のタブがあれば先に保存"})
     # セッション：終わって待機しているものを畳む（machine.json の sessionList から）
     idle = [s for s in (machine.get("sessionList") or []) if s.get("kind") == "idle_done"]
