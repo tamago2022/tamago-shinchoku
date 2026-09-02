@@ -241,7 +241,7 @@ def safe_max(base, ss, la1, cores, pressure, avail_mb, swap_up, iomb):
     if la1 is not None:
         more_load = int((cores * LOAD_CEIL - la1) / LOAD_PER_SESS)
         if more_load < 0:
-            reasons.append("ロード%.1f（コア%d×%.1f超）" % (la1, cores, LOAD_CEIL))
+            reasons.append("5分平均ロード%.1f（コア%d×%.1f超）" % (la1, cores, LOAD_CEIL))
     # メモリから
     more_mem = None
     if pressure == "red":
@@ -277,7 +277,8 @@ def build():
     swap_gb, swap_up = swap_trend()
     iomb = io_mbs()
     ss = sessions()
-    sm, reasons, alive, working = safe_max(base, ss, la[0], cores, pressure, avail, swap_up, iomb)
+    # 上限は5分平均ロード（la[1]）で決める。1分平均は瞬間的に跳ねて上限が0↔6と暴れるため。1分平均はJSONに load1 として残す
+    sm, reasons, alive, working = safe_max(base, ss, la[1] if la[1] is not None else la[0], cores, pressure, avail, swap_up, iomb)
     stalled = [s for s in ss if s["kind"] in ("asked", "stuck_tool")]
     waiting = [s for s in ss if s["kind"] == "idle_done"]
     more_ok = max(0, sm - alive)
