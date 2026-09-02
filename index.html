@@ -58,6 +58,9 @@
   .machine.warn .load{color:var(--red);}
   .machine .dim{color:var(--dim);}
   .machine .stalled{flex-basis:100%; color:var(--red);}
+  .machine .quota{flex-basis:100%; margin-top:3px; padding-top:5px; border-top:1px dashed var(--line); color:var(--sub);}
+  .machine .quota.warn{color:var(--yellow);}
+  .machine .quota.stop{color:var(--red);}
 
   /* 見出し */
   .label{display:flex; align-items:baseline; gap:8px; color:var(--sub); font-size:0.72rem; letter-spacing:0.12em; margin:18px 0 8px;}
@@ -518,12 +521,15 @@ function renderMachine(m){
   const mins = Math.max(0, Math.round((Date.now() - new Date(m.measuredAt).getTime())/60000));
   const age = mins < 1 ? "いま" : mins < 60 ? `${mins}分前` : mins < 1440 ? `${Math.floor(mins/60)}時間前` : `${Math.floor(mins/1440)}日前`;
   const stale = mins > 20;
-  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10);
+  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10) || (m.quota && (m.quota.fableLevel === "stop" || m.quota.allLevel === "stop"));
   const v = (x, unit) => x == null ? "測定不可" : `${x}${unit}`;
   el.className = "machine" + (warn ? " warn" : "");
   const sess = m.working != null ? `セッション${v(m.sessions,"本")}<span class="dim">（作業中${m.working}・止まり${m.stalled ?? 0}）</span>` : `セッション${v(m.sessions,"本")}`;
   const lim = m.safeMax != null ? `<span class="sep">｜</span><span>上限${m.safeMax}本${m.sessions > m.safeMax ? `・${m.sessions - m.safeMax}本超過` : ""}</span>` : "";
-  el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span><span>${sess}</span>${lim}<span class="sep">｜</span><span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span><span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>`;
+  const q = m.quota;
+  const qCls = q ? (q.fableLevel === "stop" || q.allLevel === "stop" ? " stop" : (q.fableLevel === "warn" || q.allLevel === "warn" ? " warn" : "")) : "";
+  const qLine = q && q.line ? `<span class="quota${qCls}">${q.line}</span>` : "";
+  el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span><span>${sess}</span>${lim}<span class="sep">｜</span><span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span><span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>${qLine}`;
   el.hidden = false;
 }
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
