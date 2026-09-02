@@ -42,6 +42,9 @@ cd "$REPO" || exit 0
 # 2026-09-03 たまごさんの優先度（PWA→Obsidian経由）を取り込み、priority.json とホワイトボードに反映
 python3 "$REPO/tools/priority_ingest.py" >/dev/null 2>&1 || true
 
+# 2026-09-03 Macの健康管理：何を閉じれば／消せば楽になるか（実測。重い計測は30分に1回）
+python3 "$REPO/tools/health_candidates.py" >/dev/null 2>&1 || true
+
 # 2026-09-02 PWA第3段階：セッションごとの航跡を1行ずつ積む（何時に始まり・何時に止まり・誰が起こしたか、を後から数えるため）
 python3 - "$OUT" "$REPO/status/history.jsonl" <<'PY' 2>/dev/null || true
 import json, sys
@@ -79,13 +82,13 @@ LAST=$(git log -1 --format=%ct -- status/machine.json 2>/dev/null); LAST=${LAST:
 AGE=$(( $(date +%s) - LAST ))
 # 数字が同じでも20分以上経っていれば鮮度のために push する
 HIST_CHANGED=0
-for f in status/history.jsonl status/whiteboard.json status/priority.json; do
+for f in status/history.jsonl status/whiteboard.json status/priority.json status/health.json; do
   [ -f "$f" ] || continue
   git ls-files --error-unmatch "$f" >/dev/null 2>&1 || HIST_CHANGED=1
   git diff --quiet -- "$f" 2>/dev/null || HIST_CHANGED=1
 done
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then exit 0; fi
 
-git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json >/dev/null 2>&1
+git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json >/dev/null 2>&1
 git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || exit 0
 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1

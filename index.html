@@ -148,6 +148,10 @@
 <div class="updated" id="updated">読み込み中…</div>
 <div class="machine" id="machine" hidden></div>
 
+<div class="label"><b>Macの健康</b>止まる＝全部止まる <small id="healthMeta"></small></div>
+<div class="sum" id="healthSum"></div>
+<div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+
 <div class="label"><b>走行状況</b>自動・5分おき <small id="sessMeta"></small></div>
 <div class="legend"><span><i style="background:var(--green)"></i>作業中</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>3時間報告なし／止まり／失敗</span></div>
 <div class="sum" id="sessSum"></div>
@@ -165,6 +169,7 @@
 <div class="g" id="wb"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
 
 <div class="label"><b>未処理の依頼</b>判断待ちが先頭・Pは優先度（タップで開いて付ける） <small id="allMeta"></small></div>
+<div class="note" style="margin:-4px 0 8px">完了＝本番に出て、別の目が動作確認まで済んだもの。ここが増えることだけが成果。</div>
 <div class="sum" id="allSummary"></div>
 <div class="g" id="all"></div>
 
@@ -252,6 +257,30 @@ document.addEventListener("click", e=>{
   const b = e.target.closest(".pk button"); if(!b) return;
   e.stopPropagation(); setPrio(b.closest(".pk").dataset.k, +b.dataset.p);
 });
+
+/* ───── Macの健康（status/health.json：何を閉じれば／消せば楽になるか。実測のみ） ───── */
+function renderHealth(h){
+  const box = document.getElementById("health"), sum = document.getElementById("healthSum");
+  if(!h){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ計測が無い（5分おきに測る）</div>`; return; }
+  const mins = Math.round((Date.now() - new Date(h.measuredAt).getTime())/60000);
+  document.getElementById("healthMeta").textContent = `${mins < 1 ? "いま" : mins + "分前"}`;
+  const diskWarn = h.diskFreeGB != null && h.diskFreeGB < 20, loadWarn = h.load != null && h.load >= 80;
+  const over = (h.sessions || 0) - (h.safeMax || 0);
+  sum.innerHTML =
+    `<span class="${loadWarn ? "red" : ""}">負荷<b>${h.load ?? "—"}%</b></span>`
+    + `<span class="${h.memPressure === "red" ? "red" : h.memPressure === "yellow" ? "yellow" : ""}">メモリ<b>${h.memPressure === "green" ? "余裕" : h.memPressure === "yellow" ? "注意" : h.memPressure === "red" ? "逼迫" : "—"}${h.memAvailGB != null ? `・空き${Math.round(h.memAvailGB)}GB` : ""}</b></span>`
+    + `<span class="${diskWarn ? "red" : ""}">ディスク空き<b>${h.diskFreeGB ?? "—"}GB</b></span>`
+    + `<span class="${over > 0 ? "red" : ""}">セッション<b>${h.sessions ?? "—"}本／上限${h.safeMax ?? "—"}${over > 0 ? `・${over}本超過` : h.moreOK != null ? `・あと${h.moreOK}本` : ""}</b></span>`;
+  const items = h.items || [];
+  if(!items.length){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">いま閉じる・消すと楽になるものは見当たらない</div>`; return; }
+  box.innerHTML = items.map(it=>{
+    const color = it.safe ? "green" : "yellow";
+    const d = `<p>${esc(it.how || "")}</p><p class="src">${it.safe ? "安全：作り直せる／閉じれば戻る。実行はMac側（セッションか本人）" : "要判断：戻らない・作業中を止める。本人の一言が要る"}</p>`;
+    return card(color, it.label, it.effect, it.safe ? "" : `<span class="n">要判断</span>`, d);
+  }).join("");
+}
+fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderHealth).catch(()=>renderHealth(null));
 
 /* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */
 const KIND_LABEL = {working:"作業中", asked:"判断待ち", stuck_tool:"承認待ち", idle_done:"終了・待機", unknown:"不明"};
