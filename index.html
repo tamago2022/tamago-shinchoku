@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>進捗表</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="進捗表">
+<meta name="theme-color" content="#1a2030">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+  :root{
+    --bg:#1a2030;        /* 夜の藍 */
+    --card:#212839;
+    --line:#2f3749;
+    --ink:#e9e2d3;       /* 生成り */
+    --sub:#9aa1ad;
+    --dim:#6b7280;
+    --aka:#c4483a;       /* 朱。差し色はこれ1点 */
+    --aka-bg:#3a2320;
+    --kinari:#d6cdba;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{background:var(--bg);}
+  body{
+    margin:0;
+    padding:calc(env(safe-area-inset-top) + 14px) calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 32px) calc(env(safe-area-inset-left) + 16px);
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:16px; line-height:1.55;
+    -webkit-text-size-adjust:100%;
+    max-width:640px; margin-left:auto; margin-right:auto;
+    overflow-x:hidden;
+  }
+  a{color:inherit;}
+  h1{
+    font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+    font-weight:400; font-size:1.35rem; letter-spacing:0.12em;
+    margin:8px 0 2px;
+  }
+  .updated{color:var(--sub); font-size:0.8rem; margin-bottom:22px;}
+
+  .label{
+    color:var(--sub); font-size:0.72rem; letter-spacing:0.14em;
+    margin:26px 0 10px; text-transform:uppercase;
+  }
+  .label:first-of-type{margin-top:0;}
+  .label small{letter-spacing:0; margin-left:8px; font-size:0.72rem; color:var(--dim);}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:14px 15px; margin-bottom:10px;
+  }
+
+  /* 今動いているもの */
+  .run .head{display:flex; gap:10px; align-items:baseline;}
+  .run .lane{color:var(--dim); font-size:0.75rem; font-variant-numeric:tabular-nums; flex:none;}
+  .run .title{font-weight:600; line-height:1.45;}
+  .run .who{color:var(--sub); font-size:0.82rem; margin-top:6px;}
+  .run .who b{font-weight:500; color:var(--kinari);}
+  .run .progress{color:var(--sub); font-size:0.85rem; margin-top:4px;}
+
+  /* リンク（タップできる。44px以上） */
+  .links{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .links a{
+    display:inline-flex; align-items:center; min-height:44px; padding:0 14px;
+    border:1px solid var(--line); border-radius:10px; text-decoration:none;
+    color:var(--kinari); font-size:0.88rem; background:rgba(255,255,255,0.02);
+  }
+  .links a::after{content:"→"; margin-left:8px; color:var(--sub);}
+  .links a:active{background:rgba(255,255,255,0.06);}
+
+  /* TODAY */
+  .today .block{margin-bottom:14px;}
+  .today .block:last-child{margin-bottom:0;}
+  .today .blabel{color:var(--sub); font-size:0.72rem; letter-spacing:0.08em; margin-bottom:5px;}
+  .today .northstar{font-size:0.95rem; line-height:1.6;}
+  .today ul{margin:0; padding-left:1.15em;}
+  .today li{margin-bottom:5px; line-height:1.5;}
+  .today .dontdo li{color:var(--kinari);}
+  .today .dontdo li::marker{color:var(--aka);}
+  .today .kpi{color:var(--sub); font-size:0.85rem;}
+
+  /* 集計（タップで該当セクションへ） */
+  .summary{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 6px;}
+  .summary a{
+    display:inline-flex; align-items:center; min-height:44px; padding:0 12px;
+    border-radius:10px; border:1px solid var(--line); text-decoration:none;
+    font-size:0.85rem; color:var(--ink); background:var(--card);
+    font-variant-numeric:tabular-nums;
+  }
+  .summary a b{font-weight:600; margin-left:6px;}
+
+  /* 依頼一覧 */
+  .section-label{color:var(--sub); font-size:0.78rem; letter-spacing:0.06em; margin:22px 0 8px; scroll-margin-top:12px;}
+  .row{
+    background:var(--card); border:1px solid var(--line); border-left:3px solid var(--line);
+    border-radius:12px; padding:13px 15px; margin-bottom:9px;
+  }
+  .row.red, .row.hold{border-left-color:var(--aka);}
+  .row.wip{border-left-color:var(--kinari);}
+  .row.done, .row.cannot{opacity:0.55;}
+  .row .content{font-weight:600; line-height:1.45;}
+  .row .meta{color:var(--sub); font-size:0.8rem; display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;}
+  .row .meta b{color:var(--kinari); font-weight:500;}
+  .row .elapsed{font-variant-numeric:tabular-nums;}
+  .row .note{font-size:0.86rem; color:var(--sub); margin-top:6px; line-height:1.5;}
+  .row.hold .note, .row.red .note{color:var(--kinari);}
+  .row .evi{font-size:0.8rem; color:var(--sub); margin-top:6px; word-break:break-all;}
+
+  footer{color:var(--dim); font-size:0.75rem; margin-top:36px; line-height:1.6;}
+</style>
+</head>
+<body>
+
+<h1>進捗表</h1>
+<div class="updated" id="updated">最終更新：読み込み中…</div>
+
+<div class="label">いま動いているもの <small id="runUpdated"></small></div>
+<div id="running"></div>
+
+<div class="label">Today</div>
+<div class="card today" id="today"></div>
+
+<div class="label">依頼一覧</div>
+<div class="summary" id="summary"></div>
+<div id="list"></div>
+
+<footer>
+  この画面はスマホから見るための写し。正本は Obsidian の <code>AI出力/_ルール/進捗表.html</code>。<br>
+  「いま動いているもの」は手で更新している（自動連携ではない）。
+</footer>
+
+<script src="data.js"></script>
+<script>
+const D = window.SHINCHOKU;
+
+const STATUS_META = {
+  red:    {mark:"🔴", label:"止まっている", order:0},
+  hold:   {mark:"⏸",  label:"判断待ち（たまごさん）", order:1},
+  wip:    {mark:"🟡", label:"作業中", order:2},
+  done:   {mark:"🟢", label:"完了", order:3},
+  cannot: {mark:"❌", label:"できない", order:4},
+};
+
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+function formatElapsed(orderedAt){
+  const ms = Date.now() - new Date(orderedAt).getTime();
+  if(ms < 0) return "未来?";
+  const totalMin = Math.floor(ms/60000);
+  const days = Math.floor(totalMin/1440);
+  const hours = Math.floor((totalMin%1440)/60);
+  const mins = totalMin%60;
+  if(days > 0) return `${days}日${hours}時間経過`;
+  if(hours > 0) return `${hours}時間${mins}分経過`;
+  return `${mins}分経過`;
+}
+function formatStamp(iso, withTime=true){
+  const d = new Date(iso);
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mi = String(d.getMinutes()).padStart(2,"0");
+  return withTime ? `${mm}-${dd} ${hh}:${mi}` : `${mm}-${dd}`;
+}
+function linksHtml(links){
+  if(!links || !links.length) return "";
+  return `<div class="links">` + links.map(l=>`<a href="${esc(l.url)}">${esc(l.label)}</a>`).join("") + `</div>`;
+}
+
+function renderRunning(){
+  document.getElementById("runUpdated").textContent = `手更新 ${formatStamp(D.runningUpdatedAt)}`;
+  const box = document.getElementById("running");
+  if(!D.running.length){ box.innerHTML = `<div class="card" style="color:var(--sub)">いまは何も走っていない</div>`; return; }
+  box.innerHTML = D.running.map(r=>`
+    <div class="card run">
+      <div class="head"><span class="lane">レーン${r.lane}</span><span class="title">${esc(r.title)}</span></div>
+      <div class="who">担当 <b>${esc(r.who)}</b>　状態 <b>${esc(r.state)}</b></div>
+      ${r.progress ? `<div class="progress">${esc(r.progress)}</div>` : ""}
+      ${linksHtml(r.links)}
+    </div>`).join("");
+}
+
+function renderToday(){
+  const t = D.today;
+  document.getElementById("today").innerHTML = `
+    <div class="block"><div class="blabel">北極星</div><div class="northstar">${esc(t.northstar)}</div></div>
+    <div class="block"><div class="blabel">今日の最重要3件（たまごさんの判断が要るもの）</div>
+      <ul>${t.top3.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="block dontdo"><div class="blabel">今日やらないこと</div>
+      <ul>${t.dontdo.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="block"><div class="blabel">Taste Gate（案の1タップ選択）</div>
+      ${linksHtml([{label:"Taste_Gate.md を開く", url:t.tasteGate}])}</div>
+    <div class="block"><div class="blabel">今月のKPI</div><div class="kpi">${esc(t.kpi)}</div></div>`;
+}
+
+function renderList(){
+  const sorted = [...D.requests].sort((a,b)=>{
+    const oa = STATUS_META[a.status].order, ob = STATUS_META[b.status].order;
+    if(oa !== ob) return oa - ob;
+    return new Date(b.orderedAt) - new Date(a.orderedAt);
+  });
+  const counts = {}; for(const k in STATUS_META) counts[k]=0;
+  sorted.forEach(r=>counts[r.status]++);
+
+  document.getElementById("summary").innerHTML = Object.keys(STATUS_META).map(k=>{
+    const m = STATUS_META[k];
+    return `<a href="#s-${k}">${m.mark} ${m.label}<b>${counts[k]}</b></a>`;
+  }).join("");
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  let lastOrder = -1;
+  sorted.forEach(r=>{
+    const m = STATUS_META[r.status];
+    if(m.order !== lastOrder){
+      const label = document.createElement("div");
+      label.className = "section-label"; label.id = `s-${r.status}`;
+      label.textContent = `${m.mark} ${m.label}`;
+      list.appendChild(label); lastOrder = m.order;
+    }
+    const row = document.createElement("div");
+    row.className = `row ${r.status}`;
+    row.innerHTML = `
+      <div class="content">${esc(r.content)}</div>
+      <div class="meta">
+        <span>依頼 <b>${formatStamp(r.orderedAt)}</b></span>
+        <span class="elapsed">${formatElapsed(r.orderedAt)}</span>
+        <span>担当 <b>${esc(r.owner||"-")}</b></span>
+      </div>
+      ${r.note ? `<div class="note">${esc(r.note)}</div>` : ""}
+      ${r.evidence ? `<div class="evi">証拠：${esc(r.evidence)}</div>` : ""}
+      ${linksHtml(r.links)}`;
+    list.appendChild(row);
+  });
+}
+
+document.getElementById("updated").textContent = `最終更新：${formatStamp(D.generatedAt)}（依頼一覧の正本時刻）`;
+renderRunning(); renderToday(); renderList();
+</script>
+</body>
+</html>
