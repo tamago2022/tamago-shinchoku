@@ -167,6 +167,14 @@ def main():
     fable_level = "stop" if (fable_pct or 0) >= STOP_PCT else "warn" if (fable_pct or 0) >= WARN_PCT else "ok"
     if proj.get("fablePctAtReset_recentPace") is not None and proj["fablePctAtReset_recentPace"] >= 100 and fable_level == "ok":
         fable_level = "warn"  # このペースだとリセット前に天井
+    # 2026-09-03 曜日ごとの目標カーブ（たまごさん指定：水30/木45/金55/土70/日80/月90/火100）で日次予算を超えていれば
+    # 75/85%の絶対閾値に届いていなくても「今日はもう使わない」として stop にする（例：今週は木金ゼロ・土日月10%ずつの計画）
+    weekday_target = WEEKDAY_TARGET[time.localtime(now).tm_wday]
+    over_pct = round(fable_pct - weekday_target, 1) if fable_pct is not None else None
+    if over_pct is not None and over_pct > 0:
+        fable_level = "stop"
+    elif over_pct is not None and over_pct > -10 and fable_level == "ok":
+        fable_level = "warn"
     # 1日あたりの許容量（残り%÷残り日数）と今日（直近24h）の実消費。今日の消費が許容量を超えていれば絞る
     day = {}
     if fable_pct is not None:
@@ -181,8 +189,6 @@ def main():
         if f_today > day["fableAllowancePerDay"] and fable_level == "ok":
             fable_level = "warn"  # 今日のFable消費が「残りを日割りした許容量」を超えた
     all_level = "stop" if (all_pct or 0) >= STOP_PCT else "warn" if (all_pct or 0) >= WARN_PCT else "ok"
-    weekday_target = WEEKDAY_TARGET[time.localtime(now).tm_wday]
-    over_pct = round(fable_pct - weekday_target, 1) if fable_pct is not None else None
     days_elapsed = round((now - since) / 86400, 1)
     ceiling_days = None
     if proj.get("hoursToCeiling_recentPace"):
@@ -224,7 +230,8 @@ def main():
            "resetAt": time.strftime("%Y-%m-%d %H:%M", time.localtime(next_reset)),
            "daysLeft": round(hours_left / 24, 1), "hoursLeft": round(hours_left, 1),
            "fableLevel": fable_level, "allLevel": all_level, "warnPct": WARN_PCT, "stopPct": STOP_PCT, "daily": day,
-           "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。75%で新規Fable停止、85%で走行中Fableも切りのいい所でSonnetへ交代。本数は減らさない",
+           "policy": ("Fable＝マガジン記事執筆のみ。他は全部Sonnet。75%%か曜日目標(%s)超過のどちらかでFableゼロ(新規停止・走行中もSonnetへ交代)、85%%でも同様。"
+                      "本数は減らさない（週枠は余らせてよい・5時間枠は使い切る）") % WEEKDAY_TARGET_TABLE,
            "fableWeightedTokensSinceReset": int(fable_now), "allWeightedTokensSinceReset": int(all_now),
            "last6h": {"fable": int(f6), "all": int(a6)},
            "projection": proj, **est,
