@@ -333,6 +333,9 @@ def raw_sessions():
 
 URL_PAT = re.compile(r"https?://[^\s)\]>」』]+")
 REPORT_HOURS = 3  # これ以上「報告」（assistantの文章）が無ければ赤
+# 2026-09-03 「反映されたのに無言」検知（温泉棚・マガジン・PWAで3連続発生。たまごさんが自分で画面を見て気づいた実害）。
+# 最後の報告文だけでなく会話全体からURL・公開/反映の痕跡を探し、正式な「完了：」報告が無いまま終わっていたら機械が拾う。
+DEPLOY_PAT = re.compile(r"(公開|反映|デプロイ|Publish|Pages|本番|x-deployment-id)")
 
 
 def transcript_stats(path):
@@ -347,6 +350,7 @@ def transcript_stats(path):
     except Exception:
         return st
     first_user = True
+    all_text_parts = []
     for ln in data.splitlines():
         if '"type":"user"' not in ln and '"type":"assistant"' not in ln:
             continue
@@ -382,6 +386,8 @@ def transcript_stats(path):
             if mdl:
                 st["model"] = mdl
             text = "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
+            if text.strip():
+                all_text_parts.append(text)
             if text.strip() and m.get("stop_reason") == "end_turn":
                 st["lastReportAt"] = ts
                 st["lastReportText"] = text[-200:].replace("\n", " ")
@@ -389,6 +395,13 @@ def transcript_stats(path):
     st["done"] = bool(re.search(r"(完了[：:]|^\s*完了|✅)", t))
     st["failed"] = bool(re.search(r"(できない[：:]|❌|失敗[：:]|エラーで止|中止)", t)) and not st["done"]
     st["urls"] = list(dict.fromkeys(URL_PAT.findall(t)))[:3]
+    # 最後の報告文だけでなく会話全体を見る。「公開/反映」の痕跡＋URLが会話のどこかにあるのに、
+    # 最後の報告（完了：）にそのURLが無い＝「自分のところで完結して黙って終わった」の機械的な定義
+    all_text = "\n".join(all_text_parts)
+    all_urls = list(dict.fromkeys(URL_PAT.findall(all_text)))
+    has_deploy_word = bool(DEPLOY_PAT.search(all_text))
+    st["deployUrls"] = [u for u in all_urls if u not in st["urls"]][:5]
+    st["unreportedDeploy"] = bool((all_urls or has_deploy_word) and not st["done"] and (st["deployUrls"] or (has_deploy_word and not st["urls"])))
     return st
 
 
@@ -404,6 +417,8 @@ def status_of(kind, idle, st):
         return "報告なし%d時間超" % REPORT_HOURS, "red"
     if kind == "stuck_tool":
         return "承認待ち", "yellow"
+    if kind in ("asked", "idle_done") and st.get("unreportedDeploy"):
+        return "反映済み・報告なし", "red"
     if kind in ("asked", "idle_done"):
         return "止まっている", "red"
     return "不明", "gray"
@@ -452,6 +467,7 @@ def sessions():
             "lastReport": st["lastReportText"][-100:],
             "status": label, "color": color,
             "urls": st["urls"],
+            "unreportedDeploy": st.get("unreportedDeploy", False), "deployUrls": st.get("deployUrls", []),
             "humanPushes": st["humanPushes"], "dispatchPushes": st["dispatchPushes"],
             "watchdogResumes": max(st["watchdogResumes"], wd.get("tries", 0)),
             "done": st["done"],

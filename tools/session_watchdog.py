@@ -49,6 +49,8 @@ MACHINE_JSON = os.path.join(REPO, "status", "machine.json")
 STATE_JSON = os.path.join(REPO, "status", "watchdog-state.json")
 VAULT = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain"
 LOG_MD = os.path.join(VAULT, "AI出力", "_ルール", "見張り番ログ.md")
+DEPLOY_ALERT_MD = os.path.join(VAULT, "AI出力", "_ルール", "反映されたのに報告が無い一覧.md")
+DEPLOY_ALERT_STATE = os.path.join(REPO, "status", "deploy-alert-state.json")
 DISPATCH_INBOX = os.path.join(VAULT, "AI出力", "_ルール", "留守中の判断待ち.md")
 HANDOFF_DIR = os.path.join(VAULT, "AI出力", "_ルール", "引き継ぎ_自動")
 SESSIONS_DIR = os.path.expanduser("~/Library/Application Support/Claude/claude-code-sessions")
@@ -81,7 +83,9 @@ MANUAL_ESSENTIALS = ("マニュアルの要点：①たまごさんに質問し�
                      "⑩(公式推奨・2026-09-02) Before you start, say in a line what you're about to do; brief updates while you work. "
                      "Close with a short recap that stands on its own."
                      "⑪(公式推奨・クレジット節約) when it will not affect the end result, try to surgically edit a file rather than rewrite the entire thing."
-                     "⑫(公式推奨・ツール呼び出し) First privately list what you need next; then request every item that doesn't depend on another's result in this one response.")
+                     "⑫(公式推奨・ツール呼び出し) First privately list what you need next; then request every item that doesn't depend on another's result in this one response."
+                     "⑬報告して初めて終わり。反映して初めて終わり。自分のところで完結させて黙って終わらない（機械が検知して転送するが、自分で報告するのが先）。"
+                     "⑭1つ本番に出たら、その都度Dispatchに報告する（何を／時刻／URL）。まとめて最後に報告しない。")
 RESUME_MSG = ("【見張り番・自動再開】止まっていたので続けます。止まらずに最後まで走り切ること。" + MANUAL_ESSENTIALS +
               " もし作業が本当に終わっているなら「完了：」で始まる3行の最終報告だけ書いて終了する。")
 DONE_PAT = re.compile(r"(完了[：:]|^完了|判断待ち[：:]\s*なし|畳みます|ここで畳|終了します|以上です|報告は以上|完了／問題／判断待ち)")
@@ -114,6 +118,12 @@ def append(path, line):
         with open(path, "a", encoding="utf-8") as f:
             if new and path == LOG_MD:
                 f.write("# 見張り番ログ（自動・1行ずつ）\n\n5分おきに `session_watchdog.py` が書く。いつ・どのセッションを・なぜ再開／引き継ぎ／着火したか。見送りも書く。\n\n")
+            elif new and path == DEPLOY_ALERT_MD:
+                f.write("# 反映されたのに報告が無い一覧（自動検知・2026-09-03）\n\n"
+                        "会話ログに公開/反映の痕跡やURLがあるのに、正式な「完了：」報告が無いまま終わっていたセッションを"
+                        "`session_watchdog.py`が5分おきに機械検知してここへ書く。**セッションが黙って完結しても、これを見れば分かる。**"
+                        "たまごさんが見たら確認済みの行に取り消し線を引く（消さない）。\n\n"
+                        "| 時刻 | セッション | URL/痕跡 |\n|---|---|---|\n")
             f.write(line + "\n")
     except Exception:
         pass
@@ -439,6 +449,36 @@ def ignite(machine):
     return new_id, pid, row
 
 
+def check_deploy_alerts(machine):
+    """「反映されたのに無言」を機械検知して転送する（2026-09-03・たまごさん指摘：温泉棚/マガジン/PWAで3連続発生、全部本人が画面を見て気づいた）。
+    factory_status.pyがsessionListの各セッションに埋めたunreportedDeploy/deployUrlsを見て、まだ転送していないものだけ
+    見張り番ログ.mdと反映されたのに報告が無い一覧.mdへ【反映】として書く（cliごとに1回だけ・状態は別ファイルで管理）。
+    戻り値はmachine.jsonへ載せる現在の未対応一覧（PWAの赤バナー用）。"""
+    state = load_json(DEPLOY_ALERT_STATE, {"alerted": []})
+    alerted = set(state.get("alerted", []))
+    outstanding = []
+    for s in (machine.get("sessionList") or []):
+        # 「反映済み・報告なし」のラベルが付いた（＝止まっていて未報告）ものだけ拾う。作業中はまだ結果が変わるので拾わない
+        if s.get("status") != "反映済み・報告なし":
+            continue
+        title = s.get("title") or "（不明）"
+        if EXCLUDE_TITLE.search(title):
+            continue  # 見回り系セッション自身の定型URL言及は除外
+        cli = s.get("cli") or "?"
+        urls = s.get("deployUrls") or s.get("urls") or []
+        entry = {"t": now(), "cli": cli, "title": title, "urls": urls}
+        outstanding.append(entry)
+        if cli in alerted:
+            continue
+        line = "【反映】%s（cli:%s）: %s だが完了報告が無い→たまごさんへ転送" % (title, cli[:8], ("URL " + "・".join(urls)) if urls else "公開/反映の痕跡あり")
+        append(LOG_MD, "- %s %s" % (now(), line))
+        append(DEPLOY_ALERT_MD, "| %s | %s（cli:%s） | %s |" % (now(), title, cli[:8], "・".join(urls) if urls else "公開/反映の痕跡あり"))
+        alerted.add(cli)
+    state["alerted"] = list(alerted)[-500:]
+    save_json(DEPLOY_ALERT_STATE, state)
+    return outstanding
+
+
 def main():
     dry = "--dry-run" in sys.argv
     state = load_json(STATE_JSON, {})
@@ -558,6 +598,7 @@ def main():
                               "doneAlive": len(done), "doneWithoutHumanPush": len(auto),
                               "autonomyRatio": round(len(auto) / len(done), 2) if done else None,
                               "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"}
+        machine["deployAlerts"] = check_deploy_alerts(machine)  # 反映されたのに報告が無いものを機械検知・転送（PWAの赤バナー用）
         machine["quota"] = quota()  # 利用枠の推定（PWAが読む）
         try:  # 自動でモデルを切り替えた記録（直近10件）
             sw = [json.loads(x) for x in open(SWITCH_LOG, encoding="utf-8").read().splitlines()[-10:] if x.strip()]
