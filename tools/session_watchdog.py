@@ -35,6 +35,7 @@
   python3 session_watchdog.py --dry-run  # 判定だけ（何も起動しない）
   python3 session_watchdog.py --status   # 試行回数・累計
 """
+import glob
 import json
 import os
 import re
@@ -479,6 +480,40 @@ def check_deploy_alerts(machine):
     return outstanding
 
 
+CRASHED_SESSIONS_GLOB = os.path.expanduser("~/Library/Application Support/Claude/claude-code-sessions/*/*/local_*.json")
+CRASH_RECENT_MIN = 720  # 12時間より古い放置セッションは「今夜のクラッシュ」ではないので対象外
+
+
+def scan_crashed_desktop_sessions(live_clis):
+    """2026-09-03実測で判明した検知漏れの穴：kanshiのPID→transcript対応は「プロセス起動時刻とtranscript先頭時刻の差±180秒」の
+    近似マッチングで、Desktopアプリのプロセスが再起動・クラッシュ（exit 143＝process_interrupted）すると外れる。
+    そうなると ps ベースの全経路（sessions_with_transcript）がそのセッションを一切検知できず、自動再開が永久に発火しない。
+    ここでは ps を見ず、Desktopアプリ自身のセッション状態ファイル（local_*.json）に残る error/isArchived を直接見て、
+    「プロセスは完全に落ちているが、まだ終わっていないはずの」セッションを拾う。resume()はcliSessionIdだけあれば
+    新しいプロセスを立てられるので、古いPIDが見つからなくても再開できる。"""
+    out = []
+    now_ts = time.time()
+    for f in glob.glob(CRASHED_SESSIONS_GLOB):
+        try:
+            d = json.load(open(f, encoding="utf-8"))
+        except Exception:
+            continue
+        cli = d.get("cliSessionId")
+        if not cli or cli in live_clis or d.get("isArchived") or not d.get("error"):
+            continue
+        last = (d.get("lastActivityAt") or 0) / 1000.0
+        idle_min = (now_ts - last) / 60.0 if last else None
+        if idle_min is None or idle_min > CRASH_RECENT_MIN:
+            continue
+        title = d.get("title") or "（不明）"
+        if EXCLUDE_TITLE.search(title):
+            continue
+        out.append({"cli": cli, "title": title, "cwd": d.get("cwd"), "idleMin": idle_min,
+                    "errorCategory": d.get("errorCategory")})
+    out.sort(key=lambda x: -x["idleMin"])  # 長く放置されているものから
+    return out
+
+
 def main():
     dry = "--dry-run" in sys.argv
     state = load_json(STATE_JSON, {})
@@ -532,6 +567,32 @@ def main():
         resumed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "try": st["tries"], "resumePid": pid})
         append(LOG_MD, "- %s ▶ 再開 %d/%d: 「%s」(%s) 理由=%s 放置%d分 %dターン 負荷=%s%%" % (now(), st["tries"], MAX_TRIES, title, s["cli"][:8], why, round(s["idle"] or 0), scan["turns"], machine.get("load")))
         n += 1
+    # ②プロセス自体が完全に落ちて ps に一切映らないセッション（検知の穴）。live_clis に無い＝上のループでは絶対に拾えない
+    live_clis = {s["cli"] for s in ss if s.get("cli")}
+    crashed = scan_crashed_desktop_sessions(live_clis)
+    crashed_resumed = []
+    for c in crashed:
+        if unsafe:
+            append(LOG_MD, "- %s ⏸ 見送り(クラッシュ回復): 「%s」(%s) だが Mac が危険（%s）" % (now(), c["title"], c["cli"][:8], unsafe))
+            continue
+        st = state.setdefault(c["cli"], {"tries": 0})
+        if st.get("handedOff"):
+            continue  # 既に別セッションへ引き継ぎ済み。古い方を二重に再開しない
+        if st.get("tries", 0) >= MAX_TRIES:
+            continue
+        if n >= MAX_PER_RUN or headless_alive >= MAX_HEADLESS:
+            break
+        if dry:
+            crashed_resumed.append({"cli": c["cli"], "title": c["title"], "dry": True}); n += 1; continue
+        pid = resume(c["cli"], c.get("cwd"))
+        st["tries"] = st.get("tries", 0) + 1; st["lastResumeAt"] = time.time(); st["title"] = c["title"]
+        totals["stalls"] += 1; totals["autoResumes"] += 1
+        headless_alive += 1
+        crashed_resumed.append({"cli": c["cli"], "title": c["title"], "try": st["tries"], "resumePid": pid})
+        append(LOG_MD, "- %s ▶ 再開 %d/%d(クラッシュ回復): 「%s」(%s) 理由=プロセス完全停止(%s)・放置%d分 → pid %s" %
+               (now(), st["tries"], MAX_TRIES, c["title"], c["cli"][:8], c.get("errorCategory"), round(c["idleMin"]), pid))
+        n += 1
+    resumed += crashed_resumed
     # 進んだセッションの試行回数はリセット
     for s in ss:
         stt = state.get(s["cli"]) if s["cli"] else None
