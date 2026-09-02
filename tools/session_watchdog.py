@@ -72,7 +72,9 @@ MANUAL_ESSENTIALS = ("マニュアルの要点：①たまごさんに質問し�
                      "②「続けますか」と聞かない。報告のために止まらない。③1つ本番に出たら即Dispatchへ報告（完了／問題／判断待ちの3行・本番の直URL）。"
                      "④Lovableのエージェントとビルドは使わない。⑤公開（Lovable Publish）は聞かずに押す。"
                      "⑥止まってよいのは 削除／課金／外部公開(公開ボタン以外)／認証情報 だけ。⑦完了は本番で別の目が確認して初めて完了（それまでは検証待ち）。"
-                     "⑧完了していないのに止まらない。右も左も試して袋小路のときだけ「判断待ち」にして次の1件へ。"
+                     "⑧完了していないのに止まらない。同じ経路で2回失敗したら次へ移る（1引数/ツールを変える→2CLI⇄API⇄ブラウザを乗り換える→"
+                     "3問題を分割する→4別Agentに委任→5公式ドキュメントを読む→6目的に戻って迂回する）。"
+                     "全部試して1行ずつ結果を書けて初めて『袋小路：◯◯（試した経路：1→…／2→…）』で判断待ちにできる。書式の無い「できません」は差し戻す。"
                      "⑨3時間か100ターンを超えたら休んでよい：最後の報告に「どこまで終わったか／次に何をするか／何を試して何がダメだったか」を書いて終了する（次の人が続ける）。")
 RESUME_MSG = ("【見張り番・自動再開】止まっていたので続けます。止まらずに最後まで走り切ること。" + MANUAL_ESSENTIALS +
               " もし作業が本当に終わっているなら「完了：」で始まる3行の最終報告だけ書いて終了する。")
@@ -142,7 +144,7 @@ def proc_cwd(pid):
 
 def scan_transcript(path):
     """会話ログを1回なめて、引き継ぎ判断と引き継ぎ文に要るものを取る"""
-    st = {"turns": 0, "lastText": "", "firstUser": "", "errors": [], "tried": []}
+    st = {"turns": 0, "lastText": "", "firstUser": "", "errors": [], "tried": [], "model": ""}
     if not path:
         return st
     try:
@@ -160,7 +162,11 @@ def scan_transcript(path):
         m = e.get("message") or {}
         c = m.get("content")
         if e.get("type") == "assistant":
-            st["turns"] += 1
+            # 「ターン」＝話し終えた回数（stop_reason=end_turn）。ツール呼び出し1回ずつ数えると10分で100を超えて引き継ぎが連鎖する（01:31 実測）
+            if m.get("stop_reason") == "end_turn":
+                st["turns"] += 1
+            if m.get("model"):
+                st["model"] = m["model"]
             if isinstance(c, list):
                 t = "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
                 if t.strip():
@@ -280,6 +286,9 @@ def decide(s, meta, scan, state):
         return None, "終了報告済み"
     if st.get("tries", 0) >= MAX_TRIES:
         return "handoff", "%d回再開しても進まない" % MAX_TRIES
+    # 週枠 85% 超：走行中の Fable セッションは、話し終えた切りのいいところで Sonnet の新セッションへ交代（本数は減らさない）
+    if quota().get("fableLevel") == "stop" and "fable" in (scan.get("model") or "") and not FABLE_OK.search(meta.get("title", "")):
+        return "handoff", "Fable週枠%s%%超→Sonnetへ交代" % quota().get("fablePct")
     if s["idle"] >= HANDOFF_HOURS * 60:
         return "handoff", "%.1f時間進んでいない" % (s["idle"] / 60)
     if scan["turns"] >= HANDOFF_TURNS:
@@ -294,6 +303,44 @@ def decide(s, meta, scan, state):
 
 
 # ---------- 実行 ----------
+# ---------- モデル方針（2026-09-03 たまごさん：既定Sonnet。Fableは判断とセンスが結果に直結するものだけ） ----------
+SONNET = "claude-sonnet-5"
+FABLE = "claude-fable-5-1"
+# たまごさん確定（2026-09-03 01:35）：Fable＝マガジン（記事の執筆）だけ。それ以外は全部 Sonnet。
+FABLE_OK = re.compile(r"(マガジン|MAGAZINE|記事の執筆|記事執筆|特集記事)", re.I)
+MECHANICAL = re.compile(r"(仕入れ|統一|修正|記録|調査|整理|検証|棚卸|一括|移行|同期|バックアップ|洗い出し|リスト|検品)")
+SWITCH_LOG = os.path.join(REPO, "status", "model_switches.jsonl")
+
+
+def quota():
+    return load_json(os.path.join(REPO, "status", "quota.json"), {})
+
+
+def model_for(task_text, prev_model=None, why=""):
+    """(モデル, 理由)。既定Sonnet。Fableはマガジン記事執筆だけ、かつ週枠に余裕がある時だけ。判断は機械。人に聞かない"""
+    q = quota()
+    level = q.get("fableLevel", "ok")
+    t = task_text or ""
+    if level == "stop":
+        model, reason = SONNET, "Fable週枠%s%%≥%d→Sonnet" % (q.get("fablePct"), q.get("stopPct", STOP_PCT_DEFAULT))
+    elif FABLE_OK.search(t) and not MECHANICAL.search(t):
+        if level == "warn":
+            model, reason = SONNET, "マガジンだがFable枠が警告域（%s%%）→Sonnetで代替" % q.get("fablePct")
+        else:
+            model, reason = FABLE, "マガジン記事の執筆（唯一のFable例外）"
+    else:
+        model, reason = SONNET, "マガジン以外→既定Sonnet"
+    try:
+        with open(SWITCH_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"t": now(), "task": t[:80], "from": prev_model, "to": model, "why": reason, "fablePct": q.get("fablePct")}, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+    return model, reason
+
+
+STOP_PCT_DEFAULT = 85
+
+
 def spawn(cmd, cwd, log_name, tag):
     log_out = os.path.join(REPO, "status", log_name)
     try:
@@ -308,8 +355,10 @@ def spawn(cmd, cwd, log_name, tag):
 
 
 def resume(cli, cwd):
-    return spawn([CLAUDE, "-p", "--resume", cli, "--permission-mode", "auto", "--output-format", "json", RESUME_MSG],
-                 cwd, "watchdog-resume-%s.log" % cli[:8], "resume " + cli)
+    cmd = [CLAUDE, "-p", "--resume", cli, "--permission-mode", "auto", "--output-format", "json"]
+    if quota().get("fableLevel") == "stop":
+        cmd += ["--model", SONNET]  # 枠が苦しい時は再開もSonnetで（止めるのではなく置き換える）
+    return spawn(cmd + [RESUME_MSG], cwd, "watchdog-resume-%s.log" % cli[:8], "resume " + cli)
 
 
 def handoff(s, meta, scan, why):
@@ -342,7 +391,9 @@ def handoff(s, meta, scan, why):
               "あなたのID: %s（ホワイトボードの担当は付け替え済み。終わったら `python3 %s set <ID> --me %s --state 検証待ち --note \"…\"`、次は `next --me %s`）\n%s\n"
               "最後は「完了：／問題：／判断待ち：」の3行で終了する。"
               % (title, why, path, body, standard_six(), me_new, WHITEBOARD, me_new, me_new, MANUAL_ESSENTIALS))
-    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--permission-mode", "auto", "--output-format", "json", prompt],
+    model, mwhy = model_for(title + " " + (rows[0]["task"] if rows else "") + " " + scan.get("firstUser", "")[:200])
+    append(LOG_MD, "- %s 🎛 引き継ぎ先のモデル: %s（%s）" % (now(), model, mwhy))
+    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--model", model, "--permission-mode", "auto", "--output-format", "json", prompt],
                 meta.get("cwd"), "watchdog-handoff-%s.log" % new_id[:8], "handoff from " + cli)
     return new_id, pid, path
 
@@ -370,7 +421,9 @@ def ignite(machine):
               "最後は「完了：／問題：／判断待ち：」の3行で終了する。"
               % (me_new, row, note, standard_six(), MANUAL_ESSENTIALS, WHITEBOARD, tid, me_new, WHITEBOARD, me_new))
     cwd = "/Users/mac/Desktop/joy-relief-station" if "joy-relief-station" in note or "本番" in note else os.path.expanduser("~/Desktop")
-    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--permission-mode", "auto", "--output-format", "json", prompt],
+    model, mwhy = model_for(row + " " + note)
+    append(LOG_MD, "- %s 🎛 着火のモデル: %s（%s）" % (now(), model, mwhy))
+    pid = spawn([CLAUDE, "-p", "--session-id", new_id, "--model", model, "--permission-mode", "auto", "--output-format", "json", prompt],
                 cwd, "watchdog-ignite-%s.log" % new_id[:8], "ignite " + tid)
     if not pid:
         subprocess.run(["python3", WHITEBOARD, "release", tid, "--me", me_new, "--note", note], capture_output=True, timeout=20)
@@ -497,6 +550,12 @@ def main():
                               "doneAlive": len(done), "doneWithoutHumanPush": len(auto),
                               "autonomyRatio": round(len(auto) / len(done), 2) if done else None,
                               "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"}
+        machine["quota"] = quota()  # 利用枠の推定（PWAが読む）
+        try:  # 自動でモデルを切り替えた記録（直近10件）
+            sw = [json.loads(x) for x in open(SWITCH_LOG, encoding="utf-8").read().splitlines()[-10:] if x.strip()]
+            machine["quota"]["switches"] = sw
+        except Exception:
+            pass
         if os.path.exists(MACHINE_JSON):
             save_json(MACHINE_JSON, machine)
     print(json.dumps({"resumed": resumed, "handedOff": handed, "ignited": ignited, "ignite": ign_why, "unrecoverable": unrec, "skipped": skipped}, ensure_ascii=False, indent=1))
