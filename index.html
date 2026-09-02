@@ -127,6 +127,17 @@
   .row.hold .note, .row.red .note{color:var(--kinari);}
   .row .evi{font-size:0.8rem; color:var(--sub); margin-top:6px; word-break:break-all;}
 
+  /* 未処理の依頼・全件 */
+  .row .no{display:inline-block; min-width:1.6em; color:var(--sub); font-weight:500; font-variant-numeric:tabular-nums; margin-right:6px;}
+  .row.hold .content .no{color:var(--aka);}
+  details.more summary{list-style:none; cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--kinari); font-size:0.85rem;}
+  details.more summary::-webkit-details-marker{display:none;}
+  details.more summary::after{content:"↓"; margin-left:8px; color:var(--sub);}
+  details.more[open] summary::after{content:"↑";}
+  .oldlist{padding:6px 15px;}
+  .old{padding:9px 0; border-bottom:1px solid var(--line); font-size:0.9rem; line-height:1.5;}
+  .old:last-child{border-bottom:none;}
+
   footer{color:var(--dim); font-size:0.75rem; margin-top:36px; line-height:1.6;}
 </style>
 </head>
@@ -140,6 +151,10 @@
 
 <div class="label">言ったこと（直近・埋もれ防止） <small id="saidCount"></small></div>
 <div id="said"></div>
+
+<div class="label">未処理の依頼・全件 <small id="allMeta"></small></div>
+<div class="summary" id="allSummary"></div>
+<div id="all"></div>
 
 <div class="label">Today</div>
 <div class="card today" id="today"></div>
@@ -155,6 +170,7 @@
 
 <script src="data.js"></script>
 <script src="said.js"></script>
+<script src="requests225.js"></script>
 <script>
 const D = window.SHINCHOKU;
 
@@ -216,6 +232,40 @@ function renderSaid(){
     + `</div>`;
 }
 
+const ALL_META = {
+  "⏸":{label:"判断待ち（たまごさん）", cls:"hold", order:0},
+  "🔴":{label:"未着手", cls:"red", order:1},
+  "🟠":{label:"着手中", cls:"wip", order:2},
+  "🟡":{label:"実装済（本番未確認）", cls:"wip", order:3},
+  "❓":{label:"完了か不明", cls:"cannot", order:4},
+};
+function renderAll(){
+  const A = window.SHINCHOKU_ALL; if(!A) return;
+  document.getElementById("allMeta").textContent = `${A.items.length + A.old.length}件・${A.generatedAt} 掘り出し`;
+  const groups = {};
+  A.items.forEach(it=>{ (groups[it.badge] ||= []).push(it); });
+  const keys = Object.keys(ALL_META).sort((a,b)=>ALL_META[a].order-ALL_META[b].order).filter(k=>groups[k]);
+  document.getElementById("allSummary").innerHTML = keys.map(k=>`<a href="#a-${ALL_META[k].cls}-${ALL_META[k].order}">${k} ${ALL_META[k].label}<b>${groups[k].length}</b></a>`).join("")
+    + `<a href="#a-old">旧台帳のみ<b>${A.old.length}</b></a>`;
+  const box = document.getElementById("all"); let h = "";
+  keys.forEach(k=>{
+    const m = ALL_META[k];
+    h += `<div class="section-label" id="a-${m.cls}-${m.order}">${k} ${m.label}（${groups[k].length}）</div>`;
+    groups[k].forEach(it=>{
+      const first = it.body[0] || "";
+      const rest = it.body.slice(1);
+      h += `<div class="row ${m.cls}">
+        <div class="content"><span class="no">${it.no}</span>${esc(it.title)}</div>
+        <div class="note">${esc(first)}</div>
+        ${rest.length || it.src ? `<details class="more"><summary>くわしく</summary>${rest.map(x=>`<div class="note">${esc(x)}</div>`).join("")}${it.src ? `<div class="evi">出典：${esc(it.src)}</div>` : ""}</details>` : ""}
+      </div>`;
+    });
+  });
+  h += `<div class="section-label" id="a-old">旧台帳のみに残る案件（2026-07・更新停止）（${A.old.length}）</div><div class="card oldlist">`
+     + A.old.map(o=>`<div class="old">${o.badge} ${esc(o.title)}</div>`).join("") + `</div>`;
+  box.innerHTML = h;
+}
+
 function renderToday(){
   const t = D.today;
   document.getElementById("today").innerHTML = `
@@ -271,7 +321,7 @@ function renderList(){
 }
 
 document.getElementById("updated").textContent = `最終更新：${formatStamp(D.generatedAt)}（依頼一覧の正本時刻）`;
-renderRunning(); renderSaid(); renderToday(); renderList();
+renderRunning(); renderSaid(); renderAll(); renderToday(); renderList();
 </script>
 </body>
 </html>
