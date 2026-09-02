@@ -1,15 +1,15 @@
 {
- "raw": "負荷 100% ｜ CPU 9% / メモリ圧迫 26% / スワップ 7.71GB / ディスク空き 52GB ｜ 稼働 5本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 2% / メモリ圧迫 26% / スワップ 7.68GB / ディスク空き 52GB ｜ 稼働 4本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 9,
+ "cpu": 2,
  "mem": 26,
- "swapGB": 7898.75,
+ "swapGB": 7866.75,
  "diskFreeGB": 52.0,
- "sessions": 5,
- "note": "上限2本・あと0本OK（5分平均ロード14.8（コア8×0.8超）、予兆（5分ロード比1.9）→1本減らす、5時間枠もったいない度57.5%→本数を上限4本まで増やす）",
- "measuredAt": "2026-09-03T02:49:03+09:00",
- "working": 4,
- "stalled": 0,
+ "sessions": 4,
+ "note": "上限2本・あと0本OK（5分平均ロード11.6（コア8×0.8超）、5時間枠もったいない度59.0%→本数を上限4本まで増やす）",
+ "measuredAt": "2026-09-03T02:54:22+09:00",
+ "working": 2,
+ "stalled": 1,
  "waiting": 1,
  "safeMax": 2,
  "moreOK": 0,
@@ -19,60 +19,44 @@
  "calibratedSafeN": 4,
  "calibrationBasis": "標本不足→既定4本・重い事象は7本で発生",
  "userActive": false,
- "predict": [
-  "5分ロード比1.9"
- ],
+ "predict": [],
  "shedCandidates": [
   {
-   "pid": 49223,
-   "title": "関連を双方向にする（夜通し）",
-   "idleMin": 13.6
+   "pid": 49683,
+   "title": "枠を自動制御する（夜通し）",
+   "idleMin": 11.1
   }
  ],
  "below": 0,
- "blockReason": "5分平均ロード14.8（コア8×0.8超）、予兆（5分ロード比1.9）→1本減らす、5時間枠もったいない度57.5%→本数を上限4本まで増やす",
- "load1": 8.57,
- "load5": 14.84,
- "load15": 17.89,
+ "blockReason": "5分平均ロード11.6（コア8×0.8超）、5時間枠もったいない度59.0%→本数を上限4本まで増やす",
+ "load1": 10.29,
+ "load5": 11.59,
+ "load15": 15.36,
  "cores": 8,
- "loadRatio": 1.07,
+ "loadRatio": 1.29,
  "memPressure": "green",
- "memAvailGB": 8.7,
+ "memAvailGB": 8.8,
  "swapIncreasing": false,
- "ioMBs": 6.43,
- "stalledList": [],
- "sessionList": [
+ "ioMBs": 0.51,
+ "stalledList": [
   {
-   "cli": "0a929613-4f70-41f7-a8ad-46f794412f9d",
-   "localId": "local_0bc997f8-10c9-4282-ab16-d2a9286db560",
-   "startedAt": "2026-09-03T01:48:10+0900",
-   "elapsedMin": 60,
-   "lastReportAt": "2026-09-02T17:35:24.103Z",
-   "lastReport": "済み：tsc新規エラー0・eslint0件・vite build成功・375pxスクショ2枚で実画面確認。 - PR #322 push済み、CI通過待ち→自動マージ→Lovable公開まで完走予定。",
-   "status": "止まっている",
-   "color": "red",
-   "urls": [],
-   "humanPushes": 2,
-   "dispatchPushes": 0,
-   "watchdogResumes": 1,
-   "done": false,
-   "pid": 49223,
-   "title": "関連を双方向にする（夜通し）",
-   "dispatch": true,
-   "mb": 224,
-   "idleMin": 13.6,
-   "kind": "idle_done",
-   "model": "claude-sonnet-5"
-  },
+   "pid": 67187,
+   "title": "達郎マガジンの叩きを朝までに",
+   "kind": "stuck_tool",
+   "idleMin": 11.4,
+   "dispatch": true
+  }
+ ],
+ "sessionList": [
   {
    "cli": "8d83c1b8-8c87-4cd0-9f07-9480dd7e4de5",
    "localId": "local_d10776d2-8762-4ef5-908d-2d1cd5abbee6",
    "startedAt": "2026-09-03T02:41:26+0900",
-   "elapsedMin": 7,
+   "elapsedMin": 13,
    "lastReportAt": null,
    "lastReport": "",
-   "status": "作業中",
-   "color": "green",
+   "status": "承認待ち",
+   "color": "yellow",
    "urls": [],
    "humanPushes": 0,
    "dispatchPushes": 0,
@@ -81,20 +65,20 @@
    "pid": 67187,
    "title": "達郎マガジンの叩きを朝までに",
    "dispatch": true,
-   "mb": 332,
-   "idleMin": 6.0,
-   "kind": "working",
+   "mb": 333,
+   "idleMin": 11.4,
+   "kind": "stuck_tool",
    "model": "claude-sonnet-5"
   },
   {
    "cli": "b0ef32a6-0a3b-451d-a08e-b84041d8f76e",
    "localId": "local_f0f0ea94-9e17-4919-93b6-99fed9ca1014",
    "startedAt": "2026-09-03T01:48:52+0900",
-   "elapsedMin": 60,
+   "elapsedMin": 65,
    "lastReportAt": "2026-09-02T17:43:13.114Z",
    "lastReport": "ings.json(既定はsonnetなのに反映されていない)を確認したが、親セッションのモデルを制御する場所を見つけられなかった。Desktop側の別経路の可能性が高く、ファイル操作だけでは袋小路。",
-   "status": "作業中",
-   "color": "green",
+   "status": "止まっている",
+   "color": "red",
    "urls": [],
    "humanPushes": 4,
    "dispatchPushes": 0,
@@ -104,15 +88,15 @@
    "title": "枠を自動制御する（夜通し）",
    "dispatch": true,
    "mb": 294,
-   "idleMin": 5.7,
-   "kind": "working",
+   "idleMin": 11.1,
+   "kind": "idle_done",
    "model": "claude-sonnet-5"
   },
   {
    "cli": "45602ff8-7519-4ca9-a688-8264f40ed882",
    "localId": "local_4423a7b2-00c2-433e-ac5f-e741892bc4ce",
    "startedAt": "2026-09-03T01:47:45+0900",
-   "elapsedMin": 61,
+   "elapsedMin": 66,
    "lastReportAt": "2026-09-02T17:46:45.716Z",
    "lastReport": "npm installの完了通知を待ちます。",
    "status": "作業中",
@@ -125,8 +109,8 @@
    "pid": 49107,
    "title": "検索を速くする（夜通し）",
    "dispatch": true,
-   "mb": 256,
-   "idleMin": 2.3,
+   "mb": 257,
+   "idleMin": 7.6,
    "kind": "working",
    "model": "claude-sonnet-5"
   },
@@ -134,7 +118,7 @@
    "cli": "b2833851-d3f5-4f2e-bdd1-7c149601aade",
    "localId": "local_f8171902-2341-4533-b21f-ba193909ba3e",
    "startedAt": "2026-09-03T02:44:43+0900",
-   "elapsedMin": 4,
+   "elapsedMin": 9,
    "lastReportAt": "2026-09-02T17:46:56.299Z",
    "lastReport": "・ログ追記済み。 問題：メモリ`red`（swap 86.4%・空き0.9GB）で着火見送り。走行6本は全て作業中で畳めず、司令塔キューのpending 1件は温存して次回に回した。 判断待ち：なし。",
    "status": "完了",
@@ -148,40 +132,36 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "mb": 312,
-   "idleMin": 2.1,
+   "idleMin": 7.4,
    "kind": "working",
    "model": "claude-opus-5"
   }
  ],
- "line": "負荷 100% ｜ セッション5本（作業中4・止まり0） ｜ 上限2本・3本超過（畳め） ｜ 空き52.0GB",
+ "line": "負荷 100% ｜ セッション4本（作業中2・止まり1） ｜ 上限2本・2本超過（畳め） ｜ 空き52.0GB",
  "modelCounts": {
-  "claude-sonnet-5": 4,
+  "claude-sonnet-5": 3,
   "claude-opus-5": 1
  },
  "autonomy": {
-  "alive": 5,
+  "alive": 4,
   "done": 1,
   "doneWithoutHumanPush": 1,
   "ratio": 1.0,
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 02:49",
+  "lastRun": "2026-09-03 02:54",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "空きなし（上限2本・目標4本・生存5本）",
-  "shed": {
-   "pid": 49223,
-   "title": "関連を双方向にする（夜通し）",
-   "idleMin": 13.6
-  },
+  "ignite": "空きなし（上限2本・目標4本・生存4本）",
+  "shed": null,
   "keep": {
    "target": 4,
-   "alive": 5,
+   "alive": 4,
    "below": 0,
-   "line": "現在5本／上限2本／目標4本／あと0本いける"
+   "line": "現在4本／上限2本／目標4本／あと0本いける"
   },
   "stalledSkipped": []
  },
@@ -191,20 +171,20 @@
   "handoffs": 3,
   "ignitions": 0,
   "gated": 0,
-  "humanPushes": 11,
+  "humanPushes": 9,
   "doneAlive": 1,
   "doneWithoutHumanPush": 1,
   "autonomyRatio": 1.0,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
  "quota": {
-  "updatedAt": "2026-09-03 02:49",
+  "updatedAt": "2026-09-03 02:54",
   "estimated": true,
   "fablePct": 65.7,
   "allPct": 52.3,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 5.6,
-  "hoursLeft": 135.2,
+  "hoursLeft": 135.1,
   "fableLevel": "stop",
   "allLevel": "ok",
   "warnPct": 75,
@@ -224,8 +204,8 @@
    "all": 139719228
   },
   "projection": {
-   "fablePctAtReset_avgPace": 336.0,
-   "fablePctAtReset_recentPace": 652.9,
+   "fablePctAtReset_avgPace": 335.1,
+   "fablePctAtReset_recentPace": 652.5,
    "hoursToCeiling_recentPace": 7.9,
    "recentPacePctPerHour": 4.34
   },
@@ -260,10 +240,10 @@
   "session5h": {
    "pct": 25.9,
    "resetAt": "2026-09-03 04:44",
-   "hoursLeft": 1.92,
-   "recentPacePctPerHour": 7.88,
-   "projectedPctAtReset": 41.0,
-   "wasteRiskPct": 59.0,
+   "hoursLeft": 1.83,
+   "recentPacePctPerHour": 7.05,
+   "projectedPctAtReset": 38.8,
+   "wasteRiskPct": 61.2,
    "mottainai": true,
    "anchor": {
     "t": "2026-09-03T02:04:06",
@@ -278,11 +258,11 @@
   "benchmark": {
    "allPacePctPerHour6h": 3.317,
    "aliveAvgLast6h": 6.3,
-   "pctPerSessionHour": 0.5223,
+   "pctPerSessionHour": 0.525,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
-   "sonnetSessionsFor5hWindow": 63.9,
+   "sonnetSessionsFor5hWindow": 66.7,
    "sonnetSessionsForWeeklyCurve": 0.7
   },
-  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 52%（曲線目標20.0%・32.3pt上振れ） ／ リセットまで 5.6日（このペースだと8時間で天井） ／ 5時間枠 25.9%・残1.9h・もったいない（59%余る見込み→本数増やす）"
+  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 52%（曲線目標20.0%・32.3pt上振れ） ／ リセットまで 5.6日（このペースだと8時間で天井） ／ 5時間枠 25.9%・残1.8h・もったいない（61%余る見込み→本数増やす）"
  }
 }
