@@ -75,6 +75,6 @@ AGE=$(( $(date +%s) - LAST ))
 # 数字が同じでも20分以上経っていれば鮮度のために push する
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ]; then exit 0; fi
 
-git add status/machine.json >/dev/null 2>&1
+git add status/machine.json status/history.jsonl >/dev/null 2>&1
 git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || exit 0
 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1
