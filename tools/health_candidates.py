@@ -156,6 +156,9 @@ def main():
         "diskFreeGB": machine.get("diskFreeGB"), "purgeableGB": pg, "snapshots": len(snaps),
         "load": machine.get("load"), "memPressure": machine.get("memPressure"), "memAvailGB": machine.get("memAvailGB"),
         "sessions": machine.get("sessions"), "safeMax": machine.get("safeMax"), "moreOK": machine.get("moreOK"),
+        # 2026-09-03 本数維持：目標本数・実測上限・校正根拠・あと何本・何を落とせば空くか（PWA表示用。machine.jsonの写し）
+        "target": machine.get("target"), "cap": machine.get("cap"), "calibratedSafeN": machine.get("calibratedSafeN"),
+        "below": machine.get("below"), "shedCandidates": machine.get("shedCandidates"),
         "items": items,
         "_duAt": last_du, "_du": disk,
     }

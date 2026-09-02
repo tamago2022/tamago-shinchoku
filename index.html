@@ -299,10 +299,16 @@ function renderHealth(h){
     `<span class="${loadWarn ? "red" : ""}">負荷<b>${h.load ?? "—"}%</b></span>`
     + `<span class="${h.memPressure === "red" ? "red" : h.memPressure === "yellow" ? "yellow" : ""}">メモリ<b>${h.memPressure === "green" ? "余裕" : h.memPressure === "yellow" ? "注意" : h.memPressure === "red" ? "逼迫" : "—"}${h.memAvailGB != null ? `・空き${Math.round(h.memAvailGB)}GB` : ""}</b></span>`
     + `<span class="${diskWarn ? "red" : ""}">ディスク空き<b>${h.diskFreeGB ?? "—"}GB</b></span>`
-    + `<span class="${over > 0 ? "red" : ""}">セッション<b>${h.sessions ?? "—"}本／上限${h.safeMax ?? "—"}${over > 0 ? `・${over}本超過` : h.moreOK != null ? `・あと${h.moreOK}本` : ""}</b></span>`;
+    + `<span class="${over > 0 ? "red" : ""}">セッション<b>${h.sessions ?? "—"}本／上限${h.safeMax ?? "—"}${over > 0 ? `・${over}本超過` : h.moreOK != null ? `・あと${h.moreOK}本` : ""}</b></span>`
+    // 2026-09-03 本数維持：目標本数（実測校正値）とあと何本、根拠（標本数）を1行追加
+    + (h.target != null ? `<span title="実測で校正した目標本数（根拠：${esc(h.calibratedSafeN != null ? `校正済み上限${h.calibratedSafeN}本` : "標本不足のため既定値")}）">目標<b>${h.target}本</b>${h.below ? `・あと${h.below}本必要` : "・充足"}</span>` : "");
+  const shed = h.shedCandidates || [];
+  const shedNote = (over > 0 && shed.length)
+    ? `<div class="card note" style="grid-column:1/-1">空けるなら：${shed.map(s=>`${esc((s.title||"?").slice(0,20))}（終わって${s.idleMin != null ? Math.round(s.idleMin) : "?"}分待機）`).join("、")}</div>`
+    : "";
   const items = h.items || [];
-  if(!items.length){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">いま閉じる・消すと楽になるものは見当たらない</div>`; return; }
-  box.innerHTML = items.map(it=>{
+  if(!items.length){ box.innerHTML = shedNote || `<div class="card note" style="grid-column:1/-1">いま閉じる・消すと楽になるものは見当たらない</div>`; return; }
+  box.innerHTML = shedNote + items.map(it=>{
     const color = it.safe ? "green" : "yellow";
     const d = `<p>${esc(it.how || "")}</p><p class="src">${it.safe ? "安全：作り直せる／閉じれば戻る。実行はMac側（セッションか本人）" : "要判断：戻らない・作業中を止める。本人の一言が要る"}</p>`;
     return card(color, it.label, it.effect, it.safe ? "" : `<span class="n">要判断</span>`, d);
