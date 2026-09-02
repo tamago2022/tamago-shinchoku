@@ -1,16 +1,16 @@
 {
- "raw": "負荷 100% ｜ CPU 9% / メモリ圧迫 26% / スワップ 7.58GB / ディスク空き 52GB ｜ 稼働 4本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 27% / スワップ 7.84GB / ディスク空き 52GB ｜ 稼働 4本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 9,
- "mem": 26,
- "swapGB": 7770.75,
+ "cpu": 7,
+ "mem": 27,
+ "swapGB": 8028.25,
  "diskFreeGB": 52.0,
- "sessions": 4,
- "note": "上限2本・あと0本OK（5分平均ロード10.9（コア8×0.8超）、5時間枠もったいない度61.2%→本数を上限4本まで増やす）",
- "measuredAt": "2026-09-03T02:59:41+09:00",
- "working": 0,
- "stalled": 1,
- "waiting": 3,
+ "sessions": 5,
+ "note": "上限2本・あと0本OK（5分平均ロード12.8（コア8×0.8超）、予兆（5分ロード比1.6）→1本減らす、5時間枠もったいない度63.0%→本数を上限4本まで増やす）",
+ "measuredAt": "2026-09-03T03:05:07+09:00",
+ "working": 3,
+ "stalled": 0,
+ "waiting": 2,
  "safeMax": 2,
  "moreOK": 0,
  "hardMax": 8,
@@ -19,89 +19,34 @@
  "calibratedSafeN": 4,
  "calibrationBasis": "標本不足→既定4本・重い事象は7本で発生",
  "userActive": false,
- "predict": [],
+ "predict": [
+  "5分ロード比1.6"
+ ],
  "shedCandidates": [
-  {
-   "pid": 49683,
-   "title": "枠を自動制御する（夜通し）",
-   "idleMin": 16.4
-  },
   {
    "pid": 49107,
    "title": "検索を速くする（夜通し）",
-   "idleMin": 12.9
+   "idleMin": 18.3
   }
  ],
  "below": 0,
- "blockReason": "5分平均ロード10.9（コア8×0.8超）、5時間枠もったいない度61.2%→本数を上限4本まで増やす",
- "load1": 9.64,
- "load5": 10.94,
- "load15": 13.94,
+ "blockReason": "5分平均ロード12.8（コア8×0.8超）、予兆（5分ロード比1.6）→1本減らす、5時間枠もったいない度63.0%→本数を上限4本まで増やす",
+ "load1": 12.16,
+ "load5": 12.75,
+ "load15": 14.02,
  "cores": 8,
- "loadRatio": 1.21,
+ "loadRatio": 1.52,
  "memPressure": "green",
- "memAvailGB": 8.5,
+ "memAvailGB": 6.3,
  "swapIncreasing": false,
- "ioMBs": 0.48,
- "stalledList": [
-  {
-   "pid": 67187,
-   "title": "達郎マガジンの叩きを朝までに",
-   "kind": "stuck_tool",
-   "idleMin": 16.7,
-   "dispatch": true
-  }
- ],
+ "ioMBs": 1.25,
+ "stalledList": [],
  "sessionList": [
-  {
-   "cli": "8d83c1b8-8c87-4cd0-9f07-9480dd7e4de5",
-   "localId": "local_d10776d2-8762-4ef5-908d-2d1cd5abbee6",
-   "startedAt": "2026-09-03T02:41:26+0900",
-   "elapsedMin": 18,
-   "lastReportAt": null,
-   "lastReport": "",
-   "status": "承認待ち",
-   "color": "yellow",
-   "urls": [],
-   "humanPushes": 0,
-   "dispatchPushes": 0,
-   "watchdogResumes": 0,
-   "done": false,
-   "pid": 67187,
-   "title": "達郎マガジンの叩きを朝までに",
-   "dispatch": true,
-   "mb": 333,
-   "idleMin": 16.7,
-   "kind": "stuck_tool",
-   "model": "claude-sonnet-5"
-  },
-  {
-   "cli": "b0ef32a6-0a3b-451d-a08e-b84041d8f76e",
-   "localId": "local_f0f0ea94-9e17-4919-93b6-99fed9ca1014",
-   "startedAt": "2026-09-03T01:48:52+0900",
-   "elapsedMin": 70,
-   "lastReportAt": "2026-09-02T17:43:13.114Z",
-   "lastReport": "ings.json(既定はsonnetなのに反映されていない)を確認したが、親セッションのモデルを制御する場所を見つけられなかった。Desktop側の別経路の可能性が高く、ファイル操作だけでは袋小路。",
-   "status": "止まっている",
-   "color": "red",
-   "urls": [],
-   "humanPushes": 4,
-   "dispatchPushes": 0,
-   "watchdogResumes": 1,
-   "done": false,
-   "pid": 49683,
-   "title": "枠を自動制御する（夜通し）",
-   "dispatch": true,
-   "mb": 294,
-   "idleMin": 16.4,
-   "kind": "idle_done",
-   "model": "claude-sonnet-5"
-  },
   {
    "cli": "45602ff8-7519-4ca9-a688-8264f40ed882",
    "localId": "local_4423a7b2-00c2-433e-ac5f-e741892bc4ce",
    "startedAt": "2026-09-03T01:47:45+0900",
-   "elapsedMin": 71,
+   "elapsedMin": 77,
    "lastReportAt": "2026-09-02T17:46:45.716Z",
    "lastReport": "npm installの完了通知を待ちます。",
    "status": "止まっている",
@@ -114,8 +59,8 @@
    "pid": 49107,
    "title": "検索を速くする（夜通し）",
    "dispatch": true,
-   "mb": 258,
-   "idleMin": 12.9,
+   "mb": 248,
+   "idleMin": 18.3,
    "kind": "idle_done",
    "model": "claude-sonnet-5"
   },
@@ -123,7 +68,7 @@
    "cli": "b2833851-d3f5-4f2e-bdd1-7c149601aade",
    "localId": "local_f8171902-2341-4533-b21f-ba193909ba3e",
    "startedAt": "2026-09-03T02:44:43+0900",
-   "elapsedMin": 15,
+   "elapsedMin": 20,
    "lastReportAt": "2026-09-02T17:46:56.299Z",
    "lastReport": "・ログ追記済み。 問題：メモリ`red`（swap 86.4%・空き0.9GB）で着火見送り。走行6本は全て作業中で畳めず、司令塔キューのpending 1件は温存して次回に回した。 判断待ち：なし。",
    "status": "完了",
@@ -137,76 +82,138 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "mb": 312,
-   "idleMin": 12.7,
+   "idleMin": 18.2,
    "kind": "idle_done",
    "model": "claude-opus-5"
+  },
+  {
+   "cli": "b0ef32a6-0a3b-451d-a08e-b84041d8f76e",
+   "localId": "local_f0f0ea94-9e17-4919-93b6-99fed9ca1014",
+   "startedAt": "2026-09-03T01:48:52+0900",
+   "elapsedMin": 76,
+   "lastReportAt": "2026-09-02T18:03:19.940Z",
+   "lastReport": "して記録済み(次のセッション/たまごさんへ引き継ぎ)。安全本数の実測(calibrate.py)は標本蓄積を継続中で、見張り番の自動再開(直近: 02:32, 02:59)・自動着火は正常稼働を確認。",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "humanPushes": 5,
+   "dispatchPushes": 0,
+   "watchdogResumes": 2,
+   "done": false,
+   "pid": 49683,
+   "title": "枠を自動制御する（夜通し）",
+   "dispatch": true,
+   "mb": 281,
+   "idleMin": 1.8,
+   "kind": "working",
+   "model": "claude-sonnet-5"
+  },
+  {
+   "cli": "8d83c1b8-8c87-4cd0-9f07-9480dd7e4de5",
+   "localId": "local_d10776d2-8762-4ef5-908d-2d1cd5abbee6",
+   "startedAt": "2026-09-03T02:41:26+0900",
+   "elapsedMin": 23,
+   "lastReportAt": null,
+   "lastReport": "",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "humanPushes": 2,
+   "dispatchPushes": 0,
+   "watchdogResumes": 1,
+   "done": false,
+   "pid": 67187,
+   "title": "達郎マガジンの叩きを朝までに",
+   "dispatch": true,
+   "mb": 317,
+   "idleMin": 0.0,
+   "kind": "working",
+   "model": "claude-sonnet-5"
+  },
+  {
+   "cli": "8d83c1b8-8c87-4cd0-9f07-9480dd7e4de5",
+   "localId": "local_d10776d2-8762-4ef5-908d-2d1cd5abbee6",
+   "startedAt": "2026-09-03T02:41:26+0900",
+   "elapsedMin": 5,
+   "lastReportAt": null,
+   "lastReport": "",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "humanPushes": 2,
+   "dispatchPushes": 0,
+   "watchdogResumes": 1,
+   "done": false,
+   "pid": 70668,
+   "title": "達郎マガジンの叩きを朝までに",
+   "dispatch": true,
+   "mb": 618,
+   "idleMin": 0.0,
+   "kind": "working",
+   "model": "claude-sonnet-5"
   }
  ],
- "line": "負荷 100% ｜ セッション4本（作業中0・止まり1） ｜ 上限2本・2本超過（畳め） ｜ 空き52.0GB",
+ "line": "負荷 100% ｜ セッション5本（作業中3・止まり0） ｜ 上限2本・3本超過（畳め） ｜ 空き52.0GB",
  "modelCounts": {
-  "claude-sonnet-5": 3,
+  "claude-sonnet-5": 4,
   "claude-opus-5": 1
  },
  "autonomy": {
-  "alive": 4,
+  "alive": 5,
   "done": 1,
   "doneWithoutHumanPush": 1,
   "ratio": 1.0,
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 02:59",
+  "lastRun": "2026-09-03 03:05",
   "resumed": [
    {
-    "pid": 49683,
-    "cli": "b0ef32a6-0a3b-451d-a08e-b84041d8f76e",
-    "title": "枠を自動制御する（夜通し）",
+    "pid": 49107,
+    "cli": "45602ff8-7519-4ca9-a688-8264f40ed882",
+    "title": "検索を速くする（夜通し）",
     "why": "話し終えて待機（未完了）",
     "try": 1,
-    "resumePid": 70665
-   },
-   {
-    "pid": 67187,
-    "cli": "8d83c1b8-8c87-4cd0-9f07-9480dd7e4de5",
-    "title": "達郎マガジンの叩きを朝までに",
-    "why": "承認待ち/固まり",
-    "try": 1,
-    "resumePid": 70668
+    "resumePid": 72637
    }
   ],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "空きなし（上限2本・目標4本・生存4本）",
-  "shed": null,
+  "ignite": "空きなし（上限2本・目標4本・生存5本）",
+  "shed": {
+   "pid": 49107,
+   "title": "検索を速くする（夜通し）",
+   "idleMin": 18.3
+  },
   "keep": {
    "target": 4,
-   "alive": 4,
+   "alive": 5,
    "below": 0,
-   "line": "現在4本／上限2本／目標4本／あと0本いける"
+   "line": "現在5本／上限2本／目標4本／あと0本いける"
   },
   "stalledSkipped": []
  },
  "metrics": {
-  "stalls": 22,
-  "autoResumes": 7,
+  "stalls": 23,
+  "autoResumes": 8,
   "handoffs": 3,
   "ignitions": 0,
   "gated": 0,
-  "humanPushes": 9,
+  "humanPushes": 14,
   "doneAlive": 1,
   "doneWithoutHumanPush": 1,
   "autonomyRatio": 1.0,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
  "quota": {
-  "updatedAt": "2026-09-03 02:59",
+  "updatedAt": "2026-09-03 03:05",
   "estimated": true,
   "fablePct": 65.7,
-  "allPct": 52.3,
+  "allPct": 52.6,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 5.6,
-  "hoursLeft": 135.0,
+  "hoursLeft": 134.9,
   "fableLevel": "stop",
   "allLevel": "ok",
   "warnPct": 75,
@@ -214,22 +221,22 @@
   "daily": {
    "fableAllowancePerDay": 6.1,
    "fableUsedLast24h": 65.7,
-   "allAllowancePerDay": 8.5,
-   "allUsedLast24h": 42.6,
+   "allAllowancePerDay": 8.4,
+   "allUsedLast24h": 42.8,
    "weeklyEvenPacePerDay": 14.3
   },
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ",
   "fableWeightedTokensSinceReset": 209857655,
-  "allWeightedTokensSinceReset": 367441865,
+  "allWeightedTokensSinceReset": 369111405,
   "last6h": {
-   "fable": 83295839,
-   "all": 139719228
+   "fable": 73281672,
+   "all": 131242463
   },
   "projection": {
-   "fablePctAtReset_avgPace": 334.2,
-   "fablePctAtReset_recentPace": 652.1,
-   "hoursToCeiling_recentPace": 7.9,
-   "recentPacePctPerHour": 4.34
+   "fablePctAtReset_avgPace": 333.3,
+   "fablePctAtReset_recentPace": 581.2,
+   "hoursToCeiling_recentPace": 9.0,
+   "recentPacePctPerHour": 3.82
   },
   "method": "推定（会話ログのトークン量×アンカー実測で目盛り合わせ）",
   "anchor": {
@@ -243,7 +250,7 @@
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
   "overPct": 20.7,
   "daysElapsedSinceReset": 1.4,
-  "ceilingDaysAtRecentPace": 0.3,
+  "ceilingDaysAtRecentPace": 0.4,
   "fableCurve": {
    "target": 45,
    "overPct": 20.7,
@@ -254,18 +261,18 @@
   },
   "allCurve": {
    "target": 20.0,
-   "overPct": 32.3,
+   "overPct": 32.6,
    "state": "over",
    "band": 10,
    "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"
   },
   "session5h": {
-   "pct": 25.9,
+   "pct": 26.4,
    "resetAt": "2026-09-03 04:44",
-   "hoursLeft": 1.74,
-   "recentPacePctPerHour": 6.37,
-   "projectedPctAtReset": 37.0,
-   "wasteRiskPct": 63.0,
+   "hoursLeft": 1.65,
+   "recentPacePctPerHour": 6.31,
+   "projectedPctAtReset": 36.8,
+   "wasteRiskPct": 63.2,
    "mottainai": true,
    "anchor": {
     "t": "2026-09-03T02:04:06",
@@ -278,13 +285,13 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 3.317,
-   "aliveAvgLast6h": 6.3,
-   "pctPerSessionHour": 0.5297,
+   "allPacePctPerHour6h": 3.116,
+   "aliveAvgLast6h": 6.2,
+   "pctPerSessionHour": 0.5018,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
-   "sonnetSessionsFor5hWindow": 69.5,
+   "sonnetSessionsFor5hWindow": 76.8,
    "sonnetSessionsForWeeklyCurve": 0.7
   },
-  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 52%（曲線目標20.0%・32.3pt上振れ） ／ リセットまで 5.6日（このペースだと8時間で天井） ／ 5時間枠 25.9%・残1.7h・もったいない（63%余る見込み→本数増やす）"
+  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 53%（曲線目標20.0%・32.6pt上振れ） ／ リセットまで 5.6日（このペースだと9時間で天井） ／ 5時間枠 26.4%・残1.6h・もったいない（63%余る見込み→本数増やす）"
  }
 }
