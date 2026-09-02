@@ -184,11 +184,17 @@
   「いま動いているもの」は手で更新している（自動連携ではない）。
 </footer>
 
-<script src="data.js"></script>
-<script src="said.js"></script>
-<script src="requests225.js"></script>
 <script>
-const D = window.SHINCHOKU;
+// データは毎回サーバーから取り直す（スマホのキャッシュで古い一覧が出ないように）
+(function(){
+  const t = Date.now(), files = ["data.js","said.js","requests225.js"]; let n = 0;
+  files.forEach(f => { const s = document.createElement("script"); s.src = f + "?t=" + t; s.async = false;
+    s.onload = s.onerror = () => { if(++n === files.length && window.__dataReady) window.__dataReady(); };
+    document.head.appendChild(s); });
+})();
+</script>
+<script>
+let D = null;
 
 const STATUS_META = {
   hold:   {mark:"⏸",  label:"判断待ち（たまごさん）", order:0},
@@ -338,8 +344,13 @@ function renderList(){
   });
 }
 
-document.getElementById("updated").textContent = `最終更新：${formatStamp(D.generatedAt)}（依頼一覧の正本時刻）`;
-renderRunning(); renderSaid(); renderAll(); renderToday(); renderList();
+window.__dataReady = function(){
+  D = window.SHINCHOKU;
+  if(!D){ document.getElementById("updated").textContent = "データを読み込めませんでした。開き直してください。"; return; }
+  document.getElementById("updated").textContent = `最終更新：${formatStamp(D.generatedAt)}（依頼一覧の正本時刻）`;
+  renderRunning(); renderSaid(); renderAll(); renderToday(); renderList();
+};
+if(window.SHINCHOKU && window.SHINCHOKU_ALL) window.__dataReady();
 
 // Macの状態（status/machine.json を読む。5分おきに書き出される）
 function renderMachine(m){
