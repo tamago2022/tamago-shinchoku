@@ -9,6 +9,11 @@ OUT="$REPO/status/machine.json"
 LOADSH="/Users/mac/Desktop/machine_load.sh"
 mkdir -p "$REPO/status"
 
+# 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
+# factory_status.py が失敗したら従来どおり machine_load.sh 単体で最低限のJSONを書く（止まらない）。
+if python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
+  :
+else
 LINE=$(bash "$LOADSH" 2>/dev/null || echo "")
 # 例：負荷 12% ｜ CPU 9% / メモリ圧迫 58% / スワップ 0.20GB / ディスク空き 61GB ｜ 稼働 14本 ｜ あと3本OK
 num() { echo "$1" | sed -nE "s/.*$2 ([0-9.]+)$3.*/\1/p" | head -1; }
@@ -22,14 +27,16 @@ NOTE=$(echo "$LINE" | awk -F'｜' '{gsub(/^ +| +$/,"",$NF); print $NF}')
 NOW=$(date +"%Y-%m-%dT%H:%M:%S%z" | sed -E 's/([0-9]{2})([0-9]{2})$/\1:\2/')
 
 j() { [ -n "${1:-}" ] && echo "$1" || echo "null"; }
-cat > "$OUT" <<EOF
+cat > "$OUT" <<EOF2
 {"measuredAt":"$NOW","load":$(j "$LOAD"),"cpu":$(j "$CPU"),"mem":$(j "$MEM"),"swapGB":$(j "$SWAP"),"diskFreeGB":$(j "$DISK"),"sessions":$(j "$SESS"),"note":"$(echo "$NOTE" | sed 's/"/\\"/g')","raw":"$(echo "$LINE" | sed 's/"/\\"/g')"}
-EOF
+EOF2
+fi
 
 cd "$REPO" || exit 0
 # 数字が前回と同じなら push しない（measuredAt 以外を比較）
-PREV=$(git show HEAD:status/machine.json 2>/dev/null | sed -E 's/"measuredAt":"[^"]*",//')
-CURR=$(sed -E 's/"measuredAt":"[^"]*",//' "$OUT")
+strip() { sed -E 's/"measuredAt":"[^"]*",//; s/"(load1|load5|load15|loadRatio|ioMBs|memAvailGB|idleMin|mb)":[^,}]*,?//g'; }
+PREV=$(git show HEAD:status/machine.json 2>/dev/null | strip)
+CURR=$(strip < "$OUT")
 LAST=$(git log -1 --format=%ct -- status/machine.json 2>/dev/null); LAST=${LAST:-0}
 AGE=$(( $(date +%s) - LAST ))
 # 数字が同じでも20分以上経っていれば鮮度のために push する

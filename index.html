@@ -56,6 +56,8 @@
   .machine .age.stale{color:var(--aka);}
   .machine.warn{border-color:var(--aka); color:var(--ink);}
   .machine.warn .load{color:var(--aka);}
+  .machine .dim{color:var(--sub);}
+  .machine .stalled{flex-basis:100%; margin-top:4px; color:var(--aka); font-size:0.8rem;}
 
   .label{
     color:var(--sub); font-size:0.72rem; letter-spacing:0.14em;
@@ -343,13 +345,25 @@ function renderMachine(m){
   const mins = Math.max(0, Math.round((Date.now() - new Date(m.measuredAt).getTime())/60000));
   const age = mins < 1 ? "いま" : mins < 60 ? `${mins}分前` : mins < 1440 ? `${Math.floor(mins/60)}時間前` : `${Math.floor(mins/1440)}日前`;
   const stale = mins > 20;
-  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10);
+  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10)
+    || (m.stalled != null && m.stalled > 0) || (m.safeMax != null && m.sessions > m.safeMax);
   const v = (x, unit) => x == null ? "測定不可" : `${x}${unit}`;
   el.className = "machine" + (warn ? " warn" : "");
+  // 2026-09-02 止まらない工場：作業中／止まり本数と安全上限（factory_status.py が出す）。旧形式のJSONでも動く
+  const sess = m.working != null
+    ? `セッション${v(m.sessions,"本")}<span class="dim">（作業中${m.working}・止まり${m.stalled ?? 0}）</span>`
+    : `セッション${v(m.sessions,"本")}`;
+  const cap = m.safeMax != null
+    ? (m.sessions > m.safeMax ? `<span class="load">上限${m.safeMax}本・${m.sessions - m.safeMax}本超過</span>`
+       : m.moreOK > 0 ? `上限${m.safeMax}本・あと${m.moreOK}本OK` : `<span class="load">上限${m.safeMax}本・増やすな</span>`)
+    : null;
+  const stalledNames = (m.stalledList || []).slice(0,3).map(s => `${s.kind === "asked" ? "質問で停止" : "承認待ち"}：${s.title}（${Math.round(s.idleMin||0)}分）`).join(" ／ ");
   el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span>`
-    + `<span>セッション${v(m.sessions,"本")}</span><span class="sep">｜</span>`
+    + `<span>${sess}</span><span class="sep">｜</span>`
+    + (cap ? `<span>${cap}</span><span class="sep">｜</span>` : "")
     + `<span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span>`
-    + `<span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>`;
+    + `<span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>`
+    + (stalledNames ? `<div class="stalled">⚠ ${stalledNames}</div>` : "");
   el.hidden = false;
 }
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
