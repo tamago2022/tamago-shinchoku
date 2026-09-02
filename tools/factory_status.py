@@ -202,12 +202,60 @@ def classify(transcript, idle):
     return "idle_done", ""
 
 
+def session_started_at(s):
+    """セッションの開始時刻。会話ログ(jsonl)の最初の timestamp を使う（プロセスの起動時刻はターンごとに変わるので使わない）。
+    ログが読めなければ ps の起動時刻で代用。"""
+    tp = s.get("transcript")
+    if tp:
+        try:
+            with open(tp, "r", encoding="utf-8", errors="ignore") as f:
+                for _ in range(20):
+                    ln = f.readline()
+                    if not ln:
+                        break
+                    try:
+                        ts = json.loads(ln).get("timestamp")
+                    except Exception:
+                        continue
+                    if ts:
+                        import datetime
+                        d = datetime.datetime.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=datetime.timezone.utc)
+                        return d.astimezone().strftime("%Y-%m-%dT%H:%M:%S%z")
+        except Exception:
+            pass
+    if s.get("start"):
+        return time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime(s["start"]))
+    return None
+
+
 def sessions():
     k = load_kanshi()
     if not k:
         return []
     try:
-        ss = k.enrich(k.idle_min(k.sessions()))
+        ss = k.idle_min(k.sessions())
+        # 2026-09-02 追加：Desktopが --resume=<id> で立て直したセッションは会話ログの先頭時刻が古く、
+        # kanshi の「起動時刻±3分」照合で（不明）になる。ps の引数から id を直接取って突合する。
+        resume_map = {}
+        for ln in run(["ps", "-Ao", "pid,args"]).splitlines():
+            m = re.search(r"^\s*(\d+)\s.*MacOS/claude .*--resume=([0-9a-f-]{36})", ln)
+            if m and "Helpers/disclaimer" not in ln:
+                resume_map[m.group(1)] = m.group(2)
+        if resume_map:
+            jl = {}
+            for root, _, files in os.walk(os.path.expanduser("~/.claude/projects")):
+                for fn in files:
+                    if fn.endswith(".jsonl"):
+                        jl[fn[:-6]] = os.path.join(root, fn)
+            for s in ss:
+                cid = resume_map.get(str(s["pid"]))
+                if cid and cid in jl and (s.get("transcript") is None):
+                    s["transcript"] = jl[cid]
+                    try:
+                        s["idle"] = (time.time() - os.path.getmtime(jl[cid])) / 60.0
+                    except Exception:
+                        pass
+        ss = k.enrich(ss)
     except Exception:
         return []
     out = []
@@ -221,6 +269,9 @@ def sessions():
             "idleMin": round(s["idle"], 1) if s.get("idle") is not None else None,
             "kind": kind,
             "tail": tail,
+            # 2026-09-02 PWA第2段階：開始時刻（ps の lstart）と会話ログID。経過時間・3h/6h札は画面側で計算
+            "startedAt": session_started_at(s),
+            "cli": os.path.splitext(os.path.basename(s["transcript"]))[0] if s.get("transcript") else None,
         })
     out.sort(key=lambda x: -(x["idleMin"] or 0))
     return out
@@ -319,7 +370,7 @@ def build():
         "swapIncreasing": swap_up,
         "ioMBs": iomb,
         "stalledList": [{k: s[k] for k in ("pid", "title", "kind", "idleMin", "dispatch")} for s in stalled],
-        "sessionList": [{k: s[k] for k in ("pid", "title", "kind", "idleMin", "mb", "dispatch")} for s in ss],
+        "sessionList": [{k: s.get(k) for k in ("pid", "title", "kind", "idleMin", "mb", "dispatch", "startedAt", "cli")} for s in ss],
         "line": line,
     })
     d["note"] = "上限%d本・あと%d本OK" % (sm, more_ok) + ("（%s）" % d["blockReason"] if reasons else "")

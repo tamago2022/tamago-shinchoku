@@ -71,6 +71,22 @@
     padding:14px 15px; margin-bottom:10px;
   }
 
+  /* 走行状況（セッションごと） */
+  .sess{border-left:3px solid var(--line);}
+  .sess.working{border-left-color:var(--kinari);}
+  .sess.warn{border-left-color:var(--aka);}
+  .sess.over{border-left-color:var(--aka); background:var(--aka-bg);}
+  .sess .head{display:flex; gap:8px; align-items:baseline;}
+  .sess .mark{flex:none; font-size:1rem;}
+  .sess .title{font-weight:600; line-height:1.45;}
+  .sess .meta{color:var(--sub); font-size:0.8rem; display:flex; gap:12px; flex-wrap:wrap; margin-top:6px; font-variant-numeric:tabular-nums;}
+  .sess .meta b{color:var(--kinari); font-weight:500;}
+  .sess.over .meta b.elapsed, .sess.warn .meta b.elapsed{color:var(--aka);}
+  .sess .tail{color:var(--sub); font-size:0.82rem; margin-top:4px;}
+  .sessum{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 8px;}
+  .sessum span{display:inline-flex; align-items:center; min-height:32px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:0.8rem; color:var(--sub);}
+  .sessum span b{color:var(--ink); font-weight:600; margin-left:5px;}
+
   /* 今動いているもの */
   .run .head{display:flex; gap:10px; align-items:baseline;}
   .run .lane{color:var(--dim); font-size:0.75rem; font-variant-numeric:tabular-nums; flex:none;}
@@ -161,6 +177,9 @@
 <h1>進捗表</h1>
 <div class="updated" id="updated">最終更新：読み込み中…</div>
 <div class="machine" id="machine" hidden></div>
+
+<div class="label">走行状況（セッションごと・自動） <small id="sessMeta"></small></div>
+<div id="sessions"><div class="card" style="color:var(--sub)">読み込み中…</div></div>
 
 <div class="label">いま動いているもの <small id="runUpdated"></small></div>
 <div id="running"></div>
@@ -380,8 +399,51 @@ function renderMachine(m){
     + (stalledNames ? `<div class="stalled">⚠ ${stalledNames}</div>` : "");
   el.hidden = false;
 }
+// 走行状況（セッションごと）。machine.json の sessionList（止まらない工場 factory_status.py が5分おきに書く）を読むだけ
+const KIND = {
+  working:   {mark:"🟢", label:"作業中"},
+  asked:     {mark:"🟡", label:"質問して停止"},
+  stuck_tool:{mark:"🔴", label:"承認待ち／固まり"},
+  idle_done: {mark:"⚪", label:"終わって待機"},
+  unknown:   {mark:"？", label:"不明"},
+};
+const WARN_H = 3, OVER_H = 6;
+function fmtDur(min){ if(min == null) return "—"; const h = Math.floor(min/60), m = Math.round(min%60); return h ? `${h}時間${m}分` : `${m}分`; }
+function renderSessions(m){
+  const box = document.getElementById("sessions");
+  const list = (m && m.sessionList) || [];
+  const measured = m && m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now();
+  document.getElementById("sessMeta").textContent = m && m.measuredAt ? `${list.length}本・${formatStamp(m.measuredAt)} 時点（5分おき自動）` : "";
+  if(!list.length){ box.innerHTML = `<div class="card" style="color:var(--sub)">いまは何も走っていない（または未計測）</div>`; return; }
+  let nWork=0, nStop=0, nOver=0, nWarn=0;
+  const rows = list.map(s=>{
+    const k = KIND[s.kind] || KIND.unknown;
+    const started = s.startedAt ? new Date(s.startedAt).getTime() : null;
+    const elapsedMin = started ? (measured - started)/60000 : null;
+    const over = elapsedMin != null && elapsedMin >= OVER_H*60;
+    const warn = !over && elapsedMin != null && elapsedMin >= WARN_H*60;
+    const stopped = s.kind === "asked" || s.kind === "stuck_tool";
+    if(s.kind === "working") nWork++; if(stopped) nStop++; if(over) nOver++; if(warn) nWarn++;
+    const mark = over ? "💀" : (warn ? "⚠️" : k.mark);
+    const q = encodeURIComponent(s.title || "");
+    const links = [{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${q}`}];
+    return `<div class="card sess ${s.kind}${over ? " over" : warn ? " warn" : ""}">
+      <div class="head"><span class="mark">${mark}</span><span class="title">${esc(s.title || "（不明）")}</span></div>
+      <div class="meta">
+        <span>状態 <b>${k.label}${over ? "・6時間超" : warn ? "・3時間超" : ""}</b></span>
+        <span>開始 <b>${started ? formatStamp(s.startedAt) : "不明"}</b></span>
+        <span>経過 <b class="elapsed">${fmtDur(elapsedMin)}</b></span>
+        ${s.idleMin != null ? `<span>無応答 <b>${fmtDur(s.idleMin)}</b></span>` : ""}
+        ${s.dispatch === false ? `<span>手動起動</span>` : ""}
+      </div>
+      ${s.tail ? `<div class="tail">${esc(s.tail)}</div>` : ""}
+      ${linksHtml(links)}
+    </div>`;
+  });
+  box.innerHTML = `<div class="sessum"><span>作業中<b>${nWork}</b></span><span>止まり<b>${nStop}</b></span><span>⚠️3時間超<b>${nWarn}</b></span><span>💀6時間超<b>${nOver}</b></span></div>` + rows.join("");
+}
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
-  .then(r => r.ok ? r.json() : null).then(renderMachine).catch(()=>{});
+  .then(r => r.ok ? r.json() : null).then(m => { renderMachine(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
 </script>
 </body>
 </html>

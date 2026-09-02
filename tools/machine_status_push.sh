@@ -33,6 +33,36 @@ EOF2
 fi
 
 cd "$REPO" || exit 0
+
+# 2026-09-02 PWA第3段階：セッションごとの航跡を1行ずつ積む（何時に始まり・何時に止まり・誰が起こしたか、を後から数えるため）
+python3 - "$OUT" "$REPO/status/history.jsonl" <<'PY' 2>/dev/null || true
+import json, sys
+m = json.load(open(sys.argv[1]))
+wd = (m.get("watchdog") or {})
+resumed = {r.get("pid") for r in (wd.get("resumed") or []) if not r.get("dry")}
+with open(sys.argv[2], "a", encoding="utf-8") as f:
+    for s in m.get("sessionList") or []:
+        f.write(json.dumps({"t": m.get("measuredAt"), "pid": s.get("pid"), "cli": s.get("cli"), "title": s.get("title"),
+                            "kind": s.get("kind"), "idle": s.get("idleMin"), "start": s.get("startedAt"),
+                            "resumed": s.get("pid") in resumed}, ensure_ascii=False) + "\n")
+PY
+# 履歴は直近3日分だけ残す（公開リポジトリを肥やさない）
+python3 - "$REPO/status/history.jsonl" <<'PY' 2>/dev/null || true
+import sys, json, time, os
+p = sys.argv[1]
+if os.path.exists(p):
+    lim = time.time() - 3*86400
+    keep = []
+    for ln in open(p, encoding="utf-8"):
+        try:
+            t = json.loads(ln).get("t") or ""
+            ts = time.mktime(time.strptime(t[:19], "%Y-%m-%dT%H:%M:%S"))
+            if ts >= lim: keep.append(ln)
+        except Exception:
+            pass
+    open(p, "w", encoding="utf-8").writelines(keep)
+PY
+
 # 数字が前回と同じなら push しない（measuredAt 以外を比較）
 strip() { sed -E 's/"measuredAt":"[^"]*",//; s/"(load1|load5|load15|loadRatio|ioMBs|memAvailGB|idleMin|mb)":[^,}]*,?//g'; }
 PREV=$(git show HEAD:status/machine.json 2>/dev/null | strip)
