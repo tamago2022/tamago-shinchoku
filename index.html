@@ -50,34 +50,24 @@
   .updated{color:var(--sub); font-size:0.72rem; margin:0 0 10px;}
 
   /* Macの状態（1行・小さく） */
-  .machine{display:flex; align-items:center; flex-wrap:wrap; gap:0 6px; margin:0 0 16px; padding:7px 10px;
-    border:1px solid var(--line); border-radius:8px; font-size:0.76rem; color:var(--sub); font-variant-numeric:tabular-nums;}
-  .machine .sep{color:var(--dim);}
-  .machine .age.stale{color:var(--red);}
-  .machine.warn{border-color:var(--red);}
-  .machine.warn .load{color:var(--red);}
-  .machine .dim{color:var(--dim);}
-  .machine .stalled{flex-basis:100%; color:var(--red);}
-  .machine .quota{flex-basis:100%; margin-top:3px; padding-top:5px; border-top:1px dashed var(--line); color:var(--sub);}
-  .machine .quota.warn{color:var(--yellow);}
-  .machine .quota.stop{color:var(--red);}
-
   /* メーター（ゲージ）：数字より感覚。緑＝余裕／黄＝考える／赤＝止める判断 */
-  .meters{margin:0 0 14px;}
+  .meters{margin:0 0 6px;}
   .meter{margin-bottom:12px;}
   .meter:last-child{margin-bottom:0;}
   .meter .mtitle{display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:0.76rem; color:var(--sub); margin-bottom:5px;}
   .meter .mtitle b{color:var(--ink); font-weight:500; font-size:0.8rem;}
   .meter .mtitle .val{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap;}
   .meter .val.green{color:var(--green);} .meter .val.yellow{color:var(--yellow);} .meter .val.red{color:var(--red);}
-  .meter .track{position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,0.055); overflow:hidden;}
-  .meter .fill{height:100%; border-radius:7px 0 0 7px; min-width:2%;}
+  .meter .track{position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,0.055); overflow:visible;}
+  .meter .fill{height:100%; border-radius:7px 0 0 7px; min-width:2%; overflow:hidden;}
   .meter .fill.green{background:var(--green);}
   .meter .fill.yellow{background:var(--yellow);}
   .meter .fill.red{background:var(--red);}
-  .meter .mk{position:absolute; top:-2px; bottom:-2px; width:1px; background:rgba(0,0,0,0.35);}
+  .meter .mk.curve{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--kinari); border-radius:1px; opacity:0.85;}
   .meter .msub{font-size:0.72rem; color:var(--dim); margin-top:4px;}
   .meter .msub.mottainai{color:var(--yellow);}
+  #machineAge{color:var(--sub);}
+  #machineAge.stale{color:var(--red);}
 
   /* モデルバッジ：状態色と混同しないよう枠線のみ・静かに */
   .mbadge{display:inline-flex; align-items:center; height:18px; padding:0 6px; margin-left:6px; border:1px solid var(--line); border-radius:5px; font-size:0.66rem; font-weight:600; color:var(--sub); vertical-align:1px; white-space:nowrap;}
@@ -173,12 +163,11 @@
 
 <h1>進捗表</h1>
 <div class="updated" id="updated">読み込み中…</div>
-<div class="machine" id="machine" hidden></div>
-<div class="meters" id="meters"></div>
 
-<div class="label"><b>Macの健康</b>止まる＝全部止まる <small id="healthMeta"></small></div>
+<div class="label"><b>いまの状況</b>マシンとクレジットを1枚で <small id="machineAge"></small></div>
+<div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
-<div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+<details class="sec"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
 
 <div class="label"><b>走行状況</b>自動・5分おき <small id="sessMeta"></small></div>
 <div class="legend"><span><i style="background:var(--green)"></i>今動いている</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>止まっている（動いていない＝台帳が着手中でも赤）</span></div>
@@ -289,19 +278,11 @@ document.addEventListener("click", e=>{
 
 /* ───── Macの健康（status/health.json：何を閉じれば／消せば楽になるか。実測のみ） ───── */
 function renderHealth(h){
-  const box = document.getElementById("health"), sum = document.getElementById("healthSum");
+  const box = document.getElementById("health");
   if(!h){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ計測が無い（5分おきに測る）</div>`; return; }
   const mins = Math.round((Date.now() - new Date(h.measuredAt).getTime())/60000);
   document.getElementById("healthMeta").textContent = `${mins < 1 ? "いま" : mins + "分前"}`;
-  const diskWarn = h.diskFreeGB != null && h.diskFreeGB < 20, loadWarn = h.load != null && h.load >= 80;
   const over = (h.sessions || 0) - (h.safeMax || 0);
-  sum.innerHTML =
-    `<span class="${loadWarn ? "red" : ""}">負荷<b>${h.load ?? "—"}%</b></span>`
-    + `<span class="${h.memPressure === "red" ? "red" : h.memPressure === "yellow" ? "yellow" : ""}">メモリ<b>${h.memPressure === "green" ? "余裕" : h.memPressure === "yellow" ? "注意" : h.memPressure === "red" ? "逼迫" : "—"}${h.memAvailGB != null ? `・空き${Math.round(h.memAvailGB)}GB` : ""}</b></span>`
-    + `<span class="${diskWarn ? "red" : ""}">ディスク空き<b>${h.diskFreeGB ?? "—"}GB</b></span>`
-    + `<span class="${over > 0 ? "red" : ""}">セッション<b>${h.sessions ?? "—"}本／上限${h.safeMax ?? "—"}${over > 0 ? `・${over}本超過` : h.moreOK != null ? `・あと${h.moreOK}本` : ""}</b></span>`
-    // 2026-09-03 本数維持：目標本数（実測校正値）とあと何本、根拠（標本数）を1行追加
-    + (h.target != null ? `<span title="実測で校正した目標本数（根拠：${esc(h.calibratedSafeN != null ? `校正済み上限${h.calibratedSafeN}本` : "標本不足のため既定値")}）">目標<b>${h.target}本</b>${h.below ? `・あと${h.below}本必要` : "・充足"}</span>` : "");
   const shed = h.shedCandidates || [];
   const shedNote = (over > 0 && shed.length)
     ? `<div class="card note" style="grid-column:1/-1">空けるなら：${shed.map(s=>`${esc((s.title||"?").slice(0,20))}（終わって${s.idleMin != null ? Math.round(s.idleMin) : "?"}分待機）`).join("、")}</div>`
@@ -564,34 +545,34 @@ function __dataReady2(){
 };
 if(window.SHINCHOKU && window.SHINCHOKU_ALL) window.__dataReady();
 
-/* ───── Macの状態1行 ───── */
+/* ───── Macの鮮度（見出し右の小さい「◯分前」だけ。数字の本体はメーターと下のミニ行に統合） ───── */
 function renderMachine(m){
-  const el = document.getElementById("machine");
-  if(!m || !m.measuredAt){ el.hidden = true; return; }
+  const el = document.getElementById("machineAge");
+  if(!m || !m.measuredAt){ el.textContent = ""; return; }
   const mins = Math.max(0, Math.round((Date.now() - new Date(m.measuredAt).getTime())/60000));
   const age = mins < 1 ? "いま" : mins < 60 ? `${mins}分前` : mins < 1440 ? `${Math.floor(mins/60)}時間前` : `${Math.floor(mins/1440)}日前`;
   const stale = mins > 20;
-  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10) || (m.quota && (m.quota.fableLevel === "stop" || m.quota.allLevel === "stop"));
-  const v = (x, unit) => x == null ? "測定不可" : `${x}${unit}`;
-  el.className = "machine" + (warn ? " warn" : "");
-  const sess = m.working != null ? `セッション${v(m.sessions,"本")}<span class="dim">（作業中${m.working}・止まり${m.stalled ?? 0}）</span>` : `セッション${v(m.sessions,"本")}`;
-  const lim = m.safeMax != null ? `<span class="sep">｜</span><span>上限${m.safeMax}本${m.sessions > m.safeMax ? `・${m.sessions - m.safeMax}本超過` : ""}</span>` : "";
-  const q = m.quota;
-  const qCls = q ? (q.fableLevel === "stop" || q.allLevel === "stop" ? " stop" : (q.fableLevel === "warn" || q.allLevel === "warn" ? " warn" : "")) : "";
-  const qLine = q && q.line ? `<span class="quota${qCls}">${q.line}</span>` : "";
-  el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span><span>${sess}</span>${lim}<span class="sep">｜</span><span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span><span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>${qLine}`;
-  el.hidden = false;
+  el.textContent = stale ? `${age}（古い）` : age;
+  el.className = stale ? "stale" : "";
 }
 /* ───── メーター（ゲージ）：数字ではなく感覚で。緑＝余裕／黄＝考える／赤＝止める判断 ─────
    5時間枠・週Fable・週全モデル・マシン負荷の4本。5時間枠だけ「使い切らないと消える」ので
-   危険（赤）の意味が逆＝余らせすぎ（もったいない）を黄で警告する。 */
-function meterHTML(title, pct, level, valText, subText, subCls){
+   危険（赤）の意味が逆＝余らせすぎ（もったいない）を黄で警告する。
+   Fable/全モデルは曜日ごとの目標曲線（曲線位置に▲マーカー）に対して上振れ／下振れも出す。 */
+function meterHTML(title, pct, level, valText, subText, subCls, curveTarget){
   const w = pct == null ? 0 : Math.max(2, Math.min(100, pct));
+  const mk = curveTarget != null ? `<div class="mk curve" style="left:${Math.max(0,Math.min(100,curveTarget))}%" title="曜日目標${curveTarget}%"></div>` : "";
   return `<div class="meter">
     <div class="mtitle"><b>${esc(title)}</b><span class="val ${level}">${esc(valText)}</span></div>
-    <div class="track"><div class="fill ${level}" style="width:${w}%"></div><div class="mk" style="left:75%"></div><div class="mk" style="left:85%"></div></div>
+    <div class="track"><div class="fill ${level}" style="width:${w}%"></div>${mk}</div>
     ${subText ? `<div class="msub${subCls ? " " + subCls : ""}">${esc(subText)}</div>` : ""}
   </div>`;
+}
+function curveSub(curve, base){
+  if(!curve) return base;
+  const arrow = curve.state === "over" ? "▲上振れ" : curve.state === "under" ? "▼下振れ" : "●曲線どおり";
+  const tip = curve.state === "over" ? "・絞る" : curve.state === "under" ? "・Fable投入や本数増の余地あり" : "";
+  return `${base}｜曲線目標${curve.target}%に対し${arrow}${curve.overPct != null ? curve.overPct + "pt" : ""}${tip}`;
 }
 function renderMeters(m){
   const el = document.getElementById("meters");
@@ -608,12 +589,14 @@ function renderMeters(m){
     parts.push(meterHTML("5時間枠", s5.pct, lvl, `${s5.pct}%`, sub, s5.mottainai ? "mottainai" : ""));
   }
   if(q.fablePct != null){
+    const base = `${q.resetAt || "火曜17:59"}まで${q.daysLeft != null ? q.daysLeft + "日" : ""}`;
     parts.push(meterHTML("週枠・Fable", q.fablePct, lvlMap[q.fableLevel] || "green", `${q.fablePct}%`,
-      `${q.resetAt || "火曜17:59"}にリセットまで${q.daysLeft != null ? q.daysLeft + "日" : ""}${q.weekdayTarget != null ? `・今日の目標${q.weekdayTarget}%` : ""}`));
+      curveSub(q.fableCurve, base), q.fableCurve && q.fableCurve.state === "over" ? "mottainai" : "", q.fableCurve && q.fableCurve.target));
   }
   if(q.allPct != null){
+    const base = `${q.resetAt || "火曜17:59"}まで${q.daysLeft != null ? q.daysLeft + "日" : ""}`;
     parts.push(meterHTML("週枠・全モデル", q.allPct, lvlMap[q.allLevel] || "green", `${q.allPct}%`,
-      `${q.resetAt || "火曜17:59"}にリセットまで${q.daysLeft != null ? q.daysLeft + "日" : ""}`));
+      curveSub(q.allCurve, base), q.allCurve && q.allCurve.state === "over" ? "mottainai" : "", q.allCurve && q.allCurve.target));
   }
   if(m.load != null){
     const lvl = m.load >= 90 ? "red" : m.load >= 70 ? "yellow" : "green";
@@ -622,6 +605,12 @@ function renderMeters(m){
       : (m.moreOK > 0 ? `あと${m.moreOK}本OK` : `上限${m.safeMax ?? "?"}本内（これ以上は増やさない）`);
     parts.push(meterHTML("マシン負荷（何%で固まるか）", m.load, lvl, `${m.load}%`, more));
   }
+  // ディスク・セッション本数のミニ行（統合。healthSumと合わせて1カード扱い）
+  const diskWarn = m.diskFreeGB != null && m.diskFreeGB < 20;
+  const over = (m.sessions || 0) - (m.safeMax || 0);
+  document.getElementById("healthSum").innerHTML =
+    `<span class="${diskWarn ? "red" : ""}">ディスク空き<b>${m.diskFreeGB ?? "—"}GB</b></span>`
+    + `<span class="${over > 0 ? "red" : ""}">セッション<b>${m.sessions ?? "—"}本／上限${m.safeMax ?? "—"}${over > 0 ? `・${over}本超過` : m.moreOK != null ? `・あと${m.moreOK}本` : ""}</b></span>`;
   el.innerHTML = parts.length ? parts.join("") : "";
 }
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
