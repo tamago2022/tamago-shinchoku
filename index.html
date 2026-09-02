@@ -75,6 +75,20 @@
   .links a::after{content:"→"; margin-left:8px; color:var(--sub);}
   .links a:active{background:rgba(255,255,255,0.06);}
 
+  /* 言ったこと */
+  .saidbox{padding:4px 15px;}
+  .said{padding:11px 0; border-bottom:1px solid var(--line);}
+  .said:last-child{border-bottom:none;}
+  .said .when{color:var(--sub); font-size:0.75rem; font-variant-numeric:tabular-nums; margin-bottom:2px;}
+  .said .text{font-size:0.95rem; line-height:1.55;}
+  .saidbox details summary{
+    list-style:none; cursor:pointer; min-height:44px; display:flex; align-items:center;
+    color:var(--kinari); font-size:0.88rem;
+  }
+  .saidbox details summary::-webkit-details-marker{display:none;}
+  .saidbox details summary::after{content:"↓"; margin-left:8px; color:var(--sub);}
+  .saidbox details[open] summary::after{content:"↑";}
+
   /* TODAY */
   .today .block{margin-bottom:14px;}
   .today .block:last-child{margin-bottom:0;}
@@ -124,6 +138,9 @@
 <div class="label">いま動いているもの <small id="runUpdated"></small></div>
 <div id="running"></div>
 
+<div class="label">言ったこと（直近・埋もれ防止） <small id="saidCount"></small></div>
+<div id="said"></div>
+
 <div class="label">Today</div>
 <div class="card today" id="today"></div>
 
@@ -137,12 +154,13 @@
 </footer>
 
 <script src="data.js"></script>
+<script src="said.js"></script>
 <script>
 const D = window.SHINCHOKU;
 
 const STATUS_META = {
-  red:    {mark:"🔴", label:"止まっている", order:0},
-  hold:   {mark:"⏸",  label:"判断待ち（たまごさん）", order:1},
+  hold:   {mark:"⏸",  label:"判断待ち（たまごさん）", order:0},
+  red:    {mark:"🔴", label:"止まっている", order:1},
   wip:    {mark:"🟡", label:"作業中", order:2},
   done:   {mark:"🟢", label:"完了", order:3},
   cannot: {mark:"❌", label:"できない", order:4},
@@ -185,6 +203,17 @@ function renderRunning(){
       ${r.progress ? `<div class="progress">${esc(r.progress)}</div>` : ""}
       ${linksHtml(r.links)}
     </div>`).join("");
+}
+
+function renderSaid(){
+  const S = window.SHINCHOKU_SAID || [];
+  const box = document.getElementById("said");
+  const SHOW = 8;
+  document.getElementById("saidCount").textContent = `${S.length}件`;
+  const item = s => `<div class="said"><div class="when">${esc(s.when)}</div><div class="text">${esc(s.said)}</div></div>`;
+  box.innerHTML = `<div class="card saidbox">` + S.slice(0,SHOW).map(item).join("")
+    + (S.length > SHOW ? `<details><summary>もっと見る（残り${S.length-SHOW}件）</summary>${S.slice(SHOW).map(item).join("")}</details>` : "")
+    + `</div>`;
 }
 
 function renderToday(){
@@ -242,7 +271,7 @@ function renderList(){
 }
 
 document.getElementById("updated").textContent = `最終更新：${formatStamp(D.generatedAt)}（依頼一覧の正本時刻）`;
-renderRunning(); renderToday(); renderList();
+renderRunning(); renderSaid(); renderToday(); renderList();
 </script>
 </body>
 </html>
