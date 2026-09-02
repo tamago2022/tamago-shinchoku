@@ -228,7 +228,8 @@ def session_started_at(s):
     return None
 
 
-def sessions():
+def raw_sessions():
+    """kanshi の生存一覧＋会話ログ突合（--resume 起動も解決済み）。session_watchdog.py もこれを使う"""
     k = load_kanshi()
     if not k:
         return []
@@ -258,8 +259,12 @@ def sessions():
         ss = k.enrich(ss)
     except Exception:
         return []
+    return ss
+
+
+def sessions():
     out = []
-    for s in ss:
+    for s in raw_sessions():
         kind, tail = classify(s.get("transcript"), s.get("idle"))
         out.append({
             "pid": int(s["pid"]),

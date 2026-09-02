@@ -32,6 +32,9 @@ cat > "$OUT" <<EOF2
 EOF2
 fi
 
+# 2026-09-02 見張り番：止まっている子セッションを検知して claude -p --resume で自動再開（判定は factory_status の分類。負荷ゲートあり）
+python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
+
 cd "$REPO" || exit 0
 
 # 2026-09-02 PWA第3段階：セッションごとの航跡を1行ずつ積む（何時に始まり・何時に止まり・誰が起こしたか、を後から数えるため）
@@ -64,7 +67,7 @@ if os.path.exists(p):
 PY
 
 # 数字が前回と同じなら push しない（measuredAt 以外を比較）
-strip() { sed -E 's/"measuredAt":"[^"]*",//; s/"(load1|load5|load15|loadRatio|ioMBs|memAvailGB|idleMin|mb)":[^,}]*,?//g'; }
+strip() { sed -E 's/"measuredAt":"[^"]*",//; s/"(load1|load5|load15|loadRatio|ioMBs|memAvailGB|idleMin|mb|lastRun)":[^,}]*,?//g'; }
 PREV=$(git show HEAD:status/machine.json 2>/dev/null | strip)
 CURR=$(strip < "$OUT")
 LAST=$(git log -1 --format=%ct -- status/machine.json 2>/dev/null); LAST=${LAST:-0}

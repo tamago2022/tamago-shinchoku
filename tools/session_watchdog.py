@@ -137,10 +137,7 @@ def sessions_with_transcript():
     spec = importlib.util.spec_from_file_location("factory_status", fs)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    k = mod.load_kanshi()
-    if not k:
-        return []
-    ss = k.enrich(k.idle_min(k.sessions()))
+    ss = mod.raw_sessions()
     out = []
     for s in ss:
         kind, tail = mod.classify(s.get("transcript"), s.get("idle"))
