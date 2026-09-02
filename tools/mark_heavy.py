@@ -19,16 +19,22 @@ OUT = os.path.join(REPO, "status", "heavy_events.jsonl")
 
 
 def main():
-    what = next((a for a in sys.argv[1:] if not a.startswith("--")), "重い")
+    args = sys.argv[1:]
+    what = next((a for a in args if not a.startswith("--")), "重い")
+    top_cpu = ""
+    if "--top-cpu" in args:
+        i = args.index("--top-cpu")
+        if i + 1 < len(args):
+            top_cpu = args[i + 1]
     try:
         m = json.load(open(MACHINE, encoding="utf-8"))
     except Exception:
         m = {}
-    row = {"t": time.strftime("%Y-%m-%dT%H:%M:%S"), "what": what, "by": "auto" if "--auto" in sys.argv else "human",
+    row = {"t": time.strftime("%Y-%m-%dT%H:%M:%S"), "what": what, "by": "auto" if "--auto" in args else "human",
            "n": m.get("sessions"), "working": m.get("working"),
            "loadRatio": round(m.get("load5") / m.get("cores"), 2) if m.get("load5") and m.get("cores") else None,
            "mem": m.get("memPressure"), "swapGB": m.get("swapGB"), "swapUp": m.get("swapIncreasing"), "ioMBs": m.get("ioMBs"),
-           "topCpu": m.get("topCpu")}
+           "topCpu": top_cpu or m.get("topCpu")}
     with open(OUT, "a", encoding="utf-8") as f:
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(json.dumps(row, ensure_ascii=False))

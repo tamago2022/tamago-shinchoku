@@ -32,8 +32,12 @@ cat > "$OUT" <<EOF2
 EOF2
 fi
 
+# 2026-09-03 利用枠の推定（会話ログのトークン量×スマホ実測アンカー）→ status/quota.json。見張り番がモデル選択と machine.json の quota 節に使う
+python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-02 見張り番：止まっている子セッションを検知して claude -p --resume で自動再開（判定は factory_status の分類。負荷ゲートあり）
 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
+# 2026-09-03 孤児プロセス回収：セッション終了後もppid=1で残り続けるlint/build/test系の暴走プロセスを止める（ロード100%固定化の実害を確認して追加）
+python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
 # 2026-09-03 本数の実測校正：load_history.jsonl＋heavy_events.jsonl → calibration.json（safeN/target）。次回の factory_status が読む
 python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く

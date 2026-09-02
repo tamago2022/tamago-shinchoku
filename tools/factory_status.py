@@ -64,6 +64,24 @@ def run(cmd, timeout=10):
         return ""
 
 
+def top_cpu_procs(n=3):
+    """CPU使用率トップn（pid付き）。「重い」記録の原因切り分け用（セッション本数のせいか、他プロセスのせいか）"""
+    try:
+        out = run(["ps", "-Ao", "pid,pcpu,comm"], 8)
+        rows = []
+        for ln in out.splitlines()[1:]:
+            parts = ln.strip().split(None, 2)
+            if len(parts) == 3:
+                try:
+                    rows.append((float(parts[1]), parts[0], os.path.basename(parts[2])))
+                except Exception:
+                    pass
+        rows.sort(key=lambda x: -x[0])
+        return "・".join("%s(pid%s,%.0f%%)" % (name, pid, cpu) for cpu, pid, name in rows[:n])
+    except Exception:
+        return ""
+
+
 def load_kanshi():
     try:
         spec = importlib.util.spec_from_file_location("tamago_kanshi", KANSHI)
@@ -545,7 +563,8 @@ def build():
     shed.sort(key=lambda x: -(x["idleMin"] or 0))
     if pressure == "red" or (load_ratio5 is not None and load_ratio5 > 2.0):
         try:
-            subprocess.run(["python3", os.path.join(HERE, "mark_heavy.py"), "自動検知: %s" % ("メモリ赤" if pressure == "red" else "5分ロード比%.1f" % load_ratio5), "--auto"], capture_output=True, timeout=10)
+            subprocess.run(["python3", os.path.join(HERE, "mark_heavy.py"), "自動検知: %s" % ("メモリ赤" if pressure == "red" else "5分ロード比%.1f" % load_ratio5),
+                            "--auto", "--top-cpu", top_cpu_procs()], capture_output=True, timeout=10)
         except Exception:
             pass
     stalled = [s for s in ss if s["kind"] in ("asked", "stuck_tool")]

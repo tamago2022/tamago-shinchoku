@@ -82,7 +82,14 @@ def main():
     if len(hist) < 30:
         hist = seed_from_git() + hist
     heavy = read_jsonl(HEAVY)
-    heavy_n = sorted({int(h.get("n")) for h in heavy if h.get("n") is not None})
+    # topCpu が記録されていて、かつ claude 系プロセスが主犯でない（node/lint/build/Chrome等の外部要因と判明している）場合は
+    # その時のセッション本数(n)を「危険な本数」に数えない。孤児プロセス由来の負荷スパイクで safeN が不当に下がる事故を防ぐ（2026-09-03）
+    def session_is_cause(h):
+        tc = (h.get("topCpu") or "").strip()
+        if not tc:
+            return True  # 原因不明は安全側（従来どおりセッションのせいとみなす）
+        return "claude" in tc.lower()
+    heavy_n = sorted({int(h.get("n")) for h in heavy if h.get("n") is not None and session_is_cause(h)})
     by = {}
     for r in hist:
         n = r.get("n")
