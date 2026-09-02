@@ -1,15 +1,15 @@
 {
- "raw": "負荷 100% ｜ CPU 4% / メモリ圧迫 23% / スワップ 7.60GB / ディスク空き 50GB ｜ 稼働 3本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 23% / スワップ 7.57GB / ディスク空き 50GB ｜ 稼働 3本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 4,
+ "cpu": 7,
  "mem": 23,
- "swapGB": 7787.25,
+ "swapGB": 7755.25,
  "diskFreeGB": 50.0,
  "sessions": 3,
- "note": "上限2本・あと0本OK（5分平均ロード17.0（コア8×0.8超）、予兆（5分ロード比2.1）→1本減らす）",
- "measuredAt": "2026-09-03T04:56:28+09:00",
- "working": 1,
- "stalled": 1,
+ "note": "上限2本・あと0本OK（5分平均ロード11.4（コア8×0.8超））",
+ "measuredAt": "2026-09-03T05:01:43+09:00",
+ "working": 0,
+ "stalled": 2,
  "waiting": 1,
  "safeMax": 2,
  "moreOK": 0,
@@ -19,28 +19,33 @@
  "calibratedSafeN": 3,
  "calibrationBasis": "標本不足→既定4本・重い事象は4本で発生",
  "userActive": false,
- "predict": [
-  "5分ロード比2.1"
- ],
+ "predict": [],
  "shedCandidates": [],
  "below": 0,
- "blockReason": "5分平均ロード17.0（コア8×0.8超）、予兆（5分ロード比2.1）→1本減らす",
- "load1": 7.84,
- "load5": 17.02,
- "load15": 31.42,
+ "blockReason": "5分平均ロード11.4（コア8×0.8超）",
+ "load1": 9.15,
+ "load5": 11.45,
+ "load15": 24.29,
  "cores": 8,
- "loadRatio": 0.98,
+ "loadRatio": 1.14,
  "memPressure": "green",
- "memAvailGB": 6.6,
+ "memAvailGB": 6.5,
  "swapIncreasing": false,
- "ioMBs": 1.01,
+ "ioMBs": 0.3,
  "stalledList": [
   {
    "pid": 94641,
    "title": "（不明）",
    "kind": "asked",
-   "idleMin": 14.4,
+   "idleMin": 19.6,
    "dispatch": false
+  },
+  {
+   "pid": 49683,
+   "title": "枠を自動制御する（夜通し）",
+   "kind": "asked",
+   "idleMin": 12.9,
+   "dispatch": true
   }
  ],
  "sessionList": [
@@ -48,7 +53,7 @@
    "cli": "0aca635e-2c9b-466b-aa60-f964663ca641",
    "localId": null,
    "startedAt": "2026-09-03T04:35:08+0900",
-   "elapsedMin": 21,
+   "elapsedMin": 26,
    "lastReportAt": "2026-09-02T19:42:00.024Z",
    "lastReport": " UI操作が必要（たまごさん本人、またはcomputer-use/claude-in-chrome MCPが繋がるセッション）。対象は30分おきの軽量パトロール1本のみで実害は小さく、緊急対応は不要。",
    "status": "止まっている",
@@ -64,7 +69,7 @@
    "title": "（不明）",
    "dispatch": false,
    "mb": 559,
-   "idleMin": 14.4,
+   "idleMin": 19.6,
    "kind": "asked",
    "model": "claude-sonnet-5"
   },
@@ -72,7 +77,7 @@
    "cli": "52dadde2-9144-402b-8f40-0c3ad23ed3dc",
    "localId": "local_f747a78b-f5ef-45ad-8bda-df702469d15d",
    "startedAt": "2026-09-03T04:44:37+0900",
-   "elapsedMin": 11,
+   "elapsedMin": 17,
    "lastReportAt": "2026-09-02T19:46:26.396Z",
    "lastReport": "ard.html 再生成、ログ追記。 問題：メモリ verdict=red（swap 85.2%／空き0.4GB、負荷100%・上限超過）のため着火は見送り。残り4本は作業中で温存。 判断待ち：なし。",
    "status": "完了",
@@ -88,7 +93,7 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "mb": 307,
-   "idleMin": 10.0,
+   "idleMin": 15.3,
    "kind": "idle_done",
    "model": "claude-opus-5"
   },
@@ -96,11 +101,11 @@
    "cli": "b0ef32a6-0a3b-451d-a08e-b84041d8f76e",
    "localId": "local_f0f0ea94-9e17-4919-93b6-99fed9ca1014",
    "startedAt": "2026-09-03T01:48:52+0900",
-   "elapsedMin": 187,
+   "elapsedMin": 192,
    "lastReportAt": "2026-09-02T19:48:50.214Z",
    "lastReport": "** 実装中に誤検知2件(URL抽出のバグ・見回りセッション自身の定型URL)を発見、両方修正済み。一覧ファイルには取り消し線で注記のみ残した。  **判断待ち：** なし  今夜の実験は継続中です。",
-   "status": "作業中",
-   "color": "green",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [],
@@ -112,12 +117,12 @@
    "title": "枠を自動制御する（夜通し）",
    "dispatch": true,
    "mb": 361,
-   "idleMin": 7.6,
-   "kind": "working",
+   "idleMin": 12.9,
+   "kind": "asked",
    "model": "claude-sonnet-5"
   }
  ],
- "line": "負荷 100% ｜ セッション3本（作業中1・止まり1） ｜ 上限2本・1本超過（畳め） ｜ 空き50.0GB",
+ "line": "負荷 100% ｜ セッション3本（作業中0・止まり2） ｜ 上限2本・1本超過（畳め） ｜ 空き50.0GB",
  "modelCounts": {
   "claude-sonnet-5": 2,
   "claude-opus-5": 1
@@ -130,8 +135,17 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 04:56",
-  "resumed": [],
+  "lastRun": "2026-09-03 05:01",
+  "resumed": [
+   {
+    "pid": 94641,
+    "cli": "0aca635e-2c9b-466b-aa60-f964663ca641",
+    "title": "引き継ぎ子:枠を自動制御する（夜通し）",
+    "why": "質問して停止",
+    "try": 1,
+    "resumePid": 99875
+   }
+  ],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
@@ -143,11 +157,18 @@
    "below": 0,
    "line": "現在3本／上限2本／目標2本／あと0本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 49683,
+    "title": "枠を自動制御する（夜通し）",
+    "kind": "asked",
+    "why": "引き継ぎ済み→0aca635e"
+   }
+  ]
  },
  "metrics": {
-  "stalls": 27,
-  "autoResumes": 11,
+  "stalls": 28,
+  "autoResumes": 12,
   "handoffs": 4,
   "ignitions": 0,
   "gated": 0,
@@ -157,9 +178,16 @@
   "autonomyRatio": 1.0,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
- "deployAlerts": [],
+ "deployAlerts": [
+  {
+   "t": "2026-09-03 05:01",
+   "cli": "b0ef32a6-0a3b-451d-a08e-b84041d8f76e",
+   "title": "枠を自動制御する（夜通し）",
+   "urls": []
+  }
+ ],
  "quota": {
-  "updatedAt": "2026-09-03 04:56",
+  "updatedAt": "2026-09-03 05:01",
   "estimated": true,
   "fablePct": 65.7,
   "allPct": 55.8,
@@ -182,14 +210,14 @@
   "fableWeightedTokensSinceReset": 209857655,
   "allWeightedTokensSinceReset": 391585189,
   "last6h": {
-   "fable": 48706307,
-   "all": 128285627
+   "fable": 39828262,
+   "all": 119199320
   },
   "projection": {
-   "fablePctAtReset_avgPace": 315.6,
-   "fablePctAtReset_recentPace": 403.6,
-   "hoursToCeiling_recentPace": 13.5,
-   "recentPacePctPerHour": 2.54
+   "fablePctAtReset_avgPace": 314.8,
+   "fablePctAtReset_recentPace": 341.8,
+   "hoursToCeiling_recentPace": 16.5,
+   "recentPacePctPerHour": 2.08
   },
   "method": "推定（会話ログのトークン量×アンカー実測で目盛り合わせ）",
   "anchor": {
@@ -203,7 +231,7 @@
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
   "overPct": 20.7,
   "daysElapsedSinceReset": 1.5,
-  "ceilingDaysAtRecentPace": 0.6,
+  "ceilingDaysAtRecentPace": 0.7,
   "fableCurve": {
    "target": 45,
    "overPct": 20.7,
@@ -223,7 +251,7 @@
    "pct": 33.3,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 4.63,
+   "recentPacePctPerHour": 4.49,
    "projectedPctAtReset": 33.3,
    "wasteRiskPct": 0.0,
    "mottainai": false,
@@ -238,14 +266,14 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 3.045,
+   "allPacePctPerHour6h": 2.83,
    "aliveAvgLast6h": 5.6,
-   "pctPerSessionHour": 0.5404,
+   "pctPerSessionHour": 0.5059,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": 0.6
   },
-  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 56%（曲線目標21.4%・34.4pt上振れ） ／ リセットまで 5.5日（このペースだと14時間で天井） ／ 5時間枠 33.3%・残0.0h",
+  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 56%（曲線目標21.4%・34.4pt上振れ） ／ リセットまで 5.5日（このペースだと16時間で天井） ／ 5時間枠 33.3%・残0.0h",
   "switches": [
    {
     "t": "2026-09-03 04:35",
