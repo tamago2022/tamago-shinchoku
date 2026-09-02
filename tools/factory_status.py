@@ -23,6 +23,8 @@
   DISK_STOP_GB  : 空きがこれ未満なら新規0本（5GB＝machine_load.sh と同じ）
   DISK_WARN_GB  : 空きがこれ未満なら「増やさない」（20GB）
   STALL_MIN     : この分数動きが無ければ「止まり」判定（10分。既存 kanshi の STUCK_MIN と同じ）
+  SAFE_FLOOR    : 憲法「常時2本」。ロードが高くても、メモリ赤・ディスク5GB未満でない限り上限は2本を下回らない
+                  （下回ると見回り係が永久に着火できず「工場が止まる」逆の事故になる）
 """
 import importlib.util
 import json
@@ -46,6 +48,7 @@ MEM_PER_SESS_MB = 350
 DISK_STOP_GB = 5
 DISK_WARN_GB = 20
 STALL_MIN = 10
+SAFE_FLOOR = 2
 PAGE = 4096
 
 # 「質問して止まっている」の目印。末尾200字にこれがあれば asked 判定
@@ -265,6 +268,8 @@ def safe_max(base, ss, la1, cores, pressure, avail_mb, swap_up, iomb):
     more = min(mores) if mores else 0
     more = max(more, -alive)
     sm = min(HARD_MAX, alive + more)
+    if sm < SAFE_FLOOR and pressure != "red":
+        sm = SAFE_FLOOR  # 常時2本は守る（赤・ディスク切れ以外）
     if sm == HARD_MAX and alive + more > HARD_MAX:
         reasons.append("上限%d本（固定）" % HARD_MAX)
     return max(sm, 0), reasons, alive, working
