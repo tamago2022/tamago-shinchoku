@@ -63,6 +63,28 @@ def save(p, d):
     os.replace(tmp, p)
 
 
+def avg_alive(now, hours):
+    """直近◯時間の history.jsonl から、5分刻みの各スナップショットで生きていたセッション数の平均を出す。
+    「Sonnet1本を1時間回すと何%」を出すための分母（自動制御の心臓部・2026-09-03）。"""
+    path = os.path.join(REPO, "status", "history.jsonl")
+    since_h = now - hours * 3600
+    counts = {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            for ln in f:
+                try:
+                    r = json.loads(ln)
+                except Exception:
+                    continue
+                t = ts_epoch(r.get("t") or "")
+                if not t or t < since_h:
+                    continue
+                counts[r.get("t")] = counts.get(r.get("t"), 0) + 1
+    except Exception:
+        return None
+    return (sum(counts.values()) / len(counts)) if counts else None
+
+
 def ts_epoch(ts):
     try:
         t = time.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S")
@@ -238,6 +260,28 @@ def main():
                 "mottainai": mottainai, "anchor": sa,
                 "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）",
             }
+
+    # ---- 自動制御の心臓部（2026-09-03）：「セッション1本を1時間動かすと全モデル週枠が何%進むか」 ----
+    # 直近6時間の全モデル消費ペース(%/h) ÷ 直近6時間の平均生存本数 = 1本1時間あたりの消費%。
+    # これが出れば「5時間枠を埋めるのに何本要るか」「週枠の曲線に対して何本が適正か」を逆算できる。
+    benchmark = None
+    if all_pct is not None and all_now > 0:
+        all_pace6 = (all_pct * (a6 / all_now)) / 6  # %/hour（直近6h実績）
+        alive6 = avg_alive(now, 6)
+        pct_per_session_hour = round(all_pace6 / alive6, 4) if alive6 and alive6 > 0 else None
+        benchmark = {"allPacePctPerHour6h": round(all_pace6, 3), "aliveAvgLast6h": round(alive6, 1) if alive6 else None,
+                     "pctPerSessionHour": pct_per_session_hour,
+                     "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる"}
+        if pct_per_session_hour and session5h:
+            target5h = 90.0  # 使い切りすぎて途中で天井に当たらないよう90%止まりを狙う
+            need5h = (target5h - session5h["pct"]) / (pct_per_session_hour * session5h["hoursLeft"]) if session5h["hoursLeft"] > 0 else None
+            benchmark["sonnetSessionsFor5hWindow"] = round(need5h, 1) if need5h and need5h > 0 else None
+        if pct_per_session_hour:
+            days_left_w = max(hours_left / 24, 0.1)
+            target_all_reset = 99.0
+            need_weekly = (target_all_reset - (all_pct or 0)) / (pct_per_session_hour * days_left_w * 24) if days_left_w > 0 else None
+            benchmark["sonnetSessionsForWeeklyCurve"] = round(need_weekly, 1) if need_weekly and need_weekly > 0 else None
+
     out = {"updatedAt": time.strftime("%Y-%m-%d %H:%M"), "estimated": True,
            "fablePct": round(fable_pct, 1) if fable_pct is not None else None,
            "allPct": round(all_pct, 1) if all_pct is not None else None,
@@ -259,6 +303,7 @@ def main():
            "allCurve": {"target": all_linear_target, "overPct": all_over_pct, "state": all_curve_state, "band": CURVE_BAND,
                         "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"},
            "session5h": session5h,
+           "benchmark": benchmark,
            "line": ("Fable週枠 %s%%（今日の目標%s%%・%s） ／ 全モデル %s%%（曲線目標%s%%・%s） ／ リセットまで %.1f日%s ／ 5時間枠 %s" % (
                "?" if fable_pct is None else round(fable_pct), weekday_target,
                {"over": "%.1fpt上振れ→絞る" % over_pct if over_pct else "", "under": "%.1fpt下振れ→投入余地あり" % (-over_pct) if over_pct else "",
