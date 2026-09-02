@@ -262,11 +262,127 @@ def raw_sessions():
     return ss
 
 
+URL_PAT = re.compile(r"https?://[^\s)\]>」』]+")
+REPORT_HOURS = 3  # これ以上「報告」（assistantの文章）が無ければ赤
+
+
+def transcript_stats(path):
+    """会話ログ全体を1回なめて、PWAが要る数字を出す（開始・最後の報告・押された回数・誰が押したか・成果URL・完了報告か）"""
+    st = {"firstAt": None, "lastReportAt": None, "lastReportText": "", "humanPushes": 0, "dispatchPushes": 0,
+          "watchdogResumes": 0, "urls": [], "done": False, "failed": False}
+    if not path:
+        return st
+    try:
+        with open(path, "rb") as f:
+            data = f.read().decode("utf-8", "ignore")
+    except Exception:
+        return st
+    first_user = True
+    for ln in data.splitlines():
+        if '"type":"user"' not in ln and '"type":"assistant"' not in ln:
+            continue
+        try:
+            e = json.loads(ln)
+        except Exception:
+            continue
+        ts = e.get("timestamp")
+        if ts and not st["firstAt"]:
+            st["firstAt"] = ts
+        m = e.get("message") or {}
+        c = m.get("content")
+        if e.get("type") == "user":
+            if isinstance(c, str):
+                text = c
+            elif isinstance(c, list):
+                text = "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
+            else:
+                text = ""
+            if not text.strip():
+                continue  # tool_result
+            if first_user:
+                first_user = False
+                continue  # 最初の指示は「押した」に数えない
+            if "【見張り番" in text:
+                st["watchdogResumes"] += 1
+            elif text.startswith("From ") or "From " in text[:60]:
+                st["dispatchPushes"] += 1
+            else:
+                st["humanPushes"] += 1
+        elif e.get("type") == "assistant" and isinstance(c, list):
+            text = "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
+            if text.strip() and m.get("stop_reason") == "end_turn":
+                st["lastReportAt"] = ts
+                st["lastReportText"] = text[-200:].replace("\n", " ")
+    t = st["lastReportText"]
+    st["done"] = bool(re.search(r"(完了[：:]|^\s*完了|✅)", t))
+    st["failed"] = bool(re.search(r"(できない[：:]|❌|失敗[：:]|エラーで止|中止)", t)) and not st["done"]
+    st["urls"] = list(dict.fromkeys(URL_PAT.findall(t)))[:3]
+    return st
+
+
+def status_of(kind, idle, st):
+    """PWA用の状態: 作業中(緑)／承認待ち(黄)／止まっている・報告なし3時間超・失敗(赤)／完了(青)"""
+    if st["done"]:
+        return "完了", "blue"
+    if st["failed"]:
+        return "失敗", "red"
+    if kind == "working":
+        return "作業中", "green"
+    if idle is not None and idle >= REPORT_HOURS * 60:
+        return "報告なし%d時間超" % REPORT_HOURS, "red"
+    if kind == "stuck_tool":
+        return "承認待ち", "yellow"
+    if kind in ("asked", "idle_done"):
+        return "止まっている", "red"
+    return "不明", "gray"
+
+
+def local_id_index():
+    idx = {}
+    try:
+        for root, _, files in os.walk(os.path.expanduser("~/Library/Application Support/Claude/claude-code-sessions")):
+            for fn in files:
+                if fn.startswith("local_") and fn.endswith(".json"):
+                    try:
+                        d = json.load(open(os.path.join(root, fn), encoding="utf-8"))
+                        if d.get("cliSessionId"):
+                            idx[d["cliSessionId"]] = d.get("sessionId")
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+    return idx
+
+
 def sessions():
     out = []
+    watchdog_state = {}
+    try:
+        with open(os.path.join(REPO, "status", "watchdog-state.json"), encoding="utf-8") as f:
+            watchdog_state = json.load(f)
+    except Exception:
+        pass
+    idx = local_id_index()
     for s in raw_sessions():
         kind, tail = classify(s.get("transcript"), s.get("idle"))
+        tr = s.get("transcript")
+        cli = os.path.basename(tr)[:-6] if tr and tr.endswith(".jsonl") else None
+        st = transcript_stats(tr)
+        label, color = status_of(kind, s.get("idle"), st)
+        started = s.get("start")
+        wd = watchdog_state.get(cli or "", {})
         out.append({
+            "cli": cli,
+            "localId": idx.get(cli),
+            "startedAt": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(started)) if started else None,
+            "elapsedMin": int((time.time() - started) / 60) if started else None,
+            "lastReportAt": st["lastReportAt"],
+            "lastReport": st["lastReportText"][-100:],
+            "status": label, "color": color,
+            "urls": st["urls"],
+            "humanPushes": st["humanPushes"], "dispatchPushes": st["dispatchPushes"],
+            "watchdogResumes": max(st["watchdogResumes"], wd.get("tries", 0)),
+            "done": st["done"],
             "pid": int(s["pid"]),
             "title": s.get("title") or "（不明）",
             "dispatch": bool(s.get("dispatch")),
@@ -375,10 +491,16 @@ def build():
         "swapIncreasing": swap_up,
         "ioMBs": iomb,
         "stalledList": [{k: s[k] for k in ("pid", "title", "kind", "idleMin", "dispatch")} for s in stalled],
-        "sessionList": [{k: s.get(k) for k in ("pid", "title", "kind", "idleMin", "mb", "dispatch", "startedAt", "cli")} for s in ss],
+        # 2026-09-02 PWA用の全項目（名前/ID・開始・最後の報告・経過・状態色・成果URL・押された回数/再開回数）。tail（本文断片）だけ落とす
+        "sessionList": [{k: v for k, v in s.items() if k != "tail"} for s in ss],
         "line": line,
     })
     d["note"] = "上限%d本・あと%d本OK" % (sm, more_ok) + ("（%s）" % d["blockReason"] if reasons else "")
+    done = [s for s in ss if s.get("done")]
+    auto = [s for s in done if (s.get("humanPushes", 0) + s.get("dispatchPushes", 0)) == 0]
+    d["autonomy"] = {"alive": len(ss), "done": len(done), "doneWithoutHumanPush": len(auto),
+                     "ratio": round(len(auto) / len(done), 2) if done else None,
+                     "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"}
     return d
 
 
