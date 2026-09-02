@@ -251,6 +251,60 @@ def handoff(s, meta, why):
         return None, None, path
 
 
+def machine_unsafe(machine):
+    """Macが固まる兆候だけを見る。該当すれば理由の文字列、無ければ空文字"""
+    if machine.get("memPressure") == "red":
+        return "メモリ圧=赤"
+    if machine.get("swapIncreasing"):
+        return "スワップ増加中"
+    d = machine.get("diskFreeGB")
+    if d is not None and d < 5:
+        return "ディスク空き5GB未満"
+    return ""
+
+
+def proc_cwd(pid):
+    try:
+        out = subprocess.run(["lsof", "-a", "-p", str(pid), "-d", "cwd", "-Fn"], capture_output=True, text=True, timeout=8).stdout
+        for ln in out.splitlines():
+            if ln.startswith("n/"):
+                return ln[1:]
+    except Exception:
+        pass
+    return None
+
+
+def first_user_text(path, n=120):
+    """会話ログの最初のユーザー発言（引き継ぎで立てたCLIセッションは管理JSONが無いので、ここから正体を知る）"""
+    try:
+        with open(path, encoding="utf-8", errors="ignore") as f:
+            for _ in range(200):
+                ln = f.readline()
+                if not ln:
+                    break
+                if '"type":"user"' not in ln:
+                    continue
+                e = json.loads(ln)
+                c = (e.get("message") or {}).get("content")
+                t = c if isinstance(c, str) else "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text") if isinstance(c, list) else ""
+                if t.strip():
+                    return t[:n]
+    except Exception:
+        pass
+    return ""
+
+
+def synth_meta(s):
+    """管理JSONに無いセッション（見張り番が --session-id で立てた引き継ぎ子など）の meta を作る"""
+    if not s.get("transcript"):
+        return None
+    t = first_user_text(s["transcript"])
+    if "【見張り番・自動引き継ぎ】" in t or "【見張り番" in t:
+        return {"local": None, "title": "引き継ぎ子:" + t.split("「")[1].split("」")[0][:20] if "「" in t and "」" in t else "引き継ぎ子",
+                "cwd": proc_cwd(s["pid"]) or os.path.expanduser("~"), "dispatch": True, "archived": False}
+    return None
+
+
 def resume(cli, cwd):
     """claude -p --resume で「続けて」を送る。子プロセスは切り離して走らせる（見張り番は待たない）"""
     log_out = os.path.join(REPO, "status", "watchdog-resume-%s.log" % cli[:8])
@@ -282,16 +336,25 @@ def main():
     n = 0
     h = 0
     for s in ss:
-        meta = idx.get(s["cli"]) if s["cli"] else None
+        meta = (idx.get(s["cli"]) if s["cli"] else None) or synth_meta(s)
         action, why = decide(s, meta, state)
         title = (meta or {}).get("title", "（不明）")
         if action is None:
             skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": why})
             continue
-        if more_ok is not None and more_ok <= 0:
-            skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "負荷ゲート（moreOK=0）: %s" % machine.get("blockReason", "")}); continue
+        # 負荷の安全弁（2026-09-03 修正）：以前は machine.json の moreOK=0（上限本数）で再開まで止めていたが、
+        # 23:32〜23:44 に止まった子3本がこれで放置され Dispatch が手で押す事故になった。ロードは Brave/node 由来で再開を止める理由にならない。
+        # 再開（既存セッションの続き）は「Macが固まる兆候」だけで止める。引き継ぎ（新規起動）は加えて固定上限を守る。
+        unsafe = machine_unsafe(machine)
+        if unsafe:
+            append(LOG_MD, "- %s ⏸ 見送り: 「%s」(%s) %s だが Mac が危険（%s）" % (now(), title, s["cli"][:8], why, unsafe))
+            skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "安全弁: %s" % unsafe}); continue
         st = state.setdefault(s["cli"], {"tries": 0})
         if action == "handoff":
+            alive = machine.get("sessions") or 0
+            if alive >= machine.get("hardMax", 8):
+                append(LOG_MD, "- %s ⏸ 引き継ぎ見送り: 「%s」(%s) %s だが生存%d本で固定上限" % (now(), title, s["cli"][:8], why, alive))
+                skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "固定上限（生存%d本）" % alive}); continue
             if h >= MAX_HANDOFF_PER_RUN:
                 skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の引き継ぎ上限%d本" % MAX_HANDOFF_PER_RUN}); continue
             if dry:

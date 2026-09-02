@@ -37,7 +37,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 OUT = os.path.join(REPO, "status", "machine.json")
-LOADSH = "/Users/mac/Desktop/machine_load.sh"
+LOADSH = "/Users/mac/Documents/AI作業/2026-09-02/スクリプト/machine_load.sh"
 VAULT = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain"
 KANSHI = os.path.join(VAULT, ".claude", "hooks", "tamago_kanshi.py")
 
@@ -256,6 +256,35 @@ def raw_sessions():
                         s["idle"] = (time.time() - os.path.getmtime(jl[cid])) / 60.0
                     except Exception:
                         pass
+        # 2026-09-03 追加：それでも突合できない（不明）プロセスは、作業ディレクトリ（lsof cwd）に対応する
+        # 会話ログ置き場から「まだ誰にも紐づいていない・プロセス起動後に更新された」最新の jsonl を当てる。
+        claimed = {s.get("transcript") for s in ss if s.get("transcript")}
+        for s in ss:
+            if s.get("transcript"):
+                continue
+            try:
+                out = run(["lsof", "-a", "-p", str(s["pid"]), "-d", "cwd", "-Fn"], timeout=8)
+                cwd = next((ln[1:] for ln in out.splitlines() if ln.startswith("n/")), None)
+                if not cwd:
+                    continue
+                pdir = os.path.expanduser("~/.claude/projects/" + re.sub(r"[^A-Za-z0-9]", "-", cwd))
+                cands = []
+                for fn in os.listdir(pdir) if os.path.isdir(pdir) else []:
+                    if fn.endswith(".jsonl"):
+                        p = os.path.join(pdir, fn)
+                        if p in claimed:
+                            continue
+                        mt = os.path.getmtime(p)
+                        if s.get("start") and mt < s["start"] - 60:
+                            continue
+                        cands.append((mt, p))
+                if cands:
+                    cands.sort(reverse=True)
+                    s["transcript"] = cands[0][1]
+                    s["idle"] = (time.time() - cands[0][0]) / 60.0
+                    claimed.add(cands[0][1])
+            except Exception:
+                pass
         ss = k.enrich(ss)
     except Exception:
         return []
