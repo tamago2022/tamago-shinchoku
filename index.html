@@ -205,7 +205,13 @@ function sessState(s, measured){
   if(s.kind === "asked" || s.kind === "stuck_tool") { color = "yellow"; }
   if(s.kind === "unknown") { color = "red"; }
   if(s.kind !== "idle_done" && elapsedMin != null && elapsedMin >= RED_H*60){ color = "red"; label = `${Math.floor(elapsedMin/60)}時間 報告なし`; }
-  return {color, label, elapsedMin, skull, started};
+  // 止まらない工場側が色と状態を出していれば、そちらを正とする（判定は1か所に）
+  if(s.color && ["green","yellow","red","gray"].includes(s.color)){ color = s.color; if(s.status) label = s.status; }
+  if(s.done) { color = "gray"; label = s.status || "完了"; }
+  return {color, label, elapsedMin: s.elapsedMin ?? elapsedMin, skull, started};
+}
+function urlLinks(urls){
+  return (urls || []).map((u,i)=> typeof u === "string" ? {label:`成果 ${i+1}`, url:u} : {label:u.label || `成果 ${i+1}`, url:u.url}).filter(l=>l.url);
 }
 function renderSessions(m){
   const box = document.getElementById("sessions");
@@ -221,11 +227,15 @@ function renderSessions(m){
     `<span class="red">赤<b>${cnt.red}</b></span><span class="yellow">黄<b>${cnt.yellow}</b></span><span class="green">緑<b>${cnt.green}</b></span><span>終了<b>${cnt.gray}</b></span>`;
   box.innerHTML = items.map(({s, st})=>{
     const q = encodeURIComponent(s.title || "");
-    const d = `<p>状態 <b>${esc(KIND_LABEL[s.kind] || "不明")}</b>　開始 <b>${st.started ? formatStamp(s.startedAt) : "不明"}</b></p>
+    const pushes = (s.humanPushes != null || s.dispatchPushes != null || s.watchdogResumes != null)
+      ? `<p>押された回数：人 <b>${s.humanPushes ?? 0}</b>・Dispatch <b>${s.dispatchPushes ?? 0}</b>・見張り番 <b>${s.watchdogResumes ?? 0}</b></p>` : "";
+    const report = s.lastReportAt ? `<p>最後の報告 <b>${formatStamp(s.lastReportAt)}</b>${s.lastReport ? `：${esc(String(s.lastReport).slice(0,160))}` : ""}</p>` : "";
+    const d = `<p>状態 <b>${esc(s.status || KIND_LABEL[s.kind] || "不明")}</b>　開始 <b>${st.started ? formatStamp(s.startedAt) : "不明"}</b></p>
       <p>経過 <b>${fmtDur(st.elapsedMin)}</b>${s.idleMin != null ? `　無応答 <b>${fmtDur(s.idleMin)}</b>` : ""}${s.dispatch === false ? "　手動起動" : ""}</p>
-      ${s.tail ? `<p>${esc(s.tail)}</p>` : ""}
+      ${report}${pushes}
+      ${!report && s.tail ? `<p>${esc(s.tail)}</p>` : ""}
       <p class="src">判定：3時間で報告が無ければ赤。6時間で💀。止まり（質問・承認待ち）は黄。</p>
-      ${linksHtml([{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${q}`}])}`;
+      ${linksHtml([...urlLinks(s.urls), {label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${q}`}])}`;
     const extra = st.skull ? `<span class="sk">💀</span>` : "";
     return card(st.color, s.title || "（不明）", st.label, extra, d);
   }).join("");
@@ -315,7 +325,7 @@ function renderMachine(m){
   el.hidden = false;
 }
 fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
-  .then(r => r.ok ? r.json() : null).then(m => { renderMachine(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
+  .then(r => r.ok ? r.json() : null).then(m => { window.__machine = m; renderMachine(m); renderSessions(m); }).catch(()=>{ renderSessions(null); });
 
 /* ───── 弱点の自動集計（history.jsonl） ───── */
 function renderStats(text){
@@ -342,7 +352,9 @@ function renderStats(text){
   const pct = (a,b) => b ? Math.round(a*100/b) + "%" : "—";
   const t0 = rows.reduce((a,r)=>r.t<a?r.t:a, rows[0].t), t1 = rows.reduce((a,r)=>r.t>a?r.t:a, rows[0].t);
   document.getElementById("statMeta").textContent = `${formatStamp(t0)}〜${formatStamp(t1)}`;
-  el.innerHTML = `<div class="sum">
+  const au = window.__machine && window.__machine.autonomy;
+  const auHtml = au ? `<div class="sum"><span>自走完了率（工場の集計）<b>${au.ratio != null ? Math.round(au.ratio*100) + "%" : "—"}</b></span><span>終了報告済み<b>${au.done ?? 0}</b></span><span>人に押されず完了<b>${au.doneWithoutHumanPush ?? 0}</b></span></div>` : "";
+  el.innerHTML = auHtml + `<div class="sum">
       <span>見たセッション<b>${n}</b></span><span>止まらず走り切った<b>${selfRun.length}／${finished.length}（${pct(selfRun.length, finished.length)}）</b></span>
       <span>止まった回数<b>${stops}</b></span><span>起こされた回数<b>${resumes}</b></span><span>いま止まっている<b>${stuckNow}</b></span>
       <span>平均の長さ<b>${avgH != null ? avgH.toFixed(1) + "時間" : "—"}</b></span></div>
