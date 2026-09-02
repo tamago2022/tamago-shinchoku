@@ -1,16 +1,16 @@
 {
- "raw": "負荷 100% ｜ CPU 13% / メモリ圧迫 23% / スワップ 7.33GB / ディスク空き 50GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 10% / メモリ圧迫 23% / スワップ 7.33GB / ディスク空き 50GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 13,
+ "cpu": 10,
  "mem": 23,
  "swapGB": 7512.75,
  "diskFreeGB": 50.0,
  "sessions": 2,
- "note": "上限2本・あと0本OK（5分平均ロード11.3（コア8×0.8超））",
- "measuredAt": "2026-09-03T05:54:46+09:00",
- "working": 2,
- "stalled": 0,
- "waiting": 0,
+ "note": "上限2本・あと0本OK（5分平均ロード14.5（コア8×0.8超）、予兆（5分ロード比1.8）→1本減らす）",
+ "measuredAt": "2026-09-03T06:00:02+09:00",
+ "working": 0,
+ "stalled": 1,
+ "waiting": 1,
  "safeMax": 2,
  "moreOK": 0,
  "hardMax": 8,
@@ -19,26 +19,36 @@
  "calibratedSafeN": 3,
  "calibrationBasis": "標本不足→既定4本・重い事象は4本で発生",
  "userActive": false,
- "predict": [],
+ "predict": [
+  "5分ロード比1.8"
+ ],
  "shedCandidates": [],
  "below": 0,
- "blockReason": "5分平均ロード11.3（コア8×0.8超）",
- "load1": 8.58,
- "load5": 11.33,
- "load15": 11.8,
+ "blockReason": "5分平均ロード14.5（コア8×0.8超）、予兆（5分ロード比1.8）→1本減らす",
+ "load1": 17.34,
+ "load5": 14.47,
+ "load15": 13.04,
  "cores": 8,
- "loadRatio": 1.07,
+ "loadRatio": 2.17,
  "memPressure": "green",
- "memAvailGB": 7.5,
+ "memAvailGB": 6.9,
  "swapIncreasing": false,
- "ioMBs": 0.39,
- "stalledList": [],
+ "ioMBs": 2.65,
+ "stalledList": [
+  {
+   "pid": 94641,
+   "title": "（不明）",
+   "kind": "asked",
+   "idleMin": 10.1,
+   "dispatch": false
+  }
+ ],
  "sessionList": [
   {
    "cli": "1659f2ee-6115-48b2-99d8-e58b299332c9",
    "localId": "local_eee0e200-ba98-4f49-a4a8-260dedbf854e",
    "startedAt": "2026-09-03T05:44:37+0900",
-   "elapsedMin": 10,
+   "elapsedMin": 15,
    "lastReportAt": "2026-09-02T20:46:31.388Z",
    "lastReport": "d`（swap 92.5%・空き1.0GB）＋負荷100%（ロード18.5/8コア）。畳んだ後も red のため**着火は見送り**。作業中3本は生きているので強制終了はしていない。 判断待ち：なし。",
    "status": "完了",
@@ -54,19 +64,19 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "mb": 318,
-   "idleMin": 8.2,
-   "kind": "working",
+   "idleMin": 13.5,
+   "kind": "idle_done",
    "model": "claude-opus-5"
   },
   {
    "cli": "0aca635e-2c9b-466b-aa60-f964663ca641",
    "localId": null,
    "startedAt": "2026-09-03T04:35:08+0900",
-   "elapsedMin": 80,
+   "elapsedMin": 85,
    "lastReportAt": "2026-09-02T20:49:52.895Z",
    "lastReport": "work定期タスクの既定モデルSonnet固定化はDesktop UI操作が必要（実害は軽微・緊急性低）。②今回のPWA変更は本番反映の実画面確認が未完了（別セッションかたまごさんの実機確認を待つ）。",
-   "status": "作業中",
-   "color": "green",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [
@@ -79,13 +89,13 @@
    "pid": 94641,
    "title": "（不明）",
    "dispatch": false,
-   "mb": 450,
-   "idleMin": 4.9,
-   "kind": "working",
+   "mb": 451,
+   "idleMin": 10.1,
+   "kind": "asked",
    "model": "claude-sonnet-5"
   }
  ],
- "line": "負荷 100% ｜ セッション2本（作業中2・止まり0） ｜ 上限2本・増やすな ｜ 空き50.0GB",
+ "line": "負荷 100% ｜ セッション2本（作業中0・止まり1） ｜ 上限2本・増やすな ｜ 空き50.0GB",
  "modelCounts": {
   "claude-opus-5": 1,
   "claude-sonnet-5": 1
@@ -98,7 +108,7 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 05:54",
+  "lastRun": "2026-09-03 06:00",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -125,15 +135,24 @@
   "autonomyRatio": 1.0,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
- "deployAlerts": [],
+ "deployAlerts": [
+  {
+   "t": "2026-09-03 06:00",
+   "cli": "0aca635e-2c9b-466b-aa60-f964663ca641",
+   "title": "（不明）",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/"
+   ]
+  }
+ ],
  "quota": {
-  "updatedAt": "2026-09-03 05:54",
+  "updatedAt": "2026-09-03 06:00",
   "estimated": true,
   "fablePct": 65.7,
   "allPct": 56.3,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 5.5,
-  "hoursLeft": 132.1,
+  "hoursLeft": 132.0,
   "fableLevel": "stop",
   "allLevel": "ok",
   "warnPct": 75,
@@ -151,11 +170,11 @@
   "allWeightedTokensSinceReset": 395156915,
   "last6h": {
    "fable": 30676505,
-   "all": 111477462
+   "all": 111307757
   },
   "projection": {
-   "fablePctAtReset_avgPace": 307.1,
-   "fablePctAtReset_recentPace": 277.0,
+   "fablePctAtReset_avgPace": 306.3,
+   "fablePctAtReset_recentPace": 276.8,
    "hoursToCeiling_recentPace": 21.5,
    "recentPacePctPerHour": 1.6
   },
@@ -191,7 +210,7 @@
    "pct": 34.4,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 3.75,
+   "recentPacePctPerHour": 3.66,
    "projectedPctAtReset": 34.4,
    "wasteRiskPct": 0.0,
    "mottainai": false,
@@ -206,9 +225,9 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 2.646,
+   "allPacePctPerHour6h": 2.642,
    "aliveAvgLast6h": 4.9,
-   "pctPerSessionHour": 0.5357,
+   "pctPerSessionHour": 0.5365,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": 0.6
