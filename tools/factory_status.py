@@ -234,7 +234,26 @@ def raw_sessions():
     if not k:
         return []
     try:
-        ss = k.idle_min(k.sessions())
+        ss = k.sessions()
+        # 2026-09-03 追加：見張り番が CLI（~/.local/bin/claude -p …）で立てた再開・引き継ぎ・着火セッションは
+        # kanshi の「claude-code/…MacOS/claude」条件に当たらず数えられない。ここで拾って同じ形で足す（headless=True）。
+        seen = {str(s["pid"]) for s in ss}
+        for ln in run(["ps", "-Ao", "pid,lstart,etime,rss,args"]).splitlines():
+            if " -p " not in ln or "MacOS/claude" in ln or "Helpers/disclaimer" in ln:
+                continue
+            if not re.search(r"(^|\s|/)claude(\s|$)", ln) or not re.search(r"--(resume|session-id)\s", ln):
+                continue
+            p = ln.split()
+            if len(p) < 9 or p[0] in seen:
+                continue
+            try:
+                st = time.mktime(time.strptime(" ".join(p[1:6]), "%a %b %d %H:%M:%S %Y"))
+            except Exception:
+                st = None
+            m = re.search(r"--(?:resume|session-id)\s+([0-9a-f-]{36})", ln)
+            ss.append({"pid": p[0], "etime": p[6], "mb": int(p[7]) / 1024.0, "start": st, "headless": True,
+                       "cli_hint": m.group(1) if m else None})
+        ss = k.idle_min(ss)
         # 2026-09-02 追加：Desktopが --resume=<id> で立て直したセッションは会話ログの先頭時刻が古く、
         # kanshi の「起動時刻±3分」照合で（不明）になる。ps の引数から id を直接取って突合する。
         resume_map = {}
@@ -242,6 +261,9 @@ def raw_sessions():
             m = re.search(r"^\s*(\d+)\s.*MacOS/claude .*--resume=([0-9a-f-]{36})", ln)
             if m and "Helpers/disclaimer" not in ln:
                 resume_map[m.group(1)] = m.group(2)
+        for s in ss:
+            if s.get("cli_hint"):
+                resume_map[str(s["pid"])] = s["cli_hint"]
         if resume_map:
             jl = {}
             for root, _, files in os.walk(os.path.expanduser("~/.claude/projects")):
