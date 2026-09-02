@@ -558,6 +558,15 @@ def build():
     if sm < SAFE_FLOOR and pressure != "red":
         sm = SAFE_FLOOR
     target = min(target, cap)
+    # 2026-09-03 5時間セッション枠：週枠と逆で「使い切らないと消える」（たまごさん指摘）。
+    # 余る見込みが大きい（もったいない度高）なら、安全上限(cap)の範囲内で本数を増やす方向に倒す。
+    try:
+        q5 = (json.load(open(os.path.join(REPO, "status", "quota.json"), encoding="utf-8")).get("session5h") or {})
+    except Exception:
+        q5 = {}
+    if q5.get("mottainai") and cap > target:
+        target = cap
+        reasons.append("5時間枠もったいない度%s%%→本数を上限%d本まで増やす" % (q5.get("wasteRiskPct"), cap))
     # 落とすなら誰か：Dispatch発で「終わって待機」のもの（会話は残る・--resume で戻せる）。動いているものは落とさない
     shed = [s for s in ss if s["kind"] == "idle_done" and s.get("dispatch")]
     shed.sort(key=lambda x: -(x["idleMin"] or 0))

@@ -26,7 +26,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 STATE = os.path.join(REPO, "status", "quota-state.json")
 ANCHOR = os.path.join(REPO, "status", "quota_anchor.json")
+SESSION5H_ANCHOR = os.path.join(REPO, "status", "session5h_anchor.json")
 OUT = os.path.join(REPO, "status", "quota.json")
+SESSION5H_HOURS = 5
 W = {"input_tokens": 1.0, "cache_creation_input_tokens": 1.25, "cache_read_input_tokens": 0.1, "output_tokens": 5.0}
 BUCKET = 900  # 15分
 RESET_WDAY, RESET_H, RESET_M = 1, 17, 59  # 火曜 17:59（ローカル＝JST）
@@ -136,6 +138,7 @@ def main():
     save(STATE, state)
     buckets = state["buckets"]
     cum = lambda upto, key: sum(v[key] for k, v in buckets.items() if int(k) <= upto)
+    total_between = lambda lo, hi: sum(v["fable"] + v["other"] for k, v in buckets.items() if lo <= int(k) <= hi)
     fable_now, all_now = cum(now, "fable"), cum(now, "fable") + cum(now, "other")
     anchor = load(ANCHOR, {})
     est = {"method": "推定（会話ログのトークン量×アンカー実測で目盛り合わせ）", "anchor": anchor}
@@ -184,6 +187,37 @@ def main():
     ceiling_days = None
     if proj.get("hoursToCeiling_recentPace"):
         ceiling_days = round(proj["hoursToCeiling_recentPace"] / 24, 1)
+
+    # ---- 5時間セッション枠（週枠とは別物・ローリング）2026-09-03 ----
+    # 週枠＝余らせるのが正解。5時間枠＝使い切らないと消える（たまごさん指摘）。
+    # なのでこちらは「このままだと何%余る見込みか（もったいない度）」を出す。本数を増やす判断は factory_status.py が使う。
+    session5h = None
+    sa = load(SESSION5H_ANCHOR, {})
+    if sa.get("t") is not None and sa.get("remainMin") is not None:
+        anchor_t5 = ts_epoch(sa["t"])
+        if anchor_t5:
+            elapsed_at_anchor_h = SESSION5H_HOURS - sa["remainMin"] / 60
+            window_start = anchor_t5 - elapsed_at_anchor_h * 3600
+            reset_at5 = window_start + SESSION5H_HOURS * 3600
+            tok_at_anchor = total_between(window_start, anchor_t5)
+            tok_now = total_between(window_start, now)
+            pct5 = sa["pct"] * (tok_now / tok_at_anchor) if tok_at_anchor > 0 else sa["pct"]
+            hours_left5 = max(0.0, (reset_at5 - now) / 3600)
+            elapsed_since_anchor_h = (now - anchor_t5) / 3600
+            elapsed_in_window_h = max(1e-9, (now - window_start) / 3600)
+            avg_pace_in_window = pct5 / elapsed_in_window_h
+            rate5 = ((pct5 - sa["pct"]) / elapsed_since_anchor_h) if elapsed_since_anchor_h >= 0.1 else avg_pace_in_window
+            rate5 = max(0.0, rate5)
+            projected5 = min(999.0, pct5 + rate5 * hours_left5)
+            waste_pct = max(0.0, 100.0 - projected5) if hours_left5 > 0 else 0.0
+            mottainai = hours_left5 > 0 and waste_pct >= 20
+            session5h = {
+                "pct": round(pct5, 1), "resetAt": time.strftime("%Y-%m-%d %H:%M", time.localtime(reset_at5)),
+                "hoursLeft": round(hours_left5, 2), "recentPacePctPerHour": round(rate5, 2),
+                "projectedPctAtReset": round(projected5, 1), "wasteRiskPct": round(waste_pct, 1),
+                "mottainai": mottainai, "anchor": sa,
+                "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）",
+            }
     out = {"updatedAt": time.strftime("%Y-%m-%d %H:%M"), "estimated": True,
            "fablePct": round(fable_pct, 1) if fable_pct is not None else None,
            "allPct": round(all_pct, 1) if all_pct is not None else None,
@@ -196,12 +230,16 @@ def main():
            "projection": proj, **est,
            "weekdayTarget": weekday_target, "weekdayTargetTable": WEEKDAY_TARGET_TABLE,
            "overPct": over_pct, "daysElapsedSinceReset": days_elapsed, "ceilingDaysAtRecentPace": ceiling_days,
-           "line": ("Fable週枠 %s%%（今日の目標%s%%・%s%s） ／ 全モデル %s%% ／ リセットまで %.1f日%s" % (
+           "session5h": session5h,
+           "line": ("Fable週枠 %s%%（今日の目標%s%%・%s%s） ／ 全モデル %s%% ／ リセットまで %.1f日%s ／ 5時間枠 %s" % (
                "?" if fable_pct is None else round(fable_pct), weekday_target,
                "超過なし" if (over_pct is None or over_pct <= 0) else ("%.1fpt超過" % over_pct),
                ("・このペースで%.1f日で天井" % ceiling_days) if ceiling_days else "",
                "?" if all_pct is None else round(all_pct), hours_left / 24,
-               ("（このペースだと%.0f時間で天井）" % proj["hoursToCeiling_recentPace"]) if proj.get("hoursToCeiling_recentPace") else ""))}
+               ("（このペースだと%.0f時間で天井）" % proj["hoursToCeiling_recentPace"]) if proj.get("hoursToCeiling_recentPace") else "",
+               ("%s%%・残%.1fh%s" % (session5h["pct"], session5h["hoursLeft"],
+                                      "・もったいない（%.0f%%余る見込み→本数増やす）" % session5h["wasteRiskPct"] if session5h["mottainai"] else "")
+                ) if session5h else "未計測（session5h_anchor.py未設定）"))}
     save(OUT, out)
     if "--quiet" not in sys.argv:
         print(json.dumps(out, ensure_ascii=False, indent=1))
