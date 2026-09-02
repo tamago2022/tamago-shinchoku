@@ -144,6 +144,7 @@
   /* 未処理の依頼・全件 */
   .row .no{display:inline-block; min-width:1.6em; color:var(--sub); font-weight:500; font-variant-numeric:tabular-nums; margin-right:6px;}
   .row.hold .content .no{color:var(--aka);}
+  .row .times{display:inline-block; margin-left:8px; padding:1px 8px; border:1px solid var(--line); border-radius:999px; font-size:0.75rem; font-weight:500; color:var(--sub); white-space:nowrap; vertical-align:2px;}
   details.more summary{list-style:none; cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--kinari); font-size:0.85rem;}
   details.more summary::-webkit-details-marker{display:none;}
   details.more summary::after{content:"↓"; margin-left:8px; color:var(--sub);}
@@ -253,6 +254,8 @@ const ALL_META = {
   "🟠":{label:"着手中", cls:"wip", order:2},
   "🟡":{label:"実装済（本番未確認）", cls:"wip", order:3},
   "❓":{label:"完了か不明", cls:"cannot", order:4},
+  "🔵":{label:"別AIが検証中", cls:"wip", order:5},
+  "✅":{label:"完了", cls:"done", order:6},
 };
 function renderAll(){
   const A = window.SHINCHOKU_ALL; if(!A) return;
@@ -270,7 +273,7 @@ function renderAll(){
       const first = it.body[0] || "";
       const rest = it.body.slice(1);
       h += `<div class="row ${m.cls}">
-        <div class="content"><span class="no">${it.no}</span>${esc(it.title)}</div>
+        <div class="content"><span class="no">${it.no}</span>${esc(it.title)}${it.times ? `<span class="times">${esc(it.times)}</span>` : ""}</div>
         <div class="note">${esc(first)}</div>
         ${rest.length || it.src ? `<details class="more"><summary>くわしく</summary>${rest.map(x=>`<div class="note">${esc(x)}</div>`).join("")}${it.src ? `<div class="evi">出典：${esc(it.src)}</div>` : ""}</details>` : ""}
       </div>`;
