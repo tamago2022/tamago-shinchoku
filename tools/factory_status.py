@@ -507,6 +507,47 @@ def build():
     ss = sessions()
     # 上限は5分平均ロード（la[1]）で決める。1分平均は瞬間的に跳ねて上限が0↔6と暴れるため。1分平均はJSONに load1 として残す
     sm, reasons, alive, working = safe_max(base, ss, la[1] if la[1] is not None else la[0], cores, pressure, avail, swap_up, iomb)
+    # ---- 2026-09-03 本数維持：実測校正（calibration.json）・人が操作中なら1本下げる・予兆で減らす ----
+    calib = {}
+    try:
+        calib = json.load(open(os.path.join(REPO, "status", "calibration.json"), encoding="utf-8"))
+    except Exception:
+        pass
+    cap = min(HARD_MAX, int(calib.get("safeN") or HARD_MAX))
+    target = max(2, int(calib.get("target") or max(2, int(cap * 0.8))))
+    user_active = False
+    try:
+        idle_ns = int(re.search(r'"HIDIdleTime" = (\d+)', run(["ioreg", "-c", "IOHIDSystem"])).group(1))
+        user_active = idle_ns < 300 * 1e9  # 5分以内にキーボード/マウス操作あり＝たまごさんがPCを使っている
+    except Exception:
+        pass
+    if user_active and cap > 2:
+        cap -= 1; reasons.append("たまごさん操作中（上限-1）")
+    load_ratio5 = (la[1] / cores) if la[1] is not None and cores else None
+    predict = []
+    if pressure == "yellow":
+        predict.append("メモリ圧=黄")
+    if swap_up:
+        predict.append("スワップ増加")
+    if load_ratio5 is not None and load_ratio5 > 1.5:
+        predict.append("5分ロード比%.1f" % load_ratio5)
+    if predict and alive > 0:
+        sm = min(sm, alive - 1)
+        reasons.append("予兆（%s）→1本減らす" % "・".join(predict))
+    if sm > cap:
+        sm = cap
+        reasons.append("実測上限%d本" % cap)
+    if sm < SAFE_FLOOR and pressure != "red":
+        sm = SAFE_FLOOR
+    target = min(target, cap)
+    # 落とすなら誰か：Dispatch発で「終わって待機」のもの（会話は残る・--resume で戻せる）。動いているものは落とさない
+    shed = [s for s in ss if s["kind"] == "idle_done" and s.get("dispatch")]
+    shed.sort(key=lambda x: -(x["idleMin"] or 0))
+    if pressure == "red" or (load_ratio5 is not None and load_ratio5 > 2.0):
+        try:
+            subprocess.run(["python3", os.path.join(HERE, "mark_heavy.py"), "自動検知: %s" % ("メモリ赤" if pressure == "red" else "5分ロード比%.1f" % load_ratio5), "--auto"], capture_output=True, timeout=10)
+        except Exception:
+            pass
     stalled = [s for s in ss if s["kind"] in ("asked", "stuck_tool")]
     waiting = [s for s in ss if s["kind"] == "idle_done"]
     more_ok = max(0, sm - alive)
@@ -534,6 +575,10 @@ def build():
         "safeMax": sm,
         "moreOK": more_ok,
         "hardMax": HARD_MAX,
+        "cap": cap, "target": target, "calibratedSafeN": calib.get("safeN"), "calibrationBasis": calib.get("basis"),
+        "userActive": user_active, "predict": predict,
+        "shedCandidates": [{"pid": s["pid"], "title": s["title"], "idleMin": s["idleMin"]} for s in shed[:3]],
+        "below": max(0, target - alive),
         "blockReason": "、".join(reasons),
         "load1": la[0], "load5": la[1], "load15": la[2], "cores": cores,
         "loadRatio": round(la[0] / cores, 2) if la[0] is not None else None,
@@ -583,6 +628,28 @@ def main():
         with open(tmp, "w", encoding="utf-8") as f:
             f.write(js)
         os.replace(tmp, OUT)
+        # 実測校正用の時系列（5分おき1行・3日分）。本数と負荷の対応をここに溜め、calibrate.py が上限を出す
+        try:
+            hp = os.path.join(os.path.dirname(OUT), "load_history.jsonl")
+            row = {"t": d["measuredAt"], "n": d.get("sessions"), "working": d.get("working"),
+                   "loadRatio": round(d["load5"] / d["cores"], 2) if d.get("load5") and d.get("cores") else None,
+                   "cpu": d.get("cpu"), "mem": d.get("memPressure"), "memAvailGB": d.get("memAvailGB"),
+                   "swapGB": d.get("swapGB"), "swapUp": d.get("swapIncreasing"), "ioMBs": d.get("ioMBs"),
+                   "userActive": d.get("userActive"), "predict": d.get("predict")}
+            lines = []
+            if os.path.exists(hp):
+                lim = time.strftime("%Y-%m-%d", time.localtime(time.time() - 3 * 86400))
+                for ln in open(hp, encoding="utf-8"):
+                    try:
+                        if (json.loads(ln).get("t") or "")[:10] >= lim:
+                            lines.append(ln if ln.endswith("\n") else ln + "\n")
+                    except Exception:
+                        pass
+            lines.append(json.dumps(row, ensure_ascii=False) + "\n")
+            with open(hp, "w", encoding="utf-8") as f:
+                f.writelines(lines)
+        except Exception:
+            pass
         print(d["line"])
     else:
         print(js)

@@ -34,6 +34,8 @@ fi
 
 # 2026-09-02 見張り番：止まっている子セッションを検知して claude -p --resume で自動再開（判定は factory_status の分類。負荷ゲートあり）
 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
+# 2026-09-03 本数の実測校正：load_history.jsonl＋heavy_events.jsonl → calibration.json（safeN/target）。次回の factory_status が読む
+python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く
 python3 /Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py sync >/dev/null 2>&1 || true
 

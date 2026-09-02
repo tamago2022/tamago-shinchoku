@@ -436,32 +436,56 @@ def main():
         stt = state.get(s["cli"]) if s["cli"] else None
         if stt and s["idle"] is not None and s["idle"] < STALL_MIN and stt.get("tries") and time.time() - stt.get("lastResumeAt", 0) > COOLDOWN_MIN * 60:
             stt["tries"] = 0
-    # ③ 自動着火（空きコンロを作らない）
+    # ③ 本数維持：目標（target＝実測上限の8割）を下回っていれば着火して埋める。上限を超えて予兆が出ていれば1本落とす
     more_ok = machine.get("moreOK") or 0
+    alive_n = machine.get("sessions") or len(ss)
+    target = machine.get("target") or 2
+    below = max(0, target - alive_n)
     last_ign = state.get("_lastIgnitionAt", 0)
+    shed_done = None
+    # 落とす：上限超過＋予兆（メモリ黄／スワップ増／ロード比1.5超）または Mac 危険。落とすのは Dispatch発で「終わって待機」のものだけ（--resume で戻せる）
+    if (unsafe or machine.get("predict")) and alive_n > (machine.get("safeMax") or 0) and machine.get("shedCandidates"):
+        c = machine["shedCandidates"][0]
+        if not dry:
+            try:
+                os.kill(int(c["pid"]), 15)
+                shed_done = c
+                totals["sheds"] = totals.get("sheds", 0) + 1
+                append(LOG_MD, "- %s 🔻 1本落とした: 「%s」(pid %s・終わって待機%d分) 理由=%s（生存%d本＞上限%s本）" % (
+                    now(), c["title"], c["pid"], round(c.get("idleMin") or 0), unsafe or "・".join(machine.get("predict") or []), alive_n, machine.get("safeMax")))
+            except Exception as e:
+                append(LOG_MD, "- %s ❌ 落とせず pid %s: %s" % (now(), c.get("pid"), e))
     if unsafe:
         ign_why = "Mac危険（%s）" % unsafe
     elif more_ok <= 0:
-        ign_why = "空きなし（上限%s本・生存%s本）" % (machine.get("safeMax"), machine.get("sessions"))
+        ign_why = "空きなし（上限%s本・目標%s本・生存%s本）" % (machine.get("safeMax"), target, alive_n)
+    elif below <= 0:
+        ign_why = "目標%d本を満たしている（生存%d本）" % (target, alive_n)
     elif headless_alive >= MAX_HEADLESS:
         ign_why = "見張り番の子が既に%d本" % headless_alive
     elif time.time() - last_ign < IGNITE_INTERVAL_MIN * 60:
-        ign_why = "前回着火から%d分未満" % IGNITE_INTERVAL_MIN
+        ign_why = "前回着火から%d分未満（目標まであと%d本）" % (IGNITE_INTERVAL_MIN, below)
     elif dry:
-        ign_why = "dry-run（着火可の状態）"
+        ign_why = "dry-run（着火可・目標まであと%d本）" % below
     else:
-        new_id, pid, row = ignite(machine)
-        if new_id:
-            state["_lastIgnitionAt"] = time.time(); totals["ignitions"] += 1
+        fired = 0
+        ign_why = "着火せず"
+        for _ in range(min(below, more_ok, 2, MAX_HEADLESS - headless_alive)):
+            new_id, pid, row = ignite(machine)
+            if not new_id:
+                ign_why = "着火せず: %s" % row; break
+            fired += 1; totals["ignitions"] += 1
             ignited.append({"newSession": new_id, "pid": pid, "row": row})
-            append(LOG_MD, "- %s 🔥 自動着火: %s → 新セッション %s（空き%d本）" % (now(), row, new_id[:8], more_ok))
-            ign_why = "着火した"
-        else:
-            ign_why = "着火せず: %s" % row
+            append(LOG_MD, "- %s 🔥 自動着火: %s → 新セッション %s（目標%d本・生存%d本・空き%d本）" % (now(), row, new_id[:8], target, alive_n, more_ok))
+            alive_n += 1
+        if fired:
+            state["_lastIgnitionAt"] = time.time(); ign_why = "着火した（%d本）" % fired
     if not dry:
         save_json(STATE_JSON, state)
         machine["watchdog"] = {"lastRun": now(), "resumed": resumed, "handedOff": handed, "ignited": ignited, "unrecoverable": unrec,
-                               "ignite": ign_why,
+                               "ignite": ign_why, "shed": shed_done,
+                               "keep": {"target": target, "alive": alive_n, "below": max(0, target - alive_n),
+                                        "line": "現在%d本／上限%s本／目標%d本／あと%d本いける" % (alive_n, machine.get("safeMax"), target, max(0, more_ok))},
                                "stalledSkipped": [x for x in skipped if x["kind"] in ("asked", "stuck_tool", "idle_done")
                                                   and not x["why"].startswith(("動いている", "Dispatch発でない", "見回り系", "終了報告済み"))]}
         sl = machine.get("sessionList") or []
