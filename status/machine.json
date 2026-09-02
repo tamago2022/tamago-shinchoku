@@ -1,46 +1,53 @@
 {
- "raw": "負荷 100% ｜ CPU 10% / メモリ圧迫 23% / スワップ 8.07GB / ディスク空き 50GB ｜ 稼働 4本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 9% / メモリ圧迫 22% / スワップ 8.07GB / ディスク空き 50GB ｜ 稼働 4本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 10,
- "mem": 23,
+ "cpu": 9,
+ "mem": 22,
  "swapGB": 8267.25,
  "diskFreeGB": 50.0,
  "sessions": 4,
- "note": "上限2本・あと0本OK（5分平均ロード36.7（コア8×0.8超）、たまごさん操作中（上限-1）、予兆（5分ロード比4.6）→1本減らす）",
- "measuredAt": "2026-09-03T04:02:59+09:00",
- "working": 2,
- "stalled": 1,
+ "note": "上限2本・あと0本OK（5分平均ロード23.5（コア8×0.8超）、予兆（5分ロード比2.9）→1本減らす、5時間枠もったいない度65.4%→本数を上限3本まで増やす）",
+ "measuredAt": "2026-09-03T04:08:40+09:00",
+ "working": 1,
+ "stalled": 2,
  "waiting": 0,
  "safeMax": 2,
  "moreOK": 0,
  "hardMax": 8,
- "cap": 2,
- "target": 2,
+ "cap": 3,
+ "target": 3,
  "calibratedSafeN": 3,
  "calibrationBasis": "標本不足→既定4本・重い事象は4本で発生",
- "userActive": true,
+ "userActive": false,
  "predict": [
-  "5分ロード比4.6"
+  "5分ロード比2.9"
  ],
  "shedCandidates": [],
  "below": 0,
- "blockReason": "5分平均ロード36.7（コア8×0.8超）、たまごさん操作中（上限-1）、予兆（5分ロード比4.6）→1本減らす",
- "load1": 21.37,
- "load5": 36.73,
- "load15": 33.92,
+ "blockReason": "5分平均ロード23.5（コア8×0.8超）、予兆（5分ロード比2.9）→1本減らす、5時間枠もったいない度65.4%→本数を上限3本まで増やす",
+ "load1": 16.97,
+ "load5": 23.48,
+ "load15": 28.42,
  "cores": 8,
- "loadRatio": 2.67,
+ "loadRatio": 2.12,
  "memPressure": "green",
- "memAvailGB": 6.8,
+ "memAvailGB": 6.7,
  "swapIncreasing": false,
- "ioMBs": 0.08,
+ "ioMBs": 0.66,
  "stalledList": [
   {
    "pid": 80468,
    "title": "Rusuban mimawari 30min",
    "kind": "asked",
-   "idleMin": 15.9,
+   "idleMin": 21.6,
    "dispatch": false
+  },
+  {
+   "pid": 49683,
+   "title": "枠を自動制御する（夜通し）",
+   "kind": "asked",
+   "idleMin": 10.3,
+   "dispatch": true
   }
  ],
  "sessionList": [
@@ -48,7 +55,7 @@
    "cli": "926b9ff6-1153-43d0-ad7d-e16c0e18dc30",
    "localId": "local_23c8ec35-e4a2-4e61-94d7-d5125200d112",
    "startedAt": "2026-09-03T03:44:37+0900",
-   "elapsedMin": 18,
+   "elapsedMin": 24,
    "lastReportAt": "2026-09-02T18:47:01.851Z",
    "lastReport": "過 → **着火は見送り**。司令塔キューのpendingは温存。 判断待ち：停止中の PID 49683「枠を自動制御する（夜通し）」を ListAgents で特定できず声かけ不可（次回再試行）。",
    "status": "止まっている",
@@ -62,7 +69,7 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "mb": 259,
-   "idleMin": 15.9,
+   "idleMin": 21.6,
    "kind": "asked",
    "model": "claude-opus-5"
   },
@@ -70,7 +77,7 @@
    "cli": "b0ef32a6-0a3b-451d-a08e-b84041d8f76e",
    "localId": "local_f0f0ea94-9e17-4919-93b6-99fed9ca1014",
    "startedAt": "2026-09-03T01:48:52+0900",
-   "elapsedMin": 134,
+   "elapsedMin": 139,
    "lastReportAt": "2026-09-02T18:58:21.675Z",
    "lastReport": "確認（直近コミット18e7c72まで問題なし、`fableLevel`判定・負荷ゲートとも機能中）。新規の作業指示は無い。  **問題：** なし  **判断待ち：** なし。作業完了のため終了する。",
    "status": "完了",
@@ -83,16 +90,16 @@
    "pid": 49683,
    "title": "枠を自動制御する（夜通し）",
    "dispatch": true,
-   "mb": 155,
-   "idleMin": 4.6,
-   "kind": "working",
+   "mb": 156,
+   "idleMin": 10.3,
+   "kind": "asked",
    "model": "claude-sonnet-5"
   },
   {
    "cli": "8d83c1b8-8c87-4cd0-9f07-9480dd7e4de5",
    "localId": "local_d10776d2-8762-4ef5-908d-2d1cd5abbee6",
    "startedAt": "2026-09-03T02:41:26+0900",
-   "elapsedMin": 81,
+   "elapsedMin": 87,
    "lastReportAt": "2026-09-02T19:01:16.087Z",
    "lastReport": "ラム等）で裏取り済み、末尾SOURCESに列挙。  **未達：** たまごさんの実画面での合格判断のみ。フジファブリック「若者のすべて」・松田聖子「青い珊瑚礁」への橋（短い標識）も末尾に設置済みです。",
    "status": "作業中",
@@ -106,7 +113,7 @@
    "title": "達郎マガジンの叩きを朝までに",
    "dispatch": true,
    "mb": 484,
-   "idleMin": 1.7,
+   "idleMin": 7.4,
    "kind": "working",
    "model": "claude-sonnet-5"
   },
@@ -114,7 +121,7 @@
    "cli": null,
    "localId": null,
    "startedAt": "2026-09-03T04:02:15+0900",
-   "elapsedMin": 0,
+   "elapsedMin": 6,
    "lastReportAt": null,
    "lastReport": "",
    "status": "不明",
@@ -127,13 +134,13 @@
    "pid": 89019,
    "title": "（不明）",
    "dispatch": false,
-   "mb": 257,
+   "mb": 258,
    "idleMin": null,
    "kind": "unknown",
    "model": null
   }
  ],
- "line": "負荷 100% ｜ セッション4本（作業中2・止まり1） ｜ 上限2本・2本超過（畳め） ｜ 空き50.0GB",
+ "line": "負荷 100% ｜ セッション4本（作業中1・止まり2） ｜ 上限2本・2本超過（畳め） ｜ 空き50.0GB",
  "modelCounts": {
   "claude-opus-5": 1,
   "claude-sonnet-5": 2,
@@ -147,18 +154,18 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 04:03",
+  "lastRun": "2026-09-03 04:08",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "空きなし（上限2本・目標2本・生存4本）",
+  "ignite": "空きなし（上限2本・目標3本・生存4本）",
   "shed": null,
   "keep": {
-   "target": 2,
+   "target": 3,
    "alive": 4,
    "below": 0,
-   "line": "現在4本／上限2本／目標2本／あと0本いける"
+   "line": "現在4本／上限2本／目標3本／あと0本いける"
   },
   "stalledSkipped": []
  },
@@ -175,13 +182,13 @@
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
  "quota": {
-  "updatedAt": "2026-09-03 04:02",
+  "updatedAt": "2026-09-03 04:08",
   "estimated": true,
   "fablePct": 65.7,
   "allPct": 54.6,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 5.6,
-  "hoursLeft": 133.9,
+  "hoursLeft": 133.8,
   "fableLevel": "stop",
   "allLevel": "ok",
   "warnPct": 75,
@@ -202,8 +209,8 @@
    "all": 120532141
   },
   "projection": {
-   "fablePctAtReset_avgPace": 323.9,
-   "fablePctAtReset_recentPace": 405.9,
+   "fablePctAtReset_avgPace": 323.0,
+   "fablePctAtReset_recentPace": 405.7,
    "hoursToCeiling_recentPace": 13.5,
    "recentPacePctPerHour": 2.54
   },
@@ -238,10 +245,10 @@
   "session5h": {
    "pct": 30.8,
    "resetAt": "2026-09-03 04:44",
-   "hoursLeft": 0.69,
-   "recentPacePctPerHour": 5.47,
-   "projectedPctAtReset": 34.6,
-   "wasteRiskPct": 65.4,
+   "hoursLeft": 0.59,
+   "recentPacePctPerHour": 5.22,
+   "projectedPctAtReset": 33.9,
+   "wasteRiskPct": 66.1,
    "mottainai": true,
    "anchor": {
     "t": "2026-09-03T02:04:06",
@@ -256,11 +263,11 @@
   "benchmark": {
    "allPacePctPerHour6h": 2.861,
    "aliveAvgLast6h": 6.0,
-   "pctPerSessionHour": 0.4769,
+   "pctPerSessionHour": 0.4798,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
-   "sonnetSessionsFor5hWindow": 179.9,
+   "sonnetSessionsFor5hWindow": 209.1,
    "sonnetSessionsForWeeklyCurve": 0.7
   },
-  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 55%（曲線目標20.0%・34.6pt上振れ） ／ リセットまで 5.6日（このペースだと14時間で天井） ／ 5時間枠 30.8%・残0.7h・もったいない（65%余る見込み→本数増やす）"
+  "line": "Fable週枠 66%（今日の目標45%・20.7pt上振れ→絞る） ／ 全モデル 55%（曲線目標20.0%・34.6pt上振れ） ／ リセットまで 5.6日（このペースだと14時間で天井） ／ 5時間枠 30.8%・残0.6h・もったいない（66%余る見込み→本数増やす）"
  }
 }
