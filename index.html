@@ -153,7 +153,7 @@
 <div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
 
 <div class="label"><b>走行状況</b>自動・5分おき <small id="sessMeta"></small></div>
-<div class="legend"><span><i style="background:var(--green)"></i>作業中</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>3時間報告なし／止まり／失敗</span></div>
+<div class="legend"><span><i style="background:var(--green)"></i>今動いている</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>止まっている（動いていない＝台帳が着手中でも赤）</span></div>
 <div class="sum" id="sessSum"></div>
 <div class="g" id="sessions"></div>
 
@@ -354,37 +354,80 @@ function renderSessions(m){
 }
 
 /* ───── ホワイトボード（ai-brain/live/whiteboard.md の写し status/whiteboard.json。セッションはこの順に取る） ───── */
-const WB_COLOR = {"作業中":"green", "判断待ち":"yellow", "検証待ち":"blue", "完了":"gray", "未着手":"gray"};
+/* 実態の状態：台帳の「作業中」ラベルは信じない。今この瞬間に生きて動いているセッションが担当している行だけ緑。
+   それ以外の「作業中」は赤＝止まっている（止まってからの時間＝最終更新からの経過）。 */
+function liveSessions(){
+  const m = window.__machine; const out = [];
+  ((m && m.sessionList) || []).forEach(s=>{
+    const st = sessState(s, m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now());
+    out.push({s, st, ids:[s.localId, s.cli].filter(Boolean).map(x=>String(x).slice(0,14))});
+  });
+  return out;
+}
+function findLive(owner){
+  if(!owner || owner === "-") return null;
+  const key = String(owner).slice(0,14);
+  return liveSessions().find(x => x.ids.some(id => id === key || key.startsWith(id) || id.startsWith(key))) || null;
+}
+function hoursSince(stamp){ // "2026-09-02 19:24" or ISO
+  if(!stamp) return null;
+  const t = new Date(String(stamp).replace(" ", "T")).getTime();
+  return isNaN(t) ? null : Math.max(0, (Date.now() - t)/3600000);
+}
+function fmtH(h){ if(h == null) return "不明"; return h < 1 ? `${Math.round(h*60)}分` : h < 48 ? `${Math.floor(h)}時間` : `${Math.floor(h/24)}日`; }
+// 台帳の状態 → 実態の状態（color, label, order）
+function effectiveState(state, owner, updatedAt){
+  const live = findLive(owner);
+  if(state === "作業中"){
+    if(live && live.st.color === "green") return {color:"green", label:"動いている", order:0, live};
+    const h = hoursSince(updatedAt);
+    return {color:"red", label:`止まっている ${fmtH(h)}${live ? "（担当は" + live.st.label + "）" : ""}`, order:1, live, h};
+  }
+  if(state === "判断待ち") return {color:"yellow", label:"判断待ち（たまごさん）", order:2};
+  if(state === "検証待ち") return {color:"blue", label:"検証待ち（別の目）", order:3};
+  if(state === "完了") return {color:"gray", label:"完了", order:5};
+  return {color:"gray", label:"未着手", order:4};
+}
 function renderWhiteboard(w){
   const box = document.getElementById("wb");
   const rows = (w && w.rows) || [];
   document.getElementById("wbMeta").textContent = w && w.updatedAt ? `${rows.length}件・${w.updatedAt.slice(5)}` : "";
   if(!rows.length){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">ホワイトボードの写しがまだ無い（Mac側 whiteboard.py sync が5分おきに書く）</div>`; return; }
-  const order = {"作業中":0, "判断待ち":1, "検証待ち":2, "未着手":3, "完了":4};
   const num = r => String(parseInt(String(r.id).replace(/^T/,""), 10));
-  const sorted = [...rows].sort((a,b)=> (a.priority||3)-(b.priority||3) || (a.rank||999)-(b.rank||999));
-  box.innerHTML = sorted.map(r=>{
-    const color = WB_COLOR[r.state] || "gray";
-    const extra = (r.count && r.count !== "台帳" ? `<span class="n">${esc(r.count)}回</span>` : "") + (r.stale ? `<span class="sk">💀</span>` : "");
-    const d = `<p>状態 <b>${esc(r.state)}</b>　担当 <b>${esc(r.owner || "空き")}</b>　順位 <b>${r.rank ?? "—"}</b>　更新 <b>${esc(r.updatedAt||"")}</b></p>
+  const items = rows.map(r => ({r, e: effectiveState(r.state, r.owner, r.updatedAt)}));
+  const cnt = {}; items.forEach(x => cnt[x.e.color] = (cnt[x.e.color]||0)+1);
+  document.getElementById("wbMeta").textContent += `　動いている${cnt.green||0}・止まっている${cnt.red||0}`;
+  window.__wbLive = {}; items.forEach(x => { window.__wbLive[num(x.r)] = x.e; });
+  if(window.SHINCHOKU_ALL && document.getElementById("all").children.length) renderAll();  // 225件側の色も実態に合わせ直す
+  items.sort((a,b)=> a.e.order - b.e.order || (a.r.priority||3)-(b.r.priority||3) || (a.r.rank||999)-(b.r.rank||999));
+  box.innerHTML = items.map(({r, e})=>{
+    const resumes = e.live ? ((e.live.s.watchdogResumes||0) + (e.live.s.dispatchPushes||0) + (e.live.s.humanPushes||0)) : 0;
+    const extra = (r.count && r.count !== "台帳" ? `<span class="n">${esc(r.count)}回</span>` : "") + (resumes ? `<span class="chip">🔁${resumes}</span>` : "") + (e.h != null && e.h >= 6 ? `<span class="sk">💀</span>` : "");
+    const d = `<p>台帳の状態 <b>${esc(r.state)}</b>　担当 <b>${esc(r.owner || "空き（誰も持っていない）")}</b>　順位 <b>${r.rank ?? "—"}</b>　最終更新 <b>${esc(r.updatedAt||"")}</b></p>
+      ${e.color === "red" ? `<p class="src">判定：担当セッションが今動いていない（生きていない・報告が無い）。台帳が「作業中」でも止まっている扱い。自動再開は見張り番（5分おき）が担う</p>` : ""}
       <p>${esc(r.note||"")}</p>
       ${linksHtml([{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${encodeURIComponent(r.task||"")}`}])}`;
-    return card(color, `${num(r)}. ${r.task}`, r.state + (r.owner ? "・" + r.owner.slice(0,14) : ""), extra, d, num(r));
+    return card(e.color, `${num(r)}. ${r.task}`, e.label, extra, d, num(r));
   }).join("");
 }
 fetch("status/whiteboard.json?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.json() : null).then(renderWhiteboard).catch(()=>renderWhiteboard(null));
 
 /* ───── 未処理の依頼（225件） ───── */
+// 台帳の札 → 実態の状態。「着手中」は今動いているセッションが無ければ止まっている（赤）。動いているものはホワイトボード側で緑になる
 const ALL_META = {
-  "⏸":{label:"判断待ち", color:"yellow", order:0},
-  "🔴":{label:"未着手",   color:"gray",   order:1},
-  "🟠":{label:"着手中",   color:"green",  order:2},
-  "🟡":{label:"実装済・未検証", color:"green", order:3},
-  "🔵":{label:"検証中",   color:"green",  order:4},
-  "❓":{label:"完了か不明", color:"gray", order:5},
-  "✅":{label:"完了",     color:"gray",   order:6},
+  "🟠":{label:"止まっている（台帳は着手中）", short:"止まっている", color:"red",    order:0},
+  "⏸":{label:"判断待ち（たまごさん）",       short:"判断待ち",     color:"yellow", order:1},
+  "🟡":{label:"実装済・本番未確認",           short:"実装済・未確認", color:"blue",  order:2},
+  "🔵":{label:"検証中（別の目）",             short:"検証中",       color:"blue",   order:3},
+  "🔴":{label:"未着手",                       short:"未着手",       color:"gray",   order:4},
+  "❓":{label:"完了か不明",                   short:"完了か不明",   color:"gray",   order:5},
+  "✅":{label:"完了",                         short:"完了",         color:"gray",   order:6},
 };
+function lastDateOf(it){ // 出典の中の一番新しい MM-DD から「止まってから」を推定（約）
+  const ds = [...(it.src||"").matchAll(/(\d{2})-(\d{2})/g)].map(m=>new Date(`2026-${m[1]}-${m[2]}T12:00:00+09:00`).getTime()).filter(x=>!isNaN(x));
+  return ds.length ? Math.max(...ds) : null;
+}
 function timesOf(it){ const m = (it.body && it.body[0] || "").match(/／\s*(\d+回[^（｜／]*)/); return m ? m[1].trim() : ""; }
 function renderAll(){
   const A = window.SHINCHOKU_ALL; if(!A) return;
@@ -401,8 +444,18 @@ function renderAll(){
     const rank = it => prioOf(it.no) || 9;   // 1が最優先。未設定は後ろ
     [...groups[k]].sort((a,b)=> rank(a) - rank(b)).forEach(it=>{
       const times = timesOf(it);
-      const d = it.body.map(x=>`<p>${esc(x)}</p>`).join("") + (it.src ? `<p class="src">出典：${esc(it.src)}</p>` : "");
-      h += card(m.color, `${it.no}. ${it.title}`, m.label, times ? `<span class="n">${esc(times)}</span>` : "", d, it.no);
+      // ホワイトボード側で「今動いている」と判定された番号は緑にする（台帳の札より実態を優先）
+      const live = (window.__wbLive || {})[String(it.no)];
+      let color = m.color, label = m.short, extra = times ? `<span class="n">${esc(times)}</span>` : "";
+      if(live && live.color === "green"){ color = "green"; label = "動いている"; }
+      else if(k === "🟠"){
+        const t = live && live.h != null ? live.h : (lastDateOf(it) ? (Date.now() - lastDateOf(it))/3600000 : null);
+        label = `止まっている ${t != null ? "約" + fmtH(t) : ""}`.trim();
+        if(t != null && t >= 24) extra += `<span class="sk">💀</span>`;
+      }
+      const d = `<p>台帳の札 <b>${k} ${esc(m.label)}</b>${k === "🟠" ? "　→ 今動いているセッションが無いので「止まっている」扱い" : ""}</p>`
+        + it.body.map(x=>`<p>${esc(x)}</p>`).join("") + (it.src ? `<p class="src">出典：${esc(it.src)}</p>` : "");
+      h += card(color, `${it.no}. ${it.title}`, label, extra, d, it.no);
     });
   });
   h += `<div class="gh" id="a-old">旧台帳のみ（2026-07・更新停止） ${A.old.length}件</div>`;
