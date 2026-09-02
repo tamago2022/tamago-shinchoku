@@ -73,7 +73,9 @@ CURR=$(strip < "$OUT")
 LAST=$(git log -1 --format=%ct -- status/machine.json 2>/dev/null); LAST=${LAST:-0}
 AGE=$(( $(date +%s) - LAST ))
 # 数字が同じでも20分以上経っていれば鮮度のために push する
-if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ]; then exit 0; fi
+HIST_CHANGED=0; git diff --quiet -- status/history.jsonl 2>/dev/null || HIST_CHANGED=1
+[ -f status/history.jsonl ] && ! git ls-files --error-unmatch status/history.jsonl >/dev/null 2>&1 && HIST_CHANGED=1
+if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then exit 0; fi
 
 git add status/machine.json status/history.jsonl >/dev/null 2>&1
 git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || exit 0
