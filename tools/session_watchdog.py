@@ -51,13 +51,21 @@ CLAUDE = os.environ.get("CLAUDE_BIN") or (os.path.expanduser("~/.local/bin/claud
         if os.path.exists(os.path.expanduser("~/.local/bin/claude")) else "claude")
 
 STALL_MIN = 15          # これ以上進んでいなければ止まっている
-MAX_TRIES = 3           # 同じセッションへ送る上限
+MAX_TRIES = 3           # 同じセッションへ送る上限（超えたら引き継ぎ）
 MAX_PER_RUN = 2         # 1回の見張りで再開する本数
-MAX_IDLE_HOURS = 6      # これ以上放置されたものは触らない（畳み対象）
+HANDOFF_HOURS = 3       # これ以上進んでいなければ、再開ではなく新しいセッションへ引き継ぐ（たまごさん 2026-09-02「赤になったら自動で引き継いで新しく走らせていい」）
+MAX_HANDOFF_PER_RUN = 1 # 1回の見張りで引き継ぐ本数
+MAX_IDLE_HOURS = 24     # これ以上放置されたものは触らない（畳み対象。見回り係の仕事）
 COOLDOWN_MIN = 20       # 再開してからこの間は再判定しない
-RESUME_MSG = ("【見張り番・自動再開】止まっていたので続けます。止まらずに最後まで走り切ること。"
-              "質問で止まらない（仮定を置いて進め、仮定は末尾に1行）。止まってよいのは 削除／課金／外部公開／認証情報 の4つだけ。"
-              "もし作業が本当に終わっているなら「完了：」で始まる3行の最終報告だけ書いて終了する。")
+WHITEBOARD = "/Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py"
+WHITEBOARD_MD = "/Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.md"
+HANDOFF_DIR = os.path.join(VAULT, "AI出力", "_ルール", "引き継ぎ_自動")
+MANUAL_ESSENTIALS = ("マニュアルの要点：①たまごさんに質問しない。判断が要れば仮定を置いて進み、仮定は末尾に1行。"
+                     "②「続けますか」と聞かない。報告のために止まらない。③1つ本番に出たら即Dispatchへ報告（完了／問題／判断待ちの3行・本番の直URL）。"
+                     "④Lovableのエージェントとビルドは使わない。⑤公開（Lovable Publish）は聞かずに押す。"
+                     "⑥止まってよいのは 削除／課金／外部公開(公開ボタン以外)／認証情報 だけ。⑦完了は本番で別の目が確認して初めて完了（それまでは検証待ち）。")
+RESUME_MSG = ("【見張り番・自動再開】止まっていたので続けます。止まらずに最後まで走り切ること。" + MANUAL_ESSENTIALS +
+              " もし作業が本当に終わっているなら「完了：」で始まる3行の最終報告だけ書いて終了する。")
 DONE_PAT = re.compile(r"(完了[：:]|^完了|判断待ち[：:]\s*なし|畳みます|ここで畳|終了します|以上です|報告は以上|完了／問題／判断待ち)")
 EXCLUDE_TITLE = re.compile(r"(mimawari|見回り|watchdog|見張り番)", re.I)
 
@@ -148,33 +156,99 @@ def sessions_with_transcript():
 
 
 def decide(s, meta, state):
-    """(再開するか, 理由)"""
+    """(動作, 理由)  動作: None=触らない / "resume"=続けてを送る / "handoff"=新セッションへ引き継ぐ"""
     if not s["cli"] or not meta:
-        return False, "会話ログ/管理JSONと突合できない"
+        return None, "会話ログ/管理JSONと突合できない"
     if meta["archived"]:
-        return False, "アーカイブ済み"
+        return None, "アーカイブ済み"
     if not meta["dispatch"]:
-        return False, "Dispatch発でない（直接タブ・見回り係）"
+        return None, "Dispatch発でない（直接タブ・見回り係）"
     if EXCLUDE_TITLE.search(meta["title"]):
-        return False, "見回り系は対象外"
+        return None, "見回り系は対象外"
     if s["idle"] is None or s["idle"] < STALL_MIN:
-        return False, "動いている（%s分）" % (round(s["idle"], 1) if s["idle"] is not None else "?")
-    if s["idle"] > MAX_IDLE_HOURS * 60:
-        return False, "放置%.1f時間＝畳み対象" % (s["idle"] / 60)
+        return None, "動いている（%s分）" % (round(s["idle"], 1) if s["idle"] is not None else "?")
     st = state.get(s["cli"], {})
+    if st.get("handedOff"):
+        return None, "引き継ぎ済み→%s" % st["handedOff"][:8]
+    if s["idle"] > MAX_IDLE_HOURS * 60:
+        return None, "放置%.1f時間＝畳み対象" % (s["idle"] / 60)
+    tail = transcript_tail_text(s["transcript"])
+    if s["kind"] == "idle_done" and DONE_PAT.search(tail):
+        return None, "終了報告済み"
+    if st.get("tries", 0) >= MAX_TRIES:
+        return "handoff", "%d回再開しても進まない" % MAX_TRIES
+    if s["idle"] >= HANDOFF_HOURS * 60:
+        return "handoff", "%.1f時間進んでいない" % (s["idle"] / 60)
     last = st.get("lastResumeAt", 0)
     if time.time() - last < COOLDOWN_MIN * 60:
-        return False, "再開直後（%d分以内）" % COOLDOWN_MIN
-    if st.get("tries", 0) >= MAX_TRIES:
-        return False, "復旧不能（%d回送っても動かない）" % MAX_TRIES
+        return None, "再開直後（%d分以内）" % COOLDOWN_MIN
     if s["kind"] in ("asked", "stuck_tool"):
-        return True, {"asked": "質問して停止", "stuck_tool": "承認待ち/固まり"}[s["kind"]]
+        return "resume", {"asked": "質問して停止", "stuck_tool": "承認待ち/固まり"}[s["kind"]]
     if s["kind"] == "idle_done":
-        tail = transcript_tail_text(s["transcript"])
-        if DONE_PAT.search(tail):
-            return False, "終了報告済み"
-        return True, "話し終えて待機（未完了）"
-    return False, "判定不能(%s)" % s["kind"]
+        return "resume", "話し終えて待機（未完了）"
+    return None, "判定不能(%s)" % s["kind"]
+
+
+def whiteboard_rows_owned(local_id):
+    """ホワイトボードでこのセッションが担当になっている行（ID, 仕事, 完了条件）"""
+    rows = []
+    if not local_id:
+        return rows
+    try:
+        for ln in open(WHITEBOARD_MD, encoding="utf-8"):
+            if ln.startswith("| T") and ("| %s |" % local_id) in ln:
+                c = [x.strip() for x in ln.strip().strip("|").split("|")]
+                if len(c) >= 8:
+                    rows.append({"id": c[0], "task": c[2], "next": c[7]})
+    except Exception:
+        pass
+    return rows
+
+
+def handoff(s, meta, why):
+    """再開できない／3時間超のセッションの続きを、新しいセッションに引き継いで走らせる"""
+    import uuid
+    cli = s["cli"]
+    new_id = str(uuid.uuid4())
+    title = meta.get("title") or "（不明）"
+    last = transcript_tail_text(s["transcript"], 600)
+    rows = whiteboard_rows_owned(meta.get("local"))
+    wb_lines = "\n".join("- %s %s ｜ 次の一手: %s" % (r["id"], r["task"], r["next"]) for r in rows) or "- （ホワイトボードに担当行なし）"
+    os.makedirs(HANDOFF_DIR, exist_ok=True)
+    stamp = time.strftime("%Y%m%d_%H%M")
+    path = os.path.join(HANDOFF_DIR, "%s_%s.md" % (stamp, cli[:8]))
+    body = ("# 自動引き継ぎ %s ← 「%s」(%s)\n\n理由: %s\n\n## 前のセッションの最後の報告（どこまで終わったか）\n\n%s\n\n"
+            "## ホワイトボードの担当行（次に何をするか）\n\n%s\n\n## 新しいセッション\n\n- session-id: `%s`\n- cwd: `%s`\n"
+            % (now(), title, cli[:8], why, last or "（文章なし）", wb_lines, new_id, meta.get("cwd")))
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(body)
+    except Exception:
+        pass
+    # ホワイトボード：前の担当を外し、新セッションに付け替える
+    me_new = "wd_" + new_id[:8]
+    for r in rows:
+        subprocess.run(["python3", WHITEBOARD, "release", r["id"], "--me", meta.get("local") or "-", "--force",
+                        "--note", "%s ｜自動引き継ぎ→%s" % (r["next"], me_new)], capture_output=True, timeout=20)
+        subprocess.run(["python3", WHITEBOARD, "take", r["id"], "--me", me_new], capture_output=True, timeout=20)
+    prompt = ("【見張り番・自動引き継ぎ】前のセッション「%s」が%s。あなたはその続きを最後までやる。\n"
+              "引き継ぎ書: %s（同じ内容を下に貼る）\n\n%s\n\n"
+              "手順: (1) 上の「最後の報告」と「担当行」を読む (2) ホワイトボードの担当は既にあなた（ID: %s）に付け替え済み。"
+              "終わったら `python3 %s set <ID> --me %s --state 検証待ち --note \"…\"` (3) 走り切る。%s\n"
+              "最後は「完了：／問題：／判断待ち：」の3行だけで終了する。"
+              % (title, why, path, body, me_new, WHITEBOARD, me_new, MANUAL_ESSENTIALS))
+    log_out = os.path.join(REPO, "status", "watchdog-handoff-%s.log" % new_id[:8])
+    cmd = [CLAUDE, "-p", "--session-id", new_id, "--permission-mode", "auto", "--output-format", "json", prompt]
+    cwd = meta.get("cwd") or os.path.expanduser("~")
+    try:
+        with open(log_out, "ab") as f:
+            f.write(("\n=== %s handoff from %s\n" % (now(), cli)).encode())
+            p = subprocess.Popen(cmd, cwd=cwd if os.path.isdir(cwd) else os.path.expanduser("~"),
+                                 stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, start_new_session=True)
+        return new_id, p.pid, path
+    except Exception as e:
+        append(LOG_MD, "- %s ❌ 引き継ぎ起動失敗 %s: %s" % (now(), cli[:8], e))
+        return None, None, path
 
 
 def resume(cli, cwd):
@@ -204,27 +278,38 @@ def main():
     more_ok = machine.get("moreOK")
     idx = cli_index()
     ss = sessions_with_transcript()
-    resumed, skipped, unrec = [], [], []
+    resumed, skipped, unrec, handed = [], [], [], []
     n = 0
+    h = 0
     for s in ss:
         meta = idx.get(s["cli"]) if s["cli"] else None
-        ok, why = decide(s, meta, state)
+        action, why = decide(s, meta, state)
         title = (meta or {}).get("title", "（不明）")
-        if not ok:
-            if why.startswith("復旧不能") and s["cli"] not in [u["cli"] for u in unrec]:
-                unrec.append({"cli": s["cli"], "title": title, "idleMin": round(s["idle"] or 0)})
-                st = state.setdefault(s["cli"], {})
-                if not st.get("reported"):
-                    st["reported"] = True
-                    append(DISPATCH_INBOX, "| %s | 見張り番: 「%s」(%s) を%d回再開しても進まない。復旧不能。畳むか手で押すかDispatch判断 | 自動では復旧できないため |" % (now(), title, s["cli"][:8], MAX_TRIES))
-                    append(LOG_MD, "- %s 🛑 復旧不能: %s (%s) %d回送っても進まず。Dispatchへ" % (now(), title, s["cli"][:8], MAX_TRIES))
+        if action is None:
             skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": why})
             continue
-        if n >= MAX_PER_RUN:
-            skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の上限%d本に達した" % MAX_PER_RUN}); continue
         if more_ok is not None and more_ok <= 0:
             skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "負荷ゲート（moreOK=0）: %s" % machine.get("blockReason", "")}); continue
         st = state.setdefault(s["cli"], {"tries": 0})
+        if action == "handoff":
+            if h >= MAX_HANDOFF_PER_RUN:
+                skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の引き継ぎ上限%d本" % MAX_HANDOFF_PER_RUN}); continue
+            if dry:
+                handed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "dry": True}); h += 1; continue
+            new_id, pid, path = handoff(s, meta, why)
+            st["handedOff"] = new_id or "failed"
+            st["handedOffAt"] = time.time()
+            st["title"] = title
+            unrec.append({"cli": s["cli"], "title": title, "idleMin": round(s["idle"] or 0), "handedOffTo": new_id})
+            handed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "newSession": new_id, "newPid": pid, "handoffFile": path})
+            append(LOG_MD, "- %s 🔁 引き継ぎ: 「%s」(%s) 理由=%s → 新セッション %s（引き継ぎ書 %s）負荷=%s%%" % (
+                now(), title, s["cli"][:8], why, (new_id or "起動失敗")[:8], os.path.basename(path), machine.get("load")))
+            append(DISPATCH_INBOX, "| %s | 見張り番: 「%s」(%s) を自動引き継ぎ（%s）→ 新セッション %s。前のセッションは畳んでよい | 記録のみ・判断不要 |" % (
+                now(), title, s["cli"][:8], why, (new_id or "起動失敗")[:8]))
+            h += 1
+            continue
+        if n >= MAX_PER_RUN:
+            skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の上限%d本に達した" % MAX_PER_RUN}); continue
         if dry:
             resumed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "dry": True}); n += 1; continue
         pid = resume(s["cli"], meta["cwd"])
@@ -243,13 +328,13 @@ def main():
                 state[s["cli"]].pop("reported", None)
     if not dry:
         save_json(STATE_JSON, state)
-        machine["watchdog"] = {"lastRun": now(), "resumed": resumed, "unrecoverable": unrec,
+        machine["watchdog"] = {"lastRun": now(), "resumed": resumed, "handedOff": handed, "unrecoverable": unrec,
                                "stalledSkipped": [x for x in skipped if x["kind"] in ("asked", "stuck_tool", "idle_done") and not x["why"].startswith(("動いている", "Dispatch発でない", "見回り系", "終了報告済み"))]}
         if os.path.exists(MACHINE_JSON):
             save_json(MACHINE_JSON, machine)
         if not resumed and not unrec:
             pass  # 変化なしはログを汚さない
-    print(json.dumps({"resumed": resumed, "unrecoverable": unrec, "skipped": skipped}, ensure_ascii=False, indent=1))
+    print(json.dumps({"resumed": resumed, "handedOff": handed, "unrecoverable": unrec, "skipped": skipped}, ensure_ascii=False, indent=1))
     return 0
 
 
