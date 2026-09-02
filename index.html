@@ -45,6 +45,18 @@
   }
   .updated{color:var(--sub); font-size:0.8rem; margin-bottom:22px;}
 
+  /* Macの状態（1行） */
+  .machine{
+    display:flex; align-items:center; flex-wrap:wrap; gap:0 6px;
+    margin:-8px 0 22px; padding:10px 12px; border:1px solid var(--line); border-radius:10px;
+    font-size:0.85rem; color:var(--kinari); font-variant-numeric:tabular-nums; line-height:1.5;
+  }
+  .machine .sep{color:var(--dim);}
+  .machine .age{color:var(--sub);}
+  .machine .age.stale{color:var(--aka);}
+  .machine.warn{border-color:var(--aka); color:var(--ink);}
+  .machine.warn .load{color:var(--aka);}
+
   .label{
     color:var(--sub); font-size:0.72rem; letter-spacing:0.14em;
     margin:26px 0 10px; text-transform:uppercase;
@@ -145,6 +157,7 @@
 
 <h1>進捗表</h1>
 <div class="updated" id="updated">最終更新：読み込み中…</div>
+<div class="machine" id="machine" hidden></div>
 
 <div class="label">いま動いているもの <small id="runUpdated"></small></div>
 <div id="running"></div>
@@ -322,6 +335,25 @@ function renderList(){
 
 document.getElementById("updated").textContent = `最終更新：${formatStamp(D.generatedAt)}（依頼一覧の正本時刻）`;
 renderRunning(); renderSaid(); renderAll(); renderToday(); renderList();
+
+// Macの状態（status/machine.json を読む。5分おきに書き出される）
+function renderMachine(m){
+  const el = document.getElementById("machine");
+  if(!m || !m.measuredAt){ el.hidden = true; return; }
+  const mins = Math.max(0, Math.round((Date.now() - new Date(m.measuredAt).getTime())/60000));
+  const age = mins < 1 ? "いま" : mins < 60 ? `${mins}分前` : mins < 1440 ? `${Math.floor(mins/60)}時間前` : `${Math.floor(mins/1440)}日前`;
+  const stale = mins > 20;
+  const warn = (m.load != null && m.load >= 80) || (m.diskFreeGB != null && m.diskFreeGB < 10);
+  const v = (x, unit) => x == null ? "測定不可" : `${x}${unit}`;
+  el.className = "machine" + (warn ? " warn" : "");
+  el.innerHTML = `<span class="load">負荷 ${v(m.load,"%")}</span><span class="sep">｜</span>`
+    + `<span>セッション${v(m.sessions,"本")}</span><span class="sep">｜</span>`
+    + `<span>空き${v(m.diskFreeGB,"GB")}</span><span class="sep">｜</span>`
+    + `<span class="age${stale ? " stale" : ""}">${age}${stale ? "（古い）" : ""}</span>`;
+  el.hidden = false;
+}
+fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderMachine).catch(()=>{});
 </script>
 </body>
 </html>
