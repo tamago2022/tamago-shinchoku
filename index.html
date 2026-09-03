@@ -254,7 +254,8 @@
 </div></details>
 
 <div class="label"><b>ホワイトボード</b>セッションが上から取る順・P1が最優先 <small id="wbMeta"></small></div>
-<div class="sendbar" id="sendbar" hidden></div>
+<!-- 2026-09-03 たまごさん「優先度をつけた6件・共有済み・Obsidianへ送る、これもいらないかな」→ 非表示 -->
+<div class="sendbar" id="sendbar" hidden style="display:none"></div>
 <div class="g" id="wb"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
 
 <div class="label"><b>未処理の依頼</b>判断待ちが先頭・Pは優先度（タップで開いて付ける） <small id="allMeta"></small></div>
@@ -795,7 +796,9 @@ function renderAll(){
   let h = "";
   keys.forEach(k=>{
     const m = ALL_META[k];
-    h += `<div class="gh ${m.color}" id="a-${m.order}">${k} <b>${m.label}</b> ${groups[k].length}件</div>`;
+    // 2026-09-03 たまごさん「止まってるだとか判断待ちだとか未着手だとか、それぞれ畳めるようにして。見づらいから」
+    //   → 見出しだけの区切りをやめて、状態ごとの折りたたみにした。既定は全部畳む。
+    h += `<details class="wbg" id="a-${m.order}"><summary class="${m.color}">${k} ${esc(m.label)} <b>${groups[k].length}</b>件</summary><div class="g wbginner">`;
     // たまごさんの★が高い順 → 元の緊急度順
     const rank = it => prioOf(it.no) || 9;   // 1が最優先。未設定は後ろ
     [...groups[k]].sort((a,b)=> rank(a) - rank(b)).forEach(it=>{
@@ -813,9 +816,11 @@ function renderAll(){
         + it.body.map(x=>`<p>${esc(x)}</p>`).join("") + (it.src ? `<p class="src">出典：${esc(it.src)}</p>` : "");
       h += card(color, `${it.no}. ${it.title}`, label, extra, d, it.no);
     });
+    h += `</div></details>`;
   });
-  h += `<div class="gh" id="a-old">旧台帳のみ（2026-07・更新停止） ${A.old.length}件</div>`;
+  h += `<details class="wbg" id="a-old"><summary>旧台帳のみ（2026-07・更新停止） <b>${A.old.length}</b>件</summary><div class="g wbginner">`;
   A.old.forEach(o=>{ const m = ALL_META[o.badge] || ALL_META["❓"]; h += card(m.color, o.title, m.label, "", `<p>旧 task-ledger.json 由来。更新は8/7で停止。</p>`); });
+  h += `</div></details>`;
   document.getElementById("all").innerHTML = h;
 }
 
