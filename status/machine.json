@@ -1,16 +1,16 @@
 {
- "raw": "負荷 100% ｜ CPU 6% / メモリ圧迫 15% / スワップ 3.82GB / ディスク空き 43GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 15% / スワップ 3.82GB / ディスク空き 43GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 6,
+ "cpu": 7,
  "mem": 15,
  "swapGB": 3917.0,
  "diskFreeGB": 43.0,
  "sessions": 2,
- "note": "上限2本・あと0本OK（5分平均ロード37.9（コア8×0.8超）、予兆（5分ロード比4.7）→1本減らす）",
- "measuredAt": "2026-09-04T02:32:09+09:00",
- "working": 1,
+ "note": "上限2本・あと0本OK（5分平均ロード36.1（コア8×0.8超）、予兆（5分ロード比4.5）→1本減らす）",
+ "measuredAt": "2026-09-04T02:32:54+09:00",
+ "working": 0,
  "stalled": 1,
- "waiting": 0,
+ "waiting": 1,
  "safeMax": 2,
  "moreOK": 0,
  "hardMax": 8,
@@ -20,31 +20,37 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比4.7"
+  "5分ロード比4.5"
  ],
- "shedCandidates": [],
+ "shedCandidates": [
+  {
+   "pid": 42669,
+   "title": "HOME／ふるさと 各国プレイリスト",
+   "idleMin": 10.3
+  }
+ ],
  "below": 2,
- "blockReason": "5分平均ロード37.9（コア8×0.8超）、予兆（5分ロード比4.7）→1本減らす",
- "load1": 35.12,
- "load5": 37.85,
- "load15": 37.44,
+ "blockReason": "5分平均ロード36.1（コア8×0.8超）、予兆（5分ロード比4.5）→1本減らす",
+ "load1": 30.14,
+ "load5": 36.12,
+ "load15": 36.82,
  "cores": 8,
- "loadRatio": 4.39,
+ "loadRatio": 3.77,
  "memPressure": "green",
- "memAvailGB": 7.2,
+ "memAvailGB": 7.1,
  "swapIncreasing": false,
- "ioMBs": 1.0,
+ "ioMBs": 1.27,
  "network": {
-  "pingMedianMs": 23.1,
-  "pingMaxMs": 36.3,
-  "pingSamples": 19
+  "pingMedianMs": 23.4,
+  "pingMaxMs": 39.3,
+  "pingSamples": 20
  },
  "stalledList": [
   {
    "pid": 62374,
    "title": "Rusuban mimawari 30min",
    "kind": "asked",
-   "idleMin": 10.1,
+   "idleMin": 10.9,
    "dispatch": false
   }
  ],
@@ -70,7 +76,7 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 362,
-   "idleMin": 10.1,
+   "idleMin": 10.9,
    "kind": "asked",
    "model": "claude-opus-5",
    "turns": 24,
@@ -80,11 +86,11 @@
    "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
    "localId": "local_6944a1ca-b499-4030-a1a4-886787ad9432",
    "startedAt": "2026-09-04T00:18:45+0900",
-   "elapsedMin": 133,
+   "elapsedMin": 134,
    "lastReportAt": "2026-09-03T17:22:32.691Z",
    "lastReport": "す。  **仮定（末尾1行）**：あゝ上野駅の「集団就職」との結びつき、Homeward Boundの1966年発表は広く知られた音楽史の事実として記載していますが、一次資料の再確認はできていません。",
-   "status": "作業中",
-   "color": "green",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [],
@@ -97,14 +103,14 @@
    "dispatch": true,
    "isDispatchSelf": false,
    "mb": 316,
-   "idleMin": 9.6,
-   "kind": "working",
+   "idleMin": 10.3,
+   "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 214,
    "lastActivityAt": "2026-09-03T17:22:32.691Z"
   }
  ],
- "line": "負荷 100% ｜ セッション2本（作業中1・止まり1） ｜ 上限2本・増やすな ｜ 空き43.0GB",
+ "line": "負荷 100% ｜ セッション2本（作業中0・止まり1） ｜ 上限2本・増やすな ｜ 空き43.0GB",
  "modelCounts": {
   "claude-opus-5": 1,
   "claude-sonnet-5": 1
@@ -147,7 +153,14 @@
   "autonomyRatio": null,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
- "deployAlerts": [],
+ "deployAlerts": [
+  {
+   "t": "2026-09-04 02:32",
+   "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
+   "title": "HOME／ふるさと 各国プレイリスト",
+   "urls": []
+  }
+ ],
  "quota": {
   "updatedAt": "2026-09-04 02:32",
   "estimated": true,
@@ -184,7 +197,7 @@
    "all": 55792626
   },
   "projection": {
-   "fablePctAtReset_avgPace": 263.0,
+   "fablePctAtReset_avgPace": 262.9,
    "fablePctAtReset_recentPace": 88.5,
    "hoursToCeiling_recentPace": null,
    "recentPacePctPerHour": 0.0
@@ -240,7 +253,7 @@
   "benchmark": {
    "allPacePctPerHour6h": 1.324,
    "aliveAvgLast6h": 3.0,
-   "pctPerSessionHour": 0.4441,
+   "pctPerSessionHour": 0.4449,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
