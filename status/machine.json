@@ -1,15 +1,15 @@
 {
- "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 12% / スワップ 4.98GB / ディスク空き 42GB ｜ 稼働 1本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 2% / メモリ圧迫 12% / スワップ 4.98GB / ディスク空き 42GB ｜ 稼働 1本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 7,
+ "cpu": 2,
  "mem": 12,
  "swapGB": 5099.75,
  "diskFreeGB": 42.0,
  "sessions": 1,
- "note": "上限2本・あと1本OK（5分平均ロード32.7（コア8×0.8超）、予兆（5分ロード比4.1）→1本減らす）",
- "measuredAt": "2026-09-04T03:38:56+09:00",
- "working": 0,
- "stalled": 1,
+ "note": "上限2本・あと1本OK（5分平均ロード32.5（コア8×0.8超）、予兆（5分ロード比4.1）→1本減らす）",
+ "measuredAt": "2026-09-04T03:39:43+09:00",
+ "working": 1,
+ "stalled": 0,
  "waiting": 0,
  "safeMax": 2,
  "moreOK": 1,
@@ -24,40 +24,32 @@
  ],
  "shedCandidates": [],
  "below": 3,
- "blockReason": "5分平均ロード32.7（コア8×0.8超）、予兆（5分ロード比4.1）→1本減らす",
- "load1": 29.33,
- "load5": 32.69,
- "load15": 33.36,
+ "blockReason": "5分平均ロード32.5（コア8×0.8超）、予兆（5分ロード比4.1）→1本減らす",
+ "load1": 30.73,
+ "load5": 32.53,
+ "load15": 33.26,
  "cores": 8,
- "loadRatio": 3.67,
+ "loadRatio": 3.84,
  "memPressure": "green",
- "memAvailGB": 7.3,
+ "memAvailGB": 7.2,
  "swapIncreasing": false,
- "ioMBs": 2.15,
+ "ioMBs": 0.38,
  "network": {
-  "pingMedianMs": 26.5,
-  "pingMaxMs": 101.3,
+  "pingMedianMs": 25.1,
+  "pingMaxMs": 38.9,
   "pingSamples": 20
  },
- "stalledList": [
-  {
-   "pid": 72237,
-   "title": "Rusuban mimawari 30min",
-   "kind": "asked",
-   "idleMin": 14.3,
-   "dispatch": false
-  }
- ],
+ "stalledList": [],
  "sessionList": [
   {
    "cli": "dcb1d1a6-80fc-46f0-a98e-0bc8d20aaacc",
    "localId": "local_d2d505d8-e00a-4f4a-8050-9f18e06ed755",
    "startedAt": "2026-09-04T03:14:58+0900",
-   "elapsedMin": 23,
+   "elapsedMin": 24,
    "lastReportAt": "2026-09-03T18:24:39.512Z",
    "lastReport": "HTML再生成済み。 問題：なし。`git commit`/`push` は未実行（外部公開に当たるため保留）。 判断待ち：残るB群64件（カタカナ外国名の英語表記取得）は別工程。次回の見回りで拾う。",
-   "status": "反映済み・報告なし",
-   "color": "red",
+   "status": "作業中",
+   "color": "green",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [],
@@ -70,14 +62,14 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 357,
-   "idleMin": 14.3,
-   "kind": "asked",
+   "idleMin": 0.0,
+   "kind": "working",
    "model": "claude-opus-5",
    "turns": 25,
    "lastActivityAt": "2026-09-03T18:24:39.512Z"
   }
  ],
- "line": "負荷 100% ｜ セッション1本（作業中0・止まり1） ｜ 上限2本・あと1本OK ｜ 空き42.0GB",
+ "line": "負荷 100% ｜ セッション1本（作業中1・止まり0） ｜ 上限2本・あと1本OK ｜ 空き42.0GB",
  "modelCounts": {
   "claude-opus-5": 1
  },
@@ -89,7 +81,7 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 03:38",
+  "lastRun": "2026-09-04 03:39",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -121,7 +113,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-04 03:38",
+  "updatedAt": "2026-09-04 03:39",
   "estimated": true,
   "fablePct": 88.5,
   "allPct": 115.1,
@@ -156,7 +148,7 @@
    "all": 57968687
   },
   "projection": {
-   "fablePctAtReset_avgPace": 257.9,
+   "fablePctAtReset_avgPace": 257.8,
    "fablePctAtReset_recentPace": 88.5,
    "hoursToCeiling_recentPace": null,
    "recentPacePctPerHour": 0.0
@@ -212,7 +204,7 @@
   "benchmark": {
    "allPacePctPerHour6h": 1.376,
    "aliveAvgLast6h": 2.7,
-   "pctPerSessionHour": 0.5127,
+   "pctPerSessionHour": 0.5142,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
