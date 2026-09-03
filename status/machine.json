@@ -1,18 +1,18 @@
 {
- "raw": "負荷 100% ｜ CPU 4% / メモリ圧迫 19% / スワップ 6.89GB / ディスク空き 45GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 12% / メモリ圧迫 19% / スワップ 6.83GB / ディスク空き 45GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 4,
+ "cpu": 12,
  "mem": 19,
- "swapGB": 7061.5,
+ "swapGB": 6997.5,
  "diskFreeGB": 45.0,
- "sessions": 0,
- "note": "上限2本・あと2本OK（5分平均ロード10.6（コア8×0.8超）、実測上限1本）",
- "measuredAt": "2026-09-03T10:01:04+09:00",
- "working": 0,
+ "sessions": 1,
+ "note": "上限2本・あと1本OK（5分平均ロード9.1（コア8×0.8超）、実測上限1本）",
+ "measuredAt": "2026-09-03T10:06:24+09:00",
+ "working": 1,
  "stalled": 0,
  "waiting": 0,
  "safeMax": 2,
- "moreOK": 2,
+ "moreOK": 1,
  "hardMax": 8,
  "cap": 1,
  "target": 1,
@@ -21,66 +21,89 @@
  "userActive": false,
  "predict": [],
  "shedCandidates": [],
- "below": 1,
- "blockReason": "5分平均ロード10.6（コア8×0.8超）、実測上限1本",
- "load1": 8.35,
- "load5": 10.56,
- "load15": 10.72,
+ "below": 0,
+ "blockReason": "5分平均ロード9.1（コア8×0.8超）、実測上限1本",
+ "load1": 7.55,
+ "load5": 9.11,
+ "load15": 10.03,
  "cores": 8,
- "loadRatio": 1.04,
+ "loadRatio": 0.94,
  "memPressure": "green",
- "memAvailGB": 10.4,
+ "memAvailGB": 10.1,
  "swapIncreasing": false,
- "ioMBs": 0.0,
+ "ioMBs": 2.63,
  "network": {
   "iface": "en1",
   "serviceName": "Wi-Fi",
   "wired": false,
-  "pingMs": 23.0
+  "pingMs": 28.3
  },
  "stalledList": [],
- "sessionList": [],
- "line": "負荷 100% ｜ セッション0本（作業中0・止まり0） ｜ 上限2本・あと2本OK ｜ 空き45.0GB",
- "modelCounts": {},
+ "sessionList": [
+  {
+   "cli": "c018ac2a-153b-4f52-88e4-603305fb9989",
+   "localId": null,
+   "startedAt": "2026-09-03T10:01:08+0900",
+   "elapsedMin": 5,
+   "lastReportAt": null,
+   "lastReport": "",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "unreportedDeploy": true,
+   "deployUrls": [],
+   "humanPushes": 0,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 68250,
+   "title": "（不明）",
+   "dispatch": false,
+   "mb": 507,
+   "idleMin": 1.8,
+   "kind": "working",
+   "model": "claude-sonnet-5",
+   "turns": 55,
+   "lastActivityAt": "2026-09-03T01:04:34.515Z"
+  }
+ ],
+ "line": "負荷 100% ｜ セッション1本（作業中1・止まり0） ｜ 上限2本・あと1本OK ｜ 空き45.0GB",
+ "modelCounts": {
+  "claude-sonnet-5": 1
+ },
  "autonomy": {
-  "alive": 0,
+  "alive": 1,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 10:01",
+  "lastRun": "2026-09-03 10:06",
   "resumed": [
    {
     "cli": "912ce2f1-5ded-4520-8678-8f31cd0b7fd7",
     "title": "旅の扉に日本の温泉棚を作る",
-    "try": 2,
-    "resumePid": 68247
+    "try": 3,
+    "resumePid": 69296
    }
   ],
   "handedOff": [],
-  "ignited": [
-   {
-    "newSession": "c018ac2a-153b-4f52-88e4-603305fb9989",
-    "pid": 68250,
-    "row": "🟢 T011 P3 [11] 本番反映が自動で回らない ｜ 作業中 ｜ 担当:wd_c018ac2a ｜ 12回 ｜ 2026-09-03 10:01"
-   }
-  ],
+  "ignited": [],
   "unrecoverable": [],
-  "ignite": "着火した（1本）",
+  "ignite": "目標1本を満たしている（生存1本）",
   "shed": null,
   "keep": {
    "target": 1,
    "alive": 1,
    "below": 0,
-   "line": "現在1本／上限2本／目標1本／あと2本いける"
+   "line": "現在1本／上限2本／目標1本／あと1本いける"
   },
   "stalledSkipped": []
  },
  "metrics": {
-  "stalls": 58,
-  "autoResumes": 39,
+  "stalls": 59,
+  "autoResumes": 40,
   "handoffs": 5,
   "ignitions": 3,
   "gated": 0,
@@ -92,15 +115,15 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-03 10:01",
+  "updatedAt": "2026-09-03 10:06",
   "estimated": true,
   "fablePct": 74.2,
-  "allPct": 81.1,
+  "allPct": 81.3,
   "allPctAsOf": null,
   "allPctAgeMin": null,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 5.3,
-  "hoursLeft": 128.0,
+  "hoursLeft": 127.9,
   "fableLevel": "stop",
   "allLevel": "warn",
   "warnPct": 75,
@@ -108,8 +131,8 @@
   "daily": {
    "fableAllowancePerDay": 4.8,
    "fableUsedLast24h": 70.2,
-   "allAllowancePerDay": 3.6,
-   "allUsedLast24h": 67.0,
+   "allAllowancePerDay": 3.5,
+   "allUsedLast24h": 67.2,
    "weeklyEvenPacePerDay": 14.3
   },
   "boost": {
@@ -121,14 +144,14 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 237172054,
-  "allWeightedTokensSinceReset": 569149923,
+  "allWeightedTokensSinceReset": 570565788,
   "last6h": {
    "fable": 27314399,
-   "all": 185498908
+   "all": 186914773
   },
   "projection": {
-   "fablePctAtReset_avgPace": 311.4,
-   "fablePctAtReset_recentPace": 256.5,
+   "fablePctAtReset_avgPace": 310.8,
+   "fablePctAtReset_recentPace": 256.4,
    "hoursToCeiling_recentPace": 18.1,
    "recentPacePctPerHour": 1.42
   },
@@ -156,17 +179,17 @@
   },
   "allCurve": {
    "target": 36.5,
-   "overPct": 44.6,
+   "overPct": 44.8,
    "state": "over",
    "band": 10,
    "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"
   },
   "session5h": {
-   "pct": 87.7,
+   "pct": 88.2,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 8.52,
-   "projectedPctAtReset": 87.7,
+   "recentPacePctPerHour": 8.48,
+   "projectedPctAtReset": 88.2,
    "wasteRiskPct": 0.0,
    "mottainai": false,
    "source": "推定(フォールバック)",
@@ -181,14 +204,14 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 4.404,
+   "allPacePctPerHour6h": 4.437,
    "aliveAvgLast6h": 3.3,
-   "pctPerSessionHour": 1.319,
+   "pctPerSessionHour": 1.3332,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": 0.1
   },
-  "line": "Fable週枠 74%（今日の目標67.5%＝45×1.5・曲線どおり） ／ 全モデル 81%（推定時点・曲線目標36.5%＝24×1.5・44.6pt上振れ） ／ リセットまで 5.3日（このペースだと18時間で天井） ／ 5時間枠 87.7%・残0.0h",
+  "line": "Fable週枠 74%（今日の目標67.5%＝45×1.5・曲線どおり） ／ 全モデル 81%（推定時点・曲線目標36.5%＝24×1.5・44.8pt上振れ） ／ リセットまで 5.3日（このペースだと18時間で天井） ／ 5時間枠 88.2%・残0.0h",
   "switches": [
    {
     "t": "2026-09-03 04:35",
