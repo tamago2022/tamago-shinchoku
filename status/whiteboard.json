@@ -45,11 +45,11 @@
    "priority": 1,
    "rank": 25,
    "task": "水汲みをさせない仕組み（作法/仕組み）",
-   "state": "検証待ち",
-   "owner": "wb-t025-0904",
+   "state": "判断待ち",
+   "owner": null,
    "count": "21",
-   "updatedAt": "2026-09-04 02:16",
-   "note": "水汲み防止の具体的な穴を1件特定・修正：共通脳の正本whiteboard.py/.mdがmainに一度もコミットされずローカルのみだった。worktree(claude/whiteboard-git-tracking-0903)で修正しpush済み(save()実行時に10分debounceでwhiteboard.md単体を自動git commit)。PR作成はAuto mode classifierに拒否+gh CLI不在で不可→留守中の判断待ち.mdに1行(GOがあれば店主/別セッションがPR化)。T025自体は広いテーマで他の穴(TASK_BOARD.md記録漏れの機械検知等)は未着手のまま残る。次の目：①compareURLでdiff内容の正しさを確認②実運用で10分後書き込み時に本当に自動commitされるか確認 [実装:wd_4666eb94]",
+   "updatedAt": "2026-09-04 02:21",
+   "note": "検証完了：①_auto_commit()のロジックをdiffレビューし意図通り(10分debounce・対象ファイル限定)を確認②実運用でgit logの自動commit履歴が実際に10分間隔で積み上がっており自分のtake操作でも即時反映を確認③PR作成の技術的ブロッカー(gh CLI不在)はgh認証済みで解消しPR#341作成済み(https://github.com/tamago2022/joy-relief-station/pull/341, mainへクリーンマージ確認済み)。聞くこと：PR#341(whiteboard.py/.mdをgit管理下に置く3ファイルのみの変更)をmainへマージしてよいか(外部公開/本番反映の判断)。マージされればfreshクローン・GitHub Actions環境でも共通脳の自動書き戻しが効くようになる",
    "stale": false
   },
   {
