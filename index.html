@@ -710,25 +710,17 @@ function renderMeters(m){
       : (m.moreOK > 0 ? `あと${m.moreOK}本OK` : `上限${m.safeMax ?? "?"}本内（これ以上は増やさない）`);
     parts.push(meterHTML("マシン負荷（何%で固まるか）", m.load, lvl, `${m.load}%`, more, "", undefined, m.measuredAt));
   }
-  // ディスク・セッション本数・ネットワーク（有線/Wi-Fi）のミニ行（統合。healthSumと合わせて1カード扱い）
+  // ディスク・セッション本数・ネットワーク（Wi-Fi品質のみ。有線ハードなし確定＝有線判定・警告は出さない）のミニ行
   const diskWarn = m.diskFreeGB != null && m.diskFreeGB < 20;
   const over = (m.sessions || 0) - (m.safeMax || 0);
   const net = m.network || {};
   let netHtml = "";
-  if(net.wired != null || net.pingMs != null){
-    const pingWarn = net.pingMs != null && net.pingMs >= 300 ? "red" : net.pingMs != null && net.pingMs >= 100 ? "yellow" : "";
-    const wifiWarn = net.wired === false ? "yellow" : "";
-    const label = net.wired === true ? "🔌有線" : net.wired === false ? "📶Wi-Fi" : "—";
-    // 有線ポートの実在・リンク状態から具体原因を出す（ポート不在／ケーブル未検出を区別）
-    let wiredNote = "";
-    if(net.wired === false){
-      const ports = net.wiredPorts || [];
-      const present = ports.filter(p => p.present);
-      if(!present.length) wiredNote = "（有線ポートが見つかりません）";
-      else { const notLinked = present.filter(p => !p.linked);
-        wiredNote = notLinked.length === present.length ? `（有線ポート${esc(notLinked.map(p=>p.name).join("・"))}にケーブル未検出）` : "（有線が抜けています）"; }
-    }
-    netHtml = `<span class="${wifiWarn || pingWarn}">${esc(label)}${net.pingMs != null ? `・${net.pingMs}ms` : ""}${wiredNote}</span>`;
+  if(net.pingMedianMs != null || net.pingMaxMs != null){
+    // バッファブロート対策：平常時の中央値だけでは分からない。跳ねを判定するのは最大値（体感に近い）
+    const maxV = net.pingMaxMs;
+    const warnCls = maxV != null && maxV >= 400 ? "red" : maxV != null && maxV >= 150 ? "yellow" : "";
+    const jump = warnCls ? "⚠️混んだ時に跳ねています（同時に大きな通信をしているアプリがあるかもしれません）" : "";
+    netHtml = `<span class="${warnCls}">📶Wi-Fi${net.pingMedianMs != null ? `・中央値${net.pingMedianMs}ms` : ""}${maxV != null ? `・最大${maxV}ms` : ""}${jump ? "　" + jump : ""}</span>`;
   }
   document.getElementById("healthSum").innerHTML =
     `<span class="${diskWarn ? "red" : ""}">ディスク空き<b>${m.diskFreeGB ?? "—"}GB</b></span>`

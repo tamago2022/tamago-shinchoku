@@ -171,45 +171,20 @@ def io_mbs():
 
 
 def network_status():
-    """2026-09-03 有線LAN診断：デフォルトルートのインターフェース名→サービス名を逆引きし、
-    Wi-Fiかそれ以外（有線）かを判定。en0/en1は機種でWi-Fi/Ethernetが入れ替わるのでサービス名で見る。
-    ping 5発の平均msも測る（100ms超で黄、300ms超で赤の目安。表示側で判定）。"""
-    result = {"iface": None, "serviceName": None, "wired": None, "pingMs": None}
+    """2026-09-03 Wi-Fi品質診断のみ（有線ハードなしとたまごさん本人が確定。有線判定・警告は撤去）。
+    バッファブロート対策：平常時のpingだけでは分からない（重い時だけ跳ねる）ので、
+    ping 20発の中央値・最大値を両方見る。判定は最大値（体感に近い）で行う（表示側）。"""
+    # 注意：macOSのping -t は総実行時間（Linuxの-t TTLとは別物）。20発×1秒間隔≒20秒かかるので短く切らない
+    result = {"pingMedianMs": None, "pingMaxMs": None, "pingSamples": None}
     try:
-        m = re.search(r"interface:\s*(\S+)", run(["route", "get", "default"], timeout=5))
-        iface = m.group(1) if m else None
-        result["iface"] = iface
-        if iface:
-            order = run(["networksetup", "-listnetworkserviceorder"], timeout=5)
-            # "(1) Ethernet\n(Hardware Port: Ethernet, Device: en0)" のペアをブロックごとに突合
-            blocks = re.findall(r"\(\d+\)\s+(.+?)\n\(Hardware Port: .+?, Device: (\w+)\)", order)
-            svc = next((name for name, dev in blocks if dev == iface), None)
-            result["serviceName"] = svc
-            if svc:
-                result["wired"] = "wi-fi" not in svc.lower()
-    except Exception:
-        pass
-    try:
-        out = run(["ping", "-c", "5", "-t", "3", "1.1.1.1"], timeout=8)
-        m = re.search(r"= [\d.]+/([\d.]+)/", out)  # min/avg/max/stddev の avg
-        if m:
-            result["pingMs"] = round(float(m.group(1)), 1)
-    except Exception:
-        pass
-    # 2026-09-03 有線ポートの実在・リンク状態（Wi-Fi継続中の原因切り分け：ケーブル未検出かポート不在か）
-    try:
-        order2 = run(["networksetup", "-listnetworkserviceorder"], timeout=5)
-        blocks2 = re.findall(r"\(\d+\)\s+(.+?)\n\(Hardware Port: .+?, Device: (\w+)\)", order2)
-        wired_ports = []
-        for name, dev in blocks2:
-            low = name.lower()
-            if "wi-fi" in low or "bluetooth" in low or "bridge" in low or "iphone" in low:
-                continue  # 有線候補だけ（Wi-Fi・Bluetooth・Thunderboltブリッジ・iPhone USBは除外）
-            out = run(["ifconfig", dev], timeout=5)
-            present = bool(out)
-            linked = present and ("status: active" in out)
-            wired_ports.append({"name": name, "device": dev, "present": present, "linked": linked})
-        result["wiredPorts"] = wired_ports
+        out = run(["ping", "-c", "20", "1.1.1.1"], timeout=25)
+        times = sorted(float(x) for x in re.findall(r"time=([\d.]+) ms", out or ""))
+        if times:
+            n = len(times)
+            median = times[n // 2] if n % 2 else (times[n // 2 - 1] + times[n // 2]) / 2
+            result["pingMedianMs"] = round(median, 1)
+            result["pingMaxMs"] = round(times[-1], 1)
+            result["pingSamples"] = n
     except Exception:
         pass
     return result
