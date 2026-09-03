@@ -193,6 +193,9 @@
   .capbar .capsub{font-size:0.68rem; font-weight:500; opacity:0.85; width:100%;}
   .capbar button{min-height:38px; padding:0 12px; border-radius:9px; border:1px solid rgba(255,255,255,0.35);
     background:rgba(255,255,255,0.12); color:inherit; font-weight:700; font-size:0.8rem;}
+  /* 2026-09-04 たまごさん「進捗表の横に現在の時刻もちゃんとリアルタイムで表示してください」
+     これが動いていること自体が「この画面は生きている」の証拠になる。 */
+  .clock{font-weight:400; font-size:0.9rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-left:8px; letter-spacing:0.02em;}
   .nowage{font-size:0.68rem; color:var(--dim); margin:2px 0 8px;}
   .nowage.nowstale{color:var(--red); font-weight:600;}
   .now{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 6px;}
@@ -224,7 +227,7 @@
 </head>
 <body>
 
-<h1>進捗表</h1>
+<h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
 
 <div id="capBar" class="capbar" hidden></div>
@@ -681,6 +684,14 @@ function tickCountdowns(){
     cd.className = "ncd" + (over ? " over" : remainSec <= 1800 ? " warn" : "");
   });
 }
+function tickClock(){
+  const el = document.getElementById("clock"); if(!el) return;
+  const d = new Date();
+  const p = n => String(n).padStart(2,"0");
+  el.textContent = `${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+tickClock();
+setInterval(tickClock, 1000);
 setInterval(tickCountdowns, 1000); // 時計はJSON再取得と切り離して毎秒動かす＝リアルタイムが効いている証拠
 
 /* ───── ホワイトボード（ai-brain/live/whiteboard.md の写し status/whiteboard.json。セッションはこの順に取る） ───── */
