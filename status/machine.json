@@ -1,18 +1,18 @@
 {
- "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 15% / スワップ 3.82GB / ディスク空き 43GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 15% / スワップ 3.73GB / ディスク空き 43GB ｜ 稼働 1本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
  "cpu": 7,
  "mem": 15,
- "swapGB": 3917.0,
+ "swapGB": 3821.0,
  "diskFreeGB": 43.0,
- "sessions": 2,
- "note": "上限2本・あと0本OK（5分平均ロード36.1（コア8×0.8超）、予兆（5分ロード比4.5）→1本減らす）",
- "measuredAt": "2026-09-04T02:32:54+09:00",
+ "sessions": 1,
+ "note": "上限2本・あと1本OK（5分平均ロード31.7（コア8×0.8超）、予兆（5分ロード比4.0）→1本減らす）",
+ "measuredAt": "2026-09-04T02:38:38+09:00",
  "working": 0,
- "stalled": 1,
+ "stalled": 0,
  "waiting": 1,
  "safeMax": 2,
- "moreOK": 0,
+ "moreOK": 1,
  "hardMax": 8,
  "cap": 5,
  "target": 4,
@@ -20,73 +20,38 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比4.5"
+  "5分ロード比4.0"
  ],
  "shedCandidates": [
   {
    "pid": 42669,
    "title": "HOME／ふるさと 各国プレイリスト",
-   "idleMin": 10.3
+   "idleMin": 16.1
   }
  ],
- "below": 2,
- "blockReason": "5分平均ロード36.1（コア8×0.8超）、予兆（5分ロード比4.5）→1本減らす",
- "load1": 30.14,
- "load5": 36.12,
- "load15": 36.82,
+ "below": 3,
+ "blockReason": "5分平均ロード31.7（コア8×0.8超）、予兆（5分ロード比4.0）→1本減らす",
+ "load1": 25.14,
+ "load5": 31.72,
+ "load15": 34.55,
  "cores": 8,
- "loadRatio": 3.77,
+ "loadRatio": 3.14,
  "memPressure": "green",
- "memAvailGB": 7.1,
+ "memAvailGB": 7.0,
  "swapIncreasing": false,
- "ioMBs": 1.27,
+ "ioMBs": 2.71,
  "network": {
-  "pingMedianMs": 23.4,
-  "pingMaxMs": 39.3,
+  "pingMedianMs": 23.3,
+  "pingMaxMs": 30.2,
   "pingSamples": 20
  },
- "stalledList": [
-  {
-   "pid": 62374,
-   "title": "Rusuban mimawari 30min",
-   "kind": "asked",
-   "idleMin": 10.9,
-   "dispatch": false
-  }
- ],
+ "stalledList": [],
  "sessionList": [
-  {
-   "cli": "70907227-ac5f-4ee7-8aad-5b0ecc81531e",
-   "localId": "local_90e875b2-7960-4d37-8901-b1f086803b6c",
-   "startedAt": "2026-09-04T02:14:57+0900",
-   "elapsedMin": 17,
-   "lastReportAt": "2026-09-03T17:22:00.649Z",
-   "lastReport": "書き戻しが未だ効かない（PR#341のマージで解消）。 判断待ち：PR#341のmainマージ（外部公開＝憲法5条）。`留守中の判断待ち.md`に記録済み、ホワイトボードT025は⏸判断待ちで停止中。",
-   "status": "反映済み・報告なし",
-   "color": "red",
-   "urls": [],
-   "unreportedDeploy": true,
-   "deployUrls": [],
-   "humanPushes": 1,
-   "dispatchPushes": 0,
-   "watchdogResumes": 0,
-   "done": false,
-   "pid": 62374,
-   "title": "Rusuban mimawari 30min",
-   "dispatch": false,
-   "isDispatchSelf": false,
-   "mb": 362,
-   "idleMin": 10.9,
-   "kind": "asked",
-   "model": "claude-opus-5",
-   "turns": 24,
-   "lastActivityAt": "2026-09-03T17:22:00.649Z"
-  },
   {
    "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
    "localId": "local_6944a1ca-b499-4030-a1a4-886787ad9432",
    "startedAt": "2026-09-04T00:18:45+0900",
-   "elapsedMin": 134,
+   "elapsedMin": 139,
    "lastReportAt": "2026-09-03T17:22:32.691Z",
    "lastReport": "す。  **仮定（末尾1行）**：あゝ上野駅の「集団就職」との結びつき、Homeward Boundの1966年発表は広く知られた音楽史の事実として記載していますが、一次資料の再確認はできていません。",
    "status": "反映済み・報告なし",
@@ -103,40 +68,46 @@
    "dispatch": true,
    "isDispatchSelf": false,
    "mb": 316,
-   "idleMin": 10.3,
+   "idleMin": 16.1,
    "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 214,
    "lastActivityAt": "2026-09-03T17:22:32.691Z"
   }
  ],
- "line": "負荷 100% ｜ セッション2本（作業中0・止まり1） ｜ 上限2本・増やすな ｜ 空き43.0GB",
+ "line": "負荷 100% ｜ セッション1本（作業中0・止まり0） ｜ 上限2本・あと1本OK ｜ 空き43.0GB",
  "modelCounts": {
-  "claude-opus-5": 1,
   "claude-sonnet-5": 1
  },
  "autonomy": {
-  "alive": 2,
+  "alive": 1,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 02:32",
+  "lastRun": "2026-09-04 02:38",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "空きなし（上限2本・目標4本・生存2本）",
+  "ignite": "着火せず: 取れる仕事なし（未着手/作業中）",
   "shed": null,
   "keep": {
    "target": 4,
-   "alive": 2,
-   "below": 2,
-   "line": "現在2本／上限2本／目標4本／あと0本いける"
+   "alive": 1,
+   "below": 3,
+   "line": "現在1本／上限2本／目標4本／あと1本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 42669,
+    "title": "HOME／ふるさと 各国プレイリスト",
+    "kind": "idle_done",
+    "why": "再開直後（20分以内）"
+   }
+  ]
  },
  "metrics": {
   "stalls": 86,
@@ -147,7 +118,7 @@
   "autoResumesThisRun": 0,
   "handoffsThisRun": 0,
   "ignitionsThisRun": 0,
-  "humanPushes": 3,
+  "humanPushes": 2,
   "doneAlive": 0,
   "doneWithoutHumanPush": 0,
   "autonomyRatio": null,
@@ -155,14 +126,14 @@
  },
  "deployAlerts": [
   {
-   "t": "2026-09-04 02:32",
+   "t": "2026-09-04 02:38",
    "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
    "title": "HOME／ふるさと 各国プレイリスト",
    "urls": []
   }
  ],
  "quota": {
-  "updatedAt": "2026-09-04 02:32",
+  "updatedAt": "2026-09-04 02:38",
   "estimated": true,
   "fablePct": 88.5,
   "allPct": 114.8,
@@ -170,7 +141,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.6,
-  "hoursLeft": 111.4,
+  "hoursLeft": 111.3,
   "fableLevel": "stop",
   "allLevel": "stop",
   "warnPct": 75,
@@ -197,7 +168,7 @@
    "all": 55792626
   },
   "projection": {
-   "fablePctAtReset_avgPace": 262.9,
+   "fablePctAtReset_avgPace": 262.4,
    "fablePctAtReset_recentPace": 88.5,
    "hoursToCeiling_recentPace": null,
    "recentPacePctPerHour": 0.0
@@ -235,7 +206,7 @@
    "pct": 160.4,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 5.74,
+   "recentPacePctPerHour": 5.71,
    "projectedPctAtReset": 160.4,
    "wasteRiskPct": 0.0,
    "mottainai": false,
@@ -253,7 +224,7 @@
   "benchmark": {
    "allPacePctPerHour6h": 1.324,
    "aliveAvgLast6h": 3.0,
-   "pctPerSessionHour": 0.4449,
+   "pctPerSessionHour": 0.4458,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
