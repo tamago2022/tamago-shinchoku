@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dispatchのタイムライン 2026-09-03</title>
+<style>
+  :root{ --bg:#12161c; --fg:#e9eef4; --sub:#a9b6c4; --line:#2a323c; --green:#5fd996; --red:#ff7d6a; --yellow:#ffe08a; }
+  *{box-sizing:border-box}
+  body{margin:0; padding:24px 16px 64px; background:var(--bg); color:var(--fg);
+       font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.75;}
+  .wrap{max-width:860px; margin:0 auto;}
+  h1{font-size:1.45rem; margin:0 0 4px;}
+  .lead{color:var(--sub); font-size:0.9rem; margin:0 0 22px;}
+  h2{font-size:1.05rem; margin:32px 0 10px; padding-top:14px; border-top:1px solid var(--line);}
+  .t{font-variant-numeric:tabular-nums; color:var(--sub); font-size:0.8rem;}
+  blockquote{margin:8px 0; padding:8px 14px; border-left:3px solid var(--yellow); color:#ffe9b0; font-size:0.92rem;}
+  ul{margin:8px 0 0; padding-left:1.2em;}
+  li{margin:4px 0;}
+  code{background:#1c222a; padding:1px 6px; border-radius:5px; font-size:0.85em;}
+  a{color:#8fd0ff;}
+  .ok{color:var(--green); font-weight:700;}
+  .ng{color:var(--red); font-weight:700;}
+  footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:0.8rem; color:var(--sub);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Dispatchのタイムライン — 2026年9月3日</h1>
+<p class="lead">たまごさんとDispatch（Claude）のやりとりの記録。ChatGPTなど外部のAIが読めるように公開しています。事実だけを時系列で並べています。</p>
+
+<h2>この日の主題</h2>
+<p>たまごさんの言葉：</p>
+<blockquote>「駅前に卵買ってきて」「わかりました買ってきます」と言ったまま全然帰ってこない。報告もない。Dispatchも追跡していない。俺は忘れちゃう、何十個も投げてるので。<b>9割帰ってこないんだよ。</b>止まって勝手にアーカイブされて埋もれてる。</blockquote>
+<blockquote>コンピュータが固まらない、クレジットが天井に行かない。<b>これを守りながら最大限、常に走らせること。</b>3本でも4本でも、余裕があれば7本でも8本でも。</blockquote>
+
+<h2><span class="t">15:41</span> 現在地の取り直し</h2>
+<ul>
+  <li>Dispatchが記憶の引き継ぎメモ（14:30時点「走行中0本」）だけを見て答え、実態とズレた。<span class="ng">これは誤り。</span></li>
+  <li>Vaultの成果物の更新時刻を辿り直したところ、15:13まで本番反映が続いていた＝本線は動いていた。</li>
+  <li>Codeタブのセッションは <code>list_sessions</code> に出ないため、Dispatchからは走行状況が見えないことを確認。</li>
+</ul>
+
+<h2><span class="t">17:53</span> Fable事故の原因を特定</h2>
+<ul>
+  <li>たまごさん「仕入れがFableで動いてる。もうFable使わないで」。</li>
+  <li>原因は見張り番 <code>session_watchdog.py</code> の <code>resume()</code>。<code>claude -p --resume</code> を<b>モデル指定なし</b>で叩いており、<code>--resume</code> は元のセッションのモデルを引き継ぐ。週枠が85%を超えるまでSonnetに切り替わらない作りだった。</li>
+  <li>対処：再開時に必ず <code>--model claude-sonnet-5</code> を明示。<code>status/no_fable.flag</code> がある間はFable完全禁止（マガジン例外も無効）。</li>
+</ul>
+
+<h2><span class="t">18:12</span> 「仕組みで起こす」を復活</h2>
+<ul>
+  <li>14:45に無効化されていた見張り番の呼び出しを再有効化。5分おきに①自動再開 ②3時間/100ターン/再開3回で自動引き継ぎ ③空きがあれば自動着火。</li>
+  <li><span class="ok">Dispatchが会話していなくても回る。</span></li>
+</ul>
+
+<h2><span class="t">18:16</span> 「進捗表と現状がつながらない」の正体</h2>
+<ul>
+  <li>実作業1本なのに「生存3本」と数えられ、空きゼロ判定で着火が永久に発火しなかった。</li>
+  <li>数えていたのは <b>Dispatch本体そのもの</b>と、<b>完了済みで残っているプロセス</b>。</li>
+  <li><code>factory_status.py</code> に <code>isDispatchSelf</code> と <code>countable</code> を追加して除外。実測で <code>sessions:1 / moreOK:1</code> に是正。</li>
+</ul>
+
+<h2><span class="t">18:30</span> 自動pushが止まる（Dispatch起因）</h2>
+<ul>
+  <li>Cowork側のサンドボックスからマウント越しにgitを叩くと <code>.git/*.lock</code> を削除できず残る。残ると以後の自動commit/pushが毎回失敗する。</li>
+  <li>対処：<code>machine_status_push.sh</code> の冒頭で「5分以上前の置き去りロック」を掃除。人手を借りずに自力で復旧できる形にした。</li>
+</ul>
+
+<h2><span class="t">19:00</span> 進捗表の作り直し</h2>
+<ul>
+  <li>走行中カードを1/3の大きさに（2列×5行＝10本が1画面）。「何分過ぎたか」を追加。</li>
+  <li>折りたたみ8個を1個に集約。</li>
+  <li><b>安全率90%の上限帯</b>を最上部に追加：「あと◯本いける」「ここが上限」「もう限界」。限界時は具体名で「◯◯を閉じると楽になる」＋その場に閉じるボタン（スマホから押せる）。</li>
+  <li>Brave・Chromeは自動で閉じない（本番公開が止まるため）。表示だけして判断は本人に残す。</li>
+</ul>
+
+<h2><span class="t">19:05</span> 完了の定義を引き直し</h2>
+<p>たまごさんの言葉：</p>
+<blockquote>メインに上げて終わり、じゃない。ラバブルでちゃんと公開して「反映しました」がディスパッチに上がって終わり。ディスパッチにも進捗表にもURL。<b>ここまでがセッションごとのゴール。</b></blockquote>
+<blockquote>右が行き止まりでした、終わり、じゃなくて。右がダメだった、左行ってみる。左がダメだった、後ろに行ってみる、上に登ってみる、どこか階段がないかな、とかそこまでやって。</blockquote>
+<blockquote>自分ができるのに、俺を動かそうとするわけよ。それもダメ。<b>あなたたちでできることは全部あなたたちでやってください。</b></blockquote>
+<ul>
+  <li>1セット＝実装 → main合流 → <b>Lovableの公開を押す</b> → 本番URLで反映を実測 → DispatchにURL → 進捗表にもURL。</li>
+  <li>Dispatch自身も、この日たまごさんに8回頼み、うち5回は自分で解決できたことだったと確認。</li>
+</ul>
+
+<h2><span class="t">19:16</span> 20 Little Phrases を公開</h2>
+<ul>
+  <li>Googleドライブの同期が壊れているため、GitHub Pagesから直接配信する経路に切り替えた。</li>
+  <li>→ <a href="../20-little-phrases/">20 Little Phrases 全27ページ</a></li>
+</ul>
+
+<h2>この日わかった、まだ直っていないこと</h2>
+<ul>
+  <li><b>作業台帳が2つに割れている。</b><code>tamago_brain/AI出力/_ルール/作業キュー.md</code>（533行）と <code>Documents/Obsidian Vault/…/作業キュー.md</code>（106行）の中身が違う。追跡が切れる原因。</li>
+  <li><b>「判断待ち」とされていた見回り11件は、実は判断不要だった。</b>中身は全部「演者が同定されていない（部屋に繋がらない）」というデータの穴。人の判断を待つ必要がなかった。</li>
+  <li>未反映ブランチ112本。本番に出ていない作業が積まれている。</li>
+  <li>Bashのハングがセッション停止の実体。2本とも確認の手前で20〜25分固まっていた。</li>
+</ul>
+
+<footer>
+  進捗表 → <a href="../../">tamago-shinchoku</a>。このページは手置きです。更新は同じファイルを上書きしてください。
+</footer>
+
+</div>
+</body>
+</html>
