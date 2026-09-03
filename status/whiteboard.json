@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 13:07",
+ "updatedAt": "2026-09-03 13:13",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -82,9 +82,9 @@
    "rank": 6,
    "task": "素人カバーの混入",
    "state": "作業中",
-   "owner": "wd_394299b1",
+   "owner": "wd_9ce6f219",
    "count": "7",
-   "updatedAt": "2026-09-03 07:08",
+   "updatedAt": "2026-09-03 13:08",
    "note": "完了条件: 本人以外が歌った動画が、本人の曲として棚に紛れ込む／7回以上 棚に並ぶ動画が本人のものだけになる。今は「便乗」が混ざっている",
    "stale": false
   },
@@ -369,11 +369,11 @@
    "priority": 3,
    "rank": 30,
    "task": "保存と裏での再生",
-   "state": "作業中",
-   "owner": "wd_9ce6f219",
+   "state": "検証待ち",
+   "owner": null,
    "count": "5",
-   "updatedAt": "2026-09-03 13:04",
-   "note": "完了条件: 曲を持ち帰れない。画面を消すと音楽が止まる／5回以上 気に入った曲を保存でき、画面を消しても鳴り続ける ｜聞くこと:実装の優先度。iPhoneでの技術検証が先） <small>出典：a09eb6a9・13bff595（08-12→08",
+   "updatedAt": "2026-09-03 13:08",
+   "note": "調査完了・コード変更なし（コミット0件）。「保存」＝既にfavorites.tsx/favorites.tsで実装済み（ハートで保存、リロードを跨いで残る）。「画面を消しても鳴り続ける」＝player.tsのPlayerSource抽象化＋AudioEngine.tsx(常駐<audio>+MediaSession API・ロック画面操作)が既にフル実装済みだが、backgroundAllowed()はsourceType='direct-audio'の曲だけtrue。**現在サイト内にaudioUrl/direct-audioを持つ曲は0件**（全曲YouTube埋め込み由来）。コード自身のコメントが明記：YouTube規約上バックグラウンド再生は禁止、抜け道は作らない、という既存の意図的な設計。詳細はPENDING_DECISIONS.md 2026-09-03 13:1x。次の一手：これはコーディングでは解決しない。一部の曲を自前ホスティングの許諾済み音声ファイル(direct-audio)に切り替えるかどうかの店主のコンテンツ戦略・著作権判断が必要（配線は完成済みなので音源さえ用意できれば即動く）。判断待ちとしてDispatchへ。 [実装:wd_9ce6f219]",
    "stale": false
   }
  ]
