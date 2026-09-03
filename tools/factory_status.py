@@ -429,6 +429,26 @@ def transcript_stats(path):
     return st
 
 
+_DISPATCH_SELF_CACHE = {}
+
+
+def is_dispatch_self(pid):
+    """そのプロセスがDispatch本体（たまごさんと会話している側）かどうか。
+    作業ディレクトリが local_ditto_* / local-agent-mode-sessions 配下なら本体。実作業ではないので本数に数えない。"""
+    key = str(pid)
+    if key in _DISPATCH_SELF_CACHE:
+        return _DISPATCH_SELF_CACHE[key]
+    ans = False
+    try:
+        out = run(["lsof", "-a", "-p", key, "-d", "cwd", "-Fn"], timeout=8)
+        cwd = next((ln[1:] for ln in out.splitlines() if ln.startswith("n/")), "") or ""
+        ans = ("local_ditto" in cwd) or ("local-agent-mode-sessions" in cwd)
+    except Exception:
+        ans = False
+    _DISPATCH_SELF_CACHE[key] = ans
+    return ans
+
+
 def status_of(kind, idle, st):
     """PWA用の状態: 作業中(緑)／承認待ち(黄)／止まっている・報告なし3時間超・失敗(赤)／完了(青)"""
     if st["done"]:
@@ -498,6 +518,10 @@ def sessions():
             "pid": int(s["pid"]),
             "title": s.get("title") or "（不明）",
             "dispatch": bool(s.get("dispatch")),
+            # 2026-09-03 たまごさん「進捗表と現状がつながるようにして」。
+            # Dispatch本体（会話しているこのセッション）は実作業ではないので本数に数えない。
+            # これを数えていたせいで「実作業1本なのに生存3本＝空きなし」となり、自動着火が永久に発火しなかった。
+            "isDispatchSelf": is_dispatch_self(s["pid"]),
             "mb": int(s.get("mb") or 0),
             "idleMin": round(s["idle"], 1) if s.get("idle") is not None else None,
             "kind": kind,
@@ -520,7 +544,18 @@ KIND_LABEL = {
 
 
 # ---------- 安全上限 ----------
+def countable(s):
+    """本数に数える対象か。Dispatch本体と、もう終わっているセッションは数えない。
+    2026-09-03：ここを数えていたせいで「実作業1本・生存3本・空きなし」となり自動着火が止まっていた。"""
+    if s.get("isDispatchSelf"):
+        return False
+    if s.get("status") in ("完了", "失敗"):
+        return False
+    return True
+
+
 def safe_max(base, ss, la1, cores, pressure, avail_mb, swap_up, iomb):
+    ss = [s for s in ss if countable(s)]
     alive = len(ss)
     working = sum(1 for s in ss if s["kind"] == "working")
     reasons = []

@@ -367,12 +367,23 @@ def quota():
     return load_json(os.path.join(REPO, "status", "quota.json"), {})
 
 
+NO_FABLE_FLAG = os.path.join(REPO, "status", "no_fable.flag")
+
+
+def no_fable():
+    """このファイルがある間はFableを一切使わない（マガジン例外も無効）。
+    2026-09-03 たまごさん：「もうフェイブル使っちゃうと天井ついちゃうからもう使わないで」"""
+    return os.path.exists(NO_FABLE_FLAG)
+
+
 def model_for(task_text, prev_model=None, why=""):
     """(モデル, 理由)。既定Sonnet。Fableはマガジン記事執筆だけ、かつ週枠に余裕がある時だけ。判断は機械。人に聞かない"""
     q = quota()
     level = q.get("fableLevel", "ok")
     t = task_text or ""
-    if level == "stop":
+    if no_fable():
+        model, reason = SONNET, "Fable禁止フラグ（status/no_fable.flag）→Sonnet"
+    elif level == "stop":
         model, reason = SONNET, "Fable週枠%s%%≥%d→Sonnet" % (q.get("fablePct"), q.get("stopPct", STOP_PCT_DEFAULT))
     elif FABLE_OK.search(t) and not MECHANICAL.search(t):
         if level == "warn":
@@ -407,8 +418,11 @@ def spawn(cmd, cwd, log_name, tag):
 
 def resume(cli, cwd):
     cmd = [CLAUDE, "-p", "--resume", cli, "--permission-mode", "auto", "--output-format", "json", "--effort", EFFORT_STUCK]
-    if quota().get("fableLevel") == "stop":
-        cmd += ["--model", SONNET]  # 枠が苦しい時は再開もSonnetで（止めるのではなく置き換える）
+    # 【2026-09-03 修正】ここが「仕入れがFableのまま起き続けた」正体。
+    # --resume は元のセッションのモデルを引き継ぐ。枠がstopになるまでFableで再開されていた。
+    # Fable禁止フラグがある時／枠が苦しい時は、必ずSonnetを明示して上書きする。
+    if no_fable() or quota().get("fableLevel") == "stop":
+        cmd += ["--model", SONNET]  # 止めるのではなく置き換える
     return spawn(cmd + [RESUME_MSG], cwd, "watchdog-resume-%s.log" % cli[:8], "resume " + cli)
 
 

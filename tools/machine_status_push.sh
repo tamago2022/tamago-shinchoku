@@ -48,7 +48,11 @@ fi
 python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-02 見張り番：止まっている子セッションを検知して claude -p --resume で自動再開（判定は factory_status の分類。負荷ゲートあり）
 # 2026-09-03 14:45 たまごさん「もう止めて」により無効化。計測(factory_status.py)とPWAへのpushは継続、自動再開だけ止める
-# python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
+# 2026-09-03 18:12 たまごさん「仕組みで起こす方復活させてください。やって」により再有効化。
+#   止めていた本当の理由＝再開がFableのままだったこと。それは session_watchdog.py 側で潰した：
+#   ①resume時に必ず --model claude-sonnet-5 を明示 ②status/no_fable.flag がある間はFable完全禁止。
+#   また止めたいときは status/no_fable.flag ではなくこの行をコメントに戻す（再開そのものが止まる）。
+python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
 # 2026-09-03 孤児プロセス回収：セッション終了後もppid=1で残り続けるlint/build/test系の暴走プロセスを止める（ロード100%固定化の実害を確認して追加）
 python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
 # 2026-09-03 本数の実測校正：load_history.jsonl＋heavy_events.jsonl → calibration.json（safeN/target）。次回の factory_status が読む
