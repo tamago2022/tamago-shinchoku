@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 22:19",
+ "updatedAt": "2026-09-03 22:24",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -81,11 +81,11 @@
    "priority": 3,
    "rank": 6,
    "task": "素人カバーの混入",
-   "state": "作業中",
-   "owner": "wd_fcae24be",
+   "state": "検証待ち",
+   "owner": null,
    "count": "7",
-   "updatedAt": "2026-09-03 22:08",
-   "note": "完了条件: 本人以外が歌った動画が、本人の曲として棚に紛れ込む／7回以上 棚に並ぶ動画が本人のものだけになる。今は「便乗」が混ざっている",
+   "updatedAt": "2026-09-03 22:20",
+   "note": "本番確認済み:2件(theウラシマ'S「ドラムカバー」/坂本龍一「ジャズピアノカバー集」)は既にwarehousedSongs.tsで倉庫化されPR#330でmain合流済み、production(https://joy-relief-station.lovable.app)で直接curl確認しどちらも0件(完全に消えている)。今回追加でaudit-amateur-cover-titles.tsの禁止ワードを5→15種類に拡張(cover表記ゆれ/performed by/モノマネ/耳コピ等)し69件を再検出、全件YouTube oEmbedで実チャンネル名を直接確認した結果、新規の紛れ込みは0件(全て部屋の本人による正当なカバー活動、既知除外リストへ21組追記)。コミットf116e801→main合流1498f582。次の一手:より広範囲の「無関係動画」再走査(diagnose-artist-mismatch.mjs、Aug8以来未実行の全24589曲)をバックグラウンドで開始済み(PID 11510、進行中/約2時間見込み)、結果が出次第別報告。別の目には本番URL2件のcurl結果とwarehousedSongs.tsのB区分コメントを見てもらえば検証できる [実装:wd_fcae24be]",
    "stale": false
   },
   {
@@ -132,8 +132,8 @@
    "state": "作業中",
    "owner": "wd_9ebaaf8f",
    "count": "台帳",
-   "updatedAt": "2026-09-03 22:18",
-   "note": "監査完了(読み取り専用、削除/マージ操作なし)。実数=未合流187本(悪化継続、09-02の181→09-03 187)。うち独自diffが実質ゼロは1本(proto/3d-gokigen)のみ、186本は実内容あり。⚠️重要な教訓：サブエージェントが最優先候補として挙げたclaude/youtube-search-secrets-fix(店主最優先案件と自称するコミット文言)を個別検証したところ、中身(youtubeSearch/youtubeDiscovery.functions.ts等)は既にPR#298(09-02合流)で同等以上の実装が入っており完全に上位互換で既に生きていた=T007/T009と同じ「肩書だけ見て焦らない、必ず現main比較で裏取り」パターン。同様にclaude/sql-migration-once-fixes-0830も検証、中身はsupabase/migrations経由(自動適用の仕組みが無いことは08-30に別セッションが実測済み・PENDING_DECISIONS.md参照)ではなく本来.claude/sql/配下でたまごさん本人がSupabase SQLエディタへ手動貼付する運用のため、単純git mergeでは本番に効果が出ない。→ **結論：187本は機械的に一括処理できない。各ブランチごとに「現mainで既に上位互換が無いか」の裏取りが必須**、これ自体が今後の標準チェック項目にすべき。実在チェック未了の残り184本のうち、重複関係が明確なもの(agent/task-153-ingest-standing系3本→内容重複)、bot自動更新のみ(tamago/issue-briefs-hold・563コミット)、rescue/backup系17本(2026-08-14〜16、未合流のまま3週間超放置、中身は実装済み機能で消失リスクは無いが取り込みも無し)は次回優先して個別検証する候補として記録した。ブランチの削除は不可逆操作のため、この監査だけでは削除しない(店主/Dispatchの確認が要る)。",
+   "updatedAt": "2026-09-03 22:22",
+   "note": "台帳回②完了(読み取り専用)。実数189本(悪化継続181→187→189)。今回:task-153系3本(重複+退行確認・削除提案)/issue-briefs-hold(bot専用・削除提案)/rescue系17本中12本を個別診断→postcard-nenchugyoji・search-perf-and-hashtagsの2本が未出荷の独立機能と確認(消えたら惜しい候補)。詳細=Vault「未反映ブランチ監査_2026-09-03.md」、削除提案3本+機能候補2本はPENDING_DECISIONS.mdへ記録済み(承認待ち)。次回:rescue系残り5本+大分岐系(aisansan-patrol等)の個別診断、恒久対策(stale自動検出)は未着手",
    "stale": false
   },
   {
@@ -286,11 +286,11 @@
    "rank": 23,
    "task": "確認が多すぎる（作法/仕組み）",
    "state": "作業中",
-   "owner": "wd_11e687a1",
+   "owner": "wd_fcae24be",
    "count": "59",
-   "updatedAt": "2026-09-03 11:42",
+   "updatedAt": "2026-09-03 22:20",
    "note": "止まらない工場（09-02）で子セッション指示に「止まらない3か条」を追加。次：設定ファイルの許可追加案を1回にまとめて判断待ちへ",
-   "stale": true
+   "stale": false
   },
   {
    "id": "T024",
@@ -298,11 +298,11 @@
    "rank": 24,
    "task": "指示待ちで止まる（作法/仕組み）",
    "state": "作業中",
-   "owner": "wd_4666eb94",
+   "owner": "wd_9ebaaf8f",
    "count": "13",
-   "updatedAt": "2026-09-03 12:09",
+   "updatedAt": "2026-09-03 22:22",
    "note": "v5適用2026-09-03 01:15起点。24h満了=2026-09-04 01:15。12:03時点(約10.8h)でgated0・humanPushes0=再発ゼロ継続中(詳細NONSTOP_FACTORY_HARNESS.md④-6)。満了前は追加調査不要・据え置き。次の見回りは満了時刻経過後に再確認→検証待ちへ",
-   "stale": true
+   "stale": false
   },
   {
    "id": "T025",
