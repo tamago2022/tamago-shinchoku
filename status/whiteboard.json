@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 15:31",
+ "updatedAt": "2026-09-03 15:36",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -134,7 +134,7 @@
    "count": "台帳",
    "updatedAt": "2026-09-03 09:33",
    "note": "監査完了(読み取り専用、削除/マージ操作なし)。実数=未合流187本(悪化継続、09-02の181→09-03 187)。うち独自diffが実質ゼロは1本(proto/3d-gokigen)のみ、186本は実内容あり。⚠️重要な教訓：サブエージェントが最優先候補として挙げたclaude/youtube-search-secrets-fix(店主最優先案件と自称するコミット文言)を個別検証したところ、中身(youtubeSearch/youtubeDiscovery.functions.ts等)は既にPR#298(09-02合流)で同等以上の実装が入っており完全に上位互換で既に生きていた=T007/T009と同じ「肩書だけ見て焦らない、必ず現main比較で裏取り」パターン。同様にclaude/sql-migration-once-fixes-0830も検証、中身はsupabase/migrations経由(自動適用の仕組みが無いことは08-30に別セッションが実測済み・PENDING_DECISIONS.md参照)ではなく本来.claude/sql/配下でたまごさん本人がSupabase SQLエディタへ手動貼付する運用のため、単純git mergeでは本番に効果が出ない。→ **結論：187本は機械的に一括処理できない。各ブランチごとに「現mainで既に上位互換が無いか」の裏取りが必須**、これ自体が今後の標準チェック項目にすべき。実在チェック未了の残り184本のうち、重複関係が明確なもの(agent/task-153-ingest-standing系3本→内容重複)、bot自動更新のみ(tamago/issue-briefs-hold・563コミット)、rescue/backup系17本(2026-08-14〜16、未合流のまま3週間超放置、中身は実装済み機能で消失リスクは無いが取り込みも無し)は次回優先して個別検証する候補として記録した。ブランチの削除は不可逆操作のため、この監査だけでは削除しない(店主/Dispatchの確認が要る)。",
-   "stale": false
+   "stale": true
   },
   {
    "id": "T011",
