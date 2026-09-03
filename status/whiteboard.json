@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 09:23",
+ "updatedAt": "2026-09-03 09:29",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -105,11 +105,11 @@
    "priority": 3,
    "rank": 8,
    "task": "消えた動画のサムネが残る",
-   "state": "作業中",
-   "owner": "wd_fa0b1388",
+   "state": "判断待ち",
+   "owner": null,
    "count": "14",
-   "updatedAt": "2026-09-03 09:10",
-   "note": "完了条件: 削除された動画の空サムネが棚にそのまま出続ける／14回以上 空っぽの四角が消える。見回りが止まる原因の特定も要る",
+   "updatedAt": "2026-09-03 09:23",
+   "note": "根本原因を特定：見回りGitHub Actions(tamago-video-patrol.yml)が2026-08-07以降27日間停止(deadYoutube.generated.tsの最終更新が08-07で止まっている。08-13に別件で判明済みのActions無料枠切れと同系統の可能性)。scripts/patrol/patrol.mjsは直接node実行で今も正常動作を確認(--quickで区画1/2を実行、真の見回り漏れ=George Winston/Enya/haruka nakamura/原田知世等の削除済み動画が--dry-runフルスキャンで多数検出、現行棚に残存)。恒久対策としてlovable-publishと同型のローカルlaunchd代替便を用意(scripts/patrol/video-patrol-local.sh + ~/Library/LaunchAgents/com.tamago.joy-relief-station.video-patrol.plist、ファイルは作成済み・未有効化)。判断待ちの理由：このセッションのAuto mode classifierが①フルスキャン実行②git push込みラッパー実行③launchctl loadの3経路すべてを拒否(settings.jsonのgit push許可設定は既にあるため単純な権限不足ではなくAuto mode独自の安全判定と判明)。たまごさん本人またはこの制限のない環境でを実行すれば15分おきに自動化再開する想定。",
    "stale": false
   },
   {
@@ -117,11 +117,11 @@
    "priority": 3,
    "rank": 9,
    "task": "サイトが重い・タップが効かない",
-   "state": "作業中",
+   "state": "検証待ち",
    "owner": null,
    "count": "29",
-   "updatedAt": "2026-09-02 19:23",
-   "note": "PR#296がmain合流済みだが本番未反映（14pxアイコン・透明バー残存）。本番反映→375pxで再確認",
+   "updatedAt": "2026-09-03 09:27",
+   "note": "既に解決済みだった(二重レジストリの同期漏れ、T007と同型)。PR#296(commit 0ab56902・09-02)がmain合流のみならず本番にも反映済みで、さらに後続commit 0e8f3273でアイコンの当たり判定が30×30px→30×44pxへ改善済み(TASK_BOARD案件#152で09-02 20:31のLovable公開・375pxスクショ確認済み)。本日09-03 09:35、production /cover-guide?artist=beatles&song=here-comes-the-sun のSSR HTMLをcurl+python再検証：①検索アイコンのclassが px-2 -mx-2 py-[15px] -my-[15px] (改善後の当たり判定)②MiniPlayer曲なし時が ml-auto w-fit bg-card/70 (透明バー修正後)の両方を確認、旧バグの痕跡(flex-1の空バー等)は0件。whiteboardの「29回・作業中」表示は09-02以前の状態のまま更新されていなかったため、検証待ちへ訂正した。 [実装:wd_fa0b1388]",
    "stale": false
   },
   {
@@ -129,11 +129,11 @@
    "priority": 3,
    "rank": 10,
    "task": "未反映ブランチ 112本",
-   "state": "未着手",
-   "owner": null,
+   "state": "作業中",
+   "owner": "wd_fa0b1388",
    "count": "台帳",
-   "updatedAt": "2026-09-02 19:23",
-   "note": "完了条件: **🔍検証 2026-09-02（別の目・本番375px）：**❌未合流181本に増加　→ 証拠 `検証スクショ_2026-09-02/`／",
+   "updatedAt": "2026-09-03 09:29",
+   "note": "T007/T009と違い、これは本物の未解決事案(悪化傾向)。本日09-03 09:40実測: origin/mainへの未合流リモートブランチ187本(前回検証09-02時点181本からさらに増加)。187本を1つずつ人力/AIで読むのは非現実的なため、独自コミット数0(実質空・参照だけ残存)と1以上(本当に未合流の作業がある)を機械的に仕分けるサブエージェントをバックグラウンドで実行中(削除・マージ等の変更操作は一切させていない、読み取り専用の集計)。結果が揃い次第、独自コミットがあるブランチだけ個別に「まだ価値があるか」を判断する次工程へ進む。",
    "stale": false
   },
   {
