@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 13:02",
+ "updatedAt": "2026-09-03 13:07",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -345,11 +345,11 @@
    "priority": 3,
    "rank": 28,
    "task": "リロードで先頭に戻る",
-   "state": "作業中",
-   "owner": "wd_9ce6f219",
+   "state": "検証待ち",
+   "owner": null,
    "count": "6",
-   "updatedAt": "2026-09-03 12:35",
-   "note": "完了条件: リロードやスクロールでページの先頭に戻され、下に行けない／6回以上 見ていた場所のまま戻ってくる",
+   "updatedAt": "2026-09-03 13:03",
+   "note": "重複調査の末、既に別セッション(01:13〜)がPR#317+#320で修理済みと判明。真因=ScrollToTopOnNav(__root.tsx)がreload/back_forwardを新規遷移と誤認しscrollTo(0)を強制、PR#320はloc.search同一性変化による再実行(6回以上の再発)もkeepScrollKeyで遮断。origin/mainに存在確認(ebcbb85d)・本番デプロイに'back_forward'マーカーで存在確認(index-CO8KeRzk.js)・TASK_BOARD 09-03記載で他2セッションも公開反映済みと確認済み(デプロイpsr2.59adf3f/bb5c90bc)。自分が独自に用意した修理branch(claude/t028-reload-scroll-top-fix)は同じ根本原因に対する重複かつ適用位置的にデッドコードだったためmainへは入れず削除・撤回(PENDING_DECISIONSに経緯記録)。残るのは実ブラウザでの最終挙動確認のみ(本セッションはブラウザMCP無し)。次の一手：別セッションが実機でリロード→スクロールを試し6回以上戻されないか確認できれば完了へ。 [実装:wd_9ce6f219]",
    "stale": false
   },
   {
@@ -357,11 +357,11 @@
    "priority": 3,
    "rank": 29,
    "task": "その場で再生できない",
-   "state": "未着手",
+   "state": "検証待ち",
    "owner": null,
    "count": "6",
-   "updatedAt": "2026-09-02 19:23",
-   "note": "完了条件: 動画がその場で鳴らず外部サイトに飛ばされる（ワンクリック再生が憲法）／6回以上 押したらその場で鳴る",
+   "updatedAt": "2026-09-03 13:04",
+   "note": "調査の結果、既に別セッション(01:23〜)がPR#319(branch claude/shelf-card-play-here-0903、コミットc99a59e5)で実装済みと判明。棚カード右下に「▶ここで聴く」ボタンを追加しplayer.playNow()でMiniPlayer再生(ページ遷移不要・iframeは押した1枚のみ)。独立検品(tamago-verifier役)済み：型/lint新規エラー0、変更はShelfCardView.tsx1ファイルのみ、既存の軽量ヘルパー再利用で重量増なし。自分でも差分を再確認し同じ結論(所見は44px固定ボタンサイズ=タップ域優先の意図的例外、修正不要)。本セッションでorigin/mainとの再マージ検証(git merge-tree)も実施し、現時点でも競合なくクリーンにマージ可能なことを確認。**未マージの理由は技術的ブロッカーではなく、店主のCLAUDE.md第一条の明示ルール「複数ページで共有されているコンポーネントの見た目変更は本番反映前に必ず店主確認」に従いDraft状態で待機中**(PENDING_DECISIONS.md 01:50に記録済み・約11時間経過)。この種の確認待ちは自分の判断で突破しない(第四条の唯一のスコープ外)。次の一手：たまごさん本人がGitHubでPR#319のDraft解除→自動QA→自動マージ→公開の順で流れる。 [実装:wd_9ce6f219]",
    "stale": false
   },
   {
@@ -369,10 +369,10 @@
    "priority": 3,
    "rank": 30,
    "task": "保存と裏での再生",
-   "state": "未着手",
-   "owner": null,
+   "state": "作業中",
+   "owner": "wd_9ce6f219",
    "count": "5",
-   "updatedAt": "2026-09-02 19:23",
+   "updatedAt": "2026-09-03 13:04",
    "note": "完了条件: 曲を持ち帰れない。画面を消すと音楽が止まる／5回以上 気に入った曲を保存でき、画面を消しても鳴り続ける ｜聞くこと:実装の優先度。iPhoneでの技術検証が先） <small>出典：a09eb6a9・13bff595（08-12→08",
    "stale": false
   }
