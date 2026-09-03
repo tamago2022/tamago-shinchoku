@@ -55,6 +55,7 @@ DEPLOY_ALERT_STATE = os.path.join(REPO, "status", "deploy-alert-state.json")
 DISPATCH_INBOX = os.path.join(VAULT, "AI出力", "_ルール", "留守中の判断待ち.md")
 HANDOFF_DIR = os.path.join(VAULT, "AI出力", "_ルール", "引き継ぎ_自動")
 SESSIONS_DIR = os.path.expanduser("~/Library/Application Support/Claude/claude-code-sessions")
+CLAUDE_PROJECTS_DIR = os.path.expanduser("~/.claude/projects")
 WHITEBOARD = "/Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py"
 WHITEBOARD_MD = "/Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.md"
 STANDARD_MD = os.path.join(VAULT, "AI出力", "_ルール", "セッション標準動作.md")
@@ -150,6 +151,16 @@ def cli_index():
                 idx[cli] = {"local": d.get("sessionId"), "title": d.get("title") or "", "cwd": d.get("cwd") or "/",
                             "dispatch": bool(d.get("dispatchParentId")), "archived": bool(d.get("isArchived"))}
     return idx
+
+
+def find_transcript(cli):
+    """クラッシュ回復セッションには ps 由来の transcript が無い。~/.claude/projects 配下を cli で1回だけ探す
+    （引き継ぎ文に「何を試して何がダメだったか」を積むため。3回再開しても落ちるセッションでしか呼ばない＝呼び出し頻度は低い）"""
+    for root, _, files in os.walk(CLAUDE_PROJECTS_DIR):
+        fn = cli + ".jsonl"
+        if fn in files:
+            return os.path.join(root, fn)
+    return None
 
 
 def proc_cwd(pid):
@@ -484,15 +495,20 @@ CRASHED_SESSIONS_GLOB = os.path.expanduser("~/Library/Application Support/Claude
 CRASH_RECENT_MIN = 720  # 12時間より古い放置セッションは「今夜のクラッシュ」ではないので対象外
 
 
-def scan_crashed_desktop_sessions(live_clis):
+def scan_crashed_desktop_sessions(live_clis, state=None):
     """2026-09-03実測で判明した検知漏れの穴：kanshiのPID→transcript対応は「プロセス起動時刻とtranscript先頭時刻の差±180秒」の
     近似マッチングで、Desktopアプリのプロセスが再起動・クラッシュ（exit 143＝process_interrupted）すると外れる。
     そうなると ps ベースの全経路（sessions_with_transcript）がそのセッションを一切検知できず、自動再開が永久に発火しない。
     ここでは ps を見ず、Desktopアプリ自身のセッション状態ファイル（local_*.json）に残る error/isArchived を直接見て、
     「プロセスは完全に落ちているが、まだ終わっていないはずの」セッションを拾う。resume()はcliSessionIdだけあれば
-    新しいプロセスを立てられるので、古いPIDが見つからなくても再開できる。"""
+    新しいプロセスを立てられるので、古いPIDが見つからなくても再開できる。
+    2026-09-03 追加で発見した第2の穴：CRASH_RECENT_MIN(12h)は「今夜と無関係な古いクラッシュ」を除外する目的だったが、
+    見張り番が一度でも掴んで再開を試みた（state[cli].triesがある）セッションまで12hで対象外になり、
+    「3回再開してもtries上限で止まり、そのまま12h経過して検知からも消え、永久放置」という実害が出た(0df4f865で実測)。
+    既に追跡中のセッションは MAX_IDLE_HOURS まで対象を伸ばす（未知の古いクラッシュだけ12hで弾く）。"""
     out = []
     now_ts = time.time()
+    state = state or {}
     for f in glob.glob(CRASHED_SESSIONS_GLOB):
         try:
             d = json.load(open(f, encoding="utf-8"))
@@ -503,7 +519,9 @@ def scan_crashed_desktop_sessions(live_clis):
             continue
         last = (d.get("lastActivityAt") or 0) / 1000.0
         idle_min = (now_ts - last) / 60.0 if last else None
-        if idle_min is None or idle_min > CRASH_RECENT_MIN:
+        tracked = bool(state.get(cli, {}).get("tries"))
+        limit_min = MAX_IDLE_HOURS * 60 if tracked else CRASH_RECENT_MIN
+        if idle_min is None or idle_min > limit_min:
             continue
         title = d.get("title") or "（不明）"
         if EXCLUDE_TITLE.search(title):
@@ -569,7 +587,7 @@ def main():
         n += 1
     # ②プロセス自体が完全に落ちて ps に一切映らないセッション（検知の穴）。live_clis に無い＝上のループでは絶対に拾えない
     live_clis = {s["cli"] for s in ss if s.get("cli")}
-    crashed = scan_crashed_desktop_sessions(live_clis)
+    crashed = scan_crashed_desktop_sessions(live_clis, state)
     crashed_resumed = []
     for c in crashed:
         if unsafe:
@@ -579,6 +597,28 @@ def main():
         if st.get("handedOff"):
             continue  # 既に別セッションへ引き継ぎ済み。古い方を二重に再開しない
         if st.get("tries", 0) >= MAX_TRIES:
+            # 2026-09-03 発見：ここが素通り(continue)なだけで、3回再開しても落ちるセッションは再開もされず
+            # 引き継ぎもされずただ放置されていた（「再開0」の実害の一因）。ここで引き継ぎへ渡す
+            alive = machine.get("sessions") or len(ss)
+            if alive >= machine.get("hardMax", 8) or h >= MAX_HANDOFF_PER_RUN or headless_alive >= MAX_HEADLESS:
+                skipped.append({"pid": None, "title": c["title"], "kind": "crashed", "why": "引き継ぎ見送り(上限)"})
+                continue
+            if dry:
+                handed.append({"cli": c["cli"], "title": c["title"], "why": "%d回再開しても再クラッシュ" % st["tries"], "dry": True}); h += 1; continue
+            tpath = find_transcript(c["cli"])
+            scan = scan_transcript(tpath) if tpath else {"turns": 0, "lastText": "", "firstUser": "", "errors": [], "tried": []}
+            meta = {"local": None, "title": c["title"], "cwd": c.get("cwd")}
+            why = "%d回再開しても再クラッシュ(%s)" % (st["tries"], c.get("errorCategory") or "process_interrupted")
+            new_id, pid, path = handoff({"cli": c["cli"]}, meta, scan, why)
+            st["handedOff"] = new_id or "failed"; st["handedOffAt"] = time.time(); st["title"] = c["title"]
+            totals["stalls"] += 1; totals["handoffs"] += 1; headless_alive += 1
+            unrec.append({"cli": c["cli"], "title": c["title"], "idleMin": round(c["idleMin"] or 0), "handedOffTo": new_id})
+            handed.append({"cli": c["cli"], "title": c["title"], "why": why, "newSession": new_id, "newPid": pid, "handoffFile": path})
+            append(LOG_MD, "- %s 🔁 引き継ぎ(クラッシュ回復から): 「%s」(%s) 理由=%s → 新セッション %s（%s）" %
+                   (now(), c["title"], c["cli"][:8], why, (new_id or "起動失敗")[:8], os.path.basename(path)))
+            append(DISPATCH_INBOX, "| %s | 見張り番: 「%s」(%s) をクラッシュ繰り返しで自動引き継ぎ → 新セッション %s。前のセッションは畳んでよい | 記録のみ・判断不要 |" %
+                   (now(), c["title"], c["cli"][:8], (new_id or "起動失敗")[:8]))
+            h += 1
             continue
         if n >= MAX_PER_RUN or headless_alive >= MAX_HEADLESS:
             break
@@ -655,10 +695,14 @@ def main():
         auto = [x for x in done if (x.get("humanPushes", 0) + x.get("dispatchPushes", 0)) == 0]
         machine["metrics"] = {"stalls": totals["stalls"], "autoResumes": totals["autoResumes"], "handoffs": totals["handoffs"],
                               "ignitions": totals["ignitions"], "gated": totals["gated"],
+                              # 2026-09-03 累計(上のautoResumes等)だけだと「このサイクルは動いたか」が分からず、
+                              # 5分ごとの偶然0件を「壊れている」と誤読される（実例：nRes=直近のみのPWA表示が0でも累計は伸びていた）。
+                              # 直近サイクルの件数を累計と並べて出す。
+                              "autoResumesThisRun": len(resumed), "handoffsThisRun": len(handed), "ignitionsThisRun": len(ignited),
                               "humanPushes": sum(x.get("humanPushes", 0) + x.get("dispatchPushes", 0) for x in sl),
                               "doneAlive": len(done), "doneWithoutHumanPush": len(auto),
                               "autonomyRatio": round(len(auto) / len(done), 2) if done else None,
-                              "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。自走完了率＝終了報告済みのうち人に押されず完了した割合"}
+                              "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"}
         machine["deployAlerts"] = check_deploy_alerts(machine)  # 反映されたのに報告が無いものを機械検知・転送（PWAの赤バナー用）
         machine["quota"] = quota()  # 利用枠の推定（PWAが読む）
         try:  # 自動でモデルを切り替えた記録（直近10件）
