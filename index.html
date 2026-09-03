@@ -436,11 +436,16 @@ function renderSessions(m){
   items.sort((a,b)=> (order[a.st.color]??9)-(order[b.st.color]??9) || (b.st.elapsedMin||0)-(a.st.elapsedMin||0));
   const wd = m.watchdog || {};
   const nRes = (wd.resumed||[]).length, nHand = (wd.handedOff||[]).length, nUnrec = (wd.unrecoverable||[]).length;
-  const au = m.autonomy || {};
+  const mt = m.metrics || {};
+  // 自走完了率：母数（終了報告済み件数）が小さいと100%が独り歩きするので、常に分数を併記する（「空セッションを数えた嘘」対策）
+  const doneN = mt.doneAlive ?? m.autonomy?.done;
+  const autoN = mt.doneWithoutHumanPush ?? m.autonomy?.doneWithoutHumanPush;
+  const auText = doneN ? `${autoN}/${doneN}件` : "データ不足";
   document.getElementById("sessSum").innerHTML =
     `<span class="green">走行中<b>${cnt.green}</b></span><span class="red">止まり<b>${cnt.red}</b></span><span class="yellow">待ち<b>${cnt.yellow}</b></span><span class="blue">完了<b>${cnt.blue||0}</b></span><span>待機<b>${cnt.gray}</b></span>`
-    + `<span title="人に押されずに完了した割合">自走完了率<b>${au.ratio != null ? Math.round(au.ratio*100) + "%" : "—"}</b></span>`
-    + (wd.lastRun ? `<span>見張り番 ${esc(wd.lastRun.slice(5))}<b>再開${nRes}${nHand ? `・引き継ぎ${nHand}` : ""}${nUnrec ? `・復旧不能${nUnrec}` : ""}</b></span>` : `<span>見張り番<b>未稼働</b></span>`);
+    + `<span title="終了報告済みのうち人に押されず完了した件数（母数が少ないと%は当てにならないので分数で出す）">自走完了<b>${esc(auText)}</b></span>`
+    // 累計は watchdog-state.json の _totals（見張り番稼働開始から）。直近は今回サイクルのwatchdog.resumed。両方出さないと「動いてない」と誤解される
+    + (wd.lastRun ? `<span title="累計は見張り番が動き出してから通算">見張り番 ${esc(wd.lastRun.slice(5))}<b>直近${nRes}・累計${mt.autoResumes ?? "—"}回${nHand || mt.handoffs ? `・引き継ぎ${mt.handoffs ?? nHand}` : ""}${nUnrec ? `・復旧不能${nUnrec}` : ""}</b></span>` : `<span>見張り番<b>未稼働</b></span>`);
   // モデル別本数（今動いているものだけ）：「今日Fable1本くらい使えるな」の判断材料
   const modelCnt = {};
   items.forEach(({s, st}) => { if(st.color === "green"){ const lbl = modelLabel(s.model) || "不明"; modelCnt[lbl] = (modelCnt[lbl]||0) + 1; } });
@@ -714,7 +719,16 @@ function renderMeters(m){
     const pingWarn = net.pingMs != null && net.pingMs >= 300 ? "red" : net.pingMs != null && net.pingMs >= 100 ? "yellow" : "";
     const wifiWarn = net.wired === false ? "yellow" : "";
     const label = net.wired === true ? "🔌有線" : net.wired === false ? "📶Wi-Fi" : "—";
-    netHtml = `<span class="${wifiWarn || pingWarn}">${esc(label)}${net.pingMs != null ? `・${net.pingMs}ms` : ""}${net.wired === false ? "（有線が抜けています）" : ""}</span>`;
+    // 有線ポートの実在・リンク状態から具体原因を出す（ポート不在／ケーブル未検出を区別）
+    let wiredNote = "";
+    if(net.wired === false){
+      const ports = net.wiredPorts || [];
+      const present = ports.filter(p => p.present);
+      if(!present.length) wiredNote = "（有線ポートが見つかりません）";
+      else { const notLinked = present.filter(p => !p.linked);
+        wiredNote = notLinked.length === present.length ? `（有線ポート${esc(notLinked.map(p=>p.name).join("・"))}にケーブル未検出）` : "（有線が抜けています）"; }
+    }
+    netHtml = `<span class="${wifiWarn || pingWarn}">${esc(label)}${net.pingMs != null ? `・${net.pingMs}ms` : ""}${wiredNote}</span>`;
   }
   document.getElementById("healthSum").innerHTML =
     `<span class="${diskWarn ? "red" : ""}">ディスク空き<b>${m.diskFreeGB ?? "—"}GB</b></span>`
@@ -766,7 +780,8 @@ function renderStats(text){
   const t0 = rows.reduce((a,r)=>r.t<a?r.t:a, rows[0].t), t1 = rows.reduce((a,r)=>r.t>a?r.t:a, rows[0].t);
   document.getElementById("statMeta").textContent = `${formatStamp(t0)}〜${formatStamp(t1)}`;
   const au = window.__machine && window.__machine.autonomy;
-  const auHtml = au ? `<div class="sum"><span>自走完了率（工場の集計）<b>${au.ratio != null ? Math.round(au.ratio*100) + "%" : "—"}</b></span><span>終了報告済み<b>${au.done ?? 0}</b></span><span>人に押されず完了<b>${au.doneWithoutHumanPush ?? 0}</b></span></div>` : "";
+  // 母数（終了報告済み）が小さいと%だけでは「空セッションを数えた100%」に見えるので、常に分数を主役にする
+  const auHtml = au ? `<div class="sum"><span title="終了報告済みのうち人に押されず完了した件数">自走完了（工場の集計）<b>${au.doneWithoutHumanPush ?? 0}／${au.done ?? 0}件</b></span></div>` : "";
   el.innerHTML = auHtml + `<div class="sum">
       <span>見たセッション<b>${n}</b></span><span>止まらず走り切った<b>${selfRun.length}／${finished.length}（${pct(selfRun.length, finished.length)}）</b></span>
       <span>止まった回数<b>${stops}</b></span><span>起こされた回数<b>${resumes}</b></span><span>いま止まっている<b>${stuckNow}</b></span>

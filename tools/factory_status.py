@@ -196,6 +196,22 @@ def network_status():
             result["pingMs"] = round(float(m.group(1)), 1)
     except Exception:
         pass
+    # 2026-09-03 有線ポートの実在・リンク状態（Wi-Fi継続中の原因切り分け：ケーブル未検出かポート不在か）
+    try:
+        order2 = run(["networksetup", "-listnetworkserviceorder"], timeout=5)
+        blocks2 = re.findall(r"\(\d+\)\s+(.+?)\n\(Hardware Port: .+?, Device: (\w+)\)", order2)
+        wired_ports = []
+        for name, dev in blocks2:
+            low = name.lower()
+            if "wi-fi" in low or "bluetooth" in low or "bridge" in low or "iphone" in low:
+                continue  # 有線候補だけ（Wi-Fi・Bluetooth・Thunderboltブリッジ・iPhone USBは除外）
+            out = run(["ifconfig", dev], timeout=5)
+            present = bool(out)
+            linked = present and ("status: active" in out)
+            wired_ports.append({"name": name, "device": dev, "present": present, "linked": linked})
+        result["wiredPorts"] = wired_ports
+    except Exception:
+        pass
     return result
 
 
