@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 10:17",
+ "updatedAt": "2026-09-03 10:22",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -153,11 +153,11 @@
    "priority": 3,
    "rank": 12,
    "task": "バッジが即時反映されない",
-   "state": "作業中",
-   "owner": "wd_c018ac2a",
+   "state": "検証待ち",
+   "owner": null,
    "count": "27",
-   "updatedAt": "2026-09-03 10:16",
-   "note": "完了条件: 棚から消す・バッジを付けても画面がすぐ変わらない／27回以上 押したら即その場で変わる。原因（データの列の食い違い）は09-02に判明、直し",
+   "updatedAt": "2026-09-03 10:19",
+   "note": "T009と同型：既に恒久対策済み・whiteboardが古い状態のまま未更新だった。根拠：①KNOWN_ISSUES.md『✅2026-09-02恒久対策』に測定済みエビデンス記載(棚ページ表示反映約40ms・削除反映約180ms、Vault compare-1〜8.png)②origin/mainでsrc/lib/badgeIdentityStore.tsが実装され、BadgeQuickPicker/ShelfCardPriorityMenu(押す側)→ShelfCardView/NextRecommendations/shelf.$worldId.$shelfId(描く側)全経路に配線済みをgit grepで確認③この修正コミット898d4c59(09-02 15:11)は現在の本番反映済みHEAD 1f09d328の祖先であり、T011作業で自分が直接publish実行(10:12→10:16、x-deployment-id psr2.8febd62)して本番に載っていることを確認済み。残り：本セッションはブラウザ操作ツールを持たないため実クリックでの目視確認はできていない(T009と同じ制約)。次の目は実機で🏷️バッジ付け外し→即座に画面が変わるかだけ見れば完了にできる。 [実装:wd_c018ac2a]",
    "stale": false
   },
   {
@@ -165,11 +165,11 @@
    "priority": 3,
    "rank": 13,
    "task": "バッジの見た目がバラバラ",
-   "state": "未着手",
+   "state": "検証待ち",
    "owner": null,
    "count": "29",
-   "updatedAt": "2026-09-02 19:23",
-   "note": "完了条件: 推しバッジの大きさ・位置がページごとに違い、指示通りにならない／29回以上 どのページでも同じ見た目になる。使い回し箇所11個の型統一が要る ｜聞くこと:最終的な大きさ・位置を1回決める） <small>出典：dd21080b・c4df937d・12657698（08-0",
+   "updatedAt": "2026-09-03 10:19",
+   "note": "T012と同一の09-02恒久対策の対象(KNOWN_ISSUES.md同一見出し『✅バッジの見た目バラバラ(29回)＋即時反映(27回)』)。根拠：①描画部品をCardBadges.tsx(唯一の窓口)へ集約済み、GoodCoverBadge/ConciergePickBadge/AiCoverBadge/MagazineBadgeを他コンポーネントから直接importしている箇所はgit grepで0件②見張りscripts/patrol/check-card-actions.mjsが違反を検出し、--self-testで違反3件を仕込んで赤になることまで確認できる逆テスト付き③verify-project.shに本体・self-test両方が組込済み(31-32行目)④この修正コミットは現在の本番反映済みHEAD 1f09d328の祖先(T011/T012で確認済みと同じ系譜)。棚ページ(旧ゼロ箇所)にもCardBadges配線済み。残り：本セッションはブラウザ操作ツールが無く実クリックでの目視確認は次の目に委ねる。 [実装:wd_c018ac2a]",
    "stale": false
   },
   {
@@ -177,11 +177,11 @@
    "priority": 3,
    "rank": 14,
    "task": "管理画面のログイン地獄",
-   "state": "作業中",
+   "state": "検証待ち",
    "owner": null,
    "count": "25",
-   "updatedAt": "2026-09-02 19:23",
-   "note": "完了条件: 管理画面のログインやパスワードが何度も弾かれ、端末に残らない／25回以上 一度入れば入りっぱなしになる。直しは作ってあるがmainに入ってお",
+   "updatedAt": "2026-09-03 10:22",
+   "note": "コード側の多層対策は全て完了・mainに反映済み(2026-08-06、e17dffb6ほか)。①AdminShelfContextへ認証を一元化(601123e5、個別コンポーネントがバラバラにuseAdminAuth持つ事故を解消)②Cookie最大400日+使うたび自動延長③direct/embed(iframe用Partitioned)の二重Cookie戦略④SafariのlocalStorage 7日ITP対策としてサーバー読取CookIeの目印(gokigen-admin-hint)を新設し判定を統一⑤合言葉を1文字'@'まで単純化+記号/大小文字/全角ゆらぎを正規化。ただしKNOWN_ISSUES.md自身が『店主の実端末(iPhone/Mac Safari)での実画面確認はまだ取れていない。これが取れるまでは解決済みへ移動しない』と明記(2026-08-06時点から未更新)。関連の未マージ枝claude/admin-login-persist(86797ff8, 08-16)も調査したが内容は既にmainの'@'方式に上位互換で吸収済み、活用価値なし。**T009/T012/T013と違い、この件はSafari実機のCookie保持という性質上、curl/SSR等のAI側検証手段では代替できない**。次に必要なのはたまごさん本人が普段使う端末で数日空けてから開き直し、ログインが保持されているかの一目。 [実装:wd_c018ac2a]",
    "stale": false
   },
   {
@@ -189,10 +189,10 @@
    "priority": 3,
    "rank": 15,
    "task": "棚の並び順が指定通りにならない",
-   "state": "未着手",
-   "owner": null,
+   "state": "作業中",
+   "owner": "wd_c018ac2a",
    "count": "9",
-   "updatedAt": "2026-09-02 19:23",
+   "updatedAt": "2026-09-03 10:22",
    "note": "完了条件: 「2曲目に入れて」が反映されない。棚内の並び替えもできない／9回以上（6回目の再発） 棚の順番を自分で決められる",
    "stale": false
   },
