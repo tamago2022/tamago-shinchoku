@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 11:37",
+ "updatedAt": "2026-09-03 11:42",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -249,11 +249,11 @@
    "priority": 3,
    "rank": 20,
    "task": "取り込みデータの誤判定",
-   "state": "作業中",
-   "owner": "wd_11e687a1",
+   "state": "検証待ち",
+   "owner": null,
    "count": "20",
-   "updatedAt": "2026-09-03 11:31",
-   "note": "着手初期段階で解放。src/lib/artistIdentify.server.tsは確認したが、実際にAIが取り込み時にアーティスト名・種別・タグを誤判定する呼び出し元(仕入れ時のLLM分類プロンプト本体)はまだ特定できていない。本人談90%という高い誤り率と20回以上の指摘回数からみて、T017/T019とは違い本物の未解決課題の可能性が高い。次の担当への引き継ぎ：1.どのファイル/スクリプトが取り込み時の自動分類を行っているか特定(admin_stock関連のingest処理・GitHub Actions workflow含む) 2.実際の誤判定サンプルを過去ログから拾う 3.根本原因(プロンプト設計かデータ突合ロジックか)を切り分ける、の3ステップから。",
+   "updatedAt": "2026-09-03 11:42",
+   "note": "根本原因を特定・修正しpush済み。①detected_artist_idガード(publicShelves.functions.ts)は2026-08-31に既に本番反映済みで再確認のみ。②未対応だった穴＝coverGuide.ts静的データ(37,455件)経由の経路にはそのガードが効かず、Black Dog/Doja Cat/Bad Bunny等の曲名一致で動物棚に誤分類されたままだった(2026-09-01監査で確認済み・未実行のまま放置)。src/lib/animals.tsに例外リスト(KNOWN_NON_ANIMAL_TITLES)を追加してpush(agent/task-020-animal-misclassification、tsc・単体動作7ケース確認済み)。tamago-task-queue.ymlの無人PR化/検品/自動マージ待ち。gh CLI不在のためこの経路で退避(agent-memory:gh-cli-unavailable-use-agent-task-branch)。「アーティスト名」誤判定の方はsrc/lib/ai-copy.server.tsのidentifyVideoSubject(LLMプロンプト)が該当箇所だが、こちらは未着手（次の担当への引き継ぎ候補）。 [実装:wd_11e687a1]",
    "stale": false
   },
   {
@@ -286,9 +286,9 @@
    "rank": 23,
    "task": "確認が多すぎる（作法/仕組み）",
    "state": "作業中",
-   "owner": null,
+   "owner": "wd_11e687a1",
    "count": "59",
-   "updatedAt": "2026-09-02 19:23",
+   "updatedAt": "2026-09-03 11:42",
    "note": "止まらない工場（09-02）で子セッション指示に「止まらない3か条」を追加。次：設定ファイルの許可追加案を1回にまとめて判断待ちへ",
    "stale": false
   },
