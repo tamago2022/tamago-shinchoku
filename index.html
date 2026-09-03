@@ -172,6 +172,32 @@
   .today .bl{color:var(--sub); font-size:0.72rem; letter-spacing:0.06em; margin:10px 0 4px;}
   .today ul{margin:0; padding-left:1.1em;} .today li{margin-bottom:4px;}
   footer{color:var(--dim); font-size:0.72rem; margin-top:28px; line-height:1.6;}
+
+  /* 走行中グリッド：ページ最優先。他のどの要素よりも目立たせる（正方形・2列） */
+  .nowage{font-size:0.68rem; color:var(--dim); margin:2px 0 8px;}
+  .nowage.nowstale{color:var(--red); font-weight:600;}
+  .now{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 6px;}
+  .now.nowstale{opacity:0.45;}
+  .nowcard{
+    min-width:0; overflow:hidden;
+    aspect-ratio:1/1; background:linear-gradient(160deg,#2b5340,#1c3a2b);
+    border:2px solid #5fd996; border-radius:16px; padding:11px 12px 10px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    box-shadow:0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(95,217,150,0.18) inset;
+  }
+  .nowcard.fable{border-color:#ff5d47; background:linear-gradient(160deg,#5a2a25,#3d1c19); box-shadow:0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,93,71,0.22) inset;}
+  .nowcard .nt{font-size:0.9rem; font-weight:700; line-height:1.28; color:#fff; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;}
+  .nowcard .nmeta{display:flex; flex-wrap:nowrap; gap:5px; align-items:center; font-size:0.62rem; color:#c8ecd8; font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
+  .nowcard.fable .nmeta{color:#ffd3c9;}
+  .nowcard .nbadge{border:1px solid rgba(255,255,255,0.35); border-radius:5px; padding:1px 6px; font-weight:700; flex:none;}
+  .nowcard .ncdlbl{font-size:0.6rem; color:#c8ecd8; margin-bottom:1px;}
+  .nowcard.fable .ncdlbl{color:#ffd3c9;}
+  .nowcard .ncd{font-variant-numeric:tabular-nums; font-size:1.12rem; font-weight:800; color:#fff; letter-spacing:0.01em; white-space:nowrap; overflow:hidden; text-overflow:clip;}
+  .nowcard .ncd.warn{color:#ffe08a;}
+  .nowcard .ncd.over{color:#ff9a8c;}
+  .nowcard .nsay{font-size:0.64rem; color:#c8ecd8;}
+  .nowcard.fable .nsay{color:#ffd3c9;}
+  .nowempty{grid-column:1/-1; padding:36px 14px; text-align:center; font-size:1.15rem; font-weight:700; color:var(--sub); border:1px dashed var(--line); border-radius:16px;}
 </style>
 </head>
 <body>
@@ -179,17 +205,21 @@
 <h1>進捗表</h1>
 <div class="updated" id="updated">読み込み中…</div>
 
-<div class="label"><b>いまの状況</b>マシンとクレジットを1枚で <small id="machineAge"></small></div>
+<div id="nowAge" class="nowage"></div>
+<div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
+
+<details class="sec"><summary>マシンとクレジット <small id="machineAge"></small></summary><div class="in">
 <div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
+</div></details>
 <details class="sec"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
 
-<div class="label"><b>走行状況</b>自動・5分おき <small id="sessMeta"></small></div>
+<details class="sec"><summary>走行状況（全件・自動5分おき） <small id="sessMeta"></small></summary><div class="in">
 <div class="legend"><span><i style="background:var(--green)"></i>今動いている</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>止まっている（動いていない＝台帳が着手中でも赤）</span></div>
 <div class="sum" id="sessSum"></div>
 <div class="modelSum" id="modelSum"></div>
 <div class="g" id="sessions"></div>
-
+</div></details>
 
 <details class="sec"><summary>言ったこと（直近・埋もれ防止） <small id="saidCount"></small></summary><div class="in" id="said"></div></details>
 <details class="sec"><summary>いま動いているもの（手更新） <small id="runUpdated"></small></summary><div class="in" id="running"></div></details>
@@ -485,6 +515,68 @@ function renderSessions(m){
   renderCmdStatus();
 }
 
+/* ───── 走行中グリッド（最優先・正方形2列・countdownは毎秒・データは30秒おき再取得） ───── */
+const EXCLUDE_NOW_TITLE = /mimawari|見回り|sweep|watchdog|見張り番/i;
+const HANDOFF_MIN = 180; // 3時間ルール
+function nowTitle(s){
+  const t = jaTitle(s.title);
+  if(!t || t === "（不明）") return "無題のセッション";
+  return t;
+}
+function collectNow(m){
+  const measured = m && m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now();
+  const list = (m && m.sessionList) || [];
+  const byKey = new Map(); // 同じセッションが複数pidで重複して出ることがあるので1本にまとめる（数を誤魔化さない）
+  list.forEach(s=>{
+    const st = sessState(s, measured);
+    if(st.color !== "green") return;
+    if(!s.startedAt) return;
+    if(EXCLUDE_NOW_TITLE.test(s.title || "")) return;
+    const key = s.cli || s.localId || s.title;
+    const prev = byKey.get(key);
+    if(!prev || (s.idleMin ?? 999) < (prev.idleMin ?? 999)) byKey.set(key, s);
+  });
+  return Array.from(byKey.values());
+}
+function renderNow(m){
+  const box = document.getElementById("now"), ageBox = document.getElementById("nowAge");
+  if(!m || !m.measuredAt){ box.innerHTML = `<div class="nowempty">読み込み中…</div>`; ageBox.textContent = ""; return; }
+  const ageMin = Math.round((Date.now() - new Date(m.measuredAt).getTime())/60000);
+  const stale = ageMin > STALE_MIN;
+  ageBox.innerHTML = (stale ? "⚠️ " : "") + `データ ${esc(formatStamp(m.measuredAt))}時点` + (stale ? `（${ageMin}分前・古い可能性）` : "");
+  ageBox.className = "nowage" + (stale ? " nowstale" : "");
+  const items = collectNow(m);
+  box.className = "now" + (stale ? " nowstale" : "");
+  if(!items.length){ box.innerHTML = `<div class="nowempty">今、何も動いていません</div>`; return; }
+  box.innerHTML = items.map(s=>{
+    const mLbl = modelLabel(s.model) || "?";
+    const isFable = mLbl === "Fable";
+    const started = s.startedAt ? formatStamp(s.startedAt) : "—";
+    const sayFresh = s.lastActivityAt ? freshness(s.lastActivityAt) : null;
+    return `<div class="nowcard${isFable ? " fable" : ""}" data-start="${esc(s.startedAt || "")}">
+      <div class="nt">${esc(nowTitle(s))}</div>
+      <div class="nmeta"><span class="nbadge">${esc(mLbl)}</span><span>${esc(started)} 開始</span></div>
+      <div><div class="ncdlbl">3時間ルール</div><div class="ncd" data-cd>--:--</div></div>
+      <div class="nsay">🗣️ ${sayFresh ? esc(sayFresh.text) : "—"}</div>
+    </div>`;
+  }).join("");
+  tickCountdowns();
+}
+function tickCountdowns(){
+  document.querySelectorAll(".nowcard[data-start]").forEach(el=>{
+    const start = el.dataset.start, cd = el.querySelector("[data-cd]");
+    if(!start || !cd) return;
+    const t = new Date(start).getTime(); if(isNaN(t)){ cd.textContent = "—"; return; }
+    const remainSec = HANDOFF_MIN*60 - Math.floor((Date.now() - t)/1000);
+    const over = remainSec < 0, abs = Math.abs(remainSec);
+    const hh = Math.floor(abs/3600), mm = Math.floor((abs%3600)/60), ss = abs%60;
+    const txt = hh > 0 ? `${hh}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}` : `${mm}:${String(ss).padStart(2,"0")}`;
+    cd.textContent = (over ? "超過 " : "残り ") + txt;
+    cd.className = "ncd" + (over ? " over" : remainSec <= 1800 ? " warn" : "");
+  });
+}
+setInterval(tickCountdowns, 1000); // 時計はJSON再取得と切り離して毎秒動かす＝リアルタイムが効いている証拠
+
 /* ───── ホワイトボード（ai-brain/live/whiteboard.md の写し status/whiteboard.json。セッションはこの順に取る） ───── */
 /* 実態の状態：台帳の「作業中」ラベルは信じない。今この瞬間に生きて動いているセッションが担当している行だけ緑。
    それ以外の「作業中」は赤＝止まっている（止まってからの時間＝最終更新からの経過）。 */
@@ -731,7 +823,7 @@ function renderMeters(m){
 function refreshMachine(){
   return fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(m => {
-      window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m);
+      window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m); renderNow(m);
       // machine.json のセッション生存情報が変わったので、実態判定(緑=今動いている)を使う
       // ホワイトボード・225件セクションも同じデータで引き直す
       if(window.__wbData) renderWhiteboard(window.__wbData);
