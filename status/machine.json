@@ -1,16 +1,16 @@
 {
- "raw": "負荷 100% ｜ CPU 18% / メモリ圧迫 14% / スワップ 4.05GB / ディスク空き 42GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 12% / メモリ圧迫 14% / スワップ 4.05GB / ディスク空き 42GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 18,
+ "cpu": 12,
  "mem": 14,
  "swapGB": 4154.25,
  "diskFreeGB": 42.0,
  "sessions": 1,
- "note": "上限2本・あと1本OK（5分平均ロード40.9（コア8×0.8超）、予兆（5分ロード比5.1）→1本減らす）",
- "measuredAt": "2026-09-04T02:50:54+09:00",
- "working": 1,
+ "note": "上限2本・あと1本OK（5分平均ロード39.2（コア8×0.8超）、予兆（5分ロード比4.9）→1本減らす）",
+ "measuredAt": "2026-09-04T02:51:40+09:00",
+ "working": 0,
  "stalled": 0,
- "waiting": 0,
+ "waiting": 1,
  "safeMax": 2,
  "moreOK": 1,
  "hardMax": 8,
@@ -20,23 +20,29 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比5.1"
+  "5分ロード比4.9"
  ],
- "shedCandidates": [],
+ "shedCandidates": [
+  {
+   "pid": 42669,
+   "title": "HOME／ふるさと 各国プレイリスト",
+   "idleMin": 10.3
+  }
+ ],
  "below": 3,
- "blockReason": "5分平均ロード40.9（コア8×0.8超）、予兆（5分ロード比5.1）→1本減らす",
- "load1": 57.79,
- "load5": 40.94,
- "load15": 36.92,
+ "blockReason": "5分平均ロード39.2（コア8×0.8超）、予兆（5分ロード比4.9）→1本減らす",
+ "load1": 42.53,
+ "load5": 39.18,
+ "load15": 36.47,
  "cores": 8,
- "loadRatio": 7.22,
+ "loadRatio": 5.32,
  "memPressure": "green",
- "memAvailGB": 7.1,
+ "memAvailGB": 7.2,
  "swapIncreasing": false,
- "ioMBs": 0.19,
+ "ioMBs": 1.71,
  "network": {
-  "pingMedianMs": 23.4,
-  "pingMaxMs": 37.2,
+  "pingMedianMs": 23.0,
+  "pingMaxMs": 32.1,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -48,8 +54,8 @@
    "elapsedMin": 152,
    "lastReportAt": "2026-09-03T17:41:20.195Z",
    "lastReport": "bFetchが通常に動くセッション、またはたまごさん本人による「投入即実行チェックリスト」の実行です。状況（ツール解禁）が変わるまで、このタスクに対する本セッションからの新規報告は無くなる見込みです。",
-   "status": "作業中",
-   "color": "green",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [],
@@ -62,8 +68,8 @@
    "dispatch": true,
    "isDispatchSelf": false,
    "mb": 312,
-   "idleMin": 9.5,
-   "kind": "working",
+   "idleMin": 10.3,
+   "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 222,
    "lastActivityAt": "2026-09-03T17:41:20.195Z"
@@ -72,7 +78,7 @@
    "cli": "23222812-02d4-48f9-9ccc-d30f3fddf610",
    "localId": "local_179a2692-2a8d-47bf-b597-bdca194e5a9d",
    "startedAt": "2026-09-04T02:44:58+0900",
-   "elapsedMin": 5,
+   "elapsedMin": 6,
    "lastReportAt": "2026-09-03T17:46:08.842Z",
    "lastReport": "Taste Gate回収なし、司令塔HTML再生成OK。 問題：メモリ逼迫（swap 83%・空き0.6GB/32GB、ロード比4.4）のため着火を見送り。生存2本＝上限2本で満杯。 判断待ち：なし。",
    "status": "完了",
@@ -89,14 +95,14 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 301,
-   "idleMin": 4.7,
+   "idleMin": 5.5,
    "kind": "working",
    "model": "claude-opus-5",
    "turns": 12,
    "lastActivityAt": "2026-09-03T17:46:08.842Z"
   }
  ],
- "line": "負荷 100% ｜ セッション1本（作業中1・止まり0） ｜ 上限2本・あと1本OK ｜ 空き42.0GB",
+ "line": "負荷 100% ｜ セッション1本（作業中0・止まり0） ｜ 上限2本・あと1本OK ｜ 空き42.0GB",
  "modelCounts": {
   "claude-sonnet-5": 1,
   "claude-opus-5": 1
@@ -109,7 +115,7 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 02:50",
+  "lastRun": "2026-09-04 02:51",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -139,9 +145,16 @@
   "autonomyRatio": 1.0,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
- "deployAlerts": [],
+ "deployAlerts": [
+  {
+   "t": "2026-09-04 02:51",
+   "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
+   "title": "HOME／ふるさと 各国プレイリスト",
+   "urls": []
+  }
+ ],
  "quota": {
-  "updatedAt": "2026-09-04 02:50",
+  "updatedAt": "2026-09-04 02:51",
   "estimated": true,
   "fablePct": 88.5,
   "allPct": 114.9,
@@ -176,7 +189,7 @@
    "all": 56316282
   },
   "projection": {
-   "fablePctAtReset_avgPace": 261.5,
+   "fablePctAtReset_avgPace": 261.4,
    "fablePctAtReset_recentPace": 88.5,
    "hoursToCeiling_recentPace": null,
    "recentPacePctPerHour": 0.0
@@ -232,7 +245,7 @@
   "benchmark": {
    "allPacePctPerHour6h": 1.337,
    "aliveAvgLast6h": 2.9,
-   "pctPerSessionHour": 0.4616,
+   "pctPerSessionHour": 0.4624,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
