@@ -619,6 +619,12 @@ function collectNow(m){
     if(st.color !== "green") return;
     if(!s.startedAt) return;
     if(EXCLUDE_NOW_TITLE.test(s.title || "")) return;
+    // 2026-09-03 たまごさん「無題のセッションって何もわからない。何やってんのか」
+    //   → 中身が分からないカードは出さない。Dispatch本体（会話している側）は実作業ではないので出さない。
+    //     題名が取れないものも、見ても何も分からないので出さない（本数の数字は別途 capbar に出している）。
+    if(s.isDispatchSelf) return;
+    const t = (s.title || "").trim();
+    if(!t || t === "（不明）" || t === "(不明)") return;
     const key = s.cli || s.localId || s.title;
     const prev = byKey.get(key);
     if(!prev || (s.idleMin ?? 999) < (prev.idleMin ?? 999)) byKey.set(key, s);
@@ -735,11 +741,13 @@ function renderWhiteboard(w){
       ${linksHtml([{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${encodeURIComponent(r.task||"")}`}])}`;
     return card(e.color, `${num(r)}. ${r.task}`, e.label, extra, d, num(r));
   };
+  // 2026-09-03 たまごさん「止まっている・判断待ちとかも全部畳めるようにして。見づらいから」
+  //   → 既定は全部畳む。件数だけ見えて、開きたいものだけ開く。
   const GROUPS = [
     {title:"完了",                  open:false, hit:e => e.label.indexOf("完了") === 0},
-    {title:"止まっている",          open:true,  hit:e => e.color === "red"},
-    {title:"判断待ち（たまごさん）", open:true,  hit:e => e.color === "yellow"},
-    {title:"いま動いている",        open:true,  hit:e => e.color === "green"},
+    {title:"止まっている",          open:false, hit:e => e.color === "red"},
+    {title:"判断待ち（たまごさん）", open:false, hit:e => e.color === "yellow"},
+    {title:"いま動いている",        open:false, hit:e => e.color === "green"},
     {title:"検証待ち（別の目）",    open:false, hit:e => e.color === "blue"},
     {title:"未着手",                open:false, hit:e => true},
   ];
