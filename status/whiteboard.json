@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 11:21",
+ "updatedAt": "2026-09-03 11:26",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -237,11 +237,11 @@
    "priority": 3,
    "rank": 19,
    "task": "シェアしても画像が出ない",
-   "state": "作業中",
-   "owner": "wd_1d49aba9",
+   "state": "検証待ち",
+   "owner": null,
    "count": "10",
-   "updatedAt": "2026-09-03 11:21",
-   "note": "完了条件: LINEやXで共有するとサムネが出ない・卵マスコットになる／10回以上 共有した相手に正しい絵が見える。ページ種別ごとの確認がまだ",
+   "updatedAt": "2026-09-03 11:23",
+   "note": "「ページ種別ごとの確認」を実施：本番SSR HTMLのog:imageを7種のページで直接確認(curl)。①cover-guide曲ページ→/api/public/share-image/<動画id>(動的YouTubeサムネ)②room/card→同様に動的③/feature/monkey-magic→専用og.jpg④/world/music→動的share-image⑤/star-land(→/room/card/star-landへ307)→動的share-image⑥/・/shelves・/history・/favorites→固定の「四つの扉」既定画像。全てのcontent系ページで曲・アーティスト固有の画像が正しく出ており「卵マスコットで固定」の再現は無し。og:image先URL2種(share-image API・四つの扉PNG)とも200・正しいcontent-type・適切なcache-controlで実配信を確認。残存する説明候補：LINE/Xは一度取得したOGPプレビューをURL単位で長期キャッシュするため、本日T011で解消された本番デプロイ詰まり期間中に古い/欠けた画像が一度キャッシュされていた場合、コード側を直しても各プラットフォームのキャッシュが自然失効するかキャッシュ再取得ツール(Xのcard validator等)を使うまで古い絵が残り続ける可能性がある＝コード側の追加修正では直せない領域。次の目：実際にLINE/Xで数URLを新規共有(未共有のURL)して正しい絵が出るか確認すれば完了にできる。 [実装:wd_1d49aba9]",
    "stale": false
   },
   {
@@ -252,8 +252,8 @@
    "state": "作業中",
    "owner": null,
    "count": "20",
-   "updatedAt": "2026-09-02 19:23",
-   "note": "完了条件: 外部動画を取り込むとアーティスト名・種別・タグを間違える（本人談90%）／20回以上 取り込んだ時点で正しく並ぶ。今は毎回人が直している",
+   "updatedAt": "2026-09-03 11:26",
+   "note": "着手初期段階で解放。(findCodeArtistByName/ensureArtistFromResearch等)を確認したが、実際にAIが取り込み時にアーティスト名・種別・タグを誤判定する呼び出し元(仕入れ時のLLM分類プロンプト本体)はまだ特定できていない。本人談90%という高い誤り率と20回以上の指摘回数からみて、T017/T019のような『既に直っていたが未検証』パターンではなく本物の未解決課題の可能性が高い。次の担当への引き継ぎ：①どのファイル/スクリプトが取り込み時の自動分類を行っているか特定（admin_stock関連のingest処理・GitHub Actions workflow含む）②実際の誤判定サンプルを店主から数件集めるか過去ログから拾う③根本原因（プロンプト設計かデータ突合ロジックか）を切り分ける、の3ステップから。",
    "stale": false
   },
   {
