@@ -1,13 +1,13 @@
 {
- "raw": "負荷 100% ｜ CPU 15% / メモリ圧迫 17% / スワップ 6.35GB / ディスク空き 39GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 2% / メモリ圧迫 17% / スワップ 6.32GB / ディスク空き 39GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 15,
+ "cpu": 2,
  "mem": 17,
- "swapGB": 6509.25,
+ "swapGB": 6477.25,
  "diskFreeGB": 39.0,
  "sessions": 1,
- "note": "上限2本・あと1本OK（5分平均ロード12.8（コア8×0.8超）、予兆（5分ロード比1.6）→1本減らす）",
- "measuredAt": "2026-09-04T06:36:00+09:00",
+ "note": "上限2本・あと1本OK（5分平均ロード12.6（コア8×0.8超）、予兆（5分ロード比1.6）→1本減らす）",
+ "measuredAt": "2026-09-04T06:36:41+09:00",
  "working": 1,
  "stalled": 0,
  "waiting": 0,
@@ -24,19 +24,19 @@
  ],
  "shedCandidates": [],
  "below": 3,
- "blockReason": "5分平均ロード12.8（コア8×0.8超）、予兆（5分ロード比1.6）→1本減らす",
- "load1": 12.08,
- "load5": 12.76,
- "load15": 11.97,
+ "blockReason": "5分平均ロード12.6（コア8×0.8超）、予兆（5分ロード比1.6）→1本減らす",
+ "load1": 11.31,
+ "load5": 12.55,
+ "load15": 11.94,
  "cores": 8,
- "loadRatio": 1.51,
+ "loadRatio": 1.41,
  "memPressure": "green",
  "memAvailGB": 8.4,
  "swapIncreasing": false,
- "ioMBs": 1.07,
+ "ioMBs": 0.39,
  "network": {
-  "pingMedianMs": 25.0,
-  "pingMaxMs": 40.0,
+  "pingMedianMs": 22.2,
+  "pingMaxMs": 55.9,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -65,8 +65,8 @@
    "idleMin": 0.4,
    "kind": "working",
    "model": "claude-sonnet-5",
-   "turns": 175,
-   "lastActivityAt": "2026-09-03T21:35:34.817Z"
+   "turns": 177,
+   "lastActivityAt": "2026-09-03T21:36:13.991Z"
   }
  ],
  "line": "負荷 100% ｜ セッション1本（作業中1・止まり0） ｜ 上限2本・あと1本OK ｜ 空き39.0GB",
@@ -142,10 +142,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 282861393,
-  "allWeightedTokensSinceReset": 844309654,
+  "allWeightedTokensSinceReset": 844355974,
   "last6h": {
    "fable": 0,
-   "all": 45597625
+   "all": 45643945
   },
   "projection": {
    "fablePctAtReset_avgPace": 245.3,
@@ -202,9 +202,9 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 1.082,
+   "allPacePctPerHour6h": 1.084,
    "aliveAvgLast6h": 2.0,
-   "pctPerSessionHour": 0.5507,
+   "pctPerSessionHour": 0.5528,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
