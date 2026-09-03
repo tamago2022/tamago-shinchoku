@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 23:25",
+ "updatedAt": "2026-09-03 23:31",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -16,6 +16,42 @@
   "5": "後回し"
  },
  "rows": [
+  {
+   "id": "T023",
+   "priority": 1,
+   "rank": 23,
+   "task": "確認が多すぎる（作法/仕組み）",
+   "state": "判断待ち",
+   "owner": null,
+   "count": "59",
+   "updatedAt": "2026-09-03 22:31",
+   "note": "許可追加案をPENDING_DECISIONSへ記載済み",
+   "stale": false
+  },
+  {
+   "id": "T024",
+   "priority": 1,
+   "rank": 24,
+   "task": "指示待ちで止まる（作法/仕組み）",
+   "state": "作業中",
+   "owner": "wd_9ebaaf8f",
+   "count": "13",
+   "updatedAt": "2026-09-03 22:26",
+   "note": "仕組み確認(コード変更なし・読み取り監査)。結論:条文追加では直らない段階。予防層(Auto Mode Activeシステムリマインダー)+回復層(見張り番30分パトロール+whiteboard.py stale6h再割当)の2層が既に稼働中と一次証拠付きで確認(本セッション自身がT024をwd_4666eb94から自動引き継ぎした実例、T010も自動着火された実例)。詳細=Vault「指示待ちで止まる_T024_仕組み確認_2026-09-03.md」。残る穴:①ホワイトボード外(Dispatch直接会話)は回復層の対象外②30分パトロールとdispatch-session-sweepの重複未棚卸し(Cowork UI要・ブラウザツール必須)③09-02制定後限定の再発件数は未集計(verification-log.mdに該当データなし)。次回はこの3点から着手",
+   "stale": false
+  },
+  {
+   "id": "T025",
+   "priority": 1,
+   "rank": 25,
+   "task": "水汲みをさせない仕組み（作法/仕組み）",
+   "state": "検証待ち",
+   "owner": null,
+   "count": "21",
+   "updatedAt": "2026-09-03 12:19",
+   "note": "水汲み防止の具体的な穴を1件特定・修正：共通脳の正本whiteboard.py/.mdがmainに一度もコミットされずローカルのみだった。worktree(claude/whiteboard-git-tracking-0903)で修正しpush済み(save()実行時に10分debounceでwhiteboard.md単体を自動git commit)。PR作成はAuto mode classifierに拒否+gh CLI不在で不可→留守中の判断待ち.mdに1行(GOがあれば店主/別セッションがPR化)。T025自体は広いテーマで他の穴(TASK_BOARD.md記録漏れの機械検知等)は未着手のまま残る。次の目：①compareURLでdiff内容の正しさを確認②実運用で10分後書き込み時に本当に自動commitされるか確認 [実装:wd_4666eb94]",
+   "stale": false
+  },
   {
    "id": "T001",
    "priority": 3,
@@ -278,42 +314,6 @@
    "count": "台帳",
    "updatedAt": "2026-09-02 19:23",
    "note": "完了条件: データベースの列不足とSQL未適用で、複数の案件が連鎖で止まっている／台帳のみ 止まっている案件がまとめて動き出す ｜聞くこと:鍵を1行貼る操作。値はたまごさん自身が入れる） <small>出典：依頼台帳r005（08-08）・PENDING_D",
-   "stale": false
-  },
-  {
-   "id": "T023",
-   "priority": 3,
-   "rank": 23,
-   "task": "確認が多すぎる（作法/仕組み）",
-   "state": "判断待ち",
-   "owner": null,
-   "count": "59",
-   "updatedAt": "2026-09-03 22:31",
-   "note": "許可追加案をPENDING_DECISIONSへ記載済み",
-   "stale": false
-  },
-  {
-   "id": "T024",
-   "priority": 3,
-   "rank": 24,
-   "task": "指示待ちで止まる（作法/仕組み）",
-   "state": "作業中",
-   "owner": "wd_9ebaaf8f",
-   "count": "13",
-   "updatedAt": "2026-09-03 22:26",
-   "note": "仕組み確認(コード変更なし・読み取り監査)。結論:条文追加では直らない段階。予防層(Auto Mode Activeシステムリマインダー)+回復層(見張り番30分パトロール+whiteboard.py stale6h再割当)の2層が既に稼働中と一次証拠付きで確認(本セッション自身がT024をwd_4666eb94から自動引き継ぎした実例、T010も自動着火された実例)。詳細=Vault「指示待ちで止まる_T024_仕組み確認_2026-09-03.md」。残る穴:①ホワイトボード外(Dispatch直接会話)は回復層の対象外②30分パトロールとdispatch-session-sweepの重複未棚卸し(Cowork UI要・ブラウザツール必須)③09-02制定後限定の再発件数は未集計(verification-log.mdに該当データなし)。次回はこの3点から着手",
-   "stale": false
-  },
-  {
-   "id": "T025",
-   "priority": 3,
-   "rank": 25,
-   "task": "水汲みをさせない仕組み（作法/仕組み）",
-   "state": "検証待ち",
-   "owner": null,
-   "count": "21",
-   "updatedAt": "2026-09-03 12:19",
-   "note": "水汲み防止の具体的な穴を1件特定・修正：共通脳の正本whiteboard.py/.mdがmainに一度もコミットされずローカルのみだった。worktree(claude/whiteboard-git-tracking-0903)で修正しpush済み(save()実行時に10分debounceでwhiteboard.md単体を自動git commit)。PR作成はAuto mode classifierに拒否+gh CLI不在で不可→留守中の判断待ち.mdに1行(GOがあれば店主/別セッションがPR化)。T025自体は広いテーマで他の穴(TASK_BOARD.md記録漏れの機械検知等)は未着手のまま残る。次の目：①compareURLでdiff内容の正しさを確認②実運用で10分後書き込み時に本当に自動commitされるか確認 [実装:wd_4666eb94]",
    "stale": false
   },
   {
