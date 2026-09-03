@@ -1,28 +1,34 @@
 {
- "measuredAt": "2026-09-04T04:56:53+0900",
+ "measuredAt": "2026-09-04T05:03:36+0900",
  "diskFreeGB": 41.0,
  "purgeableGB": null,
  "snapshots": 0,
  "load": 100,
  "memPressure": "green",
- "memAvailGB": 6.2,
- "sessions": 2,
+ "memAvailGB": 5.9,
+ "sessions": 3,
  "safeMax": 2,
  "moreOK": 0,
  "target": 4,
  "cap": 4,
  "calibratedSafeN": 5,
- "below": 2,
- "shedCandidates": [],
+ "below": 1,
+ "shedCandidates": [
+  {
+   "pid": 83532,
+   "title": "HOME／ふるさと 各国プレイリスト",
+   "idleMin": 18.7
+  }
+ ],
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 12.45GB",
-   "gb": 12.45,
+   "effect": "メモリ 12.23GB",
+   "gb": 12.23,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
-   "how": "45プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "46プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "~/Library/Caches を空にする",
@@ -34,8 +40,8 @@
   },
   {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 2.49GB",
-   "gb": 2.49,
+   "effect": "メモリ 2.13GB",
+   "gb": 2.13,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
@@ -43,8 +49,8 @@
   },
   {
    "label": "Spotifyを閉じる",
-   "effect": "メモリ 0.96GB",
-   "gb": 0.96,
+   "effect": "メモリ 0.73GB",
+   "gb": 0.73,
    "kind": "mem",
    "safe": true,
    "app": "Spotify",
@@ -59,13 +65,20 @@
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
   },
   {
-   "label": "LINEを閉じる",
-   "effect": "メモリ 0.35GB",
-   "gb": 0.35,
+   "label": "終わって待機中のセッション 1本を畳む",
+   "effect": "メモリ 0.25GB・負荷↓",
+   "gb": 0.25,
    "kind": "mem",
    "safe": true,
-   "app": "LINE",
-   "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "HOME／ふるさと 各国プレ"
+  },
+  {
+   "label": "セッションを1本減らす（上限2本）",
+   "effect": "負荷 100%→上限内",
+   "gb": 0,
+   "kind": "load",
+   "safe": false,
+   "how": "どれを止めるかは作業内容次第。止めるなら引き継ぎメモを書かせてから"
   }
  ],
  "_duAt": 1788465345.351752,
