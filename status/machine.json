@@ -1,18 +1,18 @@
 {
- "raw": "負荷 100% ｜ CPU 13% / メモリ圧迫 12% / スワップ 5.07GB / ディスク空き 42GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 5% / メモリ圧迫 12% / スワップ 5.07GB / ディスク空き 42GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 13,
+ "cpu": 5,
  "mem": 12,
  "swapGB": 5196.75,
  "diskFreeGB": 42.0,
- "sessions": 0,
- "note": "上限2本・あと2本OK（5分平均ロード39.6（コア8×0.8超））",
- "measuredAt": "2026-09-04T04:09:12+09:00",
- "working": 0,
+ "sessions": 1,
+ "note": "上限2本・あと1本OK（5分平均ロード36.9（コア8×0.8超）、予兆（5分ロード比4.6）→1本減らす）",
+ "measuredAt": "2026-09-04T04:15:02+09:00",
+ "working": 1,
  "stalled": 0,
  "waiting": 0,
  "safeMax": 2,
- "moreOK": 2,
+ "moreOK": 1,
  "hardMax": 8,
  "cap": 5,
  "target": 4,
@@ -20,38 +20,68 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比5.0"
+  "5分ロード比4.6"
  ],
  "shedCandidates": [],
- "below": 4,
- "blockReason": "5分平均ロード39.6（コア8×0.8超）",
- "load1": 49.12,
- "load5": 39.65,
- "load15": 35.36,
+ "below": 3,
+ "blockReason": "5分平均ロード36.9（コア8×0.8超）、予兆（5分ロード比4.6）→1本減らす",
+ "load1": 32.25,
+ "load5": 36.91,
+ "load15": 35.99,
  "cores": 8,
- "loadRatio": 6.14,
+ "loadRatio": 4.03,
  "memPressure": "green",
- "memAvailGB": 7.1,
+ "memAvailGB": 7.6,
  "swapIncreasing": false,
- "ioMBs": 4.33,
+ "ioMBs": 1.38,
  "network": {
-  "pingMedianMs": 24.9,
-  "pingMaxMs": 37.1,
+  "pingMedianMs": 26.9,
+  "pingMaxMs": 77.3,
   "pingSamples": 20
  },
  "stalledList": [],
- "sessionList": [],
- "line": "負荷 100% ｜ セッション0本（作業中0・止まり0） ｜ 上限2本・あと2本OK ｜ 空き42.0GB",
- "modelCounts": {},
+ "sessionList": [
+  {
+   "cli": "7145557a-3951-489b-ba91-88b5b2838bfa",
+   "localId": null,
+   "startedAt": "2026-09-04T04:14:59+0900",
+   "elapsedMin": 0,
+   "lastReportAt": null,
+   "lastReport": "",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "unreportedDeploy": false,
+   "deployUrls": [],
+   "humanPushes": 0,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 81426,
+   "title": "（不明）",
+   "dispatch": false,
+   "isDispatchSelf": false,
+   "mb": 213,
+   "idleMin": 0.0,
+   "kind": "working",
+   "model": null,
+   "turns": 0,
+   "lastActivityAt": null
+  }
+ ],
+ "line": "負荷 100% ｜ セッション1本（作業中1・止まり0） ｜ 上限2本・あと1本OK ｜ 空き42.0GB",
+ "modelCounts": {
+  "不明": 1
+ },
  "autonomy": {
-  "alive": 0,
+  "alive": 1,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 04:09",
+  "lastRun": "2026-09-04 04:15",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -60,9 +90,9 @@
   "shed": null,
   "keep": {
    "target": 4,
-   "alive": 0,
-   "below": 4,
-   "line": "現在0本／上限2本／目標4本／あと2本いける"
+   "alive": 1,
+   "below": 3,
+   "line": "現在1本／上限2本／目標4本／あと1本いける"
   },
   "stalledSkipped": []
  },
@@ -83,7 +113,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-04 04:09",
+  "updatedAt": "2026-09-04 04:15",
   "estimated": true,
   "fablePct": 88.5,
   "allPct": 115.2,
@@ -91,7 +121,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.6,
-  "hoursLeft": 109.8,
+  "hoursLeft": 109.7,
   "fableLevel": "stop",
   "allLevel": "stop",
   "warnPct": 75,
@@ -115,10 +145,10 @@
   "allWeightedTokensSinceReset": 808659304,
   "last6h": {
    "fable": 0,
-   "all": 50545499
+   "all": 45717587
   },
   "projection": {
-   "fablePctAtReset_avgPace": 255.6,
+   "fablePctAtReset_avgPace": 255.2,
    "fablePctAtReset_recentPace": 88.5,
    "hoursToCeiling_recentPace": null,
    "recentPacePctPerHour": 0.0
@@ -156,7 +186,7 @@
    "pct": 161.2,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 5.41,
+   "recentPacePctPerHour": 5.39,
    "projectedPctAtReset": 161.2,
    "wasteRiskPct": 0.0,
    "mottainai": false,
@@ -172,9 +202,9 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 1.2,
+   "allPacePctPerHour6h": 1.085,
    "aliveAvgLast6h": 2.6,
-   "pctPerSessionHour": 0.4691,
+   "pctPerSessionHour": 0.4255,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
