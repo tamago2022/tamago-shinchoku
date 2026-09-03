@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-03 14:37",
+ "updatedAt": "2026-09-03 14:50",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -156,8 +156,8 @@
    "state": "検証待ち",
    "owner": null,
    "count": "27",
-   "updatedAt": "2026-09-03 10:19",
-   "note": "T009と同型：既に恒久対策済み・whiteboardが古い状態のまま未更新だった。根拠：①KNOWN_ISSUES.md『✅2026-09-02恒久対策』に測定済みエビデンス記載(棚ページ表示反映約40ms・削除反映約180ms、Vault compare-1〜8.png)②origin/mainでsrc/lib/badgeIdentityStore.tsが実装され、BadgeQuickPicker/ShelfCardPriorityMenu(押す側)→ShelfCardView/NextRecommendations/shelf.$worldId.$shelfId(描く側)全経路に配線済みをgit grepで確認③この修正コミット898d4c59(09-02 15:11)は現在の本番反映済みHEAD 1f09d328の祖先であり、T011作業で自分が直接publish実行(10:12→10:16、x-deployment-id psr2.8febd62)して本番に載っていることを確認済み。残り：本セッションはブラウザ操作ツールを持たないため実クリックでの目視確認はできていない(T009と同じ制約)。次の目は実機で🏷️バッジ付け外し→即座に画面が変わるかだけ見れば完了にできる。 [実装:wd_c018ac2a]",
+   "updatedAt": "2026-09-03 14:42",
+   "note": "追加確認(2026-09-03 14:41・別の目)：src/lib/badgeIdentityStore.tsを直接読み、useSyncExternalStoreで押した瞬間→描く側へ即時共有する橋渡しをコードレベルで再確認。楽観的更新(削除の即時反映)も実装確認。ただし本セッションもブラウザ/管理ログイン権限を持たず、実クリック(🏷️付け外し→即座に画面が変わるか)の目視確認はまだ未実施のまま。次の目はここだけ見れば完了にできる。対象URL例：/shelf/food/kattemi-yokatta（要admin認証でのバッジ付け外し操作） [実装:wd_768a9636]",
    "stale": false
   },
   {
@@ -165,11 +165,11 @@
    "priority": 3,
    "rank": 13,
    "task": "バッジの見た目がバラバラ",
-   "state": "検証待ち",
+   "state": "完了",
    "owner": null,
    "count": "29",
-   "updatedAt": "2026-09-03 10:19",
-   "note": "T012と同一の09-02恒久対策の対象(KNOWN_ISSUES.md同一見出し『✅バッジの見た目バラバラ(29回)＋即時反映(27回)』)。根拠：①描画部品をCardBadges.tsx(唯一の窓口)へ集約済み、GoodCoverBadge/ConciergePickBadge/AiCoverBadge/MagazineBadgeを他コンポーネントから直接importしている箇所はgit grepで0件②見張りscripts/patrol/check-card-actions.mjsが違反を検出し、--self-testで違反3件を仕込んで赤になることまで確認できる逆テスト付き③verify-project.shに本体・self-test両方が組込済み(31-32行目)④この修正コミットは現在の本番反映済みHEAD 1f09d328の祖先(T011/T012で確認済みと同じ系譜)。棚ページ(旧ゼロ箇所)にもCardBadges配線済み。残り：本セッションはブラウザ操作ツールが無く実クリックでの目視確認は次の目に委ねる。 [実装:wd_c018ac2a]",
+   "updatedAt": "2026-09-03 14:41",
+   "note": "✅2026-09-03 14:41 証拠:https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta 独立検品(別の目)完了：CardBadges単一窓口/旧4部品の直接使用は全経路grepで0件/check-card-actions本体+--self-test(違反3件検出+合法4件通過)両方合格/tsc新規エラー0(既存main由来18件のみ)/本番HTMLに/badges/concierge-pick.png+alt=コンシェルジュ推しが実出力(kattemi-yokatta・tashizan両棚で確認、画像アセットも200)。見た目統一(大きさ・位置)は本番で確定",
    "stale": false
   },
   {
