@@ -1,40 +1,46 @@
 {
- "raw": "負荷 12% ｜ CPU 12% / メモリ圧迫 9% / スワップ 0GB / ディスク空き 47GB ｜ 稼働 3本 ｜ あと58本OK",
- "load": 12,
- "cpu": 12,
+ "raw": "負荷 11% ｜ CPU 11% / メモリ圧迫 9% / スワップ 0GB / ディスク空き 47GB ｜ 稼働 3本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "load": 11,
+ "cpu": 11,
  "mem": 9,
  "swapGB": 0.0,
  "diskFreeGB": 47.0,
  "sessions": 2,
- "note": "上限5本・あと3本OK",
- "measuredAt": "2026-09-03T23:06:44+09:00",
- "working": 2,
+ "note": "上限2本・あと0本OK（たまごさん操作中（上限-1））",
+ "measuredAt": "2026-09-03T23:12:17+09:00",
+ "working": 1,
  "stalled": 0,
- "waiting": 0,
- "safeMax": 5,
- "moreOK": 3,
+ "waiting": 1,
+ "safeMax": 2,
+ "moreOK": 0,
  "hardMax": 8,
- "cap": 5,
+ "cap": 4,
  "target": 4,
  "calibratedSafeN": 5,
  "calibrationBasis": "実測（5本まで合格）",
- "userActive": false,
+ "userActive": true,
  "predict": [],
- "shedCandidates": [],
+ "shedCandidates": [
+  {
+   "pid": 3512,
+   "title": "世界の暮らし×ノスタルジー接続",
+   "idleMin": 11.9
+  }
+ ],
  "below": 2,
- "blockReason": "",
- "load1": 2.37,
- "load5": 3.75,
- "load15": 5.36,
+ "blockReason": "たまごさん操作中（上限-1）",
+ "load1": 9.2,
+ "load5": 6.33,
+ "load15": 5.94,
  "cores": 8,
- "loadRatio": 0.3,
+ "loadRatio": 1.15,
  "memPressure": "green",
- "memAvailGB": 11.4,
+ "memAvailGB": 9.8,
  "swapIncreasing": false,
- "ioMBs": 0.4,
+ "ioMBs": 1.91,
  "network": {
-  "pingMedianMs": 22.6,
-  "pingMaxMs": 39.1,
+  "pingMedianMs": 24.9,
+  "pingMaxMs": 58.7,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -43,11 +49,11 @@
    "cli": "44b5f580-7de9-4177-87da-fc64fa15ed3b",
    "localId": "local_243c1fd7-1d47-4263-a60e-ef737549e612",
    "startedAt": "2026-09-03T18:03:51+0900",
-   "elapsedMin": 73,
+   "elapsedMin": 79,
    "lastReportAt": "2026-09-03T14:00:24.020Z",
    "lastReport": "de?artist=hatakeyama-miyuki&song=furusato  （補足：TASK_BOARD.mdへの完了記録はPR #338として別途出しており、まもなく自動マージされます。）",
-   "status": "作業中",
-   "color": "green",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [
     "https://joy-relief-station.lovable.app/cover-guide?artist=hatakeyama-miyuki&song=furusato"
    ],
@@ -65,8 +71,8 @@
    "dispatch": true,
    "isDispatchSelf": false,
    "mb": 376,
-   "idleMin": 6.3,
-   "kind": "working",
+   "idleMin": 11.9,
+   "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 720,
    "lastActivityAt": "2026-09-03T14:00:24.020Z"
@@ -75,7 +81,7 @@
    "cli": "fc34d3ea-f6b7-45e0-be0a-8fbae3f3d63c",
    "localId": "local_bc15311b-aeb7-4383-a140-5ac830d6679c",
    "startedAt": "2026-09-03T18:25:35+0900",
-   "elapsedMin": 73,
+   "elapsedMin": 79,
    "lastReportAt": "2026-09-03T14:04:50.592Z",
    "lastReport": "加をお願いしたい（値の閲覧・設定はAI側の権限外）。追加後は`gh workflow run tamago-once-amelie-movie-shelf.yml --ref main`一発で即完了。",
    "status": "作業中",
@@ -98,7 +104,7 @@
    "dispatch": true,
    "isDispatchSelf": false,
    "mb": 464,
-   "idleMin": 1.9,
+   "idleMin": 7.4,
    "kind": "working",
    "model": "claude-sonnet-5",
    "turns": 589,
@@ -108,7 +114,7 @@
    "cli": null,
    "localId": null,
    "startedAt": "2026-09-03T23:06:03+0900",
-   "elapsedMin": 0,
+   "elapsedMin": 6,
    "lastReportAt": null,
    "lastReport": "",
    "status": "不明",
@@ -124,7 +130,7 @@
    "title": "（不明）",
    "dispatch": false,
    "isDispatchSelf": true,
-   "mb": 377,
+   "mb": 423,
    "idleMin": null,
    "kind": "unknown",
    "model": null,
@@ -132,7 +138,7 @@
    "lastActivityAt": null
   }
  ],
- "line": "負荷 12% ｜ セッション2本（作業中2・止まり0） ｜ 上限5本・あと3本OK ｜ 空き47.0GB",
+ "line": "負荷 11% ｜ セッション2本（作業中1・止まり0） ｜ 上限2本・増やすな ｜ 空き47.0GB",
  "modelCounts": {
   "claude-sonnet-5": 2,
   "不明": 1
@@ -145,18 +151,18 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-03 23:06",
+  "lastRun": "2026-09-03 23:12",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "着火せず: 取れる仕事なし（未着手/作業中）",
+  "ignite": "空きなし（上限2本・目標4本・生存2本）",
   "shed": null,
   "keep": {
    "target": 4,
    "alive": 2,
    "below": 2,
-   "line": "現在2本／上限5本／目標4本／あと3本いける"
+   "line": "現在2本／上限2本／目標4本／あと0本いける"
   },
   "stalledSkipped": []
  },
@@ -175,9 +181,19 @@
   "autonomyRatio": null,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
- "deployAlerts": [],
+ "deployAlerts": [
+  {
+   "t": "2026-09-03 23:12",
+   "cli": "44b5f580-7de9-4177-87da-fc64fa15ed3b",
+   "title": "世界の暮らし×ノスタルジー接続",
+   "urls": [
+    "https://github.com/tamago2022/joy-relief-station/compare/main...claude/nostalgia-bridge-0903-v2",
+    "https://joy-relief-station.lovable.app/room/food/handcraft-china-seasonal-flowers"
+   ]
+  }
+ ],
  "quota": {
-  "updatedAt": "2026-09-03 23:06",
+  "updatedAt": "2026-09-03 23:12",
   "estimated": true,
   "fablePct": 88.5,
   "allPct": 111.2,
@@ -185,7 +201,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.8,
-  "hoursLeft": 114.9,
+  "hoursLeft": 114.8,
   "fableLevel": "stop",
   "allLevel": "stop",
   "warnPct": 75,
@@ -212,7 +228,7 @@
    "all": 66987802
   },
   "projection": {
-   "fablePctAtReset_avgPace": 279.9,
+   "fablePctAtReset_avgPace": 279.4,
    "fablePctAtReset_recentPace": 112.7,
    "hoursToCeiling_recentPace": 54.6,
    "recentPacePctPerHour": 0.21
@@ -250,7 +266,7 @@
    "pct": 152.7,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 6.3,
+   "recentPacePctPerHour": 6.28,
    "projectedPctAtReset": 152.7,
    "wasteRiskPct": 0.0,
    "mottainai": false,
@@ -268,7 +284,7 @@
   "benchmark": {
    "allPacePctPerHour6h": 1.59,
    "aliveAvgLast6h": 3.6,
-   "pctPerSessionHour": 0.4439,
+   "pctPerSessionHour": 0.4444,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
