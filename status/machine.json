@@ -1,16 +1,16 @@
 {
- "raw": "負荷 100% ｜ CPU 9% / メモリ圧迫 15% / スワップ 4.02GB / ディスク空き 42GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 8% / メモリ圧迫 15% / スワップ 3.99GB / ディスク空き 42GB ｜ 稼働 2本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 9,
+ "cpu": 8,
  "mem": 15,
- "swapGB": 4122.25,
+ "swapGB": 4090.25,
  "diskFreeGB": 42.0,
  "sessions": 1,
- "note": "上限2本・あと1本OK（5分平均ロード38.4（コア8×0.8超）、予兆（5分ロード比4.8）→1本減らす）",
- "measuredAt": "2026-09-04T02:52:26+09:00",
+ "note": "上限2本・あと1本OK（5分平均ロード35.5（コア8×0.8超）、予兆（5分ロード比4.4）→1本減らす）",
+ "measuredAt": "2026-09-04T02:58:16+09:00",
  "working": 0,
  "stalled": 0,
- "waiting": 1,
+ "waiting": 2,
  "safeMax": 2,
  "moreOK": 1,
  "hardMax": 8,
@@ -20,29 +20,29 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比4.8"
+  "5分ロード比4.4"
  ],
  "shedCandidates": [
   {
    "pid": 42669,
    "title": "HOME／ふるさと 各国プレイリスト",
-   "idleMin": 11.1
+   "idleMin": 16.9
   }
  ],
  "below": 3,
- "blockReason": "5分平均ロード38.4（コア8×0.8超）、予兆（5分ロード比4.8）→1本減らす",
- "load1": 38.89,
- "load5": 38.35,
- "load15": 36.28,
+ "blockReason": "5分平均ロード35.5（コア8×0.8超）、予兆（5分ロード比4.4）→1本減らす",
+ "load1": 36.29,
+ "load5": 35.49,
+ "load15": 35.28,
  "cores": 8,
- "loadRatio": 4.86,
+ "loadRatio": 4.54,
  "memPressure": "green",
- "memAvailGB": 7.2,
+ "memAvailGB": 6.9,
  "swapIncreasing": false,
- "ioMBs": 4.92,
+ "ioMBs": 1.92,
  "network": {
   "pingMedianMs": 25.8,
-  "pingMaxMs": 46.3,
+  "pingMaxMs": 58.5,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -51,7 +51,7 @@
    "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
    "localId": "local_6944a1ca-b499-4030-a1a4-886787ad9432",
    "startedAt": "2026-09-04T00:18:45+0900",
-   "elapsedMin": 153,
+   "elapsedMin": 159,
    "lastReportAt": "2026-09-03T17:41:20.195Z",
    "lastReport": "bFetchが通常に動くセッション、またはたまごさん本人による「投入即実行チェックリスト」の実行です。状況（ツール解禁）が変わるまで、このタスクに対する本セッションからの新規報告は無くなる見込みです。",
    "status": "反映済み・報告なし",
@@ -67,8 +67,8 @@
    "title": "HOME／ふるさと 各国プレイリスト",
    "dispatch": true,
    "isDispatchSelf": false,
-   "mb": 312,
-   "idleMin": 11.1,
+   "mb": 311,
+   "idleMin": 16.9,
    "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 222,
@@ -78,7 +78,7 @@
    "cli": "23222812-02d4-48f9-9ccc-d30f3fddf610",
    "localId": "local_179a2692-2a8d-47bf-b597-bdca194e5a9d",
    "startedAt": "2026-09-04T02:44:58+0900",
-   "elapsedMin": 7,
+   "elapsedMin": 13,
    "lastReportAt": "2026-09-03T17:46:08.842Z",
    "lastReport": "Taste Gate回収なし、司令塔HTML再生成OK。 問題：メモリ逼迫（swap 83%・空き0.6GB/32GB、ロード比4.4）のため着火を見送り。生存2本＝上限2本で満杯。 判断待ち：なし。",
    "status": "完了",
@@ -94,9 +94,9 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 301,
-   "idleMin": 6.3,
-   "kind": "working",
+   "mb": 305,
+   "idleMin": 12.1,
+   "kind": "idle_done",
    "model": "claude-opus-5",
    "turns": 12,
    "lastActivityAt": "2026-09-03T17:46:08.842Z"
@@ -115,11 +115,28 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 02:52",
+  "lastRun": "2026-09-04 02:58",
   "resumed": [],
-  "handedOff": [],
+  "handedOff": [
+   {
+    "pid": 42669,
+    "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
+    "title": "HOME／ふるさと 各国プレイリスト",
+    "why": "3回再開しても進まない",
+    "newSession": "aed9103d-0ea6-40c8-aaf0-79fbee78872c",
+    "newPid": 69778,
+    "handoffFile": "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain/AI出力/_ルール/引き継ぎ_自動/20260904_0258_7860f65e.md"
+   }
+  ],
   "ignited": [],
-  "unrecoverable": [],
+  "unrecoverable": [
+   {
+    "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
+    "title": "HOME／ふるさと 各国プレイリスト",
+    "idleMin": 17,
+    "handedOffTo": "aed9103d-0ea6-40c8-aaf0-79fbee78872c"
+   }
+  ],
   "ignite": "着火せず: 取れる仕事なし（未着手/作業中）",
   "shed": null,
   "keep": {
@@ -131,13 +148,13 @@
   "stalledSkipped": []
  },
  "metrics": {
-  "stalls": 87,
+  "stalls": 88,
   "autoResumes": 54,
-  "handoffs": 7,
+  "handoffs": 8,
   "ignitions": 9,
   "gated": 0,
   "autoResumesThisRun": 0,
-  "handoffsThisRun": 0,
+  "handoffsThisRun": 1,
   "ignitionsThisRun": 0,
   "humanPushes": 2,
   "doneAlive": 1,
@@ -147,14 +164,14 @@
  },
  "deployAlerts": [
   {
-   "t": "2026-09-04 02:52",
+   "t": "2026-09-04 02:58",
    "cli": "7860f65e-b605-47a7-b872-c111bdb5728f",
    "title": "HOME／ふるさと 各国プレイリスト",
    "urls": []
   }
  ],
  "quota": {
-  "updatedAt": "2026-09-04 02:52",
+  "updatedAt": "2026-09-04 02:58",
   "estimated": true,
   "fablePct": 88.5,
   "allPct": 114.9,
@@ -162,7 +179,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.6,
-  "hoursLeft": 111.1,
+  "hoursLeft": 111.0,
   "fableLevel": "stop",
   "allLevel": "stop",
   "warnPct": 75,
@@ -189,7 +206,7 @@
    "all": 56316282
   },
   "projection": {
-   "fablePctAtReset_avgPace": 261.4,
+   "fablePctAtReset_avgPace": 260.9,
    "fablePctAtReset_recentPace": 88.5,
    "hoursToCeiling_recentPace": null,
    "recentPacePctPerHour": 0.0
@@ -227,7 +244,7 @@
    "pct": 160.6,
    "resetAt": "2026-09-03 04:44",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 5.67,
+   "recentPacePctPerHour": 5.64,
    "projectedPctAtReset": 160.6,
    "wasteRiskPct": 0.0,
    "mottainai": false,
@@ -245,21 +262,13 @@
   "benchmark": {
    "allPacePctPerHour6h": 1.337,
    "aliveAvgLast6h": 2.9,
-   "pctPerSessionHour": 0.4632,
+   "pctPerSessionHour": 0.4639,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
   },
   "line": "Fable週枠 89%（今日の目標82.5%＝55×1.5・曲線どおり） ／ 全モデル 115%（推定時点・曲線目標51.4%＝34×1.5・63.5pt上振れ） ／ リセットまで 4.6日 ／ 5時間枠 160.6%・残0.0h",
   "switches": [
-   {
-    "t": "2026-09-03 09:02",
-    "task": "🟢 T007 P3 [7] おすすめに無関係が混ざる ｜ 作業中 ｜ 担当:wd_fa0b1388 ｜ 14回 ｜ 2026-09-03 09:02 完了条件:",
-    "from": null,
-    "to": "claude-sonnet-5",
-    "why": "Fable週枠74.2%≥85→Sonnet",
-    "fablePct": 74.2
-   },
    {
     "t": "2026-09-03 10:01",
     "task": "🟢 T011 P3 [11] 本番反映が自動で回らない ｜ 作業中 ｜ 担当:wd_c018ac2a ｜ 12回 ｜ 2026-09-03 10:01 完了条件",
@@ -331,6 +340,14 @@
     "to": "claude-sonnet-5",
     "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
     "fablePct": 24.5
+   },
+   {
+    "t": "2026-09-04 02:58",
+    "task": "HOME／ふるさと 各国プレイリスト  たまごさん（店主）の言葉、そのまま：\n\n「ノスタルジーの曲、ちょっと考えるところがあって。この曲は Danny Boy ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 88.5
    }
   ]
  }
