@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>20 Little Phrases that Make Japanese Smile — 全27ページ</title>
+<style>
+  :root{ --bg:#12161c; --fg:#e9eef4; --sub:#a9b6c4; --line:#2a323c; --kinari:#efe7d6; }
+  *{box-sizing:border-box}
+  body{margin:0; padding:24px 16px 64px; background:var(--bg); color:var(--fg);
+       font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.7;}
+  .wrap{max-width:900px; margin:0 auto;}
+  h1{font-size:1.5rem; margin:0 0 4px; letter-spacing:0.01em;}
+  .lead{color:var(--sub); font-size:0.92rem; margin:0 0 20px;}
+  .note{border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:0 0 24px; font-size:0.88rem; color:var(--sub);}
+  .note b{color:var(--fg);}
+  .pdf{display:inline-flex; min-height:44px; align-items:center; padding:0 16px; border-radius:10px;
+       background:var(--kinari); color:#12161c; text-decoration:none; font-weight:700;}
+  .pages{display:grid; gap:22px; margin-top:24px;}
+  figure{margin:0;}
+  figcaption{font-size:0.78rem; color:var(--sub); margin:0 0 6px; font-variant-numeric:tabular-nums;}
+  img{width:100%; height:auto; display:block; border-radius:10px; border:1px solid var(--line); background:#fff;}
+  a{color:#8fd0ff;}
+  footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:0.8rem; color:var(--sub);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>20 Little Phrases that Make Japanese Smile</h1>
+<p class="lead">全27ページ・2026-09-03版（v1）。ごきげん補給所／卵商店街の商品1号。</p>
+
+<div class="note">
+  <b>このページの使い方。</b>ChatGPTなど外部のAIに読ませるための公開ページです。
+  ページ画像は 01〜27 の順に並んでいて、それぞれ直接のURLを持っています（例：<code>…/share/20-little-phrases/01.png</code>）。
+  PDF版も同じ場所に置いてあります。Googleドライブの同期状態に左右されないよう、GitHub Pagesから直接配信しています。
+</div>
+
+<p><a class="pdf" href="20LittlePhrases.pdf">PDF版をひらく（27ページ）</a></p>
+
+<div class="pages" id="pages"></div>
+
+<footer>
+  進捗表 → <a href="../../">tamago-shinchoku</a> ／ このページは自動生成ではなく手置きです。差し替えるときは同じファイル名で上書きしてください。
+</footer>
+
+</div>
+<script>
+  const box = document.getElementById("pages");
+  let html = "";
+  for(let i = 1; i <= 27; i++){
+    const n = String(i).padStart(2, "0");
+    html += `<figure><figcaption>${n} / 27 — <a href="${n}.png">${n}.png</a></figcaption><img src="${n}.png" alt="20 Little Phrases ページ ${n}" loading="lazy"></figure>`;
+  }
+  box.innerHTML = html;
+</script>
+</body>
+</html>

@@ -174,25 +174,38 @@
   footer{color:var(--dim); font-size:0.72rem; margin-top:28px; line-height:1.6;}
 
   /* 走行中グリッド：ページ最優先。他のどの要素よりも目立たせる（正方形・2列） */
+  /* 2026-09-03 たまごさん「あと何本走らせられるか、もう限界か。100で止まるなら90%で止める。
+     限界ならブラウザ1個閉じてまで言ってほしい。スマホから閉じられるのが理想」 */
+  .capbar{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
+    margin:0 0 8px; padding:9px 12px; border-radius:12px; font-size:0.9rem; font-weight:700;
+    border:2px solid var(--green); background:rgba(95,217,150,0.10); color:#dff7ea;}
+  .capbar.warn{border-color:var(--yellow); background:rgba(255,224,138,0.10); color:#ffe9b0;}
+  .capbar.stop{border-color:var(--red); background:rgba(255,120,100,0.12); color:#ffd2c9;}
+  .capbar .capsub{font-size:0.68rem; font-weight:500; opacity:0.85; width:100%;}
+  .capbar button{min-height:38px; padding:0 12px; border-radius:9px; border:1px solid rgba(255,255,255,0.35);
+    background:rgba(255,255,255,0.12); color:inherit; font-weight:700; font-size:0.8rem;}
   .nowage{font-size:0.68rem; color:var(--dim); margin:2px 0 8px;}
   .nowage.nowstale{color:var(--red); font-weight:600;}
   .now{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 6px;}
   .now.nowstale{opacity:0.45;}
+  /* 2026-09-03 たまごさん「スカスカ。4分の1とか3分の1の大きさでいい。1画面で8〜10本、スクロールせずに見たい」
+     → 正方形をやめて横長の小カードにした。2列×5行＝10本が1画面に入る。 */
   .nowcard{
-    min-width:0; overflow:hidden;
-    aspect-ratio:1/1; background:linear-gradient(160deg,#2b5340,#1c3a2b);
-    border:2px solid #5fd996; border-radius:16px; padding:11px 12px 10px;
-    display:flex; flex-direction:column; justify-content:space-between;
-    box-shadow:0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(95,217,150,0.18) inset;
+    min-width:0; overflow:hidden; min-height:66px;
+    background:linear-gradient(160deg,#2b5340,#1c3a2b);
+    border:2px solid #5fd996; border-radius:11px; padding:7px 9px 6px;
+    display:flex; flex-direction:column; justify-content:space-between; gap:4px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(95,217,150,0.18) inset;
   }
+  .nowfoot{display:flex; align-items:baseline; justify-content:space-between; gap:6px; min-width:0;}
   .nowcard.fable{border-color:#ff5d47; background:linear-gradient(160deg,#5a2a25,#3d1c19); box-shadow:0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,93,71,0.22) inset;}
-  .nowcard .nt{font-size:0.9rem; font-weight:700; line-height:1.28; color:#fff; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;}
-  .nowcard .nmeta{display:flex; flex-wrap:nowrap; gap:5px; align-items:center; font-size:0.62rem; color:#c8ecd8; font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
+  .nowcard .nt{font-size:0.78rem; font-weight:700; line-height:1.22; color:#fff; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .nowcard .nmeta{display:flex; flex-wrap:nowrap; gap:4px; align-items:center; font-size:0.58rem; color:#c8ecd8; font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-width:0;}
   .nowcard.fable .nmeta{color:#ffd3c9;}
   .nowcard .nbadge{border:1px solid rgba(255,255,255,0.35); border-radius:5px; padding:1px 6px; font-weight:700; flex:none;}
-  .nowcard .ncdlbl{font-size:0.6rem; color:#c8ecd8; margin-bottom:1px;}
+  .nowcard .ncdlbl{font-size:0.55rem; color:#c8ecd8; flex:none;}
   .nowcard.fable .ncdlbl{color:#ffd3c9;}
-  .nowcard .ncd{font-variant-numeric:tabular-nums; font-size:1.12rem; font-weight:800; color:#fff; letter-spacing:0.01em; white-space:nowrap; overflow:hidden; text-overflow:clip;}
+  .nowcard .ncd{font-variant-numeric:tabular-nums; font-size:0.92rem; font-weight:800; color:#fff; letter-spacing:0.01em; white-space:nowrap; overflow:hidden; text-overflow:clip; flex:none;}
   .nowcard .ncd.warn{color:#ffe08a;}
   .nowcard .ncd.over{color:#ff9a8c;}
   .nowcard .nsay{font-size:0.64rem; color:#c8ecd8;}
@@ -205,27 +218,31 @@
 <h1>進捗表</h1>
 <div class="updated" id="updated">読み込み中…</div>
 
+<div id="capBar" class="capbar" hidden></div>
 <div id="nowAge" class="nowage"></div>
 <div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
 
+<!-- 2026-09-03 たまごさん「これ1個にまとめて、スペースがもったいない。マシンとクレジット開くと、この以下の下の情報が出るように」
+     → 折りたたみを縦に8個並べるのをやめ、1個にまとめて中に入れ子にした。畳んでいる間は1行しか場所を取らない。 -->
 <details class="sec"><summary>マシンとクレジット <small id="machineAge"></small></summary><div class="in">
 <div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
-</div></details>
-<details class="sec"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
 
-<details class="sec"><summary>走行状況（全件・自動5分おき） <small id="sessMeta"></small></summary><div class="in">
+<details class="sec sub"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
+
+<details class="sec sub"><summary>走行状況（全件・自動5分おき） <small id="sessMeta"></small></summary><div class="in">
 <div class="legend"><span><i style="background:var(--green)"></i>今動いている</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>止まっている（動いていない＝台帳が着手中でも赤）</span></div>
 <div class="sum" id="sessSum"></div>
 <div class="modelSum" id="modelSum"></div>
 <div class="g" id="sessions"></div>
 </div></details>
 
-<details class="sec"><summary>言ったこと（直近・埋もれ防止） <small id="saidCount"></small></summary><div class="in" id="said"></div></details>
-<details class="sec"><summary>いま動いているもの（手更新） <small id="runUpdated"></small></summary><div class="in" id="running"></div></details>
-<details class="sec"><summary>この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></summary><div class="in" id="stats">読み込み中…</div></details>
-<details class="sec"><summary>Today（北極星・最重要3件）</summary><div class="in today" id="today"></div></details>
-<details class="sec"><summary>旧・進捗表の依頼31件 <small id="listMeta"></small></summary><div class="in" id="list"></div></details>
+<details class="sec sub"><summary>言ったこと（直近・埋もれ防止） <small id="saidCount"></small></summary><div class="in" id="said"></div></details>
+<details class="sec sub"><summary>いま動いているもの（手更新） <small id="runUpdated"></small></summary><div class="in" id="running"></div></details>
+<details class="sec sub"><summary>この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></summary><div class="in" id="stats">読み込み中…</div></details>
+<details class="sec sub"><summary>Today（北極星・最重要3件）</summary><div class="in today" id="today"></div></details>
+<details class="sec sub"><summary>旧・進捗表の依頼31件 <small id="listMeta"></small></summary><div class="in" id="list"></div></details>
+</div></details>
 
 <div class="label"><b>ホワイトボード</b>セッションが上から取る順・P1が最優先 <small id="wbMeta"></small></div>
 <div class="sendbar" id="sendbar" hidden></div>
@@ -376,6 +393,47 @@ function sendCommandWithId(id, action, target, label){
   window.location.href = url;
 }
 
+/* ───── あと何本いけるか（最上部の帯）─────
+   2026-09-03 たまごさん：「100で止まるなら90%で止める。絶対に固まらない上限を見極めて、
+   あと何本いけるか、もう限界かを出して。限界ならブラウザ1個閉じてまで言って、スマホから閉じられるように」
+   安全率90%（SAFETY）を掛けた上限で判定する。ぎりぎりまで使わない。 */
+const SAFETY = 0.9;
+function renderCapBar(){
+  const bar = document.getElementById("capBar"); if(!bar) return;
+  const m = window.__machine, h = window.__health;
+  if(!m){ bar.hidden = true; return; }
+  const real = (m.sessionList || []).filter(s => !s.isDispatchSelf && !s.done && s.status !== "完了" && s.status !== "失敗").length;
+  const hardSafe = Math.max(0, Math.floor((m.safeMax || 0) * SAFETY));   // 90%で止める
+  const room = Math.max(0, hardSafe - real);
+  const load = m.load != null ? Math.round(m.load) : null;
+  let cls = "capbar", head, sub;
+  if(room > 0){
+    cls += ""; head = `あと${room}本いける`;
+  } else if(real <= hardSafe){
+    cls += " warn"; head = "ここが上限。増やさない";
+  } else {
+    cls += " stop"; head = `もう限界（${real}本／上限${hardSafe}本）`;
+  }
+  sub = `実作業${real}本・安全上限${hardSafe}本（測定上限${m.safeMax || "?"}本の90%）` + (load != null ? `・負荷${load}%` : "");
+  // 限界なら「何を閉じれば1本増えるか」を具体名で出して、その場で閉じられるようにする
+  let btn = "";
+  if(room === 0 && h && (h.items || []).length){
+    const EXCLUDED = new Set(["Brave Browser", "Google Chrome"]);
+    const cand = (h.items || []).find(it => it.kind === "mem" && it.app && it.safe && !EXCLUDED.has(it.app));
+    if(cand){
+      head += `。${cand.label}と楽になる（${cand.effect}）`;
+      btn = `<span class="cmdrow"><button type="button" class="cmdbtn" data-action="close_app" data-target="${esc(cand.app)}" data-label="${esc(cand.label)}">🗑 ${esc(cand.app)}を閉じる</button><span data-cmdid-slot></span></span>`;
+    } else {
+      const locked = (h.items || []).find(it => it.kind === "mem" && it.app && EXCLUDED.has(it.app));
+      if(locked) head += `。${esc(locked.app)}が${esc(locked.effect)}使っているが、公開が止まるので自動では閉じない`;
+    }
+  }
+  bar.className = cls;
+  bar.innerHTML = `<span>${head}</span>${btn}<span class="capsub">${esc(sub)}</span>`;
+  bar.hidden = false;
+  renderCmdStatus();
+}
+
 /* ───── Macの健康（status/health.json：何を閉じれば／消せば楽になるか。実測のみ） ───── */
 function renderHealth(h){
   const box = document.getElementById("health");
@@ -405,7 +463,7 @@ function renderHealth(h){
 }
 function refreshHealth(){
   return fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(renderHealth).catch(()=>renderHealth(null));
+    .then(r => r.ok ? r.json() : null).then(h => { window.__health = h; renderHealth(h); renderCapBar(); }).catch(()=>renderHealth(null));
 }
 refreshHealth();
 
@@ -457,7 +515,11 @@ function renderSessions(m){
   const box = document.getElementById("sessions");
   const list = (m && m.sessionList) || [];
   const measured = m && m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now();
-  document.getElementById("sessMeta").textContent = m && m.measuredAt ? `${list.length}本・${formatStamp(m.measuredAt)}` : "";
+  // 2026-09-03 たまごさん「進捗表と現状がつながるようにして」：
+  // 見出しの本数は「実作業」だけを数える。Dispatch本体（会話している側）と、もう終わったものは数えない。
+  // 一覧そのものは全件出す（見出しの数字と中身の件数が違うのは意図どおり）。
+  const nReal = list.filter(s => !s.isDispatchSelf && !s.done && s.status !== "完了" && s.status !== "失敗").length;
+  document.getElementById("sessMeta").textContent = m && m.measuredAt ? `実作業${nReal}本／表示${list.length}件・${formatStamp(m.measuredAt)}` : "";
   if(!list.length){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">いまは何も走っていない（または未計測）</div>`; document.getElementById("sessSum").innerHTML = ""; return; }
   const cnt = {green:0, yellow:0, red:0, blue:0, gray:0};
   const items = list.map(s => { const st = sessState(s, measured); cnt[st.color] = (cnt[st.color]||0)+1; return {s, st}; });
@@ -517,7 +579,23 @@ function renderSessions(m){
 
 /* ───── 走行中グリッド（最優先・正方形2列・countdownは毎秒・データは30秒おき再取得） ───── */
 const EXCLUDE_NOW_TITLE = /mimawari|見回り|sweep|watchdog|見張り番/i;
-const HANDOFF_MIN = 180; // 3時間ルール
+const HANDOFF_MIN = 180; // 3時間ルール（既定）
+// 2026-09-03 たまごさん：単発の仕事は「1時間で終わらないかな？」と時間を指定することがある。
+// data.js の running に {sessionTitle:"…", limitMin:60} を書くと、そのカードだけ制限時間が変わる。
+function limitMinFor(s){
+  try{
+    const t = (s && s.title) || "";
+    for(const r of ((window.DATA && DATA.running) || [])){
+      if(!r || !r.limitMin || !r.sessionTitle) continue;
+      if(t && (t === r.sessionTitle || t.includes(r.sessionTitle) || r.sessionTitle.includes(t))) return r.limitMin;
+    }
+  }catch(e){}
+  return HANDOFF_MIN;
+}
+function limitLabel(min){
+  if(min % 60 === 0) return `${min/60}時間ルール`;
+  return `${min}分ルール`;
+}
 function nowTitle(s){
   const t = jaTitle(s.title);
   if(!t || t === "（不明）") return "無題のセッション";
@@ -553,11 +631,15 @@ function renderNow(m){
     const isFable = mLbl === "Fable";
     const started = s.startedAt ? formatStamp(s.startedAt) : "—";
     const sayFresh = s.lastActivityAt ? freshness(s.lastActivityAt) : null;
-    return `<div class="nowcard${isFable ? " fable" : ""}" data-start="${esc(s.startedAt || "")}">
+    // 1画面に8〜10本入れるため、1枚を「題名2行＋下段1行」だけにした。
+    // 下段＝モデル／経過時間（何分過ぎたか）／残り時間。発言の鮮度は経過時間の隣に小さく出す。
+    return `<div class="nowcard${isFable ? " fable" : ""}" data-start="${esc(s.startedAt || "")}" data-limit="${limitMinFor(s)}">
       <div class="nt">${esc(nowTitle(s))}</div>
-      <div class="nmeta"><span class="nbadge">${esc(mLbl)}</span><span>${esc(started)} 開始</span></div>
-      <div><div class="ncdlbl">3時間ルール</div><div class="ncd" data-cd>--:--</div></div>
-      <div class="nsay">🗣️ ${sayFresh ? esc(sayFresh.text) : "—"}</div>
+      <div class="nowfoot">
+        <span class="nmeta"><span class="nbadge">${esc(mLbl)}</span><span data-el>—</span><span>${sayFresh ? "🗣️" + esc(sayFresh.text) : ""}</span></span>
+        <span class="ncd" data-cd>--:--</span>
+      </div>
+      <div class="ncdlbl">${esc(limitLabel(limitMinFor(s)))}・${esc(started)}開始</div>
     </div>`;
   }).join("");
   tickCountdowns();
@@ -567,7 +649,15 @@ function tickCountdowns(){
     const start = el.dataset.start, cd = el.querySelector("[data-cd]");
     if(!start || !cd) return;
     const t = new Date(start).getTime(); if(isNaN(t)){ cd.textContent = "—"; return; }
-    const remainSec = HANDOFF_MIN*60 - Math.floor((Date.now() - t)/1000);
+    const limMin = Number(el.dataset.limit) || HANDOFF_MIN;
+    const elapsedSec = Math.floor((Date.now() - t)/1000);
+    // たまごさん「これは今何分過ぎてるね、が分かるようにしたい」→ 経過も出す
+    const elEl = el.querySelector("[data-el]");
+    if(elEl){
+      const eh = Math.floor(elapsedSec/3600), em = Math.floor((elapsedSec%3600)/60);
+      elEl.textContent = eh > 0 ? `${eh}時間${em}分経過` : `${em}分経過`;
+    }
+    const remainSec = limMin*60 - elapsedSec;
     const over = remainSec < 0, abs = Math.abs(remainSec);
     const hh = Math.floor(abs/3600), mm = Math.floor((abs%3600)/60), ss = abs%60;
     const txt = hh > 0 ? `${hh}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}` : `${mm}:${String(ss).padStart(2,"0")}`;
@@ -823,7 +913,7 @@ function renderMeters(m){
 function refreshMachine(){
   return fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(m => {
-      window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m); renderNow(m);
+      window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m); renderNow(m); renderCapBar();
       // machine.json のセッション生存情報が変わったので、実態判定(緑=今動いている)を使う
       // ホワイトボード・225件セクションも同じデータで引き直す
       if(window.__wbData) renderWhiteboard(window.__wbData);

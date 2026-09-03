@@ -9,7 +9,7 @@ window.SHINCHOKU = {
   runningUpdatedAt: "2026-09-03T18:26:00+09:00",
   running: [
     {lane:1, title:"「世界の暮らし」棚（旅の扉）×「ノスタルジー/ふるさと」棚（音楽の扉）を関連欄で相互接続", who:"Sonnet / local_243c1fd7", state:"作業中（18:05着火）", progress:"関連4枠の内訳＝同じ棚2＋反対側の棚2。双方向・根拠1行。サンプル2ページ＋確認URLまで", links:[]},
-    {lane:2, title:"アメリ日本版トレーラーを映画の棚にハブとして格納＋Rousseauカバー/本人音源/海外版を双方向接続。ドラマ主題歌は新設「ドラマ」棚へ移動", who:"Sonnet / local_bc15311b", state:"作業中（18:24着火・1時間で切る）", progress:"Rousseau版が本人演奏に見える表記を直すのが最優先。映画の棚50枚からドラマを外す", links:[]}
+    {lane:2, title:"アメリ日本版トレーラーを映画の棚にハブとして格納＋Rousseauカバー/本人音源/海外版を双方向接続。ドラマ主題歌は新設「ドラマ」棚へ移動", who:"Sonnet / local_bc15311b", sessionTitle:"アメリ映画ハブ＋ドラマ棚分離", limitMin:60, state:"作業中（18:24着火・1時間で切る）", progress:"Rousseau版が本人演奏に見える表記を直すのが最優先。映画の棚50枚からドラマを外す", links:[]}
   ],
 
   // ── TODAY（進捗表.html の TODAY 欄をそのまま移植）──
