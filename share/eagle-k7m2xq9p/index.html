@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Eagle 素材ビューア（スマホ用）</title>
+<style>
+  :root{ --bg:#12161c; --fg:#e9eef4; --sub:#a9b6c4; --line:#2a323c; --accent:#5fd996; }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;}
+  header{position:sticky; top:0; z-index:5; background:rgba(18,22,28,0.96); backdrop-filter:blur(8px);
+    padding:12px 14px 10px; border-bottom:1px solid var(--line);}
+  h1{margin:0 0 8px; font-size:1.05rem; letter-spacing:0.01em;}
+  h1 small{font-weight:400; color:var(--sub); font-size:0.72rem; margin-left:6px;}
+  .search{width:100%; min-height:44px; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
+    background:#1a2028; color:var(--fg); font-size:16px;}
+  .tags{display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; -webkit-overflow-scrolling:touch;}
+  .tags button{flex:none; min-height:34px; padding:0 11px; border-radius:999px; border:1px solid var(--line);
+    background:#1a2028; color:var(--sub); font-size:0.76rem; white-space:nowrap;}
+  .tags button.on{background:var(--accent); color:#12161c; border-color:var(--accent); font-weight:700;}
+  .meta{padding:6px 14px 0; font-size:0.74rem; color:var(--sub);}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:8px 3px 60px;}
+  .grid img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#1a2028; border-radius:3px;}
+  .cell{position:relative; cursor:pointer;}
+  dialog{border:none; background:#0d1116; color:var(--fg); width:100%; max-width:100%; height:100%; max-height:100%; margin:0; padding:0;}
+  dialog::backdrop{background:rgba(0,0,0,0.9);}
+  .dw{display:flex; flex-direction:column; height:100%;}
+  .dw img{width:100%; flex:1; object-fit:contain; min-height:0; background:#000;}
+  .di{padding:12px 14px 20px; border-top:1px solid var(--line); font-size:0.84rem; overflow:auto; max-height:42%;}
+  .di b{display:block; font-size:1rem; margin-bottom:6px;}
+  .di .row{color:var(--sub); font-size:0.76rem; margin:4px 0; word-break:break-all;}
+  .di .chip{display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; border-radius:999px; background:#1a2028; border:1px solid var(--line); font-size:0.72rem;}
+  .di .chip.h{color:var(--accent); border-color:rgba(95,217,150,0.4);}
+  .close{position:absolute; top:10px; right:12px; z-index:3; min-height:44px; min-width:44px; border-radius:999px;
+    border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.55); color:#fff; font-size:1rem;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Eagle 素材ビューア <small id="cnt"></small></h1>
+  <input class="search" id="q" type="search" placeholder="名前・タグ・フォルダで検索" autocomplete="off">
+  <div class="tags" id="tags"></div>
+</header>
+<div class="meta" id="meta"></div>
+<div class="grid" id="grid"></div>
+
+<dialog id="dlg">
+  <button class="close" onclick="document.getElementById('dlg').close()">✕</button>
+  <div class="dw">
+    <img id="dimg" alt="">
+    <div class="di" id="dinfo"></div>
+  </div>
+</dialog>
+
+<script>
+let DATA = {items:[]}, FILTER = "", TAG = "";
+const grid = document.getElementById("grid");
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function thumbSrc(it){ return "t/" + it.id + (it.te || ".png"); }
+
+function matched(){
+  const q = FILTER.trim().toLowerCase();
+  return DATA.items.filter(it=>{
+    if(TAG && !(it.t||[]).includes(TAG) && !(it.h||[]).includes(TAG)) return false;
+    if(!q) return true;
+    const hay = [it.n, ...(it.t||[]), ...(it.h||[]), ...(it.f||[])].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+}
+function render(){
+  const list = matched();
+  document.getElementById("meta").textContent = `${list.length}件${TAG ? "／タグ：" + TAG : ""}${FILTER ? "／検索：" + FILTER : ""}`;
+  grid.innerHTML = list.map((it,i)=>`<div class="cell" data-i="${i}"><img loading="lazy" src="${thumbSrc(it)}" alt="${esc(it.n)}"></div>`).join("");
+  grid._list = list;
+}
+grid.addEventListener("click", e=>{
+  const cell = e.target.closest(".cell"); if(!cell) return;
+  const it = grid._list[Number(cell.dataset.i)]; if(!it) return;
+  document.getElementById("dimg").src = thumbSrc(it);
+  document.getElementById("dinfo").innerHTML =
+    `<b>${esc(it.n)}</b>`
+    + (it.f && it.f.length ? `<div class="row">フォルダ：${esc(it.f.join(" / "))}</div>` : "")
+    + (it.w ? `<div class="row">${it.w}×${it.hgt}・${esc(it.e)}</div>` : "")
+    + `<div class="row">ID：${esc(it.id)}</div>`
+    + (it.t && it.t.length ? `<div>${it.t.map(t=>`<span class="chip">${esc(t)}</span>`).join("")}</div>` : "")
+    + (it.h && it.h.length ? `<div>${it.h.map(t=>`<span class="chip h">${esc(t)}</span>`).join("")}</div>` : "");
+  document.getElementById("dlg").showModal();
+});
+document.getElementById("q").addEventListener("input", e=>{ FILTER = e.target.value; render(); });
+
+fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
+  DATA = d;
+  document.getElementById("cnt").textContent = `${d.count}件`;
+  // よく使われているタグを上位24件、絞り込みボタンに
+  const c = {};
+  d.items.forEach(it => (it.t||[]).forEach(t => c[t] = (c[t]||0)+1));
+  const top = Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,24);
+  document.getElementById("tags").innerHTML =
+    `<button data-t="" class="on">すべて</button>` +
+    top.map(([t,n])=>`<button data-t="${esc(t)}">${esc(t)} ${n}</button>`).join("");
+  document.getElementById("tags").addEventListener("click", e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    TAG = b.dataset.t || "";
+    [...document.querySelectorAll("#tags button")].forEach(x=>x.classList.toggle("on", x===b));
+    render();
+  });
+  render();
+});
+</script>
+</body>
+</html>
