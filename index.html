@@ -714,7 +714,10 @@ function renderWhiteboard(w){
   window.__wbLive = {}; items.forEach(x => { window.__wbLive[num(x.r)] = x.e; });
   if(window.SHINCHOKU_ALL && document.getElementById("all").children.length) renderAll();  // 225件側の色も実態に合わせ直す
   items.sort((a,b)=> a.e.order - b.e.order || (a.r.priority||3)-(b.r.priority||3) || (a.r.rank||999)-(b.r.rank||999));
-  box.innerHTML = items.map(({r, e})=>{
+  // 2026-09-03 たまごさん「ブロックで分けて、カテゴリで分けて。完了は一番上にまとめて隠しといて。
+  //   止まってる・判断待ち・未着手・検証中もトグルで閉じられるように」
+  //   → 状態ごとに折りたたみのブロックへ。完了と検証待ちは最初から畳んでおく（件数だけ見えればいい）。
+  const cardHtml = ({r, e}) => {
     const resumes = e.live ? ((e.live.s.watchdogResumes||0) + (e.live.s.dispatchPushes||0) + (e.live.s.humanPushes||0)) : 0;
     const extra = (r.count && r.count !== "台帳" ? `<span class="n">${esc(r.count)}回</span>` : "") + (resumes ? `<span class="chip">🔁${resumes}</span>` : "") + (e.h != null && e.h >= 6 ? `<span class="sk">💀</span>` : "");
     const d = `<p>台帳の状態 <b>${esc(r.state)}</b>　担当 <b>${esc(r.owner || "空き（誰も持っていない）")}</b>　順位 <b>${r.rank ?? "—"}</b>　最終更新 <b>${esc(r.updatedAt||"")}</b></p>
@@ -722,6 +725,25 @@ function renderWhiteboard(w){
       <p>${esc(r.note||"")}</p>
       ${linksHtml([{label:"関連メモを検索", url:`obsidian://search?vault=tamago_brain&query=${encodeURIComponent(r.task||"")}`}])}`;
     return card(e.color, `${num(r)}. ${r.task}`, e.label, extra, d, num(r));
+  };
+  const GROUPS = [
+    {title:"完了",                  open:false, hit:e => e.label.indexOf("完了") === 0},
+    {title:"止まっている",          open:true,  hit:e => e.color === "red"},
+    {title:"判断待ち（たまごさん）", open:true,  hit:e => e.color === "yellow"},
+    {title:"いま動いている",        open:true,  hit:e => e.color === "green"},
+    {title:"検証待ち（別の目）",    open:false, hit:e => e.color === "blue"},
+    {title:"未着手",                open:false, hit:e => true},
+  ];
+  const buckets = GROUPS.map(()=>[]);
+  items.forEach(x => {
+    const i = GROUPS.findIndex(g => g.hit(x.e));
+    buckets[i < 0 ? GROUPS.length - 1 : i].push(x);
+  });
+  box.innerHTML = GROUPS.map((g, i) => {
+    const b = buckets[i];
+    if(!b.length) return "";
+    return `<details class="wbg"${g.open ? " open" : ""}><summary>${esc(g.title)} <b>${b.length}</b>件</summary>
+      <div class="g wbginner">${b.map(cardHtml).join("")}</div></details>`;
   }).join("");
 }
 function refreshWhiteboard(){
