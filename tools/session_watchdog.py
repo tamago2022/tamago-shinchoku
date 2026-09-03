@@ -74,6 +74,27 @@ MAX_IDLE_HOURS = 24
 COOLDOWN_MIN = 20
 IGNITE_INTERVAL_MIN = 10
 MAX_HEADLESS = 3
+MAX_CONCURRENT = 4  # 2026-09-03 たまごさん：クレジット節約中は同時走行4本まで。既に4本ならretired/essential以外は再開しない
+RETIRED_JSON = os.path.join(REPO, "status", "retired.json")
+
+
+def retired_config():
+    """status/retired.json（Dispatchが手で編集する。ハードコードしない）
+    {"retired": [{"title": "部分一致文字列", "note": "..."}], "essential": [{"title": "...", "note": "..."}]}"""
+    return load_json(RETIRED_JSON, {"retired": [], "essential": []})
+
+
+def _title_matches(title, entries):
+    t = title or ""
+    return any(e.get("title") and e["title"] in t for e in entries)
+
+
+def is_retired(title, cfg):
+    return _title_matches(title, cfg.get("retired", []))
+
+
+def is_essential(title, cfg):
+    return _title_matches(title, cfg.get("essential", []))
 MANUAL_ESSENTIALS = ("マニュアルの要点：①たまごさんに質問しない。判断が要れば仮定を置いて進み、仮定は末尾に1行。"
                      "②「続けますか」と聞かない。報告のために止まらない。③1つ本番に出たら即Dispatchへ報告（完了／問題／判断待ちの3行・本番の直URL）。"
                      "④Lovableのエージェントとビルドは使わない。⑤公開（Lovable Publish）は聞かずに押す。"
@@ -299,6 +320,8 @@ def decide(s, meta, scan, state):
         return None, "Dispatch発でない（直接タブ・見回り係）"
     if EXCLUDE_TITLE.search(meta.get("title", "")):
         return None, "見回り系は対象外"
+    if is_retired(meta.get("title", ""), retired_config()):
+        return None, "retired登録のため見送り"
     st = state.get(s["cli"], {})
     if st.get("handedOff"):
         return None, "引き継ぎ済み→%s" % str(st["handedOff"])[:8]
@@ -528,7 +551,8 @@ def scan_crashed_desktop_sessions(live_clis, state=None):
             continue
         out.append({"cli": cli, "title": title, "cwd": d.get("cwd"), "idleMin": idle_min,
                     "errorCategory": d.get("errorCategory")})
-    out.sort(key=lambda x: -x["idleMin"])  # 長く放置されているものから
+    cfg = retired_config()
+    out.sort(key=lambda x: (0 if is_essential(x["title"], cfg) else 1, -x["idleMin"]))  # essentialを最優先、次に長く放置順
     return out
 
 
@@ -545,6 +569,9 @@ def main():
     n = h = 0
     unsafe = machine_unsafe(machine)
     headless_alive = sum(1 for s in ss if s.get("headless"))
+    cfg = retired_config()
+    alive_snapshot = machine.get("sessions") or len(ss)
+    resumed_live = 0  # このrunで新規に増やした生存本数（MAX_CONCURRENT判定に使う）
     for s in ss:
         scan = scan_transcript(s["transcript"]) if s["transcript"] else {"turns": 0, "lastText": "", "firstUser": "", "errors": [], "tried": []}
         meta = (idx.get(s["cli"]) if s["cli"] else None) or synth_meta(s, scan)
@@ -575,13 +602,17 @@ def main():
             append(LOG_MD, "- %s 🔁 引き継ぎ: 「%s」(%s) 理由=%s → 新セッション %s（%s）" % (now(), title, s["cli"][:8], why, (new_id or "起動失敗")[:8], os.path.basename(path)))
             append(DISPATCH_INBOX, "| %s | 見張り番: 「%s」(%s) を自動引き継ぎ（%s）→ 新セッション %s。前のセッションは畳んでよい | 記録のみ・判断不要 |" % (now(), title, s["cli"][:8], why, (new_id or "起動失敗")[:8]))
             h += 1; continue
-        if n >= MAX_PER_RUN:
+        if not is_essential(title, cfg) and (alive_snapshot + resumed_live) >= MAX_CONCURRENT:
+            append(LOG_MD, "- %s ⏸ 再開見送り: 「%s」(%s) %s だが同時上限%d本に到達（生存%d本）" % (now(), title, s["cli"][:8], why, MAX_CONCURRENT, alive_snapshot + resumed_live))
+            skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "同時上限%d本" % MAX_CONCURRENT}); continue
+        if not is_essential(title, cfg) and n >= MAX_PER_RUN:
             skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の再開上限%d本" % MAX_PER_RUN}); continue
         if dry:
             resumed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "dry": True}); n += 1; continue
         pid = resume(s["cli"], meta.get("cwd"))
         st["tries"] = st.get("tries", 0) + 1; st["lastResumeAt"] = time.time(); st["title"] = title
         totals["autoResumes"] += 1
+        resumed_live += 1
         resumed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "try": st["tries"], "resumePid": pid})
         append(LOG_MD, "- %s ▶ 再開 %d/%d: 「%s」(%s) 理由=%s 放置%d分 %dターン 負荷=%s%%" % (now(), st["tries"], MAX_TRIES, title, s["cli"][:8], why, round(s["idle"] or 0), scan["turns"], machine.get("load")))
         n += 1
@@ -596,6 +627,12 @@ def main():
         st = state.setdefault(c["cli"], {"tries": 0})
         if st.get("handedOff"):
             continue  # 既に別セッションへ引き継ぎ済み。古い方を二重に再開しない
+        if is_retired(c["title"], cfg):
+            append(LOG_MD, "- %s ⏸ 見送り(クラッシュ回復): 「%s」(%s) retired登録のため見送り" % (now(), c["title"], c["cli"][:8]))
+            skipped.append({"pid": None, "title": c["title"], "kind": "crashed", "why": "retired登録のため見送り"}); continue
+        if not is_essential(c["title"], cfg) and (alive_snapshot + resumed_live) >= MAX_CONCURRENT:
+            append(LOG_MD, "- %s ⏸ 再開見送り(クラッシュ回復): 「%s」(%s) 同時上限%d本に到達（生存%d本）" % (now(), c["title"], c["cli"][:8], MAX_CONCURRENT, alive_snapshot + resumed_live))
+            skipped.append({"pid": None, "title": c["title"], "kind": "crashed", "why": "同時上限%d本" % MAX_CONCURRENT}); continue
         if st.get("tries", 0) >= MAX_TRIES:
             # 2026-09-03 発見：ここが素通り(continue)なだけで、3回再開しても落ちるセッションは再開もされず
             # 引き継ぎもされずただ放置されていた（「再開0」の実害の一因）。ここで引き継ぎへ渡す
@@ -620,14 +657,15 @@ def main():
                    (now(), c["title"], c["cli"][:8], (new_id or "起動失敗")[:8]))
             h += 1
             continue
-        if n >= MAX_PER_RUN or headless_alive >= MAX_HEADLESS:
-            break
+        if not is_essential(c["title"], cfg) and (n >= MAX_PER_RUN or headless_alive >= MAX_HEADLESS):
+            skipped.append({"pid": None, "title": c["title"], "kind": "crashed", "why": "今回の再開上限／headless本数"}); continue
         if dry:
             crashed_resumed.append({"cli": c["cli"], "title": c["title"], "dry": True}); n += 1; continue
         pid = resume(c["cli"], c.get("cwd"))
         st["tries"] = st.get("tries", 0) + 1; st["lastResumeAt"] = time.time(); st["title"] = c["title"]
         totals["stalls"] += 1; totals["autoResumes"] += 1
         headless_alive += 1
+        resumed_live += 1
         crashed_resumed.append({"cli": c["cli"], "title": c["title"], "try": st["tries"], "resumePid": pid})
         append(LOG_MD, "- %s ▶ 再開 %d/%d(クラッシュ回復): 「%s」(%s) 理由=プロセス完全停止(%s)・放置%d分 → pid %s" %
                (now(), st["tries"], MAX_TRIES, c["title"], c["cli"][:8], c.get("errorCategory"), round(c["idleMin"]), pid))
