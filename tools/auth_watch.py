@@ -38,7 +38,20 @@ def log(msg):
         pass
 
 
+def cleanup_stale_login():
+    """10分以上経ったログイン手続きの残骸を落とす（放置しても固まらないが、居座らせない）。"""
+    pidf = os.path.join(REPO, "status", "auth_login.pid")
+    try:
+        if os.path.exists(pidf) and time.time() - os.path.getmtime(pidf) > 600:
+            subprocess.run(["pkill", "-f", "setup-token"], capture_output=True, timeout=5)
+            os.remove(pidf)
+            log("🔑 ログイン手続きの残骸を片づけました（10分経過）")
+    except Exception:
+        pass
+
+
 def main():
+    cleanup_stale_login()
     if not os.path.exists(AUTH_FLAG):
         return 0
     try:

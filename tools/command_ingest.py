@@ -645,6 +645,31 @@ def auth_login_url(_target=None):
         return "done", "ログインURL: %s" % m.group(0)
     return "failed", ("URLが出ませんでした: " + out[-250:]).replace("\n", " ")
 
+
+def auth_login_start(_target=None):
+    """ログイン手続きを**投げっぱなしで**始める（2026-09-05）。
+
+    分かったこと（実測）：
+      `claude setup-token` はブラウザを開いてログインさせ、**たまごさんが完了するまで待つ。**
+      前回はこちらが20秒で打ち切ったため、たまごさんがブラウザでログインしても
+      トークンが保存されなかった（＝認証は切れたまま）。
+    だから**待つのをやめる。**起動だけして、すぐ帰る。出力はファイルへ流す。
+    こちらは何も待たないので、心臓は絶対に固まらない。
+    後片付けは auth_watch.py が10分後に落とす。
+    """
+    log = os.path.join(REPO, "status", "auth_login.log")
+    run(["pkill", "-f", "setup-token"], timeout=5)   # 前の残骸があれば先に落とす
+    try:
+        with open(log, "ab") as f:
+            f.write(("\n=== %s ログイン開始 ===\n" % time.strftime("%Y-%m-%d %H:%M:%S")).encode())
+            p = subprocess.Popen([CLAUDE, "setup-token"], stdout=f, stderr=subprocess.STDOUT,
+                                 stdin=subprocess.DEVNULL, start_new_session=True)
+        io.open(os.path.join(REPO, "status", "auth_login.pid"), "w").write(str(p.pid))
+        return "done", "ログイン手続きを始めました（ブラウザが開きます。完了までこちらは待ちません）"
+    except Exception as e:
+        return "failed", str(e)
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -661,6 +686,8 @@ def _process_other(action, cmd):
         return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
+    if action == "auth_login_start":
+        return auth_login_start(target)
     if action == "auth_login_url":
         return auth_login_url(target)
     if action == "auth_probe":
