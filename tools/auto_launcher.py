@@ -288,6 +288,13 @@ def main():
 
     alive = len([s for s in (m.get("sessionList") or [])
                  if countable(s) and (not s.get("pid") or _pid_alive(s.get("pid")))])
+    # 2026-09-04 テストで見つけた穴：machine.json は「Claudeのセッション」しか載せていないので、
+    #   そこに現れないものを走らせると **走行0本と数えて上限を無視して発車し続ける**（実測：上限3本なのに6本出た）。
+    #   台帳側で running になっていて、まだ生きているものも必ず数える。
+    #   本物のセッションでも、計測が遅れて載っていない瞬間に同じことが起きる＝クレジットの垂れ流しになる。
+    queue_alive = len([it for it in items
+                       if it.get("status") == "running" and it.get("pid") and _pid_alive(it.get("pid"))])
+    alive = max(alive, queue_alive)
     safe_max = m.get("safeMax")
     if safe_max is None:
         log("見送り: safeMaxが取れない")
@@ -328,6 +335,34 @@ def main():
 
 
 def launch_one(item, q, alive, safe_max):
+    # ---- テスト用のカラ発車（クレジットを1円も使わない）----
+    # 2026-09-04 たまごさん「3分で終わるセッションをくるくる回してテストしたい。
+    #   中身はなんでもいい。3分で終わって完了報告がDispatchに来る、最低限の動作確認」
+    #   → item に "test": true があれば、Claudeを起動せず、指定秒だけ眠って
+    #     本物と同じ形の結果ログ（result と URL）を書くだけのプロセスを走らせる。
+    #     回収・確認待ち・判定・繰り上げは本物とまったく同じ道を通る。
+    if item.get("test"):
+        new_id = str(uuid.uuid4())
+        logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
+        secs = int(item.get("testSeconds") or 180)
+        url = "https://tamago2022.github.io/tamago-shinchoku/share/check/test-%d.html" % item.get("n")
+        result = "【完了】%s（テスト・%d秒で終わりました）\\n確認ページ: %s" % (item.get("title"), secs, url)
+        payload = '{"result": "%s"}' % result
+        try:
+            f = io.open(logf, "a", encoding="utf-8")
+            p = subprocess.Popen(
+                ["bash", "-c", "sleep %d; cat <<'EOF'\n%s\nEOF" % (secs, payload)],
+                stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, start_new_session=True)
+        except Exception as e:
+            log("テスト発車に失敗 %s: %s" % (item.get("n"), e))
+            return False
+        item["status"] = "running"
+        item["startedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+        item["sessionId"] = new_id
+        item["pid"] = p.pid
+        log("🧪 テスト発車 %d番「%s」→ pid %d（%d秒で終わります・走行%d本→%d本・上限%d本）"
+            % (item.get("n"), item.get("title"), p.pid, secs, alive, alive + 1, safe_max))
+        return True
 
     # ---- worktree を切る ----
     repo = q.get("repo") or "/Users/mac/Desktop/joy-relief-station"

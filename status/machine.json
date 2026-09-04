@@ -1,13 +1,13 @@
 {
- "raw": "負荷 100% ｜ CPU 16% / メモリ圧迫 17% / スワップ 19.59GB / ディスク空き 21GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
- "load": 100,
- "cpu": 16,
- "mem": 17,
- "swapGB": 20061.5,
- "diskFreeGB": 21.0,
+ "raw": "",
+ "load": null,
+ "cpu": null,
+ "mem": null,
+ "swapGB": 20036.25,
+ "diskFreeGB": null,
  "sessions": 0,
- "note": "上限4本・あと4本OK（CPU16%・メモリ空き7.8GBで余裕あり→ロードの天井を緩めた、5分平均ロード84.9（コア8×2.0超）、実測上限2本）",
- "measuredAt": "2026-09-04T22:54:38+09:00",
+ "note": "上限4本・あと4本OK（5分平均ロード96.6（コア8×0.8超）、実測上限2本）",
+ "measuredAt": "2026-09-04T23:01:21+09:00",
  "working": 0,
  "stalled": 0,
  "waiting": 0,
@@ -20,38 +20,68 @@
  "calibrationBasis": "実測（2本まで合格）",
  "userActive": true,
  "predict": [
-  "5分ロード比10.6"
+  "5分ロード比12.1"
  ],
  "shedCandidates": [],
  "below": 2,
- "blockReason": "CPU16%・メモリ空き7.8GBで余裕あり→ロードの天井を緩めた、5分平均ロード84.9（コア8×2.0超）、実測上限2本",
- "load1": 45.88,
- "load5": 84.9,
- "load15": 126.22,
+ "blockReason": "5分平均ロード96.6（コア8×0.8超）、実測上限2本",
+ "load1": 136.14,
+ "load5": 96.6,
+ "load15": 113.36,
  "cores": 8,
- "loadRatio": 5.74,
+ "loadRatio": 17.02,
  "memPressure": "green",
- "memAvailGB": 7.8,
+ "memAvailGB": 6.8,
  "swapIncreasing": false,
- "ioMBs": 25.46,
+ "ioMBs": 0.26,
  "network": {
-  "pingMedianMs": 23.5,
-  "pingMaxMs": 41.2,
+  "pingMedianMs": 26.0,
+  "pingMaxMs": 33.3,
   "pingSamples": 20
  },
  "stalledList": [],
- "sessionList": [],
- "line": "負荷 100% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き21.0GB",
- "modelCounts": {},
+ "sessionList": [
+  {
+   "cli": null,
+   "localId": null,
+   "startedAt": "2026-09-04T22:58:37+0900",
+   "elapsedMin": 2,
+   "lastReportAt": null,
+   "lastReport": "",
+   "status": "不明",
+   "color": "gray",
+   "urls": [],
+   "unreportedDeploy": false,
+   "deployUrls": [],
+   "humanPushes": 0,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 96575,
+   "title": "（不明）",
+   "dispatch": false,
+   "isDispatchSelf": true,
+   "mb": 385,
+   "idleMin": null,
+   "kind": "unknown",
+   "model": null,
+   "turns": 0,
+   "lastActivityAt": null
+  }
+ ],
+ "line": "負荷 測定不可% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き測定不可GB",
+ "modelCounts": {
+  "不明": 1
+ },
  "autonomy": {
-  "alive": 0,
+  "alive": 1,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 22:54",
+  "lastRun": "2026-09-04 23:01",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -60,9 +90,9 @@
   "shed": null,
   "keep": {
    "target": 2,
-   "alive": 0,
-   "below": 2,
-   "line": "現在0本／上限4本／目標2本／あと4本いける"
+   "alive": 1,
+   "below": 1,
+   "line": "現在1本／上限4本／目標2本／あと4本いける"
   },
   "stalledSkipped": []
  },
@@ -84,15 +114,15 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-04 22:54",
+  "updatedAt": "2026-09-04 23:01",
   "estimated": false,
   "fablePct": 82,
   "allPct": 80,
   "allPctAsOf": "22:54:14",
-  "allPctAgeMin": 0.4,
+  "allPctAgeMin": 7.2,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 3.8,
-  "hoursLeft": 91.1,
+  "hoursLeft": 91.0,
   "fableLevel": "warn",
   "allLevel": "warn",
   "warnPct": 75,
@@ -101,7 +131,7 @@
    "fableAllowancePerDay": 20.5,
    "fableUsedLast24h": 0.0,
    "allAllowancePerDay": 3.7,
-   "allUsedLast24h": 24.5,
+   "allUsedLast24h": 24.3,
    "weeklyEvenPacePerDay": 14.3
   },
   "boost": {
@@ -116,10 +146,10 @@
   "allWeightedTokensSinceReset": 1089287863,
   "last6h": {
    "fable": 0,
-   "all": 111921501
+   "all": 105628759
   },
   "projection": {
-   "fablePctAtReset_avgPace": 48.7,
+   "fablePctAtReset_avgPace": 48.6,
    "fablePctAtReset_recentPace": 22.3,
    "hoursToCeiling_recentPace": null,
    "recentPacePctPerHour": 0.0
@@ -127,7 +157,7 @@
   "method": "手入力（アプリの使用状況画面の実測値・2026-09-04 17:10時点）",
   "source": "plan-usage-history.json",
   "asOf": "22:54:14",
-  "ageMin": 0.4,
+  "ageMin": 7.2,
   "weekdayTarget": 82.5,
   "weekdayTargetBase": 55,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
@@ -152,25 +182,25 @@
   "session5h": {
    "pct": 29.0,
    "resetAt": "2026-09-05 01:13",
-   "hoursLeft": 2.31,
-   "recentPacePctPerHour": 10.78,
-   "projectedPctAtReset": 53.9,
-   "wasteRiskPct": 46.1,
+   "hoursLeft": 2.2,
+   "recentPacePctPerHour": 10.35,
+   "projectedPctAtReset": 51.8,
+   "wasteRiskPct": 48.2,
    "mottainai": true,
    "source": "実測(plan-usage-history.json)",
    "asOf": "22:54:14",
-   "ageMin": 0.4,
+   "ageMin": 7.2,
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 1.473,
-   "aliveAvgLast6h": 3.2,
-   "pctPerSessionHour": 0.4667,
+   "allPacePctPerHour6h": 1.39,
+   "aliveAvgLast6h": 3.1,
+   "pctPerSessionHour": 0.4436,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
-   "sonnetSessionsFor5hWindow": 56.6,
+   "sonnetSessionsFor5hWindow": 62.5,
    "sonnetSessionsForWeeklyCurve": 0.3
   },
-  "line": "Fable週枠 22%（今日の目標82.5%＝55×1.5・60.2pt下振れ→投入余地あり） ／ 全モデル 86%（22:54:14時点・曲線目標68.6%＝46×1.5・17.4pt上振れ） ／ リセットまで 3.8日 ／ 5時間枠 29.0%・残2.3h・もったいない（46%余る見込み→本数増やす）（22:54:14時点）",
+  "line": "Fable週枠 22%（今日の目標82.5%＝55×1.5・60.2pt下振れ→投入余地あり） ／ 全モデル 86%（22:54:14時点・曲線目標68.6%＝46×1.5・17.4pt上振れ） ／ リセットまで 3.8日 ／ 5時間枠 29.0%・残2.2h・もったいない（48%余る見込み→本数増やす）（22:54:14時点）",
   "manualAsOf": "2026-09-04 17:10",
   "switches": [
    {
