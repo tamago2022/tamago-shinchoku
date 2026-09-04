@@ -184,6 +184,14 @@ def harvest(q):
             urls = clean[:5]
         except Exception:
             pass
+        # 2026-09-05 たまごさん「何も動いてない状態は作らないで。クレジット消費最小で」
+        #   → 空回し（keepalive）は終わったら台帳から静かに消す。
+        #     確認待ちに積むと、判定するものが増えるだけで意味がない（今日それで29件溜めた）。
+        if it.get("keepalive"):
+            it["_drop"] = True
+            changed = True
+            log("♻︎ 空回し %d番が終わりました（台帳からは消します）" % it.get("n"))
+            continue
         it["finishedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
         it["result"] = (result or "（結果が読み取れませんでした）")[:1200]
         it["urls"] = urls
@@ -213,6 +221,8 @@ def harvest(q):
         else:
             it["status"] = "awaiting_check"      # たまごさんの確認待ち
             log("✅ 終了を回収 %d番「%s」→ 確認待ち（URL %d本）" % (it.get("n"), it.get("title"), len(urls)))
+    if any(x.get("_drop") for x in q.get("items", [])):
+        q["items"] = [x for x in q["items"] if not x.get("_drop")]
     return changed
 
 
@@ -322,7 +332,12 @@ def main():
       #   テスト用のカラ発車（"test": true）はClaudeを起動しない＝クレジットを1円も使わないので、
       #   週枠が上限でも通す。ここで一緒に止めていると、枠が苦しいときほど動作確認ができなくなる。
       credit_stop = quota.get("allLevel") == "stop"
-      if credit_stop and not any(it.get("status") == "waiting" and it.get("test") for it in items):
+      # 2026-09-05 たまごさん「ループシステムを作ってるんだから。**止まるのはNG。半永久装置。**」
+      #   週枠が上限でも、**1本も走っていないなら、ここで止めない。**
+      #   下で「空回し（Claudeを起動しない＝クレジット0）」を1本入れて、工場が回っている状態を保つ。
+      _running_any = any(it.get("status") == "running" for it in items)
+      _test_waiting = any(it.get("status") == "waiting" and it.get("test") for it in items)
+      if credit_stop and _running_any and not _test_waiting:
           log("見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
           return 0
 
@@ -371,6 +386,24 @@ def main():
           #   （queue_add・command_ingest.py）。既存のpriority.jsonのQキー方式より優先する。
           p = it.get("priority") or prio.get("Q%d" % it.get("n"))
           return (int(p) if p else 9, it.get("n") or 99)
+
+      # 2026-09-05 たまごさん「何も動いてない状態は作らないで。何かしら回しといて。クレジット消費最小で」
+      #   本物が出せない（週枠が上限・発車を止めている等）ときでも、工場は回っている状態を保つ。
+      #   空回しは Claude を起動しないのでクレジットは1円も使わない。終われば静かに消える。
+      running_now = [it for it in items if it.get("status") == "running"]
+      launchable = [it for it in items if it.get("status") == "waiting"
+                    and (not credit_stop or it.get("test"))]
+      if not running_now and not launchable:
+          nxt = max([int(x.get("n") or 0) for x in items] or [0]) + 1
+          items.append({
+              "n": nxt, "priority": 9, "test": True, "keepalive": True, "testSeconds": 120,
+              "title": "【空回し】工場を止めないための2分の空タスク",
+              "why": "本物が出せない間も、止まっている状態を作らないため（クレジットは使いません）",
+              "what": "Claudeを起動しない空のタスクです。2分で終わり、台帳からは静かに消えます。",
+              "status": "waiting", "limitMin": 10, "model": "claude-sonnet-5",
+          })
+          log("♻︎ 空回しを1本入れました（%d番・本物が出せないため）" % nxt)
+          save_queue(q)
 
       waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
       if credit_stop:
