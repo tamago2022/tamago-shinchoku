@@ -630,47 +630,20 @@ def restart_heartbeat(_target=None):
 
 
 def auth_login_url(_target=None):
-    """ログイン用のURLだけを取り出す（2026-09-05）。
+    """ログイン用のURLだけを取り出す（2026-09-05・安全版）。
 
-    たまごさんはターミナルを使わない。**こちらでログイン手続きを走らせ、
-    出てきたURLだけを渡して、クリック1回で済むようにする。**
-    `claude setup-token` は認証URLを標準出力に出すので、そこだけ拾って渡し、
-    プロセスはすぐ畳む（対話待ちで居座らせない）。
+    最初の版は `p.stdout.readline()` で待っていたため、`claude setup-token` が
+    入力待ちで黙り込むと**心臓ごと固まった**（07:03〜、たまごさんにPCを再起動させた）。
+    **ぶら下がる読み取りは絶対に使わない。必ず時間で切って、残骸も落とす。**
     """
-    import signal
-    try:
-        p = subprocess.Popen([CLAUDE, "setup-token"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                             stdin=subprocess.DEVNULL, text=True, start_new_session=True)
-    except Exception as e:
-        return "failed", "起動できませんでした: %s" % e
-    out = ""
-    t0 = time.time()
-    try:
-        while time.time() - t0 < 25:
-            line = p.stdout.readline()
-            if not line:
-                if p.poll() is not None:
-                    break
-                time.sleep(0.2)
-                continue
-            out += line
-            if "http" in line:
-                break
-    except Exception:
-        pass
-    try:
-        os.killpg(os.getpgid(p.pid), 15)
-    except Exception:
-        try:
-            p.kill()
-        except Exception:
-            pass
+    r = run([CLAUDE, "setup-token"], timeout=20)
+    out = ((r.stdout or "") + (r.stderr or "")) if r else ""
+    run(["pkill", "-f", "setup-token"], timeout=5)
     import re as _re
     m = _re.search(r"https://\S+", out)
     if m:
         return "done", "ログインURL: %s" % m.group(0)
-    return "failed", ("URLが出ませんでした: " + out[-300:]).replace("\n", " ")
-
+    return "failed", ("URLが出ませんでした: " + out[-250:]).replace("\n", " ")
 
 def _process_other(action, cmd):
     target = cmd.get("target")
