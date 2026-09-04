@@ -228,6 +228,19 @@
   .qp{flex:none; min-height:36px; min-width:36px; border-radius:9px; border:1px solid var(--line);
     background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
   .qp.on{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+  /* 2026-09-04 スマホから発車待りに1行追加する入力欄 */
+  .addbox{display:flex; flex-direction:column; gap:8px; padding:10px 4px 14px; border-bottom:1px solid var(--line); margin-bottom:2px;}
+  .addbox input[type=text]{width:100%; box-sizing:border-box; min-height:44px; padding:0 12px; border-radius:10px;
+    border:1px solid var(--line); background:#12161c; color:var(--ink); font:inherit; font-size:0.88rem;}
+  .addbox input[type=text]::placeholder{color:var(--dim);}
+  .addrow{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .addrow .qap{flex:none; min-height:36px; min-width:36px; padding:0 8px; border-radius:9px; border:1px solid var(--line);
+    background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
+  .addrow .qap.on{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+  .addSend{margin-left:auto; min-height:40px; padding:0 16px; border-radius:10px; border:1px solid var(--green);
+    background:var(--green); color:#12161c; font-weight:700; font-size:0.82rem;}
+  .addSend:active{opacity:0.8;}
+  .addMsg{font-size:0.72rem; color:var(--sub); min-height:1.2em;}
   .clock{font-weight:400; font-size:0.9rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-left:8px; letter-spacing:0.02em;}
   .nowage{font-size:0.68rem; color:var(--dim); margin:2px 0 8px;}
   .nowage.nowstale{color:var(--red); font-weight:600;}
@@ -263,17 +276,6 @@
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
 
-<div id="capBar" class="capbar" hidden></div>
-<div id="nowAge" class="nowage"></div>
-<div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
-<!-- 2026-09-04 たまごさん「次に発車予定の予備軍も分かるようにしといて。これが終わったら次は何が発車されるのかな、って見たいから」
-     走行中が空いたら、ここの一番上が繰り上がる。優先順位はたまごさんがタップで付ける（Pボタン）。 -->
-<!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」 -->
-<details class="sec check" id="checkSec" open><summary>🔎 たまごさんの確認待ち <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
-<details class="sec queue" id="queueSec"><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in" id="queue"></div></details>
-
-<!-- 2026-09-03 たまごさん「これ1個にまとめて、スペースがもったいない。マシンとクレジット開くと、この以下の下の情報が出るように」
-     → 折りたたみを縦に8個並べるのをやめ、1個にまとめて中に入れ子にした。畳んでいる間は1行しか場所を取らない。 -->
 <details class="sec"><summary>マシンとクレジット <small id="machineAge"></small></summary><div class="in">
 <div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
@@ -292,6 +294,34 @@
 <details class="sec sub"><summary>この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></summary><div class="in" id="stats">読み込み中…</div></details>
 <details class="sec sub"><summary>Today（北極星・最重要3件）</summary><div class="in today" id="today"></div></details>
 <details class="sec sub"><summary>旧・進捗表の依頼31件 <small id="listMeta"></small></summary><div class="in" id="list"></div></details>
+<div id="capBar" class="capbar" hidden></div>
+<div id="nowAge" class="nowage"></div>
+<div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
+<!-- 2026-09-04 たまごさん「次に発車予定の予備軍も分かるようにしといて。これが終わったら次は何が発車されるのかな、って見たいから」
+     走行中が空いたら、ここの一番上が繰り上がる。優先順位はたまごさんがタップで付ける（Pボタン）。 -->
+<details class="sec queue" id="queueSec"><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in">
+<!-- 2026-09-04 たまごさん「進捗表に入力欄を作り、そこに書いた1行がそのまま発車待ちの列に入るように。優先度も同時に付けられる」
+     obsidian://new → Vault → Mac側 command_ingest.py の queue_add アクションで status/queue.json に直接1件追加する。 -->
+<div class="addbox" id="queueAddBox">
+  <input type="text" id="qaText" maxlength="200" placeholder="思いついたことを1行で（例：〇〇のバグを直す）" autocomplete="off">
+  <div class="addrow">
+    <button type="button" class="qap" data-p="1">P1</button>
+    <button type="button" class="qap" data-p="2">P2</button>
+    <button type="button" class="qap on" data-p="3">P3</button>
+    <button type="button" class="qap" data-p="4">P4</button>
+    <button type="button" class="qap" data-p="5">P5</button>
+    <button type="button" class="addSend" id="qaSend">＋ 発車待ちに追加</button>
+  </div>
+  <div class="addMsg" id="qaMsg">P1=今すぐ・P3=普通・P5=後回し</div>
+</div>
+<div class="in" id="queue"></div>
+</div></details>
+<!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」 -->
+<details class="sec check" id="checkSec" open><summary>🔎 たまごさんの確認待ち <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
+
+<!-- 2026-09-03 たまごさん「これ1個にまとめて、スペースがもったいない。マシンとクレジット開くと、この以下の下の情報が出るように」
+     → 折りたたみを縦に8個並べるのをやめ、1個にまとめて中に入れ子にした。畳んでいる間は1行しか場所を取らない。 -->
+
 </div></details>
 
 <!-- 2026-09-04 たまごさん「完了・止まっている・判断待ち・検証待ちが下ともダブってる。統合してよ。
@@ -445,6 +475,33 @@ function sendCommandWithId(id, action, target, label){
   const url = "obsidian://new?vault=tamago_brain&file=" + encodeURIComponent("AI出力/_ルール/コマンド_受信/" + id) + "&silent=true&content=" + encodeURIComponent(body);
   window.location.href = url;
 }
+
+/* ───── スマホから発車待ちへ新規タスクを1行追加（2026-09-04）─────
+   優先度・リモコンと同じ経路（obsidian://new → Vault → Mac側 command_ingest.py の queue_add）で
+   status/queue.json に waiting 状態の新規項目を直接追加する。これまでDispatch経由でしか積めなかった。 */
+let QA_PRIO = 3;
+document.addEventListener("click", e=>{
+  const b = e.target.closest("#queueAddBox .qap"); if(!b) return;
+  QA_PRIO = +b.dataset.p;
+  document.querySelectorAll("#queueAddBox .qap").forEach(x=>x.classList.toggle("on", x===b));
+});
+document.addEventListener("click", e=>{
+  const b = e.target.closest("#qaSend"); if(!b) return;
+  const input = document.getElementById("qaText");
+  const msg = document.getElementById("qaMsg");
+  const text = (input && input.value || "").trim();
+  if(!text){ if(msg) msg.textContent = "1行、書いてから追加してください"; return; }
+  const id = "a" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const label = "＋" + text.slice(0,20);
+  SENT_CMDS[id] = {action:"queue_add", target:text, priority:QA_PRIO, label, sentAt:new Date().toISOString()};
+  try{ saveCmds(); }catch(err){}
+  const payload = {id, action:"queue_add", target:text, priority:QA_PRIO, label, requestedAt:new Date().toISOString()};
+  const body = "PWAから新規タスク追加。手で編集しない。Mac側の command_ingest.py が実行する。\n\n```json\n" + JSON.stringify(payload) + "\n```\n";
+  const url = "obsidian://new?vault=tamago_brain&file=" + encodeURIComponent("AI出力/_ルール/コマンド_受信/" + id) + "&silent=true&content=" + encodeURIComponent(body);
+  if(input) input.value = "";
+  if(msg) msg.textContent = "送信しました。30〜60秒で発車待ちの列に入ります";
+  window.location.href = url;
+});
 
 /* ───── あと何本いけるか（最上部の帯）─────
    2026-09-03 たまごさん：「100で止まるなら90%で止める。絶対に固まらない上限を見極めて、

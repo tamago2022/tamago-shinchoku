@@ -146,6 +146,9 @@ def build_prompt(item):
 
 **main合流だけでは成果ゼロです。**本番で確認せずに「直しました」と言わないでください。
 
+**たまごさんの言葉（2026-09-04）：**
+> 「**pushを完了と言ってしまう。これはダメだね。画面が変わって初めて完了。画面が変わって、なおかつ報告。Dispatchに報告。URLとともに。**セッションの中で完了したとか言って、それはもう完了してない。**報告しないのはダメ。**」
+
 # 報告の形（これだけ）
 ```
 【完了】<何を直したか1行>
@@ -206,7 +209,9 @@ def main():
     prio = (load(PRIORITY, {}).get("priority") or {})
 
     def rank(it):
-        p = prio.get("Q%d" % it.get("n"))
+        # 2026-09-04：スマホの「＋発車待ちに追加」で作った項目はitem自身に"priority"を持つ
+        #   （queue_add・command_ingest.py）。既存のpriority.jsonのQキー方式より優先する。
+        p = it.get("priority") or prio.get("Q%d" % it.get("n"))
         return (int(p) if p else 9, it.get("n") or 99)
 
     waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
@@ -238,9 +243,34 @@ def launch_one(item, q, alive, safe_max):
     #   5分以上前の置き去りロックだけ掃除する（実行中のgitは巻き添えにしない）。
     try:
         subprocess.run(["bash", "-c",
-                        "find '%s/.git' -name '*.lock' -mmin +5 -delete 2>/dev/null; "
-                        "find '%s/.git/worktrees' -name 'locked' -mmin +5 -delete 2>/dev/null; true" % (repo, repo)],
+                        # 2026-09-04 修正：-mmin +5 だと、Cowork側が直前に作ったロックが消せず
+                        #   着火が exit 128 で失敗し続けた（q15〜q33が全滅）。ここは自分しかgitを使っていない
+                        #   タイミング（5分おき・二重起動はロックで防止済み）なので、無条件で掃除する。
+                        "find '%s/.git' -name '*.lock' -delete 2>/dev/null; "
+                        "find '%s/.git/refs' -name '*.lock' -delete 2>/dev/null; "
+                        "find '%s/.git/worktrees' -name 'locked' -delete 2>/dev/null; true" % (repo, repo, repo)],
                        capture_output=True, timeout=60)
+        subprocess.run(["git", "-C", repo, "worktree", "prune"], capture_output=True, timeout=120)
+        # 2026-09-04：worktreeが129個まで増え、ディスクが96%（残23GB）になって
+        #   git worktree add が exit 128 で失敗し続けた（q15〜q33が全滅）。
+        #   自動発車で作った古いもの（q**-0904）を30分経過で片づける。作業本体はmainに合流済みの前提。
+        out = subprocess.run(["git", "-C", repo, "worktree", "list", "--porcelain"],
+                             capture_output=True, text=True, timeout=120).stdout
+        now_t = time.time()
+        for ln in out.splitlines():
+            if not ln.startswith("worktree "):
+                continue
+            path = ln[len("worktree "):].strip()
+            base = os.path.basename(path)
+            if not (base.startswith("q") and "-0904" in base):
+                continue
+            try:
+                if now_t - os.path.getmtime(path) < 1800:
+                    continue
+            except Exception:
+                continue
+            subprocess.run(["git", "-C", repo, "worktree", "remove", "--force", path],
+                           capture_output=True, timeout=180)
         subprocess.run(["git", "-C", repo, "worktree", "prune"], capture_output=True, timeout=120)
     except Exception:
         pass
@@ -263,6 +293,10 @@ def launch_one(item, q, alive, safe_max):
                     subprocess.run(["git", "-C", repo, "worktree", "add", os.path.join(".worktrees", wt_name),
                                     "-b", "claude/" + wt_name],
                                    check=True, capture_output=True, timeout=300)
+                except subprocess.CalledProcessError as e3:
+                    err = (e3.stderr or b"").decode("utf-8", "ignore")[:300] if isinstance(e3.stderr, bytes) else str(e3.stderr)[:300]
+                    log("worktree作成に失敗（3回試した） %s: %s" % (wt_name, err.replace("\n", " ")))
+                    return False
                 except Exception as e3:
                     log("worktree作成に失敗（3回試した） %s: %s" % (wt_name, e3))
                     return False

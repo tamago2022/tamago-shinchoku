@@ -16,6 +16,8 @@ PWAの「リモコン」ボタンから来たコマンドを実行する（2026-
   close_app : 重いアプリを終了（除外リスト＝Brave・Chromeは絶対に実行しない。未保存書類は失敗扱い）
   queue_ok    : 進捗表「たまごさんの確認待ち」で✅OKを押した番号を status/queue.json で done にする
   queue_redo  : 同じくやり直しを押した番号を waiting に戻し、items配列の先頭へ移動する（次に発車の一番手にする）
+  queue_add   : 進捗表の入力欄に書いた1行（+優先度1-5）を status/queue.json の末尾へ waiting として新規追加する
+                （2026-09-04追加。スマホから直接発車待ちへ積めるようにした。これまでDispatch経由でしか積めなかった）
 
   2026-09-04 queue_ok/queue_redo 追加：進捗表の確認ボタンは、これまで押した結果が端末内
   （localStorage）にしか残らず、Mac側の status/queue.json には一切反映されていなかった
@@ -156,6 +158,44 @@ def _find_item(items, n):
     return None
 
 
+def queue_add(text, priority=None):
+    """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
+    waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
+    発車待ちの列に、スマホから直接1行で積めるようにした。
+
+    優先度（1=今すぐ…5=後回し）はitem自身の"priority"フィールドに書く。
+    auto_launcher.pyのrank()はこのフィールドを最優先で見る（priority.jsonのQキー方式より単純で確実）。"""
+    text = (text or "").strip()
+    if not text:
+        return "failed", "本文が空です"
+    text = text[:400]
+    try:
+        p = int(priority)
+    except Exception:
+        p = None
+    if p is not None and (p < 1 or p > 5):
+        p = None
+    q = _load_queue()
+    items = q.get("items") or []
+    next_n = (max([int(it.get("n") or 0) for it in items], default=0)) + 1
+    item = {
+        "n": next_n,
+        "title": text[:120],
+        "why": "スマホから追加",
+        "what": text,
+        "status": "waiting",
+        "limitMin": 180,
+        "model": "claude-sonnet-5",
+    }
+    if p is not None:
+        item["priority"] = p
+    items.append(item)
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "%d番として発車待ちに追加しました（P%s）" % (next_n, p if p else "-")
+
+
 def queue_ok(target):
     """進捗表「✅OK・完了にする」→ status/queue.json の該当番号を done にする。"""
     try:
@@ -221,6 +261,8 @@ def process(cmd):
         return queue_ok(target)
     if action == "queue_redo":
         return queue_redo(target)
+    if action == "queue_add":
+        return queue_add(target, cmd.get("priority"))
     return "failed", "不明なアクション: %s" % action
 
 
