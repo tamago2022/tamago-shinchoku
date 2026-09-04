@@ -214,6 +214,23 @@
   /* 2026-09-04 判定を4つに増やしたので、2列で折り返す（1行4つは指が当たらない） */
   /* 2026-09-04 たまごさん「タスクも全部ナンバリングして。進捗表にタスクナンバーがない」
      → 行の並び順（次・2・3…）とは別に、案件番号(#24 など)を出す。口頭で番号を言えるように。 */
+  /* 週の配分（天井に行かないためのペース） */
+  .pacebar{margin:10px 0 6px; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:#161c24;}
+  .pacebar .ph{font-weight:800; font-size:1.05rem; margin-bottom:4px;}
+  .pacebar .pd{font-size:0.8rem; color:var(--sub); line-height:1.6;}
+  .pacebar .track{height:10px; border-radius:999px; background:#0e1319; margin:8px 0 6px; overflow:hidden;}
+  .pacebar .fill{height:100%; border-radius:999px;}
+  .pacebar.ok{border-color:rgba(95,217,150,0.45);} .pacebar.ok .ph{color:var(--green);} .pacebar.ok .fill{background:var(--green);}
+  .pacebar.warn{border-color:rgba(230,190,80,0.5);} .pacebar.warn .ph{color:var(--yellow);} .pacebar.warn .fill{background:var(--yellow);}
+  .pacebar.over{border-color:rgba(255,120,100,0.6); background:#241619;} .pacebar.over .ph{color:var(--red);} .pacebar.over .fill{background:var(--red);}
+  /* 2026-09-05 たまごさん「何のモデルを使ってるか一目瞭然にしたい。モデルの色も変えといて」 */
+  .mdl{display:inline-block; padding:1px 7px; border-radius:999px; font-size:0.68rem; font-weight:800; letter-spacing:.02em;
+    border:1px solid transparent; vertical-align:middle;}
+  .mdl.fable{background:#3a1216; color:#ff9f92; border-color:rgba(255,120,100,0.65);}
+  .mdl.opus{background:#3a2a12; color:#ffc98a; border-color:rgba(255,190,110,0.6);}
+  .mdl.sonnet{background:#122a1f; color:#7ee3ae; border-color:rgba(95,217,150,0.5);}
+  .mdl.haiku{background:#122430; color:#8ec9ff; border-color:rgba(120,190,255,0.5);}
+  .mdl.test{background:#1a2028; color:var(--sub); border-color:var(--line);}
   .qno{display:inline-block; margin-left:6px; font-size:0.7rem; color:var(--sub); font-variant-numeric:tabular-nums;}
   #fuelBox .fuel{min-height:44px; padding:0 14px; border-radius:10px; font-weight:800; font-size:0.9rem;
     border:1px solid var(--green); background:var(--green); color:#12161c;}
@@ -318,6 +335,9 @@
      ここから下（限界の帯・走行中・次に発車・確認待ち）は、マシンとクレジットの折りたたみの
      **外**に出す。中に入れていると、折りたたみを閉じたときに丸ごと消えてしまい、
      「発車待ちがない」ように見えてしまうため。ここは常に見えていなければならない。 -->
+<!-- 2026-09-05 たまごさん「火曜18時にリセットされるから7で割って。1日14%前後。
+     『今日は20%使ってます』とか赤印になるとか、『13%までならまだ使える』とか。天井に行かないための配分」 -->
+<div id="paceBar" class="pacebar" hidden></div>
 <div id="capBar" class="capbar" hidden></div>
 <div id="nowAge" class="nowage"></div>
 <div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
@@ -562,6 +582,37 @@ function sendCommandWithId(id, action, target, label){
   flushCommands();
 }
 // 中継所の場所は毎回読み直す（トンネルのURLは変わることがある）
+/* 週の配分（天井に行かないためのペース）。tools/pace.py が status/pace.json に書く */
+function modelChip(model){
+  const s = String(model || "").toLowerCase();
+  if(s.includes("fable")) return `<span class="mdl fable">Fable</span>`;
+  if(s.includes("opus"))  return `<span class="mdl opus">Opus</span>`;
+  if(s.includes("haiku")) return `<span class="mdl haiku">Haiku</span>`;
+  if(s.includes("sonnet"))return `<span class="mdl sonnet">Sonnet</span>`;
+  if(s.includes("テスト"))return `<span class="mdl test">テスト</span>`;
+  return "";
+}
+function renderPace(p){
+  const bar = document.getElementById("paceBar"); if(!bar) return;
+  if(!p || p.usedToday === null || p.usedToday === undefined){ bar.hidden = true; return; }
+  bar.hidden = false;
+  bar.className = "pacebar " + (p.state || "ok");
+  const pct = Math.max(0, Math.min(100, p.budgetToday ? (p.usedToday / p.budgetToday * 100) : 0));
+  const head = p.state === "over" ? `🔴 今日はもう使いすぎ`
+             : p.state === "warn" ? `🟡 今日の残りが少ない`
+             : `🟢 今日はあと ${Math.max(0, (p.budgetToday - p.usedToday)).toFixed(1)}% 使えます`;
+  bar.innerHTML = `<div class="ph">${head}</div>
+    <div class="pd">今日 <b>${p.usedToday}%</b> 使用 ／ 今日の予算 <b>${p.budgetToday}%</b>（週の残り ${p.remainWeek}% ÷ あと ${p.daysLeft}日）</div>
+    <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+    <div class="pd">週の使用 ${p.allPct}%・ならすと1日 ${p.perDayEven}%・${esc(p.resetAt || "")} にリセット</div>`;
+}
+function refreshPace(){
+  const relay = (window.__relay && window.__relay.url);
+  return fetch("status/pace.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(renderPace).catch(()=>{});
+}
+refreshPace();
+setInterval(refreshPace, 60000);
 function refreshRelay(){
   return fetch("status/relay.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(j => { window.__relay = j; flushCommands(); })
@@ -946,7 +997,7 @@ function renderCheck(){
     const fin = r.finishedAt ? String(r.finishedAt).slice(5,16).replace("T"," ") : "";
     const urls = (r.urls||[]).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
     return `<div class="crow" data-cn="${r.n}">
-      <div class="ct">#${r.n} ${esc(r.title)}</div>
+      <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
       <div class="cm">${fin ? fin + " に終了" : ""}</div>
       ${urls || `<div class="cm">URLの報告なし</div>`}
       <div class="cr">${esc((r.result||"").slice(0,600))}</div>
@@ -976,7 +1027,7 @@ function renderDone(){
     const stamp = r.checkedAt ? formatStamp(r.checkedAt) : (r.finishedAt ? formatStamp(r.finishedAt) : "—");
     const urls = (r.urls || []).filter(Boolean).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
     return `<div class="drow" data-dn="${r.n}">
-      <div class="ct">#${r.n} ${esc(r.title)}</div>
+      <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
       <div class="cm">${esc(stamp)} 完了</div>
       ${urls || `<div class="cm">URLの報告なし</div>`}
     </div>`;
@@ -990,7 +1041,7 @@ function renderLater(){
   if(meta) meta.textContent = rows.length ? `${rows.length}件` : "";
   if(!rows.length){ box.innerHTML = `<div class="card note">後回しはありません</div>`; return; }
   box.innerHTML = rows.map(r=>`<div class="crow" data-cn="${r.n}">
-      <div class="ct">#${r.n} ${esc(r.title)}</div>
+      <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
       <div class="cm">${r.laterAt ? String(r.laterAt).slice(5,16).replace("T"," ") + " に後回し" : ""}</div>
       <div class="cbtns"><button class="cok" data-ck="back" data-n="${r.n}">▶ 発車待ちに戻す</button></div>
     </div>`).join("");
@@ -1074,7 +1125,7 @@ function renderQueue(){
   box.innerHTML = rows.map((r,i)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
     return `<div class="qrow${i===0 ? " next" : ""}">
-      <span class="qn">${i===0 ? "次" : (i+1)}</span><span class="qno">#${r.n}</span>
+      <span class="qn">${i===0 ? "次" : (i+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
       <span class="qbody">
         <details class="qd"><summary><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
           <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>

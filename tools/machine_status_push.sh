@@ -162,6 +162,8 @@ fi
 tail -n 200 "$REPO/status/eagle_run.log" > "$REPO/status/eagle_run.log.tmp" 2>/dev/null && mv "$REPO/status/eagle_run.log.tmp" "$REPO/status/eagle_run.log" 2>/dev/null || true
 # 2026-09-03 本数の実測校正：load_history.jsonl＋heavy_events.jsonl → calibration.json（safeN/target）。次回の factory_status が読む
 python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
+# 2026-09-05 週の配分（天井に行かないためのペース）。今日いくつ使ったか／あといくつ使えるか
+python3 "$REPO/tools/pace.py" >/dev/null 2>&1 || true
 # 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く
 python3 /Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py sync >/dev/null 2>&1 || true
 
@@ -223,7 +225,7 @@ HIST_CHANGED=0
 if [ -n "$(git status --porcelain --untracked-files=normal -- \
       status/history.jsonl status/whiteboard.json status/priority.json status/health.json \
       status/commands.json status/queue.json status/relay.json status/version.json \
-      index.html data.js said.js tools 2>/dev/null | head -1)" ]; then
+      index.html data.js said.js tools status/pace.json 2>/dev/null | head -1)" ]; then
   HIST_CHANGED=1
 fi
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
@@ -247,7 +249,7 @@ json.dump({"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
           io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 PYVER
 git add status/version.json >/dev/null 2>&1
-git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json >/dev/null 2>&1
+git add status/pace.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1
