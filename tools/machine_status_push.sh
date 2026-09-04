@@ -164,6 +164,8 @@ tail -n 200 "$REPO/status/eagle_run.log" > "$REPO/status/eagle_run.log.tmp" 2>/d
 python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-05 週の配分（天井に行かないためのペース）。今日いくつ使ったか／あといくつ使えるか
 python3 "$REPO/tools/pace.py" >/dev/null 2>&1 || true
+# 2026-09-05 完了は1週間で「完了のひかえ」へ移す（画面を短く保つ・あとから辿れる）
+python3 "$REPO/tools/archive_done.py" >/dev/null 2>&1 || true
 # 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く
 python3 /Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py sync >/dev/null 2>&1 || true
 
@@ -249,7 +251,7 @@ json.dump({"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
           io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 PYVER
 git add status/version.json >/dev/null 2>&1
-git add status/pace.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json >/dev/null 2>&1
+git add status/pace.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1

@@ -377,7 +377,11 @@
 <!-- 2026-09-04 たまごさん「完了＝本番に出て確認まで済んだもの。ここが増えることだけが成果」
      → OKを押した項目がqueue.json上はstatus:doneになるが、これまで表示先が無く消えていた（発車待ち・確認待ちのどちらにも出ない）。
        ここに積み上げ表示する。新しい完了ほど上、日時とURLを必ず添える。 -->
-<details class="sec done" id="doneSec" open><summary>✅ 完了 <small id="doneMeta"></small></summary><div class="in" id="done"></div></details>
+<!-- 2026-09-05 たまごさん「完了も1週間経ったら自動で消えるように。だけど後でたどれるように」
+     → 7日たった完了は tools/archive_done.py が「完了のひかえ」へ移す。ここは短く保つ。 -->
+<details class="sec done" id="doneSec" open><summary>✅ 完了 <small id="doneMeta"></small></summary><div class="in" id="done">
+<div class="note" style="margin-top:8px"><a href="share/done/" style="color:var(--green)">1週間より前の完了を見る（完了のひかえ）→</a></div>
+</div></details>
 
 <!-- 2026-09-04 たまごさん「完了・止まっている・判断待ち・検証待ちが下ともダブってる。統合してよ。
      ダブりを消して。混乱するから。半分の画面で同じ情報が出せるはず」
@@ -1022,7 +1026,9 @@ function renderDone(){
     .sort((a,b) => new Date(b.checkedAt || b.finishedAt || 0) - new Date(a.checkedAt || a.finishedAt || 0));
   const meta = document.getElementById("doneMeta");
   if(meta) meta.textContent = rows.length ? `${rows.length}件` : "";
-  if(!rows.length){ box.innerHTML = `<div class="card note">まだありません（OKが出るとここに積み上がります）</div>`; return; }
+  // 2026-09-05 たまごさん「完了も1週間で消して、でも後でたどれるように」→ 控えへの入口は常に残す
+  const archLink = `<div class="note" style="margin-top:10px"><a href="share/done/" style="color:var(--green)">1週間より前の完了を見る（完了のひかえ）→</a></div>`;
+  if(!rows.length){ box.innerHTML = `<div class="card note">まだありません（OKが出るとここに積み上がります）</div>` + archLink; return; }
   box.innerHTML = rows.map(r=>{
     const stamp = r.checkedAt ? formatStamp(r.checkedAt) : (r.finishedAt ? formatStamp(r.finishedAt) : "—");
     const urls = (r.urls || []).filter(Boolean).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
@@ -1031,7 +1037,7 @@ function renderDone(){
       <div class="cm">${esc(stamp)} 完了</div>
       ${urls || `<div class="cm">URLの報告なし</div>`}
     </div>`;
-  }).join("");
+  }).join("") + archLink;
 }
 /* 🕗 後回しボックス。「とりあえずOK」を押したものが入る。発車はしない。 */
 function renderLater(){
