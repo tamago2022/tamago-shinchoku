@@ -20,6 +20,15 @@ fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
 
+# 2026-09-04 工場の心臓（15秒おきに着火と受信箱だけを回す常駐）。
+#   **この巡回のいちばん最初に立てる。**重い計測のあとに置いていたら、
+#   1回の巡回が4〜5分かかるせいで心臓そのものが何分も立たなかった。
+#   落ちていたら次の巡回で立て直す（自己修復）。二重起動はしない。
+if ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
+  nohup bash "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 &
+  disown 2>/dev/null || true
+fi
+
 # 2026-09-03 追加：置き去りのgitロックを掃除する。
 # Cowork側のサンドボックスからマウント越しにgitを叩くと、.git/*.lock と objects/*/tmp_obj_* を
 # unlink できず（Operation not permitted）残る。残ると以後このスクリプトのcommit/pushが毎回失敗し、
@@ -129,10 +138,6 @@ python3 "$REPO/tools/auto_launcher.py" >/dev/null 2>&1 || true
 # 2026-09-04 たまごさん「Obsidianには飛ばない」→ 進捗表のボタンをHTTPSで直接受ける中継所。
 #   立っていなければ立て、トンネルのURLを status/relay.json へ書く（冪等・既に動いていれば何もしない）。
 bash "$REPO/tools/relay_up.sh" >/dev/null 2>&1 || true
-# 2026-09-04 工場の心臓（15秒おきに着火と受信箱だけを回す常駐）。落ちていたら立て直す。
-if ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
-  nohup bash "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 &
-fi
 # 2026-09-04 心臓を1つにする。
 #   受信箱(Vault経由の指示)は今まで別のlaunchd便(command_watch.sh・30秒おき)に任せていたが、
 #   その便が**20:18で止まっていた**（スマホのボタンも、Dispatchからの指示も、Macに届かなくなっていた）。

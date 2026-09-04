@@ -212,6 +212,9 @@
      border-radius:10px; padding:9px 11px; margin:6px 0; white-space:pre-wrap; max-height:9em; overflow:auto;}
   .cu{display:block; font-size:0.78rem; margin:3px 0; word-break:break-all;}
   /* 2026-09-04 判定を4つに増やしたので、2列で折り返す（1行4つは指が当たらない） */
+  /* 2026-09-04 たまごさん「タスクも全部ナンバリングして。進捗表にタスクナンバーがない」
+     → 行の並び順（次・2・3…）とは別に、案件番号(#24 など)を出す。口頭で番号を言えるように。 */
+  .qno{display:inline-block; margin-left:6px; font-size:0.7rem; color:var(--sub); font-variant-numeric:tabular-nums;}
   #fuelBox .fuel{min-height:44px; padding:0 14px; border-radius:10px; font-weight:800; font-size:0.9rem;
     border:1px solid var(--green); background:var(--green); color:#12161c;}
   #fuelBox .fuel.off{background:#3a1f1f; color:#ffb3a7; border-color:rgba(255,120,100,0.5);}
@@ -340,19 +343,11 @@
     <button type="button" class="cap" data-cap="4">4</button>
   </div>
 </div>
-<div class="addbox" id="queueAddBox">
-  <input type="text" id="qaText" maxlength="200" placeholder="思いついたことを1行で（例：〇〇のバグを直す）" autocomplete="off">
-  <div class="addrow">
-    <button type="button" class="qap" data-p="1">P1</button>
-    <button type="button" class="qap" data-p="2">P2</button>
-    <button type="button" class="qap on" data-p="3">P3</button>
-    <button type="button" class="qap" data-p="4">P4</button>
-    <button type="button" class="qap" data-p="5">P5</button>
-    <button type="button" class="addSend" id="qaSend">＋ 発車待ちに追加</button>
-  </div>
-  <div class="addMsg" id="qaMsg">P1=今すぐ・P3=普通・P5=後回し</div>
-  <div class="addMsg" id="pendMsg"></div>
-</div>
+<!-- 2026-09-04 たまごさん「思いついたことを1行で、はもういらない。発車待ちに追加も、もういい。
+     ここにタスクが並んでて、ただ順番を入れ替えられるだけでいい。**割り込んで優先にして、と口頭で言う方が早い**」
+     → 入力欄と追加ボタンを外した。ここは「並んでいるものの順番を変える場所」に絞る。 -->
+<div class="addMsg" id="qaMsg" style="padding:0 2px 6px">Pを押すと順番が変わります（P1＝いちばん先に出る）。新しく足したいものはDispatchに言ってください</div>
+<div class="addMsg" id="pendMsg" style="padding:0 2px 6px"></div>
 <div class="in" id="queue"></div>
 </div></details>
 <!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」 -->
@@ -913,7 +908,7 @@ function renderCheck(){
     const fin = r.finishedAt ? String(r.finishedAt).slice(5,16).replace("T"," ") : "";
     const urls = (r.urls||[]).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
     return `<div class="crow" data-cn="${r.n}">
-      <div class="ct">${r.n}. ${esc(r.title)}</div>
+      <div class="ct">#${r.n} ${esc(r.title)}</div>
       <div class="cm">${fin ? fin + " に終了" : ""}</div>
       ${urls || `<div class="cm">URLの報告なし</div>`}
       <div class="cr">${esc((r.result||"").slice(0,600))}</div>
@@ -943,7 +938,7 @@ function renderDone(){
     const stamp = r.checkedAt ? formatStamp(r.checkedAt) : (r.finishedAt ? formatStamp(r.finishedAt) : "—");
     const urls = (r.urls || []).filter(Boolean).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
     return `<div class="drow" data-dn="${r.n}">
-      <div class="ct">${r.n}. ${esc(r.title)}</div>
+      <div class="ct">#${r.n} ${esc(r.title)}</div>
       <div class="cm">${esc(stamp)} 完了</div>
       ${urls || `<div class="cm">URLの報告なし</div>`}
     </div>`;
@@ -957,7 +952,7 @@ function renderLater(){
   if(meta) meta.textContent = rows.length ? `${rows.length}件` : "";
   if(!rows.length){ box.innerHTML = `<div class="card note">後回しはありません</div>`; return; }
   box.innerHTML = rows.map(r=>`<div class="crow" data-cn="${r.n}">
-      <div class="ct">${r.n}. ${esc(r.title)}</div>
+      <div class="ct">#${r.n} ${esc(r.title)}</div>
       <div class="cm">${r.laterAt ? String(r.laterAt).slice(5,16).replace("T"," ") + " に後回し" : ""}</div>
       <div class="cbtns"><button class="cok" data-ck="back" data-n="${r.n}">▶ 発車待ちに戻す</button></div>
     </div>`).join("");
@@ -1041,7 +1036,7 @@ function renderQueue(){
   box.innerHTML = rows.map((r,i)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
     return `<div class="qrow${i===0 ? " next" : ""}">
-      <span class="qn">${i===0 ? "次" : (i+1)}</span>
+      <span class="qn">${i===0 ? "次" : (i+1)}</span><span class="qno">#${r.n}</span>
       <span class="qbody">
         <details class="qd"><summary><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
           <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>
