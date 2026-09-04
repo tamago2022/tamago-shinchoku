@@ -1,16 +1,16 @@
 {
- "raw": "負荷 100% ｜ CPU 7% / メモリ圧迫 16% / スワップ 15.04GB / ディスク空き 31GB ｜ 稼働 4本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 8% / メモリ圧迫 15% / スワップ 14.97GB / ディスク空き 31GB ｜ 稼働 4本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 7,
- "mem": 16,
- "swapGB": 15402.0,
+ "cpu": 8,
+ "mem": 15,
+ "swapGB": 15338.0,
  "diskFreeGB": 31.0,
  "sessions": 3,
- "note": "上限2本・あと0本OK（CPU7%・メモリ空き7.1GBで余裕あり→ロードの天井を緩めた、5分平均ロード25.5（コア8×2.0超）、予兆（5分ロード比3.2）→1本減らす、5時間枠もったいない度92.9%→本数を上限5本まで増やす）",
- "measuredAt": "2026-09-04T13:55:47+09:00",
- "working": 2,
- "stalled": 0,
- "waiting": 0,
+ "note": "上限2本・あと0本OK（CPU8%・メモリ空き7.0GBで余裕あり→ロードの天井を緩めた、5分平均ロード23.2（コア8×2.0超）、予兆（5分ロード比2.9）→1本減らす、5時間枠もったいない度88.7%→本数を上限5本まで増やす）",
+ "measuredAt": "2026-09-04T13:56:29+09:00",
+ "working": 1,
+ "stalled": 1,
+ "waiting": 1,
  "safeMax": 2,
  "moreOK": 0,
  "hardMax": 8,
@@ -20,36 +20,44 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": true,
  "predict": [
-  "5分ロード比3.2"
+  "5分ロード比2.9"
  ],
  "shedCandidates": [],
  "below": 2,
- "blockReason": "CPU7%・メモリ空き7.1GBで余裕あり→ロードの天井を緩めた、5分平均ロード25.5（コア8×2.0超）、予兆（5分ロード比3.2）→1本減らす、5時間枠もったいない度92.9%→本数を上限5本まで増やす",
- "load1": 9.51,
- "load5": 25.46,
- "load15": 37.92,
+ "blockReason": "CPU8%・メモリ空き7.0GBで余裕あり→ロードの天井を緩めた、5分平均ロード23.2（コア8×2.0超）、予兆（5分ロード比2.9）→1本減らす、5時間枠もったいない度88.7%→本数を上限5本まで増やす",
+ "load1": 8.65,
+ "load5": 23.22,
+ "load15": 36.52,
  "cores": 8,
- "loadRatio": 1.19,
+ "loadRatio": 1.08,
  "memPressure": "green",
- "memAvailGB": 7.1,
+ "memAvailGB": 7.0,
  "swapIncreasing": false,
- "ioMBs": 3.44,
+ "ioMBs": 1.09,
  "network": {
-  "pingMedianMs": 27.1,
-  "pingMaxMs": 71.2,
+  "pingMedianMs": 23.1,
+  "pingMaxMs": 36.7,
   "pingSamples": 20
  },
- "stalledList": [],
+ "stalledList": [
+  {
+   "pid": 98751,
+   "title": "未反映ブランチ112本の棚卸し",
+   "kind": "stuck_tool",
+   "idleMin": 10.5,
+   "dispatch": true
+  }
+ ],
  "sessionList": [
   {
    "cli": "b14ccdd8-02e1-48bc-879a-19759b818e3f",
    "localId": "local_b108f9ed-55b6-455f-b156-3ba023bd43d4",
    "startedAt": "2026-09-04T04:58:41+0900",
-   "elapsedMin": 10,
+   "elapsedMin": 11,
    "lastReportAt": "2026-09-04T00:52:02.404Z",
    "lastReport": "ブランチpush成功、mainへの自動回収待ち（gh CLI無しのため）  次に何をすべきか指示があればお願いします。指示が無ければ、TASK_BOARD.mdの他の停滞案件を引き続き探して進めます。",
-   "status": "作業中",
-   "color": "green",
+   "status": "承認待ち",
+   "color": "yellow",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [
@@ -66,9 +74,9 @@
    "title": "未反映ブランチ112本の棚卸し",
    "dispatch": true,
    "isDispatchSelf": false,
-   "mb": 326,
-   "idleMin": 9.9,
-   "kind": "working",
+   "mb": 327,
+   "idleMin": 10.5,
+   "kind": "stuck_tool",
    "model": "claude-sonnet-5",
    "turns": 672,
    "lastActivityAt": "2026-09-04T04:45:54.883Z"
@@ -94,8 +102,8 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 349,
-   "idleMin": 9.4,
-   "kind": "working",
+   "idleMin": 10.1,
+   "kind": "idle_done",
    "model": "claude-opus-5",
    "turns": 13,
    "lastActivityAt": "2026-09-04T04:46:18.978Z"
@@ -104,7 +112,7 @@
    "cli": "fc34d3ea-f6b7-45e0-be0a-8fbae3f3d63c",
    "localId": "local_bc15311b-aeb7-4383-a140-5ac830d6679c",
    "startedAt": "2026-09-03T18:25:35+0900",
-   "elapsedMin": 10,
+   "elapsedMin": 11,
    "lastReportAt": "2026-09-04T04:48:49.581Z",
    "lastReport": "watch?v=YM_YU8HVpWM  判断待ち：点滅バグ・「この曲から続く道」位置修正は前ターンで完了済み（アメリのページ限定の調整のため、今回のご指示により後回しでよいとのこと、追加作業なし）。",
    "status": "作業中",
@@ -129,7 +137,7 @@
    "dispatch": true,
    "isDispatchSelf": false,
    "mb": 394,
-   "idleMin": 6.9,
+   "idleMin": 7.6,
    "kind": "working",
    "model": "claude-sonnet-5",
    "turns": 820,
@@ -163,7 +171,7 @@
    "lastActivityAt": null
   }
  ],
- "line": "負荷 100% ｜ セッション3本（作業中2・止まり0） ｜ 上限2本・1本超過（畳め） ｜ 空き31.0GB",
+ "line": "負荷 100% ｜ セッション3本（作業中1・止まり1） ｜ 上限2本・1本超過（畳め） ｜ 空き31.0GB",
  "modelCounts": {
   "claude-sonnet-5": 2,
   "claude-opus-5": 1,
@@ -177,7 +185,7 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 13:55",
+  "lastRun": "2026-09-04 13:56",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -190,7 +198,14 @@
    "below": 2,
    "line": "現在3本／上限2本／目標5本／あと0本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 98751,
+    "title": "未反映ブランチ112本の棚卸し",
+    "kind": "stuck_tool",
+    "why": "引き継ぎ済み→37a3d8ed"
+   }
+  ]
  },
  "metrics": {
   "stalls": 110,
@@ -209,15 +224,15 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-04 13:55",
+  "updatedAt": "2026-09-04 13:56",
   "estimated": false,
   "fablePct": 23.3,
   "allPct": 75.0,
   "allPctAsOf": "13:50:24",
-  "allPctAgeMin": 5.4,
+  "allPctAgeMin": 6.1,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.2,
-  "hoursLeft": 100.1,
+  "hoursLeft": 100.0,
   "fableLevel": "ok",
   "allLevel": "warn",
   "warnPct": 75,
@@ -252,7 +267,7 @@
   "method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
   "source": "plan-usage-history.json",
   "asOf": "13:50:24",
-  "ageMin": 5.4,
+  "ageMin": 6.1,
   "weekdayTarget": 82.5,
   "weekdayTargetBase": 55,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
@@ -277,25 +292,25 @@
   "session5h": {
    "pct": 8.0,
    "resetAt": "2026-09-04 15:23",
-   "hoursLeft": 1.46,
-   "recentPacePctPerHour": 2.26,
+   "hoursLeft": 1.45,
+   "recentPacePctPerHour": 2.25,
    "projectedPctAtReset": 11.3,
    "wasteRiskPct": 88.7,
    "mottainai": true,
    "source": "実測(plan-usage-history.json)",
    "asOf": "13:50:24",
-   "ageMin": 5.4,
+   "ageMin": 6.1,
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
    "allPacePctPerHour6h": 0.72,
    "aliveAvgLast6h": 2.3,
-   "pctPerSessionHour": 0.3162,
+   "pctPerSessionHour": 0.3148,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
-   "sonnetSessionsFor5hWindow": 177.6,
+   "sonnetSessionsFor5hWindow": 179.6,
    "sonnetSessionsForWeeklyCurve": 0.8
   },
-  "line": "Fable週枠 23%（今日の目標82.5%＝55×1.5・59.2pt下振れ→投入余地あり） ／ 全モデル 75%（13:50:24時点・曲線目標60.0%＝40×1.5・15.0pt上振れ） ／ リセットまで 4.2日 ／ 5時間枠 8.0%・残1.5h・もったいない（89%余る見込み→本数増やす）（13:50:24時点）",
+  "line": "Fable週枠 23%（今日の目標82.5%＝55×1.5・59.2pt下振れ→投入余地あり） ／ 全モデル 75%（13:50:24時点・曲線目標60.0%＝40×1.5・15.0pt上振れ） ／ リセットまで 4.2日 ／ 5時間枠 8.0%・残1.4h・もったいない（89%余る見込み→本数増やす）（13:50:24時点）",
   "switches": [
    {
     "t": "2026-09-03 14:16",
