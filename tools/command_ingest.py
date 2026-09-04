@@ -670,6 +670,23 @@ def auth_login_start(_target=None):
         return "failed", str(e)
 
 
+
+def auth_ps(_target=None):
+    """ログイン手続きのプロセスが生きているか、何を出しているかを見る（読むだけ・待たない）。"""
+    r = run(["pgrep", "-fl", "setup-token"], timeout=10)
+    alive = (r.stdout or "").strip() if r else ""
+    log = os.path.join(REPO, "status", "auth_login.log")
+    tail = ""
+    try:
+        with open(log, "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 800))
+            tail = f.read().decode("utf-8", "ignore")
+    except Exception:
+        pass
+    return "done", ("生きているプロセス: %s ／ ログ末尾: %s" % (alive or "なし", tail.replace("\n", " ")))[:900]
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -686,6 +703,8 @@ def _process_other(action, cmd):
         return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
+    if action == "auth_ps":
+        return auth_ps(target)
     if action == "auth_login_start":
         return auth_login_start(target)
     if action == "auth_login_url":
