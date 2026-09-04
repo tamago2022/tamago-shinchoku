@@ -258,6 +258,12 @@ def main():
     if harvest(q):
         q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
         json.dump(q, io.open(QUEUE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    # 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かないよ」（火曜まで残り14%）
+    #   → status/no_launch.flag があるあいだは**1本も発車させない**。
+    #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。
+    #     再開はこのファイルを消すだけ。
+    if os.path.exists(os.path.join(REPO, "status", "no_launch.flag")):
+        return 0
     m = load(MACHINE, {})
     quota = load(QUOTA, {})
 
@@ -286,6 +292,10 @@ def main():
     if safe_max is None:
         log("見送り: safeMaxが取れない")
         return 0
+    # たまごさんが進捗表で決めた「同時に走る本数」。マシンの安全上限より小さい方を採る。
+    cap = (load(os.path.join(REPO, "status", "launch_cap.json"), {}) or {}).get("cap")
+    if isinstance(cap, int):
+        safe_max = min(safe_max, cap)
     if alive >= safe_max:
         log("見送り: 走行%d本／上限%d本（空きなし）" % (alive, safe_max))
         return 0

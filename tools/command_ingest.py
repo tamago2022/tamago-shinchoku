@@ -28,6 +28,7 @@ PWAの「リモコン」ボタンから来たコマンドを実行する（2026-
 受信ファイルは消さない（記録として残す）。commands.jsonに書いたidは二重実行しない。
 """
 import glob
+import io
 import json
 import os
 import re
@@ -333,6 +334,39 @@ def queue_prio(target):
     return "failed", "%d番がqueue.jsonに見つかりません" % n
 
 
+def _repo_status(name):
+    return os.path.join(REPO, "status", name)
+
+
+def launch_switch(on):
+    """発車のもと栓。2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かなきゃいけないのに寄り道してる」
+
+    止めているあいだも、終わったものの回収・判定・繰り上げの順番は動く。燃料だけ使わない。
+    """
+    flag = _repo_status("no_launch.flag")
+    if on:
+        try:
+            os.remove(flag)
+        except Exception:
+            pass
+        return "done", "発車を再開しました"
+    with io.open(flag, "w", encoding="utf-8") as f:
+        f.write("たまごさんが進捗表から止めました %s\n" % time.strftime("%Y-%m-%d %H:%M"))
+    return "done", "発車を止めました（走っているものはそのまま）"
+
+
+def launch_cap(target):
+    """同時に走らせる本数の上限。少ないクレジットを何本に配るかをたまごさんが決める。"""
+    try:
+        n = int(target)
+    except Exception:
+        return "failed", "本数が不正: %r" % target
+    n = max(0, min(6, n))
+    with io.open(_repo_status("launch_cap.json"), "w", encoding="utf-8") as f:
+        json.dump({"cap": n, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")}, f, ensure_ascii=False, indent=1)
+    return "done", "同時に走る本数を%d本にしました" % n
+
+
 def process(cmd):
     action = cmd.get("action")
     target = cmd.get("target")
@@ -354,6 +388,12 @@ def process(cmd):
         return queue_prio(target)
     if action == "queue_later":
         return queue_later(target)
+    if action == "launch_pause":
+        return launch_switch(False)
+    if action == "launch_resume":
+        return launch_switch(True)
+    if action == "launch_cap":
+        return launch_cap(target)
     return "failed", "不明なアクション: %s" % action
 
 

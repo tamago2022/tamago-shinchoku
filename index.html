@@ -212,6 +212,12 @@
      border-radius:10px; padding:9px 11px; margin:6px 0; white-space:pre-wrap; max-height:9em; overflow:auto;}
   .cu{display:block; font-size:0.78rem; margin:3px 0; word-break:break-all;}
   /* 2026-09-04 判定を4つに増やしたので、2列で折り返す（1行4つは指が当たらない） */
+  #fuelBox .fuel{min-height:44px; padding:0 14px; border-radius:10px; font-weight:800; font-size:0.9rem;
+    border:1px solid var(--green); background:var(--green); color:#12161c;}
+  #fuelBox .fuel.off{background:#3a1f1f; color:#ffb3a7; border-color:rgba(255,120,100,0.5);}
+  #fuelBox .cap{min-width:44px; min-height:38px; border-radius:10px; border:1px solid var(--line);
+    background:#1a2028; color:var(--sub); font-weight:700;}
+  #fuelBox .cap.on{background:var(--accent,#5fd996); color:#12161c; border-color:var(--accent,#5fd996);}
   .cbtns{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;}
   .cbtns button{min-height:44px; border-radius:10px; font-weight:700; font-size:0.82rem; border:1px solid var(--line);}
   .cok{background:var(--green); color:#12161c; border-color:var(--green)!important;}
@@ -317,6 +323,23 @@
 <details class="sec queue" id="queueSec" open><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in">
 <!-- 2026-09-04 たまごさん「進捗表に入力欄を作り、そこに書いた1行がそのまま発車待ちの列に入るように。優先度も同時に付けられる」
      obsidian://new → Vault → Mac側 command_ingest.py の queue_add アクションで status/queue.json に直接1件追加する。 -->
+<!-- 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かなきゃいけないのに寄り道してる。
+     クレジットが天井行かないようにバランスを取らないとダメ」
+     → 発車のもと栓と、同時に走る本数を、たまごさんが手元で決められるようにした。
+       止めているあいだも、終わったものの回収・判定・繰り上げは動く。燃料だけ使わない。 -->
+<div class="addbox" id="fuelBox">
+  <div class="addrow">
+    <button type="button" class="fuel" id="fuelToggle">発車を止める</button>
+    <span class="addMsg" id="fuelMsg" style="flex:1"></span>
+  </div>
+  <div class="addrow">
+    <span class="addMsg">同時に走る本数</span>
+    <button type="button" class="cap" data-cap="1">1</button>
+    <button type="button" class="cap" data-cap="2">2</button>
+    <button type="button" class="cap" data-cap="3">3</button>
+    <button type="button" class="cap" data-cap="4">4</button>
+  </div>
+</div>
 <div class="addbox" id="queueAddBox">
   <input type="text" id="qaText" maxlength="200" placeholder="思いついたことを1行で（例：〇〇のバグを直す）" autocomplete="off">
   <div class="addrow">
@@ -1028,6 +1051,36 @@ function renderQueue(){
     </div>`;
   }).join("");
 }
+/* ───── 燃料の栓（発車の停止・再開／同時本数）───── */
+let FUEL_ON = true, FUEL_CAP = null;
+function renderFuel(){
+  const b = document.getElementById("fuelToggle"), msg = document.getElementById("fuelMsg");
+  if(b){ b.textContent = FUEL_ON ? "⏸ 発車を止める" : "▶ 発車を出す"; b.classList.toggle("off", !FUEL_ON); }
+  if(msg) msg.textContent = FUEL_ON ? "発車中（空いたら次が出ます）" : "止まっています（判定と繰り上げは動きます）";
+  document.querySelectorAll("#fuelBox .cap").forEach(x=>x.classList.toggle("on", +x.dataset.cap === FUEL_CAP));
+}
+function refreshFuel(){
+  return Promise.all([
+    fetch("status/launch_cap.json?t=" + Date.now(), {cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch("status/no_launch.flag?t=" + Date.now(), {cache:"no-store"}).then(r=>r.ok).catch(()=>false),
+  ]).then(([cap, paused])=>{ FUEL_CAP = cap && typeof cap.cap === "number" ? cap.cap : null; FUEL_ON = !paused; renderFuel(); });
+}
+refreshFuel();
+setInterval(refreshFuel, 60000);
+document.addEventListener("click", e=>{
+  const t = e.target.closest("#fuelToggle");
+  if(t){
+    FUEL_ON = !FUEL_ON; renderFuel();
+    sendCommandWithId("f" + Date.now().toString(36), FUEL_ON ? "launch_resume" : "launch_pause", "1",
+      FUEL_ON ? "▶ 発車を出す" : "⏸ 発車を止める");
+    return;
+  }
+  const c = e.target.closest("#fuelBox .cap");
+  if(c){
+    FUEL_CAP = +c.dataset.cap; renderFuel();
+    sendCommandWithId("k" + Date.now().toString(36), "launch_cap", String(FUEL_CAP), "同時" + FUEL_CAP + "本");
+  }
+});
 const QP_TIMER = {};   // Pの連打をまとめるためのタイマー置き場
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-qp]"); if(!b) return;
