@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-04 17:46",
+ "updatedAt": "2026-09-04 17:47",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -350,13 +350,21 @@
    "why": "実在の人物なのにページがない",
    "what": "Vulfmon＝VulfpeckのJack Strattonのソロ名義。Tommy de Bourbonはペダルスティール奏者。識別子で裏取りしてからページを作る。公式チャンネルへのリンクを必ず置く。個人の生年は書かない。",
    "n": 23,
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q23-0904",
    "startedAt": "2026-09-04T17:25:12+09:00",
    "sessionId": "1c16e056-d229-47c0-9894-315307ffa377",
-   "pid": 42757
+   "finishedAt": "2026-09-04T17:47:12+09:00",
+   "result": "（結果が読み取れませんでした）",
+   "urls": [
+    "https://www.youtube.com/results?search_query=Vulfmon+official",
+    "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&format=json",
+    "https://example.com",
+    "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DDEsKgbYs9Mc&format=json",
+    "https://www.youtube.com/@Vulfmon"
+   ]
   },
   {
    "title": "確認待ちを進捗表に出して、OK／やり直しを押せるようにする",
@@ -382,56 +390,75 @@
    "why": "デジタルのツルツル感を消したい",
    "what": "樹脂粘土や木彫りの肌、ガラスビーズの目、パペットの合わせ目、ミニチュア用の荒い布地、白熱球のスタジオ照明、フィルムの粒子感。粘土に残る指紋、フェルトのけば立ち。こうした『触れる質量感』の指定を型にまとめ、画像生成のときに毎回使えるようにする。",
    "n": 25,
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q25-0904",
    "startedAt": "2026-09-04T17:25:23+09:00",
    "sessionId": "61b17145-9dde-42c6-a9d2-02ae80e63786",
-   "pid": 42842
+   "finishedAt": "2026-09-04T17:47:12+09:00",
+   "result": "mainへの反映は完了し、Lovableの公開スクリプト（`node scripts/patrol/lovable-publish.mjs`）をバックグラウンドで実行中です。完了通知が来次第、本番URLを実測して報告します。\n\n現在地（途中経過）：\n- ① 実装：`src/lib/aiImageTextureGuides.ts`（新規・AI臭さを消す質感の指示書 `STOPMOTION_PUPPET_TEXTURE_GUIDE`）／`src/lib/henshin.functions.ts`（変身写真の画像生成に`themeStyle`を追加し、指定時はこの質感指示書へ差し替え）／`src/routes/room.henshin.tsx`（実演として新テーマ「人形劇の救助隊員」を1件追加）\n- 型チェック・ビルドとも新規エラーなし確認済み\n- ② main合流済み（コミット`d5f91a6c`）\n- ③ Lovable公開：実行中（バックグラウンド）\n- ④⑤ 本番URL確認・報告：未着手（公開完了後に実施）",
+   "urls": []
   },
   {
    "title": "止まっているタスク56件から、確認だけで閉じられるものを拾う",
    "why": "台帳が着手中のまま動いていないものが56件",
    "what": "『止まっている（台帳は着手中）』の56件を1件ずつ見て、実は本番に出ていて確認するだけで閉じられるものを探す。確認して本番URLを出すだけで1本減る。",
    "n": 26,
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q26-0904",
    "startedAt": "2026-09-04T17:27:30+09:00",
    "sessionId": "10ca8fc6-ffc6-4b02-8f91-4cd73519d972",
-   "pid": 43556
+   "finishedAt": "2026-09-04T17:47:12+09:00",
+   "result": "【完了】止まっていた台帳15件（#39/47/48/66/71/72/75/84/86/89/99/123/124/125/126）は実装済みで既に本番公開済みと実測確認、台帳を「✅本番反映済み・たまご確認待ち」へ更新しmainへ反映（コミットc1ee1bb7、追加のコード変更なし）\n\n確認済み本番URL（各ページで実測）：\n- https://joy-relief-station.lovable.app/cover-guide?artist=ging-nang-boyz （#39 フジロック仕入れ）\n- https://joy-relief-station.lovable.app/room/card/alinea-paint （#47 宿棚基準）\n- https://joy-relief-station.lovable.app/cover-guide?artist=tomoko-aran （#48 Midnight Pretenders）\n- https://joy-relief-station.lovable.app/cover-guide?artist=inoue-yousui （#66 少年時代CM接続）\n- https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria （#71/#72 Tania Maria）\n- https://joy-relief-station.lovable.app/room/card/maldon-sea-salt-125g （#75 マルドン）\n- https://joy-relief-station.lovable.app/cover-guide?artist=akiko （#84 生年削除）\n- https://joy-relief-station.lovable.app/room/card/cm-coke-1987 （#86 宿棚基準2/3弾）\n- https://joy-relief-station.lovable.app/cover-guide?artist=aretha （#89 Aretha書き直し）\n- https://joy-relief-station.lovable.app/room/card/cedarfarm-shiozuke-nama-kosho （#99 修理）\n- https://joy-relief-station.lovable.app/cover-guide?artist=mondo-grosso （#123 満島ひかり修正）\n- https://joy-relief-station.lovable.app/cover-guide?artist=ishiyama-anju （#124 石山アンジュ）\n- ",
+   "urls": [
+    "https://joy-relief-station.lovable.app/cover-guide?artist=ging-nang-boyz",
+    "https://joy-relief-station.lovable.app/room/card/alinea-paint",
+    "https://joy-relief-station.lovable.app/cover-guide?artist=tomoko-aran",
+    "https://joy-relief-station.lovable.app/cover-guide?artist=inoue-yousui",
+    "https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria"
+   ]
   },
   {
    "title": "デスクトップとダウンロードの散らかりを片づける",
    "why": "AIが作ったファイルが散らばっている",
    "what": "AIの作業ファイルはデスクトップに置かない、という決まりがある。散らばっているものを Documents/AI作業 かVaultへ移す。削除はせず移動のみ。何をどこへ動かしたかの一覧を残す。",
    "n": 27,
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
-   "worktree": "q27-0904"
+   "worktree": "q27-0904",
+   "startedAt": "2026-09-04T17:47:16+09:00",
+   "sessionId": "4884f463-e8ee-4c56-a7d3-7b78bb009791",
+   "pid": 47577
   },
   {
    "title": "Eagleギャラリーにフォルダ絞り込みを足す",
    "why": "1147件を探すのにタグだけでは足りない",
    "what": "スマホ用のEagleギャラリーに、Eagle側のフォルダ構造（参考/可愛い、映画/シーン別 など133フォルダ）で絞り込めるようにする。いまは名前とタグの検索だけ。",
    "n": 28,
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
-   "worktree": "q28-0904"
+   "worktree": "q28-0904",
+   "startedAt": "2026-09-04T17:47:21+09:00",
+   "sessionId": "451e20cc-21ab-4601-9b27-c6a95a3f0518",
+   "pid": 47592
   },
   {
    "title": "ドラマ主題歌22件を『ドラマ』棚へ移す",
    "why": "映画の棚にドラマが混ざっている",
    "what": "映画の棚50枚の中に、テレビドラマの主題歌（ミステリと言う勿れ、朝ドラおひさま など）が混ざっている。ドラマの棚を作ってそちらへ移し、映画の棚は映画だけにする。",
    "n": 29,
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
-   "worktree": "q29-0904"
+   "worktree": "q29-0904",
+   "startedAt": "2026-09-04T17:47:27+09:00",
+   "sessionId": "f8979e19-ae49-47f0-b0a4-039c8aa067df",
+   "pid": 47632
   }
  ]
 }
