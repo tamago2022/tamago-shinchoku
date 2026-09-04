@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-04 13:18",
+ "updatedAt": "2026-09-04 13:24",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -33,11 +33,11 @@
    "priority": 1,
    "rank": 24,
    "task": "指示待ちで止まる（作法/仕組み）",
-   "state": "検証待ち",
-   "owner": "T024-verify-0904",
+   "state": "作業中",
+   "owner": "wd_123cf6c2",
    "count": "13",
-   "updatedAt": "2026-09-04 13:16",
-   "note": "穴1:Dispatch直接会話は回復層で明示除外(decide()のdispatchParentId必須)確認・設計案のみ未実装(衝突回避)/穴2:dispatch-session-sweepは幽霊確認・真の重複はwatchdog.ignite()とrusuban手順4で安全な冗長設計・AGENTS.md訂正済み/穴3:見張り番ログで9件2系統(09-03 01:15〜09-04 11:45)だが穴1由来で下限値。詳細:AI出力/_ルール/T024_指示待ちで止まる_残穴3件_2026-09-04.md [実装:rusuban_0904_1145]",
+   "updatedAt": "2026-09-04 13:24",
+   "note": "検証結果:穴1〜3の事実確認は全て一次証拠で一致(send_message説明文/decide()コード/AGENTS.md/scheduled-tasks一覧/見張り番ログ件数9・13を実地再確認済み)。ただし穴1=本題の核(Dispatch本体は回復層対象外)の修正が未実装のまま(is_dispatch_self/user_activeはfactory_status.pyに実装済みだがsession_watchdog.py decide()に未配線)。仕組み化未完了のため完了不可。次の一手:decide()にis_dispatch_self()+user_activeゲート分岐を追加実装してから再度検証待ちへ。詳細=AI出力/_ルール/T024_指示待ちで止まる_残穴3件_2026-09-04.md",
    "stale": false
   },
   {
