@@ -1127,7 +1127,8 @@ document.addEventListener("click", e=>{
   if(!it) return;
   it.status = (kind === "later") ? "later" : (ok ? "done" : "waiting");   // 「とりあえずOK」は後回しボックスへ
   it.checkedAt = new Date().toISOString();
-  if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; it.priority = 1;   // やり直しは常に今すぐ＝列の先頭 }
+  // やり直しは常に「今すぐ」＝列の先頭（P1）。「後ろでいい」は「あとで」に統合した
+  if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; it.priority = 1; }
   // 端末内にも一応残す（監査用。実際の反映先は下のObsidian経由）
   try{
     const k = "shinchoku_check_v1";

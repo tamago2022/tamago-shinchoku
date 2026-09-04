@@ -82,7 +82,7 @@ QUEUE_LOCK = os.path.join(REPO, "status", ".queue.lock")
 
 
 @contextmanager
-def queue_lock(timeout=10.0):
+def queue_lock(timeout=180.0):
     f = io.open(QUEUE_LOCK, "a+")
     t0 = time.time()
     while True:
@@ -91,7 +91,10 @@ def queue_lock(timeout=10.0):
             break
         except Exception:
             if time.time() - t0 > timeout:
-                break          # 取れなくても止まらない（工場を止めない方を優先）
+                # 2026-09-05 ここで諦めて突入すると**同じ番号を2回発車してクレジットが二重に減る**
+                #   （実測：05:21に3件が二重に出た）。取れないなら、今回は何もしないで帰る。
+                log("鍵が取れないので今回は見送り（二重発車を防ぐ）")
+                raise RuntimeError("queue_lock timeout")
             time.sleep(0.05)
     try:
         yield
@@ -428,6 +431,14 @@ def main():
 
 
 def launch_one(item, q, alive, safe_max):
+    # 2026-09-05 二重発車の防止（実測：05:21に同じ番号が2回出てクレジットが二重に減った）。
+    #   鍵の取り合いに負けた側が古い台帳で走らないよう、着火の直前にもう一度いまの状態を見る。
+    fresh = load(QUEUE, {})
+    for _x in (fresh.get("items") or []):
+        if _x.get("n") == item.get("n") and _x.get("status") != "waiting":
+            log("二重発車を止めました %s番（いまの状態=%s）" % (item.get("n"), _x.get("status")))
+            return False
+
     # ---- テスト用のカラ発車（クレジットを1円も使わない）----
     # 2026-09-04 たまごさん「3分で終わるセッションをくるくる回してテストしたい。
     #   中身はなんでもいい。3分で終わって完了報告がDispatchに来る、最低限の動作確認」
@@ -564,4 +575,8 @@ def launch_one(item, q, alive, safe_max):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except RuntimeError:
+        # 鍵が取れなかっただけ。次の15秒後にまた来る（工場は止めない）
+        sys.exit(0)
