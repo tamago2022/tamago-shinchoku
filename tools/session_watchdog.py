@@ -70,6 +70,12 @@ MAX_PER_RUN = 2
 HANDOFF_HOURS = 3
 HANDOFF_TURNS = 100
 MAX_HANDOFF_PER_RUN = 1
+# 2026-09-04 たまごさん34番「3時間を超えたセッションを自動で切る」への対応。
+# 既存の HANDOFF_HOURS は s["idle"]（放置＝止まっている時間）にしか効かない。decide() は
+# s["idle"] < STALL_MIN（15分）なら即 return するので、ターンを出し続けている＝作業中のセッションは
+# 何時間走っても一生この分岐へ届かない（＝「指示文には3時間で切れと書いてあるが守られないことがある」の正体）。
+# WALLCLOCK_LIMIT_MIN はセッション開始からの経過時間（idleとは無関係）を見て、作業中でも問答無用で切る。
+WALLCLOCK_LIMIT_MIN = HANDOFF_HOURS * 60
 MAX_IDLE_HOURS = 24
 COOLDOWN_MIN = 20
 IGNITE_INTERVAL_MIN = 10
@@ -279,8 +285,10 @@ def sessions_with_transcript():
         kind, tail = mod.classify(s.get("transcript"), s.get("idle"))
         tr = s.get("transcript")
         cli = os.path.basename(tr)[:-6] if tr and tr.endswith(".jsonl") else None
+        started = s.get("start")  # ps/kanshi起動時刻（machine.jsonのelapsedMinと同じ算出元）
         out.append({"pid": int(s["pid"]), "cli": cli, "idle": s.get("idle"), "kind": kind, "transcript": tr,
-                    "headless": bool(s.get("headless"))})
+                    "headless": bool(s.get("headless")),
+                    "elapsedMin": ((time.time() - started) / 60.0) if started else None})
     return out
 
 
@@ -326,7 +334,7 @@ def standard_six():
 
 
 def decide(s, meta, scan, state, user_active=False):
-    """(動作, 理由)  None / "resume" / "handoff" """
+    """(動作, 理由)  None / "resume" / "handoff" / "hardcut"（壁時計3時間・idle無関係の強制カット）"""
     if not s["cli"] or not meta:
         return None, "会話ログ/管理JSONと突合できない"
     if meta.get("archived"):
@@ -353,6 +361,10 @@ def decide(s, meta, scan, state, user_active=False):
     st = state.get(s["cli"], {})
     if st.get("handedOff"):
         return None, "引き継ぎ済み→%s" % str(st["handedOff"])[:8]
+    em = s.get("elapsedMin")
+    if em is not None and em >= WALLCLOCK_LIMIT_MIN:
+        # idleを見ない＝作業中でも容赦なく切る。ここが本題（34番）。以降の idle 系分岐より必ず先に判定する。
+        return "hardcut", "壁時計%.1f時間経過（作業中でも強制カット。指示文の『3時間で切れ』が自己申告で守られない対策）" % (em / 60)
     if s["idle"] is None:
         return None, "動きの時刻が取れない"
     if s["idle"] < STALL_MIN:
@@ -454,7 +466,16 @@ def resume(cli, cwd):
     return spawn(cmd + [RESUME_MSG], cwd, "watchdog-resume-%s.log" % cli[:8], "resume " + cli)
 
 
-def handoff(s, meta, scan, why):
+def session_urls(cli, machine):
+    """34番「そこまでの成果とURLを回収」：factory_status.py が5分おきにmachine.jsonへ書いている
+    urls／deployUrls（会話全体からURL_PATで拾い済み）をcliで突合して引き継ぎ文へ載せる。取れなければ空。"""
+    for row in (machine.get("sessionList") or []):
+        if row.get("cli") == cli:
+            return list(dict.fromkeys((row.get("urls") or []) + (row.get("deployUrls") or [])))
+    return []
+
+
+def handoff(s, meta, scan, why, urls=None):
     cli = s["cli"]
     new_id = str(uuid.uuid4())
     me_new = "wd_" + new_id[:8]
@@ -463,13 +484,15 @@ def handoff(s, meta, scan, why):
     wb_lines = "\n".join("- %s %s ｜ 完了条件／次の一手: %s" % (r["id"], r["task"], r["next"]) for r in rows) or "- （ホワイトボードに担当行なし）"
     tried = "\n".join("- " + x for x in (scan["tried"] + scan["errors"])) or "- （記録なし）"
     done_cond = rows[0]["next"] if rows else (scan["firstUser"][:200] or "（最初の指示を参照）")
+    url_lines = "\n".join("- " + u for u in (urls or [])) or "- （会話中にURLの記載なし）"
     os.makedirs(HANDOFF_DIR, exist_ok=True)
     path = os.path.join(HANDOFF_DIR, "%s_%s.md" % (time.strftime("%Y%m%d_%H%M"), cli[:8]))
     body = ("# 自動引き継ぎ %s ← 「%s」(%s)\n\n理由: %s（%dターン）\n\n## 最初の指示（何の仕事か）\n\n%s\n\n"
-            "## どこまで終わったか（前のセッションの最後の報告）\n\n%s\n\n## 次に何をするか（ホワイトボードの担当行）\n\n%s\n\n"
+            "## どこまで終わったか（前のセッションの最後の報告）\n\n%s\n\n## この時点までに確認できたURL（成果の回収）\n\n%s\n\n"
+            "## 次に何をするか（ホワイトボードの担当行）\n\n%s\n\n"
             "## 何を試して何がダメだったか（同じ失敗を繰り返さない）\n\n%s\n\n## 完了条件（1行）\n\n%s\n\n## 新しいセッション\n\n- session-id: `%s`（ホワイトボード上のID: %s）\n- cwd: `%s`\n"
             % (now(), title, cli[:8], why, scan["turns"], scan["firstUser"] or "（不明）", scan["lastText"][-900:] or "（文章なし）",
-               wb_lines, tried, done_cond, new_id, me_new, meta.get("cwd")))
+               url_lines, wb_lines, tried, done_cond, new_id, me_new, meta.get("cwd")))
     try:
         with open(path, "w", encoding="utf-8") as f:
             f.write(body)
@@ -601,7 +624,7 @@ def scan_crashed_desktop_sessions(live_clis, state=None):
 def main():
     dry = "--dry-run" in sys.argv
     state = load_json(STATE_JSON, {})
-    totals = state.setdefault("_totals", {"stalls": 0, "autoResumes": 0, "handoffs": 0, "ignitions": 0, "gated": 0})
+    totals = state.setdefault("_totals", {"stalls": 0, "autoResumes": 0, "handoffs": 0, "ignitions": 0, "gated": 0, "hardCuts": 0})
     if "--status" in sys.argv:
         print(json.dumps(state, ensure_ascii=False, indent=1)); return 0
     machine = load_json(MACHINE_JSON, {})
@@ -636,13 +659,37 @@ def main():
                 skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の引き継ぎ上限／headless %d本" % headless_alive}); continue
             if dry:
                 handed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "dry": True}); h += 1; continue
-            new_id, pid, path = handoff(s, meta, scan, why)
+            new_id, pid, path = handoff(s, meta, scan, why, urls=session_urls(s["cli"], machine))
             st["handedOff"] = new_id or "failed"; st["handedOffAt"] = time.time(); st["title"] = title
             totals["handoffs"] += 1; headless_alive += 1
             unrec.append({"cli": s["cli"], "title": title, "idleMin": round(s["idle"] or 0), "handedOffTo": new_id})
             handed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "newSession": new_id, "newPid": pid, "handoffFile": path})
             append(LOG_MD, "- %s 🔁 引き継ぎ: 「%s」(%s) 理由=%s → 新セッション %s（%s）" % (now(), title, s["cli"][:8], why, (new_id or "起動失敗")[:8], os.path.basename(path)))
             append(DISPATCH_INBOX, "| %s | 見張り番: 「%s」(%s) を自動引き継ぎ（%s）→ 新セッション %s。前のセッションは畳んでよい | 記録のみ・判断不要 |" % (now(), title, s["cli"][:8], why, (new_id or "起動失敗")[:8]))
+            h += 1; continue
+        if action == "hardcut":
+            # 34番「3時間を超えたセッションを自動で切る」。作業中でも問答無用でSIGTERM→そこまでの成果(scan)と
+            # URL(machine.sessionListのurls/deployUrls)を引き継ぎ文へ回収→handoff()で新セッションへ列を戻す。
+            if h >= MAX_HANDOFF_PER_RUN or headless_alive >= MAX_HEADLESS:
+                skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の引き継ぎ上限／headless %d本" % headless_alive}); continue
+            if dry:
+                handed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "dry": True, "hardcut": True}); h += 1; continue
+            try:
+                os.kill(s["pid"], 15)
+                killed = True
+            except Exception as e:
+                killed = False
+                append(LOG_MD, "- %s ⚠ 強制カットのkill失敗 pid %s（%s）：引き継ぎだけ実行" % (now(), s["pid"], e))
+            new_id, pid, path = handoff(s, meta, scan, why, urls=session_urls(s["cli"], machine))
+            st["handedOff"] = new_id or "failed"; st["handedOffAt"] = time.time(); st["title"] = title
+            totals["handoffs"] += 1; totals["hardCuts"] = totals.get("hardCuts", 0) + 1; headless_alive += 1
+            unrec.append({"cli": s["cli"], "title": title, "idleMin": round(s["idle"] or 0), "handedOffTo": new_id})
+            handed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "newSession": new_id,
+                           "newPid": pid, "handoffFile": path, "hardcut": True, "killed": killed})
+            append(LOG_MD, "- %s ✂️ 3時間強制カット: 「%s」(%s) 理由=%s pid%s%s → 新セッション %s（%s）" %
+                   (now(), title, s["cli"][:8], why, s["pid"], "をkill" if killed else "kill失敗", (new_id or "起動失敗")[:8], os.path.basename(path)))
+            append(DISPATCH_INBOX, "| %s | 見張り番: 「%s」(%s) を壁時計3時間で強制カット（作業中でもkill）→ 新セッション %s。前のセッションは畳んでよい | 記録のみ・判断不要 |" %
+                   (now(), title, s["cli"][:8], (new_id or "起動失敗")[:8]))
             h += 1; continue
         if not is_essential(title, cfg) and (alive_snapshot + resumed_live) >= MAX_CONCURRENT:
             append(LOG_MD, "- %s ⏸ 再開見送り: 「%s」(%s) %s だが同時上限%d本に到達（生存%d本）" % (now(), title, s["cli"][:8], why, MAX_CONCURRENT, alive_snapshot + resumed_live))
@@ -688,7 +735,7 @@ def main():
             scan = scan_transcript(tpath) if tpath else {"turns": 0, "lastText": "", "firstUser": "", "errors": [], "tried": []}
             meta = {"local": None, "title": c["title"], "cwd": c.get("cwd")}
             why = "%d回再開しても再クラッシュ(%s)" % (st["tries"], c.get("errorCategory") or "process_interrupted")
-            new_id, pid, path = handoff({"cli": c["cli"]}, meta, scan, why)
+            new_id, pid, path = handoff({"cli": c["cli"]}, meta, scan, why, urls=session_urls(c["cli"], machine))
             st["handedOff"] = new_id or "failed"; st["handedOffAt"] = time.time(); st["title"] = c["title"]
             totals["stalls"] += 1; totals["handoffs"] += 1; headless_alive += 1
             unrec.append({"cli": c["cli"], "title": c["title"], "idleMin": round(c["idleMin"] or 0), "handedOffTo": new_id})
@@ -793,6 +840,7 @@ def main():
         done = [x for x in sl if x.get("done")]
         auto = [x for x in done if (x.get("humanPushes", 0) + x.get("dispatchPushes", 0)) == 0]
         machine["metrics"] = {"stalls": totals["stalls"], "autoResumes": totals["autoResumes"], "handoffs": totals["handoffs"],
+                              "hardCuts": totals.get("hardCuts", 0),  # 34番：壁時計3時間で強制カットした累計本数
                               "ignitions": totals["ignitions"], "gated": totals["gated"],
                               # 2026-09-03 累計(上のautoResumes等)だけだと「このサイクルは動いたか」が分からず、
                               # 5分ごとの偶然0件を「壊れている」と誤読される（実例：nRes=直近のみのPWA表示が0でも累計は伸びていた）。
