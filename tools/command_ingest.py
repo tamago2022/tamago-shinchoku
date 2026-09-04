@@ -246,6 +246,34 @@ def queue_redo(target):
     return "done", "%d番を列の先頭（次に発車）へ戻しました" % n
 
 
+def queue_prio(target):
+    """進捗表「🚏次に発車」の行のPボタン → その番号の優先度を queue.json に書き込む。
+
+    2026-09-04 たまごさん「そこにも俺、優先順位つけるよ」。
+    これまでPボタンは端末の中（localStorage）にしか残らず、**Mac側の発車順には
+    一切効いていなかった**。押した意味が無い状態だったので、他のボタンと同じ
+    obsidian経由の指示に乗せ、queue.json の item.priority を直接書き換える。
+    target は "37:1"（番号:優先度）。優先度0は「Pを外す」。
+    """
+    try:
+        s = str(target)
+        n_s, p_s = s.split(":", 1)
+        n, p = int(n_s), int(p_s)
+    except Exception:
+        return "failed", "指定が不正: %r（番号:優先度 の形で渡す）" % target
+    q = _load_queue()
+    for it in q.get("items") or []:
+        if it.get("n") == n:
+            if p:
+                it["priority"] = p
+            else:
+                it.pop("priority", None)
+            q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+            _save_queue(q)
+            return "done", "%d番の優先度を%sにしました" % (n, ("P%d" % p) if p else "なし")
+    return "failed", "%d番がqueue.jsonに見つかりません" % n
+
+
 def process(cmd):
     action = cmd.get("action")
     target = cmd.get("target")
@@ -263,6 +291,8 @@ def process(cmd):
         return queue_redo(target)
     if action == "queue_add":
         return queue_add(target, cmd.get("priority"))
+    if action == "queue_prio":
+        return queue_prio(target)
     return "failed", "不明なアクション: %s" % action
 
 

@@ -844,7 +844,11 @@ function renderQueue(){
   // 2026-09-04 正本を queue.json に移した（auto_launcher.py が着火して status を書き換える）。
   //   data.js 側は残置。waiting のものだけを「次に発車」として出す。
   const all = (window.__queue && window.__queue.items) || (window.DATA && DATA.queue) || [];
-  const rows = all.filter(r => (r.status || "waiting") === "waiting");
+  // 2026-09-04 発車の順番と画面の並びを一致させる（auto_launcher.py の rank と同じ規則）。
+  //   ここがバラバラだと「次」と書いてあるものと実際に発車するものが食い違う。
+  const rows = all.filter(r => (r.status || "waiting") === "waiting")
+    .map(r => Object.assign({}, r, {_p: (prioOf("Q" + r.n) || r.priority || 99)}))
+    .sort((a,b) => (a._p - b._p) || (a.n - b.n));
   if(!box) return;
   document.getElementById("queueMeta").textContent =
     rows.length ? `${rows.length}件${DATA.queueUpdatedAt ? "・" + formatStamp(DATA.queueUpdatedAt) : ""}` : "";
@@ -853,9 +857,9 @@ function renderQueue(){
   //   1から20番で全部トグルで閉じて、スクショとか載せられると」
   //   → 1行ごとに畳んだ説明（what）を持たせた。タップで開く。
   box.innerHTML = rows.map((r,i)=>{
-    const p = prioOf("Q" + r.n);
+    const p = prioOf("Q" + r.n) || r.priority || 0;
     return `<div class="qrow${i===0 ? " next" : ""}">
-      <span class="qn">${i===0 ? "次" : r.n}</span>
+      <span class="qn">${i===0 ? "次" : (i+1)}</span>
       <span class="qbody">
         <details class="qd"><summary><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
           <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>
@@ -865,13 +869,26 @@ function renderQueue(){
     </div>`;
   }).join("");
 }
+const QP_TIMER = {};   // Pの連打をまとめるためのタイマー置き場
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-qp]"); if(!b) return;
-  const cur = prioOf("Q" + b.dataset.qp) || 0;
+  const n = b.dataset.qp;
+  const it = ((window.__queue && window.__queue.items) || []).find(x => String(x.n) === String(n));
+  const cur = prioOf("Q" + n) || (it && it.priority) || 0;
   const next = cur >= 5 ? 0 : cur + 1;   // タップで 1→2→3→4→5→なし
-  PRIO["Q" + b.dataset.qp] = next ? {p: next, t: new Date().toISOString()} : undefined;
+  PRIO["Q" + n] = next ? {p: next, t: new Date().toISOString()} : undefined;
   savePrio && savePrio();
+  if(it) it.priority = next || undefined;   // 画面をすぐ並べ替える（Mac側の反映を待たない）
   renderQueue();
+  // 2026-09-04 これまでPは端末の中にしか残らず、Mac側の発車順に効いていなかった。
+  //   他のボタンと同じ obsidian 経由の指示に乗せて、queue.json に本当に書き込む。
+  //   Pは 1→2→…→なし と連打で回すので、押し終わってから1.5秒待って1回だけ送る
+  //   （毎回送るとタップのたびにObsidianが開いてしまう）。
+  clearTimeout(QP_TIMER[n]);
+  QP_TIMER[n] = setTimeout(()=>{
+    const p = prioOf("Q" + n) || 0;
+    sendCommandWithId("qp" + n + "-" + Date.now(), "queue_prio", n + ":" + p, "P" + (p || "なし") + " " + n + "番");
+  }, 1500);
 });
 function tickClock(){
   const el = document.getElementById("clock"); if(!el) return;

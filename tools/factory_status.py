@@ -490,8 +490,37 @@ def local_id_index():
     return idx
 
 
+def queue_titles():
+    """発車待ち台帳から「pid／セッションID → 何をやっているか」の表を作る。
+
+    2026-09-04 たまごさん：「今作業中の『題名取得中』っていうのはやめて、
+    何をやってるか明確にしてね」。自動発車したセッションには題名が付かないので、
+    画面側で推測させず**ここで台帳から引き当てて title に入れてしまう**。
+    引き当ての鍵は pid とセッションID（transcriptのファイル名＝cli）の両方。
+    pid は再起動で変わりうるが、セッションIDは変わらないため二重に持つ。
+    """
+    by_pid, by_sid = {}, {}
+    try:
+        with open(os.path.join(REPO, "status", "queue.json"), encoding="utf-8") as f:
+            q = json.load(f)
+        items = q.get("items") if isinstance(q, dict) else q
+        for it in items or []:
+            t = (it.get("title") or "").strip()
+            if not t:
+                continue
+            label = "%s（%s番・自動発車）" % (t, it.get("n"))
+            if it.get("pid"):
+                by_pid[str(it["pid"])] = label
+            if it.get("sessionId"):
+                by_sid[str(it["sessionId"])] = label
+    except Exception:
+        pass
+    return by_pid, by_sid
+
+
 def sessions():
     out = []
+    q_by_pid, q_by_sid = queue_titles()
     watchdog_state = {}
     try:
         with open(os.path.join(REPO, "status", "watchdog-state.json"), encoding="utf-8") as f:
@@ -521,7 +550,12 @@ def sessions():
             "watchdogResumes": max(st["watchdogResumes"], wd.get("tries", 0)),
             "done": st["done"],
             "pid": int(s["pid"]),
-            "title": s.get("title") or "（不明）",
+            "title": (
+                s.get("title")
+                or q_by_sid.get(str(cli or ""))
+                or q_by_pid.get(str(s.get("pid")))
+                or "（不明）"
+            ),
             "dispatch": bool(s.get("dispatch")),
             # 2026-09-03 たまごさん「進捗表と現状がつながるようにして」。
             # Dispatch本体（会話しているこのセッション）は実作業ではないので本数に数えない。
