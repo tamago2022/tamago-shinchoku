@@ -205,6 +205,13 @@
   .qbody{min-width:0; flex:1;}
   .qt{font-size:0.88rem; font-weight:700; line-height:1.35;}
   .qw{font-size:0.72rem; color:var(--sub); margin-top:3px; line-height:1.45;}
+  .qd{min-width:0;}
+  .qd > summary{list-style:none; cursor:pointer; min-width:0;}
+  .qd > summary::-webkit-details-marker{display:none;}
+  .qd > summary::after{content:" ▾"; color:var(--sub); font-size:0.7rem;}
+  .qd[open] > summary::after{content:" ▴";}
+  .qwhat{margin:8px 0 4px; padding:10px 12px; border-radius:10px; background:#161c24; border:1px solid var(--line);
+    font-size:0.8rem; line-height:1.7; color:var(--fg);}
   .qp{flex:none; min-height:36px; min-width:36px; border-radius:9px; border:1px solid var(--line);
     background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
   .qp.on{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
@@ -712,11 +719,18 @@ function renderQueue(){
   document.getElementById("queueMeta").textContent =
     rows.length ? `${rows.length}件${DATA.queueUpdatedAt ? "・" + formatStamp(DATA.queueUpdatedAt) : ""}` : "";
   if(!rows.length){ box.innerHTML = `<div class="card note">発車待ちはありません</div>`; return; }
+  // 2026-09-04 たまごさん「演者が同定されていない、って何のことだろうみたいな。どういうことなのか分かりたいね。
+  //   1から20番で全部トグルで閉じて、スクショとか載せられると」
+  //   → 1行ごとに畳んだ説明（what）を持たせた。タップで開く。
   box.innerHTML = rows.map((r,i)=>{
     const p = prioOf("Q" + r.n);
     return `<div class="qrow${i===0 ? " next" : ""}">
       <span class="qn">${i===0 ? "次" : r.n}</span>
-      <span class="qbody"><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></span>
+      <span class="qbody">
+        <details class="qd"><summary><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
+          <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>
+        </details>
+      </span>
       <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? "P" + p : "P"}</button>
     </div>`;
   }).join("");
