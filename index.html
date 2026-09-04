@@ -419,6 +419,25 @@ const PAGE_BUILD = new URLSearchParams(location.search).get("v") || "";
 </script>
 <script>
 let D = null;
+
+/* 2026-09-05 画面が黙って止まるのをやめる。
+   今日「読み込み中のまま動かない」を何度も出したが、原因は毎回
+   **例外が try/catch に飲まれて誰にも見えていなかった**こと。出す。 */
+function showErr(e){
+  try{
+    let bar = document.getElementById("jsErr");
+    if(!bar){
+      bar = document.createElement("div"); bar.id = "jsErr";
+      bar.style.cssText = "margin:8px 0;padding:8px 12px;border-radius:10px;background:#3a1216;color:#ff9f92;"
+        + "border:1px solid rgba(255,120,100,0.6);font-size:0.74rem;word-break:break-all;";
+      const h1 = document.querySelector("h1");
+      if(h1 && h1.parentNode) h1.parentNode.insertBefore(bar, h1.nextSibling);
+    }
+    bar.textContent = "画面の一部が描けませんでした：" + (e && e.message ? e.message : String(e));
+  }catch(_){}
+}
+window.addEventListener("error", ev => showErr(ev.error || ev.message));
+
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 function formatStamp(iso){
   const d = new Date(iso); if(isNaN(d)) return "—";
@@ -1535,7 +1554,14 @@ function renderMeters(m){
 function refreshMachine(){
   return fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(m => {
-      window.__machine = m; renderMachine(m); renderMeters(m); renderSessions(m); renderNow(m); renderCapBar();
+      // 2026-09-05 たまごさん「稼働中の枠が無くなった／マシンとクレジットが読み込み中のまま」
+      //   原因のかたち：ここは描画を1行に並べていたので、**どれか1つが転ぶと以降が全部描かれない。**
+      //   今日この形のバグを何度も踏んだので、1本ずつ包んで、転んでも残りは描くようにする。
+      window.__machine = m;
+      for(const fn of [() => renderMachine(m), () => renderMeters(m), () => renderSessions(m),
+                       () => renderNow(m), () => renderCapBar()]){
+        try{ fn(); }catch(err){ showErr(err); }
+      }
       // machine.json のセッション生存情報が変わったので、実態判定(緑=今動いている)を使う
       // ホワイトボード・225件セクションも同じデータで引き直す
       if(window.__wbData) renderWhiteboard(window.__wbData);
