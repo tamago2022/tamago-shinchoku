@@ -433,6 +433,57 @@ def _process_queue(action, cmd):
     return "failed", "不明なアクション: %s" % action
 
 
+def git_unlock(_target=None):
+    """置き去りのgitロックを消す（このリポジトリの .git 直下のみ）。
+
+    2026-09-05：Cowork側のサンドボックスから `git add` を叩くと、マウント越しでは
+    `.git/index.lock` を消せず（Operation not permitted）残ってしまい、
+    以後ホスト側の commit/push が全部止まる＝**進捗表が更新されなくなる**。
+    ホスト側で動くこのプロセスなら消せるので、専用の指示を用意した。
+    消すのは「このリポジトリの .git 直下の *.lock と objects の一時ファイル」だけ。
+    """
+    import glob as _glob
+    removed = []
+    for pat in (os.path.join(REPO, ".git", "*.lock"),
+                os.path.join(REPO, ".git", "refs", "**", "*.lock"),
+                os.path.join(REPO, ".git", "objects", "*", "tmp_obj_*")):
+        for f in _glob.glob(pat, recursive=True):
+            try:
+                os.remove(f)
+                removed.append(os.path.relpath(f, REPO))
+            except Exception:
+                pass
+    return "done", ("消しました: %s" % ", ".join(removed[:6])) if removed else ("skipped", "ロックはありませんでした")[1] if False else ("消しました: %s" % ", ".join(removed[:6]) if removed else "ロックはありませんでした")
+
+
+def push_unlock(_target=None):
+    """5分おきの巡回が止まったときに、置き去りのロックを外す。
+
+    2026-09-05：巡回(machine_status_push.sh)は二重起動を防ぐためロックを置くが、
+    途中で死ぬとロックが残り、以後の巡回が全部 exit 0 で素通りして
+    **計測もpushも止まる**（実測：02:42で止まり、進捗表が更新されなくなった）。
+    中のpidが生きていなければ外す。生きているなら触らない。
+    """
+    lock = os.path.join(REPO, "status", ".machine_status_push.lock")
+    if not os.path.exists(lock):
+        return "skipped", "ロックはありません"
+    try:
+        pid = int(open(lock).read().strip())
+    except Exception:
+        pid = None
+    if pid:
+        try:
+            os.kill(pid, 0)
+            return "skipped", "巡回はまだ動いています（pid %d）" % pid
+        except Exception:
+            pass
+    try:
+        os.remove(lock)
+        return "done", "止まった巡回のロックを外しました（pid %s は生きていません）" % pid
+    except Exception as e:
+        return "failed", str(e)
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -443,6 +494,10 @@ def _process_other(action, cmd):
         return stop(target)
     if action == "handoff":
         return handoff(target)
+    if action == "push_unlock":
+        return push_unlock(target)
+    if action == "git_unlock":
+        return git_unlock(target)
     if action == "launch_pause":
         return launch_switch(False)
     if action == "launch_resume":

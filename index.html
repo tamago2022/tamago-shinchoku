@@ -231,6 +231,10 @@
   .mdl.sonnet{background:#122a1f; color:#7ee3ae; border-color:rgba(95,217,150,0.5);}
   .mdl.haiku{background:#122430; color:#8ec9ff; border-color:rgba(120,190,255,0.5);}
   .mdl.test{background:#1a2028; color:var(--sub); border-color:var(--line);}
+  /* 2026-09-05 5段階の箱。上の箱が空になるまで下は出ない（発車の規則と同じ並び） */
+  .qbox{border:1px solid var(--line); border-radius:12px; margin:8px 0; overflow:hidden; background:#141a21;}
+  .qboxh{padding:7px 12px; font-size:0.78rem; font-weight:800; color:var(--sub);
+    background:#111720; border-bottom:1px solid var(--line); letter-spacing:.02em;}
   .qno{display:inline-block; margin-left:6px; font-size:0.7rem; color:var(--sub); font-variant-numeric:tabular-nums;}
   #fuelBox .fuel{min-height:44px; padding:0 14px; border-radius:10px; font-weight:800; font-size:0.9rem;
     border:1px solid var(--green); background:var(--green); color:#12161c;}
@@ -1134,10 +1138,14 @@ function renderQueue(){
   // 2026-09-04 たまごさん「演者が同定されていない、って何のことだろうみたいな。どういうことなのか分かりたいね。
   //   1から20番で全部トグルで閉じて、スクショとか載せられると」
   //   → 1行ごとに畳んだ説明（what）を持たせた。タップで開く。
-  box.innerHTML = rows.map((r,i)=>{
+  // 2026-09-05 たまごさん「1から5までの箱があっていいと思う。**ランキングが低いのが前に出てこないように。
+  //   上のやつが無くなったら上がってくる。**優先度4のやつがいきなり埋めてくるのは困る」
+  //   → 5つの箱に分けて出す。上の箱が空になるまで下の箱からは発車しない（発車の規則も同じ）。
+  const BOX = [[1,"P1 今すぐ"],[2,"P2 高い"],[3,"P3 ふつう"],[4,"P4 低い"],[5,"P5 後回し"],[9,"未設定"]];
+  const rowHtml = (r,i,globalIdx)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
-    return `<div class="qrow${i===0 ? " next" : ""}">
-      <span class="qn">${i===0 ? "次" : (i+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
+    return `<div class="qrow${globalIdx===0 ? " next" : ""}">
+      <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
       <span class="qbody">
         <details class="qd"><summary><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
           <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>
@@ -1145,7 +1153,15 @@ function renderQueue(){
       </span>
       <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? "P" + p : "P"}</button>
     </div>`;
-  }).join("");
+  };
+  let gi = 0, html = "";
+  for(const [lvl, label] of BOX){
+    const inBox = rows.filter(r => ((prioOf("Q" + r.n) || r.priority || 9)) === lvl);
+    if(!inBox.length) continue;
+    html += `<div class="qbox"><div class="qboxh">${label} <b>${inBox.length}</b>件</div>`
+          + inBox.map((r,i)=>rowHtml(r,i,gi++)).join("") + `</div>`;
+  }
+  box.innerHTML = html;
 }
 /* ───── 燃料の栓（発車の停止・再開／同時本数）───── */
 let FUEL_ON = true, FUEL_CAP = null;
