@@ -353,6 +353,12 @@ def main():
       cap = (load(os.path.join(REPO, "status", "launch_cap.json"), {}) or {}).get("cap")
       if isinstance(cap, int):
           safe_max = min(safe_max, cap)
+      # 2026-09-05：発車待ちがテスト（Claudeを起動しない・眠るだけ）しか無いときは、
+      #   マシンの安全上限（Claudeセッションを何本まで抱えられるか）に縛られる意味がない。
+      #   たまごさんの指定本数（cap）だけを見る。実処理はsleepなので負荷はほぼゼロ。
+      only_tests = all(it.get("test") for it in items if it.get("status") == "waiting")
+      if only_tests and isinstance(cap, int):
+          safe_max = cap
       if alive >= safe_max:
           log("見送り: 走行%d本／上限%d本（空きなし）" % (alive, safe_max))
           return 0
