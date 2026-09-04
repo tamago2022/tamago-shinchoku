@@ -346,7 +346,6 @@
 <!-- 2026-09-04 たまごさん「思いついたことを1行で、はもういらない。発車待ちに追加も、もういい。
      ここにタスクが並んでて、ただ順番を入れ替えられるだけでいい。**割り込んで優先にして、と口頭で言う方が早い**」
      → 入力欄と追加ボタンを外した。ここは「並んでいるものの順番を変える場所」に絞る。 -->
-<div class="addMsg" id="qaMsg" style="padding:0 2px 6px">Pを押すと順番が変わります（P1＝いちばん先に出る）。新しく足したいものはDispatchに言ってください</div>
 <div class="addMsg" id="pendMsg" style="padding:0 2px 6px"></div>
 <div class="in" id="queue"></div>
 </div></details>
@@ -720,6 +719,7 @@ function modelLabel(m){
   if(s.includes("fable")) return "Fable";
   if(s.includes("sonnet")) return "Sonnet";
   if(s.includes("haiku")) return "Haiku";
+  if(s === "test") return "テスト";   // クレジットを使わない空の発車
   return null;
 }
 function urlLinks(urls){
@@ -799,6 +799,10 @@ const HANDOFF_MIN = 180; // 3時間ルール（既定）
 function limitMinFor(s){
   try{
     const t = (s && s.title) || "";
+    // 台帳に制限時間が書いてあればそれを使う（テストの10分など）
+    const qi = ((window.__queue && window.__queue.items) || [])
+      .find(x => x.status === "running" && (String(x.sessionId||"") === String(s.cli||"-") || String(x.pid) === String(s.pid)));
+    if(qi && qi.limitMin) return qi.limitMin;
     for(const r of ((window.DATA && DATA.running) || [])){
       if(!r || !r.limitMin || !r.sessionTitle) continue;
       if(t && (t === r.sessionTitle || t.includes(r.sessionTitle) || r.sessionTitle.includes(t))) return r.limitMin;
@@ -844,6 +848,25 @@ function collectNow(m){
     const key = s.cli || s.localId || s.title;
     const prev = byKey.get(key);
     if(!prev || (s.idleMin ?? 999) < (prev.idleMin ?? 999)) byKey.set(key, s);
+  });
+  // 2026-09-04 台帳(queue.json)で「走行中」になっているものも必ず出す。
+  //   machine.json は5分おきの重い計測でしか書き変わらないうえ、Claudeのセッションしか載せない。
+  //   そのため、発車した直後の数分と、Claude以外で走らせているもの（テスト等）が
+  //   「作業中」に一切出なかった。台帳が正本なので、載っていなければここで足す。
+  ((window.__queue && window.__queue.items) || []).forEach(it=>{
+    if(it.status !== "running") return;
+    const key = it.sessionId || ("q" + it.n);
+    if(byKey.has(key)) return;
+    if([...byKey.values()].some(s => String(s.pid) === String(it.pid))) return;
+    const started = it.startedAt ? new Date(it.startedAt).getTime() : Date.now();
+    byKey.set(key, {
+      cli: it.sessionId, pid: it.pid, title: it.title,
+      startedAt: it.startedAt, lastActivityAt: it.startedAt,
+      elapsedMin: Math.max(0, Math.round((Date.now() - started) / 60000)),
+      model: it.test ? "test" : (it.model || "claude-sonnet-5"),
+      status: "作業中", color: "green", kind: "working",
+      urls: [], done: false, turns: 0, idleMin: 0, _fromQueue: true,
+    });
   });
   return Array.from(byKey.values());
 }

@@ -70,6 +70,19 @@ def countable(s):
     return True
 
 
+def save_queue(q):
+    """台帳を安全に書く。
+
+    2026-09-04：直接 open(w) で書いていたため、別のプロセス（受信箱の処理・Dispatch）が
+    同時に書いた瞬間に**中身が二重になって壊れた**（実測：末尾214文字が重複しJSONとして読めなくなった）。
+    台帳が壊れると工場が丸ごと止まるので、一時ファイルに書いてから置き換える（原子的）。
+    """
+    tmp = QUEUE + ".tmp"
+    with io.open(tmp, "w", encoding="utf-8") as f:
+        json.dump(q, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, QUEUE)
+
+
 def harvest(q):
     """2026-09-04 たまごさん「作業が終わって、終わったんであれば、そこは俺の確認待ちだよ。
     確認待ちでOKって言ったら初めて完了に入る。ダメだったらもう一回順番待ちに並ぶ」
@@ -257,7 +270,7 @@ def main():
     # 終わったものを回収して「確認待ち」へ移す（これをやらないと running のまま溜まって空きが出ない）
     if harvest(q):
         q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-        json.dump(q, io.open(QUEUE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        save_queue(q)
     # 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かないよ」（火曜まで残り14%）
     #   → status/no_launch.flag があるあいだは**1本も発車させない**。
     #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。
@@ -330,7 +343,7 @@ def main():
             launched += 1
     if launched:
         q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-        json.dump(q, io.open(QUEUE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        save_queue(q)
     return 0
 
 
