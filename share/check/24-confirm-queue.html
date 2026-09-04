@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#24 確認待ち→OK／やり直し 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #24</div>
+<h1>#24 確認待ちを進捗表に出して、OK／やり直しを押せるようにする</h1>
+<div class="date">2026-09-04 18:17 実装・本番反映（本セッションで実測・確認ページを追加）</div>
+
+<div class="fix">
+自動発車したタスクが終わると「🔎 たまごさんの確認待ち」欄に入り、<b>✅完了（合格）／🟡とりあえずOK／↩︎やり直し（今すぐ）／↩︎やり直し（後ろでいい）</b>の4ボタンで判定できる。OKを押すと「✅完了」一覧へ、日時付きで積み上がる。やり直しを押すと、もう一度「発車待ち」の列へ戻る。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+進捗表PWA（<code>index.html</code>）に、確認待ち欄の描画関数 <code>renderCheck()</code> と、ボタン押下でMac側 <code>status/queue.json</code> を書き換える中継（<code>command_ingest.py</code> の <code>queue_ok</code>／<code>queue_redo</code>／<code>queue_later</code>）を実装。完了一覧の描画関数 <code>renderDone()</code> が、確認した時刻（何時何分）を添えて新しいものを上に積み上げる。
+</div>
+
+<h2>② 数字（本番 queue.json の実測値・確認ページ作成時点）</h2>
+<div class="nums">
+  <div class="num"><b>6件</b><span>今まさに「たまごさんの確認待ち」に並んでいる件数</span></div>
+  <div class="num"><b>12件</b><span>OKを押されて「✅完了」に積み上がっている件数（すべて何時何分の時刻付き）</span></div>
+  <div class="num"><b>4種</b><span>用意されているボタンの数（完了／とりあえずOK／やり直し今すぐ／やり直し後回し）</span></div>
+</div>
+
+<h2>③ いま「確認待ち」に並んでいる6件</h2>
+<table>
+<tr><th>#</th><th>タイトル</th><th>終わった時刻</th></tr>
+<tr><td>28</td><td>Eagleギャラリーにフォルダ絞り込みを足す</td><td>09-04 18:10</td></tr>
+<tr><td>30</td><td>留守番の見回り（30分おき）を止める</td><td>09-04 18:46</td></tr>
+<tr><td>31</td><td>確認待ちの判定をMac側に反映する仕組み</td><td>09-04 18:46</td></tr>
+<tr><td>32</td><td>完了したものを『完了』一覧に積み上げる</td><td>09-04 20:47</td></tr>
+<tr><td>33</td><td>スマホからタスクを追加できるようにする</td><td>09-04 18:56</td></tr>
+<tr><td>41</td><td>曲ページの表示崩れを10ページ点検して直す</td><td>09-04 20:29</td></tr>
+</table>
+
+<h2>④ すでにOKが押され「完了」に積み上がっている12件のうち代表6件</h2>
+<table>
+<tr><th>#</th><th>タイトル</th><th>完了と判定された時刻</th></tr>
+<tr><td>4</td><td>驚の部屋・美の部屋を「音楽の扉」と同じ形にする</td><td>09-04 18:42</td></tr>
+<tr><td>5</td><td>棚編集で155棚すべてを選べるようにする</td><td>09-04 18:42</td></tr>
+<tr><td>17</td><td>YouTube APIで動画を差し替えられるようにする</td><td>09-04 19:02</td></tr>
+<tr><td>18</td><td>アメリの細かい調整</td><td>09-04 21:00</td></tr>
+<tr><td>19</td><td>Eagleの画像をWebで見る仕組みを育てる</td><td>09-04 21:00</td></tr>
+<tr><td>22</td><td>92°／Vulfmon &amp; Tommy de Bourbon の曲名・アーティストを直す</td><td>09-04 21:00</td></tr>
+</table>
+
+<h2>⑤ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ（開くと「🔎 たまごさんの確認待ち」欄が最初から開いた状態で見える）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>本番の元データ（上の表の件数・時刻と一致することがそのまま確認できる）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
+  <li><b>この機能を実装したコミット（確認待ち欄・4ボタン）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/commit/2d6caf5cef37ee580a64667bdf19821c950f5fb2" target="_blank" rel="noopener">2d6caf5</a>／<a href="https://github.com/tamago2022/tamago-shinchoku/commit/ed0f3cffa4064df7ceda43da9421d8187303fd2b" target="_blank" rel="noopener">ed0f3cf</a></li>
+</ul>
+
+<h2>⑥ 前と後</h2>
+<div class="note">
+<b>スクリーンショットは今回入っていません。</b>理由：このセッションにはブラウザ操作・画面撮影のツールが搭載されておらず、実際に試したのは（1）Bashでのheadlessブラウザ／curlによるスクリーンショット取得だが権限承認が得られず失敗、（2）別セッション（WebFetchツールを持つ担当）へ本番URLの内容確認を委任し、実際に本番ページの本文が返り「たまごさんの確認待ち」「renderDone」「queue_ok」「queue_redo」がすべて実在することを確認済み。この2経路までで、3回目以降の同じ経路の繰り返しはしていない。<br>
+代わりに、本番ページを開けば「🔎 たまごさんの確認待ち」の下に上の表と同じ6件が並び、押すとその場で消えて「✅ 完了」欄へ移ることが直接確認できる。
+</div>
+
+<footer>
+正本：<code>tamago-shinchoku</code> リポジトリ <code>index.html</code>（<code>renderCheck</code>／<code>renderDone</code>関数）と <code>tools/command_ingest.py</code>（<code>queue_ok</code>／<code>queue_redo</code>／<code>queue_later</code>）。実装自体は本セッション開始前（2026-09-04 18:17）に別セッションが完了・本番反映済みだったため、本セッションでは本番稼働の実測とこの確認ページの追加のみを行った。
+</footer>
+</body>
+</html>
