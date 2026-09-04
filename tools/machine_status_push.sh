@@ -35,6 +35,9 @@ fi
 # Cowork側のサンドボックスからマウント越しにgitを叩くと、.git/*.lock と objects/*/tmp_obj_* を
 # unlink できず（Operation not permitted）残る。残ると以後このスクリプトのcommit/pushが毎回失敗し、
 # 進捗表が丸ごと止まる（18:25〜18:30に実際に発生）。5分以上前のものだけ消す＝実行中のgitは巻き添えにしない。
+# 2026-09-05 入力待ちで黙り込む `claude setup-token` が残ると、心臓（15秒おき）ごと固まる。
+#   実測：07:03から3分間、着火も受信箱も止まった。見つけたら落とす。
+pkill -f "claude setup-token" >/dev/null 2>&1 || true
 find "$REPO/.git" -maxdepth 1 -name "*.lock" -mmin +5 -delete 2>/dev/null || true
 find "$REPO/.git/objects" -maxdepth 2 -name "tmp_obj_*" -mmin +5 -delete 2>/dev/null || true
 

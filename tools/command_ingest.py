@@ -629,6 +629,49 @@ def restart_heartbeat(_target=None):
     return "done", "心臓を入れ直しました（新しい中身で起動）%s" % ("" if not still else "／古いものが残っている可能性")
 
 
+def auth_login_url(_target=None):
+    """ログイン用のURLだけを取り出す（2026-09-05）。
+
+    たまごさんはターミナルを使わない。**こちらでログイン手続きを走らせ、
+    出てきたURLだけを渡して、クリック1回で済むようにする。**
+    `claude setup-token` は認証URLを標準出力に出すので、そこだけ拾って渡し、
+    プロセスはすぐ畳む（対話待ちで居座らせない）。
+    """
+    import signal
+    try:
+        p = subprocess.Popen([CLAUDE, "setup-token"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             stdin=subprocess.DEVNULL, text=True, start_new_session=True)
+    except Exception as e:
+        return "failed", "起動できませんでした: %s" % e
+    out = ""
+    t0 = time.time()
+    try:
+        while time.time() - t0 < 25:
+            line = p.stdout.readline()
+            if not line:
+                if p.poll() is not None:
+                    break
+                time.sleep(0.2)
+                continue
+            out += line
+            if "http" in line:
+                break
+    except Exception:
+        pass
+    try:
+        os.killpg(os.getpgid(p.pid), 15)
+    except Exception:
+        try:
+            p.kill()
+        except Exception:
+            pass
+    import re as _re
+    m = _re.search(r"https://\S+", out)
+    if m:
+        return "done", "ログインURL: %s" % m.group(0)
+    return "failed", ("URLが出ませんでした: " + out[-300:]).replace("\n", " ")
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -645,6 +688,8 @@ def _process_other(action, cmd):
         return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
+    if action == "auth_login_url":
+        return auth_login_url(target)
     if action == "auth_probe":
         return auth_probe(target)
     if action == "git_unlock":
