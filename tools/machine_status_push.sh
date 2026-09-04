@@ -205,12 +205,31 @@ HIST_CHANGED=0
 # 20分の鮮度ルールで拾えるため。毎回の差分計算に画像1000枚を含めない）。
 if [ -n "$(git status --porcelain --untracked-files=normal -- \
       status/history.jsonl status/whiteboard.json status/priority.json status/health.json \
-      status/commands.json status/queue.json status/relay.json \
+      status/commands.json status/queue.json status/relay.json status/version.json \
       index.html data.js said.js tools 2>/dev/null | head -1)" ]; then
   HIST_CHANGED=1
 fi
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
+# 2026-09-04 画面の世代を書き出す。スマホのホーム画面アプリが古いindex.htmlを握ったままになる問題への対応。
+#   index.html の中身のハッシュを status/version.json に置き、画面側が違いを見つけたら ?v=… で開き直す。
+python3 - "$REPO" <<'PYVER' >/dev/null 2>&1 || true
+import hashlib, io, json, os, sys, time
+repo = sys.argv[1]
+try:
+    h = hashlib.sha1(io.open(os.path.join(repo, "index.html"), "rb").read()).hexdigest()[:10]
+except Exception:
+    sys.exit(0)
+p = os.path.join(repo, "status", "version.json")
+try:
+    if json.load(io.open(p, encoding="utf-8")).get("v") == h:
+        sys.exit(0)
+except Exception:
+    pass
+json.dump({"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
+          io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+PYVER
+git add status/version.json >/dev/null 2>&1
 git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。

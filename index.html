@@ -356,6 +356,26 @@
 </footer>
 
 <script>
+/* 2026-09-04 たまごさんのホーム画面アプリが**古いindex.htmlを握ったまま**になっていた。
+   （直した画面をpushしても、スマホ側は前の画面のまま＝「発車待ちはありません」が出続けた）
+   GitHub PagesではHTTPヘッダを変えられないので、中身の側で世代を確認する。
+   status/version.json（毎回サーバーから取り直す）の版が、いま動いている画面と違えば、
+   URLに ?v=<版> を付けて開き直す。URLが変わるのでキャッシュに当たらず、必ず新しい画面になる。 */
+const PAGE_BUILD = new URLSearchParams(location.search).get("v") || "";
+(function checkVersion(){
+  fetch("status/version.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null)
+    .then(j => {
+      const v = j && j.v;
+      if(v && v !== PAGE_BUILD){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
+    }).catch(()=>{});
+  setInterval(()=>{
+    fetch("status/version.json?t=" + Date.now(), {cache:"no-store"})
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { const v = j && j.v; if(v && v !== PAGE_BUILD) location.replace(location.pathname + "?v=" + encodeURIComponent(v)); })
+      .catch(()=>{});
+  }, 120000);
+})();
 // データは毎回サーバーから取り直す（スマホのキャッシュで古い一覧が出ないように）
 (function(){
   const t = Date.now(), files = ["data.js","said.js","requests225.js"]; let n = 0;
