@@ -106,11 +106,15 @@ def harvest(q):
                 #   \uXXXX を解いたあと latin-1→utf-8 で戻す。
                 result = m[-1].encode("utf-8").decode("unicode_escape").encode("latin-1", "ignore").decode("utf-8", "ignore")
             # URLに混ざるゴミ（\n、全角括弧、バックスラッシュ）を落とす
-            cand = re.findall(r"https://joy-relief-station\.lovable\.app[^\s\"'）)、。]*", raw)
+            # 2026-09-04 修正：joy-relief-station.lovable.app 固定だと、成果物が
+            #   別リポジトリ（tamago-shinchoku＝GitHub Pages等）の時にURLを一切拾えなかった
+            #   （実例：20番「自動発車」自身がそれだった）。result本文（たまごさんへの完了報告文）
+            #   から任意のhttps URLを拾う方式へ一般化する。
+            cand = re.findall(r"https://[^\s\"'）)、。]*", result or raw)
             clean = []
             for u in cand:
                 u = u.split("\\")[0].rstrip("/.,:;")
-                if u and u not in clean and len(u) > len("https://joy-relief-station.lovable.app"):
+                if u and u not in clean and len(u) > len("https://a.co"):
                     clean.append(u)
             urls = clean[:5]
         except Exception:
@@ -209,12 +213,37 @@ def main():
     if not waiting:
         log("見送り: 発車待ちが空")
         return 0
-    item = waiting[0]
+
+    # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
+    #   1回の実行で1本だけだと、5分×3回で3本になるまで15分かかる。空いているぶんを一度に埋める。
+    room = safe_max - alive
+    launched = 0
+    for item in waiting[:room]:
+        if launch_one(item, q, alive + launched, safe_max):
+            launched += 1
+    if launched:
+        q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+        json.dump(q, io.open(QUEUE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return 0
+
+
+def launch_one(item, q, alive, safe_max):
 
     # ---- worktree を切る ----
     repo = q.get("repo") or "/Users/mac/Desktop/joy-relief-station"
     wt_name = item.get("worktree") or ("q%02d-0904" % item.get("n"))
     wt = os.path.join(repo, ".worktrees", wt_name)
+    # 2026-09-04：Cowork側のサンドボックスからマウント越しにgitを叩くと .lock が消せずに残り、
+    #   以後ホスト側の worktree add が exit 128 で失敗し続ける（実際に15番以降が着火できなくなった）。
+    #   5分以上前の置き去りロックだけ掃除する（実行中のgitは巻き添えにしない）。
+    try:
+        subprocess.run(["bash", "-c",
+                        "find '%s/.git' -name '*.lock' -mmin +5 -delete 2>/dev/null; "
+                        "find '%s/.git/worktrees' -name 'locked' -mmin +5 -delete 2>/dev/null; true" % (repo, repo)],
+                       capture_output=True, timeout=60)
+        subprocess.run(["git", "-C", repo, "worktree", "prune"], capture_output=True, timeout=120)
+    except Exception:
+        pass
     if not os.path.isdir(wt):
         try:
             subprocess.run(["git", "-C", repo, "worktree", "add", os.path.join(".worktrees", wt_name),
@@ -236,7 +265,7 @@ def main():
                                    check=True, capture_output=True, timeout=300)
                 except Exception as e3:
                     log("worktree作成に失敗（3回試した） %s: %s" % (wt_name, e3))
-                    return 1
+                    return False
 
     # ---- 着火 ----
     new_id = str(uuid.uuid4())
@@ -252,18 +281,16 @@ def main():
         pid = p.pid
     except Exception as e:
         log("着火に失敗 %s: %s" % (item.get("title"), e))
-        return 1
+        return False
 
     item["status"] = "running"
     item["startedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
     item["sessionId"] = new_id
     item["pid"] = pid
-    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-    json.dump(q, io.open(QUEUE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     log("🚀 自動発車 %d番「%s」→ pid %s / session %s（走行%d本→%d本・上限%d本）"
         % (item.get("n"), item.get("title"), pid, new_id[:8], alive, alive + 1, safe_max))
     print("自動発車: %s" % item.get("title"))
-    return 0
+    return True
 
 
 if __name__ == "__main__":

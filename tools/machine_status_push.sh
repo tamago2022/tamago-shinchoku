@@ -204,7 +204,11 @@ git add status/machine.json status/history.jsonl status/whiteboard.json status/p
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share >/dev/null 2>&1
-git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || return 0
+# 2026-09-04 バグ修正：commitが失敗したとき return 0 で抜けていたため、push まで到達しなかった。
+#   commitが失敗する典型は「新しい変更が無いとき」。だが、その前に別経路（Cowork側）でcommitされた分が
+#   未pushで残っていることがあり、そのぶんが永久に公開されなかった（画面が更新されない実害）。
+#   → commitの成否に関わらず push まで進む。
+git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || true
 git -c credential.helper='!gh auth git-credential' pull --rebase -q origin main >/dev/null 2>&1 || true
 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1
 }
