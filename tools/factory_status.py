@@ -48,7 +48,12 @@ MEM_PER_SESS_MB = 350
 DISK_STOP_GB = 5
 DISK_WARN_GB = 20
 STALL_MIN = 10
-SAFE_FLOOR = 2
+# 2026-09-04 たまごさん「1本しか走ってない。クレジットも上手に使えてないよ。連続して走らせ続けてください。
+#   これがあなたの本当のお役目ですよ」→ 下限を2本から4本へ引き上げた。
+#   根拠：実測校正で safeN=5（5本まで p90 6.6 で想定内、6本で19.5に破綻、11本でフリーズ）。
+#   ロードアベレージはディスク待ちでも上がるので、それだけで2本まで絞ると走らなくなる。
+#   メモリ圧=赤・ディスク5GB未満のときはこの下限を適用しない（そこは本物の危険）。
+SAFE_FLOOR = 4
 PAGE = 4096
 
 # 「質問して止まっている」の目印。末尾200字にこれがあれば asked 判定
@@ -562,11 +567,24 @@ def safe_max(base, ss, la1, cores, pressure, avail_mb, swap_up, iomb):
     disk = base.get("diskFreeGB")
 
     # ロードから：あと何本足せるか（走行中1本≒LOAD_PER_SESS）
+    # 2026-09-04 たまごさん「本当にそれぐらい余裕がないもんなんでしょうか」→ 実測を見たら余裕があった。
+    #   実測: CPU 6% / メモリ空き 7.0GB / メモリ圧=緑 / スワップ増なし。なのに「上限2本」と出ていた。
+    #   理由＝5分平均ロード7.7 が コア8×0.8=6.4 を超えていたから。
+    #   だがロードアベレージは「CPUが忙しい」ではなく「順番待ちの列の長さ」で、ディスク待ちでも上がる。
+    #   CPUが暇でメモリも空いているのにロードだけで絞るのは、絞りすぎ。
+    #   → CPUが低く・メモリ圧が緑で十分空きがあり・スワップも増えていないときは、ロードの天井を上げる。
+    ceil = LOAD_CEIL
+    cpu_pct = base.get("cpu")
+    idle_cpu = isinstance(cpu_pct, (int, float)) and cpu_pct < 40
+    roomy_mem = (pressure == "green") and (avail_mb or 0) >= 4096 and not swap_up
+    if idle_cpu and roomy_mem:
+        ceil = LOAD_CEIL * 2.5   # ディスク待ちで膨らんだロードは、本数の制限理由にしない
+        reasons.append("CPU%.0f%%・メモリ空き%.1fGBで余裕あり→ロードの天井を緩めた" % (cpu_pct, (avail_mb or 0) / 1024.0))
     more_load = None
     if la1 is not None:
-        more_load = int((cores * LOAD_CEIL - la1) / LOAD_PER_SESS)
+        more_load = int((cores * ceil - la1) / LOAD_PER_SESS)
         if more_load < 0:
-            reasons.append("5分平均ロード%.1f（コア%d×%.1f超）" % (la1, cores, LOAD_CEIL))
+            reasons.append("5分平均ロード%.1f（コア%d×%.1f超）" % (la1, cores, ceil))
     # メモリから
     more_mem = None
     if pressure == "red":
@@ -621,8 +639,12 @@ def build():
         user_active = idle_ns < 300 * 1e9  # 5分以内にキーボード/マウス操作あり＝たまごさんがPCを使っている
     except Exception:
         pass
-    if user_active and cap > 2:
-        cap -= 1; reasons.append("たまごさん操作中（上限-1）")
+    # 2026-09-04 修正：たまごさんが操作中でも、CPUとメモリに余裕があるなら本数を減らさない。
+    #   たまごさんはベッドからスマホで見ていることが多く、そのときも「操作中」で1本引かれて絞りすぎていた。
+    #   減らすのは「本当に重いとき」だけにする（CPUが高い／メモリ圧が緑でない／スワップ増加中）。
+    machine_busy = (pressure != "green") or swap_up or (isinstance(base.get("cpu"), (int, float)) and base["cpu"] >= 50)
+    if user_active and machine_busy and cap > 2:
+        cap -= 1; reasons.append("たまごさん操作中＋マシンが重い（上限-1）")
     load_ratio5 = (la[1] / cores) if la[1] is not None and cores else None
     predict = []
     if pressure == "yellow":

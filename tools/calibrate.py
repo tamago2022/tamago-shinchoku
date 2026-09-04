@@ -31,6 +31,13 @@ LOAD_OK, MEM_OK, SWAP_OK = 0.8, 0.95, 0.10
 MIN_SAMPLES = 6
 DEFAULT_SAFE = 4
 HARD_CEIL = 8
+# 2026-09-03 実測（3日ぶんの記録334件をたまごさんの指示で集計）
+#   0本=2.41 / 3本=2.81 / 4本=4.14 / 5本=6.61 ここまで想定内
+#   6本=19.48 / 10本=12.96 / 11本=52.30 ← 11本のときに実際にフリーズした
+# → セッション1本あたりの増分は約1.0。絶対値が12を超えたところから危ない。
+LOAD_PER_SESSION = 1.0    # 1本増えるごとに許すロード比の増分
+HARD_RATIO = 12.0         # これを超えたら本数に関係なく危険（コア8に対して1.5倍）
+BASE_RATIO_DEFAULT = 2.5  # 0本の標本が無いときの土台（ブラウザ等の常駐ぶん）
 MARGIN = 0.8  # たまごさん「ちょっと余裕を見ていい」→ 上限の8割を維持目標に
 
 
@@ -90,6 +97,12 @@ def main():
             return True  # 原因不明は安全側（従来どおりセッションのせいとみなす）
         return "claude" in tc.lower()
     heavy_n = sorted({int(h.get("n")) for h in heavy if h.get("n") is not None and session_is_cause(h)})
+    # 2026-09-03：セッション0本のときにも重い事象が起きているなら、それはセッションのせいではない
+    # （ブラウザ・大きなファイルコピー・Spotlight等）。本数を責めても上限が1本に張り付くだけなので、
+    # その場合は「重い事象による本数の除外」を無効にする。実データで0〜5本すべてがheavy扱いになり
+    # safeN=1 に固定されていた事故への対処。負荷そのものはロード比の判定（allow / HARD_RATIO）で見る。
+    if 0 in heavy_n:
+        heavy_n = []
     by = {}
     for r in hist:
         n = r.get("n")
@@ -102,6 +115,13 @@ def main():
             b["memGreen"] += 1
         if r.get("swapUp"):
             b["swapUp"] += 1
+    # 土台（セッション0本のときの負荷）。ブラウザ・常駐アプリの分。ここを引かないと何本でも不合格になる。
+    base_ratio = None
+    if 0 in by:
+        base_ratio = pct(by[0]["loadRatios"], 0.9)
+    if base_ratio is None:
+        base_ratio = BASE_RATIO_DEFAULT
+
     byN = {}
     for n in sorted(by):
         b = by[n]
@@ -110,7 +130,17 @@ def main():
         swap_r = b["swapUp"] / b["samples"] if b["samples"] else 0
         enough = b["samples"] >= MIN_SAMPLES
         heavy_here = n in heavy_n
-        ok = enough and not heavy_here and (p90 is None or p90 <= LOAD_OK) and mem_ok >= MEM_OK and swap_r <= SWAP_OK
+        # 2026-09-03 判定を作り直した。
+        # 旧: 絶対値 p90 <= 0.8 で合格。→ ブラウザ等の常駐だけで p90 が 2.4 あるため
+        #     「0本のときですら不合格」になり、safeN が常に 1 に張り付いていた（実データで確認）。
+        # 新: セッションが増やす分（限界増分）で見る。0本のときの負荷を土台として引き、
+        #     1本あたり LOAD_PER_SESSION まで増えるのは想定内とする。
+        #     ただし絶対値がフリーズ域（コア数比 HARD_RATIO）に達したらその時点で不合格。
+        #     実データ: 0本=2.41 / 5本=6.61（想定内）/ 6本=19.48（破綻）/ 11本=52.30（実際にフリーズ）
+        allow = base_ratio + n * LOAD_PER_SESSION
+        ok = (enough and not heavy_here
+              and (p90 is None or (p90 <= allow and p90 < HARD_RATIO))
+              and mem_ok >= MEM_OK and swap_r <= SWAP_OK)
         byN[str(n)] = {"samples": b["samples"], "loadRatioP90": round(p90, 2) if p90 is not None else None,
                        "memGreenRate": round(mem_ok, 2), "swapUpRate": round(swap_r, 2), "heavy": heavy_here,
                        "enough": enough, "ok": ok}
@@ -119,7 +149,10 @@ def main():
     for n in sorted(int(k) for k in byN):
         if byN[str(n)]["ok"]:
             safe = n
-        elif byN[str(n)]["enough"] or byN[str(n)]["heavy"]:
+        else:
+            # 2026-09-03：不合格でも「標本不足」なら素通りしていたため、
+            # 6本で破綻（p90=19.5）しているのに9本まで合格と判定されていた。
+            # 保証できない本数に当たったら、そこで打ち切る。上を見に行かない。
             break
     heavy_floor = (min(heavy_n) - 1) if heavy_n else None
     if safe is None:

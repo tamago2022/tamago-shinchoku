@@ -20,6 +20,13 @@ fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
 
+# 2026-09-03 追加：置き去りのgitロックを掃除する。
+# Cowork側のサンドボックスからマウント越しにgitを叩くと、.git/*.lock と objects/*/tmp_obj_* を
+# unlink できず（Operation not permitted）残る。残ると以後このスクリプトのcommit/pushが毎回失敗し、
+# 進捗表が丸ごと止まる（18:25〜18:30に実際に発生）。5分以上前のものだけ消す＝実行中のgitは巻き添えにしない。
+find "$REPO/.git" -maxdepth 1 -name "*.lock" -mmin +5 -delete 2>/dev/null || true
+find "$REPO/.git/objects" -maxdepth 2 -name "tmp_obj_*" -mmin +5 -delete 2>/dev/null || true
+
 run_once() {
 # 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
 # factory_status.py が失敗したら従来どおり machine_load.sh 単体で最低限のJSONを書く（止まらない）。
@@ -45,7 +52,67 @@ EOF2
 fi
 
 # 2026-09-03 利用枠の推定（会話ログのトークン量×スマホ実測アンカー）→ status/quota.json。見張り番がモデル選択と machine.json の quota 節に使う
+# 2026-09-03 調査：quota_estimate.py が「実測ファイルが読めない」と言って推定にフォールバックし、
+# 全モデル週枠を111%（実際は68%）、5時間枠を152%（実際は13%）と大きく外していた。
+# 実測ファイルが本当に存在するのか・読めるのかを、ホスト側で動くこのスクリプトから確かめて記録する。
+{
+  echo "probe at $(date '+%F %T')"
+  ls -l "$HOME/Library/Application Support/Claude/plan-usage-history.json" 2>&1
+  echo "--- 最新サンプルと、なぜ採用されないか ---"
+  python3 - <<'PYEOF' 2>&1
+import json, os, time
+p = os.path.expanduser("~/Library/Application Support/Claude/plan-usage-history.json")
+try:
+    d = json.load(open(p, encoding="utf-8"))
+except Exception as e:
+    print("読めない:", e); raise SystemExit
+ss = d.get("samples") or []
+print("version=%s samples=%d" % (d.get("version"), len(ss)))
+if ss:
+    last = ss[-1]
+    age = (time.time() - last["t"]/1000.0)/60.0
+    print("最新: t=%s (%.1f分前) u=%s org=%s" % (
+        time.strftime("%F %T", time.localtime(last["t"]/1000.0)), age, last.get("u"), (last.get("org") or "")[:8]))
+    # 直近12件の推移
+    for s in ss[-12:]:
+        print("  %s fh=%s sd=%s" % (time.strftime("%m-%d %H:%M", time.localtime(s["t"]/1000.0)),
+                                    (s.get("u") or {}).get("fh"), (s.get("u") or {}).get("sd")))
+PYEOF
+} > "$REPO/status/_plan_usage_probe.txt" 2>&1
 python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
+# 2026-09-03 たまごさん「進捗の数字がずれてる時点でダメ」。
+# Claudeアプリの実測ファイルは書き込みが止まることがあり（21:45で停止を確認）、推定に落ちると大きく外す。
+# 実際: 全モデル68% / Fable82% ← アプリ画面の値。推定: 111% / 88.5%。
+# status/quota_manual.json に {"allPct":68,"fablePct":82,"asOf":"2026-09-03 23:05"} を置けば、そちらを正とする。
+# アプリ画面のスクショから拾った値を入れる用。実測ファイルが復活すればこのファイルを消せば元に戻る。
+python3 - "$REPO" <<'PYEOF' >/dev/null 2>&1 || true
+import json, os, sys
+# 2026-09-04 バグ修正：ここは REPO を環境変数として読もうとしていたが export されておらず、
+#   フォールバックの __file__ もヒアドキュメント実行では存在しないため例外→握りつぶし で
+#   手入力(quota_manual.json)が一度も適用されていなかった。引数で渡す形に直した。
+repo = sys.argv[1] if len(sys.argv) > 1 else "/Users/mac/Desktop/tamago-shinchoku"
+q = os.path.join(repo, "status", "quota.json")
+m = os.path.join(repo, "status", "quota_manual.json")
+if os.path.exists(m):
+    d = json.load(open(q, encoding="utf-8")) if os.path.exists(q) else {}
+    man = json.load(open(m, encoding="utf-8"))
+    for k in ("allPct", "fablePct"):
+        if man.get(k) is not None:
+            d[k] = man[k]
+    # 2026-09-04 5時間枠も手入力できるようにする（推定が152%と出て実際は13%だった）
+    if man.get("sessionPct") is not None:
+        d["sessionPct"] = man["sessionPct"]
+        s5 = d.get("session5h")
+        if isinstance(s5, dict):
+            s5["pct"] = man["sessionPct"]
+    d["estimated"] = False
+    d["method"] = "手入力（アプリの使用状況画面の実測値・%s時点）" % man.get("asOf", "?")
+    d["manualAsOf"] = man.get("asOf")
+    for key, pct in (("fableLevel", d.get("fablePct")), ("allLevel", d.get("allPct"))):
+        if isinstance(pct, (int, float)):
+            d[key] = "stop" if pct >= d.get("stopPct", 85) else ("warn" if pct >= d.get("warnPct", 75) else "ok")
+    json.dump(d, open(q, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+PYEOF
 # 2026-09-02 見張り番：止まっている子セッションを検知して claude -p --resume で自動再開（判定は factory_status の分類。負荷ゲートあり）
 # 2026-09-03 14:45 たまごさん「もう止めて」により無効化。計測(factory_status.py)とPWAへのpushは継続、自動再開だけ止める
 # 2026-09-03 18:12 たまごさん「仕組みで起こす方復活させてください。やって」により再有効化。
@@ -55,6 +122,24 @@ python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
 # 2026-09-03 孤児プロセス回収：セッション終了後もppid=1で残り続けるlint/build/test系の暴走プロセスを止める（ロード100%固定化の実害を確認して追加）
 python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
+# 2026-09-04 たまごさん「まず連続して走る仕組みを優先してね。順番に発車されるようにして、1日中回ってる状態を作るのが最優先」
+#   発車待ち(status/queue.json)から、マシンとクレジットに空きがあれば1本だけ自動で着火する。
+#   3時間縛り・URL報告のセットはプロンプト側に必ず入る。Fableは使わない（常にSonnet）。
+python3 "$REPO/tools/auto_launcher.py" >/dev/null 2>&1 || true
+# 2026-09-03 たまごさん「iPhoneでいいなと思ったスクショを、すかさず入れられるのかな。そのスピード感だと助かる」
+#   ① iCloud Driveの「Eagle_取り込み_iPhoneから」に入った画像をEagleへ登録して、取り込み済みへ移す
+#   ② Eagleライブラリ → スマホ用Webギャラリー（share/eagle-…）を差分更新
+#   どちらも増えたぶんだけ処理するので数秒で終わる。外付けが外れていれば②は黙って何もしない。
+# 2026-09-04 たまごさん「Eagleの見回りは5分に1回じゃなくて1日1回でいい」
+#   取り込み口（iPhoneから放り込んだぶん）は「すかさず入る」のが要件なので5分おきのまま。
+#   ギャラリーの作り直しだけ1日1回（前回から20時間以上あいたときだけ）にする。
+{ echo "--- $(date '+%F %T') eagle-inbox ---"; python3 "$REPO/tools/eagle_inbox.py"; } >> "$REPO/status/eagle_run.log" 2>&1 || true
+_gstamp="$REPO/status/.eagle_gallery_last"
+if [ ! -f "$_gstamp" ] || [ -n "$(find "$_gstamp" -mmin +1200 2>/dev/null)" ]; then
+  { echo "--- $(date '+%F %T') eagle-gallery(1日1回) ---"; python3 "$REPO/tools/eagle_gallery.py"; } >> "$REPO/status/eagle_run.log" 2>&1 || true
+  touch "$_gstamp"
+fi
+tail -n 200 "$REPO/status/eagle_run.log" > "$REPO/status/eagle_run.log.tmp" 2>/dev/null && mv "$REPO/status/eagle_run.log.tmp" "$REPO/status/eagle_run.log" 2>/dev/null || true
 # 2026-09-03 本数の実測校正：load_history.jsonl＋heavy_events.jsonl → calibration.json（safeN/target）。次回の factory_status が読む
 python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く
@@ -115,7 +200,10 @@ for f in status/history.jsonl status/whiteboard.json status/priority.json status
 done
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
-git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json >/dev/null 2>&1
+git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json >/dev/null 2>&1
+# 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
+# ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
+git add index.html data.js said.js share >/dev/null 2>&1
 git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || return 0
 git -c credential.helper='!gh auth git-credential' pull --rebase -q origin main >/dev/null 2>&1 || true
 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1

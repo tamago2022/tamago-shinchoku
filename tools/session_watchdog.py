@@ -75,6 +75,9 @@ COOLDOWN_MIN = 20
 IGNITE_INTERVAL_MIN = 10
 MAX_HEADLESS = 3
 MAX_CONCURRENT = 4  # 2026-09-03 たまごさん：クレジット節約中は同時走行4本まで。既に4本ならretired/essential以外は再開しない
+# 2026-09-03 実測（3日ぶん334件）：0本=2.4 / 5本=6.6（想定内）/ 6本=19.5 / 11本=52.3でフリーズ。
+# ロード比がこの値を超えたら、作業中のセッションでも1本落としてMacを守る。PCが落ちるより軽い被害。
+DANGER_RATIO = 10.0
 RETIRED_JSON = os.path.join(REPO, "status", "retired.json")
 
 
@@ -254,11 +257,23 @@ def synth_meta(s, scan):
     return None
 
 
+_FACTORY_STATUS_MOD = None
+
+
+def factory_status_module():
+    """factory_status.py を動的import。is_dispatch_self() など同ファイルの判定を使い回す（1プロセス内で1回だけロード）"""
+    global _FACTORY_STATUS_MOD
+    if _FACTORY_STATUS_MOD is None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("factory_status", os.path.join(HERE, "factory_status.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _FACTORY_STATUS_MOD = mod
+    return _FACTORY_STATUS_MOD
+
+
 def sessions_with_transcript():
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("factory_status", os.path.join(HERE, "factory_status.py"))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    mod = factory_status_module()
     out = []
     for s in mod.raw_sessions():
         kind, tail = mod.classify(s.get("transcript"), s.get("idle"))
@@ -310,13 +325,26 @@ def standard_six():
             "5.終わったら状態更新して次を取る 6.たまごさんに質問しない・判断はDispatchへ")
 
 
-def decide(s, meta, scan, state):
+def decide(s, meta, scan, state, user_active=False):
     """(動作, 理由)  None / "resume" / "handoff" """
     if not s["cli"] or not meta:
         return None, "会話ログ/管理JSONと突合できない"
     if meta.get("archived"):
         return None, "アーカイブ済み"
     if not meta.get("dispatch"):
+        # 2026-09-04 T024穴1対応：Dispatch本体（たまごさんと直接会話しているセッション）に無断で
+        # 「続けて」を送って会話へ割り込まないよう、原則は従来通り対象外のまま。
+        # 例外は「たまごさんが離席中(user_active=false)に質問して止まっている(kind=asked)」時だけ。
+        # handoff・idle_done再開は対象にしない（設計: T024_指示待ちで止まる_残穴3件_2026-09-04.md 穴1）
+        if (s.get("pid") and s["kind"] == "asked" and not user_active
+                and s["idle"] is not None and s["idle"] >= STALL_MIN
+                and factory_status_module().is_dispatch_self(s["pid"])):
+            st = state.get(s["cli"], {})
+            if st.get("tries", 0) >= MAX_TRIES:
+                return None, "Dispatch本体・%d回再開しても進まないため見送り" % MAX_TRIES
+            if time.time() - st.get("lastResumeAt", 0) < COOLDOWN_MIN * 60:
+                return None, "Dispatch本体・再開直後（%d分以内）" % COOLDOWN_MIN
+            return "resume", "Dispatch本体・離席中に質問して停止"
         return None, "Dispatch発でない（直接タブ・見回り係）"
     if EXCLUDE_TITLE.search(meta.get("title", "")):
         return None, "見回り系は対象外"
@@ -589,7 +617,7 @@ def main():
     for s in ss:
         scan = scan_transcript(s["transcript"]) if s["transcript"] else {"turns": 0, "lastText": "", "firstUser": "", "errors": [], "tried": []}
         meta = (idx.get(s["cli"]) if s["cli"] else None) or synth_meta(s, scan)
-        action, why = decide(s, meta, scan, state)
+        action, why = decide(s, meta, scan, state, user_active=bool(machine.get("userActive")))
         title = (meta or {}).get("title", "（不明）")
         if action is None:
             skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": why}); continue
@@ -698,15 +726,34 @@ def main():
     last_ign = state.get("_lastIgnitionAt", 0)
     shed_done = None
     # 落とす：上限超過＋予兆（メモリ黄／スワップ増／ロード比1.5超）または Mac 危険。落とすのは Dispatch発で「終わって待機」のものだけ（--resume で戻せる）
-    if (unsafe or machine.get("predict")) and alive_n > (machine.get("safeMax") or 0) and machine.get("shedCandidates"):
-        c = machine["shedCandidates"][0]
+    shed_list = list(machine.get("shedCandidates") or [])
+    # 2026-09-03 たまごさん「気づいたらコンピューターがフリーズしてた。そこを見極めて余裕を持って止まらないように」
+    # 実測：11本でロード比52.3に達してフリーズ。5本までは想定内（p90 6.6）、6本から破綻（19.5）。
+    # 旧: 落とせるのは「終わって待機」だけ。11本全部が作業中だと1本も落ちずにフリーズまで行く。
+    # 新: ロード比が危険域(DANGER_RATIO)なら、作業中でも古い順に落とす。Dispatch本体とessentialは除く。
+    #     SIGTERM なので会話ログは残り、あとで --resume で戻せる。PCが落ちるより軽い被害。
+    ratio = machine.get("loadRatio")
+    danger = isinstance(ratio, (int, float)) and ratio >= DANGER_RATIO
+    if danger and not shed_list:
+        pool = [s for s in (machine.get("sessionList") or [])
+                if not s.get("isDispatchSelf")
+                and not is_essential(s.get("title") or "", cfg)
+                and s.get("pid")]
+        pool.sort(key=lambda s: -(s.get("elapsedMin") or 0))   # 長く動いているものから
+        shed_list = pool[:1]
+    if (unsafe or danger or machine.get("predict")) and (danger or alive_n > (machine.get("safeMax") or 0)) and shed_list:
+        c = shed_list[0]
         if not dry:
             try:
                 os.kill(int(c["pid"]), 15)
                 shed_done = c
                 totals["sheds"] = totals.get("sheds", 0) + 1
-                append(LOG_MD, "- %s 🔻 1本落とした: 「%s」(pid %s・終わって待機%d分) 理由=%s（生存%d本＞上限%s本）" % (
-                    now(), c["title"], c["pid"], round(c.get("idleMin") or 0), unsafe or "・".join(machine.get("predict") or []), alive_n, machine.get("safeMax")))
+                append(LOG_MD, "- %s 🔻 1本落とした: 「%s」(pid %s・%s) 理由=%s（生存%d本＞上限%s本・ロード比%s）" % (
+                    now(), c.get("title"), c.get("pid"), c.get("status") or "終わって待機",
+                    ("危険域ロード比%.1f" % ratio) if danger else (unsafe or "・".join(machine.get("predict") or [])),
+                    alive_n, machine.get("safeMax"), ratio))
+                append(DISPATCH_INBOX, "| %s | 見張り番: Macを守るため「%s」を1本落とした（ロード比%s・生存%d本）。--resume で戻せる | 記録のみ・判断不要 |" % (
+                    now(), c.get("title"), ratio, alive_n))
             except Exception as e:
                 append(LOG_MD, "- %s ❌ 落とせず pid %s: %s" % (now(), c.get("pid"), e))
     if unsafe:
