@@ -15,10 +15,12 @@ PORT="${RELAY_PORT:-8788}"
 LOG="$REPO/status/relay.log"
 TUNLOG="$REPO/status/relay_tunnel.log"
 
-# brew未導入でも動くよう、リポジトリ同梱版(tools/bin/cloudflared)をフォールバックに使う。
+# brew未導入でも動くよう、~/.tamago/bin/cloudflared（単体バイナリ・git管理外）をフォールバックに使う。
+# 2026-09-04: リポジトリ内(tools/bin)に置くと公開リポジトリへ41MBのバイナリをcommitすることになるため、
+#   Mac側のローカルインフラ置き場（~/.tamago/配下・公開便Chromeと同じ流儀）へ移した。
 CLOUDFLARED="$(command -v cloudflared 2>/dev/null || true)"
-if [ -z "$CLOUDFLARED" ] && [ -x "$REPO/tools/bin/cloudflared" ]; then
-  CLOUDFLARED="$REPO/tools/bin/cloudflared"
+if [ -z "$CLOUDFLARED" ] && [ -x "$HOME/.tamago/bin/cloudflared" ]; then
+  CLOUDFLARED="$HOME/.tamago/bin/cloudflared"
 fi
 have_cloudflared() { [ -n "${CLOUDFLARED:-}" ]; }
 
