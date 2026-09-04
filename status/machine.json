@@ -1,13 +1,13 @@
 {
- "raw": "負荷 100% ｜ CPU 8% / メモリ圧迫 19% / スワップ 11.08GB / ディスク空き 31GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 15% / メモリ圧迫 19% / スワップ 11.02GB / ディスク空き 31GB ｜ 稼働 1本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 8,
+ "cpu": 15,
  "mem": 19,
- "swapGB": 11353.5,
+ "swapGB": 11289.5,
  "diskFreeGB": 31.0,
  "sessions": 1,
- "note": "上限2本・あと1本OK（CPU8%・メモリ空き7.2GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.8）→1本減らす、5時間枠もったいない度90.7%→本数を上限5本まで増やす）",
- "measuredAt": "2026-09-04T13:14:42+09:00",
+ "note": "上限2本・あと1本OK（CPU15%・メモリ空き6.8GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.9）→1本減らす、5時間枠もったいない度91.0%→本数を上限5本まで増やす）",
+ "measuredAt": "2026-09-04T13:15:28+09:00",
  "working": 1,
  "stalled": 0,
  "waiting": 0,
@@ -20,30 +20,30 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比1.8"
+  "5分ロード比1.9"
  ],
  "shedCandidates": [],
  "below": 4,
- "blockReason": "CPU8%・メモリ空き7.2GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.8）→1本減らす、5時間枠もったいない度90.7%→本数を上限5本まで増やす",
- "load1": 12.54,
- "load5": 14.6,
- "load15": 15.28,
+ "blockReason": "CPU15%・メモリ空き6.8GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.9）→1本減らす、5時間枠もったいない度91.0%→本数を上限5本まで増やす",
+ "load1": 15.6,
+ "load5": 15.06,
+ "load15": 15.41,
  "cores": 8,
- "loadRatio": 1.57,
+ "loadRatio": 1.95,
  "memPressure": "green",
- "memAvailGB": 7.2,
+ "memAvailGB": 6.8,
  "swapIncreasing": false,
- "ioMBs": 0.01,
+ "ioMBs": 0.13,
  "network": {
-  "pingMedianMs": 23.5,
-  "pingMaxMs": 105.0,
+  "pingMedianMs": 26.3,
+  "pingMaxMs": 35.6,
   "pingSamples": 20
  },
  "stalledList": [],
  "sessionList": [
   {
    "cli": "a178c239-be3f-4786-83d6-64a7d7d11f85",
-   "localId": null,
+   "localId": "local_6d165ca7-423a-4726-9d30-805b2c9a8bb4",
    "startedAt": "2026-09-04T13:14:37+0900",
    "elapsedMin": 0,
    "lastReportAt": null,
@@ -61,17 +61,17 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 260,
+   "mb": 288,
    "idleMin": 0.0,
    "kind": "working",
-   "model": null,
-   "turns": 0,
-   "lastActivityAt": null
+   "model": "claude-opus-5",
+   "turns": 7,
+   "lastActivityAt": "2026-09-04T04:14:50.958Z"
   }
  ],
  "line": "負荷 100% ｜ セッション1本（作業中1・止まり0） ｜ 上限2本・あと1本OK ｜ 空き31.0GB",
  "modelCounts": {
-  "不明": 1
+  "claude-opus-5": 1
  },
  "autonomy": {
   "alive": 1,
@@ -81,7 +81,7 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 13:14",
+  "lastRun": "2026-09-04 13:15",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -113,12 +113,12 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-04 13:14",
+  "updatedAt": "2026-09-04 13:15",
   "estimated": false,
   "fablePct": 23.6,
   "allPct": 75.0,
   "allPctAsOf": "13:05:24",
-  "allPctAgeMin": 9.3,
+  "allPctAgeMin": 10.1,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.2,
   "hoursLeft": 100.7,
@@ -142,10 +142,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 282861393,
-  "allWeightedTokensSinceReset": 900386651,
+  "allWeightedTokensSinceReset": 900557905,
   "last6h": {
    "fable": 0,
-   "all": 48385632
+   "all": 48116114
   },
   "projection": {
    "fablePctAtReset_avgPace": 58.9,
@@ -156,7 +156,7 @@
   "method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
   "source": "plan-usage-history.json",
   "asOf": "13:05:24",
-  "ageMin": 9.3,
+  "ageMin": 10.1,
   "weekdayTarget": 82.5,
   "weekdayTargetBase": 55,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
@@ -181,22 +181,22 @@
   "session5h": {
    "pct": 5.0,
    "resetAt": "2026-09-04 15:27",
-   "hoursLeft": 2.22,
-   "recentPacePctPerHour": 1.8,
-   "projectedPctAtReset": 9.0,
-   "wasteRiskPct": 91.0,
+   "hoursLeft": 2.21,
+   "recentPacePctPerHour": 1.79,
+   "projectedPctAtReset": 8.9,
+   "wasteRiskPct": 91.1,
    "mottainai": true,
    "source": "実測(plan-usage-history.json)",
    "asOf": "13:05:24",
-   "ageMin": 9.3,
+   "ageMin": 10.1,
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 0.672,
+   "allPacePctPerHour6h": 0.668,
    "aliveAvgLast6h": 2.4,
-   "pctPerSessionHour": 0.2841,
+   "pctPerSessionHour": 0.2834,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
-   "sonnetSessionsFor5hWindow": 134.8,
+   "sonnetSessionsFor5hWindow": 135.7,
    "sonnetSessionsForWeeklyCurve": 0.8
   },
   "line": "Fable週枠 24%（今日の目標82.5%＝55×1.5・58.9pt下振れ→投入余地あり） ／ 全モデル 75%（13:05:24時点・曲線目標60.0%＝40×1.5・15.0pt上振れ） ／ リセットまで 4.2日 ／ 5時間枠 5.0%・残2.2h・もったいない（91%余る見込み→本数増やす）（13:05:24時点）",
