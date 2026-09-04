@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-04 18:15",
+ "updatedAt": "2026-09-04 18:33",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -470,6 +470,78 @@
    "urls": [
     "https://joy-relief-station.lovable.app/world/music"
    ]
+  },
+  {
+   "title": "留守番の見回り（30分おき）を止める",
+   "why": "たまごさん「これ消しちゃっていい。もったいない」",
+   "what": "『Rusuban mimawari 30min』が30分おきに動いてセッション枠を1本占有している。たまごさんが不要と判断。定期実行の登録を止め、定期実行台帳からも消す。停止したことをログに残す。",
+   "n": 30,
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "worktree": "q30-0904",
+   "startedAt": "2026-09-04T18:21:33+09:00",
+   "sessionId": "daf4485e-c9f3-4988-9a11-3c4a4e41c214",
+   "pid": 53316
+  },
+  {
+   "title": "確認待ちの判定をMac側に反映する仕組み",
+   "why": "OK／やり直しを押した結果をqueue.jsonへ戻す",
+   "what": "進捗表で『OK・完了にする』『やり直し』を押した結果は、いま端末の中にしか残らない。優先度と同じ道（Obsidian経由）でMac側へ渡し、queue.jsonのstatusを done / waiting に書き換える。やり直しは列の先頭に戻す。",
+   "n": 31,
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "worktree": "q31-0904",
+   "startedAt": "2026-09-04T18:22:03+09:00",
+   "sessionId": "cc7adc0f-1728-488c-89e9-acf8d24df305",
+   "pid": 53382
+  },
+  {
+   "title": "完了したものを『完了』一覧に積み上げる",
+   "why": "完了＝本番に出て確認まで済んだもの。ここが増えることだけが成果",
+   "what": "OKと判定されたものを、日時とURLつきで完了一覧に積む。何時何分に完了したかを残す。増えていくのが目に見えるようにする。",
+   "n": 32,
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "worktree": "q32-0904",
+   "startedAt": "2026-09-04T18:24:44+09:00",
+   "sessionId": "e4df6d85-c335-4343-8b60-df1921c9dbc9",
+   "pid": 53553
+  },
+  {
+   "title": "スマホからタスクを追加できるようにする",
+   "why": "思いついたその場で発車待ちに積みたい",
+   "what": "進捗表に入力欄を作り、そこに書いた1行がそのまま発車待ちの列に入るようにする。優先度も同時に付けられる。いまはDispatch経由でしか積めない。",
+   "n": 33,
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "worktree": "q33-0904",
+   "startedAt": "2026-09-04T18:33:15+09:00",
+   "sessionId": "3977319e-4b0d-41fe-9cd6-6d3677f6224b",
+   "pid": 54189
+  },
+  {
+   "title": "3時間を超えたセッションを自動で切る",
+   "why": "たまごさん「全部3時間縛り」",
+   "what": "指示文には『3時間で切れ』と書いてあるが、守られないことがある。3時間を超えたら見張り番が強制的に切って、そこまでの成果とURLを回収し、残りを引き継ぎとして列に戻す。",
+   "n": 34,
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "worktree": "q34-0904"
+  },
+  {
+   "title": "Googleドライブに上げる（ブラウザ経由で確立）",
+   "why": "Driveアプリが死んでいてローカル経由では上がらない",
+   "what": "Driveのデスクトップアプリが止まっていて、Mac側のフォルダとクラウドが繋がっていない。ブラウザ（ログイン済み）から上げる手順を確立して、20フレーズ27枚と円卓デザインのClaude版を実際に上げる。",
+   "n": 35,
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "worktree": "q35-0904"
   }
  ]
 }
