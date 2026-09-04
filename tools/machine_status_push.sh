@@ -136,7 +136,9 @@ python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
 # 2026-09-04 たまごさん「まず連続して走る仕組みを優先してね。順番に発車されるようにして、1日中回ってる状態を作るのが最優先」
 #   発車待ち(status/queue.json)から、マシンとクレジットに空きがあれば1本だけ自動で着火する。
 #   3時間縛り・URL報告のセットはプロンプト側に必ず入る。Fableは使わない（常にSonnet）。
-python3 "$REPO/tools/auto_launcher.py" >/dev/null 2>&1 || true
+# 2026-09-05 発車は心臓（15秒おき）だけに任せる。ここからも呼ぶと二重発車の元になった。
+#   （実測：同じ番号が2回出てクレジットが二重に減った）
+# python3 "$REPO/tools/auto_launcher.py" >/dev/null 2>&1 || true
 # 2026-09-04 たまごさん「Obsidianには飛ばない」→ 進捗表のボタンをHTTPSで直接受ける中継所。
 #   立っていなければ立て、トンネルのURLを status/relay.json へ書く（冪等・既に動いていれば何もしない）。
 bash "$REPO/tools/relay_up.sh" >/dev/null 2>&1 || true

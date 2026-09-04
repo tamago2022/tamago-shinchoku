@@ -106,6 +106,26 @@ def queue_lock(timeout=180.0):
         f.close()
 
 
+# ---- 発車係は同時に1つだけ（2026-09-05）----
+# 実測：05:21と05:23に**同じ番号が2回発車**した（pid 30405/30494、30918/30919）。
+# 心臓（15秒おき）と5分便の両方が auto_launcher を呼ぶため、走り出しが重なると
+# 台帳の鍵を取り合う前に「同じ待ち行列」を見てしまう瞬間がある。
+# ＝クレジットが二重に減る。**発車係そのものを1つに制限する。**
+RUN_LOCK = os.path.join(REPO, "status", ".auto_launcher.lock")
+_run_lock_f = None
+
+
+def only_one_launcher():
+    """先客がいれば False を返して静かに帰る（工場は止めない）。"""
+    global _run_lock_f
+    try:
+        _run_lock_f = io.open(RUN_LOCK, "a+")
+        fcntl.flock(_run_lock_f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except Exception:
+        return False
+
+
 def save_queue(q):
     """台帳を安全に書く。
 
@@ -187,6 +207,27 @@ def harvest(q):
             urls = clean[:5]
         except Exception:
             pass
+        # ---- 認証切れの検知（2026-09-05・実害あり）----
+        # 実測：05:25〜05:28に10本以上が1〜3秒で死に、ログには
+        #   "Failed to authenticate: OAuth session expired and could not be refreshed"
+        # だけが残っていた。これはこちらでは直せない（たまごさんが claude にログインし直すしかない）。
+        # 気づかずに回すと、**同じ失敗を何十本も量産して台帳が汚れるだけ**なので、見つけたら発車を止める。
+        if "Failed to authenticate" in (raw or "") or "OAuth session expired" in (raw or ""):
+            flag = os.path.join(REPO, "status", "no_launch.flag")
+            if not os.path.exists(flag):
+                io.open(flag, "w", encoding="utf-8").write(
+                    "Claudeのログインが切れています（OAuth session expired）。"
+                    "たまごさんが claude にログインし直すまで発車を止めます。%s\n"
+                    % time.strftime("%Y-%m-%d %H:%M"))
+            io.open(os.path.join(REPO, "status", "auth_expired.flag"), "w", encoding="utf-8").write(
+                time.strftime("%Y-%m-%d %H:%M"))
+            it["status"] = "waiting"      # 失敗ではないので、そのまま列に戻す（やり直し回数も数えない）
+            for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                it.pop(k, None)
+            it.pop("pid", None)
+            changed = True
+            log("🔑 ログインが切れています。%d番は列に戻し、発車を止めました" % it.get("n"))
+            continue
         # 2026-09-05 たまごさん「何も動いてない状態は作らないで。クレジット消費最小で」
         #   → 空回し（keepalive）は終わったら台帳から静かに消す。
         #     確認待ちに積むと、判定するものが増えるだけで意味がない（今日それで29件溜めた）。
@@ -309,6 +350,8 @@ def build_prompt(item):
 
 
 def main():
+  if not only_one_launcher():
+      return 0      # 先客がいる。二重発車を作らない
   with queue_lock():
       q = load(QUEUE, {})
       items = q.get("items") or []

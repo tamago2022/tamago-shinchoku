@@ -51,6 +51,71 @@ def parse_reset(s):
     return None
 
 
+# ---- 燃料の配分を自動でやる（2026-09-05・たまごさん指示）----
+# たまごさんの言葉：
+#   「**5時間枠は、リセットがかかるとき90〜99%で着地するのが理想。そのギリギリをついてほしい。**
+#    まだ3%しかないのに5時間経って0%に戻る、それは全然使えてない、元が取れてない。
+#    **週間は、土日月＋火18時まで。1日30%。30%を超えたらもう今日はストップ。**
+#    Fableは今のところ使う予定ない。**そこまでマネジメントしてくれたら非常に助かります。**」
+DAILY_CAP = 30.0        # 1日に使ってよい週枠の割合（超えたら今日は打ち止め）
+S5_TARGET = 95.0        # 5時間枠は、リセット時にこのあたりで着地させたい
+CAP_MIN, CAP_MAX = 2, 4  # 同時に走らせる本数の下限・上限
+
+
+def manage_fuel(d, q):
+    """今日の使いすぎを止め、5時間枠を余らせないように本数を上下させる。"""
+    repo_status = lambda n: os.path.join(REPO, "status", n)
+    flag = repo_status("no_launch.flag")
+    cap_path = repo_status("launch_cap.json")
+    notes = []
+
+    # ① 1日の上限。超えたら自動で発車を止める（たまごさんの手を借りない）
+    used = d.get("usedToday")
+    if isinstance(used, (int, float)):
+        if used >= DAILY_CAP:
+            if not os.path.exists(flag):
+                io.open(flag, "w", encoding="utf-8").write(
+                    "今日はもう%.1f%%使ったので自動で止めました（1日の上限%.0f%%）。%s\n"
+                    % (used, DAILY_CAP, time.strftime("%Y-%m-%d %H:%M")))
+                notes.append("今日の上限%.0f%%に達したので発車を止めました" % DAILY_CAP)
+        else:
+            # 自分で止めたぶんだけ解除する（たまごさんが手で止めたものは触らない）
+            try:
+                if os.path.exists(flag) and "1日の上限" in io.open(flag, encoding="utf-8").read():
+                    os.remove(flag)
+                    notes.append("日付が変わったので発車を再開しました")
+            except Exception:
+                pass
+
+    # ② 5時間枠を余らせない。このままのペースでリセット時に何%になるかで本数を上下する
+    s5 = (q.get("session5h") or {})
+    pct = s5.get("pct")
+    hours_left = s5.get("hoursLeft")
+    rate = s5.get("recentPacePctPerHour")
+    cap_now = (load(cap_path, {}) or {}).get("cap")
+    if isinstance(pct, (int, float)) and isinstance(hours_left, (int, float)) and hours_left > 0.2:
+        r = rate if isinstance(rate, (int, float)) and rate > 0 else None
+        projected = pct + (r * hours_left) if r else None
+        d["s5Projected"] = round(projected, 1) if projected is not None else None
+        if projected is not None and isinstance(cap_now, int):
+            new_cap = cap_now
+            if projected < S5_TARGET - 15:      # 大きく余る見込み → もっと走らせる
+                new_cap = min(CAP_MAX, cap_now + 1)
+            elif projected > 105:               # 天井に着く見込み → 絞る
+                new_cap = max(CAP_MIN, cap_now - 1)
+            if new_cap != cap_now and (used is None or used < DAILY_CAP):
+                json.dump({"cap": new_cap, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+                           "why": "5時間枠の着地見込み%.0f%%（目標%.0f%%）" % (projected, S5_TARGET)},
+                          io.open(cap_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                notes.append("同時本数を%d→%d本にしました（5時間枠の着地見込み%.0f%%）"
+                             % (cap_now, new_cap, projected))
+    d["dailyCap"] = DAILY_CAP
+    d["s5Target"] = S5_TARGET
+    d["cap"] = (load(cap_path, {}) or {}).get("cap")
+    d["fuelNotes"] = notes
+    return d
+
+
 def main():
     q = load(QUOTA, {})
     all_pct = q.get("allPct")
@@ -82,21 +147,32 @@ def main():
                 pass
     except Exception:
         pass
+    # 2026-09-05 週がリセットされると使用率が 86% → 0% のように落ちる。
+    #   その前の記録を基準にすると「今日 -86% 使った」というおかしな数字になるので、
+    #   **落ちた地点を新しい起点にする。**
+    todays = []
     for r in rows:
         try:
             t = datetime.strptime(r["t"], "%Y-%m-%dT%H:%M:%S")
         except Exception:
             continue
         if t >= today0:
-            first_today = r
-            break
+            todays.append(r)
+    base = None
+    for r in todays:
+        v = r.get("allPct")
+        if v is None:
+            continue
+        if base is None or v < base - 20:     # 20pt以上の急落＝リセット
+            base = v
+    first_today = {"allPct": base} if base is not None else None
     used_today = None
-    if first_today is not None and first_today.get("allPct") is not None:
-        used_today = round(all_pct - first_today["allPct"], 1)
+    if base is not None:
+        used_today = max(0.0, round(all_pct - base, 1))
 
     per_day_even = round(WEEK_TARGET / DAYS, 1)                       # 14.1
     remain = max(0.0, WEEK_TARGET - all_pct)
-    budget_today = round(remain / max(1.0, days_left), 1)             # 今日あと使える目安
+    budget_today = round(min(DAILY_CAP, remain / max(1.0, days_left)), 1)   # 今日あと使える目安（上限30%）
     line_target = round(WEEK_TARGET * min(1.0, days_used / DAYS), 1)  # 今この時点の理想ライン
     over = round(all_pct - line_target, 1)
 
@@ -123,6 +199,10 @@ def main():
         "state": state,
         "note": "火曜18:00リセット。7日で99%に着地するのが理想。今日の予算＝残り÷残り日数（遅れも使いすぎも引きずらない）",
     }
+    try:
+        d = manage_fuel(d, q)
+    except Exception as e:
+        d["fuelNotes"] = ["配分の自動調整でつまずきました: %s" % e]
     tmp = OUT + ".tmp"
     json.dump(d, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(tmp, OUT)
