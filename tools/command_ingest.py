@@ -566,6 +566,28 @@ def queue_delete(target):
     return "done", "%d番を消しました（取り消せるよう status/deleted.json に控えてあります）" % n
 
 
+def auth_probe(_target=None):
+    """claude CLI が本当に認証できるかを、いちばん軽い実行で確かめる（2026-09-05）。
+
+    たまごさんは「ログインしている」と言っている。アプリのログインとCLIの認証は
+    別々に持っているので、**推測せずに実際に叩いて確かめる。**
+    """
+    r = run([CLAUDE, "-p", "--model", "claude-sonnet-5", "--output-format", "json", "1+1は？"], timeout=60)
+    if r is None:
+        return "failed", "claude が応答しませんでした（タイムアウト）"
+    out = (r.stdout or "") + (r.stderr or "")
+    if "Failed to authenticate" in out or "OAuth session expired" in out:
+        return "failed", "まだ認証が切れています（OAuth session expired）"
+    if '"result"' in out:
+        try:
+            import json as _j
+            d = _j.loads(out.strip().splitlines()[-1])
+            return "done", "認証OK。返事=%s" % str(d.get("result"))[:40]
+        except Exception:
+            return "done", "認証OK（応答あり）"
+    return "failed", ("見慣れない応答: " + out[-200:]).replace("\n", " ")
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -578,6 +600,8 @@ def _process_other(action, cmd):
         return handoff(target)
     if action == "push_unlock":
         return push_unlock(target)
+    if action == "auth_probe":
+        return auth_probe(target)
     if action == "git_unlock":
         return git_unlock(target)
     if action == "launch_pause":
