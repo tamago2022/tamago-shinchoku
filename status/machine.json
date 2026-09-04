@@ -1,13 +1,13 @@
 {
- "raw": "負荷 100% ｜ CPU 13% / メモリ圧迫 22% / スワップ 9.36GB / ディスク空き 33GB ｜ 稼働 1本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 5% / メモリ圧迫 22% / スワップ 9.36GB / ディスク空き 33GB ｜ 稼働 1本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 13,
+ "cpu": 5,
  "mem": 22,
  "swapGB": 9585.75,
  "diskFreeGB": 33.0,
  "sessions": 1,
- "note": "上限5本・あと4本OK（CPU13%・メモリ空き7.1GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限5本、5時間枠もったいない度100.0%→本数を上限5本まで増やす）",
- "measuredAt": "2026-09-04T10:36:37+09:00",
+ "note": "上限5本・あと4本OK（CPU5%・メモリ空き6.9GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限5本、5時間枠もったいない度100.0%→本数を上限5本まで増やす）",
+ "measuredAt": "2026-09-04T10:37:14+09:00",
  "working": 0,
  "stalled": 0,
  "waiting": 1,
@@ -24,23 +24,23 @@
   {
    "pid": 42749,
    "title": "イパネマの娘に高校生カバーを繋ぐ",
-   "idleMin": 18.8
+   "idleMin": 19.4
   }
  ],
  "below": 4,
- "blockReason": "CPU13%・メモリ空き7.1GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限5本、5時間枠もったいない度100.0%→本数を上限5本まで増やす",
- "load1": 7.99,
- "load5": 7.34,
- "load15": 13.82,
+ "blockReason": "CPU5%・メモリ空き6.9GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限5本、5時間枠もったいない度100.0%→本数を上限5本まで増やす",
+ "load1": 10.59,
+ "load5": 7.97,
+ "load15": 13.78,
  "cores": 8,
- "loadRatio": 1.0,
+ "loadRatio": 1.32,
  "memPressure": "green",
- "memAvailGB": 7.1,
+ "memAvailGB": 6.9,
  "swapIncreasing": false,
- "ioMBs": 0.87,
+ "ioMBs": 0.11,
  "network": {
-  "pingMedianMs": 23.1,
-  "pingMaxMs": 61.1,
+  "pingMedianMs": 24.8,
+  "pingMaxMs": 107.7,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -69,7 +69,7 @@
    "dispatch": true,
    "isDispatchSelf": false,
    "mb": 305,
-   "idleMin": 18.8,
+   "idleMin": 19.4,
    "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 247,
@@ -88,7 +88,7 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 10:36",
+  "lastRun": "2026-09-04 10:37",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -120,7 +120,7 @@
  },
  "deployAlerts": [
   {
-   "t": "2026-09-04 10:36",
+   "t": "2026-09-04 10:37",
    "cli": "5b6e8c9c-cc6f-429c-8732-c95c1f807e0d",
    "title": "イパネマの娘に高校生カバーを繋ぐ",
    "urls": [
@@ -130,12 +130,12 @@
   }
  ],
  "quota": {
-  "updatedAt": "2026-09-04 10:36",
+  "updatedAt": "2026-09-04 10:37",
   "estimated": false,
   "fablePct": 23.4,
   "allPct": 74.0,
   "allPctAsOf": "10:30:37",
-  "allPctAgeMin": 6.0,
+  "allPctAgeMin": 6.6,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.3,
   "hoursLeft": 103.4,
@@ -173,7 +173,7 @@
   "method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
   "source": "plan-usage-history.json",
   "asOf": "10:30:37",
-  "ageMin": 6.0,
+  "ageMin": 6.6,
   "weekdayTarget": 82.5,
   "weekdayTargetBase": 55,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
@@ -198,25 +198,25 @@
   "session5h": {
    "pct": 0.0,
    "resetAt": "2026-09-04 15:15",
-   "hoursLeft": 4.65,
+   "hoursLeft": 4.64,
    "recentPacePctPerHour": 0.0,
    "projectedPctAtReset": 0.0,
    "wasteRiskPct": 100.0,
    "mottainai": true,
    "source": "実測(plan-usage-history.json)",
    "asOf": "10:30:37",
-   "ageMin": 6.0,
+   "ageMin": 6.6,
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
    "allPacePctPerHour6h": 1.142,
    "aliveAvgLast6h": 2.7,
-   "pctPerSessionHour": 0.4253,
+   "pctPerSessionHour": 0.4268,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
-   "sonnetSessionsFor5hWindow": 45.5,
+   "sonnetSessionsFor5hWindow": 45.4,
    "sonnetSessionsForWeeklyCurve": 0.6
   },
-  "line": "Fable週枠 23%（今日の目標82.5%＝55×1.5・59.1pt下振れ→投入余地あり） ／ 全モデル 74%（10:30:37時点・曲線目標57.9%＝39×1.5・16.1pt上振れ） ／ リセットまで 4.3日 ／ 5時間枠 0.0%・残4.7h・もったいない（100%余る見込み→本数増やす）（10:30:37時点）",
+  "line": "Fable週枠 23%（今日の目標82.5%＝55×1.5・59.1pt下振れ→投入余地あり） ／ 全モデル 74%（10:30:37時点・曲線目標57.9%＝39×1.5・16.1pt上振れ） ／ リセットまで 4.3日 ／ 5時間枠 0.0%・残4.6h・もったいない（100%余る見込み→本数増やす）（10:30:37時点）",
   "switches": [
    {
     "t": "2026-09-03 12:03",
