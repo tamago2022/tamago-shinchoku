@@ -401,7 +401,12 @@ def main():
     os.makedirs(INBOX_DIR, exist_ok=True)
     out = load_json(OUT, {"results": []})
     done_ids = {r.get("id") for r in out.get("results", [])}
-    files = sorted(glob.glob(os.path.join(INBOX_DIR, "*.md")))
+    # 2026-09-04 受信箱を2つにした。
+    #   Vault側(iCloud)は同期に数分かかることがあり、Dispatchからの指示が届くのが遅れた（実測4分以上）。
+    #   リポジトリ内の status/inbox/ は同じディスクなので**すぐ届く**。Dispatchはこちらを使う。
+    local_inbox = os.path.join(REPO, "status", "inbox")
+    os.makedirs(local_inbox, exist_ok=True)
+    files = sorted(glob.glob(os.path.join(INBOX_DIR, "*.md")) + glob.glob(os.path.join(local_inbox, "*.md")))
     changed = False
     for fp in files:
         try:
