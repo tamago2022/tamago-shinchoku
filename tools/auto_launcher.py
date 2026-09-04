@@ -111,11 +111,30 @@ def harvest(q):
             #   （実例：20番「自動発車」自身がそれだった）。result本文（たまごさんへの完了報告文）
             #   から任意のhttps URLを拾う方式へ一般化する。
             cand = re.findall(r"https://[^\s\"'）)、。]*", result or raw)
+            # 2026-09-04 たまごさん「確認のURLをくれるのはいいけど、**全く見当違いなところに連れて行く**
+            #   からそれもやめて。**確認してからこっちに上げて。**時間の無駄だから」
+            #   → 「直ったところ」を指していないURLを証拠として数えない。
+            #     ここで弾かれると、この仕事はURLなし扱いになり自動でやり直しの列へ戻る。
+            JUNK = (
+                "example.com", "youtube.com/oembed", "youtube.com/results",
+                "youtube.com/watch", "youtu.be/", "github.com/", "docs.", "localhost",
+                "trycloudflare.com",
+            )
+            ROOTS = (
+                "https://joy-relief-station.lovable.app",
+                "https://tamago2022.github.io/tamago-shinchoku",
+                "https://www.youtube.com", "https://youtube.com",
+            )
             clean = []
             for u in cand:
                 u = u.split("\\")[0].rstrip("/.,:;")
-                if u and u not in clean and len(u) > len("https://a.co"):
-                    clean.append(u)
+                if not u or u in clean or len(u) <= len("https://a.co"):
+                    continue
+                if any(j in u for j in JUNK):
+                    continue
+                if u in ROOTS:          # トップページだけ貼るのは「どこを見ればいいか分からない」
+                    continue
+                clean.append(u)
             urls = clean[:5]
         except Exception:
             pass
@@ -203,6 +222,14 @@ def build_prompt(item):
 **「直っていること」がそのページを開いただけで分かること。**
 開いてもまだ探さないと分からないなら、その確認ページは失格です。
 
+**出す前に自分で開いて確かめる。**たまごさんの言葉：
+> 「**確認のURLをくれるのはいいけど、全く見当違いなところに連れて行くから、それもやめて。
+>  確認してからこっちに上げて。時間の無駄だから。ちゃんと『直った』『問題がある』というところのURLを置いてください。**」
+
+次のURLは**証拠として数えません**（貼っても、URLなし扱いでやり直しになります）：
+サイトのトップページだけ／`example.com`／YouTubeの検索結果やoembed／GitHubのリポジトリ／ドキュメント。
+**直した実物か、確認ページのURL**を出してください。
+
 # 時間
 **3時間で必ず切ってください。**（たまごさん指定）
 3時間で終わらなければ、**できたところまでを本番に出して、URLと「どこまで終わって、次に何をするか」を報告**してから終わってください。黙って止まるのが一番困ります。
@@ -243,7 +270,18 @@ def main():
         log("見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
         return 0
 
-    alive = len([s for s in (m.get("sessionList") or []) if countable(s)])
+    # 2026-09-04 machine.json は重い計測（27秒〜）でしか書き変わらないので、最大5分ぶん古い。
+    #   そのままだと「もう死んでいるセッション」を走行中として数え、空きが出ても繰り上がらなかった。
+    #   ここで pid の生死をその場で見て、死んでいるぶんを除く（数百マイクロ秒で終わる）。
+    def _pid_alive(pid):
+        try:
+            os.kill(int(pid), 0)
+            return True
+        except Exception:
+            return False
+
+    alive = len([s for s in (m.get("sessionList") or [])
+                 if countable(s) and (not s.get("pid") or _pid_alive(s.get("pid")))])
     safe_max = m.get("safeMax")
     if safe_max is None:
         log("見送り: safeMaxが取れない")

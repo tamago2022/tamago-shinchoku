@@ -252,9 +252,23 @@ git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/nul
 # 約260秒（次の5分ティックが来る前）、間を空けずに回し続ける。走行中↔停止の切り替わりをできるだけ早くPWAへ反映するため。
 # factory_status.py自体が実測27秒かかる（ps/lsof/transcriptスキャン）ので、固定sleepは入れず作業時間そのものを間隔にする
 LOOP_END=$(( $(date +%s) + 260 ))
+# 2026-09-04 たまごさん「1個空いたら1個繰り上がる、ところてんみたいに」
+#   重い計測(factory_status・実測27秒〜。走行が増えるとさらに伸びる)と同じ周期でしか
+#   着火と受信箱を見ていなかったため、空きが出てから繰り上がるまで最大5分かかっていた。
+#   → 重い計測の合間に、**軽い2つ（着火・受信箱）だけを15秒おきに回す。**
+#     どちらも数百ミリ秒で終わるので、負荷はほぼ増えない。
+quick_tick() {
+  python3 "$REPO/tools/auto_launcher.py"   >/dev/null 2>&1 || true
+  python3 "$REPO/tools/command_ingest.py"  >/dev/null 2>&1 || true
+}
 while :; do
   run_once
   NOWSEC=$(date +%s)
   [ "$NOWSEC" -ge "$LOOP_END" ] && break
-  sleep 2
+  for _ in 1 2 3 4; do
+    sleep 15
+    [ "$(date +%s)" -ge "$LOOP_END" ] && break
+    quick_tick
+  done
+  [ "$(date +%s)" -ge "$LOOP_END" ] && break
 done
