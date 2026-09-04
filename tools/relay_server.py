@@ -121,6 +121,19 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/health"):
             return self._json(200, {"ok": True, "at": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+        # 2026-09-05 たまごさん「押しても動かない、完了に入らない、後に回らない」
+        #   原因：押した結果はMacにちゃんと届いていた（記録あり）が、画面が読んでいた台帳は
+        #   GitHub Pages側の**公開済みコピー**で、公開は5分以上遅れる。
+        #   そのため押した直後に画面が古い状態へ戻り、何度も押すことになっていた。
+        #   → 中継所からMacの**生の台帳**をそのまま返す。押した瞬間に画面へ反映される。
+        for name, path in (("/queue", "queue.json"), ("/machine", "machine.json"),
+                           ("/quota", "quota.json"), ("/commands", "commands.json")):
+            if self.path.startswith(name):
+                try:
+                    with io.open(os.path.join(REPO, "status", path), encoding="utf-8") as f:
+                        return self._json(200, json.load(f))
+                except Exception as e:
+                    return self._json(500, {"ok": False, "error": str(e)})
         return self._json(404, {"ok": False})
 
     def do_POST(self):

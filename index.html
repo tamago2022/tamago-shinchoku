@@ -671,13 +671,28 @@ function renderHealth(h){
    30秒おきに読み直し、失敗したことも画面に出す。 */
 window.__queueErr = 0;
 function refreshHealth(){
-  return fetch("status/queue.json?t=" + Date.now(), {cache:"no-store"})
+  // 2026-09-05 中継所が使えるなら、そちらから**Macの生の台帳**を読む。
+  //   GitHub Pages側のコピーは公開が5分以上遅れるため、押した直後に古い状態へ戻ってしまい
+  //   「押しても動かない・完了に入らない」に見えていた。中継所なら押した瞬間に反映される。
+  const relay = (window.__relay && window.__relay.url);
+  const src = relay ? (relay.replace(/\/$/, "") + "/queue?t=" + Date.now())
+                    : ("status/queue.json?t=" + Date.now());
+  return fetch(src, {cache:"no-store"})
     .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
     .then(q => { window.__queue = q; window.__queueErr = 0; try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} })
-    .catch(()=>{ window.__queueErr++; try{ renderQueue(); }catch(e){} });
+    .catch(()=>{
+      // 中継所がダメなら公開済みコピーで代用する（古いが、何も出ないよりまし）
+      if(relay){
+        return fetch("status/queue.json?t=" + Date.now(), {cache:"no-store"})
+          .then(r => r.ok ? r.json() : null)
+          .then(q => { if(q){ window.__queue = q; try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} } })
+          .catch(()=>{ window.__queueErr++; try{ renderQueue(); }catch(e){} });
+      }
+      window.__queueErr++; try{ renderQueue(); }catch(e){}
+    });
 }
 refreshHealth();
-setInterval(refreshHealth, 30000);
+setInterval(refreshHealth, 10000);   // 中継所から直接読むので、10秒ごとに見に行く
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refreshHealth(); });
 
 /* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */

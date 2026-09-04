@@ -24,9 +24,11 @@ trap 'rm -f "$LOCK"' EXIT
 #   **この巡回のいちばん最初に立てる。**重い計測のあとに置いていたら、
 #   1回の巡回が4〜5分かかるせいで心臓そのものが何分も立たなかった。
 #   落ちていたら次の巡回で立て直す（自己修復）。二重起動はしない。
+#   2026-09-05：`nohup ... &` だと**launchdが次の便を出すときに親ごと（プロセスグループごと）
+#   殺されて心臓も一緒に死んでいた**（実測：01:32/01:42/01:51と10分おきに立ち上げ直されていた）。
+#   親から切り離した別セッションとして起動する（pythonの start_new_session=True ＝ setsid相当）。
 if ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
-  nohup bash "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 &
-  disown 2>/dev/null || true
+  python3 -c "import subprocess,sys; subprocess.Popen(['bash', sys.argv[1]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, start_new_session=True)" "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 || true
 fi
 
 # 2026-09-03 追加：置き去りのgitロックを掃除する。

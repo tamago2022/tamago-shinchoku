@@ -285,7 +285,10 @@ def main():
         log("見送り: Macが危険（mem=%s swapUp=%s disk=%s）" % (m.get("memPressure"), m.get("swapIncreasing"), m.get("diskFreeGB")))
         return 0
     # ---- 安全弁：クレジット ----
-    if quota.get("allLevel") == "stop":
+    #   テスト用のカラ発車（"test": true）はClaudeを起動しない＝クレジットを1円も使わないので、
+    #   週枠が上限でも通す。ここで一緒に止めていると、枠が苦しいときほど動作確認ができなくなる。
+    credit_stop = quota.get("allLevel") == "stop"
+    if credit_stop and not any(it.get("status") == "waiting" and it.get("test") for it in items):
         log("見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
         return 0
 
@@ -330,8 +333,12 @@ def main():
         return (int(p) if p else 9, it.get("n") or 99)
 
     waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
+    if credit_stop:
+        # 週枠が上限のあいだは、クレジットを使わないテストだけ通す
+        waiting = [it for it in waiting if it.get("test")]
     if not waiting:
-        log("見送り: 発車待ちが空")
+        log("見送り: 発車待ちが空" if not credit_stop else
+            "見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
         return 0
 
     # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
