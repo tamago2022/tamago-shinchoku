@@ -322,18 +322,7 @@
 
 <details class="sec sub"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
 
-<details class="sec sub"><summary>走行状況（全件・自動5分おき） <small id="sessMeta"></small></summary><div class="in">
-<div class="legend"><span><i style="background:var(--green)"></i>今動いている</span><span><i style="background:var(--yellow)"></i>承認・判断待ち</span><span><i style="background:var(--red)"></i>止まっている（動いていない＝台帳が着手中でも赤）</span></div>
-<div class="sum" id="sessSum"></div>
-<div class="modelSum" id="modelSum"></div>
-<div class="g" id="sessions"></div>
-</div></details>
 
-<details class="sec sub"><summary>言ったこと（直近・埋もれ防止） <small id="saidCount"></small></summary><div class="in" id="said"></div></details>
-<details class="sec sub"><summary>いま動いているもの（手更新） <small id="runUpdated"></small></summary><div class="in" id="running"></div></details>
-<details class="sec sub"><summary>この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></summary><div class="in" id="stats">読み込み中…</div></details>
-<details class="sec sub"><summary>Today（北極星・最重要3件）</summary><div class="in today" id="today"></div></details>
-<details class="sec sub"><summary>旧・進捗表の依頼31件 <small id="listMeta"></small></summary><div class="in" id="list"></div></details>
 </div></details>
 <!-- 2026-09-04 たまごさん「次に発車がない。ここに溜めて」
      ここから下（限界の帯・走行中・次に発車・確認待ち）は、マシンとクレジットの折りたたみの
@@ -756,6 +745,17 @@ function refreshHealth(){
       window.__queueErr++; try{ renderQueue(); }catch(e){}
     });
 }
+/* 2026-09-05 たまごさん「何を閉じれば消せば楽になるか、これが機能してない」
+   原因：refreshHealth() の1行目が return だったため、**status/health.json を一度も取りに行っていなかった。**
+   中身（Braveで11.9GB戻る等）はMac側でちゃんと作られていたのに、画面に届いていなかっただけ。 */
+function refreshMachineHealth(){
+  return fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null)
+    .then(h => { window.__health = h; try{ renderHealth(h); renderCapBar(); }catch(e){} })
+    .catch(()=>{ try{ renderHealth(null); }catch(e){} });
+}
+refreshMachineHealth();
+setInterval(refreshMachineHealth, 60000);
 refreshHealth();
 setInterval(refreshHealth, 10000);   // 中継所から直接読むので、10秒ごとに見に行く
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refreshHealth(); });
