@@ -25,7 +25,17 @@ fi
 have_cloudflared() { [ -n "${CLOUDFLARED:-}" ]; }
 
 # ---- 1. 受け口（python）を起動 ----
+# 2026-09-05：relay_server.py を直したときに、古いプロセスが動き続けて新機能が効かなかった。
+#   ファイルが前回起動より新しければ、いったん落として入れ直す。
+STAMP="$REPO/status/.relay_server_started"
+if pgrep -f "relay_server.py" >/dev/null 2>&1 && [ -f "$STAMP" ] \
+   && [ "$REPO/tools/relay_server.py" -nt "$STAMP" ]; then
+  pkill -f "relay_server.py" >/dev/null 2>&1 || true
+  sleep 1
+  echo "$(date '+%F %T') 受け口を入れ直します（コードが新しくなったため）" >>"$LOG"
+fi
 if ! pgrep -f "relay_server.py" >/dev/null 2>&1; then
+  touch "$STAMP"
   nohup python3 "$REPO/tools/relay_server.py" >>"$LOG" 2>&1 &
   sleep 1
   echo "$(date '+%F %T') 受け口を起動しました" >>"$LOG"
