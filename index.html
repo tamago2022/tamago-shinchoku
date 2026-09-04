@@ -929,15 +929,17 @@ function renderMeters(m){
       : `残り${s5.hoursLeft}h・${s5.resetAt}にリセット（使い切らないと消える）`;
     parts.push(meterHTML("5時間枠", s5.pct, lvl, `${s5.pct}%`, sub, s5.mottainai ? "mottainai" : "", undefined, qFresh));
   }
-  if(q.fablePct != null){
-    const base = `${q.resetAt || "火曜17:59"}まで${q.daysLeft != null ? q.daysLeft + "日" : ""}`;
-    parts.push(meterHTML("週枠・Fable", q.fablePct, lvlMap[q.fableLevel] || "green", `${q.fablePct}%`,
-      curveSub(q.fableCurve, base), q.fableCurve && q.fableCurve.state === "over" ? "mottainai" : "", q.fableCurve && q.fableCurve.target, qFresh));
-  }
+  // 2026-09-04 たまごさん「並び方も一緒にして。ややこしいから。Fableと全モデルがテレコになってる」
+  //   → Claudeアプリの『使用状況』画面と同じ順に揃える：現在のセッション（5時間枠）→ すべてのモデル → Fableのみ
   if(q.allPct != null){
     const base = `${q.resetAt || "火曜17:59"}まで${q.daysLeft != null ? q.daysLeft + "日" : ""}`;
-    parts.push(meterHTML("週枠・全モデル", q.allPct, lvlMap[q.allLevel] || "green", `${q.allPct}%`,
+    parts.push(meterHTML("週枠・すべてのモデル", q.allPct, lvlMap[q.allLevel] || "green", `${q.allPct}%`,
       curveSub(q.allCurve, base), q.allCurve && q.allCurve.state === "over" ? "mottainai" : "", q.allCurve && q.allCurve.target, qFresh));
+  }
+  if(q.fablePct != null){
+    const base = `${q.resetAt || "火曜17:59"}まで${q.daysLeft != null ? q.daysLeft + "日" : ""}`;
+    parts.push(meterHTML("週枠・Fableのみ", q.fablePct, lvlMap[q.fableLevel] || "green", `${q.fablePct}%`,
+      curveSub(q.fableCurve, base), q.fableCurve && q.fableCurve.state === "over" ? "mottainai" : "", q.fableCurve && q.fableCurve.target, qFresh));
   }
   if(m.load != null){
     const lvl = m.load >= 90 ? "red" : m.load >= 70 ? "yellow" : "green";
