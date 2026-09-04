@@ -199,6 +199,13 @@
   .check > summary{font-weight:700;}
   .crow{padding:12px 4px; border-bottom:1px solid var(--line);}
   .crow:last-child{border-bottom:none;}
+  .done{border-color:rgba(111,143,176,0.5);}
+  .done > summary{font-weight:700; color:var(--blue);}
+  .drow{padding:10px 4px; border-bottom:1px solid var(--line);}
+  .drow:last-child{border-bottom:none;}
+  .drow .ct{font-weight:600;}
+  .drow .cm{color:var(--sub); font-size:0.78rem; margin-top:2px;}
+  .drow .cu{display:block; color:var(--blue); font-size:0.8rem; word-break:break-all; margin-top:2px;}
   .ct{font-size:0.92rem; font-weight:700; line-height:1.35;}
   .cm{font-size:0.72rem; color:var(--sub); margin:3px 0 6px; font-variant-numeric:tabular-nums;}
   .cr{font-size:0.78rem; line-height:1.65; color:var(--fg); background:#161c24; border:1px solid var(--line);
@@ -327,6 +334,10 @@
 </div></details>
 <!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」 -->
 <details class="sec check" id="checkSec" open><summary>🔎 たまごさんの確認待ち <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
+<!-- 2026-09-04 たまごさん「完了＝本番に出て確認まで済んだもの。ここが増えることだけが成果」
+     → OKを押した項目がqueue.json上はstatus:doneになるが、これまで表示先が無く消えていた（発車待ち・確認待ちのどちらにも出ない）。
+       ここに積み上げ表示する。新しい完了ほど上、日時とURLを必ず添える。 -->
+<details class="sec done" id="doneSec" open><summary>✅ 完了 <small id="doneMeta"></small></summary><div class="in" id="done"></div></details>
 
 <!-- 2026-09-04 たまごさん「完了・止まっている・判断待ち・検証待ちが下ともダブってる。統合してよ。
      ダブりを消して。混乱するから。半分の画面で同じ情報が出せるはず」
@@ -622,7 +633,7 @@ window.__queueErr = 0;
 function refreshHealth(){
   return fetch("status/queue.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(q => { window.__queue = q; window.__queueErr = 0; try{ renderQueue(); renderCheck(); }catch(e){} })
+    .then(q => { window.__queue = q; window.__queueErr = 0; try{ renderQueue(); renderCheck(); renderDone(); }catch(e){} })
     .catch(()=>{ window.__queueErr++; try{ renderQueue(); }catch(e){} });
 }
 refreshHealth();
@@ -869,6 +880,29 @@ function renderCheck(){
     </div>`;
   }).join("");
 }
+/* ───── 完了一覧（積み上げ） ─────
+   2026-09-04 たまごさん「OKと判定されたものを、日時とURLつきで完了一覧に積む。
+   何時何分に完了したかを残す。増えていくのが目に見えるように」
+   status:done の項目を、確認した時刻(checkedAt)が新しい順に並べて全部出す（消さない＝積み上がる）。 */
+function renderDone(){
+  const box = document.getElementById("done"); if(!box) return;
+  const all = (window.__queue && window.__queue.items) || [];
+  const rows = all.filter(r => r.status === "done")
+    .slice()
+    .sort((a,b) => new Date(b.checkedAt || b.finishedAt || 0) - new Date(a.checkedAt || a.finishedAt || 0));
+  const meta = document.getElementById("doneMeta");
+  if(meta) meta.textContent = rows.length ? `${rows.length}件` : "";
+  if(!rows.length){ box.innerHTML = `<div class="card note">まだありません（OKが出るとここに積み上がります）</div>`; return; }
+  box.innerHTML = rows.map(r=>{
+    const stamp = r.checkedAt ? formatStamp(r.checkedAt) : (r.finishedAt ? formatStamp(r.finishedAt) : "—");
+    const urls = (r.urls || []).filter(Boolean).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
+    return `<div class="drow" data-dn="${r.n}">
+      <div class="ct">${r.n}. ${esc(r.title)}</div>
+      <div class="cm">${esc(stamp)} 完了</div>
+      ${urls || `<div class="cm">URLの報告なし</div>`}
+    </div>`;
+  }).join("");
+}
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-ck]"); if(!b) return;
   // 2026-09-04 たまごさん「70点だけど今急ぎじゃないからいいや、という状態がある。
@@ -897,7 +931,7 @@ document.addEventListener("click", e=>{
     ng5:   ["queue_redo",  String(n) + ":5", "↩︎やり直し（後ろ）"],
   }[kind] || ["queue_ok", String(n), "✅完了 "];
   sendCommandWithId(id, CMD[0], CMD[1], CMD[2] + n + "番");
-  renderCheck(); renderQueue();
+  renderCheck(); renderQueue(); renderDone();
 });
 
 /* ───── 次に発車（予備軍）─────
