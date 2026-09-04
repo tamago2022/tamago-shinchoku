@@ -615,6 +615,12 @@ function refreshPace(){
   return fetch("status/pace.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(renderPace).catch(()=>{});
 }
+function refreshQuota(){
+  return fetch("status/quota.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(q => { if(q){ window.__quota = q; try{ renderFuel(); }catch(e){} } }).catch(()=>{});
+}
+refreshQuota();
+setInterval(refreshQuota, 60000);
 refreshPace();
 setInterval(refreshPace, 60000);
 function refreshRelay(){
@@ -1146,7 +1152,16 @@ let FUEL_ON = true, FUEL_CAP = null;
 function renderFuel(){
   const b = document.getElementById("fuelToggle"), msg = document.getElementById("fuelMsg");
   if(b){ b.textContent = FUEL_ON ? "⏸ 発車を止める" : "▶ 発車を出す"; b.classList.toggle("off", !FUEL_ON); }
-  if(msg) msg.textContent = FUEL_ON ? "発車中（空いたら次が出ます）" : "止まっています（判定と繰り上げは動きます）";
+  // 2026-09-05 「発車待ちに入っているのに何も動いていない」の理由を必ず画面に出す。
+  //   黙って出さないのがいちばん困る（壊れているのか、止めているのか分からない）。
+  const q = window.__quota || {};
+  const stop = (typeof q.allPct === "number") && q.allPct >= (q.stopPct || 85);
+  if(msg){
+    msg.textContent = !FUEL_ON ? "止まっています（判定と繰り上げは動きます）"
+      : stop ? `週枠が上限（${q.allPct}%）。本物の仕事は発車しません＝クレジットを使いません`
+      : "発車中（空いたら次が出ます）";
+    msg.style.color = (!FUEL_ON || stop) ? "var(--yellow)" : "";
+  }
   document.querySelectorAll("#fuelBox .cap").forEach(x=>x.classList.toggle("on", +x.dataset.cap === FUEL_CAP));
 }
 function refreshFuel(){
