@@ -1,12 +1,12 @@
 {
- "measuredAt": "2026-09-04T21:48:52+0900",
- "diskFreeGB": null,
+ "measuredAt": "2026-09-04T21:51:56+0900",
+ "diskFreeGB": 20.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": null,
+ "load": 100,
  "memPressure": "green",
- "memAvailGB": 7.6,
- "sessions": 4,
+ "memAvailGB": 6.7,
+ "sessions": 7,
  "safeMax": 4,
  "moreOK": 0,
  "target": 2,
@@ -16,51 +16,59 @@
  "shedCandidates": [],
  "items": [
   {
+   "label": "~/Library/Caches を空にする",
+   "effect": "空き 8.79GB",
+   "gb": 8.79,
+   "kind": "disk",
+   "safe": true,
+   "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
+  },
+  {
    "label": "Braveを閉じる",
-   "effect": "メモリ 9.6GB",
-   "gb": 9.6,
+   "effect": "メモリ 8.51GB",
+   "gb": 8.51,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
    "how": "46プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
-   "label": "~/Library/Caches を空にする",
-   "effect": "空き 8.76GB",
-   "gb": 8.76,
-   "kind": "disk",
-   "safe": true,
-   "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
-  },
-  {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 2.99GB",
-   "gb": 2.99,
+   "effect": "メモリ 3.41GB",
+   "gb": 3.41,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
-   "how": "26プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "34プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "node_modules を消す（1箇所）",
-   "effect": "空き 0.4GB",
-   "gb": 0.4,
+   "effect": "空き 0.43GB",
+   "gb": 0.43,
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
+  },
+  {
+   "label": "セッションを3本減らす（上限4本）",
+   "effect": "負荷 100%→上限内",
+   "gb": 0,
+   "kind": "load",
+   "safe": false,
+   "how": "どれを止めるかは作業内容次第。止めるなら引き継ぎメモを書かせてから"
   }
  ],
- "_duAt": 1788524448.893713,
+ "_duAt": 1788526299.6753752,
  "_du": {
-  "caches": 8.76,
+  "caches": 8.79,
   "npx": 0.15,
   "trash": 0.01,
   "driveCache": 0.19,
-  "nodeModules": 0.4,
+  "nodeModules": 0.43,
   "nodeModulesList": [
    [
     "~/Desktop/joy-relief-station/node_modules",
-    0.4
+    0.43
    ]
   ]
  }
