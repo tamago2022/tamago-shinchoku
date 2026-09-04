@@ -290,25 +290,19 @@ def queue_later(target):
             break
     if src is None:
         return "failed", "%d番がqueue.jsonに見つかりません" % n
-    src["status"] = "done"
-    src["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    # 2026-09-04 たまごさん「とりあえず後回しでOKを押すと、後回しボックスに入れて欲しいのに、
+    #   **押してるのに次から次へと出てくる。1回だから後回しでOKって言ったんだ。そこから消えて欲しい。**」
+    #   → 「あとで直す」を新しい依頼として積み直すのをやめた（それが増え続ける原因だった）。
+    #     status を later（後回しボックス）にするだけ。確認待ちからは即座に消え、発車もしない。
+    #     時間ができたら「後回しを回して」の一言で waiting に戻す。
+    src["status"] = "later"
+    src["laterAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    src["checkedAt"] = src["laterAt"]
     src["checkNote"] = "たまごさん判定：とりあえずOK（70点。時間があるとき直す）"
-    nxt = max([int(x.get("n") or 0) for x in items] or [0]) + 1
-    items.append({
-        "n": nxt,
-        "priority": 5,
-        "title": "【あとで直す】" + (src.get("title") or ""),
-        "why": "たまごさん判定：とりあえずOK（70点）。合格は85点。急がないが、いつか85点にする",
-        "what": "元の依頼（%d番）は「とりあえずOK」で一度閉じました。残り15点ぶんを仕上げます。\n\n【元の依頼】\n%s"
-                % (n, src.get("what") or ""),
-        "status": "waiting",
-        "limitMin": 180,
-        "model": "claude-sonnet-5",
-    })
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
-    return "done", "%d番をとりあえずOKで閉じ、あとで直す分を%d番（P5）に積みました" % (n, nxt)
+    return "done", "%d番を後回しボックスへ入れました（確認待ちからは消えます）" % n
 
 
 def queue_prio(target):
