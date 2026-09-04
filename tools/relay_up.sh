@@ -15,7 +15,12 @@ PORT="${RELAY_PORT:-8788}"
 LOG="$REPO/status/relay.log"
 TUNLOG="$REPO/status/relay_tunnel.log"
 
-have_cloudflared() { command -v cloudflared >/dev/null 2>&1; }
+# brew未導入でも動くよう、リポジトリ同梱版(tools/bin/cloudflared)をフォールバックに使う。
+CLOUDFLARED="$(command -v cloudflared 2>/dev/null || true)"
+if [ -z "$CLOUDFLARED" ] && [ -x "$REPO/tools/bin/cloudflared" ]; then
+  CLOUDFLARED="$REPO/tools/bin/cloudflared"
+fi
+have_cloudflared() { [ -n "${CLOUDFLARED:-}" ]; }
 
 # ---- 1. 受け口（python）を起動 ----
 if ! pgrep -f "relay_server.py" >/dev/null 2>&1; then
@@ -32,7 +37,7 @@ fi
 
 if ! pgrep -f "cloudflared.*localhost:$PORT" >/dev/null 2>&1; then
   : > "$TUNLOG"
-  nohup cloudflared tunnel --url "http://localhost:$PORT" --no-autoupdate >>"$TUNLOG" 2>&1 &
+  nohup "$CLOUDFLARED" tunnel --url "http://localhost:$PORT" --no-autoupdate >>"$TUNLOG" 2>&1 &
   # URLが出るまで最大30秒待つ
   for _ in $(seq 1 30); do
     URL="$(grep -Eo 'https://[a-z0-9-]+\.trycloudflare\.com' "$TUNLOG" 2>/dev/null | head -1)"
