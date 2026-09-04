@@ -656,10 +656,12 @@ function collectNow(m){
     if(s.isDispatchSelf) return;
     let t = (s.title || "").trim();
     if(!t || t === "（不明）" || t === "(不明)"){
-      // 自動発車したセッションは題名が付かない。queue.json の running から pid で引き当てる
-      const q = ((window.__queue && window.__queue.items) || []).find(x => x.status === "running" && String(x.pid) === String(s.pid));
-      if(q){ s = Object.assign({}, s, {title: q.title, _auto: true}); t = q.title; }
-      else return;
+      // 自動発車したセッションは題名が付かない。queue.json から pid で引き当てる
+      const q = ((window.__queue && window.__queue.items) || []).find(x => String(x.pid) === String(s.pid));
+      // 2026-09-04：引き当てられなくても消さない。「何も動いていません」と出る方が誤解を招く。
+      //   たまごさん「無題は意味がない」→ 題名の代わりに何が分かるかを出す（自動発車ぶんである旨とPID）。
+      t = q ? q.title : ("自動発車のセッション（題名取得中・PID " + s.pid + "）");
+      s = Object.assign({}, s, {title: t, _auto: true});
     }
     const key = s.cli || s.localId || s.title;
     const prev = byKey.get(key);
