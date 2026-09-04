@@ -129,6 +129,10 @@ python3 "$REPO/tools/auto_launcher.py" >/dev/null 2>&1 || true
 # 2026-09-04 たまごさん「Obsidianには飛ばない」→ 進捗表のボタンをHTTPSで直接受ける中継所。
 #   立っていなければ立て、トンネルのURLを status/relay.json へ書く（冪等・既に動いていれば何もしない）。
 bash "$REPO/tools/relay_up.sh" >/dev/null 2>&1 || true
+# 2026-09-04 工場の心臓（15秒おきに着火と受信箱だけを回す常駐）。落ちていたら立て直す。
+if ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
+  nohup bash "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 &
+fi
 # 2026-09-04 心臓を1つにする。
 #   受信箱(Vault経由の指示)は今まで別のlaunchd便(command_watch.sh・30秒おき)に任せていたが、
 #   その便が**20:18で止まっていた**（スマホのボタンも、Dispatchからの指示も、Macに届かなくなっていた）。
