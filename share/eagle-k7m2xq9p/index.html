@@ -15,6 +15,8 @@
   h1 small{font-weight:400; color:var(--sub); font-size:0.72rem; margin-left:6px;}
   .search{width:100%; min-height:44px; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
     background:#1a2028; color:var(--fg); font-size:16px;}
+  .folderSel{width:100%; min-height:40px; margin-top:6px; padding:8px 10px; border-radius:10px; border:1px solid var(--line);
+    background:#1a2028; color:var(--fg); font-size:0.86rem;}
   .tags{display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; -webkit-overflow-scrolling:touch;}
   .tags button{flex:none; min-height:34px; padding:0 11px; border-radius:999px; border:1px solid var(--line);
     background:#1a2028; color:var(--sub); font-size:0.76rem; white-space:nowrap;}
@@ -41,6 +43,7 @@
 <header>
   <h1>Eagle 素材ビューア <small id="cnt"></small></h1>
   <input class="search" id="q" type="search" placeholder="名前・タグ・フォルダで検索" autocomplete="off">
+  <select class="folderSel" id="folderSel"></select>
   <div class="tags" id="tags"></div>
 </header>
 <div class="meta" id="meta"></div>
@@ -55,16 +58,19 @@
 </dialog>
 
 <script>
-let DATA = {items:[]}, FILTER = "", TAG = "";
+let DATA = {items:[]}, FILTER = "", TAG = "", FOLDER = "";
 const grid = document.getElementById("grid");
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 function thumbSrc(it){ return "t/" + it.id + (it.te || ".png"); }
+// it.o があれば「原寸に近い受け渡し用画像」。無ければサムネで代用。
+function bestSrc(it){ return it.o ? ("o/" + it.id + it.o) : thumbSrc(it); }
 
 function matched(){
   const q = FILTER.trim().toLowerCase();
   return DATA.items.filter(it=>{
     if(TAG && !(it.t||[]).includes(TAG) && !(it.h||[]).includes(TAG)) return false;
+    if(FOLDER && !(it.f||[]).includes(FOLDER)) return false;
     if(!q) return true;
     const hay = [it.n, ...(it.t||[]), ...(it.h||[]), ...(it.f||[])].join(" ").toLowerCase();
     return hay.includes(q);
@@ -72,19 +78,20 @@ function matched(){
 }
 function render(){
   const list = matched();
-  document.getElementById("meta").textContent = `${list.length}件${TAG ? "／タグ：" + TAG : ""}${FILTER ? "／検索：" + FILTER : ""}`;
+  document.getElementById("meta").textContent = `${list.length}件${FOLDER ? "／フォルダ：" + FOLDER : ""}${TAG ? "／タグ：" + TAG : ""}${FILTER ? "／検索：" + FILTER : ""}`;
   grid.innerHTML = list.map((it,i)=>`<div class="cell" data-i="${i}"><img loading="lazy" src="${thumbSrc(it)}" alt="${esc(it.n)}"></div>`).join("");
   grid._list = list;
 }
 grid.addEventListener("click", e=>{
   const cell = e.target.closest(".cell"); if(!cell) return;
   const it = grid._list[Number(cell.dataset.i)]; if(!it) return;
-  document.getElementById("dimg").src = thumbSrc(it);
+  document.getElementById("dimg").src = bestSrc(it);
   document.getElementById("dinfo").innerHTML =
     `<b>${esc(it.n)}</b>`
     + (it.f && it.f.length ? `<div class="row">フォルダ：${esc(it.f.join(" / "))}</div>` : "")
     + (it.w ? `<div class="row">${it.w}×${it.hgt}・${esc(it.e)}</div>` : "")
     + `<div class="row">ID：${esc(it.id)}</div>`
+    + (it.o ? `<div class="row">画像を長押しで保存できます（受け渡し用・原寸に近い画質）</div>` : `<div class="row">サムネイルのみ（受け渡し用の準備中）</div>`)
     + (it.t && it.t.length ? `<div>${it.t.map(t=>`<span class="chip">${esc(t)}</span>`).join("")}</div>` : "")
     + (it.h && it.h.length ? `<div>${it.h.map(t=>`<span class="chip h">${esc(t)}</span>`).join("")}</div>` : "");
   document.getElementById("dlg").showModal();
@@ -107,6 +114,14 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
     [...document.querySelectorAll("#tags button")].forEach(x=>x.classList.toggle("on", x===b));
     render();
   });
+  // フォルダも件数順に出す（フォルダ絞り込み）
+  const fc = {};
+  d.items.forEach(it => (it.f||[]).forEach(f => fc[f] = (fc[f]||0)+1));
+  const folderList = Object.entries(fc).sort((a,b)=>b[1]-a[1]);
+  const sel = document.getElementById("folderSel");
+  sel.innerHTML = `<option value="">フォルダ：すべて</option>` +
+    folderList.map(([f,n])=>`<option value="${esc(f)}">${esc(f)}（${n}）</option>`).join("");
+  sel.addEventListener("change", e=>{ FOLDER = e.target.value; render(); });
   render();
 });
 </script>
