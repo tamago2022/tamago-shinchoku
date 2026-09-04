@@ -588,6 +588,26 @@ def auth_probe(_target=None):
     return "failed", ("見慣れない応答: " + out[-200:]).replace("\n", " ")
 
 
+def auth_where(_target=None):
+    """認証がどこに入っているか・どのclaudeを使っているかを調べる（中身は読まない・場所と日時だけ）。"""
+    import glob as _g
+    lines = []
+    for c in ("~/.local/bin/claude", "/opt/homebrew/bin/claude", "/usr/local/bin/claude",
+              "/Applications/Claude.app/Contents/Resources/claude",
+              "~/.claude/local/claude"):
+        pth = os.path.expanduser(c)
+        if os.path.exists(pth):
+            v = run([pth, "--version"], timeout=20)
+            lines.append("%s : %s" % (c, ((v.stdout or v.stderr or "").strip()[:40] if v else "応答なし")))
+    for c in ("~/.claude/.credentials.json", "~/Library/Application Support/Claude/.credentials.json"):
+        pth = os.path.expanduser(c)
+        lines.append("%s : %s" % (c, time.strftime("%m-%d %H:%M", time.localtime(os.path.getmtime(pth)))
+                                  if os.path.exists(pth) else "無し"))
+    k = run(["security", "find-generic-password", "-s", "Claude Code-credentials", "-w"], timeout=15)
+    lines.append("キーチェーン(Claude Code-credentials): %s" % ("あり" if (k and k.returncode == 0) else "無し/読めない"))
+    return "done", " ｜ ".join(lines)[:900]
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -600,6 +620,8 @@ def _process_other(action, cmd):
         return handoff(target)
     if action == "push_unlock":
         return push_unlock(target)
+    if action == "auth_where":
+        return auth_where(target)
     if action == "auth_probe":
         return auth_probe(target)
     if action == "git_unlock":

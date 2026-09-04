@@ -365,8 +365,17 @@ def main():
       #   → status/no_launch.flag があるあいだは**1本も発車させない**。
       #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。
       #     再開はこのファイルを消すだけ。
-      if os.path.exists(os.path.join(REPO, "status", "no_launch.flag")):
-          return 0
+      # 2026-09-05 ログイン切れで止めているだけのときは、**Claudeを使わない空回しは通す。**
+      #   本物は出せないが、工場が死んだ状態にはしない（たまごさん「止まるのはNG。半永久装置」）。
+      _flag = os.path.join(REPO, "status", "no_launch.flag")
+      auth_only = False
+      if os.path.exists(_flag):
+          try:
+              auth_only = "ログインが切れています" in io.open(_flag, encoding="utf-8").read()
+          except Exception:
+              auth_only = False
+          if not auth_only:
+              return 0
       m = load(MACHINE, {})
       quota = load(QUOTA, {})
 
@@ -377,7 +386,7 @@ def main():
       # ---- 安全弁：クレジット ----
       #   テスト用のカラ発車（"test": true）はClaudeを起動しない＝クレジットを1円も使わないので、
       #   週枠が上限でも通す。ここで一緒に止めていると、枠が苦しいときほど動作確認ができなくなる。
-      credit_stop = quota.get("allLevel") == "stop"
+      credit_stop = (quota.get("allLevel") == "stop") or auth_only
       # 2026-09-05 たまごさん「ループシステムを作ってるんだから。**止まるのはNG。半永久装置。**」
       #   週枠が上限でも、**1本も走っていないなら、ここで止めない。**
       #   下で「空回し（Claudeを起動しない＝クレジット0）」を1本入れて、工場が回っている状態を保つ。

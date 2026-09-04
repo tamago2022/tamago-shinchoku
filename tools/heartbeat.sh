@@ -21,6 +21,8 @@ echo "$(date '+%F %T') 心臓を起動しました" >> "$LOG"
 while :; do
   python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1 || true
   python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
+  # ログインが戻ったら自分で気づいて再開する（10分に1回だけ試す）
+  python3 "$REPO/tools/auth_watch.py"     >/dev/null 2>&1 || true
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
