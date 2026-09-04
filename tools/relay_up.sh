@@ -28,8 +28,9 @@ have_cloudflared() { [ -n "${CLOUDFLARED:-}" ]; }
 # 2026-09-05：relay_server.py を直したときに、古いプロセスが動き続けて新機能が効かなかった。
 #   ファイルが前回起動より新しければ、いったん落として入れ直す。
 STAMP="$REPO/status/.relay_server_started"
+# relay_server.py は command_ingest.py を読み込んでいるので、そちらの更新でも入れ直す
 if pgrep -f "relay_server.py" >/dev/null 2>&1 && [ -f "$STAMP" ] \
-   && [ "$REPO/tools/relay_server.py" -nt "$STAMP" ]; then
+   && { [ "$REPO/tools/relay_server.py" -nt "$STAMP" ] || [ "$REPO/tools/command_ingest.py" -nt "$STAMP" ]; }; then
   pkill -f "relay_server.py" >/dev/null 2>&1 || true
   sleep 1
   echo "$(date '+%F %T') 受け口を入れ直します（コードが新しくなったため）" >>"$LOG"

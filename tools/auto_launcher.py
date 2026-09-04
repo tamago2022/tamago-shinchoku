@@ -70,6 +70,39 @@ def countable(s):
     return True
 
 
+# ---- 台帳の鍵（2026-09-05）----
+# たまごさん「完了に入ったものもあれば、反応しないものもあります」の原因。
+# 中継所（押したボタン）と心臓（着火・回収）が**同時に台帳を読み書きしていた**ため、
+# 片方が1秒前に読んだ古い内容で上書きし、押した結果が消えていた（lost update）。
+# 読む→書くの間ずっと鍵をかける。macOSの flock を使う（同一ファイルなので確実）。
+import fcntl
+from contextlib import contextmanager
+
+QUEUE_LOCK = os.path.join(REPO, "status", ".queue.lock")
+
+
+@contextmanager
+def queue_lock(timeout=10.0):
+    f = io.open(QUEUE_LOCK, "a+")
+    t0 = time.time()
+    while True:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except Exception:
+            if time.time() - t0 > timeout:
+                break          # 取れなくても止まらない（工場を止めない方を優先）
+            time.sleep(0.05)
+    try:
+        yield
+    finally:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        except Exception:
+            pass
+        f.close()
+
+
 def save_queue(q):
     """台帳を安全に書く。
 
@@ -263,95 +296,96 @@ def build_prompt(item):
 
 
 def main():
-    q = load(QUEUE, {})
-    items = q.get("items") or []
-    if not items:
-        return 0
-    # 終わったものを回収して「確認待ち」へ移す（これをやらないと running のまま溜まって空きが出ない）
-    if harvest(q):
-        q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-        save_queue(q)
-    # 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かないよ」（火曜まで残り14%）
-    #   → status/no_launch.flag があるあいだは**1本も発車させない**。
-    #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。
-    #     再開はこのファイルを消すだけ。
-    if os.path.exists(os.path.join(REPO, "status", "no_launch.flag")):
-        return 0
-    m = load(MACHINE, {})
-    quota = load(QUOTA, {})
+  with queue_lock():
+      q = load(QUEUE, {})
+      items = q.get("items") or []
+      if not items:
+          return 0
+      # 終わったものを回収して「確認待ち」へ移す（これをやらないと running のまま溜まって空きが出ない）
+      if harvest(q):
+          q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+          save_queue(q)
+      # 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かないよ」（火曜まで残り14%）
+      #   → status/no_launch.flag があるあいだは**1本も発車させない**。
+      #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。
+      #     再開はこのファイルを消すだけ。
+      if os.path.exists(os.path.join(REPO, "status", "no_launch.flag")):
+          return 0
+      m = load(MACHINE, {})
+      quota = load(QUOTA, {})
 
-    # ---- 安全弁：マシン ----
-    if (m.get("memPressure") == "red") or m.get("swapIncreasing") or (m.get("diskFreeGB") or 99) < 5:
-        log("見送り: Macが危険（mem=%s swapUp=%s disk=%s）" % (m.get("memPressure"), m.get("swapIncreasing"), m.get("diskFreeGB")))
-        return 0
-    # ---- 安全弁：クレジット ----
-    #   テスト用のカラ発車（"test": true）はClaudeを起動しない＝クレジットを1円も使わないので、
-    #   週枠が上限でも通す。ここで一緒に止めていると、枠が苦しいときほど動作確認ができなくなる。
-    credit_stop = quota.get("allLevel") == "stop"
-    if credit_stop and not any(it.get("status") == "waiting" and it.get("test") for it in items):
-        log("見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
-        return 0
+      # ---- 安全弁：マシン ----
+      if (m.get("memPressure") == "red") or m.get("swapIncreasing") or (m.get("diskFreeGB") or 99) < 5:
+          log("見送り: Macが危険（mem=%s swapUp=%s disk=%s）" % (m.get("memPressure"), m.get("swapIncreasing"), m.get("diskFreeGB")))
+          return 0
+      # ---- 安全弁：クレジット ----
+      #   テスト用のカラ発車（"test": true）はClaudeを起動しない＝クレジットを1円も使わないので、
+      #   週枠が上限でも通す。ここで一緒に止めていると、枠が苦しいときほど動作確認ができなくなる。
+      credit_stop = quota.get("allLevel") == "stop"
+      if credit_stop and not any(it.get("status") == "waiting" and it.get("test") for it in items):
+          log("見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
+          return 0
 
-    # 2026-09-04 machine.json は重い計測（27秒〜）でしか書き変わらないので、最大5分ぶん古い。
-    #   そのままだと「もう死んでいるセッション」を走行中として数え、空きが出ても繰り上がらなかった。
-    #   ここで pid の生死をその場で見て、死んでいるぶんを除く（数百マイクロ秒で終わる）。
-    def _pid_alive(pid):
-        try:
-            os.kill(int(pid), 0)
-            return True
-        except Exception:
-            return False
+      # 2026-09-04 machine.json は重い計測（27秒〜）でしか書き変わらないので、最大5分ぶん古い。
+      #   そのままだと「もう死んでいるセッション」を走行中として数え、空きが出ても繰り上がらなかった。
+      #   ここで pid の生死をその場で見て、死んでいるぶんを除く（数百マイクロ秒で終わる）。
+      def _pid_alive(pid):
+          try:
+              os.kill(int(pid), 0)
+              return True
+          except Exception:
+              return False
 
-    alive = len([s for s in (m.get("sessionList") or [])
-                 if countable(s) and (not s.get("pid") or _pid_alive(s.get("pid")))])
-    # 2026-09-04 テストで見つけた穴：machine.json は「Claudeのセッション」しか載せていないので、
-    #   そこに現れないものを走らせると **走行0本と数えて上限を無視して発車し続ける**（実測：上限3本なのに6本出た）。
-    #   台帳側で running になっていて、まだ生きているものも必ず数える。
-    #   本物のセッションでも、計測が遅れて載っていない瞬間に同じことが起きる＝クレジットの垂れ流しになる。
-    queue_alive = len([it for it in items
-                       if it.get("status") == "running" and it.get("pid") and _pid_alive(it.get("pid"))])
-    alive = max(alive, queue_alive)
-    safe_max = m.get("safeMax")
-    if safe_max is None:
-        log("見送り: safeMaxが取れない")
-        return 0
-    # たまごさんが進捗表で決めた「同時に走る本数」。マシンの安全上限より小さい方を採る。
-    cap = (load(os.path.join(REPO, "status", "launch_cap.json"), {}) or {}).get("cap")
-    if isinstance(cap, int):
-        safe_max = min(safe_max, cap)
-    if alive >= safe_max:
-        log("見送り: 走行%d本／上限%d本（空きなし）" % (alive, safe_max))
-        return 0
+      alive = len([s for s in (m.get("sessionList") or [])
+                   if countable(s) and (not s.get("pid") or _pid_alive(s.get("pid")))])
+      # 2026-09-04 テストで見つけた穴：machine.json は「Claudeのセッション」しか載せていないので、
+      #   そこに現れないものを走らせると **走行0本と数えて上限を無視して発車し続ける**（実測：上限3本なのに6本出た）。
+      #   台帳側で running になっていて、まだ生きているものも必ず数える。
+      #   本物のセッションでも、計測が遅れて載っていない瞬間に同じことが起きる＝クレジットの垂れ流しになる。
+      queue_alive = len([it for it in items
+                         if it.get("status") == "running" and it.get("pid") and _pid_alive(it.get("pid"))])
+      alive = max(alive, queue_alive)
+      safe_max = m.get("safeMax")
+      if safe_max is None:
+          log("見送り: safeMaxが取れない")
+          return 0
+      # たまごさんが進捗表で決めた「同時に走る本数」。マシンの安全上限より小さい方を採る。
+      cap = (load(os.path.join(REPO, "status", "launch_cap.json"), {}) or {}).get("cap")
+      if isinstance(cap, int):
+          safe_max = min(safe_max, cap)
+      if alive >= safe_max:
+          log("見送り: 走行%d本／上限%d本（空きなし）" % (alive, safe_max))
+          return 0
 
-    # ---- 優先度順に並べる。たまごさんがPWAで付けたPが最優先、次に元の番号 ----
-    prio = (load(PRIORITY, {}).get("priority") or {})
+      # ---- 優先度順に並べる。たまごさんがPWAで付けたPが最優先、次に元の番号 ----
+      prio = (load(PRIORITY, {}).get("priority") or {})
 
-    def rank(it):
-        # 2026-09-04：スマホの「＋発車待ちに追加」で作った項目はitem自身に"priority"を持つ
-        #   （queue_add・command_ingest.py）。既存のpriority.jsonのQキー方式より優先する。
-        p = it.get("priority") or prio.get("Q%d" % it.get("n"))
-        return (int(p) if p else 9, it.get("n") or 99)
+      def rank(it):
+          # 2026-09-04：スマホの「＋発車待ちに追加」で作った項目はitem自身に"priority"を持つ
+          #   （queue_add・command_ingest.py）。既存のpriority.jsonのQキー方式より優先する。
+          p = it.get("priority") or prio.get("Q%d" % it.get("n"))
+          return (int(p) if p else 9, it.get("n") or 99)
 
-    waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
-    if credit_stop:
-        # 週枠が上限のあいだは、クレジットを使わないテストだけ通す
-        waiting = [it for it in waiting if it.get("test")]
-    if not waiting:
-        log("見送り: 発車待ちが空" if not credit_stop else
-            "見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
-        return 0
+      waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
+      if credit_stop:
+          # 週枠が上限のあいだは、クレジットを使わないテストだけ通す
+          waiting = [it for it in waiting if it.get("test")]
+      if not waiting:
+          log("見送り: 発車待ちが空" if not credit_stop else
+              "見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
+          return 0
 
-    # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
-    #   1回の実行で1本だけだと、5分×3回で3本になるまで15分かかる。空いているぶんを一度に埋める。
-    room = safe_max - alive
-    launched = 0
-    for item in waiting[:room]:
-        if launch_one(item, q, alive + launched, safe_max):
-            launched += 1
-    if launched:
-        q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-        save_queue(q)
-    return 0
+      # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
+      #   1回の実行で1本だけだと、5分×3回で3本になるまで15分かかる。空いているぶんを一度に埋める。
+      room = safe_max - alive
+      launched = 0
+      for item in waiting[:room]:
+          if launch_one(item, q, alive + launched, safe_max):
+              launched += 1
+      if launched:
+          q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+          save_queue(q)
+      return 0
 
 
 def launch_one(item, q, alive, safe_max):

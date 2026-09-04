@@ -144,6 +144,39 @@ def handoff(cli):
         return "failed", str(e)
 
 
+# ---- 台帳の鍵（2026-09-05）----
+# たまごさん「完了に入ったものもあれば、反応しないものもあります」の原因。
+# 押したボタンの処理と、心臓（着火・回収）が同時に台帳を読み書きしていたため、
+# 片方が古い内容で上書きして押した結果が消えていた（lost update）。
+# 読む→書くの間ずっと鍵をかける（auto_launcher.py と同じ鍵ファイル）。
+import fcntl
+from contextlib import contextmanager
+
+QUEUE_LOCK = os.path.join(REPO, "status", ".queue.lock")
+
+
+@contextmanager
+def queue_lock(timeout=10.0):
+    f = open(QUEUE_LOCK, "a+")
+    t0 = time.time()
+    while True:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except Exception:
+            if time.time() - t0 > timeout:
+                break
+            time.sleep(0.05)
+    try:
+        yield
+    finally:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        except Exception:
+            pass
+        f.close()
+
+
 def _load_queue():
     return load_json(QUEUE, {"items": []})
 
@@ -369,6 +402,10 @@ def launch_cap(target):
 
 def process(cmd):
     action = cmd.get("action")
+    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later"):
+        with queue_lock():
+            return _process_queue(action, cmd)
+
     target = cmd.get("target")
     if action == "close_app":
         return close_app(target)
@@ -378,6 +415,11 @@ def process(cmd):
         return stop(target)
     if action == "handoff":
         return handoff(target)
+    return _process_other(action, cmd)
+
+
+def _process_queue(action, cmd):
+    target = cmd.get("target")
     if action == "queue_ok":
         return queue_ok(target)
     if action == "queue_redo":
@@ -388,6 +430,19 @@ def process(cmd):
         return queue_prio(target)
     if action == "queue_later":
         return queue_later(target)
+    return "failed", "不明なアクション: %s" % action
+
+
+def _process_other(action, cmd):
+    target = cmd.get("target")
+    if action == "close_app":
+        return close_app(target)
+    if action == "resume":
+        return resume(target)
+    if action == "stop":
+        return stop(target)
+    if action == "handoff":
+        return handoff(target)
     if action == "launch_pause":
         return launch_switch(False)
     if action == "launch_resume":
