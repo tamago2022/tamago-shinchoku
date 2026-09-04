@@ -129,6 +129,12 @@ python3 "$REPO/tools/auto_launcher.py" >/dev/null 2>&1 || true
 # 2026-09-04 たまごさん「Obsidianには飛ばない」→ 進捗表のボタンをHTTPSで直接受ける中継所。
 #   立っていなければ立て、トンネルのURLを status/relay.json へ書く（冪等・既に動いていれば何もしない）。
 bash "$REPO/tools/relay_up.sh" >/dev/null 2>&1 || true
+# 2026-09-04 心臓を1つにする。
+#   受信箱(Vault経由の指示)は今まで別のlaunchd便(command_watch.sh・30秒おき)に任せていたが、
+#   その便が**20:18で止まっていた**（スマホのボタンも、Dispatchからの指示も、Macに届かなくなっていた）。
+#   別便が1つ死ぬだけで工場が片肺になるので、この巡回の中で一緒に処理する。
+#   （command_watch.sh 側は残してよい。二重に走っても、処理済みファイルは消えるので害はない）
+python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
 # 2026-09-03 たまごさん「iPhoneでいいなと思ったスクショを、すかさず入れられるのかな。そのスピード感だと助かる」
 #   ① iCloud Driveの「Eagle_取り込み_iPhoneから」に入った画像をEagleへ登録して、取り込み済みへ移す
 #   ② Eagleライブラリ → スマホ用Webギャラリー（share/eagle-…）を差分更新
