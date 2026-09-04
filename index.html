@@ -195,6 +195,19 @@
     background:rgba(255,255,255,0.12); color:inherit; font-weight:700; font-size:0.8rem;}
   /* 2026-09-04 たまごさん「進捗表の横に現在の時刻もちゃんとリアルタイムで表示してください」
      これが動いていること自体が「この画面は生きている」の証拠になる。 */
+  .queue{border-color:rgba(95,217,150,0.35);}
+  .queue > summary{font-weight:700;}
+  .qrow{display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
+  .qrow:last-child{border-bottom:none;}
+  .qn{flex:none; width:26px; height:26px; border-radius:999px; display:flex; align-items:center; justify-content:center;
+    font-size:0.72rem; font-weight:800; background:#1a2028; border:1px solid var(--line); color:var(--sub); font-variant-numeric:tabular-nums;}
+  .qrow.next .qn{background:var(--green); color:#12161c; border-color:var(--green);}
+  .qbody{min-width:0; flex:1;}
+  .qt{font-size:0.88rem; font-weight:700; line-height:1.35;}
+  .qw{font-size:0.72rem; color:var(--sub); margin-top:3px; line-height:1.45;}
+  .qp{flex:none; min-height:36px; min-width:36px; border-radius:9px; border:1px solid var(--line);
+    background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
+  .qp.on{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
   .clock{font-weight:400; font-size:0.9rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-left:8px; letter-spacing:0.02em;}
   .nowage{font-size:0.68rem; color:var(--dim); margin:2px 0 8px;}
   .nowage.nowstale{color:var(--red); font-weight:600;}
@@ -233,6 +246,9 @@
 <div id="capBar" class="capbar" hidden></div>
 <div id="nowAge" class="nowage"></div>
 <div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
+<!-- 2026-09-04 たまごさん「次に発車予定の予備軍も分かるようにしといて。これが終わったら次は何が発車されるのかな、って見たいから」
+     走行中が空いたら、ここの一番上が繰り上がる。優先順位はたまごさんがタップで付ける（Pボタン）。 -->
+<details class="sec queue" id="queueSec"><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in" id="queue"></div></details>
 
 <!-- 2026-09-03 たまごさん「これ1個にまとめて、スペースがもったいない。マシンとクレジット開くと、この以下の下の情報が出るように」
      → 折りたたみを縦に8個並べるのをやめ、1個にまとめて中に入れ子にした。畳んでいる間は1行しか場所を取らない。 -->
@@ -686,6 +702,33 @@ function tickCountdowns(){
     cd.className = "ncd" + (over ? " over" : remainSec <= 1800 ? " warn" : "");
   });
 }
+/* ───── 次に発車（予備軍）─────
+   2026-09-04 たまごさん「そこにも俺、優先順位つけるよ」→ 各行のPボタンで1〜5を付けられる。
+   付けた優先度は既存の優先度受信（Obsidian経由）と同じ仕組みに乗せる。 */
+function renderQueue(){
+  const box = document.getElementById("queue");
+  const rows = (window.DATA && DATA.queue) || [];
+  if(!box) return;
+  document.getElementById("queueMeta").textContent =
+    rows.length ? `${rows.length}件${DATA.queueUpdatedAt ? "・" + formatStamp(DATA.queueUpdatedAt) : ""}` : "";
+  if(!rows.length){ box.innerHTML = `<div class="card note">発車待ちはありません</div>`; return; }
+  box.innerHTML = rows.map((r,i)=>{
+    const p = prioOf("Q" + r.n);
+    return `<div class="qrow${i===0 ? " next" : ""}">
+      <span class="qn">${i===0 ? "次" : r.n}</span>
+      <span class="qbody"><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></span>
+      <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? "P" + p : "P"}</button>
+    </div>`;
+  }).join("");
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-qp]"); if(!b) return;
+  const cur = prioOf("Q" + b.dataset.qp) || 0;
+  const next = cur >= 5 ? 0 : cur + 1;   // タップで 1→2→3→4→5→なし
+  PRIO["Q" + b.dataset.qp] = next ? {p: next, t: new Date().toISOString()} : undefined;
+  savePrio && savePrio();
+  renderQueue();
+});
 function tickClock(){
   const el = document.getElementById("clock"); if(!el) return;
   const d = new Date();
@@ -694,6 +737,7 @@ function tickClock(){
 }
 tickClock();
 setInterval(tickClock, 1000);
+try{ renderQueue(); }catch(e){}
 setInterval(tickCountdowns, 1000); // 時計はJSON再取得と切り離して毎秒動かす＝リアルタイムが効いている証拠
 
 /* ───── ホワイトボード（ai-brain/live/whiteboard.md の写し status/whiteboard.json。セッションはこの順に取る） ───── */
