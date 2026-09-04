@@ -301,6 +301,8 @@
   .nowcard .nmeta{display:flex; flex-wrap:nowrap; gap:4px; align-items:center; font-size:0.58rem; color:#c8ecd8; font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-width:0;}
   .nowcard.fable .nmeta{color:#ffd3c9;}
   .nowcard .nbadge{border:1px solid rgba(255,255,255,0.35); border-radius:5px; padding:1px 6px; font-weight:700; flex:none;}
+  .nowcard .npause{margin-top:6px; width:100%; min-height:32px; border-radius:8px; font-size:0.66rem; font-weight:700;
+    border:1px solid rgba(255,255,255,0.28); background:rgba(0,0,0,0.28); color:#fff;}
   .nowcard .ncdlbl{font-size:0.55rem; color:#c8ecd8; flex:none;}
   .nowcard.fable .ncdlbl{color:#ffd3c9;}
   .nowcard .ncd{font-variant-numeric:tabular-nums; font-size:0.92rem; font-weight:800; color:#fff; letter-spacing:0.01em; white-space:nowrap; overflow:hidden; text-overflow:clip; flex:none;}
@@ -383,14 +385,8 @@
 <div class="sendbar" id="sendbar" hidden style="display:none"></div>
 <div class="g" id="wb" hidden style="display:none"></div>
 
-<div class="label"><b>依頼</b>状態ごとに畳んである・Pは優先度（タップで開いて付ける） <small id="allMeta"></small></div>
-<div class="note" style="margin:-4px 0 8px">完了＝本番に出て、別の目が動作確認まで済んだもの。ここが増えることだけが成果。</div>
-<div class="sum" id="allSummary"></div>
-<div class="g" id="all"></div>
 
-<footer>
-  正本は Obsidian の <code>AI出力/_ルール/未処理の依頼_全件_2026-09-02.md</code> と <code>進捗表.html</code>。カードをタップすると詳細が開く。
-</footer>
+<!-- 2026-09-05 たまごさん「余分な情報は削ろう」→ 依頼225件の一覧ごと外したので、その出典の説明も消す -->
 
 <script>
 /* 2026-09-04 たまごさんのホーム画面アプリが**古いindex.htmlを握ったまま**になっていた。
@@ -899,6 +895,27 @@ function nowTitle(s){
   if(!t || t === "（不明）") return "無題のセッション";
   return t;
 }
+
+/* 2026-09-05 たまごさん「今あなたこれ1回引っ込めて、みたいな。割り込みもあり、緊急で入るから。
+   安全に止められるように、続きから再開できるように」
+   → 走行カードから台帳の番号を引き当て、⏸で一時停止できるようにする。
+     止め方はSIGTERM（強制終了ではない）。次に発車するとき前のセッションを --resume で起こすので、
+     **最初からやり直しにはならない。** */
+function qnOf(s){
+  const it = ((window.__queue && window.__queue.items) || []).find(x =>
+    x.status === "running" && (String(x.sessionId||"") === String(s.cli||"-") || String(x.pid) === String(s.pid)));
+  return it ? it.n : null;
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-pause]"); if(!b) return;
+  const n = Number(b.dataset.pause);
+  b.disabled = true; b.textContent = "引っ込めています…";
+  const it = ((window.__queue && window.__queue.items) || []).find(x => x.n === n);
+  if(it){ it.status = "waiting"; delete it.pid; }
+  sendCommandWithId("z" + Date.now().toString(36), "queue_pause", String(n), "⏸ 引っ込める " + n + "番");
+  try{ renderQueue(); }catch(err){}
+});
+
 function collectNow(m){
   const measured = m && m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now();
   const list = (m && m.sessionList) || [];
@@ -974,6 +991,7 @@ function renderNow(m){
         <span class="ncd" data-cd>--:--</span>
       </div>
       <div class="ncdlbl">${esc(limitLabel(limitMinFor(s)))}・${esc(started)}開始</div>
+      ${qnOf(s) ? `<button type="button" class="npause" data-pause="${qnOf(s)}">⏸ 引っ込める（続きから再開）</button>` : ""}
     </div>`;
   }).join("");
   tickCountdowns();
@@ -1335,6 +1353,7 @@ function lastDateOf(it){ // 出典の中の一番新しい MM-DD から「止ま
 }
 function timesOf(it){ const m = (it.body && it.body[0] || "").match(/／\s*(\d+回[^（｜／]*)/); return m ? m[1].trim() : ""; }
 function renderAll(){
+  if(!document.getElementById("all")) return;   // 表示欄を消したので、無ければ何もしない
   const A = window.SHINCHOKU_ALL; if(!A) return;
   document.getElementById("allMeta").textContent = `${A.items.length + A.old.length}件・${A.generatedAt}`;
   const groups = {}; A.items.forEach(it=>{ (groups[it.badge] ||= []).push(it); });
@@ -1379,15 +1398,18 @@ function renderAll(){
 
 /* ───── 畳んである節 ───── */
 function renderSaid(){
+  if(!document.getElementById("said")) return;   // 表示欄を消したので、無ければ何もしない
   const S = window.SHINCHOKU_SAID || [];
   document.getElementById("saidCount").textContent = `${S.length}件`;
   document.getElementById("said").innerHTML = S.map(s=>`<div class="row"><div class="when">${esc(s.when)}</div>${esc(s.said)}</div>`).join("");
 }
 function renderRunning(){
+  if(!document.getElementById("running") || !document.getElementById("runUpdated")) return;   // 表示欄を消したので、無ければ何もしない
   document.getElementById("runUpdated").textContent = `手更新 ${formatStamp(D.runningUpdatedAt)}`;
   document.getElementById("running").innerHTML = D.running.map(r=>`<div class="row"><b>${esc(r.title)}</b><div class="meta">担当 ${esc(r.who)}　状態 ${esc(r.state)}${r.progress ? "　" + esc(r.progress) : ""}</div>${linksHtml(r.links)}</div>`).join("");
 }
 function renderToday(){
+  if(!document.getElementById("today")) return;   // 表示欄を消したので、無ければ何もしない
   const t = D.today;
   document.getElementById("today").innerHTML = `
     <div class="bl">北極星</div><div>${esc(t.northstar)}</div>
@@ -1398,6 +1420,7 @@ function renderToday(){
 }
 const STATUS_META = {hold:"⏸ 判断待ち", red:"🔴 止まっている", wip:"🟡 作業中", done:"🟢 完了", cannot:"❌ できない"};
 function renderList(){
+  if(!document.getElementById("list")) return;   // 表示欄を消したので、無ければ何もしない
   const order = ["hold","red","wip","done","cannot"];
   const sorted = [...D.requests].sort((a,b)=> order.indexOf(a.status)-order.indexOf(b.status) || (new Date(b.orderedAt)-new Date(a.orderedAt)));
   document.getElementById("listMeta").textContent = `${sorted.length}件・${formatStamp(D.generatedAt)}`;

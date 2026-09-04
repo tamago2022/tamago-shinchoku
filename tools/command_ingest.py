@@ -402,7 +402,7 @@ def launch_cap(target):
 
 def process(cmd):
     action = cmd.get("action")
-    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later"):
+    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later", "queue_pause"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -430,6 +430,8 @@ def _process_queue(action, cmd):
         return queue_prio(target)
     if action == "queue_later":
         return queue_later(target)
+    if action == "queue_pause":
+        return queue_pause(target)
     return "failed", "不明なアクション: %s" % action
 
 
@@ -482,6 +484,48 @@ def push_unlock(_target=None):
         return "done", "止まった巡回のロックを外しました（pid %s は生きていません）" % pid
     except Exception as e:
         return "failed", str(e)
+
+
+def queue_pause(target):
+    """走行中の仕事を安全に引っ込めて、続きから再開できる形で列に戻す。
+
+    2026-09-05 たまごさん：
+      「**今あなたこれ1回引っ込めて**、みたいな。作業の途中で引っ込めるとどういうエラーが出ちゃうのか
+       分かんないけど、**それも安全に止められるように、続きから再開できるように。**
+       途中で止めても。**割り込みもあり。緊急で入るから。**」
+
+    やること：SIGTERM（強制終了ではない）で止める → status を waiting に戻す →
+    `resumeFrom` にセッションIDを残す。次に発車するとき auto_launcher が
+    `claude -p --resume <id>` で**前回の続きから**起こす。最初からやり直しにはならない。
+    """
+    try:
+        n = int(target)
+    except Exception:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    it = _find_item(q.get("items") or [], n)
+    if it is None:
+        return "failed", "%d番がqueue.jsonに見つかりません" % n
+    if it.get("status") != "running":
+        return "skipped", "%d番は走っていません（今は%s）" % (n, it.get("status"))
+    pid = it.get("pid")
+    killed = False
+    if pid:
+        try:
+            os.kill(int(pid), 15)      # SIGTERM。-9は使わない（途中成果を書き切らせる）
+            killed = True
+        except Exception:
+            pass
+    it["status"] = "waiting"
+    it["pausedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    if it.get("sessionId"):
+        it["resumeFrom"] = it["sessionId"]     # 続きから再開するための目印
+    it.pop("pid", None)
+    it["priority"] = it.get("priority") or 3
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "%d番を引っ込めました（%s。次に発車するとき続きから再開します）" % (
+        n, "止めました" if killed else "すでに終わっていました")
 
 
 def _process_other(action, cmd):

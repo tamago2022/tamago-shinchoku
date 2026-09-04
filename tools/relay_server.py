@@ -33,8 +33,8 @@ sys.path.insert(0, HERE)
 import command_ingest  # noqa: E402
 
 ALLOWED = {
-    "queue_ok", "queue_later", "queue_redo", "queue_prio", "queue_add",
-    "priority_set", "resume", "stop", "close_app", "handoff",
+    "queue_ok", "queue_later", "queue_redo", "queue_prio", "queue_add", "queue_pause",
+    "priority_set", "resume", "stop", "close_app", "handoff", "launch_pause", "launch_resume", "launch_cap", "git_unlock", "push_unlock",
 }
 ORIGIN = "https://tamago2022.github.io"
 LOG = os.path.join(REPO, "status", "relay.log")

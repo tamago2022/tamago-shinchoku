@@ -494,9 +494,22 @@ def launch_one(item, q, alive, safe_max):
     # ---- 着火 ----
     new_id = str(uuid.uuid4())
     prompt = build_prompt(item)
-    logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
-    cmd = [CLAUDE, "-p", "--session-id", new_id, "--model", SONNET,
-           "--permission-mode", "auto", "--output-format", "json", prompt]
+    # 2026-09-05 たまごさん「割り込みもあり。緊急で入るから。途中で止めても、**続きから再開できるように**」
+    #   → 引っ込めた（一時停止した）ものは、新しいセッションを立てずに前のセッションを再開する。
+    #     やり直しになっていないので、そこまでの作業が無駄にならない。
+    resume_id = item.get("resumeFrom")
+    if resume_id:
+        new_id = resume_id
+        logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
+        cmd = [CLAUDE, "-p", "--resume", resume_id, "--model", SONNET,
+               "--permission-mode", "auto", "--output-format", "json",
+               "【再開】たまごさんが緊急の割り込みのために一度止めた仕事です。"
+               "**前回の続きから**進めてください。最初からやり直さないこと。\n\n" + prompt]
+        item.pop("resumeFrom", None)
+    else:
+        logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
+        cmd = [CLAUDE, "-p", "--session-id", new_id, "--model", SONNET,
+               "--permission-mode", "auto", "--output-format", "json", prompt]
     try:
         with open(logf, "ab") as f:
             f.write(("\n=== %s 自動発車: %s\n" % (time.strftime("%F %T"), item.get("title"))).encode())
