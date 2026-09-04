@@ -1,22 +1,22 @@
 {
- "updatedAt": "2026-09-04 17:16",
+ "updatedAt": "2026-09-04 17:25",
  "estimated": false,
  "fablePct": 82,
  "allPct": 75,
- "allPctAsOf": "16:20:24",
- "allPctAgeMin": 56.0,
+ "allPctAsOf": null,
+ "allPctAgeMin": null,
  "resetAt": "2026-09-08 17:59",
  "daysLeft": 4.0,
- "hoursLeft": 96.7,
+ "hoursLeft": 96.6,
  "fableLevel": "warn",
  "allLevel": "warn",
  "warnPct": 75,
  "stopPct": 85,
  "daily": {
-  "fableAllowancePerDay": 19.3,
-  "fableUsedLast24h": 0.3,
-  "allAllowancePerDay": 5.5,
-  "allUsedLast24h": 21.4,
+  "fableAllowancePerDay": 2.9,
+  "fableUsedLast24h": 1.3,
+  "allAllowancePerDay": -10.0,
+  "allUsedLast24h": 38.7,
   "weeklyEvenPacePerDay": 14.3
  },
  "boost": {
@@ -28,64 +28,74 @@
  "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
  "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
  "fableWeightedTokensSinceReset": 282861393,
- "allWeightedTokensSinceReset": 984100295,
+ "allWeightedTokensSinceReset": 985871944,
  "last6h": {
   "fable": 0,
-  "all": 88591445
+  "all": 90363094
  },
  "projection": {
-  "fablePctAtReset_avgPace": 52.8,
-  "fablePctAtReset_recentPace": 22.4,
+  "fablePctAtReset_avgPace": 208.2,
+  "fablePctAtReset_recentPace": 88.5,
   "hoursToCeiling_recentPace": null,
   "recentPacePctPerHour": 0.0
  },
  "method": "手入力（アプリの使用状況画面の実測値・2026-09-04 14:19時点）",
- "source": "plan-usage-history.json",
- "asOf": "16:20:24",
- "ageMin": 56.0,
+ "anchor": {
+  "t": "2026-09-03T01:28:00",
+  "fablePct": 63,
+  "allPct": 44,
+  "setAt": "2026-09-03 01:50",
+  "source": "たまごさんのスマホ・使用状況（2026-09-03 01:28）"
+ },
  "weekdayTarget": 82.5,
  "weekdayTargetBase": 55,
  "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
- "overPct": -60.1,
+ "overPct": 6.0,
  "daysElapsedSinceReset": 3.0,
  "ceilingDaysAtRecentPace": null,
  "fableCurve": {
   "target": 82.5,
-  "overPct": -60.1,
-  "state": "under",
-  "headroomPct": 60.1,
+  "overPct": 6.0,
+  "state": "on_track",
+  "headroomPct": 0.0,
   "band": 10,
   "note": "state=over→Fableゼロで絞る／under→Fable投入・本数増加の余地あり／on_track→曲線どおり"
  },
  "allCurve": {
   "target": 64.3,
-  "overPct": 13.7,
+  "overPct": 76.1,
   "state": "over",
   "band": 10,
   "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"
  },
  "session5h": {
   "pct": 8,
-  "resetAt": "2026-09-04 14:55",
+  "resetAt": "2026-09-03 04:44",
   "hoursLeft": 0.0,
-  "recentPacePctPerHour": 1.22,
-  "projectedPctAtReset": 9.0,
+  "recentPacePctPerHour": 4.97,
+  "projectedPctAtReset": 215.5,
   "wasteRiskPct": 0.0,
   "mottainai": false,
-  "source": "実測(plan-usage-history.json)",
-  "asOf": "16:20:24",
-  "ageMin": 56.0,
+  "source": "推定(フォールバック)",
+  "anchor": {
+   "t": "2026-09-03T02:04:06",
+   "pct": 20.0,
+   "remainMin": 160.0,
+   "resetAt": "2026-09-03 04:44",
+   "setAt": "2026-09-03 02:04",
+   "source": "たまごさんのアプリ実測"
+  },
   "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
  },
  "benchmark": {
-  "allPacePctPerHour6h": 1.17,
+  "allPacePctPerHour6h": 2.145,
   "aliveAvgLast6h": 3.2,
-  "pctPerSessionHour": 0.3701,
+  "pctPerSessionHour": 0.6652,
   "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
   "sonnetSessionsFor5hWindow": null,
-  "sonnetSessionsForWeeklyCurve": 0.6
+  "sonnetSessionsForWeeklyCurve": null
  },
- "line": "Fable週枠 22%（今日の目標82.5%＝55×1.5・60.1pt下振れ→投入余地あり） ／ 全モデル 78%（16:20:24時点・曲線目標64.3%＝43×1.5・13.7pt上振れ） ／ リセットまで 4.0日 ／ 5時間枠 9.0%・残0.0h（16:20:24時点）",
+ "line": "Fable週枠 89%（今日の目標82.5%＝55×1.5・曲線どおり） ／ 全モデル 140%（推定時点・曲線目標64.3%＝43×1.5・76.1pt上振れ） ／ リセットまで 4.0日 ／ 5時間枠 215.5%・残0.0h",
  "sessionPct": 8,
  "manualAsOf": "2026-09-04 14:19"
 }

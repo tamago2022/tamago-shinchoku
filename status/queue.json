@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-04 17:13",
+ "updatedAt": "2026-09-04 17:25",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -281,26 +281,34 @@
    "title": "Eagleの画像をWebで見る仕組みを育てる",
    "why": "1147件は見られる。取り込み口も動いている",
    "what": "Eagleの画像をスマホのブラウザで見られるようにしました（1147件・検索とタグ絞り込みつき）。iPhoneから放り込む口も動いています。次はフォルダごとの絞り込みや、元画像の受け渡しを足していきます。",
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q19-0904",
    "startedAt": "2026-09-04T17:05:37+09:00",
    "sessionId": "7121beb7-0ee6-499b-a209-7b5cae4f68d1",
-   "pid": 38793
+   "finishedAt": "2026-09-04T17:25:09+09:00",
+   "result": "【完了】Eagle画像ビューアにフォルダ絞り込みを追加\n【完了】画像の受け渡し用ファイル(長辺1600px・原寸に近い画質)を1005件生成し、詳細画面から長押し保存できるようにした\nURL: https://tamago2022.github.io/tamago-shinchoku/share/eagle-k7m2xq9p/\n\n注：このプロジェクトはLovableではなくGitHub Pages自動配信（main push→数十秒で反映）。本番data.jsonとo/画像ファイルを直接叩いて反映を実測済み。動画・pdf・大型gif等148件は受け渡し用画像が未対応（次の一手）。",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/eagle-k7m2xq9p"
+   ]
   },
   {
    "n": 20,
    "title": "走行中が空いたら自動で次を発車させる",
    "why": "この「次に発車」を手動更新から自動へ",
    "what": "いまこの発車待ちの一覧は手で書いています。これを、走行中のセッションが終わったら自動で一番上を着火する形にします。ここまで来ると「工場が止まらない」が完成します。",
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q20-0904",
    "startedAt": "2026-09-04T17:06:43+09:00",
    "sessionId": "3e556b99-00c5-4772-8af1-d8b301a7b620",
-   "pid": 39115
+   "finishedAt": "2026-09-04T17:25:09+09:00",
+   "result": "【完了】「走行中が空いたら自動で次を発車させる」は既に実装・稼働中と判明（`tamago-shinchoku`リポジトリの`tools/auto_launcher.py`。5分おきlaunchd経由で本セッション自身がその仕組みに20番として着火されたのが実証）。未コミットだった実装（複数本まとめ着火・ロック掃除・URL抽出のjoy-relief-station固定バグ修正）をmainへcommit・push済み\nURL: https://tamago2022.github.io/tamago-shinchoku/\n\n補足1行：この案件は`joy-relief-station`のLovableページではなく別リポジトリ`tamago-shinchoku`（GitHub Pages自動反映・push即公開）の話でした。実働の証拠はWebページではなく`status/auto_launch.log`（15〜22番が本日17時台に連続自動着火・pushはcommit `15e866c0`がorigin/mainへ到達済みを確認）です。",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku"
+   ]
   },
   {
    "title": "イパネマの高校生カバーをやり直す（動画が貼られていない）",
@@ -320,43 +328,54 @@
    "why": "曲名が入っておらず、アーティストも未登録",
    "what": "カードのタイトルが『Tommy de Bourbonがペダルスティールで演奏を披露』になっていて曲名がない。正しくは曲名『92°』、アーティスト『Vulfmon & Tommy de Bourbon』。コピーも投稿文をなぞっただけの水道水コピーなので、Vulfpeck本人が『聴いてほしい』と紹介した事実を軸に書き直す。",
    "n": 22,
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q22-0904",
    "startedAt": "2026-09-04T17:13:38+09:00",
    "sessionId": "4ddae3d6-9e1d-407b-b9a9-dba19bda97e0",
-   "pid": 40233
+   "finishedAt": "2026-09-04T17:25:09+09:00",
+   "result": "I'm waiting for the background verification check (90s) to complete before proceeding to the Lovable publish step. I'll continue as soon as it reports back.",
+   "urls": []
   },
   {
    "title": "Vulfmon と Tommy de Bourbon のアーティストページを作る",
    "why": "実在の人物なのにページがない",
    "what": "Vulfmon＝VulfpeckのJack Strattonのソロ名義。Tommy de Bourbonはペダルスティール奏者。識別子で裏取りしてからページを作る。公式チャンネルへのリンクを必ず置く。個人の生年は書かない。",
    "n": 23,
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
-   "worktree": "q23-0904"
+   "worktree": "q23-0904",
+   "startedAt": "2026-09-04T17:25:12+09:00",
+   "sessionId": "1c16e056-d229-47c0-9894-315307ffa377",
+   "pid": 42757
   },
   {
    "title": "確認待ちを進捗表に出して、OK／やり直しを押せるようにする",
    "why": "終わったものをたまごさんが判定して初めて完了になる流れ",
    "what": "自動発車したものが終わると『確認待ち』に入る。それを進捗表に出して、OKなら完了、ダメならもう一度発車待ちの列に戻す、というボタンを付ける。何時何分に完了したかも表示する。",
    "n": 24,
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
-   "worktree": "q24-0904"
+   "worktree": "q24-0904",
+   "startedAt": "2026-09-04T17:25:16+09:00",
+   "sessionId": "e22390ee-62b3-43ab-a80e-ac138fb1427f",
+   "pid": 42780
   },
   {
    "title": "AI臭さを消す質感の指示書を作る（サンダーバード／ストップモーション）",
    "why": "デジタルのツルツル感を消したい",
    "what": "樹脂粘土や木彫りの肌、ガラスビーズの目、パペットの合わせ目、ミニチュア用の荒い布地、白熱球のスタジオ照明、フィルムの粒子感。粘土に残る指紋、フェルトのけば立ち。こうした『触れる質量感』の指定を型にまとめ、画像生成のときに毎回使えるようにする。",
    "n": 25,
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
-   "worktree": "q25-0904"
+   "worktree": "q25-0904",
+   "startedAt": "2026-09-04T17:25:23+09:00",
+   "sessionId": "61b17145-9dde-42c6-a9d2-02ae80e63786",
+   "pid": 42842
   },
   {
    "title": "止まっているタスク56件から、確認だけで閉じられるものを拾う",
