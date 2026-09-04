@@ -608,6 +608,27 @@ def auth_where(_target=None):
     return "done", " ｜ ".join(lines)[:900]
 
 
+def restart_heartbeat(_target=None):
+    """心臓を入れ直す（2026-09-05）。
+
+    bash の while ループは起動時にまとめて読み込まれるので、`heartbeat.sh` を書き換えても
+    **走っている心臓には反映されない**（実測：auth_watch.py を足したのに1時間以上呼ばれていなかった）。
+    ここで一度落とす。5分おきの巡回が新しい中身で立て直す。
+    """
+    r = run(["pkill", "-f", "tools/heartbeat.sh"], timeout=10)
+    time.sleep(1)
+    chk = run(["pgrep", "-f", "tools/heartbeat.sh"], timeout=10)
+    still = bool(chk and (chk.stdout or "").strip())
+    # すぐ立て直す（巡回を待たない）
+    try:
+        subprocess.Popen(["bash", os.path.join(REPO, "tools", "heartbeat.sh")],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         stdin=subprocess.DEVNULL, start_new_session=True)
+    except Exception as e:
+        return "failed", "落としたが立て直せませんでした: %s" % e
+    return "done", "心臓を入れ直しました（新しい中身で起動）%s" % ("" if not still else "／古いものが残っている可能性")
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -620,6 +641,8 @@ def _process_other(action, cmd):
         return handoff(target)
     if action == "push_unlock":
         return push_unlock(target)
+    if action == "restart_heartbeat":
+        return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
     if action == "auth_probe":
