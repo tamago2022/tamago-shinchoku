@@ -14,6 +14,14 @@ PWAの「リモコン」ボタンから来たコマンドを実行する（2026-
   stop      : 指定pidを終了（Claudeプロセスであることを確認してから。SIGTERM）
   handoff   : 詰まっているセッションに簡易引き継ぎメッセージ付きの新セッションを立てる
   close_app : 重いアプリを終了（除外リスト＝Brave・Chromeは絶対に実行しない。未保存書類は失敗扱い）
+  queue_ok    : 進捗表「たまごさんの確認待ち」で✅OKを押した番号を status/queue.json で done にする
+  queue_redo  : 同じくやり直しを押した番号を waiting に戻し、items配列の先頭へ移動する（次に発車の一番手にする）
+
+  2026-09-04 queue_ok/queue_redo 追加：進捗表の確認ボタンは、これまで押した結果が端末内
+  （localStorage）にしか残らず、Mac側の status/queue.json には一切反映されていなかった
+  （index.html側コメントに「Obsidian経由でMac側へ渡す」と書かれていたが実装が無かった）。
+  優先度（priority_ingest.py）・リモコン（resume/stop/handoff/close_app）と同じ
+  「obsidian://new → Vault → このingest → status/queue.json」の道に乗せて実装した。
 
 受信ファイルは消さない（記録として残す）。commands.jsonに書いたidは二重実行しない。
 """
@@ -31,6 +39,7 @@ REPO = os.path.dirname(HERE)
 VAULT = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain"
 INBOX_DIR = os.path.join(VAULT, "AI出力", "_ルール", "コマンド_受信")
 OUT = os.path.join(REPO, "status", "commands.json")
+QUEUE = os.path.join(REPO, "status", "queue.json")
 CLAUDE = os.environ.get("CLAUDE_BIN") or (os.path.expanduser("~/.local/bin/claude")
         if os.path.exists(os.path.expanduser("~/.local/bin/claude")) else "claude")
 
@@ -132,6 +141,71 @@ def handoff(cli):
         return "failed", str(e)
 
 
+def _load_queue():
+    return load_json(QUEUE, {"items": []})
+
+
+def _save_queue(q):
+    save_json(QUEUE, q)
+
+
+def _find_item(items, n):
+    for it in items:
+        if it.get("n") == n:
+            return it
+    return None
+
+
+def queue_ok(target):
+    """進捗表「✅OK・完了にする」→ status/queue.json の該当番号を done にする。"""
+    try:
+        n = int(target)
+    except Exception:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    it = _find_item(items, n)
+    if it is None:
+        return "failed", "%d番がqueue.jsonに見つかりません" % n
+    if it.get("status") == "done":
+        return "skipped", "%d番はすでに完了です" % n
+    it["status"] = "done"
+    it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "%d番を完了にしました" % n
+
+
+def queue_redo(target):
+    """進捗表「↩︎やり直し」→ status/queue.json の該当番号を waiting に戻し、
+    items配列の先頭へ移す（＝次に発車の一番手。auto_launcher.pyが次サイクルで拾う）。
+    走行の残骸（sessionId/pid/startedAt/finishedAt/result/urls）は消し、新規のwaiting項目と同じ形に戻す。"""
+    try:
+        n = int(target)
+    except Exception:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    idx = None
+    for i, it in enumerate(items):
+        if it.get("n") == n:
+            idx = i
+            break
+    if idx is None:
+        return "failed", "%d番がqueue.jsonに見つかりません" % n
+    it = items.pop(idx)
+    it["status"] = "waiting"
+    it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    for k in ("finishedAt", "result", "urls", "sessionId", "pid", "startedAt"):
+        it.pop(k, None)
+    items.insert(0, it)
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "%d番を列の先頭（次に発車）へ戻しました" % n
+
+
 def process(cmd):
     action = cmd.get("action")
     target = cmd.get("target")
@@ -143,6 +217,10 @@ def process(cmd):
         return stop(target)
     if action == "handoff":
         return handoff(target)
+    if action == "queue_ok":
+        return queue_ok(target)
+    if action == "queue_redo":
+        return queue_redo(target)
     return "failed", "不明なアクション: %s" % action
 
 

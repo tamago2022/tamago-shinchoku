@@ -761,13 +761,17 @@ document.addEventListener("click", e=>{
   it.status = ok ? "done" : "waiting";
   it.checkedAt = new Date().toISOString();
   if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; }
-  // 判定は端末に持ち、Obsidian経由でMac側へ渡す（既存の優先度と同じ道）
+  // 端末内にも一応残す（監査用。実際の反映先は下のObsidian経由）
   try{
     const k = "shinchoku_check_v1";
     const saved = JSON.parse(localStorage.getItem(k) || "{}");
     saved["Q"+n] = {ok, t: new Date().toISOString()};
     localStorage.setItem(k, JSON.stringify(saved));
   }catch(err){}
+  // 2026-09-04 判定を端末だけに残さず、優先度・リモコンと同じ道（obsidian://new → Vault →
+  //   Mac側 command_ingest.py）でqueue.jsonへ反映する。queue_ok=done／queue_redo=waitingに戻し列の先頭へ。
+  const id = "q" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  sendCommandWithId(id, ok ? "queue_ok" : "queue_redo", String(n), (ok ? "✅完了 " : "↩︎やり直し ") + n + "番");
   renderCheck(); renderQueue();
 });
 
