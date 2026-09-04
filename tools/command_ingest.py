@@ -759,6 +759,48 @@ def auth_login_code(target):
     return "done", "コードを渡しました（数秒で保存されます）"
 
 
+
+def auth_install_token(_target=None):
+    """作られた長期トークンを、工場だけが読める場所へ移す（2026-09-05）。
+
+    `claude setup-token` は**キーチェーンには保存せず、画面に出して終わる**。
+    そのままではCLIは認証されないので、こちらで拾って
+    `~/.tamago/claude_token`（権限600・git管理外）へ入れ、
+    工場がclaudeを起動するときに `CLAUDE_CODE_OAUTH_TOKEN` として渡す。
+
+    **中身はどこにも表示しない。**（このリポジトリはGitHub Pagesで公開されているため、
+    status/ 配下には置かない。ログからも消す）
+    """
+    import re as _re
+    log = os.path.join(REPO, "status", "auth_login.log")
+    try:
+        raw = io.open(log, encoding="utf-8", errors="ignore").read()
+    except Exception:
+        return "failed", "ログが読めません"
+    m = _re.search(r"(sk-ant-oat01-[A-Za-z0-9_\-]+)", raw.replace(" ", ""))
+    if not m:
+        return "failed", "トークンが見つかりません"
+    token = m.group(1)
+    d = os.path.expanduser("~/.tamago")
+    os.makedirs(d, exist_ok=True)
+    p = os.path.join(d, "claude_token")
+    with io.open(p, "w", encoding="utf-8") as f:
+        f.write(token)
+    os.chmod(p, 0o600)
+    # 痕跡を消す（公開リポジトリの中に秘密を置かない）
+    try:
+        cleaned = _re.sub(r"sk-ant-oat01-[A-Za-z0-9_\- ]+", "（トークンは ~/.tamago/claude_token へ移しました）", raw)
+        io.open(log, "w", encoding="utf-8").write(cleaned)
+    except Exception:
+        pass
+    for junk in ("auth_login_url.txt", "auth_code.txt", "auth_login.pid", "auth_login_done.txt"):
+        try:
+            os.remove(os.path.join(REPO, "status", junk))
+        except Exception:
+            pass
+    return "done", "トークンを ~/.tamago/claude_token へ入れました（権限600・ログからは消去）"
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -775,6 +817,8 @@ def _process_other(action, cmd):
         return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
+    if action == "auth_install_token":
+        return auth_install_token(target)
     if action == "auth_login_helper":
         return auth_login_helper(target)
     if action == "auth_login_code":
