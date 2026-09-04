@@ -738,6 +738,27 @@ def auth_login_pty(_target=None):
     return "failed", ("URLが出ませんでした: " + clean[-300:]).replace("\n", " ")
 
 
+
+def auth_login_helper(_target=None):
+    """ログイン係（tools/auth_login_helper.py）を切り離して起動する。こちらは待たない。"""
+    try:
+        subprocess.Popen(["python3", os.path.join(REPO, "tools", "auth_login_helper.py")],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         stdin=subprocess.DEVNULL, start_new_session=True)
+    except Exception as e:
+        return "failed", str(e)
+    return "done", "ログイン係を起動しました（URLは status/auth_login_url.txt に出ます）"
+
+
+def auth_login_code(target):
+    """たまごさんがブラウザで受け取ったコードを、待っているログイン係へ渡す。"""
+    code = (target or "").strip()
+    if not code:
+        return "failed", "コードが空です"
+    io.open(os.path.join(REPO, "status", "auth_code.txt"), "w", encoding="utf-8").write(code)
+    return "done", "コードを渡しました（数秒で保存されます）"
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -754,6 +775,10 @@ def _process_other(action, cmd):
         return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
+    if action == "auth_login_helper":
+        return auth_login_helper(target)
+    if action == "auth_login_code":
+        return auth_login_code(target)
     if action == "auth_login_pty":
         return auth_login_pty(target)
     if action == "auth_ps":
