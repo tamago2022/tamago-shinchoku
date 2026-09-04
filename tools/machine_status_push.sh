@@ -200,17 +200,15 @@ HIST_CHANGED=0
 #   「マシンの数字が前回と同じ」だけで早期returnし、**発車待ちの中身や画面の直しが
 #   何時間も公開されなかった**（実害：たまごさんの画面に「発車待ちはありません」が出続けた）。
 #   公開に載せる対象（下の git add と同じ顔ぶれ）を、そのまま変更検知の対象にする。
-for f in status/history.jsonl status/whiteboard.json status/priority.json status/health.json \
-         status/commands.json status/queue.json status/relay.json index.html data.js said.js; do
-  [ -f "$f" ] || continue
-  git ls-files --error-unmatch "$f" >/dev/null 2>&1 || HIST_CHANGED=1
-  git diff --quiet -- "$f" 2>/dev/null || HIST_CHANGED=1
-done
-for d in tools share; do
-  [ -d "$d" ] || continue
-  git diff --quiet -- "$d" 2>/dev/null || HIST_CHANGED=1
-  [ -n "$(git ls-files --others --exclude-standard "$d" 2>/dev/null | head -1)" ] && HIST_CHANGED=1
-done
+# git status を1回だけ叩いて判定する（1ファイルずつ git を呼ぶと、share/ に画像が1000枚以上あるため
+# 30秒ごとの巡回が重くなり、計測そのものが遅れる）。share/ はここに入れない（変更が稀で、
+# 20分の鮮度ルールで拾えるため。毎回の差分計算に画像1000枚を含めない）。
+if [ -n "$(git status --porcelain --untracked-files=normal -- \
+      status/history.jsonl status/whiteboard.json status/priority.json status/health.json \
+      status/commands.json status/queue.json status/relay.json \
+      index.html data.js said.js tools 2>/dev/null | head -1)" ]; then
+  HIST_CHANGED=1
+fi
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
 git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json >/dev/null 2>&1
