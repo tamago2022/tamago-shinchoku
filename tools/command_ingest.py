@@ -221,6 +221,17 @@ def queue_redo(target):
     """進捗表「↩︎やり直し」→ status/queue.json の該当番号を waiting に戻し、
     items配列の先頭へ移す（＝次に発車の一番手。auto_launcher.pyが次サイクルで拾う）。
     走行の残骸（sessionId/pid/startedAt/finishedAt/result/urls）は消し、新規のwaiting項目と同じ形に戻す。"""
+    # 2026-09-04 たまごさん「やり直しも、今すぐやり直せないのか、急ぎのやつもある。
+    #   順番待ちの後に並んでいいよ、っていうのもある」
+    #   → target は "12"（今まで通り＝先頭）か "12:5"（優先度つき）で受ける。
+    #     優先度が付いていれば、先頭へ割り込ませず item.priority に書いて列の順番に任せる。
+    prio = None
+    if ":" in str(target):
+        target, _p = str(target).split(":", 1)
+        try:
+            prio = int(_p)
+        except Exception:
+            prio = None
     try:
         n = int(target)
     except Exception:

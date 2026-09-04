@@ -294,12 +294,17 @@
 <details class="sec sub"><summary>この仕組みの弱点（直近3日・自動集計） <small id="statMeta"></small></summary><div class="in" id="stats">読み込み中…</div></details>
 <details class="sec sub"><summary>Today（北極星・最重要3件）</summary><div class="in today" id="today"></div></details>
 <details class="sec sub"><summary>旧・進捗表の依頼31件 <small id="listMeta"></small></summary><div class="in" id="list"></div></details>
+</div></details>
+<!-- 2026-09-04 たまごさん「次に発車がない。ここに溜めて」
+     ここから下（限界の帯・走行中・次に発車・確認待ち）は、マシンとクレジットの折りたたみの
+     **外**に出す。中に入れていると、折りたたみを閉じたときに丸ごと消えてしまい、
+     「発車待ちがない」ように見えてしまうため。ここは常に見えていなければならない。 -->
 <div id="capBar" class="capbar" hidden></div>
 <div id="nowAge" class="nowage"></div>
 <div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
 <!-- 2026-09-04 たまごさん「次に発車予定の予備軍も分かるようにしといて。これが終わったら次は何が発車されるのかな、って見たいから」
      走行中が空いたら、ここの一番上が繰り上がる。優先順位はたまごさんがタップで付ける（Pボタン）。 -->
-<details class="sec queue" id="queueSec"><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in">
+<details class="sec queue" id="queueSec" open><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in">
 <!-- 2026-09-04 たまごさん「進捗表に入力欄を作り、そこに書いた1行がそのまま発車待ちの列に入るように。優先度も同時に付けられる」
      obsidian://new → Vault → Mac側 command_ingest.py の queue_add アクションで status/queue.json に直接1件追加する。 -->
 <div class="addbox" id="queueAddBox">
@@ -318,11 +323,6 @@
 </div></details>
 <!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」 -->
 <details class="sec check" id="checkSec" open><summary>🔎 たまごさんの確認待ち <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
-
-<!-- 2026-09-03 たまごさん「これ1個にまとめて、スペースがもったいない。マシンとクレジット開くと、この以下の下の情報が出るように」
-     → 折りたたみを縦に8個並べるのをやめ、1個にまとめて中に入れ子にした。畳んでいる間は1行しか場所を取らない。 -->
-
-</div></details>
 
 <!-- 2026-09-04 たまごさん「完了・止まっている・判断待ち・検証待ちが下ともダブってる。統合してよ。
      ダブりを消して。混乱するから。半分の画面で同じ情報が出せるはず」
@@ -852,7 +852,14 @@ function renderQueue(){
   if(!box) return;
   document.getElementById("queueMeta").textContent =
     rows.length ? `${rows.length}件${DATA.queueUpdatedAt ? "・" + formatStamp(DATA.queueUpdatedAt) : ""}` : "";
-  if(!rows.length){ box.innerHTML = `<div class="card note">発車待ちはありません</div>`; return; }
+  // 2026-09-04 「発車待ちがない」と出ていたのに台帳には15本あった。原因を切り分けられるよう、
+  //   ①まだ読めていない ②読めたが本当に0本 を区別して出す。黙って「ありません」と出さない。
+  if(!rows.length){
+    box.innerHTML = window.__queue
+      ? `<div class="card note">発車待ちはありません（台帳${(all||[]).length}件を読み込み済み）</div>`
+      : `<div class="card note">発車待ちを読み込み中…（読めないときは画面を下に引いて更新）</div>`;
+    return;
+  }
   // 2026-09-04 たまごさん「演者が同定されていない、って何のことだろうみたいな。どういうことなのか分かりたいね。
   //   1から20番で全部トグルで閉じて、スクショとか載せられると」
   //   → 1行ごとに畳んだ説明（what）を持たせた。タップで開く。
