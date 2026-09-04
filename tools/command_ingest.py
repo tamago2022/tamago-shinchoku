@@ -250,11 +250,65 @@ def queue_redo(target):
     it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     for k in ("finishedAt", "result", "urls", "sessionId", "pid", "startedAt"):
         it.pop(k, None)
-    items.insert(0, it)
+    if prio:
+        it["priority"] = prio
+        items.append(it)          # 順番待ちの後ろへ。優先度で拾われる
+        where = "P%d で列に戻しました（急がない）" % prio
+    else:
+        it.pop("priority", None)
+        it["priority"] = 1
+        items.insert(0, it)       # 今すぐ＝先頭へ割り込ませる
+        where = "列の先頭（次に発車）へ戻しました"
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
-    return "done", "%d番を列の先頭（次に発車）へ戻しました" % n
+    return "done", "%d番を%s" % (n, where)
+
+
+def queue_later(target):
+    """「🟡 とりあえずOK（あとで直す）」を押したとき。
+
+    2026-09-04 たまごさんの言葉：「70点だけど、今急ぎじゃないからいいや、っていうのもあるわけよ。
+    完全には治ってないけど、まあここまでだったらとりあえずいいや、という状態がある。
+    完全にオッケーじゃないんだけどね。とりあえずオッケー、だけど時間あるとき直そうね、っていうこと。
+    結構俺の中では優先順位中ぐらいなのに、70点を85点に持っていくのに時間はかけたくない。」
+
+    → **いったん完了として片づける**（確認待ちの列から外す）。
+      そのうえで「あとで直す」1件を **P5（後回し）** で発車待ちの末尾に積む。
+      列が空いてきたときに勝手に拾われるので、たまごさんは何もしなくてよい。
+    """
+    try:
+        n = int(target)
+    except Exception:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    src = None
+    for it in items:
+        if it.get("n") == n:
+            src = it
+            break
+    if src is None:
+        return "failed", "%d番がqueue.jsonに見つかりません" % n
+    src["status"] = "done"
+    src["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    src["checkNote"] = "たまごさん判定：とりあえずOK（70点。時間があるとき直す）"
+    nxt = max([int(x.get("n") or 0) for x in items] or [0]) + 1
+    items.append({
+        "n": nxt,
+        "priority": 5,
+        "title": "【あとで直す】" + (src.get("title") or ""),
+        "why": "たまごさん判定：とりあえずOK（70点）。合格は85点。急がないが、いつか85点にする",
+        "what": "元の依頼（%d番）は「とりあえずOK」で一度閉じました。残り15点ぶんを仕上げます。\n\n【元の依頼】\n%s"
+                % (n, src.get("what") or ""),
+        "status": "waiting",
+        "limitMin": 180,
+        "model": "claude-sonnet-5",
+    })
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "%d番をとりあえずOKで閉じ、あとで直す分を%d番（P5）に積みました" % (n, nxt)
 
 
 def queue_prio(target):
@@ -304,6 +358,8 @@ def process(cmd):
         return queue_add(target, cmd.get("priority"))
     if action == "queue_prio":
         return queue_prio(target)
+    if action == "queue_later":
+        return queue_later(target)
     return "failed", "不明なアクション: %s" % action
 
 

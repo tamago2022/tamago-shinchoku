@@ -204,10 +204,13 @@
   .cr{font-size:0.78rem; line-height:1.65; color:var(--fg); background:#161c24; border:1px solid var(--line);
      border-radius:10px; padding:9px 11px; margin:6px 0; white-space:pre-wrap; max-height:9em; overflow:auto;}
   .cu{display:block; font-size:0.78rem; margin:3px 0; word-break:break-all;}
-  .cbtns{display:flex; gap:8px; margin-top:8px;}
-  .cbtns button{flex:1; min-height:44px; border-radius:10px; font-weight:700; font-size:0.85rem; border:1px solid var(--line);}
+  /* 2026-09-04 判定を4つに増やしたので、2列で折り返す（1行4つは指が当たらない） */
+  .cbtns{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;}
+  .cbtns button{min-height:44px; border-radius:10px; font-weight:700; font-size:0.82rem; border:1px solid var(--line);}
   .cok{background:var(--green); color:#12161c; border-color:var(--green)!important;}
+  .clater{background:#3a2f12; color:var(--yellow); border-color:rgba(230,190,80,0.45)!important;}
   .cng{background:#1a2028; color:var(--red);}
+  .cng2{background:#1a2028; color:var(--sub);}
   .queue{border-color:rgba(95,217,150,0.35);}
   .queue > summary{font-weight:700;}
   .qrow{display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
@@ -318,6 +321,7 @@
     <button type="button" class="addSend" id="qaSend">＋ 発車待ちに追加</button>
   </div>
   <div class="addMsg" id="qaMsg">P1=今すぐ・P3=普通・P5=後回し</div>
+  <div class="addMsg" id="pendMsg"></div>
 </div>
 <div class="in" id="queue"></div>
 </div></details>
@@ -417,16 +421,22 @@ function setPrio(k, p){
 function pendingCount(){ // 端末内にあって、共有側（priority.json）と違うもの
   let n = 0; for(const k in PRIO){ const r = PRIO_REMOTE[k]; if(!r || +r.p !== +PRIO[k].p) n++; } return n;
 }
-function obsidianSendUrl(){
-  const payload = {updatedAt:new Date().toISOString(), prio:PRIO};
-  const body = "たまごさんがPWAで付けた優先度。手で編集しない。Mac側の priority_ingest.py が5分おきに読む。\n\n```json\n" + JSON.stringify(payload) + "\n```\n";
-  return "obsidian://new?vault=tamago_brain&file=" + encodeURIComponent("AI出力/_ルール/優先度_受信") + "&overwrite=true&silent=true&content=" + encodeURIComponent(body);
+// 優先度は、押すたびに1件ずつ送らず「今の全部」をまとめて中継所へ渡す（画面は飛ばさない）
+let PRIO_SEND_TIMER = null;
+function sendPrioViaRelay(){
+  clearTimeout(PRIO_SEND_TIMER);
+  PRIO_SEND_TIMER = setTimeout(()=>{
+    sendCommandWithId("p" + Date.now().toString(36), "priority_set", JSON.stringify(PRIO), "優先度をまとめて更新");
+  }, 1500);
 }
 function updateSendBar(){
   const bar = document.getElementById("sendbar"); if(!bar) return;
   const n = pendingCount(), total = Object.keys(PRIO).filter(k=>PRIO[k].p>0).length;
   bar.hidden = total === 0;
-  bar.innerHTML = `<span>優先度を付けた ${total}件${n ? `・未送信 ${n}件` : "・共有済み"}</span><a href="${obsidianSendUrl()}">Obsidianへ送る →</a>`;
+  // 2026-09-04 たまごさん「Obsidianには飛ばない」→ 手で送るリンクを廃止。
+  //   優先度も他のボタンと同じ中継所ルートで自動的に送る（画面は飛ばさない）。
+  bar.innerHTML = `<span>優先度を付けた ${total}件${n ? `・未送信 ${n}件（自動で送ります）` : "・共有済み"}</span>`;
+  if(n) sendPrioViaRelay();
 }
 document.addEventListener("click", e=>{
   const b = e.target.closest(".pk button"); if(!b) return;
@@ -467,14 +477,47 @@ document.addEventListener("click", e=>{
   sendCommandWithId(id, b.dataset.action, b.dataset.target, b.dataset.label);
   if(holder){ holder.dataset.cmdid = id; holder.removeAttribute("data-cmdid-slot"); renderCmdStatus(); }
 });
+/* 2026-09-04 たまごさん「Obsidianに飛んじゃうよ。Obsidianに飛ぶというアクションは、
+   この進捗表ではもうありえないから。**Obsidianには飛ばない。**」
+   → ボタンを押してもアプリを切り替えない。中継所(status/relay.json に書かれたURL)へ
+     そのまま送る。中継所が用意できていない・届かないときは端末の中に貯めておき、
+     次に届くようになったときにまとめて送る。**画面は絶対に飛ばさない。** */
+let PENDING_CMDS = [];
+try{ PENDING_CMDS = JSON.parse(localStorage.getItem("shinchoku_pending_cmds") || "[]"); }catch(e){ PENDING_CMDS = []; }
+function savePending(){ try{ localStorage.setItem("shinchoku_pending_cmds", JSON.stringify(PENDING_CMDS.slice(-50))); }catch(e){} }
+function renderPending(){
+  const el = document.getElementById("pendMsg"); if(!el) return;
+  el.textContent = PENDING_CMDS.length ? `未送信 ${PENDING_CMDS.length}件（中継所につながり次第まとめて送ります）` : "";
+}
+function relayUrl(){ return (window.__relay && window.__relay.url) || null; }
+function flushCommands(){
+  const url = relayUrl();
+  if(!url || !PENDING_CMDS.length) { renderPending(); return Promise.resolve(); }
+  const batch = PENDING_CMDS.slice();
+  return fetch(url.replace(/\/$/, "") + "/cmd", {
+    method: "POST", mode: "cors", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({commands: batch}),
+  }).then(r => {
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    PENDING_CMDS = PENDING_CMDS.filter(c => !batch.some(b => b.id === c.id));
+    savePending(); renderPending(); refreshHealth();
+  }).catch(()=>{ renderPending(); });
+}
 function sendCommandWithId(id, action, target, label){
   SENT_CMDS[id] = {action, target, label, sentAt: new Date().toISOString()};
   saveCmds();
-  const payload = {id, action, target, label, requestedAt: new Date().toISOString()};
-  const body = "PWAからのリモコン指示。手で編集しない。Mac側の command_ingest.py が実行する。\n\n```json\n" + JSON.stringify(payload) + "\n```\n";
-  const url = "obsidian://new?vault=tamago_brain&file=" + encodeURIComponent("AI出力/_ルール/コマンド_受信/" + id) + "&silent=true&content=" + encodeURIComponent(body);
-  window.location.href = url;
+  PENDING_CMDS.push({id, action, target, label, requestedAt: new Date().toISOString()});
+  savePending(); renderPending();
+  flushCommands();
 }
+// 中継所の場所は毎回読み直す（トンネルのURLは変わることがある）
+function refreshRelay(){
+  return fetch("status/relay.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(j => { window.__relay = j; flushCommands(); })
+    .catch(()=>{});
+}
+refreshRelay();
+setInterval(refreshRelay, 60000);
 
 /* ───── スマホから発車待ちへ新規タスクを1行追加（2026-09-04）─────
    優先度・リモコンと同じ経路（obsidian://new → Vault → Mac側 command_ingest.py の queue_add）で
@@ -493,14 +536,14 @@ document.addEventListener("click", e=>{
   if(!text){ if(msg) msg.textContent = "1行、書いてから追加してください"; return; }
   const id = "a" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const label = "＋" + text.slice(0,20);
+  // 2026-09-04 たまごさん「Obsidianには飛ばない」→ 画面を切り替えず、中継所へそのまま送る
+  PENDING_CMDS.push({id, action:"queue_add", target:text, priority:QA_PRIO, label, requestedAt:new Date().toISOString()});
+  savePending();
   SENT_CMDS[id] = {action:"queue_add", target:text, priority:QA_PRIO, label, sentAt:new Date().toISOString()};
   try{ saveCmds(); }catch(err){}
-  const payload = {id, action:"queue_add", target:text, priority:QA_PRIO, label, requestedAt:new Date().toISOString()};
-  const body = "PWAから新規タスク追加。手で編集しない。Mac側の command_ingest.py が実行する。\n\n```json\n" + JSON.stringify(payload) + "\n```\n";
-  const url = "obsidian://new?vault=tamago_brain&file=" + encodeURIComponent("AI出力/_ルール/コマンド_受信/" + id) + "&silent=true&content=" + encodeURIComponent(body);
   if(input) input.value = "";
-  if(msg) msg.textContent = "送信しました。30〜60秒で発車待ちの列に入ります";
-  window.location.href = url;
+  if(msg) msg.textContent = "受け付けました。発車待ちの列に入ります";
+  flushCommands();
 });
 
 /* ───── あと何本いけるか（最上部の帯）─────
@@ -571,13 +614,20 @@ function renderHealth(h){
   }).join("");
   renderCmdStatus();
 }
+/* 2026-09-04 「発車待ちを読み込み中…」のまま止まる事故への対応。
+   これまで台帳(queue.json)の読み込みは**開始時の1回だけ**で、通信が一度でも失敗すると
+   `.catch(()=>{})` が黙って握りつぶし、二度と読みに行かなかった（＝永久に「読み込み中」）。
+   30秒おきに読み直し、失敗したことも画面に出す。 */
+window.__queueErr = 0;
 function refreshHealth(){
   return fetch("status/queue.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(q => { window.__queue = q; try{ renderQueue(); renderCheck(); }catch(e){} }).catch(()=>{});
-  fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(h => { window.__health = h; renderHealth(h); renderCapBar(); }).catch(()=>renderHealth(null));
+    .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(q => { window.__queue = q; window.__queueErr = 0; try{ renderQueue(); renderCheck(); }catch(e){} })
+    .catch(()=>{ window.__queueErr++; try{ renderQueue(); }catch(e){} });
 }
 refreshHealth();
+setInterval(refreshHealth, 30000);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refreshHealth(); });
 
 /* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */
 const KIND_LABEL = {working:"作業中", asked:"判断待ち", stuck_tool:"承認待ち", idle_done:"終了・待機", unknown:"不明"};
@@ -810,29 +860,43 @@ function renderCheck(){
       <div class="cm">${fin ? fin + " に終了" : ""}</div>
       ${urls || `<div class="cm">URLの報告なし</div>`}
       <div class="cr">${esc((r.result||"").slice(0,600))}</div>
-      <div class="cbtns"><button class="cok" data-ck="ok" data-n="${r.n}">✅ OK・完了にする</button><button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し（列に戻す）</button></div>
+      <div class="cbtns">
+        <button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了（合格）</button>
+        <button class="clater" data-ck="later" data-n="${r.n}">🟡 とりあえずOK（あとで直す）</button>
+        <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し（今すぐ）</button>
+        <button class="cng2" data-ck="ng5" data-n="${r.n}">↩︎ やり直し（後ろでいい）</button>
+      </div>
     </div>`;
   }).join("");
 }
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-ck]"); if(!b) return;
-  const n = Number(b.dataset.n), ok = b.dataset.ck === "ok";
+  // 2026-09-04 たまごさん「70点だけど今急ぎじゃないからいいや、という状態がある。
+  //   やり直しも、今すぐのと、順番待ちの後ろでいいのがある」→ 判定を4つに分けた。
+  const n = Number(b.dataset.n), kind = b.dataset.ck;
+  const ok = (kind === "ok" || kind === "later");
   const it = ((window.__queue && window.__queue.items) || []).find(x => x.n === n);
   if(!it) return;
   it.status = ok ? "done" : "waiting";
   it.checkedAt = new Date().toISOString();
-  if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; }
+  if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; it.priority = (kind === "ng5" ? 5 : 1); }
   // 端末内にも一応残す（監査用。実際の反映先は下のObsidian経由）
   try{
     const k = "shinchoku_check_v1";
     const saved = JSON.parse(localStorage.getItem(k) || "{}");
-    saved["Q"+n] = {ok, t: new Date().toISOString()};
+    saved["Q"+n] = {ok, kind, t: new Date().toISOString()};
     localStorage.setItem(k, JSON.stringify(saved));
   }catch(err){}
   // 2026-09-04 判定を端末だけに残さず、優先度・リモコンと同じ道（obsidian://new → Vault →
   //   Mac側 command_ingest.py）でqueue.jsonへ反映する。queue_ok=done／queue_redo=waitingに戻し列の先頭へ。
   const id = "q" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-  sendCommandWithId(id, ok ? "queue_ok" : "queue_redo", String(n), (ok ? "✅完了 " : "↩︎やり直し ") + n + "番");
+  const CMD = {
+    ok:    ["queue_ok",    String(n),       "✅完了 "],
+    later: ["queue_later", String(n),       "🟡とりあえずOK "],
+    ng:    ["queue_redo",  String(n),       "↩︎やり直し（今すぐ）"],
+    ng5:   ["queue_redo",  String(n) + ":5", "↩︎やり直し（後ろ）"],
+  }[kind] || ["queue_ok", String(n), "✅完了 "];
+  sendCommandWithId(id, CMD[0], CMD[1], CMD[2] + n + "番");
   renderCheck(); renderQueue();
 });
 
@@ -857,7 +921,9 @@ function renderQueue(){
   if(!rows.length){
     box.innerHTML = window.__queue
       ? `<div class="card note">発車待ちはありません（台帳${(all||[]).length}件を読み込み済み）</div>`
-      : `<div class="card note">発車待ちを読み込み中…（読めないときは画面を下に引いて更新）</div>`;
+      : (window.__queueErr
+          ? `<div class="card note">台帳が読めませんでした（${window.__queueErr}回失敗）。30秒ごとに自動で読み直しています</div>`
+          : `<div class="card note">発車待ちを読み込み中…</div>`);
     return;
   }
   // 2026-09-04 たまごさん「演者が同定されていない、って何のことだろうみたいな。どういうことなのか分かりたいね。
@@ -1012,7 +1078,12 @@ function renderAll(){
   const A = window.SHINCHOKU_ALL; if(!A) return;
   document.getElementById("allMeta").textContent = `${A.items.length + A.old.length}件・${A.generatedAt}`;
   const groups = {}; A.items.forEach(it=>{ (groups[it.badge] ||= []).push(it); });
-  const keys = Object.keys(ALL_META).sort((a,b)=>ALL_META[a].order-ALL_META[b].order).filter(k=>groups[k]);
+  // 2026-09-04 たまごさん「ダブりの表現がある。これいらないわ、削っちゃっていい。同じ表現を繰り返さないで」
+  //   →「⏸ 判断待ち（たまごさん）」は、上の「🔎 たまごさんの確認待ち」と同じことを言っている。
+  //     判定して押す場所は上の1か所だけにする。件数と日付（225件・生成日時）はそのまま残す。
+  const DUP_HIDE = ["⏸"];
+  const keys = Object.keys(ALL_META).sort((a,b)=>ALL_META[a].order-ALL_META[b].order)
+    .filter(k=>groups[k] && !DUP_HIDE.includes(k));
   document.getElementById("allSummary").innerHTML = keys.map(k=>`<a class="${ALL_META[k].color}" href="#a-${ALL_META[k].order}">${k} ${ALL_META[k].label}<b>${groups[k].length}</b></a>`).join("")
     + `<a href="#a-old">旧台帳<b>${A.old.length}</b></a>`;
   let h = "";

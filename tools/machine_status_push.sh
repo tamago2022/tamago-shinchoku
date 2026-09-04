@@ -126,6 +126,9 @@ python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
 #   発車待ち(status/queue.json)から、マシンとクレジットに空きがあれば1本だけ自動で着火する。
 #   3時間縛り・URL報告のセットはプロンプト側に必ず入る。Fableは使わない（常にSonnet）。
 python3 "$REPO/tools/auto_launcher.py" >/dev/null 2>&1 || true
+# 2026-09-04 たまごさん「Obsidianには飛ばない」→ 進捗表のボタンをHTTPSで直接受ける中継所。
+#   立っていなければ立て、トンネルのURLを status/relay.json へ書く（冪等・既に動いていれば何もしない）。
+bash "$REPO/tools/relay_up.sh" >/dev/null 2>&1 || true
 # 2026-09-03 たまごさん「iPhoneでいいなと思ったスクショを、すかさず入れられるのかな。そのスピード感だと助かる」
 #   ① iCloud Driveの「Eagle_取り込み_iPhoneから」に入った画像をEagleへ登録して、取り込み済みへ移す
 #   ② Eagleライブラリ → スマホ用Webギャラリー（share/eagle-…）を差分更新
@@ -193,14 +196,24 @@ LAST=$(git log -1 --format=%ct -- status/machine.json 2>/dev/null); LAST=${LAST:
 AGE=$(( $(date +%s) - LAST ))
 # 数字が同じでも20分以上経っていれば鮮度のために push する
 HIST_CHANGED=0
-for f in status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json; do
+# 2026-09-04 バグ修正：この見張りに queue.json・index.html・tools が入っていなかったため、
+#   「マシンの数字が前回と同じ」だけで早期returnし、**発車待ちの中身や画面の直しが
+#   何時間も公開されなかった**（実害：たまごさんの画面に「発車待ちはありません」が出続けた）。
+#   公開に載せる対象（下の git add と同じ顔ぶれ）を、そのまま変更検知の対象にする。
+for f in status/history.jsonl status/whiteboard.json status/priority.json status/health.json \
+         status/commands.json status/queue.json status/relay.json index.html data.js said.js; do
   [ -f "$f" ] || continue
   git ls-files --error-unmatch "$f" >/dev/null 2>&1 || HIST_CHANGED=1
   git diff --quiet -- "$f" 2>/dev/null || HIST_CHANGED=1
 done
+for d in tools share; do
+  [ -d "$d" ] || continue
+  git diff --quiet -- "$d" 2>/dev/null || HIST_CHANGED=1
+  [ -n "$(git ls-files --others --exclude-standard "$d" 2>/dev/null | head -1)" ] && HIST_CHANGED=1
+done
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
-git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json >/dev/null 2>&1
+git add status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1
