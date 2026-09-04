@@ -11,8 +11,11 @@ Eagleライブラリ → スマホ用Webギャラリーを差分更新する。
   1. Eagleライブラリの images/*.info を読む
   2. まだギャラリーに無いものだけ、サムネをコピーして data.json に足す
   3. Eagle側で消えたものはギャラリーからも消す（サムネのファイルは残す＝復活が速い）
+  4. 画像（png/jpg/jpeg/webp/gif）は、サムネとは別に「受け渡し用」画像も o/ に作る。
+     長辺1600pxまでに抑えた実物（それ以下ならそのまま）＝「元の全データ」そのものではないが、
+     保存・共有に十分な画質。動画(mov/mp4)やpdf等は対象外（サムネ表示のみ・今回は見送り）。
 
-新規ぶんだけ処理するので、毎回まわしても数秒で終わる。5分おきの machine_status_push.sh から呼ぶ。
+新規ぶんだけ処理するので、毎回まわしても数秒〜数分で終わる。1日1回 machine_status_push.sh から呼ぶ。
 """
 import io
 import json
@@ -21,12 +24,21 @@ import shutil
 import sys
 import time
 
+try:
+    from PIL import Image
+except Exception:
+    Image = None
+
 LIB = "/Volumes/iMac HDD/Eagle_Library_2026-09-02/eagle AI 画像整理.library"
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 OUT = os.path.join(REPO, "share", "eagle-k7m2xq9p")
 DATA = os.path.join(OUT, "data.json")
 THUMBS = os.path.join(OUT, "t")
+HANDOFF = os.path.join(OUT, "o")
+HANDOFF_EXTS = {"png", "jpg", "jpeg", "webp", "gif"}
+HANDOFF_MAX = 1600  # 長辺の上限px
+HANDOFF_GIF_LIMIT = 8 * 1024 * 1024  # gifはアニメ崩れを避け、そのままコピー。大きすぎる分は見送り
 
 
 def folder_names(lib):
@@ -46,6 +58,53 @@ def folder_names(lib):
 
     walk(md.get("folders"))
     return out
+
+
+def find_original(p):
+    """サムネ(_thumbnail.*)ではなく、本物のファイルを探す"""
+    for f in os.listdir(p):
+        if f == "metadata.json" or f.startswith("."):
+            continue
+        if "_thumbnail." in f:
+            continue
+        return os.path.join(p, f)
+    return None
+
+
+def make_handoff(orig_path, ext, item_id):
+    """受け渡し用画像を o/ に作る。戻り値は保存した拡張子（作れなければNone）"""
+    ext = (ext or "").lower()
+    if ext not in HANDOFF_EXTS or Image is None:
+        return None
+    os.makedirs(HANDOFF, exist_ok=True)
+    try:
+        if ext == "gif":
+            if os.path.getsize(orig_path) > HANDOFF_GIF_LIMIT:
+                return None
+            dst = os.path.join(HANDOFF, item_id + ".gif")
+            if not os.path.exists(dst):
+                shutil.copyfile(orig_path, dst)
+            return ".gif"
+        im = Image.open(orig_path)
+        im.load()
+        w, h = im.size
+        if max(w, h) <= HANDOFF_MAX:
+            # すでに小さい＝原本のバイト列をそのままコピー（劣化なし）
+            dst_ext = "." + (ext if ext in ("png", "jpg", "jpeg", "webp") else "png")
+            dst = os.path.join(HANDOFF, item_id + dst_ext)
+            if not os.path.exists(dst):
+                shutil.copyfile(orig_path, dst)
+            return dst_ext
+        if im.mode in ("P", "RGBA", "LA"):
+            im = im.convert("RGB")
+        scale = HANDOFF_MAX / float(max(w, h))
+        im2 = im.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+        dst = os.path.join(HANDOFF, item_id + ".jpg")
+        if not os.path.exists(dst):
+            im2.save(dst, "JPEG", quality=82, optimize=True)
+        return ".jpg"
+    except Exception:
+        return None
 
 
 def read_item(p, folders):
@@ -95,7 +154,7 @@ def main():
 
     folders = folder_names(LIB)
     imgs = os.path.join(LIB, "images")
-    live, added, updated = set(), 0, 0
+    live, added, updated, handoff_made = set(), 0, 0, 0
     for d in sorted(os.listdir(imgs)):
         if not d.endswith(".info"):
             continue
@@ -103,8 +162,14 @@ def main():
         iid = d[:-5]
         live.add(iid)
         old = known.get(iid)
-        # 既知でメタの更新も無ければ触らない（差分更新）
-        if old is not None:
+        # 既知でメタの更新も無ければ触らない（差分更新）。
+        # ただし画像なのに受け渡し用(o)がまだ無い分（既存の未対応ぶん）は、初回だけ穴埋めで通す。
+        needs_handoff_backfill = bool(
+            old is not None
+            and (old.get("e") or "").lower() in HANDOFF_EXTS
+            and not old.get("o")
+        )
+        if old is not None and not needs_handoff_backfill:
             try:
                 mtime = os.path.getmtime(os.path.join(p, "metadata.json"))
             except Exception:
@@ -120,13 +185,22 @@ def main():
                 shutil.copyfile(src, dst)
             except Exception:
                 continue
+        orig = find_original(p)
+        if orig is not None:
+            oext = make_handoff(orig, item["e"], item["id"])
+            if oext:
+                item["o"] = oext
+                if not (old and old.get("o")):
+                    handoff_made += 1
+        elif old is not None and old.get("o"):
+            item["o"] = old["o"]  # 原本を見失っても既存の受け渡し画像は保つ
         try:
             item["_s"] = os.path.getmtime(os.path.join(p, "metadata.json"))
         except Exception:
             item["_s"] = time.time()
         if old is None:
             added += 1
-        else:
+        elif not needs_handoff_backfill:
             updated += 1
         known[iid] = item
 
@@ -137,8 +211,8 @@ def main():
     items = sorted(known.values(), key=lambda x: -(x.get("mt") or 0))
     json.dump({"count": len(items), "items": items, "updatedAt": time.strftime("%Y-%m-%d %H:%M")},
               io.open(DATA, "w", encoding="utf-8"), ensure_ascii=False)
-    if added or updated or removed:
-        print("ギャラリー更新: 追加%d / 更新%d / 削除%d / 合計%d" % (added, updated, len(removed), len(items)))
+    if added or updated or removed or handoff_made:
+        print("ギャラリー更新: 追加%d / 更新%d / 削除%d / 受け渡し画像%d / 合計%d" % (added, updated, len(removed), handoff_made, len(items)))
     return 0
 
 
