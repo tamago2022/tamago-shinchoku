@@ -687,6 +687,57 @@ def auth_ps(_target=None):
     return "done", ("生きているプロセス: %s ／ ログ末尾: %s" % (alive or "なし", tail.replace("\n", " ")))[:900]
 
 
+
+def auth_login_pty(_target=None):
+    """ログイン手続きを"にせの端末"付きで始めて、URLだけ拾う（2026-09-05）。
+
+    分かったこと（実測）：
+      `claude setup-token` は**端末（TTY）が無いと何も出さずに即死する。**
+      だから「投げっぱなし」でも「時間で切る」でも、URLは一度も出なかった。
+    → Pythonのptyで**にせの端末**を作って渡す。これで本来の表示（ログインURL）が出る。
+      読み取りは select で25秒だけ。**プロセスは殺さない**（たまごさんがブラウザで
+      ログインを終えるまで生かす）。後片付けは auth_watch.py が10分後にやる。
+    """
+    import pty as _pty
+    import select as _select
+    log = os.path.join(REPO, "status", "auth_login.log")
+    run(["pkill", "-f", "setup-token"], timeout=5)
+    master, slave = _pty.openpty()
+    try:
+        p = subprocess.Popen([CLAUDE, "setup-token"], stdin=slave, stdout=slave, stderr=slave,
+                             start_new_session=True, close_fds=True)
+    except Exception as e:
+        return "failed", "起動できませんでした: %s" % e
+    os.close(slave)
+    io.open(os.path.join(REPO, "status", "auth_login.pid"), "w").write(str(p.pid))
+    out, t0 = "", time.time()
+    while time.time() - t0 < 25:
+        r, _, _ = _select.select([master], [], [], 1.0)
+        if not r:
+            continue
+        try:
+            chunk = os.read(master, 4096)
+        except Exception:
+            break
+        if not chunk:
+            break
+        out += chunk.decode("utf-8", "ignore")
+        if "http" in out:
+            break
+    try:
+        with open(log, "ab") as f:
+            f.write(("\n=== %s pty版 ===\n" % time.strftime("%Y-%m-%d %H:%M:%S")).encode())
+            f.write(out.encode("utf-8", "ignore"))
+    except Exception:
+        pass
+    import re as _re
+    m = _re.search(r"https://\S+", out)
+    if m:
+        return "done", "ログインURL: %s" % m.group(0).rstrip("\x1b[0m")
+    clean = _re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", out)
+    return "failed", ("URLが出ませんでした: " + clean[-300:]).replace("\n", " ")
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -703,6 +754,8 @@ def _process_other(action, cmd):
         return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
+    if action == "auth_login_pty":
+        return auth_login_pty(target)
     if action == "auth_ps":
         return auth_ps(target)
     if action == "auth_login_start":
