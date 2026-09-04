@@ -402,7 +402,7 @@ def launch_cap(target):
 
 def process(cmd):
     action = cmd.get("action")
-    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later", "queue_pause"):
+    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later", "queue_pause", "queue_delete"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -432,6 +432,8 @@ def _process_queue(action, cmd):
         return queue_later(target)
     if action == "queue_pause":
         return queue_pause(target)
+    if action == "queue_delete":
+        return queue_delete(target)
     return "failed", "不明なアクション: %s" % action
 
 
@@ -526,6 +528,42 @@ def queue_pause(target):
     _save_queue(q)
     return "done", "%d番を引っ込めました（%s。次に発車するとき続きから再開します）" % (
         n, "止めました" if killed else "すでに終わっていました")
+
+
+def queue_delete(target):
+    """タスクそのものを台帳から消す。
+
+    2026-09-05 たまごさん：
+      「**タスク自体削除っていう削除にして、その4つにして。**完了と、とりあえずOK（あとで直す）と、
+       やり直しますと、あとタスク削除。この4つにして。」
+
+    完了（成果として積む）とは別物。**もう要らない依頼を列から消す**ためのもの。
+    消す前に status/deleted.json へ丸ごと退避する（憲法：消さずに倉庫へ。取り消せるようにしておく）。
+    """
+    try:
+        n = int(target)
+    except Exception:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    it = _find_item(items, n)
+    if it is None:
+        return "failed", "%d番がqueue.jsonに見つかりません" % n
+    if it.get("status") == "running" and it.get("pid"):
+        try:
+            os.kill(int(it["pid"]), 15)
+        except Exception:
+            pass
+    box = os.path.join(REPO, "status", "deleted.json")
+    d = load_json(box, {"items": []})
+    it["deletedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    d.setdefault("items", []).append(it)
+    d["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    save_json(box, d)
+    q["items"] = [x for x in items if x.get("n") != n]
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "%d番を消しました（取り消せるよう status/deleted.json に控えてあります）" % n
 
 
 def _process_other(action, cmd):

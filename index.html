@@ -247,7 +247,7 @@
   .cok{background:var(--green); color:#12161c; border-color:var(--green)!important;}
   .clater{background:#3a2f12; color:var(--yellow); border-color:rgba(230,190,80,0.45)!important;}
   .cng{background:#1a2028; color:var(--red);}
-  .cng2{background:#1a2028; color:var(--sub);}
+  .cdel{background:#1a2028; color:var(--sub); border-color:var(--line);}
   .queue{border-color:rgba(95,217,150,0.35);}
   .queue > summary{font-weight:700;}
   .qrow{display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
@@ -1052,11 +1052,13 @@ function renderCheck(){
       <div class="cm">${fin ? fin + " に終了" : ""}</div>
       ${urls || `<div class="cm">URLの報告なし</div>`}
       <div class="cr">${esc((r.result||"").slice(0,600))}</div>
+      <!-- 2026-09-05 たまごさん「とりあえずOKと、やり直し後でいいは、一緒の扱いかな。
+           完了と、とりあえずOK（あとで直す）と、やり直しますと、あとタスク削除。この4つにして」 -->
       <div class="cbtns">
-        <button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了（合格）</button>
-        <button class="clater" data-ck="later" data-n="${r.n}">🟡 とりあえずOK（あとで直す）</button>
+        <button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了（消える）</button>
         <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し（今すぐ）</button>
-        <button class="cng2" data-ck="ng5" data-n="${r.n}">↩︎ やり直し（後ろでいい）</button>
+        <button class="clater" data-ck="later" data-n="${r.n}">🕗 あとで（手が空いたら）</button>
+        <button class="cdel" data-ck="del" data-n="${r.n}">🗑 このタスクを消す</button>
       </div>
     </div>`;
   }).join("");
@@ -1112,12 +1114,20 @@ document.addEventListener("click", e=>{
   // 2026-09-04 たまごさん「70点だけど今急ぎじゃないからいいや、という状態がある。
   //   やり直しも、今すぐのと、順番待ちの後ろでいいのがある」→ 判定を4つに分けた。
   const n = Number(b.dataset.n), kind = b.dataset.ck;
+  if(kind === "del"){
+    // タスクそのものを消す。取り消せるようMac側で status/deleted.json に控える
+    const arr = (window.__queue && window.__queue.items) || [];
+    const i = arr.findIndex(x => x.n === n); if(i >= 0) arr.splice(i, 1);
+    sendCommandWithId("d" + Date.now().toString(36), "queue_delete", String(n), "🗑 消す " + n + "番");
+    try{ renderCheck(); renderQueue(); renderDone(); renderLater(); }catch(e){}
+    return;
+  }
   const ok = (kind === "ok" || kind === "later");
   const it = ((window.__queue && window.__queue.items) || []).find(x => x.n === n);
   if(!it) return;
   it.status = (kind === "later") ? "later" : (ok ? "done" : "waiting");   // 「とりあえずOK」は後回しボックスへ
   it.checkedAt = new Date().toISOString();
-  if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; it.priority = (kind === "ng5" ? 5 : 1); }
+  if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; it.priority = 1;   // やり直しは常に今すぐ＝列の先頭 }
   // 端末内にも一応残す（監査用。実際の反映先は下のObsidian経由）
   try{
     const k = "shinchoku_check_v1";
@@ -1130,9 +1140,8 @@ document.addEventListener("click", e=>{
   const id = "q" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const CMD = {
     ok:    ["queue_ok",    String(n),       "✅完了 "],
-    later: ["queue_later", String(n),       "🟡とりあえずOK "],
+    later: ["queue_later", String(n),       "🕗あとで "],
     ng:    ["queue_redo",  String(n),       "↩︎やり直し（今すぐ）"],
-    ng5:   ["queue_redo",  String(n) + ":5", "↩︎やり直し（後ろ）"],
   }[kind] || ["queue_ok", String(n), "✅完了 "];
   sendCommandWithId(id, CMD[0], CMD[1], CMD[2] + n + "番");
   renderCheck(); renderQueue(); renderDone(); renderLater();
