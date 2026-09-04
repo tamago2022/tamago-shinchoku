@@ -500,7 +500,9 @@ function renderHealth(h){
   renderCmdStatus();
 }
 function refreshHealth(){
-  return fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/queue.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(q => { window.__queue = q; try{ renderQueue(); }catch(e){} }).catch(()=>{});
+  fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(h => { window.__health = h; renderHealth(h); renderCapBar(); }).catch(()=>renderHealth(null));
 }
 refreshHealth();
@@ -652,8 +654,13 @@ function collectNow(m){
     //   → 中身が分からないカードは出さない。Dispatch本体（会話している側）は実作業ではないので出さない。
     //     題名が取れないものも、見ても何も分からないので出さない（本数の数字は別途 capbar に出している）。
     if(s.isDispatchSelf) return;
-    const t = (s.title || "").trim();
-    if(!t || t === "（不明）" || t === "(不明)") return;
+    let t = (s.title || "").trim();
+    if(!t || t === "（不明）" || t === "(不明)"){
+      // 自動発車したセッションは題名が付かない。queue.json の running から pid で引き当てる
+      const q = ((window.__queue && window.__queue.items) || []).find(x => x.status === "running" && String(x.pid) === String(s.pid));
+      if(q){ s = Object.assign({}, s, {title: q.title, _auto: true}); t = q.title; }
+      else return;
+    }
     const key = s.cli || s.localId || s.title;
     const prev = byKey.get(key);
     if(!prev || (s.idleMin ?? 999) < (prev.idleMin ?? 999)) byKey.set(key, s);
@@ -714,7 +721,10 @@ function tickCountdowns(){
    付けた優先度は既存の優先度受信（Obsidian経由）と同じ仕組みに乗せる。 */
 function renderQueue(){
   const box = document.getElementById("queue");
-  const rows = (window.DATA && DATA.queue) || [];
+  // 2026-09-04 正本を queue.json に移した（auto_launcher.py が着火して status を書き換える）。
+  //   data.js 側は残置。waiting のものだけを「次に発車」として出す。
+  const all = (window.__queue && window.__queue.items) || (window.DATA && DATA.queue) || [];
+  const rows = all.filter(r => (r.status || "waiting") === "waiting");
   if(!box) return;
   document.getElementById("queueMeta").textContent =
     rows.length ? `${rows.length}件${DATA.queueUpdatedAt ? "・" + formatStamp(DATA.queueUpdatedAt) : ""}` : "";
