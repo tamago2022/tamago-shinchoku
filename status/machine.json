@@ -1,13 +1,13 @@
 {
- "raw": "負荷 100% ｜ CPU 6% / メモリ圧迫 16% / スワップ 19.06GB / ディスク空き 22GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
+ "raw": "負荷 100% ｜ CPU 13% / メモリ圧迫 16% / スワップ 19.06GB / ディスク空き 22GB ｜ 稼働 0本 ｜ ⚠ これ以上増やすな（ロード/コア比0.8超）",
  "load": 100,
- "cpu": 6,
+ "cpu": 13,
  "mem": 16,
- "swapGB": 19521.75,
+ "swapGB": 19489.75,
  "diskFreeGB": 22.0,
  "sessions": 1,
- "note": "上限4本・あと3本OK（CPU6%・メモリ空き9.2GBで余裕あり→ロードの天井を緩めた、5分平均ロード56.7（コア8×2.0超）、予兆（5分ロード比7.1）→1本減らす）",
- "measuredAt": "2026-09-04T17:55:14+09:00",
+ "note": "上限4本・あと3本OK（CPU13%・メモリ空き9.1GBで余裕あり→ロードの天井を緩めた、5分平均ロード51.6（コア8×2.0超）、予兆（5分ロード比6.5）→1本減らす）",
+ "measuredAt": "2026-09-04T17:56:05+09:00",
  "working": 1,
  "stalled": 0,
  "waiting": 0,
@@ -20,24 +20,24 @@
  "calibrationBasis": "実測（5本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比7.1"
+  "5分ロード比6.5"
  ],
  "shedCandidates": [],
  "below": 3,
- "blockReason": "CPU6%・メモリ空き9.2GBで余裕あり→ロードの天井を緩めた、5分平均ロード56.7（コア8×2.0超）、予兆（5分ロード比7.1）→1本減らす",
- "load1": 29.29,
- "load5": 56.7,
- "load15": 69.32,
+ "blockReason": "CPU13%・メモリ空き9.1GBで余裕あり→ロードの天井を緩めた、5分平均ロード51.6（コア8×2.0超）、予兆（5分ロード比6.5）→1本減らす",
+ "load1": 25.76,
+ "load5": 51.64,
+ "load15": 66.74,
  "cores": 8,
- "loadRatio": 3.66,
+ "loadRatio": 3.22,
  "memPressure": "green",
- "memAvailGB": 9.2,
+ "memAvailGB": 9.1,
  "swapIncreasing": false,
- "ioMBs": 2.82,
+ "ioMBs": 5.4,
  "network": {
-  "pingMedianMs": 22.2,
-  "pingMaxMs": 36.2,
-  "pingSamples": 19
+  "pingMedianMs": 27.7,
+  "pingMaxMs": 38.8,
+  "pingSamples": 20
  },
  "stalledList": [],
  "sessionList": [
@@ -45,7 +45,7 @@
    "cli": "4884f463-e8ee-4c56-a7d3-7b78bb009791",
    "localId": null,
    "startedAt": "2026-09-04T17:47:24+0900",
-   "elapsedMin": 7,
+   "elapsedMin": 8,
    "lastReportAt": null,
    "lastReport": "",
    "status": "作業中",
@@ -61,8 +61,8 @@
    "title": "（不明）",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 536,
-   "idleMin": 5.8,
+   "mb": 537,
+   "idleMin": 6.6,
    "kind": "working",
    "model": "claude-sonnet-5",
    "turns": 5,
@@ -81,7 +81,7 @@
   "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"
  },
  "watchdog": {
-  "lastRun": "2026-09-04 17:55",
+  "lastRun": "2026-09-04 17:56",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -113,7 +113,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-04 17:55",
+  "updatedAt": "2026-09-04 17:56",
   "estimated": false,
   "fablePct": 82,
   "allPct": 75,
@@ -121,7 +121,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-09-08 17:59",
   "daysLeft": 4.0,
-  "hoursLeft": 96.1,
+  "hoursLeft": 96.0,
   "fableLevel": "warn",
   "allLevel": "warn",
   "warnPct": 75,
@@ -142,10 +142,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 282861393,
-  "allWeightedTokensSinceReset": 997501902,
+  "allWeightedTokensSinceReset": 997659496,
   "last6h": {
    "fable": 0,
-   "all": 99374737
+   "all": 99532331
   },
   "projection": {
    "fablePctAtReset_avgPace": 206.7,
@@ -202,9 +202,9 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 2.359,
+   "allPacePctPerHour6h": 2.363,
    "aliveAvgLast6h": 3.5,
-   "pctPerSessionHour": 0.6747,
+   "pctPerSessionHour": 0.6772,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
