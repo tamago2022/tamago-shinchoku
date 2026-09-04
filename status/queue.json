@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-04 18:59",
+ "updatedAt": "2026-09-04 19:08",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -8,7 +8,7 @@
    "title": "シェアしても画像が出ない",
    "why": "SNSに貼ったときサムネが出ない",
    "what": "ページのリンクをSNSやLINEに貼ると、ふつうは記事のサムネイル画像が一緒に出ます。それが出ていません。画像が出ないと、貼っても誰も押しません。ページの種類（曲・棚・アーティスト・特集・トップ）ごとに、画像を指定するタグが正しく出ているかを1つずつ確認して直します。",
-   "status": "awaiting_check",
+   "status": "hold",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q01-0904",
@@ -16,24 +16,19 @@
    "sessionId": "3df4c257-4a2f-4562-91c1-0cf041e5736e",
    "finishedAt": "2026-09-04T15:58:17+09:00",
    "result": "Status: Fix implemented and merged to main (commit `ed8f1157`, includes the 4-file OGP fix `17af52dc` + TASK_BOARD record). Now running `scripts/patrol/lovable-publish.mjs` in the background to push the change live — will confirm the production URL once it completes and report back.",
-   "urls": []
+   "urls": [],
+   "holdNote": "画像が出るページと出ないページがある。出ないページに出くわしたときに、そのURLで確認する。それまで聞かない。"
   },
   {
    "n": 2,
    "title": "LINEに送るが壊れている",
    "why": "リンクのコピーはできるが、LINEを選ぶとQRコードを求められる",
-   "what": "共有ボタンから「LINEに送る」を選ぶと、送るはずが QRコード読み取りの画面になってしまう状態です。スマホから友達に送れないので、実質シェアできません。LINEの共有の呼び出し方が古い方式のままになっている可能性が高いです。\n\n【やり直しの理由・2026-09-04】たまごさん確認：共有を押すと別タブが開いてLINEのログイン画面に飛ばされる。まだ直っていない。スマホから実際に友達へ送れることがゴール。押して送れるところまで自分で確かめること。",
-   "status": "awaiting_check",
+   "what": "共有ボタンから「LINEに送る」を選ぶと、送るはずが QRコード読み取りの画面になってしまう状態です。スマホから友達に送れないので、実質シェアできません。LINEの共有の呼び出し方が古い方式のままになっている可能性が高いです。\n\n【やり直しの理由・2026-09-04】たまごさん確認：共有を押すと別タブが開いてLINEのログイン画面に飛ばされる。まだ直っていない。スマホから実際に友達へ送れることがゴール。押して送れるところまで自分で確かめること。\n\n【2回目のやり直し・2026-09-04】たまごさん本番確認：**まだ壊れている。**共有を押すと別タブが開いてLINEのログイン画面へ飛ぶ。**スマホの実機で押して、実際に友達へ送れるところまで自分で確かめること。**確かめずに完了と言わない。",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "startedAt": "2026-09-04T18:47:37+09:00",
-   "worktree": "r02-0904",
-   "sessionId": "8cd3121e-4f33-4442-a235-a1e6c7d05253",
-   "finishedAt": "2026-09-04T18:56:47+09:00",
-   "result": "（結果が読み取れませんでした）",
-   "urls": [
-    "https://joy-relief-station.lovable.app"
-   ]
+   "worktree": "r02-0904"
   },
   {
    "n": 3,
@@ -88,7 +83,7 @@
    "title": "外部から入れた曲の「曲名とアーティスト」を自動で埋める",
    "why": "URLを貼っただけだと曲名もアーティストも空のまま",
    "what": "X（旧Twitter）などからURLを貼って取り込むと、曲名やアーティスト名が入らないことがあります（例：92° / Vulfmon & Tommy de Bourbon が入らなかった）。1日1回、その日入ったものを見回って、動画の説明欄や音楽データベースから曲名とアーティストを調べて埋めます。Shazamがやることを、あとから機械にやらせるイメージです。裏が取れないものは埋めずに残します。",
-   "status": "awaiting_check",
+   "status": "hold",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q06-0904",
@@ -96,20 +91,19 @@
    "sessionId": "bc793909-39ca-480f-a9d0-027f3b390315",
    "finishedAt": "2026-09-04T15:58:17+09:00",
    "result": "バックグラウンドのlintコマンドの完了を待ちます。",
-   "urls": []
+   "urls": [],
+   "holdNote": "次に曲を持ってきたときに、その場で埋まるかどうかで確認する。それまで聞かない。"
   },
   {
    "n": 7,
-   "title": "「誰が演奏しているか分からない」カードを22件直す",
-   "why": "演奏者が登録されていないので、その人のページに飛べない",
-   "what": "カードに動画は入っているのに、誰が演奏・投稿しているのかが登録されていないものが22件あります。そのせいで、そのアーティストのページ（部屋）に繋がりません。動画の投稿者情報から特定して埋めます。判断は要らない、埋めるだけの作業です。\n\n【やり直しの理由・2026-09-04】たまごさん確認：何のことか分からない。**どのページのことか、ページ名とURLを出すこと。**22件の一覧をページ名つきで出してから直す。",
-   "status": "running",
+   "title": "「アーティスト未接続」のカードを直す（実例つき）",
+   "why": "動画はあるのにアーティストページへ繋がっていない",
+   "what": "**画面に『アーティスト未接続』と出ているカードのこと。**たまごさんのスクショで実例が確認できた：\nUAの曲ページの『この曲の関連動画』に UA『太陽手に月は心の両手に』(2024.10.21 @EX THEATER ROPPONGI) のライブ映像が入っているが、その下に **『アーティスト未接続』** と表示され、UAのアーティストページへ繋がっていない。\n\n**やること：**\n① まず『アーティスト未接続』になっているカードを全部数えて、**ページ名とURLの一覧を先に出す**（たまごさんが何のことか分かるように）\n② 動画の投稿者・演者を識別子で特定して、既にあるアーティストページに繋ぐ\n③ 繋いだら本番で『アーティスト未接続』が消えていることを確認して報告\n\n**一覧を出す前に直し始めないこと。**たまごさんが『何のことか分からない』と言っている。",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "startedAt": "2026-09-04T18:58:08+09:00",
-   "worktree": "r07-0904",
-   "sessionId": "d6774517-9836-4efd-8bf5-6acf0d64cf19",
-   "pid": 56682
+   "worktree": "r07-0904"
   },
   {
    "n": 8,
@@ -191,53 +185,41 @@
    "n": 14,
    "title": "止まっているタスク56件を減らす",
    "why": "台帳が「着手中」のまま何日も動いていない",
-   "what": "依頼の一覧で「止まっている（台帳は着手中）」が56件あります。着手したことになっているのに実際は誰も動いていないもので、これが「頼んだのに帰ってこない」の実体です。短時間で終わるものから順に片づけて数を減らします。",
-   "status": "awaiting_check",
+   "what": "依頼の一覧で「止まっている（台帳は着手中）」が56件あります。着手したことになっているのに実際は誰も動いていないもので、これが「頼んだのに帰ってこない」の実体です。短時間で終わるものから順に片づけて数を減らします。\n\n【やり直し・2026-09-04】たまごさん：「**仕分けたところを見せて。それじゃないとOKかやり直しか判断がつかない。**」→ 作業した結果の一覧（何を何件どう仕分けたか）を、**スマホで開けるURLかVaultのファイル**にして出すこと。『結果が読み取れませんでした』では判定できない。",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q14-0904",
-   "startedAt": "2026-09-04T16:33:43+09:00",
-   "sessionId": "137644b2-54b7-4532-9bfa-addce983b3cf",
-   "finishedAt": "2026-09-04T16:34:33+09:00",
-   "result": "（結果が読み取れませんでした）",
-   "urls": []
+   "startedAt": "2026-09-04T16:33:43+09:00"
   },
   {
    "n": 15,
    "title": "未着手110件から、すぐ終わるものを拾って消す",
    "why": "1時間以内で終わるものだけ選んで数を減らす",
-   "what": "依頼の一覧で「未着手」が110件あります。この中には調査が要る大きいものと、確認するだけで閉じられる小さいものが混ざっています。小さいものだけ選んで、次々に片づけます。",
-   "status": "awaiting_check",
+   "what": "依頼の一覧で「未着手」が110件あります。この中には調査が要る大きいものと、確認するだけで閉じられる小さいものが混ざっています。小さいものだけ選んで、次々に片づけます。\n\n【やり直し・2026-09-04】たまごさん：「**仕分けたところを見せて。それじゃないとOKかやり直しか判断がつかない。**」→ 作業した結果の一覧（何を何件どう仕分けたか）を、**スマホで開けるURLかVaultのファイル**にして出すこと。『結果が読み取れませんでした』では判定できない。",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q15-0904",
-   "startedAt": "2026-09-04T16:43:57+09:00",
-   "sessionId": "1cedde3e-5e7e-498f-bcfd-dcd96f23db3d",
-   "finishedAt": "2026-09-04T17:04:00+09:00",
-   "result": "（結果が読み取れませんでした）",
-   "urls": []
+   "startedAt": "2026-09-04T16:43:57+09:00"
   },
   {
    "n": 16,
    "title": "未反映ブランチ112本を仕分ける",
    "why": "本番に出ていない作業が112本ぶん積まれている",
-   "what": "「ブランチ」＝作業の下書き置き場のことです。AIが作業した内容が112本ぶん、本番に出ないまま残っています。中身が既に本番に入っていて捨てていいもの、まだ生きていて本番に出すべきもの、判断が要るもの、の3つに仕分けます。これも「帰ってこない卵」の実体です。",
-   "status": "awaiting_check",
+   "what": "「ブランチ」＝作業の下書き置き場のことです。AIが作業した内容が112本ぶん、本番に出ないまま残っています。中身が既に本番に入っていて捨てていいもの、まだ生きていて本番に出すべきもの、判断が要るもの、の3つに仕分けます。これも「帰ってこない卵」の実体です。\n\n【やり直し・2026-09-04】たまごさん：「**仕分けたところを見せて。それじゃないとOKかやり直しか判断がつかない。**」→ 作業した結果の一覧（何を何件どう仕分けたか）を、**スマホで開けるURLかVaultのファイル**にして出すこと。『結果が読み取れませんでした』では判定できない。",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q16-0904",
-   "startedAt": "2026-09-04T16:53:13+09:00",
-   "sessionId": "2e4fa2e0-45d8-4799-89f5-e49ae0a1476b",
-   "finishedAt": "2026-09-04T17:05:32+09:00",
-   "result": "（結果が読み取れませんでした）",
-   "urls": []
+   "startedAt": "2026-09-04T16:53:13+09:00"
   },
   {
    "n": 17,
    "title": "YouTube APIで動画を差し替えられるようにする",
    "why": "急いでいない。実装はもう入っている",
    "what": "棚の動画を、スマホから検索して差し替えられる機能です。コードは既に本番に入っていて、APIキーを通すところだけ残っています。たまごさんから「本当に急いでいない」との指定あり。",
-   "status": "awaiting_check",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q17-0904",
@@ -245,7 +227,9 @@
    "sessionId": "e7d0c01f-fb72-4571-a617-0a18d038b6d7",
    "finishedAt": "2026-09-04T17:06:39+09:00",
    "result": "（結果が読み取れませんでした）",
-   "urls": []
+   "urls": [],
+   "checkedAt": "2026-09-04T19:02:42+09:00",
+   "checkNote": "たまごさん確認：動くようになった。80点。位置の直しは別タスクへ分離。"
   },
   {
    "n": 18,
@@ -380,23 +364,13 @@
   {
    "title": "止まっているタスク56件から、確認だけで閉じられるものを拾う",
    "why": "台帳が着手中のまま動いていないものが56件",
-   "what": "『止まっている（台帳は着手中）』の56件を1件ずつ見て、実は本番に出ていて確認するだけで閉じられるものを探す。確認して本番URLを出すだけで1本減る。",
+   "what": "『止まっている（台帳は着手中）』の56件を1件ずつ見て、実は本番に出ていて確認するだけで閉じられるものを探す。確認して本番URLを出すだけで1本減る。\n\n【やり直し・2026-09-04】たまごさん：「**仕分けたところを見せて。それじゃないとOKかやり直しか判断がつかない。**」→ 作業した結果の一覧（何を何件どう仕分けたか）を、**スマホで開けるURLかVaultのファイル**にして出すこと。『結果が読み取れませんでした』では判定できない。",
    "n": 26,
-   "status": "awaiting_check",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q26-0904",
-   "startedAt": "2026-09-04T17:27:30+09:00",
-   "sessionId": "10ca8fc6-ffc6-4b02-8f91-4cd73519d972",
-   "finishedAt": "2026-09-04T17:47:12+09:00",
-   "result": "【完了】止まっていた台帳15件（#39/47/48/66/71/72/75/84/86/89/99/123/124/125/126）は実装済みで既に本番公開済みと実測確認、台帳を「✅本番反映済み・たまご確認待ち」へ更新しmainへ反映（コミットc1ee1bb7、追加のコード変更なし）\n\n確認済み本番URL（各ページで実測）：\n- https://joy-relief-station.lovable.app/cover-guide?artist=ging-nang-boyz （#39 フジロック仕入れ）\n- https://joy-relief-station.lovable.app/room/card/alinea-paint （#47 宿棚基準）\n- https://joy-relief-station.lovable.app/cover-guide?artist=tomoko-aran （#48 Midnight Pretenders）\n- https://joy-relief-station.lovable.app/cover-guide?artist=inoue-yousui （#66 少年時代CM接続）\n- https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria （#71/#72 Tania Maria）\n- https://joy-relief-station.lovable.app/room/card/maldon-sea-salt-125g （#75 マルドン）\n- https://joy-relief-station.lovable.app/cover-guide?artist=akiko （#84 生年削除）\n- https://joy-relief-station.lovable.app/room/card/cm-coke-1987 （#86 宿棚基準2/3弾）\n- https://joy-relief-station.lovable.app/cover-guide?artist=aretha （#89 Aretha書き直し）\n- https://joy-relief-station.lovable.app/room/card/cedarfarm-shiozuke-nama-kosho （#99 修理）\n- https://joy-relief-station.lovable.app/cover-guide?artist=mondo-grosso （#123 満島ひかり修正）\n- https://joy-relief-station.lovable.app/cover-guide?artist=ishiyama-anju （#124 石山アンジュ）\n- ",
-   "urls": [
-    "https://joy-relief-station.lovable.app/cover-guide?artist=ging-nang-boyz",
-    "https://joy-relief-station.lovable.app/room/card/alinea-paint",
-    "https://joy-relief-station.lovable.app/cover-guide?artist=tomoko-aran",
-    "https://joy-relief-station.lovable.app/cover-guide?artist=inoue-yousui",
-    "https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria"
-   ]
+   "startedAt": "2026-09-04T17:27:30+09:00"
   },
   {
    "title": "デスクトップとダウンロードの散らかりを片づける",
@@ -531,6 +505,20 @@
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q35-0904"
+  },
+  {
+   "n": 36,
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "worktree": "q36-0904",
+   "priority": 1,
+   "title": "関連動画をメインの直下（2番目）にフルサイズで出す",
+   "why": "たまごさん「今いちばん下に来ちゃう。メインの直下に、大きく」",
+   "what": "たまごさんの言葉：「**これさぁ、1番下に来ちゃうのよ。これがでかいメインの下に来てください。フルサイズで2番目ってことだね。**大体ね、**公式のミュージックビデオ＋ライブっていう組み合わせが増えるだろうから、一応大きく出してあげたい**ので、**2番目、メインの直下**に来るようにしてください。」\n\n**やること：**曲ページで『この曲の関連動画』がページ最下部に置かれている。これを**メイン動画のすぐ下（上から2番目）へ移し、カード幅いっぱいのフルサイズ（aspect-video）で出す。**\n狙いは『公式MV → 同じ曲のライブ映像』のように、続けて見たくなる並びを最初に見せること。\n既存の他のセクション（他の曲・この後こんな旅も・戻るボタン等）はその下に押し下げる。\n**曲ページ全体に効かせる**（1ページだけ直して終わりにしない）。本番で実際に位置が変わったことを自分の目で確認してから報告。",
+   "startedAt": "2026-09-04T19:08:32+09:00",
+   "sessionId": "60a9d07c-7070-4266-85ef-bd136b7e0846",
+   "pid": 57668
   }
  ]
 }

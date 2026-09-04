@@ -729,10 +729,14 @@ function collectNow(m){
     let t = (s.title || "").trim();
     if(!t || t === "（不明）" || t === "(不明)"){
       // 自動発車したセッションは題名が付かない。queue.json から pid で引き当てる
-      const q = ((window.__queue && window.__queue.items) || []).find(x => String(x.pid) === String(s.pid));
-      // 2026-09-04：引き当てられなくても消さない。「何も動いていません」と出る方が誤解を招く。
-      //   たまごさん「無題は意味がない」→ 題名の代わりに何が分かるかを出す（自動発車ぶんである旨とPID）。
-      t = q ? q.title : ("自動発車のセッション（題名取得中・PID " + s.pid + "）");
+      // 2026-09-04 たまごさん「作業中の『題名取得中』はやめて、何をやってるか明確に」
+      //   → 引き当ての鍵を pid だけでなくセッションID(cli)にも広げ、
+      //     それでも分からない時は「PID◯◯」ではなく、直近の発言の頭を出す（何をしているかが分かる方を出す）。
+      const qi = (window.__queue && window.__queue.items) || [];
+      const q = qi.find(x => String(x.sessionId || "") === String(s.cli || "-"))
+             || qi.find(x => String(x.pid) === String(s.pid));
+      const say = (s.lastReport || "").replace(/\s+/g, " ").trim();
+      t = q ? q.title : (say ? ("作業中：" + say.slice(0, 40)) : "自動発車のセッション（台帳と結びついていません）");
       s = Object.assign({}, s, {title: t, _auto: true});
     }
     const key = s.cli || s.localId || s.title;
