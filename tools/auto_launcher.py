@@ -133,7 +133,8 @@ def harvest(q):
         tries = int(it.get("redoCount") or 0)
         if not urls and tries < 2:
             it["redoCount"] = tries + 1
-            it["status"] = "waiting"
+            # 止める指示が出ている案件は、やり直しでも列に戻さない（戻すと勝手に再発車してしまう）
+            it["status"] = "hold" if it.get("holdNote") else "waiting"
             it["priority"] = it.get("priority") or 2
             it["what"] = (it.get("what") or "") + (
                 "\n\n【自動やり直し・%s】前回はURLを1本も出さずに終わりました。"
