@@ -1,0 +1,18 @@
+{
+  "items": [
+    "共通部品 src/components/RelatedCardsRow.tsx 本体：TARGET_COUNT=10・grid-cols-2・fillFromCardId棚補充の実装を、店主要求（一番下・横スクロール1行・高さ統一）に合わせて書き換える（ここ1箇所の修正が全呼び出し元5箇所に効く）",
+    "呼び出し箇所1: src/routes/cover-guide.tsx 772行目 label=「こちらもどうぞ」（店主が名指ししたラベルそのもの）。全曲ページに影響。fillFromCardIdありで related が空でも棚から常時10件補充される",
+    "呼び出し箇所2: src/routes/cover-guide.tsx 782行目 label=「こちらも、同じ流れで」。song.bridgeRelatedを持つ曲ページのみに追加で表示される別枠（772行目と2つ縦に並ぶ）",
+    "呼び出し箇所3: src/routes/room.card.$slug.tsx 557行目 label=「こちらも、同じ流れで」（card.relatedLabel未設定時のデフォルト）。room/card配下の全ExtraCardページに影響",
+    "呼び出し箇所4: src/routes/room.food.$slug.tsx 234行目 label=「こちらも、同じ流れで」。room/food配下の全食べ物カードページに影響",
+    "呼び出し箇所5: src/routes/watch.tsx 1253行目 label=「この動画の、次の一歩」。watch再生ページ全体（YouTube検索結果経由の動画も含む）に影響",
+    "サムネイル高さ不揃いの修正：RelatedCardsRow内のFramedThumb/カード枠のaspect比・タイトル1行/2行によるカード高さのブレを、余白で揃えて統一する",
+    "「出るページ・出ないページ」の差の原因確認：fillFromCardId（getCardIdForSong等）が解決できない曲・カードでは items.length===0 で非表示になる。棚(RecCardインデックス)未登録の曲は出ない仕様であることの一貫性チェック",
+    "全ページ機械走査スクリプトの新設：ビルド後に grid grid-cols-2 を含むRelatedCardsRow残存箇所を件数で数え、目視でなく数字で「0件」を示す仕組みを作る",
+    "検証ページ: /cover-guide?artist=bee-gees&song=too-much-heaven（実測済み：「こちらもどうぞ」10件＋「この流れで、もう一本」等、関連セクションが縦に複数並ぶ）",
+    "検証ページ: /room/card/gaijin-roman（実測済み：「こちらも、同じ流れで」4件＋「海外発信者の棚 の仲間たち」4件が縦に並び、紹介文まで重複して見える最有力の実害例）",
+    "参照確認（対象外）: /world/music 経由の src/components/NextRecommendations.tsx（「つぎの寄り道」横スクロール10件）は既存の別コンポーネントで正常動作。RelatedCardsRowと混同しないよう区別する",
+    "検証ページ: スティーヴィー・ワンダーの曲ページ（店主確認済み＝出ていない実例。fillFromCardId未解決パターンの実地確認）",
+    "検証ページ: 加藤和彦『あの素晴しい愛をもう一度』の曲ページ（店主確認済み＝出ていない実例。同上）"
+  ]
+}

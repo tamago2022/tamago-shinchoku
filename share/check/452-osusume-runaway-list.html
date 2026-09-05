@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#452 「こちらもどうぞ」暴走：対象の洗い出し一覧（452番・一覧作成回） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #452 「こちらもどうぞ」暴走：対象の洗い出し一覧（452番・一覧作成回）</div>
+<h1>#452 「こちらもどうぞ」暴走：対象の洗い出し一覧（452番・一覧作成回）</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+原因の共通部品は<code>src/components/RelatedCardsRow.tsx</code>1つ（origin/main反映済み・コミット2e4ea39f）。2026-09-05に「10件まで棚から補充」の指示で<code>TARGET_COUNT=10</code>・<code>fillFromCardId</code>補充を追加したが、レイアウトは元の2列グリッド(<code>grid-cols-2</code>)のまま拡張されたため「2列×5個=10個」が全ページに増殖した。呼び出し元は5箇所（曲ページ×2・room/card・room/food・watch）。今回は一覧化のみ、修正は次のバッチで実施。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>14</b><span>洗い出した対象数（status/split/452-list.jsonへ保存済み）</span></div>
+  <div class="num"><b>5</b><span>影響を受けている呼び出し箇所（ファイル×行）</span></div>
+  <div class="num"><b>1</b><span>原因の共通部品ファイル数（1箇所直せば全ページへ波及）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実例1: Bee Gees Too Much Heaven（10件+セクション重複）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven</a></li>
+  <li><b>実例2: gaijin-roman（4件+4件で重複が最も強い）</b><a href="https://joy-relief-station.lovable.app/room/card/gaijin-roman" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/gaijin-roman</a></li>
+  <li><b>対象外の参考: 正常な「つぎの寄り道」横スクロール10件（world/music）</b><a href="https://joy-relief-station.lovable.app/world/music" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/music</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>cover-guide.tsx:772 label=「こちらもどうぞ」（全曲ページ・常時10件補充）</td><td class="yes">洗い出し済み</td></tr>
+<tr><td>cover-guide.tsx:782 label=「こちらも、同じ流れで」（bridgeRelated曲のみ）</td><td class="yes">洗い出し済み</td></tr>
+<tr><td>room.card.$slug.tsx:557（room/card全体）</td><td class="yes">洗い出し済み</td></tr>
+<tr><td>room.food.$slug.tsx:234（room/food全体）</td><td class="yes">洗い出し済み</td></tr>
+<tr><td>watch.tsx:1253（watch全体）</td><td class="yes">洗い出し済み</td></tr>
+<tr><td>サムネイル高さ不揃いの修正</td><td class="no">次バッチで実施</td></tr>
+<tr><td>全ページ機械走査（grid-cols-2残存を数字で確認）の仕組み新設</td><td class="no">次バッチで実施</td></tr>
+</table>
+
+<footer>
+この回は一覧作成のみ（店主指示：本体修正は次の10件ずつの回で実施）。一覧の正本は status/split/452-list.json。
+</footer>
+</body>
+</html>
