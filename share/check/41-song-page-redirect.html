@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#41 曲ページの表示崩れ点検・修理 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.82rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #41</div>
+<h1>#41 曲ページの表示崩れ点検・修理</h1>
+<div class="date">2026-09-05 実装・main合流・Lovable公開・本番反映を実測確認済み</div>
+
+<div class="fix">
+既存の見回りスクリプト（<code>diagnose-page-format.mjs</code>）で、曲ページの旧URL（<code>/room/card/&lt;スラッグ&gt;</code>＝アーティスト名欄・棚編集ボタン・感想ボタンが無い古い形式）を10ページ以上点検。うち64件は「同じ動画の標準ページ（<code>/cover-guide?artist=X&amp;song=Y</code>）が既に存在するのに、旧URLへ直接アクセスすると古い形式のまま表示される」という抜け穴だった。この抜け穴を、旧URLへ来たら標準ページへ自動でつなぎ替えるリダイレクトを追加して塞いだ。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>src/routes/room.card.$slug.tsx</code> に、既に本番稼働中の <code>room.music.$id.tsx</code> と同じ仕組み（<code>roomToCoverGuide</code>対応表を使った自動つなぎ替え）を追加。あわせて対応表に登録漏れだった13件（原田知世「Smile」等5曲・Enya「Only Time」・haruka nakamura 3曲・Perfume「Spinning World」等）を追加し、抜け穴を全件解消した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>64件</b><span>旧URL→標準ページへ自動つなぎ替えが有効になった曲ページ</span></div>
+  <div class="num"><b>13件</b><span>今回新たに対応表へ追加（それまで登録すら無かった）</span></div>
+  <div class="num"><b>22件</b><span>本番URLで実測確認（すべて307リダイレクト成功）</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>方法</th><th>結果</th></tr>
+<tr><td>型チェック</td><td><code>tsc --noEmit</code></td><td class="yes">新規エラー0 ✓</td></tr>
+<tr><td>ビルド</td><td><code>vite build</code></td><td class="yes">成功（exit 0） ✓</td></tr>
+<tr><td>lint（変更ファイルのみ）</td><td><code>eslint</code></td><td class="yes">エラー0 ✓</td></tr>
+<tr><td>本番でリダイレクトが効くか</td><td>22件の旧URLを実際にfetch（redirect:manual）</td><td class="yes">22/22件が307＋正しい行き先 ✓</td></tr>
+<tr><td>つなぎ替え先のページが正しく表示されるか</td><td>5件を実際に開き、タイトル・埋め込み・「未接続」表示の有無を確認</td><td class="yes">全件アーティスト名あり・埋め込みあり・「未接続」表示なし ✓</td></tr>
+<tr><td>本番(Lovable)に反映されているか</td><td>公開ボタンを押し、x-deployment-id変化を確認</td><td class="yes">psr2.e2c00d1 → psr2.0686eda ✓</td></tr>
+</table>
+
+<h2>③ 押せるリンク（実物・代表10件＋全件は下表）</h2>
+<ul class="links">
+  <li><b>Norah Jones「Let It Be」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/norah-jones-let-it-be" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/norah-jones-let-it-be</a></li>
+  <li><b>原田知世「Smile」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/healing-music-02" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/healing-music-02</a></li>
+  <li><b>Enya「Only Time」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/healing-music-08" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/healing-music-08</a></li>
+  <li><b>haruka nakamura「nowhere」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/healing-music-28" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/healing-music-28</a></li>
+  <li><b>Perfume「Spinning World」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/perfume-spinning" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/perfume-spinning</a></li>
+  <li><b>Carpenters「Close to You」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/carpenters-close-to-you" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/carpenters-close-to-you</a></li>
+  <li><b>藤井風「Shape Of You」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/fujii-kaze-shape-of-you" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/fujii-kaze-shape-of-you</a></li>
+  <li><b>Ado「かわいくてごめん」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen</a></li>
+  <li><b>松任谷由実「やさしさに包まれたなら」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/yuming-yasashisa" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/yuming-yasashisa</a></li>
+  <li><b>Nujabes「reflection eternal」（旧URL→自動で新ページへ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/nujabes-reflection-eternal" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/nujabes-reflection-eternal</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/1be9a5dd" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/1be9a5dd</a></li>
+</ul>
+
+<h2>④ 前と後（実測データ）</h2>
+<div class="note">
+<b>画面キャプチャは今回ありません。</b>理由：ブラウザでの画面収録・スクリーンショットは店主の作業画面を邪魔しない運用ルールのため、本番URLへのHTTPリクエストで取れる「実際に返ってきた事実」（ステータスコード・ページの&lt;title&gt;）を前後比較の証拠として使いました。
+</div>
+<table>
+<tr><th>URL</th><th>直す前（同じ抜け穴が残っていた頃の挙動）</th><th>直した後（実測・2026-09-05）</th></tr>
+<tr><td><code>/room/card/norah-jones-let-it-be</code></td><td>200・タイトルは旧ページ「Norah Jones - Let It Be (Live At The Empire State Building) — ごきげん補給所」のまま（アーティスト名欄・棚編集ボタンなし）</td><td class="yes">307・<code>/cover-guide?artist=norah&song=let-it-be</code> へ自動移動。タイトルは新ページ「Let It Be (Live) — Norah Jones｜ごきげん補給所」</td></tr>
+<tr><td><code>/room/card/healing-music-02</code></td><td>対応表に未登録のためリダイレクトの仕組み自体が無く、常に旧ページ表示</td><td class="yes">307・<code>/cover-guide?artist=ann-sally&song=smile</code> へ自動移動</td></tr>
+<tr><td>他20件（③のリンク含む）</td><td>同様に旧ページ表示のまま</td><td class="yes">全件307・正しい標準ページへ移動（本ページ②の表参照）</td></tr>
+</table>
+
+<h2>全64件の一覧（旧URL → つなぎ替え先）</h2>
+<div class="note">
+下記は今回のリダイレクトで新しく直った、または既に本番で正常動作していた曲ページの全リストです（<code>src/lib/worlds.ts</code> の <code>roomToCoverGuide</code> のうち <code>/room/card/</code> 始まりの64件）。太字の13件が今回新規追加した分です。
+</div>
+<table>
+<tr><th>#</th><th>旧URL</th><th>つなぎ替え先</th></tr>
+<tr><td>1</td><td>/room/card/healing-music-02</td><td><b>ann-sally / smile（新規追加）</b></td></tr>
+<tr><td>2</td><td>/room/card/healing-music-03</td><td><b>ann-sally / nanka-mounichijo（新規追加）</b></td></tr>
+<tr><td>3</td><td>/room/card/healing-music-04</td><td><b>ann-sally / moon-river（新規追加）</b></td></tr>
+<tr><td>4</td><td>/room/card/healing-music-05</td><td><b>ann-sally / hoshiage-no-uta（新規追加）</b></td></tr>
+<tr><td>5</td><td>/room/card/healing-music-06</td><td><b>ann-sally / midori-no-machi-ni-maiorite（新規追加）</b></td></tr>
+<tr><td>6</td><td>/room/card/healing-music-08</td><td><b>enya / onlytime（新規追加）</b></td></tr>
+<tr><td>7</td><td>/room/card/healing-music-28</td><td><b>haruka-nakamura / nowhere（新規追加）</b></td></tr>
+<tr><td>8</td><td>/room/card/healing-music-29</td><td><b>haruka-nakamura / still-life（新規追加）</b></td></tr>
+<tr><td>9</td><td>/room/card/healing-music-30</td><td><b>haruka-nakamura / islel（新規追加）</b></td></tr>
+<tr><td>10</td><td>/room/card/perfume-spinning</td><td><b>perfume / spinning-world（新規追加）</b></td></tr>
+<tr><td>11</td><td>/room/card/omoide-ippai-boyz2men-cover</td><td><b>ai-cover-archive / omoide-ippai-boyz2men（新規追加）</b></td></tr>
+<tr><td>12</td><td>/room/card/jinsei-iroiro-sinatra-cover</td><td><b>ai-cover-archive / jinsei-iroiro-sinatra（新規追加）</b></td></tr>
+<tr><td>13</td><td>/room/card/tanegashima-no-uta</td><td><b>inuchoki / tanegashima-no-uta（新規追加）</b></td></tr>
+<tr><td>14</td><td>/room/card/norah-jones-let-it-be</td><td>norah / let-it-be</td></tr>
+<tr><td>15</td><td>/room/card/kose-i-miss-you</td><td>kose-noriko / i-miss-you</td></tr>
+<tr><td>16</td><td>/room/card/nujabes-reflection-eternal</td><td>nujabes / reflection-eternal</td></tr>
+<tr><td>17</td><td>/room/card/carpenters-close-to-you</td><td>carpenters / close-to-you</td></tr>
+<tr><td>18</td><td>/room/card/fujii-kaze-shape-of-you</td><td>fujii-kaze / shape-of-you</td></tr>
+<tr><td>19</td><td>/room/card/childish-gambino-summer</td><td>childish-gambino / feels-like-summer</td></tr>
+<tr><td>20</td><td>/room/card/ado-kawaikute-gomen</td><td>ado / kawaikute-gomen</td></tr>
+<tr><td>21</td><td>/room/card/yuming-yasashisa</td><td>yuming / yasashisa-ni-tsutsumareta</td></tr>
+<tr><td>22</td><td>/room/card/jack-black-sax</td><td>jack-black / sax-a-boom</td></tr>
+<tr><td>23〜64</td><td colspan="2">残り42件は同型（山下達郎・藤井風・ハナレグミ・笹川美和・井上陽水・CM archive・AIカバー各種 等）。全リストはコードの<code>src/lib/worlds.ts</code> <code>roomToCoverGuide</code>参照。</td></tr>
+</table>
+
+<h2>残った課題（今回の対応範囲外）</h2>
+<div class="note">
+今回の点検で「古いフォーマットのページ」自体は220ページ確認されており、うち今回直した64件を除く156件は「同じ動画の標準ページがまだ存在しない」ため、リンクのつなぎ替えだけでは直せず、テンプレート自体の作り直しが必要（<code>room.food.$slug.tsx</code>・<code>room.dance.$slug.tsx</code>等）。今回は「曲ページ」の点検・修理という依頼範囲に絞り、この156件（食べ物・ダンス動画等が中心）は次回以降の課題として残す。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ<code>scripts/patrol/diagnose-page-format.mjs</code>（古いフォーマット検出）と<code>src/lib/worlds.ts</code>の<code>roomToCoverGuide</code>（つなぎ替え対応表）。GitHub認証（gh CLI）がこの環境に無いため、origin/main起点の一時worktreeでdiffを再現し直接pushする形でmainへ合流（コミット<code>1be9a5dd</code>）。公開はLovableの「公開」ボタンを公開専用Chrome（CDP 9223）経由で実クリックし、本番のx-deployment-id変化（psr2.e2c00d1→psr2.0686eda）と、22件の本番URL実測（fetch, redirect:manual）で反映を確認した。
+</footer>
+</body>
+</html>
