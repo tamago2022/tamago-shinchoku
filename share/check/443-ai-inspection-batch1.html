@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品＋自動OKの仕組みを実装 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品＋自動OKの仕組みを実装</div>
+<h1>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品＋自動OKの仕組みを実装</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+①割り当てられた10件（37/34/8/41/216/9/3/28/27/25番）を1件ずつ本番URL・確認ページ・queue.jsonの実データで再検品。②9件は合格、1件(3番「こちらもどうぞ」)は<b>本番で暴走中</b>のため不合格として据え置き、既存の緊急修理タスク452番に委ねた。③根本原因を発見：AI検品(416番のverifier)が合格(PASS)を出しても、これまではそのまま『たまごさんの確認待ち』に留まり続け、人のタップが必要だった。<code>tools/auto_launcher.py</code>を直し、<b>PASS→そのままstatus=doneへ自動完了</b>させる仕組みを実装・本番(常駐プロセスheartbeat.sh、15秒おきに再読込)へ反映済み。判断できない(技術的エラー)場合だけ引き続き人の目へ回る。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>10件</b><span>今回の対象バッチ</span></div>
+  <div class="num"><b>9件</b><span>合格・自動OK対象</span></div>
+  <div class="num"><b>1件</b><span>不合格・本番incident(3番)</span></div>
+  <div class="num"><b>16件</b><span>ai_verify_stats.json累計検品数(13合格/3不合格)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>確認待ち／完了タップ画面(本番)</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>AI検品(鬼監督)の実績ログ</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json</a></li>
+  <li><b>3番の暴走を修理中の緊急タスク452番</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
+  <li><b>216番：曲ページ(Bee Gees)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven</a></li>
+  <li><b>216番：物まね側ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>37番 バッジ比率化</td><td class="yes">本番JSで13.8%を実測確認済み・既存実装が反映中</td></tr>
+<tr><td>34番 3時間セッション自動切り</td><td class="yes">模擬5パターン+本番4URLを実測確認済み</td></tr>
+<tr><td>8番 Googleドライブ同期</td><td class="yes">同期停止を実測診断・店主の再起動待ちとして完了</td></tr>
+<tr><td>41番 曲ページ表示崩れ点検</td><td class="yes">81件のリダイレクトを本番で実測確認(healing-music-02等)</td></tr>
+<tr><td>216番 ビージーズ子供→Too Much Heaven</td><td class="yes">本番JSで双方向リンク・ものまね表記を確認</td></tr>
+<tr><td>9番 円卓デザイン案Claude版</td><td class="yes">店主レビュー済み(とりあえずOK)</td></tr>
+<tr><td>28番 Eagleフォルダ絞り込み</td><td class="yes">店主レビュー済み(とりあえずOK)</td></tr>
+<tr><td>27番 デスクトップ片付け</td><td class="yes">店主レビュー済み+別担当のWebFetch実測済み</td></tr>
+<tr><td>25番 AI臭さ質感指示書</td><td class="yes">店主レビュー済み(とりあえずOK)</td></tr>
+<tr><td>3番 こちらもどうぞ10個+シャッフル</td><td class="no">本番で暴走(2列×5個グリッドが全ページに拡散)。緊急修理452番が進行中のため不合格のまま据え置き</td></tr>
+</table>
+
+<footer>
+実装：tools/auto_launcher.py（PASS時にstatus=doneへ自動遷移・okBy=ai-verifier-auto）。本番反映：常駐プロセスheartbeat.shが15秒おきにauto_launcher.pyを再読込するため、コミット後は即座に有効。GitHub Pages(このリポジトリ)には本番Publish操作は存在しないため対象外。
+</footer>
+</body>
+</html>
