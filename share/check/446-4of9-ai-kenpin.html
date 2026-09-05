@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#446 446番(4/9) 鬼監督AI検品バッチ結果 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #446 446番(4/9) 鬼監督AI検品バッチ結果</div>
+<h1>#446 446番(4/9) 鬼監督AI検品バッチ結果</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+対象10件のうち、43・44・46・215は既に別経路でdone判定済み、45はまだビルド待ちで未着手。残り5件(42/48/113/213/214)を鬼監督が実データで独立検証した結果、本番URL・本文一致は確認できたが、必須条件「③スクショが残っている」を満たすものが1件もなかったため、姉妹バッチ444番でAI Verifierが実際に差し戻した基準(n=20,13)に合わせ、5件とも自動OKにせず静かにやり直しへ差し戻した(店主には見せない)。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5</b><span>判定対象(awaiting_check)</span></div>
+  <div class="num"><b>0</b><span>自動OKにした件数</span></div>
+  <div class="num"><b>5</b><span>やり直しへ差し戻した件数(スクショ欠如)</span></div>
+  <div class="num"><b>4</b><span>既に別経路でdone済み(43/44/46/215・今回は不変更)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の進捗表(queue.json・42/48/113/213/214がwaitingに戻っていることが見える)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
+  <li><b>鬼監督の判定ログ(oni_kantoku_log.jsonl・今回の差し戻し理由5件を1行ずつ記録)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl</a></li>
+  <li><b>姉妹バッチ444番の確認ページ(同じ基準でVerifierに差し戻された前例)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/444-oni-kantoku-batch2.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/444-oni-kantoku-batch2.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>42 都はるみ他11組アーティストページ</td><td class="no">本番3件をcurlで独立再取得しはるみ節/志村正彦/サグネ発の覆面ロックデュオを実測。スクショ無し→差し戻し</td></tr>
+<tr><td>48 留守番見回り30分おき復活</td><td class="no">ローカルscheduled-tasks.jsonを直接読みenabled:true・直近実行08:14を実測(確認ページより新しい)。スクショ無し→差し戻し</td></tr>
+<tr><td>113 イパネマ高校生カバー動画埋め込み</td><td class="no">本番カバー側・原曲側をnode fetchで独立再取得し双方向リンクを実測。スクショ無し→差し戻し</td></tr>
+<tr><td>213 X投稿の原曲をつなぐ(Bee Gees)</td><td class="no">本番曲ページをcurlで独立再取得しYour Face Sounds Familiar/no_earthquakeを実測。スクショ無し→差し戻し</td></tr>
+<tr><td>214 動画のBGM自動特定</td><td class="no">git merge-base --is-ancestorでmain合流を独立検証(前セッションはこれを確認できず正直に保留していた)。UI変化なしの運用ツールで画面キャプチャ対象が無い。スクショ無し→差し戻し</td></tr>
+</table>
+
+<footer>
+判定は鬼監督(このセッション)。ブラウザ・スクリーンショット道具がこのセッションに無いため、鬼監督自身もスクショを作れなかった。次回やり直しセッションでclaude-in-chrome等が使える場合はその場で実物キャプチャを撮って確認ページに貼ること。
+</footer>
+</body>
+</html>
