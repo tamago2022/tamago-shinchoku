@@ -109,9 +109,22 @@ TTS_LINES = [
 ]
 
 
+def _existing_tts(key):
+    for ext in (".mp3", ".wav", ".m4a"):
+        p = os.path.join(OUT_DIR, f"tts_{key}{ext}")
+        if os.path.exists(p) and os.path.getsize(p) > 0:
+            return p
+    return None
+
+
 def run_tts_all():
     results = {}
     for key, char, voice, text in TTS_LINES:
+        existing = _existing_tts(key)
+        if existing:
+            print(f"[SKIP-DUP] TTS:{key} は既に生成済み（二重課金回避）: {existing}")
+            results[key] = existing
+            continue
         nchars = len(text)
         est_usd = (nchars / 1000.0) * 0.10
         if would_exceed(est_usd):
@@ -150,6 +163,11 @@ def run_ume(tts_paths):
     ]
     clip_paths = []
     for shot_key, audio_parts, seconds in plan:
+        existing_ume = os.path.join(OUT_DIR, f"{shot_key}_ume.mp4")
+        if os.path.exists(existing_ume) and os.path.getsize(existing_ume) > 0:
+            print(f"[SKIP-DUP] {shot_key}: 既にKling LipSync完成済み（二重課金回避）: {existing_ume}")
+            clip_paths.append(existing_ume)
+            continue
         audio_parts = [p for p in audio_parts if p]
         if not audio_parts:
             print(f"[SKIP] {shot_key}: 音声が無いのでスキップ")
@@ -251,13 +269,14 @@ def run_matsu(shots):
     try:
         out = fh.run_sync(
             "bytedance/seedance-2.5/reference-to-video",
-            {"prompt": prompt, "reference_image_url": image_url, "resolution": "480p", "duration": "5"},
+            {"prompt": prompt, "image_urls": [image_url], "resolution": "480p", "duration": "5"},
             timeout=420,
         )
     except Exception as e:
         print(f"[ERROR] 松の実測生成に失敗: {e}")
-        print("        (このモデルの正式な画像入力パラメータ名が異なる可能性が高い。")
-        print("         fal.ai/models/bytedance/seedance-2.5/reference-to-video/api で実スキーマを確認してから再実行してください)")
+        print("        (2026-09-06 419番: 1回目は reference_image_url で HTTP422")
+        print("         'At least one reference image or video is required' → image_urls(配列)に修正済み。")
+        print("         それでも失敗する場合は fal.ai/models/bytedance/seedance-2.5/reference-to-video/api を再確認)")
         return None
 
     record("Seedance2.5:sh09(実測)", est_usd_worst_case, "480p・5秒・1本のみ（本当の請求額はfalダッシュボードで要確認）")
@@ -291,22 +310,9 @@ def write_cost_report(ume_ok, take_ok, matsu_ok):
     return path
 
 
-def main():
-    print(f"予算上限: {BUDGET_JPY}円")
-    shots = crop_shots()
-
-    tts_paths = run_tts_all()
-    ume = run_ume(tts_paths)
-    take = None
-    matsu = None
-    if total_jpy() < BUDGET_JPY:
-        take = run_take(shots)
-    if total_jpy() < BUDGET_JPY:
-        matsu = run_matsu(shots)
-
+def _finalize(ume, take, matsu):
+    """途中で例外が起きても、そこまでの成果を必ず書き出す（外部状態への保存・冪等原則）。"""
     report = write_cost_report(ume, take, matsu)
-
-    # Google Driveへもコピー（可能なら。ログイン不要でパスがマウントされていれば書き込めるはず）
     try:
         os.makedirs(DRIVE_DIR, exist_ok=True)
         import shutil
@@ -317,8 +323,26 @@ def main():
         print(f"[DRIVE] コピー完了: {DRIVE_DIR}")
     except Exception as e:
         print(f"[DRIVE] コピー失敗（Google Drive未マウント等の可能性）: {e}")
-
     print(f"\n累計 {total_jpy():.1f}円 / 上限{BUDGET_JPY}円")
+
+
+def main():
+    print(f"予算上限: {BUDGET_JPY}円")
+    shots = crop_shots()
+
+    ume = None
+    take = None
+    matsu = None
+    try:
+        tts_paths = run_tts_all()
+        ume = run_ume(tts_paths)
+        if total_jpy() < BUDGET_JPY:
+            take = run_take(shots)
+        if total_jpy() < BUDGET_JPY:
+            matsu = run_matsu(shots)
+    finally:
+        _finalize(ume, take, matsu)
+
     print("完了。確認ページ用に output/ フォルダの中身を使ってください。")
 
 

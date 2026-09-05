@@ -218,6 +218,36 @@ def _find_item(items, n):
     return None
 
 
+# ---- 2026-09-06 421番：積む前に重複を照合 ----
+# 心臓の多重起動で同じ指示が10個・15個と積み上がる事故が繰り返し起きた（queue_dedupe参照）。
+# あれは「増えてしまった後」の掃除。ここでは「積む前」に止める。
+DUP_STATUSES = ("waiting", "running", "hold")
+
+
+def _titles_conflict(a, b):
+    """題名の重複判定：完全一致／どちらかがもう片方を含む／先頭30文字が同じ。"""
+    a = (a or "").strip()
+    b = (b or "").strip()
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    if a in b or b in a:
+        return True
+    if len(a) >= 30 and len(b) >= 30 and a[:30] == b[:30]:
+        return True
+    return False
+
+
+def _find_duplicate_title(items, title):
+    for it in items:
+        if it.get("status") not in DUP_STATUSES:
+            continue
+        if _titles_conflict(title, str(it.get("title") or "")):
+            return it
+    return None
+
+
 def queue_add(text, priority=None, label=None):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
@@ -235,7 +265,13 @@ def queue_add(text, priority=None, label=None):
     # ② 題名を `text[:120]`（指示文の先頭120文字）にしていた。だから進捗表に指示文が
     #    そのまま題名として並び、たまごさんに「6番以降が変」と言われた。
     # → 制限を外し、**題名は label（短い名前）を優先**して使う。
-    title = (label or "").strip()
+    label = (label or "").strip()
+    # 2026-09-06 421番：本当に別物のときの逃げ道。label に「重複OK」と書いてあれば
+    # 重複照合をスキップして通す（マーカー自体は題名から取り除く）。
+    force_dup = "重複OK" in label
+    if force_dup:
+        label = re.sub(r"重複OK", "", label).strip(" 　・:：,、")
+    title = label
     if not title:
         # labelが無いときだけ、本文の1行目から短く作る（記号は落とす）
         first = re.sub(r"[*#`>]", "", text.splitlines()[0] if text.splitlines() else text)
@@ -250,6 +286,12 @@ def queue_add(text, priority=None, label=None):
         p = None
     q = _load_queue()
     items = q.get("items") or []
+    # 2026-09-06 421番：積む前に重複を照合する。完全一致／片方がもう片方を含む／
+    # 先頭30文字が同じ、のいずれかなら「重複OK」指定が無い限り積まずに返す。
+    if not force_dup:
+        dup = _find_duplicate_title(items, title)
+        if dup is not None:
+            return "skipped", "%d番と同じ内容です（積みませんでした。別物なら label に『重複OK』と書いて送ってください）" % dup.get("n")
     next_n = (max([int(it.get("n") or 0) for it in items], default=0)) + 1
     item = {
         "n": next_n,
@@ -733,6 +775,54 @@ def disk_report(_target=None):
     return "done", msg[:1800]
 
 
+def disk_breakdown(_target=None):
+    """何に何GB使っているかを、投げっぱなしで実測する（2026-09-06）。
+
+    たまごさん「**何に何ギガ使ってるかも分からないんでね。移動して問題ないものがあるなら
+    どんどん移動していきたい。**」
+
+    `du` は重い。**工場の中で待つと心臓ごと詰まる**（9/05に実測。12分止めた）。
+    だから**投げっぱなしにして、結果はファイルに書かせる。**こちらは何も待たない。
+    出来上がりは status/disk_breakdown.txt。
+    """
+    out = os.path.join(REPO, "status", "disk_breakdown.txt")
+    script = r'''
+{
+  echo "=== 測った時刻: $(date '+%F %T') ==="
+  echo
+  echo "=== 本体の空き（データ側＝実態）==="
+  df -h /System/Volumes/Data | tail -1
+  echo
+  echo "=== ホーム直下（GB・大きい順）==="
+  du -sx -m ~/* ~/Library 2>/dev/null | sort -rn | head -25 \
+    | awk '{ printf "%8.1f GB  %s\n", $1/1024, substr($0, index($0,$2)) }'
+  echo
+  echo "=== 書類の中（GB・大きい順）==="
+  du -sx -m ~/Documents/* 2>/dev/null | sort -rn | head -15 \
+    | awk '{ printf "%8.1f GB  %s\n", $1/1024, substr($0, index($0,$2)) }'
+  echo
+  echo "=== デスクトップの中（GB・大きい順）==="
+  du -sx -m ~/Desktop/* 2>/dev/null | sort -rn | head -15 \
+    | awk '{ printf "%8.1f GB  %s\n", $1/1024, substr($0, index($0,$2)) }'
+  echo
+  echo "=== ライブラリの中（GB・大きい順）==="
+  du -sx -m ~/Library/* 2>/dev/null | sort -rn | head -15 \
+    | awk '{ printf "%8.1f GB  %s\n", $1/1024, substr($0, index($0,$2)) }'
+  echo
+  echo "=== 終わり ==="
+} > "%s" 2>&1
+''' % out
+    try:
+        io.open(out, "w", encoding="utf-8").write(
+            "測定中です（数分かかります）。始めた時刻: %s\n" % time.strftime("%F %T"))
+        subprocess.Popen(["bash", "-lc", script],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         stdin=subprocess.DEVNULL, start_new_session=True)
+        return "done", "容量の内訳を測り始めました（投げっぱなし・数分後に status/disk_breakdown.txt に出ます）"
+    except Exception as e:
+        return "failed", str(e)
+
+
 def relay_fix(_target=None):
     """中継所（進捗表→Mac）を強制的に立て直し、**結果を実測で返す**（2026-09-05）。
 
@@ -1188,6 +1278,8 @@ def _process_other(action, cmd):
         return relay_fix(target)
     if action == "disk_report":
         return disk_report(target)
+    if action == "disk_breakdown":
+        return disk_breakdown(target)
     if action == "git_unlock":
         return git_unlock(target)
     if action == "launch_pause":
