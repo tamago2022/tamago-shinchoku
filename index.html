@@ -984,10 +984,28 @@ function qnOf(s){
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-pause]"); if(!b) return;
   const n = Number(b.dataset.pause);
-  b.disabled = true; b.textContent = "引っ込めています…";
+  // 2026-09-06 押したあと「引っ込めています…」のまま何分も固まって見えていた。
+  //   走行中カードは machine.json（5分おき更新）から作っているので、押しても最大5分消えない。
+  //   → **押した瞬間にそのカードを画面から消す。**サーバの返事を待たない。
+  //   本当に止まったかは、次の更新で machine.json から消えることで裏が取れる。
+  b.disabled = true; b.textContent = "引っ込めました";
   const it = ((window.__queue && window.__queue.items) || []).find(x => x.n === n);
   if(it){ it.status = "waiting"; delete it.pid; }
   sendCommandWithId("z" + Date.now().toString(36), "queue_pause", String(n), "⏸ 引っ込める " + n + "番");
+  const card = b.closest(".nowcard");
+  if(card){
+    card.style.transition = "opacity .35s ease, transform .35s ease";
+    card.style.opacity = "0.25";
+    card.style.transform = "scale(.97)";
+    setTimeout(function(){ try{ card.remove(); }catch(_){} }, 900);
+  }
+  // 走行中の一覧からも即座に外す（次の再描画で戻ってこないように）
+  try{
+    const m = window.__machine;
+    if(m && Array.isArray(m.sessionList)){
+      m.sessionList = m.sessionList.filter(s => String(qnOf(s)) !== String(n));
+    }
+  }catch(_){}
   try{ renderQueue(); }catch(err){}
 });
 
