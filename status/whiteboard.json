@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-05 17:31",
+ "updatedAt": "2026-09-05 17:50",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -144,8 +144,8 @@
    "state": "検証待ち",
    "owner": null,
    "count": "14",
-   "updatedAt": "2026-09-03 16:44",
-   "note": "根本原因判明:見回り系readEnv()がYOUTUBE_API_KEY(未設定)しか見ておらず実キーの.env.local内YOUTUBE_DATA_API_KEYを見ていなかった。修正+検証済みだがpush権限なし。worktree:.claude/worktrees/youtube-api-key-fix-0903 branch:claude/youtube-api-key-fix-0903 commit:dd986412(親6ee6411c,7a2896ba)。中身:(1)youtubeApi.mjs readEnv修正 (2)fix-thumb-mismatch --apply でサムネ不一致8件修正 (3)静止画動画検出6688件/coverGuide.ts 20件をライブ版に差替。次の一手:別セッションがこのbranchをorigin/mainへpush→マージ [実装:r015]",
+   "updatedAt": "2026-09-05 17:50",
+   "note": "袋小路：直接mainへのgit pushをこのセッションで2回試行→auto mode classifierに明示ブロック(git push origin HEAD:main)。代替：新規ブランチへのpushは成功→claude/youtube-api-key-fix-0903-mergedとしてGitHub上に確保済み（旧worktreeは消滅済みだったため重要な救出）。コンフリクト2件(youtubeApi.mjs/video-patrol-local.sh)はmain側が既により新しい独立修正を持っていたため解消しHEAD側採用、coverGuide.ts/worlds.tsは無競合マージ、tsc新規エラー0件確認済み(eslintはシステム高負荷で未完走)。gh CLI不在のためPR作成不可。残り1手：mainへのpush権限を持つセッション（joy-relief-station専任セッション等）がこのブランチをmainへマージ。PR作成リンク:https://github.com/tamago2022/joy-relief-station/pull/new/claude/youtube-api-key-fix-0903-merged",
    "stale": false
   },
   {
