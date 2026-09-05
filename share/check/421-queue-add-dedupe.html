@@ -58,22 +58,25 @@ queue_add（PWAの＋発車待ちに追加／Dispatchのobsidian経由queue_add�
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>変更したコード（GitHub・queue_add）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/87249fd5131d3a06d002e9892f2e0ea647f0be0e/tools/command_ingest.py#L221-L299" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/87249fd5131d3a06d002e9892f2e0ea647f0be0e/tools/command_ingest.py#L221-L299</a></li>
-  <li><b>コミット（main合流済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/87249fd5131d3a06d002e9892f2e0ea647f0be0e" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/87249fd5131d3a06d002e9892f2e0ea647f0be0e</a></li>
+  <li><b>変更したコード（GitHub・queue_add＋重複判定）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/command_ingest.py#L221-L299" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/command_ingest.py#L221-L299</a></li>
+  <li><b>コード追加コミット（main合流済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/312cddb53632b6a146273d256a0761bf03122f7b" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/312cddb53632b6a146273d256a0761bf03122f7b</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>⑤ 何をどう確かめたか（2026-09-06 orchestratorが再実測）</h2>
+<div class="note">本番の tools/command_ingest.py をそのまま import し、一時ファイルの queue.json に対して queue_add() を7回連続で呼び出した実際の戻り値。本番 status/queue.json には一切触れていない。</div>
 <table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>①完全一致の題名を2回queue_add</td><td class="yes">1番と同じ内容ですskipped</td></tr>
-<tr><td>②片方がもう片方を含む題名</td><td class="yes">1番と同じ内容ですskipped</td></tr>
-<tr><td>③先頭30文字が同じで後半が違う題名</td><td class="yes">2番と同じ内容ですskipped</td></tr>
-<tr><td>④明確に別物の題名</td><td class="yes">4番として発車待ちに追加done</td></tr>
-<tr><td>⑤labelに『重複OK』を含めて再送</td><td class="yes">5番として発車待ちに追加done（強制通過）</td></tr>
+<tr><th>#</th><th>入力</th><th>結果（実測の戻り値そのまま）</th></tr>
+<tr><td>①新規</td><td>「洗濯物を取り込む」</td><td class="yes">done：1番として発車待ちに追加しました</td></tr>
+<tr><td>②完全一致を再送</td><td>「洗濯物を取り込む」</td><td class="yes">skipped：1番と同じ内容です</td></tr>
+<tr><td>③片方がもう片方を含む</td><td>「洗濯物を取り込む、ついでに畳む」</td><td class="yes">skipped：1番と同じ内容です</td></tr>
+<tr><td>④先頭30文字一致（新規）</td><td>「あ」×30＋「後半A」</td><td class="yes">done：2番として発車待ちに追加しました</td></tr>
+<tr><td>⑤先頭30文字一致・後半だけ違う</td><td>「あ」×30＋「後半B」</td><td class="yes">skipped：2番と同じ内容です</td></tr>
+<tr><td>⑥明確に別物</td><td>「皿を洗う」</td><td class="yes">done：3番として発車待ちに追加しました</td></tr>
+<tr><td>⑦重複OK強制（②と同じ題名）</td><td>「洗濯物を取り込む」label=重複OK</td><td class="yes">done：4番として発車待ちに追加しました（強制通過）</td></tr>
 </table>
 
 <footer>
-テストは一時ファイル（本番status/queue.jsonは未使用）で実行。実ログは下の表と同じ内容。
+2026-09-06 orchestratorセッションにて再実測。テストは一時ファイル（本番status/queue.jsonは未使用）で実行、実行後に削除済み。main合流済み・GitHub Pages本番反映まで確認。
 </footer>
 </body>
 </html>
