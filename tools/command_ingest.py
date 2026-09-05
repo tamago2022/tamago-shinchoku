@@ -633,6 +633,17 @@ def relay_fix(_target=None):
     if not local_ok:
         return "failed", "受け口が立ちません。" + " ／ ".join(steps)
 
+    # ②' 家のWi-Fiの中で直接届く道（トンネル不要・切れない・URLが変わらない）
+    lan = ""
+    ip = run(["ipconfig", "getifaddr", "en0"], timeout=5)
+    addr = (ip.stdout or "").strip() if ip is not None else ""
+    if not addr:
+        ip = run(["ipconfig", "getifaddr", "en1"], timeout=5)
+        addr = (ip.stdout or "").strip() if ip is not None else ""
+    if addr:
+        lan = "http://%s:8788" % addr
+        steps.append("家の中の道=%s" % lan)
+
     # ③ 道を2本用意する。cloudflared が張れなければ localtunnel へ落ちる。
     #    2026-09-05：たまごさんの回線は 7844 が塞がれていて cloudflared が hard_fail する。
     #    **道が1本しかないのが今日の詰まりの原因**なので、必ず代わりを持たせる。
@@ -661,11 +672,19 @@ def relay_fix(_target=None):
     npx = _sh.which("npx")
     if npx:
         io.open(tunlog, "w").write("--- localtunnel ---\n")
-        subprocess.Popen([npx, "-y", "localtunnel", "--port", "8788"],
+        # **名前を固定する。**（2026-09-05）
+        # 立て直すたびにURLが変わると、進捗表が読む status/relay.json の公開（5分おき）が
+        # 追いつかず、たまごさんの画面はいつまでも「何も動いてない」ままになる。
+        # 固定名なら、立て直しても進捗表は同じ場所を見続けられる。
+        subprocess.Popen([npx, "-y", "localtunnel", "--port", "8788",
+                          "--subdomain", "tamago-shinchoku"],
                          stdout=open(tunlog, "a"), stderr=subprocess.STDOUT,
                          stdin=subprocess.DEVNULL, start_new_session=True, close_fds=True)
         url = _wait_url(r"https://[a-z0-9-]+\.loca\.lt", 60)
         steps.append("localtunnel=%s" % (url or "URLが出ない"))
+        # 名前が取られていたら、名前なしでもう一度（繋がることを優先する）
+        if url and url != "https://tamago-shinchoku.loca.lt":
+            steps.append("固定名は取られていたので別名で張った")
         if url and not _outside_ok(url):
             steps.append("localtunnelのURLは外から繋がらず→別の道へ")
             run(["pkill", "-f", "localtunnel"], timeout=10)
@@ -689,11 +708,16 @@ def relay_fix(_target=None):
                 url = ""
 
     if not url:
+        # トンネルが全部だめでも、家の中の道が生きていれば進捗表は動く。失敗扱いにしない。
+        if lan:
+            json.dump({"url": "", "lanUrl": lan, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
+                      io.open(rjson, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            return "done", "外への道は張れませんでしたが、家の中の道は通っています（%s）／ %s" % (lan, " ／ ".join(steps))
         return "failed", "どの道も張れませんでした。" + " ／ ".join(steps)
 
     c = run(["curl", "-s", "-m", "20", "-o", "/dev/null", "-w", "%{http_code}", url + "/health"], timeout=30)
     code = (c.stdout or "").strip() if c is not None else ""
-    json.dump({"url": url, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
+    json.dump({"url": url, "lanUrl": lan, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
               io.open(rjson, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     if code == "200":
         return "done", "中継所が復活しました（%s・実測200）／ %s" % (url, " ／ ".join(steps))

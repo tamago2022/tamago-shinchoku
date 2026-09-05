@@ -121,6 +121,44 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/health"):
             return self._json(200, {"ok": True, "at": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+        # 2026-09-05 **進捗表そのものをMacから配る。**
+        #   トンネル（cloudflared / localtunnel）は、たまごさんの回線では張れたり切れたりを
+        #   繰り返し、そのたびURLが変わって進捗表が迷子になった（10:15〜10:39に5回変わった）。
+        #   家のWi-Fiの中なら、トンネルを通さずMacへ直接届く。**遅れゼロ・切れない・URLも変わらない。**
+        #   ここは http なので、同じ http のこのページから読む限り混在コンテンツにもならない。
+        if self.path in ("/", "/index.html") or self.path.startswith("/?"):
+            try:
+                with io.open(os.path.join(REPO, "index.html"), "rb") as f:
+                    body = f.read()
+                self.send_response(200)
+                self._cors()
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                return self.wfile.write(body)
+            except Exception as e:
+                return self._json(500, {"ok": False, "error": str(e)})
+        # 進捗表が「status/なんとか.json」を相対パスで読むので、そのまま返せるようにする
+        if self.path.startswith("/status/"):
+            name = self.path[len("/status/"):].split("?")[0]
+            if "/" not in name and ".." not in name:
+                p = os.path.join(REPO, "status", name)
+                if os.path.exists(p):
+                    try:
+                        with io.open(p, "rb") as f:
+                            body = f.read()
+                        self.send_response(200)
+                        self._cors()
+                        ct = "application/json" if name.endswith(".json") else "text/plain; charset=utf-8"
+                        self.send_header("Content-Type", ct)
+                        self.send_header("Cache-Control", "no-store")
+                        self.send_header("Content-Length", str(len(body)))
+                        self.end_headers()
+                        return self.wfile.write(body)
+                    except Exception as e:
+                        return self._json(500, {"ok": False, "error": str(e)})
+            return self._json(404, {"ok": False})
         # 2026-09-05 たまごさん「押しても動かない、完了に入らない、後に回らない」
         #   原因：押した結果はMacにちゃんと届いていた（記録あり）が、画面が読んでいた台帳は
         #   GitHub Pages側の**公開済みコピー**で、公開は5分以上遅れる。
@@ -185,7 +223,10 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     port = int(os.environ.get("RELAY_PORT") or 8788)
     log("中継所を起動 port=%d" % port)
-    ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+    # 2026-09-05 127.0.0.1 だと**Mac自身からしか届かない。**
+    #   たまごさんはスマホで進捗表を見るので、家のWi-Fiの中から直接届くよう 0.0.0.0 で待つ。
+    #   外（インターネット）からは家のルータが遮るので、開くのは家の中だけ。
+    ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
 
 
 if __name__ == "__main__":

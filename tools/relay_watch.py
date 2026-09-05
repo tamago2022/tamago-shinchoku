@@ -27,7 +27,13 @@ sys.path.insert(0, HERE)
 RJSON = os.path.join(REPO, "status", "relay.json")
 STAMP = os.path.join(REPO, "status", ".relay_watch_at")
 LOG = os.path.join(REPO, "status", "relay.log")
-INTERVAL = 120  # 2分に1回だけ見る（無駄打ちしない）
+# 2026-09-05 追記：**立て直しすぎるのも害だった。**
+#   2分おきに張り直したら、そのたびトンネルのURLが変わり、進捗表がどれを見ればいいか
+#   分からなくなった（10:15〜10:39で5回変わった）。見るのは2分おきでよいが、
+#   **立て直しは10分に1回まで**にする。家の中の道（LAN直結）は切れないので、
+#   トンネルが多少切れていても進捗表は動き続ける。
+INTERVAL = 120        # 見るのは2分おき
+FIX_INTERVAL = 600    # 立て直すのは10分に1回まで
 
 
 def log(msg):
@@ -61,14 +67,22 @@ def main():
         pass
     io.open(STAMP, "w").write(str(int(time.time())))
 
-    url = ""
+    url, lan = "", ""
     try:
-        url = json.load(io.open(RJSON, encoding="utf-8")).get("url") or ""
+        d = json.load(io.open(RJSON, encoding="utf-8"))
+        url, lan = d.get("url") or "", d.get("lanUrl") or ""
     except Exception:
         pass
-    if alive(url):
+    if alive(url) or alive(lan):
         return 0
 
+    fixstamp = os.path.join(REPO, "status", ".relay_fix_at")
+    try:
+        if time.time() - os.path.getmtime(fixstamp) < FIX_INTERVAL:
+            return 0   # さっき立て直したばかり。URLを変えすぎない
+    except Exception:
+        pass
+    io.open(fixstamp, "w").write(str(int(time.time())))
     log("中継所が外から繋がりません（%s）。立て直します" % (url or "URL未設定"))
     try:
         import command_ingest
