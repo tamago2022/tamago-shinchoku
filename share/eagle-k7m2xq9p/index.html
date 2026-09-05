@@ -21,6 +21,8 @@
   .tags button{flex:none; min-height:34px; padding:0 11px; border-radius:999px; border:1px solid var(--line);
     background:#1a2028; color:var(--sub); font-size:0.76rem; white-space:nowrap;}
   .tags button.on{background:var(--accent); color:#12161c; border-color:var(--accent); font-weight:700;}
+  .colorTags button{border-color:rgba(255,255,255,0.18);}
+  .colorTags button.on{background:#fff; color:#12161c; border-color:#fff;}
   .meta{padding:6px 14px 0; font-size:0.74rem; color:var(--sub);}
   .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:8px 3px 60px;}
   .grid img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#1a2028; border-radius:3px;}
@@ -45,6 +47,7 @@
   <input class="search" id="q" type="search" placeholder="名前・タグ・フォルダで検索" autocomplete="off">
   <select class="folderSel" id="folderSel"></select>
   <div class="tags" id="tags"></div>
+  <div class="tags colorTags" id="colorTags"></div>
 </header>
 <div class="meta" id="meta"></div>
 <div class="grid" id="grid"></div>
@@ -78,7 +81,8 @@ function matched(){
 }
 function render(){
   const list = matched();
-  document.getElementById("meta").textContent = `${list.length}件${FOLDER ? "／フォルダ：" + FOLDER : ""}${TAG ? "／タグ：" + TAG : ""}${FILTER ? "／検索：" + FILTER : ""}`;
+  const tagLabel = TAG.startsWith("_color:") ? "色：" + TAG.replace("_color:","") : (TAG ? "タグ：" + TAG : "");
+  document.getElementById("meta").textContent = `${list.length}件${FOLDER ? "／フォルダ：" + FOLDER : ""}${tagLabel ? "／" + tagLabel : ""}${FILTER ? "／検索：" + FILTER : ""}`;
   grid.innerHTML = list.map((it,i)=>`<div class="cell" data-i="${i}"><img loading="lazy" src="${thumbSrc(it)}" alt="${esc(it.n)}"></div>`).join("");
   grid._list = list;
 }
@@ -112,8 +116,25 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
     const b = e.target.closest("button"); if(!b) return;
     TAG = b.dataset.t || "";
     [...document.querySelectorAll("#tags button")].forEach(x=>x.classList.toggle("on", x===b));
+    [...document.querySelectorAll("#colorTags button")].forEach(x=>x.classList.remove("on"));
     render();
   });
+  // Eagleが自動でつけた色タグ（_color:オレンジ系 等）で絞り込み。件数が多い順に。
+  const cc = {};
+  d.items.forEach(it => (it.h||[]).forEach(t => { if(t.startsWith("_color:")) cc[t] = (cc[t]||0)+1; }));
+  const colorTop = Object.entries(cc).sort((a,b)=>b[1]-a[1]);
+  const colorTagsEl = document.getElementById("colorTags");
+  if(colorTop.length){
+    colorTagsEl.innerHTML = colorTop.map(([t,n])=>`<button data-t="${esc(t)}">${esc(t.replace("_color:",""))} ${n}</button>`).join("");
+    colorTagsEl.addEventListener("click", e=>{
+      const b = e.target.closest("button"); if(!b) return;
+      const already = b.classList.contains("on");
+      TAG = already ? "" : (b.dataset.t || "");
+      [...document.querySelectorAll("#colorTags button")].forEach(x=>x.classList.toggle("on", !already && x===b));
+      [...document.querySelectorAll("#tags button")].forEach(x=>x.classList.toggle("on", x.dataset.t===""));
+      render();
+    });
+  }
   // フォルダも件数順に出す（フォルダ絞り込み）
   const fc = {};
   d.items.forEach(it => (it.f||[]).forEach(f => fc[f] = (fc[f]||0)+1));
