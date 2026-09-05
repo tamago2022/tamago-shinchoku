@@ -166,6 +166,7 @@ def save_queue(q):
 
 
 OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
+CHECK_STATS = os.path.join(REPO, "status", "content_check_stats.json")
 
 
 def _elapsed_min(started, finished):
@@ -204,6 +205,118 @@ def append_outbox(it, ok):
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     except Exception as e:
         log("outbox書き込み失敗（%s番）: %s" % (it.get("n"), e))
+
+
+def _strip_html_for_check(html):
+    """タグを外してプレーンテキストにする（判定用・雑でよい）"""
+    import re as _re
+    html = _re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", html)
+    text = _re.sub(r"(?s)<[^>]+>", " ", html)
+    text = _re.sub(r"&nbsp;|&amp;|&lt;|&gt;|&quot;|&#39;", " ", text)
+    text = _re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+CHECK_ROOTS = (
+    "https://joy-relief-station.lovable.app",
+    "https://tamago2022.github.io/tamago-shinchoku",
+    "https://tamago2022.github.io/tamago-shinchoku/index.html",
+    "https://www.youtube.com",
+    "https://youtube.com",
+)
+
+
+def content_check(url, timeout=10):
+    """2026-09-06 新設：確認待ちに上げる直前に、確認ページを機械が実際に開いて中身を検品する。
+
+    たまごさん「今日、確認待ちに『結果が読み取れませんでした』『URLの報告なし』が並び、
+    たまごさんに『これ何を見て判断すればいいの』という状態を作った」への対策。
+    既存のURL検品（JUNK/ROOTSフィルタ＝文字列だけを見る）の続きとして、
+    ここでは実際にページを取りに行って中身を見る。
+
+    弾く条件（どれか1つでも該当したら不合格）：
+      ①404などページが開けない
+      ②本文（タグを外した後）が200文字未満
+      ③「準備中」「TODO」「調査中」しか書かれていない
+      ④スクリーンショット（<img）も数字も1つも無い
+      ⑤リンク先が全部トップページ
+
+    戻り値: (ok: bool, reason: str)
+    """
+    import re as _re
+    import urllib.request
+    import urllib.error
+
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "tamago-content-checker/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            code = resp.getcode()
+            raw = resp.read().decode("utf-8", "ignore")
+    except urllib.error.HTTPError as e:
+        return False, "ページが開けません（HTTP %s）" % e.code
+    except Exception as e:
+        return False, "取得に失敗しました（%s）" % e
+
+    if code and code != 200:
+        return False, "ページが%sです" % code
+
+    text = _strip_html_for_check(raw)
+    if len(text) < 200:
+        return False, "本文が%d文字しかありません（200文字未満）" % len(text)
+
+    NG_WORDS = ("準備中", "TODO", "調査中")
+    if any(w in text for w in NG_WORDS):
+        residual = text
+        for w in NG_WORDS:
+            residual = residual.replace(w, "")
+        residual_core = _re.sub(r"[\s　、。・,.\-…\d]", "", residual)
+        if len(residual_core) < 20:
+            return False, "「準備中」「TODO」「調査中」しか書かれていません"
+
+    has_img = bool(_re.search(r"(?is)<img\b", raw))
+    has_digit = bool(_re.search(r"\d", text))
+    if not has_img and not has_digit:
+        return False, "スクリーンショットも数字も1つもありません"
+
+    links = _re.findall(r'(?is)<a\s[^>]*href=["\']([^"\']+)["\']', raw)
+
+    def _is_root(u):
+        u2 = (u or "").rstrip("/")
+        if not u2 or u2.startswith("#"):
+            return True
+        return any(u2 == r.rstrip("/") for r in CHECK_ROOTS)
+
+    real_links = [l for l in links if l and not l.startswith("#")]
+    if real_links and all(_is_root(l) for l in real_links):
+        return False, "リンク先が全部トップページです"
+
+    return True, ""
+
+
+def _record_content_check(ok, reason, url, item_n=None):
+    """検品の実績（何件検品して何件弾いたか）を status/content_check_stats.json へ積む。
+    確認ページ側がこれをfetchして『実績』を表示する。"""
+    stats = load(CHECK_STATS, {"totalChecked": 0, "totalRejected": 0, "history": []})
+    stats["totalChecked"] = int(stats.get("totalChecked") or 0) + 1
+    if not ok:
+        stats["totalRejected"] = int(stats.get("totalRejected") or 0) + 1
+    hist = stats.get("history") or []
+    hist.append({
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+        "n": item_n,
+        "url": url,
+        "ok": bool(ok),
+        "reason": reason,
+    })
+    stats["history"] = hist[-50:]
+    stats["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    try:
+        tmp = CHECK_STATS + ".tmp"
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            json.dump(stats, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, CHECK_STATS)
+    except Exception as e:
+        log("content_check_stats書き込み失敗: %s" % e)
 
 
 def harvest(q):
@@ -364,6 +477,42 @@ def harvest(q):
                 it.pop(k, None)
             log("↩︎ URLなしのため自動やり直し %d番「%s」（%d回目）" % (it.get("n"), it.get("title"), tries + 1))
         else:
+            # 2026-09-06 新設：確認待ちに上げる直前に、確認ページの中身を機械が検品する。
+            #   「結果が読み取れませんでした」「URLの報告なし」の次に多かった事故が
+            #   「URLはあるが、開いても中身が無い確認ページ」だった。
+            #   urlsの中から確認ページ（/share/check/を含むURL）を探し、実際に開いて中身を見る。
+            check_url = next((u for u in urls if "/share/check/" in u), None)
+            if check_url:
+                ok, reason = content_check(check_url)
+                _record_content_check(ok, reason, check_url, it.get("n"))
+                if not ok:
+                    fails = int(it.get("contentCheckFailCount") or 0) + 1
+                    it["contentCheckFailCount"] = fails
+                    if fails < 3:
+                        it["status"] = "hold" if it.get("holdNote") else "waiting"
+                        it["priority"] = it.get("priority") or 2
+                        it["what"] = (it.get("what") or "") + (
+                            "\n\n【確認ページの機械検品ではねられました・%d回目・%s】"
+                            "理由：%s。確認ページ %s の中身を作り直してください。"
+                            "①何を直したか1行 ②数字（何件中何件） ③押せるリンク一覧 "
+                            "④可能なら前後のスクリーンショット、の4つを必ず入れること。"
+                            % (fails, time.strftime("%m-%d %H:%M"), reason, check_url))
+                        for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                            it.pop(k, None)
+                        changed = True
+                        log("🚫 確認ページ検品NG %d番「%s」→ 列に戻す（%d回目・理由:%s）"
+                            % (it.get("n"), it.get("title"), fails, reason))
+                        continue
+                    else:
+                        it["result"] = (it.get("result") or "") + (
+                            "\n\n【確認ページの機械検品：3回連続ではねられたため人の目に回します】理由：%s"
+                            % reason)
+                        it["status"] = "awaiting_check"
+                        append_outbox(it, bool(urls))
+                        log("⚠️ 確認ページ検品3回連続NG %d番「%s」→ 人の目へ（理由:%s）"
+                            % (it.get("n"), it.get("title"), reason))
+                        continue
+                log("✅ 確認ページ検品OK %d番「%s」（%s）" % (it.get("n"), it.get("title"), check_url))
             it["status"] = "awaiting_check"      # たまごさんの確認待ち
             append_outbox(it, bool(urls))
             log("✅ 終了を回収 %d番「%s」→ 確認待ち（URL %d本）" % (it.get("n"), it.get("title"), len(urls)))
