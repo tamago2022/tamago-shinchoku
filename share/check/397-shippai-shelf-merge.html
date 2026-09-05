@@ -19,7 +19,8 @@ ul{padding-left:1.2em}
 
 <div class="b">
 <p class="ok">① 何を直したか（1行）</p>
-<p>笑いの世界に分裂していた「失敗」「ドジ失敗」「人間だもの」（重複していた空の「失敗」も含め計4行）を、たまごさん指定のタイトル<b>「ドジ　失敗　人間だもの」</b>の1棚へ統合。同じ走査で見つかった「驚きとリアクションの棚」⇔「リアクション」も1棚へ統合。<b>動画（中身）は1つも削除していない</b>。</p>
+<p>笑いの世界に分裂していた「失敗」「ドジ失敗」「人間だもの」（重複していた空の「失敗」も含め計4行）を、たまごさん指定のタイトル<b>「ドジ　失敗　人間だもの」</b>の1棚へ統合。同じ走査で見つかった「驚きとリアクションの棚」⇔「リアクション」も1棚へ統合。<b>動画（中身）は1つも削除していない</b>。<b>Lovable公開まで完了・本番のページタイトルで実測確認済み</b>（下記③参照）。</p>
+<p class="small">実装経路：本来はDB（<code>admin_shelves</code>/<code>admin_shelf_picks</code>）側で統合する一度きり便（<code>scripts/patrol/merge-shippai-shelves-once.mjs</code>/<code>.sql</code>）を用意したが、GitHub Actionsの無料枠切れ/Secrets未設定で2回push・40分超待っても本番DBが書き換わらなかったため、<code>src/lib/useMergedShelves.ts</code>に表示側の統合ロジックを実装（DBは無変更・動画データ本体は完全に無傷）。将来DB書き込みが直ったら、このコード側パッチは削除してDB側を正にする設計。</p>
 </div>
 
 <div class="b">
@@ -51,22 +52,23 @@ ul{padding-left:1.2em}
 </div>
 
 <div class="b">
-<p class="ok">③ 押せるリンク（実物のページ）</p>
+<p class="ok">③ 押せるリンク（実物のページ）＋実測結果</p>
 <ul>
-<li><a href="https://joy-relief-station.lovable.app/shelf/laugh/shippai" target="_blank">統合後の棚「ドジ　失敗　人間だもの」（笑いの世界）</a></li>
+<li><a href="https://joy-relief-station.lovable.app/shelf/laugh/shippai" target="_blank">統合後の棚「ドジ　失敗　人間だもの」（笑いの世界）</a> — <b>本番HTMLの見出し(h1)が実際に「ドジ　失敗　人間だもの」になっていることを確認済み</b>（統合前は「失敗」）</li>
 <li><a href="https://joy-relief-station.lovable.app/shelf/laugh/surprise-reaction" target="_blank">統合後の棚「驚きとリアクションの棚」（笑いの世界）</a></li>
 <li><a href="https://joy-relief-station.lovable.app/room/laugh" target="_blank">笑いの世界トップ（棚一覧に「ドジ失敗」「人間だもの」が別棚として並んでいないことを確認できる）</a></li>
 </ul>
+<p class="small">補足：ページを開いた直後（サーバーが返す最初の画面）はタイトルだけが先に切り替わり、カード一覧は一瞬遅れてブラウザ側の読み込みで揃う作り（既存の仕組み）。本番Supabaseの実データを直接取得し、重複除去のロジックを1件ずつ手計算で突き合わせた結果、統合後の枚数は<b>ちょうど8枚</b>（下の対応表と一致、取りこぼし0件）。</p>
 </div>
 
 <div class="b">
 <p class="warn">仕組みの説明（1行だけ）</p>
-<p class="small">中身は<code>admin_stock</code>という動画データ本体に保存されていて、今回は「どの棚に出すか」の紐付け（<code>admin_shelf_picks</code>）と棚の名前を寄せただけ。動画データ本体は一切削除していない。</p>
+<p class="small">中身は<code>admin_stock</code>という動画データ本体に保存されていて、DBの棚データ自体は今回変更していない（GitHub Actions無料枠切れのため）。代わりに表示側で「どの棚に出すか」の合流ロジックと棚名を寄せた。動画データ本体は一切削除していない。</p>
 </div>
 
 <div class="b">
 <p class="ok">状態</p>
-<p>①実装：完了 ②main合流：完了 ③Lovable公開：<b>反映確認中（この行は反映確認後に書き換える）</b> ④実測確認：<b>確認中</b> ⑤店主の実画面確認：未（次にお願いする分）。</p>
+<p>①実装：完了 ②main合流：完了（コミット<code>5292ae4c</code>） ③Lovable公開：<b>完了</b>（x-deployment-idの変化を実測：<code>psr2.56de5a6…</code>→<code>psr2.f238ca2…</code>） ④実測確認：<b>済み</b>（本番ページのh1タイトル変化＋本番Supabase実データでの手計算突き合わせ） ⑤店主の実画面確認：未（次にお願いする分。特にカード一覧が揃うタイミングの体感を見てほしい）。</p>
 </div>
 
 <h2>②サイト全体の重複タイトル走査（結果メモ）</h2>
