@@ -502,6 +502,90 @@ def _record_ai_verify(ok, reason, cost, url, item_n=None):
         log("ai_verify_stats書き込み失敗: %s" % e)
 
 
+SPLIT_DIR = os.path.join(REPO, "status", "split")
+SPLIT_BATCH_SIZE = 10
+
+
+def split_big_job(it, q, urls):
+    """2026-09-06 423番：大きい仕事の1本目（一覧作成）が終わったら、
+    status/split/{n}-list.json を読んで10件ずつの小分けタスクを自動で発車待ちへ積む。
+
+    たまごさん「いま『サイト全体の◯◯を直す』のような仕事が1本で積まれ、3時間で切られて
+    中途半端に終わっている」への対策。一覧が無い／空なら『失敗』ではなく
+    『一覧作成をやり直す』として2回まで自動で列に戻し、それでもダメなら人の目へ回す
+    （既存のURLなし自動やり直しと同じ考え方＝無限ループを作らない）。
+
+    戻り値：Trueなら it の状態確定済み（confirm待ちへ回してよい）。呼び出し側で
+    append_outbox() するかどうかの判断に使う。
+    """
+    n = it.get("n")
+    list_path = os.path.join(SPLIT_DIR, "%d-list.json" % n)
+    data = load(list_path, {})
+    targets = [str(t).strip() for t in (data.get("items") or []) if str(t).strip()]
+    if not targets:
+        tries = int(it.get("splitRetryCount") or 0)
+        if tries < 2:
+            it["splitRetryCount"] = tries + 1
+            it["status"] = "hold" if it.get("holdNote") else "waiting"
+            it["priority"] = it.get("priority") or 2
+            it["what"] = (it.get("what") or "") + (
+                "\n\n【自動やり直し・一覧が見つかりません・%s】"
+                "`status/split/%d-list.json` が無いか空でした。"
+                "`{\"items\": [\"対象1\", \"対象2\", ...]}` の形で必ず保存してください。"
+                % (time.strftime("%m-%d %H:%M"), n))
+            for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                it.pop(k, None)
+            log("↩︎ 一覧ファイルなしのため自動やり直し %d番「%s」（%d回目）"
+                % (n, it.get("title"), tries + 1))
+            return False
+        it["result"] = (it.get("result") or "") + (
+            "\n\n【自動分割：2回試みても一覧ファイルが作れませんでした。人の目に回します】"
+            "対象 status/split/%d-list.json" % n)
+        it["status"] = "awaiting_check"
+        log("⚠️ 大きい仕事の一覧作成が2回失敗 %d番「%s」→ 人の目へ" % (n, it.get("title")))
+        return True
+
+    items = q.get("items") or []
+    next_n = max([int(x.get("n") or 0) for x in items] or [0])
+    orig_title = (it.get("originalTitle") or it.get("title") or "").replace("【一覧作成】", "").strip()
+    orig_what = it.get("originalWhat") or ""
+    chunks = [targets[i:i + SPLIT_BATCH_SIZE] for i in range(0, len(targets), SPLIT_BATCH_SIZE)]
+    added = []
+    for i, chunk in enumerate(chunks, 1):
+        next_n += 1
+        batch_what = (
+            "# 元の依頼\n---\n%s\n---\n\n"
+            "# ★この仕事は自動分割の一部です（%d/%d本目）\n"
+            "元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。"
+            "**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n"
+            "対象一覧（%d件）：\n%s\n\n"
+            "1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。"
+            "ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。"
+        ) % (orig_what, i, len(chunks), len(chunk), "\n".join("- %s" % t for t in chunk))
+        items.append({
+            "n": next_n,
+            "title": "%s（%d/%d）" % (orig_title or it.get("title") or ("%d番" % n), i, len(chunks)),
+            "why": "大きい仕事の自動分割（元は%d番）" % n,
+            "what": batch_what,
+            "status": "waiting",
+            "limitMin": 180,
+            "model": "claude-sonnet-5",
+            "priority": it.get("priority") or 3,
+            "splitFrom": n,
+            "splitIndex": i,
+            "splitTotal": len(chunks),
+        })
+        added.append(next_n)
+    q["items"] = items
+    it["status"] = "awaiting_check"
+    it["result"] = (it.get("result") or "") + (
+        "\n\n【自動分割完了】対象%d件を%d本（%d件ずつ）の発車待ちに積みました→%s番"
+        % (len(targets), len(chunks), SPLIT_BATCH_SIZE, "・".join(str(x) for x in added)))
+    log("✂︎ 大きい仕事を自動分割 %d番「%s」→ 対象%d件を%d本へ（%s番）"
+        % (n, it.get("title"), len(targets), len(chunks), "・".join(str(x) for x in added)))
+    return True
+
+
 def harvest(q):
     """2026-09-04 たまごさん「作業が終わって、終わったんであれば、そこは俺の確認待ちだよ。
     確認待ちでOKって言ったら初めて完了に入る。ダメだったらもう一回順番待ちに並ぶ」
@@ -638,6 +722,17 @@ def harvest(q):
         it["urls"] = urls
         it.pop("pid", None)
         changed = True
+
+        # ---- 大きい仕事の自動分割（2026-09-06 423番）----
+        # command_ingest.py の queue_add() で『全ページ』『◯◯件』等を検知した仕事は、
+        # 本体ではなく「対象の一覧を作るだけ」の1本目として積まれている（bigJob/phase=list）。
+        # ここでその一覧作成が終わったのを検知し、status/split/{n}-list.json を読んで
+        # 10件ずつの小分けタスクへ機械的に割り、発車待ちの末尾へ積む。
+        if it.get("bigJob") and it.get("phase") == "list":
+            if split_big_job(it, q, urls):
+                append_outbox(it, bool(urls))
+            continue
+
         # 2026-09-04 たまごさん「画面が変わって初めて完了。画面が変わって、なおかつ報告。
         #   Dispatchに報告。URLとともに。」
         #   → **URLが1本も無いものを確認待ちに入れない。**入れると、たまごさんが

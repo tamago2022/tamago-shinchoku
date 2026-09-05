@@ -248,6 +248,58 @@ def _find_duplicate_title(items, title):
     return None
 
 
+# ---- 2026-09-06 423番：大きすぎる仕事を自動で小さく切る ----
+# たまごさん「『サイト全体の◯◯を直す』のような仕事が1本で積まれ、3時間で切られて
+# 中途半端に終わっている」。発車の直前（＝発車待ちに積む時点）で指示文を見て、
+# 『全ページ』『全件』『すべての』『◯◯件』のような言葉があれば大きい仕事だと判定する。
+BIG_JOB_KEYWORDS = ("全ページ", "全件", "すべての", "全部の", "全アーティスト", "全曲", "全記事")
+BIG_JOB_COUNT_RE = re.compile(r"(\d{2,})\s*件")  # 二桁以上の「N件」（10件〜）
+
+
+def _is_big_job(text):
+    """大きすぎる仕事かどうかの機械判定。誤判定を恐れず広めに拾う
+    （広めに拾っても『まず一覧だけ作る』に落ちるだけで実害が小さいため）。"""
+    t = text or ""
+    for kw in BIG_JOB_KEYWORDS:
+        if kw in t:
+            return True
+    m = BIG_JOB_COUNT_RE.search(t)
+    if m:
+        try:
+            if int(m.group(1)) >= 10:
+                return True
+        except Exception:
+            pass
+    return False
+
+
+def _build_list_phase_what(n, title, text):
+    """大きい仕事の1本目＝『対象の一覧を作るだけ』の指示文を組み立てる。"""
+    return (
+        "この依頼は「全ページ」「全件」「すべての」「◯◯件」のような言葉を含んでいたため、"
+        "**大きすぎる仕事**だと機械が判定しました（423番の仕組み）。\n"
+        "1本で3時間かけてやろうとすると、途中で切られて成果がゼロになる実害が繰り返し出ているため、"
+        "**今回はまだ本体の作業をしないでください。**\n\n"
+        "# 元の依頼\n---\n%s\n---\n\n"
+        "# 今回やること（これだけ）\n"
+        "1. 上の依頼の対象になる項目（ページ・アーティスト・曲など、1件＝あとで1本の小さい仕事に"
+        "分割できる単位）を実際に調べて洗い出してください。\n"
+        "2. 洗い出した一覧を、次の場所にJSONで**必ず**保存してください"
+        "（このファイルが無い・空だと自動分割ができず、この仕事はやり直しになります）：\n"
+        "   `status/split/%d-list.json`\n"
+        "   形式：`{\"items\": [\"対象1の短い説明\", \"対象2の短い説明\", ...]}`\n"
+        "   （例：ページのURLやスラッグ、アーティスト名など、次の担当がそれだけ読めば"
+        "何をすればいいか分かる短い一文にすること）\n"
+        "3. 確認ページ（`python3 tools/make_check_page.py`）に、見つけた**件数**と一覧の**代表例**"
+        "（全部は貼らなくてよい）をまとめて報告してください。\n"
+        "4. 一覧ファイルさえ保存できていれば、あとは工場が自動で**10件ずつ**の小分けタスクに割って"
+        "発車待ちへ積みます。あなたはこの一覧作成が終わった時点で完了です。\n\n"
+        "# 禁止\n"
+        "- この回で対象の中身（ページ内容の修正など）まで手を出さない（次の10件ずつの回でやります）\n"
+        "- 「多すぎるので無理」と諦めない。調べられる範囲で実際に洗い出す\n"
+    ) % (text, n)
+
+
 def queue_add(text, priority=None, label=None):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
@@ -293,21 +345,32 @@ def queue_add(text, priority=None, label=None):
         if dup is not None:
             return "skipped", "%d番と同じ内容です（積みませんでした。別物なら label に『重複OK』と書いて送ってください）" % dup.get("n")
     next_n = (max([int(it.get("n") or 0) for it in items], default=0)) + 1
+    # 2026-09-06 423番：大きすぎる仕事は、本体を積む代わりに「一覧作成だけ」の1本目を積む。
+    # 一覧ができたら auto_launcher.py の harvest() が自動で10件ずつの発車待ちへ割る。
+    big_job = _is_big_job(text)
     item = {
         "n": next_n,
-        "title": title,
+        "title": ("【一覧作成】%s" % title) if big_job else title,
         "why": "スマホから追加",
-        "what": text,
+        "what": _build_list_phase_what(next_n, title, text) if big_job else text,
         "status": "waiting",
         "limitMin": 180,
         "model": "claude-sonnet-5",
     }
+    if big_job:
+        item["bigJob"] = True
+        item["phase"] = "list"
+        item["originalTitle"] = title
+        item["originalWhat"] = text
     if p is not None:
         item["priority"] = p
     items.append(item)
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
+    if big_job:
+        return "done", ("%d番：大きい仕事と判定したので、まず一覧作成だけを発車待ちに追加しました"
+                         "（P%s）。一覧ができたら自動で10件ずつに割ります" % (next_n, p if p else "-"))
     return "done", "%d番として発車待ちに追加しました（P%s）" % (next_n, p if p else "-")
 
 
