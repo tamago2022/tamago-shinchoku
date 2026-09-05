@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>412番：確認待ち77件の棚卸し</title>
+<style>
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; background:#0e1116; color:#e6e6e6; margin:0; padding:16px; line-height:1.6; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:#9aa4af; font-size:13px; margin-bottom:18px; }
+  .nums { background:#161b22; border:1px solid #2a3138; border-radius:10px; padding:14px 16px; margin-bottom:20px; }
+  .nums div { margin:3px 0; }
+  .nums b { color:#7ee787; }
+  h2 { font-size:16px; border-left:4px solid #58a6ff; padding-left:10px; margin:26px 0 10px; }
+  h2.j { border-left-color:#f0883e; }
+  .row { background:#161b22; border:1px solid #2a3138; border-radius:10px; padding:10px 14px; margin-bottom:8px; }
+  .rt { font-weight:600; font-size:14px; margin-bottom:4px; }
+  .rh { font-size:13px; color:#c9d1d9; margin-bottom:6px; }
+  .rl a.chk { color:#58a6ff; text-decoration:none; font-size:13px; font-weight:600; }
+  .rl a { color:#79c0ff; text-decoration:none; font-size:13px; margin-right:8px; }
+  .rl a.chk { margin-right:10px; }
+  .nourl { color:#f85149; font-size:13px; }
+  .bad { background:#f85149; color:#fff; font-size:11px; padding:1px 6px; border-radius:4px; }
+  .warn { background:#d29922; color:#000; font-size:11px; padding:1px 6px; border-radius:4px; }
+  details { margin-top:24px; background:#0d1117; border:1px solid #2a3138; border-radius:10px; padding:10px 14px; }
+  summary { cursor:pointer; font-size:14px; color:#9aa4af; }
+  .fixlist { font-size:13px; color:#c9d1d9; margin-top:8px; }
+  .fixlist li { margin-bottom:4px; }
+</style>
+</head>
+<body>
+<h1>412番：確認待ち77件の棚卸し</h1>
+<div class="sub">たまごさんが上から順に見て✅か↩︎を判定できるように整理しました（進捗表アプリ本体のqueue.jsonも同時に整理済み）。</div>
+
+<div class="nums">
+  <div>もとの確認待ち：<b>77件</b></div>
+  <div>①URLが無い・中身が空・未完了だったもの → <b>10件</b>を発車待ちの列に戻しました（完了していないため）</div>
+  <div>②同じ内容が重複していたもの → <b>4組</b>を1件ずつに統合しました</div>
+  <div>③残り <b>63件</b>（テスト用12件を1行にまとめて表示）を「すぐ判定できるもの」と「実物を見ないと判定できないもの」に分けました</div>
+  <div>　→ すぐ判定できるもの：<b>37行</b>（テストのまとめ1行を含む）</div>
+  <div>　→ 実物を見ないと判定できないもの：<b>15件</b></div>
+</div>
+
+<h2>✅ すぐ判定できるもの（上から順にどうぞ）</h2>
+<div class="row">
+  <div class="rt">#301〜#312（テスト用ダミータスク・12件まとめ）</div>
+  <div class="rh">「2分で終わる軽いタスク」という自動発車の動作テスト。中身に判定対象は無し。まとめて✅でよい。</div>
+  <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-301.html" target="_blank" rel="noopener">代表1件を見る →</a> 他11件：<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-302.html" target="_blank" rel="noopener">#302</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-303.html" target="_blank" rel="noopener">#303</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-304.html" target="_blank" rel="noopener">#304</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-305.html" target="_blank" rel="noopener">#305</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-306.html" target="_blank" rel="noopener">#306</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-307.html" target="_blank" rel="noopener">#307</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-308.html" target="_blank" rel="noopener">#308</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-309.html" target="_blank" rel="noopener">#309</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-310.html" target="_blank" rel="noopener">#310</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-311.html" target="_blank" rel="noopener">#311</a> <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/test-312.html" target="_blank" rel="noopener">#312</a></div>
+</div>
+<div class="row">
+      <div class="rt">#41 曲ページの表示崩れを10ページ点検して直す</div>
+      <div class="rh">曲ページの表示崩れ（旧URL形式でアーティスト名未接続になる抜け穴）81件を修理、main合流・Lovable本番反映済み</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/41-song-page-check.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#38 曲ページの下に「この曲の関連動画」が2番目に来ているか全ページ確認</div>
+      <div class="rh">曲ページ「この曲の関連動画」がメイン動画の直下(2番目)に来ているか、該当する全9ページ(本番全数)を実測確認。実装は既にmain合流・Lovable公開済み(commit c…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/38-related-video-2nd-all9.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#8 Googleドライブの同期を直す</div>
+      <div class="rh">Googleドライブアプリが古すぎてGoogleから起動拒否されていた根本原因（v87.0.2→deprecated判定）を特定し、v130.0.2へ更新して同期エンジンを復旧…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/8-google-drive-sync.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#27 デスクトップとダウンロードの散らかりを片づける</div>
+      <div class="rh">デスクトップとダウンロードに散らばっていたAI作業ファイル3件（CHECKPOINT.md／CLAUDE-HANDOFF-v004.md／gdrive_music_progre…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/27-desktop-cleanup.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#25 AI臭さを消す質感の指示書を作る（サンダーバード／ストップモーション）</div>
+      <div class="rh">AI臭さを消す質感テンプレート（サンダーバード／ストップモーション向け・樹脂粘土肌/ガラスビーズ目/パペット合わせ目/フェルト荒地/白熱球照明/フィルム粒子感等）を「ごきげん変…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/25-stopmotion-texture.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#22 <span class="bad">問題あり</span> 92°／Vulfmon &amp; Tommy de Bourbon の曲名・アーテ…</div>
+      <div class="rh">92°／Vulfmon &amp; Tommy de Bourbonの曲名・アーティスト・コピー修正は実装してmainへpush済みだが、本番データベースは依然として未反映です（前回セ…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#19 Eagleの画像をWebで見る仕組みを育てる</div>
+      <div class="rh">Eagle画像ビューアに「色でさがす」絞り込み（Eagle自動タグ_color:*を活用）を追加・本番反映。フォルダ絞り込み・元画像受け渡しは前回セッションで既に実装・公開済み…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#10 <span class="bad">問題あり</span> HOME／ふるさとプレイリストを仕上げる</div>
+      <div class="rh">HOME／ふるさとプレイリスト仕上げは、環境の壁で今回も着手できませんでした（Spotify本体の書き換えが必要な作業のため）。</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#34 3時間を超えたセッションを自動で切る</div>
+      <div class="rh">3時間を超えたセッションを自動で切る仕組み（見張り番の壁時計3時間強制カット）を実測確認し、進捗表アプリの画面上に累計回数の表示を追加。本番反映済み。</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/34-session-3h-cutoff.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#20 走行中が空いたら自動で次を発車させる</div>
+      <div class="rh">自動発車は本番稼働中。今日6.5時間で54回・41案件を無人で着火（20番自身も2回）。確認ページに実績あり。</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#2 LINEに送るが壊れている</div>
+      <div class="rh">LINEに送るが壊れている（記憶の扉3ファイルの取りこぼしを含め4箇所すべて修正・本番公開済み）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#7 「アーティスト未接続」のカードを直す（実例つき）</div>
+      <div class="rh">曲ページ「アーティスト未接続」カードを直しました（全8件中、識別子で演者確認できた4件をUA・Joyce Moreno・THE BLUE HEARTS・杏里→Night Tem…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/7-artist-unlinked-cards.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#11 プレイリストの曲を補給所にもカードとして入れる</div>
+      <div class="rh">プレイリスト8曲の補給所カード化、本番反映・実測確認済み</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#14 止まっているタスク56件を減らす</div>
+      <div class="rh">受付台帳で「🟠止まっている」表示だった34件を1件ずつ実態確認し、台帳の表示を34件→1件（本当に稼働中のもの）まで減らした。仕分け中に見つかった誤り（/japan・/japa…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/14-todokezumi-shiwake.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#15 未着手110件から、すぐ終わるものを拾って消す</div>
+      <div class="rh">未着手110件から即閉じられる7件を仕分け（実装2件を本番反映＋監査で5件を実態確認）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/15-quick-wins.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#16 未反映ブランチ112本を仕分ける</div>
+      <div class="rh">未反映ブランチ216本（依頼時112本から増加）を4段階に仕分け・確認ページを本番公開・実測確認済み</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/16-branch-shiwake.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#26 止まっているタスク56件から、確認だけで閉じられるものを拾う</div>
+      <div class="rh">止まっているタスク56件のうち9件を独立検品し、6件をPASS（🔵検品済みへ格上げ・main反映済み）、3件をFAIL（原因付きで台帳に記録）として仕分けた。</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/26-stalled-tasks-check.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#31 進捗表で押したボタンを、パソコン側に反映する</div>
+      <div class="rh">進捗表の「OK・完了にする／やり直し」を、優先度と同じObsidian経由でMac側queue.jsonへ反映（done/waiting書き換え、やり直しは列の先頭へ）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#33 スマホからタスクを追加できるようにする</div>
+      <div class="rh">進捗表（スマホ用アプリ）に入力欄を新設し、1行＋優先度(P1〜P5)でその場で発車待ちの列へ追加できるようにした（Dispatch経由不要）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#35 <span class="warn">判断待ち</span> Googleドライブに上げる（ブラウザ経由で確立）</div>
+      <div class="rh">Googleドライブが起動後すぐ落ちる原因を特定（バージョン87.0.2が非推奨判定）。修正版130.0.2を用意・署名検証済みだが、`/Applications`への設置操作…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/35-gdrive-browser-upload.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#39 曲ページのコピーを5本、書き直して並べる</div>
+      <div class="rh">曲ページのコピーが薄い曲を5本選定し(松任谷由実「ノーサイド」・美空ひばり「お祭りマンボ」・THE YELLOW MONKEY「太陽が燃えている」・Aretha Frankli…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/39-5songs-copy-choices.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#40 仕入れ：世界の暮らし × ノスタルジーの棚をつなげる（続き）</div>
+      <div class="rh">旅の扉「世界の暮らし」棚の2本と、音楽の扉「ノスタルジー」棚の2曲を双方向で接続し、Lovable公開済み</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/40-nostalgia-world-living.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#42 アーティストページの無い曲に、アーティストページを作る</div>
+      <div class="rh">曲はあるがアーティストページが無かった11組（都はるみ・森昌子・イルカ・はっぴいえんど・森高千里・フジファブリック・森山直太朗・いしだあゆみ・ピンキーとキラーズ・辛島美登里・A…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/42-missing-artist-pages.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#43 YouTube API で「死んでいる動画」を洗い出して差し替える</div>
+      <div class="rh">死んだ動画の自動見回りを止めていた2つの隠れた故障(APIキー名の食い違い・worktree破損)を修理し、見つけていた新規死亡動画2件をmain合流→Lovable公開まで完…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/43-dead-video-patrol.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#46 中継所を立てる（進捗表のボタンがObsidianに飛ばないように）</div>
+      <div class="rh">進捗表のボタンをMac直結の中継所(cloudflaredトンネル)経由に切替、Obsidianへ飛ばなくした</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/46-relay.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#113 【あとで直す】イパネマの高校生カバーをやり直す（動画が貼られていない）</div>
+      <div class="rh">イパネマの高校生カバー、動画埋め込みを本番反映まで実測確認（既にmain合流・Lovable公開済みだった）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/113-ipanema-koukousei-cover.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#213 外から入れたX投稿の「原曲」を1日1回の見回りで突き止めて繋ぐ</div>
+      <div class="rh">X投稿から原曲を突き止めて既存曲へ繋ぐ仕組みを新設し、テストケース（Bee Gees『Too Much Heaven』×Your Face Sounds Familiar Ki…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/213-genkyoku.html" target="_blank" rel="noopener">確認ページ →</a> <a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">[本番を見る]</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#214 動画の「後ろで流れてる音楽」を自動で突き止める（Shazamの手間を無くす）</div>
+      <div class="rh">動画の「後ろで流れてる音楽(BGM)」を無料の層（TikTok音源情報／X本文／YouTube説明欄）から自動で突き止め、確信が持てないものは断定せず「未特定」のまま黙って残す…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/214-bgm-mimawari.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#215 食べ物の動画に「材料と、どこで買えるか」を添える</div>
+      <div class="rh">食べ物レシピカードに「材料の正体＋実在確認済みの入手先＋代用」を添える食材ガイドを追加し、本番反映済み</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/215-food-ingredient-guide.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#320 falの機種・料金・できることの早見表</div>
+      <div class="rh">fal機種・料金・できることの早見表（動画/音声ElevenLabs/BGM・効果音/画像の4分野・11機種・公式との食い違い5件を明記）を確認ページに反映</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/320-fal-hayamihyo.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#333 Eagleライブラリ→Googleドライブの自動同期</div>
+      <div class="rh">Eagleライブラリ→Google Driveの自動複製を実装（フォルダ階層を再現しながらコピー、5分おき自動実行の常駐ループも稼働中・407→540件と実際に増加中を確認）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/333-eagle-drive-sync.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#398 【1日1回の見回り】外部リンクをその日のうちに仕上げる係</div>
+      <div class="rh">queue方式の見回り係（`daily-link-triage.mjs`）をmainへ実装。実例1件（flyingtowerのモンスタートラック動画）を日本語タイトル・コピー・…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/398-daily-link-triage.html" target="_blank" rel="noopener">確認ページ →</a> <a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">[本番を見る]</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#399 『Sinking Monster Truck』ページの仕上げ（日本語タイトル化）</div>
+      <div class="rh">『Sinking Monster Truck / flyingtower』を日本語タイトル・コピー・タイタニックのテーマへの片道リンク・棚の仲間4件表示に仕上げ、本番公開・反映…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/399-monster-truck.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#403 【円卓の素材】テーマ『昔は人の仕事だったものが、AIの標準機能になる』を、円…</div>
+      <div class="rh">円卓の素材「昔は人の仕事だったものが、AIの標準機能になる」（NHK『ネタドリ！』AI失業回きっかけ）は402番で先に完成・本番反映済みと判明。403番では番組本編の文字起こし…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#406 進捗表(/Users/mac/Desktop/tamago-shinchok…</div>
+      <div class="rh">進捗表の優先度表示から「P」を消し、数字だけ（優先度なしは「—」）にした（箱の見出し・行のボタンの2箇所、優先度を選ぶ画面の説明文は維持）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/406-priority-no-p.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#407 円卓EP02『著作権は時代遅れか』の素材作成</div>
+      <div class="rh">円卓EP02「著作権は時代遅れなのか」の素材（事実の床4出典＋対立2陣営台本7ビート）をVaultに作成し、確認ページで公開</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/407-entaku-copyright-ep02.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+
+<h2 class="j">🖥 実物を見ないと判定できないもの（本番画面を見てから判定）</h2>
+<div class="row">
+      <div class="rt">#37 バッジの大きさを「比率」に変える（10回以上言われている）</div>
+      <div class="rh">バッジ（コンシェルジュ推し／Good Cover）を固定pxから短辺比率18%へ統一。main合流（`9fa191bc`→`f74bfd1a`）済み、Lovable本番の配信中…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/37-badge-ratio.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#9 <span class="bad">問題あり</span> 円卓デザイン案にClaude版を上げる</div>
+      <div class="rh">円卓デザイン案「Claude版」40枚はGoogleドライブのローカル領域に配置済みだが、Drive同期エンジンがバージョン廃止(APPLICATION_DEPRECATED)…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/9-round-table-claude.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#28 Eagleギャラリーにフォルダ絞り込みを足す</div>
+      <div class="rh">Eagleギャラリー（スマホ用）にフォルダ絞り込みを追加（既存の平置き123フォルダを親フォルダ単位でグループ化し、階層的に選べるよう改善・本番反映済み）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/28-eagle-folder-filter.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#23 Vulfmon と Tommy de Bourbon のアーティストページを作る</div>
+      <div class="rh">Vulfmon・Tommy de Bourbonのアーティストページ作成は、並行走行していた別セッションが先に本番反映済み（コミット892d1c89）だったため、本番の実データ…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#18 アメリの細かい調整</div>
+      <div class="rh">アメリ（映画）ページの「この曲から続く道」位置調整（85点→残り15点）。実装は09-04に別セッションが既にmain合流済みと判明、本セッションは本番Lovable反映をWe…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/18-amelie.html" target="_blank" rel="noopener">確認ページ →</a> <a href="https://joy-relief-station.lovable.app/cover-guide?artist=amelie-movie&amp;song=amelie-trailer-jp" target="_blank" rel="noopener">[本番を見る]</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#29 ドラマ主題歌22件を『ドラマ』棚へ移す</div>
+      <div class="rh">ドラマ主題歌23件を映画の棚から分離し「ドラマの棚」へ移動、本番の実機ブラウザで反映確認済み（副産物：mainのビルド失敗9/1〜を修理）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/29-drama-shelf.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#36 関連動画をメインの直下（2番目）にフルサイズで出す</div>
+      <div class="rh">曲ページの「この曲の関連動画」をメイン動画の直下(2番目)へ移動し、フルサイズ(aspect-video)表示に変更。本番反映・実写確認済み。</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/36-related-videos-main.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#313 Lately（スティーヴィー・ワンダー）に良いバージョンを2番目で入れる</div>
+      <div class="rh">Lately（Stevie Wonder）に指定動画（GClNn2nMmtA）を曲ページの2番目（原曲直下）へ追加済み・本番反映を実測で再確認</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/313-lately-live-video.html" target="_blank" rel="noopener">確認ページ →</a> <a href="https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately" target="_blank" rel="noopener">[本番を見る]</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#314 曲ページの構成をLatelyで決めきる（1ページの密度と並び）</div>
+      <div class="rh">実装・ローカル検証は完了したが、mainへの反映がツール制限でブロックされ本番未反映（判断待ち）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/314-lately-song-layout.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#317 【最優先】バッジの大きさをakiko見本の見た目に戻す</div>
+      <div class="rh">バッジ短辺比率(BADGE_TARGET_SHORT_SIDE_RATIO)を18%→13.8%へ戻し、見本のakikoページのバッジ大きさを復元しました</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#334 スマホでEagleライブラリを一覧表示できるようにする</div>
+      <div class="rh">スマホからEagleライブラリを一覧で見る件（334番）— 4選択肢を比較し、既存の「Eagle素材ビューア」（GitHub Pages・iCloud/Drive非依存）が完了…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/334-eagle-mobile-gallery.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#364 棚編集　2番目に追加ボタン</div>
+      <div class="rh">364番「棚編集 2番目に追加ボタン」を調査した結果、既に本番（joy-relief-station.lovable.app）に実装・配信済みだった（新規実装なし・既存コード無…</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/364-shelf-second-add-button.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#397 同じタイトルの棚を統合（失敗→ドジ　失敗　人間だもの）</div>
+      <div class="rh">笑いの棚「失敗」「ドジ失敗」「人間だもの」を「ドジ　失敗　人間だもの」の1棚へ統合（表示側で合流・DBは無傷、Lovable公開まで完走・本番h1で実測確認済み）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/397-shippai-shelf-merge.html" target="_blank" rel="noopener">確認ページ →</a> <a href="https://joy-relief-station.lovable.app/shelf/laugh/shippai" target="_blank" rel="noopener">[本番を見る]</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#401 卵劇場EP01を無料/100円/300円の3段階で試作・比較</div>
+      <div class="rh">卵劇場EP01を無料(A)/推定100円(B)/推定300円(C)の3段階で試作し、1ページで見比べられる確認ページを作成・公開（3本の動画とも実データで200応答を確認済み）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/401-ep01-3tier-compare.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+<div class="row">
+      <div class="rt">#409 卵劇場EP01・15秒を松竹梅（3段階）で比較</div>
+      <div class="rh">卵劇場EP01のSH09〜SH11を15秒×松竹梅（無料/100円/300円）で比較する指示だが、実行一歩手前で停止（判断待ち）</div>
+      <div class="rl"><a class="chk" href="https://tamago2022.github.io/tamago-shinchoku/share/check/409-ep01-matsutakeume.html" target="_blank" rel="noopener">確認ページ →</a></div>
+    </div>
+
+<details>
+<summary>①発車待ちに戻した10件・②統合した4組の内訳（クリックで開く）</summary>
+<div class="fixlist">
+<b>発車待ちに戻した（未完了だった）：</b>
+<ul>
+<li>#3 「こちらもどうぞ」全ページ10個化 — 実装完了通知待ちのまま止まっていた</li>
+<li>#13 コピー書き直し5案 — Publishスクリプトの完了通知待ちのまま止まっていた</li>
+<li>#44 YouTube検索結果の文字化け — Bashコマンドの途中経過のまま止まっていた</li>
+<li>#45 棚編集メイン2枠化 — tscのバックグラウンド完了待ちのまま止まっていた</li>
+<li>#48 留守番見回り30分おき復元 — 次回実行の結果待ちのまま止まっていた</li>
+<li>#157 「飼い主大好き」棚の統合 — verifier待ちのまま止まっていた</li>
+<li>#216 フィリピンの子どもビージーズの関連づけ — 「結果が読み取れませんでした」</li>
+<li>#315 Latelyのコピー書き直し — URLなし・遅延報告のみで証拠不足</li>
+<li>#396 Björk『Crystalline』を入れる — 反映待ちループの途中経過のまま止まっていた</li>
+<li>#400 BGM→原曲リンクの向きボタン — builderの続き待ちのまま止まっていた</li>
+</ul>
+<b>1件に統合した（同じ内容が2件あった）：</b>
+<ul>
+<li>#12 と #29「ドラマ主題歌をドラマ棚へ移す」→ #29に統合（#12を削除）</li><li>#316 と #320「falの早見表」→ #320に統合（#316を削除）</li><li>#47 と #364「棚編集2番目に追加ボタン」→ #364に統合（#47を削除）</li><li>#402 と #403「円卓の素材（AI失業回）」→ #403に統合（#402を削除）</li>
+</ul>
+</div>
+</details>
+
+</body>
+</html>
