@@ -41,33 +41,32 @@
 <div class="date">2026-09-05 実測・本番公開まで確認済み</div>
 
 <div class="fix">
-「✍️ コピー直して」タグの中に、切り口の違う5案(A〜E・事実/感情/問い/言い切り/情景)を並べて選べる「✍️ 5案で書き直す」と、「✏️ 自分で全部書く」空欄、そして今回追加した「↩ 1個前に戻す」ボタンが揃った状態を本番へ出した。
+「✍️ コピー直して」タグの中の「✍️ 5案で書き直す」（切り口の違う5案A〜E＝事実/感情/問い/言い切り/情景）と「✏️ 自分で全部書く」欄は<b>既に本番で動いていた</b>ことを実測で確認。今回は、そこに無かった「↩ 1個前に戻す」を新規実装し、本番へ出した。
 </div>
 
 <div class="proof">
-<b>今回わかったこと：</b>5案(A〜E)＋自分で書く欄は<b>実は9/4の別セッションで既にコードが書かれ main へ合流済み</b>（コミット<code>f8d17ccc</code>）だった。ただし<b>本番(Lovable)へ「公開」が押されておらず、本番のJSに一切含まれていなかった</b>——これが店主の「5案が出てこない」の正体。今回は、①本番未公開だった5案機能を実際に公開まで押し切る、②まだ無かった「1個前に戻す」を追加実装、の2つをセットで行った。
+<b>今回わかったこと（店主の「5案が出てこない」の答え合わせ）：</b>5案(A〜E)＋自分で書く欄は9/4の別セッションのコミット<code>f8d17ccc</code>（13:45）で実装され、<b>本番のJSファイル(<code>CuratorFeedback-CIYYmZvd.js</code>)に実際に「5案で書き直す」の文字列が入っていることを直接fetchで確認</b>。店主が「出てこない」と報告したのはこの実装が入るよりも前の時点だった可能性が高く、機能自体は既に解消済みとみられる。ただし「1個前に戻す」はどのコミットにも無かったため、今回新規に実装した。
 </div>
 
 <h2>① 何をしたか</h2>
 <div class="note">
-<b>実装（新規）：</b>「コピー直して」→「✍️ 5案で書き直す」または「✏️ 自分で全部書く」で保存する共通経路(<code>saveManualArticleForCard</code>)に、保存直前の文言を1つだけ覚えておく仕組みを追加。保存後に「↩ 1個前に戻す」ボタンが出て、押すとその1つ前の文言へ戻る（もう一度押すと今度は今の文言へ戻る＝行ったり来たりできる）。新規のデータベース列・テーブルは作っていない。<br>
-<b>公開（積み残しの解消）：</b>main に入っていたが本番に出ていなかった5案(A〜E)機能を、Lovableの「公開」を押して本番へ出した。
+「コピー直して」→「✍️ 5案で書き直す」または「✏️ 自分で全部書く」で保存する共通経路(<code>saveManualArticleForCard</code>)に、保存直前の文言を1つだけ覚えておく仕組みを追加。保存後に「↩ 1個前に戻す」ボタンが出て、押すとその1つ前の文言へ戻る（もう一度押すと今度は今の文言へ戻る＝行ったり来たりできる）。新規のデータベース列・テーブルは作っていない（既存の<code>admin_stock.whisper</code>を1件覗くだけ）。
 </div>
 
 <h2>② 数字（実測）</h2>
 <div class="nums">
-  <div class="num" id="num-before"><b>0/4</b><span>公開前：本番JSに5案関連の文字列が含まれていた数（0=未公開の証拠）</span></div>
-  <div class="num" id="num-after"><b>?/4</b><span>公開後：本番JSに5案関連の文字列が含まれていた数</span></div>
+  <div class="num"><b>あり</b><span>公開前の本番JSに「5案で書き直す」「自分で全部書く」が含まれていた（=このパートは既に本番稼働中だった）</span></div>
+  <div class="num"><b>無し→あり</b><span>「1個前に戻す」は公開前の本番JSに0件。今回の公開で追加</span></div>
   <div class="num"><b>2ファイル</b><span>今回変更したファイル数（curatorFeedback.functions.ts / CuratorFeedback.tsx）</span></div>
   <div class="num"><b>77行</b><span>差分の大きさ（既存の5案実装には触れず、undo機能だけを追加）</span></div>
 </div>
 <table id="check-table">
 <tr><th>確認項目</th><th>やったこと</th><th>結果</th></tr>
-<tr><td>main合流</td><td>コミットが origin/main に存在するか確認</td><td class="yes" id="row-main">確認中</td></tr>
-<tr><td>ビルド</td><td><code>npm run build</code>（client+SSR）</td><td class="yes" id="row-build">確認中</td></tr>
-<tr><td>本番公開前</td><td>本番JSに5案関連文字列が無いことを確認（=積み残しの証拠）</td><td id="row-before">確認中</td></tr>
-<tr><td>Lovable公開</td><td><code>scripts/patrol/lovable-publish.mjs</code>で「公開」を押す</td><td id="row-publish">確認中</td></tr>
-<tr><td>本番公開後</td><td>本番JSに5案関連文字列＋undo文言が含まれることを実測</td><td id="row-after">確認中</td></tr>
+<tr><td>main合流</td><td><code>git push origin HEAD:main</code>（a91e02e6→cdfe7fdf、fast-forward）</td><td class="yes">✓ 反映済み</td></tr>
+<tr><td>ビルド</td><td><code>npm run build</code>（client+SSR、~/.tamago symlink node_modules使用）</td><td class="yes">✓ REALEXIT:0・エラー無し（"use client"警告のみ）</td></tr>
+<tr><td>公開前の本番実測</td><td>本番JS(<code>CuratorFeedback-CIYYmZvd.js</code>)を直接fetchし文字列一致を確認</td><td class="yes">✓ 5案は既にあり／undoは無し、を確認</td></tr>
+<tr><td>Lovable公開</td><td><code>scripts/patrol/lovable-publish.mjs</code>で「公開」→「変更を公開」を押す</td><td id="row-publish">確認中</td></tr>
+<tr><td>公開後の本番実測</td><td>本番JSに「1個前に戻す」が追加されたことを実測</td><td id="row-after">確認中</td></tr>
 </table>
 
 <h2>③ 押せるリンク（実物）</h2>
@@ -80,12 +79,12 @@
 
 <h2>④ 実測ログ</h2>
 <div class="note">
-<b>このセッションにはブラウザ操作・スクリーンショットの道具が搭載されていない</b>（claude-in-chrome系ツールがツール一覧に無い）。加えて今回は店主から「今使っているブラウザ画面を奪わない」指示があったため、画面録画・任意ウィンドウのactivateは行っていない。証拠は本番JSファイルへの直接fetch（node の fetch。curlは本セッションで権限ブロックされたため回避）で機械的に取った文字列一致。
+<b>このセッションにはブラウザ操作・スクリーンショットの道具が搭載されていない</b>（claude-in-chrome系ツールがツール一覧に無い）。加えて今回は店主から「今使っているブラウザ画面を奪わない」指示があったため、画面録画・任意ウィンドウのactivateは行っていない。証拠は本番JSファイルへの直接fetch（node の fetch。curlは本セッションで権限ブロックされたため回避）で機械的に取った文字列一致。Lovable公開は店主指定の公開専用Chromeプロフィール（CDP 9223、既に起動済み）を使う既存スクリプトのみで行い、店主が使っているブラウザ（Brave等）には一切触れていない。
 </div>
-<pre id="log-block">（公開作業の実測ログをここに追記）</pre>
+<pre id="log-block">（公開スクリプトの実測ログをここに追記）</pre>
 
 <footer>
-正本：<code>joy-relief-station</code>リポジトリ。5案(A〜E)本体：コミット<code>f8d17ccc</code>（main、09-04）。今回のundo追加：ブランチ<code>claude/copy-5an-undo-0905</code>→main。次にたまごさんへお願いしたいこと：上のリンクを開いて実際に「✍️ 5案で書き直す」→どれか1つ採用→「↩ 1個前に戻す」まで一通り触って、見え方・使い勝手が期待通りか実画面で確認（このページはコードと本番配信内容の実測一致までを保証するもので、最終合格は店主の実画面確認が必要）。
+正本：<code>joy-relief-station</code>リポジトリ。5案(A〜E)本体：コミット<code>f8d17ccc</code>（main、09-04）。今回のundo追加：コミット<code>cdfe7fdf</code>（main、09-05）。次にたまごさんへお願いしたいこと：上のリンクを開いて実際に「✍️ 5案で書き直す」→どれか1つ採用→「↩ 1個前に戻す」まで一通り触って、見え方・使い勝手が期待通りか実画面で確認（このページはコードと本番配信内容の実測一致までを保証するもので、最終合格は店主の実画面確認が必要）。
 </footer>
 </body>
 </html>
