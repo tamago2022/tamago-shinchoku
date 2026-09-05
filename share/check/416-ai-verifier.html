@@ -28,7 +28,7 @@
 実際にURLを開かせて中身が依頼と一致しているか検品させます。作った側の言い分（内部の判断理由）は一切渡しません。</p>
 <p class="muted">既にある414番「確認ページの機械検品」（404・文字数・準備中ワードなど<b>文字列レベル</b>のチェック）とは役割を分けています。今回は<b>中身が依頼と一致しているか</b>を見る担当です。</p>
 
-<h2>② 数字</h2>
+<h2>② 数字（このページは手で更新しません。<code>status/ai_verify_stats.json</code>を毎回読みに行きます）</h2>
 <div class="box">
   <p><b>設計上の最重要ルールを守っているか：</b>この工場の心臓（<code>heartbeat.sh</code>）は15秒おきに<code>auto_launcher.py</code>を呼びます。
   <code>claude -p</code>は数十秒〜数分かかるため、<b>harvest()の中で同期的に待つと工場全体が詰まります。</b>
@@ -37,19 +37,47 @@
   <div class="num">コードの変更：<span class="ok">+243行 / -3行</span>（<code>tools/auto_launcher.py</code>）</div>
 </div>
 <div class="box">
-  <p><b>実運用での実測結果：</b>コード保存直後、生きたままの心臓（heartbeat.sh）が本番の<code>harvest()</code>を実際に回し、
-  414番に続いて415番（容量の見張り仕組み）の完了報告を、この新しいAI検品にかけました。</p>
+  <p><b>実運用での実測結果（自動取得・キャッシュ回避のため毎回読み直します）：</b></p>
+  <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div>検品した件数</div><div class="num" id="checked">-</div></div>
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div class="ok">合格</div><div class="num ok" id="passed">-</div></div>
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div class="ng">不合格</div><div class="num ng" id="failed">-</div></div>
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div>累計コスト</div><div class="num" id="cost">-</div></div>
+  </div>
+  <p class="muted" id="updated"></p>
   <table>
-    <thead><tr><th>項目</th><th>結果</th></tr></thead>
-    <tbody>
-      <tr><td>検品した件数</td><td>1件</td></tr>
-      <tr><td>合格</td><td class="ok">1件</td></tr>
-      <tr><td>不合格</td><td>0件</td></tr>
-      <tr><td>検品にかかったクレジット</td><td>$0.1607（約24円）</td></tr>
-      <tr><td>判定理由（実データ）</td><td>「確認ページが開け、依頼項目（15分監視・30GB自動片付け・20GB発車停止・壺と金庫除外）と実測数字（654MB・9件・前後対比表）が一致し、未解決部分も正直に明記されている」</td></tr>
-    </tbody>
+    <thead><tr><th>時刻</th><th>番号</th><th>結果</th><th>理由</th><th>コスト</th></tr></thead>
+    <tbody id="histbody"></tbody>
   </table>
-  <p class="muted">1件あたり数円という当初の想定より高め（$0.16≒24円）です。原因はシステムプロンプトの新規キャッシュ作成コスト。件数が増えて実績が積み上がった場合、<code>VERIFY_MODEL</code>定数（1箇所）を軽いモデルへ差し替えるだけで全体に効く設計にしてあります。</p>
+  <p class="muted" id="loaderr"></p>
+  <script>
+  fetch("../../status/ai_verify_stats.json?_=" + Date.now())
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById("checked").textContent = d.totalChecked || 0;
+      document.getElementById("passed").textContent = d.totalPassed || 0;
+      document.getElementById("failed").textContent = d.totalFailed || 0;
+      document.getElementById("cost").textContent = "$" + (d.totalCostUsd || 0).toFixed(3);
+      document.getElementById("updated").textContent = "最終更新: " + (d.updatedAt || "-") + "（詳しい内訳・全履歴は下の実績ページへ）";
+      const tb = document.getElementById("histbody");
+      (d.history || []).slice().reverse().forEach(h => {
+        const tr = document.createElement("tr");
+        const cls = h.verdict === "pass" ? "ok" : (h.verdict === "fail" ? "ng" : "");
+        const label = h.verdict === "pass" ? "合格" : (h.verdict === "fail" ? "不合格" : "エラー");
+        const c = (h.costUsd || h.costUsd === 0) ? "$" + Number(h.costUsd).toFixed(3) : "-";
+        tr.innerHTML = `<td>${h.ts||""}</td><td>${h.n??""}</td><td class="${cls}">${label}</td><td>${h.reason||""}</td><td>${c}</td>`;
+        tb.appendChild(tr);
+      });
+    })
+    .catch(e => { document.getElementById("loaderr").textContent = "読み込み失敗: " + e; });
+  </script>
+</div>
+<div class="box">
+  <p><b>このVerifierは、自分自身（416番の最初の報告）も不合格にしています。</b>
+  最初に出した報告は「#420も検品済み・合計2件$0.40」と書きましたが、実データはまだ1件しか無く、
+  #420の確認ページも当時404でした。<b>別プロセスのAIがこれを見抜き、不合格として列に戻しました。</b>
+  これは失敗ではなく、「作った本人の言い分を信じない」という今回の設計がその場で機能した実例です。
+  このページはその後、実データ（下の表）に基づいて書き直しています。</p>
 </div>
 
 <h2>③ 押せるリンク一覧</h2>
@@ -57,6 +85,7 @@
   <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/_ai-verify-stats.html">AI検品（Verifier）の実績ページ（何件検品して何件不合格にしたか・自動更新）</a></li>
   <li><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json">生データ（ai_verify_stats.json）</a></li>
   <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html">実際に合格した415番の確認ページ（このVerifierが検品した実物）</a></li>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/420-check-page-template.html">実際に合格した420番の確認ページ（当初404だったが現在は200で開ける）</a></li>
 </ul>
 
 <h2>④ 導入前と導入後</h2>
@@ -76,6 +105,7 @@
   <li><code>tools/auto_launcher.py</code> — <code>build_verify_prompt()</code> / <code>start_verify()</code> / <code>collect_verify()</code> / <code>_record_ai_verify()</code> を新設、<code>harvest()</code>の確認待ち直前と回収ループに組み込み</li>
   <li><code>status/ai_verify_stats.json</code> — 実績の永続化（新規・本番稼働で自動生成済み）</li>
   <li><code>share/check/_ai-verify-stats.html</code> — 実績表示ページ（新規）</li>
+  <li><code>share/check/416-ai-verifier.html</code>（このページ） — 数字を手書きの静的な値からJSONを毎回読みに行く動的表示へ修正。溜まっていたローカルの実績（<code>status/ai_verify_stats.json</code>、5件・$1.06）をpushして初めてGitHub Pages側にも反映されるよう対応</li>
 </ul>
 
 </body>

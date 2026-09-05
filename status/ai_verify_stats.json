@@ -1,10 +1,13 @@
 {
- "totalChecked": 1,
- "totalPassed": 1,
- "totalFailed": 0,
+ "totalChecked": 6,
+ "totalPassed": 4,
+ "totalFailed": 2,
  "totalErrors": 0,
- "totalCostUsd": 0.1607,
- "reasonCounts": {},
+ "totalCostUsd": 1.3082,
+ "reasonCounts": {
+  "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
+  "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1
+ },
  "history": [
   {
    "ts": "2026-09-06T02:19:23+09:00",
@@ -13,7 +16,47 @@
    "verdict": "pass",
    "reason": "確認ページが開け、依頼項目（15分監視・30GB自動片付け・20GB発車停止・壺と金庫除外）と実測数字（654MB・9件・前後対比表）が一致し、未解決部分も正直に明記されている",
    "costUsd": 0.1606688
+  },
+  {
+   "ts": "2026-09-06T03:36:16+09:00",
+   "n": 420,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/420-check-page-template.html",
+   "verdict": "pass",
+   "reason": "テンプレート・生成スクリプト・auto_launcher.py短縮の3点がmainに実在し、確認ページ／本番URLとも実際にHTTP 200で開け内容も依頼と一致した",
+   "costUsd": 0.2382784
+  },
+  {
+   "ts": "2026-09-06T04:09:53+09:00",
+   "n": 416,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/416-ai-verifier.html",
+   "verdict": "fail",
+   "reason": "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(status/ai_verify_stats.json)は1件($0.1607)のみで#420の確認ページも404であり、実績が誇張されている",
+   "costUsd": 0.19470479999999998
+  },
+  {
+   "ts": "2026-09-06T04:09:53+09:00",
+   "n": 418,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/418-tap-only-confirm.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番URLとも実在し200で開け、報告内容（サムネ・押せるURL・2ボタン・証拠なし赤表示・ソート順・行圧縮）がindex.htmlの実装と完全に一致していた",
+   "costUsd": 0.24044919999999997
+  },
+  {
+   "ts": "2026-09-06T04:12:29+09:00",
+   "n": 422,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/422-shippai-daichou.html",
+   "verdict": "pass",
+   "reason": "確認ページ・status/failures.md（8件全ブロック記載済み）・auto_launcher.py L871の追記・コミットa34ab32、いずれも実在し内容が一致。サンプルでcommand_ingest.py/auth_watch.py/worktree_reaper.pyの根拠コードも実装と符合することを確認した",
+   "costUsd": 0.22923619999999997
+  },
+  {
+   "ts": "2026-09-06T04:24:33+09:00",
+   "n": 421,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/421-queue-add-dedupe.html",
+   "verdict": "fail",
+   "reason": "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)のコミットを指しており、直したはずのリンク不備が解消されていない",
+   "costUsd": 0.24488559999999998
   }
  ],
- "updatedAt": "2026-09-06 02:19"
+ "updatedAt": "2026-09-06 04:24"
 }
