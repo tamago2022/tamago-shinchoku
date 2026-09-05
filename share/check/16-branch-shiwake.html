@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#16 未反映ブランチ216本の仕分け 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.0rem;letter-spacing:0.04em;margin:30px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:130px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.82rem;}
+  .fixnote{background:#fff3ee;border:1px solid #e3b7a9;border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 16px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #16</div>
+<h1>#16 未反映ブランチ216本の仕分け</h1>
+<div class="date">2026-09-05 実施</div>
+
+<div class="fix">
+GitHub上に残っていたリモートブランチ全216本（「未反映ブランチ112本」の依頼当時より増えていた）を、1本ずつ機械的に確認し、①既に本番(main)に入っていて捨てて良いもの ②まだ生きていて本番に出すべき可能性が高いもの ③大きすぎる・古すぎて個別に人が見て判断すべきもの、の4段階に仕分けた。
+</div>
+
+<h2>① 何をしたか</h2>
+<div class="note">
+全216本について、mainとの祖先関係（merge-base）・差分行数・最終更新日を機械的に取得。差分が完全に無いものは「既に本番に入っている＝捨てて良い」、差分はあるが3週間以上前で変更が小さいものは「陳腐化の疑い」、差分が300行または15ファイル以上の大きなものは「誤って一括処理すると事故る＝個別に人の目が必要」、それ以外は「反映候補」として分けた。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>216本</b><span>今回の対象（リモート全ブランチ）</span></div>
+  <div class="num"><b>37本</b><span class="yes">捨てて良い（36本は本番に合流済み・1本は差分ゼロ）</span></div>
+  <div class="num"><b>35本</b><span>陳腐化の疑い（3週間以上前・変更100行未満）</span></div>
+  <div class="num"><b>83本</b><span>反映候補（生きている可能性が高い・個別確認が必要）</span></div>
+  <div class="num"><b>61本</b><span class="no">要精査（大規模・一括処理は危険）</span></div>
+</div>
+<div class="note">
+このセッションでは「仕分け」までを実施し、ブランチの削除・mainへの取り込みは実行していない（誤って壊れたコードや重複をmainへ入れる事故を避けるため、実行は個別レビュー後に回す）。捨てて良い37本の実削除と、反映候補83本の個別確認は次の作業として <code>.claude/TASK_BOARD.md</code> に引き継ぎを残した。
+</div>
+
+<h2>③ 全216本のリスト（CSV・分類・変更行数・最終コミット・比較リンク付き）</h2>
+<div class="note">
+<a href="16-branch-list.csv" target="_blank">16-branch-list.csv を開く（全216行）</a>　※スマホのブラウザでもそのまま開けます
+</div>
+
+<h2>捨てて良い（既に本番mainに合流済み）（代表8件）</h2>
+<ul class="links">
+<li><b>agent/plurality-roundtable-v1</b>
+    <div class="note" style="margin:4px 0">動画見回りを継続的な巡回項目として強化：停止監視・取りこぼし修理・再試行追加</div>
+    <div class="note" style="margin:4px 0">最終更新: 30日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/plurality-roundtable-v1" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/plurality-roundtable-v1</a>
+  </li>
+<li><b>agent/task-106-work</b>
+    <div class="note" style="margin:4px 0">chore(tamago): 予約台帳を自動更新</div>
+    <div class="note" style="margin:4px 0">最終更新: 52日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-106-work" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-106-work</a>
+  </li>
+<li><b>agent/task-130-nujabes-ai-router</b>
+    <div class="note" style="margin:4px 0">fix: Nujabes特集ページのESLint指摘を解消（案件#130・検品対応）</div>
+    <div class="note" style="margin:4px 0">最終更新: 5日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-130-nujabes-ai-router" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-130-nujabes-ai-router</a>
+  </li>
+<li><b>agent/task-172-work</b>
+    <div class="note" style="margin:4px 0">chore(tamago): 予約台帳を自動更新</div>
+    <div class="note" style="margin:4px 0">最終更新: 48日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-172-work" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-172-work</a>
+  </li>
+<li><b>agent/task-96-manager-guard</b>
+    <div class="note" style="margin:4px 0">Merge pull request #101 from tamago2022/agent/task-96-audit-dashboard</div>
+    <div class="note" style="margin:4px 0">最終更新: 52日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-96-manager-guard" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-96-manager-guard</a>
+  </li>
+<li><b>agent/world-expert-guilds</b>
+    <div class="note" style="margin:4px 0">Claude共通脳へ専門家ギルドと実装優先を追加</div>
+    <div class="note" style="margin:4px 0">最終更新: 31日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/world-expert-guilds" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/world-expert-guilds</a>
+  </li>
+<li><b>claude/amateur-cover-audit-v2-0903</b>
+    <div class="note" style="margin:4px 0">T006恒久検出の禁止ワードを拡張し、全件を目視確認して紛れ込み0件を確認</div>
+    <div class="note" style="margin:4px 0">最終更新: 1日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/amateur-cover-audit-v2-0903" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/amateur-cover-audit-v2-0903</a>
+  </li>
+<li><b>claude/amelie-db-secrets-note-0903</b>
+    <div class="note" style="margin:4px 0">docs: DB secrets欠如の判断メモを追記（アメリ棚卸し・ドラマ22件移動の残作業）</div>
+    <div class="note" style="margin:4px 0">最終更新: 1日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/amelie-db-secrets-note-0903" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/amelie-db-secrets-note-0903</a>
+  </li>
+</ul>
+<h2>捨てて良い（mainと差分ゼロ）（代表1件）</h2>
+<ul class="links">
+<li><b>proto/3d-gokigen</b>
+    <div class="note" style="margin:4px 0">3D試作v3: 月と夜空・提灯グロー・光だまり・電柱電線・自販機・縦看板・木床ギャラリー・まばたき [skip ci]</div>
+    <div class="note" style="margin:4px 0">最終更新: 51日前 ／ 変更: 0ファイル・0行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...proto/3d-gokigen" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...proto/3d-gokigen</a>
+  </li>
+</ul>
+<h2>判断が要る（3週間以上前・変更100行未満＝陳腐化の疑い）（代表8件）</h2>
+<ul class="links">
+<li><b>claude/healing-music-related-0814-rescue-20260816</b>
+    <div class="note" style="margin:4px 0">feat: 癒しの音楽棚30件にrelated導線を追加</div>
+    <div class="note" style="margin:4px 0">最終更新: 22日前 ／ 変更: 1ファイル・30行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/healing-music-related-0814-rescue-20260816" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/healing-music-related-0814-rescue-20260816</a>
+  </li>
+<li><b>claude/inn-related-links-0814</b>
+    <div class="note" style="margin:4px 0">feat: 「日本の美しい宿」10件を相互リンクし、テクノシャーマン型の余韻導線を作る</div>
+    <div class="note" style="margin:4px 0">最終更新: 22日前 ／ 変更: 1ファイル・10行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/inn-related-links-0814" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/inn-related-links-0814</a>
+  </li>
+<li><b>claude/maldon-sea-salt-125g</b>
+    <div class="note" style="margin:4px 0">feat: マルドン シーソルト 125gを商品ページとして仕入れ</div>
+    <div class="note" style="margin:4px 0">最終更新: 22日前 ／ 変更: 1ファイル・38行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/maldon-sea-salt-125g" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/maldon-sea-salt-125g</a>
+  </li>
+<li><b>claude/rinapon-midnight-pretenders</b>
+    <div class="note" style="margin:4px 0">fix: Midnight Pretendersの片道リンク解消+Ms.OOJAカバー追加（りなぽん案件・正式移管分）</div>
+    <div class="note" style="margin:4px 0">最終更新: 22日前 ／ 変更: 1ファイル・6行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/rinapon-midnight-pretenders" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/rinapon-midnight-pretenders</a>
+  </li>
+<li><b>claude/tania-maria-come-with-me</b>
+    <div class="note" style="margin:4px 0">feat: Tania Maria「Come With Me」を仕入れ（店主音声指示の特定・仕入れ）</div>
+    <div class="note" style="margin:4px 0">最終更新: 22日前 ／ 変更: 1ファイル・13行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/tania-maria-come-with-me" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/tania-maria-come-with-me</a>
+  </li>
+<li><b>claude/akg-blue-train-0812</b>
+    <div class="note" style="margin:4px 0">仕入れ：ASIAN KUNG-FU GENERATION「ブルートレイン」を追加</div>
+    <div class="note" style="margin:4px 0">最終更新: 23日前 ／ 変更: 1ファイル・1行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/akg-blue-train-0812" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/akg-blue-train-0812</a>
+  </li>
+<li><b>claude/boukyou-world-expansion</b>
+    <div class="note" style="margin:4px 0">feat: 望郷テーマを世界へ横展開（韓国・メキシコ・台湾・ポルトガル）</div>
+    <div class="note" style="margin:4px 0">最終更新: 23日前 ／ 変更: 2ファイル・47行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/boukyou-world-expansion" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/boukyou-world-expansion</a>
+  </li>
+<li><b>claude/fix-dead-links-kazari-koori</b>
+    <div class="note" style="margin:4px 0">fix: 飾りじゃないのよ涙は・氷の世界の死んだリンクを仕入れて解消</div>
+    <div class="note" style="margin:4px 0">最終更新: 23日前 ／ 変更: 1ファイル・11行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/fix-dead-links-kazari-koori" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/fix-dead-links-kazari-koori</a>
+  </li>
+</ul>
+<h2>まだ生きていて本番に出すべき可能性が高い（要個別確認）（代表10件）</h2>
+<ul class="links">
+<li><b>claude/q314-lately-layout</b>
+    <div class="note" style="margin:4px 0">fix: 曲ページの構成をLatelyで決めきる(案件314・Step1)</div>
+    <div class="note" style="margin:4px 0">最終更新: 0日前 ／ 変更: 2ファイル・200行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/q314-lately-layout" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/q314-lately-layout</a>
+  </li>
+<li><b>claude/nostalgia-bridge-0903-v2</b>
+    <div class="note" style="margin:4px 0">docs: 公開・回収担当メールボックスへ案件#154のPR代行依頼を追記</div>
+    <div class="note" style="margin:4px 0">最終更新: 1日前 ／ 変更: 8ファイル・150行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/nostalgia-bridge-0903-v2" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/nostalgia-bridge-0903-v2</a>
+  </li>
+<li><b>claude/shelf-card-play-here-0903</b>
+    <div class="note" style="margin:4px 0">feat(棚カード): 「▶ ここで聴く」— ページ遷移せずその場（MiniPlayer）で再生（試作・店主確認待ち）</div>
+    <div class="note" style="margin:4px 0">最終更新: 2日前 ／ 変更: 1ファイル・41行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/shelf-card-play-here-0903" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/shelf-card-play-here-0903</a>
+  </li>
+<li><b>claude/chatgpt-handoff-20phrases-0901</b>
+    <div class="note" style="margin:4px 0">add: 『20 Little Phrases that Make Japanese Smile』企画をGitHub共通脳へ昇格</div>
+    <div class="note" style="margin:4px 0">最終更新: 3日前 ／ 変更: 3ファイル・105行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/chatgpt-handoff-20phrases-0901" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/chatgpt-handoff-20phrases-0901</a>
+  </li>
+<li><b>claude/ai-buddha-correction</b>
+    <div class="note" style="margin:4px 0">AI BUDDHA訂正版を反映: 真実は80億人分ある/AIにしかできない理由</div>
+    <div class="note" style="margin:4px 0">最終更新: 4日前 ／ 変更: 3ファイル・61行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/ai-buddha-correction" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/ai-buddha-correction</a>
+  </li>
+<li><b>claude/ai-buddha-final</b>
+    <div class="note" style="margin:4px 0">AI BUDDHA最終版: 二層構造/消耗しない理由/過剰同調の危険/フィジカルAI後回し</div>
+    <div class="note" style="margin:4px 0">最終更新: 4日前 ／ 変更: 3ファイル・53行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/ai-buddha-final" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/ai-buddha-final</a>
+  </li>
+<li><b>fix/song-override-thumbnail-hito-ni-yasashiku</b>
+    <div class="note" style="margin:4px 0">fix: 曲一覧・コラボ曲カードのサムネに「動画を差し替え」を反映</div>
+    <div class="note" style="margin:4px 0">最終更新: 4日前 ／ 変更: 1ファイル・19行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...fix/song-override-thumbnail-hito-ni-yasashiku" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...fix/song-override-thumbnail-hito-ni-yasashiku</a>
+  </li>
+<li><b>claude/final-view-player-thumbnail-fix</b>
+    <div class="note" style="margin:4px 0">fix: The Final View/Nujabes特集の再生ブロックが空箱になる不具合を修理（店主本番発見）</div>
+    <div class="note" style="margin:4px 0">最終更新: 5日前 ／ 変更: 2ファイル・18行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/final-view-player-thumbnail-fix" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/final-view-player-thumbnail-fix</a>
+  </li>
+<li><b>claude/final-view-visual-fixes</b>
+    <div class="note" style="margin:4px 0">fix: The Final View特集のデザイン指摘3件を修正（店主指摘・CSS図形/文字のみ禁止）</div>
+    <div class="note" style="margin:4px 0">最終更新: 5日前 ／ 変更: 2ファイル・41行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/final-view-visual-fixes" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/final-view-visual-fixes</a>
+  </li>
+<li><b>claude/final-view-ship-0830</b>
+    <div class="note" style="margin:4px 0">SOUNDSCAPE特集「The Final View」を完成版へ差し替え（本文拡張＋事実誤り修正）</div>
+    <div class="note" style="margin:4px 0">最終更新: 5日前 ／ 変更: 2ファイル・290行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/final-view-ship-0830" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/final-view-ship-0830</a>
+  </li>
+</ul>
+<h2>判断が要る（大規模変更・誤ってmainへ入れると事故る規模）（代表8件）</h2>
+<ul class="links">
+<li><b>codex-dispatch</b>
+    <div class="note" style="margin:4px 0">dispatch: build Bokemaru PWA prototype</div>
+    <div class="note" style="margin:4px 0">最終更新: 0日前 ／ 変更: 7ファイル・702行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...codex-dispatch" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...codex-dispatch</a>
+  </li>
+<li><b>tamago/issue-briefs-hold</b>
+    <div class="note" style="margin:4px 0">[skip ci] issue-briefs自動更新</div>
+    <div class="note" style="margin:4px 0">最終更新: 0日前 ／ 変更: 1ファイル・2564行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...tamago/issue-briefs-hold" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...tamago/issue-briefs-hold</a>
+  </li>
+<li><b>agent/task-153-ingest-standing-v2</b>
+    <div class="note" style="margin:4px 0">常設仕入れ(案件#153): 第3バッチ40曲（カバー筋・店主指示「この曲のカバーはないかな」）</div>
+    <div class="note" style="margin:4px 0">最終更新: 2日前 ／ 変更: 10ファイル・2472行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-153-ingest-standing-v2" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-153-ingest-standing-v2</a>
+  </li>
+<li><b>agent/task-153-ingest-standing</b>
+    <div class="note" style="margin:4px 0">常設仕入れ(案件#153): 第3バッチ40曲（カバー筋・店主指示「この曲のカバーはないかな」）</div>
+    <div class="note" style="margin:4px 0">最終更新: 2日前 ／ 変更: 11ファイル・3650行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-153-ingest-standing" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...agent/task-153-ingest-standing</a>
+  </li>
+<li><b>claude/feature-sayonara-natsu-0902</b>
+    <div class="note" style="margin:4px 0">特集(叩き・未公開): 山下達郎「さよなら夏の日」MAGAZINE STORY — 夏は終わる。返事は、来る。</div>
+    <div class="note" style="margin:4px 0">最終更新: 2日前 ／ 変更: 5ファイル・1112行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/feature-sayonara-natsu-0902" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/feature-sayonara-natsu-0902</a>
+  </li>
+<li><b>claude/ingest-standing-0902-v2</b>
+    <div class="note" style="margin:4px 0">常設仕入れ(案件#153): 第3バッチ40曲（カバー筋・店主指示「この曲のカバーはないかな」）</div>
+    <div class="note" style="margin:4px 0">最終更新: 2日前 ／ 変更: 11ファイル・3650行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...claude/ingest-standing-0902-v2" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...claude/ingest-standing-0902-v2</a>
+  </li>
+<li><b>feat/gokigen-map</b>
+    <div class="note" style="margin:4px 0">feat(map): ごきげんマップのプロトタイプ /map（Leaflet+OpenStreetMap・課金なし・裏が取れた8か所）</div>
+    <div class="note" style="margin:4px 0">最終更新: 2日前 ／ 変更: 6ファイル・1200行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...feat/gokigen-map" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...feat/gokigen-map</a>
+  </li>
+<li><b>gossip-warehouse-0902</b>
+    <div class="note" style="margin:4px 0">ゴシップ切り抜き動画19件を倉庫へ下ろす＋compliance-checkにタイトル判定を追加</div>
+    <div class="note" style="margin:4px 0">最終更新: 2日前 ／ 変更: 7ファイル・341行</div>
+    <a href="https://github.com/tamago2022/joy-relief-station/compare/main...gossip-warehouse-0902" target="_blank">https://github.com/tamago2022/joy-relief-station/compare/main...gossip-warehouse-0902</a>
+  </li>
+</ul>
+
+
+<div class="fixnote">
+<b>仕分け方針の補足：</b>「捨てて良い」はmainとの祖先関係（git merge-base）で機械的に確定した事実であり誤判定の余地はない。「陳腐化の疑い」「要精査」は年齢・変更量からの推定であり、中身を読んでいない。実際に消す・本番に出す判断は、必ずこの一覧から個別に開いて確認してから行うこと。
+</div>
+
+<footer>
+全216本の生データ：<a href="16-branch-list.csv">16-branch-list.csv</a>（このページと同じフォルダ）。この確認ページ自体はGitHub Pagesで公開。<br>
+<a href="../">← 進捗表にもどる</a>
+</footer>
+</body>
+</html>
