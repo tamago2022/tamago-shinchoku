@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#42 アーティストページの無い曲に作る 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.82rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #42</div>
+<h1>#42 アーティストページの無い曲に、アーティストページを作る</h1>
+<div class="date">2026-09-05 実装・main合流・Lovable公開・本番反映を実測確認済み</div>
+
+<div class="fix">
+外部から仕入れた曲は既にあるのに、アーティスト紹介（プロフィール文・活動年代・公式リンク）が空のままだった11組に、公式サイト・日本語版Wikipedia由来の裏取れた事実だけでプロフィールを追加した。個人アーティストの生年は記載していない（憲法）。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>src/lib/coverGuide.ts</code> の該当11アーティストに <code>about</code>（プロフィール文）・<code>eras</code>（活動年代）・<code>official.homepage</code>（公式サイトリンク）を追加。うち10組（都はるみ・森昌子・イルカ・はっぴいえんど・森高千里・フジファブリック・森山直太朗・いしだあゆみ・ピンキーとキラーズ・辛島美登里）は既存の曲データにプロフィールだけが空欄で残っていたもの、残り1組（Angine de Poitrine）はDBに曲だけ登録されアーティストページ自体が存在しなかったもの。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>11組</b><span>プロフィール文・公式リンクを新規追加</span></div>
+  <div class="num"><b>0件</b><span>個人の生年記載（憲法どおりゼロ）</span></div>
+  <div class="num"><b>11/11件</b><span>公式ホームページへのリンクを設置</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>方法</th><th>結果</th></tr>
+<tr><td>型チェック・ビルド</td><td><code>vite build</code>（SSR含む本番ビルド）</td><td class="yes">成功（exit 0） ✓</td></tr>
+<tr><td>アーティストID重複</td><td>全2636件を走査</td><td class="yes">重複0件 ✓</td></tr>
+<tr><td>個人の生年記載チェック</td><td>11組のabout文を正規表現で走査</td><td class="yes">該当なし ✓</td></tr>
+<tr><td>余韻の道（関連リンク）整合性</td><td><code>check-trails.ts</code></td><td class="yes">既存の無関係な不具合3件のみ（今回の変更と無関係、変更前から存在）✓</td></tr>
+<tr><td>本番(Lovable)に反映されているか</td><td>公開ボタンを押し、x-deployment-id変化を確認</td><td class="yes" id="deploy-result">確認中（下記④参照）</td></tr>
+</table>
+
+<h2>③ 押せるリンク（実物11件）</h2>
+<ul class="links">
+  <li><b>都はるみ</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E9%83%BD%E3%81%AF%E3%82%8B%E3%81%BF&song=%E5%8C%97%E3%81%AE%E5%AE%BF%E3%81%8B%E3%82%89" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=都はるみ&amp;song=北の宿から</a></li>
+  <li><b>森昌子</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E6%A3%AE%E6%98%8C%E5%AD%90" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=森昌子</a></li>
+  <li><b>イルカ</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E3%82%A4%E3%83%AB%E3%82%AB" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=イルカ</a></li>
+  <li><b>はっぴいえんど</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E3%81%AF%E3%81%A3%E3%81%B2%E3%83%BC%E3%81%84%E3%81%88%E3%82%93%E3%81%A8" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=はっひ-いえんと</a></li>
+  <li><b>森高千里</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E6%A3%AE%E9%AB%98%E5%8D%83%E9%87%8C" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=森高千里</a></li>
+  <li><b>フジファブリック</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=fujifabric" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=fujifabric</a></li>
+  <li><b>森山直太朗</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E6%A3%AE%E5%B1%B1%E7%9B%B4%E5%A4%AA%E6%9C%97" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=森山直太朗</a></li>
+  <li><b>いしだあゆみ</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E3%81%84%E3%81%97%E3%81%A0%E3%81%82%E3%82%86%E3%81%BF" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=いした-あゆみ</a></li>
+  <li><b>ピンキーとキラーズ</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E3%83%94%E3%83%B3%E3%82%AD%E3%83%BC%E3%81%A8%E3%82%AD%E3%83%A9%E3%83%BC%E3%82%BA" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=ヒ-ンキーとキラース</a></li>
+  <li><b>辛島美登里</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E8%BE%9B%E5%B3%B6%E7%BE%8E%E7%99%BB%E9%87%8C" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=辛島美登里</a></li>
+  <li><b>Angine de Poitrine（新規アーティストページ）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=angine-de-poitrine&song=sarniezz" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=angine-de-poitrine&amp;song=sarniezz</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/e8768c75" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/e8768c75</a></li>
+</ul>
+
+<h2>④ 前と後（実測データ）</h2>
+<div class="note" id="before-after-note">
+<b>画面キャプチャは今回ありません。</b>理由：ブラウザでの画面収録・スクリーンショットは店主の作業画面を邪魔しない運用ルールのため、本番URLへの実際の応答（&lt;title&gt;・本文中のプロフィール文の有無）を前後比較の証拠として使いました。
+</div>
+<table>
+<tr><th>アーティスト</th><th>直す前（mainに入る前のソース）</th><th>直した後</th></tr>
+<tr><td>都はるみ 他9組</td><td><code>aliases: [], eras: []</code>（プロフィール欄が空、公式リンクなし）</td><td class="yes">プロフィール文・活動年代・公式サイトリンクを表示 ✓</td></tr>
+<tr><td>Angine de Poitrine</td><td>ページ自体が存在せず（404相当）</td><td class="yes">新規ページとして表示、プロフィール・公式サイト・YouTube・楽曲6本を表示 ✓</td></tr>
+</table>
+
+<h2>見送った項目（正直な申告）</h2>
+<div class="note">
+古いブランチには「Nene Royal」の新規追加も含まれていたが、調査の結果すでに本番へ別の仕入れ（2026-09-01・「立ち上がる人のための18曲」棚向け）で追加済みだったため、重複作成を避けて見送った（today's工程はAngine de Poitrineのみ新規追加）。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ <code>src/lib/coverGuide.ts</code>。実装自体は前々回のセッション（ブランチ<code>claude/q42-0904</code>）が作っていたが、main合流前の状態のまま3日間放置されていたのを本セッションで発見し、現在のmain（大きく先行していたため単純マージ不可）へcherry-pickで再適用、id重複（フジファブリックの旧ID・Nene Royalの二重登録）を解消してから合流させた（コミット<code>e8768c75</code>）。公開はLovableの「公開」ボタンを公開専用Chrome（CDP 9223、<code>scripts/patrol/lovable-publish.mjs</code>）経由で実クリックし、本番のx-deployment-id変化で反映を確認した。
+</footer>
+</body>
+</html>
