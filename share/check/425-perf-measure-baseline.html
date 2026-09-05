@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#425 425番：軽さ・第1歩＝本番5ページ実測（重い順） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #425 425番：軽さ・第1歩＝本番5ページ実測（重い順）</div>
+<h1>#425 425番：軽さ・第1歩＝本番5ページ実測（重い順）</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+本番5ページ（トップ／曲ページ／アーティストページ／棚ページ／検索結果）をスマホ・4G相当条件で実測しました。<b>この回では直していません</b>。次に何を直すか決めるための計測回です。npmインストールが作業機で使えなかったため、実Chromeを直接CDPで動かして計測（Lighthouseと同じモバイル条件：360x640・CPU4倍スロー・Slow4G）。数値はすべて実測値です。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>7932ms</b><span>検索結果ページのLCP（全ページ中 最悪）</span></div>
+  <div class="num"><b>0.5131</b><span>検索結果ページのCLS（0.25超は不良ライン）</span></div>
+  <div class="num"><b>1777ms</b><span>棚ページの長い処理合計（全ページ中 最大）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>①検索結果のスクショ</b><a href="img/425-search.png" target="_blank" rel="noopener">img/425-search.png</a></li>
+  <li><b>②トップのスクショ</b><a href="img/425-top.png" target="_blank" rel="noopener">img/425-top.png</a></li>
+  <li><b>③曲ページのスクショ</b><a href="img/425-song.png" target="_blank" rel="noopener">img/425-song.png</a></li>
+  <li><b>④棚ページのスクショ</b><a href="img/425-shelf.png" target="_blank" rel="noopener">img/425-shelf.png</a></li>
+  <li><b>⑤アーティストページのスクショ</b><a href="img/425-artist.png" target="_blank" rel="noopener">img/425-artist.png</a></li>
+  <li><b>本番トップ(実物)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番検索結果(実物)</b><a href="https://joy-relief-station.lovable.app/search?q=%E5%A4%8F" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search?q=%E5%A4%8F</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①検索結果(/search) LCP 7932ms・CLS 0.5131・TBT 1228ms・転送1639KB・JS1465ms</td><td class="no">最重</td></tr>
+<tr><td>②トップ(/) LCP 6876ms・CLS 0・TBT 25ms・転送688KB・JS79ms</td><td class="no">JSはほぼゼロなのにLCPが悪い</td></tr>
+<tr><td>③曲ページ(/watch) LCP 1936ms・CLS 0・TBT 1252ms・転送596KB・JS2180ms</td><td class="yes">LCP合格ライン内</td></tr>
+<tr><td>④棚ページ(/shelf) LCP 1880ms・CLS 0.3042・TBT 1777ms・転送1210KB・JS2069ms</td><td class="yes">TBTが最大</td></tr>
+<tr><td>⑤アーティスト(/cover-guide) LCP 984ms・CLS 0・TBT 1276ms・転送653KB・JS1950ms</td><td class="yes">最軽</td></tr>
+</table>
+
+<footer>
+この回は測定のみで本番コードは変更していません。次の一手：①トップページのLCP原因調査（JSではなく画像/フォント/API待ちの疑い）②検索結果のCLS是正（後から差し込まれるレイアウトのズレ）③棚ページの長い処理の分割。
+</footer>
+</body>
+</html>
