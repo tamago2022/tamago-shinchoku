@@ -1,0 +1,56 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>337番 バッジ比率を見本(akiko)へ戻した確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:720px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.ng{color:#ff8a8a;font-weight:800}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.92rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:right}
+th{background:#20262f;text-align:center}
+td:first-child,th:first-child{text-align:left}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+</style></head><body>
+
+<h1>337番：バッジの大きさを見本（akiko）へ戻した の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 直したこと（1行）</p>
+<p>コミット<code>9fa191bc</code>／<code>f74bfd1a</code>で<code>BADGE_TARGET_SHORT_SIDE_RATIO</code>を18%へ上げた結果、見本だった<b>akiko『Love Theme From "Spartacus"』</b>のバッジまで大きくなってしまった回帰を修正。<code>src/lib/badgeKinds.ts</code>の<code>BADGE_TARGET_SHORT_SIDE_RATIO</code>を<span class="ng">18</span>→<span class="ok">13.8</span>（akikoページのパソコン表示での実測値）へ戻した。他の数値・画像・位置は変更していない。</p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字（本番配信中のJSファイルを直接ダウンロードして実測。推測ではなく配信中コードそのもの）</p>
+<p class="small">本番URL <code>https://joy-relief-station.lovable.app/</code> が配信しているJS（<code>assets/index-DTrYDXMk.js</code>）を確認（2026-09-05 18:51 JST時点、x-deployment-id: <code>psr2.553b7c8c</code>）：</p>
+<p class="small"><code>Yae=13.8,Lae=512/341,Qae=432/512;function lU(e){return `${(Yae*e*(9/16)).toFixed(1)}%`}const Nae={width:lU(Lae),...},Pae={width:lU(Qae),...}</code></p>
+<p><span class="ok">定数は13.8で確定</span>（18ではない）。18%だった時の証拠は前回の確認ページ（<code>37-badge-ratio.html</code>、x-deployment-id <code>psr2.e2c00d19</code>）に<code>Tae=18</code>として残っている。今回<code>Yae=13.8</code>に変わっていることで、見本を壊した回帰が直っていることが配信コードから確認できる。</p>
+
+<table>
+<tr><th>カードの形</th><th>短辺（=高さ）</th><th>戻す前（18%）のバッジ高さ</th><th>戻した後（13.8%）のバッジ高さ</th></tr>
+<tr><td>棚カード（小・compact）</td><td>136px</td><td>24.5px</td><td>18.8px</td></tr>
+<tr><td>棚カード（大・compact）</td><td>176px</td><td>31.7px</td><td>24.3px</td></tr>
+<tr><td>本編動画（スマホ）</td><td>184px</td><td>33.1px</td><td>25.4px</td></tr>
+<tr><td>本編動画（パソコン）</td><td>405px</td><td>72.9px</td><td>55.9px</td></tr>
+</table>
+<p class="small">比率方式（<code>widthPercentFor</code>）のため、短辺に対する比率はコンシェルジュ推し・Good Cover共通で常に定数と一致する。18%→13.8%への変更で、どのカードでもバッジ高さが約23%小さくなった（見本のakikoページと一致する大きさへ戻った）。</p>
+</div>
+
+<div class="b">
+<p class="ok">③ 押せるリンク（実物のページ）</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus" target="_blank">見本ページ：akiko『Love Theme From "Spartacus"』（このページの見た目が正解）</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria&song=come-with-me-tania" target="_blank">Tania Maria『Come With Me』（同じ定数を使う別ページ・比較用）</a></li>
+</ul>
+</div>
+
+<div class="b">
+<p class="ok">状態</p>
+<p>①実装（<code>BADGE_TARGET_SHORT_SIDE_RATIO=13.8</code>） ②main合流（コミット<code>9c58feb4</code>） ③Lovable公開・反映確認（x-deployment-id <code>psr2.553b7c8c</code>、2026-09-05 18:51 JST時点で配信中のJSに<code>Yae=13.8</code>を確認） ④配信中コードでの実測確認 まで完了。⑤店主の実画面確認は未実施（次回訪問時）。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>
