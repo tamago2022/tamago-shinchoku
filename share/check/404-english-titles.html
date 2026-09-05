@@ -1,0 +1,64 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>404番 英語題名カードの日本語化 確認ページ</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8}
+h1{font-size:1.2rem;margin:0 0 16px}
+h2{font-size:1rem;margin:24px 0 8px;color:#9fb2c8}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.ng{color:#f2a154;font-weight:800}
+a{color:#5fd996;word-break:break-all}
+.quote{background:#0e1116;border-left:3px solid #5fd996;padding:10px 14px;margin:8px 0;font-size:0.92rem;color:#c9d4e0}
+code{background:#0e1116;padding:2px 6px;border-radius:4px;font-size:0.85rem}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:0.88rem}
+th,td{border-bottom:1px solid #2a323c;padding:6px 8px;text-align:left;vertical-align:top}
+th{color:#9fb2c8;font-weight:600}
+ol{padding-left:1.4em}</style></head><body>
+<h1>404番 英語題名カードの日本語化 の確認ページ</h1>
+
+<div class="b">
+<h2>① 何をしたか</h2>
+<p>店主が『<code>Sinking Monster Truck / flyingtower</code>』というカードを見て「これだと開いた人が何の動画か分からない」と指摘。サイト全体の<code>/watch?v=&lt;videoId&gt;</code>ページ（YouTube単体動画カード）のうち、英語の原題・投稿者名がそのまま題名になっているものを、<strong>実測アクセス数（<code>card_stats.play_count</code>）でよく見られている順に</strong>選び、日本語のクリックしたくなるタイトル・一言コピーへ書き直した。<code>Sinking Monster Truck</code>自体は既に別セッション（案件#399）が対応済みだったため、それ以外の16件を今回の対象にした。</p>
+<p>実装は<code>src/routes/watch.tsx</code>の<code>MANUAL_WATCH_OVERRIDES</code>（コード側の個別上書き）。本来は<code>admin_stock.title</code>をDBで直接書き換える想定だったが、リポジトリのGitHub Secretsに<code>SUPABASE_SERVICE_ROLE_KEY</code>が存在せず、DB書き込み経路が構造的に使えないと実測で判明したため（既知の問題）、案件#399と同じコード側の方式に切り替えた。</p>
+</div>
+
+<div class="b">
+<h2>② 数字</h2>
+<p>「よく見られている順」に選んだ<strong>16件を日本語化・本番反映済み</strong>（残りの英語題名カードは、今回選ばなかった分＝play_count実績が低い、または音楽アーティスト名+曲名形式で原題保持が妥当なもの）。</p>
+</div>
+
+<div class="b">
+<h2>③ 直した16件（押せるリンク・アクセスの多い順）</h2>
+<table>
+<tr><th>元の英語題名</th><th>新しい日本語題名</th><th>ページ</th></tr>
+<tr><td>Guy Pets Chihuahua to Relax - Bites Hand</td><td>チワワを撫でて落ち着かせようとしたら、まさかの一噛み</td><td><a href="https://joy-relief-station.lovable.app/watch?v=TKQcAzBpKew" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Babysitting Fails | Best of Adam Rose React Compilation</td><td>ベビーシッターあるある失敗集（Adam Roseのリアクション）</td><td><a href="https://joy-relief-station.lovable.app/watch?v=8Ixv_UDTDHo" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Stuffing a Giant Steak with Homemade Butter in the Forest</td><td>森の中で、巨大ステーキに手作りバターをこれでもかと詰め込む</td><td><a href="https://joy-relief-station.lovable.app/watch?v=q-Rvd_FR2DA" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Cat Vibing To Ievan Polkka</td><td>あの中毒ソング「イエヴァン・ポルカ」でノリノリになる猫</td><td><a href="https://joy-relief-station.lovable.app/watch?v=NUYvbT6vTPs" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Try Not to Laugh Challenge: Funniest Cat Moments</td><td>笑ったら負け。Simon's Catの爆笑ハプニング集</td><td><a href="https://joy-relief-station.lovable.app/watch?v=20z8q5oqMXQ" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Cat Wearing A Shark Costume Cleans The Kitchen On A Roomba</td><td>サメの着ぐるみを着た猫が、ルンバに乗ってキッチンを掃除する</td><td><a href="https://joy-relief-station.lovable.app/watch?v=tLt5rBfNucc" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>'CAN IT SWIM' PHONE CHALLENGE!!!</td><td>スマホは水に浮くのか沈むのか、まじめに実験してみた</td><td><a href="https://joy-relief-station.lovable.app/watch?v=7rTAkJ8Xq5g" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Cat vs Printer - The Translation</td><td>プリンターと戦う猫、その鳴き声を「翻訳」してみた</td><td><a href="https://joy-relief-station.lovable.app/watch?v=CSK1D3bZhRs" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Massive Ephemeral Earth Mural by artist David Popa</td><td>山肌にそのまま描く、消えていく巨大な土の絵</td><td><a href="https://joy-relief-station.lovable.app/watch?v=qY54OUadFmo" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Mishka the Talking Husky Wants My Eggs! - SUBTITLED</td><td>「卵ちょうだい」としゃべる、あのハスキー犬ミシュカ</td><td><a href="https://joy-relief-station.lovable.app/watch?v=DzGhtgrD3WU" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Chihuahua Always Bites His Owner! | It's Me or The Dog</td><td>飼い主に噛みつき癖が直らないチワワ、しつけの現場</td><td><a href="https://joy-relief-station.lovable.app/watch?v=D6AwESI9I94" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Skateboarding Dog（Tillman）</td><td>スケボーを乗りこなす、あの伝説のブルドッグ「ティルマン」</td><td><a href="https://joy-relief-station.lovable.app/watch?v=CQzUsTFqtW0" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Fritz Learns to Catch Compilation #1</td><td>キャッチが下手すぎる犬フリッツの練習記録 その1</td><td><a href="https://joy-relief-station.lovable.app/watch?v=6w2UxDdhZPk" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Fritz Learns To Catch Compilation #2</td><td>キャッチが下手すぎる犬フリッツの練習記録 その2</td><td><a href="https://joy-relief-station.lovable.app/watch?v=6peHtgK0-tM" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Dog Reunited With Owner Returning From Deployment</td><td>長期任務から帰ってきた飼い主と、再会した瞬間の犬</td><td><a href="https://joy-relief-station.lovable.app/watch?v=7dCHtqzJJBI" target="_blank" rel="noopener">開く</a></td></tr>
+<tr><td>Ecstatic Dogs Welcome Home Their Owners After Being Away</td><td>旅行から帰ってきた飼い主を、大興奮で出迎える犬たち</td><td><a href="https://joy-relief-station.lovable.app/watch?v=AOqkodwjNZM" target="_blank" rel="noopener">開く</a></td></tr>
+</table>
+</div>
+
+<div class="b">
+<h2>④ 実測の証拠</h2>
+<p class="ok">main合流済み（コミット <code>cc2a535f</code>）＋Lovable本番へ公開済み</p>
+<p>Lovableの「変更を公開」を自動実行し、本番の <code>x-deployment-id</code> が <code>psr2.827b9fa</code>→<code>psr2.bec36b8</code> に変わったことを確認（2026-09-06 00:36）。その後、node fetchで本番16ページ全件のHTML本文を取得し、それぞれ新しい日本語題名が実在することを1件ずつ実測（<span class="ok">16 / 16 件 OK</span>）。旧英語題名は全ページで消えている。</p>
+</div>
+
+<div class="b">
+<h2>⑤ 今回のスコープ外として残った項目（正直な報告）</h2>
+<p>残りの英語題名カード（<code>Almost September - Bdash x Miranda</code>・<code>Luci Gang - HEADLOCK</code>・音楽アーティスト名+曲名形式のもの等）は、①play_count実績が今回選んだ16件より低い、または②「アーティスト名 - 曲名」という音楽ページとして原題保持が妥当な形式、のいずれかに当たるため今回は対象外とした。X投稿由来の「wow」等（<code>kind: x</code>）は表示経路が別（tweetMeta系）で、今回のwatch.tsx側の対応範囲には含まれない。継続対応が必要なら次の担当へ引き継ぐ。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表にもどる</a></p>
+</body></html>
