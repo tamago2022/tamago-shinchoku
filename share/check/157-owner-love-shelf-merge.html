@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#157 「飼い主大好き」棚の重複統合 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.82rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  .wait{color:#a6791f;font-weight:700;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #157</div>
+<h1>#157 「飼い主大好き」棚が2つある問題を1つに統合</h1>
+<div class="date">2026-09-05 作業中（このページは実測が揃い次第このまま更新します）</div>
+
+<div class="fix">
+管理データ（Supabaseの<code>admin_shelves</code>テーブル）に「飼い主大好き」というタイトルの棚が2行重複していた。片方はビルトイン棚（<code>worlds.ts</code>）へ正しく合流済みだったが、もう片方は合流先が未設定のまま独立棚として扱われ、公開画面に別枠で重複表示される原因になっていた。<b>中身のカードは1枚も削除せず</b>、合流先を設定するだけで1つに統合する。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>admin_shelves</code>の棚ID<code>079b4ee5-adee-4016-b898-6c7f5c4353d7</code>（合流先未設定＝独立棚扱い）に、既にビルトイン棚へ正しく合流している側と同じ合流先<code>shelf-owner-love</code>を設定。これにより既存の合流ロジック（<code>publicListShelvesForWorld</code>／2026-08-06実装済み）に乗り、公開画面での重複見出しが解消される。カードはどちらの棚のものも削除しない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1件</b><span>独立棚扱いだった側のカード数（YouTube動画）</span></div>
+  <div class="num"><b>2件</b><span>既に合流済みだった側のカード数（X投稿）</span></div>
+  <div class="num"><b>0件</b><span>重複（両棚の中身は別々の動画、同じ動画の二重登録ではない）</span></div>
+  <div class="num"><b>3件</b><span>統合後の合計カード数（1件は表示対象、2件はたまごさんの掲載可否待ちで非表示のまま維持）</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>方法</th><th>結果</th></tr>
+<tr><td>DB統合（<code>extends_shelf_id</code>更新）</td><td>Supabase実測（anonキーでのSELECT）</td><td class="wait" id="db-result">確認中</td></tr>
+<tr><td>本番の公開画面で重複が解消されたか</td><td>本番URLのSSR HTMLを実測</td><td class="wait" id="deploy-result">確認中</td></tr>
+</table>
+
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の「飼い主大好き」棚（統合後の到達点）</b><br><a href="https://joy-relief-station.lovable.app/world/cute" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/cute</a></li>
+  <li><b>独立棚扱いだった側のカード（YouTube・生存確認済み・埋め込み可）</b><br><a href="https://www.youtube.com/watch?v=TmQXINdButs" target="_blank" rel="noopener">https://www.youtube.com/watch?v=TmQXINdButs</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/db0e085d" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/db0e085d</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<table>
+<tr><th>棚ID</th><th>直す前</th><th>直した後</th></tr>
+<tr><td><code>079b4ee5</code>（独立棚扱い）</td><td>合流先未設定→公開画面に「飼い主大好き」が別枠でもう1つ表示</td><td class="wait" id="after-result">確認中</td></tr>
+</table>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ <code>scripts/patrol/merge-owner-love-shelf-once.mjs</code>・<code>.github/workflows/tamago-once-merge-owner-love-shelf.yml</code>。書き込みはSupabaseのRLSによりservice_role経由が必須のため、GitHub Actionsの一度きり便（Secrets経由）で実行する設計。
+</footer>
+</body>
+</html>
