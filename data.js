@@ -86,6 +86,7 @@ window.SHINCHOKU = {
   {status:"hold", content:"部屋IDが開けない実害(羊文学↔スキマスイッチ衝突/ID重複12種24部屋/濁点文字化け137件 等)", orderedAt:"2026-08-31T18:45:00+09:00", owner:"見回り係", evidence:"", note:"調査資料は完成。ID付け替え・統合3件の可否をたまごさんに聞く必要あり"},
 
   // --- 状態不明・止まっている(赤) ---
+  {status:"red", content:"🚨Mac負荷が急上昇中(load average 222→296→581・6分間で悪化)", orderedAt:"2026-09-05T17:02:00+09:00", owner:"-", evidence:"", note:"claude CLIプロセス実測29本(同時走行3本の原則を大幅超過)。vite devサーバーが6h31m/6h10m/4h39m/3h32m連続稼働、Virtualization.frameworkのVMが119.9%CPU・3h25m。orphan_reaper.pyは孤児0件(devサーバーは設計上対象外のため主因を捕捉できず)。たまごさん本人による同時セッション数の手動整理を推奨。詳細は見張り番ログ.md 09-05 17:02"},
   {status:"red", content:"Braveブラウザのポートを閉じる", orderedAt:"2026-08-30T00:00:00+09:00", owner:"-", evidence:"", note:"急ぎではない。通常再起動で閉じられる"},
   {status:"red", content:"Notionサポートへの返信メール送信", orderedAt:"2026-08-30T00:00:00+09:00", owner:"-", evidence:"", note:"Gmail下書き済み・送信のみ(08-27時点情報、対応済みの可能性あり=要確認)"},
   {status:"red", content:"案内所パーソナライズ改修(大型指示書・1件目/URL1つ→1問→3件→反応→次の3件)", orderedAt:"2026-08-31T06:19:00+09:00", owner:"不明(joy-relief-station系)", evidence:"", note:"18:44に再着火を試みたが23:22の督促にも応答なし。担当セッション死亡濃厚"},
