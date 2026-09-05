@@ -58,6 +58,10 @@ while :; do
   #   **投げっぱなしにして心臓は待たない**（対話待ちで工場を止めた07:03の事故の教訓）。
   #   生死は「プロセスが居るか」ではなく「外から叩いて200が返るか」で見る。道は2本（relay_watch.py）。
   ( python3 "$REPO/tools/relay_watch.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-05 使い終わった作業場(git worktree)を片づける。放っておくと51個溜まり、
+  #   ChatGPT(Codex)がそれを1つずつ「プロジェクト」として拾ってたまごさんの画面を汚す。
+  #   本流に入っていて・未保存の変更が無くて・2時間以上経ったものだけ消す（30分に1回）。
+  ( python3 "$REPO/tools/worktree_reaper.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
