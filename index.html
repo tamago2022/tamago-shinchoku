@@ -274,8 +274,17 @@
     font-size:0.72rem; font-weight:800; background:#1a2028; border:1px solid var(--line); color:var(--sub); font-variant-numeric:tabular-nums;}
   .qrow.next .qn{background:var(--green); color:#12161c; border-color:var(--green);}
   .qbody{min-width:0; flex:1;}
-  .qt{font-size:0.88rem; font-weight:700; line-height:1.35;}
-  .qw{font-size:0.72rem; color:var(--sub); margin-top:3px; line-height:1.45;}
+  /* 2026-09-05 スマホで題名と理由が1文字ずつ縦に並んで読めなくなっていた。
+     span のまま横に置くと、幅が足りないときに文字単位でつぶれる。必ず縦に積む。 */
+  .qt{font-size:0.88rem; font-weight:700; line-height:1.35; display:block; width:100%; overflow-wrap:anywhere;}
+  .qw{font-size:0.72rem; color:var(--sub); margin-top:3px; line-height:1.45; display:block; width:100%; overflow-wrap:anywhere;}
+  /* スマホ幅では、上段に「取っ手・順番・番号・モデル・P」、下段いっぱいに題名を置く。
+     取っ手やPボタンと題名を1行に並べようとするから幅が足りなくなる。 */
+  @media (max-width: 620px){
+    .qrow{flex-wrap:wrap; row-gap:6px; align-items:center;}
+    .qbody{flex:1 1 100%; width:100%; order:9;}
+    .qno{font-size:0.72rem;}
+  }
   .qd{min-width:0;}
   .qd > summary{list-style:none; cursor:pointer; min-width:0;}
   .qd > summary::-webkit-details-marker{display:none;}
