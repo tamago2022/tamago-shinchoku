@@ -41,6 +41,15 @@ MACHINE = os.path.join(REPO, "status", "machine.json")
 QUOTA = os.path.join(REPO, "status", "quota.json")
 PRIORITY = os.path.join(REPO, "status", "priority.json")
 LOG = os.path.join(REPO, "status", "auto_launch.log")
+# ---- 424番：どの仕事がいくら使ったか見える化（2026-09-06）----
+COST_LEDGER = os.path.join(REPO, "status", "cost_by_task.json")
+# 単価フォールバック（total_cost_usdが取れなかった時だけ使う）。
+# 出典：Vault内に「入力$10/出力$50・100万トークンあたり」の記録は見つからなかった
+#   （grep済み・2026-09-06）。依頼文に明記されたこの数値をそのままフォールバック単価として採用する。
+#   実際にはほぼ全ての回でclaude -pのJSON出力に total_cost_usd（Anthropic公式単価でCLIが
+#   算出済みの実額）が入っているため、フォールバックが使われるのは異常系のみの想定。
+FALLBACK_PRICE_IN_PER_1M = 10.0
+FALLBACK_PRICE_OUT_PER_1M = 50.0
 SONNET = "claude-sonnet-5"
 CLAUDE = os.path.expanduser("~/.local/bin/claude")
 if not os.path.exists(CLAUDE):
@@ -502,6 +511,62 @@ def _record_ai_verify(ok, reason, cost, url, item_n=None):
         log("ai_verify_stats書き込み失敗: %s" % e)
 
 
+def _record_cost_by_task(n, title, cost_usd, tokens_in, tokens_out,
+                          cache_read, cache_creation, model_name,
+                          started_at, finished_at):
+    """424番：どの仕事がいくら使ったか見える化。
+
+    たまごさん「いまは全体の使用率しか分からず、『どの種類の仕事が高いのか』が
+    分からない。だから減らしようがない」への対応。harvest() が1件終わるたびに
+    ここを呼び、status/cost_by_task.json（tasks配列＝台帳）へ1行足す。
+    _record_ai_verify と同じ書式（tmpファイル→os.replaceで原子的に置換）。
+    """
+    if cost_usd is None and (tokens_in or tokens_out):
+        cost_usd = round(
+            (tokens_in or 0) * FALLBACK_PRICE_IN_PER_1M / 1_000_000
+            + (tokens_out or 0) * FALLBACK_PRICE_OUT_PER_1M / 1_000_000, 6)
+    elapsed_min = _elapsed_min(started_at, finished_at)
+    data = load(COST_LEDGER, {"tasks": []})
+    tasks = data.get("tasks") or []
+    tasks.append({
+        "n": n,
+        "title": title,
+        "inputTokens": int(tokens_in or 0),
+        "outputTokens": int(tokens_out or 0),
+        "cacheReadTokens": int(cache_read or 0),
+        "cacheCreationTokens": int(cache_creation or 0),
+        "costUsd": round(float(cost_usd), 6) if cost_usd is not None else None,
+        "elapsedMin": elapsed_min,
+        "model": model_name or "",
+        "finishedAt": finished_at,
+    })
+    tasks = tasks[-300:]   # 直近300件だけ持つ（台帳が無限に太らないように）
+    data["tasks"] = tasks
+
+    # ---- 今日いちばん高かった仕事トップ5（JST基準）----
+    today = time.strftime("%Y-%m-%d")
+    today_tasks = [t for t in tasks if (t.get("finishedAt") or "").startswith(today)
+                   and t.get("costUsd") is not None]
+    top5 = sorted(today_tasks, key=lambda t: t["costUsd"], reverse=True)[:5]
+    data["todayTop5"] = top5
+    data["todayTotalCostUsd"] = round(sum(t.get("costUsd") or 0 for t in today_tasks), 4)
+    data["todayTaskCount"] = len(today_tasks)
+    data["priceSourceNote"] = (
+        "推定コストは基本 claude -p --output-format json の total_cost_usd をそのまま採用"
+        "（Anthropic公式単価でCLIが算出済みの実額）。それが取れない場合だけ、"
+        "入力$%.0f／出力$%.0f（100万トークンあたり・依頼文に指定された数値。"
+        "Vault内に出典記録は見つからなかったためフォールバックとして採用）で概算する。"
+        % (FALLBACK_PRICE_IN_PER_1M, FALLBACK_PRICE_OUT_PER_1M))
+    data["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    try:
+        tmp = COST_LEDGER + ".tmp"
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, COST_LEDGER)
+    except Exception as e:
+        log("cost_by_task書き込み失敗 %s番: %s" % (n, e))
+
+
 SPLIT_DIR = os.path.join(REPO, "status", "split")
 SPLIT_BATCH_SIZE = 10
 
@@ -614,8 +679,30 @@ def harvest(q):
         sid = (it.get("sessionId") or "")[:8]
         logf = os.path.join(REPO, "status", "auto-launch-%s.log" % sid)
         result, urls = "", []
+        raw = ""
+        # 424番：どの仕事がいくら使ったか見える化用（cost_usdが無ければNoneのまま）
+        cost_usd, tok_in, tok_out, tok_cache_read, tok_cache_creation, model_name = (
+            None, 0, 0, 0, 0, "")
         try:
             raw = io.open(logf, encoding="utf-8", errors="ignore").read()
+            for _line in raw.splitlines():
+                _line = _line.strip()
+                if not _line or '"total_cost_usd"' not in _line:
+                    continue
+                try:
+                    _j = json.loads(_line)
+                except Exception:
+                    continue
+                cost_usd = _j.get("total_cost_usd")
+                _u = _j.get("usage") or {}
+                tok_in = int(_u.get("input_tokens") or 0)
+                tok_out = int(_u.get("output_tokens") or 0)
+                tok_cache_read = int(_u.get("cache_read_input_tokens") or 0)
+                tok_cache_creation = int(_u.get("cache_creation_input_tokens") or 0)
+                _mu = _j.get("modelUsage") or {}
+                if _mu:
+                    model_name = "+".join(_mu.keys())
+                break
             m = re.findall(r'"result"\s*:\s*"((?:[^"\\]|\\.)*)"', raw)
             if m:
                 # 2026-09-04 文字化け修正：unicode_escape は日本語を latin-1 として壊す。
@@ -720,6 +807,13 @@ def harvest(q):
         it["finishedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
         it["result"] = (result or "（結果が読み取れませんでした）")[:1200]
         it["urls"] = urls
+        # 424番：どの仕事がいくら使ったか見える化（結果の良し悪しに関わらず、使った分は記録する）
+        try:
+            _record_cost_by_task(it.get("n"), it.get("title"), cost_usd, tok_in, tok_out,
+                                  tok_cache_read, tok_cache_creation, model_name,
+                                  it.get("startedAt"), it["finishedAt"])
+        except Exception as e:
+            log("cost_by_task記録失敗 %s番: %s" % (it.get("n"), e))
         it.pop("pid", None)
         changed = True
 
