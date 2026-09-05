@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-05 02:25",
+ "updatedAt": "2026-09-05 17:12",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -34,9 +34,9 @@
    "rank": 24,
    "task": "指示待ちで止まる（作法/仕組み）",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "0df4f865-e20a-4810-999b-499020107ba8",
    "count": "13",
-   "updatedAt": "2026-09-04 13:35",
+   "updatedAt": "2026-09-05 16:56",
    "note": "穴1本題(Dispatch本体は回復層対象外)を仕組み化：tamago-shinchoku/tools/session_watchdog.py decide()にis_dispatch_self()+user_activeゲート追加(is_dispatch_selfかつuser_active=false×kind=asked×idle>=15分の時だけresume。handoff非対象。tries/cooldownは既存値を流用)。main()呼び出し側でmachine.json の userActive をdecide()へ渡すよう配線。py_compile通過・dry-run実行で新ロジック含め正常動作確認済み(エラー無し・既存スキップ理由も従来通り)。設計根拠=AI出力/_ルール/T024_指示待ちで止まる_残穴3件_2026-09-04.md 穴1 [実装:wd_123cf6c2]",
    "stale": false
   },
@@ -69,11 +69,11 @@
    "priority": 3,
    "rank": 2,
    "task": "動画の差し替えができない",
-   "state": "検証待ち",
+   "state": "判断待ち",
    "owner": null,
    "count": "42",
-   "updatedAt": "2026-09-03 06:44",
-   "note": "main合流(243fe372)確認済み・本番x-deployment-id実測でコード配信確認済み。残り1手=店主が/admin/inventoryで🔑APIキー貼り直し+実画面確認（PENDING_DECISIONS.md記載）。URL: https://joy-relief-station.lovable.app/admin/inventory [実装:wd_394299b1]",
+   "updatedAt": "2026-09-05 17:10",
+   "note": "別の目で再確認：main合流(243fe372)実在・本番稼働も確認済み。残り1手は店主本人のスマホ30秒のみ→本番 https://joy-relief-station.lovable.app/admin/inventory の「🔑 APIキー」タブでログイン→YouTube Data APIキーを貼って保存。手順・セレクタは/tmp/set-youtube-key.mjsに完成済み。AI側の資格情報送信は分類器が3回明示ブロック済みのため検証待ちループを判断待ちへ訂正",
    "stale": false
   },
   {
@@ -190,9 +190,9 @@
    "rank": 12,
    "task": "バッジが即時反映されない",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "claude_pwa_verify_0905",
    "count": "27",
-   "updatedAt": "2026-09-03 14:42",
+   "updatedAt": "2026-09-05 16:56",
    "note": "追加確認(2026-09-03 14:41・別の目)：src/lib/badgeIdentityStore.tsを直接読み、useSyncExternalStoreで押した瞬間→描く側へ即時共有する橋渡しをコードレベルで再確認。楽観的更新(削除の即時反映)も実装確認。ただし本セッションもブラウザ/管理ログイン権限を持たず、実クリック(🏷️付け外し→即座に画面が変わるか)の目視確認はまだ未実施のまま。次の目はここだけ見れば完了にできる。対象URL例：/shelf/food/kattemi-yokatta（要admin認証でのバッジ付け外し操作） [実装:wd_768a9636]",
    "stale": false
   },
