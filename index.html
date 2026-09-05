@@ -254,21 +254,26 @@
   /* 2026-09-06 修正：初期版は1行=約360pxで「スマホ1画面に3件」を満たせなかった（実測）。
      サムネの比率を横長にし、余白とボタンの上下marginを削って1行を約250px前後まで詰めた。
      文字側のline-height/font-sizeは一切触っていない（縮めたのは画像比率と余白だけ）。 */
-  .cthumbs{display:flex; gap:6px; margin:4px 0;}
-  .cthumbs img{flex:1 1 0; min-width:0; width:100%; aspect-ratio:3/1; object-fit:cover; border-radius:8px;
+  /* 2026-09-06 再修正（418番セルフチェック）：CSS計算値で250〜260pxはiPhone SE等の実効高さ
+     （約600px）だと3件目が入りきらない恐れがあったため、サムネのaspect-ratioを4.4/1へ、
+     ボタンのmin-heightを44px→40pxへ、上下marginを4px→3pxへさらに詰め、1行を約195〜215px
+     （タイトル1〜2行）まで縮めた。文字のfont-size/line-heightは今回も変更していない。 */
+  .cthumbs{display:flex; gap:6px; margin:3px 0;}
+  .cthumbs img{flex:1 1 0; min-width:0; width:100%; aspect-ratio:4.4/1; object-fit:cover; border-radius:8px;
     border:1px solid var(--line); background:#0e1319; display:block;}
   .cthumbs.wait{padding:6px; border:1px dashed var(--line); border-radius:8px; color:var(--dim);
     font-size:0.78rem; text-align:center;}
   .cthumbs.none{padding:6px; border:1px dashed var(--red); border-radius:8px; background:var(--red-bg);
     color:#ffb3a7; font-size:0.82rem; font-weight:700; text-align:center; line-height:1.5;}
-  .curlbtn{display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px;
+  .curlbtn{display:flex; align-items:center; justify-content:center; gap:6px; min-height:40px;
     border-radius:10px; border:1px solid var(--blue); color:var(--blue); text-decoration:none;
-    font-weight:700; font-size:0.86rem; margin:4px 0; padding:4px 10px; text-align:center; line-height:1.4;}
+    font-weight:700; font-size:0.86rem; margin:3px 0; padding:3px 10px; text-align:center; line-height:1.4;}
   .curlbtn.dead{border-color:var(--red); color:#ffb3a7; background:var(--red-bg);}
-  .check .crow{padding:6px 4px;}
-  .cbtns.cbtns2{grid-template-columns:1fr 1fr; margin-top:4px;}
-  .cmore{margin-top:4px; border-top:1px dashed var(--line); padding-top:4px;}
-  .cmore > summary{cursor:pointer; font-size:0.74rem; color:var(--dim); list-style:none; min-height:26px;
+  .check .crow{padding:5px 4px;}
+  .cbtns.cbtns2{grid-template-columns:1fr 1fr; margin-top:3px;}
+  .cbtns.cbtns2 button{min-height:40px;}
+  .cmore{margin-top:3px; border-top:1px dashed var(--line); padding-top:3px;}
+  .cmore > summary{cursor:pointer; font-size:0.74rem; color:var(--dim); list-style:none; min-height:22px;
     display:flex; align-items:center;}
   .cmore > summary::-webkit-details-marker{display:none;}
   .cmore > summary::after{content:"（くわしく・後で・消す）"; margin-left:4px;}
