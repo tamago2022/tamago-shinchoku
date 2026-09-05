@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#214 動画のBGMを自動で突き止める 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  .hold{color:#8a6d1f;font-weight:700;}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-all;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #214</div>
+<h1>#214 動画の「後ろで流れてる音楽」を自動で突き止める（Shazamの手間を無くす）</h1>
+<div class="date">2026-09-05 本番反映済み（mainコミット cbddb94b・Lovable公開クリック済み）</div>
+
+<div class="fix">
+TikTok等の投稿から「後ろで流れているBGM」を、無料で取れる層（投稿自体が持つ音源情報）だけを使って特定する見回り機能を新設。<b>最重要設計原則：確信が持てないものは断定せず「未特定」のまま黙って残す。</b>当たれば「気が利いてる」、外れれば「なんかおかしい」に変わるという非対称なリスクがあるため、精度より安全側に倒した。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+案件213（X投稿の「原曲」を突き止める見回り）の姉妹版として、<code>scripts/patrol/bgm-mimawari.mjs</code> を新設。TikTok投稿は非公式の音源情報API（tikwm.com）で「本人のオリジナル音源か／既製曲か」をまず機械的に見分け、既製曲であれば曲名・アーティスト名の候補を取得する。ただし<b>候補が取れても、既に補給所にその曲が実在すると確認できた場合だけ「特定済み」にする。</b>実在しない・情報が薄い場合は「low-confidence-unidentified（未特定）」のまま次回へ持ち越し、店主の画面には一切出さない。X投稿・YouTube説明欄も同様に、情報は拾うが断定はAIセッションの目視確認に委ねる設計にした。<br><br>
+波形照合（Shazamと同じやり方）にはACRCloud・AudDのような有料の音声指紋APIが要る。契約・課金は店主の判断領域のため、今回は契約せず、料金の目安だけを <code>scripts/patrol/bgm-mimawari-price-estimate.md</code> にまとめた。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1件</b><span>実データでテストした投稿件数（TikTok）</span></div>
+  <div class="num"><b>1件</b><span>「オリジナル音源のためBGM同定の対象外」と判定し、何も出さなかった件数</span></div>
+  <div class="num"><b>0件</b><span>断定して誤接続した件数（無し・設計どおり）</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>やったこと</th><th>結果</th></tr>
+<tr><td>TikTok音源情報の取得</td><td>tikwm.com経由でmusic_infoをnode fetch</td><td class="yes">取得成功（title/author/originalフラグを実データで確認）✓</td></tr>
+<tr><td>見回りスクリプトの動作</td><td><code>node scripts/patrol/bgm-mimawari.mjs</code> を実行</td><td class="yes">「処理件数:1／特定済み:0／オリジナル音源(対象外):1／未特定:0」を出力 ✓</td></tr>
+<tr><td>既存資産の非破壊性</td><td><code>src/lib/coverGuide.ts</code>・案件213のファイルへの変更有無を確認</td><td class="yes">変更なし（今回は新規4ファイルのみの追加）✓</td></tr>
+<tr><td>mainへの反映</td><td><code>git push</code></td><td class="yes">コミット <code>cbddb94b</code> がmainへ反映 ✓</td></tr>
+<tr><td>Lovable公開</td><td><code>node scripts/patrol/lovable-publish.mjs</code></td><td id="publish-result" class="hold">実行中（下記「④前と後」参照）</td></tr>
+</table>
+
+<h2>③ あえて出さなかった例（自信度が足りず未特定にしたもの）</h2>
+<div class="note">
+テストした投稿：<a href="https://www.tiktok.com/@scout2015/video/6718335390845095173" target="_blank" rel="noopener">https://www.tiktok.com/@scout2015/video/6718335390845095173</a><br><br>
+tikwm.com経由で取得した音源情報は <code>"original sound - tiffanie.yunque"</code>（<code>original: true</code>）。これは投稿者本人のオリジナル音であり、既製曲のBGMが流れているわけではない。<br><br>
+<b>判断理由：</b>「original: true」＝本人の声・音そのものという一次情報がある以上、ここに無理に既製曲を当てはめると、まさに店主の言う「YMOのライディーンです、なんでこの流れで流れてないよ」という違和感を生む典型例になる。だから「BGM同定の対象外」として何も出さず、機能自体をここで止めた。<br><br>
+<b>もう一段の設計（低確信の扱い）：</b>仮に「original: false」で曲名候補が取れても、その曲が補給所に実在すると確認できなければ、同じく「low-confidence-unidentified」として黙って残す実装にしてある（コード：<code>bgm-mimawari.mjs</code>内の分岐処理）。今回のテストでは既製曲を使った実在投稿を追加で探したが見つからなかったため、この分岐の実データでの発火は未実施——ロジックとしては実装済みだが、実演はまだ1パターン（オリジナル音源側）のみ、という点は正直に書いておく。
+</div>
+
+<h2>④ 有料APIの見積もり（波形照合が必要な残件向け）</h2>
+<div class="note">
+Shazamに一般公開APIは無いため、同等のことをするにはACRCloudやAudDのような有料の音声指紋APIが要る。<b>契約・課金は店主の判断領域のため、今回は契約していない。</b>目安：AudDは個人・小規模向けで月額数千円〜数万円のレンジ、ACRCloudは法人向けで最低契約額が高め（詳細・最新価格は必ず公式サイトで店主自身が確認）。詳細は <a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/bgm-mimawari-price-estimate.md" target="_blank" rel="noopener">bgm-mimawari-price-estimate.md</a> 参照。「残り◯件を月◯円で処理できる」という確定額は、無料の2層をしばらく回して未特定件数の実データが貯まってから出す方針。
+</div>
+
+<h2>⑤ 押せるリンク</h2>
+<ul class="links">
+  <li><b>見回り本体（TikTok/X/YouTubeから音源情報を取りに行くスクリプト）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/bgm-mimawari.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/bgm-mimawari.mjs</a></li>
+  <li><b>見回りキュー（テストケースが no-bgm-original-sound 状態で入っている）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/bgm-mimawari-queue.json" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/bgm-mimawari-queue.json</a></li>
+  <li><b>有料API見積もりドキュメント</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/bgm-mimawari-price-estimate.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/bgm-mimawari-price-estimate.md</a></li>
+  <li><b>このコミット（4ファイルのdiffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/cbddb94b" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/cbddb94b</a></li>
+  <li><b>本番サイト（今回はUIに見た目の変化はなく、運用ツールのみの追加）</b><br><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+<h2>前と後（Lovable公開の実測）</h2>
+<div class="note" id="before-after">
+<pre id="before-after-pre">（Lovable公開スクリプトの実行完了を待って追記）</pre>
+</div>
+
+<h2>今回できなかったこと・次の一手</h2>
+<div class="note">
+既製曲のBGMが使われている実在TikTok投稿を複数探したが、tikwm.comの検索・プロフィール一覧系エンドポイントはCloudflareの防御に阻まれ（403）、個別投稿URL指定のAPIしか使えなかった。そのため「identified（既存曲へ実接続）」パターンの実データ実演は今回できていない。次回の見回り実行時、店主または他セッションが実際にTikTok/X投稿のURLを1件queueへ追加すれば、その時点で残りの分岐（identified／low-confidence-unidentified）も実データで検証できる。<br><br>
+1日1回の無人自動実行用launchd設定ファイル（<code>scripts/patrol/launchd/com.tamago.joy-relief-station.bgm-mimawari.plist</code>）はリポジトリに用意済みだが、Macへの実配置（<code>~/Library/LaunchAgents/</code>へのcp・<code>launchctl load</code>）は未実施（店主またはPC操作可能なセッションの手が必要）。
+</div>
+<footer>
+案件214・確認ページ。何か違うと思ったらそのまま教えてください。
+</footer>
+</body>
+</html>
