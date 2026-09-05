@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#26 止まっているタスク56件から確認だけで閉じる 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #26</div>
+<h1>#26 止まっているタスク56件から、確認だけで閉じられるものを拾う</h1>
+<div class="date">2026-09-05 実施。joy-relief-station（卵商店街）側の台帳「本番反映済み・検品前」状態の案件を対象に、本番URLを実際に開いて検証した。</div>
+
+<div class="fix">
+台帳（<code>.claude/TASK_BOARD.md</code>）に「実装セッション自身は本番に出たと言っているが、別の人がまだ確認していない」状態で止まっていた案件を9件選び、1件ずつ本番URLを開いて中身を照合した。<b>6件は実際に直っていたのでその場で検品済みへ格上げした。3件は「直ったつもり」で止まっていたことが分かったので、正直にFAILとして台帳に書き戻した（見つけたことも前進）。</b>
+</div>
+
+<h2>① 数字（先に結論）</h2>
+<div class="nums">
+  <div class="num"><b>9件</b><span>検品した件数</span></div>
+  <div class="num"><b>6件</b><span>PASS＝確認だけで閉じた</span></div>
+  <div class="num"><b>3件</b><span>FAIL＝まだ直っていないと判明</span></div>
+</div>
+
+<h2>② 仕分けた結果（1件ずつ）</h2>
+<table>
+<tr><th>#</th><th>内容</th><th>判定</th><th>根拠</th></tr>
+<tr><td>2</td><td>ハナレグミ↔サントリーウイスキーの双方向リンク</td><td class="yes">PASS</td><td>本番HTMLでサントリー6件・ハナレグミ5件、双方向成立を実測</td></tr>
+<tr><td>37</td><td>ごきげんフード＆レシピレーダーの改修</td><td class="yes">PASS</td><td>本番200・「シェフ」表記59件を実測</td></tr>
+<tr><td>61</td><td>The Knack「My Sharona」の曲コピー修正</td><td class="yes">PASS</td><td>本番に「1万8千ドル」「theknack.com」を実測</td></tr>
+<tr><td>76</td><td>「日本の美しい宿」棚10件の相互リンク</td><td class="yes">PASS</td><td>本番カードページに「こちらも、同じ流れで」の関連3件（サムネ・リンク）を実測</td></tr>
+<tr><td>99</td><td>/room/card/$slug が本番で全滅していたバグの修理</td><td class="yes">PASS</td><td>モンキー・マジック等3ページを複数回実測、クラッシュ文言0件</td></tr>
+<tr><td>100</td><td>アーティストページ曲一覧の横4列グリッドを2列へ撤回</td><td class="yes">PASS</td><td>本番の曲一覧はgrid-cols-2。grid-cols-4は無関係なナビ部分のみと確認</td></tr>
+<tr><td>21</td><td>矢沢永吉の消えた動画4曲の差し替え</td><td class="no">FAIL</td><td>修理ブランチがmainに未合流。本番は今も旧動画IDのまま</td></tr>
+<tr><td>77</td><td>「癒しの音楽棚」30件の相互リンク</td><td class="no">FAIL</td><td>コードはmain合流済みだが本番で関連セクション自体が出ない（#76と同じ仕組みなのに非表示。原因未特定）</td></tr>
+<tr><td>78</td><td>「もぐもぐの森」28件の相互リンク</td><td class="no">FAIL</td><td>実際のユーザー導線(/animal/$slug)には関連表示の仕組みが実装されていない。追加したデータが誰にも見えていない</td></tr>
+</table>
+<div class="note">
+判定はcurlでの機械的な本番実測のみで行った（推測での合格は無し）。PASSした6件は<code>.claude/TASK_BOARD.md</code>を🔵検品済みへ更新しmainへpush済み。FAILの3件も理由付きで台帳に書き戻し済み（次に触る人がゼロから調べ直さずに済む）。
+</div>
+
+<h2>③ 押せるリンク（PASSした6件・実物）</h2>
+<ul class="links">
+  <li><b>#2 ハナレグミ（サントリーへの導線を確認）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=hanaregumi" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=hanaregumi</a></li>
+  <li><b>#37 ごきげんフード＆レシピレーダー</b><br><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
+  <li><b>#61 The Knack「My Sharona」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=the-knack" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=the-knack</a></li>
+  <li><b>#76 「日本の美しい宿」棚（禅坊 靖寧のカード。下に関連3件が並ぶ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/inn-zenbo-seinei" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/inn-zenbo-seinei</a></li>
+  <li><b>#99 モンキー・マジック（以前は真っ白に落ちていたページ）</b><br><a href="https://joy-relief-station.lovable.app/room/card/monkey-magic-ai-future-funk" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/monkey-magic-ai-future-funk</a></li>
+  <li><b>#100 山下達郎（曲一覧が2列になっているか）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro</a></li>
+  <li><b>台帳の更新コミット（TASK_BOARD.md）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/190b5f36" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/190b5f36</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<div class="note">
+<b>画像のスクリーンショットは今回ありません。</b>理由：このセッションには実ブラウザ操作の手段（claude-in-chrome等）が無く、確認はすべて本番URLをサーバー側から直接取得してテキスト照合する方式（curl相当）で行った。「前」は台帳に書かれていた自己申告の内容、「後」は上の②の実測結果そのもの。上の押せるリンクを開けば、今回確認した内容（サントリーとの相互リンク・シェフ表記・1万8千ドルのコピー・関連3件の並び・クラッシュしないこと・2列グリッド）がその場で見える。
+</div>
+
+<h2>残った課題（FAILの3件・次に直す人へ）</h2>
+<div class="note">
+<b>#21</b>：修理は完成しているがmainに入っていない。ブランチ<code>fix/yazawa-dead-videos-v2</code>をmainへ合流させればよい（コンフリクトの確認が必要）。<br>
+<b>#77</b>：コードはmainに入っているのに本番で表示されない。#76と全く同じ仕組み（RelatedCardsRow）を使っているのに一方は表示され一方はされない、原因不明。次の担当は「癒しの音楽棚」のカード定義と「日本の美しい宿」の定義の違い（フィールドの有無等）から当たるとよい。<br>
+<b>#78</b>：データは追加したが、そもそも表示する画面（/animal/$slug）に関連表示機能が無い。animal.$slug.tsxへRelatedCardsRowを追加する実装が必要（データの作り直しは不要）。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ<code>.claude/TASK_BOARD.md</code>（案件#2・37・61・76・77・78・99・100・21）。判定はNode.jsのfetch APIで本番URLを取得しテキスト照合する方式で実施（このセッションのBash curlはネットワーク権限が承認されず使用不可だったため、代替経路として確立した）。TASK_BOARD.mdの更新はorigin/main起点の一時worktreeで作業しGitHubへ直接push（コミット190b5f36）。ドキュメントのみの変更のためLovable公開（Publish）の対象外。
+</footer>
+</body>
+</html>
