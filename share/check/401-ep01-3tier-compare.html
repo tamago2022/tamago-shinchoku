@@ -1,0 +1,76 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>401番『卵劇場EP01』3段階試作の確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:900px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.1rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.warn{color:#f4c05f;font-weight:800}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.9rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#20262f}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.88em;word-break:break-all}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+video{width:100%;border-radius:10px;background:#000;margin-top:8px}
+.grade{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:800;font-size:0.85rem}
+.grade.free{background:#2a3a2f;color:#7fe0a0}
+.grade.mid{background:#3a3120;color:#f4c05f}
+.grade.high{background:#3a2020;color:#ff8a8a}
+</style></head><body>
+
+<h1>401番：卵劇場EP01「娘がAIと暮らしはじめた」3段階試作の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 何を直したか（1行）</p>
+<p>たまごさんの指示どおり、同じ台本・同じ絵コンテから<b>無料版（A）／推定100円版（B）／推定300円版（C）</b>の3本を作って並べた。差は「声」と「一部ショットの動画生成AI使用」の2点。</p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字</p>
+<table>
+<tr><th>版</th><th>音声</th><th>映像</th><th>実コスト</th><th>完成尺</th></tr>
+<tr><td><span class="grade free">A：無料</span></td><td>macOS内蔵 say（Kyoko）をピッチ/速度加工して7役演じ分け</td><td>静止画パン/ズーム（Ken Burns）のみ</td><td class="ok">0円</td><td>56.7秒</td></tr>
+<tr><td><span class="grade mid">B：推定100円</span></td><td>ElevenLabs（日本語アニメ声などプロ品質7役）</td><td>Aと同じKen Burnsのみ</td><td>推定 数円〜十数円（文字数234文字からの概算。正確な請求額はElevenLabs管理画面のみで確定）</td><td>72.1秒</td></tr>
+<tr><td><span class="grade high">C：推定300円</span></td><td>Bと同じElevenLabs音声</td><td>18ショット中2ショット（SH18・SH25）をFAL「Kling v1.6」で動画生成、残り16ショットはKen Burns</td><td>ElevenLabs分＋Kling生成2本＝推定100〜150円程度（Kling分の正確な請求額はFALダッシュボードのみで確定）</td><td>Bと同じ尺構成</td></tr>
+</table>
+<p class="small">※ A/Bは声の演技力の差、B/Cは「一部だけでもキャラが実際に動く」効果の差を見るための切り分け。</p>
+</div>
+
+<div class="b">
+<h2 style="margin-top:0">A：無料版</h2>
+<video controls preload="metadata" poster="img/401-preview-a.jpg"><source src="videos/401-ep01-a.mp4" type="video/mp4"></video>
+<p class="small"><a href="videos/401-ep01-a.mp4" target="_blank">直接開く（別タブ）</a></p>
+</div>
+
+<div class="b">
+<h2 style="margin-top:0">B：推定100円版（音声だけプロ品質に）</h2>
+<video controls preload="metadata" poster="img/401-preview-b.jpg"><source src="videos/401-ep01-b.mp4" type="video/mp4"></video>
+<p class="small"><a href="videos/401-ep01-b.mp4" target="_blank">直接開く（別タブ）</a></p>
+</div>
+
+<div class="b">
+<h2 style="margin-top:0">C：推定300円版（一部ショットが実際に動く）</h2>
+<video controls preload="metadata" poster="img/401-preview-c.jpg"><source src="videos/401-ep01-c.mp4" type="video/mp4"></video>
+<p class="small"><a href="videos/401-ep01-c.mp4" target="_blank">直接開く（別タブ）</a></p>
+</div>
+
+<div class="b">
+<p class="warn">③ 問題・正直な限界</p>
+<ul>
+<li>Google Driveへの格納は指示書にあったが、たまごさんの実ログインが必要な操作でありAI側から代行できないため、代わりに本確認ページ（GitHub Pages）に3本とも直接埋め込んだ。</li>
+<li>25ショットの絵コンテのうち、60〜90秒に収めるため台本の「必須ショット」18個だけを使用（06,07,12,14,16,19,20は台本自身が定める削減候補として省略）。</li>
+<li>リップシンク（口の動きと音声の同期）は3版とも未実装。台本指示の「軽い口パク」は今回の試作範囲では見送った。</li>
+<li>ElevenLabs・FALの正確な請求額（円換算）は、それぞれの管理画面でしか確定できない。本ページの金額は文字数・相場からの推定であり、実際の請求が300円を超えていないかは店主側でのご確認をお願いしたい。</li>
+<li>C版の動画生成AIは2ショット（SH18の静かな間、SH25のうさぎの咀嚼）に限定した。動きが単純なショットほど生成が安定するため、あえて対話ショットは避けた。</li>
+</ul>
+</div>
+
+<div class="b">
+<p class="ok">状態</p>
+<p>①3本の試作：完成・本ページに埋め込み公開済み ②GitHub Pages反映：本コミットのpushから数十秒で反映 ③店主の実画面確認：未（このページを開いて3本を見比べていただく段階）。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>
