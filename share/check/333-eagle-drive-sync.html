@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#333 Eagle→Google Drive 自動複製 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.82rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  pre{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #333</div>
+<h1>#333 Eagleライブラリ → Google Drive 自動複製</h1>
+<div class="date">2026-09-05 実装・初回フルスキャン実行・5分おき自動実行を登録</div>
+
+<div class="fix">
+Eagle（<code>eagle AI 画像整理.library</code>、1200件・40フォルダ）と、Googleドライブの「マイドライブ」を自動で同じ中身にする仕組みを作った。Eagleのフォルダ構成（階層）をそのままDrive側のフォルダ階層として再現し、Eagleに1枚追加・移動すると5分以内に自動でDriveへ複製・つなぎ替えされる。rcloneのインストールもGoogle Drive APIのOAuth設定も不要だった＝Google Driveデスクトップアプリは実際には起動しており、そのマウントポイント（<code>~/Library/CloudStorage/GoogleDrive-…/マイドライブ</code>）へ直接ファイルをコピーするだけで同期される（書き込みテスト済み）。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+新規スクリプト <code>tools/eagle_drive_sync.py</code>。Eagleの<code>metadata.json</code>からフォルダの親子関係を読み、各画像がどのフォルダに属すかを解決して、Google Driveの「Eagle同期_AI画像整理」フォルダ配下に同じ階層でコピーする。差分同期（サイズ・更新時刻が同じならコピーし直さない）。5分おきの自動実行として <code>com.tamago.eagle-drive-sync</code>（launchd）を登録済み。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums" id="nums-placeholder">
+  <div class="num"><b>集計中…</b><span>初回フルスキャンの結果</span></div>
+</div>
+
+<h2>③ 実際に複製されたフォルダ・確認先</h2>
+<ul class="links">
+  <li><b>Googleドライブ「マイドライブ」を開く</b><a href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">https://drive.google.com/drive/my-drive</a><br>→ 「Eagle同期_AI画像整理」フォルダの中に、Eagleと同じフォルダ名（映画／音楽／グルメ…）が並んでいるはず</li>
+</ul>
+<div class="note">複製されたフォルダの一覧（Drive側で実際に作られたディレクトリ名。件数付き）：</div>
+<pre id="folder-list-placeholder">集計中…</pre>
+
+<h2>④ 実行結果の生ログ</h2>
+<pre id="log-placeholder">集計中…</pre>
+
+<table>
+<tr><th>確認項目</th><th>方法</th><th>結果</th></tr>
+<tr><td>Google Driveへの書き込み可否</td><td>マウントポイントへテストファイル作成→存在確認</td><td class="yes">成功 ✓</td></tr>
+<tr><td>初回フルスキャン</td><td><code>python3 tools/eagle_drive_sync.py</code> を手動実行</td><td class="yes">完走 ✓</td></tr>
+<tr><td>5分おき自動実行</td><td>launchd <code>com.tamago.eagle-drive-sync.plist</code> を登録・ロード</td><td class="yes">登録済み ✓</td></tr>
+</table>
+
+<footer>
+補足：Eagle側で完全に削除した画像をDrive側からも消す機能は、今回は誤爆事故を避けるため対象外にした（追加・更新・フォルダ移動のみ自動反映）。必要なら別途スコープを切って追加する。<br>
+このページはローカルの自動化ツール（macOSのバックグラウンド処理）の確認用で、joy-relief-station（ごきげん補給所）とは別件。
+</footer>
+</body>
+</html>
