@@ -218,7 +218,7 @@ def _find_item(items, n):
     return None
 
 
-def queue_add(text, priority=None):
+def queue_add(text, priority=None, label=None):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
     発車待ちの列に、スマホから直接1行で積めるようにした。
@@ -228,7 +228,20 @@ def queue_add(text, priority=None):
     text = (text or "").strip()
     if not text:
         return "failed", "本文が空です"
-    text = text[:400]
+    # ---- 2026-09-06 01:10 **ここに2つの重大なバグがあった。**----
+    # ① `text[:400]` で指示文を400文字に切っていた。Dispatchが書いた長い指示（守るべき条件・
+    #    禁止事項・出力先・上限額）が**途中で消え、子セッションは不完全な指示で走っていた。**
+    #    実測：#404・#412〜418 の8本が全部きっかり400文字で切れていた。
+    # ② 題名を `text[:120]`（指示文の先頭120文字）にしていた。だから進捗表に指示文が
+    #    そのまま題名として並び、たまごさんに「6番以降が変」と言われた。
+    # → 制限を外し、**題名は label（短い名前）を優先**して使う。
+    title = (label or "").strip()
+    if not title:
+        # labelが無いときだけ、本文の1行目から短く作る（記号は落とす）
+        first = re.sub(r"[*#`>]", "", text.splitlines()[0] if text.splitlines() else text)
+        first = re.sub(r"^【[^】]*】", "", first).strip()
+        title = first[:60]
+    title = re.sub(r"[*#`]", "", title)[:80]
     try:
         p = int(priority)
     except Exception:
@@ -240,7 +253,7 @@ def queue_add(text, priority=None):
     next_n = (max([int(it.get("n") or 0) for it in items], default=0)) + 1
     item = {
         "n": next_n,
-        "title": text[:120],
+        "title": title,
         "why": "スマホから追加",
         "what": text,
         "status": "waiting",
@@ -452,7 +465,7 @@ def _process_queue(action, cmd):
     if action == "queue_redo":
         return queue_redo(target)
     if action == "queue_add":
-        return queue_add(target, cmd.get("priority"))
+        return queue_add(target, cmd.get("priority"), cmd.get("label"))
     if action == "queue_prio":
         return queue_prio(target)
     if action == "queue_later":
