@@ -456,7 +456,24 @@ def main():
       quota = load(QUOTA, {})
 
       # ---- 安全弁：マシン ----
-      if (m.get("memPressure") == "red") or m.get("swapIncreasing") or (m.get("diskFreeGB") or 99) < 5:
+      # 2026-09-05 17:25 **スワップが増えているだけでは止めない。**
+      #   たまごさんの言葉：「**多少間違えたとしても、ちゃんと3時間ずっと走り続けて
+      #   進捗が報告されるんだったら、そっちの方がよっぽど良い。承認しないと進まないよりよっぽど良い。**」
+      #   実測：メモリはgreen（余裕あり）なのに swapIncreasing=True だけで**1本も出せず全停止**していた。
+      #   スワップは平常時でも増えることがある。止めるのは本当に危ないとき——
+      #   メモリ圧が赤、ディスクが5GB未満、またはメモリが黄色でかつスワップも増えているとき——だけにする。
+      mem = m.get("memPressure")
+      swap_up = bool(m.get("swapIncreasing"))
+      really_bad = (mem == "red") or ((m.get("diskFreeGB") or 99) < 5) or (mem == "yellow" and swap_up)
+      # 計測が10分以上古いときは、その判断を信じない（古い「危険」で工場が止まり続けるのを防ぐ）
+      try:
+          import datetime as _dt
+          _t = m.get("measuredAt")
+          if _t and (time.time() - _dt.datetime.strptime(_t[:19], "%Y-%m-%dT%H:%M:%S").timestamp()) > 600:
+              really_bad = False
+      except Exception:
+          pass
+      if really_bad:
           log("見送り: Macが危険（mem=%s swapUp=%s disk=%s）" % (m.get("memPressure"), m.get("swapIncreasing"), m.get("diskFreeGB")))
           return 0
       # ---- 安全弁：クレジット ----

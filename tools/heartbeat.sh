@@ -32,7 +32,14 @@ if [ -f "$PIDF" ]; then
   fi
 fi
 echo $$ > "$PIDF"
-trap 'rm -f "$PIDF" 2>/dev/null || true' EXIT INT TERM
+# 退くときは「自分のPIDが書いてあるときだけ」消す。
+# 2026-09-05 17:25 これを付けずに無条件で消していたため、交代した古い心臓が
+#   **新しい心臓のPIDファイルまで道連れに消して**、誰も居ないのに居るように見えたり、
+#   逆に立て直しの判断が狂ったりした（17:17を最後に心臓が止まった）。
+cleanup_pid() {
+  if [ "$(cat "$PIDF" 2>/dev/null || true)" = "$$" ]; then rm -f "$PIDF" 2>/dev/null || true; fi
+}
+trap cleanup_pid EXIT INT TERM
 
 echo "$(date '+%F %T') 心臓を起動しました（pid $$）" >> "$LOG"
 while :; do
