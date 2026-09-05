@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#38 曲ページ全体チェック：関連動画がメイン動画の直下(2番目)か 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  img.shot{width:100%;border:1px solid var(--line);border-radius:10px;margin:0 0 6px;display:block;}
+  .cap{color:var(--sub);font-size:0.8rem;margin:0 0 20px;}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #38</div>
+<h1>#38 曲ページ全体チェック：「この曲の関連動画」がメイン動画の直下(2番目)に来ているか</h1>
+<div class="date">2026-09-05 13:57 本番反映を実測確認済み（x-deployment-id: psr2.0686eda7…）</div>
+
+<div class="fix">
+<b>やったこと：</b>曲ページ全体（<code>src/routes/cover-guide.tsx</code>）で、「この曲の関連動画」（<code>SongRelatedVideosSection</code>）が<b>メイン公式動画（OriginalSection）の直後・上から2番目</b>に、カード幅いっぱいのフルサイズ（16:9 aspect-video）で出るようになっているかを、対象となる曲ページ全件（9件）について確認した。<br><br>
+<b>大事な前提：</b>このセクションは「アーティスト名で一目でAIカバー…」のような常時表示ではなく、<code>admin_song_overrides.related_videos</code>というデータ（芸人カバー・パロディ・ライブ映像など）を実際に持っている曲のページだけに出る仕様。本番データベースを直接調べたところ、<b>この仕組みが効く曲は全曲中ちょうど9件</b>だった（10件無作為に選ぼうとしても、そもそも対象が9件しか存在しない＝これが「全数」）。それ以外の曲ページ（例：Ann Sallyなど）にこのセクションが出ないのは異常ではなく仕様通り。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>src/routes/cover-guide.tsx</code>のStep3内、メイン公式動画（<code>OriginalSection</code>）の直後・TikTok欄より前に「この曲の関連動画」を配置。旧配置（ページ後半、他の複数セクションの後）からは削除。カード自体は<code>src/components/SongRelatedVideosSection.tsx</code>で <code>w-full aspect-video</code>（フルサイズ・16:9）を使用。<br>
+<b>正直な経緯：</b>コード自体は本日午前（コミット<code>c92df061</code>・09-05 10:12）に既に別セッションが実装・main合流・Lovable公開まで完了させていた（成果物：<a href="36-related-videos-main.html">36-related-videos-main.html</a>）。今回の作業は、その修正が<b>曲ページ全体（対象9件すべて）に本当に効いているか</b>を独立して数え直し、main合流後に積まれた14件の後続コミットで巻き戻っていないかを確認し、最後にLovableの「公開」を改めて押して本番へ確実に反映させたもの。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>9 / 9</b><span>対象曲ページ（related_videosを持つ曲）のうち、コードが正しい位置にある件数</span></div>
+  <div class="num"><b>2番目</b><span>メイン動画の直後の表示順（旧：ページ後半）</span></div>
+  <div class="num"><b>14件</b><span>本日09-05 10:12の修正後にmainへ積まれた後続コミット数。うちこの2ファイルを触ったものは0件（巻き戻りなし）</span></div>
+  <div class="num"><b>9 / 9</b><span>本番で実際にページが生きている（HTTP 200）ことを確認した件数</span></div>
+</div>
+
+<h2>③ 10ページ分の判定表（対象は9件が全数）</h2>
+<table>
+<tr><th>#</th><th>曲</th><th>本番URL</th><th>メイン動画の直後(2番目)か</th><th>本番生存</th></tr>
+<tr><td>1</td><td>中島みゆき「糸」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&song=ito" target="_blank" rel="noopener">開く</a></td><td class="yes">✓ コード順で直後を確認</td><td class="yes">200</td></tr>
+<tr><td>2</td><td>Bruno Mars「Uptown Funk」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&song=uptown-funk" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>3</td><td>松任谷由実「あの日にかえりたい」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=yuming&song=ano-hi-ni-kaeritai" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>4</td><td>THE BLUE HEARTS「人にやさしく」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>5</td><td>杏里「Windy Summer」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=anri&song=windy-summer" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>6</td><td>Joyce Moreno「Feminina」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=joyce-moreno&song=feminina" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>7</td><td>ニャンゴスター「Overqualified for the Job」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nyangostar&song=overqualified-for-the-job" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>8</td><td>サカナクション「新宝島」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sakanaction&song=new-world" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>9</td><td>UA「太陽手に月は心の両手に」</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=u-a&song=taiyou-te-ni-tsuki-wa-kokoro-no-ryoute-ni" target="_blank" rel="noopener">開く</a></td><td class="yes">✓</td><td class="yes">200</td></tr>
+<tr><td>10</td><td>（参考）関連動画データを持たない曲の例</td><td>任意の曲ページ</td><td>対象外＝正しく非表示（仕様通り）</td><td>—</td></tr>
+</table>
+
+<h2>④ 押せるリンク（実物・9件全部）</h2>
+<ul class="links">
+  <li><b>中島みゆき「糸」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&song=ito" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&song=ito</a></li>
+  <li><b>Bruno Mars「Uptown Funk」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&song=uptown-funk" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&song=uptown-funk</a></li>
+  <li><b>松任谷由実「あの日にかえりたい」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=yuming&song=ano-hi-ni-kaeritai" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=yuming&song=ano-hi-ni-kaeritai</a></li>
+  <li><b>THE BLUE HEARTS「人にやさしく」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku</a></li>
+  <li><b>杏里「Windy Summer」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=anri&song=windy-summer" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=anri&song=windy-summer</a></li>
+  <li><b>Joyce Moreno「Feminina」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=joyce-moreno&song=feminina" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=joyce-moreno&song=feminina</a></li>
+  <li><b>ニャンゴスター「Overqualified for the Job」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nyangostar&song=overqualified-for-the-job" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nyangostar&song=overqualified-for-the-job</a></li>
+  <li><b>サカナクション「新宝島」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sakanaction&song=new-world" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=sakanaction&song=new-world</a></li>
+  <li><b>UA「太陽手に月は心の両手に」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=u-a&song=taiyou-te-ni-tsuki-wa-kokoro-no-ryoute-ni" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=u-a&song=taiyou-te-ni-tsuki-wa-kokoro-no-ryoute-ni</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/c92df061cde68a12b6105a33f5f13d8bec33a700" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/c92df061</a></li>
+  <li><b>変更したコード（mainの最新版）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/routes/cover-guide.tsx" target="_blank" rel="noopener">src/routes/cover-guide.tsx</a></li>
+</ul>
+
+<h2>⑤ 前と後（実写）</h2>
+<div class="note">
+下の2枚は本日午前（09-05 10:42）に本番URLを実機で開いて撮影したもの（成果物<a href="36-related-videos-main.html">#36の確認ページ</a>より転載。今回はその後14件のコミットで巻き戻っていないことをコード差分で確認済み・上記②参照）。
+</div>
+<img class="shot" src="img/36-after-nakajima.png" alt="本番・中島みゆき「糸」のページ。メイン動画のすぐ下に見出し「この曲の関連動画 1本」、フルサイズのサムネイルカードが1枚。">
+<div class="cap">① 本番実写：中島みゆき「糸」。メイン動画のすぐ下（2番目）に「この曲の関連動画」がカード幅いっぱいで表示されている。</div>
+<img class="shot" src="img/36-after-brunomars.png" alt="本番・Bruno Mars「Uptown Funk」のページ。見出し「この曲の関連動画 2本」、フルサイズのサムネイルカードが表示。">
+<div class="cap">② 本番実写：Bruno Mars「Uptown Funk」。関連動画2本のうち1本目（フルサイズ）。</div>
+
+<footer>
+今回の作業：①9件全数をSupabase(admin_song_overrides)から数え直し ②main合流後の後続14コミットが対象2ファイルを触っていないことをgit logで確認 ③Lovableの「公開」をCDP経由で実クリックし、x-deployment-idが<code>psr2.e2c00d19…</code>→<code>psr2.0686eda7…</code>へ変わったことを実測 ④公開後、対象9ページ全件が本番でHTTP 200を返すことを実測。<br>
+このセッションにはブラウザ実機スクリーンショットのツールが搭載されていなかったため、⑤の実写は本日午前に同じコードで撮影済みの#36の写真を正直に転載（コードは①②で不変を確認済み）。
+</footer>
+</body>
+</html>
