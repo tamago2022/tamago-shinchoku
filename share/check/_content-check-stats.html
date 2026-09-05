@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>確認ページの機械検品・実績</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:720px;margin:24px auto;padding:0 16px;line-height:1.7;color:#222}
+  h1{font-size:20px}
+  .num{font-size:40px;font-weight:800;margin:4px 0}
+  .box{background:#f6f6f6;border-radius:12px;padding:16px;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{border-bottom:1px solid #ddd;padding:6px 4px;text-align:left;vertical-align:top}
+  .ok{color:#0a7a2f}
+  .ng{color:#c22}
+  .muted{color:#888;font-size:12px}
+</style>
+</head>
+<body>
+<h1>確認ページの機械検品・実績</h1>
+<p class="muted">harvest（着火した仕事を回収する係）が、確認待ちに上げる直前に確認ページの中身を実際に開いて検品しています。ここはその実績を自動で表示するページです（このページ自体は手で更新しません。<code>status/content_check_stats.json</code> を読むだけです）。</p>
+
+<div class="box">
+  <div>これまでに検品した件数</div>
+  <div class="num" id="checked">-</div>
+  <div>そのうち弾いた件数</div>
+  <div class="num ng" id="rejected">-</div>
+  <div class="muted" id="updated"></div>
+</div>
+
+<h2>直近の検品ログ</h2>
+<table id="tbl">
+  <thead><tr><th>時刻</th><th>番号</th><th>結果</th><th>理由</th></tr></thead>
+  <tbody></tbody>
+</table>
+<p class="muted" id="err"></p>
+
+<script>
+fetch("../../status/content_check_stats.json?_=" + Date.now())
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById("checked").textContent = d.totalChecked || 0;
+    document.getElementById("rejected").textContent = d.totalRejected || 0;
+    document.getElementById("updated").textContent = "最終更新: " + (d.updatedAt || "-");
+    const tb = document.querySelector("#tbl tbody");
+    (d.history || []).slice().reverse().forEach(h => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${h.ts || ""}</td><td>${h.n ?? ""}</td>`
+        + `<td class="${h.ok ? "ok" : "ng"}">${h.ok ? "合格" : "不合格"}</td>`
+        + `<td>${h.ok ? "" : (h.reason || "")}</td>`;
+      tb.appendChild(tr);
+    });
+  })
+  .catch(e => { document.getElementById("err").textContent = "読み込み失敗: " + e; });
+</script>
+</body>
+</html>
