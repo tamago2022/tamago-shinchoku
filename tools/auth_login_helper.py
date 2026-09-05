@@ -96,7 +96,9 @@ def main():
                     log("ログインURLを書き出しました")
             try:
                 with io.open(LOG, "a", encoding="utf-8") as f:
-                    f.write(strip_ansi(chunk.decode("utf-8", "ignore")))
+                    txt = strip_ansi(chunk.decode("utf-8", "ignore"))
+                    txt = re.sub(r"sk-ant-oat01-[A-Za-z0-9_\-\s]{40,}", "（トークンは伏せました）", txt)
+                    f.write(txt)
             except Exception:
                 pass
         # たまごさんからコードが届いたら流し込む
@@ -115,7 +117,21 @@ def main():
         if code_sent and ("success" in buf.lower() or "saved" in buf.lower()):
             break
 
-    ok = code_sent and proc.poll() is not None and proc.returncode == 0
+    # トークンを拾って安全な場所へ入れる（画面折り返しで空白・改行が混ざるので全部落とす）
+    installed = False
+    clean_all = strip_ansi(buf)
+    squeezed = re.sub(r"\s+", "", clean_all)
+    m = re.search(r"(sk-ant-oat01-[A-Za-z0-9_\-]{40,})", squeezed)
+    if m:
+        d = os.path.expanduser("~/.tamago")
+        os.makedirs(d, exist_ok=True)
+        tp = os.path.join(d, "claude_token")
+        io.open(tp, "w", encoding="utf-8").write(m.group(1))
+        os.chmod(tp, 0o600)
+        installed = True
+        log("トークンを ~/.tamago/claude_token へ入れました（%d文字）" % len(m.group(1)))
+
+    ok = installed
     w(DONE_FILE, "ok" if ok else "ng")
     try:
         os.close(master)

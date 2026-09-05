@@ -51,9 +51,25 @@ CLAUDE = os.environ.get("CLAUDE_BIN") or (os.path.expanduser("~/.local/bin/claud
 EXCLUDED_APPS = {"Brave Browser", "Google Chrome"}
 
 
-def run(cmd, timeout=10):
+
+# ---- 認証トークン（2026-09-05）----
+# `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
+# こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
+def claude_env():
+    env = dict(os.environ)
+    p = os.path.expanduser("~/.tamago/claude_token")
     try:
-        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        t = io.open(p, encoding="utf-8").read().strip()
+        if t:
+            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
+    except Exception:
+        pass
+    return env
+
+
+def run(cmd, timeout=10, env=None):
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
     except Exception:
         return None
 
@@ -102,7 +118,7 @@ def resume(cli):
         with open(log, "ab") as f:
             f.write(("\n=== %s resume ===\n" % time.strftime("%Y-%m-%d %H:%M:%S")).encode())
             subprocess.Popen(cmd, cwd=os.path.expanduser("~"), stdout=f, stderr=subprocess.STDOUT,
-                              stdin=subprocess.DEVNULL, start_new_session=True)
+                              stdin=subprocess.DEVNULL, start_new_session=True, env=claude_env())
         return "done", "再開コマンドを送りました"
     except Exception as e:
         return "failed", str(e)
@@ -138,7 +154,7 @@ def handoff(cli):
         with open(log, "ab") as f:
             f.write(("\n=== %s handoff from %s ===\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cli[:8])).encode())
             subprocess.Popen(cmd, cwd=os.path.expanduser("~"), stdout=f, stderr=subprocess.STDOUT,
-                              stdin=subprocess.DEVNULL, start_new_session=True)
+                              stdin=subprocess.DEVNULL, start_new_session=True, env=claude_env())
         return "done", "新セッション %s を起動しました" % new_id[:8]
     except Exception as e:
         return "failed", str(e)
@@ -572,7 +588,7 @@ def auth_probe(_target=None):
     たまごさんは「ログインしている」と言っている。アプリのログインとCLIの認証は
     別々に持っているので、**推測せずに実際に叩いて確かめる。**
     """
-    r = run([CLAUDE, "-p", "--model", "claude-sonnet-5", "--output-format", "json", "1+1は？"], timeout=60)
+    r = run([CLAUDE, "-p", "--model", "claude-sonnet-5", "--output-format", "json", "1+1は？"], timeout=60, env=claude_env())
     if r is None:
         return "failed", "claude が応答しませんでした（タイムアウト）"
     out = (r.stdout or "") + (r.stderr or "")
@@ -801,6 +817,22 @@ def auth_install_token(_target=None):
     return "done", "トークンを ~/.tamago/claude_token へ入れました（権限600・ログからは消去）"
 
 
+
+def auth_token_check(_target=None):
+    """トークンが正しく置けているか、中身を出さずに確かめる。"""
+    p = os.path.expanduser("~/.tamago/claude_token")
+    if not os.path.exists(p):
+        return "failed", "トークンのファイルがありません"
+    t = io.open(p, encoding="utf-8").read().strip()
+    env = claude_env()
+    has = "CLAUDE_CODE_OAUTH_TOKEN" in env
+    r = run([CLAUDE, "-p", "--model", "claude-sonnet-5", "--output-format", "json", "ping"],
+            timeout=60, env=env)
+    out = ((r.stdout or "") + (r.stderr or "")) if r else "（応答なし）"
+    return "done", ("長さ%d文字・先頭%s／環境変数に入った:%s／結果: %s"
+                    % (len(t), t[:12], has, out[-220:].replace("\n", " ")))
+
+
 def _process_other(action, cmd):
     target = cmd.get("target")
     if action == "close_app":
@@ -817,6 +849,8 @@ def _process_other(action, cmd):
         return restart_heartbeat(target)
     if action == "auth_where":
         return auth_where(target)
+    if action == "auth_token_check":
+        return auth_token_check(target)
     if action == "auth_install_token":
         return auth_install_token(target)
     if action == "auth_login_helper":

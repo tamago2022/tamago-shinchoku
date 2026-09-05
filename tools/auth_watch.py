@@ -30,6 +30,22 @@ if not os.path.exists(CLAUDE):
 INTERVAL = 600  # 10分に1回だけ試す（無駄打ちしない）
 
 
+
+# ---- 認証トークン（2026-09-05）----
+# `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
+# こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
+def claude_env():
+    env = dict(os.environ)
+    p = os.path.expanduser("~/.tamago/claude_token")
+    try:
+        t = io.open(p, encoding="utf-8").read().strip()
+        if t:
+            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
+    except Exception:
+        pass
+    return env
+
+
 def log(msg):
     try:
         with io.open(LOG, "a", encoding="utf-8") as f:
@@ -63,7 +79,7 @@ def main():
     try:
         r = subprocess.run([CLAUDE, "-p", "--model", "claude-sonnet-5",
                             "--output-format", "json", "1+1は？"],
-                           capture_output=True, text=True, timeout=90)
+                           capture_output=True, text=True, timeout=90, env=claude_env())
     except Exception:
         return 0
     out = (r.stdout or "") + (r.stderr or "")

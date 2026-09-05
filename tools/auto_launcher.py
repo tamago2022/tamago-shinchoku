@@ -47,6 +47,22 @@ if not os.path.exists(CLAUDE):
             break
 
 
+
+# ---- 認証トークン（2026-09-05）----
+# `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
+# こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
+def claude_env():
+    env = dict(os.environ)
+    p = os.path.expanduser("~/.tamago/claude_token")
+    try:
+        t = io.open(p, encoding="utf-8").read().strip()
+        if t:
+            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
+    except Exception:
+        pass
+    return env
+
+
 def log(msg):
     try:
         with io.open(LOG, "a", encoding="utf-8") as f:
@@ -610,7 +626,7 @@ def launch_one(item, q, alive, safe_max):
         with open(logf, "ab") as f:
             f.write(("\n=== %s 自動発車: %s\n" % (time.strftime("%F %T"), item.get("title"))).encode())
             p = subprocess.Popen(cmd, cwd=wt, stdout=f, stderr=subprocess.STDOUT,
-                                 stdin=subprocess.DEVNULL, start_new_session=True)
+                                 stdin=subprocess.DEVNULL, start_new_session=True, env=claude_env())
         pid = p.pid
     except Exception as e:
         log("着火に失敗 %s: %s" % (item.get("title"), e))
