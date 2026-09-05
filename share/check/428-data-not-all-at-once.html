@@ -45,14 +45,14 @@
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-検索ページの関連動画検索(searchRelatedVideos)が通常検索と違いデバウンス無しで打鍵ごとに即送信していた不整合を解消。200msデバウンスへ統一し、5文字打つとサーバー関数を5回呼んでいたのを1回へ削減。あわせて先行案件#727(coverGuide.ts 8MB超の静的import解消・ShelfJumpSheet先読み解消)が既に本番反映済みであることを実測で再確認(回帰なし)。
+検索ページの関連動画検索(searchRelatedVideos)が通常検索と違いデバウンス無しで打鍵ごとに即送信していた不整合を解消。200msデバウンスへ統一し、5文字打つとサーバー関数を5回呼んでいたのを1回へ削減(本番JSに setTimeout 2箇所を実測確認)。あわせて先行案件#727(coverGuide.ts 8MB超の静的import解消)・#427(SiteHeader/BottomTabNavのlazy化)も同時に本番反映済みであることを実測確認(回帰なし・むしろ微減)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1427KB</b><span>トップページ初回転送量(gzip)</span></div>
-  <div class="num"><b>1441KB</b><span>棚ページ(world/music)初回転送量(gzip)</span></div>
-  <div class="num"><b>1422KB</b><span>検索ページ初回転送量(gzip)</span></div>
+  <div class="num"><b>1406KB</b><span>トップページ初回転送量(gzip・直前比-21KB)</span></div>
+  <div class="num"><b>1423KB</b><span>棚ページ(world/music)初回転送量(gzip・直前比-18KB)</span></div>
+  <div class="num"><b>1401KB</b><span>検索ページ初回転送量(gzip・直前比-21KB)</span></div>
   <div class="num"><b>5→1</b><span>検索1語あたりのサーバー呼び出し回数(デバウンス前→後)</span></div>
 </div>
 
@@ -68,7 +68,7 @@
 
 
 <footer>
-このページは #428 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+反映確認：x-deployment-id psr2.9f4ba76（2026-09-06 06:46公開）。本番JS(search-BfEFhlMb.js)内にsetTimeoutデバウンスが2箇所存在することを実測。
 </footer>
 </body>
 </html>
