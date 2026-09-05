@@ -135,13 +135,25 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
       render();
     });
   }
-  // フォルダも件数順に出す（フォルダ絞り込み）
+  // フォルダはEagle側の階層（親 / 子）でグループ化して出す（件数順の平置きだと133件が探しにくいため）
   const fc = {};
   d.items.forEach(it => (it.f||[]).forEach(f => fc[f] = (fc[f]||0)+1));
-  const folderList = Object.entries(fc).sort((a,b)=>b[1]-a[1]);
+  const groups = {};
+  Object.keys(fc).sort((a,b)=>a.localeCompare(b,"ja")).forEach(f=>{
+    const parts = f.split(" / ");
+    const top = parts[0];
+    (groups[top] = groups[top] || []).push([f, fc[f], parts.slice(1).join(" / ")]);
+  });
   const sel = document.getElementById("folderSel");
-  sel.innerHTML = `<option value="">フォルダ：すべて</option>` +
-    folderList.map(([f,n])=>`<option value="${esc(f)}">${esc(f)}（${n}）</option>`).join("");
+  let optHtml = `<option value="">フォルダ：すべて</option>`;
+  Object.keys(groups).sort((a,b)=>a.localeCompare(b,"ja")).forEach(top=>{
+    const rows = groups[top];
+    const total = rows.reduce((s,r)=>s+r[1],0);
+    optHtml += `<optgroup label="${esc(top)}（${total}）">` +
+      rows.map(([f,n,label])=>`<option value="${esc(f)}">${esc(label || "（フォルダ全体）")}（${n}）</option>`).join("") +
+      `</optgroup>`;
+  });
+  sel.innerHTML = optHtml;
   sel.addEventListener("change", e=>{ FOLDER = e.target.value; render(); });
   render();
 });
