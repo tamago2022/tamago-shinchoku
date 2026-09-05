@@ -58,11 +58,11 @@ queue_add（PWAの＋発車待ちに追加／Dispatchのobsidian経由queue_add�
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>変更したコード（GitHub・queue_add＋重複判定）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/command_ingest.py#L221-L299" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/command_ingest.py#L221-L299</a></li>
-  <li><b>コード追加コミット（main合流済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/312cddb53632b6a146273d256a0761bf03122f7b" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/312cddb53632b6a146273d256a0761bf03122f7b</a></li>
+  <li><b>変更したコード（GitHub・現在mainの実物。DUP_STATUSES／_titles_conflict／_find_duplicate_title／queue_addの重複判定部分）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/86621b7cf8de3e9f7c46e9388ca2be3edf54d052/tools/command_ingest.py#L224-L374" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/86621b7.../tools/command_ingest.py#L224-L374</a></li>
 </ul>
+<div class="note">※前回版はここに「コード追加コミット」として312cddbへのリンクを置いていたが、そのコミットは自動ステータスコミット（コミットメッセージ「status: Mac負荷 03:43」）に本機能の差分が相乗りしたもので、同じコミットに409番（松茸梅動画）の無関係な出力ファイルも大量に含まれていた。紛らわしいため撤去し、上の「現在mainの実物」への直リンク（行番号固定）に一本化した。</div>
 
-<h2>⑤ 何をどう確かめたか（2026-09-06 orchestratorが再実測）</h2>
+<h2>⑤ 何をどう確かめたか（2026-09-06 再実測・現在のmain HEAD 86621b7で再実行）</h2>
 <div class="note">本番の tools/command_ingest.py をそのまま import し、一時ファイルの queue.json に対して queue_add() を7回連続で呼び出した実際の戻り値。本番 status/queue.json には一切触れていない。</div>
 <table>
 <tr><th>#</th><th>入力</th><th>結果（実測の戻り値そのまま）</th></tr>
