@@ -888,7 +888,8 @@ function renderSessions(m){
     `<span class="green">走行中<b>${cnt.green}</b></span><span class="red">止まり<b>${cnt.red}</b></span><span class="yellow">待ち<b>${cnt.yellow}</b></span><span class="blue">完了<b>${cnt.blue||0}</b></span><span>待機<b>${cnt.gray}</b></span>`
     + `<span title="終了報告済みのうち人に押されず完了した件数（母数が少ないと%は当てにならないので分数で出す）">自走完了<b>${esc(auText)}</b></span>`
     // 累計は watchdog-state.json の _totals（見張り番稼働開始から）。直近は今回サイクルのwatchdog.resumed。両方出さないと「動いてない」と誤解される
-    + (wd.lastRun ? `<span title="累計は見張り番が動き出してから通算">見張り番 ${esc(wd.lastRun.slice(5))}<b>直近${nRes}・累計${mt.autoResumes ?? "—"}回${nHand || mt.handoffs ? `・引き継ぎ${mt.handoffs ?? nHand}` : ""}${nUnrec ? `・復旧不能${nUnrec}` : ""}</b></span>` : `<span>見張り番<b>未稼働</b></span>`);
+    // 34番「3時間を超えたセッションを自動で切る」：hardCuts＝壁時計3時間で作業中でも強制カットした累計本数。0でも「まだ発生していない」と分かるよう常に出す
+    + (wd.lastRun ? `<span title="累計は見張り番が動き出してから通算">見張り番 ${esc(wd.lastRun.slice(5))}<b>直近${nRes}・累計${mt.autoResumes ?? "—"}回${nHand || mt.handoffs ? `・引き継ぎ${mt.handoffs ?? nHand}` : ""}${nUnrec ? `・復旧不能${nUnrec}` : ""}</b></span><span title="壁時計3時間を超えたら作業中でも強制カットして次のセッションへ引き継ぐ（idleとは無関係）">3時間強制カット<b>${mt.hardCuts ?? 0}回</b></span>` : `<span>見張り番<b>未稼働</b></span>`);
   // モデル別本数（今動いているものだけ）：「今日Fable1本くらい使えるな」の判断材料
   const modelCnt = {};
   items.forEach(({s, st}) => { if(st.color === "green"){ const lbl = modelLabel(s.model) || "不明"; modelCnt[lbl] = (modelCnt[lbl]||0) + 1; } });
