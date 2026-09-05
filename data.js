@@ -116,5 +116,6 @@ window.SHINCHOKU = {
   {status:"done", content:"GitHub Actions自動実行が支払い不備で全滅(08-08頃〜)", orderedAt:"2026-08-30T00:00:00+09:00", owner:"-", evidence:"", note:"課金せずローカル直接実行へ切替済み"},
   {status:"done", content:"共通脳の双方向テスト(ChatGPT⇄Claude)", orderedAt:"2026-08-31T00:00:00+09:00", owner:"-", evidence:"ai-brain/sync/chatgpt/latest.md ⇄ ai-brain/sync/claude/latest.md", note:"往復1周成立確認済み。たまごさんのコピペは不要になった"},
   {status:"done", content:"依頼台帳を作る", orderedAt:"2026-08-31T23:37:00+09:00", owner:"本セッション", evidence:"AI出力/_ルール/依頼台帳.md", note:""},
+  {status:"done", content:"発車待ち#26：止まっているタスク56件のうち9件を検品(6件PASS/3件FAIL)", orderedAt:"2026-09-05T12:00:00+09:00", owner:"tamago-orchestrator", evidence:"https://tamago2022.github.io/tamago-shinchoku/share/check/26-stalled-tasks-check.html", note:"joy-relief-station側TASK_BOARD.mdの「検品前」案件6件（#2/#37/#61/#76/#99/#100）を本番URL実測でPASS・🔵検品済みへ格上げ。3件（#21/#77/#78）は逆に「直ったつもりで止まっていた」ことが判明しFAILとして台帳へ記録（次の一手も併記）。残る47件は未着手"},
   ]
 };
