@@ -56,6 +56,23 @@ if [ -f "$HBPID" ]; then
   HBOLD="$(cat "$HBPID" 2>/dev/null || true)"
   if [ -n "${HBOLD:-}" ] && kill -0 "$HBOLD" 2>/dev/null; then HB_ALIVE=1; fi
 fi
+# ---- 2026-09-06 00:16 **生きているのに詰まっている心臓を見つける。**----
+# プロセスが在るかどうかだけで見ていたので、**中で固まっていても「生きている」と判定して
+# 立て直さなかった。**実際 00:13 を最後に発車も受信箱も3分間止まったまま誰も気づかなかった。
+# 心臓は15秒ごとに必ず auto_launch.log へ何か書く。**3分以上伸びていなければ詰まっている。**
+# 中継所の生死を「外から叩いて確かめた」のと同じ考え方で、心臓も**仕事が進んでいるか**で見る。
+if [ "$HB_ALIVE" = "1" ]; then
+  NOW_S=$(date +%s)
+  LOG_S=$(stat -f %m "$REPO/status/auto_launch.log" 2>/dev/null || echo 0)
+  if [ "$(( NOW_S - LOG_S ))" -gt 180 ]; then
+    echo "$(date '+%F %T') 💤 心臓が$(( (NOW_S - LOG_S) / 60 ))分間なにも書いていません。詰まっているとみなして入れ直します" >> "$REPO/status/heartbeat.log"
+    pkill -f "tools/heartbeat.sh" >/dev/null 2>&1 || true
+    sleep 1
+    pkill -9 -f "tools/heartbeat.sh" >/dev/null 2>&1 || true
+    rm -f "$HBPID" 2>/dev/null || true
+    HB_ALIVE=0
+  fi
+fi
 if [ "$HB_ALIVE" = "0" ] && ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
   python3 -c "import subprocess,sys; subprocess.Popen(['bash', sys.argv[1]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, start_new_session=True)" "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 || true
 fi
