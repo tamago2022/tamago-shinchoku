@@ -248,6 +248,29 @@
   .clater{background:#3a2f12; color:var(--yellow); border-color:rgba(230,190,80,0.45)!important;}
   .cng{background:#1a2028; color:var(--red);}
   .cdel{background:#1a2028; color:var(--sub); border-color:var(--line);}
+  /* 2026-09-06(418番) 押すだけで終わる確認待ち：サムネ＋本番URL＋完了/やり直しの2ボタンだけを最初に見せ、
+     長い文章・後回し/削除は<details>の中に畳む。「証拠なし」「開けない」は赤で先に分かるようにする。
+     画像もボタンも高さは固定pxでなくaspect-ratio/min-heightで決め、9/05の文字縦潰れを再発させない。 */
+  .cthumbs{display:flex; gap:6px; margin:8px 0;}
+  .cthumbs img{flex:1 1 0; min-width:0; width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px;
+    border:1px solid var(--line); background:#0e1319; display:block;}
+  .cthumbs.wait{padding:10px; border:1px dashed var(--line); border-radius:8px; color:var(--dim);
+    font-size:0.78rem; text-align:center;}
+  .cthumbs.none{padding:10px; border:1px dashed var(--red); border-radius:8px; background:var(--red-bg);
+    color:#ffb3a7; font-size:0.82rem; font-weight:700; text-align:center; line-height:1.5;}
+  .curlbtn{display:flex; align-items:center; justify-content:center; gap:6px; min-height:46px;
+    border-radius:10px; border:1px solid var(--blue); color:var(--blue); text-decoration:none;
+    font-weight:700; font-size:0.86rem; margin:8px 0; padding:6px 10px; text-align:center; line-height:1.4;}
+  .curlbtn.dead{border-color:var(--red); color:#ffb3a7; background:var(--red-bg);}
+  .cbtns.cbtns2{grid-template-columns:1fr 1fr; margin-top:6px;}
+  .cmore{margin-top:8px; border-top:1px dashed var(--line); padding-top:6px;}
+  .cmore > summary{cursor:pointer; font-size:0.74rem; color:var(--dim); list-style:none; min-height:30px;
+    display:flex; align-items:center;}
+  .cmore > summary::-webkit-details-marker{display:none;}
+  .cmore > summary::after{content:"（くわしく・後で・消す）"; margin-left:4px;}
+  .cmore .cbtns{margin-top:8px;}
+  .crow.proof{opacity:1;}
+  .crow.noproof{border-left:3px solid var(--red); padding-left:8px;}
   .queue{border-color:rgba(95,217,150,0.35);}
   .queue > summary{font-weight:700;}
   .qrow{display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
@@ -1123,29 +1146,101 @@ function tickCountdowns(){
   });
 }
 /* ───── たまごさんの確認待ち ─────
-   自動発車が終わると awaiting_check に入る。ここでOK→完了、やり直し→発車待ちの列に戻す。 */
+   自動発車が終わると awaiting_check に入る。ここでOK→完了、やり直し→発車待ちの列に戻す。
+   2026-09-06(418番) たまごさん「長い文章はいらない。画面で見て『直ったね』という判断にしたい。
+   押してみて、ちゃんとそのページに飛んで、反映されてるねという確認をバンバンしていきたい」
+   → 各行を①前後スクショ ②押せる本番URL ③完了/やり直しの2ボタンだけ、の形にする。
+     文章（終了時刻・全URL一覧・報告本文）と後回し/削除は<details>に畳んで隠す。
+     証拠(スクショ)が無い・URLが開けない行は赤く出し、証拠がある行を上に並べる。 */
+window.__thumbCache = window.__thumbCache || {};   // checkUrl -> [img,...] | null(見つからず) | "pending"
+window.__urlHealthCache = window.__urlHealthCache || {}; // url -> true/false | "pending"
+function absUrl(base, src){ try{ return new URL(src, base).href; }catch(e){ return src || ""; } }
+// 確認ページ(/share/check/…)は同一オリジンなので実際のHTTPステータスと<img>を両方取れる。
+// ここで拾えた画像を「証拠のスクショ」として使う（content_check()が既にimg/数字の有無を検品済みの前提に乗る）。
+function fetchCheckPageAssets(url){
+  if(window.__thumbCache[url] !== undefined) return Promise.resolve(window.__thumbCache[url]);
+  window.__thumbCache[url] = "pending";
+  return fetch(url, {cache:"no-store"}).then(res=>{
+    window.__urlHealthCache[url] = !!res.ok;
+    if(!res.ok){ window.__thumbCache[url] = null; return null; }
+    return res.text().then(html=>{
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const imgs = Array.from(doc.querySelectorAll("img"))
+        .map(im => absUrl(url, im.getAttribute("src") || ""))
+        .filter(Boolean);
+      window.__thumbCache[url] = imgs.length ? imgs.slice(0,2) : null;
+      return window.__thumbCache[url];
+    });
+  }).catch(()=>{ window.__thumbCache[url] = null; window.__urlHealthCache[url] = false; return null; });
+}
+// 本番URL（他オリジンのことが多い）はブラウザのCORS制限で中身までは読めないため、
+// 「通信そのものが失敗するか」だけを見る（DNS不明・接続不可・タイムアウト＝赤。それ以外は今のところ緑扱い）。
+// 同一オリジン（/share/配下）だけは fetchCheckPageAssets 側で本物の404も拾える。
+function checkUrlReachable(url){
+  if(window.__urlHealthCache[url] !== undefined) return Promise.resolve(window.__urlHealthCache[url]);
+  window.__urlHealthCache[url] = "pending";
+  const ctrl = ("AbortController" in window) ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(()=>ctrl.abort(), 6000) : null;
+  return fetch(url, {method:"HEAD", mode:"no-cors", cache:"no-store", signal: ctrl && ctrl.signal})
+    .then(()=>{ clearTimeout(timer); window.__urlHealthCache[url] = true; return true; })
+    .catch(()=>{ clearTimeout(timer); window.__urlHealthCache[url] = false; return false; });
+}
 function renderCheck(){
   const box = document.getElementById("check"); if(!box) return;
   const all = (window.__queue && window.__queue.items) || [];
   const rows = all.filter(r => r.status === "awaiting_check");
   document.getElementById("checkMeta").textContent = rows.length ? `${rows.length}件` : "";
   if(!rows.length){ box.innerHTML = `<div class="card note">確認待ちはありません</div>`; return; }
-  box.innerHTML = rows.map(r=>{
+  const evid = rows.map(r=>{
+    const urls = (r.urls||[]).filter(Boolean);
+    const checkUrl = urls.find(u => u.includes("/share/check/")) || null;
+    const primaryUrl = urls.find(u => !u.includes("/share/check/")) || checkUrl || urls[0] || null;
+    let thumbs = checkUrl ? window.__thumbCache[checkUrl] : null;
+    if(checkUrl && thumbs === undefined){ thumbs = "pending"; fetchCheckPageAssets(checkUrl).then(()=>renderCheck()); }
+    let health = primaryUrl ? window.__urlHealthCache[primaryUrl] : undefined;
+    if(primaryUrl && health === undefined){
+      health = "pending";
+      // 確認ページ自体が本番URLの場合は上のfetchで既にurlHealthも埋まるので二重には叩かない
+      if(primaryUrl !== checkUrl) checkUrlReachable(primaryUrl).then(()=>renderCheck());
+    }
+    const hasProof = Array.isArray(thumbs) && thumbs.length > 0;
+    const isDead = health === false;
+    // 並び順：証拠(スクショ)があるものを最優先、次にURLが生きているもの。分からない(pending)は中間に置く。
+    const score = (hasProof ? 2 : 0) + (isDead ? -3 : (health === true ? 1 : 0));
+    return {r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead, score};
+  });
+  evid.sort((a,b)=> b.score - a.score);
+  box.innerHTML = evid.map(({r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead})=>{
     const fin = r.finishedAt ? String(r.finishedAt).slice(5,16).replace("T"," ") : "";
-    const urls = (r.urls||[]).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
-    return `<div class="crow" data-cn="${r.n}">
+    const thumbsHtml = thumbs === "pending"
+      ? `<div class="cthumbs wait">確認中…</div>`
+      : hasProof
+        ? `<div class="cthumbs">${thumbs.map((u,i)=>`<img src="${esc(u)}" loading="lazy" alt="${i===0?"前":"後"}">`).join("")}</div>`
+        : `<div class="cthumbs none">⚠️ 証拠なし（スクショが見つかりません）</div>`;
+    const urlLabel = health === "pending" ? "▶ 本番を開いて確認" : isDead ? "⚠️ 開けないかも・要確認" : "▶ 本番を開いて確認";
+    const urlBtn = primaryUrl
+      ? `<a class="curlbtn${isDead ? " dead" : ""}" href="${esc(primaryUrl)}" target="_blank" rel="noopener">${urlLabel}</a>`
+      : `<div class="curlbtn dead">⚠️ URLの報告なし</div>`;
+    const allUrls = urls.map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
+    return `<div class="crow${hasProof ? " proof" : " noproof"}" data-cn="${r.n}">
       <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
-      <div class="cm">${fin ? fin + " に終了" : ""}</div>
-      ${urls || `<div class="cm">URLの報告なし</div>`}
-      <div class="cr">${esc((r.result||"").slice(0,600))}</div>
-      <!-- 2026-09-05 たまごさん「とりあえずOKと、やり直し後でいいは、一緒の扱いかな。
-           完了と、とりあえずOK（あとで直す）と、やり直しますと、あとタスク削除。この4つにして」 -->
-      <div class="cbtns">
-        <button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了（消える）</button>
-        <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し（今すぐ）</button>
-        <button class="clater" data-ck="later" data-n="${r.n}">🕗 あとで（手が空いたら）</button>
-        <button class="cdel" data-ck="del" data-n="${r.n}">🗑 このタスクを消す</button>
+      ${thumbsHtml}
+      ${urlBtn}
+      <!-- 2026-09-06(418番) たまごさん「押すだけで終わる確認待ち」→ 前面は2ボタンだけ。
+           あとで/削除・全文の報告・終了時刻・全URL一覧は<details>へ畳む（消してはいない）。 -->
+      <div class="cbtns cbtns2">
+        <button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了</button>
+        <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し</button>
       </div>
+      <details class="cmore"><summary>くわしく</summary>
+        <div class="cm">${fin ? fin + " に終了" : ""}</div>
+        ${allUrls || `<div class="cm">URLの報告なし</div>`}
+        <div class="cr">${esc((r.result||"").slice(0,600))}</div>
+        <div class="cbtns">
+          <button class="clater" data-ck="later" data-n="${r.n}">🕗 あとで（手が空いたら）</button>
+          <button class="cdel" data-ck="del" data-n="${r.n}">🗑 このタスクを消す</button>
+        </div>
+      </details>
     </div>`;
   }).join("");
 }

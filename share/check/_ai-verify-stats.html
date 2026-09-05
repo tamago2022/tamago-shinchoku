@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI検品（Verifier）・実績</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.7;color:#222}
+  h1{font-size:20px}
+  h2{font-size:16px;margin-top:24px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .card{background:#f6f6f6;border-radius:12px;padding:14px 16px;margin:12px 0;flex:1;min-width:130px}
+  .num{font-size:34px;font-weight:800;margin:2px 0}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{border-bottom:1px solid #ddd;padding:6px 4px;text-align:left;vertical-align:top}
+  .ok{color:#0a7a2f}
+  .ng{color:#c22}
+  .err{color:#a67c00}
+  .muted{color:#888;font-size:12px}
+  code{background:#eee;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<h1>AI検品（Verifier）・実績</h1>
+<p class="muted">
+作った本人（builder）に自己採点させず、別プロセスのclaude（Sonnet）が1件ずつ独立に確認しています。
+機械検品（404・文字数などの文字列チェック）とは別の担当で、こちらは「依頼内容と実際の変化が一致しているか」を見ます。
+このページは手で更新しません。<code>status/ai_verify_stats.json</code> を読むだけです。
+</p>
+
+<div class="row">
+  <div class="card">
+    <div>検品した件数</div>
+    <div class="num" id="checked">-</div>
+  </div>
+  <div class="card">
+    <div class="ok">合格</div>
+    <div class="num ok" id="passed">-</div>
+  </div>
+  <div class="card">
+    <div class="ng">不合格</div>
+    <div class="num ng" id="failed">-</div>
+  </div>
+  <div class="card">
+    <div class="err">技術的エラー（素通し）</div>
+    <div class="num err" id="errors">-</div>
+  </div>
+</div>
+
+<div class="card">
+  <div>検品にかかったクレジット（合計）</div>
+  <div class="num" id="cost">-</div>
+  <div class="muted" id="avgcost"></div>
+</div>
+<p class="muted" id="updated"></p>
+
+<h2>不合格の理由の内訳</h2>
+<table id="reasons"><thead><tr><th>理由</th><th>件数</th></tr></thead><tbody></tbody></table>
+
+<h2>直近の検品ログ</h2>
+<table id="tbl">
+  <thead><tr><th>時刻</th><th>番号</th><th>結果</th><th>理由</th><th>コスト</th></tr></thead>
+  <tbody></tbody>
+</table>
+<p class="muted" id="err"></p>
+
+<script>
+fetch("../../status/ai_verify_stats.json?_=" + Date.now())
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById("checked").textContent = d.totalChecked || 0;
+    document.getElementById("passed").textContent = d.totalPassed || 0;
+    document.getElementById("failed").textContent = d.totalFailed || 0;
+    document.getElementById("errors").textContent = d.totalErrors || 0;
+    const cost = d.totalCostUsd || 0;
+    document.getElementById("cost").textContent = "$" + cost.toFixed(3);
+    const n = d.totalChecked || 0;
+    if (n > 0) {
+      const yen = Math.round(cost * 150 * 100) / 100;
+      document.getElementById("avgcost").textContent =
+        "1件あたり約 $" + (cost / n).toFixed(4) + "（およそ" + Math.round((cost / n) * 150) + "円）・累計およそ" + yen + "円";
+    }
+    document.getElementById("updated").textContent = "最終更新: " + (d.updatedAt || "-");
+    const rt = document.querySelector("#reasons tbody");
+    const rc = d.reasonCounts || {};
+    Object.keys(rc).sort((a, b) => rc[b] - rc[a]).forEach(k => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${k}</td><td>${rc[k]}</td>`;
+      rt.appendChild(tr);
+    });
+    const tb = document.querySelector("#tbl tbody");
+    (d.history || []).slice().reverse().forEach(h => {
+      const tr = document.createElement("tr");
+      const cls = h.verdict === "pass" ? "ok" : (h.verdict === "fail" ? "ng" : "err");
+      const label = h.verdict === "pass" ? "合格" : (h.verdict === "fail" ? "不合格" : "エラー");
+      const c = (h.costUsd || h.costUsd === 0) ? "$" + Number(h.costUsd).toFixed(3) : "-";
+      tr.innerHTML = `<td>${h.ts || ""}</td><td>${h.n ?? ""}</td>`
+        + `<td class="${cls}">${label}</td>`
+        + `<td>${h.reason || ""}</td><td>${c}</td>`;
+      tb.appendChild(tr);
+    });
+  })
+  .catch(e => { document.getElementById("err").textContent = "読み込み失敗: " + e; });
+</script>
+</body>
+</html>

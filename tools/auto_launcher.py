@@ -26,8 +26,10 @@
 import io
 import json
 import os
+import re
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from datetime import datetime
@@ -319,6 +321,187 @@ def _record_content_check(ok, reason, url, item_n=None):
         log("content_check_stats書き込み失敗: %s" % e)
 
 
+AI_VERIFY_STATS = os.path.join(REPO, "status", "ai_verify_stats.json")
+VERIFY_MODEL = SONNET  # 2026-09-06：Verifierも今はSonnet固定。
+                       # 実績（ai_verify_stats.jsonのtotalCostUsd）でコストが高いと分かったら、ここだけ差し替えれば全体に効く。
+VERIFY_TIMEOUT_SEC = 600  # これを超えて生きていたら異常とみなし強制終了する安全弁
+
+
+def build_verify_prompt(it, check_url, urls):
+    """AI検品(Verifier)への指示文。渡すのは①元の依頼②作業した側の完了報告③確認ページ/本番URLの3つだけ。
+    作った側の言い分・判断理由・内部事情は一切渡さない。"""
+    target = check_url or (urls[0] if urls else "")
+    return """【AI検品・Verifier】あなたは検品専門です。この作業を行った本人ではありません。
+
+# 元の依頼
+{title}
+
+{what}
+
+# 作業した側の完了報告（そのまま。これを鵜呑みにせず、実際に確認すること）
+{result}
+
+# 確認すること
+- 確認ページ（あれば必ず開く）: {check_url}
+- 本番URL（実際に開く）: {urls}
+
+# やり方
+- `curl` 等で実際にURLを取得して中身を読んでください。
+- **ブラウザ・claude-in-chrome・screencapture は使わないでください。**許可ダイアログを出さないこと。
+- 確認ページがあれば必ず開き、依頼内容と実際の変化が一致するか確認してください。
+- 本番URLも実際に開き、確認ページの主張と食い違いがないか確認してください。
+- あなたは実装しません。直しません。**見るだけです。**
+
+# 不合格の基準（どれか1つでも該当したら不合格）
+- URLが開けない
+- 中身が依頼と一致しない・的外れ
+- 検証可能な証拠（数字・リンク・スクショ）が無く、主張だけ
+- 「直した」と書いてあるのに、実際には変化の跡が無い
+
+# 出力の最後（必ず単独の1行。この形式を厳守。パースするので変えないこと）
+VERIFY_RESULT: PASS - <合格理由を一言（日本語）>
+または
+VERIFY_RESULT: FAIL - <不合格理由を一言（日本語・具体的に）>
+""".format(
+        title=it.get("title") or "",
+        what=it.get("what") or "",
+        result=(it.get("result") or "")[:1200],
+        check_url=check_url or "（なし）",
+        urls=", ".join(urls or []) or "（なし）",
+    ), target
+
+
+def start_verify(it, check_url, urls):
+    """確認待ちへ上げる前に、別プロセスのclaudeをバックグラウンドで1本だけ着火する（同期待ちしない）。
+    check_url優先、無ければurls[0]。両方無ければFalseを返す（＝検品できないので呼び出し側は素通しする）。
+    成功したら it に verifyPid / verifySessionId / verifyLog / verifyStartedAt / verifyUrl をセットしてTrueを返す。
+    """
+    target = check_url or (urls[0] if urls else None)
+    if not target:
+        return False
+    prompt, _ = build_verify_prompt(it, check_url, urls)
+    new_id = str(uuid.uuid4())
+    logf = os.path.join(REPO, "status", "verify-%s.log" % new_id[:8])
+    try:
+        cwd = tempfile.mkdtemp(prefix="tamago-verify-")
+        cmd = [CLAUDE, "-p", "--model", VERIFY_MODEL,
+               "--permission-mode", "auto", "--output-format", "json", prompt]
+        with open(logf, "ab") as f:
+            p = subprocess.Popen(cmd, cwd=cwd, stdout=f, stderr=subprocess.STDOUT,
+                                 stdin=subprocess.DEVNULL, start_new_session=True, env=claude_env())
+    except Exception as e:
+        log("AI検品の着火に失敗 %s番: %s" % (it.get("n"), e))
+        return False
+    it["verifyPid"] = p.pid
+    it["verifySessionId"] = new_id
+    it["verifyLog"] = logf
+    it["verifyStartedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+    it["verifyUrl"] = target
+    return True
+
+
+def collect_verify(it):
+    """status="verifying" の項目を回収する。
+
+    戻り値：
+      None                    → まだ検品中（pidが生きている）。呼び出し側は何もしない
+      (True, reason, cost)    → 合格
+      (False, reason, cost)   → 不合格
+      (None, reason, cost)    → 技術的エラー（結果が読み取れない・タイムアウト）。呼び出し側は素通しさせる
+    """
+    pid = it.get("verifyPid")
+    alive = False
+    if pid:
+        try:
+            os.kill(int(pid), 0)
+            alive = True
+        except Exception:
+            alive = False
+    if alive:
+        # startedAt（ローカル時刻文字列）と今の時刻を素直に比較する（タイムゾーンは両方ローカルなので揃う）。
+        try:
+            started = it.get("verifyStartedAt") or ""
+            fmt = "%Y-%m-%dT%H:%M:%S"
+            t0 = datetime.strptime(started[:19], fmt)
+            now = datetime.strptime(time.strftime("%Y-%m-%dT%H:%M:%S"), fmt)
+            elapsed = (now - t0).total_seconds()
+        except Exception:
+            elapsed = 0
+        if elapsed > VERIFY_TIMEOUT_SEC:
+            try:
+                os.kill(int(pid), 9)
+            except Exception:
+                pass
+            return None, "AI検品がタイムアウトしました（%d秒超）" % VERIFY_TIMEOUT_SEC, None
+        return None
+    # 死んでいる＝終わった
+    logf = it.get("verifyLog") or ""
+    raw = ""
+    try:
+        raw = io.open(logf, encoding="utf-8", errors="ignore").read()
+    except Exception:
+        pass
+    cost = None
+    mcost = re.search(r'"total_cost_usd"\s*:\s*([0-9.]+)', raw or "")
+    if mcost:
+        try:
+            cost = float(mcost.group(1))
+        except Exception:
+            cost = None
+    text = ""
+    m = re.findall(r'"result"\s*:\s*"((?:[^"\\]|\\.)*)"', raw or "")
+    if m:
+        text = m[-1].encode("utf-8").decode("unicode_escape").encode("latin-1", "ignore").decode("utf-8", "ignore")
+    mv = re.search(r"VERIFY_RESULT:\s*(PASS|FAIL)\s*-\s*(.+)", text or raw or "", re.IGNORECASE)
+    if not mv:
+        return None, "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）", cost
+    verdict = mv.group(1).upper() == "PASS"
+    reason = mv.group(2).strip().splitlines()[0][:200]
+    return verdict, reason, cost
+
+
+def _record_ai_verify(ok, reason, cost, url, item_n=None):
+    """実績を status/ai_verify_stats.json に永続化する。_record_content_check と同じ書式（tmpファイル→os.replaceで原子的に置換）。"""
+    stats = load(AI_VERIFY_STATS, {
+        "totalChecked": 0, "totalPassed": 0, "totalFailed": 0, "totalErrors": 0,
+        "totalCostUsd": 0.0, "reasonCounts": {}, "history": [],
+    })
+    stats["totalChecked"] = int(stats.get("totalChecked") or 0) + 1
+    if ok is True:
+        stats["totalPassed"] = int(stats.get("totalPassed") or 0) + 1
+        verdict = "pass"
+    elif ok is False:
+        stats["totalFailed"] = int(stats.get("totalFailed") or 0) + 1
+        verdict = "fail"
+        rc = stats.get("reasonCounts") or {}
+        key = (reason or "")[:40]
+        rc[key] = int(rc.get(key) or 0) + 1
+        stats["reasonCounts"] = rc
+    else:
+        stats["totalErrors"] = int(stats.get("totalErrors") or 0) + 1
+        verdict = "error"
+    if cost:
+        stats["totalCostUsd"] = round(float(stats.get("totalCostUsd") or 0.0) + float(cost), 4)
+    hist = stats.get("history") or []
+    hist.append({
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+        "n": item_n,
+        "url": url,
+        "verdict": verdict,
+        "reason": reason,
+        "costUsd": cost,
+    })
+    stats["history"] = hist[-50:]
+    stats["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    try:
+        tmp = AI_VERIFY_STATS + ".tmp"
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            json.dump(stats, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, AI_VERIFY_STATS)
+    except Exception as e:
+        log("ai_verify_stats書き込み失敗: %s" % e)
+
+
 def harvest(q):
     """2026-09-04 たまごさん「作業が終わって、終わったんであれば、そこは俺の確認待ちだよ。
     確認待ちでOKって言ったら初めて完了に入る。ダメだったらもう一回順番待ちに並ぶ」
@@ -513,9 +696,66 @@ def harvest(q):
                             % (it.get("n"), it.get("title"), reason))
                         continue
                 log("✅ 確認ページ検品OK %d番「%s」（%s）" % (it.get("n"), it.get("title"), check_url))
-            it["status"] = "awaiting_check"      # たまごさんの確認待ち
-            append_outbox(it, bool(urls))
-            log("✅ 終了を回収 %d番「%s」→ 確認待ち（URL %d本）" % (it.get("n"), it.get("title"), len(urls)))
+            # 2026-09-06 新設（416番）：確認待ちに上げる前に、別プロセスのclaude(Sonnet)を1本だけ
+            # バックグラウンドで着火してAI検品(Verifier)させる。harvest()は15秒おきに軽く回る前提
+            # （heartbeat.sh）なので、ここでは絶対に同期待ちしない。結果は次回以降のharvest()で回収する。
+            if start_verify(it, check_url, urls):
+                it["status"] = "verifying"
+                changed = True
+                log("🔎 AI検品へ回す %d番「%s」" % (it.get("n"), it.get("title")))
+            else:
+                it["status"] = "awaiting_check"      # たまごさんの確認待ち（検品できないので素通し）
+                append_outbox(it, bool(urls))
+                log("✅ 終了を回収 %d番「%s」→ 確認待ち（URL %d本・AI検品は対象外）"
+                    % (it.get("n"), it.get("title"), len(urls)))
+
+    # ---- AI検品（Verifier）の回収（2026-09-06新設・416番）----
+    # 上のループでstatus="verifying"にした項目を、別のループでバックグラウンドから回収する。
+    # ここも同期待ちしない：まだ生きていれば次回のharvest()にそのまま持ち越す。
+    for it in q.get("items", []):
+        if it.get("status") != "verifying":
+            continue
+        outcome = collect_verify(it)
+        if outcome is None:
+            continue  # まだ検品中。次回また見る
+        ok, reason, cost = outcome
+        target = it.get("verifyUrl") or ""
+        _record_ai_verify(ok, reason, cost, target, it.get("n"))
+        for k in ("verifyPid", "verifySessionId", "verifyLog", "verifyStartedAt", "verifyUrl"):
+            it.pop(k, None)
+        if ok is False:
+            fails = int(it.get("aiVerifyFailCount") or 0) + 1
+            it["aiVerifyFailCount"] = fails
+            if fails < 3:
+                it["status"] = "hold" if it.get("holdNote") else "waiting"
+                it["priority"] = it.get("priority") or 2
+                it["what"] = (it.get("what") or "") + (
+                    "\n\n【AI検品(Verifier)ではねられました・%d回目・%s】理由：%s。"
+                    "依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。"
+                    % (fails, time.strftime("%m-%d %H:%M"), reason))
+                for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                    it.pop(k, None)
+                changed = True
+                log("🚫 AI検品NG %d番「%s」→ 列に戻す（%d回目・理由:%s・$%.3f）"
+                    % (it.get("n"), it.get("title"), fails, reason, cost or 0))
+                continue
+            it["result"] = (it.get("result") or "") + (
+                "\n\n【AI検品(Verifier)：3回連続で不合格のため人の目に回します】理由：%s" % reason)
+            it["status"] = "awaiting_check"
+            append_outbox(it, bool(it.get("urls")))
+            changed = True
+            log("⚠️ AI検品3回連続NG %d番「%s」→ 人の目へ（理由:%s）" % (it.get("n"), it.get("title"), reason))
+            continue
+        # PASS、またはNone（技術的エラーのため素通し）
+        if ok is None:
+            it["result"] = (it.get("result") or "") + ("\n\n【AI検品：%s】" % reason)
+            log("… AI検品エラー・素通し %d番「%s」・理由:%s" % (it.get("n"), it.get("title"), reason))
+        else:
+            log("✅ AI検品OK %d番「%s」・理由:%s・$%.3f" % (it.get("n"), it.get("title"), reason, cost or 0))
+        it["status"] = "awaiting_check"
+        append_outbox(it, bool(it.get("urls")))
+        changed = True
+
     if any(x.get("_drop") for x in q.get("items", [])):
         q["items"] = [x for x in q["items"] if not x.get("_drop")]
     return changed
