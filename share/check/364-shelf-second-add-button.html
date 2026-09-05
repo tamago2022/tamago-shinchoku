@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>確認：364番 棚編集「2番目に置く」ボタン</title>
+<style>
+  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;max-width:720px;margin:0 auto;padding:20px;line-height:1.7;background:#faf5ec;color:#222}
+  h1{font-size:1.2rem;border-bottom:3px solid #e8a33d;padding-bottom:8px}
+  h2{font-size:1rem;margin-top:1.8em;color:#8a5a1e}
+  .num{font-size:1.6rem;font-weight:bold;color:#1a7a3d}
+  code{background:#eee;padding:2px 6px;border-radius:4px;font-size:0.85em}
+  a{color:#1a5aa8}
+  .box{background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px 18px;margin:10px 0}
+  .warn{background:#fff8e1;border:1px solid #e8c468}
+</style>
+</head>
+<body>
+<h1>確認ページ：364番「棚編集　2番目に追加ボタン」</h1>
+
+<h2>① 何を確認したか</h2>
+<div class="box">
+「棚編集画面に、動画を<b>2番目の位置として追加できるボタン</b>を付ける」という依頼だったが、
+調査の結果、この機能は<b>すでに本番（joy-relief-station.lovable.app）に実装・配信済み</b>だった。
+新規の実装は行っていない（既存資産に手を加えていない）。
+</div>
+
+<h2>② 数字</h2>
+<div class="box">
+<p class="num">確認した文言：4件中4件が本番JSに実在</p>
+<ul>
+<li><code>2番目に置く</code> → 実在</li>
+<li><code>2番目の動画として足しました</code>（成功トースト文言） → 実在</li>
+<li><code>この動画をトップにする</code>（隣にある兄弟ボタン） → 実在</li>
+<li><code>関連動画として追加</code>（同じ選択メニューの別ボタン） → 実在</li>
+</ul>
+<p>本番デプロイID（x-deployment-id）：<br>
+<code>psr2.3b8550d2-a778-48d8-9dd4-2c75f7b698ba.1789211095.wLz086J-SQU-XqniKpC57DsZz290TcKb6kHVNvfuDmU</code></p>
+<p>確認したファイル：本番配信されている <code>assets/AdminShelfPanel-BZGI-YL-.js</code>（棚編集パネルの実チャンク、83,907バイト）</p>
+</div>
+
+<h2>③ 押せるリンクの一覧</h2>
+<div class="box">
+<p>このボタンは「棚編集」パネルの中にあり、<b>管理者ログイン後にだけ表示される内部ツール</b>のため、
+一般公開ページのURLとしては存在しない（パスワード無しの第三者には見えない仕様が正しい状態）。
+ボタンを実際に押せる入口は、下記のような公開ページ上の「棚編集」ボタンから開く。
+</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=godiego&song=monkey-magic" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=godiego&song=monkey-magic</a>（曲ページの例。管理端末でログイン済みなら「棚編集」ボタン→URLを貼ると「2️⃣ 2番目に置く」が現れる）</li>
+<li><a href="https://joy-relief-station.lovable.app/assets/AdminShelfPanel-BZGI-YL-.js" target="_blank" rel="noopener">本番チャンク実物（このURLをブラウザで開き、Ctrl+Fで「2番目に置く」を検索すると本文中に見つかる＝コードとして配信されている一次証拠）</a></li>
+</ul>
+</div>
+
+<h2>④ 前と後</h2>
+<div class="box warn">
+<p><b>スクリーンショットは撮っていない。</b>理由：この機能は管理パスワードでログインした状態でしか画面に現れず、
+ログイン代行・パスワード入力の代行は憲法で禁止されている操作（店主のログインを使う代行は不可）。
+かわりに、上の「②数字」「③リンク」の通り、<b>本番に配信されているコード自体を実測</b>して存在を確認した。
+また、この機能の実装履歴（2026-08-01〜08-03の3回の改善コミット）は
+<code>src/components/AdminShelfPanel.tsx</code> のコメントに残っており、
+「トップにする」「2番目に置く」「関連動画」の3択ボタンとして店主要望から生まれた機能であることも裏取り済み。
+</p>
+</div>
+
+<h2>結論</h2>
+<div class="box">
+今回の364番の依頼内容（棚編集の2番目に追加ボタン）は、<b>すでに本番で動いている状態</b>だった。
+新規の実装・pushは発生していない（実装済みのものを壊さないため、既存コードには一切手を加えていない）。
+もし依頼の意図が「別の場所に別のボタンが欲しい」「今のボタンの見え方を変えたい」等、これとは違う話であれば、
+たまごさんの実画面で該当箇所を見せてもらえれば、その通りに作り直す。
+</div>
+
+</body>
+</html>
