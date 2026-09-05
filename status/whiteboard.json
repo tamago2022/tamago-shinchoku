@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-05 17:20",
+ "updatedAt": "2026-09-05 17:28",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -117,11 +117,11 @@
    "priority": 3,
    "rank": 6,
    "task": "素人カバーの混入",
-   "state": "検証待ち",
-   "owner": "verify_kohei_0905",
+   "state": "完了",
+   "owner": null,
    "count": "7",
-   "updatedAt": "2026-09-05 17:20",
-   "note": "本番確認済み:2件(theウラシマ'S「ドラムカバー」/坂本龍一「ジャズピアノカバー集」)は既にwarehousedSongs.tsで倉庫化されPR#330でmain合流済み、production(https://joy-relief-station.lovable.app)で直接curl確認しどちらも0件(完全に消えている)。今回追加でaudit-amateur-cover-titles.tsの禁止ワードを5→15種類に拡張(cover表記ゆれ/performed by/モノマネ/耳コピ等)し69件を再検出、全件YouTube oEmbedで実チャンネル名を直接確認した結果、新規の紛れ込みは0件(全て部屋の本人による正当なカバー活動、既知除外リストへ21組追記)。コミットf116e801→main合流1498f582。次の一手:より広範囲の「無関係動画」再走査(diagnose-artist-mismatch.mjs、Aug8以来未実行の全24589曲)をバックグラウンドで開始済み(PID 11510、進行中/約2時間見込み)、結果が出次第別報告。別の目には本番URL2件のcurl結果とwarehousedSongs.tsのB区分コメントを見てもらえば検証できる [実装:wd_fcae24be]",
+   "updatedAt": "2026-09-05 17:28",
+   "note": "✅2026-09-05 17:28 証拠:https://github.com/tamago2022/joy-relief-station/blob/main/src/lib/warehousedSongs.ts 別の目で確認：origin/mainのwarehousedSongs.tsを直接git showで取得し、theウラシマ'Sドラムカバー・坂本龍一ジャズピアノカバー集の両方が正しい理由コメント付きで倉庫化済みを確認（HTML検索ページはクライアント描画で本文長が同一のため不採用、データソース直読みへ切替）。追加のPID 11510(diagnose-artist-mismatch全曲再走査)は本セッション確認時点で終了済みだが結果ログ未特定、別件として継続監視が必要",
    "stale": false
   },
   {
@@ -189,11 +189,11 @@
    "priority": 3,
    "rank": 12,
    "task": "バッジが即時反映されない",
-   "state": "検証待ち",
-   "owner": "claude_pwa_verify_0905",
+   "state": "完了",
+   "owner": null,
    "count": "27",
-   "updatedAt": "2026-09-05 16:56",
-   "note": "追加確認(2026-09-03 14:41・別の目)：src/lib/badgeIdentityStore.tsを直接読み、useSyncExternalStoreで押した瞬間→描く側へ即時共有する橋渡しをコードレベルで再確認。楽観的更新(削除の即時反映)も実装確認。ただし本セッションもブラウザ/管理ログイン権限を持たず、実クリック(🏷️付け外し→即座に画面が変わるか)の目視確認はまだ未実施のまま。次の目はここだけ見れば完了にできる。対象URL例：/shelf/food/kattemi-yokatta（要admin認証でのバッジ付け外し操作） [実装:wd_768a9636]",
+   "updatedAt": "2026-09-05 17:26",
+   "note": "✅2026-09-05 17:26 証拠:Vault: T012_バッジ即時反映_検証_2026-09-05/README.md（本番実クリック実測：バッジ表示2ms・非表示61ms、URL: https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta） 実クリック確認完了。前回の[実装:wd_768a9636]から別の目として検証",
    "stale": false
   },
   {
