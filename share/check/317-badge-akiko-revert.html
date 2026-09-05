@@ -1,0 +1,38 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>317番 バッジ見本戻しの確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.7}
+h1{font-size:1.25rem;margin:0 0 12px}.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}.num{font-size:1.4rem;font-weight:800;color:#ffd166}
+a{color:#7fc7ff}code{background:#0c0f14;padding:2px 6px;border-radius:6px}</style></head><body>
+<h1>317番：バッジの大きさを見本(akiko)へ戻した確認</h1>
+
+<div class="b">
+<p class="ok">①何を直したか</p>
+<p>コミット9fa191bc/f74bfd1aでバッジ短辺比率を18%へ上げた結果、見本だった akiko『Love Theme From Spartacus』のバッジまで大きくなってしまっていた。<br>
+<code>src/lib/badgeKinds.ts</code> の <code>BADGE_TARGET_SHORT_SIDE_RATIO</code> を <b>18 → 13.8</b> に戻した（この1行だけ変更）。</p>
+</div>
+
+<div class="b">
+<p class="ok">②数字（実測）</p>
+<p>本番の見え方を決めるJSバンドルを直接取得し、値を実測した。<br>
+本番反映前：<span class="num">18</span>％ → 本番反映後：<span class="num">13.8</span>％（akikoページ実測どおりの唯一の正解値）<br>
+確認方法：本番HTML→JSバンドルURL（<code>/assets/index-*.js</code>）を取得し、比率の定数（コード中では <code>Yae</code> という短縮名で出現）が <code>13.8</code> になっていることを直接読んで確認済み。</p>
+</div>
+
+<div class="b">
+<p class="ok">③押せるリンク（実物ページ）</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus" target="_blank">akiko『Love Theme From Spartacus』（見本ページ本体）</a></li>
+</ul>
+<p>このファイル自体が「変更対象は上記1本のみ」の確認ページ。バッジは同じ計算式（<code>BADGE_TARGET_SHORT_SIDE_RATIO</code>）を全ページで共有しているため、この1本の実測が全ページの反映を代表する。</p>
+</div>
+
+<div class="b">
+<p class="ok">④前後スクリーンショット</p>
+<p>今回はたまごさんの操作画面を奪わない方針（Braveに触らない・画面収録の許可ダイアログを出さない）のため、
+スクリーンショットではなく<b>本番に配信されているコード自体の実測値</b>を証拠にしている（③の「確認方法」参照）。<br>
+見た目の最終確認は、上のリンクをたまごさんご自身の目で開いていただくことをお願いします。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>
