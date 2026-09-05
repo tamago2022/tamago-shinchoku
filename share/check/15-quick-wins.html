@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#15 未着手110件からすぐ終わるものを拾って消す 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:130px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;margin-bottom:16px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  .fixnote{background:#fff3ee;border:1px solid #e3b7a9;border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 16px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #15</div>
+<h1>#15 未着手110件からすぐ終わるものを拾って消す</h1>
+<div class="date">2026-09-05 実装2件を本番反映＋監査で5件の実態を確認</div>
+
+<div class="fix">
+受付台帳（<code>作業キュー.md</code>）の🔴未着手70件超から、①実際にコードを直して本番に出せるもの2件、②「未着手」表示のまま実は既に本番にあるもの5件を見つけて仕分けた。①は<b>mainへpush・Lovable公開・本番実測</b>まで完走。②は本番を実測した証拠つきで台帳を訂正した。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<b>コードで直して本番に出したもの（2件）：</b><br>
+1. 曲が0件の部屋にも「代表曲をご用意しました」という案内文が出ていた誤表示を修正（中身がある時だけ出るように）。依頼#46。<br>
+2. サイトマップ（検索エンジン向けの地図）に「棚」が1件も出ていなかった原因（<code>worlds.ts</code>の未import）を直し、棚ページが検索エンジンから見つかるようにした。依頼#51。<br>
+<br>
+<b>「未着手」表示のまま実は既に本番にあった、と分かったもの（5件）：</b>台帳の🔴表示が古くなっていただけで、追加作業は不要と確認できたもの。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>70件超</b><span>台帳の🔴未着手を確認対象に</span></div>
+  <div class="num"><b>2件</b><span class="yes">実装→本番反映まで完走</span></div>
+  <div class="num"><b>5件</b><span class="yes">実は既に本番済みと判明・台帳訂正</span></div>
+  <div class="num"><b>103件</b><span>sitemapに新規追加された棚のURL数（0→103）</span></div>
+</div>
+<div class="note">
+結果：<b>7件</b>を「未着手」の列から動かした（うち2件は今回の実装、5件は監査での訂正）。
+</div>
+
+<h2>③ 実際に本番で確認したページ（押せるリンク）</h2>
+<ul class="links">
+  <li><b>①のサイトマップ修正：棚(shelf)が103件追加された証拠</b>
+    <a href="https://joy-relief-station.lovable.app/sitemap.xml" target="_blank">https://joy-relief-station.lovable.app/sitemap.xml</a>
+    <div class="note" style="margin-top:6px">実測：反映前は<code>/shelf/</code>が0件→反映後は<b>103件</b>。x-deployment-idが<code>psr2.ce714a8</code>→<code>psr2.f053e76</code>に変わったことも確認（公開ボタンを実際に押した証拠）</div>
+  </li>
+  <li><b>Sade「Smooth Operator」（未着手表示だったが実在確認）</b>
+    <a href="https://joy-relief-station.lovable.app/cover-guide?artist=sade&song=smooth-operator" target="_blank">https://joy-relief-station.lovable.app/cover-guide?artist=sade&song=smooth-operator</a>
+    <div class="note" style="margin-top:6px">200 OK・ページタイトル「Smooth Operator — Sade｜ごきげん補給所」を確認</div>
+  </li>
+  <li><b>Minnie Riperton「Lovin' You」（未着手表示だったが実在確認）</b>
+    <a href="https://joy-relief-station.lovable.app/cover-guide?artist=minnie-riperton&song=lovin-you" target="_blank">https://joy-relief-station.lovable.app/cover-guide?artist=minnie-riperton&song=lovin-you</a>
+    <div class="note" style="margin-top:6px">200 OK・ページタイトル一致確認（「夜の棚」への掲載までは店主判断のため未着手のまま）</div>
+  </li>
+  <li><b>MONKEY MAJIK（「ページが2つある」問題は解消済みと確認）</b>
+    <a href="https://joy-relief-station.lovable.app/cover-guide?artist=monkey-majik" target="_blank">https://joy-relief-station.lovable.app/cover-guide?artist=monkey-majik</a>
+    <div class="note" style="margin-top:6px">データ上も1件のみ（重複なし）・「みの」表記あり</div>
+  </li>
+  <li><b>Xania Monet（追加依頼だったが既に仕入れ済みと確認）</b>
+    <a href="https://joy-relief-station.lovable.app/cover-guide?artist=xania-monet" target="_blank">https://joy-relief-station.lovable.app/cover-guide?artist=xania-monet</a>
+    <div class="note" style="margin-top:6px">200 OK・2026-08-02に仕入れ済みだったページ</div>
+  </li>
+  <li><b>石山アンジュ（アーティストページ作成依頼だったが既に実在）</b>
+    <a href="https://joy-relief-station.lovable.app/cover-guide?artist=ishiyama-anju" target="_blank">https://joy-relief-station.lovable.app/cover-guide?artist=ishiyama-anju</a>
+    <div class="note" style="margin-top:6px">200 OK・ページタイトル一致確認（「和の部屋」への棚追加のみ店主判断待ちで残る）</div>
+  </li>
+</ul>
+
+<div class="fixnote">
+<b>今回は着手しなかったもの：</b>「モドゥーニョのカードのURLが繋がっていない」問題は、原因（コード側に無くDB側のスラッグ不一致）を再確認したが、ローカル環境からのDB書き込み手段が無く今回は見送り。「多言語対応(EN/ZH/ES/KO)」も本番未反映のまま（実測で言語切替が無いことを確認済み・規模が大きいため対象外）。
+</div>
+
+<h2>④ 前と後（実測記録）</h2>
+<table>
+<tr><th>項目</th><th>反映前</th><th>反映後</th></tr>
+<tr><td>sitemap.xml の /shelf/ 件数</td><td class="no">0件</td><td class="yes">103件</td></tr>
+<tr><td>x-deployment-id</td><td>psr2.ce714a8</td><td class="yes">psr2.f053e76（公開ボタン実行後に変化）</td></tr>
+<tr><td>曲0件の部屋の案内文</td><td class="no">「代表曲をご用意しました」が誤表示</td><td class="yes">中身がある時だけ表示（実測で確認）</td></tr>
+</table>
+<div class="note">
+このセッションはブラウザのスクリーンショット機能を使わない方針のため（たまごさんの画面を奪わない対応）、画像の代わりに上記の直接取得結果（HTTPステータス・件数・deployment-idの変化）を証拠として置いている。
+</div>
+
+<footer>
+台帳の実物：Obsidian Vault内 <code>AI出力/_ルール/作業キュー.md</code>（店主のスマホから見られる場所）。この確認ページ自体はGitHub Pagesで公開。<br>
+本番へのpush：commit <code>1548eeeb</code>（joy-relief-station main）。<br>
+<a href="../">← 進捗表にもどる</a>
+</footer>
+</body>
+</html>
