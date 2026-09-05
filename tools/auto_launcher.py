@@ -847,16 +847,9 @@ def build_prompt(item):
 **「直したページを1つだけ貼る」のは禁止です。**たまごさんはそこから自分で探すことになります。
 代わりに、成果を1枚にまとめた**確認ページ**を作り、そのURLだけを報告してください。
 
-作り方（このやり方以外を考えないでください）：
-1. リポジトリ `/Users/mac/Desktop/tamago-shinchoku` の `share/check/` に
-   **`{n}-<短い英語名>.html`** という1ファイルを作る（例：`share/check/{n}-drama-shelf.html`）
-2. 中身は**この4つだけ**。飾りは要りません。
-   - ① 何を直したか（1行）
-   - ② **数字**（例：「22件のうち21件を移動。残り1件は◯◯のため未」）
-   - ③ **押せるリンクの一覧**（直した実物のページ。1件ずつ `<a href>`。10件を超えるなら代表10件＋全件）
-   - ④ **前と後のスクリーンショット**（撮れたら `share/check/img/` に置いて `<img>` で貼る）
-3. `git add` → `commit` → `push origin main`。GitHub Pagesなので数十秒で公開されます
-4. 報告に書くURLは **`https://tamago2022.github.io/tamago-shinchoku/share/check/{n}-....html`**
+作り方（2026-09-06〜・型ができたので必ずこれを使う。ゼロから書かない）：
+**`python3 tools/make_check_page.py --n {n} --slug <短い英語名> --title "..." --what "..." --num "値|説明" --link "ラベル|URL"` を使う**（型は`share/check/_template.html`、使い方全体は`python3 tools/make_check_page.py --help`）。
+書けたら `git add` → `commit` → `push origin main`。GitHub Pagesなので数十秒で公開され、報告URLは**`https://tamago2022.github.io/tamago-shinchoku/share/check/{n}-....html`**。
 
 **「直っていること」がそのページを開いただけで分かること。**
 開いてもまだ探さないと分からないなら、その確認ページは失格です。

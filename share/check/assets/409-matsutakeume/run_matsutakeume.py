@@ -98,11 +98,14 @@ def make_hold_video(png_path, mp4_path, seconds, fps=24, size=(960, 540)):
 # ---------- ③ 梅：TTS（ElevenLabs）→ Kling LipSync ----------
 
 TTS_LINES = [
-    ("sh09_amore", "アモーレ", "Antoni", "人生は愛だ！ ロマンスだ！"),
+    # 2026-09-06 419番: "Antoni" は fal-ai/elevenlabs/tts/eleven-v3 で
+    # HTTP 422 "Voice not found: Antoni" になることを実測で確認（旧世代voice名が廃止済み）。
+    # "Rachel"(デフォルト)/"Adam" は実際に呼び出して有効なことを小額テストで確認済みなので採用。
+    ("sh09_amore", "アモーレ", "Rachel", "人生は愛だ！ ロマンスだ！"),
     ("sh10_yamori", "家守", "Adam", "お前は四回結婚してるだろ。"),
-    ("sh10_amore", "アモーレ", "Antoni", "四回も愛した。"),
+    ("sh10_amore", "アモーレ", "Rachel", "四回も愛した。"),
     ("sh11_yamori", "家守", "Adam", "三回離婚してる！"),
-    ("sh11_amore", "アモーレ", "Antoni", "三回、正直だった。"),
+    ("sh11_amore", "アモーレ", "Rachel", "三回、正直だった。"),
 ]
 
 
