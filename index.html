@@ -256,7 +256,16 @@
   .qgrip{flex:none; width:26px; height:34px; display:flex; align-items:center; justify-content:center;
     color:var(--sub); font-size:1.05rem; cursor:grab; touch-action:none; user-select:none; opacity:.55;}
   .qgrip:active{cursor:grabbing; opacity:1;}
-  .qrow.qdrag{background:#1b2330; outline:1px dashed var(--green); border-radius:8px; opacity:.92;}
+  .qrow.qdrag{opacity:.28;}
+  /* 指について回る影（今どれを持っているか） */
+  .qghost{position:fixed; z-index:9999; pointer-events:none; background:#1b2330;
+    border:1px solid var(--green); border-radius:10px; padding:8px 6px; opacity:.95;
+    box-shadow:0 10px 24px rgba(0,0,0,.45); transform:rotate(-.4deg);}
+  /* ここに入るよ、の棒（Notionと同じ考え方） */
+  .qbar{position:fixed; z-index:9998; height:3px; background:var(--green); border-radius:3px;
+    display:none; pointer-events:none; box-shadow:0 0 8px rgba(111,156,122,.8);}
+  .qbar::before{content:""; position:absolute; left:-4px; top:-3px; width:9px; height:9px;
+    border-radius:999px; background:var(--green);}
   .qn{flex:none; width:26px; height:26px; border-radius:999px; display:flex; align-items:center; justify-content:center;
     font-size:0.72rem; font-weight:800; background:#1a2028; border:1px solid var(--line); color:var(--sub); font-variant-numeric:tabular-nums;}
   .qrow.next .qn{background:var(--green); color:#12161c; border-color:var(--green);}
@@ -768,7 +777,16 @@ function refreshHealth(){
                     : ("status/queue.json?t=" + Date.now());
   return fetch(src, {cache:"no-store", headers: relay ? RELAY_HEADERS : {}})
     .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(q => { window.__queue = q; window.__queueErr = 0; try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} })
+    .then(q => {
+      // 並べ替えた直後の10秒間は、手元の並びを外から来たデータで上書きしない
+      //   （Mac側へ order が書き込まれる前に読み直しが来ると、下げたものが上に戻って見えるため）
+      if(window.__orderHold && Date.now() < window.__orderHold && window.__queue){
+        const old = new Map((window.__queue.items||[]).map(x=>[x.n, x.order]));
+        (q.items||[]).forEach(x=>{ if(old.has(x.n) && x.order == null) x.order = old.get(x.n); });
+      }
+      window.__queue = q; window.__queueErr = 0;
+      try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){}
+    })
     .catch(()=>{
       // 中継所がダメなら公開済みコピーで代用する（古いが、何も出ないよりまし）
       if(relay){
@@ -1190,9 +1208,12 @@ function renderQueue(){
   const all = (window.__queue && window.__queue.items) || (window.DATA && DATA.queue) || [];
   // 2026-09-04 発車の順番と画面の並びを一致させる（auto_launcher.py の rank と同じ規則）。
   //   ここがバラバラだと「次」と書いてあるものと実際に発車するものが食い違う。
+  // 2026-09-05 並びは「優先度 → 手で並べ替えた順(order) → 番号」。Mac側の発車順(rank)と同じ規則。
+  //   ここを番号順だけにしていたので、下げたものが読み直しのたびに上へ戻っていた。
   const rows = all.filter(r => (r.status || "waiting") === "waiting")
-    .map(r => Object.assign({}, r, {_p: (prioOf("Q" + r.n) || r.priority || 99)}))
-    .sort((a,b) => (a._p - b._p) || (a.n - b.n));
+    .map(r => Object.assign({}, r, {_p: (prioOf("Q" + r.n) || r.priority || 99),
+                                    _o: (typeof r.order === "number" ? r.order : 1e6)}))
+    .sort((a,b) => (a._p - b._p) || (a._o - b._o) || (a.n - b.n));
   if(!box) return;
   // 2026-09-04 **致命的なバグだった箇所。**ここで `DATA.queueUpdatedAt` を裸で読んでいた。
   //   data.js は後から読み込む別ファイルなので、間に合っていないと DATA が無く ReferenceError になる。
@@ -1255,53 +1276,111 @@ function renderQueue(){
    ・掴めるのは左端の「⣿」だけ（本文をタップしたら今まで通り説明が開く）
    ・動かしている間、指の位置にある行と入れ替えて見た目を先に変える
    ・離した瞬間に、落ちた箱の優先度と、上から順の並びを台帳へ送る */
+/* 2026-09-05（2回目）たまごさん
+   「つまんで、なんか戻っちゃったりするよ。一回下にやったのに、また上に上がっちゃったり。
+     もっと操作感良くならないの。**Notionみたいなのが理想。棒が入ってここに入れるんだよみたいな。
+     棒も一緒に動いて。**」
+   直したこと：
+   ① 動かしている間、行そのものは動かさない。**入る場所に青い棒**を出す（Notionと同じ）
+   ② 掴んだ行の影が指について回る（今どれを持っているか分かる）
+   ③ 離した瞬間に**手元の台帳へ先に書き込む**。これをやっていなかったので、30秒ごとの
+      読み直しが来ると古い並びで描き直され、**下げたものが上に戻っていた。**
+   ④ 送っている間は読み直しで上書きしない（10秒間） */
 let DRAG = null;
+window.__orderHold = 0;   // この時刻までは外から来た並びで描き直さない
+function qbar(){
+  let b = document.getElementById("qInsertBar");
+  if(!b){
+    b = document.createElement("div");
+    b.id = "qInsertBar"; b.className = "qbar";
+    document.body.appendChild(b);
+  }
+  return b;
+}
 function wireDrag(box){
   box.querySelectorAll(".qgrip").forEach(g=>{
     g.addEventListener("pointerdown", e=>{
       const row = e.target.closest(".qrow"); if(!row) return;
       e.preventDefault();
       try{ g.setPointerCapture(e.pointerId); }catch(_){}
-      DRAG = {row, id:e.pointerId, grip:g};
+      const r = row.getBoundingClientRect();
+      const ghost = row.cloneNode(true);
+      ghost.className = "qrow qghost";
+      ghost.style.width = r.width + "px";
+      ghost.style.left = r.left + "px";
+      ghost.style.top = r.top + "px";
+      document.body.appendChild(ghost);
+      DRAG = {row, id:e.pointerId, ghost, dy: e.clientY - r.top, target:null, after:false};
       row.classList.add("qdrag");
-      if(navigator.vibrate) try{ navigator.vibrate(10); }catch(_){}
+      if(navigator.vibrate) try{ navigator.vibrate(8); }catch(_){}
     });
     g.addEventListener("pointermove", e=>{
       if(!DRAG || DRAG.id !== e.pointerId) return;
       e.preventDefault();
+      DRAG.ghost.style.top = (e.clientY - DRAG.dy) + "px";
+      DRAG.ghost.style.display = "none";
       const el = document.elementFromPoint(e.clientX, e.clientY);
+      DRAG.ghost.style.display = "";
       const over = el && el.closest ? el.closest(".qrow") : null;
-      if(over && over !== DRAG.row && over.parentElement){
+      const bar = qbar();
+      if(over && over !== DRAG.row){
         const rect = over.getBoundingClientRect();
         const after = e.clientY > rect.top + rect.height/2;
-        over.parentElement.insertBefore(DRAG.row, after ? over.nextSibling : over);
+        DRAG.target = over; DRAG.after = after;
+        bar.style.display = "block";
+        bar.style.left = rect.left + "px";
+        bar.style.width = rect.width + "px";
+        bar.style.top = (after ? rect.bottom : rect.top) - 1 + "px";
       } else {
-        // 箱の見出しの上まで持っていったら、その箱の先頭へ入れる
         const bx = el && el.closest ? el.closest(".qbox") : null;
         if(bx && !bx.contains(DRAG.row)){
           const first = bx.querySelector(".qrow");
-          bx.insertBefore(DRAG.row, first || null);
+          if(first){
+            const rect = first.getBoundingClientRect();
+            DRAG.target = first; DRAG.after = false;
+            bar.style.display = "block";
+            bar.style.left = rect.left + "px";
+            bar.style.width = rect.width + "px";
+            bar.style.top = (rect.top - 1) + "px";
+            return;
+          }
         }
+        DRAG.target = null; bar.style.display = "none";
       }
     });
     const finish = e=>{
       if(!DRAG || DRAG.id !== e.pointerId) return;
-      DRAG.row.classList.remove("qdrag");
-      const moved = DRAG.row; DRAG = null;
-      // 落ちた箱の優先度を引き継ぐ
-      const bx = moved.closest(".qbox");
-      const newP = bx ? Number(bx.dataset.box) : 0;
-      const n = Number(moved.dataset.n), oldP = Number(moved.dataset.p);
-      if(newP && newP !== oldP && newP !== 9){
-        setPrio("Q" + n, newP);
-        sendCommandWithId("p" + Date.now().toString(36), "queue_prio", n + ":" + newP, "P" + newP + " へ移動 " + n + "番");
-        moved.dataset.p = String(newP);
+      const {row, target, after, ghost} = DRAG;
+      DRAG = null;
+      try{ ghost.remove(); }catch(_){}
+      qbar().style.display = "none";
+      row.classList.remove("qdrag");
+      if(target && target.parentElement){
+        target.parentElement.insertBefore(row, after ? target.nextSibling : target);
       }
-      // 上から順の並びを丸ごと送る（画面に出ている番号だけ）
-      const order = Array.from(document.querySelectorAll("#queue .qrow")).map(x=>x.dataset.n).filter(Boolean);
+      const bx = row.closest(".qbox");
+      const newP = bx ? Number(bx.dataset.box) : 0;
+      const n = Number(row.dataset.n), oldP = Number(row.dataset.p);
+      const items = (window.__queue && window.__queue.items) || [];
+      const rows = Array.from(document.querySelectorAll("#queue .qrow"));
+      // ③ 手元の台帳を先に書き換える。これで読み直しが来ても並びが戻らない
+      rows.forEach((x, i)=>{
+        const it = items.find(y => y.n === Number(x.dataset.n));
+        if(it) it.order = i + 1;
+      });
+      if(newP && newP !== oldP && newP !== 9){
+        const it = items.find(y => y.n === n);
+        if(it) it.priority = newP;
+        setPrio("Q" + n, newP);
+        sendCommandWithId("p" + Date.now().toString(36), "queue_prio", n + ":" + newP, "P" + newP + " へ " + n + "番");
+        row.dataset.p = String(newP);
+      }
+      const order = rows.map(x=>x.dataset.n).filter(Boolean);
       if(order.length){
         sendCommandWithId("o" + Date.now().toString(36), "queue_order", order.join(","), "並び順を保存");
       }
+      window.__orderHold = Date.now() + 10000;   // ④ 10秒は外の並びで描き直さない
+      try{ renderQueue(); }catch(_){}
     };
     g.addEventListener("pointerup", finish);
     g.addEventListener("pointercancel", finish);
