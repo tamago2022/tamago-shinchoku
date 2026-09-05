@@ -608,6 +608,9 @@ def relay_fix(_target=None):
     # ① 掃除。古い受け口とトンネルを確実に落とす（ポート占有 Address already in use の元）
     run(["pkill", "-f", "cloudflared"], timeout=10)
     run(["pkill", "-f", "relay_server.py"], timeout=10)
+    # localtunnel も必ず落とす。残しておくと二重に張って、どちらのURLが生きているか分からなくなる
+    run(["pkill", "-f", "localtunnel"], timeout=10)
+    run(["pkill", "-f", "lt --port"], timeout=10)
     time.sleep(2)
     lsof = run(["lsof", "-ti", "tcp:8788"], timeout=10)
     stuck = [x for x in ((lsof.stdout or "") if lsof else "").split() if x.strip()]
@@ -645,35 +648,45 @@ def relay_fix(_target=None):
             time.sleep(1)
         return ""
 
+    def _outside_ok(u):
+        c = run(["curl", "-s", "-m", "15", "-o", "/dev/null", "-w", "%{http_code}",
+                 "-H", "bypass-tunnel-reminder: 1", u.rstrip("/") + "/health"], timeout=25)
+        return c is not None and (c.stdout or "").strip() == "200"
+
+    # **localtunnel を先に試す。**（2026-09-05）
+    # たまごさんの回線は 7844番が塞がれていて cloudflared が張れない日がある。
+    # 先に cloudflared を試すと、失敗が分かるまで毎回45秒を捨てることになる。
+    # 繋がる方を先頭に置く。cloudflared が使えるようになったらここを戻せばよい。
     url = ""
-    cf = _sh.which("cloudflared") or os.path.expanduser("~/.tamago/bin/cloudflared")
-    if os.path.exists(cf):
-        io.open(tunlog, "w").write("")
-        subprocess.Popen([cf, "tunnel", "--url", "http://localhost:8788",
-                          "--protocol", "http2", "--no-autoupdate"],
+    npx = _sh.which("npx")
+    if npx:
+        io.open(tunlog, "w").write("--- localtunnel ---\n")
+        subprocess.Popen([npx, "-y", "localtunnel", "--port", "8788"],
                          stdout=open(tunlog, "a"), stderr=subprocess.STDOUT,
                          stdin=subprocess.DEVNULL, start_new_session=True, close_fds=True)
-        url = _wait_url(r"https://[a-z0-9-]+\.trycloudflare\.com", 45)
-        steps.append("cloudflared=%s" % (url or "URLが出ない"))
-
-    if url:
-        c = run(["curl", "-s", "-m", "15", "-o", "/dev/null", "-w", "%{http_code}", url + "/health"], timeout=25)
-        if not (c is not None and (c.stdout or "").strip() == "200"):
-            steps.append("cloudflaredのURLは外から繋がらず→別の道へ")
-            run(["pkill", "-f", "cloudflared"], timeout=10)
+        url = _wait_url(r"https://[a-z0-9-]+\.loca\.lt", 60)
+        steps.append("localtunnel=%s" % (url or "URLが出ない"))
+        if url and not _outside_ok(url):
+            steps.append("localtunnelのURLは外から繋がらず→別の道へ")
+            run(["pkill", "-f", "localtunnel"], timeout=10)
             url = ""
+    else:
+        steps.append("npxが無いのでlocaltunnelは使えない")
 
     if not url:
-        npx = _sh.which("npx")
-        if npx:
-            io.open(tunlog, "a").write("\n--- localtunnel ---\n")
-            subprocess.Popen([npx, "-y", "localtunnel", "--port", "8788"],
+        cf = _sh.which("cloudflared") or os.path.expanduser("~/.tamago/bin/cloudflared")
+        if os.path.exists(cf):
+            io.open(tunlog, "a").write("\n--- cloudflared ---\n")
+            subprocess.Popen([cf, "tunnel", "--url", "http://localhost:8788",
+                              "--protocol", "http2", "--no-autoupdate"],
                              stdout=open(tunlog, "a"), stderr=subprocess.STDOUT,
                              stdin=subprocess.DEVNULL, start_new_session=True, close_fds=True)
-            url = _wait_url(r"https://[a-z0-9-]+\.loca\.lt", 60)
-            steps.append("localtunnel=%s" % (url or "URLが出ない"))
-        else:
-            steps.append("npxが無いのでlocaltunnelは使えない")
+            url = _wait_url(r"https://[a-z0-9-]+\.trycloudflare\.com", 45)
+            steps.append("cloudflared=%s" % (url or "URLが出ない"))
+            if url and not _outside_ok(url):
+                steps.append("cloudflaredのURLも外から繋がらず")
+                run(["pkill", "-f", "cloudflared"], timeout=10)
+                url = ""
 
     if not url:
         return "failed", "どの道も張れませんでした。" + " ／ ".join(steps)

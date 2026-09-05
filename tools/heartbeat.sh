@@ -26,11 +26,8 @@ while :; do
   # 2026-09-05：中継所（進捗表→Mac）が死ぬと、たまごさんがボタンを押しても何も届かない。
   #   5分便まかせだと最大5分間ボタンが効かないままなので、心臓でも2分に1回見る。
   #   **投げっぱなしにして心臓は待たない**（対話待ちで工場を止めた07:03の事故の教訓）。
-  RC="$REPO/status/.relay_check"
-  if [ ! -f "$RC" ] || [ "$(( $(date +%s) - $(stat -f %m "$RC" 2>/dev/null || echo 0) ))" -ge 120 ]; then
-    touch "$RC"
-    ( bash "$REPO/tools/relay_up.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
-  fi
+  #   生死は「プロセスが居るか」ではなく「外から叩いて200が返るか」で見る。道は2本（relay_watch.py）。
+  ( python3 "$REPO/tools/relay_watch.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

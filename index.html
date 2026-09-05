@@ -582,7 +582,8 @@ function flushCommands(){
   if(!url || !PENDING_CMDS.length) { renderPending(); return Promise.resolve(); }
   const batch = PENDING_CMDS.slice();
   return fetch(url.replace(/\/$/, "") + "/cmd", {
-    method: "POST", mode: "cors", headers: {"Content-Type": "application/json"},
+    method: "POST", mode: "cors",
+    headers: Object.assign({"Content-Type": "application/json"}, RELAY_HEADERS),
     body: JSON.stringify({commands: batch}),
   }).then(r => {
     if(!r.ok) throw new Error("HTTP " + r.status);
@@ -750,7 +751,7 @@ function refreshHealth(){
   const relay = (window.__relay && window.__relay.url);
   const src = relay ? (relay.replace(/\/$/, "") + "/queue?t=" + Date.now())
                     : ("status/queue.json?t=" + Date.now());
-  return fetch(src, {cache:"no-store"})
+  return fetch(src, {cache:"no-store", headers: relay ? RELAY_HEADERS : {}})
     .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
     .then(q => { window.__queue = q; window.__queueErr = 0; try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} })
     .catch(()=>{
