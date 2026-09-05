@@ -1324,6 +1324,23 @@ function renderQueue(){
    ④ 送っている間は読み直しで上書きしない（10秒間） */
 let DRAG = null;
 window.__orderHold = 0;   // この時刻までは外から来た並びで描き直さない
+
+/* 2026-09-06 掴んだあとの後始末。**どんな終わり方でも必ずここを通す。**
+   影（.qghost）・棒（.qbar）・薄くなった行（.qdrag）・固定したスクロール、
+   この4つが1つでも残ると「文字が残る」「線が変」に見える。まとめて消す。 */
+function cleanupDrag(){
+  document.querySelectorAll(".qghost").forEach(function(el){ try{ el.remove(); }catch(_){} });
+  const bar = document.getElementById("qInsertBar");
+  if(bar){ bar.style.display = "none"; }
+  document.querySelectorAll(".qrow.qdrag").forEach(function(el){ el.classList.remove("qdrag"); });
+  document.body.style.overflow = "";
+  document.body.style.touchAction = "";
+  DRAG = null;
+}
+/* 画面の外で指を離した・別のアプリに切り替わった、でも必ず掃除する */
+window.addEventListener("pointerup", function(){ if(DRAG) cleanupDrag(); });
+window.addEventListener("pointercancel", function(){ if(DRAG) cleanupDrag(); });
+window.addEventListener("blur", function(){ if(DRAG) cleanupDrag(); });
 function qbar(){
   let b = document.getElementById("qInsertBar");
   if(!b){
@@ -1397,14 +1414,14 @@ function wireDrag(box){
       if(changed && navigator.vibrate){ try{ navigator.vibrate(4); }catch(_){} }   // カシャッの手応え
     });
     const finish = e=>{
-      if(!DRAG || DRAG.id !== e.pointerId) return;
-      const {row, target, after, ghost} = DRAG;
-      DRAG = null;
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-      try{ ghost.remove(); }catch(_){}
-      qbar().style.display = "none";
-      row.classList.remove("qdrag");
+      // 2026-09-06 たまごさん「文字が残ってたり、線のバーが変だったり。70点」
+      //   指を離すやり方は1つではない（画面の外で離す・別のアプリに切り替わる・
+      //   指が2本になる）。**pointerupが来ないまま終わることがある。**
+      //   そのとき影と棒がそのまま残り、掴んだ行も薄いままになっていた。
+      //   → 後始末は必ず1か所（cleanupDrag）を通す。イベントの種類に関わらず必ず掃除する。
+      if(!DRAG || (e && e.pointerId != null && DRAG.id !== e.pointerId)) { cleanupDrag(); return; }
+      const {row, target, after} = DRAG;
+      cleanupDrag();   // 影・棒・薄い行・スクロール固定を、まとめて必ず片づける
       if(target && target.parentElement){
         target.parentElement.insertBefore(row, after ? target.nextSibling : target);
         // カシャッと収まった合図（一瞬だけ光らせる）
@@ -1438,6 +1455,7 @@ function wireDrag(box){
     };
     g.addEventListener("pointerup", finish);
     g.addEventListener("pointercancel", finish);
+    g.addEventListener("lostpointercapture", function(e){ if(DRAG && DRAG.id === e.pointerId) finish(e); });
   });
 }
 /* ───── 燃料の栓（発車の停止・再開／同時本数）───── */
