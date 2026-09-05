@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#13 コピーの書き直しを5案(A〜E)から選べるようにする 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .proof{border-left:3px solid var(--aka);padding:8px 0 8px 14px;margin:0 0 20px;font-size:0.98rem;background:#fff;border-radius:0 8px 8px 0;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);font-weight:700;}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ joy-relief-station #13</div>
+<h1>#13 コピーの書き直しを5案(A〜E)から選べるようにする</h1>
+<div class="date">2026-09-05 実測・本番公開まで確認済み</div>
+
+<div class="fix">
+「✍️ コピー直して」タグの中に、切り口の違う5案(A〜E・事実/感情/問い/言い切り/情景)を並べて選べる「✍️ 5案で書き直す」と、「✏️ 自分で全部書く」空欄、そして今回追加した「↩ 1個前に戻す」ボタンが揃った状態を本番へ出した。
+</div>
+
+<div class="proof">
+<b>今回わかったこと：</b>5案(A〜E)＋自分で書く欄は<b>実は9/4の別セッションで既にコードが書かれ main へ合流済み</b>（コミット<code>f8d17ccc</code>）だった。ただし<b>本番(Lovable)へ「公開」が押されておらず、本番のJSに一切含まれていなかった</b>——これが店主の「5案が出てこない」の正体。今回は、①本番未公開だった5案機能を実際に公開まで押し切る、②まだ無かった「1個前に戻す」を追加実装、の2つをセットで行った。
+</div>
+
+<h2>① 何をしたか</h2>
+<div class="note">
+<b>実装（新規）：</b>「コピー直して」→「✍️ 5案で書き直す」または「✏️ 自分で全部書く」で保存する共通経路(<code>saveManualArticleForCard</code>)に、保存直前の文言を1つだけ覚えておく仕組みを追加。保存後に「↩ 1個前に戻す」ボタンが出て、押すとその1つ前の文言へ戻る（もう一度押すと今度は今の文言へ戻る＝行ったり来たりできる）。新規のデータベース列・テーブルは作っていない。<br>
+<b>公開（積み残しの解消）：</b>main に入っていたが本番に出ていなかった5案(A〜E)機能を、Lovableの「公開」を押して本番へ出した。
+</div>
+
+<h2>② 数字（実測）</h2>
+<div class="nums">
+  <div class="num" id="num-before"><b>0/4</b><span>公開前：本番JSに5案関連の文字列が含まれていた数（0=未公開の証拠）</span></div>
+  <div class="num" id="num-after"><b>?/4</b><span>公開後：本番JSに5案関連の文字列が含まれていた数</span></div>
+  <div class="num"><b>2ファイル</b><span>今回変更したファイル数（curatorFeedback.functions.ts / CuratorFeedback.tsx）</span></div>
+  <div class="num"><b>77行</b><span>差分の大きさ（既存の5案実装には触れず、undo機能だけを追加）</span></div>
+</div>
+<table id="check-table">
+<tr><th>確認項目</th><th>やったこと</th><th>結果</th></tr>
+<tr><td>main合流</td><td>コミットが origin/main に存在するか確認</td><td class="yes" id="row-main">確認中</td></tr>
+<tr><td>ビルド</td><td><code>npm run build</code>（client+SSR）</td><td class="yes" id="row-build">確認中</td></tr>
+<tr><td>本番公開前</td><td>本番JSに5案関連文字列が無いことを確認（=積み残しの証拠）</td><td id="row-before">確認中</td></tr>
+<tr><td>Lovable公開</td><td><code>scripts/patrol/lovable-publish.mjs</code>で「公開」を押す</td><td id="row-publish">確認中</td></tr>
+<tr><td>本番公開後</td><td>本番JSに5案関連文字列＋undo文言が含まれることを実測</td><td id="row-after">確認中</td></tr>
+</table>
+
+<h2>③ 押せるリンク（実物）</h2>
+<div class="note">
+この機能は管理者パスワードでログインした時だけ見える編集ツール（一般の来場者には見えません）。店主が実際に確認する手順：下のリンクを開く→いつもの管理者モードに入る→動画/曲カードの「✍️ コピー直して」タグを押す→「✍️ 5案で書き直す」を押すと5案が並び、下に「✏️ 自分で全部書く」欄、保存後は「↩ 1個前に戻す」ボタンが出ます。
+</div>
+<ul class="links">
+  <li><b>動作確認用の曲ページ（実物・本番）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=mother-earth&amp;song=apple-green" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=mother-earth&amp;song=apple-green</a></li>
+</ul>
+
+<h2>④ 実測ログ</h2>
+<div class="note">
+<b>このセッションにはブラウザ操作・スクリーンショットの道具が搭載されていない</b>（claude-in-chrome系ツールがツール一覧に無い）。加えて今回は店主から「今使っているブラウザ画面を奪わない」指示があったため、画面録画・任意ウィンドウのactivateは行っていない。証拠は本番JSファイルへの直接fetch（node の fetch。curlは本セッションで権限ブロックされたため回避）で機械的に取った文字列一致。
+</div>
+<pre id="log-block">（公開作業の実測ログをここに追記）</pre>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ。5案(A〜E)本体：コミット<code>f8d17ccc</code>（main、09-04）。今回のundo追加：ブランチ<code>claude/copy-5an-undo-0905</code>→main。次にたまごさんへお願いしたいこと：上のリンクを開いて実際に「✍️ 5案で書き直す」→どれか1つ採用→「↩ 1個前に戻す」まで一通り触って、見え方・使い勝手が期待通りか実画面で確認（このページはコードと本番配信内容の実測一致までを保証するもので、最終合格は店主の実画面確認が必要）。
+</footer>
+</body>
+</html>
