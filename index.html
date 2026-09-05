@@ -1369,6 +1369,12 @@ function wireDrag(box){
       document.body.appendChild(ghost);
       DRAG = {row, id:e.pointerId, ghost, dy: 14, target:null, after:false};
       row.classList.add("qdrag");
+      // 2026-09-06 たまごさん「ラインの位置が変」。
+      //   棒は画面座標(fixed)で描いているので、**掴んでいる最中にページが動くと棒だけ取り残される。**
+      //   指を動かさずにスクロールした瞬間がまさにそれ。→ 掴んでいる間はページを固定する。
+      DRAG.scrollY = window.scrollY;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
       if(navigator.vibrate) try{ navigator.vibrate(8); }catch(_){}
     });
     g.addEventListener("pointermove", e=>{
@@ -1394,6 +1400,8 @@ function wireDrag(box){
       if(!DRAG || DRAG.id !== e.pointerId) return;
       const {row, target, after, ghost} = DRAG;
       DRAG = null;
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
       try{ ghost.remove(); }catch(_){}
       qbar().style.display = "none";
       row.classList.remove("qdrag");

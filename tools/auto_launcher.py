@@ -30,6 +30,7 @@ import subprocess
 import sys
 import time
 import uuid
+from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -164,6 +165,47 @@ def save_queue(q):
     os.replace(tmp, QUEUE)
 
 
+OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
+
+
+def _elapsed_min(started, finished):
+    """startedAt〜finishedAt（"%Y-%m-%dT%H:%M:%S+09:00"形式）の差を分で返す。取れなければNone。"""
+    try:
+        fmt = "%Y-%m-%dT%H:%M:%S"
+        t0 = datetime.strptime((started or "")[:19], fmt)
+        t1 = datetime.strptime((finished or "")[:19], fmt)
+        return round((t1 - t0).total_seconds() / 60.0, 1)
+    except Exception:
+        return None
+
+
+def append_outbox(it, ok):
+    """2026-09-06 新設：仕事が終わるたびに1行、status/dispatch_outbox.jsonl へ追記する。
+
+    たまごさん「相変わらずディスパッチに報告がない。3時間で切ってるなら3時間ごとに
+    3本4本、確認が来ていいはず」。これまで子セッションは queue.json（進捗表）には
+    書けても、Dispatch（たまごさんと会話する側）へ届ける道が無かった。
+    ここで書き出しておけば、Dispatchが会話開始時にこのファイルを読み、
+    status/dispatch_reported.json（既にある「報告済み番号」の記録）と突き合わせて
+    ＝前回報告した以降の分だけをまとめて出せる（読み取り側は今回の作業対象外）。
+    """
+    try:
+        finished = it.get("finishedAt") or time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+        row = {
+            "ts": finished,
+            "n": it.get("n"),
+            "title": it.get("title"),
+            "ok": bool(ok),
+            "elapsedMin": _elapsed_min(it.get("startedAt"), finished),
+            "urls": it.get("urls") or [],
+            "result": (it.get("result") or "")[:300],
+        }
+        with io.open(OUTBOX, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception as e:
+        log("outbox書き込み失敗（%s番）: %s" % (it.get("n"), e))
+
+
 def harvest(q):
     """2026-09-04 たまごさん「作業が終わって、終わったんであれば、そこは俺の確認待ちだよ。
     確認待ちでOKって言ったら初めて完了に入る。ダメだったらもう一回順番待ちに並ぶ」
@@ -292,6 +334,7 @@ def harvest(q):
             it.pop("pid", None)
             it["status"] = "awaiting_check"
             changed = True
+            append_outbox(it, False)
             log("⚠️ 5回続けて途中で切られた %d番「%s」→ 確認待ち" % (it.get("n"), it.get("title")))
             continue
         it["finishedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
@@ -322,6 +365,7 @@ def harvest(q):
             log("↩︎ URLなしのため自動やり直し %d番「%s」（%d回目）" % (it.get("n"), it.get("title"), tries + 1))
         else:
             it["status"] = "awaiting_check"      # たまごさんの確認待ち
+            append_outbox(it, bool(urls))
             log("✅ 終了を回収 %d番「%s」→ 確認待ち（URL %d本）" % (it.get("n"), it.get("title"), len(urls)))
     if any(x.get("_drop") for x in q.get("items", [])):
         q["items"] = [x for x in q["items"] if not x.get("_drop")]

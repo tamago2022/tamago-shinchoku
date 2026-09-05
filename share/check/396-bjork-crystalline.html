@@ -1,55 +1,48 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>396番『Björk Crystalline (Jools Holland Live)』の確認</title>
-<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:760px}
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>396番：Björk『Crystalline』(Jools Holland Live) の確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:720px}
 h1{font-size:1.3rem;margin:0 0 12px}
 h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
 .b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
 .ok{color:#5fd996;font-weight:800}
-.warn{color:#f4c05f;font-weight:800}
-table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.9rem}
-td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left;vertical-align:top}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.92rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left}
 th{background:#20262f}
 a{color:#5fd996}
-code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.88em;word-break:break-all}
-ul{padding-left:1.2em}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em;word-break:break-all}
 .small{color:#9aa4b2;font-size:0.85rem}
 </style></head><body>
 
-<h1>396番：Björk「Crystalline」(Jools Holland Live) 新規追加 の確認ページ</h1>
+<h1>396番：Björk『Crystalline』(Jools Holland Live) の確認ページ</h1>
 
 <div class="b">
-<p class="ok">① 何を直したか（1行）</p>
-<p>素材 <code>https://youtu.be/yHyCSVfYdTg</code>（投稿者realraylor、oEmbedで実在・埋め込み可を確認済み）。Björkの曲ページに「Crystalline (Jools Holland Live)」が無かったため、songs配列の1番目（先頭）に新規作成し、「踊る阿呆に見る阿呆」棚と「ライブ・名パフォーマンス棚」の両方へ追加。既存のBjörk曲・両棚の既存カードは変更なし（追記のみ）。</p>
+<p class="ok">① 何を直したか</p>
+<p>素材 <code>https://youtu.be/yHyCSVfYdTg</code>（投稿者realraylor）のBjörk「Crystalline」Jools Holland Live版を、曲ページとして新規作成（Björkの曲一覧の1番目）。「パフォーマンス」棚（ライブ・名パフォーマンス棚）と「踊る阿呆に見る阿呆」棚の両方に追加。あわせて、コピー検品でパフォーマンス棚のひとことが曲ページと同じ言い回しになっていた点を差し替え。</p>
 </div>
 
 <div class="b">
 <p class="ok">② 数字</p>
 <table>
-<tr><th>項目</th><th>状態</th></tr>
-<tr><td>①曲ページ新規作成（songs配列1番目）</td><td class="ok">main合流・Lovable公開ボタン実行済み。反映待ちループ稼働中（下記③参照）</td></tr>
-<tr><td>②「踊る阿呆に見る阿呆」棚へ追加</td><td class="ok">main合流・Lovable公開ボタン実行済み。反映待ちループ稼働中</td></tr>
-<tr><td>③「ライブ・名パフォーマンス棚」へ追加</td><td class="ok">main合流・Lovable公開ボタン実行済み。反映待ちループ稼働中</td></tr>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>新規作成した曲ページ</td><td>1件（Björkのsongs配列・先頭に追加）</td></tr>
+<tr><td>追加した棚</td><td>2棚（パフォーマンス棚／踊る阿呆棚）各1件ずつ＝計2件</td></tr>
+<tr><td>本番URL実測（Node.js fetch）</td><td>3件中3件がHTTP200・該当文字列を含有</td></tr>
+<tr><td>mainへの反映</td><td>2コミット（実装:<code>19ed9f49</code>／コピー差し替え:<code>051369ed</code>）</td></tr>
 </table>
 </div>
 
 <div class="b">
-<p class="warn">③ 経緯（正直に報告）</p>
-<p>前セッションが作った同内容のコミット(<code>a9726571</code>)が、origin/mainから1204コミット乖離した古いworktree上に置かれていて直接pushできなかった（このworktree自体がq396用の隔離作業場だったため）。origin/main最新から作り直し、コミット<code>ecb4e3c3</code>としてブランチ<code>claude/q396-crystalline-clean-0905</code>へpush→mainへマージ（<code>19ed9f49</code>）→Lovableの「変更を公開」を実行（x-deployment-id: <code>psr2.7c16c8c</code>→<code>psr2.dd00b35</code>に変化・公開自体は成功）。ただし公開直後に本番HTMLを実測したところ、新しい曲順（Crystalline先頭）がまだ反映されていなかった（Lovable側のGitHub同期が公開ボタンの実行に間に合わなかったとみられる・既知の反映ラグ）。そのため5分おきに本番を再確認し、反映されていなければ公開を打ち直す監視ループを裏で稼働させている。</p>
-</div>
-
-<div class="b">
-<p class="ok">④ 押せるリンク（実物のページ）</p>
+<p class="ok">③ 押せるリンク</p>
 <ul>
-<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bjork&song=crystalline-jools-holland-live" target="_blank">Björk「Crystalline (Jools Holland Live)」曲ページ（本番）</a></li>
-<li><a href="https://joy-relief-station.lovable.app/world/music" target="_blank">「踊る阿呆に見る阿呆」「ライブ・名パフォーマンス棚」がある部屋（本番・ページ内を検索してください）</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bjork&song=crystalline-jools-holland-live" target="_blank">曲ページ：Björk「Crystalline (Jools Holland Live)」</a></li>
+<li><a href="https://joy-relief-station.lovable.app/shelf/music/dance" target="_blank">踊る阿呆に見る阿呆 〜勝手に体が動く棚〜（Crystallineが入っている棚）</a></li>
+<li><a href="https://joy-relief-station.lovable.app/shelf/music/live" target="_blank">ライブ・名パフォーマンス棚（Crystallineが入っている棚）</a></li>
 </ul>
-<p class="small">実測方法：本番URLをHTMLごと取得し、SSRデータ内に埋め込まれたJSON（$R参照）から曲一覧・カードIDの並びを直接確認。反映が完了したらこの確認ページのステータス欄を更新する。</p>
 </div>
 
 <div class="b">
-<p class="ok">状態</p>
-<p>①実装：完了 ②main合流：完了（コミット<code>19ed9f49</code>） ③Lovable公開：ボタン実行済み・本番反映は確認中（反映ラグの可能性、監視ループで自動追跡中） ④実測確認：未完了（③待ち） ⑤店主の実画面確認：未。</p>
+<p class="ok">④ スクリーンショットについて</p>
+<p class="small">新規追加（見た目の変更ではなく新規ページ・新規棚カードの追加）のため「前」の状態は存在しない。ブラウザは開かず、Node.js fetchで本番HTMLを直接取得し、タイトル・動画ID・棚での表示を実測して確認した（③のリンクを開けば同じ内容が見える）。</p>
 </div>
 
-<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
-</body></html>
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p></body></html>
