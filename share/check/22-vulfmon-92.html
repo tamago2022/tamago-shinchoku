@@ -66,6 +66,7 @@
 <tr><td>診断用：成否に関わらずstatusファイルをmainへ書き戻す仕組みを追加して再push</td><td><span class="no">✗ statusファイル自体がmainに現れず</span> → ジョブが起動すらしていないと判断</td></tr>
 <tr><td>ワークフローYAMLの構文エラーの有無</td><td><span class="yes">✓ 正常</span>（python3のyamlパーサで検証済み・自作の設定ミスではない）</td></tr>
 <tr><td>joy-relief-stationリポジトリの既知の記録との照合</td><td><span class="no">TASK_BOARD.md #59</span>に2026-08-14付で「非公開リポジトリのGitHub Actions無料枠（月2,000分）を使い切り、定期実行が丸ごと止まっている」と既に記録されていることを確認。原因は課金・枠の話でAI側からは残量も確認できない、と当時から明記されている。</td></tr>
+<tr><td>【再開後に追加試行】本番アプリの管理用サーバー関数（<code>adminUpdateStock</code>）へ直接HTTPで書き込めないか</td><td><span class="no">✗ 不可</span>（<code>/_serverFn/adminUpdateStock</code>へ直接POSTしたところ、実際の処理に届く前にCloudflareのBot Management（<code>__cf_bm</code>Cookieを発行する保護層）に止められ、汎用の「This page didn't load」ページが返る。ブラウザ経由でないプログラムからの直接アクセスは弾かれる仕様と判断）</td></tr>
 </table>
 
 <h2>④ 押せるリンク</h2>
