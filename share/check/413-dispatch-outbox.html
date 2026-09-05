@@ -1,0 +1,69 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>413番 確認ページ</title>
+<style>
+body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.7;max-width:760px}
+h1{font-size:1.2rem;margin:0 0 6px}
+h2{font-size:1rem;margin:24px 0 8px;color:#9fb0c3}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.num{font-size:1.4rem;font-weight:800;color:#5fd996}
+a{color:#7ec8ff}
+ul{padding-left:1.2em}
+pre{white-space:pre-wrap;word-break:break-all;background:#0d1116;border:1px solid #2a323c;border-radius:8px;padding:12px;font-size:.78rem;color:#c9d4e0}
+.row{border-bottom:1px solid #2a323c;padding:10px 0}
+.row:last-child{border-bottom:none}
+.tag{display:inline-block;background:#22304a;color:#8fc0ff;border-radius:6px;padding:1px 8px;font-size:.72rem;margin-right:6px}
+.tag.fail{background:#3a2222;color:#ff9d9d}
+</style></head><body>
+
+<h1>413番：Dispatchへ届く報告の道 の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 何を直したか</p>
+<p>子セッションが3時間で仕事を終えても、それを<b>誰も店主（Dispatch）へ伝える道が無かった</b>穴を塞いだ。
+<code>tools/auto_launcher.py</code> の <code>harvest()</code>（死んだ子セッションを回収する場所）に
+<code>append_outbox()</code> を新設し、仕事が終わるたびに <code>status/dispatch_outbox.jsonl</code> へ
+1行（時刻・番号・題名・成否・経過分・URL）を自動追記するようにした。</p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字</p>
+<p><span class="num">2箇所</span> の完了地点（正常終了／5回連続で強制中断）から書き込むようにし、
+実装後に<span class="num">1回</span>の単体テストで書き込みを確認、その直後に
+<span class="num">実際の別セッション（396番）の完了1件</span>を自動でキャッチして本番へ書き込んだ
+（下の「実際に溜まった行」参照。テストではなく本物の完了報告）。</p>
+</div>
+
+<div class="b">
+<p class="ok">③ 押せるリンク</p>
+<ul>
+<li><a href="https://github.com/tamago2022/tamago-shinchoku/commit/fb8b08e">実装したコミット（auto_launcher.py差分）</a></li>
+<li><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/dispatch_outbox.jsonl">status/dispatch_outbox.jsonl（本番の生ファイル）</a></li>
+<li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/396-bjork-crystalline.html">この仕組みが実際に拾った完了：396番（Björk）の確認ページ</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bjork&song=crystalline-jools-holland-live">↑の本番ページ</a></li>
+<li><a href="https://tamago2022.github.io/tamago-shinchoku/">進捗表トップにもどる</a></li>
+</ul>
+</div>
+
+<div class="b">
+<p class="ok">④ 実際に溜まった行（status/dispatch_outbox.jsonl の中身そのまま）</p>
+<div class="row">
+<span class="tag">テスト</span><b>n=999999</b> テスト:outbox書き込み確認<br>
+成否=OK・経過45.5分・2026-09-06 01:45:30
+</div>
+<div class="row">
+<span class="tag">本物</span><b>n=396</b> Björk『Crystalline』（Jools Holland Live）を入れる<br>
+成否=OK・経過3.8分・2026-09-06 01:52:48（このコードが本番で拾った1件目）
+</div>
+<p>生データ：</p>
+<pre id="raw">読み込み中…</pre>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表にもどる</a></p>
+
+<script>
+fetch('https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/dispatch_outbox.jsonl')
+  .then(r => r.text()).then(t => { document.getElementById('raw').textContent = t; })
+  .catch(() => { document.getElementById('raw').textContent = '（このページ単体では読み込めませんでした。上のrawリンクを直接開いてください）'; });
+</script>
+</body></html>
