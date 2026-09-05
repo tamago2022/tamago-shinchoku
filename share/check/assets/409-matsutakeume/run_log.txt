@@ -1,0 +1,30 @@
+予算上限: 300.0円
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/fal_helper.py", line 44, in run_sync
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/urllib/request.py", line 214, in urlopen
+    return opener.open(url, data, timeout)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/urllib/request.py", line 523, in open
+    response = meth(req, response)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/urllib/request.py", line 632, in http_response
+    response = self.parent.error(
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/urllib/request.py", line 561, in error
+    return self._call_chain(*args)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/urllib/request.py", line 494, in _call_chain
+    result = func(*args)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/urllib/request.py", line 641, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 422: Unprocessable Entity
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py", line 323, in <module>
+    main()
+  File "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py", line 295, in main
+    tts_paths = run_tts_all()
+  File "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py", line 117, in run_tts_all
+    out = fh.run_sync("fal-ai/elevenlabs/tts/eleven-v3", {"text": text, "voice": voice}, timeout=60)
+  File "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/fal_helper.py", line 48, in run_sync
+    raise RuntimeError(f"HTTP {e.code}: {body}")
+RuntimeError: HTTP 422: {"detail":[{"loc":["body","voice"],"msg":"Voice not found: Antoni","type":"feature_not_supported","url":"https://docs.fal.ai/errors#feature_not_supported","input":"Antoni"}]}
