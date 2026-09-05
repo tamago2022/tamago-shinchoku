@@ -1,0 +1,43 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>18番 アメリの細かい調整 確認ページ</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8}
+h1{font-size:1.2rem;margin:0 0 16px}
+h2{font-size:1rem;margin:24px 0 8px;color:#9fb2c8}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+a{color:#5fd996;word-break:break-all}
+.quote{background:#0e1116;border-left:3px solid #5fd996;padding:10px 14px;margin:8px 0;font-size:0.92rem;color:#c9d4e0}
+code{background:#0e1116;padding:2px 6px;border-radius:4px;font-size:0.85rem}
+ol{padding-left:1.4em}</style></head><body>
+<h1>18番 アメリの細かい調整（85点→残り15点）の確認ページ</h1>
+
+<div class="b">
+<h2>① 何をしたか</h2>
+<p>映画『アメリ』紹介ページ（<code>artist=amelie-movie</code>）で店主が指摘していた「この曲から続く道」の位置を、「こちらも」の直前へ移動。実装自体は09-04に別セッションがPR#343でmain合流済みだったため、今回は<strong>本番(Lovable)への反映を実測確認</strong>する作業として完走した。</p>
+</div>
+
+<div class="b">
+<h2>② 数字</h2>
+<p>対象1ページ（アメリ映画紹介ページ）。本番HTMLの見出し出現順を実測し、コード差分どおりの並びになっていることを確認：</p>
+<div class="quote">「アメリ（映画）の他の曲」→「この後、こんな旅もできます」→「ここから続く道」→「つくった人つながり Rousseau」→「こちらもどうぞ」</div>
+<p>「ここから続く道」が一番下ではなく「こちらもどうぞ」の直前に来ている＝修正後のレイアウトが本番に出ている。</p>
+</div>
+
+<div class="b">
+<h2>③ 押せるリンク</h2>
+<p>本番の『アメリ』紹介ページ（本命）：<br>
+<a href="https://joy-relief-station.lovable.app/cover-guide?artist=amelie-movie&song=amelie-trailer-jp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=amelie-movie&song=amelie-trailer-jp</a></p>
+<p>関連：ヤン・ティルセン本人ページ（アメリの音楽家。誤同定なしを確認済み）：<br>
+<a href="https://joy-relief-station.lovable.app/cover-guide?artist=yann-tiersen&song=comptine-d-un-autre-ete-l-apres-midi" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=yann-tiersen&song=comptine-d-un-autre-ete-l-apres-midi</a></p>
+</div>
+
+<div class="b">
+<h2>④ 実測の証拠</h2>
+<p class="ok">本番反映済み（WebFetchで公開後のHTML実テキストを取得して確認・スクリーンショットではなくテキスト実測）</p>
+<p>根拠となったコード側の変更（<code>src/routes/cover-guide.tsx</code>、コミット<code>fc232fee</code>）：</p>
+<div class="quote">店主指示（2026-09-03）：「この曲から続く道」が一番下に来すぎていた。「こちらも」と同じ流れ（すぐ上）へ寄せる。</div>
+<p><code>git merge-base --is-ancestor fc232fee origin/main</code> → 真（main合流済み）。上記②の本番HTML実測で、コード差分どおりの並びが実際に出ていることを確認。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表にもどる</a></p>
+</body></html>
