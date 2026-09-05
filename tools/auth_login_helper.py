@@ -62,6 +62,16 @@ def strip_ansi(s):
 
 
 def main():
+    # ---- 2026-09-05 17:10 封印（たまごさんの明確な要求）----
+    # たまごさん「Claudeタブ消したのに、また2つ立ち上がって、
+    #   『Claude Codeさんが Claudeチャットアカウントへの接続を希望しています』って、
+    #   **もうこれやめてくんないかなって話だよ。**」
+    # この係は `claude` を起動して /login を叩くので、**動くたびにブラウザのログイン画面が開く。**
+    # 朝の認証復旧が終わった今、これが勝手に動く理由は無い。**既定で封印する。**
+    # どうしても必要になったら ~/.tamago/allow_login_helper を置いたときだけ動く。
+    if not os.path.exists(os.path.expanduser("~/.tamago/allow_login_helper")):
+        log("封印中のため何もしませんでした（たまごさんの指示 2026-09-05）")
+        return 0
     for p in (URL_FILE, CODE_FILE, DONE_FILE):
         try:
             os.remove(p)

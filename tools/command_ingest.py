@@ -460,6 +460,8 @@ def _process_queue(action, cmd):
         return queue_pause(target)
     if action == "queue_order":
         return queue_order(target)
+    if action == "queue_dedupe":
+        return queue_dedupe(target)
     if action == "queue_delete":
         return queue_delete(target)
     return "failed", "不明なアクション: %s" % action
@@ -514,6 +516,44 @@ def push_unlock(_target=None):
         return "done", "止まった巡回のロックを外しました（pid %s は生きていません）" % pid
     except Exception as e:
         return "failed", str(e)
+
+
+def queue_dedupe(_target=None):
+    """同じ題名の仕事が何個も並んでいたら、1つだけ残して片づける（2026-09-05）。
+
+    たまごさん「同じものが2つ同時に作業してるよね。これも変だよね」
+    原因は心臓が何本も走っていたこと（受信箱が何度も読まれ、同じ指示が何回も実行された）。
+    心臓は1本に直したが、**既に増えてしまった分**をここで掃除する。
+    走行中のものを最優先で残し、次に番号が小さいものを残す。残りは deleted.json へ控えて消す。
+    """
+    q = _load_queue()
+    items = q.get("items") or []
+    box = os.path.join(REPO, "status", "deleted.json")
+    d = load_json(box, {"items": []})
+    groups = {}
+    for it in items:
+        if it.get("status") not in ("waiting", "running", "hold"):
+            continue
+        key = (str(it.get("title") or "")[:60], it.get("status") == "hold")
+        groups.setdefault(key[0], []).append(it)
+    drop = []
+    for key, xs in groups.items():
+        if len(xs) < 2:
+            continue
+        xs.sort(key=lambda x: (x.get("status") != "running", int(x.get("n") or 0)))
+        for it in xs[1:]:
+            it["deletedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+            it["deletedWhy"] = "重複（心臓が多重起動していた時に増えたもの）"
+            d.setdefault("items", []).append(it)
+            drop.append(it.get("n"))
+    if not drop:
+        return "done", "重複はありませんでした"
+    d["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    save_json(box, d)
+    q["items"] = [x for x in items if x.get("n") not in drop]
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "重複%d件を片づけました（deleted.jsonに控えてあります）" % len(drop)
 
 
 def queue_order(target):
@@ -814,18 +854,37 @@ def restart_heartbeat(_target=None):
     **走っている心臓には反映されない**（実測：auth_watch.py を足したのに1時間以上呼ばれていなかった）。
     ここで一度落とす。5分おきの巡回が新しい中身で立て直す。
     """
-    r = run(["pkill", "-f", "tools/heartbeat.sh"], timeout=10)
-    time.sleep(1)
+    # 2026-09-05 **確実に全部落としてから1本だけ立てる。**
+    #   これまでは pkill 1回で満足していたので、落としきれなかった心臓が生き残り、
+    #   立て直すたびに増えていった（16:25の2分間で12本）。心臓が増える＝受信箱が
+    #   何回も読まれる＝**同じ指示が何回も実行されて、台帳に同じ仕事が何個も増える。**
+    pidf = os.path.join(REPO, "status", "heartbeat.pid")
+    for _ in range(3):
+        run(["pkill", "-f", "tools/heartbeat.sh"], timeout=10)
+        time.sleep(1)
+        chk = run(["pgrep", "-f", "tools/heartbeat.sh"], timeout=10)
+        if not (chk and (chk.stdout or "").strip()):
+            break
     chk = run(["pgrep", "-f", "tools/heartbeat.sh"], timeout=10)
-    still = bool(chk and (chk.stdout or "").strip())
-    # すぐ立て直す（巡回を待たない）
+    left = [x for x in ((chk.stdout or "") if chk else "").split() if x.strip()]
+    for pid in left:
+        run(["kill", "-9", pid], timeout=5)
+    try:
+        os.remove(pidf)
+    except Exception:
+        pass
+    time.sleep(0.5)
     try:
         subprocess.Popen(["bash", os.path.join(REPO, "tools", "heartbeat.sh")],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                          stdin=subprocess.DEVNULL, start_new_session=True)
     except Exception as e:
         return "failed", "落としたが立て直せませんでした: %s" % e
-    return "done", "心臓を入れ直しました（新しい中身で起動）%s" % ("" if not still else "／古いものが残っている可能性")
+    time.sleep(2)
+    chk2 = run(["pgrep", "-f", "tools/heartbeat.sh"], timeout=10)
+    now_n = len([x for x in ((chk2.stdout or "") if chk2 else "").split() if x.strip()])
+    return "done", "心臓を入れ直しました（いま%d本%s）" % (
+        now_n, "" if now_n == 1 else "・★1本になっていません")
 
 
 def auth_login_url(_target=None):
@@ -856,6 +915,11 @@ def auth_login_start(_target=None):
     こちらは何も待たないので、心臓は絶対に固まらない。
     後片付けは auth_watch.py が10分後に落とす。
     """
+    # 2026-09-05 17:10 封印。たまごさん「Claude Codeさんが接続を希望していますって、
+    #   もうこれやめてくんないかなって話だよ」。この手のアクションは動くたびにブラウザの
+    #   ログイン画面を開く。既定で何もしない。~/.tamago/allow_login_helper を置いたときだけ動く。
+    if not os.path.exists(os.path.expanduser("~/.tamago/allow_login_helper")):
+        return "skipped", "ログイン手続きは封印中です（ブラウザのログイン画面を出さないため）"
     log = os.path.join(REPO, "status", "auth_login.log")
     run(["pkill", "-f", "setup-token"], timeout=5)   # 前の残骸があれば先に落とす
     try:
@@ -897,6 +961,11 @@ def auth_login_pty(_target=None):
       読み取りは select で25秒だけ。**プロセスは殺さない**（たまごさんがブラウザで
       ログインを終えるまで生かす）。後片付けは auth_watch.py が10分後にやる。
     """
+    # 2026-09-05 17:10 封印。たまごさん「Claude Codeさんが接続を希望していますって、
+    #   もうこれやめてくんないかなって話だよ」。この手のアクションは動くたびにブラウザの
+    #   ログイン画面を開く。既定で何もしない。~/.tamago/allow_login_helper を置いたときだけ動く。
+    if not os.path.exists(os.path.expanduser("~/.tamago/allow_login_helper")):
+        return "skipped", "ログイン手続きは封印中です（ブラウザのログイン画面を出さないため）"
     import pty as _pty
     import select as _select
     log = os.path.join(REPO, "status", "auth_login.log")
@@ -940,6 +1009,11 @@ def auth_login_pty(_target=None):
 
 def auth_login_helper(_target=None):
     """ログイン係（tools/auth_login_helper.py）を切り離して起動する。こちらは待たない。"""
+    # 2026-09-05 17:10 封印。たまごさん「Claude Codeさんが接続を希望していますって、
+    #   もうこれやめてくんないかなって話だよ」。この手のアクションは動くたびにブラウザの
+    #   ログイン画面を開く。既定で何もしない。~/.tamago/allow_login_helper を置いたときだけ動く。
+    if not os.path.exists(os.path.expanduser("~/.tamago/allow_login_helper")):
+        return "skipped", "ログイン手続きは封印中です（ブラウザのログイン画面を出さないため）"
     try:
         subprocess.Popen(["python3", os.path.join(REPO, "tools", "auth_login_helper.py"), (_target or "login")],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,

@@ -17,8 +17,31 @@ set -u
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$REPO/status/heartbeat.log"
 
-echo "$(date '+%F %T') 心臓を起動しました" >> "$LOG"
+# ---- 心臓は必ず1本だけ（2026-09-05・実害あり）----
+# たまごさん「同じものが2つ同時に作業してるよね。これも変だよね」「発車待ちに同じ内容が2番3番」
+# 実測：16:25〜16:26の2分間で「心臓を起動しました」が12回。**心臓が何本も走っていた。**
+#   心臓が2本なら受信箱も2回読まれ、同じ指示が2回実行される（＝台帳に同じ仕事が2つ増える）。
+#   4本走っていたので4つに増えていた。走行中に同じ仕事が2つ並ぶのも同じ理由。
+# コメントに「二重起動しない」と書いてあったが、**実装が無かった。**書いただけでは効かない。
+PIDF="$REPO/status/heartbeat.pid"
+if [ -f "$PIDF" ]; then
+  OLD="$(cat "$PIDF" 2>/dev/null || true)"
+  if [ -n "${OLD:-}" ] && [ "$OLD" != "$$" ] && kill -0 "$OLD" 2>/dev/null; then
+    echo "$(date '+%F %T') 既に心臓が動いています（pid $OLD）。この起動はやめます" >> "$LOG"
+    exit 0
+  fi
+fi
+echo $$ > "$PIDF"
+trap 'rm -f "$PIDF" 2>/dev/null || true' EXIT INT TERM
+
+echo "$(date '+%F %T') 心臓を起動しました（pid $$）" >> "$LOG"
 while :; do
+  # 自分が正規の心臓でなくなっていたら（誰かが入れ直した）静かに退く
+  CUR="$(cat "$PIDF" 2>/dev/null || true)"
+  if [ -n "${CUR:-}" ] && [ "$CUR" != "$$" ]; then
+    echo "$(date '+%F %T') 新しい心臓（pid $CUR）に交代します" >> "$LOG"
+    exit 0
+  fi
   python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1 || true
   python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
   # ログインが戻ったら自分で気づいて再開する（10分に1回だけ試す）

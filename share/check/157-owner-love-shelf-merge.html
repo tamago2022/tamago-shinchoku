@@ -40,12 +40,12 @@
 <div class="date">2026-09-05 作業中（このページは実測が揃い次第このまま更新します）</div>
 
 <div class="fix">
-管理データ（Supabaseの<code>admin_shelves</code>テーブル）に「飼い主大好き」というタイトルの棚が2行重複していた。片方はビルトイン棚（<code>worlds.ts</code>）へ正しく合流済みだったが、もう片方は合流先が未設定のまま独立棚として扱われ、公開画面に別枠で重複表示される原因になっていた。<b>中身のカードは1枚も削除せず</b>、合流先を設定するだけで1つに統合する。
+管理データ（Supabaseの<code>admin_shelves</code>テーブル）に「飼い主大好き」というタイトルの棚が2行重複していた。片方はビルトイン棚（<code>worlds.ts</code>）へ正しく合流済みだったが、もう片方は合流先が未設定のまま独立棚として扱われ、公開画面に別枠で重複表示される原因になっていた。<b>中身のカードは1枚も削除せず</b>、表示を1つに統合する。
 </div>
 
 <h2>① 何を直したか</h2>
 <div class="note">
-<code>admin_shelves</code>の棚ID<code>079b4ee5-adee-4016-b898-6c7f5c4353d7</code>（合流先未設定＝独立棚扱い）に、既にビルトイン棚へ正しく合流している側と同じ合流先<code>shelf-owner-love</code>を設定。これにより既存の合流ロジック（<code>publicListShelvesForWorld</code>／2026-08-06実装済み）に乗り、公開画面での重複見出しが解消される。カードはどちらの棚のものも削除しない。
+当初はDB側（<code>admin_shelves.extends_shelf_id</code>）を書き換える一度きり便（GitHub Actions経由）を用意したが、このリポジトリのGitHub SecretsにSUPABASE_SERVICE_ROLE_KEYが登録されておらず実行できないと判明。方針を切り替え、<b>DBは書き換えず、コード側（<code>src/lib/publicShelves.functions.ts</code>）の棚一覧を作る関数に「合流先が未設定でもタイトルが既存のビルトイン棚と一致すれば自動的にそちらへ合流させる」ロジックを追加</b>した。これは既にクライアント側（<code>useMergedShelves.ts</code>）にある同種のタイトル一致マージ（2026-08-06実装済み）と同じ考え方をサーバー側にも適用したもので、「飼い主大好き」以外に見つかっている同型の重複（ものまねの棚・名カバーの棚等）にも自動的に効く恒久対策。カードはどちらの棚のものも削除しない。
 </div>
 
 <h2>② 数字</h2>
@@ -75,7 +75,7 @@
 </table>
 
 <footer>
-正本：<code>joy-relief-station</code>リポジトリ <code>scripts/patrol/merge-owner-love-shelf-once.mjs</code>・<code>.github/workflows/tamago-once-merge-owner-love-shelf.yml</code>。書き込みはSupabaseのRLSによりservice_role経由が必須のため、GitHub Actionsの一度きり便（Secrets経由）で実行する設計。
+正本：<code>joy-relief-station</code>リポジトリ <code>src/lib/publicShelves.functions.ts</code>（<code>publicListShelvesForWorld</code>関数）。当初検討したGitHub Actions一度きり便（<code>scripts/patrol/merge-owner-love-shelf-once.mjs</code>等）はSecrets不在のため未実行のまま放棄。
 </footer>
 </body>
 </html>

@@ -20,6 +20,24 @@ fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
 
+# ---- 残骸の掃除（2026-09-05 17:05・実害あり）----
+# たまごさん「Mac重たいよ」。実測：5分平均ロードが238（8コアのMacで通常8以下）。
+# 原因は、中継所のトンネルを立て直すたびに起動していた localtunnel(npx/node) と cloudflared が、
+# 繋がらないまま**積み上がっていた**こと。ここは launchd が直接起動するので、
+# 心臓が詰まっていても必ず走る＝**最後の掃除係**。
+# 落とすのは自分たちが起動したものだけ（8788番ポート宛て・localtunnel）。
+# たまごさんの他の作業（開発用のnode等）を巻き込まないよう、パターンを絞ってある。
+LOAD1="$(sysctl -n vm.loadavg 2>/dev/null | awk '{print $2}' | cut -d. -f1)"
+if [ -n "${LOAD1:-}" ] && [ "$LOAD1" -ge 15 ] 2>/dev/null; then
+  LT_N="$(pgrep -fc 'localtunnel' 2>/dev/null || echo 0)"
+  CF_N="$(pgrep -fc 'cloudflared.*localhost:8788' 2>/dev/null || echo 0)"
+  if [ "${LT_N:-0}" -gt 1 ] 2>/dev/null || [ "${CF_N:-0}" -gt 1 ] 2>/dev/null; then
+    pkill -f 'localtunnel' >/dev/null 2>&1 || true
+    pkill -f 'cloudflared.*localhost:8788' >/dev/null 2>&1 || true
+    echo "$(date '+%F %T') 🧹 重い（ロード$LOAD1）ので中継所の残骸を掃除（localtunnel ${LT_N}本・cloudflared ${CF_N}本）" >> "$REPO/status/relay.log"
+  fi
+fi
+
 # 2026-09-04 工場の心臓（15秒おきに着火と受信箱だけを回す常駐）。
 #   **この巡回のいちばん最初に立てる。**重い計測のあとに置いていたら、
 #   1回の巡回が4〜5分かかるせいで心臓そのものが何分も立たなかった。
@@ -27,7 +45,18 @@ trap 'rm -f "$LOCK"' EXIT
 #   2026-09-05：`nohup ... &` だと**launchdが次の便を出すときに親ごと（プロセスグループごと）
 #   殺されて心臓も一緒に死んでいた**（実測：01:32/01:42/01:51と10分おきに立ち上げ直されていた）。
 #   親から切り離した別セッションとして起動する（pythonの start_new_session=True ＝ setsid相当）。
-if ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
+# 2026-09-05 **pgrep だけで判断すると心臓が増える。**
+#   実測：16:25〜16:58に何十本も立ち上がった。起動直後はまだ pgrep に見えない一瞬があり、
+#   そこで別の便が「居ない」と判断してもう1本立てる。心臓が増えると受信箱が何度も読まれ、
+#   **同じ指示が何回も実行されて台帳に同じ仕事が何十個も増える**（待機が70件に膨れた）。
+#   → PIDファイル（心臓が起動時に自分で書く）を先に見る。生きていれば絶対に立てない。
+HBPID="$REPO/status/heartbeat.pid"
+HB_ALIVE=0
+if [ -f "$HBPID" ]; then
+  HBOLD="$(cat "$HBPID" 2>/dev/null || true)"
+  if [ -n "${HBOLD:-}" ] && kill -0 "$HBOLD" 2>/dev/null; then HB_ALIVE=1; fi
+fi
+if [ "$HB_ALIVE" = "0" ] && ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
   python3 -c "import subprocess,sys; subprocess.Popen(['bash', sys.argv[1]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, start_new_session=True)" "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 || true
 fi
 

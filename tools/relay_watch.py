@@ -60,6 +60,15 @@ def alive(url):
 
 
 def main():
+    # 2026-09-05 17:02 **重いときは何もしない。**
+    #   実測：Macの5分平均ロードが238まで上がった。原因のひとつが、この見張りが呼ぶ
+    #   立て直し（npx localtunnel / cloudflared の起動）が重なって積み上がったこと。
+    #   重いときにさらにプロセスを起こすのは、火に油。ロードが高い間は黙って見送る。
+    try:
+        if os.getloadavg()[0] > 20:
+            return 0
+    except Exception:
+        pass
     try:
         if time.time() - os.path.getmtime(STAMP) < INTERVAL:
             return 0
