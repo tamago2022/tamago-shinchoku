@@ -40,6 +40,13 @@ LOG_MD = os.path.join(VAULT, "AI出力", "_ルール", "見張り番ログ.md")
 ORPHAN_MIN = 20
 CPU_MIN = 3.0
 MAX_KILL_PER_RUN = 3
+# 2026-09-05追記：ppid==1（真の孤児）だけでは、親シェル（npm run lint 等）が
+# まだ生きている場合を見逃す。実測：coverGuide.ts病的スタックで eslint . が
+# 親生存のまま5〜6時間・CPU50〜65%を4件同時に消費し、load average 1分値が
+# 222まで上昇した実害あり（ppid==1のケースはゼロ件だった＝この条件だけでは
+# 一切捕捉できていなかった）。親の生死に関わらず「STUCK_MIN分以上ホワイト
+# リスト一致で動き続けている」ことそのものを異常とみなす閾値を追加する。
+STUCK_MIN = 60
 
 WHITELIST = re.compile(
     r"(\beslint\b|\btsc\b|\bjest\b|\bvitest\b|playwright test|\bwebpack\b|\brollup\b|"
@@ -98,8 +105,6 @@ def candidates():
         if len(parts) < 5:
             continue
         pid, ppid, etime, pcpu, cmd = parts
-        if ppid != "1":
-            continue
         if not WHITELIST.search(cmd) or EXCLUDE.search(cmd):
             continue
         try:
@@ -107,8 +112,16 @@ def candidates():
             cpu = float(pcpu)
         except Exception:
             continue
-        if mins >= ORPHAN_MIN and cpu >= CPU_MIN:
-            found.append({"pid": int(pid), "etimeMin": round(mins, 1), "cpu": cpu, "cmd": cmd[:160]})
+        is_true_orphan = ppid == "1" and mins >= ORPHAN_MIN and cpu >= CPU_MIN
+        # 親が生きていても、STUCK_MIN分を超えて動き続けているなら異常（本来数分で
+        # 終わるコマンドのため）。CPU_MINは問わない（詰まって0%近辺で止まっている
+        # ケースも拾う）。
+        is_stuck_with_parent = ppid != "1" and mins >= STUCK_MIN
+        if is_true_orphan or is_stuck_with_parent:
+            found.append({
+                "pid": int(pid), "etimeMin": round(mins, 1), "cpu": cpu, "cmd": cmd[:160],
+                "kind": "orphan" if is_true_orphan else "stuck-with-live-parent",
+            })
     found.sort(key=lambda x: -x["etimeMin"])
     return found
 
