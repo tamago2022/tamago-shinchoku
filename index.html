@@ -263,7 +263,11 @@
     box-shadow:0 10px 24px rgba(0,0,0,.45); transform:rotate(-.4deg);}
   /* ここに入るよ、の棒（Notionと同じ考え方） */
   .qbar{position:fixed; z-index:9998; height:3px; background:var(--green); border-radius:3px;
-    display:none; pointer-events:none; box-shadow:0 0 8px rgba(111,156,122,.8);}
+    display:none; pointer-events:none; box-shadow:0 0 8px rgba(111,156,122,.8);
+    transition:top .07s cubic-bezier(.2,.9,.3,1.4), left .07s ease, width .07s ease;}
+  /* 収まった瞬間に一瞬だけ光る＝カシャッの合図 */
+  @keyframes qsnapflash{0%{background:rgba(111,156,122,.35);}100%{background:transparent;}}
+  .qrow.qsnap{animation:qsnapflash .32s ease-out; border-radius:8px;}
   .qbar::before{content:""; position:absolute; left:-4px; top:-3px; width:9px; height:9px;
     border-radius:999px; background:var(--green);}
   .qn{flex:none; width:26px; height:26px; border-radius:999px; display:flex; align-items:center; justify-content:center;
@@ -1297,6 +1301,22 @@ function qbar(){
   }
   return b;
 }
+/* 指の高さに、いちばん近い「行の境目」を返す。必ずどこかを返すので棒が消えない。 */
+function nearestSlot(y){
+  const rows = Array.from(document.querySelectorAll("#queue .qrow"))
+    .filter(r => !r.classList.contains("qdrag"));
+  let best = null, bestD = Infinity;
+  for(const r of rows){
+    const rect = r.getBoundingClientRect();
+    if(rect.height === 0) continue;
+    const cands = [[false, rect.top], [true, rect.bottom]];
+    for(const [after, yy] of cands){
+      const d = Math.abs(y - yy);
+      if(d < bestD){ bestD = d; best = {row:r, after, y:yy, rect}; }
+    }
+  }
+  return best;
+}
 function wireDrag(box){
   box.querySelectorAll(".qgrip").forEach(g=>{
     g.addEventListener("pointerdown", e=>{
@@ -1318,35 +1338,20 @@ function wireDrag(box){
       if(!DRAG || DRAG.id !== e.pointerId) return;
       e.preventDefault();
       DRAG.ghost.style.top = (e.clientY - DRAG.dy) + "px";
-      DRAG.ghost.style.display = "none";
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      DRAG.ghost.style.display = "";
-      const over = el && el.closest ? el.closest(".qrow") : null;
+      // 2026-09-05（3回目）たまごさん「**マグネットみたいにカシャンカシャンってなってほしい。
+      //   ちゃんと指定したところにカシャッとはまるようにして**」
+      //   指の真下に行が無い（枠の外へ出た・行と行の隙間）と、棒が消えて宙ぶらりんになっていた。
+      //   → 指の高さに**いちばん近い行の境目**を必ず選ぶ。だから絶対に外れない＝カシャッと吸い付く。
+      const slot = nearestSlot(e.clientY);
       const bar = qbar();
-      if(over && over !== DRAG.row){
-        const rect = over.getBoundingClientRect();
-        const after = e.clientY > rect.top + rect.height/2;
-        DRAG.target = over; DRAG.after = after;
-        bar.style.display = "block";
-        bar.style.left = rect.left + "px";
-        bar.style.width = rect.width + "px";
-        bar.style.top = (after ? rect.bottom : rect.top) - 1 + "px";
-      } else {
-        const bx = el && el.closest ? el.closest(".qbox") : null;
-        if(bx && !bx.contains(DRAG.row)){
-          const first = bx.querySelector(".qrow");
-          if(first){
-            const rect = first.getBoundingClientRect();
-            DRAG.target = first; DRAG.after = false;
-            bar.style.display = "block";
-            bar.style.left = rect.left + "px";
-            bar.style.width = rect.width + "px";
-            bar.style.top = (rect.top - 1) + "px";
-            return;
-          }
-        }
-        DRAG.target = null; bar.style.display = "none";
-      }
+      if(!slot){ DRAG.target = null; bar.style.display = "none"; return; }
+      const changed = (DRAG.target !== slot.row) || (DRAG.after !== slot.after);
+      DRAG.target = slot.row; DRAG.after = slot.after;
+      bar.style.display = "block";
+      bar.style.left = slot.rect.left + "px";
+      bar.style.width = slot.rect.width + "px";
+      bar.style.top = (slot.y - 1) + "px";
+      if(changed && navigator.vibrate){ try{ navigator.vibrate(4); }catch(_){} }   // カシャッの手応え
     });
     const finish = e=>{
       if(!DRAG || DRAG.id !== e.pointerId) return;
@@ -1357,6 +1362,10 @@ function wireDrag(box){
       row.classList.remove("qdrag");
       if(target && target.parentElement){
         target.parentElement.insertBefore(row, after ? target.nextSibling : target);
+        // カシャッと収まった合図（一瞬だけ光らせる）
+        row.classList.add("qsnap");
+        setTimeout(()=>row.classList.remove("qsnap"), 320);
+        if(navigator.vibrate){ try{ navigator.vibrate(12); }catch(_){} }
       }
       const bx = row.closest(".qbox");
       const newP = bx ? Number(bx.dataset.box) : 0;

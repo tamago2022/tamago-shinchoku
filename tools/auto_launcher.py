@@ -261,6 +261,39 @@ def harvest(q):
             changed = True
             log("♻︎ 空回し %d番が終わりました（台帳からは消します）" % it.get("n"))
             continue
+        # ---- 途中で切られたものを「終わった」にしない（2026-09-05）----
+        # たまごさんに「結果が読み取れませんでした・URLの報告なし」を見せてしまった件の原因。
+        # `claude -p --output-format json` は**終わるときに1行のJSONを吐く。**それが1文字も無い
+        # ということは、途中で外から止められた（見張り番がマシンの重さで間引いた＝sheds、
+        # 3時間の強制カット、こちらのpkillの巻き添え等）ということ。**仕事が失敗したのではない。**
+        # 失敗として確認待ちに積むと、たまごさんが「これ何を見ればいいの」と確認だけさせられる。
+        # → **続きから再開**する形で列に戻す。やり直しではないので、そこまでの作業は無駄にならない。
+        if not (result or "").strip() and '"result"' not in (raw or ""):
+            cut = int(it.get("cutCount") or 0)
+            if cut < 5:
+                it["cutCount"] = cut + 1
+                it["status"] = "hold" if it.get("holdNote") else "waiting"
+                if it.get("sessionId"):
+                    it["resumeFrom"] = it["sessionId"]   # 続きから起こす
+                it["priority"] = it.get("priority") or 2
+                for k in ("finishedAt", "result", "urls", "startedAt"):
+                    it.pop(k, None)
+                it.pop("pid", None)
+                changed = True
+                log("✂︎ 途中で切られたので続きから再開へ %d番「%s」（%d回目）"
+                    % (it.get("n"), it.get("title"), cut + 1))
+                continue
+            # 5回続けて切られるなら、切られ方そのものがおかしい。人の目に回す。
+            it["result"] = ("【5回続けて途中で切られました】仕事の中身の問題ではなく、"
+                            "走っている途中で外から止められています。マシンの重さで間引かれた"
+                            "（見張り番のsheds）か、3時間の強制カットの可能性があります。")
+            it["finishedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+            it["urls"] = []
+            it.pop("pid", None)
+            it["status"] = "awaiting_check"
+            changed = True
+            log("⚠️ 5回続けて途中で切られた %d番「%s」→ 確認待ち" % (it.get("n"), it.get("title")))
+            continue
         it["finishedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
         it["result"] = (result or "（結果が読み取れませんでした）")[:1200]
         it["urls"] = urls
