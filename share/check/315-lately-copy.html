@@ -42,7 +42,7 @@
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #315</div>
 <h1>#315 Latelyのコピーを書き直す（「静かなピアノの夜」では薄い）</h1>
-<div class="date" id="statusline">確認中…</div>
+<div class="date" id="statusline">2026-09-05 本番反映済み（Lovable公開済み・本番HTMLで新文言を実測確認）</div>
 
 <div class="fix">
 「静かなピアノの夜。」は、たまごさんが「人類のバラードトップ10に入る」「不朽の名作」と評するこの曲の格に対して薄すぎる、という指摘を受け、事実ベースで書き直した。事実の軸は2つ：①スティーヴィー・ワンダーがベース・ピアノ・声を<b>全部ひとりで録音した</b>こと、②<b>13年後（1993年）</b>にJodeciがカバーし、<b>全米R&amp;Bチャート1位を13週独走</b>したこと。噂・推測は使わず、この2つの事実の組み合わせ方だけを変えて5案を作った。
@@ -57,7 +57,7 @@
 <div class="nums">
   <div class="num" id="num-files"><b>4箇所</b><span>coverGuide.ts内の変更箇所（artists配列2件・curated原曲note2件）</span></div>
   <div class="num" id="num-plans"><b>5案</b><span>A〜E、事実2軸の組み合わせ違いで作成</span></div>
-  <div class="num" id="num-deploy"><b id="deploy-result">確認中</b><span>本番反映（x-deployment-id変化）</span></div>
+  <div class="num" id="num-deploy"><b id="deploy-result" class="yes">反映済み</b><span>本番HTTP 200・x-deployment-id: psr2.0ba15795…</span></div>
 </div>
 
 <h2>③ A〜E案（採用はA・緑の枠）</h2>
@@ -83,10 +83,17 @@
 <tr><td>前</td><td>静かなピアノの夜。</td></tr>
 <tr><td>後（採用A案）</td><td>ベース、ピアノ、声、全部ひとりで録った。13年後、Jodeciのカバーが全米R&amp;Bチャート1位を13週独走した一曲。</td></tr>
 </table>
-<div class="shots" id="shots-block"></div>
+<div class="note">このセッションには実ブラウザのスクリーンショット取得ツールが無かったため、画像は省略。代わりに本番HTMLをそのまま取得して文字列を実測（下記「今の状態」参照）。気になる場合は上の「本番の曲ページ」リンクを直接開いて見比べてください。</div>
 
 <h2 id="genjo-title">今の状態（正直な報告）</h2>
-<div class="note" id="genjo-body">確認中…</div>
+<div class="note" id="genjo-body">
+<b>結論：本番へ反映済み。</b><br>
+・mainブランチ：コミット<code>4b6530f3</code>が<code>origin/main</code>に合流済み（fetch実測で確認）。<br>
+・Lovable公開：前任セッションが公開スクリプトを実行済みで、既に反映されていたため今回は再実行不要と判断（バックグラウンドに残っていた重複プロセスは新規起動せず）。<br>
+・本番実測：<code>https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately</code> をHTTP 200で取得し、本文の紹介文（note）に新文言「ベース、ピアノ、声、全部ひとりで録った。13年後、Jodeciのカバーが全米R&amp;Bチャート1位を13週独走した一曲。」が実際に表示されていることを確認。旧文言「静かなピアノの夜。」は本番ページに残っていない。<br>
+・デプロイ識別子：<code>x-deployment-id: psr2.0ba15795-a706-4d8b-8f35-fd9a817e4d00...</code>（レスポンスヘッダで確認）。<br>
+残りは<b>店主の実画面での最終確認</b>のみ。上の「本番の曲ページ」を開いて、紹介文が新しくなっていることをご確認ください。
+</div>
 
 <footer>
 正本：<code>joy-relief-station</code>リポジトリ<code>src/lib/coverGuide.ts</code>（<code>id:"lately"</code>のnote・4箇所）。案件記録は<code>.claude/TASK_BOARD.md</code>案件#315。
