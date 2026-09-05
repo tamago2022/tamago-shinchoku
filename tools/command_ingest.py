@@ -810,8 +810,13 @@ def disk_breakdown(_target=None):
     | awk '{ printf "%8.1f GB  %s\n", $1/1024, substr($0, index($0,$2)) }'
   echo
   echo "=== 終わり ==="
-} > "%s" 2>&1
-''' % out
+} > "__OUT__" 2>&1
+'''.replace("__OUT__", out)
+    # ↑ ここは絶対に % 書式を使わないこと。
+    #   スクリプトの中に awk の `%8.1f` が入っているので、`% out` と書くと
+    #   Pythonがそれを書式指定子と誤解して TypeError で落ちる。
+    #   2026-09-06 03:28、これで command_ingest が15分間まるごと止まり、
+    #   たまごさんが押したボタンも新しい指示も1件も処理されなくなった。
     try:
         io.open(out, "w", encoding="utf-8").write(
             "測定中です（数分かかります）。始めた時刻: %s\n" % time.strftime("%F %T"))
