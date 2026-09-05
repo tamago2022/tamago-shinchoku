@@ -636,7 +636,19 @@ refreshQuota();
 setInterval(refreshQuota, 60000);
 refreshPace();
 setInterval(refreshPace, 60000);
+/* 2026-09-05 このページがMac自身から配られているとき（家のWi-Fiの中で http://192.168.x.x:8788 を
+   開いたとき）は、**自分がいる場所がそのまま中継所**。トンネルを探しにいかない。
+   トンネルは切れるたびURLが変わるが、家の中の道は切れないしURLも変わらない。 */
+function isLocalRelay(){
+  return location.protocol === "http:" &&
+         (location.port === "8788" || /^(192\.168\.|10\.|127\.)/.test(location.hostname));
+}
 function refreshRelay(){
+  if(isLocalRelay()){
+    window.__relay = {url: location.origin, lanUrl: location.origin, local: true};
+    flushCommands();
+    return Promise.resolve();
+  }
   return fetch("status/relay.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(j => { window.__relay = j; flushCommands(); })
     .catch(()=>{});
