@@ -252,6 +252,11 @@
   .queue > summary{font-weight:700;}
   .qrow{display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
   .qrow:last-child{border-bottom:none;}
+  /* 2026-09-05 つまんで動かす取っ手。ここだけ掴める（本文タップは今まで通り説明が開く） */
+  .qgrip{flex:none; width:26px; height:34px; display:flex; align-items:center; justify-content:center;
+    color:var(--sub); font-size:1.05rem; cursor:grab; touch-action:none; user-select:none; opacity:.55;}
+  .qgrip:active{cursor:grabbing; opacity:1;}
+  .qrow.qdrag{background:#1b2330; outline:1px dashed var(--green); border-radius:8px; opacity:.92;}
   .qn{flex:none; width:26px; height:26px; border-radius:999px; display:flex; align-items:center; justify-content:center;
     font-size:0.72rem; font-weight:800; background:#1a2028; border:1px solid var(--line); color:var(--sub); font-variant-numeric:tabular-nums;}
   .qrow.next .qn{background:var(--green); color:#12161c; border-color:var(--green);}
@@ -998,6 +1003,17 @@ function collectNow(m){
   });
   return Array.from(byKey.values());
 }
+/* 2026-09-05 たまごさん「下のやつは詳細が開けるけれども、上のやつが開けない。
+   上のやつも詳細を開けるようにしてください」→ 走行中のカードにも台帳の説明を畳んで持たせる。 */
+function detailOf(n){
+  if(!n) return "";
+  const items = (window.__queue && window.__queue.items) || [];
+  const it = items.find(x => x.n === Number(n));
+  if(!it) return "";
+  const body = it.what || it.why || "";
+  if(!body) return "";
+  return `<details class="qd nowdet"><summary>詳細</summary><div class="qwhat">${esc(body)}</div></details>`;
+}
 function renderNow(m){
   const box = document.getElementById("now"), ageBox = document.getElementById("nowAge");
   if(!m || !m.measuredAt){ box.innerHTML = `<div class="nowempty">読み込み中…</div>`; ageBox.textContent = ""; return; }
@@ -1022,7 +1038,8 @@ function renderNow(m){
         <span class="ncd" data-cd>--:--</span>
       </div>
       <div class="ncdlbl">${esc(limitLabel(limitMinFor(s)))}・${esc(started)}開始</div>
-      ${qnOf(s) ? `<button type="button" class="npause" data-pause="${qnOf(s)}">⏸ 引っ込める（続きから再開）</button>` : ""}
+      ${detailOf(qnOf(s))}
+      ${qnOf(s) ? `<button type="button" class="npause" data-pause="${qnOf(s)}">⏸ 引っ込める（列の最後尾へ）</button>` : ""}
     </div>`;
   }).join("");
   tickCountdowns();
@@ -1201,9 +1218,14 @@ function renderQueue(){
   //   上のやつが無くなったら上がってくる。**優先度4のやつがいきなり埋めてくるのは困る」
   //   → 5つの箱に分けて出す。上の箱が空になるまで下の箱からは発車しない（発車の規則も同じ）。
   const BOX = [[1,"P1 今すぐ"],[2,"P2 高い"],[3,"P3 ふつう"],[4,"P4 低い"],[5,"P5 後回し"],[9,"未設定"]];
+  // 2026-09-05 たまごさん「ドラッグアンドドロップで順番入れ替えられるようにしたい、上下。
+  //   今さ、押したら1個下に下がる、みたいなやつでしょ。すごいやりづらいです」
+  //   → 左端の「⣿」を掴んで動かす。指でもマウスでも動くよう pointer イベントで書く。
+  //   落とした場所の箱の優先度をそのまま引き継ぎ、並び順(order)を台帳へ送る。
   const rowHtml = (r,i,globalIdx)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
-    return `<div class="qrow${globalIdx===0 ? " next" : ""}">
+    return `<div class="qrow${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
+      <span class="qgrip" title="つまんで動かす">⣿</span>
       <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
       <span class="qbody">
         <details class="qd"><summary><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
@@ -1217,10 +1239,70 @@ function renderQueue(){
   for(const [lvl, label] of BOX){
     const inBox = rows.filter(r => ((prioOf("Q" + r.n) || r.priority || 9)) === lvl);
     if(!inBox.length) continue;
-    html += `<div class="qbox"><div class="qboxh">${label} <b>${inBox.length}</b>件</div>`
+    html += `<div class="qbox" data-box="${lvl}"><div class="qboxh">${label} <b>${inBox.length}</b>件</div>`
           + inBox.map((r,i)=>rowHtml(r,i,gi++)).join("") + `</div>`;
   }
   box.innerHTML = html;
+  wireDrag(box);
+}
+
+/* ───── つまんで動かす（指でもマウスでも）2026-09-05 ─────
+   たまごさん「ドラッグアンドドロップで、納車みたいに、順番入れ替えられるようにしたい」。
+   HTML標準のドラッグはスマホで動かないので pointer イベントで自前でやる。
+   ・掴めるのは左端の「⣿」だけ（本文をタップしたら今まで通り説明が開く）
+   ・動かしている間、指の位置にある行と入れ替えて見た目を先に変える
+   ・離した瞬間に、落ちた箱の優先度と、上から順の並びを台帳へ送る */
+let DRAG = null;
+function wireDrag(box){
+  box.querySelectorAll(".qgrip").forEach(g=>{
+    g.addEventListener("pointerdown", e=>{
+      const row = e.target.closest(".qrow"); if(!row) return;
+      e.preventDefault();
+      try{ g.setPointerCapture(e.pointerId); }catch(_){}
+      DRAG = {row, id:e.pointerId, grip:g};
+      row.classList.add("qdrag");
+      if(navigator.vibrate) try{ navigator.vibrate(10); }catch(_){}
+    });
+    g.addEventListener("pointermove", e=>{
+      if(!DRAG || DRAG.id !== e.pointerId) return;
+      e.preventDefault();
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const over = el && el.closest ? el.closest(".qrow") : null;
+      if(over && over !== DRAG.row && over.parentElement){
+        const rect = over.getBoundingClientRect();
+        const after = e.clientY > rect.top + rect.height/2;
+        over.parentElement.insertBefore(DRAG.row, after ? over.nextSibling : over);
+      } else {
+        // 箱の見出しの上まで持っていったら、その箱の先頭へ入れる
+        const bx = el && el.closest ? el.closest(".qbox") : null;
+        if(bx && !bx.contains(DRAG.row)){
+          const first = bx.querySelector(".qrow");
+          bx.insertBefore(DRAG.row, first || null);
+        }
+      }
+    });
+    const finish = e=>{
+      if(!DRAG || DRAG.id !== e.pointerId) return;
+      DRAG.row.classList.remove("qdrag");
+      const moved = DRAG.row; DRAG = null;
+      // 落ちた箱の優先度を引き継ぐ
+      const bx = moved.closest(".qbox");
+      const newP = bx ? Number(bx.dataset.box) : 0;
+      const n = Number(moved.dataset.n), oldP = Number(moved.dataset.p);
+      if(newP && newP !== oldP && newP !== 9){
+        setPrio("Q" + n, newP);
+        sendCommandWithId("p" + Date.now().toString(36), "queue_prio", n + ":" + newP, "P" + newP + " へ移動 " + n + "番");
+        moved.dataset.p = String(newP);
+      }
+      // 上から順の並びを丸ごと送る（画面に出ている番号だけ）
+      const order = Array.from(document.querySelectorAll("#queue .qrow")).map(x=>x.dataset.n).filter(Boolean);
+      if(order.length){
+        sendCommandWithId("o" + Date.now().toString(36), "queue_order", order.join(","), "並び順を保存");
+      }
+    };
+    g.addEventListener("pointerup", finish);
+    g.addEventListener("pointercancel", finish);
+  });
 }
 /* ───── 燃料の栓（発車の停止・再開／同時本数）───── */
 let FUEL_ON = true, FUEL_CAP = null;

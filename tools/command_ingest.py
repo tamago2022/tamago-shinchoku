@@ -585,9 +585,15 @@ def queue_pause(target):
         it["resumeFrom"] = it["sessionId"]     # 続きから再開するための目印
     it.pop("pid", None)
     it["priority"] = it.get("priority") or 3
+    # 2026-09-05 たまごさん「引っ込めたやつはちょっと列の後ろに行って。最後尾に」
+    #   引っ込めた直後にまた先頭へ戻ってくると、割り込ませたくて引っ込めた意味が無い。
+    #   同じ優先度の中で一番後ろになるよう order を大きく振る。
+    orders = [int(x.get("order")) for x in (q.get("items") or [])
+              if isinstance(x.get("order"), int)]
+    it["order"] = (max(orders) if orders else 0) + 1000
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
-    return "done", "%d番を引っ込めました（%s。次に発車するとき続きから再開します）" % (
+    return "done", "%d番を引っ込めて列の最後尾へ回しました（%s。次に発車するとき続きから再開します）" % (
         n, "止めました" if killed else "すでに終わっていました")
 
 
