@@ -35,7 +35,16 @@ INTERVAL = 600  # 10分に1回だけ試す（無駄打ちしない）
 # `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
 # こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
 def claude_env():
+    """環境変数のトークンは原則使わない（2026-09-05に実測して分かったこと）。
+
+    `CLAUDE_CODE_OAUTH_TOKEN` は**キーチェーンの正しい鍵より優先される。**
+    古い壊れた鍵が1つ残っているだけで、ログインが成功していても工場全体が
+    「OAuth session expired」のままになる。キーチェーンを正本にする。
+    """
     env = dict(os.environ)
+    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
+    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
+        return env
     p = os.path.expanduser("~/.tamago/claude_token")
     try:
         t = io.open(p, encoding="utf-8").read().strip()
