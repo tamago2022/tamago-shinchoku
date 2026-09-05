@@ -139,6 +139,30 @@ class Handler(BaseHTTPRequestHandler):
                 return self.wfile.write(body)
             except Exception as e:
                 return self._json(500, {"ok": False, "error": str(e)})
+        # 2026-09-05 たまごさん「ブラウザ探すのが面倒くさい。ホーム画面でできるようにして」
+        #   → アイコンと manifest も配る。これでホーム画面に足せば、アプリのように一発で開ける。
+        for name, ct in (("manifest.webmanifest", "application/manifest+json"),
+                         ("apple-touch-icon.png", "image/png"),
+                         ("icon-192.png", "image/png"),
+                         ("icon-512.png", "image/png"),
+                         ("favicon.ico", "image/x-icon"),
+                         ("sw.js", "text/javascript")):
+            if self.path.split("?")[0] == "/" + name:
+                p = os.path.join(REPO, name)
+                if not os.path.exists(p):
+                    return self._json(404, {"ok": False})
+                try:
+                    with io.open(p, "rb") as f:
+                        body = f.read()
+                    self.send_response(200)
+                    self._cors()
+                    self.send_header("Content-Type", ct)
+                    self.send_header("Cache-Control", "no-store")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    return self.wfile.write(body)
+                except Exception as e:
+                    return self._json(500, {"ok": False, "error": str(e)})
         # 進捗表が「status/なんとか.json」を相対パスで読むので、そのまま返せるようにする
         if self.path.startswith("/status/"):
             name = self.path[len("/status/"):].split("?")[0]
