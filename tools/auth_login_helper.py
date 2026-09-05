@@ -115,6 +115,18 @@ def main():
                     f.write(txt)
             except Exception:
                 pass
+        # 何度でも送れる入力箱（1行ずつ端末へ流す）。/login や コードはここを通す
+        keys = os.path.join(REPO, "status", "auth_keys.txt")
+        if os.path.exists(keys):
+            try:
+                lines = io.open(keys, encoding="utf-8").read()
+                os.remove(keys)
+                for ln in lines.splitlines():
+                    os.write(master, (ln + "\r").encode("utf-8"))
+                    time.sleep(0.4)
+                log("入力を送りました（%d行）" % len(lines.splitlines()))
+            except Exception as e:
+                log("入力を送れませんでした: %s" % e)
         # たまごさんからコードが届いたら流し込む
         if not code_sent and os.path.exists(CODE_FILE):
             try:
