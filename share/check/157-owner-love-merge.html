@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>確認：157番「飼い主大好き」棚の重複統合</title>
+<style>
+  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;max-width:720px;margin:0 auto;padding:20px;line-height:1.7;background:#faf5ec;color:#222}
+  h1{font-size:1.2rem;border-bottom:3px solid #e8a33d;padding-bottom:8px}
+  h2{font-size:1rem;margin-top:1.8em;color:#8a5a1e}
+  .num{font-size:1.6rem;font-weight:bold;color:#1a7a3d}
+  code{background:#eee;padding:2px 6px;border-radius:4px;font-size:0.85em;word-break:break-all}
+  a{color:#1a5aa8}
+  .box{background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px 18px;margin:10px 0}
+  .warn{background:#fff8e1;border:1px solid #e8c468}
+  img{max-width:100%;border:1px solid #ccc;border-radius:8px;margin-top:8px}
+</style>
+</head>
+<body>
+<h1>確認ページ：157番「飼い主大好き」棚の重複統合</h1>
+
+<h2>① 何を直したか</h2>
+<div class="box">
+Supabaseの棚テーブル（<code>admin_shelves</code>）に、<b>「飼い主大好き」という名前の棚が2行</b>存在していた（世界＝「かわいい」）。
+片方（2026-07-08作成）は独立した棚のまま浮いていて動画1本（ViralHogの犬動画）だけを持ち、もう片方（2026-07-15作成）は正しく本体の棚（サイトに表示されている19枚の棚）にくっつく設定になっていた。
+<b>浮いていた方の動画1本を、正しくくっつく方へ移してから、浮いていた棚の行を削除して1本化した。</b>中身は消さず、両方の内容を1つにまとめた。
+</div>
+
+<h2>② 数字</h2>
+<div class="box">
+<p class="num">統合前：2棚（1本＋1本の動画）／統合後：1棚（合計の動画は移動済み）</p>
+<ul>
+<li>浮いていた棚（<code>079b4ee5…</code>）：動画1件（ViralHog「Dogs Are Excited to See Owners Coming Home」）</li>
+<li>正しい方の棚（<code>c60b35e2…</code>）：もともと2件（X投稿）＋移動してきた1件＝<b>3件</b></li>
+<li>本体の棚（サイトに表示されている「飼い主大好き」）：19枚（変わらず）</li>
+</ul>
+</div>
+
+<h2>③ 押せるリンクの一覧</h2>
+<div class="box">
+<p>統合後の「飼い主大好き」棚そのもの（サイトの実物ページ）：</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/shelf/cute/shelf-owner-love" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/shelf-owner-love</a></li>
+<li><a href="https://joy-relief-station.lovable.app/world/cute" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/cute</a>（「かわいい」の世界。「飼い主大好き」の見出しは1個だけになっている）</li>
+</ul>
+<p>棚の管理データ（本番REST API・誰でも読めるURL）。統合後は行が1本だけになっていることが確認できる：</p>
+<ul>
+<li><a href="__ADMIN_SHELVES_URL__" target="_blank" rel="noopener">__ADMIN_SHELVES_URL__</a></li>
+</ul>
+</div>
+
+<h2>④ 前と後</h2>
+<div class="box">
+<p><b>前（統合前・管理データそのもの）：</b>「飼い主大好き」の行が2つ出ている。</p>
+<pre style="white-space:pre-wrap;background:#f4f0e6;padding:10px;border-radius:6px;font-size:0.8em">__BEFORE_JSON__</pre>
+<p><b>後（統合後・管理データそのもの）：</b>「飼い主大好き」の行は1つだけになっている。</p>
+<pre style="white-space:pre-wrap;background:#f4f0e6;padding:10px;border-radius:6px;font-size:0.8em">__AFTER_JSON__</pre>
+</div>
+
+<h2>結論</h2>
+<div class="box">
+「飼い主大好き」の重複を1本化した。<b>サイトの見た目（世界ページ・棚ページの19枚）はもともと変わっていない</b>ので画面上の違いは分かりにくいが、
+裏側の管理データで2行→1行になったこと、浮いていた動画1本が消えずに正しい棚へ移ったことが上の「④前と後」で確認できる。
+</div>
+
+</body>
+</html>
