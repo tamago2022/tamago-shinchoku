@@ -22,3 +22,19 @@
 3. 数分で公開URLに反映される
 
 リンクは `links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=<URLエンコードしたパス>"}]` の形で付ける。パスの文字列だけを置かない。
+
+## Dispatchへの完了報告（2026-09-06新設・413番）
+
+子セッションが完了するたびに `tools/auto_launcher.py` の `harvest()` が
+`status/dispatch_outbox.jsonl` へ1行追記する（JSON Lines。1行＝1件の完了）。
+項目：`ts`（完了時刻）／`n`（番号）／`title`（題名）／`ok`（成否）／
+`elapsedMin`（着火〜完了の経過分）／`urls`（本番・確認ページURL）／`result`（報告文の抜粋）。
+
+**Dispatch（たまごさんとの会話）は、会話開始時に次の2ファイルを読み比べて報告する：**
+
+1. `status/dispatch_outbox.jsonl` の全行
+2. `status/dispatch_reported.json` の `ns`（すでに報告済みの番号一覧）
+
+`ns` に無い `n` の行だけを「まだ報告していない完了」として、3時間の区切り（`elapsedMin`）が
+分かる形でまとめて話す。話し終えたら、報告した `n` を `dispatch_reported.json` の `ns` へ追記する
+（読み取り・突き合わせ側は今回新設せず、既存の `ns` 台帳とこの運用手順だけで足りる）。
