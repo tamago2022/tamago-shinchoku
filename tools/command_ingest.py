@@ -758,7 +758,7 @@ def auth_login_pty(_target=None):
 def auth_login_helper(_target=None):
     """ログイン係（tools/auth_login_helper.py）を切り離して起動する。こちらは待たない。"""
     try:
-        subprocess.Popen(["python3", os.path.join(REPO, "tools", "auth_login_helper.py")],
+        subprocess.Popen(["python3", os.path.join(REPO, "tools", "auth_login_helper.py"), (_target or "login")],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                          stdin=subprocess.DEVNULL, start_new_session=True)
     except Exception as e:

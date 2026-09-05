@@ -67,13 +67,27 @@ def main():
             os.remove(p)
         except Exception:
             pass
+    mode = sys.argv[1] if len(sys.argv) > 1 else "login"
     subprocess.run(["pkill", "-f", "setup-token"], capture_output=True)
     master, slave = pty.openpty()
-    proc = subprocess.Popen([CLAUDE, "setup-token"], stdin=slave, stdout=slave, stderr=slave,
+    if mode == "setup-token":
+        cmd = [CLAUDE, "setup-token"]
+    else:
+        # 本来のログイン。**キーチェーンの古い鍵を正しく上書きする**のはこちら。
+        # setup-token は環境変数用のトークンを出すだけで、古い鍵が残ったままだと
+        # CLIはそちらを見て「期限切れ」と言い続ける（2026-09-05に実測）。
+        cmd = [CLAUDE]
+    proc = subprocess.Popen(cmd, stdin=slave, stdout=slave, stderr=slave,
                             start_new_session=True, close_fds=True)
     os.close(slave)
     log("ログイン係を started（pid %d）" % proc.pid)
 
+    if mode != "setup-token":
+        time.sleep(4)
+        try:
+            os.write(master, b"/login\r")
+        except Exception:
+            pass
     buf, t0, url_written, code_sent = "", time.time(), False, False
     while time.time() - t0 < LIMIT:
         if proc.poll() is not None:
