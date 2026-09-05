@@ -573,6 +573,10 @@ function renderPending(){
   el.textContent = PENDING_CMDS.length ? `未送信 ${PENDING_CMDS.length}件（中継所につながり次第まとめて送ります）` : "";
 }
 function relayUrl(){ return (window.__relay && window.__relay.url) || null; }
+/* 2026-09-05 中継所の道が2本になった。cloudflared が張れないとき localtunnel(*.loca.lt)へ落ちる。
+   localtunnel は初回に「Click to Continue」の注意ページを挟むので、このヘッダーで素通りさせる。
+   付いていても cloudflared 側では無害なので、中継所宛ては常に付ける。 */
+const RELAY_HEADERS = {"bypass-tunnel-reminder": "1"};
 function flushCommands(){
   const url = relayUrl();
   if(!url || !PENDING_CMDS.length) { renderPending(); return Promise.resolve(); }

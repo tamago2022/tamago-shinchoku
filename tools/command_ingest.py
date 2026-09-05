@@ -592,6 +592,101 @@ def queue_delete(target):
     return "done", "%d番を消しました（取り消せるよう status/deleted.json に控えてあります）" % n
 
 
+def relay_fix(_target=None):
+    """中継所（進捗表→Mac）を強制的に立て直し、**結果を実測で返す**（2026-09-05）。
+
+    たまごさんの「今すぐ押しても入らない」「今何も動いてませんてなる」の正体は、
+    cloudflared のクイックトンネルが**プロセスを残したまま無言で死ぬ**こと。
+    見回りが pgrep で生死を見ていたので、毎回「生きている」と誤判定して素通りしていた。
+    ここでは古いものを必ず殺してから立て直し、外から叩いて200が返るかまで確かめる。
+    """
+    import shutil as _sh
+    steps = []
+    rjson = os.path.join(REPO, "status", "relay.json")
+    tunlog = os.path.join(REPO, "status", "relay_tunnel.log")
+
+    # ① 掃除。古い受け口とトンネルを確実に落とす（ポート占有 Address already in use の元）
+    run(["pkill", "-f", "cloudflared"], timeout=10)
+    run(["pkill", "-f", "relay_server.py"], timeout=10)
+    time.sleep(2)
+    lsof = run(["lsof", "-ti", "tcp:8788"], timeout=10)
+    stuck = [x for x in ((lsof.stdout or "") if lsof else "").split() if x.strip()]
+    for pid in stuck:
+        run(["kill", "-9", pid], timeout=5)
+    if stuck:
+        steps.append("ポート8788を掴んでいた%d本を落とした" % len(stuck))
+        time.sleep(1)
+
+    # ② 受け口だけ先に立てる
+    subprocess.Popen([sys.executable, os.path.join(REPO, "tools", "relay_server.py")],
+                     stdout=open(os.path.join(REPO, "status", "relay.log"), "a"),
+                     stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                     start_new_session=True, close_fds=True)
+    time.sleep(2)
+    h = run(["curl", "-s", "-m", "5", "-o", "/dev/null", "-w", "%{http_code}",
+             "http://127.0.0.1:8788/health"], timeout=10)
+    local_ok = h is not None and (h.stdout or "").strip() == "200"
+    steps.append("受け口(ローカル)=%s" % ("OK" if local_ok else "NG"))
+    if not local_ok:
+        return "failed", "受け口が立ちません。" + " ／ ".join(steps)
+
+    # ③ 道を2本用意する。cloudflared が張れなければ localtunnel へ落ちる。
+    #    2026-09-05：たまごさんの回線は 7844 が塞がれていて cloudflared が hard_fail する。
+    #    **道が1本しかないのが今日の詰まりの原因**なので、必ず代わりを持たせる。
+    def _wait_url(pat, sec=45):
+        for _ in range(sec):
+            try:
+                txt = io.open(tunlog, encoding="utf-8", errors="ignore").read()
+            except Exception:
+                txt = ""
+            m = re.findall(pat, txt)
+            if m:
+                return m[-1]
+            time.sleep(1)
+        return ""
+
+    url = ""
+    cf = _sh.which("cloudflared") or os.path.expanduser("~/.tamago/bin/cloudflared")
+    if os.path.exists(cf):
+        io.open(tunlog, "w").write("")
+        subprocess.Popen([cf, "tunnel", "--url", "http://localhost:8788",
+                          "--protocol", "http2", "--no-autoupdate"],
+                         stdout=open(tunlog, "a"), stderr=subprocess.STDOUT,
+                         stdin=subprocess.DEVNULL, start_new_session=True, close_fds=True)
+        url = _wait_url(r"https://[a-z0-9-]+\.trycloudflare\.com", 45)
+        steps.append("cloudflared=%s" % (url or "URLが出ない"))
+
+    if url:
+        c = run(["curl", "-s", "-m", "15", "-o", "/dev/null", "-w", "%{http_code}", url + "/health"], timeout=25)
+        if not (c is not None and (c.stdout or "").strip() == "200"):
+            steps.append("cloudflaredのURLは外から繋がらず→別の道へ")
+            run(["pkill", "-f", "cloudflared"], timeout=10)
+            url = ""
+
+    if not url:
+        npx = _sh.which("npx")
+        if npx:
+            io.open(tunlog, "a").write("\n--- localtunnel ---\n")
+            subprocess.Popen([npx, "-y", "localtunnel", "--port", "8788"],
+                             stdout=open(tunlog, "a"), stderr=subprocess.STDOUT,
+                             stdin=subprocess.DEVNULL, start_new_session=True, close_fds=True)
+            url = _wait_url(r"https://[a-z0-9-]+\.loca\.lt", 60)
+            steps.append("localtunnel=%s" % (url or "URLが出ない"))
+        else:
+            steps.append("npxが無いのでlocaltunnelは使えない")
+
+    if not url:
+        return "failed", "どの道も張れませんでした。" + " ／ ".join(steps)
+
+    c = run(["curl", "-s", "-m", "20", "-o", "/dev/null", "-w", "%{http_code}", url + "/health"], timeout=30)
+    code = (c.stdout or "").strip() if c is not None else ""
+    json.dump({"url": url, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
+              io.open(rjson, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    if code == "200":
+        return "done", "中継所が復活しました（%s・実測200）／ %s" % (url, " ／ ".join(steps))
+    return "failed", "URLは出ましたが外から繋がりません（%s → HTTP %s）／ %s" % (url, code or "不明", " ／ ".join(steps))
+
+
 def auth_probe(_target=None):
     """claude CLI が本当に認証できるかを、いちばん軽い実行で確かめる（2026-09-05）。
 
@@ -877,6 +972,8 @@ def _process_other(action, cmd):
         return auth_login_url(target)
     if action == "auth_probe":
         return auth_probe(target)
+    if action == "relay_fix":
+        return relay_fix(target)
     if action == "git_unlock":
         return git_unlock(target)
     if action == "launch_pause":
