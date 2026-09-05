@@ -339,6 +339,12 @@
      『今日は20%使ってます』とか赤印になるとか、『13%までならまだ使える』とか。天井に行かないための配分」 -->
 <div id="paceBar" class="pacebar" hidden></div>
 <div id="capBar" class="capbar" hidden></div>
+<!-- 2026-09-05 たまごさん「完了っていうのを限界の下に行きましょう。その下が作業中、その下が順番待ち。
+     上から完了、作業中、順番待ち、確認待ち、後回しの順で」→ 並びをこの通りにした。
+     終わったものが一番上に来るので、開くたび「今日これだけ進んだ」が最初に目に入る。 -->
+<details class="sec done" id="doneSec" open><summary>✅ 完了 <small id="doneMeta"></small></summary><div class="in" id="done">
+<div class="note" style="margin-top:8px"><a href="share/done/" style="color:var(--green)">1週間より前の完了を見る（完了のひかえ）→</a></div>
+</div></details>
 <div id="nowAge" class="nowage"></div>
 <div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
 <!-- 2026-09-04 たまごさん「次に発車予定の予備軍も分かるようにしといて。これが終わったら次は何が発車されるのかな、って見たいから」
@@ -374,9 +380,6 @@
        ここに積み上げ表示する。新しい完了ほど上、日時とURLを必ず添える。 -->
 <!-- 2026-09-05 たまごさん「完了も1週間経ったら自動で消えるように。だけど後でたどれるように」
      → 7日たった完了は tools/archive_done.py が「完了のひかえ」へ移す。ここは短く保つ。 -->
-<details class="sec done" id="doneSec" open><summary>✅ 完了 <small id="doneMeta"></small></summary><div class="in" id="done">
-<div class="note" style="margin-top:8px"><a href="share/done/" style="color:var(--green)">1週間より前の完了を見る（完了のひかえ）→</a></div>
-</div></details>
 
 <!-- 2026-09-04 たまごさん「完了・止まっている・判断待ち・検証待ちが下ともダブってる。統合してよ。
      ダブりを消して。混乱するから。半分の画面で同じ情報が出せるはず」
