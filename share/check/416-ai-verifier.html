@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>416番：作った本人以外が検品するVerifier・確認ページ</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.75;color:#222}
+  h1{font-size:22px}
+  h2{font-size:17px;margin-top:28px;border-left:6px solid #333;padding-left:8px}
+  .num{font-size:32px;font-weight:800}
+  .box{background:#f6f6f6;border-radius:12px;padding:16px;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+  td,th{border-bottom:1px solid #ddd;padding:8px 6px;text-align:left;vertical-align:top}
+  .ok{color:#0a7a2f;font-weight:700}
+  .ng{color:#c22;font-weight:700}
+  a{color:#1a56db}
+  .muted{color:#777;font-size:13px}
+  code{background:#eee;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<h1>① 何を直したか</h1>
+<p><b>「作った本人に合否を判定させない」仕組み（AI検品＝Verifier）を作りました。</b><br>
+仕事が終わって<code>awaiting_check</code>（たまごさんの確認待ち）に上がる直前に、<code>harvest()</code>（<code>tools/auto_launcher.py</code>）が
+<b>別プロセスのclaude（Sonnet固定）を1本だけバックグラウンドで着火</b>し、「元の依頼」「作業した側の完了報告」「確認ページ・本番URL」の3つだけを渡して、
+実際にURLを開かせて中身が依頼と一致しているか検品させます。作った側の言い分（内部の判断理由）は一切渡しません。</p>
+<p class="muted">既にある414番「確認ページの機械検品」（404・文字数・準備中ワードなど<b>文字列レベル</b>のチェック）とは役割を分けています。今回は<b>中身が依頼と一致しているか</b>を見る担当です。</p>
+
+<h2>② 数字</h2>
+<div class="box">
+  <p><b>設計上の最重要ルールを守っているか：</b>この工場の心臓（<code>heartbeat.sh</code>）は15秒おきに<code>auto_launcher.py</code>を呼びます。
+  <code>claude -p</code>は数十秒〜数分かかるため、<b>harvest()の中で同期的に待つと工場全体が詰まります。</b>
+  そのため<code>start_verify()</code>はバックグラウンドで着火して即座に戻り、結果は次回以降の<code>harvest()</code>呼び出しで
+  <code>collect_verify()</code>がpidの生死を見て回収する設計にしました（既存の子セッション着火と同じ非同期パターン）。</p>
+  <div class="num">コードの変更：<span class="ok">+243行 / -3行</span>（<code>tools/auto_launcher.py</code>）</div>
+</div>
+<div class="box">
+  <p><b>実運用での実測結果：</b>コード保存直後、生きたままの心臓（heartbeat.sh）が本番の<code>harvest()</code>を実際に回し、
+  414番に続いて415番（容量の見張り仕組み）の完了報告を、この新しいAI検品にかけました。</p>
+  <table>
+    <thead><tr><th>項目</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr><td>検品した件数</td><td>1件</td></tr>
+      <tr><td>合格</td><td class="ok">1件</td></tr>
+      <tr><td>不合格</td><td>0件</td></tr>
+      <tr><td>検品にかかったクレジット</td><td>$0.1607（約24円）</td></tr>
+      <tr><td>判定理由（実データ）</td><td>「確認ページが開け、依頼項目（15分監視・30GB自動片付け・20GB発車停止・壺と金庫除外）と実測数字（654MB・9件・前後対比表）が一致し、未解決部分も正直に明記されている」</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">1件あたり数円という当初の想定より高め（$0.16≒24円）です。原因はシステムプロンプトの新規キャッシュ作成コスト。件数が増えて実績が積み上がった場合、<code>VERIFY_MODEL</code>定数（1箇所）を軽いモデルへ差し替えるだけで全体に効く設計にしてあります。</p>
+</div>
+
+<h2>③ 押せるリンク一覧</h2>
+<ul>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/_ai-verify-stats.html">AI検品（Verifier）の実績ページ（何件検品して何件不合格にしたか・自動更新）</a></li>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json">生データ（ai_verify_stats.json）</a></li>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html">実際に合格した415番の確認ページ（このVerifierが検品した実物）</a></li>
+</ul>
+
+<h2>④ 導入前と導入後</h2>
+<p class="muted">画面のスクリーンショットではなく、<code>status/ai_verify_stats.json</code>に実際に書き込まれた検品ログ（実データ）で示します。</p>
+<table>
+  <thead><tr><th></th><th>導入前</th><th>導入後</th></tr></thead>
+  <tbody>
+    <tr><td>合否の判定者</td><td>作った本人（builder）の自己申告のみ</td><td class="ok">別プロセスのAI（Sonnet）が独立に実URLを開いて判定</td></tr>
+    <tr><td>依頼内容と実際の変化が一致しているか</td><td>チェックなし</td><td class="ok">Verifierが確認ページ・本番URLを実際に開いて照合</td></tr>
+    <tr><td>不合格の扱い</td><td>そのまま確認待ちへ</td><td class="ok">理由を<code>what</code>に追記して列に戻す（3回連続で人の目へ）</td></tr>
+    <tr><td>検品コスト</td><td>記録なし</td><td class="ok">1件ごとにドルで記録・累計を実績ページに常時表示</td></tr>
+  </tbody>
+</table>
+
+<h2>触った場所</h2>
+<ul>
+  <li><code>tools/auto_launcher.py</code> — <code>build_verify_prompt()</code> / <code>start_verify()</code> / <code>collect_verify()</code> / <code>_record_ai_verify()</code> を新設、<code>harvest()</code>の確認待ち直前と回収ループに組み込み</li>
+  <li><code>status/ai_verify_stats.json</code> — 実績の永続化（新規・本番稼働で自動生成済み）</li>
+  <li><code>share/check/_ai-verify-stats.html</code> — 実績表示ページ（新規）</li>
+</ul>
+
+</body>
+</html>

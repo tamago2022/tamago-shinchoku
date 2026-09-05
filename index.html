@@ -251,20 +251,24 @@
   /* 2026-09-06(418番) 押すだけで終わる確認待ち：サムネ＋本番URL＋完了/やり直しの2ボタンだけを最初に見せ、
      長い文章・後回し/削除は<details>の中に畳む。「証拠なし」「開けない」は赤で先に分かるようにする。
      画像もボタンも高さは固定pxでなくaspect-ratio/min-heightで決め、9/05の文字縦潰れを再発させない。 */
-  .cthumbs{display:flex; gap:6px; margin:8px 0;}
-  .cthumbs img{flex:1 1 0; min-width:0; width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px;
+  /* 2026-09-06 修正：初期版は1行=約360pxで「スマホ1画面に3件」を満たせなかった（実測）。
+     サムネの比率を横長にし、余白とボタンの上下marginを削って1行を約250px前後まで詰めた。
+     文字側のline-height/font-sizeは一切触っていない（縮めたのは画像比率と余白だけ）。 */
+  .cthumbs{display:flex; gap:6px; margin:6px 0;}
+  .cthumbs img{flex:1 1 0; min-width:0; width:100%; aspect-ratio:12/5; object-fit:cover; border-radius:8px;
     border:1px solid var(--line); background:#0e1319; display:block;}
-  .cthumbs.wait{padding:10px; border:1px dashed var(--line); border-radius:8px; color:var(--dim);
+  .cthumbs.wait{padding:8px; border:1px dashed var(--line); border-radius:8px; color:var(--dim);
     font-size:0.78rem; text-align:center;}
-  .cthumbs.none{padding:10px; border:1px dashed var(--red); border-radius:8px; background:var(--red-bg);
+  .cthumbs.none{padding:8px; border:1px dashed var(--red); border-radius:8px; background:var(--red-bg);
     color:#ffb3a7; font-size:0.82rem; font-weight:700; text-align:center; line-height:1.5;}
-  .curlbtn{display:flex; align-items:center; justify-content:center; gap:6px; min-height:46px;
+  .curlbtn{display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px;
     border-radius:10px; border:1px solid var(--blue); color:var(--blue); text-decoration:none;
-    font-weight:700; font-size:0.86rem; margin:8px 0; padding:6px 10px; text-align:center; line-height:1.4;}
+    font-weight:700; font-size:0.86rem; margin:6px 0; padding:4px 10px; text-align:center; line-height:1.4;}
   .curlbtn.dead{border-color:var(--red); color:#ffb3a7; background:var(--red-bg);}
-  .cbtns.cbtns2{grid-template-columns:1fr 1fr; margin-top:6px;}
-  .cmore{margin-top:8px; border-top:1px dashed var(--line); padding-top:6px;}
-  .cmore > summary{cursor:pointer; font-size:0.74rem; color:var(--dim); list-style:none; min-height:30px;
+  .check .crow{padding:8px 4px;}
+  .cbtns.cbtns2{grid-template-columns:1fr 1fr; margin-top:4px;}
+  .cmore{margin-top:4px; border-top:1px dashed var(--line); padding-top:4px;}
+  .cmore > summary{cursor:pointer; font-size:0.74rem; color:var(--dim); list-style:none; min-height:26px;
     display:flex; align-items:center;}
   .cmore > summary::-webkit-details-marker{display:none;}
   .cmore > summary::after{content:"（くわしく・後で・消す）"; margin-left:4px;}
