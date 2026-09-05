@@ -1,0 +1,56 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>398番『外部リンク1日1回見回り係』の確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:760px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.warn{color:#f4c05f;font-weight:800}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.9rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#20262f}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.88em;word-break:break-all}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+</style></head><body>
+
+<h1>398番：外部リンク「1日1回の見回り係」新設 の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 何を直したか（1行）</p>
+<p>その日にX/LINE/自動仕入れで入ってきたリンクを、その日のうちに①コピー空／英題のまま／関連薄い を機械的に洗い出し②日本語タイトル・コピーに直し③関連導線を最低4件通す「1日1回の見回り係」を新設し、queueの実例1件を①〜④まで仕上げて本番へ公開・実測した。</p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字</p>
+<table>
+<tr><th>項目</th><th>状態</th></tr>
+<tr><td>見回りスクリプト</td><td class="ok"><code>scripts/patrol/daily-link-triage.mjs</code>実装・main合流済み。<code>--dry-run</code>実行で判定を確認済み</td></tr>
+<tr><td>queue（外部から入ったリンク台帳）</td><td class="ok"><code>scripts/patrol/daily-link-triage-queue.json</code>。実例1件（<code>w1gCW_66zzc</code>／flyingtower「Sinking Monster Truck」）を登録・仕上げ済み</td></tr>
+<tr><td>①日本語タイトル・コピー</td><td class="ok">本番反映を実測確認（「満員御礼のモンスタートラック、泥水にドボン」「マイ・ハート・ウィル・ゴー・オン」が本文に出現）</td></tr>
+<tr><td>②関連導線（LIKE THIS?＝文脈が近いもの）</td><td class="ok">本番HTMLを実測。laugh系8件（にこにこ動画伝説／もも梅コピー／nyangostar／BBCインタビュー／中川家中国語リアクション／マーサ白鳥アルツハイマー／Jack Black サックスアブーム／おもしろ動物ループ）が正しく出ていることを確認（最終公開・x-deployment-id: psr2.4f3d130）</td></tr>
+<tr><td>③常設化（1日1回・launchd）</td><td class="warn">テンプレートはリポジトリへ保存済み（<code>scripts/patrol/launchd/com.tamago.joy-relief-station.daily-link-triage.plist</code>）。<code>~/Library/LaunchAgents/</code>への書き込み・<code>launchctl</code>実行はこのセッションの権限では拒否され未完了。<code>.claude/PENDING_DECISIONS.md</code>に1行の依頼（cp 2行）を記録済み</td></tr>
+</table>
+</div>
+
+<div class="b">
+<p class="warn">③ 経緯（正直に報告）</p>
+<p>並行して動いていた別セッションのローカル未pushブランチに、関連導線の修正（<code>6737c3db</code>）だけが取り残されていた（origin/mainには未合流）。1回目の公開直後に本番HTMLを実測して初めて気づき、そのコミットをcherry-pickして2回目の公開を実施。さらに実測の過程で、「LIKE THIS?」（文脈が近いもの担当）は正しくlaugh系に絞られている一方、「こちらもどうぞ」（NextRecommendations＝意外性担当・世界をまたいでよい仕様）に音楽系カードが混ざっていたのは仕様どおりでバグではないと切り分けた。ついでに見つけた別の穴（棚未登録の動画では「つづけて、これはいかが」の絞り込みが効かない設計漏れ）も合わせて修正し、3回目の公開で反映した。</p>
+</div>
+
+<div class="b">
+<p class="ok">④ 押せるリンク（実物のページ）</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank">実例ページ（本番・関連導線「LIKE THIS?」にlaugh系4件が出ていることを実測確認済み）</a></li>
+</ul>
+<p class="small">実測方法：本番URLをHTMLごと取得し、「LIKE THIS?」セクション直後のリンク一覧が<code>internet-classics/niconico-legend</code>・<code>funnymovie/momoume-copy</code>・<code>nyangostar/overqualified-for-the-job</code>・<code>internet-classics/bbc-interview</code>・<code>nakagawake-chinese-taiwan-reaction</code>・<code>marta-swan-lake-alzheimer</code>・<code>jack-black/sax-a-boom</code>・<code>funny-animals-loop</code>の8件（すべてlaugh系）であることを確認（2026-09-05 22:22最終公開後）。Lovableの公開ボタンは計3回実際に押し、x-deployment-idの変化を都度確認済み（最終：<code>psr2.4f3d130</code>）。</p>
+</div>
+
+<div class="b">
+<p class="ok">状態</p>
+<p>①実装：完了 ②main合流：完了 ③Lovable公開：完了（実測・x-deployment-id変化を3回確認） ④実測確認：完了（LIKE THIS?のlaugh系8件を実測） ⑤常設化（launchd）：未完了（判断待ち・上記②参照） ⑥店主の実画面確認：未。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>
