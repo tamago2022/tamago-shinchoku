@@ -48,9 +48,30 @@ if ! have_cloudflared; then
   exit 0
 fi
 
-if ! pgrep -f "cloudflared.*localhost:$PORT" >/dev/null 2>&1; then
+# 2026-09-05：**プロセスが居るかどうかで生死を判断してはいけない。**
+#   trycloudflare のクイックトンネルは、cloudflared のプロセスを残したまま無言で死ぬ。
+#   pgrep が引っかかるので新しく立て直さず、進捗表からのボタンが**丸ごと届かなくなる。**
+#   たまごさんの「今すぐ押しても入らない」「今何も動いてませんてなる」の正体がこれ（実測 HTTP 000）。
+#   だから**外から実際に叩いて200が返るか**で見る。返らなければ、プロセスが居ても殺して立て直す。
+TUNNEL_OK=0
+OLD_URL="$(python3 -c "import json,io,sys;print(json.load(io.open(sys.argv[1],encoding='utf-8')).get('url',''))" "$REPO/status/relay.json" 2>/dev/null || true)"
+if [ -n "${OLD_URL:-}" ]; then
+  CODE="$(curl -s -m 8 -o /dev/null -w '%{http_code}' "$OLD_URL/health" 2>/dev/null || echo 000)"
+  [ "$CODE" = "200" ] && TUNNEL_OK=1
+  if [ "$TUNNEL_OK" != "1" ]; then
+    echo "$(date '+%F %T') トンネルが死んでいます（$OLD_URL → HTTP $CODE）。立て直します" >>"$LOG"
+    pkill -f "cloudflared.*localhost:$PORT" >/dev/null 2>&1 || true
+    sleep 1
+  fi
+fi
+
+if [ "$TUNNEL_OK" != "1" ] || ! pgrep -f "cloudflared.*localhost:$PORT" >/dev/null 2>&1; then
   : > "$TUNLOG"
-  nohup "$CLOUDFLARED" tunnel --url "http://localhost:$PORT" --no-autoupdate >>"$TUNLOG" 2>&1 &
+  # 2026-09-05：たまごさんの回線は **QUIC(UDP 7844) が塞がれている**（cloudflaredの事前チェックで
+  #   region2 が UDP・TCP ともに FAIL、hard_fail=true）。既定のQUICのままだとトンネルが張れず、
+  #   URLが払い出されないまま黙って居座る＝進捗表のボタンが全部死ぬ。
+  #   cloudflared 自身が「use HTTP2」と言っているので、最初からHTTP2で張る。
+  nohup "$CLOUDFLARED" tunnel --url "http://localhost:$PORT" --protocol http2 --no-autoupdate >>"$TUNLOG" 2>&1 &
   # URLが出るまで最大30秒待つ
   for _ in $(seq 1 30); do
     URL="$(grep -Eo 'https://[a-z0-9-]+\.trycloudflare\.com' "$TUNLOG" 2>/dev/null | head -1)"
