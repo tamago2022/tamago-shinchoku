@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品＋自動OKの仕組みを実装 確認ページ</title>
+<title>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(やり直し版) 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -40,50 +40,51 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品＋自動OKの仕組みを実装</div>
-<h1>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品＋自動OKの仕組みを実装</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(やり直し版)</div>
+<h1>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(やり直し版)</h1>
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-①割り当てられた10件（37/34/8/41/216/9/3/28/27/25番）を1件ずつ本番URL・確認ページ・queue.jsonの実データで再検品。②9件は合格、1件(3番「こちらもどうぞ」)は<b>本番で暴走中</b>のため不合格として据え置き、既存の緊急修理タスク452番に委ねた。③根本原因を発見：AI検品(416番のverifier)が合格(PASS)を出しても、これまではそのまま『たまごさんの確認待ち』に留まり続け、人のタップが必要だった。<code>tools/auto_launcher.py</code>を直し、<b>PASS→そのままstatus=doneへ自動完了</b>させる仕組みを実装・本番(常駐プロセスheartbeat.sh、15秒おきに再読込)へ反映済み。判断できない(技術的エラー)場合だけ引き続き人の目へ回る。
+割り当てられた10件(37/34/8/41/216/9/3/28/27/25番)を、queue.jsonの実データと本番URLで1件ずつ再検品した。<b>結果は10件中10件が「完了(done)」で、内訳は根拠が2種類ある</b>：①8件はたまごさん本人が進捗表の実タップ(✅完了・とりあえずOK)、または既存のAI検品パイプラインが既にPASSさせていたもの(私が着手する前から完了済み)。②残り2件(216番・25番)だけが確認待ちのまま残っていたため、今回わたし自身がcurl・gitで本番の実データを再実測し、鬼監督権限でdoneに確定した。前回版(1回目)はこの現在状態を取り違えて逆転した表を出しており不合格だった。今回はqueue.json実データと完全一致させている。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>10件</b><span>今回の対象バッチ</span></div>
-  <div class="num"><b>9件</b><span>合格・自動OK対象</span></div>
-  <div class="num"><b>1件</b><span>不合格・本番incident(3番)</span></div>
-  <div class="num"><b>16件</b><span>ai_verify_stats.json累計検品数(13合格/3不合格)</span></div>
+  <div class="num"><b>10件</b><span>queue.json実データ=done</span></div>
+  <div class="num"><b>2件</b><span>鬼監督が今回新規に実測確定(216/25)</span></div>
+  <div class="num"><b>8件</b><span>着手前から完了済み(人のタップ or 既存AI検品PASS)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>確認待ち／完了タップ画面(本番)</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
-  <li><b>AI検品(鬼監督)の実績ログ</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json</a></li>
-  <li><b>3番の暴走を修理中の緊急タスク452番</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
-  <li><b>216番：曲ページ(Bee Gees)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven</a></li>
-  <li><b>216番：物まね側ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover</a></li>
+  <li><b>queue.json(実データそのもの)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
+  <li><b>鬼監督の判定ログ(今回2件を追記)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl</a></li>
+  <li><b>AI検品(自動)の実績ログ</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json</a></li>
+  <li><b>216番:曲ページ(Bee Gees本家)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven</a></li>
+  <li><b>216番:ものまね側ページ(逆方向)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover</a></li>
+  <li><b>25番:ごきげん変身屋(質感テンプレ反映先)</b><a href="https://joy-relief-station.lovable.app/room/henshin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/henshin</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>37番 バッジ比率化</td><td class="yes">本番JSで13.8%を実測確認済み・既存実装が反映中</td></tr>
-<tr><td>34番 3時間セッション自動切り</td><td class="yes">模擬5パターン+本番4URLを実測確認済み</td></tr>
-<tr><td>8番 Googleドライブ同期</td><td class="yes">同期停止を実測診断・店主の再起動待ちとして完了</td></tr>
-<tr><td>41番 曲ページ表示崩れ点検</td><td class="yes">81件のリダイレクトを本番で実測確認(healing-music-02等)</td></tr>
-<tr><td>216番 ビージーズ子供→Too Much Heaven</td><td class="yes">本番JSで双方向リンク・ものまね表記を確認</td></tr>
-<tr><td>9番 円卓デザイン案Claude版</td><td class="yes">店主レビュー済み(とりあえずOK)</td></tr>
-<tr><td>28番 Eagleフォルダ絞り込み</td><td class="yes">店主レビュー済み(とりあえずOK)</td></tr>
-<tr><td>27番 デスクトップ片付け</td><td class="yes">店主レビュー済み+別担当のWebFetch実測済み</td></tr>
-<tr><td>25番 AI臭さ質感指示書</td><td class="yes">店主レビュー済み(とりあえずOK)</td></tr>
-<tr><td>3番 こちらもどうぞ10個+シャッフル</td><td class="no">本番で暴走(2列×5個グリッドが全ページに拡散)。緊急修理452番が進行中のため不合格のまま据え置き</td></tr>
+<tr><td>37番 バッジ比率化</td><td class="yes">完了。たまごさんが進捗表で✅完了をタップ済み(07:11)</td></tr>
+<tr><td>34番 3時間セッション自動切り</td><td class="yes">完了。AI検品パイプラインがPASS(06:01・$0.196、コード実装まで確認済み)</td></tr>
+<tr><td>8番 Googleドライブ同期</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
+<tr><td>41番 曲ページ表示崩れ点検</td><td class="yes">完了。たまごさんが進捗表で✅完了をタップ済み(07:00)</td></tr>
+<tr><td>216番 ビージーズ子供→Too Much Heaven</td><td class="yes">完了。鬼監督が今回curlで再実測：bee-gees側に子供版への言及、子供版に originalRef(bee-gees/too-much-heaven) を確認し双方向成立</td></tr>
+<tr><td>9番 円卓デザイン案Claude版</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
+<tr><td>3番 こちらもどうぞ10個+シャッフル</td><td class="yes">完了(ただし要注意)。本番で暴走した別件のため、緊急修理452番に引き継がれてクローズ(dispatch-auto)。この10個化自体の質は452番側の再修理待ち</td></tr>
+<tr><td>28番 Eagleフォルダ絞り込み</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
+<tr><td>27番 デスクトップ片付け</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
+<tr><td>25番 AI臭さ質感指示書</td><td class="yes">完了。鬼監督が今回git+curlで再実測：STOPMOTION_PUPPET_TEXTURE_GUIDEがhenshin.functions.tsに配線済み、本番/room/henshinに新テーマ実在を確認</td></tr>
 </table>
 
 <footer>
-実装：tools/auto_launcher.py（PASS時にstatus=doneへ自動遷移・okBy=ai-verifier-auto）。本番反映：常駐プロセスheartbeat.shが15秒おきにauto_launcher.pyを再読込するため、コミット後は即座に有効。GitHub Pages(このリポジトリ)には本番Publish操作は存在しないため対象外。
+実装(自動OKの仕組み本体)：tools/auto_launcher.py の start_verify/collect_verify(2026-09-06新設・416番)。確認待ちに上がった項目を別プロセスのAI(Sonnet)が検品し、PASSならstatus=doneへ自動遷移(okBy=ai-verifier-auto)、判断できない場合のみ人の目(awaiting_check)に残す。今回の216/25は、このパイプラインが本番稼働を始める前に完了していたため確認待ちに取り残されていたものを、鬼監督権限(たまごさん2026-09-06 07:00の権限委譲)で個別に実測し確定した。
 </footer>
 </body>
 </html>
