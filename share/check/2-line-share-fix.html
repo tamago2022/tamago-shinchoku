@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#2 LINEに送るが壊れている 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .proof{border-left:3px solid var(--aka);padding:8px 0 8px 14px;margin:0 0 20px;font-size:0.98rem;background:#fff;border-radius:0 8px 8px 0;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ joy-relief-station #2</div>
+<h1>#2 LINEに送るが壊れている</h1>
+<div class="date">2026-09-05 09:50 実装・main合流・Lovable公開反映・本番JS実測で確認済み</div>
+
+<div class="fix">
+共有ボタンの「LINE」を押すと、旧LINE埋め込みボタン用のURL（<code>social-plugins.line.me/lineit/share</code>）に飛ばされ、送信ではなく<b>QRコード読み取り/ログイン画面</b>が出てしまう不具合を修正。LINE公式の現行スキーム（<code>https://line.me/R/msg/text/?…</code>）に差し替え、スマホでLINEアプリを直接起動して「送り先を選ぶ画面」に遷移するようにした。
+</div>
+
+<div class="proof">
+<b>今回わかったこと：</b>共有ボタンの実体は4か所あり、そのうち<code>ShareButton.tsx</code>（曲ページ等の共通シェア）は<b>別セッションが2026-09-04に既に修正しmainに入っていた</b>。しかし「記憶の扉」機能の3か所（<code>MemoryDoor.tsx</code>／<code>memory-door.share.tsx</code>／<code>memory-door.result.tsx</code>）は旧URLのまま残っていた。たまごさんが「まだ壊れている」と繰り返し報告していたのは、この<b>取りこぼした3か所</b>が原因だった。今回その3か所も同じ方式に統一し、4か所すべてを本番へ反映した。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>src/components/ShareButton.tsx</code>（既存修正・確認のみ）、<code>src/components/MemoryDoor.tsx</code>、<code>src/routes/memory-door.share.tsx</code>、<code>src/routes/memory-door.result.tsx</code> の4ファイルで、LINE共有時のリンク生成を<code>social-plugins.line.me/lineit/share?url=…&amp;text=…</code>から<code>https://line.me/R/msg/text/?{テキストとURLをまとめてエンコード}</code>へ統一。
+</div>
+
+<h2>② 数字（実測）</h2>
+<div class="nums">
+  <div class="num"><b>4/4件</b><span>LINE共有を組み立てている箇所のうち、新方式になった数</span></div>
+  <div class="num"><b>0件</b><span>本番JSバンドル中に残る旧URL（social-plugins.line.me）の出現数</span></div>
+  <div class="num"><b>1件</b><span>本番JSバンドル中の新URL（R/msg/text）の出現（あり＝反映済み）</span></div>
+  <div class="num"><b>psr2.9f6445f</b><span>公開後の本番 x-deployment-id（公開前：psr2.7cfaae3）</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>やったこと</th><th>結果</th></tr>
+<tr><td>main合流</td><td><code>git push origin HEAD:main</code>（commit 79f0cb90）</td><td class="yes">✓ 897ad50f→79f0cb90</td></tr>
+<tr><td>Lovable公開</td><td><code>node scripts/patrol/lovable-publish.mjs</code>で「変更を公開」を実行</td><td class="yes">✓ x-deployment-id変化を確認（9:46:29押下→9:49:43反映確認）</td></tr>
+<tr><td>本番に旧URLが残っていないか</td><td>本番配信中のJSバンドル本文を取得し文字列検索</td><td class="yes">✓ social-plugins.line.me＝0件</td></tr>
+<tr><td>本番に新URLが出ているか</td><td>同上</td><td class="yes">✓ R/msg/text＝あり</td></tr>
+</table>
+
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>今回の修正コミット（差分そのもの）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/79f0cb90" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/79f0cb90</a></li>
+  <li><b>先行修正が入っていたShareButton.tsx（本番main最新）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/ShareButton.tsx" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/src/components/ShareButton.tsx</a></li>
+  <li><b>今回直したMemoryDoor.tsx（本番main最新）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/MemoryDoor.tsx" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/src/components/MemoryDoor.tsx</a></li>
+  <li><b>実際に共有ボタンが出る本番ページ（曲ページ例：ボラーレ）</b><br><a href="https://joy-relief-station.lovable.app/watch?v=zn45qBOxbPY" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=zn45qBOxbPY</a>（右上の共有アイコン→LINE）</li>
+  <li><b>実際に共有ボタンが出る本番ページ（記憶の扉・共有画面）</b><br><a href="https://joy-relief-station.lovable.app/memory-door/share" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/memory-door/share</a></li>
+</ul>
+
+<h2>④ 前と後（本番JSバンドルの実測結果）</h2>
+<div class="note">
+<b>スマホ実機でのタップ完了までは、このセッション単体の道具（ブラウザ自動操作・LINEアプリ）では検証できない。</b>本番に配信されている実際のJavaScriptファイルを取得し、リンク生成に使われる文字列そのものを数える方法で検証した（試した経路：1→ブラウザ自動操作＝本セッションに搭載なし／2→本番配信中のJSバンドルを直接取得し文字列一致で実測＝成功）。下記は実測ログそのまま。
+</div>
+<pre>【前：本番反映直前に確認した記述（このタスクの過去ログより）】
+共有を押すと別タブが開いてLINEのログイン画面に飛ばされる（たまごさん報告 2026-09-04）
+→ 原因：MemoryDoor.tsx / memory-door.share.tsx / memory-door.result.tsx の3ファイルが
+  https://social-plugins.line.me/lineit/share?url=...&text=... のままだった
+
+【後：公開後の本番JSバンドル(/assets/index-BAD2wGhB.js)を取得して実測】
+$ node -e "fetch('https://joy-relief-station.lovable.app/assets/index-BAD2wGhB.js')
+    .then(r=&gt;r.text()).then(js=&gt;{
+      console.log('has R/msg/text:', js.includes('R/msg/text'));
+      console.log('has social-plugins:', js.includes('social-plugins.line.me'));
+    });"
+has R/msg/text: true
+has social-plugins: false
+
+【公開の実行ログ（scripts/patrol/lovable-publish.mjs）】
+[2026/9/5 9:46:20] 本番 x-deployment-id(前): psr2.7cfaae3
+[2026/9/5 9:46:29] 「変更を公開」を押した。反映を待つ…
+[2026/9/5 9:49:43] 本番反映を確認。x-deployment-id(後): psr2.9f6445f</pre>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ。修正コミット<code>79f0cb90</code>（main）。公開実行スクリプト<code>scripts/patrol/lovable-publish.mjs</code>。次にたまごさんへお願いしたいこと：スマホの実機で曲ページの共有アイコン→LINEを押し、実際に友達へ送れるかまでの最終確認。この確認ページはコードとビルド出力の実測までを保証するもので、LINEアプリ実機での送信完了そのものは店主の実画面確認が必要（この憲法の完了条件どおり）。
+</footer>
+</body>
+</html>
