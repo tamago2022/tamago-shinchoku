@@ -52,7 +52,16 @@ if not os.path.exists(CLAUDE):
 # `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
 # こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
 def claude_env():
+    """CLIに渡す環境。**環境変数のトークンは原則使わない**（2026-09-05に実測）。
+
+    `CLAUDE_CODE_OAUTH_TOKEN` はキーチェーンの正しい鍵より優先されるので、
+    古い壊れたトークンが1つ残っているだけで工場全体が「期限切れ」になる。
+    キーチェーンを正本にし、環境変数を使いたいときだけ ~/.tamago/use_token を置く。
+    """
     env = dict(os.environ)
+    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
+    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
+        return env
     p = os.path.expanduser("~/.tamago/claude_token")
     try:
         t = io.open(p, encoding="utf-8").read().strip()
