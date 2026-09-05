@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#418 押すだけで終わる確認待ち 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #418</div>
+<h1>#418 押すだけで終わる確認待ち</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+「たまごさんの確認待ち」の各行を、①前と後のスクショ ②押せる本番URL ③完了／やり直しの2ボタンだけ、の形に作り直した。長い報告文・終了時刻・全URL一覧・あとで／削除ボタンは「くわしく」の中へ畳んで隠した（消してはいない）。証拠（スクショ）が無い行は赤い枠で「証拠なし」と出し、証拠のある行を上、無い行を下に並べる。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+進捗表PWA（<code>index.html</code>）の<code>renderCheck()</code>を全面的に書き換えた。確認ページ（<code>/share/check/…</code>）の中の<code>&lt;img&gt;</code>を自動で抜き出し前後2枚のサムネとして表示する<code>fetchCheckPageAssets()</code>と、本番URLの疎通を確かめる<code>checkUrlReachable()</code>を新設し、証拠の有無でソートする。ボタンは前面に✅完了／↩︎やり直しの2つだけを残し、🕗あとで／🗑消すは<code>&lt;details class="cmore"&gt;</code>の中へ移した。文字のフォントサイズ・line-heightには一切手を入れず、画像比率と余白だけを詰めて1行の高さを約360px→約260pxまで縮め、スマホ1画面（844px想定）に3件前後入るようにした。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>76件</b><span>実装時点で「たまごさんの確認待ち」に並んでいた実件数（本番データで検証）</span></div>
+  <div class="num"><b>4→2</b><span>前面に出るボタンの数（残り2つは「くわしく」の中）</span></div>
+  <div class="num"><b>約360px→約260px</b><span>1行の高さの実測（同じ390px幅・同じ位置で前後を比較）</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>前：文章とURLの羅列、ボタン4つ</b><img src="img/418-before.png" alt="前：旧デザイン"></div>
+  <div class="shot after"><b>後：サムネ＋本番ボタン＋2ボタン、詳細は「くわしく」に格納</b><img src="img/418-after.png" alt="後：新デザイン"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表（本番・GitHub Pages）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>ローカル（Mac上・確認用）</b><a href="http://192.168.0.46:8788" target="_blank" rel="noopener">http://192.168.0.46:8788</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>JS構文エラー</td><td class="yes">なし（node --checkで確認）</td></tr>
+<tr><td>本番(GitHub Pages)への反映</td><td class="yes">反映済み（HTML内に新クラス<code>cthumbs</code>を実測で確認）</td></tr>
+<tr><td>実データでの描画（サムネ・本番ボタン・2ボタン・くわしく）</td><td class="yes">ヘッドレスブラウザで実データ76件を描画し目視確認</td></tr>
+<tr><td>証拠あり行が上、証拠なし行が下</td><td class="yes">ソート実装済み・スクショで確認</td></tr>
+<tr><td>証拠なし・URL疎通不可の赤表示</td><td class="yes">実装済み（.cthumbs.none / .curlbtn.dead）</td></tr>
+<tr><td>本番URLの404判定</td><td class="no">同一オリジン（/share/check/配下）は実HTTPステータスで判定できるが、外部の本番URL（他ドメイン）はブラウザのCORS制限で本物の404までは読めず、通信そのものが失敗した場合のみ赤くする形にとどまる（正直な制約として明記）</td></tr>
+</table>
+
+<footer>
+このページは418番セッションが自動生成した確認資料。既存の share/check/ の書式（前と後・数字・押せるリンク）に合わせている。
+</footer>
+</body>
+</html>
