@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#444 444番2/9本目 AI検品結果 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #444 444番2/9本目 AI検品結果</div>
+<h1>#444 444番2/9本目 AI検品結果</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+確認待ち10件(n=23,22,19,18,10,20,2,7,11,13)を新規スクリプトtools/verify_check_pages.pyで機械検品。判定基準は①確認ページURLが本番200 ②本文に効果の裏取り(evidence)がありネガティブ記述が無い ③スクリーンショット枚数(img_count)が1枚以上、の3条件AND。7番のみ3条件すべて満たしPASS(status=done)、残り9件はimg_count=0(スクリーンショット無し)でFAILとなりqueue.jsonのstatusをawaiting_checkへ差し戻し済み。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>10件</b><span>検品対象</span></div>
+  <div class="num"><b>1件</b><span>PASS(自動完了)</span></div>
+  <div class="num"><b>9件</b><span>FAIL(差し戻し)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>n=7 確認ページ(PASS)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/7-artist-unlinked-cards.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/7-artist-unlinked-cards.html</a></li>
+  <li><b>n=23 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html</a></li>
+  <li><b>n=22 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html</a></li>
+  <li><b>n=19 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html</a></li>
+  <li><b>n=18 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/18-amelie-adjust.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/18-amelie-adjust.html</a></li>
+  <li><b>n=10 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html</a></li>
+  <li><b>n=20 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html</a></li>
+  <li><b>n=2 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html</a></li>
+  <li><b>n=11 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html</a></li>
+  <li><b>n=13 確認ページ(FAIL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/13-copy-5an-undo.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/13-copy-5an-undo.html</a></li>
+  <li><b>queue.json(更新後)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/queue.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/queue.json</a></li>
+  <li><b>検品スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_check_pages.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_check_pages.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>n=7 アーティスト未接続カード直し</td><td class="yes">PASS(img_count=4)</td></tr>
+<tr><td>n=23 Vulfmon/Tommy de Bourbonページ</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=22 92°曲名アーティスト直し</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=19 Eagle画像ビューア色検索</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=18 アメリの細かい調整</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=10 HOME/ふるさとプレイリスト仕上げ</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=20 自動発車の仕組み</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=2 LINEに送る不具合修正</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=11 プレイリスト曲のカード化</td><td class="no">FAIL(img_count=0)</td></tr>
+<tr><td>n=13 コピー5案から選べる機能</td><td class="no">FAIL(img_count=0)</td></tr>
+</table>
+
+<footer>
+このページは #444 2/9本目のセッションがtools/verify_check_pages.pyの機械判定結果をtools/make_check_page.pyで確認ページ化したもの。FAILの9件はstatus=awaiting_checkへ差し戻し済み・スクリーンショット追加後に再判定が必要。
+</footer>
+</body>
+</html>

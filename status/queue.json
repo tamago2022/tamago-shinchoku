@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 08:34",
+ "updatedAt": "2026-09-06 08:47",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -12,11 +12,12 @@
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q18-0904",
-   "checkedAt": "2026-09-06T06:56:38+0900",
+   "checkedAt": "2026-09-06T08:44:45+0900",
    "checkNote": "たまごさん判定：とりあえずOK（70点。時間があるとき直す）",
    "laterAt": "2026-09-04T21:00:35+0900",
    "priority": 1,
-   "redoCount": 1
+   "redoCount": 1,
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/18-amelie-adjust.html => 200 / https://tamago2022.github.io/tamago-shinchoku/share/check/18-amelie.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/18-amelie-adjust.html / ③FAIL: img_count=0"
   },
   {
    "n": 216,
@@ -250,17 +251,17 @@
   {
    "title": "Vulfmon と Tommy de Bourbon のアーティストページを作る",
    "why": "実在の人物なのにページがない",
-   "what": "Vulfmon＝VulfpeckのJack Strattonのソロ名義。Tommy de Bourbonはペダルスティール奏者。識別子で裏取りしてからページを作る。公式チャンネルへのリンクを必ず置く。個人の生年は書かない。\n\n【自動やり直し・09-05 18:32】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
+   "what": "Vulfmon＝VulfpeckのJack Strattonのソロ名義。Tommy de Bourbonはペダルスティール奏者。識別子で裏取りしてからページを作る。公式チャンネルへのリンクを必ず置く。個人の生年は書かない。\n\n【自動やり直し・09-05 18:32】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html / ③FAIL: img_count=0",
    "n": 23,
-   "status": "done",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q23-0904",
-   "checkedAt": "2026-09-06T06:53:54+0900",
+   "checkedAt": "2026-09-06T08:44:45+0900",
    "checkNote": "たまごさん判定：とりあえずOK（70点。時間があるとき直す）",
    "laterAt": "2026-09-04T21:00:35+0900",
    "priority": 1,
-   "redoCount": 1,
+   "redoCount": 2,
    "sessionId": "49dcccd0-63da-46ae-9c93-4e531e9884e6",
    "cutCount": 1,
    "startedAt": "2026-09-05T18:47:08+09:00",
@@ -268,7 +269,8 @@
    "result": "【完了】Vulfmon・Tommy de Bourbonのアーティストページ作成は、並行走行していた別セッションが先に本番反映済み（コミット892d1c89）だったため、本番の実データ表示をcurlで実測確認し、TASK_BOARD.mdへ記録\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html"
-   ]
+   ],
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/23-vulfmon-tommy-pages.html / ③FAIL: img_count=0"
   },
   {
    "title": "92°／Vulfmon & Tommy de Bourbon の曲名・アーティストを直す",
@@ -279,7 +281,7 @@
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q22-0904",
-   "checkedAt": "2026-09-06T07:43:51+0900",
+   "checkedAt": "2026-09-06T08:44:45+0900",
    "checkNote": "たまごさん判定：とりあえずOK（70点。時間があるとき直す）",
    "laterAt": "2026-09-04T21:00:34+0900",
    "priority": 1,
@@ -290,18 +292,19 @@
    "result": "【問題】92°／Vulfmon & Tommy de Bourbonの曲名・アーティスト・コピー修正は実装してmainへpush済みだが、本番データベースは依然として未反映です（前回セッションから状態変化なし・再確認済み）。原因はこの案件固有の不具合ではなく、joy-relief-stationのGitHub Actions無料枠切れ（TASK_BOARD.md #59に既知記録あり）でDB書き込みジョブが起動しないため。今回さらに「本番アプリの管理用サーバー関数へ直接HTTPで書き込む」別経路も試しましたが、Cloudflare Bot Managementに弾かれ不可でした。実測ログ・押せるリンクはすべて確認ページにまとめてあります。\n\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html\n\nたまごさんにしかできない唯一の作業：GitHubのSettings→Billing→Actionsで無料枠の残量を確認・解放してください。枠が空けば、既にmainにある一度きり便がそのまま動いて反映されます（追加の実装作業は不要）。\n\n【鬼監督：判断できないためたまごさんへ】理由：実装はmain合流済みだが本番DB書き込みがGitHub Actions無料枠切れで止まっている。枠の確認・解放はたまごさん本人のGitHub Billing操作が必要（課金領域のため鬼監督は判断不可）",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html"
-   ]
+   ],
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html / ③FAIL: img_count=0"
   },
   {
    "n": 19,
    "title": "Eagleの画像をWebで見る仕組みを育てる",
    "why": "1147件は見られる。取り込み口も動いている",
-   "what": "Eagleの画像をスマホのブラウザで見られるようにしました（1147件・検索とタグ絞り込みつき）。iPhoneから放り込む口も動いています。次はフォルダごとの絞り込みや、元画像の受け渡しを足していきます。",
-   "status": "done",
+   "what": "Eagleの画像をスマホのブラウザで見られるようにしました（1147件・検索とタグ絞り込みつき）。iPhoneから放り込む口も動いています。次はフォルダごとの絞り込みや、元画像の受け渡しを足していきます。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html / ③FAIL: img_count=0",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q19-0904",
-   "checkedAt": "2026-09-06T06:54:00+0900",
+   "checkedAt": "2026-09-06T08:44:45+0900",
    "checkNote": "たまごさん判定：とりあえずOK（70点。時間があるとき直す）",
    "laterAt": "2026-09-04T21:00:34+0900",
    "priority": 1,
@@ -311,7 +314,9 @@
    "result": "確認ページも本番で200を確認できた。最終報告を行う。\n\n【完了】Eagle画像ビューアに「色でさがす」絞り込み（Eagle自動タグ_color:*を活用）を追加・本番反映。フォルダ絞り込み・元画像受け渡しは前回セッションで既に実装・公開済みと実測確認済み。\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html"
-   ]
+   ],
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/19-eagle-color-filter.html / ③FAIL: img_count=0",
+   "redoCount": 1
   },
   {
    "n": 10,
@@ -322,7 +327,7 @@
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "r10-0904",
-   "checkedAt": "2026-09-06T07:43:51+0900",
+   "checkedAt": "2026-09-06T08:44:45+0900",
    "checkNote": "たまごさん判定：とりあえずOK（70点。時間があるとき直す）",
    "laterAt": "2026-09-04T21:00:35+0900",
    "priority": 1,
@@ -332,25 +337,26 @@
    "result": "【問題】HOME／ふるさとプレイリスト仕上げは、環境の壁で今回も着手できませんでした（Spotify本体の書き換えが必要な作業のため）。\n\n**壁は1点だけです：** このセッションにはブラウザ操作ツール（Chrome操作）が一切配布されておらず、`.env`にもSpotify認証情報（Client ID／Secret／トークン）が0件でした。Spotifyデスクトップアプリも未検出、委任先の4サブエージェントも同じくブラウザツールなし。タイトル変更・非公開解除・曲順並べ替えは、コードやLovableでは届かない「Spotify社の管理画面操作」そのものなので、mainへのpush→Lovable公開という通常の完走ルートが存在しません。\n\n確認ページ（試した4つの打開策と結果、次に必要なもの3案を1枚にまとめました）:\nhttps://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html\n\n**次に必要なもの（どれか1つ）：** たまごさんご本人がSpotifyアプリ／サイトで直接編集していただくのが一番早いです。判断メモは`.claude/PENDING_DECISIONS.md`に記録済みです。\n\n【鬼監督：判断できないためたまごさんへ】理由：Spotify本体の編集（タイトル/公開設定/曲順）が必要で、このセッション群にはSpotify認証情報もブラウザ操作手段も無い。たまごさん本人がSpotifyで直接編集する以外に手段が無い（本人操作の壁）",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html"
-   ]
+   ],
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html / ③FAIL: img_count=0"
   },
   {
    "n": 20,
    "title": "走行中が空いたら自動で次を発車させる",
    "why": "この「次に発車」を手動更新から自動へ",
-   "what": "いまこの発車待ちの一覧は手で書いています。これを、走行中のセッションが終わったら自動で一番上を着火する形にします。ここまで来ると「工場が止まらない」が完成します。",
-   "status": "done",
+   "what": "いまこの発車待ちの一覧は手で書いています。これを、走行中のセッションが終わったら自動で一番上を着火する形にします。ここまで来ると「工場が止まらない」が完成します。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html / ③FAIL: img_count=0",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q20-0904",
-   "checkedAt": "2026-09-06T07:43:51+0900",
+   "checkedAt": "2026-09-06T08:44:45+0900",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html"
    ],
    "result": "【完了】自動発車は本番稼働中。今日6.5時間で54回・41案件を無人で着火（20番自身も2回）。確認ページに実績あり。",
    "finishedAt": "2026-09-05T05:18:03+09:00",
-   "okBy": "oni-kantoku-manual-444",
-   "okNote": "鬼監督AI検品PASS：auto_launch.logに本日54回超の実着火ログ・AI検品の実運用ログが実在し、この444番自身が自動着火された事実そのものが証拠"
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html / ③FAIL: img_count=0",
+   "redoCount": 1
   },
   {
    "title": "確認待ちを進捗表に出して、OK／やり直しを押せるようにする",
@@ -391,8 +397,8 @@
    "n": 2,
    "title": "LINEに送るが壊れている",
    "why": "リンクのコピーはできるが、LINEを選ぶとQRコードを求められる",
-   "what": "共有ボタンから「LINEに送る」を選ぶと、送るはずが QRコード読み取りの画面になってしまう状態です。スマホから友達に送れないので、実質シェアできません。LINEの共有の呼び出し方が古い方式のままになっている可能性が高いです。\n\n【やり直しの理由・2026-09-04】たまごさん確認：共有を押すと別タブが開いてLINEのログイン画面に飛ばされる。まだ直っていない。スマホから実際に友達へ送れることがゴール。押して送れるところまで自分で確かめること。\n\n【2回目のやり直し・2026-09-04】たまごさん本番確認：**まだ壊れている。**共有を押すと別タブが開いてLINEのログイン画面へ飛ぶ。**スマホの実機で押して、実際に友達へ送れるところまで自分で確かめること。**確かめずに完了と言わない。\n\n【一時停止・2026-09-04 20:45】たまごさん「今日はこの仕組みだけ。後も止めちゃってもいい。クレジットが足りない」→ 仕組み（発車→繰り上がり→確認URL→完了）以外は止めています。仕組みが回ったら再開します。\n\n【自動やり直し・09-05 05:22】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-05 05:24】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "done",
+   "what": "共有ボタンから「LINEに送る」を選ぶと、送るはずが QRコード読み取りの画面になってしまう状態です。スマホから友達に送れないので、実質シェアできません。LINEの共有の呼び出し方が古い方式のままになっている可能性が高いです。\n\n【やり直しの理由・2026-09-04】たまごさん確認：共有を押すと別タブが開いてLINEのログイン画面に飛ばされる。まだ直っていない。スマホから実際に友達へ送れることがゴール。押して送れるところまで自分で確かめること。\n\n【2回目のやり直し・2026-09-04】たまごさん本番確認：**まだ壊れている。**共有を押すと別タブが開いてLINEのログイン画面へ飛ぶ。**スマホの実機で押して、実際に友達へ送れるところまで自分で確かめること。**確かめずに完了と言わない。\n\n【一時停止・2026-09-04 20:45】たまごさん「今日はこの仕組みだけ。後も止めちゃってもいい。クレジットが足りない」→ 仕組み（発車→繰り上がり→確認URL→完了）以外は止めています。仕組みが回ったら再開します。\n\n【自動やり直し・09-05 05:22】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-05 05:24】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html / ③FAIL: img_count=0",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "r02-0904",
@@ -404,7 +410,9 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html"
    ],
-   "checkedAt": "2026-09-06T07:00:48+0900"
+   "checkedAt": "2026-09-06T08:44:45+0900",
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/2-line-share-fix.html / ③FAIL: img_count=0",
+   "redoCount": 1
   },
   {
    "n": 4,
@@ -475,20 +483,20 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/7-artist-unlinked-cards.html"
    ],
-   "checkedAt": "2026-09-06T07:43:51+0900",
-   "okBy": "oni-kantoku-manual-444",
-   "okNote": "鬼監督AI検品PASS：確認ページのafterスクリーンショット4枚（実ファイル・数百KB〜1MB）と本番URL4本すべて200・報告内容と一致"
+   "checkedAt": "2026-09-06T08:44:45+0900",
+   "okBy": "oni-kantoku-verify_check_pages-444-2of9",
+   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/7-artist-unlinked-cards.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/7-artist-unlinked-cards.html / ③PASS: img_count=4"
   },
   {
    "n": 11,
    "title": "プレイリストの曲を補給所にもカードとして入れる",
    "why": "裏タグを仕込んで後から繋げるように",
-   "what": "プレイリストに入れた曲を、補給所のカードとしても登録します。裏タグ（_home-leave / _home-faraway など6パターン＋国コード）を付けておくと、あとで「アイルランドの帰れない歌だけ」のように引っ張れます。\n\n【やり直しの理由・2026-09-04】たまごさん確認：入れたところを見たい。カードのURLを出すこと。入れただけで報告しない。\n\n【一時停止・2026-09-04 20:45】たまごさん「今日はこの仕組みだけ。後も止めちゃってもいい。クレジットが足りない」→ 仕組み（発車→繰り上がり→確認URL→完了）以外は止めています。仕組みが回ったら再開します。\n\n【自動やり直し・09-04 22:22】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-05 05:28】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "done",
+   "what": "プレイリストに入れた曲を、補給所のカードとしても登録します。裏タグ（_home-leave / _home-faraway など6パターン＋国コード）を付けておくと、あとで「アイルランドの帰れない歌だけ」のように引っ張れます。\n\n【やり直しの理由・2026-09-04】たまごさん確認：入れたところを見たい。カードのURLを出すこと。入れただけで報告しない。\n\n【一時停止・2026-09-04 20:45】たまごさん「今日はこの仕組みだけ。後も止めちゃってもいい。クレジットが足りない」→ 仕組み（発車→繰り上がり→確認URL→完了）以外は止めています。仕組みが回ったら再開します。\n\n【自動やり直し・09-04 22:22】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-05 05:28】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html / ③FAIL: img_count=0",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "r11-0904",
-   "redoCount": 2,
+   "redoCount": 3,
    "priority": 3,
    "startedAt": "2026-09-05T09:57:03+09:00",
    "sessionId": "810cf792-027e-4459-a91b-1a9f53269b85",
@@ -497,18 +505,19 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html"
    ],
-   "checkedAt": "2026-09-06T07:01:23+0900"
+   "checkedAt": "2026-09-06T08:44:45+0900",
+   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html / ③FAIL: img_count=0"
   },
   {
    "n": 13,
    "title": "コピーの書き直しを5案（A〜E）から選べるようにする",
    "why": "1案だけ出されても選べない",
-   "what": "コピーを直すとき、いまは書き直し案が1つしか出ません。切り口の違う5案を出して選べるようにします。さらに「全部自分で書く」空欄も用意します。将来は1行目はA案、2行目はC案、のようにいいとこ取りできる形へ。\n\n【やり直しの理由・2026-09-04】たまごさん確認：自分の言葉を入れられるようにはなったが、5案（A〜E）が出てこない。加えて『1個前に戻す』も欲しい（何回か書き直すうちに前の方が良かった、が起きる）。\n\n【一時停止・2026-09-04 20:45】たまごさん「今日はこの仕組みだけ。後も止めちゃってもいい。クレジットが足りない」→ 仕組み（発車→繰り上がり→確認URL→完了）以外は止めています。仕組みが回ったら再開します。\n\n【自動やり直し・09-04 22:08】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-04 22:32】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "done",
+   "what": "コピーを直すとき、いまは書き直し案が1つしか出ません。切り口の違う5案を出して選べるようにします。さらに「全部自分で書く」空欄も用意します。将来は1行目はA案、2行目はC案、のようにいいとこ取りできる形へ。\n\n【やり直しの理由・2026-09-04】たまごさん確認：自分の言葉を入れられるようにはなったが、5案（A〜E）が出てこない。加えて『1個前に戻す』も欲しい（何回か書き直すうちに前の方が良かった、が起きる）。\n\n【一時停止・2026-09-04 20:45】たまごさん「今日はこの仕組みだけ。後も止めちゃってもいい。クレジットが足りない」→ 仕組み（発車→繰り上がり→確認URL→完了）以外は止めています。仕組みが回ったら再開します。\n\n【自動やり直し・09-04 22:08】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-04 22:32】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://joy-relief-station.lovable.app/cover-guide?artist=mother-earth&song=apple-green => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/13-copy-5an-undo.html / ③FAIL: img_count=0",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "r13-0904",
-   "redoCount": 2,
+   "redoCount": 3,
    "priority": 1,
    "sessionId": "461fb0af-276a-45ac-87fd-e98b33425d49",
    "cutCount": 1,
@@ -519,9 +528,8 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/13-copy-5an-undo.html",
     "https://joy-relief-station.lovable.app/cover-guide?artist=mother-earth&song=apple-green"
    ],
-   "checkedAt": "2026-09-06T07:43:51+0900",
-   "okBy": "oni-kantoku-manual-444",
-   "okNote": "鬼監督AI検品PASS：5案(A〜E)+1個前に戻す機能のコミットf8d17ccc/cdfe7fdfがorigin/mainに実在・本番URL200を確認"
+   "checkedAt": "2026-09-06T08:44:45+0900",
+   "verifyNote": "機械検品FAIL: ①PASS: https://joy-relief-station.lovable.app/cover-guide?artist=mother-earth&song=apple-green => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/13-copy-5an-undo.html / ③FAIL: img_count=0"
   },
   {
    "n": 14,
@@ -2105,7 +2113,7 @@
    "title": "仕組み：確認待ちをAI検品で自動OKにする（1/9）",
    "why": "大きい仕事の自動分割（元は440番）",
    "what": "# 元の依頼\n---\n【仕組み・最優先】確認待ち82件を、たまごさんが押さなくても減る形にする（自動OK）。\n\nたまごさんの言葉（2026-09-06）:\n「進捗ができてから承認が出なくなったじゃん。静かでありがたいんだけど、ちゃんと作業完了してんのかな？　もう自動で進めるようにしたんだっけ？　それだったらめちゃくちゃ素晴らしいよ」\n\n★現状（実測 2026-09-06）: 走行4本／確認待ち82件／完了7件。**発車と再開は自動になったが、最後のOKだけがまだ人の指に残っている。**だから完了が7件しか積み上がっていない。ここが今いちばん詰まっている場所。\n\n★作るもの：**AI検品による自動OK**\n 1. 確認待ちの各件について、別のセッション（判定役）が本番URLを実際に開いて、報告どおりに変わっているかを機械的に見る。\n 2. 合格の条件を厳しく決める：①本番URLが200で開く ②報告に書かれた変化が画面に実在する ③スクショが残っている。この3つが全部揃ったものだけ自動でOK。\n 3. **1つでも欠けたら自動OKにしない。**赤くして、たまごさんの列に残す。「たぶん大丈夫」で通さない。\n 4. 自動OKしたものは「完了」に積み、**何を根拠にOKにしたか（開いたURL・見た変化・スクショ）を1行ずつ残す。**あとから疑えるようにする。\n 5. たまごさんの列に残った分だけを、押すだけの形（#418で作った画面）で上に出す。\n\n★狙い: たまごさんが押す件数を82件→10件以下にする。ループエンジニアリング＝たまごさんの介入を減らす、そのもの。\n★作ったら、82件に対して実際に流して「何件が自動OKになり、何件が赤で残ったか」を数字で報告する。数字が無い報告は不可。\n★報告は【完了】1行＋確認ページURL＋本番URL。\n---\n\n# ★この仕事は自動分割の一部です（1/9本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（10件）：\n- queue.json n=37 title=「バッジの大きさを「比率」に変える（10回以上言われている）」status=awaiting_check redoCount=2 urls:なし(要:本文中のurlを探すか未報告として却下)\n- queue.json n=34 title=「3時間を超えたセッションを自動で切る」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/34-session-3h-cutoff.html\n- queue.json n=8 title=「Googleドライブの同期を直す」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/8-google-drive-sync-diagnosis.html\n- queue.json n=41 title=「曲ページの表示崩れを10ページ点検して直す」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/41-song-page-check.html\n- queue.json n=216 title=「フィリピンの子どもビージーズを『Too Much Heaven』の関連に繋ぐ」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/216-beegees-kids.html , https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&song=too-much-heaven , https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&song=too-much-heaven-kids-cover\n- queue.json n=9 title=「円卓デザイン案にClaude版を上げる」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/9-round-table-claude.html\n- queue.json n=3 title=「「こちらもどうぞ」を全ページ10個にする＋毎回シャッフル」status=awaiting_check redoCount=2 urls:なし(要:本文中のurlを探すか未報告として却下)\n- queue.json n=28 title=「Eagleギャラリーにフォルダ絞り込みを足す」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/28-eagle-folder-filter.html\n- queue.json n=27 title=「デスクトップとダウンロードの散らかりを片づける」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/27-desktop-cleanup.html\n- queue.json n=25 title=「AI臭さを消す質感の指示書を作る（サンダーバード／ストップモーション）」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/25-stopmotion-texture.html\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。\n\n---\n【★権限譲渡（2026-09-06 07:00・たまごさん本人の言葉）】\n> 「**進捗にあるものも全部もうやらしていいかな。俺の基準で落として。**そしたらだいぶ俺の確認も減るでしょう。\n>  **俺はそのあなたの記憶を信じるよ。**スキルにして見回りさして。全部見せるのはしんどいでしょう。\n>  だったら他のAIが何か見つけたら持ち寄って鬼監督に見てもらってよ。\n>  **どうしても分かんねぇっていうのだけ教えてよ。鬼監督も判断が分かんねぇっていうの。**」\n> 「**まじで大量に間違われて、全部確認してくれって言われるのはちょっと無理ゲーです**」「ストレスがすごい」\n\n★**たまごさんは正式に判定の権限を渡しました。**確認待ちにあるもの全件、鬼監督が判定してよい。\n 合格 → そのまま完了にする（たまごさんに見せない）。\n 不合格 → 黙ってやり直しへ戻す（たまごさんに見せない）。\n★**たまごさんに上げてよいのは1種類だけ：鬼監督が判断できなかったもの。**\n 「念のため」「一応」で上げるのは違反。上げるときは**なぜ判断できなかったかを1行**付ける。\n★流れ：作業したAI → 成果を持ち寄る → 鬼監督が関門0〜7で判定 → 分からないものだけたまごさんへ。\n★これを1回きりにせず、**見回りとして定期的に回す。**新しく確認待ちに入ったものを自動で拾う。\n★1日1回「鬼監督が◯件通して◯件戻した」を1行だけ残す。件数以外の説明は書かない。\n\n\n【AI検品(Verifier)ではねられました・1回目・09-06 07:59】理由：確認ページの合否表がqueue.json実データと逆転(216/25は未完了なのにPASS扱い、不合格とした3番が実際はdone化)しており、ai_verify_stats.jsonにも今回バッチの検品根拠ログが存在しない。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。\n\n【AI検品(Verifier)ではねられました・2回目・09-06 08:29】理由：確認ページ443の34番「AI検品パイプラインがPASS(06:01・$0.196)」という検品根拠が、リンク先のai_verify_stats.json(history 6件に該当なし)にもoni_kantoku_log.jsonl(該当なし)にも存在せず、出典不明の主張(216/25番は実データで裏付け確認済みだが、34番のみ検証不能)。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -2113,7 +2121,10 @@
    "splitIndex": 1,
    "splitTotal": 9,
    "order": 4,
-   "aiVerifyFailCount": 2
+   "aiVerifyFailCount": 2,
+   "startedAt": "2026-09-06T08:42:51+09:00",
+   "sessionId": "231fa90e-f0de-4c83-968a-f5fb30bd4dc8",
+   "pid": 90111
   },
   {
    "n": 444,
@@ -2162,7 +2173,7 @@
    "title": "仕組み：確認待ちをAI検品で自動OKにする（4/9）",
    "why": "大きい仕事の自動分割（元は440番）",
    "what": "# 元の依頼\n---\n【仕組み・最優先】確認待ち82件を、たまごさんが押さなくても減る形にする（自動OK）。\n\nたまごさんの言葉（2026-09-06）:\n「進捗ができてから承認が出なくなったじゃん。静かでありがたいんだけど、ちゃんと作業完了してんのかな？　もう自動で進めるようにしたんだっけ？　それだったらめちゃくちゃ素晴らしいよ」\n\n★現状（実測 2026-09-06）: 走行4本／確認待ち82件／完了7件。**発車と再開は自動になったが、最後のOKだけがまだ人の指に残っている。**だから完了が7件しか積み上がっていない。ここが今いちばん詰まっている場所。\n\n★作るもの：**AI検品による自動OK**\n 1. 確認待ちの各件について、別のセッション（判定役）が本番URLを実際に開いて、報告どおりに変わっているかを機械的に見る。\n 2. 合格の条件を厳しく決める：①本番URLが200で開く ②報告に書かれた変化が画面に実在する ③スクショが残っている。この3つが全部揃ったものだけ自動でOK。\n 3. **1つでも欠けたら自動OKにしない。**赤くして、たまごさんの列に残す。「たぶん大丈夫」で通さない。\n 4. 自動OKしたものは「完了」に積み、**何を根拠にOKにしたか（開いたURL・見た変化・スクショ）を1行ずつ残す。**あとから疑えるようにする。\n 5. たまごさんの列に残った分だけを、押すだけの形（#418で作った画面）で上に出す。\n\n★狙い: たまごさんが押す件数を82件→10件以下にする。ループエンジニアリング＝たまごさんの介入を減らす、そのもの。\n★作ったら、82件に対して実際に流して「何件が自動OKになり、何件が赤で残ったか」を数字で報告する。数字が無い報告は不可。\n★報告は【完了】1行＋確認ページURL＋本番URL。\n---\n\n# ★この仕事は自動分割の一部です（4/9本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（10件）：\n- queue.json n=42 title=「アーティストページの無い曲に、アーティストページを作る」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/42-missing-artist-pages.html\n- queue.json n=43 title=「YouTube API で「死んでいる動画」を洗い出して差し替える」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/43-dead-video-patrol.html\n- queue.json n=44 title=「YouTube検索の結果に「&#39;」がそのまま出ている」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/44-youtube-search-html-entities.html\n- queue.json n=45 title=「棚編集：メインを2枠にする（2番に入れる・入れ替え・関連から外す）」status=awaiting_check redoCount=2 urls:なし(要:本文中のurlを探すか未報告として却下)\n- queue.json n=46 title=「中継所を立てる（進捗表のボタンがObsidianに飛ばないように）」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/46-relay.html\n- queue.json n=48 title=「留守番の見回りを30分おきに戻す」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/48-rusuban.html\n- queue.json n=113 title=「【あとで直す】イパネマの高校生カバーをやり直す（動画が貼られていない）」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/113-ipanema-koukousei-cover.html\n- queue.json n=213 title=「外から入れたX投稿の「原曲」を1日1回の見回りで突き止めて繋ぐ」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/213-genkyoku.html , https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&song=too-much-heaven\n- queue.json n=214 title=「動画の「後ろで流れてる音楽」を自動で突き止める（Shazamの手間を無くす）」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/214-bgm-mimawari.html\n- queue.json n=215 title=「食べ物の動画に「材料と、どこで買えるか」を添える」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/215-food-ingredient-guide.html\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。\n\n---\n【★権限譲渡（2026-09-06 07:00・たまごさん本人の言葉）】\n> 「**進捗にあるものも全部もうやらしていいかな。俺の基準で落として。**そしたらだいぶ俺の確認も減るでしょう。\n>  **俺はそのあなたの記憶を信じるよ。**スキルにして見回りさして。全部見せるのはしんどいでしょう。\n>  だったら他のAIが何か見つけたら持ち寄って鬼監督に見てもらってよ。\n>  **どうしても分かんねぇっていうのだけ教えてよ。鬼監督も判断が分かんねぇっていうの。**」\n> 「**まじで大量に間違われて、全部確認してくれって言われるのはちょっと無理ゲーです**」「ストレスがすごい」\n\n★**たまごさんは正式に判定の権限を渡しました。**確認待ちにあるもの全件、鬼監督が判定してよい。\n 合格 → そのまま完了にする（たまごさんに見せない）。\n 不合格 → 黙ってやり直しへ戻す（たまごさんに見せない）。\n★**たまごさんに上げてよいのは1種類だけ：鬼監督が判断できなかったもの。**\n 「念のため」「一応」で上げるのは違反。上げるときは**なぜ判断できなかったかを1行**付ける。\n★流れ：作業したAI → 成果を持ち寄る → 鬼監督が関門0〜7で判定 → 分からないものだけたまごさんへ。\n★これを1回きりにせず、**見回りとして定期的に回す。**新しく確認待ちに入ったものを自動で拾う。\n★1日1回「鬼監督が◯件通して◯件戻した」を1行だけ残す。件数以外の説明は書かない。\n",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -2172,21 +2183,32 @@
    "order": 7,
    "startedAt": "2026-09-06T08:07:13+09:00",
    "sessionId": "f9e95fde-110d-43e6-bbde-3fba8a89568b",
-   "pid": 80993
+   "finishedAt": "2026-09-06T08:43:13+09:00",
+   "result": "Page confirmed live and correctly rendered. Task complete within budget — reporting per the required 9割削減フォーマット.\n\n【完了】確認待ちバッチ(4/9・n=42,48,113,213,214)を鬼監督が判定→本番URLは実測一致したがスクショ無しのため5件とも自動OKにせずやり直しへ差し戻し（店主には見せない）\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/446-4of9-ai-kenpin.html\n本番: https://tamago2022.github.io/tamago-shinchoku/status/queue.json",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/446-4of9-ai-kenpin.html",
+    "https://tamago2022.github.io/tamago-shinchoku/status/queue.json"
+   ],
+   "checkedAt": "2026-09-06T08:44:37+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：確認ページ・queue.json・oni_kantoku_log.jsonlの実測値が「5件とも自動OKにせずやり直しへ差し戻した」という主張と数字レベルで完全一致"
   },
   {
    "n": 447,
    "title": "仕組み：確認待ちをAI検品で自動OKにする（5/9）",
    "why": "大きい仕事の自動分割（元は440番）",
    "what": "# 元の依頼\n---\n【仕組み・最優先】確認待ち82件を、たまごさんが押さなくても減る形にする（自動OK）。\n\nたまごさんの言葉（2026-09-06）:\n「進捗ができてから承認が出なくなったじゃん。静かでありがたいんだけど、ちゃんと作業完了してんのかな？　もう自動で進めるようにしたんだっけ？　それだったらめちゃくちゃ素晴らしいよ」\n\n★現状（実測 2026-09-06）: 走行4本／確認待ち82件／完了7件。**発車と再開は自動になったが、最後のOKだけがまだ人の指に残っている。**だから完了が7件しか積み上がっていない。ここが今いちばん詰まっている場所。\n\n★作るもの：**AI検品による自動OK**\n 1. 確認待ちの各件について、別のセッション（判定役）が本番URLを実際に開いて、報告どおりに変わっているかを機械的に見る。\n 2. 合格の条件を厳しく決める：①本番URLが200で開く ②報告に書かれた変化が画面に実在する ③スクショが残っている。この3つが全部揃ったものだけ自動でOK。\n 3. **1つでも欠けたら自動OKにしない。**赤くして、たまごさんの列に残す。「たぶん大丈夫」で通さない。\n 4. 自動OKしたものは「完了」に積み、**何を根拠にOKにしたか（開いたURL・見た変化・スクショ）を1行ずつ残す。**あとから疑えるようにする。\n 5. たまごさんの列に残った分だけを、押すだけの形（#418で作った画面）で上に出す。\n\n★狙い: たまごさんが押す件数を82件→10件以下にする。ループエンジニアリング＝たまごさんの介入を減らす、そのもの。\n★作ったら、82件に対して実際に流して「何件が自動OKになり、何件が赤で残ったか」を数字で報告する。数字が無い報告は不可。\n★報告は【完了】1行＋確認ページURL＋本番URL。\n---\n\n# ★この仕事は自動分割の一部です（5/9本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（10件）：\n- queue.json n=301 title=「【ぐるぐる1】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-301.html\n- queue.json n=302 title=「【ぐるぐる2】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-302.html\n- queue.json n=303 title=「【ぐるぐる3】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-303.html\n- queue.json n=304 title=「【ぐるぐる4】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-304.html\n- queue.json n=305 title=「【ぐるぐる5】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-305.html\n- queue.json n=306 title=「【ぐるぐる6】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-306.html\n- queue.json n=307 title=「【ぐるぐる7】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-307.html\n- queue.json n=308 title=「【ぐるぐる8】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-308.html\n- queue.json n=309 title=「【ぐるぐる9】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-309.html\n- queue.json n=310 title=「【ぐるぐる10】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-310.html\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。\n\n---\n【★権限譲渡（2026-09-06 07:00・たまごさん本人の言葉）】\n> 「**進捗にあるものも全部もうやらしていいかな。俺の基準で落として。**そしたらだいぶ俺の確認も減るでしょう。\n>  **俺はそのあなたの記憶を信じるよ。**スキルにして見回りさして。全部見せるのはしんどいでしょう。\n>  だったら他のAIが何か見つけたら持ち寄って鬼監督に見てもらってよ。\n>  **どうしても分かんねぇっていうのだけ教えてよ。鬼監督も判断が分かんねぇっていうの。**」\n> 「**まじで大量に間違われて、全部確認してくれって言われるのはちょっと無理ゲーです**」「ストレスがすごい」\n\n★**たまごさんは正式に判定の権限を渡しました。**確認待ちにあるもの全件、鬼監督が判定してよい。\n 合格 → そのまま完了にする（たまごさんに見せない）。\n 不合格 → 黙ってやり直しへ戻す（たまごさんに見せない）。\n★**たまごさんに上げてよいのは1種類だけ：鬼監督が判断できなかったもの。**\n 「念のため」「一応」で上げるのは違反。上げるときは**なぜ判断できなかったかを1行**付ける。\n★流れ：作業したAI → 成果を持ち寄る → 鬼監督が関門0〜7で判定 → 分からないものだけたまごさんへ。\n★これを1回きりにせず、**見回りとして定期的に回す。**新しく確認待ちに入ったものを自動で拾う。\n★1日1回「鬼監督が◯件通して◯件戻した」を1行だけ残す。件数以外の説明は書かない。\n",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "splitFrom": 440,
    "splitIndex": 5,
    "splitTotal": 9,
-   "order": 8
+   "order": 8,
+   "startedAt": "2026-09-06T08:47:17+09:00",
+   "sessionId": "85fb2173-2509-4cd5-a343-d5082900e70c",
+   "pid": 91456
   },
   {
    "n": 448,
@@ -2412,7 +2434,7 @@
    "title": "Codexの一覧に残った工場の残骸を消す",
    "why": "スマホから追加",
    "what": "【今すぐ・小さい掃除】ChatGPT（Codex）アプリの一覧に残っている、うちの工場の残骸を消す。\n\nたまごさんの言葉（2026-09-06）:\n「ChatGPTの一覧に、なんでこっちのタスクが現れるの？　もう作らないで欲しいんだけど。一覧が汚れて、あっちのセッションが見つけられないのよ。だからあっちに積まないで」\n「全然Mac触っていいよ。もう消しちゃって」\n\n★たまごさんのiPhoneのCodexアプリ「リモート（iMac.local）」のプロジェクト一覧に、\n `q403-0904` `q398-0904` `q397-0904` のような**うちの工場の作業場の名前**が並んでいる。\n 中身は「【自動発車】発車待ちの403番です。」というこちらのプロンプト。\n ディスク上の作業場はもう存在しないので、**Codex側が自分の記録として持っている。**\n\n★やること\n 1. `/Users/mac/.codex/` の中を見て、セッション・プロジェクトの記録がどのファイルに入っているか突き止める。\n 2. **`q<数字>-0904` という名前のもの、および中身が「【自動発車】発車待ちの」で始まるものだけを消す。**\n 3. 消す前に `/Users/mac/.codex` を丸ごとコピーしてバックアップを取る（`~/Documents/AI作業/backup_codex_2026-09-06/`）。\n 4. たまごさん本人のCodexセッション（EP2食の未来、卵劇場EP01画像制作、実地テスト用制作パック搬送 など）は\n    **絶対に消さない。**これはたまごさんの仕事の記録。**判断がつかないものは残す。**\n 5. 消したあと、残った件数と、消した件数を数える。\n\n★**この掃除の範囲は Codex の記録だけ。**他のアプリの設定・たまごさんのファイルには一切触らない。\n★今後こちらの作業場がCodexに拾われないよう、置き場所は既に\n `/Users/mac/Documents/AI作業/.worktrees/` へ移してある（対応済み）。\n★報告は3行だけ。何件消して何件残したか。ログ抜粋・経緯・謝罪は書かない。\n\n【自動やり直し・09-06 08:08】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-06 08:24】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -2420,21 +2442,24 @@
    "redoCount": 2,
    "startedAt": "2026-09-06T08:24:40+09:00",
    "sessionId": "ce0612fe-1309-4db1-a505-d31f03d8ab00",
-   "pid": 85619
+   "finishedAt": "2026-09-06T08:46:52+09:00",
+   "result": "【完了】ChatGPT（Codex）のプロジェクト一覧から、うちの工場の残骸（q38/q44/q45/q397/q398/q402/q403/q41-0904、r02/r03/r07/r10/r21-0904）を削除\n消した数：13件（対応する空スレッド25件、取込記録28件も合わせて削除）\n残した数：14件（tamago_brain・joy-relief-station・Desktop・work good vibes・ごきげん補給所｜編集部・卵劇場など、たまごさん本人の作業記録は全て残存。バックアップは`~/Documents/AI作業/backup_codex_2026-09-06/`に保存済み）\n\n※本件はローカルのCodexアプリ記録の掃除のみで、卵商店街サイトの変更ではないため本番URL・Lovable公開は対象外です。",
+   "urls": []
   },
   {
    "n": 464,
    "title": "曲ページの関連動画を、その場で外す・差し替える・並べ替える",
    "why": "スマホから追加",
-   "what": "【曲ページ】関連動画を、その場でポチポチ直せるようにする（外す・差し替える・並べ替える）。\n\nたまごさんの言葉（2026-09-06・そのまま）:\n「棚編集とかついてないのね。もう削除したいのもいっぱいあるのよ。『いやこれは合ってねえよ』『ここにふさわしくねーよ』ってやつがあるから、これもこっちでポチポチで消していきたいんだけど」\n「**『文脈が合ってない』っていうボタン。**もしそれを押すと、違うのにパッと切り替わるだとか。**あと削除も欲しい。このページから外すみたいな。棚から外すのと一緒**」\n「**さっきの発車の順番待ちみたいに、上に来て欲しい動画がすげえ下にあったりだとか。これも上に差し込みたいんだけど、Notionみたいに『いやこれは下でしょう』みたいな。それが感覚的にできるとありがたい**」\n「**左右とかも入れ替えられるんだったら入れ替えたいな**」\n\n★作るもの（曲ページの関連動画・「こちらもどうぞ」の各カードに付ける）\n 1. **「このページから外す」** … 押したらそのページの関連から消える（棚から外すのと同じ扱い）。\n    元のデータは消さない。**このページに出さないだけ。**\n 2. **「文脈が合ってない」** … 押したらその場で**別の候補に差し替わる。**\n    差し替え先は、そのページの文脈に近いものから選ぶ（ジャンルを飛ばさない）。\n    押すたびに次の候補へ回る。戻したくなったら1回だけ取り消せる。\n 3. **ドラッグで並べ替え（上下）** … 進捗表で作ったのと同じ操作感。\n    **棒が入って「ここに入るよ」と見える。マグネットでカシャッとはまる。**\n    実装は進捗表の `index.html` の並べ替え（`qgrip` / `nearestSlot` / `qbar`）が既にお手本。**ゼロから書かない。**\n 4. **横並びのものは左右の入れ替えもできる。**\n 5. 押した結果は**すぐ画面に反映する**（返事を待たせない）。保存はその裏で。\n\n★守ること\n - たまごさんだけが見える形にする（訪問者に編集ボタンを出さない）。\n - スマホの親指で押せる大きさ。カードの見た目を壊さない。\n - **軽さは機能より優先。**編集の仕組みを足したせいでページが重くなったら不合格。\n - 触る前に `tamago-tone` と `page-kenpin` を読む。出す前に `oni-kantoku` を通す。\n - 共有コンポーネントなので**ビフォーアフターのスクショを確認ページに並べる。**\n★main へ push → Lovable の公開を押す → 本番で実際に押してみて動くところのスクショを撮る。\n★報告は3行だけ。",
+   "what": "【曲ページ】関連動画を、その場でポチポチ直せるようにする（外す・差し替える・並べ替える）。\n\nたまごさんの言葉（2026-09-06・そのまま）:\n「棚編集とかついてないのね。もう削除したいのもいっぱいあるのよ。『いやこれは合ってねえよ』『ここにふさわしくねーよ』ってやつがあるから、これもこっちでポチポチで消していきたいんだけど」\n「**『文脈が合ってない』っていうボタン。**もしそれを押すと、違うのにパッと切り替わるだとか。**あと削除も欲しい。このページから外すみたいな。棚から外すのと一緒**」\n「**さっきの発車の順番待ちみたいに、上に来て欲しい動画がすげえ下にあったりだとか。これも上に差し込みたいんだけど、Notionみたいに『いやこれは下でしょう』みたいな。それが感覚的にできるとありがたい**」\n「**左右とかも入れ替えられるんだったら入れ替えたいな**」\n\n★作るもの（曲ページの関連動画・「こちらもどうぞ」の各カードに付ける）\n 1. **「このページから外す」** … 押したらそのページの関連から消える（棚から外すのと同じ扱い）。\n    元のデータは消さない。**このページに出さないだけ。**\n 2. **「文脈が合ってない」** … 押したらその場で**別の候補に差し替わる。**\n    差し替え先は、そのページの文脈に近いものから選ぶ（ジャンルを飛ばさない）。\n    押すたびに次の候補へ回る。戻したくなったら1回だけ取り消せる。\n 3. **ドラッグで並べ替え（上下）** … 進捗表で作ったのと同じ操作感。\n    **棒が入って「ここに入るよ」と見える。マグネットでカシャッとはまる。**\n    実装は進捗表の `index.html` の並べ替え（`qgrip` / `nearestSlot` / `qbar`）が既にお手本。**ゼロから書かない。**\n 4. **横並びのものは左右の入れ替えもできる。**\n 5. 押した結果は**すぐ画面に反映する**（返事を待たせない）。保存はその裏で。\n\n★守ること\n - たまごさんだけが見える形にする（訪問者に編集ボタンを出さない）。\n - スマホの親指で押せる大きさ。カードの見た目を壊さない。\n - **軽さは機能より優先。**編集の仕組みを足したせいでページが重くなったら不合格。\n - 触る前に `tamago-tone` と `page-kenpin` を読む。出す前に `oni-kantoku` を通す。\n - 共有コンポーネントなので**ビフォーアフターのスクショを確認ページに並べる。**\n★main へ push → Lovable の公開を押す → 本番で実際に押してみて動くところのスクショを撮る。\n★報告は3行だけ。\n\n【自動やり直し・09-06 08:40】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
    "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "order": 5,
-   "startedAt": "2026-09-06T07:58:53+09:00",
-   "sessionId": "4b14d6a5-834c-4cdd-97b5-d78d7fe37271",
-   "pid": 79275
+   "redoCount": 1,
+   "startedAt": "2026-09-06T08:43:32+09:00",
+   "sessionId": "2ef67648-48ce-4b5c-be7d-4a264d1e844f",
+   "pid": 90372
   },
   {
    "n": 465,
