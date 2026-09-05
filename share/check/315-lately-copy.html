@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#315 Latelyのコピーを書き直す 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);font-weight:700;}
+  .pending{color:#a67c1e;font-weight:700;}
+  .plans{list-style:none;margin:0;padding:0;}
+  .plans li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;font-size:0.95rem;}
+  .plans li b{display:inline-block;background:#efe9db;border-radius:50%;width:22px;height:22px;text-align:center;line-height:22px;margin-right:8px;font-size:0.85rem;}
+  .plans li.chosen{border-left:4px solid var(--midori);}
+  .chosen-tag{display:inline-block;background:var(--midori);color:#fff;font-size:0.7rem;border-radius:4px;padding:1px 6px;margin-left:6px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #315</div>
+<h1>#315 Latelyのコピーを書き直す（「静かなピアノの夜」では薄い）</h1>
+<div class="date" id="statusline">確認中…</div>
+
+<div class="fix">
+「静かなピアノの夜。」は、たまごさんが「人類のバラードトップ10に入る」「不朽の名作」と評するこの曲の格に対して薄すぎる、という指摘を受け、事実ベースで書き直した。事実の軸は2つ：①スティーヴィー・ワンダーがベース・ピアノ・声を<b>全部ひとりで録音した</b>こと、②<b>13年後（1993年）</b>にJodeciがカバーし、<b>全米R&amp;Bチャート1位を13週独走</b>したこと。噂・推測は使わず、この2つの事実の組み合わせ方だけを変えて5案を作った。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>src/lib/coverGuide.ts</code>内、Stevie Wonder「Lately」のnote文言（アーティスト一覧2箇所＋curated原曲note2箇所、計4箇所）を「静かなピアノの夜。」から、A〜E案のうち採用した文言へ変更。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num" id="num-files"><b>4箇所</b><span>coverGuide.ts内の変更箇所（artists配列2件・curated原曲note2件）</span></div>
+  <div class="num" id="num-plans"><b>5案</b><span>A〜E、事実2軸の組み合わせ違いで作成</span></div>
+  <div class="num" id="num-deploy"><b id="deploy-result">確認中</b><span>本番反映（x-deployment-id変化）</span></div>
+</div>
+
+<h2>③ A〜E案（採用はA・緑の枠）</h2>
+<ul class="plans">
+  <li class="chosen"><b>A</b>ベース、ピアノ、声、全部ひとりで録った。13年後、Jodeciのカバーが全米R&amp;Bチャート1位を13週独走した一曲。<span class="chosen-tag">採用・本番反映</span></li>
+  <li><b>B</b>スタジオにひとり。ベースもピアノも声も、全部自分で重ねた。13年後、Jodeciのカバーが全米R&amp;Bチャート1位で13週も居座った。</li>
+  <li><b>C</b>1980年、ひとりで録った。1993年、Jodeciがカバーして全米R&amp;Bチャート1位、13週独走。40年以上、歌い継がれているバラード。</li>
+  <li><b>D</b>楽器も声も、ぜんぶひとりで録った一曲。13年の時を経てJodeciがカバーし、全米R&amp;Bチャート1位を13週守り抜いた。</li>
+  <li><b>E</b>ピアノと声だけかと思ったら、ベースも自分で弾いていた。13年後、Jodeciのカバーが全米R&amp;Bチャート1位を13週独走。</li>
+</ul>
+<div class="note">他の案（B〜E）に差し替えたい場合は、店主から一言（記号だけでOK）もらえればこのページの更新と同じ手順ですぐに差し替え可能。</div>
+
+<h2>④ 押せるリンク（実物）</h2>
+<ul class="links" id="links-block">
+  <li><b>本番の曲ページ（Stevie Wonder「Lately」）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&song=lately" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately</a></li>
+  <li><b>この修正のコミット（coverGuide.tsのdiffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/4b6530f3" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/4b6530f3</a></li>
+  <li><b>案件記録（TASK_BOARD.md 案件#315）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md</a></li>
+</ul>
+
+<h2>⑤ 前と後</h2>
+<table>
+<tr><th>状態</th><th>文言</th></tr>
+<tr><td>前</td><td>静かなピアノの夜。</td></tr>
+<tr><td>後（採用A案）</td><td>ベース、ピアノ、声、全部ひとりで録った。13年後、Jodeciのカバーが全米R&amp;Bチャート1位を13週独走した一曲。</td></tr>
+</table>
+<div class="shots" id="shots-block"></div>
+
+<h2 id="genjo-title">今の状態（正直な報告）</h2>
+<div class="note" id="genjo-body">確認中…</div>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ<code>src/lib/coverGuide.ts</code>（<code>id:"lately"</code>のnote・4箇所）。案件記録は<code>.claude/TASK_BOARD.md</code>案件#315。
+</footer>
+</body>
+</html>
