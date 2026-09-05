@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案件44：YouTube検索HTML実体参照デコード 確認ページ</title>
+<style>
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; line-height: 1.7; color: #222; }
+  h1 { font-size: 1.3rem; border-bottom: 3px solid #333; padding-bottom: 8px; }
+  h2 { font-size: 1.05rem; margin-top: 2em; color: #444; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  td, th { border: 1px solid #ccc; padding: 8px 10px; text-align: left; font-size: 0.92rem; }
+  th { background: #f5f5f5; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; }
+  .before { color: #c0392b; }
+  .after { color: #27ae60; }
+  a { color: #1a5fb4; }
+  .note { color: #777; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<h1>案件44：棚編集のYouTube検索結果でHTML実体参照が表示される不具合の修正確認</h1>
+
+<h2>① 何を直したか</h2>
+<p>棚編集のYouTube検索結果で <code>&amp;#39;</code> のようなHTML実体参照が表示されていたのをデコードするよう修正。サムネ取得失敗時はカードごと非表示にする修正も同時実施。</p>
+
+<h2>② 数字</h2>
+<table>
+  <tr><th>修正ファイル数</th><td>2件（<code>src/lib/youtubeSearch.functions.ts</code>, <code>src/components/YouTubeSearchInline.tsx</code>）</td></tr>
+  <tr><th>mainへ入った日時</th><td>2026-09-04 21:18（コミット <code>7ffbec71</code>）</td></tr>
+  <tr><th>本番の実測ステータスコード</th><td>200</td></tr>
+  <tr><th>本番の実測 x-deployment-id</th><td><code>psr2.cc70d845-5a6a-40b0-b8e2-d75e414840b8.1789229880.22I1EykMGQsXw1W5yHY89dDqUu_iHVLIOI9zd9YwMiY</code>（2026-09-06 実測）</td></tr>
+</table>
+
+<h2>③ リンク</h2>
+<ul>
+  <li>本番トップ：<a href="https://joy-relief-station.lovable.app" target="_blank">https://joy-relief-station.lovable.app</a></li>
+  <li>GitHubコミット：<a href="https://github.com/tamago2022/joy-relief-station/commit/7ffbec71850a485d2168c886da7cbf79a6426b2e" target="_blank">https://github.com/tamago2022/joy-relief-station/commit/7ffbec71850a485d2168c886da7cbf79a6426b2e</a>
+    <div class="note">※非公開リポジトリのため無認証アクセスは404になります（未確認）。ローカルの<code>git log</code>ではハッシュ・日時・コミットメッセージの実在を確認済み。</div>
+  </li>
+</ul>
+
+<h2>④ 前後比較の証拠（Node.jsで同じデコードロジックを実行した結果）</h2>
+<pre><span class="before">修正前: BTS &amp;#39;Dynamite&amp;#39; @Music Bank</span>
+<span class="after">修正後: BTS 'Dynamite' @Music Bank</span></pre>
+
+<h2>公開状態</h2>
+<p>launchd自動実行（<code>scripts/patrol/lovable-publish.mjs</code>）の直近ログ（<code>~/Library/Logs/TamagoLovablePublish/publish.log</code>）によると、2026-09-06 00:48:57 に公開成功（x-deployment-id: <code>psr2.cc70d84</code> → 現在の本番実測値と一致）。直後の 01:18:59 の実行はLovableエディタページの読み込みタイムアウトで失敗（exit=1）しているが、その時点で既に最新版は公開済みのため本番には影響なし。</p>
+
+<p class="note">作成：tamago-release セッション（2026-09-06）</p>
+
+</body>
+</html>
