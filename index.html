@@ -387,6 +387,14 @@
 
 <details class="sec sub"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
 
+<!-- 424番：どの仕事がいくら使ったか見える化（2026-09-06）。
+     たまごさん「いまは全体の使用率しか分からず、『どの種類の仕事が高いのか』が分からない。
+     だから減らしようがない」→ 仕事1本ごとの入出力トークン・推定コスト・所要時間を
+     status/cost_by_task.json に貯め、ここで今日のトップ5だけ見せる。 -->
+<details class="sec sub"><summary>今日いちばん高かった仕事トップ5 <small id="costMeta"></small></summary><div class="in">
+<div class="g" id="costTop5"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+<div class="note" id="costSrcNote" style="margin-top:6px"></div>
+</div></details>
 
 </div></details>
 <!-- 2026-09-04 たまごさん「次に発車がない。ここに溜めて」
@@ -697,6 +705,38 @@ refreshQuota();
 setInterval(refreshQuota, 60000);
 refreshPace();
 setInterval(refreshPace, 60000);
+
+/* ───── 424番：どの仕事がいくら使ったか見える化（今日のトップ5） ─────
+   status/cost_by_task.json（tools/auto_launcher.py の harvest() が1本終わるたびに書く）を読むだけ。
+   金額はUSD（claude -pのtotal_cost_usdをそのまま採用。無ければ依頼文の単価でフォールバック概算）。 */
+function fmtUsd(v){ return v == null ? "—" : "$" + Number(v).toFixed(2); }
+function renderCostTop5(d){
+  const box = document.getElementById("costTop5");
+  const meta = document.getElementById("costMeta");
+  const src = document.getElementById("costSrcNote");
+  if(!box) return;
+  if(!d || !(d.todayTop5 || []).length){
+    box.innerHTML = `<div class="card note" style="grid-column:1/-1">今日はまだ終わった仕事の記録が無い（仕事が1本終わるたびに増える）</div>`;
+    if(meta) meta.textContent = "";
+    return;
+  }
+  if(meta) meta.textContent = `今日${d.todayTaskCount || 0}本・合計${fmtUsd(d.todayTotalCostUsd)}`;
+  box.innerHTML = d.todayTop5.map((t, i)=>{
+    const tokTotal = (t.inputTokens||0) + (t.outputTokens||0);
+    const detail = `<p>入力 ${(t.inputTokens||0).toLocaleString()}トークン・出力 ${(t.outputTokens||0).toLocaleString()}トークン`
+      + (t.cacheReadTokens ? `（うちキャッシュ読み ${t.cacheReadTokens.toLocaleString()}）` : "") + `</p>`
+      + `<p>所要 ${t.elapsedMin != null ? fmtDur(t.elapsedMin) : "—"}${t.model ? "・" + esc(t.model) : ""}</p>`;
+    return card(i === 0 ? "yellow" : "gray", `${i+1}位　${t.n}番 ${t.title || ""}`, fmtUsd(t.costUsd),
+      `<span class="n">${tokTotal.toLocaleString()}tok</span>`, detail);
+  }).join("");
+  if(src) src.textContent = d.priceSourceNote || "";
+}
+function refreshCost(){
+  return fetch("status/cost_by_task.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(renderCostTop5).catch(()=>{});
+}
+refreshCost();
+setInterval(refreshCost, 60000);
 /* 2026-09-05 このページがMac自身から配られているとき（家のWi-Fiの中で http://192.168.x.x:8788 を
    開いたとき）は、**自分がいる場所がそのまま中継所**。トンネルを探しにいかない。
    トンネルは切れるたびURLが変わるが、家の中の道は切れないしURLも変わらない。 */
