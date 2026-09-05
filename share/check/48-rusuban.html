@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#48 留守番の見回りを30分おきに戻す 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #48</div>
+<h1>#48 留守番の見回りを30分おきに戻す</h1>
+<div class="date">__DATE_JST__ 実装・設定を元に戻し・次回実行の実測まで反映済み</div>
+
+<div class="fix">
+30番セッションが「留守番の見回り（<code>rusuban-mimawari-30min</code>）を止める」を実行したが、これはたまごさんの意図と逆だった。たまごさんの言葉：「留守番の見回り、やめない。30分に1回やってくれ」。<b>2026-09-04の停止判断を取り消し、30分おきの見回りを元に戻した。</b>
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+①Claude Desktopの定期タスク設定ファイル（<code>scheduled-tasks.json</code>）で <code>rusuban-mimawari-30min</code> の <code>enabled</code> を <code>false → true</code> に戻した。②同タスクの実体 <code>SKILL.md</code> 冒頭に入っていた「停止ブロック」（起動しても即終了する仕掛け）を撤去し、本体の見回り手順（生存確認・停滞の再起動・24時間放置の畳み・空き枠への着火）を通常どおり実行できる状態に戻した。③Vaultの2つの台帳（<code>定期タスク_停止台帳.md</code>・<code>定期実行台帳.md</code>）に「取り消した」旨を追記した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>enabled: true</b><span>設定ファイル実測（下の②画面）</span></div>
+  <div class="num"><b>__WAIT_STATUS__</b><span>次回実行（毎時07分・37分）の実測結果</span></div>
+  <div class="num"><b>2ファイル</b><span>Vault台帳の更新（停止台帳・実行台帳）</span></div>
+</div>
+
+<h2>③ 押せるリンク・実物</h2>
+<ul class="links">
+  <li><b>設定ファイルの実物（enabled: true になっている画面）</b><br>下の「④ 設定が戻ったことの実測」参照（ローカルの機密パスのためリンク化はせず、中身をそのままコードで貼る）</li>
+  <li><b>SKILL.md本体（停止ブロックを外した後）</b><br><code>~/.claude/scheduled-tasks/rusuban-mimawari-30min/SKILL.md</code></li>
+  <li><b>進捗表アプリ本体</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+</ul>
+
+<h2>④ 設定が戻ったことの実測 と 実際に動いた記録</h2>
+<div class="note">
+<b>設定ファイル（scheduled-tasks.json）の該当部分：</b>
+</div>
+<pre>{
+  "id": "rusuban-mimawari-30min",
+  "cronExpression": "7,37 * * * *",
+  "enabled": true,
+  "lastRunAt": "__LASTRUN_BEFORE__"
+}</pre>
+
+<div class="note">
+<b>実際に動いた記録：</b><br>
+__RUN_EVIDENCE__
+</div>
+
+<footer>
+正本：Claude Desktopの定期タスク設定 <code>scheduled-tasks.json</code>（<code>claude-code-sessions/81e8a1ee.../scheduled-tasks.json</code>）と <code>~/.claude/scheduled-tasks/rusuban-mimawari-30min/SKILL.md</code>。Vaultの記録正本は <code>AI出力/_ルール/定期タスク_停止台帳.md</code>・<code>定期実行台帳.md</code>（いずれも2026-09-05追記あり）。実行ログの正本は <code>AI出力/_ルール/留守中の作業ログ.md</code>。
+</footer>
+</body>
+</html>
