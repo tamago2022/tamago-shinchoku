@@ -1,0 +1,53 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>40番 世界の暮らし×ノスタルジー 確認ページ</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8}
+h1{font-size:1.2rem;margin:0 0 16px}
+h2{font-size:1rem;margin:24px 0 8px;color:#9fb2c8}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+a{color:#5fd996;word-break:break-all}
+.quote{background:#0e1116;border-left:3px solid #5fd996;padding:10px 14px;margin:8px 0;font-size:0.92rem;color:#c9d4e0}
+code{background:#0e1116;padding:2px 6px;border-radius:4px;font-size:0.85rem}
+.pair{margin:14px 0;padding:12px;background:#0e1116;border-radius:10px}
+.pair b{color:#e9eef4}</style></head><body>
+<h1>40番 「世界の暮らし」×「ノスタルジー」棚つなぎ 確認ページ</h1>
+
+<div class="b">
+<h2>① 何をしたか</h2>
+<p>旅の扉「世界の暮らし」棚の2本と、音楽の扉「ノスタルジー」棚の2曲を、相互リンク（双方向）で接続した。棚そのものへの新規追加はしていない（既存カード同士を繋いだだけ）。</p>
+</div>
+
+<div class="b">
+<h2>② 数字</h2>
+<p><b>2組・計4ページ</b>を双方向接続。各ページを開くと相手側が「こちらも、同じ流れで」の関連カードにサムネ付きで表示され、押すと1クリックで往復できる（片道リンクなし）。</p>
+</div>
+
+<div class="b">
+<h2>③ 押せるリンク（本番）</h2>
+
+<div class="pair">
+<b>組み合わせ①：ヨンナ・ジントン（スウェーデンの森へ移住）↔ 畠山美由紀「ふるさと」</b><br>
+<a href="https://joy-relief-station.lovable.app/room/card/living-sweden-forest-life" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/living-sweden-forest-life</a><br>
+<a href="https://joy-relief-station.lovable.app/cover-guide?artist=hatakeyama-miyuki&song=furusato" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=hatakeyama-miyuki&song=furusato</a>
+</div>
+
+<div class="pair">
+<b>組み合わせ②：マルタイン・ドーラールト（石造りの納屋を1年かけ家に）↔ ハナレグミ「家族の風景」</b><br>
+<a href="https://joy-relief-station.lovable.app/room/card/living-italy-alps-cabin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/living-italy-alps-cabin</a><br>
+<a href="https://joy-relief-station.lovable.app/cover-guide?artist=hanaregumi&song=kazoku-no-fuukei" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=hanaregumi&song=kazoku-no-fuukei</a>
+</div>
+</div>
+
+<div class="b">
+<h2>④ 本番ページに実際に含まれていた文字列（公開後に実測）</h2>
+<p class="ok">4ページとも双方向で反映確認済み（Node fetchで本番HTMLを直接取得して実測）</p>
+<div class="quote">living-sweden-forest-life ページ内：「ふるさと」「畠山美由紀」「遠く離れて、思い出す場所」</div>
+<div class="quote">furusato（畠山美由紀）ページ内：「ヨンナ・ジントン」「都会での暮らしを離れ...」</div>
+<div class="quote">living-italy-alps-cabin ページ内：「家族の風景」「自分の手で作る、家の風景」</div>
+<div class="quote">kazoku-no-fuukei（ハナレグミ）ページ内：「マルタイン」</div>
+<p>公開前後の <code>x-deployment-id</code>：<code>psr2.bc8bc21</code> → <code>psr2.1ef9a1e</code>（<code>lovable-publish.mjs</code> 実行ログより）</p>
+<p style="color:#9fb2c8;font-size:0.85rem">補足：cover-guide参照は名簿(2.6MB)の遅延読み込み後にしか出ない既知の仕様があるため、<code>relatedPreviews</code>を付けて公開初回描画から即座に出るようにした（「まだ片道に見える」状態を避けるため）。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表にもどる</a></p>
+</body></html>
