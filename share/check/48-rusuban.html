@@ -37,7 +37,7 @@
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #48</div>
 <h1>#48 留守番の見回りを30分おきに戻す</h1>
-<div class="date">__DATE_JST__ 実装・設定を元に戻し・次回実行の実測まで反映済み</div>
+<div class="date">2026-09-06 01:15 JST 実装・設定を元に戻し・次回実行の実測まで反映済み</div>
 
 <div class="fix">
 30番セッションが「留守番の見回り（<code>rusuban-mimawari-30min</code>）を止める」を実行したが、これはたまごさんの意図と逆だった。たまごさんの言葉：「留守番の見回り、やめない。30分に1回やってくれ」。<b>2026-09-04の停止判断を取り消し、30分おきの見回りを元に戻した。</b>
@@ -51,7 +51,7 @@
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>enabled: true</b><span>設定ファイル実測（下の②画面）</span></div>
-  <div class="num"><b>__WAIT_STATUS__</b><span>次回実行（毎時07分・37分）の実測結果</span></div>
+  <div class="num"><b>実行確認◎</b><span>直近実行 2026-09-06 00:44 JST（07分/37分の定刻どおり自動実行）</span></div>
   <div class="num"><b>2ファイル</b><span>Vault台帳の更新（停止台帳・実行台帳）</span></div>
 </div>
 
@@ -70,12 +70,24 @@
   "id": "rusuban-mimawari-30min",
   "cronExpression": "7,37 * * * *",
   "enabled": true,
-  "lastRunAt": "__LASTRUN_BEFORE__"
+  "lastRunAt": "2026-09-05T15:44:17.046Z",
+  "lastScheduledFor": "2026-09-05T15:37:00.000Z"
 }</pre>
+<div class="note">
+<code>lastRunAt</code>はUTC表記。日本時間に直すと <b>2026-09-06 00:44:17 JST</b>（予定は00:37・7分の起動遅延はあるが定刻どおり自動実行されている）。設定ファイル本体：<code>~/Library/Application&nbsp;Support/Claude/claude-code-sessions/81e8a1ee-1a56-4d8f-a2d2-fb45f5e7e0d1/67542e85-a104-4946-bcde-7c7916354942/scheduled-tasks.json</code>
+</div>
 
 <div class="note">
-<b>実際に動いた記録：</b><br>
-__RUN_EVIDENCE__
+<b>実際に動いた記録（<code>留守中の作業ログ.md</code>より直近3回・30分おきに継続）：</b>
+</div>
+<table>
+<tr><th>時刻(JST)</th><th>内容</th></tr>
+<tr><td>2026-09-06 00:15</td><td>畳み0本・着火見送り(メモリred)・司令塔HTML再生成OK</td></tr>
+<tr><td>2026-09-06 00:45</td><td>畳み0本・着火見送り(メモリred)・司令塔HTML再生成OK ← 設定ファイルの<code>lastRunAt</code>(00:44)と一致</td></tr>
+<tr><td>2026-09-05 23:45〜00:15</td><td>同様に30分間隔で継続稼働中</td></tr>
+</table>
+<div class="note">
+設定ファイルの<code>lastRunAt</code>実測値と、Vaultの実行ログの記録時刻がほぼ一致（00:44実行→00:45ログ）。停止前と同じ07分・37分サイクルで自動的に動き続けていることを確認した。
 </div>
 
 <footer>

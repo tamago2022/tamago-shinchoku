@@ -258,9 +258,13 @@
   .qgrip:active{cursor:grabbing; opacity:1;}
   .qrow.qdrag{opacity:.28;}
   /* 指について回る影（今どれを持っているか） */
+  /* 掴んでいる札。**題名だけの小さな1行**にする（行を丸ごと複製すると画面を覆ってしまう） */
   .qghost{position:fixed; z-index:9999; pointer-events:none; background:#1b2330;
-    border:1px solid var(--green); border-radius:10px; padding:8px 6px; opacity:.95;
-    box-shadow:0 10px 24px rgba(0,0,0,.45); transform:rotate(-.4deg);}
+    border:1px solid var(--green); border-radius:8px; padding:6px 10px; opacity:.95;
+    max-width:min(260px, 70vw); height:28px; line-height:16px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:0.78rem; font-weight:700; color:var(--fg);
+    box-shadow:0 8px 20px rgba(0,0,0,.5); transform:rotate(-.4deg);}
   /* ここに入るよ、の棒（Notionと同じ考え方） */
   .qbar{position:fixed; z-index:9998; height:3px; background:var(--green); border-radius:3px;
     display:none; pointer-events:none; box-shadow:0 0 8px rgba(111,156,122,.8);
@@ -1334,13 +1338,18 @@ function wireDrag(box){
       e.preventDefault();
       try{ g.setPointerCapture(e.pointerId); }catch(_){}
       const r = row.getBoundingClientRect();
-      const ghost = row.cloneNode(true);
-      ghost.className = "qrow qghost";
-      ghost.style.width = r.width + "px";
-      ghost.style.left = r.left + "px";
+      // 2026-09-06 たまごさん「タスク移動がまだバグってる」
+      //   行を丸ごと複製して影にしていたので、**題名が長い行を掴むと影が画面の半分を覆い、
+      //   走行中のカードの上にまで乗って何を持っているか分からなくなっていた。**
+      //   → 影は**題名だけの小さな札**にする。指のそばに小さく付いてくるだけでいい。
+      const ghost = document.createElement("div");
+      ghost.className = "qghost";
+      const t = row.querySelector(".qt");
+      ghost.textContent = "#" + (row.dataset.n || "") + "  " + ((t && t.textContent) || "").slice(0, 24);
+      ghost.style.left = (r.left + 8) + "px";
       ghost.style.top = r.top + "px";
       document.body.appendChild(ghost);
-      DRAG = {row, id:e.pointerId, ghost, dy: e.clientY - r.top, target:null, after:false};
+      DRAG = {row, id:e.pointerId, ghost, dy: 14, target:null, after:false};
       row.classList.add("qdrag");
       if(navigator.vibrate) try{ navigator.vibrate(8); }catch(_){}
     });
