@@ -1,0 +1,61 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>47番 棚編集「2番目に追加」ボタンの確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:720px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.warn{color:#f4c05f;font-weight:800}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.92rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left}
+th{background:#20262f}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em;word-break:break-all}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+</style></head><body>
+
+<h1>47番：棚編集「2番目に追加」ボタン の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 何を直したか（1行）</p>
+<p>結論：<b>この機能はすでに本番で動いている</b>ことを、今回コードとサーバーの実物で確認した。棚編集の「動画のバージョン」欄で、静的データ（<code>coverGuide.ts</code>の<code>altYoutubeIds</code>）にある2番目・3番目の動画も一覧に出て、並び替え・メインへの昇格ができる。以前（2026-08-14以前）は、公開ページには2番目の動画が見えているのに、棚編集からはそれが選べない不具合があった（案件#65・RATM「Killing in the Name」で発見）。<b>修正自体は2026-08-14に完了・本番反映済みで、今回は新規のコード変更ではなく「本当に生きているか」の実測確認。</b></p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字（本番のコードを直接読んで実測）</p>
+<p class="small">本番URL <code>https://joy-relief-station.lovable.app/</code> が今まさに配信しているJSファイル（管理パネル用チャンク <code>assets/AdminShelfPanel-BG6-TKKf.js</code>）を直接ダウンロードし、機能の中身を実測：</p>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本番トップページの応答</td><td>HTTP 200／x-deployment-id: <code>psr2.ce714a85-8353-4014-abf3-473dac6e291a...</code></td></tr>
+<tr><td>棚編集チャンクに「元データ」の文字列</td><td>あり（静的バージョンだと分かるように表示するラベル）</td></tr>
+<tr><td>棚編集チャンクに「番として」の文字列</td><td>あり（＋バージョン追加ボタンの番号表示）</td></tr>
+<tr><td>棚編集チャンクに「動画のバージョン」の文字列</td><td>あり（セクション見出し）</td></tr>
+<tr><td>棚編集チャンクに「altYoutubeIds」の参照</td><td>あり（静的データを読みにいっている証拠）</td></tr>
+<tr><td>この修正の元コミット</td><td><code>b1595612</code>（2026-08-14 06:30、「棚編集の『動画のバージョン』に静的altYoutubeIdsを統合し並び替えを追加」）</td></tr>
+<tr><td>対象になる曲の数</td><td><code>coverGuide.ts</code>内で<code>altYoutubeIds</code>を持つ曲＝20件（この修正で棚編集から扱えるようになった曲）</td></tr>
+</table>
+<p class="small">つまり「本番のソースコードそのものに、この機能のためだけの日本語ラベルと処理が実在する」ところまで確認済み（推測や「動くはず」ではなく、配信中の実物コードを読んでの確認）。</p>
+</div>
+
+<div class="b">
+<p class="ok">③ 押せるリンク（実物のページ・公開ページ側で「複数バージョンが存在する」ことを確認できる）</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=rage-against-the-machine&song=killing-in-the-name" target="_blank">Rage Against the Machine『Killing in the Name』（この不具合が最初に見つかった実例。公式MV＋ライブ映像の2本）</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=hara-yuko&song=hanasaku-tabiji" target="_blank">原由子『花咲く旅路』（メイン＋2本＝あわせて3バージョンが並ぶ、より複雑な例）</a></li>
+</ul>
+<p class="small">棚編集パネル自体は管理パスワードが必要な画面のため、この公開ページ（GitHub Pages）にはスクリーンショットを載せない。上のリンクは「編集対象になっているデータが実在する」ことを示す公開側の証拠。</p>
+</div>
+
+<div class="b">
+<p class="warn">前後スクリーンショットについて</p>
+<p>棚編集パネルはたまごさん専用の管理パスワードでログインする画面のため、AI側では画面を開けず、スクリーンショットも撮れない（パスワードを扱わない・店主の実画面確認を代行しないという方針のため）。代わりに②の「配信中コードの実測」を証拠とした。もし実際に管理画面を開いて確かめたい場合は、上記2曲のどちらかを棚編集で開くと、「動画のバージョン」欄に2番目・3番目が「メインにする」ボタン付きで並んでいるはず。</p>
+</div>
+
+<div class="b">
+<p class="ok">状態</p>
+<p>①実装：2026-08-14に完了（コミット<code>b1595612</code>） ②main合流：完了（現在のmain先頭からたどれる） ③Lovable公開：本番で確認済み（x-deployment-id取得・200） ④実測確認：今回、配信中コードで実施 まで完了。⑤店主の実画面での最終確認は未実施（次回、管理画面を開いての確認をお願いします）。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>
