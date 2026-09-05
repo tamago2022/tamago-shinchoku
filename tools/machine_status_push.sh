@@ -182,6 +182,12 @@ PYEOF
 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
 # 2026-09-03 孤児プロセス回収：セッション終了後もppid=1で残り続けるlint/build/test系の暴走プロセスを止める（ロード100%固定化の実害を確認して追加）
 python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
+# 2026-09-06(415番) 容量の見張り：/System/Volumes/Data の空きを測り、30GB未満なら
+#   .worktreesのnode_modules/dist/.output・7日超ログ・__pycache__だけを安全に片づけ、
+#   20GB未満ならstatus/no_launch.flagを立てて発車を止める。壺と金庫(写真/動画/音楽/
+#   Eagle/Vault/Drive/dmg)には一切触れない。launchdの新規登録が2回ブロックされたため
+#   既存の5分間隔ジョブに相乗り(内部で15分に1回だけ実処理・STAMPファイルで間引き)。
+python3 "$REPO/tools/disk_guardian.py" >/dev/null 2>&1 || true
 # 2026-09-04 たまごさん「まず連続して走る仕組みを優先してね。順番に発車されるようにして、1日中回ってる状態を作るのが最優先」
 #   発車待ち(status/queue.json)から、マシンとクレジットに空きがあれば1本だけ自動で着火する。
 #   3時間縛り・URL報告のセットはプロンプト側に必ず入る。Fableは使わない（常にSonnet）。
