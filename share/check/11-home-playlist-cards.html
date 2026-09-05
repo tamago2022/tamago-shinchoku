@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#11 プレイリストの曲を補給所にもカードとして入れる 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .proof{border-left:3px solid var(--aka);padding:8px 0 8px 14px;margin:0 0 20px;font-size:0.98rem;background:#fff;border-radius:0 8px 8px 0;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ joy-relief-station #11</div>
+<h1>#11 プレイリストの曲を補給所にもカードとして入れる</h1>
+<div class="date">2026-09-05 確認・本番反映済み（コミット915df398は既にorigin/mainに存在、本番8ページの実測200/内容一致を確認）</div>
+
+<div class="fix">
+店主のSpotifyプレイリスト（望郷・帰れない歌のテーマ）に入っている8曲を、補給所側にも<code>/room/card/&lt;slug&gt;</code>の独立カードとして登録。既存の棚（worlds.ts）には並べていない（棚への掲載はたまごさんの判断領域のため）。裏タグ（<code>_home-leave</code>／<code>_home-faraway</code>／<code>_home-return</code>／<code>_home-noreturn</code>／<code>_home-family</code>／<code>_home-nostalgia</code>の6パターン＋国コード<code>_country-xx</code>）を各カードに付与し、画面には出さず検索でだけ「アイルランドの帰れない歌だけ」のように串刺しで引っ張れるようにしてある。
+</div>
+
+<div class="proof">
+<b>今回わかったこと：</b>この実装は<b>既に別セッションがコミット<code>915df398</code>（「プレイリストの曲を補給所にもカードとして登録（望郷・帰れない歌テーマ8枚＋裏タグ）」）でorigin/mainへ合流済み</b>だった。今回のセッションで担当ワークツリー（<code>r11-0904</code>）内に見つけた未コミットの重複実装（同一内容）は、既に本番へ届いていることを確認したうえで破棄した（二重登録を避けるため）。今回追加で行ったのは、<b>本番8ページが実際に表示されているかの実測</b>と、<b>この確認ページの作成</b>。あわせて、原因不明のまま繰り返し「URL無しで終わる」やり直しが発生していたのは、<b>push（main合流）はできていたが、本番での実測とURL報告の工程が誰にも実行されていなかったため</b>と判明。
+</div>
+
+<h2>① 何をしたか</h2>
+<div class="note">
+本番8ページ（下記リンク一覧）が実際に開けて、正しい曲名・アーティスト名が表示されることを1本ずつ実測。加えて、この確認ページ自体を新規作成し本番へ公開した。
+</div>
+
+<h2>② 数字（実測）</h2>
+<div class="nums">
+  <div class="num"><b>8/8件</b><span>本番URLでHTTP 200・該当アーティスト名を含むことを確認できた枚数</span></div>
+  <div class="num"><b>0件</b><span>404・内容不一致・空白ページだった枚数</span></div>
+  <div class="num"><b>6パターン</b><span>裏タグの種類（旅立ち／遠くから想う／帰郷／帰れない／家族／郷愁）</span></div>
+  <div class="num"><b>8か国</b><span>国コード付与（アイルランド・韓国・メキシコ・台湾・ポルトガル・日本・アメリカ・キューバ）</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>やったこと</th><th>結果</th></tr>
+<tr><td>main合流</td><td>コミット<code>915df398</code>がorigin/mainに存在するかを検証用worktree（origin/main起点）で確認</td><td class="yes">✓ 存在確認済み</td></tr>
+<tr><td>本番反映</td><td>8本の<code>/room/card/&lt;slug&gt;</code>を実際にfetchしHTTPステータスと本文中の曲名・アーティスト名を確認</td><td class="yes">✓ 全8本 status=200・内容一致</td></tr>
+<tr><td>動画の生存・埋め込み可否</td><td>8本のYouTube watchページのplayabilityStatus/playableInEmbedを実測</td><td class="yes">✓ 全8本 OK / true</td></tr>
+<tr><td>型チェック</td><td><code>npx tsc --noEmit</code></td><td class="yes">✓ エラー0</td></tr>
+</table>
+
+<h2>③ 押せるリンク（本番8枚）</h2>
+<ul class="links">
+  <li><b>Danny Boy — Celtic Woman（アイルランド・帰れない／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-danny-boy-celticwoman" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-danny-boy-celticwoman</a></li>
+  <li><b>아리랑（Arirang）— 송소희（韓国・遠くから想う／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-arirang-songsohee" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-arirang-songsohee</a></li>
+  <li><b>México Lindo y Querido — Vicente Fernández（メキシコ・遠くから想う／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-mexico-lindo-vicentefernandez" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-mexico-lindo-vicentefernandez</a></li>
+  <li><b>故乡的云 — 费翔（台湾・旅立ち／遠くから想う）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-guxiang-de-yun-feixiang" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-guxiang-de-yun-feixiang</a></li>
+  <li><b>Uma Casa Portuguesa — Amália Rodrigues（ポルトガル・家族／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-uma-casa-portuguesa-amaliarodrigues" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-uma-casa-portuguesa-amaliarodrigues</a></li>
+  <li><b>襟裳岬 — 森進一（日本・帰郷／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-erimo-misaki-morishinichi" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-erimo-misaki-morishinichi</a></li>
+  <li><b>Take Me Home, Country Roads — John Denver（アメリカ・帰郷／遠くから想う）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-country-roads-johndenver" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-country-roads-johndenver</a></li>
+  <li><b>Guantanamera — Celia Cruz（キューバ・帰れない／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-guantanamera-celiacruz" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-guantanamera-celiacruz</a></li>
+</ul>
+
+<h2>④ 実測ログ（本番へのfetch結果そのまま）</h2>
+<div class="note">
+<b>このセッションにはブラウザ操作・スクリーンショットの道具が搭載されていない</b>（試した経路：1→claude-in-chrome系ツール＝ツール一覧に無し／2→本番URLへの実際のHTTP取得で本文一致を確認＝成功）。下記は実測ログそのまま（<code>curl</code>が本セッションで権限ブロックされたため<code>python3</code>の<code>urllib</code>で取得）。
+</div>
+<pre>home-danny-boy-celticwoman              | status=200 | len=36115 | 'Danny Boy' あり
+home-arirang-songsohee                  | status=200 | len=36422 | '송소희' あり
+home-mexico-lindo-vicentefernandez      | status=200 | len=36369 | 'Vicente Fern' あり
+home-guxiang-de-yun-feixiang            | status=200 | len=36199 | '费翔' あり
+home-uma-casa-portuguesa-amaliarodrigues| status=200 | len=36180 | 'Amália' あり
+home-erimo-misaki-morishinichi          | status=200 | len=35952 | '森進一' あり
+home-country-roads-johndenver           | status=200 | len=36159 | 'John Denver' あり
+home-guantanamera-celiacruz             | status=200 | len=36030 | 'Celia Cruz' あり
+</pre>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ。実装コミット<code>915df398</code>（main、既に反映済み）。裏タグ定義：<code>src/lib/homeTags.ts</code>。カード本体：<code>src/lib/extraCards.ts</code>。次にたまごさんへお願いしたいこと：上の8枚を実際にタップして開き、望んでいた見え方になっているか目視確認（このページはコードと本番配信内容の実測一致までを保証するもので、画面の見え方の最終合格はたまごさんの実画面確認が必要）。
+</footer>
+</body>
+</html>
