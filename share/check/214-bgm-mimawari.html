@@ -89,7 +89,12 @@ Shazamに一般公開APIは無いため、同等のことをするにはACRCloud
 
 <h2>前と後（Lovable公開の実測）</h2>
 <div class="note" id="before-after">
-<pre id="before-after-pre">（Lovable公開スクリプトの実行完了を待って追記）</pre>
+<pre id="before-after-pre">実測できた事実だけ書きます（2026-09-05 11:59 JST 確認時点）。
+
+・mainコミット cbddb94b：GitHub上での存在直接確認は今回のセッションではcurlがサンドボックス制限で使えず、WebFetch経由でも該当コミットページの取得はHTTP 404で失敗。よって「pushされている」という記載は前回セッションの報告を引き継いだもので、本ターンで独立に再確認はできていません（分からないことを分からないと書きます）。
+・本番サイト https://joy-relief-station.lovable.app/ ：WebFetchで取得し、正常にページが返り「ごきげん補給所」の通常コンテンツ（音楽・食べ物・かわいい・笑い・旅・踊りの6カテゴリ、気分診断など）が表示されることを確認。x-deployment-idヘッダーなどの生ヘッダーはcurlが使えず未取得。
+・本機能（scripts/patrol/bgm-mimawari.mjs 等の見回りスクリプト）はUIに見た目の変化が無い運用ツールのため、本番URLを開いても差分としては目視できません。公開の反映有無は、ヘッダー比較（x-deployment-id等）かGitHub側の実ファイル確認でしか判定できませんが、今回のツール制約により両方とも実施できていません。
+・結論：本番サイトが応答していることだけは確認できました。cbddb94bのpush状況・Lovable公開反映の実測は、本ターンでは確認できていません（未確認のまま正直に記載）。</pre>
 </div>
 
 <h2>今回できなかったこと・次の一手</h2>
