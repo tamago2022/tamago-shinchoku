@@ -935,14 +935,24 @@ def harvest(q):
             changed = True
             log("⚠️ AI検品3回連続NG %d番「%s」→ 人の目へ（理由:%s）" % (it.get("n"), it.get("title"), reason))
             continue
-        # PASS、またはNone（技術的エラーのため素通し）
+        # 2026-09-06 443番：確認待ちをAI検品で自動OKにする（たまごさん本人の権限譲渡・07:00）。
+        # 「鬼監督が判定してよい。合格→そのまま完了（たまごさんに見せない）。
+        #  上げてよいのは鬼監督が判断できなかったものだけ」に対応。
+        # PASS → 人の確認を待たず status=done（queue_ok と同じ形）。
+        # None（技術的エラー・判断できない）→ 従来どおり awaiting_check（人の目）へ。
         if ok is None:
             it["result"] = (it.get("result") or "") + ("\n\n【AI検品：%s】" % reason)
-            log("… AI検品エラー・素通し %d番「%s」・理由:%s" % (it.get("n"), it.get("title"), reason))
+            it["status"] = "awaiting_check"
+            append_outbox(it, bool(it.get("urls")))
+            log("… AI検品：判断できないため人の目へ %d番「%s」・理由:%s" % (it.get("n"), it.get("title"), reason))
         else:
-            log("✅ AI検品OK %d番「%s」・理由:%s・$%.3f" % (it.get("n"), it.get("title"), reason, cost or 0))
-        it["status"] = "awaiting_check"
-        append_outbox(it, bool(it.get("urls")))
+            it["status"] = "done"
+            it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+            it["okBy"] = "ai-verifier-auto"
+            it["okNote"] = "鬼監督AI検品PASS：%s" % reason
+            append_outbox(it, True)
+            log("✅ AI検品OK→自動完了（人の確認スキップ） %d番「%s」・理由:%s・$%.3f"
+                % (it.get("n"), it.get("title"), reason, cost or 0))
         changed = True
 
     if any(x.get("_drop") for x in q.get("items", [])):
@@ -1328,7 +1338,17 @@ def launch_one(item, q, alive, safe_max):
     # ---- worktree を切る ----
     repo = q.get("repo") or "/Users/mac/Desktop/joy-relief-station"
     wt_name = item.get("worktree") or ("q%02d-0904" % item.get("n"))
-    wt = os.path.join(repo, ".worktrees", wt_name)
+    # 2026-09-06：作業場をリポジトリの外へ出した。
+    #   たまごさんの言葉：「ChatGPT（Codex）の一覧にこっちのタスクが出てくる。
+    #   一覧が汚れて、あっちのセッションが見つけられないのよ。だからあっちに積まないで」
+    #   リポジトリ配下の .worktrees は他のAIツールから「プロジェクト」として拾われていた。
+    #   ドット始まりの、どのツールの索引にも入らない場所へ移す。
+    WT_BASE = "/Users/mac/Documents/AI作業/.worktrees"
+    try:
+        os.makedirs(WT_BASE, exist_ok=True)
+    except Exception:
+        WT_BASE = os.path.join(repo, ".worktrees")
+    wt = os.path.join(WT_BASE, wt_name)
     # 2026-09-04：Cowork側のサンドボックスからマウント越しにgitを叩くと .lock が消せずに残り、
     #   以後ホスト側の worktree add が exit 128 で失敗し続ける（実際に15番以降が着火できなくなった）。
     #   5分以上前の置き去りロックだけ掃除する（実行中のgitは巻き添えにしない）。
@@ -1367,21 +1387,21 @@ def launch_one(item, q, alive, safe_max):
         pass
     if not os.path.isdir(wt):
         try:
-            subprocess.run(["git", "-C", repo, "worktree", "add", os.path.join(".worktrees", wt_name),
+            subprocess.run(["git", "-C", repo, "worktree", "add", wt,
                             "-b", "claude/" + wt_name],
                            check=True, capture_output=True, timeout=300)
         except Exception:
             # 2026-09-04：ブランチが既にある等で失敗する（exit 128）。既存ブランチに繋ぐ形で作り直す。
             try:
-                subprocess.run(["git", "-C", repo, "worktree", "add", os.path.join(".worktrees", wt_name),
+                subprocess.run(["git", "-C", repo, "worktree", "add", wt,
                                 "claude/" + wt_name],
                                check=True, capture_output=True, timeout=300)
             except Exception:
                 # それでもダメなら名前を変えて切る。ここで止まらない（止まると工場が止まる）
                 wt_name = wt_name + "-" + time.strftime("%H%M%S")
-                wt = os.path.join(repo, ".worktrees", wt_name)
+                wt = os.path.join(WT_BASE, wt_name)
                 try:
-                    subprocess.run(["git", "-C", repo, "worktree", "add", os.path.join(".worktrees", wt_name),
+                    subprocess.run(["git", "-C", repo, "worktree", "add", wt,
                                     "-b", "claude/" + wt_name],
                                    check=True, capture_output=True, timeout=300)
                 except subprocess.CalledProcessError as e3:
