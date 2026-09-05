@@ -428,7 +428,8 @@ def launch_cap(target):
 
 def process(cmd):
     action = cmd.get("action")
-    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later", "queue_pause", "queue_delete"):
+    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
+                  "queue_pause", "queue_delete", "queue_order", "queue_dedupe"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -1140,7 +1141,16 @@ def _process_other(action, cmd):
 def main():
     os.makedirs(INBOX_DIR, exist_ok=True)
     out = load_json(OUT, {"results": []})
-    done_ids = {r.get("id") for r in out.get("results", [])}
+    # ---- 2026-09-05 18:50 **重複が無限に増えた真因。**----
+    # 「処理済みかどうか」を commands.json の results だけで見ていた。
+    # ところが results は最後に `[-200:]` で切り詰めている（肥やさないため）。
+    # 200件を超えると**古いidが消える → その受信箱ファイルが「未処理」に戻り、また実行される。**
+    # 受信箱のファイルは記録として消さない設計なので、**同じ指示が何度でも蘇る。**
+    # 今日これで「バッジをakikoに戻す」が10個、「棚編集」が15個、台帳に積み上がった。
+    # → 処理済みのidは**切り詰めない別ファイル**に全部貯める。表示用のresultsだけ200件に絞る。
+    SEEN = os.path.join(REPO, "status", "processed_ids.json")
+    seen = load_json(SEEN, {"ids": []})
+    done_ids = set(seen.get("ids") or []) | {r.get("id") for r in out.get("results", [])}
     # 2026-09-04 受信箱を2つにした。
     #   Vault側(iCloud)は同期に数分かかることがあり、Dispatchからの指示が届くのが遅れた（実測4分以上）。
     #   リポジトリ内の status/inbox/ は同じディスクなので**すぐ届く**。Dispatchはこちらを使う。
@@ -1172,7 +1182,13 @@ def main():
         changed = True
         print("%s: %s / %s -> %s (%s)" % (cid, cmd.get("action"), cmd.get("target"), status, message))
     if changed:
-        out["results"] = out["results"][-200:]  # 肥やさない
+        # 処理済みidは切り詰めずに全部残す（切り詰めると同じ指示が蘇って重複が増える）
+        try:
+            ids = list(dict.fromkeys(list(seen.get("ids") or []) + list(done_ids)))
+            save_json(SEEN, {"ids": ids[-20000:], "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+        except Exception:
+            pass
+        out["results"] = out["results"][-200:]  # 表示用だけ絞る
         out["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         save_json(OUT, out)
 

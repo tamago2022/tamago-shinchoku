@@ -58,8 +58,16 @@ def parse_reset(s):
 #    **週間は、土日月＋火18時まで。1日30%。30%を超えたらもう今日はストップ。**
 #    Fableは今のところ使う予定ない。**そこまでマネジメントしてくれたら非常に助かります。**」
 DAILY_CAP = 30.0        # 1日に使ってよい週枠の割合（超えたら今日は打ち止め）
-S5_TARGET = 95.0        # 5時間枠は、リセット時にこのあたりで着地させたい
-CAP_MIN, CAP_MAX = 2, 4  # 同時に走らせる本数の下限・上限
+# ---- 2026-09-05 18:50 たまごさんの言葉（そのまま）----
+#   「5時間かけて99%、100%使うのが理想だけど、**コンピューターの作業が止まるのはマイナス**だから、
+#    例えば80%とか75%でも、**ずっと毎回5時間ごとに75%使えてれば無駄は無い**ねみたいな。
+#    1ヵ月ずっと70%、80%、毎回の5時間で回ってれば俺は満足。
+#    **コンピューターも止まらず、タスクも進み続ける。その状態が理想。**」
+#   → 天井ぎりぎり（95%）を狙うのをやめる。**78%で安定して着地させる。**
+#     100%を1回取って翌日フリーズするより、78%を毎回取り続ける方が総量で勝つ。
+S5_TARGET = 78.0        # 5時間枠は、リセット時にこのあたりで着地させたい（安定重視）
+S5_FLOOR = 70.0         # これを下回る見込みなら、まだ余っている＝本数を増やしてよい
+CAP_MIN, CAP_MAX = 2, 5  # 同時に走らせる本数の下限・上限
 
 
 def manage_fuel(d, q):
@@ -99,9 +107,11 @@ def manage_fuel(d, q):
         d["s5Projected"] = round(projected, 1) if projected is not None else None
         if projected is not None and isinstance(cap_now, int):
             new_cap = cap_now
-            if projected < S5_TARGET - 15:      # 大きく余る見込み → もっと走らせる
+            # 70%に届かない見込み＝まだ余っている → 1本増やす
+            # 78%を超える見込み＝行き過ぎ → 1本減らす（天井に当てない・PCを止めない）
+            if projected < S5_FLOOR:
                 new_cap = min(CAP_MAX, cap_now + 1)
-            elif projected > 105:               # 天井に着く見込み → 絞る
+            elif projected > S5_TARGET + 7:
                 new_cap = max(CAP_MIN, cap_now - 1)
             if new_cap != cap_now and (used is None or used < DAILY_CAP):
                 json.dump({"cap": new_cap, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
