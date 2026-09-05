@@ -465,7 +465,13 @@ def main():
           # 2026-09-04：スマホの「＋発車待ちに追加」で作った項目はitem自身に"priority"を持つ
           #   （queue_add・command_ingest.py）。既存のpriority.jsonのQキー方式より優先する。
           p = it.get("priority") or prio.get("Q%d" % it.get("n"))
-          return (int(p) if p else 9, it.get("n") or 99)
+          # 2026-09-05 たまごさん「ドラッグアンドドロップで順番入れ替えられるようにしたい」
+          #   手で並べ替えた順（order）は、同じ優先度の中での並びとして最優先で効かせる。
+          #   並べ替えていないものは order が無いので、従来どおり番号順で後ろに付く。
+          o = it.get("order")
+          return (int(p) if p else 9,
+                  int(o) if isinstance(o, int) else 10 ** 6,
+                  it.get("n") or 99)
 
       # 2026-09-05 たまごさん「何も動いてない状態は作らないで。何かしら回しといて。クレジット消費最小で」
       #   本物が出せない（週枠が上限・発車を止めている等）ときでも、工場は回っている状態を保つ。

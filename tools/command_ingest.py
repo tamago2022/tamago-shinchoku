@@ -458,6 +458,8 @@ def _process_queue(action, cmd):
         return queue_later(target)
     if action == "queue_pause":
         return queue_pause(target)
+    if action == "queue_order":
+        return queue_order(target)
     if action == "queue_delete":
         return queue_delete(target)
     return "failed", "不明なアクション: %s" % action
@@ -512,6 +514,39 @@ def push_unlock(_target=None):
         return "done", "止まった巡回のロックを外しました（pid %s は生きていません）" % pid
     except Exception as e:
         return "failed", str(e)
+
+
+def queue_order(target):
+    """手で並べ替えた順番を台帳に焼き込む（2026-09-05）。
+
+    たまごさんの言葉：
+      「**ドラッグアンドドロップで、順番入れ替えられるようにしたい、上下。
+        今さ、押したら1個下に下がる、みたいなやつでしょ。すごいやりづらいです。**」
+
+    target は "37,113,313,314" のように**並べ替えた後の番号を先頭から並べた文字列**。
+    その順に order を 1,2,3… と振る。発車係(auto_launcher.rank)は
+    優先度 → order → 番号 の順で見るので、同じ箱の中の並びがそのまま発車順になる。
+    画面に出ていない番号には触らない（部分的な並べ替えでも壊れない）。
+    """
+    try:
+        ns = [int(x) for x in str(target).replace(" ", "").split(",") if x != ""]
+    except Exception:
+        return "failed", "並び順が読めません: %r" % target
+    if not ns:
+        return "failed", "並び順が空です"
+    q = _load_queue()
+    items = q.get("items") or []
+    hit = 0
+    for i, n in enumerate(ns, start=1):
+        it = _find_item(items, n)
+        if it is not None:
+            it["order"] = i
+            hit += 1
+    if not hit:
+        return "failed", "その番号は台帳にありません"
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", "%d件の並び順を保存しました（この順に発車します）" % hit
 
 
 def queue_pause(target):
