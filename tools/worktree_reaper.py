@@ -89,6 +89,38 @@ def main():
         pass
 
     guard = running_paths()
+
+    # ---- ① まず node_modules だけ先に消す（2026-09-05・容量の主犯）----
+    # たまごさん「一昨日60GB空けたばかりでしょ。なんでそんなに早く埋まる？原因解明して」
+    # 実測：作業場51個のうち**18個に node_modules がある。**1個で数百MB。
+    #   仕事のたびに作業場を切って、そこで `bun install` が走り、**片づけていなかった。**
+    #   だから何GB空けても数日で埋まる。**これが主犯。**
+    # node_modules は `bun install` で何度でも作り直せる＝消してよいもの（壺でも金庫でもない）。
+    # 作業場そのものは残すので、成果物や未pushのコミットには一切触れない。
+    freed = []
+    for name in sorted(os.listdir(WT_DIR)):
+        path = os.path.join(WT_DIR, name)
+        nm = os.path.join(path, "node_modules")
+        if not os.path.isdir(nm):
+            continue
+        if name in guard or any(name.startswith(g + "-") for g in guard):
+            continue
+        try:
+            if time.time() - os.path.getmtime(path) < MIN_AGE_SEC:
+                continue
+        except Exception:
+            continue
+        try:
+            import shutil
+            shutil.rmtree(nm, ignore_errors=True)
+            if not os.path.isdir(nm):
+                freed.append(name)
+        except Exception:
+            pass
+    if freed:
+        log("📦 node_modules を消しました %d件（bun installで作り直せます）: %s"
+            % (len(freed), ", ".join(freed[:12])))
+
     removed, kept = [], []
     for name in sorted(os.listdir(WT_DIR)):
         path = os.path.join(WT_DIR, name)

@@ -674,6 +674,52 @@ def queue_delete(target):
     return "done", "%d番を消しました（取り消せるよう status/deleted.json に控えてあります）" % n
 
 
+def disk_report(_target=None):
+    """容量が戻らない理由を実測で洗い出す（2026-09-05）。
+
+    たまごさん「**一昨日60GB（120GB）空けたばかりでしょ。なんでそんなに早く埋まる？
+    原因解明して。**」「**120GB他へ移動したはずでしょ。**」
+
+    実測で分かっていること：本体(466GB)は残り20GB・96%。外付けiMac HDD(1.9TB)は893GB空き。
+    **移動したのに本体が減っていない。**その理由をここで機械的に確かめる。
+    いちばんありがちな犯人はTime Machineのローカルスナップショット
+    （消しても移しても、スナップショットが古い状態を抱えていて容量が返ってこない）。
+    """
+    out = []
+
+    def add(title, cmd, timeout=60):
+        r = run(cmd, timeout=timeout)
+        txt = ((r.stdout or "") + (r.stderr or "")).strip() if r else "(取得できず)"
+        out.append("【%s】%s" % (title, txt[:600].replace("\n", " / ")))
+
+    # 2026-09-05 23:12 **`df -h /` だけ見てはいけない。**
+    #   macOS(APFS)は起動ディスクを「システム」と「データ」の2つのボリュームに分けている。
+    #   `/` はシステム側（読み取り専用・約21GB）なので、**たまごさんのファイルの実態は
+    #   `/System/Volumes/Data` の方**にある。ここを見ないと「空きがある/ない」を間違える。
+    add("本体（システム側）", ["df", "-h", "/"])
+    add("★本体（データ側＝実態）", ["df", "-h", "/System/Volumes/Data"])
+    add("パージ可能（消せば戻る分）", ["bash", "-lc",
+        "diskutil info / | grep -iE 'Free Space|Available|Container Free' | head -4"], timeout=30)
+    # ① Time Machineのローカルスナップショット（消しても容量が返らない最大の理由）
+    add("ローカルスナップショット", ["tmutil", "listlocalsnapshots", "/"])
+    # ② パージ可能領域（Finderの「空き容量」と実際のズレ）
+    add("パージ可能を含む詳細", ["diskutil", "info", "/"], timeout=40)
+    # 2026-09-05 23:10 **`du` をここから外した。**
+    #   ホーム全体を舐める `du -sx ~/* ~/Library` を入れたせいで、受信箱の処理が何分も止まり、
+    #   後ろに並んでいた指示（心臓の入れ直しなど）が12分間1つも実行されなかった。
+    #   **工場の中で重いコマンドを走らせない**（07:03に工場を止めたのと同じ失敗）。
+    #   容量の内訳は `du` を使わずに済む方法（下の tmutil / diskutil）で足りる。
+    #   どうしても内訳が要るときは、Dispatch自身のbashから範囲を絞って測る。
+    add("ゴミ箱の中身の数", ["bash", "-lc", "ls -1 ~/.Trash 2>/dev/null | wc -l"], timeout=20)
+    msg = " ／ ".join(out)
+    try:
+        io.open(os.path.join(REPO, "status", "disk_report.txt"), "w", encoding="utf-8").write(
+            time.strftime("%Y-%m-%d %H:%M:%S") + "\n" + "\n\n".join(out))
+    except Exception:
+        pass
+    return "done", msg[:1800]
+
+
 def relay_fix(_target=None):
     """中継所（進捗表→Mac）を強制的に立て直し、**結果を実測で返す**（2026-09-05）。
 
@@ -1127,6 +1173,8 @@ def _process_other(action, cmd):
         return auth_probe(target)
     if action == "relay_fix":
         return relay_fix(target)
+    if action == "disk_report":
+        return disk_report(target)
     if action == "git_unlock":
         return git_unlock(target)
     if action == "launch_pause":
