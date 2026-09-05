@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>確認ページ：HOME／ふるさとプレイリスト仕上げ（自動発車10番）</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.8;color:#222}
+  h1{font-size:20px;border-bottom:3px solid #d9534f;padding-bottom:8px}
+  .box{background:#fff3f3;border:1px solid #f0c0c0;border-radius:8px;padding:16px;margin:16px 0}
+  .num{font-size:28px;font-weight:bold;color:#d9534f}
+  table{width:100%;border-collapse:collapse;margin:12px 0}
+  td,th{border:1px solid #ddd;padding:8px;text-align:left;font-size:14px}
+  th{background:#f5f5f5}
+  .ok{color:#2a7a2a}
+  .ng{color:#d9534f;font-weight:bold}
+  code{background:#f0f0f0;padding:2px 6px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<h1>①何を確認したか</h1>
+<p><strong>結論：今回のセッションでは着手できませんでした（実装ゼロ）。</strong>「HOME／ふるさとプレイリスト」（Spotify・33曲）のタイトル修正・非公開解除・曲順並べ替えは、<strong>Spotify本体の管理画面またはAPIを書き換える操作</strong>であり、コード修正やLovable公開では届かない場所にあります。今回はその「なぜ届かないか」を具体的に4つ確認しました。</p>
+
+<h1>②数字</h1>
+<div class="box">
+  <div class="num">4 / 4</div>
+  <div>試した打開策 4つ、すべて不可（全滅）</div>
+</div>
+
+<table>
+<tr><th>試した経路</th><th>結果</th></tr>
+<tr><td>このセッションが持っているツール一覧を確認（ブラウザ操作ツールの有無）</td><td class="ng">無し（Read/Bash/Write/Edit/Agentのみ。Chromeを操作する手段が配布されていない）</td></tr>
+<tr><td><code>.env</code> 内に <code>SPOTIFY_</code> 系の認証情報（Client ID／Secret／トークン）が無いか全数検索</td><td class="ng">0件（Spotify Web APIを直接叩く鍵も無い）</td></tr>
+<tr><td>Macに Spotify デスクトップアプリが入っていないか確認</td><td class="ng">未検出（AppleScriptでの存在確認が失敗）</td></tr>
+<tr><td>4つのサブエージェント（builder／memory／verifier／release）のツール一覧を確認</td><td class="ng">どれもブラウザ操作ツールを持たない（委任しても同じ壁）</td></tr>
+</table>
+
+<h1>③この案件だけの特殊事情</h1>
+<p>いつもの「①実装→②main合流→③Lovable公開→④本番URL確認」という完走ルートが、<strong>この案件には存在しません。</strong>Spotifyのプレイリスト編集はこのリポジトリのコードではなく、Spotify社のサービス側の管理画面でしか行えないためです。押せるボタンが無いので、コード側でどれだけ工夫しても届きません。</p>
+
+<h1>④直すために必要なもの（次の一手・どれか1つでよい）</h1>
+<table>
+<tr><th>案</th><th>内容</th></tr>
+<tr><td>案1</td><td>たまごさんご本人が、ご自身のスマホ／PCのSpotifyアプリかブラウザで、直接タイトル変更・公開設定・曲順並べ替えを行う（一番早い）</td></tr>
+<tr><td>案2</td><td>このセッション種別にブラウザ操作ツール（claude-in-chrome）を配布し、かつそのプロフィールでSpotifyへログイン済みにしておく</td></tr>
+<tr><td>案3</td><td>Spotify Developer Dashboardでアプリを作り、playlist-modify権限のトークンを発行して<code>.env</code>へ追記する（値はたまごさんご本人が書き込む・AI側は見ない）</td></tr>
+</table>
+
+<p style="margin-top:32px;color:#888;font-size:13px">記録：<code>.claude/PENDING_DECISIONS.md</code>（2026-09-04・2026-09-05の2回分）／<code>.claude/agent-memory/tamago-orchestrator/project_spotify_playlist_edit_blocked.md</code></p>
+
+</body>
+</html>
