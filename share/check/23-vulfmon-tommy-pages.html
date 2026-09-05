@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#23 Vulfmon／Tommy de Bourbon アーティストページ 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .status{display:inline-block;background:#e9f4ec;color:var(--midori);border:1px solid #c3e0cb;border-radius:8px;padding:4px 12px;font-size:0.85rem;font-weight:700;margin-bottom:14px;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);font-weight:700;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #23</div>
+<h1>#23 Vulfmon／Tommy de Bourbon アーティストページを作る</h1>
+<div class="date">2026-09-05 実測・確認ページ作成</div>
+<span class="status">✅ 本番反映済み（実測confirmed）</span>
+
+<div class="fix">
+このセッションが着手する前に、<b>並行して走っていた別セッションが同じ依頼を先に実装し、mainへコミット→Lovable公開まで完走済み</b>だった（コミット<code>892d1c89</code>）。本ページは「新規に作った」報告ではなく、<b>本番で実際に表示されていることをcurlで実測して確認した</b>報告。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+Vulfmon（Vulfpeckの中心メンバーJack Strattonのソロ名義）と、ペダルスティール奏者Tommy de Bourbonの、アーティストページを新規作成。どちらも識別子（公式YouTubeチャンネルのchannelId／oEmbed）で裏取り済み。個人の生年は記載なし（憲法どおり）。公式チャンネルへのリンクを両ページに設置済み。
+</div>
+
+<h2>② 数字（本番から直接実測）</h2>
+<div class="nums">
+  <div class="num"><b>2件</b><span>新規作成したアーティストページ（Vulfmon／Tommy de Bourbon）</span></div>
+  <div class="num"><b>14曲</b><span>Vulfmonページの収録曲数</span></div>
+  <div class="num"><b>6曲</b><span>Tommy de Bourbonページの収録曲数</span></div>
+  <div class="num"><b>200 / 200</b><span>本番URLのHTTPステータス（両方とも正常応答）</span></div>
+  <div class="num"><b>2 / 2</b><span>公式チャンネルリンクがページ内に実在（curlで文字列確認）</span></div>
+</div>
+
+<h2>③ 実際に確認した内容（curl実測ログ）</h2>
+<table>
+<tr><th>確認内容</th><th>結果</th></tr>
+<tr><td><code>/cover-guide?artist=vulfmon</code> HTTPステータス</td><td><span class="yes">200</span></td></tr>
+<tr><td>同ページに曲名「I Can't Party」「92°」が含まれるか</td><td><span class="yes">✓ 含まれる</span></td></tr>
+<tr><td>同ページに公式チャンネル <code>https://www.youtube.com/@Vulf</code> へのリンクがあるか</td><td><span class="yes">✓ あり（2箇所）</span></td></tr>
+<tr><td><code>/cover-guide?artist=tommy-de-bourbon</code> HTTPステータス</td><td><span class="yes">200</span></td></tr>
+<tr><td>同ページに曲名「St Judy's Comet」「Jolene」が含まれるか</td><td><span class="yes">✓ 含まれる</span></td></tr>
+<tr><td>同ページに本人チャンネル <code>https://www.youtube.com/@tommydebourbon4192</code> へのリンクがあるか</td><td><span class="yes">✓ あり（2箇所）</span></td></tr>
+<tr><td>対照実験：存在しないアーティストID（<code>nonexistent-artist-xyz123</code>）のページと内容が同一でないか</td><td><span class="yes">✓ 別内容</span>（HTML長さ・本文とも不一致。個別データが実際に描画されていると確認）</td></tr>
+<tr><td>個人（Jack Stratton／Tommy de Bourbon）の生年記載の有無</td><td><span class="yes">✓ 記載なし</span>（本文に西暦の生年表記を確認できず）</td></tr>
+</table>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番：Vulfmon のアーティストページ</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=vulfmon" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=vulfmon</a></li>
+  <li><b>本番：Tommy de Bourbon のアーティストページ</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tommy-de-bourbon" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tommy-de-bourbon</a></li>
+  <li><b>実装コミット（joy-relief-station・main反映済み）</b><br><code>892d1c89</code>「feat: Vulfmon・Tommy de Bourbonのアーティストページを追加」</li>
+  <li><b>関連する別案件（曲カードの表記修正・こちらは未反映）</b><br><a href="./22-vulfmon-92.html">#22 92°／Vulfmon &amp; Tommy de Bourbon の曲名・アーティストを直す（棚カードの表記修正、GitHub Actions枠切れで別途ブロック中）</a></li>
+</ul>
+
+<h2>⑤ 前と後</h2>
+<div class="note">
+<b>スクリーンショットは今回入れていません。</b>理由：たまごさんが今作業中の画面を奪わないため（screencapture・osascript activate・Braveタブ操作は全面禁止という運用ルールのため）、ブラウザを起動せずcurlのみで確認した。<br>
+「前」＝このページは元々存在しなかった（404 / 検索結果なし）。「後」＝上記②③の実測のとおり、本番URLが200で応答し、公式チャンネルリンク・曲名を含む固有のコンテンツが返っている。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ <code>src/lib/coverGuide.ts</code>（id: <code>vulfmon</code> / <code>tommy-de-bourbon</code>）。TASK_BOARD.md 案件#153に経緯を記録。
+</footer>
+</body>
+</html>
