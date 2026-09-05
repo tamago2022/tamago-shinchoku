@@ -1,0 +1,56 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>399番『Sinking Monster Truck』ページ仕上げ の確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:760px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.warn{color:#f4c05f;font-weight:800}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.9rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#20262f}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.88em;word-break:break-all}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+</style></head><body>
+
+<h1>399番：『Sinking Monster Truck / flyingtower』ページ仕上げ の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 何を直したか（1行）</p>
+<p>たまごさんが外部から直接投入した生データ（英語原題＋投稿者名のまま・コピー無し）に、①日本語のクリックしたくなる題名 ②コピー ③タイタニックのテーマ（Celine Dion「My Heart Will Go On」）への片道リンクを追加。④「人間だもの」棚の仲間を最低4件にする対応、⑤「ドジ　失敗　人間だもの」棚への掲載は、<b>本番DB書き込み経路（GitHub Actions）が既知の無料枠切れで詰まっているため未完了</b>（下記「問題」参照）。</p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字</p>
+<table>
+<tr><th>項目</th><th>状態</th></tr>
+<tr><td>①題名の日本語化</td><td class="ok">コード側で反映済み（main合流・Lovable反映待ち）</td></tr>
+<tr><td>②コピー追加</td><td class="ok">コード側で反映済み（同上）</td></tr>
+<tr><td>③セリーヌ・ディオンへの片道リンク</td><td class="ok">コード側で反映済み（同上・逆方向は安全装置で構造的にブロック）</td></tr>
+<tr><td>④「人間だもの」棚の仲間 最低4件</td><td class="warn">未達（現在1件＝きんに君のみ）。修正スクリプトは書き込み待ちで足止め中</td></tr>
+<tr><td>⑤「ドジ　失敗　人間だもの」棚への掲載</td><td>既に部分的に成立（「ドジ失敗」「人間だもの」の2棚にcandidateとして登録済み。397番の棚統合が完了すれば1棚に合流予定）</td></tr>
+</table>
+</div>
+
+<div class="b">
+<p class="warn">③ 問題（正直に報告）</p>
+<p>①②③はDB書き込みが要らない形（<code>/watch</code>ページ側の個別動画コード上書き）で実装し、main合流済み。④は「同じ棚の仲間を最低4件」を実現する仕組み（<code>ShelfSiblingsSection</code>／<code>publicListShelfSiblingsForExternalCard</code>）が完全にDB駆動（<code>admin_shelf_picks</code>を直接読む）のため、コード側の上書きでは直せない。本番DBへの書き込みには<code>SUPABASE_SERVICE_ROLE_KEY</code>が必要で、唯一の経路であるGitHub Actionsの一度きり便（<code>scripts/patrol/finish-monster-truck-card-once.mjs</code>）をmainへpush済みだが、<b>約1時間待っても本番DBに一切反映されていない</b>ことを実測で確認した（<code>admin_stock.updated_at</code>が投入時刻のまま変化なし）。これは私固有の失敗ではなく、<code>.claude/TASK_BOARD.md</code>#59・<code>PENDING_DECISIONS.md</code>に2026-09-05付ですでに記録されている「GitHub Actions無料枠（非公開リポジトリ月2,000分）を使い切り、定期実行が丸ごと止まっている」という既知・継続中の構造問題（3週間以上前から）と同一原因。同じ問題に別セッション（397番・棚統合）も同日ぶつかっており、40分待っても反映されず再トリガーを試みている。</p>
+</div>
+
+<div class="b">
+<p class="ok">④ 押せるリンク（実物のページ）</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank">対象ページ（Lovable反映後、題名が「満員御礼のモンスタートラック、泥水にドボン」に変わる想定）</a></li>
+</ul>
+<p class="small">Lovableの本番反映には数十分〜1時間ほどラグがあることが多く（過去実績）、この確認ページ作成時点ではまだ旧題名（英語）のまま。反映され次第、店主の実画面確認をお願いしたい。</p>
+</div>
+
+<div class="b">
+<p class="ok">状態</p>
+<p>①コード実装：完了（main合流：コミット<code>281c381b</code>） ②Lovable公開：<b>反映待ち（コード分）</b> ③DB書き込み（④⑤の完全解消に必要）：<b>GitHub Actions無料枠切れでブロック中・解決手段なし（店主のご確認待ち）</b> ④店主の実画面確認：未。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>
