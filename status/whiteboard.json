@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-05 17:15",
+ "updatedAt": "2026-09-05 17:16",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -33,11 +33,11 @@
    "priority": 1,
    "rank": 24,
    "task": "指示待ちで止まる（作法/仕組み）",
-   "state": "検証待ち",
-   "owner": "0df4f865-e20a-4810-999b-499020107ba8",
+   "state": "完了",
+   "owner": null,
    "count": "13",
-   "updatedAt": "2026-09-05 16:56",
-   "note": "穴1本題(Dispatch本体は回復層対象外)を仕組み化：tamago-shinchoku/tools/session_watchdog.py decide()にis_dispatch_self()+user_activeゲート追加(is_dispatch_selfかつuser_active=false×kind=asked×idle>=15分の時だけresume。handoff非対象。tries/cooldownは既存値を流用)。main()呼び出し側でmachine.json の userActive をdecide()へ渡すよう配線。py_compile通過・dry-run実行で新ロジック含め正常動作確認済み(エラー無し・既存スキップ理由も従来通り)。設計根拠=AI出力/_ルール/T024_指示待ちで止まる_残穴3件_2026-09-04.md 穴1 [実装:wd_123cf6c2]",
+   "updatedAt": "2026-09-05 17:16",
+   "note": "✅2026-09-05 17:16 証拠:tamago-shinchoku/tools/session_watchdog.py（commit f1dd176、git status clean=作業ツリーに反映済み） 別の目として再検証：decide()の新ゲート(is_dispatch_self+user_active+kind=asked+idle>=15分)を6パターンの単体テストで確認（離席中/在席中/kind不一致/idle不足/tries上限/is_dispatch_self=False、全て設計通りの分岐）。is_dispatch_self()はlsof cwd判定、userActiveはHIDIdleTime<5分の実信号で両方スタブでなく機能を確認。session_watchdog.py --dry-runをフル実データで実行しエラー0件。py_compile通過。唯一の差異：note内で参照されるT024_指示待ちで止まる_残穴3件_2026-09-04.mdはVault内に見当たらず(同テーマの09-03付ドキュメントはあり)。機能に影響しない記録漏れとして次回引き継ぎへ記載",
    "stale": false
   },
   {
