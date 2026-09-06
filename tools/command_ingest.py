@@ -248,6 +248,29 @@ def _find_duplicate_title(items, title):
     return None
 
 
+# ---- 2026-09-06 490番：完了済みの仕事が「スマホから」また積まれる事故 ----
+# 実例：「仕組み：確認ページの機械検品」が414番で完了(02:05)・鬼監督OK(09:27)まで済んでいたのに、
+# 同じ文面が484番（20:21）・490番（20:18）と3回も再投入された。
+# 原因：上の_find_duplicate_titleはstatusが"waiting/running/hold"の**今の列にいる項目**しか見ておらず、
+# 一度完了してdeleted.jsonへ片づいた項目は照合対象から外れていた。
+# たまごさんがスマホから同じ内容を打ち直すたび、工場が「初めて聞く依頼」として何度でも作り直してしまう。
+# → 積む前に deleted.json（完了控え）も合わせて照合し、完了済みならその場でURLを返す。
+DELETED_PATH_FOR_DEDUPE = os.path.join(REPO, "status", "deleted.json")
+
+
+def _find_duplicate_in_completed(title):
+    try:
+        d = load_json(DELETED_PATH_FOR_DEDUPE, {"items": []})
+    except Exception:
+        return None
+    for it in d.get("items") or []:
+        if it.get("status") != "done":
+            continue
+        if _titles_conflict(title, str(it.get("title") or "")):
+            return it
+    return None
+
+
 # ---- 2026-09-06 423番：大きすぎる仕事を自動で小さく切る ----
 # たまごさん「『サイト全体の◯◯を直す』のような仕事が1本で積まれ、3時間で切られて
 # 中途半端に終わっている」。発車の直前（＝発車待ちに積む時点）で指示文を見て、
@@ -357,6 +380,15 @@ def queue_add(text, priority=None, label=None, origin=None):
         dup = _find_duplicate_title(items, title)
         if dup is not None:
             return "skipped", "%d番と同じ内容です（積みませんでした。別物なら label に『重複OK』と書いて送ってください）" % dup.get("n")
+        # 2026-09-06 490番：今の列だけでなく、完了して片づいた仕事とも照合する
+        # （414→484→490と3回同じ依頼が再投入された事故の再発防止）。
+        done_dup = _find_duplicate_in_completed(title)
+        if done_dup is not None:
+            urls = done_dup.get("urls") or []
+            url_txt = " / ".join(urls) if urls else "(URL記録なし)"
+            return "skipped", ("%d番で既に完了しています（積みませんでした）：%s"
+                                "／もう一度やり直したいなら label に『重複OK』と書いて送ってください"
+                                % (done_dup.get("n"), url_txt))
     next_n = (max([int(it.get("n") or 0) for it in items], default=0)) + 1
     # 2026-09-06 423番：大きすぎる仕事は、本体を積む代わりに「一覧作成だけ」の1本目を積む。
     # 一覧ができたら auto_launcher.py の harvest() が自動で10件ずつの発車待ちへ割る。
