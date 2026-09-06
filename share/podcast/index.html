@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>たまごの寝る前ノート（朗読）</title>
+<style>
+  body{background:#1a2030;color:#e9e2d3;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
+       max-width:640px;margin:0 auto;padding:24px 16px 60px;line-height:1.7;}
+  h1{font-size:1.3rem;font-weight:500;}
+  .lead{color:#9aa1ad;font-size:0.9rem;margin-bottom:24px;}
+  .card{background:#212839;border:1px solid #2f3749;border-radius:12px;padding:16px;margin-bottom:16px;}
+  .card h2{font-size:1rem;margin:0 0 6px;}
+  .card p{color:#9aa1ad;font-size:0.85rem;margin:0 0 10px;}
+  audio{width:100%;}
+  .box{background:#212839;border:1px solid #2f3749;border-radius:12px;padding:16px;margin-bottom:24px;}
+  .box b{color:#d6cdba;}
+  code{background:#2f3749;padding:2px 6px;border-radius:4px;font-size:0.85rem;word-break:break-all;}
+  a{color:#6f8fb0;}
+  .steps li{margin-bottom:8px;}
+</style>
+</head>
+<body>
+<h1>たまごの寝る前ノート</h1>
+<p class="lead">円卓ノートを、AivisSpeech（無料・ローカル・人物ごとに声を変える）で読み上げた音声です。<br>
+このページは検索避け設定（noindex）はしていますが、URLを知っていれば誰でも開けます。円卓ノートなど「外に出て困らない内容」だけをここに置いています。</p>
+
+<div class="box">
+  <b>iPhoneで寝ながら聴く（おすすめ）:</b>
+  <ol class="steps">
+    <li>「ポッドキャスト」アプリを開く → 右上の検索 → 検索欄の下にある「URLを入力」をタップ</li>
+    <li>次のURLを貼って開く：<br><code>https://tamago2022.github.io/tamago-shinchoku/share/podcast/feed.xml</code></li>
+    <li>番組が出たら「フォロー」。あとは他のポッドキャストと同じでロック画面操作・連続再生・スリープタイマーが使えます</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h2>円卓：AIソロプレナーと『昔は人の仕事だったこと』（約16分）</h2>
+  <p>NHK『ネタドリ！』のAI特集をきっかけにした円卓。AivisSpeechで人物ごとに声を切り替え。</p>
+  <audio controls preload="none" src="audio/512-entaku-ai-shitsugyo.m4a"></audio>
+</div>
+
+<div class="card">
+  <h2>円卓：AIが壊すのは修行期間、才能を証明するまでの10年（約6分）</h2>
+  <p>Xの投稿を起点にした思考整理円卓。AivisSpeechで人物ごとに声を切り替え。</p>
+  <audio controls preload="none" src="audio/512-entaku-shiko-memo.m4a"></audio>
+</div>
+
+<div class="box">
+  <b>3つ聴き比べ（同じ文章・押したら鳴ります）：</b>
+  <p style="margin:8px 0 12px;">「ごきげん補給所へようこそ。今日はどんな一日でしたか…」を3種類で読ませた同じ音声です。</p>
+  <p style="margin:0 0 4px;">① AivisSpeech（無料・ローカル）</p>
+  <audio controls preload="none" src="kikikurabe/aivisspeech.m4a"></audio>
+  <p style="margin:12px 0 4px;">② Style-Bert-VITS2（無料・ローカル）</p>
+  <audio controls preload="none" src="kikikurabe/style-bert-vits2.m4a"></audio>
+  <p style="margin:12px 0 4px;">③ ElevenLabs（fal経由・約15円）</p>
+  <audio controls preload="none" src="kikikurabe/elevenlabs.mp3"></audio>
+</div>
+
+<div class="box">
+  <b>今回分かったこと（正直に）：</b>
+  <ul class="steps">
+    <li>声の質：AivisSpeech ＞ ずんだもん(VOICEVOX)。円卓は人物ごとに違う声を自動で割り当て済み。</li>
+    <li>費用：AivisSpeechは無料（ローカル・電気代のみ）。ElevenLabs(fal経由)は1000文字あたり約15円。</li>
+    <li>Style-Bert-VITS2は今回セットアップ・試作音声まで作成。品質はAivisSpeechと僅差のため、今回はAivisSpeechを標準採用（セットアップが軽く、話者切り替えの実装が既にある）。</li>
+    <li>新しい円卓ノートが増えたら、<code>python3 tools/build_podcast_feed.py</code> を実行して押し出すと、この番組に次の回として追加されます（現状は手動実行。完全自動化は次の一歩）。</li>
+  </ul>
+</div>
+
+</body>
+</html>
