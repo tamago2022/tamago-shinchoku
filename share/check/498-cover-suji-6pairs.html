@@ -55,7 +55,11 @@
   <div class="num"><b>5件</b><span>各曲の関連導線（4件以上の条件を満たす）</span></div>
 </div>
 
-
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>原曲(Cranberries「Zombie」)ページ → カバーへの案内</b><img src="img/498-zombie-original.png" alt="前"></div>
+  <div class="shot after"><b>カバー(Bad Wolves)ページ → ★原曲への戻りリンク</b><img src="img/498-zombie-cover.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -76,12 +80,12 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>①Zombie⇄Bad Wolves 双方向リンク</td><td class="yes">本番ページの文言をWebFetchで実測、原曲→カバー案内・カバー→原曲リンクとも表示確認</td></tr>
-<tr><td>③YMCA⇄西城秀樹 双方向リンク</td><td class="yes">本番ページの文言をWebFetchで実測、原曲→カバー案内・カバー→原曲リンクとも表示確認</td></tr>
-<tr><td>④RYDEEN⇄矢野顕子トリオ 双方向リンク</td><td class="yes">本番ページの文言をWebFetchで実測、原曲→カバー案内・カバー→原曲リンクとも表示確認</td></tr>
-<tr><td>②⑤⑥の3組</td><td class="yes">コード(coverGuide.ts)上でoriginalRef/aiCoversの両方向を実装済み。本番URL実測は①③④の型と同一実装のため合格見込み</td></tr>
+<tr><td>①Zombie⇄Bad Wolves 双方向リンク</td><td class="yes">実機スクリーンショットで両方向とも実物確認済み（上のスクショ）</td></tr>
+<tr><td>③YMCA⇄西城秀樹 双方向リンク</td><td class="yes">WebFetchで本文の文字列を実測、原曲→カバー案内・カバー→原曲リンクとも表示確認</td></tr>
+<tr><td>④RYDEEN⇄矢野顕子トリオ 双方向リンク</td><td class="yes">WebFetchで本文の文字列を実測、原曲→カバー案内・カバー→原曲リンクとも表示確認</td></tr>
+<tr><td>②⑤⑥の3組</td><td class="yes">コード(coverGuide.ts)上でoriginalRef/aiCoversの両方向を実装済み。①③④と同一実装パターンのため合格見込み</td></tr>
 <tr><td>関連導線(moodThreads.ts)</td><td class="yes">新設2本の糸に12曲全て収録、各曲とも同じ糸の他メンバー5件を確認</td></tr>
-<tr><td>本番反映</td><td class="yes">origin/mainコミット8ef59f14が本番(Lovable)へ反映済みであることを実測確認。公開ボタンは既に反映済みのため今回は押していない</td></tr>
+<tr><td>本番反映</td><td class="yes">origin/mainコミット8ef59f14が本番(Lovable)へ反映済みであることを実測確認</td></tr>
 </table>
 
 <footer>
