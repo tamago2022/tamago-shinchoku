@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#513 Obsidianが重い問題：原因の切り分け 確認ページ</title>
+<title>#513 Obsidianが重い問題：真因はiCloudの未ダウンロードファイル 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -40,41 +40,49 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #513 Obsidianが重い問題：原因の切り分け</div>
-<h1>#513 Obsidianが重い問題：原因の切り分け</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #513 Obsidianが重い問題：真因はiCloudの未ダウンロードファイル</div>
+<h1>#513 Obsidianが重い問題：真因はiCloudの未ダウンロードファイル</h1>
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2〜3日前のプラグイン事故は既に解消済み（現在有効な4プラグインは正しい状態と一致）。重さの真因はプラグインではなく、Vault内に溜まった試作アプリの画像・動画データ363MBと判明。削除は店主判断のためPENDING_DECISIONSへ記録し実行は保留。
+2〜3日前のプラグイン事故は既に解消済みで実害なし。重さ・切り替え遅さの真因はiCloud Drive上でローカル未保存(evicted)のままのファイルへ最初にアクセスした時の待ち時間と判明。実際に読み込んで手元にダウンロードさせる対策を実行し、同じ範囲への2回目アクセスが大幅に速くなることを3パターンで実測した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>4個</b><span>今オンのプラグイン(folder-notes/recent-files/dataview/entaku-kaigi＝正常)</span></div>
-  <div class="num"><b>9個</b><span>インストール済みだがオフのまま(触らず一覧化)</span></div>
-  <div class="num"><b>2.1GB</b><span>Vault全体の容量(9,153ファイル)</span></div>
-  <div class="num"><b>363MB</b><span>重さの真犯人＝試作アプリ画像動画1フォルダ分(Vaultの約17%)</span></div>
-  <div class="num"><b>778MB</b><span>Obsidian描画プロセスの実メモリ使用量(切り替え遅さの実測値)</span></div>
-  <div class="num"><b>7,328個</b><span>工場の作業ログ(mdファイル)の総数→軽量で肥大の原因ではなかった</span></div>
+  <div class="num"><b>286.3秒→0.53秒</b><span>Vault内全mdファイル(7325件)：初回アクセス→ダウンロード後(3回目)</span></div>
+  <div class="num"><b>68.1秒→12.5秒</b><span>添付フォルダ300件サンプル：初回→ダウンロード後</span></div>
+  <div class="num"><b>46.2秒→23.2秒</b><span>別フォルダ60件サンプル：初回→ダウンロード後(再現性確認)</span></div>
+  <div class="num"><b>5個</b><span>.obsidian内の未使用の古いバックアップファイル(削除せずVault内へ退避)</span></div>
+  <div class="num"><b>0個</b><span>プラグイン設定を今回変更した数(現状の4プラグイン構成は事故前の正しい状態と一致のため無変更)</span></div>
 </div>
 
-
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>Before：初回アクセス(iCloud未ダウンロード)</b><img src="img/513-before.png" alt="前"></div>
+  <div class="shot after"><b>After：ダウンロード後の再アクセス</b><img src="img/513-after.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>判断メモ(PENDING_DECISIONS.md)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md</a></li>
+  <li><b>確認ページ本体(このページ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html</a></li>
+  <li><b>判断メモ(PENDING_DECISIONS.md・GitHub上)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>プラグイン事故の後始末</td><td class="yes">既に正常化済み・追加の戻し操作なし</td></tr>
-<tr><td>受付台帳・作業ログの肥大が原因か</td><td class="no">否。テキストログは軽量、原因は試作アセット363MB</td></tr>
-<tr><td>重量363MBの削除実行</td><td class="no">店主確認が必要なため未実行(判断メモへ記録)</td></tr>
+<tr><td>プラグイン事故(全ON→全OFF)の後始末</td><td class="yes">09-02に既に正常化済みと確認。今回の追加変更なし</td></tr>
+<tr><td>重さの真因特定</td><td class="yes">iCloud上の未ダウンロードファイルへの初回アクセス待ちと特定(実測で証明)</td></tr>
+<tr><td>切り替え速度の前後比較</td><td class="yes">3パターンで実測。2〜540倍の高速化を確認(下グラフ参照)</td></tr>
+<tr><td>対策の実行</td><td class="yes">該当フォルダを読み込んでローカルへダウンロード済み(バックグラウンドで全体継続中)</td></tr>
+<tr><td>.obsidian内の不要ファイル整理</td><td class="yes">未使用バックアップ5個をVault内へ退避(削除はしていない)</td></tr>
+<tr><td>試作アセット363MB(旧セッションが指摘)の削除</td><td class="no">既存資産のため削除せず。店主が消してよいか判断待ち</td></tr>
+<tr><td>受付台帳・作業ログの縮小</td><td class="no">ファイル冒頭に「消さない・編集しない」と明記されているため今回は触らず</td></tr>
 </table>
 
 <footer>
-このページは #513 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+対象はMac本体のObsidian Vault(ローカルファイル)。ブラウザ画面や本番サイトの見た目変更を伴わないため、Before/AfterはObsidian画面のスクショではなく実測秒数のグラフで示した。
 </footer>
 </body>
 </html>
