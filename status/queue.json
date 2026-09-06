@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 12:31",
+ "updatedAt": "2026-09-06 12:38",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -8,13 +8,16 @@
    "title": "松竹梅を実際に走らせる",
    "why": "スマホから追加",
    "what": "【卵劇場EP01・松竹梅を実際に走らせて完成させる】409番が実行スクリプトを完成させたところで止まっている。残りは走らせるだけ。★実行するもの：/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py（300円上限で自動停止するガード付き・完成済み）。★前提として409番が確認済みのこと：①falのAPIキーは有効（無料テストで実証）。キーは /Users/mac/Documents/AI作業/fal_key.txt（FAL_KEY=$(cat ...) で環境変数に入れる。中身を絶対に画面・ログ・チャット・コミットに出さない）。②Kling LipSyncは静止画1枚では動かない。video_url と audio_url の両方が必須（公式で確認済み）。だから梅も、まず静止画から短い動画を作ってから口を当てる必要がある。③SH09/SH10/SH11の素材切り出しは3枚とも完了済み。★やること：①スクリプトを読んで、上の②の仕様に対応できているか確かめる。できていなければ直す。②1本投げるごとに『今回いくら／累計いくら』を円とUSDで記録する。③合計300円で必ず止まる。超えそうなら手前で止めて、そこまでを成果として出す。④Seedanceの実単価を実測して記録する（手元の数字は5秒で約64円、たまごさんの記憶は1分20秒で60円。桁が違うので必ず実測）。★出力：/Users/mac/Library/CloudStorage/GoogleDrive-eggypop2010@gmail.com/マイドライブ/卵劇場EP01_完成/ に ume_15s.mp4 take_15s.mp4 matsu_15s.mp4 と cost_matsutakeume.md。★確認ページに3本を縦に並べて、その場で再生できる形にする。それぞれの上に『いくらかかったか・何の機種か・何ができたか・何ができなかったか』を1行ずつ。★証拠が無いものは完了ではない。動画が実際に再生できることを自分で確かめてから報告する。\n\n【自動やり直し・09-06 03:32】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-06 03:37】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・2026-09-06 Dispatch】前回はURLもスクショも1つも出さずに終わりました。**証拠の無いものは完了ではありません。**たまごさんの確認列には出しません。押せる本番URLかスクショを必ず出すこと。報告は3行だけ。",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "redoCount": 2,
    "order": null,
    "checkedAt": "2026-09-06T09:01:46+0900",
-   "priority": 1
+   "priority": 1,
+   "startedAt": "2026-09-06T12:38:23+09:00",
+   "sessionId": "fcc46623-1e05-4b48-8992-4a5267d607ca",
+   "pid": 63860
   },
   {
    "n": 41,
@@ -1398,7 +1401,7 @@
    "title": "【最優先・見本を壊した戻し】バッジの大きさを akiko『Love Theme From Spartacus』の見た目に戻す。たまごさんの言葉：『明子のラブテーマフロムスパルタカスを直したでしょう。あれが見本だったんです。あれを直したらだめ",
    "why": "スマホから追加",
    "what": "【最優先・見本を壊した戻し】バッジの大きさを akiko『Love Theme From Spartacus』の見た目に戻す。たまごさんの言葉：『明子のラブテーマフロムスパルタカスを直したでしょう。あれが見本だったんです。あれを直したらだめだよ。あれが1番よくできてたんだから。全部あれに直すんだ』。やること：joy-relief-station の src/lib/badgeKinds.ts の BADGE_TARGET_SHORT_SIDE_RATIO を 18 から 13.8 に変えるだけ（akikoページのパソコン表示での実測値が13.8%で、それが唯一の正解）。他の数値・画像・位置は一切触らない。コミット9fa191bcとf74bfd1aで18%目標にした結果、見本だったakikoまで大きくなった。mainブランチで作業すること（今チェックアウトされているのは claude/tas\n\n【自動やり直し・09-05 16:56】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 09:07】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html / ③FAIL: img_count=0",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -1408,10 +1411,12 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html"
    ],
    "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html / ③FAIL: img_count=0",
-   "checkedAt": "2026-09-06T09:07:40+0900",
+   "checkedAt": "2026-09-06T12:37:31+0900",
    "startedAt": "2026-09-06T12:26:46+09:00",
    "sessionId": "653e9754-9643-4077-bf26-6ff69d30d721",
-   "pid": 60250
+   "pid": 60250,
+   "okBy": "oni-kantoku-verify_check_pages-317-oni-fix",
+   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html / ③PASS: img_count=2"
   },
   {
    "n": 320,
@@ -1555,7 +1560,7 @@
    "title": "【円卓の素材】テーマ『昔は人の仕事だったものが、AIの標準機能になる』を、円卓会議にかけられる形に整える。きっかけ：NHK『ネタドリ！』のAI失業回（https://www.web.nhk/tv/an/netadori/pl/series-",
    "why": "スマホから追加",
    "what": "【円卓の素材】テーマ『昔は人の仕事だったものが、AIの標準機能になる』を、円卓会議にかけられる形に整える。きっかけ：NHK『ネタドリ！』のAI失業回（https://www.web.nhk/tv/an/netadori/pl/series-tep-QL8GZ2L5VX/ep/8IFYUFWE13 ）をたまごさんが視聴。★**番組そのものの録音・全文文字起こしはしない**（放送番組は著作物なので複製を作らない）。代わりに、**公開されている一次情報だけ**で同じ議論ができる素材を作る。やること：①NHKの番組公式ページ・NHKのニュース記事など、公開されている番組の紹介文から論点を拾う。②**落合陽一氏の主張**は、公開されているインタビュー・寄稿・登壇記録から裏取りして引用元URLつきで整理する（番組の発言を推測で書かない）。③『AI失業』の実態を、公的な統計・調査（総務省・厚労省・経産省\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 09:41】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html / ③FAIL: img_count=0",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -1563,12 +1568,14 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html"
    ],
-   "checkedAt": "2026-09-06T09:41:27+0900",
+   "checkedAt": "2026-09-06T12:38:53+0900",
    "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html / ③FAIL: img_count=0",
    "redoCount": 1,
    "startedAt": "2026-09-06T12:27:40+09:00",
    "sessionId": "ef7f8a91-1ecf-44df-b3bd-0a282bab8ef1",
-   "pid": 60654
+   "pid": 60654,
+   "okBy": "oni-kantoku-verify_check_pages-403-oni-kantoku-img-fix",
+   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html / ③PASS: img_count=2"
   },
   {
    "n": 404,
@@ -1794,11 +1801,14 @@
    "title": "軽さ：画像を軽くする",
    "why": "スマホから追加",
    "what": "【Lovable高速化】画像を軽くする。サイトはサムネイルの塊なので、ここが一番効く可能性が高い。★やること：①いま配信されている画像の実サイズを調べる（YouTubeのサムネは maxresdefault が1280x720で重い。カード表示に必要なのは320〜480px幅）。②表示サイズに合った解像度を選ぶ（YouTubeは mqdefault/hqdefault/maxresdefault を選べる。カードは mqdefault で足りるはず。実際に見比べて画質が落ちないか確かめる）。③srcset と sizes を入れて、端末に合った解像度だけ落とすようにする。④画面外の画像は loading=lazy にする（既に入っているか確認。入っていない箇所を直す）。⑤width と height を必ず指定して、レイアウトのガタつき（CLS）を消す。★効果の測り方：直す前と後で、1ページあたりの画像転送量を実測して比べる。★見た目が落ちていないことをスクリーンショットで示す。落ちるなら戻す。★確認ページに『前：◯MB → 後：◯MB』の数字とビフォーアフターのスクショを出す。\n\n【自動やり直し・09-06 06:21】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-06 06:39】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
-   "redoCount": 2
+   "redoCount": 2,
+   "startedAt": "2026-09-06T12:38:57+09:00",
+   "sessionId": "d0bee4e7-b6d8-4bcd-9432-46856903095d",
+   "pid": 64087
   },
   {
    "n": 427,
@@ -2897,7 +2907,7 @@
    "title": "仕組み：Dispatchへ届く報告の道",
    "why": "スマホから追加",
    "what": "【仕組み】子セッションの完了報告がDispatchに届く道(status/dispatch_outbox.jsonl)を作る。確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 09:42】必須条件①②③をAND判定した結果FAIL。①PASS(確認ページ200) ②PASS(本文に実在の裏付け記述あり) ③FAIL(img_count=0・スクリーンショットが無い)。なお本項目は一時queue.jsonから外れ status/deleted.json 側にのみ存在していたが、449番(7/9)の対象10件に含まれるため機械検品のため復元した。",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -2907,7 +2917,10 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html",
     "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/dispatch_outbox.jsonl"
    ],
-   "checkedAt": "2026-09-06T09:42:07+0900"
+   "checkedAt": "2026-09-06T09:42:07+0900",
+   "startedAt": "2026-09-06T12:32:32+09:00",
+   "sessionId": "517ad68c-7b96-448f-bf31-6dcb38888b0e",
+   "pid": 62253
   }
  ]
 }
