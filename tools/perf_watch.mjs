@@ -24,6 +24,20 @@
  *   「処理済み」判定は、切り詰めた末尾配列などではなく status/perf_history.jsonl の
  *   全件を毎回読み直して判定する（配列を`[-N:]`等で削ると古い判定が消えて
  *   同じ処理が繰り返される事故が過去にあったため、このファイルは切り詰めない）。
+ *
+ * 【2026-09-06 実測で判明した重大な不具合と修正】
+ * 当初は `PerformanceObserver({type:'largest-contentful-paint', buffered:true})` を
+ * JS側に仕込んで window.__lcp を読む方式で実装していたが、実機検証で
+ * `performance.getEntriesByType('largest-contentful-paint')` が常に空配列になり、
+ * lcp_ms が毎回 null になる不具合を発見した（FCPは同じ条件で正しく取れていた）。
+ * 原因の切り分け：JS Performance APIのLCPエントリそのものがヘッドレスChromeの
+ * このセッションでは一度も生成されていなかった（observerの実装ミスではなかった）。
+ * 対策として、Lighthouse自身と同じ「Tracingドメインでブラウザ内部のトレースイベントを
+ * 直接読む」方式に切り替えた（`largestContentfulPaint::Candidate` トレースイベントを
+ * `NavigationTiming navigationStart` からの相対時間で計算）。実機で1回、実際に
+ * LCP値の取得に成功したことを確認済み（1回目は失敗、2回目に成功＝Mac高負荷時は
+ * トレースイベントの発火自体が遅れて計測ウィンドウ内に収まらないことがあるため、
+ * 1ページにつき最大2回まで計測を試みるリトライを入れてある）。
  */
 import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync, existsSync, readFileSync, appendFileSync } from "node:fs";
@@ -135,7 +149,7 @@ async function findWs(port) {
     try {
       const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
       const page = list.find((t) => t.type === "page");
-      if (page?.webSocketDebuggerUrl) return page.webSocketDebuggerUrl;
+      if (page?.webSocketDebuggerUrl) return page; // id と webSocketDebuggerUrl の両方を使う
     } catch {
       /* まだ起動中 */
     }
@@ -165,15 +179,25 @@ function connect(wsUrl, onEvent) {
   return { ready, send, close: () => ws.close() };
 }
 
-const PERF_JS = `(() => {
-  const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
-  const last = lcpEntries.length ? lcpEntries[lcpEntries.length - 1] : null;
-  const lcp = last ? Math.round(last.renderTime || last.loadTime) : null;
-  const paintEntries = performance.getEntriesByType('paint');
-  const fcpEntry = paintEntries.find((e) => e.name === 'first-contentful-paint');
-  const fcp = fcpEntry ? Math.round(fcpEntry.startTime) : null;
+// Tracingドメインで拾うカテゴリ（Lighthouseが使う集合を踏襲。loadingカテゴリに
+// firstContentfulPaint / largestContentfulPaint::Candidate / NavigationTiming navigationStart
+// の各トレースイベントが乗る）。
+const TRACE_CATEGORIES = "loading,rail,devtools.timeline,disabled-by-default-devtools.timeline";
+
+// トレースイベント配列からFCP・LCPをミリ秒で算出する（navigationStartからの相対時間）。
+// largestContentfulPaint::Candidate は描画のたびに複数回発火し、より大きい要素が
+// 見つかるたびに上書きされる仕様のため、時刻順に並べて最後の1件を採用する。
+export function parseTraceMetrics(events) {
+  const navStart = events.find((e) => e.name === "NavigationTiming navigationStart");
+  const fcpEvent = events.find((e) => e.name === "firstContentfulPaint");
+  const lcpEvents = events
+    .filter((e) => e.name === "largestContentfulPaint::Candidate")
+    .sort((a, b) => a.ts - b.ts);
+  const lastLcp = lcpEvents[lcpEvents.length - 1];
+  const lcp = navStart && lastLcp ? Math.round((lastLcp.ts - navStart.ts) / 1000) : null;
+  const fcp = navStart && fcpEvent ? Math.round((fcpEvent.ts - navStart.ts) / 1000) : null;
   return { lcp, fcp };
-})()`;
+}
 
 async function measureAllPages(pages = PAGES) {
   const port = 9800 + Math.floor(Math.random() * 200);
@@ -194,49 +218,71 @@ async function measureAllPages(pages = PAGES) {
   );
 
   try {
-    const wsUrl = await findWs(port);
+    const target = await findWs(port);
     let loadFired = false;
-    const { ready, send, close } = connect(wsUrl, (msg) => {
+    const trace = { events: [], complete: false };
+    const { ready, send, close } = connect(target.webSocketDebuggerUrl, (msg) => {
       if (msg.method === "Page.loadEventFired") loadFired = true;
+      else if (msg.method === "Tracing.dataCollected") trace.events.push(...(msg.params.value || []));
+      else if (msg.method === "Tracing.tracingComplete") trace.complete = true;
     });
     await ready;
     await send("Page.enable");
     await send("Runtime.enable");
+    // headless=newはタブが既定でhidden扱いのため、明示的にアクティブ化する。
+    await send("Target.activateTarget", { targetId: target.id });
 
-    const results = [];
-    for (const page of pages) {
+    async function measureOnce(url) {
+      trace.events.length = 0;
+      trace.complete = false;
       loadFired = false;
-      await send("Page.navigate", { url: page.url });
+      await send("Tracing.start", { categories: TRACE_CATEGORIES, transferMode: "ReportEvents" });
+      await send("Page.navigate", { url });
       const start = Date.now();
       while (!loadFired && Date.now() - start < LOAD_TIMEOUT_MS) {
         await sleep(300);
       }
-      // load完了後もLCPが確定するまで待つ（固定待ちではなく、LCPが出るたびに早期終了するポーリング方式）。
-      // 2026-09-06実測：Mac側の同時実行数が多い時間帯はCPUが取り合いになり、
-      // loadイベント後20秒待ってもpaintエントリが0件のままのケースを確認した
-      // （headless Chrome起動自体は成功・visibilityState='visible'も確認済みで、
-      //   純粋にレンダリングへCPU時間が回ってきていないだけ）。そのため最大待ち時間を伸ばし、
-      // 出た時点ですぐ評価へ進めるポーリングに変更。
-      const settleStart = Date.now();
-      let lcpReady = false;
-      while (!lcpReady && Date.now() - settleStart < POST_LOAD_MAX_WAIT_MS) {
-        await sleep(1000);
-        const probe = await send("Runtime.evaluate", {
-          expression: "performance.getEntriesByType('largest-contentful-paint').length > 0",
-          returnByValue: true,
-        });
-        if (probe?.result?.value) lcpReady = true;
+      // load完了後もLCPが確定するまで一定時間待つ（Mac混雑時はレンダリングにCPU時間が
+      // 回ってこず、load後もLCP候補の発火が遅れることを実測で確認済み）。
+      await sleep(POST_LOAD_MAX_WAIT_MS);
+      await send("Tracing.end");
+      const endStart = Date.now();
+      while (!trace.complete && Date.now() - endStart < 10000) {
+        await sleep(200);
       }
-      const evalResult = await send("Runtime.evaluate", { expression: PERF_JS, returnByValue: true });
-      const value = evalResult?.result?.value ?? {};
-      results.push({ key: page.key, url: page.url, lcp_ms: value.lcp ?? null, fcp_ms: value.fcp ?? null });
-      console.log(`[perf_watch] ${page.key}: LCP=${value.lcp}ms FCP=${value.fcp}ms`);
+      await sleep(300); // 最終dataCollectedメッセージの到着待ち
+      return parseTraceMetrics(trace.events);
+    }
+
+    const results = [];
+    for (const page of pages) {
+      let metrics = await measureOnce(page.url);
+      // 1回目でLCPが取れなかった場合のみ、もう一度だけ試す（Mac高負荷時のflaky対策）。
+      if (metrics.lcp === null) {
+        console.log(`[perf_watch] ${page.key}: 1回目でLCP未取得のため再計測します`);
+        metrics = await measureOnce(page.url);
+      }
+      results.push({ key: page.key, url: page.url, lcp_ms: metrics.lcp, fcp_ms: metrics.fcp });
+      console.log(`[perf_watch] ${page.key}: LCP=${metrics.lcp}ms FCP=${metrics.fcp}ms`);
     }
     close();
     return results;
   } finally {
-    chrome.kill("SIGKILL");
-    rmSync(profile, { recursive: true, force: true });
+    // 2026-09-06実測で判明：kill直後にrmSyncするとChromeが一時プロファイル内の
+    // ロックファイルをまだ書いている途中でENOTEMPTYになることがある。
+    // プロセスの実終了(exitイベントかタイムアウト)を待ってから消す。
+    await new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve();
+      };
+      chrome.once("exit", finish);
+      chrome.kill("SIGKILL");
+      setTimeout(finish, 3000);
+    });
+    rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   }
 }
 
@@ -289,6 +335,20 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   console.log(`[perf_watch] ${results.length}件のページを計測しました（${today}）${dryRun ? "（dry-run・未保存）" : ""}`);
+
+  // 進捗表に貼る「直近7日の推移」画像を実測のたびに作り直す（④の要件）。
+  // 失敗しても計測結果の保存自体は既に終わっているので、ここは握りつぶしてログだけ出す。
+  if (!dryRun) {
+    await new Promise((resolve) => {
+      const chart = spawn("python3", [join(REPO_ROOT, "tools/perf_watch_chart.py")], { stdio: "inherit" });
+      chart.on("exit", resolve);
+      chart.on("error", (e) => {
+        console.error("[perf_watch] グラフ生成に失敗（実測データ自体は保存済み）", e);
+        resolve();
+      });
+    });
+  }
+
   return { written };
 }
 

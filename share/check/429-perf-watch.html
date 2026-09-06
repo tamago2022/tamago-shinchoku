@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#429 軽さ：重くなったら気づく見張り 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #429 軽さ：重くなったら気づく見張り</div>
+<h1>#429 軽さ：重くなったら気づく見張り</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+本番3ページ(トップ／世界の音楽／カバーガイド)を毎晩3:20に自動でLCP・FCP計測する仕組みを作った。前回の実装はLCPが100%null(バグ)だったため、Chromeのトレース機能を使う方式に直して修正。今日の実測で3ページ中2ページが本物のLCP値を記録。悪化検知(前日比10%ルール)は擬似データで実際にdispatch_outbox.jsonlへ通知が飛ぶところまでエンドツーエンドで確認済み。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2/3</b><span>本日LCP実測に成功したページ数(残り1件はMac高負荷でリトライしても未取得・正直に表示)</span></div>
+  <div class="num"><b>14/14</b><span>悪化検知ロジックの逆テストPASS(誤検知しない6件+見逃さない8件)</span></div>
+  <div class="num"><b>3:20</b><span>毎晩の自動計測時刻(launchd登録済み)</span></div>
+  <div class="num"><b>18</b><span>status/perf_history.jsonlに積み上がった実測行数</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot after"><b>本日時点のLCP推移グラフ(実データ)</b><img src="img/429-lcp-trend.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番:世界の音楽</b><a href="https://joy-relief-station.lovable.app/world/music" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/music</a></li>
+  <li><b>本番:カバーガイド</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>実測ログの中身(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/perf_history.jsonl" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/perf_history.jsonl</a></li>
+  <li><b>見張りスクリプト本体(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/perf_watch.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/perf_watch.mjs</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>毎晩の自動計測(launchd)</td><td class="yes">登録済み(3:20・com.tamago.tamago-shinchoku.perf-watch)</td></tr>
+<tr><td>LCPが常にnullになるバグ</td><td class="yes">発見・修正済み(Tracingドメイン方式に切替)</td></tr>
+<tr><td>悪化を10%以上検知したら自動通知</td><td class="yes">逆テスト14件PASS+擬似データでdispatch_outbox.jsonlへの実配線をエンドツーエンド確認</td></tr>
+<tr><td>同じ日に2回動いても壊れない(冪等性)</td><td class="yes">確認済み(--forceを付けない限り2重記録しない)</td></tr>
+<tr><td>直近7日の推移を進捗表に表示</td><td class="yes">画像で表示(今日が1日目のため今は1点のみ・今後毎晩積み上がる)</td></tr>
+</table>
+
+<footer>
+このページは #429 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>

@@ -118,3 +118,14 @@
 - **原因**：440番の本文にある「鬼監督、俺の分身」はたまごさんが望む未来の仕組みとしての発言であり、この時点ではまだスキル化されていない（構想止まり）。
 - **今回の対応**：鬼監督が無い場合、完了報告を止めずに自分でセルフチェック（第九条）して進めた。次にこのスキルを作る担当は、440/441番の本文（queue.json）にある関門0〜7の要件をそのまま定義に落とせる。
 - **日付**：2026-09-06（441番）
+
+---
+
+## 11. ヘッドレスChromeで`PerformanceObserver('largest-contentful-paint')`を仕込んでも、LCPが100%常にnullになる
+
+- **症状**：429番（軽さ見張り）で、本番ページをヘッドレスChromeで開きLCP・FCPを測る実装を作ったところ、`status/perf_history.jsonl`に記録された`lcp_ms`が**4回連続で全件null**だった（`fcp_ms`は同じ条件で正しく数百〜数万msの値が取れていた）。
+- **原因**：`Page.addScriptToEvaluateOnNewDocument`でJS側に`new PerformanceObserver(...).observe({type:'largest-contentful-paint', buffered:true})`を仕込む方式そのものが、このヘッドレスChrome(152.0.7977.76・`--headless=new`)環境では機能しなかった。診断用の使い捨てスクリプトで直接`performance.getEntriesByType('largest-contentful-paint').length`を読んでも**常に0件**（observerのコールバックが1回も呼ばれていないのではなく、ブラウザ内部でLCPエントリそのものが1件も生成されていなかった）。visibilityState='visible'・focus=falseは確認済みで、FCPは同条件で正常に発火していたため、"タブが隠れている"系の既知の落とし穴（`Target.activateTarget`で対処済み）が原因ではなかった。
+- **直し方**：JS Performance APIをあきらめ、**CDPの`Tracing`ドメインでブラウザ内部のトレースイベントを直接読む方式**（Lighthouse自身が使っているのと同じ方式）に切り替えた。`Tracing.start({categories:"loading,rail,devtools.timeline,disabled-by-default-devtools.timeline"})`→`Page.navigate`→一定時間待機→`Tracing.end`→集まった`Tracing.dataCollected`のイベント配列から`largestContentfulPaint::Candidate`（時刻順で最後の1件＝最終確定値）と`NavigationTiming navigationStart`を見つけ、両者の`ts`（マイクロ秒）の差からミリ秒を算出する。実機で複数回、実際にLCP値の取得に成功したことを確認済み（`tools/perf_watch.mjs`の`parseTraceMetrics()`）。
+- **二度と起こさないための仕掛け**：Mac高負荷時（実測でloadavg1が10〜19台）はトレースイベントの発火自体が数十秒遅れ、1回の計測ウィンドウ内に間に合わずLCPがnullのままになることがある（FCPだけ取れてLCPだけnullという状態は「バグ」ではなく「今回はMacが混んでいて間に合わなかった」の可能性が高いことをコード冒頭コメントに明記）。そのため`measureAllPages()`は1ページにつき最大2回まで計測をリトライする設計にした。なお本番運用は深夜3:20の自動実行かつ`loadavg1>8`なら丸ごとスキップする既存ガードがあるため、日中の実機検証（loadavg1が10〜19台）よりはるかに好条件で走る想定。
+- **日付**：2026-09-06（429番）
+- **根拠**：`tools/perf_watch.mjs`内の`parseTraceMetrics()`とファイル冒頭コメント「2026-09-06 実測で判明した重大な不具合と修正」節／`tools/_test_perf_watch_alert.mjs`（悪化検知ロジック14件の逆テスト）
