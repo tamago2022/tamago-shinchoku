@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#491 容量の見張り：いまの空きと消せる候補一覧 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #491 容量の見張り：いまの空きと消せる候補一覧</div>
+<h1>#491 容量の見張り：いまの空きと消せる候補一覧</h1>
+<div class="date">2026-09-06 20:23 実装・main合流・実測確認</div>
+
+<div class="fix">
+ディスクの空きを15分おきに見張り、25GB未満で安全な物だけ自動片付け、8GB未満で発車を止めてDispatchへ知らせる仕組み（415番で実装・本番稼働中・実際に片付け動作あり）に、確認ページで<b>いまの空き</b>と<b>消せる候補の一覧（消さずに一覧だけ）</b>を見られる機能を追加した。壺・金庫（写真・動画・音楽・Eagleライブラリ・Vault・Google Drive実体・dmg）には一切触れない設計は変更していない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>36.2GB</b><span>いまの空き容量（/System/Volumes/Data・正しい測り方）</span></div>
+  <div class="num"><b>25GB</b><span>警戒線：これを切ったら安全な物だけ自動片付け</span></div>
+  <div class="num"><b>8GB</b><span>停止線：これを切ったら発車を止めてDispatchへ通知</span></div>
+  <div class="num"><b>18件・約1MB</b><span>いま列挙されている消せる候補の合計（現状ほぼ空フォルダ）</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>前：415番実装直後に起きた事故（工場全停止）</b><img src="img/491-before.png" alt="前"></div>
+  <div class="shot after"><b>後：いまの実測（36.1GB・候補一覧つき）</b><img src="img/491-after.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実装本体：tools/disk_guardian.py（main合流済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_guardian.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_guardian.py</a></li>
+  <li><b>いまの候補一覧の実物：status/disk_candidates.json</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_candidates.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_candidates.json</a></li>
+  <li><b>実行ログ（1行ずつ何を消して何MB空いたか）：status/disk_guardian.log</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log</a></li>
+  <li><b>元になった415番の確認ページ（初回実装・本番稼働開始）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>15分おきの自動測定（launchd経由）</td><td class="yes">稼働中（disk_guardian.log 20:23時点まで記録継続）</td></tr>
+<tr><td>消せる候補の一覧をJSONへ保存</td><td class="yes">status/disk_candidates.json（15分ごとに上書き・削除はしない）</td></tr>
+<tr><td>壺・金庫（写真/動画/音楽/Eagle/Vault/Drive/dmg）への接触</td><td class="yes">0件（パスにキーワードが1つでも含まれたら問答無用でスキップ）</td></tr>
+<tr><td>20GB台の発車停止フラグ(no_launch.flag)</td><td class="yes">現在36.2GBのため未発動（正常）</td></tr>
+<tr><td>候補1: __pycache__（tamago-shinchoku/tools）</td><td class="yes">約1MB・保護なし</td></tr>
+<tr><td>候補2: .worktrees/admin-login-fix/node_modules</td><td class="yes">約0MB・保護なし</td></tr>
+<tr><td>候補3: .worktrees/artist-mismatch/node_modules</td><td class="yes">約0MB・保護なし</td></tr>
+<tr><td>候補4: .worktrees/constitution-autonomy/node_modules</td><td class="yes">約0MB・保護なし</td></tr>
+<tr><td>候補5: .worktrees/covers-section-0816/node_modules</td><td class="yes">約0MB・保護なし</td></tr>
+<tr><td>候補6: .worktrees/glim-hanare/node_modules</td><td class="yes">約0MB・保護なし</td></tr>
+<tr><td>候補7〜18（省略分）</td><td class="yes">同種のnode_modules空フォルダ。実物は下のJSONリンクで全件確認できる</td></tr>
+<tr><td>WARN/STOP閾値を依頼値(30GB/20GB)から変更した理由</td><td class="yes">25GB/8GBに調整済み（415番実装直後、17GB台で工場を丸ごと止めてしまった事故の再発防止。既存の調整をそのまま維持）</td></tr>
+</table>
+
+<footer>
+実装はtamago-shinchoku main（コミット5005972ほか）。tamago-verifierによる独立検品：合格（is_forbidden/is_allowed等の既存ガードには一切触れていないことを差分・実行結果の両方で確認済み）。
+</footer>
+</body>
+</html>
