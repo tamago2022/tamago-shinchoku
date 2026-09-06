@@ -1,178 +1,36 @@
 {
- "totalChecked": 21,
- "totalPassed": 15,
- "totalFailed": 6,
- "totalErrors": 0,
- "totalCostUsd": 5.0899,
+ "totalChecked": 70,
+ "totalPassed": 45,
+ "totalFailed": 24,
+ "totalErrors": 1,
+ "totalCostUsd": 19.444,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
   "確認ページの内容が依頼(全件読み込み→ページング/必要分先読みへの是正)と無関係": 1,
   "確認ページの合否表がqueue.json実データと逆転(216/25は未完了なの": 1,
   "「PASS→自動完了」とされた3件のうち2件（n=20, n=13）は本人たちの": 1,
-  "確認ページ443の34番「AI検品パイプラインがPASS(06:01・$0.19": 1
+  "確認ページ443の34番「AI検品パイプラインがPASS(06:01・$0.19": 1,
+  "n=20/2/11/13の4件がFAIL判定なのにstatusがawaiting": 1,
+  "n=401/413を「deleted.jsonで確認」としているが、delete": 1,
+  "確認ページは「10件全て合格・差し戻し0」と書いているが、報告文とqueue.j": 1,
+  "必須のビフォーアフタースクショが確認ページに1枚も無く、新機能（外す/文脈差替え": 1,
+  "スクショのキャプションと実画像が食い違い（①は4ボタン非表示なのに表示と主張、③": 1,
+  "確認ページに載っている証拠リンク(TASK_BOARD.md/PENDING_D": 1,
+  "削除・差替え・並べ替えを実際にクリックした後の本番スクショが依然として無く、コー": 1,
+  "確認ページの9件移動は事実だが、デスクトップに「卵劇場」関連フォルダ・zip2件": 1,
+  "空き容量が確認ページ自身の数字で17GB（基準20GB未満・元の危機ラインとほぼ": 1,
+  "コード修正・本番反映は本物だが、依頼で明示された「実際にPWAを開いて最新が出る": 1,
+  "確認ページ自身が「曲0件・DB書き込み未確認」と明記しており、依頼の核心（欠けて": 1,
+  "origin未設定＝工場発とみなす仕組みが未実装で、現在awaiting_che": 1,
+  "依頼必須の「切り替え速度を前後で数字比較」が皆無で、報告自身も真因未確定・受付台": 1,
+  "「4件をdoneに動かせた」と報告しているが、queue.json実データでdo": 1,
+  "本当のニーズ（iPhone実再生・RSS/Podcast化・公開範囲の明示・自動": 1,
+  "依頼必須の切り替え速度の前後数字比較が無く、重さの原因(363MB)の削除も未実": 1,
+  "報告記載の本番URL（GitHubコミットへのリンク）とページ内PENDING_": 1,
+  "本番URL(Googleドライブ)がサインイン要求で開けず中身を確認できず、Ea": 1
  },
  "history": [
-  {
-   "ts": "2026-09-06T02:19:23+09:00",
-   "n": 415,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html",
-   "verdict": "pass",
-   "reason": "確認ページが開け、依頼項目（15分監視・30GB自動片付け・20GB発車停止・壺と金庫除外）と実測数字（654MB・9件・前後対比表）が一致し、未解決部分も正直に明記されている",
-   "costUsd": 0.1606688
-  },
-  {
-   "ts": "2026-09-06T03:36:16+09:00",
-   "n": 420,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/420-check-page-template.html",
-   "verdict": "pass",
-   "reason": "テンプレート・生成スクリプト・auto_launcher.py短縮の3点がmainに実在し、確認ページ／本番URLとも実際にHTTP 200で開け内容も依頼と一致した",
-   "costUsd": 0.2382784
-  },
-  {
-   "ts": "2026-09-06T04:09:53+09:00",
-   "n": 416,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/416-ai-verifier.html",
-   "verdict": "fail",
-   "reason": "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(status/ai_verify_stats.json)は1件($0.1607)のみで#420の確認ページも404であり、実績が誇張されている",
-   "costUsd": 0.19470479999999998
-  },
-  {
-   "ts": "2026-09-06T04:09:53+09:00",
-   "n": 418,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/418-tap-only-confirm.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URLとも実在し200で開け、報告内容（サムネ・押せるURL・2ボタン・証拠なし赤表示・ソート順・行圧縮）がindex.htmlの実装と完全に一致していた",
-   "costUsd": 0.24044919999999997
-  },
-  {
-   "ts": "2026-09-06T04:12:29+09:00",
-   "n": 422,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/422-shippai-daichou.html",
-   "verdict": "pass",
-   "reason": "確認ページ・status/failures.md（8件全ブロック記載済み）・auto_launcher.py L871の追記・コミットa34ab32、いずれも実在し内容が一致。サンプルでcommand_ingest.py/auth_watch.py/worktree_reaper.pyの根拠コードも実装と符合することを確認した",
-   "costUsd": 0.22923619999999997
-  },
-  {
-   "ts": "2026-09-06T04:24:33+09:00",
-   "n": 421,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/421-queue-add-dedupe.html",
-   "verdict": "fail",
-   "reason": "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)のコミットを指しており、直したはずのリンク不備が解消されていない",
-   "costUsd": 0.24488559999999998
-  },
-  {
-   "ts": "2026-09-06T04:35:18+09:00",
-   "n": 423,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/423-auto-split-big-jobs.html",
-   "verdict": "pass",
-   "reason": "確認ページの主張(検知3種+10件分割+一覧作成切替)がコミットdiffの実コード(BIG_JOB_KEYWORDS, SPLIT_BATCH_SIZE=10等)と一致し、mainに反映済みと確認できた",
-   "costUsd": 0.1640996
-  },
-  {
-   "ts": "2026-09-06T04:46:21+09:00",
-   "n": 416,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/416-ai-verifier.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番ページ・JSONの3つが実データ(6件検品/4合格/2不合格/$1.3082)で完全一致し、静的な数字がJSON動的fetchに置き換わっていることも実際に確認できた",
-   "costUsd": 0.1583466
-  },
-  {
-   "ts": "2026-09-06T04:49:23+09:00",
-   "n": 421,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/421-queue-add-dedupe.html",
-   "verdict": "pass",
-   "reason": "誤ったコミットリンクはhref属性から撤去済み、production URLの実コードで重複照合の実装(_titles_conflict/_find_duplicate_title/重複OK逃げ道)を確認し依頼内容と一致",
-   "costUsd": 0.11755499999999999
-  },
-  {
-   "ts": "2026-09-06T05:03:31+09:00",
-   "n": 425,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/425-perf-measure-baseline.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URL・スクショ5枚すべて実在し200で確認、5ページ分の実測数値（LCP/CLS/TBT/転送量/JS）が重い順の表と改善候補3点まで依頼通りに揃っている",
-   "costUsd": 0.1704712
-  },
-  {
-   "ts": "2026-09-06T05:37:52+09:00",
-   "n": 8,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/8-google-drive-sync-diagnosis.html",
-   "verdict": "pass",
-   "reason": "確認ページが開け、診断結果（同期停止の実測・5経路失敗・本人への再起動依頼）が依頼内容と一致し、数値証拠とリンクも揃っている",
-   "costUsd": 0.1520976
-  },
-  {
-   "ts": "2026-09-06T06:01:02+09:00",
-   "n": 34,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/34-session-3h-cutoff.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番index.html・両コミット・watchdog本体コード(WALLCLOCK_LIMIT_MIN=180分、hardcut分岐)を実際に取得・照合し、依頼内容と実装が一致することを確認した",
-   "costUsd": 0.1961084
-  },
-  {
-   "ts": "2026-09-06T06:17:42+09:00",
-   "n": 430,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/430-disk-cleanup.html",
-   "verdict": "pass",
-   "reason": "確認ページの内容（18GB到達・21件削除・5回の巻き込み事故と復元）を実ディスク状態・failures.md・disk_guardian.pyのコード変更で裏取りでき、一致した",
-   "costUsd": 0.30514300000000005
-  },
-  {
-   "ts": "2026-09-06T06:21:39+09:00",
-   "n": 424,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/424-cost-by-task.html",
-   "verdict": "pass",
-   "reason": "JSON構造・本番描画ロジック・実データ集計が依頼内容と一致し、確認ページのリンクも実際に開いて中身が整合していることを確認した",
-   "costUsd": 0.2621842
-  },
-  {
-   "ts": "2026-09-06T07:00:54+09:00",
-   "n": 428,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/428-data-not-all-at-once.html",
-   "verdict": "fail",
-   "reason": "確認ページの内容が依頼(全件読み込み→ページング/必要分先読みへの是正)と無関係な別作業(検索デバウンス)であり的外れ、かつ本番のx-deployment-idも報告値と不一致",
-   "costUsd": 0.1599446
-  },
-  {
-   "ts": "2026-09-06T07:35:29+09:00",
-   "n": 216,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/216-beegees-kids.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番2URLとも実際に開き、双方向リンクと子どものものまね表記が実データで一致した",
-   "costUsd": 0.3277352
-  },
-  {
-   "ts": "2026-09-06T07:59:43+09:00",
-   "n": 443,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/443-ai-inspection-batch1.html",
-   "verdict": "fail",
-   "reason": "確認ページの合否表がqueue.json実データと逆転(216/25は未完了なのにPASS扱い、不合格とした3番が実際はdone化)しており、ai_verify_stats.jsonにも今回バッチの検品根拠ログが存在しない",
-   "costUsd": 0.20832619999999996
-  },
-  {
-   "ts": "2026-09-06T08:07:47+09:00",
-   "n": 445,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/445-3of9-ai-kenpin.html",
-   "verdict": "pass",
-   "reason": "6件全て(#16,26,31,33,40は根拠実在を実測確認、#35は判断保留が妥当)で報告と本番の一致を確認",
-   "costUsd": 0.35822480000000007
-  },
-  {
-   "ts": "2026-09-06T08:08:07+09:00",
-   "n": 444,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/444-oni-kantoku-batch2.html",
-   "verdict": "fail",
-   "reason": "「PASS→自動完了」とされた3件のうち2件（n=20, n=13）は本人たちの確認ページに「スクリーンショットは今回ありません／撮影ツールが無い」と明記されており、依頼で定めた必須合格条件「③スクショが残っている」を満たしていないのに自動OK（status=done）にされている",
-   "costUsd": 0.3161934
-  },
-  {
-   "ts": "2026-09-06T08:29:44+09:00",
-   "n": 443,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/443-ai-inspection-batch1.html",
-   "verdict": "fail",
-   "reason": "確認ページ443の34番「AI検品パイプラインがPASS(06:01・$0.196)」という検品根拠が、リンク先のai_verify_stats.json(history 6件に該当なし)にもoni_kantoku_log.jsonl(該当なし)にも存在せず、出典不明の主張(216/25番は実データで裏付け確認済みだが、34番のみ検証不能)",
-   "costUsd": 0.6539972000000001
-  },
   {
    "ts": "2026-09-06T08:44:37+09:00",
    "n": 446,
@@ -180,7 +38,399 @@
    "verdict": "pass",
    "reason": "確認ページ・queue.json・oni_kantoku_log.jsonlの実測値が「5件とも自動OKにせずやり直しへ差し戻した」という主張と数字レベルで完全一致",
    "costUsd": 0.231394
+  },
+  {
+   "ts": "2026-09-06T09:02:42+09:00",
+   "n": 447,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/447-5of9-ai-kenpin.html",
+   "verdict": "pass",
+   "reason": "確認ページ(200)の主張(10件検品・10件自動OK・0件差し戻し)通り、test-301〜310の全10件が実際にHTTP 200で開き、内容も「発車→作業中→終了→確認待ち、まで通っています」で確認ページの記述と食い違いなし",
+   "costUsd": 0.14946879999999999
+  },
+  {
+   "ts": "2026-09-06T09:03:29+09:00",
+   "n": 444,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/444-2of9-result.html",
+   "verdict": "fail",
+   "reason": "n=20/2/11/13の4件がFAIL判定なのにstatusがawaiting_checkのまま(waitingに未変更)で、確認待ち列に残ったまま。「9件やり直しへ戻した」という報告と実データが不一致",
+   "costUsd": 0.2733122
+  },
+  {
+   "ts": "2026-09-06T09:14:20+09:00",
+   "n": 448,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/448-oni-kantoku-batch6.html",
+   "verdict": "pass",
+   "reason": "queue.json実態・監査ログ・修正コード全てが報告内容と一致し裏付けが取れた",
+   "costUsd": 0.2610598
+  },
+  {
+   "ts": "2026-09-06T09:24:05+09:00",
+   "n": 443,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/443-ai-inspection-batch1.html",
+   "verdict": "pass",
+   "reason": "queue.json/oni_kantoku_log.jsonl実データと確認ページの数字(1件done・9件waiting)が完全一致し、前回2回のFAIL指摘(数字逆転・出典不明の34番PASS主張)は解消されている",
+   "costUsd": 0.3085686
+  },
+  {
+   "ts": "2026-09-06T09:28:36+09:00",
+   "n": 449,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/449-7of9-ai-kenpin.html",
+   "verdict": "fail",
+   "reason": "n=401/413を「deleted.jsonで確認」としているが、deleted.jsonの実物にはこの2件が存在せず、同ファイルは2026-09-05T08:18に一度コミットされたきり更新されていない（虚偽の裏取り根拠＝捏造）",
+   "costUsd": 0.4414641999999999
+  },
+  {
+   "ts": "2026-09-06T09:32:53+09:00",
+   "n": 444,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/444-2of9-result.html",
+   "verdict": "pass",
+   "reason": "確認ページ・queue.json実データとも報告通り(n=7のみdone・4枚のスクショ確認、他9件はwaitingに正しく反映)、前回指摘の2件(status未反映・スクショ無しPASS)も修正済みで確認できた",
+   "costUsd": 0.1990818
+  },
+  {
+   "ts": "2026-09-06T09:37:42+09:00",
+   "n": 451,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/451-oni-kantoku-batch9.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番queue.json・ログの3点とも整合し、n=430はスクショ欠如で正しく差し戻し済み",
+   "costUsd": 0.201833
+  },
+  {
+   "ts": "2026-09-06T09:40:44+09:00",
+   "n": 450,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/450-oni-kantoku-batch8.html",
+   "verdict": "pass",
+   "reason": "対象9件全てqueue.json/deleted.json/oni_kantoku_log.jsonlの3系統で整合し、419の据え置きも実データと一致",
+   "costUsd": 0.5164548000000001
+  },
+  {
+   "ts": "2026-09-06T09:41:15+09:00",
+   "n": 438,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/438-yamashita-natsu-magazine.html",
+   "verdict": "pass",
+   "reason": "確認ページの主張(7段構成・4枚写真・動画ID差替・岡田有希子削除)を配信中JSで実測確認、アーティストページ→cover-guide→307リダイレクトで本番マガジンへの導線も実動作を確認",
+   "costUsd": 0.427775
+  },
+  {
+   "ts": "2026-09-06T09:44:58+09:00",
+   "n": 449,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/449-7of9-ai-kenpin.html",
+   "verdict": "fail",
+   "reason": "確認ページは「10件全て合格・差し戻し0」と書いているが、報告文とqueue.jsonの実態は「10件全て不合格・差し戻し」で正反対に矛盾している",
+   "costUsd": 0.2406618
+  },
+  {
+   "ts": "2026-09-06T09:53:17+09:00",
+   "n": 464,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/464-related-video-edit.html",
+   "verdict": "fail",
+   "reason": "必須のビフォーアフタースクショが確認ページに1枚も無く、新機能（外す/文脈差替え/ドラッグ並べ替え/左右入れ替え）の動作証拠が主張のみで検証不能",
+   "costUsd": 0.2618564
+  },
+  {
+   "ts": "2026-09-06T09:56:10+09:00",
+   "n": 449,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/449-7of9-ai-kenpin.html",
+   "verdict": "pass",
+   "reason": "確認ページ・queue.json・監査ログ・dispatch報告の4点が「10件全て不合格・差し戻し・自動OK0件」で完全一致し、過去の捏造・矛盾指摘も解消済み",
+   "costUsd": 0.27842380000000005
+  },
+  {
+   "ts": "2026-09-06T10:21:47+09:00",
+   "n": 3,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/3-osusume10.html",
+   "verdict": "pass",
+   "reason": "確認ページに5種類のページの10個表示スクショ・2回読込での並び変化スクショ・バッジ数実測表・5本の押せるリンクが揃っており、画像7枚とリンク5本(本番URL含む)は全て実在・生存(HTTP 200)を確認した",
+   "costUsd": 0.2241106
+  },
+  {
+   "ts": "2026-09-06T10:32:18+09:00",
+   "n": 464,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/464-related-video-edit.html",
+   "verdict": "fail",
+   "reason": "スクショのキャプションと実画像が食い違い（①は4ボタン非表示なのに表示と主張、③は無関係な既存モーダル）、削除・差替え成功・並べ替え・左右入れ替えの実動作を示す証拠が皆無",
+   "costUsd": 0.251379
+  },
+  {
+   "ts": "2026-09-06T10:51:53+09:00",
+   "n": 8,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/8-google-drive-sync-fix.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番リンクとも200で開け、内容も実測値付きで依頼内容と一致し誇張なし",
+   "costUsd": 0.1903524
+  },
+  {
+   "ts": "2026-09-06T11:02:55+09:00",
+   "n": 442,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/442-related-grid.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番URLとも実際に開け、本番HTMLソース内のgrid-cols/aspect-video/アイコン化ボタンとスクショ証拠が依頼内容（縦積み→横グリッド化）と一致した",
+   "costUsd": 0.4116618
+  },
+  {
+   "ts": "2026-09-06T11:09:27+09:00",
+   "n": 9,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/9-entaku-design-claude.html",
+   "verdict": "pass",
+   "reason": "確認ページは開け依頼内容と一致・具体的な数字とリンクあり、Driveリンクも実在（中身自体はGoogleログイン必須のため直接閲覧は不可だが正常な非公開フォルダの挙動）",
+   "costUsd": 0.17701280000000003
+  },
+  {
+   "ts": "2026-09-06T11:22:00+09:00",
+   "n": 10,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/153-home-furusato-playlist-blocked.html",
+   "verdict": "fail",
+   "reason": "確認ページに載っている証拠リンク(TASK_BOARD.md/PENDING_DECISIONS.md、リポジトリjoy-relief-stationごと)が2本とも404で実在せず、壁の記録という主張を裏付ける検証可能な証拠が無い",
+   "costUsd": 0.19254899999999997
+  },
+  {
+   "ts": "2026-09-06T11:23:40+09:00",
+   "n": 464,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/464-related-video-edit-v2.html",
+   "verdict": "fail",
+   "reason": "削除・差替え・並べ替えを実際にクリックした後の本番スクショが依然として無く、コード存在確認とロジック単体テストだけでは「実際に動く」証拠にならない",
+   "costUsd": 0.26704639999999996
+  },
+  {
+   "ts": "2026-09-06T11:31:22+09:00",
+   "n": 18,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/18-amelie-adjust.html",
+   "verdict": "pass",
+   "reason": "本番JSバンドル内の設定データを直接確認し、amelie-movie(kind:\"thing\")には「一覧へ戻る」が適用される構造になっていることを独立に裏取りできた（確認ページの主張と一致）",
+   "costUsd": 0.34750620000000004
+  },
+  {
+   "ts": "2026-09-06T11:35:27+09:00",
+   "n": 27,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/27-desktop-cleanup.html",
+   "verdict": "fail",
+   "reason": "確認ページの9件移動は事実だが、デスクトップに「卵劇場」関連フォルダ・zip2件、「円卓」フォルダ、未処理の依頼メモ、UUID画像等の明らかなAI作業ファイルが多数残存しており、片付けが不完全",
+   "costUsd": 0.1972916
+  },
+  {
+   "ts": "2026-09-06T11:53:19+09:00",
+   "n": 28,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/28-eagle-folder-filter.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番ページとも200応答、data.jsonの実測値(1200件/123フォルダ)が確認ページの数字と一致し、本番JSにフォルダ絞り込みロジックが実装されていることを確認した",
+   "costUsd": 0.1803432
+  },
+  {
+   "ts": "2026-09-06T11:53:34+09:00",
+   "n": 27,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/27-desktop-cleanup-v2.html",
+   "verdict": "pass",
+   "reason": "デスクトップ・ダウンロードの実ファイルを確認し、確認ページの数字（残9件・移動126件相当）と実体が一致、前回指摘の卵劇場/円卓/UUID画像等もDocuments/AI作業へ移動済みと確認できた",
+   "costUsd": 0.174384
+  },
+  {
+   "ts": "2026-09-06T12:05:26+09:00",
+   "n": 25,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/25-stopmotion-texture.html",
+   "verdict": "pass",
+   "reason": "本番URLを実際に取得し「特撮・人形劇編」カテゴリと「人形劇の救助隊員」テーマ（style:stopmotionタグ付き）の実在をJSバンドルから直接確認、確認ページの主張と一致した",
+   "costUsd": 0.37651999999999997
+  },
+  {
+   "ts": "2026-09-06T12:14:41+09:00",
+   "n": 41,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/41-song-page-check.html",
+   "verdict": "pass",
+   "reason": "確認ページと本番URL(norah-jones-let-it-be含む計10件)をcurlで独立実測し、旧URL→標準ページへの307リダイレクトと200到達を確認、報告内容と一致した",
+   "costUsd": 0.2503438
+  },
+  {
+   "ts": "2026-09-06T12:20:01+09:00",
+   "n": 216,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/216-beegees-kids.html",
+   "verdict": "pass",
+   "reason": "双方向リンク・子どもものまね表記・棚未掲載のすべてが本番データで実証された",
+   "costUsd": 0.36616920000000003
+  },
+  {
+   "ts": "2026-09-06T12:50:01+09:00",
+   "n": 427,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/427-js-bundle-slim.html",
+   "verdict": "pass",
+   "reason": "本番JS実測値が確認ページの主張と一致し、棚・扉ボタン用のDrawerコードが実際に別チャンクへ分離され初回読み込みから外れていることをコードレベルで確認できた",
+   "costUsd": 0.33836020000000006
+  },
+  {
+   "ts": "2026-09-06T13:01:33+09:00",
+   "n": 213,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/213-genkyoku-tsunagu.html",
+   "verdict": "pass",
+   "reason": "確認ページに実物スクショ(<img>)2枚が存在し実際に取得・内容確認でき、本番データ(coverguide-data.js)とUIロジックの直接検証で両方向リンク(famousUses/originalRef)の実装が裏付けられた",
+   "costUsd": 0.43055879999999996
+  },
+  {
+   "ts": "2026-09-06T14:36:15+09:00",
+   "n": 430,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/430-disk-space-recovery.html",
+   "verdict": "fail",
+   "reason": "空き容量が確認ページ自身の数字で17GB（基準20GB未満・元の危機ラインとほぼ同水準）なのにno_launch.flagを消して発車を再開しており、実測内訳と1行ずつの削除ログも欠落、完了報告の「18GB確保」も確認ページの「4.5GB」と矛盾する",
+   "costUsd": 0.2938488
+  },
+  {
+   "ts": "2026-09-06T14:54:11+09:00",
+   "n": 429,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/429-perf-watch.html",
+   "verdict": "pass",
+   "reason": "launchd登録・実測ログ(perf_history.jsonl)・スクリプト本体・悪化検知ロジックの実装が確認でき、本番URLも一致(行数18の記載のみ実測16と小差だが主張の骨子は裏取り済み)",
+   "costUsd": 0.23934719999999998
+  },
+  {
+   "ts": "2026-09-06T15:19:17+09:00",
+   "n": 430,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/430-disk-guardian-recovery.html",
+   "verdict": "pass",
+   "reason": "確認ページと本番ログを実取得、危機17.2GB→22.3〜22.4GBの実測推移・削除の1行ログ・整合した数字を確認できた",
+   "costUsd": 0.2243952
+  },
+  {
+   "ts": "2026-09-06T15:32:27+09:00",
+   "n": 435,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/435-egg-theater-ep02-food-future.html",
+   "verdict": "pass",
+   "reason": "確認ページ・動画3本・画像6枚を実際に取得し、動画は正常なMP4で合計尺13.28秒が主張と一致、未達事項（フル尺未達）も正直に開示されている",
+   "costUsd": 0.23785960000000003
+  },
+  {
+   "ts": "2026-09-06T15:41:29+09:00",
+   "n": 436,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/436-pwa-stale-fix.html",
+   "verdict": "fail",
+   "reason": "コード修正・本番反映は本物だが、依頼で明示された「実際にPWAを開いて最新が出ることをスクリーンショットで確かめる」検証が確認ページに一切無く、Node上のモックテストで代替されている",
+   "costUsd": 0.30423120000000003
+  },
+  {
+   "ts": "2026-09-06T15:50:19+09:00",
+   "n": 437,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/437-fal-kyokasho-seihon.html",
+   "verdict": "error",
+   "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
+   "costUsd": 0.6945193999999998
+  },
+  {
+   "ts": "2026-09-06T16:06:24+09:00",
+   "n": 431,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/431-onboarding-daily-sweep.html",
+   "verdict": "fail",
+   "reason": "確認ページ自身が「曲0件・DB書き込み未確認」と明記しており、依頼の核心（欠けている曲の仮埋め）が本番画面に反映されていない",
+   "costUsd": 0.1881896
+  },
+  {
+   "ts": "2026-09-06T16:18:27+09:00",
+   "n": 458,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/458-queue-origin-batch4.html",
+   "verdict": "fail",
+   "reason": "origin未設定＝工場発とみなす仕組みが未実装で、現在awaiting_check13件中12件が未設定のため確認列にそのまま出てしまい、「本番で稼働中と実測済み」という報告の主張が実態と食い違う",
+   "costUsd": 0.29136059999999997
+  },
+  {
+   "ts": "2026-09-06T16:24:38+09:00",
+   "n": 436,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/436-pwa-stale-fix.html",
+   "verdict": "pass",
+   "reason": "コード修正（visibilitychange等3箇所への版チェック追加・赤字強制リロードボタン）が本番に反映され、実機の本番データを写した前後スクショと確認ページ・本番URLが揃っており、前回指摘の「スクショなし」が解消された",
+   "costUsd": 0.311213
+  },
+  {
+   "ts": "2026-09-06T16:35:42+09:00",
+   "n": 459,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/459-bulk-ok.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番ともに実在し、チェックボックス／全部選ぶ・証拠のみ選ぶ／まとめてOK／10秒取り消し／赤行の選択除外／中継所のカンマ区切り対応まで、依頼内容とHTML・JS・Pythonの実装が一致することを実測確認した",
+   "costUsd": 0.40765599999999996
+  },
+  {
+   "ts": "2026-09-06T16:50:29+09:00",
+   "n": 510,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/510-fal-cost-5min-report.html",
+   "verdict": "pass",
+   "reason": "確認ページ・fal公式ページとも実際に取得でき、内訳/5分試算/値上げ裏取り(9/7に4倍・h3-max限定を公式本文で確認)/ローカル化可否が具体的数字と出典付きで一致していた",
+   "costUsd": 0.22274020000000003
+  },
+  {
+   "ts": "2026-09-06T17:12:15+09:00",
+   "n": 513,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-karuku.html",
+   "verdict": "fail",
+   "reason": "依頼必須の「切り替え速度を前後で数字比較」が皆無で、報告自身も真因未確定・受付台帳縮小未達と自白しており「直した」と言える状態ではない",
+   "costUsd": 0.1758846
+  },
+  {
+   "ts": "2026-09-06T17:17:46+09:00",
+   "n": 462,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/462-bulk-ok-4of4.html",
+   "verdict": "fail",
+   "reason": "「4件をdoneに動かせた」と報告しているが、queue.json実データでdoneなのは430のみ（407・412はwaiting、453はawaiting_checkのまま未確認）",
+   "costUsd": 0.42821839999999994
+  },
+  {
+   "ts": "2026-09-06T17:43:21+09:00",
+   "n": 512,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/512-yomiage-kikikurabe.html",
+   "verdict": "fail",
+   "reason": "本当のニーズ（iPhone実再生・RSS/Podcast化・公開範囲の明示・自動化)に一切触れておらず、旧要件の聴き比べページのみで的外れ",
+   "costUsd": 0.1986832
+  },
+  {
+   "ts": "2026-09-06T17:48:43+09:00",
+   "n": 513,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html",
+   "verdict": "fail",
+   "reason": "依頼必須の切り替え速度の前後数字比較が無く、重さの原因(363MB)の削除も未実行なのに「解消済み」と読める書き方で、さらに唯一のリンク(PENDING_DECISIONS.md)が404で開けない",
+   "costUsd": 0.21997280000000005
+  },
+  {
+   "ts": "2026-09-06T18:17:23+09:00",
+   "n": 461,
+   "url": "https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc",
+   "verdict": "pass",
+   "reason": "10件とも確認ページ・本番URLを実測し依頼内容と一致（未完了点・既知バグは報告側が正直に開示済み、401番のプレビュー画像使い回しのみ軽微な指摘）",
+   "costUsd": 0.7529319999999999
+  },
+  {
+   "ts": "2026-09-06T19:30:50+09:00",
+   "n": 513,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html",
+   "verdict": "fail",
+   "reason": "報告記載の本番URL（GitHubコミットへのリンク）とページ内PENDING_DECISIONS.mdリンクが両方とも404で開けず、前回指摘済みの不具合が未修正のまま",
+   "costUsd": 0.17167100000000002
+  },
+  {
+   "ts": "2026-09-06T20:19:42+09:00",
+   "n": 583,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/583-ep01-yasui-model-doga.html",
+   "verdict": "fail",
+   "reason": "本番URL(Googleドライブ)がサインイン要求で開けず中身を確認できず、Eagle格納も未実施と自認しているため成果物を検証できない",
+   "costUsd": 0.2819216
+  },
+  {
+   "ts": "2026-09-06T20:19:57+09:00",
+   "n": 468,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/468-akiko-badge-revert.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番ページとも開け、本番JSバンドル実測でRATIO=13.8への復元を確認できた（他2ページのスクショ添付は無いが数値証拠で裏付けあり）",
+   "costUsd": 0.2475876
+  },
+  {
+   "ts": "2026-09-06T20:24:47+09:00",
+   "n": 484,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/484-check-page-inspection.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番JSON・GitHub上のコード全てが依頼内容と一致し、数字（70件検品/2件弾いた）も本番JSONと符合、content_checkのharvest組み込みも実コードで確認できた",
+   "costUsd": 0.2407586
+  },
+  {
+   "ts": "2026-09-06T20:25:21+09:00",
+   "n": 474,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/474-ai-job-roundtable.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番GitHub上の4ファイルとも実在しHTTP200、内容も依頼(番組本編非複製・出典URL付き数字・落合陽一氏は「裏取りできず」と正直記載・4職種の標準機能化分析・危機/チャンス論を同熱量・反論明記・たまごさん記憶用の枠)と一致",
+   "costUsd": 0.2853462
   }
  ],
- "updatedAt": "2026-09-06 08:44"
+ "updatedAt": "2026-09-06 20:25"
 }
