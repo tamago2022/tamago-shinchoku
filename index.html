@@ -581,7 +581,7 @@ document.addEventListener("click", e=>{
 });
 function card(color, title, stateLabel, extra, detailHtml, prioKey, subLine){
   const p = prioKey != null ? prioOf(prioKey) : 0;
-  const star = prioKey != null ? `<span class="pv" data-k="${esc(prioKey)}">${p ? "P" + p : ""}</span>` : "";
+  const star = prioKey != null ? `<span class="pv" data-k="${esc(prioKey)}">${p ? String(p) : ""}</span>` : "";
   const picker = prioKey != null ? `<div class="pk" data-k="${esc(prioKey)}">優先度（1＝今すぐ） ${[1,2,3,4,5].map(n=>`<button type="button" class="${p===n?"on":""}" data-p="${n}">${n}</button>`).join("")}<button type="button" class="off" data-p="0">なし</button></div>` : "";
   return `<div class="c ${color}${p && p<=2 ? " hot" : ""}" ${prioKey != null ? `data-prio="${p}"` : ""}><span class="more">▼</span>
     <div class="t">${esc(title)}</div>
@@ -608,7 +608,7 @@ function mergePrio(remote){
 function prioOf(k){ const v = PRIO[String(k)]; return v ? (+v.p || 0) : 0; }
 function setPrio(k, p){
   PRIO[String(k)] = {p:+p, t:new Date().toISOString()}; savePrio();
-  document.querySelectorAll(`.pv[data-k="${CSS.escape(String(k))}"]`).forEach(el=>{ el.textContent = p ? "P" + p : ""; });
+  document.querySelectorAll(`.pv[data-k="${CSS.escape(String(k))}"]`).forEach(el=>{ el.textContent = p ? String(p) : ""; });
   document.querySelectorAll(`.pk[data-k="${CSS.escape(String(k))}"] button`).forEach(b=>{ b.classList.toggle("on", +b.dataset.p === +p && +p > 0); });
   document.querySelectorAll(`.pk[data-k="${CSS.escape(String(k))}"]`).forEach(pk=>{ const c = pk.closest(".c"); if(c){ c.dataset.prio = p; c.classList.toggle("hot", p > 0 && p <= 2); } });
   updateSendBar();
@@ -1306,12 +1306,16 @@ function checkUrlReachable(url){
 function renderCheck(){
   const box = document.getElementById("check"); if(!box) return;
   const all = (window.__queue && window.__queue.items) || [];
-  // 2026-09-06(453/455番) たまごさん「勝手に間違えて、勝手に確認増やしてんのよ」
+  // 2026-09-06(453/455/458番) たまごさん「勝手に間違えて、勝手に確認増やしてんのよ」
   // →「たまごさん発」か「工場発」かを origin で見分ける。origin==="factory" は
   //   確認列に出さず畳む（題名も既定では見せない・見たい時だけ開ける）。
+  // 458番(2回目・検品指摘対応)：印の無いもの(origin未設定)は「工場発とみなす」が
+  //   本来のルールなのに、旧実装は origin!=="factory" で判定していたため
+  //   未設定＝表示されてしまっていた（awaiting_check 12/13件が素通り）。
+  //   既定を反転：確認列に出すのは origin==="user" と明示された行だけ。
   const allAwc = all.filter(r => r.status === "awaiting_check");
-  const rows = allAwc.filter(r => r.origin !== "factory");
-  const factoryRows = allAwc.filter(r => r.origin === "factory");
+  const rows = allAwc.filter(r => r.origin === "user");
+  const factoryRows = allAwc.filter(r => r.origin !== "user");
   document.getElementById("checkMeta").textContent = rows.length ? `${rows.length}件` : "";
   const factoryFold = factoryRows.length ? `<details class="cmore cfactory"><summary>🏭 工場発（見なくてよいもの）${factoryRows.length}件・畳んでいます</summary>
       ${factoryRows.map(r=>{
