@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 09:13",
+ "updatedAt": "2026-09-06 09:16",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -249,11 +249,11 @@
    "priority": 3,
    "rank": 17,
    "task": "英語で検索しても出ない",
-   "state": "検証待ち",
+   "state": "完了",
    "owner": null,
    "count": "台帳",
-   "updatedAt": "2026-09-03 11:18",
-   "note": "英語検索は既にmainに実装済み(74df36df・2026-07-10)だったが、T011で今朝解消された本番デプロイ詰まりの影響を受けていた可能性が高い。本番publicSearchCardsサーバー関数を直接叩いて実データで検証(seroval形式でpayload組み立て→/_serverFn/<id>へGET)：queen/beatles/michael jackson/led zeppelin/yesterday/bohemian rhapsody/yoasobi/utada hikaru/spitz/mr children/king gnu/volare/sukiyaki 全て英語クエリで正しい関連結果が返ることを実測確認(0件になるケースなし)。未合流ブランチclaude/search-multilang-0819は中身ゼロ(既にmain合流済み)、他に埋もれた修正なし。残存する軽微な課題：カタログに無い作品名(totoro以外のジブリ作品名等)で無関係な結果が混ざる(0件にならず薄いノイズが出る)。これは「出ない」ではなく検索品質の別課題として次点に切り出し候補。優先順位の判断(他多言語作業との着手順)は自律走行の原則に基づき自分で決定：T017を先に検証済みにし、T018(UI多言語)は既存の未着手項目のまま。次の目は実ブラウザで/search?q=beatles等を打ち、表示されることを確認すれば完了にできる。 [実装:wd_1d49aba9]",
+   "updatedAt": "2026-09-06 09:16",
+   "note": "✅2026-09-06 09:16 証拠:https://joy-relief-station.lovable.app/search?q=beatles 別の目で実ブラウザ確認：/search?q=beatles/queen/yesterday/utada hikaruを実際に開き、beatles=59件・queen=56件・yesterday=20件・utada hikaru=42件の関連結果表示を確認（初回3.5秒待ちでは'検索中...'のまま未完了だったため9秒待ちに調整、false alarmを解消）",
    "stale": false
   },
   {
