@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#470 Eagle→Drive 自動同期 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #470 Eagle→Drive 自動同期</div>
+<h1>#470 Eagle→Drive 自動同期</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+Eagleに画像・動画を1枚追加すると、5分おきに自動でGoogle Driveへも複製される仕組みを実装した。Eagle側のフォルダ構成（階層）もDrive側でそのまま再現される（一方向・Eagle→Driveのみ）。有料サービスは未使用（Google Driveデスクトップアプリの同期フォルダへ直接コピー）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1213件</b><span>Eagle→Drive 同期済みファイル数</span></div>
+  <div class="num"><b>133/135</b><span>Eagle側フォルダ階層のうちDrive側に再現できた数</span></div>
+  <div class="num"><b>5分おき</b><span>自動同期の実行間隔(launchd)</span></div>
+  <div class="num"><b>6件</b><span>直近の自動追加実績(2026-09-07 01:00の実行ログ)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>①動画(ユーモアパロディ)</b><a href="https://drive.google.com/file/d/1BaNoJpxkuK75sML7M1FTivLeQ4NDpbEJ/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1BaNoJpxkuK75sML7M1FTivLeQ4NDpbEJ/view</a></li>
+  <li><b>②画像(風刺画)</b><a href="https://drive.google.com/file/d/1rMn-tARc_MVlagPpYm2eNXf-vgv49uWP/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1rMn-tARc_MVlagPpYm2eNXf-vgv49uWP/view</a></li>
+  <li><b>③画像(卵劇場円卓)</b><a href="https://drive.google.com/file/d/1YSEb_dOC7fcQEFfbmpGvcqmKIje17zx6/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1YSEb_dOC7fcQEFfbmpGvcqmKIje17zx6/view</a></li>
+  <li><b>④スクショ(卵劇場円卓)</b><a href="https://drive.google.com/file/d/1zj7QKrJ6eqyA5euZJ6Bzb8A9W6GqP8ki/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1zj7QKrJ6eqyA5euZJ6Bzb8A9W6GqP8ki/view</a></li>
+  <li><b>⑤画像(風刺画)</b><a href="https://drive.google.com/file/d/1GqzGVGHUll6Jkfa-NDHplMs4FuTF82I4/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1GqzGVGHUll6Jkfa-NDHplMs4FuTF82I4/view</a></li>
+  <li><b>⑥画像(参考/実景)</b><a href="https://drive.google.com/file/d/1IncIYzOa2tAZWfUBVxW62SzJSwl2rsDv/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1IncIYzOa2tAZWfUBVxW62SzJSwl2rsDv/view</a></li>
+  <li><b>⑦画像(参考/mood)</b><a href="https://drive.google.com/file/d/14P-_6DY8mf6zPbfjdxjJlZjVCKvjHjEg/view" target="_blank" rel="noopener">https://drive.google.com/file/d/14P-_6DY8mf6zPbfjdxjJlZjVCKvjHjEg/view</a></li>
+  <li><b>⑧スクショ(AI出力構造理解)</b><a href="https://drive.google.com/file/d/1BQie4y1ppgzJa0Oj7vWtv4ToP-ldg1HU/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1BQie4y1ppgzJa0Oj7vWtv4ToP-ldg1HU/view</a></li>
+  <li><b>⑨画像(AI出力/マトリクス)</b><a href="https://drive.google.com/file/d/18_AgWY4d84T4I7-879ST-82zOIkCbGou/view" target="_blank" rel="noopener">https://drive.google.com/file/d/18_AgWY4d84T4I7-879ST-82zOIkCbGou/view</a></li>
+  <li><b>⑩動画(映画/gen2)</b><a href="https://drive.google.com/file/d/1zS5zq44OfkFHqKOukXQlPKS37CN3MMRg/view" target="_blank" rel="noopener">https://drive.google.com/file/d/1zS5zq44OfkFHqKOukXQlPKS37CN3MMRg/view</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Eagleのフォルダ構成の再現</td><td class="yes">Drive側に133/135フォルダ一致(残り2件は中身が空のフォルダ)</td></tr>
+<tr><td>5分おきの自動同期(launchd)</td><td class="yes">com.tamago.eagle-drive-sync 稼働中・RunAtLoad+300秒間隔</td></tr>
+<tr><td>重複コピー防止(差分のみ)</td><td class="yes">サイズ+更新時刻が同じファイルは再コピーしない</td></tr>
+<tr><td>一方向(Eagle→Drive)</td><td class="yes">実装のとおり。Drive→Eagleの逆方向・削除の反映は対象外</td></tr>
+</table>
+
+<footer>
+このページは #470 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
