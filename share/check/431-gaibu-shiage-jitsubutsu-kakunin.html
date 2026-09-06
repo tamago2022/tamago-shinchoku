@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#431 外部から入れた分を1日1回仕上げる（実物確認が必要） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #431 外部から入れた分を1日1回仕上げる（実物確認が必要）</div>
+<h1>#431 外部から入れた分を1日1回仕上げる（実物確認が必要）</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+見回りスクリプト(check-onboarding-gaps.mjs)と日次GitHub Actions(tamago-onboarding-sweep.yml)はmain合流済み(コミット16e7fa21)。個別対応したIVNITは本番で曲が入っている状態を確認済み（サムネ数10件）。ただし「1日1回の自動見回り」自体がGitHub Actions上で実際に動いているかは、このセッションからは確認する手段が無い（GitHub Actionsの実行ログ・無料枠の残量はGitHub側の画面でしか見えない）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>10件</b><span>IVNITページのサムネ数（解消済み）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>GitHub Actions実行状況を見る場所</b><a href="https://github.com/tamago2022/joy-relief-station/actions/workflows/tamago-onboarding-sweep.yml" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/actions/workflows/tamago-onboarding-sweep.yml</a></li>
+  <li><b>IVNITページ(解消済みの実例)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ivnit" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=ivnit</a></li>
+</ul>
+
+
+
+<footer>
+自動見回り自体が動いているかは、GitHub Actionsの実行履歴（上のリンク）をたまごさんが開いて確認するのが一番早い。IVNIT個別分はすでに解消済み。
+</footer>
+</body>
+</html>
