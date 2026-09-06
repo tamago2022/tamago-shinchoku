@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 12:38",
+ "updatedAt": "2026-09-06 12:39",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1815,13 +1815,14 @@
    "title": "軽さ：最初に落ちてくるJSを減らす",
    "why": "スマホから追加",
    "what": "【Lovable高速化】最初に読み込まれるJavaScriptを減らす。★やること：①ビルドして、どのライブラリがバンドルのどれだけを占めているか調べる（vite なら rollup-plugin-visualizer などローカルで動く無料の手段で）。②大きいものトップ10を出す。③そのうち『最初の画面では要らないもの』を遅延読み込みに変える（React.lazy と Suspense）。特に：棚編集などの管理画面、検索、モーダル、グラフ、アニメーション系。④ルートごとにコード分割されているか確認し、されていなければ入れる。★注意：既存の見た目と動きを変えない。壊したら戻す。★効果の測り方：直す前と後で、トップページの初回JS転送量を実測して比べる。★確認ページに『前：◯KB → 後：◯KB』と、主要ページが今まで通り動いているスクリーンショットを出す。",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "sessionId": "a24a5479-92ce-4d82-891e-712ec4aa83c8",
    "cutCount": 2,
-   "resumeFrom": "a24a5479-92ce-4d82-891e-712ec4aa83c8"
+   "startedAt": "2026-09-06T12:39:31+09:00",
+   "pid": 64321
   },
   {
    "n": 428,
@@ -2907,7 +2908,7 @@
    "title": "仕組み：Dispatchへ届く報告の道",
    "why": "スマホから追加",
    "what": "【仕組み】子セッションの完了報告がDispatchに届く道(status/dispatch_outbox.jsonl)を作る。確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 09:42】必須条件①②③をAND判定した結果FAIL。①PASS(確認ページ200) ②PASS(本文に実在の裏付け記述あり) ③FAIL(img_count=0・スクリーンショットが無い)。なお本項目は一時queue.jsonから外れ status/deleted.json 側にのみ存在していたが、449番(7/9)の対象10件に含まれるため機械検品のため復元した。",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -2917,10 +2918,12 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html",
     "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/dispatch_outbox.jsonl"
    ],
-   "checkedAt": "2026-09-06T09:42:07+0900",
+   "checkedAt": "2026-09-06T12:39:21+0900",
    "startedAt": "2026-09-06T12:32:32+09:00",
    "sessionId": "517ad68c-7b96-448f-bf31-6dcb38888b0e",
-   "pid": 62253
+   "pid": 62253,
+   "okBy": "oni-kantoku-verify_check_pages-413-image-fix",
+   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/dispatch_outbox.jsonl => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html / ③PASS: img_count=2"
   }
  ]
 }
