@@ -18,6 +18,12 @@ iPhoneから放り込んだ画像を Eagle に取り込む。
   4. 失敗したものは残したまま、理由をログに書く（黙って消さない）
 
 ファイル名で行き先を指定することもできる。例: 「料理#夜食.jpg」→ タグ「夜食」も付く。
+
+2026-09-07 追加（デスクトップ見回り）:
+  たまごさんがUnsplash等からDLするとAVIF形式になり、それをEagleへ直接ドラッグすると
+  「インポート画面が出たまま」朝まで固まって残る事故が起きた。
+  同じことが起きないよう、このスクリプトは毎回デスクトップ直下も見回り、
+  avif/webp/heic を先にJPEGへ変換してからEagleへ登録する（元ファイルは削除せず退避）。
 """
 import io
 import json
@@ -35,7 +41,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 LOG = os.path.join(REPO, "status", "eagle_inbox.log")
 API = "http://localhost:41595"
-EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic", ".svg"}
+EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic", ".avif", ".svg"}
+# 2026-09-07 事故：たまごさんがUnsplashからDLした画像がAVIF形式で
+#   デスクトップに溜まり、それをEagleへドラッグしたら「インポート画面が出たまま」
+#   止まって朝まで残っていた（Eagleがsipsで変換前の生avifを読めなかったため）。
+#   対処＝①iPhone便のEXTSにも .avif を追加 ②デスクトップ直下を定期的に見回り、
+#         avif/webp/heic を先回りでJPEGへ変換してEagleへ入れてしまう（DESKTOP_SWEEP）。
+DESKTOP = os.path.expanduser("~/Desktop")
+DESKTOP_DONE = os.path.join(DESKTOP, "Eagle取り込み済み_変換画像")
+DESKTOP_SWEEP_EXTS = {".avif", ".webp", ".heic"}
+NEEDS_CONVERT_EXTS = {".heic", ".avif"}
 
 
 def log(msg):
@@ -88,15 +103,80 @@ def ensure_folder(name):
 
 
 def heic_to_jpg(path):
-    """iPhoneのHEICはEagleで扱いにくいのでJPGへ。macOS標準のsipsを使う（追加インストール不要）"""
+    """HEIC/AVIFはEagleで扱いにくいのでJPGへ。macOS標準のsipsを使う（追加インストール不要）"""
     out = os.path.splitext(path)[0] + ".jpg"
     try:
         subprocess.run(["sips", "-s", "format", "jpeg", path, "--out", out],
                        check=True, capture_output=True, timeout=60)
         return out if os.path.exists(out) else None
     except Exception as e:
-        log("HEIC変換に失敗 %s: %s" % (os.path.basename(path), e))
+        log("画像変換に失敗 %s: %s" % (os.path.basename(path), e))
         return None
+
+
+def desktop_avif_sweep():
+    """デスクトップ直下に転がっている avif/webp/heic を、次にEagleが止まる前に先回りで片付ける。
+    元ファイルは削除せず DESKTOP_DONE へ退避するだけ（作り直せないものは消さない方針）。"""
+    if not os.path.isdir(DESKTOP):
+        return
+    try:
+        names = [f for f in os.listdir(DESKTOP)
+                 if not f.startswith(".") and os.path.isfile(os.path.join(DESKTOP, f))
+                 and os.path.splitext(f)[1].lower() in DESKTOP_SWEEP_EXTS]
+    except Exception as e:
+        log("デスクトップ見回りに失敗: %s" % e)
+        return
+    if not names:
+        return
+    if not eagle_alive():
+        log("Eagleが起動していないのでデスクトップ見回りを見送り（%d件はそのまま待機）" % len(names))
+        return
+
+    os.makedirs(DESKTOP_DONE, exist_ok=True)
+    stage_dir = os.path.expanduser("~/Library/Caches/TamagoEagleInbox")
+    os.makedirs(stage_dir, exist_ok=True)
+    ok = ng = 0
+    for f in names:
+        src = os.path.join(DESKTOP, f)
+        try:
+            s1 = os.path.getsize(src)
+            time.sleep(0.4)
+            if os.path.getsize(src) != s1 or s1 == 0:
+                continue  # ダウンロード途中の可能性。次回に回す
+        except Exception:
+            continue
+
+        conv = heic_to_jpg(src)
+        if not conv:
+            ng += 1
+            continue
+        stem = os.path.splitext(os.path.basename(src))[0]
+        stage = os.path.join(stage_dir, "%d_%s.jpg" % (int(time.time()), stem))
+        try:
+            shutil.copyfile(conv, stage)
+        except Exception as e:
+            ng += 1
+            log("デスクトップ画像の控え作成に失敗 %s: %s" % (f, e))
+            continue
+        payload = {"path": stage, "name": stem,
+                   "tags": ["_from:desktop_sweep", "_in:" + time.strftime("%Y-%m-%d")],
+                   "annotation": "デスクトップに置かれた%s画像を自動変換して取り込み %s"
+                                 % (os.path.splitext(f)[1].lstrip("."), time.strftime("%Y-%m-%d %H:%M"))}
+        try:
+            api("/api/item/addFromPath", payload)
+            time.sleep(3)
+            ok += 1
+            shutil.move(src, os.path.join(DESKTOP_DONE, f))
+            if os.path.exists(conv):
+                os.remove(conv)  # sipsが作った変換ファイル本体はstageに控えがあるので消してよい
+            log("デスクトップ見回り登録OK %s" % f)
+        except Exception as e:
+            ng += 1
+            log("デスクトップ見回り登録に失敗 %s: %s" % (f, e))
+
+    if ok or ng:
+        log("デスクトップ見回り: 成功%d / 失敗%d" % (ok, ng))
+        print("デスクトップ見回り: 成功%d / 失敗%d" % (ok, ng))
 
 
 def main():
@@ -128,7 +208,7 @@ def main():
             continue
 
         path = src
-        if os.path.splitext(f)[1].lower() == ".heic":
+        if os.path.splitext(f)[1].lower() in NEEDS_CONVERT_EXTS:
             conv = heic_to_jpg(src)
             if not conv:
                 ng += 1
@@ -200,5 +280,14 @@ def main():
     return 0
 
 
+def main_with_desktop_sweep():
+    rc = main()
+    try:
+        desktop_avif_sweep()
+    except Exception as e:
+        log("デスクトップ見回りで例外: %s" % e)
+    return rc
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main_with_desktop_sweep())
