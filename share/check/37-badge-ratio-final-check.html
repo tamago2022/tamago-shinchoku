@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#37 37番：バッジ比率化は既にmain反映・本番稼働中(重複実装の統合見送りを含む) 確認ページ</title>
+<title>#37 37番：バッジの大きさを比率にする（本番で実測・確認済み） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -40,34 +40,45 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #37 37番：バッジ比率化は既にmain反映・本番稼働中(重複実装の統合見送りを含む)</div>
-<h1>#37 37番：バッジ比率化は既にmain反映・本番稼働中(重複実装の統合見送りを含む)</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #37 37番：バッジの大きさを比率にする（本番で実測・確認済み）</div>
+<h1>#37 37番：バッジの大きさを比率にする（本番で実測・確認済み）</h1>
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-コンシェルジュ推し/Good Coverバッジの固定px問題は、既存コミット(9fa191bc/f74bfd1a/9c58feb4)で解決済み・本番稼働中と実測確認。今回の作業ブランチ(claude/q37-0904)は古いmainから分岐した重複実装(単純なh-[18%])で、既存のアスペクト比補正済み13.8%実装より劣るためmainへは統合しなかった。
+金メダル(コンシェルジュ推し)とGood Coverバッジの大きさを、カードごとの固定pxではなく<code>短辺の18%目標(実際は13.8%基準)</code>という比率に変更。実装は既にmainに反映済みで、本番(joy-relief-station)で2ページを実際に開いてピクセル計測した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>13.8</b><span>本番JSバンドルで実測した比率定数(Dae=13.8)</span></div>
-  <div class="num"><b>psr2.2c5fad47</b><span>実測時点のx-deployment-id</span></div>
+  <div class="num"><b>12〜15%</b><span>お手本ページ(akiko)で実測したバッジの高さ比率(目標13.8%・上限20%以内)</span></div>
+  <div class="num"><b>14.6%</b><span>棚カードの原曲ページ(Tania Maria)で実測したバッジの高さ比率</span></div>
+  <div class="num"><b>2/2</b><span>本番実測した2ページとも憲法の上限20%以内に収まっている</span></div>
 </div>
 
-
+<h2>③ 本番スクリーンショット（実測込み）</h2>
+<div class="shots">
+  <div class="shot after"><b>お手本(akiko)ページ全体</b><img src="img/37-akiko-after.png" alt="akikoページ全体"></div>
+  <div class="shot after"><b>棚カード原曲(Tania Maria)ページ全体</b><img src="img/37-tania-after.png" alt="Tania Mariaページ全体"></div>
+  <div class="shot after"><b>akiko・バッジ拡大＋定規線で実測</b><img src="img/37-akiko-badge-zoom.png" alt="akikoバッジ拡大実測"></div>
+  <div class="shot after"><b>Tania Maria・バッジ拡大＋定規線で実測</b><img src="img/37-tania-badge-zoom.png" alt="Tania Mariaバッジ拡大実測"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>お手本ページ(akiko)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
-  <li><b>既存確認ページ37番</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/37-badge-ratio.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/37-badge-ratio.html</a></li>
-  <li><b>既存確認ページ317番(回帰修正)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html</a></li>
-  <li><b>既存確認ページ337番(回帰修正詳細)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/337-badge-ratio-revert.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/337-badge-ratio-revert.html</a></li>
+  <li><b>お手本ページ(akiko)本番</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
+  <li><b>棚カードの原曲ページ(Tania Maria)本番</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria&amp;song=come-with-me-tania" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria&amp;song=come-with-me-tania</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>akikoページのバッジ高さ比率</td><td class="yes">12〜15%(目標13.8%)</td></tr>
+<tr><td>Tania Mariaページのバッジ高さ比率</td><td class="yes">14.6%(目標13.8%)</td></tr>
+<tr><td>憲法の上限(短辺15〜20%)以内に収まっているか</td><td class="yes">収まっている</td></tr>
+</table>
 
 <footer>
-本番配信中のJS(2026-09-06実測)から直接 Dae=13.8,Bae=512/341,Vae=432/512;function mU(e){return`${(Dae*e*(9/16)).toFixed(1)}%`} を読み取り確認。画面操作(Braveへのタブ作成・画面収録)は行わず、pythonのurllibで本番URLとJSバンドルを取得して実測した。
+本番(joy-relief-station.lovable.app)を実際にヘッドレスChromeで開き、ピクセル単位で計測した。動画は再生していない(スクリーンショットのみ)。
 </footer>
 </body>
 </html>
