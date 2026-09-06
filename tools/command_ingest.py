@@ -509,44 +509,52 @@ def queue_redo(target):
     #   順番待ちの後に並んでいいよ、っていうのもある」
     #   → target は "12"（今まで通り＝先頭）か "12:5"（優先度つき）で受ける。
     #     優先度が付いていれば、先頭へ割り込ませず item.priority に書いて列の順番に任せる。
+    # 2026-09-06(585番) 「splitFromが同じもの（まとめ行）のやり直しは1本ずつ押させず、
+    #   グループ全n（"12,15,18"）へ一括で作用させる」→ 単体("12")もカンマ区切りも同じ道で受ける。
     prio = None
-    if ":" in str(target):
-        target, _p = str(target).split(":", 1)
+    t = str(target)
+    if ":" in t:
+        t, _p = t.split(":", 1)
         try:
             prio = int(_p)
         except Exception:
             prio = None
-    try:
-        n = int(target)
-    except Exception:
+    ns = _split_targets(t)
+    if not ns:
         return "failed", "番号が不正: %r" % target
     q = _load_queue()
     items = q.get("items") or []
-    idx = None
-    for i, it in enumerate(items):
-        if it.get("n") == n:
-            idx = i
-            break
-    if idx is None:
-        return "failed", "%d番がqueue.jsonに見つかりません" % n
-    it = items.pop(idx)
-    it["status"] = "waiting"
-    it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    for k in ("finishedAt", "result", "urls", "sessionId", "pid", "startedAt"):
-        it.pop(k, None)
-    if prio:
-        it["priority"] = prio
-        items.append(it)          # 順番待ちの後ろへ。優先度で拾われる
-        where = "P%d で列に戻しました（急がない）" % prio
-    else:
-        it.pop("priority", None)
-        it["priority"] = 1
-        items.insert(0, it)       # 今すぐ＝先頭へ割り込ませる
-        where = "列の先頭（次に発車）へ戻しました"
+    done = []
+    for n in ns:
+        idx = None
+        for i, it in enumerate(items):
+            if it.get("n") == n:
+                idx = i
+                break
+        if idx is None:
+            continue
+        it = items.pop(idx)
+        it["status"] = "waiting"
+        it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        for k in ("finishedAt", "result", "urls", "sessionId", "pid", "startedAt"):
+            it.pop(k, None)
+        if prio:
+            it["priority"] = prio
+            items.append(it)          # 順番待ちの後ろへ。優先度で拾われる
+        else:
+            it.pop("priority", None)
+            it["priority"] = 1
+            items.insert(0, it)       # 今すぐ＝先頭へ割り込ませる
+        done.append(n)
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
-    return "done", "%d番を%s" % (n, where)
+    if not done:
+        return "failed", "queue.jsonに見つかりません: %r" % target
+    where = ("P%d で列に戻しました（急がない）" % prio) if prio else "列の先頭（次に発車）へ戻しました"
+    if len(done) == 1:
+        return "done", "%d番を%s" % (done[0], where)
+    return "done", "%d件をまとめて%s（%s）" % (len(done), where, ",".join(str(x) for x in done))
 
 
 def queue_later(target):
@@ -873,31 +881,41 @@ def queue_delete(target):
 
     完了（成果として積む）とは別物。**もう要らない依頼を列から消す**ためのもの。
     消す前に status/deleted.json へ丸ごと退避する（憲法：消さずに倉庫へ。取り消せるようにしておく）。
+
+    2026-09-06(585番) 「splitFromが同じもの（まとめ行）の『まとめて消す』は1本ずつ押させず、
+    グループ全n（"12,15,18"）へ一括で作用させる」→ 単体("12")もカンマ区切りも同じ道で受ける。
     """
-    try:
-        n = int(target)
-    except Exception:
+    ns = _split_targets(target)
+    if not ns:
         return "failed", "番号が不正: %r" % target
     q = _load_queue()
     items = q.get("items") or []
-    it = _find_item(items, n)
-    if it is None:
-        return "failed", "%d番がqueue.jsonに見つかりません" % n
-    if it.get("status") == "running" and it.get("pid"):
-        try:
-            os.kill(int(it["pid"]), 15)
-        except Exception:
-            pass
     box = os.path.join(REPO, "status", "deleted.json")
     d = load_json(box, {"items": []})
-    it["deletedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    d.setdefault("items", []).append(it)
+    deleted = []
+    for n in ns:
+        it = _find_item(items, n)
+        if it is None:
+            continue
+        if it.get("status") == "running" and it.get("pid"):
+            try:
+                os.kill(int(it["pid"]), 15)
+            except Exception:
+                pass
+        it["deletedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        d.setdefault("items", []).append(it)
+        deleted.append(n)
     d["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     save_json(box, d)
-    q["items"] = [x for x in items if x.get("n") != n]
+    q["items"] = [x for x in items if x.get("n") not in deleted]
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
-    return "done", "%d番を消しました（取り消せるよう status/deleted.json に控えてあります）" % n
+    if not deleted:
+        return "failed", "queue.jsonに見つかりません: %r" % target
+    if len(deleted) == 1:
+        return "done", "%d番を消しました（取り消せるよう status/deleted.json に控えてあります）" % deleted[0]
+    return "done", "%d件をまとめて消しました（%s・取り消せるよう status/deleted.json に控えてあります）" % (
+        len(deleted), ",".join(str(x) for x in deleted))
 
 
 def disk_report(_target=None):

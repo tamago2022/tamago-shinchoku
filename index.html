@@ -1137,6 +1137,41 @@ function qnOf(s){
     x.status === "running" && (String(x.sessionId||"") === String(s.cli||"-") || String(x.pid) === String(s.pid)));
   return it ? it.n : null;
 }
+
+/* ───── 585番：splitFromが同じ行を1行にまとめる（確認待ち・発車待ち・走行中で共通） ─────
+   423番の自動分割で1つの依頼が9本・4本などに割れたとき、9行そのまま並べない。
+   1行にまとめ、残り件数だけ数字で見せる。開いた時だけ中の1本ずつが見える（既定は畳む）。
+   たまごさん「同じ名前のタスクが4分の1とか4分の2とかあるんだけど、これ1本にできないの」（2026-09-06）。 */
+const STATUS_JA = {
+  waiting: "発車待ち", running: "走行中", done: "おわり", cancelled: "取り消し",
+  awaiting_check: "確認待ち", later: "あとで", hold: "保留",
+};
+function splitGroupBaseTitle(it){
+  // まとめ行のタイトルは分割元のoriginalTitle（無ければtitle）だけを表示し、
+  // 「（i/total）」サフィックスと「【一覧作成】」プレフィックスを取り除く。
+  let t = (it && (it.originalTitle || it.title)) || "";
+  t = t.replace(/^【一覧作成】/, "");
+  t = t.replace(/[（(]\s*\d+\s*[\/／]\s*\d+\s*[）)]\s*$/, "");
+  return t.trim();
+}
+function splitGroupsOf(allItems){
+  // splitFromごとに全メンバー（状態を問わず）を集める。件数の正本はここ1か所だけ。
+  const map = new Map();
+  (allItems || []).forEach(it=>{
+    const sf = it.splitFrom;
+    if(!sf) return;
+    if(!map.has(sf)) map.set(sf, []);
+    map.get(sf).push(it);
+  });
+  map.forEach(arr => arr.sort((a,b)=>(a.splitIndex||0)-(b.splitIndex||0)));
+  return map;
+}
+function splitGroupSummary(members){
+  const total = Math.max(members.length, ...members.map(m=>m.splitTotal||0), 1);
+  const closed = members.filter(m=>m.status === "done" || m.status === "cancelled").length;
+  const remaining = Math.max(0, total - closed);
+  return {total, closed, remaining, allNs: members.map(m=>m.n).join(",")};
+}
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-pause]"); if(!b) return;
   const n = Number(b.dataset.pause);
@@ -1214,7 +1249,26 @@ function collectNow(m){
       urls: [], done: false, turns: 0, idleMin: 0, _fromQueue: true,
     });
   });
-  return Array.from(byKey.values());
+  // 585番：splitFromが同じもの（大きい仕事の自動分割で1本ずつ走らせているバッチ）は
+  // 1枚のカードにまとめる。グループ内に走行中(=ここに出てくる時点で必ず走行中)が
+  // 1本でもあれば、それを代表にしてグループ全体の進み具合を出す。2本目以降は出さない。
+  const qItemsForGroup = (window.__queue && window.__queue.items) || [];
+  const seenSplitFrom = new Set();
+  const merged = [];
+  Array.from(byKey.values()).forEach(s=>{
+    const n = qnOf(s);
+    const qit = n != null ? qItemsForGroup.find(x => x.n === n) : null;
+    const sf = qit && qit.splitFrom;
+    if(!sf){ merged.push(s); return; }
+    if(seenSplitFrom.has(sf)) return; // 同じグループの2本目以降は重複表示しない
+    seenSplitFrom.add(sf);
+    const groupMembers = qItemsForGroup.filter(x => x.splitFrom === sf);
+    const summary = splitGroupSummary(groupMembers);
+    merged.push(Object.assign({}, s, {
+      title: "📦 " + splitGroupBaseTitle(qit) + "（" + summary.total + "本中" + summary.closed + "本おわり・残り" + summary.remaining + "本）",
+    }));
+  });
+  return merged;
 }
 /* 2026-09-05 たまごさん「下のやつは詳細が開けるけれども、上のやつが開けない。
    上のやつも詳細を開けるようにしてください」→ 走行中のカードにも台帳の説明を畳んで持たせる。 */
@@ -1344,6 +1398,107 @@ function checkUrlReachable(url){
     .then(()=>{ clearTimeout(timer); window.__urlHealthCache[url] = true; return true; })
     .catch(()=>{ clearTimeout(timer); window.__urlHealthCache[url] = false; return false; });
 }
+function checkEvidOf(r){
+  // 1件分の証拠(スクショ・URLの生死)を計算する。単体行でも、まとめ行を開いた中の1本でも同じ計算を使う。
+  const urls = (r.urls||[]).filter(Boolean);
+  const checkUrl = urls.find(u => u.includes("/share/check/")) || null;
+  const primaryUrl = urls.find(u => !u.includes("/share/check/")) || checkUrl || urls[0] || null;
+  let thumbs = checkUrl ? window.__thumbCache[checkUrl] : null;
+  if(checkUrl && thumbs === undefined){ thumbs = "pending"; fetchCheckPageAssets(checkUrl).then(()=>renderCheck()); }
+  let health = primaryUrl ? window.__urlHealthCache[primaryUrl] : undefined;
+  if(primaryUrl && health === undefined){
+    health = "pending";
+    // 確認ページ自体が本番URLの場合は上のfetchで既にurlHealthも埋まるので二重には叩かない
+    if(primaryUrl !== checkUrl) checkUrlReachable(primaryUrl).then(()=>renderCheck());
+  }
+  const hasProof = Array.isArray(thumbs) && thumbs.length > 0;
+  const isDead = health === false;
+  // 並び順：証拠(スクショ)があるものを最優先、次にURLが生きているもの。分からない(pending)は中間に置く。
+  const score = (hasProof ? 2 : 0) + (isDead ? -3 : (health === true ? 1 : 0));
+  return {r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead, score};
+}
+function checkRowHtml(e){
+  const {r, urls, primaryUrl, thumbs, health, hasProof, isDead} = e;
+  const fin = r.finishedAt ? String(r.finishedAt).slice(5,16).replace("T"," ") : "";
+  const thumbsHtml = thumbs === "pending"
+    ? `<div class="cthumbs wait">確認中…</div>`
+    : hasProof
+      ? `<div class="cthumbs">${thumbs.map((u,i)=>`<img src="${esc(u)}" loading="lazy" alt="${i===0?"前":"後"}">`).join("")}</div>`
+      : `<div class="cthumbs none">⚠️ 証拠なし（スクショが見つかりません）</div>`;
+  const urlLabel = health === "pending" ? "▶ 本番を開いて確認" : isDead ? "⚠️ 開けないかも・要確認" : "▶ 本番を開いて確認";
+  const urlBtn = primaryUrl
+    ? `<a class="curlbtn${isDead ? " dead" : ""}" href="${esc(primaryUrl)}" target="_blank" rel="noopener">${urlLabel}</a>`
+    : `<div class="curlbtn dead">⚠️ URLの報告なし</div>`;
+  const allUrls = urls.map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
+  // 赤（証拠なし・URLが開かないおそれ）は「全部選ぶ」でも選ばれない別扱い＝チェックボックス自体をdisabledにして事故を防ぐ
+  const isRed = !hasProof || isDead;
+  const checked = window.__bulkSelected.has(r.n) ? " checked" : "";
+  return `<div class="crow${hasProof ? " proof" : " noproof"}" data-cn="${r.n}">
+    <div class="ctrow">
+      <label class="ccheck" title="${isRed ? "証拠なし・URL不通のためまとめてOK対象外（1件ずつなら押せます）" : "まとめてOKに含める"}">
+        <input type="checkbox" class="crowchk" data-cn="${r.n}"${isRed ? " disabled" : ""}${checked}>
+      </label>
+      <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
+    </div>
+    ${thumbsHtml}
+    ${urlBtn}
+    <!-- 2026-09-06(418番) たまごさん「押すだけで終わる確認待ち」→ 前面は2ボタンだけ。
+         あとで/削除・全文の報告・終了時刻・全URL一覧は<details>へ畳む（消してはいない）。 -->
+    <div class="cbtns cbtns2">
+      <button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了</button>
+      <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し</button>
+    </div>
+    <details class="cmore"><summary>くわしく</summary>
+      <div class="cm">${fin ? fin + " に終了" : ""}</div>
+      ${allUrls || `<div class="cm">URLの報告なし</div>`}
+      <div class="cr">${esc((r.result||"").slice(0,600))}</div>
+      <div class="cbtns">
+        <button class="clater" data-ck="later" data-n="${r.n}">🕗 あとで（手が空いたら）</button>
+        <button class="cdel" data-ck="del" data-n="${r.n}">🗑 このタスクを消す</button>
+      </div>
+    </details>
+  </div>`;
+}
+function checkGroupRowHtml(entry){
+  // 585番：splitFromが同じものは1行にまとめる。既定は畳んだ状態。開いた時だけ中の1本ずつが見える。
+  // 「↩︎やり直し」「🗑消す」「✅完了」はグループ全n（allNs＝カンマ区切り）へ一括で作用する。1本ずつ消させない。
+  const {members, memberEvids, summary, title} = entry;
+  const openMembers = memberEvids.filter(e => e.r.status !== "done" && e.r.status !== "cancelled");
+  return `<div class="crow cgroup" data-cn="${summary.allNs}">
+    <div class="ctrow">
+      <div class="ct">📦 ${esc(title)} <span class="cgprog">${summary.total}本中${summary.closed}本おわり・残り${summary.remaining}本</span></div>
+    </div>
+    <div class="cbtns cbtns2">
+      <button class="cok" data-ck="ok" data-n="${summary.allNs}">✅ まとめて完了</button>
+      <button class="cng" data-ck="ng" data-n="${summary.allNs}">↩︎ まとめてやり直し</button>
+    </div>
+    <details class="cmore"><summary>${members.length}本の内訳を見る</summary>
+      ${openMembers.length
+        ? openMembers.map(e => e.r.status === "awaiting_check" ? checkRowHtml(e)
+            : `<div class="cm">#${e.r.n}（${esc(STATUS_JA[e.r.status] || e.r.status)}）${esc(e.r.title || "")}</div>`).join("")
+        : memberEvids.map(e=>`<div class="cm">#${e.r.n}（${esc(STATUS_JA[e.r.status] || e.r.status)}）</div>`).join("")}
+      <div class="cbtns"><button class="cdel" data-ck="del" data-n="${summary.allNs}">🗑 まとめて消す</button></div>
+    </details>
+  </div>`;
+}
+function buildCheckEntries(rowsForSection, groupMap){
+  // splitFromが同じ行を1エントリにまとめる。まとめた後の並びは（グループも単体も）証拠の強さで揃える。
+  const seenSf = new Set();
+  const entries = [];
+  rowsForSection.forEach(r=>{
+    const sf = r.splitFrom;
+    if(!sf){ entries.push({isGroup:false, evid: checkEvidOf(r), score: checkEvidOf(r).score}); return; }
+    if(seenSf.has(sf)) return; // 同じグループの2本目以降は出さない
+    seenSf.add(sf);
+    const members = groupMap.get(sf) || [r];
+    const memberEvids = members.map(checkEvidOf);
+    const summary = splitGroupSummary(members);
+    const score = Math.max.apply(null, memberEvids.map(e=>e.score).concat([-3]));
+    entries.push({isGroup:true, splitFrom: sf, members, memberEvids, summary, title: splitGroupBaseTitle(members[0]), score});
+  });
+  entries.sort((a,b)=> b.score - a.score);
+  return entries;
+}
 function renderCheck(){
   const box = document.getElementById("check"); if(!box) return;
   const all = (window.__queue && window.__queue.items) || [];
@@ -1358,8 +1513,10 @@ function renderCheck(){
   const rows = allAwc.filter(r => r.origin === "user");
   const factoryRows = allAwc.filter(r => r.origin !== "user");
   document.getElementById("checkMeta").textContent = rows.length ? `${rows.length}件` : "";
+  const groupMap = splitGroupsOf(all);
   const factoryFold = factoryRows.length ? `<details class="cmore cfactory"><summary>🏭 工場発（見なくてよいもの）${factoryRows.length}件・畳んでいます</summary>
-      ${factoryRows.map(r=>{
+      ${buildCheckEntries(factoryRows, groupMap).map(en => en.isGroup ? checkGroupRowHtml(en) : (()=>{
+        const r = en.evid.r;
         const urls = (r.urls||[]).filter(Boolean).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
         return `<div class="crow" data-cn="${r.n}">
           <div class="ct">#${r.n} ${esc(r.title)}</div>
@@ -1368,30 +1525,16 @@ function renderCheck(){
           <div class="cbtns"><button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了</button>
           <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し</button></div>
         </div>`;
-      }).join("")}
+      })()).join("")}
     </details>` : "";
   if(!rows.length){ box.innerHTML = `<div class="card note">確認待ちはありません</div>` + factoryFold; return; }
-  const evid = rows.map(r=>{
-    const urls = (r.urls||[]).filter(Boolean);
-    const checkUrl = urls.find(u => u.includes("/share/check/")) || null;
-    const primaryUrl = urls.find(u => !u.includes("/share/check/")) || checkUrl || urls[0] || null;
-    let thumbs = checkUrl ? window.__thumbCache[checkUrl] : null;
-    if(checkUrl && thumbs === undefined){ thumbs = "pending"; fetchCheckPageAssets(checkUrl).then(()=>renderCheck()); }
-    let health = primaryUrl ? window.__urlHealthCache[primaryUrl] : undefined;
-    if(primaryUrl && health === undefined){
-      health = "pending";
-      // 確認ページ自体が本番URLの場合は上のfetchで既にurlHealthも埋まるので二重には叩かない
-      if(primaryUrl !== checkUrl) checkUrlReachable(primaryUrl).then(()=>renderCheck());
-    }
-    const hasProof = Array.isArray(thumbs) && thumbs.length > 0;
-    const isDead = health === false;
-    // 並び順：証拠(スクショ)があるものを最優先、次にURLが生きているもの。分からない(pending)は中間に置く。
-    const score = (hasProof ? 2 : 0) + (isDead ? -3 : (health === true ? 1 : 0));
-    return {r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead, score};
+  const entries = buildCheckEntries(rows, groupMap);
+  // まとめてOK：残っている番号（単体行＋まとめ行の中の確認待ちメンバー）だけに選択状態を絞る
+  const liveNs = new Set();
+  entries.forEach(en=>{
+    if(!en.isGroup){ liveNs.add(en.evid.r.n); return; }
+    en.memberEvids.forEach(e=>{ if(e.r.status === "awaiting_check") liveNs.add(e.r.n); });
   });
-  evid.sort((a,b)=> b.score - a.score);
-  // まとめてOK：残っている番号だけに選択状態を絞る（消えた・完了済みの番号を選択済みのまま残さない）
-  const liveNs = new Set(evid.map(e=>e.r.n));
   Array.from(window.__bulkSelected).forEach(n=>{ if(!liveNs.has(n)) window.__bulkSelected.delete(n); });
   const selCount = window.__bulkSelected.size;
   const bulkBar = `<div class="cbulk">
@@ -1406,47 +1549,9 @@ function renderCheck(){
     ? `<div class="cundo"><span>✅ ${window.__bulkUndo.ns.length}件を完了にしました</span>
         <button type="button" data-bulk="undo">↩︎ 取り消す（残り<span id="cundoSec">${Math.max(0, Math.ceil((window.__bulkUndo.until - Date.now())/1000))}</span>秒）</button></div>`
     : "";
-  box.innerHTML = bulkBar + undoBar + evid.map(({r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead})=>{
-    const fin = r.finishedAt ? String(r.finishedAt).slice(5,16).replace("T"," ") : "";
-    const thumbsHtml = thumbs === "pending"
-      ? `<div class="cthumbs wait">確認中…</div>`
-      : hasProof
-        ? `<div class="cthumbs">${thumbs.map((u,i)=>`<img src="${esc(u)}" loading="lazy" alt="${i===0?"前":"後"}">`).join("")}</div>`
-        : `<div class="cthumbs none">⚠️ 証拠なし（スクショが見つかりません）</div>`;
-    const urlLabel = health === "pending" ? "▶ 本番を開いて確認" : isDead ? "⚠️ 開けないかも・要確認" : "▶ 本番を開いて確認";
-    const urlBtn = primaryUrl
-      ? `<a class="curlbtn${isDead ? " dead" : ""}" href="${esc(primaryUrl)}" target="_blank" rel="noopener">${urlLabel}</a>`
-      : `<div class="curlbtn dead">⚠️ URLの報告なし</div>`;
-    const allUrls = urls.map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
-    // 赤（証拠なし・URLが開かないおそれ）は「全部選ぶ」でも選ばれない別扱い＝チェックボックス自体をdisabledにして事故を防ぐ
-    const isRed = !hasProof || isDead;
-    const checked = window.__bulkSelected.has(r.n) ? " checked" : "";
-    return `<div class="crow${hasProof ? " proof" : " noproof"}" data-cn="${r.n}">
-      <div class="ctrow">
-        <label class="ccheck" title="${isRed ? "証拠なし・URL不通のためまとめてOK対象外（1件ずつなら押せます）" : "まとめてOKに含める"}">
-          <input type="checkbox" class="crowchk" data-cn="${r.n}"${isRed ? " disabled" : ""}${checked}>
-        </label>
-        <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
-      </div>
-      ${thumbsHtml}
-      ${urlBtn}
-      <!-- 2026-09-06(418番) たまごさん「押すだけで終わる確認待ち」→ 前面は2ボタンだけ。
-           あとで/削除・全文の報告・終了時刻・全URL一覧は<details>へ畳む（消してはいない）。 -->
-      <div class="cbtns cbtns2">
-        <button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了</button>
-        <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し</button>
-      </div>
-      <details class="cmore"><summary>くわしく</summary>
-        <div class="cm">${fin ? fin + " に終了" : ""}</div>
-        ${allUrls || `<div class="cm">URLの報告なし</div>`}
-        <div class="cr">${esc((r.result||"").slice(0,600))}</div>
-        <div class="cbtns">
-          <button class="clater" data-ck="later" data-n="${r.n}">🕗 あとで（手が空いたら）</button>
-          <button class="cdel" data-ck="del" data-n="${r.n}">🗑 このタスクを消す</button>
-        </div>
-      </details>
-    </div>`;
-  }).join("") + factoryFold;
+  box.innerHTML = bulkBar + undoBar
+    + entries.map(en => en.isGroup ? checkGroupRowHtml(en) : checkRowHtml(en.evid)).join("")
+    + factoryFold;
 }
 /* ───── 完了一覧（積み上げ） ─────
    2026-09-04 たまごさん「OKと判定されたものを、日時とURLつきで完了一覧に積む。
