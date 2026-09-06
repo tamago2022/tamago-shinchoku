@@ -35,7 +35,13 @@ DRIVE_DIR = "/Users/mac/Library/CloudStorage/GoogleDrive-eggypop2010@gmail.com/�
 USD_TO_JPY = 157.0
 BUDGET_JPY = 300.0
 
-COST_LOG = []
+# 2026-09-06 419番: COST_LOGはプロセス起動のたびに空になる。
+# 前回プロセス（梅の3ショット+竹sh09実測=123.3円）は既に実費が発生済みで
+# output/内のファイルとしてもSKIP-DUPで残っているため、その分を最初から
+# 積んでおかないと「合計300円で必ず止まる」が壊れて二重に予算を使ってしまう。
+PRIOR_SPEND_JPY = 123.3
+COST_LOG = [{"label": "前回実行分(引き継ぎ)", "usd": PRIOR_SPEND_JPY / USD_TO_JPY, "jpy": PRIOR_SPEND_JPY,
+             "note": "梅3ショット+竹sh09実測（前プロセスで実費発生済み・output/に成果物あり）", "t": "prior"}]
 
 
 def jpy(usd):
@@ -59,22 +65,30 @@ def would_exceed(usd):
 # ---------- ① 画像の切り出し（無料・ローカル処理） ----------
 
 def crop_shots():
-    from PIL import Image
     img_dir = os.path.join(HERE, "img")
     os.makedirs(img_dir, exist_ok=True)
-    src1 = Image.open(os.path.join(FLAT_PACK, "21_SHOTS_06_10.png"))
-    sh09 = src1.crop((30, 505, 560, 780))
-    sh09.save(os.path.join(img_dir, "sh09_source.png"))
-    sh10 = src1.crop((828, 505, 1360, 780))
-    sh10.save(os.path.join(img_dir, "sh10_source.png"))
-    src2 = Image.open(os.path.join(FLAT_PACK, "22_SHOTS_11_15.png"))
-    sh11 = src2.crop((15, 172, 565, 425))
-    sh11.save(os.path.join(img_dir, "sh11_source.png"))
-    return {
+    paths = {
         "sh09": os.path.join(img_dir, "sh09_source.png"),
         "sh10": os.path.join(img_dir, "sh10_source.png"),
         "sh11": os.path.join(img_dir, "sh11_source.png"),
     }
+    if all(os.path.exists(p) and os.path.getsize(p) > 0 for p in paths.values()):
+        # 2026-09-06 419番: 元の制作パックフォルダ(FLAT_PACK)が本セッション時点で
+        # 見当たらなくなっていた（移動/整理された可能性）。前回プロセスが既に
+        # 切り出し済みのこの3枚をそのまま再利用する（無料処理・二重生成不要）。
+        print("[SKIP-DUP] 画像切り出しは前回分を再利用（元FLAT_PACKが見当たらないため）")
+        return paths
+
+    from PIL import Image
+    src1 = Image.open(os.path.join(FLAT_PACK, "21_SHOTS_06_10.png"))
+    sh09 = src1.crop((30, 505, 560, 780))
+    sh09.save(paths["sh09"])
+    sh10 = src1.crop((828, 505, 1360, 780))
+    sh10.save(paths["sh10"])
+    src2 = Image.open(os.path.join(FLAT_PACK, "22_SHOTS_11_15.png"))
+    sh11 = src2.crop((15, 172, 565, 425))
+    sh11.save(paths["sh11"])
+    return paths
 
 
 # ---------- ② 静止画から「固定カメラの5秒動画」を作る（Kling LipSyncのvideo_url入力用・無料） ----------
@@ -214,80 +228,118 @@ def run_ume(tts_paths):
     return final if clip_paths else None
 
 
-# ---------- ④ 竹：Seedance 2.0 mini（まず1本だけ実測） ----------
+# ---------- ④ 竹：Seedance 2.0 mini（sh09で実測済み・sh10/sh11も同様に追加して15秒フルへ） ----------
+
+TAKE_PROMPTS = {
+    "sh09": "A puppet-like animated man in a red velvet coat gestures dramatically, mouth moving as if shouting joyfully, camera fixed, subtle natural motion.",
+    "sh10": "A puppet-like animated man in a red velvet coat argues with a woman, both gesturing emotionally, camera fixed, subtle natural motion.",
+    "sh11": "A puppet-like animated woman speaks calmly and honestly, gentle hand gesture, camera fixed, subtle natural motion.",
+}
+
 
 def run_take(shots):
-    print("\n=== 【竹】bytedance/seedance-2.0/mini/image-to-video（まず1本だけ実測） ===")
-    shot_key = "sh09"
-    image_url = fh.upload_file(shots[shot_key], "image/png")
-    prompt = "A puppet-like animated man in a red velvet coat gestures dramatically, mouth moving as if shouting joyfully, camera fixed, subtle natural motion."
+    print("\n=== 【竹】bytedance/seedance-2.0/mini/image-to-video（3ショット・15秒フル） ===")
+    clip_paths = []
+    for shot_key in ("sh09", "sh10", "sh11"):
+        existing = os.path.join(OUT_DIR, f"{shot_key}_take.mp4")
+        if os.path.exists(existing) and os.path.getsize(existing) > 0:
+            print(f"[SKIP-DUP] {shot_key}: 既にSeedance2.0生成済み（二重課金回避）: {existing}")
+            clip_paths.append(existing)
+            continue
 
-    # 480p・5秒 = 最安構成での実測（公式早見表: 480p 約0.0721ドル/秒）
-    est_usd_worst_case = 0.0721 * 5 + 0.05  # 少し余裕を見た概算
-    if would_exceed(est_usd_worst_case):
-        print("[STOP] 竹の実測すら予算内に収まらない見込み。ここで竹はスキップ。")
-        return None
+        # 480p・5秒 = 最安構成での実測単価をsh09実測（56.6円/5秒）から採用
+        est_usd = 0.3605
+        if would_exceed(est_usd):
+            print(f"[STOP] 竹:{shot_key} で予算超過見込み。ここで竹は打ち切り。")
+            break
 
-    try:
-        out = fh.run_sync(
-            "bytedance/seedance-2.0/mini/image-to-video",
-            {"prompt": prompt, "image_url": image_url, "resolution": "480p", "duration": "5"},
-            timeout=420,
-        )
-    except Exception as e:
-        print(f"[ERROR] 竹の実測生成に失敗: {e}")
-        print("        (パラメータ名 resolution/duration の実際の許容値をfalのエラーメッセージで確認して調整してください)")
-        return None
+        image_url = fh.upload_file(shots[shot_key], "image/png")
+        prompt = TAKE_PROMPTS[shot_key]
+        try:
+            out = fh.run_sync(
+                "bytedance/seedance-2.0/mini/image-to-video",
+                {"prompt": prompt, "image_url": image_url, "resolution": "480p", "duration": "5"},
+                timeout=420,
+            )
+        except Exception as e:
+            print(f"[ERROR] 竹:{shot_key} 生成に失敗: {e}")
+            continue
 
-    # 注意：実際の請求額はfalダッシュボードでのみ確定する。ここでは早見表の単価から概算する。
-    record("Seedance2.0:sh09(実測)", 0.0721 * 5, "480p・5秒・1本のみ（本当の請求額はfalダッシュボードで要確認）")
-    out_url = fh.find_url(out)
-    if out_url:
-        dest = os.path.join(OUT_DIR, "sh09_take.mp4")
-        fh.download(out_url, dest)
-        print(f"  -> {dest}")
-        return dest
-    print(f"[WARN] 竹の出力URLが見つからない: {json.dumps(out)[:400]}")
-    return None
+        # 注意：実際の請求額はfalダッシュボードでのみ確定する。ここではsh09実測値を単価として概算する。
+        record(f"Seedance2.0:{shot_key}", est_usd, "480p・5秒（sh09実測単価を採用。本当の請求額はfalダッシュボードで要確認）")
+        out_url = fh.find_url(out)
+        if out_url:
+            dest = os.path.join(OUT_DIR, f"{shot_key}_take.mp4")
+            fh.download(out_url, dest)
+            clip_paths.append(dest)
+            print(f"  -> {dest}")
+        else:
+            print(f"[WARN] 竹:{shot_key} の出力URLが見つからない: {json.dumps(out)[:400]}")
+
+    final = os.path.join(OUT_DIR, "take_15s.mp4")
+    if clip_paths:
+        concat_bytes(clip_paths, final)
+        print(f"[DONE] 竹版（単純結合・{len(clip_paths)}ショット）: {final}")
+    return final if clip_paths else None
 
 
-# ---------- ⑤ 松：Seedance 2.5 reference-to-video（まず1本だけ実測） ----------
+# ---------- ⑤ 松：Seedance 2.5 reference-to-video（1本ずつ実測しながら予算内で追加） ----------
+
+MATSU_PROMPTS = {
+    "sh09": "Cinematic camera slowly pushes in on a puppet-like animated man in a red velvet coat, shouting joyfully with dramatic hand gestures, warm moonlit night background.",
+    "sh10": "Cinematic camera slowly pushes in on a puppet-like animated man arguing emotionally with a woman, warm moonlit night background.",
+    "sh11": "Cinematic camera slowly pushes in on a puppet-like animated woman speaking calmly and honestly, warm moonlit night background.",
+}
+
 
 def run_matsu(shots):
-    print("\n=== 【松】bytedance/seedance-2.5/reference-to-video（まず1本だけ実測） ===")
-    shot_key = "sh09"
-    image_url = fh.upload_file(shots[shot_key], "image/png")
-    prompt = "Cinematic camera slowly pushes in on a puppet-like animated man in a red velvet coat, shouting joyfully with dramatic hand gestures, warm moonlit night background."
-
+    print("\n=== 【松】bytedance/seedance-2.5/reference-to-video（1本ずつ実測しながら予算内で追加） ===")
+    clip_paths = []
     # 720p・5秒での最悪見積り（公式早見表: 720p 約0.28〜0.47ドル/秒）→ 5秒で約1.4〜2.35ドル ≈ 220〜370円
     # 予算300円の大半〜全部を1本で使い切る可能性が高いため、480pでの実測を優先する。
     est_usd_worst_case = 0.13 * 5 + 0.1  # 480p下限側で見積り
-    if would_exceed(est_usd_worst_case):
-        print("[STOP] 松の実測ですら予算内に収まらない見込み。松は実行せず、価格情報のみ報告する。")
-        return None
 
-    try:
-        out = fh.run_sync(
-            "bytedance/seedance-2.5/reference-to-video",
-            {"prompt": prompt, "image_urls": [image_url], "resolution": "480p", "duration": "5"},
-            timeout=420,
-        )
-    except Exception as e:
-        print(f"[ERROR] 松の実測生成に失敗: {e}")
-        print("        (2026-09-06 419番: 1回目は reference_image_url で HTTP422")
-        print("         'At least one reference image or video is required' → image_urls(配列)に修正済み。")
-        print("         それでも失敗する場合は fal.ai/models/bytedance/seedance-2.5/reference-to-video/api を再確認)")
-        return None
+    for shot_key in ("sh09", "sh10", "sh11"):
+        existing = os.path.join(OUT_DIR, f"{shot_key}_matsu.mp4")
+        if os.path.exists(existing) and os.path.getsize(existing) > 0:
+            print(f"[SKIP-DUP] {shot_key}: 既にSeedance2.5生成済み（二重課金回避）: {existing}")
+            clip_paths.append(existing)
+            continue
 
-    record("Seedance2.5:sh09(実測)", est_usd_worst_case, "480p・5秒・1本のみ（本当の請求額はfalダッシュボードで要確認）")
-    out_url = fh.find_url(out)
-    if out_url:
-        dest = os.path.join(OUT_DIR, "sh09_matsu.mp4")
-        fh.download(out_url, dest)
-        print(f"  -> {dest}")
-        return dest
-    print(f"[WARN] 松の出力URLが見つからない: {json.dumps(out)[:400]}")
-    return None
+        if would_exceed(est_usd_worst_case):
+            print(f"[STOP] 松:{shot_key} で予算超過見込み。ここで松は打ち切り。")
+            break
+
+        image_url = fh.upload_file(shots[shot_key], "image/png")
+        prompt = MATSU_PROMPTS[shot_key]
+        try:
+            out = fh.run_sync(
+                "bytedance/seedance-2.5/reference-to-video",
+                {"prompt": prompt, "image_urls": [image_url], "resolution": "480p", "duration": "5"},
+                timeout=420,
+            )
+        except Exception as e:
+            print(f"[ERROR] 松:{shot_key} 生成に失敗: {e}")
+            print("        (2026-09-06 419番: 1回目は reference_image_url で HTTP422")
+            print("         'At least one reference image or video is required' → image_urls(配列)に修正済み。")
+            print("         それでも失敗する場合は fal.ai/models/bytedance/seedance-2.5/reference-to-video/api を再確認)")
+            continue
+
+        record(f"Seedance2.5:{shot_key}(実測)", est_usd_worst_case, "480p・5秒（本当の請求額はfalダッシュボードで要確認）")
+        out_url = fh.find_url(out)
+        if out_url:
+            dest = os.path.join(OUT_DIR, f"{shot_key}_matsu.mp4")
+            fh.download(out_url, dest)
+            clip_paths.append(dest)
+            print(f"  -> {dest}")
+        else:
+            print(f"[WARN] 松:{shot_key} の出力URLが見つからない: {json.dumps(out)[:400]}")
+
+    final = os.path.join(OUT_DIR, "matsu_15s.mp4")
+    if clip_paths:
+        concat_bytes(clip_paths, final)
+        print(f"[DONE] 松版（単純結合・{len(clip_paths)}ショット）: {final}")
+    return final if clip_paths else None
 
 
 def write_cost_report(ume_ok, take_ok, matsu_ok):
@@ -336,10 +388,13 @@ def main():
     try:
         tts_paths = run_tts_all()
         ume = run_ume(tts_paths)
-        if total_jpy() < BUDGET_JPY:
-            take = run_take(shots)
+        # 2026-09-06 419番: 松(Seedance2.5)は単価が竹(Seedance2.0)より高く、
+        # 竹を先に使い切ると松の実測すら1本もできなくなる。
+        # 「Seedanceの実単価を実測する」目的を優先し、松を先に1本以上試す。
         if total_jpy() < BUDGET_JPY:
             matsu = run_matsu(shots)
+        if total_jpy() < BUDGET_JPY:
+            take = run_take(shots)
     finally:
         _finalize(ume, take, matsu)
 
