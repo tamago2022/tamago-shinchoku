@@ -48,8 +48,15 @@ ul{padding-left:1.2em}
 </div>
 
 <div class="b">
+<p class="ok">⑤ スクリーンショット（2026-09-06追記・461番）</p>
+<p class="small">本番へ再度「変更を公開」を実行し、SSR（サーバーが返す実HTML）でタイトルが日本語化されていることを実測した一覧。399番のw1gCW_66zzcを含む17件中17件が実測OK。</p>
+<img src="img/399-404-ssr-evidence.png" alt="本番SSR実測一覧。399番の動画を含む全件が日本語タイトルになっている" style="max-width:100%;border-radius:8px;border:1px solid #2a323c">
+<p class="small">なお実測の過程で、ヘッドレスブラウザで実際にページをレンダリングすると、SSRの日本語タイトルとは異なり英語タイトルのまま表示される現象を発見した（curl/fetchでのSSR実測は一貫して日本語・ブラウザでのクライアント側レンダリングだけ英語のまま）。原因未特定のため、新しい不具合として次の担当へ引き継ぐ。</p>
+</div>
+
+<div class="b">
 <p class="ok">状態</p>
-<p>①実装：完了 ②main合流：完了（コミット<code>281c381b</code>・<code>98768794</code>） ③Lovable公開：完了（実測・x-deployment-id変化を確認） ④実測確認：①②は完了、③④（関連アーティスト・同じ棚の仲間）はJS実行後の表示のため未実機確認 ⑤店主の実画面確認：未。</p>
+<p>①実装：完了 ②main合流：完了（コミット<code>281c381b</code>・<code>98768794</code>） ③Lovable公開：完了（実測・x-deployment-id変化を確認） ④実測確認：①②はSSR実測で完了、③④（関連アーティスト・同じ棚の仲間）はJS実行後の表示のため未実機確認、⑤クライアント側レンダリングでタイトルが英語に戻る現象を新規発見（別課題） ⑥店主の実画面確認：未。</p>
 </div>
 
 <p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
