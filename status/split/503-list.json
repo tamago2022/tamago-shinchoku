@@ -1,0 +1,15 @@
+{
+  "items": [
+    "src/components/SongRelatedVideosSection.tsx：related_videos配列を登録順のまま描画しているだけで並び替えロジックが無い。店主指定の優先順位（本人→本人の別バージョン→その曲が実際に使われたもの→カバー→パロディ）でソートする関数を追加する",
+    "src/components/SongRelatedVideosSection.tsx：featured（先頭2件・大サイズ）とrest（3件目以降・小サイズ）の振り分けが単純に配列の先頭2件になっている（80行目 slice(0,2)）。並び替え後の順位ではなくv.kind==='parody'等がfeaturedに来ないよう、本人動画を必ずfeatured先頭・パロディを必ずrest末尾に固定する分岐を追加する",
+    "src/components/SongRelatedVideosSection.tsx：同一URL/動画IDの重複除去ロジックが存在しない（keyにv.urlを使っているだけでuniq化していない）。related_videos表示直前にURL基準の重複排除フィルタを追加する（このロジックは全曲ページ共通コンポーネントなので直せば全ページに効く）",
+    "nakajima/ito（中島みゆき「糸」）: admin_song_overridesテーブルのrelated_videosから、文脈が合わない4本（ケンタッキーフライドチキンCM／I Miss You／巨勢典子／二人の夏物語＝いずれも「夏」の単語一致だけで紐づいている）をDB側で削除する。「忘れられない会」で実際に使われた動画1本は名指しで残す",
+    "nakajima/ito：related_videosに同じパロディ動画が3枚重複登録されている実物を特定し、1本だけ残して2本削除する（③の共通フィルタ実装後の実データクレンジングとして、共通修正が効くか確認する意味でも必須）",
+    "バッジサイズ不一致の原因：src/lib/badgeKinds.ts の CONCIERGE_BADGE_SIZE_CLASS（GoodCoverBadge/ConciergePickBadge共通・101〜104行目）が今も固定px（normal: h-11 md:h-14, compact: h-10）で定義されており、店主の言う「短辺13.8%」という比率指定はコード全文検索でも見つからない。317番タスクで比率へ戻したはずの修正が本当にmainへ反映されているか、比率ベース（例: w-[13.8%]相当）へ書き換わっているかをgit logで確認し、未反映なら比率指定へ統一する",
+    "akiko/love-theme-from-spartacus ページと nakajima/ito ページで、実際に描画されているバッジの種類（AiCoverBadge固定px／GoodCoverBadge固定px／ConciergePickBadge固定px のどれが乗っているか）が食い違っている可能性を確認し、同じ曲種別なら同じコンポーネント・同じサイズ定数を使うよう揃える",
+    "「単語が一致しただけで無関係な動画が関連付けられる」仕組みの所在特定：related_videosがどの仕入れ・自動関連付けスクリプト（scripts/配下または管理画面の自動登録機能）から書き込まれたかを追跡し、タイトル内キーワード一致のみで曲・アーティストと無関係な動画を紐付けている箇所を特定する（1ページ直しでなく仕組み自体を直すための調査）",
+    "上記⑦の自動関連付けロジックが影響している可能性のある他の曲ページの実例を2〜3件、コード/データから洗い出す（「1ページだけ直して終わりにしない」という店主指示への次回対応材料。今回はリストアップのみで着手はしない）",
+    "検品項目の追加：`oni-kantoku`（鬼監督）／`page-kenpin`のチェックリストに「関連動画の重複0件」「文脈適合（曲・アーティストと無関係な動画が無いか）」「バッジサイズが比率指定になっているか」の3項目を追加し、次回このページを直す担当が機械的に確認できるようにする",
+    "修正完了後、本番の https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&song=ito を実際に開き、ヘッダーから関連動画セクションまで上から下へ目視確認し、ビフォーアフターのスクリーンショットを確認ページへ並べる最終確認タスク"
+  ]
+}
