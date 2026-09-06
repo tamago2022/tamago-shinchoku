@@ -960,9 +960,25 @@ def harvest(q):
     return changed
 
 
+# 案件#437（2026-09-06）：falの教材ファイル一式（Vault
+# AI出力/falの教科書_教材ファイル一式/fal-kyokasho/）が正本になったので、
+# fal関連の案件が来た時だけ、この1行を指示文の末尾に足す。
+FAL_MODEL_TABLE_NOTE = """
+
+# falを触る前に（案件#437・2026-09-06）
+**falを触る前に、Vaultの教材ファイル `MODEL_TABLE.md`（`AI出力/falの教科書_教材ファイル一式/fal-kyokasho/MODEL_TABLE.md`）を必ず見る。**
+`share/check/316-fal-hayamihyo.html`等の早見表URLはこれまでどおり参考にしてよいが、型番・単価の正本は教材ファイルのMODEL_TABLE.md。
+"""
+
+
+def _is_fal_related(item):
+    text = "{} {}".format(item.get("title") or "", item.get("what") or "")
+    return "fal" in text.lower()
+
+
 def build_prompt(item):
     """着火用の指示文。たまごさんが繰り返し言っていることを毎回入れる。"""
-    return """【自動発車】発車待ちの{n}番です。
+    base = """【自動発車】発車待ちの{n}番です。
 
 # やること
 **{title}**
@@ -1147,6 +1163,9 @@ def build_prompt(item):
 - 棚への新規掲載はしない（たまごさんの判断領域）。既存の修正・確認に限る
 - BraveとLovableのChromeウィンドウを閉じない
 """.format(n=item.get("n"), title=item.get("title"), what=item.get("what") or "")
+    if _is_fal_related(item):
+        base += FAL_MODEL_TABLE_NOTE
+    return base
 
 
 def main():
