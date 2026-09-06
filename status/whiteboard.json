@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 09:04",
+ "updatedAt": "2026-09-06 09:05",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -213,11 +213,11 @@
    "priority": 3,
    "rank": 14,
    "task": "管理画面のログイン地獄",
-   "state": "検証待ち",
+   "state": "判断待ち",
    "owner": null,
    "count": "25",
-   "updatedAt": "2026-09-03 10:22",
-   "note": "コード側の多層対策は全て完了・mainに反映済み(2026-08-06、e17dffb6ほか)。①AdminShelfContextへ認証を一元化(601123e5、個別コンポーネントがバラバラにuseAdminAuth持つ事故を解消)②Cookie最大400日+使うたび自動延長③direct/embed(iframe用Partitioned)の二重Cookie戦略④SafariのlocalStorage 7日ITP対策としてサーバー読取CookIeの目印(gokigen-admin-hint)を新設し判定を統一⑤合言葉を1文字'@'まで単純化+記号/大小文字/全角ゆらぎを正規化。ただしKNOWN_ISSUES.md自身が『店主の実端末(iPhone/Mac Safari)での実画面確認はまだ取れていない。これが取れるまでは解決済みへ移動しない』と明記(2026-08-06時点から未更新)。関連の未マージ枝claude/admin-login-persist(86797ff8, 08-16)も調査したが内容は既にmainの'@'方式に上位互換で吸収済み、活用価値なし。**T009/T012/T013と違い、この件はSafari実機のCookie保持という性質上、curl/SSR等のAI側検証手段では代替できない**。次に必要なのはたまごさん本人が普段使う端末で数日空けてから開き直し、ログインが保持されているかの一目。 [実装:wd_c018ac2a]",
+   "updatedAt": "2026-09-06 09:05",
+   "note": "別の目で確認：コード側の全対策(commit e17dffb6・601123e5含む)はorigin/mainの祖先であることを確認済み。ただし本件はSafari実機のCookie保持という性質上、AI側の検証手段(curl/SSR等)では原理的に代替不可。店主へ1行：普段お使いの端末（iPhone/Mac）で数日以上あけてから管理画面を開き直し、ログインが保持されているか一目見てください→保持されていれば「完了」で閉じられます",
    "stale": false
   },
   {
