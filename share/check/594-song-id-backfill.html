@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#594 曲のid空欄17件を埋めて壊れにくくした（常設594番） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #594 曲のid空欄17件を埋めて壊れにくくした（常設594番）</div>
+<h1>#594 曲のid空欄17件を埋めて壊れにくくした（常設594番）</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+37,613曲の名簿のうち、URL・関連付けに使う<code>id</code>が空文字のまま登録されていた17曲を、既存の命名ルール(youtubeIdベース／無い場合はアーティストID+番号)で埋めた。見た目の変化は無い、曲が増えても壊れにくくするためのデータ整合性の修理（順番待ちが16本あり列の補充条件(5本未満)に達していなかったため、新規タスク追加の代わりに『壊れにくさ』優先度1位の小さな修理を自分で実行した）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>17件→0件</b><span>patrol検品(check-data-holes.mjs)の「id空欄」警告件数（修理前→修理後）</span></div>
+  <div class="num"><b>37,613曲</b><span>対象の名簿全体（今回1件も削除・変更していない）</span></div>
+  <div class="num"><b>0件</b><span>型チェック(tsc --noEmit)の新規エラー</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>patrol検品の件数（1枚で前後を比較表示）</b><img src="img/594-before-after.png" alt="前"></div>
+  <div class="shot after"><b>同上（本番反映後に再実行しても同じ結果）</b><img src="img/594-before-after.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番・虹(laruku)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=laruku&amp;song=song-g9yokp1cnry" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=laruku&amp;song=song-g9yokp1cnry</a></li>
+  <li><b>本番・大地(BEYOND)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=beyond&amp;song=song-beyond-6" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=beyond&amp;song=song-beyond-6</a></li>
+  <li><b>本番・やってみよう(WANIMA)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=wanima&amp;song=song-wanima-1" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=wanima&amp;song=song-wanima-1</a></li>
+  <li><b>コミット(main)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/f65d26e7" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/f65d26e7</a></li>
+</ul>
+
+
+
+<footer>
+このページは #594 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
