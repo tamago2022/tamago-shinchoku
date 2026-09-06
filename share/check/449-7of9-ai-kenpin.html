@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#449 449番(7/9・訂正版): 確認待ち10件を鬼監督が判定 確認ページ</title>
+<title>#449 449番(7/9・訂正版): 確認待ち10件を鬼監督が機械検品 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -40,19 +40,19 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #449 449番(7/9・訂正版): 確認待ち10件を鬼監督が判定</div>
-<h1>#449 449番(7/9・訂正版): 確認待ち10件を鬼監督が判定</h1>
-<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認（1回目のAI検品指摘を受けて根拠を訂正）</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #449 449番(7/9・訂正版): 確認待ち10件を鬼監督が機械検品</div>
+<h1>#449 449番(7/9・訂正版): 確認待ち10件を鬼監督が機械検品</h1>
+<div class="date">2026-09-06 恒久ツール tools/verify_check_pages.py で再判定・訂正版</div>
 
 <div class="fix">
-1回目の提出は「n=401/413はdeleted.jsonで確認」と書いたが、公開されているstatus/deleted.json（コミット済み・main反映済み）には実は401/413が存在せず、根拠が裏取りできなかった（AI検品ではねられた）。今回は deleted.json を根拠にせず、10件全ての確認ページURLを直接fetchしてHTTP 200と本文の内容一致を1件ずつ確認し直した。
+1回目の提出はn=401/413の根拠に『deleted.jsonで確認』と書いたが、main反映済みのdeleted.jsonに実は無く、AI検品に『捏造』と指摘された。今回は自己判断をやめ、恒久の機械検品ツール(tools/verify_check_pages.py＝①URL200 ②本文に裏付け ③スクショ<img>実在、をAND判定)に10件全部をかけ直した。結果、10件全てが③(スクショ無し)でFAILし、waitingへ差し戻した（自動OK＝0件）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>10</b><span>判定対象</span></div>
-  <div class="num"><b>10</b><span>確認ページを直接fetchしHTTP200＋内容一致を確認</span></div>
-  <div class="num"><b>0</b><span>差し戻し</span></div>
+  <div class="num"><b>0</b><span>機械検品PASS(自動OK)</span></div>
+  <div class="num"><b>10</b><span>③スクショ無しでFAIL→waitingへ差し戻し</span></div>
   <div class="num"><b>0</b><span>判断できず店主へ</span></div>
 </div>
 
@@ -60,37 +60,38 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>398 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/398-daily-link-triage.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/398-daily-link-triage.html</a></li>
-  <li><b>399 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/399-monster-truck.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/399-monster-truck.html</a></li>
-  <li><b>401 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/401-ep01-3tier-compare.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/401-ep01-3tier-compare.html</a></li>
-  <li><b>403 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html</a></li>
-  <li><b>404 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/404-english-titles.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/404-english-titles.html</a></li>
-  <li><b>406 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/406-priority-no-p.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/406-priority-no-p.html</a></li>
-  <li><b>407 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/407-entaku-copyright-ep02.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/407-entaku-copyright-ep02.html</a></li>
-  <li><b>411 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/411-usagi-ninjin-sfx.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/411-usagi-ninjin-sfx.html</a></li>
-  <li><b>412 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/412-hantei-tanaoshi.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/412-hantei-tanaoshi.html</a></li>
-  <li><b>413 確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html</a></li>
-  <li><b>413の成果物(dispatch_outbox.jsonl・31行が稼働中)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/dispatch_outbox.jsonl" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/dispatch_outbox.jsonl</a></li>
-  <li><b>訂正の監査ログ(oni_kantoku_log.jsonl)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/oni_kantoku_log.jsonl</a></li>
+  <li><b>監査ログ(oni_kantoku_log.jsonl・今回の10行を含む)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/oni_kantoku_log.jsonl</a></li>
+  <li><b>queue.json(status:waiting反映後)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/queue.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/queue.json</a></li>
+  <li><b>機械検品ツール本体</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_check_pages.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_check_pages.py</a></li>
+  <li><b>398確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/398-daily-link-triage.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/398-daily-link-triage.html</a></li>
+  <li><b>399確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/399-monster-truck.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/399-monster-truck.html</a></li>
+  <li><b>401確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/401-ep01-3tier-compare.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/401-ep01-3tier-compare.html</a></li>
+  <li><b>403確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html</a></li>
+  <li><b>404確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/404-english-titles.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/404-english-titles.html</a></li>
+  <li><b>406確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/406-priority-no-p.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/406-priority-no-p.html</a></li>
+  <li><b>407確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/407-entaku-copyright-ep02.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/407-entaku-copyright-ep02.html</a></li>
+  <li><b>411確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/411-usagi-ninjin-sfx.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/411-usagi-ninjin-sfx.html</a></li>
+  <li><b>412確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/412-hantei-tanaoshi.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/412-hantei-tanaoshi.html</a></li>
+  <li><b>413確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/413-dispatch-outbox.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>398 見回り係</td><td class="yes">確認ページ200・本番watchページに日本語新題名を確認</td></tr>
-<tr><td>399 モンスタートラック</td><td class="yes">確認ページ200・日本語新題名を本番で確認</td></tr>
-<tr><td>401 EP01 3段階試作</td><td class="yes">確認ページ200・本文に無料/100円/300円の3案比較が実在</td></tr>
-<tr><td>403 円卓AI失業回素材</td><td class="yes">確認ページ200・出典3件のURLも200</td></tr>
-<tr><td>404 英語題名の書き直し</td><td class="yes">確認ページ200・本番titleタグで新題名を確認</td></tr>
-<tr><td>406 進捗表のP表記</td><td class="yes">確認ページ200・本番ソースでP表記消去を確認</td></tr>
-<tr><td>407 円卓著作権EP02素材</td><td class="yes">確認ページ200・Vault素材ファイルの実在を確認</td></tr>
-<tr><td>411 うさぎ咀嚼音</td><td class="yes">確認ページ200・queue.json上もdone</td></tr>
-<tr><td>412 判定待ちの棚卸し</td><td class="yes">確認ページ200・内容が一覧として機能</td></tr>
-<tr><td>413 Dispatch報告の道</td><td class="yes">確認ページ200・status/dispatch_outbox.jsonlが実際に31行稼働中</td></tr>
+<tr><td>398 見回り係</td><td class="no">①PASS②PASS③FAIL(img無し)→waiting(redo3)</td></tr>
+<tr><td>399 モンスタートラック</td><td class="no">①PASS②PASS③FAIL(img無し)→waiting(redo1)</td></tr>
+<tr><td>401 EP01 3段階試作</td><td class="no">①PASS②PASS③FAIL(img無し)→queue.json復元しwaiting(redo1)</td></tr>
+<tr><td>403 円卓AI失業回素材</td><td class="no">①PASS②PASS③FAIL(img無し)→waiting(redo1)</td></tr>
+<tr><td>404 英語題名の書き直し</td><td class="no">①PASS②PASS③FAIL(img無し)→waiting(redo1)</td></tr>
+<tr><td>406 進捗表のP表記</td><td class="no">①PASS②PASS③FAIL(img無し)→waiting(redo1)</td></tr>
+<tr><td>407 円卓著作権EP02素材</td><td class="no">①PASS②PASS③FAIL(img無し)→waiting(redo1)</td></tr>
+<tr><td>411 うさぎ咀嚼音</td><td class="no">①PASS②PASS③FAIL(img無し)→waiting(redo1)</td></tr>
+<tr><td>412 判定待ちの棚卸し</td><td class="no">①PASS②FAIL(NG文言検出)③FAIL(img無し)→waiting(redo1)</td></tr>
+<tr><td>413 Dispatch報告の道</td><td class="no">①PASS②PASS③FAIL(img無し)→queue.json復元しwaiting(redo1)</td></tr>
 </table>
 
 <footer>
-訂正版：1回目はn=401/413の根拠に未コミットのdeleted.json状態を使い、AI検品で「捏造」と指摘された。2回目は10件全部を確認ページの直接fetch（HTTP200＋本文一致）だけで裏取りし直した。
+訂正の経緯：1回目はn=401/413の根拠に未コミットのdeleted.json状態を使いAI検品に指摘された。2回目で恒久ツールにかけ直したところ、実は10件全部がスクショ条件③で機械的にFAILしていたと判明。今回は自己判断で例外扱いせず、全10件をqueue.json上でwaiting(やり直し)へ正直に差し戻した。自動OKは0件。
 </footer>
 </body>
 </html>
