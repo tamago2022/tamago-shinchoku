@@ -44,15 +44,11 @@ ul{padding-left:1.2em}
 </div>
 
 <div class="b">
-<p class="warn">前後スクリーンショットについて</p>
-<p>今回はブラウザを開かず<code>curl</code>相当の方法（本番HTML・JSONの直接取得）だけで実装・検証を完結させた（たまごさんの作業画面を奪わない方針のため、ブラウザ操作を避けた）。代わりに、追加したコードそのものを載せる。</p>
-<p class="small">追加分（<code>index.html</code>）：</p>
-<pre style="white-space:pre-wrap;background:#0d1116;border:1px solid #2a323c;border-radius:8px;padding:10px;font-size:0.78rem;overflow:auto">&lt;div class="tags colorTags" id="colorTags">&lt;/div>
-
-// Eagleが自動でつけた色タグ（_color:オレンジ系 等）で絞り込み
-const cc = {};
-d.items.forEach(it => (it.h||[]).forEach(t => { if(t.startsWith("_color:")) cc[t] = (cc[t]||0)+1; }));
-colorTagsEl.innerHTML = colorTop.map(([t,n])=>`&lt;button data-t="${t}">${t.replace("_color:","")} ${n}&lt;/button>`).join("");</pre>
+<p class="ok">④ 実機スクリーンショット（本番・実測。たまごさんのブラウザは使わず、無人のヘッドレスブラウザで撮影）</p>
+<p class="small">Before：色フィルターを押す前（1200件・全体表示）</p>
+<img src="img/19-color-filter-before.png" alt="色フィルターを押す前のギャラリー" style="width:100%;max-width:340px;border-radius:10px;border:1px solid #2a323c;display:block;margin:8px 0">
+<p class="small">After：「オレンジ系」ボタンを押した後（369件に絞り込み、上部に「369件／色：オレンジ系」と表示）</p>
+<img src="img/19-color-filter-after.png" alt="色フィルター適用後のギャラリー" style="width:100%;max-width:340px;border-radius:10px;border:1px solid #2a323c;display:block;margin:8px 0">
 </div>
 
 <div class="b">
@@ -67,7 +63,7 @@ colorTagsEl.innerHTML = colorTop.map(([t,n])=>`&lt;button data-t="${t}">${t.repl
 
 <div class="b">
 <p class="ok">状態</p>
-<p>①実装：完了 ②main合流：完了 ③公開：完了（GitHub Pages自動デプロイ・push後60秒で反映を実測） ④本番の実画面での確認：<b>Claude側はHTML/JSONの実測まで完了。たまごさん本人の実画面確認はこれから</b>（このプロジェクトはGitHub Pagesで動いておりLovableの「公開」ボタンは存在しない）。</p>
+<p>①実装：完了 ②main合流：完了 ③公開：完了（GitHub Pages自動デプロイ・push後60秒で反映を実測） ④本番の実画面での確認：<b>無人のヘッドレスブラウザで本番URLを開き、実際にボタンを押して絞り込み前後のスクリーンショットを撮影・上に掲載済み</b>（このプロジェクトはGitHub Pagesで動いておりLovableの「公開」ボタンは存在しない）。たまごさん本人の実機確認はこれから。</p>
 </div>
 
 <p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
