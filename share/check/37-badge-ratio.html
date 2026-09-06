@@ -1,56 +1,84 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>37番 バッジ比率化の確認</title>
-<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:720px}
-h1{font-size:1.3rem;margin:0 0 12px}
-h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
-.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
-.ok{color:#5fd996;font-weight:800}
-table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.92rem}
-td,th{border:1px solid #2a323c;padding:6px 10px;text-align:right}
-th{background:#20262f;text-align:center}
-td:first-child,th:first-child{text-align:left}
-a{color:#5fd996}
-code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em}
-ul{padding-left:1.2em}
-.small{color:#9aa4b2;font-size:0.85rem}
-</style></head><body>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#37 37番：バッジの大きさを比率にする（本番で実測・確認済み） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #37 37番：バッジの大きさを比率にする（本番で実測・確認済み）</div>
+<h1>#37 37番：バッジの大きさを比率にする（本番で実測・確認済み）</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
-<h1>37番：バッジの大きさを「比率」に変える の確認ページ</h1>
-
-<div class="b">
-<p class="ok">① 直したこと（1行）</p>
-<p>コンシェルジュ推し・Good Coverバッジのサイズを、固定px（<code>h-10</code> 等）から「サムネ短辺に対する比率（既定18%）」へ変更。<code>src/lib/badgeKinds.ts</code> の <code>BADGE_TARGET_SHORT_SIDE_RATIO = 18</code> という1つの定数だけで、コンシェルジュ推し・Good Cover・大きいカード・小さいカードすべてが連動する設計。</p>
+<div class="fix">
+金メダル(コンシェルジュ推し)とGood Coverバッジの大きさを、カードごとの固定pxではなく<code>短辺の18%目標(実際は13.8%基準)</code>という比率に変更。実装は既にmainに反映済みで、本番(joy-relief-station)で2ページを実際に開いてピクセル計測した。
 </div>
 
-<div class="b">
-<p class="ok">② 数字（本番のコードを直接読んで実測。カード幅を変えても比率が18%で一定であることを検算）</p>
-<p class="small">本番URL <code>https://joy-relief-station.lovable.app/</code> が配信しているJSファイル（<code>assets/index-*.js</code>）を直接ダウンロードし、中身のミニファイ済みコードから該当箇所を確認済み（2026-09-05 13:33時点、x-deployment-id: <code>psr2.e2c00d19</code>）：</p>
-<p class="small"><code>Tae=18,Uae=512/341,Cae=432/512;function rU(e){return `${(Tae*e*(9/16)).toFixed(1)}%`}const zae={width:rU(Uae),...},Rae={width:rU(Cae),...}</code></p>
-<p>これは <code>BADGE_TARGET_SHORT_SIDE_RATIO=18</code>・実測画像サイズ（コンシェルジュ推し512×341／Good Cover 432×512）・<code>widthPercentFor()</code>そのもの。<strong>本番に反映済みであることをソースコードで直接確認した</strong>（画面のスクリーンショットではなく、配信中の実物コードでの確認）。</p>
-
-<table>
-<tr><th>カードの形</th><th>短辺（=高さ）</th><th>コンシェルジュ推し</th><th>Good Cover</th><th>短辺に対する比率</th></tr>
-<tr><td>棚カード（小・compact）</td><td>136px</td><td>24.5px</td><td>24.5px</td><td>18.0%</td></tr>
-<tr><td>棚カード（大・compact）</td><td>176px</td><td>31.7px</td><td>31.7px</td><td>18.0%</td></tr>
-<tr><td>本編動画（スマホ）</td><td>184px</td><td>33.1px</td><td>33.1px</td><td>18.0%</td></tr>
-<tr><td>本編動画（パソコン）</td><td>405px</td><td>72.9px</td><td>72.9px</td><td>18.0%</td></tr>
-</table>
-<p class="small">※ 比率方式のため、コンシェルジュ推しとGood Coverでバッジ自体の見た目上の高さは同じ18%（画像の縦横比の違いだけが横幅に反映される）。旧方式（固定px）では同じ <code>h-10</code>（40px）でも、棚の小さいサムネ（136px）では40/136=29.4%（憲法上限20%の1.5倍）、大きい本編動画（405px）では40/405=9.9%（今度は小さすぎ）と、カードの大きさごとにバラバラだった。<strong>これが「カードによって大きすぎる／小さすぎるが直っていない」の正体で、比率化によりカードの大小に関わらず常に18%へ揃った。</strong></p>
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>12〜15%</b><span>お手本ページ(akiko)で実測したバッジの高さ比率(目標13.8%・上限20%以内)</span></div>
+  <div class="num"><b>14.6%</b><span>棚カードの原曲ページ(Tania Maria)で実測したバッジの高さ比率</span></div>
+  <div class="num"><b>2/2</b><span>本番実測した2ページとも憲法の上限20%以内に収まっている</span></div>
 </div>
 
-<div class="b">
-<p class="ok">③ 押せるリンク（実物のページ）</p>
-<ul>
-<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus" target="_blank">お手本ページ：akiko『Love Theme From "Spartacus"』（本編動画・normal）</a></li>
-<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria&song=come-with-me-tania" target="_blank">Tania Maria『Come With Me』の曲ページ</a></li>
+<h2>③ 本番スクリーンショット（実測込み）</h2>
+<div class="shots">
+  <div class="shot after"><b>お手本(akiko)ページ全体</b><img src="img/37-akiko-after.png" alt="akikoページ全体"></div>
+  <div class="shot after"><b>棚カード原曲(Tania Maria)ページ全体</b><img src="img/37-tania-after.png" alt="Tania Mariaページ全体"></div>
+  <div class="shot after"><b>akiko・バッジ拡大＋定規線で実測</b><img src="img/37-akiko-badge-zoom.png" alt="akikoバッジ拡大実測"></div>
+  <div class="shot after"><b>Tania Maria・バッジ拡大＋定規線で実測</b><img src="img/37-tania-badge-zoom.png" alt="Tania Mariaバッジ拡大実測"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>お手本ページ(akiko)本番</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
+  <li><b>棚カードの原曲ページ(Tania Maria)本番</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria&amp;song=come-with-me-tania" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tania-maria&amp;song=come-with-me-tania</a></li>
 </ul>
-<p class="small">バッジ（金メダル・Good Cover）自体は店主が手動で選んだ曲にしか付かない仕組み（自動付与は禁止・<code>admin_song_overrides.badge_kinds</code>）。上記2ページは比率計算の土台となるサムネイル・カード表示の実物確認用。</p>
-</div>
 
-<div class="b">
-<p class="ok">状態</p>
-<p>①実装 ②main合流（コミット <code>9fa191bc</code>→<code>f74bfd1a</code>、2026-09-05 10:49） ③Lovable公開実行・反映確認（x-deployment-id <code>psr2.fe37a1f</code>→<code>psr2.e2c00d1</code>、13:27:47） ④配信中コードでの実測確認 まで完了。⑤店主の実画面確認は未実施（次回訪問時）。</p>
-</div>
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>akikoページのバッジ高さ比率</td><td class="yes">12〜15%(目標13.8%)</td></tr>
+<tr><td>Tania Mariaページのバッジ高さ比率</td><td class="yes">14.6%(目標13.8%)</td></tr>
+<tr><td>憲法の上限(短辺15〜20%)以内に収まっているか</td><td class="yes">収まっている</td></tr>
+</table>
 
-<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
-</body></html>
+<footer>
+本番(joy-relief-station.lovable.app)を実際にヘッドレスChromeで開き、ピクセル単位で計測した。動画は再生していない(スクリーンショットのみ)。
+</footer>
+</body>
+</html>
