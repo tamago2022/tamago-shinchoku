@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#460 確認待ちに「まとめてOK」チェックボックスを追加 確認ページ</title>
+<title>#460 確認待ちに「まとめてOK」を付ける（459番の続き・重複防止の確認） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -40,42 +40,46 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #460 確認待ちに「まとめてOK」チェックボックスを追加</div>
-<h1>#460 確認待ちに「まとめてOK」チェックボックスを追加</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #460 確認待ちに「まとめてOK」を付ける（459番の続き・重複防止の確認）</div>
+<h1>#460 確認待ちに「まとめてOK」を付ける（459番の続き・重複防止の確認）</h1>
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-進捗表(index.html)の「たまごさんの確認待ち」に、①各行のチェックボックス ②「全部選ぶ」「証拠のあるものだけ選ぶ」ボタン ③選んだ件数を<b>1回の通信</b>でまとめて完了にするボタン ④押した瞬間に画面から消える(楽観的更新) ⑤直後に「◯件を完了にしました／取り消す」を<b>10秒だけ</b>表示 ⑥証拠なし・URLが開かない赤い行は<b>チェックボックス自体を無効化</b>して「全部選ぶ」でも巻き込まれない、を実装した。中継所(tools/command_ingest.py)の queue_ok / queue_undo_ok もカンマ区切りの複数番号(例: "12,15,18")を1回で受けられるよう対応済み。
+459番(1/4)が①各行のチェックボックス ②「全部選ぶ」「証拠のあるものだけ選ぶ」 ③1回の通信でまとめて完了 ④押した瞬間に画面から消える(楽観的更新) ⑤直後10秒だけ取り消しバナー ⑥赤(証拠なし・URL不通)はチェックボックス自体を無効化 の全てを実装しmain合流・本番反映まで完了済みだった。460番(2/4)は<b>同じ依頼の重複バッチ</b>だったため、新規実装はせず本番での動作を独立に再検証した。ローカルにmainと同じコードのコピーを置き、実際にチェック→クリックのシミュレーションを行った結果を下に示す。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番HTTPステータス</span></div>
-  <div class="num"><b>6/6</b><span>要件のうち実装済み</span></div>
-  <div class="num"><b>07:15 UTC</b><span>本番の最終更新(Last-Modified)</span></div>
+  <div class="num"><b>12→10件</b><span>クリックで確認待ちが実際に2件減った</span></div>
+  <div class="num"><b>85→87件</b><span>完了一覧が実際に2件増えた</span></div>
+  <div class="num"><b>200</b><span>本番(GitHub Pages)のHTTPステータス</span></div>
 </div>
 
-
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>クリック前：確認待ち12件・まとめてOK未選択</b><img src="img/460-bulk-before.png" alt="前"></div>
+  <div class="shot after"><b>2件選択してクリック後：確認待ち10件に減り、取り消しバナーが出た</b><img src="img/460-bulk-after.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番の進捗表を開く</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>459番の確認ページ(実データでの往復13→12→13を実測済み)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/459-bulk-ok.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/459-bulk-ok.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>行にチェックボックスがある</td><td class="yes">yes</td></tr>
-<tr><td>「全部選ぶ」「証拠のあるものだけ選ぶ」ボタンがある</td><td class="yes">yes</td></tr>
-<tr><td>選んだ件数をまとめて1回で送る(1件ずつ通信しない)</td><td class="yes">yes</td></tr>
-<tr><td>押した瞬間に画面から消える(楽観的更新)</td><td class="yes">yes</td></tr>
-<tr><td>直後に10秒だけ取り消しバナーが出る</td><td class="yes">yes</td></tr>
-<tr><td>赤(証拠なし・URL不通)はチェックボックスが無効化され選ばれない</td><td class="yes">yes</td></tr>
-<tr><td>中継所がカンマ区切りの複数番号を受け付ける(queue_ok/queue_undo_ok)</td><td class="yes">yes</td></tr>
+<tr><td>行にチェックボックスがある(実機DOMで確認)</td><td class="yes">yes</td></tr>
+<tr><td>2件選択→まとめてOKボタンが有効化される</td><td class="yes">yes</td></tr>
+<tr><td>クリック直後、選んだ2件が確認待ちから消える(楽観的更新)</td><td class="yes">yes</td></tr>
+<tr><td>クリック直後「2件を完了にしました／取り消す」バナーが出る</td><td class="yes">yes</td></tr>
+<tr><td>証拠なしの行はチェックボックスが無効(disabled)で選べない</td><td class="yes">yes</td></tr>
+<tr><td>中継所(command_ingest.py)がカンマ区切りの複数番号を受け付ける</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-このページは #460 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実データ(status/queue.json)を書き換えないよう、本番と同一コードのローカルコピー(localhost:8899)で検証した。本番(GitHub Pages)がこのコードを配信していることはHTTP直接取得(200・Last-Modified確認)で別途裏取り済み。
 </footer>
 </body>
 </html>
