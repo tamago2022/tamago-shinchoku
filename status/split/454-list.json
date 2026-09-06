@@ -1,0 +1,33 @@
+{
+  "items": [
+    "仕組み①：push前フックで「触ってよい範囲」外の変更をFAILさせる仕組みを作る（対象：git pre-push相当・タスクごとのallowlistファイル）",
+    "仕組み②：代表ページ（曲=/cover-guide, アーティスト=/room/card/:slug, 棚=/shelf/:worldId/:shelfId, トップ=/, カード=/room/card/:slug）の変更前後スクリーンショットを自動で撮り比べるバッチを作る",
+    "仕組み③：全件・全曲へ一括適用する作業は必ず1件だけ作って見せてからでないと残りへ広げられないよう、実行スクリプト側にドライラン件数の上限ゲートを入れる",
+    "仕入れ段階チェック設計：新規仕入れ曲は登録前にvalidate-song.mjs相当の1関数を通し、必須項目欠落・重複・埋め込み不可なら本登録前にはじく（後から3万曲を直すより安い、の実装方針を1行で確定させる）",
+    "src/components/RelatedCardsRow.tsx（呼び出し5箇所・cover-guide.tsx含む）：TARGET_COUNT=10・grid-cols-2の無断追加事故の本体。今回の直接原因ファイルなので最優先で監査対象へ登録",
+    "src/components/SiteHeader.tsx（49ファイルから参照）：最も影響範囲が広い共通部品。見た目差分ガードの最優先監視対象",
+    "src/components/Doodle.tsx（30ファイルから参照）：装飾系共通部品。無断で全ページの見た目を変えうる高リスク箇所",
+    "src/components/Breadcrumbs.tsx（28ファイルから参照）：パンくず共通部品。監視対象へ登録",
+    "src/components/VideoCard.tsx（21ファイルから参照）：動画カード共通部品。サムネ・レイアウトが全曲ページに波及するため最重要監視対象の一つ",
+    "src/components/Door.tsx（14ファイルから参照）：扉UI共通部品。監視対象へ登録",
+    "src/components/LowPolyHero.tsx（13ファイルから参照）：ヒーロー表示共通部品。監視対象へ登録",
+    "src/contexts/AdminAuthContext（10ファイルから参照）：管理画面認証まわり共通部品。誤変更時の影響範囲が広いため監視対象へ登録",
+    "src/components/AddToShelfButton.tsx（8ファイルから参照）：棚追加ボタン共通部品。監視対象へ登録",
+    "src/components/HeartButton.tsx（7ファイルから参照）：お気に入りボタン共通部品。監視対象へ登録",
+    "src/components/TrailSection.tsx（6ファイルから参照）：関連導線の共通部品。監視対象へ登録",
+    "src/components/ShareButton.tsx（6ファイルから参照）：シェアボタン共通部品。監視対象へ登録",
+    "src/components/MinimalRoom.tsx（6ファイルから参照）：部屋レイアウト共通部品。監視対象へ登録",
+    "src/components/MemoryDoor.tsx（6ファイルから参照）：記憶の扉共通部品。監視対象へ登録",
+    "src/components/EggConcierge.tsx（6ファイルから参照）：コンシェルジュ共通部品。監視対象へ登録",
+    "src/components/BackButton.tsx（5ファイルから参照）：戻るボタン共通部品。監視対象へ登録",
+    "src/components/ShelfJumpLinks.tsx（4ファイル＝SongPage.tsx／room.card.$slug.tsx／watch.tsx／animal.$slug.tsx／room.dance.$slug.tsxに影響、PENDING_DECISIONSに強化案あり）：監視対象へ登録",
+    "src/components/ShelfCardView.tsx（4ファイルから参照）：棚カード表示共通部品。監視対象へ登録",
+    "src/components/OtherRoomsStrip.tsx（4ファイルから参照）：他の部屋導線共通部品。監視対象へ登録",
+    "src/components/CuratorFeedback.tsx（4ファイルから参照）：キュレーターフィードバック共通部品。監視対象へ登録",
+    "src/contexts/AdminShelfContext（4ファイルから参照）：管理画面棚まわり共通部品。監視対象へ登録",
+    "src/components/SongRelatedVideosSection.tsx（TASK_BOARD #22で判明：sm:grid-cols-2固定により関連動画1本のページ全てで空白が出る既知の類似不具合。1匹100匹の実例）：横展開範囲の再点検対象",
+    "src/components/NextUpCard.tsx（憲法で名指しされた次に押せるカードの正本部品、2ファイルから参照）：監視対象へ登録",
+    "src/components/TextRecommendations.tsx（3ファイルから参照、9/6にrouteロジック変更あり）：監視対象へ登録",
+    "src/components/NextRecommendations.tsx（3ファイルから参照、9/4にcover-guide.tsx連動で変更あり）：監視対象へ登録"
+  ]
+}
