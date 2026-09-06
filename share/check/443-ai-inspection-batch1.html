@@ -71,8 +71,8 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>37番 バッジ比率化</td><td class="yes">完了。たまごさんが進捗表で✅完了をタップ済み(07:11)</td></tr>
-<tr><td>34番 3時間セッション自動切り</td><td class="yes">完了。AI検品パイプラインがPASS(06:01・$0.196、コード実装まで確認済み)</td></tr>
+<tr><td>37番 バッジ比率化</td><td class="no">未確認。queue.jsonの実データではn=37は status="waiting"（redoCount=2・checkedAt 08:55、確認ページ37-badge-ratio-final-check.htmlが06:11に404で機械検品に一度落ちている）のままで、たまごさんのタップ記録(checkNote)もAI検品ログ(ai_verify_stats.json)も見当たらない。一次証拠が無いまま完了扱いにするのは今回2回落ちた原因なので、断定を避け「実測できず・時間切れ」と正直に書く</td></tr>
+<tr><td>34番 3時間セッション自動切り</td><td class="yes">完了。ai_verify_stats.jsonのhistory中 ts=2026-09-06T06:01:02+09:00 のエントリ(verdict=pass, cost=$0.1961084)が根拠。このコミットでpushして本番から見えるようにした</td></tr>
 <tr><td>8番 Googleドライブ同期</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
 <tr><td>41番 曲ページ表示崩れ点検</td><td class="yes">完了。たまごさんが進捗表で✅完了をタップ済み(07:00)</td></tr>
 <tr><td>216番 ビージーズ子供→Too Much Heaven</td><td class="yes">完了。鬼監督が今回curlで再実測：bee-gees側に子供版への言及、子供版に originalRef(bee-gees/too-much-heaven) を確認し双方向成立</td></tr>
