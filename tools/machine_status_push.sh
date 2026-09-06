@@ -312,7 +312,7 @@ json.dump({"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
           io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 PYVER
 git add status/version.json >/dev/null 2>&1
-git add status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json >/dev/null 2>&1
+git add status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json status/disk_guardian.log status/disk_candidates.json >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1
