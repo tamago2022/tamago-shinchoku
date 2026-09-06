@@ -280,6 +280,10 @@
   .cmore .cbtns{margin-top:8px;}
   .crow.proof{opacity:1;}
   .crow.noproof{border-left:3px solid var(--red); padding-left:8px;}
+  /* 585番：splitFromが同じ行を1行にまとめた表示（確認待ち・発車待ち・走行中で共通の見た目） */
+  .crow.cgroup{border-left:3px solid var(--sub);}
+  .cgprog{display:inline-block; font-size:0.76rem; color:var(--sub); margin-left:6px; font-weight:400;}
+  .qrow.qgroup{border-left:3px solid var(--sub);}
   /* 2026-09-06(459番) まとめてOK：チェックボックス列＋上部ツールバー＋10秒だけの取り消しバナー。
      文字の縦潰れを再発させないため、行の高さは.ctrow(flex)で確保しfont-size/line-heightは一切触らない。 */
   .ctrow{display:flex; align-items:flex-start; gap:6px;}
@@ -1727,11 +1731,21 @@ function renderQueue(){
   // 2026-09-04 正本を queue.json に移した（auto_launcher.py が着火して status を書き換える）。
   //   data.js 側は残置。waiting のものだけを「次に発車」として出す。
   const all = (window.__queue && window.__queue.items) || (window.DATA && DATA.queue) || [];
+  // 585番：splitFromが同じもの（大きい仕事の自動分割）は代表1本だけ発車待ちに出し、
+  //   残り件数は下のgroupMapから集計する。9本並べない。
+  const groupMap = splitGroupsOf(all);
+  const seenSfQ = new Set();
   // 2026-09-04 発車の順番と画面の並びを一致させる（auto_launcher.py の rank と同じ規則）。
   //   ここがバラバラだと「次」と書いてあるものと実際に発車するものが食い違う。
   // 2026-09-05 並びは「優先度 → 手で並べ替えた順(order) → 番号」。Mac側の発車順(rank)と同じ規則。
   //   ここを番号順だけにしていたので、下げたものが読み直しのたびに上へ戻っていた。
   const rows = all.filter(r => (r.status || "waiting") === "waiting")
+    .filter(r=>{
+      if(!r.splitFrom) return true;
+      if(seenSfQ.has(r.splitFrom)) return false; // 同じグループの2本目以降は出さない
+      seenSfQ.add(r.splitFrom);
+      return true;
+    })
     .map(r => Object.assign({}, r, {_p: (prioOf("Q" + r.n) || r.priority || 99),
                                     _o: (typeof r.order === "number" ? r.order : 1e6)}))
     .sort((a,b) => (a._p - b._p) || (a._o - b._o) || (a.n - b.n));
@@ -1769,6 +1783,22 @@ function renderQueue(){
   //   落とした場所の箱の優先度をそのまま引き継ぎ、並び順(order)を台帳へ送る。
   const rowHtml = (r,i,globalIdx)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
+    // 585番：splitFromが同じもの（発車待ちに残っているのは代表1本）は、まとめの進み具合を出す。
+    if(r.splitFrom){
+      const members = groupMap.get(r.splitFrom) || [r];
+      const summary = splitGroupSummary(members);
+      const title = splitGroupBaseTitle(r);
+      return `<div class="qrow qgroup${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
+        <span class="qgrip" title="つまんで動かす">⣿</span>
+        <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
+        <span class="qbody">
+          <details class="qd"><summary><span class="qt">📦 ${esc(title)}</span><span class="qw">${summary.total}本中${summary.closed}本おわり・残り${summary.remaining}本</span></summary>
+            <div class="qwhat">${members.map(m=>`#${m.n}（${esc(STATUS_JA[m.status] || m.status)}）`).join("　")}</div>
+          </details>
+        </span>
+        <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? p : "—"}</button>
+      </div>`;
+    }
     return `<div class="qrow${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
       <span class="qgrip" title="つまんで動かす">⣿</span>
       <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
