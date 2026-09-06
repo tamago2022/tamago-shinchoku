@@ -33,12 +33,16 @@
   .no{color:var(--aka);font-weight:700;}
   code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .shot{flex:1;min-width:260px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;font-size:0.86rem;}
+  .shot img{width:100%;border-radius:6px;display:block;}
 </style>
 </head>
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #23</div>
 <h1>#23 Vulfmon／Tommy de Bourbon アーティストページを作る</h1>
-<div class="date">2026-09-05 実測・確認ページ作成</div>
+<div class="date">2026-09-05 実測・確認ページ作成／2026-09-06 実物の画像を追加</div>
 <span class="status">✅ 本番反映済み（実測confirmed）</span>
 
 <div class="fix">
@@ -80,10 +84,19 @@ Vulfmon（Vulfpeckの中心メンバーJack Strattonのソロ名義）と、ペ�
   <li><b>関連する別案件（曲カードの表記修正・こちらは未反映）</b><br><a href="./22-vulfmon-92.html">#22 92°／Vulfmon &amp; Tommy de Bourbon の曲名・アーティストを直す（棚カードの表記修正、GitHub Actions枠切れで別途ブロック中）</a></li>
 </ul>
 
-<h2>⑤ 前と後</h2>
+<h2>⑤ 実物の画像（本番から直接取得）</h2>
 <div class="note">
-<b>スクリーンショットは今回入れていません。</b>理由：たまごさんが今作業中の画面を奪わないため（screencapture・osascript activate・Braveタブ操作は全面禁止という運用ルールのため）、ブラウザを起動せずcurlのみで確認した。<br>
-「前」＝このページは元々存在しなかった（404 / 検索結果なし）。「後」＝上記②③の実測のとおり、本番URLが200で応答し、公式チャンネルリンク・曲名を含む固有のコンテンツが返っている。
+たまごさんの画面（ブラウザ）は一切操作していない。各ページが本番で実際に生成しているシェア用プレビュー画像（<code>og:image</code>）を、ページごとにcurl相当の方法で直接取得したもの。ページごとに別の画像が出る＝それぞれのデータが個別に実在する証拠。
+</div>
+<div class="shots">
+  <div class="shot">
+    <b>Vulfmonページ（/cover-guide?artist=vulfmon）のシェア画像</b>
+    <img src="img/23-vulfmon-share.jpg" alt="Vulfmonページのシェア画像">
+  </div>
+  <div class="shot">
+    <b>Tommy de Bourbonページ（/cover-guide?artist=tommy-de-bourbon）のシェア画像</b>
+    <img src="img/23-tommy-share.jpg" alt="Tommy de Bourbonページのシェア画像">
+  </div>
 </div>
 
 <footer>
