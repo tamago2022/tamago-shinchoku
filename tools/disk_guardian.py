@@ -48,6 +48,10 @@ QUEUE = os.path.join(REPO, "status", "queue.json")
 LOG = os.path.join(REPO, "status", "disk_guardian.log")
 STAMP = os.path.join(REPO, "status", ".disk_guardian_at")
 NO_LAUNCH_FLAG = os.path.join(REPO, "status", "no_launch.flag")
+# 2026-09-06（491番）：確認ページに「いまの空き」「消せる候補の一覧（消さずに一覧だけ）」を
+# 出せるようにするための保存先。dump_candidates() が15分おきに上書きするだけで、
+# candidates() 自体のロジック（壺金庫ガード・許可範囲）には一切触らない。
+CANDIDATES_JSON = os.path.join(REPO, "status", "disk_candidates.json")
 MY_FLAG_MARK = "容量見張り"  # 自分が書いたno_launch.flagだけを自動解除するための目印
 
 INTERVAL = 900          # 15分に1回でよい。既存の5分間隔ジョブ(machine_status_push.sh)から
@@ -261,6 +265,23 @@ def maybe_release_stop(free_gb):
             pass
 
 
+def dump_candidates(free_gb):
+    """いまの空きと消せる候補の一覧を確認ページ用に保存するだけ（ここでは何も消さない）。"""
+    try:
+        cs = sorted(candidates(), key=lambda c: -c.get("size_mb", 0))
+        data = {
+            "measured_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "free_gb": round(free_gb, 1),
+            "warn_gb": WARN_GB,
+            "stop_gb": STOP_GB,
+            "candidates": cs,
+        }
+        with io.open(CANDIDATES_JSON, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        log("候補一覧の保存に失敗: %s" % e)
+
+
 def main():
     try:
         if time.time() - os.path.getmtime(STAMP) < INTERVAL:
@@ -274,6 +295,7 @@ def main():
         log("df測定失敗のため何もしません")
         return 0
     log("空き %.1fGB" % free_gb)
+    dump_candidates(free_gb)
 
     if free_gb < STOP_GB:
         notify_stop(free_gb)
