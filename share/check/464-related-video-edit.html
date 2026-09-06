@@ -45,38 +45,43 @@
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-曲ページ「この曲の関連動画」の各カードに、たまご専用（一般訪問者には出ない）で①外す(元データ保持・このページ表示だけ除外) ②「文脈が合ってない」→同じアーティストの他曲に登録済みの関連動画から次候補へその場で差し替え(1回undo可) ③ドラッグでの上下並べ替え(進捗表index.htmlのqgrip/nearestSlot/qbarを移植) ④横並びfeatured2枚の左右入れ替え、を追加。即時反映・保存は裏で実行。
+曲ページ『この曲の関連動画』の各カードに、たまご専用（一般訪問者には出ない）で①外す（元データ保持・このページ表示だけ除外）②『文脈が合ってない』（同アーティストの他曲の関連動画へその場で差し替え・1回undo可）③ドラッグでの上下並べ替え④横並び2枚の左右入れ替え、を追加。即時反映・保存は裏で実行。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>f4162ea0</b><span>実装コミット(main合流済み)</span></div>
   <div class="num"><b>psr2.6374dc5</b><span>公開後の本番デプロイID</span></div>
-  <div class="num"><b>0</b><span>型チェック(tsc --noEmit)エラー</span></div>
+  <div class="num"><b>4/4</b><span>本番で確認できたボタン(外す/文脈が合ってない/ドラッグ/左右入れ替え)</span></div>
 </div>
 
-
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>中島みゆき「糸」：編集ボタン4種(外す/文脈が合ってない/ドラッグ/左右)が表示</b><img src="img/464-before.png" alt="前"></div>
+  <div class="shot after"><b>Bruno Mars「Uptown Funk」：2本掲載時は左右入れ替えボタンも同時表示</b><img src="img/464-before-2items.png" alt="後"></div>
+</div>
+<div class="shots">
+  <div class="shot after"><b>「文脈が合ってない」を実際にクリック→本物のログイン→本物のサーバー往復が動いた結果画面</b><img src="img/464-cycle-result.png" alt="クリック後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番の実在曲ページ(中島みゆき「糸」)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito</a></li>
-  <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番の実在曲ページ(中島みゆき「糸」・?admin=1で編集ボタン表示)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito&amp;admin=1" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito&amp;admin=1</a></li>
+  <li><b>本番の2本掲載ページ(Bruno Mars「Uptown Funk」・全4ボタン同時に見える)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&amp;song=uptown-funk&amp;admin=1" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&amp;song=uptown-funk&amp;admin=1</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>たまご専用ガード(canShowEditButton)で編集UIを出し訪問者には出さない</td><td class="yes">yes</td></tr>
-<tr><td>外すボタン=DBの表示配列から除外のみ(元動画URL自体は消えない)</td><td class="yes">yes</td></tr>
-<tr><td>「文脈が合ってない」候補は同じアーティストの登録済み関連動画から選定(ジャンルを飛ばさない)</td><td class="yes">yes</td></tr>
-<tr><td>ドラッグ並べ替えは進捗表index.htmlのqgrip/nearestSlot/qbarを移植(ゼロから書いていない)</td><td class="yes">yes</td></tr>
-<tr><td>型チェック(tsc --noEmit)通過</td><td class="yes">yes</td></tr>
-<tr><td>ESLint(変更ファイルのみ)通過(prettier整形も追送済み)</td><td class="yes">yes</td></tr>
-<tr><td>本番SSR HTMLに関連動画データ(パートナー名「エハラ」)が反映</td><td class="yes">yes</td></tr>
+<tr><td>編集ボタン(外す/文脈が合ってない/ドラッグ/左右)が実在の本番ページに表示される(訪問者には出ない)</td><td class="yes">yes</td></tr>
+<tr><td>『文脈が合ってない』を実際にクリック→本物のログイン→本物のサーバー往復が動作する</td><td class="yes">yes</td></tr>
+<tr><td>上記の実行結果(現時点のデータでは候補0件=no_candidate)を正直に表示できている</td><td class="yes">yes</td></tr>
+<tr><td>『外す』の実クリックによる本番データ削除は今回あえて自動実行していない(本番コンテンツを壊さないため)</td><td class="yes">yes(未実行)</td></tr>
+<tr><td>型チェック(tsc --noEmit)エラー0/ESLint(変更ファイルのみ)エラー0</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-このページは #464 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+『文脈が合ってない』は現在サイト全体で related_videos が9曲分しか登録されておらず、同一アーティストの複数曲にまたがる候補が存在しない(実測クエリで確認)。そのため本番実クリックでは正直に「他に候補がありません」が返る=仕様どおりの正常動作。『外す』の実削除・実スワップは、本番の実データを壊すリスクを避けるためこのセッションでは自動実行していない(削除後の復元手段がUIから直接提供されていないため)。
 </footer>
 </body>
 </html>
