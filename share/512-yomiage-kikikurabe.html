@@ -45,23 +45,33 @@
 
 <div class="card">
   <b class="name">Style-Bert-VITS2（無料・ローカル）</b>
-  <span class="tag">検証中</span>
-  <p id="sbv2-note" class="pending">セットアップが完了次第この場所に音声を追加します（下の「② 数字」に容量・時間を追記）。</p>
+  <span class="tag">機械っぽさは一番少ない/しかし遅い</span>
+  <p>抑揚は3つの中で一番自然。ただし同じ文章の生成に120秒（AivisSpeechの約6倍）かかった。円卓20分の台本には現実的な時間で使えない。</p>
+  <audio controls preload="none" src="audio/512/test_sbv2.wav"></audio>
 </div>
 
 <div class="card">
   <b class="name">ElevenLabs（fal経由・有料）</b>
-  <span class="tag">キー待ち</span>
-  <p class="pending">この環境に fal / ElevenLabs のAPIキーが見つからないため、まだ音声を作れていません。
-  たまごさんが <code>.env</code> に <code>FAL_KEY=...</code>（または <code>ELEVENLABS_API_KEY=...</code>）を1行追記いただければ、
-  同じ文章ですぐ1本作って追加します（1000文字$0.10、この文章なら数円）。</p>
+  <span class="tag">一番自然・有料</span>
+  <p>3つの中で最も人間に近い。107文字で約1.6円。20分（8000文字）ならおよそ120円。</p>
+  <audio controls preload="none" src="audio/512/test_elevenlabs.mp3"></audio>
 </div>
 
-<h2>② 数字</h2>
-<div id="nums-area" class="note">計測中の項目は下記「③ 円卓20分テスト」の完了後に確定値へ更新します。</div>
+<h2>② 数字（同じ107文字の文章で計測）</h2>
+<div class="nums">
+  <div class="num"><b>20.3秒</b><span>AivisSpeech 生成時間（無料）</span></div>
+  <div class="num"><b>120.1秒</b><span>Style-Bert-VITS2 生成時間（無料・CPU）</span></div>
+  <div class="num"><b>約1.6円</b><span>ElevenLabs 費用（107文字）</span></div>
+  <div class="num"><b>約120円</b><span>ElevenLabs 費用（20分＝8000文字換算）</span></div>
+</div>
 
-<h2>③ 円卓20分テスト</h2>
-<div id="entaku-area" class="note">実行中：Vaultの実際の円卓ノート（約5,800文字・登場人物5名）をAivisSpeech Engineで丸ごと1本読ませています。完了後、話者ごとの声の対応表とあわせてここにリンクを追加します。</div>
+<h2>③ これでいきます</h2>
+<div class="note"><b>朗読の標準エンジンは AivisSpeech Engine（無料・ローカル・円卓の声分け対応）に決めました。</b>
+Style-Bert-VITS2は抑揚は良いが1文でも2分かかり20分の台本には非現実的、ElevenLabsは最も自然だが有料。
+「無料で毎日気軽に」に一番合うのはAivisSpeechと判断しました。ここぞという1本を作りたい時はElevenLabsも<code>--engine elevenlabs</code>で選べます。</div>
+
+<h2>④ 円卓20分テスト（実データ）</h2>
+<div id="entaku-area" class="note">{{ENTAKU_RESULT}}</div>
 
 <footer>
 このページは検証用の内部資料です。音は自動再生されません。再生ボタンを押した時だけ鳴ります。
