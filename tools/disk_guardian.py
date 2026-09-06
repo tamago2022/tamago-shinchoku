@@ -42,7 +42,13 @@ WT_DIR = os.path.join(JOY, ".worktrees")
 # 大量にできる（Claude Codeのworktreeエージェント機能）。ここは元々見張り対象に
 # 入っておらず、実測で node_modules だけで約8.7GB、dist/.output で約3.4GB、
 # 合計12GB超が野放しになっていた＝17GB切れの主因。以後はここも見張る。
-WT_DIRS = (WT_DIR, os.path.join(JOY, ".claude", "worktrees"))
+# 2026-09-06（491番検品で発覚・追加）：同じ2026-09-06に auto_launcher.py 側が
+# 「他のAIツールの索引を汚さない」対応で作業場の主置き場を
+# `/Users/mac/Documents/AI作業/.worktrees` へ移設していた（joy-relief-station配下は
+# フォールバックのみ）。この新しい主置き場を見ておらず実測21件・約1.6GBが野放しに
+# なっていたため追加した。
+AI_WORK_WT = "/Users/mac/Documents/AI作業/.worktrees"
+WT_DIRS = (WT_DIR, os.path.join(JOY, ".claude", "worktrees"), AI_WORK_WT)
 QUEUE = os.path.join(REPO, "status", "queue.json")
 
 LOG = os.path.join(REPO, "status", "disk_guardian.log")
