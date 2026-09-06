@@ -280,6 +280,27 @@
   .cmore .cbtns{margin-top:8px;}
   .crow.proof{opacity:1;}
   .crow.noproof{border-left:3px solid var(--red); padding-left:8px;}
+  /* 2026-09-06(459番) まとめてOK：チェックボックス列＋上部ツールバー＋10秒だけの取り消しバナー。
+     文字の縦潰れを再発させないため、行の高さは.ctrow(flex)で確保しfont-size/line-heightは一切触らない。 */
+  .ctrow{display:flex; align-items:flex-start; gap:6px;}
+  .ctrow .ct{flex:1 1 auto;}
+  .ccheck{flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    width:36px; height:36px; margin:-4px -2px -4px -6px; cursor:pointer;}
+  .ccheck input{width:24px; height:24px; accent-color:var(--green); cursor:pointer;}
+  .ccheck input:disabled{opacity:0.3; cursor:not-allowed;}
+  .cbulk{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:2px 0 10px;
+    padding:8px; border:1px solid var(--line); border-radius:10px; background:#1a2028;}
+  .cbulkpick{display:flex; gap:6px; flex:1 1 100%; flex-wrap:wrap;}
+  .cbulkpick button{min-height:40px; padding:0 10px; border-radius:9px; font-weight:700;
+    font-size:0.78rem; border:1px solid var(--line); background:#212839; color:var(--sub);}
+  .cbulkok{flex:1 1 100%; min-height:48px; margin-top:2px; border-radius:10px; font-weight:700;
+    font-size:0.9rem; background:var(--green); color:#12161c; border:1px solid var(--green);}
+  .cbulkok:disabled{background:#2a303d; color:var(--dim); border-color:var(--line); opacity:0.75;}
+  .cundo{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
+    margin:2px 0 10px; padding:10px; border-radius:10px; border:1px solid var(--green);
+    background:#1c2b22; color:var(--ink); font-size:0.86rem; font-weight:700;}
+  .cundo button{min-height:40px; padding:0 12px; border-radius:9px; border:1px solid var(--green);
+    background:transparent; color:var(--green); font-weight:700;}
   .queue{border-color:rgba(95,217,150,0.35);}
   .queue > summary{font-weight:700;}
   .qrow{display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
@@ -1227,6 +1248,30 @@ function tickCountdowns(){
      証拠(スクショ)が無い・URLが開けない行は赤く出し、証拠がある行を上に並べる。 */
 window.__thumbCache = window.__thumbCache || {};   // checkUrl -> [img,...] | null(見つからず) | "pending"
 window.__urlHealthCache = window.__urlHealthCache || {}; // url -> true/false | "pending"
+/* ───── まとめてOK（459番） ─────
+   2026-09-06 たまごさん「このパチパチパチ、よっぽど楽なんだけど、こんなの1個1個やってらんないよね」
+   →82件を1個ずつ82回押させない。チェックして1回の通信でまとめてqueue_okを流す。
+   証拠なし・URL不通（赤）はチェックボックス自体をdisabledにして、全部選ぶ／まとめてOKの事故を構造的に防ぐ。 */
+window.__bulkSelected = window.__bulkSelected || new Set(); // まとめてOK用にチェックした番号
+window.__bulkUndo = window.__bulkUndo || null;               // {ns:[...], until} 10秒だけ取り消せる
+function updateBulkButton(){
+  const btn = document.querySelector(".cbulkok"); if(!btn) return;
+  const n = window.__bulkSelected.size;
+  btn.textContent = `選んだ${n}件をまとめてOK`;
+  btn.disabled = n === 0;
+}
+function showUndoBanner(ns){
+  window.__bulkUndo = { ns: ns.slice(), until: Date.now() + 10000 };
+  renderCheck();
+  clearInterval(window.__undoTimer);
+  window.__undoTimer = setInterval(()=>{
+    if(!window.__bulkUndo){ clearInterval(window.__undoTimer); return; }
+    const remain = Math.max(0, Math.ceil((window.__bulkUndo.until - Date.now())/1000));
+    const el = document.getElementById("cundoSec");
+    if(el) el.textContent = remain;
+    if(remain <= 0){ window.__bulkUndo = null; clearInterval(window.__undoTimer); renderCheck(); }
+  }, 500);
+}
 function absUrl(base, src){ try{ return new URL(src, base).href; }catch(e){ return src || ""; } }
 // 確認ページ(/share/check/…)は同一オリジンなので実際のHTTPステータスと<img>を両方取れる。
 // ここで拾えた画像を「証拠のスクショ」として使う（content_check()が既にimg/数字の有無を検品済みの前提に乗る）。
@@ -1300,7 +1345,23 @@ function renderCheck(){
     return {r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead, score};
   });
   evid.sort((a,b)=> b.score - a.score);
-  box.innerHTML = evid.map(({r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead})=>{
+  // まとめてOK：残っている番号だけに選択状態を絞る（消えた・完了済みの番号を選択済みのまま残さない）
+  const liveNs = new Set(evid.map(e=>e.r.n));
+  Array.from(window.__bulkSelected).forEach(n=>{ if(!liveNs.has(n)) window.__bulkSelected.delete(n); });
+  const selCount = window.__bulkSelected.size;
+  const bulkBar = `<div class="cbulk">
+    <div class="cbulkpick">
+      <button type="button" data-bulk="all">🔲 全部選ぶ</button>
+      <button type="button" data-bulk="proof">🖼️ 証拠のあるものだけ選ぶ</button>
+      <button type="button" data-bulk="clear">✕ 選択解除</button>
+    </div>
+    <button type="button" class="cbulkok" data-bulk="ok"${selCount ? "" : " disabled"}>選んだ${selCount}件をまとめてOK</button>
+  </div>`;
+  const undoBar = window.__bulkUndo
+    ? `<div class="cundo"><span>✅ ${window.__bulkUndo.ns.length}件を完了にしました</span>
+        <button type="button" data-bulk="undo">↩︎ 取り消す（残り<span id="cundoSec">${Math.max(0, Math.ceil((window.__bulkUndo.until - Date.now())/1000))}</span>秒）</button></div>`
+    : "";
+  box.innerHTML = bulkBar + undoBar + evid.map(({r, urls, checkUrl, primaryUrl, thumbs, health, hasProof, isDead})=>{
     const fin = r.finishedAt ? String(r.finishedAt).slice(5,16).replace("T"," ") : "";
     const thumbsHtml = thumbs === "pending"
       ? `<div class="cthumbs wait">確認中…</div>`
@@ -1312,8 +1373,16 @@ function renderCheck(){
       ? `<a class="curlbtn${isDead ? " dead" : ""}" href="${esc(primaryUrl)}" target="_blank" rel="noopener">${urlLabel}</a>`
       : `<div class="curlbtn dead">⚠️ URLの報告なし</div>`;
     const allUrls = urls.map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
+    // 赤（証拠なし・URLが開かないおそれ）は「全部選ぶ」でも選ばれない別扱い＝チェックボックス自体をdisabledにして事故を防ぐ
+    const isRed = !hasProof || isDead;
+    const checked = window.__bulkSelected.has(r.n) ? " checked" : "";
     return `<div class="crow${hasProof ? " proof" : " noproof"}" data-cn="${r.n}">
-      <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
+      <div class="ctrow">
+        <label class="ccheck" title="${isRed ? "証拠なし・URL不通のためまとめてOK対象外（1件ずつなら押せます）" : "まとめてOKに含める"}">
+          <input type="checkbox" class="crowchk" data-cn="${r.n}"${isRed ? " disabled" : ""}${checked}>
+        </label>
+        <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
+      </div>
       ${thumbsHtml}
       ${urlBtn}
       <!-- 2026-09-06(418番) たまごさん「押すだけで終わる確認待ち」→ 前面は2ボタンだけ。
@@ -1426,6 +1495,66 @@ document.addEventListener("click", e=>{
   }[kind] || ["queue_ok", String(n), "✅完了 "];
   sendCommandWithId(id, CMD[0], CMD[1], CMD[2] + n + "番");
   renderCheck(); renderQueue(); renderDone(); renderLater();
+});
+// チェックボックスの変更（[data-ck]ではなく専用のcrowchk）。全部選ぶ等のボタン操作もこれで更新される。
+document.addEventListener("change", e=>{
+  const cb = e.target.closest(".crowchk"); if(!cb) return;
+  const n = Number(cb.dataset.cn);
+  if(cb.checked) window.__bulkSelected.add(n); else window.__bulkSelected.delete(n);
+  updateBulkButton();
+});
+// まとめてOKのツールバー（全部選ぶ／証拠のあるものだけ選ぶ／選択解除／まとめてOK／取り消す）
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-bulk]"); if(!b) return;
+  const kind = b.dataset.bulk;
+  if(kind === "all" || kind === "proof"){
+    document.querySelectorAll(".crow[data-cn]").forEach(rowEl=>{
+      const n = Number(rowEl.dataset.cn);
+      const cb = rowEl.querySelector(".crowchk");
+      if(!cb || cb.disabled) return; // 赤（証拠なし・URL不通）はここで自然に除外される
+      const include = (kind === "all") || rowEl.classList.contains("proof");
+      cb.checked = include;
+      if(include) window.__bulkSelected.add(n); else window.__bulkSelected.delete(n);
+    });
+    updateBulkButton();
+    return;
+  }
+  if(kind === "clear"){
+    document.querySelectorAll(".crowchk").forEach(cb=>{ cb.checked = false; });
+    window.__bulkSelected.clear();
+    updateBulkButton();
+    return;
+  }
+  if(kind === "ok"){
+    const ns = Array.from(window.__bulkSelected);
+    if(!ns.length) return;
+    // 2026-09-06(459番) たまごさん「押した瞬間に画面から消す」→ 楽観的更新。返事を待たせない。
+    const items = (window.__queue && window.__queue.items) || [];
+    ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it.status = "done"; it.checkedAt = new Date().toISOString(); }
+    });
+    window.__bulkSelected.clear();
+    // 1件ずつ82回通信しない。1回の送信でカンマ区切りをまとめて流す（command_ingest.py側で分解）。
+    sendCommandWithId("bo" + Date.now().toString(36), "queue_ok", ns.join(","), `✅まとめて完了 ${ns.length}件`);
+    renderCheck(); renderQueue(); renderDone();
+    showUndoBanner(ns);
+    return;
+  }
+  if(kind === "undo"){
+    const undo = window.__bulkUndo; if(!undo) return;
+    const ns = undo.ns;
+    const items = (window.__queue && window.__queue.items) || [];
+    ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it.status = "awaiting_check"; delete it.checkedAt; }
+    });
+    window.__bulkUndo = null;
+    clearInterval(window.__undoTimer);
+    sendCommandWithId("bu" + Date.now().toString(36), "queue_undo_ok", ns.join(","), `↩︎まとめて取り消し ${ns.length}件`);
+    renderCheck(); renderQueue(); renderDone();
+    return;
+  }
 });
 
 /* ───── 次に発車（予備軍）─────
