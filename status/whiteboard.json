@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-05 17:50",
+ "updatedAt": "2026-09-06 09:01",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -144,8 +144,8 @@
    "state": "検証待ち",
    "owner": null,
    "count": "14",
-   "updatedAt": "2026-09-05 17:50",
-   "note": "袋小路：直接mainへのgit pushをこのセッションで2回試行→auto mode classifierに明示ブロック(git push origin HEAD:main)。代替：新規ブランチへのpushは成功→claude/youtube-api-key-fix-0903-mergedとしてGitHub上に確保済み（旧worktreeは消滅済みだったため重要な救出）。コンフリクト2件(youtubeApi.mjs/video-patrol-local.sh)はmain側が既により新しい独立修正を持っていたため解消しHEAD側採用、coverGuide.ts/worlds.tsは無競合マージ、tsc新規エラー0件確認済み(eslintはシステム高負荷で未完走)。gh CLI不在のためPR作成不可。残り1手：mainへのpush権限を持つセッション（joy-relief-station専任セッション等）がこのブランチをmainへマージ。PR作成リンク:https://github.com/tamago2022/joy-relief-station/pull/new/claude/youtube-api-key-fix-0903-merged",
+   "updatedAt": "2026-09-05 17:51",
+   "note": "再取得も同じ状態（main push権限待ち）。別の担当へ回す",
    "stale": false
   },
   {
@@ -153,11 +153,11 @@
    "priority": 3,
    "rank": 9,
    "task": "サイトが重い・タップが効かない",
-   "state": "検証待ち",
+   "state": "完了",
    "owner": null,
    "count": "29",
-   "updatedAt": "2026-09-03 09:27",
-   "note": "既に解決済みだった(二重レジストリの同期漏れ、T007と同型)。PR#296(commit 0ab56902・09-02)がmain合流のみならず本番にも反映済みで、さらに後続commit 0e8f3273でアイコンの当たり判定が30×30px→30×44pxへ改善済み(TASK_BOARD案件#152で09-02 20:31のLovable公開・375pxスクショ確認済み)。本日09-03 09:35、production /cover-guide?artist=beatles&song=here-comes-the-sun のSSR HTMLをcurl+python再検証：①検索アイコンのclassが px-2 -mx-2 py-[15px] -my-[15px] (改善後の当たり判定)②MiniPlayer曲なし時が ml-auto w-fit bg-card/70 (透明バー修正後)の両方を確認、旧バグの痕跡(flex-1の空バー等)は0件。whiteboardの「29回・作業中」表示は09-02以前の状態のまま更新されていなかったため、検証待ちへ訂正した。 [実装:wd_fa0b1388]",
+   "updatedAt": "2026-09-06 09:01",
+   "note": "✅2026-09-06 09:01 証拠:https://joy-relief-station.lovable.app/cover-guide?artist=beatles&song=here-comes-the-sun 別の目で再確認：本番SSR HTMLを独立にcurl取得、当たり判定クラス(px-2 -mx-2 py-[15px] -my-[15px])・透明バークラス(ml-auto w-fit bg-card/70)の両方を確認。旧バグの痕跡なし",
    "stale": false
   },
   {
