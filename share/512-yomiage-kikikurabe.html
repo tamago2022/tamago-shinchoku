@@ -70,8 +70,40 @@
 Style-Bert-VITS2は抑揚は良いが1文でも2分かかり20分の台本には非現実的、ElevenLabsは最も自然だが有料。
 「無料で毎日気軽に」に一番合うのはAivisSpeechと判断しました。ここぞという1本を作りたい時はElevenLabsも<code>--engine elevenlabs</code>で選べます。</div>
 
-<h2>④ 円卓20分テスト（実データ）</h2>
-<div id="entaku-area" class="note">{{ENTAKU_RESULT}}</div>
+<h2>④ 円卓・人ごとの声分け（実データ）</h2>
+<div class="card">
+  <b class="name">Vault実物の円卓ノートを丸ごと1本読ませた（5人の顧問＋ナレーター）</b>
+  <span class="tag">押したら鳴ります・約3.5分</span>
+  <p>「円卓会議_思考メモ」ノート（2,097文字）をそのまま読ませた。サム・アルトマン→ヤン・ルカン→ジェフリー・ヒントン→ジェンスン・フアン→事業開発顧問の5人が、地の文（ナレーター）とは別の声で自動的に切り替わる。生成時間215秒・無料。</p>
+  <audio controls preload="none" src="audio/512/entaku_5nin_aivis.wav"></audio>
+</div>
+
+<table>
+<tr><th>話者</th><th>割り当てた声</th></tr>
+<tr><td>ナレーター（地の文）</td><td>まお（ノーマル）</td></tr>
+<tr><td>サム・アルトマン</td><td>まお（ふつー）</td></tr>
+<tr><td>ヤン・ルカン</td><td>まお（あまあま）</td></tr>
+<tr><td>ジェフリー・ヒントン</td><td>まお（おちつき）</td></tr>
+<tr><td>ジェンスン・フアン</td><td>まお（からかい）</td></tr>
+<tr><td>事業開発・ビジネス戦略顧問</td><td>まお（せつなめ）</td></tr>
+</table>
+
+<h2>⑤ 円卓20分フル（Vault実データ）</h2>
+<div class="note">
+「AI失業回_素材」ノート（5,025文字・約12分の音声）を丸ごと1本読ませた。所要時間653秒（11分）・費用0円。
+このノートは複数の顧問が対話する形式ではなく地の文中心の資料だったため、ほぼ単一の声（ナレーター）で読み上げている
+（人物の対話形式のノートなら上の④のように自動で声が切り替わる）。
+容量が大きいため、GitHub Pagesではなく<a href="https://drive.google.com/drive/my-drive">Googleドライブ「マイドライブ／朗読ツール_512番_音声」</a>に保存した。
+</div>
+
+<h2>⑥ 道具の使い方</h2>
+<div class="note">
+Macのターミナルで次の1行だけ（ファイルパスを変えるだけ）：<br>
+<code>python3 "/Users/mac/Documents/AI作業/tools_local/dokudoku/dokudoku.py" "読みたいファイルのパス.md"</code><br>
+同じ場所に「ファイル名.wav」ができる。円卓ノート（人物名の見出し）なら自動で声を切り替える。
+普通のノートは全部同じ声（ナレーター）で読む。使う前にAivisSpeech Engineを起動しておく必要がある
+（<code>/Users/mac/Documents/AI作業/tools_local/dokudoku/engines/AivisSpeechEngine-x64/macOS-x64/run</code>）。
+</div>
 
 <footer>
 このページは検証用の内部資料です。音は自動再生されません。再生ボタンを押した時だけ鳴ります。
