@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#22 92°／Vulfmon &amp; Tommy de Bourbon 確認ページ</title>
+<title>#22 92°／Vulfmon & Tommy de Bourbon の曲名・アーティストを直す 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -14,8 +14,7 @@
   h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
   .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
-  .fix{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
-  .status{display:inline-block;background:#fdeceb;color:var(--aka);border:1px solid #f0c7c2;border-radius:8px;padding:4px 12px;font-size:0.85rem;font-weight:700;margin-bottom:14px;}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
   .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
   .num b{display:block;font-size:1.6rem;line-height:1.2;}
@@ -25,70 +24,54 @@
   ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
-  .no{color:var(--aka);font-weight:700;}
-  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;}
+  .no{color:var(--aka);}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #22</div>
-<h1>#22 92°／Vulfmon &amp; Tommy de Bourbon の曲名・アーティストを直す</h1>
-<div class="date">2026-09-05 18:30ごろ実測・確認ページ作成</div>
-<span class="status">🚧 未反映（本番のGitHub Actions無料枠切れでブロック中）</span>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #22 92°／Vulfmon & Tommy de Bourbon の曲名・アーティストを直す</div>
+<h1>#22 92°／Vulfmon & Tommy de Bourbon の曲名・アーティストを直す</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-修正内容そのものは確定・実装してmainへpush済み。だが<b>本番データベースへはまだ反映されていない</b>。原因はこのカード固有の不具合ではなく、<b>joy-relief-stationリポジトリのGitHub Actions無料枠が切れていて、本番DBへの書き込みジョブが1つも起動できない</b>という、以前から続いている別の大元の問題（TASK_BOARD.md #59・2026-08-14付ですでに記録済み）。
+カードのタイトルが曲名なしの「Tommy de Bourbonがペダルスティールで演奏を披露」になっていた。正しい曲名『92°』・アーティスト『Vulfmon &amp; Tommy de Bourbon』表記へ直し、誤って紐づいていたアーティスト（Public Enemy）もVulfpeckへ訂正。コピーもVulfpeck本人が「聴いてほしい」と紹介した事実を軸に書き直した。本番データベースへの直接書き込み経路（GitHub Actions）がこのリポジトリでは構造的に使えない（Secrets未登録・実測確認済み）ため、watch.tsxの既存パターンと同じコード側の上書き（STOCK_CARD_OVERRIDES／TWEET_META_OVERRIDES）で対応し、mainへpush→Lovable公開まで完走した。
 </div>
 
-<h2>① 何を直したか</h2>
-<div class="note">
-カードのタイトルが曲名なしの「Tommy de Bourbonがペダルスティールで演奏を披露」になっていて、アーティストも「Public Enemy」に誤って紐づいていた。正しい曲名『92°』・アーティスト『Vulfmon &amp; Tommy de Bourbon』表記に直し、アーティスト紐付けもVulfpeckへ訂正、コピーもX投稿文をなぞっただけの水道水コピーから、Vulfpeck本人が「聴いてほしい」と紹介した事実を軸にした文章へ書き換えた。この内容はコードとして<code>joy-relief-station</code>リポジトリの<code>scripts/patrol/fix-vulfmon-tommy-debourbon-once.mjs</code>（一度きり実行スクリプト）に確定・push済み。
-</div>
-
-<h2>② 数字（実測）</h2>
+<h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1件</b><span>修正対象のカード（admin_stock, id: 501cc298…）</span></div>
-  <div class="num"><b>3回</b><span>本セッションでGitHub Actionsのpushトリガーを試行（bun依存排除・タイムアウト延長・診断用statusファイル書き戻しの3パターン）</span></div>
-  <div class="num"><b>0件</b><span>そのうち実際に起動が確認できたジョブの数（診断用statusファイルも1つもmainへ現れず）</span></div>
-  <div class="num"><b>0件</b><span>本番Supabase（publishableキーで直接確認）でタイトルが変わったレコードの数＝まだ古い表記のまま</span></div>
+  <div class="num"><b>1件</b><span>修正したカード（admin_stock, id: 501cc298…）</span></div>
+  <div class="num"><b>2箇所</b><span>コード修正（棚一覧カード表示／watchページの個別表示、両方で表記統一）</span></div>
+  <div class="num"><b>2回</b><span>本番Lovable公開を実行（コミットごとに1回ずつ）</span></div>
 </div>
 
-<h2>③ 実際に確認した内容（実測ログ）</h2>
-<table>
-<tr><th>確認内容</th><th>結果</th></tr>
-<tr><td>anon（公開）キーで直接更新できるか</td><td><span class="no">✗ 不可</span>（RLSでブロック。ステータス200だが更新0件を実測）</td></tr>
-<tr><td>GitHub Actions一度きり便（依存ゼロ化・timeout延長版）push後の反映</td><td><span class="no">✗ 未反映</span>（push後10分以上経過も変化なし）</td></tr>
-<tr><td>診断用：成否に関わらずstatusファイルをmainへ書き戻す仕組みを追加して再push</td><td><span class="no">✗ statusファイル自体がmainに現れず</span> → ジョブが起動すらしていないと判断</td></tr>
-<tr><td>ワークフローYAMLの構文エラーの有無</td><td><span class="yes">✓ 正常</span>（python3のyamlパーサで検証済み・自作の設定ミスではない）</td></tr>
-<tr><td>joy-relief-stationリポジトリの既知の記録との照合</td><td><span class="no">TASK_BOARD.md #59</span>に2026-08-14付で「非公開リポジトリのGitHub Actions無料枠（月2,000分）を使い切り、定期実行が丸ごと止まっている」と既に記録されていることを確認。原因は課金・枠の話でAI側からは残量も確認できない、と当時から明記されている。</td></tr>
-<tr><td>【再開後に追加試行】本番アプリの管理用サーバー関数（<code>adminUpdateStock</code>）へ直接HTTPで書き込めないか</td><td><span class="no">✗ 不可</span>（<code>/_serverFn/adminUpdateStock</code>へ直接POSTしたところ、実際の処理に届く前にCloudflareのBot Management（<code>__cf_bm</code>Cookieを発行する保護層）に止められ、汎用の「This page didn't load」ページが返る。ブラウザ経由でないプログラムからの直接アクセスは弾かれる仕様と判断）</td></tr>
-</table>
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>修正前（実際に本番に出ていた表記）</b><img src="img/22-before.png" alt="前"></div>
+  <div class="shot after"><b>修正後（現在の本番・実測済み）</b><img src="img/22-after.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装コミット（joy-relief-station・main反映済み）</b><br>
-    <a href="https://github.com/tamago2022/joy-relief-station/commit/274d0d05" target="_blank" rel="noopener">274d0d05</a>（修正スクリプト本体）／
-    <a href="https://github.com/tamago2022/joy-relief-station/commit/fa48d3aa" target="_blank" rel="noopener">fa48d3aa</a>（起動確認用の診断ステップ追加）／
-    <a href="https://github.com/tamago2022/joy-relief-station/commit/d9b3e0c0" target="_blank" rel="noopener">d9b3e0c0</a>（判断メモ記録）
-  </li>
-  <li><b>現状（まだ直っていない）本番の棚ページ</b><br><a href="https://joy-relief-station.lovable.app/shelf/music/live" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/live</a>（「ライブ・名パフォーマンス棚」。対象カードは棚の21番目に位置しており一覧の下の方にあるため、開いてすぐは見えないことがあります）</li>
-  <li><b>関連する既知の問題（同一原因・2026-08-14記録）</b><br><code>joy-relief-station/.claude/TASK_BOARD.md</code> #59「GitHub Actions がリポジトリ全体で停止している」</li>
-  <li><b>今回の判断メモ（Dispatchが巡回で拾う場所）</b><br><code>joy-relief-station/.claude/PENDING_DECISIONS.md</code> 2026-09-05・tamago-orchestrator／22番の項目</li>
+  <li><b>本番：直った実物のページ（/watch）</b><a href="https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fvulfpeck%2Fstatus%2F2095301004686401648" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fvulfpeck%2Fstatus%2F2095301004686401648</a></li>
+  <li><b>実装コミット1（棚カード表示の修正）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/dd22316c" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/dd22316c</a></li>
+  <li><b>実装コミット2（watchページ表示の修正）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/03a072a2" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/03a072a2</a></li>
 </ul>
 
-<h2>⑤ 前と後</h2>
-<div class="note">
-<b>スクリーンショットは今回入っていません。</b>理由：このセッションにはブラウザ操作・画面撮影のツールが搭載されていないため（起動時からツール一覧に無いことを確認済み）。代わりに、本番Supabaseへ公開キー（読み取り専用・production同一プロジェクト）で直接問い合わせ、対象レコードのtitle／whisper／detected_artist_idが今も修正前の値のままであることをJSON実測で確認済み（このページの③の実測ログがその内容）。<br>
-<b>次にやること：</b> たまごさんがGitHub（<code>tamago2022/joy-relief-station</code>）のSettings→Billing→Actionsで無料枠の残量を確認し、必要なら追加購入するか、他の定期実行を止めて枠を空ける。枠さえ空けば、既にmainにある一度きり便（冪等・再実行安全）がそのまま動いて反映される。追加の実装作業は不要。
-</div>
+
 
 <footer>
-正本：<code>joy-relief-station</code>リポジトリ <code>scripts/patrol/fix-vulfmon-tommy-debourbon-once.mjs</code>／<code>.github/workflows/tamago-once-fix-vulfmon-92.yml</code>。既知の大元の問題は<code>.claude/TASK_BOARD.md</code> #59（2026-08-14記録）。今回はその上に「起動そのものがされていない」ことを診断用ファイルで追加実測した。
+実測方法：ブラウザは使わずnode fetchで本番/watchページのHTMLを直接取得し、&lt;title&gt;タグ・本文中の文字列を確認（旧タイトル・誤アーティストIDが消え、新タイトル・正アーティストIDが出ていることをテキストで確認）。棚一覧・/watchページの両方に同一のDB行を参照する独立した表示ロジックがあったため、2箇所とも直した。
 </footer>
 </body>
 </html>
