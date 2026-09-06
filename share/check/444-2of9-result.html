@@ -42,17 +42,17 @@
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #444 444番2/9本目 AI検品結果</div>
 <h1>#444 444番2/9本目 AI検品結果</h1>
-<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認（09:2x 再実行で修正済み）</div>
 
 <div class="fix">
-確認待ち10件(n=23,22,19,18,10,20,2,7,11,13)を新規スクリプトtools/verify_check_pages.pyで機械検品。判定基準は①確認ページURLが本番200 ②本文に効果の裏取り(evidence)がありネガティブ記述が無い ③スクリーンショット枚数(img_count)が1枚以上、の3条件AND。7番のみ3条件すべて満たしPASS(status=done)、残り9件はimg_count=0(スクリーンショット無し)でFAILとなりqueue.jsonのstatusをawaiting_checkへ差し戻し済み。
+確認待ち10件(n=23,22,19,18,10,20,2,7,11,13)をtools/verify_check_pages.pyで機械検品。判定基準は①確認ページURLが本番200 ②本文に効果の裏取り(evidence)がありネガティブ記述が無い ③スクリーンショット枚数(img_count)が1枚以上、の3条件AND。7番のみ3条件すべて満たしPASS(status=done)、残り9件はimg_count=0(スクリーンショット無し)でFAIL。<b>2回目のAI検品指摘（n=20/2/11/13がFAILなのにstatusがawaiting_checkのまま残っていた）を受けて、スクリプトのstatus反映ロジックを修正し再実行。9件全部がqueue.json上で正しく status=waiting（やり直し列）へ揃ったことを実測済み。</b>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>10件</b><span>検品対象</span></div>
-  <div class="num"><b>1件</b><span>PASS(自動完了)</span></div>
-  <div class="num"><b>9件</b><span>FAIL(差し戻し)</span></div>
+  <div class="num"><b>1件</b><span>PASS(自動完了・done)</span></div>
+  <div class="num"><b>9件</b><span>FAIL→status=waitingへ正しく反映</span></div>
 </div>
 
 
@@ -89,7 +89,7 @@
 </table>
 
 <footer>
-このページは #444 2/9本目のセッションがtools/verify_check_pages.pyの機械判定結果をtools/make_check_page.pyで確認ページ化したもの。FAILの9件はstatus=awaiting_checkへ差し戻し済み・スクリーンショット追加後に再判定が必要。
+このページは #444 2/9本目のセッションがtools/verify_check_pages.pyの機械判定結果を手で確認ページ化したもの。FAILの9件はqueue.json上でstatus=waiting（やり直し列）へ正しく反映済み・スクリーンショット追加後に次の着火で再判定される。status/oni_kantoku_log.jsonlに判定10行を監査ログとして追記済み。
 </footer>
 </body>
 </html>
