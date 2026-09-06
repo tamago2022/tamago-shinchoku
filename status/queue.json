@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 15:58",
+ "updatedAt": "2026-09-06 16:01",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -2491,7 +2491,7 @@
    "title": "たまごさんが頼んでいないタスクを確認列に出さない（1/4）",
    "why": "大きい仕事の自動分割（元は453番）",
    "what": "# 元の依頼\n---\n【最優先・たまごさんの脳を守る工事】たまごさんが頼んでいないタスクを、たまごさんの確認列に出さない。\n\nたまごさんの言葉（2026-09-06・そのまま）:\n「止まってるタスク56件を減らせって、どういうことだよ。考えるのはもうすげえ脳みそやられる。これ何のことみたいな。本番に出ていない112本分ける、ごめんごめん」\n「あなたが勝手に間違えて、また俺が確認する時刻になってんのよ。やばくないかこれ。**俺がやってっつったこと以外で、勝手に自爆して、勝手に確認増やしてんのよ。しかも大量に。**もう脳みそ爆発しそう」\n「こんなの1個1個開いて見てらんないわ。こんな70ページ以上あるやつ」\n\n★これが今いちばん深刻な問題です。確認待ちの中身を数えたところ：\n - たまごさんが実際に頼んだもの … 29件\n - **工場が自分で作って、自分で終わらせて、たまごさんに確認を求めているもの … 38件**\n （うち12件は「循環を見るため」の自己テストだった。Dispatchが今すぐ閉じた）\n\n★作るもの：**確認列に出す資格の判定**\n 1. 各タスクに「**たまごさん発**」か「**工場発**」かの印を持たせる。\n    たまごさん発＝進捗表やDispatchからたまごさんの言葉で入ったもの。\n    工場発＝AIが自分で思いついて積んだもの（棚卸し・整理・自己テスト・内部の数合わせ等）。\n 2. **工場発のものは、たまごさんの確認列に出さない。**AI同士で判定して閉じる。\n    どうしても人の目が要るものだけ、**理由を1行付けて**上げる。\n 3. 進捗表の確認列に「たまごさん発だけ表示」を既定にする。工場発は畳んで隠す（見たい時だけ開ける）。\n 4. **今後 queue_add するとき、工場発のタスクには最初からこの印を付ける。**印の無いものは工場発とみなす。\n 5. 「止まってるタスク56件」「本番に出ていない112本」のような**工場の内部事情のタスクは、\n    たまごさんに一切見せない。**題名も見せない。AIが黙って処理する。\n\n★同時に、既にある67件を仕分けし直す。**たまごさん発の29件だけを残し、残りは工場側で閉じる。**\n 閉じた分は「Dispatchが自動で閉じた◯件」として、押せるURLの一覧だけ残す（あとから疑えるように）。\n\n★これは 440番（AI検品で自動OK）と一体の工事。**先にこの仕分けをやると、440が見る件数が半分以下になる。**\n★報告は3行だけ。ログ抜粋・経緯・謝罪は書かない。\n---\n\n# ★この仕事は自動分割の一部です（1/4本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（10件）：\n- queue.json n=25 title=「AI臭さを消す質感の指示書を作る（サンダーバード／ストップモーション）」status=awaiting_check why=「デジタルのツルツル感を消したい」origin_hint=要確認(引用なし・画像生成の質感方針。店主発寄りだが確証なし)\n- queue.json n=22 title=「92°／Vulfmon & Tommy de Bourbon の曲名・アーティストを直す」status=awaiting_check why=「曲名が入っておらず、アーティストも未登録」origin_hint=工場発疑い(データ不備を自己発見・たまご引用なし。AI検品で閉じられる可能性)\n- queue.json n=10 title=「HOME／ふるさとプレイリストを仕上げる」status=awaiting_check why=「33曲は入った。タイトル・公開設定・曲順が残り」origin_hint=店主発確定(本文に「たまごさん確認」の明記あり)\n- queue.json n=20 title=「走行中が空いたら自動で次を発車させる」status=awaiting_check why=「この「次に発車」を手動更新から自動へ」origin_hint=工場発(内部の仕組み改善・自己発案。たまご引用なし)\n- queue.json n=7 title=「「アーティスト未接続」のカードを直す（実例つき）」status=awaiting_check why=「動画はあるのにアーティストページへ繋がっていない」origin_hint=店主発確定(たまごさんのスクショで実例確認)\n- queue.json n=13 title=「コピーの書き直しを5案（A〜E）から選べるようにする」status=awaiting_check why=「1案だけ出されても選べない」origin_hint=店主発確定(たまごさん確認の引用あり)\n- queue.json n=16 title=「未反映ブランチ112本を仕分ける」status=awaiting_check why=「本番に出ていない作業が112本ぶん積まれている」origin_hint=工場発確定(453番本文が「工場の内部事情」の例として名指し。たまごさんに見せない対象)\n- queue.json n=26 title=「止まっているタスク56件から、確認だけで閉じられるものを拾う」status=awaiting_check why=「台帳が着手中のまま動いていないものが56件」origin_hint=工場発確定(453番本文が「工場の内部事情」の例として名指し。たまごさんに見せない対象)\n- queue.json n=31 title=「進捗表で押したボタンを、パソコン側に反映する」status=awaiting_check why=「OK／やり直しを押した結果をqueue.jsonへ戻す」origin_hint=工場発(進捗表↔queue.json配線の内部整備。たまご引用なし)\n- queue.json n=33 title=「スマホからタスクを追加できるようにする」status=awaiting_check why=「思いついたその場で発車待ちに積みたい」origin_hint=工場発疑い(スマホ追加機能そのものの拡張。たまご引用なし)\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -2500,7 +2500,16 @@
    "splitTotal": 4,
    "startedAt": "2026-09-06T15:38:05+09:00",
    "sessionId": "557166c6-15ff-47d3-939a-dd2732d49771",
-   "pid": 7391
+   "pid": 7391,
+   "finishedAt": "2026-09-06T16:00:54+09:00",
+   "result": "確認待ち・完了一覧の各タスクに origin(たまごさん発/工場発)の印を付ける仕組みを実装。対象10件を判定(user4件・factory6件)。工場発は完了一覧で題名を伏せ「🏭 Dispatchが自動で閉じた内部作業」表示に、確認待ちでは畳んで隠す。今後queue_add・自動分割で作るタスクにも自動でこの印が付く。",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/455-queue-origin-filter.html",
+    "https://tamago2022.github.io/tamago-shinchoku/"
+   ],
+   "okBy": "oni-kantoku-verify_check_pages-455-orchestrator-origin-filter",
+   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://tamago2022.github.io/tamago-shinchoku/ => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/455-queue-origin-filter.html / ③PASS: img_count=2",
+   "checkedAt": "2026-09-06T16:01:19+0900"
   },
   {
    "n": 456,
@@ -2549,26 +2558,32 @@
    "title": "たまごさんが頼んでいないタスクを確認列に出さない（4/4）",
    "why": "大きい仕事の自動分割（元は453番）",
    "what": "# 元の依頼\n---\n【最優先・たまごさんの脳を守る工事】たまごさんが頼んでいないタスクを、たまごさんの確認列に出さない。\n\nたまごさんの言葉（2026-09-06・そのまま）:\n「止まってるタスク56件を減らせって、どういうことだよ。考えるのはもうすげえ脳みそやられる。これ何のことみたいな。本番に出ていない112本分ける、ごめんごめん」\n「あなたが勝手に間違えて、また俺が確認する時刻になってんのよ。やばくないかこれ。**俺がやってっつったこと以外で、勝手に自爆して、勝手に確認増やしてんのよ。しかも大量に。**もう脳みそ爆発しそう」\n「こんなの1個1個開いて見てらんないわ。こんな70ページ以上あるやつ」\n\n★これが今いちばん深刻な問題です。確認待ちの中身を数えたところ：\n - たまごさんが実際に頼んだもの … 29件\n - **工場が自分で作って、自分で終わらせて、たまごさんに確認を求めているもの … 38件**\n （うち12件は「循環を見るため」の自己テストだった。Dispatchが今すぐ閉じた）\n\n★作るもの：**確認列に出す資格の判定**\n 1. 各タスクに「**たまごさん発**」か「**工場発**」かの印を持たせる。\n    たまごさん発＝進捗表やDispatchからたまごさんの言葉で入ったもの。\n    工場発＝AIが自分で思いついて積んだもの（棚卸し・整理・自己テスト・内部の数合わせ等）。\n 2. **工場発のものは、たまごさんの確認列に出さない。**AI同士で判定して閉じる。\n    どうしても人の目が要るものだけ、**理由を1行付けて**上げる。\n 3. 進捗表の確認列に「たまごさん発だけ表示」を既定にする。工場発は畳んで隠す（見たい時だけ開ける）。\n 4. **今後 queue_add するとき、工場発のタスクには最初からこの印を付ける。**印の無いものは工場発とみなす。\n 5. 「止まってるタスク56件」「本番に出ていない112本」のような**工場の内部事情のタスクは、\n    たまごさんに一切見せない。**題名も見せない。AIが黙って処理する。\n\n★同時に、既にある67件を仕分けし直す。**たまごさん発の29件だけを残し、残りは工場側で閉じる。**\n 閉じた分は「Dispatchが自動で閉じた◯件」として、押せるURLの一覧だけ残す（あとから疑えるように）。\n\n★これは 440番（AI検品で自動OK）と一体の工事。**先にこの仕分けをやると、440が見る件数が半分以下になる。**\n★報告は3行だけ。ログ抜粋・経緯・謝罪は書かない。\n---\n\n# ★この仕事は自動分割の一部です（4/4本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（8件）：\n- queue.json n=407 title=「円卓EP02の議題『著作権は時代遅れなのか——AIが壊したのは作品より境界線だった』の素材を作る。★**元ネタはVaultに既にある完成度の高いノート**：`00 inbox/AIと著作権　AI時代の著作権――消えるのは権利か、それとも「所」status=awaiting_check why=「スマホから追加」origin_hint=店主発確定(queue_addのwhyが「スマホから追加」=たまごさん本人がスマホ入力で追加。仕組み上100%たまごさん発)\n- queue.json n=412 title=「【判定待ちの棚卸し】たまごさんの確認待ちが77件まで溜まっている。**たまごさんが判定しやすい形に整える。**★やること：①77件を全部見て、**確認ページのURLが無いもの・開いても中身が無いもの・『結果が読み取れませんでした』になってい」status=awaiting_check why=「スマホから追加」origin_hint=店主発確定(queue_addのwhyが「スマホから追加」=たまごさん本人がスマホ入力で追加。仕組み上100%たまごさん発)\n- queue.json n=418 title=「仕組み：押すだけで終わる確認待ち」status=awaiting_check why=「スマホから追加」origin_hint=店主発確定(queue_addのwhyが「スマホから追加」=たまごさん本人がスマホ入力で追加。仕組み上100%たまごさん発)\n- queue.json n=430 title=「緊急：容量を空けて発車を再開する」status=awaiting_check why=「スマホから追加」origin_hint=店主発確定(queue_addのwhyが「スマホから追加」=たまごさん本人がスマホ入力で追加。仕組み上100%たまごさん発)\n- 仕組み構築: status/queue.json の各itemに origin(店主発/工場発) フィールドを持たせる。queue_add(tools/priority_ingest.py)のスマホ追加分は自動で店主発、Dispatchが自発的に積む分は工場発をデフォルトにし、印の無い既存項目は工場発とみなす\n- 仕組み構築: index.html(進捗表)の確認列の既定表示を「たまごさん発だけ」にする。工場発は折りたたんで隠し、開けば見られるようにする\n- 仕組み構築: 工場発と判定した項目はDispatch/AI同士で検証して自動でdoneまたはretiredにする。人の目が必要なものだけ理由1行を添えて確認列に残す\n- 仕組み構築: 「止まってるタスクN件」「未反映ブランチN本」のような工場の内部事情の題名・件数を、たまごさん向け表示から完全に隠す（factory_status.py等の出力先を分離）\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "splitFrom": 453,
    "splitIndex": 4,
-   "splitTotal": 4
+   "splitTotal": 4,
+   "startedAt": "2026-09-06T16:00:15+09:00",
+   "sessionId": "41a5dd42-27b0-47b6-94f8-1d55c65195dc",
+   "pid": 14959
   },
   {
    "n": 459,
    "title": "確認待ちに「まとめてOK」を付ける（1/4）",
    "why": "大きい仕事の自動分割（元は441番）",
    "what": "# 元の依頼\n---\n【最優先・今日中・小さい工事】確認待ちに「まとめてOK」を付ける。1個ずつ押させない。\n\nたまごさんの言葉（2026-09-06）:\n「このパチパチパチ、よっぽど楽なんだけど、こんなの1個1個やってらんないよね」\n\n★今82件ある。押すだけの形にはなったが、**1件ずつ82回は人間のやることではない。**\n★作るもの（進捗表 index.html）:\n 1. 各行に小さなチェックボックス。**「全部選ぶ」**と**「証拠のあるものだけ選ぶ」**の2つのボタン。\n 2. 上部に「選んだ◯件をまとめてOK」ボタン。1回の送信でまとめて queue_ok を流す（1件ずつ通信しない）。\n 3. **押した瞬間に画面から消す**（楽観的更新）。返事を待たせない。\n 4. まとめてOKの直後に「◯件を完了にしました／取り消す」を10秒だけ出す。押し間違いを戻せるようにする。\n 5. 赤（証拠なし・URLが開かない）は**「全部選ぶ」でも選ばれない。**別扱いにする。まとめてOKで事故らせない。\n 6. スマホの親指で押せる大きさ。文字が縦に潰れないこと。\n\n★中継所側（command_ingest.py）に、複数番号を1回で受ける口が無ければ足す（例: queue_ok に \"12,15,18\" を許す）。ALLOWED も忘れず更新。\n★見た目を触る前に tamago-tone を読む。\n★終わったら http://192.168.0.46:8788 と GitHub Pages の両方で実際に押してみて、82件が減るところのスクショを撮る。\n★報告は【完了】1行＋確認ページURL＋本番URL。\n---\n\n# ★この仕事は自動分割の一部です（1/4本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（10件）：\n- queue.json n=7 title=「「アーティスト未接続」のカードを直す（実例つき）」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/7-artist-unlinked-cards.html\n- queue.json n=10 title=「HOME／ふるさとプレイリストを仕上げる」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html\n- queue.json n=13 title=「コピーの書き直しを5案（A〜E）から選べるようにする」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/13-copy-5an-undo.html , https://joy-relief-station.lovable.app/cover-guide?artist=mother-earth&song=apple-green\n- queue.json n=16 title=「未反映ブランチ112本を仕分ける」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/16-branch-shiwake.html\n- queue.json n=20 title=「走行中が空いたら自動で次を発車させる」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html\n- queue.json n=22 title=「92°／Vulfmon & Tommy de Bourbon の曲名・アーティストを直す」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/22-vulfmon-92.html\n- queue.json n=25 title=「AI臭さを消す質感の指示書を作る（サンダーバード／ストップモーション）」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/25-stopmotion-texture.html\n- queue.json n=26 title=「止まっているタスク56件から、確認だけで閉じられるものを拾う」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/26-stalled-tasks-check.html\n- queue.json n=31 title=「進捗表で押したボタンを、パソコン側に反映する」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku\n- queue.json n=33 title=「スマホからタスクを追加できるようにする」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "splitFrom": 441,
    "splitIndex": 1,
-   "splitTotal": 4
+   "splitTotal": 4,
+   "startedAt": "2026-09-06T16:01:19+09:00",
+   "sessionId": "fe11eea0-e6b0-4ba9-9711-297388a2b899",
+   "pid": 15267
   },
   {
    "n": 460,
