@@ -41,12 +41,26 @@
 <h1>④直すために必要なもの（次の一手・どれか1つでよい）</h1>
 <table>
 <tr><th>案</th><th>内容</th></tr>
-<tr><td>案1</td><td>たまごさんご本人が、ご自身のスマホ／PCのSpotifyアプリかブラウザで、直接タイトル変更・公開設定・曲順並べ替えを行う（一番早い）</td></tr>
+<tr><td>案1</td><td>たまごさんご本人が、ご自身のスマホ／PCのSpotifyアプリかブラウザで、直接タイトル変更・公開設定・曲順並べ替えを行う（2〜3分・一番早い）</td></tr>
 <tr><td>案2</td><td>このセッション種別にブラウザ操作ツール（claude-in-chrome）を配布し、かつそのプロフィールでSpotifyへログイン済みにしておく</td></tr>
 <tr><td>案3</td><td>Spotify Developer Dashboardでアプリを作り、playlist-modify権限のトークンを発行して<code>.env</code>へ追記する（値はたまごさんご本人が書き込む・AI側は見ない）</td></tr>
 </table>
 
-<p style="margin-top:32px;color:#888;font-size:13px">記録：<code>.claude/PENDING_DECISIONS.md</code>（2026-09-04・2026-09-05の2回分）／<code>.claude/agent-memory/tamago-orchestrator/project_spotify_playlist_edit_blocked.md</code></p>
+<div class="box" style="background:#f3f8ff;border-color:#c0d8f0">
+<strong>案1の具体的な手順（コピペで2〜3分）：</strong>
+<ol>
+<li>タイトル変更：プレイリストを開く→「…」または鉛筆アイコン→編集→タイトル欄に貼り付け：<br><code>🏠 帰りたくなった夜に｜ごきげん補給所</code></li>
+<li>非公開→公開：同じ編集画面（または「…」メニュー）→「非公開のプレイリスト」のトグルをオフにする</li>
+<li>曲順の並べ替え：曲を長押し（PC版はドラッグ）で上下に移動。国ごとの固まりを崩し、「入口（穏やか）→中盤（切なさが濃い曲）→終盤（安心して終わる曲）」の3段階に緩く分けるだけで十分</li>
+</ol>
+</div>
+
+<h1>⑤証拠（実行結果そのままの画像）</h1>
+<p style="color:#666;font-size:13px">画面のスクリーンショットではありません。Spotify側の画面は今回一度も開いていないため撮れません。代わりに、このセッションが実際に実行したコマンドの結果をそのまま画像化しています。</p>
+<img src="img/10-home-tools-and-env.png" alt="ツール一覧とenvアクセス制限の実行結果" style="max-width:100%;border:1px solid #ccc;border-radius:6px;margin:12px 0">
+<img src="img/10-home-script-readonly.png" alt="既存Spotifyスクリプトが読み取り専用であることの実行結果" style="max-width:100%;border:1px solid #ccc;border-radius:6px;margin:12px 0">
+
+<p style="margin-top:32px;color:#888;font-size:13px">記録：<code>.claude/PENDING_DECISIONS.md</code>（2026-09-04・2026-09-05の2回分）／<code>.claude/agent-memory/tamago-orchestrator/project_spotify_playlist_edit_blocked.md</code>／<code>.claude/TASK_BOARD.md</code>案件#153（joy-relief-stationリポジトリ・非公開のためGitHub直リンクは店主ログイン必須）</p>
 
 </body>
 </html>
