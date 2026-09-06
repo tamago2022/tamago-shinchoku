@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#314 曲ページの構成をLatelyで決めきる（本番反映・実測確認） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #314 曲ページの構成をLatelyで決めきる（本番反映・実測確認）</div>
+<h1>#314 曲ページの構成をLatelyで決めきる（本番反映・実測確認）</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+店主指定の並び（メイン動画3枚→この流れでもう一本4枚→名カバー→関連する棚→<s>この後こんな旅もできます</s>撤去）は、Stevie Wonder「Lately」の本番ページに<b>すでに反映済み</b>（PR #375・main合流）。名カバー欄の「オルガンで固まってサムネイルが見えない」も解消し、実際にサムネイルが表示されている（下記の2枚は本番から直接取得した実物画像）。他の曲ページ（例：class「夏の日の1993」）は今までどおりテキストのみの一覧で、この曲だけに絞った変更であることも実測で確認した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>15枚</b><span>本番ページ内の&lt;img&gt;タグ総数(2026-09-06実測)</span></div>
+  <div class="num"><b>4件</b><span>「この流れで、もう一本」の表示件数（2→4に増加・実測）</span></div>
+  <div class="num"><b>2件</b><span>名カバー欄のサムネイル表示件数（本番で実測）</span></div>
+  <div class="num"><b>0件</b><span>「この後、こんな旅もできます」の出現数（撤去・実測）</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>名カバー1（Jodeci）本番・実物サムネイル</b><img src="https://img.youtube.com/vi/zUT0vZmbH88/hqdefault.jpg" alt="前"></div>
+  <div class="shot after"><b>名カバー2（福原美穂）本番・実物サムネイル</b><img src="https://img.youtube.com/vi/dfvU1TVMwz4/hqdefault.jpg" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ（Stevie Wonder「Lately」）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=stevie&amp;song=lately" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=stevie&amp;song=lately</a></li>
+  <li><b>マージ済みPR #375</b><a href="https://github.com/tamago2022/joy-relief-station/pull/375" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/pull/375</a></li>
+  <li><b>変更コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/3e23cb19c625b181e7f57ee6ed1e7b621353837b" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/3e23cb19c625b181e7f57ee6ed1e7b621353837b</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>並び順（メイン→もう一本→名カバー→関連する棚）</td><td class="yes">本番HTMLの出現順で確認・想定どおり</td></tr>
+<tr><td>この流れで、もう一本が4枚か</td><td class="yes">本番HTML中「同じ温度」の出現回数=4</td></tr>
+<tr><td>名カバーにサムネイルが出るか</td><td class="yes">本番HTMLの&lt;img src=&quot;img.youtube.com/...&quot;&gt;を実機取得で2件確認</td></tr>
+<tr><td>この後、こんな旅もできますが消えているか</td><td class="yes">本番HTMLに文字列なし(0件)</td></tr>
+<tr><td>他の曲ページに影響していないか</td><td class="yes">class「夏の日の1993」の本番HTMLは同クラス0件・名カバー欄はテキストのみのまま</td></tr>
+<tr><td>mainへの合流</td><td class="yes">PR #375がmainへマージ済み(commit 3e23cb19)</td></tr>
+<tr><td>Lovable本番反映</td><td class="yes">本番URLを直接取得(2026-09-06)し全項目を実測確認</td></tr>
+</table>
+
+<footer>
+このページは #314 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
