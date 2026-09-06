@@ -11,7 +11,7 @@
 やること：
   ① 15分おきに空きを測る（軽い。dfだけ）
   ② 30GBを切ったら、安全に消せるものだけ自動で片づける：
-     - joy-relief-station の作業場(.worktrees)の node_modules
+     - joy-relief-station の作業場(.worktrees・.claude/worktrees の両方)の node_modules
        （bun/npm installで作り直せる。tools/worktree_reaper.py と同じ考え方を流用）
      - 7日以上前のログ
      - __pycache__
@@ -22,9 +22,10 @@
      ソフトウェアのdmg。迷ったら触らない（パスにキーワードが1つでも含まれたら問答無用でスキップ）
   ⑤ 何を消して何GB空いたかを1行ずつログに残す(status/disk_guardian.log)
 
-このスクリプトは削除範囲を「joy-relief-station の .worktrees 配下」「tamago-shinchoku /
-joy-relief-station の tools・scripts 配下の __pycache__」「tamago-shinchoku/status の
-7日超ログ」に明示的に限定している。それ以外のディレクトリには一切降りない。
+このスクリプトは削除範囲を「joy-relief-station の .worktrees 配下・.claude/worktrees 配下」
+「tamago-shinchoku / joy-relief-station の tools・scripts 配下の __pycache__」
+「tamago-shinchoku/status の7日超ログ」に明示的に限定している。それ以外のディレクトリには
+一切降りない。
 """
 import io
 import json
@@ -37,6 +38,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)  # /Users/mac/Desktop/tamago-shinchoku
 JOY = "/Users/mac/Desktop/joy-relief-station"
 WT_DIR = os.path.join(JOY, ".worktrees")
+# 2026-09-06（430番）：作業場は `.worktrees` だけでなく `.claude/worktrees` にも
+# 大量にできる（Claude Codeのworktreeエージェント機能）。ここは元々見張り対象に
+# 入っておらず、実測で node_modules だけで約8.7GB、dist/.output で約3.4GB、
+# 合計12GB超が野放しになっていた＝17GB切れの主因。以後はここも見張る。
+WT_DIRS = (WT_DIR, os.path.join(JOY, ".claude", "worktrees"))
 QUEUE = os.path.join(REPO, "status", "queue.json")
 
 LOG = os.path.join(REPO, "status", "disk_guardian.log")
@@ -67,8 +73,7 @@ FORBIDDEN_KEYWORDS = (
 )
 
 # 片付けを許す範囲（この外には一切降りない）
-ALLOWED_ROOTS = (
-    WT_DIR,
+ALLOWED_ROOTS = WT_DIRS + (
     os.path.join(REPO, "tools"),
     os.path.join(REPO, "status"),
     os.path.join(JOY, "tools"),
@@ -146,9 +151,11 @@ def candidates():
     out = []
     guard = running_worktree_names()
 
-    if os.path.isdir(WT_DIR):
-        for name in sorted(os.listdir(WT_DIR)):
-            path = os.path.join(WT_DIR, name)
+    for wt_dir in WT_DIRS:
+        if not os.path.isdir(wt_dir):
+            continue
+        for name in sorted(os.listdir(wt_dir)):
+            path = os.path.join(wt_dir, name)
             if not os.path.isdir(path) or is_forbidden(path):
                 continue
             protected = name in guard or any(name.startswith(g + "-") for g in guard)
