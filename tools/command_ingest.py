@@ -380,25 +380,85 @@ def queue_add(text, priority=None, label=None, origin=None):
     return "done", "%d番として発車待ちに追加しました（P%s）" % (next_n, p if p else "-")
 
 
+def _split_targets(target):
+    """"12" でも "12,15,18" でも受ける共通の分解処理。
+    2026-09-06(459番) 「まとめてOK」でチェックした複数件を1回の通信で流すために追加。
+    重複・空要素・数字でないものは無視する。"""
+    nums = []
+    for part in str(target).split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            v = int(part)
+        except Exception:
+            continue
+        if v not in nums:
+            nums.append(v)
+    return nums
+
+
 def queue_ok(target):
-    """進捗表「✅OK・完了にする」→ status/queue.json の該当番号を done にする。"""
-    try:
-        n = int(target)
-    except Exception:
+    """進捗表「✅OK・完了にする」→ status/queue.json の該当番号を done にする。
+    2026-09-06(459番) 「まとめてOK」対応：target は "12" 単体でも "12,15,18" のカンマ区切りでもよい。
+    1件ずつ82回通信させない、が今回の趣旨（1回の呼び出しでqueue.jsonを1回だけ保存する）。"""
+    ns = _split_targets(target)
+    if not ns:
         return "failed", "番号が不正: %r" % target
     q = _load_queue()
     items = q.get("items") or []
-    it = _find_item(items, n)
-    if it is None:
-        return "failed", "%d番がqueue.jsonに見つかりません" % n
-    if it.get("status") == "done":
-        return "skipped", "%d番はすでに完了です" % n
-    it["status"] = "done"
-    it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    done, skipped, missing = [], [], []
+    for n in ns:
+        it = _find_item(items, n)
+        if it is None:
+            missing.append(n)
+            continue
+        if it.get("status") == "done":
+            skipped.append(n)
+            continue
+        it["status"] = "done"
+        it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        done.append(n)
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
-    return "done", "%d番を完了にしました" % n
+    if len(ns) == 1:
+        if done:
+            return "done", "%d番を完了にしました" % done[0]
+        if skipped:
+            return "skipped", "%d番はすでに完了です" % skipped[0]
+        return "failed", "%d番がqueue.jsonに見つかりません" % ns[0]
+    msg = "%d件をまとめて完了にしました（%s）" % (len(done), ",".join(str(x) for x in done)) if done else "完了できたものはありません"
+    if skipped:
+        msg += "・すでに完了%d件" % len(skipped)
+    if missing:
+        msg += "・見つからず%d件（%s）" % (len(missing), ",".join(str(x) for x in missing))
+    return ("done" if done else "failed"), msg
+
+
+def queue_undo_ok(target):
+    """「まとめてOK」直後の取り消し（10秒以内）。done→awaiting_checkへ戻す。
+    2026-09-06(459番) 「押した瞬間に画面から消す→直後に『取り消す』を10秒だけ出す」の受け皿。
+    checkedAtを外すだけで、result/urls等の中身は消さない（元の確認待ちにそのまま戻る）。"""
+    ns = _split_targets(target)
+    if not ns:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    restored = []
+    for n in ns:
+        it = _find_item(items, n)
+        if it is None or it.get("status") != "done":
+            continue
+        it["status"] = "awaiting_check"
+        it.pop("checkedAt", None)
+        restored.append(n)
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    if not restored:
+        return "skipped", "取り消せる項目がありませんでした（%r）" % target
+    return "done", "%d件を確認待ちに戻しました（%s）" % (len(restored), ",".join(str(x) for x in restored))
 
 
 def queue_redo(target):
@@ -552,7 +612,7 @@ def launch_cap(target):
 
 def process(cmd):
     action = cmd.get("action")
-    if action in ("queue_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
+    if action in ("queue_ok", "queue_undo_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
                   "queue_pause", "queue_delete", "queue_order", "queue_dedupe"):
         with queue_lock():
             return _process_queue(action, cmd)
@@ -573,6 +633,8 @@ def _process_queue(action, cmd):
     target = cmd.get("target")
     if action == "queue_ok":
         return queue_ok(target)
+    if action == "queue_undo_ok":
+        return queue_undo_ok(target)
     if action == "queue_redo":
         return queue_redo(target)
     if action == "queue_add":
