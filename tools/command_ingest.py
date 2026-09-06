@@ -300,13 +300,18 @@ def _build_list_phase_what(n, title, text):
     ) % (text, n)
 
 
-def queue_add(text, priority=None, label=None):
+def queue_add(text, priority=None, label=None, origin=None):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
     発車待ちの列に、スマホから直接1行で積めるようにした。
 
     優先度（1=今すぐ…5=後回し）はitem自身の"priority"フィールドに書く。
-    auto_launcher.pyのrank()はこのフィールドを最優先で見る（priority.jsonのQキー方式より単純で確実）。"""
+    auto_launcher.pyのrank()はこのフィールドを最優先で見る（priority.jsonのQキー方式より単純で確実）。
+
+    2026-09-06(453/455番) たまごさん「工場が自分で作って、自分で終わらせて、確認を求めているものが
+    大量にある」→ 各タスクに「たまごさん発／工場発」の印(origin)を持たせ、確認列の表示判定に使う。
+    進捗表(スマホ)・Dispatchからの通常追加＝たまごさんの言葉で入るものなので既定は"user"。
+    見張り番・棚卸し等がAI自身の判断で積む時だけ、呼び出し側が明示的に origin="factory" を渡す。"""
     text = (text or "").strip()
     if not text:
         return "failed", "本文が空です"
@@ -356,6 +361,7 @@ def queue_add(text, priority=None, label=None):
         "status": "waiting",
         "limitMin": 180,
         "model": "claude-sonnet-5",
+        "origin": origin if origin in ("user", "factory") else "user",
     }
     if big_job:
         item["bigJob"] = True
@@ -570,7 +576,7 @@ def _process_queue(action, cmd):
     if action == "queue_redo":
         return queue_redo(target)
     if action == "queue_add":
-        return queue_add(target, cmd.get("priority"), cmd.get("label"))
+        return queue_add(target, cmd.get("priority"), cmd.get("label"), cmd.get("origin"))
     if action == "queue_prio":
         return queue_prio(target)
     if action == "queue_later":

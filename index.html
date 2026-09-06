@@ -1261,9 +1261,26 @@ function checkUrlReachable(url){
 function renderCheck(){
   const box = document.getElementById("check"); if(!box) return;
   const all = (window.__queue && window.__queue.items) || [];
-  const rows = all.filter(r => r.status === "awaiting_check");
+  // 2026-09-06(453/455番) たまごさん「勝手に間違えて、勝手に確認増やしてんのよ」
+  // →「たまごさん発」か「工場発」かを origin で見分ける。origin==="factory" は
+  //   確認列に出さず畳む（題名も既定では見せない・見たい時だけ開ける）。
+  const allAwc = all.filter(r => r.status === "awaiting_check");
+  const rows = allAwc.filter(r => r.origin !== "factory");
+  const factoryRows = allAwc.filter(r => r.origin === "factory");
   document.getElementById("checkMeta").textContent = rows.length ? `${rows.length}件` : "";
-  if(!rows.length){ box.innerHTML = `<div class="card note">確認待ちはありません</div>`; return; }
+  const factoryFold = factoryRows.length ? `<details class="cmore cfactory"><summary>🏭 工場発（見なくてよいもの）${factoryRows.length}件・畳んでいます</summary>
+      ${factoryRows.map(r=>{
+        const urls = (r.urls||[]).filter(Boolean).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
+        return `<div class="crow" data-cn="${r.n}">
+          <div class="ct">#${r.n} ${esc(r.title)}</div>
+          <div class="cm">${esc(r.originNote||"AIが自分で積んだ内部事情のタスク")}</div>
+          ${urls || ""}
+          <div class="cbtns"><button class="cok" data-ck="ok" data-n="${r.n}">✅ 完了</button>
+          <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し</button></div>
+        </div>`;
+      }).join("")}
+    </details>` : "";
+  if(!rows.length){ box.innerHTML = `<div class="card note">確認待ちはありません</div>` + factoryFold; return; }
   const evid = rows.map(r=>{
     const urls = (r.urls||[]).filter(Boolean);
     const checkUrl = urls.find(u => u.includes("/share/check/")) || null;
@@ -1315,7 +1332,7 @@ function renderCheck(){
         </div>
       </details>
     </div>`;
-  }).join("");
+  }).join("") + factoryFold;
 }
 /* ───── 完了一覧（積み上げ） ─────
    2026-09-04 たまごさん「OKと判定されたものを、日時とURLつきで完了一覧に積む。
@@ -1335,6 +1352,15 @@ function renderDone(){
   box.innerHTML = rows.map(r=>{
     const stamp = r.checkedAt ? formatStamp(r.checkedAt) : (r.finishedAt ? formatStamp(r.finishedAt) : "—");
     const urls = (r.urls || []).filter(Boolean).map(u=>`<a class="cu" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
+    // 2026-09-06(453/455番) 「工場の内部事情のタスクは、たまごさんに一切見せない。題名も見せない」
+    // →origin==="factory" は題名を伏せ、押せるURLの一覧だけ残す（あとから疑えるように）。
+    if(r.origin === "factory"){
+      return `<div class="drow" data-dn="${r.n}">
+        <div class="ct">🏭 Dispatchが自動で閉じた内部作業（#${r.n}）</div>
+        <div class="cm">${esc(stamp)} 完了</div>
+        ${urls || `<div class="cm">URLの報告なし</div>`}
+      </div>`;
+    }
     return `<div class="drow" data-dn="${r.n}">
       <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
       <div class="cm">${esc(stamp)} 完了</div>

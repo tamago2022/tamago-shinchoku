@@ -639,6 +639,9 @@ def split_big_job(it, q, urls):
             "splitFrom": n,
             "splitIndex": i,
             "splitTotal": len(chunks),
+            # 2026-09-06(453/455番) 分割元の origin をそのまま引き継ぐ（大きい仕事の中身は
+            # たまごさんが言ったことの分割にすぎない）。分割元にも印が無ければ既定は"user"。
+            "origin": it.get("origin") if it.get("origin") in ("user", "factory") else "user",
         })
         added.append(next_n)
     q["items"] = items
