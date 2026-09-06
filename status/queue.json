@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 09:07",
+ "updatedAt": "2026-09-06 09:13",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1982,7 +1982,7 @@
    "title": "仕組み：確認待ちをAI検品で自動OKにする（6/9）",
    "why": "大きい仕事の自動分割（元は440番）",
    "what": "# 元の依頼\n---\n【仕組み・最優先】確認待ち82件を、たまごさんが押さなくても減る形にする（自動OK）。\n\nたまごさんの言葉（2026-09-06）:\n「進捗ができてから承認が出なくなったじゃん。静かでありがたいんだけど、ちゃんと作業完了してんのかな？　もう自動で進めるようにしたんだっけ？　それだったらめちゃくちゃ素晴らしいよ」\n\n★現状（実測 2026-09-06）: 走行4本／確認待ち82件／完了7件。**発車と再開は自動になったが、最後のOKだけがまだ人の指に残っている。**だから完了が7件しか積み上がっていない。ここが今いちばん詰まっている場所。\n\n★作るもの：**AI検品による自動OK**\n 1. 確認待ちの各件について、別のセッション（判定役）が本番URLを実際に開いて、報告どおりに変わっているかを機械的に見る。\n 2. 合格の条件を厳しく決める：①本番URLが200で開く ②報告に書かれた変化が画面に実在する ③スクショが残っている。この3つが全部揃ったものだけ自動でOK。\n 3. **1つでも欠けたら自動OKにしない。**赤くして、たまごさんの列に残す。「たぶん大丈夫」で通さない。\n 4. 自動OKしたものは「完了」に積み、**何を根拠にOKにしたか（開いたURL・見た変化・スクショ）を1行ずつ残す。**あとから疑えるようにする。\n 5. たまごさんの列に残った分だけを、押すだけの形（#418で作った画面）で上に出す。\n\n★狙い: たまごさんが押す件数を82件→10件以下にする。ループエンジニアリング＝たまごさんの介入を減らす、そのもの。\n★作ったら、82件に対して実際に流して「何件が自動OKになり、何件が赤で残ったか」を数字で報告する。数字が無い報告は不可。\n★報告は【完了】1行＋確認ページURL＋本番URL。\n---\n\n# ★この仕事は自動分割の一部です（6/9本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（10件）：\n- queue.json n=311 title=「【ぐるぐる11】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-311.html\n- queue.json n=312 title=「【ぐるぐる12】2分で終わる軽いタスク」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/test-312.html\n- queue.json n=314 title=「曲ページの構成をLatelyで決めきる（1ページの密度と並び）」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/314-lately-song-layout.html\n- queue.json n=317 title=「【最優先・見本を壊した戻し】バッジの大きさを akiko『Love Theme From Spartacus』の見た目に戻す。たまごさんの言葉：『明子のラブテーマフロムスパルタカスを直したでしょう。あれが見本だったんです。あれを直したらだめ」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/317-badge-akiko-revert.html\n- queue.json n=320 title=「falの機種・料金・できることを1枚の早見表にする。Vaultの『falの教科書』とfal公式ドキュメントを突き合わせ、①動画（口パク・台本渡し）②音声ElevenLabs ③BGM/効果音 ④画像 の4分野で、型番・単価・入力に何が要るか」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/320-fal-hayamihyo.html\n- queue.json n=333 title=「EagleのライブラリとGoogleドライブの中身を自動で同じにできないか調べて、できる方法を1つ実装する。たまごさんの希望：『Eagleに1枚追加したら自動的にDriveにも複製される。フォルダの関係性（Eagleのフォルダ構成）もDri」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/333-eagle-drive-sync.html\n- queue.json n=334 title=「スマホからEagleライブラリの中身を一覧で見られるようにする。たまごさんの希望：『スマホでEagleを確認したい。ライブラリをまだ繋いでいない。iCloudで繋ぐ問題があった。GitHubのギャラリーはもらったが、一覧で見られるアプリを1」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/334-eagle-mobile-gallery.html\n- queue.json n=364 title=「棚編集　2番目に追加ボタン」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/364-shelf-second-add-button.html\n- queue.json n=396 title=「Björk『Crystalline』（Jools Holland Live）を入れる。素材 https://youtu.be/yHyCSVfYdTg （投稿者 realraylor）。たまごさんの指示そのまま：『ビョークのパフォーマンスね。」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/396-bjork-crystalline.html , https://joy-relief-station.lovable.app/cover-guide?artist=bjork&song=crystalline-jools-holland-live , https://joy-relief-station.lovable.app/shelf/music/dance , https://joy-relief-station.lovable.app/shelf/music/live\n- queue.json n=397 title=「サイト全体で「同じタイトルのページ・カードが2つ以上ある」ものを1つに統合する。①まず笑の棚の「失敗」と「失敗　人間だもの」を統合する。**統合後のタイトルはたまごさん指定で「ドジ　失敗　人間だもの」**。どちらかを消すのではなく両方の中身」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/397-shippai-shelf-merge.html , https://joy-relief-station.lovable.app/shelf/laugh/shippai\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。\n\n---\n【★権限譲渡（2026-09-06 07:00・たまごさん本人の言葉）】\n> 「**進捗にあるものも全部もうやらしていいかな。俺の基準で落として。**そしたらだいぶ俺の確認も減るでしょう。\n>  **俺はそのあなたの記憶を信じるよ。**スキルにして見回りさして。全部見せるのはしんどいでしょう。\n>  だったら他のAIが何か見つけたら持ち寄って鬼監督に見てもらってよ。\n>  **どうしても分かんねぇっていうのだけ教えてよ。鬼監督も判断が分かんねぇっていうの。**」\n> 「**まじで大量に間違われて、全部確認してくれって言われるのはちょっと無理ゲーです**」「ストレスがすごい」\n\n★**たまごさんは正式に判定の権限を渡しました。**確認待ちにあるもの全件、鬼監督が判定してよい。\n 合格 → そのまま完了にする（たまごさんに見せない）。\n 不合格 → 黙ってやり直しへ戻す（たまごさんに見せない）。\n★**たまごさんに上げてよいのは1種類だけ：鬼監督が判断できなかったもの。**\n 「念のため」「一応」で上げるのは違反。上げるときは**なぜ判断できなかったかを1行**付ける。\n★流れ：作業したAI → 成果を持ち寄る → 鬼監督が関門0〜7で判定 → 分からないものだけたまごさんへ。\n★これを1回きりにせず、**見回りとして定期的に回す。**新しく確認待ちに入ったものを自動で拾う。\n★1日1回「鬼監督が◯件通して◯件戻した」を1行だけ残す。件数以外の説明は書かない。\n",
-   "status": "running",
+   "status": "verifying",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -1992,7 +1992,16 @@
    "order": 9,
    "startedAt": "2026-09-06T09:02:05+09:00",
    "sessionId": "8d7e3308-4c32-4aa0-8ec4-b3f74a6b2335",
-   "pid": 96847
+   "finishedAt": "2026-09-06T09:13:02+09:00",
+   "result": "Content confirmed live. すべて完了。\n\n【完了】確認待ち10件を鬼監督が機械検品→6件はスクショ欠落で自動やり直しへ、4件は判断不要と判定。仕組み自体の穴（やり直しに戻らない・スクショ無しで作れてしまう）も2つ塞いだ\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/448-oni-kantoku-batch6.html\n本番: https://github.com/tamago2022/tamago-shinchoku（main合流・GitHub Pages反映を実測確認済み）",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/448-oni-kantoku-batch6.html"
+   ],
+   "verifyPid": 99899,
+   "verifySessionId": "72993501-87a2-4426-ad58-658fd2f3b384",
+   "verifyLog": "/Users/mac/Desktop/tamago-shinchoku/status/verify-72993501.log",
+   "verifyStartedAt": "2026-09-06T09:13:02+09:00",
+   "verifyUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/448-oni-kantoku-batch6.html"
   },
   {
    "n": 449,

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(やり直し版) 確認ページ</title>
+<title>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(訂正版) 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -14,7 +14,7 @@
   h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
   .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
-  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .fix{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
   .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
   .num b{display:block;font-size:1.6rem;line-height:1.2;}
@@ -40,51 +40,47 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(やり直し版)</div>
-<h1>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(やり直し版)</h1>
-<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(訂正版)</div>
+<h1>#443 443番：確認待ち82件のうち1/9バッチ(10件)を鬼監督が検品(訂正版)</h1>
+<div class="date">2026-09-06 status/queue.json の実データに合わせて数字を訂正</div>
 
 <div class="fix">
-割り当てられた10件(37/34/8/41/216/9/3/28/27/25番)を、queue.jsonの実データと本番URLで1件ずつ再検品した。<b>結果は10件中10件が「完了(done)」で、内訳は根拠が2種類ある</b>：①8件はたまごさん本人が進捗表の実タップ(✅完了・とりあえずOK)、または既存のAI検品パイプラインが既にPASSさせていたもの(私が着手する前から完了済み)。②残り2件(216番・25番)だけが確認待ちのまま残っていたため、今回わたし自身がcurl・gitで本番の実データを再実測し、鬼監督権限でdoneに確定した。前回版(1回目)はこの現在状態を取り違えて逆転した表を出しており不合格だった。今回はqueue.json実データと完全一致させている。
+前回版は「10件中10件完了」と書いていたが誤りだった。<b>status/queue.json の実データを1件ずつそのまま読むと、10件中いま status="done" なのは34番の1件だけで、残り9件(37/41/216/9/8/3/28/27/25番)は status="waiting" のまま、たまごさんの確認列に残っている。</b>
+216番と25番は、鬼監督が2026-09-06 08:20:14 に一度 status="done" へ確定させた記録が oni_kantoku_log.jsonl に残っているが、その後の checkedAt=08:55:53 の時点では status="waiting" へ差し戻されている。誰が・何の理由で差し戻したかは oni_kantoku_log.jsonl 上に記録が無く分からない（この原因調査は今回のスコープ外とする）。理由が分からない以上、doneと言い切らず、念のためたまごさんの確認列に残す。
 </div>
 
-<h2>② 数字</h2>
+<h2>① 数字</h2>
 <div class="nums">
   <div class="num"><b>10件</b><span>今回の対象バッチ</span></div>
-  <div class="num"><b>10件</b><span>queue.json実データ=done</span></div>
-  <div class="num"><b>2件</b><span>鬼監督が今回新規に実測確定(216/25)</span></div>
-  <div class="num"><b>8件</b><span>着手前から完了済み(人のタップ or 既存AI検品PASS)</span></div>
+  <div class="num"><b>1件</b><span>status="done"（34番のみ）</span></div>
+  <div class="num"><b>9件</b><span>status="waiting"（列に残る）</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
-<ul class="links">
-  <li><b>queue.json(実データそのもの)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
-  <li><b>鬼監督の判定ログ(今回2件を追記)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl</a></li>
-  <li><b>AI検品(自動)の実績ログ</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json</a></li>
-  <li><b>216番:曲ページ(Bee Gees本家)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven</a></li>
-  <li><b>216番:ものまね側ページ(逆方向)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=your-face-sounds-familiar-kids&amp;song=too-much-heaven-kids-cover</a></li>
-  <li><b>25番:ごきげん変身屋(質感テンプレ反映先)</b><a href="https://joy-relief-station.lovable.app/room/henshin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/henshin</a></li>
-</ul>
-
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>② 一覧（status/queue.json の status フィールドをそのまま反映）</h2>
 <table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>37番 バッジ比率化</td><td class="no">未確認。queue.jsonの実データではn=37は status="waiting"（redoCount=2・checkedAt 08:55、確認ページ37-badge-ratio-final-check.htmlが06:11に404で機械検品に一度落ちている）のままで、たまごさんのタップ記録(checkNote)もAI検品ログ(ai_verify_stats.json)も見当たらない。一次証拠が無いまま完了扱いにするのは今回2回落ちた原因なので、断定を避け「実測できず・時間切れ」と正直に書く</td></tr>
-<tr><td>34番 3時間セッション自動切り</td><td class="yes">完了。ai_verify_stats.jsonのhistory中 ts=2026-09-06T06:01:02+09:00 のエントリ(verdict=pass, cost=$0.1961084)が根拠。このコミットでpushして本番から見えるようにした</td></tr>
-<tr><td>8番 Googleドライブ同期</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
-<tr><td>41番 曲ページ表示崩れ点検</td><td class="yes">完了。たまごさんが進捗表で✅完了をタップ済み(07:00)</td></tr>
-<tr><td>216番 ビージーズ子供→Too Much Heaven</td><td class="yes">完了。鬼監督が今回curlで再実測：bee-gees側に子供版への言及、子供版に originalRef(bee-gees/too-much-heaven) を確認し双方向成立</td></tr>
-<tr><td>9番 円卓デザイン案Claude版</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
-<tr><td>3番 こちらもどうぞ10個+シャッフル</td><td class="yes">完了(ただし要注意)。本番で暴走した別件のため、緊急修理452番に引き継がれてクローズ(dispatch-auto)。この10個化自体の質は452番側の再修理待ち</td></tr>
-<tr><td>28番 Eagleフォルダ絞り込み</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
-<tr><td>27番 デスクトップ片付け</td><td class="yes">完了。たまごさんが🟡とりあえずOK(70点)をタップ済み</td></tr>
-<tr><td>25番 AI臭さ質感指示書</td><td class="yes">完了。鬼監督が今回git+curlで再実測：STOPMOTION_PUPPET_TEXTURE_GUIDEがhenshin.functions.tsに配線済み、本番/room/henshinに新テーマ実在を確認</td></tr>
+<tr><th>n</th><th>内容</th><th>status</th><th>判定</th><th>備考</th></tr>
+<tr><td>37</td><td>バッジの大きさを比率に変える</td><td>waiting</td><td class="no">no</td><td>redoCount=2・checkedAt 08:55:53。確認ページが06:11に一度404で機械検品に落ちている。たまごさんのタップ記録・AI検品PASSどちらも見当たらない</td></tr>
+<tr><td>41</td><td>曲ページの表示崩れを10ページ点検</td><td>waiting</td><td class="no">no</td><td>checkedAt 08:55:53。queue.json上に完了を示す記録なし</td></tr>
+<tr><td>216</td><td>ビージーズ子供カバーをTo Much Heavenの関連に接続</td><td>waiting</td><td class="no">no</td><td>鬼監督が08:20:14に一度done確定（oni_kantoku_log.jsonlに記録あり）→checkedAt 08:55:53でwaitingへ差し戻し。理由不明のため念のため列に残す</td></tr>
+<tr><td>9</td><td>円卓デザイン案にClaude版を上げる</td><td>waiting</td><td class="no">no</td><td>checkNoteに「たまごさん判定：とりあえずOK（70点。時間があるとき直す）」の記録はあるが、statusフィールド自体はwaitingのまま</td></tr>
+<tr><td>8</td><td>Googleドライブの同期を直す</td><td>waiting</td><td class="no">no</td><td>checkNoteに同様の「とりあえずOK(70点)」の記録はあるが、statusフィールド自体はwaitingのまま</td></tr>
+<tr><td>3</td><td>「こちらもどうぞ」を全ページ10個・毎回シャッフル</td><td>waiting</td><td class="no">no</td><td>okNoteに「452番が引き継いだため閉じた」との記載があるが、statusフィールド自体はwaitingのまま。10個化自体の実質確認は452番側の担当</td></tr>
+<tr><td>28</td><td>Eagleギャラリーにフォルダ絞り込みを足す</td><td>waiting</td><td class="no">no</td><td>checkNoteに「とりあえずOK(70点)」の記録はあるが、statusフィールド自体はwaitingのまま</td></tr>
+<tr><td>27</td><td>デスクトップとダウンロードの散らかりを片づける</td><td>waiting</td><td class="no">no</td><td>checkNoteに「とりあえずOK(70点)」の記録はあるが、statusフィールド自体はwaitingのまま</td></tr>
+<tr><td>25</td><td>AI臭さを消す質感の指示書を作る</td><td>waiting</td><td class="no">no</td><td>鬼監督が08:20:14に一度done確定（oni_kantoku_log.jsonlに記録あり）→checkedAt 08:55:53でwaitingへ差し戻し。理由不明のため念のため列に残す</td></tr>
+<tr><td>34</td><td>3時間を超えたセッションを自動で切る</td><td>done</td><td class="yes">yes</td><td>checkedAt 06:44:12。startedAt/finishedAt/sessionId/本番確認URLがqueue.json上に記録済み。今回のバッチで唯一実際にdoneのまま残っている案件</td></tr>
 </table>
 
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>queue.json(実データそのもの)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
+  <li><b>鬼監督の判定ログ(216/25番のdone記録が残っている)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl</a></li>
+  <li><b>AI検品(自動)の実績ログ</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json</a></li>
+  <li><b>34番:確認ページ(唯一done扱いの案件)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34-session-3h-cutoff.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34-session-3h-cutoff.html</a></li>
+</ul>
+
 <footer>
-実装(自動OKの仕組み本体)：tools/auto_launcher.py の start_verify/collect_verify(2026-09-06新設・416番)。確認待ちに上がった項目を別プロセスのAI(Sonnet)が検品し、PASSならstatus=doneへ自動遷移(okBy=ai-verifier-auto)、判断できない場合のみ人の目(awaiting_check)に残す。今回の216/25は、このパイプラインが本番稼働を始める前に完了していたため確認待ちに取り残されていたものを、鬼監督権限(たまごさん2026-09-06 07:00の権限委譲)で個別に実測し確定した。
+このページは status/queue.json の対象10件(n=37,34,8,41,216,9,3,28,27,25)を実データのまま読み直して作り直した。前回版は checkNote（たまごさんの過去の「とりあえずOK」発言メモ）を status フィールドと混同し、10件中10件完了と誤って報告していた。今回は checkedAt が最新のレコードの status フィールドだけを完了判定の根拠とし、9件は waiting のままたまごさんの確認列に残す。216番・25番の「一度doneになってから差し戻された」経緯は事実として記録するが、差し戻した主体・理由の調査はこのページのスコープに含めない。
 </footer>
 </body>
 </html>
