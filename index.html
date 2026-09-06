@@ -346,7 +346,10 @@
   .addMsg{font-size:0.72rem; color:var(--sub); min-height:1.2em;}
   .clock{font-weight:400; font-size:0.9rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-left:8px; letter-spacing:0.02em;}
   .nowage{font-size:0.68rem; color:var(--dim); margin:2px 0 8px;}
-  .nowage.nowstale{color:var(--red); font-weight:600;}
+  /* 2026-09-06 たまごさんのPWAが11時間前の画面を握ったまま気づけなかった事故への対応。
+     古いときは小さい灰色文字のままにせず、赤く・大きく・タップで直せる形にする。 */
+  .nowage.nowstale{color:var(--red); font-weight:700; font-size:0.92rem; cursor:pointer;
+    text-decoration:underline; text-underline-offset:3px;}
   .now{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 6px;}
   .now.nowstale{opacity:0.45;}
   /* 2026-09-03 たまごさん「スカスカ。4分の1とか3分の1の大きさでいい。1画面で8〜10本、スクロールせずに見たい」
@@ -464,20 +467,39 @@
    status/version.json（毎回サーバーから取り直す）の版が、いま動いている画面と違えば、
    URLに ?v=<版> を付けて開き直す。URLが変わるのでキャッシュに当たらず、必ず新しい画面になる。 */
 const PAGE_BUILD = new URLSearchParams(location.search).get("v") || "";
-(function checkVersion(){
+/* 2026-09-06 実測で判明した原因：この版ずれ検知は「最初の読み込み時」と「2分ごとのsetInterval」
+   でしか動いていなかった。iOSのホーム画面アプリ（standalone PWA）は、バックグラウンドや
+   画面ロック中にタイマーを止める（=setIntervalが進まない）ため、11時間ぶりに開いても
+   すぐには何も起きず、次のタイマーが回ってくるまで古い画面のままになっていた。
+   下の #now データ更新（refreshAllLive、約1975行目）には既に「visible に戻ったら即チェック」
+   があったのに、この版ずれ検知だけそれが無かったのが今回の穴。同じ仕掛けをここにも足す。
+   version.json 自体は fetch を {cache:"no-store"} にしているのでブラウザ側キャッシュは
+   経由しない（実測：GitHub Pages配信は Cache-Control: max-age=600 が付くが、no-store指定の
+   fetchは毎回ネットワークへ取りに行くので影響しない。詳しくは status/failures.md 12番）。 */
+let __versionCheckBusy = false;
+function checkVersion(){
+  if(__versionCheckBusy) return;
+  __versionCheckBusy = true;
   fetch("status/version.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null)
     .then(j => {
+      __versionCheckBusy = false;
       const v = j && j.v;
       if(v && v !== PAGE_BUILD){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
-    }).catch(()=>{});
-  setInterval(()=>{
-    fetch("status/version.json?t=" + Date.now(), {cache:"no-store"})
-      .then(r => r.ok ? r.json() : null)
-      .then(j => { const v = j && j.v; if(v && v !== PAGE_BUILD) location.replace(location.pathname + "?v=" + encodeURIComponent(v)); })
-      .catch(()=>{});
-  }, 120000);
-})();
+    }).catch(()=>{ __versionCheckBusy = false; });
+}
+// 押すと強制的に読み直せるボタン用（#nowAge が赤いときのタップ、右上の鮮度表示など）。
+// バージョンが同じでも、画面が固まって見えるときの最後の手段として必ず新しいURLへ飛ばす。
+window.forceHardReload = function(){
+  location.replace(location.pathname + "?v=" + Date.now());
+};
+checkVersion();
+setInterval(checkVersion, 120000);
+// 2026-09-06 追加：アプリを再び開いた瞬間（画面ロック解除・アプリ切替からの復帰）に、
+// 2分のタイマーを待たず今すぐ確認する。下のデータ更新（1979行目付近）と同じ仕掛け。
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") checkVersion(); });
+window.addEventListener("pageshow", () => checkVersion());
+window.addEventListener("focus", () => checkVersion());
 // データは毎回サーバーから取り直す（スマホのキャッシュで古い一覧が出ないように）
 (function(){
   const t = Date.now(), files = ["data.js","said.js","requests225.js"]; let n = 0;
@@ -1148,8 +1170,10 @@ function renderNow(m){
   if(!m || !m.measuredAt){ box.innerHTML = `<div class="nowempty">読み込み中…</div>`; ageBox.textContent = ""; return; }
   const ageMin = Math.round((Date.now() - new Date(m.measuredAt).getTime())/60000);
   const stale = ageMin > STALE_MIN;
-  ageBox.innerHTML = (stale ? "⚠️ " : "") + `データ ${esc(formatStamp(m.measuredAt))}時点` + (stale ? `（${ageMin}分前・古い可能性）` : "");
+  ageBox.innerHTML = (stale ? "⚠️ " : "") + `データ ${esc(formatStamp(m.measuredAt))}時点` + (stale ? `（${ageMin}分前・古い可能性・タップで最新へ）` : "");
   ageBox.className = "nowage" + (stale ? " nowstale" : "");
+  // 2026-09-06 古い画面を握ったまま気づけない事故への対応。赤字を押したら強制的に読み直す。
+  ageBox.onclick = stale ? () => { if(window.forceHardReload) forceHardReload(); } : null;
   const items = collectNow(m);
   box.className = "now" + (stale ? " nowstale" : "");
   if(!items.length){ box.innerHTML = `<div class="nowempty">今、何も動いていません</div>`; return; }
