@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#472 fal早見表（動画・音声・BGM/効果音・画像） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #472 fal早見表（動画・音声・BGM/効果音・画像）</div>
+<h1>#472 fal早見表（動画・音声・BGM/効果音・画像）</h1>
+<div class="date">2026-09-06 Vault反映・確認ページ公開まで実測確認（有料生成は一切していません＝調べて表にしただけ）</div>
+
+<div class="fix">
+<p>fal（AI生成サービス）の「①動画（口パク・台本渡し）②音声（ElevenLabs）③BGM/効果音④画像」の4分野を、<b>型番・単価・入力に要るもの・出力の尺上限・BGMを一緒に埋め込めるか・声をどこまで変えられるか</b>の6項目で1枚にまとめました。成果物本体はVaultの『AI出力/円卓EP0_v004/fal早見表.md』に追記済み（166行→216行）。このページには追記した表をそのまま転記しています。</p><h3>①動画（口パク・台本渡し）</h3><table><tr><th>項目</th><th>標準機（Seedance 2.0 mini）</th><th>新世代機（Seedance 2.5）</th></tr><tr><td>型番</td><td>bytedance/seedance-2.0/mini/image-to-video</td><td>bytedance/seedance-2.5/reference-to-video</td></tr><tr><td>単価</td><td>約$0.40/本（5秒）</td><td>$0.0214/1000トークン</td></tr><tr><td>入力に要るもの</td><td>Prompt＋Image URL必須（fal-ai/接頭辞を付けると404）</td><td>Prompt必須・参照動画は任意（image_urlsは複数形）</td></tr><tr><td>出力の尺上限</td><td>4〜15秒（durationパラメータ）／autoで最大15秒</td><td>最大30秒（単一パス）</td></tr><tr><td>BGMを一緒に埋め込めるか</td><td>generate_audioで同期音声（口パク済みセリフ込み）を生成可。専用の台本欄は無くプロンプト内に台詞を書く方式。BGM（メロディ）は③で別生成し合成</td><td>同左（Generate Audio機能）</td></tr><tr><td>声をどこまで変えられるか</td><td>声質の個別選択パラメータなし（プロンプト任せ）</td><td>同左</td></tr></table><h3>②音声（ElevenLabs／TTS）</h3><table><tr><th>項目</th><th>TTS標準機</th><th>TTS多表現機（ElevenLabs）</th></tr><tr><td>型番</td><td>fal-ai/minimax/speech-02-hd</td><td>fal-ai/elevenlabs/tts/eleven-v3</td></tr><tr><td>単価</td><td>$0.10/1000文字</td><td>$0.10/1000文字</td></tr><tr><td>入力に要るもの</td><td>text必須、voice_idは任意（日本語ネイティブ検証済み4種）</td><td>text必須、voiceは任意（既定Rachel）。うろ覚えの声IDは422で拒否される</td></tr><tr><td>出力の文字数上限</td><td>公式確認：最大20万文字</td><td>公式ページに記載なし（不明）</td></tr><tr><td>BGMを一緒に埋め込めるか</td><td>不可（音声のみ、BGMは③で別生成）</td><td>不可</td></tr><tr><td>声をどこまで変えられるか</td><td>既製ボイスから選ぶのみ。感情7種・話速0.5〜2.0倍調整可。クローン機能の明記なし</td><td>既製ボイス20種以上＋インラインタグで演技を調整可能。声そのものの複製はfalの外（Irodori等）が必要</td></tr></table><h3>③BGM／効果音</h3><table><tr><th>項目</th><th>音楽機（BGM）</th><th>効果音機（SE）</th></tr><tr><td>型番</td><td>fal-ai/stable-audio-25/text-to-audio</td><td>cassetteai/sound-effects-generator</td></tr><tr><td>単価（教材正本・2026-08-13検証）</td><td>$0.05/回（公式2026-09-05取得では$0.2/回＝要再確認）</td><td>$0.02/回（公式2026-09-05取得では$0.01/回＝要再確認）</td></tr><tr><td>入力に要るもの</td><td>Prompt必須（雰囲気・楽器・テンポ・尺）。尺はseconds_totalで指定（項目名を間違えると黙って190秒になる事故あり）</td><td>Prompt＋Duration必須。末尾に必ずdry, no music, no loop</td></tr><tr><td>出力の尺上限</td><td>公式に明記なし（不明）</td><td>最大30秒（生成は約1秒）</td></tr><tr><td>BGMを動画に埋め込めるか</td><td>単体音声ファイル出力のみ。動画への合成は別工程</td><td>同左</td></tr><tr><td>声をどこまで変えられるか</td><td>該当なし</td><td>該当なし</td></tr></table><h3>④画像</h3><table><tr><th>役割</th><th>型番</th><th>単価</th><th>入力に要るもの</th></tr><tr><td>標準機</td><td>fal-ai/nano-banana</td><td>$0.04/枚</td><td>Prompt必須</td></tr><tr><td>標準機・編集版</td><td>fal-ai/nano-banana/edit</td><td>$0.04/枚</td><td>Prompt＋参照画像必須</td></tr><tr><td>新世代機</td><td>fal-ai/nano-banana-2/edit</td><td>$0.08/枚（2K×1.5・4K×2）</td><td>Prompt＋参照画像最大14枚必須</td></tr><tr><td>新世代機（廉価）</td><td>google/nano-banana-2-lite/edit</td><td>目安$0.03〜0.05/枚</td><td>Prompt必須（参照画像は任意）</td></tr><tr><td>高級機（文字入れ用）</td><td>openai/gpt-image-2/edit</td><td>high $0.219／medium $0.061／low $0.015</td><td>発注文＋文字ホワイトリスト</td></tr></table><p style="color:#7a7568;font-size:0.85rem;">※画像には尺・BGMの概念が無いため上表では割愛（枚数課金）。</p>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4</b><span>分野数（動画/音声/BGM・効果音/画像）</span></div>
+  <div class="num"><b>13</b><span>掲載した型番の数</span></div>
+  <div class="num"><b>0</b><span>有料生成した回数（調べただけ）</span></div>
+  <div class="num"><b>+50行</b><span>Vault本体『fal早見表.md』への追記（166→216行）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>fal早見表.md（Vault本体・今回追記した統合早見表）</b><a href="obsidian://open?vault=tamago_brain&amp;file=AI%E5%87%BA%E5%8A%9B%2F%E5%86%86%E5%8D%93EP0_v004%2Ffal%E6%97%A9%E8%A6%8B%E8%A1%A8" target="_blank" rel="noopener">obsidian://open?vault=tamago_brain&amp;file=AI%E5%87%BA%E5%8A%9B%2F%E5%86%86%E5%8D%93EP0_v004%2Ffal%E6%97%A9%E8%A6%8B%E8%A1%A8</a></li>
+  <li><b>関連：以前の教材製本まとめ（案件#437）確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/437-fal-kyokasho-seihon.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/437-fal-kyokasho-seihon.html</a></li>
+  <li><b>型番・単価の正本：教材MODEL_TABLE.md（GitHub非公開のためVaultリンク）</b><a href="obsidian://open?vault=tamago_brain&amp;file=AI%E5%87%BA%E5%8A%9B%2Ffal%E3%81%AE%E6%95%99%E7%A7%91%E6%9B%B8_%E6%95%99%E6%9D%90%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E4%B8%80%E5%BC%8F%2Ffal-kyokasho%2FMODEL_TABLE.md" target="_blank" rel="noopener">obsidian://open?vault=tamago_brain&amp;file=AI%E5%87%BA%E5%8A%9B%2Ffal%E3%81%AE%E6%95%99%E7%A7%91%E6%9B%B8_%E6%95%99%E6%9D%90%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E4%B8%80%E5%BC%8F%2Ffal-kyokasho%2FMODEL_TABLE.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①動画表（6項目）</td><td class="yes">型番/単価/入力/尺上限/BGM同梱/声の6項目を掲載</td></tr>
+<tr><td>②音声表（6項目）</td><td class="yes">同上6項目を掲載</td></tr>
+<tr><td>③BGM/効果音表（6項目）</td><td class="yes">同上6項目を掲載</td></tr>
+<tr><td>④画像表</td><td class="yes">型番/単価/入力を掲載。尺・BGM・声は概念が無いため割愛と明記</td></tr>
+<tr><td>既存Vault資産の削除</td><td class="yes">0件（追記のみ・既存見出し17件すべて残存を確認済み）</td></tr>
+<tr><td>独立検品（tamago-verifier）</td><td class="yes">PASS（数字・型番を一次資料MODEL_TABLE.mdと突き合わせ済み、矛盾なし）</td></tr>
+<tr><td>有料生成の有無</td><td class="yes">0回（調べるだけ、発注は一切していない）</td></tr>
+</table>
+
+<footer>
+このページは #472 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。成果物本体はObsidian Vault『AI出力/円卓EP0_v004/fal早見表.md』。
+</footer>
+</body>
+</html>
