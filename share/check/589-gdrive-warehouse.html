@@ -45,31 +45,30 @@
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-たまごさんが『共通素材庫のfal testに置いた』と言うだけで、AIがフォルダを探して中身を取ってこられるツール（tools/gdrive-warehouse/fetch.py）を新規実装。main合流済み。AVIF/WEBP/HEIC画像は自動でJPEGへ変換するので『対応してない形式』で止まらない。Google Driveアプリが落ちていても自動でバックグラウンド再起動する見張り(watchdog)も同梱。
+たまごさんが『共通素材庫のfal testに置いた』と言うだけで、AIがフォルダ名だけで中身を探して取ってこられるツール(tools/gdrive-warehouse/fetch.py)をmainへ実装。Google Driveアプリ自体も130.0.2へ更新済みで、旧87.0.2の起動時クラッシュが解消していることを実機で確認した。AVIF画像は自動でJPEGへ変換されるので『対応してない形式でした』で止まらない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3件</b><span>fal testフォルダから実際に取得できたファイル数</span></div>
-  <div class="num"><b>3件</b><span>AVIF→JPEGへ自動変換できた件数</span></div>
+  <div class="num"><b>130.0.2</b><span>Google Driveアプリの現在バージョン(旧87.0.2は解消)</span></div>
+  <div class="num"><b>3件</b><span>fal testフォルダから実際に取得・JPEG変換できた件数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装コミット(main合流ずみ)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/22d6f693c5edc78a72e3ce29051700b2f8d3f21" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/22d6f693c5edc78a72e3ce29051700b2f8d3f21</a></li>
-  <li><b>使い方README</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/tools/gdrive-warehouse/README.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/tools/gdrive-warehouse/README.md</a></li>
+  <li><b>このページ自体(GitHub Pages・公開URL)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/589-gdrive-warehouse.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/589-gdrive-warehouse.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>fal testフォルダの3ファイルをコピー</td><td class="yes">OK</td></tr>
-<tr><td>AVIF→JPEG自動変換(3件とも成功)</td><td class="yes">OK</td></tr>
-<tr><td>存在しないフォルダ名での逆テスト(クラッシュせずエラーを返す)</td><td class="yes">OK</td></tr>
-<tr><td>変換元のAVIFファイルは削除せず両方残す</td><td class="yes">OK</td></tr>
-<tr><td>Google Drive再起動はバックグラウンド起動(-g)で画面を奪わない</td><td class="yes">OK</td></tr>
+<tr><td>fal testフォルダの3ファイルを実際にコピーできた</td><td class="yes">yes</td></tr>
+<tr><td>AVIF→JPEG自動変換(3件とも成功)</td><td class="yes">yes</td></tr>
+<tr><td>存在しないフォルダ名で実行→クラッシュせずエラーを返す(逆テスト)</td><td class="yes">yes</td></tr>
+<tr><td>Google Drive.appが130.0.2で稼働中(旧87.0.2非推奨は解消)</td><td class="yes">yes</td></tr>
+<tr><td>見張り(watchdog)をlaunchdへ設置(自動有効化は次回ログイン時)</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
