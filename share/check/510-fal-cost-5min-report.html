@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#510 falの実費内訳・5分試算・値上げ裏取り・ローカル化調査 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #510 falの実費内訳・5分試算・値上げ裏取り・ローカル化調査</div>
+<h1>#510 falの実費内訳・5分試算・値上げ裏取り・ローカル化調査</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+EP02「食の未来」の実測課金は3カット13秒で$0.9556(¥149.3、動画が98.4%)。同じペースで5分(300秒)を作ると<b>そのまま¥3,433・使い回しても¥1,443・最安モデルでも¥2,397</b>で、目標の300円には<b>今のfalの動画課金体系のままでは届かない</b>。「明日明後日に4倍」の噂はfal公式モデルページ本文で裏取り済み＝<b>事実（9/7まで・ちょうど4倍）</b>、ただし対象は今回使っていない<code>minimax/h3-max</code>系だけ。ローカル化は<b>音声は電気代だけで可能・動画はまだ実用に届かない</b>（クオリティ・速度とも）。詳細は下記Vaultリンクへ。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>¥149.3</b><span>EP02実測合計(13秒・3カット・98.4%が動画)</span></div>
+  <div class="num"><b>¥3,433</b><span>5分そのまま作った場合(目標300円の11.4倍)</span></div>
+  <div class="num"><b>¥1,443</b><span>5分・使い回し込み(目標300円の4.8倍)</span></div>
+  <div class="num"><b>4.0倍</b><span>minimax/h3-max系の値上げ倍率(9/7まで有効)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>詳細レポート(Vault・実費内訳/5分試算/値上げ裏取り/ローカル化調査 全文)</b><a href="obsidian://open?vault=tamago_brain&amp;file=AI%E5%87%BA%E5%8A%9B%2F40_%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%2F%E5%86%86%E5%8D%93%E4%BC%9A%E8%AD%B0%F0%9F%94%A5%2F%E5%86%86%E5%8D%93_fal%E3%82%B3%E3%82%B9%E3%83%88%E5%86%85%E8%A8%B3%E3%81%A85%E5%88%86%E8%A9%A6%E7%AE%97_%E5%80%A4%E4%B8%8A%E3%81%92%E8%A3%8F%E5%8F%96%E3%82%8A_2026-09-06.md" target="_blank" rel="noopener">obsidian://open?vault=tamago_brain&amp;file=AI%E5%87%BA%E5%8A%9B%2F40_%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%2F%E5%86%86%E5%8D%93%E4%BC%9A%E8%AD%B0%F0%9F%94%A5%2F%E5%86%86%E5%8D%93_fal%E3%82%B3%E3%82%B9%E3%83%88%E5%86%85%E8%A8%B3%E3%81%A85%E5%88%86%E8%A9%A6%E7%AE%97_%E5%80%A4%E4%B8%8A%E3%81%92%E8%A3%8F%E5%8F%96%E3%82%8A_2026-09-06.md</a></li>
+  <li><b>fal公式：値上げが書いてあるページ(h3-max-turbo)</b><a href="https://fal.ai/models/minimax/h3-max-turbo/image-to-video" target="_blank" rel="noopener">https://fal.ai/models/minimax/h3-max-turbo/image-to-video</a></li>
+  <li><b>fal公式：今回実際に使った動画モデル(seedance)</b><a href="https://fal.ai/models/bytedance/seedance-2.0/mini/reference-to-video" target="_blank" rel="noopener">https://fal.ai/models/bytedance/seedance-2.0/mini/reference-to-video</a></li>
+  <li><b>EP02実費の原本(cost_report.md)</b><a href="https://drive.google.com/drive/folders/EP02_%E9%A3%9F%E3%81%AE%E6%9C%AA%E6%9D%A5_FAL200%E5%86%86%E3%83%86%E3%82%B9%E3%83%88_PACK" target="_blank" rel="noopener">https://drive.google.com/drive/folders/EP02_%E9%A3%9F%E3%81%AE%E6%9C%AA%E6%9D%A5_FAL200%E5%86%86%E3%83%86%E3%82%B9%E3%83%88_PACK</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>EP02の実費内訳(モデル/回数/単価/合計)を書いたか</td><td class="yes">書いた(3モデル・実測/bin/zsh.9556)</td></tr>
+<tr><td>5分試算を3パターン出したか</td><td class="yes">そのまま/使い回し/最安モデルの3通り、すべて計算済み</td></tr>
+<tr><td>目標300円に届く道があるか一言で答えたか</td><td class="yes">今のfal動画課金のままでは届かない(最善でも目標の4.8倍)</td></tr>
+<tr><td>値上げの噂を公式本文で日付・倍率入りで裏取りしたか</td><td class="yes">fal公式ページ本文で確認(9/7まで・ちょうど4倍・対象はh3-max系のみ)</td></tr>
+<tr><td>ローカル化の可否を正直に書いたか</td><td class="yes">音声=電気代のみで可能/動画=現状まだ実用に届かない、と明記</td></tr>
+<tr><td>安くする手を数値付きで並べたか</td><td class="yes">7項目、それぞれ円換算の効果を記載</td></tr>
+<tr><td>今後のfal報告ルールをoni-kantokuの関門に入れたか</td><td class="yes">入れた(モデル/回数/単価/合計を書く義務)</td></tr>
+</table>
+
+<footer>
+このページは #510 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
