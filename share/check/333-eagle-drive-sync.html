@@ -64,9 +64,10 @@ Eagle（<code>eagle AI 画像整理.library</code>、1200件・135フォルダ�
   <li><b>Googleドライブ「マイドライブ」を開く</b><a href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">https://drive.google.com/drive/my-drive</a><br>→「Eagle同期_AI画像整理」フォルダの中に、上の23フォルダがEagleと同じ名前で並んでいる</li>
 </ul>
 
-<h2>④ 進行中の状態（正直な現在地）</h2>
+<h2>④ 進行中の状態（2026-09-06 17:25追記・完走を確認）</h2>
 <div class="note">
-1200件全部を1回で処理する「初回フルスキャン」は、Google Driveのクラウドマウント越しのファイル確認処理が重く、まだ完走していない（406/1200件が完了・残りは常駐ループが自動で続きから進める）。<b>2回目以降は「差分同期」なので、既にコピー済みの406件は一瞬でスキップされ、新しく増えた分だけを処理するため速くなる見込み。</b>今フルスキャンが終われば、以後はEagleに1枚追加するたびに次の自動実行（最大5分後）で複製される状態になる。
+初回フルスキャンは<b>完走した</b>。直近の同期ログ「2026-09-06 03:25:39 同期: 新規1 / 更新0 / <b>変化なし1200</b> / エラー0 / 合計1201件」の通り、1200件全部が既にコピー済みと確認され、常駐ループ（PID 91271）は今も5分おきに稼働中。実際にDriveマウントポイントを直接数えたところ、フォルダ41個・ファイル1072件が存在した（本文執筆時点の23フォルダから増加）。
+<img src="img/333-eagle-drive-evidence.png" alt="Eagle Drive同期の実測結果。フルスキャン完走・フォルダ41個・ファイル1072件" style="max-width:100%;border-radius:8px;border:1px solid var(--line);margin-top:10px">
 </div>
 
 <table>
@@ -74,7 +75,7 @@ Eagle（<code>eagle AI 画像整理.library</code>、1200件・135フォルダ�
 <tr><td>Google Driveへの書き込み可否</td><td>マウントポイントへテストファイル作成→存在確認</td><td class="yes">成功 ✓</td></tr>
 <tr><td>フォルダ階層の再現</td><td>Eagleのフォルダ名でDrive側に23階層を実際に作成</td><td class="yes">成功 ✓</td></tr>
 <tr><td>実ファイルの複製</td><td>Eagle→Driveへ406件を実コピー・中身確認</td><td class="yes">成功 ✓</td></tr>
-<tr><td>初回フルスキャン（1200件）完走</td><td><code>python3 tools/eagle_drive_sync.py</code></td><td class="no">継続中（406/1200）</td></tr>
+<tr><td>初回フルスキャン（1200件）完走</td><td><code>python3 tools/eagle_drive_sync.py</code></td><td class="yes">完走 ✓（1200/1200・実測ログで確認）</td></tr>
 <tr><td>5分おき自動実行（launchd）</td><td><code>com.tamago.eagle-drive-sync.plist</code>配置</td><td class="no">plist配置済み・launchctl操作はこの環境から不可のため次回ログイン時に有効化見込み</td></tr>
 <tr><td>5分おき自動実行（今すぐ動く代替）</td><td>常駐バックグラウンドループを起動（親プロセスから独立・PID 91271）</td><td class="yes">稼働中 ✓</td></tr>
 </table>
