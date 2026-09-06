@@ -992,6 +992,11 @@ function urlLinks(urls){
 }
 function renderSessions(m){
   const box = document.getElementById("sessions");
+  // 2026-09-06(461番) 「セッション一覧」表示（id="sessions"）は現在のHTMLには存在しない
+  // （#now・#queue・#check・#done の新しいセクションに置き換わり、こちらは廃止済みと判明）。
+  // 呼び出し元(refreshMachine)は残っていたため、box=null に対して以降 textContent を
+  // 設定し続けて「画面の一部が描けませんでした」エラーが毎回出ていた。安全に早期returnする。
+  if(!box) return;
   const list = (m && m.sessionList) || [];
   const measured = m && m.measuredAt ? new Date(m.measuredAt).getTime() : Date.now();
   // 2026-09-03 たまごさん「進捗表と現状がつながるようにして」：
