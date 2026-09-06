@@ -62,6 +62,9 @@ while :; do
   #   ChatGPT(Codex)がそれを1つずつ「プロジェクト」として拾ってたまごさんの画面を汚す。
   #   本流に入っていて・未保存の変更が無くて・2時間以上経ったものだけ消す（30分に1回）。
   ( python3 "$REPO/tools/worktree_reaper.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-07（620番）：確認ページ(share/check)が上限も掃除も無いまま増え続けていた。
+  #   60日以上さわられていないものだけ、店主が拾えるようゴミ箱へ退避する（6時間に1回でよい）。
+  ( python3 "$REPO/tools/check_page_pruner.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
