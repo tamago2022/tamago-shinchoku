@@ -158,11 +158,61 @@ def run_tts_all():
 
 
 def concat_bytes(paths, dest):
-    """mp3等を単純バイト連結する簡易つなぎ（ffmpeg非搭載環境向けの妥協策）。"""
+    """mp3等を単純バイト連結する簡易つなぎ（ffmpeg非搭載環境向けの妥協策）。
+    ※ TTS音声パーツの結合専用。mp4動画の結合には使わないこと（下のconcat_mp4を使う）。"""
     with open(dest, "wb") as out:
         for p in paths:
             with open(p, "rb") as f:
                 out.write(f.read())
+    return dest
+
+
+def _ffmpeg_exe():
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        for cand in ("/private/tmp/ep01_bin/ffmpeg", "ffmpeg"):
+            return cand
+    return "ffmpeg"
+
+
+def concat_mp4(paths, dest):
+    """mp4動画を正しく結合する（ffmpeg concat demuxer→ダメなら再エンコードconcatにフォールバック）。
+
+    2026-09-06 419番: 旧concat_bytes()（単純バイト連結）でume_15s.mp4/take_15s.mp4を作っていたが、
+    mp4はコンテナ形式のため単純連結では2本目以降のmoovが読めず、実際には最初の1ショット分
+    （5〜6秒）しか再生できない不良ファイルになっていた（cv2で実測し発覚）。必ずこちらを使う。
+    """
+    import subprocess, tempfile
+    ffmpeg = _ffmpeg_exe()
+    list_path = dest + ".concat_list.txt"
+    with open(list_path, "w") as f:
+        for p in paths:
+            f.write(f"file '{os.path.abspath(p)}'\n")
+    try:
+        r = subprocess.run(
+            [ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", list_path, "-c", "copy", dest],
+            capture_output=True,
+        )
+        ok = r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0
+        if not ok:
+            # 解像度・fps不揃い等でstream copyが失敗した場合は再エンコードで結合する
+            inputs = []
+            filter_parts = []
+            concat_inputs = ""
+            for i, p in enumerate(paths):
+                inputs += ["-i", p]
+                filter_parts.append(f"[{i}:v]scale=960:540,setsar=1,fps=24[v{i}]")
+                concat_inputs += f"[v{i}][{i}:a]"
+            filter_complex = ";".join(filter_parts) + ";" + concat_inputs + f"concat=n={len(paths)}:v=1:a=1[v][a]"
+            cmd = [ffmpeg, "-y"] + inputs + ["-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]", dest]
+            r2 = subprocess.run(cmd, capture_output=True)
+            if r2.returncode != 0:
+                raise RuntimeError(f"ffmpeg concat失敗: {r2.stderr.decode(errors='ignore')[-1500:]}")
+    finally:
+        if os.path.exists(list_path):
+            os.remove(list_path)
     return dest
 
 
@@ -223,7 +273,7 @@ def run_ume(tts_paths):
 
     final = os.path.join(OUT_DIR, "ume_15s.mp4")
     if clip_paths:
-        concat_bytes(clip_paths, final)
+        concat_mp4(clip_paths, final)
         print(f"[DONE] 梅版（単純結合）: {final}")
     return final if clip_paths else None
 
@@ -278,7 +328,7 @@ def run_take(shots):
 
     final = os.path.join(OUT_DIR, "take_15s.mp4")
     if clip_paths:
-        concat_bytes(clip_paths, final)
+        concat_mp4(clip_paths, final)
         print(f"[DONE] 竹版（単純結合・{len(clip_paths)}ショット）: {final}")
     return final if clip_paths else None
 
@@ -337,7 +387,7 @@ def run_matsu(shots):
 
     final = os.path.join(OUT_DIR, "matsu_15s.mp4")
     if clip_paths:
-        concat_bytes(clip_paths, final)
+        concat_mp4(clip_paths, final)
         print(f"[DONE] 松版（単純結合・{len(clip_paths)}ショット）: {final}")
     return final if clip_paths else None
 
