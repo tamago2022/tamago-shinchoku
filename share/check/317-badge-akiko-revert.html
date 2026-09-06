@@ -1,38 +1,75 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>317番 バッジ見本戻しの確認</title>
-<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.7}
-h1{font-size:1.25rem;margin:0 0 12px}.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
-.ok{color:#5fd996;font-weight:800}.num{font-size:1.4rem;font-weight:800;color:#ffd166}
-a{color:#7fc7ff}code{background:#0c0f14;padding:2px 6px;border-radius:6px}</style></head><body>
-<h1>317番：バッジの大きさを見本(akiko)へ戻した確認</h1>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#317 317番：バッジの大きさを見本(akiko)へ戻した確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #317 317番：バッジの大きさを見本(akiko)へ戻した確認</div>
+<h1>#317 317番：バッジの大きさを見本(akiko)へ戻した確認</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
-<div class="b">
-<p class="ok">①何を直したか</p>
-<p>コミット9fa191bc/f74bfd1aでバッジ短辺比率を18%へ上げた結果、見本だった akiko『Love Theme From Spartacus』のバッジまで大きくなってしまっていた。<br>
-<code>src/lib/badgeKinds.ts</code> の <code>BADGE_TARGET_SHORT_SIDE_RATIO</code> を <b>18 → 13.8</b> に戻した（この1行だけ変更）。</p>
+<div class="fix">
+コミット9fa191bc/f74bfd1aで短辺比率を18%へ上げた結果、見本だったakiko『Love Theme From Spartacus』のバッジまで大きくなっていた。src/lib/badgeKinds.ts の BADGE_TARGET_SHORT_SIDE_RATIO を 18→13.8 に戻す1行だけの変更。本番のJSバンドルを直接読み、13.8が配信されていることを実測済み（x-deployment-id: psr2.48240a42-284b-44b4-9afe-6452886fdec6.1789270231）。
 </div>
 
-<div class="b">
-<p class="ok">②数字（実測）</p>
-<p>本番の見え方を決めるJSバンドルを直接取得し、値を実測した。<br>
-本番反映前：<span class="num">18</span>％ → 本番反映後：<span class="num">13.8</span>％（akikoページ実測どおりの唯一の正解値）<br>
-確認方法：本番HTML→JSバンドルURL（<code>/assets/index-*.js</code>）を取得し、比率の定数（コード中では <code>Yae</code> という短縮名で出現）が <code>13.8</code> になっていることを直接読んで確認済み。</p>
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>13.8%</b><span>本番バンドル実測値（正解）</span></div>
+  <div class="num"><b>18→13.8</b><span>変えた比率</span></div>
+  <div class="num"><b>8.5%→6.5%</b><span>バッジ幅の変化（good-cover.png）</span></div>
 </div>
 
-<div class="b">
-<p class="ok">③押せるリンク（実物ページ）</p>
-<ul>
-<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus" target="_blank">akiko『Love Theme From Spartacus』（見本ページ本体）</a></li>
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>Before：短辺目標18%（見本が壊れていた時・幅8.5%）</b><img src="img/317-akiko-before.png" alt="前"></div>
+  <div class="shot after"><b>After：短辺目標13.8%（見本どおりに戻した・今の本番の実物スクリーンショット）</b><img src="img/317-akiko-after.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>akiko『Love Theme From Spartacus』本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
 </ul>
-<p>このファイル自体が「変更対象は上記1本のみ」の確認ページ。バッジは同じ計算式（<code>BADGE_TARGET_SHORT_SIDE_RATIO</code>）を全ページで共有しているため、この1本の実測が全ページの反映を代表する。</p>
-</div>
 
-<div class="b">
-<p class="ok">④前後スクリーンショット</p>
-<p>今回はたまごさんの操作画面を奪わない方針（Braveに触らない・画面収録の許可ダイアログを出さない）のため、
-スクリーンショットではなく<b>本番に配信されているコード自体の実測値</b>を証拠にしている（③の「確認方法」参照）。<br>
-見た目の最終確認は、上のリンクをたまごさんご自身の目で開いていただくことをお願いします。</p>
-</div>
 
-<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
-</body></html>
+
+<footer>
+本番URLはヘッドレスブラウザ(Playwright)で開いて実測（音声出力なし・自動再生ミュート・たまごさんの画面には触れていない）。Beforeはbadgeを幅8.5%に配置した比較用の合成画像（本番のバッジ画像・サムネイル画像をそのまま使用）。Afterは本番ページをそのままスクリーンショットした実物。
+</footer>
+</body>
+</html>
