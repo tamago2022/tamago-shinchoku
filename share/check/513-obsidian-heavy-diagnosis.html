@@ -45,7 +45,7 @@
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2〜3日前のプラグイン事故は既に解消済みで実害なし。重さ・切り替え遅さの真因はiCloud Drive上でローカル未保存(evicted)のままのファイルへ最初にアクセスした時の待ち時間と判明。実際に読み込んで手元にダウンロードさせる対策を実行し、同じ範囲への2回目アクセスが大幅に速くなることを3パターンで実測した。
+2〜3日前のプラグイン事故は既に解消済みで実害なし。重さ・切り替え遅さの原因は2つ見つかった。①iCloud Drive上でローカル未保存(evicted)のままのファイルへ最初にアクセスした時の待ち時間、②AIの自動記録システム(第二の脳ブリッジ)がVaultの中へ13MBのファイルを5分おきに書き続けていたことで①の待ち時間を悪化させ続けていたこと。①は該当フォルダを読み込んでダウンロードさせる対策、②はVaultの外へ書き込み先を移す対策をそれぞれ実行し、実測で効果を確認した。
 </div>
 
 <h2>② 数字</h2>
@@ -53,6 +53,8 @@
   <div class="num"><b>286.3秒→0.53秒</b><span>Vault内全mdファイル(7325件)：初回アクセス→ダウンロード後(3回目)</span></div>
   <div class="num"><b>68.1秒→12.5秒</b><span>添付フォルダ300件サンプル：初回→ダウンロード後</span></div>
   <div class="num"><b>46.2秒→23.2秒</b><span>別フォルダ60件サンプル：初回→ダウンロード後(再現性確認)</span></div>
+  <div class="num"><b>567回</b><span>原因②：42時間で自動記録がVault内へ書き込んだ回数(5分おき)</span></div>
+  <div class="num"><b>26MB→0MB</b><span>原因②：1回の書き込みサイズ(コンフリクトコピー含む)→対策後は0(Vault外へ移動)</span></div>
   <div class="num"><b>5個</b><span>.obsidian内の未使用の古いバックアップファイル(削除せずVault内へ退避)</span></div>
   <div class="num"><b>0個</b><span>プラグイン設定を今回変更した数(現状の4プラグイン構成は事故前の正しい状態と一致のため無変更)</span></div>
 </div>
@@ -66,6 +68,7 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>確認ページ本体(このページ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html</a></li>
+  <li><b>原因②を直した差分(GitHub・commit c0dd3533)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/c0dd3533" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/c0dd3533</a></li>
   <li><b>判断メモ(PENDING_DECISIONS.md・GitHub上)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md</a></li>
 </ul>
 
@@ -73,16 +76,16 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>プラグイン事故(全ON→全OFF)の後始末</td><td class="yes">09-02に既に正常化済みと確認。今回の追加変更なし</td></tr>
-<tr><td>重さの真因特定</td><td class="yes">iCloud上の未ダウンロードファイルへの初回アクセス待ちと特定(実測で証明)</td></tr>
-<tr><td>切り替え速度の前後比較</td><td class="yes">3パターンで実測。2〜540倍の高速化を確認(下グラフ参照)</td></tr>
-<tr><td>対策の実行</td><td class="yes">該当フォルダを読み込んでローカルへダウンロード済み(バックグラウンドで全体継続中)</td></tr>
+<tr><td>重さの真因特定</td><td class="yes">①iCloud上の未ダウンロードファイルへの初回アクセス待ち ②自動記録(第二の脳ブリッジ)がVault内へ5分おき13MB書き続けていたこと。両方を実測で特定</td></tr>
+<tr><td>切り替え速度の前後比較</td><td class="yes">3パターンで実測。2〜540倍の高速化を確認(上の数字カード参照)</td></tr>
+<tr><td>対策の実行</td><td class="yes">①該当フォルダを読み込んでローカルへダウンロード済み ②自動記録の書き込み先をVaultの外(このMacのローカル)へ完全に移動し、Vault内には今後一切書き込まれない状態を確認済み</td></tr>
 <tr><td>.obsidian内の不要ファイル整理</td><td class="yes">未使用バックアップ5個をVault内へ退避(削除はしていない)</td></tr>
 <tr><td>試作アセット363MB(旧セッションが指摘)の削除</td><td class="no">既存資産のため削除せず。店主が消してよいか判断待ち</td></tr>
 <tr><td>受付台帳・作業ログの縮小</td><td class="no">ファイル冒頭に「消さない・編集しない」と明記されているため今回は触らず</td></tr>
 </table>
 
 <footer>
-対象はMac本体のObsidian Vault(ローカルファイル)。ブラウザ画面や本番サイトの見た目変更を伴わないため、Before/AfterはObsidian画面のスクショではなく実測秒数のグラフで示した。
+対象はMac本体のObsidian Vault(ローカルファイル)。ブラウザ画面や本番サイトの見た目変更を伴わないため、Before/AfterはObsidian画面のスクショではなく実測秒数のグラフで示した。原因②(自動記録の書き込み先移動)は追加調査で見つかったもので、この確認ページへ追記して1枚にまとめた。
 </footer>
 </body>
 </html>
