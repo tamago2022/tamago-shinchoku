@@ -24,9 +24,11 @@
   .colorTags button{border-color:rgba(255,255,255,0.18);}
   .colorTags button.on{background:#fff; color:#12161c; border-color:#fff;}
   .meta{padding:6px 14px 0; font-size:0.74rem; color:var(--sub);}
-  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:8px 3px 60px;}
+  .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; padding:8px 3px 60px;}
   .grid img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#1a2028; border-radius:3px;}
-  .cell{position:relative; cursor:pointer;}
+  .cell{position:relative; cursor:pointer; min-width:0; overflow:hidden;}
+  .more{grid-column:1 / -1; min-height:48px; margin-top:6px; border-radius:10px; border:1px solid var(--line);
+    background:#1a2028; color:var(--fg); font-size:0.9rem;}
   dialog{border:none; background:#0d1116; color:var(--fg); width:100%; max-width:100%; height:100%; max-height:100%; margin:0; padding:0;}
   dialog::backdrop{background:rgba(0,0,0,0.9);}
   .dw{display:flex; flex-direction:column; height:100%;}
@@ -62,6 +64,10 @@
 
 <script>
 let DATA = {items:[]}, FILTER = "", TAG = "", FOLDER = "";
+// 1200件超を一度にDOMへ出すと画像の読み込み中にレイアウトが崩れる（実測で確認済み）。
+// 初期表示は60件に絞り、「もっと見る」で60件ずつ足す。フィルタを変えたら最初の60件に戻す。
+const PAGE = 60;
+let SHOWN = PAGE;
 const grid = document.getElementById("grid");
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -79,12 +85,17 @@ function matched(){
     return hay.includes(q);
   });
 }
+function resetAndRender(){ SHOWN = PAGE; render(); }
 function render(){
   const list = matched();
+  const shown = list.slice(0, SHOWN);
   const tagLabel = TAG.startsWith("_color:") ? "色：" + TAG.replace("_color:","") : (TAG ? "タグ：" + TAG : "");
-  document.getElementById("meta").textContent = `${list.length}件${FOLDER ? "／フォルダ：" + FOLDER : ""}${tagLabel ? "／" + tagLabel : ""}${FILTER ? "／検索：" + FILTER : ""}`;
-  grid.innerHTML = list.map((it,i)=>`<div class="cell" data-i="${i}"><img loading="lazy" src="${thumbSrc(it)}" alt="${esc(it.n)}"></div>`).join("");
-  grid._list = list;
+  document.getElementById("meta").textContent = `${list.length}件${FOLDER ? "／フォルダ：" + FOLDER : ""}${tagLabel ? "／" + tagLabel : ""}${FILTER ? "／検索：" + FILTER : ""}${list.length > shown.length ? `／${shown.length}件を表示中` : ""}`;
+  grid.innerHTML = shown.map((it,i)=>`<div class="cell" data-i="${i}"><img loading="lazy" src="${thumbSrc(it)}" alt="${esc(it.n)}"></div>`).join("")
+    + (list.length > shown.length ? `<button class="more" id="moreBtn">もっと見る（残り${list.length - shown.length}件）</button>` : "");
+  grid._list = shown;
+  const moreBtn = document.getElementById("moreBtn");
+  if(moreBtn) moreBtn.addEventListener("click", ()=>{ SHOWN += PAGE; render(); });
 }
 grid.addEventListener("click", e=>{
   const cell = e.target.closest(".cell"); if(!cell) return;
@@ -100,7 +111,7 @@ grid.addEventListener("click", e=>{
     + (it.h && it.h.length ? `<div>${it.h.map(t=>`<span class="chip h">${esc(t)}</span>`).join("")}</div>` : "");
   document.getElementById("dlg").showModal();
 });
-document.getElementById("q").addEventListener("input", e=>{ FILTER = e.target.value; render(); });
+document.getElementById("q").addEventListener("input", e=>{ FILTER = e.target.value; resetAndRender(); });
 
 fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
   DATA = d;
@@ -117,7 +128,7 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
     TAG = b.dataset.t || "";
     [...document.querySelectorAll("#tags button")].forEach(x=>x.classList.toggle("on", x===b));
     [...document.querySelectorAll("#colorTags button")].forEach(x=>x.classList.remove("on"));
-    render();
+    resetAndRender();
   });
   // Eagleが自動でつけた色タグ（_color:オレンジ系 等）で絞り込み。件数が多い順に。
   const cc = {};
@@ -132,7 +143,7 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
       TAG = already ? "" : (b.dataset.t || "");
       [...document.querySelectorAll("#colorTags button")].forEach(x=>x.classList.toggle("on", !already && x===b));
       [...document.querySelectorAll("#tags button")].forEach(x=>x.classList.toggle("on", x.dataset.t===""));
-      render();
+      resetAndRender();
     });
   }
   // フォルダはEagle側の階層（親 / 子）でグループ化して出す（件数順の平置きだと133件が探しにくいため）
@@ -154,7 +165,7 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
       `</optgroup>`;
   });
   sel.innerHTML = optHtml;
-  sel.addEventListener("change", e=>{ FOLDER = e.target.value; render(); });
+  sel.addEventListener("change", e=>{ FOLDER = e.target.value; resetAndRender(); });
   render();
 });
 </script>
