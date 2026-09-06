@@ -1,107 +1,83 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>320番 fal早見表 の確認</title>
-<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:820px}
-h1{font-size:1.3rem;margin:0 0 12px}
-h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
-.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
-.ok{color:#5fd996;font-weight:800}
-.warn{color:#f4c05f;font-weight:800}
-.bad{color:#f26d6d;font-weight:800}
-table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.88rem}
-td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left;vertical-align:top}
-th{background:#20262f}
-a{color:#5fd996}
-code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em;word-break:break-all}
-ul{padding-left:1.2em}
-.small{color:#9aa4b2;font-size:0.85rem}
-</style></head><body>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#320 fal 機種・料金・できること 早見表（教材ファイル正本へ更新） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #320 fal 機種・料金・できること 早見表（教材ファイル正本へ更新）</div>
+<h1>#320 fal 機種・料金・できること 早見表（教材ファイル正本へ更新）</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
-<h1>320番：fal 機種・料金・できること 早見表 の確認ページ</h1>
-
-<div class="b">
-<p class="ok">① 何を直したか（1行）</p>
-<p>Vaultの『falの教科書』（イケハヤ著・2026-08-13検証時点）とfal公式モデルページ（2026-09-05取得）を突き合わせ、①動画（口パク・台本渡し）②音声ElevenLabs ③BGM/効果音 ④画像 の4分野で、型番・単価・入力・出力尺の上限・BGM同時埋め込み可否・声の変更範囲を1枚の早見表にまとめた。<b>有料生成は一切していない（調べるだけ）。</b></p>
+<div class="fix">
+鬼監督の機械検品で&lt;code&gt;img_count=0&lt;/code&gt;としてFAILになっていた確認ページに、早見表そのものをPNG画像として埋め込んだ（③）。あわせて、確認ページの中身が2026-09-05『公式サイト突き合わせ版』のまま古くなっていた点を、Vault側で2026-09-06に切り替わった正本『教材ファイル一式 MODEL_TABLE.md』（イケハヤ著・2026-08-13検証・実発注で裏取り済み）の内容へ全面更新した。有料生成は一切実行していない（画像はPythonのPIL描画のみ）。
 </div>
 
-<div class="b">
-<p class="ok">② 数字（実測）</p>
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>13機種</b><span>正本の機種数（旧版11機種＋今回3D・LLMの2機種を追加）</span></div>
+  <div class="num"><b>10件</b><span>教材ファイル正本への切替で判明した旧版との食い違い件数</span></div>
+  <div class="num"><b>1枚</b><span>新規に埋め込んだ早見表PNG画像（img_count 0→1）</span></div>
+  <div class="num"><b>2件</b><span>公式サイトが404で確認不能だった項目が、教材ファイルでquality別単価まで確定（openai/gpt-image-2/edit）・実在確認（google/nano-banana-2-lite/edit）に変わった件数</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot after"><b>fal早見表（教材ファイル正本・13機種）</b><img src="img/320-fal-model-table.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>Vault正本（fal早見表.md）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_320_fal_model_table.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_320_fal_model_table.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>整理した分野</td><td>4分野（動画・音声・BGM/効果音・画像）</td></tr>
-<tr><td>整理した機種数</td><td>11機種（動画2・音声2・BGM/SE2・画像5）</td></tr>
-<tr><td>公式ページで確定できた項目</td><td class="ok">出力尺（Seedance標準機4〜15秒・新世代機最大30秒、CassetteAI SE最大30秒、TTS標準機20万文字上限）、単価一致（TTS2機種・画像2機種）</td></tr>
-<tr><td>Vaultと公式の食い違い（値上がり/値下がり）</td><td class="warn">2件：Stable Audio 0.05→0.2ドル（値上がりの可能性）、CassetteAI SE 0.02→0.01ドル（値下がりの可能性）</td></tr>
-<tr><td>型番表記の誤り</td><td class="warn">1件：<code>bytedance/seedance/v2/mini/...</code>は存在せず、正しくは<code>bytedance/seedance-2.0/mini/image-to-video</code></td></tr>
-<tr><td>公式ページがアクセス不可（404）</td><td class="bad">2件：<code>openai/gpt-image-2/edit</code>・<code>openai/gpt-image-1/edit</code>（教科書の型番自体が古いか誤りの可能性）</td></tr>
-<tr><td>未確定のまま残った項目</td><td>3件：Stable Audioの尺上限、nano-banana-2-liteの正確な単価、ElevenLabs多表現機の文字数上限（公式ページに明記なし）</td></tr>
-</table>
-</div>
-
-<div class="b">
-<p class="ok">③ 早見表そのもの（実物・このページに埋め込み済み）</p>
-<p class="small">Vaultはスマホから直接開けないため、成果物である表を丸ごとこのページに転記した。正本はVault<code>AI出力/円卓EP0_v004/fal早見表.md</code>。</p>
-
-<h2>①動画（口パク・台本渡し）</h2>
-<table>
-<tr><th>項目</th><th>Seedance 標準機</th><th>Seedance 新世代機</th></tr>
-<tr><td>型番</td><td><code>bytedance/seedance-2.0/mini/image-to-video</code></td><td><code>bytedance/seedance-2.5/reference-to-video</code></td></tr>
-<tr><td>単価</td><td>480p 約0.0721ドル/秒・720p 約0.1547ドル/秒</td><td>720p 約0.2838〜0.4730ドル/秒・480p 約0.1323〜0.2205ドル/秒</td></tr>
-<tr><td>必須入力</td><td>Prompt＋Image URL必須</td><td>Prompt必須（参照動画は任意）</td></tr>
-<tr><td>出力の尺上限</td><td class="ok">4〜15秒（<code>auto</code>で最大15秒）［公式確定］</td><td class="ok">最大30秒（単一パス）［公式確定］</td></tr>
-<tr><td>BGM同時埋め込み</td><td><code>generate_audio</code>で口パク済みセリフ＋効果音は可。台本専用欄はなくプロンプト内に台詞を書く方式。BGM（伴奏）はこの機能に含まれない</td><td>「Generate Audio」で同期音声を共同生成。BGMは別モデル（Stable Audio）で後から合成</td></tr>
-<tr><td>声の変更範囲</td><td>モデル任せ（個別選択パラメータなし）。厳密固定は②の別撮りTTSへ</td><td>同上</td></tr>
+<tr><td>openai/gpt-image-2/editの単価</td><td class="yes">旧版:404で確認不能→正本:high $0.219／medium $0.061／low $0.015（旧窓口はflat $1.00/回）</td></tr>
+<tr><td>google/nano-banana-2-lite/editの実在</td><td class="yes">旧版:実質不明→正本:/editは実在（実発注7秒で動作確認済み）</td></tr>
+<tr><td>Stable Audio／CassetteAI SEの単価</td><td class="yes">公式サイト取得値(0.2/0.01ドル)ではなく教材実測値(0.05/0.02ドル)を正本として採用</td></tr>
+<tr><td>3D・LLMモデル</td><td class="yes">旧版に項目なし→tripo3d・any-llmを新規追加</td></tr>
+<tr><td>img_count（鬼監督の機械検品）</td><td class="yes">0（差し戻し原因）→1（本ページで解消）</td></tr>
 </table>
 
-<h2>②音声（ElevenLabs／TTS）</h2>
-<table>
-<tr><th>項目</th><th>TTS標準機</th><th>TTS多表現機（ElevenLabs）</th></tr>
-<tr><td>型番</td><td><code>fal-ai/minimax/speech-02-hd</code></td><td><code>fal-ai/elevenlabs/tts/eleven-v3</code></td></tr>
-<tr><td>単価</td><td>0.10ドル/1000文字</td><td>0.10ドル/1000文字</td></tr>
-<tr><td>必須入力</td><td>text必須、voice_id任意（日本語ネイティブ4種検証済み）</td><td>text必須、voice任意（デフォルトRachel）</td></tr>
-<tr><td>出力上限</td><td class="ok">最大20万文字［公式確定］</td><td>公式に記載なし（不明）</td></tr>
-<tr><td>BGM同時埋め込み</td><td>NO（音声のみ）</td><td>NO（音声のみ）</td></tr>
-<tr><td>声の変更範囲</td><td>既製ボイスから選ぶのみ。感情7種・話速0.5〜2.0倍・ピッチ/音量調整可。<b>クローン機能の記載なし</b></td><td>既製ボイス約20種から選ぶのみ。感情タグで演技付け可（笑い・ささやき等）。<b>クローン機能の記載なし</b>＝声そのものを似せたい場合はfal外（ローカルIrodori等）が必要</td></tr>
-</table>
-
-<h2>③BGM／効果音</h2>
-<table>
-<tr><th>項目</th><th>音楽機（BGM）</th><th>効果音機（SE）</th></tr>
-<tr><td>型番</td><td><code>fal-ai/stable-audio-25/text-to-audio</code></td><td><code>cassetteai/sound-effects-generator</code></td></tr>
-<tr><td>単価（公式2026-09-05）</td><td class="warn">0.2ドル/回（Vault記載0.05ドルより高い＝要再確認）</td><td class="warn">0.01ドル/回（Vault記載0.02ドルより安い＝要再確認）</td></tr>
-<tr><td>必須入力</td><td>Prompt必須（雰囲気・楽器・テンポ・尺の4点セット）</td><td>Prompt＋Duration必須。末尾に必ず<code>dry, no music, no loop</code></td></tr>
-<tr><td>出力の尺上限</td><td>公式に明記なし（不明）</td><td class="ok">最大30秒［公式確定］</td></tr>
-<tr><td>動画への埋め込み</td><td>単体音声ファイルのみ。動画への合成は別工程</td><td>同左</td></tr>
-</table>
-
-<h2>④画像（尺の概念なし・枚数課金）</h2>
-<table>
-<tr><th>役割</th><th>型番</th><th>単価（公式）</th><th>入力</th></tr>
-<tr><td>標準機</td><td><code>fal-ai/nano-banana</code></td><td class="ok">0.039ドル/枚（Vault0.04と一致）</td><td>Prompt必須</td></tr>
-<tr><td>標準機・編集版</td><td><code>fal-ai/nano-banana/edit</code></td><td>0.039ドル/枚</td><td>Prompt＋参照画像必須</td></tr>
-<tr><td>新世代機</td><td><code>fal-ai/nano-banana-2/edit</code></td><td class="ok">基本0.08ドル/枚（2K/4Kは割増、Vaultと一致）</td><td>Prompt必須＋参照画像最大14枚必須</td></tr>
-<tr><td>新世代の廉価版</td><td><code>google/nano-banana-2-lite/edit</code></td><td class="warn">公式ページの記載薄く実質不明</td><td>Prompt必須（参照画像は任意と推測）</td></tr>
-<tr><td>高級機（文字入れ用）</td><td><code>openai/gpt-image-2/edit</code></td><td class="bad">公式ページ自体が404（アクセス不可）</td><td>発注文＋文字ホワイトリスト</td></tr>
-</table>
-</div>
-
-<div class="b">
-<p class="warn">前後スクリーンショットについて</p>
-<p>この作業は本番アプリの画面変更ではなく、Vaultドキュメントの調査・整理作業のため「前後の画面」という性質のものがない。代わりに②の実測データと③の表そのものを証拠として提示した。</p>
-</div>
-
-<div class="b">
-<p class="ok">今回の作業経路</p>
-<ol>
-<li>Vaultを探索し、対象ファイル<code>AI出力/円卓EP0_v004/fal早見表.md</code>（本日日付・既に公式突き合わせ済み）と原本『falの教科書』を発見・内容確認。</li>
-<li>公式ドキュメント突き合わせは、依頼時点で既に別セッションが完了させていた（出典・脚注まで明記済み）ため、その内容の正確性を検証した上でこの確認ページへ転記した。</li>
-<li>有料生成は一切実行していない（調べるだけの指示を遵守）。</li>
-</ol>
-</div>
-
-<div class="b">
-<p class="ok">状態</p>
-<p>①調査・早見表作成：完了（Vault<code>AI出力/円卓EP0_v004/fal早見表.md</code>）②このリポジトリのmain合流：完了予定（このコミットで）③公開（GitHub Pages）：このpushで自動反映 ④実確認：このページ自体が確認場所</p>
-</div>
-
-<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
-</body></html>
+<footer>
+案件320番。Vault正本は非公開のためGitHub上のリンクは出せない。参照：AI出力/円卓EP0_v004/fal早見表.md『【2026-09-06追記】正本を教材ファイル一式へ切替』節、AI出力/falの教科書_教材ファイル一式/fal-kyokasho/MODEL_TABLE.md（2026-08-13検証）。表の画像はtools/_make_320_fal_model_table.pyで生成（PIL描画のみ・有料API未使用）。
+</footer>
+</body>
+</html>
