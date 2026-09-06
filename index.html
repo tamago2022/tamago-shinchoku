@@ -1898,13 +1898,18 @@ function effectiveState(state, owner, updatedAt){
 }
 function renderWhiteboard(w){
   const box = document.getElementById("wb");
+  const wbMetaEl = document.getElementById("wbMeta");
+  // 2026-09-06(461番) id="wbMeta"は現在のHTMLに存在しない（ホワイトボード表示が
+  // #wb ごとhidden固定になり廃止済みと判明）。呼び出し元は残っていたため、
+  // 毎回「画面の一部が描けませんでした」エラーが出ていた。box/wbMetaが無ければ早期return。
+  if(!box || !wbMetaEl) return;
   const rows = (w && w.rows) || [];
-  document.getElementById("wbMeta").textContent = w && w.updatedAt ? `${rows.length}件・${w.updatedAt.slice(5)}` : "";
+  wbMetaEl.textContent = w && w.updatedAt ? `${rows.length}件・${w.updatedAt.slice(5)}` : "";
   if(!rows.length){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">ホワイトボードの写しがまだ無い（Mac側 whiteboard.py sync が5分おきに書く）</div>`; return; }
   const num = r => String(parseInt(String(r.id).replace(/^T/,""), 10));
   const items = rows.map(r => ({r, e: effectiveState(r.state, r.owner, r.updatedAt)}));
   const cnt = {}; items.forEach(x => cnt[x.e.color] = (cnt[x.e.color]||0)+1);
-  document.getElementById("wbMeta").textContent += `　動いている${cnt.green||0}・止まっている${cnt.red||0}`;
+  wbMetaEl.textContent += `　動いている${cnt.green||0}・止まっている${cnt.red||0}`;
   window.__wbLive = {}; items.forEach(x => { window.__wbLive[num(x.r)] = x.e; });
   if(window.SHINCHOKU_ALL && document.getElementById("all").children.length) renderAll();  // 225件側の色も実態に合わせ直す
   items.sort((a,b)=> a.e.order - b.e.order || (a.r.priority||3)-(b.r.priority||3) || (a.r.rank||999)-(b.r.rank||999));
@@ -2169,6 +2174,9 @@ document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState 
 /* ───── 弱点の自動集計（history.jsonl） ───── */
 function renderStats(text){
   const el = document.getElementById("stats");
+  // 2026-09-06(461番) id="stats"は現在のHTMLに存在しない（廃止済みと判明）。
+  // 呼び出し元は残っていたため、毎回「画面の一部が描けませんでした」エラーが出ていた。
+  if(!el) return;
   const rows = (text || "").split("\n").filter(Boolean).map(l => { try { return JSON.parse(l); } catch(e){ return null; } }).filter(Boolean);
   if(!rows.length){ el.textContent = "まだ航跡が溜まっていない（5分おきに積み始めたところ）。"; return; }
   const S = {};
