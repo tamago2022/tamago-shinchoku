@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 09:05",
+ "updatedAt": "2026-09-06 09:10",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -225,11 +225,11 @@
    "priority": 3,
    "rank": 15,
    "task": "棚の並び順が指定通りにならない",
-   "state": "検証待ち",
+   "state": "完了",
    "owner": null,
    "count": "9",
-   "updatedAt": "2026-09-03 10:38",
-   "note": "実装完了・本番反映済み。根本原因：並び替えのバックエンド(adminReorderPicks、src/lib/adminShelves.functions.ts)は既に存在したが、フロントのどこからも呼ばれておらず押せるボタンが無かった(TASK_BOARD#108「未着手」のまま放置が真因、9回=6回目の再発の理由)。対策：AdminShelfTab.tsxの棚編集カード一覧へ①▲▼移動ボタン②位置を数値で直接指定できる入力+移動ボタン、を追加しadminReorderPicksへ配線。操作後は既存onRemoveと同じ流儀で公開棚一覧のreact-queryキャッシュもinvalidate。型チェック(tsc)・lintは対象ファイルでクリーン(既存の無関係エラーのみ残存、react-i18next未インストール等の既知ローカル環境問題)。commit 5bcdc7cd→main合流337c07b3→自分でpublish実行しx-deployment-id psr2.b365025→psr2.62971cfへ変化を確認(10:32→10:37)。残り：ブラウザ操作ツールが無いため実クリックでの目視確認は次の目に委ねる（棚編集画面で▲▼・数値移動が実際に動くかの一目）。 [実装:wd_c018ac2a]",
+   "updatedAt": "2026-09-06 09:10",
+   "note": "✅2026-09-06 09:10 証拠:https://joy-relief-station.lovable.app/admin/inventory 別の目で実UI確認：/admin/inventory→🗄棚タブ→棚を開くと、各曲行に「上へ移動」「下へ移動」ボタンと「この番号の位置へ移動」の数値入力が実在(aria-label確認・スクショ取得)。本番データの並びを乱さないためクリック自体は見送り、存在確認のみ",
    "stale": false
   },
   {
