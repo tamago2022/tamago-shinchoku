@@ -82,8 +82,29 @@ FORBIDDEN_KEYWORDS = (
     "Pictures", "iCloud~md~obsidian",
 )
 
+# 2026-09-07（620番・容量急減の原因調査）：ここまでの監視対象（作業場のnode_modules・
+# __pycache__・7日超ログ）は全部合わせても数GB規模で、実際に急減の主犯だった
+# 「OS/アプリの一時キャッシュ」（合計で当日8GB超・実測）が完全に監視の外だった。
+# 以下はいずれもOS/アプリが自動的に作り直す一時データであり、店主の壺・金庫
+# （写真・Vault・Drive実体・Eagle・Xアーカイブ・fal成果物）とは無関係。
+HOME = os.path.expanduser("~")
+APP_CACHE_ROOTS = (
+    # iCloud(CloudKit)がアップロード時に作る一時クローン。同期のたび生成され、
+    # 消しても次回同期時に再生成されるだけ（実測3.3GB・5187ファイル）。
+    os.path.join(HOME, "Library/Caches/CloudKit"),
+    # Sparkle(多くのMacアプリの自動更新機構)のダウンロード・インストールキャッシュ。
+    # 更新後も旧バージョンのインストーラを消さずに溜め込む（Codex実測1.3GB）。
+    os.path.join(HOME, "Library/Caches/com.openai.codex/org.sparkle-project.Sparkle"),
+    os.path.join(HOME, "Library/Caches/com.brave.Browser/org.sparkle-project.Sparkle/PersistentDownloads"),
+    os.path.join(HOME, "Library/Application Support/BraveSoftware/Brave-Browser/component_crx_cache"),
+    os.path.join(HOME, "Library/Caches/notion-updater"),
+    # pipのHTTPキャッシュ。再ダウンロードで作り直せる（実測439MB）。
+    os.path.join(HOME, "Library/Caches/pip"),
+)
+APP_CACHE_MIN_AGE_SEC = 3 * 86400  # 3日以上さわられていないものだけ
+
 # 片付けを許す範囲（この外には一切降りない）
-ALLOWED_ROOTS = WT_DIRS + (
+ALLOWED_ROOTS = WT_DIRS + APP_CACHE_ROOTS + (
     os.path.join(REPO, "tools"),
     os.path.join(REPO, "status"),
     os.path.join(JOY, "tools"),
@@ -196,6 +217,26 @@ def candidates():
                 if is_allowed(p):
                     out.append({"path": p, "kind": "__pycache__", "worktree": "-",
                                 "protected": False, "age_ok": True, "size_mb": dir_size_mb(p)})
+
+    # 2026-09-07追加：OS/アプリの一時キャッシュ（中身だけ消す。ルート自体は残す＝
+    # 次回そのアプリが自分で作り直せるようにする）。
+    for root in APP_CACHE_ROOTS:
+        if not os.path.isdir(root) or not is_allowed(root):
+            continue
+        try:
+            entries = os.listdir(root)
+        except Exception:
+            continue
+        for fn in entries:
+            fp = os.path.join(root, fn)
+            if not is_allowed(fp):
+                continue
+            try:
+                age_ok = (time.time() - os.path.getmtime(fp)) >= APP_CACHE_MIN_AGE_SEC
+            except Exception:
+                age_ok = False
+            out.append({"path": fp, "kind": "app_cache", "worktree": "-",
+                        "protected": False, "age_ok": age_ok, "size_mb": dir_size_mb(fp)})
 
     # 7日超のログ（tamago-shinchoku/status配下のみ）
     root = os.path.join(REPO, "status")
