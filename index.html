@@ -1612,38 +1612,48 @@ document.addEventListener("click", e=>{
   }
   // 2026-09-04 たまごさん「70点だけど今急ぎじゃないからいいや、という状態がある。
   //   やり直しも、今すぐのと、順番待ちの後ろでいいのがある」→ 判定を4つに分けた。
-  const n = Number(b.dataset.n), kind = b.dataset.ck;
+  // 2026-09-06(585番) たまごさん「もういい（取り消し）を押したら、まとまり全体が消える。
+  //   1本ずつ消させない」→ まとめ行のdata-nは"12,15,18"のカンマ区切り。ここで1回の
+  //   通信でグループ全nへ一括で作用させる（単体行も同じ道＝1件だけのカンマ無しリストとして通る）。
+  const ns = String(b.dataset.n || "").split(",").map(s=>Number(s.trim())).filter(v=>!isNaN(v));
+  const kind = b.dataset.ck;
+  if(!ns.length) return;
+  const nsJoined = ns.join(",");
+  const label = ns.length > 1 ? `まとめて${ns.length}件（${nsJoined}）` : nsJoined;
   if(kind === "del"){
     // タスクそのものを消す。取り消せるようMac側で status/deleted.json に控える
     const arr = (window.__queue && window.__queue.items) || [];
-    const i = arr.findIndex(x => x.n === n); if(i >= 0) arr.splice(i, 1);
-    sendCommandWithId("d" + Date.now().toString(36), "queue_delete", String(n), "🗑 消す " + n + "番");
+    ns.forEach(n=>{ const i = arr.findIndex(x => x.n === n); if(i >= 0) arr.splice(i, 1); });
+    sendCommandWithId("d" + Date.now().toString(36), "queue_delete", nsJoined, "🗑 消す " + label + "番");
     try{ renderCheck(); renderQueue(); renderDone(); renderLater(); }catch(e){}
     return;
   }
   const ok = (kind === "ok" || kind === "later");
-  const it = ((window.__queue && window.__queue.items) || []).find(x => x.n === n);
-  if(!it) return;
-  it.status = (kind === "later") ? "later" : (ok ? "done" : "waiting");   // 「とりあえずOK」は後回しボックスへ
-  it.checkedAt = new Date().toISOString();
-  // やり直しは常に「今すぐ」＝列の先頭（P1）。「後ろでいい」は「あとで」に統合した
-  if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; it.priority = 1; }
-  // 端末内にも一応残す（監査用。実際の反映先は下のObsidian経由）
-  try{
-    const k = "shinchoku_check_v1";
-    const saved = JSON.parse(localStorage.getItem(k) || "{}");
-    saved["Q"+n] = {ok, kind, t: new Date().toISOString()};
-    localStorage.setItem(k, JSON.stringify(saved));
-  }catch(err){}
+  const items = (window.__queue && window.__queue.items) || [];
+  ns.forEach(n=>{
+    const it = items.find(x => x.n === n);
+    if(!it) return;
+    it.status = (kind === "later") ? "later" : (ok ? "done" : "waiting");   // 「とりあえずOK」は後回しボックスへ
+    it.checkedAt = new Date().toISOString();
+    // やり直しは常に「今すぐ」＝列の先頭（P1）。「後ろでいい」は「あとで」に統合した
+    if(!ok){ delete it.finishedAt; delete it.result; delete it.urls; it.priority = 1; }
+    // 端末内にも一応残す（監査用。実際の反映先は下のObsidian経由）
+    try{
+      const k = "shinchoku_check_v1";
+      const saved = JSON.parse(localStorage.getItem(k) || "{}");
+      saved["Q"+n] = {ok, kind, t: new Date().toISOString()};
+      localStorage.setItem(k, JSON.stringify(saved));
+    }catch(err){}
+  });
   // 2026-09-04 判定を端末だけに残さず、優先度・リモコンと同じ道（obsidian://new → Vault →
   //   Mac側 command_ingest.py）でqueue.jsonへ反映する。queue_ok=done／queue_redo=waitingに戻し列の先頭へ。
   const id = "q" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const CMD = {
-    ok:    ["queue_ok",    String(n),       "✅完了 "],
-    later: ["queue_later", String(n),       "🕗あとで "],
-    ng:    ["queue_redo",  String(n),       "↩︎やり直し（今すぐ）"],
-  }[kind] || ["queue_ok", String(n), "✅完了 "];
-  sendCommandWithId(id, CMD[0], CMD[1], CMD[2] + n + "番");
+    ok:    ["queue_ok",    nsJoined,       "✅完了 "],
+    later: ["queue_later", nsJoined,       "🕗あとで "],
+    ng:    ["queue_redo",  nsJoined,       "↩︎やり直し（今すぐ）"],
+  }[kind] || ["queue_ok", nsJoined, "✅完了 "];
+  sendCommandWithId(id, CMD[0], CMD[1], CMD[2] + label + "番");
   renderCheck(); renderQueue(); renderDone(); renderLater();
 });
 // チェックボックスの変更（[data-ck]ではなく専用のcrowchk）。全部選ぶ等のボタン操作もこれで更新される。
@@ -1658,7 +1668,9 @@ document.addEventListener("click", e=>{
   const b = e.target.closest("[data-bulk]"); if(!b) return;
   const kind = b.dataset.bulk;
   if(kind === "all" || kind === "proof"){
-    document.querySelectorAll(".crow[data-cn]").forEach(rowEl=>{
+    // 2026-09-06(585番) まとめ行(.cgroup)は data-cn がカンマ区切りで、中の1本の.crowchkを
+    //   自分のものとして誤って二重集計してしまうため対象から外す（中の1本は自分自身の行として別途処理される）。
+    document.querySelectorAll(".crow[data-cn]:not(.cgroup)").forEach(rowEl=>{
       const n = Number(rowEl.dataset.cn);
       const cb = rowEl.querySelector(".crowchk");
       if(!cb || cb.disabled) return; // 赤（証拠なし・URL不通）はここで自然に除外される
