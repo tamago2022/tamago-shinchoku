@@ -420,6 +420,15 @@
 <div class="note" id="costSrcNote" style="margin-top:6px"></div>
 </div></details>
 
+<!-- 492番（2026-09-06）：作った本人に合否を判定させない「別AIが検品するVerifier」の実績を、
+     たまごさんが毎日開くこの進捗表からも見えるようにする。実装自体は416番で既に本番稼働中
+     （tools/auto_launcher.py の start_verify/collect_verify、harvest()のawaiting_check直前）
+     だが、この進捗表からリンクが無く「見つけられない」状態だったので、ここに要約カードを足す。 -->
+<details class="sec sub"><summary>AI検品(Verifier)の実績 <small id="aiVerifyMeta"></small></summary><div class="in">
+<div class="g" id="aiVerifyBox"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+<div class="note" id="aiVerifySrcNote" style="margin-top:6px"><a href="share/check/_ai-verify-stats.html" style="color:var(--green)">理由の内訳・履歴を見る（自動更新）→</a></div>
+</div></details>
+
 </div></details>
 <!-- 2026-09-04 たまごさん「次に発車がない。ここに溜めて」
      ここから下（限界の帯・走行中・次に発車・確認待ち）は、マシンとクレジットの折りたたみの
@@ -780,6 +789,33 @@ function refreshCost(){
 }
 refreshCost();
 setInterval(refreshCost, 60000);
+
+/* ───── 492番：AI検品(Verifier)の実績を要約表示（2026-09-06） ─────
+   status/ai_verify_stats.json（tools/auto_launcher.py の _record_ai_verify() が
+   1件検品するたびに書く）を読むだけ。理由の内訳・履歴の全文は share/check/_ai-verify-stats.html へ。 */
+function renderAiVerify(d){
+  const box = document.getElementById("aiVerifyBox");
+  const meta = document.getElementById("aiVerifyMeta");
+  if(!box) return;
+  if(!d || !d.totalChecked){
+    box.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ検品の記録が無い（確認待ちに上がる仕事が1件終わるたびに増える）</div>`;
+    if(meta) meta.textContent = "";
+    return;
+  }
+  const checked = d.totalChecked || 0, passed = d.totalPassed || 0, failed = d.totalFailed || 0, errors = d.totalErrors || 0;
+  if(meta) meta.textContent = `累計${checked}件・合格${passed}・不合格${failed}${errors ? "・技術エラー" + errors : ""}・${fmtUsd(d.totalCostUsd)}`;
+  const topReason = Object.entries(d.reasonCounts || {}).sort((a,b)=>b[1]-a[1])[0];
+  box.innerHTML = [
+    card(failed > 0 ? "yellow" : "green", "検品した件数", String(checked), "", `<p>合格 ${passed}件・不合格 ${failed}件${errors ? "・技術エラー " + errors + "件" : ""}</p>`),
+    card("gray", "検品にかかったコスト", fmtUsd(d.totalCostUsd), "", `<p>1件あたり平均 ${fmtUsd(checked ? d.totalCostUsd/checked : null)}（モデルはSonnet固定）</p>`),
+  ].join("") + (topReason ? card("gray", "不合格でいちばん多い理由", String(topReason[1]) + "件", "", `<p>${esc(topReason[0])}</p>`) : "");
+}
+function refreshAiVerify(){
+  return fetch("status/ai_verify_stats.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(renderAiVerify).catch(()=>{});
+}
+refreshAiVerify();
+setInterval(refreshAiVerify, 60000);
 /* 2026-09-05 このページがMac自身から配られているとき（家のWi-Fiの中で http://192.168.x.x:8788 を
    開いたとき）は、**自分がいる場所がそのまま中継所**。トンネルを探しにいかない。
    トンネルは切れるたびURLが変わるが、家の中の道は切れないしURLも変わらない。 */
