@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>朗読の道具 聴き比べ（512番）</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin:0 auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 16px;}
+  .card b.name{display:block;font-size:1.05rem;margin-bottom:4px;}
+  .card span.tag{display:inline-block;background:#efe9db;color:var(--sub);border-radius:6px;padding:2px 8px;font-size:0.76rem;margin-bottom:10px;}
+  .card p{margin:6px 0 10px;font-size:0.9rem;color:var(--sub);}
+  audio{width:100%;}
+  .pending{color:var(--sub);font-size:0.9rem;background:#efe9db;border-radius:8px;padding:10px 12px;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 10px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  .sample-text{font-size:0.86rem;color:var(--sub);background:#efe9db;border-radius:8px;padding:10px 12px;margin:0 0 18px;}
+</style>
+</head>
+<body>
+<div class="date"><a href="./">共有資料の一覧</a> ／ 512番 朗読の道具</div>
+<h1>文章を自然な朗読の音声にする（聴き比べ）</h1>
+<div class="date">作成: 2026-09-06</div>
+
+<div class="sample-text">
+読み上げた同じ文章：「ごきげん補給所へようこそ。今日はどんな一日でしたか。ここでは、あなたの好きな音楽から、少しだけ半歩先の発見へ、そっと手を伸ばします。急がなくて大丈夫です。今日も、あなたのごきげんに、少しでも役に立てたら嬉しいです。」
+</div>
+
+<h2>① 聴き比べ（押したら鳴ります）</h2>
+
+<div class="card">
+  <b class="name">AivisSpeech Engine（無料・ローカル）</b>
+  <span class="tag">これでいきます</span>
+  <p>日本製、無料、Macだけで動く。円卓の話者切り替えもこれで実装済み。</p>
+  <audio controls preload="none" src="audio/512/test_aivis.wav"></audio>
+</div>
+
+<div class="card">
+  <b class="name">Style-Bert-VITS2（無料・ローカル）</b>
+  <span class="tag">検証中</span>
+  <p id="sbv2-note" class="pending">セットアップが完了次第この場所に音声を追加します（下の「② 数字」に容量・時間を追記）。</p>
+</div>
+
+<div class="card">
+  <b class="name">ElevenLabs（fal経由・有料）</b>
+  <span class="tag">キー待ち</span>
+  <p class="pending">この環境に fal / ElevenLabs のAPIキーが見つからないため、まだ音声を作れていません。
+  たまごさんが <code>.env</code> に <code>FAL_KEY=...</code>（または <code>ELEVENLABS_API_KEY=...</code>）を1行追記いただければ、
+  同じ文章ですぐ1本作って追加します（1000文字$0.10、この文章なら数円）。</p>
+</div>
+
+<h2>② 数字</h2>
+<div id="nums-area" class="note">計測中の項目は下記「③ 円卓20分テスト」の完了後に確定値へ更新します。</div>
+
+<h2>③ 円卓20分テスト</h2>
+<div id="entaku-area" class="note">実行中：Vaultの実際の円卓ノート（約5,800文字・登場人物5名）をAivisSpeech Engineで丸ごと1本読ませています。完了後、話者ごとの声の対応表とあわせてここにリンクを追加します。</div>
+
+<footer>
+このページは検証用の内部資料です。音は自動再生されません。再生ボタンを押した時だけ鳴ります。
+</footer>
+</body>
+</html>
