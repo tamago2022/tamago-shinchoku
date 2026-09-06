@@ -129,3 +129,14 @@
 - **二度と起こさないための仕掛け**：Mac高負荷時（実測でloadavg1が10〜19台）はトレースイベントの発火自体が数十秒遅れ、1回の計測ウィンドウ内に間に合わずLCPがnullのままになることがある（FCPだけ取れてLCPだけnullという状態は「バグ」ではなく「今回はMacが混んでいて間に合わなかった」の可能性が高いことをコード冒頭コメントに明記）。そのため`measureAllPages()`は1ページにつき最大2回まで計測をリトライする設計にした。なお本番運用は深夜3:20の自動実行かつ`loadavg1>8`なら丸ごとスキップする既存ガードがあるため、日中の実機検証（loadavg1が10〜19台）よりはるかに好条件で走る想定。
 - **日付**：2026-09-06（429番）
 - **根拠**：`tools/perf_watch.mjs`内の`parseTraceMetrics()`とファイル冒頭コメント「2026-09-06 実測で判明した重大な不具合と修正」節／`tools/_test_perf_watch_alert.mjs`（悪化検知ロジック14件の逆テスト）
+
+---
+
+## 12. PWA（ホーム画面アプリ）が古い画面を握ったまま、版ずれ検知が働かなかった
+
+- **症状**：たまごさんのホーム画面アプリが「データ 09-05 16:34時点（676分前）」という11時間以上前の画面を表示し続けた。09-04に入れたはずの版ずれ検知（`status/version.json`とページの版を突き合わせて古ければ`?v=`付きで開き直す仕組み）が効いていなかった。
+- **原因**：版ずれ検知が「最初の読み込み時」と「2分ごとの`setInterval`」の2箇所でしか動いていなかった。iOSのホーム画面アプリ（standalone PWA）は、バックグラウンドや画面ロック中にJSタイマーを止めるため、11時間ぶりに開いてもすぐには何も起きず、次のタイマーが回ってくるまで（最悪2分、実際は止まったまま二度と回らないことがある）古い画面のままになっていた。**同じページ内の別の仕組み（`#now`のデータ更新＝`refreshAllLive`）には既に「アプリが再びvisibleになった瞬間に即チェックする」`visibilitychange`リスナーが入っていたのに、版ずれ検知だけそれが漏れていた**のが今回の穴。version.json自体は`{cache:"no-store"}`付きfetchで取っており、ブラウザ側キャッシュが原因ではなかった（実測：GitHub Pages配信は`Cache-Control: max-age=600`が付くが、no-store指定のfetchはCDNの値に関わらず毎回ネットワークへ取りに行く）。
+- **直し方**：`checkVersion()`を名前付き関数に分離し、`document.addEventListener("visibilitychange", ...)`・`window.addEventListener("pageshow", ...)`・`window.addEventListener("focus", ...)`の3つから即座に呼び出すようにした。あわせて、右上の「データ…時点」表示（`#nowAge`）が古い時は赤字を大きくし、タップすると`window.forceHardReload()`（版の一致を待たず`?v=<いまの時刻>`で強制的に開き直す）が呼べるようにした。
+- **二度と起こさないための仕掛け**：Node単体で実際のコード（`index.html`の該当`<script>`ブロックそのもの）を`document`/`window`/`fetch`をモックして実行するテストを作り、①修正前のコードは「visibilitychangeリスナーが1つも登録されていない」で不合格になること、②修正後のコードは初回チェック・visibilitychange復帰・pageshow・forceHardReloadの4パターン全てで正しい新しい版へ`location.replace`されることを、両方とも実際に実行して確認した（逆テスト＝修正前コードで同じテストを走らせて赤くなることまで確認済み）。
+- **日付**：2026-09-06（436番）
+- **根拠**：`index.html`内`checkVersion`/`forceHardReload`（旧`(function checkVersion(){...})()`の直後）、`renderNow()`内`ageBox.onclick`
