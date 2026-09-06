@@ -184,6 +184,15 @@ def main():
     ap.add_argument("--footer", help="末尾の注記（省略時は自動生成）")
     ap.add_argument("--out", help="出力ファイルパス（省略時は share/check/{n}-{slug}.html）")
     ap.add_argument("--print-url", action="store_true", help="生成後、GitHub Pages上の想定URLを標準出力へ1行出す")
+    ap.add_argument(
+        "--allow-no-screenshot",
+        help=(
+            "スクショ無しで書き出すことを明示的に許可する（理由を1行必須。例: "
+            "'--allow-no-screenshot \"調査のみでVault成果物へのリンクしか出せない\"'）。"
+            "指定しない限り--before/--afterのどちらも無いと書き出しを拒否する"
+            "（鬼監督の機械検品③がimg無しを問答無用でFAILにするため、事前に防ぐ）。"
+        ),
+    )
     args = ap.parse_args()
 
     cfg = {}
@@ -242,6 +251,21 @@ def main():
     if "n" not in cfg or "slug" not in cfg:
         print("エラー: --n と --slug は必須です（またはJSONにnとslugを入れる）", file=sys.stderr)
         sys.exit(1)
+
+    if not cfg.get("before_img") and not cfg.get("after_img"):
+        allow_reason = args.allow_no_screenshot or cfg.get("allow_no_screenshot")
+        if not allow_reason:
+            print(
+                "エラー: スクショ(--before/--after)が1枚もありません。"
+                "鬼監督の機械検品(tools/verify_check_pages.py)は<img>タグが無い"
+                "確認ページを問答無用でFAILにし、やり直しへ戻します"
+                "（444/446/448番バッチで実際に繰り返し発生した事故）。"
+                "先に share/check/img/ へスクショを置いて --before/--after で渡すか、"
+                "本当にスクショが作れない事情がある時だけ"
+                "--allow-no-screenshot \"理由\" を付けてください。",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
     out_path = args.out or cfg.get("out") or os.path.join(
         CHECK_DIR, "%s-%s.html" % (cfg["n"], cfg["slug"])

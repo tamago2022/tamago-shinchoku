@@ -215,22 +215,27 @@ def apply_results(results, task_tag):
                 item["checkedAt"] = now_iso()
                 decision = "pass"
             else:
-                was_done = item.get("status") == "done"
+                prev_status = item.get("status")
                 item["verifyNote"] = "機械検品FAIL: " + summary
                 item["checkedAt"] = now_iso()
-                if was_done:
+                if prev_status in ("done", "awaiting_check"):
+                    # 2026-09-06修正：以前はstatus==doneの時しかやり直しへ戻していなかった。
+                    # awaiting_check（未判定のまま溜まる）のFAILも同じ扱いで
+                    # waitingへ戻し、redoCountを積み、次にbuilderが自動で再着手できる状態にする。
                     note = (
                         "\n\n【鬼監督(verify_check_pages.py)差し戻し・%s】"
                         "必須条件①②③をAND判定した結果FAIL。%s"
                     ) % (now_disp(), summary)
                     item["what"] = item.get("what", "") + note
-                    item["status"] = "awaiting_check"
+                    item["status"] = "waiting"
                     item["redoCount"] = item.get("redoCount", 0) + 1
                     item.pop("okBy", None)
                     item.pop("okNote", None)
-                    decision = "redo(done->awaiting_check)"
+                    for k in ("startedAt", "finishedAt", "sessionId", "pid", "cutCount", "pausedAt", "order"):
+                        item.pop(k, None)
+                    decision = "redo(%s->waiting)" % prev_status
                 else:
-                    decision = "fail(status unchanged: %s)" % item.get("status")
+                    decision = "fail(status unchanged: %s)" % prev_status
             audit_lines.append({
                 "n": n,
                 "title": item.get("title"),
