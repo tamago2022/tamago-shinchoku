@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#590 判定待ちの棚卸し（1/2）— 上から判定できます 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #590 判定待ちの棚卸し（1/2）— 上から判定できます</div>
+<h1>#590 判定待ちの棚卸し（1/2）— 上から判定できます</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+77件のうち今回の10件を整理。まず上の4件はすぐ判定できます（✅か↩︎をお願いします）。下の3件は実装済みですが実物を見ないと判定できないので、リンク先で見てから判定してください。残り3件（画像を軽くする＝未実装で列へ戻し／同名タスク統合＝585番へ一本化済みでこちらは対応不要／曲の仕入れ＝常設タスクなので確認待ちから外しました）は判定不要です。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+<div class="note">（数字なし）</div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>①#437 falの教材ファイルを正本にする → 型番・単価の正本をMODEL_TABLE.mdへ切替済み</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/437-fal-kyokasho-seihon.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/437-fal-kyokasho-seihon.html</a></li>
+  <li><b>②#428 軽さ：データを一度に全部読まない → 初回転送量を実測し検索のデバウンス漏れも修正、本番反映済み</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/428-data-not-all-at-once.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/428-data-not-all-at-once.html</a></li>
+  <li><b>③#463 Codexの一覧に残った工場の残骸を消す → 残骸13件を削除、たまごさんの記録14件は保持</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/463-codex-zangai-sakujo.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/463-codex-zangai-sakujo.html</a></li>
+  <li><b>④#48 留守番の見回りを30分おきに戻す → 設定を戻し、実行ログで約30分おきに動作していることを確認</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/48-rusuban-mimawari-30min-kakunin.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/48-rusuban-mimawari-30min-kakunin.html</a></li>
+  <li><b>⑤#45 棚編集：メインを2枠にする → コードは完成・本番反映済みだが実機確認が必要（BTS等の曲ページで見てください）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/45-shelf-2nd-slot-jitsubutsu-kakunin.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/45-shelf-2nd-slot-jitsubutsu-kakunin.html</a></li>
+  <li><b>⑥#439 「さよなら夏の日」の関連を4本にする → コードは完成・本番反映済みだが、狙った4本が正しく入っているか実物確認が必要</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/439-sayonara-natsu-jitsubutsu-kakunin.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/439-sayonara-natsu-jitsubutsu-kakunin.html</a></li>
+  <li><b>⑦#431 外部から入れた分を1日1回仕上げる → 仕組みは本番反映済み・IVNIT分は解消確認済みだが、自動見回り自体が動いているかはGitHub Actions側の確認が必要</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/431-gaibu-shiage-jitsubutsu-kakunin.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/431-gaibu-shiage-jitsubutsu-kakunin.html</a></li>
+  <li><b>進捗表アプリ（判定はここのボタンで）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+
+
+<footer>
+対象外3件：#426画像を軽くする（未実装と判明・列に戻しました）／#467同じ内容の一覧作成（585番に統合済み・対応不要）／#584曲の仕入れ（常設タスクのため確認待ちから外しました）。判定は進捗表アプリ（一番下のリンク）の該当番号で✅か↩︎を押してください。
+</footer>
+</body>
+</html>
