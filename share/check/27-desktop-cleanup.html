@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#27 デスクトップとダウンロードの散らかりを片づける 確認ページ</title>
+<title>#27 デスクトップ・ダウンロード整理 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -17,14 +17,20 @@
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
   .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
-  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
   .num span{color:var(--sub);font-size:0.8rem;}
   .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
   ul.links{list-style:none;margin:0;padding:0;}
   ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
-  ul.links a,ul.links code{word-break:break-all;font-size:0.92rem;}
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
@@ -34,57 +40,43 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #27</div>
-<h1>#27 デスクトップとダウンロードの散らかりを片づける</h1>
-<div class="date">2026-09-05 実施。「AIの作業ファイルはデスクトップに置かない」という決まりに従い、散らばっていたAI作業ファイルを Documents/AI作業 へ移動した（削除はしていない）。</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #27 デスクトップ・ダウンロード整理</div>
+<h1>#27 デスクトップ・ダウンロード整理</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-デスクトップ直下105件・ダウンロード直下2件を全件棚卸しし、<b>「AIの作業ファイルだと確実に判別できるもの」だけを3件、Documents/AI作業へ移動した。</b>写真・スクリーンショット・スキャン画像・インストーラー等、AI作業ファイルかどうか確証が持てないものは、誤って必要なファイルを見失わせるリスクを避けるため、今回は動かさず対象外にした（理由は下の表に1行ずつ書いた）。
+デスクトップに散らばっていたAI作業ファイル9件を Documents/AI作業/デスクトップ整理_2026-09-06/ へ移動（削除なし）。ダウンロードは個人ファイルのみで対象なし。
 </div>
 
-<h2>① 数字（先に結論）</h2>
+<h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>105件</b><span>デスクトップ直下の総数</span></div>
-  <div class="num"><b>2件</b><span>ダウンロード直下の総数</span></div>
-  <div class="num"><b>3件</b><span>AI作業ファイルと確認して移動</span></div>
-  <div class="num"><b>0件</b><span>削除した件数（移動のみ）</span></div>
+  <div class="num"><b>9件</b><span>移動したファイル・フォルダ</span></div>
+  <div class="num"><b>0件</b><span>削除したもの</span></div>
 </div>
 
-<h2>② 移動した3件（前→後）</h2>
-<table>
-<tr><th>ファイル</th><th>前（あった場所）</th><th>後（移動先）</th><th>中身</th></tr>
-<tr><td>CHECKPOINT.md</td><td class="no">~/Desktop/</td><td class="yes">~/Documents/AI作業/デスクトップ整理_2026-09-05/</td><td>カガリビトEP.0 v004制作のClaude再開用チェックポイント</td></tr>
-<tr><td>CLAUDE-HANDOFF-v004.md</td><td class="no">~/Desktop/</td><td class="yes">~/Documents/AI作業/デスクトップ整理_2026-09-05/</td><td>同案件のClaude引き継ぎ指示書</td></tr>
-<tr><td>gdrive_music_progress.log</td><td class="no">~/Desktop/</td><td class="yes">~/Documents/AI作業/デスクトップ整理_2026-09-05/</td><td>音楽ライブラリまるごとバックアップ移動作業のAI実行ログ</td></tr>
-</table>
 
-<h2>③ 今回あえて動かさなかったもの（判断つかず・実害回避）</h2>
-<table>
-<tr><th>対象</th><th>件数目安</th><th>動かさなかった理由</th></tr>
-<tr><td>joy-relief-station / tamago-shinchoku フォルダ</td><td>2件</td><td>現在稼働中のリポジトリ本体そのもの。移動すると全パイプラインが止まる</td></tr>
-<tr><td>Desktop直下の .claude フォルダ</td><td>1件</td><td>中身を確認したところ tamago-shinchoku の見張り番システム（session_watchdog等）が参照する稼働中の設定だった。動かすと監視が壊れる</td></tr>
-<tr><td>スクリーンショット類</td><td>約60件</td><td>AI確認用と私用の両方が混在しており機械的に判別できない。写真アプリ等から見えなくなる実害を避けた</td></tr>
-<tr><td>UUID命名の画像（05e90ae5-…jpg 等）</td><td>約10件</td><td>AI生成画像か通常のダウンロード画像か確証が持てなかった</td></tr>
-<tr><td>わえ　スキャン フォルダ</td><td>12件</td><td>AI作業の「元資料」であり「AIの作業ファイル」そのものではないため対象外と判断</td></tr>
-<tr><td>twitter-2026-08-05-… フォルダ</td><td>1件</td><td>個人のTwitterデータエクスポート（AI作業ではなく私物データ）</td></tr>
-<tr><td>dmgインストーラー・pdf・m4a等</td><td>約8件</td><td>いずれも私物・アプリ配布物であり「AI作業ファイル」に該当しない</td></tr>
-</table>
-<div class="note">
-③はいずれも「AI作業ファイルだと確証が持てない、または動かすと稼働中の仕組みが壊れる」もの。次に片づける人は、この表を出発点に1件ずつ本人へ要不要を確認しながら進められる。
-</div>
 
-<h2>④ 移動先の実物（開けば中身が見える）</h2>
+<h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>移動先フォルダ</b><br><code>~/Documents/AI作業/デスクトップ整理_2026-09-05/</code></li>
-  <li><b>この確認ページ自体のコミット（GitHub Pages）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/commits/main" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commits/main</a></li>
+<li><b>（リンクなし）</b></li>
 </ul>
 
-<div class="note">
-<b>本件はWebアプリ（joy-relief-station）のコード変更ではなくローカルファイル整理のため、Lovable公開の対象外。</b>「本番反映」に相当するのは、この確認ページをGitHub Pagesで公開したこと。ページを開いた時点で、上の②③の内容がそのまま実物として確認できる。
-</div>
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>desktop-claude-zangai（.claude残骸フォルダ）</td><td class="yes">デスクトップ整理_2026-09-06/desktop-claude-zangai</td></tr>
+<tr><td>EP01_work</td><td class="yes">デスクトップ整理_2026-09-06/EP01_work</td></tr>
+<tr><td>EP01_娘がAIと暮らしはじめた_Claude制作パック_FLAT.zip</td><td class="yes">デスクトップ整理_2026-09-06/</td></tr>
+<tr><td>EP01_娘がAIと暮らしはじめた_Claude制作パック_FLAT（フォルダ）</td><td class="yes">デスクトップ整理_2026-09-06/</td></tr>
+<tr><td>EP_食の未来_FAL200円テスト_PACK（フォルダ）</td><td class="yes">デスクトップ整理_2026-09-06/</td></tr>
+<tr><td>EP_食の未来_FAL200円テスト_PACK (1).zip</td><td class="yes">デスクトップ整理_2026-09-06/</td></tr>
+<tr><td>EP_食の未来_FAL200円テスト_PACK.zip</td><td class="yes">デスクトップ整理_2026-09-06/</td></tr>
+<tr><td>fal-kyokasho（フォルダ）</td><td class="yes">デスクトップ整理_2026-09-06/</td></tr>
+<tr><td>fal-kyokasho-kyozai.zip</td><td class="yes">デスクトップ整理_2026-09-06/</td></tr>
+</table>
 
 <footer>
-実施：tamago-orchestrator。対象マシン：たまごさんのMac（このセッションのローカル環境）。移動はmvコマンドのみ・削除コマンドは一度も実行していない。判断基準（明確なAI作業ファイルのみ移動・確証が持てないものは対象外）は今後の同種作業でも踏襲予定。
+対象外（意図的に動かさず）：joy-relief-station・tamago-shinchokuは稼働中のgitリポジトリ（未コミット変更あり）のため移動せず現状維持。個人の写真・スクリーンショット・PDF・アプリインストーラーはAI作業ファイルではないため対象外。ダウンロードは個人ファイルのみで移動なし。
 </footer>
 </body>
 </html>
