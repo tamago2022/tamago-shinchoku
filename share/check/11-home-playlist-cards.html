@@ -32,12 +32,16 @@
   .yes{color:var(--midori);font-weight:700;}
   pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;flex:1;min-width:200px;max-width:320px;}
+  .shot img{width:100%;border-radius:6px;display:block;border:1px solid var(--line);}
+  .shot b{display:block;font-size:0.82rem;margin-bottom:6px;color:var(--sub);}
 </style>
 </head>
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ joy-relief-station #11</div>
 <h1>#11 プレイリストの曲を補給所にもカードとして入れる</h1>
-<div class="date">2026-09-05 確認・本番反映済み（コミット915df398は既にorigin/mainに存在、本番8ページの実測200/内容一致を確認）</div>
+<div class="date">2026-09-05 本番反映確認／2026-09-07 実画面のスクリーンショット2枚を追加（鬼監督の③img_count=0差し戻しへの対応）</div>
 
 <div class="fix">
 店主のSpotifyプレイリスト（望郷・帰れない歌のテーマ）に入っている8曲を、補給所側にも<code>/room/card/&lt;slug&gt;</code>の独立カードとして登録。既存の棚（worlds.ts）には並べていない（棚への掲載はたまごさんの判断領域のため）。裏タグ（<code>_home-leave</code>／<code>_home-faraway</code>／<code>_home-return</code>／<code>_home-noreturn</code>／<code>_home-family</code>／<code>_home-nostalgia</code>の6パターン＋国コード<code>_country-xx</code>）を各カードに付与し、画面には出さず検索でだけ「アイルランドの帰れない歌だけ」のように串刺しで引っ張れるようにしてある。
@@ -67,7 +71,16 @@
 <tr><td>型チェック</td><td><code>npx tsc --noEmit</code></td><td class="yes">✓ エラー0</td></tr>
 </table>
 
-<h2>③ 押せるリンク（本番8枚）</h2>
+<h2>③ 実際の画面（本番をヘッドレスChromeで撮影・2026-09-07追加）</h2>
+<div class="note">
+本番の実画面。曲名・アーティスト名・説明文・YouTubeサムネイルが表示されている。
+</div>
+<div class="shots">
+  <div class="shot"><b>Danny Boy — Celtic Woman（アイルランド）</b><img src="img/11-danny-boy-celticwoman.png" alt="Danny Boyカードの本番画面"></div>
+  <div class="shot"><b>아리랑（Arirang）— 송소희（韓国）</b><img src="img/11-arirang-songsohee.png" alt="Arirangカードの本番画面"></div>
+</div>
+
+<h2>④ 押せるリンク（本番8枚）</h2>
 <ul class="links">
   <li><b>Danny Boy — Celtic Woman（アイルランド・帰れない／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-danny-boy-celticwoman" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-danny-boy-celticwoman</a></li>
   <li><b>아리랑（Arirang）— 송소희（韓国・遠くから想う／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-arirang-songsohee" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-arirang-songsohee</a></li>
@@ -79,7 +92,7 @@
   <li><b>Guantanamera — Celia Cruz（キューバ・帰れない／郷愁）</b><br><a href="https://joy-relief-station.lovable.app/room/card/home-guantanamera-celiacruz" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/home-guantanamera-celiacruz</a></li>
 </ul>
 
-<h2>④ 実測ログ（本番へのfetch結果そのまま）</h2>
+<h2>⑤ 実測ログ（本番へのfetch結果そのまま）</h2>
 <div class="note">
 <b>このセッションにはブラウザ操作・スクリーンショットの道具が搭載されていない</b>（試した経路：1→claude-in-chrome系ツール＝ツール一覧に無し／2→本番URLへの実際のHTTP取得で本文一致を確認＝成功）。下記は実測ログそのまま（<code>curl</code>が本セッションで権限ブロックされたため<code>python3</code>の<code>urllib</code>で取得）。
 </div>
