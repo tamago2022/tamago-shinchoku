@@ -479,6 +479,22 @@
 <div id="dekita"><div class="card note">読み込み中…</div></div>
 </div></details>
 
+<!-- 632番（2026-09-07）：falの予算管理（モデル別にいくら使ったか）。
+     たまごさん「何のモデルを使ったのかっていうのが気になるよね。何の動画で何を使ったのか」
+     「リップシンクが高い（実測1カット22円）」「捨てたものにいくら使ったか、ここが一番痛い数字」。
+     status/fal_cost_ledger.json（tools/fal_cost_ledger.py が読み書きする新しい台帳）を読んで表示する。
+     既存のcost_by_task.json（424番）はClaude Codeセッション自体のトークン代であり、falへの実費とは
+     別物だったため（今回確認した事実）、この帳簿を新設した。他のタスクからも fal_cost_ledger.add_record()
+     を呼べば1行ずつ積み上がる。 -->
+<details class="sec" id="falBudgetSec"><summary>💰 falの予算（モデル別） <small id="falBudgetMeta"></small></summary><div class="in">
+<div class="g" id="falBudgetSummary"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+<div class="g" id="falBudgetByModel" style="margin-top:8px"></div>
+<details class="sec sub"><summary>帳簿の生ログ（新しい順）</summary><div class="in">
+<div id="falBudgetRows"><div class="card note">読み込み中…</div></div>
+</div></details>
+<div class="note" id="falBudgetNote" style="margin-top:6px"></div>
+</div></details>
+
 <details class="sec"><summary>マシンとクレジット <small id="machineAge"></small></summary><div class="in">
 <div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
@@ -937,6 +953,66 @@ document.addEventListener("click", e=>{
 });
 refreshDekimono();
 setInterval(refreshDekimono, 60000);
+
+/* ───── 632番：falの予算（モデル別）表示（2026-09-07） ─────
+   status/fal_cost_ledger.json（tools/fal_cost_ledger.py が計算済みのsummaryごと書く）を読むだけ。
+   モデル別合計・今月合計・1本あたり最安・捨てたものの合計、を出す。 */
+const FAL_RESULT_LABELS = {adopted:"採用", discarded:"捨てた", failed_no_charge:"失敗・無課金", in_progress:"実行中"};
+function renderFalBudget(d){
+  const sumBox = document.getElementById("falBudgetSummary");
+  const modelBox = document.getElementById("falBudgetByModel");
+  const rowsBox = document.getElementById("falBudgetRows");
+  const meta = document.getElementById("falBudgetMeta");
+  const note = document.getElementById("falBudgetNote");
+  if(!sumBox) return;
+  const s = (d && d.summary) || null;
+  const records = (d && d.records) || [];
+  if(!s || !records.length){
+    sumBox.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ記録が無い（falを使った仕事が1本終わるたびに増える）</div>`;
+    if(modelBox) modelBox.innerHTML = "";
+    if(rowsBox) rowsBox.innerHTML = "";
+    if(meta) meta.textContent = "";
+    return;
+  }
+  if(meta) meta.textContent = `今月合計${s.thisMonthTotalYen}円・${records.length}行`;
+  const capColor = s.overCap ? "red" : (s.remainingYen < s.capYen * 0.2 ? "yellow" : "green");
+  sumBox.innerHTML = [
+    card(capColor, "今月の合計", `${s.thisMonthTotalYen}円`, "",
+      `<p>上限${s.capYen}円のうち残り${s.remainingYen}円（$${s.thisMonthTotalUsd}）</p>`),
+    card(s.discardedTotalYen > 0 ? "yellow" : "gray", "捨てたものの合計", `${s.discardedTotalYen}円`, "",
+      `<p>失敗・無課金は別に${s.failedNoChargeTotalYen}円（課金なし）</p>`),
+    s.cheapestPerUnit
+      ? card("gray", "1本あたり最安", `${s.cheapestPerUnit.unitCostYen}円`, "",
+          `<p>${esc(s.cheapestPerUnit.model || "")}（${esc(s.cheapestPerUnit.what || "")}・${s.cheapestPerUnit.n}番）</p>`)
+      : "",
+  ].join("");
+  modelBox.innerHTML = (s.byModel || []).map(b => card(
+    "gray", esc(b.model), `${b.totalYen}円`, `<span class="n">${b.count}回</span>`,
+    `<p>採用${b.adoptedCount}・捨てた${b.discardedCount}${b.failedCount ? "・失敗" + b.failedCount : ""}</p>`
+  )).join("");
+  const sorted = records.slice().sort((a, b) =>
+    new Date(b.recordedAt || b.date || 0) - new Date(a.recordedAt || a.date || 0));
+  rowsBox.innerHTML = sorted.map(r => {
+    const label = FAL_RESULT_LABELS[r.result] || r.result || "";
+    return `<div class="row">
+      <div class="when">${esc(r.date || "")}${r.n != null ? "・" + r.n + "番" : ""}</div>
+      <div class="ct">${esc(r.title || "")}</div>
+      <div class="cm">${esc(r.model || "")}</div>
+      <div class="cm">${esc(r.what || "")}・${r.count}回${r.totalCostYen != null ? "・" + r.totalCostYen + "円" : ""}${r.elapsedMin != null ? "・" + fmtDur(r.elapsedMin) : ""}・${esc(label)}</div>
+      ${r.note ? `<div class="cm">${esc(r.note)}</div>` : ""}
+    </div>`;
+  }).join("");
+  if(note) note.textContent =
+    `fal.aiダッシュボード(fal.ai/dashboard/usage-billing)との自動突き合わせは未実装（fal公式APIに課金取得口が無く404、ブラウザでの手動確認が必要と2026-09-07に確認済み）。更新: ${d.updatedAt || "—"}`;
+}
+function refreshFalBudget(){
+  return fetch("status/fal_cost_ledger.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if(d) renderFalBudget(d); })
+    .catch(()=>{});
+}
+refreshFalBudget();
+setInterval(refreshFalBudget, 60000);
 
 /* ───── 492番：AI検品(Verifier)の実績を要約表示（2026-09-06） ─────
    status/ai_verify_stats.json（tools/auto_launcher.py の _record_ai_verify() が
