@@ -442,10 +442,22 @@ def maybe_release_stop(free_gb):
 # 「オフラインのアクセスを解除」するGUI操作が必要。自動削除はしない、警告するだけ）。
 GDRIVE_WARN_GB = 50
 
+# 2026-09-08（642番・「工場がGoogleドライブから読むのをやめる」）：
+# ★このgdrive_big_folder_warnings()自体が「Driveを読む＝容量を食う」を
+#   毎回やっていた張本人だった。disk_guardian.pyはINTERVAL=900秒（15分おき）で
+#   1日96回動く。そのたびに Drive の「マイドライブ」直下フォルダ全部へ
+#   `du -sm`（=配下の全ファイルへstat）を実行していた＝1日96回、Driveを丸ごと
+#   舐めていたことになる。たまごさんの指示「Driveを丸ごと走査しない」に反する。
+# ★直し方：実測（du）は1日1回だけに制限し、それ以外の呼び出しはキャッシュ
+#   （GDRIVE_CACHE_JSON）を返すだけにした。これで指示の
+#   「毎日1回、Driveのローカル使用量を測って記録する」も同時に満たす。
+GDRIVE_CHECK_INTERVAL_SEC = 86400  # 1日1回でよい（巨大フォルダの増減はそんなに速く動かない）
+GDRIVE_STAMP = os.path.join(REPO, "status", ".gdrive_check_at")
+GDRIVE_CACHE_JSON = os.path.join(REPO, "status", "gdrive_daily_usage.json")
 
-def gdrive_big_folder_warnings():
-    """Google Driveの「マイドライブ」直下でGDRIVE_WARN_GBを超えるフォルダを
-    見つけたら警告として返すだけ（壺金庫なので絶対に削除しない）。"""
+
+def _gdrive_measure_now():
+    """実際にduを叩いて測る（1日1回だけ呼ばれる想定。ここ以外からdu -smをDriveへ打たない）。"""
     warnings = []
     try:
         base_glob = os.path.join(HOME, "Library", "CloudStorage", "GoogleDrive-*", "マイドライブ")
@@ -465,6 +477,39 @@ def gdrive_big_folder_warnings():
                     warnings.append({"path": p, "size_gb": round(size_gb, 1)})
     except Exception as e:
         log("Google Drive警告チェック失敗: %s" % e)
+    return warnings
+
+
+def gdrive_big_folder_warnings():
+    """Google Driveの「マイドライブ」直下でGDRIVE_WARN_GBを超えるフォルダを
+    見つけたら警告として返すだけ（壺金庫なので絶対に削除しない）。
+    2026-09-08(642番)：実測(du)は1日1回だけ。それ以外は前回結果のキャッシュを返す
+    （＝Driveへ触りに行かない）。"""
+    now = time.time()
+    try:
+        last = os.path.getmtime(GDRIVE_STAMP)
+    except Exception:
+        last = 0
+    if now - last < GDRIVE_CHECK_INTERVAL_SEC:
+        try:
+            cached = json.load(io.open(GDRIVE_CACHE_JSON, encoding="utf-8"))
+            return cached.get("warnings", [])
+        except Exception:
+            return []
+
+    warnings = _gdrive_measure_now()
+    try:
+        io.open(GDRIVE_STAMP, "w", encoding="utf-8").write(str(int(now)))
+    except Exception:
+        pass
+    try:
+        with io.open(GDRIVE_CACHE_JSON, "w", encoding="utf-8") as f:
+            json.dump({
+                "measured_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "warnings": warnings,
+            }, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        log("Google Drive日次キャッシュ保存失敗: %s" % e)
     return warnings
 
 
