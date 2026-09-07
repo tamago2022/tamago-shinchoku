@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#624 進捗表：発車待ちに「1番へ／位置指定」ボタンを追加 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #624 進捗表：発車待ちに「1番へ／位置指定」ボタンを追加</div>
+<h1>#624 進捗表：発車待ちに「1番へ／位置指定」ボタンを追加</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+発車待ちの各行に🔝（同じ箱の先頭へ・1タップ）と⋯（1〜5の位置を指定・2タップ）ボタンを追加。長距離の並び替えをドラッグ+スクロールの繰り返しから解放した。押した瞬間に画面が動き、保存は裏で行い、本当に保存が失敗した時だけ元へ戻して「戻しました」と表示する。優先度（箱）は変えない＝たまごさんの言う「昇格じゃない」を満たす。ブラウザを新規に開けない運用のため、本番へ配信された実物のコード(index.html)をNode.js(jsdom)へ読み込み、実際のクリックイベントを発生させて検証した（コードを読んで「たぶん合ってる」ではなく、実際に動かして測った）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1タップ</b><span>14番目→箱の先頭(1番)へ移動できた</span></div>
+  <div class="num"><b>2タップ</b><span>⋯→3 で任意の位置(3番目)へ移動できた</span></div>
+  <div class="num"><b>0件</b><span>移動しても他の箱(優先度)の並びが変化した件数</span></div>
+  <div class="num"><b>3/3</b><span>検証項目：1タップ移動／2タップ位置指定／保存失敗時の自動復帰、すべて実測でOK</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番（進捗表アプリ本体）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>本番のソース確認（qJumpMenu等が実際に配信されていることの直接確認）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>🔝ボタンで14番目が箱の先頭(1番)へ移動</td><td class="yes">OK</td></tr>
+<tr><td>優先度(箱)は変わらず据え置き</td><td class="yes">OK</td></tr>
+<tr><td>他の箱の並びに影響なし</td><td class="yes">OK</td></tr>
+<tr><td>⋯→3 の2タップで任意位置(3番目)へ移動</td><td class="yes">OK</td></tr>
+<tr><td>選択後にメニューが閉じる</td><td class="yes">OK</td></tr>
+<tr><td>保存が本当に失敗した時だけ元へ戻り「戻しました」と表示</td><td class="yes">OK</td></tr>
+</table>
+
+<footer>
+このページは #624 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
