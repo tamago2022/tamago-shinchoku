@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#320 fal 機種・料金・できること 早見表（教材ファイル正本へ更新） 確認ページ</title>
+<title>#320/633 fal 機種・料金・できること 早見表（常設で育てる） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -40,45 +40,63 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #320 fal 機種・料金・できること 早見表（教材ファイル正本へ更新）</div>
-<h1>#320 fal 機種・料金・できること 早見表（教材ファイル正本へ更新）</h1>
-<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #320/633 fal 機種・料金・できること 早見表（常設で育てる）</div>
+<h1>#320/633 fal 機種・料金・できること 早見表（常設で育てる）</h1>
+<div class="date">2026-09-07 633番で「表現ごとの実測早見表」を追記・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-鬼監督の機械検品で<code>img_count=0</code>としてFAILになっていた確認ページに、早見表そのものをPNG画像として埋め込んだ（③）。あわせて、確認ページの中身が2026-09-05『公式サイト突き合わせ版』のまま古くなっていた点を、Vault側で2026-09-06に切り替わった正本『教材ファイル一式 MODEL_TABLE.md』（イケハヤ著・2026-08-13検証・実発注で裏取り済み）の内容へ全面更新した。有料生成は一切実行していない（画像はPythonのPIL描画のみ）。
+【633番追記・2026-09-07】「1000個モデルがあるから、いろいろ安く試してみる」常設タスク。今回は「10円〜数十円で良いアンビエント動画（人物なし・台詞なし）が作れるか」だけを検証。基準は588番「花・湖・山」（たまごさん評価90点・89円）と<b>同一の画像・同一の意図のプロンプト</b>で、動画部分だけを2つの安いモデルに差し替えて比較した。<b>lightricks/ltx-2.5/image-to-video/fast が6秒720p無音で9.2円（基準の約10分の1）</b>、fal-ai/ltx-video-13b-distilled/image-to-videoが約5秒720pで30.2円。どちらも実際に有料実行し、1フレーム静止画で絵作りを確認済み（下記⑥）。動きそのものの採点はたまごさんの実画面確認待ち。
+<br><br>
+【320番・2026-09-06分】鬼監督の機械検品で<code>img_count=0</code>としてFAILになっていた確認ページに、早見表そのものをPNG画像として埋め込んだ。あわせて、確認ページの中身が2026-09-05『公式サイト突き合わせ版』のまま古くなっていた点を、Vault側で2026-09-06に切り替わった正本『教材ファイル一式 MODEL_TABLE.md』（イケハヤ著・2026-08-13検証・実発注で裏取り済み）の内容へ全面更新した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>13機種</b><span>正本の機種数（旧版11機種＋今回3D・LLMの2機種を追加）</span></div>
-  <div class="num"><b>10件</b><span>教材ファイル正本への切替で判明した旧版との食い違い件数</span></div>
-  <div class="num"><b>1枚</b><span>新規に埋め込んだ早見表PNG画像（img_count 0→1）</span></div>
-  <div class="num"><b>2件</b><span>公式サイトが404で確認不能だった項目が、教材ファイルでquality別単価まで確定（openai/gpt-image-2/edit）・実在確認（google/nano-banana-2-lite/edit）に変わった件数</span></div>
+  <div class="num"><b>9.2円</b><span>lightricks/ltx-2.5/image-to-video/fast・6秒720p無音（633番・最安）</span></div>
+  <div class="num"><b>30.2円</b><span>fal-ai/ltx-video-13b-distilled/image-to-video・約5秒720p（633番）</span></div>
+  <div class="num"><b>89円</b><span>基準：588番「花・湖・山」合算（たまごさん評価90点）</span></div>
+  <div class="num"><b>13機種</b><span>320番・正本の機種数（旧版11機種＋3D・LLMの2機種）</span></div>
 </div>
 
 <h2>③ 前と後（実データでのスクリーンショット）</h2>
 <div class="shots">
-  <div class="shot after"><b>fal早見表（教材ファイル正本・13機種）</b><img src="img/320-fal-model-table.png" alt="後"></div>
+  <div class="shot after"><b>633番：表現ごとの実測早見表（常設・育てる）</b><img src="img/633-ambient-cheap-table.png" alt="633番早見表"></div>
+  <div class="shot plain"><b>lightricks/ltx-2.5/fast（9.2円・6秒）の1フレーム</b><img src="img/633-ltx25-fast-thumb.png" alt="ltx-2.5-fast"><span class="meta">花・湖・山（588番と同一画像・同一意図プロンプト）</span></div>
+  <div class="shot plain"><b>ltx-video-13b-distilled（30.2円・約5秒）の1フレーム</b><img src="img/633-ltx13b-thumb.png" alt="ltx-13b-distilled"><span class="meta">同一画像・同一プロンプト。花周りに小さなノイズあり</span></div>
+  <div class="shot after"><b>fal早見表（教材ファイル正本・13機種／320番）</b><img src="img/320-fal-model-table.png" alt="後"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>早見表PNG生成スクリプト（tools/_make_320_fal_model_table.py）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_320_fal_model_table.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_320_fal_model_table.py</a></li>
-  <li><b>確認ページHTML生成スクリプト（tools/make_check_page.py）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py</a></li>
+  <li><b>633番：ltx-2.5-fast 動画本体（6.12秒・9.2円）</b><a href="https://v3b.fal.media/files/b/0aa9787f/iao_sfVMw4EhCJcUrALmL_pwrAhpO4.mp4" target="_blank" rel="noopener">https://v3b.fal.media/files/b/0aa9787f/iao_sfVMw4EhCJcUrALmL_pwrAhpO4.mp4</a></li>
+  <li><b>633番：ltx-13b-distilled 動画本体（約5秒・30.2円）</b><a href="https://v3b.fal.media/files/b/0aa978b2/jjHXJ7o0shP-brXufGPhy_CjFdsAuO.mp4" target="_blank" rel="noopener">https://v3b.fal.media/files/b/0aa978b2/jjHXJ7o0shP-brXufGPhy_CjFdsAuO.mp4</a></li>
+  <li><b>633番：早見表PNG生成スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_633_ambient_cheap_table.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_633_ambient_cheap_table.py</a></li>
+  <li><b>fal予算台帳（モデル別・633番の記帳先）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>320番：早見表PNG生成スクリプト（tools/_make_320_fal_model_table.py）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_320_fal_model_table.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/_make_320_fal_model_table.py</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>openai/gpt-image-2/editの単価</td><td class="yes">旧版:404で確認不能→正本:high $0.219／medium $0.061／low $0.015（旧窓口はflat $1.00/回）</td></tr>
-<tr><td>google/nano-banana-2-lite/editの実在</td><td class="yes">旧版:実質不明→正本:/editは実在（実発注7秒で動作確認済み）</td></tr>
-<tr><td>Stable Audio／CassetteAI SEの単価</td><td class="yes">公式サイト取得値(0.2/0.01ドル)ではなく教材実測値(0.05/0.02ドル)を正本として採用</td></tr>
-<tr><td>3D・LLMモデル</td><td class="yes">旧版に項目なし→tripo3d・any-llmを新規追加</td></tr>
-<tr><td>img_count（鬼監督の機械検品）</td><td class="yes">0（差し戻し原因）→1（本ページで解消）</td></tr>
+<tr><td>【633番】10〜数十円でアンビエント動画は作れるか</td><td class="yes">作れる。2モデルとも実発注・有料実行済み。ltx-2.5-fastが9.2円で最安（基準の約10分の1）</td></tr>
+<tr><td>【633番】基準(588番)と同じ画像・同じ意図で比べたか</td><td class="yes">比べた。588-after.jpg（GitHub Pages公開URL）をそのままimage_urlに使用</td></tr>
+<tr><td>【633番】出来の採点</td><td class="no">自己採点のみ（1フレーム確認）。動きの質はたまごさんの実画面確認が必要</td></tr>
+<tr><td>【633番】帳簿記録</td><td class="yes">status/fal_cost_ledger.jsonへ2件記帳済み（n=633）</td></tr>
+<tr><td>openai/gpt-image-2/editの単価（320番）</td><td class="yes">旧版:404で確認不能→正本:high $0.219／medium $0.061／low $0.015</td></tr>
+<tr><td>img_count（鬼監督の機械検品）</td><td class="yes">0（差し戻し原因）→4（本ページで解消）</td></tr>
 </table>
 
+<h2>⑥ 早見表の読み方（633番・常設で育てる列）</h2>
+<table>
+<tr><th>したいこと</th><th>これ</th><th>値段</th></tr>
+<tr><td>安さ最優先の微動ループ（花・水面・雲）</td><td>lightricks/ltx-2.5/image-to-video/fast（duration:6, resolution:720p, generate_audio:false）</td><td class="yes">9.2円/本</td></tr>
+<tr><td>もう少し画質を見たい微動ループ</td><td>fal-ai/ltx-video-13b-distilled/image-to-video（既定設定）</td><td>30.2円/本</td></tr>
+<tr><td>環境音まで含めた完成品（これまでの基準）</td><td>nano-banana＋seedance-2.0/mini＋stable-audio-25の合算</td><td>89円/本</td></tr>
+</table>
+<div class="note">失敗ではなく「まだ試していない」候補：bytedance/seedance-2.0/fast（$0.24〜0.30/秒=5秒で180〜225円、この用途には高すぎるため次回以降は除外）。fal-ai/ltx-2-19b/image-to-video（$0.0018/メガピクセル、次回試す候補）。</div>
+
 <footer>
-案件320番。Vault正本は非公開のためGitHub上のリンクは出せない。参照：AI出力/円卓EP0_v004/fal早見表.md『【2026-09-06追記】正本を教材ファイル一式へ切替』節、AI出力/falの教科書_教材ファイル一式/fal-kyokasho/MODEL_TABLE.md（2026-08-13検証）。表の画像はtools/_make_320_fal_model_table.pyで生成（PIL描画のみ・有料API未使用）。
+案件633番（常設・620番系）／320番。Vault正本は非公開のためGitHub上のリンクは出せない。633番の成果物（動画・サムネイル）はGoogleドライブと同様にVault側「AI出力/40_プロジェクト/fal安いモデル早見表_2026-09-07/OUTPUT」にもバックアップ済み。参照：AI出力/falの教科書_教材ファイル一式/fal-kyokasho/MODEL_TABLE.md（2026-08-13検証）、status/fal_cost_ledger.json（n=633）。早見表PNGはtools/_make_633_ambient_cheap_table.py・tools/_make_320_fal_model_table.pyで生成（PIL描画のみ）。動画2本は実際に有料API実行して取得（1本9.2円・1本30.2円、合計39.4円）。
 </footer>
 </body>
 </html>
