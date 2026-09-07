@@ -32,6 +32,8 @@ CRED_PATH = os.path.expanduser("~/.tamago/gmail_app_password")
 GMAIL_ADDR = "eggypop2010@gmail.com"
 SINCE_DATE = "07-Sep-2026"  # 問い合わせを送った日より前のものは見ない（古い無関係メールの誤検知防止）
 JST = timezone(timedelta(hours=9))
+CHECK_INTERVAL_HOURS = 20  # 「1日1回」の実装。心臓(heartbeat.sh)は15秒おきに呼ぶが、実際にIMAPへ
+                            # 繋ぎに行くのはここで間引く（新しいlaunchd便を増やさず既存の心臓に相乗り）。
 
 
 def log_state(**kv):
@@ -60,10 +62,32 @@ def run_git(args):
     return subprocess.run(["git"] + args, cwd=ROOT, check=True, capture_output=True, text=True)
 
 
+def already_checked_recently():
+    if not os.path.exists(STATE_PATH):
+        return False
+    try:
+        st = json.load(open(STATE_PATH, encoding="utf-8"))
+    except Exception:
+        return False
+    last = st.get("lastCheckedAt")
+    if not last:
+        return False
+    try:
+        last_dt = datetime.fromisoformat(last)
+    except Exception:
+        return False
+    return (datetime.now(JST) - last_dt) < timedelta(hours=CHECK_INTERVAL_HOURS)
+
+
 def main():
     if os.path.exists(DONE_FLAG):
         log_state(skipped="already_notified")
         return 0
+
+    # 心臓（15秒おき）から毎回呼ばれても、実際にIMAPへ繋ぎに行くのは1日1回だけにする
+    if already_checked_recently():
+        return 0
+    log_state(lastCheckedAt=datetime.now(JST).isoformat())
 
     if not os.path.exists(CRED_PATH):
         log_state(blocked="no_credential", credPathExpected=CRED_PATH)
