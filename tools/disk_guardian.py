@@ -528,6 +528,139 @@ def share_dir_sizes():
     return sizes
 
 
+# 2026-09-08（645番・「二度と減らない形にする」）：空き容量に応じて同時走行本数
+# (status/launch_cap.json の cap)を自動で絞る。クレジット枠管理など他の理由で
+# 既に低いcapが設定されている場合はそちらを優先し、壊さない（自分が設定した分だけ
+# 自動で戻す＝maybe_release_stop()と同じ「自分の後始末は自分でする」方式）。
+LAUNCH_CAP_JSON = os.path.join(REPO, "status", "launch_cap.json")
+LAUNCH_CAP_MARK = "容量見張り"
+LAUNCH_CAP_WARN_GB = 30  # これを切ったら2本
+LAUNCH_CAP_STOP_GB = 15  # これを切ったら1本
+
+
+def _load_json(path, default=None):
+    try:
+        return json.load(io.open(path, encoding="utf-8"))
+    except Exception:
+        return default if default is not None else {}
+
+
+def maybe_adjust_launch_cap(free_gb):
+    if free_gb < LAUNCH_CAP_STOP_GB:
+        desired = 1
+    elif free_gb < LAUNCH_CAP_WARN_GB:
+        desired = 2
+    else:
+        desired = None
+
+    cur = _load_json(LAUNCH_CAP_JSON, {})
+    is_mine = cur.get("source") == LAUNCH_CAP_MARK
+
+    if desired is not None:
+        if is_mine and cur.get("cap") == desired:
+            return  # 既に自分が同じ値を設定済み
+        if not is_mine and isinstance(cur.get("cap"), int) and cur.get("cap") <= desired:
+            return  # 他の理由(クレジット枠等)の方が既に厳しいか同等 → 触らない
+        prev_cap = cur.get("_prev_cap") if is_mine else cur.get("cap")
+        prev_why = cur.get("_prev_why") if is_mine else cur.get("why")
+        try:
+            with io.open(LAUNCH_CAP_JSON, "w", encoding="utf-8") as f:
+                json.dump({
+                    "cap": desired,
+                    "source": LAUNCH_CAP_MARK,
+                    "_prev_cap": prev_cap,
+                    "_prev_why": prev_why,
+                    "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                    "why": "%s：空き%.1fGB<%dGBのため走行上限を%d本に制限" % (
+                        LAUNCH_CAP_MARK, free_gb,
+                        LAUNCH_CAP_STOP_GB if desired == 1 else LAUNCH_CAP_WARN_GB, desired),
+                }, f, ensure_ascii=False, indent=1)
+            log("🐢 空き%.1fGB → 走行上限を%d本に制限(launch_cap.json)" % (free_gb, desired))
+        except Exception as e:
+            log("launch_cap.json書き込み失敗: %s" % e)
+    else:
+        if is_mine:
+            prev_cap = cur.get("_prev_cap")
+            restored = {
+                "cap": prev_cap if isinstance(prev_cap, int) else 5,
+                "why": cur.get("_prev_why") or "容量見張り解除により復帰",
+                "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            }
+            try:
+                with io.open(LAUNCH_CAP_JSON, "w", encoding="utf-8") as f:
+                    json.dump(restored, f, ensure_ascii=False, indent=1)
+                log("✅ 空き%.1fGBまで回復 → 走行上限を元(%s本)に戻しました" % (free_gb, restored["cap"]))
+            except Exception as e:
+                log("launch_cap.json復元失敗: %s" % e)
+
+
+# 2026-09-08（645番・「毎日1回、空き容量を記録。前日比-5GBを超えたら犯人を特定して報告」）：
+# 1日1回だけ空き容量を履歴に積む。前日との差が-5GBを超えたら警告をログへ残す
+# （犯人の自動特定まではしない＝status/history.jsonlとの突き合わせは人/Dispatch側で行う）。
+DAILY_HISTORY_JSON = os.path.join(REPO, "status", "disk_daily_history.json")
+DAILY_DROP_WARN_GB = 5
+
+
+def maybe_record_daily(free_gb):
+    today = time.strftime("%Y-%m-%d")
+    hist = _load_json(DAILY_HISTORY_JSON, {"days": []})
+    days = hist.get("days") or []
+    if days and days[-1].get("date") == today:
+        return  # 今日はもう記録済み
+    prev_free = days[-1].get("free_gb") if days else None
+    days.append({"date": today, "free_gb": round(free_gb, 1),
+                 "measured_at": time.strftime("%Y-%m-%d %H:%M:%S")})
+    days = days[-90:]  # 90日分だけ残す
+    try:
+        with io.open(DAILY_HISTORY_JSON, "w", encoding="utf-8") as f:
+            json.dump({"days": days}, f, ensure_ascii=False, indent=1)
+    except Exception as e:
+        log("日次履歴の保存失敗: %s" % e)
+        return
+    if prev_free is not None and (prev_free - free_gb) > DAILY_DROP_WARN_GB:
+        log("⚠️前日比-%.1fGB(前日%.1fGB→今日%.1fGB)。原因調査が必要"
+            % (prev_free - free_gb, prev_free, free_gb))
+
+
+# 2026-09-08（645番）：share/check・share/eagle-* に上限を設け、超えたら古いものから
+# 外付け(/Volumes/iMac HDD)へ移す。GitHub Pagesの確認ページなので、直近だけ手元(=リポジトリ)
+# に残し、古いものは archive フォルダへ実体を移してから git rm する（次回pushで反映）。
+SHARE_CHECK_DIR = os.path.join(REPO, "share", "check")
+SHARE_CHECK_KEEP = 30
+EXTERNAL_ARCHIVE_ROOT = "/Volumes/iMac HDD/tamago-shinchoku-archive/share-check"
+
+
+def archive_old_share_check(dry_run=True):
+    """share/check直下の.htmlのうち、更新日時が新しい順にSHARE_CHECK_KEEP件だけ残し、
+    それ以外を外付けへ移す候補を返す（dry_run=Trueなら移動せず一覧だけ）。"""
+    if not os.path.isdir(SHARE_CHECK_DIR):
+        return []
+    # "_"始まりはテンプレート・集計ファイル（_template.html等）。仕組みが壊れるため対象外。
+    files = [f for f in os.listdir(SHARE_CHECK_DIR)
+             if f.endswith(".html") and not f.startswith("_")]
+    files_full = [(f, os.path.getmtime(os.path.join(SHARE_CHECK_DIR, f))) for f in files]
+    files_full.sort(key=lambda x: -x[1])
+    old = [f for f, _ in files_full[SHARE_CHECK_KEEP:]]
+    if dry_run or not old:
+        return old
+    if not os.path.isdir("/Volumes/iMac HDD"):
+        log("share/check整理: 外付け未接続のためスキップ")
+        return []
+    os.makedirs(EXTERNAL_ARCHIVE_ROOT, exist_ok=True)
+    moved = []
+    for f in old:
+        src = os.path.join(SHARE_CHECK_DIR, f)
+        dst = os.path.join(EXTERNAL_ARCHIVE_ROOT, f)
+        try:
+            shutil.move(src, dst)
+            moved.append(f)
+        except Exception as e:
+            log("share/check移動失敗 %s: %s" % (f, e))
+    if moved:
+        log("📦 share/checkから%d件を外付けへ移動(直近%d件は保持)" % (len(moved), SHARE_CHECK_KEEP))
+    return moved
+
+
 def dump_candidates(free_gb):
     """いまの空きと消せる候補の一覧を確認ページ用に保存するだけ（ここでは何も消さない）。"""
     try:
@@ -566,6 +699,8 @@ def main():
         return 0
     log("空き %.1fGB" % free_gb)
     dump_candidates(free_gb)
+    maybe_record_daily(free_gb)
+    maybe_adjust_launch_cap(free_gb)
 
     if free_gb < STOP_GB:
         notify_stop(free_gb)
@@ -578,6 +713,10 @@ def main():
             log("片付け完了: 約%.0fMB解放" % freed)
         else:
             log("片付け対象なし(安全条件を満たすものが無かった)")
+        # 2026-09-08（645番）：share/checkが上限を超えていたら古いものから外付けへ
+        # 移す。git rm・commit・pushはここでは行わない（次回のpushで反映される想定。
+        # 誤ってpushトリガーになる操作を自動化ループへ混ぜない）。
+        archive_old_share_check(dry_run=False)
         after = disk_free_gb()
         if after is not None and after != free_gb:
             log("片付け後の空き %.1fGB" % after)
