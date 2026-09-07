@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#622 サムネイルの大きさに共通の呼び名（主役／半分／棚札／豆） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #622 サムネイルの大きさに共通の呼び名（主役／半分／棚札／豆）</div>
+<h1>#622 サムネイルの大きさに共通の呼び名（主役／半分／棚札／豆）</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+サムネイルの大きさに共通の呼び名をつけた。今日「ハーフサイズにして」と言われてメインの動画まで半分にしてしまった事故を受け、呼び名を1つに揃えて事故を防ぐための正本ページ。<b>「ハーフサイズ」という言い方は今後使わない。「半分」に統一する。</b>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>100%</b><span>主役＝カード幅いっぱい（短辺13.8%基準のバッジと組み合わさる最大サイズ）</span></div>
+  <div class="num"><b>約24〜50%</b><span>半分＝画面幅により2〜4枚並ぶ（PC幅で概ね半分〜1/4）</span></div>
+  <div class="num"><b>204px(実測)</b><span>棚札＝正方形寄り・横がobject-coverでクロップ</span></div>
+  <div class="num"><b>144px固定</b><span>豆＝聴き比べ用の固定幅サムネ（実例データはまだ少ない）</span></div>
+  <div class="num"><b>13.8%±2pt</b><span>バッジ比率のお手本（案件602/606・akikoページで確定）</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>①主役（しゅやく）｜曲ページのメイン動画。カード幅いっぱい・16:9。ページで一番大きい。他より小さくしてはいけない。</b><img src="img/622-shuyaku.png" alt="①主役（しゅやく）｜曲ページのメイン動画。カード幅いっぱい・16:9。ページで一番大きい。他より小さくしてはいけない。"><span class="meta">cover-guide.tsx 再生前サムネボタン（aspect-video w-full）。実測686×385.875px</span></div>
+  <div class="shot plain"><b>②半分（はんぶん）｜カバー・パロディ・『この流れで、もう一本』。幅がだいたい半分〜1/4・16:9。</b><img src="img/622-hanbun.png" alt="②半分（はんぶん）｜カバー・パロディ・『この流れで、もう一本』。幅がだいたい半分〜1/4・16:9。"><span class="meta">RelatedCardsRow（店主が理想形と名指しした部品、room/card配下のスラッグページ）実測。同じ設計のNextUpCard＋NextUpGrid（cover-guide.tsx）はPC幅でsm:grid-cols-2＝正確に50%</span></div>
+  <div class="shot plain"><b>③棚札（たなふだ）｜棚に並ぶカード。正方形に近い。横が切れている。</b><img src="img/622-tanafuda.png" alt="③棚札（たなふだ）｜棚に並ぶカード。正方形に近い。横が切れている。"><span class="meta">ShelfCardView.tsx（aspect-square w-full + object-cover）実測204×204px</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>主役の実物ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
+  <li><b>半分の実物ページ（RelatedCardsRow）</b><a href="https://joy-relief-station.lovable.app/room/card/highway-to-hell-rock-soul" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/highway-to-hell-rock-soul</a></li>
+  <li><b>棚札の実物ページ</b><a href="https://joy-relief-station.lovable.app/shelf/music/asia" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/asia</a></li>
+  <li><b>バッジ比率のお手本ページ（13.8%）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>主役=cover-guide.tsxメイン動画</td><td class="yes">使う：曲ページのメイン動画のみ。禁止：これを縮めることは絶対にしない（今日の事故はこれをハーフサイズにしてしまった）</td></tr>
+<tr><td>半分=NextUpCard/RelatedCardsRow</td><td class="yes">使う：原曲・カバー・パロディ・関連カード（複数枚を並べる時）。禁止：主役の代わりに使わない</td></tr>
+<tr><td>棚札=ShelfCardView</td><td class="yes">使う：棚（ジャンル別一覧）のグリッド表示のみ。禁止：曲ページの主役・半分の代用にしない（正方形で横が切れるため）</td></tr>
+<tr><td>豆=SpokesHubCoversSection</td><td class="no">使う：将来『聴き比べ』機能を作る時の固定幅小サムネ(144px)。現状：実例データが少なく本番スクショが撮れなかった、正直に保留</td></tr>
+</table>
+
+<footer>
+この1枚が今後の正本。oni-kantoku（~/.claude/skills/oni-kantoku/SKILL.md）・joy-relief-stationの工場の指示書（.claude/manuals/02-shelf-editor-ui.md）から参照済み。<br>
+正直な報告：「tamago-tone」は独立した正本ファイルとしては見つからず、Obsidian Vaultの引き継ぎメモに「見た目（色・書体等）のデザイントーン規約」を指す慣用的な参照が1件あるのみだった。本ページ（サムネイルの寸法の呼び名）とは対象が異なるため、参照リンクの追加は保留する。正本が特定でき次第、追記する。<br>
+作成：tamago-orchestrator（案件#622・2026-09-07）。
+</footer>
+</body>
+</html>
