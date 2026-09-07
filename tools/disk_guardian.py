@@ -27,6 +27,7 @@
 「tamago-shinchoku/status の7日超ログ」に明示的に限定している。それ以外のディレクトリには
 一切降りない。
 """
+import glob
 import io
 import json
 import os
@@ -103,13 +104,51 @@ APP_CACHE_ROOTS = (
 )
 APP_CACHE_MIN_AGE_SEC = 3 * 86400  # 3日以上さわられていないものだけ
 
-# 片付けを許す範囲（この外には一切降りない）
-ALLOWED_ROOTS = WT_DIRS + APP_CACHE_ROOTS + (
-    os.path.join(REPO, "tools"),
-    os.path.join(REPO, "status"),
-    os.path.join(JOY, "tools"),
-    os.path.join(JOY, "scripts"),
+# 2026-09-07（620番タスクC・監視対象の拡張）：ブラウザ自動操作プロファイル
+# （鬼監督=oni-kantoku・Lovable公開便=chrome-publish）はChrome本体と同じく
+# Cache/Code Cache/GPUCache配下に再生成可能な一時データを溜め込む。実測ログ
+# （620番）でこの種のプロファイルキャッシュが完全に監視対象外だったと判明した。
+# プロファイル名は実行のたび増える/複数並存するため固定パスでは拾えない→globで
+# 都度展開する。Cookie・Login Data等の実データ（ログインセッション）には触れない。
+APP_CACHE_GLOB_PATTERNS = (
+    "/tmp/oni-kantoku-chrome-profile*",
+    os.path.join(HOME, ".tamago", "chrome-publish"),
 )
+APP_CACHE_SUBDIRS = ("Default/Cache", "Default/Code Cache", "Default/GPUCache",
+                      "Cache", "Code Cache", "GPUCache")
+
+
+def _glob_app_cache_roots():
+    """globパターンを展開し、実在するCache系サブフォルダだけを返す（毎回動的に解決）。"""
+    roots = []
+    for pattern in APP_CACHE_GLOB_PATTERNS:
+        for base in glob.glob(pattern):
+            if not os.path.isdir(base):
+                continue
+            for sub in APP_CACHE_SUBDIRS:
+                sp = os.path.join(base, sub)
+                if os.path.isdir(sp):
+                    roots.append(sp)
+    return tuple(roots)
+
+
+# 2026-09-07：~/.claude/projects（並行セッションのtranscript・tool-results置き場、
+# 実測3.3GB超）の添付出力を「候補として見せるだけ」の対象にする。transcript本体
+# (.jsonl)は復旧の頼り（Remote Control運用）のため対象外、UUIDサブフォルダ配下
+# だけをサイズ測定する。cleanup()からは明示的に除外し、絶対に自動では消さない。
+CLAUDE_PROJECTS = os.path.join(HOME, ".claude", "projects")
+CLAUDE_SESSION_MIN_AGE_SEC = 14 * 86400  # 14日以上更新の無いセッションだけ候補に出す
+
+
+def allowed_roots():
+    """片付けを許す範囲（この外には一切降りない）。app cacheはglob展開があるため
+    毎回動的に解決する（起動時に存在しなかったプロファイルも後から拾えるように）。"""
+    return WT_DIRS + APP_CACHE_ROOTS + _glob_app_cache_roots() + (
+        os.path.join(REPO, "tools"),
+        os.path.join(REPO, "status"),
+        os.path.join(JOY, "tools"),
+        os.path.join(JOY, "scripts"),
+    )
 
 
 def is_forbidden(path):
@@ -121,7 +160,7 @@ def is_allowed(path):
     ap = os.path.abspath(path)
     if is_forbidden(ap):
         return False
-    return any(ap == r or ap.startswith(r + os.sep) for r in ALLOWED_ROOTS)
+    return any(ap == r or ap.startswith(r + os.sep) for r in allowed_roots())
 
 
 def log(msg):
@@ -220,7 +259,7 @@ def candidates():
 
     # 2026-09-07追加：OS/アプリの一時キャッシュ（中身だけ消す。ルート自体は残す＝
     # 次回そのアプリが自分で作り直せるようにする）。
-    for root in APP_CACHE_ROOTS:
+    for root in APP_CACHE_ROOTS + _glob_app_cache_roots():
         if not os.path.isdir(root) or not is_allowed(root):
             continue
         try:
@@ -237,6 +276,37 @@ def candidates():
                 age_ok = False
             out.append({"path": fp, "kind": "app_cache", "worktree": "-",
                         "protected": False, "age_ok": age_ok, "size_mb": dir_size_mb(fp)})
+
+    # 2026-09-07（620番タスクC）：~/.claude/projects配下の古いセッションの添付出力
+    # （tool-results等）をサイズ測定して候補一覧にだけ出す。transcript本体(.jsonl)は
+    # 復旧の頼りのため対象にしない。**ここは常に候補表示のみ・cleanup()側で明示的に
+    # 除外し、自動削除の対象条件を満たしても絶対に消さない**（迷ったら消さない方針）。
+    if os.path.isdir(CLAUDE_PROJECTS):
+        try:
+            proj_names = os.listdir(CLAUDE_PROJECTS)
+        except Exception:
+            proj_names = []
+        for proj in proj_names:
+            proj_path = os.path.join(CLAUDE_PROJECTS, proj)
+            if not os.path.isdir(proj_path):
+                continue
+            try:
+                entries = os.listdir(proj_path)
+            except Exception:
+                continue
+            for name in entries:
+                sub = os.path.join(proj_path, name)
+                if not os.path.isdir(sub):
+                    continue  # .jsonl本体（transcript）はここでは対象にしない
+                try:
+                    age = time.time() - os.path.getmtime(sub)
+                except Exception:
+                    continue
+                out.append({
+                    "path": sub, "kind": "claude_session_attachments", "worktree": "-",
+                    "protected": False, "age_ok": age >= CLAUDE_SESSION_MIN_AGE_SEC,
+                    "size_mb": dir_size_mb(sub),
+                })
 
     # 7日超のログ（tamago-shinchoku/status配下のみ）
     root = os.path.join(REPO, "status")
@@ -277,6 +347,10 @@ def safe_remove(path, kind):
 def cleanup():
     freed_total = 0.0
     for c in candidates():
+        # 2026-09-07：~/.claude/projects の添付出力は候補一覧に見せるだけの対象。
+        # age_ok条件を満たしても、ここで明示的に弾いて自動削除しない（人の目待ち）。
+        if c["kind"] == "claude_session_attachments":
+            continue
         if c["protected"] or not c["age_ok"]:
             continue
         freed_total += safe_remove(c["path"], c["kind"])
