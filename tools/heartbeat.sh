@@ -65,6 +65,10 @@ while :; do
   # 2026-09-07（620番）：確認ページ(share/check)が上限も掃除も無いまま増え続けていた。
   #   60日以上さわられていないものだけ、店主が拾えるようゴミ箱へ退避する（6時間に1回でよい）。
   ( python3 "$REPO/tools/check_page_pruner.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-07（626番）：support@anthropic.comへの問い合わせ返信を1日1回チェックする見張り。
+  #   新しいlaunchd便は増やさず、既存の心臓に相乗り。実際にIMAPへ繋ぐのはスクリプト内部で
+  #   1日1回に間引いている（それ以外の15秒ごとの呼び出しは即座に戻るだけで負荷ゼロに近い）。
+  ( python3 "$REPO/tools/check_anthropic_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
