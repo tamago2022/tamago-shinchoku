@@ -28,6 +28,7 @@ PWAの「リモコン」ボタンから来たコマンドを実行する（2026-
 受信ファイルは消さない（記録として残す）。commands.jsonに書いたidは二重実行しない。
 """
 import glob
+import hashlib
 import io
 import json
 import os
@@ -49,6 +50,32 @@ CLAUDE = os.environ.get("CLAUDE_BIN") or (os.path.expanduser("~/.local/bin/claud
 # 2026-09-03 たまごさん指定：絶対に閉じない（Chromeを含めるのは『Happy Place Station | Lovable』の
 # ウィンドウを巻き込まないため。プロセス単位のquitではウィンドウ単位の除外ができないので全体を除外する）
 EXCLUDED_APPS = {"Brave Browser", "Google Chrome"}
+
+# 615番: ノートの中の「▶ 読み上げ」リンクから来た音声化。
+DOKUDOKU_WORKER = os.path.join(HERE, "dokudoku_worker.py")
+
+
+def dokudoku_publish(target, cmd_id=None):
+    """Obsidianノートの「▶ 読み上げ」を押すと来る。音声化(数分かかる)はワーカーへ切り離し、
+    ここでは受け付けたことだけを即座に返す（受信箱ループを止めないため）。
+    target: Vault内の相対パス(拡張子省略可)か絶対パス。"""
+    if not target:
+        return "failed", "ノートのパスが空です"
+    path = target
+    if not os.path.isabs(path):
+        rel = path if path.endswith(".md") else path + ".md"
+        path = os.path.join(VAULT, rel)
+    if not os.path.exists(path):
+        return "failed", "ノートが見つかりません: %s" % path
+    cid = cmd_id or str(int(time.time()))
+    try:
+        subprocess.Popen([sys.executable, DOKUDOKU_WORKER, cid, path],
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                          stdin=subprocess.DEVNULL, start_new_session=True)
+    except Exception as e:
+        return "failed", "起動できませんでした: %s" % e
+    return "done", ("音声化を始めました。数分後にPodcastページに追加されます"
+                     "（進み具合: status/dokudoku-%s.log）" % cid[:8])
 
 
 
@@ -690,6 +717,8 @@ def process(cmd):
         return stop(target)
     if action == "handoff":
         return handoff(target)
+    if action == "dokudoku":
+        return dokudoku_publish(target, cmd.get("id"))
     return _process_other(action, cmd)
 
 
@@ -1534,7 +1563,13 @@ def main():
         except Exception:
             continue
         cid = cmd.get("id")
-        if not cid or cid in done_ids:
+        if not cid:
+            # 615番: Obsidianノートに埋め込んだ「▶ 読み上げ」は静的リンク(obsidian://new)で
+            # JS側のようにクリックごとのidを持てない。ファイルパス+更新時刻からIDを作る。
+            # Obsidianは同名ファイルが既にあると連番("name 1.md")で新規保存するため、
+            # 押すたびに別ファイル＝別IDになり、正しく毎回実行される。
+            cid = "f-" + hashlib.md5((fp + str(os.path.getmtime(fp))).encode("utf-8")).hexdigest()[:16]
+        if cid in done_ids:
             continue
         status, message = process(cmd)
         out.setdefault("results", []).append({
