@@ -28,6 +28,13 @@ Eagleライブラリ → Google Drive を自動で「同じ中身」にする。
 
 状態ファイル: status/eagle_drive_sync_state.json
 ログ: status/eagle_drive_sync.log
+
+2026-09-08（642番・「工場がGoogleドライブから読むのをやめる」確認）：
+このスクリプトは読み込み元(LIB)がiMac HDD、書き込み先(DRIVE_ROOT)がGoogle Driveで、
+Drive側は個々のコピー先ディレクトリへ os.makedirs / shutil.copy2 するだけであり、
+Drive配下をdu・find・os.walkのような「全ファイルを舐める」形で走査してはいない
+（既に指示どおり「Mac本体/外付けHDDから読み、Driveには書くだけ」になっている）。
+新しく手を入れる担当は、この原則（Driveを読み取り走査の対象にしない）を崩さないこと。
 """
 import io
 import json
