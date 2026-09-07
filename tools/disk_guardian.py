@@ -702,6 +702,11 @@ def main():
     maybe_record_daily(free_gb)
     maybe_adjust_launch_cap(free_gb)
 
+    # 2026-09-08（645番）：share/checkの件数上限は「ディスクが逼迫しているか」とは
+    # 無関係に常時守る（30件超がそのまま放置され続けないように、毎回チェックする）。
+    # git rm・commit・pushはここでは行わない（既存の自動コミットジョブが拾う）。
+    archive_old_share_check(dry_run=False)
+
     if free_gb < STOP_GB:
         notify_stop(free_gb)
     else:
@@ -713,10 +718,6 @@ def main():
             log("片付け完了: 約%.0fMB解放" % freed)
         else:
             log("片付け対象なし(安全条件を満たすものが無かった)")
-        # 2026-09-08（645番）：share/checkが上限を超えていたら古いものから外付けへ
-        # 移す。git rm・commit・pushはここでは行わない（次回のpushで反映される想定。
-        # 誤ってpushトリガーになる操作を自動化ループへ混ぜない）。
-        archive_old_share_check(dry_run=False)
         after = disk_free_gb()
         if after is not None and after != free_gb:
             log("片付け後の空き %.1fGB" % after)
