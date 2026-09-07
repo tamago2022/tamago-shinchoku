@@ -386,19 +386,79 @@ def maybe_release_stop(free_gb):
             pass
 
 
+# 2026-09-07（620番・容量急減の主犯特定）：Google Drive「マイドライブ」直下は
+# 壺金庫（FORBIDDEN_KEYWORDSに"CloudStorage"等が入っており、絶対に自動削除しない）
+# だが、それゆえにここに何十GBという重複ファイルが置かれても誰も気づけなかった。
+# 実例：「音楽ライブラリまるごとバックアップ_iMacHDDの控え_2026-09-02」125GB。
+# Google Drive Desktopの同期方式が「ミラーリング」だと、クラウドと同じ量が
+# そのままローカルディスクにも専有される（`fileproviderctl evict`で一時的に
+# ローカル実体を消しても、同期デーモインが数分〜十数分で再ダウンロードし直すことを
+# 620番で実測確認済み＝恒久解決にはGoogle Drive Desktopアプリの環境設定で
+# 「ファイルをストリーミングする」に切り替えるか、対象フォルダを右クリックして
+# 「オフラインのアクセスを解除」するGUI操作が必要。自動削除はしない、警告するだけ）。
+GDRIVE_WARN_GB = 50
+
+
+def gdrive_big_folder_warnings():
+    """Google Driveの「マイドライブ」直下でGDRIVE_WARN_GBを超えるフォルダを
+    見つけたら警告として返すだけ（壺金庫なので絶対に削除しない）。"""
+    warnings = []
+    try:
+        base_glob = os.path.join(HOME, "Library", "CloudStorage", "GoogleDrive-*", "マイドライブ")
+        for base in glob.glob(base_glob):
+            if not os.path.isdir(base):
+                continue
+            try:
+                entries = os.listdir(base)
+            except Exception:
+                continue
+            for name in entries:
+                p = os.path.join(base, name)
+                if not os.path.isdir(p):
+                    continue
+                size_gb = dir_size_mb(p) / 1024.0
+                if size_gb >= GDRIVE_WARN_GB:
+                    warnings.append({"path": p, "size_gb": round(size_gb, 1)})
+    except Exception as e:
+        log("Google Drive警告チェック失敗: %s" % e)
+    return warnings
+
+
+# 2026-09-07（620番）：tamago-shinchoku自身のshare/配下（確認ページ・Eagle共有画像）も
+# 「毎回増え続けるが誰も測っていない」状態だった。ここも自動削除はせず、サイズを
+# ログに残して見える化するだけに留める（確認ページの実物が消えると困るため）。
+SHARE_WATCH_DIRS = ("check", "eagle-k7m2xq9p")
+
+
+def share_dir_sizes():
+    sizes = {}
+    for name in SHARE_WATCH_DIRS:
+        p = os.path.join(REPO, "share", name)
+        if os.path.isdir(p):
+            sizes[name] = dir_size_mb(p)
+    return sizes
+
+
 def dump_candidates(free_gb):
     """いまの空きと消せる候補の一覧を確認ページ用に保存するだけ（ここでは何も消さない）。"""
     try:
         cs = sorted(candidates(), key=lambda c: -c.get("size_mb", 0))
+        gdrive_warnings = gdrive_big_folder_warnings()
+        share_sizes = share_dir_sizes()
         data = {
             "measured_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             "free_gb": round(free_gb, 1),
             "warn_gb": WARN_GB,
             "stop_gb": STOP_GB,
             "candidates": cs,
+            "gdrive_big_folder_warnings": gdrive_warnings,
+            "share_dir_sizes_mb": share_sizes,
         }
         with io.open(CANDIDATES_JSON, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+        for w in gdrive_warnings:
+            log("⚠️Google Drive巨大フォルダ(壺金庫のため未削除・要GUI対応): %.1fGB %s"
+                % (w["size_gb"], w["path"]))
     except Exception as e:
         log("候補一覧の保存に失敗: %s" % e)
 
