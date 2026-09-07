@@ -1,0 +1,53 @@
+{
+  "_comment": "2026-09-07(628番)：深津さんの指摘『AGENTS.mdを全員が読める形で肥大化させること自体がいけない』への対応。build_prompt()の固定文言をここへ1件1ファイルで分割。alwaysは毎回全部読む常時コア、topicsはタイトル・本文にkeywordsのどれかが含まれる時だけ差し込む状況別ルール。中身は移動のみで1文字も削っていない（元のbase templateから完全一致で抽出・sum(chunks)==raw確認済み）。",
+  "always": [
+    "always-01-ai-shain-oni-kantoku",
+    "always-02-show-change-and-judge",
+    "always-03-report-format",
+    "always-04-report-cut-90",
+    "always-05-evidence",
+    "always-06-try-everything-first",
+    "always-07-little-by-little",
+    "always-08-check-page",
+    "always-09-time-limit",
+    "always-10-approach",
+    "always-11-prohibitions"
+  ],
+  "topics": [
+    {
+      "file": "topic-recommend-ratio",
+      "desc": "おすすめ・レコメンド・関連導線を触る仕事にだけ「安心4：冒険1」の比率ルールを渡す",
+      "keywords": ["おすすめ", "レコメンド", "関連導線", "次に見る", "半歩先", "関連曲", "似ている"]
+    },
+    {
+      "file": "topic-content-honesty",
+      "desc": "コピー・紹介文・仕入れ等コンテンツを書く仕事にだけ「正しいより楽しい・嘘禁止」を渡す",
+      "keywords": ["コピー", "文章", "プロフィール", "紹介文", "記事", "仕入れ", "説明文"]
+    },
+    {
+      "file": "topic-title-copy",
+      "desc": "タイトル・題名を作る仕事にだけクリックしたくなる題名の目標を渡す",
+      "keywords": ["タイトル", "題名", "見出し", "サムネ文言"]
+    },
+    {
+      "file": "topic-browser-dont-steal-screen",
+      "desc": "ブラウザ・動画・タブに触る可能性がある仕事にだけ画面を奪わない手順を渡す",
+      "keywords": ["ブラウザ", "動画", "youtube", "タブ", "chrome", "画面収録", "スクショ", "スクリーンショット"]
+    },
+    {
+      "file": "topic-browser-no-new-window",
+      "desc": "ブラウザ操作を伴う仕事にだけ新規ウィンドウ禁止・既存タブ使い回しルールを渡す",
+      "keywords": ["ブラウザ", "動画", "youtube", "タブ", "chrome"]
+    },
+    {
+      "file": "topic-no-sound",
+      "desc": "動画・音声・音楽を扱う仕事にだけミュート必須・再生禁止ルールを渡す",
+      "keywords": ["動画", "youtube", "音声", "再生", "音楽", "曲"]
+    },
+    {
+      "file": "topic-fal",
+      "desc": "fal（画像/動画生成API）を触る仕事にだけ型番・単価の正本を渡す（旧_is_fal_relatedと同じ判定）",
+      "keywords": ["fal"]
+    }
+  ]
+}
