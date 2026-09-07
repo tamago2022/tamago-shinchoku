@@ -61,6 +61,45 @@ def fmt_duration(sec):
     return f"{m}:{s:02d}"
 
 
+def build_index_cards(meta, files):
+    """615番: index.html の EPISODES マーカー間を episodes.json から自動で書き換える
+    （新しいエピソードが増えるたびに手でHTMLを編集しなくて済むように）。"""
+    cards = []
+    for fname in files:
+        key = os.path.splitext(fname)[0]
+        info = meta.get(key, {})
+        title = info.get("title", key)
+        desc = info.get("description", "たまごさんの円卓ノートを、寝ながら聴けるように音声化したもの。")
+        note_uri = info.get("note_uri")
+        note_link = f' <a href="{escape(note_uri)}">元ノートを開く</a>' if note_uri else ""
+        cards.append(
+            f'<div class="card">\n'
+            f'  <h2>{escape(title)}</h2>\n'
+            f'  <p>{escape(desc)}{note_link}</p>\n'
+            f'  <audio controls preload="none" src="audio/{escape(fname)}"></audio>\n'
+            f'</div>'
+        )
+    return "\n\n".join(cards)
+
+
+def update_index_html(meta, files):
+    if not os.path.exists(INDEX_PATH):
+        return False
+    with open(INDEX_PATH, encoding="utf-8") as f:
+        html = f.read()
+    start = html.find(INDEX_START)
+    end = html.find(INDEX_END)
+    if start == -1 or end == -1:
+        print("[build_podcast_feed] index.htmlにEPISODESマーカーが無いため自動更新をスキップしました")
+        return False
+    start_line_end = html.find("\n", start) + 1
+    cards_html = build_index_cards(meta, files)
+    new_html = html[:start_line_end] + cards_html + "\n" + html[end:]
+    with open(INDEX_PATH, "w", encoding="utf-8") as f:
+        f.write(new_html)
+    return True
+
+
 def main():
     meta = load_meta()
     files = sorted(f for f in os.listdir(AUDIO_DIR) if f.endswith(".m4a"))
@@ -112,6 +151,8 @@ def main():
         f.write(rss)
     print(f"書き出し完了: {FEED_PATH} ({len(files)}本)")
     print(f"RSS URL: {FEED_URL}")
+    if update_index_html(meta, files):
+        print(f"書き出し完了: {INDEX_PATH}")
 
 
 if __name__ == "__main__":
