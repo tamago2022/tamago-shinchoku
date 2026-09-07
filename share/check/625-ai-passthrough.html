@@ -38,30 +38,36 @@
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
+  .quote{background:#fff;border:1px solid var(--line);border-left:3px solid var(--ao);border-radius:0 10px 10px 0;padding:14px 16px;font-size:0.88rem;white-space:pre-wrap;word-break:break-word;margin:0 0 10px;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #625 625番：他AIの言いっぱなしをコピペ1回で工場に積める入口</div>
 <h1>#625 625番：他AIの言いっぱなしをコピペ1回で工場に積める入口</h1>
-<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映・実機タップまで実測確認（2回目・検品差し戻し対応）</div>
 
 <div class="fix">
-進捗表(スマホPWA)の『次に発車』欄に、ChatGPT等の他AIの返答をそのまま長文で貼れる入力欄を新設しました。貼ると内容を自動でいくつかの塊に分け、その場で『◯本受け取りました』と件数を表示、既存の発車待ちの列(queue.json)へそのまま積みます。要約や整形はしません。あわせて、他AIに渡す短い指示文(①提案で終わらせない ②できないと言わない ③人を動かすのは最終手段)をコピーできる欄も同じ場所に置きました。同じ3点はGitHubの共通脳(AI_COMMON_BRIEFING.md)にも追記済みです。
+進捗表(スマホPWA)の『次に発車』欄に、ChatGPT等の他AIの返答をそのまま長文で貼れる入力欄を新設。貼ると内容を自動でいくつかの塊に分け、その場で『◯本受け取りました』と件数を表示、既存の発車待ちの列(queue.json)へそのまま積む。要約や整形はしない。あわせて、他AIに渡す短い指示文(①提案で終わらせない ②できないと言わない ③人を動かすのは最終手段)をコピーできる欄も同じ場所に置いた。同じ3点はGitHubの共通脳(ai-brain/AI_COMMON_BRIEFING.md、mainブランチ)にも追記済み——1回目の検品でこのリンクが非公開リポジトリのため開けず未検証となったため、今回は追記した本文をこのページに直接引用し、headless Chromeでの実機タップ(貼る→送信→メッセージ表示)もスクリーンショット付きで確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>本番ページのHTTPステータス</span></div>
   <div class="num"><b>5</b><span>本番HTMLに含まれる新要素(入力欄/送信/メッセージ/指示文/コピー)の確認済み個数</span></div>
+  <div class="num"><b>2本</b><span>実機タップテストで実際に分割・受理された件数（テストデータ。relay.jsonはブロックしqueue.jsonは汚していない）</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>貼り付け前</b><img src="img/625-before.png" alt="前"></div>
+  <div class="shot after"><b>2本のテスト文を貼って送信した直後</b><img src="img/625-after.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>進捗表(本番・貼り付け欄はここ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
-  <li><b>共通脳への追記(GitHub・AI_COMMON_BRIEFING.md)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/AI_COMMON_BRIEFING.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/AI_COMMON_BRIEFING.md</a></li>
+  <li><b>共通脳の追記(GitHub・AI_COMMON_BRIEFING.md／非公開リポジトリのため店主のログイン済みブラウザで開いてください。本文はこのページ下に直接引用)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/AI_COMMON_BRIEFING.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/AI_COMMON_BRIEFING.md</a></li>
   <li><b>実装コミット(tamago-shinchoku)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/42521bb" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/42521bb</a></li>
 </ul>
 
@@ -72,8 +78,8 @@
 <tr><td>本番HTMLにid=pasteSend(工場に積むボタン)が含まれる</td><td class="yes">yes</td></tr>
 <tr><td>本番HTMLにid=aiInstructionText(他AI向け指示文)が含まれる</td><td class="yes">yes</td></tr>
 <tr><td>分割ロジック(見出し/番号リスト/区切り線/空行)を3パターンで動作確認(node)</td><td class="yes">yes</td></tr>
-<tr><td>Python側queue_add連携を一時フォルダで動作確認(3本→3件登録)</td><td class="yes">yes</td></tr>
-<tr><td>本番スクリーンショット(実機タップ確認)</td><td class="yes">no</td></tr>
+<tr><td>headless Chromeで実機タップ(2本のテスト文を貼って送信)し『2本受け取りました』表示を確認</td><td class="yes">yes</td></tr>
+<tr><td>GitHub共通脳(AI_COMMON_BRIEFING.md)のmainブランチに3点の指示文が実在(git show origin/mainで実測)</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
