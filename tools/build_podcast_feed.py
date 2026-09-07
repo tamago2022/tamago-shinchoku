@@ -23,6 +23,9 @@ PODCAST_DIR = os.path.join(REPO_ROOT, "share", "podcast")
 AUDIO_DIR = os.path.join(PODCAST_DIR, "audio")
 FEED_PATH = os.path.join(PODCAST_DIR, "feed.xml")
 META_PATH = os.path.join(PODCAST_DIR, "episodes.json")
+INDEX_PATH = os.path.join(PODCAST_DIR, "index.html")
+INDEX_START = "<!-- EPISODES:START"
+INDEX_END = "<!-- EPISODES:END -->"
 
 SITE_BASE = "https://tamago2022.github.io/tamago-shinchoku"
 FEED_URL = f"{SITE_BASE}/share/podcast/feed.xml"
