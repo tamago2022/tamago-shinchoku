@@ -462,6 +462,10 @@
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
 
+<!-- 626番（2026-09-07）：Anthropicサポート返信の見張り。来ている時だけ出す静かなお知らせ。
+     data.js の anthropicReply が null の間は display:none のまま（何も出さない）。 -->
+<div id="anthropicAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;"></div>
+
 <!-- 2026-09-07(616番) たまごさん「もうここにできてますよ、っていうコーナーが欲しい。
      ここに行けば、頼んだ成果がここにあるんだ、っていう。修正とは違うんだよ。成果物と修正は分けたい」
      →「✅完了」は直したもの（1週間で消える・流れていくもの）。ここは作ったもの（消えない・ずっと残る棚）。
@@ -2666,8 +2670,18 @@ function __dataReady2(){
   D = window.SHINCHOKU;
   if(!D){ document.getElementById("updated").textContent = "データを読み込めませんでした。開き直してください。"; return; }
   document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
-  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar();
+  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert();
 };
+// 626番：Anthropic返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
+function renderAnthropicAlert(){
+  const el = document.getElementById("anthropicAlert");
+  if(!el) return;
+  const a = D && D.anthropicReply;
+  if(!a){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.style.display = "block";
+  el.innerHTML = `🔔 Anthropicから返信が来ています（${esc(a.subject || "件名なし")} / ${esc(a.date || "")}）　`
+    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`;
+}
 if(window.SHINCHOKU && window.SHINCHOKU_ALL) window.__dataReady();
 
 /* ───── Macの鮮度（見出し右の小さい「◯分前」だけ。数字の本体はメーターと下のミニ行に統合） ───── */
