@@ -502,6 +502,15 @@ def queue_ok(target):
         it["status"] = "done"
         it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         done.append(n)
+        # 616番：たまごさんがOKを押した瞬間が「本当に終わった」瞬間。
+        # 成果物なら「できたもの」棚へ自動で載せる（修正・内部作業は載せない＝dekimono_lib判定）。
+        try:
+            if HERE not in sys.path:
+                sys.path.insert(0, HERE)
+            import dekimono_lib
+            dekimono_lib.append_if_deliverable(n, it.get("title"), it.get("result"), it.get("urls"))
+        except Exception:
+            pass
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)

@@ -206,6 +206,26 @@
   .drow .ct{font-weight:600;}
   .drow .cm{color:var(--sub); font-size:0.78rem; margin-top:2px;}
   .drow .cu{display:block; color:var(--blue); font-size:0.8rem; word-break:break-all; margin-top:2px;}
+  /* 2026-09-07(616番) 「できたもの」棚：修正（流れて消える）とは別に、成果物（消えない）だけを並べる。
+     たまごさん「ここに行けば、頼んだ成果がここにあるんだ、っていう」→ 押しても消えない・ずっと残る棚。 */
+  .dekita{border-color:rgba(201,162,74,0.55);}
+  .dekita > summary{font-weight:700; color:var(--yellow);}
+  .dkfilters{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 10px;}
+  .dkfilters button{min-height:34px; padding:0 12px; border-radius:999px; border:1px solid var(--line);
+    background:rgba(255,255,255,0.03); color:var(--sub); font-size:0.76rem; font-weight:600;}
+  .dkfilters button.on{background:var(--yellow); border-color:var(--yellow); color:#1a2030;}
+  .dkrow{display:flex; align-items:flex-start; gap:10px; padding:10px 4px; border-bottom:1px solid var(--line);
+    text-decoration:none; color:inherit;}
+  .dkrow:last-child{border-bottom:none;}
+  .dkthumb{flex:none; width:56px; aspect-ratio:1/1; border-radius:10px; display:flex; align-items:center;
+    justify-content:center; font-size:1.5rem; background:#2a3040;}
+  .dkthumb.t-動画{background:#3a2b20;} .dkthumb.t-音{background:#20323a;}
+  .dkthumb.t-記事{background:#2b2038;} .dkthumb.t-ページ{background:#233a2a;} .dkthumb.t-資料{background:#3a3620;}
+  .dkbody{flex:1 1 auto; min-width:0;}
+  .dkbody .ct{font-size:0.9rem;}
+  .dkbody .cm{margin:2px 0 3px;}
+  .dktag{display:inline-block; font-size:0.68rem; font-weight:700; color:var(--yellow);
+    border:1px solid rgba(201,162,74,0.5); border-radius:6px; padding:1px 6px; margin-right:6px;}
   .ct{font-size:0.92rem; font-weight:700; line-height:1.35;}
   .cm{font-size:0.72rem; color:var(--sub); margin:3px 0 6px; font-variant-numeric:tabular-nums;}
   .cr{font-size:0.78rem; line-height:1.65; color:var(--fg); background:#161c24; border:1px solid var(--line);
@@ -408,6 +428,23 @@
 
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
+
+<!-- 2026-09-07(616番) たまごさん「もうここにできてますよ、っていうコーナーが欲しい。
+     ここに行けば、頼んだ成果がここにあるんだ、っていう。修正とは違うんだよ。成果物と修正は分けたい」
+     →「✅完了」は直したもの（1週間で消える・流れていくもの）。ここは作ったもの（消えない・ずっと残る棚）。
+     見る場所を増やしたくない、というたまごさんの希望どおり、新しいページは作らず進捗表の中にタブとして足した。
+     一番上に置くのは「そこに行けば頼んだものができてる」を1タップで見せるため。 -->
+<details class="sec dekita" id="dekitaSec" open><summary>🎁 できたもの <small id="dekitaMeta"></small></summary><div class="in">
+<div class="dkfilters" id="dkfilters">
+  <button type="button" class="on" data-dktype="all">すべて</button>
+  <button type="button" data-dktype="動画">動画</button>
+  <button type="button" data-dktype="音">音</button>
+  <button type="button" data-dktype="記事">記事</button>
+  <button type="button" data-dktype="ページ">ページ</button>
+  <button type="button" data-dktype="資料">資料</button>
+</div>
+<div id="dekita"><div class="card note">読み込み中…</div></div>
+</div></details>
 
 <details class="sec"><summary>マシンとクレジット <small id="machineAge"></small></summary><div class="in">
 <div class="meters" id="meters"></div>
@@ -793,6 +830,52 @@ function refreshCost(){
 }
 refreshCost();
 setInterval(refreshCost, 60000);
+
+/* ───── 616番：「できたもの」棚（2026-09-07） ─────
+   status/dekimono.json（成果物だけの正本・消えない）を読んで並べる。
+   修正（queue.json→✅完了）とは別の道。フィルタは押した種類だけ絞り込む（1タップ）。 */
+const DK_THUMB = {"動画":"🎬","音":"🎧","記事":"📰","ページ":"🖼️","資料":"📊"};
+window.__dekimonoFilter = "all";
+function renderDekita(){
+  const box = document.getElementById("dekita"); if(!box) return;
+  const meta = document.getElementById("dekitaMeta");
+  const all = (window.__dekimono && window.__dekimono.items) || [];
+  if(meta) meta.textContent = all.length ? `${all.length}件` : "";
+  const filt = window.__dekimonoFilter || "all";
+  const rows = all.filter(it => filt === "all" || it.type === filt)
+    .slice()
+    .sort((a,b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+  if(!rows.length){
+    box.innerHTML = `<div class="card note">まだありません（成果物ができるとここに積み上がります）</div>`;
+    return;
+  }
+  box.innerHTML = rows.map(it => {
+    const icon = DK_THUMB[it.type] || "🎁";
+    const stamp = it.addedAt ? formatStamp(it.addedAt) : "—";
+    return `<a class="dkrow" href="${esc(it.url || "#")}" target="_blank" rel="noopener">
+      <div class="dkthumb t-${esc(it.type||"")}">${icon}</div>
+      <div class="dkbody">
+        <div class="ct"><span class="dktag">${esc(it.type||"")}</span>${esc(it.title||"")}</div>
+        <div class="cm">${esc(it.what||"")}</div>
+        <div class="cm">${esc(stamp)}</div>
+      </div>
+    </a>`;
+  }).join("");
+}
+function refreshDekimono(){
+  return fetch("status/dekimono.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if(d){ window.__dekimono = d; renderDekita(); } })
+    .catch(()=>{});
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-dktype]"); if(!b) return;
+  window.__dekimonoFilter = b.dataset.dktype;
+  document.querySelectorAll("#dkfilters button").forEach(x => x.classList.toggle("on", x === b));
+  renderDekita();
+});
+refreshDekimono();
+setInterval(refreshDekimono, 60000);
 
 /* ───── 492番：AI検品(Verifier)の実績を要約表示（2026-09-06） ─────
    status/ai_verify_stats.json（tools/auto_launcher.py の _record_ai_verify() が

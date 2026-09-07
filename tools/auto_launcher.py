@@ -956,6 +956,14 @@ def harvest(q):
             append_outbox(it, True)
             log("✅ AI検品OK→自動完了（人の確認スキップ） %d番「%s」・理由:%s・$%.3f"
                 % (it.get("n"), it.get("title"), reason, cost or 0))
+            # 616番：自動OKもたまごさんがOKを押すのと同じ「完了」。成果物なら棚へ自動登録。
+            try:
+                if HERE not in sys.path:
+                    sys.path.insert(0, HERE)
+                import dekimono_lib
+                dekimono_lib.append_if_deliverable(it.get("n"), it.get("title"), it.get("result"), it.get("urls"))
+            except Exception:
+                pass
         changed = True
 
     if any(x.get("_drop") for x in q.get("items", [])):
