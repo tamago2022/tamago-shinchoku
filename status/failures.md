@@ -160,3 +160,23 @@
 - **二度と起こさないための仕掛け**：ルールが1件1ファイルになったことで、次に新しいルールを足す担当は①どのファイルに足すか（always/topics）を選ぶ設計に強制され、②`INDEX.json`のkeywordsを見れば「このルールは今どのタスクに配られているか」が一目で分かる。「巨大な1本のテンプレートに無限に追記し続ける」という壊れ方そのものを構造的にやりにくくした。
 - **日付**：2026-09-07（628番）
 - **根拠**：`tools/auto_launcher.py` の `build_prompt()`（旧版は本コミット直前のgit historyに残る）、`tools/prompt_rules/INDEX.json`、`tools/prompt_rules/always-01-ai-shain-oni-kantoku.md`
+
+## 15. `Read`ツールでavif画像を直接開くと、生のバイナリとして大量トークンを消費する
+
+- **症状**：631番で、Google Driveの素材写真（.avif形式）を`Read`ツールでそのまま開いたところ、画像として表示されず、圧縮バイナリの断片が大量の行として展開され、1ファイルで数万トークンを消費した（73,182トークンでキャップに到達し途中で打ち切られた例あり）。
+- **原因**：`Read`ツールの画像プレビュー機能はPNG/JPEG等の主要フォーマットには対応しているが、avifはサポート対象外で、テキストファイルとして扱われ生バイトがそのまま出力される。
+- **直し方**：`sips -s format png 元.avif --out 変換後.png`でPNGに変換し、さらに`sips -Z 500 変換後.png --out 縮小版.png`で500px程度に縮小してから`Read`する。2コマンドとも標準のmacOSツール（ffmpeg不使用）。
+- **二度と起こさないための仕掛け**：素材フォルダの写真を開く前に拡張子を確認し、`.avif`（またはその他`Read`が画像として認識しない形式）なら先に`sips`でpng変換・縮小してから開く、を手順として徹底する。
+- **日付**：2026-09-07（631番）
+- **根拠**：本セッションの実行ログ（avif直読み→トークン大量消費→sips変換で解決）
+
+---
+
+## 16. 発車されたworktree（`.worktrees/qNNN-MMDD`）が中身ゼロのまま「initializing」ロックで止まっていることがある
+
+- **症状**：631番で発車されたworktree（`/Users/mac/Documents/AI作業/.worktrees/q631-0904`、joy-relief-station配下）が、`.agents`/`.claude`/`.env`/`.github`/`.gitignore`/`.lovable`の6点しか存在せず、`git status`では1505ファイルが「deleted」としてステージされる異常な状態だった。メインリポジトリの`git worktree list`にはこのworktree自体が出てこず（実行に2分以上かかりバックグラウンド化するほど重かった）、`.git/worktrees/q631-0904/locked`ファイルの中身が`initializing`のままだった。
+- **原因（未確定）**：`git worktree add`によるチェックアウトが完了する前に何らかの理由で処理が止まった（他セッションとの競合、ディスク/負荷起因の中断など）と推測されるが、本セッションでは特定できなかった。
+- **今回の対応**：このworktreeは使わず、タスク本文（`queue.json`の631番エントリ）から実際に作業すべきリポジトリが`/Users/mac/Desktop/tamago-shinchoku`であると特定し、そちらで直接作業して完走した。壊れたworktree自体の修復は試みていない（実害が無かったため）。
+- **二度と起こさないための仕掛け**：発車されたworktreeで作業を始める前に、まず`ls`でリポジトリの主要ファイル（`package.json`やREADME等）が実在するか一目で確認する。1505件のようなdeleted大量表示や、主要ファイルが揃っていない状態を見つけたら、そのworktreeでの実装は諦めて、タスク本文が指す本来のリポジトリ／実行環境を先に特定してからそちらで作業する。
+- **日付**：2026-09-07（631番）
+- **根拠**：本セッションの実行ログ（`git status`のdeleted 1505件、`.git/worktrees/q631-0904/locked`の中身`initializing`、`git worktree list`に非表示）
