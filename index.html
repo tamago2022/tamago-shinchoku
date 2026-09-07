@@ -401,6 +401,19 @@
   .addbox input[type=text]{width:100%; box-sizing:border-box; min-height:44px; padding:0 12px; border-radius:10px;
     border:1px solid var(--line); background:#12161c; color:var(--ink); font:inherit; font-size:0.88rem;}
   .addbox input[type=text]::placeholder{color:var(--dim);}
+  /* 625番（2026-09-07）他のAI（ChatGPT等）の言いっぱなしをそのまま貼れる入口。
+     長文のまま貼れることが条件なので複数行のtextareaにする（要約・整形はさせない）。 */
+  .addbox textarea{width:100%; box-sizing:border-box; min-height:90px; padding:8px 12px; border-radius:10px;
+    border:1px solid var(--line); background:#12161c; color:var(--ink); font:inherit; font-size:0.86rem;
+    resize:vertical; line-height:1.4;}
+  .addbox textarea::placeholder{color:var(--dim);}
+  .addbox .aiInstBox{margin-top:2px;}
+  .addbox .aiInstBox summary{font-size:0.72rem; color:var(--sub); cursor:pointer; padding:4px 0;}
+  .addbox .aiInstText{white-space:pre-wrap; font-size:0.74rem; line-height:1.5; background:#12161c;
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px; color:var(--sub); margin:6px 0;}
+  .addbox .aiInstCopy{min-height:34px; padding:0 14px; border-radius:9px; border:1px solid var(--line);
+    background:#1a2028; color:var(--fg); font-size:0.78rem; font-weight:700;}
+  .addbox .aiInstCopy.done{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
   .addrow{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .addrow .qap{flex:none; min-height:36px; min-width:36px; padding:0 8px; border-radius:9px; border:1px solid var(--line);
     background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
@@ -527,6 +540,34 @@
 <!-- 2026-09-04 たまごさん「思いついたことを1行で、はもういらない。発車待ちに追加も、もういい。
      ここにタスクが並んでて、ただ順番を入れ替えられるだけでいい。**割り込んで優先にして、と口頭で言う方が早い**」
      → 入力欄と追加ボタンを外した。ここは「並んでいるものの順番を変える場所」に絞る。 -->
+<!-- 625番（2026-09-07）↑と矛盾しない別物：上で外したのは「たまごさん自身が思いついた1行」の入力欄。
+     こちらは「ChatGPT等・他のAIが出した言いっぱなしの返答を、汚いまま長文コピペで貼る」入口。
+     たまごさんの言葉：「壁打ちはいいんだけど、そこで途切れるなよ。散らかして終わり。それを形にしないとダメ」
+     「50回ぐらい」水汲みさせられている、その水汲みを消すための専用入口。
+     貼った文章はJS側(splitPastedText)で複数の塊に分け、そのままの文面で優先度・リモコンと同じ経路
+     （obsidian://new → command_ingest.py の queue_add）へ複数回投げる。要約も整形もしない。 -->
+<div class="addbox" id="pasteBox">
+  <div class="addMsg" style="color:var(--sub)">他のAI（ChatGPT・Gemini・Grok等）の返答をそのまま貼る（長文OK・複数件まとめてOK・整形しなくていい）</div>
+  <textarea id="pasteText" placeholder="ここに貼り付け…"></textarea>
+  <div class="addrow">
+    <button type="button" class="addSend" id="pasteSend">工場に積む</button>
+    <span class="addMsg" id="pasteMsg" style="flex:1"></span>
+  </div>
+  <details class="aiInstBox">
+    <summary>他のAIに渡す指示文（貼る前に相手へ渡すとよい・コピー用）</summary>
+    <div class="aiInstText" id="aiInstructionText">提案で終わらせないでください。最後に必ず、そのまま実行できる形で出してください。
+①やること（1行） ②完了の条件（何がどうなったら終わりか） ③触ってよい範囲 ④やってはいけないこと。
+この4つが揃っていない提案は、出さないでください。
+
+できないことを「できる」と言わないでください。自分の道具で本当にできるか確かめてから言ってください。
+確かめていないなら「確かめていない」と正直に言ってください（持っていない機能を持っているかのように話さない）。
+
+人を動かすのは最終手段です。人に頼む前に、自分の手で全部試してください。
+試した道を1行ずつ書いてから頼んでください。方針はころころ変えないでください（変えるときは理由を1行で）。</div>
+    <button type="button" class="aiInstCopy" id="copyInstruction">コピーする</button>
+    <span class="addMsg" id="copyInstructionMsg"></span>
+  </details>
+</div>
 <div class="addMsg" id="pendMsg" style="padding:0 2px 6px"></div>
 <div class="in" id="queue"></div>
 </div></details>
@@ -968,6 +1009,76 @@ document.addEventListener("click", e=>{
   if(input) input.value = "";
   if(msg) msg.textContent = "受け付けました。発車待ちの列に入ります";
   flushCommands();
+});
+
+/* ───── 625番：他のAIの言いっぱなしを、コピペ1回で工場の列へ（2026-09-07）─────
+   汚いまま貼れることが条件。要約・整形はしない。ここでやるのは「何本の仕事か」を
+   機械的に見分けて分けるだけ。分けた各断片は、そのままの文面でqueue_add（既存の
+   優先度・リモコンと同じ経路）へ複数回投げる。重複照合・大きすぎる仕事の自動分割は
+   queue_add側（command_ingest.py）が既存のロジックでそのまま効く。 */
+function splitPastedText(raw){
+  const text = String(raw || "").replace(/\r\n/g, "\n").trim();
+  if(!text) return [];
+  let parts;
+  let mergeLeadingShort = false;
+  if(/\n[ \t]*-{3,}[ \t]*\n/.test("\n" + text + "\n")){
+    // 明示的な区切り線（---）があればそれを最優先で使う
+    parts = text.split(/\n[ \t]*-{3,}[ \t]*\n/);
+  } else if(/(^|\n)#{1,3}[ \t]+\S/.test(text)){
+    // Markdown見出し単位（##/###）で割る。見出し自体は残す
+    parts = text.split(/\n(?=#{1,3}[ \t]+\S)/);
+  } else if(/(^|\n)[ \t]*(\d{1,2}[.)、]|[①-⑳])[ \t]*\S/.test(text)){
+    // 番号付き・丸数字付きリスト単位で割る
+    parts = text.split(/\n(?=[ \t]*(?:\d{1,2}[.)、]|[①-⑳])[ \t]*\S)/);
+    mergeLeadingShort = true; // 「いくつか提案があります」等の短い前置きが1番目に浮くのを防ぐ
+  } else {
+    // 目印が無ければ空行2つ以上のかたまりで割る（それも無ければ1本のまま）
+    parts = text.split(/\n{2,}/);
+  }
+  parts = parts.map(p => p.trim()).filter(p => p.length > 0);
+  if(mergeLeadingShort && parts.length > 1 && parts[0].length < 40 &&
+     !/^(?:\d{1,2}[.)、]|[①-⑳])/.test(parts[0])){
+    parts[1] = parts[0] + "\n" + parts[1];
+    parts.shift();
+  }
+  parts = parts.filter(p => p.length >= 8);
+  if(parts.length === 0) parts = [text];
+  return parts;
+}
+function pasteTitle(fragment){
+  const first = fragment.split("\n").map(s => s.trim()).find(s => s.length > 0) || fragment;
+  const cleaned = first.replace(/^[#>*\-\d.)、①-⑳\s]+/, "").trim();
+  return (cleaned || first).slice(0, 40);
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("#pasteSend"); if(!b) return;
+  const input = document.getElementById("pasteText");
+  const msg = document.getElementById("pasteMsg");
+  const raw = (input && input.value || "");
+  const parts = splitPastedText(raw);
+  if(!parts.length){ if(msg) msg.textContent = "貼ってから押してください"; return; }
+  parts.forEach((frag, i) => {
+    const id = "p" + Date.now().toString(36) + Math.random().toString(36).slice(2,6) + i;
+    const label = "🗣️" + pasteTitle(frag);
+    // origin="user"：他AI経由でもたまごさんが選んで貼った依頼なので、通常の依頼と同じ扱いにする
+    PENDING_CMDS.push({id, action:"queue_add", target:frag, priority:3, label, requestedAt:new Date().toISOString()});
+    SENT_CMDS[id] = {action:"queue_add", target:frag, priority:3, label, sentAt:new Date().toISOString()};
+  });
+  try{ savePending(); saveCmds(); }catch(err){}
+  if(input) input.value = "";
+  if(msg) msg.textContent = parts.length + "本受け取りました。発車待ちの列に積みます";
+  flushCommands();
+});
+document.addEventListener("click", e=>{
+  const b = e.target.closest("#copyInstruction"); if(!b) return;
+  const el = document.getElementById("aiInstructionText");
+  const msg = document.getElementById("copyInstructionMsg");
+  const text = el ? el.textContent : "";
+  const done = () => { if(msg) msg.textContent = "コピーしました"; b.classList.add("done"); setTimeout(()=>b.classList.remove("done"), 1500); };
+  const fail = () => { if(msg) msg.textContent = "コピーできませんでした。文章を長押しして選択してください"; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(fail);
+  } else { fail(); }
 });
 
 /* ───── あと何本いけるか（最上部の帯）─────
