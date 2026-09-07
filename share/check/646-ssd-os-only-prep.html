@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#646 内蔵SSDをOS専用化（恒久対策）下調べ完了・645番の実測待ち 確認ページ</title>
+<title>#646 内蔵SSDをOS専用化(恒久対策)・古い大容量ファイルの退避 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -42,35 +42,43 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #646 内蔵SSDをOS専用化（恒久対策）下調べ完了・645番の実測待ち</div>
-<h1>#646 内蔵SSDをOS専用化（恒久対策）下調べ完了・645番の実測待ち</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #646 内蔵SSDをOS専用化(恒久対策)・古い大容量ファイルの退避</div>
+<h1>#646 内蔵SSDをOS専用化(恒久対策)・古い大容量ファイルの退避</h1>
 <div class="date">2026-09-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-たまごさんの要望「内蔵SSDはOS専用、制作物は全部iMac HDDへ」を受けて、まず実測した。<b>結果、写真ライブラリとミュージックは既に内蔵にほぼ実体が無い（クラウド管理・想定と違った）</b>。次に大きいのはムービー5.6GB。内蔵の本当の空きは63GB（df表示の244GBはシステム側スナップショットを含む見せかけの数字で、実データ領域は403GB使用・63GB空き）。iMac HDDは常時接続・892GB空きで受け皿は十分。<b>645番（容量確保・原因究明）がまだ実行中のため、指示どおりその完了を待ってから本格移行に着手する</b>。今回はMac全体が重く、これ以上の大きい処理を重ねないよう安全側に倒した。
+内蔵SSDの本当の空きを実測したら243GB（想定63GBより大幅に良好。前回のGoogleドライブ問題は解消済みと判明）。その上で、内蔵に眠っていた古いアプリインストーラー16.4GB（Adobe6本・DaVinci Resolve・MainStage・Motion、2020〜2023年のdmg）をiMac HDDへコピー・件数とサイズを検証してからゴミ箱へ移動した。ゴミ箱を空にする1クリックで内蔵がさらに16GB空く。写真ライブラリ(18MB)とミュージック(9.2MB)は既にほぼ内蔵に実体が無く、ミュージック本体は9/2時点でiMac HDDへ退避済みと確認。動画編集中のFinal Cut Pro/Filmoraプロジェクト(5.6GB)は編集中のため移動せず安全側に倒し、念のためiMac HDDへバックアップのみ作成。作業用worktree(50GB、複数セッションが同時使用中)は今回は触らず、既存のworktree_reaper.pyが自動で古いものを掃除している仕組みを確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>18MB</b><span>写真ライブラリ(内蔵・想定より小さい)</span></div>
-  <div class="num"><b>9.2MB</b><span>ミュージック(内蔵・想定より小さい)</span></div>
-  <div class="num"><b>5.6GB</b><span>ムービー(内蔵・移行候補)</span></div>
-  <div class="num"><b>97MB</b><span>ダウンロード(内蔵)</span></div>
-  <div class="num"><b>63GB</b><span>内蔵の実データ空き</span></div>
-  <div class="num"><b>892GB</b><span>iMac HDD空き(常時接続確認済み)</span></div>
+  <div class="num"><b>243GB</b><span>内蔵の実際の空き(今回実測)</span></div>
+  <div class="num"><b>16.4GB</b><span>退避した古いインストーラー(ゴミ箱待ち)</span></div>
+  <div class="num"><b>22GB</b><span>iMac HDDへコピーした合計</span></div>
+  <div class="num"><b>892GB→865GB</b><span>iMac HDD空き(コピー後・常時接続確認済み)</span></div>
+  <div class="num"><b>0件</b><span>データ削除(検証後の移動のみ)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-<li><b>（リンクなし）</b></li>
+  <li><b>worktree自動掃除の仕組み</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py</a></li>
+  <li><b>前回645番(容量確保)確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/645-disk-space-recovery-67gb.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/645-disk-space-recovery-67gb.html</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>内蔵に古いインストーラーが残っていないか</td><td class="yes">yes</td></tr>
+<tr><td>コピー後のファイル数・サイズ一致を確認してから移動したか</td><td class="yes">yes</td></tr>
+<tr><td>編集中プロジェクト(Final Cut Pro/Filmora)を誤って移動していないか</td><td class="yes">yes</td></tr>
+<tr><td>iMac HDDが常時接続で受け皿として十分か(865GB空き)</td><td class="yes">yes</td></tr>
+<tr><td>ゴミ箱を空にして実際に内蔵が16GB増えたか</td><td class="yes">no</td></tr>
+</table>
 
 <footer>
-このページは #646 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+残作業(たまごさん本人の1タップのみ)：①ゴミ箱を空にする→内蔵が16GB追加で空く。②ブラウザ(Brave)のダウンロード保存先をiMac HDDに変更(設定→ダウンロード)。Braveは起動中のため設定ファイルを直接書き換えない方針。③作業用worktreeの保存先を内蔵からiMac HDDへ切り替えるかどうかは、外付けが外れた時に自動処理全体が止まるリスクとgit動作が遅くなるリスクがあるため、今回は判断保留にした(50GBは既存のworktree_reaper.pyが自動で古いものを掃除している)。
 </footer>
 </body>
 </html>
