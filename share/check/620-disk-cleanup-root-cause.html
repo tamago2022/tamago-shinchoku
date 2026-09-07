@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#620 容量急減の犯人特定と見張りの拡張 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #620 容量急減の犯人特定と見張りの拡張</div>
+<h1>#620 容量急減の犯人特定と見張りの拡張</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+正しい空き容量の測り方(df -h /System/Volumes/Data)で測り直したら実際は22.6GB。本命はGoogle Drive「マイドライブ」内の音楽ライブラリバックアップ125.2GBがミラーリング同期でローカルにも同量専有されていたこと(外付けHDDに同一物126GBが既に存在済み・保険の二重コピーと確認)。fileproviderctl evictで一時解放を2回試したが同期デーモンが数分〜十数分で再ダウンロードすることを実測、恒久解決にはGoogle Drive Desktopの環境設定変更(GUI操作)が必要でこのセッションには実行手段が無かった。今回自分で実行完了できたのはVault内の重複キャッシュ・古い動画の退避・git gcで合計約550MB。二度と気づかれず溜まらないよう、既存の容量見張り(15分おき自動実行・disk_guardian.py)にGoogle Drive巨大フォルダの自動警告を追加し、本番で実際に動作(ログ出力)まで確認した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>22.6GB</b><span>正しい空き容量(修正後の測り方)</span></div>
+  <div class="num"><b>125.2GB</b><span>特定した本命(Google Drive・未解放・GUI操作待ち)</span></div>
+  <div class="num"><b>550MB</b><span>今回自分で解放した容量(Vault整理+git gc)</span></div>
+  <div class="num"><b>15分</b><span>Google Drive巨大フォルダ警告の自動チェック間隔(実装・動作確認済み)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>見張りコードの変更(disk_guardian.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/370038f62b18f6efda6672e35f8897a55e0659eb" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/370038f62b18f6efda6672e35f8897a55e0659eb</a></li>
+  <li><b>実測データ(候補一覧JSON・生データ)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_candidates.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_candidates.json</a></li>
+  <li><b>見張りの実行ログ(生データ)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_guardian.log" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_guardian.log</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>正しい空き容量(df -h /System/Volumes/Data)</td><td class="yes">22.6GB(実測)</td></tr>
+<tr><td>Google Drive125.2GB問題の特定</td><td class="yes">完了(外付けHDDに同一物確認済み)</td></tr>
+<tr><td>Google Drive125.2GBの解放</td><td class="no">未解放(GUI操作が必要・このセッションでは実行不可)</td></tr>
+<tr><td>Vault内キャッシュ整理(重複+古い本体)</td><td class="yes">53MB解放</td></tr>
+<tr><td>Vault内Ambient Factory動画の退避</td><td class="yes">407MB(外付けHDDへ移動・消去はしていない)</td></tr>
+<tr><td>tamago-shinchoku .git gc</td><td class="yes">1.0GB→934MB</td></tr>
+<tr><td>見張りへのGoogle Drive巨大フォルダ警告追加</td><td class="yes">実装・mainへ反映・本番動作確認済み</td></tr>
+<tr><td>share/check・share/eagleの見える化</td><td class="yes">実装・mainへ反映済み(自動削除はまだしない)</td></tr>
+</table>
+
+<footer>
+このページは #620 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
