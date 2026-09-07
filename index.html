@@ -376,6 +376,26 @@
   .qp{flex:none; min-height:36px; min-width:36px; border-radius:9px; border:1px solid var(--line);
     background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
   .qp.on{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+  /* 624番 長距離の並び替え用ボタン（1番へ／位置指定）。ドラッグは近い距離用に残す。
+     親指で押せる大きさ・文字が縦に潰れないよう white-space:nowrap で1行に固定する。 */
+  .qtop, .qmore{flex:none; min-height:36px; min-width:36px; padding:0; border-radius:9px;
+    border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.88rem;
+    font-weight:700; white-space:nowrap; line-height:1;}
+  .qtop:active, .qmore:active{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+  .qjump-menu{position:fixed; z-index:9999; display:none; background:#1b2330; border:1px solid var(--green);
+    border-radius:12px; padding:8px; box-shadow:0 10px 26px rgba(0,0,0,0.5); gap:6px;}
+  .qjump-menu.open{display:flex;}
+  .qjump-menu button{min-height:44px; min-width:44px; border-radius:9px; border:1px solid var(--line);
+    background:#12161c; color:var(--ink); font:inherit; font-size:0.95rem; font-weight:800;}
+  .qjump-menu button:active{background:var(--green); color:#12161c; border-color:var(--green);}
+  .qjump-backdrop{position:fixed; inset:0; z-index:9998; display:none; background:transparent;}
+  .qjump-backdrop.open{display:block;}
+  /* 624番 保存に失敗した時だけ出す「戻しました」の合図。押した直後に画面は先に動くので、
+     普段は出ない。出た時だけ気づけばいい。 */
+  .qtoast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:10000;
+    background:#3a1216; color:#ffb3a7; border:1px solid rgba(255,120,100,0.6); border-radius:10px;
+    padding:10px 16px; font-size:0.84rem; font-weight:700; box-shadow:0 8px 20px rgba(0,0,0,0.5);
+    max-width:88vw; text-align:center;}
   /* 2026-09-04 スマホから発車待りに1行追加する入力欄 */
   .addbox{display:flex; flex-direction:column; gap:8px; padding:10px 4px 14px; border-bottom:1px solid var(--line); margin-bottom:2px;}
   .addbox input[type=text]{width:100%; box-sizing:border-box; min-height:44px; padding:0 12px; border-radius:10px;
@@ -1864,6 +1884,12 @@ function renderQueue(){
   //   今さ、押したら1個下に下がる、みたいなやつでしょ。すごいやりづらいです」
   //   → 左端の「⣿」を掴んで動かす。指でもマウスでも動くよう pointer イベントで書く。
   //   落とした場所の箱の優先度をそのまま引き継ぎ、並び順(order)を台帳へ送る。
+  // 624番 たまごさん「14番から1番にするのって大変なのよ。画面をスクロールしながら、
+  //   今3回に分けてやってるよ」「1番から5番くらいのボタンをつけて、1番に昇格じゃないけど」
+  //   → 優先度（箱）は変えず、**同じ箱の中の並び順**だけを1〜2タップで動かすボタン。
+  //   長距離はボタン、近い距離の入れ替えは今まで通りドラッグ（⣿）。
+  const qJumpHtml = n => `<button class="qtop" data-qtop="${n}" title="この箱の先頭へ（1番へ）">🔝</button>` +
+    `<button class="qmore" data-qmore="${n}" title="順番を指定（1〜5）">⋯</button>`;
   const rowHtml = (r,i,globalIdx)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
     // 585番：splitFromが同じもの（発車待ちに残っているのは代表1本）は、まとめの進み具合を出す。
@@ -1880,6 +1906,7 @@ function renderQueue(){
           </details>
         </span>
         <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? p : "—"}</button>
+        ${qJumpHtml(r.n)}
       </div>`;
     }
     return `<div class="qrow${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
@@ -1891,6 +1918,7 @@ function renderQueue(){
         </details>
       </span>
       <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? p : "—"}</button>
+      ${qJumpHtml(r.n)}
     </div>`;
   };
   let gi = 0, html = "";
@@ -1902,6 +1930,18 @@ function renderQueue(){
   }
   box.innerHTML = html;
   wireDrag(box);
+  // 624番 たまごさん「上まで行ったのに、1階上に行ったらまた戻るんだよね。どこ行った？」
+  //   → 並び替え直後は毎回まるごと描き直す（renderQueue）ので、画面が動かした行を見失う。
+  //   直前に動かした番号が残っていれば、描き直した後に**その行までこちらから追いかける**。
+  if(window.__scrollFollowN != null){
+    const target = box.querySelector(`.qrow[data-n="${window.__scrollFollowN}"]`);
+    if(target){
+      target.scrollIntoView({behavior:"smooth", block:"center"});
+      target.classList.add("qsnap");
+      setTimeout(()=>target.classList.remove("qsnap"), 320);
+    }
+    window.__scrollFollowN = null;
+  }
 }
 
 /* ───── つまんで動かす（指でもマウスでも）2026-09-05 ─────
@@ -2056,6 +2096,120 @@ function wireDrag(box){
     g.addEventListener("lostpointercapture", function(e){ if(DRAG && DRAG.id === e.pointerId) finish(e); });
   });
 }
+
+/* ───── 624番：長距離の並び替えボタン（「1番へ」／位置指定）─────
+   たまごさん「14番から1番にするのって大変なのよ。画面をスクロールしながら、
+   今3回に分けてやってるよ」「1番から5番くらいのボタンをつけて、1番に昇格じゃないけど」
+   ・「🔝1」＝1タップで**同じ箱の中の先頭**へ（優先度＝箱は変えない。彼女の言う「昇格じゃない」）
+   ・「⋯」＝2タップ目で1〜5の位置を選べる（場所を取らないよう普段は畳んでおく）
+   ・押した瞬間に画面を動かし、台帳への保存は裏で行う。**送信が本当に失敗した時だけ**元に戻して
+     「戻しました」と出す（中継所がまだ無いだけ＝いつもの「あとで送ります」は失敗として扱わない。
+     他の全ボタンと同じく、それは正常な保留状態）。
+   ・動かした後は renderQueue() の末尾（window.__scrollFollowN）が自動でその行までスクロールする。 */
+function qtoast(msg){
+  const t = document.createElement("div");
+  t.className = "qtoast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ try{ t.remove(); }catch(_){} }, 2600);
+}
+/* 位置移動を実際に行い、items[].order を書き換えて描き直す。戻すためのスナップショットを返す。 */
+function moveWithinBox(n, targetPos){
+  const box = document.querySelector("#queue"); if(!box) return null;
+  const row = box.querySelector(`.qrow[data-n="${n}"]`); if(!row) return null;
+  const boxEl = row.closest(".qbox"); if(!boxEl) return null;
+  const siblings = Array.from(boxEl.querySelectorAll(":scope > .qrow"));
+  const from = siblings.indexOf(row);
+  if(from < 0) return null;
+  siblings.splice(from, 1);
+  const idx = Math.max(0, Math.min(targetPos - 1, siblings.length));
+  if(idx >= siblings.length){ boxEl.appendChild(row); }
+  else{ boxEl.insertBefore(row, siblings[idx]); }
+  const items = (window.__queue && window.__queue.items) || [];
+  const before = items.map(it => ({n: it.n, order: it.order}));   // 戻す時のスナップショット
+  const rows = Array.from(document.querySelectorAll("#queue .qrow"));
+  rows.forEach((x, i)=>{
+    const it = items.find(y => y.n === Number(x.dataset.n));
+    if(it) it.order = i + 1;
+  });
+  return {before, order: rows.map(x=>x.dataset.n).filter(Boolean)};
+}
+function restoreOrder(before){
+  const items = (window.__queue && window.__queue.items) || [];
+  before.forEach(p=>{ const it = items.find(y => y.n === p.n); if(it) it.order = p.order; });
+}
+/* 台帳への保存。中継所があるのに本当に届かなかった時だけ失敗として扱い、呼び出し元へ知らせる。
+   中継所がまだ無い（＝いつもの「あとで送ります」）は失敗ではないので、そのまま既存の仕組みへ乗せる。 */
+function sendOrderReliable(order, onFail){
+  const id = "o" + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+  const url = relayUrl();
+  if(!url){ sendCommandWithId(id, "queue_order", order.join(","), "並び順を保存"); return; }
+  fetch(url.replace(/\/$/, "") + "/cmd", {
+    method: "POST", mode: "cors",
+    headers: Object.assign({"Content-Type": "application/json"}, RELAY_HEADERS),
+    body: JSON.stringify({commands: [{id, action:"queue_order", target:order.join(","), label:"並び順を保存", requestedAt:new Date().toISOString()}]}),
+  }).then(r=>{
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    SENT_CMDS[id] = {action:"queue_order", target:order.join(","), label:"並び順を保存", sentAt:new Date().toISOString()};
+    saveCmds();
+  }).catch(()=>{ onFail && onFail(); });
+}
+function jumpToPosition(n, targetPos){
+  n = Number(n);
+  const snap = moveWithinBox(n, targetPos);
+  if(!snap) return;
+  window.__orderHold = Date.now() + 10000;
+  window.__scrollFollowN = n;
+  try{ renderQueue(); }catch(_){}
+  if(navigator.vibrate){ try{ navigator.vibrate(10); }catch(_){} }
+  sendOrderReliable(snap.order, ()=>{
+    restoreOrder(snap.before);
+    window.__scrollFollowN = n;
+    try{ renderQueue(); }catch(_){}
+    qtoast("戻しました（保存に失敗しました。もう一度お試しください）");
+  });
+}
+function closeJumpMenu(){
+  const m = document.getElementById("qJumpMenu"), bd = document.getElementById("qJumpBackdrop");
+  if(m){ m.classList.remove("open"); m.removeAttribute("data-n"); }
+  if(bd) bd.classList.remove("open");
+}
+function openJumpMenu(anchorBtn, n){
+  let m = document.getElementById("qJumpMenu"), bd = document.getElementById("qJumpBackdrop");
+  if(!m){
+    bd = document.createElement("div"); bd.id = "qJumpBackdrop"; bd.className = "qjump-backdrop";
+    document.body.appendChild(bd);
+    m = document.createElement("div"); m.id = "qJumpMenu"; m.className = "qjump-menu";
+    m.innerHTML = [1,2,3,4,5].map(p=>`<button type="button" data-jpos="${p}">${p}</button>`).join("");
+    document.body.appendChild(m);
+  }
+  m.dataset.n = n;
+  const r = anchorBtn.getBoundingClientRect();
+  m.style.display = "flex";
+  const mw = 5 * 50 + 16; // だいたいの幅（画面外にはみ出さないよう後で補正）
+  let left = r.left; if(left + mw > window.innerWidth) left = Math.max(4, window.innerWidth - mw - 4);
+  m.style.left = left + "px";
+  m.style.top = (r.bottom + 6) + "px";
+  m.classList.add("open");
+  bd.classList.add("open");
+}
+document.addEventListener("click", e=>{
+  const top = e.target.closest(".qtop");
+  if(top){ e.stopPropagation(); closeJumpMenu(); jumpToPosition(top.dataset.qtop, 1); return; }
+  const more = e.target.closest(".qmore");
+  if(more){ e.stopPropagation(); openJumpMenu(more, more.dataset.qmore); return; }
+  const jp = e.target.closest("#qJumpMenu [data-jpos]");
+  if(jp){
+    const n = document.getElementById("qJumpMenu").dataset.n;
+    closeJumpMenu();
+    jumpToPosition(n, Number(jp.dataset.jpos));
+    return;
+  }
+  if(e.target.closest("#qJumpBackdrop") || (!e.target.closest("#qJumpMenu") && !e.target.closest(".qmore"))){
+    closeJumpMenu();
+  }
+});
+
 /* ───── 燃料の栓（発車の停止・再開／同時本数）───── */
 let FUEL_ON = true, FUEL_CAP = null;
 function renderFuel(){
