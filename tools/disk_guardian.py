@@ -104,6 +104,26 @@ APP_CACHE_ROOTS = (
 )
 APP_CACHE_MIN_AGE_SEC = 3 * 86400  # 3日以上さわられていないものだけ
 
+# 2026-09-08（640番・128GBキャッシュ調査の副産物）：本命は
+# ~/Library/CloudStorage/GoogleDrive-*/マイドライブ配下の「オフラインで利用可能」指定
+# フォルダ(実測125GB)だったが、これは fileproviderctl evict が
+# contentPolicy(=常に手元に置く指定)で明示的に拒否する(Error 35)ことを実機で確認済み
+# ＝GUI側で「オフラインのアクセスを解除」を1回押す以外に安全な自動解除経路が無い
+# （FORBIDDEN_KEYWORDSのCloudStorage/GoogleDrive/Musicにより本スクリプトは元々この
+# フォルダの中には一切降りない＝正しい挙動、変更不要）。
+# 代わりに実機調査で見つかった「壺金庫と無関係な安全采キャッシュ」を追加する：
+#   - joy-relief-station 本体(Desktop直下・worktreeではない)のnode_modules/dist/.output
+#     （bun/npm installで作り直せる。実測424MB。稼働中プロセスが無いことを確認済み）
+#   - Spotify/Python/bun/node-gyp のアプリキャッシュ（いずれも実測時プロセス未実行・
+#     再生成される一時データ。実測 Spotify285MB+Python173MB+bun172MB+node-gyp64MB）
+MAIN_REPO_DIR = JOY  # Desktop直下の本体（.worktreesではない）
+APP_CACHE_ROOTS = APP_CACHE_ROOTS + (
+    os.path.join(HOME, "Library/Caches/com.spotify.client"),
+    os.path.join(HOME, "Library/Caches/com.apple.python"),
+    os.path.join(HOME, "Library/Caches/bun"),
+    os.path.join(HOME, "Library/Caches/node-gyp"),
+)
+
 # 2026-09-07（620番タスクC・監視対象の拡張）：ブラウザ自動操作プロファイル
 # （鬼監督=oni-kantoku・Lovable公開便=chrome-publish）はChrome本体と同じく
 # Cache/Code Cache/GPUCache配下に再生成可能な一時データを溜め込む。実測ログ
@@ -148,6 +168,11 @@ def allowed_roots():
         os.path.join(REPO, "status"),
         os.path.join(JOY, "tools"),
         os.path.join(JOY, "scripts"),
+        # 2026-09-08（640番）：本体(Desktop直下)のnode_modules/dist/.outputだけを
+        # 名指しで許可。JOY全体は許可しない（srcや.git等を誤って対象化しないため）。
+        os.path.join(MAIN_REPO_DIR, "node_modules"),
+        os.path.join(MAIN_REPO_DIR, "dist"),
+        os.path.join(MAIN_REPO_DIR, ".output"),
     )
 
 
@@ -241,6 +266,25 @@ def candidates():
                         "protected": protected, "age_ok": age_ok,
                         "size_mb": dir_size_mb(sp),
                     })
+
+    # 2026-09-08（640番）：joy-relief-station 本体(Desktop直下・worktreeではない)の
+    # node_modules/dist/.output。WT_DIRSは.worktrees配下しか見ないため、本体側は
+    # 監視対象外のまま実測424MB(node_modules)が野放しだった。稼働中の開発サーバの
+    # cwdと一致しないことを実行時に確認した上で追加（走行中の作業場は触らない方針を
+    # MAIN_REPO_DIRでも踏襲）。
+    if os.path.isdir(MAIN_REPO_DIR) and MAIN_REPO_DIR not in guard:
+        for sub in ("node_modules", "dist", ".output"):
+            sp = os.path.join(MAIN_REPO_DIR, sub)
+            if os.path.isdir(sp) and is_allowed(sp):
+                try:
+                    age_ok = (time.time() - os.path.getmtime(sp)) >= MIN_AGE_SEC
+                except Exception:
+                    age_ok = False
+                out.append({
+                    "path": sp, "kind": sub, "worktree": "joy-relief-station(本体)",
+                    "protected": False, "age_ok": age_ok,
+                    "size_mb": dir_size_mb(sp),
+                })
 
     # __pycache__（tools/scripts配下・浅い探索のみ。壺金庫には降りない）
     for root in (os.path.join(REPO, "tools"), os.path.join(JOY, "tools"), os.path.join(JOY, "scripts")):
