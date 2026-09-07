@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>過去投稿ぬか床 - 検索</title>
+<style>
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; background:#fdf6e9; margin:0; padding:16px; color:#3a2e1f; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.sub { color:#8a7355; font-size:13px; margin:0 0 16px; }
+  #stat { font-size:13px; color:#6b5637; margin-bottom:8px; }
+  input[type=text] { width:100%; box-sizing:border-box; padding:12px; font-size:16px; border:2px solid #c9a86a; border-radius:8px; margin-bottom:10px; }
+  select { padding:8px; border-radius:6px; border:1px solid #c9a86a; margin-bottom:12px; }
+  .item { background:#fff; border:1px solid #e6d5b0; border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .meta { font-size:12px; color:#a08856; margin-bottom:6px; display:flex; gap:10px; }
+  .text { font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .badge { background:#fdeecb; color:#b3821b; padding:1px 6px; border-radius:4px; font-size:11px; }
+  mark { background:#ffe08a; }
+  #loading { padding:40px; text-align:center; color:#a08856; }
+</style>
+</head>
+<body>
+<h1>🫙 過去投稿ぬか床 - 検索</h1>
+<p class="sub">言葉・時期で自分の過去投稿を検索。反応が多い順・新しい順に並べ替えできます。</p>
+<div id="loading">読み込み中…</div>
+<div style="display:none" id="app">
+  <div id="stat"></div>
+  <input type="text" id="q" placeholder="検索する言葉を入れてください（例：地球、子供、朝）">
+  <div>
+    並び替え：
+    <select id="sort">
+      <option value="score">反応が多い順</option>
+      <option value="new">新しい順</option>
+      <option value="old">古い順</option>
+    </select>
+  </div>
+  <div id="results"></div>
+</div>
+<script>
+let DATA = [];
+fetch('tweets_data.json').then(r => r.json()).then(data => {
+  DATA = data;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('stat').textContent = `全 ${DATA.length.toLocaleString()} 件（返信・リツイートを除いた本人投稿のみ）`;
+  render();
+});
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function highlight(text, q) {
+  const esc = escapeHtml(text);
+  if (!q) return esc;
+  try {
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    return esc.replace(re, m => `<mark>${m}</mark>`);
+  } catch(e) { return esc; }
+}
+
+function render() {
+  const q = document.getElementById('q').value.trim();
+  const sort = document.getElementById('sort').value;
+  let list = DATA;
+  if (q) {
+    list = list.filter(d => d.text.includes(q));
+  }
+  list = list.slice().sort((a,b) => {
+    if (sort === 'score') return b.score - a.score;
+    if (sort === 'new') return b.date.localeCompare(a.date);
+    return a.date.localeCompare(b.date);
+  });
+  const top = list.slice(0, 100);
+  const el = document.getElementById('results');
+  document.getElementById('stat').textContent = `${list.length.toLocaleString()} 件ヒット（上位${top.length}件を表示）`;
+  el.innerHTML = top.map(d => `
+    <div class="item">
+      <div class="meta">
+        <span>${d.date}</span>
+        <span class="badge">♥ ${d.fav}</span>
+        <span class="badge">🔁 ${d.rt}</span>
+        ${d.media ? '<span class="badge">🖼️ 画像/動画</span>' : ''}
+      </div>
+      <div class="text">${highlight(d.text, q)}</div>
+    </div>
+  `).join('');
+}
+document.getElementById('q').addEventListener('input', render);
+document.getElementById('sort').addEventListener('change', render);
+</script>
+</body>
+</html>
