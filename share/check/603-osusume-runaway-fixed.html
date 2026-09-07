@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#603 「こちらもどうぞ」暴走の巻き戻し：本番で実測比較 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #603 「こちらもどうぞ」暴走の巻き戻し：本番で実測比較</div>
+<h1>#603 「こちらもどうぞ」暴走の巻き戻し：本番で実測比較</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+共通部品RelatedCardsRow.tsxを2列グリッドから横スクロール1行(表示10件)へ戻し、カード高さをself-stretchで統一(案件#465・commit d94641f3/80e6db35)。前回はコードの裏取りのみで画像が無く検品ではねられたため、同じページ(gaijin-roman)を壊れていた旧コードと現在の本番で実際にレンダリングし直し、見た目の変化を撮り直した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0</b><span>残存するgrid-cols-2(見張りスクリプト実測)</span></div>
+  <div class="num"><b>5</b><span>呼び出し元の確認件数(全件一致)</span></div>
+  <div class="num"><b>1024px</b><span>before/after同一幅で実測(PC相当)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>前：2列グリッドが4段、カードごとに高さがバラバラ(旧コードを実際にローカルで再現・実測)</b><img src="img/603-before-2col-grid.png" alt="前"></div>
+  <div class="shot after"><b>後：横1行スクロール、カード高さが揃っている(本番joy-relief-station.lovable.appを実測)</b><img src="img/603-after-scroll-row.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番: gaijin-roman(スクショ撮影元そのもの)</b><a href="https://joy-relief-station.lovable.app/room/card/gaijin-roman" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/gaijin-roman</a></li>
+  <li><b>本番: Bee Gees Too Much Heaven</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven</a></li>
+  <li><b>前回(一覧作成回)の確認ページ#452</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/452-osusume-runaway-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/452-osusume-runaway-list.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>共通部品からgrid-cols-2が消えているか(origin/main実物)</td><td class="yes">yes</td></tr>
+<tr><td>横スクロール1行(overflow-x-auto)・表示10件を維持しているか</td><td class="yes">yes</td></tr>
+<tr><td>カード高さをself-stretchで統一しているか</td><td class="yes">yes</td></tr>
+<tr><td>同一ページ(gaijin-roman)で壊れていた見た目と直った見た目を並べて確認したか</td><td class="yes">yes</td></tr>
+<tr><td>本番(Lovable)配信コードが修正後と一致するか</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #603 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
