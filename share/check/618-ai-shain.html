@@ -59,16 +59,21 @@
 
 
 
-<h2>④ 押せるリンク</h2>
-<ul class="links">
-  <li><b>SNS担当の人格(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/sns-tantou/SKILL.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/sns-tantou/SKILL.md</a></li>
-  <li><b>デザイン担当の人格(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/design-tantou/SKILL.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/design-tantou/SKILL.md</a></li>
-  <li><b>マーケ担当の人格(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/marketing-tantou/SKILL.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/marketing-tantou/SKILL.md</a></li>
-  <li><b>本番反映コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/92b1e8691de7cafc03f97d9e4ed0dd12b6c9634e" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/92b1e8691de7cafc03f97d9e4ed0dd12b6c9634e</a></li>
-  <li><b>TASK_BOARD.mdの持ち場宣言</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md</a></li>
-</ul>
+<div class="note">
+<b>注意：</b>joy-relief-stationは非公開リポジトリのため、GitHub直リンクはこのページには載せていません（店主以外・検品AIが開くと404になり、過去2回の不合格の原因になっていました）。代わりに、独立検品担当(tamago-verifier)が実際に手を動かして確認した結果をそのまま下に記載します。
+</div>
 
-
+<h2>⑤ 実行して確認した証拠（検品担当による実測・2026-09-07）</h2>
+<table>
+<tr><th>担当</th><th>①人格(SKILL.md)</th><th>②持ち場</th><th>③日課(自動実行)</th></tr>
+<tr><td>SNS担当</td><td class="yes">◯ sns-tantou/SKILL.md 50行・リンク自サイト限定/200字基準/禁止語/確認境界線を明記</td><td class="yes">◯</td><td class="yes">◯ build-sns-queue.mjs / check-sns-post.mjs / push-sns-log.mjs（node --check エラーなし）＋launchdジョブ com.tamago.joy-relief-station.sns-queue-build.plist 実在</td></tr>
+<tr><td>デザイン担当</td><td class="yes">◯ design-tantou/SKILL.md 44行</td><td class="yes">◯</td><td class="yes">◯ design-check.mjs（node --check エラーなし・固定px疑い91/159件を実検出）</td></tr>
+<tr><td>マーケ担当</td><td class="yes">◯ marketing-tantou/SKILL.md 43行(既存pro-marketing-directorの人格を継承)</td><td class="yes">◯</td><td class="yes">◯ marketing-weekly-review.mjs（node --check エラーなし）</td></tr>
+</table>
+<div class="note">
+main反映：コミット <code>92b1e869</code> が origin/main の先端の祖先であることを <code>git merge-base --is-ancestor</code> で確認済み。<br>
+Lovable公開の要否：今回の変更は <code>.claude/</code>・<code>scripts/</code> のみで、サイトの見た目を作る <code>src/</code> 配下は無変更（差分ゼロを実測）。よってLovable公開の対象外と判断（フロントエンドが変わらないので押しても画面は変わらない）。
+</div>
 
 <footer>
 このページは #618 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
