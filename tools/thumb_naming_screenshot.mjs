@@ -35,20 +35,25 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const TARGETS = [
   {
+    // 再生前のメインサムネイル(このボタン自体が「主役」の実描画。再生するとFullscreenPlayerに
+    // 差し替わるが、ページを開いた瞬間に見える姿=これが「主役」の実例として最も代表的)。
     name: "shuyaku",
     label: "主役",
     url: "https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus",
-    selector: 'iframe[src*="youtube.com/embed"]',
-    useParent: true, // iframeの親(aspect-video.bg-black)を撮る
-    pad: 16,
+    selector: 'button[aria-label$="を再生"]',
+    nth: 0,
+    pad: 10,
   },
   {
+    // RelatedCardsRow（店主が「理想形」と名指しした部品）。/room/card/<slug> の
+    // 「こちらもどうぞ。」。実際のaspect-video枠は FramedThumb.tsx の
+    // <span className="block w-full aspect-video overflow-hidden"> (img自体には付かない)。
     name: "hanbun",
     label: "半分",
-    url: "https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus",
-    selector: 'button.group.block.w-full',
+    url: "https://joy-relief-station.lovable.app/room/card/highway-to-hell-rock-soul",
+    selector: 'span.aspect-video.overflow-hidden',
     nth: 0,
-    pad: 16,
+    pad: 10,
   },
   {
     name: "tanafuda",
@@ -57,15 +62,6 @@ const TARGETS = [
     selector: 'div.relative.aspect-square.w-full',
     nth: 0,
     pad: 16,
-  },
-  {
-    name: "mame",
-    label: "豆",
-    url: "https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus",
-    selector: 'img.w-36.aspect-video',
-    nth: 0,
-    pad: 12,
-    clickOpenText: "名カバー",
   },
 ];
 

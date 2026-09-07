@@ -63,10 +63,17 @@ def build_nums_html(nums):
     return "\n".join(out)
 
 
-def build_shots_section(before_img, after_img, before_label, after_label):
-    if not before_img and not after_img:
+def build_shots_section(before_img, after_img, before_label, after_label, shots=None, shots_title=None):
+    """スクショ節を組み立てる。
+
+    後方互換のbefore/after（2枚専用）に加え、任意枚数を並べたい時は
+    shots=[{"label":..., "img":..., "meta":...(省略可)}, ...] を渡す。
+    before/afterとshotsを両方渡した場合は両方とも出す（通常はどちらか一方でよい）。
+    """
+    if not before_img and not after_img and not shots:
         return ""
-    parts = ['<h2>③ 前と後（実データでのスクリーンショット）</h2>', '<div class="shots">']
+    title = shots_title or "③ 実データでのスクリーンショット"
+    parts = ["<h2>%s</h2>" % esc(title), '<div class="shots">']
     if before_img:
         parts.append(
             '  <div class="shot before"><b>%s</b><img src="%s" alt="前"></div>'
@@ -76,6 +83,12 @@ def build_shots_section(before_img, after_img, before_label, after_label):
         parts.append(
             '  <div class="shot after"><b>%s</b><img src="%s" alt="後"></div>'
             % (esc(after_label or "後"), esc(after_img))
+        )
+    for s in shots or []:
+        meta_html = ('<span class="meta">%s</span>' % esc(s["meta"])) if s.get("meta") else ""
+        parts.append(
+            '  <div class="shot plain"><b>%s</b><img src="%s" alt="%s">%s</div>'
+            % (esc(s.get("label", "")), esc(s.get("img", "")), esc(s.get("label", "")), meta_html)
         )
     parts.append("</div>")
     return "\n".join(parts)
@@ -127,6 +140,8 @@ def build_context(cfg):
         cfg.get("after_img"),
         cfg.get("before_label"),
         cfg.get("after_label"),
+        cfg.get("shots"),
+        cfg.get("shots_title"),
     )
     links_html = build_links_html(cfg.get("links") or [])
     table_section = build_table_section(cfg.get("table") or [])
@@ -181,6 +196,14 @@ def main():
     ap.add_argument("--after", dest="after_img", help="後スクショの相対パス")
     ap.add_argument("--before-label", dest="before_label")
     ap.add_argument("--after-label", dest="after_label")
+    ap.add_argument(
+        "--shot",
+        action="append",
+        default=[],
+        metavar="LABEL|IMG[|META]",
+        help="任意枚数のスクショを並べたい時（before/after2枚に収まらない場合）。複数指定可。META省略可。",
+    )
+    ap.add_argument("--shots-title", dest="shots_title", help="スクショ節の見出し（省略時は既定文言）")
     ap.add_argument("--footer", help="末尾の注記（省略時は自動生成）")
     ap.add_argument("--out", help="出力ファイルパス（省略時は share/check/{n}-{slug}.html）")
     ap.add_argument("--print-url", action="store_true", help="生成後、GitHub Pages上の想定URLを標準出力へ1行出す")
@@ -220,6 +243,19 @@ def main():
         cfg["after_label"] = args.after_label
     if args.footer:
         cfg["footer"] = args.footer
+    if args.shots_title:
+        cfg["shots_title"] = args.shots_title
+
+    if args.shot:
+        shots = cfg.get("shots") or []
+        for raw in args.shot:
+            parts = raw.split("|")
+            if len(parts) < 2:
+                raise ValueError("形式は 'LABEL|IMG' or 'LABEL|IMG|META' です: %r" % raw)
+            label, img = parts[0].strip(), parts[1].strip()
+            meta = parts[2].strip() if len(parts) >= 3 else None
+            shots.append({"label": label, "img": img, "meta": meta})
+        cfg["shots"] = shots
 
     if args.num:
         nums = cfg.get("nums") or []
@@ -252,7 +288,7 @@ def main():
         print("エラー: --n と --slug は必須です（またはJSONにnとslugを入れる）", file=sys.stderr)
         sys.exit(1)
 
-    if not cfg.get("before_img") and not cfg.get("after_img"):
+    if not cfg.get("before_img") and not cfg.get("after_img") and not cfg.get("shots"):
         allow_reason = args.allow_no_screenshot or cfg.get("allow_no_screenshot")
         if not allow_reason:
             print(
