@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#648 容量の減りが止まったか・24時間観測 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #648 容量の減りが止まったか・24時間観測</div>
+<h1>#648 容量の減りが止まったか・24時間観測</h1>
+<div class="date">2026-09-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+642番(Drive走査1日1回化)・645番(125GB解放)の後、本当に減りが止まったかをdisk_guardian.logの実測(15分おき)だけで検証。新しい計測プロセスは追加していない(既存ログを読むだけ＝軽い)。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>9.0時間</b><span>645/646番の解放が完了した山(08:22・62.7GB)からの経過時間</span></div>
+  <div class="num"><b>-0.8GB</b><span>その9時間での増減(62.7GB→61.9GB)</span></div>
+  <div class="num"><b>横ばい・止まっている</b><span>判定結果</span></div>
+  <div class="num"><b>約2.1GB/日</b><span>同ペースを1日換算した目安(以前の20〜30GB/日から大幅改善)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot after"><b>直近24時間の空き容量推移(実測・赤帯=1時間で1GB以上減った区間)</b><img src="img/648-disk-trend.svg" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実測ログ(disk_guardian.log)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log</a></li>
+  <li><b>新規の検証スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>解放前(9/6〜9/8朝)</td><td class="no">17〜18GB台で危機的・自動発車停止が頻発</td></tr>
+<tr><td>解放後(9/8 08:22〜17:22)</td><td class="yes">62.7GB→61.9GBで横ばい</td></tr>
+<tr><td>恒久の見張り</td><td class="yes">disk_guardian.pyが1日1回、山からの推移とグラフを自動更新(tools/disk_trend.py)</td></tr>
+</table>
+
+<footer>
+24時間まるまるの連続横ばいはまだ9時間分しか無い。恒久の見張り(disk_guardian.py)が毎日1回、山からの経過時間とグラフを自動で伸ばしていく。前日比-5GB超えた日だけ犯人番号つきで警告する。
+</footer>
+</body>
+</html>

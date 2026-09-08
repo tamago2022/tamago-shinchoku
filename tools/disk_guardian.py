@@ -33,7 +33,18 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import time
+
+# 2026-09-08（648番・「容量の減りが止まったかを24時間測って証明する」）：
+# disk_trend.pyは同じtools/配下の新規モジュール。日次の推移レポート(JSON+SVGグラフ)
+# と「1時間で1GB以上減った時間帯の犯人候補」を作る。失敗してもdisk_guardian.py本体の
+# 安全動作（片付け・発車停止判定）を壊さないよう、import自体を例外安全にする。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import disk_trend
+except Exception:
+    disk_trend = None
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)  # /Users/mac/Desktop/tamago-shinchoku
@@ -618,8 +629,37 @@ def maybe_record_daily(free_gb):
         log("日次履歴の保存失敗: %s" % e)
         return
     if prev_free is not None and (prev_free - free_gb) > DAILY_DROP_WARN_GB:
-        log("⚠️前日比-%.1fGB(前日%.1fGB→今日%.1fGB)。原因調査が必要"
-            % (prev_free - free_gb, prev_free, free_gb))
+        # 2026-09-08（648番）：犯人特定まで自動化する（disk_trend.find_culprits）。
+        # 前回記録〜今回記録の間にhistory.jsonlへ記録されていたタスク番号を突き合わせる。
+        cause = "特定できず"
+        if disk_trend is not None and days and len(days) >= 2:
+            try:
+                t1 = time.strptime(days[-2]["measured_at"], "%Y-%m-%d %H:%M:%S")
+                t2 = time.strptime(days[-1]["measured_at"], "%Y-%m-%d %H:%M:%S")
+                import datetime as _dt
+                nums, _titles = disk_trend.find_culprits(
+                    _dt.datetime(*t1[:6]), _dt.datetime(*t2[:6]))
+                if nums:
+                    cause = "・".join(nums)
+            except Exception:
+                pass
+        log("⚠️前日比-%.1fGB(前日%.1fGB→今日%.1fGB)。原因候補：%s"
+            % (prev_free - free_gb, prev_free, free_gb, cause))
+    elif prev_free is not None:
+        log("📊 容量見張り日次：変化なし(前日%.1fGB→今日%.1fGB)" % (prev_free, free_gb))
+
+    # 1日1回、24時間トレンドレポート(JSON+SVGグラフ)も更新する（同じ日次タイミングに相乗り。
+    # 新規launchd登録はしない＝642番までの教訓と同じ理由）。
+    if disk_trend is not None:
+        try:
+            r = disk_trend.build_report()
+            stable = r.get("stable_period_since_trough")
+            if stable:
+                log("📈 直近の山(%s・%.1fGB)以降%sh経過、いま%.1fGB → %s"
+                    % (stable["since"], stable["since_free_gb"], stable["hours"],
+                       stable["now_free_gb"], stable["verdict"]))
+        except Exception as e:
+            log("容量トレンドレポート生成失敗: %s" % e)
 
 
 # 2026-09-08（645番）：share/check・share/eagle-* に上限を設け、超えたら古いものから

@@ -966,6 +966,40 @@ def harvest(q):
                 pass
         changed = True
 
+    # ---- 溜まった確認待ちを鬼監督に順番に見せる（2026-09-08新設・650番）----
+    # たまごさんの言葉：「まじで大量に間違われて、そっちが勝手に間違えて、
+    #   全部確認してくれって言われるのは無理ゲーです」「82件を1個ずつ見るのは無理」。
+    # 鬼監督への権限譲渡（2026-09-06）でこの先の新しい分は自動判定されるようになったが、
+    # **その前に溜まった分は誰も見ないまま確認待ちに残り続けていた**（2026-09-08時点で35件）。
+    # ここで、確認ページを持っていてまだ一度も検品されていないものを、
+    # 1回のharvestにつき1本だけ、静かに検品へ回す。合格すれば自動で完了になり、
+    # たまごさんの列から消える。判断できなかったものだけが確認待ちに残る。
+    #
+    # 1本ずつなのは意図的：機械の負荷とクレジットを跳ねさせない。15秒おきに回るので、
+    # 検品が空いていれば数時間で列が溶ける。急がないことが軽さを守る。
+    try:
+        verifying_now = len([x for x in q.get("items", [])
+                             if x.get("status") == "verifying"])
+        if verifying_now < 2:
+            for it in q.get("items", []):
+                if it.get("status") != "awaiting_check":
+                    continue
+                if it.get("backlogVerified") or it.get("aiVerifyFailCount"):
+                    continue
+                urls = it.get("urls") or []
+                check_url = next((u for u in urls if "/share/check/" in u), None)
+                if not check_url and not urls:
+                    continue          # 証拠が1本も無いものは検品しようがない。人の目へ残す
+                it["backlogVerified"] = True   # 二度と同じものを着火しない印
+                if start_verify(it, check_url, urls):
+                    it["status"] = "verifying"
+                    changed = True
+                    log("🔎 溜まっていた確認待ちを検品へ %d番「%s」"
+                        % (it.get("n"), it.get("title")))
+                break
+    except Exception as e:
+        log("確認待ちの掃き出しで失敗（本流は止めない）: %s" % e)
+
     if any(x.get("_drop") for x in q.get("items", [])):
         q["items"] = [x for x in q["items"] if not x.get("_drop")]
     return changed
