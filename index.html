@@ -90,6 +90,17 @@
   .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:0.72rem; color:var(--sub); margin:-2px 0 8px;}
   .legend i{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:1px;}
 
+  /* 652番: あとで見る棚（サムネイル付き・押せばそのまま開く） */
+  .laterTabsGrid{grid-template-columns:1fr 1fr;}
+  .ltCard{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:block; text-decoration:none; color:var(--ink);}
+  .ltCard .ltThumbWrap{width:100%; aspect-ratio:16/9; background:#10141f; overflow:hidden;}
+  .ltCard img{width:100%; height:100%; object-fit:cover; display:block;}
+  .ltCard .ltBody{padding:8px 10px 10px;}
+  .ltCard .ltTitle{font-size:0.82rem; font-weight:600; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .ltCard .ltMeta{margin-top:4px; font-size:0.68rem; color:var(--sub); display:flex; justify-content:space-between; gap:6px;}
+  .ltGroupHead{grid-column:1/-1; margin:10px 0 -2px; color:var(--sub); font-size:0.74rem;}
+  .ltGroupHead:first-child{margin-top:0;}
+
   /* 縦2列の一覧 */
   .g{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .gh{grid-column:1/-1; color:var(--sub); font-size:0.74rem; letter-spacing:0.06em; margin:6px 0 -2px; display:flex; align-items:baseline; gap:6px;}
@@ -243,6 +254,10 @@
   .pacebar.ok{border-color:rgba(95,217,150,0.45);} .pacebar.ok .ph{color:var(--green);} .pacebar.ok .fill{background:var(--green);}
   .pacebar.warn{border-color:rgba(230,190,80,0.5);} .pacebar.warn .ph{color:var(--yellow);} .pacebar.warn .fill{background:var(--yellow);}
   .pacebar.over{border-color:rgba(255,120,100,0.6); background:#241619;} .pacebar.over .ph{color:var(--red);} .pacebar.over .fill{background:var(--red);}
+  /* 2026-09-09 数字がいつ時点かを添え、古い（10分超）数字は薄く灰色にする */
+  .pacebar.stale{opacity:0.6;}
+  .pacebar .pdas{color:var(--dim); font-size:0.72rem;}
+  .pacebar .pdas.stale{color:var(--red); font-weight:600;}
   /* 2026-09-05 たまごさん「何のモデルを使ってるか一目瞭然にしたい。モデルの色も変えといて」 */
   .mdl{display:inline-block; padding:1px 7px; border-radius:999px; font-size:0.68rem; font-weight:800; letter-spacing:.02em;
     border:1px solid transparent; vertical-align:middle;}
@@ -329,7 +344,11 @@
     background:transparent; color:var(--green); font-weight:700;}
   .queue{border-color:rgba(95,217,150,0.35);}
   .queue > summary{font-weight:700;}
-  .qrow{display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
+  /* 2026-09-09 崩れ修正：flex-wrapが無いままだと、幅620pxを超える画面（PC・横長デスクトップ）
+     ではボタン群（取っ手・番号・モデル・P・最後尾・順番指定・取り消し・完了＝8個前後）が
+     .qbody（flex:1・min-width:0）を1行に押し込み、幅が0近くまで潰れて.qt（overflow-wrap:anywhere）
+     の文字が1文字ずつ縦に折り返されていた。基本ルールとして常時ラップさせ、本文の最低幅も確保する。 */
+  .qrow{display:flex; flex-wrap:wrap; row-gap:6px; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line);}
   .qrow:last-child{border-bottom:none;}
   /* 2026-09-05 つまんで動かす取っ手。ここだけ掴める（本文タップは今まで通り説明が開く） */
   .qgrip{flex:none; width:26px; height:34px; display:flex; align-items:center; justify-content:center;
@@ -356,7 +375,7 @@
   .qn{flex:none; width:26px; height:26px; border-radius:999px; display:flex; align-items:center; justify-content:center;
     font-size:0.72rem; font-weight:800; background:#1a2028; border:1px solid var(--line); color:var(--sub); font-variant-numeric:tabular-nums;}
   .qrow.next .qn{background:var(--green); color:#12161c; border-color:var(--green);}
-  .qbody{min-width:0; flex:1;}
+  .qbody{min-width:200px; flex:1 1 200px;}
   /* 2026-09-05 スマホで題名と理由が1文字ずつ縦に並んで読めなくなっていた。
      span のまま横に置くと、幅が足りないときに文字単位でつぶれる。必ず縦に積む。 */
   .qt{font-size:0.88rem; font-weight:700; line-height:1.35; display:block; width:100%; overflow-wrap:anywhere;}
@@ -493,6 +512,11 @@
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
 
+<!-- 2026-09-09（たまごさん指示）「クレジット配分を一番上に」「同時稼働本数も分かるように」
+     →この2枚を進捗表の一番最初、他のどのセクションよりも上に置く。 -->
+<div id="paceBar" class="pacebar" hidden></div>
+<div id="capBar" class="capbar" hidden></div>
+
 <!-- 650番（2026-09-08）：お金の管理表（サブスク＋クレジット＋fal）への入口。
      たまごさん「月のAI費はまとめて欲しい」→ 別ページ(money.html)を1枚のPWAとして新設し、ここから開けるようにする。 -->
 <a href="money.html" style="display:inline-block;margin:0 0 10px;padding:6px 12px;border:1px solid var(--line);border-radius:20px;color:var(--kinari);text-decoration:none;font-size:0.8rem;">💰 お金の管理表を見る</a>
@@ -506,7 +530,7 @@
      →「✅完了」は直したもの（1週間で消える・流れていくもの）。ここは作ったもの（消えない・ずっと残る棚）。
      見る場所を増やしたくない、というたまごさんの希望どおり、新しいページは作らず進捗表の中にタブとして足した。
      一番上に置くのは「そこに行けば頼んだものができてる」を1タップで見せるため。 -->
-<details class="sec dekita" id="dekitaSec" open><summary>🎁 できたもの <small id="dekitaMeta"></small></summary><div class="in">
+<details class="sec dekita" id="dekitaSec"><summary>🎁 できたもの <small id="dekitaMeta"></small></summary><div class="in">
 <div class="dkfilters" id="dkfilters">
   <button type="button" class="on" data-dktype="all">すべて</button>
   <button type="button" data-dktype="動画">動画</button>
@@ -564,9 +588,9 @@
      **外**に出す。中に入れていると、折りたたみを閉じたときに丸ごと消えてしまい、
      「発車待ちがない」ように見えてしまうため。ここは常に見えていなければならない。 -->
 <!-- 2026-09-05 たまごさん「火曜18時にリセットされるから7で割って。1日14%前後。
-     『今日は20%使ってます』とか赤印になるとか、『13%までならまだ使える』とか。天井に行かないための配分」 -->
-<div id="paceBar" class="pacebar" hidden></div>
-<div id="capBar" class="capbar" hidden></div>
+     『今日は20%使ってます』とか赤印になるとか、『13%までならまだ使える』とか。天井に行かないための配分」
+     2026-09-09（本日の指示）：この2枚（クレジット配分・同時稼働本数）は一番上に出す。
+     実体は下に移した（paceBar/capBar本体はh1の直下）。ここは配置説明だけ残す。 -->
 <!-- 2026-09-05 たまごさん「完了っていうのを限界の下に行きましょう。その下が作業中、その下が順番待ち。
      上から完了、作業中、順番待ち、確認待ち、後回しの順で」→ 並びをこの通りにした。
      終わったものが一番上に来るので、開くたび「今日これだけ進んだ」が最初に目に入る。 -->
@@ -579,7 +603,7 @@
 <div id="now" class="now"><div class="nowempty">読み込み中…</div></div>
 <!-- 2026-09-04 たまごさん「次に発車予定の予備軍も分かるようにしといて。これが終わったら次は何が発車されるのかな、って見たいから」
      走行中が空いたら、ここの一番上が繰り上がる。優先順位はたまごさんがタップで付ける（Pボタン）。 -->
-<details class="sec queue" id="queueSec" open><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in">
+<details class="sec queue" id="queueSec"><summary>🚏 次に発車 <small id="queueMeta"></small></summary><div class="in">
 <!-- 2026-09-04 たまごさん「進捗表に入力欄を作り、そこに書いた1行がそのまま発車待ちの列に入るように。優先度も同時に付けられる」
      obsidian://new → Vault → Mac側 command_ingest.py の queue_add アクションで status/queue.json に直接1件追加する。 -->
 <!-- 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かなきゃいけないのに寄り道してる。
@@ -631,10 +655,19 @@
 <!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」
      653番（2026-09-08）たまごさん「1個1個やってらんない」→ 見出しを「終わりました（あなたのOK待ち）」に変更し、
      何をすればいいかを最初の1行で言い切る。 -->
-<details class="sec check" id="checkSec" open><summary>終わりました（あなたのOK待ち） <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
+<details class="sec check" id="checkSec"><summary>終わりました（あなたのOK待ち） <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
 <!-- 2026-09-04 たまごさん「とりあえず後回しでOKを押したら、後回しボックスに入れて、そこから消えて欲しい」
      押した瞬間に確認待ちから消える。ここは畳んだまま。時間ができたら「戻す」で列に並ぶ。 -->
 <details class="sec later" id="laterSec"><summary>🕗 後回し（時間があるとき） <small id="laterMeta"></small></summary><div class="in" id="later"></div></details>
+<!-- 652番（2026-09-09）「閉じられないブラウザタブを『あとで見る棚』に逃がして、Braveを軽くする」
+     たまごさんの言葉「1回ブラウザ閉じちゃうと、もう一生出せないみたい。何を見てたかも忘れちゃう」
+     → Brave（Default＝「あなたの Brave」プロフィール）のセッションファイルを tools/later_tabs_snapshot.py が
+       直接読み取り（Braveアプリには触れない・タブは開かない）、status/later_tabs.json へ書き出す。
+       ここは「全部ここに入ってます」を見せて、安心して閉じてもらうための棚。サムネイル付きで並べる。 -->
+<details class="sec laterTabs" id="laterTabsSec"><summary>🗂️ あとで見る棚（ブラウザを閉じても大丈夫） <small id="laterTabsMeta"></small></summary><div class="in">
+<div class="note" style="margin-bottom:8px">Braveで開いていた・最近見ていたページを見つけたぶん全部ここに集めました。ブラウザを閉じても、ここから開き直せます。</div>
+<div class="g laterTabsGrid" id="laterTabsGrid"></div>
+</div></details>
 <!-- 2026-09-04 たまごさん「完了＝本番に出て確認まで済んだもの。ここが増えることだけが成果」
      → OKを押した項目がqueue.json上はstatus:doneになるが、これまで表示先が無く消えていた（発車待ち・確認待ちのどちらにも出ない）。
        ここに積み上げ表示する。新しい完了ほど上、日時とURLを必ず添える。 -->
@@ -891,19 +924,33 @@ function modelChip(model){
   if(s.includes("テスト"))return `<span class="mdl test">テスト</span>`;
   return "";
 }
+/* 2026-09-09（たまごさん指示）「週で100%だから日割りにすると13%くらい。火曜18時リセットで配分してほしい。
+   超過したら赤で分かるように」→ 見出しを「目安◯%に対して今◯%（+◯%超過）」の形に統一し、
+   数字がいつ時点かを必ず添える（古い数字は薄く灰色）。pace.jsonのbudgetTodayは曜日曲線込みの
+   精緻な日割り（単純な週÷7の13%より賢い）なので値はそのまま使い、単純日割りの目安(perDayEven)も併記する。 */
 function renderPace(p){
   const bar = document.getElementById("paceBar"); if(!bar) return;
   if(!p || p.usedToday === null || p.usedToday === undefined){ bar.hidden = true; return; }
   bar.hidden = false;
-  bar.className = "pacebar " + (p.state || "ok");
+  let ageMin = null;
+  if(p.updatedAt){
+    const t = new Date(String(p.updatedAt).replace(" ", "T") + "+09:00").getTime();
+    if(!isNaN(t)) ageMin = Math.round((Date.now() - t) / 60000);
+  }
+  const stale = ageMin != null && ageMin >= 10;
+  bar.className = "pacebar " + (p.state || "ok") + (stale ? " stale" : "");
   const pct = Math.max(0, Math.min(100, p.budgetToday ? (p.usedToday / p.budgetToday * 100) : 0));
-  const head = p.state === "over" ? `🔴 今日はもう使いすぎ`
-             : p.state === "warn" ? `🟡 今日の残りが少ない`
-             : `🟢 今日はあと ${Math.max(0, (p.budgetToday - p.usedToday)).toFixed(1)}% 使えます`;
+  const over = Math.max(0, (p.usedToday - p.budgetToday));
+  const head = p.state === "over"
+      ? `🔴 今日の目安${p.budgetToday}%に対して今${p.usedToday}%（+${over.toFixed(1)}%超過）`
+      : p.state === "warn"
+      ? `🟡 今日の目安${p.budgetToday}%のうち${p.usedToday}%使用（残りわずか）`
+      : `🟢 今日はあと ${Math.max(0, (p.budgetToday - p.usedToday)).toFixed(1)}% 使えます（目安${p.budgetToday}%のうち${p.usedToday}%）`;
+  const asOf = ageMin == null ? "" : (ageMin < 1 ? "たった今" : ageMin + "分前") + "の値";
   bar.innerHTML = `<div class="ph">${head}</div>
-    <div class="pd">今日 <b>${p.usedToday}%</b> 使用 ／ 今日の予算 <b>${p.budgetToday}%</b>（週の残り ${p.remainWeek}% ÷ あと ${p.daysLeft}日）</div>
+    <div class="pd">週枠100%のうち今週使用 <b>${p.allPct}%</b> ／ 週の残り${p.remainWeek}% ÷ あと${p.daysLeft}日 ・ 単純日割り目安 約${p.perDayEven}%</div>
     <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-    <div class="pd">週の使用 ${p.allPct}%・ならすと1日 ${p.perDayEven}%・${esc(p.resetAt || "")} にリセット</div>`;
+    <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>`;
 }
 function refreshPace(){
   const relay = (window.__relay && window.__relay.url);
@@ -1083,6 +1130,58 @@ function refreshAiVerify(){
 }
 refreshAiVerify();
 setInterval(refreshAiVerify, 60000);
+
+/* ───── 652番：あとで見る棚（2026-09-09） ─────
+   status/later_tabs.json（tools/later_tabs_snapshot.py が1日1回、Braveのセッション
+   ファイルを直接読み取って書く。Braveアプリ自体には触れない・タブは開かない）を読んで、
+   サムネイル付きカードで並べる。押すとそのURLへ新規タブで飛ぶ（このアプリ自体は何も操作しない）。 */
+const LT_GROUP_ORDER = ["YouTube", "ChatGPT", "X (Twitter)", "Grok / Gemini", "Google", "Notion", "その他のページ"];
+function ltTimeAgo(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  const diffH = (Date.now() - d.getTime()) / 3600000;
+  if(diffH < 1) return "1時間以内";
+  if(diffH < 24) return Math.round(diffH) + "時間前";
+  return Math.round(diffH/24) + "日前";
+}
+function renderLaterTabs(d){
+  const grid = document.getElementById("laterTabsGrid");
+  const meta = document.getElementById("laterTabsMeta");
+  if(!grid) return;
+  const entries = (d && d.entries) || [];
+  if(!entries.length){
+    grid.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ記録がありません（次の自動チェックで集まります）</div>`;
+    if(meta) meta.textContent = "";
+    return;
+  }
+  if(meta){
+    const rss = d.brave_rss_mb ? Math.round(d.brave_rss_mb/1024*10)/10 + "GB" : "—";
+    meta.textContent = `${entries.length}件・今のBraveメモリ約${rss}（${entries.length}件ぶんタブを閉じても大丈夫）`;
+  }
+  const byGroup = {};
+  for(const e of entries){ (byGroup[e.group] ||= []).push(e); }
+  const groups = LT_GROUP_ORDER.filter(g => byGroup[g]).concat(Object.keys(byGroup).filter(g => !LT_GROUP_ORDER.includes(g)));
+  let html = "";
+  for(const g of groups){
+    html += `<div class="ltGroupHead">${esc(g)}　<b>${byGroup[g].length}</b>件</div>`;
+    for(const e of byGroup[g]){
+      html += `<a class="ltCard" href="${esc(e.url)}" target="_blank" rel="noopener">`
+        + `<div class="ltThumbWrap"><img src="${esc(e.thumb)}" loading="lazy" alt=""></div>`
+        + `<div class="ltBody"><div class="ltTitle">${esc(e.title)}</div>`
+        + `<div class="ltMeta"><span>${esc(e.sub || e.host || "")}</span><span>${esc(ltTimeAgo(e.last_seen))}</span></div>`
+        + `</div></a>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+function refreshLaterTabs(){
+  return fetch("status/later_tabs.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(renderLaterTabs).catch(()=>{});
+}
+refreshLaterTabs();
+setInterval(refreshLaterTabs, 300000);
+
 /* 2026-09-05 このページがMac自身から配られているとき（家のWi-Fiの中で http://192.168.x.x:8788 を
    開いたとき）は、**自分がいる場所がそのまま中継所**。トンネルを探しにいかない。
    トンネルは切れるたびURLが変わるが、家の中の道は切れないしURLも変わらない。 */
@@ -1213,15 +1312,27 @@ function renderCapBar(){
   const hardSafe = Math.max(0, Math.floor((m.safeMax || 0) * SAFETY));   // 90%で止める
   const room = Math.max(0, hardSafe - real);
   const load = m.load != null ? Math.round(m.load) : null;
+  // 2026-09-09（たまごさん指示）「大体三本か四本ぐらいがいい」「一番嫌なのが重すぎて固まること」
+  //   「最悪なのは何もタスクが回ってないこと」→ Dispatch自身を除いた実本数に、
+  //   固定の目安（0本＝工場停止・最優先で赤／5本以上＝重い・警告／3〜4本が適正）を先に判定する。
+  //   Fable混在時は一言添える（個別カードの赤枠は既存の.nowcard.fableで対応済み）。
+  const fableN = Object.entries(m.modelCounts || {})
+    .filter(([k]) => String(k).toLowerCase().includes("fable"))
+    .reduce((a, [, v]) => a + (v || 0), 0);
   let cls = "capbar", head, sub;
-  if(room > 0){
-    cls += ""; head = `あと${room}本いける`;
+  if(real === 0){
+    cls += " stop"; head = `🔴 工場停止（0本・何も走っていません）`;
+  } else if(real >= 5){
+    cls += " warn"; head = `🟡 重い（${real}本走行中・目安3〜4本）`;
+  } else if(room > 0){
+    head = `🟢 あと${room}本いける（今${real}本・目安3〜4本）`;
   } else if(real <= hardSafe){
     cls += " warn"; head = "ここが上限。増やさない";
   } else {
     cls += " stop"; head = `もう限界（${real}本／上限${hardSafe}本）`;
   }
-  sub = `実作業${real}本・安全上限${hardSafe}本（測定上限${m.safeMax || "?"}本の90%）` + (load != null ? `・負荷${load}%` : "");
+  sub = `実作業${real}本・安全上限${hardSafe}本（測定上限${m.safeMax || "?"}本の90%）` + (load != null ? `・負荷${load}%` : "")
+    + (fableN > 0 ? `・うちFable${fableN}本` : "");
   // 限界なら「何を閉じれば1本増えるか」を具体名で出して、その場で閉じられるようにする
   let btn = "";
   if(room === 0 && h && (h.items || []).length){
@@ -3097,22 +3208,11 @@ function renderStats(text){
 fetch("status/history.jsonl?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.text() : "").then(renderStats).catch(()=>renderStats(""));
 
-/* ───── 653番（2026-09-08）完了セクションの開閉状態を覚える ─────
-   たまごさん「1個1個やってらんない」小工事の一環。完了(✅)セクションは既定で閉じておき、
-   たまごさんが開け閉めした状態をlocalStorageに覚え、次回開いた時も同じ状態にする。 */
-(function(){
-  const KEY = "shinchoku_sec_open_v1";
-  let saved = {};
-  try{ saved = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ saved = {}; }
-  const el = document.getElementById("doneSec");
-  if(!el) return;
-  if(saved.doneSec === true) el.setAttribute("open", "");
-  else if(saved.doneSec === false) el.removeAttribute("open");
-  el.addEventListener("toggle", function(){
-    saved.doneSec = el.open;
-    try{ localStorage.setItem(KEY, JSON.stringify(saved)); }catch(e){}
-  });
-})();
+/* ───── 2026-09-09（たまごさん指示）進捗表は必ず全部畳んだ状態で開く ─────
+   たまごさん「進捗表は必ずトグルは全部畳んだ状態で出てきてください」。
+   653番の「前回の開閉状態を覚えて復元する」仕組みは今回の指示と矛盾するため終了する
+   （読み込み直後にopen属性を戻すコードを削除。HTML側にopen属性を残していないセクションは
+   これで常に閉じた状態から始まる。会話中にたまごさんが開くのは今まで通り自由）。 */
 </script>
 </body>
 </html>
