@@ -40,6 +40,9 @@ import uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+import cost_risk  # noqa: E402  案件#676：お金がかかるタスクの自動判定
 VAULT = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain"
 INBOX_DIR = os.path.join(VAULT, "AI出力", "_ルール", "コマンド_受信")
 OUT = os.path.join(REPO, "status", "commands.json")
@@ -487,6 +490,11 @@ def queue_add(text, priority=None, label=None, origin=None):
         item["originalWhat"] = text
     if p is not None:
         item["priority"] = p
+    # 案件#676：新規で積む段階でお金の匂いを判定しておく。falは当面使わない方針なので、
+    # 言及があれば無条件でお金の確認待ちにする（auto_launcher.pyがOKが出るまで発車しない）。
+    if cost_risk.is_cost_risk(item) or cost_risk.is_fal_task(item):
+        item["costsMoney"] = True
+        item["costEstimate"] = cost_risk.estimate_note(item)
     items.append(item)
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
@@ -560,6 +568,38 @@ def queue_ok(target):
     if missing:
         msg += "・見つからず%d件（%s）" % (len(missing), ",".join(str(x) for x in missing))
     return ("done" if done else "failed"), msg
+
+
+def queue_cost_ok(target):
+    """進捗表の💴「OKで発車を許可」→ status/queue.json の該当番号に costApproved を立てる。
+
+    案件#676：costsMoney が立った項目は tools/auto_launcher.py が自動発車しない
+    （2026-09-08にfalで15ドル溶けた事故のガード）。ここでたまごさんの承認だけを記録し、
+    実際の着火は次の auto_launcher.py の周回に任せる（このボタンはClaudeを起動しない）。"""
+    ns = _split_targets(target)
+    if not ns:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    approved, missing = [], []
+    for n in ns:
+        it = _find_item(items, n)
+        if it is None:
+            missing.append(n)
+            continue
+        it["costApproved"] = True
+        it["costApprovedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        approved.append(n)
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    if not approved:
+        return "failed", "queue.jsonに見つかりません: %r" % target
+    msg = "%d件のお金の確認にOKを出しました（%s）。次の周回で発車します" % (
+        len(approved), ",".join(str(x) for x in approved))
+    if missing:
+        msg += "・見つからず%d件" % len(missing)
+    return "done", msg
 
 
 def queue_undo_ok(target):
@@ -748,7 +788,7 @@ def process(cmd):
     action = cmd.get("action")
     if action in ("queue_ok", "queue_undo_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
                   "queue_pause", "queue_delete", "queue_order", "queue_dedupe",
-                  "queue_cancel", "queue_undo_cancel"):
+                  "queue_cancel", "queue_undo_cancel", "queue_cost_ok"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -792,6 +832,8 @@ def _process_queue(action, cmd):
         return queue_cancel(target)
     if action == "queue_undo_cancel":
         return queue_undo_cancel(target)
+    if action == "queue_cost_ok":
+        return queue_cost_ok(target)
     return "failed", "不明なアクション: %s" % action
 
 

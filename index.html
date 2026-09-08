@@ -400,8 +400,12 @@
   .qd[open] > summary::after{content:" ▴";}
   .qwhat{margin:8px 0 4px; padding:10px 12px; border-radius:10px; background:#161c24; border:1px solid var(--line);
     font-size:0.8rem; line-height:1.7; color:var(--fg);}
-  /* 654番（2026-09-08）お金がかかるタスクは題名を赤字にして一目で分かるようにする。 */
-  .qt.money{color:#ff5c5c; font-weight:700;}
+  /* 654番（2026-09-08）お金がかかるタスクは題名を赤字にして一目で分かるようにする。
+     676番（2026-09-09）発車待ちだけでなく走行中(.nt)・確認待ち(.ct)にも同じ赤字を出す。 */
+  .qt.money, .nt.money, .ct.money{color:#ff5c5c; font-weight:700;}
+  /* 676番：お金の確認待ち（costsMoneyが立っていてまだOKが出ていない）を発車させるボタン。 */
+  .qcostok{flex:none; min-height:36px; padding:0 10px; border-radius:9px; border:1px solid #ff5c5c;
+    background:#3a1414; color:#ffb3b3; font-size:0.72rem; font-weight:700; white-space:nowrap;}
   /* 654番（2026-09-08）優先順位（qp）と、箱の中の順番（qtop/qmoreの数字ボタン）が
      どちらも数字で紛らわしかった→優先順位は「色帯＋Pラベル」の見た目にして見分ける。 */
   .qp{flex:none; min-height:36px; min-width:40px; padding:0 6px; border-radius:9px;
@@ -1591,6 +1595,14 @@ function qnOf(s){
     x.status === "running" && (String(x.sessionId||"") === String(s.cli||"-") || String(x.pid) === String(s.pid)));
   return it ? it.n : null;
 }
+/* 676番：走行中カードにも発車待ちと同じ💴赤字を出す（qnOfで台帳の項目を引き当てて見る）。 */
+function nowMoneyItem(s){
+  const n = qnOf(s);
+  if(n == null) return null;
+  return ((window.__queue && window.__queue.items) || []).find(x => x.n === n) || null;
+}
+function nowMoneyCls(s){ return (nowMoneyItem(s) || {}).costsMoney === true ? " money" : ""; }
+function nowMoneyMark(s){ return (nowMoneyItem(s) || {}).costsMoney === true ? "💴 " : ""; }
 
 /* ───── 585番：splitFromが同じ行を1行にまとめる（確認待ち・発車待ち・走行中で共通） ─────
    423番の自動分割で1つの依頼が9本・4本などに割れたとき、9行そのまま並べない。
@@ -1755,7 +1767,7 @@ function renderNow(m){
     // 1画面に8〜10本入れるため、1枚を「題名2行＋下段1行」だけにした。
     // 下段＝モデル／経過時間（何分過ぎたか）／残り時間。発言の鮮度は経過時間の隣に小さく出す。
     return `<div class="nowcard${isFable ? " fable" : ""}" data-start="${esc(s.startedAt || "")}" data-limit="${limitMinFor(s)}">
-      <div class="nt">${esc(nowTitle(s))}</div>
+      <div class="nt${nowMoneyCls(s)}">${nowMoneyMark(s)}${esc(nowTitle(s))}</div>
       <div class="nowfoot">
         <span class="nmeta"><span class="nbadge">${esc(mLbl)}</span><span data-el>—</span><span>${sayFresh ? "🗣️" + esc(sayFresh.text) : ""}</span></span>
         <span class="ncd" data-cd>--:--</span>
@@ -1939,12 +1951,15 @@ function checkRowHtml(e){
   // 赤（証拠なし・URLが開かないおそれ）は「全部選ぶ」でも選ばれない別扱い＝チェックボックス自体をdisabledにして事故を防ぐ
   const isRed = !hasProof || isDead;
   const checked = window.__bulkSelected.has(r.n) ? " checked" : "";
+  // 676番：発車待ちと同じ印（costsMoney）を確認待ちでも赤字で出す。
+  const moneyCls = r.costsMoney === true ? " money" : "";
+  const moneyMark = r.costsMoney === true ? "💴 " : "";
   return `<div class="crow${hasProof ? " proof" : " noproof"}" data-cn="${r.n}">
     <div class="ctrow">
       <label class="ccheck" title="${isRed ? "証拠なし・URL不通のためまとめてOK対象外（1件ずつなら押せます）" : "まとめてOKに含める"}">
         <input type="checkbox" class="crowchk" data-cn="${r.n}"${isRed ? " disabled" : ""}${checked}>
       </label>
-      <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
+      <div class="ct${moneyCls}">#${r.n} ${moneyMark}${esc(r.title)} ${modelChip(r.model)}</div>
     </div>
     ${thumbsHtml}
     ${urlBtn}
@@ -1974,9 +1989,12 @@ function checkGroupRowHtml(entry){
   // 「↩︎やり直し」「🗑消す」「✅完了」はグループ全n（allNs＝カンマ区切り）へ一括で作用する。1本ずつ消させない。
   const {members, memberEvids, summary, title} = entry;
   const openMembers = memberEvids.filter(e => e.r.status !== "done" && e.r.status !== "cancelled");
+  // 676番：グループ内に1本でもお金がかかるものがあれば、まとめ行ごと赤字にする。
+  const moneyCls = members.some(m => m.costsMoney === true) ? " money" : "";
+  const moneyMark = members.some(m => m.costsMoney === true) ? "💴 " : "";
   return `<div class="crow cgroup" data-cn="${summary.allNs}">
     <div class="ctrow">
-      <div class="ct">📦 ${esc(title)} <span class="cgprog">${summary.total}本中${summary.closed}本おわり・残り${summary.remaining}本</span></div>
+      <div class="ct${moneyCls}">📦 ${moneyMark}${esc(title)} <span class="cgprog">${summary.total}本中${summary.closed}本おわり・残り${summary.remaining}本</span></div>
     </div>
     <div class="cbtns cbtns2">
       <button class="cok" data-ck="ok" data-n="${summary.allNs}">✅ まとめて完了</button>
@@ -2256,6 +2274,22 @@ function showQueueCancelUndo(ns){
     if(remain <= 0){ window.__queueCancelUndo = null; clearInterval(window.__queueCancelUndoTimer); renderQueue(); }
   }, 500);
 }
+/* 676番：💰OKで発車を許可。押した瞬間にcostApprovedを楽観的に立て、queue_cost_okを送る。 */
+document.addEventListener("click", e=>{
+  const cob = e.target.closest("[data-costok]");
+  if(cob){
+    const ns = String(cob.dataset.costok).split(",").map(s=>Number(s.trim())).filter(v=>!isNaN(v));
+    if(!ns.length) return;
+    const items = (window.__queue && window.__queue.items) || [];
+    ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it) it.costApproved = true;
+    });
+    sendCommandWithId("cok" + Date.now().toString(36), "queue_cost_ok", ns.join(","), `💰OK ${ns.length}件`);
+    try{ renderQueue(); }catch(_){}
+    return;
+  }
+});
 document.addEventListener("click", e=>{
   const cb = e.target.closest("[data-qcancel]");
   if(cb){
@@ -2420,6 +2454,11 @@ function renderQueue(){
   // 654番 完了・取り消しはセットで出す（取り消しは既存のqueue_cancel、完了は既存のqueue_okに乗せる）。
   const qActionHtml = (n,label) => `<button class="qcancel" data-qcancel="${n}" title="もういい（この依頼を取り消す）">取り消し</button>` +
     `<button class="qcancel qdone" data-qdone="${n}" title="完了として記録する（10秒だけ取り消せます）">✅完了</button>`;
+  // 676番：costsMoneyが立っていてまだOKが出ていないものは、押すまでauto_launcher.pyが発車させない。
+  // このボタンを押すとqueue_cost_okが飛び、costApprovedが立って次の周回で発車する。
+  const qCostOkHtml = (n, needsApproval, estimate) => needsApproval
+    ? `<button class="qcostok" data-costok="${n}" title="${esc(estimate || "金額を確認してから押してください")}">💰OKで発車を許可</button>`
+    : "";
   const rowHtml = (r,i,globalIdx)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
     // 654番（2026-09-08）お金がかかるタスクは題名を赤字＋💴で目立たせる。
@@ -2430,6 +2469,7 @@ function renderQueue(){
       const members = groupMap.get(r.splitFrom) || [r];
       const summary = splitGroupSummary(members);
       const title = splitGroupBaseTitle(r);
+      const groupNeedsApproval = members.some(m => m.costsMoney === true && m.costApproved !== true);
       return `<div class="qrow qgroup${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
         <span class="qgrip" title="つまんで動かす">⣿</span>
         <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
@@ -2438,11 +2478,13 @@ function renderQueue(){
             <div class="qwhat">${members.map(m=>`#${m.n}（${esc(STATUS_JA[m.status] || m.status)}）`).join("　")}</div>
           </details>
         </span>
+        ${qCostOkHtml(summary.allNs || r.n, groupNeedsApproval, r.costEstimate)}
         ${qPrioHtml(r.n, p)}
         ${qJumpHtml(r.n)}
         ${qActionHtml(summary.allNs || r.n)}
       </div>`;
     }
+    const needsApproval = r.costsMoney === true && r.costApproved !== true;
     return `<div class="qrow${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
       <span class="qgrip" title="つまんで動かす">⣿</span>
       <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
@@ -2451,6 +2493,7 @@ function renderQueue(){
           <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>
         </details>
       </span>
+      ${qCostOkHtml(r.n, needsApproval, r.costEstimate)}
       ${qPrioHtml(r.n, p)}
       ${qJumpHtml(r.n)}
       ${qActionHtml(r.n)}

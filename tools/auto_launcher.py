@@ -36,6 +36,8 @@ from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+import cost_risk  # noqa: E402  案件#676：お金がかかるタスクの自動判定・確認文言
 QUEUE = os.path.join(REPO, "status", "queue.json")
 MACHINE = os.path.join(REPO, "status", "machine.json")
 QUOTA = os.path.join(REPO, "status", "quota.json")
@@ -216,6 +218,27 @@ def append_outbox(it, ok):
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     except Exception as e:
         log("outbox書き込み失敗（%s番）: %s" % (it.get("n"), e))
+
+
+def _append_cost_confirm_outbox(it, message):
+    """案件#676：お金がかかるタスクを止めたとき、1回だけ dispatch_outbox へ確認を出す。
+
+    通常の完了報告（n=数値）と同じ番号を使うと dispatch_reported.json の既読判定
+    （n だけを見て「もう話した」扱いにする）を巻き込み、あとで本当に完了した報告が
+    消えてしまう。なので n は文字列で "<番号>-cost" にして衝突させない。
+    """
+    try:
+        row = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+            "n": "%s-cost" % it.get("n"),
+            "type": "cost_confirm",
+            "title": it.get("title"),
+            "message": message,
+        }
+        with io.open(OUTBOX, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception as e:
+        log("cost_confirm outbox書き込み失敗（%s番）: %s" % (it.get("n"), e))
 
 
 def _strip_html_for_check(html):
@@ -1328,6 +1351,31 @@ def main():
       if not waiting:
           log("見送り: 発車待ちが空" if not credit_stop else
               "見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
+          return 0
+
+      # ---- お金の確認ゲート（案件#676・2026-09-08にfalで15ドル溶けた事故のガード）----
+      #   costsMoney が立っていて、たまごさんがまだOKを押していない（costApproved が無い）ものは
+      #   絶対に自動発車しない。列の先頭に来た最初の1回だけ dispatch_outbox へ確認を出し、
+      #   以後は costAskedAt があるので黙って足止めする（同じ問いを連呼しない）。
+      #   進捗表の💴ボタン（queue_cost_ok）でOKが押されると costApproved が立ち、次の周回で発車する。
+      asked_now = False
+      cost_ok_waiting = []
+      for it in waiting:
+          if it.get("costsMoney") and not it.get("costApproved"):
+              if not it.get("costAskedAt"):
+                  msg = cost_risk.confirm_message(it)
+                  _append_cost_confirm_outbox(it, msg)
+                  it["costAskedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+                  asked_now = True
+                  log("💰 発車を止めて確認を出しました %d番「%s」" % (it.get("n"), it.get("title")))
+              continue
+          cost_ok_waiting.append(it)
+      if asked_now:
+          q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+          save_queue(q)
+      waiting = cost_ok_waiting
+      if not waiting:
+          log("見送り: 発車待ちは全部お金の確認待ち")
           return 0
 
       # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
