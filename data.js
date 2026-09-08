@@ -10,6 +10,36 @@ window.SHINCHOKU = {
   // tools/check_anthropic_reply.py が検知した時だけこの値を書き換えてpushする。
   anthropicReply: null,
 
+  // 683番（2026-09-09）：マイク不具合の「再現条件を記録できる形」。新しい置き場所は作らず、
+  // ここに配列で1行足すだけにする（626番のanthropicReplyと同じ手更新パターン）。
+  // たまごさんが「またマイクが使えない」と言ったら、time・load・状況を1件足すだけでよい。
+  micIssueLog: [
+    {
+      time: "2026-09-09T08:20:00+09:00",
+      note: "初回切り分け（683番）。macOSのマイク権限＝Claude Desktopに許可済み（TCC.db実測）。" +
+            "デフォルト入力デバイス＝内蔵マイクのまま（切り替わっていない）。他アプリがマイクを排他占有している" +
+            "証拠は見つからず（aivisspeech-engine・Zoomは非稼働）。一方でload average 37〜45（8コアの4〜6倍・" +
+            "Braveだけで75プロセス、Chromeレンダラー単体でCPU159%）という慢性的な過負荷を検出。" +
+            "スマホは常時使える＝サーバ/アカウント側の問題ではないという手がかりとも整合するため、" +
+            "こちら側（Macの高負荷）が最有力の要因。ただし高負荷時にアプリがマイクストリームを正しく" +
+            "再初期化できていない可能性（アプリ側の頑健性の問題）も残るため、両方をAnthropicへ報告する。"
+    }
+  ],
+
+  // 683番：Anthropicへの問い合わせ文面（マイク＋添付画像の取りこぼしの2件）。
+  // 送信はたまごさん本人が押す（外部公開は確認義務）。gmailComposeUrlを開けば宛先・件名・本文が
+  // 入った状態でGmailの作成画面が開くので、あとは送信ボタンを押すだけ。
+  anthropicDraftMail: {
+    to: "support@anthropic.com",
+    subject: "Claude Desktop (Mac): intermittent microphone dictation failures & ~30% dropped image attachments",
+    bodyEn: "Hello Anthropic Support,\n\nI'm a daily user of Claude Desktop (Cowork/Dispatch) on macOS and would like to report two intermittent input reliability issues.\n\n1) Microphone dictation intermittently stops working (Mac only)\n- I dictate most instructions by voice. On the Mac app, the microphone intermittently stops working (not a hard permission error, it just silently fails sometimes).\n- On my iPhone (same account), voice input always works. Only the Mac desktop app is affected.\n- I checked local causes: mic permission for Claude is granted in System Settings, the default input device is still the built-in mic (not switched), and I found no other app holding exclusive mic access at failure time. My Mac does sometimes run under heavy system load, which may contribute, but the Mac-only, intermittent pattern suggests the app itself may not recover the mic stream reliably (e.g. after device/focus changes or under load).\n- Is this a known issue? Any recommended fix besides restarting the whole app?\n\n2) Attached screenshots sometimes fail to send (~30% of the time)\n- When I attach a screenshot in Claude Desktop, about 30% of the time the image never reaches the assistant, even though it looked like it sent. I only notice when the assistant doesn't reference it, so I have to retake and resend, doubling the effort.\n- This is intermittent, not a hard failure every time.\n\nBoth issues affect voice input and image attachments, my primary way of using Claude Desktop daily. Any known fixes, or ways I can help debug (logs, timestamps) would be appreciated.\n\nThank you,\neggypop2010@gmail.com",
+    bodyJa: "Anthropicサポート様\n\nClaude Desktop（Mac版・Cowork/Dispatch）を毎日使っているユーザーです。作業の妨げになっている入力の不安定さについて、2件ご報告します。\n\n1) マイク（音声入力）が断続的に使えなくなる（Mac版のみ）\n- 指示のほとんどを音声入力で出しています。Mac版アプリで、マイク入力が断続的に効かなくなります。権限エラーのような明確な失敗ではなく、時々静かに動かなくなるだけです。\n- 同じアカウントのiPhone版では、音声入力は常に安定して動きます。Mac版だけの現象です。\n- こちらで調べられる原因は確認済みです：システム設定でClaudeへのマイク権限は許可済み、デフォルトの入力デバイスは内蔵マイクのまま（切り替わっていない）、その時点で他アプリがマイクを排他的に使っている証拠も見つかりませんでした。Macがときどき高負荷になることが一因の可能性はありますが、断続的でPC版だけで起きるという特徴から、アプリ側（負荷時のマイクストリーム再初期化の扱いなど）の問題である可能性も考えられます。\n- 既知の問題か、アプリ全体の再起動以外に推奨される対処があれば教えてください。\n\n2) スクリーンショットの添付が届かないことがある（約3割）\n- Claude Desktopでメッセージに画像を添付すると、送信できたように見えても、約3割の確率でアシスタント側に画像が届きません。アシスタントが画像に触れないことで気づき、撮り直して送り直すことになり、毎回二度手間になっています。\n- こちらも常に失敗するわけではなく、断続的に発生します。\n\nどちらも、私が日常的にClaude Desktopとやり取りする主な手段（音声入力＋画像添付）を不安定にしています。既知の対処法や、デバッグに協力できること（ログ、発生時刻など）があれば教えてください。\n\nよろしくお願いいたします。\neggypop2010@gmail.com",
+    gmailComposeUrl: "https://mail.google.com/mail/?view=cm&fs=1&to=support%40anthropic.com&su=Claude%20Desktop%20%28Mac%29%3A%20intermittent%20microphone%20dictation%20failures%20%26%20~30%25%20dropped%20image%20attachments&body=Hello%20Anthropic%20Support%2C%0A%0AI%27m%20a%20daily%20user%20of%20Claude%20Desktop%20%28Cowork/Dispatch%29%20on%20macOS%20and%20would%20like%20to%20report%20two%20intermittent%20input%20reliability%20issues.%0A%0A1%29%20Microphone%20dictation%20intermittently%20stops%20working%20%28Mac%20only%29%0A-%20I%20dictate%20most%20instructions%20by%20voice.%20On%20the%20Mac%20app%2C%20the%20microphone%20intermittently%20stops%20working%20%28not%20a%20hard%20permission%20error%2C%20it%20just%20silently%20fails%20sometimes%29.%0A-%20On%20my%20iPhone%20%28same%20account%29%2C%20voice%20input%20always%20works.%20Only%20the%20Mac%20desktop%20app%20is%20affected.%0A-%20I%20checked%20local%20causes%3A%20mic%20permission%20for%20Claude%20is%20granted%20in%20System%20Settings%2C%20the%20default%20input%20device%20is%20still%20the%20built-in%20mic%20%28not%20switched%29%2C%20and%20I%20found%20no%20other%20app%20holding%20exclusive%20mic%20access%20at%20failure%20time.%20My%20Mac%20does%20sometimes%20run%20under%20heavy%20system%20load%2C%20which%20may%20contribute%2C%20but%20the%20Mac-only%2C%20intermittent%20pattern%20suggests%20the%20app%20itself%20may%20not%20recover%20the%20mic%20stream%20reliably%20%28e.g.%20after%20device/focus%20changes%20or%20under%20load%29.%0A-%20Is%20this%20a%20known%20issue%3F%20Any%20recommended%20fix%20besides%20restarting%20the%20whole%20app%3F%0A%0A2%29%20Attached%20screenshots%20sometimes%20fail%20to%20send%20%28~30%25%20of%20the%20time%29%0A-%20When%20I%20attach%20a%20screenshot%20in%20Claude%20Desktop%2C%20about%2030%25%20of%20the%20time%20the%20image%20never%20reaches%20the%20assistant%2C%20even%20though%20it%20looked%20like%20it%20sent.%20I%20only%20notice%20when%20the%20assistant%20doesn%27t%20reference%20it%2C%20so%20I%20have%20to%20retake%20and%20resend%2C%20doubling%20the%20effort.%0A-%20This%20is%20intermittent%2C%20not%20a%20hard%20failure%20every%20time.%0A%0ABoth%20issues%20affect%20voice%20input%20and%20image%20attachments%2C%20my%20primary%20way%20of%20using%20Claude%20Desktop%20daily.%20Any%20known%20fixes%2C%20or%20ways%20I%20can%20help%20debug%20%28logs%2C%20timestamps%29%20would%20be%20appreciated.%0A%0AThank%20you%2C%0Aeggypop2010%40gmail.com",
+    gmailSearchUrl: "https://mail.google.com/mail/u/0/#search/from%3Aanthropic.com",
+    note: "651番・626番の実測どおり、この作業場にはGmail本文を読む/送るブラウザ手段がありません（IMAP=要アプリパスワード・Mail.app=Gmail未設定・既存Chrome=Lovable専用でGmail未ログイン・新規ブラウザ起動は憲法で禁止）。" +
+          "そのため本文はここに事前生成し、gmailComposeUrlを開けば宛先・件名・本文入りでGmail作成画面が開く状態にしてあります。たまごさんが開いて送信ボタンを押すだけで送れます。"
+  },
+
   // ── 今動いているもの（手更新。リアルタイム連携ではない）──
 
   // 2026-09-04 たまごさん「次に発車予定の予備軍も分かるようにしといて。これが終わったら次は何が発車されるのかな、って見たいから」

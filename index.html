@@ -558,6 +558,13 @@
      data.js の anthropicReply が null の間は display:none のまま（何も出さない）。 -->
 <div id="anthropicAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;"></div>
 
+<!-- 683番（2026-09-09）：マイクの再現ログ＋Anthropicへの下書きメール（送信はたまごさんが押す）。
+     見る場所を増やさないため、既存の折りたたみ形式(details)を使い回す。 -->
+<details class="sec" id="micMailSec"><summary>🎙 マイク不具合ログ ＆ Anthropicへの下書き</summary><div class="in">
+  <div id="micLogBox" style="font-size:0.85rem;line-height:1.6;"></div>
+  <div id="anthropicDraftBox" style="margin-top:10px;font-size:0.85rem;line-height:1.6;"></div>
+</div></details>
+
 <!-- 2026-09-07(616番) たまごさん「もうここにできてますよ、っていうコーナーが欲しい。
      ここに行けば、頼んだ成果がここにあるんだ、っていう。修正とは違うんだよ。成果物と修正は分けたい」
      →「✅完了」は直したもの（1週間で消える・流れていくもの）。ここは作ったもの（消えない・ずっと残る棚）。
@@ -3215,7 +3222,7 @@ function __dataReady2(){
   D = window.SHINCHOKU;
   if(!D){ document.getElementById("updated").textContent = "データを読み込めませんでした。開き直してください。"; return; }
   document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
-  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert();
+  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail();
 };
 // 626番：Anthropic返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
 function renderAnthropicAlert(){
@@ -3226,6 +3233,35 @@ function renderAnthropicAlert(){
   el.style.display = "block";
   el.innerHTML = `🔔 Anthropicから返信が来ています（${esc(a.subject || "件名なし")} / ${esc(a.date || "")}）　`
     + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`;
+}
+// 683番：①マイク不具合の再現ログ（配列に1行足すだけで増える）②Anthropicへの下書きメール
+// （宛先・件名・本文入りでGmail作成画面を開くリンク。送信ボタンはたまごさんが押す）。
+function renderMicAndDraftMail(){
+  const logBox = document.getElementById("micLogBox");
+  const draftBox = document.getElementById("anthropicDraftBox");
+  if(logBox){
+    const log = (D && D.micIssueLog) || [];
+    if(!log.length){
+      logBox.innerHTML = "<div class=\"card note\">まだ記録がありません。</div>";
+    } else {
+      logBox.innerHTML = log.slice().reverse().map(e => (
+        `<div style="margin-bottom:8px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.03);">`
+        + `<b>${esc(e.time || "")}</b><br>${esc(e.note || "")}</div>`
+      )).join("");
+    }
+  }
+  if(draftBox){
+    const m = D && D.anthropicDraftMail;
+    if(!m){ draftBox.innerHTML = ""; return; }
+    draftBox.innerHTML =
+      `<div style="margin-bottom:6px;">Anthropicへの問い合わせ下書き（マイク断続不具合＋添付画像3割ロス）を用意しました。`
+      + `下のボタンでGmailの作成画面が宛先・件名・本文入りで開きます。<b>あとは送信ボタンを押すだけ</b>です。</div>`
+      + `<a href="${esc(m.gmailComposeUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border-radius:20px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);text-decoration:none;">✉️ Gmailの作成画面を開く（送信は自分で）</a>`
+      + `<a href="${esc(m.gmailSearchUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 0;padding:6px 12px;border-radius:20px;border:1px solid var(--line);color:var(--kinari);text-decoration:none;">🔍 Anthropicからのメールを検索</a>`
+      + `<details style="margin-top:8px;"><summary style="cursor:pointer;">日本語の文面（確認用）</summary>`
+      + `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.82rem;">${esc(m.bodyJa || "")}</pre></details>`
+      + (m.note ? `<div style="margin-top:8px;font-size:0.78rem;color:var(--sub);">${esc(m.note)}</div>` : "");
+  }
 }
 if(window.SHINCHOKU && window.SHINCHOKU_ALL) window.__dataReady();
 
