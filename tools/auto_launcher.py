@@ -193,6 +193,40 @@ def _elapsed_min(started, finished):
         return None
 
 
+def short_report(it):
+    """679番 たまごさん「これを直しましたのURLだけでいい位だよ」「報告とURLはセット」。
+    子セッションの生の完了報告（経緯・説明・謝罪込みで長いことがある）から、
+    機械で「1行目=何を直したか（20字以内）」「urlは呼び出し側でurls[0]を使う」を抜き出す。
+    Dispatch向け(status/dispatch_outbox.jsonl)・進捗表向けの両方が、ここを通した短い形だけを見る。
+    """
+    raw = (it.get("result") or "").strip()
+    what = ""
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # 【完了】【問題】【判断待ち】ラベルと箇条書き記号を落として、中身の文だけ残す
+        line = re.sub(r"^[【\[](完了|問題|判断待ち)[】\]][:：]?\s*", "", line)
+        line = line.lstrip("・-*# 　")
+        if line:
+            what = line
+            break
+    if not what:
+        what = it.get("title") or ""
+    if len(what) > 20:
+        what = what[:19] + "…"
+    return what
+
+
+def format_report_line(it):
+    """short_report()の1行に、代表URL（あれば）を2行目として添えた完成形。
+    経緯・技術の途中経過はここで捨てる（既存 it["result"] の生テキストは queue.json 側に残る）。
+    """
+    what = short_report(it)
+    urls = it.get("urls") or []
+    return what + ("\n" + urls[0] if urls else "")
+
+
 def append_outbox(it, ok):
     """2026-09-06 新設：仕事が終わるたびに1行、status/dispatch_outbox.jsonl へ追記する。
 
@@ -212,7 +246,7 @@ def append_outbox(it, ok):
             "ok": bool(ok),
             "elapsedMin": _elapsed_min(it.get("startedAt"), finished),
             "urls": it.get("urls") or [],
-            "result": (it.get("result") or "")[:300],
+            "result": format_report_line(it),  # 679番：経緯を捨てて「20字+URL」だけにする
         }
         with io.open(OUTBOX, "a", encoding="utf-8") as f:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -946,6 +980,11 @@ def harvest(q):
                 it.pop(k, None)
             log("↩︎ URLなしのため自動やり直し %d番「%s」（%d回目）" % (it.get("n"), it.get("title"), tries + 1))
         else:
+            # 679番：2回やり直してもURLが1本も出なかった場合、確認待ちへ渡す理由を1行だけ残す
+            #   （たまごさんが「これ何を見ればいいの」とならないよう、URL無しの事実を明記する）。
+            if not urls:
+                it["result"] = (it.get("result") or "") + (
+                    "\n\n【理由】本番URLが1本も出せませんでした（2回やり直し済み）。人の目で判断してください。")
             # 2026-09-06 新設：確認待ちに上げる直前に、確認ページの中身を機械が検品する。
             #   「結果が読み取れませんでした」「URLの報告なし」の次に多かった事故が
             #   「URLはあるが、開いても中身が無い確認ページ」だった。
