@@ -88,6 +88,8 @@
 <h1>お金の管理表</h1>
 <div class="updated" id="updated"></div>
 
+<div class="hero" id="salesHero"><div class="range">💰 今月の売上（Gumroad）</div><div class="note">読み込み中…</div></div>
+
 <div class="hero" id="hero"><div class="range">読み込み中…</div></div>
 
 <div class="sec">
@@ -109,6 +111,11 @@
   <div class="sech">🤖 Claudeの枠の消費 <small>参考値・請求は来ません</small></div>
   <div id="claudeBox">読み込み中…</div>
   <div class="note">これはClaudeのサブスク定額プランの中の消費量をAPI単価に換算した参考値です。上のサブスク「Claude」欄の月額とは別物で、この分の追加請求はありません。</div>
+</div>
+
+<div class="sec">
+  <div class="sech">📺 YouTube <small id="ytMeta"></small></div>
+  <div id="youtubeBox">読み込み中…</div>
 </div>
 
 <script>
@@ -314,6 +321,98 @@ fetch("status/cost_by_task.json?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.json() : null).then(renderClaude).catch(()=>{
     document.getElementById("claudeBox").innerHTML = `<div class="note">読み込みに失敗しました</div>`;
   });
+
+/* ── 今月の売上（Gumroad）：status/sales.json（tools/gumroad_sales_sync.py）をそのまま読む ── */
+function renderSalesHero(d){
+  const hero = document.getElementById("salesHero");
+  if(!d){
+    hero.innerHTML = `<div class="range">💰 今月の売上（Gumroad）</div><div class="note">読み込みに失敗しました</div>`;
+    return;
+  }
+  if(!d.configured){
+    hero.innerHTML = `<div class="range">💰 今月の売上（Gumroad）</div><div class="note">${esc(d.note || "Gumroadのアクセストークンが未設定です")}</div>`;
+    return;
+  }
+  if(d.error){
+    hero.innerHTML = `<div class="range">💰 今月の売上（Gumroad）</div><div class="warn">エラー：${esc(d.error)}</div>`;
+    return;
+  }
+  const tm = d.thisMonth || {count:0, byCurrency:{}};
+  const entries = Object.entries(tm.byCurrency || {});
+  const totalLine = entries.length
+    ? entries.map(([cur,amt]) => `${Number(amt).toFixed(2)} ${esc(cur)}`).join(" ／ ")
+    : "0";
+  const recent = (d.recentSales || []).map(s =>
+    `<div class="kv"><span>${esc(s.name)}</span><span class="v">${Number(s.price).toFixed(2)} ${esc(s.currency)}</span></div>`
+  ).join("");
+  hero.innerHTML = `
+    <div class="range">💰 今月の売上（Gumroad）</div>
+    <div class="total">${esc(totalLine)}</div>
+    <div class="breakdown">今月 ${tm.count || 0}件</div>
+    <div class="note">直近の売上</div>
+    ${recent || `<div class="note">まだ今月の売上はありません</div>`}
+    <div class="note">更新：${esc(d.updatedAt || "—")}</div>
+  `;
+}
+fetch("status/sales.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderSalesHero).catch(()=>{ renderSalesHero(null); });
+
+/* ── YouTube：status/youtube_stats.json + status/youtube_stats_history.json（tools/youtube_stats_sync.py）をそのまま読む ── */
+function ytHistoryGrowthLine(history){
+  const arr = (history && history.history) || [];
+  if(arr.length < 2){
+    return `<div class="note">まだ比較データがありません（明日以降、伸びが分かります）</div>`;
+  }
+  const latest = arr[arr.length - 1];
+  const latestDate = new Date(latest.date + "T00:00:00");
+  let target = arr[0];
+  for(const e of arr){
+    const d = new Date(e.date + "T00:00:00");
+    const diffDays = Math.round((latestDate - d) / 86400000);
+    if(diffDays <= 7){ target = e; break; }
+  }
+  const diff = (latest.viewCount || 0) - (target.viewCount || 0);
+  const days = Math.round((latestDate - new Date(target.date + "T00:00:00")) / 86400000);
+  if(days <= 0){
+    return `<div class="note">まだ比較データがありません（明日以降、伸びが分かります）</div>`;
+  }
+  const sign = diff >= 0 ? "+" : "";
+  return `<div class="kv"><span>直近${days}日間の再生回数の伸び</span><span class="v">${sign}${diff.toLocaleString()}回</span></div>`;
+}
+function renderYoutube(stats, history){
+  const box = document.getElementById("youtubeBox");
+  const meta = document.getElementById("ytMeta");
+  if(!stats){
+    box.innerHTML = `<div class="note">読み込みに失敗しました</div>`;
+    return;
+  }
+  if(!stats.configured){
+    if(meta) meta.textContent = "";
+    box.innerHTML = `<div class="note">${esc(stats.note || "YouTube Data APIキーが未設定です")}</div>`;
+    return;
+  }
+  if(stats.error){
+    if(meta) meta.textContent = "";
+    box.innerHTML = `<div class="warn">エラー：${esc(stats.error)}</div>`;
+    return;
+  }
+  if(meta) meta.textContent = "登録者 " + Number(stats.subscriberCount || 0).toLocaleString() + "人";
+  const videos = (stats.recentVideos || []).map(v =>
+    `<div class="kv"><span>${esc(v.title)}</span><span class="v">${Number(v.viewCount || 0).toLocaleString()}回</span></div>`
+  ).join("");
+  box.innerHTML = `
+    <div class="kv"><span>登録者数</span><span class="v">${Number(stats.subscriberCount || 0).toLocaleString()}人</span></div>
+    <div class="kv"><span>総再生回数</span><span class="v">${Number(stats.viewCount || 0).toLocaleString()}回</span></div>
+    <div class="kv"><span>動画本数</span><span class="v">${Number(stats.videoCount || 0).toLocaleString()}本</span></div>
+    ${ytHistoryGrowthLine(history)}
+    ${videos ? `<div class="note">直近の動画</div>${videos}` : ""}
+    <div class="note">更新：${esc(stats.updatedAt || "—")} ／ <a href="${esc(stats.channelUrl || "#")}" target="_blank" rel="noopener">チャンネルを開く</a></div>
+  `;
+}
+Promise.all([
+  fetch("status/youtube_stats.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
+  fetch("status/youtube_stats_history.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
+]).then(([stats, history]) => { renderYoutube(stats, history); });
 
 /* ── 台帳（名前の正本）を読み込んでから描画開始 ── */
 fetch("status/subscriptions.json?t=" + Date.now(), {cache:"no-store"})
