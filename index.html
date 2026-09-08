@@ -378,8 +378,29 @@
   .qbody{min-width:200px; flex:1 1 200px;}
   /* 2026-09-05 スマホで題名と理由が1文字ずつ縦に並んで読めなくなっていた。
      span のまま横に置くと、幅が足りないときに文字単位でつぶれる。必ず縦に積む。 */
-  .qt{font-size:0.88rem; font-weight:700; line-height:1.35; display:block; width:100%; overflow-wrap:anywhere;}
-  .qw{font-size:0.72rem; color:var(--sub); margin-top:3px; line-height:1.45; display:block; width:100%; overflow-wrap:anywhere;}
+  /* 682番（2026-09-09）たまごさん「1行が縦に大きすぎる。1件が画面の1/4を占めている」
+     題名が何行でも折り返していたのを最大2行までに制限し、19件を見るのに何度もスクロールする状態を減らす。 */
+  .qt{font-size:0.88rem; font-weight:700; line-height:1.35; display:-webkit-box; -webkit-box-orient:vertical;
+    -webkit-line-clamp:2; overflow:hidden; width:100%; overflow-wrap:anywhere;}
+  .qw{font-size:0.72rem; color:var(--sub); margin-top:3px; line-height:1.45; display:-webkit-box;
+    -webkit-box-orient:vertical; -webkit-line-clamp:1; overflow:hidden; width:100%; overflow-wrap:anywhere;}
+  /* 682番：ボタン群（優先度・順番・完了/取消）を1本の横スクロール帯にまとめる。
+     以前は折り返して縦に何段も積み重なり「1件が画面の1/4」になっていた。
+     ボタン自体は小さくせず、横に並べて指でスワイプできる帯にすることで縦の高さを1〜2行ぶんに抑える。 */
+  .qactions{display:flex; gap:6px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    margin-top:6px; padding-bottom:2px; width:100%;}
+  .qactions::-webkit-scrollbar{height:3px;}
+  .qsel{flex:none; width:22px; height:22px; margin:0 2px 0 0; accent-color:var(--green);}
+  /* 682番：一括仕分けバー。何十件選んでも上に固定で出て、数タップで全部へ適用する。 */
+  .qbulkbar{position:sticky; top:0; z-index:50; display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    margin:0 0 8px; padding:8px 10px; border-radius:10px; border:1px solid var(--green);
+    background:#16261c; color:var(--fg); font-size:0.8rem; font-weight:700;}
+  .qbulkcount{flex:none;}
+  .qbulkbtns{display:flex; flex-wrap:wrap; gap:6px;}
+  .qbulk{flex:none; min-height:38px; min-width:38px; padding:0 8px; border-radius:9px;
+    border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.86rem; font-weight:800;}
+  .qbulk:active{background:var(--green); color:#12161c; border-color:var(--green);}
+  .qbulkclear{margin-left:auto; border-color:var(--sub); color:var(--sub); background:transparent;}
   /* スマホ幅では、上段に「取っ手・順番・番号・モデル・P」、下段いっぱいに題名を置く。
      取っ手やPボタンと題名を1行に並べようとするから幅が足りなくなる。 */
   @media (max-width: 620px){
@@ -2383,6 +2404,54 @@ document.addEventListener("click", e=>{
     return;
   }
 });
+/* ───── 682番（2026-09-09）一括仕分け ─────
+   たまごさん「何十個もタスクが並んでるじゃん。昨日は100個ぐらいあった。だからそれもABCDEで切って、
+   『あなたはAグループだね』みたいに、一瞬で今日の順番を変えたい」
+   → チェックボックスで何件でも選び、上に出るバーの[A][B][C][D][E][F][最後尾]を1タップで
+     選んだ全部へ一気に適用する。1件ずつ押させない。 */
+let QSEL = new Set();   // 選択中の番号（文字列）
+function qBulkBarHtml(){
+  const n = QSEL.size;
+  if(!n) return "";
+  const btns = [1,2,3,4,5,6].map(p=>`<button type="button" class="qbulk" data-bulkp="${p}">${PRIO_DOT[p-1]}</button>`).join("");
+  return `<div class="qbulkbar">
+    <span class="qbulkcount">選択中 ${n}件</span>
+    <span class="qbulkbtns">${btns}<button type="button" class="qbulk qbulklast" data-bulklast="1">⬇️最後尾</button></span>
+    <button type="button" class="qbulk qbulkclear" data-bulkclear="1">選択解除</button>
+  </div>`;
+}
+function applyBulkPriority(p){
+  if(!QSEL.size) return;
+  const items = (window.__queue && window.__queue.items) || [];
+  const ts = new Date().toISOString();
+  const ns = Array.from(QSEL);
+  ns.forEach(nStr=>{
+    const n = Number(nStr);
+    if(p){ PRIO["Q" + n] = {p, t: ts}; } else { delete PRIO["Q" + n]; }
+    const it = items.find(x => x.n === n);
+    if(it) it.priority = p || undefined;
+    sendCommandWithId("bp" + n + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+      "queue_prio", n + ":" + p, "一括" + (p ? PRIO_NAME[p] : "未設定") + " " + n + "番");
+  });
+  try{ savePrio(); }catch(_){}
+  QSEL.clear();
+  renderQueue();
+  qtoast(`${ns.length}件を${p ? PRIO_NAME[p] : "未設定"}にしました`);
+}
+document.addEventListener("change", e=>{
+  const cb = e.target.closest(".qsel"); if(!cb) return;
+  const ns = String(cb.dataset.qsel).split(",");
+  if(cb.checked) ns.forEach(x=>QSEL.add(x)); else ns.forEach(x=>QSEL.delete(x));
+  renderQueue();
+});
+document.addEventListener("click", e=>{
+  const bp = e.target.closest("[data-bulkp]");
+  if(bp){ e.stopPropagation(); applyBulkPriority(Number(bp.dataset.bulkp)); return; }
+  const bl = e.target.closest("[data-bulklast]");
+  if(bl){ e.stopPropagation(); applyBulkPriority(5); return; }
+  const bc = e.target.closest("[data-bulkclear]");
+  if(bc){ e.stopPropagation(); QSEL.clear(); renderQueue(); return; }
+});
 /* ───── 次に発車（予備軍）─────
    2026-09-04 たまごさん「そこにも俺、優先順位つけるよ」→ 各行のPボタンで1〜5を付けられる。
    付けた優先度は既存の優先度受信（Obsidian経由）と同じ仕組みに乗せる。 */
@@ -2423,7 +2492,7 @@ function renderQueue(){
   // 2026-09-04 「発車待ちがない」と出ていたのに台帳には15本あった。原因を切り分けられるよう、
   //   ①まだ読めていない ②読めたが本当に0本 を区別して出す。黙って「ありません」と出さない。
   if(!rows.length){
-    box.innerHTML = queueCancelUndoBar() + queueDoneUndoBar() + (window.__queue
+    box.innerHTML = qBulkBarHtml() + queueCancelUndoBar() + queueDoneUndoBar() + (window.__queue
       ? `<div class="card note">発車待ちはありません（台帳${(all||[]).length}件を読み込み済み）</div>`
       : (window.__queueErr
           ? `<div class="card note">台帳が読めませんでした（${window.__queueErr}回失敗）。30秒ごとに自動で読み直しています</div>`
@@ -2484,32 +2553,38 @@ function renderQueue(){
       const title = splitGroupBaseTitle(r);
       const groupNeedsApproval = members.some(m => m.costsMoney === true && m.costApproved !== true);
       return `<div class="qrow qgroup${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
+        <input type="checkbox" class="qsel" data-qsel="${summary.allNs || r.n}" ${QSEL.has(String(r.n)) ? "checked" : ""}>
         <span class="qgrip" title="つまんで動かす">⣿</span>
         <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
         <span class="qbody">
           <details class="qd"><summary><span class="qt${moneyCls}">📦 ${moneyMark}${esc(title)}</span><span class="qw">${summary.total}本中${summary.closed}本おわり・残り${summary.remaining}本</span></summary>
             <div class="qwhat">${members.map(m=>`#${m.n}（${esc(STATUS_JA[m.status] || m.status)}）`).join("　")}</div>
           </details>
+          <span class="qactions">
+            ${qCostOkHtml(summary.allNs || r.n, groupNeedsApproval, r.costEstimate)}
+            ${qPrioHtml(r.n, p)}
+            ${qJumpHtml(r.n)}
+            ${qActionHtml(summary.allNs || r.n)}
+          </span>
         </span>
-        ${qCostOkHtml(summary.allNs || r.n, groupNeedsApproval, r.costEstimate)}
-        ${qPrioHtml(r.n, p)}
-        ${qJumpHtml(r.n)}
-        ${qActionHtml(summary.allNs || r.n)}
       </div>`;
     }
     const needsApproval = r.costsMoney === true && r.costApproved !== true;
     return `<div class="qrow${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
+      <input type="checkbox" class="qsel" data-qsel="${r.n}" ${QSEL.has(String(r.n)) ? "checked" : ""}>
       <span class="qgrip" title="つまんで動かす">⣿</span>
       <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
       <span class="qbody">
         <details class="qd"><summary><span class="qt${moneyCls}">${moneyMark}${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
           <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>
         </details>
+        <span class="qactions">
+          ${qCostOkHtml(r.n, needsApproval, r.costEstimate)}
+          ${qPrioHtml(r.n, p)}
+          ${qJumpHtml(r.n)}
+          ${qActionHtml(r.n)}
+        </span>
       </span>
-      ${qCostOkHtml(r.n, needsApproval, r.costEstimate)}
-      ${qPrioHtml(r.n, p)}
-      ${qJumpHtml(r.n)}
-      ${qActionHtml(r.n)}
     </div>`;
   };
   let gi = 0, html = "";
@@ -2519,7 +2594,7 @@ function renderQueue(){
     html += `<div class="qbox" data-box="${lvl}"><div class="qboxh">${label} <b>${inBox.length}</b>件</div>`
           + inBox.map((r,i)=>rowHtml(r,i,gi++)).join("") + `</div>`;
   }
-  box.innerHTML = queueCancelUndoBar() + queueDoneUndoBar() + html;
+  box.innerHTML = qBulkBarHtml() + queueCancelUndoBar() + queueDoneUndoBar() + html;
   wireDrag(box);
   // 624番 たまごさん「上まで行ったのに、1階上に行ったらまた戻るんだよね。どこ行った？」
   //   → 並び替え直後は毎回まるごと描き直す（renderQueue）ので、画面が動かした行を見失う。
