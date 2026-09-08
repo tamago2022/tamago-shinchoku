@@ -220,6 +220,17 @@ if [ ! -f "$_gstamp" ] || [ -n "$(find "$_gstamp" -mmin +1200 2>/dev/null)" ]; t
   touch "$_gstamp"
 fi
 tail -n 200 "$REPO/status/eagle_run.log" > "$REPO/status/eagle_run.log.tmp" 2>/dev/null && mv "$REPO/status/eagle_run.log.tmp" "$REPO/status/eagle_run.log" 2>/dev/null || true
+
+# 2026-09-09(652番) あとで見る棚：Brave（Default＝あなたの Brave）のセッションファイルを
+#   直接読み取り、開いていたタブ相当のURLをサムネイル付きでstatus/later_tabs.jsonへ書く。
+#   Braveアプリ自体には触れない・タブは開かない（tools/later_tabs_snapshot.py参照）。
+#   1日1回でよいのでeagle_galleryと同じ「20時間以上あいたときだけ」方式にする
+#   （ネットワーク取得(oEmbed/タイトル取得)を伴い数十秒かかるため、5分おきには回さない）。
+_ltstamp="$REPO/status/.later_tabs_last"
+if [ ! -f "$_ltstamp" ] || [ -n "$(find "$_ltstamp" -mmin +1200 2>/dev/null)" ]; then
+  { echo "--- $(date '+%F %T') later-tabs(1日1回) ---"; python3 "$REPO/tools/later_tabs_snapshot.py"; } >> "$REPO/status/later_tabs_run.log" 2>&1 || true
+  touch "$_ltstamp"
+fi
 # 2026-09-03 本数の実測校正：load_history.jsonl＋heavy_events.jsonl → calibration.json（safeN/target）。次回の factory_status が読む
 python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-05 週の配分（天井に行かないためのペース）。今日いくつ使ったか／あといくつ使えるか
@@ -313,7 +324,7 @@ json.dump({"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
           io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 PYVER
 git add status/version.json >/dev/null 2>&1
-git add status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json status/disk_guardian.log status/disk_candidates.json >/dev/null 2>&1
+git add status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json status/disk_guardian.log status/disk_candidates.json status/later_tabs.json >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1
