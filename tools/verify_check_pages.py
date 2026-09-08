@@ -82,8 +82,28 @@ def queue_lock(timeout=180.0):
         f.close()
 
 
+_URL_NOTE_STOP = "（`　\n\t"
+
+
+def _strip_trailing_note(raw):
+    """2026-09-09追記（668番）：queue.jsonのurls欄に『URL＋日本語の説明文』が
+    1文字列として連結されている記録ミスが繰り返し発生した（420番実例。auto_launcher.py
+    のURL抽出正規表現に全角開き括弧が終端文字として無かったのが根本原因、そちらは
+    修正済み）。ここでも二重の安全網として、開こうとする直前に説明文を切り落とす。
+    切り落とさずそのままurlopenすると日本語がUnicodeEncodeErrorを起こし、
+    生きているURLが誤って「404扱い」でVerifierへ報告されてしまう。"""
+    u = (raw or "").strip()
+    cut = len(u)
+    for ch in _URL_NOTE_STOP:
+        idx = u.find(ch)
+        if idx != -1:
+            cut = min(cut, idx)
+    return u[:cut].rstrip("`").strip()
+
+
 def http_get(url, timeout=15):
     """(status_code_or_None, body_text) を返す。例外は握りつぶさずNoneで表現する。"""
+    url = _strip_trailing_note(url)
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
