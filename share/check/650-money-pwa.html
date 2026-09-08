@@ -52,12 +52,13 @@
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1178.3円</b><span>今月のfal実費(status/fal_cost_ledger.json summary.thisMonthTotalYenをそのまま表示)</span></div>
+  <div class="num"><b>1178.3円</b><span>今月のfal実費(本番status/fal_cost_ledger.json summary.thisMonthTotalYenをそのまま表示)</span></div>
   <div class="num"><b>5件</b><span>status/subscriptions.jsonの初期サブスク台帳(名前のみ既知、金額・課金日は未登録と正直表示)</span></div>
-  <div class="num"><b>$503.25</b><span>今月のClaude枠消費(status/cost_by_task.json 148本の合計・参考値であり請求は来ないと明記)</span></div>
+  <div class="num"><b>$303.28</b><span>今月のClaude枠消費・本番81本の合計(参考値であり請求は来ないと明記)</span></div>
 </div>
-
-
+<div class="note">
+Claude枠消費は「今も処理が完了するたびに増え続ける生きた台帳」です。この$303.28・81本は<b>2026-09-08にmoney.htmlと全く同じ計算式(status/cost_by_task.jsonのfinishedAtが2026-09で始まる行のcostUsdを合計)で、本番(GitHub Pages)のJSONを直接取得して検算</b>した値で、本番money.htmlが今表示している値と一致します（前回提出時はローカルの未pushな別セッションの作業ファイルを誤って参照しており、本番の実データ81本・$303.28ではなく148本・$503.25と書いてしまっていました＝この回で修正）。以後もタスクが進むたびに本番の表示はこの数字より増えていきます。「今この瞬間の正確な値」は本番money.htmlを開けば分かります。
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -72,6 +73,7 @@
 <tr><td>money.html内のJSをnode --checkで構文検証</td><td class="yes">yes</td></tr>
 <tr><td>status/subscriptions.jsonをpython json.loadで検証(5件)</td><td class="yes">yes</td></tr>
 <tr><td>現金(サブスク+fal)と換算値(Claude枠消費)は別欄・合計に混ぜていない</td><td class="yes">yes</td></tr>
+<tr><td>本番(GitHub Pages)のstatus/cost_by_task.jsonをcurlで直接取得し、money.htmlと同じ式(finishedAtが2026-09の行のcostUsd合計)で検算</td><td class="yes">yes（81本・$303.28で確認ページの数字と一致）</td></tr>
 <tr><td>本番URLでのスクリーンショット取得(本セッションにブラウザ操作ツールが無いため)</td><td class="yes">no</td></tr>
 </table>
 
