@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#591 判定待ちの棚卸し(591番・2/2)：すぐ判定できる一覧 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #591 判定待ちの棚卸し(591番・2/2)：すぐ判定できる一覧</div>
+<h1>#591 判定待ちの棚卸し(591番・2/2)：すぐ判定できる一覧</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんの確認待ちのうち591番が担当する8件（#441 #452 #454 #503 #509 #511 #513 #589）を全部curlで実測した。全件200 OK・中身ありで、重複は無かった。6件は一覧作成のみで確認ページを読むだけで判定できる。残り2件（#513・#589）は本文中で『AI検品(Verifier)が3回連続で不合格』と自己申告されており証拠リンクが開けないため、実物を見てからの判定に分けた。上から順に、すぐ判定できるものを先に並べてある。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>8件</b><span>591番の担当対象</span></div>
+  <div class="num"><b>6件</b><span>すぐ判定できる</span></div>
+  <div class="num"><b>2件</b><span>実物を見て判定(AI検品3回不合格)</span></div>
+  <div class="num"><b>0件</b><span>重複(見つからず)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>【すぐ判定】#441 確認待ちに「まとめてOK」を付ける(対象35件の洗い出し)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/441-confirm-list-441.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/441-confirm-list-441.html</a></li>
+  <li><b>【すぐ判定】#452「こちらもどうぞ」の暴走を戻す(対象14件の洗い出し)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/452-osusume-runaway-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/452-osusume-runaway-list.html</a></li>
+  <li><b>【すぐ判定】#454 頼まれていない変更を機械で止める(対象29件の洗い出し)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/454-unauthorized-change-guard-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/454-unauthorized-change-guard-list.html</a></li>
+  <li><b>【すぐ判定】#503 中島みゆき「糸」の関連動画を作り直す(対象11件の洗い出し)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/503-ito-related-videos-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/503-ito-related-videos-list.html</a></li>
+  <li><b>【すぐ判定】#509 カバー・パロディをハーフサイズに(対象672件の洗い出し)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/509-cover-parody-halfsize-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/509-cover-parody-halfsize-list.html</a></li>
+  <li><b>【すぐ判定】#511 Eagle・Driveへ自動アップロード(対象8件の洗い出し)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/511-eagle-drive-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/511-eagle-drive-list.html</a></li>
+  <li><b>【実物を見て判定】#513 Obsidianが重い原因の診断・修正</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/513-obsidian-heavy-diagnosis.html</a></li>
+  <li><b>【実物を見て判定】#589 Googleドライブを倉庫化するツール</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/589-gdrive-warehouse.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/589-gdrive-warehouse.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>#441 まとめてOK対象35件</td><td class="yes">200 OK・4.9KB・すぐ判定</td></tr>
+<tr><td>#452 こちらもどうぞ暴走の対象14件</td><td class="yes">200 OK・6.3KB・すぐ判定</td></tr>
+<tr><td>#454 機械ガード対象29件</td><td class="yes">200 OK・4.9KB・すぐ判定</td></tr>
+<tr><td>#503 糸の関連動画対象11件</td><td class="yes">200 OK・4.7KB・すぐ判定</td></tr>
+<tr><td>#509 カバー・パロディ対象672件</td><td class="yes">200 OK・5.5KB・すぐ判定</td></tr>
+<tr><td>#511 Eagle・Drive対象8件</td><td class="yes">200 OK・4.9KB・すぐ判定</td></tr>
+<tr><td>#513 Obsidian重い診断</td><td class="no">AI検品3回不合格・証拠リンクが404・実物要確認</td></tr>
+<tr><td>#589 Googleドライブ倉庫化</td><td class="no">AI検品3回不合格・実装ファイル未確認・実物要確認</td></tr>
+</table>
+
+<footer>
+このページは #591 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#424 どの仕事がいくら使ったか見える化 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #424 どの仕事がいくら使ったか見える化</div>
+<h1>#424 どの仕事がいくら使ったか見える化</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+仕事が1本終わるたびに、そのセッションが使った入力/出力トークン数・推定コスト(USD)・所要時間を <code>status/cost_by_task.json</code> へ自動で記録する仕組みを作った。進捗表(index.html)の「マシンとクレジット」の中に「今日いちばん高かった仕事トップ5」を追加し、どの種類の仕事が高いかが一目で分かるようにした。過去79件分はログから遡って穴埋め済み。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>23件</b><span>今日(2026-09-06)終わった仕事の件数</span></div>
+  <div class="num"><b>$74.46</b><span>今日の合計コスト(推定・実額混在)</span></div>
+  <div class="num"><b>79件</b><span>穴埋めで台帳に足した過去分</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表（マシンとクレジット→今日いちばん高かった仕事トップ5）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>生データ status/cost_by_task.json</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/cost_by_task.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/cost_by_task.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>1位 404番 サイト全体から英語の原題や投稿者名がそのまま題名</td><td class="yes">$14.59・153分・入568/出123427トークン</td></tr>
+<tr><td>2位 425番 軽さ：まず実測して重い順に並べる</td><td class="yes">$10.86・53分・入2/出438トークン</td></tr>
+<tr><td>3位 3番 「こちらもどうぞ」を全ページ10個にする＋毎回シャッフル</td><td class="yes">$4.22・37分・入4/出149トークン</td></tr>
+<tr><td>4位 37番 バッジの大きさを「比率」に変える</td><td class="yes">$3.99・34分・入60/出10433トークン</td></tr>
+<tr><td>5位 8番 Googleドライブの同期を直す</td><td class="yes">$3.97・17分・入216/出48333トークン</td></tr>
+</table>
+
+<footer>
+単価の出典：推定コストは基本 claude -p --output-format json の total_cost_usd（Anthropic公式単価でCLIが算出済みの実額）をそのまま採用。それが取れない時だけ、依頼文にあった入力$10／出力$50（100万トークンあたり）でフォールバック概算する——Vault内にこの単価の出典記録は見つからなかったため、依頼文の数値をそのまま採用した。
+</footer>
+</body>
+</html>

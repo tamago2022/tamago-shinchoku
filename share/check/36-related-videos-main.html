@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#36 関連動画をメイン直下(2番目)へ・フルサイズ化 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  img.shot{width:100%;border:1px solid var(--line);border-radius:10px;margin:0 0 6px;display:block;}
+  .cap{color:var(--sub);font-size:0.8rem;margin:0 0 20px;}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #36</div>
+<h1>#36 曲ページの「この曲の関連動画」をメイン動画の直下(2番目)へ移動・フルサイズ化</h1>
+<div class="date">2026-09-05 10:12 実装・main合流／10:38 Lovable公開・本番反映を実測確認済み</div>
+
+<div class="fix">
+曲ページの「この曲の関連動画」（公式カバー・パロディ・ライブ映像等）が、以前はメイン動画から遠い、ページの後半（他の複数セクションの後）に配置されていた。これを<b>メイン公式動画のすぐ下・上から2番目</b>へ移動し、カード幅いっぱいのフルサイズ（16:9 aspect-video）で出すように変更した。狙いは「公式MV→ライブ映像」のように、続けて見たくなる並びを最初に見せること。全曲ページ共通のコンポーネント変更のため、該当データを持つ曲すべてに効く。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>src/routes/cover-guide.tsx</code>：曲ページ本体（Step3）内の、メイン公式動画（OriginalSection）の直後・TikTok欄より前に「この曲の関連動画」（SongRelatedVideosSection）を新規配置。旧配置（ページ後半、他のいくつかのセクションの後）からは削除。<br>
+<code>src/components/SongRelatedVideosSection.tsx</code>：先頭2件（featured）のグリッドを2列（<code>sm:grid-cols-2</code>）から1列（<code>grid-cols-1</code>）へ変更し、カード幅いっぱいのフルサイズ表示に。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2番目</b><span>メイン動画の直後の表示順（旧：ページ後半）</span></div>
+  <div class="num"><b>9件</b><span>本番DBで「この曲の関連動画」データを持つ曲（今回の変更が実際に効く対象。うち1曲は動画2本）</span></div>
+  <div class="num"><b>686×386px</b><span>実機で計測したサムネイル実寸（16:9・カード幅いっぱい。旧レイアウトは横幅の半分）</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>方法</th><th>結果</th></tr>
+<tr><td>メイン動画の直後（2番目）に来ているか</td><td>本番SSR後のDOMを実機で走査し、見出し直前の要素を確認</td><td class="yes">直前要素＝メイン動画欄（「YouTube次に再生」等）✓</td></tr>
+<tr><td>フルサイズ（1列・aspect-video）になっているか</td><td>本番の実要素のclassNameと実寸を計測</td><td class="yes"><code>grid gap-4 grid-cols-1</code>／画像686×386px ✓</td></tr>
+<tr><td>本番(Lovable)に反映されているか</td><td>公開ボタンを押し、x-deployment-id変化とJSバンドル内容を確認</td><td class="yes">公開済み・新デプロイのJSに新コード確認 ✓</td></tr>
+<tr><td>型・ビルド</td><td><code>tsc --noEmit</code>／<code>npm run build</code></td><td class="yes">新規エラーなし・ビルド成功 ✓</td></tr>
+</table>
+
+<h2>③ 押せるリンク（実物）</h2>
+<ul class="links">
+  <li><b>本番・中島みゆき「糸」（この曲の関連動画=1本／下の画像①）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&song=ito" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&song=ito</a></li>
+  <li><b>本番・Bruno Mars「Uptown Funk」（この曲の関連動画=2本／下の画像②）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&song=uptown-funk" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&song=uptown-funk</a></li>
+  <li><b>本番・松任谷由実「あの日にかえりたい」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=yuming&song=ano-hi-ni-kaeritai" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=yuming&song=ano-hi-ni-kaeritai</a></li>
+  <li><b>本番・THE BLUE HEARTS「人にやさしく」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku</a></li>
+  <li><b>変更したコード（mainの最新版）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/routes/cover-guide.tsx" target="_blank" rel="noopener">src/routes/cover-guide.tsx</a>／<a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/SongRelatedVideosSection.tsx" target="_blank" rel="noopener">src/components/SongRelatedVideosSection.tsx</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/c92df061cde68a12b6105a33f5f13d8bec33a700" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/c92df061</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<div class="note">
+<b>「前」の画面キャプチャは今回ありません。</b>理由：本番は確認前にすでに新レイアウトへ更新済みで、変更前の状態を撮り直すことができなかったため。代わりに、③のコミットリンクで前後のコード差分（配置・grid-cols）がそのまま見えます。「後」は下記2枚、いずれも本番URLを実機で開いて撮影した実写です。
+</div>
+<img class="shot" src="img/36-after-nakajima.png" alt="本番・中島みゆき「糸」のページ。メイン動画（『糸』YouTube再生ブロック）のすぐ下に見出し「この曲の関連動画 1本」、フルサイズのサムネイルカードが1枚。">
+<div class="cap">① 本番実写：中島みゆき「糸」。メイン動画のすぐ下（2番目）に「この曲の関連動画」がカード幅いっぱいで表示されている。</div>
+<img class="shot" src="img/36-after-brunomars.png" alt="本番・Bruno Mars「Uptown Funk」のページ。見出し「この曲の関連動画 2本」、フルサイズのアニメパロディサムネイル1枚目が表示され、下に別セクション「この流れで、もう一本」が続く。">
+<div class="cap">② 本番実写：Bruno Mars「Uptown Funk」。関連動画2本のうち1本目（フルサイズ）。既存の別セクション（この流れで、もう一本）はその下へ押し下げられている。</div>
+
+<h2>残った小さな課題</h2>
+<div class="note">
+本番の管理画面側で「離席中に7件の問題」として、<code>admin_stock.badge_kinds does not exist</code>という既存のDBスキーマ不整合が表示されている。これは今回の変更とは無関係の既存問題（別カラムの参照ミス）で、今回のタスク範囲外のため対応していない。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code> リポジトリ <code>src/routes/cover-guide.tsx</code>（Step3内・OriginalSectionの直後）と<code>src/components/SongRelatedVideosSection.tsx</code>（featuredのgridクラス）。GitHub認証（gh CLI）がこの環境に無いため、origin/main起点の一時worktreeでdiffを再現し直接pushする形でmainへ合流。公開はLovableエディタの「公開」ボタンをCDP経由で実クリックし、公開完了（x-deployment-id変化・SSR/JSバンドル内容・実機DOM構造の3点）を実測して確認した。
+</footer>
+</body>
+</html>

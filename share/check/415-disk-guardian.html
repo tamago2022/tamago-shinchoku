@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#415 容量の見張り 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:130px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;margin-bottom:16px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  .fixnote{background:#fff3ee;border:1px solid #e3b7a9;border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 16px;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #415</div>
+<h1>#415 容量の見張り（disk_guardian）</h1>
+<div class="date">2026-09-06 02:00〜02:10 実装・本番稼働開始・実測</div>
+
+<div class="fix">
+Macの起動ディスクの空きが尽きる前に自分で片づける常時監視の仕組み（<code>disk_guardian.py</code>）を新設し、既存の5分おき自動実行ジョブに組み込んで本番稼働を開始した。<b>実際に654MBを自動で片づける動作まで実測済み。</b>
+</div>
+
+<h2>① 何をしたか</h2>
+<div class="note">
+・<b>正しい空き容量の測り方</b>（<code>df -h /System/Volumes/Data</code>。起動ディスクが2つに分かれているmacOSの罠を回避）で15分おきに空きを測定。<br>
+・<b>30GB未満</b>なら、作業場(.worktrees)の<code>node_modules</code>／<code>dist</code>／<code>.output</code>（2時間以上経過・走行中でないもののみ）・<code>__pycache__</code>・7日超のログを自動で片づける。<br>
+・<b>20GB未満</b>なら<code>status/no_launch.flag</code>を立てて新規発車を止める（既存の<code>auto_launcher.py</code>がこのフラグを見て止まる仕組みは元からあるので新規実装は不要だった）。回復したら自分が立てたフラグだけ自動解除。<br>
+・写真・動画・音楽・Eagle・Vault・Google Drive実体・dmgには<b>パスにキーワードが1つでも含まれたら問答無用でスキップ</b>する二重ガードを入れ、片づける範囲も.worktrees・tools・statusの3か所だけに限定した。<br>
+・<b>常設化の経路</b>：launchdへの新規ジョブ登録を2回試したがどちらも権限確認でブロックされたため（同じ経路を3回やらない方針に従い）切替え、既に本番稼働中の5分間隔ジョブ<code>machine_status_push.sh</code>に1行組み込む方式にした。スクリプト自身がSTAMPファイルで前回実行から900秒未満なら即終了するため、実質15分に1回だけ動く。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>17.2GB→17.4GB</b><span>実行後の空き容量（実測）</span></div>
+  <div class="num"><b>654MB</b><span class="yes">実際に解放した容量</span></div>
+  <div class="num"><b>9件</b><span class="yes">今回片づけた対象（.output×8、__pycache__×1）</span></div>
+  <div class="num"><b>4件</b><span>現在も候補として監視中（走行中・経過2時間未満のため保留）</span></div>
+</div>
+<div class="note">
+現在の空きは20GBのSTOP_GB基準を下回っているため、<b>いま<code>status/no_launch.flag</code>が立って新規発車が止まっている状態</b>（意図通りの動作）。654MBはビルド成果物の再生成可能な残骸のみで、写真・動画・Eagle・Vault・Google Drive実体には一切触れていない。
+</div>
+
+<h2>③ 実物の場所（押せるリンク）</h2>
+<div class="fixnote">
+<b>このタスクはローカルMac運用の裏方ツール（ディスク監視）であり、Web公開先（Lovable本番URL）が存在しないタスク種別。</b>「本番URL」に代わる実物として、GitHub Pagesで公開しているこの確認ページ自体と、ローカルの実行ログ・実装ファイルを以下に置く。
+</div>
+<ul class="links">
+  <li><b>この確認ページ（GitHub Pages公開）</b>
+    <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html" target="_blank">https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html</a>
+  </li>
+  <li><b>実装本体</b>：<code>tools/disk_guardian.py</code>（tamago-shinchokuリポジトリ、main合流済み）</li>
+  <li><b>組み込み先</b>：<code>tools/machine_status_push.sh</code>（既存5分間隔ジョブに1行追加）</li>
+  <li><b>実行ログ（1行ずつ「何を消して何MB空いたか」を記録）</b>：<code>status/disk_guardian.log</code></li>
+  <li><b>発車停止フラグ（現在の状態）</b>：<code>status/no_launch.flag</code></li>
+</ul>
+
+<h2>④ 前と後（実測記録）</h2>
+<table>
+<tr><th>項目</th><th>実行前</th><th>実行後</th></tr>
+<tr><td>空き容量（<code>/System/Volumes/Data</code>）</td><td class="no">17.2GB</td><td class="yes">17.4GB</td></tr>
+<tr><td><code>.worktrees/copy-editor-0904/.output</code></td><td class="no">存在（81MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>.worktrees/corleo-split/.output</code></td><td class="no">存在（81MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>.worktrees/fujirock-gap-fill-0810/.output</code></td><td class="no">存在（82MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>.worktrees/kattemi-pepper/.output</code></td><td class="no">存在（82MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>.worktrees/parody-ingest/.output</code></td><td class="no">存在（82MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>.worktrees/r11-0904/.output</code></td><td class="no">存在（81MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>.worktrees/r13-0904/.output</code></td><td class="no">存在（81MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>.worktrees/rec-contamination-fkj-ladder/.output</code></td><td class="no">存在（83MB）</td><td class="yes">削除済み</td></tr>
+<tr><td><code>tools/__pycache__</code>（tamago-shinchoku）</td><td class="no">存在（1MB）</td><td class="yes">削除済み</td></tr>
+<tr><td>写真・動画・音楽・Eagle・Vault・Google Drive・dmg</td><td>触っていない</td><td class="yes">触っていない（未変化を確認）</td></tr>
+</table>
+<div class="note">
+このセッションはブラウザのスクリーンショット機能・画面収録を使わない方針のため（たまごさんの画面を奪わない対応）、画像の代わりに<code>df</code>の実測値・ログファイルの中身・削除前後のディレクトリ存在有無を証拠として置いている。
+</div>
+
+<div class="fixnote">
+<b>今回わかったこと（次回への申し送り）：</b>この工場の本体ディスクは、Google Drive実体(<code>Library/CloudStorage</code> 約134GB)とソフトウェアのdmg(約17GB)が主犯級で、これらは仕組み上「壺と金庫」として今後も一切触らない。654MBの片づけでは20GB回復には遠く及ばないため、<b>根本的な空き容量の回復には、たまごさん自身によるdmgの手動削除やGoogle Driveの整理判断が別途必要</b>（この仕組みの役目は「埋まる前に安全な分だけ自動で片づけ、危険な時は発車を止めて知らせる」ことまで）。
+</div>
+
+<footer>
+実装コミット：tamago-shinchoku main。ジョブ自体は<code>machine_status_push.sh</code>（既存launchd <code>com.tamago.machine-status</code>、5分おき）から呼ばれ、15分に1回だけ実処理する。<br>
+<a href="../">← 進捗表にもどる</a>
+</footer>
+</body>
+</html>

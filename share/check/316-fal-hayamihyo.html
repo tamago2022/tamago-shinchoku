@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#316 fal早見表 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:900px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.82rem;margin:0 0 16px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  .kaisei{color:var(--aka);font-weight:700;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #316</div>
+<h1>#316 fal 機種・料金・できること早見表</h1>
+<div class="date">2026-09-05 作成・Vault反映済み（調査のみ・有料生成は一切していない）</div>
+
+<div class="fix">
+Vaultの『falの教科書』（2026-08-13検証時点）と、fal.ai公式サイト（2026-09-05取得）を突き合わせ、<b>①動画（口パク・台本渡し）②音声（ElevenLabs）③BGM/効果音④画像</b>の4分野で、型番・単価・入力・出力尺の上限・BGM同時埋め込み可否・声の変更範囲を1枚にまとめた。約3週間で公式側の仕様・料金が変わっている箇所が複数見つかったので、下の表では「Vault記載」と「公式確認」を両方併記している。
+</div>
+
+<h2>① 何を作ったか</h2>
+<div class="note">
+Vaultに <code>AI出力/円卓EP0_v004/fal早見表.md</code> として早見表本体を保存。この確認ページは、その中身をそのまま見られる形にしたもの（Vaultはローカルファイルのため直リンクができないので、内容をここに丸ごと転記している）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>11型番</b><span>調査した機種数（画像5・動画2・音声2・音楽/SE2）</span></div>
+  <div class="num"><b>6件</b><span>Vaultと公式の食い違いを発見（下記「公式との食い違い」参照）</span></div>
+  <div class="num"><b>1件</b><span>公式ページが404でアクセス不能だった型番（openai/gpt-image-2/edit）</span></div>
+  <div class="num"><b>0円</b><span>有料生成の実行回数（調査のみ）</span></div>
+</div>
+
+<h2>③ fal公式モデルページへのリンク（押せるリンク・10件）</h2>
+<ul class="links">
+  <li><b>画像・標準機 fal-ai/nano-banana</b><br><a href="https://fal.ai/models/fal-ai/nano-banana" target="_blank" rel="noopener">https://fal.ai/models/fal-ai/nano-banana</a></li>
+  <li><b>画像・標準機（編集）fal-ai/nano-banana/edit</b><br><a href="https://fal.ai/models/fal-ai/nano-banana/edit" target="_blank" rel="noopener">https://fal.ai/models/fal-ai/nano-banana/edit</a></li>
+  <li><b>画像・新世代機 fal-ai/nano-banana-2/edit</b><br><a href="https://fal.ai/models/fal-ai/nano-banana-2/edit" target="_blank" rel="noopener">https://fal.ai/models/fal-ai/nano-banana-2/edit</a></li>
+  <li><b>画像・廉価版 google/nano-banana-2-lite/edit</b><br><a href="https://fal.ai/models/google/nano-banana-2-lite/edit" target="_blank" rel="noopener">https://fal.ai/models/google/nano-banana-2-lite/edit</a></li>
+  <li><b>画像・高級機（文字入れ）openai/gpt-image-2/edit ※404で未確認</b><br><a href="https://fal.ai/models/openai/gpt-image-2/edit" target="_blank" rel="noopener">https://fal.ai/models/openai/gpt-image-2/edit</a></li>
+  <li><b>動画・標準機 bytedance/seedance-2.0/mini/image-to-video</b><br><a href="https://fal.ai/models/bytedance/seedance-2.0/mini/image-to-video" target="_blank" rel="noopener">https://fal.ai/models/bytedance/seedance-2.0/mini/image-to-video</a></li>
+  <li><b>動画・新世代機 bytedance/seedance-2.5/reference-to-video</b><br><a href="https://fal.ai/models/bytedance/seedance-2.5/reference-to-video" target="_blank" rel="noopener">https://fal.ai/models/bytedance/seedance-2.5/reference-to-video</a></li>
+  <li><b>音声・標準機 fal-ai/minimax/speech-02-hd</b><br><a href="https://fal.ai/models/fal-ai/minimax/speech-02-hd" target="_blank" rel="noopener">https://fal.ai/models/fal-ai/minimax/speech-02-hd</a></li>
+  <li><b>音声・ElevenLabs fal-ai/elevenlabs/tts/eleven-v3</b><br><a href="https://fal.ai/models/fal-ai/elevenlabs/tts/eleven-v3" target="_blank" rel="noopener">https://fal.ai/models/fal-ai/elevenlabs/tts/eleven-v3</a></li>
+  <li><b>音楽 fal-ai/stable-audio-25/text-to-audio</b><br><a href="https://fal.ai/models/fal-ai/stable-audio-25/text-to-audio" target="_blank" rel="noopener">https://fal.ai/models/fal-ai/stable-audio-25/text-to-audio</a></li>
+  <li><b>効果音 cassetteai/sound-effects-generator</b><br><a href="https://fal.ai/models/cassetteai/sound-effects-generator" target="_blank" rel="noopener">https://fal.ai/models/cassetteai/sound-effects-generator</a></li>
+</ul>
+
+<h2>④ 早見表本体（Vault保存分をそのまま転記）</h2>
+
+<h2 style="margin-top:20px;">① 動画（口パク・台本渡し）</h2>
+<table>
+<tr><th>項目</th><th>Seedance 標準機</th><th>Seedance 新世代機</th></tr>
+<tr><td>型番</td><td><code>bytedance/seedance-2.0/mini/image-to-video</code></td><td><code>bytedance/seedance-2.5/reference-to-video</code></td></tr>
+<tr><td>単価</td><td>480p 約0.0721ドル/秒・720p 約0.1547ドル/秒</td><td>720p 約0.47〜0.28ドル/秒・480p 約0.22〜0.13ドル/秒</td></tr>
+<tr><td>必須入力</td><td>Prompt＋Image URL</td><td>Prompt（参照動画は任意）</td></tr>
+<tr><td>出力の尺上限</td><td class="yes"><b>4〜15秒（duration指定／auto最大15秒）</b></td><td class="yes"><b>最大30秒</b></td></tr>
+<tr><td>BGM同時埋め込み</td><td><code>generate_audio</code>で口パク済みセリフ・効果音・環境音は可。<span class="no">BGM（伴奏）は含まれない</span></td><td>同期音声は可。<span class="no">BGMは別モデルで合成</span></td></tr>
+<tr><td>声の変更範囲</td><td>モデル任せ（個別選択パラメータなし）</td><td>同左</td></tr>
+</table>
+
+<h2 style="margin-top:20px;">② 音声（ElevenLabs／TTS）</h2>
+<table>
+<tr><th>項目</th><th>TTS標準機</th><th>TTS多表現機（ElevenLabs）</th></tr>
+<tr><td>型番</td><td><code>fal-ai/minimax/speech-02-hd</code></td><td><code>fal-ai/elevenlabs/tts/eleven-v3</code></td></tr>
+<tr><td>単価</td><td>0.10ドル/1000文字</td><td>0.10ドル/1000文字</td></tr>
+<tr><td>必須入力</td><td>text必須・voice_id任意</td><td>text必須・voice任意（既定Rachel）</td></tr>
+<tr><td>文字数上限</td><td class="yes"><b>最大20万文字</b></td><td>公式に記載なし（不明）</td></tr>
+<tr><td>BGM同時埋め込み</td><td class="no">NO</td><td class="no">NO</td></tr>
+<tr><td>声の変更範囲</td><td>既製ボイスのみ。感情7種・話速0.5〜2.0倍。<span class="no">クローン機能の記載なし</span></td><td>既製ボイス約20種＋インラインタグで演技調整。<span class="no">クローン機能の記載なし（声を変えるのでなく既製の声に演技をつける機能）</span></td></tr>
+</table>
+
+<h2 style="margin-top:20px;">③ BGM／効果音</h2>
+<table>
+<tr><th>項目</th><th>音楽機（BGM・曲）</th><th>効果音機（SE）</th></tr>
+<tr><td>型番</td><td><code>fal-ai/stable-audio-25/text-to-audio</code></td><td><code>cassetteai/sound-effects-generator</code></td></tr>
+<tr><td>単価</td><td class="kaisei">公式確認：0.2ドル/回（Vault記載0.05ドルから変化の可能性）</td><td class="kaisei">公式確認：0.01ドル/回（Vault記載0.02ドルから変化の可能性）</td></tr>
+<tr><td>必須入力</td><td>Prompt（雰囲気・楽器・テンポ・尺の4点）</td><td>Prompt＋Duration（末尾に<code>dry, no music, no loop</code>必須）</td></tr>
+<tr><td>出力の尺上限</td><td>公式に明記なし（不明）</td><td class="yes"><b>最大30秒</b></td></tr>
+<tr><td>動画へのBGM埋め込み</td><td colspan="2">このモデル単体は音声ファイルを出力するのみ。動画への合成は別工程（①参照）</td></tr>
+</table>
+
+<h2 style="margin-top:20px;">④ 画像</h2>
+<table>
+<tr><th>役割</th><th>型番</th><th>単価（公式）</th><th>Vault記載</th><th>入力</th></tr>
+<tr><td>標準機</td><td><code>fal-ai/nano-banana</code></td><td>0.039ドル/枚</td><td>0.04ドル/枚（ほぼ一致）</td><td>Prompt必須</td></tr>
+<tr><td>標準機・編集</td><td><code>fal-ai/nano-banana/edit</code></td><td>0.039ドル/枚</td><td>—</td><td>Prompt＋参照画像必須</td></tr>
+<tr><td>新世代機</td><td><code>fal-ai/nano-banana-2/edit</code></td><td>基本0.08ドル/枚（2K/4K割増）</td><td>0.08ドル/枚〜（一致）</td><td>Prompt＋参照画像最大14枚必須</td></tr>
+<tr><td>廉価版</td><td><code>google/nano-banana-2-lite/edit</code></td><td class="kaisei">実質不明（要Pricing確認）</td><td>1枚数セント</td><td>Prompt必須</td></tr>
+<tr><td>高級機（文字入れ）</td><td><code>openai/gpt-image-2/edit</code></td><td class="kaisei">公式ページ404・確認不能</td><td>high約0.2／low約0.015ドル</td><td>—</td></tr>
+</table>
+
+<h2>⑤ 公式との食い違い（6件・使う前に必ず再確認すべき点）</h2>
+<div class="note">
+1. Stable Audio単価：Vault0.05ドル→公式0.2ドル（値上がりの可能性）<br>
+2. CassetteAI SE単価：Vault0.02ドル→公式0.01ドル（値下がりの可能性）<br>
+3. 動画の型番表記：<code>seedance/v2/mini/...</code>は存在せず、正しくは<code>seedance-2.0/mini/...</code><br>
+4. <code>openai/gpt-image-2/edit</code>は公式ページが404でアクセス不能（型番自体が古いか誤りの可能性）<br>
+5. 「台本渡し」の実体：専用の台本入力欄はなく、<code>generate_audio</code>フラグ＋プロンプト内の台詞記述で口パク音声を生成する仕組み<br>
+6. ElevenLabsの「声のクローン」機能はfal公式ページに記載がなく、声を似せたい場合はfal外の手段が必要
+</div>
+
+<h2>⑥ 前と後</h2>
+<div class="note">
+<b>スクリーンショットは今回ありません。</b>理由：見た目のある画面の修正ではなく、Vaultノートと確認ページの新規作成（調査資料）のため。前＝Vaultに早見表が存在しなかった状態、後＝上記の表がVaultとこの確認ページの両方に存在する状態。
+</div>
+
+<footer>
+正本：Vault <code>AI出力/円卓EP0_v004/fal早見表.md</code>（この確認ページと内容は同一）。出典：Vault『falの教科書』（2026-08-16整理）＋fal.ai公式モデルページ（2026-09-05取得）。有料のfal API呼び出し・生成は一切実行していない。
+</footer>
+</body>
+</html>

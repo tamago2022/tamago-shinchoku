@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34 3時間を超えたセッションを自動で切る 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-all;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #34</div>
+<h1>#34 3時間を超えたセッションを自動で切る</h1>
+<div class="date">2026-09-05 実測・本番反映済み</div>
+
+<div class="fix">
+指示文に「3時間で切れ」と書いてあっても、作業中のセッションは自己申告に頼っていたため守られないことがあった。見張り番（<code>session_watchdog.py</code>）に、セッション開始からの経過時間（作業中かどうかに関係なく計る「壁時計」）が180分を超えたら、作業中でも強制的にセッションを終了し、そこまでの成果とURLを引き継ぎ文へ回収して新しいセッションへ列を戻す仕組みを追加した。この仕組み自体は前のセッション（2026-09-04 20:58）が実装・push済みだったため、今回は①本番で実際に動いていることを実測で確認し、②たまごさんがPWA画面を開くだけで累計回数を確認できるよう表示を追加し、③本番反映まで完了させた。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<b>見張り番の強制カット自体（既存実装）：</b>5分おきのlaunchd（<code>machine_status_push.sh</code> → <code>session_watchdog.py</code>）が全セッションの経過時間を見て、180分（3時間）を超えたら<code>idle</code>（放置時間）を見ずに強制終了（SIGTERM）→成果とURLを引き継ぎ文へ回収→新セッションを自動着火。<br><br>
+<b>今回追加した分：</b>この強制カットの累計回数（<code>metrics.hardCuts</code>）は裏側のJSONには既に出ていたが、進捗表アプリ（たまごさんが見る画面）には表示されていなかった。「見張り番」の行に<b>「3時間強制カット◯回」</b>を追加し、たまごさんが自分でPWAを開くだけで確認できるようにした。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>180分</b><span>強制カットの基準（WALLCLOCK_LIMIT_MIN）</span></div>
+  <div class="num"><b>0回</b><span>これまでの強制カット累計（3時間超のセッションがまだ発生していないため。仕組み自体は稼働中）</span></div>
+  <div class="num"><b>5分おき</b><span>見張り番の実行間隔（launchd実測）</span></div>
+  <div class="num"><b>127件</b><span>見張り番が検知した「止まり」の累計（stalls）</span></div>
+</div>
+<div class="note">
+0回は「動いていない」ではなく「まだ対象が出ていない」の意味。単体テスト（前セッションのコミットメッセージ記載）で、作業中190分→強制カット発火／作業中170分→従来通り無視／経過時間不明→従来ロジック／見回り系300分→対象外、の4パターンを確認済み。
+</div>
+
+<h2>③ 押せるリンク・実物</h2>
+<ul class="links">
+  <li><b>進捗表アプリ本体（ここに「3時間強制カット」の数字が出ている）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>強制カットの実装コミット（2026-09-04・前セッション）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/commit/af4d03908518788208a2910f94d4cccc6428aa2a" target="_blank" rel="noopener">af4d0390：見張り番：壁時計3時間の強制カットを追加（34番）</a></li>
+  <li><b>PWA表示追加のコミット（今回）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/commit/a36b55a24deed1d4e87fe99f892bb2ff45313661" target="_blank" rel="noopener">a36b55a：進捗表: 34番「3時間強制カット」の累計をPWA本文に表示</a></li>
+  <li><b>見張り番の本体コード（session_watchdog.py）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/session_watchdog.py" target="_blank" rel="noopener">tools/session_watchdog.py</a></li>
+</ul>
+
+<h2>④ 本番コードに実際に入っていることの実測</h2>
+<div class="note">
+<b>2026-09-05 18:21、本番URL（<code>https://tamago2022.github.io/tamago-shinchoku/index.html</code>）から実際に取得したソースの該当部分：</b>
+</div>
+<pre>&lt;span title="壁時計3時間を超えたら作業中でも強制カットして次のセッションへ引き継ぐ（idleとは無関係）"&gt;
+  3時間強制カット&lt;b&gt;${mt.hardCuts ?? 0}回&lt;/b&gt;&lt;/span&gt;</pre>
+
+<div class="note">
+<b>裏側の実測値（本番Macで5分おきに更新される machine.json、2026-09-05 18:20時点）：</b>
+</div>
+<pre>{
+  "watchdog": { "lastRun": "2026-09-05 18:20" },
+  "metrics": {
+    "stalls": 127,
+    "autoResumes": 79,
+    "handoffs": 13,
+    "hardCuts": 0,
+    "ignitions": 11
+  }
+}</pre>
+
+<h2>⑤ 判断メモ（1行）</h2>
+<div class="note">
+本番反映は「Lovableの公開」ではなく、このリポジトリの<code>git push origin main</code> → GitHub Pages自動配信（README記載の正式フロー）。反映されたことは、push直後にpolling実測で本番HTMLに新しい文字列が現れた時刻（push後 約1分）まで確認済み。
+</div>
+
+<footer>
+正本：<code>tools/session_watchdog.py</code>（<code>WALLCLOCK_LIMIT_MIN</code> / <code>decide()</code>の<code>hardcut</code>分岐 / <code>main()</code>の<code>action == "hardcut"</code>節）、<code>index.html</code>（<code>renderSessions()</code>内の<code>sessSum</code>組み立て部分）。実行ログの正本：Vault <code>AI出力/_ルール/見張り番ログ.md</code>（強制カットが実際に発火した際は「✂️ 3時間強制カット」の行が追加される）。
+</footer>
+</body>
+</html>

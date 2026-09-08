@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#491 容量の見張り(2回目・検品対応)：新しい作業場も監視＋ログを継続pushへ 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #491 容量の見張り(2回目・検品対応)：新しい作業場も監視＋ログを継続pushへ</div>
+<h1>#491 容量の見張り(2回目・検品対応)：新しい作業場も監視＋ログを継続pushへ</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+①検品指摘どおり、監視対象が新しい作業場の主置き場(/Users/mac/Documents/AI作業/.worktrees)を見ていなかった穴を disk_guardian.py に追加し、実際にそこのnode_modulesを候補として検出することを確認した。②disk_guardian.logとdisk_candidates.jsonが一度きりの手動コミットで止まっていた（本番のログが15:12で停止していた原因）ため、5分おきの自動push対象へ加え、以後は人手なしで継続的にmainへ反映されるようにした。壺・金庫（写真/動画/音楽/Eagle/Vault/Drive実体/dmg）には一切触れない設計は変更していない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>35.9GB</b><span>いまの空き(安全域・WARN25GB/STOP8GBより上)</span></div>
+  <div class="num"><b>3か所</b><span>見張り対象の作業場(旧2か所+新しい主置き場を追加)</span></div>
+  <div class="num"><b>19件・約1MB</b><span>いま列挙されている消せる候補の合計</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="shots">
+  <div class="shot before"><b>検品ではねられた時点(1回目)</b><img src="img/491-before.png" alt="前"></div>
+  <div class="shot after"><b>直した後(2回目・main合流・実測確認)</b><img src="img/491-after.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>main上の実物: disk_guardian.log</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log</a></li>
+  <li><b>main上の実物: disk_candidates.json</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_candidates.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_candidates.json</a></li>
+  <li><b>main上の実物: disk_guardian.py(修正差分)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/38a6d62" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/38a6d62</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>新しい作業場(AI作業/.worktrees)を監視対象に追加</td><td class="yes">yes</td></tr>
+<tr><td>そこのnode_modulesを候補として実際に検出</td><td class="yes">yes</td></tr>
+<tr><td>ログ/候補一覧を5分おきの自動pushへ追加(継続反映)</td><td class="yes">yes</td></tr>
+<tr><td>main(GitHub)上のログとJSONが同時刻(20:53:06)で一致</td><td class="yes">yes</td></tr>
+<tr><td>壺・金庫への接触</td><td class="yes">0件</td></tr>
+</table>
+
+<footer>
+1回目のAI検品指摘（disk_guardian.logの反映停止・候補件数の表記不一致）に対する再提出。次回の定期push(5分おき)以降、disk_guardian.log/disk_candidates.jsonのmain上の値は自動更新され続ける。
+</footer>
+</body>
+</html>

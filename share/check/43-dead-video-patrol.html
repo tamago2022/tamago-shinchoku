@@ -1,0 +1,63 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>43番 死んでいる動画の見回り・恒久修理の確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:760px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.warn{color:#f2c94c;font-weight:800}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.92rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left}
+th{background:#20262f}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em;word-break:break-all}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+</style></head><body>
+
+<h1>43番：YouTube APIで死んでいる動画を洗い出して差し替える　の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 直したこと（1行）</p>
+<p>「死んだ動画の自動見回り」の仕組みは既にあったが、<strong>2つの隠れた故障で新しい死亡動画がずっと本番へ届かなくなっていた</strong>。その2つの故障を直し、実際に見つかっていた新規の死亡動画2件を本番へ反映した。</p>
+</div>
+
+<div class="b">
+<h2>② 数字</h2>
+<table>
+<tr><th>項目</th><th>数字</th></tr>
+<tr><td>今回の見回りが実際に点検した動画</td><td>217本（棚のカード1143枚のうち）</td></tr>
+<tr><td>削除・非公開など「死んでいる」と判定</td><td>44本</td></tr>
+<tr><td>埋め込み禁止（YouTube上は見られるが部屋の中では再生不可）</td><td>7本</td></tr>
+<tr><td>差し替え先の公式動画が見つからず「棚から除外」で対応</td><td>44本中44本（うち今回新規に本番へ反映したのは2本）</td></tr>
+<tr><td>本番の除外リストに載っている動画ID（現在の合計）</td><td>128件</td></tr>
+<tr><td>見つけて直した「見回りが止まっていた原因」</td><td>2件（下記③参照）</td></tr>
+</table>
+<p class="small">「差し替え先が見つからない」が多い理由：CM・お笑い動画・追悼映像など<strong>公式チャンネルが同じ内容を別IDで再アップロードしていないもの</strong>がほとんど。方針どおり、素人カバー・非公式の代役は使わず、見つからない場合は表示から除外するだけにした（差し替えを無理に行わない＝憲法どおり）。</p>
+</div>
+
+<div class="b">
+<h2>③ 見つけて直した「仕組みの故障」</h2>
+<ol>
+<li><strong>YouTube Data APIの鍵が見回りスクリプトに届いていなかった。</strong>実際の鍵は <code>.env.local</code> の <code>YOUTUBE_DATA_API_KEY</code> にあるのに、見回り側は <code>.env</code> の <code>YOUTUBE_API_KEY</code> という別名しか探しておらず、常に精度の落ちる予備手段（oEmbed）で判定していた。→ 両方のファイル・両方の名前を読めるよう修理（<code>scripts/patrol/youtubeApi.mjs</code>）。</li>
+<li><strong>見回り専用の作業フォルダ（worktree）のgitの紐付けが壊れていた。</strong>フォルダ自体は残っていたが、中身が指している内部データだけ消えており、以後は <code>git status</code>・<code>git commit</code>・<code>git push</code>が毎回無言で失敗し、「変化なし」に見えてしまっていた。→ 壊れていたら自動で作り直す自己修復ロジックを追加し、このスクリプト自体もはじめてバージョン管理（git）に入れた（今まで動作マシンに直書きされているだけの「野良スクリプト」だった）。</li>
+</ol>
+<p class="small">この2つの故障により、8/15（店主の手動コミット）以降、自動見回りの成果がmainへ届かない期間ができていた。調査の途中、①のフォルダ修理をした直後に見回りが自力で復旧し、探していた新規の死亡動画2件（大和証券CM・いかりや長介の教室コント）を自力でmainへ反映した。②のAPI鍵修理は今回のコミットで初めてmainへ入り、次回以降の見回りから効き始める。</p>
+</div>
+
+<div class="b">
+<h2>④ 押せるリンク（実物のページ・本番）</h2>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ikariya-chosuke&song=drifters-kyoushitsu" target="_blank">いかりや長介「8時だョ！全員集合 教室コント」の曲ページ</a> — 元動画（sg-9476qrzg）は削除済み。今回、除外リストへ追加し本番に反映済み（配信中のコードで実測確認）。</li>
+</ul>
+<p class="small">大和証券CM「aging with joy」（動画ID: -YX5mS14QBM）は棚のカードではなく案内所の曲データ側の登録のため、専用の閲覧URLが無い。除外リストへの反映は上記と同じ扱いで本番済み（配信中のコードで実測確認）。</p>
+</div>
+
+<div class="b">
+<h2>状態</h2>
+<p>①実装 ②main合流（コミット <code>1c198244</code>、2026-09-05 14:57） ③Lovable公開実行（x-deployment-id <code>psr2.1ef9a1e</code>→<code>psr2.8462521</code>、2026-09-05 15:04:07確認） ④配信中の本番コードで、対象2件が除外リストに含まれていることを実測確認 まで完了。</p>
+<p class="warn">正直な残課題：今回mainへ入れた修理（API鍵・自己修復ロジック）自体はスクリプト側のコードで、画面の見た目には影響しないため、公開ボタンを押しても配信ファイル自体は変化なし（想定どおり）。また、直近の見回りが「生き返った」と判定した2件（2oas3ppVZ9A・nh7NCWKHDF8）の復活反映は、まだ本番のビルドに取り込まれていない（次回のLovable取り込みで反映される見込み・実害なし＝過剰に除外しているだけ）。店主の実画面での最終確認は未実施。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>

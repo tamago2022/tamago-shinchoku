@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#448 448番(6/9)確認待ち10件の鬼監督判定＋自動OKの仕組み強化 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #448 448番(6/9)確認待ち10件の鬼監督判定＋自動OKの仕組み強化</div>
+<h1>#448 448番(6/9)確認待ち10件の鬼監督判定＋自動OKの仕組み強化</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+対象10件のうち3件(311,312,334)は既に完了済み、1件(397)はキュー自体から既に外れ済み。残る6件(314,317,320,333,364,396)を鬼監督(verify_check_pages.py)で機械検品した結果、全件スクショ(img)欠落でFAILし、たまごさんに見せず自動でやり直し(status:waiting)へ戻した。あわせて、これまでawaiting_check中のFAILがやり直しへ戻らず放置される穴と、スクショ無し確認ページがそもそも作れてしまう穴の2つを塞いだ(恒久修正・make_check_page.py/verify_check_pages.py)。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>6件</b><span>機械検品してFAIL・やり直しへ戻した件数</span></div>
+  <div class="num"><b>0件</b><span>自動OKにした件数(今回は0件・スクショ欠落のため)</span></div>
+  <div class="num"><b>4件</b><span>判断不要だった件数(311,312,334=既完了/397=既にキューから消滅)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>監査ログ(oni_kantoku_log.jsonl)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/oni_kantoku_log.jsonl</a></li>
+  <li><b>queue.json</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/queue.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/queue.json</a></li>
+  <li><b>検品ツール本体</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_check_pages.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_check_pages.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>314 曲ページ構成(Lately)</td><td class="no">①②PASS③FAIL(img無)→waitingへ差し戻し</td></tr>
+<tr><td>317 バッジ復元(akiko)</td><td class="no">①②PASS③FAIL(img無)→waitingへ差し戻し</td></tr>
+<tr><td>320 fal早見表</td><td class="no">①②PASS③FAIL(img無)→waitingへ差し戻し</td></tr>
+<tr><td>333 Eagle→Drive同期</td><td class="no">①②PASS③FAIL(img無)→waitingへ差し戻し</td></tr>
+<tr><td>364 棚編集2番目ボタン</td><td class="no">①②PASS③FAIL(img無)→waitingへ差し戻し</td></tr>
+<tr><td>396 Björk Crystalline</td><td class="no">①②PASS③FAIL(img無)→waitingへ差し戻し</td></tr>
+<tr><td>仕組み修正1</td><td class="yes">verify_check_pages.py: awaiting_check中のFAILも waiting へ戻すよう修正(以前はdoneの時しか戻さなかった穴)</td></tr>
+<tr><td>仕組み修正2</td><td class="yes">make_check_page.py: スクショ無しでは書き出し拒否(--allow-no-screenshotで理由必須)に変更</td></tr>
+</table>
+
+<footer>
+このページは #448 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>

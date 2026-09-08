@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>416番：作った本人以外が検品するVerifier・確認ページ</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.75;color:#222}
+  h1{font-size:22px}
+  h2{font-size:17px;margin-top:28px;border-left:6px solid #333;padding-left:8px}
+  .num{font-size:32px;font-weight:800}
+  .box{background:#f6f6f6;border-radius:12px;padding:16px;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+  td,th{border-bottom:1px solid #ddd;padding:8px 6px;text-align:left;vertical-align:top}
+  .ok{color:#0a7a2f;font-weight:700}
+  .ng{color:#c22;font-weight:700}
+  a{color:#1a56db}
+  .muted{color:#777;font-size:13px}
+  code{background:#eee;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<h1>① 何を直したか</h1>
+<p><b>「作った本人に合否を判定させない」仕組み（AI検品＝Verifier）を作りました。</b><br>
+仕事が終わって<code>awaiting_check</code>（たまごさんの確認待ち）に上がる直前に、<code>harvest()</code>（<code>tools/auto_launcher.py</code>）が
+<b>別プロセスのclaude（Sonnet固定）を1本だけバックグラウンドで着火</b>し、「元の依頼」「作業した側の完了報告」「確認ページ・本番URL」の3つだけを渡して、
+実際にURLを開かせて中身が依頼と一致しているか検品させます。作った側の言い分（内部の判断理由）は一切渡しません。</p>
+<p class="muted">既にある414番「確認ページの機械検品」（404・文字数・準備中ワードなど<b>文字列レベル</b>のチェック）とは役割を分けています。今回は<b>中身が依頼と一致しているか</b>を見る担当です。</p>
+
+<h2>② 数字（このページは手で更新しません。<code>status/ai_verify_stats.json</code>を毎回読みに行きます）</h2>
+<div class="box">
+  <p><b>設計上の最重要ルールを守っているか：</b>この工場の心臓（<code>heartbeat.sh</code>）は15秒おきに<code>auto_launcher.py</code>を呼びます。
+  <code>claude -p</code>は数十秒〜数分かかるため、<b>harvest()の中で同期的に待つと工場全体が詰まります。</b>
+  そのため<code>start_verify()</code>はバックグラウンドで着火して即座に戻り、結果は次回以降の<code>harvest()</code>呼び出しで
+  <code>collect_verify()</code>がpidの生死を見て回収する設計にしました（既存の子セッション着火と同じ非同期パターン）。</p>
+  <div class="num">コードの変更：<span class="ok">+243行 / -3行</span>（<code>tools/auto_launcher.py</code>）</div>
+</div>
+<div class="box">
+  <p><b>実運用での実測結果（自動取得・キャッシュ回避のため毎回読み直します）：</b></p>
+  <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div>検品した件数</div><div class="num" id="checked">-</div></div>
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div class="ok">合格</div><div class="num ok" id="passed">-</div></div>
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div class="ng">不合格</div><div class="num ng" id="failed">-</div></div>
+    <div class="card" style="background:#eee;border-radius:10px;padding:10px 14px;flex:1;min-width:110px"><div>累計コスト</div><div class="num" id="cost">-</div></div>
+  </div>
+  <p class="muted" id="updated"></p>
+  <table>
+    <thead><tr><th>時刻</th><th>番号</th><th>結果</th><th>理由</th><th>コスト</th></tr></thead>
+    <tbody id="histbody"></tbody>
+  </table>
+  <p class="muted" id="loaderr"></p>
+  <script>
+  fetch("../../status/ai_verify_stats.json?_=" + Date.now())
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById("checked").textContent = d.totalChecked || 0;
+      document.getElementById("passed").textContent = d.totalPassed || 0;
+      document.getElementById("failed").textContent = d.totalFailed || 0;
+      document.getElementById("cost").textContent = "$" + (d.totalCostUsd || 0).toFixed(3);
+      document.getElementById("updated").textContent = "最終更新: " + (d.updatedAt || "-") + "（詳しい内訳・全履歴は下の実績ページへ）";
+      const tb = document.getElementById("histbody");
+      (d.history || []).slice().reverse().forEach(h => {
+        const tr = document.createElement("tr");
+        const cls = h.verdict === "pass" ? "ok" : (h.verdict === "fail" ? "ng" : "");
+        const label = h.verdict === "pass" ? "合格" : (h.verdict === "fail" ? "不合格" : "エラー");
+        const c = (h.costUsd || h.costUsd === 0) ? "$" + Number(h.costUsd).toFixed(3) : "-";
+        tr.innerHTML = `<td>${h.ts||""}</td><td>${h.n??""}</td><td class="${cls}">${label}</td><td>${h.reason||""}</td><td>${c}</td>`;
+        tb.appendChild(tr);
+      });
+    })
+    .catch(e => { document.getElementById("loaderr").textContent = "読み込み失敗: " + e; });
+  </script>
+</div>
+<div class="box">
+  <p><b>このVerifierは、自分自身（416番の最初の報告）も不合格にしています。</b>
+  最初に出した報告は「#420も検品済み・合計2件$0.40」と書きましたが、実データはまだ1件しか無く、
+  #420の確認ページも当時404でした。<b>別プロセスのAIがこれを見抜き、不合格として列に戻しました。</b>
+  これは失敗ではなく、「作った本人の言い分を信じない」という今回の設計がその場で機能した実例です。
+  このページはその後、実データ（下の表）に基づいて書き直しています。</p>
+</div>
+
+<h2>③ 押せるリンク一覧</h2>
+<ul>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/_ai-verify-stats.html">AI検品（Verifier）の実績ページ（何件検品して何件不合格にしたか・自動更新）</a></li>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai_verify_stats.json">生データ（ai_verify_stats.json）</a></li>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/415-disk-guardian.html">実際に合格した415番の確認ページ（このVerifierが検品した実物）</a></li>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/420-check-page-template.html">実際に合格した420番の確認ページ（当初404だったが現在は200で開ける）</a></li>
+</ul>
+
+<h2>④ 導入前と導入後</h2>
+<p class="muted">画面のスクリーンショットではなく、<code>status/ai_verify_stats.json</code>に実際に書き込まれた検品ログ（実データ）で示します。</p>
+<table>
+  <thead><tr><th></th><th>導入前</th><th>導入後</th></tr></thead>
+  <tbody>
+    <tr><td>合否の判定者</td><td>作った本人（builder）の自己申告のみ</td><td class="ok">別プロセスのAI（Sonnet）が独立に実URLを開いて判定</td></tr>
+    <tr><td>依頼内容と実際の変化が一致しているか</td><td>チェックなし</td><td class="ok">Verifierが確認ページ・本番URLを実際に開いて照合</td></tr>
+    <tr><td>不合格の扱い</td><td>そのまま確認待ちへ</td><td class="ok">理由を<code>what</code>に追記して列に戻す（3回連続で人の目へ）</td></tr>
+    <tr><td>検品コスト</td><td>記録なし</td><td class="ok">1件ごとにドルで記録・累計を実績ページに常時表示</td></tr>
+  </tbody>
+</table>
+
+<h2>触った場所</h2>
+<ul>
+  <li><code>tools/auto_launcher.py</code> — <code>build_verify_prompt()</code> / <code>start_verify()</code> / <code>collect_verify()</code> / <code>_record_ai_verify()</code> を新設、<code>harvest()</code>の確認待ち直前と回収ループに組み込み</li>
+  <li><code>status/ai_verify_stats.json</code> — 実績の永続化（新規・本番稼働で自動生成済み）</li>
+  <li><code>share/check/_ai-verify-stats.html</code> — 実績表示ページ（新規）</li>
+  <li><code>share/check/416-ai-verifier.html</code>（このページ） — 数字を手書きの静的な値からJSONを毎回読みに行く動的表示へ修正。溜まっていたローカルの実績（<code>status/ai_verify_stats.json</code>、5件・$1.06）をpushして初めてGitHub Pages側にも反映されるよう対応</li>
+</ul>
+
+</body>
+</html>

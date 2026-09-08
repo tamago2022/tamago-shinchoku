@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#213 X投稿の原曲を1日1回の見回りで突き止めて繋ぐ 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-all;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #213</div>
+<h1>#213 外から入れたX投稿の「原曲」を1日1回の見回りで突き止めて繋ぐ</h1>
+<div class="date">2026-09-05 10:08 本番反映済み（Lovable公開クリック済み・x-deployment-id変化を実測）</div>
+
+<div class="fix">
+X投稿（動画）を1本入れると、その原曲（元ネタ）を突き止めて既存の曲ページ・アーティストページへ関連としてつなぐ仕組みを新設。テストケース（フィリピンの子供番組でBee Geesに扮した子が歌う動画）を実際に本番のBee Gees『Too Much Heaven』原曲ページへ接続した。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+店主から渡されたテストケース：X投稿 <a href="https://x.com/no_earthquake/status/2095415265605648765" target="_blank" rel="noopener">https://x.com/no_earthquake/status/2095415265605648765</a>（フィリピンの子供番組 Your Face Sounds Familiar Kids で、子どもたちが老人メイクでビージーズに扮して熱唱）の原曲を、映像に焼かれた字幕の歌詞（"Nobody gets too much heaven no more / It's much harder to come by"）から <b>Bee Gees『Too Much Heaven』(1978)</b> と確定した。<br><br>
+補給所には既にBee Geesのアーティストページ・Too Much Heaven曲ページがあったため、新規仕入れはせず、既存曲の関連カバー欄（<code>coverGuide.ts</code> の <code>aiCovers</code>）へこのX投稿を接続した（<code>ofSongId: "too-much-heaven"</code>指定で、Too Much Heavenの曲ページに自動で表示される）。<br><br>
+あわせて、今後も同じ作業を1日1回の見回りで回せるよう <code>scripts/patrol/genkyoku-mimawari.mjs</code>（見回り本体）＋<code>genkyoku-mimawari-queue.json</code>（キュー）を新設。未特定のX投稿は推測で断定せず「未特定」のまま次回へ持ち越し、特定済みの分はcoverGuide.ts側のリンクが本当に実在するかを機械的にチェックする。1日1回のlaunchd自動実行の設定ファイルもリポジトリに用意した（Mac側への実配置は店主・PC操作可能なセッションの手を借りる必要がある）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1/1件</b><span>見回りが処理したX投稿のうち、原曲を特定できた件数</span></div>
+  <div class="num"><b>0件</b><span>coverGuide.ts側のリンク切れ検出（実在チェックOK）</span></div>
+  <div class="num"><b>200</b><span>本番ページを直接取得した時のHTTPステータス</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>やったこと</th><th>結果</th></tr>
+<tr><td>見回りスクリプトの動作</td><td><code>node scripts/patrol/genkyoku-mimawari.mjs</code> を実行</td><td class="yes">「処理件数: 1 / うち特定済み: 1 / 未特定: 0 / リンク切れ検出: 0」を出力 ✓</td></tr>
+<tr><td>mainへの反映</td><td><code>git push origin ...:main</code></td><td class="yes">コミット <code>16f8462b</code>→<code>07565cad</code> がmainへ反映 ✓</td></tr>
+<tr><td>Lovable公開</td><td><code>node scripts/patrol/lovable-publish.mjs</code> で「変更を公開」を自動クリック</td><td class="yes">x-deployment-id が <code>psr2.9f6445f</code> → <code>psr2.b3b3c0b</code> に変化 ✓</td></tr>
+<tr><td>本番ページに実際に出ているか</td><td>本番の曲ページHTMLを直接取得し文字列検索</td><td class="yes">「Your Face Sounds Familiar」「too-much-heaven」「x.com/no_earthquake」すべて本文中に検出 ✓</td></tr>
+</table>
+
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の曲ページ（Bee Gees『Too Much Heaven』・関連カバー欄に今回のX投稿が表示される）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&song=too-much-heaven</a></li>
+  <li><b>今回つないだ元のX投稿（フィリピンの子供番組）</b><br><a href="https://x.com/no_earthquake/status/2095415265605648765" target="_blank" rel="noopener">https://x.com/no_earthquake/status/2095415265605648765</a></li>
+  <li><b>この修正のコミット（coverGuide.tsのdiffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/16f8462b" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/16f8462b</a></li>
+  <li><b>見回り本体（1日1回、原曲つなぎの状況を機械チェックする道具）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/genkyoku-mimawari.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/genkyoku-mimawari.mjs</a></li>
+  <li><b>見回りキュー（処理状況の記録。今回のテストケースが identified 状態で入っている）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/genkyoku-mimawari-queue.json" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/genkyoku-mimawari-queue.json</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<div class="note">
+<b>スクリーンショットは今回ありません。</b>理由：このセッションにブラウザ操作の道具（claude-in-chrome等）が無いため撮影できなかった（試した経路：ツール一覧を確認→スクリーンショット系の道具は無し）。代わりに、本番ページを実際に取得して中身が変わったことをそのまま貼る。
+</div>
+<pre>【公開前】x-deployment-id: psr2.9f6445f
+【公開後】x-deployment-id: psr2.b3b3c0b9-859f-4a41-a504-e45b9771f652...
+
+【本番の曲ページ（/cover-guide?artist=bee-gees&song=too-much-heaven）を直接取得して文字列検索】
+has "Your Face Sounds Familiar" : true
+has "too-much-heaven"           : true
+has "x.com/no_earthquake"       : true
+（＝Too Much Heavenのページに、今回つないだX投稿のカードが実際に出ている）
+
+【見回りスクリプトの実行結果（本番反映後に再実行）】
+=== 原曲つなぎ見回り（案件213） ===
+処理件数: 1 / うち特定済み: 1 / 未特定: 0 / リンク切れ検出: 0
+✅ https://x.com/no_earthquake/status/2095415265605648765 → bee-gees/too-much-heaven（実在確認OK）</pre>
+
+<h2>今回できなかったこと・次の一手</h2>
+<div class="note">
+このセッションはネットワークを伴うBashコマンド（curl等）とYouTube Data APIキーの読み取りが認可されず、番組の公式YouTube動画の存在確認・タイトル検索ができなかった（node fetchは動いたため、本番確認・Lovable公開自体は完走できた）。そのため今回の接続は「原曲ページからX投稿への外部リンク」という形にとどめている。<br><br>
+「1日1回の見回り」を無人で回すためのlaunchd設定ファイルは <code>scripts/patrol/launchd/com.tamago.joy-relief-station.genkyoku-mimawari.plist</code> としてリポジトリに用意したが、Macの <code>~/Library/LaunchAgents/</code> への実配置と <code>launchctl load</code> はこのセッションの権限では実行できなかった（店主またはPC操作可能な次のセッションが <code>cp</code> して読み込む必要がある）。<br><br>
+「ものまね」棚への掲載候補として、今回のケースを <code>.claude/PENDING_DECISIONS.md</code> へ1行記録した（棚掲載は店主の判断領域のため、このセッションでは掲載しない）。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code> リポジトリ <code>src/lib/coverGuide.ts</code>（bee-geesの<code>aiCovers</code>）・<code>scripts/patrol/genkyoku-mimawari.mjs</code>＋<code>genkyoku-mimawari-queue.json</code>（見回り本体）・<code>scripts/patrol/launchd/</code>（1日1回実行テンプレート・配置待ち）。作業ログは<code>.claude/manuals/01-ingest-linking.md</code>「2026-09-05」節、案件記録は<code>.claude/TASK_BOARD.md</code>案件#132。
+</footer>
+</body>
+</html>

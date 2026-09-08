@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#7 「アーティスト未接続」カードを直す 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  img.shot{width:100%;border:1px solid var(--line);border-radius:10px;margin:0 0 6px;display:block;}
+  .cap{color:var(--sub);font-size:0.8rem;margin:0 0 20px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #7</div>
+<h1>#7 曲ページの「アーティスト未接続」カードを直す</h1>
+<div class="date">2026-09-05 実装・main合流・Lovable公開・本番反映を実測確認済み</div>
+
+<div class="fix">
+曲ページ「この曲の関連動画」に、演者の分かる動画が入っているのに下に「アーティスト未接続」と表示され、アーティストページへ繋がらないカードがあった（実例：UAの曲ページに本人ライブ映像が入っているのに接続先が無い）。DB全体（133曲分）を調べ、該当する全8本のうち、YouTube投稿者情報（識別子）で演者を確認でき、かつ既存のアーティストページが既にある4本を、そのページへ接続した。
+</div>
+
+<h2>① 全部数えた結果（先に一覧）</h2>
+<div class="note">
+<code>admin_song_overrides.related_videos</code>（曲ページの関連動画データ）を全133行スキャン。全10本の関連動画のうち<b>8本</b>で「アーティスト未接続」状態だった。
+</div>
+<table>
+<tr><th>#</th><th>曲ページ</th><th>関連動画</th><th>投稿者（識別子確認）</th><th>対応</th></tr>
+<tr><td>1</td><td>UA「太陽手に月は心の両手に」</td><td>本人ライブ映像(2024)</td><td>UA本人</td><td class="yes">✓ 接続済み（今回）</td></tr>
+<tr><td>2</td><td>Joyce Moreno「Feminina」</td><td>本人動画</td><td>Joyce Moreno本人</td><td class="yes">✓ 接続済み（今回）</td></tr>
+<tr><td>3</td><td>THE BLUE HEARTS「人にやさしく」</td><td>1988年CM本人出演映像</td><td>THE BLUE HEARTS本人</td><td class="yes">✓ 接続済み（今回）</td></tr>
+<tr><td>4</td><td>杏里「WINDY SUMMER」</td><td>Night Tempo Edit</td><td>Night Tempo</td><td class="yes">✓ 接続済み（今回）</td></tr>
+<tr><td>5</td><td>ニャンゴスター「overqualified for the job」</td><td>「紅」振付カバー</td><td>紅雨改（既存ページ無し）</td><td class="no">✕ 未対応・新規仕入れ要</td></tr>
+<tr><td>6</td><td>サカナクション「新宝島」</td><td>男性ダンサー動画</td><td>Cheer Here!（既存ページ無し）</td><td class="no">✕ 未対応・新規仕入れ要</td></tr>
+<tr><td>7</td><td>Bruno Mars「Uptown Funk」</td><td>アニメMV編集</td><td>3StarsAmV（演者不在の編集チャンネル）</td><td class="no">✕ 未対応・対象外</td></tr>
+<tr><td>8</td><td>Bruno Mars「Uptown Funk」</td><td>TikTokアカペラカバー</td><td>0zern（既存ページ無し）</td><td class="no">✕ 未対応・新規仕入れ要</td></tr>
+</table>
+<div class="note">
+5〜8は「既存の部屋（アーティストページ）が無い・演者が特定できない」ため、今回の対応範囲外（棚への追加ではなく新規仕入れの判断領域）。今回直したのは1〜4の4件。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>133行</b><span>DBの曲オーバーライドを全件スキャン</span></div>
+  <div class="num"><b>8/10本</b><span>「アーティスト未接続」だった関連動画</span></div>
+  <div class="num"><b>4件</b><span>識別子で演者確認・既存ページへ接続完了</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>方法</th><th>結果</th></tr>
+<tr><td>演者の同定</td><td>YouTube oEmbed（author_name/author_url）で識別子確認</td><td class="yes">4件とも本人または既存アーティスト確認 ✓</td></tr>
+<tr><td>本番DBが更新されたか</td><td>一度きり便APIを実行し、応答ログで件数確認</td><td class="yes">fixed:4, skippedAlready:0 ✓</td></tr>
+<tr><td>本番画面で「アーティスト未接続」が消えたか</td><td>本番URLを実機（Chrome・JS実行後のDOM）で開いて確認</td><td class="yes">4ページとも「by 〇〇」のリンク表示に変化 ✓</td></tr>
+<tr><td>本番(Lovable)に反映されているか</td><td>公開ボタンを押し、x-deployment-id変化を確認</td><td class="yes">psr2.22581fb → psr2.10ad849 ✓</td></tr>
+<tr><td>型・ビルド</td><td><code>tsc --noEmit</code>／<code>vite build</code>／<code>eslint</code></td><td class="yes">新規エラーなし・ビルド成功 ✓</td></tr>
+</table>
+
+<h2>③ 押せるリンク（実物）</h2>
+<ul class="links">
+  <li><b>本番・UA「太陽手に月は心の両手に」（依頼の実例）</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=u-a&song=taiyou-te-ni-tsuki-wa-kokoro-no-ryoute-ni" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=u-a&song=taiyou-te-ni-tsuki-wa-kokoro-no-ryoute-ni</a></li>
+  <li><b>本番・Joyce Moreno「Feminina」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=joyce-moreno&song=feminina" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=joyce-moreno&song=feminina</a></li>
+  <li><b>本番・THE BLUE HEARTS「人にやさしく」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku</a></li>
+  <li><b>本番・杏里「WINDY SUMMER」</b><br><a href="https://joy-relief-station.lovable.app/cover-guide?artist=anri&song=windy-summer" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=anri&song=windy-summer</a></li>
+  <li><b>実装したコード（mainの最新版）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/routes/api.admin.related-video-artist-link-0905.ts" target="_blank" rel="noopener">src/routes/api.admin.related-video-artist-link-0905.ts</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/joy-relief-station/commit/3e8dd821" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/3e8dd821</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<div class="note">
+<b>「前」の画面キャプチャは今回ありません。</b>理由：本番の一度きり便APIを実行した時点で即座にDBが更新され、直後に確認したため「未接続のまま」の状態を撮り直せなかったため。「未接続」だった時の見た目は、たまごさんが最初に見つけたスクリーンショット（UAのページ、関連動画カードの下にグレー文字で「アーティスト未接続」とだけ出る状態）と同じです。下記4枚は、いずれも本番URLを実機（JS実行後）で開いて撮影した「後」の実写です。
+</div>
+<img class="shot" src="img/7-ua-after.png" alt="本番・UAの曲ページ。関連動画カードの下に「by UA」という青いリンク文字が表示されている。">
+<div class="cap">① 本番実写：UA「太陽手に月は心の両手に」。「by UA」のリンクに変わり、UA本人のページへ飛べる。</div>
+<img class="shot" src="img/7-joyce-after.png" alt="本番・Joyce Morenoの曲ページ。「by Joyce Moreno」のリンクが表示されている。">
+<div class="cap">② 本番実写：Joyce Moreno「Feminina」。「by Joyce Moreno」のリンクに変わった。</div>
+<img class="shot" src="img/7-bluehearts-after.png" alt="本番・THE BLUE HEARTSの曲ページ。「by THE BLUE HEARTS」のリンクが表示されている。">
+<div class="cap">③ 本番実写：THE BLUE HEARTS「人にやさしく」。「by THE BLUE HEARTS」のリンクに変わった。</div>
+<img class="shot" src="img/7-anri-after.png" alt="本番・杏里の曲ページ。「by Night Tempo」のリンクが表示されている。">
+<div class="cap">④ 本番実写：杏里「WINDY SUMMER」（Night Tempo Edit）。「by Night Tempo」のリンクに変わった（リミックスした本人へ接続）。</div>
+
+<h2>残った課題（今回の対応範囲外）</h2>
+<div class="note">
+上の表5〜8番の4本（ニャンゴスター「紅」振付カバー・サカナクション「新宝島」男性ダンサー動画・Bruno Mars「Uptown Funk」のAMV編集／TikTokアカペラカバー）は、演者の既存アーティストページが無いため未対応。棚への追加ではなく新規アーティスト仕入れの判断領域のため、店主の判断を待ちます。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code>リポジトリ<code>src/components/SongRelatedVideosSection.tsx</code>（「アーティスト未接続」の表示条件）と<code>admin_song_overrides.related_videos</code>テーブル（データ本体）。GitHub認証（gh CLI）がこの環境に無いため、origin/main起点の一時worktreeでdiffを再現し直接pushする形でmainへ合流。公開はLovableエディタの「公開」ボタンをCDP経由で実クリックし、本番DBの更新も同じCDP経由のブラウザでAPIルートを開いて適用・応答ログで確認した。
+</footer>
+</body>
+</html>

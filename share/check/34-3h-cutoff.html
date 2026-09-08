@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34 3時間を超えたセッションを自動で切る 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #34</div>
+<h1>#34 3時間を超えたセッションを自動で切る</h1>
+<div class="date">2026-09-04 20:58 実装・ローカル自動運転（launchd）に反映済み</div>
+
+<div class="fix">
+見張り番（<code>tools/session_watchdog.py</code>）に、<b>「壁時計で3時間経ったら、作業中でも問答無用でセッションを止める」</b>機能を追加した。今までは「止まって（放置=idle）から3時間」しか検知できず、ずっと動き続けているセッションは何時間でも生き続けていた（＝「3時間で切れという指示文が守られないことがある」の正体）。止める前に、そこまでの成果とURLを引き継ぎ書へ回収し、続きをやる新しいセッションを自動で立てる。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+<code>session_watchdog.py</code> の判定関数 <code>decide()</code> に、セッション開始からの経過時間（<code>elapsedMin</code>。idleとは無関係）が180分を超えたら <code>"hardcut"</code> を返す分岐を追加。5分おきの見張り番サイクル（<code>com.tamago.machine-status</code> launchd）でこの分岐に当たると、①SIGTERMでそのプロセスを止める→②会話ログとmachine.jsonのURL記録から「そこまでの成果」を引き継ぎ書（Markdown）へ書き出す→③続きをやる新セッションを自動で立ち上げる、という順で動く。Dispatch本体（たまごさんとの会話そのもの）・見回り系・retired登録のセッションは対象外（既存の除外ロジックをそのまま流用）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>180分</b><span>壁時計の強制カット基準（WALLCLOCK_LIMIT_MIN）</span></div>
+  <div class="num"><b>4/4</b><span>単体テスト合格（下表）</span></div>
+  <div class="num"><b>0/4本</b><span>実装直後に生きていたセッションのうち今カット対象のもの（全部2〜5分経過で正常）</span></div>
+</div>
+<table>
+<tr><th>テストケース</th><th>入力</th><th>期待</th><th>結果</th></tr>
+<tr><td>作業中でも3時間超で切れるか（本題）</td><td>elapsedMin=190・idle=2分・作業中</td><td>hardcut</td><td class="yes">hardcut ✓</td></tr>
+<tr><td>3時間未満は今まで通り無視されるか（回帰）</td><td>elapsedMin=170・idle=2分・作業中</td><td>何もしない</td><td class="yes">「動いている」✓</td></tr>
+<tr><td>経過時間が取れない時に従来ロジックが壊れないか</td><td>elapsedMin=None・idle=20分・質問中</td><td>resume（従来通り）</td><td class="yes">resume ✓</td></tr>
+<tr><td>見回り系・Dispatch本体は3時間超でも対象外か（誤爆防止）</td><td>elapsedMin=300・見回り系タイトル</td><td>対象外</td><td class="yes">「見回り系は対象外」✓</td></tr>
+</table>
+
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>直したファイル（mainの最新版）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/session_watchdog.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/session_watchdog.py</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/commit/af4d03908518788208a2910f94d4cccc6428aa2a" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/af4d039</a></li>
+  <li><b>本番の生データ（machine.json・5分おきに自動更新）：sessionListの各行に今回追加した elapsedMin と、この34番セッション自身も実在することが確認できる</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/status/machine.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/machine.json</a></li>
+  <li><b>進捗表アプリ本体</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<div class="note">
+<b>スクリーンショットは今回ありません。</b>理由：見た目のある画面ではなく、5分おきに裏で動く自動運転スクリプト（見張り番）そのものの修正のため。代わりに、直した分岐の前後をコードでそのまま示す（③のコミットリンクと同じ内容）。
+</div>
+<pre>【前】idleが3時間続かないと発火しない（decide()）
+    if s["idle"] &lt; STALL_MIN:          # 作業中(15分未満の無反応)なら
+        return None, "動いている（%s分）"  # ← ここで即return。何時間動き続けても二度と下に進まない
+    ...
+    if s["idle"] &gt;= HANDOFF_HOURS * 60:  # 3時間"放置"の判定はここにあるが、上のreturnで永遠に届かない
+
+【後】elapsedMin（壁時計・idle無関係）を最初に見る
+    em = s.get("elapsedMin")
+    if em is not None and em &gt;= WALLCLOCK_LIMIT_MIN:   # セッション開始から180分経っていたら
+        return "hardcut", "壁時計%.1f時間経過（作業中でも強制カット）" % (em / 60)  # 作業中でも即カット
+    if s["idle"] &lt; STALL_MIN:
+        return None, "動いている（%s分）"</pre>
+
+<footer>
+正本：<code>tamago-shinchoku</code> リポジトリ <code>tools/session_watchdog.py</code>（<code>WALLCLOCK_LIMIT_MIN</code>・<code>decide()</code>のhardcut分岐・<code>session_urls()</code>）。実行は5分おきのlaunchd（<code>com.tamago.machine-status</code>）が自動で行うため、この修正を保存した時点で次の周期から効いている。3時間を超えるセッションが今後発生すれば、この機能で自動的に切られ、Dispatchの見張り番ログと留守中の判断待ちへ記録される。
+</footer>
+</body>
+</html>

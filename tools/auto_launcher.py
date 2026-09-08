@@ -991,6 +991,30 @@ def harvest(q):
                 if not check_url and not urls:
                     continue          # 証拠が1本も無いものは検品しようがない。人の目へ残す
                 it["backlogVerified"] = True   # 二度と同じものを着火しない印
+                # ---- 2026-09-08 17:28 すぐ見つかった穴。ここで止める。----
+                # 645番の容量確保で share/check の古いページ256件を外付けへ退避した。
+                # その結果、**昔の確認ページURLは軒並み404になっている**。
+                # 何も考えず検品へ回すと、鬼監督は「ページが開けない」で全部を不合格にし、
+                # **すでに終わっている仕事30件が列に戻って作り直しになる**（実測：45番・48番）。
+                # 仕事そのものが悪かったわけではなく、証拠の置き場所をこちらが動かしただけ。
+                # → 開けないものは検品にかけない。証拠が消えた印だけ付けて、人の目へ残す。
+                if check_url:
+                    alive, why = content_check(check_url)
+                    if not alive and "取得に失敗" in (why or ""):
+                        # 回線の一時的な失敗。今日は見送って、次の巡回でまた見る。
+                        it.pop("backlogVerified", None)
+                        log("… 確認ページに繋がらないので次回へ %d番（%s）" % (it.get("n"), why))
+                        break
+                    if not alive and ("HTTP" in (why or "") or "開け" in (why or "")):
+                        it["evidenceGone"] = True
+                        it["result"] = (it.get("result") or "") + (
+                            "\n\n【証拠ページが見当たりません】%s が開けません（%s）。"
+                            "645番の容量確保で古い確認ページを外付けへ退避したためです。"
+                            "仕事のやり直しは不要。証拠だけが行方不明です。" % (check_url, why))
+                        changed = True
+                        log("📄 証拠ページが消えている %d番「%s」→ 検品にかけない"
+                            % (it.get("n"), it.get("title")))
+                        break
                 if start_verify(it, check_url, urls):
                     it["status"] = "verifying"
                     changed = True

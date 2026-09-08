@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#431 外部から入れた分を1日1回仕上げる仕組み 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #431 外部から入れた分を1日1回仕上げる仕組み</div>
+<h1>#431 外部から入れた分を1日1回仕上げる仕組み</h1>
+<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+外部から入れたページ（今回の実例：韓国のバーチャルアイドルグループIVNIT・Nawoo）が『ページはできているのに曲が0件のまま』になる事故を防ぐため、直近48時間の新規ページを毎日自動で点検し、確証（同一公式チャンネル＋生存確認）が取れた曲だけその場で仮埋めする常設の見回りを新設し、本番(main)へ反映した。既存の見回り担当(roles.json)へ統合し、新しい別の係は作っていない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2件</b><span>直近48時間に検出したページ(IVNIT・Nawoo)</span></div>
+  <div class="num"><b>3件</b><span>mainへ反映したcommit数</span></div>
+  <div class="num"><b>0件</b><span>現時点でDB書き込みを確認できた件数(下記の壁を参照)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ・IVNIT（今どうなってるか見る場所）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ivnit" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=ivnit</a></li>
+  <li><b>本番ページ・Nawoo</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nawoo" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nawoo</a></li>
+  <li><b>mainへの反映（GitHub・仕組み本体）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/01c038f1" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/01c038f1</a></li>
+  <li><b>見回りワークフロー（GitHub Actions・毎日JST6:30＋手動実行可）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.github/workflows/tamago-onboarding-sweep.yml" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.github/workflows/tamago-onboarding-sweep.yml</a></li>
+  <li><b>判断メモ（GitHub Actions実行未確認の件）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>IVNITの曲・動画</td><td class="yes">0件のまま（要出典・未書き込み）</td></tr>
+<tr><td>Nawooの曲・動画</td><td class="yes">0件のまま（要出典・未書き込み）</td></tr>
+<tr><td>仕組み自体のmain反映</td><td class="yes">済み(3コミット)</td></tr>
+<tr><td>毎日の自動実行(JST6:30)</td><td class="yes">設定済み・次回実行待ち</td></tr>
+</table>
+
+<footer>
+残っている壁：新設したGitHub Actions（tamago-onboarding-sweep.yml）がSUPABASE_SERVICE_ROLE_KEYで実際にDBへ書き込む役目だが、pushしてから20分以上待っても実行された形跡（自動コミット）が現れない。gh CLI・GitHub API・WebFetch・node fetchの4経路で確認を試みたが未認証のため確証が取れなかった。最有力の疑いはリポジトリのGitHub SecretsにSUPABASE_URL／SUPABASE_SERVICE_ROLE_KEYが未登録のままという点。GitHub Settings→Secrets and variables→Actionsで確認いただくか、Actionsタブから『Tamago Onboarding Sweep』を手動実行(workflow_dispatch)していただければ、動くはず。仕組み本体（検出ロジック・安全な追記のみの書き込み設計）は独立検品で全項目PASS済み。
+</footer>
+</body>
+</html>

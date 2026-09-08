@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#38 関連動画がメイン動画の直下(2番目)か・全ページ確認</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  img.shot{width:100%;border:1px solid var(--line);border-radius:10px;margin:0 0 6px;display:block;}
+  .cap{color:var(--sub);font-size:0.8rem;margin:0 0 20px;}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-all;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 発車待ち #38（やり直し）</div>
+<h1>#38 曲ページの「この曲の関連動画」がメイン動画の直下（2番目）に来ているか・全ページ確認</h1>
+<div class="date">確認日時：2026-09-05 18:30（本番を直接測定）</div>
+
+<div class="fix">
+「この曲の関連動画」（公式カバー・パロディ・ライブ映像等）は、<b>「この機能を持つ曲」全部で1つの共通部品</b>を使っている。この部品を呼び出す位置は<code>src/routes/cover-guide.tsx</code>の1箇所だけ（メイン公式動画の部品の直後）。<b>だから「1ページ直したら全ページに効く／1ページ壊れたら全ページ壊れる」構造。</b>今回は「1ページだけ見て合格にする」のではなく、<b>この機能が実際に載っている本番の曲ページ9本（＝これが全数。無作為の10本ではなく「該当する全部」）</b>を、実際に本番へ問い合わせて確認した。
+</div>
+
+<h2>① 何を確認したか</h2>
+<div class="note">
+①本番の各ページが実在し200で開けるか（9/9）。②本番に配信中のJS本体（<code>cover-guide-*.js</code>）を直接取得し、「この曲の関連動画」を出す部品（関数名 <code>Sn</code>）の呼び出し位置が、メイン動画部品（関数名 <code>ji</code>・props: <code>songYoutubeId, extraMedia, pairedMedia, mainVideoCap</code>＝メイン動画特有のprops）の<b>直後</b>にあるか（下の「実測の中身」参照）。③今日の同じ修正（コミット<code>c92df061</code>）を本番で実機ブラウザ撮影した既存の証拠2枚（中島みゆき「糸」／Bruno Mars「Uptown Funk」）を転載。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>9 / 9</b><span>「この曲の関連動画」を持つ曲ページ（本番DB全数）が200で開けた</span></div>
+  <div class="num"><b>1本</b><span>この部品を呼び出しているコード上の箇所（全ページ共通・分岐なし）</span></div>
+  <div class="num"><b>直後</b><span>本番配信中のJSで確認した、メイン動画部品からの相対位置</span></div>
+</div>
+
+<h2>③ 押せるリンク一覧（全9件・本番実物）</h2>
+<table>
+<tr><th>#</th><th>曲</th><th>アーティスト</th><th>この曲の関連動画</th><th>本番ページ</th><th>直下(2番目)か</th></tr>
+<tr><td>1</td><td>糸</td><td>中島みゆき</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&song=ito" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（下に実写あり）</td></tr>
+<tr><td>2</td><td>Uptown Funk</td><td>Bruno Mars</td><td>2本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&song=uptown-funk" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（下に実写あり）</td></tr>
+<tr><td>3</td><td>あの日にかえりたい</td><td>松任谷由実</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=yuming&song=ano-hi-ni-kaeritai" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（共通部品・同一コード）</td></tr>
+<tr><td>4</td><td>新宝島</td><td>サカナクション</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sakanaction&song=new-world" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（共通部品・同一コード）</td></tr>
+<tr><td>5</td><td>人にやさしく</td><td>THE BLUE HEARTS</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=blue-hearts&song=hito-ni-yasashiku" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（共通部品・同一コード）</td></tr>
+<tr><td>6</td><td>WINDY SUMMER</td><td>杏里</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=anri&song=windy-summer" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（共通部品・同一コード）</td></tr>
+<tr><td>7</td><td>太陽手に月は心の両手に</td><td>UA</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=u-a&song=taiyou-te-ni-tsuki-wa-kokoro-no-ryoute-ni" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（共通部品・同一コード）</td></tr>
+<tr><td>8</td><td>Feminina</td><td>Joyce Moreno</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=joyce-moreno&song=feminina" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（共通部品・同一コード）</td></tr>
+<tr><td>9</td><td>overqualified for the job</td><td>ニャンゴスター</td><td>1本</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nyangostar&song=overqualified-for-the-job" target="_blank" rel="noopener">開く</a></td><td class="yes">✓（共通部品・同一コード）</td></tr>
+</table>
+<div class="cap">この9件が「この曲の関連動画」を持つ本番の曲、全数（Supabase <code>admin_song_overrides.related_videos</code>を直接数えた結果）。9件とも同じ1つのコード部品を通るため、1件で構造を確認すれば残り8件も同じ構造になる。念のため9件とも実在（200・正しいタイトル）まで個別に確認した。</div>
+
+<h2>④ 前と後（実写・本日撮影ぶんを転載）</h2>
+<div class="note">
+今回のセッションには実ブラウザ操作の道具が無いため新規の実写は撮れなかった。代わりに、<b>この同じ修正（コミット<code>c92df061</code>・今日10:12に合流・10:38に公開確認済み）</b>を、公開直後に別セッションが本番へ実機ブラウザで接続し撮影した実写2枚をそのまま載せる（捏造・使い回しの再掲ではなく同一修正・同日の一次証拠）。
+</div>
+<img class="shot" src="img/36-after-nakajima.png" alt="本番・中島みゆき「糸」。メイン動画のすぐ下に見出し「この曲の関連動画 1本」、フルサイズのサムネイルカード。">
+<div class="cap">① 本番実写：中島みゆき「糸」。メイン動画の直下（2番目）に「この曲の関連動画」。</div>
+<img class="shot" src="img/36-after-brunomars.png" alt="本番・Bruno Mars「Uptown Funk」。見出し「この曲の関連動画 2本」、フルサイズのアニメパロディサムネイル。">
+<div class="cap">② 本番実写：Bruno Mars「Uptown Funk」。関連動画2本のうち1本目。下に別セクション「この流れで、もう一本」が続く＝関連動画が先、それ以外の棚は後。</div>
+
+<h2>実測の中身（本番JSを直接取得して確認したログ）</h2>
+<div class="note">2026-09-05 18:25、本番URLから配信中の<code>cover-guide-*.js</code>を直接取得し、文字列としてそのまま確認した実測結果（要約）。</div>
+<pre>[本番から直接取得]
+関数 Sn({artistId,songId}) の中身に "この曲の関連動画" の見出し文字列 → SongRelatedVideosSection と特定。
+
+本番配信中のJS内、Step3の描画順（実際に取得した文字列そのまま・一部省略）：
+  ...e.jsx(ji,{artistId:s,songId:r.id,...,songYoutubeId:r.youtubeId,
+       extraMedia:o,pairedMedia:r.pairedMedia,mainVideoCap:y?3:void 0}),
+  e.jsx(Sn,{artistId:s,songId:r.id}),          ← 「この曲の関連動画」＝メイン動画(ji)の直後
+  y?e.jsxs(e.Fragment,{children:[
+     e.jsx($t,...),                             ← プチ物語 等、他のセクションはここから後
+     ...
+     r.tiktoks && ... e.jsx(kt,{tiktoks:r.tiktoks}),
+     ...
+  ]}) : ...
+
+→ Sn（この曲の関連動画）の呼び出しは1箇所のみ、ji（メイン動画）の直後。
+   他の全セクション（グッドカバー・プチ物語・TikTok等）はSnより後ろに来る。
+   これは全曲ページで共有される同一コードパスのため、9ページ全部に同じ構造で効く。</pre>
+
+<h2>⑤ 型・ビルド・main合流の状態</h2>
+<table>
+<tr><th>項目</th><th>結果</th></tr>
+<tr><td>この修正のコミット</td><td><a href="https://github.com/tamago2022/joy-relief-station/commit/c92df061cde68a12b6105a33f5f13d8bec33a700" target="_blank" rel="noopener">c92df061</a>（2026-09-05 10:12合流・main上に存在）</td></tr>
+<tr><td>本番(Lovable)反映</td><td class="yes">反映済み（本番配信中のJSに上記の並びを直接確認・✓）</td></tr>
+<tr><td>本番9ページの実在確認</td><td class="yes">9/9件が200・正しいタイトルで開けた ✓</td></tr>
+</table>
+
+<h2>残った制約（正直に）</h2>
+<div class="note">
+本セッションには実ブラウザ操作・画面撮影の道具が無かったため、9件全部の新規スクリーンショットは撮れていない。その代わりとして、①本番配信中のJS本体を直接取得しコードの並び順を実測（9件共通の構造的証拠）、②同一修正のリアル実写2枚（本日撮影ぶん）を転載、の二本立てで確認した。「見た目が本当にそうなっているか」を完全な形で店主自身の目で見たい場合は、上記③のリンクをスマホ・PCで直接開くと確認できる。
+</div>
+
+<footer>
+正本：<code>joy-relief-station</code> リポジトリ <code>src/routes/cover-guide.tsx</code>（Step3内、OriginalSectionの直後にSongRelatedVideosSectionを呼ぶ1箇所のみ）。データ正本：Supabase <code>admin_song_overrides.related_videos</code>（該当9件）。確認方法：本番URL直接fetch＋配信中JS直接取得（curlではなくNode.js fetchで実測、ブラウザは使用していない）。
+</footer>
+</body>
+</html>

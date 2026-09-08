@@ -1,0 +1,58 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>41番 曲ページ表示崩れ点検 確認ページ</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8}
+h1{font-size:1.2rem;margin:0 0 16px}
+h2{font-size:1rem;margin:24px 0 8px;color:#9fb2c8}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.ng{color:#f2a154;font-weight:800}
+a{color:#5fd996;word-break:break-all}
+.quote{background:#0e1116;border-left:3px solid #5fd996;padding:10px 14px;margin:8px 0;font-size:0.92rem;color:#c9d4e0}
+code{background:#0e1116;padding:2px 6px;border-radius:4px;font-size:0.85rem}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:0.88rem}
+th,td{border-bottom:1px solid #2a323c;padding:6px 8px;text-align:left;vertical-align:top}
+th{color:#9fb2c8;font-weight:600}
+ol{padding-left:1.4em}</style></head><body>
+<h1>41番 曲ページの表示崩れを10ページ点検して直す の確認ページ</h1>
+
+<div class="b">
+<h2>① 何をしたか</h2>
+<p>曲ページの旧URL形式（<code>/room/card/&lt;slug&gt;</code>）に直接アクセスすると、標準ページ（<code>/cover-guide?artist=...&amp;song=...</code>）が既に存在するのに古いフォーマットのページ（アーティスト名欄が無い＝「アーティスト未接続」に見える状態）がそのまま表示される抜け穴があった。これを<code>src/routes/room.card.$slug.tsx</code>に自動リダイレクトを追加して解消し、本番へ反映した。</p>
+</div>
+
+<div class="b">
+<h2>② 数字</h2>
+<p>見回りスクリプト（<code>diagnose-page-format.mjs</code>）が検出した旧フォーマットページ220件のうち、<strong>標準ページが既に存在する81件（既存68件＋今回新規に対応表へ追加した13件）のリダイレクトを修理・本番反映済み</strong>。残り139件は標準ページ自体が未整備で、今回のスコープ（既存ページの修理）ではなく仕入れ・データ整備の課題として別枠に残る（下記⑤参照）。</p>
+</div>
+
+<div class="b">
+<h2>③ 点検表（代表10件・押せるリンク）</h2>
+<table>
+<tr><th>ページ</th><th>症状（修理前）</th><th>直したか</th></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-02" target="_blank" rel="noopener">healing-music-02（原田知世 - Smile）</a></td><td>旧フォーマットのままアーティスト未接続表示</td><td class="ok">直った→ann-sally標準ページへリダイレクト</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-03" target="_blank" rel="noopener">healing-music-03（何日君再來）</a></td><td>同上</td><td class="ok">直った</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-04" target="_blank" rel="noopener">healing-music-04（Moon River）</a></td><td>同上</td><td class="ok">直った</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-05" target="_blank" rel="noopener">healing-music-05（星影の小径）</a></td><td>同上</td><td class="ok">直った</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-06" target="_blank" rel="noopener">healing-music-06（緑の町に舞い降りて）</a></td><td>同上</td><td class="ok">直った</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-08" target="_blank" rel="noopener">healing-music-08（Enya - Only Time）</a></td><td>同上</td><td class="ok">直った→本番でリダイレクト実測確認済み</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-28" target="_blank" rel="noopener">healing-music-28（haruka nakamura - nowhere）</a></td><td>同上</td><td class="ok">直った</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-29" target="_blank" rel="noopener">healing-music-29（haruka nakamura - still life）</a></td><td>同上</td><td class="ok">直った</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/healing-music-30" target="_blank" rel="noopener">healing-music-30（haruka nakamura - アイル）</a></td><td>同上</td><td class="ok">直った</td></tr>
+<tr><td><a href="https://joy-relief-station.lovable.app/room/card/perfume-spinning" target="_blank" rel="noopener">perfume-spinning（Perfume - Spinning World）</a></td><td>同上</td><td class="ok">直った→本番でリダイレクト実測確認済み</td></tr>
+</table>
+<p>上記10件はすべて本番URLとして開ける状態（旧URLへアクセスすると標準ページへ自動でつなぎ替わる）。</p>
+</div>
+
+<div class="b">
+<h2>④ 実測の証拠</h2>
+<p class="ok">main合流済み（コミット <code>1be9a5dd</code>、origin/mainの祖先として確認済み）＋Lovable本番へ反映済み</p>
+<p>本番での実測（別担当がWebFetchで実測）：<code>/room/card/healing-music-02</code>→Ann Sally「Smile」ページへリダイレクトされYouTube埋め込み表示あり／<code>/room/card/healing-music-08</code>→Enya「Only Time」ページへ到達／<code>/room/card/perfume-spinning</code>→Perfume「Spinning World」ページへ到達。いずれも旧ページはもう出ない。あわせて曲ページ側の①埋め込み②サムネイル③空プレースホルダーの点検も実施し、新規の異常は見つからなかった。</p>
+</div>
+
+<div class="b">
+<h2>⑤ 今回のスコープ外として残った項目（正直な報告）</h2>
+<p>「モドゥーニョ『Volare』のカードが404」という過去の未解決事故を再確認したところ、<code>Volare</code>の曲データは現状<strong>Gipsy Kings</strong>のアーティスト枠にのみ存在し、原曲のドメニコ・モドゥーニョ本人のアーティストページはまだ作られていない（＝リンク修理ではなく新規仕入れが必要な案件）。これは既存の「原曲を巡る旅」企画の継続課題として棚上げし、今回は手を付けていない（新規仕入れは可・棚への掲載判断はたまごさんの領域のため）。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表にもどる</a></p>
+</body></html>

@@ -1,0 +1,47 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>25番 AI臭さを消す質感の指示書の確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:720px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+</style></head><body>
+
+<h1>25番：AI臭さを消す質感の指示書を作る（サンダーバード／ストップモーション）の確認</h1>
+
+<div class="b">
+<p class="ok">① 直したこと（1行）</p>
+<p>樹脂粘土や木彫りの肌・ガラスビーズの目・パペットの合わせ目・ミニチュア用の荒い布地・白熱球のスタジオ照明・フィルムの粒子感・指紋・フェルトのけば立ちを盛り込んだ「AI臭さを消す質感テンプレート」を1本にまとめ、「ごきげん変身屋」（写真を変身させる機能）の新テーマとして選べるようにした。</p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字</p>
+<p>再利用できる質感テンプレートは<code>src/lib/aiImageTextureGuides.ts</code>の<code>STOPMOTION_PUPPET_TEXTURE_GUIDE</code>として1本にまとめ済み（要求された8項目の質感指定すべてを含む）。これを使う新テーマを「特撮・人形劇編」カテゴリに1件（「人形劇の救助隊員」）追加。既存34テーマ（フォトリアル路線）はそのまま変更なし。テンプレートは今後、人形劇系の新テーマを足すたびに書き直さず使い回せる設計。</p>
+<p class="small">この実装は自分が着手する前に別セッションが既にmainへ実装・合流済みだった（コミット<code>d5f91a6c</code>）。重複作業を避けるため自分は本番反映の実測確認のみ行った。</p>
+</div>
+
+<div class="b">
+<p class="ok">③ 押せるリンク（実物のページ）</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/room/henshin" target="_blank">本番「ごきげん変身屋」ページ（/room/henshin）</a> — テーマ一覧を下へスクロールすると「特撮・人形劇編」というカテゴリ見出しがあり、「人形劇の救助隊員」というテーマカードが選べます。</li>
+</ul>
+<p class="small">写真をアップロードしてこのテーマを選ぶと、質感テンプレートを反映した画像がAI生成されます（生成には店主の写真アップロードが必要なため、このページ自体では生成結果は貼っていません）。</p>
+</div>
+
+<div class="b">
+<p class="ok">④ 反映確認の根拠（実測）</p>
+<p class="small">・git側：<code>git merge-base --is-ancestor d5f91a6c origin/main</code> → 祖先関係を確認（origin/main HEAD = <code>598c8d15</code>）。<code>src/lib/aiImageTextureGuides.ts</code>・<code>room.henshin.tsx</code>内の「特撮・人形劇編」「人形劇の救助隊員」「style: "stopmotion"」をソースツリーから直接grepで確認済み。</p>
+<p class="small">・本番側：<code>https://joy-relief-station.lovable.app/room/henshin</code> を実際に取得し、ページ内に「特撮・人形劇編」「人形劇の救助隊員」の文字列が実在することを確認済み（他の既存テーマ群と並んで表示されている）。</p>
+</div>
+
+<div class="b">
+<p class="ok">状態</p>
+<p>①実装 ②main合流（コミット<code>d5f91a6c</code>） ③Lovable反映（本番URLで文字列を実測確認） まで完了。④店主の実画面確認は未実施（次回訪問時）。</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>

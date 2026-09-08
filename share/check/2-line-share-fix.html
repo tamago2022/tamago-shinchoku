@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#2 LINEに送るが壊れている 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2 LINEに送るが壊れている</div>
+<h1>#2 LINEに送るが壊れている</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+共有ボタンの「LINE」を押すと旧URL(social-plugins.line.me/lineit/share)へ飛び、送信ではなく<b>LINEのログイン画面(QRコード読み取り)</b>が出てしまう不具合を修正。LINE公式の現行URL(line.me/R/msg/text/)に差し替え、本番の実クリックで実際にこのURLが呼ばれることを確認した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4/4件</b><span>LINE共有を組み立てている箇所のうち新方式になった数(曲ページ・記憶の扉3画面)</span></div>
+  <div class="num"><b>0件</b><span>本番JSバンドルに残る旧URL(social-plugins.line.me)の出現数</span></div>
+  <div class="num"><b>実クリックで確認</b><span>静的コードだけでなく本番ページでボタンを実際に押しwindow.open()に渡ったURLを直接捕まえた</span></div>
+</div>
+
+<h2>③ 前と後（実データでのスクリーンショット）</h2>
+<div class="note">本番ページの共有アイコンを実際にクリックしてメニューを開き、その中の「LINE」を実際にクリックして<code>window.open()</code>へ渡ったURLをそのまま開いて撮影した3枚。</div>
+<div class="shots">
+  <div class="shot"><b>本番ページで共有→LINEを実際にクリックした直後</b><img src="img/2-line-menu-open.png" alt="共有メニューが開いた本番画面"></div>
+  <div class="shot before"><b>旧URLの行き先(壊れていた症状=LINEログイン画面)</b><img src="img/2-line-before-login.png" alt="前"></div>
+  <div class="shot after"><b>新URLの行き先(今の本番=LINE送信画面)</b><img src="img/2-line-after-send.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実際に共有メニューが開いた本番ページのスクショ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/img/2-line-menu-open.png" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/img/2-line-menu-open.png</a></li>
+  <li><b>本番ページ(共有アイコン→LINEで確認できる)</b><a href="https://joy-relief-station.lovable.app/watch?v=zn45qBOxbPY" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=zn45qBOxbPY</a></li>
+  <li><b>記憶の扉・共有画面</b><a href="https://joy-relief-station.lovable.app/memory-door/share" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/memory-door/share</a></li>
+  <li><b>修正コミット(main)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/79f0cb90" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/79f0cb90</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本番ページでシェアボタンを実際にクリック</td><td class="yes">メニューが開きLINEが選べた</td></tr>
+<tr><td>メニューのLINEを実際にクリックしwindow.open()の引数を捕捉</td><td class="yes">https://line.me/R/msg/text/?...(新URL)が渡された</td></tr>
+<tr><td>捕捉した新URLへ実際にアクセス</td><td class="yes">200・ログイン画面へリダイレクトされず「LINEアプリを開く」画面のまま</td></tr>
+<tr><td>旧URL(social-plugins.line.me)へ同条件でアクセス(比較用)</td><td class="yes">LINEのログイン画面(access.line.me)へリダイレクト=たまごさんの報告と一致</td></tr>
+<tr><td>本番JSバンドル実測</td><td class="yes">social-plugins.line.me=0件・R/msg/text=1件</td></tr>
+</table>
+
+<footer>
+正本：joy-relief-stationリポジトリ。次にたまごさんへお願いしたいこと：スマホ実機で共有アイコン→LINEを押し、送り先を選んで実際に送れるかの最終確認（本ページはボタンの実クリックとその先のURL実測までを保証するもので、LINEアプリでの送信完了そのものは店主の実画面確認が必要）。
+</footer>
+</body>
+</html>

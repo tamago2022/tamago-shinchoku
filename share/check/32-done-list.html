@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#32 完了一覧を積み上げる 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.88rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.78rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #32</div>
+<h1>#32 完了したものを『完了』一覧に積み上げる</h1>
+<div class="date">2026-09-04 20:4x 実装・本番反映</div>
+
+<div class="fix">
+進捗表アプリ（PWA）に <b>「✅ 完了」欄</b> を新設した。OKと判定された項目（status: done）は、これまで「次に発車」からも「たまごさんの確認待ち」からも消えて<b>どこにも表示されていなかった</b>。新設した欄に、完了した日時とURLを添えて、新しいものが上に積み上がる形で常時表示する。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+「✅ 完了」に押した項目が消えていく問題を直し、<code>index.html</code> に完了一覧セクション（<code>#doneSec</code>）と描画関数 <code>renderDone()</code> を追加。データは <code>status/queue.json</code> の <code>status:"done"</code> をそのまま拾うので、これから「OK」を押すたびに件数が増えていく。
+</div>
+
+<h2>② 数字（本番の実測値）</h2>
+<div class="nums">
+  <div class="num"><b>0 → 1</b><span>「完了」を表示するセクションの数（直す前は無し）</span></div>
+  <div class="num"><b>3件</b><span>本番 queue.json の status:done 件数（そのまま積み上がって表示される）</span></div>
+  <div class="num"><b>2/3件</b><span>URLが添えられている件数（残り1件は正直に「URLの報告なし」と表示）</span></div>
+</div>
+<table>
+<tr><th>#</th><th>タイトル</th><th>完了日時</th><th>URL</th></tr>
+<tr><td>4</td><td>驚の部屋・美の部屋を「音楽の扉」と同じ形にする</td><td>09-04 18:42</td><td class="no">URLの報告なし</td></tr>
+<tr><td>5</td><td>棚編集で155棚すべてを選べるようにする</td><td>09-04 18:42</td><td class="yes">あり（2本）</td></tr>
+<tr><td>17</td><td>YouTube APIで動画を差し替えられるようにする</td><td>09-04 19:02</td><td class="no">URLの報告なし</td></tr>
+</table>
+
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ（ここに「✅ 完了」欄が実在する）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>本番の元データ（status:doneが3件、上の表と一致することが確認できる）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
+  <li><b>この修正のコミット</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/commit/b5d88c3bc965d4e035b61a11a6ad2a87a7548349" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/b5d88c3</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<div class="note">
+<b>スクリーンショットは今回入っていません。</b>理由：headless Chromeでの自動撮影を2回試したが、いずれもmacOSの画面収録許可（TCC）待ちでプロセスがハングし、返ってこなかった（本番URL向け・ローカル静的コピー向けの2経路とも同じ症状）。同じ経路を3回目は試さず、撮影は諦めて数字とリンクでの確認に切り替えた。<br>
+代わりに、本番ページを開けば「🔎 たまごさんの確認待ち」のすぐ下に「✅ 完了 <b>3件</b>」という見出しが最初から開いた状態（畳まれていない）で見える。開いた瞬間に③のリンクで確認できる。
+</div>
+
+<footer>
+正本：<code>tamago-shinchoku</code> リポジトリ <code>index.html</code>（renderDone関数・#doneSec）。データは <code>status/queue.json</code> をそのまま参照。今後「OK（合格）」を押すたびに、この欄の件数が増えていく。
+</footer>
+</body>
+</html>

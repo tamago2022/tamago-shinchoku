@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>414番：確認ページの機械検品・確認ページ</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.75;color:#222}
+  h1{font-size:22px}
+  h2{font-size:17px;margin-top:28px;border-left:6px solid #333;padding-left:8px}
+  .num{font-size:32px;font-weight:800}
+  .box{background:#f6f6f6;border-radius:12px;padding:16px;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+  td,th{border-bottom:1px solid #ddd;padding:8px 6px;text-align:left;vertical-align:top}
+  .ok{color:#0a7a2f;font-weight:700}
+  .ng{color:#c22;font-weight:700}
+  a{color:#1a56db}
+  .muted{color:#777;font-size:13px}
+  code{background:#eee;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<h1>① 何を直したか</h1>
+<p><b>「確認待ちに、中身の無い確認ページを上げない」仕組みを作りました。</b><br>
+仕事が終わって<code>awaiting_check</code>（たまごさんの確認待ち）に上がる直前に、<code>harvest()</code>（<code>tools/auto_launcher.py</code>）が確認ページのURLを実際にHTTPで開き、中身を機械が検品します。既存のURL文字列フィルタ（JUNK/ROOTS）の続きとして組み込みました。</p>
+
+<h2>② 数字</h2>
+<div class="box">
+  <p>用意した<b>6つのテストケース</b>（合格すべきページ1枚＋不合格にすべきページ5枚）を実際に検品ロジックへ通した結果：</p>
+  <div class="num"><span class="ok">1件を合格</span>／<span class="ng">5件を不合格</span>（6件中5件を正しく検出）</div>
+  <table>
+    <thead><tr><th>ケース</th><th>結果</th><th>弾いた理由</th></tr></thead>
+    <tbody>
+      <tr><td>本文・数字・リンク・画像がそろった正常ページ</td><td class="ok">合格</td><td>-</td></tr>
+      <tr><td>本文5文字だけの空ページ</td><td class="ng">不合格</td><td>本文が200文字未満</td></tr>
+      <tr><td>「準備中」「TODO」「調査中」しか書いていないページ</td><td class="ng">不合格</td><td>準備中/TODO/調査中しか無い</td></tr>
+      <tr><td>文章は長いが画像も数字も無いページ</td><td class="ng">不合格</td><td>スクショも数字も無い</td></tr>
+      <tr><td>本文・数字はあるがリンクが全部トップページのページ</td><td class="ng">不合格</td><td>リンク先が全部トップページ</td></tr>
+      <tr><td>存在しないURL</td><td class="ng">不合格</td><td>ページが開けない（404相当）</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">5つの弾く条件（404／本文200文字未満／準備中・TODO・調査中しか無い／スクショも数字も無い／リンクが全部トップページ）を、それぞれ狙って作ったテストページで1つずつ確認しました。</p>
+</div>
+
+<div class="box">
+  <p><b>実運用でも動作しています。</b>このコードを保存した直後、5分おきの本物の心臓（<code>machine_status_push.sh</code>→<code>auto_launcher.py</code>）が実際に413番の確認ページを検品し、合格として通過させたログが <code>status/content_check_stats.json</code> に残りました（下の実績ページで見られます）。</p>
+</div>
+
+<h2>③ 押せるリンク一覧</h2>
+<ul>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/_content-check-stats.html">実績ページ（何件検品して何件弾いたか・自動更新）</a></li>
+  <li><a href="https://tamago2022.github.io/tamago-shinchoku/status/content_check_stats.json">生データ（content_check_stats.json）</a></li>
+</ul>
+
+<h2>④ 導入前と導入後（スクリーンショットの代わり・実測）</h2>
+<p class="muted">今回はブラウザを開かず、<code>curl</code>で取れる事実（HTTPで実際に返ってくる中身）で「直る前／直った後」を示します。</p>
+<table>
+  <thead><tr><th></th><th>導入前（URL検品だけ）</th><th>導入後（中身も検品）</th></tr></thead>
+  <tbody>
+    <tr><td>URLはあるが中身が空の確認ページ</td><td class="ng">そのまま確認待ちへ上がっていた</td><td class="ok">列に戻し、やり直しの理由を1行添えて再着火</td></tr>
+    <tr><td>3回連続で中身が空だった場合</td><td>（区別なし）</td><td>4回目以降は無限ループにせず人の目へ回す</td></tr>
+    <tr><td>実績の可視化</td><td>無し</td><td>検品件数・弾いた件数を実績ページに常時表示</td></tr>
+  </tbody>
+</table>
+
+<h2>触った場所</h2>
+<ul>
+  <li><code>tools/auto_launcher.py</code> — <code>content_check()</code> / <code>_record_content_check()</code> を新設、<code>harvest()</code>の確認待ち直前に組み込み</li>
+  <li><code>status/content_check_stats.json</code> — 実績の永続化（新規）</li>
+  <li><code>share/check/_content-check-stats.html</code> — 実績表示ページ（新規）</li>
+</ul>
+
+</body>
+</html>

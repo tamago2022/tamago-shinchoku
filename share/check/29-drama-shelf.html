@@ -1,0 +1,83 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>29番 ドラマ主題歌の棚移動 の確認</title>
+<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:720px}
+h1{font-size:1.3rem;margin:0 0 12px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
+.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:#5fd996;font-weight:800}
+.warn{color:#f4c05f;font-weight:800}
+.bad{color:#f26d6d;font-weight:800}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.92rem}
+td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left}
+th{background:#20262f}
+a{color:#5fd996}
+code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.9em;word-break:break-all}
+ul{padding-left:1.2em}
+.small{color:#9aa4b2;font-size:0.85rem}
+img{max-width:100%;border-radius:12px;border:1px solid #2a323c;margin-top:8px}
+.imgs{display:flex;gap:12px;flex-wrap:wrap}
+.imgs figure{margin:0;flex:1;min-width:220px}
+figcaption{color:#9aa4b2;font-size:0.85rem;margin-top:4px;text-align:center}
+</style></head><body>
+
+<h1>29番：ドラマ主題歌23件を「ドラマの棚」へ移す の確認ページ</h1>
+
+<div class="b">
+<p class="ok">① 何を直したか（1行）</p>
+<p><b>「映画の棚」に混ざっていたテレビドラマ・TVアニメ・特撮の主題歌23件を「ドラマの棚」へ分離し、本番に反映・実機（ブラウザ）で確認した。</b>途中でmain自体のTypeScriptビルドが9/1から失敗し続けてLovableの公開が一切効かなくなっていた根本原因も特定・修理した（副産物）。</p>
+</div>
+
+<div class="b">
+<p class="ok">② 数字（本番実機で確認・実測）</p>
+<table>
+<tr><th>確認箇所</th><th>直す前</th><th>直した後（本番・実機ブラウザ）</th></tr>
+<tr><td>ドラマの棚（<code>/shelf/music/drama</code>）</td><td class="bad">1件</td><td class="ok">23件</td></tr>
+<tr><td>映画の棚（<code>/shelf/music/movies</code>）</td><td>29件（ドラマ混入・実質6件+DB49件の一部）</td><td class="ok">29件・全部映画（Eye of the Tiger, Born to Be Wild, Shallow等）</td></tr>
+</table>
+<p class="small">対象23件の内訳：テレビドラマ主題歌18件＋TVアニメ/特撮の主題歌5件（タッチ・ONE PIECE「Hope」・BLEACH「D-tecnoLife」・ゴジラS.P「青い」・仮面ライダー「EXCITE」）。<br>
+注意：本番ページを機械的に取得する（curl/fetch）と初期HTML（SSR直後）では反映前の数字（1件・6件）のまま見える。これはこのサイトの設計上、棚の中身がブラウザでJavaScriptを実行した後に確定して表示される仕組みのため。<b>実際にブラウザで開いた状態（下のスクリーンショット・実機確認）が本当の本番の見え方</b>。</p>
+</div>
+
+<div class="b">
+<p class="ok">③ 押せるリンク（本番の実物）</p>
+<ul>
+<li><a href="https://joy-relief-station.lovable.app/shelf/music/drama" target="_blank"><b>ドラマの棚（本番）— 23件</b></a></li>
+<li><a href="https://joy-relief-station.lovable.app/shelf/music/movies" target="_blank"><b>映画の棚（本番）— 29件・映画だけ</b></a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=king-gnu&song=kaizo" target="_blank">King Gnu「カメレオン」— ドラマ『ミステリと言う勿れ』主題歌</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=misia&song=aitakute-ima" target="_blank">MISIA「逢いたくていま」— ドラマ『JIN-仁-』</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=aimyon&song=naked-heart" target="_blank">あいみょん「裸の心」</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=arashi&song=truth" target="_blank">嵐「truth」— ドラマ『魔王』</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=yuzu&song=ame-nochi-hallelujah" target="_blank">ゆず「雨のち晴レルヤ」— NHK朝ドラ</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=iwasaki-yoshimi&song=touch" target="_blank">岩崎良美「タッチ」— TVアニメ『タッチ』</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=namie&song=hope" target="_blank">安室奈美恵「Hope」— TVアニメ『ONE PIECE』</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=uverworld&song=d-tecnolife" target="_blank">UVERworld「D-tecnoLife」— TVアニメ『BLEACH』</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=polkadot-stingray&song=blue" target="_blank">ポルカドットスティングレイ「青い」— TVアニメ『ゴジラS.P』</a></li>
+<li><a href="https://joy-relief-station.lovable.app/cover-guide?artist=daichi-miura&song=excite" target="_blank">三浦大知「EXCITE」— 仮面ライダー</a></li>
+</ul>
+<p class="small">全23件：逢いたくていま(MISIA)・裸の心(あいみょん)・カメレオン(King Gnu)・雨燦々(King Gnu)・阿修羅ちゃん(Ado)・雨のち晴レルヤ(ゆず)・HELLO(福山雅治)・truth(嵐)・Make-up Shadow(井上陽水)・ここにしか咲かない花(コブクロ)・Rain(José Feliciano)・To Love You More(Celine Dion)・くちばしにチェリー(EGO-WRAPPIN')・サニーサイドメロディー(EGO-WRAPPIN')・花唄(TOKIO)・キラキラ(オフコース)・旅路(藤井風)・燦燦(三浦大知)・タッチ(岩崎良美)・Hope(安室奈美恵)・D-tecnoLife(UVERworld)・青い(ポルカドットスティングレイ)・EXCITE(三浦大知)</p>
+</div>
+
+<div class="b">
+<p class="ok">④ 本番スクリーンショット（実機ブラウザ・直した後）</p>
+<div class="imgs">
+<figure><img src="img/29-drama-after.png" alt="ドラマの棚23件"><figcaption>ドラマの棚（23件・カメレオン/truth/Rain等が実際に並んでいる）</figcaption></figure>
+<figure><img src="img/29-movies-after.png" alt="映画の棚29件"><figcaption>映画の棚（29件・Eye of the Tiger/Born to Be Wild等、映画だけになった）</figcaption></figure>
+</div>
+</div>
+
+<div class="b">
+<p class="ok">今回、実際に試した経路・見つけた原因（すべて）</p>
+<ol>
+<li><b>真因1（大きい方）</b>：mainブランチ自体のTypeScriptビルドが2026-09-01以降失敗し続けており、Lovableの「公開」を何度押しても本番に何も反映されない状態だった（<code>src/lib/tasteLedger.ts</code>と<code>src/routes/feature.final-view.tsx</code>の型エラー2件）。両方修理してmainへ反映、ビルド成功を確認。</li>
+<li><b>真因2（今回の本題）</b>：ドラマ棚を分離する実装（前任コミット）自体は正しい方針だったが、DB「映画の棚」が<code>extends_shelf_id="movies"</code>という別経路でデータが届く実装になっており、その経路には除外ロジックが適用されていなかった。両方の経路に除外ロジックを適用するよう修正。</li>
+<li>本番のSSR（サーバー初期HTML）だけを<code>curl</code>/<code>fetch</code>で見ると反映前の数字に見えて混乱したが、<b>実機ブラウザ（JS実行後）で確認したところ正しく反映されていた</b>ことを特定した。</li>
+</ol>
+</div>
+
+<div class="b">
+<p class="ok">状態</p>
+<p>①コード側の実装：完了・本番反映済み ②main合流：完了（<code>d9af294d</code>） ③Lovable公開：実行済み・実機で反映確認 ④実機ブラウザでの見た目確認：完了（本ページのスクリーンショット）</p>
+</div>
+
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
+</body></html>

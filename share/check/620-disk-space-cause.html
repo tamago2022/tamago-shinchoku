@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#620 容量急減の原因調査（案件#620） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #620 容量急減の原因調査（案件#620）</div>
+<h1>#620 容量急減の原因調査（案件#620）</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+旧システムボリューム170GBを発見・安全な一時ファイル約8GBを削除・二度と溜まらない自動掃除を3本実装(push済み)
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>22→25GB</b><span>今回の実測(System Volumes Data空き)</span></div>
+  <div class="num"><b>170GB</b><span>旧システムボリューム(未使用・店主確認待ち)</span></div>
+  <div class="num"><b>8GB</b><span>安全に削除した一時ファイル・キャッシュ</span></div>
+  <div class="num"><b>13件</b><span>自動片づけ対象にした放置worktree</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>判断メモ(PENDING_DECISIONS.md・旧ボリューム170GBの扱い)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md</a></li>
+  <li><b>拡張したworktree_reaper.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py</a></li>
+  <li><b>拡張したdisk_guardian.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_guardian.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_guardian.py</a></li>
+  <li><b>新設check_page_pruner.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/check_page_pruner.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/check_page_pruner.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>旧システムボリューム(Macintosh SSD/Data計170GB・中身は2024年の古いUsers一式)</td><td class="no">店主確認待ち・削除せず記録のみ</td></tr>
+<tr><td>Google Drive CloudStorage 130GB</td><td class="yes">実体データなので触らない</td></tr>
+<tr><td>Application Support 57GB(Codex/CloudDocs/Notion等)</td><td class="yes">一部の古いキャッシュのみ削除済み</td></tr>
+<tr><td>Library/Caches 9.2GB(CloudKit一時クローン・Codexアップデータ・pip等)</td><td class="yes">安全なもの削除済み・今後は自動化</td></tr>
+<tr><td>/private/tmp配下のgit worktree 29個・計7GB(既存の見張りの対象外だった)</td><td class="yes">13個削除・残りは自動片づけへ登録</td></tr>
+<tr><td>joy-relief-station/.worktrees 26個(幽霊worktreeで既存reaperが永久スキップしていた)</td><td class="yes">退避ロジックを追加(次回実行で処理)</td></tr>
+<tr><td>tamago-shinchoku share/check 293MB(確認ページの画像・動画が無制限に増加)</td><td class="yes">60日超を自動退避する仕組みを新設</td></tr>
+</table>
+
+<footer>
+このページは #620 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>

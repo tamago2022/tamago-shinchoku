@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#46 中継所を立てる（Obsidianに飛ばない） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.85rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #46</div>
+<h1>#46 中継所を立てる（進捗表のボタンがObsidianに飛ばないように）</h1>
+<div class="date">2026-09-04 21:00 実装・本番反映済み・Mac側で常時稼働中</div>
+
+<div class="fix">
+進捗表(PWA)のボタンを押すと、今まで <code>obsidian://new</code> が開いて画面がObsidianアプリへ切り替わっていた。それをやめ、Macに立てた「中継所」(<code>relay_server.py</code>)へ、<b>cloudflaredのクイックトンネルで直接HTTPS</b>で届くようにした。押してもアプリは切り替わらない。
+</div>
+
+<h2>① 何を直したか</h2>
+<div class="note">
+Mac側に <code>tools/relay_server.py</code>（localhost:8788の受け口）を常時起動し、<code>cloudflared tunnel</code>（アカウント不要のクイックトンネル）で外から <code>https://xxxx.trycloudflare.com</code> として叩けるようにした。払い出されたURLは <code>status/relay.json</code> に書き込まれ、GitHub Pages経由でPWAが60秒おきに読みに行く。受け付けるのはキューの並び替え系コマンドだけ（<code>relay_server.py</code>の<code>ALLOWED</code>で制限）。<br><br>
+brewが使えない環境だったため、cloudflared本体はPythonでGitHubから直接ダウンロードし、<b>Mac側のローカル置き場</b>（<code>~/.tamago/bin/cloudflared</code>・gitには入れない）に置いた。5分おきの見張り番（<code>machine_status_push.sh</code> → 既存の <code>com.tamago.machine-status</code> launchd job）が <code>relay_up.sh</code> を毎回呼ぶので、Mac再起動後も自動で立ち上がる。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>200</b><span>トンネル経由で送った疎通テスト(/health)の応答コード</span></div>
+  <div class="num"><b>2/2件</b><span>公開トンネル経由の並び替えコマンド(queue_prio)が成功</span></div>
+  <div class="num"><b>0件</b><span>relay_up.shを計5回実行して発生した多重起動(受け口・トンネルとも常に1プロセス)</span></div>
+</div>
+<table>
+<tr><th>確認項目</th><th>やったこと</th><th>結果</th></tr>
+<tr><td>トンネル疎通</td><td>公開URLの <code>/health</code> をcurl相当で叩く</td><td class="yes"><code>200 {"ok": true}</code> ✓</td></tr>
+<tr><td>コマンドが本当にqueue.jsonへ届くか</td><td>公開URL経由で41番の優先度を 5→3 に変更</td><td class="yes">queue.json の41番 priority が 3 に変化 ✓</td></tr>
+<tr><td>同上・逆方向でも通るか</td><td>新しいトンネル発行後にもう一度、41番を 3→5 に変更</td><td class="yes">queue.json の41番 priority が 5 に変化 ✓</td></tr>
+<tr><td>二重起動しないか（1回目）</td><td>起動済みの状態で <code>relay_up.sh</code> を2回連続実行</td><td class="yes">受け口・トンネルとも1プロセスのまま ✓</td></tr>
+<tr><td>ゼロから起動しても正しい場所から立つか</td><td>受け口・トンネルを両方止め、<code>relay_up.sh</code> を再実行</td><td class="yes"><code>~/.tamago/bin/cloudflared</code> から新規に起動 ✓</td></tr>
+<tr><td>二重起動しないか（2回目・再起動後）</td><td>そのあとさらに <code>relay_up.sh</code> を2回連続実行</td><td class="yes">受け口・トンネルとも1プロセスのまま ✓</td></tr>
+<tr><td>GitHub Pagesに反映されたか</td><td><code>status/relay.json</code> を本番URLで直接取得</td><td class="yes">最新のトンネルURLが返る ✓</td></tr>
+</table>
+
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>いま生きている中継所URL（本番のrelay.jsonの中身・そのまま踏める）</b><br><a href="https://designation-talks-punk-oxford.trycloudflare.com/health" target="_blank" rel="noopener">https://designation-talks-punk-oxford.trycloudflare.com/health</a></li>
+  <li><b>本番の生データ（PWAが読みに行っているのと同じファイル）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/status/relay.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/relay.json</a></li>
+  <li><b>この修正のコミット（diffがそのまま見える）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/commit/9ae44e85c3fcd55ebebccc115c73c56677e477e9" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/9ae44e8</a></li>
+  <li><b>直したファイル（mainの最新版）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/relay_up.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/relay_up.sh</a></li>
+  <li><b>中継所の受け口本体（できることはキュー操作だけに絞ってある）</b><br><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/relay_server.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/relay_server.py</a></li>
+  <li><b>進捗表アプリ本体（PWAはここから60秒おきにrelay.jsonを読む）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+</ul>
+
+<h2>④ 前と後</h2>
+<div class="note">
+<b>スクリーンショットは今回ありません。</b>理由：このセッションにブラウザ操作の道具が無いため撮影できなかった（試した経路：ツール一覧を確認→スクリーンショット系の道具は無し）。代わりに、公開トンネル経由で送った本物のコマンドと、実際に書き換わった<code>status/queue.json</code>の中身をそのまま貼る（41番の優先度・数字は上の②のテストと対応）。
+</div>
+<pre>【送った中身（41番の優先度を5→3にする）】
+POST https://designation-talks-punk-oxford.trycloudflare.com/cmd
+{"commands":[{"id":"t1","action":"queue_prio","target":"41:3"}]}
+
+【返ってきた中身】
+{"ok": true, "results": [{"id": "t1", "status": "done", "message": "41番の優先度をP3にしました"}]}
+
+【直後の queue.json・41番】
+BEFORE: "priority": 5
+AFTER : "priority": 3
+
+【もう一度、新しいトンネルURLでも通るか(3→5)】
+POST https://designation-talks-punk-oxford.trycloudflare.com/cmd
+{"commands":[{"id":"t2","action":"queue_prio","target":"41:5"}]}
+→ {"ok": true, "results": [{"id": "t2", "status": "done", "message": "41番の優先度をP5にしました"}]}
+BEFORE: "priority": 3
+AFTER : "priority": 5</pre>
+
+<h2>ついでに直した事故</h2>
+<div class="note">
+作業中、cloudflaredの実行ファイル(41MB)を誤ってリポジトリの中(<code>tools/bin/</code>)にダウンロードしたまま、Mac側の自動push(5分おき)に一度commitされてしまった。<b>Git履歴の書き換えは不可逆操作のため今回は行わず</b>、以後同じ事故が起きないよう<code>.gitignore</code>に<code>tools/bin/</code>を追加し、バイナリ本体はMac側のローカル置き場（<code>~/.tamago/bin/</code>・git管理外）へ移した。過去1コミット分だけリポジトリのサイズが増えているが、動作・公開には影響しない。
+</div>
+
+<footer>
+正本：<code>tamago-shinchoku</code> リポジトリ <code>tools/relay_up.sh</code>（cloudflaredのフォールバック先を追加）・<code>tools/relay_server.py</code>（受け口・既存実装）・<code>status/relay.json</code>（発行されたURL）。Mac再起動後も5分おきの見張り番（<code>com.tamago.machine-status</code> launchd → <code>machine_status_push.sh</code> → <code>relay_up.sh</code>）が自動で立て直す。トンネルURLは知っていれば誰でも発車待ちの並び替えができるが、できることは<code>relay_server.py</code>の<code>ALLOWED</code>でキュー操作だけに絞ってある。
+</footer>
+</body>
+</html>

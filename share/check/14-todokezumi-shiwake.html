@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#14 止まっているタスク56件を減らす 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:130px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;margin-bottom:16px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  .fixnote{background:#fff3ee;border:1px solid #e3b7a9;border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 16px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #14</div>
+<h1>#14 止まっているタスク56件を減らす</h1>
+<div class="date">2026-09-05 仕分け実施・本番実測込み</div>
+
+<div class="fix">
+受付台帳（<code>AI出力/_ルール/作業キュー.md</code>）で「🟠着手中のまま」表示だった依頼を、1件ずつ実物（main合流の有無・本番URL・commit）で確認し、表示を実態に合わせて確定した。34件のうち33件の表示を🟠から動かし、本当に今も動いているのは1件だけに絞った。
+</div>
+
+<h2>① 何をしたか</h2>
+<div class="note">
+台帳に「🟠着手中」と残ったまま何日も動いていなかった34件を全部開き、それぞれ<b>main合流の証拠（commit）／本番URLの実測（200かどうか・中身のキーワード）／店主の停止指示との照合</b>のどれかで実態を確認。確認できた通りに台帳の状態欄を書き換えた（削除はしていない、上書きのみ）。作業中に見つかった誤り（後述）も訂正した。
+</div>
+
+<h2>② 数字（受付台帳34件の内訳）</h2>
+<div class="nums">
+  <div class="num"><b>34件</b><span>仕分け対象（台帳に残っていた🟠）</span></div>
+  <div class="num"><b>13件</b><span class="yes">✅ 本番まで確認できた完了</span></div>
+  <div class="num"><b>11件</b><span>🟡 main合流済みだが本番未反映・一部完了など継続中</span></div>
+  <div class="num"><b>5件</b><span class="no">🔴 未着手・店主対応待ちと確定</span></div>
+  <div class="num"><b>4件</b><span>ℹ️ 終わりのある依頼ではなく常設ロールと判明（対象外）</span></div>
+  <div class="num"><b>1件</b><span>🟠 今も実際に動いている（Vulfmon仕入れ）</span></div>
+</div>
+<div class="note">
+結果：台帳の「止まっている（🟠）」表示は <b>34件 → 1件</b> に減った。34件の内訳は上記。
+</div>
+
+<h2>③ 実際に本番で確認したページ（curlではなくpython3のurllibで直接取得・200とキーワード一致を実測）</h2>
+<ul class="links">
+  <li><b>日本の温泉棚（スターらんど）</b>
+    <a href="https://joy-relief-station.lovable.app/star-land" target="_blank">https://joy-relief-station.lovable.app/star-land</a>
+    <div class="note" style="margin-top:6px">200 OK／本文に「ととのん」「温泉」を実測で確認／x-deployment-id あり（最新ビルド）</div>
+  </li>
+  <li><b>「日本」ハブ新設（スポーク8本の入口）</b>
+    <a href="https://joy-relief-station.lovable.app/hub/japan" target="_blank">https://joy-relief-station.lovable.app/hub/japan</a>
+    <div class="note" style="margin-top:6px">200 OK／本文に「温泉」「ととのん」を実測で確認</div>
+  </li>
+  <li><b>マガジン「さよなら夏の日」改稿版</b>
+    <a href="https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi" target="_blank">https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi</a>
+    <div class="note" style="margin-top:6px">200 OK／本文に「竹内まりや」「HYBS」「藍にいな」「駅」を確認、「岡田有希子」「YUKIKA」「Night Tempo」は含まれない＝指示どおりの改稿版が出ている</div>
+  </li>
+</ul>
+
+<div class="fixnote">
+<b>仕分け中に見つかった訂正1件：</b>台帳は「/japan・/japan-ja 実装済み」で✅扱いだったが、本番で実測したところ両方とも404だった（main合流は事実／commit 578cb49e）。この案件は✅から🟡（本番未反映・要再調査）へ台帳を訂正した。「合流した＝本番に出ている」と思い込まず、直った件も直っていない件も両方この確認ページに書いている。
+</div>
+
+<h2>④ 前後の比較（今回はスクリーンショットの代わりに直接取得の実測記録）</h2>
+<table>
+<tr><th>ページ</th><th>取得方法</th><th>結果</th></tr>
+<tr><td>/star-land</td><td>python3 urllib で直接取得</td><td class="yes">200・本文一致</td></tr>
+<tr><td>/hub/japan</td><td>python3 urllib で直接取得</td><td class="yes">200・本文一致</td></tr>
+<tr><td>/feature/sayonara-natsu-no-hi</td><td>python3 urllib で直接取得</td><td class="yes">200・改稿版の内容一致</td></tr>
+<tr><td>/japan, /japan-ja</td><td>python3 urllib で直接取得</td><td class="no">404（main合流済みだが本番未反映）</td></tr>
+</table>
+<div class="note">
+このセッションはブラウザのスクリーンショット機能が使えなかったため、画像の代わりに上記の直接取得結果（HTTPステータスと本文中の実際の文字列一致）を証拠として置いている。
+</div>
+
+<footer>
+台帳の実物：Obsidian Vault内 <code>AI出力/_ルール/作業キュー.md</code>（店主のスマホから見られる場所）。この確認ページ自体はGitHub Pagesで公開。<br>
+<a href="../">← 進捗表にもどる</a>
+</footer>
+</body>
+</html>

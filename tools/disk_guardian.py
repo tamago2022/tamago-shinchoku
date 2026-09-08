@@ -667,19 +667,36 @@ def maybe_record_daily(free_gb):
 # に残し、古いものは archive フォルダへ実体を移してから git rm する（次回pushで反映）。
 SHARE_CHECK_DIR = os.path.join(REPO, "share", "check")
 SHARE_CHECK_KEEP = 30
+# 2026-09-08 17:35 やり直し。**「件数」で捨てたのが間違いだった。**
+#   645番で「直近30件だけ残す」にした結果、256件の確認ページが外付けへ出て、
+#   **たまごさんに渡してきた確認URLが軒並み404になった。**
+#   鬼監督に古い確認待ちを見せたら、ページが開けないという理由で
+#   「すでに終わっている仕事」を次々に不合格にし、作り直しの列へ戻し始めた（実測4件）。
+#   確認ページはたまごさんへの領収書であり、**リンクが死ぬこと自体が損害。**
+#   重いのはページ数ではなく、中に埋め込んだ画像。258件のHTMLを全部足しても33MB。
+#   → **軽いページは何件でも残す。重いページだけを、新しい方から30件残して外へ出す。**
+SHARE_CHECK_BIG_KB = 500     # これを超えるものだけを「重いページ」として扱う
 EXTERNAL_ARCHIVE_ROOT = "/Volumes/iMac HDD/tamago-shinchoku-archive/share-check"
 
 
 def archive_old_share_check(dry_run=True):
-    """share/check直下の.htmlのうち、更新日時が新しい順にSHARE_CHECK_KEEP件だけ残し、
-    それ以外を外付けへ移す候補を返す（dry_run=Trueなら移動せず一覧だけ）。"""
+    """share/check直下の.htmlのうち、**重いもの**（SHARE_CHECK_BIG_KB超）だけを対象に、
+    更新日時が新しい順にSHARE_CHECK_KEEP件だけ残し、それ以外を外付けへ移す候補を返す。
+    軽いページ（＝ほぼ全部の確認ページ）は、何件あっても動かさない。リンクを殺さないため。"""
     if not os.path.isdir(SHARE_CHECK_DIR):
         return []
     # "_"始まりはテンプレート・集計ファイル（_template.html等）。仕組みが壊れるため対象外。
     files = [f for f in os.listdir(SHARE_CHECK_DIR)
              if f.endswith(".html") and not f.startswith("_")]
-    files_full = [(f, os.path.getmtime(os.path.join(SHARE_CHECK_DIR, f))) for f in files]
-    files_full.sort(key=lambda x: -x[1])
+    big = []
+    for f in files:
+        p = os.path.join(SHARE_CHECK_DIR, f)
+        try:
+            if os.path.getsize(p) > SHARE_CHECK_BIG_KB * 1024:
+                big.append((f, os.path.getmtime(p)))
+        except Exception:
+            pass
+    files_full = sorted(big, key=lambda x: -x[1])
     old = [f for f, _ in files_full[SHARE_CHECK_KEEP:]]
     if dry_run or not old:
         return old
