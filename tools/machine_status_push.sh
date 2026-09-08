@@ -288,6 +288,7 @@ if [ -n "$(git status --porcelain --untracked-files=normal -- \
       status/history.jsonl status/whiteboard.json status/priority.json status/health.json \
       status/commands.json status/queue.json status/relay.json status/version.json status/launch_cap.json \
       status/ai_verify_stats.json \
+      status/disk_guardian.log status/disk_trend_report.json status/disk_daily_history.json status/disk_candidates.json \
       index.html data.js said.js tools status/pace.json 2>/dev/null | head -1)" ]; then
   HIST_CHANGED=1
 fi

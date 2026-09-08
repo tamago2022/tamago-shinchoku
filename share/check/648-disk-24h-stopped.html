@@ -44,18 +44,23 @@
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #648 容量の減りが止まったか・24時間観測</div>
 <h1>#648 容量の減りが止まったか・24時間観測</h1>
-<div class="date">2026-09-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-08 実装・main合流・本番(GitHub Pages)反映まで実測確認（18:26 追記・不合格を受けての作り直し）</div>
 
 <div class="fix">
-642番(Drive走査1日1回化)・645番(125GB解放)の後、本当に減りが止まったかをdisk_guardian.logの実測(15分おき)だけで検証。新しい計測プロセスは追加していない(既存ログを読むだけ＝軽い)。
+642番(Drive走査1日1回化)・645番(125GB解放)の後、本当に減りが止まったかをdisk_guardian.logの実測(15分おき)だけで検証。新しい計測プロセスは追加していない(既存ログを読むだけ＝軽い)。<br>
+<b>1回目の不合格の原因を直した：</b>GitHub上のログが2026-09-07 13:39で止まって見えたのは、5分おきの自動push側に「disk_guardian.logが変化したか」を見る項目が無く、他の項目に変化が無い日は丸ごとpushされずに止まっていたバグ(tools/machine_status_push.sh)。この監視項目を追加し、以後は変化があれば5分以内に自動でGitHubへ届く。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（本ページ作成時点の実測。以後も自動更新される）</h2>
 <div class="nums">
-  <div class="num"><b>9.0時間</b><span>645/646番の解放が完了した山(08:22・62.7GB)からの経過時間</span></div>
-  <div class="num"><b>-0.8GB</b><span>その9時間での増減(62.7GB→61.9GB)</span></div>
+  <div class="num"><b>10.0時間</b><span>645/646番の解放が完了した山(08:25・62.7GB)からの経過時間</span></div>
+  <div class="num"><b>-0.8GB</b><span>その10時間での増減(62.7GB→61.9GB)</span></div>
   <div class="num"><b>横ばい・止まっている</b><span>判定結果</span></div>
-  <div class="num"><b>約2.1GB/日</b><span>同ペースを1日換算した目安(以前の20〜30GB/日から大幅改善)</span></div>
+  <div class="num"><b>約1.9GB/日</b><span>同ペースを1日換算した目安(以前の20〜30GB/日から大幅改善)</span></div>
+</div>
+
+<div class="note">
+<b>24時間フルではまだ証明できていない。</b>山(08:25)から丸24時間経つのは<b>2026-09-09 08:25</b>。それまでは正直に「10時間分の横ばい」としか言えない。恒久の見張り(disk_guardian.py・1日1回)が毎日ここを自動で伸ばし続けるので、明日の朝以降このページを開けば24時間分の実測に育っている。
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -65,20 +70,24 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実測ログ(disk_guardian.log)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log</a></li>
-  <li><b>新規の検証スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py</a></li>
+  <li><b>実測ログ(disk_guardian.log・自動push修正後)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_guardian.log</a></li>
+  <li><b>トレンドの生データ(disk_trend_report.json)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_trend_report.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/disk_trend_report.json</a></li>
+  <li><b>検証スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py</a></li>
+  <li><b>今回直した自動push側のバグ</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/machine_status_push.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/machine_status_push.sh</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>解放前(9/6〜9/8朝)</td><td class="no">17〜18GB台で危機的・自動発車停止が頻発</td></tr>
-<tr><td>解放後(9/8 08:22〜17:22)</td><td class="yes">62.7GB→61.9GBで横ばい</td></tr>
-<tr><td>恒久の見張り</td><td class="yes">disk_guardian.pyが1日1回、山からの推移とグラフを自動更新(tools/disk_trend.py)</td></tr>
+<tr><td>解放前(9/6〜9/8朝)</td><td class="no">11〜18GB台で危機的・自動発車停止が頻発</td></tr>
+<tr><td>解放後(9/8 08:25〜18:25)</td><td class="yes">62.7GB→61.9GBで横ばい(10.0時間分)</td></tr>
+<tr><td>24時間フル分</td><td class="no">まだ足りない。2026-09-09 08:25にここが24.0時間になる</td></tr>
+<tr><td>GitHub側のログが止まって見えた原因</td><td class="yes">push判定バグを特定し修正済み(このページの① 参照)</td></tr>
+<tr><td>恒久の見張り</td><td class="yes">disk_guardian.pyが1日1回、山からの推移とグラフを自動更新(tools/disk_trend.py)。5分おきの自動pushで以後は放置されない</td></tr>
 </table>
 
 <footer>
-24時間まるまるの連続横ばいはまだ9時間分しか無い。恒久の見張り(disk_guardian.py)が毎日1回、山からの経過時間とグラフを自動で伸ばしていく。前日比-5GB超えた日だけ犯人番号つきで警告する。
+このページのURLは変えない。明日の朝(2026-09-09 08:25以降)にもう一度開けば、同じURLのまま24時間分の実測へ育っている。前日比-5GB超えた日だけ犯人番号つきで警告する。
 </footer>
 </body>
 </html>
