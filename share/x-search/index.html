@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>過去ツイート検索 プロトタイプ（案件#667）</title>
+<style>
+  :root{color-scheme:light dark;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+       max-width:780px;margin:0 auto;padding:16px;background:#0f1115;color:#e8e8ec;}
+  h1{font-size:1.05rem;font-weight:600;margin:4px 0 2px;}
+  .sub{color:#9aa0aa;font-size:.8rem;margin-bottom:14px;}
+  #q{width:100%;box-sizing:border-box;font-size:1.1rem;padding:12px 14px;border-radius:12px;
+     border:1px solid #333;background:#1a1d24;color:#fff;outline:none;}
+  #q:focus{border-color:#6aa6ff;}
+  #stat{color:#8ea0c0;font-size:.82rem;margin:8px 2px 4px;}
+  #list{margin-top:8px;}
+  .card{background:#171a20;border:1px solid #262a33;border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+  .meta{color:#8b93a3;font-size:.72rem;margin-bottom:6px;display:flex;gap:10px;}
+  .txt{white-space:pre-wrap;word-break:break-word;line-height:1.5;font-size:.94rem;}
+  mark{background:#ffd76a;color:#111;border-radius:3px;padding:0 2px;}
+  .empty{color:#8b93a3;text-align:center;padding:40px 0;}
+  .loading{color:#8b93a3;text-align:center;padding:40px 0;}
+  a.tw{color:#6aa6ff;text-decoration:none;}
+</style>
+</head>
+<body>
+  <h1>🔎 過去ツイート検索（プロトタイプ・案件#667）</h1>
+  <div class="sub">たまごさん本人のXアーカイブ 47,011件をこのブラウザの中だけで検索します（外部送信なし）。キーワードを打つと即座に絞り込みます。</div>
+  <input id="q" type="search" placeholder="キーワードで検索（例: AI 孤独）" autofocus>
+  <div id="stat">読み込み中…</div>
+  <div id="list"></div>
+
+<script>
+const listEl = document.getElementById('list');
+const statEl = document.getElementById('stat');
+const qEl = document.getElementById('q');
+let ROWS = [];
+
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function highlight(text, terms){
+  let out = esc(text);
+  for(const t of terms){
+    if(!t) continue;
+    const re = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+    out = out.replace(re, m => '<mark>'+m+'</mark>');
+  }
+  return out;
+}
+
+function render(query){
+  const terms = query.trim().split(/\s+/).filter(Boolean);
+  let matched;
+  if(terms.length === 0){
+    matched = ROWS.slice(0, 30);
+    statEl.textContent = `全 ${ROWS.length.toLocaleString()} 件中、最新30件を表示中（キーワードを入力すると絞り込み）`;
+  } else {
+    const lowers = terms.map(t => t.toLowerCase());
+    matched = ROWS.filter(r => {
+      const lt = r.t.toLowerCase();
+      return lowers.every(t => lt.includes(t));
+    });
+    statEl.textContent = `「${query}」→ ${matched.length.toLocaleString()} 件ヒット（全${ROWS.length.toLocaleString()}件中）`;
+    matched = matched.slice(0, 100);
+  }
+
+  if(matched.length === 0){
+    listEl.innerHTML = '<div class="empty">見つかりませんでした</div>';
+    return;
+  }
+
+  listEl.innerHTML = matched.map(r => {
+    const url = `https://x.com/i/web/status/${r.id}`;
+    return `<div class="card">
+      <div class="meta"><span>${r.d || '日付不明'}</span><span>❤ ${r.f}</span><span>🔁 ${r.r}</span>${r.rp?'<span>返信</span>':''}<a class="tw" href="${url}" target="_blank" rel="noopener">元ツイートを開く →</a></div>
+      <div class="txt">${highlight(r.t, terms)}</div>
+    </div>`;
+  }).join('');
+}
+
+let MODE = '本人の実データ（ローカル）';
+fetch('data.json').then(r => {
+  if(!r.ok) throw new Error('no local data.json');
+  return r.json();
+}).catch(() => {
+  MODE = 'デモ用サンプル5件（公開版・本人の実ツイートはプライバシー配慮のため非公開）';
+  return fetch('data.demo.json').then(r => r.json());
+}).then(data => {
+  ROWS = data;
+  render('');
+  qEl.addEventListener('input', () => render(qEl.value));
+  document.querySelector('.sub').textContent =
+    `モード: ${MODE} / 読み込み件数: ${ROWS.length.toLocaleString()}件。ローカルで tools/build_x_tweet_search_proto.py を実行すると、この画面のまま本人の47,011件フル検索に切り替わります。`;
+}).catch(err => {
+  statEl.textContent = '読み込みエラー: ' + err;
+});
+</script>
+</body>
+</html>
