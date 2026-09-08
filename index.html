@@ -823,6 +823,11 @@ document.addEventListener("click", e=>{
 //   A=今すぐ／B=早めに／C=普通／D=後回し／E=いつでも。F=空き枠（発車待ちの箱だけの特別枠。下記PRIO_DOT参照）。
 const PRIO_LETTER = {1:"A", 2:"B", 3:"C", 4:"D", 5:"E", 6:"F"};
 const PRIO_NAME = {1:"A 今すぐ", 2:"B 早めに", 3:"C 普通", 4:"D 後回し", 5:"E いつでも", 6:"F 空き枠"};
+// 682番：qBulkBarHtml()（グローバル関数）とrenderQueue()内のqPrioHtml、両方から使うので
+//   グローバルに置く（renderQueue()内のローカルconstだった時、qBulkBarHtml()から
+//   ReferenceErrorになり一括仕分けバーが1件も出ない不具合があった＝ヘッドレスChromeの
+//   実機テストで発見）。
+const PRIO_DOT = ["🔴A", "🟠B", "🟡C", "🔵D", "⚪E", "🟢F"]; // 1〜6
 function card(color, title, stateLabel, extra, detailHtml, prioKey, subLine){
   const p = prioKey != null ? prioOf(prioKey) : 0;
   const star = prioKey != null ? `<span class="pv" data-k="${esc(prioKey)}">${p ? PRIO_LETTER[p] : ""}</span>` : "";
@@ -2530,7 +2535,7 @@ function renderQueue(){
   // 655番（2026-09-08）489番「Pって何の略？分かりにくい」を踏まえ、文字の「P」は使わず
   //   色付きの丸だけにする（数字ボタンとの見分けも兼ねる。489番はこれで統合・完了扱い）。
   // 682番：丸だけだと意味が伝わらない（たまごさん指摘）ので、色の隣にA〜Fの文字を必ず添える。
-  const PRIO_DOT = ["🔴A", "🟠B", "🟡C", "🔵D", "⚪E", "🟢F"]; // 1〜6
+  //   PRIO_DOT自体はグローバルへ移した（qBulkBarHtml()からも使うため。上のコメント参照）。
   const qPrioHtml = (n,p) => {
     const label = p ? PRIO_DOT[p - 1] : "—";
     const now = p ? ("今:" + PRIO_NAME[p]) : "今:未設定";
