@@ -50,17 +50,26 @@
 アーティストページの「カバー・パロディ」（名カバー・AIカバー・コラボ）を、本人の曲と同じ全画面幅から、コンパクトな行リスト表示へ縮小し統一見出し「カバー・パロディ」で分離。共有コンポーネント修正のため対象10件全部に自動適用。中島みゆき「糸」は動画重複を解消（1本のみ）、Stevie Wonder「Lately」はコピーを「代表曲のひとつ」系から具体的事実（ベース・ピアノ・声を一人録音／13年後Jodeciカバーが全米1位13週独走）へ書き直し。
 </div>
 
+<div class="note">
+<b>2026-09-09 追記：</b>コード上は書き直し済みだったが、本番DBの古い上書き（admin_stock.whisper＝「静かなピアノの夜。」）が優先表示され、Latelyページのコピーが手抜きのまま残っていた。GitHub ActionsのSecrets未登録でDB書き込みができないため、コード側で「この古い上書き文字列だけは無視する」処理を追加し、mainへpush（コミット <code>d4298d73</code>）。push後に本番URLを再取得し、下記の新コピーが実際に出ていることを確認済み。
+</div>
+
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>10件</b><span>対象アーティストページ（見出し「カバー・パロディ」出現を全件で実測確認）</span></div>
   <div class="num"><b>1本</b><span>糸ページの本編動画（重複解消・実測: unique embed id=1）</span></div>
 </div>
 
-<h2>③ 実データでのスクリーンショット</h2>
+<h2>③ 実データでのスクリーンショット・本番コピー実測</h2>
 <div class="shots">
   <div class="shot before"><b>糸：本編動画1本のみ（重複解消）</b><img src="img/656-ito-no-dup.png" alt="前"></div>
   <div class="shot after"><b>Lately：カバー・パロディ見出し＋Jodeci/福原美穂がハーフサイズ行リストで表示</b><img src="img/656-lately-cover-parody.png" alt="後"></div>
 </div>
+<table>
+<tr><th></th><th>コピー文</th></tr>
+<tr><td class="no">直す前（本番に残っていた上書き）</td><td>静かなピアノの夜。</td></tr>
+<tr><td class="yes">直した後（2026-09-09・本番URLを再取得して実測）</td><td>ベース、ピアノ、声、全部ひとりで録った。13年後、Jodeciのカバーが全米R&amp;Bチャート1位を13週独走した一曲。</td></tr>
+</table>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
