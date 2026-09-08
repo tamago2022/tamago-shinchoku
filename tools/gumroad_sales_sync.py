@@ -33,7 +33,7 @@ SALES_JSON = os.path.join(REPO, "status", "sales.json")
 LAST_SEEN_JSON = os.path.join(REPO, "status", "gumroad_last_seen.json")
 VAULT_LOG = (
     "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/"
-    "tamago_brain/AI出力/_ルール/見張り番ログ.md"
+    "tamago_brain/AI出力/_ルール/売上ログ.md"
 )
 
 GUMROAD_SALES_URL = "https://api.gumroad.com/v2/sales"
