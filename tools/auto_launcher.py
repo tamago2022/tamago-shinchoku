@@ -1399,6 +1399,14 @@ def main():
               "見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
           return 0
 
+      # 682番（2026-09-09）F（空き枠タスク）＝「やってほしいが今は枠を使いたくない」もの。
+      #   たまごさん「本当にどうでもいい、やってはほしいけど今は容量を使いたくないってやつ」
+      #   「他にタスクが空いたときに入ればいいよ」。
+      #   A〜E（優先度1〜5・未設定9）が発車待ちに1本でも残っていれば、Fは絶対に対象へ入れない。
+      has_non_f_waiting = any(_effective_priority(it) != 6 for it in waiting)
+      if has_non_f_waiting:
+          waiting = [it for it in waiting if _effective_priority(it) != 6]
+
       # ---- お金の確認ゲート（案件#676・2026-09-08にfalで15ドル溶けた事故のガード）----
       #   costsMoney が立っていて、たまごさんがまだOKを押していない（costApproved が無い）ものは
       #   絶対に自動発車しない。列の先頭に来た最初の1回だけ dispatch_outbox へ確認を出し、
