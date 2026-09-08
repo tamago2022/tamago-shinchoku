@@ -93,7 +93,7 @@
     },
     {
       "item": "本人の実ツイート全文を無防備に公開URLへ置いていないか",
-      "result": "data.jsonは.gitignore対象。公開版はサンプル5件のみ。判断理由をshared-brain/20_DECISIONSへ記録",
+      "result": "一時事故あり・即修正済み：無関係な自動status-commitデーモンが.gitignore反映前のdata.json(11.6MB・実データ)を巻き込みpush、約60〜75秒間 200 OK で公開状態になった（実測）。即座にgit rmし404化を確認。公開版は元々data.demo.json(サンプル5件)のみ使う設計。詳細はstatus/failures.md #18",
       "ok": true
     }
   ],

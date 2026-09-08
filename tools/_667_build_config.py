@@ -153,7 +153,10 @@ cfg = {
         {"item": "案を並べず1つに決めたか",
          "result": "「こう変えてやる」で結論。本線/越境の2案は保留の理由付きで提示（選ばせていない）", "ok": True},
         {"item": "本人の実ツイート全文を無防備に公開URLへ置いていないか",
-         "result": "data.jsonは.gitignore対象。公開版はサンプル5件のみ。判断理由をshared-brain/20_DECISIONSへ記録",
+         "result": ("一時事故あり・即修正済み：無関係な自動status-commitデーモンが.gitignore反映前の"
+                    "data.json(11.6MB・実データ)を巻き込みpush、約60〜75秒間 200 OK で公開状態になった"
+                    "（実測）。即座にgit rmし404化を確認。公開版は元々data.demo.json(サンプル5件)のみ使う"
+                    "設計。詳細はstatus/failures.md #18"),
          "ok": True},
     ],
     "footer": "軍配（pro-marketing-director）スキル準拠。根拠の掟：数字は全て出典URL付き。⑥の切り替え条件のみ根拠なしの勘と明記。",
