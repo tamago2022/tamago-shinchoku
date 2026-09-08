@@ -2290,12 +2290,15 @@ function renderQueue(){
   //   長距離はボタン、近い距離の入れ替えは今まで通りドラッグ（⣿）。
   const qJumpHtml = n => `<button class="qtop" data-qtop="${n}" title="この箱の先頭へ（1番へ）">🔝</button>` +
     `<button class="qmore" data-qmore="${n}" title="順番を指定（1〜5）">⋯</button>`;
-  // 654番（2026-09-08）優先順位ボタン（色帯＋Pラベル）と、一気に最後尾へ落とすボタンをまとめて出す。
+  // 654番（2026-09-08）優先順位ボタン（色帯）と、一気に最後尾へ落とすボタンをまとめて出す。
+  // 655番（2026-09-08）489番「Pって何の略？分かりにくい」を踏まえ、文字の「P」は使わず
+  //   色付きの丸だけにする（数字ボタンとの見分けも兼ねる。489番はこれで統合・完了扱い）。
+  const PRIO_DOT = ["🔴", "🟠", "🟡", "🔵", "⚪"]; // 1〜5
   const qPrioHtml = (n,p) => {
-    const label = p ? ("P" + p) : "P–";
-    const now = p ? ("今:P" + p) : "今:未設定";
+    const label = p ? PRIO_DOT[p - 1] : "—";
+    const now = p ? ("今:優先度" + p) : "今:未設定";
     return `<button class="qp" data-qp="${n}" data-plevel="${p || ""}" title="優先度を1段階下げる（${now}）">${label}</button>` +
-      `<button class="qbottom" data-qbottom="${n}" title="優先度を一気に最後尾（P5）にする">⬇️最後尾</button>`;
+      `<button class="qbottom" data-qbottom="${n}" title="優先度を一気に最後尾（5）にする">⬇️最後尾</button>`;
   };
   // 654番 完了・取り消しはセットで出す（取り消しは既存のqueue_cancel、完了は既存のqueue_okに乗せる）。
   const qActionHtml = (n,label) => `<button class="qcancel" data-qcancel="${n}" title="もういい（この依頼を取り消す）">取り消し</button>` +
@@ -2705,7 +2708,7 @@ document.addEventListener("click", e=>{
   clearTimeout(QP_TIMER[n]);
   QP_TIMER[n] = setTimeout(()=>{
     const p = prioOf("Q" + n) || 0;
-    sendCommandWithId("qp" + n + "-" + Date.now(), "queue_prio", n + ":" + p, "P" + (p || "なし") + " " + n + "番");
+    sendCommandWithId("qp" + n + "-" + Date.now(), "queue_prio", n + ":" + p, "優先度" + (p || "なし") + " " + n + "番");
   }, 1500);
 });
 // 654番（2026-09-08）「⬇️最後尾」＝優先度を一気に5（後回し）へ落とす。qpのクリック処理とほぼ同じ、
@@ -2720,7 +2723,7 @@ document.addEventListener("click", e=>{
   if(it) it.priority = next;   // 画面をすぐ並べ替える（Mac側の反映を待たない）
   renderQueue();
   clearTimeout(QP_TIMER[n]);
-  sendCommandWithId("qb" + n + "-" + Date.now(), "queue_prio", n + ":5", "⬇️最後尾（P5） " + n + "番");
+  sendCommandWithId("qb" + n + "-" + Date.now(), "queue_prio", n + ":5", "⬇️最後尾（優先度5） " + n + "番");
 });
 function tickClock(){
   const el = document.getElementById("clock"); if(!el) return;
