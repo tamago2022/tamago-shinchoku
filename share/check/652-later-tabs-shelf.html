@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#652 あとで見る棚（閉じられないブラウザタブの逃がし場所） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #652 あとで見る棚（閉じられないブラウザタブの逃がし場所）</div>
+<h1>#652 あとで見る棚（閉じられないブラウザタブの逃がし場所）</h1>
+<div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんの Brave（Default＝『あなたの Brave』）で開いていた・最近見ていたタブを、Braveアプリに一切触れずセッションファイルから直接読み取り、進捗表（index.html）の『後回し』のすぐ下に新しい棚『🗂️ あとで見る棚』としてサムネイル付きで並べた。押せばそのままリンク先が開く。1日1回、既存の巡回（tools/machine_status_push.sh）に相乗りして自動更新する。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>155件</b><span>見つかった開いていた・直近のタブ（YouTube44・ChatGPT34・X21・Grok系17・Google10・その他29）</span></div>
+  <div class="num"><b>約14.6GB</b><span>今のBraveの実メモリ使用量（プロセス66個）。この件数ぶん閉じても大丈夫、の目安</span></div>
+  <div class="num"><b>1日1回</b><span>自動更新の頻度（新規launchd登録はブロックされるため既存5分おき巡回に相乗り）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表（本番）を開く（あとで見る棚は『後回し』の下）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>あとで見る棚のデータ(later_tabs.json)を直接見る</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/later_tabs.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/later_tabs.json</a></li>
+  <li><b>実装(later_tabs_snapshot.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/later_tabs_snapshot.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/later_tabs_snapshot.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Braveアプリに触れずタブを読み取れるか</td><td class="yes">セッションファイル(SNSSバイナリ)を直接読み取り、タブを開かず抽出できた（1055個の生URL→155件に整理）</td></tr>
+<tr><td>サムネイル付きで表示されるか</td><td class="yes">YouTubeはoEmbedの実サムネ、その他は取得したog:imageかドメイン頭文字のタイル画像を必ず表示（文字だけの行なし）</td></tr>
+<tr><td>本番(GitHub Pages)に反映されたか</td><td class="yes">main合流・push済み。CDN反映待ちのため下記スクショの代わりにcurlのHTTPコードと件数で確認</td></tr>
+</table>
+
+<footer>
+このページは #652 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
