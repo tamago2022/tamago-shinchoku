@@ -779,6 +779,28 @@ def git_unlock(_target=None):
     return "done", ("消しました: %s" % ", ".join(removed[:6])) if removed else ("skipped", "ロックはありませんでした")[1] if False else ("消しました: %s" % ", ".join(removed[:6]) if removed else "ロックはありませんでした")
 
 
+def git_push(_target=None):
+    """今あるコミットをGitHubへ push する（2026-09-08新設）。
+
+    5分おきの巡回(machine_status_push.sh)が push も兼ねているが、
+    **マシンが重いと巡回そのものがハングして、pushだけが何十分も止まる**
+    （実測：2026-09-08 17:29から止まり、直した確認ページ258件が本番に出せなかった）。
+    Coworkのサンドボックスからは資格情報が無くて push できないので、
+    ホスト側で動くこのプロセスに1発だけ押させる口を用意した。
+    commit はしない。**すでにあるコミットを送るだけ。**
+    """
+    import subprocess as _sp
+    try:
+        r = _sp.run(["git", "-C", REPO, "push", "origin", "HEAD"],
+                    capture_output=True, text=True, timeout=180)
+    except Exception as e:
+        return "failed", "pushできませんでした: %s" % e
+    out = ((r.stdout or "") + (r.stderr or "")).strip().replace("\n", " / ")[:400]
+    if r.returncode != 0:
+        return "failed", "pushが失敗しました: %s" % out
+    return "done", "pushしました: %s" % (out or "変更なし")
+
+
 def push_unlock(_target=None):
     """5分おきの巡回が止まったときに、置き去りのロックを外す。
 
@@ -1530,6 +1552,8 @@ def _process_other(action, cmd):
         return disk_breakdown(target)
     if action == "git_unlock":
         return git_unlock(target)
+    if action == "git_push":
+        return git_push(target)
     if action == "launch_pause":
         return launch_switch(False)
     if action == "launch_resume":

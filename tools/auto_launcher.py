@@ -787,6 +787,8 @@ def harvest(q):
                 it["status"] = "hold" if it.get("holdNote") else "waiting"
                 if it.get("sessionId"):
                     it["resumeFrom"] = it["sessionId"]   # 続きから起こす
+                    # 切られた時刻を残す。1時間放置すると起こすほうが高くつくため（下の🧊）
+                    it["cutAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
                 it["priority"] = it.get("priority") or 2
                 for k in ("finishedAt", "result", "urls", "startedAt"):
                     it.pop(k, None)
@@ -986,6 +988,16 @@ def harvest(q):
                     continue
                 if it.get("backlogVerified") or it.get("aiVerifyFailCount"):
                     continue
+                # 証拠ページが開けなかったものは、3時間おきにもう一度だけ見に行く。
+                # 復旧のpushがまだ本番に届いていないだけ、ということがあるため。
+                _ec = it.get("evidenceCheckedAt")
+                if _ec:
+                    try:
+                        if (time.time() - time.mktime(
+                                time.strptime(_ec[:19], "%Y-%m-%dT%H:%M:%S"))) < 3 * 3600:
+                            continue
+                    except Exception:
+                        pass
                 urls = it.get("urls") or []
                 check_url = next((u for u in urls if "/share/check/" in u), None)
                 if not check_url and not urls:
@@ -1007,6 +1019,8 @@ def harvest(q):
                         break
                     if not alive and ("HTTP" in (why or "") or "開け" in (why or "")):
                         it["evidenceGone"] = True
+                        it["evidenceCheckedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+                        it.pop("backlogVerified", None)   # 復旧したら3時間後にもう一度見る
                         it["result"] = (it.get("result") or "") + (
                             "\n\n【証拠ページが見当たりません】%s が開けません（%s）。"
                             "645番の容量確保で古い確認ページを外付けへ退避したためです。"
@@ -1382,6 +1396,25 @@ def launch_one(item, q, alive, safe_max):
     #   → 引っ込めた（一時停止した）ものは、新しいセッションを立てずに前のセッションを再開する。
     #     やり直しになっていないので、そこまでの作業が無駄にならない。
     resume_id = item.get("resumeFrom")
+    # ---- 2026-09-08：**1時間放置したものを起こすと、10倍高くつく。**----
+    # むなかたさんの解説（note n595ea66ba734）で分かったこと：
+    #   サブスク枠のキャッシュは**最後に使ってから1時間で切れる。**
+    #   キャッシュが効いていれば過去のやり取りの読み直しは1/10（Fable5.1は1/40）で済むが、
+    #   切れた後に --resume で起こすと、**それまでの会話を全部「定価」で読み直す。**
+    #   うちは止まったセッションを何時間も後に叩き起こしていた（実測：8時間放置のセッション）。
+    #   → 50分より長く放置されたものは、起こさずに**新しいセッションで立て直す。**
+    #     続きの情報は指示文（build_prompt）に入っているので、やり直しにはならない。
+    cut_at = item.get("cutAt") or item.get("resumeFromAt")
+    if resume_id and cut_at:
+        try:
+            gap = (time.time() - time.mktime(time.strptime(cut_at[:19], "%Y-%m-%dT%H:%M:%S"))) / 60.0
+            if gap > 50:
+                log("🧊 %d番は%d分放置。キャッシュが切れているので起こさず立て直す（そのほうが安い）"
+                    % (item.get("n"), gap))
+                resume_id = None
+                item.pop("resumeFrom", None)
+        except Exception:
+            pass
     if resume_id:
         new_id = resume_id
         logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
