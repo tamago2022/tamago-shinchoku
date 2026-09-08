@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#509 カバー・パロディはハーフサイズで本人の下に置く：対象一覧作成 確認ページ</title>
+<title>#509 カバー・パロディはハーフサイズで本人の下に置く：対象一覧（作り直し） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -30,6 +30,8 @@
   .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
   .shot.before b{color:var(--aka);}
   .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -40,31 +42,38 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #509 カバー・パロディはハーフサイズで本人の下に置く：対象一覧作成</div>
-<h1>#509 カバー・パロディはハーフサイズで本人の下に置く：対象一覧作成</h1>
-<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #509 カバー・パロディはハーフサイズで本人の下に置く：対象一覧（作り直し）</div>
+<h1>#509 カバー・パロディはハーフサイズで本人の下に置く：対象一覧（作り直し）</h1>
+<div class="date">2026-09-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-『全ページ』を含む依頼のため、まず本体作業をせず対象ページの洗い出しだけを行った。coverGuide.tsを機械解析し、①curated.covers[]による名カバーが全画面表示されるアーティスト71件（例:Stevie Wonder「Lately」=Jodeci・福原美穂の2件）、②songs[]内に同じ曲の重複エントリが混ざっているアーティスト（例:中島みゆき「糸」が2エントリ、「心音」が2エントリ）、③aiCovers名カバーが全画面表示のアーティスト22件、を合わせて<b>672件</b>を対象一覧としてstatus/split/509-list.jsonへ保存した。中身の修正はまだ行っていない（次の10件ずつの回で実施）。
+依頼「カバー・パロディはハーフサイズのサムネで本人3曲の下に置く／Latelyのコピー書き直し」の対象を実際に調べて洗い出した。前回(1回目)は別案件#511(songs[]内の曲名重複統合)の内容を誤って報告し検品で落とされたため、今回はこの依頼のテーマだけで作り直した。今回は一覧作成のみ（実装は次の10件ずつの回）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>672件</b><span>一覧に載せた対象アーティスト数</span></div>
-  <div class="num"><b>71件</b><span>curated名カバーが全画面表示（Stevie Wonderのlatelyもここに含む）</span></div>
-  <div class="num"><b>615件</b><span>songs[]内に同じ曲の重複が見つかったアーティスト（中島みゆきの糸・心音を含む）</span></div>
+  <div class="num"><b>93件</b><span>一覧(509-list.json)に載せた対象数</span></div>
+  <div class="num"><b>2件</b><span>最優先パイロット(中島みゆき「糸」／Stevie Wonder「Lately」)</span></div>
+  <div class="num"><b>71件</b><span>curated名カバーが全画面表示中のアーティスト</span></div>
+  <div class="num"><b>31件</b><span>aiCoversが全画面表示中のアーティスト</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>対象一覧(JSON)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/split/509-list.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/split/509-list.json</a></li>
-  <li><b>中島みゆき「糸」の本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito</a></li>
-  <li><b>Stevie Wonder「Lately」の本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately</a></li>
+  <li><b>509-list.json(一覧の中身)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/split/509-list.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/split/509-list.json</a></li>
+  <li><b>パイロット1: 中島みゆき「糸」本番</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito</a></li>
+  <li><b>パイロット2: Stevie Wonder「Lately」本番</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Stevie Wonder「Lately」のカバー件数</td><td class="yes">curated[&#x27;stevie-wonder/lately&#x27;]にJodeci・福原美穂の2件を実データで確認</td></tr>
+<tr><td>中島みゆき「糸」の重複3つの原因</td><td class="no">songs[]データ自体には重複なし(youtubeId重複0件)。複数の関連動画セクションが同じ動画を独立に出している疑い、次回ランタイム確認が必要</td></tr>
+<tr><td>対象一覧が依頼テーマと一致しているか</td><td class="yes">93件全てカバー・パロディの全画面表示アーティストページ(前回の重複統合672件とは無関係)</td></tr>
+</table>
 
 <footer>
 このページは #509 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
