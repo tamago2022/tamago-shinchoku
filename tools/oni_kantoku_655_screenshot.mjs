@@ -149,7 +149,7 @@ async function main() {
     // 1枚目：発車待ちセクション（qbox見出し行から数行分が収まる高さ）。
     //   #queue自体はページのかなり下にあるので、その位置からクリップする（y:0からだと映らない）。
     const clip1 = { x: 0, y: Math.max(0, Math.floor(info.rect.top) - 10), width: 430, height: 700, scale: 1 };
-    const shot1 = await send("Page.captureScreenshot", { format: "png", clip: clip1 });
+    const shot1 = await send("Page.captureScreenshot", { format: "png", clip: { ...clip1, scale: 1 }, captureBeyondViewport: true });
     writeFileSync(OUT_FILE_1, Buffer.from(shot1.data, "base64"));
     console.log("保存:", OUT_FILE_1);
 
@@ -177,7 +177,7 @@ async function main() {
     await sleep(300);
     const y2 = Math.max(0, Math.floor((info2.rect?.top || 0)) - 200);
     const clip2 = { x: 0, y: y2, width: 430, height: 400, scale: 1 };
-    const shot2 = await send("Page.captureScreenshot", { format: "png", clip: clip2 });
+    const shot2 = await send("Page.captureScreenshot", { format: "png", clip: { ...clip2, scale: 1 }, captureBeyondViewport: true });
     writeFileSync(OUT_FILE_2, Buffer.from(shot2.data, "base64"));
     console.log("保存:", OUT_FILE_2);
 
