@@ -311,13 +311,13 @@
   .ctrow{display:flex; align-items:flex-start; gap:6px;}
   .ctrow .ct{flex:1 1 auto;}
   .ccheck{flex:0 0 auto; display:flex; align-items:center; justify-content:center;
-    width:36px; height:36px; margin:-4px -2px -4px -6px; cursor:pointer;}
-  .ccheck input{width:24px; height:24px; accent-color:var(--green); cursor:pointer;}
+    width:44px; height:44px; margin:-8px -6px -8px -10px; cursor:pointer;}
+  .ccheck input{width:26px; height:26px; accent-color:var(--green); cursor:pointer;}
   .ccheck input:disabled{opacity:0.3; cursor:not-allowed;}
   .cbulk{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:2px 0 10px;
     padding:8px; border:1px solid var(--line); border-radius:10px; background:#1a2028;}
   .cbulkpick{display:flex; gap:6px; flex:1 1 100%; flex-wrap:wrap;}
-  .cbulkpick button{min-height:40px; padding:0 10px; border-radius:9px; font-weight:700;
+  .cbulkpick button{min-height:44px; padding:0 10px; border-radius:9px; font-weight:700;
     font-size:0.78rem; border:1px solid var(--line); background:#212839; color:var(--sub);}
   .cbulkok{flex:1 1 100%; min-height:48px; margin-top:2px; border-radius:10px; font-weight:700;
     font-size:0.9rem; background:var(--green); color:#12161c; border:1px solid var(--green);}
@@ -325,7 +325,7 @@
   .cundo{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
     margin:2px 0 10px; padding:10px; border-radius:10px; border:1px solid var(--green);
     background:#1c2b22; color:var(--ink); font-size:0.86rem; font-weight:700;}
-  .cundo button{min-height:40px; padding:0 12px; border-radius:9px; border:1px solid var(--green);
+  .cundo button{min-height:44px; padding:0 12px; border-radius:9px; border:1px solid var(--green);
     background:transparent; color:var(--green); font-weight:700;}
   .queue{border-color:rgba(95,217,150,0.35);}
   .queue > summary{font-weight:700;}
@@ -375,21 +375,39 @@
   .qd[open] > summary::after{content:" ▴";}
   .qwhat{margin:8px 0 4px; padding:10px 12px; border-radius:10px; background:#161c24; border:1px solid var(--line);
     font-size:0.8rem; line-height:1.7; color:var(--fg);}
-  .qp{flex:none; min-height:36px; min-width:36px; border-radius:9px; border:1px solid var(--line);
-    background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
-  .qp.on{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+  /* 654番（2026-09-08）お金がかかるタスクは題名を赤字にして一目で分かるようにする。 */
+  .qt.money{color:#ff5c5c; font-weight:700;}
+  /* 654番（2026-09-08）優先順位（qp）と、箱の中の順番（qtop/qmoreの数字ボタン）が
+     どちらも数字で紛らわしかった→優先順位は「色帯＋Pラベル」の見た目にして見分ける。 */
+  .qp{flex:none; min-height:36px; min-width:40px; padding:0 6px; border-radius:9px;
+    border:1px dashed var(--line); background:transparent; color:var(--sub);
+    font-size:0.66rem; font-weight:800; letter-spacing:.02em; white-space:nowrap;}
+  .qp[data-plevel="1"]{border:1px solid var(--red); background:rgba(210,77,62,.22); color:#ffcac2;}
+  .qp[data-plevel="2"]{border:1px solid #d98a3d; background:rgba(217,138,61,.22); color:#f3d3a8;}
+  .qp[data-plevel="3"]{border:1px solid var(--yellow); background:rgba(201,162,74,.22); color:#eeddab;}
+  .qp[data-plevel="4"]{border:1px solid #5fb0c9; background:rgba(95,176,201,.22); color:#bfe6ef;}
+  .qp[data-plevel="5"]{border:1px solid var(--sub); background:rgba(154,161,173,.22); color:var(--ink);}
+  .qp:active{filter:brightness(1.25);}
+  /* 654番 優先度を一気に最後尾（P5）へ落とすボタン。qpの隣に置く。 */
+  .qbottom{flex:none; min-height:36px; min-width:36px; padding:0; border-radius:9px;
+    border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.78rem;
+    font-weight:700; white-space:nowrap; line-height:1;}
+  .qbottom:active{background:var(--sub); color:#12161c; border-color:var(--sub);}
   /* 624番 長距離の並び替え用ボタン（1番へ／位置指定）。ドラッグは近い距離用に残す。
      親指で押せる大きさ・文字が縦に潰れないよう white-space:nowrap で1行に固定する。 */
   .qtop, .qmore{flex:none; min-height:36px; min-width:36px; padding:0; border-radius:9px;
     border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.88rem;
     font-weight:700; white-space:nowrap; line-height:1;}
   .qtop:active, .qmore:active{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
-  /* 653番（2026-09-08）waiting行の「もういい（取り消し）」／確認待ち行の「もう見なくていい」。
+  /* 653番（2026-09-08）waiting行の「取り消し」／確認待ち行の「もう見なくていい」。
      親指で押せる大きさ（44px）。他のボタンと間違えないよう少し離し、色は控えめ（赤ではない＝完了ではない）。 */
   .qcancel{flex:none; min-height:44px; min-width:44px; padding:0 10px; margin-left:4px; border-radius:9px;
     border:1px solid var(--line); background:transparent; color:var(--sub); font:inherit; font-size:0.78rem;
     font-weight:700; white-space:nowrap; line-height:1;}
   .qcancel:active{background:rgba(255,255,255,0.08); color:var(--fg);}
+  /* 654番（2026-09-08）「✅完了」は取り消しと隣り合うので色だけ緑に分ける。 */
+  .qcancel.qdone{border-color:var(--green); color:var(--green);}
+  .qcancel.qdone:active{background:rgba(111,156,122,.18); color:var(--fg);}
   .qcancelUndo{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 8px;
     padding:9px 12px; border-radius:10px; border:1px solid var(--line); background:#1a2028;
     color:var(--ink); font-size:0.86rem; font-weight:700;}
