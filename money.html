@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>お金の管理表</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="お金">
+<meta name="theme-color" content="#1a2030">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<!--
+  650番（2026-09-08）：お金の管理表（サブスク＋クレジット＋fal）を1枚のPWAにする。
+  たまごさん「月のAI費はまとめて欲しい。今月1日から31日までいくらかかりますみたいなね」
+  「falであなたいろいろやってくれたじゃん…あれ800円ぐらい使ってんの、と思って」
+
+  ・進捗表(index.html)と同じ作り＝素のHTML/CSS/JS・fetchでstatus/*.jsonを読むだけ・新しい仕組みは増やさない。
+  ・現金(サブスク+fal)と換算値(Claudeの枠消費・請求は来ない)は欄を分ける。混ぜて合計しない。
+  ・サブスクの名前だけ status/subscriptions.json（台帳・git管理）が正本。金額/課金日/状態/お試し終了日は
+    この端末のlocalStorage（既存の「優先度」機能 shinchoku.prio.v1 と同じ手法）に保存する。
+    店主に毎回同じ質問をさせず、初回だけこの画面で1回入力すれば以後は自動で出る。
+  ・分からない数字は「未登録」と出す。手打ちの推定値は混ぜない（この方針は index.html 側の既存ルールと同一）。
+-->
+<style>
+  :root{
+    --bg:#1a2030; --card:#212839; --line:#2f3749; --ink:#e9e2d3; --sub:#9aa1ad; --dim:#6b7280;
+    --kinari:#d6cdba; --green:#6f9c7a; --yellow:#c9a24a; --red:#d24d3e; --blue:#6f8fb0;
+    --red-bg:#3a2320; --gray:#4b5364;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{background:var(--bg);}
+  body{
+    margin:0; padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 32px) calc(env(safe-area-inset-left) + 12px);
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:16px; line-height:1.5; -webkit-text-size-adjust:100%;
+    max-width:640px; margin-left:auto; margin-right:auto; overflow-x:hidden;
+  }
+  a{color:inherit;}
+  .back{display:inline-block; color:var(--sub); font-size:0.8rem; text-decoration:none; margin-bottom:6px;}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif; font-weight:400; font-size:1.2rem; letter-spacing:0.12em; margin:2px 0 2px;}
+  .updated{color:var(--sub); font-size:0.72rem; margin:0 0 14px;}
+
+  .hero{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 16px; margin-bottom:14px;}
+  .hero .range{color:var(--sub); font-size:0.8rem; margin-bottom:6px;}
+  .hero .total{font-size:2.1rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink);}
+  .hero .breakdown{color:var(--sub); font-size:0.78rem; margin-top:6px;}
+  .hero .warn{color:var(--red); font-size:0.76rem; margin-top:6px;}
+
+  .sec{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 12px 14px; margin-bottom:12px;}
+  .sech{font-size:0.9rem; font-weight:600; margin-bottom:10px; display:flex; align-items:baseline; justify-content:space-between; gap:8px;}
+  .sech small{color:var(--dim); font-weight:400; font-size:0.7rem;}
+  .note{color:var(--dim); font-size:0.72rem; margin-top:6px;}
+
+  .row{border:1px solid var(--line); border-radius:10px; padding:10px 10px; margin-bottom:8px; background:rgba(255,255,255,0.02);}
+  .row:last-child{margin-bottom:0;}
+  .row.cancelled{opacity:0.45;}
+  .rname{font-size:0.92rem; font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:6px;}
+  .badge{border:1px solid var(--line); border-radius:20px; padding:2px 10px; font-size:0.72rem; white-space:nowrap; cursor:pointer; user-select:none;}
+  .badge.active{color:var(--green); border-color:var(--green);}
+  .badge.trial{color:var(--yellow); border-color:var(--yellow);}
+  .badge.cancelled{color:var(--dim); border-color:var(--dim);}
+  .badge.unknown{color:var(--sub); border-color:var(--sub);}
+  .rfields{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .rfield{display:flex; align-items:center; gap:4px; font-size:0.76rem; color:var(--sub);}
+  .rfield input{
+    background:var(--bg); border:1px solid var(--line); color:var(--ink); border-radius:6px;
+    padding:4px 6px; font-size:0.8rem; width:88px; font-variant-numeric:tabular-nums;
+  }
+  .rfield input[type=date]{width:132px;}
+  .trialwarn{color:var(--red); font-size:0.76rem; margin-top:6px; font-weight:600;}
+  .delx{color:var(--dim); font-size:0.7rem; border:none; background:none; cursor:pointer; padding:2px 4px;}
+
+  .addrow{display:flex; gap:6px; margin-top:10px;}
+  .addrow input{flex:1; background:var(--bg); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:8px 10px; font-size:0.85rem;}
+  .addrow button{border:1px solid var(--green); color:var(--green); background:none; border-radius:8px; padding:8px 14px; font-size:0.85rem;}
+
+  .kv{display:flex; justify-content:space-between; font-size:0.85rem; padding:4px 0; border-bottom:1px dashed var(--line);}
+  .kv:last-child{border-bottom:none;}
+  .kv .v{font-variant-numeric:tabular-nums; font-weight:600;}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">← 進捗表へ</a>
+<h1>お金の管理表</h1>
+<div class="updated" id="updated"></div>
+
+<div class="hero" id="hero"><div class="range">読み込み中…</div></div>
+
+<div class="sec">
+  <div class="sech">📋 サブスク一覧 <small>タップで状態が変わる・数字は入力してその場で保存</small></div>
+  <div id="subsList"></div>
+  <div class="addrow">
+    <input type="text" id="addName" placeholder="追加するサブスクの名前（例：1ヶ月だけ試す生成AI）">
+    <button type="button" id="addBtn">＋追加</button>
+  </div>
+  <div class="note">名前の初期リストは status/subscriptions.json（台帳）。金額・課金日・状態・追加した行はこの端末に保存されます（他の端末では出ません）。</div>
+</div>
+
+<div class="sec">
+  <div class="sech">🎬 fal（従量課金） <small id="falMeta"></small></div>
+  <div id="falBox">読み込み中…</div>
+</div>
+
+<div class="sec">
+  <div class="sech">🤖 Claudeの枠の消費 <small>参考値・請求は来ません</small></div>
+  <div id="claudeBox">読み込み中…</div>
+  <div class="note">これはClaudeのサブスク定額プランの中の消費量をAPI単価に換算した参考値です。上のサブスク「Claude」欄の月額とは別物で、この分の追加請求はありません。</div>
+</div>
+
+<script>
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function yen(n){ return n==null ? "未登録" : "¥" + Math.round(n).toLocaleString(); }
+function fmtUsd(v){ return v == null ? "—" : "$" + Number(v).toFixed(2); }
+
+/* ── localStorage側の上書き・追加行（既存の「優先度」機能 shinchoku.prio.v1 と同じ手法） ── */
+const OV_KEY = "shinchoku.money.overrides.v1";
+const CUSTOM_KEY = "shinchoku.money.custom.v1";
+function loadOv(){ try{ return JSON.parse(localStorage.getItem(OV_KEY) || "{}"); }catch(e){ return {}; } }
+function saveOv(ov){ localStorage.setItem(OV_KEY, JSON.stringify(ov)); }
+function loadCustom(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "[]"); }catch(e){ return []; } }
+function saveCustom(list){ localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); }
+
+const STATUS_CYCLE = ["active","trial","cancelled"];
+const STATUS_LABEL = {unknown:"未登録", active:"継続中", trial:"お試し中", cancelled:"解約済み"};
+
+function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function daysUntil(iso){
+  if(!iso) return null;
+  const target = new Date(iso + "T00:00:00");
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((target - now) / 86400000);
+}
+
+let BASE_ITEMS = [];
+function mergedItems(){
+  const ov = loadOv();
+  const custom = loadCustom();
+  const all = BASE_ITEMS.concat(custom);
+  return all.map(base => {
+    const o = ov[base.id] || {};
+    return Object.assign({}, base, {
+      monthlyYen: o.monthlyYen !== undefined ? o.monthlyYen : base.monthlyYen,
+      billingDay: o.billingDay !== undefined ? o.billingDay : base.billingDay,
+      status: o.status || base.status || "unknown",
+      trialEndDate: o.trialEndDate !== undefined ? o.trialEndDate : (base.trialEndDate || null),
+      isCustom: !!base.isCustom,
+    });
+  });
+}
+function setOverride(id, patch){
+  const ov = loadOv();
+  ov[id] = Object.assign({}, ov[id] || {}, patch);
+  saveOv(ov);
+}
+
+function cycleStatus(cur){
+  if(!STATUS_CYCLE.includes(cur)) return STATUS_CYCLE[0];
+  const i = STATUS_CYCLE.indexOf(cur);
+  return STATUS_CYCLE[(i+1) % STATUS_CYCLE.length];
+}
+
+function renderSubs(){
+  const items = mergedItems();
+  const box = document.getElementById("subsList");
+  box.innerHTML = items.map(it => {
+    const st = it.status || "unknown";
+    let warn = "";
+    if(st === "trial"){
+      if(it.trialEndDate){
+        const d = daysUntil(it.trialEndDate);
+        if(d != null){
+          if(d < 0) warn = `<div class="trialwarn">お試し終了日を過ぎています（${esc(it.trialEndDate)}）。もう有料になっている可能性があります</div>`;
+          else if(d <= 7) warn = `<div class="trialwarn">あと${d}日で有料になります（${esc(it.trialEndDate)}）</div>`;
+          else warn = `<div class="note">お試し終了：${esc(it.trialEndDate)}（あと${d}日）</div>`;
+        }
+      } else {
+        warn = `<div class="trialwarn">お試し終了日が未登録です。右下の日付を入れてください</div>`;
+      }
+    }
+    return `<div class="row ${st==='cancelled'?'cancelled':''}" data-id="${esc(it.id)}">
+      <div class="rname">
+        <span>${esc(it.name)}</span>
+        <span class="badge ${st}" data-act="cycle">${STATUS_LABEL[st]}</span>
+      </div>
+      <div class="rfields">
+        <span class="rfield">月額 <input type="number" inputmode="numeric" data-act="monthly" value="${it.monthlyYen!=null?it.monthlyYen:''}" placeholder="未登録">円</span>
+        <span class="rfield">課金日 <input type="number" inputmode="numeric" min="1" max="31" data-act="billday" value="${it.billingDay!=null?it.billingDay:''}" placeholder="未登録">日</span>
+        ${st === 'trial' ? `<span class="rfield">終了予定 <input type="date" data-act="trialend" value="${it.trialEndDate||''}"></span>` : ""}
+        ${it.isCustom ? `<button type="button" class="delx" data-act="del">削除</button>` : ""}
+      </div>
+      ${warn}
+    </div>`;
+  }).join("");
+}
+
+(function attachSubsListeners(){
+  const box = document.getElementById("subsList");
+  box.addEventListener("click", e => {
+    const row = e.target.closest(".row"); if(!row) return;
+    const id = row.dataset.id;
+    if(e.target.dataset.act === "cycle"){
+      const items = mergedItems();
+      const it = items.find(x => x.id === id);
+      const next = cycleStatus(it.status);
+      setOverride(id, { status: next });
+      renderSubs(); renderHero();
+    } else if(e.target.dataset.act === "del"){
+      const custom = loadCustom().filter(x => x.id !== id);
+      saveCustom(custom);
+      const ov = loadOv(); delete ov[id]; saveOv(ov);
+      renderSubs(); renderHero();
+    }
+  });
+  box.addEventListener("change", e => {
+    const row = e.target.closest(".row"); if(!row) return;
+    const id = row.dataset.id;
+    const act = e.target.dataset.act;
+    if(act === "monthly"){
+      const v = e.target.value === "" ? null : Number(e.target.value);
+      setOverride(id, { monthlyYen: v });
+    } else if(act === "billday"){
+      const v = e.target.value === "" ? null : Number(e.target.value);
+      setOverride(id, { billingDay: v });
+    } else if(act === "trialend"){
+      setOverride(id, { trialEndDate: e.target.value || null });
+    }
+    renderSubs(); renderHero();
+  });
+})();
+
+document.getElementById("addBtn").addEventListener("click", () => {
+  const input = document.getElementById("addName");
+  const name = input.value.trim();
+  if(!name) return;
+  const id = "custom-" + Date.now();
+  const custom = loadCustom();
+  custom.push({ id, name, monthlyYen: null, billingDay: null, status: "unknown", isCustom: true });
+  saveCustom(custom);
+  input.value = "";
+  renderSubs(); renderHero();
+});
+
+/* ── 今月の日付範囲（機種のローカル日付。毎月自動で変わる＝仕組み化） ── */
+function monthRangeLabel(){
+  const now = new Date();
+  const last = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  return `${now.getMonth()+1}月1日〜${last}日`;
+}
+function currentYm(){
+  const now = new Date();
+  return now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0");
+}
+
+let FAL_SUMMARY = null;
+let CLAUDE_MONTH_USD = null;
+
+function renderHero(){
+  const hero = document.getElementById("hero");
+  const items = mergedItems();
+  const activeCash = items.filter(it => it.status === "active" && it.monthlyYen != null)
+    .reduce((s,it) => s + Number(it.monthlyYen), 0);
+  const unregisteredActive = items.filter(it => it.status === "active" && it.monthlyYen == null).length;
+  const falYen = FAL_SUMMARY ? FAL_SUMMARY.thisMonthTotalYen : 0;
+  const total = activeCash + falYen;
+  hero.innerHTML = `
+    <div class="range">${monthRangeLabel()}：現金ベース</div>
+    <div class="total">${yen(total)}</div>
+    <div class="breakdown">内訳：サブスク ${yen(activeCash)} ＋ fal ${yen(falYen)}${FAL_SUMMARY ? "" : "（読み込み中）"}</div>
+    ${unregisteredActive > 0 ? `<div class="warn">継続中のうち${unregisteredActive}件、月額が未登録（合計に含まれていません）</div>` : ""}
+  `;
+}
+
+/* ── fal（従量課金）：既存の status/fal_cost_ledger.json（tools/fal_cost_ledger.py）をそのまま読む ── */
+function renderFal(d){
+  const box = document.getElementById("falBox");
+  const meta = document.getElementById("falMeta");
+  const s = d && d.summary;
+  if(!s){
+    box.innerHTML = `<div class="note">まだ記録が無い（falを使った仕事が1本終わるたびに増える）</div>`;
+    return;
+  }
+  FAL_SUMMARY = s;
+  if(meta) meta.textContent = `今月${s.thisMonthTotalYen}円`;
+  box.innerHTML = `
+    <div class="kv"><span>今月の合計</span><span class="v">${yen(s.thisMonthTotalYen)}（${fmtUsd(s.thisMonthTotalUsd)}）</span></div>
+    <div class="kv"><span>上限のうち残り</span><span class="v">${yen(s.remainingYen)}（上限${yen(s.capYen)}）</span></div>
+    <div class="kv"><span>捨てたものの合計</span><span class="v">${yen(s.discardedTotalYen)}</span></div>
+  `;
+  renderHero();
+}
+fetch("status/fal_cost_ledger.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderFal).catch(()=>{
+    document.getElementById("falBox").innerHTML = `<div class="note">読み込みに失敗しました</div>`;
+  });
+
+/* ── Claudeの枠の消費（参考値）：status/cost_by_task.json の今月分を合計するだけ。請求は来ない ── */
+function renderClaude(d){
+  const box = document.getElementById("claudeBox");
+  const tasks = (d && d.tasks) || [];
+  const ym = currentYm();
+  const monthTasks = tasks.filter(t => (t.finishedAt || "").startsWith(ym));
+  const totalUsd = monthTasks.reduce((s,t) => s + (t.costUsd || 0), 0);
+  CLAUDE_MONTH_USD = totalUsd;
+  box.innerHTML = `
+    <div class="kv"><span>今月${monthTasks.length}本の合計（換算値）</span><span class="v">${fmtUsd(totalUsd)}</span></div>
+    <div class="kv"><span>出典</span><span class="v" style="font-weight:400; font-size:0.75rem; color:var(--dim)">status/cost_by_task.json</span></div>
+  `;
+}
+fetch("status/cost_by_task.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderClaude).catch(()=>{
+    document.getElementById("claudeBox").innerHTML = `<div class="note">読み込みに失敗しました</div>`;
+  });
+
+/* ── 台帳（名前の正本）を読み込んでから描画開始 ── */
+fetch("status/subscriptions.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : {items:[]})
+  .then(d => {
+    BASE_ITEMS = (d.items || []);
+    document.getElementById("updated").textContent = "台帳更新：" + (d.updatedAt || "—");
+    renderSubs();
+    renderHero();
+  })
+  .catch(() => {
+    document.getElementById("subsList").innerHTML = `<div class="note">台帳の読み込みに失敗しました</div>`;
+  });
+</script>
+</body>
+</html>

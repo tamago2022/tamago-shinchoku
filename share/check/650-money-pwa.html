@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#650 お金の管理表（サブスク＋クレジット＋fal）を1枚のPWAにした 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #650 お金の管理表（サブスク＋クレジット＋fal）を1枚のPWAにした</div>
+<h1>#650 お金の管理表（サブスク＋クレジット＋fal）を1枚のPWAにした</h1>
+<div class="date">2026-09-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんの『月のAI費はまとめて欲しい。今月1日から31日までいくらかかりますみたいなね』『falであなたいろいろやってくれたじゃん…あれ800円ぐらい使ってんの』を受け、進捗表(index.html)と同じ作りで <code>money.html</code> を新設。上に今月の現金合計(サブスク継続中分＋fal実費)を大きく表示、下にサブスク一覧(名前/月額/課金日/状態/お試し終了日をタップ・入力その場保存)、fal従量課金(status/fal_cost_ledger.jsonをそのまま表示)、Claudeの枠消費(参考値・請求は来ないと明記して現金と別欄)を並べた。名前の初期台帳はstatus/subscriptions.json(Claude/Grok/Kindle Unlimited/Audible/Spotifyの5件、金額等は未登録で正直に出す)。進捗表トップに💰リンクを追加。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1178.3円</b><span>今月のfal実費(status/fal_cost_ledger.json summary.thisMonthTotalYenをそのまま表示)</span></div>
+  <div class="num"><b>5件</b><span>status/subscriptions.jsonの初期サブスク台帳(名前のみ既知、金額・課金日は未登録と正直表示)</span></div>
+  <div class="num"><b>$503.25</b><span>今月のClaude枠消費(status/cost_by_task.json 148本の合計・参考値であり請求は来ないと明記)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番：お金の管理表</b><a href="https://tamago2022.github.io/tamago-shinchoku/money.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/money.html</a></li>
+  <li><b>本番：進捗表(入口の💰リンクあり)</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>ローカルhttp.serverでmoney.html/index.html/3つのstatus JSONが全部200で返る</td><td class="yes">yes</td></tr>
+<tr><td>money.html内のJSをnode --checkで構文検証</td><td class="yes">yes</td></tr>
+<tr><td>status/subscriptions.jsonをpython json.loadで検証(5件)</td><td class="yes">yes</td></tr>
+<tr><td>現金(サブスク+fal)と換算値(Claude枠消費)は別欄・合計に混ぜていない</td><td class="yes">yes</td></tr>
+<tr><td>本番URLでのスクリーンショット取得(本セッションにブラウザ操作ツールが無いため)</td><td class="yes">no</td></tr>
+</table>
+
+<footer>
+実装:money.html(新規)・status/subscriptions.json(新規)・index.htmlに入口リンク追加。次回たまごさんが実機で開いた時、サブスク5件(Claude/Grok/Kindle Unlimited/Audible/Spotify)の月額・課金日・状態を1回だけタップ/入力すればこの端末に保存され以後毎回自動で出る。
+</footer>
+</body>
+</html>
