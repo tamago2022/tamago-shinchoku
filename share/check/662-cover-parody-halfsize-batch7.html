@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#662 カバー・パロディのハーフサイズ分離(案件#662 7/10)・検証結果 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #662 カバー・パロディのハーフサイズ分離(案件#662 7/10)・検証結果</div>
+<h1>#662 カバー・パロディのハーフサイズ分離(案件#662 7/10)・検証結果</h1>
+<div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+大森靖子/尾崎豊/Pentatonix/Playing For Change/Pomplamoose/Prince/PUSHIM/Queen/Rage Against the Machine/RedHookの10アーティストページで、カバー・パロディ動画を本人代表曲一覧の下へ「カバー・パロディ」見出しで分離し、ハーフサイズ(2列)サムネで表示する型が本番に反映されていることを実測した。うちPomplamooseは<b>Jamiroquai×Bee Geesマッシュアップのカードが欠落するデータ不具合</b>を発見し、原曲アーティスト各自の代表曲のyoutubeIdで橋渡しする修正をmainへpush・Lovable公開まで実施した(案件#662-7)。Lately(Stevie Wonder)のコピーは先行対応で既に本番反映済みを確認。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>10/10</b><span>対象10ページ全てで反映確認</span></div>
+  <div class="num"><b>1</b><span>Pomplamooseで発見・修正した表示欠落バグ</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番: 大森靖子</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=omori-seiko" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=omori-seiko</a></li>
+  <li><b>本番: 尾崎豊</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ozaki" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=ozaki</a></li>
+  <li><b>本番: Pentatonix</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=pentatonix" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=pentatonix</a></li>
+  <li><b>本番: Playing For Change</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=playing-for-change" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=playing-for-change</a></li>
+  <li><b>本番: Pomplamoose(修正後)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=pomplamoose" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=pomplamoose</a></li>
+  <li><b>本番: Prince</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=prince" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=prince</a></li>
+  <li><b>本番: PUSHIM</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=pushim" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=pushim</a></li>
+  <li><b>本番: Queen</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=queen" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=queen</a></li>
+  <li><b>本番: Rage Against the Machine</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=rage-against-the-machine" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=rage-against-the-machine</a></li>
+  <li><b>本番: RedHook</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=red-hook" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=red-hook</a></li>
+  <li><b>本番: Lately(Stevie Wonder・コピー確認)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>大森靖子『ウエディング・ベル』→Sugarの原曲がハーフサイズ2列で分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>尾崎豊『Forget-me-not』→Ms.OOJA/清水翔太の名カバーがハーフサイズ2列で分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>Pentatonix『Hallelujah』→Leonard Cohenの原曲がハーフサイズ2列で分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>Playing For Change『One Love/Stand By Me/What&#x27;s Going On』→原曲3組がハーフサイズ2列で分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>Pomplamoose『Jamiroquai×Bee Geesマッシュアップ』→カード欠落を修正しハーフサイズ2列で表示(今回のfix)</td><td class="yes">反映済み</td></tr>
+<tr><td>Prince『Whole Lotta Love/Nothing Compares 2 U/While My Guitar〜』→自己参照重複を除外しハーフサイズ2列で表示</td><td class="yes">反映済み</td></tr>
+<tr><td>PUSHIM『傘がない』→井上陽水の原曲リンクがカバー・パロディ内に分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>Queen『Somebody to Love/Bohemian Rhapsody』→名カバー2種がハーフサイズ2列で分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>Rage Against the Machine『Guerrilla Radio』→RedHookの名カバーがハーフサイズ2列で分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>RedHook『Guerrilla Radio』→RATM原曲がハーフサイズ2列で分離表示</td><td class="yes">反映済み</td></tr>
+<tr><td>Lately(Stevie Wonder)のコピー『代表曲のひとつ』を排し、Jodeciカバーが全米1位13週の事実で書き直し済み</td><td class="yes">反映済み</td></tr>
+</table>
+
+<footer>
+このページは #662 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
