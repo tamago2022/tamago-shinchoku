@@ -780,6 +780,43 @@ def harvest(q):
         # 3時間の強制カット、こちらのpkillの巻き添え等）ということ。**仕事が失敗したのではない。**
         # 失敗として確認待ちに積むと、たまごさんが「これ何を見ればいいの」と確認だけさせられる。
         # → **続きから再開**する形で列に戻す。やり直しではないので、そこまでの作業は無駄にならない。
+        # ---- 「来ない通知を待って終わっている」を、終わったことにしない（2026-09-08・653番）----
+        # 2026-09-08に確認待ち28件を洗ったら、**証拠が1本も無い11件のうち10件がこれだった。**
+        #   「バックグラウンドの完了通知を待ちます」「ビルド完了通知を待っています」
+        #   「3件の完了を待機しています」——**その通知は永遠に来ない。**
+        #   `claude -p` は一発実行なので、バックグラウンドに投げた時点で待ち受ける口が無い。
+        #   セッションはそう言い残して終わり、台帳には「終わった」として確認待ちへ積まれ、
+        #   **たまごさんの列に「何を見ればいいのか分からないもの」として溜まっていた。**
+        #   中身（605=商売の芯、635=独自ドメイン、609=あめちゃん等）は、どれも途中で止まっている。
+        # → 待ちの言葉で終わっていて、証拠URLが1本も無いものは、**列に戻す。**
+        _r = (result or "").strip()
+        _waiting_words = ("完了通知を待", "完了を待", "通知を待", "待機しています", "待っています",
+                          "待ちます", "完了するまで待", "結果が読み取れませんでした")
+        if (_r and not urls and len(_r) < 400
+                and any(w in _r for w in _waiting_words)):
+            stallc = int(it.get("bgWaitCount") or 0) + 1
+            it["bgWaitCount"] = stallc
+            it["status"] = "hold" if it.get("holdNote") else "waiting"
+            it["priority"] = it.get("priority") or 2
+            it["what"] = (it.get("what") or "") + (
+                "\n\n【来ない通知を待って終わっていました・%d回目・%s】\n"
+                "前回このタスクは「%s」と言い残して終わっています。**その通知は来ません。**\n"
+                "`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を"
+                "受け取る口が構造的にありません。\n"
+                "**バックグラウンド実行（& や run_in_background）を使わないでください。**\n"
+                "外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\n"
+                "mainへのpushが環境の安全装置で弾かれる場合は、"
+                "`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けば"
+                "ホスト側が押します（2026-09-08新設）。"
+                % (stallc, time.strftime("%m-%d %H:%M"), _r[:120]))
+            for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                it.pop(k, None)
+            it.pop("pid", None)
+            changed = True
+            log("⏳ 来ない通知を待って終わっていたので列に戻す %d番「%s」（%d回目）"
+                % (it.get("n"), it.get("title"), stallc))
+            continue
+
         if not (result or "").strip() and '"result"' not in (raw or ""):
             cut = int(it.get("cutCount") or 0)
             if cut < 5:
