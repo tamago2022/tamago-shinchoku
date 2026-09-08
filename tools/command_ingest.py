@@ -374,6 +374,28 @@ def _build_list_phase_what(n, title, text):
     ) % (text, n)
 
 
+_ENGINEER_TITLE_RE = re.compile(
+    r"[a-zA-Z_]+_[a-zA-Z_]+"          # snake_case（内輪の関数名・変数名）
+    r"|\.(py|js|ts|tsx|mjs|cjs|json|html|css|sh)\b"  # ファイル名っぽい拡張子
+    r"|\bfix\b|\brefactor\b|\bbug\b"  # 英語の工事用語
+)
+
+
+def _warn_if_engineer_title(title):
+    """653番：内輪の工事名（スネークケース・ファイル名・fix/refactor等）がタイトルに
+    紛れ込んでいたら、追加自体は止めずに status/queue_title_warnings.log へ1行残す。
+    棚卸し担当（人間向け日本語への書き直し）が後からまとめて拾うための足あと。"""
+    t = (title or "").strip()
+    if not t or not _ENGINEER_TITLE_RE.search(t):
+        return
+    try:
+        path = os.path.join(REPO, "status", "queue_title_warnings.log")
+        with io.open(path, "a", encoding="utf-8") as f:
+            f.write("%s\t%s\n" % (time.strftime("%Y-%m-%dT%H:%M:%S"), t))
+    except Exception:
+        pass
+
+
 def queue_add(text, priority=None, label=None, origin=None):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
@@ -389,6 +411,18 @@ def queue_add(text, priority=None, label=None, origin=None):
     text = (text or "").strip()
     if not text:
         return "failed", "本文が空です"
+    # ---- 653番（2026-09-08）タイトル命名基準 ----
+    # たまごさんが進捗表を開いて一目で中身が分かることが目的。ここに積まれた title は
+    # そのまま進捗表（index.html）の「発車待ち」「確認待ち」に出る＝たまごさんが直接読む文字列。
+    #   ◎ 良い例：「並べ替えたら元に戻る不具合を直す」「完了セクションを最初から閉じておく」
+    #   ✕ 悪い例：「queue_reorder_bug」「fix_worlds_ts_error.cjs」「refactor checkRowHtml()」
+    #             （内輪の工事名・スネークケースの関数/ファイル名・英語だけの説明・仕組みの解説調）
+    # 判断基準：中身の技術用語やファイル名をそのままtitleに流用しない。「何をするか」を
+    # たまごさんの言葉に翻訳してから積む（label引数で短い日本語名を渡すのが正攻法）。
+    # ここでは自動追加そのものを止めない（誤検知で正当な追加が失敗する方が実害が大きい）。
+    # 内輪の工事名っぽい題名（拡張子・スネークケース・英字だけ等）は積んだ上で
+    # status/queue_title_warnings.log に1行残し、棚卸し担当が後から拾えるようにする。
+    _warn_if_engineer_title(label or text.splitlines()[0] if text else "")
     # ---- 2026-09-06 01:10 **ここに2つの重大なバグがあった。**----
     # ① `text[:400]` で指示文を400文字に切っていた。Dispatchが書いた長い指示（守るべき条件・
     #    禁止事項・出力先・上限額）が**途中で消え、子セッションは不完全な指示で走っていた。**
@@ -713,7 +747,8 @@ def launch_cap(target):
 def process(cmd):
     action = cmd.get("action")
     if action in ("queue_ok", "queue_undo_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
-                  "queue_pause", "queue_delete", "queue_order", "queue_dedupe"):
+                  "queue_pause", "queue_delete", "queue_order", "queue_dedupe",
+                  "queue_cancel", "queue_undo_cancel"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -753,6 +788,10 @@ def _process_queue(action, cmd):
         return queue_dedupe(target)
     if action == "queue_delete":
         return queue_delete(target)
+    if action == "queue_cancel":
+        return queue_cancel(target)
+    if action == "queue_undo_cancel":
+        return queue_undo_cancel(target)
     return "failed", "不明なアクション: %s" % action
 
 
@@ -992,6 +1031,59 @@ def queue_delete(target):
         return "done", "%d番を消しました（取り消せるよう status/deleted.json に控えてあります）" % deleted[0]
     return "done", "%d件をまとめて消しました（%s・取り消せるよう status/deleted.json に控えてあります）" % (
         len(deleted), ",".join(str(x) for x in deleted))
+
+
+def queue_cancel(target):
+    """653番（2026-09-08）「もういい（取り消し）」「もう見なくていい」の受け皿。
+    waiting(順番待ち)・awaiting_check(確認待ち)どちらの行にも同じ道で使う。
+    完了(done)ではなく cancelled として記録する（「やった」と「もう要らない」を混同しない）。
+    10秒以内ならJS側のUndoバナー→queue_undo_cancelで元の状態に戻せるよう、
+    キャンセル直前のstatusを _preCancelStatus に控えておく。"""
+    ns = _split_targets(target)
+    if not ns:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    done = []
+    for n in ns:
+        it = _find_item(items, n)
+        if it is None or it.get("status") in ("cancelled", "done"):
+            continue
+        it["_preCancelStatus"] = it.get("status")
+        it["status"] = "cancelled"
+        it["cancelledAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        done.append(n)
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    if not done:
+        return "failed", "queue.jsonに見つかりません: %r" % target
+    if len(done) == 1:
+        return "done", "%d番を取り消しにしました" % done[0]
+    return "done", "%d件をまとめて取り消しにしました（%s）" % (len(done), ",".join(str(x) for x in done))
+
+
+def queue_undo_cancel(target):
+    """queue_cancel の10秒取り消し。cancelled → キャンセル直前のstatus（無ければwaiting）へ戻す。"""
+    ns = _split_targets(target)
+    if not ns:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    restored = []
+    for n in ns:
+        it = _find_item(items, n)
+        if it is None or it.get("status") != "cancelled":
+            continue
+        it["status"] = it.pop("_preCancelStatus", None) or "waiting"
+        it.pop("cancelledAt", None)
+        restored.append(n)
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    if not restored:
+        return "failed", "取り消せるものが見つかりません: %r" % target
+    return "done", "%d件を元へ戻しました（%s）" % (len(restored), ",".join(str(x) for x in restored))
 
 
 def disk_report(_target=None):

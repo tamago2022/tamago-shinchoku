@@ -268,6 +268,8 @@
   .clater{background:#3a2f12; color:var(--yellow); border-color:rgba(230,190,80,0.45)!important;}
   .cng{background:#1a2028; color:var(--red);}
   .cdel{background:#1a2028; color:var(--sub); border-color:var(--line);}
+  /* 653番（2026-09-08）確認待ちの「もう見なくていい」。完了(cok)とは別扱い＝cancelledとして記録。 */
+  .ccancel{background:#1a2028; color:var(--sub); border-color:var(--line);}
   /* 2026-09-06(418番) 押すだけで終わる確認待ち：サムネ＋本番URL＋完了/やり直しの2ボタンだけを最初に見せ、
      長い文章・後回し/削除は<details>の中に畳む。「証拠なし」「開けない」は赤で先に分かるようにする。
      画像もボタンも高さは固定pxでなくaspect-ratio/min-heightで決め、9/05の文字縦潰れを再発させない。 */
@@ -382,6 +384,17 @@
     border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.88rem;
     font-weight:700; white-space:nowrap; line-height:1;}
   .qtop:active, .qmore:active{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+  /* 653番（2026-09-08）waiting行の「もういい（取り消し）」／確認待ち行の「もう見なくていい」。
+     親指で押せる大きさ（44px）。他のボタンと間違えないよう少し離し、色は控えめ（赤ではない＝完了ではない）。 */
+  .qcancel{flex:none; min-height:44px; min-width:44px; padding:0 10px; margin-left:4px; border-radius:9px;
+    border:1px solid var(--line); background:transparent; color:var(--sub); font:inherit; font-size:0.78rem;
+    font-weight:700; white-space:nowrap; line-height:1;}
+  .qcancel:active{background:rgba(255,255,255,0.08); color:var(--fg);}
+  .qcancelUndo{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 8px;
+    padding:9px 12px; border-radius:10px; border:1px solid var(--line); background:#1a2028;
+    color:var(--ink); font-size:0.86rem; font-weight:700;}
+  .qcancelUndo button{min-height:40px; padding:0 12px; border-radius:9px; border:1px solid var(--green);
+    background:transparent; color:var(--green); font-weight:700;}
   .qjump-menu{position:fixed; z-index:9999; display:none; background:#1b2330; border:1px solid var(--green);
     border-radius:12px; padding:8px; box-shadow:0 10px 26px rgba(0,0,0,0.5); gap:6px;}
   .qjump-menu.open{display:flex;}
@@ -539,7 +552,9 @@
 <!-- 2026-09-05 たまごさん「完了っていうのを限界の下に行きましょう。その下が作業中、その下が順番待ち。
      上から完了、作業中、順番待ち、確認待ち、後回しの順で」→ 並びをこの通りにした。
      終わったものが一番上に来るので、開くたび「今日これだけ進んだ」が最初に目に入る。 -->
-<details class="sec done" id="doneSec" open><summary>✅ 完了 <small id="doneMeta"></small></summary><div class="in" id="done">
+<!-- 653番（2026-09-08）たまごさん「まとめてOK」小工事(1/2)：完了セクションは既定で閉じる。
+     開閉状態はlocalStorage(shinchoku_sec_open_v1)に覚え、次回開いた時も同じ状態を保つ（下のsecOpen系JSで制御）。 -->
+<details class="sec done" id="doneSec"><summary>✅ 完了 <small id="doneMeta"></small></summary><div class="in" id="done">
 <div class="note" style="margin-top:8px"><a href="share/done/" style="color:var(--green)">1週間より前の完了を見る（完了のひかえ）→</a></div>
 </div></details>
 <div id="nowAge" class="nowage"></div>
@@ -595,8 +610,10 @@
 <div class="addMsg" id="pendMsg" style="padding:0 2px 6px"></div>
 <div class="in" id="queue"></div>
 </div></details>
-<!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」 -->
-<details class="sec check" id="checkSec" open><summary>🔎 たまごさんの確認待ち <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
+<!-- 2026-09-04 たまごさん「作業が終わったら、そこは俺の確認待ち。OKって言ったら初めて完了。ダメならもう一回順番待ちに並ぶ」
+     653番（2026-09-08）たまごさん「1個1個やってらんない」→ 見出しを「終わりました（あなたのOK待ち）」に変更し、
+     何をすればいいかを最初の1行で言い切る。 -->
+<details class="sec check" id="checkSec" open><summary>終わりました（あなたのOK待ち） <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
 <!-- 2026-09-04 たまごさん「とりあえず後回しでOKを押したら、後回しボックスに入れて、そこから消えて欲しい」
      押した瞬間に確認待ちから消える。ここは畳んだまま。時間ができたら「戻す」で列に並ぶ。 -->
 <details class="sec later" id="laterSec"><summary>🕗 後回し（時間があるとき） <small id="laterMeta"></small></summary><div class="in" id="later"></div></details>
@@ -1669,6 +1686,58 @@ function showUndoBanner(ns){
     if(remain <= 0){ window.__bulkUndo = null; clearInterval(window.__undoTimer); renderCheck(); }
   }, 500);
 }
+/* ───── 653番（2026-09-08）確認待ちの「もう見なくていい」 ─────
+   完了ではなく cancelled として記録（queue_cancel）。押した瞬間に消し、10秒だけ取り消せる。
+   bulkOKのUndo(__bulkUndo)とは別物として持つ（同時に別々の操作をしても混同しないよう分ける）。 */
+window.__checkCancelUndo = window.__checkCancelUndo || null; // {ns:[...], until}
+function checkCancelUndoBar(){
+  const u = window.__checkCancelUndo; if(!u) return "";
+  return `<div class="cundo"><span>🙈 ${u.ns.length}件を見なくていいにしました</span>
+    <button type="button" data-checkundo="1">↩︎ 取り消す（残り<span id="cCancelUndoSec">${Math.max(0, Math.ceil((u.until - Date.now())/1000))}</span>秒）</button></div>`;
+}
+function showCheckCancelUndo(ns){
+  window.__checkCancelUndo = { ns: ns.slice(), until: Date.now() + 10000 };
+  renderCheck();
+  clearInterval(window.__checkCancelUndoTimer);
+  window.__checkCancelUndoTimer = setInterval(()=>{
+    if(!window.__checkCancelUndo){ clearInterval(window.__checkCancelUndoTimer); return; }
+    const remain = Math.max(0, Math.ceil((window.__checkCancelUndo.until - Date.now())/1000));
+    const el = document.getElementById("cCancelUndoSec");
+    if(el) el.textContent = remain;
+    if(remain <= 0){ window.__checkCancelUndo = null; clearInterval(window.__checkCancelUndoTimer); renderCheck(); }
+  }, 500);
+}
+document.addEventListener("click", e=>{
+  const cb = e.target.closest("[data-checkcancel]");
+  if(cb){
+    const ns = String(cb.dataset.checkcancel).split(",").map(s=>Number(s.trim())).filter(v=>!isNaN(v));
+    if(!ns.length) return;
+    const items = (window.__queue && window.__queue.items) || [];
+    ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it._preCancelStatus = it.status; it.status = "cancelled"; }
+    });
+    sendCommandWithId("qc" + Date.now().toString(36), "queue_cancel", ns.join(","), `🙈もう見なくていい ${ns.length}件`);
+    showCheckCancelUndo(ns);
+    try{ renderQueue(); }catch(_){}
+    return;
+  }
+  const ub = e.target.closest("[data-checkundo]");
+  if(ub){
+    const u = window.__checkCancelUndo; if(!u) return;
+    const items = (window.__queue && window.__queue.items) || [];
+    u.ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it.status = it._preCancelStatus || "awaiting_check"; delete it._preCancelStatus; }
+    });
+    window.__checkCancelUndo = null;
+    clearInterval(window.__checkCancelUndoTimer);
+    sendCommandWithId("qu" + Date.now().toString(36), "queue_undo_cancel", u.ns.join(","), `↩︎見なくていいを戻す ${u.ns.length}件`);
+    renderCheck();
+    try{ renderQueue(); }catch(_){}
+    return;
+  }
+});
 function absUrl(base, src){ try{ return new URL(src, base).href; }catch(e){ return src || ""; } }
 // 確認ページ(/share/check/…)は同一オリジンなので実際のHTTPステータスと<img>を両方取れる。
 // ここで拾えた画像を「証拠のスクショ」として使う（content_check()が既にimg/数字の有無を検品済みの前提に乗る）。
@@ -1751,11 +1820,15 @@ function checkRowHtml(e){
       <button class="cng" data-ck="ng" data-n="${r.n}">↩︎ やり直し</button>
     </div>
     <details class="cmore"><summary>くわしく</summary>
+      <!-- 653番（2026-09-08）長い依頼文がそのまま題名として前面に出ていた行があったため、
+           題名は短く要約し、元の全文は消さず fullTitle に退避してここへ畳んだ。 -->
+      ${r.fullTitle ? `<div class="cm">${esc(r.fullTitle)}</div>` : ""}
       <div class="cm">${fin ? fin + " に終了" : ""}</div>
       ${allUrls || `<div class="cm">URLの報告なし</div>`}
       <div class="cr">${esc((r.result||"").slice(0,600))}</div>
       <div class="cbtns">
         <button class="clater" data-ck="later" data-n="${r.n}">🕗 あとで（手が空いたら）</button>
+        <button class="ccancel" data-checkcancel="${r.n}">🙈 もう見なくていい</button>
         <button class="cdel" data-ck="del" data-n="${r.n}">🗑 このタスクを消す</button>
       </div>
     </details>
@@ -1779,7 +1852,10 @@ function checkGroupRowHtml(entry){
         ? openMembers.map(e => e.r.status === "awaiting_check" ? checkRowHtml(e)
             : `<div class="cm">#${e.r.n}（${esc(STATUS_JA[e.r.status] || e.r.status)}）${esc(e.r.title || "")}</div>`).join("")
         : memberEvids.map(e=>`<div class="cm">#${e.r.n}（${esc(STATUS_JA[e.r.status] || e.r.status)}）</div>`).join("")}
-      <div class="cbtns"><button class="cdel" data-ck="del" data-n="${summary.allNs}">🗑 まとめて消す</button></div>
+      <div class="cbtns">
+        <button class="ccancel" data-checkcancel="${summary.allNs}">🙈 まとめて見なくていい</button>
+        <button class="cdel" data-ck="del" data-n="${summary.allNs}">🗑 まとめて消す</button>
+      </div>
     </details>
   </div>`;
 }
@@ -1829,7 +1905,11 @@ function renderCheck(){
         </div>`;
       })()).join("")}
     </details>` : "";
-  if(!rows.length){ box.innerHTML = `<div class="card note">確認待ちはありません</div>` + factoryFold; return; }
+  // 653番（2026-09-08）「作業はもう終わっています。中身が合っていたらOK、違っていたらやり直し」の1行。
+  //   renderCheck()はbox.innerHTMLを毎回丸ごと描き直すため、HTML側に静的に書いても消えてしまう。
+  //   ここ（描き直しの先頭）に必ず含めることで、確認待ちが0件でもある時でも常に出す。
+  const checkIntro = `<div class="note" style="margin-bottom:8px">作業はもう終わっています。中身が合っていたらOK、違っていたらやり直し</div>`;
+  if(!rows.length){ box.innerHTML = checkIntro + checkCancelUndoBar() + `<div class="card note">確認待ちはありません</div>` + factoryFold; return; }
   const entries = buildCheckEntries(rows, groupMap);
   // まとめてOK：残っている番号（単体行＋まとめ行の中の確認待ちメンバー）だけに選択状態を絞る
   const liveNs = new Set();
@@ -1851,7 +1931,7 @@ function renderCheck(){
     ? `<div class="cundo"><span>✅ ${window.__bulkUndo.ns.length}件を完了にしました</span>
         <button type="button" data-bulk="undo">↩︎ 取り消す（残り<span id="cundoSec">${Math.max(0, Math.ceil((window.__bulkUndo.until - Date.now())/1000))}</span>秒）</button></div>`
     : "";
-  box.innerHTML = bulkBar + undoBar
+  box.innerHTML = checkIntro + bulkBar + undoBar + checkCancelUndoBar()
     + entries.map(en => en.isGroup ? checkGroupRowHtml(en) : checkRowHtml(en.evid)).join("")
     + factoryFold;
 }
@@ -2021,6 +2101,58 @@ document.addEventListener("click", e=>{
   }
 });
 
+/* ───── 653番（2026-09-08）waiting行の「もういい（取り消し）」 ─────
+   完了ではなく cancelled として記録（queue_cancel）。押した瞬間に列から消し、10秒だけ取り消せる。 */
+window.__queueCancelUndo = window.__queueCancelUndo || null; // {ns:[...], until}
+function queueCancelUndoBar(){
+  const u = window.__queueCancelUndo; if(!u) return "";
+  return `<div class="qcancelUndo"><span>✕ ${u.ns.length}件を取り消しにしました</span>
+    <button type="button" data-qundo="1">↩︎ 取り消す（残り<span id="qCancelUndoSec">${Math.max(0, Math.ceil((u.until - Date.now())/1000))}</span>秒）</button></div>`;
+}
+function showQueueCancelUndo(ns){
+  window.__queueCancelUndo = { ns: ns.slice(), until: Date.now() + 10000 };
+  renderQueue();
+  clearInterval(window.__queueCancelUndoTimer);
+  window.__queueCancelUndoTimer = setInterval(()=>{
+    if(!window.__queueCancelUndo){ clearInterval(window.__queueCancelUndoTimer); return; }
+    const remain = Math.max(0, Math.ceil((window.__queueCancelUndo.until - Date.now())/1000));
+    const el = document.getElementById("qCancelUndoSec");
+    if(el) el.textContent = remain;
+    if(remain <= 0){ window.__queueCancelUndo = null; clearInterval(window.__queueCancelUndoTimer); renderQueue(); }
+  }, 500);
+}
+document.addEventListener("click", e=>{
+  const cb = e.target.closest("[data-qcancel]");
+  if(cb){
+    const ns = String(cb.dataset.qcancel).split(",").map(s=>Number(s.trim())).filter(v=>!isNaN(v));
+    if(!ns.length) return;
+    const items = (window.__queue && window.__queue.items) || [];
+    // 押した瞬間に画面から消す（楽観的更新）。返事を待たせない。
+    ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it._preCancelStatus = it.status; it.status = "cancelled"; }
+    });
+    sendCommandWithId("qc" + Date.now().toString(36), "queue_cancel", ns.join(","), `✕もういい ${ns.length}件`);
+    showQueueCancelUndo(ns);
+    try{ renderCheck(); }catch(_){}
+    return;
+  }
+  const ub = e.target.closest("[data-qundo]");
+  if(ub){
+    const u = window.__queueCancelUndo; if(!u) return;
+    const items = (window.__queue && window.__queue.items) || [];
+    u.ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it.status = it._preCancelStatus || "waiting"; delete it._preCancelStatus; }
+    });
+    window.__queueCancelUndo = null;
+    clearInterval(window.__queueCancelUndoTimer);
+    sendCommandWithId("qu" + Date.now().toString(36), "queue_undo_cancel", u.ns.join(","), `↩︎取り消しを戻す ${u.ns.length}件`);
+    renderQueue();
+    try{ renderCheck(); }catch(_){}
+    return;
+  }
+});
 /* ───── 次に発車（予備軍）─────
    2026-09-04 たまごさん「そこにも俺、優先順位つけるよ」→ 各行のPボタンで1〜5を付けられる。
    付けた優先度は既存の優先度受信（Obsidian経由）と同じ仕組みに乗せる。 */
@@ -2061,11 +2193,11 @@ function renderQueue(){
   // 2026-09-04 「発車待ちがない」と出ていたのに台帳には15本あった。原因を切り分けられるよう、
   //   ①まだ読めていない ②読めたが本当に0本 を区別して出す。黙って「ありません」と出さない。
   if(!rows.length){
-    box.innerHTML = window.__queue
+    box.innerHTML = queueCancelUndoBar() + (window.__queue
       ? `<div class="card note">発車待ちはありません（台帳${(all||[]).length}件を読み込み済み）</div>`
       : (window.__queueErr
           ? `<div class="card note">台帳が読めませんでした（${window.__queueErr}回失敗）。30秒ごとに自動で読み直しています</div>`
-          : `<div class="card note">発車待ちを読み込み中…</div>`);
+          : `<div class="card note">発車待ちを読み込み中…</div>`));
     return;
   }
   // 2026-09-04 たまごさん「演者が同定されていない、って何のことだろうみたいな。どういうことなのか分かりたいね。
@@ -2102,6 +2234,7 @@ function renderQueue(){
         </span>
         <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? p : "—"}</button>
         ${qJumpHtml(r.n)}
+        <button class="qcancel" data-qcancel="${summary.allNs || r.n}" title="もういい（この依頼を取り消す）">✕もういい</button>
       </div>`;
     }
     return `<div class="qrow${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
@@ -2114,6 +2247,7 @@ function renderQueue(){
       </span>
       <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? p : "—"}</button>
       ${qJumpHtml(r.n)}
+      <button class="qcancel" data-qcancel="${r.n}" title="もういい（この依頼を取り消す）">✕もういい</button>
     </div>`;
   };
   let gi = 0, html = "";
@@ -2123,7 +2257,7 @@ function renderQueue(){
     html += `<div class="qbox" data-box="${lvl}"><div class="qboxh">${label} <b>${inBox.length}</b>件</div>`
           + inBox.map((r,i)=>rowHtml(r,i,gi++)).join("") + `</div>`;
   }
-  box.innerHTML = html;
+  box.innerHTML = queueCancelUndoBar() + html;
   wireDrag(box);
   // 624番 たまごさん「上まで行ったのに、1階上に行ったらまた戻るんだよね。どこ行った？」
   //   → 並び替え直後は毎回まるごと描き直す（renderQueue）ので、画面が動かした行を見失う。
@@ -2267,6 +2401,8 @@ function wireDrag(box){
       const n = Number(row.dataset.n), oldP = Number(row.dataset.p);
       const items = (window.__queue && window.__queue.items) || [];
       const rows = Array.from(document.querySelectorAll("#queue .qrow"));
+      // 653番：戻すためのスナップショットを、書き換える"前"に取る（moveWithinBoxと同じやり方）
+      const beforeSnap = items.map(it => ({n: it.n, order: it.order}));
       // ③ 手元の台帳を先に書き換える。これで読み直しが来ても並びが戻らない
       rows.forEach((x, i)=>{
         const it = items.find(y => y.n === Number(x.dataset.n));
@@ -2280,8 +2416,19 @@ function wireDrag(box){
         row.dataset.p = String(newP);
       }
       const order = rows.map(x=>x.dataset.n).filter(Boolean);
+      // 653番（2026-09-08・並べ替えが元に戻る不具合3回目の対応）
+      //   以前はここが sendCommandWithId の投げっぱなしで、中継所への送信が失敗しても
+      //   画面には何も出ず、ローカルの並びだけが実際には保存されないまま次の読み直しで
+      //   元へ戻っていた。moveWithinBox/jumpToPosition と同じ sendOrderReliable に統一し、
+      //   「保存が本当に失敗した時だけ」元へ戻し「戻しました」を出す。
       if(order.length){
-        sendCommandWithId("o" + Date.now().toString(36), "queue_order", order.join(","), "並び順を保存");
+        window.__scrollFollowN = n;
+        sendOrderReliable(order, ()=>{
+          restoreOrder(beforeSnap);
+          window.__scrollFollowN = n;
+          try{ renderQueue(); }catch(_){}
+          qtoast("戻しました（保存に失敗しました。もう一度お試しください）");
+        });
       }
       window.__orderHold = Date.now() + 10000;   // ④ 10秒は外の並びで描き直さない
       try{ renderQueue(); }catch(_){}
@@ -2334,8 +2481,18 @@ function restoreOrder(before){
   before.forEach(p=>{ const it = items.find(y => y.n === p.n); if(it) it.order = p.order; });
 }
 /* 台帳への保存。中継所があるのに本当に届かなかった時だけ失敗として扱い、呼び出し元へ知らせる。
-   中継所がまだ無い（＝いつもの「あとで送ります」）は失敗ではないので、そのまま既存の仕組みへ乗せる。 */
+   中継所がまだ無い（＝いつもの「あとで送ります」）は失敗ではないので、そのまま既存の仕組みへ乗せる。
+   653番（2026-09-08）並べ替えが元に戻る不具合(3回目の指摘)の原因究明で判明：
+   ドラッグ操作(wireDrag)は元々このsendOrderReliableを使わず、失敗時の後始末が無い
+   sendCommandWithId直送だった。中継所への送信が失敗しても画面には何も表示されず、
+   ローカルのitems.orderだけ書き換わったまま次の読み直しでサーバー側の古い並びに
+   戻っていた＝「並べ替えたのに元に戻る」の実体。→ ドラッグ側もこの関数を必ず通す形に統一した。
+   さらに「保存が終わる前に次の操作が来ても最後の操作が勝つ」ため、呼び出しごとに
+   通し番号(__orderSeq)を持たせ、後から来た操作より前の失敗コールバックは
+   （既に新しい状態で上書き済みなので）ロールバックを実行しない。 */
+window.__orderSeq = window.__orderSeq || 0;
 function sendOrderReliable(order, onFail){
+  const seq = ++window.__orderSeq;
   const id = "o" + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
   const url = relayUrl();
   if(!url){ sendCommandWithId(id, "queue_order", order.join(","), "並び順を保存"); return; }
@@ -2347,7 +2504,7 @@ function sendOrderReliable(order, onFail){
     if(!r.ok) throw new Error("HTTP " + r.status);
     SENT_CMDS[id] = {action:"queue_order", target:order.join(","), label:"並び順を保存", sentAt:new Date().toISOString()};
     saveCmds();
-  }).catch(()=>{ onFail && onFail(); });
+  }).catch(()=>{ if(seq === window.__orderSeq) onFail && onFail(); });
 }
 function jumpToPosition(n, targetPos){
   n = Number(n);
@@ -2836,6 +2993,23 @@ function renderStats(text){
 }
 fetch("status/history.jsonl?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.text() : "").then(renderStats).catch(()=>renderStats(""));
+
+/* ───── 653番（2026-09-08）完了セクションの開閉状態を覚える ─────
+   たまごさん「1個1個やってらんない」小工事の一環。完了(✅)セクションは既定で閉じておき、
+   たまごさんが開け閉めした状態をlocalStorageに覚え、次回開いた時も同じ状態にする。 */
+(function(){
+  const KEY = "shinchoku_sec_open_v1";
+  let saved = {};
+  try{ saved = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ saved = {}; }
+  const el = document.getElementById("doneSec");
+  if(!el) return;
+  if(saved.doneSec === true) el.setAttribute("open", "");
+  else if(saved.doneSec === false) el.removeAttribute("open");
+  el.addEventListener("toggle", function(){
+    saved.doneSec = el.open;
+    try{ localStorage.setItem(KEY, JSON.stringify(saved)); }catch(e){}
+  });
+})();
 </script>
 </body>
 </html>
