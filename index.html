@@ -2171,6 +2171,61 @@ document.addEventListener("click", e=>{
     return;
   }
 });
+
+/* ───── 654番（2026-09-08）waiting行の「✅完了」 ─────
+   既存の「取り消し」（queue_cancel）と全く同じパターン。既存のqueue_okに乗せ、
+   10秒だけ取り消せる（queue_undo_ok。まとめてOKツールバーの取り消しと同じ道）。 */
+window.__queueDoneUndo = window.__queueDoneUndo || null; // {ns:[...], until}
+function queueDoneUndoBar(){
+  const u = window.__queueDoneUndo; if(!u) return "";
+  return `<div class="qcancelUndo"><span>✅ ${u.ns.length}件を完了にしました</span>
+    <button type="button" data-qundodone="1">↩︎ 取り消す（残り<span id="qDoneUndoSec">${Math.max(0, Math.ceil((u.until - Date.now())/1000))}</span>秒）</button></div>`;
+}
+function showQueueDoneUndo(ns){
+  window.__queueDoneUndo = { ns: ns.slice(), until: Date.now() + 10000 };
+  renderQueue();
+  clearInterval(window.__queueDoneUndoTimer);
+  window.__queueDoneUndoTimer = setInterval(()=>{
+    if(!window.__queueDoneUndo){ clearInterval(window.__queueDoneUndoTimer); return; }
+    const remain = Math.max(0, Math.ceil((window.__queueDoneUndo.until - Date.now())/1000));
+    const el = document.getElementById("qDoneUndoSec");
+    if(el) el.textContent = remain;
+    if(remain <= 0){ window.__queueDoneUndo = null; clearInterval(window.__queueDoneUndoTimer); renderQueue(); }
+  }, 500);
+}
+document.addEventListener("click", e=>{
+  const db = e.target.closest("[data-qdone]");
+  if(db){
+    const ns = String(db.dataset.qdone).split(",").map(s=>Number(s.trim())).filter(v=>!isNaN(v));
+    if(!ns.length) return;
+    const items = (window.__queue && window.__queue.items) || [];
+    const label = ns.length > 1 ? `まとめて${ns.length}件（${ns.join(",")}）` : String(ns[0]);
+    // 押した瞬間に画面から消す（楽観的更新）。返事を待たせない。
+    ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it._preDoneStatus = it.status; it.status = "done"; it.checkedAt = new Date().toISOString(); }
+    });
+    sendCommandWithId("qd" + Date.now().toString(36), "queue_ok", ns.join(","), `✅完了 ${label}番`);
+    showQueueDoneUndo(ns);
+    try{ renderCheck(); renderDone(); }catch(_){}
+    return;
+  }
+  const udb = e.target.closest("[data-qundodone]");
+  if(udb){
+    const u = window.__queueDoneUndo; if(!u) return;
+    const items = (window.__queue && window.__queue.items) || [];
+    u.ns.forEach(n=>{
+      const it = items.find(x => x.n === n);
+      if(it){ it.status = it._preDoneStatus || "waiting"; delete it._preDoneStatus; delete it.checkedAt; }
+    });
+    window.__queueDoneUndo = null;
+    clearInterval(window.__queueDoneUndoTimer);
+    sendCommandWithId("qud" + Date.now().toString(36), "queue_undo_ok", u.ns.join(","), `↩︎完了を戻す ${u.ns.length}件`);
+    renderQueue();
+    try{ renderCheck(); renderDone(); }catch(_){}
+    return;
+  }
+});
 /* ───── 次に発車（予備軍）─────
    2026-09-04 たまごさん「そこにも俺、優先順位つけるよ」→ 各行のPボタンで1〜5を付けられる。
    付けた優先度は既存の優先度受信（Obsidian経由）と同じ仕組みに乗せる。 */
@@ -2211,7 +2266,7 @@ function renderQueue(){
   // 2026-09-04 「発車待ちがない」と出ていたのに台帳には15本あった。原因を切り分けられるよう、
   //   ①まだ読めていない ②読めたが本当に0本 を区別して出す。黙って「ありません」と出さない。
   if(!rows.length){
-    box.innerHTML = queueCancelUndoBar() + (window.__queue
+    box.innerHTML = queueCancelUndoBar() + queueDoneUndoBar() + (window.__queue
       ? `<div class="card note">発車待ちはありません（台帳${(all||[]).length}件を読み込み済み）</div>`
       : (window.__queueErr
           ? `<div class="card note">台帳が読めませんでした（${window.__queueErr}回失敗）。30秒ごとに自動で読み直しています</div>`
@@ -2235,8 +2290,21 @@ function renderQueue(){
   //   長距離はボタン、近い距離の入れ替えは今まで通りドラッグ（⣿）。
   const qJumpHtml = n => `<button class="qtop" data-qtop="${n}" title="この箱の先頭へ（1番へ）">🔝</button>` +
     `<button class="qmore" data-qmore="${n}" title="順番を指定（1〜5）">⋯</button>`;
+  // 654番（2026-09-08）優先順位ボタン（色帯＋Pラベル）と、一気に最後尾へ落とすボタンをまとめて出す。
+  const qPrioHtml = (n,p) => {
+    const label = p ? ("P" + p) : "P–";
+    const now = p ? ("今:P" + p) : "今:未設定";
+    return `<button class="qp" data-qp="${n}" data-plevel="${p || ""}" title="優先度を1段階下げる（${now}）">${label}</button>` +
+      `<button class="qbottom" data-qbottom="${n}" title="優先度を一気に最後尾（P5）にする">⬇️最後尾</button>`;
+  };
+  // 654番 完了・取り消しはセットで出す（取り消しは既存のqueue_cancel、完了は既存のqueue_okに乗せる）。
+  const qActionHtml = (n,label) => `<button class="qcancel" data-qcancel="${n}" title="もういい（この依頼を取り消す）">取り消し</button>` +
+    `<button class="qcancel qdone" data-qdone="${n}" title="完了として記録する（10秒だけ取り消せます）">✅完了</button>`;
   const rowHtml = (r,i,globalIdx)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
+    // 654番（2026-09-08）お金がかかるタスクは題名を赤字＋💴で目立たせる。
+    const moneyCls = r.costsMoney === true ? " money" : "";
+    const moneyMark = r.costsMoney === true ? "💴 " : "";
     // 585番：splitFromが同じもの（発車待ちに残っているのは代表1本）は、まとめの進み具合を出す。
     if(r.splitFrom){
       const members = groupMap.get(r.splitFrom) || [r];
@@ -2246,26 +2314,26 @@ function renderQueue(){
         <span class="qgrip" title="つまんで動かす">⣿</span>
         <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
         <span class="qbody">
-          <details class="qd"><summary><span class="qt">📦 ${esc(title)}</span><span class="qw">${summary.total}本中${summary.closed}本おわり・残り${summary.remaining}本</span></summary>
+          <details class="qd"><summary><span class="qt${moneyCls}">📦 ${moneyMark}${esc(title)}</span><span class="qw">${summary.total}本中${summary.closed}本おわり・残り${summary.remaining}本</span></summary>
             <div class="qwhat">${members.map(m=>`#${m.n}（${esc(STATUS_JA[m.status] || m.status)}）`).join("　")}</div>
           </details>
         </span>
-        <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? p : "—"}</button>
+        ${qPrioHtml(r.n, p)}
         ${qJumpHtml(r.n)}
-        <button class="qcancel" data-qcancel="${summary.allNs || r.n}" title="もういい（この依頼を取り消す）">✕もういい</button>
+        ${qActionHtml(summary.allNs || r.n)}
       </div>`;
     }
     return `<div class="qrow${globalIdx===0 ? " next" : ""}" data-n="${r.n}" data-p="${p||9}">
       <span class="qgrip" title="つまんで動かす">⣿</span>
       <span class="qn">${globalIdx===0 ? "次" : (globalIdx+1)}</span><span class="qno">#${r.n}</span> ${modelChip(r.model)}
       <span class="qbody">
-        <details class="qd"><summary><span class="qt">${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
+        <details class="qd"><summary><span class="qt${moneyCls}">${moneyMark}${esc(r.title)}</span><span class="qw">${esc(r.why||"")}</span></summary>
           <div class="qwhat">${esc(r.what || "（説明はまだ書いていません）")}</div>
         </details>
       </span>
-      <button class="qp${p ? " on" : ""}" data-qp="${r.n}">${p ? p : "—"}</button>
+      ${qPrioHtml(r.n, p)}
       ${qJumpHtml(r.n)}
-      <button class="qcancel" data-qcancel="${r.n}" title="もういい（この依頼を取り消す）">✕もういい</button>
+      ${qActionHtml(r.n)}
     </div>`;
   };
   let gi = 0, html = "";
@@ -2275,7 +2343,7 @@ function renderQueue(){
     html += `<div class="qbox" data-box="${lvl}"><div class="qboxh">${label} <b>${inBox.length}</b>件</div>`
           + inBox.map((r,i)=>rowHtml(r,i,gi++)).join("") + `</div>`;
   }
-  box.innerHTML = queueCancelUndoBar() + html;
+  box.innerHTML = queueCancelUndoBar() + queueDoneUndoBar() + html;
   wireDrag(box);
   // 624番 たまごさん「上まで行ったのに、1階上に行ったらまた戻るんだよね。どこ行った？」
   //   → 並び替え直後は毎回まるごと描き直す（renderQueue）ので、画面が動かした行を見失う。
@@ -2639,6 +2707,20 @@ document.addEventListener("click", e=>{
     const p = prioOf("Q" + n) || 0;
     sendCommandWithId("qp" + n + "-" + Date.now(), "queue_prio", n + ":" + p, "P" + (p || "なし") + " " + n + "番");
   }, 1500);
+});
+// 654番（2026-09-08）「⬇️最後尾」＝優先度を一気に5（後回し）へ落とす。qpのクリック処理とほぼ同じ、
+//   next を固定で5にしたもの。連打まとめのタイマーは使わず、押した瞬間にすぐ送る（1回で確定するため）。
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-qbottom]"); if(!b) return;
+  const n = b.dataset.qbottom;
+  const it = ((window.__queue && window.__queue.items) || []).find(x => String(x.n) === String(n));
+  const next = 5;
+  PRIO["Q" + n] = {p: next, t: new Date().toISOString()};
+  savePrio && savePrio();
+  if(it) it.priority = next;   // 画面をすぐ並べ替える（Mac側の反映を待たない）
+  renderQueue();
+  clearTimeout(QP_TIMER[n]);
+  sendCommandWithId("qb" + n + "-" + Date.now(), "queue_prio", n + ":5", "⬇️最後尾（P5） " + n + "番");
 });
 function tickClock(){
   const el = document.getElementById("clock"); if(!el) return;
