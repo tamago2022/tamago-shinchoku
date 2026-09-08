@@ -301,6 +301,32 @@ def content_check(url, timeout=10):
     if real_links and all(_is_root(l) for l in real_links):
         return False, "リンク先が全部トップページです"
 
+    # ---- 2026-09-09 たまごさんの指摘で追加：**リンクを1本ずつ開いて確かめる。**----
+    # たまごさんの言葉：「牛尾さんはできたんだと思ってURL2つ押したら全部404。鬼監督どうなってるんだい」
+    # 実際に起きたこと（623番）：確認ページ自体は200で、中身も正しかった。**仕事は終わっていた。**
+    #   だが、ページに貼ってあった2本のリンクが両方とも **private リポジトリ**（joy-relief-station）で、
+    #   たまごさんが押すと GitHub が 404 を返す。**こちらからは見えて、本人には見えないリンクだった。**
+    # → **「ページが開けた」だけでは合格にしない。ページの上のリンクが、たまごさん本人の目から
+    #    開けるかどうかまで見る。**開けないリンクを貼るのは、証拠を渡していないのと同じ。
+    checkable = [l for l in real_links
+                 if l.startswith("http") and not _is_root(l)]
+    for l in checkable[:8]:          # 8本まで。全部見ると遅くなるので上限を切る
+        # private リポジトリは、こちらが開けてもたまごさんには 404 に見える。中身を見るまでもなく不合格。
+        if "github.com/tamago2022/joy-relief-station" in l:
+            return False, ("たまごさんが開けないリンクが貼ってあります（%s は非公開リポジトリで、"
+                           "本人が押すと404になります）。証拠は本人が開ける場所に置いてください" % l)
+        try:
+            req2 = urllib.request.Request(l, method="HEAD",
+                                          headers={"User-Agent": "tamago-content-checker/1.0"})
+            with urllib.request.urlopen(req2, timeout=8) as r2:
+                if r2.getcode() not in (200, 301, 302):
+                    return False, "貼ってあるリンクが開けません（%s → HTTP %s）" % (l, r2.getcode())
+        except urllib.error.HTTPError as e:
+            if e.code in (403, 404, 410):
+                return False, "貼ってあるリンクが開けません（%s → HTTP %s）" % (l, e.code)
+        except Exception:
+            pass                     # 回線の一時的な失敗でページ全体を落とさない
+
     return True, ""
 
 
