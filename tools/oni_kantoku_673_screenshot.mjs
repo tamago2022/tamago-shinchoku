@@ -132,16 +132,28 @@ async function measureAndOpenQueue(send) {
 async function shoot(send, width, height, outFile) {
   await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile: width < 500 });
   await sleep(300);
-  const clip = { x: 0, y: 0, width, height, scale: 1 };
+  // 「1 今すぐ」箱（queueSecの中の最初のqbox）の位置までスクロールしてから撮る
+  const posInfo = await send("Runtime.evaluate", {
+    expression: `(() => {
+      const box = document.querySelector('.qbox');
+      if (!box) return JSON.stringify({ found: false });
+      const rect = box.getBoundingClientRect();
+      return JSON.stringify({ found: true, top: rect.top + window.scrollY });
+    })()`,
+    returnByValue: true,
+  });
+  const pos = JSON.parse(posInfo.result?.value || "{}");
+  const y = pos.found ? Math.max(0, Math.floor(pos.top) - 40) : 0;
+  const clip = { x: 0, y, width, height, scale: 1 };
   const shot = await send("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport: true });
   writeFileSync(outFile, Buffer.from(shot.data, "base64"));
-  console.log("保存:", outFile);
+  console.log("保存:", outFile, "y=", y);
 }
 
 async function main() {
   if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
 
-  const port = 9900 + Math.floor(Math.random() * 200);
+  const port = 31000 + Math.floor(Math.random() * 3000);
   const profile = mkdtempSync(join(tmpdir(), "oni-673-shot-"));
   const chrome = spawn(
     CHROME,
