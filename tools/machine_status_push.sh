@@ -317,6 +317,35 @@ git add status/pace.json status/launch_cap.json status/done_archive.json status/
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1
+
+# ---- 2026-09-09 事故の再発防止：**大きいファイルを公開に載せない。**----
+# 何が起きたか：02:44、Xアプリのプロトタイプを作っていた別セッションが
+#   share/x-search/data.json（たまごさん本人の実ツイート47,011件・12MB）を置いた。
+#   **この巡回の `git add share tools` が中身を見ずに巻き込み、公開GitHub Pagesへpushした。**
+#   1分で気づいて消したが、たまごさんに「二度と起きないようにして」と言われた。
+#
+# なぜ .gitignore だけでは足りないか：
+#   .gitignore に書けるのは「今回の1ファイル」だけ。**次に誰かが別の名前で置いたら、また同じことが起きる。**
+#   ここは `share` と `tools` を**丸ごと**addしているので、置かれたものは何でも公開される構造だった。
+#
+# 対策：**これから載せようとしているファイルを1つずつ見て、1MBを超えるものがあったら
+#        その1本だけ取り下げて、載せない。**（残りは通常どおり公開する＝画面は止まらない）
+#   個人データの塊は必ず大きい。確認ページのHTMLは小さい。**この線引きで十分に効く。**
+#   取り下げたものは status/blocked_large_files.log に記録し、たまごさんが後で見られるようにする。
+_BIG=0
+while IFS= read -r _f; do
+  [ -z "$_f" ] && continue
+  [ -f "$_f" ] || continue
+  _sz=$(wc -c < "$_f" 2>/dev/null || echo 0)
+  if [ "${_sz:-0}" -gt 1048576 ] 2>/dev/null; then
+    git restore --staged "$_f" >/dev/null 2>&1 || git reset -q HEAD "$_f" >/dev/null 2>&1
+    echo "$(date '+%F %T') 🛑 公開を止めた（${_sz}バイト・1MB超）: $_f" >> "$REPO/status/blocked_large_files.log"
+    _BIG=$((_BIG+1))
+  fi
+done < <(git diff --cached --name-only --diff-filter=AM -- share tools 2>/dev/null)
+if [ "$_BIG" -gt 0 ]; then
+  echo "$(date '+%F %T') 🛑 大きいファイル${_BIG}件を公開から外しました（個人データの誤公開を防ぐため）" >> "$REPO/status/relay.log"
+fi
 # 2026-09-04 バグ修正：commitが失敗したとき return 0 で抜けていたため、push まで到達しなかった。
 #   commitが失敗する典型は「新しい変更が無いとき」。だが、その前に別経路（Cowork側）でcommitされた分が
 #   未pushで残っていることがあり、そのぶんが永久に公開されなかった（画面が更新されない実害）。
