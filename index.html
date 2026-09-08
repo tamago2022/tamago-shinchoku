@@ -388,7 +388,13 @@
     .qno{font-size:0.72rem;}
   }
   .qd{min-width:0;}
-  .qd > summary{list-style:none; cursor:pointer; min-width:0;}
+  /* 2026-09-09（673番）<summary>はブラウザ既定でdisplay:flex（横並び）になる。
+     .qt/.qwはCSSではdisplay:block・width:100%を指定していたが、
+     親summaryがflexだと「横に並べて奪い合う」扱いになり、
+     題名(.qt)が幅の半分以下(実測121px/291px中)まで押し潰されて何行にも折り返されていた
+     （610px超のPCだけでなくスマホでも起きていた実際の残存バグ）。
+     flex-directionをcolumnに固定し、題名→理由の縦積みを確実にする。 */
+  .qd > summary{list-style:none; cursor:pointer; min-width:0; display:flex; flex-direction:column; align-items:stretch;}
   .qd > summary::-webkit-details-marker{display:none;}
   .qd > summary::after{content:" ▾"; color:var(--sub); font-size:0.7rem;}
   .qd[open] > summary::after{content:" ▴";}
