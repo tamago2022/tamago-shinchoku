@@ -1351,17 +1351,24 @@ def main():
           return 0
 
       # ---- 優先度順に並べる。たまごさんがPWAで付けたPが最優先、次に元の番号 ----
+      # 682番（2026-09-09）画面表示は A〜E（＋空き枠F）の文字だが、中身の数字(1〜6)は変えていない。
+      #   A=1 今すぐ／B=2 早めに／C=3 普通／D=4 後回し／E=5 いつでも／F=6 空き枠（安全弁だけ）。
+      #   この rank() は昔からある数字のままなので壊れない。
       prio = (load(PRIORITY, {}).get("priority") or {})
+
+      def _effective_priority(it):
+          p = it.get("priority") or prio.get("Q%d" % it.get("n"))
+          return int(p) if p else 9
 
       def rank(it):
           # 2026-09-04：スマホの「＋発車待ちに追加」で作った項目はitem自身に"priority"を持つ
           #   （queue_add・command_ingest.py）。既存のpriority.jsonのQキー方式より優先する。
-          p = it.get("priority") or prio.get("Q%d" % it.get("n"))
+          p = _effective_priority(it)
           # 2026-09-05 たまごさん「ドラッグアンドドロップで順番入れ替えられるようにしたい」
           #   手で並べ替えた順（order）は、同じ優先度の中での並びとして最優先で効かせる。
           #   並べ替えていないものは order が無いので、従来どおり番号順で後ろに付く。
           o = it.get("order")
-          return (int(p) if p else 9,
+          return (p,
                   int(o) if isinstance(o, int) else 10 ** 6,
                   it.get("n") or 99)
 
