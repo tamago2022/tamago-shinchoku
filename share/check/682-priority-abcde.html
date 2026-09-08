@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#682 優先度をABCDEに・まとめて仕分け 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #682 優先度をABCDEに・まとめて仕分け</div>
+<h1>#682 優先度をABCDEに・まとめて仕分け</h1>
+<div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+発車待ちの優先度表示を数字1〜5からA〜Eの文字に変更。開きっぱなしで閉じなかった「順番指定」ポップオーバーを修正（選ぶ・外側タップ・同じボタン再タップの3通りで必ず閉じる／同時に2つ開かない）。チェックボックスで何件でも選び、上のバーからA〜F・最後尾を1タップで一括適用できる一括仕分けを新設。F（空き枠）は発車待ちが空の時だけ動く安全な追加枠。「2番目へ」ボタンも追加、1行の高さも圧縮した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>19件</b><span>発車待ちの実件数（本番）</span></div>
+  <div class="num"><b>5件→2ファイル</b><span>Node.jsテスト:ポップオーバー開閉10項目pass・逆テストで2項目fail確認</span></div>
+  <div class="num"><b>5番号</b><span>queue.jsonで実測: 1,4,6番→D／20番→A／17番→最後尾(E)、その後全部元に戻した</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>①発車待ち全体（A〜F箱・凡例）</b><img src="img/682-queue-overview.png" alt="①発車待ち全体（A〜F箱・凡例）"><span class="meta">ヘッドレスChromeで本番を実機取得</span></div>
+  <div class="shot plain"><b>②ポップオーバーは同時に1つだけ</b><img src="img/682-jumpmenu-open.png" alt="②ポップオーバーは同時に1つだけ"><span class="meta">「この箱の中で何番目にする？」と見出しも追加</span></div>
+  <div class="shot plain"><b>③一括仕分けバー（選択中→A〜F/最後尾）</b><img src="img/682-bulk-select.png" alt="③一括仕分けバー（選択中→A〜F/最後尾）"><span class="meta">チェックを入れると上に固定バーが出る</span></div>
+  <div class="shot plain"><b>④「2番目へ」ボタン</b><img src="img/682-second-button.png" alt="④「2番目へ」ボタン"><span class="meta">🔝1番・🥈2番・⋯順番・取消が横並び</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番（発車待ち一覧）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html#queueSec" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html#queueSec</a></li>
+  <li><b>変更コミット1（本体）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/431f8af" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/431f8af</a></li>
+  <li><b>変更コミット2（一括仕分けバー修正）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/17df83b" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/17df83b</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>「1,2,3,4,5」ポップオーバーが閉じない・2つ見える</td><td class="yes">直った（選択/外側タップ/再タップで閉じる・同時に1つだけ）</td></tr>
+<tr><td>優先度の表示が数字1〜5</td><td class="yes">A〜Eの文字表示に変更（中身の数字は同じ・発車の順番ロジックは無改造）</td></tr>
+<tr><td>F（空き枠）新設</td><td class="yes">A〜Eの発車待ちが1本でもあれば絶対に発車しない安全弁を追加</td></tr>
+<tr><td>複数件をまとめて仕分け</td><td class="yes">チェックボックス＋一括バーで1〜100件を数タップで変更可能</td></tr>
+<tr><td>「2番目へ」ワンタップ</td><td class="yes">追加済み（緊急対応をすぐ2番目へ繰り上げ）</td></tr>
+<tr><td>1行の高さ</td><td class="yes">題名2行まで・ボタンは横スクロール帯に圧縮</td></tr>
+</table>
+
+<footer>
+queue.jsonへの反映はcommand_ingest.pyのqueue_prio()を実際に呼び出し、1,4,6番→D／20番→A／17番→最後尾(E)へ書き換わることを確認した後、全部を元の優先度なしへ戻した（テストのため本物のたまごさんの並びを一時的に変えたが、確認後に必ず復元済み）。
+</footer>
+</body>
+</html>

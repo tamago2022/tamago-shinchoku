@@ -211,3 +211,15 @@
 - **二度と起こさないための仕掛け**：発生源（auto_launcher.pyのURL抽出）と検品側（verify_check_pages.pyのhttp_get）の両方に終端文字の防御を入れたので、今後同じ書き方の完了報告が来ても、urls欄はクリーンなURLだけになる。次に「実測すると404なのに仕事は終わっている」という報告が来たら、まずqueue.jsonの該当urls欄に日本語・全角括弧が混ざっていないかを最初に疑う。
 - **日付**：2026-09-09（668番）
 - **根拠**：`status/_668_link_audit_result.json`（255本のURLを実測し記録ミス10本を特定した生ログ）、`status/queue.json`のn=420の`urlsFixedNote`、`git log`（`tools/auto_launcher.py`・`tools/verify_check_pages.py`の該当コミット）
+
+---
+
+## 20. renderQueue()内のローカルconstをグローバル関数から呼ぶと、画面が壊れずに機能だけ黙って死ぬ
+
+- **症状**：682番（優先度A〜E化・一括仕分け）で、チェックボックスで複数選び上部に「選択中N件」バーを出す`qBulkBarHtml()`を実装したが、本番で実際に2件チェックしても**一度もバーが出なかった**。エラーもコンソールに出ているだけで、画面上は「何も起きない」という一番気づきにくい壊れ方だった。
+- **原因**：`qBulkBarHtml()`をグローバルスコープの関数として書いたが、色付きドットの配列`PRIO_DOT`（`🔴A`等）は元々`renderQueue()`関数の**内側**で`const`宣言されていた（同じ関数内の`qPrioHtml`から使うためだけに置かれていた）。`qBulkBarHtml()`から`PRIO_DOT`を参照すると`ReferenceError: PRIO_DOT is not defined`が発生していたが、これは`document.addEventListener("click", ...)`のハンドラ内で投げられる例外で、**呼び出し元が握りつぶす作りにはなっていないのに、画面上は真っ白にもならず、ただ「バーが描画されない」だけ**という地味な壊れ方をした（チェックボックスのchangeイベント自体は正常発火・QSELへの追加も成功していたため、パッと見「選択自体はできているのにバーだけ出ない」という切り分けにくい症状だった）。
+- **直し方**：`PRIO_DOT`をグローバルスコープへ移し（`PRIO_LETTER`/`PRIO_NAME`の隣）、`renderQueue()`内のローカル`const PRIO_DOT`は削除して二重定義を防いだ。
+- **見つけ方**：`tools/oni_kantoku_*_screenshot.mjs`と同じ「headless Chrome + CDP」方式で本番URLを実際に開き、`document.querySelectorAll('.qsel')`でチェックボックスを2つクリック→`document.querySelector('.qbulkbar')`の有無を実機で確認した。目視のスクショだけでなく、**JSを実際に実行してDOMの結果を数字で見る**ことで原因まで特定できた（スクショだけでは「バーが出ていない」までしか分からず、原因の切り分けにはRuntime.evaluateでの直接実行が要った）。
+- **二度と起こさないための仕掛け**：`renderQueue()`のように巨大な関数の中にある定数・小関数を、後から別のグローバル関数が使い回したくなった時は、**先にその定数の定義場所（ローカルかグローバルか）を`grep -n "const XXX"`で確認してから**参照する。同じ名前でローカル/グローバルの二重定義があると、片方を消し忘れて紛らわしくなるので、移動時は必ず元のローカル定義を削除してから構文チェック（`node --check`）とヘッドレスChromeでの実機確認の両方を通す。
+- **日付**：2026-09-09（682番）
+- **根拠**：`index.html`の`PRIO_DOT`定義（グローバル・`PRIO_LETTER`の隣）と`qBulkBarHtml()`、`/tmp/_debug_bulk2.mjs`の実行ログ（`ReferenceError: PRIO_DOT is not defined`→修正後`barExists:true`）
