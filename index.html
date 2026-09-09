@@ -275,6 +275,9 @@
   .weekbar .wcell{flex:1; display:flex; align-items:center; justify-content:center; font-size:0.72rem; color:var(--dim); border-right:1px dashed rgba(255,255,255,0.1); position:relative;}
   .weekbar .wcell:last-child{border-right:none;}
   .weekbar .wcell.today{color:var(--kinari); font-weight:800; background:rgba(255,255,255,0.06);}
+  /* wtrackはoverflow:hiddenで角丸を効かせているので、印（本来ここ/今ここ）はtrackの外にはみ出す
+     ラベル付きのため、clipされない別レイヤー(.wmarks・wtrackの兄弟要素)に重ねて置く。 */
+  .weekbar .wmarks{position:absolute; inset:0; pointer-events:none;}
   .weekbar .wmk{position:absolute; top:-7px; bottom:-7px; width:0; border-left:3px solid var(--sub); z-index:2;}
   .weekbar .wmk .wmf{position:absolute; left:0; transform:translateX(-50%); font-size:0.64rem; white-space:nowrap; padding:1px 5px; border-radius:5px; background:#0e1319; border:1px solid var(--line);}
   .weekbar .wmk.wexp .wmf{top:-20px; color:var(--sub);}
@@ -1048,7 +1051,8 @@ function buildWeekBar(p){
   const isOver = overAmt > 0.5; // 誤差0.5%未満は「ほぼ同じ」として赤にしない
   const cells = days.map((d, i) => `<div class="wcell${i === dayIdx ? " today" : ""}">${d}</div>`).join("");
   const html = `<div class="weekbar">
-      <div class="wtrack">${cells}
+      <div class="wtrack">${cells}</div>
+      <div class="wmarks">
         <div class="wmk wexp" style="left:${expPct.toFixed(1)}%"><span class="wmf">本来ここ ${expPct.toFixed(1)}%</span></div>
         <div class="wmk wnow${isOver ? " over" : ""}" style="left:${nowPct.toFixed(1)}%"><span class="wmf">今ここ ${nowPct.toFixed(1)}%</span></div>
       </div>
@@ -3103,7 +3107,7 @@ document.addEventListener("click", e=>{
 });
 
 /* ───── 燃料の栓（発車の停止・再開／同時本数）───── */
-let FUEL_ON = true, FUEL_CAP = null;
+let FUEL_ON = true, FUEL_CAP = null, FUEL_WHY = null;
 function renderFuel(){
   const b = document.getElementById("fuelToggle"), msg = document.getElementById("fuelMsg");
   if(b){ b.textContent = FUEL_ON ? "⏸ 発車を止める" : "▶ 発車を出す"; b.classList.toggle("off", !FUEL_ON); }
@@ -3118,12 +3122,27 @@ function renderFuel(){
     msg.style.color = (!FUEL_ON || stop) ? "var(--yellow)" : "";
   }
   document.querySelectorAll("#fuelBox .cap").forEach(x=>x.classList.toggle("on", +x.dataset.cap === FUEL_CAP));
+  // 702番（2026-09-10）：同時本数（cap）が自動で上下したとき、なぜ変えたかを1行必ず出す
+  //   （「週の予算を+18%超えたので5→3にしました」のように。黙って変えない）。
+  let why = document.getElementById("fuelWhy");
+  if(!why && document.getElementById("fuelBox")){
+    why = document.createElement("div");
+    why.id = "fuelWhy";
+    why.className = "addMsg";
+    why.style.cssText = "flex-basis:100%; opacity:.8; font-size:0.8rem;";
+    document.getElementById("fuelBox").appendChild(why);
+  }
+  if(why) why.textContent = FUEL_CAP != null ? `同時本数の上限 ${FUEL_CAP}本${FUEL_WHY ? "（" + FUEL_WHY + "）" : ""}` : "";
 }
 function refreshFuel(){
   return Promise.all([
     fetch("status/launch_cap.json?t=" + Date.now(), {cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch("status/no_launch.flag?t=" + Date.now(), {cache:"no-store"}).then(r=>r.ok).catch(()=>false),
-  ]).then(([cap, paused])=>{ FUEL_CAP = cap && typeof cap.cap === "number" ? cap.cap : null; FUEL_ON = !paused; renderFuel(); });
+  ]).then(([cap, paused])=>{
+    FUEL_CAP = cap && typeof cap.cap === "number" ? cap.cap : null;
+    FUEL_WHY = cap && cap.why ? String(cap.why) : null;
+    FUEL_ON = !paused; renderFuel();
+  });
 }
 refreshFuel();
 setInterval(refreshFuel, 60000);
