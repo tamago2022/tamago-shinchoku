@@ -393,27 +393,56 @@ def build_index_html():
 """ % items_html
 
 
-def push_repo(date):
-    try:
-        subprocess.run(["git", "add", "share/nikki/"], cwd=REPO, check=True)
-        diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=REPO)
-        if diff.returncode == 0:
-            print("git: 差分なし（コミット省略）")
-            return True
-        subprocess.run(
-            ["git", "commit", "-m", "nikki: %s 業務日誌を自動生成（700番）" % date],
-            cwd=REPO, check=True,
-        )
-        push = subprocess.run(["git", "push", "origin", "main"], cwd=REPO, capture_output=True, text=True)
-        if push.returncode == 0:
-            print("git push 成功")
-            return True
-        else:
-            print("git push 失敗: %s" % push.stderr.strip()[:300])
-            return False
-    except subprocess.CalledProcessError as e:
-        print("git操作失敗: %s" % e)
-        return False
+def push_repo(date, retries=3, wait_sec=5):
+    """このリポジトリは他の自動化プロセスも同時にgit操作するため、
+    index.lock競合等で1回失敗することがある。少し待って最大retries回まで試す。"""
+    import time
+
+    last_err = None
+    for attempt in range(1, retries + 1):
+        try:
+            subprocess.run(["git", "add", "share/nikki/"], cwd=REPO, check=True,
+                            capture_output=True, text=True)
+            diff = subprocess.run(["git", "diff", "--cached", "--quiet", "--", "share/nikki/"],
+                                   cwd=REPO)
+            if diff.returncode == 0:
+                print("git: 差分なし（コミット省略）")
+                return True
+            commit = subprocess.run(
+                ["git", "commit", "-m", "nikki: %s 業務日誌を自動生成（700番）" % date],
+                cwd=REPO, capture_output=True, text=True,
+            )
+            if commit.returncode != 0:
+                last_err = "commit失敗(試行%d): %s" % (attempt, (commit.stdout + commit.stderr).strip()[:300])
+                print(last_err)
+                time.sleep(wait_sec)
+                continue
+            # push前に最新を取り込み、他プロセスの先行pushと衝突しないようにする
+            subprocess.run(["git", "fetch", "origin", "main"], cwd=REPO, capture_output=True, text=True, timeout=30)
+            push = subprocess.run(["git", "push", "origin", "main"], cwd=REPO, capture_output=True, text=True)
+            if push.returncode == 0:
+                print("git push 成功")
+                return True
+            # 追従が必要な場合（他プロセスが先にpush済み）は rebase して再試行
+            subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=REPO,
+                            capture_output=True, text=True, timeout=60)
+            push2 = subprocess.run(["git", "push", "origin", "main"], cwd=REPO, capture_output=True, text=True)
+            if push2.returncode == 0:
+                print("git push 成功（rebase後）")
+                return True
+            last_err = "push失敗(試行%d): %s" % (attempt, push2.stderr.strip()[:300])
+            print(last_err)
+            time.sleep(wait_sec)
+        except subprocess.CalledProcessError as e:
+            last_err = "git操作失敗(試行%d): %s" % (attempt, e)
+            print(last_err)
+            time.sleep(wait_sec)
+        except subprocess.TimeoutExpired as e:
+            last_err = "git操作タイムアウト(試行%d): %s" % (attempt, e)
+            print(last_err)
+            time.sleep(wait_sec)
+    print("git操作: %d回試して失敗。次回の定時実行で再試行される想定。最終エラー: %s" % (retries, last_err))
+    return False
 
 
 def generate_one(date):
