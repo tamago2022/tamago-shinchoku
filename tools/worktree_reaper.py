@@ -38,6 +38,13 @@ LOG = os.path.join(REPO, "status", "worktree_reaper.log")
 STAMP = os.path.join(REPO, "status", ".worktree_reaper_at")
 INTERVAL = 1800          # 30分に1回でよい
 MIN_AGE_SEC = 2 * 3600   # 触ってから2時間は残す
+# 2026-09-09（685番・容量調査中にこのセッション自身のworktreeが誤って消された
+# 実例で発覚）：コミットを一切していない新規worktreeは、HEADがTARGET本体の
+# 現在のブランチ先端とビット一致するため「origin/mainに取り込み済み」の
+# 条件も真になってしまい、本体4条件をすり抜けて誤って消される。
+# これから使われる可能性が高い「まっさら」なworktreeは、通常のMIN_AGE_SEC(2h)
+# ではなくこちらの長い保護期間が経つまで消さない。
+FRESH_WORKTREE_MIN_AGE_SEC = 24 * 3600
 
 # 2026-09-07（620番・容量急減の原因調査で発覚）：
 #   並行して走るセッションの多くが `/private/tmp/<名前>` に joy-relief-station の
@@ -144,6 +151,17 @@ def sweep_node_modules(wt_dir, guard):
             % (wt_dir, len(freed), ", ".join(freed[:12])))
 
 
+_TARGET_HEAD_CACHE = {}
+
+
+def target_head():
+    """TARGET本体（joy-relief-station）の現在のブランチ先端SHAを1回だけ取得する。"""
+    if "sha" not in _TARGET_HEAD_CACHE:
+        r = git(["rev-parse", "HEAD"], cwd=TARGET)
+        _TARGET_HEAD_CACHE["sha"] = (r.stdout or "").strip() if (r and r.returncode == 0) else None
+    return _TARGET_HEAD_CACHE["sha"]
+
+
 def sweep_worktrees(wt_dir, guard):
     """本体4条件（走行中でない・2時間以上経過・未コミット無し・origin/mainに取込済み）
     を満たすものだけ `git worktree remove`。幽霊（登録が既に消えている）は別扱い。"""
@@ -187,6 +205,12 @@ def sweep_worktrees(wt_dir, guard):
             kept.append((name, "HEADが読めない"))
             continue
         sha = (head.stdout or "").strip()
+        if sha and sha == target_head() and age < FRESH_WORKTREE_MIN_AGE_SEC:
+            # コミット未着手＝これから使われる可能性が高い新品。もっと長く保護する
+            # （685番：この判定が無いと「本流と同じコミット」＝「取込済み」と
+            # 誤判定され、作業開始直後のworktreeが誤って消されてしまう）。
+            kept.append((name, "コミット未着手・保護期間中"))
+            continue
         merged = git(["merge-base", "--is-ancestor", sha, "origin/main"])
         if merged is None or merged.returncode != 0:
             kept.append((name, "まだ本流に入っていない"))
@@ -305,6 +329,9 @@ def sweep_paths(paths, guard, label):
             kept.append((name, "HEADが読めない"))
             continue
         sha = (head.stdout or "").strip()
+        if sha and sha == target_head() and age < FRESH_WORKTREE_MIN_AGE_SEC:
+            kept.append((name, "コミット未着手・保護期間中"))
+            continue
         merged = git(["merge-base", "--is-ancestor", sha, "origin/main"])
         if merged is None or merged.returncode != 0:
             kept.append((name, "まだ本流に入っていない"))
@@ -401,6 +428,9 @@ def main():
                 kept.append((name, "HEADが読めない"))
                 continue
             sha = (head.stdout or "").strip()
+            if sha and sha == target_head() and age < FRESH_WORKTREE_MIN_AGE_SEC:
+                kept.append((name, "コミット未着手・保護期間中"))
+                continue
             merged = git(["merge-base", "--is-ancestor", sha, "origin/main"])
             if merged is None or merged.returncode != 0:
                 kept.append((name, "まだ本流に入っていない"))
