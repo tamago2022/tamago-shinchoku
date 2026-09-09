@@ -28,6 +28,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 TARGET = "/Users/mac/Desktop/joy-relief-station"
 WT_DIR = os.path.join(TARGET, ".worktrees")
+# 2026-09-09（685番・容量急減の徹底追及で発覚）：`.claude/worktrees`配下に
+# サブエージェント(agent-xxxx等)が作る作業場が89個・実測9.0GB、reaper・
+# disk_guardianどちらの監視対象にも入らず野放しになっていた。
+# `.worktrees`(2026-09-05)→`/private/tmp`(2026-09-07)に続き3件目の同じ穴。
+CLAUDE_WT_DIR = os.path.join(TARGET, ".claude", "worktrees")
 QUEUE = os.path.join(REPO, "status", "queue.json")
 LOG = os.path.join(REPO, "status", "worktree_reaper.log")
 STAMP = os.path.join(REPO, "status", ".worktree_reaper_at")
@@ -226,6 +231,97 @@ def private_tmp_targets():
     return out
 
 
+def git_worktree_paths():
+    """`git worktree list --porcelain`を正本にして、TARGET自身を除く全登録パスを返す。
+    2026-09-09（685番）：決め打ちの置き場所（.worktrees/.claude/worktrees/private/tmp
+    直下）だけを見る方式だと、ネストした深い場所（例：
+    /private/tmp/.../scratchpad/wt-xxx）に作られたworktreeを見落とし続ける。
+    ここを正本にすれば、次に新しい置き場所が増えても自動で拾える。"""
+    r = git(["worktree", "list", "--porcelain"])
+    if r is None or r.returncode != 0:
+        return []
+    paths = []
+    for line in (r.stdout or "").splitlines():
+        if line.startswith("worktree "):
+            p = line[len("worktree "):].strip()
+            if p and os.path.abspath(p) != TARGET:
+                paths.append(p)
+    return paths
+
+
+def sweep_node_modules_paths(paths, guard):
+    """sweep_node_modulesのパス配列版（decide-by-listdirではなくgit worktree list由来）。"""
+    freed = []
+    for path in paths:
+        name = os.path.basename(path)
+        nm = os.path.join(path, "node_modules")
+        if not os.path.isdir(nm):
+            continue
+        if name in guard or any(name.startswith(g + "-") for g in guard):
+            continue
+        try:
+            if time.time() - os.path.getmtime(path) < MIN_AGE_SEC:
+                continue
+        except Exception:
+            continue
+        try:
+            import shutil
+            shutil.rmtree(nm, ignore_errors=True)
+            if not os.path.isdir(nm):
+                freed.append(name)
+        except Exception:
+            pass
+    if freed:
+        log("📦 [git worktree list] node_modules を消しました %d件（bun installで作り直せます）: %s"
+            % (len(freed), ", ".join(freed[:12])))
+
+
+def sweep_paths(paths, guard, label):
+    """sweep_worktreesと同じ本体4条件を、git worktree list由来のパス配列に適用する版。"""
+    removed, kept = [], []
+    for path in paths:
+        name = os.path.basename(path)
+        if not os.path.isdir(path):
+            continue
+        if name in guard or any(name.startswith(g + "-") for g in guard):
+            kept.append((name, "走行中"))
+            continue
+        try:
+            age = time.time() - os.path.getmtime(path)
+        except Exception:
+            continue
+        if age < MIN_AGE_SEC:
+            kept.append((name, "まだ新しい"))
+            continue
+        st = git(["status", "--porcelain"], cwd=path)
+        if st is None or st.returncode != 0:
+            kept.append((name, "状態が読めない"))
+            continue
+        if (st.stdout or "").strip():
+            kept.append((name, "未保存の変更あり"))
+            continue
+        head = git(["rev-parse", "HEAD"], cwd=path)
+        if head is None or head.returncode != 0:
+            kept.append((name, "HEADが読めない"))
+            continue
+        sha = (head.stdout or "").strip()
+        merged = git(["merge-base", "--is-ancestor", sha, "origin/main"])
+        if merged is None or merged.returncode != 0:
+            kept.append((name, "まだ本流に入っていない"))
+            continue
+        r = git(["worktree", "remove", "--force", path])
+        if r is not None and r.returncode == 0:
+            removed.append(name)
+        else:
+            kept.append((name, "removeに失敗"))
+    if removed:
+        git(["worktree", "prune"])
+        log("🧹 [%s] 片づけた作業場 %d件: %s" % (label, len(removed), ", ".join(removed[:10])))
+    if kept:
+        log("[%s] 残した %d件（理由つき）: %s" % (
+            label, len(kept), ", ".join("%s(%s)" % (n, why) for n, why in kept[:8])))
+
+
 def main():
     try:
         if time.time() - os.path.getmtime(STAMP) < INTERVAL:
@@ -246,6 +342,35 @@ def main():
     if os.path.isdir(WT_DIR):
         sweep_node_modules(WT_DIR, guard)
         sweep_worktrees(WT_DIR, guard)
+
+    # 2026-09-09（685番）追加：`.claude/worktrees`配下も同じ4条件で片づける。
+    if os.path.isdir(CLAUDE_WT_DIR):
+        sweep_node_modules(CLAUDE_WT_DIR, guard)
+        sweep_worktrees(CLAUDE_WT_DIR, guard)
+
+    # 2026-09-09（685番）追加：git worktree list --porcelainを正本にして、
+    # 上記の決め打ち3箇所（.worktrees/.claude/worktrees/private-tmp直下）以外に
+    # 作られたworktree（例：/private/tmp配下のネストしたscratchpad）も同じ条件で拾う。
+    # これで次に新しい置き場所が増えても自動対応できる。
+    try:
+        _known_dirs = (os.path.abspath(WT_DIR), os.path.abspath(CLAUDE_WT_DIR))
+
+        def _is_known(p):
+            ap = os.path.abspath(p)
+            for d in _known_dirs:
+                if ap == d or ap.startswith(d + os.sep):
+                    return True
+            if ap.startswith(PRIVATE_TMP + os.sep):
+                rel = os.path.relpath(ap, PRIVATE_TMP)
+                return os.sep not in rel  # PRIVATE_TMP直下だけは既存ループが処理済み
+            return False
+
+        dynamic_paths = [p for p in git_worktree_paths() if not _is_known(p)]
+        if dynamic_paths:
+            sweep_node_modules_paths(dynamic_paths, guard)
+            sweep_paths(dynamic_paths, guard, "git worktree list(新規置き場所)")
+    except Exception as e:
+        log("git worktree list動的スイープ失敗: %s" % e)
 
     # 2026-09-07追加：/private/tmp配下のjoy-relief-station worktreeも同じ4条件で片づける。
     # /private/tmpは実在ディレクトリの集合ではなく個別名の集合なので、専用ループにする。
