@@ -16,6 +16,8 @@ PWAの「リモコン」ボタンから来たコマンドを実行する（2026-
   close_app : 重いアプリを終了（除外リスト＝Brave・Chromeは絶対に実行しない。未保存書類は失敗扱い）
   queue_ok    : 進捗表「たまごさんの確認待ち」で✅OKを押した番号を status/queue.json で done にする
   queue_redo  : 同じくやり直しを押した番号を waiting に戻し、items配列の先頭へ移動する（次に発車の一番手にする）
+                cmd.note があれば「何が直っていなかったか」として what に1行追記する（680番）。
+                ownerRedoCount が3に達したら別アプローチを指示し dispatch_outbox.jsonl / failures.md へ記録する。
   queue_add   : 進捗表の入力欄に書いた1行（+優先度1-5）を status/queue.json の末尾へ waiting として新規追加する
                 （2026-09-04追加。スマホから直接発車待ちへ積めるようにした。これまでDispatch経由でしか積めなかった）
 
@@ -627,10 +629,57 @@ def queue_undo_ok(target):
     return "done", "%d件を確認待ちに戻しました（%s）" % (len(restored), ",".join(str(x) for x in restored))
 
 
-def queue_redo(target):
-    """進捗表「↩︎やり直し」→ status/queue.json の該当番号を waiting に戻し、
-    items配列の先頭へ移す（＝次に発車の一番手。auto_launcher.pyが次サイクルで拾う）。
-    走行の残骸（sessionId/pid/startedAt/finishedAt/result/urls）は消し、新規のwaiting項目と同じ形に戻す。"""
+OWNER_REDO_ESCALATE_AT = 3  # 680番：同じ経路で3回目に達したら別のやり方に切り替える
+
+
+def _append_owner_redo_escalation(it, note, count):
+    """680番：たまごさんの「直ってないよ」指摘での手動やり直しが3回目に達した時、
+    通常の完了報告（n=数値）と混ざらないよう n を文字列 "<番号>-redo3" にして
+    status/dispatch_outbox.jsonl へ1回だけ追記する（676番のcost_confirmと同じパターン）。
+    Dispatchが次の会話で必ず拾い、たまごさんへ「同じ直し方を3回繰り返している」と伝えられるようにする。"""
+    try:
+        row = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+            "n": "%s-redo%d" % (it.get("n"), count),
+            "type": "owner_redo_escalation",
+            "title": it.get("title"),
+            "message": (
+                "🔁%d番「%s」は、たまごさんの「直ってないよ」指摘で%d回目のやり直しです。"
+                "同じ直し方を繰り返している疑いがあるので、次は原因の調べ方・実装方法を変えます。"
+                % (it.get("n"), it.get("title"), count)
+            ),
+            "note": note or "",
+        }
+        with io.open(os.path.join(REPO, "status", "dispatch_outbox.jsonl"), "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+    try:
+        with io.open(os.path.join(REPO, "status", "failures.md"), "a", encoding="utf-8") as f:
+            f.write(
+                "\n\n---\n\n## 680番自動記録：%s番「%s」が同じ経路で%d回やり直しになった\n\n"
+                "- **症状**：たまごさんが会話で「直ってない、やり直して」と指摘し、%d回目のqueue_redoが呼ばれた。\n"
+                "- **今回の指摘**：%s\n"
+                "- **対応**：同じ直し方を4回目は繰り返さない。次のbuilderは原因の調べ方・実装方法を変えること。\n"
+                "- **日付**：%s\n"
+                % (it.get("n"), it.get("title"), count, count, note or "（本文なし）",
+                   time.strftime("%Y-%m-%d"))
+            )
+    except Exception:
+        pass
+
+
+def queue_redo(target, note=None):
+    """進捗表「↩︎やり直し」・会話での「直ってないよ、やり直して」→
+    status/queue.json の該当番号を waiting に戻し、items配列の先頭へ移す
+    （＝次に発車の一番手。auto_launcher.pyが次サイクルで拾う）。
+    走行の残骸（sessionId/pid/startedAt/finishedAt/result/urls）は消し、新規のwaiting項目と同じ形に戻す。
+
+    note: 680番で追加。「何が直っていなかったか」を1行、what の末尾に追記する
+    （次のセッションが同じ間違いを繰り返さないため）。空でもよい（その場合も回数だけは数える）。
+    ownerRedoCount がOWNER_REDO_ESCALATE_AT（3）に達したら、同じ経路を繰り返さず
+    dispatch_outbox.jsonl／failures.md へ記録し、次のwhatに「別アプローチで」を明記する。
+    """
     # 2026-09-04 たまごさん「やり直しも、今すぐやり直せないのか、急ぎのやつもある。
     #   順番待ちの後に並んでいいよ、っていうのもある」
     #   → target は "12"（今まで通り＝先頭）か "12:5"（優先度つき）で受ける。
@@ -648,9 +697,11 @@ def queue_redo(target):
     ns = _split_targets(t)
     if not ns:
         return "failed", "番号が不正: %r" % target
+    note = (note or "").strip()
     q = _load_queue()
     items = q.get("items") or []
     done = []
+    escalated = []
     for n in ns:
         idx = None
         for i, it in enumerate(items):
@@ -664,7 +715,29 @@ def queue_redo(target):
         it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         for k in ("finishedAt", "result", "urls", "sessionId", "pid", "startedAt"):
             it.pop(k, None)
-        if prio:
+        # 680番：手動やり直し（たまごさんの「直ってないよ」指摘）の回数を別カウンタで数える
+        # （auto_launcher.py が使う自動やり直し用の redoCount とは意味が違うため混ぜない）。
+        oc = int(it.get("ownerRedoCount") or 0) + 1
+        it["ownerRedoCount"] = oc
+        ts = time.strftime("%m-%d %H:%M")
+        if note:
+            note_line = "\n\n【たまごさんのやり直し指摘・%d回目・%s】%s" % (oc, ts, note)
+        else:
+            note_line = "\n\n【たまごさんのやり直し指摘・%d回目・%s】まだ直っていないとの指摘です（詳細の言葉は無し）。" % (oc, ts)
+        escalate = oc >= OWNER_REDO_ESCALATE_AT
+        if escalate:
+            note_line += (
+                "\n同じ直し方で%d回やり直しになっています。今回は前回までと同じ手順を繰り返さず、"
+                "原因の調べ方・実装の方法そのものを変えてください。" % oc
+            )
+        it["what"] = (it.get("what") or "") + note_line
+        if escalate:
+            it.pop("priority", None)
+            it["priority"] = 1
+            items.insert(0, it)       # 最優先・列の先頭へ
+            escalated.append(n)
+            _append_owner_redo_escalation(it, note, oc)
+        elif prio:
             it["priority"] = prio
             items.append(it)          # 順番待ちの後ろへ。優先度で拾われる
         else:
@@ -678,6 +751,8 @@ def queue_redo(target):
     if not done:
         return "failed", "queue.jsonに見つかりません: %r" % target
     where = ("P%d で列に戻しました（急がない）" % prio) if prio else "列の先頭（次に発車）へ戻しました"
+    if escalated:
+        where += "・%s番は3回目以上のため別アプローチを指示済み" % ",".join(str(x) for x in escalated)
     if len(done) == 1:
         return "done", "%d番を%s" % (done[0], where)
     return "done", "%d件をまとめて%s（%s）" % (len(done), where, ",".join(str(x) for x in done))
@@ -813,7 +888,7 @@ def _process_queue(action, cmd):
     if action == "queue_undo_ok":
         return queue_undo_ok(target)
     if action == "queue_redo":
-        return queue_redo(target)
+        return queue_redo(target, cmd.get("note"))
     if action == "queue_add":
         return queue_add(target, cmd.get("priority"), cmd.get("label"), cmd.get("origin"))
     if action == "queue_prio":
