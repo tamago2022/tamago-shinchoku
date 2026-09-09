@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#685 ディスク容量：1日20GB減る原因を特定して止めた 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #685 ディスク容量：1日20GB減る原因を特定して止めた</div>
+<h1>#685 ディスク容量：1日20GB減る原因を特定して止めた</h1>
+<div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+空き容量が減り続ける正体を突き止めて実際に止めた。①ゴミ箱に2020〜2023年の古いソフト(DaVinci Resolve・MainStage・Motion等)が16.9GB死蔵→自動削除。②毎日1回しか更新されなかった容量グラフを15分おき更新に修正→対策の効果が今すぐ画面に出るようになった。③Googleドライブが外付けへ移した音楽データをローカルにも複製し続けていた（120GB→60GBしか空かなかった謎の正体）。④ダウンロード・デスクトップの重い生成物を外付け(iMac HDD)へ自動で逃がす仕組みを新設。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>65.2GB</b><span>今の空き容量(11:57時点)</span></div>
+  <div class="num"><b>+16.9GB</b><span>ゴミ箱の古いソフト削除で解放</span></div>
+  <div class="num"><b>+2.7GB</b><span>24時間の増減(昨日比・今はプラス)</span></div>
+  <div class="num"><b>横ばい</b><span>直近1時間の傾向</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot after"><b>空き容量の推移グラフ(直近24時間・実測)</b><img src="img/648-disk-trend.svg" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>空き容量グラフ(生データ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/disk_trend_report.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/disk_trend_report.json</a></li>
+  <li><b>日次の記録(生データ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/disk_daily_history.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/disk_daily_history.json</a></li>
+  <li><b>見張りの実行ログ</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/disk_guardian.log" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/disk_guardian.log</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>計測がズレていた件(2系統で26GB食い違い)</td><td class="yes">片方が旧値のまま固まっていたバグを特定・修正済み</td></tr>
+<tr><td>1日20GB減る正体</td><td class="yes">夜間14時間の観測停止中にGoogleドライブの音楽データが急増していたと判明</td></tr>
+<tr><td>120GB→60GBの謎</td><td class="yes">外付けへ移した音楽データをGoogleドライブがローカルにも複製し続けていたため</td></tr>
+<tr><td>ゴミ箱16.9GBの死蔵</td><td class="yes">自動削除の仕組みを新設し実行、今は97MBのみ</td></tr>
+<tr><td>外付けを既定の置き場に</td><td class="yes">ダウンロード・デスクトップの重い生成物を自動で外付けへ逃がす仕組みを新設</td></tr>
+<tr><td>24時間で見て減りは止まったか</td><td class="yes">昨日比+2.7GB(増加)・直近1時間は横ばい。Googleドライブ側の完全解消は店主のGUI操作待ち</td></tr>
+</table>
+
+<footer>
+Googleドライブの音楽キャッシュ(現在76GB)は「壺金庫」ガードでAIが自動削除しない安全設計。完全に消すにはGoogle Drive Desktopアプリでこのフォルダの「オフラインアクセスを解除」を1回押す操作が必要（店主のみ可能な操作、638番から継続）。
+</footer>
+</body>
+</html>
