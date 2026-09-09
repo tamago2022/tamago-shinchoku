@@ -393,54 +393,76 @@ def build_index_html():
 """ % items_html
 
 
+def _run(args, timeout=None):
+    """失敗しても例外を投げず、returncode/stdout/stderrを常に返す薄いラッパー。
+    fetch/pull等の『ベストエフォート』呼び出しをtry/exceptだらけにしないため。"""
+    try:
+        r = subprocess.run(args, cwd=REPO, capture_output=True, text=True, timeout=timeout)
+        return r.returncode, (r.stdout or ""), (r.stderr or "")
+    except subprocess.TimeoutExpired:
+        return -1, "", "timeout after %ss" % timeout
+    except OSError as e:
+        return -1, "", str(e)
+
+
 def push_repo(date, retries=3, wait_sec=5):
     """このリポジトリは他の自動化プロセスも同時にgit操作するため、
-    index.lock競合等で1回失敗することがある。少し待って最大retries回まで試す。"""
+    index.lock競合・fetchの遅延（実測：このリポジトリはgit statusだけで
+    50秒超かかることがある＝status/failures.mdの既知事象）で1回失敗することがある。
+    fetchはベストエフォート（失敗・タイムアウトしても止めない）にし、
+    『commit済みだがpush前に例外で抜けて未送信のまま残る』状態を毎回チェックして拾う。"""
     import time
 
     last_err = None
     for attempt in range(1, retries + 1):
-        try:
-            subprocess.run(["git", "add", "share/nikki/"], cwd=REPO, check=True,
-                            capture_output=True, text=True)
-            diff = subprocess.run(["git", "diff", "--cached", "--quiet", "--", "share/nikki/"],
-                                   cwd=REPO)
-            if diff.returncode == 0:
-                print("git: 差分なし（コミット省略）")
-                return True
-            commit = subprocess.run(
-                ["git", "commit", "-m", "nikki: %s 業務日誌を自動生成（700番）" % date],
-                cwd=REPO, capture_output=True, text=True,
-            )
-            if commit.returncode != 0:
-                last_err = "commit失敗(試行%d): %s" % (attempt, (commit.stdout + commit.stderr).strip()[:300])
+        # 1) 変更をadd（無ければ何も起きない）
+        rc, out, err = _run(["git", "add", "share/nikki/"])
+        if rc != 0:
+            last_err = "add失敗(試行%d): %s" % (attempt, (out + err).strip()[:300])
+            print(last_err)
+            time.sleep(wait_sec)
+            continue
+
+        # 2) まだコミットしていない差分があればコミット
+        diff_rc, _, _ = _run(["git", "diff", "--cached", "--quiet", "--", "share/nikki/"])
+        if diff_rc != 0:  # 差分あり
+            rc, out, err = _run(["git", "commit", "-m", "nikki: %s 業務日誌を自動生成（700番）" % date])
+            if rc != 0:
+                last_err = "commit失敗(試行%d): %s" % (attempt, (out + err).strip()[:300])
                 print(last_err)
                 time.sleep(wait_sec)
                 continue
-            # push前に最新を取り込み、他プロセスの先行pushと衝突しないようにする
-            subprocess.run(["git", "fetch", "origin", "main"], cwd=REPO, capture_output=True, text=True, timeout=30)
-            push = subprocess.run(["git", "push", "origin", "main"], cwd=REPO, capture_output=True, text=True)
-            if push.returncode == 0:
-                print("git push 成功")
-                return True
-            # 追従が必要な場合（他プロセスが先にpush済み）は rebase して再試行
-            subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=REPO,
-                            capture_output=True, text=True, timeout=60)
-            push2 = subprocess.run(["git", "push", "origin", "main"], cwd=REPO, capture_output=True, text=True)
-            if push2.returncode == 0:
-                print("git push 成功（rebase後）")
-                return True
-            last_err = "push失敗(試行%d): %s" % (attempt, push2.stderr.strip()[:300])
-            print(last_err)
-            time.sleep(wait_sec)
-        except subprocess.CalledProcessError as e:
-            last_err = "git操作失敗(試行%d): %s" % (attempt, e)
-            print(last_err)
-            time.sleep(wait_sec)
-        except subprocess.TimeoutExpired as e:
-            last_err = "git操作タイムアウト(試行%d): %s" % (attempt, e)
-            print(last_err)
-            time.sleep(wait_sec)
+
+        # 3) ここまで来たら「working treeの差分は無い」はず。
+        #    ただし前回の試行でcommitだけ成功しpushに届かなかった可能性があるので、
+        #    差分の有無に関わらず「未pushコミットがあるか」を必ず確認する。
+        ahead_rc, ahead_out, _ = _run(["git", "rev-list", "--count", "origin/main..HEAD"])
+        ahead = ahead_out.strip()
+        if ahead_rc != 0 or ahead in ("", "0"):
+            print("git: pushすべき新規コミットなし（差分なし、または前回の試行で既に反映済み）")
+            return True
+
+        # 4) fetchはベストエフォート（失敗・タイムアウトしても致命傷にしない）
+        f_rc, _, f_err = _run(["git", "fetch", "origin", "main"], timeout=45)
+        if f_rc != 0:
+            print("git fetch 失敗/タイムアウト(試行%d・続行): %s" % (attempt, f_err.strip()[:200]))
+
+        rc, out, err = _run(["git", "push", "origin", "main"])
+        if rc == 0:
+            print("git push 成功")
+            return True
+
+        # 5) 追従が必要な場合（他プロセスが先にpush済み）は rebase して再試行
+        _run(["git", "pull", "--rebase", "origin", "main"], timeout=60)
+        rc2, out2, err2 = _run(["git", "push", "origin", "main"])
+        if rc2 == 0:
+            print("git push 成功（rebase後）")
+            return True
+
+        last_err = "push失敗(試行%d): %s" % (attempt, (err + err2).strip()[:300])
+        print(last_err)
+        time.sleep(wait_sec)
+
     print("git操作: %d回試して失敗。次回の定時実行で再試行される想定。最終エラー: %s" % (retries, last_err))
     return False
 
