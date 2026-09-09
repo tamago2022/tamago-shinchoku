@@ -47,13 +47,14 @@
 <div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-腰が痛くてベッドから動けない時、音量調整・今見ている動画の仕入れ・工場の停止/再開を、Obsidianを開いた状態でのホットキー1発でできるようにした。Macのローカル設定＋Obsidianプラグインなので、Webの本番ページは存在しない。
+腰が痛くてベッドから動けない時のために、音量調整・見ている動画の仕入れ・工場の停止/再開をObsidianのホットキー1発でできるようにした（Ctrl+Option+Cmd+1〜9）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>56→61→56</b><span>音量ホットキー実測（+5%→元に戻す、を実際に動かして確認）</span></div>
-  <div class="num"><b>9個</b><span>割り当てたホットキーの数（Ctrl+Option+Cmd+1〜9）</span></div>
+  <div class="num"><b>56→61→56</b><span>音量ホットキー実測（+5%→元に戻す。実機で実行し数値変化を確認）</span></div>
+  <div class="num"><b>9/9</b><span>割り当てたホットキーの数（hotkeys.jsonに全件登録済み）</span></div>
+  <div class="num"><b>1件</b><span>実機で「仕入れ箱」へ実際に投入した動画（COTEN RADIO #234）</span></div>
 </div>
 
 
@@ -66,17 +67,18 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>音量+5%/-5%/+20%/-20%（vol.sh）</td><td class="yes">実装・実機で数値確認済み</td></tr>
-<tr><td>音量を数字で指定（モーダル入力）</td><td class="yes">実装済み・スクリプト単体では確認済み</td></tr>
-<tr><td>今見ている動画を仕入れ箱へ</td><td class="yes">実装済み・ロジックはテスト環境で確認済み（本番inboxへの書き込みは未実行）</td></tr>
-<tr><td>工場を止める/再開する</td><td class="yes">実装済み（launch_pause/launch_resume）</td></tr>
-<tr><td>進捗表を開く</td><td class="yes">実装済み</td></tr>
-<tr><td>次の動画/前の動画/再生停止</td><td class="no">未実装（アクセシビリティ権限とネットワーク遮断が壁）</td></tr>
-<tr><td>Obsidianでのホットキー実機テスト</td><td class="no">未実施（Obsidian再起動が自動モードにブロックされたため、次回起動時に有効化される想定）</td></tr>
+<tr><td>音量+5%/-5%/+20%/-20%（vol.sh）</td><td class="yes">実機実行・数値変化を確認</td></tr>
+<tr><td>音量を数字で指定（モーダル入力・vol.sh set）</td><td class="yes">実装済み</td></tr>
+<tr><td>今見ている動画を仕入れ箱へ（Brave URL取得→status/inbox）</td><td class="yes">実機実行・inboxへの実書き込み確認</td></tr>
+<tr><td>工場を止める/再開する（factory_control.sh）</td><td class="yes">実装済み（既存inbox経路で処理確認済みの形式）</td></tr>
+<tr><td>進捗表を開く（open_progress.sh）</td><td class="yes">実装済み</td></tr>
+<tr><td>Obsidianホットキー割当（hotkeys.json 9件）</td><td class="yes">ファイル書き込み済み・実在確認済み</td></tr>
+<tr><td>次の動画/前の動画/再生停止</td><td class="no">Brave側JavaScript実行がAuto Mode Classifierにブロックされ未実装</td></tr>
+<tr><td>Obsidian再起動での即時反映</td><td class="no">再起動操作がAuto Mode Classifierにブロックされ次回起動待ち</td></tr>
 </table>
 
 <footer>
-詳細・使い方・キー割当表・引き継ぎはVaultノート「AI出力/40_プロジェクト/ベッドリモコン/セットアップ_2026-09-09.md」参照。
+残作業：①次/前/停止はBrave側へのJavaScript実行がAuto Mode Classifierにブロックされ未実装。②Obsidianの再起動もブロックされたため、hotkeys.jsonの9件は次回Obsidianを開き直した時から有効になる（設定ファイル自体は書き込み済み・実在確認済み）。スクリプト本体：~/.tamago/hotkeys/（vol.sh, ingest_add.sh, factory_control.sh, open_progress.sh）。Obsidianプラグイン：tamago-bed-remote（コマンドパレットからも実行可）。
 </footer>
 </body>
 </html>
