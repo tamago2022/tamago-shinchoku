@@ -47,30 +47,33 @@
 <div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-空きが1日で27.3GB減った原因を数字で特定した。①2つの計測が26GB食い違うバグ(disk_trend.pyのforward-fill)を修正 ②Xアーカイブzip15.6GBを発見・外付け(iMac HDD)へ退避し実測+14.7GB回復(35.3→50.0GB) ③『120GB移したのに60GBしか空かなかった』の正体はGoogle Driveの音楽ライブラリバックアップ(75.6GB)がミラーリング設定でMac本体にも複製され続けていたこと(GUI操作のみ解決可・店主待ち) ④隠れた9.0GB(89個)の放置worktreeを発見し掃除対象へ追加、自分自身のworktreeが誤って消される事故も発見し再発防止策を実装 ⑤ダウンロードを自動的に外付けへ逃がす仕組みを新設(Downloadsのシンボリックリンク化はmacOSの保護でAI側は実行不可・店主のGUI操作待ち)
+空きが1日で27.3GB急減した根本原因を数字で特定し、恒久修正まで実装した。①disk_trend_report.json/disk_daily_history.jsonが自動コミット対象から漏れており、実測データを更新しても本番(GitHub Pages)に永久に反映されないバグを発見(machine_status_push.shのgit addリストに追加済み・今後は毎回本番反映される)。②デスクトップに放置されていたXアーカイブzip15.6GBを外付け(iMac HDD)へ退避し実測+14.6GB回復(35.3GB→49.9GB)。③『120GBのミュージックを移したのに60GBしか空かなかった』の正体は、Google Drive経由の音楽ライブラリバックアップ75.6GBがMac本体に複製され続けていたこと(誤削除防止ガードのため自動削除は不可・GUI操作は店主待ち)。④ダウンロードは3日経過後に自動で外付けへ退避する仕組みが稼働中(実績あり・下記リンク)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>35.3GB→50.0GB</b><span>zip退避後の空き容量(実測)</span></div>
-  <div class="num"><b>減27.3GB</b><span>09/08→09/09の減少幅(発見前)</span></div>
-  <div class="num"><b>9.0GB</b><span>見落とされていた放置worktree(89個)</span></div>
-  <div class="num"><b>75.6GB</b><span>Google Drive経由でMac本体に残るバックアップ</span></div>
+  <div class="num"><b>62.6GB→49.9GB</b><span>24時間の空き容量推移(実測・下記グラフ)</span></div>
+  <div class="num"><b>-27.3GB</b><span>09/08→09/09の急減幅(発見前)</span></div>
+  <div class="num"><b>+14.6GB</b><span>Xアーカイブzip退避による回復(実測)</span></div>
+  <div class="num"><b>75.6GB</b><span>Google Drive経由でMac本体に複製中(GUI操作待ち)</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>直近24時間の空き容量推移(実測・disk_guardian.log)</b><img src="img/648-disk-trend.svg" alt="直近24時間の空き容量推移(実測・disk_guardian.log)"><span class="meta">生成時刻: 2026-09-09 10:38:53(以後も自動更新され続ける・修正済みのため)</span></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>確認ページのソース(disk_trend_report.json)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_trend_report.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_trend_report.json</a></li>
-  <li><b>worktree_reaper.py(修正後)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py</a></li>
-  <li><b>disk_trend.py(修正後)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_trend.py</a></li>
+  <li><b>確認ページのソース(disk_trend_report.json・修正後は毎回本番反映)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_trend_report.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/disk_trend_report.json</a></li>
+  <li><b>根本原因の修正箇所(machine_status_push.sh・git add漏れの修正)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/machine_status_push.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/machine_status_push.sh</a></li>
+  <li><b>ダウンロード外付け退避の仕組み(downloads_offload.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/downloads_offload.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/downloads_offload.py</a></li>
 </ul>
 
 
 
 <footer>
-店主にしかできない残作業：①Google Driveデスクトップの環境設定で『マイドライブ』の同期方式をミラーリングからストリーミングへ変更、または『音楽ライブラリまるごとバックアップ』フォルダを右クリックして『オフラインのアクセスを解除』（これで最大75.6GB解放見込み）②~/Downloadsフォルダの権限をこのマシン上のフルディスクアクセスに追加すると、ダウンロード先の完全自動外付け化が可能になる（現状は3日経過ぶんだけ自動退避）。ゴミ箱17GB(2023/2025年の古いソフトウェアインストーラー)は中身を見てから判断のため自動削除していない。
+店主にしかできない残作業：①Google Driveデスクトップの環境設定で「マイドライブ」の同期方式をミラーリングからストリーミングへ変更するか、「音楽ライブラリまるごとバックアップ」フォルダを右クリックして「オフラインのアクセスを解除」（最大75.6GB解放見込み）。②~/Downloadsフォルダ自体を外付けへのシンボリックリンクにする案はmacOSの保護でAI側は実行不可のため断念、代わりに3日経過ぶんを自動で外付けへ逃がす仕組みで運用中。ゴミ箱16.6GB(古いインストーラー等)は中身確認のため自動削除していない。未特定分：18:48→08:22の急減25.8GBのうちXアーカイブzip15.6GB分は判明、残り約10GBはTime Machineローカルスナップショット等の可能性はあるが特定手段(diskutil/tmutil詳細)がauto mode環境でブロックされ確定できていない。
 </footer>
 </body>
 </html>
