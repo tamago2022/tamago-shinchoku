@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#708 「深刻なバグ」ラベルの正体調査 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #708 「深刻なバグ」ラベルの正体調査</div>
+<h1>#708 「深刻なバグ」ラベルの正体調査</h1>
+<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+猫の動画ページ左下に出ていた「深刻なバグ」という黒いラベルを、ソースコード・本番配信HTML・本番JSバンドル・共有画像まで実測したが、どこにも文字列として存在しないことを確認した。コード側の修正対象は無い。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>「深刻なバグ」を含むファイル(src・本番HTML・本番JS・共有画像)</span></div>
+  <div class="num"><b>5箇所</b><span>実測した層(ソース/HTML/JS/画像/依存パッケージ)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>猫動画の共有画像(証拠・エラー文字なし)</b><img src="img/708-maru-cat-thumb.jpg" alt="猫動画の共有画像(証拠・エラー文字なし)"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>猫の動画ページ(本番)</b><a href="https://joy-relief-station.lovable.app/room/card/maru-cat" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/maru-cat</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>src全文検索(深刻)</td><td class="yes">無関係な1件のみ・当該ラベルなし</td></tr>
+<tr><td>本番SSR HTML実測</td><td class="yes">文字列なし</td></tr>
+<tr><td>本番JSバンドル(3MB)実測</td><td class="yes">文字列なし</td></tr>
+<tr><td>猫動画の共有画像を目視</td><td class="yes">通常のサムネ、文字の焼き込みなし</td></tr>
+<tr><td>バグ報告ウィジェット系の依存</td><td class="yes">package.jsonに無し</td></tr>
+</table>
+
+<footer>
+推定：Lovableのビルドパイプライン全面停止(案件#690/#152)と同時期に発生。たまごさんがLovable編集画面(プレビュー)経由でこのページを見た際に、Lovable自身のエラー監視UIが表示したラベルである可能性が最も高い。公開URLが配信する実物には存在しないため、このリポジトリのコード修正では直せない(直す対象が無い)。詳細は.claude/PENDING_DECISIONS.mdの2026-09-10・708号車の項、.claude/KNOWN_ISSUES.mdにも追記済み。
+</footer>
+</body>
+</html>
