@@ -69,9 +69,18 @@ def parse_log(path=LOG_PATH):
     return entries
 
 
+# 2026-09-09（685番・「61.2GBで横ばい」と実測35.3GBが26GB食い違っていた件の原因）：
+# 旧実装は「実測が無い時間はNoneのまま欠測」とコメントしながら、実際には
+# 直前の実測値をそのまま埋める(forward-fill)コードになっていた。disk_guardianが
+# 一晩(14時間)止まっていた区間がまるごと旧値で埋まり、「横ばい・止まっている」と
+# 誤判定していた。実測とスロット時刻の差がこの閾値を超えたら、素直にNone(欠測)にする。
+STALE_GAP_HOURS = 1.5  # 実行間隔900秒(15分)の6倍の余裕
+
+
 def hourly_series(entries, hours=24, end=None):
     """直近hours時間を1時間刻みでリサンプルする。各時刻スロットには、その時刻
-    以前で最も近い実測値を採用する（実測が無い時間帯はNoneのまま欠測にする）。"""
+    以前で最も近い実測値を採用する。ただしその実測からSTALE_GAP_HOURS以上
+    離れている（＝実測が長時間途切れていた）場合はNoneのまま欠測扱いにする。"""
     if end is None:
         end = datetime.datetime.now()
     start = end - datetime.timedelta(hours=hours)
@@ -80,11 +89,16 @@ def hourly_series(entries, hours=24, end=None):
     idx = 0
     n = len(entries)
     last_val = None
+    last_dt = None
     while t <= end:
         while idx < n and entries[idx][0] <= t:
             last_val = entries[idx][1]
+            last_dt = entries[idx][0]
             idx += 1
-        slots.append((t, last_val))
+        if last_dt is not None and (t - last_dt).total_seconds() > STALE_GAP_HOURS * 3600:
+            slots.append((t, None))
+        else:
+            slots.append((t, last_val))
         t += datetime.timedelta(hours=1)
     return slots
 
@@ -152,6 +166,24 @@ def _load_json(path, default=None):
         return default if default is not None else {}
 
 
+def find_measurement_gap_hours(t1, t2, path=LOG_PATH):
+    """t1〜t2の間で、実測(空きGB)ログが最大何時間途切れていたかを返す。
+    2026-09-09（685番）：18:48→翌08:41の14時間、disk_guardianの記録がまるごと
+    無かった（Macがスリープ等）。「特定できず」で終わらせず、少なくとも
+    「観測できていない時間帯があった」ことを報告に出す。"""
+    entries = parse_log(path)
+    in_range = [e[0] for e in entries if t1 <= e[0] <= t2]
+    # 区間の両端(t1・t2)も境界として含める。末尾（t2直前で記録が途切れて
+    # いたケース＝今回の実例）を見落とすと、大きな空白があるのに0時間台の
+    # 結果を返してしまうバグになる（685番で実測して発見・修正）。
+    bounds = [t1] + in_range + [t2]
+    max_gap = 0.0
+    for i in range(1, len(bounds)):
+        gap = (bounds[i] - bounds[i - 1]).total_seconds() / 3600
+        max_gap = max(max_gap, gap)
+    return round(max_gap, 1)
+
+
 def daily_line():
     """『昨日：67GB→◯GB（増減◯GB）。原因：◯◯』の1行、または『変化なし』を返す。"""
     hist = _load_json(DAILY_HISTORY_JSON, {"days": []})
@@ -168,9 +200,16 @@ def daily_line():
         except Exception:
             t1 = t2 = None
         nums = []
+        gap_hours = 0.0
         if t1 and t2:
             nums, _ = find_culprits(t1, t2)
-        cause = "・".join(nums) if nums else "特定できず(history.jsonlに手がかり無し)"
+            gap_hours = find_measurement_gap_hours(t1, t2)
+        hints = []
+        if nums:
+            hints.append("・".join(nums))
+        if gap_hours >= STALE_GAP_HOURS:
+            hints.append("実測に%.1fh空白あり(スリープ等で見えていない時間帯。手動でduの増分確認を)" % gap_hours)
+        cause = "・".join(hints) if hints else "特定できず(history.jsonlに手がかり無し)"
         return "昨日：%.1fGB→%.1fGB（増減-%.1fGB）。原因：%s" % (
             prev["free_gb"], cur["free_gb"], delta, cause)
     elif delta < -0.01:
