@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-09 16:47",
+ "updatedAt": "2026-09-09 14:03",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -527,18 +527,22 @@
    "n": 1,
    "title": "シェアしても画像が出ない",
    "why": "SNSに貼ったときサムネが出ない",
-   "what": "ページのリンクをSNSやLINEに貼ると、ふつうは記事のサムネイル画像が一緒に出ます。それが出ていません。画像が出ないと、貼っても誰も押しません。ページの種類（曲・棚・アーティスト・特集・トップ）ごとに、画像を指定するタグが正しく出ているかを1つずつ確認して直します。\n\n【来ない通知を待って終わっていました・1回目・09-09 16:46】\n前回このタスクは「待ちます。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。",
-   "status": "hold",
+   "what": "ページのリンクをSNSやLINEに貼ると、ふつうは記事のサムネイル画像が一緒に出ます。それが出ていません。画像が出ないと、貼っても誰も押しません。ページの種類（曲・棚・アーティスト・特集・トップ）ごとに、画像を指定するタグが正しく出ているかを1つずつ確認して直します。",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q01-0904",
+   "startedAt": "2026-09-09T14:00:45+09:00",
+   "sessionId": "dcbaa72d-17a0-4f5b-a298-f88f98fbbba9",
+   "finishedAt": "2026-09-04T15:58:17+09:00",
+   "result": "Status: Fix implemented and merged to main (commit `ed8f1157`, includes the 4-file OGP fix `17af52dc` + TASK_BOARD record). Now running `scripts/patrol/lovable-publish.mjs` in the background to push the change live — will confirm the production URL once it completes and report back.",
+   "urls": [],
    "holdNote": "画像が出るページと出ないページがある。出ないページに出くわしたときに、そのURLで確認する。それまで聞かない。",
    "origin": "factory",
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "order": 22,
-   "bgWaitCount": 1,
-   "priority": 2
+   "pid": 12434
   },
   {
    "n": 2,
@@ -570,17 +574,26 @@
    "title": "驚の部屋・美の部屋を「音楽の扉」と同じ形にする",
    "why": "棚が縦にバーッと出ていて見づらい",
    "what": "音楽の扉では、棚が横一列に並んでいて、押すと一覧でサムネイルが出ます。驚の部屋と美の部屋はその形になっておらず、全部が縦に並んで出てしまっています。音楽の扉に合わせます。新しく作るのではなく、既にある形に寄せます。\n\n【668番・差し戻し】queue.jsonのurls欄が空で確認ページも見つからず、result欄が「検品結果の通知を待っています。」というプレースホルダーのままdoneになっていました。仕事が終わった証拠が無いため、正直にwaitingへ戻します。",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q04-0904",
-   "result": "検品結果の通知を待っています。",
-   "urls": [],
+   "result": "【完了】驚の部屋は音楽の扉と同じ形式で本番稼働していることを実測確認しました\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/4-wonder-beauty-music-door-format.html\n本番: https://joy-relief-station.lovable.app/hidden/wonder\n（美の部屋 https://joy-relief-station.lovable.app/hidden/beauty は同じ実装ですが棚データが0件のため見た目確認は棚データ投入後）",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/4-wonder-beauty-music-door-format.html",
+    "https://joy-relief-station.lovable.app/hidden/wonder"
+   ],
    "origin": "factory",
    "redoCount": 1,
-   "startedAt": "2026-09-09T16:47:38+09:00",
-   "sessionId": "92bb817b-1c60-4e29-a875-507402796440",
-   "pid": 75272
+   "aiVerifyFailCount": 1,
+   "priority": 2,
+   "cutCount": 1,
+   "cutAt": "2026-09-09T15:53:56+0900",
+   "bgWaitCount": 1,
+   "startedAt": "2026-09-09T16:28:56+09:00",
+   "sessionId": "82813f88-ec77-4e6d-99c7-b5f476700d2e",
+   "pid": 68270,
+   "finishedAt": "2026-09-09T16:55:00+09:00"
   },
   {
    "n": 5,
@@ -609,12 +622,12 @@
    "title": "外部から入れた曲の「曲名とアーティスト」を自動で埋める",
    "why": "URLを貼っただけだと曲名もアーティストも空のまま",
    "what": "X（旧Twitter）などからURLを貼って取り込むと、曲名やアーティスト名が入らないことがあります（例：92° / Vulfmon & Tommy de Bourbon が入らなかった）。1日1回、その日入ったものを見回って、動画の説明欄や音楽データベースから曲名とアーティストを調べて埋めます。Shazamがやることを、あとから機械にやらせるイメージです。裏が取れないものは埋めずに残します。",
-   "status": "running",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q06-0904",
-   "startedAt": "2026-09-09T16:47:20+09:00",
-   "sessionId": "396459a6-03c9-41e7-9122-34a4dda1c2c3",
+   "startedAt": "2026-09-04T15:14:00+09:00",
+   "sessionId": "bc793909-39ca-480f-a9d0-027f3b390315",
    "finishedAt": "2026-09-04T15:58:17+09:00",
    "result": "バックグラウンドのlintコマンドの完了を待ちます。",
    "urls": [],
@@ -622,8 +635,7 @@
    "origin": "factory",
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
-   "order": 23,
-   "pid": 75134
+   "order": 23
   },
   {
    "n": 7,
@@ -773,7 +785,7 @@
    "title": "YouTube APIで動画を差し替えられるようにする",
    "why": "急いでいない。実装はもう入っている",
    "what": "棚の動画を、スマホから検索して差し替えられる機能です。コードは既に本番に入っていて、APIキーを通すところだけ残っています。たまごさんから「本当に急いでいない」との指定あり。\n\n【668番・差し戻し】queue.jsonのurls欄が空で確認ページも見つからず、result欄が「（結果が読み取れませんでした）」というプレースホルダーのままdoneになっていました。仕事が終わった証拠が無いため、正直にwaitingへ戻します。",
-   "status": "running",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q17-0904",
@@ -781,10 +793,7 @@
    "urls": [],
    "checkNote": "たまごさん確認：動くようになった。80点。位置の直しは別タスクへ分離。",
    "origin": "factory",
-   "redoCount": 1,
-   "startedAt": "2026-09-09T16:47:44+09:00",
-   "sessionId": "f8c28005-88ca-4700-82e3-b37513e77603",
-   "pid": 75328
+   "redoCount": 1
   },
   {
    "title": "イパネマの高校生カバーをやり直す（動画が貼られていない）",
@@ -7761,7 +7770,7 @@
    "title": "🎥仕入:(1769) 資本主義の経済学史　〜現代人が知っ",
    "why": "スマホから追加",
    "what": "動画URL: https://www.youtube.com/watch?v=qBHnSEOZgGs&list=PLrfQXlteYeH7y1yeuWGbAGb3zOQpSp-tc&index=2 （(1769) 資本主義の経済学史　〜現代人が知っておくべきレジェンド学者たちの持論！〜【COTEN RADIO #234 】 - YouTube）をベッドから仕入れ登録依頼。存在確認・同定・棚判断まで仕入れフローに従って進めてください。\n\n【自動やり直し・09-09 13:36】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "verifying",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -7771,32 +7780,21 @@
    "redoCount": 1,
    "startedAt": "2026-09-09T13:36:58+09:00",
    "sessionId": "80144a9a-cd0b-4db0-95ac-92040dceeb02",
-   "finishedAt": "2026-09-09T16:46:58+09:00",
-   "result": "【完了】COTEN RADIO「資本主義の経済学史」を新規仕入れ・本番反映\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/694-coten-radio-234.html\n本番: https://joy-relief-station.lovable.app/cover-guide?artist=coten-radio&song=coten-radio-234-shihonshugi-keizaigakushi",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/694-coten-radio-234.html",
-    "https://joy-relief-station.lovable.app/cover-guide?artist=coten-radio&song=coten-radio-234-shihonshugi-keizaigakushi"
-   ],
-   "verifyPid": 74953,
-   "verifySessionId": "cd16d350-4150-4d71-866e-e575927915e0",
-   "verifyLog": "/Users/mac/Desktop/tamago-shinchoku/status/verify-cd16d350.log",
-   "verifyStartedAt": "2026-09-09T16:46:59+09:00",
-   "verifyUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/694-coten-radio-234.html"
+   "pid": 3775
   },
   {
    "n": 695,
    "title": "🎥仕入:(1769) ポスト資本主義　ー現代人が彩る新た",
    "why": "スマホから追加",
-   "what": "動画URL: https://www.youtube.com/watch?v=4Y3175Zv_B8&list=PLrfQXlteYeH7y1yeuWGbAGb3zOQpSp-tc&index=3 （(1769) ポスト資本主義　ー現代人が彩る新たな社会のグラデーションー【COTEN RADIO #235 】 - YouTube）をベッドから仕入れ登録依頼。存在確認・同定・棚判断まで仕入れフローに従って進めてください。\n\n【来ない通知を待って終わっていました・1回目・09-09 16:46】\n前回このタスクは「バックグラウンドのtscタスク完了通知を待ちます。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。",
+   "what": "動画URL: https://www.youtube.com/watch?v=4Y3175Zv_B8&list=PLrfQXlteYeH7y1yeuWGbAGb3zOQpSp-tc&index=3 （(1769) ポスト資本主義　ー現代人が彩る新たな社会のグラデーションー【COTEN RADIO #235 】 - YouTube）をベッドから仕入れ登録依頼。存在確認・同定・棚判断まで仕入れフローに従って進めてください。",
    "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 3,
-   "bgWaitCount": 1,
-   "startedAt": "2026-09-09T16:47:11+09:00",
-   "sessionId": "d43d4d2a-1d15-479b-8279-75dd6c1facd1",
-   "pid": 75049
+   "startedAt": "2026-09-09T13:51:36+09:00",
+   "sessionId": "9077a694-f6ad-49a3-a576-93275c726a86",
+   "pid": 10244
   }
  ]
 }
