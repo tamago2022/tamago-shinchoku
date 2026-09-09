@@ -234,3 +234,16 @@
 - **二度と起こさないための仕掛け**：新しくSKILL.mdを作成・改訂した担当は、`grep -rl "<スキル名>"`で他のprompt_rules/失敗台帳に「実在しない」等の古い前提が残っていないか確認する運用を上記の役割分担ドキュメントに明記した。合わせて、queue.json運用・進捗表の見方が`README.md`にしか無く新規セッションに伝わっていなかった欠落も発見し、`tools/prompt_rules/topic-dispatch-queue-ops.md`を新設して埋めた。
 - **日付**：2026-09-10（701番）
 - **根拠**：`tools/prompt_rules/always-01-ai-shain-oni-kantoku.md`（本日の差分）、`skills-plugin/.../skills/oni-kantoku/SKILL.md`（実在確認）、`tools/prompt_rules/topic-dispatch-queue-ops.md`（新設）、`tools/prompt_rules/INDEX.json`（topics追加）
+
+---
+
+## 22. Chromeが最小化されているとclaude-in-chrome拡張のタブグループが壊れる→生のCDPで既存プロセスに相乗りすれば回避できる
+
+- **症状**：704番で、Chromeが最小化（Dockに下げた状態）のとき、`tabs_context_mcp{createIfEmpty:true}`でタブIDは返るのに、直後の`navigate`が「このセッションのタブグループに無い」で弾かれる不具合が2連続で発生した（2026-09-09 20:20）。たまごさんからは「ブラウザが画面中央にバーンと出てくるのが邪魔、裏で走ってほしい」という明確な指示があった。
+- **原因**：claude-in-chrome拡張は**Chrome拡張機能のUI層（chrome.tabGroups等）を経由**しており、ウィンドウが最小化されるとブラウザ側がそのUI状態を保持しなくなる（＝タブグループごと消える）。一方、`playwright-core`の`chromium.connectOverCDP()`が使う**生のCDP（Chrome DevTools Protocol、デバッグポート経由のJSON-RPC）はウィンドウの表示状態と無関係に動く**別経路であることを実機で確認した。
+- **直し方（実機検証済み・703実測）**：既存の「Lovable公開専用Chrome」（`~/.tamago/chrome-publish`・CDP 9223・`com.tamago.joy-relief-station.lovable-publish`のlaunchdが常時立ち上げている）に**新しいタブを1本だけ足して**使う。手順は683番が先に踏んでおり（Anthropicからの返信メールを既存プロセスへの相乗りタブで読んだ）、今回それを再現可能な汎用スクリプトへ確定した：`~/.tamago/browser_peek.mjs`。
+  実測の証拠：`Browser.setWindowBounds`で明示的に`windowState:"minimized"`にした状態でも新規タブの作成・`goto()`・`title()`取得（Gmail受信トレイの件名まで正常取得）が成功し、操作前後で`Browser.getWindowForTarget`の`bounds`（left/top/width/height/windowState）が**完全一致**（=ウィンドウの位置・状態を一切動かさずに済む）ことを確認した。使い終えたタブは`page.close()`で必ず閉じ、既存タブ（Lovableエディタ）は最後まで1件のまま無傷だった。
+  なお`osascript`経由の`System Events`はこの無人セッションでは「補助アクセスは許可されません(-25211)」で使えないため、ウィンドウ状態の確認・制御は**最初からCDPだけで完結させる**のが唯一の実用経路（Accessibility権限の許可ダイアログを誰も押せない無人環境で機能する）。
+- **二度と起こさないための仕掛け**：ブラウザで何かを「裏で」確認したいタスクは、claude-in-chrome拡張ではなく`node ~/.tamago/browser_peek.mjs --url "<URL>" --title --screenshot /tmp/x.png --check-window-state`を使う運用に統一する（スクリプトのdocコメントに要点を記載済み）。新しいChromeプロセスは絶対に起動しない・既存タブには触らない・`bringToFront()`やOSの`activate`は呼ばない、の3点をスクリプト自身が保証する。
+- **日付**：2026-09-10（704番）
+- **根拠**：`~/.tamago/browser_peek.mjs`全文、実行ログ（`Browser.getWindowForTarget`の前後一致・`windowState:"minimized"`下での`goto`成功）、683番の先行事例（`share/check/683-mic-issue-and-anthropic-mail.html`footer）
