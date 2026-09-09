@@ -196,6 +196,16 @@ def main():
     else:
         state = "ok"
 
+    # 2026-09-09（689番）「クレジットが超余ってるのに1本しか回ってない」「丸1日以上動いて週0%はおかしい」
+    #   → allPct=0 をそのまま信じない。quota.json の estimated（実測が読めたか）と
+    #     allPctAgeMin（本物のサンプルが何分前か）を pace.json 側にも渡し、
+    #     PWA が「0%」を鵜呑みにせず「取れていない」灰色表示へ切り替えられるようにする。
+    #   suspectZero：週が始まって6時間以上経っているのに0%＝取得が壊れている疑いが濃厚
+    days_used_h = days_used * 24
+    suspect_zero = bool(all_pct == 0 and days_used_h > 6)
+    data_ok = (q.get("estimated") is False) and (
+        q.get("allPctAgeMin") is None or q.get("allPctAgeMin") <= 90)
+
     d = {
         "updatedAt": now.strftime("%Y-%m-%d %H:%M"),
         "allPct": all_pct,
@@ -208,7 +218,12 @@ def main():
         "lineTarget": line_target,
         "overLine": over,
         "state": state,
-        "note": "火曜18:00リセット。7日で99%に着地するのが理想。今日の予算＝残り÷残り日数（遅れも使いすぎも引きずらない）",
+        "estimated": q.get("estimated"),
+        "allPctAgeMin": q.get("allPctAgeMin"),
+        "allPctAsOf": q.get("allPctAsOf"),
+        "dataOk": data_ok,
+        "suspectZero": suspect_zero,
+        "note": "火曜18:00リセット。7日で99%に着地するのが理想＝1日目安13〜14%。今日の予算＝残り÷残り日数（遅れも使いすぎも引きずらない）。超えたら赤。",
     }
     try:
         d = manage_fuel(d, q)
