@@ -223,3 +223,14 @@
 - **二度と起こさないための仕掛け**：`renderQueue()`のように巨大な関数の中にある定数・小関数を、後から別のグローバル関数が使い回したくなった時は、**先にその定数の定義場所（ローカルかグローバルか）を`grep -n "const XXX"`で確認してから**参照する。同じ名前でローカル/グローバルの二重定義があると、片方を消し忘れて紛らわしくなるので、移動時は必ず元のローカル定義を削除してから構文チェック（`node --check`）とヘッドレスChromeでの実機確認の両方を通す。
 - **日付**：2026-09-09（682番）
 - **根拠**：`index.html`の`PRIO_DOT`定義（グローバル・`PRIO_LETTER`の隣）と`qBulkBarHtml()`、`/tmp/_debug_bulk2.mjs`の実行ログ（`ReferenceError: PRIO_DOT is not defined`→修正後`barExists:true`）
+
+---
+
+## 21. prompt_rulesの記述が古くなり、既に実在するスキルを「存在しない」と誤情報のまま配り続けていた
+
+- **症状**：701番（Skills棚卸し）で確認したところ、`tools/prompt_rules/always-01-ai-shain-oni-kantoku.md`が「`oni-kantoku`スキルは現時点でファイルとして実在しない（#10で確認済み）」という2026-09-07時点の記述のまま放置されていた。実際には`oni-kantoku`は`~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/.../skills/oni-kantoku/SKILL.md`として既に作成されており（関門0〜10まで整備済み）、この誤った「実在しない」情報が`always`ルールとして全タスクへ配られ続けていた。
+- **原因**：`always`系は「毎回全セッションに強制注入される確実な層」として作ったが、**中身の鮮度を誰も見直す仕組みが無かった**。スキルが後から作られても、それを参照している別ファイル（prompt_rules側）の記述は自動で追従しない。
+- **直し方**：`always-01`の記述を「実在する・パス記載」へ更新。あわせて④skills（SKILL.md）の棚卸し結果とMemory/Skills役割分担の正本を`shared-brain/20_DECISIONS/2026-09-10_Skills棚卸しとMemory役割分担.md`にまとめた。
+- **二度と起こさないための仕掛け**：新しくSKILL.mdを作成・改訂した担当は、`grep -rl "<スキル名>"`で他のprompt_rules/失敗台帳に「実在しない」等の古い前提が残っていないか確認する運用を上記の役割分担ドキュメントに明記した。合わせて、queue.json運用・進捗表の見方が`README.md`にしか無く新規セッションに伝わっていなかった欠落も発見し、`tools/prompt_rules/topic-dispatch-queue-ops.md`を新設して埋めた。
+- **日付**：2026-09-10（701番）
+- **根拠**：`tools/prompt_rules/always-01-ai-shain-oni-kantoku.md`（本日の差分）、`skills-plugin/.../skills/oni-kantoku/SKILL.md`（実在確認）、`tools/prompt_rules/topic-dispatch-queue-ops.md`（新設）、`tools/prompt_rules/INDEX.json`（topics追加）
