@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#715 憲法遵守点検（毎日1回・自動） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #715 憲法遵守点検（毎日1回・自動）</div>
+<h1>#715 憲法遵守点検（毎日1回・自動）</h1>
+<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+書いてあるルール（1Mコンテキスト禁止・モデル固定・鬼監督の自動稼働・完了報告のURL必須 等）のうち機械で測れるものを、<code>tools/kenpou_check.py</code>が毎日1回チェックする。結果は<code>status/kenpou_check.json</code>に書かれ、進捗表(index.html)の🏛️憲法遵守点検セクションに赤/緑で出る。赤が出た項目は既存のqueue_add()経由で直すタスクを自動的に発車待ちへ積む（同じ内容が既に列にあれば重複して積まない）。毎日09:10 JSTにlaunchd(<code>com.tamago.tamago-shinchoku.kenpou-check</code>)が自動実行し、点検そのものが24時間止まっていればフロント側が気づいて赤にする。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>9</b><span>点検項目数</span></div>
+  <div class="num"><b>4</b><span>今回赤だった件数</span></div>
+  <div class="num"><b>25/25</b><span>1Mコンテキストで走った本数</span></div>
+  <div class="num"><b>0/23</b><span>直近24hの完了で鬼監督記録が付いた件数</span></div>
+  <div class="num"><b>315</b><span>1MB超ファイルの件数</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>本番：赤バナー（4件検出時）</b><img src="img/715-alert-banner.png" alt="前"></div>
+  <div class="shot after"><b>本番：9項目カード（赤4・緑5）</b><img src="img/715-kenpou-section.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表（本番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>点検の生データ（本番JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/kenpou_check.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/kenpou_check.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>1Mコンテキストで走った子セッション</td><td class="no">直近25本中25本が赤（714番と重複のためタスクは積み直さず）</td></tr>
+<tr><td>鬼監督が完了ごとに自動で動いているか</td><td class="no">直近24h完了23件中0件に記録あり＝赤（684番と重複のためタスクは積み直さず）</td></tr>
+<tr><td>URL無しで完了(done)になった仕事</td><td class="yes">0件・緑</td></tr>
+<tr><td>工場が止まったまま放置</td><td class="yes">走行3/上限3で正常・緑</td></tr>
+<tr><td>queue.json最大番号の退行</td><td class="yes">前回比減少なし・緑</td></tr>
+<tr><td>公開リポジトリの1MB超ファイル</td><td class="no">315件・赤→717番として発車待ちへ自動追加</td></tr>
+<tr><td>渡し済み確認ページの404</td><td class="yes">直近15件すべて200・緑</td></tr>
+<tr><td>対話待ち・放置セッション</td><td class="no">プロセス消滅済みのrunningを検出・赤→718番として発車待ちへ自動追加</td></tr>
+</table>
+
+<footer>
+毎日09:10 JSTにlaunchdが自動実行し、次回以降も同じ結果を進捗表で確認できる。714番・684番と重複する赤は新規タスクを積まずスキップ済み（717番=1MB超ファイル、718番=放置セッションのみ新規発車待ちへ追加）。
+</footer>
+</body>
+</html>

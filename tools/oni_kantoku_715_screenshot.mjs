@@ -28,7 +28,7 @@ const OUT_DIR = join(REPO_ROOT, "share/check/img");
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const URL = "https://tamago2022.github.io/tamago-shinchoku/index.html?nc=" + Date.now();
 const LOAD_TIMEOUT_MS = 20000;
-const SETTLE_MS = 3000;
+const SETTLE_MS = 4000;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -95,9 +95,11 @@ async function evalJs(send, expr) {
 }
 
 async function shoot(send, width, height, y, outFile) {
+  width = Math.round(width);
+  height = Math.round(height);
   await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile: width < 500 });
   await sleep(250);
-  const clip = { x: 0, y: Math.max(0, y - 20), width, height, scale: 1 };
+  const clip = { x: 0, y: Math.round(Math.max(0, y - 20)), width, height, scale: 1 };
   const shot = await send("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport: true });
   writeFileSync(outFile, Buffer.from(shot.data, "base64"));
   console.log("保存:", outFile, "y=", clip.y);
@@ -136,6 +138,13 @@ async function main() {
     await waitComplete(send);
     await sleep(SETTLE_MS);
 
+    // status/kenpou_check.json のfetchが遅れることがあるため、カードが描画されるまで最大10秒待つ
+    for (let i = 0; i < 20; i++) {
+      const n = await evalJs(send, `document.querySelectorAll('#kenpouBox .c').length`);
+      if (n > 0) break;
+      await sleep(500);
+    }
+
     // 1) 赤バナー（見えているか。無ければbanner高さ0として上部だけ撮る）
     const bannerInfo = await evalJs(send, `(() => {
       const el = document.getElementById('kenpouAlert');
@@ -163,7 +172,7 @@ async function main() {
     })()`);
     console.log("憲法点検セクション:", secInfo);
     const sec = JSON.parse(secInfo);
-    await shoot(send, 390, Math.min(1600, Math.max(400, sec.height + 60)), sec.top, join(OUT_DIR, "715-kenpou-section.png"));
+    await shoot(send, 390, Math.round(Math.min(1600, Math.max(400, sec.height + 60))), sec.top, join(OUT_DIR, "715-kenpou-section.png"));
 
     close();
   } finally {
