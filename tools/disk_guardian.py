@@ -813,6 +813,14 @@ def main():
     except Exception as e:
         log("downloads_offload呼び出し失敗: %s" % e)
 
+    # 2026-09-09（685番）：Desktop直下の大きい生成物・アーカイブも同じ考え方で
+    # 外付けへ既定の置き場を作る（downloads_offloadと同じ方式・7日超500MB超のみ）。
+    try:
+        import desktop_offload
+        desktop_offload.main()
+    except Exception as e:
+        log("desktop_offload呼び出し失敗: %s" % e)
+
     # 2026-09-09（685番）：ゴミ箱の7日超項目は、空き容量の逼迫（WARN_GB=25）を
     # 待たずに常時片付ける。店主が既に「削除」を選んだ後の最終置き場であり、
     # 実測で2020〜2023年の古いインストーラが16.4GB居座っていた

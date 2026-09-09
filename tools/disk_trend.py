@@ -336,6 +336,41 @@ def render_svg(slots, drops, out_path=OUT_SVG):
     return out_path
 
 
+def recent_stability(entries, window_hours=3):
+    """直近window_hours時間の実測(15分おき生データ)から傾きだけを見る。
+    2026-09-09（685番・3回目対応）：24時間全体の山からの差分(stable_period_
+    since_trough)は、観測空白明けの急落・急回復（Macスリープ由来の
+    一時的な変動）も丸ごと含んでしまい、対策を打って以降ずっと安定していても
+    「まだ減っている」と出続ける構造になっていた。対策後の"直近"だけを別枠で
+    見えるようにする（24時間の判定を置き換えるのではなく、併記して両方見せる）。"""
+    if not entries:
+        return None
+    now = entries[-1][0]
+    cutoff = now - datetime.timedelta(hours=window_hours)
+    recent = [(t, v) for t, v in entries if t >= cutoff]
+    if len(recent) < 2:
+        return None
+    first_t, first_v = recent[0]
+    last_t, last_v = recent[-1]
+    delta = round(first_v - last_v, 1)
+    span_hours = round((last_t - first_t).total_seconds() / 3600, 2)
+    if delta > 1.0:
+        verdict = "要注意・直近も減っている"
+    elif delta < -1.0:
+        verdict = "増えた（直近で片付けがあった）"
+    else:
+        verdict = "横ばい・直近は止まっている"
+    return {
+        "since": first_t.strftime("%Y-%m-%d %H:%M"),
+        "since_free_gb": first_v,
+        "now_free_gb": last_v,
+        "delta_gb": delta,
+        "hours": span_hours,
+        "samples": len(recent),
+        "verdict": verdict,
+    }
+
+
 def build_report(hours=24):
     entries = parse_log()
     slots = hourly_series(entries, hours=hours)
@@ -401,6 +436,8 @@ def build_report(hours=24):
         "total_delta_gb": total_delta,
         "verdict": verdict_of(total_delta),
         "stable_period_since_trough": stable,
+        "recent_stability_1h": recent_stability(entries, window_hours=1),
+        "recent_stability_3h": recent_stability(entries, window_hours=3),
         "drops_over_1gb_per_hour": drops,
         "daily_line": daily_line(),
     }
