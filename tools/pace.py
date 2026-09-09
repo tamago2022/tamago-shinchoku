@@ -71,58 +71,130 @@ S5_FLOOR = 82.0         # これを下回る見込みなら、まだ余ってい
 CAP_MIN, CAP_MAX = 3, 5  # 同時に走らせる本数の下限・上限（6本は行き過ぎ）
 
 
+# ---- 2026-09-09 20:00 実測バグ（702番）----
+#   進捗表は「今日30%使用・目安11.7%に対して+18.3%超過」と赤で出ているのに、
+#   launch_cap.json は cap=5 のまま11時間動いていなかった。
+#   原因1：下の cap 書き換え条件に `used < DAILY_CAP` が入っていて、
+#          usedToday が DAILY_CAP(30) に達した瞬間に「capを書き換えない」に化けていた
+#          （＝一番下げたい瞬間にフリーズする。凍結バグ）。
+#   原因2：cap の計算が「5時間枠の着地見込み」だけを見ていて、週の予算（pace.jsonのoverLine/state）を
+#          一度も見ていなかった。だから週が大幅超過でも本数が減らなかった。
+# 直し方：
+#   ・下げる方向の書き込みは DAILY_CAP に関係なく必ず行う（②のガードは「増やす」時だけに掛ける）。
+#   ・週の予算超過（overLine）を段階で見る：+5%→cap-1／+10%→cap-2／+15%→新規発車そのものを止める
+#     （no_launch.flag。走行中は止めない＝0本にはしない）。今日のstateが"over"のときも1本減らす。
+#   ・逆に週の予算が10pt以上余っていれば1本増やす（「余ってるのに1本しか回ってない」対策）。
+#   ・5時間枠の判定と週の判定、両方が同時に「下げたい」と言ったら、より安全な（小さい）方を採用。
+#     どちらかが下げたいと言っているときは増やさない。
+WEEK_OVER_STOP = 15.0    # これを超えたら新規発車そのものを止める（走行中は継続）
+WEEK_OVER_2 = 10.0       # これを超えたら cap-2
+WEEK_OVER_1 = 5.0        # これを超えたら cap-1
+WEEK_UNDER_UP = -10.0    # これより下（＝週の予算が大きく余っている）なら cap+1
+DAILY_FLAG_MARK = "1日の上限"
+WEEK_FLAG_MARK = "週の予算"
+
+
 def manage_fuel(d, q):
-    """今日の使いすぎを止め、5時間枠を余らせないように本数を上下させる。"""
+    """今日の使いすぎ・週の予算超過を止め、5時間枠を余らせないように本数を上下させる。"""
     repo_status = lambda n: os.path.join(REPO, "status", n)
     flag = repo_status("no_launch.flag")
     cap_path = repo_status("launch_cap.json")
     notes = []
 
-    # ① 1日の上限。超えたら自動で発車を止める（たまごさんの手を借りない）
     used = d.get("usedToday")
-    if isinstance(used, (int, float)):
-        if used >= DAILY_CAP:
-            if not os.path.exists(flag):
-                io.open(flag, "w", encoding="utf-8").write(
-                    "今日はもう%.1f%%使ったので自動で止めました（1日の上限%.0f%%）。%s\n"
-                    % (used, DAILY_CAP, time.strftime("%Y-%m-%d %H:%M")))
-                notes.append("今日の上限%.0f%%に達したので発車を止めました" % DAILY_CAP)
-        else:
-            # 自分で止めたぶんだけ解除する（たまごさんが手で止めたものは触らない）
-            try:
-                if os.path.exists(flag) and "1日の上限" in io.open(flag, encoding="utf-8").read():
-                    os.remove(flag)
-                    notes.append("日付が変わったので発車を再開しました")
-            except Exception:
-                pass
+    over_line = d.get("overLine")     # 週の理想ラインとの差。+なら使いすぎ、-なら余っている
+    day_state = d.get("state")        # 今日の使用が今日の予算に対して ok/warn/over/unknown
 
-    # ② 5時間枠を余らせない。このままのペースでリセット時に何%になるかで本数を上下する
+    daily_stop = isinstance(used, (int, float)) and used >= DAILY_CAP
+    week_stop = isinstance(over_line, (int, float)) and over_line > WEEK_OVER_STOP
+
+    # ① 上限（1日 or 週）に触れたら新規発車だけ止める（走行中はそのまま・0本にはしない）
+    if daily_stop or week_stop:
+        try:
+            cur = io.open(flag, encoding="utf-8").read() if os.path.exists(flag) else ""
+        except Exception:
+            cur = ""
+        add = []
+        if daily_stop and DAILY_FLAG_MARK not in cur:
+            add.append("今日はもう%.1f%%使ったので自動で止めました（1日の上限%.0f%%）" % (used, DAILY_CAP))
+            notes.append("今日の上限%.0f%%に達したので発車を止めました" % DAILY_CAP)
+        if week_stop and WEEK_FLAG_MARK not in cur:
+            add.append("週の予算を+%.1f%%超えたので新規発車を止めました（走行中は継続）" % over_line)
+            notes.append("週の予算を+%.1f%%超えたので新規発車を止めました" % over_line)
+        if add:
+            io.open(flag, "w", encoding="utf-8").write(
+                (cur.strip() + "; " if cur.strip() else "") + "; ".join(add)
+                + "（%s）\n" % time.strftime("%Y-%m-%d %H:%M"))
+    else:
+        # 両方の条件が外れたときだけ、自動で立てたフラグを自動で解除する（手動フラグは触らない）
+        try:
+            if os.path.exists(flag):
+                cur = io.open(flag, encoding="utf-8").read()
+                if (DAILY_FLAG_MARK in cur or WEEK_FLAG_MARK in cur) and "ログインが切れています" not in cur:
+                    os.remove(flag)
+                    notes.append("使用が落ち着いたので発車を再開しました")
+        except Exception:
+            pass
+
+    # ② 同時本数（cap）を上下させる。5時間枠のシグナルと週の予算シグナルを両方見て、
+    #    下げ提案があれば一番安全な（小さい）方を採る。上げるのは両方が問題ないときだけ。
+    cap_now = (load(cap_path, {}) or {}).get("cap")
+    if not isinstance(cap_now, int):
+        cap_now = CAP_MAX
+    proposals = []   # (提案cap, 理由, +1/-1/-2/-3の向き)
+
     s5 = (q.get("session5h") or {})
     pct = s5.get("pct")
     hours_left = s5.get("hoursLeft")
     rate = s5.get("recentPacePctPerHour")
-    cap_now = (load(cap_path, {}) or {}).get("cap")
     if isinstance(pct, (int, float)) and isinstance(hours_left, (int, float)) and hours_left > 0.2:
         r = rate if isinstance(rate, (int, float)) and rate > 0 else None
         projected = pct + (r * hours_left) if r else None
         d["s5Projected"] = round(projected, 1) if projected is not None else None
-        if projected is not None and isinstance(cap_now, int):
-            new_cap = cap_now
-            # 70%に届かない見込み＝まだ余っている → 1本増やす
-            # 78%を超える見込み＝行き過ぎ → 1本減らす（天井に当てない・PCを止めない）
+        if projected is not None:
             if projected < S5_FLOOR:
-                new_cap = min(CAP_MAX, cap_now + 1)
+                proposals.append((min(CAP_MAX, cap_now + 1),
+                                   "5時間枠の着地見込み%.0f%%で余っている" % projected, 1))
             elif projected > S5_TARGET + 7:
-                new_cap = max(CAP_MIN, cap_now - 1)
-            if new_cap != cap_now and (used is None or used < DAILY_CAP):
-                json.dump({"cap": new_cap, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-                           "why": "5時間枠の着地見込み%.0f%%（目標%.0f%%）" % (projected, S5_TARGET)},
-                          io.open(cap_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-                notes.append("同時本数を%d→%d本にしました（5時間枠の着地見込み%.0f%%）"
-                             % (cap_now, new_cap, projected))
+                proposals.append((max(CAP_MIN, cap_now - 1),
+                                   "5時間枠の着地見込み%.0f%%で行き過ぎ" % projected, -1))
+
+    if isinstance(over_line, (int, float)):
+        if over_line > WEEK_OVER_STOP:
+            proposals.append((CAP_MIN, "週の予算を+%.1f%%超過（新規発車は停止中）" % over_line, -3))
+        elif over_line > WEEK_OVER_2:
+            proposals.append((max(CAP_MIN, cap_now - 2), "週の予算を+%.1f%%超過" % over_line, -2))
+        elif over_line > WEEK_OVER_1:
+            proposals.append((max(CAP_MIN, cap_now - 1), "週の予算を+%.1f%%超過" % over_line, -1))
+        elif day_state == "over":
+            proposals.append((max(CAP_MIN, cap_now - 1), "今日の使用が今日の予算を超過(state=over)", -1))
+        elif over_line < WEEK_UNDER_UP:
+            proposals.append((min(CAP_MAX, cap_now + 1), "週の予算が余っている(overLine=%.1f)" % over_line, 1))
+
+    downs = [p for p in proposals if p[2] < 0]
+    ups = [p for p in proposals if p[2] > 0]
+    new_cap, why = cap_now, None
+    if downs:
+        new_cap, why, _ = min(downs, key=lambda p: p[0])
+    elif ups:
+        new_cap, why, _ = ups[0]
+        # 増やすのは、今日すでに1日の上限を使い切っていないときだけ
+        if isinstance(used, (int, float)) and used >= DAILY_CAP:
+            new_cap, why = cap_now, None
+
+    # 下げる方向は DAILY_CAP に関係なく必ず書く（凍結バグの直し）。増やす方向だけ↑で既にガード済み。
+    if why and new_cap != cap_now:
+        json.dump({"cap": new_cap, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "why": why},
+                  io.open(cap_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        notes.append("同時本数を%d→%d本にしました（%s）" % (cap_now, new_cap, why))
+    elif not os.path.exists(cap_path):
+        json.dump({"cap": cap_now, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "why": "初期値"},
+                  io.open(cap_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+
     d["dailyCap"] = DAILY_CAP
     d["s5Target"] = S5_TARGET
     d["cap"] = (load(cap_path, {}) or {}).get("cap")
+    d["capWhy"] = (load(cap_path, {}) or {}).get("why")
     d["fuelNotes"] = notes
     return d
 

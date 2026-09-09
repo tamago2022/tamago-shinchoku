@@ -259,6 +259,33 @@
   .pacebar.stale{opacity:0.6;}
   .pacebar .pdas{color:var(--dim); font-size:0.72rem;}
   .pacebar .pdas.stale{color:var(--red); font-weight:600;}
+  /* 703番（2026-09-10）「クレジットの欄も畳んじゃっていいよ。開いて確認するから」
+     →pacebarをdetails化。summaryの中身（棒＋数字）は開閉に関わらず常に見える。
+     畳んだ状態でも異常（赤）だけは必ず見える設計にする。 */
+  details.pacebar{cursor:default;}
+  details.pacebar summary{cursor:pointer; list-style:none;}
+  details.pacebar summary::-webkit-details-marker{display:none;}
+  details.pacebar .pmHint{font-size:0.68rem; color:var(--dim); text-align:right; margin-top:2px;}
+  details.pacebar .pmHint::after{content:"開いてくわしく見る ↓";}
+  details.pacebar[open] .pmHint::after{content:"閉じる ↑";}
+  /* 週を7等分した棒：「本来ここ（経過時間の目安）」と「今ここ（実際の使用率）」を同じ棒の上に重ねる。
+     たまごさん「視覚的に一瞬で分かるといいよね」→数字より先に棒が目に入るよう、summaryの先頭に置く。 */
+  .weekbar{position:relative; margin:14px 0 26px;}
+  .weekbar .wtrack{position:relative; display:flex; height:36px; border-radius:8px; overflow:hidden; background:#0e1319; border:1px solid var(--line);}
+  .weekbar .wcell{flex:1; display:flex; align-items:center; justify-content:center; font-size:0.72rem; color:var(--dim); border-right:1px dashed rgba(255,255,255,0.1); position:relative;}
+  .weekbar .wcell:last-child{border-right:none;}
+  .weekbar .wcell.today{color:var(--kinari); font-weight:800; background:rgba(255,255,255,0.06);}
+  .weekbar .wmk{position:absolute; top:-7px; bottom:-7px; width:0; border-left:3px solid var(--sub); z-index:2;}
+  .weekbar .wmk .wmf{position:absolute; left:0; transform:translateX(-50%); font-size:0.64rem; white-space:nowrap; padding:1px 5px; border-radius:5px; background:#0e1319; border:1px solid var(--line);}
+  .weekbar .wmk.wexp .wmf{top:-20px; color:var(--sub);}
+  .weekbar .wmk.wnow{border-left-color:var(--sub);}
+  .weekbar .wmk.wnow .wmf{bottom:-20px; color:var(--sub); font-weight:800; border-color:var(--sub);}
+  .weekbar .wmk.wnow.over{border-left-color:var(--red);}
+  .weekbar .wmk.wnow.over .wmf{color:var(--red); border-color:var(--red);}
+  .weeknums{font-size:0.82rem; color:var(--sub); margin-top:2px;}
+  .weeknums b{color:var(--kinari);}
+  .weeknums .over{color:var(--red); font-weight:800;}
+  .weeknums .under{color:var(--sub);}
   /* 2026-09-05 たまごさん「何のモデルを使ってるか一目瞭然にしたい。モデルの色も変えといて」 */
   .mdl{display:inline-block; padding:1px 7px; border-radius:999px; font-size:0.68rem; font-weight:800; letter-spacing:.02em;
     border:1px solid transparent; vertical-align:middle;}
@@ -548,7 +575,7 @@
 
 <!-- 2026-09-09（たまごさん指示）「クレジット配分を一番上に」「同時稼働本数も分かるように」
      →この2枚を進捗表の一番最初、他のどのセクションよりも上に置く。 -->
-<div id="paceBar" class="pacebar" hidden></div>
+<details id="paceBar" class="pacebar" hidden></details>
 <div id="capBar" class="capbar" hidden></div>
 
 <!-- 650番（2026-09-08）：お金の管理表（サブスク＋クレジット＋fal）への入口。
@@ -769,11 +796,23 @@ document.addEventListener("visibilitychange", () => { if(document.visibilityStat
 window.addEventListener("pageshow", () => checkVersion());
 window.addEventListener("focus", () => checkVersion());
 // データは毎回サーバーから取り直す（スマホのキャッシュで古い一覧が出ないように）
+// 703番（2026-09-10）「データを読み込めませんでした。開き直してください。」を消す（702の6番）。
+//   原因：通信が一瞬詰まってdata.js等の取得が失敗(onerror)しても、そのまま諦めて
+//   「読み込めませんでした」を出していた。まず自分で読み直す（たまごさんに開き直させない）。
 (function(){
-  const t = Date.now(), files = ["data.js","said.js","requests225.js"]; let n = 0;
-  files.forEach(f => { const s = document.createElement("script"); s.src = f + "?t=" + t; s.async = false;
-    s.onload = s.onerror = () => { if(++n === files.length && window.__dataReady) window.__dataReady(); };
-    document.head.appendChild(s); });
+  const files = ["data.js","said.js","requests225.js"]; let n = 0;
+  function loadOne(f, triesLeft){
+    const s = document.createElement("script");
+    s.src = f + "?t=" + Date.now();
+    s.async = false;
+    s.onload = () => { if(++n === files.length && window.__dataReady) window.__dataReady(); };
+    s.onerror = () => {
+      if(triesLeft > 0){ setTimeout(() => loadOne(f, triesLeft - 1), 900); return; }
+      if(++n === files.length && window.__dataReady) window.__dataReady();
+    };
+    document.head.appendChild(s);
+  }
+  files.forEach(f => loadOne(f, 3)); // 最大4回（本番+リトライ3回）試してから諦める
 })();
 </script>
 <script>
@@ -992,6 +1031,30 @@ function modelChip(model){
    超過したら赤で分かるように」→ 見出しを「目安◯%に対して今◯%（+◯%超過）」の形に統一し、
    数字がいつ時点かを必ず添える（古い数字は薄く灰色）。pace.jsonのbudgetTodayは曜日曲線込みの
    精緻な日割り（単純な週÷7の13%より賢い）なので値はそのまま使い、単純日割りの目安(perDayEven)も併記する。 */
+/* 703番（2026-09-10）たまごさん「火曜18時にリセットされるから、一応7等分にして、
+   本来だったら火曜・水曜このへんだけど、今この辺ですよって分かると、視覚的に一瞬で分かるといいよね」
+   → 週(火→水→木→金→土→日→月)を7等分した棒の上に「本来ここ（経過時間の目安）」と
+     「今ここ（実際の使用率）」を2本の印で重ねる。位置の計算根拠は両方とも0〜100%の同じ物差し
+     （本来＝週が何%経過したか、今＝週の何%を使ったか）なので、2本のズレ＝超過幅がそのまま棒の
+     ズレとして見える。 */
+function buildWeekBar(p){
+  const days = ["火","水","木","金","土","日","月"];
+  const daysLeft = (typeof p.daysLeft === "number") ? p.daysLeft : 7;
+  const elapsedDays = Math.max(0, Math.min(7, 7 - daysLeft));
+  const expPct = Math.max(0, Math.min(100, elapsedDays / 7 * 100));
+  const dayIdx = Math.max(0, Math.min(6, Math.floor(elapsedDays)));
+  const nowPct = Math.max(0, Math.min(100, Number(p.allPct) || 0));
+  const overAmt = nowPct - expPct;
+  const isOver = overAmt > 0.5; // 誤差0.5%未満は「ほぼ同じ」として赤にしない
+  const cells = days.map((d, i) => `<div class="wcell${i === dayIdx ? " today" : ""}">${d}</div>`).join("");
+  const html = `<div class="weekbar">
+      <div class="wtrack">${cells}
+        <div class="wmk wexp" style="left:${expPct.toFixed(1)}%"><span class="wmf">本来ここ ${expPct.toFixed(1)}%</span></div>
+        <div class="wmk wnow${isOver ? " over" : ""}" style="left:${nowPct.toFixed(1)}%"><span class="wmf">今ここ ${nowPct.toFixed(1)}%</span></div>
+      </div>
+    </div>`;
+  return {html, expPct, nowPct, overAmt, isOver};
+}
 function renderPace(p){
   const bar = document.getElementById("paceBar"); if(!bar) return;
   window.__pace = p; // renderCapBar()が「今日の予算に余裕があるか」を見るのに使う（689番）
@@ -1014,10 +1077,15 @@ function renderPace(p){
     const why = p.suspectZero
       ? `週の使用率が${p.allPct}%のままです。リセットから6時間以上経っており、0%が続くのは不自然です`
       : `週の使用率の取得元（Claudeアプリの実測）が確認できていません`;
-    bar.innerHTML = `<div class="ph">🔘 週の使用率：取れていない可能性があります</div>
+    const wb = buildWeekBar(p);
+    bar.innerHTML = `<summary>${wb.html}
+      <div class="ph">🔘 週の使用率：取れていない可能性があります</div>
+      <div class="pmHint"></div></summary>
+      <div class="in">
       <div class="pd">${esc(why)}。表示中の数字（${p.allPct}%）は参考値として扱ってください</div>
       <div class="pd">週100%を火曜18:00リセットで7日で使い切るのが配分の考え方（1日の目安は約13〜14%・理想は火曜18:00に99.9%・超えたら赤）</div>
-      <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>`;
+      <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>
+      </div>`;
     return;
   }
   bar.className = "pacebar " + (p.state || "ok") + (stale ? " stale" : "");
@@ -1028,11 +1096,21 @@ function renderPace(p){
       : p.state === "warn"
       ? `🟡 今日の目安${p.budgetToday}%のうち${p.usedToday}%使用（残りわずか）`
       : `🟢 今日はあと ${Math.max(0, (p.budgetToday - p.usedToday)).toFixed(1)}% 使えます（目安${p.budgetToday}%のうち${p.usedToday}%）`;
-  bar.innerHTML = `<div class="ph">${head}</div>
+  const wb = buildWeekBar(p);
+  const weekOverTxt = wb.isOver
+    ? `<span class="over">+${wb.overAmt.toFixed(1)}%超過</span>`
+    : `<span class="under">まだ余裕（${Math.abs(wb.overAmt).toFixed(1)}%ぶん）</span>`;
+  // 畳んだ状態でも見えるのはsummaryの中身だけ＝棒・週の数字・超過表示はここに置く（たまごさん「畳んでいても異常は分かること」）。
+  bar.innerHTML = `<summary>${wb.html}
+      <div class="weeknums">今ここ <b>${wb.nowPct.toFixed(1)}%</b> ／ 本来ここ（目安） <b>${wb.expPct.toFixed(1)}%</b> ／ ${weekOverTxt}</div>
+      <div class="ph">${head}</div>
+      <div class="pmHint"></div></summary>
+    <div class="in">
     <div class="pd">週枠100%のうち今週使用 <b>${p.allPct}%</b> ／ 週の残り${p.remainWeek}% ÷ あと${p.daysLeft}日 ・ 単純日割り目安 約${p.perDayEven}%</div>
     <div class="pd" style="opacity:.75">配分：週100%を火曜18:00リセットで7日で使い切る（1日目安13〜14%・理想は火曜18:00に99.9%・超えたら赤）</div>
     <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-    <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>`;
+    <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>
+    </div>`;
 }
 function refreshPace(){
   const relay = (window.__relay && window.__relay.url);
@@ -3303,11 +3381,62 @@ const prioReady = fetch("status/priority.json?t=" + Date.now(), {cache:"no-store
 window.__dataReady = function(){
   prioReady.then(__dataReady2);
 };
+// 702番（2026-09-10）：703番の自動リロード＋再試行だけだと、通信が本当に長く詰まった時
+//   「読み込みに時間がかかっています…」がずっと続くだけで、結局データは何も見えない
+//   （＝体感は真っ白と同じ）。ここに「最後に成功した古いデータ」を灰色で出す安全網を足す。
+const SHINCHOKU_CACHE_KEY = "shinchoku_last_good_v1";
+function saveShinchokuCache(){
+  try{
+    localStorage.setItem(SHINCHOKU_CACHE_KEY, JSON.stringify({
+      D: window.SHINCHOKU, ALL: window.SHINCHOKU_ALL, SAID: window.SHINCHOKU_SAID,
+      savedAt: Date.now()
+    }));
+  }catch(e){}
+}
+function loadShinchokuCache(){
+  try{ return JSON.parse(localStorage.getItem(SHINCHOKU_CACHE_KEY) || "null"); }catch(e){ return null; }
+}
+function renderStaleFromCache(cached){
+  D = cached.D; window.SHINCHOKU_ALL = cached.ALL; window.SHINCHOKU_SAID = cached.SAID;
+  const mins = Math.max(0, Math.round((Date.now() - cached.savedAt) / 60000));
+  const when = new Date(cached.savedAt).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"});
+  const upd = document.getElementById("updated");
+  if(upd) upd.innerHTML = `<span style="color:#9aa0a6">⚠ 最新を読み込めず、${mins}分前（${esc(when)}時点）の内容を表示中</span>`;
+  try{ renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail(); }catch(e){ showErr(e); }
+}
+let __dataReadyRetries = 0;
 function __dataReady2(){
   D = window.SHINCHOKU;
-  if(!D){ document.getElementById("updated").textContent = "データを読み込めませんでした。開き直してください。"; return; }
+  if(!D){
+    // 703番（2026-09-10）「データを読み込めませんでした。開き直してください。」を消す。
+    //   ここまで来ても読めていない＝たいてい一瞬の通信詰まり。たまごさんに開き直させず、
+    //   まず自分で1回だけ静かにページを読み直す（無限ループ防止に15秒のクールダウンを挟む）。
+    const key = "shinchoku_autoreload_at";
+    const last = Number(sessionStorage.getItem(key) || 0);
+    const now = Date.now();
+    if(now - last > 15000){
+      try{ sessionStorage.setItem(key, String(now)); }catch(e){}
+      location.replace(location.pathname + "?v=" + now);
+      return;
+    }
+    // リロード後も3回（約12秒）読めなければ、ループで粘るより先に「古いデータを灰色で表示」へ切り替える。
+    //   粘り自体は止めない（裏で __dataReady2 を呼び直し続け、直ったら自動で最新に戻る）。
+    __dataReadyRetries++;
+    const cached = loadShinchokuCache();
+    if(__dataReadyRetries > 3 && cached && cached.D){
+      renderStaleFromCache(cached);
+      setTimeout(() => { try{ __dataReady2(); }catch(e){} }, 15000);
+      return;
+    }
+    const upd = document.getElementById("updated");
+    if(upd) upd.textContent = "読み込みに時間がかかっています…（自動で読み直しています）";
+    setTimeout(() => { try{ __dataReady2(); }catch(e){} }, 4000);
+    return;
+  }
+  __dataReadyRetries = 0;
   document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
   renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail();
+  saveShinchokuCache();
 };
 // 626番：Anthropic返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
 function renderAnthropicAlert(){
