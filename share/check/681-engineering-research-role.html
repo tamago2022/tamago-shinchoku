@@ -62,17 +62,44 @@
 
 
 
-<h2>④ 押せるリンク</h2>
+<div class="note">
+<b>⚠️前回の差し戻しを直しました：</b>以前ここに貼っていた3本のリンクは<code>github.com/tamago2022/joy-relief-station</code>という非公開リポジトリを指しており、たまごさん本人が押すと404になっていました。リンクで見せる代わりに、下に<b>実際のレポート本文をこのページへ直接埋め込み</b>ました。もう他のページへ探しに行く必要はありません。
+</div>
+
+<h2>③ 初回レポートの中身（本文をそのまま埋め込み）</h2>
+<div class="note">
+<b>結論（3行）</b><br>
+牛尾剛さんのnote新着は無し（最新09-07分は既読）。Anthropic公式の「Claude Codeのauto mode（許可待ちを自動判定する仕組み）」記事が最も刺さる内容で、この作業中に実際に何度も起きた許可待ちの正体を、まさにこの記事が解説していた。<br>
+差分：うちは危険な操作を丸ごと「人に聞く」設定にしているため、無人実行だと止まってしまう。ドメイン単位の細かい許可を足す案を<b>案件#682としてTASK_BOARDへ新規に積んだ</b>（設定自体はたまごさんの目を通すまで変更していない）。<br>
+OpenAI公式はボット拒否で今回は取得できず、次回の課題として残した。
+</div>
+
+<table>
+<tr><th>源</th><th>直近の動き</th><th>時期</th></tr>
+<tr><td>牛尾剛（note.com/simplearchitect）</td><td>新刊『持たざる者の戦略』発表（既読・新規動き無し）</td><td>2026-09-07</td></tr>
+<tr><td>Anthropic Engineering Blog</td><td>Claude Code auto modeの設計記事（採用検討・最重要）</td><td>2026-03-25</td></tr>
+<tr><td>Anthropic News</td><td>企業向け安全対策の発表2件（手法記事ではないため不採用）</td><td>2026-08-31〜09-01</td></tr>
+<tr><td>OpenAI（news/cookbook）</td><td>取得できず（ボット拒否）。次回課題</td><td>—</td></tr>
+</table>
+
+<h2>④ 押せるリンク（本人が開ける一次情報のみ）</h2>
 <ul class="links">
-  <li><b>常設リサーチ係の新設コミット（GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/796237a7" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/796237a7</a></li>
-  <li><b>案件#681の記録（TASK_BOARD.md）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md</a></li>
-  <li><b>初回リサーチ内容（スキル本文・GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-engineering-research/SKILL.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-engineering-research/SKILL.md</a></li>
+  <li><b>今回の採用検討の元記事（Anthropic公式）</b><a href="https://www.anthropic.com/engineering/claude-code-auto-mode" target="_blank" rel="noopener">https://www.anthropic.com/engineering/claude-code-auto-mode</a></li>
+  <li><b>牛尾剛さんの新着note（今回「新着なし」と判定した対象そのもの）</b><a href="https://note.com/simplearchitect/n/n137e63e1da93" target="_blank" rel="noopener">https://note.com/simplearchitect/n/n137e63e1da93</a></li>
 </ul>
 
-
+<h2>チェック項目</h2>
+<table>
+<tr><th>項目</th><th>結果</th><th></th></tr>
+<tr><td>牛尾剛note新着チェック</td><td>実施（新着なし・既読済みと確認）</td><td class="yes">済</td></tr>
+<tr><td>Anthropic公式チェック</td><td>実施・auto mode記事を発見し比較</td><td class="yes">済</td></tr>
+<tr><td>OpenAI公式チェック</td><td>ボット拒否で失敗・次回課題として記録</td><td class="no">未</td></tr>
+<tr><td>採用案をTASK_BOARDへ追記</td><td>案件#682として新規追記</td><td class="yes">済</td></tr>
+<tr><td>日次自動実行（launchd）登録</td><td><code>launchctl list</code>で登録を実測確認（毎朝7:00起動）</td><td class="yes">済</td></tr>
+</table>
 
 <footer>
-このページは #681 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは内部の運用ロール（社内スキル・日次cronジョブ）の新設報告のため、Lovable本番サイトの画面には変化がありません。証拠は上の本文・表にすべて埋め込み済みで、他のページへ探しに行く必要はありません。書式は share/check/_template.html（共通の型）を土台に、本文埋め込みのため一部手直ししています。
 </footer>
 </body>
 </html>
