@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#701 Skillsの棚卸し・毎回守ることをスキル側に固定 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #701 Skillsの棚卸し・毎回守ることをスキル側に固定</div>
+<h1>#701 Skillsの棚卸し・毎回守ることをスキル側に固定</h1>
+<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+Anthropicサポートの回答『挙動の固定はMemoryとSkillsで明示するのが対策』を受けて、Cowork/Dispatchが使う全28スキルを棚卸しした。①既に実在するのに『実在しない』という誤った案内のまま配られていたルールを1件発見して直した（鬼監督スキル）。②queue.json・進捗表の使い方が新規セッションに伝わっていなかった欠落を発見し、新しいルールとして追加した。③『事実・決定はどこに書くか（Memory）』『やり方はどこに書くか（Skills）』の役割分担を1枚の資料にまとめた。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>28</b><span>棚卸ししたスキルの総数</span></div>
+  <div class="num"><b>13</b><span>たまごさん専用スキル（残り15は標準ツール）</span></div>
+  <div class="num"><b>1</b><span>直した誤情報（鬼監督スキルは実在しないという古い案内）</span></div>
+  <div class="num"><b>1</b><span>新しく足したルール（queue.json・進捗表の使い方）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>直した誤情報の差分（GitHub）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/f0ca3cdc" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/f0ca3cdc</a></li>
+  <li><b>新しく足したルール本文</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/prompt_rules/topic-dispatch-queue-ops.md" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/prompt_rules/topic-dispatch-queue-ops.md</a></li>
+  <li><b>役割分担のまとめ（Memory側との住み分け）</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/shared-brain/20_DECISIONS/2026-09-10_Skills%E6%A3%9A%E5%8D%B8%E3%81%97%E3%81%A8Memory%E5%BD%B9%E5%89%B2%E5%88%86%E6%8B%85.md" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/shared-brain/20_DECISIONS/2026-09-10_Skills%E6%A3%9A%E5%8D%B8%E3%81%97%E3%81%A8Memory%E5%BD%B9%E5%89%B2%E5%88%86%E6%8B%85.md</a></li>
+  <li><b>事故台帳への追記（21番）</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/failures.md" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/failures.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>鬼監督（oni-kantoku）</td><td class="yes">実在する・関門0〜10まで整備済み・古い誤案内を修正済み</td></tr>
+<tr><td>AI社員（ai-shain）</td><td class="yes">説明文にたまごさんの言葉そのままが入っており良好</td></tr>
+<tr><td>ボンジョビおじさん構文（bonjovi-ojisan-kobun）</td><td class="yes">コピー作成時の説明が明確・良好</td></tr>
+<tr><td>たまごの好み（tamago-tone）</td><td class="yes">画像/デザイン作業時の説明が明確・良好</td></tr>
+<tr><td>誌面基準（tamago-magazine-layout）</td><td class="yes">記事・特集ページ作業時の説明が明確・良好</td></tr>
+<tr><td>運用OS（tamago-unyou-os）</td><td class="yes">憲法・受付台帳等の核。既にセッション起動時の仕組みで二重に強制されており最も確実</td></tr>
+<tr><td>運営報告（unei-houkoku）</td><td class="yes">Anthropicへの要望送信という用途が明確・良好</td></tr>
+<tr><td>ページ検品（page-kenpin）</td><td class="yes">鬼監督と役割が近い（鬼監督が全体、これはページ単体）・重複ではなく詳細担当として妥当</td></tr>
+<tr><td>queue.json運用・進捗表の見方</td><td class="yes">README.mdにしか無く新規セッションに伝わっていなかった→新設して解消</td></tr>
+</table>
+
+<footer>
+このページは #701 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
