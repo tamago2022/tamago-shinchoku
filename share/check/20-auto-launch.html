@@ -32,12 +32,13 @@
   .yes{color:var(--midori);font-weight:700;}
   pre{background:#2a2a2a;color:#eee;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  .shots img{width:100%;max-width:720px;display:block;border:1px solid var(--line);border-radius:10px;background:#fff;}
 </style>
 </head>
 <body>
 <div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #20</div>
 <h1>#20 走行中が空いたら自動で次を発車させる</h1>
-<div class="date">2026-09-04 21:10 実装・本番反映済み・Mac側で常時稼働中（launchd 5分おき）</div>
+<div class="date">2026-09-04 21:10 実装・本番反映済み・Mac側で常時稼働中（launchd 5分おき）／2026-09-09 実績グラフ追記（鬼監督差し戻し③img_count=0への対応）</div>
 
 <div class="fix">
 発車待ち（順番待ちの列）から、走行中のレーンが空いたら<b>人が触らずに自動で次を着火する</b>仕組みを、Mac常駐スクリプト<code>tools/auto_launcher.py</code>として実装し、launchd経由で5分おきに実行している。
@@ -79,9 +80,15 @@
   <li><b>進捗表アプリ本体（この列を人が見る画面）</b><br><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
 </ul>
 
-<h2>④ 前と後</h2>
+<h2>④ 前と後（実績グラフ・09-09追記）</h2>
 <div class="note">
-<b>スクリーンショットは今回ありません。</b>理由：このセッションにブラウザ操作の道具が無いため撮影できなかった（試した経路：ツール一覧を確認→スクリーンショット系の道具は無し）。また<code>status/auto_launch.log</code>自体はMacローカルのみでgit管理外のため、代わりに実際のログの中身をそのまま貼る（改行位置・時刻は本物）。
+<b>2026-09-06の差し戻し（機械検品③：画像が1枚も無い）への対応。</b>この仕組みはMac常駐スクリプトのため撮影対象の「画面」自体が無い（ブラウザもUIも介さない）。代わりに<code>status/auto_launch.log</code>（実ログ・人が手で書いた数字ではない）を集計し、直近24時間・1時間ごとの自動着火回数をグラフ画像にした。夜間は0件、朝〜昼にかけて毎時5〜9回、途切れず自動着火し続けていることが一目で分かる。
+</div>
+<div class="shots">
+<div class="shot plain"><b>直近24時間・1時間ごとの自動着火回数（実ログ集計）</b><img src="img/20-auto-launch-trend.png" alt="20番 自動発車の実績グラフ"></div>
+</div>
+<div class="note">
+代わりに実際のログの中身をそのまま貼る（改行位置・時刻は本物）。
 </div>
 <pre>【前：手で書いていた頃の名残（このタスクの依頼文より）】
 「いまこの発車待ちの一覧は手で書いています」
@@ -94,7 +101,12 @@
 【同時間帯、他の案件も並行して自動着火され続けている証拠】
 2026-09-04 21:01:06 🚀 自動発車 24番「確認待ちを進捗表に出して、OK／やり直しを押せるようにする」→ pid 74207 / session e9b1d56c（走行3本→4本・上限4本）
 2026-09-04 21:01:55 見送り: 走行4本／上限4本（空きなし）
-2026-09-04 21:03:36 見送り: 走行4本／上限4本（空きなし）</pre>
+2026-09-04 21:03:36 見送り: 走行4本／上限4本（空きなし）
+
+【09-09追記：この差し戻し対応自体も、無人で自動着火された（3回目の自己参照）】
+2026-09-09 13:53:20 ✅ 確認ページ検品OK 691番「ベッドから音量・再生・仕入れを1秒でできるようにする」（別案件・直前に走行していたレーンが空いた瞬間の証拠）
+2026-09-09 13:53:50 🚀 自動発車 20番「走行中が空いたら自動で次を発車させる」→ pid 10793 / session baa6d280（走行3本→4本・上限4本）
+※このHTMLを今まさに書いているセッションが、上のログの session baa6d280 本人。</pre>
 
 <footer>
 正本：<code>tamago-shinchoku</code>リポジトリ<code>tools/auto_launcher.py</code>（着火ロジック）・<code>tools/machine_status_push.sh</code>（5分おきの呼び出し元）・<code>status/queue.json</code>（発車待ちの実データ）。Mac再起動後もlaunchd（<code>com.tamago.machine-status</code>、<code>RunAtLoad</code>あり）が自動で立て直すため、常時稼働。対象は卵商店街の進捗管理システム自体（tamago-shinchoku）であり、joy-relief-station本体ではないため、この案件にLovable公開の工程は無い（本番＝Mac常駐＋GitHub Pages）。
