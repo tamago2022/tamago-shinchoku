@@ -405,12 +405,44 @@ def _run(args, timeout=None):
         return -1, "", str(e)
 
 
-def push_repo(date, retries=3, wait_sec=5):
+def _clear_stale_index_lock(min_age_sec=90):
+    """実測（700番）：.git/index.lock が異常終了したgitプロセスの残骸として
+    数分間残り、以降の全git操作（add/commit）が『File exists』で失敗し続けた。
+    lsofで保持プロセスが実在しないことを確認できる場合のみ、かつ生成から
+    min_age_sec秒以上経過している場合のみ、安全とみなして削除する
+    （他プロセスが今まさに使っている正当なロックを誤って消さないための二重チェック）。
+    戻り値: 削除したらTrue、何もしなければFalse。"""
+    lock_path = os.path.join(REPO, ".git", "index.lock")
+    if not os.path.exists(lock_path):
+        return False
+    try:
+        age = datetime.datetime.now().timestamp() - os.path.getmtime(lock_path)
+    except OSError:
+        return False
+    if age < min_age_sec:
+        return False
+    # 保持プロセスが実在しないことを確認できた時だけ削除する
+    rc, out, _ = _run(["lsof", lock_path], timeout=5)
+    if rc == 0 and out.strip():
+        # lsofが行を返した＝まだどこかのプロセスが握っている＝触らない
+        return False
+    try:
+        os.remove(lock_path)
+        print("git: 残骸の index.lock（%d秒経過・保持プロセスなし）を削除して続行" % int(age))
+        return True
+    except OSError as e:
+        print("git: index.lock 削除失敗: %s" % e)
+        return False
+
+
+def push_repo(date, retries=5, wait_sec=8):
     """このリポジトリは他の自動化プロセスも同時にgit操作するため、
-    index.lock競合・fetchの遅延（実測：このリポジトリはgit statusだけで
-    50秒超かかることがある＝status/failures.mdの既知事象）で1回失敗することがある。
-    fetchはベストエフォート（失敗・タイムアウトしても止めない）にし、
-    『commit済みだがpush前に例外で抜けて未送信のまま残る』状態を毎回チェックして拾う。"""
+    index.lock競合や一時的な遅延で1回失敗することがある。
+    ただし『rebaseで頑張って解消する』のはやめる（実測：git pull --rebaseが
+    このリポジトリでは60秒のtimeoutを超えてハングし得た。原因はネットワーク遅延ではなく、
+    大量の自動生成ファイルを抱えたワーキングツリーの走査コストと見られる）。
+    既存の他の自動化スクリプト（later_tabs_snapshot.py等）と同じ軽量方針に合わせ、
+    fetch/rebaseはせず、push失敗時はログだけ残して次回の定時実行に委ねる。"""
     import time
 
     last_err = None
@@ -418,10 +450,14 @@ def push_repo(date, retries=3, wait_sec=5):
         # 1) 変更をadd（無ければ何も起きない）
         rc, out, err = _run(["git", "add", "share/nikki/"])
         if rc != 0:
-            last_err = "add失敗(試行%d): %s" % (attempt, (out + err).strip()[:300])
-            print(last_err)
-            time.sleep(wait_sec)
-            continue
+            if "index.lock" in (out + err) and _clear_stale_index_lock():
+                # 残骸ロックを消せたのですぐ再試行（sleepせず同じattempt内でaddし直す）
+                rc, out, err = _run(["git", "add", "share/nikki/"])
+            if rc != 0:
+                last_err = "add失敗(試行%d): %s" % (attempt, (out + err).strip()[:300])
+                print(last_err)
+                time.sleep(wait_sec)
+                continue
 
         # 2) まだコミットしていない差分があればコミット
         diff_rc, _, _ = _run(["git", "diff", "--cached", "--quiet", "--", "share/nikki/"])
@@ -436,31 +472,22 @@ def push_repo(date, retries=3, wait_sec=5):
         # 3) ここまで来たら「working treeの差分は無い」はず。
         #    ただし前回の試行でcommitだけ成功しpushに届かなかった可能性があるので、
         #    差分の有無に関わらず「未pushコミットがあるか」を必ず確認する。
-        ahead_rc, ahead_out, _ = _run(["git", "rev-list", "--count", "origin/main..HEAD"])
+        ahead_rc, ahead_out, _ = _run(["git", "rev-list", "--count", "HEAD", "^origin/main"])
         ahead = ahead_out.strip()
         if ahead_rc != 0 or ahead in ("", "0"):
             print("git: pushすべき新規コミットなし（差分なし、または前回の試行で既に反映済み）")
             return True
 
-        # 4) fetchはベストエフォート（失敗・タイムアウトしても致命傷にしない）
-        f_rc, _, f_err = _run(["git", "fetch", "origin", "main"], timeout=45)
-        if f_rc != 0:
-            print("git fetch 失敗/タイムアウト(試行%d・続行): %s" % (attempt, f_err.strip()[:200]))
-
-        rc, out, err = _run(["git", "push", "origin", "main"])
+        rc, out, err = _run(["git", "push", "origin", "main"], timeout=60)
         if rc == 0:
             print("git push 成功")
             return True
 
-        # 5) 追従が必要な場合（他プロセスが先にpush済み）は rebase して再試行
-        _run(["git", "pull", "--rebase", "origin", "main"], timeout=60)
-        rc2, out2, err2 = _run(["git", "push", "origin", "main"])
-        if rc2 == 0:
-            print("git push 成功（rebase後）")
-            return True
-
-        last_err = "push失敗(試行%d): %s" % (attempt, (err + err2).strip()[:300])
+        last_err = "push失敗(試行%d): %s" % (attempt, (out + err).strip()[:300])
         print(last_err)
+        # リモートが先行している場合はここで諦める（rebaseはしない）。
+        # ローカルのコミットは残るので、次回起動時に3)のahead判定へ再度乗り、
+        # 定時実行の度にpushだけ再試行される（履歴が壊れるより安全）。
         time.sleep(wait_sec)
 
     print("git操作: %d回試して失敗。次回の定時実行で再試行される想定。最終エラー: %s" % (retries, last_err))
