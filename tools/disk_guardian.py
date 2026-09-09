@@ -171,6 +171,14 @@ CLAUDE_PROJECTS = os.path.join(HOME, ".claude", "projects")
 CLAUDE_SESSION_MIN_AGE_SEC = 14 * 86400  # 14日以上更新の無いセッションだけ候補に出す
 
 
+TRASH_DIR = os.path.join(HOME, ".Trash")
+# 2026-09-09（685番・「1日20GB減る」原因追及）：ゴミ箱は店主が既に「消す」と
+# 決めたものの最終置き場。実測で2020〜2023年の古いインストーラ(.dmg等)が
+# 16.4GB居座っていた（Finderで「ゴミ箱を空にする」を押し忘れているだけ）。
+# ただし「うっかり削除して数分後に戻したい」を守るため、7日以上経過した
+# トップレベル項目だけを対象にする（直近のworktree_reaper_ghosts等は対象外）。
+TRASH_MIN_AGE_SEC = 7 * 86400
+
 def allowed_roots():
     """片付けを許す範囲（この外には一切降りない）。app cacheはglob展開があるため
     毎回動的に解決する（起動時に存在しなかったプロファイルも後から拾えるように）。"""
@@ -184,6 +192,8 @@ def allowed_roots():
         os.path.join(MAIN_REPO_DIR, "node_modules"),
         os.path.join(MAIN_REPO_DIR, "dist"),
         os.path.join(MAIN_REPO_DIR, ".output"),
+        # 2026-09-09（685番）：ゴミ箱トップレベル項目（7日以上経過分のみ候補化）。
+        TRASH_DIR,
     )
 
 
@@ -376,6 +386,28 @@ def candidates():
                                     "size_mb": dir_size_mb(fp)})
                 except Exception:
                     pass
+
+    # 2026-09-09（685番）：ゴミ箱（~/.Trash）直下のトップレベル項目。店主が既に
+    # Finderで「削除」を選んだ後の最終置き場であり、中身は既にis_forbidden()
+    # （Eagle/Vault/CloudStorage/Photos等のキーワード）でも二重に守られる。
+    # 7日以上ゴミ箱にあるものだけを候補にする（うっかり削除の救済期間）。
+    if os.path.isdir(TRASH_DIR) and is_allowed(TRASH_DIR):
+        try:
+            trash_entries = os.listdir(TRASH_DIR)
+        except Exception:
+            trash_entries = []
+        for fn in trash_entries:
+            if fn in (".DS_Store",):
+                continue
+            fp = os.path.join(TRASH_DIR, fn)
+            if is_forbidden(fp) or not is_allowed(fp):
+                continue
+            try:
+                age_ok = (time.time() - os.path.getmtime(fp)) >= TRASH_MIN_AGE_SEC
+            except Exception:
+                age_ok = False
+            out.append({"path": fp, "kind": "trash_old", "worktree": "-",
+                        "protected": False, "age_ok": age_ok, "size_mb": dir_size_mb(fp)})
     return out
 
 
@@ -776,6 +808,20 @@ def main():
         downloads_offload.main()
     except Exception as e:
         log("downloads_offload呼び出し失敗: %s" % e)
+
+    # 2026-09-09（685番）：ゴミ箱の7日超項目は、空き容量の逼迫（WARN_GB=25）を
+    # 待たずに常時片付ける。店主が既に「削除」を選んだ後の最終置き場であり、
+    # 実測で2020〜2023年の古いインストーラが16.4GB居座っていた
+    # （＝Finderで「空にする」を押し忘れているだけの死蔵容量）。
+    try:
+        trash_freed = 0.0
+        for c in candidates():
+            if c["kind"] == "trash_old" and c["age_ok"] and not c["protected"]:
+                trash_freed += safe_remove(c["path"], c["kind"])
+        if trash_freed:
+            log("🗑ゴミ箱の7日超項目を片付け: 約%.0fMB解放" % trash_freed)
+    except Exception as e:
+        log("ゴミ箱掃除失敗: %s" % e)
 
     if free_gb < STOP_GB:
         notify_stop(free_gb)
