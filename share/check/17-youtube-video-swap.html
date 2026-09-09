@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#17 17番：YouTube APIで動画を差し替える機能 - 本番反映確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #17 17番：YouTube APIで動画を差し替える機能 - 本番反映確認</div>
+<h1>#17 17番：YouTube APIで動画を差し替える機能 - 本番反映確認</h1>
+<div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+曲ページ（/cover-guide）の管理者パネル（棚編集ボタン→パスワード認証）内、YouTube検索で動画を差し替えるUI（YouTubeSearchInline.tsx）。関連する5つの修理コミットが本番main（origin/main HEAD 6201e73b・2026-09-09 16:37）へ全て反映済みであることをgit ancestry(merge-base --is-ancestor)で確認した。工場側の管理記録checkNoteに『たまごさん確認：動くようになった。80点。位置の直しは別タスクへ分離。』と店主本人の実機合格記録あり。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5</b><span>反映済み修理コミット</span></div>
+  <div class="num"><b>80点</b><span>店主の実機採点</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>確認に使った曲ページ(cover-guide例)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=i-miss-you" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=i-miss-you</a></li>
+  <li><b>①動画追加クラッシュ修理 889137e3</b><a href="https://github.com/tamago2022/joy-relief-station/commit/889137e3fb8118a5b17381c339774fddd0ad8b7b" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/889137e3fb8118a5b17381c339774fddd0ad8b7b</a></li>
+  <li><b>②棚編集メイン2枠化 6247d863</b><a href="https://github.com/tamago2022/joy-relief-station/commit/6247d863c823c453fb7fc0018c6aaaedd7260cea" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/6247d863c823c453fb7fc0018c6aaaedd7260cea</a></li>
+  <li><b>③YouTube検索結果デコード修理 7ffbec71</b><a href="https://github.com/tamago2022/joy-relief-station/commit/7ffbec71850a485d2168c886da7cbf79a6426b2e" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/7ffbec71850a485d2168c886da7cbf79a6426b2e</a></li>
+  <li><b>④検索→差し替えをスマホ対応化 b14e7f3f</b><a href="https://github.com/tamago2022/joy-relief-station/commit/b14e7f3f4a36ab49aea554bdaee32679b9ca7bf3" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/b14e7f3f4a36ab49aea554bdaee32679b9ca7bf3</a></li>
+  <li><b>⑤APIキーが本番に届かない問題修理 6e7d1c04</b><a href="https://github.com/tamago2022/joy-relief-station/commit/6e7d1c045e84c4b6db6f2bf40333d1f120fbc456" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/6e7d1c045e84c4b6db6f2bf40333d1f120fbc456</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①889137e3が origin/main の祖先か</td><td class="yes">反映済み</td></tr>
+<tr><td>②6247d863が origin/main の祖先か</td><td class="yes">反映済み</td></tr>
+<tr><td>③7ffbec71が origin/main の祖先か</td><td class="yes">反映済み</td></tr>
+<tr><td>④b14e7f3fが origin/main の祖先か</td><td class="yes">反映済み</td></tr>
+<tr><td>⑤6e7d1c04が origin/main の祖先か</td><td class="yes">反映済み</td></tr>
+<tr><td>本番cover-guideページがHTTP応答で正常表示(WebFetch確認)</td><td class="yes">正常</td></tr>
+<tr><td>x-deployment-idヘッダーでの直接実測(このセッションではネットワークcurlがサンドボックス制約で不可)</td><td class="no">未実施(WebFetchで代替確認)</td></tr>
+<tr><td>YouTube検索UI自体の実機タップ確認(パスワード保護のため非ログインでは不可)</td><td class="yes">店主が既に実機で確認済み(80点)</td></tr>
+</table>
+
+<footer>
+本セッションはネットワークcurlがサンドボックス許可制約でブロックされたため、x-deployment-idヘッダーの直接実測はできなかった。代わりにgit merge-base --is-ancestorでの5コミット全件のmain到達確認と、WebFetchでの本番cover-guideページ正常表示確認、および工場管理記録の店主確認メモ(80点)を根拠とした。店主の実画面での最終合格は既に得られている前提。
+</footer>
+</body>
+</html>
