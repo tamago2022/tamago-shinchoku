@@ -764,6 +764,19 @@ def main():
     # git rm・commit・pushはここでは行わない（既存の自動コミットジョブが拾う）。
     archive_old_share_check(dry_run=False)
 
+    # 2026-09-09（685番・「ダウンロードは全部iMac HDDを使うようにしてほしい」）：
+    # ~/Downloadsフォルダ自体を外付けへのシンボリックリンクに置き換える理想形は、
+    # macOSのTCC保護でPermission Deniedとなり実行不可（GUI側の許可が必要・店主のみ
+    # 可能な操作）と実測確認済み。次善策として、3日以上経ったダウンロードだけを
+    # 自動で外付けへ退避する係をここから間借りして動かす（launchctl loadが
+    # このセッションの権限では拒否されたため、既に動いているこのジョブへ相乗り）。
+    try:
+        sys.path.insert(0, HERE)
+        import downloads_offload
+        downloads_offload.main()
+    except Exception as e:
+        log("downloads_offload呼び出し失敗: %s" % e)
+
     if free_gb < STOP_GB:
         notify_stop(free_gb)
     else:
