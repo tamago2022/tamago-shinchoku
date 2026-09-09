@@ -3250,7 +3250,8 @@ function renderAnthropicAlert(){
   if(!a){ el.style.display = "none"; el.innerHTML = ""; return; }
   el.style.display = "block";
   el.innerHTML = `🔔 Anthropicから返信が来ています（${esc(a.subject || "件名なし")} / ${esc(a.date || "")}）　`
-    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`;
+    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`
+    + (a.summary ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.85;">${esc(a.summary)}</div>` : "");
 }
 // 683番：①マイク不具合の再現ログ（配列に1行足すだけで増える）②Anthropicへの下書きメール
 // （宛先・件名・本文入りでGmail作成画面を開くリンク。送信ボタンはたまごさんが押す）。

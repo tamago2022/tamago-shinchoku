@@ -6,9 +6,22 @@ window.SHINCHOKU = {
   generatedAt: "2026-09-01T00:20:00+09:00",
 
   // 626番（2026-09-07）：support@anthropic.comへ送った問い合わせの返信を1日1回チェックする見張り。
-  // 来ていない間はnull（何も表示しない・「来ていません」も出さない）。
-  // tools/check_anthropic_reply.py が検知した時だけこの値を書き換えてpushする。
-  anthropicReply: null,
+  // 見張り係(tools/check_anthropic_reply.py)は9/07からgmail_app_password未設置でblocked:no_credentialのまま
+  // 死んでいた（自動検知はできず）。683番でその代わりに、Lovable公開専用Chrome(CDP)の
+  // 既存タブへ1本だけ新規タブを足してGmailに直接アクセスし（新規ブラウザ起動はせず、既存プロセスに
+  // 相乗り）、9/07にeggypop2010@gmail.com経由で送った問い合わせへの返信本文を人力で確認・記録した。
+  anthropicReply: {
+    subject: "Feedback: Dispatch behavior varies between sessions — can it be pinned?",
+    from: "Fin AI Agent from Anthropic",
+    date: "2026-09-07T12:40:00+09:00",
+    summary: "各セッションは毎回まっさらな文脈で始まり前回の会話を引き継がないのは仕様どおり。特定セッションの挙動・モデル振り分けを" +
+             "『固定』する公式手段は現時点で無い。対策としてMemory機能とSkillsで指示を明示的・永続的にすることを推奨（例：" +
+             "『このチャンネルでは定型作業は自律的に決め、大きな変更のときだけ確認して』と明示的に覚えさせる）。",
+    gmailUrl: "https://mail.google.com/mail/u/0/#search/from%3Aanthropic.com",
+    detectedAt: "2026-09-09T09:20:00+09:00",
+    note: "見張り係の自動検知ではなく人力確認（gmail_app_password未設置のため）。マイク不具合＋添付画像ロスの新規問い合わせ" +
+          "(anthropicDraftMail)はまだたまごさん送信前のため、その返信はまだ存在しない。"
+  },
 
   // 683番（2026-09-09）：マイク不具合の「再現条件を記録できる形」。新しい置き場所は作らず、
   // ここに配列で1行足すだけにする（626番のanthropicReplyと同じ手更新パターン）。
