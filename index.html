@@ -254,6 +254,7 @@
   .pacebar.ok{border-color:rgba(95,217,150,0.45);} .pacebar.ok .ph{color:var(--green);} .pacebar.ok .fill{background:var(--green);}
   .pacebar.warn{border-color:rgba(230,190,80,0.5);} .pacebar.warn .ph{color:var(--yellow);} .pacebar.warn .fill{background:var(--yellow);}
   .pacebar.over{border-color:rgba(255,120,100,0.6); background:#241619;} .pacebar.over .ph{color:var(--red);} .pacebar.over .fill{background:var(--red);}
+  .pacebar.unsure{border-color:rgba(160,160,160,0.5); background:#1b1f24;} .pacebar.unsure .ph{color:var(--dim);}
   /* 2026-09-09 数字がいつ時点かを添え、古い（10分超）数字は薄く灰色にする */
   .pacebar.stale{opacity:0.6;}
   .pacebar .pdas{color:var(--dim); font-size:0.72rem;}
@@ -983,6 +984,7 @@ function modelChip(model){
    精緻な日割り（単純な週÷7の13%より賢い）なので値はそのまま使い、単純日割りの目安(perDayEven)も併記する。 */
 function renderPace(p){
   const bar = document.getElementById("paceBar"); if(!bar) return;
+  window.__pace = p; // renderCapBar()が「今日の予算に余裕があるか」を見るのに使う（689番）
   if(!p || p.usedToday === null || p.usedToday === undefined){ bar.hidden = true; return; }
   bar.hidden = false;
   let ageMin = null;
@@ -991,6 +993,23 @@ function renderPace(p){
     if(!isNaN(t)) ageMin = Math.round((Date.now() - t) / 60000);
   }
   const stale = ageMin != null && ageMin >= 10;
+  const asOf = ageMin == null ? "" : (ageMin < 1 ? "たった今" : ageMin + "分前") + "の値";
+  // 2026-09-09（689番）「クレジットが超余ってるのに…」「丸1日以上動いて週0%はおかしい」
+  //   → 0%をそのまま信じない。tools/pace.pyが付けたdataOk（実測が新しく取れているか）と
+  //     suspectZero（0%なのにリセットから6時間以上経っている＝取得が壊れている疑い）を見て、
+  //     疑わしい時は緑/赤の代わりに灰色で「取れていない」と出す（0%表示で安心させない）。
+  const unsure = (p.dataOk === false) || p.suspectZero === true;
+  if(unsure){
+    bar.className = "pacebar unsure" + (stale ? " stale" : "");
+    const why = p.suspectZero
+      ? `週の使用率が${p.allPct}%のままです。リセットから6時間以上経っており、0%が続くのは不自然です`
+      : `週の使用率の取得元（Claudeアプリの実測）が確認できていません`;
+    bar.innerHTML = `<div class="ph">🔘 週の使用率：取れていない可能性があります</div>
+      <div class="pd">${esc(why)}。表示中の数字（${p.allPct}%）は参考値として扱ってください</div>
+      <div class="pd">週100%を火曜18:00リセットで7日で使い切るのが配分の考え方（1日の目安は約13〜14%・理想は火曜18:00に99.9%・超えたら赤）</div>
+      <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>`;
+    return;
+  }
   bar.className = "pacebar " + (p.state || "ok") + (stale ? " stale" : "");
   const pct = Math.max(0, Math.min(100, p.budgetToday ? (p.usedToday / p.budgetToday * 100) : 0));
   const over = Math.max(0, (p.usedToday - p.budgetToday));
@@ -999,9 +1018,9 @@ function renderPace(p){
       : p.state === "warn"
       ? `🟡 今日の目安${p.budgetToday}%のうち${p.usedToday}%使用（残りわずか）`
       : `🟢 今日はあと ${Math.max(0, (p.budgetToday - p.usedToday)).toFixed(1)}% 使えます（目安${p.budgetToday}%のうち${p.usedToday}%）`;
-  const asOf = ageMin == null ? "" : (ageMin < 1 ? "たった今" : ageMin + "分前") + "の値";
   bar.innerHTML = `<div class="ph">${head}</div>
     <div class="pd">週枠100%のうち今週使用 <b>${p.allPct}%</b> ／ 週の残り${p.remainWeek}% ÷ あと${p.daysLeft}日 ・ 単純日割り目安 約${p.perDayEven}%</div>
+    <div class="pd" style="opacity:.75">配分：週100%を火曜18:00リセットで7日で使い切る（1日目安13〜14%・理想は火曜18:00に99.9%・超えたら赤）</div>
     <div class="track"><div class="fill" style="width:${pct}%"></div></div>
     <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>`;
 }
@@ -1357,14 +1376,28 @@ document.addEventListener("click", e=>{
    あと何本いけるか、もう限界かを出して。限界ならブラウザ1個閉じてまで言って、スマホから閉じられるように」
    安全率90%（SAFETY）を掛けた上限で判定する。ぎりぎりまで使わない。 */
 const SAFETY = 0.9;
+// 2026-09-09（689番）「今10本走ってるように見える。実際は4本」→ 進捗表が自前で数え直していた本数
+//   （machine.jsonのsessionListを画面側フィルタで再集計）と、health.jsonが正として持っている
+//   本数(sessions)がズレて見えることがあった。**これからはhealth.jsonのsessionsを正として使う**
+//   （新しいほう＝計測直後で20分以内なら）。health.jsonが古い・無い時だけ、これまでどおり
+//   machine.jsonのsessionListから数え直す（止まらないためのフォールバック）。
+function runningCount(m, h){
+  const healthFresh = h && h.measuredAt && (Date.now() - new Date(h.measuredAt).getTime()) < 20*60000;
+  if(healthFresh && typeof h.sessions === "number") return h.sessions;
+  return (m.sessionList || []).filter(s => !s.isDispatchSelf && !s.done && s.status !== "完了" && s.status !== "失敗").length;
+}
 function renderCapBar(){
   const bar = document.getElementById("capBar"); if(!bar) return;
   const m = window.__machine, h = window.__health;
   if(!m){ bar.hidden = true; return; }
-  const real = (m.sessionList || []).filter(s => !s.isDispatchSelf && !s.done && s.status !== "完了" && s.status !== "失敗").length;
+  const real = runningCount(m, h);
   const hardSafe = Math.max(0, Math.floor((m.safeMax || 0) * SAFETY));   // 90%で止める
   const room = Math.max(0, hardSafe - real);
   const load = m.load != null ? Math.round(m.load) : null;
+  // 検品中(status=verifying)は「1本」に数えない・別枠で見せる（台帳=queue.jsonが正）
+  const qItems = (window.__queue && window.__queue.items) || [];
+  const verifyingN = qItems.filter(x => x.status === "verifying").length;
+  const waitingN = qItems.filter(x => x.status === "waiting").length;
   // 2026-09-09（たまごさん指示）「大体三本か四本ぐらいがいい」「一番嫌なのが重すぎて固まること」
   //   「最悪なのは何もタスクが回ってないこと」→ Dispatch自身を除いた実本数に、
   //   固定の目安（0本＝工場停止・最優先で赤／5本以上＝重い・警告／3〜4本が適正）を先に判定する。
@@ -1372,11 +1405,22 @@ function renderCapBar(){
   const fableN = Object.entries(m.modelCounts || {})
     .filter(([k]) => String(k).toLowerCase().includes("fable"))
     .reduce((a, [, v]) => a + (v || 0), 0);
+  // 「クレジットが超余ってるのに1本しか回ってない」も異常として出す：
+  //   本数に空きがあり、発車待ちが実際にあり、発車を止めていない・今日の予算も超えていないのに
+  //   増えていない＝黄色で理由を出す（0本は下の分岐で赤・最優先のまま）。
+  const q = window.__quota || {};
+  const quotaStopped = (typeof q.allPct === "number") && q.allPct >= (q.stopPct || 85);
+  const p = window.__pace || {};
+  const budgetOver = p.state === "over";
+  const idleButRoom = real > 0 && room > 0 && waitingN > 0 && typeof FUEL_ON !== "undefined" && FUEL_ON
+    && !quotaStopped && !budgetOver;
   let cls = "capbar", head, sub;
   if(real === 0){
     cls += " stop"; head = `🔴 工場停止（0本・何も走っていません）`;
   } else if(real >= 5){
-    cls += " warn"; head = `🟡 重い（${real}本走行中・目安3〜4本）`;
+    cls += " warn"; head = `🟡 重い（${real}本走行中・目安3〜4本）。まず本数より先にモデルを落とす（Sonnet固定・Fable停止）`;
+  } else if(idleButRoom){
+    cls += " warn"; head = `🟡 空きがあるのに発車していません（今${real}本・あと${room}本OK・発車待ち${waitingN}件・今日の予算も余っています）`;
   } else if(room > 0){
     head = `🟢 あと${room}本いける（今${real}本・目安3〜4本）`;
   } else if(real <= hardSafe){
@@ -1385,7 +1429,8 @@ function renderCapBar(){
     cls += " stop"; head = `もう限界（${real}本／上限${hardSafe}本）`;
   }
   sub = `実作業${real}本・安全上限${hardSafe}本（測定上限${m.safeMax || "?"}本の90%）` + (load != null ? `・負荷${load}%` : "")
-    + (fableN > 0 ? `・うちFable${fableN}本` : "");
+    + (fableN > 0 ? `・うちFable${fableN}本` : "")
+    + (verifyingN > 0 ? `・検品中${verifyingN}本（別枠・本数には含めない）` : "");
   // 限界なら「何を閉じれば1本増えるか」を具体名で出して、その場で閉じられるようにする
   let btn = "";
   if(room === 0 && h && (h.items || []).length){
@@ -1400,7 +1445,9 @@ function renderCapBar(){
     }
   }
   bar.className = cls;
-  bar.innerHTML = `<span>${head}</span>${btn}<span class="capsub">${esc(sub)}</span>`;
+  // 「1本」の数え方を毎回小さく出す（何を数えているか画面自身に書く。689番）
+  const defLine = `<div class="capsub" style="opacity:.62">1本＝Dispatch自身を除く生存セッション（承認待ちも1本・完了済みは含めない）。検品中は別枠。health.jsonのsessions（${real}）と一致</div>`;
+  bar.innerHTML = `<span>${head}</span>${btn}<span class="capsub">${esc(sub)}</span>${defLine}`;
   bar.hidden = false;
   renderCmdStatus();
 }

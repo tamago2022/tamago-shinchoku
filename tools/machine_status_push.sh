@@ -145,33 +145,55 @@ python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
 # 実際: 全モデル68% / Fable82% ← アプリ画面の値。推定: 111% / 88.5%。
 # status/quota_manual.json に {"allPct":68,"fablePct":82,"asOf":"2026-09-03 23:05"} を置けば、そちらを正とする。
 # アプリ画面のスクショから拾った値を入れる用。実測ファイルが復活すればこのファイルを消せば元に戻る。
+# 2026-09-09（689番）事故の再発防止：「実測ファイルが復活したら消す」を**人の消し忘れ任せ**にしていたため、
+#   2026-09-05 05:17の手入力（週リセット直後で全部0%）が4日間ずっと残り続け、
+#   real_usage()が本物の値（19%など）を取れるようになった後も毎回0%で上書きしていた
+#   （scalarのallPctだけが手入力の0で潰され、line文言だけはquota_estimate.pyの本物の値のまま
+#   →「allPct=0なのにlineは19%」という自己矛盾した画面になっていた＝689番の症状そのもの）。
+#   ①本物の実測(quota_estimate.py自身のestimated=false)が取れている間は手入力を適用しない
+#   ②手入力自体も6時間を過ぎたら「古い一点の値」とみなし自動で無効化する（消し忘れても効かなくなる）
 python3 - "$REPO" <<'PYEOF' >/dev/null 2>&1 || true
-import json, os, sys
+import json, os, sys, time
 # 2026-09-04 バグ修正：ここは REPO を環境変数として読もうとしていたが export されておらず、
 #   フォールバックの __file__ もヒアドキュメント実行では存在しないため例外→握りつぶし で
 #   手入力(quota_manual.json)が一度も適用されていなかった。引数で渡す形に直した。
 repo = sys.argv[1] if len(sys.argv) > 1 else "/Users/mac/Desktop/tamago-shinchoku"
 q = os.path.join(repo, "status", "quota.json")
 m = os.path.join(repo, "status", "quota_manual.json")
+MANUAL_MAX_AGE_H = 6
 if os.path.exists(m):
     d = json.load(open(q, encoding="utf-8")) if os.path.exists(q) else {}
     man = json.load(open(m, encoding="utf-8"))
-    for k in ("allPct", "fablePct"):
-        if man.get(k) is not None:
-            d[k] = man[k]
-    # 2026-09-04 5時間枠も手入力できるようにする（推定が152%と出て実際は13%だった）
-    if man.get("sessionPct") is not None:
-        d["sessionPct"] = man["sessionPct"]
-        s5 = d.get("session5h")
-        if isinstance(s5, dict):
-            s5["pct"] = man["sessionPct"]
-    d["estimated"] = False
-    d["method"] = "手入力（アプリの使用状況画面の実測値・%s時点）" % man.get("asOf", "?")
-    d["manualAsOf"] = man.get("asOf")
-    for key, pct in (("fableLevel", d.get("fablePct")), ("allLevel", d.get("allPct"))):
-        if isinstance(pct, (int, float)):
-            d[key] = "stop" if pct >= d.get("stopPct", 85) else ("warn" if pct >= d.get("warnPct", 75) else "ok")
-    json.dump(d, open(q, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    real_ok = d.get("estimated") is False
+    man_age_h = None
+    try:
+        t = time.strptime(man.get("asOf", ""), "%Y-%m-%d %H:%M")
+        man_age_h = (time.time() - time.mktime(t)) / 3600.0
+    except Exception:
+        pass
+    stale_manual = man_age_h is None or man_age_h > MANUAL_MAX_AGE_H
+    if real_ok or stale_manual:
+        pass  # 本物の実測が取れている、または手入力が古すぎる→何もしない（quota_estimate.pyの値をそのまま使う）
+    else:
+        for k in ("allPct", "fablePct"):
+            if man.get(k) is not None:
+                d[k] = man[k]
+        # 2026-09-04 5時間枠も手入力できるようにする（推定が152%と出て実際は13%だった）
+        if man.get("sessionPct") is not None:
+            d["sessionPct"] = man["sessionPct"]
+            s5 = d.get("session5h")
+            if isinstance(s5, dict):
+                s5["pct"] = man["sessionPct"]
+        d["estimated"] = False
+        d["method"] = "手入力（アプリの使用状況画面の実測値・%s時点）" % man.get("asOf", "?")
+        d["manualAsOf"] = man.get("asOf")
+        for key, pct in (("fableLevel", d.get("fablePct")), ("allLevel", d.get("allPct"))):
+            if isinstance(pct, (int, float)):
+                d[key] = "stop" if pct >= d.get("stopPct", 85) else ("warn" if pct >= d.get("warnPct", 75) else "ok")
+        # line文言もscalarと矛盾しないように手入力用に書き換える（「allPct=0なのにline=19%」の再発防止）
+        d["line"] = "（手入力 %s時点）全モデル %s%% ／ Fable %s%%" % (
+            man.get("asOf", "?"), d.get("allPct"), d.get("fablePct"))
+        json.dump(d, open(q, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 PYEOF
 # 2026-09-02 見張り番：止まっている子セッションを検知して claude -p --resume で自動再開（判定は factory_status の分類。負荷ゲートあり）
 # 2026-09-03 14:45 たまごさん「もう止めて」により無効化。計測(factory_status.py)とPWAへのpushは継続、自動再開だけ止める
