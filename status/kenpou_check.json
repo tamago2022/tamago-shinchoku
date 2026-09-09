@@ -1,0 +1,91 @@
+{
+ "checkedAt": "2026-09-10T08:35:41+09:00",
+ "overallColor": "red",
+ "redCount": 4,
+ "items": [
+  {
+   "key": "ctx_1m",
+   "label": "1Mコンテキストで走った子セッション",
+   "color": "red",
+   "count": 25,
+   "sample": 25,
+   "detail": "直近25本の子セッション中25本が標準200kを超えるコンテキスト窓（実測1M）で走っていた（CLAUDE.md/AGENTS.mdの『1M context/extended contextは使わない』に違反）"
+  },
+  {
+   "key": "fable_model",
+   "label": "Fableモデルの混入（Sonnet固定違反）",
+   "color": "green",
+   "count": 0,
+   "sample": 25,
+   "detail": "直近25本はすべてSonnet固定で走っていた"
+  },
+  {
+   "key": "oni_kantoku_alive",
+   "label": "鬼監督が完了のたびに自動で動いているか",
+   "color": "red",
+   "count": 23,
+   "detail": "最終記録から約18.5時間経過（2026-09-09T14:03:01+0900）／直近24時間の完了23件中、鬼監督の記録が付いているのは0件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
+  },
+  {
+   "key": "done_missing_url",
+   "label": "URL無しで完了(done)になった仕事",
+   "color": "green",
+   "count": 0,
+   "detail": "直近24時間の完了はすべてURL付き"
+  },
+  {
+   "key": "factory_stalled",
+   "label": "工場が止まったまま放置されていないか",
+   "color": "green",
+   "count": 0,
+   "detail": "走行3本／上限3本（枠が埋まっているだけ・正常）"
+  },
+  {
+   "key": "queue_max_regression",
+   "label": "queue.jsonの最大番号が前回より減っていないか",
+   "color": "green",
+   "count": 0,
+   "detail": "前回718番 → 今回718番（減少なし）"
+  },
+  {
+   "key": "big_files",
+   "label": "公開リポジトリの1MB超ファイル",
+   "color": "red",
+   "count": 315,
+   "detail": "share/audio/512/entaku_5nin_aivis.wav(32.1MB)、share/podcast/audio/512-entaku-ai-shitsugyo.m4a(15.3MB)、share/check/assets/409-matsutakeume/output/sh10_hold.mp4(8.3MB)、share/check/video/583/SH10.mp4(8.2MB)、share/check/video/583/SH21.mp4(7.5MB)"
+  },
+  {
+   "key": "check_page_404",
+   "label": "渡し済みの確認ページURLが404になっていないか",
+   "color": "green",
+   "count": 0,
+   "sample": 15,
+   "detail": "直近15件の確認ページはすべて200だった"
+  },
+  {
+   "key": "orphan_sessions",
+   "label": "対話待ち・放置されたセッション",
+   "color": "red",
+   "count": 1,
+   "detail": "プロセスが既に無いのにrunning扱いのまま：#704"
+  }
+ ],
+ "queuedFixes": [
+  {
+   "key": "ctx_1m",
+   "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "oni_kantoku_alive",
+   "skipped": "既存の684番と同じ内容のためスキップ"
+  },
+  {
+   "key": "big_files",
+   "skipped": "既にこの点検が積んだ717番が未解決のため積み直さない"
+  },
+  {
+   "key": "orphan_sessions",
+   "skipped": "既にこの点検が積んだ718番が未解決のため積み直さない"
+  }
+ ]
+}

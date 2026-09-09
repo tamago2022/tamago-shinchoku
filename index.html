@@ -589,6 +589,17 @@
      data.js の anthropicReply が null の間は display:none のまま（何も出さない）。 -->
 <div id="anthropicAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;"></div>
 
+<!-- 715番（2026-09-10）：憲法の遵守点検（毎日1回・自動）。
+     たまごさん「たまごが言ったルールが引き継がれてないっていうのが、だから困るんだよね。
+     だからそれを仕組みにして」→ 書いてあるルールのうち機械で測れるものを毎日チェックし、
+     status/kenpou_check.json（tools/kenpou_check.py が書く）を読んで、1つでも赤があれば
+     ここに一目で分かる形で出す。赤が出た項目は自動で発車待ちへ直すタスクを積む（積んだ/
+     スキップした結果も同じJSONに入っている）。 -->
+<div id="kenpouAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb4b4;border:1px solid rgba(255,120,120,0.5);font-size:0.85rem;line-height:1.5;"></div>
+<details class="sec" id="kenpouSec"><summary>🏛️ 憲法遵守点検 <small id="kenpouMeta"></small></summary><div class="in">
+<div class="g" id="kenpouBox"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+</div></details>
+
 <!-- 683番（2026-09-09）：マイクの再現ログ＋Anthropicへの下書きメール（送信はたまごさんが押す）。
      見る場所を増やさないため、既存の折りたたみ形式(details)を使い回す。 -->
 <details class="sec" id="micMailSec"><summary>🎙 マイク不具合ログ ＆ Anthropicへの下書き</summary><div class="in">
@@ -1294,6 +1305,63 @@ function refreshAiVerify(){
 }
 refreshAiVerify();
 setInterval(refreshAiVerify, 60000);
+
+/* ───── 715番：憲法遵守点検（2026-09-10） ─────
+   status/kenpou_check.json（tools/kenpou_check.py が毎日1回書く）を読んで表示するだけ。
+   「点検そのものが止まっていないか」は、ここ（フロント側）で毎回 checkedAt と今の時刻の差を
+   計算して判定する＝点検スクリプト自身が止まっても、ここは常に「本当に今から見て古いか」を
+   出し続けられる（684番で鬼監督が止まったのに誰も気づかなかった、と同じ穴をここでは作らない）。 */
+function kenpouAgeText(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  const h = (Date.now() - d.getTime()) / 3600000;
+  if(h < 1) return "たった今";
+  if(h < 24) return Math.round(h) + "時間前";
+  return Math.round(h/24) + "日前";
+}
+function renderKenpou(d){
+  const box = document.getElementById("kenpouBox");
+  const meta = document.getElementById("kenpouMeta");
+  const alertBox = document.getElementById("kenpouAlert");
+  if(!box) return;
+  if(!d || !d.items){
+    box.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ点検の記録が無い（次の自動実行を待っています）</div>`;
+    if(meta) meta.textContent = "";
+    if(alertBox) alertBox.style.display = "none";
+    return;
+  }
+  const staleMs = Date.now() - new Date(d.checkedAt).getTime();
+  const stale = isNaN(staleMs) || staleMs > 24*3600*1000;
+  const items = d.items || [];
+  const reds = items.filter(it => it.color === "red");
+  if(meta){
+    meta.textContent = `${kenpouAgeText(d.checkedAt)}に点検・${items.length}項目中${reds.length}件が赤`
+      + (stale ? "／⚠️点検そのものが24時間以上止まっている" : "");
+  }
+  box.innerHTML = items.map(it => card(
+    stale && it.color !== "red" ? "yellow" : it.color,
+    it.label,
+    it.color === "red" ? `🔴 ${it.count}件` : "🟢 OK",
+    "",
+    `<p>${esc(it.detail || "")}</p>`
+  )).join("");
+  if(alertBox){
+    if(reds.length || stale){
+      alertBox.style.display = "block";
+      alertBox.innerHTML = (reds.length ? `🔴 憲法違反 ${reds.length}件：${reds.map(r=>esc(r.label)).join("・")}<br>` : "")
+        + (stale ? `⚠️ 点検スクリプト自体が24時間以上動いていない（最終点検：${esc(d.checkedAt||"")}）` : "");
+    } else {
+      alertBox.style.display = "none";
+    }
+  }
+}
+function refreshKenpou(){
+  return fetch("status/kenpou_check.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(renderKenpou).catch(()=>{});
+}
+refreshKenpou();
+setInterval(refreshKenpou, 60000);
 
 /* ───── 652番：あとで見る棚（2026-09-09） ─────
    status/later_tabs.json（tools/later_tabs_snapshot.py が1日1回、Braveのセッション
