@@ -648,40 +648,44 @@ def maybe_record_daily(free_gb):
     today = time.strftime("%Y-%m-%d")
     hist = _load_json(DAILY_HISTORY_JSON, {"days": []})
     days = hist.get("days") or []
-    if days and days[-1].get("date") == today:
-        return  # 今日はもう記録済み
-    prev_free = days[-1].get("free_gb") if days else None
-    days.append({"date": today, "free_gb": round(free_gb, 1),
-                 "measured_at": time.strftime("%Y-%m-%d %H:%M:%S")})
-    days = days[-90:]  # 90日分だけ残す
-    try:
-        with io.open(DAILY_HISTORY_JSON, "w", encoding="utf-8") as f:
-            json.dump({"days": days}, f, ensure_ascii=False, indent=1)
-    except Exception as e:
-        log("日次履歴の保存失敗: %s" % e)
-        return
-    if prev_free is not None and (prev_free - free_gb) > DAILY_DROP_WARN_GB:
-        # 2026-09-08（648番）：犯人特定まで自動化する（disk_trend.find_culprits）。
-        # 前回記録〜今回記録の間にhistory.jsonlへ記録されていたタスク番号を突き合わせる。
-        cause = "特定できず"
-        if disk_trend is not None and days and len(days) >= 2:
-            try:
-                t1 = time.strptime(days[-2]["measured_at"], "%Y-%m-%d %H:%M:%S")
-                t2 = time.strptime(days[-1]["measured_at"], "%Y-%m-%d %H:%M:%S")
-                import datetime as _dt
-                nums, _titles = disk_trend.find_culprits(
-                    _dt.datetime(*t1[:6]), _dt.datetime(*t2[:6]))
-                if nums:
-                    cause = "・".join(nums)
-            except Exception:
-                pass
-        log("⚠️前日比-%.1fGB(前日%.1fGB→今日%.1fGB)。原因候補：%s"
-            % (prev_free - free_gb, prev_free, free_gb, cause))
-    elif prev_free is not None:
-        log("📊 容量見張り日次：変化なし(前日%.1fGB→今日%.1fGB)" % (prev_free, free_gb))
+    already_recorded_today = bool(days and days[-1].get("date") == today)
+    if not already_recorded_today:
+        prev_free = days[-1].get("free_gb") if days else None
+        days.append({"date": today, "free_gb": round(free_gb, 1),
+                     "measured_at": time.strftime("%Y-%m-%d %H:%M:%S")})
+        days = days[-90:]  # 90日分だけ残す
+        try:
+            with io.open(DAILY_HISTORY_JSON, "w", encoding="utf-8") as f:
+                json.dump({"days": days}, f, ensure_ascii=False, indent=1)
+        except Exception as e:
+            log("日次履歴の保存失敗: %s" % e)
+            return
+        if prev_free is not None and (prev_free - free_gb) > DAILY_DROP_WARN_GB:
+            # 2026-09-08（648番）：犯人特定まで自動化する（disk_trend.find_culprits）。
+            # 前回記録〜今回記録の間にhistory.jsonlへ記録されていたタスク番号を突き合わせる。
+            cause = "特定できず"
+            if disk_trend is not None and days and len(days) >= 2:
+                try:
+                    t1 = time.strptime(days[-2]["measured_at"], "%Y-%m-%d %H:%M:%S")
+                    t2 = time.strptime(days[-1]["measured_at"], "%Y-%m-%d %H:%M:%S")
+                    import datetime as _dt
+                    nums, _titles = disk_trend.find_culprits(
+                        _dt.datetime(*t1[:6]), _dt.datetime(*t2[:6]))
+                    if nums:
+                        cause = "・".join(nums)
+                except Exception:
+                    pass
+            log("⚠️前日比-%.1fGB(前日%.1fGB→今日%.1fGB)。原因候補：%s"
+                % (prev_free - free_gb, prev_free, free_gb, cause))
+        elif prev_free is not None:
+            log("📊 容量見張り日次：変化なし(前日%.1fGB→今日%.1fGB)" % (prev_free, free_gb))
 
-    # 1日1回、24時間トレンドレポート(JSON+SVGグラフ)も更新する（同じ日次タイミングに相乗り。
-    # 新規launchd登録はしない＝642番までの教訓と同じ理由）。
+    # 2026-09-09（685番・2回目検品対応）：旧実装は「今日はもう記録済み」の日は
+    # この関数ごと即returnしていたため、trend_report（disk_trend_report.json）が
+    # **1日1回しか更新されなかった**。当日中に対策を打っても、その日の残り時間は
+    # ずっと古い「まだ減っている」判定のまま本番に出続けるバグだった。
+    # build_report()はログファイルを読むだけの軽い処理（新たにdfは叩かない）なので、
+    # 日次記録の有無に関わらず、この関数が呼ばれるたび(=15分おき)毎回更新する。
     if disk_trend is not None:
         try:
             r = disk_trend.build_report()

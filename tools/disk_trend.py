@@ -48,6 +48,48 @@ LINE_RE = re.compile(
     r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) (?:空き|片付け後の空き) (\d+\.?\d*)GB")
 TASK_NO_RE = re.compile(r"[（(](\d+)番")
 
+# 2026-09-09（685番・「120GB移したのに60GBしか空かなかった」の説明用）：
+# disk_guardian.logの「⚠️Google Drive巨大フォルダ」行から時刻とサイズを拾う。
+# このフォルダ（音楽ライブラリまるごとバックアップ_iMacHDDの控え）が
+# 外付けへ移したはずの音楽データのローカルキャッシュとして居座っていた
+# 実物であり、日々の増減が全体の空き容量の増減と強く連動している。
+GDRIVE_LINE_RE = re.compile(
+    r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ⚠️Google Drive巨大フォルダ.*?: (\d+\.?\d*)GB (.+)$")
+
+
+def parse_gdrive_log(path=LOG_PATH):
+    """(datetime, size_gb, folder_path) のリストを時刻昇順で返す。"""
+    entries = []
+    if not os.path.exists(path):
+        return entries
+    with io.open(path, encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            m = GDRIVE_LINE_RE.match(line)
+            if not m:
+                continue
+            try:
+                dt = datetime.datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")
+                gb = float(m.group(2))
+            except Exception:
+                continue
+            entries.append((dt, gb, m.group(3).strip()))
+    entries.sort(key=lambda x: x[0])
+    return entries
+
+
+def gdrive_delta(t1, t2, path=LOG_PATH):
+    """t1〜t2の間でGoogle Drive巨大フォルダのサイズが何GB変化したかを返す
+    （None=ログ無し、正=増えた、負=減った）。フォルダ名も一緒に返す。"""
+    entries = parse_gdrive_log(path)
+    in_range = [(dt, gb, name) for dt, gb, name in entries if t1 <= dt <= t2]
+    before = [(dt, gb, name) for dt, gb, name in entries if dt <= t1]
+    v1 = before[-1] if before else (in_range[0] if in_range else None)
+    v2 = in_range[-1] if in_range else None
+    if v1 is None or v2 is None:
+        return None
+    return {"name": v2[2], "from_gb": v1[1], "to_gb": v2[1],
+            "delta_gb": round(v1[1] - v2[1], 1)}
+
 
 def parse_log(path=LOG_PATH):
     """(datetime, free_gb) のリストを時刻昇順で返す。"""
@@ -209,6 +251,12 @@ def daily_line():
             hints.append("・".join(nums))
         if gap_hours >= STALE_GAP_HOURS:
             hints.append("実測に%.1fh空白あり(スリープ等で見えていない時間帯。手動でduの増分確認を)" % gap_hours)
+        if t1 and t2:
+            gd = gdrive_delta(t1, t2)
+            if gd and abs(gd["delta_gb"]) >= 1.0:
+                direction = "減った(片付いた)" if gd["delta_gb"] > 0 else "増えた(キャッシュ肥大)"
+                hints.append("Googleドライブの「%s」が%.1fGB→%.1fGBへ%s" % (
+                    os.path.basename(gd["name"]), gd["from_gb"], gd["to_gb"], direction))
         cause = "・".join(hints) if hints else "特定できず(history.jsonlに手がかり無し)"
         return "昨日：%.1fGB→%.1fGB（増減-%.1fGB）。原因：%s" % (
             prev["free_gb"], cur["free_gb"], delta, cause)
@@ -324,6 +372,23 @@ def build_report(hours=24):
                 "hours": round((valid[-1][0] - peak_t).total_seconds() / 3600, 1),
                 "verdict": verdict_of(stable_delta),
             }
+            # 2026-09-09（685番）：「まだ減っている」判定が出た区間の犯人候補を
+            # ここでも出す（daily_lineだけだと日跨ぎ1点比較にしかならず、
+            # peak以降の区間で何が起きていたかが見えなかった）。
+            if abs(stable_delta) >= 1.0:
+                nums, _titles = find_culprits(peak_t, valid[-1][0])
+                gd = gdrive_delta(peak_t, valid[-1][0])
+                hints = []
+                if nums:
+                    hints.append("・".join(nums))
+                gap = find_measurement_gap_hours(peak_t, valid[-1][0])
+                if gap >= STALE_GAP_HOURS:
+                    hints.append("実測に%.1fh空白あり" % gap)
+                if gd and abs(gd["delta_gb"]) >= 1.0:
+                    direction = "減った" if gd["delta_gb"] > 0 else "増えた"
+                    hints.append("Googleドライブの「%s」%.1fGB→%.1fGB(%s)" % (
+                        os.path.basename(gd["name"]), gd["from_gb"], gd["to_gb"], direction))
+                stable["cause_hint"] = "・".join(hints) if hints else "特定できず"
 
     report = {
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
