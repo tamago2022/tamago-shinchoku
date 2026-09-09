@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-06 09:16",
+ "updatedAt": "2026-09-09 10:44",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -141,11 +141,11 @@
    "priority": 3,
    "rank": 8,
    "task": "消えた動画のサムネが残る",
-   "state": "検証待ち",
+   "state": "判断待ち",
    "owner": null,
    "count": "14",
-   "updatedAt": "2026-09-06 09:01",
-   "note": "変化なし（前回と同じ引き継ぎ状態：main push権限待ち。branchはclaude/youtube-api-key-fix-0903-mergedとして確保済み）",
+   "updatedAt": "2026-09-09 08:47",
+   "note": "見回り係が判断：3回連続で「変化なし＝main push権限待ち」。AIがpushできない以上、検証待ちのまま回しても空回りするため判断待ちへ。残り1手＝ブランチ claude/youtube-api-key-fix-0903-merged を main へマージ（PR作成リンク: https://github.com/tamago2022/joy-relief-station/pull/new/claude/youtube-api-key-fix-0903-merged）",
    "stale": false
   },
   {
@@ -273,11 +273,11 @@
    "priority": 3,
    "rank": 19,
    "task": "シェアしても画像が出ない",
-   "state": "検証待ち",
+   "state": "完了",
    "owner": null,
    "count": "10",
-   "updatedAt": "2026-09-03 11:23",
-   "note": "「ページ種別ごとの確認」を実施：本番SSR HTMLのog:imageを7種のページで直接確認(curl)。①cover-guide曲ページ→/api/public/share-image/<動画id>(動的YouTubeサムネ)②room/card→同様に動的③/feature/monkey-magic→専用og.jpg④/world/music→動的share-image⑤/star-land(→/room/card/star-landへ307)→動的share-image⑥/・/shelves・/history・/favorites→固定の「四つの扉」既定画像。全てのcontent系ページで曲・アーティスト固有の画像が正しく出ており「卵マスコットで固定」の再現は無し。og:image先URL2種(share-image API・四つの扉PNG)とも200・正しいcontent-type・適切なcache-controlで実配信を確認。残存する説明候補：LINE/Xは一度取得したOGPプレビューをURL単位で長期キャッシュするため、本日T011で解消された本番デプロイ詰まり期間中に古い/欠けた画像が一度キャッシュされていた場合、コード側を直しても各プラットフォームのキャッシュが自然失効するかキャッシュ再取得ツール(Xのcard validator等)を使うまで古い絵が残り続ける可能性がある＝コード側の追加修正では直せない領域。次の目：実際にLINE/Xで数URLを新規共有(未共有のURL)して正しい絵が出るか確認すれば完了にできる。 [実装:wd_1d49aba9]",
+   "updatedAt": "2026-09-06 09:17",
+   "note": "✅2026-09-06 09:17 証拠:https://joy-relief-station.lovable.app/api/public/share-image/5Zgqq6Ho-l0 別の目で確認：3種のページ(曲ページ・特集・トップ)でog:imageが固有画像を指し(卵マスコット固定なし)、実際の画像URLも200・image/jpegで実配信を確認。残る「LINE/X側の古いキャッシュ」はAI側で検証不能な外部プラットフォーム領域として明記済み、コード側の課題としては解消",
    "stale": false
   },
   {
@@ -286,9 +286,9 @@
    "rank": 20,
    "task": "取り込みデータの誤判定",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "verify-t020-1788911228",
    "count": "20",
-   "updatedAt": "2026-09-03 11:42",
+   "updatedAt": "2026-09-09 08:47",
    "note": "根本原因を特定・修正しpush済み。①detected_artist_idガード(publicShelves.functions.ts)は2026-08-31に既に本番反映済みで再確認のみ。②未対応だった穴＝coverGuide.ts静的データ(37,455件)経由の経路にはそのガードが効かず、Black Dog/Doja Cat/Bad Bunny等の曲名一致で動物棚に誤分類されたままだった(2026-09-01監査で確認済み・未実行のまま放置)。src/lib/animals.tsに例外リスト(KNOWN_NON_ANIMAL_TITLES)を追加してpush(agent/task-020-animal-misclassification、tsc・単体動作7ケース確認済み)。tamago-task-queue.ymlの無人PR化/検品/自動マージ待ち。gh CLI不在のためこの経路で退避(agent-memory:gh-cli-unavailable-use-agent-task-branch)。「アーティスト名」誤判定の方はsrc/lib/ai-copy.server.tsのidentifyVideoSubject(LLMプロンプト)が該当箇所だが、こちらは未着手（次の担当への引き継ぎ候補）。 [実装:wd_11e687a1]",
    "stale": false
   },

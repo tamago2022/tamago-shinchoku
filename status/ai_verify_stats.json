@@ -1,9 +1,9 @@
 {
- "totalChecked": 70,
- "totalPassed": 45,
- "totalFailed": 24,
+ "totalChecked": 79,
+ "totalPassed": 50,
+ "totalFailed": 28,
  "totalErrors": 1,
- "totalCostUsd": 19.444,
+ "totalCostUsd": 22.4576,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -28,81 +28,13 @@
   "本当のニーズ（iPhone実再生・RSS/Podcast化・公開範囲の明示・自動": 1,
   "依頼必須の切り替え速度の前後数字比較が無く、重さの原因(363MB)の削除も未実": 1,
   "報告記載の本番URL（GitHubコミットへのリンク）とページ内PENDING_": 1,
-  "本番URL(Googleドライブ)がサインイン要求で開けず中身を確認できず、Ea": 1
+  "本番URL(Googleドライブ)がサインイン要求で開けず中身を確認できず、Ea": 1,
+  "コードは実装済みだが「実際に1件完了させ短い報告が届く」という完了条件の実演がな": 1,
+  "679番自身がqueue.json上でstatus:runningのまま未完了で": 1,
+  "679番自身がqueue.jsonでstatus:runningのまま未完了、確": 1,
+  "確認ページがソースとして案内するdisk_trend_report.json/d": 1
  },
  "history": [
-  {
-   "ts": "2026-09-06T08:44:37+09:00",
-   "n": 446,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/446-4of9-ai-kenpin.html",
-   "verdict": "pass",
-   "reason": "確認ページ・queue.json・oni_kantoku_log.jsonlの実測値が「5件とも自動OKにせずやり直しへ差し戻した」という主張と数字レベルで完全一致",
-   "costUsd": 0.231394
-  },
-  {
-   "ts": "2026-09-06T09:02:42+09:00",
-   "n": 447,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/447-5of9-ai-kenpin.html",
-   "verdict": "pass",
-   "reason": "確認ページ(200)の主張(10件検品・10件自動OK・0件差し戻し)通り、test-301〜310の全10件が実際にHTTP 200で開き、内容も「発車→作業中→終了→確認待ち、まで通っています」で確認ページの記述と食い違いなし",
-   "costUsd": 0.14946879999999999
-  },
-  {
-   "ts": "2026-09-06T09:03:29+09:00",
-   "n": 444,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/444-2of9-result.html",
-   "verdict": "fail",
-   "reason": "n=20/2/11/13の4件がFAIL判定なのにstatusがawaiting_checkのまま(waitingに未変更)で、確認待ち列に残ったまま。「9件やり直しへ戻した」という報告と実データが不一致",
-   "costUsd": 0.2733122
-  },
-  {
-   "ts": "2026-09-06T09:14:20+09:00",
-   "n": 448,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/448-oni-kantoku-batch6.html",
-   "verdict": "pass",
-   "reason": "queue.json実態・監査ログ・修正コード全てが報告内容と一致し裏付けが取れた",
-   "costUsd": 0.2610598
-  },
-  {
-   "ts": "2026-09-06T09:24:05+09:00",
-   "n": 443,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/443-ai-inspection-batch1.html",
-   "verdict": "pass",
-   "reason": "queue.json/oni_kantoku_log.jsonl実データと確認ページの数字(1件done・9件waiting)が完全一致し、前回2回のFAIL指摘(数字逆転・出典不明の34番PASS主張)は解消されている",
-   "costUsd": 0.3085686
-  },
-  {
-   "ts": "2026-09-06T09:28:36+09:00",
-   "n": 449,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/449-7of9-ai-kenpin.html",
-   "verdict": "fail",
-   "reason": "n=401/413を「deleted.jsonで確認」としているが、deleted.jsonの実物にはこの2件が存在せず、同ファイルは2026-09-05T08:18に一度コミットされたきり更新されていない（虚偽の裏取り根拠＝捏造）",
-   "costUsd": 0.4414641999999999
-  },
-  {
-   "ts": "2026-09-06T09:32:53+09:00",
-   "n": 444,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/444-2of9-result.html",
-   "verdict": "pass",
-   "reason": "確認ページ・queue.json実データとも報告通り(n=7のみdone・4枚のスクショ確認、他9件はwaitingに正しく反映)、前回指摘の2件(status未反映・スクショ無しPASS)も修正済みで確認できた",
-   "costUsd": 0.1990818
-  },
-  {
-   "ts": "2026-09-06T09:37:42+09:00",
-   "n": 451,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/451-oni-kantoku-batch9.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番queue.json・ログの3点とも整合し、n=430はスクショ欠如で正しく差し戻し済み",
-   "costUsd": 0.201833
-  },
-  {
-   "ts": "2026-09-06T09:40:44+09:00",
-   "n": 450,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/450-oni-kantoku-batch8.html",
-   "verdict": "pass",
-   "reason": "対象9件全てqueue.json/deleted.json/oni_kantoku_log.jsonlの3系統で整合し、419の据え置きも実データと一致",
-   "costUsd": 0.5164548000000001
-  },
   {
    "ts": "2026-09-06T09:41:15+09:00",
    "n": 438,
@@ -430,7 +362,79 @@
    "verdict": "pass",
    "reason": "確認ページ・本番GitHub上の4ファイルとも実在しHTTP200、内容も依頼(番組本編非複製・出典URL付き数字・落合陽一氏は「裏取りできず」と正直記載・4職種の標準機能化分析・危機/チャンス論を同熱量・反論明記・たまごさん記憶用の枠)と一致",
    "costUsd": 0.2853462
+  },
+  {
+   "ts": "2026-09-09T08:35:26+09:00",
+   "n": 672,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/672-zen-window-gumroad.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番ページ・Gumroad商品ページの3つとも実際に開けて内容が一致し、クリック計測イベントもJSバンドル内に実在確認できた",
+   "costUsd": 0.2322594
+  },
+  {
+   "ts": "2026-09-09T08:38:46+09:00",
+   "n": 679,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/679-report-shorten-url-required.html",
+   "verdict": "fail",
+   "reason": "コードは実装済みだが「実際に1件完了させ短い報告が届く」という完了条件の実演がなく、dispatch_outbox.jsonlに新形式の完了報告が1件も無く679番自身もqueue.json上でrunningのまま",
+   "costUsd": 0.5667482
+  },
+  {
+   "ts": "2026-09-09T08:55:20+09:00",
+   "n": 682,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/682-priority-abcde.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番コードとも依頼内容（ABCDE表示・ポップオーバー修正・一括仕分け・2番目へ）が実装されており、コミット/スクショ/queue.jsonの実在も確認できた",
+   "costUsd": 0.289968
+  },
+  {
+   "ts": "2026-09-09T09:38:02+09:00",
+   "n": 679,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/679-short-report-url-required.html",
+   "verdict": "fail",
+   "reason": "679番自身がqueue.json上でstatus:runningのまま未完了で、dispatch_outbox.jsonlにも#672/#679/#682の記録が本番に1件も無い(最新は2日前の#636)。前回指摘と同じ問題が未解消。",
+   "costUsd": 0.272544
+  },
+  {
+   "ts": "2026-09-09T09:44:45+09:00",
+   "n": 683,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/683-mic-issue-and-anthropic-mail.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番index.html・data.jsの内容が一致し、マイク切り分けの1行結論（Mac側高負荷が最有力・アプリ側も残る）、Anthropic返信本文の表示、Gmail下書きリンクの中身、実機スクリーンショットまで全て実データで確認できた",
+   "costUsd": 0.5329172
+  },
+  {
+   "ts": "2026-09-09T09:53:15+09:00",
+   "n": 679,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/679-short-report-url-required.html",
+   "verdict": "fail",
+   "reason": "679番自身がqueue.jsonでstatus:runningのまま未完了、確認ページが主張するdispatch_outbox.jsonlの#672/#682/#683記録も本番に実在せず（最新は09-07の#636のまま）、前回・前々回と同じ問題が未解消",
+   "costUsd": 0.3380168
+  },
+  {
+   "ts": "2026-09-09T10:12:18+09:00",
+   "n": 681,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/681-engineering-research-role.html",
+   "verdict": "pass",
+   "reason": "前回の非公開リンクは撤去され本文埋め込みに差し替え済み、①直した内容②数字③押せるリンク2本(anthropic.com/note.comとも実際に200で開けて内容も記載通り)が揃っており依頼と一致している",
+   "costUsd": 0.19391039999999998
+  },
+  {
+   "ts": "2026-09-09T10:30:47+09:00",
+   "n": 685,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/685-disk-space-leak-root-cause.html",
+   "verdict": "fail",
+   "reason": "確認ページがソースとして案内するdisk_trend_report.json/disk_daily_history.jsonが09-08時点の修正前データのまま更新されておらず（今日09-09分の実測比較が本番に存在しない）、かつ完了条件で必須とされたスクリーンショットも確認ページに一切無い",
+   "costUsd": 0.36997160000000007
+  },
+  {
+   "ts": "2026-09-09T10:33:25+09:00",
+   "n": 689,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/689-shinchoku-honsu-shiyoritsu.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番URL・生データ(health.json/quota.json)の実測とコード実装がすべて一致し、4日間0%固定の原因特定と修正も裏付けられた",
+   "costUsd": 0.2173196
   }
  ],
- "updatedAt": "2026-09-06 20:25"
+ "updatedAt": "2026-09-09 10:33"
 }
