@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#705 LINE/X共有サムネが出ない不具合の修理(3回目・独立検品リジェクト対応) 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #705 LINE/X共有サムネが出ない不具合の修理(3回目・独立検品リジェクト対応)</div>
+<h1>#705 LINE/X共有サムネが出ない不具合の修理(3回目・独立検品リジェクト対応)</h1>
+<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+X(Twitter)由来カードのサムネ(pbs.twimg.com)を、生死判定なしで一律に汎用既定画像へ差し替えていた実装をやめ、見回りが実測で生死判定してから死んでいるものだけ差し替える方式に変更。店主報告の実個体(猫動画・投稿者@meibeile)を含む155件中154件が、これまでの汎用画像でなく本来の実写サムネイルへ戻った。あわせて、検品スクリプト(check-ogp.mjs)がDB(admin_stock)由来のX投稿・YouTubeカードを1件も点検していなかった盲点も解消し、総点検を37,833件から40,151件へ拡張。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>40151</b><span>OGP総点検件数(admin_stock 2318件を新規追加)</span></div>
+  <div class="num"><b>0</b><span>URL異常(空・相対パス)件数</span></div>
+  <div class="num"><b>154/155</b><span>X由来サムネが実写のまま出る割合(以前は155件全て汎用画像行き)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番:猫動画(店主報告の実個体)</b><a href="https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fmeibeile%2Fstatus%2F2095787286604767594&amp;title=2%E5%8C%B9%E3%81%AE%E7%8C%AB%E3%80%81%E3%81%8F%E3%81%A3%E3%81%A4%E3%81%8D%E3%81%99%E3%81%8E%E3%81%A6%E8%84%9A%E3%81%8C%E9%A1%94%E3%81%AB%E4%B9%97%E3%81%A3%E3%81%A6%E3%82%8B&amp;thumb=https%3A%2F%2Fpbs.twimg.com%2Famplify_video_thumb%2F2095787253859835904%2Fimg%2FyUNuZct1CzzJaJiw.jpg" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fmeibeile%2Fstatus%2F2095787286604767594&amp;title=2%E5%8C%B9%E3%81%AE%E7%8C%AB%E3%80%81%E3%81%8F%E3%81%A3%E3%81%A4%E3%81%8D%E3%81%99%E3%81%8E%E3%81%A6%E8%84%9A%E3%81%8C%E9%A1%94%E3%81%AB%E4%B9%97%E3%81%A3%E3%81%A6%E3%82%8B&amp;thumb=https%3A%2F%2Fpbs.twimg.com%2Famplify_video_thumb%2F2095787253859835904%2Fimg%2FyUNuZct1CzzJaJiw.jpg</a></li>
+  <li><b>本番:串焼き肉(同じ投稿者の別カード)</b><a href="https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fmeibeile%2Fstatus%2F2094746292853575854&amp;title=%E3%83%91%E3%83%B3%E3%81%8B%E3%82%89%E3%81%82%E3%81%B5%E3%82%8C%E5%87%BA%E3%81%99%E7%89%B9%E5%A4%A7%E3%81%AE%E4%B8%B2%E7%84%BC%E3%81%8D%E8%82%89&amp;thumb=https%3A%2F%2Fpbs.twimg.com%2Famplify_video_thumb%2F2094746256061104128%2Fimg%2Ff3NKAgq6gekwktcb.jpg" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fmeibeile%2Fstatus%2F2094746292853575854&amp;title=%E3%83%91%E3%83%B3%E3%81%8B%E3%82%89%E3%81%82%E3%81%B5%E3%82%8C%E5%87%BA%E3%81%99%E7%89%B9%E5%A4%A7%E3%81%AE%E4%B8%B2%E7%84%BC%E3%81%8D%E8%82%89&amp;thumb=https%3A%2F%2Fpbs.twimg.com%2Famplify_video_thumb%2F2094746256061104128%2Fimg%2Ff3NKAgq6gekwktcb.jpg</a></li>
+  <li><b>本番:パグ動画(店主が「出ない」と報告した最初の実例)</b><a href="https://joy-relief-station.lovable.app/watch?v=XcqvZ8Bd6Ag" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=XcqvZ8Bd6Ag</a></li>
+  <li><b>変更のコミット(main)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/933def8b" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/933def8b</a></li>
+</ul>
+
+
+
+<footer>
+このページは #705 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
