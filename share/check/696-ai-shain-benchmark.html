@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#696 卵編集部の役割分担を世界のトップ事例と突き合わせる 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  .decision{border-left:3px solid var(--ao);padding:8px 0 8px 14px;margin:10px 0;background:#fff;border-radius:0 10px 10px 0;}
+  .decision b.yes{color:var(--midori);}
+  .decision b.no{color:var(--aka);}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;margin-bottom:16px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #696 卵編集部の役割分担を世界のトップ事例と突き合わせる</div>
+<h1>#696 卵編集部の役割分担を世界のトップ事例と突き合わせる</h1>
+<div class="date">2026-09-10 実施（681番リサーチ係の初回お題）</div>
+
+<div class="fix">
+たまごさんが作った卵編集部の暫定メンバー（ボケ丸・ふれいむ君・親方・モグラくん・キティちゃん・紬さん）を、
+Anthropic公式・arXiv論文・DeepMind公式・Cognition公式ブログの一次情報7件と突き合わせた。
+採用2件（鬼監督をロースターへ正式追加／キャラ別「事実は書かない領域」の明記）を実行し、
+見送り2件（モデル階層化・複数AIでの事実性ディベート）を理由付きで記録した。
+</div>
+
+<h2>①数字</h2>
+<div class="nums">
+  <div class="num"><b>7件</b><span>一次情報の出典（すべて実際にURLを開いて内容を確認済み）</span></div>
+  <div class="num"><b>2件</b><span>採用して実行した具体策</span></div>
+  <div class="num"><b>2件</b><span>見送り（理由付きで記録）</span></div>
+  <div class="num"><b>8人</b><span>ロースターの人数（鬼監督を追加して7→8）</span></div>
+  <div class="num"><b>#712</b><span>ブラウザ操作が必要で今回は積むだけにした発車待ち番号</span></div>
+</div>
+
+<h2>②比較（向こう／うち／差分／決定）</h2>
+
+<table>
+<tr><th>テーマ</th><th>向こうの事実（出典）</th><th>うちの今</th><th>決定</th></tr>
+<tr>
+  <td>①並列多人数エージェント</td>
+  <td>Anthropic：Opus(リード)+Sonnet(並列ワーカー)で単体より90.2%良化。ただしチャット比15倍のトークン消費</td>
+  <td>基本1人ずつ順番に呼ぶ。常時並列なし</td>
+  <td class="no">採用しない（現状維持）</td>
+</tr>
+<tr>
+  <td>②作る役と検品する役の分離</td>
+  <td>Reflexion：HumanEval 80%→91%。AlphaEvolve：生成+自動評価器で本番1年超・Google計算資源0.7%継続回収</td>
+  <td>builder→verifier、独立プロセスの検品まで実装済みだが鬼監督がロースターに未掲載</td>
+  <td class="yes">採用した（鬼監督を正式追加）</td>
+</tr>
+<tr>
+  <td>③人格・キャラの効果と副作用</td>
+  <td>In-Context Impersonation：鳥専門家ペルソナは鳥の説明が上手くなる一方、性別ペルソナで車の説明力に偏りが出た</td>
+  <td>キャラは声・トンマナ用途。事実確認とは別レイヤーだが明文化なし</td>
+  <td class="yes">採用した（書いてはいけない領域を明記）</td>
+</tr>
+<tr>
+  <td>④常設 vs 呼ばれた時だけ／モデル階層化</td>
+  <td>Anthropic：常設マルチエージェントはチャット比15倍。リード=Opus/ワーカー=Sonnetの階層</td>
+  <td>常設はモグラくん(1日1回)のみ。モデルはSonnet固定(週枠事故の再発防止)</td>
+  <td class="no">モデル階層化は見送り（Sonnet固定の制約と衝突）</td>
+</tr>
+<tr>
+  <td>⑤複数AIでの事実性ディベート</td>
+  <td>Multiagent Debate：複数ラウンドの提案・反論で推論の正確性向上、幻覚減少</td>
+  <td>仕入れの同定・裏取りは単一AI+機械検品のみ</td>
+  <td class="no">見送り（往復コストが制約と衝突。将来条件付き再検討）</td>
+</tr>
+</table>
+
+<div class="note">
+<b>参考として引用：</b>Cognition（Devin開発元）「Don't Build Multi-Agents」は、サブエージェントが互いを見えないまま並列に動くと成果物が不整合になる実例（鳥のイラストと背景でスタイルが噛み合わなかった）を挙げ、単一の線形エージェント＋文脈共有を推奨している。①・④の「並列常時稼働を採用しない」判断を別の会社の実例からも裏付けた。
+</div>
+
+<h2>③今回実際に変えたこと</h2>
+<table>
+<tr><th>項目</th><th>内容</th><th></th></tr>
+<tr><td>卵編集部ロースターに鬼監督を追加</td><td>Vault新規ファイル作成（下記リンク）。8人目として正式登録、キャラ別「書いてよい／書いてはいけない」領域を表にした</td><td class="yes">済</td></tr>
+<tr><td>oni-kantokuスキルへ研究的根拠を追記</td><td>~/.claude/skills/oni-kantoku/SKILL.md 末尾にReflexion/AlphaEvolveの数字を追記（追記のみ・既存内容は削除せず）</td><td class="yes">済</td></tr>
+<tr><td>ChatGPT側カスタムAI社員への追記（ブラウザGUI操作要）</td><td>本セッションはブラウザ操作の手段が無いため実行できず、発車待ち#712として積んだ</td><td class="no">積んだのみ・未実行</td></tr>
+</table>
+
+<h2>④押せるリンク（一次情報。全件200で開けることを実際に確認済み）</h2>
+<ul class="links">
+  <li><b>Anthropic公式：How we built our multi-agent research system</b><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">https://www.anthropic.com/engineering/multi-agent-research-system</a></li>
+  <li><b>Reflexion（arXiv:2303.11366）</b><a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">https://arxiv.org/abs/2303.11366</a></li>
+  <li><b>AlphaEvolve（DeepMind公式ブログ）</b><a href="https://deepmind.google/discover/blog/alphaevolve-a-gemini-powered-coding-agent-for-designing-advanced-algorithms/" target="_blank" rel="noopener">https://deepmind.google/discover/blog/alphaevolve-a-gemini-powered-coding-agent-for-designing-advanced-algorithms/</a></li>
+  <li><b>In-Context Impersonation（arXiv:2305.14930）</b><a href="https://arxiv.org/abs/2305.14930" target="_blank" rel="noopener">https://arxiv.org/abs/2305.14930</a></li>
+  <li><b>Multiagent Debate（arXiv:2305.14325）</b><a href="https://arxiv.org/abs/2305.14325" target="_blank" rel="noopener">https://arxiv.org/abs/2305.14325</a></li>
+  <li><b>AutoGen（arXiv:2308.08155・参考）</b><a href="https://arxiv.org/abs/2308.08155" target="_blank" rel="noopener">https://arxiv.org/abs/2308.08155</a></li>
+  <li><b>Cognition「Don't Build Multi-Agents」（参考）</b><a href="https://cognition.ai/blog/dont-build-multi-agents" target="_blank" rel="noopener">https://cognition.ai/blog/dont-build-multi-agents</a></li>
+</ul>
+
+<h2>チェック項目</h2>
+<table>
+<tr><th>項目</th><th>結果</th><th></th></tr>
+<tr><td>出典は一次情報のみか</td><td>Anthropic/DeepMind/Cognition公式ブログ＋arXiv原論文。全件curlで200確認・本文の該当箇所も実際に読んだ</td><td class="yes">済</td></tr>
+<tr><td>数字がある事例を優先したか</td><td>90.2%／15倍／80%→91%／0.7%／性別バイアスの実例、すべて本文から直接確認した数字</td><td class="yes">済</td></tr>
+<tr><td>採用/見送りの理由を明記したか</td><td>採用2件・見送り2件とも理由を1文で記録（上表・Vault文書）</td><td class="yes">済</td></tr>
+<tr><td>採用したものを積んだか（報告して終わりにしない）</td><td>2件は即実行、1件（ブラウザ操作要）は#712として発車待ちへ積んだ</td><td class="yes">済</td></tr>
+<tr><td>非公開リンクを貼っていないか</td><td>全リンクが公開URL（GitHub非公開リポ等は使用していない）</td><td class="yes">済</td></tr>
+</table>
+
+<footer>
+このページは内部の運用ロール（卵編集部のキャラ分業・検品スキル）の更新報告のため、Lovable本番サイト（ごきげん補給所）の画面には変化がありません。
+証拠は上の本文・表にすべて埋め込み済みです。詳しい比較全文はVault「AI出力/_ルール/AI組織OS/卵編集部_ロースター_2026-09-10.md」、
+oni-kantokuスキルの更新は「~/.claude/skills/oni-kantoku/SKILL.md」末尾、発車待ちの追記は「status/queue.json」の#712番を参照。
+書式は share/check/_template.html（共通の型）を土台にしています。
+</footer>
+</body>
+</html>
