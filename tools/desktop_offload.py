@@ -9,13 +9,20 @@
 
 downloads_offload.py（~/Downloads担当）と同じ考え方をDesktopにも広げる。
 Desktopは作業中のファイルも多いため、Downloadsより慎重な条件にする：
-  - 500MB以上の「単体ファイル」だけを対象にする（フォルダ・小さいファイルは触らない）
+  - 500MB以上の「単体ファイル」だけを対象にする（小さいファイルは触らない）
   - 7日以上更新されていないものだけ（すぐ使う生成物を持っていかない）
   - .app / エイリアス / tamago-shinchoku・joy-relief-station等の作業リポジトリ
-    自体（フォルダ）は対象外（このスクリプトはファイル単体しか動かさない設計
-    なので実質的にリポジトリフォルダごと巻き込むことはない）
+    自体（フォルダ）は対象外
   - 既に~/Desktop直下にある「◯◯退避」系フォルダ自体（前回までの手動退避の
     受け皿）は移動対象から除外する
+
+【2026-09-10・719番追記】「フォルダは対象外」にしていたことが、たまごさんの
+指摘「joy-relief-stationだとか、卵進捗だとか、obsidian_setting_backupだとか、
+tamago-warehouse-pickupとか、もう知らないフォルダーがデスクトップに増えてん
+だよね」の直接原因だった（生成物の多くはフォルダ単位で作られる）。
+downloads_offload.pyと同じ判定（フォルダはos.walkで合計サイズを見る）へ揃え、
+フォルダも対象にする。作業中リポジトリの誤巻き込みはSKIP_NAMES_CONTAININGで
+引き続き防ぐ。
 """
 import io
 import os
@@ -112,15 +119,30 @@ def main():
         if any(k in name for k in SKIP_NAMES_CONTAINING):
             continue
         src = os.path.join(SRC_DIR, name)
-        # フォルダは対象外（今回は単体ファイルのみ、誤動作リスクを下げる）
-        if not os.path.isfile(src):
+        # .app（アプリ本体）・エイリアスは触らない
+        if name.endswith(".app"):
             continue
         try:
             mtime = os.path.getmtime(src)
-            size_mb = os.path.getsize(src) / 1024.0 / 1024.0
         except Exception:
             continue
         if mtime > cutoff:
+            continue
+        # 2026-09-10（719番）：フォルダも対象にする（downloads_offload.pyと同じ
+        # 判定方式）。フォルダはos.walkで合計サイズを見る。
+        try:
+            if os.path.isdir(src):
+                if os.path.islink(src):
+                    continue
+                size_mb = sum(
+                    os.path.getsize(os.path.join(dp, f))
+                    for dp, _, fs in os.walk(src) for f in fs
+                ) / 1024.0 / 1024.0
+            elif os.path.isfile(src):
+                size_mb = os.path.getsize(src) / 1024.0 / 1024.0
+            else:
+                continue
+        except Exception:
             continue
         if size_mb < MIN_SIZE_MB:
             continue
