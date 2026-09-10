@@ -1446,6 +1446,31 @@ function isLocalRelay(){
   return location.protocol === "http:" &&
          (location.port === "8788" || /^(192\.168\.|10\.|127\.)/.test(location.hostname));
 }
+/* 2026-09-11（726番）：「PWAと内容がズレてる」対応。
+   data.js/queue_light.json等はすべて同一オリジンの相対パスで読んでいるので、コード自体は
+   PWAでもブラウザでも同じ場所を見に行く。ズレの実体はほぼ「PWAとブラウザがそもそも違う
+   URL（違うオリジン）を開いている」こと（例：PWAは古いURLでホーム画面登録されたまま、
+   ブラウザは正しい本番URLを見ている、等）。start_urlは登録時点のURLに固定されるためJS側
+   からは強制的に合わせられないので、正規URLと違う場所を開いている時にその場で気づけるよう
+   警告を出す（家のWi-Fi内でMacから直接開く isLocalRelay 系は意図した別経路なので対象外）。 */
+const CANONICAL_ORIGIN = "https://tamago2022.github.io";
+const CANONICAL_PATH_PREFIX = "/tamago-shinchoku/";
+function checkCanonicalLocation(){
+  if(isLocalRelay()) return;
+  if(location.origin === CANONICAL_ORIGIN && location.pathname.indexOf(CANONICAL_PATH_PREFIX) === 0) return;
+  try{
+    const bar = document.createElement("div");
+    bar.id = "canonicalWarn";
+    bar.style.cssText = "margin:8px 0;padding:8px 12px;border-radius:10px;background:#3a2c12;color:#ffd27f;"
+      + "border:1px solid rgba(255,190,100,0.6);font-size:0.78rem;";
+    bar.innerHTML = `⚠ 本来のアドレスと違う場所を開いています（今：${esc(location.origin + location.pathname)}）。`
+      + `PWAとブラウザで中身がズレて見える時はここが原因のことがあります。`
+      + `<a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#ffd27f;text-decoration:underline;">正しいアドレスはこちら</a>`;
+    const h1 = document.querySelector("h1");
+    if(h1 && h1.parentNode) h1.parentNode.insertBefore(bar, h1.nextSibling);
+  }catch(e){}
+}
+checkCanonicalLocation();
 function refreshRelay(){
   if(isLocalRelay()){
     window.__relay = {url: location.origin, lanUrl: location.origin, local: true};

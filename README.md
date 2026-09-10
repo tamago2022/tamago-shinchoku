@@ -23,6 +23,27 @@
 
 リンクは `links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=<URLエンコードしたパス>"}]` の形で付ける。パスの文字列だけを置かない。
 
+## 発車待ちの軽量表示（2026-09-10・726番）
+
+`status/queue.json`（発車待ち台帳の正本）はwhat/result本文込みで1.5MB超あり、進捗表が毎回これを
+まるごと読むと重い。そこで表示用に`status/queue_light.json`（`tools/build_queue_light.py`が生成、
+n/title/status/priority/model/updatedAt等だけ・80KB台）を作り、進捗表はまずこちらだけを読む。
+`<details>`（くわしく）を開いた瞬間だけ、その1件のwhat/resultをフルの`queue.json`から遅延取得する
+（`fetchQueueFull()`）。done/cancelledは直近分だけしか`queue_light.json`に含めない。
+
+## PWAとブラウザで中身がズレる件（2026-09-11・726番）
+
+`data.js`/`queue_light.json`等はすべて同一オリジンの相対パスで読むので、コード自体は
+PWA・ブラウザどちらでも同じ場所を見る。ズレの実体は「PWAとブラウザがそもそも違うURL
+（違うオリジン）を開いている」ことがほぼ全て（PWAは古いURLでホーム画面登録されたまま等）。
+JS側から強制的に合わせることはできないため、正規URL（`https://tamago2022.github.io/tamago-shinchoku/`）
+と違う場所を開いている時は画面上部に警告バナーを出す（`checkCanonicalLocation()`、家のWi-Fi内で
+Macから直接開く`isLocalRelay`系は意図した別経路なので対象外）。
+また、通信が細い回線で`fetch`や`<script src>`の応答が返らないまま止まる箇所（`checkVersion`／
+`priority.json`取得／`data.js`等の読み込み）に明示的なタイムアウトを追加し、詰まっても
+「読み込みに時間がかかっています」が無言のまま何十分も出続けないようにした（一定回数を
+超えたら失敗と表示し、手動で読み直すリンクを出す）。
+
 ## Dispatchへの完了報告（2026-09-06新設・413番）
 
 子セッションが完了するたびに `tools/auto_launcher.py` の `harvest()` が
