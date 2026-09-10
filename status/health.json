@@ -1,11 +1,11 @@
 {
- "measuredAt": "2026-09-10T21:39:40+0900",
+ "measuredAt": "2026-09-10T21:47:07+0900",
  "diskFreeGB": null,
  "purgeableGB": null,
  "snapshots": 0,
  "load": null,
  "memPressure": "green",
- "memAvailGB": 7.4,
+ "memAvailGB": 7.2,
  "sessions": 1,
  "safeMax": 4,
  "moreOK": 3,
@@ -17,30 +17,71 @@
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 20.75GB",
-   "gb": 20.75,
+   "effect": "メモリ 20.48GB",
+   "gb": 20.48,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
    "how": "89プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
+   "label": "~/Library/Caches を空にする",
+   "effect": "空き 5.13GB",
+   "gb": 5.13,
+   "kind": "disk",
+   "safe": true,
+   "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
+  },
+  {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 1.86GB",
-   "gb": 1.86,
+   "effect": "メモリ 1.77GB",
+   "gb": 1.77,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
    "how": "24プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
+   "label": "ゴミ箱を空にする",
+   "effect": "空き 1.15GB",
+   "gb": 1.15,
+   "kind": "disk",
+   "safe": false,
+   "how": "捨てたつもりのもの。中身を一度見てから"
+  },
+  {
    "label": "Spotifyを閉じる",
-   "effect": "メモリ 0.59GB",
-   "gb": 0.59,
+   "effect": "メモリ 0.56GB",
+   "gb": 0.56,
    "kind": "mem",
    "safe": true,
    "app": "Spotify",
    "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "LINEを閉じる",
+   "effect": "メモリ 0.48GB",
+   "gb": 0.48,
+   "kind": "mem",
+   "safe": true,
+   "app": "LINE",
+   "how": "6プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "node_modules を消す（1箇所）",
+   "effect": "空き 0.44GB",
+   "gb": 0.44,
+   "kind": "disk",
+   "safe": true,
+   "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
+  },
+  {
+   "label": "~/.npm/_npx を空にする",
+   "effect": "空き 0.39GB",
+   "gb": 0.39,
+   "kind": "disk",
+   "safe": true,
+   "how": "npx の一時置き場。作り直される"
   },
   {
    "label": "Googleドライブのローカルキャッシュ",
@@ -49,24 +90,20 @@
    "kind": "disk",
    "safe": false,
    "how": "アップロード待ちが残っていると消せない"
-  },
-  {
-   "label": "LINEを閉じる",
-   "effect": "メモリ 0.36GB",
-   "gb": 0.36,
-   "kind": "mem",
-   "safe": true,
-   "app": "LINE",
-   "how": "6プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   }
  ],
- "_duAt": 1789042385.86131,
+ "_duAt": 1789044335.310484,
  "_du": {
-  "caches": null,
-  "npx": null,
-  "trash": null,
+  "caches": 5.13,
+  "npx": 0.39,
+  "trash": 1.15,
   "driveCache": 0.37,
-  "nodeModules": 0.0,
-  "nodeModulesList": []
+  "nodeModules": 0.44,
+  "nodeModulesList": [
+   [
+    "~/Desktop/joy-relief-station/node_modules",
+    0.44
+   ]
+  ]
  }
 }
