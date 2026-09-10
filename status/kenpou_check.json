@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-09-10T09:10:22+09:00",
+ "checkedAt": "2026-09-10T16:23:48+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 4,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,8 +23,8 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "red",
-   "count": 23,
-   "detail": "最終記録から約19.1時間経過（2026-09-09T14:03:01+0900）／直近24時間の完了23件中、鬼監督の記録が付いているのは0件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
+   "count": 15,
+   "detail": "最終記録から約26.3時間経過（2026-09-09T14:03:01+0900）／直近24時間の完了15件中、鬼監督の記録が付いているのは0件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
   },
   {
    "key": "done_missing_url",
@@ -38,14 +38,14 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "意図的な一時停止中（status/no_launch.flag）なので工場停止としては扱わない"
+   "detail": "最終発車から0.4時間・発車待ち11件・空き1枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回718番 → 今回721番（減少なし）"
+   "detail": "前回726番 → 今回726番（減少なし）"
   },
   {
    "key": "big_files",
@@ -68,6 +68,13 @@
    "color": "green",
    "count": 0,
    "detail": "放置されたセッションは無い"
+  },
+  {
+   "key": "worktree_count",
+   "label": "リポジトリ内のworktree（作業場）件数",
+   "color": "red",
+   "count": 137,
+   "detail": "137件（しきい値100件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。worktree_reaper.pyが動いているか確認し、片づけを進めること）"
   }
  ],
  "queuedFixes": [
@@ -82,6 +89,12 @@
   {
    "key": "big_files",
    "skipped": "既にこの点検が積んだ717番が未解決のため積み直さない"
+  },
+  {
+   "key": "worktree_count",
+   "status": "done",
+   "message": "727番として発車待ちに追加しました（P2）",
+   "n": 727
   }
  ]
 }
