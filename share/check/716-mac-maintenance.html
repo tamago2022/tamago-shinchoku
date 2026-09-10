@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#716 パソコンが重い原因を特定＋メンテナンス係を新設 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #716 パソコンが重い原因を特定＋メンテナンス係を新設</div>
+<h1>#716 パソコンが重い原因を特定＋メンテナンス係を新設</h1>
+<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+常駐スクリプトのうち5本(taste-intake-review・daily-kenpin・engineering-research・sns-queue-build・genkyoku-mimawari)が「参照先の作業フォルダ(worktree)が既に掃除された後も、そのことに気づかず毎回空振りし続けるゾンビ」になっていたのを発見し自動で退避した。Macの負荷・ディスク空き・常駐便の生死を毎日9:25に自動点検し、直せるものは黙って直す係(tools/tamago_maintenance.py)を715番(憲法遵守点検)と同じ枠組みで新設した。実測の結果、load高止まりの主犯はうちの常駐スクリプトではなく Brave Browser Helper (Renderer) だとプロセス単位で確定した(たまごさんのブラウザタブ利用そのもの。Braveには触れない制約のため強制終了はしていない)。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5本</b><span>見つけて自動退避したゾンビ常駐便</span></div>
+  <div class="num"><b>52.3GB</b><span>ディスク空き(実測・案件記載の51GBと一致)</span></div>
+  <div class="num"><b>毎日9:25</b><span>新設したメンテ係の自動実行時刻</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実行結果(maintenance_check.json)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/maintenance_check.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/maintenance_check.json</a></li>
+  <li><b>新設スクリプト(tamago_maintenance.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/tamago_maintenance.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/tamago_maintenance.py</a></li>
+  <li><b>コミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/b566f9f8" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/b566f9f8</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>ゾンビ常駐便5本の自動検出・退避</td><td class="yes">済み(実測ログあり)</td></tr>
+<tr><td>毎日9:25に自動点検する係を新設・launchd登録</td><td class="yes">済み(launchctl list確認済み)</td></tr>
+<tr><td>load高止まりの主犯をプロセス単位で特定</td><td class="yes">済み(Brave Browser Helper系)</td></tr>
+<tr><td>Brave自体を閉じてMac全体のloadを強制的に下げる</td><td class="no">未実施(Braveには触れない恒久ルールのため)</td></tr>
+<tr><td>進捗表タブの読み込み中表示</td><td class="no">原因はMac全体の高負荷でブラウザ描画が遅延している可能性が高いという仮説どまり。個別のポーリング処理自体に無限ループは確認できなかった</td></tr>
+</table>
+
+<footer>
+このページは #716 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
