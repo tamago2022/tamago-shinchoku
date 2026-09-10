@@ -1,9 +1,9 @@
 {
- "totalChecked": 97,
- "totalPassed": 61,
+ "totalChecked": 98,
+ "totalPassed": 62,
  "totalFailed": 35,
  "totalErrors": 1,
- "totalCostUsd": 27.3492,
+ "totalCostUsd": 27.713,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -42,14 +42,6 @@
   "確認ページ自身が「スピーカーから実際に音が聞こえるかは未確認」と明記しているのに": 1
  },
  "history": [
-  {
-   "ts": "2026-09-06T12:50:01+09:00",
-   "n": 427,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/427-js-bundle-slim.html",
-   "verdict": "pass",
-   "reason": "本番JS実測値が確認ページの主張と一致し、棚・扉ボタン用のDrawerコードが実際に別チャンクへ分離され初回読み込みから外れていることをコードレベルで確認できた",
-   "costUsd": 0.33836020000000006
-  },
   {
    "ts": "2026-09-06T13:01:33+09:00",
    "n": 213,
@@ -441,7 +433,15 @@
    "verdict": "pass",
    "reason": "確認ページ・本番URLとも200で開き、確認ページは「スピーカーで実際に聞こえるかは未確認」と明記した上で「▶実クリックでspeaking=trueになったことは実測」という矛盾のない主張に修正済み、本番ページも本文がタイトル候補以降のみ・URL除去ロジック・全ボタン(play/stop/back15/30/60/toStart/rate)を実装済みと確認した。",
    "costUsd": 0.28915420000000003
+  },
+  {
+   "ts": "2026-09-10T17:56:28+09:00",
+   "n": 724,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/724-ai-online-real-value-play.html",
+   "verdict": "pass",
+   "reason": "本番URL(200)は実音声m4a(9.47MB≒9.4MB、audio/mp4、長さ19:00)を<audio>タグで再生する構成に作り直されており、dokudoku_worker.py→AivisSpeech Engine(ローカル実音声合成)を実際に使っていることをソースで確認。前回差し戻し理由(speechSynthesis流用)は解消。再生/停止/15秒/30秒/1分戻す/頭から/速度の",
+   "costUsd": 0.3638056
   }
  ],
- "updatedAt": "2026-09-10 17:21"
+ "updatedAt": "2026-09-10 17:56"
 }
