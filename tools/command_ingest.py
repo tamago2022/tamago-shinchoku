@@ -241,6 +241,24 @@ def _load_queue():
 
 def _save_queue(q):
     save_json(QUEUE, q)
+    # 2026-09-10（726番）queue.json保存の都度、軽量版queue_light.jsonも即時再生成する。
+    #   これまでqueue_light.jsonはauto_launcher.pyの周回終端でしか作り直されず、
+    #   さらに中継所(relay_server.py)の/queueはqueue.jsonをそのまま返していたため、
+    #   PWA（中継所経由）では軽量化の効果がゼロで、PWAとブラウザ（GitHub Pages直結）で
+    #   表示件数がズレる原因にもなっていた。ここで作り直せば、relay_server.pyの/queueが
+    #   queue_light.jsonへ切り替わっても「押した瞬間に画面へ反映」という鮮度は保たれる。
+    #   本体（queue.json）の保存は絶対に失敗させないので、失敗しても握りつぶし1行だけ残す。
+    try:
+        if HERE not in sys.path:
+            sys.path.insert(0, HERE)
+        import build_queue_light
+        build_queue_light.build()
+    except Exception as e:
+        try:
+            with io.open(os.path.join(REPO, "status", "queue_light_build_errors.log"), "a", encoding="utf-8") as f:
+                f.write("%s queue_light再生成に失敗: %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), e))
+        except Exception:
+            pass
 
 
 def _find_item(items, n):

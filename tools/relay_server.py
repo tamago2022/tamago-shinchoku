@@ -189,7 +189,15 @@ class Handler(BaseHTTPRequestHandler):
         #   GitHub Pages側の**公開済みコピー**で、公開は5分以上遅れる。
         #   そのため押した直後に画面が古い状態へ戻り、何度も押すことになっていた。
         #   → 中継所からMacの**生の台帳**をそのまま返す。押した瞬間に画面へ反映される。
-        for name, path in (("/queue", "queue.json"), ("/machine", "machine.json"),
+        # 2026-09-10（726番）たまごさん「ブラウザの進捗表、読み込み遅いね。重いよ」
+        #   中継所の/queueは上記コメントの経緯でqueue.json（1.4MB超・what/result本文が大半）を
+        #   そのまま返しており、軽量化（queue_light.json新設）の効果がゼロになっていた。
+        #   さらにPWA（中継所経由・全件）とブラウザ直結（GitHub Pages・直近30件）で
+        #   見える件数が食い違う原因にもなっていた。
+        #   → command_ingest.pyの_save_queue()がqueue.json保存の都度queue_light.jsonを
+        #     即時再生成するようにしたので、「押した瞬間に画面へ反映」という鮮度は保ったまま、
+        #     ここもqueue_light.jsonを返せる。
+        for name, path in (("/queue", "queue_light.json"), ("/machine", "machine.json"),
                            ("/quota", "quota.json"), ("/commands", "commands.json")):
             if self.path.startswith(name):
                 try:
