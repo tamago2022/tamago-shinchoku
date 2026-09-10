@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#719 デスクトップ整理＋iMac HDD引っ越し（719番・進行中） 確認ページ</title>
+<title>#719 デスクトップ整理＋iMac HDD引っ越し（719番・7回目・進行中） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -42,39 +42,37 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #719 デスクトップ整理＋iMac HDD引っ越し（719番・進行中）</div>
-<h1>#719 デスクトップ整理＋iMac HDD引っ越し（719番・進行中）</h1>
-<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #719 デスクトップ整理＋iMac HDD引っ越し（719番・7回目・進行中）</div>
+<h1>#719 デスクトップ整理＋iMac HDD引っ越し（719番・7回目・進行中）</h1>
+<div class="date">2026-09-11 00:00〜 実測確認・前回の「原因特定」を実測で訂正</div>
 
 <div class="fix">
-デスクトップの中身をiMac HDDのClaude専用置き場へ整理。内蔵ディスクの空き容量が減り続ける本当の原因を突き止めた：GoogleChromeが作る一時ファイル(code_sign_clone)が2026-09-06から片付けられず112個・約151GB分たまっていた。これは過去のセッションでは見つかっていなかった新発見。この片付けを開始したが、外付けHDDへ大量の小さいファイルを移す作業自体が非常に時間のかかる処理で、今回の3時間の枠内には全部を運びきれなかった。
+デスクトップは完全に整理し、「今動いている開発フォルダ」以外は全部iMac HDDへ移した（joy-relief-station等の稼働中フォルダだけが残る状態）。前回セッションが「これが犯人」としたブラウザの一時ファイル(code_sign_clone)の片付けを、消す前後で容量を厳密に測り直したところ、<b>空き容量はほとんど増えないことが分かった</b>（見かけの1.4GBを消しても内蔵の空きは増えない、むしろ減ることさえあった）。前回の発見は訂正が必要と判明。本当に効果がある一番大きい塊（21GB・10万ファイルの古い作業フォルダ）の移動を裏で開始し、このセッション終了後も継続する。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>87GB</b><span>今の内蔵の空き（開始時51GB→87GB）</span></div>
-  <div class="num"><b>151GB</b><span>新しく見つけた一番大きい原因（ブラウザの片付け忘れファイル）</span></div>
-  <div class="num"><b>4/112</b><span>運び終えた個数（1個あたり約1.4GB、残りは裏で進行中）</span></div>
+  <div class="num"><b>84GB</b><span>今の内蔵の空き（正しい指標 /System/Volumes/Data。目標100GBまであと16GB）</span></div>
+  <div class="num"><b>0GB</b><span>code_sign_clone移動による実際の解放量（見かけ上は10GB超移動したが、実測では増えなかった＝前回の見立て違い）</span></div>
+  <div class="num"><b>4項目</b><span>デスクトップ直下の残り（joy-relief-station等、すべて稼働中で触ってはいけないもの）</span></div>
 </div>
-
-
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-<li><b>（リンクなし）</b></li>
+  <li><b>iMac HDD側の置き場ノート（今回の訂正・引き継ぎを追記済み）</b><a href="file:///Volumes/iMac%20HDD/Claude専用/README_置き場ルール.md" target="_blank" rel="noopener">file:///Volumes/iMac HDD/Claude専用/README_置き場ルール.md</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>iMac HDDにClaude専用の置き場ができているか</td><td class="yes">yes</td></tr>
-<tr><td>内蔵の空きが100GB以上になったか</td><td class="yes">no</td></tr>
-<tr><td>デスクトップの不要フォルダが片付いたか</td><td class="yes">yes</td></tr>
-<tr><td>減り続ける原因が分かったか</td><td class="yes">yes</td></tr>
+<tr><td>内蔵の空きが100GB以上になったか</td><td class="no">no（84GB）</td></tr>
+<tr><td>デスクトップが「今動いているもの」だけになったか</td><td class="yes">yes</td></tr>
+<tr><td>減り続ける原因が分かったか</td><td class="no">要再調査（前回の「code_sign_clone犯人説」は実測で否定。真因はまだ確定していない）</td></tr>
 </table>
 
 <footer>
-次にやること：残り108個のcode_sign_clone（1個1.4GB程度、合計約148GB）の片付けを続ければ、内蔵の空きは目標の100GBを大きく超える見込み。移動は裏で継続中（このセッションは3時間の制限で終了、次のセッションが引き継ぐ）。外付けHDD(iMac HDD)は大きい1個のファイルなら速い(143MB/秒)が、小さいファイルが大量にあると極端に遅くなる特性があると判明。今後、大量の小ファイルをこのHDDへ運ぶ時は先に1つのファイルへまとめてから運ぶこと。
+次にやること：`~/Documents/AI作業/2026-09-02/プロジェクト/デスクトップ整理`（21GB・101,586ファイル）の移動をrsyncで裏起動し継続中。これが完了すれば100GBに届く見込み。今回の作業中、他の並行セッションもディスクへ同時アクセスしており、単純な読み取り(du)ですら数分〜10分以上かかる状態だった。次のセッションは、着手前に`ps aux`で他セッションの重い処理と重なっていないか確認し、iMac HDDのREADMEに追記した「code_sign_clone移動は効果なし」の訂正を踏まえて進めること。
 </footer>
 </body>
 </html>
