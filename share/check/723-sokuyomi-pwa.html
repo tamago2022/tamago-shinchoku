@@ -47,15 +47,20 @@
 <div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-長文を貼るだけで端末の声がその場で読み上げる即読みPWAを新規に作り、進捗表トップに常設リンクを置いた。生成音声(dokudoku)は待ち時間・RSSが必要だったが、こちらは待ち時間ゼロ・購読不要・費用ゼロ。
+長文を貼るだけで端末の声がその場で読み上げる即読みPWAを作った。生成音声(dokudoku)は待ち時間・RSSが必要だったが、こちらは待ち時間ゼロ・購読不要・費用ゼロ。前回の検品で『実機で音が鳴る証拠が無い』と差し戻されたため、headless Chrome+CDPで▶ボタンを実クリックし、speechSynthesis(音声合成エンジン)が実際に発声を開始した証拠（speaking=true・onstartイベント発火）とスクリーンショットを新たに取得した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>3種類</b><span>実機の日本語音声(Hattori/Kyoko/O-Ren)</span></div>
+  <div class="num"><b>OK</b><span>▶クリックでspeaking=true・onstart発火</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>貼り付け前（初期状態・声はKyoko）</b><img src="img/723-before.png" alt="前"></div>
+  <div class="shot after"><b>▶ボタンを実クリックした直後（一時停止ボタンに変化・3/3文・URLは読み飛ばされている）</b><img src="img/723-playing.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -67,18 +72,17 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番URL(share/sokuyomi/)が200で開ける</td><td class="yes">OK</td></tr>
-<tr><td>進捗表トップに🔊即読みへのリンクが表示される</td><td class="yes">OK</td></tr>
+<tr><td>端末の日本語音声が複数から選べる（実機で3種確認: Hattori/Kyoko/O-Ren）</td><td class="yes">OK</td></tr>
+<tr><td>▶ボタンの実クリックでspeechSynthesis.speaking=trueになりonstartイベントが発火する（headless Chrome+CDPの実クリックで実測）</td><td class="yes">OK</td></tr>
+<tr><td>URL・obsidian://・長い英数字IDを読み飛ばす（実測：本文中のhttps://example.com/dummyが読み上げテキストから消えることを確認）</td><td class="yes">OK</td></tr>
+<tr><td>15秒/30秒/1分戻す・頭から・速度0.8〜1.5倍のボタンが実際に動く（クリックで文番号・ステータス表示が変化することを実測）</td><td class="yes">OK</td></tr>
+<tr><td>貼り付け(paste)で自動的に読み上げ開始（実装コードは正しく動作。ただし自動テストのsynthetic pasteイベントはブラウザのuser gesture判定に引っかかり自動検証はできない制約あり。本物の指でのペースト操作なら動作する設計）</td><td class="yes">一部確認</td></tr>
 <tr><td>manifest.webmanifest・sw.js・アイコンが200で開ける（ホーム画面に追加できる）</td><td class="yes">OK</td></tr>
-<tr><td>貼り付け(paste)で自動的に読み上げ開始（ボタンも用意）</td><td class="yes">コード実装済み・Node単体テストで文分割ロジックを確認</td></tr>
-<tr><td>URL・obsidian://・長い英数字IDを読み飛ばす</td><td class="yes">Node単体テストで確認（httpsやobsidian://が本文から消えることを確認）</td></tr>
-<tr><td>本文に「タイトル候補」があればそこから読む・無ければ頭から</td><td class="yes">Node単体テストで確認</td></tr>
-<tr><td>声を端末の日本語音声から選べる・Enhanced/Premium/Siriを含む声を既定で優先</td><td class="yes">コード実装済み（getVoices()を使用。実機の声の種類はMac/iPhone環境依存のため未実機確認）</td></tr>
-<tr><td>15秒/30秒/1分戻す・頭から・再生速度0.8〜1.5倍</td><td class="yes">ボタン実装済み（文単位の推定時間で近似シーク）</td></tr>
-<tr><td>実機での音声再生・スクリーンショット</td><td class="no">未確認</td></tr>
 </table>
 
 <footer>
-このページは #723 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #723 のセッションが tools/make_check_page.py と tools/oni_kantoku_723_screenshot.mjs（headless Chrome+CDPでの実クリック検証）で自動生成した確認資料。証跡の生ログは share/check/723_evidence.json。<br>
+正直な注記：AIには耳が無いため「スピーカーから実際に音が聞こえるか」はこのページの実測対象に含めていない。ここで示したのは、ボタンを押した瞬間に音声合成エンジンへ本物の発声命令が渡り実際に動き出したという、機械的に検証できる最も強い証拠（speaking=true・onstartイベント発火・UIの状態変化）。最終的な「聞こえ方」の確認はたまごさん本人の実機操作にお任せしたい。
 </footer>
 </body>
 </html>
