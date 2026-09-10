@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-10 17:14",
+ "updatedAt": "2026-09-10 17:21",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -52,18 +52,25 @@
    "title": "【急ぎ】「資本主義の限界（深井龍之介）／お金が消える前夜」を読み上げてURLを出す",
    "why": "スマホから追加",
    "what": "**たまごさんが今すぐ聞きたい。音声とURLを出すことだけをやる。他は一切やらない。**（724番と同じ形）\n\n■ 対象ノート\nObsidian Vault `tamago_brain` の\n**「資本主義の限界　深井龍之介　AIが労働を壊し、「お金の次」を人類に迫る／お金が消える前夜――AI・BI・格差・所有をめぐる世界円卓」**\n（Vaultの実体：`/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain/`。名前で探す。長いので前方一致でよい）\n\n■ やること（これだけ）\n1. ノートを読む。\n2. **読み始めは「タイトル候補」の見出しから**（あれば）。それより上のメタ情報・前置き・タグ・日付は**読まない。**「タイトル候補」が無ければ本文の頭から。\n3. **URLは読み上げない。**\n4. 音声にする（`tools/dokudoku_worker.py` の既存の仕組み。新しく作らない）。\n5. **聞くページを出す。再生／停止／15秒戻す／30秒戻す／1分戻す／頭から／再生速度**を付ける。スマホで**画面のボタン**で操作できること。\n6. **できたらDispatchへURLを返す。**RSS・購読・フィードの話は一切出さない。\n\n■ 守ること\n- たまごさんに質問しない。材料集めや考察はやらない。**音声とURLだけ。早さが最優先。**\n\n■ 完了条件\n聞くページのURL。スマホで再生ボタンを押して音が鳴ること。\n\n【たまごさんのやり直し指摘・1回目・09-10 12:36】まだ直っていないとの指摘です（詳細の言葉は無し）。\n\n【AI検品(Verifier)ではねられました・1回目・09-10 16:50】理由：完了条件の核心（スマホ実機で▶を押して音が鳴ること）を確認ページ自身が「未確認」と明記しており、たまごさんの「まだ直っていない」指摘と矛盾しない状態のまま完了報告されている。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。\n\n【来ない通知を待って終わっていました・1回目・09-10 16:58】\n前回このタスクは「音声生成が完了するまで待機します。完了次第、続きを進めます。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【AI検品(Verifier)ではねられました・2回目・09-10 17:14】理由：確認ページ自身が「スピーカーから実際に音が聞こえるかは未確認」と明記しているのに、完了報告は「実機で音が出ることを実測した」と言い切っており矛盾。テストもMac上headless Chromeでスマホ実機ではない。。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
-   "checkedAt": "2026-09-10T12:36:38+0900",
+   "checkedAt": "2026-09-10T17:21:25+0900",
    "ownerRedoCount": 1,
    "priority": 1,
    "aiVerifyFailCount": 2,
    "bgWaitCount": 1,
    "startedAt": "2026-09-10T17:14:38+09:00",
    "sessionId": "2248cf28-0360-4b8e-8081-915f1d44869e",
-   "pid": 1831
+   "finishedAt": "2026-09-10T17:20:34+09:00",
+   "result": "検証完了しました。実装済みで、本番URLは実際に200で開けること、確認ページの内容が過去の却下理由(矛盾した完了報告)と矛盾しないことを独立検証で確認できました。\n\n【完了】「資本主義の限界（深井龍之介）／お金が消える前夜」を聞くページ化し、本番公開済み\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/725-shihonshugi-genkai-play.html\n本番: https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/notes/725-shihonshugi-genkai.html\n\n※スマホ実機でスピーカーから音が聞こえるかはAI側では確認できず未実施（確認ページに明記済み。再生/停止/15秒・30秒・1分戻す/頭から/速度調整ボタンは実装済み、▶クリックで音声合成エンジンが実際に発声開始することはheadless Chrome+CDPの実クリックで実測済み）",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/725-shihonshugi-genkai-play.html",
+    "https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/notes/725-shihonshugi-genkai.html"
+   ],
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：確認ページ・本番URLとも200で開き、確認ページは「スピーカーで実際に聞こえるかは未確認」と明記した上で「▶実クリックでspeaking=trueになったことは実測」という矛盾のない主張に修正済み、本番ページも本文がタイトル候補以降のみ・URL除去ロジック・全ボタン(play/stop/back15/30/60/toStart/rate)を実装済みと確認した。"
   },
   {
    "n": 687,
