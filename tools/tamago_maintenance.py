@@ -366,10 +366,16 @@ def check_vite_zombies(dry_run=False):
             continue
         if not (("npm exec vite dev" in r["command"]) or ("npm exec vite preview" in r["command"])):
             continue
-        children_killed = any(c["ppid"] == r["pid"] and c["pid"] in killed_pids for c in rows)
-        if children_killed:
+        children = [c for c in rows if c["ppid"] == r["pid"]]
+        children_killed = any(c["pid"] in killed_pids for c in children)
+        # 前回パスで子(vite本体・esbuild)を先に片づけた後、次にこの関数を呼んだ時点では
+        # 子は既にプロセス表から消えている＝「子が無いnpmラッパー」も同じく孤児。
+        # 1時間以上生きている npm ラッパーで子が居ないものは、片づけ忘れの残骸として扱う。
+        orphaned_no_child = (not children) and _etime_to_sec(r["etime"]) >= VITE_ZOMBIE_GRACE_SEC
+        if children_killed or orphaned_no_child:
             entry = {"pid": r["pid"], "command": r["command"][:140],
-                       "reason": "子のvite/esbuildを片づけたため道連れ",
+                       "reason": "子のvite/esbuildを片づけたため道連れ" if children_killed
+                                 else "子が既に居ない孤児npmラッパー（1時間以上前から）",
                        "rssKB": int(r["rss"]) if r["rss"].isdigit() else None}
             if not dry_run:
                 try:
