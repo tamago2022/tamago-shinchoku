@@ -403,6 +403,43 @@ def check_check_pages(sample=15, timeout=10):
     }
 
 
+# ───────────────────────── ⑩：リポジトリ内のworktree（作業場）が増えすぎていないか ─────────────────────────
+# 720番（2026-09-10）：ChatGPT/Codexのアプリのプロジェクト一覧に、うちが作ったgit worktreeが
+# 300件近く出て「増える一方」と店主から2回目の指摘。原因はjoy-relief-station配下の
+# `.worktrees`/`.claude/worktrees`等に作業場が溜まり続けること。worktree_reaper.py（30分おき、
+# heartbeat.sh経由）が片づけ役だが、機能していても新規作成の速度に追いつかず増え続けることがある
+# ので、件数そのものを毎日点検して赤にする。しきい値は店主の体感（300件は明確に多すぎ）を踏まえ
+# 100件を境にした（reaperが健全なら通常は数十件程度に収まる想定）。
+
+WORKTREE_TARGET = "/Users/mac/Desktop/joy-relief-station"
+WORKTREE_COUNT_LIMIT = 100
+
+
+def check_worktree_count(limit=WORKTREE_COUNT_LIMIT):
+    try:
+        r = subprocess.run(
+            ["git", "-C", WORKTREE_TARGET, "worktree", "list", "--porcelain"],
+            capture_output=True, text=True, timeout=60,
+        )
+        count = len([l for l in r.stdout.splitlines() if l.startswith("worktree ")])
+    except Exception as e:
+        return {
+            "key": "worktree_count", "label": "リポジトリ内のworktree（作業場）件数",
+            "color": "gray", "count": 0, "detail": "計測に失敗した: %s" % e,
+        }
+    over = count > limit
+    return {
+        "key": "worktree_count",
+        "label": "リポジトリ内のworktree（作業場）件数",
+        "color": "red" if over else "green",
+        "count": count,
+        "detail": (
+            "%d件（しきい値%d件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。"
+            "worktree_reaper.pyが動いているか確認し、片づけを進めること）" % (count, limit)
+        ) if over else ("%d件（しきい値%d件以内）" % (count, limit)),
+    }
+
+
 # ───────────────────────── ⑨：対話待ち・放置されたセッション ─────────────────────────
 
 def check_orphan_sessions(stuck_factor=2.0, abs_stuck_hours=6):
@@ -538,6 +575,7 @@ def main():
         check_big_files(),
         check_check_pages(),
         check_orphan_sessions(),
+        check_worktree_count(),
     ]
 
     queued = []
