@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#690 Lately バッジ比率・カード高さ 実測PASS（2026-09-11） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #690 Lately バッジ比率・カード高さ 実測PASS（2026-09-11）</div>
+<h1>#690 Lately バッジ比率・カード高さ 実測PASS（2026-09-11）</h1>
+<div class="date">2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+案件#690の本体：バッジをakiko『Love Theme From Spartacus』実測値(短辺の13.8%・cqh比率でCSS実装済み)の定数1つに統一し、固定pxを撤去。今回<code>tools/oni_kantoku_badge_ratio.mjs</code>で本番URLを headless Chrome 実測した結果、Lately・akiko両ページとも全バッジが目標比率±2pt以内、同じ行のカード高さ差0px、棚編集ボタンとの重なり0件でPASS。過去2回のAI検品リジェクトは、バッジがSupabase非同期取得後にクライアント側で描画される（静的HTMLには出ない）ため、JS実行なしの検品ではバッジ不在に見え、無関係な文字キャプション(コラボ欄の<code>text-[10px]</code>)を誤って旧実装の痕跡と読んだことが原因と判明（該当箇所はコード確認済み・バッジ本体ではない）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>バッジ比率±2pt超え（目標13.8%）</span></div>
+  <div class="num"><b>0px</b><span>同じ行のカード高さ差</span></div>
+  <div class="num"><b>0件</b><span>棚編集ボタンとバッジの重なり</span></div>
+  <div class="num"><b>11枚</b><span>実測した全バッジ（Lately7・akiko4）</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>Lately本番・モバイル実測（バッジ左上に表示）</b><img src="img/690-verify-0911-lately-mobile.png" alt="Lately本番・モバイル実測（バッジ左上に表示）"><span class="meta">13.8%ちょうど</span></div>
+  <div class="shot plain"><b>Lately本番・デスクトップ（メイン動画フル幅・コピー確認）</b><img src="img/690-verify-0911-lately-desktop.png" alt="Lately本番・デスクトップ（メイン動画フル幅・コピー確認）"></div>
+  <div class="shot plain"><b>akiko見本・モバイル実測（比較用）</b><img src="img/690-verify-0911-akiko-mobile.png" alt="akiko見本・モバイル実測（比較用）"><span class="meta">13.8%ちょうど</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番:Lately</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&amp;song=lately</a></li>
+  <li><b>本番:akiko見本</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①メイン動画フル幅(1・2・3並び)</td><td class="yes">直った</td></tr>
+<tr><td>②カバー・パロディを本人動画と同サイズで2枚並び</td><td class="yes">直った</td></tr>
+<tr><td>③コピー書き直し（静かなピアノの夜、を撤去）</td><td class="yes">直った</td></tr>
+<tr><td>④バッジの大きさ・位置（短辺13.8%・左上固定）</td><td class="yes">直った</td></tr>
+<tr><td>⑤サムネの上下余白比率・カード高さ揃え</td><td class="yes">直った</td></tr>
+<tr><td>⑥棚編集ボタンとサムネ・タグの重なり</td><td class="yes">直った</td></tr>
+<tr><td>⑦コラボ・共演・CM欄にバッジを付けられる</td><td class="yes">直った</td></tr>
+</table>
+
+<footer>
+実測コマンド: node tools/oni_kantoku_badge_ratio.mjs <URL> --shot out.png（joy-relief-stationリポジトリ内）。2026-09-11 01:38頃に本番へ実行、PASS（不合格0件）を確認。
+</footer>
+</body>
+</html>
