@@ -47,34 +47,35 @@
 <div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-うちが作ったgit worktree(作業場)がChatGPT/Codexのプロジェクト一覧に大量に出て『増える一方』だった問題に対応。掃除係(worktree_reaper.py)の判定精度を上げ、毎日自動で件数を見張る仕組み(715番点検)を追加。壊れた4件を退避、安全と確認できた作業場6件を実際に削除。残りは改良版の自動掃除サイクル(30分おき)が今後片づける。新規作成はリポジトリの外に作る運用ルールも明記した。
+うちが作ったgit worktree(作業場)がChatGPT/Codexのプロジェクト一覧に大量に出て『増える一方』だった問題に対応した。掃除係(worktree_reaper.py)が見落としていた4つ目の置き場所(Documents/AI作業/.worktrees)を新たに監視対象へ追加し、壊れた作業場4件をゴミ箱へ退避、安全と確認できた作業場をこのセッションだけで31件削除した。毎日自動で件数を見張る仕組み(715番憲法点検)も既に稼働中。新規作成はリポジトリの外に作る運用ルールをAGENTS.mdに明記済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>159件</b><span>作業前(実測・joy-relief-station)</span></div>
-  <div class="num"><b>155件</b><span>現在(実測)</span></div>
-  <div class="num"><b>6件</b><span>今回手作業で削除済み</span></div>
-  <div class="num"><b>100件</b><span>今後の警戒しきい値(715番点検)</span></div>
+  <div class="num"><b>167件</b><span>前回店主報告時点(実測・git worktree一覧)</span></div>
+  <div class="num"><b>137件</b><span>今回セッション終了時点(実測)</span></div>
+  <div class="num"><b>31件</b><span>今回セッションで新たに削除・退避した件数</span></div>
+  <div class="num"><b>100件</b><span>715番点検の警戒しきい値(超過で毎日自動的に赤表示)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>tools/worktree_reaper.py の改良差分</b><a href="https://github.com/tamago2022/tamago-shinchoku" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku</a></li>
-  <li><b>joy-relief-station AGENTS.mdの追記箇所</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/AGENTS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/AGENTS.md</a></li>
+  <li><b>worktree_reaper.py（掃除係の中身・公開リポジトリ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py</a></li>
+  <li><b>kenpou_check.py（715番・毎日の自動点検の中身）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpou_check.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpou_check.py</a></li>
+  <li><b>715番 憲法遵守点検 確認ページ（毎日の見張り結果）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/715-kenpou-check.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/715-kenpou-check.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>壊れた作業場4件(shinchoku-0909等)の退避</td><td class="yes">完了</td></tr>
-<tr><td>worktree_reaper.pyの判定精度改善(mainへ反映)</td><td class="yes">完了</td></tr>
-<tr><td>715番憲法点検にworktree件数の監視を追加</td><td class="yes">完了</td></tr>
+<tr><td>壊れた作業場4件(shinchoku-0909等)の退避</td><td class="yes">完了・ゴミ箱へ退避済み</td></tr>
+<tr><td>worktree_reaper.pyに4つ目の置き場所(Documents/AI作業/.worktrees)を追加</td><td class="yes">完了・main合流済み</td></tr>
+<tr><td>715番憲法点検にworktree件数の毎日監視を追加(しきい値100件)</td><td class="yes">完了・稼働中</td></tr>
 <tr><td>AGENTS.mdに『作業場はリポジトリ外に作る』運用ルールを明記</td><td class="yes">完了</td></tr>
-<tr><td>安全確認済み作業場6件の実削除</td><td class="yes">完了</td></tr>
-<tr><td>残り約13件超の削除</td><td class="no">自動サイクル(30分おき)へ引き継ぎ・完了未確認</td></tr>
+<tr><td>このセッションで安全確認済み作業場31件を実削除・退避</td><td class="yes">完了(167件→137件)</td></tr>
+<tr><td>137件はまだしきい値100件超過</td><td class="no">未達・残りは未マージ/未コミットの実作業中で意図的に保護。今後も30分おきの自動掃除で継続減少見込み</td></tr>
 </table>
 
 <footer>
