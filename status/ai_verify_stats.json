@@ -1,9 +1,9 @@
 {
- "totalChecked": 95,
+ "totalChecked": 96,
  "totalPassed": 60,
- "totalFailed": 34,
+ "totalFailed": 35,
  "totalErrors": 1,
- "totalCostUsd": 26.812,
+ "totalCostUsd": 27.06,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -38,17 +38,10 @@
   "確認ページの主張(load1→6.4)が、ページ自身がリンクする最新実測JSON": 1,
   "完了条件で明記されたスクリーンショット（実機で音が鳴る証拠）が無く、確認ページ自": 1,
   "依頼で指定した`tools/dokudoku_worker.py`（AivisS": 1,
-  "完了条件の核心（スマホ実機で▶を押して音が鳴ること）を確認ページ自身が「未確認」": 1
+  "完了条件の核心（スマホ実機で▶を押して音が鳴ること）を確認ページ自身が「未確認」": 1,
+  "確認ページ自身が「スピーカーから実際に音が聞こえるかは未確認」と明記しているのに": 1
  },
  "history": [
-  {
-   "ts": "2026-09-06T12:14:41+09:00",
-   "n": 41,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/41-song-page-check.html",
-   "verdict": "pass",
-   "reason": "確認ページと本番URL(norah-jones-let-it-be含む計10件)をcurlで独立実測し、旧URL→標準ページへの307リダイレクトと200到達を確認、報告内容と一致した",
-   "costUsd": 0.2503438
-  },
   {
    "ts": "2026-09-06T12:20:01+09:00",
    "n": 216,
@@ -440,7 +433,15 @@
    "verdict": "pass",
    "reason": "確認ページ・本番URL・スクショ・証跡JSONが全て実在し、依頼内容（RSS不要で即読み上げ）と実装コードが一致している",
    "costUsd": 0.33592600000000006
+  },
+  {
+   "ts": "2026-09-10T17:14:28+09:00",
+   "n": 725,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/725-shihonshugi-genkai-play.html",
+   "verdict": "fail",
+   "reason": "確認ページ自身が「スピーカーから実際に音が聞こえるかは未確認」と明記しているのに、完了報告は「実機で音が出ることを実測した」と言い切っており矛盾。テストもMac上headless Chromeでスマホ実機ではない。",
+   "costUsd": 0.2480076
   }
  ],
- "updatedAt": "2026-09-10 16:52"
+ "updatedAt": "2026-09-10 17:14"
 }
