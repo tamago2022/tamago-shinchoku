@@ -21,6 +21,7 @@
 import io
 import json
 import os
+import re
 import subprocess
 import time
 
@@ -63,6 +64,37 @@ PRIVATE_TMP = "/private/tmp"
 # **rmではなくゴミ箱へ退避するだけ**にとどめる（店主が後で拾えるように）。
 GHOST_TRASH = os.path.join(os.path.expanduser("~"), ".Trash", "worktree_reaper_ghosts")
 GHOST_MIN_AGE_SEC = 3 * 86400  # 3日以上さわられていない幽霊だけ対象
+
+# 2026-09-10（720番・店主「ChatGPTのタスク一覧が300件近く出て増える一方」への対応で発覚）：
+# 「未保存の変更あり」でずっと保護され続けているworktreeの実態を数件サンプルしたところ、
+# 大半が実際の未完了作業ではなく①`.claude/agents/*.md`（main側で更新され続ける共通のエージェント
+# 定義）、②`.agents/skills/`配下の未追跡ディレクトリ（後から共有スキルとして追加されたもの）、
+# ③`.codex/`（同様の未追跡ノイズ）、④自動生成ファイル、で埋まっていた（例：gdrive-music-0903は
+# `??`行が全部この手のノイズのみで実質差分ゼロだった）。これらは「消えても実害がない共通ノイズ」
+# と明確に言えるものだけを厳選し、除外した残りが空なら「実質clean」として扱う。
+# 安全側に倒すため、ここに載せる以外の差分が1件でもあれば従来通り保護する。
+HARMLESS_STATUS_PATTERNS = [
+    re.compile(r"^ M \.claude/agents/.*\.md$"),
+    re.compile(r"^\?\? \.agents/skills/"),
+    re.compile(r"^\?\? \.codex/"),
+    re.compile(r"^ M src/routeTree\.gen\.ts$"),
+]
+
+
+def has_meaningful_changes(status_output):
+    """`git status --porcelain`の出力から、無害な共通ノイズを除いても
+    実質的な差分が残るかを判定する。空文字列・全行が無害パターン一致なら False。"""
+    text = (status_output or "").strip()
+    if not text:
+        return False
+    for line in text.splitlines():
+        line = line.rstrip()
+        if not line:
+            continue
+        if any(p.match(line) for p in HARMLESS_STATUS_PATTERNS):
+            continue
+        return True
+    return False
 
 
 def log(msg):
@@ -197,7 +229,7 @@ def sweep_worktrees(wt_dir, guard):
         if st is None or st.returncode != 0:
             kept.append((name, "状態が読めない"))
             continue
-        if (st.stdout or "").strip():
+        if has_meaningful_changes(st.stdout):
             kept.append((name, "未保存の変更あり"))
             continue
         head = git(["rev-parse", "HEAD"], cwd=path)
@@ -321,7 +353,7 @@ def sweep_paths(paths, guard, label):
         if st is None or st.returncode != 0:
             kept.append((name, "状態が読めない"))
             continue
-        if (st.stdout or "").strip():
+        if has_meaningful_changes(st.stdout):
             kept.append((name, "未保存の変更あり"))
             continue
         head = git(["rev-parse", "HEAD"], cwd=path)
@@ -420,7 +452,7 @@ def main():
             if st is None or st.returncode != 0:
                 kept.append((name, "状態が読めない"))
                 continue
-            if (st.stdout or "").strip():
+            if has_meaningful_changes(st.stdout):
                 kept.append((name, "未保存の変更あり"))
                 continue
             head = git(["rev-parse", "HEAD"], cwd=path)
