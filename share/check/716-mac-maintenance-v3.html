@@ -47,12 +47,12 @@
 <div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-重さの犯人はうちの検証スクリプトの設定漏れだった。eslintが.claude/.worktrees配下4万5千件を毎回スキャンして10分以上詰まっていたのを除外設定で直し、丸1日止まっていた「あとで見る棚」を復活、進捗表の重い再描画も止めた。
+重さの犯人は、うちの検証スクリプトの設定漏れ＋不安定な外部トンネル。eslintが.claude/.worktrees配下4万5千件を毎回スキャンして10分以上詰まり負荷が高止まりし続け、それが原因で「進捗表とMacをつなぐ道」の自動修復まで止まっていた。両方直した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>31.23 → 6.6</b><span>load1(負荷) 直す前→直した後</span></div>
+  <div class="num"><b>31.23 → 6.4</b><span>load1(負荷) 直す前→直した後</span></div>
   <div class="num"><b>45,618 → 約400</b><span>eslintがスキャンするファイル数</span></div>
   <div class="num"><b>8個・337MB</b><span>片づけたゾンビviteサーバー</span></div>
   <div class="num"><b>162件 → 219件</b><span>あとで見る棚(652番)が復活・更新</span></div>
@@ -61,7 +61,7 @@
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
   <div class="shot before"><b>直す前：load1=31.23</b><img src="img/716-load-before.png" alt="前"></div>
-  <div class="shot after"><b>直した後：load1=6.6</b><img src="img/716-load-after.png" alt="後"></div>
+  <div class="shot after"><b>直した後：load1=6.4</b><img src="img/716-load-after.png" alt="後"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
@@ -77,13 +77,14 @@
 <tr><td>eslintの除外設定(.claude/.worktrees/tools/supabase)</td><td class="yes">直した・joy-relief-station本番へpush済み</td></tr>
 <tr><td>暴走していたフルリポジトリeslintの停止</td><td class="yes">停止した(load低下を実測)</td></tr>
 <tr><td>進捗表の10秒ごと重い再描画</td><td class="yes">差分が無ければ再描画しない仕組みに変更・反映済み</td></tr>
-<tr><td>進捗表タブが固まる原因(中継所への通信詰まり)</td><td class="yes">8秒で諦める仕組みを追加・反映済み</td></tr>
+<tr><td>進捗表タブが固まる原因1(中継所への通信詰まり)</td><td class="yes">8秒で諦める仕組みを追加・反映済み</td></tr>
+<tr><td>進捗表タブが固まる原因2(外部の中継トンネルが9/9朝から死亡)</td><td class="yes">負荷が高すぎて自動修復が止まっていたのが真因。負荷を下げた上で立て直し、実測200を確認</td></tr>
 <tr><td>あとで見る棚(652番)が1日以上止まっていた件</td><td class="yes">常設メンテ係(715番と同枠組み)に組み込み毎日自動化</td></tr>
 <tr><td>Braveの単一タブが97〜132%食っていた件</td><td class="no">Braveには触れない方針のため未対処(原因特定のみ)</td></tr>
 </table>
 
 <footer>
-常設メンテ係は tools/tamago_maintenance.py（毎日09:25・launchd自動実行・715番と同じ枠組み）。Braveの重いタブは方針により触れないため、たまごさんご自身でタブを閉じるかブラウザ再起動が必要な場合があります。
+常設メンテ係は tools/tamago_maintenance.py（毎日09:25・launchd自動実行・715番と同じ枠組み）。外部トンネルは不安定なサービスのため今後また切れる可能性がありますが、負荷が下がったことで自動修復（tools/relay_watch.py・2分おき）が正常に働くようになりました。Braveの重いタブは方針により触れないため、たまごさんご自身でタブを閉じるかブラウザ再起動が必要な場合があります。
 </footer>
 </body>
 </html>
