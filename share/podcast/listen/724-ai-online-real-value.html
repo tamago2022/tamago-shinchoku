@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ</title>
+<style>
+  :root{--bg:#1a2030;--ink:#e9e2d3;--sub:#9aa1ad;--line:#2f3749;--accent:#6f8fb0;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);
+    background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
+    font-size:16px;line-height:1.7;max-width:600px;margin-left:auto;margin-right:auto;}
+  h1{font-size:1.15rem;font-weight:500;margin:0 0 6px;}
+  .lead{color:var(--sub);font-size:0.85rem;margin-bottom:22px;}
+  .status{background:#212839;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;}
+  .status .time{font-size:1.5rem;font-variant-numeric:tabular-nums;}
+  .status .state{color:var(--sub);font-size:0.85rem;margin-top:4px;}
+  .bigbtn{display:block;width:100%;padding:20px;font-size:1.3rem;border-radius:14px;border:none;
+    background:var(--accent);color:#0f1420;font-weight:700;margin-bottom:14px;}
+  .bigbtn:active{opacity:0.8;}
+  .row{display:flex;gap:10px;margin-bottom:14px;}
+  .row button{flex:1;padding:16px 4px;font-size:1rem;border-radius:12px;border:1px solid var(--line);
+    background:#212839;color:var(--ink);font-weight:600;}
+  .row button:active{background:#2f3749;}
+  .speedrow{display:flex;gap:8px;margin-bottom:20px;}
+  .speedrow button{flex:1;padding:14px 2px;font-size:0.95rem;border-radius:10px;border:1px solid var(--line);
+    background:#212839;color:var(--sub);}
+  .speedrow button.active{background:var(--accent);color:#0f1420;border-color:var(--accent);font-weight:700;}
+  .back{display:block;text-align:center;color:var(--sub);font-size:0.85rem;margin-top:24px;}
+  a{color:var(--accent);}
+</style>
+</head>
+<body>
+<h1>AIがオンラインを代替するほどリアル集合価値は高まるか</h1>
+<p class="lead">円卓ノートをAivisSpeechで読み上げた音声です。画面のボタンで操作してください。</p>
+
+<audio id="ply" preload="metadata" src="../audio/AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B.m4a"></audio>
+
+<div class="status">
+  <div class="time"><span id="cur">0:00</span> / <span id="dur">--:--</span></div>
+  <div class="state" id="state">読み込み中…</div>
+</div>
+
+<button class="bigbtn" id="playBtn">▶ 再生</button>
+
+<div class="row">
+  <button id="b15">⏪ 15秒</button>
+  <button id="b30">⏪ 30秒</button>
+  <button id="b60">⏪ 1分</button>
+</div>
+<div class="row">
+  <button id="bRestart">⏮ 頭から</button>
+</div>
+
+<div class="speedrow">
+  <button data-speed="0.75">0.75x</button>
+  <button data-speed="1" class="active">1.0x</button>
+  <button data-speed="1.25">1.25x</button>
+  <button data-speed="1.5">1.5x</button>
+</div>
+
+<a class="back" href="../">← 朗読一覧へ</a>
+
+<script>
+(function(){
+  var a = document.getElementById('ply');
+  var playBtn = document.getElementById('playBtn');
+  var state = document.getElementById('state');
+  var cur = document.getElementById('cur');
+  var dur = document.getElementById('dur');
+
+  function fmt(sec){
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    var m = Math.floor(sec/60), s = Math.floor(sec%60);
+    return m + ':' + (s<10?'0':'') + s;
+  }
+  function seekBy(delta){
+    if (!isFinite(a.duration)) { a.currentTime = Math.max(0, a.currentTime + delta); return; }
+    a.currentTime = Math.min(a.duration, Math.max(0, a.currentTime + delta));
+  }
+  a.addEventListener('loadedmetadata', function(){ dur.textContent = fmt(a.duration); });
+  a.addEventListener('timeupdate', function(){ cur.textContent = fmt(a.currentTime); });
+  a.addEventListener('play', function(){ playBtn.textContent = '⏸ 停止'; state.textContent = '再生中'; });
+  a.addEventListener('pause', function(){ playBtn.textContent = '▶ 再生'; state.textContent = '停止中'; });
+  a.addEventListener('ended', function(){ playBtn.textContent = '▶ 再生'; state.textContent = '終わりました'; });
+  a.addEventListener('error', function(){ state.textContent = '音声の読み込みに失敗しました'; });
+  a.addEventListener('canplay', function(){ if (state.textContent === '読み込み中…') state.textContent = '準備できました'; });
+
+  playBtn.addEventListener('click', function(){
+    if (a.paused) { a.play(); } else { a.pause(); }
+  });
+  document.getElementById('b15').addEventListener('click', function(){ seekBy(-15); });
+  document.getElementById('b30').addEventListener('click', function(){ seekBy(-30); });
+  document.getElementById('b60').addEventListener('click', function(){ seekBy(-60); });
+  document.getElementById('bRestart').addEventListener('click', function(){ a.currentTime = 0; });
+
+  var speedBtns = document.querySelectorAll('.speedrow button');
+  speedBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var sp = parseFloat(btn.getAttribute('data-speed'));
+      a.playbackRate = sp;
+      speedBtns.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  });
+})();
+</script>
+</body>
+</html>
