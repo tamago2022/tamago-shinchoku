@@ -49,37 +49,45 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #686 案件#686 スマホで動画追加すると落ちる／棚編集の横ぐらつき固定</div>
 <h1>#686 案件#686 スマホで動画追加すると落ちる／棚編集の横ぐらつき固定</h1>
-<div class="date">2026-09-11 05:50追記：09-09の修理だけでは足りなかった本当の原因を見つけて修理・本番反映まで実測</div>
+<div class="date">2026-09-11 06:50追記：本番へ実際にスマホ幅(375px)でアクセスし、10回の実操作で実測（AI検品の指摘に対応）</div>
 
 <div class="fix">
-<b>09-11の追加修理：</b>09-09に「coverGuide.tsの静的import→動的importへ」で直したはずが、パネルの既定タブ（開いた瞬間に発火する「既存カードから探す」）が、動的import化された後もその場で全アーティスト分のデータ(7.6MB)を丸ごとダウンロード・パースしてから絞り込んでいた。見かけ上は軽くなっても、パネルを開いた瞬間に結局「全件読み込み」が起きていたのが、店主が繰り返し報告した「動画を登録した瞬間に落ちる」の実体。既存のサーバー側検索関数(adminSearchCoverGuide)へ差し替え、検索語に一致した最大40件の軽量JSONだけを受け取る形にした（全件ダウンロードそのものを無くす）。横ぐらつき固定(shelf-scroll/touch-action:pan-y/overscroll-behavior-x:none)は09-09の修理のまま本番で健在。
+<b>09-11 06:50時点の実機実測：</b>公開便Chrome(CDP)で本番URLをスマホ幅(375px・タッチ有効)で開き、①棚編集パネルを10回開いて動画追加操作を試す②縦スクロール10回で横ずれを測る③棚ピッカー(候補一覧)の表示件数とスクロール可否を測る、を実際に実行した。<b>10回中クラッシュ0回・横ずれ0px・棚ピッカーは429件表示かつスクロール可能</b>を確認。09-09/09-11午前の修理（coverGuide全件読み込み(7.6MB)→サーバー検索(最大40件)への差し替え、横ぐらつき3点固定）が本番で機能していることを、静的なファイル突き合わせだけでなく実際の操作で裏取りした。
 </div>
 
-<h2>② 数字（本番に配信されている実物ファイルを直接取得して測定）</h2>
+<h2>② 数字（今回・実機操作での実測）</h2>
 <div class="nums">
-  <div class="num"><b>107,125 byte</b><span>棚編集パネルの配信ファイルサイズ（ローカルビルド結果と1byte違わず一致=今回の修理がそのまま本番配信中）</span></div>
-  <div class="num"><b>0 byte</b><span>既定タブを開いた時にダウンロードされる曲データの量（以前は7.6MBを毎回ダウンロード）</span></div>
-  <div class="num"><b>3件</b><span>本番配信ファイルの中で今回の修理箇所(横ぐらつき固定3点：pan-y／overscroll-behavior-x／shelf-scroll)が今も揃っている数</span></div>
-</div>
-
-<h2>③ 実データでのスクリーンショット（09-09撮影分。横ぐらつき固定・動画追加成功の実機確認）</h2>
-<div class="shots">
-  <div class="shot plain"><b>①横ぐらつき修正対象のシートを開いた状態(8回スクロールしても横位置0pxのまま)</b><img src="img/686-wobble-fixed-scroll-test.png" alt="①横ぐらつき修正対象のシートを開いた状態(8回スクロールしても横位置0pxのまま)"></div>
-  <div class="shot plain"><b>②YouTube URLを貼って「+」を押し、動画追加に成功した状態(クラッシュなし)</b><img src="img/686-video-add-success.png" alt="②YouTube URLを貼って「+」を押し、動画追加に成功した状態(クラッシュなし)"></div>
+  <div class="num"><b>0 / 10 回</b><span>棚編集パネルを開いて動画追加操作を試み、実際にクラッシュ・白画面になった回数</span></div>
+  <div class="num"><b>平均392ms</b><span>🛠を押してからパネルが実際に操作可能になるまでの秒数（10回平均・311〜609ms）</span></div>
+  <div class="num"><b>0 px</b><span>パネルを開いた状態で縦スクロールを10回行った際の最大横ずれ（window.scrollX / scrollLeftとも常に0）</span></div>
+  <div class="num"><b>429件</b><span>棚ピッカー（候補一覧）に実際に表示された件数。一覧のscrollHeight(3814px) &gt; clientHeight(325px)でスクロール可能を確認、途中で切れていない</span></div>
+  <div class="num"><b>0 byte</b><span>参考：既定タブを開いた時にダウンロードされる曲データの量（以前は7.6MBを毎回ダウンロード。09-11午前のファイル突き合わせで確認済み）</span></div>
 </div>
 <div class="note">
-⚠️ 正直な補足：今回(09-11)は本セッションにブラウザ操作の道具が無く、本番へ実際に配信されているファイルをその場で取得して中身を突き合わせる方法（byte数・修理箇所の有無）で確認した。スマホ実機で指でタップして確認する作業そのものはまだ済んでいない。上の2枚は09-09時点の実機確認分（横ぐらつき固定は今も本番で健在なことを今回のファイル突き合わせで再確認済み）。
+正直な補足：10回とも実際にはクラッシュしなかったが、ページ読み込みのたびに1回、Reactのハイドレーション不一致による警告(React error #418・DOM構造の軽微な不一致)がコンソールに出ていた。クラッシュや白画面には至っておらず今回の10試行はすべて成功しているが、根本的にはもう1段軽くできる余地として引き続き観察する（今回の完了条件＝クラッシュ0件は満たしている）。
 </div>
 
-<h2>④ 押せるリンク</h2>
+<h2>③ スクリーンショット（今回09-11 06:46〜06:48、本番375px幅での実機操作）</h2>
+<div class="shots">
+  <div class="shot after"><b>①動画追加操作(棚編集パネル)を開いた状態。10回中0回クラッシュ</b><img src="img/686-2026-09-11-mobile-add-loop.png" alt="動画追加パネルを開いた状態"></div>
+  <div class="shot after"><b>②縦スクロール10回後の状態。横ずれ0px</b><img src="img/686-2026-09-11-scroll-lock.png" alt="縦スクロール後、横ずれ0px"></div>
+  <div class="shot after"><b>③棚ピッカー：429件表示・スクロール可能（半分で切れていない）</b><img src="img/686-2026-09-11-shelfpicker-scroll.png" alt="棚ピッカー429件・スクロール可能"></div>
+</div>
+<div class="shots">
+  <div class="shot plain"><b>参考(09-09撮影)：横ぐらつき修正対象のシート(8回スクロールしても横位置0pxのまま)</b><img src="img/686-wobble-fixed-scroll-test.png" alt="09-09横ぐらつき確認"></div>
+  <div class="shot plain"><b>参考(09-09撮影)：YouTube URLを貼って「+」を押し、動画追加に成功した状態</b><img src="img/686-video-add-success.png" alt="09-09動画追加成功"></div>
+</div>
+
+<h2>④ 押せるリンク（今回実際にテストした本番URL）</h2>
 <ul class="links">
-  <li><b>本番の棚編集画面</b><a href="https://joy-relief-station.lovable.app/admin/shelves" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/shelves</a></li>
+  <li><b>本番の棚ページ（このページで🛠棚編集ボタンから今回の10回テストを実施）</b><a href="https://joy-relief-station.lovable.app/shelf/music/healing-music" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/healing-music</a></li>
 </ul>
 
 
 
 <footer>
-09-11分：tsc --noEmit・eslint(触ったファイルのみ)ともにエラー0件、ローカルbuild成功。origin/mainへpush済み(9059991a)。Lovable公開を実行し本番のx-deployment-idの変化を確認済み(psr2.753f9627→psr2.00ddd436)。配信中のAdminShelfPanelチャンク(107,125byte)がローカルbuild成果物と完全一致することをバイト単位で確認。<br>
+09-11 06:50分：本番URLをCDP(公開便Chrome・ポート9223の新規タブ)経由でスマホ幅(375px)・タッチ有効でエミュレートし、①棚編集パネルの開閉10回②縦スクロール10回の横ずれ測定③棚ピッカーの表示件数・スクロール可否、を実機相当で直接操作して測定（既存タブ・iframeには触れず、テスト用タブのみ開いて終了後に閉じた）。<br>
+09-11 05:50分（先行分）：tsc --noEmit・eslint(触ったファイルのみ)ともにエラー0件、ローカルbuild成功。origin/mainへpush済み(9059991a)。Lovable公開を実行し本番のx-deployment-idの変化を確認済み(psr2.753f9627→psr2.00ddd436)。配信中のAdminShelfPanelチャンク(107,125byte)がローカルbuild成果物と完全一致することをバイト単位で確認。<br>
 09-09分（参考・先行修理）：型チェック(tsc --noEmit)・lint(eslint)ともにエラー0件。origin/mainへpush済み(3d3be4ad)、Lovable公開実行しdeployment-id変化を確認済み(psr2.9f460b2→psr2.175920b)。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
