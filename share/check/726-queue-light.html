@@ -47,22 +47,26 @@
 <div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-進捗表が毎回読んでいた status/queue.json（1.47MB、中身の大半は各タスクの指示文what）を、番号・題名・状態・優先度・モデルだけの軽量版 status/queue_light.json（74KB）に分離。進捗表アプリの初回読み込みはこちらに切り替え、指示文の全文は<details>（くわしく）を開いた時だけ裏で1回取りに行く方式にした。完了・取り消し済みも直近30件だけ運び、それより古いものは運ばない。あわせてPWAとブラウザで表示がズレる件の原因調査：Service Workerは使っておらず、原因は版ずれキャッシュではなく「どこからデータを読んでいるか」（Mac直結／中継所経由／GitHub Pages公開コピー）が環境によって違うこと。公開コピーは push から反映まで数十秒〜数分の遅れがあるため。対策として画面に出典ラベルを表示し、ズレていても店主が自分で気づけるようにした。
+進捗表が毎回まるごと読んでいた status/queue.json（各タスクの指示文で肥大化）を、番号・題名・状態・優先度・モデルだけの軽量版 status/queue_light.json に分離。最初の表示はこちらだけを読み、指示文の全文はカードを開いた時だけ裏で取りに行く。完了・取消は直近30件だけ運ぶ。あわせてPWAとブラウザの表示ズレを調査：Service Workerは未使用（キャッシュのズレではない）、manifest.webmanifestのstart_urlは通常ブラウザと同じURLを指しており、構造的にPWAだけ別の中身になることはない。ズレの正体は「どこからデータを読むか」（Mac直結／中継所経由／GitHub Pages公開コピー）の違いだけで、画面に出典ラベルを出して店主が気づける形にした。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1,473,323→74,420 バイト</b><span>queue.jsonの転送量(95%減)</span></div>
-  <div class="num"><b>15.0→1.2 ms</b><span>読み込み(json.load)にかかる時間(92%減)</span></div>
-  <div class="num"><b>104.9→1.4 ms</b><span>ローカルhttpサーバー実測での取得時間</span></div>
+  <div class="num"><b>1,477,174→74,420 バイト</b><span>queue.jsonの転送量（本番実測・95%減）</span></div>
+  <div class="num"><b>27.80秒→2.16秒</b><span>遅いスマホ回線（4G・400kbps相当）でのデータ取得実測</span></div>
+  <div class="num"><b>32.13秒→6.49秒</b><span>初回表示まで(index.html+データ)の合計・実測（約80%短縮）</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>本番(iPhone幅390px・実機同等)のスクリーンショット</b><img src="img/726-mobile-after.png" alt="本番(iPhone幅390px・実機同等)のスクリーンショット"><span class="meta">headless Chromeでモバイル表示を撮影。依頼一覧・完了30件など実データが正しく描画されている</span></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番の進捗表</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
   <li><b>軽量版queue_light.json(本番・実測200・74420バイト)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue_light.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue_light.json</a></li>
+  <li><b>フル版queue.json(比較用・本番・1477174バイト)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue.json</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -73,7 +77,11 @@
 <tr><td>queue.json(正本)を書き換えていない</td><td class="yes">PASS(md5一致)</td></tr>
 <tr><td>完了・取り消しは直近30件だけ軽量版に残す</td><td class="yes">PASS(30件)</td></tr>
 <tr><td>カードを開いた時だけ指示文(what)を取りに行く</td><td class="yes">PASS(toggleイベントで実装)</td></tr>
-<tr><td>PWA/ブラウザのズレの出典表示(直結/中継所/公開コピー)</td><td class="yes">PASS(queueMetaに表示)</td></tr>
+<tr><td>遅いスマホ回線(400kbps)実測・queue取得時間</td><td class="yes">PASS(27.80秒→2.16秒・curl --limit-rate実測)</td></tr>
+<tr><td>初回表示までの合計転送時間(同条件)</td><td class="yes">PASS(32.13秒→6.49秒)</td></tr>
+<tr><td>PWAがService Workerで古いデータを返していないか</td><td class="yes">PASS(未使用と確認・grep 0件)</td></tr>
+<tr><td>PWA(start_url)とブラウザが同じURLを指しているか</td><td class="yes">PASS(どちらも./＝同一オリジン)</td></tr>
+<tr><td>本番モバイル幅スクリーンショットで実データが描画されるか</td><td class="yes">PASS(390px・完了30件など表示確認)</td></tr>
 <tr><td>auto_launcher.pyの発車判定は壊れていない</td><td class="yes">PASS(finally節で分離・本体は無変更)</td></tr>
 </table>
 
