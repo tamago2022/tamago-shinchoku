@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#723 即読みPWA（RSS・購読を知らなくても聞ける） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #723 即読みPWA（RSS・購読を知らなくても聞ける）</div>
+<h1>#723 即読みPWA（RSS・購読を知らなくても聞ける）</h1>
+<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+長文を貼るだけで端末の声がその場で読み上げる即読みPWAを新規に作り、進捗表トップに常設リンクを置いた。生成音声(dokudoku)は待ち時間・RSSが必要だったが、こちらは待ち時間ゼロ・購読不要・費用ゼロ。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+<div class="note">（数字なし）</div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>即読みPWA本番を開く</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/</a></li>
+  <li><b>進捗表トップ（🔊即読みボタンあり）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本番URL(share/sokuyomi/)が200で開ける</td><td class="yes">OK</td></tr>
+<tr><td>進捗表トップに🔊即読みへのリンクが表示される</td><td class="yes">OK</td></tr>
+<tr><td>manifest.webmanifest・sw.js・アイコンが200で開ける（ホーム画面に追加できる）</td><td class="yes">OK</td></tr>
+<tr><td>貼り付け(paste)で自動的に読み上げ開始（ボタンも用意）</td><td class="yes">コード実装済み・Node単体テストで文分割ロジックを確認</td></tr>
+<tr><td>URL・obsidian://・長い英数字IDを読み飛ばす</td><td class="yes">Node単体テストで確認（httpsやobsidian://が本文から消えることを確認）</td></tr>
+<tr><td>本文に「タイトル候補」があればそこから読む・無ければ頭から</td><td class="yes">Node単体テストで確認</td></tr>
+<tr><td>声を端末の日本語音声から選べる・Enhanced/Premium/Siriを含む声を既定で優先</td><td class="yes">コード実装済み（getVoices()を使用。実機の声の種類はMac/iPhone環境依存のため未実機確認）</td></tr>
+<tr><td>15秒/30秒/1分戻す・頭から・再生速度0.8〜1.5倍</td><td class="yes">ボタン実装済み（文単位の推定時間で近似シーク）</td></tr>
+<tr><td>実機での音声再生・スクリーンショット</td><td class="no">未確認</td></tr>
+</table>
+
+<footer>
+このページは #723 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+</body>
+</html>
