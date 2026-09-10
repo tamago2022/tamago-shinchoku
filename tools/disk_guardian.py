@@ -821,19 +821,17 @@ def main():
     except Exception as e:
         log("desktop_offload呼び出し失敗: %s" % e)
 
-    # 2026-09-09（685番）：ゴミ箱の7日超項目は、空き容量の逼迫（WARN_GB=25）を
-    # 待たずに常時片付ける。店主が既に「削除」を選んだ後の最終置き場であり、
-    # 実測で2020〜2023年の古いインストーラが16.4GB居座っていた
-    # （＝Finderで「空にする」を押し忘れているだけの死蔵容量）。
-    try:
-        trash_freed = 0.0
-        for c in candidates():
-            if c["kind"] == "trash_old" and c["age_ok"] and not c["protected"]:
-                trash_freed += safe_remove(c["path"], c["kind"])
-        if trash_freed:
-            log("🗑ゴミ箱の7日超項目を片付け: 約%.0fMB解放" % trash_freed)
-    except Exception as e:
-        log("ゴミ箱掃除失敗: %s" % e)
+    # 【2026-09-11・735番で恒久停止】旧: ゴミ箱の7日超項目を自動で完全削除していた。
+    # たまごさんの明示指示（2026-09-10 20:10）「削除は絶対に俺に確認だよ。すべての
+    # 削除は」「ゴミ箱にも入れない」に真っ向から反するため、このトリガーごと停止する。
+    # 実害：2026-09-10 08:50、この機能が ~/.Trash/ZoomRecordings（約0MB）と
+    # ~/.Trash/録音（約288MB）を確認なしに完全削除していたことが735番の調査で発覚。
+    # 2026-09-09にも ソフトウェア1(6.5GB)/ソフトウェア2(10.4GB) を同様に削除済み。
+    # 以後、ゴミ箱の中身は disk_guardian が触らない（店主が自分でFinderの
+    # 「ゴミ箱を空にする」を押すまで残り続ける）。candidates() 内の trash_old 収集
+    # ロジック自体は温存（次のDispatchが「ゴミ箱に何日分溜まっているか」を読むだけの
+    # 診断用途には使えるため）が、safe_remove を呼ぶ実行部分だけを止める。
+    pass
 
     if free_gb < STOP_GB:
         notify_stop(free_gb)
