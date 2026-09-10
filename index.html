@@ -569,9 +569,29 @@
   .nowcard .nsay{font-size:0.64rem; color:#c8ecd8;}
   .nowcard.fable .nsay{color:#ffd3c9;}
   .nowempty{grid-column:1/-1; padding:36px 14px; text-align:center; font-size:1.15rem; font-weight:700; color:var(--sub); border:1px dashed var(--line); border-radius:16px;}
+  /* 732番：「聞かれる前に上がりましたを届ける」つけ麺屋の呼び出し札。一番上・一番目立つ位置に出す。 */
+  #arrivalsBanner{margin:0 0 12px; display:flex; flex-direction:column; gap:8px;}
+  #arrivalsBanner .arrival{display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px;
+    background:linear-gradient(135deg,#173a24,#0f2a1a); border:1px solid rgba(120,255,170,0.45);
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);}
+  #arrivalsBanner .arrival.check{background:linear-gradient(135deg,#233247,#182333); border-color:rgba(140,190,255,0.4);}
+  #arrivalsBanner .arrival .ico{font-size:1.4rem; line-height:1;}
+  #arrivalsBanner .arrival .body{flex:1; min-width:0;}
+  #arrivalsBanner .arrival .tag{font-size:0.72rem; font-weight:800; color:#8dffb0; letter-spacing:0.02em;}
+  #arrivalsBanner .arrival.check .tag{color:#9cc4ff;}
+  #arrivalsBanner .arrival a.tt{display:block; color:#fff; font-weight:700; font-size:0.95rem; text-decoration:none; margin-top:2px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #arrivalsBanner .arrival a.tt:active{opacity:0.7;}
+  #arrivalsBanner .arrival .dismiss{background:none; border:none; color:rgba(255,255,255,0.55); font-size:1.1rem; padding:4px 6px; cursor:pointer;}
 </style>
 </head>
 <body>
+
+<!-- 732番（2026-09-11）：「先生（生成）が終わってるんだったら、ちょっと報告が欲しいよね。
+     まだ？って言われる前に『できてますよ』ってお知らせしてほしい」「つけ麺屋でも
+     『何番、上がりました』って出るわけだよ」（たまごさん）。開くたびに、聞かれる前に
+     未読の完了だけをここへ出す。中身は下のJS(refreshArrivals)が入れる。 -->
+<div id="arrivalsBanner"></div>
 
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
@@ -876,6 +896,66 @@ function showErr(e){
 window.addEventListener("error", ev => showErr(ev.error || ev.message));
 
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+/* ───── 732番：完了は聞かれる前に届く（「◯番 上がりました」）─────
+   status/new_arrivals.json（tools/auto_launcher.pyのappend_outbox()が完了のたびに
+   URL付きで積む・軽量・直近40件だけ）をポーリングし、まだ見ていない分だけ画面の
+   一番上に出す。「見たら消える」＝一度描画したらその場でlocalStorageへ既読を書き、
+   次回の読み込みでは二度と出さない（同じものを何度も出さない）。 */
+const ARRIVALS_SEEN_KEY = "shinchoku_arrivals_seen_v1";
+function loadArrivalsSeen(){
+  try{ return new Set(JSON.parse(localStorage.getItem(ARRIVALS_SEEN_KEY) || "[]")); }catch(e){ return new Set(); }
+}
+function saveArrivalsSeen(set){
+  try{
+    // 際限なく太らせない：直近200件だけ残す
+    const arr = Array.from(set).slice(-200);
+    localStorage.setItem(ARRIVALS_SEEN_KEY, JSON.stringify(arr));
+  }catch(e){}
+}
+function arrivalId(a){ return String(a.n) + "@" + String(a.ts); }
+function renderArrivals(list){
+  const box = document.getElementById("arrivalsBanner");
+  if(!box) return;
+  if(!list.length){ return; } // 何も足さない＝既に出ているものはそのまま、無ければ何もしない
+  const html = list.map(a => {
+    const isCheck = a.kind === "check";
+    return `<div class="arrival ${isCheck?"check":""}" data-id="${esc(arrivalId(a))}">`
+      + `<div class="ico">${isCheck?"🔧":"🎉"}</div>`
+      + `<div class="body"><div class="tag">${esc(a.n)}番 上がりました</div>`
+      + `<a class="tt" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.title || "")}</a></div>`
+      + `<button class="dismiss" type="button" aria-label="閉じる">✕</button>`
+      + `</div>`;
+  }).join("");
+  box.insertAdjacentHTML("afterbegin", html);
+}
+document.addEventListener("click", e=>{
+  const btn = e.target.closest("#arrivalsBanner .dismiss"); if(!btn) return;
+  const card = btn.closest(".arrival"); if(card) card.remove();
+});
+function refreshArrivals(){
+  return fetchWithTimeout("status/new_arrivals.json?t=" + Date.now(), {cache:"no-store"}, 8000)
+    .then(r => r.ok ? r.json() : [])
+    .then(list => {
+      if(!Array.isArray(list)) return;
+      const seen = loadArrivalsSeen();
+      const unseen = list.filter(a => a && a.n != null && a.url && !seen.has(arrivalId(a)));
+      if(unseen.length){
+        // 新しい方を上に
+        renderArrivals(unseen.slice().reverse());
+      }
+      // 描画したものは見た扱いにする＝次回のポーリング・次回の起動で二度と出さない
+      list.forEach(a => { if(a && a.n != null) seen.add(arrivalId(a)); });
+      saveArrivalsSeen(seen);
+    })
+    .catch(()=>{});
+}
+refreshArrivals();
+setInterval(refreshArrivals, 60000);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refreshArrivals(); });
+window.addEventListener("pageshow", () => refreshArrivals());
+window.addEventListener("focus", () => refreshArrivals());
+
 function formatStamp(iso){
   const d = new Date(iso); if(isNaN(d)) return "—";
   const mm = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");

@@ -227,6 +227,52 @@ def format_report_line(it):
     return what + ("\n" + urls[0] if urls else "")
 
 
+NEW_ARRIVALS = os.path.join(REPO, "status", "new_arrivals.json")
+NEW_ARRIVALS_CAP = 40
+
+
+def _append_new_arrival(row):
+    """732番：完了は聞かれる前に届く必要がある（たまごさん「先生（生成）が終わってるん
+    だったら、ちょっと報告が欲しいよね。まだ？って言われる前に『できてますよ』って
+    お知らせしてほしい」「つけ麺屋でも『何番、上がりました』って出るわけだよ」）。
+
+    これまで dispatch_outbox.jsonl は「Dispatchが会話を始めた時に読む」ものでしかなく、
+    たまごさんが毎日開く進捗表（PWA）には完了の合図が一切出ていなかった＝一番の穴。
+    ここで、URL付きで成功した完了だけを軽量な別ファイルへも書き出す。進捗表(index.html)は
+    こちらだけをポーリングし、「◯番 上がりました」を画面の一番上に出す。
+
+    - 題名1行＋URLだけを持たせる（長い経緯は載せない＝queue.json側に残っている）。
+    - 40件を超えたら古い方から捨てる（無限に太らせない＝軽さ優先）。
+    - 「見たら消える」はクライアント側(localStorageの既読セット)の役目なので、
+      ここでは常に真実の完了記録を積むだけでよい（既読管理はサーバー側に持たない）。
+    """
+    try:
+        urls = row.get("urls") or []
+        # 確認ページ（share/check/...）以外の実物URLがあれば、そちらを主URLとして優先する
+        # （たまごさんが見て嬉しいのは成果物そのものであって、内部の確認記録ではないため）。
+        primary = next((u for u in urls if isinstance(u, str) and "/share/check/" not in u), None) or (urls[0] if urls else None)
+        if not primary:
+            return
+        entry = {
+            "n": row.get("n"),
+            "title": row.get("title"),
+            "url": primary,
+            "ts": row.get("ts"),
+            "kind": "product" if any(isinstance(u, str) and "/share/check/" not in u for u in urls) else "check",
+        }
+        arrivals = load(NEW_ARRIVALS, [])
+        if not isinstance(arrivals, list):
+            arrivals = []
+        arrivals.append(entry)
+        arrivals = arrivals[-NEW_ARRIVALS_CAP:]
+        tmp = NEW_ARRIVALS + ".tmp"
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            json.dump(arrivals, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, NEW_ARRIVALS)
+    except Exception as e:
+        log("new_arrivals書き込み失敗（%s番）: %s" % (row.get("n"), e))
+
+
 def append_outbox(it, ok):
     """2026-09-06 新設：仕事が終わるたびに1行、status/dispatch_outbox.jsonl へ追記する。
 
@@ -236,6 +282,9 @@ def append_outbox(it, ok):
     ここで書き出しておけば、Dispatchが会話開始時にこのファイルを読み、
     status/dispatch_reported.json（既にある「報告済み番号」の記録）と突き合わせて
     ＝前回報告した以降の分だけをまとめて出せる（読み取り側は今回の作業対象外）。
+
+    732番：それだけだと「Dispatchが会話しているときにしか届かない」ので、成功かつ
+    URL付きの完了は _append_new_arrival() で進捗表(PWA)向けの軽量フィードにも積む。
     """
     try:
         finished = it.get("finishedAt") or time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
@@ -250,6 +299,8 @@ def append_outbox(it, ok):
         }
         with io.open(OUTBOX, "a", encoding="utf-8") as f:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        if ok and row["urls"]:
+            _append_new_arrival(row)
     except Exception as e:
         log("outbox書き込み失敗（%s番）: %s" % (it.get("n"), e))
 

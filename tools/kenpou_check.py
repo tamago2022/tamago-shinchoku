@@ -440,6 +440,61 @@ def check_worktree_count(limit=WORKTREE_COUNT_LIMIT):
     }
 
 
+# ───────────────────────── ⑪：Dispatchの完了報告が溜まっていないか ─────────────────────────
+# 732番（2026-09-11）：README「Dispatchへの完了報告」の手順（会話開始時にdispatch_outbox.jsonl
+# の全行とdispatch_reported.jsonのnsを突き合わせ、未報告分をまとめて話す）が実際には
+# 守られておらず、dispatch_reported.json自体が一度も作られていなかった（＝一度も報告されて
+# いない）。ここでは「未報告のまま3時間以上置かれている完了が何件あるか」を機械で数える。
+
+DISPATCH_OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
+DISPATCH_REPORTED = os.path.join(REPO, "status", "dispatch_reported.json")
+
+
+def check_unreported_completions(stale_hours=3):
+    reported_ns = set((load(DISPATCH_REPORTED, {}) or {}).get("ns") or [])
+    rows = []
+    try:
+        with io.open(DISPATCH_OUTBOX, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    d = json.loads(line)
+                except Exception:
+                    continue
+                if d.get("type"):  # cost_confirm / owner_redo_escalation は報告対象外
+                    continue
+                rows.append(d)
+    except FileNotFoundError:
+        pass
+
+    now = time.time()
+    unreported = [d for d in rows if d.get("n") not in reported_ns]
+    oldest_epoch = min((to_epoch(d.get("ts")) for d in unreported if to_epoch(d.get("ts"))), default=None)
+    oldest_hours = (now - oldest_epoch) / 3600.0 if oldest_epoch else None
+    stale = bool(unreported) and (oldest_hours is None or oldest_hours > stale_hours)
+
+    if not unreported:
+        detail = "未報告の完了は無い（dispatch_outboxとdispatch_reportedが一致）"
+    elif oldest_hours is None:
+        detail = "未報告の完了が%d件（最古の時刻が読めず経過時間は不明）" % len(unreported)
+    else:
+        detail = (
+            "未報告の完了が%d件たまっている（最古は約%.1f時間前：#%s）。"
+            "Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+            % (len(unreported), oldest_hours, unreported[0].get("n"))
+        )
+
+    return {
+        "key": "unreported_completions",
+        "label": "未報告の完了が溜まっていないか",
+        "color": "red" if stale else "green",
+        "count": len(unreported),
+        "detail": detail,
+    }
+
+
 # ───────────────────────── ⑨：対話待ち・放置されたセッション ─────────────────────────
 
 def check_orphan_sessions(stuck_factor=2.0, abs_stuck_hours=6):
@@ -576,6 +631,7 @@ def main():
         check_check_pages(),
         check_orphan_sessions(),
         check_worktree_count(),
+        check_unreported_completions(),
     ]
 
     queued = []

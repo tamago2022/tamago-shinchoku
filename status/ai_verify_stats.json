@@ -1,9 +1,9 @@
 {
- "totalChecked": 105,
+ "totalChecked": 107,
  "totalPassed": 62,
- "totalFailed": 42,
+ "totalFailed": 44,
  "totalErrors": 1,
- "totalCostUsd": 29.9461,
+ "totalCostUsd": 30.712,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -46,25 +46,11 @@
   "確認ページ自体が「内蔵空き100GB以上→no（実際88GB）」と明記し目標未達": 1,
   "本番URLを直接確認するとバッジ要素自体が存在せず(画像src・DOM上ゼロ)、": 1,
   "確認ページ自身が内蔵空き84GB(100GB未達)・原因究明も未確定(要再調査)": 1,
-  "一覧作成（731-list.json・確認ページ）自体は本物で内容も一致するが、": 1
+  "一覧作成（731-list.json・確認ページ）自体は本物で内容も一致するが、": 1,
+  "queue_light.json軽量化・タイムアウトはコードで裏取りできたが、完": 1,
+  "本番DOM実測でバッジ要素は`text-[10px]`/`px-2`/`py-0": 1
  },
  "history": [
-  {
-   "ts": "2026-09-06T16:06:24+09:00",
-   "n": 431,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/431-onboarding-daily-sweep.html",
-   "verdict": "fail",
-   "reason": "確認ページ自身が「曲0件・DB書き込み未確認」と明記しており、依頼の核心（欠けている曲の仮埋め）が本番画面に反映されていない",
-   "costUsd": 0.1881896
-  },
-  {
-   "ts": "2026-09-06T16:18:27+09:00",
-   "n": 458,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/458-queue-origin-batch4.html",
-   "verdict": "fail",
-   "reason": "origin未設定＝工場発とみなす仕組みが未実装で、現在awaiting_check13件中12件が未設定のため確認列にそのまま出てしまい、「本番で稼働中と実測済み」という報告の主張が実態と食い違う",
-   "costUsd": 0.29136059999999997
-  },
   {
    "ts": "2026-09-06T16:24:38+09:00",
    "n": 436,
@@ -448,7 +434,23 @@
    "verdict": "fail",
    "reason": "一覧作成（731-list.json・確認ページ）自体は本物で内容も一致するが、「735・736番へ自動分割完了」の主張は queue.json（最大734番）・dispatch_outbox・split配下のどこにも痕跡がなく未検証の虚偽報告",
    "costUsd": 0.5841626000000001
+  },
+  {
+   "ts": "2026-09-11T01:13:49+09:00",
+   "n": 726,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/726-queue-light-timeout.html",
+   "verdict": "fail",
+   "reason": "queue_light.json軽量化・タイムアウトはコードで裏取りできたが、完了条件必須の実機スクリーンショット・実回線計測・PWA/ブラウザ読み込み先の統一と並べた比較が3回目も未提出（確認ページ自身が未取得と明記）",
+   "costUsd": 0.3107436
+  },
+  {
+   "ts": "2026-09-11T01:21:34+09:00",
+   "n": 690,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/690-lately-fix-confirmed-live.html",
+   "verdict": "fail",
+   "reason": "本番DOM実測でバッジ要素は`text-[10px]`/`px-2`/`py-0.5`/`top-2 left-2`という固定px指定のみで、比率(%)指定クラスはページ内に0件。確認ページの「短辺13.8%・全5箇所PASS」という主張と実装が矛盾しており、11回以上指摘済みのバッジ比率問題が今回も未解消。",
+   "costUsd": 0.45522920000000006
   }
  ],
- "updatedAt": "2026-09-11 01:10"
+ "updatedAt": "2026-09-11 01:21"
 }
