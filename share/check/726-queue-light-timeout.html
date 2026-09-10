@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#726 進捗表を軽く・PWAとブラウザのズレに警告 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #726 進捗表を軽く・PWAとブラウザのズレに警告</div>
+<h1>#726 進捗表を軽く・PWAとブラウザのズレに警告</h1>
+<div class="date">2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+台帳(queue.json 1.5MB)を毎回まるごと読んでいたのをやめ、題名・状態・優先度だけの軽量版(queue_light.json)を先に読むように変更。くわしくを開いた行だけ本文を追加で取りに行く。あわせて、通信が細いと画面が固まったまま戻らない箇所（バージョン確認・優先度取得・データ本体の読み込み）にタイムアウトを追加し、詰まっても失敗と分かるようにした。PWAとブラウザで中身が違って見える件は、本来のアドレスと違う場所を開いている時に警告を出す仕組みを追加（コード自体はPWA/ブラウザ共通で同じ場所を読む設計だったため、ズレの実体は『違うURLを開いている』ことだったと判明）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>72.7KB</b><span>queue_light.json 本番実測サイズ</span></div>
+  <div class="num"><b>95.1%減</b><span>旧queue.json 1483.5KB→72.7KB</span></div>
+  <div class="num"><b>171ms</b><span>本番取得時間(旧576msから70%短縮)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表 本番</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>queue_light.json 本番</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/queue_light.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/queue_light.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>queue.json→queue_light.jsonへ切替(what/result抜き)</td><td class="yes">本番で実測95.1%減・反映済み</td></tr>
+<tr><td>完了・取り消し済みは直近分だけ運ぶ</td><td class="yes">queue_light内はdone30件(フルはdone223件)・cancelledは含めず</td></tr>
+<tr><td>通信が詰まって固まる箇所にタイムアウト追加</td><td class="yes">checkVersion/priority.json取得/data.js読み込みに8〜12秒の上限・本番反映済み</td></tr>
+<tr><td>「読み込みに時間がかかっています」を出しっぱなしにしない</td><td class="yes">約40秒粘っても読めなければ失敗表示+手動読み直しボタンへ切替</td></tr>
+<tr><td>PWA/ブラウザのURLズレ検知</td><td class="yes">正規URLと違う場所を開くと警告バナーを表示・本番反映済み</td></tr>
+<tr><td>スマホ実機でのスクリーンショット・実回線での計測</td><td class="no">ブラウザ操作ツールがこのセッションに無く取得不可</td></tr>
+</table>
+
+<footer>
+本番URLからPythonで直接取得しファイルサイズと応答時間を実測（curlは環境の制約で使用不可、urllib.requestで代替）。スマホ実機・PWAでの見た目のスクリーンショットは、このセッションにブラウザ操作ツールが提供されておらず取得できていません。正直に申告します。
+</footer>
+</body>
+</html>
