@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""完了したものを1週間で片づけて、あとから辿れる場所へ移す。
+"""完了・取消したものを1週間で片づけて、あとから辿れる場所へ移す。
 
 2026-09-05 たまごさんの言葉：
   「**完了も1週間経ったら自動で消えるようにしといて。だけどその後でたどれるようにしといて。**
@@ -8,10 +8,17 @@
    一応そこもスッキリしたいので。」
 
 やること:
-  1. status/queue.json の done のうち、判定から7日以上たったものを取り出す
+  1. status/queue.json の done・cancelled のうち、判定から7日以上たったものを取り出す
   2. status/done_archive.json に足す（消さない・ここが「あとから辿れる場所」）
   3. share/done/index.html を作り直す（スマホで開ける一覧。新しい順）
   4. queue.json からは外す（進捗表の完了欄が短く保たれる）
+
+【2026-09-10 716番で発見】この処理は元々 cancelled を見ておらず、queue.jsonが
+390件・1.8MBまで肥大化していた。進捗表(index.html)は10秒おきにqueue.jsonを
+丸ごと取り直して再描画するため、これが「進捗表のタブがずっとぐるぐる回る」
+「パソコンが重い」の実測できた原因の1つだった。かつ、この片づけ自体が
+launchdに登録されておらず一度も自動実行されていなかった（tools/tamago_maintenance.py
+の日次点検から呼ぶように変更・今後は毎日自動で片づく）。
 
 台帳を触るので、心臓・中継所と同じ鍵をかける。
 """
@@ -130,9 +137,14 @@ def main():
         items = q.get("items") or []
         keep, moved = [], []
         for it in items:
-            if it.get("status") == "done":
+            # 2026-09-10 716番で発見：ここは元々 status=="done" しか見ておらず、
+            # cancelled(95件)が永久にqueue.jsonへ居座っていた（1.8MBに肥大化し、
+            # 進捗表が10秒おきにこれを丸ごと取り直して描き直す原因になっていた）。
+            # cancelledも同じ扱いで片づける。タイムスタンプが無いもの(壊れた記録)は
+            # 判定しようがないので即座に片づけて良い(消すのではなくアーカイブへ移すだけ)。
+            if it.get("status") in ("done", "cancelled"):
                 t = when(it)
-                if t is not None and t < cutoff:
+                if t is None or t < cutoff:
                     moved.append(it)
                     continue
             keep.append(it)

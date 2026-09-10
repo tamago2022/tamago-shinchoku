@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-09 10:44",
+ "updatedAt": "2026-09-10 12:54",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -322,9 +322,9 @@
    "rank": 26,
    "task": "完了報告の基準（作法/仕組み）",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "kensho-t026-0910",
    "count": "14",
-   "updatedAt": "2026-09-02 19:23",
+   "updatedAt": "2026-09-10 02:16",
    "note": "関門（完了検証チェックリスト＋verification-log）作成済み。別の目が1件この関門どおりに検証して回ることを確認したら完了 [実装:local_01833c18]",
    "stale": false
   },
@@ -334,9 +334,9 @@
    "rank": 27,
    "task": "白画面とフリーズ",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "kensho-t027",
    "count": "3",
-   "updatedAt": "2026-09-03 22:41",
+   "updatedAt": "2026-09-10 03:16",
    "note": "白画面が起きた瞬間の実端末データ(whiteScreenWatch.tsが2026-08-07から収集済みだが見る手段が無く死蔵されていた)を/admin/inventoryの📈アクセスタブ末尾に表示するgetWhiteScreenReports()を追加。main commit b2334c6eへ合流済み、Lovable自動公開便(30分おき)を待つ。別の目への依頼:公開後、管理パスワードで/admin/inventoryを開き「⬜白画面レポート」欄に実データが出るか確認してほしい(0件なら発生頻度自体が低いことの証拠にもなる)。データが貯まれば完了条件の「実端末での再現データ」がついに手に入る [実装:wd_fcae24be]",
    "stale": false
   },
@@ -346,9 +346,9 @@
    "rank": 28,
    "task": "リロードで先頭に戻る",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "kensho-t028-0910",
    "count": "6",
-   "updatedAt": "2026-09-03 13:03",
+   "updatedAt": "2026-09-10 08:17",
    "note": "重複調査の末、既に別セッション(01:13〜)がPR#317+#320で修理済みと判明。真因=ScrollToTopOnNav(__root.tsx)がreload/back_forwardを新規遷移と誤認しscrollTo(0)を強制、PR#320はloc.search同一性変化による再実行(6回以上の再発)もkeepScrollKeyで遮断。origin/mainに存在確認(ebcbb85d)・本番デプロイに'back_forward'マーカーで存在確認(index-CO8KeRzk.js)・TASK_BOARD 09-03記載で他2セッションも公開反映済みと確認済み(デプロイpsr2.59adf3f/bb5c90bc)。自分が独自に用意した修理branch(claude/t028-reload-scroll-top-fix)は同じ根本原因に対する重複かつ適用位置的にデッドコードだったためmainへは入れず削除・撤回(PENDING_DECISIONSに経緯記録)。残るのは実ブラウザでの最終挙動確認のみ(本セッションはブラウザMCP無し)。次の一手：別セッションが実機でリロード→スクロールを試し6回以上戻されないか確認できれば完了へ。 [実装:wd_9ce6f219]",
    "stale": false
   },

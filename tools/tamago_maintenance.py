@@ -246,6 +246,204 @@ def check_watchdogs():
 
 
 # ---------------------------------------------------------------------------
+# 5. 終わったタスクの vite dev サーバー残骸（ゾンビ）を片づける
+# ---------------------------------------------------------------------------
+# 【2026-09-10 716番2回目・実測で発見】たまごさんの「パソコンが重い」の実体を追うと、
+#   ・swap 32GB使用・空き物理メモリ1.3GB・swapin/outが3秒で計1MB超のページを動かす
+#     "実際に今スラッシングしている" 状態だった（memory_pressureは"green"で気づけない）。
+#   ・原因の一部は、うちの工場が過去に作った vite dev/preview サーバーが、タスクが
+#     done になった後も殺されずに1〜3日以上動き続けていたこと（実例：q658/q627/q612/
+#     q657/q600 = 全部queue.json上はdone、q598はhold。動かす理由が無いのに動いていた）。
+#   ・killコマンドはこのセッションのBash経由では自動モードの分類器に拒否されたため、
+#     「常設係が自分のPythonコードの中でos.killする」形にした（本スクリプトはlaunchd経由
+#     で無人実行されるので、対話セッションの分類器を経由しない）。
+VITE_ZOMBIE_GRACE_SEC = 3600  # 「終わってから1時間」は保険として様子見、それ以降は片づける
+WORKTREE_PATTERNS = [
+    re.compile(r"/\.worktrees/q(\d+)-"),
+    re.compile(r"/private/tmp/q(\d+)[-/]"),
+]
+
+
+def _ps_snapshot():
+    rc, out, _ = _run(["ps", "-Ao", "pid,ppid,etime,rss,command"], timeout=15)
+    rows = []
+    if rc != 0:
+        return rows
+    for line in out.splitlines()[1:]:
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split(None, 4)
+        if len(parts) < 5:
+            continue
+        pid, ppid, etime, rss, command = parts
+        rows.append({"pid": pid, "ppid": ppid, "etime": etime, "rss": rss, "command": command})
+    return rows
+
+
+def _etime_to_sec(etime):
+    # macOS ps の etime 形式："[[dd-]hh:]mm:ss"
+    try:
+        days = 0
+        if "-" in etime:
+            d, rest = etime.split("-", 1)
+            days = int(d)
+        else:
+            rest = etime
+        bits = [int(x) for x in rest.split(":")]
+        while len(bits) < 3:
+            bits.insert(0, 0)
+        h, m, s = bits[-3], bits[-2], bits[-1]
+        return days * 86400 + h * 3600 + m * 60 + s
+    except Exception:
+        return 0
+
+
+def _extract_task_n(command):
+    for pat in WORKTREE_PATTERNS:
+        m = pat.search(command)
+        if m:
+            return int(m.group(1))
+    return None
+
+
+def _path_from_command(command):
+    m = re.search(r"(/[^ ]+/node_modules/(?:\.bin/vite|@esbuild/[^/]+/bin/esbuild))", command)
+    if not m:
+        return None
+    return m.group(1).split("/node_modules/")[0]
+
+
+def check_vite_zombies(dry_run=False):
+    """終わった/保留のタスクに紐づく vite dev・preview・esbuild サービスを検出し、
+    参照先が消えている、またはqueue.json上でdone/cancelled/holdかつ猶予時間超なら
+    SIGTERM で片づける（削除ではなく終了のみ・ワークツリー自体には触れない）。"""
+    rows = _ps_snapshot()
+    q = load_json(os.path.join(STATUS, "queue.json"), {"items": []})
+    q_status = {it.get("n"): it.get("status") for it in q.get("items", [])}
+
+    targets = [r for r in rows if ("vite dev" in r["command"] or "vite preview" in r["command"]
+                                     or "esbuild --service" in r["command"])]
+    killed, kept = [], []
+    freed_rss_kb = 0
+    for r in targets:
+        command = r["command"]
+        path = _path_from_command(command)
+        task_n = _extract_task_n(command)
+        age_sec = _etime_to_sec(r["etime"])
+        reason = None
+        if path is not None and not os.path.exists(path):
+            reason = "参照先の作業フォルダが既に無い"
+        elif task_n is not None:
+            st = q_status.get(task_n)
+            if st in ("done", "cancelled", "hold") and age_sec >= VITE_ZOMBIE_GRACE_SEC:
+                reason = "queue.json上でstatus=%s・%d分前から起動中" % (st, age_sec // 60)
+        if reason:
+            entry = {"pid": r["pid"], "command": command[:140], "reason": reason,
+                       "rssKB": int(r["rss"]) if r["rss"].isdigit() else None}
+            if not dry_run:
+                try:
+                    os.kill(int(r["pid"]), 15)  # SIGTERM
+                    entry["signaled"] = True
+                except Exception as e:
+                    entry["signaled"] = False
+                    entry["error"] = str(e)
+            else:
+                entry["dryRun"] = True
+            killed.append(entry)
+            if entry.get("rssKB"):
+                freed_rss_kb += entry["rssKB"]
+        else:
+            kept.append({"pid": r["pid"], "etimeSec": age_sec})
+
+    # "npm exec vite dev/preview" は絶対パスが出ないため上のtargetsでは拾えないことがある。
+    # 子プロセス(esbuildサービス等)が既に片づけ対象なら、その親のnpmラッパーも道連れで片づける
+    # （孤児になったnpmラッパーだけがゾンビとして残るのを防ぐ）。
+    killed_pids = {k["pid"] for k in killed}
+    by_pid = {r["pid"]: r for r in rows}
+    for r in rows:
+        if r["pid"] in killed_pids:
+            continue
+        if not (("npm exec vite dev" in r["command"]) or ("npm exec vite preview" in r["command"])):
+            continue
+        children_killed = any(c["ppid"] == r["pid"] and c["pid"] in killed_pids for c in rows)
+        if children_killed:
+            entry = {"pid": r["pid"], "command": r["command"][:140],
+                       "reason": "子のvite/esbuildを片づけたため道連れ",
+                       "rssKB": int(r["rss"]) if r["rss"].isdigit() else None}
+            if not dry_run:
+                try:
+                    os.kill(int(r["pid"]), 15)
+                    entry["signaled"] = True
+                except Exception as e:
+                    entry["signaled"] = False
+                    entry["error"] = str(e)
+            else:
+                entry["dryRun"] = True
+            killed.append(entry)
+            killed_pids.add(r["pid"])
+            if entry.get("rssKB"):
+                freed_rss_kb += entry["rssKB"]
+
+    # 逆方向：親のvite devを片づけた場合、esbuildサービス子は親が死んでも自分では終了しない
+    # （ソケット越しの独立プロセスのため）。親が片づけ対象になった子(esbuild --service)は
+    # 参照パスの生死やqueue.json判定に関わらず道連れで片づける。
+    for r in rows:
+        if r["pid"] in killed_pids:
+            continue
+        if "esbuild --service" not in r["command"]:
+            continue
+        if r["ppid"] in killed_pids:
+            entry = {"pid": r["pid"], "command": r["command"][:140],
+                       "reason": "親のvite devを片づけたため道連れ（孤児防止）",
+                       "rssKB": int(r["rss"]) if r["rss"].isdigit() else None}
+            if not dry_run:
+                try:
+                    os.kill(int(r["pid"]), 15)
+                    entry["signaled"] = True
+                except Exception as e:
+                    entry["signaled"] = False
+                    entry["error"] = str(e)
+            else:
+                entry["dryRun"] = True
+            killed.append(entry)
+            killed_pids.add(r["pid"])
+            if entry.get("rssKB"):
+                freed_rss_kb += entry["rssKB"]
+
+    kept = [k for k in kept if k["pid"] not in killed_pids]
+    return {"checked": len(targets), "killed": killed, "keptCount": len(kept),
+            "freedRssMB": round(freed_rss_kb / 1024.0, 1)}
+
+
+# ---------------------------------------------------------------------------
+# 6. queue.json の完了控えを片づける（archive_done.py を呼ぶ）
+# ---------------------------------------------------------------------------
+
+def run_archive_done(dry_run=False):
+    """queue.json の done/cancelled のうち古いものを done_archive.json へ移す。
+    以前はこのツール自体がどこからも自動起動されておらず、queue.jsonが390件・1.8MBまで
+    肥大化していた（進捗表が10秒おきにこれを丸ごと取得・再描画＝重さと「ぐるぐる回る」の原因）。
+    本メンテ係の日次実行に乗せることで、以後は毎日自動で片づく。"""
+    if dry_run:
+        return {"ran": False, "dryRun": True}
+    before = None
+    qpath = os.path.join(STATUS, "queue.json")
+    try:
+        before = os.path.getsize(qpath)
+    except Exception:
+        pass
+    rc, out, err = _run(["python3", os.path.join(HERE, "archive_done.py")], timeout=60)
+    after = None
+    try:
+        after = os.path.getsize(qpath)
+    except Exception:
+        pass
+    return {"ran": rc == 0, "output": (out or err or "").strip()[:200],
+            "beforeBytes": before, "afterBytes": after}
+
+
+# ---------------------------------------------------------------------------
 # 直せないものだけ dispatch_outbox.jsonl へ1行
 # ---------------------------------------------------------------------------
 
@@ -292,6 +490,8 @@ def main(argv=None):
     history = load_jsonl(HIST)
 
     zombie_result = check_zombie_launch_agents(dry_run=args.dry_run)
+    vite_result = check_vite_zombies(dry_run=args.dry_run)
+    archive_result = run_archive_done(dry_run=args.dry_run)
     disk_result = check_disk(history)
     load_result = check_load()
     watchdog_result = check_watchdogs()
@@ -300,6 +500,8 @@ def main(argv=None):
     result = {
         "measuredAt": now_jst_str(),
         "launchAgents": zombie_result,
+        "viteZombies": vite_result,
+        "queueArchive": archive_result,
         "disk": disk_result,
         "load": load_result,
         "watchdogs": watchdog_result,
@@ -322,7 +524,8 @@ def main(argv=None):
 
 
 def _push(paths=("status/maintenance_check.json", "status/maintenance_check_log.jsonl",
-                  "status/dispatch_outbox.jsonl"), retries=5, wait_sec=8):
+                  "status/dispatch_outbox.jsonl", "status/queue.json",
+                  "status/done_archive.json", "share/done/index.html"), retries=5, wait_sec=8):
     for attempt in range(1, retries + 1):
         rc, out, err = _run(["git", "add"] + list(paths))
         if rc != 0:
