@@ -40,6 +40,11 @@
 </style>
 </head>
 <body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #431 外部から入れた分を1日1回仕上げる仕組み</div>
 <h1>#431 外部から入れた分を1日1回仕上げる仕組み</h1>
 <div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
@@ -78,5 +83,9 @@
 <footer>
 残っている壁：新設したGitHub Actions（tamago-onboarding-sweep.yml）がSUPABASE_SERVICE_ROLE_KEYで実際にDBへ書き込む役目だが、pushしてから20分以上待っても実行された形跡（自動コミット）が現れない。gh CLI・GitHub API・WebFetch・node fetchの4経路で確認を試みたが未認証のため確証が取れなかった。最有力の疑いはリポジトリのGitHub SecretsにSUPABASE_URL／SUPABASE_SERVICE_ROLE_KEYが未登録のままという点。GitHub Settings→Secrets and variables→Actionsで確認いただくか、Actionsタブから『Tamago Onboarding Sweep』を手動実行(workflow_dispatch)していただければ、動くはず。仕組み本体（検出ロジック・安全な追記のみの書き込み設計）は独立検品で全項目PASS済み。
 </footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
 </body>
 </html>

@@ -17,6 +17,11 @@
 </style>
 </head>
 <body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
 <h1>確認ページの機械検品・実績</h1>
 <p class="muted">harvest（着火した仕事を回収する係）が、確認待ちに上げる直前に確認ページの中身を実際に開いて検品しています。ここはその実績を自動で表示するページです（このページ自体は手で更新しません。<code>status/content_check_stats.json</code> を読むだけです）。</p>
 
@@ -53,5 +58,9 @@ fetch("../../status/content_check_stats.json?_=" + Date.now())
   })
   .catch(e => { document.getElementById("err").textContent = "読み込み失敗: " + e; });
 </script>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
 </body>
 </html>

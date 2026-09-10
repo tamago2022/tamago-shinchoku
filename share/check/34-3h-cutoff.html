@@ -35,6 +35,11 @@
 </style>
 </head>
 <body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
 <div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #34</div>
 <h1>#34 3時間を超えたセッションを自動で切る</h1>
 <div class="date">2026-09-04 20:58 実装・ローカル自動運転（launchd）に反映済み</div>
@@ -90,5 +95,9 @@
 <footer>
 正本：<code>tamago-shinchoku</code> リポジトリ <code>tools/session_watchdog.py</code>（<code>WALLCLOCK_LIMIT_MIN</code>・<code>decide()</code>のhardcut分岐・<code>session_urls()</code>）。実行は5分おきのlaunchd（<code>com.tamago.machine-status</code>）が自動で行うため、この修正を保存した時点で次の周期から効いている。3時間を超えるセッションが今後発生すれば、この機能で自動的に切られ、Dispatchの見張り番ログと留守中の判断待ちへ記録される。
 </footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
 </body>
 </html>

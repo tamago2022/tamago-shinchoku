@@ -42,6 +42,11 @@
 </style>
 </head>
 <body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #691 ベッドリモコン：音量・仕入れ・工場制御をホットキー化</div>
 <h1>#691 ベッドリモコン：音量・仕入れ・工場制御をホットキー化</h1>
 <div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
@@ -83,5 +88,9 @@
 <footer>
 スクリプト本体：ホームフォルダの .tamago/hotkeys/ 配下（vol.sh, ingest_add.sh, factory_control.sh, open_progress.sh, mediakey.sh, mediakey, mediacmd, nowplaying）。Obsidianプラグイン：tamago_brain vault内 .obsidian/plugins/tamago-bed-remote（コマンドパレットからも実行可）。<br><br><b>前へ／再生停止／次への詳しい状況：</b>正規のmacOS API（MRMediaRemoteSendCommand、Control Centerの再生ボタンと同じ経路）で実装し、実機で実際にコマンドを送信（結果はresult=true=送信成功）。ただし今たまごさんのBraveで再生中のYouTube動画（COTEN RADIO）に対しては、送信後もタイトル・再生位置・再生状態のいずれにも変化が見られなかった。より確実なもう一つの方式（物理メディアキーと同じ信号を送るCGEventPost方式）も実装済みだが、これは本セッションにアクセシビリティ権限が無いため今は無効。<b>たまごさんが一度だけ、システム設定 → プライバシーとセキュリティ → アクセシビリティ → 「+」ボタンで .tamago/hotkeys/mediakey（ホームフォルダ配下）を追加してチェックを入れると、この方式が有効になり次へ/前へ/再生停止がどのアプリの再生にも確実に効くようになる見込み。</b>これは質問ではなく状況報告——手が空いた時に任意でどうぞ。
 </footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
 </body>
 </html>

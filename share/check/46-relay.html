@@ -35,6 +35,11 @@
 </style>
 </head>
 <body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
 <div class="date"><a href="../">共有資料の一覧</a> ／ 進捗表アプリ #46</div>
 <h1>#46 中継所を立てる（進捗表のボタンがObsidianに飛ばないように）</h1>
 <div class="date">2026-09-04 21:00 実装・本番反映済み・Mac側で常時稼働中</div>
@@ -106,5 +111,9 @@ AFTER : "priority": 5</pre>
 <footer>
 正本：<code>tamago-shinchoku</code> リポジトリ <code>tools/relay_up.sh</code>（cloudflaredのフォールバック先を追加）・<code>tools/relay_server.py</code>（受け口・既存実装）・<code>status/relay.json</code>（発行されたURL）。Mac再起動後も5分おきの見張り番（<code>com.tamago.machine-status</code> launchd → <code>machine_status_push.sh</code> → <code>relay_up.sh</code>）が自動で立て直す。トンネルURLは知っていれば誰でも発車待ちの並び替えができるが、できることは<code>relay_server.py</code>の<code>ALLOWED</code>でキュー操作だけに絞ってある。
 </footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
 </body>
 </html>

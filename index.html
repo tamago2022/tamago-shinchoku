@@ -976,7 +976,9 @@ function freshness(iso){
 }
 function linksHtml(links){
   if(!links || !links.length) return "";
-  return `<div class="links">` + links.map(l=>`<a href="${esc(l.url)}">${esc(l.label)}</a>`).join("") + `</div>`;
+  // 739番：ここだけ target="_blank" が抜けていた。PWA(ホーム画面アプリ)には戻るボタンが無いため、
+  // 外部リンク(GitHub・obsidian://等)を同じ画面で開くと進捗表に戻れなくなる。他は全部対応済みだった。
+  return `<div class="links">` + links.map(l=>`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("") + `</div>`;
 }
 // カードのトグル（リンクのタップは通す）
 document.addEventListener("click", e=>{

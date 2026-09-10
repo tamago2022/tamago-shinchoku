@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#454 頼まれていない変更を本番前に機械で止める（一覧作成） 確認ページ</title>
+<title>#739 進捗表→GitHub等で戻れない問題の修正 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -30,6 +30,8 @@
   .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
   .shot.before b{color:var(--aka);}
   .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -45,32 +47,33 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #454 頼まれていない変更を本番前に機械で止める（一覧作成）</div>
-<h1>#454 頼まれていない変更を本番前に機械で止める（一覧作成）</h1>
-<div class="date">2026-09-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #739 進捗表→GitHub等で戻れない問題の修正</div>
+<h1>#739 進捗表→GitHub等で戻れない問題の修正</h1>
+<div class="date">2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-本体の仕組み作りはまだ着手していません。今回は対象の洗い出しだけです。①push前に触ってよい範囲外をFAILさせる仕組み ②代表ページの見た目を前後で自動比較 ③全件展開は1件で見せてからにする、の3つの仕組みを作る対象と、無断で全ページに影響する『共通部品』一覧（RelatedCardsRow・SiteHeader・VideoCard等29件）を洗い出し、次の担当が10件ずつ小分けで着手できるようstatus/split/454-list.jsonに保存しました。
+PWA（ホーム画面アプリ）には戻るボタン・アドレスバーが無く、『できたもの』等から外部リンク(GitHub等)を開くと進捗表に帰れなかった。①外部リンク生成箇所のうち唯一 target="_blank" が抜けていた <code>linksHtml()</code> を修正（他の箇所は元から対応済みだった）。②share/配下の全ページ（確認ページ・共有資料403件）とmoney.htmlに、画面の上と下の両方へ「← 進捗表に戻る」リンクを機械的に常設した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>29</b><span>洗い出した対象件数</span></div>
-  <div class="num"><b>3</b><span>作る仕組みの本数（①範囲外FAIL ②見た目差分 ③1件先出し）</span></div>
+  <div class="num"><b>403件</b><span>戻るリンクを追加したページ数</span></div>
+  <div class="num"><b>0件</b><span>body構造が壊れたファイル(検査済み)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>対象一覧(454-list.json)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/split/454-list.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/split/454-list.json</a></li>
-  <li><b>今回の直接原因ファイル RelatedCardsRow.tsx</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/RelatedCardsRow.tsx" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/src/components/RelatedCardsRow.tsx</a></li>
+  <li><b>この確認ページ自体で戻るボタンを試せる</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/739-back-link-pwa.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/739-back-link-pwa.html</a></li>
+  <li><b>既存の確認ページの例（10番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/10-home-playlist-blocked.html</a></li>
+  <li><b>お金の管理表（money.html）</b><a href="https://tamago2022.github.io/tamago-shinchoku/money.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/money.html</a></li>
 </ul>
 
 
 
 <footer>
-このページは #454 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #739 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
