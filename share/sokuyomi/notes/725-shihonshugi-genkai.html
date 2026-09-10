@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>資本主義の限界（深井龍之介）／お金が消える前夜｜聞くページ</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    background: #1a2030; color: #eef0f6;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    max-width: 640px; margin-left: auto; margin-right: auto;
+  }
+  h1 { font-size: 19px; margin: 4px 0 2px; line-height: 1.4; }
+  .sub { color: #9aa3c0; font-size: 13px; margin-bottom: 16px; }
+  .sub a { color: #8fb4ff; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  select, input[type=range] { flex: 1; min-width: 120px; }
+  select {
+    background: #10131f; color: #eef0f6; border: 1px solid #333c5a; border-radius: 8px; padding: 8px;
+    font-size: 14px;
+  }
+  .rate-label { font-size: 13px; color: #b9c0dd; min-width: 62px; text-align: right; }
+  .status {
+    background: #10131f; border: 1px solid #333c5a; border-radius: 12px; padding: 12px;
+    font-size: 13px; color: #b9c0dd; margin-bottom: 12px; min-height: 20px;
+  }
+  .status b { color: #eef0f6; }
+  .controls {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;
+  }
+  .controls button, .playbtn {
+    background: #2a3358; color: #eef0f6; border: none; border-radius: 10px;
+    padding: 12px 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .controls button:active, .playbtn:active { background: #3a4578; }
+  .playbtn {
+    width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px; background: #3a6b4a;
+  }
+  .playbtn.playing { background: #6b3a3a; }
+  .voicehelp {
+    width: 100%; background: none; border: 1px dashed #4a5580; color: #9aa3c0;
+    border-radius: 10px; padding: 10px; font-size: 12px; cursor: pointer; margin-bottom: 16px;
+  }
+  .modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 10;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #1e2440; border-radius: 14px; padding: 20px; max-width: 420px; font-size: 14px;
+    line-height: 1.8; color: #e5e8f5;
+  }
+  .modal ol { padding-left: 20px; margin: 10px 0; }
+  .modal button {
+    margin-top: 14px; width: 100%; padding: 12px; background: #2a3358; color: #fff;
+    border: none; border-radius: 8px; font-size: 15px;
+  }
+</style>
+</head>
+<body>
+  <h1>🔊 資本主義の限界（深井龍之介）／お金が消える前夜</h1>
+  <div class="sub">たまごさんの円卓ノートを読み上げます。<a href="obsidian://open?vault=tamago_brain&amp;file=%E8%B3%87%E6%9C%AC%E4%B8%BB%E7%BE%A9%E3%81%AE%E9%99%90%E7%95%8C%E3%80%80%E6%B7%B1%E4%BA%95%E9%BE%8D%E4%B9%8B%E4%BB%8B%E3%80%80AI%E3%81%8C%E5%8A%B4%E5%83%8D%E3%82%92%E5%A3%8A%E3%81%97%E3%80%81%E3%80%8C%E3%81%8A%E9%87%91%E3%81%AE%E6%AC%A1%E3%80%8D%E3%82%92%E4%BA%BA%E9%A1%9E%E3%81%AB%E8%BF%AB%E3%82%8B%E3%81%8A%E9%87%91%E3%81%8C%E6%B6%88%E3%81%88%E3%82%8B%E5%89%8D%E5%A4%9C%E2%80%95%E2%80%95AI%E3%83%BBBI%E3%83%BB%E6%A0%BC%E5%B7%AE%E3%83%BB%E6%89%80%E6%9C%89%E3%82%92%E3%82%81%E3%81%90%E3%82%8B%E4%B8%96%E7%95%8C%E5%86%86%E5%8D%93">元ノートをObsidianで開く</a></div>
+
+  <div class="row">
+    <select id="voiceSel"></select>
+  </div>
+  <div class="row">
+    <input type="range" id="rate" min="0.8" max="1.5" step="0.05" value="0.95">
+    <div class="rate-label" id="rateLabel">0.95倍</div>
+  </div>
+
+  <button class="playbtn" id="playBtn">▶ 読み上げ開始</button>
+
+  <div class="controls">
+    <button id="back15">⏪ 15秒</button>
+    <button id="back30">⏪ 30秒</button>
+    <button id="back60">⏪ 1分</button>
+    <button id="toStart">⏮ 頭から</button>
+    <button id="stopBtn">⏹ 停止</button>
+  </div>
+
+  <button class="voicehelp" id="voiceHelpBtn">🎙 もっと自然な声にする（無料・手順を見る）</button>
+
+  <div class="status" id="status">声を読み込み中…</div>
+
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <b>もっと自然な声にする（無料）</b>
+      <ol>
+        <li>設定アプリを開く</li>
+        <li>アクセシビリティ</li>
+        <li>読み上げコンテンツ</li>
+        <li>声 → 日本語</li>
+        <li>好きな声の横の雲マークをタップしてダウンロード（「拡張」「プレミアム」がより自然）</li>
+      </ol>
+      ダウンロードが終わったら、このページに戻って声の一覧を開き直すと選べるようになります。
+      <button onclick="document.getElementById('modalBg').classList.remove('show')">閉じる</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+    var RAW_TEXT = "# タイトル候補\n\n1. **資本主義の最終章はもう始まっている――AI・お金・仕事・所有の次へ**\n    \n2. **お金が消える前に、仕事が壊れる――AI時代のポスト資本主義・世界円卓**\n    \n3. **地球メルカリ化の果てに――「所有する者が勝つ社会」はAIを越えられるか**\n    \n4. **資本主義4.0――お金をなくすのではなく、「お金しか見えないOS」を終わらせる**\n    \n5. **2035年、お金はまだある。でも意味が変わっている――ポスト資本主義・大円卓**\n    \n\n# 議題\n\n**資本主義は終わるのか。AIによって労働・所得・所有・お金の意味が崩れ始めたとき、人間は次に何を「分配装置」として使うのか。**\n\n先に軍配の方向だけ言います。\n\n> **「資本主義→別の○○主義」へ一夜で交代する可能性は低い。**\n> \n> もっと現実的なのは、**資本主義の上に複数の別OSが重なり始めること**です。\n> \n> 市場＋BI＋公共財＋共有資本＋コミュニティ＋贈与＋AIによる極端な低コスト化。\n> \n> つまり、**単一OSの終焉**がポスト資本主義の本体だと思います。\n\n---\n\n# 1｜まずCOTEN RADIOを解析する\n\nたまごさんが貼ったプレイリスト、確認しました。\n\n実体は**資本主義編・全4回、合計約3時間31分**です。COTEN自身が、この4本で資本主義を歴史から捉え直し、COTENが考えるポスト資本主義と、その実験まで説明する構成だとしています。([Spotify](https://open.spotify.com/playlist/2q7R4b6y54RFZUIarYXUTK?utm_source=chatgpt.com \"資本主義（コテンラジオ） - playlist by COTEN Inc. | Spotify\"))\n\n### ① #233\n\n**「カネを持ってりゃ偉いのか!? 人類史を変えた『資本主義』の正体」**\n\n資本主義を自然法則としてではなく、**歴史的に成立した仕組み**として相対化する入口です。  \n[YouTube #233](https://www.youtube.com/watch?v=lCSXlmZpORI&utm_source=chatgpt.com)\n\n### ② #234\n\n**「資本主義の経済学史」**\n\nアダム・スミス以降、「市場はどこまで任せればよいのか」「国家はどこまで介入するのか」という思想史を追う。  \n[YouTube #234](https://www.youtube.com/watch?v=qBHnSEOZgGs&utm_source=chatgpt.com)\n\n### ③ #235\n\n**「ポスト資本主義――現代人が彩る新たな社会のグラデーション」**\n\nここが今回の本丸。\n\n扱われているのは、\n\n**公益資本主義／鎌倉資本主義／里山資本主義／地域コミュニティ／金融資本主義批判／脱成長／総有／ブルシット・ジョブ／山口周／ポール・メイソン／広井良典／グレーバー／環境／循環**\n\nなどです。つまりCOTENも、**「次の一個の主義」を探していない。複数のグラデーションを並べている。** ([Apple Podcasts](https://podcasts.apple.com/us/podcast/28-3-%E3%83%9D%E3%82%B9%E3%83%88%E8%B3%87%E6%9C%AC%E4%B8%BB%E7%BE%A9-%E3%83%BC%E7%8F%BE%E4%BB%A3%E4%BA%BA%E3%81%8C%E5%BD%A9%E3%82%8B%E6%96%B0%E3%81%9F%E3%81%AA%E7%A4%BE%E4%BC%9A%E3%81%AE%E3%82%B0%E3%83%A9%E3%83%87%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%83%BC-coten-radio-%E8%B3%87%E6%9C%AC%E4%B8%BB%E7%BE%A9%E7%B7%A83/id1450522865?i=1000548406525&utm_source=chatgpt.com \"〖28-3〗ポスト資本主義　ー現代人が彩る新たな社会のグラデ… - 歴史を面白く学ぶコテンラジオ （COTEN RADIO） - Apple Podcasts\"))\n\nCOTEN公式にはこの回から、\n\n> 市場に評価されることだけでは、全員の幸福にはつながらない\n\nという趣旨の象徴的な一節も抜き出されています。([株式会社COTEN](https://coten.co.jp/embed/?utm_source=chatgpt.com \"株式会社COTEN\"))\n\n[YouTube #235](https://www.youtube.com/watch?v=4Y3175Zv_B8&utm_source=chatgpt.com)\n\n### ④ #236\n\n**「株式会社COTENの大実験」**\n\nここが非常に重要。\n\n「社会に必要だが、金銭的ROIが低いものは株式会社では投資しづらい」という穴に対し、COTENは**直接的な金銭リターンを受け取らなくても、人類への貢献にお金を出すCOTEN CREW**を試しています。広告モデルや有料化だけに依存しない社会実験です。([株式会社COTEN](https://coten.co.jp/cotencrew/?utm_source=chatgpt.com \"COTEN CREW | 株式会社COTEN\"))\n\nつまり深井龍之介は、\n\n**ポスト資本主義を本に書いているだけではない。株式会社の中に小さな別OSを実装している。**\n\n[YouTube #236](https://www.youtube.com/watch?v=kCeLFO1uqiE&utm_source=chatgpt.com)\n\n---\n\n# 2｜事実の床：2022年のCOTENから、2026年に何が変わったか\n\nここが今回いちばん面白い。\n\n**COTENの放送は2022年。AI大爆発の前です。**\n\nところが2026年、その問題設定に**AIが火薬をぶち込んだ。**\n\n## 事実① イーロン・マスクは本当に「お金が意味を失う」と言っている\n\n2025年11月、マスクはAIとロボットが進めば10〜20年で仕事が任意になり、さらに先では**money will stop being relevant**、通貨そのものの意味が薄れるという予測を公に語りました。\n\nしかもBIよりさらに強く、以前から**Universal High Income**という表現を使っています。([アーカイブ](https://archive.ph/2025.12.12-112216/https%3A/fortune.com/2025/11/20/elon-musk-tesla-ai-work-optional-money-irrelevant/?utm_source=chatgpt.com \"Elon Musk: AI, robotics will make work optional and money irrelevant in 10 to 20 years | Fortune\"))\n\nただし重要なのは、\n\n**これは経済学的予測ではなく、マスクの技術的ユートピア仮説**です。\n\n電力、土地、計算資源、希少資源、良い立地、他人の時間など、物理的希少性までは消えません。\n\n---\n\n## 事実② ハラリは「お金は共同幻想」と言うだけでは、もう終わっていない\n\nハラリの古くからの主張は、\n\n**お金＝巨大人数の他人同士を協力させる「相互信頼システム」**\n\nです。\n\nそして最近のAI論ではもっと先に行っています。\n\nAIが、人間には理解不能な金融商品や金融関係を作り始め、**AI同士が理解している金融ネットワークの中で、人間が馬のような存在になる可能性**まで問題提起している。([IMF](https://www.imf.org/en/publications/fandd/issues/2024/12/cafe-economics-humankinds-comparative-advantage-yuval-noah-harari?utm_source=chatgpt.com \"Humankind’s Comparative Advantage\"))\n\nだから、\n\n> 「お金が消える」\n\nより怖いシナリオは、\n\n> **「お金は残るが、人間には金融システムが理解できなくなる」**\n\nです。\n\nこれは十分あり得ます。\n\n---\n\n## 事実③ そして資本主義のど真ん中からラリー・フィンクが警報を鳴らした\n\nここ、今回の円卓で一番重要かもしれません。\n\nBlackRockのラリー・フィンクは2026年の年次書簡で、\n\n**経済的価値が資本市場でより多く生まれる一方、その恩恵が資産所有者へ偏っている。さらにAIは所有が広がらなければ格差を拡大する**\n\nとはっきり書いています。([BlackRock](https://www.blackrock.com/jp/individual/ja/larry-fink-annual-chairmans-letter?utm_source=chatgpt.com \"ラリー・フィンクの年次書簡の概要｜ブラックロック\"))\n\nしかも彼の結論は反資本主義ではない。\n\n> **「資本市場を壊す」のではなく「所有者を増やせ」。**\n\nこれです。\n\nこれは後で深井と激突します。\n\n---\n\n# 3｜参加顧問\n\n今回は**実在人物の公的発言・著作から立場を再構成した仮想円卓**です。以下の台詞は本人の逐語引用ではありません。\n\n### 深井龍之介\n\nCOTEN代表。歴史から現代の制度を相対化する人。  \n**なぜこの席か：ポスト資本主義を「会社経営」で実験している。**\n\n### ラリー・フィンク\n\nBlackRockを率いてきた世界最大級の資産運用側の人物。  \n**なぜこの席か：資本主義の中心から「AI＋所有格差」を警告している。**\n\n### イーロン・マスク\n\nTesla、SpaceXなどを率いる技術資本側。  \n**なぜこの席か：AI・ロボットによるポスト希少社会を最も強く描いている。**\n\n### ユヴァル・ノア・ハラリ\n\n歴史家。『サピエンス全史』『NEXUS』。  \n**なぜこの席か：「貨幣＝共同の物語」という根本から議論できる。**\n\n### ダロン・アセモグル\n\nMIT経済学者。制度・技術・格差研究。  \n**なぜこの席か：AIを「人間を代替する方向に作るな」と警告する反対席。**\n\n2026年にも、人を置換するAGI競争ではなく**pro-worker AI**を作れと主張しています。([MITストーンセンター](https://shapingwork.mit.edu/research/building-pro-worker-ai/?utm_source=chatgpt.com \"Building pro-worker AI - MIT Stone Center on Inequality and Shaping the Future of Work\"))\n\n### 井上智洋\n\n駒澤大学教授。AIとベーシックインカムを長く論じてきた日本の経済学者。  \n**なぜこの席か：AI→雇用→BIを日本語圏で真正面からつないできた。**\n\nちなみに「辻元太郎さん」は今回の調査ではBI論者として特定できませんでした。ここは人名を推測せず、**井上智洋＋山森亮**をBI席に置くのが正確です。日本ベーシックインカム学会でも2025年末に「AIとBI」が正面テーマになっています。([日本ベーシックインカム学会](https://jabi.jp/?utm_source=chatgpt.com \"1 日本ベーシックインカム学会公式サイト\"))\n\n### ウォーレン・バフェット\n\n資本配分・複利・企業価値の象徴。  \n**なぜこの席か：「良い企業に資本を流す」という資本主義の最強弁護席。**\n\n### ロスチャイルド家・ロックフェラー財団席\n\n個人一名の代弁ではなく**歴史席**として参加。\n\n「金融資本家＝悪」という雑な扱いはしません。ロスチャイルド家は金融史の中心にいると同時に、病院・教育・住宅などへのフィランソロピーも長く行ってきました。([ロスチャイルドアーカイブ](https://www.rothschildarchive.org/family/philanthropy/?utm_source=chatgpt.com \"The Family ‹ Family philanthropy :: The Rothschild Archive\"))\n\nロックフェラー財団も現在、AIで影響を受ける地域を含む「Good Jobs」に1億ドル規模を投じています。([The Rockefeller Foundation](https://www.rockefellerfoundation.org/news/rockefeller-foundation-launches-100m-good-jobs-for-america-strategy/?utm_source=chatgpt.com \"Rockefeller Foundation Launches $100 Million “Good Jobs for America” Strategy | RF\"))\n\nそして生活者席。\n\n**ミナ18歳／奨学金を抱える大学生／家賃に追われる店主／現場労働者／普通のおばちゃん／猫。**\n\n---\n\n# 4｜円卓開始\n\n## 深井龍之介\n\n「僕がまず言いたいのは、**資本主義は人類史の終着点ではない**ということです。\n\n資本主義が悪いと言っているわけじゃない。\n\nむしろすごい。\n\n遠く離れた知らない人同士をつなぎ、イノベーションを起こし、人類史上ものすごい生産力を作った。\n\nでも、市場が測れる価値と、人間が感じる価値は同じじゃない。\n\n子育て、介護、友達、地域、自然、知識の共有、安心。\n\n市場価格ゼロでも、人間には巨大な価値があるものが山ほどあります。」\n\n---\n\n## バフェット\n\n「そこで資本主義を捨てる必要はあるか？\n\n私は逆だ。\n\n**資本は、人類が発明したかなり優れた意思決定装置だ。**\n\n良い事業に資本を送り、悪い事業から引き上げる。\n\n問題は資本そのものではなく、短期主義、独占、情報格差、規制の失敗だ。」\n\n---\n\n## 深井\n\n「そうです。\n\nだから僕も『資本主義を倒せ』とは思わない。\n\n**市場で測れない価値を、市場だけで測ることをやめよう**と言っている。」\n\n### 第一衝突\n\n**資本主義を捨てる派 vs 資本主義の適用範囲を狭める派。**\n\n軍配は後者。\n\n---\n\n# 5｜そこへラリー・フィンク\n\n「AI時代には、さらに単純な問題があります。\n\n誰がAIを**所有しているのか。**\n\nAIによって生産性が10倍になる。\n\n会社の利益は増える。\n\nでも株式を持っている人が10%しかいなければ、残り90%には何が起こる？\n\nだから答えは、\n\n**所有を民主化することだ。**」\n\nこれは実際、フィンクの2026年書簡とほぼ同じ問題設定です。([BlackRock](https://www.blackrock.com/corporate/investor-relations/larry-fink-annual-chairmans-letter?cid=organic-social%3Alinkedin%3Ablackrock%3Ablackrock%3Aldf+letter+2022%3A%3Anetherlands%3A1992252&linkId=100000104430564&utm_source=chatgpt.com \"Larry Fink’s 2026 Chairman’s Letter to Investors | BlackRock\"))\n\n---\n\n## 奨学金を抱える21歳\n\n「待ってください。\n\n僕、家賃払って奨学金返して食費払ったら、投資する金ないんですけど。」\n\n円卓、静まる。\n\n---\n\n## フィンク\n\n「だから早く、小さく、広く資本市場に参加できる制度を作る。」\n\n---\n\n## 普通のおばちゃん\n\n「その人、**投資する金がない**って言ったよ。」\n\n11秒で終了。\n\nここが最大の穴です。\n\n**資産格差を投資参加で解決するモデルは、元手が必要。**\n\n---\n\n# 6｜井上智洋、BI席\n\n「だからBIです。\n\nAIが労働需要を大幅に減らすなら、\n\n**所得＝労働の対価**\n\nという一本足打法が壊れる。\n\n生きる権利と雇用契約を切り離す。\n\n最低限の所得は市民権として配る。」\n\n---\n\n## アセモグルが反論\n\n「私はそこに警告したい。\n\nAIで人を全部置き換えて、\n\n失業した人に現金を配ればいい、\n\nという社会設計は危険です。\n\n仕事は金だけではない。\n\n**技能、社会参加、誇り、交友、意味**も配っている。」\n\nこれがpro-worker AI論の核心です。([World Bank Live](https://live.worldbank.org/en/event/2026/daron-acemoglu-on-the-good-jobs-imperative-abcde-2026?utm_source=chatgpt.com \"Event | Daron Acemoglu on the Good-Jobs Imperative — ABCDE 2026\"))\n\n---\n\n## ミナ18歳\n\n「じゃあ私たち、\n\n**AIに仕事取られない能力を永遠にアップデートし続けないと生存権ないんですか？**」\n\nこれも痛い。\n\n---\n\n# 7｜イーロン・マスク乱入\n\n「その前提そのものがなくなる。\n\nロボットが食料を作り、\n\nロボットが家を建て、\n\nAIが医療をやり、\n\nエネルギーが豊富になれば、\n\n働かなくても物がある。\n\nその世界では、お金の重要性が下がる。」\n\n---\n\n## ハラリ\n\n「ただしイーロン。\n\n**希少性は物だけではない。**\n\nマンハッタンの一番良い部屋。\n\n美しい島。\n\n一人の人間から受け取れる愛。\n\n政治権力。\n\n人々の注意。\n\n社会的地位。\n\nこれらはAIが100億台あっても有限です。」\n\nここ、ものすごく重要です。\n\n### 「AIで何でも無料」論の盲点\n\nAIは、\n\n**複製可能なものの限界費用**\n\nを激減させます。\n\nでも、\n\n**希少な土地・自然・注意・信頼・権力・人間関係**\n\nは消えない。\n\nだからお金が完全に不要になるより、\n\n> **お金が担当する範囲が縮む**\n\n可能性の方が高い。\n\n---\n\n# 8｜そこで「地球メルカリ化」を中央テーブルに置く\n\nたまごさんのノートは、これを非常に明確に言語化しています。\n\n> **「地球メルカリ化とは、世界を“住む場所”ではなく“転売できる商品棚”として見るOS。」**\n\n家は「住居」から利回り。\n\n山は「自然」から水源・太陽光・カーボンクレジット。\n\n災害はキャットボンド。\n\n水は価格変動リスクの金融市場。\n\nそしてノートの核心は、\n\n> **投資そのものが悪いのではなく、生命・地域・未来を利回りだけで見るOSが怖い。**\n\nここでCOTENと完全につながります。\n\n### COTEN\n\n「市場価格では測れない価値がある」\n\n### 地球メルカリ化\n\n「市場価格を付けられるものが増えすぎた」\n\nつまり表裏です。\n\n---\n\n# 9｜ロスチャイルド／ロックフェラー歴史席\n\n「金融化が全部悪だった、では歴史を説明できない。\n\n巨大な資本集積が、\n\n鉄道、\n\n病院、\n\n大学、\n\n科学研究、\n\nインフラ、\n\n医療、\n\n公共事業\n\nを可能にした。\n\n問題は**大資本そのものではなく、大資本を誰が、何の目的で、誰に説明責任を持って動かすか**だ。」\n\n深井、うなずく。\n\n---\n\n## 店の親父\n\n「難しい話いいからさ。\n\nうちは売上そんな変わんねえのに、\n\n材料も電気も家賃も上がってんだよ。\n\n俺は何主義になったら楽になるんだ？」\n\n円卓静止。\n\nこれです。\n\n**思想が生活に着地しないポスト資本主義は、ただの知識人の趣味。**\n\n---\n\n# 10｜30代・40代ビジネスパーソンに何が起こるか\n\nここはかなり重要。\n\n2026年時点では、「AI失業社会がもう来た」と断定できるデータはありません。\n\nIMFも、仕事の消滅だけでなく新しい技能・仕事の発生を確認しています。先進国の求人の約10件に1件が新しいスキルを要求するなど、まず起きているのは**仕事の再構成**です。([IMF](https://www.imf.org/en/blogs/articles/2026/01/14/new-skills-and-ai-are-reshaping-the-future-of-work?utm_source=chatgpt.com \"New Skills and AI Are Reshaping the Future of Work\"))\n\nただし30〜40代には特殊な問題があります。\n\n20代ならAI前提でキャリアを作れる。\n\n60代なら逃げ切れる人もいる。\n\n**30〜40代は、旧OSで十数年積んだ瞬間にOSが変わる。**\n\n特に危ないのは、\n\n- 中間管理\n    \n- 調整\n    \n- 資料作成\n    \n- 情報仲介\n    \n- 初歩的分析\n    \n- 定型的専門職\n    \n- 「知っていること」そのものを商品にする仕事\n    \n\nです。\n\n一方、強くなるのは、\n\n**所有する人／AIを使って作る人／現実世界を動かす人／信頼を持つ人／コミュニティを持つ人／意思決定責任を取れる人。**\n\n---\n\n# 11｜若者にはさらに別のゲームが始まる\n\n昔：\n\n**勉強 → 就職 → 給料 → 家 → 資産形成**\n\nこれが一本道だった。\n\nAI時代：\n\n**学ぶ → AIと作る → 小さく稼ぐ → コミュニティ → 複数所得 → 所有 → また学ぶ**\n\nになる可能性が高い。\n\nつまり「いい会社に入る」が、\n\n人生のOSではなく、\n\n**数あるAPIの一本になる。**\n\n---\n\n# 12｜最大の対立\n\n## A陣営\n\n### フィンク／バフェット\n\n**「資本主義2.0」**\n\n市場は残す。\n\nただし所有を広げる。\n\n国民全員が資産所有者になる。\n\n---\n\n## B陣営\n\n### BI派\n\n**「所得と雇用を切る」**\n\nAI配当、\n\nBI、\n\nソーシャル・ウェルス・ファンドなどで、\n\n生産資本の利益を全員へ。\n\n---\n\n## C陣営\n\n### アセモグル\n\n**「そもそも人間を不要にするAIを作るな」**\n\nAIは代替装置ではなく、\n\n**人間能力増幅装置**にする。\n\n---\n\n## D陣営\n\n### 深井／山口周／里山・公益資本主義\n\n**「市場を社会の一部分に戻す」**\n\n家族、\n\n地域、\n\n贈与、\n\n公共財、\n\n自然、\n\n文化、\n\nケア、\n\n意味。\n\n全部を価格にしない。\n\n---\n\n## E陣営\n\n### マスク\n\n**「技術で希少性そのものを潰す」**\n\n豊富になれば分配問題の多くは消える。\n\n---\n\n# 13｜議長の軍配\n\n**どれか一つではありません。**\n\n私は2030年代へ向けて、こうなる確率が最も高いと見ます。\n\n# 資本主義4.0＝五層構造\n\n**第1層　市場**\n\n欲しい物、起業、競争、価格。\n\nここは残る。\n\n---\n\n**第2層　全民所有**\n\n株式・年金・ソブリンファンド・AI資本の配当。\n\n> **働く人だけでなく、持つ人を増やす。**\n\n---\n\n**第3層　最低生活床**\n\nBI、負の所得税、住宅・医療・教育などのベーシックサービス。\n\n> **生存権を雇用主から少し取り戻す。**\n\n---\n\n**第4層　コモンズ**\n\n自然、知識、公共空間、コミュニティ、オープンソース。\n\n> **値札を付けない領域を意図的に残す。**\n\n---\n\n**第5層　意味**\n\n愛、\n\n遊び、\n\n創作、\n\n人間関係、\n\n貢献、\n\n「何のために生きるか」。\n\nここは市場にもAIにも最終的には決められない。\n\n---\n\n# 14｜だから「お金はなくなるか」\n\n軍配：\n\n## **なくならない。ただし王様ではなくなる可能性がある。**\n\nこれはかなり重要な違いです。\n\n現在のお金は、\n\n**生存権＋自由＋地位＋選択肢＋安心＋権力**\n\nを全部一枚で兼務している。\n\nだから強すぎる。\n\nポスト資本主義とは、お金を燃やすことではなく、\n\n**お金が持ちすぎている権限を、別の制度へ分散すること**\n\nなのではないか。\n\nこれはCOTENの思想、BI、フィンクの全民所有、マスクの豊富性、アセモグルのpro-worker AIを一枚にすると見えてきます。\n\n---\n\n# 15｜猫、最後に発言\n\n猫：\n\n**「ごはんと昼寝が足りてれば、GDP知らない。」**\n\n11秒どころか3秒。\n\n全員黙る。\n\n---\n\n# 現実への翻訳\n\nここから先、たまごさんの「Eden Loop」側へ翻訳すると非常に面白い。\n\n**Control Earth**\n\n> 働け  \n> 稼げ  \n> 買え  \n> 所有しろ  \n> 増やせ  \n> 負けるな  \n> 足りなければもっと働け\n\nから、\n\n**Eden Loop**\n\n> 生存は確保する  \n> AIで面倒を減らす  \n> 必要なものは市場で作る  \n> 市場に向かないものは共有する  \n> 余剰は循環させる  \n> 人間は意味・遊び・関係・創作へ戻る\n\nです。\n\nこれは共産主義への回帰ではない。\n\nむしろ、\n\n## **市場を「神」から「便利な道具」へ降格させる。**\n\nこれが一番近い。\n\n---\n\n# 今日やること\n\n今回の円卓から、保存すべき3本はこれです。\n\n**① ポスト資本主義の本体**\n\n> **「資本主義の次」は一つの主義ではない。単一OSから複数OSへの移行である。**\n\n**② AI時代最大の政治問題**\n\n> **AIが何をできるかではなく、AIを誰が所有するか。**\n\n**③ 地球メルカリ化への回答**\n\n> **値札を禁止するのではない。値札を貼ってはいけない領域を社会がもう一度決める。**\n\n---\n\n# 寝かせること\n\n「2035年にお金がなくなる」\n\n「AIでほぼ全員失業する」\n\n「BIは必ず導入される」\n\nここはまだ断定しません。\n\n特にマスクの未来像は**重要なシグナルではあるが予言ではない**。\n\nむしろ今から観測するべきなのは、\n\n**①AIによる労働所得の比率低下  \n②AI資本の所有集中  \n③BI／ベーシックサービスの政策化  \n④全民資本所有制度  \n⑤労働以外から所得を得る人口比率**\n\nこの5個です。\n\n---\n\n# 今日のOSアップデート\n\n> ## **「資本主義を倒す」のではない。「お金にやらせすぎている仕事を減らす」。**\n\n家を決める。\n\n教育を決める。\n\n医療を決める。\n\n人の価値を決める。\n\n自然の価値を決める。\n\n時間の価値を決める。\n\nそして最終的には、\n\n「あなたの人生は成功だったか」まで決める。\n\n**一つの数字に、そこまでやらせなくていい。**\n\n今回のCOTEN RADIOを2026年のAIまで延長すると、私はここが一番深い結論だと思います。";
+
+  var voiceSel = document.getElementById("voiceSel");
+  var rateInput = document.getElementById("rate");
+  var rateLabel = document.getElementById("rateLabel");
+  var playBtn = document.getElementById("playBtn");
+  var statusEl = document.getElementById("status");
+  var modalBg = document.getElementById("modalBg");
+
+  var synth = window.speechSynthesis;
+  var sentences = [];
+  var currentIndex = 0;
+  var cumTimes = [];
+  var utteranceStartedAt = 0;
+  var isPlaying = false;
+  var isPaused = false;
+
+  var voices = [];
+  function pickBestVoiceIndex(list) {
+    var ja = list.filter(function(v){ return /^ja/i.test(v.lang); });
+    if (ja.length === 0) return list.length ? 0 : -1;
+    var preferred = ja.find(function(v){ return /enhanced|premium|siri/i.test(v.name); });
+    if (preferred) return list.indexOf(preferred);
+    return list.indexOf(ja[0]);
+  }
+  function loadVoices() {
+    voices = synth.getVoices() || [];
+    if (!voices.length) return;
+    voiceSel.innerHTML = "";
+    voices.forEach(function(v, i){
+      var opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = v.name + "（" + v.lang + "）" + (/enhanced|premium|siri/i.test(v.name) ? " ★おすすめ" : "");
+      voiceSel.appendChild(opt);
+    });
+    var saved = localStorage.getItem("sokuyomi_voice_name");
+    var savedIdx = saved ? voices.findIndex(function(v){ return v.name === saved; }) : -1;
+    var idx = savedIdx >= 0 ? savedIdx : pickBestVoiceIndex(voices);
+    if (idx < 0) idx = 0;
+    voiceSel.value = idx;
+    prepareText();
+  }
+  synth.addEventListener("voiceschanged", loadVoices);
+  loadVoices();
+  setTimeout(loadVoices, 300);
+
+  voiceSel.addEventListener("change", function(){
+    var v = voices[parseInt(voiceSel.value, 10)];
+    if (v) localStorage.setItem("sokuyomi_voice_name", v.name);
+  });
+
+  var savedRate = parseFloat(localStorage.getItem("sokuyomi_rate") || "0.95");
+  rateInput.value = savedRate;
+  rateLabel.textContent = savedRate.toFixed(2) + "倍";
+  rateInput.addEventListener("input", function(){
+    rateLabel.textContent = parseFloat(rateInput.value).toFixed(2) + "倍";
+  });
+  rateInput.addEventListener("change", function(){
+    localStorage.setItem("sokuyomi_rate", rateInput.value);
+    if (isPlaying) speakFrom(estimateCurrentIndex());
+  });
+
+  function stripForSpeech(raw) {
+    var body = raw;
+    body = body.replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, "$1");
+    body = body.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+    body = body.replace(/https?:\/\/\S+/g, "");
+    body = body.replace(/obsidian:\/\/\S+/g, "");
+    body = body.replace(/\*\*([^*]+)\*\*/g, "$1");
+    body = body.replace(/`([^`]+)`/g, "$1");
+    body = body.replace(/^#+\s*/gm, "");
+    body = body.replace(/^[\-\*・]\s+/gm, "");
+    body = body.replace(/[A-Za-z0-9_\-]{20,}/g, "");
+    body = body.replace(/^\s*#[^\s#]+\s*$/gm, "");
+    body = body.replace(/\n{3,}/g, "\n\n");
+    return body.trim();
+  }
+
+  function splitByChars(text, marks) {
+    var out = [];
+    var buf = "";
+    for (var i = 0; i < text.length; i++) {
+      buf += text[i];
+      if (marks.indexOf(text[i]) >= 0) { out.push(buf); buf = ""; }
+    }
+    if (buf) out.push(buf);
+    return out.map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function splitSentences(text) {
+    var raw = splitByChars(text, ["。", "！", "？", "\n"]);
+    var out = [];
+    raw.forEach(function(s){
+      if (s.length > 120) {
+        var parts = splitByChars(s, ["、"]);
+        var buf = "";
+        parts.forEach(function(p){
+          if ((buf + p).length > 80) { if (buf) out.push(buf); buf = p; }
+          else buf += p;
+        });
+        if (buf) out.push(buf);
+      } else {
+        out.push(s);
+      }
+    });
+    return out.filter(function(s){ return s.length > 0; });
+  }
+
+  function estCharsPerSec(rate) { return 6.0 * rate; }
+
+  function buildCumTimes(rate) {
+    var t = 0;
+    cumTimes = sentences.map(function(s){
+      var start = t;
+      t += Math.max(0.4, s.length / estCharsPerSec(rate));
+      return start;
+    });
+  }
+
+  function prepareText() {
+    var text = stripForSpeech(RAW_TEXT);
+    sentences = splitSentences(text);
+    buildCumTimes(parseFloat(rateInput.value));
+    var v = voices[parseInt(voiceSel.value, 10)];
+    statusEl.innerHTML = sentences.length + " 文（約" + text.length + "字）。<b>" + (v ? v.name : "端末の声") + "</b> で読みます。▶を押してください。";
+  }
+
+  function estimateCurrentIndex() {
+    if (!cumTimes.length) return 0;
+    var elapsedNow = (utteranceStartedAt > 0 ? (performance.now() - utteranceStartedAt) / 1000 : 0);
+    var atSentenceStart = cumTimes[currentIndex] || 0;
+    var nowT = atSentenceStart + Math.max(0, elapsedNow);
+    return timeToIndex(nowT);
+  }
+  function timeToIndex(t) {
+    var lo = 0, hi = cumTimes.length - 1, ans = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      if (cumTimes[mid] <= t) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    return ans;
+  }
+
+  function speakFrom(index) {
+    synth.cancel();
+    if (index < 0) index = 0;
+    if (index >= sentences.length) { finishReading(); return; }
+    currentIndex = index;
+    isPlaying = true;
+    isPaused = false;
+    playBtn.textContent = "⏸ 一時停止";
+    playBtn.classList.add("playing");
+    speakOne(index);
+  }
+
+  function speakOne(index) {
+    if (!isPlaying || index >= sentences.length) { if (index >= sentences.length) finishReading(); return; }
+    currentIndex = index;
+    updateStatus();
+    var u = new SpeechSynthesisUtterance(sentences[index]);
+    var v = voices[parseInt(voiceSel.value, 10)];
+    if (v) u.voice = v;
+    u.lang = (v && v.lang) || "ja-JP";
+    u.rate = parseFloat(rateInput.value);
+    u.onstart = function(){ utteranceStartedAt = performance.now(); };
+    u.onend = function(){
+      if (!isPlaying || isPaused) return;
+      speakOne(index + 1);
+    };
+    u.onerror = function(){
+      if (!isPlaying || isPaused) return;
+      speakOne(index + 1);
+    };
+    synth.speak(u);
+  }
+
+  function finishReading() {
+    isPlaying = false;
+    isPaused = false;
+    playBtn.textContent = "▶ 読み上げ開始";
+    playBtn.classList.remove("playing");
+    statusEl.innerHTML = "読み終わりました。";
+  }
+
+  function updateStatus() {
+    var pct = sentences.length ? Math.round((currentIndex / sentences.length) * 100) : 0;
+    statusEl.innerHTML = (currentIndex + 1) + " / " + sentences.length + " 文（約" + pct + "%）";
+  }
+
+  playBtn.addEventListener("click", function(){
+    if (isPlaying && !isPaused) {
+      synth.pause();
+      isPaused = true;
+      playBtn.textContent = "▶ 再開";
+      playBtn.classList.remove("playing");
+      return;
+    }
+    if (isPlaying && isPaused) {
+      isPaused = false;
+      playBtn.textContent = "⏸ 一時停止";
+      playBtn.classList.add("playing");
+      try { synth.resume(); } catch(e) { speakFrom(currentIndex); }
+      return;
+    }
+    if (!sentences.length) prepareText();
+    speakFrom(currentIndex || 0);
+  });
+
+  document.getElementById("stopBtn").addEventListener("click", function(){
+    synth.cancel();
+    isPlaying = false; isPaused = false;
+    playBtn.textContent = "▶ 読み上げ開始";
+    playBtn.classList.remove("playing");
+  });
+  document.getElementById("toStart").addEventListener("click", function(){
+    if (!sentences.length) return;
+    buildCumTimes(parseFloat(rateInput.value));
+    speakFrom(0);
+  });
+  function jumpBack(seconds) {
+    if (!sentences.length) return;
+    buildCumTimes(parseFloat(rateInput.value));
+    var nowIdx = estimateCurrentIndex();
+    var nowT = cumTimes[nowIdx] || 0;
+    var targetT = Math.max(0, nowT - seconds);
+    speakFrom(timeToIndex(targetT));
+  }
+  document.getElementById("back15").addEventListener("click", function(){ jumpBack(15); });
+  document.getElementById("back30").addEventListener("click", function(){ jumpBack(30); });
+  document.getElementById("back60").addEventListener("click", function(){ jumpBack(60); });
+
+  document.getElementById("voiceHelpBtn").addEventListener("click", function(){
+    modalBg.classList.add("show");
+  });
+  modalBg.addEventListener("click", function(e){
+    if (e.target === modalBg) modalBg.classList.remove("show");
+  });
+
+})();
+</script>
+</body>
+</html>
