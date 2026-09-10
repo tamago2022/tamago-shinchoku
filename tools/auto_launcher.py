@@ -1249,7 +1249,38 @@ def build_prompt(item):
     return "\n\n".join(parts)
 
 
-def main():
+# ---- 進捗表の軽量化（2026-09-10）----
+#   queue.json（1.4MB超・大半はwhat本文）を進捗表アプリが毎回丸ごと運んで重かったため、
+#   what/resultを抜いた軽量版 status/queue_light.json を別途作る（build_queue_light.py）。
+#   queue.jsonが更新される（＝着火・回収・確認処理のどれかがsave_queueを呼ぶ）たびに
+#   作り直せば十分なので、mtimeが前回チェック時から変わっていた時だけ再生成する。
+#   失敗しても発車判定（本体処理）は絶対に止めない＝try/exceptで必ず囲む。
+QUEUE_LIGHT_MTIME_STATE = os.path.join(REPO, "status", ".queue_light_mtime")
+
+
+def _maybe_rebuild_queue_light():
+    try:
+        mtime = os.path.getmtime(QUEUE)
+    except Exception:
+        return
+    last = None
+    try:
+        last = float(io.open(QUEUE_LIGHT_MTIME_STATE, encoding="utf-8").read().strip())
+    except Exception:
+        last = None
+    if last is not None and mtime <= last:
+        return
+    try:
+        sys.path.insert(0, HERE)
+        import build_queue_light
+        build_queue_light.build()
+        with io.open(QUEUE_LIGHT_MTIME_STATE, "w", encoding="utf-8") as f:
+            f.write(str(mtime))
+    except Exception as e:
+        log("queue_light再生成に失敗（本体は継続）: %s" % e)
+
+
+def _main_impl():
   if not only_one_launcher():
       return 0      # 先客がいる。二重発車を作らない
   with queue_lock():
@@ -1616,6 +1647,18 @@ def launch_one(item, q, alive, safe_max):
         % (item.get("n"), item.get("title"), pid, new_id[:8], alive, alive + 1, safe_max))
     print("自動発車: %s" % item.get("title"))
     return True
+
+
+def main():
+    # 途中のどの見送り（return 0）・例外で抜けても、queue.jsonが動いていたら
+    # queue_light.jsonを必ず作り直す（PWA側が軽量版を読むため）。本体の発車判定は絶対に止めない。
+    try:
+        return _main_impl()
+    finally:
+        try:
+            _maybe_rebuild_queue_light()
+        except Exception as e:
+            log("queue_light再生成（main終端）に失敗: %s" % e)
 
 
 if __name__ == "__main__":
