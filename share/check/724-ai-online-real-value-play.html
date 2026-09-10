@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#724 AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ 確認ページ</title>
+<title>#724 AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ（実音声版） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -42,37 +42,42 @@
 </style>
 </head>
 <body>
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #724 AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ</div>
-<h1>#724 AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #724 AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ（実音声版）</div>
+<h1>#724 AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ（実音声版）</h1>
 <div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-たまごさんの円卓ノート「AIがオンラインを代替するほどリアル集合価値は高まるか」を、既存の即読みPWA（723番）と同じ読み上げロジックで専用の聞くページ化した。読み始めは「タイトル候補」見出し以降のみ、URLは読み上げ対象から自動除去。ページを開いて▶を押せば端末の声で読み上げが始まり、停止／15秒・30秒・1分戻す／頭から／速度調整のボタンを付けた。
+たまごさんの円卓ノートを、tools/dokudoku_worker.py(AivisSpeech・ローカル無料の実音声合成)で本物の音声ファイル(m4a)にした。前回は代わりにブラウザ内蔵の合成音声(speechSynthesis)を使ってしまいAI検品に差し戻されたため、実音声ファイルを&lt;audio&gt;タグで再生する方式に作り直した。読み始めは「タイトル候補」見出し以降のみ・URLは読み上げから自動除去。再生/停止/15秒・30秒・1分戻す/頭から/速度の全ボタンをheadless Chromeで実クリックし、audio.currentTimeが実際に進むことを実測した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>231</b><span>読み上げ対象の文数</span></div>
-  <div class="num"><b>6211</b><span>読み上げ本文の文字数（URL等除去後）</span></div>
+  <div class="num"><b>19:00</b><span>音声の長さ(分:秒)</span></div>
+  <div class="num"><b>6039</b><span>読み上げ文字数(URL等除去後)</span></div>
+  <div class="num"><b>9.4MB</b><span>音声ファイルサイズ</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>再生前</b><img src="img/724-before.png" alt="前"></div>
+  <div class="shot after"><b>▶クリック後(再生中・時刻が進んでいる)</b><img src="img/724-playing.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>聞くページ本番（ここを開いて▶を押す）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/notes/724-ai-online-real-value.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/notes/724-ai-online-real-value.html</a></li>
-  <li><b>元ノート（Obsidianで開く）</b><a href="obsidian://open?vault=tamago_brain&amp;file=AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B" target="_blank" rel="noopener">obsidian://open?vault=tamago_brain&amp;file=AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B</a></li>
+  <li><b>聞くページ本番(ここを開いて▶を押す)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/notes/724-ai-online-real-value.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/notes/724-ai-online-real-value.html</a></li>
+  <li><b>音声ファイル本体(m4a)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/podcast/audio/AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B.m4a" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/podcast/audio/AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B.m4a</a></li>
+  <li><b>元ノート(Obsidianで開く)</b><a href="obsidian://open?vault=tamago_brain&amp;file=AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B" target="_blank" rel="noopener">obsidian://open?vault=tamago_brain&amp;file=AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番URLが200で開ける</td><td class="yes">OK</td></tr>
-<tr><td>本文(タイトル候補以降)がページに正しく埋め込まれている</td><td class="yes">OK</td></tr>
-<tr><td>読み上げ用テキストからURLが除去される(Node実機シミュレーションで確認)</td><td class="yes">OK</td></tr>
-<tr><td>本文が231文に分割される(Node実機シミュレーションで確認)</td><td class="yes">OK</td></tr>
-<tr><td>再生/停止/15秒/30秒/1分戻す/頭から/速度ボタンが実装されている</td><td class="yes">OK</td></tr>
-<tr><td>実機(iPhone等)で▶を押して実際に音が鳴ること</td><td class="no">未確認</td></tr>
+<tr><td>本番URLが200で開ける(音声・ページ両方)</td><td class="yes">OK</td></tr>
+<tr><td>読み上げ音源が実音声ファイル(AivisSpeech/dokudoku_worker.py)である(speechSynthesisではない)</td><td class="yes">OK</td></tr>
+<tr><td>読み始めがタイトル候補見出し以降のみ(それより上のメタ情報を含まない)</td><td class="yes">OK</td></tr>
+<tr><td>headless Chromeで▶を実クリックし、audio.paused=falseかつcurrentTimeが2秒後に1.61秒まで実際に進んだ</td><td class="yes">OK</td></tr>
+<tr><td>15秒戻す/停止ボタンの実クリック動作</td><td class="yes">OK</td></tr>
 </table>
 
 <footer>
