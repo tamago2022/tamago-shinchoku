@@ -1,9 +1,9 @@
 {
- "totalChecked": 102,
+ "totalChecked": 104,
  "totalPassed": 62,
- "totalFailed": 39,
+ "totalFailed": 41,
  "totalErrors": 1,
- "totalCostUsd": 28.6547,
+ "totalCostUsd": 29.3619,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -43,25 +43,11 @@
   "queue.json軽量化の実装・数字は本番コードで確認できたが、完了条件必須の": 1,
   "完了条件①(内蔵空き100GB以上)が78GBで未達、②のパス別内訳の数字も確認": 1,
   "queue.json軽量化は数字・コード・スクショで裏取りできたが、PWA/ブラ": 1,
-  "確認ページ自体が「内蔵空き100GB以上→no（実際88GB）」と明記し目標未達": 1
+  "確認ページ自体が「内蔵空き100GB以上→no（実際88GB）」と明記し目標未達": 1,
+  "本番URLを直接確認するとバッジ要素自体が存在せず(画像src・DOM上ゼロ)、": 1,
+  "確認ページ自身が内蔵空き84GB(100GB未達)・原因究明も未確定(要再調査)": 1
  },
  "history": [
-  {
-   "ts": "2026-09-06T15:32:27+09:00",
-   "n": 435,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/435-egg-theater-ep02-food-future.html",
-   "verdict": "pass",
-   "reason": "確認ページ・動画3本・画像6枚を実際に取得し、動画は正常なMP4で合計尺13.28秒が主張と一致、未達事項（フル尺未達）も正直に開示されている",
-   "costUsd": 0.23785960000000003
-  },
-  {
-   "ts": "2026-09-06T15:41:29+09:00",
-   "n": 436,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/436-pwa-stale-fix.html",
-   "verdict": "fail",
-   "reason": "コード修正・本番反映は本物だが、依頼で明示された「実際にPWAを開いて最新が出ることをスクリーンショットで確かめる」検証が確認ページに一切無く、Node上のモックテストで代替されている",
-   "costUsd": 0.30423120000000003
-  },
   {
    "ts": "2026-09-06T15:50:19+09:00",
    "n": 437,
@@ -445,7 +431,23 @@
    "verdict": "fail",
    "reason": "確認ページ自体が「内蔵空き100GB以上→no（実際88GB）」と明記し目標未達、③の置き場ノートへのリンクも無く、前回指摘と同じ未達成が繰り返されている",
    "costUsd": 0.1432692
+  },
+  {
+   "ts": "2026-09-11T00:48:46+09:00",
+   "n": 690,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/690-lately-badge-height-check.html",
+   "verdict": "fail",
+   "reason": "本番URLを直接確認するとバッジ要素自体が存在せず(画像src・DOM上ゼロ)、確認ページの「短辺13.8%で全5箇所PASS」という実測主張・証拠スクショと本番の実態が一致しない。報告者自身も「本番反映は待機中」と認めており、11回目の指摘が今回も未解消。",
+   "costUsd": 0.5567152000000002
+  },
+  {
+   "ts": "2026-09-11T00:53:26+09:00",
+   "n": 719,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/719-disk-cleanup-imac-hdd.html",
+   "verdict": "fail",
+   "reason": "確認ページ自身が内蔵空き84GB(100GB未達)・原因究明も未確定(要再調査)と明記しており、完了条件①③が満たされていない",
+   "costUsd": 0.1504794
   }
  ],
- "updatedAt": "2026-09-10 21:35"
+ "updatedAt": "2026-09-11 00:53"
 }

@@ -773,6 +773,17 @@
 <!-- 2026-09-05 たまごさん「余分な情報は削ろう」→ 依頼225件の一覧ごと外したので、その出典の説明も消す -->
 
 <script>
+/* 2026-09-11（726番）：通信が細い回線で「応答が来ないまま止まる」箇所をつぶす共通ヘルパー。
+   これまで fetch のいくつかにタイムアウトが無く、レスポンスが返らない限り待ち続けていた
+   （onerror/catchはHTTPエラー時にしか発火せず、pendingのままだと画面が永久に「読み込み中」になる）。
+   AbortControllerで一定時間後に強制的に諦め、必ず.catch()側へ落とす。 */
+function fetchWithTimeout(url, opts, ms){
+  opts = opts || {};
+  const ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), ms || 8000) : null;
+  const merged = Object.assign({}, opts, ctrl ? {signal: ctrl.signal} : {});
+  return fetch(url, merged).finally(() => { if(timer) clearTimeout(timer); });
+}
 /* 2026-09-04 たまごさんのホーム画面アプリが**古いindex.htmlを握ったまま**になっていた。
    （直した画面をpushしても、スマホ側は前の画面のまま＝「発車待ちはありません」が出続けた）
    GitHub PagesではHTTPヘッダを変えられないので、中身の側で世代を確認する。
@@ -792,7 +803,7 @@ let __versionCheckBusy = false;
 function checkVersion(){
   if(__versionCheckBusy) return;
   __versionCheckBusy = true;
-  fetch("status/version.json?t=" + Date.now(), {cache:"no-store"})
+  fetchWithTimeout("status/version.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : null)
     .then(j => {
       __versionCheckBusy = false;
@@ -818,18 +829,29 @@ window.addEventListener("focus", () => checkVersion());
 //   「読み込めませんでした」を出していた。まず自分で読み直す（たまごさんに開き直させない）。
 (function(){
   const files = ["data.js","said.js","requests225.js"]; let n = 0;
+  /* 2026-09-11（726番）：回線が細いと <script src> は onload も onerror も一生発火せず
+     pending のまま止まることがある（HTTPエラーではなく応答そのものが来ない状態はイベント化されない）。
+     この場合これまで __dataReady が永久に呼ばれず、「読み込みに時間がかかっています」より前の
+     段階で無言のまま固まっていた（実機で22分止まった一因）。12秒経ったら来ている分だけで
+     先に進め、__dataReady2 側の既存リトライ・キャッシュ表示へ確実にバトンを渡す。 */
+  let __filesDone = false;
+  function finishOnce(){
+    if(__filesDone) return; __filesDone = true;
+    if(window.__dataReady) window.__dataReady();
+  }
   function loadOne(f, triesLeft){
     const s = document.createElement("script");
     s.src = f + "?t=" + Date.now();
     s.async = false;
-    s.onload = () => { if(++n === files.length && window.__dataReady) window.__dataReady(); };
+    s.onload = () => { if(++n === files.length) finishOnce(); };
     s.onerror = () => {
       if(triesLeft > 0){ setTimeout(() => loadOne(f, triesLeft - 1), 900); return; }
-      if(++n === files.length && window.__dataReady) window.__dataReady();
+      if(++n === files.length) finishOnce();
     };
     document.head.appendChild(s);
   }
   files.forEach(f => loadOne(f, 3)); // 最大4回（本番+リトライ3回）試してから諦める
+  setTimeout(finishOnce, 12000); // 応答なしのまま詰まった時の保険
 })();
 </script>
 <script>
@@ -1430,7 +1452,7 @@ function refreshRelay(){
     flushCommands();
     return Promise.resolve();
   }
-  return fetch("status/relay.json?t=" + Date.now(), {cache:"no-store"})
+  return fetchWithTimeout("status/relay.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : null).then(j => { window.__relay = j; flushCommands(); })
     .catch(()=>{});
 }
@@ -3545,7 +3567,7 @@ function renderList(){
 loadPrio();
 loadCmds();
 // 共有側（priority.json：Mac側が Obsidian 経由で取り込んだもの）を先に読んでから描く
-const prioReady = fetch("status/priority.json?t=" + Date.now(), {cache:"no-store"})
+const prioReady = fetchWithTimeout("status/priority.json?t=" + Date.now(), {cache:"no-store"}, 8000)
   .then(r => r.ok ? r.json() : null).then(j => {
     if(!j) return;
     // Mac側の形 {"priority":{"T004":1}, "stamps":{"T004":"ISO"}} を端末内の形 {"4":{p,t}} に直す
@@ -3604,6 +3626,16 @@ function __dataReady2(){
       return;
     }
     const upd = document.getElementById("updated");
+    /* 2026-09-11（726番）：「読み込みに時間がかかっています」が出しっぱなしのまま何十分も
+       戻らない事故（実機で22分）への対応。キャッシュも無く10回（約40秒）粘っても読めない時は、
+       「自動で読み直しています」と嘘をつかず、はっきり失敗を伝えて手動ボタンを出す。
+       ここに来た＝通信そのものが長く詰まっている合図なので、8秒待って裏で回し続ける。 */
+    if(__dataReadyRetries > 10 && upd){
+      upd.innerHTML = `⚠ 読み込めていません（${__dataReadyRetries}回失敗・通信が詰まっている可能性）　`
+        + `<a href="#" onclick="forceHardReload();return false;" style="color:#8ef0ae;text-decoration:underline;">押して読み直す</a>`;
+      setTimeout(() => { try{ __dataReady2(); }catch(e){} }, 8000);
+      return;
+    }
     if(upd) upd.textContent = "読み込みに時間がかかっています…（自動で読み直しています）";
     setTimeout(() => { try{ __dataReady2(); }catch(e){} }, 4000);
     return;
