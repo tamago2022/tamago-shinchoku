@@ -47,13 +47,13 @@
 <div class="date">2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-たまごさんの『デスクトップのフォルダが本当にいなくなった』不安を受けた735番の続き（1/2は10件確認済み）。残り9件を1つずつ実地照合した。8件は実在確認、1件（デスクトップ整理_2026-09-02）は<b>移動が完了しておらず元の場所に17GBが残ったまま停止中</b>と判明（たまごさんの『整理止めて』指示でrsyncが途中停止した状態。データは消えておらず今も存在する）。
+たまごさんの『デスクトップのフォルダが本当にいなくなった』不安を受けた735番の続き（1/2は10件確認・完全削除4件を発見済み）。残り9件を1つずつ実地照合した。8件は実在確認、1件（デスクトップ整理_2026-09-02）は<b>移動が完了しておらず元の場所に17GBが残ったまま停止中</b>と判明（たまごさんの『整理止めて』指示でrsyncが途中停止した状態。データは消えておらず今も存在する）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>9件中9件</b><span>実地照合した件数（削除は0件）</span></div>
-  <div class="num"><b>0件</b><span>719番/735番の移動作業でゴミ箱に入ったもの</span></div>
+  <div class="num"><b>0件</b><span>今回(2/2)新たに見つかったゴミ箱混入</span></div>
   <div class="num"><b>17GB/93,564件</b><span>デスクトップ整理_2026-09-02のうち、まだ元の場所に残っている分（未移動）</span></div>
 </div>
 
@@ -61,8 +61,8 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>iMac HDD側の置き場ノート（今回の発見を追記予定）</b><a href="file:///Volumes/iMac%20HDD/Claude専用/README_置き場ルール.md" target="_blank" rel="noopener">file:///Volumes/iMac%20HDD/Claude専用/README_置き場ルール.md</a></li>
-  <li><b>1/2の確認ページ（先に確認した10件）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/735-desktop-cleanup-trace-1of2.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/735-desktop-cleanup-trace-1of2.html</a></li>
+  <li><b>iMac HDD側の置き場ノート（今回の発見を追記済み）</b><a href="file:///Volumes/iMac%20HDD/Claude専用/README_置き場ルール.md" target="_blank" rel="noopener">file:///Volumes/iMac%20HDD/Claude専用/README_置き場ルール.md</a></li>
+  <li><b>1/2の確認ページ（先に確認した10件・完全削除4件の詳細）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/735-desktop-cleanup-trace-1of2.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/735-desktop-cleanup-trace-1of2.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -73,10 +73,10 @@
 <tr><td>③デスクトップのスクショ</td><td class="yes">退避先に合計39枚(36枚+3枚)。現デスクトップは0枚＝全部移動済み</td></tr>
 <tr><td>④デスクトップ整理_2026-08-02_残りtar</td><td class="yes">実データ4件(zip2件・html1件・DS_Store)+空フォルダ5個を確認。元フォルダは既に無く直接照合不可だが中身は健全</td></tr>
 <tr><td>⑤デスクトップ整理_2026-09-02</td><td class="yes">移動が完了していない。元の場所に17GB・93,564ファイルがまだ残存(アーカイブ側は5.0GB・14,053ファイルのみ移動済み)。たまごさんの指示でrsyncが途中停止した状態と判明。データは消えていない</td></tr>
-<tr><td>⑥デスクトップ整理_2026-09-02本体tar</td><td class="yes">⑤とは別物。⑤とは重複が一部あるが08-03〜08-04のスクショ7枚は追加分。ゴミではなく保持継続</td></tr>
+<tr><td>⑥デスクトップ整理_2026-09-02本体tar</td><td class="yes">⑤とは別物。08-02分は④と重複するが08-03〜08-04のスクショ7枚は追加分。ゴミではなく保持継続</td></tr>
 <tr><td>⑦進捗表.html</td><td class="yes">シンボリックリンク。実体はObsidian Vault内。tamago-shinchoku本体(発車エンジン)とは別物で、たまごさんが見る『表』だけの窓</td></tr>
-<tr><td>⑧ゴミ箱点検(~/.Trash)</td><td class="yes">719番/735番由来はゼロ件。別由来の3件(無関係の既存ゴミ)のみ</td></tr>
-<tr><td>⑨iMac HDD側.Trashes</td><td class="yes">1,228ファイル・2.1GB、全て2024年1月の古いシステムゴミ箱で719番作業と無関係</td></tr>
+<tr><td>⑧ゴミ箱点検(~/.Trash)</td><td class="yes">今回新たな719番/735番由来の混入は0件。なお1/2番セッションが別途、disk_guardian.pyの自動削除でソフトウェア1/2・ZoomRecordings・録音の計4件17.2GBが完全削除済みと発見・報告済み（復元不可、仕組みは無効化済み。詳細は1/2ページ参照）</td></tr>
+<tr><td>⑨iMac HDD側.Trashes</td><td class="yes">1,228ファイル・2.1GB、全て2024年1月付の古いシステムゴミ箱で719番作業と無関係</td></tr>
 </table>
 
 <footer>
