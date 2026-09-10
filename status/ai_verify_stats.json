@@ -1,9 +1,9 @@
 {
- "totalChecked": 98,
+ "totalChecked": 99,
  "totalPassed": 62,
- "totalFailed": 35,
+ "totalFailed": 36,
  "totalErrors": 1,
- "totalCostUsd": 27.713,
+ "totalCostUsd": 28.0186,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -39,17 +39,10 @@
   "完了条件で明記されたスクリーンショット（実機で音が鳴る証拠）が無く、確認ページ自": 1,
   "依頼で指定した`tools/dokudoku_worker.py`（AivisS": 1,
   "完了条件の核心（スマホ実機で▶を押して音が鳴ること）を確認ページ自身が「未確認」": 1,
-  "確認ページ自身が「スピーカーから実際に音が聞こえるかは未確認」と明記しているのに": 1
+  "確認ページ自身が「スピーカーから実際に音が聞こえるかは未確認」と明記しているのに": 1,
+  "queue.json軽量化の実装・数字は本番コードで確認できたが、完了条件必須の": 1
  },
  "history": [
-  {
-   "ts": "2026-09-06T13:01:33+09:00",
-   "n": 213,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/213-genkyoku-tsunagu.html",
-   "verdict": "pass",
-   "reason": "確認ページに実物スクショ(<img>)2枚が存在し実際に取得・内容確認でき、本番データ(coverguide-data.js)とUIロジックの直接検証で両方向リンク(famousUses/originalRef)の実装が裏付けられた",
-   "costUsd": 0.43055879999999996
-  },
   {
    "ts": "2026-09-06T14:36:15+09:00",
    "n": 430,
@@ -441,7 +434,15 @@
    "verdict": "pass",
    "reason": "本番URL(200)は実音声m4a(9.47MB≒9.4MB、audio/mp4、長さ19:00)を<audio>タグで再生する構成に作り直されており、dokudoku_worker.py→AivisSpeech Engine(ローカル実音声合成)を実際に使っていることをソースで確認。前回差し戻し理由(speechSynthesis流用)は解消。再生/停止/15秒/30秒/1分戻す/頭から/速度の",
    "costUsd": 0.3638056
+  },
+  {
+   "ts": "2026-09-10T18:19:14+09:00",
+   "n": 726,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/726-queue-light.html",
+   "verdict": "fail",
+   "reason": "queue.json軽量化の実装・数字は本番コードで確認できたが、完了条件必須の「スマホ回線での実測」「スクリーンショット添付」「PWA/ブラウザの表示統一」が満たされていない",
+   "costUsd": 0.30558820000000003
   }
  ],
- "updatedAt": "2026-09-10 17:56"
+ "updatedAt": "2026-09-10 18:19"
 }
