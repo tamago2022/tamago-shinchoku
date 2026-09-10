@@ -2451,12 +2451,14 @@ function renderDone(){
     const thumbsHtml = (thumbs && thumbs !== "pending" && thumbs.length)
       ? `<div class="cthumbs">${thumbs.map((u,i)=>`<img src="${esc(u)}" loading="lazy" alt="${i===0?"前":"後"}">`).join("")}</div>`
       : "";
-    const moreHtml = (r.result || r.fullTitle)
-      ? `<details class="cmore"><summary>くわしく</summary>
+    // 2026-09-10（726番）軽量版(queue_light.json)は result を持たないため、
+    //   「r.result || r.fullTitle」で判定すると<details>ごと消えて開けなくなっていた。
+    //   常に<details>を出し、開いた瞬間に既存のtoggleリスナー(fetchQueueFull)が
+    //   フルqueue.jsonから result を取ってきて差し込む（中身が本当に空の完了もあるが実害は小さい）。
+    const moreHtml = `<details class="cmore"><summary>くわしく</summary>
           ${r.fullTitle ? `<div class="cm">${esc(r.fullTitle)}</div>` : ""}
           <div class="cr">${esc((r.result||"").slice(0,600))}</div>
-        </details>`
-      : "";
+        </details>`;
     // 2026-09-06(453/455番) 「工場の内部事情のタスクは、たまごさんに一切見せない。題名も見せない」
     // →origin==="factory" は題名を伏せ、押せるURLの一覧だけ残す（あとから疑えるように）。
     if(r.origin === "factory"){
