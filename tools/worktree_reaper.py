@@ -83,12 +83,13 @@ HARMLESS_STATUS_PATTERNS = [
 
 def has_meaningful_changes(status_output):
     """`git status --porcelain`の出力から、無害な共通ノイズを除いても
-    実質的な差分が残るかを判定する。空文字列・全行が無害パターン一致なら False。"""
-    text = (status_output or "").strip()
-    if not text:
+    実質的な差分が残るかを判定する。空文字列・全行が無害パターン一致なら False。
+    注意：`--porcelain`の各行は先頭2文字がステータスコード（例" M"）で意味を持つため、
+    行全体を`.strip()`してはいけない（先頭スペースが消えて誤判定する）。改行のみで分割する。"""
+    if not (status_output or "").strip():
         return False
-    for line in text.splitlines():
-        line = line.rstrip()
+    for line in status_output.splitlines():
+        line = line.rstrip("\r\n")
         if not line:
             continue
         if any(p.match(line) for p in HARMLESS_STATUS_PATTERNS):
