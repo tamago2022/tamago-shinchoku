@@ -49,23 +49,26 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #686 案件#686 スマホで動画追加すると落ちる／棚編集の横ぐらつき固定</div>
 <h1>#686 案件#686 スマホで動画追加すると落ちる／棚編集の横ぐらつき固定</h1>
-<div class="date">2026-09-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-11 05:50追記：09-09の修理だけでは足りなかった本当の原因を見つけて修理・本番反映まで実測</div>
 
 <div class="fix">
-スマホ幅(375px)の棚編集で①動画追加時のクラッシュ原因(未処理のPromise拒否)を修理②縦スクロール中に横へ動く原因箇所(overflow-x-auto)にshelf-scroll/overflow-x-hidden/touch-action:pan-yを適用して固定。本番実機(375px)で実測。
+<b>09-11の追加修理：</b>09-09に「coverGuide.tsの静的import→動的importへ」で直したはずが、パネルの既定タブ（開いた瞬間に発火する「既存カードから探す」）が、動的import化された後もその場で全アーティスト分のデータ(7.6MB)を丸ごとダウンロード・パースしてから絞り込んでいた。見かけ上は軽くなっても、パネルを開いた瞬間に結局「全件読み込み」が起きていたのが、店主が繰り返し報告した「動画を登録した瞬間に落ちる」の実体。既存のサーバー側検索関数(adminSearchCoverGuide)へ差し替え、検索語に一致した最大40件の軽量JSONだけを受け取る形にした（全件ダウンロードそのものを無くす）。横ぐらつき固定(shelf-scroll/touch-action:pan-y/overscroll-behavior-x:none)は09-09の修理のまま本番で健在。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（本番に配信されている実物ファイルを直接取得して測定）</h2>
 <div class="nums">
-  <div class="num"><b>0px</b><span>8回の縦スクロール中も横位置は常に0px固定(実測)</span></div>
-  <div class="num"><b>0件</b><span>動画追加操作でのJSエラー件数</span></div>
-  <div class="num"><b>成功</b><span>YouTube URL貼り付け→動画追加(クラッシュせず完了)</span></div>
+  <div class="num"><b>107,125 byte</b><span>棚編集パネルの配信ファイルサイズ（ローカルビルド結果と1byte違わず一致=今回の修理がそのまま本番配信中）</span></div>
+  <div class="num"><b>0 byte</b><span>既定タブを開いた時にダウンロードされる曲データの量（以前は7.6MBを毎回ダウンロード）</span></div>
+  <div class="num"><b>3件</b><span>本番配信ファイルの中で今回の修理箇所(横ぐらつき固定3点：pan-y／overscroll-behavior-x／shelf-scroll)が今も揃っている数</span></div>
 </div>
 
-<h2>③ 実データでのスクリーンショット</h2>
+<h2>③ 実データでのスクリーンショット（09-09撮影分。横ぐらつき固定・動画追加成功の実機確認）</h2>
 <div class="shots">
   <div class="shot plain"><b>①横ぐらつき修正対象のシートを開いた状態(8回スクロールしても横位置0pxのまま)</b><img src="img/686-wobble-fixed-scroll-test.png" alt="①横ぐらつき修正対象のシートを開いた状態(8回スクロールしても横位置0pxのまま)"></div>
   <div class="shot plain"><b>②YouTube URLを貼って「+」を押し、動画追加に成功した状態(クラッシュなし)</b><img src="img/686-video-add-success.png" alt="②YouTube URLを貼って「+」を押し、動画追加に成功した状態(クラッシュなし)"></div>
+</div>
+<div class="note">
+⚠️ 正直な補足：今回(09-11)は本セッションにブラウザ操作の道具が無く、本番へ実際に配信されているファイルをその場で取得して中身を突き合わせる方法（byte数・修理箇所の有無）で確認した。スマホ実機で指でタップして確認する作業そのものはまだ済んでいない。上の2枚は09-09時点の実機確認分（横ぐらつき固定は今も本番で健在なことを今回のファイル突き合わせで再確認済み）。
 </div>
 
 <h2>④ 押せるリンク</h2>
@@ -76,7 +79,8 @@
 
 
 <footer>
-型チェック(tsc --noEmit)・lint(eslint)ともにエラー0件。origin/mainへpush済み(3d3be4ad)、Lovable公開実行しdeployment-id変化を確認済み(psr2.9f460b2→psr2.175920b)。
+09-11分：tsc --noEmit・eslint(触ったファイルのみ)ともにエラー0件、ローカルbuild成功。origin/mainへpush済み(9059991a)。Lovable公開を実行し本番のx-deployment-idの変化を確認済み(psr2.753f9627→psr2.00ddd436)。配信中のAdminShelfPanelチャンク(107,125byte)がローカルbuild成果物と完全一致することをバイト単位で確認。<br>
+09-09分（参考・先行修理）：型チェック(tsc --noEmit)・lint(eslint)ともにエラー0件。origin/mainへpush済み(3d3be4ad)、Lovable公開実行しdeployment-id変化を確認済み(psr2.9f460b2→psr2.175920b)。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
