@@ -47,16 +47,21 @@
 <div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-たまごさんの円卓ノート「資本主義の限界（深井龍之介）／お金が消える前夜」を、724番と同じ即読みロジックで専用の聞くページ化した。読み始めは「タイトル候補」見出し以降のみ、URLは読み上げ対象から自動除去。ページを開いて▶を押せば端末の声で読み上げが始まり、停止／15秒・30秒・1分戻す／頭から／速度調整のボタンを付けた。
+たまごさんの円卓ノート「資本主義の限界（深井龍之介）／お金が消える前夜」を、724番と同じ即読みロジックで専用の聞くページ化した。読み始めは「タイトル候補」見出し以降のみ、URLは読み上げ対象から自動除去。ページを開いて▶を押せば端末の声で読み上げが始まり、停止／15秒・30秒・1分戻す／頭から／速度調整のボタンを付けた。前回の検品で「実機で音が鳴る証拠が無い」と差し戻されたため、723番と同じ手法（headless Chrome+CDPで▶ボタンを実クリック）で、音声合成エンジンが実際に発声を開始した証拠（speaking=true・状態表示の変化）とスクリーンショットを新たに取得した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>483</b><span>読み上げ対象の文数</span></div>
   <div class="num"><b>8188</b><span>読み上げ本文の文字数（URL等除去後）</span></div>
+  <div class="num"><b>OK</b><span>▶クリックでspeaking=true・15秒戻す/停止も実測</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>▶を押す前（初期状態・声はKyoko）</b><img src="img/725-before.png" alt="前"></div>
+  <div class="shot after"><b>▶ボタンを実クリックした直後（一時停止ボタンに変化・1/483文・声=Kyoko）</b><img src="img/725-playing.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -72,11 +77,13 @@
 <tr><td>読み上げ用テキストからURLが除去される(Node実機シミュレーションで確認)</td><td class="yes">OK</td></tr>
 <tr><td>本文が483文に分割される(Node実機シミュレーションで確認)</td><td class="yes">OK</td></tr>
 <tr><td>再生/停止/15秒/30秒/1分戻す/頭から/速度ボタンが実装されている</td><td class="yes">OK</td></tr>
-<tr><td>実機(iPhone等)で▶を押して実際に音が鳴ること</td><td class="no">未確認</td></tr>
+<tr><td>▶ボタンの実クリックでspeechSynthesis.speaking=trueになる（headless Chrome+CDPの実クリックで実測）</td><td class="yes">OK</td></tr>
+<tr><td>15秒戻す・停止ボタンが実際に動く（クリックで文番号・speaking状態が変化することを実測）</td><td class="yes">OK</td></tr>
 </table>
 
 <footer>
-このページは #725 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #725 のセッションが tools/make_check_page.py と tools/oni_kantoku_725_screenshot.mjs（headless Chrome+CDPでの実クリック検証）で自動生成した確認資料。証跡の生ログは share/check/725_evidence.json。書式は share/check/_template.html（共通の型）に揃えている。<br>
+正直な注記：AIには耳が無いため「スピーカーから実際に音が聞こえるか」はこのページの実測対象に含めていない。ここで示したのは、ボタンを押した瞬間に音声合成エンジンへ本物の発声命令が渡り実際に動き出したという、機械的に検証できる最も強い証拠（speaking=true・UIの状態変化）。最終的な「聞こえ方」の確認はたまごさん本人の実機操作にお任せしたい。
 </footer>
 </body>
 </html>
