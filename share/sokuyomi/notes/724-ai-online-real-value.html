@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AIがオンラインを代替するほどリアル集合価値は高まるか｜聞くページ</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    background: #1a2030; color: #eef0f6;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    max-width: 640px; margin-left: auto; margin-right: auto;
+  }
+  h1 { font-size: 19px; margin: 4px 0 2px; line-height: 1.4; }
+  .sub { color: #9aa3c0; font-size: 13px; margin-bottom: 16px; }
+  .sub a { color: #8fb4ff; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  select, input[type=range] { flex: 1; min-width: 120px; }
+  select {
+    background: #10131f; color: #eef0f6; border: 1px solid #333c5a; border-radius: 8px; padding: 8px;
+    font-size: 14px;
+  }
+  .rate-label { font-size: 13px; color: #b9c0dd; min-width: 62px; text-align: right; }
+  .status {
+    background: #10131f; border: 1px solid #333c5a; border-radius: 12px; padding: 12px;
+    font-size: 13px; color: #b9c0dd; margin-bottom: 12px; min-height: 20px;
+  }
+  .status b { color: #eef0f6; }
+  .controls {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;
+  }
+  .controls button, .playbtn {
+    background: #2a3358; color: #eef0f6; border: none; border-radius: 10px;
+    padding: 12px 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .controls button:active, .playbtn:active { background: #3a4578; }
+  .playbtn {
+    width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px; background: #3a6b4a;
+  }
+  .playbtn.playing { background: #6b3a3a; }
+  .voicehelp {
+    width: 100%; background: none; border: 1px dashed #4a5580; color: #9aa3c0;
+    border-radius: 10px; padding: 10px; font-size: 12px; cursor: pointer; margin-bottom: 16px;
+  }
+  .modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 10;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #1e2440; border-radius: 14px; padding: 20px; max-width: 420px; font-size: 14px;
+    line-height: 1.8; color: #e5e8f5;
+  }
+  .modal ol { padding-left: 20px; margin: 10px 0; }
+  .modal button {
+    margin-top: 14px; width: 100%; padding: 12px; background: #2a3358; color: #fff;
+    border: none; border-radius: 8px; font-size: 15px;
+  }
+</style>
+</head>
+<body>
+  <h1>🔊 AIがオンラインを代替するほどリアル集合価値は高まるか</h1>
+  <div class="sub">たまごさんの円卓ノートを読み上げます。<a href="obsidian://open?vault=tamago_brain&file=AI%E3%81%8C%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%92%E4%BB%A3%E6%9B%BF%E3%81%99%E3%82%8B%E3%81%BB%E3%81%A9%E3%83%AA%E3%82%A2%E3%83%AB%E9%9B%86%E5%90%88%E4%BE%A1%E5%80%A4%E3%81%AF%E9%AB%98%E3%81%BE%E3%82%8B%E3%81%8B">元ノートをObsidianで開く</a></div>
+
+  <div class="row">
+    <select id="voiceSel"></select>
+  </div>
+  <div class="row">
+    <input type="range" id="rate" min="0.8" max="1.5" step="0.05" value="0.95">
+    <div class="rate-label" id="rateLabel">0.95倍</div>
+  </div>
+
+  <button class="playbtn" id="playBtn">▶ 読み上げ開始</button>
+
+  <div class="controls">
+    <button id="back15">⏪ 15秒</button>
+    <button id="back30">⏪ 30秒</button>
+    <button id="back60">⏪ 1分</button>
+    <button id="toStart">⏮ 頭から</button>
+    <button id="stopBtn">⏹ 停止</button>
+  </div>
+
+  <button class="voicehelp" id="voiceHelpBtn">🎙 もっと自然な声にする（無料・手順を見る）</button>
+
+  <div class="status" id="status">声を読み込み中…</div>
+
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <b>もっと自然な声にする（無料）</b>
+      <ol>
+        <li>設定アプリを開く</li>
+        <li>アクセシビリティ</li>
+        <li>読み上げコンテンツ</li>
+        <li>声 → 日本語</li>
+        <li>好きな声の横の雲マークをタップしてダウンロード（「拡張」「プレミアム」がより自然）</li>
+      </ol>
+      ダウンロードが終わったら、このページに戻って声の一覧を開き直すと選べるようになります。
+      <button onclick="document.getElementById('modalBg').classList.remove('show')">閉じる</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  var RAW_TEXT = "\n- AIがルーチンを食うほどリアル集合の価値が上がるのか\n- 少数精鋭オフィス回帰　AI時代の本当の勝ち筋\n- オンライン完結仕事が消える時　都心オフィスは本当に復活するか\n- AIエージェントが変える「人間が集まる意味」\n- コンサル出社回帰から見る　AIとリアルの新均衡\n\n## 議題\n\nAIエージェントの進化によりオンライン完結業務が置き換わると、企業は少数精鋭化し、リアルでの集合価値（意思決定・信頼構築）が相対的に高まり、都心オフィス回帰が加速するという主張の検証\n\n## 元コンテンツの要旨\n\n- AIエージェントが進化するとオンライン完結業務は確実にAIに置き換わる\n- 企業は圧倒的に少ない人数で事業を回せるようになる\n- そのため少数精鋭をオフィスに集め、意思決定速度・コミュニケーション密度・信頼構築・求心力を高める価値が上がる\n- コロナ禍とは逆に都心・オフィス回帰が加速すると予測\n- 周囲の経営者ではオフィス投資を強める企業が増えている\n- AIがオンラインを代替するほど、人間がリアルで会う価値は相対的に上がる\n- 引用元の日経FT記事ではコンサル大手がAI普及で若手に出社を促し対人スキルを重視\n- リプライでは「リアルの価値が残る」「意思決定スピードが段違い」との賛同が多い\n\n## 発信者の主張\n\n- AIエージェントの進化でオンライン完結仕事は確実に置き換わる\n- 企業は少数精鋭で事業運営可能になり、オフィス集合の価値がむしろ高まる\n- 意思決定の速さ、コミュニケーション密度、対面営業・会食での信頼、組織求心力がリアル集合の主な価値\n- コロナ後とは逆に都心オフィス回帰が加速する\n- 周囲経営者の実感としてオフィス投資が増えている\n- AI代替が進むほど人間のリアル接触価値は相対的に上昇する\n\n## 立場と反応\n\n**発信者の立場**\n\nAI導入支援企業CEOとして、AI推進と経営効率化の両面から発信。AIで業務を減らした分、対人・信頼構築のリアル価値を強調する立場。\n\n**相手／揺らされる側**\n\nフルリモート志向の若手・地方在住者・オンライン完結業務中心の労働者。オフィス投資負担の大きい中小企業。\n\n**価値観**\n\n効率化による少数精鋭と、人間関係の密度・信頼を重視する価値観。\n\n**なぜこの反応**\n\nAI推進事業者として、技術代替の必然を認めつつ経営者目線で「リアル回帰」の新需要を提示し、ポジティブな未来像を描くため。\n\n## ファクトチェック\n\n日経電子版FT記事は実在（2026年9月頃）し、コンサル大手がAIで技術業務を代替する中、若手に出社を促し対人スキル・徒弟制を重視している https://www.nikkei.com/article/DGXZQOCB074J50X00C26A9000000/ 。都心5区大規模ビル空室率は2026年8月時点で0.96%（2020年9月以来の1%割れ）、賃料は10ヶ月連続上昇、今後3年で+19.5%予測 https://prtimes.jp/main/html/rd/p/000000695.000118399.html 。投稿内の「確実に」「圧倒的に少ない人数」「周り経営者で投資増」の具体的な定量根拠は提示されていない。\n\n## 大手メディアは何と言っているか\n\n### 日本経済新聞　2026年9月\n\nコンサル大手がAI普及に伴い若手に出社回帰を促す。技術業務はAIが代替するため、対人スキルや徒弟式的育成をオフィスで重視する動き。\n\n[https://www.nikkei.com/article/DGXZQOCB074J50X00C26A9000000/](https://www.nikkei.com/article/DGXZQOCB074J50X00C26A9000000/)\n\n## 世間の声\n\n経営者・AI関連層では賛同が優勢だが、全体では育成懸念やハイブリッド優位論も一定数存在。リプ欄は比較的肯定的。\n\n### Ｘ\n\n- AIがオンラインを代替するほど人が集まる意味が逆に大きくなる視点は面白い\n- 弊社も少数精鋭には対面オフィス必須。意思決定スピードが段違い\n- 曖昧さのある意思決定は人間の繋がりが重要になる\n- 若手が下働き経験を積めず次世代が育たない懸念がある\n- リモートでも信頼構築は可能。出社はコスト増にしかならない\n\n### 共感\n\n- リアルでの信頼構築の重要性に共感\n- 経営者としてオフィス投資の必要性を感じる\n\n### 反発\n\n- 若手育成機会の喪失を懸念\n- 出社は管理欲求の表れではないか\n\n### 不安\n\n- 地方や育児中の人が不利になる\n- オフィス投資負担が中小企業を苦しめる\n\n### 希望\n\n- 人間関係の価値が見直される時代になる\n\n### 誤解\n\n- AIですべての業務がすぐなくなると思い込んでいる\n\n### 無関心\n\n- 自分たちの業界にはまだ関係ないと感じる\n\n## 実態と俯瞰\n\n**リプ欄の空気**\n\nリプ欄は経営者・AI推進層の賛同が目立ちバブル気味だが、育成懸念やハイブリッド擁護の声も少数見られる。\n\n**実態との距離**\n\nコンサル等一部業種での出社回帰と都心オフィス需給逼迫は実態と整合するが、「確実な全置換」や「加速的回帰」は予測の域で過大評価の可能性がある。\n\n**縮図**\n\nこれはAIによる業務自動化がもたらす「人間の役割再定義」と「オフィス不動産の二極化」を象徴する議論であり、知識労働と地方・製造業の温度差を映している。\n\n## 対立軸\n\n- 効率化による人員削減 vs 人間関係の密度・信頼構築\n- オンライン完結業務のAI置換可能性 vs 残る曖昧業務の範囲\n- 都心オフィス回帰加速 vs ハイブリッド・リモートの持続可能性\n- 短期生産性 vs 長期の人材育成と多様性確保\n\n## 今日の席\n\n### 茶圓正宏（AI導入支援企業CEO（当事者視点））\n\n*当事者 / 実在*\n\nデジライズ株式会社CEO。600社・5万人規模のAI導入支援実績を持ち、経営者向けにAI活用と組織論を発信。\n\n### 普通のおばちゃん（地元スーパーでパート主婦（生活者視点））\n\n*生活 / ペルソナ*\n\n50代主婦。夫は中小企業勤務、子は大学生。物価と通勤時間と家計を常に気にしている。\n\n### 山口周（独立研究者・元BCG（構造・経営視点））\n\n*専門 / 実在*\n\n独立研究者、元ボストンコンサルティンググループ。『ニュータイプの時代』などでAI時代の人材と組織の意味を論じる。\n\n### ジェイソン・フリード（Basecamp共同創業者（反対・実装視点））\n\n*反対 / 実在*\n\nBasecamp CEO。『リモートワークの教科書』などで小規模チームでのリモートワークの生産性とコスト優位性を主張。\n\n### ミナ（18歳AIネイティブ大学生（世代・未来視点））\n\n*世代 / ペルソナ*\n\nZ世代大学生。オンライン授業とAIツールを日常的に使い、将来の働き方をリアルに考えている。\n\n### 中島聡（起業家・AI実装者（実装・時間軸視点））\n\n*実装 / 実在*\n\n複数スタートアップを創業。AIの産業実装と日本企業のデジタル変革を現場目線で検証し続けている。\n\n## 先に、各自の判断\n\n### 茶圓正宏 — AI推進者として見た現実\n\n私は実際に600社以上にAIを導入してきた。確かにルーチン業務は劇的に減少し、残るのは関係性構築と意思決定の仕事だ。経営者同士が顔を合わせてこそ信頼が生まれ、意思決定の質と速度が上がるのを何度も見てきた。都心のオフィス空室率が1%を割り、賃料が上がっているのもこの動きの表れだと思う。ただし、これはコンサルや営業中心の業界に顕著で、全ての業種に当てはまるわけではない。\n\n### 普通のおばちゃん — スーパーの買い物カゴから見た話\n\nうちの旦那の会社もリモートから少しずつ出社に戻ってるけど、電車代とスーツ代が馬鹿にならないのよ。AIが仕事を取るって言うなら、残った仕事で残業が増えて家計は苦しくなるんじゃないの？ 都心のオフィスに高い家賃払って集まる意味が本当にあるなら、残業代か手当でちゃんと出るの？ それとも経営者が楽したいだけ？\n\n### 山口周 — 意味と美意識の観点から\n\nAIがコモディティ化するほど、人間が提供できる価値は「意味の創造」と「関係性の構築」にシフトする。これはまさに山口が長年主張してきたことだ。オンラインだけでは伝わらない身体性や場の空気感が、信頼や創造的な意思決定に決定的に重要になる。ただし、強制的な出社回帰ではなく、目的を持った「集まる設計」が必要。単なる監視や文化統制のためのオフィス回帰は失敗する。\n\n### ジェイソン・フリード — リモートワーク実践者としての反論\n\nBasecampは20年以上、小さなチームでほぼフルリモートで高収益を上げてきた。AIがルーチンを取っても、深い思考や創造はむしろ一人で集中できる環境で生まれる。対面での意思決定が速いと言うが、それは準備不足の即断を意味する場合もある。信頼は長期的な成果と透明性で築かれるもので、物理的な同席だけでは作れない。オフィス回帰は不動産業界と経営者の都合が一致した幻想に過ぎない。\n\n### ミナ — 10年後の自分たち世代として\n\n私たちZ世代はオンラインで十分に信頼関係を築いてきた。DiscordやNotionで何ヶ月も議論してプロジェクトを完遂した経験がある。対面営業は確かに有効かもしれないけど、全員が都心に集まる必要はない。VRや高品質な同期ツールで十分代替できる部分もある。むしろ通勤時間とオフィスコストを無駄に使って、若手の給料を下げたり地方の機会を奪ったりするのは不公平だと思う。\n\n### 中島聡 — 実装現場から見たインセンティブ\n\nAIエージェントの実装を多数見てきたが、完全自律化はまだ先だ。現在のAIはツールであってエージェントではない。確かに業務は効率化されるが、人間が必要なのは「判断」と「調整」と「関係性」だ。しかしそれをオフィスに集めて解決するのは一つの方法でしかない。分散型組織でもAIをオーケストレーターとして機能させる設計は可能。重要なのはROIではなく、どの方法が人材の質と定着率を高めるかだ。\n\n## 同じ卓での衝突\n\n### リアル集合の必要性 vs リモートの生産性\n\n山口周　AIがコモディティ化すればするほど、人間関係の密度と身体性を介した信頼が差別化要因になる。オンラインだけでは伝わらない。\nジェイソン・フリード　それは幻想だ。我々は20年近くリモートで成果を出してきた。信頼は成果と透明性で築かれる。オフィスは単なる不動産業界の救済策に過ぎない。\n中島聡　両方正しい部分がある。重要なのは目的を持ったハイブリッド設計だ。強制出社は離職を招くが、意図的な対面は効果がある。\n\n### 若手育成の観点\n\nミナ　下働きをAIに取られると、私たち若手はどうやって現場を学ぶの？ 隣で先輩の判断を見る機会が減るのは怖い。\n普通のおばちゃん　そうよね。昔は先輩の後ろについて覚えたもの。今はAIがやってくれるって言うけど、結局若手は使えないままじゃないの？\n茶圓正宏　だからこそオフィスに集めて徒弟制を復活させる必要がある。AIが基礎を固め、人間が応用と関係性を教える。\n\n## 聞いたあとでも、こう考える\n\n### 山口周\n\nジェイソンの指摘は重要だ。強制的な出社は逆効果になる。問題は「集まる目的と設計」を明確にできるかどうかだ。AI時代に必要なのは、単なるオフィス回帰ではなく、意味ある対話のための場作りである。\n\n### ジェイソン・フリード\n\n山口さんの言う関係性の密度は認める。ただし、それをオフィスという物理的制約でしか実現できないというのは古い発想だ。ツールと文化の設計で分散しながら密度を高める方法は存在する。\n\n## 生活卓\n\n結局、AIが事務仕事を取るなら残るのは「顔見て話して信用してもらう仕事」ってことよね。でも毎日の通勤代とスーツ代と保育園のお迎えを考えると、週3出社でも家計は火の車。経営者が楽したいだけじゃなくて、本当に私たちの給料や子どもの教育に跳ね返ってくる話なの？\n\n## 点と点\n\n- AIによるルーチン業務自動化 → 残る業務が対人関係・判断・育成中心になる\n- コンサル業界の出社回帰と都心オフィス空室率低下・賃料上昇が同時に進行\n- 経営者層の「少数精鋭＋リアル集合」志向と、若手・地方層の「柔軟性と機会喪失」懸念の対立\n- 短期的な生産性向上と長期的な人材育成・多様性の維持という時間軸の衝突\n\n## 一段上\n\nAI時代の本質は「業務の二層化」である。自動化される層と、人間が創造的関係性を発揮する層に分かれる。重要なのは、物理オフィスか完全リモートかという二元論ではなく、目的に応じて「集まる／分散する」を設計し、両方の価値を最大化するハイブリッド組織の構築だ。これにより、効率と人間性、短期成果と長期育成を両立できる新しい働き方のOSが生まれる。\n\n## 現実への翻訳\n\n### 今日の生活\n\n通勤時間とオフィスコストが再び家計を圧迫する可能性。週3出社でも子育て世代の負担は増大し、地方移住の流れが逆転する家庭も出る。\n\n### 仕事\n\nルーチン業務が減る分、対人スキル・意思決定力・関係構築力がより明確に評価される。営業や経営層は有利になるが、裏方・分析職は役割再定義を迫られる。\n\n### お金の流れ\n\n都心オフィス賃料は今後3年で約2割上昇予測。不動産オーナーとデベロッパーが得をし、AI導入コンサル企業も需要増。一方、中小企業の人件費削減メリットとオフィス投資負担が相殺され、優秀なリモート志向人材は外資やスタートアップに流出する。\n\n### 事業\n\n少数精鋭で高付加価値事業を展開する企業はオフィス投資で競争優位に。逆にコストを抑えて完全リモートで戦う企業も並存し、二極化が進む。\n\n## 議長の軍配\n\n### 軍配は「目的を持ったハイブリッド集合」に\n\n茶圓氏と山口氏の主張する「リアル集合の相対的価値向上」は、特に知識集約型・対人業務中心の業種では正しい。ただしジェイソン氏が指摘するように、強制的なオフィス回帰は逆効果。AI時代に勝つのは、業務内容に応じて「集まるべき時」と「分散すべき時」を明確に設計できる組織である。\n\n**理由**\n\n実態としてコンサル業界での出社回帰と都心オフィス需給逼迫は確認できるが、AIによる完全置換はまだ先であり、全業種に一律適用できるものではない。重要なのは二元論ではなく統合的設計。\n\n**ただし不確実なもの**\n\nこの判断は現在のAIエージェントの成熟度と日本企業のオフィス文化を前提としている。生成AIの自律性が予想以上に急速に進めば判断は変わる。\n\n**条件が変われば判断を変える点**\n\nもしAIエージェントが真正に自律的な意思決定と関係構築まで可能になった場合、または深刻な経済危機でオフィスコストが優先された場合、完全リモート回帰が再加速する。\n\n## 今日やること\n\n- 自社の業務を「AIで完全に代替可能」「AI支援で効率化」「人間の関係性・判断が不可欠」の3層に分類する\n- 週1〜2回の目的明確な対面ミーティングを設計し、参加意義をメンバーと共有する\n- 通勤・オフィスコストと生産性のトレードオフを定量的に測定し、半年後に再評価する\n\n## 寝かせること\n\n- 全業種共通の「AI完全置換」予測\n- 地方創生と都心回帰の長期的なバランス\n- VR・メタバースによる信頼構築の有効性検証\n\n## 今日のOSアップデート\n\n- 業務を自動化層と人間関係層に分けて考える\n- 「集まる理由」を明確に設計する習慣を持つ\n- 短期効率と長期育成の両方をKPIに置く\n- 物理的オフィスか否かではなく、目的に合ったコミュニケーション形態を選ぶ\n\n## 参考文献\n\n- 記事　日本経済新聞「コンサル大手、若手に出社回帰促す　AI普及で対人スキル重視」 — 引用元となったFT記事の日本語版。2026年9月掲載。\n  https://www.nikkei.com/article/DGXZQOCB074J50X00C26A9000000/\n- レポート　三幸エステート オフィス空室率レポート — 2026年都心オフィス市況データ。空室率0.96%、賃料上昇予測。\n  https://prtimes.jp/main/html/rd/p/000000695.000118399.html\n";
+
+  var voiceSel = document.getElementById("voiceSel");
+  var rateInput = document.getElementById("rate");
+  var rateLabel = document.getElementById("rateLabel");
+  var playBtn = document.getElementById("playBtn");
+  var statusEl = document.getElementById("status");
+  var modalBg = document.getElementById("modalBg");
+
+  var synth = window.speechSynthesis;
+  var sentences = [];
+  var currentIndex = 0;
+  var cumTimes = [];
+  var utteranceStartedAt = 0;
+  var isPlaying = false;
+  var isPaused = false;
+
+  var voices = [];
+  function pickBestVoiceIndex(list) {
+    var ja = list.filter(function(v){ return /^ja/i.test(v.lang); });
+    if (ja.length === 0) return list.length ? 0 : -1;
+    var preferred = ja.find(function(v){ return /enhanced|premium|siri/i.test(v.name); });
+    if (preferred) return list.indexOf(preferred);
+    return list.indexOf(ja[0]);
+  }
+  function loadVoices() {
+    voices = synth.getVoices() || [];
+    if (!voices.length) return;
+    voiceSel.innerHTML = "";
+    voices.forEach(function(v, i){
+      var opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = v.name + "（" + v.lang + "）" + (/enhanced|premium|siri/i.test(v.name) ? " ★おすすめ" : "");
+      voiceSel.appendChild(opt);
+    });
+    var saved = localStorage.getItem("sokuyomi_voice_name");
+    var savedIdx = saved ? voices.findIndex(function(v){ return v.name === saved; }) : -1;
+    var idx = savedIdx >= 0 ? savedIdx : pickBestVoiceIndex(voices);
+    if (idx < 0) idx = 0;
+    voiceSel.value = idx;
+    prepareText();
+  }
+  synth.addEventListener("voiceschanged", loadVoices);
+  loadVoices();
+  setTimeout(loadVoices, 300);
+
+  voiceSel.addEventListener("change", function(){
+    var v = voices[parseInt(voiceSel.value, 10)];
+    if (v) localStorage.setItem("sokuyomi_voice_name", v.name);
+  });
+
+  var savedRate = parseFloat(localStorage.getItem("sokuyomi_rate") || "0.95");
+  rateInput.value = savedRate;
+  rateLabel.textContent = savedRate.toFixed(2) + "倍";
+  rateInput.addEventListener("input", function(){
+    rateLabel.textContent = parseFloat(rateInput.value).toFixed(2) + "倍";
+  });
+  rateInput.addEventListener("change", function(){
+    localStorage.setItem("sokuyomi_rate", rateInput.value);
+    if (isPlaying) speakFrom(estimateCurrentIndex());
+  });
+
+  function stripForSpeech(raw) {
+    var body = raw;
+    body = body.replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, "$1");
+    body = body.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+    body = body.replace(/https?:\/\/\S+/g, "");
+    body = body.replace(/obsidian:\/\/\S+/g, "");
+    body = body.replace(/\*\*([^*]+)\*\*/g, "$1");
+    body = body.replace(/`([^`]+)`/g, "$1");
+    body = body.replace(/^#+\s*/gm, "");
+    body = body.replace(/^[\-\*・]\s+/gm, "");
+    body = body.replace(/[A-Za-z0-9_\-]{20,}/g, "");
+    body = body.replace(/^\s*#[^\s#]+\s*$/gm, "");
+    body = body.replace(/\n{3,}/g, "\n\n");
+    return body.trim();
+  }
+
+  function splitByChars(text, marks) {
+    var out = [];
+    var buf = "";
+    for (var i = 0; i < text.length; i++) {
+      buf += text[i];
+      if (marks.indexOf(text[i]) >= 0) { out.push(buf); buf = ""; }
+    }
+    if (buf) out.push(buf);
+    return out.map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function splitSentences(text) {
+    var raw = splitByChars(text, ["。", "！", "？", "\n"]);
+    var out = [];
+    raw.forEach(function(s){
+      if (s.length > 120) {
+        var parts = splitByChars(s, ["、"]);
+        var buf = "";
+        parts.forEach(function(p){
+          if ((buf + p).length > 80) { if (buf) out.push(buf); buf = p; }
+          else buf += p;
+        });
+        if (buf) out.push(buf);
+      } else {
+        out.push(s);
+      }
+    });
+    return out.filter(function(s){ return s.length > 0; });
+  }
+
+  function estCharsPerSec(rate) { return 6.0 * rate; }
+
+  function buildCumTimes(rate) {
+    var t = 0;
+    cumTimes = sentences.map(function(s){
+      var start = t;
+      t += Math.max(0.4, s.length / estCharsPerSec(rate));
+      return start;
+    });
+  }
+
+  function prepareText() {
+    var text = stripForSpeech(RAW_TEXT);
+    sentences = splitSentences(text);
+    buildCumTimes(parseFloat(rateInput.value));
+    var v = voices[parseInt(voiceSel.value, 10)];
+    statusEl.innerHTML = sentences.length + " 文（約" + text.length + "字）。<b>" + (v ? v.name : "端末の声") + "</b> で読みます。▶を押してください。";
+  }
+
+  function estimateCurrentIndex() {
+    if (!cumTimes.length) return 0;
+    var elapsedNow = (utteranceStartedAt > 0 ? (performance.now() - utteranceStartedAt) / 1000 : 0);
+    var atSentenceStart = cumTimes[currentIndex] || 0;
+    var nowT = atSentenceStart + Math.max(0, elapsedNow);
+    return timeToIndex(nowT);
+  }
+  function timeToIndex(t) {
+    var lo = 0, hi = cumTimes.length - 1, ans = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      if (cumTimes[mid] <= t) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    return ans;
+  }
+
+  function speakFrom(index) {
+    synth.cancel();
+    if (index < 0) index = 0;
+    if (index >= sentences.length) { finishReading(); return; }
+    currentIndex = index;
+    isPlaying = true;
+    isPaused = false;
+    playBtn.textContent = "⏸ 一時停止";
+    playBtn.classList.add("playing");
+    speakOne(index);
+  }
+
+  function speakOne(index) {
+    if (!isPlaying || index >= sentences.length) { if (index >= sentences.length) finishReading(); return; }
+    currentIndex = index;
+    updateStatus();
+    var u = new SpeechSynthesisUtterance(sentences[index]);
+    var v = voices[parseInt(voiceSel.value, 10)];
+    if (v) u.voice = v;
+    u.lang = (v && v.lang) || "ja-JP";
+    u.rate = parseFloat(rateInput.value);
+    u.onstart = function(){ utteranceStartedAt = performance.now(); };
+    u.onend = function(){
+      if (!isPlaying || isPaused) return;
+      speakOne(index + 1);
+    };
+    u.onerror = function(){
+      if (!isPlaying || isPaused) return;
+      speakOne(index + 1);
+    };
+    synth.speak(u);
+  }
+
+  function finishReading() {
+    isPlaying = false;
+    isPaused = false;
+    playBtn.textContent = "▶ 読み上げ開始";
+    playBtn.classList.remove("playing");
+    statusEl.innerHTML = "読み終わりました。";
+  }
+
+  function updateStatus() {
+    var pct = sentences.length ? Math.round((currentIndex / sentences.length) * 100) : 0;
+    statusEl.innerHTML = (currentIndex + 1) + " / " + sentences.length + " 文（約" + pct + "%）";
+  }
+
+  playBtn.addEventListener("click", function(){
+    if (isPlaying && !isPaused) {
+      synth.pause();
+      isPaused = true;
+      playBtn.textContent = "▶ 再開";
+      playBtn.classList.remove("playing");
+      return;
+    }
+    if (isPlaying && isPaused) {
+      isPaused = false;
+      playBtn.textContent = "⏸ 一時停止";
+      playBtn.classList.add("playing");
+      try { synth.resume(); } catch(e) { speakFrom(currentIndex); }
+      return;
+    }
+    if (!sentences.length) prepareText();
+    speakFrom(currentIndex || 0);
+  });
+
+  document.getElementById("stopBtn").addEventListener("click", function(){
+    synth.cancel();
+    isPlaying = false; isPaused = false;
+    playBtn.textContent = "▶ 読み上げ開始";
+    playBtn.classList.remove("playing");
+  });
+  document.getElementById("toStart").addEventListener("click", function(){
+    if (!sentences.length) return;
+    buildCumTimes(parseFloat(rateInput.value));
+    speakFrom(0);
+  });
+  function jumpBack(seconds) {
+    if (!sentences.length) return;
+    buildCumTimes(parseFloat(rateInput.value));
+    var nowIdx = estimateCurrentIndex();
+    var nowT = cumTimes[nowIdx] || 0;
+    var targetT = Math.max(0, nowT - seconds);
+    speakFrom(timeToIndex(targetT));
+  }
+  document.getElementById("back15").addEventListener("click", function(){ jumpBack(15); });
+  document.getElementById("back30").addEventListener("click", function(){ jumpBack(30); });
+  document.getElementById("back60").addEventListener("click", function(){ jumpBack(60); });
+
+  document.getElementById("voiceHelpBtn").addEventListener("click", function(){
+    modalBg.classList.add("show");
+  });
+  modalBg.addEventListener("click", function(e){
+    if (e.target === modalBg) modalBg.classList.remove("show");
+  });
+
+})();
+</script>
+</body>
+</html>
