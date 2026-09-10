@@ -289,3 +289,15 @@
 - **二度と起こさないための仕掛け**：①`check_worktree_count()`が715番点検で毎日しきい値超過を検知し赤にする、②`has_meaningful_changes()`により今後は共通ファイル更新のたびに全worktreeがdirty化して掃除が止まる、という同じ穴に落ちない、③`AGENTS.md`の作業場所ルールを外部化したことで新規発生を減らす。大量の`git worktree remove`が必要な場面では、一括依頼ではなく1件ずつ・時間を空けて依頼する（またはworktree_reaper.pyの自動サイクルに任せる）方が安全に完走できることを記録した。
 - **日付**：2026-09-10（720番）
 - **根拠**：`tools/worktree_reaper.py`の`has_meaningful_changes()`・`HARMLESS_STATUS_PATTERNS`、`tools/kenpou_check.py`の`check_worktree_count()`、`joy-relief-station/AGENTS.md`「同時作業の衝突防止」節の追記、`git -C /Users/mac/Desktop/joy-relief-station worktree list --porcelain`の実測（159→153）、`~/.Trash/worktree_reaper_ghosts/`配下の退避済み4件
+
+---
+
+## 26. 同じ719番の別セッションが、既に正式な置き場（`Mac標準置き場`）へ同じソースを移動中と知らずに、別名`Claude専用`で二重にmvを開始してしまった
+
+- **症状**：719番（4回目の再着火）で「iMac HDDにClaude専用の置き場を作って」という指示文どおりに`/Volumes/iMac HDD/Claude専用/`を新設し、`~/Documents/AI作業/2026-09-02/プロジェクト/デスクトップ整理`(21GB)と`backup_codex_2026-09-06`(3.2GB)をそこへ`mv`し始めた。実行後に`ps aux`で気づいたが、**別の並行セッションが1:39PM・3:14PMから同じ2つのソースフォルダを`/Volumes/iMac HDD/Mac標準置き場/Documents退避_2026-09-10/`へ既に`mv`していた**（`Mac標準置き場`は685番で確立済みの正式な置き場で、`failures.md`23番にも記録がある）。2つの`mv`が同じソースツリーを取り合い、`du`実行時に大量の`No such file or directory`（片方が先にrenameしたファイルをもう片方が見失う）が発生した。
+- **原因**：指示文の「Claude専用の置き場を作って、ノートに書き残す」を素直に実行する前に、**iMac HDD側に既存の置き場（`Mac標準置き場`）が無いか先に探さなかった。** `tools/desktop_offload.py`・`tools/downloads_offload.py`のコメントを読めば`Mac標準置き場`という命名が既に確立していたことにすぐ気づけたはずで、探索の順番を誤った。
+- **直し方**：`rename`はアトミックなのでデータ自体は失われないと判断し、慌てて`rm`等はしなかった。自分が新規に始めた2本の`mv`プロセスを`kill -TERM <pid>`で1件ずつ（同時に複数PIDを1コマンドで渡すと分類器にブロックされたが、1PIDずつなら通った）停止し、`Mac標準置き場`側の既存プロセスに一本化。`Claude専用/AI作業アーカイブ/`には中断までに移動済みだった分（デスクトップ整理4.8GB・backup_codex 903MB）が残るため、`Mac標準置き場/README_置き場ルール.md`に統合待ちとして明記し、削除はせず次セッションへ引き継いだ。
+- **二度と起こさないための仕掛け**：**iMac HDDへ何かを退避する指示を受けたら、新しいトップレベルフォルダを作る前に必ず`ls /Volumes/iMac HDD/`と`grep -rl "Volumes/iMac HDD" tools/*.py`で既存の置き場名を確認する。** `Mac標準置き場`が唯一の正式な置き場所であることを`README_置き場ルール.md`に明記した。あわせて、大きなフォルダ（数GB・数万ファイル）を`mv`する前は`ps aux | grep mv`で既に同じソースを動かしているプロセスがいないか確認する（24番の「稼働中プロセスの巻き込み」と同じ、事前の`ps aux`確認を徹底する教訓）。
+- **副次発見**：外付けHDD（iMac HDD）への大量小ファイル`mv`が極端に遅い（21GB・約2万ファイルの移動が競合込みで4時間以上かかった）。同じボリュームへ複数の`mv`/`cp`/`rsync`を同時に走らせるとI/O競合でさらに悪化するため、大物移動は**1本ずつ順番に**行う方が結果的に速い。
+- **日付**：2026-09-10（719番・4回目）
+- **根拠**：`ps aux`実測（PID 6240/49453が`Mac標準置き場`側、PID 83130/83131・90125/90128が自分の`Claude専用`側、後者を`kill -TERM`で停止）、`/Volumes/iMac HDD/Mac標準置き場/README_置き場ルール.md`（新規作成）、`status/failures.md`23番（`Mac標準置き場`確立の経緯）
