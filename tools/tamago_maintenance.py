@@ -35,6 +35,7 @@
   python3 tools/tamago_maintenance.py --dry-run  # 何も書かず・何も直さず結果だけ表示
 """
 import argparse
+import datetime
 import glob
 import io
 import json
@@ -423,6 +424,52 @@ def check_vite_zombies(dry_run=False):
 
 
 # ---------------------------------------------------------------------------
+# 5.5 「あとで見る棚」（652番）のスナップショットが止まっていないか・動かす
+# ---------------------------------------------------------------------------
+# 【2026-09-10 716番3回目・実測で発見】later_tabs_snapshot.py(652番)は単発スクリプトとして
+#   存在するだけで、どこからも定期実行されていなかった（status/later_tabs.json の最終更新が
+#   前日の朝で丸1日以上止まっていた）。「閉じられないタブを棚へ逃がす」仕組みがあるのに
+#   動いていない＝画面上は「効いているはず」なのに実際には古い一覧のまま、を放置していた。
+#   715番/716番の日次点検に相乗りさせ、単独のlaunchdジョブを増やさない。
+LATER_TABS_MAX_GAP_SEC = 24 * 3600  # 24時間以上更新が無ければ「止まっている」扱い
+
+
+def check_later_tabs(dry_run=False):
+    out_path = os.path.join(STATUS, "later_tabs.json")
+    prev = load_json(out_path, {})
+    prev_generated = prev.get("generated_at")
+    stale = True
+    gap_min = None
+    if prev_generated:
+        try:
+            gen_dt = datetime.datetime.fromisoformat(prev_generated)
+            gap_sec = (datetime.datetime.now() - gen_dt).total_seconds()
+            gap_min = round(gap_sec / 60, 1)
+            stale = gap_sec > LATER_TABS_MAX_GAP_SEC
+        except Exception:
+            pass
+    ran = False
+    error = None
+    if stale and not dry_run:
+        rc, out, err = _run(
+            ["python3", os.path.join(HERE, "later_tabs_snapshot.py")], timeout=90
+        )
+        ran = True
+        if rc != 0:
+            error = (err or out or "").strip()[:200]
+    new = load_json(out_path, {})
+    return {
+        "wasStaleBeforeRun": stale,
+        "prevGeneratedAt": prev_generated,
+        "prevGapMin": gap_min,
+        "ranThisTime": ran,
+        "error": error,
+        "entryCount": new.get("entry_count"),
+        "nowGeneratedAt": new.get("generated_at"),
+    }
+
+
+# ---------------------------------------------------------------------------
 # 6. queue.json の完了控えを片づける（archive_done.py を呼ぶ）
 # ---------------------------------------------------------------------------
 
@@ -498,16 +545,20 @@ def main(argv=None):
     zombie_result = check_zombie_launch_agents(dry_run=args.dry_run)
     vite_result = check_vite_zombies(dry_run=args.dry_run)
     archive_result = run_archive_done(dry_run=args.dry_run)
+    later_tabs_result = check_later_tabs(dry_run=args.dry_run)
     disk_result = check_disk(history)
     load_result = check_load()
     watchdog_result = check_watchdogs()
     problems = notify_if_needed(disk_result, load_result, watchdog_result, dry_run=args.dry_run)
+    if later_tabs_result.get("error"):
+        problems.append("あとで見る棚(652番)の更新に失敗: %s" % later_tabs_result["error"])
 
     result = {
         "measuredAt": now_jst_str(),
         "launchAgents": zombie_result,
         "viteZombies": vite_result,
         "queueArchive": archive_result,
+        "laterTabs": later_tabs_result,
         "disk": disk_result,
         "load": load_result,
         "watchdogs": watchdog_result,
@@ -531,7 +582,8 @@ def main(argv=None):
 
 def _push(paths=("status/maintenance_check.json", "status/maintenance_check_log.jsonl",
                   "status/dispatch_outbox.jsonl", "status/queue.json",
-                  "status/done_archive.json", "share/done/index.html"), retries=5, wait_sec=8):
+                  "status/done_archive.json", "share/done/index.html",
+                  "status/later_tabs.json"), retries=5, wait_sec=8):
     for attempt in range(1, retries + 1):
         rc, out, err = _run(["git", "add"] + list(paths))
         if rc != 0:

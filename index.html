@@ -1651,16 +1651,27 @@ window.__queueRawText = null;
    前回取得したテキストと同じなら（＝中身が変わっていない）parseもrenderも
    スキップする。変化があった時だけ今まで通り即座に反映するので、
    「押した瞬間に反映」という体験は変えていない。 */
+window.__queueBusy = false;
 function refreshHealth(){
+  // 2026-09-10（716番）：中継所（トンネル経由）への fetch にタイムアウトが無く、
+  //   トンネルが詰まると応答が返らないまま10秒おきに新しいfetchを積み増していた。
+  //   これがタブの読み込みインジケーターが回り続ける・重くなる原因の一つ。
+  //   前回のfetchが終わっていなければ今回は発行しない・8秒で必ず諦める、の2つで止める。
+  if(window.__queueBusy) return Promise.resolve();
+  window.__queueBusy = true;
+  const done = () => { window.__queueBusy = false; };
+  const ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
   // 2026-09-05 中継所が使えるなら、そちらから**Macの生の台帳**を読む。
   //   GitHub Pages側のコピーは公開が5分以上遅れるため、押した直後に古い状態へ戻ってしまい
   //   「押しても動かない・完了に入らない」に見えていた。中継所なら押した瞬間に反映される。
   const relay = (window.__relay && window.__relay.url);
   const src = relay ? (relay.replace(/\/$/, "") + "/queue?t=" + Date.now())
                     : ("status/queue.json?t=" + Date.now());
-  return fetch(src, {cache:"no-store", headers: relay ? RELAY_HEADERS : {}})
-    .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+  return fetch(src, {cache:"no-store", headers: relay ? RELAY_HEADERS : {}, signal: ctrl && ctrl.signal})
+    .then(r => { if(timer) clearTimeout(timer); if(!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
     .then(text => {
+      done();
       window.__queueErr = 0;
       if(text === window.__queueRawText){ return; } // 中身が前回と同じ＝parse/render不要
       window.__queueRawText = text;
@@ -1675,19 +1686,22 @@ function refreshHealth(){
       try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){}
     })
     .catch(()=>{
+      if(timer) clearTimeout(timer);
       // 中継所がダメなら公開済みコピーで代用する（古いが、何も出ないよりまし）
       if(relay){
         return fetch("status/queue.json?t=" + Date.now(), {cache:"no-store"})
           .then(r => r.ok ? r.text() : null)
           .then(text => {
+            done();
             if(!text) return;
             if(text === window.__queueRawText) return;
             window.__queueRawText = text;
             const q = JSON.parse(text);
             window.__queue = q; try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){}
           })
-          .catch(()=>{ window.__queueErr++; try{ renderQueue(); }catch(e){} });
+          .catch(()=>{ done(); window.__queueErr++; try{ renderQueue(); }catch(e){} });
       }
+      done();
       window.__queueErr++; try{ renderQueue(); }catch(e){}
     });
 }
