@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>即読み</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a2030">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    background: #1a2030; color: #eef0f6;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    max-width: 640px; margin-left: auto; margin-right: auto;
+  }
+  h1 { font-size: 20px; margin: 4px 0 2px; }
+  .sub { color: #9aa3c0; font-size: 13px; margin-bottom: 16px; }
+  textarea {
+    width: 100%; min-height: 160px; border-radius: 12px; border: 1px solid #333c5a;
+    background: #10131f; color: #eef0f6; padding: 12px; font-size: 15px; line-height: 1.6;
+    resize: vertical;
+  }
+  .hint { font-size: 12px; color: #7c85a8; margin: 6px 0 16px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  select, input[type=range] { flex: 1; min-width: 120px; }
+  select {
+    background: #10131f; color: #eef0f6; border: 1px solid #333c5a; border-radius: 8px; padding: 8px;
+    font-size: 14px;
+  }
+  .rate-label { font-size: 13px; color: #b9c0dd; min-width: 62px; text-align: right; }
+  .status {
+    background: #10131f; border: 1px solid #333c5a; border-radius: 12px; padding: 12px;
+    font-size: 13px; color: #b9c0dd; margin-bottom: 12px; min-height: 20px;
+  }
+  .status b { color: #eef0f6; }
+  .controls {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;
+  }
+  .controls button, .playbtn {
+    background: #2a3358; color: #eef0f6; border: none; border-radius: 10px;
+    padding: 12px 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .controls button:active, .playbtn:active { background: #3a4578; }
+  .playbtn {
+    width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px; background: #3a6b4a;
+  }
+  .playbtn.playing { background: #6b3a3a; }
+  .voicehelp {
+    width: 100%; background: none; border: 1px dashed #4a5580; color: #9aa3c0;
+    border-radius: 10px; padding: 10px; font-size: 12px; cursor: pointer; margin-bottom: 16px;
+  }
+  .history { margin-top: 20px; }
+  .history h2 { font-size: 14px; color: #9aa3c0; margin-bottom: 8px; }
+  .hitem {
+    background: #10131f; border: 1px solid #262e4d; border-radius: 10px; padding: 10px 12px;
+    margin-bottom: 8px; font-size: 13px; color: #cfd4ec; cursor: pointer;
+  }
+  .hitem:active { background: #1a2140; }
+  .modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 10;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #1e2440; border-radius: 14px; padding: 20px; max-width: 420px; font-size: 14px;
+    line-height: 1.8; color: #e5e8f5;
+  }
+  .modal ol { padding-left: 20px; margin: 10px 0; }
+  .modal button {
+    margin-top: 14px; width: 100%; padding: 12px; background: #2a3358; color: #fff;
+    border: none; border-radius: 8px; font-size: 15px;
+  }
+</style>
+</head>
+<body>
+  <h1>🔊 即読み</h1>
+  <div class="sub">長文を貼ったら、すぐ読み始めます。RSSも購読も要りません。</div>
+
+  <textarea id="ta" placeholder="ここに長文を貼り付けてください（貼ったらすぐ読み始めます）"></textarea>
+  <div class="hint">タイトル候補があればそこから読みます。URL・記号の羅列は読み飛ばします。</div>
+
+  <div class="row">
+    <select id="voiceSel"></select>
+  </div>
+  <div class="row">
+    <input type="range" id="rate" min="0.8" max="1.5" step="0.05" value="0.95">
+    <div class="rate-label" id="rateLabel">0.95倍</div>
+  </div>
+
+  <button class="playbtn" id="playBtn">▶ 読み上げ開始</button>
+
+  <div class="controls">
+    <button id="back15">⏪ 15秒</button>
+    <button id="back30">⏪ 30秒</button>
+    <button id="back60">⏪ 1分</button>
+    <button id="toStart">⏮ 頭から</button>
+    <button id="stopBtn">⏹ 停止</button>
+    <button id="pasteBtn">📋 貼り付け</button>
+  </div>
+
+  <button class="voicehelp" id="voiceHelpBtn">🎙 もっと自然な声にする（無料・手順を見る）</button>
+
+  <div class="status" id="status">声を読み込み中…</div>
+
+  <div class="history">
+    <h2>さっき読んだもの</h2>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <b>もっと自然な声にする（無料）</b>
+      <ol>
+        <li>設定アプリを開く</li>
+        <li>アクセシビリティ</li>
+        <li>読み上げコンテンツ</li>
+        <li>声 → 日本語</li>
+        <li>好きな声の横の雲マークをタップしてダウンロード（「拡張」「プレミアム」がより自然）</li>
+      </ol>
+      ダウンロードが終わったら、このページに戻って声の一覧を開き直すと選べるようになります。
+      <button onclick="document.getElementById('modalBg').classList.remove('show')">閉じる</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(function(){});
+  }
+
+  var ta = document.getElementById("ta");
+  var voiceSel = document.getElementById("voiceSel");
+  var rateInput = document.getElementById("rate");
+  var rateLabel = document.getElementById("rateLabel");
+  var playBtn = document.getElementById("playBtn");
+  var statusEl = document.getElementById("status");
+  var historyList = document.getElementById("historyList");
+  var modalBg = document.getElementById("modalBg");
+
+  var synth = window.speechSynthesis;
+  var sentences = [];
+  var currentIndex = 0;
+  var cumTimes = []; // 各文の開始時刻(推定・秒)
+  var utteranceStartedAt = 0; // performance.now() 時点
+  var isPlaying = false;
+  var isPaused = false;
+  var currentTextKey = "";
+
+  // ---------- 声の準備 ----------
+  var voices = [];
+  function pickBestVoiceIndex(list) {
+    var ja = list.filter(function(v){ return /^ja/i.test(v.lang); });
+    if (ja.length === 0) return list.length ? 0 : -1;
+    var preferred = ja.find(function(v){ return /enhanced|premium|siri/i.test(v.name); });
+    if (preferred) return list.indexOf(preferred);
+    return list.indexOf(ja[0]);
+  }
+  function loadVoices() {
+    voices = synth.getVoices() || [];
+    if (!voices.length) return;
+    voiceSel.innerHTML = "";
+    voices.forEach(function(v, i){
+      var opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = v.name + "（" + v.lang + "）" + (/enhanced|premium|siri/i.test(v.name) ? " ★おすすめ" : "");
+      voiceSel.appendChild(opt);
+    });
+    var saved = localStorage.getItem("sokuyomi_voice_name");
+    var savedIdx = saved ? voices.findIndex(function(v){ return v.name === saved; }) : -1;
+    var idx = savedIdx >= 0 ? savedIdx : pickBestVoiceIndex(voices);
+    if (idx < 0) idx = 0;
+    voiceSel.value = idx;
+    statusEl.innerHTML = "声の準備ができました。<b>" + voices[idx].name + "</b> を使います。";
+  }
+  synth.addEventListener("voiceschanged", loadVoices);
+  loadVoices();
+  setTimeout(loadVoices, 300);
+
+  voiceSel.addEventListener("change", function(){
+    var v = voices[parseInt(voiceSel.value, 10)];
+    if (v) localStorage.setItem("sokuyomi_voice_name", v.name);
+  });
+
+  // ---------- 速度 ----------
+  var savedRate = parseFloat(localStorage.getItem("sokuyomi_rate") || "0.95");
+  rateInput.value = savedRate;
+  rateLabel.textContent = savedRate.toFixed(2) + "倍";
+  rateInput.addEventListener("input", function(){
+    rateLabel.textContent = parseFloat(rateInput.value).toFixed(2) + "倍";
+  });
+  rateInput.addEventListener("change", function(){
+    localStorage.setItem("sokuyomi_rate", rateInput.value);
+    if (isPlaying) speakFrom(estimateCurrentIndex());
+  });
+
+  // ---------- 前処理 ----------
+  function stripForSpeech(raw) {
+    var lines = raw.split("\n");
+    var titleIdx = lines.findIndex(function(l){ return l.indexOf("タイトル候補") >= 0; });
+    var body = titleIdx >= 0 ? lines.slice(titleIdx + 1).join("\n") : raw;
+
+    // 順序が重要：先に [文字](URL) / [[リンク]] の構文を崩し、その後に裸のURLを除去する。
+    body = body.replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, "$1");
+    body = body.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+    body = body.replace(/https?:\/\/\S+/g, "");
+    body = body.replace(/obsidian:\/\/\S+/g, "");
+    body = body.replace(/\*\*([^*]+)\*\*/g, "$1");
+    body = body.replace(/`([^`]+)`/g, "$1");
+    body = body.replace(/^#+\s*/gm, "");
+    body = body.replace(/^[\-\*・]\s+/gm, "");
+    body = body.replace(/[A-Za-z0-9_\-]{20,}/g, "");
+    body = body.replace(/^\s*#[^\s#]+\s*$/gm, "");
+    body = body.replace(/\n{3,}/g, "\n\n");
+    return body.trim();
+  }
+
+  // Safari旧バージョンは正規表現の後読み(lookbehind)が使えず構文エラーで
+  // スクリプト全体が止まることがあるため、後読みを使わず手書きで分割する。
+  function splitByChars(text, marks) {
+    var out = [];
+    var buf = "";
+    for (var i = 0; i < text.length; i++) {
+      buf += text[i];
+      if (marks.indexOf(text[i]) >= 0) { out.push(buf); buf = ""; }
+    }
+    if (buf) out.push(buf);
+    return out.map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function splitSentences(text) {
+    var raw = splitByChars(text, ["。", "！", "？", "\n"]);
+    var out = [];
+    raw.forEach(function(s){
+      if (s.length > 120) {
+        var parts = splitByChars(s, ["、"]);
+        var buf = "";
+        parts.forEach(function(p){
+          if ((buf + p).length > 80) { if (buf) out.push(buf); buf = p; }
+          else buf += p;
+        });
+        if (buf) out.push(buf);
+      } else {
+        out.push(s);
+      }
+    });
+    return out.filter(function(s){ return s.length > 0; });
+  }
+
+  function estCharsPerSec(rate) { return 6.0 * rate; }
+
+  function buildCumTimes(rate) {
+    var t = 0;
+    cumTimes = sentences.map(function(s){
+      var start = t;
+      t += Math.max(0.4, s.length / estCharsPerSec(rate));
+      return start;
+    });
+  }
+
+  // ---------- 履歴 ----------
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem("sokuyomi_history") || "[]"); }
+    catch(e) { return []; }
+  }
+  function saveHistoryEntry(text) {
+    var hist = loadHistory();
+    var key = textKey(text);
+    hist = hist.filter(function(h){ return h.key !== key; });
+    hist.unshift({ key: key, text: text, title: text.slice(0, 30).replace(/\n/g, " "), at: Date.now() });
+    hist = hist.slice(0, 5);
+    localStorage.setItem("sokuyomi_history", JSON.stringify(hist));
+    renderHistory();
+  }
+  function renderHistory() {
+    var hist = loadHistory();
+    historyList.innerHTML = "";
+    if (!hist.length) {
+      historyList.innerHTML = '<div style="color:#5c6488;font-size:13px;">まだありません</div>';
+      return;
+    }
+    hist.forEach(function(h){
+      var div = document.createElement("div");
+      div.className = "hitem";
+      var d = new Date(h.at);
+      div.textContent = h.title + "…（" + (d.getMonth()+1) + "/" + d.getDate() + "）";
+      div.addEventListener("click", function(){
+        ta.value = h.text;
+        startReading(h.text, true);
+      });
+      historyList.appendChild(div);
+    });
+  }
+  renderHistory();
+
+  function textKey(text) {
+    var h = 0;
+    for (var i = 0; i < Math.min(text.length, 500); i++) { h = (h * 31 + text.charCodeAt(i)) | 0; }
+    return "k" + h + "_" + text.length;
+  }
+
+  // ---------- 読み上げ本体 ----------
+  function estimateCurrentIndex() {
+    if (!cumTimes.length) return 0;
+    var rate = parseFloat(rateInput.value);
+    var elapsedNow = (utteranceStartedAt > 0 ? (performance.now() - utteranceStartedAt) / 1000 : 0);
+    var atSentenceStart = cumTimes[currentIndex] || 0;
+    var nowT = atSentenceStart + Math.max(0, elapsedNow);
+    return timeToIndex(nowT);
+  }
+  function timeToIndex(t) {
+    var lo = 0, hi = cumTimes.length - 1, ans = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      if (cumTimes[mid] <= t) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    return ans;
+  }
+
+  function speakFrom(index) {
+    synth.cancel();
+    if (index < 0) index = 0;
+    if (index >= sentences.length) { finishReading(); return; }
+    currentIndex = index;
+    isPlaying = true;
+    isPaused = false;
+    playBtn.textContent = "⏸ 一時停止";
+    playBtn.classList.add("playing");
+    speakOne(index);
+  }
+
+  function speakOne(index) {
+    if (!isPlaying || index >= sentences.length) { if (index >= sentences.length) finishReading(); return; }
+    currentIndex = index;
+    localStorage.setItem("sokuyomi_progress_" + currentTextKey, String(index));
+    updateStatus();
+    var u = new SpeechSynthesisUtterance(sentences[index]);
+    var v = voices[parseInt(voiceSel.value, 10)];
+    if (v) u.voice = v;
+    u.lang = (v && v.lang) || "ja-JP";
+    u.rate = parseFloat(rateInput.value);
+    u.onstart = function(){ utteranceStartedAt = performance.now(); };
+    u.onend = function(){
+      if (!isPlaying || isPaused) return;
+      speakOne(index + 1);
+    };
+    u.onerror = function(){
+      if (!isPlaying || isPaused) return;
+      speakOne(index + 1);
+    };
+    synth.speak(u);
+  }
+
+  function finishReading() {
+    isPlaying = false;
+    isPaused = false;
+    playBtn.textContent = "▶ 読み上げ開始";
+    playBtn.classList.remove("playing");
+    statusEl.innerHTML = "読み終わりました。";
+  }
+
+  function updateStatus() {
+    var pct = sentences.length ? Math.round((currentIndex / sentences.length) * 100) : 0;
+    statusEl.innerHTML = (currentIndex + 1) + " / " + sentences.length + " 文（約" + pct + "%）";
+  }
+
+  function startReading(rawText, resumeIfPossible) {
+    var text = stripForSpeech(rawText);
+    if (!text) { statusEl.innerHTML = "読める文章が見つかりませんでした。"; return; }
+    sentences = splitSentences(text);
+    currentTextKey = textKey(rawText);
+    buildCumTimes(parseFloat(rateInput.value));
+    saveHistoryEntry(rawText);
+    var startIdx = 0;
+    if (resumeIfPossible) {
+      var saved = localStorage.getItem("sokuyomi_progress_" + currentTextKey);
+      if (saved) startIdx = parseInt(saved, 10) || 0;
+    }
+    speakFrom(startIdx);
+  }
+
+  // ---------- 操作 ----------
+  ta.addEventListener("paste", function(){
+    setTimeout(function(){
+      var text = ta.value.trim();
+      if (text) startReading(text, false);
+    }, 80);
+  });
+
+  playBtn.addEventListener("click", function(){
+    if (isPlaying && !isPaused) {
+      synth.pause();
+      isPaused = true;
+      playBtn.textContent = "▶ 再開";
+      playBtn.classList.remove("playing");
+      return;
+    }
+    if (isPlaying && isPaused) {
+      isPaused = false;
+      playBtn.textContent = "⏸ 一時停止";
+      playBtn.classList.add("playing");
+      try { synth.resume(); } catch(e) { speakFrom(currentIndex); }
+      return;
+    }
+    var text = ta.value.trim();
+    if (!text) { statusEl.innerHTML = "本文を貼り付けてください。"; return; }
+    startReading(text, true);
+  });
+
+  document.getElementById("stopBtn").addEventListener("click", function(){
+    synth.cancel();
+    isPlaying = false; isPaused = false;
+    playBtn.textContent = "▶ 読み上げ開始";
+    playBtn.classList.remove("playing");
+  });
+  document.getElementById("toStart").addEventListener("click", function(){
+    if (!sentences.length) return;
+    buildCumTimes(parseFloat(rateInput.value));
+    speakFrom(0);
+  });
+  function jumpBack(seconds) {
+    if (!sentences.length) return;
+    buildCumTimes(parseFloat(rateInput.value));
+    var nowIdx = estimateCurrentIndex();
+    var nowT = cumTimes[nowIdx] || 0;
+    var targetT = Math.max(0, nowT - seconds);
+    speakFrom(timeToIndex(targetT));
+  }
+  document.getElementById("back15").addEventListener("click", function(){ jumpBack(15); });
+  document.getElementById("back30").addEventListener("click", function(){ jumpBack(30); });
+  document.getElementById("back60").addEventListener("click", function(){ jumpBack(60); });
+
+  document.getElementById("pasteBtn").addEventListener("click", function(){
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function(text){
+        if (text) { ta.value = text; startReading(text, false); }
+      }).catch(function(){
+        statusEl.innerHTML = "貼り付けの許可が得られませんでした。テキスト欄へ直接ペーストしてください。";
+      });
+    } else {
+      statusEl.innerHTML = "この画面ではボタンからの貼り付けに対応していません。テキスト欄へ直接ペーストしてください。";
+    }
+  });
+
+  document.getElementById("voiceHelpBtn").addEventListener("click", function(){
+    modalBg.classList.add("show");
+  });
+  modalBg.addEventListener("click", function(e){
+    if (e.target === modalBg) modalBg.classList.remove("show");
+  });
+
+})();
+</script>
+</body>
+</html>

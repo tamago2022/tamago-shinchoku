@@ -34,6 +34,14 @@ WT_DIR = os.path.join(TARGET, ".worktrees")
 # disk_guardianどちらの監視対象にも入らず野放しになっていた。
 # `.worktrees`(2026-09-05)→`/private/tmp`(2026-09-07)に続き3件目の同じ穴。
 CLAUDE_WT_DIR = os.path.join(TARGET, ".claude", "worktrees")
+# 2026-09-10（720番・店主「ChatGPTのタスク一覧に作業場が300件近く出て増える一方」への
+# 2回目の指摘で発覚）：セッションの並列作業場（isolation:worktree等）が
+# `Documents/AI作業/.worktrees` にも作られており（実測39件）、ここは reaper の
+# 監視対象に一度も入っていなかった（TARGETがjoy-relief-station直下に決め打ちだった穴）。
+# 中身はjoy-relief-stationのworktreeなので同じ4条件でそのまま片づけられる。
+DOCS_WT_DIR = os.path.join(
+    os.path.expanduser("~"), "Documents", "AI作業", ".worktrees"
+)
 QUEUE = os.path.join(REPO, "status", "queue.json")
 LOG = os.path.join(REPO, "status", "worktree_reaper.log")
 STAMP = os.path.join(REPO, "status", ".worktree_reaper_at")
@@ -408,12 +416,17 @@ def main():
         sweep_node_modules(CLAUDE_WT_DIR, guard)
         sweep_worktrees(CLAUDE_WT_DIR, guard)
 
+    # 2026-09-10（720番）追加：`Documents/AI作業/.worktrees`配下も同じ4条件で片づける。
+    if os.path.isdir(DOCS_WT_DIR):
+        sweep_node_modules(DOCS_WT_DIR, guard)
+        sweep_worktrees(DOCS_WT_DIR, guard)
+
     # 2026-09-09（685番）追加：git worktree list --porcelainを正本にして、
     # 上記の決め打ち3箇所（.worktrees/.claude/worktrees/private-tmp直下）以外に
     # 作られたworktree（例：/private/tmp配下のネストしたscratchpad）も同じ条件で拾う。
     # これで次に新しい置き場所が増えても自動対応できる。
     try:
-        _known_dirs = (os.path.abspath(WT_DIR), os.path.abspath(CLAUDE_WT_DIR))
+        _known_dirs = (os.path.abspath(WT_DIR), os.path.abspath(CLAUDE_WT_DIR), os.path.abspath(DOCS_WT_DIR))
 
         def _is_known(p):
             ap = os.path.abspath(p)
