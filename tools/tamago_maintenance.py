@@ -210,15 +210,17 @@ def check_load():
         load1, load5, load15 = os.getloadavg()
     except Exception:
         load1 = load5 = load15 = None
+    # 【2026-09-10 716番3回目】閾値超え時だけでなく常時CPU上位を記録する。
+    # 理由：常駐スクリプトが原因でないことを日々証明し続けるには、平常時の実測も要る
+    # （閾値待ちだと「たまたま閾値未満だった日」の犯人が一切残らない）。
     top = []
-    if load1 is not None and load1 >= LOAD_ALERT_THRESHOLD:
-        rc, out, _ = _run(["ps", "-Ao", "pcpu,comm", "-r"], timeout=10)
-        if rc == 0:
-            lines = [l.strip() for l in out.splitlines()[1:] if l.strip()]
-            for l in lines[:5]:
-                parts = l.split(None, 1)
-                if len(parts) == 2:
-                    top.append({"pcpu": parts[0], "comm": os.path.basename(parts[1])})
+    rc, out, _ = _run(["ps", "-Ao", "pcpu,comm", "-r"], timeout=10)
+    if rc == 0:
+        lines = [l.strip() for l in out.splitlines()[1:] if l.strip()]
+        for l in lines[:5]:
+            parts = l.split(None, 1)
+            if len(parts) == 2:
+                top.append({"pcpu": parts[0], "comm": os.path.basename(parts[1])})
     return {
         "load1": round(load1, 1) if load1 is not None else None,
         "load5": round(load5, 1) if load5 is not None else None,
