@@ -247,3 +247,22 @@
 - **二度と起こさないための仕掛け**：ブラウザで何かを「裏で」確認したいタスクは、claude-in-chrome拡張ではなく`node ~/.tamago/browser_peek.mjs --url "<URL>" --title --screenshot /tmp/x.png --check-window-state`を使う運用に統一する（スクリプトのdocコメントに要点を記載済み）。新しいChromeプロセスは絶対に起動しない・既存タブには触らない・`bringToFront()`やOSの`activate`は呼ばない、の3点をスクリプト自身が保証する。
 - **日付**：2026-09-10（704番）
 - **根拠**：`~/.tamago/browser_peek.mjs`全文、実行ログ（`Browser.getWindowForTarget`の前後一致・`windowState:"minimized"`下での`goto`成功）、683番の先行事例（`share/check/683-mic-issue-and-anthropic-mail.html`footer）
+
+- **【2026-09-10追記・704番3回目】上記「完全一致」は検証不足だった。`ctx.newPage()`は必ず一瞬`normal`へ戻る。根本対策は`Target.createTarget({background:true})`**：
+  - 上記の検証は`goto()`完了後のbefore/afterしか比較しておらず、`ctx.newPage()`直後（goto呼び出し前）の一瞬を見ていなかった。実機で計測し直すと、`ctx.newPage()`は**5回中5回**、呼んだ直後に`windowState`が`minimized`→`normal`へ変わることを確認した（`goto()`実行中にOS側が偶然`minimized`へ戻ることがあるが、保証されない＝非決定的。実際に検証作業中、`browser_peek.mjs`旧版のテストでウィンドウが`normal`のまま数十秒残ってしまう事故を1回引き起こした）。
+  - 対策：既存タブ（`ctx.pages()[0]`）から`newCDPSession`を張り、生CDPコマンド`Target.createTarget({url, background:true, newWindow:false})`でタブを作る。この方式は**5回連続でwindowStateが一度も変化しなかった**（そもそも露出しない）。作成したtargetはPlaywrightの`ctx.on("page", cb)`イベントで検知でき、通常のPageオブジェクトとして`waitForLoadState()`・`close()`等が使える（実機確認済み）。
+  - `scripts/patrol/lovable-publish.mjs`と`~/.tamago/browser_peek.mjs`の両方をこの方式へ書き換え済み（失敗時は従来の`ctx.newPage()`へ自動フォールバック）。
+  - **教訓**：ウィンドウ状態の検証は「操作前後の状態」だけでなく「操作の瞬間（新規タブ作成直後など）」も計測しないと、露出の見落としが起きる。`Browser.setWindowBounds`で`minimized`に戻す処理（keepMinimized方式）は事後の巻き戻しであり、呼び出し～反映までの間は原理的に露出しうる。**そもそも状態を変えさせない`Target.createTarget(background:true)`の方が優先されるべき設計**。
+  - **日付**：2026-09-10（704番3回目）
+
+
+---
+
+## 23. `desktop_offload.py`が「フォルダは対象外」だったため、デスクトップにフォルダが際限なく溜まり続けていた
+
+- **症状**：719番で、たまごさんから「joy-relief-stationだとか、卵進捗だとか、obsidian_setting_backupだとか、tamago-warehouse-pickupとか、もう知らないフォルダーがデスクトップに増えてんだよね」との指摘。実測でデスクトップ直下に生成物フォルダ・zipが多数放置され、内蔵ディスクの空きが51GB（数時間前は59GB、その前は35GB）と上下しながら減っていた。
+- **原因**：685番で作った`tools/desktop_offload.py`（Desktop直下の大物を6時間おきに自動でiMac HDDへ退避する係）は、コメントに明記の通り「フォルダは対象外（今回は単体ファイルのみ、誤動作リスクを下げる）」という設計だった。しかし実際にデスクトップへ溜まるものの大半はフォルダ単位（生成物一式・アーカイブ解凍後・アプリのバックアップ等）で、この設計そのものが「フォルダだけが際限なく残り続ける」直接原因になっていた。兄弟スクリプトの`downloads_offload.py`（~/Downloads担当）は最初からフォルダも対象にしており、2つのスクリプトの間で対象範囲が食い違っていたことに誰も気づいていなかった。
+- **直し方**：`desktop_offload.py`を`downloads_offload.py`と同じ判定方式（`os.path.isdir`ならフォルダ、`os.walk`で合計サイズを算出）へ揃え、フォルダも対象にした。作業中リポジトリ（`tamago-shinchoku`・`joy-relief-station`等）の誤巻き込みは既存の`SKIP_NAMES_CONTAINING`でこれまで通り防ぐ。あわせて719番でデスクトップ直下の大物7件（`Xネタ_仕分け`4.7GB等）とDocuments配下の過去退避フォルダ`2026-09-02`(27GB)を`/Volumes/iMac HDD/Mac標準置き場/`へ手動で先に退避した（削除ではなく移動のみ）。
+- **二度と起こさないための仕掛け**：Mac本体の特定フォルダを自動退避する係を新しく作る・改修する時は、**同じ目的の兄弟スクリプトが既にあれば対象範囲（ファイルのみ／フォルダも含む）が揃っているかを先に`diff`感覚で見比べる**。「今回は慎重に単体ファイルのみ」のようなスコープ限定コメントを見つけたら、それが本当に今も妥当か（＝実際にデスクトップへ増えているものの形と一致しているか）を疑ってから着手する。
+- **日付**：2026-09-10（719番）
+- **根拠**：`tools/desktop_offload.py`（改修差分）、`tools/downloads_offload.py`（元ネタとして参照）、`status/disk_daily_history.json`（62.6→35.3→53.2GBの上下）、`status/disk_guardian.log`（09-09 11:56〜09-10 06:14の18時間実測空白）
