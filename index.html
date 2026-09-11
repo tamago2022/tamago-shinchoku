@@ -1199,7 +1199,20 @@ function buildWeekBar(p){
 function renderPace(p){
   const bar = document.getElementById("paceBar"); if(!bar) return;
   window.__pace = p; // renderCapBar()が「今日の予算に余裕があるか」を見るのに使う（689番）
-  if(!p || p.usedToday === null || p.usedToday === undefined){ bar.hidden = true; return; }
+  // 2026-09-11（752番）：フェッチ失敗時は p=null になり、そのまま bar.hidden=true で
+  //   欄ごと消えていた（黙って消える＝「元々無い」と区別が付かない）。前回成功データが
+  //   キャッシュにあれば灰色のstale扱いで出し続け、無い時だけ本当に隠す。
+  if(!p || p.usedToday === null || p.usedToday === undefined){
+    const cached = loadLastGood("pace");
+    if(cached && cached.data && cached.data.usedToday != null){
+      bar.hidden = false;
+      bar.className = "pacebar unsure stale";
+      bar.innerHTML = `<summary><div class="ph">${staleNoteHtml(cached.savedAt)}　週の使用率は前回値（${cached.data.allPct}%）を表示中</div></summary>`;
+    } else {
+      bar.hidden = true;
+    }
+    return;
+  }
   bar.hidden = false;
   let ageMin = null;
   if(p.updatedAt){
@@ -1254,13 +1267,23 @@ function renderPace(p){
     </div>`;
 }
 function refreshPace(){
-  const relay = (window.__relay && window.__relay.url);
-  return fetch("status/pace.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(renderPace).catch(()=>{});
+  // 2026-09-11（752番）：タイムアウト無しの素のfetchのままだった。成功時はキャッシュも更新する。
+  return fetchWithTimeout("status/pace.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(p => { renderPace(p); if(p) saveLastGood("pace", p); })
+    .catch(()=>{ renderPace(null); });
 }
 function refreshQuota(){
-  return fetch("status/quota.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(q => { if(q){ window.__quota = q; try{ renderFuel(); }catch(e){} } }).catch(()=>{});
+  return fetchWithTimeout("status/quota.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(q => { if(q){ window.__quota = q; window.__quotaStaleAt = null; saveLastGood("quota", q); try{ renderFuel(); }catch(e){} } })
+    .catch(()=>{
+      // 752番：失敗時に window.__quota を前回値のまま放置すると「更新されていない」ことに
+      //   気づけない。キャッシュがあれば時刻付きで維持、renderFuelにいつ時点かを持たせる。
+      const cached = loadLastGood("quota");
+      if(cached && cached.data){ window.__quota = cached.data; window.__quotaStaleAt = cached.savedAt; }
+      try{ renderFuel(); }catch(e){}
+    });
 }
 refreshQuota();
 setInterval(refreshQuota, 60000);
@@ -1797,11 +1820,19 @@ function renderCapBar(){
 }
 
 /* ───── Macの健康（status/health.json：何を閉じれば／消せば楽になるか。実測のみ） ───── */
-function renderHealth(h){
+function renderHealth(h, errored){
   const box = document.getElementById("health");
-  if(!h){ box.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ計測が無い（5分おきに測る）</div>`; return; }
+  const metaEl = document.getElementById("healthMeta");
+  // 2026-09-11（752番）：「まだ計測が無い」は読み込み失敗時にも出ていて、0件と失敗が区別できなかった。
+  if(!h){
+    if(metaEl) metaEl.textContent = "";
+    box.innerHTML = errored
+      ? `<div class="card note" style="grid-column:1/-1">⚠ 読み込めませんでした　<a href="#" onclick="refreshMachineHealth();return false;" style="color:#8ef0ae;text-decoration:underline;">タップで再読み込み</a></div>`
+      : `<div class="card note" style="grid-column:1/-1">まだ計測が無い（5分おきに測る）</div>`;
+    return;
+  }
   const mins = Math.round((Date.now() - new Date(h.measuredAt).getTime())/60000);
-  document.getElementById("healthMeta").textContent = `${mins < 1 ? "いま" : mins + "分前"}`;
+  if(metaEl) metaEl.innerHTML = (window.__healthStaleAt ? staleNoteHtml(window.__healthStaleAt) + "　" : "") + `${mins < 1 ? "いま" : mins + "分前"}`;
   const over = (h.sessions || 0) - (h.safeMax || 0);
   const shed = h.shedCandidates || [];
   const shedNote = (over > 0 && shed.length)
@@ -1944,11 +1975,23 @@ document.addEventListener("toggle", e=>{
 /* 2026-09-05 たまごさん「何を閉じれば消せば楽になるか、これが機能してない」
    原因：refreshHealth() の1行目が return だったため、**status/health.json を一度も取りに行っていなかった。**
    中身（Braveで11.9GB戻る等）はMac側でちゃんと作られていたのに、画面に届いていなかっただけ。 */
+window.__healthStaleAt = null;
 function refreshMachineHealth(){
-  return fetch("status/health.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null)
-    .then(h => { window.__health = h; try{ renderHealth(h); renderCapBar(); }catch(e){} })
-    .catch(()=>{ try{ renderHealth(null); }catch(e){} });
+  // 2026-09-11（752番）：タイムアウト無しの素のfetchのままだった。失敗時は前回成功データを
+  //   灰色でstale表示、無ければ「まだ計測が無い」ではなく「読み込めませんでした」を出す。
+  return fetchWithTimeout("status/health.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(h => {
+      window.__health = h; window.__healthStaleAt = null;
+      if(h) saveLastGood("health", h);
+      try{ renderHealth(h); renderCapBar(); }catch(e){}
+    })
+    .catch(()=>{
+      const cached = loadLastGood("health");
+      if(cached && cached.data){ window.__health = cached.data; window.__healthStaleAt = cached.savedAt; }
+      else { window.__health = null; }
+      try{ renderHealth(window.__health, true); renderCapBar(); }catch(e){}
+    });
 }
 refreshMachineHealth();
 setInterval(refreshMachineHealth, 60000);
@@ -3453,9 +3496,12 @@ function renderFuel(){
   const q = window.__quota || {};
   const stop = (typeof q.allPct === "number") && q.allPct >= (q.stopPct || 85);
   if(msg){
-    msg.textContent = !FUEL_ON ? "止まっています（判定と繰り上げは動きます）"
+    const base = !FUEL_ON ? "止まっています（判定と繰り上げは動きます）"
       : stop ? `週枠が上限（${q.allPct}%）。本物の仕事は発車しません＝クレジットを使いません`
       : "発車中（空いたら次が出ます）";
+    // 752番：quota.jsonの読み込みが失敗し前回値のまま出している時は、それが分かるよう明示する
+    //   （黙って古い％を出し続けると「今は違うのに」と誤解させる）。
+    msg.innerHTML = base + (window.__quotaStaleAt ? "　" + staleNoteHtml(window.__quotaStaleAt) : "");
     msg.style.color = (!FUEL_ON || stop) ? "var(--yellow)" : "";
   }
   document.querySelectorAll("#fuelBox .cap").forEach(x=>x.classList.toggle("on", +x.dataset.cap === FUEL_CAP));
