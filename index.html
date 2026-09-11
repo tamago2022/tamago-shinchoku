@@ -228,6 +228,7 @@
   .dkrow{display:flex; align-items:flex-start; gap:10px; padding:10px 4px; border-bottom:1px solid var(--line);
     text-decoration:none; color:inherit;}
   .dkrow:last-child{border-bottom:none;}
+  .dkrow.stale{opacity:0.55;} /* 752番：読み込み失敗時に出す前回キャッシュは灰色扱い（新着と混ぜない） */
   .dkthumb{flex:none; width:56px; aspect-ratio:1/1; border-radius:10px; display:flex; align-items:center;
     justify-content:center; font-size:1.5rem; background:#2a3040;}
   .dkthumb.t-動画{background:#3a2b20;} .dkthumb.t-音{background:#20323a;}
@@ -804,6 +805,24 @@ function fetchWithTimeout(url, opts, ms){
   const merged = Object.assign({}, opts, ctrl ? {signal: ctrl.signal} : {});
   return fetch(url, merged).finally(() => { if(timer) clearTimeout(timer); });
 }
+/* 2026-09-11（752番）：「読み込み失敗」を「0件」として見せない共通ヘルパー。
+   0件（本当に無い）と読み込み失敗（通信が詰まった）は意味が正反対。0と出すと「消えた」と
+   誤解させる（実例：752番＝dekimono.jsonは16件あるのに、タイムアウト/通信エラー時に
+   「まだありません」が出て「できたものが消えた」とたまごさんに誤解された）。
+   失敗時は必ず①前回成功データがあれば灰色で「◯分前の内容」②無ければ「読み込めませんでした」
+   のどちらかを出し、件数を伴う「0件」「ありません」は絶対に出さない。 */
+function lastGoodKey(name){ return "shinchoku_lastgood_" + name; }
+function saveLastGood(name, data){
+  try{ localStorage.setItem(lastGoodKey(name), JSON.stringify({data, savedAt: Date.now()})); }catch(e){}
+}
+function loadLastGood(name){
+  try{ return JSON.parse(localStorage.getItem(lastGoodKey(name)) || "null"); }catch(e){ return null; }
+}
+function staleNoteHtml(savedAt){
+  const mins = Math.max(0, Math.round((Date.now() - savedAt) / 60000));
+  const when = new Date(savedAt).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"});
+  return `<span style="color:#9aa0a6">⚠ 読み込めず・${mins < 1 ? "たった今" : mins + "分前"}（${esc(when)}時点）の内容</span>`;
+}
 /* 2026-09-04 たまごさんのホーム画面アプリが**古いindex.htmlを握ったまま**になっていた。
    （直した画面をpushしても、スマホ側は前の画面のまま＝「発車待ちはありません」が出続けた）
    GitHub PagesではHTTPヘッダを変えられないので、中身の側で世代を確認する。
@@ -1285,11 +1304,24 @@ setInterval(refreshCost, 60000);
    修正（queue.json→✅完了）とは別の道。フィルタは押した種類だけ絞り込む（1タップ）。 */
 const DK_THUMB = {"動画":"🎬","音":"🎧","記事":"📰","ページ":"🖼️","資料":"📊"};
 window.__dekimonoFilter = "all";
+window.__dekimonoStaleAt = null; // フェッチ失敗でキャッシュ表示中の時だけ savedAt を入れる。成功したら必ずnullに戻す
+window.__dekimonoErr = 0;
 function renderDekita(){
   const box = document.getElementById("dekita"); if(!box) return;
   const meta = document.getElementById("dekitaMeta");
   const all = (window.__dekimono && window.__dekimono.items) || [];
-  if(meta) meta.textContent = all.length ? `${all.length}件` : "";
+  // 2026-09-11（752番）：0件（本当に無い）と読み込み失敗は意味が正反対なので絶対に混ぜない。
+  //   一度もデータを持てていない（window.__dekimonoがまだ無い）＝読み込み中 or 失敗、これは0件と別扱い。
+  if(!window.__dekimono){
+    if(meta) meta.innerHTML = window.__dekimonoErr
+      ? `<span style="color:#9aa0a6">⚠ 読み込めませんでした</span>` : "";
+    box.innerHTML = window.__dekimonoErr
+      ? `<div class="card note">⚠ 読み込めませんでした　<a href="#" onclick="refreshDekimono();return false;" style="color:#8ef0ae;text-decoration:underline;">タップで再読み込み</a></div>`
+      : `<div class="card note">読み込み中…</div>`;
+    return;
+  }
+  if(meta) meta.innerHTML = (window.__dekimonoStaleAt ? staleNoteHtml(window.__dekimonoStaleAt) + "　" : "")
+    + (all.length ? `${all.length}件` : "");
   const filt = window.__dekimonoFilter || "all";
   const rows = all.filter(it => filt === "all" || it.type === filt)
     .slice()
@@ -1298,10 +1330,11 @@ function renderDekita(){
     box.innerHTML = `<div class="card note">まだありません（成果物ができるとここに積み上がります）</div>`;
     return;
   }
-  box.innerHTML = rows.map(it => {
+  box.innerHTML = (window.__dekimonoStaleAt ? `<div class="card note" style="grid-column:1/-1">${staleNoteHtml(window.__dekimonoStaleAt)}</div>` : "")
+    + rows.map(it => {
     const icon = DK_THUMB[it.type] || "🎁";
     const stamp = it.addedAt ? formatStamp(it.addedAt) : "—";
-    return `<a class="dkrow" href="${esc(it.url || "#")}" target="_blank" rel="noopener">
+    return `<a class="dkrow${window.__dekimonoStaleAt ? " stale" : ""}" href="${esc(it.url || "#")}" target="_blank" rel="noopener">
       <div class="dkthumb t-${esc(it.type||"")}">${icon}</div>
       <div class="dkbody">
         <div class="ct"><span class="dktag">${esc(it.type||"")}</span>${esc(it.title||"")}</div>
@@ -1312,10 +1345,29 @@ function renderDekita(){
   }).join("");
 }
 function refreshDekimono(){
-  return fetch("status/dekimono.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null)
-    .then(d => { if(d){ window.__dekimono = d; renderDekita(); } })
-    .catch(()=>{});
+  // 2026-09-11（752番）：726番のタイムアウト追加以降、ここだけタイムアウト無しの素のfetchのままで、
+  //   通信が詰まると「読み込み失敗」なのに何も表示されず、次に renderDekita() が呼ばれた時
+  //   window.__dekimono が空のまま＝「まだありません（0件）」と誤って見えていた。
+  //   ①タイムアウトを付ける ②失敗時は前回成功データを灰色でstale表示 ③無ければ明示的にエラー表示、の3点で直す。
+  return fetchWithTimeout("status/dekimono.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(d => {
+      if(!d) throw new Error("empty body");
+      window.__dekimono = d; window.__dekimonoErr = 0; window.__dekimonoStaleAt = null;
+      renderDekita();
+      saveLastGood("dekimono", d);
+    })
+    .catch(() => {
+      window.__dekimonoErr++;
+      const cached = loadLastGood("dekimono");
+      if(cached && cached.data){
+        window.__dekimono = cached.data;
+        window.__dekimonoStaleAt = cached.savedAt;
+      } else {
+        window.__dekimono = null;
+      }
+      renderDekita();
+    });
 }
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-dktype]"); if(!b) return;
