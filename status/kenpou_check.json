@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-09-10T16:23:48+09:00",
+ "checkedAt": "2026-09-11T09:10:14+09:00",
  "overallColor": "red",
- "redCount": 4,
+ "redCount": 5,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,8 +23,8 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "red",
-   "count": 15,
-   "detail": "最終記録から約26.3時間経過（2026-09-09T14:03:01+0900）／直近24時間の完了15件中、鬼監督の記録が付いているのは0件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
+   "count": 19,
+   "detail": "最終記録から約43.1時間経過（2026-09-09T14:03:01+0900）／直近24時間の完了19件中、鬼監督の記録が付いているのは0件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
   },
   {
    "key": "done_missing_url",
@@ -38,21 +38,21 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "最終発車から0.4時間・発車待ち11件・空き1枠あり"
+   "detail": "意図的な一時停止中（status/no_launch.flag）なので工場停止としては扱わない"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回726番 → 今回726番（減少なし）"
+   "detail": "前回736番 → 今回749番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
-   "count": 315,
-   "detail": "share/audio/512/entaku_5nin_aivis.wav(32.1MB)、share/podcast/audio/512-entaku-ai-shitsugyo.m4a(15.3MB)、share/check/assets/409-matsutakeume/output/sh10_hold.mp4(8.3MB)、share/check/video/583/SH10.mp4(8.2MB)、share/check/video/583/SH21.mp4(7.5MB)"
+   "count": 321,
+   "detail": "share/audio/512/entaku_5nin_aivis.wav(32.1MB)、share/podcast/audio/512-entaku-ai-shitsugyo.m4a(15.3MB)、\"share/podcast/audio/AI\\343\\201\\214\\343\\202\\252\\343\\203\\263\\343\\203\\251\\343\\202\\244\\343\\203\\263\\343\\202\\222\\344\\273\\243\\346\\233\\277\\343\\201\\231\\343\\202\\213\\343\\201\\273\\343\\201\\251\\343\\203\\252\\343\\202\\242\\343\\203\\253\\351\\233\\206\\345\\220\\210\\344\\276\\241\\345\\200\\244\\343\\201\\257\\351\\253\\230\\343\\201\\276\\343\\202\\213\\343\\201\\213.m4a\"(9.5MB)、share/check/assets/409-matsutakeume/output/sh10_hold.mp4(8.3MB)、share/check/video/583/SH10.mp4(8.2MB)"
   },
   {
    "key": "check_page_404",
@@ -73,8 +73,15 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "red",
-   "count": 137,
-   "detail": "137件（しきい値100件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。worktree_reaper.pyが動いているか確認し、片づけを進めること）"
+   "count": 134,
+   "detail": "134件（しきい値100件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。worktree_reaper.pyが動いているか確認し、片づけを進めること）"
+  },
+  {
+   "key": "unreported_completions",
+   "label": "未報告の完了が溜まっていないか",
+   "color": "red",
+   "count": 132,
+   "detail": "未報告の完了が132件たまっている（最古は約127.4時間前：#999999）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
@@ -92,9 +99,13 @@
   },
   {
    "key": "worktree_count",
+   "skipped": "既にこの点検が積んだ727番が未解決のため積み直さない"
+  },
+  {
+   "key": "unreported_completions",
    "status": "done",
-   "message": "727番として発車待ちに追加しました（P2）",
-   "n": 727
+   "message": "750番として発車待ちに追加しました（P2）",
+   "n": 750
   }
  ]
 }
