@@ -1,11 +1,11 @@
 {
- "measuredAt": "2026-09-12T04:23:46+0900",
+ "measuredAt": "2026-09-12T04:33:12+0900",
  "diskFreeGB": null,
  "purgeableGB": null,
  "snapshots": 0,
  "load": null,
  "memPressure": "green",
- "memAvailGB": 5.6,
+ "memAvailGB": 7.1,
  "sessions": 1,
  "safeMax": 4,
  "moreOK": 3,
@@ -17,17 +17,25 @@
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 13.32GB",
-   "gb": 13.32,
+   "effect": "メモリ 12.46GB",
+   "gb": 12.46,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
-   "how": "42プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "38プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "~/Library/Caches を空にする",
+   "effect": "空き 5.51GB",
+   "gb": 5.51,
+   "kind": "disk",
+   "safe": true,
+   "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
   },
   {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 4.14GB",
-   "gb": 4.14,
+   "effect": "メモリ 4.37GB",
+   "gb": 4.37,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
@@ -43,8 +51,8 @@
   },
   {
    "label": "Googleドライブのローカルキャッシュ",
-   "effect": "空き 1.11GB",
-   "gb": 1.11,
+   "effect": "空き 1.14GB",
+   "gb": 1.14,
    "kind": "disk",
    "safe": false,
    "how": "アップロード待ちが残っていると消せない"
@@ -56,15 +64,28 @@
    "kind": "disk",
    "safe": true,
    "how": "npx の一時置き場。作り直される"
+  },
+  {
+   "label": "node_modules を消す（1箇所）",
+   "effect": "空き 0.47GB",
+   "gb": 0.47,
+   "kind": "disk",
+   "safe": true,
+   "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
   }
  ],
- "_duAt": 1789153020.091726,
+ "_duAt": 1789155047.940126,
  "_du": {
-  "caches": null,
+  "caches": 5.51,
   "npx": 0.47,
   "trash": 1.16,
-  "driveCache": 1.11,
-  "nodeModules": 0.0,
-  "nodeModulesList": []
+  "driveCache": 1.14,
+  "nodeModules": 0.47,
+  "nodeModulesList": [
+   [
+    "~/Desktop/joy-relief-station/node_modules",
+    0.47
+   ]
+  ]
  }
 }
