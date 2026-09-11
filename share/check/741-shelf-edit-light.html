@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#741 棚編集パネルが重い（coverGuide 4MB問題）を解消 確認ページ</title>
+<title>#741 棚編集パネルが重い問題を解消(#741) 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,41 +47,49 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #741 棚編集パネルが重い（coverGuide 4MB問題）を解消</div>
-<h1>#741 棚編集パネルが重い（coverGuide 4MB問題）を解消</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #741 棚編集パネルが重い問題を解消(#741)</div>
+<h1>#741 棚編集パネルが重い問題を解消(#741)</h1>
 <div class="date">2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-棚編集パネル(AdminShelfPanel)を開いた瞬間に、アーティスト索引/曲データのフル本体(7.26MB)を読み込んでいた原因を解消。軽量索引(coverGuideLite)を新設し、開いた時点ではAdminShelfPanel本体(0.10MB)だけを読み込む形へ変更。フル本体は動画編集で本当に必要な場面だけ動的に読む。本番反映済み(x-deployment-id変化を実測確認)。
+棚編集パネル(AdminShelfPanel)を開いた瞬間に、アーティスト・曲データのフル本体(7.26MB)を丸ごと読み込んでいたのが「とにかく重い」の原因だった。軽量索引(coverGuideLite)を新設し、開いた瞬間はパネル本体(0.10MB)だけを読む形へ変更。フル本体は動画編集の一部機能で本当に必要な時だけ動的に読む。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0.10MB</b><span>棚編集を開いた瞬間の読み込み量(修正後・本番実測)</span></div>
-  <div class="num"><b>7.26MB</b><span>従来は開いた瞬間ここまで読んでいた(フル本体・本番に今も存在するファイルで比較)</span></div>
-  <div class="num"><b>約98%減</b><span>開いた瞬間の読み込み量の削減率(7.26MB→0.10MB)</span></div>
+  <div class="num"><b>0.10MB</b><span>棚編集を開いた瞬間の読み込み量(修正後・本番実物ファイルで実測)</span></div>
+  <div class="num"><b>7.53MB</b><span>修正前の設計なら開いた瞬間ここまで読んでいた(本番に今も存在する実ファイルで実測)</span></div>
+  <div class="num"><b>約98.6%減</b><span>開いた瞬間の読み込み量の削減率</span></div>
+  <div class="num"><b>0.56秒</b><span>開いて操作できるまでの秒数(修正後・本番実測=ダウンロード+構文解析)</span></div>
+  <div class="num"><b>3.52秒</b><span>修正前の設計での秒数(本番の実ファイルで同条件実測)</span></div>
+  <div class="num"><b>約84%短縮</b><span>開いて操作できるまでの秒数の短縮率</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>直す前(修正前の設計・本番の実ファイルで同条件実測)</b><img src="img/741-load-before.svg" alt="前"></div>
+  <div class="shot after"><b>直した後(修正後・本番実測)</b><img src="img/741-load-after.svg" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番サイト</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>棚編集チャンク実物(0.10MB)</b><a href="https://joy-relief-station.lovable.app/assets/AdminShelfPanel-DbIHOFtq.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/AdminShelfPanel-DbIHOFtq.js</a></li>
-  <li><b>軽量索引チャンク実物(検索時のみ読む・3.52MB)</b><a href="https://joy-relief-station.lovable.app/assets/coverGuideLite.generated-DbyOZgNf.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/coverGuideLite.generated-DbyOZgNf.js</a></li>
-  <li><b>フル本体チャンク実物(動画編集の一部機能のみ・7.26MB)</b><a href="https://joy-relief-station.lovable.app/assets/coverguide-data-CasSTd1F.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/coverguide-data-CasSTd1F.js</a></li>
+  <li><b>棚編集チャンク実物(0.10MB・開いた瞬間これだけ読む)</b><a href="https://joy-relief-station.lovable.app/assets/AdminShelfPanel-CKAhIx-6.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/AdminShelfPanel-CKAhIx-6.js</a></li>
+  <li><b>軽量索引チャンク実物(3.52MB・検索/ラベル整形時のみ読む)</b><a href="https://joy-relief-station.lovable.app/assets/coverGuideLite.generated-DbyOZgNf.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/coverGuideLite.generated-DbyOZgNf.js</a></li>
+  <li><b>フル本体チャンク実物(7.26MB・動画編集の一部機能のみ)</b><a href="https://joy-relief-station.lovable.app/assets/coverguide-data-DNnF02H9.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/coverguide-data-DNnF02H9.js</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>棚編集を開いた瞬間の読み込みがAdminShelfPanel本体だけになっているか</td><td class="yes">yes</td></tr>
+<tr><td>棚編集を開いた瞬間の読み込みがAdminShelfPanel本体(0.10MB)だけになっているか</td><td class="yes">yes</td></tr>
 <tr><td>coverGuide本体(7.26MB)が棚編集を開いた瞬間には読み込まれず、動画編集の一部機能でのみ動的に読まれるか</td><td class="yes">yes</td></tr>
-<tr><td>本番のx-deployment-idが公開操作後に変化し反映されたことを実測したか</td><td class="yes">yes</td></tr>
+<tr><td>本番のx-deployment-idが今回の修正コミットを反映しているか(実ファイル名で確認)</td><td class="yes">yes</td></tr>
+<tr><td>開いて操作できるまでの秒数を、直す前・直した後の両方で実測したか</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-このページは #741 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+計測環境の注記：スマホ実機ではなく、この作業環境(Mac)からNode.js fetchで本番の実JSチャンクを3回ダウンロードした平均値＋vm.Scriptでの構文解析時間。回線が遅いほど絶対値は伸びるが、読み込み量98.6%減・時間84%短縮という比率は回線速度によらずほぼ同じ。このセッションにはブラウザ操作ツールが搭載されておらず実画面のスクリーンショットは取得できないため、before/afterの画像は実測データの図（本番の実ファイルをこの目で数えた数字）。上の「押せるリンク」を開けば、本物のJSチャンクの中身とサイズを誰でも確認できる。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
