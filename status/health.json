@@ -1,11 +1,11 @@
 {
- "measuredAt": "2026-09-12T06:28:41+0900",
+ "measuredAt": "2026-09-12T06:37:38+0900",
  "diskFreeGB": null,
  "purgeableGB": null,
  "snapshots": 0,
  "load": null,
  "memPressure": "green",
- "memAvailGB": 5.6,
+ "memAvailGB": 5.7,
  "sessions": 1,
  "safeMax": 4,
  "moreOK": 3,
@@ -17,21 +17,46 @@
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 11.44GB",
-   "gb": 11.44,
+   "effect": "メモリ 11.07GB",
+   "gb": 11.07,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
-   "how": "38プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "42プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "~/Library/Caches を空にする",
+   "effect": "空き 6.36GB",
+   "gb": 6.36,
+   "kind": "disk",
+   "safe": true,
+   "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
   },
   {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 3.68GB",
-   "gb": 3.68,
+   "effect": "メモリ 3.71GB",
+   "gb": 3.71,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
    "how": "41プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "Notionを閉じる",
+   "effect": "メモリ 2.69GB",
+   "gb": 2.69,
+   "kind": "mem",
+   "safe": true,
+   "app": "Notion",
+   "how": "10プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "Googleドライブのローカルキャッシュ",
+   "effect": "空き 1.18GB",
+   "gb": 1.18,
+   "kind": "disk",
+   "safe": false,
+   "how": "アップロード待ちが残っていると消せない"
   },
   {
    "label": "ゴミ箱を空にする",
@@ -42,12 +67,12 @@
    "how": "捨てたつもりのもの。中身を一度見てから"
   },
   {
-   "label": "Googleドライブのローカルキャッシュ",
-   "effect": "空き 1.16GB",
-   "gb": 1.16,
+   "label": "~/.npm/_npx を空にする",
+   "effect": "空き 0.47GB",
+   "gb": 0.47,
    "kind": "disk",
-   "safe": false,
-   "how": "アップロード待ちが残っていると消せない"
+   "safe": true,
+   "how": "npx の一時置き場。作り直される"
   },
   {
    "label": "node_modules を消す（1箇所）",
@@ -56,23 +81,14 @@
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
-  },
-  {
-   "label": "LINEを閉じる",
-   "effect": "メモリ 0.31GB",
-   "gb": 0.31,
-   "kind": "mem",
-   "safe": true,
-   "app": "LINE",
-   "how": "2プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   }
  ],
- "_duAt": 1789160631.153876,
+ "_duAt": 1789162491.194596,
  "_du": {
-  "caches": null,
-  "npx": null,
+  "caches": 6.36,
+  "npx": 0.47,
   "trash": 1.16,
-  "driveCache": 1.16,
+  "driveCache": 1.18,
   "nodeModules": 0.46,
   "nodeModulesList": [
    [
