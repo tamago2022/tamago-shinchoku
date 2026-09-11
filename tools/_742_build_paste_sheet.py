@@ -199,7 +199,7 @@ def main():
     cfg = {
         "n": 742,
         "slug": "oniyome-chan-paste-sheet",
-        "title": "742 LINEスタンプ「鬼嫁ちゃん」貼るだけ申請シート",
+        "title": "LINEスタンプ「鬼嫁ちゃん」貼るだけ申請シート",
         "date_line": "2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認",
         "what": what_html,
         "nums": nums,
@@ -207,7 +207,7 @@ def main():
         "table": table,
         "after_img": "img/742-oniyome-paste-sheet.png",
         "after_label": "本番ページの実際の表示（ヘッドレスChromeで撮影・機械的な証拠）",
-        "shots_title": "⑤ 実際の画面（本番URLをヘッドレスで撮影）",
+        "shots_title": "③ 実際の画面（本番URLをヘッドレスで撮影）",
         "footer": (
             "このページはLINE Creators Marketの画面を自動操作するものではない（creator.line.meは"
             "ブラウザ自動化を安全上の理由で禁止しているため）。ここに用意した文言をたまごさんが"
