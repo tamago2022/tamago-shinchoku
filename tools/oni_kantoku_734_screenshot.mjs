@@ -27,24 +27,6 @@ const SETTLE_MS = 3000;
 
 const TARGETS = [
   {
-    url: "https://joy-relief-station.lovable.app/room/food/nakameguro-korean-kominka",
-    out: "734-1-nakameguro-card.png",
-    width: 390,
-    label: "カード1（動画+写真3枚の投稿。実装では動画優先）",
-  },
-  {
-    url: "https://joy-relief-station.lovable.app/room/food/sendai-miyage-okashi",
-    out: "734-2-sendai-card.png",
-    width: 390,
-    label: "カード2（写真2枚のみの投稿）",
-  },
-  {
-    url: "https://joy-relief-station.lovable.app/world/food",
-    out: "734-3-world-food-index.png",
-    width: 390,
-    label: "食べ物ワールド一覧（グリッド/index表示）",
-  },
-  {
     url: "https://joy-relief-station.lovable.app/world/food#shelf-photo-test-room",
     out: "734-4-world-food-shelves.png",
     width: 390,
@@ -124,12 +106,12 @@ async function evalJs(send, expr) {
   return r.result?.value;
 }
 
-async function shoot(send, width, height, outFile) {
+async function shoot(send, width, height, outFile, top = 0) {
   width = Math.round(width);
   height = Math.round(height);
-  await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile: width < 500 });
+  await send("Emulation.setDeviceMetricsOverride", { width, height: height + top, deviceScaleFactor: 2, mobile: width < 500 });
   await sleep(250);
-  const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: 0, y: 0, width, height, scale: 1 } });
+  const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: 0, y: top, width, height, scale: 1 } });
   writeFileSync(outFile, Buffer.from(shot.data, "base64"));
   console.log("保存:", outFile);
 }
@@ -165,10 +147,28 @@ async function shootOne(target) {
     await waitComplete(send);
     await sleep(SETTLE_MS);
 
-    const scrollHeight = await evalJs(send, "document.body.scrollHeight");
-    console.log(`[${target.out}] scrollHeight=${scrollHeight}`);
+    let top = 0;
+    if (target.scrollToId) {
+      // ハッシュ自動スクロールが効かない場合に備え、対象要素を直接中央〜上寄せへ持っていく。
+      const found = await evalJs(
+        send,
+        `(() => {
+          const el = document.getElementById(${JSON.stringify(target.scrollToId)});
+          if (!el) return JSON.stringify({ found: false });
+          el.scrollIntoView({ behavior: "instant", block: "start" });
+          return JSON.stringify({ found: true });
+        })()`,
+      );
+      console.log(`[${target.out}] scrollToId=${target.scrollToId} ->`, found);
+      await sleep(1200);
+      top = await evalJs(send, "window.scrollY");
+    }
 
-    await shoot(send, target.width, Math.min(2200, scrollHeight || 900), join(OUT_DIR, target.out));
+    const scrollHeight = await evalJs(send, "document.body.scrollHeight");
+    console.log(`[${target.out}] scrollHeight=${scrollHeight} top=${top}`);
+
+    const remaining = Math.max(600, (scrollHeight || 900) - (top || 0));
+    await shoot(send, target.width, Math.min(2200, remaining), join(OUT_DIR, target.out), top || 0);
 
     close();
   } finally {
