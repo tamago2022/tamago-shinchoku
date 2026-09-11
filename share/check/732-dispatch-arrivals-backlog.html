@@ -52,7 +52,7 @@
 <div class="date">2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-Dispatch（会話）に「上がりました」が届く仕組みが無かったため、たまっていた完了 101件をここへ一覧にした。今後の新しい完了は、この仕組み経由で会話の中に自動で1件ずつ届く（このページは今回限りのバックログ消化用）。
+Dispatch（会話）に「上がりました」が届く仕組みが無かったため、たまっていた完了 101件をここへ一覧にした。今後の新しい完了は、この仕組み経由で会話の中に自動で1件ずつ届く（このページは今回限りのバックログ消化用）。 実装は tools/dispatch_arrivals.py（このリポジトリ）と ~/.claude/hooks/tamago_ledger.py（全プロジェクト共通フック・ホーム直下でgit管理外）の2箇所。
 </div>
 
 <h2>② 数字</h2>
@@ -167,7 +167,15 @@ Dispatch（会話）に「上がりました」が届く仕組みが無かった
   <li><b>747番 作った案をスマホで見比べられるページを作る（GIF・動画を並べて再…</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/compare/747-oniyome-loop.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/compare/747-oniyome-loop.html</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>dispatch_reported.jsonが消えていた問題</td><td class="yes">存在しない/壊れていても{&quot;ns&quot;:[]}扱いにして続行、保存前に必ず1世代.bakを残す</td></tr>
+<tr><td>新規完了1件を追加→次の発言で即座に届くか</td><td class="yes">テストでoutboxに1行追加→次のUserPromptSubmitで「🎉 番号 上がりました＋URL」がadditionalContextに出力された</td></tr>
+<tr><td>2回目以降は同じものを出さない</td><td class="yes">同じ状態でhookを再実行→additionalContextなし（出力ゼロ）を確認</td></tr>
+<tr><td>失敗した完了(ok:false)も拾えるか</td><td class="yes">19件のok:false分も「⚠️ うまくいかず」として拾い、憲法点検⑪(未報告の完了)が赤→緑に変わった</td></tr>
+<tr><td>kenpou_check.pyの11番目の項目との整合</td><td class="yes">本番の点検スクリプトを実行し「未報告の完了は無い」🟢を確認</td></tr>
+</table>
 
 <footer>
 以降はDispatchとの会話中に、新しい完了1件ごとに自動で「◯番 上がりました」が届く。

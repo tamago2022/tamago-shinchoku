@@ -93,7 +93,10 @@ def read_outbox_rows():
 
 
 def pending_rows(rows, reported_ns):
-    """通常の完了報告（n が数値）だけを対象にする。
+    """通常の完了報告（n が数値）だけを対象にする。ok=false（失敗した完了）も含める
+    ——ここで漏らすと tools/kenpou_check.py の11番目「未報告の完了」が失敗分だけ
+    永遠に赤のまま残ってしまう（2026-09-11実測：ok=falseが19件、reportedに登録
+    されないまま放置されていた）。
     cost_confirm/owner_redo_escalation（n が "<番号>-cost" 等の文字列）は
     進捗表の💴ボタン・failures.md記録という既存の別ルートで扱われるためここでは除外する。
     同じ番号が複数回完了報告されている（連番タスクの1/9等）場合は最新の1件だけ残す。
@@ -105,8 +108,6 @@ def pending_rows(rows, reported_ns):
         if not isinstance(n, int):
             continue
         if n in reported_set:
-            continue
-        if not row.get("ok"):
             continue
         latest[n] = row  # 同じnは後勝ち＝最新の完了行
     return [latest[n] for n in sorted(latest.keys())]
@@ -123,6 +124,8 @@ def format_line(row):
     urls = row.get("urls") or []
     title = _clip(row.get("title"))
     n = row.get("n")
+    if not row.get("ok"):
+        return "⚠️ %s番 うまくいかず：%s" % (n, title)
     if urls:
         return "🎉 %s番 上がりました：%s\n%s" % (n, title, urls[0])
     return "🔧 %s番 完了：%s" % (n, title)
@@ -139,16 +142,23 @@ def build_notice(max_show=MAX_SHOW):
     if not pend:
         return None
 
-    with_url = [r for r in pend if r.get("urls")]
-    without_url = [r for r in pend if not r.get("urls")]
+    failed = [r for r in pend if not r.get("ok")]
+    with_url = [r for r in pend if r.get("ok") and r.get("urls")]
+    without_url = [r for r in pend if r.get("ok") and not r.get("urls")]
 
     lines = []
+    # 失敗は握りつぶさない。件数が多くても直近だけは必ず本文に出す。
+    for row in failed[-max_show:]:
+        lines.append(format_line(row))
     shown = with_url[-max_show:]
     rest_url_count = len(with_url) - len(shown)
     for row in shown:
         lines.append(format_line(row))
 
     tail = []
+    rest_failed_count = len(failed) - min(len(failed), max_show)
+    if rest_failed_count > 0:
+        tail.append("（ほか %d件、うまくいかなかった分・確認ページで）" % rest_failed_count)
     if rest_url_count > 0:
         tail.append("（ほか %d件、URLあり・古い順は確認ページで）" % rest_url_count)
     if without_url:
