@@ -227,12 +227,64 @@ def inspect_zip(zip_path, retries=3, wait_sec=2):
                 info["readable"] = True
                 info["entry_count"] = len(names)
                 info["entries_sample"] = names[:6]
+                info["images"] = inspect_zip_images(z, names)
                 return info
         except Exception as e:
             info["error"] = str(e)
             materialize(zip_path)
             time.sleep(wait_sec)
     return info
+
+
+def inspect_zip_images(zf, names):
+    """ZIP内のスタンプ画像(拡張子png/jpg/jpeg/webp)を、メイン/タブ/プレビュー用の
+    画像を除いてPillowで検品する（370px以内・透過あり）。769番5回目までは
+    ZIP内画像の規格チェックが未実装で『検出0枚・規格OK0枚』と表示され続けていた
+    見た目上の不備を直すための追加分。"""
+    exts = (".png", ".jpg", ".jpeg", ".webp")
+    skip_names = ("main", "tab", "sheet_preview", "readme")
+    out = {"checked": 0, "ok": 0, "oversize": [], "no_alpha": []}
+    for n in names:
+        low = n.lower()
+        if not low.endswith(exts):
+            continue
+        base = os.path.splitext(os.path.basename(low))[0]
+        if any(s in base for s in skip_names):
+            continue
+        try:
+            data = zf.read(n)
+            im = Image.open(io.BytesIO(data)) if Image else None
+            if im is None:
+                continue
+            im.load()
+            w, h = im.size
+            mode = im.mode
+        except Exception as e:
+            out["oversize"].append("%s(読取失敗:%s)" % (n, e))
+            continue
+        out["checked"] += 1
+        ok = True
+        if w > MAX_STICKER_PX or h > MAX_STICKER_PX:
+            out["oversize"].append("%s (%dx%d)" % (n, w, h))
+            ok = False
+        if mode not in ("RGBA", "LA", "P"):
+            out["no_alpha"].append("%s (%s)" % (n, mode))
+            ok = False
+        if ok:
+            out["ok"] += 1
+    return out
+
+
+META_IMAGE_MARKERS = ("main", "tab", "sheet_preview", "採用シート", "確認用")
+
+
+def is_meta_image(filename):
+    """main画像・トークルームタブ・社内確認用プレビューシートは、370px規格の
+    対象であるスタンプ本体24枚とは別物。769番5回目で
+    sheet_preview_25.png(1254x1254)が『サイズ超過』に誤検出されていたのを
+    直すため、ファイル名から除外する。"""
+    base = os.path.splitext(os.path.basename(filename))[0].lower()
+    return any(m in base for m in META_IMAGE_MARKERS)
 
 
 def inspect_images(dir_path, expected_count, timeout_each=2.0):
@@ -278,6 +330,8 @@ def inspect_images(dir_path, expected_count, timeout_each=2.0):
             report["error"] = "一覧取得に失敗(materialize後も): %s" % e2
             return report
 
+    files = [fp for fp in files if not is_meta_image(fp)]
+
     # ディレクトリのnamespaceが実体化されても、配下ファイルの中身は
     # 個別にmaterializeしないと開けないことがある（769番で実測）。
     # ここで先に全部materializeしてから開く。
@@ -285,6 +339,16 @@ def inspect_images(dir_path, expected_count, timeout_each=2.0):
 
     if not files and zips:
         report["zip_info"] = inspect_zip(zips[0])
+        zi = report["zip_info"]
+        zimg = zi.get("images") if zi else None
+        if zimg:
+            # ZIP内の実画像検品結果を、PNG直置きの場合と同じ数字欄に反映する
+            # （769番5回目まで「検出0枚・規格OK0枚」のまま放置されていた不備の修正）。
+            report["files_found"] = zimg.get("checked", 0)
+            report["ok"] = zimg.get("ok", 0)
+            report["oversize"] = zimg.get("oversize", [])
+            report["no_alpha"] = zimg.get("no_alpha", [])
+            return report
 
     report["files_found"] = len(files)
     for fp in files:
