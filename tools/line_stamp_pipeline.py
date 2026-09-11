@@ -388,7 +388,7 @@ def build_sheet_html(cfg, img_report):
     return "\n".join(parts)
 
 
-def process_one(cfg, force=False, state=None):
+def process_one(cfg, force=False, state=None, after_img=None):
     slug = cfg["slug"]
     img_dir = find_image_dir(cfg)
     img_report = inspect_images(img_dir, cfg.get("expected_image_count"))
@@ -449,6 +449,9 @@ def process_one(cfg, force=False, state=None):
             "LINE Creators Marketの画面を自動操作するものではなく(ToS上の自動化禁止のため)、"
             "コピペ用の文言シートそのものが成果物。管理画面はアカウント固有のためスクショに個人情報が写る"
         ),
+        "after_img": after_img,
+        "after_label": "本番ページの実際の表示（ヘッドレスChromeで撮影・機械的な証拠）" if after_img else None,
+        "shots_title": "③ 実際の画面（本番URLをヘッドレスで撮影）" if after_img else None,
         "footer": (
             "このページはLINE Creators Marketの画面を自動操作するものではない（creator.line.meは"
             "ブラウザ自動化を安全上の理由で禁止しているため）。ここに用意した文言と検品結果を"
@@ -489,7 +492,11 @@ def main():
 
     results = []
     for cfg in configs:
-        r = process_one(cfg, state=state)
+        slug = cfg["slug"]
+        shot_rel = "img/%d-%s-paste-sheet.png" % (TASK_N, slug)
+        shot_abs = os.path.join(CHECK_DIR, shot_rel)
+        after_img = shot_rel if os.path.isfile(shot_abs) else None
+        r = process_one(cfg, state=state, after_img=after_img)
         results.append(r)
         state.setdefault("sheets", {})[r["slug"]] = {
             "url": r["url"],
@@ -532,7 +539,7 @@ def main():
 def _push(paths=(
     "share/check", "status/line_stamp_pipeline_state.json",
     "status/dispatch_outbox.jsonl", "tools/line_stamp_configs",
-    "tools/line_stamp_pipeline.py",
+    "tools/line_stamp_pipeline.py", "tools/line_stamp_shot.mjs",
 ), retries=5, wait_sec=6):
     import subprocess
     for attempt in range(1, retries + 1):
