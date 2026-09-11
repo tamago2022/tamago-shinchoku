@@ -82,7 +82,13 @@ def main():
         url, lan = d.get("url") or "", d.get("lanUrl") or ""
     except Exception:
         pass
-    if alive(url) or alive(lan):
+    # 2026-09-11 修正（753番）：以前は lan（家の中の道）が生きていれば
+    # url（外の道＝トンネル）が死んでいても「生きている」と判定していた。
+    # 家の中は進捗表が動き続けるので気づかないが、**比較ページ「これにする」
+    # ボタンはスマホ（外のネットワーク）から relay.json の url へ直接POSTする
+    # 実装のため、外の道が切れているとスマホから押しても永久に届かなくなる。
+    # → 外の道は外の道で独立して生死を見て、死んでいたら立て直す。
+    if alive(url):
         return 0
 
     fixstamp = os.path.join(REPO, "status", ".relay_fix_at")
