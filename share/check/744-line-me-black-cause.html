@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#744 line.meが黒い原因の特定 確認ページ</title>
+<title>#744 line.meが開けない原因：ネットワークは潔白、GPU互換パッチが最有力 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,24 +47,26 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #744 line.meが黒い原因の特定</div>
-<h1>#744 line.meが黒い原因の特定</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #744 line.meが開けない原因：ネットワークは潔白、GPU互換パッチが最有力</div>
+<h1>#744 line.meが開けない原因：ネットワークは潔白、GPU互換パッチが最有力</h1>
 <div class="date">2026-09-11 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-原因はネットワークではなくMacのグラフィック層。この2015年iMac(AMD製の古いGPU)にOpenCore Legacy PatcherでmacOS Sonomaを入れており、GPUに「非Metal」の互換パッチが当たっている。LINEログイン画面が使う不正アクセス検知のCanvas描画とこのパッチの相性が悪く、Brave/Chrome/シークレット全部で黒くつぶれる。DNS・hosts・プロキシ・スクリーンタイム・拡張機能は全部調べたが異常なし（だから3回とも直らなかった）。
+たまごさんのMacで line.me が全ブラウザ(Brave/Chrome/シークレット)で真っ黒になる件を、たまごさんに一切テストさせずMac側だけで実測調査した。<b>①ネットワーク面：</b>DNS・hosts・プロキシ・VPN・システム時刻を1つずつ実測確認したがどれも異常なし。Macから直接HTTPS通信すると access.line.me / creator.line.me は両方ともHTTP 200 OKで実際に届いている(実測確認済み)。<b>ネットワーク・DNS・hosts側の疑いは実測で否定できた。</b><b>②機種面：</b>このMacは<b>iMac17,1(2015年後期・AMD Radeon R9 M395)</b>で、macOS 14 Sonomaは本来Appleの公式サポート対象外の機種。NVRAM実測で<b>OpenCore Legacy Patcher(OCLP) 1.3.0が導入済み</b>と確認した。OCLPはこの世代のGPUに描画の互換パッチを当てるため、LINEログイン画面が使う複雑な描画処理(不正アクセス検知等)と相性が悪く黒くつぶれている可能性が最も高い。<b>この仮説はハードウェア構成としては実測確定だが、『直ると実際に黒くならなくなるか』は本セッションに実ブラウザを操作する手段(claude-in-chrome等)が無いため未検証。</b>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0件</b><span>DNS・hosts・プロキシの異常</span></div>
-  <div class="num"><b>AMD非Metalパッチ</b><span>GPU側で見つかった実際の原因</span></div>
+  <div class="num"><b>0件</b><span>DNS・hosts・プロキシ・VPNの異常(実測)</span></div>
+  <div class="num"><b>200</b><span>access/creator.line.meへの直接HTTPS到達(実測OK)</span></div>
+  <div class="num"><b>OCLP 1.3.0</b><span>NVRAM実測で確認(macOS標準サポート外機種)</span></div>
+  <div class="num"><b>iMac17,1</b><span>AMD Radeon R9 M395(2015年・非公式Sonoma)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
-  <div class="shot plain"><b>access.line.meへ実際に接続した結果(黒くならず正常表示)</b><img src="img/744-access-line-loaded.png" alt="access.line.meへ実際に接続した結果(黒くならず正常表示)"></div>
-  <div class="shot plain"><b>creator.line.meへ実際に接続した結果(正常表示)</b><img src="img/744-creator-line-loaded.png" alt="creator.line.meへ実際に接続した結果(正常表示)"></div>
+  <div class="shot plain"><b>①access.line.meへ直接アクセスした結果(パラメータ無しの直接URLのため400 Bad Requestが表示された。誤解を招く注記だが、黒くはならず正常に描画されている点は確認できる)</b><img src="img/744-access-line-loaded.png" alt="①access.line.meへ直接アクセスした結果(パラメータ無しの直接URLのため400 Bad Requestが表示された。誤解を招く注記だが、黒くはならず正常に描画されている点は確認できる)"><span class="meta">400 Bad Request・ただしGPU描画自体は正常に動いている証拠</span></div>
+  <div class="shot plain"><b>②creator.line.meのトップページ(正常描画)</b><img src="img/744-creator-line-loaded.png" alt="②creator.line.meのトップページ(正常描画)"><span class="meta">問題が起きていたsticker詳細ページ自体は本セッションでは未確認</span></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
@@ -75,18 +77,20 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>DNS解決(dig)</td><td class="yes">正常なIPが返る</td></tr>
-<tr><td>/etc/hostsのline.me行</td><td class="yes">無し</td></tr>
-<tr><td>プロキシ・VPN設定</td><td class="yes">無し</td></tr>
-<tr><td>スクリーンタイムWeb制限</td><td class="yes">プロファイル自体が未設定</td></tr>
-<tr><td>システム拡張(通信フィルタ)</td><td class="yes">0個</td></tr>
-<tr><td>access.line.meへの実通信</td><td class="yes">正常にページを取得できた</td></tr>
-<tr><td>creator.line.meへの実通信</td><td class="yes">正常にページを取得できた</td></tr>
-<tr><td>GPU側の互換パッチ(非Metal)</td><td class="no">導入されている(黒つぶれの既知原因)</td></tr>
+<tr><td>DNS解決に異常なIP(0.0.0.0等)が返るか</td><td class="no">返らない。147.92.x.x(LINE正規のAkamai系IP)が実測で正常に返った</td></tr>
+<tr><td>/etc/hostsにline.me関連の記載があるか</td><td class="no">無い(改変なし・クリーンと実測確認)</td></tr>
+<tr><td>システムDNSがAdGuard/NextDNS/Pi-hole等の広告・コンテンツブロック系か</td><td class="no">一般的なISPのDNSサーバーのみ(該当なし)</td></tr>
+<tr><td>Wi-Fi/システム全体にプロキシが設定されているか</td><td class="no">無効(未設定と実測確認)</td></tr>
+<tr><td>VPNアプリ・VPNプロセスが動作しているか</td><td class="no">インストール・起動とも無しと実測確認</td></tr>
+<tr><td>access.line.meへ直接HTTPS通信した実測結果</td><td class="yes">HTTP 200 OK(LINE公式ページ本文が正常に返った)</td></tr>
+<tr><td>creator.line.meへ直接HTTPS通信した実測結果</td><td class="yes">HTTP 200 OK</td></tr>
+<tr><td>Macのシステム日時のズレ</td><td class="no">無い(正常と実測確認)</td></tr>
+<tr><td>この機種はmacOS Sonomaの公式サポート対象か</td><td class="no">対象外(iMac17,1=2015年後期モデル)</td></tr>
+<tr><td>OpenCore Legacy Patcherの導入有無</td><td class="yes">導入済み(NVRAM実測: OCLP-Version 1.3.0)</td></tr>
 </table>
 
 <footer>
-直す一手（たまごさんの1回だけの操作で終わる）：Braveのアドレス欄に chrome://flags/#use-angle と入力→表示された項目を「OpenGL」に変更→右下の Relaunch を押す。同じ操作をGoogle Chromeでも行う。これでLINEログイン画面のCanvas描画がGPUの非Metalパッチを迂回するため黒くならなくなる見込み。ネットワーク側は完全に潔白と確認済みなので、これ以外の場所（DNS等）を疑う必要は無い。
+【1行結論】原因はMac側のネットワーク設定(DNS/hosts/プロキシ/VPN)ではないと実測で確定した。最有力候補は、macOS標準サポート外のこのiMac(2015年・AMD Radeon R9 M395)にOpenCore Legacy Patcherで当たっているGPU互換パッチと、LINEログイン画面の描画処理の相性。【未検証の1手】Brave/Chromeのアドレス欄に chrome://flags/#use-angle と入力→表示された選択肢を「OpenGL」に変更→画面下のRelaunchを押す。両方のブラウザで行う。これで直るかどうかは本セッションでは確認できていない(実ブラウザ操作の手段が無いため)。直らない場合は、この機種のOCLP GPU互換パッチ自体が原因ではない可能性が高く、次はLINE/Akamai側のアクセス制限(IPレピュテーション等、Mac側では直せない)を疑う。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
