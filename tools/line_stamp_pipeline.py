@@ -69,6 +69,45 @@ except Exception:
 TASK_N = 769
 
 
+def materialize(path, timeout=25):
+    """Google DriveのオンデマンドファイルをmacOSのFile Provider APIで強制的に
+    ディスクへダウンロードさせる（769番5回目で発見・恒久化）。
+    従来は『時間を置いて再実行すれば読める見込み』とリトライ待ちに頼っていたが、
+    実際は待つだけでは直らないケースがあり(link countが65535という異常値になる等)、
+    `fileproviderctl materialize <path>` を明示的に呼ぶと即座に実体化できることを確認した。
+    ディレクトリに対しても呼べる（配下のitemが1件マテリアライズされる）。"""
+    import subprocess
+    try:
+        subprocess.run(
+            ["fileproviderctl", "materialize", path],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+        return True
+    except Exception:
+        return False
+
+
+def materialize_dir_files(dir_path, exts=(".png", ".jpg", ".jpeg", ".webp", ".zip"), limit=60):
+    """ディレクトリ配下の対象ファイルを1つずつmaterializeする。
+    ディレクトリ丸ごとのmaterializeは『namespace』だけを実体化し、
+    各ファイルの中身は個別にmaterializeしないと読めないことがある(769番で実測)。"""
+    try:
+        names = sorted(os.listdir(dir_path))
+    except Exception:
+        materialize(dir_path)
+        try:
+            names = sorted(os.listdir(dir_path))
+        except Exception:
+            return
+    count = 0
+    for n in names:
+        if count >= limit:
+            break
+        if n.lower().endswith(exts):
+            materialize(os.path.join(dir_path, n))
+            count += 1
+
+
 def now_jst_str():
     return time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
 
@@ -104,33 +143,51 @@ def list_configs():
 
 
 def scan_drive_folders():
-    """LINEスタンプ/ 直下のキャラクターフォルダ名一覧（新規検知用）。読めなければ空。"""
+    """LINEスタンプ/ 直下のキャラクターフォルダ名一覧（新規検知用）。
+    読めなければmaterializeで実体化してから1回だけ再試行する。それでも
+    駄目なら空ではなくエラーとして正直に返す。"""
     try:
         return sorted(
             n for n in os.listdir(GD_ROOT)
             if os.path.isdir(os.path.join(GD_ROOT, n)) and not n.startswith(".")
         )
-    except Exception as e:
-        return {"__error__": str(e)}
+    except Exception as e1:
+        materialize(GD_ROOT)
+        try:
+            return sorted(
+                n for n in os.listdir(GD_ROOT)
+                if os.path.isdir(os.path.join(GD_ROOT, n)) and not n.startswith(".")
+            )
+        except Exception as e2:
+            return {"__error__": "%s / materialize後も失敗: %s" % (e1, e2)}
 
 
 def find_image_dir(cfg):
     """image_dir_candidatesのうち、実際に中身(画像 or zip)が1つ以上入っている
     最初の候補を返す。空フォルダは飛ばす（「個別PNG」が空で「完成ZIP」に本体がある
-    ケースが実在するため）。"""
+    ケースが実在するため）。os.scandirが失敗する場合(Resource deadlock avoided、
+    link count異常等)はmaterializeしてから1回だけ再試行する。"""
     base = os.path.join(GD_ROOT, cfg.get("drive_folder", ""))
     fallback = None
     for cand in cfg.get("image_dir_candidates") or []:
         p = os.path.join(base, cand) if cand else base
         if not os.path.isdir(p):
-            continue
+            # isdir自体が読めない(未実体化)ケースもmaterializeしてから再確認する。
+            materialize(p)
+            if not os.path.isdir(p):
+                continue
         if fallback is None:
             fallback = p
         try:
             if any(True for _ in os.scandir(p)):
                 return p
         except Exception:
-            continue
+            materialize(p)
+            try:
+                if any(True for _ in os.scandir(p)):
+                    return p
+            except Exception:
+                continue
     return fallback
 
 
@@ -150,17 +207,20 @@ def find_zip_files(cfg):
     return out
 
 
-def inspect_zip(zip_path, retries=3, wait_sec=3):
+def inspect_zip(zip_path, retries=3, wait_sec=2):
     """zip内一覧の取得を試みる。Google Driveのプレースホルダが未ダウンロードだと
-    'Resource deadlock avoided' や 'File is not a zip file' になるため、数回だけ
-    待ってリトライし、それでも駄目なら『Drive同期待ち』として正直に報告する。"""
+    'Resource deadlock avoided' や 'File is not a zip file' になる。
+    769番5回目までは『待てば直る』前提でリトライしていたが、実際は待つだけでは
+    直らず、`fileproviderctl materialize` で明示的に実体化させて初めて読めることを
+    確認した。1回目の失敗で即materializeし、それでも駄目な場合だけ正直に
+    『Drive同期待ち』として報告する。"""
     import zipfile
     info = {"path": zip_path, "readable": False}
     try:
         info["size_bytes"] = os.path.getsize(zip_path)
     except Exception:
         info["size_bytes"] = None
-    for _ in range(retries):
+    for i in range(retries):
         try:
             with zipfile.ZipFile(zip_path) as z:
                 names = [n for n in z.namelist() if not n.endswith("/")]
@@ -170,6 +230,7 @@ def inspect_zip(zip_path, retries=3, wait_sec=3):
                 return info
         except Exception as e:
             info["error"] = str(e)
+            materialize(zip_path)
             time.sleep(wait_sec)
     return info
 
@@ -202,9 +263,25 @@ def inspect_images(dir_path, expected_count, timeout_each=2.0):
                     files.append(os.path.join(root, nm))
                 elif nm.lower().endswith(".zip"):
                     zips.append(os.path.join(root, nm))
-    except Exception as e:
-        report["error"] = "一覧取得に失敗: %s" % e
-        return report
+    except Exception:
+        # link count異常等でos.walk自体が落ちるケース(769番5回目・実測)。
+        # ディレクトリをmaterializeしてから1回だけ再試行する。
+        materialize(dir_path)
+        try:
+            for root, _dirs, names in os.walk(dir_path):
+                for nm in names:
+                    if nm.lower().endswith(exts):
+                        files.append(os.path.join(root, nm))
+                    elif nm.lower().endswith(".zip"):
+                        zips.append(os.path.join(root, nm))
+        except Exception as e2:
+            report["error"] = "一覧取得に失敗(materialize後も): %s" % e2
+            return report
+
+    # ディレクトリのnamespaceが実体化されても、配下ファイルの中身は
+    # 個別にmaterializeしないと開けないことがある（769番で実測）。
+    # ここで先に全部materializeしてから開く。
+    materialize_dir_files(dir_path)
 
     if not files and zips:
         report["zip_info"] = inspect_zip(zips[0])
@@ -218,22 +295,32 @@ def inspect_images(dir_path, expected_count, timeout_each=2.0):
                 im.load()
                 w, h = im.size
                 mode = im.mode
-            if time.time() - t0 > timeout_each:
-                pass  # 参考値のみ、打ち切りはしない（Pillow自体に非同期タイムアウトが無いため）
-            ok = True
-            if w > MAX_STICKER_PX or h > MAX_STICKER_PX:
-                report["oversize"].append("%s (%dx%d)" % (os.path.basename(fp), w, h))
-                ok = False
-            if mode not in ("RGBA", "LA", "P"):
-                report["no_alpha"].append("%s (%s)" % (os.path.basename(fp), mode))
-                ok = False
-            if ok:
-                report["ok"] += 1
-        except OSError as e:
-            # Google Drive の Resource deadlock avoided もここに入る。
-            report["unreadable"].append("%s (%s)" % (os.path.basename(fp), e))
+        except OSError:
+            # Google Drive の Resource deadlock avoided。個別ファイルを
+            # materializeして1回だけ再試行してから諦める。
+            materialize(fp)
+            try:
+                with Image.open(fp) as im:
+                    im.load()
+                    w, h = im.size
+                    mode = im.mode
+            except Exception as e2:
+                report["unreadable"].append("%s (%s)" % (os.path.basename(fp), e2))
+                continue
         except Exception as e:
             report["unreadable"].append("%s (%s)" % (os.path.basename(fp), e))
+            continue
+        if time.time() - t0 > timeout_each:
+            pass  # 参考値のみ、打ち切りはしない（Pillow自体に非同期タイムアウトが無いため）
+        ok = True
+        if w > MAX_STICKER_PX or h > MAX_STICKER_PX:
+            report["oversize"].append("%s (%dx%d)" % (os.path.basename(fp), w, h))
+            ok = False
+        if mode not in ("RGBA", "LA", "P"):
+            report["no_alpha"].append("%s (%s)" % (os.path.basename(fp), mode))
+            ok = False
+        if ok:
+            report["ok"] += 1
 
     report["expected_count"] = expected_count
     return report
