@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>人文知とAIの接点：人類が重んじる妥当性と可能性｜聞くページ</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px calc(16px + env(safe-area-inset-right)) 140px calc(16px + env(safe-area-inset-left));
+    background: #1a2030; color: #eef0f6;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    max-width: 640px; margin-left: auto; margin-right: auto;
+  }
+  h1 { font-size: 20px; margin: 4px 0 2px; line-height: 1.45; }
+  .sub { color: #9aa3c0; font-size: 13px; margin-bottom: 16px; }
+  .sub a { color: #8fb4ff; }
+  .lenbadge {
+    display: inline-block; background: #262f52; color: #c9d3ff; border-radius: 999px;
+    padding: 4px 12px; font-size: 13px; font-weight: 700; margin-bottom: 14px;
+  }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  input[type=range] { flex: 1; min-width: 120px; height: 28px; }
+  .rate-label { font-size: 13px; color: #b9c0dd; min-width: 62px; text-align: right; }
+  .status {
+    background: #10131f; border: 1px solid #333c5a; border-radius: 12px; padding: 12px;
+    font-size: 14px; color: #b9c0dd; margin-bottom: 12px; min-height: 20px;
+  }
+  .status b { color: #eef0f6; font-size: 16px; }
+  .controls {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;
+  }
+  .controls button {
+    background: #2a3358; color: #eef0f6; border: none; border-radius: 12px;
+    padding: 16px 6px; font-size: 15px; font-weight: 700; cursor: pointer; min-height: 52px;
+  }
+  .controls button:active { background: #3a4578; }
+  .seekwrap { margin-bottom: 4px; }
+  .seek { width: 100%; }
+  .miniplayer {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999;
+    background: rgba(20,24,42,0.97); backdrop-filter: blur(6px);
+    border-top: 1px solid #333c5a;
+    padding: 10px calc(14px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+  }
+  .miniplayer .seek { height: 30px; margin-bottom: 6px; }
+  .miniplayer .miniRow { display: flex; align-items: center; gap: 10px; }
+  .miniplayer .time { font-size: 13px; color: #b9c0dd; min-width: 46px; text-align: center; }
+  .playbtn {
+    background: #3a6b4a; color: #eef0f6; border: none; border-radius: 999px;
+    width: 64px; height: 64px; font-size: 24px; flex-shrink: 0; cursor: pointer;
+  }
+  .playbtn.playing { background: #6b3a3a; }
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9998;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+  <h1>🔊 人文知とAIの接点：人類が重んじる妥当性と可能性</h1>
+  <div class="sub">たまごさんの円卓ノートをAivisSpeech（無料・ローカル）で読み上げた音声です。<a href="obsidian://open?vault=tamago_brain&file=%E4%BA%BA%E6%96%87%E7%9F%A5%E3%81%A8AI%E3%81%AE%E6%8E%A5%E7%82%B9%EF%BC%9A%E4%BA%BA%E9%A1%9E%E3%81%8C%E9%87%8D%E3%82%93%E3%81%98%E3%82%8B%E5%A6%A5%E5%BD%93%E6%80%A7%E3%81%A8%E5%8F%AF%E8%83%BD%E6%80%A7">元ノートをObsidianで開く</a></div>
+  <div class="lenbadge" id="lenBadge">長さ：読み込み中…</div>
+
+  <audio id="player" preload="metadata" src="https://tamago2022.github.io/tamago-shinchoku/share/podcast/audio/754-jinbunchi-ai.wav"></audio>
+
+  <div class="row">
+    <span style="font-size:13px;color:#b9c0dd;">速度</span>
+    <input type="range" id="rate" min="0.8" max="1.5" step="0.05" value="0.92">
+    <div class="rate-label" id="rateLabel">0.92倍</div>
+  </div>
+
+  <div class="controls">
+    <button id="back15">⏪ 15秒</button>
+    <button id="back30">⏪ 30秒</button>
+    <button id="back60">⏪ 1分</button>
+    <button id="fwd30">30秒⏩</button>
+    <button id="toStart">⏮ 頭から</button>
+    <button id="stopBtn">⏹ 停止</button>
+  </div>
+
+  <div class="status" id="status">音声を読み込み中…</div>
+
+<div class="miniplayer">
+  <div class="seekwrap">
+    <input type="range" id="seek" class="seek" min="0" max="1000" step="1" value="0">
+  </div>
+  <div class="miniRow">
+    <button class="playbtn" id="playBtn">▶</button>
+    <div class="time" id="curTime">0:00</div>
+    <div style="flex:1;text-align:center;font-size:12px;color:#8891b5;" id="remainLabel">残り —</div>
+    <div class="time" id="durTime">0:00</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var player = document.getElementById("player");
+  var playBtn = document.getElementById("playBtn");
+  var statusEl = document.getElementById("status");
+  var rateInput = document.getElementById("rate");
+  var rateLabel = document.getElementById("rateLabel");
+  var seekInput = document.getElementById("seek");
+  var lenBadge = document.getElementById("lenBadge");
+  var curTimeEl = document.getElementById("curTime");
+  var durTimeEl = document.getElementById("durTime");
+  var remainLabelEl = document.getElementById("remainLabel");
+  var seeking = false;
+  var STORAGE_KEY = "sokuyomi_pos_" + "754-jinbunchi-ai";
+  var KNOWN_DURATION = 792.2;
+
+  function fmt(sec) {
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    var m = Math.floor(sec / 60);
+    var s = Math.floor(sec % 60);
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  if (KNOWN_DURATION > 0) {
+    lenBadge.textContent = "長さ：" + fmt(KNOWN_DURATION);
+    durTimeEl.textContent = fmt(KNOWN_DURATION);
+  }
+
+  function updateStatus() {
+    var dur = player.duration || KNOWN_DURATION || 0;
+    curTimeEl.textContent = fmt(player.currentTime);
+    durTimeEl.textContent = fmt(dur);
+    statusEl.innerHTML = "経過 <b>" + fmt(player.currentTime) + "</b> ／ 残り <b>" + fmt(Math.max(0, dur - player.currentTime)) + "</b> ／ 全体 " + fmt(dur);
+    remainLabelEl.textContent = "残り " + fmt(Math.max(0, dur - player.currentTime));
+    if (!seeking && dur > 0) {
+      seekInput.value = Math.round((player.currentTime / dur) * 1000);
+    }
+    if (player.currentTime > 0) {
+      try { localStorage.setItem(STORAGE_KEY, String(player.currentTime)); } catch(e){}
+    }
+  }
+
+  player.addEventListener("loadedmetadata", function(){
+    var dur = player.duration || KNOWN_DURATION || 0;
+    lenBadge.textContent = "長さ：" + fmt(dur);
+    var saved = 0;
+    try { saved = parseFloat(localStorage.getItem(STORAGE_KEY) || "0"); } catch(e){}
+    if (saved > 3 && saved < dur - 3) {
+      player.currentTime = saved;
+      statusEl.innerHTML = "前回の続き（" + fmt(saved) + "）から再生できます。▶を押してください。";
+    } else {
+      statusEl.innerHTML = "準備できました。▶を押してください。（全体 " + fmt(dur) + "）";
+    }
+    updateStatus();
+  });
+  player.addEventListener("error", function(){
+    statusEl.textContent = "音声を読み込めませんでした。時間をおいて開き直してください。";
+  });
+  player.addEventListener("timeupdate", updateStatus);
+  player.addEventListener("play", function(){
+    playBtn.textContent = "⏸";
+    playBtn.classList.add("playing");
+  });
+  player.addEventListener("pause", function(){
+    playBtn.textContent = "▶";
+    playBtn.classList.remove("playing");
+  });
+  player.addEventListener("ended", function(){
+    playBtn.textContent = "▶";
+    playBtn.classList.remove("playing");
+    statusEl.textContent = "読み終わりました。";
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  });
+
+  playBtn.addEventListener("click", function(){
+    if (player.paused) {
+      player.play().catch(function(){
+        statusEl.textContent = "再生できませんでした。もう一度▶を押してください。";
+      });
+    } else {
+      player.pause();
+    }
+  });
+
+  document.getElementById("stopBtn").addEventListener("click", function(){
+    player.pause();
+  });
+  document.getElementById("toStart").addEventListener("click", function(){
+    player.currentTime = 0;
+    player.play().catch(function(){});
+  });
+  function jumpBack(seconds) {
+    player.currentTime = Math.max(0, player.currentTime - seconds);
+  }
+  function jumpFwd(seconds) {
+    var dur = player.duration || KNOWN_DURATION || 0;
+    player.currentTime = Math.min(dur, player.currentTime + seconds);
+  }
+  document.getElementById("back15").addEventListener("click", function(){ jumpBack(15); });
+  document.getElementById("back30").addEventListener("click", function(){ jumpBack(30); });
+  document.getElementById("back60").addEventListener("click", function(){ jumpBack(60); });
+  document.getElementById("fwd30").addEventListener("click", function(){ jumpFwd(30); });
+
+  rateInput.addEventListener("input", function(){
+    var r = parseFloat(rateInput.value);
+    rateLabel.textContent = r.toFixed(2) + "倍";
+    player.playbackRate = r;
+  });
+  player.playbackRate = parseFloat(rateInput.value);
+
+  seekInput.addEventListener("input", function(){ seeking = true; });
+  seekInput.addEventListener("change", function(){
+    var dur = player.duration || KNOWN_DURATION || 0;
+    if (dur > 0) {
+      player.currentTime = (parseFloat(seekInput.value) / 1000) * dur;
+    }
+    seeking = false;
+  });
+})();
+</script>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
