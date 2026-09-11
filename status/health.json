@@ -1,11 +1,11 @@
 {
- "measuredAt": "2026-09-11T18:16:17+0900",
+ "measuredAt": "2026-09-11T18:18:21+0900",
  "diskFreeGB": null,
  "purgeableGB": null,
  "snapshots": 0,
  "load": null,
  "memPressure": "green",
- "memAvailGB": 6.6,
+ "memAvailGB": 7.0,
  "sessions": 2,
  "safeMax": 4,
  "moreOK": 2,
@@ -17,8 +17,8 @@
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 16.28GB",
-   "gb": 16.28,
+   "effect": "メモリ 17.22GB",
+   "gb": 17.22,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
@@ -26,20 +26,28 @@
   },
   {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 6.49GB",
-   "gb": 6.49,
+   "effect": "空き 6.5GB",
+   "gb": 6.5,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
   },
   {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 3.86GB",
-   "gb": 3.86,
+   "effect": "メモリ 3.76GB",
+   "gb": 3.76,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
-   "how": "37プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "36プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "ゴミ箱を空にする",
+   "effect": "空き 1.15GB",
+   "gb": 1.15,
+   "kind": "disk",
+   "safe": false,
+   "how": "捨てたつもりのもの。中身を一度見てから"
   },
   {
    "label": "Spotifyを閉じる",
@@ -51,6 +59,22 @@
    "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
+   "label": "~/.npm/_npx を空にする",
+   "effect": "空き 0.47GB",
+   "gb": 0.47,
+   "kind": "disk",
+   "safe": true,
+   "how": "npx の一時置き場。作り直される"
+  },
+  {
+   "label": "node_modules を消す（1箇所）",
+   "effect": "空き 0.46GB",
+   "gb": 0.46,
+   "kind": "disk",
+   "safe": true,
+   "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
+  },
+  {
    "label": "Googleドライブのローカルキャッシュ",
    "effect": "空き 0.44GB",
    "gb": 0.44,
@@ -59,13 +83,18 @@
    "how": "アップロード待ちが残っていると消せない"
   }
  ],
- "_duAt": 1789116417.205672,
+ "_duAt": 1789118269.766134,
  "_du": {
-  "caches": 6.49,
-  "npx": null,
-  "trash": null,
+  "caches": 6.5,
+  "npx": 0.47,
+  "trash": 1.15,
   "driveCache": 0.44,
-  "nodeModules": 0.0,
-  "nodeModulesList": []
+  "nodeModules": 0.46,
+  "nodeModulesList": [
+   [
+    "~/Desktop/joy-relief-station/node_modules",
+    0.46
+   ]
+  ]
  }
 }
