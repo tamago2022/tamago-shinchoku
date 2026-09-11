@@ -584,6 +584,15 @@
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #arrivalsBanner .arrival a.tt:active{opacity:0.7;}
   #arrivalsBanner .arrival .dismiss{background:none; border:none; color:rgba(255,255,255,0.55); font-size:1.1rem; padding:4px 6px; cursor:pointer;}
+  /* 756番：毎朝の入荷見回り（707番の自動化）の常設サマリ行。一度見たら消える arrivalsBanner と違い、
+     こちらは毎朝上書きされ続ける固定の1行（「昨日の入荷○件／直した○件 →見る」）。押すと固定URLの
+     確認ページ(share/check/daily-ingest.html)へ。 */
+  #dailyIngestBar{margin:0 0 12px; display:none;}
+  #dailyIngestBar a{display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:14px;
+    background:linear-gradient(135deg,#2a2416,#1c1810); border:1px solid rgba(255,210,120,0.4);
+    color:#ffe3a0; text-decoration:none; font-size:0.88rem; font-weight:700;}
+  #dailyIngestBar a:active{opacity:0.75;}
+  #dailyIngestBar .arrow{margin-left:auto; opacity:0.8; font-weight:400;}
 </style>
 </head>
 <body>
@@ -593,6 +602,13 @@
      『何番、上がりました』って出るわけだよ」（たまごさん）。開くたびに、聞かれる前に
      未読の完了だけをここへ出す。中身は下のJS(refreshArrivals)が入れる。 -->
 <div id="arrivalsBanner"></div>
+
+<!-- 756番（2026-09-11）：「毎朝の入荷見回りを仕組みにする」の常設サマリ行。たまごさん
+     「『昨日はこれとこれが入りました』って言って、『こう書き換えておきました』っていう。
+     そのページも見せてね、リンクで」→ status/daily_ingest_summary.json（毎朝の見回りタスクが
+     上書きする）を読み、進捗表の一番上に「昨日の入荷○件／直した○件 →見る」を出す。
+     押すと固定URLの確認ページ(share/check/daily-ingest.html)へ飛ぶ。 -->
+<div id="dailyIngestBar"><a id="dailyIngestLink" href="share/check/daily-ingest.html"><span id="dailyIngestText">読み込み中…</span><span class="arrow">→見る</span></a></div>
 
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
@@ -974,6 +990,34 @@ setInterval(refreshArrivals, 60000);
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refreshArrivals(); });
 window.addEventListener("pageshow", () => refreshArrivals());
 window.addEventListener("focus", () => refreshArrivals());
+
+/* ───── 756番：毎朝の入荷見回りサマリ（進捗表トップの1行）─────
+   status/daily_ingest_summary.json（{date,total,fixed,ok,unsure,url}）を読んで
+   「昨日(date)の入荷 ○件／直した ○件 →見る」を常設で表示する。arrivalsBannerと違い
+   既読で消えず、毎朝の実行結果で上書きされ続ける。 */
+function fmtDailyIngestDate(d){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d||""));
+  return m ? (parseInt(m[2],10) + "月" + parseInt(m[3],10) + "日") : String(d||"");
+}
+function refreshDailyIngestBar(){
+  return fetchWithTimeout("status/daily_ingest_summary.json?t=" + Date.now(), {cache:"no-store"}, 8000)
+    .then(r => r.ok ? r.json() : null)
+    .then(s => {
+      if(!s || typeof s.total !== "number") return;
+      const bar = document.getElementById("dailyIngestBar");
+      const txt = document.getElementById("dailyIngestText");
+      const link = document.getElementById("dailyIngestLink");
+      if(!bar || !txt || !link) return;
+      txt.textContent = fmtDailyIngestDate(s.date) + "の入荷 " + s.total + "件／直した " + (s.fixed||0) + "件";
+      link.href = s.url || "share/check/daily-ingest.html";
+      bar.style.display = "block";
+    })
+    .catch(()=>{});
+}
+refreshDailyIngestBar();
+setInterval(refreshDailyIngestBar, 300000);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refreshDailyIngestBar(); });
+window.addEventListener("pageshow", () => refreshDailyIngestBar());
 
 function formatStamp(iso){
   const d = new Date(iso); if(isNaN(d)) return "—";

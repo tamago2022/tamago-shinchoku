@@ -90,11 +90,19 @@ def build_what(target_date_str):
         "毎回、push後にこのファイルが更新されたか・DBの値が実際に変わったかを確認すること。"
         "変わっていなければGitHub ActionsのSecrets(SUPABASE_SERVICE_ROLE_KEY)未設定の疑いがあるので、"
         ".claude/PENDING_DECISIONS.mdへ1行書いて店主確認を仰ぐ（作業は止めず次の一手も書く）。\n\n"
-        "最後に、固定URL share/check/daily-ingest.html （tools/make_check_page.py で生成。過去日付分は"
-        "share/check/daily-ingest-%s.html のように別ファイルで残し、一度渡したURLは404にしない）へ、"
-        "直したもの／そのままでよかったもの／直せなかったもの、をサムネイル・前後比較付きで1枚にまとめて"
-        "上書き公開する。判断がつかなかったものだけ「直せなかったもの」に出す。それ以外は自分で直す。"
-    ) % (target_date_str, target_date_str)
+        "最後に、固定URL share/check/daily-ingest.html （tools/make_check_page.py の --out で明示指定して"
+        "生成・上書き。過去日付分は share/check/756-daily-ingest-%s.html のように別ファイルで残し、"
+        "一度渡したURLは404にしない）へ、直したもの／そのままでよかったもの／直せなかったもの、を"
+        "サムネイル・前後比較付きで1枚にまとめて上書き公開する。判断がつかなかったものだけ"
+        "「直せなかったもの」に出す。それ以外は自分で直す。\n\n"
+        "★進捗表トップの1行も必ず更新する（756番の仕組み本体）：status/daily_ingest_summary.json を"
+        "{\"date\":\"%s\",\"total\":見回った件数,\"fixed\":直した件数,\"ok\":そのままでよかった件数,"
+        "\"unsure\":判断がつかなかった件数,\"url\":\"share/check/daily-ingest.html\","
+        "\"updatedAt\":ISO8601}の形で上書きし、mainへpushする。index.html側の表示ロジック"
+        "（#dailyIngestBar・refreshDailyIngestBar()）は756番で実装済みなのでJSON更新だけでよい。"
+        "この2点（固定URL・summary.json）を両方更新しない限り、756番の完了条件は満たされない"
+        "（1回目の検品で両方が無いとしてFAILになった実例がある。同じ理由で2回目を落とさないこと）。"
+    ) % (target_date_str, target_date_str, target_date_str)
 
 
 def main():
