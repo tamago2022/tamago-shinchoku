@@ -271,17 +271,33 @@
       "result": "adopted",
       "note": "公称$0.01/秒×5.48秒=$0.0548(8.2円/150円レート)の計算値。ダッシュボード実測(Subtotal前後差)は今回も取得不能と判明: (1)ブラウザ操作ツール非搭載でfal.aiログイン画面しか返らない (2)公式Billing API(GET https://api.fal.ai/v1/account/billing)を正しく特定し実行したが403 authorization_error(admin API keyが必要、現行キーは動画生成専用スコープ) (3)レスポンスヘッダーx-fal-billable-units=71.24を発見したがUSD換算係数(unit_price)もbilling API経由でしか取れず403で不明、根拠のない換算はしない。次回以降ダッシュボード実測を可能にするには、たまごさんにfal.ai管理画面でadmin scope付きAPIキーを発行いただくか、生成のたびに一度だけダッシュボードを直接見ていただく必要がある。",
       "recordedAt": "2026-09-12T05:38:04+09:00"
+    },
+    {
+      "date": "2026-09-12",
+      "n": 771,
+      "title": "海辺1本(ltx-2.5 fast)・もや一方向ループ検証",
+      "model": "lightricks/ltx-2.5/image-to-video/fast",
+      "what": "751番と同じ元絵で、もやが一方向に流れ続けカメラ固定の海辺動画を1本生成(5.48秒/1920x1080)",
+      "count": 1,
+      "unitCostUsd": 0.0548,
+      "unitCostYen": 8.2,
+      "totalCostUsd": 0.0548,
+      "totalCostYen": 8.22,
+      "elapsedMin": 1.0,
+      "result": "in_progress",
+      "note": "実費は未確定。fal公式Billing API(GET /v1/account/billing)は403(admin権限不足、現行キーは通常キー)で拒否。レスポンスヘッダーx-fal-billable-units=71.24はあるがUSD単価換算手段なし。ブラウザ操作ツールがこのセッションに無くダッシュボードのSubtotal前後差も取得不可。ここに入れた金額は公称単価(0.04ドル/秒)からの計算値であり実費ではない。admin scope付きAPIキーが発行されれば確定できる。確認ページ:share/check/771-ltx25-mist-oneway-cost.html",
+      "recordedAt": "2026-09-12T07:01:32+09:00"
     }
   ],
   "monthlyCapYen": 3000,
-  "updatedAt": "2026-09-12T05:38:04+09:00",
+  "updatedAt": "2026-09-12T07:01:32+09:00",
   "summary": {
     "thisMonth": "2026-09",
-    "thisMonthTotalYen": 1294.52,
-    "thisMonthTotalUsd": 6.0675,
-    "allTimeTotalYen": 1294.52,
+    "thisMonthTotalYen": 1302.74,
+    "thisMonthTotalUsd": 6.1223,
+    "allTimeTotalYen": 1302.74,
     "capYen": 3000,
-    "remainingYen": 1705.48,
+    "remainingYen": 1697.26,
     "overCap": false,
     "byModel": [
       {
@@ -331,9 +347,9 @@
       },
       {
         "model": "lightricks/ltx-2.5/image-to-video/fast",
-        "totalYen": 23.22,
-        "totalUsd": 0.0548,
-        "count": 3,
+        "totalYen": 31.44,
+        "totalUsd": 0.1096,
+        "count": 4,
         "adoptedCount": 3,
         "discardedCount": 0,
         "failedCount": 0
@@ -383,6 +399,6 @@
     },
     "discardedTotalYen": 12.0,
     "failedNoChargeTotalYen": 0,
-    "recordCount": 17
+    "recordCount": 18
   }
 }
