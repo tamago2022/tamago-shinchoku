@@ -9,7 +9,12 @@ permissions:
   id-token: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # 769番6回目で発見：このリポジトリは自動ジョブが1〜2分おきにcommitし続ける。
+  # cancel-in-progress:true だと新しいpushのたびに直前のデプロイが即キャンセルされ、
+  # 確認ページの更新が本番に反映されないまま「直っていない」扱いになる事故が起きていた。
+  # false にすると実行はキューイングされ、1つずつ最後まで完了する（最新コミットの
+  # 内容は少し遅れても必ず反映される）。
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
