@@ -250,6 +250,21 @@ if [ ! -f "$_gstamp" ] || [ -n "$(find "$_gstamp" -mmin +1200 2>/dev/null)" ]; t
 fi
 tail -n 200 "$REPO/status/eagle_run.log" > "$REPO/status/eagle_run.log.tmp" 2>/dev/null && mv "$REPO/status/eagle_run.log.tmp" "$REPO/status/eagle_run.log" 2>/dev/null || true
 
+# 2026-09-12(717番) relay.log・check_page_pruner.logが際限なく太る事故の再発防止。
+#   relay.logは中継所(relay_server.py)のHTTPアクセスログをappendし続けるだけで、
+#   どこにもトリム処理が無かったため実測46.8MB(632,529行)まで膨れ上がっていた
+#   （公開リポジトリの1MB超ガードを赤くしていた原因の一つ）。
+#   1MBを超えたら直近1000行だけ残す。追記元プロセスはappendし続けるだけなので、
+#   tail→mvの入れ替え自体は他の書き込みと衝突しない（eagle_run.logと同じ安全な手法）。
+for _bigsrc in "$REPO/status/relay.log" "$REPO/status/check_page_pruner.log"; do
+  if [ -f "$_bigsrc" ]; then
+    _bs=$(wc -c < "$_bigsrc" 2>/dev/null || echo 0)
+    if [ "${_bs:-0}" -gt 1000000 ] 2>/dev/null; then
+      tail -n 1000 "$_bigsrc" > "${_bigsrc}.tmp" 2>/dev/null && mv "${_bigsrc}.tmp" "$_bigsrc" 2>/dev/null || true
+    fi
+  fi
+done
+
 # 2026-09-09(652番) あとで見る棚：Brave（Default＝あなたの Brave）のセッションファイルを
 #   直接読み取り、開いていたタブ相当のURLをサムネイル付きでstatus/later_tabs.jsonへ書く。
 #   Braveアプリ自体には触れない・タブは開かない（tools/later_tabs_snapshot.py参照）。

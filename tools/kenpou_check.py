@@ -58,6 +58,17 @@ HIST = os.path.join(REPO, "status", "kenpou_check_log.jsonl")
 
 BIG_FILE_LIMIT = 1_000_000  # 1MB
 
+# 2026-09-12(717番)：長尺の生音声だけは対象外にする。
+#   理由：share/podcast/audio・share/audio は実際に配信中のポッドキャスト本編（RSS配信あり）
+#   ／TTS聞き比べ用の生波形サンプル。1MBに収めようとすると数分の音声が数十kbpsになり、
+#   スピーチとして聞き取れないほど劣化する（実測：13分番組を1MB未満にするには9.6kbps相当）か、
+#   聞き比べの前提が壊れる。壊れるまで潰すくらいなら「知って許容する」方を選ぶ。
+#   ここに入れて良いのはこの2ディレクトリだけ（新しく増やす時は日付と理由をここに書く）。
+BIG_FILE_EXEMPT_PREFIXES = (
+    "share/podcast/audio/",
+    "share/audio/",
+)
+
 
 def load(p, default):
     return al.load(p, default)
@@ -337,7 +348,7 @@ def check_queue_max_regression():
 def check_big_files(limit_bytes=BIG_FILE_LIMIT):
     try:
         r = subprocess.run(
-            ["git", "ls-tree", "-r", "-l", "HEAD"], cwd=REPO,
+            ["git", "-c", "core.quotepath=false", "ls-tree", "-r", "-l", "HEAD"], cwd=REPO,
             capture_output=True, text=True, timeout=180,
         )
         lines = r.stdout.splitlines()
@@ -355,7 +366,7 @@ def check_big_files(limit_bytes=BIG_FILE_LIMIT):
         if size_s == "-":
             continue
         size = int(size_s)
-        if size > limit_bytes:
+        if size > limit_bytes and not path.startswith(BIG_FILE_EXEMPT_PREFIXES):
             big.append((path, size))
     big.sort(key=lambda x: -x[1])
     return {
@@ -365,7 +376,7 @@ def check_big_files(limit_bytes=BIG_FILE_LIMIT):
         "count": len(big),
         "detail": (
             "、".join("%s(%.1fMB)" % (p, s / 1e6) for p, s in big[:5])
-        ) if big else "1MB超のファイルは無い",
+        ) if big else "1MB超のファイルは無い（%s は長尺音声のため対象外）" % "・".join(BIG_FILE_EXEMPT_PREFIXES),
     }
 
 
