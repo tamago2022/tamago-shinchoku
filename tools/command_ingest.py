@@ -565,12 +565,12 @@ def queue_ok(target):
         it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         done.append(n)
         # 616番：たまごさんがOKを押した瞬間が「本当に終わった」瞬間。
-        # 成果物なら「できたもの」棚へ自動で載せる（修正・内部作業は載せない＝dekimono_lib判定）。
+        # 759番：「新しく作った」だけでなく「直した」も同じ棚（消えない）へ積む（record_done）。
         try:
             if HERE not in sys.path:
                 sys.path.insert(0, HERE)
             import dekimono_lib
-            dekimono_lib.append_if_deliverable(n, it.get("title"), it.get("result"), it.get("urls"))
+            dekimono_lib.record_done(n, it.get("title"), it.get("result"), it.get("urls"))
         except Exception:
             pass
     q["items"] = items

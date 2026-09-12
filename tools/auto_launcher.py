@@ -1151,12 +1151,13 @@ def harvest(q):
             append_outbox(it, True)
             log("✅ AI検品OK→自動完了（人の確認スキップ） %d番「%s」・理由:%s・$%.3f"
                 % (it.get("n"), it.get("title"), reason, cost or 0))
-            # 616番：自動OKもたまごさんがOKを押すのと同じ「完了」。成果物なら棚へ自動登録。
+            # 616番：自動OKもたまごさんがOKを押すのと同じ「完了」。棚へ自動登録。
+            # 759番：新しく作った／直した、どちらも同じ棚（消えない）へrecord_done()で積む。
             try:
                 if HERE not in sys.path:
                     sys.path.insert(0, HERE)
                 import dekimono_lib
-                dekimono_lib.append_if_deliverable(it.get("n"), it.get("title"), it.get("result"), it.get("urls"))
+                dekimono_lib.record_done(it.get("n"), it.get("title"), it.get("result"), it.get("urls"))
             except Exception:
                 pass
         changed = True
