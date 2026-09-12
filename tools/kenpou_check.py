@@ -58,14 +58,15 @@ HIST = os.path.join(REPO, "status", "kenpou_check_log.jsonl")
 
 BIG_FILE_LIMIT = 1_000_000  # 1MB
 
-# 2026-09-12(717番)：長尺の生音声だけは対象外にする。
-#   理由：share/podcast/audio・share/audio は実際に配信中のポッドキャスト本編（RSS配信あり）
-#   ／TTS聞き比べ用の生波形サンプル。1MBに収めようとすると数分の音声が数十kbpsになり、
-#   スピーチとして聞き取れないほど劣化する（実測：13分番組を1MB未満にするには9.6kbps相当）か、
-#   聞き比べの前提が壊れる。壊れるまで潰すくらいなら「知って許容する」方を選ぶ。
-#   ここに入れて良いのはこの2ディレクトリだけ（新しく増やす時は日付と理由をここに書く）。
+# 2026-09-12(717番)：share/podcast/audio・share/audio を対象外にしていた期間があったが、
+#   これは「圧縮せずに点検だけ緑にする」誤魔化しだとAI検品で2回はねられた（実ファイルは
+#   32.1MB・15.3MBのまま未圧縮で放置されていた）。717番の3回目でようやく実際に
+#   HE-AAC低ビットレートへ再エンコード／長尺は前半後半2本へ分割し、対象外リストに頼らず
+#   全ファイルを物理的に1MB未満へ縮めた（例：754-jinbunchi-ai 69.87MB→716KB+722KB）。
+#   よってこの2ディレクトリの対象外指定は不要になったため撤去した（今後また肥大したら
+#   同じく圧縮/分割で解決すること。対象外リストへ戻すのは禁止＝再発防止）。
 #
-# 2026-09-12(717番・追記)：status/queue.json も対象外にする。
+# 2026-09-12(717番・追記)：status/queue.json は対象外にする。
 #   理由：これは「発車待ちの正本」＝稼働中の生きた台帳であり、静的なアセットではない
 #   （見張り番・auto_launcher.py・PWA進捗表が秒〜分単位で読み書きする）。サイズの主因は
 #   直近1週間分の完了済み項目（実測：全339件のうち243件がdone/cancelled）で、これは
@@ -76,8 +77,6 @@ BIG_FILE_LIMIT = 1_000_000  # 1MB
 #   （tweets_data.jsonは同じ717番で5分割して解消済み・こちらは静的データなので圧縮ではなく
 #   分割で対応、queue.jsonのような生きた単一ファイルには分割が使えないため方式が異なる）
 BIG_FILE_EXEMPT_PREFIXES = (
-    "share/podcast/audio/",
-    "share/audio/",
     "status/queue.json",
 )
 
@@ -388,7 +387,7 @@ def check_big_files(limit_bytes=BIG_FILE_LIMIT):
         "count": len(big),
         "detail": (
             "、".join("%s(%.1fMB)" % (p, s / 1e6) for p, s in big[:5])
-        ) if big else "1MB超のファイルは無い（%s は長尺音声のため対象外）" % "・".join(BIG_FILE_EXEMPT_PREFIXES),
+        ) if big else "1MB超のファイルは無い（%s は生きた台帳のため対象外・音声は717番で全て圧縮/分割済み）" % "・".join(BIG_FILE_EXEMPT_PREFIXES),
     }
 
 

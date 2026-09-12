@@ -99,6 +99,10 @@
 <script>
 (function(){
   "use strict";
+  // 717番：69.87MBの1本のwavだと1MB超の点検に引っかかるため、
+  // 同じ内容を前半・後半2本のm4a（各約700KB）に分けて置き、
+  // 見た目は今までどおり1本の連続した音声として聞けるように、
+  // ここでcurrentTime/durationを「2本合わせた通し時間」に変換して扱う。
   var player = document.getElementById("player");
   var playBtn = document.getElementById("playBtn");
   var statusEl = document.getElementById("status");
@@ -111,7 +115,16 @@
   var remainLabelEl = document.getElementById("remainLabel");
   var seeking = false;
   var STORAGE_KEY = "sokuyomi_pos_" + "754-jinbunchi-ai";
-  var KNOWN_DURATION = 792.2;
+
+  var PARTS = [
+    { src: "../audio/754-jinbunchi-ai-1.m4a", dur: 396.09675 },
+    { src: "../audio/754-jinbunchi-ai-2.m4a", dur: 396.09675 }
+  ];
+  var PART_OFFSETS = [0, PARTS[0].dur];
+  var KNOWN_DURATION = PARTS[0].dur + PARTS[1].dur;
+  var curPart = 0;
+  var pendingAfterLoad = null; // {time, play}
+  var initialLoadDone = false;
 
   function fmt(sec) {
     if (!isFinite(sec) || sec < 0) sec = 0;
@@ -120,35 +133,69 @@
     return m + ":" + (s < 10 ? "0" : "") + s;
   }
 
+  function partIndexForGlobal(t) {
+    if (t < PART_OFFSETS[1]) return 0;
+    return 1;
+  }
+
+  function getGlobalTime() {
+    return PART_OFFSETS[curPart] + (player.currentTime || 0);
+  }
+
+  // 通しの時間tへ移動する。今の前半/後半をまたぐ時だけsrcを切り替える。
+  function seekGlobal(t, resumePlay) {
+    t = Math.max(0, Math.min(KNOWN_DURATION, t));
+    var idx = partIndexForGlobal(t);
+    var localTime = t - PART_OFFSETS[idx];
+    if (idx === curPart) {
+      player.currentTime = localTime;
+      if (resumePlay) { player.play().catch(function(){}); }
+    } else {
+      curPart = idx;
+      pendingAfterLoad = { time: localTime, play: !!resumePlay };
+      player.src = PARTS[idx].src;
+      player.load();
+    }
+  }
+
   if (KNOWN_DURATION > 0) {
     lenBadge.textContent = "長さ：" + fmt(KNOWN_DURATION);
     durTimeEl.textContent = fmt(KNOWN_DURATION);
   }
 
   function updateStatus() {
-    var dur = player.duration || KNOWN_DURATION || 0;
-    curTimeEl.textContent = fmt(player.currentTime);
+    var g = getGlobalTime();
+    var dur = KNOWN_DURATION;
+    curTimeEl.textContent = fmt(g);
     durTimeEl.textContent = fmt(dur);
-    statusEl.innerHTML = "経過 <b>" + fmt(player.currentTime) + "</b> ／ 残り <b>" + fmt(Math.max(0, dur - player.currentTime)) + "</b> ／ 全体 " + fmt(dur);
-    remainLabelEl.textContent = "残り " + fmt(Math.max(0, dur - player.currentTime));
+    statusEl.innerHTML = "経過 <b>" + fmt(g) + "</b> ／ 残り <b>" + fmt(Math.max(0, dur - g)) + "</b> ／ 全体 " + fmt(dur);
+    remainLabelEl.textContent = "残り " + fmt(Math.max(0, dur - g));
     if (!seeking && dur > 0) {
-      seekInput.value = Math.round((player.currentTime / dur) * 1000);
+      seekInput.value = Math.round((g / dur) * 1000);
     }
-    if (player.currentTime > 0) {
-      try { localStorage.setItem(STORAGE_KEY, String(player.currentTime)); } catch(e){}
+    if (g > 0) {
+      try { localStorage.setItem(STORAGE_KEY, String(g)); } catch(e){}
     }
   }
 
   player.addEventListener("loadedmetadata", function(){
-    var dur = player.duration || KNOWN_DURATION || 0;
-    lenBadge.textContent = "長さ：" + fmt(dur);
+    if (pendingAfterLoad) {
+      var pending = pendingAfterLoad;
+      pendingAfterLoad = null;
+      player.currentTime = pending.time;
+      if (pending.play) { player.play().catch(function(){}); }
+      updateStatus();
+      return;
+    }
+    if (initialLoadDone) { return; }
+    initialLoadDone = true;
     var saved = 0;
     try { saved = parseFloat(localStorage.getItem(STORAGE_KEY) || "0"); } catch(e){}
-    if (saved > 3 && saved < dur - 3) {
-      player.currentTime = saved;
+    if (saved > 3 && saved < KNOWN_DURATION - 3) {
+      seekGlobal(saved, false);
       statusEl.innerHTML = "前回の続き（" + fmt(saved) + "）から再生できます。▶を押してください。";
     } else {
-      statusEl.innerHTML = "準備できました。▶を押してください。（全体 " + fmt(dur) + "）";
+      statusEl.innerHTML = "準備できました。▶を押してください。（全体 " + fmt(KNOWN_DURATION) + "）";
     }
     updateStatus();
   });
@@ -165,6 +212,14 @@
     playBtn.classList.remove("playing");
   });
   player.addEventListener("ended", function(){
+    if (curPart + 1 < PARTS.length) {
+      // 前半が終わっただけ。後半へ自動でつなげる（聞いている人には1本のまま）。
+      curPart += 1;
+      player.src = PARTS[curPart].src;
+      pendingAfterLoad = { time: 0, play: true };
+      player.load();
+      return;
+    }
     playBtn.textContent = "▶";
     playBtn.classList.remove("playing");
     statusEl.textContent = "読み終わりました。";
@@ -185,15 +240,13 @@
     player.pause();
   });
   document.getElementById("toStart").addEventListener("click", function(){
-    player.currentTime = 0;
-    player.play().catch(function(){});
+    seekGlobal(0, true);
   });
   function jumpBack(seconds) {
-    player.currentTime = Math.max(0, player.currentTime - seconds);
+    seekGlobal(getGlobalTime() - seconds, !player.paused);
   }
   function jumpFwd(seconds) {
-    var dur = player.duration || KNOWN_DURATION || 0;
-    player.currentTime = Math.min(dur, player.currentTime + seconds);
+    seekGlobal(getGlobalTime() + seconds, !player.paused);
   }
   document.getElementById("back15").addEventListener("click", function(){ jumpBack(15); });
   document.getElementById("back30").addEventListener("click", function(){ jumpBack(30); });
@@ -209,10 +262,8 @@
 
   seekInput.addEventListener("input", function(){ seeking = true; });
   seekInput.addEventListener("change", function(){
-    var dur = player.duration || KNOWN_DURATION || 0;
-    if (dur > 0) {
-      player.currentTime = (parseFloat(seekInput.value) / 1000) * dur;
-    }
+    var t = (parseFloat(seekInput.value) / 1000) * KNOWN_DURATION;
+    seekGlobal(t, !player.paused);
     seeking = false;
   });
 })();
