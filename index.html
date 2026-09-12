@@ -622,6 +622,12 @@
 </head>
 <body>
 
+<!-- 787番（2026-09-12）：「いまの現在地」1枚(status/genzaichi.json)の7項目を進捗表の
+     一番上に出す。たまごさんは進捗表しか見ない、という指示に合わせ、他のどのバーよりも
+     前に置く。赤（本番停止・心臓停止）がある時だけ目立たせ、無い時は畳んだ状態にする
+     （paceBar/heartbeatBarと同じ「異常が無ければ邪魔しない」方針）。 -->
+<details id="genzaichiBar" class="pacebar"><summary><div class="ph">いまの現在地を読み込み中…</div></summary></details>
+
 <!-- 732番（2026-09-11）：「先生（生成）が終わってるんだったら、ちょっと報告が欲しいよね。
      まだ？って言われる前に『できてますよ』ってお知らせしてほしい」「つけ麺屋でも
      『何番、上がりました』って出るわけだよ」（たまごさん）。開くたびに、聞かれる前に
@@ -1409,6 +1415,57 @@ refreshQuota();
 setInterval(refreshQuota, 60000);
 refreshPace();
 setInterval(refreshPace, 60000);
+
+/* ───── 787番（2026-09-12）：「いまの現在地」7項目を進捗表の一番上に出す ─────
+   status/genzaichi.json（tools/genzaichi.pyがheartbeat.shに相乗りし実質30分おきに書く）を
+   そのまま表示するだけ。paceBarと同じ「フェッチ失敗時は前回値を灰色で維持・0件と混同しない」
+   方式（752番の教訓）。redFlagsが1件でもあれば赤で開いた状態、無ければ緑で畳んだ状態にする。 */
+function renderGenzaichi(g){
+  const bar = document.getElementById("genzaichiBar"); if(!bar) return;
+  if(!g){
+    const cached = loadLastGood("genzaichi");
+    if(cached && cached.data){
+      bar.hidden = false;
+      bar.className = "pacebar unsure stale";
+      bar.open = (cached.data.redFlags && cached.data.redFlags.length > 0);
+      bar.innerHTML = `<summary><div class="ph">${staleNoteHtml(cached.savedAt)}　いまの現在地は前回値を表示中</div></summary>`;
+    } else {
+      bar.hidden = true;
+    }
+    return;
+  }
+  bar.hidden = false;
+  const red = g.redFlags || [];
+  const genAt = g.generatedAt ? new Date(g.generatedAt).getTime() : null;
+  const ageMin = genAt ? Math.max(0, Math.round((Date.now() - genAt) / 60000)) : null;
+  const stale = ageMin != null && ageMin >= 40; // 実質30分おきなので40分超は「止まっている」扱い
+  bar.className = "pacebar " + (red.length ? "over" : "ok") + (stale ? " stale" : "");
+  bar.open = red.length > 0;
+  const head = red.length
+    ? `🔴 ${red.map(esc).join(" ／ ")}`
+    : `✅ 止まっていません（本番・心臓ともに正常）`;
+  const running = (g.runningNow || []).map(x => `${esc(String(x.n))} ${esc(x.label || "")}`).join("、") || "0本";
+  const nextP1 = (g.nextP1 || []).map(x => `${esc(String(x.n))} ${esc(x.label || "")}`).join(" / ") || "なし";
+  const unrep = g.unreportedDone || [];
+  bar.innerHTML = `<summary><div class="ph">${head}</div>
+      <div class="pmHint"></div></summary>
+    <div class="in">
+    <div class="pd">走行 <b>${esc(String(g.running && g.running.count))} / ${esc(String(g.running && g.running.safeMax))}</b>（発車待ち${esc(String(g.waitingCount))}件・うちP1 ${esc(String(g.p1Count))}件）</div>
+    <div class="pd">今日の完了 <b>${esc(String(g.doneToday))}件</b> ／ 子セッション${esc(String(g.childSessionsToday))}本・合計$${esc(String(g.costToday))}・1本平均$${esc(String(g.avgCostPerChild))}${(g.avgCostPerChild||0) > 3 ? "　🔴$3超は異常" : ""}</div>
+    <div class="pd">今すぐ走っているもの：${running}</div>
+    <div class="pd">次に出る（P1先頭）：${nextP1}</div>
+    <div class="pd">まだ渡していない完成品 <b>${esc(String(unrep.length))}件</b>${unrep.length ? "：" + unrep.slice(-3).map(x => esc(String(x.n))).join("、") + " など" : ""}</div>
+    <div class="pd" style="opacity:.7">${ageMin == null ? "" : (ageMin < 1 ? "たった今" : ageMin + "分前") + "時点の値（実質30分おき自動更新）"}</div>
+    </div>`;
+}
+function refreshGenzaichi(){
+  return fetchWithTimeout("status/genzaichi.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(g => { renderGenzaichi(g); if(g) saveLastGood("genzaichi", g); })
+    .catch(()=>{ renderGenzaichi(null); });
+}
+refreshGenzaichi();
+setInterval(refreshGenzaichi, 60000);
 
 /* ───── 424番：どの仕事がいくら使ったか見える化（今日のトップ5） ─────
    status/cost_by_task.json（tools/auto_launcher.py の harvest() が1本終わるたびに書く）を読むだけ。
