@@ -1029,6 +1029,30 @@ document.addEventListener("click", e=>{
   const btn = e.target.closest("#arrivalsBanner .dismiss"); if(!btn) return;
   const card = btn.closest(".arrival"); if(card) card.remove();
 });
+/* ───── 796番（2026-09-13）「ぐるぐる読み込みが止まらない・重い・画面が上にずれる」─────
+   原因（実測）：refreshAllLive() が30秒ごとに machine.json / whiteboard.json / commands.json を
+   丸ごと取り直し、中身が1バイトも変わっていなくても renderMachine/renderSessions/renderWhiteboard等の
+   innerHTML書き換えをやり直していた。60秒おきの cost_by_task.json / dekimono.json 等も同様。
+   「読み込み中…」が消えたと思ったらまた出る、画面が上にずれる、は全部これが正体。
+   直し方：前回取得した生テキストと同じなら parse も render もスキップする
+   （queue_light.jsonでは716番で既にこの形にしていた＝同じ考え方を他の全ポーリングにも広げる）。
+   中身が変わった時だけ今まで通り即座に反映するので「押した瞬間に反映」は変えていない。 */
+window.__rawCache796 = window.__rawCache796 || {};
+function unchangedSince796(key, text){
+  if(window.__rawCache796[key] === text) return true;
+  window.__rawCache796[key] = text;
+  return false;
+}
+/* スクロール位置を保険で守る：中身が変わって描き直す時も、ページ全体のスクロール位置は動かさない
+   （details要素の開閉状態が再構築で失われて高さが変わっても、見ている位置がずれないようにする）。 */
+function withScrollLock796(fn){
+  const y = window.scrollY;
+  try{ fn(); } finally {
+    if(Math.abs(window.scrollY - y) > 1){
+      requestAnimationFrame(()=>{ window.scrollTo(0, y); });
+    }
+  }
+}
 function refreshArrivals(){
   return fetchWithTimeout("status/new_arrivals.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : [])
@@ -1189,7 +1213,10 @@ function loadCmds(){ try { SENT_CMDS = JSON.parse(localStorage.getItem(CMD_KEY) 
 function saveCmds(){ try { localStorage.setItem(CMD_KEY, JSON.stringify(SENT_CMDS)); } catch(e){} }
 function refreshCommands(){
   return fetch("status/commands.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(d => {
+    .then(r => r.ok ? r.text() : null).then(text => {
+      if(text == null) throw new Error("empty");
+      if(unchangedSince796("commands", text)) return;
+      const d = JSON.parse(text);
       CMD_RESULTS = {}; (d && d.results || []).forEach(r => { CMD_RESULTS[r.id] = r; });
       renderCmdStatus();
     }).catch(()=>{});
@@ -1289,11 +1316,21 @@ function modelChip(model){
    直したのは見せ方だけ：①各マスに開始時刻「18時〜」を添える ②今日のマスの中に6時間刻みの
    薄い目盛りを入れて、マスの中のどのへんにいるかも分かるようにする ③棒の下に
    「週は火曜18:00に始まって次の火曜17:59に終わる」を1行常設する。 */
+/* 796番（2026-09-13）「週の目盛りが3種類あって食い違っている」への対応：
+   ここは以前「経過日数÷7の直線」を自分で計算していた（＝日曜朝で64.0%）。
+   一方 tools/pace.py は quota.json の曲線（水30/木45/金55/土70/日80/月90/火100）を
+   倍率抜きで使った lineTarget（＝80.0）を status/pace.json に既に書いている。
+   同じ「本来ここ」に画面側とサーバー側で別々の答えが出ていたのが3種類問題の正体。
+   → 画面では二度と計算し直さず、p.lineTarget（pace.json）を唯一の正本として使う。
+   （elapsedDaysは「今日はどの曜日マスか」というカレンダー位置の表示にだけ使い、
+   目標％の計算には使わない＝役割を分ける）。 */
 function buildWeekBar(p){
   const days = ["火","水","木","金","土","日","月"];
   const daysLeft = (typeof p.daysLeft === "number") ? p.daysLeft : 7;
   const elapsedDays = Math.max(0, Math.min(7, 7 - daysLeft));
-  const expPct = Math.max(0, Math.min(100, elapsedDays / 7 * 100));
+  const expPct = (typeof p.lineTarget === "number" && !isNaN(p.lineTarget))
+    ? Math.max(0, Math.min(100, p.lineTarget))
+    : Math.max(0, Math.min(100, elapsedDays / 7 * 100)); // pace.jsonに無い時だけの保険
   const dayIdx = Math.max(0, Math.min(6, Math.floor(elapsedDays)));
   const withinDayFrac = Math.max(0, Math.min(1, elapsedDays - Math.floor(elapsedDays))); // 今日のマスの中の進み具合（0〜1）
   const nowPct = Math.max(0, Math.min(100, Number(p.allPct) || 0));
@@ -1377,10 +1414,29 @@ function renderPace(p){
   const weekOverTxt = wb.isOver
     ? `<span class="over">+${wb.overAmt.toFixed(1)}%超過</span>`
     : `<span class="under">まだ余裕（${Math.abs(wb.overAmt).toFixed(1)}%ぶん）</span>`;
+  // 796番（2026-09-13）「余っている／超過の一言だけを出さない。必ず『残り何%を何日で＝1日何%』まで書く」
+  //   → 残り(remainWeek)÷残り日数(daysLeft)を1日あたりの必要ペースとして出し、
+  //     普段の目安(perDayEven=約13〜14%)と比べて「先行/追いつかない」を文章で言い切る。
+  //     計算はここでしかしない（本来ここのライン(expPct)はpace.jsonのlineTargetを唯一の正本にする＝上のbuildWeekBar参照）。
+  const weekdayJa = ["日","月","火","水","木","金","土"];
+  const nowD = new Date();
+  const nowDayLabel = weekdayJa[nowD.getDay()];
+  const nowTimeLabel = nowD.toLocaleTimeString("ja-JP", {hour:"2-digit", minute:"2-digit", hour12:false});
+  const remainPerDay = (typeof p.daysLeft === "number" && p.daysLeft > 0.01 && typeof p.remainWeek === "number")
+    ? (p.remainWeek / p.daysLeft) : null;
+  const remainPerDayTxt = remainPerDay != null ? remainPerDay.toFixed(1) : "—";
+  const paceVerdict = (remainPerDay != null && typeof p.perDayEven === "number")
+    ? (remainPerDay <= p.perDayEven
+        ? `普段の目安${p.perDayEven}%より少ない＝余っていない。やや先行している`
+        : `普段の目安${p.perDayEven}%より多い＝このままだと週内に足りなくなるおそれ`)
+    : "";
+  const paceSentence = `週は火曜18:00に始まって次の火曜17:59に終わる。今は${nowDayLabel}曜${esc(nowTimeLabel)}。`
+    + `使用${p.allPct}%。残り${p.remainWeek}%を${p.daysLeft}日で使う＝1日あたり${remainPerDayTxt}%。${paceVerdict}`;
   // 畳んだ状態でも見えるのはsummaryの中身だけ＝棒・週の数字・超過表示はここに置く（たまごさん「畳んでいても異常は分かること」）。
   bar.innerHTML = `<summary>${wb.html}
       <div class="weeknums">今ここ <b>${wb.nowPct.toFixed(1)}%</b> ／ 本来ここ（目安） <b>${wb.expPct.toFixed(1)}%</b> ／ ${weekOverTxt}</div>
       <div class="ph">${head}</div>
+      <div class="pd" style="font-weight:600">${paceSentence}</div>
       <div class="pmHint"></div></summary>
     <div class="in">
     <div class="pd">週枠100%のうち今週使用 <b>${p.allPct}%</b> ／ 週の残り${p.remainWeek}% ÷ あと${p.daysLeft}日 ・ 単純日割り目安 約${p.perDayEven}%</div>
@@ -1494,7 +1550,11 @@ function renderCostTop5(d){
 }
 function refreshCost(){
   return fetch("status/cost_by_task.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(renderCostTop5).catch(()=>{});
+    .then(r => r.ok ? r.text() : null).then(text => {
+      if(text == null) throw new Error("empty");
+      if(unchangedSince796("cost", text)) return;
+      withScrollLock796(()=>renderCostTop5(JSON.parse(text)));
+    }).catch(()=>{});
 }
 refreshCost();
 setInterval(refreshCost, 60000);
@@ -1697,8 +1757,13 @@ function renderFalBudget(d){
 }
 function refreshFalBudget(){
   return fetch("status/fal_cost_ledger.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null)
-    .then(d => { if(d) renderFalBudget(d); })
+    .then(r => r.ok ? r.text() : null)
+    .then(text => {
+      if(text == null) return;
+      if(unchangedSince796("falBudget", text)) return;
+      const d = JSON.parse(text);
+      if(d) withScrollLock796(()=>renderFalBudget(d));
+    })
     .catch(()=>{});
 }
 refreshFalBudget();
@@ -1726,7 +1791,11 @@ function renderAiVerify(d){
 }
 function refreshAiVerify(){
   return fetch("status/ai_verify_stats.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(renderAiVerify).catch(()=>{});
+    .then(r => r.ok ? r.text() : null).then(text => {
+      if(text == null) throw new Error("empty");
+      if(unchangedSince796("aiVerify", text)) return;
+      withScrollLock796(()=>renderAiVerify(JSON.parse(text)));
+    }).catch(()=>{});
 }
 refreshAiVerify();
 setInterval(refreshAiVerify, 60000);
@@ -1783,7 +1852,11 @@ function renderKenpou(d){
 }
 function refreshKenpou(){
   return fetch("status/kenpou_check.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(renderKenpou).catch(()=>{});
+    .then(r => r.ok ? r.text() : null).then(text => {
+      if(text == null) throw new Error("empty");
+      if(unchangedSince796("kenpou", text)) return;
+      withScrollLock796(()=>renderKenpou(JSON.parse(text)));
+    }).catch(()=>{});
 }
 refreshKenpou();
 setInterval(refreshKenpou, 60000);
@@ -1834,7 +1907,11 @@ function renderLaterTabs(d){
 }
 function refreshLaterTabs(){
   return fetch("status/later_tabs.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(renderLaterTabs).catch(()=>{});
+    .then(r => r.ok ? r.text() : null).then(text => {
+      if(text == null) throw new Error("empty");
+      if(unchangedSince796("laterTabs", text)) return;
+      withScrollLock796(()=>renderLaterTabs(JSON.parse(text)));
+    }).catch(()=>{});
 }
 refreshLaterTabs();
 setInterval(refreshLaterTabs, 300000);
@@ -2144,7 +2221,9 @@ function refreshHealth(){
         (q.items||[]).forEach(x=>{ if(old.has(x.n) && x.order == null) x.order = old.get(x.n); });
       }
       window.__queue = q;
-      try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){}
+      // 796番：発車待ち・確認待ち・完了の4本まとめてinnerHTMLを作り直す＝件数や開閉状態が
+      //   変わると高さが変わり画面が上下にずれる。スクロール位置だけは動かさない保険を掛ける。
+      withScrollLock796(()=>{ try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} });
     })
     .catch(()=>{
       if(timer) clearTimeout(timer);
@@ -2158,7 +2237,8 @@ function refreshHealth(){
             if(text === window.__queueRawText) return;
             window.__queueRawText = text;
             const q = JSON.parse(text);
-            window.__queue = q; try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){}
+            window.__queue = q;
+            withScrollLock796(()=>{ try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} });
           })
           .catch(()=>{ done(); window.__queueErr++; try{ renderQueue(); }catch(e){} });
       }
@@ -3917,7 +3997,12 @@ function renderWhiteboard(w){
 }
 function refreshWhiteboard(){
   return fetch("status/whiteboard.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(w => { window.__wbData = w; renderWhiteboard(w); }).catch(()=>renderWhiteboard(null));
+    .then(r => r.ok ? r.text() : null).then(text => {
+      if(text == null) throw new Error("empty");
+      if(unchangedSince796("whiteboard", text)) return;
+      const w = JSON.parse(text);
+      window.__wbData = w; withScrollLock796(()=>renderWhiteboard(w));
+    }).catch(()=>{ if(!window.__wbData) renderWhiteboard(null); });
 }
 refreshWhiteboard();
 
@@ -4238,20 +4323,26 @@ function renderHeartbeat(m){
 }
 function refreshMachine(){
   return fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null).then(m => {
-      // 2026-09-05 たまごさん「稼働中の枠が無くなった／マシンとクレジットが読み込み中のまま」
-      //   原因のかたち：ここは描画を1行に並べていたので、**どれか1つが転ぶと以降が全部描かれない。**
-      //   今日この形のバグを何度も踏んだので、1本ずつ包んで、転んでも残りは描くようにする。
-      window.__machine = m;
-      for(const fn of [() => renderHeartbeat(m), () => renderMachine(m), () => renderMeters(m), () => renderSessions(m),
-                       () => renderNow(m), () => renderCapBar()]){
-        try{ fn(); }catch(err){ showErr(err); }
-      }
-      // machine.json のセッション生存情報が変わったので、実態判定(緑=今動いている)を使う
-      // ホワイトボード・225件セクションも同じデータで引き直す
-      if(window.__wbData) renderWhiteboard(window.__wbData);
-      if(window.SHINCHOKU_ALL) renderAll();
-    }).catch(()=>{ renderSessions(null); });
+    .then(r => r.ok ? r.text() : null).then(text => {
+      if(text == null) throw new Error("empty");
+      // 796番：前回と1バイトも変わっていなければ、parseもrenderもしない（=画面は動かさない）
+      if(unchangedSince796("machine", text)) return;
+      const m = JSON.parse(text);
+      withScrollLock796(()=>{
+        // 2026-09-05 たまごさん「稼働中の枠が無くなった／マシンとクレジットが読み込み中のまま」
+        //   原因のかたち：ここは描画を1行に並べていたので、**どれか1つが転ぶと以降が全部描かれない。**
+        //   今日この形のバグを何度も踏んだので、1本ずつ包んで、転んでも残りは描くようにする。
+        window.__machine = m;
+        for(const fn of [() => renderHeartbeat(m), () => renderMachine(m), () => renderMeters(m), () => renderSessions(m),
+                         () => renderNow(m), () => renderCapBar()]){
+          try{ fn(); }catch(err){ showErr(err); }
+        }
+        // machine.json のセッション生存情報が変わったので、実態判定(緑=今動いている)を使う
+        // ホワイトボード・225件セクションも同じデータで引き直す
+        if(window.__wbData) renderWhiteboard(window.__wbData);
+        if(window.SHINCHOKU_ALL) renderAll();
+      });
+    }).catch(()=>{ if(!window.__machine) renderSessions(null); });
 }
 refreshMachine();
 refreshCommands();
