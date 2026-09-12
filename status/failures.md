@@ -523,3 +523,14 @@
 - **未解決（次回への引き継ぎ）**：完全自動でのフォーム入力・審査リクエスト押下は、①LINE Creators Marketの利用規約でブラウザ自動化が禁止されている(742番調査)ため実行するとアカウント停止リスクがある、②仮にリスクを取る前提でも、ログイン済みプロファイルが存在しない(`chrome-line`のような専用プロファイルを新設し、たまごさん本人に1回だけ非headlessで開いてログインしてもらう必要がある)、の2点が壁として残っている。次回このテーマに着手する時は、まずこのリスクをたまごさんへ改めて明確に(会話ではなく1行の文字として)伝え直すこと。
 - **二度と起こさないための仕掛け**：`tools/line_stamp_configs/*.json`を編集した直後は必ず`python3 tools/line_stamp_pipeline.py`（対象を絞るなら`--slug <slug>`）を実行してからcommit/pushする、という手順を`tools/line_stamp_pipeline.py`冒頭のdocstringに明記済み（既存のdocstringに追記）。今後は`_769_verify_live.mjs`のような「公開URLに実際にfetchして文字列の有無を確認する」検証を、鬼監督のURL到達確認だけに頼らず自分でも1回通す。
 - **日付**：2026-09-12（769番・11回目の処理）
+
+---
+
+## 29. 771番のworktreeが本来のtamago-shinchokuではなくjoy-relief-station側になっていた（重大・要恒久対策）
+
+- **症状**：771番（fal.ai ltx-2.5で海辺動画1本＋実費確定）のセッションが着火した際、`tools/auto_launcher.py`が作った作業場所`/Users/mac/Documents/AI作業/.worktrees/q771-0904`の中身が、tamago-shinchoku（このリポジトリ）ではなく**joy-relief-station**（別プロジェクト・別GitHubリポジトリ）のgit worktreeになっていた。セッションはjoy-relief-station用の`CLAUDE.md`/`AGENTS.md`（ごきげん補給所の運営憲法）を読み込んだ状態で起動し、771番の指示（fal.ai動画生成・確認ページ作成）と役割が一致しない状態から始まった。
+- **原因（`tools/auto_launcher.py` 1569行目で特定）**：`repo = q.get("repo") or "/Users/mac/Desktop/joy-relief-station"` — `queue.json`の各項目に`repo`フィールドが無い場合、**無条件でjoy-relief-stationをデフォルトにしている**。771番のqueue.jsonエントリには`repo`キーが元々存在せず（`n/title/why/what/status/limitMin/model/origin/costsMoney/...`等のキー一覧に`repo`は無い）、tamago-shinchoku自身のメンテナンス的なタスク（fal生成・確認ページ作成・進捗表改修等）でも`repo`を明示しない限り、joy-relief-station側でworktreeが作られてしまう。
+- **実害**：セッション（今回の771番担当）は、当初「これはごきげん補給所プロジェクトの管轄外では」と誤認しかけた（実際にはtamago-shinchoku自身のタスクだった）。sessionIdが`status/queue.json`の771番エントリと一致することで正しい担当だと判明し、`/Users/mac/Desktop/tamago-shinchoku`（本来の実行場所、メインチェックアウト）へ絶対パスでアクセスして作業を継続、実害なく完了できたが、原因調査に時間を要した。
+- **対応（今回はここまで）**：コード自体（`auto_launcher.py`のデフォルト値ロジック）はここでは変更していない（341件のqueue.json全体・他の並行稼働セッションへの影響範囲が読み切れないため、うかつに変更しない判断）。この記録を恒久対策の起点として残す。
+- **恒久対策案（次にこのテーマに触る人向け）**：①`queue.json`へタスクを追加する経路（進捗表の`queue_add`・`tools/command_ingest.py`等）で、`repo`が未指定の時に「fal.ai／確認ページ／進捗表／status/」等tamago-shinchoku自身に関するキーワードを本文から検出したら自動で`repo`を自分自身に設定する。②またはそもそもデフォルトを「指定が無ければ自分自身（tamago-shinchoku）」に変え、joy-relief-station向けタスクの方を明示指定必須にする（どちらの母数が多いかを`queue.json`の実データで数えてから決めるべき）。
+- **日付**：2026-09-12（771番）
