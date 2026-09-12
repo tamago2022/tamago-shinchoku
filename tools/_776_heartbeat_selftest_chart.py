@@ -52,7 +52,8 @@ def find_events(lines, since_str):
 
 
 def render_svg(events, out_path=OUT_SVG):
-    W, H = 820, 46 + 40 * max(1, len(events))
+    extra_h = 30 if len(events) >= 2 else 0
+    W, H = 820, 46 + 40 * max(1, len(events)) + extra_h
     pad_l, pad_t = 170, 30
     parts = []
     parts.append(
@@ -76,6 +77,20 @@ def render_svg(events, out_path=OUT_SVG):
         parts.append('<text x="%d" y="%d" font-size="12" fill="%s">%s</text>'
                       % (pad_l, y + 4, color, safe_msg[:70]))
         y += 40
+    if len(events) >= 2:
+        try:
+            t0 = time.mktime(time.strptime(events[0][0], "%Y-%m-%d %H:%M:%S"))
+            t1 = time.mktime(time.strptime(events[-1][0], "%Y-%m-%d %H:%M:%S"))
+            delta_min = (t1 - t0) / 60.0
+            parts.append(
+                '<rect x="16" y="%d" width="%d" height="26" rx="6" fill="#ecfdf5" stroke="#16a34a"/>'
+                % (y + 4, W - 32))
+            parts.append(
+                '<text x="26" y="%d" font-size="13" fill="#065f46" font-weight="bold">'
+                '所要 %.1f分（誰も操作していません。machine_status_push.sh・launchd 5分便による自動検知・自動再起動）</text>'
+                % (y + 21, delta_min))
+        except Exception:
+            pass
     parts.append("</svg>")
     svg = "\n".join(parts)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
