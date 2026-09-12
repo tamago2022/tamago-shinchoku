@@ -405,3 +405,25 @@
   - https://tamago2022.github.io/tamago-shinchoku/share/check/769-line-stamp-factory-progress.html
   - https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html
   - https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html
+
+
+---
+
+## 680番自動記録：769番「【今すぐ】鬼嫁ちゃんLINE申請をCodexから引き継ぐ＋申請機を作る」が同じ経路で6回やり直しになった
+
+- **症状**：たまごさんが会話で「直ってない、やり直して」と指摘し、6回目のqueue_redoが呼ばれた。
+- **今回の指摘**：（本文なし）
+- **対応**：同じ直し方を4回目は繰り返さない。次のbuilderは原因の調べ方・実装方法を変えること。
+- **日付**：2026-09-12
+
+
+---
+
+## 29. 697番「サムネの食い違い解消」で、乖離しきったブランチ上に重複実装を作ってしまった（main側は既に別セッションが解決済み）
+
+- **症状**：697番（棚と一覧のサムネ食い違い解消＋一覧への棚編集追加）が4回連続「バックグラウンド待ちで通知が来ず終了」を繰り返していた。5回目に作業ブランチ`claude/q697-0904`のHEADを見たところ、`584b9821`という実装コミットが既に存在していた（cover-guide.tsx／search.tsx／shelf.$worldId.$shelfId.tsxの3ファイルにCardActionCluster配線）。
+- **原因**：作業ブランチ`claude/q697-0904`はorigin/mainから1813コミット遅れて乖離しており、584b9821を作った時点のセッションは、**同じ問題（案件693／案件686）が既に別セッションによってmainへ2026-09-09〜09-12 07:39の間に全て解決済み**であることに気づかないまま実装していた。origin/main起点で新規worktreeを作りcherry-pickしたところ、3ファイル全てでコンフリクトが発生し、比較の結果**main側の実装の方が優れていた**（`gridShelfTarget`という共通ヘルパーを使い`shelfCardBadgeIdentity`でバッジ表示も統合済み。584b9821側は`songRef`のアドホックな手動分岐のみでCardBadges表示が無かった）。
+- **直し方**：cherry-pickを`--abort`し、584b9821はmainへマージしなかった（重複かつ劣化のため）。main側の実装（376ea818・59eed97c・63de62b6）がそのまま正であることをコードレビュー＋機械検品（`check-shelf-grid-parity.mjs`・`check-card-actions.mjs`、いずれも`--self-test`含め全PASS）＋本番JSバンドルの文字列実測（"棚編集"・"cg:"プレフィックス・"lazy-from-shelf-target"の出現有無）で確認した。
+- **見つかった追加の穴**：検索結果一覧(`search.tsx`)へのCardActionCluster追加（コミット`63de62b6`・2026-09-12 07:39）だけは、確認時点でまだ本番のJSバンドルに反映されていなかった（`search-*.js`チャンクに`lazy-from-shelf-target`が0件、同じ文字列が共通/一覧/コラボ欄チャンクには存在）。`lovable-publish.mjs`を実行して公開を通した。
+- **二度と起こさないための仕掛け**：**乖離の大きい作業ブランチ（origin/mainから数百〜数千コミット遅れ）で実装を始める前に、必ず`git log origin/main -S"<関連キーワード>"`または対象ファイルの`git blame origin/main`で「既に別セッションが同じ問題を解決していないか」を先に確認する。** これを怠ると、店主に見せる前に自分で気づけたはずの重複実装・劣化再実装を量産する。本番反映確認は、SSR HTMLだけでなくクライアント側チャンクの実際の文字列（日本語UI文言・カスタムのオブジェクトキー文字列リテラル）で行うと、tsc/eslintが通らない環境でも実測できる。
+- **日付**：2026-09-12（697番・5回目でようやく状況を正しく把握）
