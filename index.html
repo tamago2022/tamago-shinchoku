@@ -230,14 +230,29 @@
   .dkrow:last-child{border-bottom:none;}
   .dkrow.stale{opacity:0.55;} /* 752番：読み込み失敗時に出す前回キャッシュは灰色扱い（新着と混ぜない） */
   .dkthumb{flex:none; width:56px; aspect-ratio:1/1; border-radius:10px; display:flex; align-items:center;
-    justify-content:center; font-size:1.5rem; background:#2a3040;}
+    justify-content:center; font-size:1.5rem; background:#2a3040; overflow:hidden;}
+  .dkthumb img{width:100%; height:100%; object-fit:cover;}
   .dkthumb.t-動画{background:#3a2b20;} .dkthumb.t-音{background:#20323a;}
   .dkthumb.t-記事{background:#2b2038;} .dkthumb.t-ページ{background:#233a2a;} .dkthumb.t-資料{background:#3a3620;}
+  .dkthumb.t-修正{background:#3a2b2b;}
   .dkbody{flex:1 1 auto; min-width:0;}
   .dkbody .ct{font-size:0.9rem;}
   .dkbody .cm{margin:2px 0 3px;}
   .dktag{display:inline-block; font-size:0.68rem; font-weight:700; color:var(--yellow);
     border:1px solid rgba(201,162,74,0.5); border-radius:6px; padding:1px 6px; margin-right:6px;}
+  /* 759番：「新しく作った／直した」で分けて探せる棚。既存の.dkfiltersを流用しつつ、
+     直したの「on」だけ色を変えて一目で区別できるようにする（新しく作った＝黄、直した＝橙）。 */
+  .dkkind button[data-dkkind="fixed"].on{background:#e0954b; border-color:#e0954b;}
+  .dksearch{display:flex; flex-direction:column; gap:8px; margin:4px 0 10px;}
+  .dksearch input[type=search]{width:100%; box-sizing:border-box; min-height:38px; padding:0 12px;
+    border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--fg);
+    font-size:0.86rem;}
+  .dksearch input[type=search]::placeholder{color:var(--dim);}
+  .dkdaterow{display:flex; flex-wrap:wrap; gap:6px;}
+  .dkdaterow button{min-height:30px; padding:0 10px; border-radius:999px; border:1px solid var(--line);
+    background:rgba(255,255,255,0.03); color:var(--sub); font-size:0.72rem; font-weight:600;}
+  .dkdaterow button.on{background:var(--blue); border-color:var(--blue); color:#0d1420;}
+  .dkempty{grid-column:1/-1;}
   .ct{font-size:0.92rem; font-weight:700; line-height:1.35;}
   .cm{font-size:0.72rem; color:var(--sub); margin:3px 0 6px; font-variant-numeric:tabular-nums;}
   .cr{font-size:0.78rem; line-height:1.65; color:var(--fg); background:#161c24; border:1px solid var(--line);
@@ -674,7 +689,15 @@
      →「✅完了」は直したもの（1週間で消える・流れていくもの）。ここは作ったもの（消えない・ずっと残る棚）。
      見る場所を増やしたくない、というたまごさんの希望どおり、新しいページは作らず進捗表の中にタブとして足した。
      一番上に置くのは「そこに行けば頼んだものができてる」を1タップで見せるため。 -->
+<!-- 2026-09-12(759番) たまごさん「昨日ちらっと『できたもの』で中目黒のやつが上がってて、
+     今もう見つけられなかった。ちゃんと『直した系』のカテゴライズ...これも埋もれちゃうと困る」
+     → 新しく作った／直した を分けるタブ・言葉で探す・日付で絞る、の3つを足す。消えない棚のまま。 -->
 <details class="sec dekita" id="dekitaSec"><summary>🎁 できたもの <small id="dekitaMeta"></small></summary><div class="in">
+<div class="dkfilters dkkind" id="dkkind">
+  <button type="button" class="on" data-dkkind="all">すべて</button>
+  <button type="button" data-dkkind="new">✨ 新しく作った</button>
+  <button type="button" data-dkkind="fixed">🔧 直した</button>
+</div>
 <div class="dkfilters" id="dkfilters">
   <button type="button" class="on" data-dktype="all">すべて</button>
   <button type="button" data-dktype="動画">動画</button>
@@ -682,6 +705,16 @@
   <button type="button" data-dktype="記事">記事</button>
   <button type="button" data-dktype="ページ">ページ</button>
   <button type="button" data-dktype="資料">資料</button>
+  <button type="button" data-dktype="修正">修正</button>
+</div>
+<div class="dksearch">
+  <input type="search" id="dkq" placeholder="題名・内容で探す（例：中目黒）">
+  <div class="dkdaterow" id="dkdaterow">
+    <button type="button" class="on" data-dkdays="all">全部</button>
+    <button type="button" data-dkdays="0">今日</button>
+    <button type="button" data-dkdays="1">昨日</button>
+    <button type="button" data-dkdays="7">1週間</button>
+  </div>
 </div>
 <div id="dekita"><div class="card note">読み込み中…</div></div>
 </div></details>
@@ -1411,11 +1444,50 @@ setInterval(refreshCost, 60000);
 
 /* ───── 616番：「できたもの」棚（2026-09-07） ─────
    status/dekimono.json（成果物だけの正本・消えない）を読んで並べる。
-   修正（queue.json→✅完了）とは別の道。フィルタは押した種類だけ絞り込む（1タップ）。 */
-const DK_THUMB = {"動画":"🎬","音":"🎧","記事":"📰","ページ":"🖼️","資料":"📊"};
-window.__dekimonoFilter = "all";
+   修正（queue.json→✅完了）とは別の道。フィルタは押した種類だけ絞り込む（1タップ）。
+   ───── 759番（2026-09-12）：新しく作った／直した で分けて探せるように ─────
+   たまごさん「昨日ちらっと『できたもの』で中目黒のやつが上がってて、今もう見つけられなかった。
+   ちゃんと『直した系』のカテゴライズ...これも埋もれちゃうと困る」。
+   items に kind:"new"|"fixed" を追加（dekimono_lib.record_done、759番）。
+   ここでは①kindタブ ②言葉で探す ③日付（今日/昨日/1週間/全部）の3つの絞り込みを足す。
+   絞り込んでも棚の中身（過去分）自体は一切消さない。サムネは check ページなら実物の
+   スクショ（fetchCheckPageAssets・完了欄と同じ仕組みを流用）、無ければ種類アイコン。 */
+const DK_THUMB = {"動画":"🎬","音":"🎧","記事":"📰","ページ":"🖼️","資料":"📊","修正":"🔧"};
+window.__dekimonoFilter = "all";       // 種類（動画/音/記事/ページ/資料/修正）
+window.__dekimonoKind = "all";         // "new"=新しく作った／"fixed"=直した／"all"
+window.__dekimonoDays = "all";         // "0"=今日／"1"=昨日／"7"=1週間／"all"=全部
+window.__dekimonoQuery = "";           // 題名・内容の部分一致検索
 window.__dekimonoStaleAt = null; // フェッチ失敗でキャッシュ表示中の時だけ savedAt を入れる。成功したら必ずnullに戻す
 window.__dekimonoErr = 0;
+function dkDayKey(d){ return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function dkMatchesDate(it, days){
+  if(days === "all") return true;
+  if(!it.addedAt) return false;
+  const d = new Date(it.addedAt);
+  if(isNaN(d)) return false;
+  const now = new Date();
+  if(days === "0") return dkDayKey(d) === dkDayKey(now);
+  if(days === "1"){
+    const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    return dkDayKey(d) === dkDayKey(y);
+  }
+  if(days === "7"){
+    const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+    return d >= cutoff;
+  }
+  return true;
+}
+function dkThumbInner(it){
+  const icon = DK_THUMB[it.type] || "🎁";
+  const checkUrl = (it.url && it.url.indexOf("/share/check/") !== -1) ? it.url : null;
+  if(checkUrl && typeof fetchCheckPageAssets === "function"){
+    window.__thumbCache = window.__thumbCache || {};
+    let thumbs = window.__thumbCache[checkUrl];
+    if(thumbs === undefined){ thumbs = "pending"; fetchCheckPageAssets(checkUrl).then(()=>{ try{ renderDekita(); }catch(e){} }); }
+    if(thumbs && thumbs !== "pending" && thumbs.length) return `<img src="${esc(thumbs[0])}" loading="lazy" alt="">`;
+  }
+  return icon;
+}
 function renderDekita(){
   const box = document.getElementById("dekita"); if(!box) return;
   const meta = document.getElementById("dekitaMeta");
@@ -1430,24 +1502,35 @@ function renderDekita(){
       : `<div class="card note">読み込み中…</div>`;
     return;
   }
+  const newCount = all.filter(it => it.kind !== "fixed").length;
+  const fixedCount = all.filter(it => it.kind === "fixed").length;
   if(meta) meta.innerHTML = (window.__dekimonoStaleAt ? staleNoteHtml(window.__dekimonoStaleAt) + "　" : "")
-    + (all.length ? `${all.length}件` : "");
-  const filt = window.__dekimonoFilter || "all";
-  const rows = all.filter(it => filt === "all" || it.type === filt)
-    .slice()
-    .sort((a,b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+    + (all.length ? `${all.length}件（✨${newCount}・🔧${fixedCount}）` : "");
+  const kindFilt = window.__dekimonoKind || "all";
+  const typeFilt = window.__dekimonoFilter || "all";
+  const days = window.__dekimonoDays || "all";
+  const q = (window.__dekimonoQuery || "").trim().toLowerCase();
+  const rows = all.filter(it => {
+    if(kindFilt !== "all" && (it.kind === "fixed" ? "fixed" : "new") !== kindFilt) return false;
+    if(typeFilt !== "all" && it.type !== typeFilt) return false;
+    if(!dkMatchesDate(it, days)) return false;
+    if(q && !((it.title||"") + " " + (it.what||"")).toLowerCase().includes(q)) return false;
+    return true;
+  }).slice().sort((a,b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
   if(!rows.length){
-    box.innerHTML = `<div class="card note">まだありません（成果物ができるとここに積み上がります）</div>`;
+    box.innerHTML = all.length
+      ? `<div class="card note dkempty">この条件に一致するものはありません（絞り込みを変えてみてください）</div>`
+      : `<div class="card note dkempty">まだありません（成果物ができるとここに積み上がります）</div>`;
     return;
   }
   box.innerHTML = (window.__dekimonoStaleAt ? `<div class="card note" style="grid-column:1/-1">${staleNoteHtml(window.__dekimonoStaleAt)}</div>` : "")
     + rows.map(it => {
-    const icon = DK_THUMB[it.type] || "🎁";
     const stamp = it.addedAt ? formatStamp(it.addedAt) : "—";
+    const kindTag = it.kind === "fixed" ? `<span class="dktag" style="color:#e0954b;border-color:rgba(224,149,75,0.5)">🔧直した</span>` : `<span class="dktag">✨作った</span>`;
     return `<a class="dkrow${window.__dekimonoStaleAt ? " stale" : ""}" href="${esc(it.url || "#")}" target="_blank" rel="noopener">
-      <div class="dkthumb t-${esc(it.type||"")}">${icon}</div>
+      <div class="dkthumb t-${esc(it.type||"")}">${dkThumbInner(it)}</div>
       <div class="dkbody">
-        <div class="ct"><span class="dktag">${esc(it.type||"")}</span>${esc(it.title||"")}</div>
+        <div class="ct">${kindTag}<span class="dktag">${esc(it.type||"")}</span>${esc(it.title||"")}</div>
         <div class="cm">${esc(it.what||"")}</div>
         <div class="cm">${esc(stamp)}</div>
       </div>
@@ -1485,6 +1568,22 @@ document.addEventListener("click", e=>{
   document.querySelectorAll("#dkfilters button").forEach(x => x.classList.toggle("on", x === b));
   renderDekita();
 });
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-dkkind]"); if(!b) return;
+  window.__dekimonoKind = b.dataset.dkkind;
+  document.querySelectorAll("#dkkind button").forEach(x => x.classList.toggle("on", x === b));
+  renderDekita();
+});
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-dkdays]"); if(!b) return;
+  window.__dekimonoDays = b.dataset.dkdays;
+  document.querySelectorAll("#dkdaterow button").forEach(x => x.classList.toggle("on", x === b));
+  renderDekita();
+});
+(function(){
+  const inp = document.getElementById("dkq"); if(!inp) return;
+  inp.addEventListener("input", () => { window.__dekimonoQuery = inp.value; renderDekita(); });
+})();
 refreshDekimono();
 setInterval(refreshDekimono, 60000);
 
