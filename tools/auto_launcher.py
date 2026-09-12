@@ -363,10 +363,19 @@ def content_check(url, timeout=10):
     戻り値: (ok: bool, reason: str)
     """
     import re as _re
+    import socket as _socket
     import urllib.request
     import urllib.error
 
+    # 2026-09-12（776番）：urllib.request.urlopen(timeout=...) はTCP接続・読み込みには効くが
+    #   **DNS解決（getaddrinfo）自体はこのtimeoutの対象外**というPythonの既知の落とし穴がある。
+    #   ネットワークが一瞬不安定になりDNSが応答しないだけで、ここが無期限にブロックし続け、
+    #   auto_launcher.py全体（＝心臓）が固まる（実測：12:58〜16:49、230分停止の主因と推定）。
+    #   socket.setdefaulttimeout() はDNS解決にも効く数少ない確実な手段なので、呼び出し前後で
+    #   グローバル既定値を退避・復元する（他のコードの挙動を変えないため）。
+    _old_timeout = _socket.getdefaulttimeout()
     try:
+        _socket.setdefaulttimeout(timeout)
         req = urllib.request.Request(url, headers={"User-Agent": "tamago-content-checker/1.0"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             code = resp.getcode()
@@ -375,6 +384,8 @@ def content_check(url, timeout=10):
         return False, "ページが開けません（HTTP %s）" % e.code
     except Exception as e:
         return False, "取得に失敗しました（%s）" % e
+    finally:
+        _socket.setdefaulttimeout(_old_timeout)
 
     if code and code != 200:
         return False, "ページが%sです" % code
@@ -1172,12 +1183,17 @@ def harvest(q):
                     continue
                 # 証拠ページが開けなかったものは、3時間おきにもう一度だけ見に行く。
                 # 復旧のpushがまだ本番に届いていないだけ、ということがあるため。
+                # 2026-09-12（776番）：回線が一時的に繋がらなかっただけの時は、_contentCheckCooldownMin
+                #   （既定1分）だけ待てば十分。3時間固定だと、たまたま繋がらなかった1回で3時間も
+                #   検品の順番から外れてしまう（＝人には見えない形でその項目だけ止まる）。
                 _ec = it.get("evidenceCheckedAt")
                 if _ec:
+                    _cooldown_sec = float(it.get("_contentCheckCooldownMin") or 180) * 60
                     try:
                         if (time.time() - time.mktime(
-                                time.strptime(_ec[:19], "%Y-%m-%dT%H:%M:%S"))) < 3 * 3600:
+                                time.strptime(_ec[:19], "%Y-%m-%dT%H:%M:%S"))) < _cooldown_sec:
                             continue
+                        it.pop("_contentCheckCooldownMin", None)
                     except Exception:
                         pass
                 urls = it.get("urls") or []
@@ -1196,7 +1212,13 @@ def harvest(q):
                     alive, why = content_check(check_url)
                     if not alive and "取得に失敗" in (why or ""):
                         # 回線の一時的な失敗。今日は見送って、次の巡回でまた見る。
+                        # 2026-09-12（776番）：以前はここで即座にbacklogVerifiedを外していたため、
+                        #   ネットワークが数分単位で不調な間、同じ番号を15秒おきに無限リトライし続けた。
+                        #   socket.setdefaulttimeout()でハング自体は防いだが、多重防御として
+                        #   1分間のクールダウンを入れ、詰まりかけても他のitemの検品を止めない。
                         it.pop("backlogVerified", None)
+                        it["evidenceCheckedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+                        it["_contentCheckCooldownMin"] = 1
                         log("… 確認ページに繋がらないので次回へ %d番（%s）" % (it.get("n"), why))
                         break
                     if not alive and ("HTTP" in (why or "") or "開け" in (why or "")):

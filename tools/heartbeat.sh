@@ -73,6 +73,19 @@ while :; do
     echo "$(date '+%F %T') 新しい心臓（pid $CUR）に交代します" >> "$LOG"
     exit 0
   fi
+  # ---- 2026-09-12（776番①）：心臓を立て直す側（machine_status_push.sh・launchd 5分便）が
+  #   死んでいないかを、心臓自身が確かめる。「見張りの見張り」を積み上げるのではなく、
+  #   相互監視（心臓⇄5分便）にして、どちらか生きている方が相手を起こせる形にする。
+  #   実測はmachine.json（この5分便が毎回必ず書く）の最終更新時刻で行う。15分止まっていたら
+  #   launchdへ直接蹴り直しを頼む（新規ジョブ登録ではなく既存ジョブのkickstartのみ）。
+  MJ="$REPO/status/machine.json"
+  if [ -f "$MJ" ]; then
+    MJ_AGE=$(( $(date +%s) - $(stat -f %m "$MJ" 2>/dev/null || echo 0) ))
+    if [ "$MJ_AGE" -gt 900 ]; then
+      echo "$(date '+%F %T') 🚨 立て直しの便（machine_status_push.sh）が${MJ_AGE}秒（約$(( MJ_AGE / 60 ))分）更新していません。launchdへ蹴り直しを試みます" >> "$LOG"
+      launchctl kickstart -k "gui/$(id -u)/com.tamago.machine-status" >> "$LOG" 2>&1 || true
+    fi
+  fi
   run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1
