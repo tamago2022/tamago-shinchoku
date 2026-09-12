@@ -271,17 +271,65 @@
       "result": "in_progress",
       "note": "公称$0.01/秒×5.48秒=$0.0548(8.2円/150円レート)の計算値。ダッシュボード実測(Subtotal前後差)は今回も取得不能(2026-09-12・複数セッション独立で確認済み・経路を使い切ったため以後この経路を繰り返さない): (1)ブラウザ操作ツール非搭載でfal.aiログイン画面しか返らない (2)公式Billing API(GET https://api.fal.ai/v1/account/billing)を正しく特定し実行したが403 authorization_error(admin API keyが必要、現行キーは動画生成専用スコープ) (3)レスポンスヘッダーx-fal-billable-units=71.24を発見したがUSD換算係数(unit_price)もbilling API経由でしか取れず403で不明、根拠のない換算はしない。今回の追加作業：カメラのズレを特徴点マッチングで数値測定(横23px=1.8%・ズーム1.4%、単調増加で往復ではない)し、ffmpeg(imageio_ffmpeg同梱バイナリ、vidstab tripodモード)で後処理スタビライズ→横7px(0.5%)・ズーム1.0%まで圧縮。falへの新規リクエストは無く追加課金ゼロ(既存の1本のみ使用)。実費確定にはたまごさんにしかできない1点(admin scope APIキー発行、または生成前後で一度だけダッシュボードを見る)が必要。",
       "recordedAt": "2026-09-12T05:38:04+09:00"
+    },
+    {
+      "date": "2026-09-12",
+      "n": 783,
+      "title": "読み聞かせ絵本・声3種聞き比べ",
+      "model": "fal-ai/minimax/speech-02-hd",
+      "what": "桃太郎冒頭116文字・Wise_Woman・寝かしつけ調整(speed0.85)",
+      "count": 1,
+      "unitCostUsd": 0.0116,
+      "unitCostYen": 1.74,
+      "totalCostUsd": 0.0116,
+      "totalCostYen": 1.74,
+      "elapsedMin": 1.0,
+      "result": "adopted",
+      "note": "3種聞き比べのうち1本。783番承認済み上限20円以内",
+      "recordedAt": "2026-09-12T23:17:56+09:00"
+    },
+    {
+      "date": "2026-09-12",
+      "n": 783,
+      "title": "読み聞かせ絵本・声3種聞き比べ",
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "what": "桃太郎冒頭116文字・Matilda・stability0.75",
+      "count": 1,
+      "unitCostUsd": 0.0116,
+      "unitCostYen": 1.74,
+      "totalCostUsd": 0.0116,
+      "totalCostYen": 1.74,
+      "elapsedMin": 1.0,
+      "result": "adopted",
+      "note": "3種聞き比べのうち1本。783番承認済み上限20円以内",
+      "recordedAt": "2026-09-12T23:17:56+09:00"
+    },
+    {
+      "date": "2026-09-12",
+      "n": 783,
+      "title": "読み聞かせ絵本・声3種聞き比べ",
+      "model": "alibaba/qwen-audio-3-tts",
+      "what": "桃太郎冒頭116文字・Cherry・language=Japanese",
+      "count": 1,
+      "unitCostUsd": 0.0058,
+      "unitCostYen": 0.87,
+      "totalCostUsd": 0.0058,
+      "totalCostYen": 0.87,
+      "elapsedMin": 1.0,
+      "result": "adopted",
+      "note": "3種聞き比べのうち1本。Grok TTSはxAI APIキー未設定のため代替。783番承認済み上限20円以内",
+      "recordedAt": "2026-09-12T23:17:56+09:00"
     }
   ],
   "monthlyCapYen": 3000,
-  "updatedAt": "2026-09-12T07:05:42+09:00",
+  "updatedAt": "2026-09-12T23:17:56+09:00",
   "summary": {
     "thisMonth": "2026-09",
-    "thisMonthTotalYen": 1294.52,
-    "thisMonthTotalUsd": 6.0675,
-    "allTimeTotalYen": 1294.52,
+    "thisMonthTotalYen": 1298.87,
+    "thisMonthTotalUsd": 6.0965,
+    "allTimeTotalYen": 1298.87,
     "capYen": 3000,
-    "remainingYen": 1705.48,
+    "remainingYen": 1701.13,
     "overCap": false,
     "byModel": [
       {
@@ -340,10 +388,10 @@
       },
       {
         "model": "fal-ai/elevenlabs/tts/eleven-v3",
-        "totalYen": 15.4,
-        "totalUsd": 0.1027,
-        "count": 1,
-        "adoptedCount": 1,
+        "totalYen": 17.14,
+        "totalUsd": 0.1143,
+        "count": 2,
+        "adoptedCount": 2,
         "discardedCount": 0,
         "failedCount": 0
       },
@@ -358,9 +406,18 @@
       },
       {
         "model": "fal-ai/minimax/speech-02-hd",
-        "totalYen": 0.7,
-        "totalUsd": 0.0,
-        "count": 5,
+        "totalYen": 2.44,
+        "totalUsd": 0.0116,
+        "count": 6,
+        "adoptedCount": 2,
+        "discardedCount": 0,
+        "failedCount": 0
+      },
+      {
+        "model": "alibaba/qwen-audio-3-tts",
+        "totalYen": 0.87,
+        "totalUsd": 0.0058,
+        "count": 1,
         "adoptedCount": 1,
         "discardedCount": 0,
         "failedCount": 0
@@ -383,6 +440,6 @@
     },
     "discardedTotalYen": 12.0,
     "failedNoChargeTotalYen": 0,
-    "recordCount": 17
+    "recordCount": 20
   }
 }
