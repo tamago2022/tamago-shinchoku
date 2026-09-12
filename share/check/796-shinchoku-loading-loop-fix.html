@@ -64,26 +64,64 @@
 
 
 
-<h2>④ 押せるリンク</h2>
+<h2>③ 追加分（2026-09-13・AI検品で1回はねられた後の作り直し）：本線案 status/now.json・status/rev.txt</h2>
+<div class="fix">
+週の目盛り（paceBar）と「いまの現在地」（genzaichiBar）だけは、②の9箇所の仕組みが対象外で、
+以前のまま「60秒ごとに status/pace.json・status/genzaichi.json を無条件で取り直し、無条件で
+書き換える」ままだった。ここに、たまごさんが要求した本線案（rev.txtだけを見に行き、同じなら
+何もしない／変わっていたらnow.jsonを1回だけ取って書き換える）を実装した。<br>
+書く側：<code>tools/pace.py</code>（既存の5分おき常駐に相乗り。新しい常駐は増やしていない）が、
+pace.json書き込みの直後に status/pace.json＋status/genzaichi.json を1本にまとめた
+<code>status/now.json</code>（実測3622バイト）と、その中身のハッシュだけの
+<code>status/rev.txt</code>（実測20バイト）を書く。<br>
+読む側：<code>index.html</code>の新しい<code>pollNow()</code>が30秒おきに rev.txt だけを見に行き、
+前回と同じ文字列なら通信も再描画もそこで打ち切る。変わっていた時だけ now.json を1回取り、
+既存の<code>renderPace</code>・<code>renderGenzaichi</code>（②と同じ<code>withScrollLock796</code>で
+スクロール位置を保険で戻す）を呼ぶ。既存の<code>refreshPace()</code>・<code>refreshGenzaichi()</code>
+（pace.json/genzaichi.jsonへの直接フェッチ）は削除せず、初回表示とnow.json/rev.txtが無い時の保険として残した。
+</div>
+
+<h2>④ 実測（本物のindex.htmlの<code>pollNow()</code>をNode上でそのまま実行して数えた）</h2>
+<table>
+<tr><th></th><th>前（旧：paceBar/genzaichiBarのみ・60秒ごと無条件）</th><th>後（新：rev.txt方式・30秒ごと）</th></tr>
+<tr><td>60秒あたりの通信回数</td><td>2本（pace.json＋genzaichi.json、毎回）</td><td>データ不変の60秒：<b>2本</b>（rev.txtのみ）／データが変わった60秒：3本(rev.txt×2+now.json×1)</td></tr>
+<tr><td>60秒あたりの通信量</td><td>約3,976バイト（711B+3,265B、毎回・変化の有無に関係なく）</td><td>データ不変の60秒：<b>約40バイト</b>（rev.txt 20B×2）／データが変わった60秒：約3,662バイト</td></tr>
+<tr><td>ズレの最大幅</td><td>最大60秒（次のポーリングまで気づけない）</td><td>クライアント側は最大<b>30秒</b>（rev.txtの確認間隔）。実際の鮮度はpace.py(5分おき)・genzaichi.py(実質30分おき)という元データの更新間隔が下限（そこはクライアント側では縮められない）</td></tr>
+<tr><td>60秒あたりの再描画回数</td><td>2回（データが1バイトも変わらなくても毎回paceBar・genzaichiBarを丸ごと書き換え）</td><td>データ不変の60秒：<b>0回</b>／データが変わった60秒：2回（変わった分だけ）</td></tr>
+<tr><td>再描画時のスクロール移動量</td><td>保険なし（旧コードに固定処置が無い）</td><td>renderPace/renderGenzaichiの呼び出しを<code>withScrollLock796</code>で包み、描き直し後にスクロール位置がずれたら次フレームで元の位置へ戻す（②で本番稼働済みの仕組みをそのまま流用）</td></tr>
+</table>
+<div class="note">
+実測方法：<code>node</code>でindex.htmlの&lt;script&gt;を実際に取り出し、fetchだけをテスト用の偽サーバー
+（rev.txtが同じ／変わった、の2パターン）に差し替えて<code>pollNow()</code>を4回呼び、通信先と再描画回数を数えた
+（推測ではなく本物のコードを動かした結果）。<b>正直な限定事項</b>：このセッションには実ブラウザを操作する
+ツールが搭載されておらず、375px実機でのスクロール量ピクセル計測・録画は今回も撮影できていない
+（憲法の「ブラウザを新しく立ち上げない・画面を奪わない」原則により、代役ツールの追加導入も見送った）。
+上記はコード実行による実測であり、実機録画の代わりにはならないことを明記する。
+</div>
+
+<h2>⑤ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番の進捗表</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>本番status/now.json（新規・約3.6KB）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/now.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/now.json</a></li>
+  <li><b>本番status/rev.txt（新規・約20バイト）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/rev.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/rev.txt</a></li>
   <li><b>本番pace.json(lineTarget=80.0を実測)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/pace.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/pace.json</a></li>
   <li><b>移した410本の記録(MANIFEST.md)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/_archive/logs-2026-09-13/MANIFEST.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/_archive/logs-2026-09-13/MANIFEST.md</a></li>
-  <li><b>本番に反映されたコード差分(796番コメント)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/96c56ff9df7c7660ed142219ec38c81d8ca2f29b" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/96c56ff9df7c7660ed142219ec38c81d8ca2f29b</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>⑥ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本来ここ80.0%と使用79〜80%が一致(3種類→1種類)</td><td class="yes">一致(overLine=0.0)</td></tr>
 <tr><td>3日以上前のログ410本を倉庫へ移動・記録</td><td class="yes">完了(status/_archive/logs-2026-09-13/MANIFEST.md)</td></tr>
-<tr><td>同じデータなら再描画しない仕組み(9箇所)を本番へ反映</td><td class="yes">反映済み(GitHub Pages実測で確認)</td></tr>
-<tr><td>375px実機でのスクロール非ジャンプのスクリーンショット/録画</td><td class="no">このセッションにブラウザ操作ツールが無く撮影不可(下記注記)</td></tr>
+<tr><td>同じデータなら再描画しない仕組み(9箇所＋今回のpaceBar/genzaichiBar)を本番へ反映</td><td class="yes">反映済み</td></tr>
+<tr><td>status/now.json・status/rev.txtが本番で200で返る</td><td class="yes">下記リンク参照（本番反映後に実測）</td></tr>
+<tr><td>通信回数・通信量・ズレ幅・再描画回数の実測表</td><td class="yes">④参照（本物のコードを実行して計測）</td></tr>
+<tr><td>375px実機でのスクロール非ジャンプのスクリーンショット/録画</td><td class="no">このセッションにブラウザ操作ツールが無く撮影不可(④の限定事項に明記)</td></tr>
 <tr><td>ファイルサイズ・取得時間の実測表</td><td class="yes">完了(下記参照・本番URLに対しcurl実測)</td></tr>
 </table>
 
 <footer>
-status/*.jsonの取得時間・サイズ実測(GitHub Pages本番, 2026-09-13 05:5x時点): queue_light.json 88KB/0.53秒、dekimono.json 136KB/0.47秒、cost_by_task.json 48KB/0.33秒、commands.json 50KB/0.34秒、later_tabs.json 55KB/0.36秒、quota.json 3.9KB/0.29秒、pace.json 0.7KB/0.29秒、machine.json 12KB/0.31秒、whiteboard.json 24KB/0.30秒、queue.json(フル・詳細展開時のみ) 1.9MB/0.63秒。個々は1秒未満だが、30秒おきの機械的な全部作り直しが積み重なって「ぐるぐる・重い」に見えていた。
+status/*.jsonの取得時間・サイズ実測(GitHub Pages本番, 2026-09-13 05:5x時点): queue_light.json 88KB/0.53秒、dekimono.json 136KB/0.47秒、cost_by_task.json 48KB/0.33秒、commands.json 50KB/0.34秒、later_tabs.json 55KB/0.36秒、quota.json 3.9KB/0.29秒、pace.json 0.7KB/0.29秒、machine.json 12KB/0.31秒、whiteboard.json 24KB/0.30秒、queue.json(フル・詳細展開時のみ) 1.9MB/0.63秒。個々は1秒未満だが、30秒おきの機械的な全部作り直しが積み重なって「ぐるぐる・重い」に見えていた。now.json(新規)は3,622バイト・rev.txt(新規)は20バイト。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
