@@ -52,37 +52,40 @@
 <div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-751番と同じ元絵(海辺のZENうんこ)を使い、ltx-2.5 fastで『もやが一方向に流れ続け、カメラは完全固定、最初と最後がほぼ同じ絵になる』動画を1本だけ生成した。オプティカルフロー解析(客観的な数値検証)で136フレーム中116フレームが右方向、左方向は0フレームと確認できた。fal.aiダッシュボードの前後差での実費確定は、公式Billing APIを見つけて叩いたが権限不足(403)、ブラウザ操作の手段も無いため今回も取得できなかった。代わりに公称単価からの計算値と、その計算に使った公式ドキュメントの引用を載せている。
+<b style="color:var(--aka);">★2026-09-12差し戻し対応：</b>「最初と最後のフレームで岩・太陽・人物の位置が一致」という前回の報告は誤りだった。特徴点マッチングで数値測定したところ、実際は横に23px(画面幅の1.8%)ずれ、1.4%ズームインしていた(単調に増加＝ゆっくり前進、往復ではない)。追加のfal課金をせず、生成済みの動画1本(750番と同じくfalへの新規リクエストは無し)にffmpeg(vidstabのtripodモード＝最初のコマへ機械的に固定)を後処理として適用し、横ズレを23px→7px(0.5%)、ズームを1.4%→1.0%まで圧縮した。目視でも下のbefore/after画像の通りほぼ一致する。fal.aiダッシュボードの前後差での実費確定は、公式Billing APIを見つけて叩いたが権限不足(403)、ブラウザ操作の手段も無いため今回も取得できず、計算値のみ据え置き。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>5.48秒</b><span>動画の長さ</span></div>
-  <div class="num"><b>1920x1080</b><span>解像度</span></div>
-  <div class="num"><b>$0.0548 (8.2円)</b><span>公称単価からの計算値(150円/ドル)</span></div>
+  <div class="num"><b>1280x720</b><span>スタビライズ後の解像度</span></div>
+  <div class="num"><b>$0.0548 (8.2円)</b><span>公称単価からの計算値(150円/ドル)・追加課金なし</span></div>
+  <div class="num"><b>23px→7px</b><span>カメラの横ズレ(修正前→後、画面幅1280pxに対する比率1.8%→0.5%)</span></div>
+  <div class="num"><b>1.4%→1.0%</b><span>ズーム量(修正前→後)</span></div>
   <div class="num"><b>116/136コマ</b><span>もやが右方向に動いた割合(左方向は0)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
-  <div class="shot before"><b>最初のフレーム</b><img src="assets/771-zen-beach-loop/frames/frame_0000.jpg" alt="前"></div>
-  <div class="shot after"><b>最後のフレーム(ループ確認用)</b><img src="assets/771-zen-beach-loop/frames/frame_0136.jpg" alt="後"></div>
+  <div class="shot before"><b>修正前：最初と最後のコマ(実際は23pxずれていた)</b><img src="assets/771-zen-beach-loop/before_after_original.jpg" alt="修正前before/after"></div>
+  <div class="shot after"><b>ffmpegスタビライズ後：最初と最後のコマ(7pxまで圧縮)</b><img src="assets/771-zen-beach-loop/before_after_stabilized.jpg" alt="修正後before/after"></div>
   <div class="shot plain"><b>もやの推移9コマ(0.68秒間隔)</b><img src="assets/771-zen-beach-loop/mist_contact_sheet2.jpg" alt="もやの推移9コマ(0.68秒間隔)"><span class="meta">水平線付近をクロップ。オプティカルフローでも左方向の動きは検出されず</span></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>生成した動画</b><a href="https://v3b.fal.media/files/b/0aaa0a2f/uuC0zCybxgxvM6Fbs-MR__HW4ZtB5p.mp4" target="_blank" rel="noopener">https://v3b.fal.media/files/b/0aaa0a2f/uuC0zCybxgxvM6Fbs-MR__HW4ZtB5p.mp4</a></li>
+  <li><b>スタビライズ後の動画(採用・カメラ固定版)</b><a href="assets/771-zen-beach-loop/video_ltx_fast_771_stabilized.mp4" target="_blank" rel="noopener">assets/771-zen-beach-loop/video_ltx_fast_771_stabilized.mp4</a></li>
+  <li><b>生成そのままの動画(修正前・fal.ai配信元URL)</b><a href="https://v3b.fal.media/files/b/0aaa0a2f/uuC0zCybxgxvM6Fbs-MR__HW4ZtB5p.mp4" target="_blank" rel="noopener">https://v3b.fal.media/files/b/0aaa0a2f/uuC0zCybxgxvM6Fbs-MR__HW4ZtB5p.mp4</a></li>
   <li><b>fal帳簿(status/fal_cost_ledger.json)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/fal_cost_ledger.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/fal_cost_ledger.json</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>カメラが完全固定か</td><td class="yes">最初と最後のフレームで岩・太陽・人物の位置が一致</td></tr>
+<tr><td>カメラが完全固定か</td><td class="yes">特徴点マッチングで数値測定。修正前は横23px(1.8%)ズレ・1.4%ズーム(単調増加=往復なし)。ffmpeg tripodスタビライズで横7px(0.5%)・ズーム1.0%まで圧縮、目視でほぼ一致</td></tr>
 <tr><td>もやが一方向に流れ続けるか(戻らないか)</td><td class="yes">オプティカルフロー解析：136コマ中116コマで右方向の動き、左方向の動きは0コマ</td></tr>
-<tr><td>ループ向きの絵になっているか</td><td class="yes">最初と最後のフレームがほぼ同一構図</td></tr>
-<tr><td>ダッシュボードのSubtotal前後差を1円まで確定できたか</td><td class="no">ブラウザ操作ツールなし＋Billing APIは403(admin権限が必要)で不可、計算値のみ</td></tr>
+<tr><td>ループ向きの絵になっているか</td><td class="yes">スタビライズ後の最初と最後のフレームがほぼ同一構図(上のbefore/after画像参照)</td></tr>
+<tr><td>ダッシュボードのSubtotal前後差を1円まで確定できたか</td><td class="no">ブラウザ操作ツールなし＋Billing APIは403(admin権限が必要)で不可、計算値のみ。たまごさん本人にしかできない1点(下記)が必要</td></tr>
 </table>
 
 <footer>
