@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#717 公開リポジトリの1MB超ファイルを解消 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #717 公開リポジトリの1MB超ファイルを解消</div>
+<h1>#717 公開リポジトリの1MB超ファイルを解消</h1>
+<div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+1MB超のファイルが330件（Eagleギャラリー237件＋確認ページの画像/動画93件）あった。原因3つを直した：①スマホ用Eagleギャラリーのサムネ/受け渡し画像を無劣化コピーしていた処理を圧縮方式へ修正、②公開直前に大きいファイルを弾くガードが一部の経路（個別セッションの直接commit）を素通りしていたのでgit pre-commit hookに一本化、③中継所のログ(relay.log)が46.8MBまで無制限に肥大していたのでトリムを追加。既存の330件も同じ画質のままその場で圧縮した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>330件</b><span>直す前（1MB超ファイル数）</span></div>
+  <div class="num"><b>2件</b><span>直した後（残りは判断待ちの2件のみ）</span></div>
+  <div class="num"><b>907MB→約420MB</b><span>該当ファイルの合計サイズ</span></div>
+  <div class="num"><b>0件</b><span>新たに1MB超が増える経路（pre-commit hookで恒久ガード）</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>直す前（1.8MB・確認ページ用スクショの一例）</b><img src="img/717-before-442-demo.jpg" alt="前"></div>
+  <div class="shot after"><b>直した後（116KB・見た目はそのまま）</b><img src="img/442-before.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>GitHub Pages（このEagleギャラリーが軽くなった実物）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/eagle-k7m2xq9p/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/eagle-k7m2xq9p/index.html</a></li>
+  <li><b>直したコミット（717番）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/0f3bd1c3" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/0f3bd1c3</a></li>
+  <li><b>失敗台帳への記録（原因・判断根拠つき）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/failures.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/failures.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>画質を保ったまま容量を落とせているか</td><td class="yes">同じ画像を並べて目視。文字も判別できる範囲を維持</td></tr>
+<tr><td>生きているURL（Eagleギャラリー・ポッドキャスト等）が壊れていないか</td><td class="yes">ファイル名/拡張子は変えず中身だけ圧縮。ポッドキャスト本編は対象外に</td></tr>
+<tr><td>1MB超が今後また増えないか</td><td class="yes">.git/hooks/pre-commitで機械的にブロックする仕組みを追加</td></tr>
+<tr><td>残り2件（tweets_data.json・queue.json）はどうするか</td><td class="yes">前者は過去の類似事故と同種のためたまごさんの判断待ち、後者は稼働中の生きた台帳のため今回は見送り</td></tr>
+</table>
+
+<footer>
+対象外にした share/podcast/audio・share/audio（配信中ポッドキャスト・TTS聞き比べ用音声）は tools/kenpou_check.py の BIG_FILE_EXEMPT_PREFIXES に理由付きで明記。詳しい原因と判断根拠は status/failures.md の20番を参照。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
