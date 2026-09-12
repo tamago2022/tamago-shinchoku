@@ -21,7 +21,7 @@ Dispatchが会話の最初に必ず読む1枚。ルールではなく「今の�
     番号ごとに最後の1件だけを残し、URLのファイル名が自分の番号で始まっていないものは捨てる。
   - Vault（Obsidian）側にも新規ファイルとして同じ7項目を置く（既存ノートは1文字も触らない）。
 """
-import json, os, re, glob, subprocess, datetime, urllib.request, time
+import io, json, os, re, glob, subprocess, datetime, urllib.request, time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ST = os.path.join(REPO, "status")

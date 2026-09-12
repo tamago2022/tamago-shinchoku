@@ -45,6 +45,7 @@ REPO = os.path.dirname(HERE)
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import cost_risk  # noqa: E402  案件#676：お金がかかるタスクの自動判定
+import redo_guard  # noqa: E402  案件#797：やり直し合計2回でstuck化する共通ガード
 VAULT = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain"
 INBOX_DIR = os.path.join(VAULT, "AI出力", "_ルール", "コマンド_受信")
 OUT = os.path.join(REPO, "status", "commands.json")
@@ -275,7 +276,11 @@ DUP_STATUSES = ("waiting", "running", "hold")
 
 
 def _titles_conflict(a, b):
-    """題名の重複判定：完全一致／どちらかがもう片方を含む／先頭30文字が同じ。"""
+    """題名の重複判定：完全一致／どちらかがもう片方を含む／先頭40文字が同じ。
+    797番：30→40文字へ拡張（たまごさん「同じ名前が並ぶな」）。
+    分割タスクの "(1/4)"/"(2/4)" のようなカウンタは**先頭**に置く運用にしたので
+    （auto_launcher.py split_big_job参照）、先頭40文字を比べればカウンタ違いの分割タスク同士は
+    自然に別物と判定される（strip等はしない＝わざと区別のため残す）。"""
     a = (a or "").strip()
     b = (b or "").strip()
     if not a or not b:
@@ -284,7 +289,7 @@ def _titles_conflict(a, b):
         return True
     if a in b or b in a:
         return True
-    if len(a) >= 30 and len(b) >= 30 and a[:30] == b[:30]:
+    if len(a) >= 40 and len(b) >= 40 and a[:40] == b[:40]:
         return True
     return False
 
@@ -720,6 +725,7 @@ def queue_redo(target, note=None):
     items = q.get("items") or []
     done = []
     escalated = []
+    stuck_now = []  # 797番：やり直し合計2回に達して今回stuckにしたもの
     for n in ns:
         idx = None
         for i, it in enumerate(items):
@@ -749,6 +755,16 @@ def queue_redo(target, note=None):
                 "原因の調べ方・実装の方法そのものを変えてください。" % oc
             )
         it["what"] = (it.get("what") or "") + note_line
+        redo_guard.note_fail_reason(it, note or "たまごさんの「直ってないよ」指摘（詳細なし）")
+        # 797番：redoCount＋ownerRedoCount＋aiVerifyFailCountの合計が2に達したら、
+        # たまごさんの「やり直して」であっても、もう一度同じ手順で走らせず一旦止める。
+        # たまごさんの言葉：「まず同じことを2回やって、絶対に厳守して、タスクを殴らせない」。
+        if redo_guard.should_stuck(it):
+            redo_guard.mark_stuck(it)
+            items.insert(0, it)
+            done.append(n)
+            stuck_now.append(n)
+            continue
         if escalate:
             it.pop("priority", None)
             it["priority"] = 1
@@ -771,6 +787,9 @@ def queue_redo(target, note=None):
     where = ("P%d で列に戻しました（急がない）" % prio) if prio else "列の先頭（次に発車）へ戻しました"
     if escalated:
         where += "・%s番は3回目以上のため別アプローチを指示済み" % ",".join(str(x) for x in escalated)
+    if stuck_now:
+        where += ("・%s番はやり直し合計2回に達したため今回は走らせず止めました（Dispatchへ理由付きで通知済み）"
+                  % ",".join(str(x) for x in stuck_now))
     if len(done) == 1:
         return "done", "%d番を%s" % (done[0], where)
     return "done", "%d件をまとめて%s（%s）" % (len(done), where, ",".join(str(x) for x in done))

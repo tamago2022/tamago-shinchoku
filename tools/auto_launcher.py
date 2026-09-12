@@ -38,11 +38,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import cost_risk  # noqa: E402  案件#676：お金がかかるタスクの自動判定・確認文言
+import redo_guard  # noqa: E402  案件#797：やり直し合計2回でstuck化する共通ガード
 QUEUE = os.path.join(REPO, "status", "queue.json")
 MACHINE = os.path.join(REPO, "status", "machine.json")
 QUOTA = os.path.join(REPO, "status", "quota.json")
 PRIORITY = os.path.join(REPO, "status", "priority.json")
 LOG = os.path.join(REPO, "status", "auto_launch.log")
+# 797番：直近の実発車（本物・空回しテスト問わず）の時刻。genzaichi.py がこれの
+# 更新間隔を見て「発車0本が10分続いていないか」を判定する（詳細はgenzaichi.py側）。
+LAST_LAUNCH_STAMP = os.path.join(REPO, "status", ".last_launch_at")
 # ---- 424番：どの仕事がいくら使ったか見える化（2026-09-06）----
 COST_LEDGER = os.path.join(REPO, "status", "cost_by_task.json")
 # 単価フォールバック（total_cost_usdが取れなかった時だけ使う）。
@@ -789,7 +793,11 @@ def split_big_job(it, q, urls):
         ) % (orig_what, i, len(chunks), len(chunk), "\n".join("- %s" % t for t in chunk))
         items.append({
             "n": next_n,
-            "title": "%s（%d/%d）" % (orig_title or it.get("title") or ("%d番" % n), i, len(chunks)),
+            # 797番：カウンタを末尾の全角括弧「（1/4）」から先頭の半角「(1/4)」へ移した。
+            # たまごさん「順番待ちに同じ名前のタスクが3つ並んだりすんなよ」への対応。
+            # 進捗表の題名は横幅で省略される（CSS text-overflow:ellipsis）ため、区別点が
+            # 長い共通の題名の末尾にあると省略部分に隠れて同じ名前に見えてしまっていた。
+            "title": "(%d/%d) %s" % (i, len(chunks), orig_title or it.get("title") or ("%d番" % n)),
             "why": "大きい仕事の自動分割（元は%d番）" % n,
             "what": batch_what,
             "status": "waiting",
@@ -1052,6 +1060,12 @@ def harvest(q):
         tries = int(it.get("redoCount") or 0)
         if not urls and tries < 2:
             it["redoCount"] = tries + 1
+            redo_guard.note_fail_reason(it, "URLが1本も無いまま終了")
+            # 797番：3つのカウンタ合計が2に達したら、やり直しに戻さずここでstuck化する
+            if redo_guard.should_stuck(it):
+                redo_guard.mark_stuck(it, log)
+                changed = True
+                continue
             # 止める指示が出ている案件は、やり直しでも列に戻さない（戻すと勝手に再発車してしまう）
             it["status"] = "hold" if it.get("holdNote") else "waiting"
             it["priority"] = it.get("priority") or 2
@@ -1136,6 +1150,12 @@ def harvest(q):
         if ok is False:
             fails = int(it.get("aiVerifyFailCount") or 0) + 1
             it["aiVerifyFailCount"] = fails
+            redo_guard.note_fail_reason(it, reason or "(AI検品の理由が空でした)")
+            # 797番：3つのカウンタ合計が2に達したら、3回目を待たずここでstuck化する
+            if redo_guard.should_stuck(it):
+                redo_guard.mark_stuck(it, log)
+                changed = True
+                continue
             if fails < 3:
                 it["status"] = "hold" if it.get("holdNote") else "waiting"
                 it["priority"] = it.get("priority") or 2
@@ -1578,6 +1598,12 @@ def _main_impl():
       if launched:
           q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
           save_queue(q)
+          # 797番：genzaichi.pyが「発車0本が10分続いていないか」を見るための実測点。
+          try:
+              with io.open(LAST_LAUNCH_STAMP, "w", encoding="utf-8") as f:
+                  f.write(time.strftime("%Y-%m-%dT%H:%M:%S+09:00"))
+          except Exception:
+              pass
       return 0
 
 
@@ -1644,29 +1670,21 @@ def launch_one(item, q, alive, safe_max):
                         "find '%s/.git' -name '*.lock' -delete 2>/dev/null; "
                         "find '%s/.git/refs' -name '*.lock' -delete 2>/dev/null; "
                         "find '%s/.git/worktrees' -name 'locked' -delete 2>/dev/null; true" % (repo, repo, repo)],
-                       capture_output=True, timeout=60)
-        subprocess.run(["git", "-C", repo, "worktree", "prune"], capture_output=True, timeout=120)
-        # 2026-09-04：worktreeが129個まで増え、ディスクが96%（残23GB）になって
-        #   git worktree add が exit 128 で失敗し続けた（q15〜q33が全滅）。
-        #   自動発車で作った古いもの（q**-0904）を30分経過で片づける。作業本体はmainに合流済みの前提。
-        out = subprocess.run(["git", "-C", repo, "worktree", "list", "--porcelain"],
-                             capture_output=True, text=True, timeout=120).stdout
-        now_t = time.time()
-        for ln in out.splitlines():
-            if not ln.startswith("worktree "):
-                continue
-            path = ln[len("worktree "):].strip()
-            base = os.path.basename(path)
-            if not (base.startswith("q") and "-0904" in base):
-                continue
-            try:
-                if now_t - os.path.getmtime(path) < 1800:
-                    continue
-            except Exception:
-                continue
-            subprocess.run(["git", "-C", repo, "worktree", "remove", "--force", path],
-                           capture_output=True, timeout=180)
-        subprocess.run(["git", "-C", repo, "worktree", "prune"], capture_output=True, timeout=120)
+                       capture_output=True, timeout=20)
+        # 797番：ここに以前あった「worktree一覧を列挙し30分経過したものを強制削除する」処理は
+        # 撤去した。理由は2つ。
+        #   ①重い：git worktree list --porcelain / remove --force に最大120〜180秒のtimeoutを
+        #     許していたため、worktreeの登録が増えるほど（実測：joy-relief-station側で32件）
+        #     着火1回のたびにここで時間を食い、heartbeat.sh側の45秒killに巻き込まれて
+        #     「発車そのもの」が止まる原因になっていた（2026-09-13 05:26〜05:42に14回連続で発生）。
+        #   ②危険：ここは「30分経過しただけ」で強制削除しており、未コミットの変更や
+        #     origin/main未合流かどうかを見ていなかった。既存の tools/worktree_reaper.py が
+        #     heartbeat.shに相乗りして15秒おきに同じ掃除を行っており、こちらは
+        #     「running中でない・git statusが空・origin/mainに合流済み・2時間以上放置」の
+        #     4条件を全部満たした時だけ消す、より安全な実装。重複していたので片方（安全な方）だけ残す。
+        # 着火の直前に必要なのは「今から作る自分のworktree名の場所が空いているか」だけなので、
+        # 軽い prune（stale参照の整理）だけ残す。
+        subprocess.run(["git", "-C", repo, "worktree", "prune"], capture_output=True, timeout=20)
     except Exception:
         pass
     if not os.path.isdir(wt):
