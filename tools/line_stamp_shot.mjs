@@ -143,7 +143,11 @@ async function main() {
     const j = JSON.parse(info);
     if (EXPECT_TEXT && !j.hasExpect) throw new Error("本文に期待する文字列が無い（描画失敗の疑い）: " + EXPECT_TEXT);
 
-    await shoot(send, 390, Math.min(1600, j.scrollHeight), OUT_FILE);
+    // 1600px capだと①Display Information節だけで埋まり、②Sticker Images
+    // （画像検品結果=検出枚数・規格OK枚数）以降が写らないことがある
+    // （769番5回目でスクショが変化前後で完全一致するバグとして発覚）。
+    // ②まで確実に含める高さへ引き上げる。
+    await shoot(send, 390, Math.min(2800, j.scrollHeight), OUT_FILE);
 
     close();
   } finally {
