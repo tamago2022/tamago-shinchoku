@@ -133,8 +133,20 @@ def format_line(row):
 
 def build_notice(max_show=MAX_SHOW):
     """未報告の完了があれば通知テキストを返す。無ければ None。
-    表示した番号（＋urlsが無く裏方扱いで件数だけに畳んだ番号も含めて全部）は
-    その場で dispatch_reported.json へ追記する＝二度と出さない。
+
+    【750番・2026-09-12修正】旧実装は「6件を超えた分」を件数だけ見せて
+    "確認ページで"と案内しつつ、実際にはそのページを作らないまま
+    pend全件（=overflow分も含めて）をその場でdispatch_reported.jsonへ
+    既読登録していた。Dispatchとの会話が長く空くとbacklogが6件を大きく
+    超え、超過分の内容（title/url）は誰にも見せられないまま永久に
+    「報告済み」扱いになって消えていた（715番の日次点検が実際に
+    「132件たまっている」を検知した根本原因）。
+    → 今回から、既読登録の対象は「実際に本文へ出した分」だけに限定する。
+      表示しきれなかった分（failed/with_urlのoverflow）は既読にせず、
+      次回build_notice()が呼ばれた時にまた候補として残す。
+      二重報告にはなるが、内容が消えるより遥かにマシ（既存方針と同じ）。
+      without_url（urlも無い裏方完了）は元々中身が薄いため、件数表示のみで
+      引き続き即時に既読化する（これは元の設計のまま維持）。
     """
     reported = load_reported()
     rows = read_outbox_rows()
@@ -148,19 +160,20 @@ def build_notice(max_show=MAX_SHOW):
 
     lines = []
     # 失敗は握りつぶさない。件数が多くても直近だけは必ず本文に出す。
-    for row in failed[-max_show:]:
+    shown_failed = failed[-max_show:]
+    for row in shown_failed:
         lines.append(format_line(row))
-    shown = with_url[-max_show:]
-    rest_url_count = len(with_url) - len(shown)
-    for row in shown:
+    shown_url = with_url[-max_show:]
+    rest_url_count = len(with_url) - len(shown_url)
+    for row in shown_url:
         lines.append(format_line(row))
 
     tail = []
-    rest_failed_count = len(failed) - min(len(failed), max_show)
+    rest_failed_count = len(failed) - len(shown_failed)
     if rest_failed_count > 0:
-        tail.append("（ほか %d件、うまくいかなかった分・確認ページで）" % rest_failed_count)
+        tail.append("（ほか %d件、うまくいかなかった分・次回以降に古い順で伝えます）" % rest_failed_count)
     if rest_url_count > 0:
-        tail.append("（ほか %d件、URLあり・古い順は確認ページで）" % rest_url_count)
+        tail.append("（ほか %d件、URLあり・次回以降に古い順で伝えます）" % rest_url_count)
     if without_url:
         tail.append("（裏方の完了 %d件・省略）" % len(without_url))
 
@@ -172,10 +185,14 @@ def build_notice(max_show=MAX_SHOW):
         notice += "\n" + footer
     notice += "\n\n↑これを次の返信の冒頭で必ず先に伝えてください（1件＝1行＋URL）。"
 
-    # 出した分は全部（本文に出した分も、件数だけに畳んだ分も）既読にする。
-    # 二重報告は許容するが、ここで確実に前進させないと次回また同じ分が積み重なる。
-    all_ns = [r.get("n") for r in pend]
-    new_ns = sorted(set((reported.get("ns") or []) + all_ns))
+    # 既読にするのは「実際に本文へ出した分」＋「without_url（中身が薄い裏方完了）」だけ。
+    # overflow（表示しきれなかったfailed/with_url）は既読にせず次回へ持ち越す＝内容ロスト防止。
+    shown_ns = (
+        [r.get("n") for r in shown_failed]
+        + [r.get("n") for r in shown_url]
+        + [r.get("n") for r in without_url]
+    )
+    new_ns = sorted(set((reported.get("ns") or []) + shown_ns))
     save_reported({"ns": new_ns, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S+09:00")})
 
     return notice
