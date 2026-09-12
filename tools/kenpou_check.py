@@ -497,7 +497,40 @@ def check_unreported_completions(stale_hours=3):
 
 # ───────────────────────── ⑨：対話待ち・放置されたセッション ─────────────────────────
 
+def _reconcile_dead_pid_sessions():
+    """718番の根本対策（705番で2回連続発生した誤検知への恒久対応）。
+
+    check_orphan_sessions()は「プロセスが死んでいるのにstatus=runningのまま」を
+    赤として"報告するだけ"だった。しかしそれを実際に直す処理（al.harvest()）は
+    既に別経路（auto_launcherのメインループ）に存在しており、この点検が走る
+    タイミングとharvest()が回るタイミングがズレると、直る直前の一瞬を
+    たまたま点検が捕まえて赤を出す（705番が2026-09-10 08:24/08:35に
+    連続で誤検知された実例＝harvest()が08:25:04に既に終わらせていたのに、
+    次の点検が追いつく前だった）。
+    → 点検が判定する"前"に、この点検自身がharvest()を1回呼んで
+      死んだPIDのrunningを先に回収してしまう。報告するだけでなく、
+      その場で直してから判定する（第六条：2回目の指摘は恒久対策まで）。
+    """
+    try:
+        with al.queue_lock():
+            q = al.load(QUEUE, {"items": []})
+            if al.harvest(q):
+                q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+                al.save_queue(q)
+                return True
+    except Exception as e:
+        log_line = "⚠️ kenpou_check: 事前harvest()に失敗（本体の判定は継続）: %s" % e
+        try:
+            with io.open(os.path.join(REPO, "status", "kenpou_check.log"), "a", encoding="utf-8") as f:
+                f.write(log_line + "\n")
+        except Exception:
+            pass
+    return False
+
+
 def check_orphan_sessions(stuck_factor=2.0, abs_stuck_hours=6):
+    # 判定する前に、直せるものは先に直す（詳細は_reconcile_dead_pid_sessionsのdocstring）。
+    _reconcile_dead_pid_sessions()
     q = load(QUEUE, {"items": []})
     now = time.time()
     dead_pid = []
