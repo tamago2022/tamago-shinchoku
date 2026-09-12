@@ -2,90 +2,199 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>#782 飛び出す絵本(卵の庭)1見開き試作 確認ページ</title>
+<title>卵の庭 — 飛び出す絵本（試作・1見開き）</title>
 <style>
-  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  :root{
+    --paper:#f4efe4;
+    --ink:#2a2a2a;
+    --sub:#7a7568;
+    --panel:#e7d5b7;
+  }
   *{box-sizing:border-box;}
-  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
-  a{color:var(--ao);}
-  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
-  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
-  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
-  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
-  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
-  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
-  .num b{display:block;font-size:1.6rem;line-height:1.2;}
-  .num span{color:var(--sub);font-size:0.8rem;}
-  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
-  ul.links{list-style:none;margin:0;padding:0;}
-  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
-  ul.links li b{display:block;margin-bottom:4px;}
-  ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
-  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
-  tr:last-child td{border-bottom:none;}
-  .yes{color:var(--midori);font-weight:700;}
-  .no{color:var(--aka);}
-  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    overflow-x:hidden;}
+  .wrap{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 22px) 18px 60px;}
+  .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #ddd3bd;background:#fff;
+    border-radius:999px;padding:5px 12px;font-size:11px;color:var(--sub);margin-bottom:10px;}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.7rem;
+    letter-spacing:0.05em;margin:0 0 8px;text-align:center;}
+  .lead{font-size:0.82rem;line-height:1.7;color:var(--sub);text-align:center;margin:0 0 22px;}
+
+  /* ===== 見開きステージ ===== */
+  .stage{
+    position:relative;
+    height:64vh;
+    min-height:420px;
+    max-height:620px;
+    width:100%;
+    overflow:hidden;
+    border-radius:20px;
+    border:1px solid #e2dccd;
+    background:#bfe3f0;
+    touch-action:pan-y;
+    -webkit-user-select:none;user-select:none;
+  }
+  .layer{position:absolute;inset:0;will-change:transform;}
+
+  .sky{background:linear-gradient(to bottom,#a7d8ec 0%,#cdeaf4 55%,#f4ecd2 100%);z-index:0;}
+  .cloud{position:absolute;background:rgba(255,255,255,.82);border-radius:999px;filter:blur(1px);}
+  .c1{left:8%;top:12%;width:96px;height:40px;}
+  .c2{left:55%;top:20%;width:80px;height:32px;background:rgba(255,255,255,.7);}
+  .c3{left:75%;top:8%;width:64px;height:24px;background:rgba(255,255,255,.6);}
+
+  .hills{z-index:10;bottom:0;top:auto;height:66%;}
+  .ground{position:absolute;left:0;bottom:0;width:100%;height:55%;background:#9fd3a0;
+    border-radius:50%;transform:translateY(33%);}
+  .tree{position:absolute;bottom:28%;width:3px;height:64px;background:#7a5a3a;}
+  .tree.l{left:15%;}
+  .tree.r{left:auto;right:18%;}
+  .leaf{position:absolute;bottom:40%;width:56px;height:56px;border-radius:50%;background:#6fb56f;}
+  .leaf.l{left:12%;transform:translateX(-50%);}
+  .leaf.r{left:auto;right:15%;transform:translateX(50%);background:#7fbf7f;}
+
+  .hero{z-index:20;bottom:8%;top:auto;height:40%;display:flex;justify-content:center;align-items:flex-end;}
+  .egg{position:relative;width:104px;height:128px;}
+  .egg .body{position:absolute;inset:0;background:radial-gradient(circle at 35% 30%,#fffdf6,#ffe8b8 70%,#f6cf8a);
+    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;box-shadow:0 10px 18px rgba(0,0,0,.15);}
+  .egg .face{position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);font-size:34px;}
+  .sparkle{position:absolute;left:50%;top:50%;font-size:20px;pointer-events:none;opacity:0;}
+
+  .flowers{z-index:30;bottom:0;top:auto;height:34%;pointer-events:none;}
+  .grass{position:absolute;left:0;bottom:-6px;width:100%;height:56px;background:#5fae5f;
+    clip-path:polygon(0 100%,0 40%,5% 60%,10% 30%,15% 70%,20% 20%,25% 65%,30% 35%,35% 75%,40% 25%,
+      45% 60%,50% 20%,55% 70%,60% 30%,65% 65%,70% 25%,75% 70%,80% 35%,85% 65%,90% 20%,95% 60%,100% 30%,100% 100%);}
+  .flower{position:absolute;bottom:28px;font-size:18px;}
+  .f1{left:20%;}
+  .f2{left:45%;bottom:38px;font-size:16px;}
+  .f3{left:68%;}
+  .f4{left:85%;bottom:32px;font-size:16px;}
+
+  /* 観音開き */
+  .door{position:absolute;top:0;bottom:0;width:50%;background:var(--panel);z-index:40;
+    transition:transform 1.05s cubic-bezier(.22,1,.36,1);}
+  .door.left{left:0;}
+  .door.right{right:0;}
+  .door.open.left{transform:translateX(-100%);}
+  .door.open.right{transform:translateX(100%);}
+  .door-label{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.05rem;color:#473423;
+    transition:opacity .5s ease;pointer-events:none;}
+  .door-label.hide{opacity:0;}
+
+  .hud{position:absolute;right:10px;bottom:10px;z-index:35;background:rgba(0,0,0,.28);color:#fff;
+    font-size:10px;padding:5px 10px;border-radius:999px;backdrop-filter:blur(2px);pointer-events:none;}
+
+  .foot{margin-top:16px;text-align:center;font-size:0.78rem;line-height:1.7;color:var(--sub);}
+  .spacer{height:38vh;}
 </style>
 </head>
 <body>
-<!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div class="wrap">
+  <div style="text-align:center"><span class="badge">✨ 飛び出す絵本（試作・1見開きだけ）</span></div>
+  <h1>卵の庭</h1>
+  <p class="lead">スクロールしてみてください。庭の奥行きが動きます。<br>画面をタップすると、光の粒が舞います。</p>
+
+  <div class="stage" id="stage">
+    <div class="layer sky" id="l-sky">
+      <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+    </div>
+    <div class="layer hills" id="l-hills">
+      <div class="ground"></div>
+      <div class="tree l"></div><div class="leaf l"></div>
+      <div class="tree r"></div><div class="leaf r"></div>
+    </div>
+    <div class="layer hero" id="l-hero">
+      <div class="egg" id="egg">
+        <div class="body"></div>
+        <div class="face">🥚</div>
+      </div>
+    </div>
+    <div class="layer flowers" id="l-flowers">
+      <div class="grass"></div>
+      <span class="flower f1">🌸</span><span class="flower f2">🌼</span>
+      <span class="flower f3">🌷</span><span class="flower f4">🌼</span>
+    </div>
+
+    <div class="door left" id="door-l"></div>
+    <div class="door right" id="door-r"></div>
+    <div class="door-label" id="door-label">卵の庭がひらきます…</div>
+
+    <div class="hud" id="hud">タップ ／ スクロール 0%</div>
+  </div>
+
+  <div class="spacer"></div>
+  <p class="foot">これは1見開きだけの小さな試作です。反応を見ながら、次の見開きを増やすか決めます。<br>（関根光才さんの映像表現からヒントを得た、飛び出す絵本ふうの動きです）</p>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #782 飛び出す絵本(卵の庭)1見開き試作</div>
-<h1>#782 飛び出す絵本(卵の庭)1見開き試作</h1>
-<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var sky = document.getElementById('l-sky');
+  var hills = document.getElementById('l-hills');
+  var hero = document.getElementById('l-hero');
+  var flowers = document.getElementById('l-flowers');
+  var hud = document.getElementById('hud');
+  var egg = document.getElementById('egg');
 
-<div class="fix">
-たまごさんのObsidianノート(飛び出す絵本アイデア)を受けて、スクロール/タップで4層が動く1見開きだけの試作ページを実装(/pop-up-ehon)。初回表示は観音開きに開く導入演出、画面タップで光の粒✨が舞う。スマホ375px幅対応。実装・main合流(コミット73b411a8)・ビルド成功まで完走したが、<b>Lovableの本番反映は2026-09-07から続く基盤障害(GitHub→Lovable同期停止)により保留中</b>。これは今回で6件目の独立した確認で、既に5件のセッションが公開ボタン試行を含むあらゆる手段を試し「AI側にこれ以上の打開策なし」と結論済みのため、今回は同じ手を繰り返さなかった。
-</div>
+  // ---- スクロールでパララックス（奥行き） ----
+  var ticking = false;
+  function progress(){
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    if (docH <= 0) return 0;
+    var p = window.scrollY / docH;
+    return Math.max(0, Math.min(1, p));
+  }
+  function apply(){
+    var p = progress();
+    sky.style.transform = 'translateY(' + (p*40) + 'px)';
+    hills.style.transform = 'translateY(' + (p*90) + 'px)';
+    hero.style.transform = 'translateY(' + (p*150) + 'px)';
+    flowers.style.transform = 'translateY(' + (p*260) + 'px)';
+    hud.textContent = 'タップ ／ スクロール ' + Math.round(p*100) + '%';
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){
+    if (!ticking){ requestAnimationFrame(apply); ticking = true; }
+  }, {passive:true});
+  apply();
 
-<h2>② 数字</h2>
-<div class="nums">
-  <div class="num"><b>73b411a8</b><span>main合流コミット</span></div>
-  <div class="num"><b>404</b><span>本番URLの現状応答</span></div>
-</div>
+  // ---- タップで光の粒 ----
+  function burstSparkles(){
+    for (var i=0;i<8;i++){
+      (function(){
+        var s = document.createElement('span');
+        s.className = 'sparkle';
+        s.textContent = '✨';
+        var dx = (Math.random()-0.5)*220;
+        var dy = (Math.random()-0.5)*180-40;
+        var rot = (Math.random()-0.5)*90;
+        egg.appendChild(s);
+        s.animate([
+          { transform:'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity:0 },
+          { transform:'translate(calc(-50% + '+dx*0.4+'px), calc(-50% + '+dy*0.4+'px)) scale(1) rotate('+rot*0.5+'deg)', opacity:1, offset:0.35 },
+          { transform:'translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px)) scale(.6) rotate('+rot+'deg)', opacity:0 }
+        ], { duration:1300, easing:'ease-out' });
+        setTimeout(function(){ s.remove(); }, 1300);
+      })();
+    }
+  }
+  stage.addEventListener('click', function(e){
+    if (e.target.closest('.door')) return;
+    burstSparkles();
+  });
 
-
-
-<h2>④ 押せるリンク</h2>
-<ul class="links">
-  <li><b>実装コミット(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/73b411a8" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/73b411a8</a></li>
-  <li><b>本番トップ(復旧後に/pop-up-ehonが見える場所)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>Lovable基盤障害の記録(PENDING_DECISIONS)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md</a></li>
-</ul>
-
-<h2>⑤ 何をどう確かめたか</h2>
-<table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>型チェック(pop-up-ehon関連)</td><td class="yes">エラー0件</td></tr>
-<tr><td>eslint(pop-up-ehon.tsx)</td><td class="yes">エラー0件</td></tr>
-<tr><td>vite build</td><td class="yes">成功・成果物に/pop-up-ehon含む</td></tr>
-<tr><td>main合流</td><td class="yes">完了(73b411a8)</td></tr>
-<tr><td>本番(Lovable)反映</td><td class="no">基盤障害により未反映(x-deployment-id不変)</td></tr>
-</table>
-
-<footer>
-このページは #782 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
-</footer>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
-</div>
-<!-- /SHINCHOKU_BACK_LINK -->
+  // ---- 観音開きの導入演出 ----
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      document.getElementById('door-l').classList.add('open','left');
+      document.getElementById('door-r').classList.add('open','right');
+      document.getElementById('door-label').classList.add('hide');
+    }, 350);
+  });
+})();
+</script>
 </body>
 </html>
