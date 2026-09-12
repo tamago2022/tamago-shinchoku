@@ -266,7 +266,13 @@ def main():
     #   → quota.py が出している weekdayTarget があればそれを使う（同じ物差しで測る）。
     #     取れないときだけ、従来の直線に戻す（壊れない）。
     line_target = round(WEEK_TARGET * min(1.0, days_used / DAYS), 1)  # 従来の直線（予備）
-    _wt = q.get("weekdayTarget")
+    # 2026-09-13 たまごさん「今日曜の朝だぜ。ちょっと計算してみな」→ 計算し直したら、こちらが間違っていた。
+    #   weekdayTarget は「週間制限50%引き上げ中」の倍率(×1.5)を掛けた後の値（80→120→99で頭打ち）。
+    #   だが allPct（79%）は**引き上げ後の枠に対する割合**なので、目標側にも倍率を掛けると二重に数える。
+    #   正しいのは倍率をかける前の素の曲線 weekdayTargetBase（水30/木45/金55/土70/日80/月90/火100）。
+    #   実測：日曜05:36時点で 使用79% / 目標80% ＝ **ほぼライン上**（余ってもいないし超えてもいない）。
+    #   直前に「20pt余っている」と報告したのは誤り。倍率の二重掛けが原因。
+    _wt = q.get("weekdayTargetBase") or q.get("weekdayTarget")
     try:
         if _wt is not None and float(_wt) > 0:
             line_target = round(min(float(_wt), WEEK_TARGET), 1)

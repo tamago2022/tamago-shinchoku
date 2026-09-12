@@ -429,12 +429,25 @@ def content_check(url, timeout=10):
     #    開けるかどうかまで見る。**開けないリンクを貼るのは、証拠を渡していないのと同じ。
     checkable = [l for l in real_links
                  if l.startswith("http") and not _is_root(l)]
+    # 2026-09-13（793番停止事故）：ここは上のメイン取得と違い socket.setdefaulttimeout() を
+    #   かけていなかった。urlopen(timeout=...) はDNS解決（getaddrinfo）には効かないため、
+    #   リンク1本のDNSが応答しないだけで無期限にブロックし、harvest()→auto_launcher.py全体
+    #   （＝心臓）が45秒の見張りに毎回強制終了され、**発車が1本も出せなくなった**
+    #   （実測：05:26〜05:34に8回連続で「45秒以内に終わらず強制終了」）。
+    #   さらに全リンクが正常に振る舞っても 8本×8秒=64秒 で45秒予算を超えうるため、
+    #   経過時間の予算（LINK_CHECK_BUDGET秒）を持たせ、超えたら残りは検品なしで打ち切る。
+    LINK_CHECK_BUDGET = 20.0
+    _t0 = time.time()
     for l in checkable[:8]:          # 8本まで。全部見ると遅くなるので上限を切る
+        if time.time() - _t0 > LINK_CHECK_BUDGET:
+            break                    # 予算超過。残りは見ずに次の判定へ進む（心臓を止めない）
         # private リポジトリは、こちらが開けてもたまごさんには 404 に見える。中身を見るまでもなく不合格。
         if "github.com/tamago2022/joy-relief-station" in l:
             return False, ("たまごさんが開けないリンクが貼ってあります（%s は非公開リポジトリで、"
                            "本人が押すと404になります）。証拠は本人が開ける場所に置いてください" % l)
+        _old_timeout2 = _socket.getdefaulttimeout()
         try:
+            _socket.setdefaulttimeout(8)
             req2 = urllib.request.Request(l, method="HEAD",
                                           headers={"User-Agent": "tamago-content-checker/1.0"})
             with urllib.request.urlopen(req2, timeout=8) as r2:
@@ -445,6 +458,8 @@ def content_check(url, timeout=10):
                 return False, "貼ってあるリンクが開けません（%s → HTTP %s）" % (l, e.code)
         except Exception:
             pass                     # 回線の一時的な失敗でページ全体を落とさない
+        finally:
+            _socket.setdefaulttimeout(_old_timeout2)
 
     return True, ""
 
@@ -810,7 +825,15 @@ def harvest(q):
     """
     import re
     changed = False
+    # 2026-09-13（793番停止事故）：確認待ちが複数件重なると、1件ずつのcontent_check
+    #   （実URLを開く・最大30秒程度）が積み重なって合計45秒を超えうる。
+    #   全体にも時間予算を持たせ、超えたら残りは次回のharvest()に回す（心臓を止めない）。
+    HARVEST_BUDGET = 25.0
+    _harvest_t0 = time.time()
     for it in q.get("items", []):
+        if time.time() - _harvest_t0 > HARVEST_BUDGET:
+            log("⏳ harvest予算(%d秒)超過。残りは次の周回へ" % int(HARVEST_BUDGET))
+            break
         if it.get("status") != "running":
             continue
         pid = it.get("pid")
@@ -1355,17 +1378,19 @@ def _maybe_rebuild_queue_light():
 
 
 def _main_impl():
-  if not only_one_launcher():
-      return 0      # 先客がいる。二重発車を作らない
+  # 2026-09-13（793番停止事故）：以前はここで harvest()（確認ページのURLを1本ずつ実際に
+  #   開いて検品する content_check を含む・重い/ネットワーク待ちが起こりうる）を発車判定より
+  #   **先に**呼んでいた。content_check がDNS応答待ちなどで詰まると、発車判定にすら
+  #   たどり着けず「45秒以内に終わらず強制終了」が延々続き、**1本も発車できなくなった**
+  #   （実測：05:26〜05:34に8回連続）。
+  #   → harvest は main() 側で発車の**あと**に回す（下記コメント参照）。「発車は必ず先にやる」。
+  #   room計算に使う alive/queue_alive は元々 pid の生死を直接見て出しているので、
+  #   harvest を先に呼ばなくても発車の可否判定は正しく動く。
   with queue_lock():
       q = load(QUEUE, {})
       items = q.get("items") or []
       if not items:
           return 0
-      # 終わったものを回収して「確認待ち」へ移す（これをやらないと running のまま溜まって空きが出ない）
-      if harvest(q):
-          q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-          save_queue(q)
       # 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かないよ」（火曜まで残り14%）
       #   → status/no_launch.flag があるあいだは**1本も発車させない**。
       #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。
@@ -1729,11 +1754,38 @@ def launch_one(item, q, alive, safe_max):
     return True
 
 
+def _harvest_pass():
+    """2026-09-13（793番停止事故）新設：終わった仕事の回収（content_checkの実URL検品含む）を
+    発車判定とは切り離した、独立の遅い工程として最後に回す。
+
+    ここが詰まって45秒の見張りに強制終了されても、その時点で**発車はもう終わって
+    queue.jsonに保存済み**なので、工場が0本のまま止まることはない。
+    """
+    with queue_lock():
+        q = load(QUEUE, {})
+        if not q.get("items"):
+            return
+        if harvest(q):
+            q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+            save_queue(q)
+
+
 def main():
     # 途中のどの見送り（return 0）・例外で抜けても、queue.jsonが動いていたら
     # queue_light.jsonを必ず作り直す（PWA側が軽量版を読むため）。本体の発車判定は絶対に止めない。
     try:
-        return _main_impl()
+        if not only_one_launcher():
+            return 0      # 先客がいる。二重発車を作らない
+        rc = _main_impl()
+        # 2026-09-13：発車（上）が終わったあとに、遅くなりうる回収作業（下）を回す。
+        #   「発車は必ず先にやる」。ここで例外・タイムアウトが起きても発車済みの分は失われない。
+        try:
+            _harvest_pass()
+        except RuntimeError:
+            pass          # 鍵が取れなかっただけ。次回また拾う
+        except Exception as e:
+            log("harvestパス（発車のあと）に失敗: %s" % e)
+        return rc
     finally:
         try:
             _maybe_rebuild_queue_light()
