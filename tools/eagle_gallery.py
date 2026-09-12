@@ -39,6 +39,8 @@ HANDOFF = os.path.join(OUT, "o")
 HANDOFF_EXTS = {"png", "jpg", "jpeg", "webp", "gif"}
 HANDOFF_MAX = 1600  # 長辺の上限px
 HANDOFF_GIF_LIMIT = 8 * 1024 * 1024  # gifはアニメ崩れを避け、そのままコピー。大きすぎる分は見送り
+THUMB_MAX = 480  # グリッド表示用サムネの長辺上限px（2026-09-12・案件#717）
+BYTE_CAP = 950_000  # kenpou_check.py BIG_FILE_LIMIT(1MB)に対する安全マージン
 
 
 def folder_names(lib):
@@ -71,6 +73,51 @@ def find_original(p):
     return None
 
 
+def make_thumb(src, dst):
+    """グリッド表示用サムネを作る。2026-09-12(案件#717)まではEagle自身の_thumbnail.*を
+    そのままコピーしていたため、Eagle側のサムネがそもそも大きい場合はそのまま巨大ファイルになっていた
+    （実測：t/配下だけで1MB超が5件）。ここで必ず長辺THUMB_MAX以下へ縮小してから保存する。
+    """
+    ext = os.path.splitext(src)[1].lower()
+    if Image is None or ext not in (".png", ".jpg", ".jpeg", ".webp"):
+        # 動画のサムネ・gif等、扱えない形式はこれまで通り無劣化コピー
+        shutil.copyfile(src, dst)
+        return
+    try:
+        im = Image.open(src)
+        im.load()
+        w, h = im.size
+        if max(w, h) > THUMB_MAX:
+            scale = THUMB_MAX / float(max(w, h))
+            im = im.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+        if ext == ".png" and im.mode in ("RGBA", "LA", "P"):
+            im.save(dst, "PNG", optimize=True)
+        else:
+            if im.mode not in ("RGB", "L"):
+                im = im.convert("RGB")
+            im.save(dst, "JPEG" if ext in (".jpg", ".jpeg") else "WEBP", quality=78)
+    except Exception:
+        shutil.copyfile(src, dst)
+
+
+def _save_jpeg_under_cap(im, dst, cap=BYTE_CAP, start_q=82, min_q=45):
+    """JPEGで保存し、capバイトを超えたら品質→サイズの順に下げて収める（案件#717：1MB超ガードの再発防止）。"""
+    if im.mode not in ("RGB", "L"):
+        im = im.convert("RGB")
+    q = start_q
+    cur = im
+    while True:
+        cur.save(dst, "JPEG", quality=q, optimize=True)
+        if os.path.getsize(dst) <= cap or (q <= min_q and max(cur.size) <= 640):
+            return
+        if q > min_q:
+            q -= 10
+        else:
+            w, h = cur.size
+            scale = 0.85
+            cur = cur.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+
+
 def make_handoff(orig_path, ext, item_id):
     """受け渡し用画像を o/ に作る。戻り値は保存した拡張子（作れなければNone）"""
     ext = (ext or "").lower()
@@ -88,20 +135,25 @@ def make_handoff(orig_path, ext, item_id):
         im = Image.open(orig_path)
         im.load()
         w, h = im.size
-        if max(w, h) <= HANDOFF_MAX:
+        if max(w, h) <= HANDOFF_MAX and os.path.getsize(orig_path) <= BYTE_CAP:
             # すでに小さい＝原本のバイト列をそのままコピー（劣化なし）
             dst_ext = "." + (ext if ext in ("png", "jpg", "jpeg", "webp") else "png")
             dst = os.path.join(HANDOFF, item_id + dst_ext)
             if not os.path.exists(dst):
                 shutil.copyfile(orig_path, dst)
             return dst_ext
+        # 2026-09-12(案件#717)：長辺は小さくても「原本のバイト列コピー」だと1MBを超えることがある
+        #   （検出量：eagle-k7m2xq9p/o配下だけで232件）。長辺基準の分岐をやめ、
+        #   常にJPEGへ再エンコードしてBYTE_CAPに収める一本化した経路にする。
         if im.mode in ("P", "RGBA", "LA"):
             im = im.convert("RGB")
-        scale = HANDOFF_MAX / float(max(w, h))
-        im2 = im.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+        if max(w, h) > HANDOFF_MAX:
+            scale = HANDOFF_MAX / float(max(w, h))
+            im = im.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
         dst = os.path.join(HANDOFF, item_id + ".jpg")
         if not os.path.exists(dst):
-            im2.save(dst, "JPEG", quality=82, optimize=True)
+            _save_jpeg_under_cap(im, dst)
+            return ".jpg"
         return ".jpg"
     except Exception:
         return None
@@ -182,7 +234,7 @@ def main():
         dst = os.path.join(THUMBS, item["id"] + item["te"])
         if not os.path.exists(dst):
             try:
-                shutil.copyfile(src, dst)
+                make_thumb(src, dst)
             except Exception:
                 continue
         orig = find_original(p)

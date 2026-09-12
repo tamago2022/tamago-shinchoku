@@ -87,6 +87,13 @@ pkill -f "claude setup-token" >/dev/null 2>&1 || true
 find "$REPO/.git" -maxdepth 1 -name "*.lock" -mmin +5 -delete 2>/dev/null || true
 find "$REPO/.git/objects" -maxdepth 2 -name "tmp_obj_*" -mmin +5 -delete 2>/dev/null || true
 
+# 2026-09-12(717番) pre-commit hookの自己修復：.git/hooksは追跡対象外なので、
+#   何かの拍子に消えても（別worktreeでの再clone等）ここで毎回作り直す。1MB超ガードの最終防波堤。
+if [ ! -x "$REPO/.git/hooks/pre-commit" ] && [ -f "$REPO/tools/git-hooks/pre-commit" ]; then
+  cp "$REPO/tools/git-hooks/pre-commit" "$REPO/.git/hooks/pre-commit" 2>/dev/null || true
+  chmod +x "$REPO/.git/hooks/pre-commit" 2>/dev/null || true
+fi
+
 run_once() {
 # 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
 # factory_status.py が失敗したら従来どおり machine_load.sh 単体で最低限のJSONを書く（止まらない）。

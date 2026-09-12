@@ -1,0 +1,35 @@
+#!/bin/bash
+# 公開リポジトリを1MB超のファイルで太らせない最終防波堤（案件#717）。
+#
+# 背景：status/blocked_large_files.log を見る限り、machine_status_push.sh 内の
+#   「git add 直後に1MB超をunstageする」ガード（2026-09-09追加）は effective だったが、
+#   それは machine_status_push.sh がコミットする経路にしか効かなかった。
+#   個別セッションが直接 `git add -A && git commit` する経路（#734/#751/#771等の実データで確認済み）
+#   は素通りしていた。→ git commit そのものの入口（pre-commit hook）に置けば、
+#   どの経路から来ても必ず通る唯一の関所になる。
+#
+# 方針：コミット自体は止めない（自動化フローを壊さないため）。
+#   1MB超のファイルだけ黙って unstage し、status/blocked_large_files.log に記録する。
+#   全部unstageした結果コミットする物が無くなった場合は、そのまま空コミットにはせず終了コードで知らせる。
+set -uo pipefail
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+[ -z "$REPO_ROOT" ] && exit 0
+cd "$REPO_ROOT" || exit 0
+LIMIT=1000000
+LOG="$REPO_ROOT/status/blocked_large_files.log"
+BIG=0
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  [ -f "$f" ] || continue
+  sz=$(wc -c < "$f" 2>/dev/null || echo 0)
+  if [ "${sz:-0}" -gt "$LIMIT" ] 2>/dev/null; then
+    git reset -q HEAD -- "$f" >/dev/null 2>&1 || true
+    mkdir -p "$REPO_ROOT/status" 2>/dev/null || true
+    echo "$(date '+%F %T') 🛑 pre-commitで公開を止めた（${sz}バイト・1MB超）: $f" >> "$LOG" 2>/dev/null || true
+    BIG=$((BIG+1))
+  fi
+done < <(git diff --cached --name-only --diff-filter=AM 2>/dev/null)
+if [ "$BIG" -gt 0 ]; then
+  echo "🛑 pre-commit: 1MB超のファイル ${BIG} 件をコミットから外しました（詳細: status/blocked_large_files.log）" >&2
+fi
+exit 0
