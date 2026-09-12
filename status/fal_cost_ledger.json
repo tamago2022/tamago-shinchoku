@@ -269,7 +269,7 @@
       "totalCostYen": 8.22,
       "elapsedMin": 1.0,
       "result": "in_progress",
-      "note": "公称$0.01/秒×5.48秒=$0.0548(8.2円/150円レート)の計算値。ダッシュボード実測(Subtotal前後差)は今回も取得不能と判明: (1)ブラウザ操作ツール非搭載でfal.aiログイン画面しか返らない (2)公式Billing API(GET https://api.fal.ai/v1/account/billing)を正しく特定し実行したが403 authorization_error(admin API keyが必要、現行キーは動画生成専用スコープ) (3)レスポンスヘッダーx-fal-billable-units=71.24を発見したがUSD換算係数(unit_price)もbilling API経由でしか取れず403で不明、根拠のない換算はしない。次回以降ダッシュボード実測を可能にするには、たまごさんにfal.ai管理画面でadmin scope付きAPIキーを発行いただくか、生成のたびに一度だけダッシュボードを直接見ていただく必要がある。",
+      "note": "公称$0.01/秒×5.48秒=$0.0548(8.2円/150円レート)の計算値。ダッシュボード実測(Subtotal前後差)は今回も取得不能(2026-09-12・複数セッション独立で確認済み・経路を使い切ったため以後この経路を繰り返さない): (1)ブラウザ操作ツール非搭載でfal.aiログイン画面しか返らない (2)公式Billing API(GET https://api.fal.ai/v1/account/billing)を正しく特定し実行したが403 authorization_error(admin API keyが必要、現行キーは動画生成専用スコープ) (3)レスポンスヘッダーx-fal-billable-units=71.24を発見したがUSD換算係数(unit_price)もbilling API経由でしか取れず403で不明、根拠のない換算はしない。今回の追加作業：カメラのズレを特徴点マッチングで数値測定(横23px=1.8%・ズーム1.4%、単調増加で往復ではない)し、ffmpeg(imageio_ffmpeg同梱バイナリ、vidstab tripodモード)で後処理スタビライズ→横7px(0.5%)・ズーム1.0%まで圧縮。falへの新規リクエストは無く追加課金ゼロ(既存の1本のみ使用)。実費確定にはたまごさんにしかできない1点(admin scope APIキー発行、または生成前後で一度だけダッシュボードを見る)が必要。",
       "recordedAt": "2026-09-12T05:38:04+09:00"
     }
   ],

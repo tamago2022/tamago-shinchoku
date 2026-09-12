@@ -89,7 +89,8 @@
 </table>
 
 <footer>
-実費が1円まで確定できなかった理由：fal.ai公式Billing API(GET https://api.fal.ai/v1/account/billing、fal.ai/docs/platform-apis/v1/account/billingに実在)を正しいエンドポイントまで特定して呼び出したが『This API key is not permitted to perform this action』(403)で拒否された。ドキュメント上もこの系のAPIはadmin API keyが必要と明記されている。現在の~/.fal_keyは動画生成専用の通常キーでadmin権限が無い。レスポンスヘッダーにx-fal-billable-units=71.24という値はあったが、USDへ換算する単価(unit_price)を取得する手段が同じ理由で無く、根拠のない換算をして『実費』と書くことはしていない。ブラウザ操作ツールもこのセッションには搭載されていない。この2つが揃わない限り、AI側だけでダッシュボード実測を再現する方法は無い。次に進めるなら、fal.ai管理画面(https://fal.ai/dashboard/keys)でadmin scope付きのキーを追加発行いただくのが一番早い。
+実費が1円まで確定できなかった理由：fal.ai公式Billing API(GET https://api.fal.ai/v1/account/billing、fal.ai/docs/platform-apis/v1/account/billingに実在)を正しいエンドポイントまで特定して呼び出したが『This API key is not permitted to perform this action』(403)で拒否された。ドキュメント上もこの系のAPIはadmin API keyが必要と明記されている。現在の~/.fal_keyは動画生成専用の通常キーでadmin権限が無い。レスポンスヘッダーにx-fal-billable-units=71.24という値はあったが、USDへ換算する単価(unit_price)を取得する手段が同じ理由で無く、根拠のない換算をして『実費』と書くことはしていない。ブラウザ操作ツールもこのセッションには搭載されていない。この2つが揃わない限り、AI側だけでダッシュボード実測を再現する方法は無い（本セッションを含め複数回試行して同じ結論・経路を使い切ったため、これ以上AI側だけで繰り返さない）。<br><br>
+<b>たまごさんにしかできない1点：</b>①fal.ai管理画面(https://fal.ai/dashboard/keys)でadmin scope付きのAPIキーを追加発行いただくか、②次に1本生成する前後で一度だけ https://fal.ai/dashboard/usage-billing を見てSubtotalの数字を教えていただくか、のどちらか。①なら以後は自動で実費が取れるようになり、②なら今回の1本分だけその場で確定できます。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
