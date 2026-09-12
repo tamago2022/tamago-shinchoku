@@ -273,9 +273,18 @@
      たまごさん「視覚的に一瞬で分かるといいよね」→数字より先に棒が目に入るよう、summaryの先頭に置く。 */
   .weekbar{position:relative; margin:14px 0 26px;}
   .weekbar .wtrack{position:relative; display:flex; height:36px; border-radius:8px; overflow:hidden; background:#0e1319; border:1px solid var(--line);}
-  .weekbar .wcell{flex:1; display:flex; align-items:center; justify-content:center; font-size:0.72rem; color:var(--dim); border-right:1px dashed rgba(255,255,255,0.1); position:relative;}
+  /* 728番（2026-09-12）：見出しが「火・水・木…」だけだと、実際のマス区切りが火曜18:00始まりの
+     24時間ブロックであることが伝わらず「今もう木曜の後半のはずなのに木のマスの頭に線がある」と
+     誤解される。曜日の下に開始時刻「18時〜」を添えて、そのマスが何時に始まるかを見せる。 */
+  .weekbar .wcell{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; font-size:0.72rem; color:var(--dim); border-right:1px dashed rgba(255,255,255,0.1); position:relative;}
   .weekbar .wcell:last-child{border-right:none;}
   .weekbar .wcell.today{color:var(--kinari); font-weight:800; background:rgba(255,255,255,0.06);}
+  .weekbar .wcell-day{font-size:0.78rem; line-height:1;}
+  .weekbar .wcell-time{font-size:0.56rem; opacity:.75; line-height:1;}
+  /* 今日のマスの中に6時間刻み（25/50/75%）の薄い目盛りを入れて、マスの中のどのへんに
+     いるかを一目で分かるようにする（本来ここ/今ここの縦線はマス跨ぎの全体位置なので、
+     マスの中身を割るこの目盛りとは別に必要）。 */
+  .weekbar .wtick{position:absolute; top:3px; bottom:3px; width:0; border-left:1px dotted rgba(255,255,255,0.3); z-index:1;}
   /* wtrackはoverflow:hiddenで角丸を効かせているので、印（本来ここ/今ここ）はtrackの外にはみ出す
      ラベル付きのため、clipされない別レイヤー(.wmarks・wtrackの兄弟要素)に重ねて置く。 */
   .weekbar .wmarks{position:absolute; inset:0; pointer-events:none;}
@@ -286,6 +295,7 @@
   .weekbar .wmk.wnow .wmf{bottom:-20px; color:var(--sub); font-weight:800; border-color:var(--sub);}
   .weekbar .wmk.wnow.over{border-left-color:var(--red);}
   .weekbar .wmk.wnow.over .wmf{color:var(--red); border-color:var(--red);}
+  .weekbar .wfoot{margin-top:6px; font-size:0.66rem; color:var(--dim); opacity:.85;}
   .weeknums{font-size:0.82rem; color:var(--sub); margin-top:2px;}
   .weeknums b{color:var(--kinari);}
   .weeknums .over{color:var(--red); font-weight:800;}
@@ -624,7 +634,10 @@
 
 <!-- 2026-09-09（たまごさん指示）「クレジット配分を一番上に」「同時稼働本数も分かるように」
      →この2枚を進捗表の一番最初、他のどのセクションよりも上に置く。 -->
-<details id="paceBar" class="pacebar" hidden></details>
+<!-- 728番（2026-09-12）「読み込み中が出たり消えたりで画面がぺこぺこ動く」対策（726番と同根）：
+     hiddenのまま初期化すると高さ0→データ到着で一気に出現しレイアウトが跳ねるので、
+     最初からプレースホルダーの高さを確保しておく（renderPace()がデータ到着後に書き換える）。 -->
+<details id="paceBar" class="pacebar"><summary><div class="ph">週の使用率を読み込み中…</div></summary></details>
 <div id="capBar" class="capbar" hidden></div>
 
 <!-- 650番（2026-09-08）：お金の管理表（サブスク＋クレジット＋fal）への入口。
@@ -1230,24 +1243,42 @@ function modelChip(model){
      「今ここ（実際の使用率）」を2本の印で重ねる。位置の計算根拠は両方とも0〜100%の同じ物差し
      （本来＝週が何%経過したか、今＝週の何%を使ったか）なので、2本のズレ＝超過幅がそのまま棒の
      ズレとして見える。 */
+/* 728番（2026-09-12）たまごさん「本来ここ29.4%、木曜日が始まった時点だったらその位置でいいけど、
+   木曜日の中でもメモリはあるわけでしょう」→ 週の目盛りは正しく動いていたが、見出しが単なる
+   「火・水・木…」（＝カレンダーの1日）に見えるせいで、実際は火曜18:00始まりの24時間ブロック
+   であることが伝わらず「今もう木曜の後半のはずなのに木のマスの頭に線がある」と誤解された。
+   直したのは見せ方だけ：①各マスに開始時刻「18時〜」を添える ②今日のマスの中に6時間刻みの
+   薄い目盛りを入れて、マスの中のどのへんにいるかも分かるようにする ③棒の下に
+   「週は火曜18:00に始まって次の火曜17:59に終わる」を1行常設する。 */
 function buildWeekBar(p){
   const days = ["火","水","木","金","土","日","月"];
   const daysLeft = (typeof p.daysLeft === "number") ? p.daysLeft : 7;
   const elapsedDays = Math.max(0, Math.min(7, 7 - daysLeft));
   const expPct = Math.max(0, Math.min(100, elapsedDays / 7 * 100));
   const dayIdx = Math.max(0, Math.min(6, Math.floor(elapsedDays)));
+  const withinDayFrac = Math.max(0, Math.min(1, elapsedDays - Math.floor(elapsedDays))); // 今日のマスの中の進み具合（0〜1）
   const nowPct = Math.max(0, Math.min(100, Number(p.allPct) || 0));
   const overAmt = nowPct - expPct;
   const isOver = overAmt > 0.5; // 誤差0.5%未満は「ほぼ同じ」として赤にしない
-  const cells = days.map((d, i) => `<div class="wcell${i === dayIdx ? " today" : ""}">${d}</div>`).join("");
+  const cells = days.map((d, i) => {
+    const isToday = i === dayIdx;
+    // 今日のマスにだけ6時間刻み（25/50/75%）の薄い目盛りを入れる（マスの幅＝24時間＝4分割）
+    const ticks = isToday
+      ? [25, 50, 75].map(pct => `<div class="wtick" style="left:${pct}%"></div>`).join("")
+      : "";
+    return `<div class="wcell${isToday ? " today" : ""}">
+        <span class="wcell-day">${d}</span><span class="wcell-time">18時〜</span>${ticks}
+      </div>`;
+  }).join("");
   const html = `<div class="weekbar">
       <div class="wtrack">${cells}</div>
       <div class="wmarks">
         <div class="wmk wexp" style="left:${expPct.toFixed(1)}%"><span class="wmf">本来ここ ${expPct.toFixed(1)}%</span></div>
         <div class="wmk wnow${isOver ? " over" : ""}" style="left:${nowPct.toFixed(1)}%"><span class="wmf">今ここ ${nowPct.toFixed(1)}%</span></div>
       </div>
+      <div class="wfoot">週は火曜18:00に始まって次の火曜17:59に終わる（1マス＝24時間・見出しはそのマスの開始時刻、今日のマスの中の点線は6時間ごと）</div>
     </div>`;
-  return {html, expPct, nowPct, overAmt, isOver};
+  return {html, expPct, nowPct, overAmt, isOver, withinDayFrac};
 }
 function renderPace(p){
   const bar = document.getElementById("paceBar"); if(!bar) return;
@@ -1315,6 +1346,9 @@ function renderPace(p){
     <div class="in">
     <div class="pd">週枠100%のうち今週使用 <b>${p.allPct}%</b> ／ 週の残り${p.remainWeek}% ÷ あと${p.daysLeft}日 ・ 単純日割り目安 約${p.perDayEven}%</div>
     <div class="pd" style="opacity:.75">配分：週100%を火曜18:00リセットで7日で使い切る（1日目安13〜14%・理想は火曜18:00に99.9%・超えたら赤）</div>
+    <!-- 728番（2026-09-12）：「今日」がどの1日かを明記。tools/pace.pyのtoday0はカレンダーの
+         0時起点で計算しているため、週の火曜18:00起点とは別軸であることをここで注記する。 -->
+    <div class="pd" style="opacity:.7">「今日」はカレンダーの1日（0:00〜24:00）で計算しています。週の起点（火曜18:00）とは別の区切りです</div>
     <div class="track"><div class="fill" style="width:${pct}%"></div></div>
     <div class="pd">${esc(p.resetAt || "")}にリセット（火曜18:00） 　<span class="pdas${stale ? " stale" : ""}">${asOf}</span></div>
     </div>`;
