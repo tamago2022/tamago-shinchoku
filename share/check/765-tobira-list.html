@@ -52,30 +52,31 @@
 <div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-全ページに置く「扉」（感想→自動タスク化→お礼＋あめちゃん→メール登録）を実装するための対象を洗い出し、後で10件ずつ小分けできる形で32件のリストにまとめた。今回は一覧作成のみで、扉自体の実装はまだしていない。
+「感想→自動タスク化→お礼＋あめちゃん→メール登録」の扉を置く対象ページを実際にコードを調べて洗い出しました。実装はまだしていません（今回は一覧作成のみ）。一覧は10件ずつ自動で小分けされ、次の回から本体の実装に入ります。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>32件</b><span>洗い出した対象の数</span></div>
-  <div class="num"><b>21ルート</b><span>うちVideoCard.tsx 1箇所の修正で一括反映されるページ</span></div>
-  <div class="num"><b>約35,051件</b><span>coverGuide.ts上の曲データ規模の目安(youtubeId出現数)</span></div>
+  <div class="num"><b>37件</b><span>洗い出した対象項目の数（呼び出し箇所の一括反映先を含めるとルート換算で約70ページ）</span></div>
+  <div class="num"><b>21+6+81+1</b><span>VideoCard経由21ルート／MinimalRoom経由6ルート／棚ページ81件／単体ページ多数、という内訳</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>765-list.json（対象一覧の中身）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/split/765-list.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/split/765-list.json</a></li>
+<li><b>（リンクなし）</b></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>扉コンポーネント本体の新規実装（ペコリ動画枠・手探り文・感想フォーム・メール登録・商品棚導線）</td><td class="yes">1件（既存の管理者用CuratorFeedbackとは別物として新規作成）</td></tr>
-<tr><td>バックエンド機能（自動タスク化・お礼メール+あめちゃん3個・メール登録保存先・ペコリ動画枠）</td><td class="yes">4件</td></tr>
-<tr><td>各ページテンプレートへの設置（VideoCard/cover-guide/MinimalRoom/棚/ハブ等の呼び出し箇所）</td><td class="yes">26件</td></tr>
-<tr><td>展開順の管理（まず1ページでテスト→店主確認→全体展開）</td><td class="yes">1件</td></tr>
+<tr><td>src/components/VideoCard.tsx</td><td class="yes">OK・21ルート一括反映先（曲カード・アニメ・海外・コント等）</td></tr>
+<tr><td>src/routes/cover-guide.tsx</td><td class="yes">OK・35,051件規模の最大表示面</td></tr>
+<tr><td>src/components/MinimalRoom.tsx</td><td class="yes">OK・6ルート一括反映先</td></tr>
+<tr><td>src/routes/world.$worldId.tsx（棚81件）</td><td class="yes">OK</td></tr>
+<tr><td>src/routes/ai-factory.tsx 等・当初リストに漏れていた4ルート</td><td class="yes">今回追加で発見・リストへ追記済み</td></tr>
+<tr><td>src/routes/room.music.$id.tsx</td><td class="no">リダイレクト専用のため対象外と確認</td></tr>
 </table>
 
 <footer>
