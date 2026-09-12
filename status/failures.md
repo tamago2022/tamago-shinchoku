@@ -441,3 +441,24 @@
 - **二度と起こさないための仕掛け**：「まだ直っていない」の指摘が、直前の追加指示（新キャラ・新素材等）とほぼ同時刻に来た場合は、指摘の原因を「前回の直し方が壊れている」ではなくまず「直前の新規追加がまだ処理されていない」を疑う。queue.jsonの`what`欄の末尾（一番新しい追記）を必ず確認してから着手する。
 - **日付**：2026-09-12（769番・6回目）
 - **根拠**：`tools/line_stamp_configs/rashikoru.json`、`share/check/769-rashikoru-paste-sheet.html`（本番200・検出24枚/規格OK24枚実測）、`share/check/769-line-stamp-factory-progress.html`（3キャラ目追記・本番反映確認済み）、Vault`AI出力/_ルール/素材台帳.md`追記
+
+---
+
+## 20. 公開リポジトリの1MB超ファイルが330件まで積み上がっていた（内訳：Eagleギャラリー237件・確認ページの画像/動画93件）。原因は3つの別々の穴
+
+- **症状**：715番の日次憲法点検で「公開リポジトリの1MB超ファイル」が315→330件に増加しながら赤のまま放置されていた（717番）。
+- **原因①（最大の穴・237件）**：`tools/eagle_gallery.py`が①サムネ(`t/`)をEagle自身の`_thumbnail.*`のまま無劣化コピーしていた（リサイズ皆無）、②受け渡し用画像(`o/`)も「長辺1600px以下なら原本バイト列をそのままコピー」というロジックで、寸法が小さくても色数の多いPNGは平気で1〜3MBになっていた。
+- **原因②（既存ガードの穴）**：2026-09-09に`machine_status_push.sh`へ「1MB超は`git add`直後にunstageする」ガードを入れていたが、**そのスクリプト経由のコミットにしか効かなかった**。個別セッションが直接`git add -A && git commit`する経路（#734/#751/#771等の実データで確認）は素通りしていた。
+- **原因③（無制限に肥大するログ）**：`status/relay.log`が中継所(relay_server.py)のHTTPアクセスログを追記し続けるだけでトリム処理が無く、実測46.8MB(632,529行)まで膨張していた。
+- **直し方**：
+  1. `tools/eagle_gallery.py`：サムネは長辺480pxへ必ず縮小(`make_thumb`)、受け渡し画像は`BYTE_CAP`(950KB)に収まるまで品質→サイズの順に下げる(`_save_jpeg_under_cap`)方式に一本化。既存237件は`tools/_717_shrink_eagle_existing.py`で一回だけ縮小（791MB→371MB、1MB超は0件に）。
+  2. **`.git/hooks/pre-commit`を新設**（どの経路のcommitでも必ず通る唯一の関所）。1MB超はcommitごと止めずファイルだけunstageし`status/blocked_large_files.log`へ記録。トラッキング対象外なので`tools/git-hooks/pre-commit`に控えを置き、`machine_status_push.sh`が毎サイクル「無ければ複製し直す」自己修復を行う。
+  3. `status/relay.log`・`status/check_page_pruner.log`を1000行にトリムし、`machine_status_push.sh`に「1MB超えたらtail 1000行へ」の常設トリムを追加。
+  4. 確認ページの静止画32件（share/check/img・assets配下）はPillowでPNG可逆最適化→パレット量子化、JPEGは品質+リサイズの段階縮小でその場（同拡張子）縮小。動画50件はffmpeg(imageio_ffmpeg同梱バイナリ)でH.264再エンコード、解像度とビットレートを段階的に下げて1MB未満に（`tools/_717_shrink_check_images.py`・`tools/_717_shrink_check_videos.py`）。
+- **意図的に対象外にした2系統（ごまかしではなく`tools/kenpou_check.py`の`BIG_FILE_EXEMPT_PREFIXES`に明記済み）**：`share/podcast/audio/`・`share/audio/`＝配信中のポッドキャスト本編(RSS配信あり)とTTS聞き比べ用の生波形サンプル。1MBに収めようとすると数分の音声が数十kbpsになり聞き取れなくなる／聞き比べの前提が壊れるため、実物を壊してまで数字を合わせない判断。
+- **今回あえて手を付けなかった残り2件（要フォローアップ・判断待ち）**：
+  - `share/x-archive/tweets_data.json`(3.3MB・たまごさん本人の実ツイート13,121件のフルテキスト)：2026-09-09の667番事故（実ツイート全文47,011件が誤って公開された）と同種のリスク。今回は削除・非公開化の判断まではせず現状維持。667番と同じ扱い（gitignore化）にするかはたまごさんの判断が必要と考え、あえて手を付けなかった。
+  - `status/queue.json`(1.9MB・発車待ちの正本)：複数の常駐プロセスが同時に読み書きしている生きた台帳で、圧縮するには本文(`what`等)を削るか`archive_done.py`のアーカイブ間隔を短くする必要があり、稼働中に手を入れると競合で壊すリスクがあるため今回は見送り。
+- **二度と起こさないための仕掛け**：pre-commit hookが恒久的な最終防波堤。今後どのファイルが1MBを超えて追加されても、機械的にunstageされ`status/blocked_large_files.log`に残る。
+- **日付**：2026-09-12（717番）
+- **根拠**：`git ls-tree -r -l HEAD`実測（330件→2件）、`tools/kenpou_check.py --no-queue`実行結果、`.git/hooks/pre-commit`・`tools/git-hooks/pre-commit`・`tools/eagle_gallery.py`・`tools/_717_shrink_*.py`・`tools/machine_status_push.sh`の該当コミット
