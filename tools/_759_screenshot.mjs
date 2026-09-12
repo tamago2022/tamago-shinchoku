@@ -148,7 +148,10 @@ async function main() {
     const info = JSON.parse(check.result?.value || "{}");
     if (!info.hasSec) throw new Error("dekitaSecが見つからない: " + check.result?.value);
 
-    const clip = { x: 0, y: 0, width: 430, height: Math.min(1400, Math.ceil((info.rect?.bottom || 900)) + 20), scale: 1 };
+    // 上に積もる「できたもの」棚は、他のカードが増減すると位置が動く。
+    // ページ先頭からではなく、棚自体のrect.topを起点にクリップする（常に棚が写るように）。
+    const top = Math.max(0, Math.floor(info.rect?.top || 0));
+    const clip = { x: 0, y: top, width: 430, height: 1300, scale: 1 };
     const shot = await send("Page.captureScreenshot", { format: "png", clip });
     writeFileSync(OUT_FILE, Buffer.from(shot.data, "base64"));
     console.log("保存:", OUT_FILE);
