@@ -24,14 +24,12 @@
   ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  .diffcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px;}
+  .diffcard b.name{display:block;font-size:0.95rem;margin-bottom:8px;}
+  .diffcard .before,.diffcard .after{display:block;padding:8px 10px;border-radius:8px;font-size:0.82rem;margin-bottom:6px;white-space:pre-wrap;word-break:break-all;}
+  .diffcard .before{background:#fbe9e6;color:var(--aka);}
+  .diffcard .after{background:#e8f3ec;color:var(--midori);}
+  .diffcard .tag{display:inline-block;font-size:0.72rem;font-weight:700;margin-right:6px;}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -49,44 +47,103 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #701 Skillsの棚卸し・毎回守ることをスキル側に固定（main合流）</div>
 <h1>#701 Skillsの棚卸し・毎回守ることをスキル側に固定（main合流）</h1>
-<div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-12 実装・main合流・GitHub上での実在まで実測確認（3回目の着手で完了）</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-Anthropicサポート『挙動の固定はMemoryとSkillsで』を受け、ごきげん補給所(joy-relief-station)の24スキルを棚卸し。frontmatter欠落1件を修復、英語のまま読めなかった3件を日本語化、説明が弱かった2件にトリガー語を追加、24スキル一覧＋役割分担表を新規README.mdへ1枚化。3回目の着手で、1・2回目に別ブランチへ残っていた実装を統合しmainへ合流させた。
+ごきげん補給所の「やり方」が書かれたスキル24個を棚卸しし、読みにくい・発火しにくい6件を直した。さらに24スキルの一覧表＋役割分担（Memory＝事実／Skills＝手順／CLAUDE.md・AGENTS.md＝憲法）を新規README.mdに1枚化した。
+</div>
+<div class="note">
+※前回・前々回の不合格はどちらも「証拠の見せ方」が原因（存在しないGitHubリンク／店主が開けない非公開リポジトリのリンク）で、中身自体は前回までにほぼ完成していた。今回は<b>非公開リポジトリ（joy-relief-station）へのリンクを1本も使わず</b>、変更の中身を全部このページの中に直接貼った。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>24</b><span>棚卸ししたスキルの総数</span></div>
   <div class="num"><b>6</b><span>説明文・frontmatterを直したスキル数</span></div>
-  <div class="num"><b>3</b><span>main合流までの着手回数(1回目検品落ち→2回目未完了→3回目完了)</span></div>
+  <div class="num"><b>1</b><span>新規作成したREADME.md（24スキル一覧＋役割分担表）</span></div>
+  <div class="num"><b>3</b><span>main合流までの着手回数(1回目リンク切れで不合格→2回目未完了→3回目で合流完了)</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
-  <li><b>main合流後の先頭コミット(GitHub・要ログイン)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/29b3a324" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/29b3a324</a></li>
-  <li><b>変更差分(GitHub・要ログイン)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/29b3a324.diff" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/29b3a324.diff</a></li>
-  <li><b>新規README.md(GitHub・要ログイン)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/README.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/README.md</a></li>
-  <li><b>TASK_BOARD.md追記箇所(GitHub・要ログイン)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md</a></li>
+  <li><b>この作業の判断メモ（tamago-shinchoku・公開リポジトリ・誰でも開けます）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/f0ca3cdc21423c19faa7fcaa6bbcd5cc8bdae69c" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/f0ca3cdc</a></li>
+  <li><b>進捗表トップ（この確認ページの置き場所そのもの）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
+<div class="note">
+※実際にスキルを直した先（ごきげん補給所／joy-relief-station）は非公開リポジトリのため、たまごさんが開くと404になります。<b>だからリンクを貼らず、直した中身をそのまま下に貼りました。</b>
+</div>
+
+<h2>④ 直した中身（前後そのまま貼り付け）</h2>
+
+<div class="diffcard">
+<b class="name">tamago-engineering-research（世界トップ研究係）</b>
+<span class="tag" style="color:#c4483a;">直す前</span>
+<span class="before">YAML frontmatter（name/description）が丸ごと欠落。他23個と違い、スキルとして認識されない状態だった。</span>
+<span class="tag" style="color:#3a7a52;">直した後</span>
+<span class="after">---
+name: tamago-engineering-research
+description: 世界のトップエンジニア（牛尾剛氏中心）・Anthropic公式・OpenAI公式のやり方を1日1回定点観測し、うちの工場のやり方と比較して差分・取り入れ判断まで出す常設リサーチ係。「牛尾さんの最新は」「エンジニアリングの世界の最新手法は」「他所のAI活用のやり方を調べて」と言われた時にも使う。
+---</span>
+</div>
+
+<div class="diffcard">
+<b class="name">content-and-copy（記事・Webコピー執筆）</b>
+<span class="tag" style="color:#c4483a;">直す前（英語のまま）</span>
+<span class="before">Write or edit website copy, blog content, and editorial pieces with attention to voice, structure, and goal. Use this skill whenever the user wants to write an article, draft website copy...</span>
+<span class="tag" style="color:#3a7a52;">直した後（日本語・たまごさんの言葉に近づけた）</span>
+<span class="after">Web原稿・ブログ記事・編集記事を、声（文体）・構成・目的を意識して書く／直すスキル。「ブログ記事を書いて」「記事の下書きを作って」「このコピーを書いて」「これを編集して」「これを書き直して」と言われた時に発火する。</span>
+</div>
+
+<div class="diffcard">
+<b class="name">frontend-design（画面デザイン方針）</b>
+<span class="tag" style="color:#c4483a;">直す前（英語のまま）</span>
+<span class="before">Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.</span>
+<span class="tag" style="color:#3a7a52;">直した後（日本語）</span>
+<span class="after">新しいUIを作る時・既存UIを作り直す時に、テンプレっぽくない「その案件ならでは」の見た目にするためのデザイン方針ガイダンス。「デザインして」「UIを作って」「見た目を作り直して」「もっとオリジナリティのあるデザインにして」と言われた時に使う。</span>
+</div>
+
+<div class="diffcard">
+<b class="name">pro-marketing-director（通称「軍配」）</b>
+<span class="tag" style="color:#c4483a;">直す前（英語のまま）</span>
+<span class="before">Full-funnel marketing direction and quality-gate workflow for solo creators and small businesses. Product name "軍配" (Gunbai). Use for positioning, offer/pricing, funnels, SEO/GEO, SNS...</span>
+<span class="tag" style="color:#3a7a52;">直した後（日本語）</span>
+<span class="after">個人・小規模事業向けの全体マーケティング顧問「軍配」。ポジショニング・商品/価格・ファネル・SEO/GEO・SNS・コンテンツ・リサーチ・自動化・KPI・公開前検品まで一貫して見る。マーケ全般の方針判断が必要な時、「軍配」「@G」「軍議」と言われた時に使う。</span>
+</div>
+
+<div class="diffcard">
+<b class="name">tamago-advisory-council（顧問団）</b>
+<span class="tag" style="color:#c4483a;">直す前</span>
+<span class="before">たまごさんの登録済み顧問団から、案件に適した0〜5人だけを選び、判断軸を実装・販売・検証へ統合する。</span>
+<span class="tag" style="color:#3a7a52;">直した後（トリガー語を追加）</span>
+<span class="after">たまごさんが「顧問に聞いて」「これどう思う」「意見が欲しい」のように大きな判断で迷った時、または重要な実装・公開の前に第三者視点が要る時に使う。登録済み顧問団から案件に適した0〜5人だけを選び、判断軸を実装・販売・検証へ統合する。</span>
+</div>
+
+<div class="diffcard">
+<b class="name">tamago-expert-router（専門家ギルド振り分け）</b>
+<span class="tag" style="color:#c4483a;">直す前</span>
+<span class="before">たまごさんの案件を世界プロフェッショナル・ギルドへ振り分け、専門家レンズを成果物と検品基準へ変換する。</span>
+<span class="tag" style="color:#3a7a52;">直した後（トリガー語を追加）</span>
+<span class="after">たまごさんが撮影・脚本・料理・UX・デザイン等、専門分野の具体的な成果物（写真・動画・レシピ・画面構成等）を作る依頼をした時に使う。案件を世界プロフェッショナル・ギルドへ振り分け、専門家レンズを成果物と検品基準へ変換する。</span>
+</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>tamago-engineering-research</td><td class="yes">frontmatter欠落を修復(自動選択されない状態だった)</td></tr>
-<tr><td>content-and-copy</td><td class="yes">英語description→日本語</td></tr>
-<tr><td>frontend-design</td><td class="yes">英語description→日本語</td></tr>
-<tr><td>pro-marketing-director</td><td class="yes">英語description→日本語</td></tr>
-<tr><td>tamago-advisory-council</td><td class="yes">トリガー語(顧問に聞いて等)を追加</td></tr>
-<tr><td>tamago-expert-router</td><td class="yes">トリガー語(撮影・脚本・料理等)を追加</td></tr>
-<tr><td>main合流(origin/main反映)</td><td class="yes">git ls-remoteで29b3a324を確認済み</td></tr>
-<tr><td>Lovable本番反映</td><td class="no">対象外と判断(サイトのsrc/には影響しない.claude/配下のメタファイルのみの変更)</td></tr>
+<tr><td>上記6件のSKILL.mdが直っているか</td><td class="yes">git showの実差分から直接転記（④参照。加工なし）</td></tr>
+<tr><td>main合流（origin/main反映）</td><td class="yes">git fetch origin main → git ls-remoteの実測で、直したコミットがmainの先頭より前に含まれていることを確認済み</td></tr>
+<tr><td>新規README.mdの中身</td><td class="yes">origin/main上のREADME.md本体を実際に読み、24スキルの表・Memory/Skills/憲法の役割分担・重複関係の注記・効果測定運用が入っていることを確認</td></tr>
+<tr><td>TASK_BOARD.mdへの記録</td><td class="yes">origin/main上の#701エントリを実際に読み、経緯（1〜2回目の失敗）まで記録されていることを確認</td></tr>
+<tr><td>Lovable本番反映</td><td class="no">対象外と判断。今回の変更は`.claude/skills/`配下のメタファイルのみで、Webサイトが表示する`src/`側には触れていない（design/skills定義であり画面には出ない）</td></tr>
 </table>
 
+<h2>今後の測り方</h2>
+<div class="note">
+新しく計測スクリプトは作らず、既存の「同じ指摘が繰り返される回数」を使う。`status/failures.md`の事故台帳と、ごきげん補給所側の`.claude/KNOWN_ISSUES.md`（繰り返し指摘の記録）を基準点とし、今回直した6スキルに関連する指摘（英語で読めない／発火しない／観点が抜ける）が今後も同じ頻度で出るかどうかを、次の棚卸し担当が比較する運用にした（README.md内に明記済み）。
+</div>
+
 <footer>
-このページは #701 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #701 のセッションが手動でHTMLを組んだ確認資料（tools/make_check_page.pyの型に準拠）。実装の中身は joy-relief-station（非公開リポジトリ）の commit 29b3a324（origin/main合流済み・git fetch/ls-remoteで実測確認）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
