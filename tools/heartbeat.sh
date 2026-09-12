@@ -41,6 +41,30 @@ cleanup_pid() {
 }
 trap cleanup_pid EXIT INT TERM
 
+# ---- 2026-09-12（776番）：心臓が詰まったまま二度と戻らない事故への根本対策 ----
+# それまでは machine_status_push.sh が「180秒何も書いていなければ心臓を入れ直す」
+# 外側の見張りしか持っておらず、中身（auto_launcher.py / command_ingest.py）が
+# 何らかの理由で固まる原因そのものは直っていなかった。実測：2026-09-12 12:58〜16:49の
+# 230分間、立て直しては数分〜十数分でまた詰まる、を繰り返した（heartbeat.log参照）。
+# 「見張りの見張り」を増やすのではなく、一番下（この15秒ループ自体）に
+# 「どんな理由で固まっても必ず自分で抜け出す」保険を1つ置く。
+# 戻り値：タイムアウトで強制終了した時だけ 124（GNU timeoutと同じ慣例）を返す。
+# それ以外（コマンド自身が正常/異常終了した場合）はそのままの終了コードを返す＝
+# 呼び出し側が今までどおり || true で握りつぶせる。
+run_with_timeout() {
+  local secs="$1"; shift
+  "$@" &
+  local cpid=$!
+  local killed_flag="$REPO/status/.heartbeat_killed_$$_$cpid"
+  ( sleep "$secs" 2>/dev/null; if kill -0 "$cpid" 2>/dev/null; then : > "$killed_flag"; kill -9 "$cpid" 2>/dev/null; fi ) &
+  local watcher=$!
+  wait "$cpid" 2>/dev/null
+  local rc=$?
+  kill "$watcher" 2>/dev/null; wait "$watcher" 2>/dev/null
+  if [ -f "$killed_flag" ]; then rm -f "$killed_flag" 2>/dev/null; return 124; fi
+  return $rc
+}
+
 echo "$(date '+%F %T') 心臓を起動しました（pid $$）" >> "$LOG"
 while :; do
   # 自分が正規の心臓でなくなっていたら（誰かが入れ直した）静かに退く
@@ -49,8 +73,10 @@ while :; do
     echo "$(date '+%F %T') 新しい心臓（pid $CUR）に交代します" >> "$LOG"
     exit 0
   fi
-  python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1 || true
-  python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
+  run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1
+  [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
+  run_with_timeout 45 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1
+  [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ command_ingest.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
   # ログインが戻ったら自分で気づいて再開する（10分に1回だけ試す）
   python3 "$REPO/tools/auth_watch.py"     >/dev/null 2>&1 || true
   # 2026-09-05：中継所（進捗表→Mac）が死ぬと、たまごさんがボタンを押しても何も届かない。

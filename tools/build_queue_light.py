@@ -72,7 +72,11 @@ def build(queue_path=QUEUE, out_path=QUEUE_LIGHT, keep=DONE_KEEP):
         "items": light_items,
     }
 
-    tmp = out_path + ".tmp"
+    # 2026-09-12（776番）：固定名の .tmp だと、心臓（15秒おき）とmachine_status_push.sh
+    #   （260秒ループ）の両方が同時にbuild()を呼んだ時、片方が rename した直後にもう片方が
+    #   同じ .tmp を開こうとして [Errno 2] No such file or directory で失敗する競合があった
+    #   （心臓が詰まる事故の引き金の1つ）。プロセスIDを名前に入れて衝突しないようにする。
+    tmp = "%s.tmp.%d" % (out_path, os.getpid())
     with io.open(tmp, "w", encoding="utf-8") as f:
         json.dump(light, f, ensure_ascii=False, indent=1)
     os.replace(tmp, out_path)

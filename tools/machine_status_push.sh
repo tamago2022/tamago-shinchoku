@@ -421,9 +421,23 @@ LOOP_END=$(( $(date +%s) + 260 ))
 #   着火と受信箱を見ていなかったため、空きが出てから繰り上がるまで最大5分かかっていた。
 #   → 重い計測の合間に、**軽い2つ（着火・受信箱）だけを15秒おきに回す。**
 #     どちらも数百ミリ秒で終わるので、負荷はほぼ増えない。
+# 2026-09-12（776番）：heartbeat.sh と同じ保険をここにも入れる。この5分便の中でも
+#   auto_launcher.py/command_ingest.pyを直接呼んでいるため、心臓側だけ直しても
+#   この経路がハングすればやはり「詰まって見える」状態になりうる。
+run_with_timeout() {
+  local secs="$1"; shift
+  "$@" &
+  local cpid=$!
+  ( sleep "$secs" 2>/dev/null; kill -9 "$cpid" 2>/dev/null ) &
+  local watcher=$!
+  wait "$cpid" 2>/dev/null
+  local rc=$?
+  kill "$watcher" 2>/dev/null; wait "$watcher" 2>/dev/null
+  return $rc
+}
 quick_tick() {
-  python3 "$REPO/tools/auto_launcher.py"   >/dev/null 2>&1 || true
-  python3 "$REPO/tools/command_ingest.py"  >/dev/null 2>&1 || true
+  run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"   >/dev/null 2>&1 || true
+  run_with_timeout 45 python3 "$REPO/tools/command_ingest.py"  >/dev/null 2>&1 || true
 }
 while :; do
   run_once

@@ -776,7 +776,43 @@ def build():
     d["autonomy"] = {"alive": len(ss), "done": len(done), "doneWithoutHumanPush": len(auto),
                      "ratio": round(len(auto) / len(done), 2) if done else None,
                      "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"}
+    d["heartbeat"] = heartbeat_status()
     return d
+
+
+def heartbeat_status():
+    """工場の心臓（heartbeat.sh）が生きているか・何分止まっているかを実測する（776番）。
+
+    心臓は15秒おきに必ず何か（着火判定・受信箱チェック）を行い、その中で
+    auto_launch.log（着火ログ）を更新する仕組みになっている。プロセスが「居る」だけでは
+    中で詰まっていても分からない（実際、pgrepには見えるのに180秒以上何も進んでいない
+    事故が2026-09-12に230分続いた）。判定は必ず「実際に仕事が進んでいるか」の実測でやる。
+    """
+    pidf = os.path.join(REPO, "status", "heartbeat.pid")
+    logf = os.path.join(REPO, "status", "auto_launch.log")
+    alive = False
+    pid = None
+    try:
+        pid = int(open(pidf, encoding="utf-8").read().strip())
+        os.kill(pid, 0)
+        alive = True
+    except Exception:
+        alive = False
+    stalled_min = None
+    try:
+        stalled_min = round((time.time() - os.path.getmtime(logf)) / 60.0, 1)
+    except Exception:
+        pass
+    # 10分（=STALL_MINと同じ基準）以上ログが進んでいなければ「止まっている」とみなす。
+    # プロセスが居るかどうかは判定に使わない（居るのに詰まっているケースを見逃さないため）。
+    stalled = bool(stalled_min is not None and stalled_min >= 10)
+    return {
+        "pid": pid,
+        "processAlive": alive,
+        "stalledMin": stalled_min,
+        "stalled": stalled,
+        "note": ("💤 心臓が%s分止まっています" % stalled_min) if stalled else "心臓は動いています",
+    }
 
 
 def table(d):

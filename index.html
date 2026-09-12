@@ -610,6 +610,15 @@
      押すと固定URLの確認ページ(share/check/daily-ingest.html)へ飛ぶ。 -->
 <div id="dailyIngestBar"><a id="dailyIngestLink" href="share/check/daily-ingest.html"><span id="dailyIngestText">読み込み中…</span><span class="arrow">→見る</span></a></div>
 
+<!-- 776番（2026-09-12）：「心臓が止まっても人を起こさずに復活する形にする」。
+     工場の心臓（tools/heartbeat.sh）が止まっていることに気づけず、たまごさんが
+     気づかないまま何時間も待たされた事故（12:58〜16:49・230分）への対応。
+     status/machine.json の heartbeat フィールド（tools/factory_status.py が実測）を見て、
+     10分以上詰まっていたら進捗表の一番上に赤で出す。動いている間は何も出さない（邪魔しない）。
+     ボタンは既存の command_ingest.py の restart_heartbeat アクションへそのまま繋ぐ
+     （2026-09-05から実装済み・PWA側の入口が無かっただけ）。 -->
+<div id="heartbeatBar" style="display:none"></div>
+
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
 
@@ -4019,6 +4028,24 @@ function renderMeters(m){
     + netHtml;
   el.innerHTML = parts.length ? parts.join("") : "";
 }
+/* 776番（2026-09-12）：心臓（tools/heartbeat.sh）が止まっていることに、たまごさんより先に
+   気づくための表示。machine.json.heartbeat（factory_status.pyが実測）を見るだけで、
+   ここ自体はネットワークや外部プロセスに触らない（表示が固まってさらに気づけない、を避ける）。 */
+function renderHeartbeat(m){
+  const el = document.getElementById("heartbeatBar");
+  if(!el) return;
+  const hb = m && m.heartbeat;
+  if(!hb || !hb.stalled){ el.style.display = "none"; el.innerHTML = ""; return; }
+  const mins = hb.stalledMin != null ? hb.stalledMin : "?";
+  el.style.display = "block";
+  el.style.cssText = "display:block;margin:0 0 12px;padding:12px 14px;border-radius:14px;"
+    + "background:linear-gradient(135deg,#4a1414,#2b0d0d);border:1px solid rgba(255,120,120,0.5);"
+    + "color:#ffdada;font-weight:700;font-size:0.92rem;";
+  el.innerHTML = `<div>💤 心臓が${esc(String(mins))}分止まっています${hb.processAlive ? "" : "（プロセス自体も見当たりません）"}</div>`
+    + `<div class="cmdrow" style="margin-top:8px">`
+    + `<button type="button" class="cmdbtn" data-action="restart_heartbeat" data-target="" data-label="心臓を起こす">🔁 心臓を起こす</button>`
+    + `<span data-cmdid-slot></span></div>`;
+}
 function refreshMachine(){
   return fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(m => {
@@ -4026,7 +4053,7 @@ function refreshMachine(){
       //   原因のかたち：ここは描画を1行に並べていたので、**どれか1つが転ぶと以降が全部描かれない。**
       //   今日この形のバグを何度も踏んだので、1本ずつ包んで、転んでも残りは描くようにする。
       window.__machine = m;
-      for(const fn of [() => renderMachine(m), () => renderMeters(m), () => renderSessions(m),
+      for(const fn of [() => renderHeartbeat(m), () => renderMachine(m), () => renderMeters(m), () => renderSessions(m),
                        () => renderNow(m), () => renderCapBar()]){
         try{ fn(); }catch(err){ showErr(err); }
       }
