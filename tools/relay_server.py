@@ -122,6 +122,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/health"):
             return self._json(200, {"ok": True, "at": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+        # 2026-09-13（798番・第3段）家（Wi-Fiの中）で見るときはリアルタイムにする。
+        #   status/rev.txt（now.jsonのハッシュ20バイト）の変化だけを見張り、変わった瞬間に
+        #   1行だけ送る。画面側(EventSource)はこれを受けてnow.jsonを1回だけ取りに行く。
+        #   GitHub Pages（スマホ側・静的配信）にはこの経路が無いので、そちらは既存の
+        #   rev.txt 30秒ポーリング(pollNow)にそのまま任せる（このサーバーが無くても壊れない）。
+        if self.path.startswith("/events"):
+            return self._sse_rev()
         # 2026-09-05 **進捗表そのものをMacから配る。**
         #   トンネル（cloudflared / localtunnel）は、たまごさんの回線では張れたり切れたりを
         #   繰り返し、そのたびURLが変わって進捗表が迷子になった（10:15〜10:39に5回変わった）。
@@ -206,6 +213,54 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception as e:
                     return self._json(500, {"ok": False, "error": str(e)})
         return self._json(404, {"ok": False})
+
+    def _sse_rev(self):
+        """rev.txtの変化を1秒未満の遅延で押す。新しいプロセスは増やさない
+        （このHTTPサーバーの1スレッドが接続中だけ張り付く。ThreadingHTTPServerなので
+        他のリクエストは別スレッドで並行処理され、ブロックしない）。"""
+        rev_path = os.path.join(REPO, "status", "rev.txt")
+        try:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self._cors()
+            self.end_headers()
+        except Exception:
+            return
+
+        def read_rev():
+            try:
+                with io.open(rev_path, encoding="utf-8") as f:
+                    return f.read().strip()
+            except Exception:
+                return None
+
+        last = read_rev()
+        try:
+            self.wfile.write(("retry: 3000\ndata: %s\n\n" % (last or "")).encode("utf-8"))
+            self.wfile.flush()
+        except Exception:
+            return
+        idle = 0.0
+        # 家の中だけ・たまごさん1人分の接続なので、0.3秒刻みの張り付き監視で十分軽い。
+        while True:
+            time.sleep(0.3)
+            cur = read_rev()
+            try:
+                if cur is not None and cur != last:
+                    last = cur
+                    self.wfile.write(("data: %s\n\n" % cur).encode("utf-8"))
+                    self.wfile.flush()
+                    idle = 0.0
+                else:
+                    idle += 0.3
+                    if idle >= 20:
+                        # プロキシ/ブラウザのアイドルタイムアウト対策のコメント行（画面側には無視される）
+                        self.wfile.write(b": ping\n\n")
+                        self.wfile.flush()
+                        idle = 0.0
+            except (BrokenPipeError, ConnectionResetError, OSError):
+                return  # 画面側が閉じた・タブが閉じられた
 
     def do_POST(self):
         if not self.path.startswith("/cmd"):

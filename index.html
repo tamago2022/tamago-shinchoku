@@ -1474,7 +1474,6 @@ function refreshQuota(){
 refreshQuota();
 setInterval(refreshQuota, 60000);
 refreshPace();
-setInterval(refreshPace, 60000);
 
 /* ───── 787番（2026-09-12）：「いまの現在地」7項目を進捗表の一番上に出す ─────
    status/genzaichi.json（tools/genzaichi.pyがheartbeat.shに相乗りし実質30分おきに書く）を
@@ -1525,7 +1524,39 @@ function refreshGenzaichi(){
     .catch(()=>{ renderGenzaichi(null); });
 }
 refreshGenzaichi();
-setInterval(refreshGenzaichi, 60000);
+
+/* ───── 796番（2026-09-13）進捗表の「ぐるぐる読み込み・重い・週の目盛り食い違う」の本線対策 ─────
+   たまごさんの要求：「間隔を伸ばすのではなく、ズレの幅を小さく、かつ通信を軽くする」の両立。
+   これまでは status/pace.json（711B）と status/genzaichi.json（約3.2KB）を、それぞれ独立した
+   60秒タイマーで「変わっていなくても毎回」フルHTML書き換えしていた（合計 約4KB/分・2回の
+   無条件再描画/分）。ここを、中身のハッシュだけの status/rev.txt（20バイト）を30秒おきに見に行き、
+   前回と同じなら通信も再描画も一切しない方式へ変える。変わっていた時だけ status/now.json
+   （pace＋genzaichiをまとめた1本・約3.6KB）を1回取って、その回だけ書き換える。
+   status/pace.json・status/genzaichi.json への直接フェッチ（refreshPace/refreshGenzaichi）は
+   ページ読み込み直後の初回表示、および now.json/rev.txt がまだ用意できていない時の保険として
+   そのまま残す（削除しない）。 */
+let __nowRev = null;
+function pollNow(){
+  return fetchWithTimeout("status/rev.txt?t=" + Date.now(), {cache:"no-store"}, 8000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.text(); })
+    .then(rev => {
+      rev = (rev || "").trim();
+      if(!rev || rev === __nowRev) return; // 変わっていない→ここで打ち切り（now.jsonは取りに行かない・再描画もしない）
+      return fetchWithTimeout("status/now.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+        .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+        .then(data => {
+          if(!data) return;
+          __nowRev = rev; // now.jsonの取得まで成功して初めて既読扱いにする（半端な既読を作らない）
+          withScrollLock796(()=>{
+            if(data.pace){ renderPace(data.pace); saveLastGood("pace", data.pace); }
+            if(data.genzaichi){ renderGenzaichi(data.genzaichi); saveLastGood("genzaichi", data.genzaichi); }
+          });
+        });
+    })
+    .catch(()=>{ /* rev.txt/now.jsonが無い・失敗した時は何もしない（refreshPace/refreshGenzaichiの初回表示が保険） */ });
+}
+pollNow();
+setInterval(pollNow, 30000);
 
 /* ───── 424番：どの仕事がいくら使ったか見える化（今日のトップ5） ─────
    status/cost_by_task.json（tools/auto_launcher.py の harvest() が1本終わるたびに書く）を読むだけ。

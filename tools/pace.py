@@ -20,6 +20,7 @@
       今日の予算 = (99 - 今の使用率) ÷ 残り日数
   - 今日の使用が今日の予算を超えていたら赤、8割超えたら黄、それ以下は緑
 """
+import hashlib
 import io
 import json
 import os
@@ -31,8 +32,59 @@ REPO = os.path.dirname(HERE)
 QUOTA = os.path.join(REPO, "status", "quota.json")
 HIST = os.path.join(REPO, "status", "pace_history.jsonl")
 OUT = os.path.join(REPO, "status", "pace.json")
+GENZAICHI_JSON = os.path.join(REPO, "status", "genzaichi.json")
+VERSION_JSON = os.path.join(REPO, "status", "version.json")
+NOW_OUT = os.path.join(REPO, "status", "now.json")
+REV_OUT = os.path.join(REPO, "status", "rev.txt")
 WEEK_TARGET = 99.0          # 使い切る目標（余らせない）
 DAYS = 7.0
+
+
+# 796番（2026-09-13）「進捗表がぐるぐる読み込み続ける・重い・週の目盛りが食い違う」の本線対策。
+#   たまごさんの要求：「間隔を伸ばすのではなく、ズレの幅を小さく、かつ通信を軽くする」の両立。
+#   → 画面の1枚目(paceBar・genzaichiBar)だけを詰めた小さいnow.jsonを1本作り、
+#     中身のハッシュだけのrev.txt(数十バイト)を添える。画面はrev.txtだけを見に行き、
+#     前回と同じなら何もしない(通信も再描画もゼロ)。変わっていた時だけnow.jsonを1回取る。
+#   pace.pyは5分おき(machine_status_push.sh経由)に必ず動く既存の常駐に相乗りしているため、
+#   新しい常駐は増やしていない。genzaichi.pyへ相乗りする案も検討したが、genzaichi.py本体は
+#   実質30分ゲートで動くため、そちらに乗せるとpace側の鮮度が今より落ちる(regression)。
+#   そのためpace.py側(5分おき・既存カデンス)に乗せ、genzaichi.jsonは都度ディスクから読み直して
+#   一緒に詰める(genzaichi.json自身の更新頻度＝実質30分おきは変わらない。ここでの合成は
+#   「取りに行く回数」を1本化するためであって、元データの鮮度を変えるものではない)。
+def write_now_and_rev(pace_data):
+    try:
+        genzaichi = None
+        if os.path.exists(GENZAICHI_JSON):
+            try:
+                genzaichi = json.load(io.open(GENZAICHI_JSON, encoding="utf-8"))
+            except Exception:
+                genzaichi = None
+        version = None
+        if os.path.exists(VERSION_JSON):
+            try:
+                version = json.load(io.open(VERSION_JSON, encoding="utf-8"))
+            except Exception:
+                version = None
+        now_obj = {
+            "builtAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "pace": pace_data,
+            "genzaichi": genzaichi,
+            "version": version,
+        }
+        body = json.dumps(now_obj, ensure_ascii=False, separators=(",", ":"))
+        tmp_now = NOW_OUT + ".tmp"
+        with io.open(tmp_now, "w", encoding="utf-8") as f:
+            f.write(body)
+        os.replace(tmp_now, NOW_OUT)
+        rev = hashlib.sha256(body.encode("utf-8")).hexdigest()[:20]
+        tmp_rev = REV_OUT + ".tmp"
+        with io.open(tmp_rev, "w", encoding="utf-8") as f:
+            f.write(rev)
+        os.replace(tmp_rev, REV_OUT)
+        return len(body.encode("utf-8"))
+    except Exception:
+        # now.json/rev.txtの生成に失敗しても、本体のpace.json更新は絶対に止めない
+        return None
 
 
 def load(p, d):
@@ -325,6 +377,7 @@ def main():
     tmp = OUT + ".tmp"
     json.dump(d, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(tmp, OUT)
+    write_now_and_rev(d)
     # 履歴が太らないように、直近2000行だけ残す
     if len(rows) > 2200:
         try:
