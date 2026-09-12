@@ -1473,7 +1473,13 @@ def _main_impl():
           #   手で並べ替えた順（order）は、同じ優先度の中での並びとして最優先で効かせる。
           #   並べ替えていないものは order が無いので、従来どおり番号順で後ろに付く。
           o = it.get("order")
-          return (p,
+          # 2026-09-13 たまごさん「すぐ見たいやつ、ちょっと別枠にしてくんないかな？
+          #   俺の中で優先順位全然違うから。1週間後でいいよってのもあれば、明日にでも見たいってのもある」
+          #   → urgent:true（すぐ見たい）は priority より強い。旗を立てるのは
+          #     Dispatchかたまごさんだけ（自動では立たない）。理由は urgentReason に入れる。
+          u = 0 if it.get("urgent") else 1
+          return (u,
+                  p,
                   int(o) if isinstance(o, int) else 10 ** 6,
                   it.get("n") or 99)
 

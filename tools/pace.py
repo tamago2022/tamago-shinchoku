@@ -256,7 +256,22 @@ def main():
     per_day_even = round(WEEK_TARGET / DAYS, 1)                       # 14.1
     remain = max(0.0, WEEK_TARGET - all_pct)
     budget_today = round(min(DAILY_CAP, remain / max(1.0, days_left)), 1)   # 今日あと使える目安（上限30%）
-    line_target = round(WEEK_TARGET * min(1.0, days_used / DAYS), 1)  # 今この時点の理想ライン
+    # 2026-09-13（工場が2時間15分止まっていた原因）：
+    #   ここは「経過日数÷7」の直線だけで理想ラインを出していたが、quota.py 側は
+    #   曲線（水30/木45/金55/土70/日80/月90/火100）＋週間制限の引き上げ倍率を掛けた
+    #   weekdayTarget を既に計算している。**2つの基準がズレていた。**
+    #   実害：2026-09-13 03:00、quota.json は「79% / 目標96.4% → 17.4pt下振れ・本数を増やす余地」と
+    #         言っているのに、pace.py の直線（63.2%）では「+15.8%超過」となり
+    #         no_launch.flag を立てて工場を止めた。たまごさんの「すぐ見たい」6件が発車できなかった。
+    #   → quota.py が出している weekdayTarget があればそれを使う（同じ物差しで測る）。
+    #     取れないときだけ、従来の直線に戻す（壊れない）。
+    line_target = round(WEEK_TARGET * min(1.0, days_used / DAYS), 1)  # 従来の直線（予備）
+    _wt = q.get("weekdayTarget")
+    try:
+        if _wt is not None and float(_wt) > 0:
+            line_target = round(min(float(_wt), WEEK_TARGET), 1)
+    except (TypeError, ValueError):
+        pass
     over = round(all_pct - line_target, 1)
 
     if used_today is None:
