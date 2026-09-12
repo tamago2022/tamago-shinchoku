@@ -745,13 +745,13 @@
 <div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
 
-<details class="sec sub"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
+<details class="sec sub" id="healthSec"><summary>何を閉じれば・消せば楽になるか <small id="healthMeta"></small></summary><div class="in"><div class="g" id="health"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div></div></details>
 
 <!-- 424番：どの仕事がいくら使ったか見える化（2026-09-06）。
      たまごさん「いまは全体の使用率しか分からず、『どの種類の仕事が高いのか』が分からない。
      だから減らしようがない」→ 仕事1本ごとの入出力トークン・推定コスト・所要時間を
      status/cost_by_task.json に貯め、ここで今日のトップ5だけ見せる。 -->
-<details class="sec sub"><summary>今日いちばん高かった仕事トップ5 <small id="costMeta"></small></summary><div class="in">
+<details class="sec sub" id="costSec"><summary>今日いちばん高かった仕事トップ5 <small id="costMeta"></small></summary><div class="in">
 <div class="g" id="costTop5"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
 <div class="note" id="costSrcNote" style="margin-top:6px"></div>
 </div></details>
@@ -760,7 +760,7 @@
      たまごさんが毎日開くこの進捗表からも見えるようにする。実装自体は416番で既に本番稼働中
      （tools/auto_launcher.py の start_verify/collect_verify、harvest()のawaiting_check直前）
      だが、この進捗表からリンクが無く「見つけられない」状態だったので、ここに要約カードを足す。 -->
-<details class="sec sub"><summary>AI検品(Verifier)の実績 <small id="aiVerifyMeta"></small></summary><div class="in">
+<details class="sec sub" id="aiVerifySec"><summary>AI検品(Verifier)の実績 <small id="aiVerifyMeta"></small></summary><div class="in">
 <div class="g" id="aiVerifyBox"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
 <div class="note" id="aiVerifySrcNote" style="margin-top:6px"><a href="share/check/_ai-verify-stats.html" style="color:var(--green)">理由の内訳・履歴を見る（自動更新）→</a></div>
 </div></details>
@@ -920,8 +920,13 @@ const PAGE_BUILD = new URLSearchParams(location.search).get("v") || "";
    経由しない（実測：GitHub Pages配信は Cache-Control: max-age=600 が付くが、no-store指定の
    fetchは毎回ネットワークへ取りに行くので影響しない。詳しくは status/failures.md 12番）。 */
 let __versionCheckBusy = false;
+// 798番⑦：PAGE_BUILDが空（?v=無しでの初回アクセス）だと、version.jsonの実ハッシュと
+//   永久に一致せずlocation.replaceを毎回のcheckVersion呼び出しのたびに繰り返す事故があった
+//   （実測：headless計測30秒で3回、フルページ314KB＋status/配下ほぼ全部を毎回再取得＝
+//   「ぐるぐる読み込みが止まらない」の主因の一つ）。すでに一度 ?v= を付けて開き直した後は
+//   （＝PAGE_BUILDが非空になった後は）二度と比較しない＝1タブにつき最大1回だけに絞る。
 function checkVersion(){
-  if(__versionCheckBusy) return;
+  if(__versionCheckBusy || PAGE_BUILD) return;
   __versionCheckBusy = true;
   fetchWithTimeout("status/version.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : null)
@@ -937,7 +942,7 @@ window.forceHardReload = function(){
   location.replace(location.pathname + "?v=" + Date.now());
 };
 checkVersion();
-setInterval(checkVersion, 120000);
+setInterval(()=>{ if(!document.hidden) checkVersion(); }, 120000);
 // 2026-09-06 追加：アプリを再び開いた瞬間（画面ロック解除・アプリ切替からの復帰）に、
 // 2分のタイマーを待たず今すぐ確認する。下のデータ更新（1979行目付近）と同じ仕掛け。
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") checkVersion(); });
@@ -1075,7 +1080,7 @@ function refreshArrivals(){
     .catch(()=>{});
 }
 refreshArrivals();
-setInterval(refreshArrivals, 60000);
+setInterval(()=>{ if(!document.hidden) refreshArrivals(); }, 60000);
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refreshArrivals(); });
 window.addEventListener("pageshow", () => refreshArrivals());
 window.addEventListener("focus", () => refreshArrivals());
@@ -1104,7 +1109,7 @@ function refreshDailyIngestBar(){
     .catch(()=>{});
 }
 refreshDailyIngestBar();
-setInterval(refreshDailyIngestBar, 300000);
+setInterval(()=>{ if(!document.hidden) refreshDailyIngestBar(); }, 300000);
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refreshDailyIngestBar(); });
 window.addEventListener("pageshow", () => refreshDailyIngestBar());
 
@@ -1472,7 +1477,7 @@ function refreshQuota(){
     });
 }
 refreshQuota();
-setInterval(refreshQuota, 60000);
+setInterval(()=>{ if(!document.hidden) refreshQuota(); }, 60000);
 refreshPace();
 
 /* ───── 787番（2026-09-12）：「いまの現在地」7項目を進捗表の一番上に出す ─────
@@ -1535,28 +1540,89 @@ refreshGenzaichi();
    status/pace.json・status/genzaichi.json への直接フェッチ（refreshPace/refreshGenzaichi）は
    ページ読み込み直後の初回表示、および now.json/rev.txt がまだ用意できていない時の保険として
    そのまま残す（削除しない）。 */
+/* ───── 798番⑤：重いものは、その<details>が開いているときだけ定期取得する ─────
+   cost_by_task.json（約90KB）・dekimono.json（約137KB）・fal_cost_ledger.json（約17KB）・
+   ai_verify_stats.json（約30KB）・kenpou_check.json（約3.4KB）は、対応する<details>が
+   折りたたまれている間は誰も見ていないので、開かれるまで取りに行かない。
+   閉じたまま見ない行は通信もしない＝ページ全体の定常通信量を大きく下げる。 */
+function detailsOpen(id){ const el = document.getElementById(id); return !el || el.open; } // 見つからない時は既存動作のまま(安全側)
+document.addEventListener("toggle", (e) => {
+  const el = e.target;
+  if(!(el instanceof HTMLDetailsElement) || !el.open) return;
+  const map = {
+    costSec: () => { if(typeof refreshCost === "function") refreshCost(); },
+    dekitaSec: () => { if(typeof refreshDekimono === "function") refreshDekimono(); },
+    falBudgetSec: () => { if(typeof refreshFalBudget === "function") refreshFalBudget(); },
+    aiVerifySec: () => { if(typeof refreshAiVerify === "function") refreshAiVerify(); },
+    kenpouSec: () => { if(typeof refreshKenpou === "function") refreshKenpou(); },
+  };
+  const fn = map[el.id];
+  if(fn) fn();
+}, true); // toggleイベントはバブルしないためcaptureで拾う
+
 let __nowRev = null;
+// 798番⑧：rev（今回の値）を受け取って、変わっていた時だけnow.jsonを1回取って書き換える部分を
+//   共通化。30秒ポーリング(pollNow)とSSE(家・中継所経由でのリアルタイム受信)の両方から呼ぶ。
+function applyNowRev(rev){
+  rev = (rev || "").trim();
+  if(!rev || rev === __nowRev) return; // 変わっていない→ここで打ち切り（now.jsonは取りに行かない・再描画もしない）
+  return fetchWithTimeout("status/now.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(data => {
+      if(!data) return;
+      __nowRev = rev; // now.jsonの取得まで成功して初めて既読扱いにする（半端な既読を作らない）
+      withScrollLock796(()=>{
+        if(data.pace){ renderPace(data.pace); saveLastGood("pace", data.pace); }
+        if(data.genzaichi){ renderGenzaichi(data.genzaichi); saveLastGood("genzaichi", data.genzaichi); }
+      });
+    });
+}
 function pollNow(){
   return fetchWithTimeout("status/rev.txt?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.text(); })
-    .then(rev => {
-      rev = (rev || "").trim();
-      if(!rev || rev === __nowRev) return; // 変わっていない→ここで打ち切り（now.jsonは取りに行かない・再描画もしない）
-      return fetchWithTimeout("status/now.json?t=" + Date.now(), {cache:"no-store"}, 12000)
-        .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
-        .then(data => {
-          if(!data) return;
-          __nowRev = rev; // now.jsonの取得まで成功して初めて既読扱いにする（半端な既読を作らない）
-          withScrollLock796(()=>{
-            if(data.pace){ renderPace(data.pace); saveLastGood("pace", data.pace); }
-            if(data.genzaichi){ renderGenzaichi(data.genzaichi); saveLastGood("genzaichi", data.genzaichi); }
-          });
-        });
-    })
+    .then(rev => applyNowRev(rev))
     .catch(()=>{ /* rev.txt/now.jsonが無い・失敗した時は何もしない（refreshPace/refreshGenzaichiの初回表示が保険） */ });
 }
 pollNow();
-setInterval(pollNow, 30000);
+let __nowPollTimer = setInterval(()=>{ if(!document.hidden) pollNow(); }, 30000);
+/* ───── 798番⑧：家（中継所8788・192.168.0.46・Wi-Fiの中）にいるときはSSEでリアルタイム化 ─────
+   status/rev.txt の変化をサーバー側（relay_server.pyの/events）が見張り、変わった瞬間だけ
+   1行push（Python実測で遅延0.48秒）。GitHub Pages（スマホ・外出先・静的配信）にはSSEの
+   受け口が無いので、window.__relay（中継所URL）が無い時はそもそも接続を試みず、
+   既存の30秒ポーリングだけで動く（二重に動かさない・繋がらない時は自動でここに落ちる）。 */
+let __sse = null;
+let __sseUrl = null;
+function stopSseRealtime(){
+  if(__sse){ try{ __sse.close(); }catch(e){} __sse = null; __sseUrl = null; }
+}
+function ensureNowPollTimer(){
+  if(!__nowPollTimer){ __nowPollTimer = setInterval(()=>{ if(!document.hidden) pollNow(); }, 30000); }
+}
+function trySseRealtime(){
+  const relay = window.__relay && window.__relay.url;
+  if(!relay || typeof EventSource === "undefined"){ stopSseRealtime(); ensureNowPollTimer(); return; }
+  // 相手が変わっていなければ張り直さない（60秒おきのrefreshRelayのたびに再接続しない）
+  if(__sse && __sseUrl === relay && __sse.readyState !== EventSource.CLOSED) return;
+  stopSseRealtime();
+  try{
+    const es = new EventSource(relay.replace(/\/$/, "") + "/events");
+    __sse = es;
+    __sseUrl = relay;
+    es.onopen = () => {
+      // SSEが繋がった＝リアルタイムが効く。二重に動かさないよう30秒ポーリングは止める。
+      if(__nowPollTimer){ clearInterval(__nowPollTimer); __nowPollTimer = null; }
+    };
+    es.onmessage = (ev) => { applyNowRev(ev.data); };
+    es.onerror = () => {
+      // 切れた・繋がらない→自動で30秒ポーリングへ戻す（既に居れば増やさない）
+      ensureNowPollTimer();
+    };
+  }catch(e){ ensureNowPollTimer(); }
+}
+trySseRealtime();
+// relay（中継所）URLは60秒おきに再検出される（refreshRelay）ため、見つかった/消えた直後に
+// SSEの張り直しを試みる（家に帰ってきた・出かけた、の両方に自動追従）。
+document.addEventListener("visibilitychange", () => { if(!document.hidden) trySseRealtime(); });
 
 /* ───── 424番：どの仕事がいくら使ったか見える化（今日のトップ5） ─────
    status/cost_by_task.json（tools/auto_launcher.py の harvest() が1本終わるたびに書く）を読むだけ。
@@ -1592,7 +1658,7 @@ function refreshCost(){
     }).catch(()=>{});
 }
 refreshCost();
-setInterval(refreshCost, 60000);
+setInterval(()=>{ if(!document.hidden && detailsOpen('costSec')) refreshCost(); }, 60000);
 
 /* ───── 616番：「できたもの」棚（2026-09-07） ─────
    status/dekimono.json（成果物だけの正本・消えない）を読んで並べる。
@@ -1737,7 +1803,7 @@ document.addEventListener("click", e=>{
   inp.addEventListener("input", () => { window.__dekimonoQuery = inp.value; renderDekita(); });
 })();
 refreshDekimono();
-setInterval(refreshDekimono, 60000);
+setInterval(()=>{ if(!document.hidden && detailsOpen('dekitaSec')) refreshDekimono(); }, 60000);
 
 /* ───── 632番：falの予算（モデル別）表示（2026-09-07） ─────
    status/fal_cost_ledger.json（tools/fal_cost_ledger.py が計算済みのsummaryごと書く）を読むだけ。
@@ -1802,7 +1868,7 @@ function refreshFalBudget(){
     .catch(()=>{});
 }
 refreshFalBudget();
-setInterval(refreshFalBudget, 60000);
+setInterval(()=>{ if(!document.hidden && detailsOpen('falBudgetSec')) refreshFalBudget(); }, 60000);
 
 /* ───── 492番：AI検品(Verifier)の実績を要約表示（2026-09-06） ─────
    status/ai_verify_stats.json（tools/auto_launcher.py の _record_ai_verify() が
@@ -1833,7 +1899,7 @@ function refreshAiVerify(){
     }).catch(()=>{});
 }
 refreshAiVerify();
-setInterval(refreshAiVerify, 60000);
+setInterval(()=>{ if(!document.hidden && detailsOpen('aiVerifySec')) refreshAiVerify(); }, 60000);
 
 /* ───── 715番：憲法遵守点検（2026-09-10） ─────
    status/kenpou_check.json（tools/kenpou_check.py が毎日1回書く）を読んで表示するだけ。
@@ -1894,7 +1960,7 @@ function refreshKenpou(){
     }).catch(()=>{});
 }
 refreshKenpou();
-setInterval(refreshKenpou, 60000);
+setInterval(()=>{ if(!document.hidden && detailsOpen('kenpouSec')) refreshKenpou(); }, 60000);
 
 /* ───── 652番：あとで見る棚（2026-09-09） ─────
    status/later_tabs.json（tools/later_tabs_snapshot.py が1日1回、Braveのセッション
@@ -1949,7 +2015,7 @@ function refreshLaterTabs(){
     }).catch(()=>{});
 }
 refreshLaterTabs();
-setInterval(refreshLaterTabs, 300000);
+setInterval(()=>{ if(!document.hidden) refreshLaterTabs(); }, 300000);
 
 /* 2026-09-05 このページがMac自身から配られているとき（家のWi-Fiの中で http://192.168.x.x:8788 を
    開いたとき）は、**自分がいる場所がそのまま中継所**。トンネルを探しにいかない。
@@ -1987,14 +2053,15 @@ function refreshRelay(){
   if(isLocalRelay()){
     window.__relay = {url: location.origin, lanUrl: location.origin, local: true};
     flushCommands();
+    if(typeof trySseRealtime === "function") trySseRealtime(); // 798番⑧：家が見つかった瞬間に張り直す
     return Promise.resolve();
   }
   return fetchWithTimeout("status/relay.json?t=" + Date.now(), {cache:"no-store"}, 8000)
-    .then(r => r.ok ? r.json() : null).then(j => { window.__relay = j; flushCommands(); })
+    .then(r => r.ok ? r.json() : null).then(j => { window.__relay = j; flushCommands(); if(typeof trySseRealtime === "function") trySseRealtime(); })
     .catch(()=>{});
 }
 refreshRelay();
-setInterval(refreshRelay, 60000);
+setInterval(()=>{ if(!document.hidden) refreshRelay(); }, 60000);
 
 /* ───── スマホから発車待ちへ新規タスクを1行追加（2026-09-04）─────
    優先度・リモコンと同じ経路（obsidian://new → Vault → Mac側 command_ingest.py の queue_add）で
@@ -2352,9 +2419,9 @@ function refreshMachineHealth(){
     });
 }
 refreshMachineHealth();
-setInterval(refreshMachineHealth, 60000);
+setInterval(()=>{ if(!document.hidden) refreshMachineHealth(); }, 60000);
 refreshHealth();
-setInterval(refreshHealth, 10000);   // 中継所から直接読むので、10秒ごとに見に行く
+setInterval(()=>{ if(!document.hidden) refreshHealth(); }, 10000);   // 中継所から直接読むので、10秒ごとに見に行く（タブが見えていない間は止める・798番⑥）
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refreshHealth(); });
 
 /* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */
@@ -3914,7 +3981,7 @@ function refreshFuel(){
   });
 }
 refreshFuel();
-setInterval(refreshFuel, 60000);
+setInterval(()=>{ if(!document.hidden) refreshFuel(); }, 60000);
 document.addEventListener("click", e=>{
   const t = e.target.closest("#fuelToggle");
   if(t){
