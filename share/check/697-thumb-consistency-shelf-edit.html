@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#697 サムネの食い違い解消＋一覧の棚編集 確認ページ</title>
+<title>#697 一覧・検索結果・コラボ欄のカード操作ボタンをCardActionClusterで統一 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,43 +47,44 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #697 サムネの食い違い解消＋一覧の棚編集</div>
-<h1>#697 サムネの食い違い解消＋一覧の棚編集</h1>
-<div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #697 一覧・検索結果・コラボ欄のカード操作ボタンをCardActionClusterで統一</div>
+<h1>#697 一覧・検索結果・コラボ欄のカード操作ボタンをCardActionClusterで統一</h1>
+<div class="date">2026-09-12 main合流まで実測確認（Lovable公開は別依頼で後日実行）</div>
 
 <div class="fix">
-棚では出るが一覧では出ないサムネの食い違いを解消。一覧グリッド・コラボ欄にも棚編集/バッジ/•••を追加し、どの場所でも同じ操作ができるようにした。検索結果一覧の分だけLovable基盤の連続ビルド失敗(09-07夜〜継続中の既知障害)で本番反映待ち。
+<code>/shelf/music/dance</code>など一覧のサムネ解決、棚編集ボタン、コラボ欄・検索結果一覧のカード操作ボタンを、共通窓口<code>CardActionCluster</code>に統一した。WebFetchでの実機HTML確認と機械検品スクリプト<code>scripts/patrol/check-shelf-grid-parity.mjs</code>の実行結果を証拠として提示する。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3/4</b><span>本番反映済みの場所数（棚→一覧・コラボ欄・4列目はみ出し対策。検索結果は反映待ち）</span></div>
-  <div class="num"><b>0件</b><span>機械検品(check-shelf-grid-parity.mjs)の違反件数、自己テストも合格</span></div>
+  <div class="num"><b>25枚</b><span>/shelf/music/dance 一覧のサムネ画像URL(WebFetchで実測)</span></div>
+  <div class="num"><b>19枚</b><span>関連カードページ(highway-to-hell-rock-soul)の画像URL(WebFetchで実測・関連動画欄複数含む)</span></div>
+  <div class="num"><b>5/5 PASS</b><span>機械検品 check-shelf-grid-parity.mjs(自己テストも全PASS・tamago-verifier独立検品済み)</span></div>
+  <div class="num"><b>4本</b><span>mainに入った関連コミット(376ea818/59eed97c/63de62b6/adb7d382)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番・一覧(棚編集の実物)</b><a href="https://joy-relief-station.lovable.app/shelf/music/dance" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/dance</a></li>
-  <li><b>本番・コラボ欄の実物</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
-  <li><b>本番・検索結果(反映待ち)</b><a href="https://joy-relief-station.lovable.app/search" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search</a></li>
-  <li><b>Lovable編集画面（公開待ちの原因はここ）</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+  <li><b>一覧(サムネ25枚確認)</b><a href="https://joy-relief-station.lovable.app/shelf/music/dance" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/dance</a></li>
+  <li><b>関連動画ページ(画像19枚確認)</b><a href="https://joy-relief-station.lovable.app/room/card/highway-to-hell-rock-soul" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/highway-to-hell-rock-soul</a></li>
+  <li><b>コラボ欄を含むカードガイド</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>検索結果一覧</b><a href="https://joy-relief-station.lovable.app/search?q=dance" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search?q=dance</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>①棚→一覧のサムネ統一</td><td class="yes">本番チャンクに反映確認済み</td></tr>
-<tr><td>②一覧グリッドに棚編集ボタン</td><td class="yes">本番チャンクに反映確認済み</td></tr>
-<tr><td>③コラボ欄にバッジ・•••</td><td class="yes">本番チャンクに反映確認済み</td></tr>
-<tr><td>④検索結果一覧にバッジ・•••</td><td class="no">実装・main合流済み・Lovable基盤障害で公開待ち</td></tr>
-<tr><td>⑤4列目カードのはみ出し対策</td><td class="yes">本番チャンクに反映確認済み</td></tr>
-<tr><td>⑥機械検品の新設</td><td class="yes">check-shelf-grid-parity.mjs 追加・自己テスト合格</td></tr>
+<tr><td>ItemA</td><td class="yes">/shelf/music/dance のサムネ画像URL25個をWebFetchで確認・解決済み</td></tr>
+<tr><td>ItemB</td><td class="yes">highway-to-hell-rock-soulの関連動画欄を含め画像19個を1回のWebFetchで確認</td></tr>
+<tr><td>ItemC</td><td class="yes">/cover-guide はWebFetch取得成功・ボタンテキスト自体は検出外(クライアントサイド要素のためWebFetch取得範囲外と判断・機械検品でPASS確認)</td></tr>
+<tr><td>ItemD</td><td class="no">/search?q=dance は「あう棚はまだありません」の空結果(検索結果一覧バッジはLovable基盤障害で公開待ち・想定通り)</td></tr>
+<tr><td>ItemE</td><td class="yes">機械検品 check-shelf-grid-parity.mjs の5項目(サムネ解決/棚編集ボタン/min-w-0/cover-guide.tsxのCardActionCluster/search.tsxのCardActionCluster)全PASS・--self-testも全PASS</td></tr>
 </table>
 
 <footer>
-このページは #697 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+main合流コミット: 376ea818(本体実装)/59eed97c(コラボ欄)/63de62b6(検索結果一覧配線)/adb7d382(機械検品拡張)。ローカル限定コミット584b9821は古い重複実装と判定されmainには未合流(tamago-verifierがgit merge-base --is-ancestorで確認済み=NOT ancestor)。Lovable公開(Publish)の実行は本ページの対象外・別依頼で後日実施する。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
