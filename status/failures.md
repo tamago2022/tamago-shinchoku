@@ -377,3 +377,31 @@
 - **二度と起こさないための仕掛け**：①「完全自動化」を求める指示が来た時は、対象サービスの利用規約でブラウザ自動化が禁止されていないか先に確認し、禁止されている場合はその事実を1行で明示的に伝える（黙って次善策だけ出さない）。②単発の確認ページ・単発のシートを作った時点で満足せず、「次に同じ種類の依頼が来た時、設定ファイル1つで済むか」を毎回自問する。③Googleドライブのファイルが`Resource deadlock avoided`で読めない時は、リトライしても直らないことがある（今回は約15分間隔で3回試したが状態は変わらなかった）。原因はDrive.appプロセス自体の不調である可能性が高く、`ps aux`でCPU時間・`auto_restart_count`を見て異常が無いか確認する。
 - **日付**：2026-09-12（769番）
 - **根拠**：`tools/line_stamp_pipeline.py`・`tools/line_stamp_configs/oniyome-chan.json`・`tools/line_stamp_configs/peralino-usocchi.json`・`tools/line_stamp_shot.mjs`・`share/check/769-oniyome-chan-paste-sheet.html`・`share/check/769-peralino-usocchi-paste-sheet.html`（本番反映・`<img>`タグ実在を実測確認済み）・`com.tamago.tamago-shinchoku.line-stamp-pipeline.plist`（`launchctl list`で登録確認済み）・`ps aux`実測（Google Drive.app PID 89866, CPU時間399:51.07, auto_restart_count=1）
+
+
+---
+
+## 680番自動記録：769番「【今すぐ】鬼嫁ちゃんLINE申請をCodexから引き継ぐ＋申請機を作る」が同じ経路で5回やり直しになった
+
+- **症状**：たまごさんが会話で「直ってない、やり直して」と指摘し、5回目のqueue_redoが呼ばれた。
+- **今回の指摘**：（本文なし）
+- **対応**：同じ直し方を4回目は繰り返さない。次のbuilderは原因の調べ方・実装方法を変えること。
+- **日付**：2026-09-12
+
+
+---
+
+## 28. 769番「LINEスタンプ申請機」が5回目でようやく解消：Google Driveの『Resource deadlock avoided』は待っても直らず、`fileproviderctl materialize`で強制ダウンロードすると即座に直る
+
+- **症状**：769番が5回連続で「直ってない」になっていた。27番の記録どおり4回目までは「Driveの同期待ち」を前提にリトライ・待機を繰り返す実装のまま止まっていた。
+- **原因**：`inspect_zip`・`inspect_images`は『時間を置いて再実行すれば読める見込み』として数秒のリトライ待ちしか組み込んでおらず、実際にはGoogle Drive.appのオンデマンド同期（File Provider Extension）は勝手にダウンロードを開始しないケースがあった（ペラリーノウソッチのフォルダはlink countが65535という異常値のまま何時間も放置されていた）。「待てば直る」という前提そのものが誤りだった。
+- **直し方**：macOS標準の`fileproviderctl materialize <path>`をPythonの`subprocess`から呼ぶことで、対象のファイル/ディレクトリを明示的に実体化（強制ダウンロード）できることを発見。`tools/line_stamp_pipeline.py`に`materialize()`・`materialize_dir_files()`を追加し、`scan_drive_folders`・`find_image_dir`・`inspect_zip`・`inspect_images`の各所で「読み取り失敗→materialize→1回だけ再試行」を組み込んで恒久化した。ディレクトリ単位のmaterializeは配下ファイルの中身までは実体化しないことがあるため、ファイル単位でも個別にmaterializeする2段構えが必要だった（`materialize_dir_files`）。
+- **副次修正**：①ZIP内画像がPillowで検品されておらず「検出0枚・規格OK0枚」のまま放置されていた表示不備を`inspect_zip_images`で解消。②main画像・トークルームタブ・社内確認用プレビューシート（例: 1254x1254のsheet_preview）がスタンプ本体24枚と同じ370px規格チェックに巻き込まれ「サイズ超過」に誤検出されていたのを`is_meta_image`で除外。③`tools/line_stamp_shot.mjs`のスクショ高さ上限が1600pxしかなく、①Display Information節だけで埋まって②Sticker Images（今回の変更箇所）が写らず「前後のスクショが完全にバイト一致する」というセルフチェックで気づいた不備を2800pxへ拡張して解消。
+- **結果**：鬼嫁ちゃん・ペラリーノウソッチ両キャラとも「検出24枚・規格OK24枚（370px以内・透過あり）・文言確定済み」まで到達し、貼るだけ申請シートが完成。ペラリーノウソッチの文言はたまごさんが指示文に既に確定案（A案）を明記していたのに、4回目までのセッションがconfigへ反映していなかった（Drive側の障害調査に気を取られて見落とし）ことも合わせて修正。
+- **できなかったこと（正直な記録）**：LINE Creators Marketの実際の管理画面（審査リクエスト直前まで本当に進んでいるか）は、本セッションにブラウザ操作ツールが一切無いため確認できていない。シートの内容をたまごさん自身の手でコピー＆貼り付けしてもらう必要がある。
+- **二度と起こさないための仕掛け**：Google Driveのオンデマンドファイルが読めない時は「待つ」を初手にせず、まず`fileproviderctl materialize <path>`を試す（ディレクトリとファイルの両方に効く。ファイルは個別に呼ぶ必要がある）。証拠画像を差分確認する時は、変更箇所がスクショの可視範囲（高さcap等）に入っているかを先に確認する（バイト一致＝無変化ではなく「同じ範囲しか写っていない」の可能性を疑う）。
+- **日付**：2026-09-12（769番・5回目）
+- **根拠**：`tools/line_stamp_pipeline.py`の`materialize`/`materialize_dir_files`/`inspect_zip_images`/`is_meta_image`、`tools/line_stamp_configs/peralino-usocchi.json`（A案/B案反映）、`tools/line_stamp_shot.mjs`（height cap 1600→2800）、本番3URL実測（200・「検出24枚／規格OK 24枚」確認済み）：
+  - https://tamago2022.github.io/tamago-shinchoku/share/check/769-line-stamp-factory-progress.html
+  - https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html
+  - https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html
