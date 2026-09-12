@@ -73,6 +73,62 @@ PRIVATE_TMP = "/private/tmp"
 GHOST_TRASH = os.path.join(os.path.expanduser("~"), ".Trash", "worktree_reaper_ghosts")
 GHOST_MIN_AGE_SEC = 3 * 86400  # 3日以上さわられていない幽霊だけ対象
 
+# 2026-09-12（727番・店主「ChatGPT/Codexのプロジェクト一覧を汚す」再発への対応）：
+# 本体4条件が安全すぎて「未保存の変更あり」「まだ本流に入っていない」「状態が読めない」
+# に該当する作業場が、何日前に放置されたものでも永遠に片づかず130件で足踏みしていた
+# （30分毎の巡回で1〜4件しか進まない＝しきい値100件に何時間経っても届かない）。
+# 「成果を消すのが最悪」の原則は変えず、**消す代わりにバックアップしてから消す**：
+#   - 未保存の変更あり     → diffをパッチとして ~/.Trash/worktree_reaper_backups へ退避
+#   - まだ本流に入っていない → そのコミットをバックアップ用ブランチ名でoriginへpushして退避
+#   - 状態が読めない       → 幽霊と同じ扱いでゴミ箱へ退避（rescue_ghostを流用）
+# 対象は「3日以上放置されたもの」だけ（既存のGHOST_MIN_AGE_SECと同じ基準に揃える）。
+STALE_BACKUP_MIN_AGE_SEC = 3 * 86400
+BACKUP_TRASH = os.path.join(os.path.expanduser("~"), ".Trash", "worktree_reaper_backups")
+
+
+def backup_uncommitted_changes(path, name):
+    """未コミット差分をパッチ＋軽い未追跡ファイルとして退避する。成功したらTrue。"""
+    try:
+        os.makedirs(BACKUP_TRASH, exist_ok=True)
+        dest = os.path.join(BACKUP_TRASH, "%s_%d" % (name, int(time.time())))
+        os.makedirs(dest, exist_ok=True)
+        diff = git(["diff", "HEAD"], cwd=path, timeout=60)
+        with io.open(os.path.join(dest, "changes.patch"), "w", encoding="utf-8") as f:
+            f.write((diff.stdout or "") if diff else "")
+        st = git(["status", "--porcelain"], cwd=path, timeout=30)
+        st_out = (st.stdout or "") if st else ""
+        with io.open(os.path.join(dest, "status.txt"), "w", encoding="utf-8") as f:
+            f.write(st_out)
+        if st_out:
+            import shutil
+            for line in st_out.splitlines():
+                if not line.startswith("?? "):
+                    continue
+                rel = line[3:].strip()
+                src = os.path.join(path, rel)
+                try:
+                    if os.path.isfile(src) and os.path.getsize(src) < 2_000_000:
+                        target = os.path.join(dest, "untracked", rel)
+                        os.makedirs(os.path.dirname(target), exist_ok=True)
+                        shutil.copy2(src, target)
+                except Exception:
+                    pass
+        return True
+    except Exception as e:
+        log("バックアップ失敗 %s: %s" % (path, e))
+        return False
+
+
+def backup_branch_to_remote(path, name, sha):
+    """まだ本流に入っていないコミットを、バックアップ用ブランチ名でoriginへpushして退避する。"""
+    backup_ref = "refs/heads/backup/%s-%d" % (name, int(time.time()))
+    r = git(["push", "origin", "%s:%s" % (sha, backup_ref)], cwd=path, timeout=120)
+    if r is not None and r.returncode == 0:
+        log("バックアップブランチへpush済み: %s -> %s" % (name, backup_ref))
+        return True
+    log("バックアップpush失敗 %s: %s" % (name, (r.stderr if r else "?")))
+    return False
+
 # 2026-09-10（720番・店主「ChatGPTのタスク一覧が300件近く出て増える一方」への対応で発覚）：
 # 「未保存の変更あり」でずっと保護され続けているworktreeの実態を数件サンプルしたところ、
 # 大半が実際の未完了作業ではなく①`.claude/agents/*.md`（main側で更新され続ける共通のエージェント
@@ -206,7 +262,7 @@ def target_head():
 def sweep_worktrees(wt_dir, guard):
     """本体4条件（走行中でない・2時間以上経過・未コミット無し・origin/mainに取込済み）
     を満たすものだけ `git worktree remove`。幽霊（登録が既に消えている）は別扱い。"""
-    removed, rescued, kept = [], [], []
+    removed, rescued, backed_up, kept = [], [], [], []
     for name in sorted(os.listdir(wt_dir)):
         path = os.path.join(wt_dir, name)
         if not os.path.isdir(path):
@@ -236,10 +292,20 @@ def sweep_worktrees(wt_dir, guard):
 
         st = git(["status", "--porcelain"], cwd=path)
         if st is None or st.returncode != 0:
-            kept.append((name, "状態が読めない"))
+            if age >= STALE_BACKUP_MIN_AGE_SEC and rescue_ghost(path, name):
+                rescued.append(name)
+            else:
+                kept.append((name, "状態が読めない"))
             continue
         if has_meaningful_changes(st.stdout):
-            kept.append((name, "未保存の変更あり"))
+            if age >= STALE_BACKUP_MIN_AGE_SEC and backup_uncommitted_changes(path, name):
+                r = git(["worktree", "remove", "--force", path])
+                if r is not None and r.returncode == 0:
+                    backed_up.append(name)
+                else:
+                    kept.append((name, "未保存の変更あり・remove失敗"))
+            else:
+                kept.append((name, "未保存の変更あり"))
             continue
         head = git(["rev-parse", "HEAD"], cwd=path)
         if head is None or head.returncode != 0:
@@ -254,7 +320,14 @@ def sweep_worktrees(wt_dir, guard):
             continue
         merged = git(["merge-base", "--is-ancestor", sha, "origin/main"])
         if merged is None or merged.returncode != 0:
-            kept.append((name, "まだ本流に入っていない"))
+            if age >= STALE_BACKUP_MIN_AGE_SEC and backup_branch_to_remote(path, name, sha):
+                r = git(["worktree", "remove", "--force", path])
+                if r is not None and r.returncode == 0:
+                    backed_up.append(name)
+                else:
+                    kept.append((name, "まだ本流に入っていない・remove失敗"))
+            else:
+                kept.append((name, "まだ本流に入っていない"))
             continue
         r = git(["worktree", "remove", "--force", path])
         if r is not None and r.returncode == 0:
@@ -265,6 +338,10 @@ def sweep_worktrees(wt_dir, guard):
     if removed:
         git(["worktree", "prune"])
         log("🧹 [%s] 片づけた作業場 %d件: %s" % (wt_dir, len(removed), ", ".join(removed[:10])))
+    if backed_up:
+        git(["worktree", "prune"])
+        log("🗄️ [%s] バックアップ付きで片づけた作業場 %d件（%sに退避済み）: %s"
+            % (wt_dir, len(backed_up), BACKUP_TRASH, ", ".join(backed_up[:10])))
     if rescued:
         log("👻 [%s] 幽霊をゴミ箱へ退避 %d件（%sに残っています）: %s"
             % (wt_dir, len(rescued), GHOST_TRASH, ", ".join(rescued[:10])))
@@ -343,7 +420,7 @@ def sweep_node_modules_paths(paths, guard):
 
 def sweep_paths(paths, guard, label):
     """sweep_worktreesと同じ本体4条件を、git worktree list由来のパス配列に適用する版。"""
-    removed, kept = [], []
+    removed, backed_up, rescued, kept = [], [], [], []
     for path in paths:
         name = os.path.basename(path)
         if not os.path.isdir(path):
@@ -360,10 +437,20 @@ def sweep_paths(paths, guard, label):
             continue
         st = git(["status", "--porcelain"], cwd=path)
         if st is None or st.returncode != 0:
-            kept.append((name, "状態が読めない"))
+            if age >= STALE_BACKUP_MIN_AGE_SEC and rescue_ghost(path, name):
+                rescued.append(name)
+            else:
+                kept.append((name, "状態が読めない"))
             continue
         if has_meaningful_changes(st.stdout):
-            kept.append((name, "未保存の変更あり"))
+            if age >= STALE_BACKUP_MIN_AGE_SEC and backup_uncommitted_changes(path, name):
+                r = git(["worktree", "remove", "--force", path])
+                if r is not None and r.returncode == 0:
+                    backed_up.append(name)
+                else:
+                    kept.append((name, "未保存の変更あり・remove失敗"))
+            else:
+                kept.append((name, "未保存の変更あり"))
             continue
         head = git(["rev-parse", "HEAD"], cwd=path)
         if head is None or head.returncode != 0:
@@ -375,7 +462,14 @@ def sweep_paths(paths, guard, label):
             continue
         merged = git(["merge-base", "--is-ancestor", sha, "origin/main"])
         if merged is None or merged.returncode != 0:
-            kept.append((name, "まだ本流に入っていない"))
+            if age >= STALE_BACKUP_MIN_AGE_SEC and backup_branch_to_remote(path, name, sha):
+                r = git(["worktree", "remove", "--force", path])
+                if r is not None and r.returncode == 0:
+                    backed_up.append(name)
+                else:
+                    kept.append((name, "まだ本流に入っていない・remove失敗"))
+            else:
+                kept.append((name, "まだ本流に入っていない"))
             continue
         r = git(["worktree", "remove", "--force", path])
         if r is not None and r.returncode == 0:
@@ -385,6 +479,13 @@ def sweep_paths(paths, guard, label):
     if removed:
         git(["worktree", "prune"])
         log("🧹 [%s] 片づけた作業場 %d件: %s" % (label, len(removed), ", ".join(removed[:10])))
+    if backed_up:
+        git(["worktree", "prune"])
+        log("🗄️ [%s] バックアップ付きで片づけた作業場 %d件（%sに退避済み）: %s"
+            % (label, len(backed_up), BACKUP_TRASH, ", ".join(backed_up[:10])))
+    if rescued:
+        log("👻 [%s] 幽霊をゴミ箱へ退避 %d件（%sに残っています）: %s"
+            % (label, len(rescued), GHOST_TRASH, ", ".join(rescued[:10])))
     if kept:
         log("[%s] 残した %d件（理由つき）: %s" % (
             label, len(kept), ", ".join("%s(%s)" % (n, why) for n, why in kept[:8])))
@@ -447,51 +548,12 @@ def main():
 
     # 2026-09-07追加：/private/tmp配下のjoy-relief-station worktreeも同じ4条件で片づける。
     # /private/tmpは実在ディレクトリの集合ではなく個別名の集合なので、専用ループにする。
+    # 2026-09-12（727番）：このループはsweep_pathsと全く同じ4条件＋バックアップ退避を
+    # 重複実装していたため、二重管理を避けてsweep_pathsに一本化した。
     pt_names = private_tmp_targets()
     if pt_names:
-        removed, kept = [], []
-        for name in sorted(pt_names):
-            path = os.path.join(PRIVATE_TMP, name)
-            if name in guard or any(name.startswith(g + "-") for g in guard):
-                kept.append((name, "走行中"))
-                continue
-            try:
-                age = time.time() - os.path.getmtime(path)
-            except Exception:
-                continue
-            if age < MIN_AGE_SEC:
-                kept.append((name, "まだ新しい"))
-                continue
-            st = git(["status", "--porcelain"], cwd=path)
-            if st is None or st.returncode != 0:
-                kept.append((name, "状態が読めない"))
-                continue
-            if has_meaningful_changes(st.stdout):
-                kept.append((name, "未保存の変更あり"))
-                continue
-            head = git(["rev-parse", "HEAD"], cwd=path)
-            if head is None or head.returncode != 0:
-                kept.append((name, "HEADが読めない"))
-                continue
-            sha = (head.stdout or "").strip()
-            if sha and sha == target_head() and age < FRESH_WORKTREE_MIN_AGE_SEC:
-                kept.append((name, "コミット未着手・保護期間中"))
-                continue
-            merged = git(["merge-base", "--is-ancestor", sha, "origin/main"])
-            if merged is None or merged.returncode != 0:
-                kept.append((name, "まだ本流に入っていない"))
-                continue
-            r = git(["worktree", "remove", "--force", path])
-            if r is not None and r.returncode == 0:
-                removed.append(name)
-            else:
-                kept.append((name, "removeに失敗"))
-        if removed:
-            git(["worktree", "prune"])
-            log("🧹 [/private/tmp] 片づけた作業場 %d件: %s" % (len(removed), ", ".join(removed[:10])))
-        if kept:
-            log("[/private/tmp] 残した %d件（理由つき）: %s" % (
-                len(kept), ", ".join("%s(%s)" % (n, why) for n, why in kept[:8])))
+        pt_paths = [os.path.join(PRIVATE_TMP, name) for name in sorted(pt_names)]
+        sweep_paths(pt_paths, guard, "/private/tmp")
 
     return 0
 
