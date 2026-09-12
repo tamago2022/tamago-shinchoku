@@ -65,6 +65,24 @@
 
 
 
+<h2>③ 心臓の中の各工程・実測秒数（クロマティの頃との比較）</h2>
+<div class="note">
+クロマティが設計した心臓(heartbeat.sh)は「軽い2つだけを15秒おき・どちらも1秒かからない」だったが、
+2026-09-06以降「確認ページの機械検品」「AI検品の着火と回収」「queue_light再生成」等が同じ15秒ループへ
+足されていき、2026-09-13 05:26〜05:42には<b>auto_launcher.pyが45秒killを14回連続</b>（＝16分間発車0本）
+という実インシデントが起きた（status/heartbeat.log実測）。今回、原因の主犯だった「着火のたびに
+git worktreeを一覧・強制削除する処理」（下表）を撤去し、既存の安全な掃除係(worktree_reaper.py)へ
+一本化した。以下は本セッション中に実測した秒数。
+</div>
+<table>
+<tr><th>工程</th><th>実測秒数</th><th>備考</th></tr>
+<tr><td>auto_launcher.py（1回・平常時）</td><td>0.18秒</td><td>45秒killの直接対象。修正後の実測</td></tr>
+<tr><td>command_ingest.py（1回）</td><td>0.10秒</td><td>45秒killの直接対象</td></tr>
+<tr><td>genzaichi.py（ゲート解放時・本体実行）</td><td>5.72秒</td><td>Lovableへのネットワーク確認込み。heartbeatからは<code>( ... &amp; )</code>で非同期起動のためブロックしない</td></tr>
+<tr><td>worktree_reaper.py / check_page_pruner.py / check_anthropic_reply.py / daily_ingest_scheduler.py / relay_watch.py（ゲート未解放時）</td><td>各0.06〜0.10秒</td><td>いずれも内部ゲートで大半は即終了。非同期起動</td></tr>
+<tr><td class="no">【撤去】着火ごとのgit worktree一覧(--porcelain)</td><td class="no">2.62秒（32件登録時・1回分のみ）</td><td>これに加えて対象件数分の<code>git worktree remove --force</code>（最大180秒のtimeout）が着火のたびに走っていた。安全条件（未コミット確認・origin/main合流確認）も無く、30分経過だけで強制削除する危険な実装だった</td></tr>
+</table>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>進捗表(🛑手を止めた仕事セクションが追加された)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
@@ -78,7 +96,18 @@
 <tr><td>③queue_unstickが無限ループにならないか(手段を変えて再開→カウンタリセット)</td><td class="yes">unittest 3本PASS</td></tr>
 <tr><td>④発車0本10分検知+自己復旧(モンキーパッチで本番ファイルを汚さず実行)</td><td class="yes">unittest 4本PASS</td></tr>
 <tr><td>⑤770/771/513を実際にstuck化・dispatch_outbox.jsonlへ理由付きで記録</td><td class="yes">本番queue.json/dispatch_outbox.jsonlで確認済み</td></tr>
+<tr><td>⑥本番の<code>status/queue_light.json</code>（進捗表が実際に読むファイル）に770/771/513=stuckが反映されている</td><td class="yes">GitHub Pages上のqueue_light.jsonを直接fetchして確認済み</td></tr>
+<tr><td>⑦778/779/780/781のラベルが先頭(1/4)〜(4/4)になり、本番で見分けられる</td><td class="yes">GitHub Pages上のqueue_light.jsonで4件とも先頭カウンタ違いを確認済み（下記参照）</td></tr>
 </table>
+<div class="note">
+⑦の実測（本番<code>status/queue_light.json</code>から直接取得した題名）：<br>
+778 (1/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+779 (2/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+780 (3/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+781 (4/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+※実機ブラウザのスクリーンショット取得ツールが本セッションに無かったため、店主の実画面確認の代わりに
+本番配信データの直接取得で代替（進捗表の横幅省略表示でも、先頭のカウンタは切れずに必ず見える設計）。
+</div>
 
 <footer>
 このページは #797 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
