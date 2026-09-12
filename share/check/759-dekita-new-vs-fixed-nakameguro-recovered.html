@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#759 できたもの：新しく作った／直したで分けて探せるように（AI検品の再指摘→中目黒#749を復旧） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #759 できたもの：新しく作った／直したで分けて探せるように（AI検品の再指摘→中目黒#749を復旧）</div>
+<h1>#759 できたもの：新しく作った／直したで分けて探せるように（AI検品の再指摘→中目黒#749を復旧）</h1>
+<div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+1回目の検品で『中目黒のページがdekimono.json全206件のどこにも無い』と指摘された。調べたところ原因は、backfillの取り込み元（queue.json・done_archive.json）が直近だけを残すローリング台帳で、#749（2026-09-11完了・中目黒ページの商品カード説明文修正）は取り込み前にそこから流れて消えていた。唯一消えない記録＝確認ページ本体(share/check/*.html、423件)を正本にして全件を読み直し、まだ棚に無かった70件（新しく作った12件・直した58件）を復旧。#749もこれで棚に戻り、<code>「昨日」</code>で絞ると見つかる状態を実機で確認した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>278件</b><span>「できたもの」棚の総件数（復旧前208件→+70件）</span></div>
+  <div class="num"><b>18件</b><span>「昨日」(09-11)で絞った時の件数。#749（中目黒）を含む</span></div>
+  <div class="num"><b>1件</b><span>検索欄に「中目黒」と入れて出てくる行数（#749がヒット）</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>①1画面目（できたもの棚は畳まれたまま）</b><img src="img/759b-firstview-collapsed.png" alt="①1画面目（できたもの棚は畳まれたまま）"><span class="meta">dekitaSec.open=falseを実測してから撮影</span></div>
+  <div class="shot plain"><b>②検索「中目黒」→#749が1件表示</b><img src="img/759b-search-nakameguro.png" alt="②検索「中目黒」→#749が1件表示"><span class="meta">「昨日」フィルタ→全期間に戻す→検索欄に中目黒と入力、まで実機操作した結果</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番（進捗表・できたもの棚）</b><a href="https://tamago2022.github.io/tamago-shinchoku/#dekitaSec" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/#dekitaSec</a></li>
+  <li><b>復旧した#749の確認ページ（中目黒・最終版）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/749-card-align-reconfirm-0912.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/749-card-align-reconfirm-0912.html</a></li>
+  <li><b>巻き戻しスクリプト（tools/backfill_dekimono_from_checkpages.py）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/backfill_dekimono_from_checkpages.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/backfill_dekimono_from_checkpages.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>「新しく作った／直した」タブで分かれている</td><td class="yes">yes</td></tr>
+<tr><td>「昨日」で絞ると#749（中目黒）が出てくる（実機DOM確認・rows=18・中目黒を含む）</td><td class="yes">yes</td></tr>
+<tr><td>検索欄に「中目黒」→1件ヒット（実機DOM確認）</td><td class="yes">yes</td></tr>
+<tr><td>サムネイル付き・押せる（既存のdkrow・fetchCheckPageAssetsをそのまま使用）</td><td class="yes">yes</td></tr>
+<tr><td>1画面目（375px想定・430px幅で撮影）は畳まれた状態（open:false）で圧迫していない</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+1回目の検品指摘（#749が存在しない）は事実で、原因はbackfillの取り込み元がローリング台帳だったこと。今回は消えない確認ページ423件を正本に読み直して復旧し、record_done()は616番からauto_launcher.py／command_ingest.py双方の完了時に同期呼び出し済みなので、今後の完了分はこの抜けが起きない。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
