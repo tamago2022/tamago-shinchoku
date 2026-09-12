@@ -372,6 +372,11 @@ git add status/version.json >/dev/null 2>&1
 #   この一覧に無かったため、disk_guardian.py/disk_trend.pyがローカルで何度更新しても
 #   本番(GitHub Pages)には永久に反映されず、確認ページが「止まって見える」誤診断の元になっていた。
 git add status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json status/disk_guardian.log status/disk_candidates.json status/later_tabs.json status/disk_trend_report.json status/disk_daily_history.json status/gdrive_daily_usage.json >/dev/null 2>&1
+# 2026-09-13(798番) 事故の再発防止：status/now.json・status/rev.txt がこの一覧に無く、
+#   pace.pyがローカルで何度更新してもGitHub Pages（スマホ側）には永久に反映されず、
+#   画面のpollNow()が常にrev.txt 404を踏んで既存のrefreshPace/refreshGenzaichi頼みに
+#   落ちたまま気づかれない事故になっていた（家のWi-Fi内だけ動いているように見えて実は違う）。
+git add status/now.json status/rev.txt >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1
