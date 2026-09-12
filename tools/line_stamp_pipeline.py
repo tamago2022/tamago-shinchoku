@@ -471,7 +471,7 @@ def build_sheet_html(cfg, img_report):
         "LINE側には自動で貼られません。貼り付けは毎回ご自身でお願いします）</li>"
         "<li>④まで貼り終えたら保存。Requestはまだ押さない</li>"
         "</ol>"
-        '<a class="ps-open" href="https://creator.line.me/ja/dashboard" target="_blank" rel="noopener">'
+        '<a class="ps-open" href="https://creator.line.me/ja/" target="_blank" rel="noopener">'
         "LINE Creators Marketを開く（マイページ）</a>"
         "</div>" % mcp.esc(stamp_id)
     )
