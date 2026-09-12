@@ -43,13 +43,16 @@
 </div>
 <script>
 let DATA = [];
-fetch('tweets_data.json').then(r => r.json()).then(data => {
-  DATA = data;
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('stat').textContent = `全 ${DATA.length.toLocaleString()} 件（返信・リツイートを除いた本人投稿のみ）`;
-  render();
-});
+// 2026-09-12(717番)：1ファイル3.3MBだと公開リポジトリの1MB超ファイル点検に引っかかるため、
+// 中身は変えずに5分割（tweets_data_1〜5.json）。読み込み側で結合するだけで見え方は変わらない。
+Promise.all([1,2,3,4,5].map(i => fetch(`tweets_data_${i}.json`).then(r => r.json())))
+  .then(parts => {
+    DATA = parts.flat();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('stat').textContent = `全 ${DATA.length.toLocaleString()} 件（返信・リツイートを除いた本人投稿のみ）`;
+    render();
+  });
 
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

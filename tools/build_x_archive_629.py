@@ -60,16 +60,23 @@ search_data = [{
     'media': 1 if i['media'] else 0, 'score': i['score']
 } for i in items]
 
-with open(f"{OUT}/tweets_data.json", 'w', encoding='utf-8') as f:
-    json.dump(search_data, f, ensure_ascii=False, separators=(',', ':'))
+# 2026-09-12(717番)：1ファイルにすると公開リポジトリの1MB超ファイル点検に引っかかるため、
+# 5分割して書き出す（share/x-archive/index.html 側もこの分割前提でPromise.allで結合する）。
+import math
+PARTS = 5
+chunk = math.ceil(len(search_data) / PARTS)
+for idx in range(PARTS):
+    part = search_data[idx * chunk: (idx + 1) * chunk]
+    with open(f"{OUT}/tweets_data_{idx+1}.json", 'w', encoding='utf-8') as f:
+        json.dump(part, f, ensure_ascii=False, separators=(',', ':'))
 
 # 循環候補(上位300件、テキスト30字以上)
 candidates = [i for i in items if len(i['text']) >= 20][:300]
 with open(f"{OUT}/candidates.json", 'w', encoding='utf-8') as f:
     json.dump(candidates, f, ensure_ascii=False, indent=1)
 
-size = os.path.getsize(f"{OUT}/tweets_data.json")
-print('検索データサイズ:', size, 'bytes =', round(size/1024/1024,2), 'MB')
+size = sum(os.path.getsize(f"{OUT}/tweets_data_{i+1}.json") for i in range(PARTS))
+print('検索データサイズ(5分割合計):', size, 'bytes =', round(size/1024/1024,2), 'MB')
 print('候補件数:', len(candidates))
 print('上位5件プレビュー:')
 for c in candidates[:5]:
