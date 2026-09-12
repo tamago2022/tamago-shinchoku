@@ -844,6 +844,10 @@
 <details class="sec check" id="checkSec"><summary>終わりました（あなたのOK待ち） <small id="checkMeta"></small></summary><div class="in" id="check"></div></details>
 <!-- 2026-09-04 たまごさん「とりあえず後回しでOKを押したら、後回しボックスに入れて、そこから消えて欲しい」
      押した瞬間に確認待ちから消える。ここは畳んだまま。時間ができたら「戻す」で列に並ぶ。 -->
+<!-- 797番（2026-09-13）「まず同じことを2回やって、絶対に厳守して、タスクを殴らせない」
+     redoCount+ownerRedoCount+aiVerifyFailCountの合計が2に達したものは自動発車から外れ、
+     ここに退避される。手段を変えるか要件を1行決めてから「▶ 発車待ちに戻す」で列へ戻す。 -->
+<details class="sec later" id="stuckSec"><summary>🛑 手を止めた仕事（やり直し2回で自動停止） <small id="stuckMeta"></small></summary><div class="in" id="stuck"></div></details>
 <details class="sec later" id="laterSec"><summary>🕗 後回し（時間があるとき） <small id="laterMeta"></small></summary><div class="in" id="later"></div></details>
 <!-- 652番（2026-09-09）「閉じられないブラウザタブを『あとで見る棚』に逃がして、Braveを軽くする」
      たまごさんの言葉「1回ブラウザ閉じちゃうと、もう一生出せないみたい。何を見てたかも忘れちゃう」
@@ -2223,7 +2227,7 @@ function refreshHealth(){
       window.__queue = q;
       // 796番：発車待ち・確認待ち・完了の4本まとめてinnerHTMLを作り直す＝件数や開閉状態が
       //   変わると高さが変わり画面が上下にずれる。スクロール位置だけは動かさない保険を掛ける。
-      withScrollLock796(()=>{ try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} });
+      withScrollLock796(()=>{ try{ renderQueue(); renderCheck(); renderDone(); renderLater(); renderStuck(); }catch(e){} });
     })
     .catch(()=>{
       if(timer) clearTimeout(timer);
@@ -2238,7 +2242,7 @@ function refreshHealth(){
             window.__queueRawText = text;
             const q = JSON.parse(text);
             window.__queue = q;
-            withScrollLock796(()=>{ try{ renderQueue(); renderCheck(); renderDone(); renderLater(); }catch(e){} });
+            withScrollLock796(()=>{ try{ renderQueue(); renderCheck(); renderDone(); renderLater(); renderStuck(); }catch(e){} });
           })
           .catch(()=>{ done(); window.__queueErr++; try{ renderQueue(); }catch(e){} });
       }
@@ -3026,6 +3030,23 @@ function renderDone(){
   }).join("") + archLink;
 }
 /* 🕗 後回しボックス。「とりあえずOK」を押したものが入る。発車はしない。 */
+function renderStuck(){
+  // 797番：やり直し合計2回でstuckになった仕事の一覧。理由（failReasons）を必ず見せる
+  // （たまごさん「何を見て判断すればいいの」とならないよう、理由抜きで出さない）。
+  const box = document.getElementById("stuck"); if(!box) return;
+  const rows = ((window.__queue && window.__queue.items) || []).filter(r => r.status === "stuck");
+  const meta = document.getElementById("stuckMeta");
+  if(meta) meta.textContent = rows.length ? `${rows.length}件` : "";
+  if(!rows.length){ box.innerHTML = `<div class="card note">止まっている仕事はありません</div>`; return; }
+  box.innerHTML = rows.map(r=>{
+    const reasons = (r.failReasons || []).slice(-2).map(x=>esc(x)).join("／");
+    return `<div class="crow" data-cn="${r.n}">
+      <div class="ct">#${r.n} ${esc(r.title)} ${modelChip(r.model)}</div>
+      <div class="cm">合計${r.stuckRedoTotal != null ? r.stuckRedoTotal : "?"}回・理由：${reasons || "(記録なし)"}</div>
+      <div class="cbtns"><button class="cok" data-ck="unstick" data-n="${r.n}">▶ 手段を変えて発車待ちに戻す</button></div>
+    </div>`;
+  }).join("");
+}
 function renderLater(){
   const box = document.getElementById("later"); if(!box) return;
   const rows = ((window.__queue && window.__queue.items) || []).filter(r => r.status === "later");
@@ -3048,6 +3069,17 @@ document.addEventListener("click", e=>{
     renderLater(); renderQueue();
     return;
   }
+  if(b.dataset.ck === "unstick"){
+    // 797番：stuckは合計2回で自動停止した項目。queue_redoに乗せるとカウンタが減らず
+    // 即座にまた止まるので、専用のqueue_unstick（カウンタをリセットして再スタート）を使う。
+    const n = Number(b.dataset.n);
+    const note = (window.prompt("何を変えて再開しますか（手段・要件を1行。空でもOK）", "") || "").trim();
+    const it = ((window.__queue && window.__queue.items) || []).find(x => x.n === n);
+    if(it){ it.status = "waiting"; it.priority = 1; }
+    sendCommandWithExtra("u" + Date.now().toString(36), "queue_unstick", String(n), "▶ 手段を変えて再開 " + n + "番", {note});
+    renderStuck(); renderQueue();
+    return;
+  }
   // 2026-09-04 たまごさん「70点だけど今急ぎじゃないからいいや、という状態がある。
   //   やり直しも、今すぐのと、順番待ちの後ろでいいのがある」→ 判定を4つに分けた。
   // 2026-09-06(585番) たまごさん「もういい（取り消し）を押したら、まとまり全体が消える。
@@ -3063,7 +3095,7 @@ document.addEventListener("click", e=>{
     const arr = (window.__queue && window.__queue.items) || [];
     ns.forEach(n=>{ const i = arr.findIndex(x => x.n === n); if(i >= 0) arr.splice(i, 1); });
     sendCommandWithId("d" + Date.now().toString(36), "queue_delete", nsJoined, "🗑 消す " + label + "番");
-    try{ renderCheck(); renderQueue(); renderDone(); renderLater(); }catch(e){}
+    try{ renderCheck(); renderQueue(); renderDone(); renderLater(); renderStuck(); }catch(e){}
     return;
   }
   // 680番：「↩︎やり直し」は「何が直っていなかったか」を1行だけ聞く（空でもよい）。
@@ -3102,7 +3134,7 @@ document.addEventListener("click", e=>{
   } else {
     sendCommandWithId(id, CMD[0], CMD[1], CMD[2] + label + "番");
   }
-  renderCheck(); renderQueue(); renderDone(); renderLater();
+  renderCheck(); renderQueue(); renderDone(); renderLater(); renderStuck();
 });
 // チェックボックスの変更（[data-ck]ではなく専用のcrowchk）。全部選ぶ等のボタン操作もこれで更新される。
 document.addEventListener("change", e=>{

@@ -25,6 +25,10 @@ import io, json, os, re, glob, subprocess, datetime, urllib.request, time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ST = os.path.join(REPO, "status")
+# 797番：テスト時にモンキーパッチできるよう、書き込み先をモジュール変数として出しておく
+# （本番はstatus/配下、テストはtempディレクトリに差し替えて実行し、本番の受信箱を汚さない）。
+DISPATCH_OUTBOX = os.path.join(ST, "dispatch_outbox.jsonl")
+FAILURES_MD = os.path.join(ST, "failures.md")
 JST = datetime.timezone(datetime.timedelta(hours=9))
 now = datetime.datetime.now(JST)
 
@@ -177,6 +181,122 @@ def unreported_completions():
     return [(n_, t_, u_) for n_, t_, u_, _ in ordered]
 
 
+# ---- 797番：「発車0本が10分続いていないか」の検知＋自己復旧 ----
+# 実測（2026-09-13）：05:26〜05:42の16分間、auto_launcher.pyが45秒killを14回連続で
+# 食らい、その間ずっと発車0本だった。心臓（heartbeat.sh）自体は「動いています」ログを
+# 出し続けており、既存の7項目（★止まっていないか）だけでは検知できなかった
+# （心臓のプロセスが生きている＝正常、という判定だったため）。
+# 「発車」は auto_launcher.py が本物・空回しテスト問わず何か1本着火するたびに
+# status/.last_launch_at を書き換える（798番=auto_launcher.py側で実装）。
+# 発車待ちが空でクレジットも十分な「本当に出すものが無い」状態でも、
+# 安全弁（credit_stop×running_any=false時）は必ず2分ごとに空回しタスクを1本入れる設計
+# なので、10分間1本も出ないのは異常の強いシグナルとして扱ってよい。
+LAST_LAUNCH_STAMP = os.path.join(ST, ".last_launch_at")
+LAUNCH_SILENCE_ALERT_STAMP = os.path.join(ST, ".launch_silence_alerted_at")
+
+
+def launch_silence_min():
+    try:
+        age = time.time() - os.path.getmtime(LAST_LAUNCH_STAMP)
+        return age / 60.0
+    except FileNotFoundError:
+        return None  # まだ一度も発車したことが無い（新規環境）。異常とは扱わない
+
+
+def _self_heal_launch_silence(silence_min):
+    """止まっていたら、たまごさんに言われる前に自分で立て直しを試みる。
+    やること（既存の安全な手段だけを使う。新しい破壊的操作はしない）：
+      ① heartbeat.sh のPIDが死んでいれば立て直す（machine_status_push.shと同じ判定・同じ起動コマンド）。
+      ② no_launch.flag が「ログインが切れています」以外の理由で残ったままなら、
+         中身をログへ残すだけにする（正当性が読み取れないものを機械で勝手に消すのは危険なので、
+         消すところまではやらず、Dispatchへの通知に理由を含めて人の目で判断できるようにする）。
+    戻り値：実際に行った手当ての説明（1行、日本語）。何もできなければその理由。"""
+    actions = []
+    hbpid_path = os.path.join(ST, "heartbeat.pid")
+    hb_alive = False
+    try:
+        pid = int(io.open(hbpid_path, encoding="utf-8").read().strip())
+        os.kill(pid, 0)
+        hb_alive = True
+    except Exception:
+        hb_alive = False
+    if not hb_alive:
+        try:
+            subprocess.Popen(
+                ["bash", os.path.join(REPO, "tools", "heartbeat.sh")],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL, start_new_session=True,
+            )
+            actions.append("心臓(heartbeat.sh)のPIDが死んでいたので立て直しました")
+        except Exception as e:
+            actions.append("心臓の立て直しを試みましたが失敗: %s" % str(e)[:100])
+    else:
+        try:
+            subprocess.run(
+                ["launchctl", "kickstart", "-k", "gui/%d/com.tamago.machine-status" % os.getuid()],
+                capture_output=True, timeout=10,
+            )
+            actions.append("心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました")
+        except Exception as e:
+            actions.append("5分便の蹴り直しを試みましたが失敗: %s" % str(e)[:100])
+    flag_path = os.path.join(ST, "no_launch.flag")
+    if os.path.exists(flag_path):
+        try:
+            content = io.open(flag_path, encoding="utf-8").read().strip()
+        except Exception:
+            content = "(読めず)"
+        actions.append("no_launch.flagが残っています（内容：%s）。正当な理由か人の目で確認してください" % content[:120])
+    return "／".join(actions) if actions else "手当てできる対象が見つかりませんでした"
+
+
+def check_launch_silence():
+    """10分間発車が無ければ赤で報告し、その場で立て直しを試みる。
+    連続して赤の間は1回だけ dispatch_outbox・failures.md へ書く（毎30分スパムしない）。
+    発車が再開したら次の沈黙エピソードのためにアラート済みスタンプを消す。"""
+    silence_min = launch_silence_min()
+    if silence_min is None or silence_min <= 10:
+        try:
+            if os.path.exists(LAUNCH_SILENCE_ALERT_STAMP):
+                os.remove(LAUNCH_SILENCE_ALERT_STAMP)
+        except Exception:
+            pass
+        return None
+    already_alerted = os.path.exists(LAUNCH_SILENCE_ALERT_STAMP)
+    heal_msg = _self_heal_launch_silence(silence_min)
+    if not already_alerted:
+        try:
+            with open(LAUNCH_SILENCE_ALERT_STAMP, "w") as f:
+                f.write(now.isoformat())
+        except Exception:
+            pass
+        msg = ("🛑発車が%.0f分止まっていました。見つけて自分で直しました：%s" % (silence_min, heal_msg))
+        try:
+            row = {
+                "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+                "n": "launch-silence-%s" % now.strftime("%Y%m%d%H%M"),
+                "type": "launch_silence_self_heal",
+                "title": "発車0本が10分以上続いた",
+                "message": msg,
+                "silenceMin": round(silence_min, 1),
+            }
+            with io.open(DISPATCH_OUTBOX, "a", encoding="utf-8") as f:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        try:
+            with io.open(FAILURES_MD, "a", encoding="utf-8") as f:
+                f.write(
+                    "\n\n---\n\n## 797番自動記録：発車が%.0f分止まっていたので自分で直しました\n\n"
+                    "- **症状**：status/.last_launch_at が%.0f分更新されておらず、10分ルールに抵触しました。\n"
+                    "- **対応**：%s\n"
+                    "- **日付**：%s\n"
+                    % (silence_min, silence_min, heal_msg, now.strftime("%Y-%m-%d %H:%M"))
+                )
+        except Exception:
+            pass
+    return "🔴 **発車：%.0f分 沈黙**（見つけて直しました：%s）" % (silence_min, heal_msg)
+
+
 def write_vault_mirror(md_text):
     """Vault（Obsidian）側にも同じ7項目を置く。既存ノートは1文字も触らない＝新規ファイルのみ。
     iCloudが同期待ちで読めない等は静かに諦める（本体の出力には影響させない）。"""
@@ -223,6 +343,9 @@ def build():
         red_flags.append("心臓：ログが読めない")
     elif hb_min > 10:
         red_flags.append("心臓：%.0f分 沈黙" % hb_min)
+    launch_silence_line = check_launch_silence()
+    if launch_silence_line:
+        red_flags.append(launch_silence_line.replace("🔴 **", "").replace("**", ""))
 
     L = []
     A = L.append
@@ -243,6 +366,10 @@ def build():
         A("- 🔴 **心臓：%.0f分 沈黙**" % hb_min)
     else:
         A("- ✅ 心臓：%.0f分前に動いた" % hb_min)
+    if launch_silence_line:
+        A("- %s" % launch_silence_line)
+    else:
+        A("- ✅ 発車：10分以内に動いている")
     A("")
     A("## 数字")
     A("- 走行 **%s / %s**（発車待ち %d件・うちP1 %d件）" % (h.get("sessions"), h.get("safeMax"), len(waiting), len(p1)))
@@ -288,6 +415,7 @@ def build():
         "redFlags": red_flags,
         "deploy": {"hoursSinceUpdate": dep_h, "deploymentId": dep_id},
         "heartbeatSilentMin": hb_min,
+        "launchSilentMin": round(launch_silence_min() or 0, 1) if launch_silence_min() is not None else None,
         "running": {"count": h.get("sessions"), "safeMax": h.get("safeMax")},
         "waitingCount": len(waiting),
         "p1Count": len(p1),

@@ -795,6 +795,60 @@ def queue_redo(target, note=None):
     return "done", "%d件をまとめて%s（%s）" % (len(done), where, ",".join(str(x) for x in done))
 
 
+def queue_unstick(target, note=None):
+    """797番：進捗表「🛑手を止めた仕事」の「▶ 手段を変えて発車待ちに戻す」。
+
+    queue_redo() は使わない。queue_redo() はownerRedoCountを+1して都度stuck判定するため、
+    stuck化した項目（合計が既に2以上）をそのままqueue_redo()に通すと、カウンタが2以上のまま
+    即座にまたstuck化してしまい、ボタンを押しても列に戻らない（無限ループ）。
+    ここでは「たまごさん／Dispatchが手段を変えると決めた」という明示的な意思表示として扱い、
+    3つのカウンタとfailReasonsをリセットしてから列の先頭へ戻す（やり直し回数は0から再スタート）。
+    リセットした事実と、リセット前の合計回数はwhatに残す（何度リセットされたかは消さない）。"""
+    ns = _split_targets(target)
+    if not ns:
+        return "failed", "番号が不正: %r" % target
+    note = (note or "").strip()
+    q = _load_queue()
+    items = q.get("items") or []
+    done = []
+    for n in ns:
+        idx = None
+        for i, it in enumerate(items):
+            if it.get("n") == n:
+                idx = i
+                break
+        if idx is None:
+            continue
+        it = items.pop(idx)
+        if it.get("status") != "stuck":
+            items.insert(idx, it)
+            continue
+        prev_total = redo_guard.redo_total(it)
+        ts = time.strftime("%m-%d %H:%M")
+        note_line = ("\n\n【797番・手段を変えて再開・%s】stuckになる直前の合計やり直し回数は%d回でした。"
+                     "%sカウンタを0からリセットして列の先頭へ戻します。"
+                     % (ts, prev_total, ("「%s」。" % note) if note else ""))
+        it["what"] = (it.get("what") or "") + note_line
+        for k in ("redoCount", "ownerRedoCount", "aiVerifyFailCount", "failReasons",
+                  "stuckAt", "stuckReasonSummary", "stuckRedoTotal",
+                  "finishedAt", "result", "urls", "sessionId", "pid", "startedAt"):
+            it.pop(k, None)
+        it["status"] = "waiting"
+        it.pop("priority", None)
+        it["priority"] = 1
+        it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        items.insert(0, it)
+        done.append(n)
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    if not done:
+        return "failed", "stuck状態の項目が見つかりませんでした: %r" % target
+    if len(done) == 1:
+        return "done", "%d番をリセットして発車待ちの先頭へ戻しました" % done[0]
+    return "done", "%d件をリセットして発車待ちの先頭へ戻しました（%s）" % (len(done), ",".join(str(x) for x in done))
+
+
 def queue_later(target):
     """「🟡 とりあえずOK（あとで直す）」を押したとき。
 
@@ -900,7 +954,7 @@ def process(cmd):
     action = cmd.get("action")
     if action in ("queue_ok", "queue_undo_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
                   "queue_pause", "queue_delete", "queue_order", "queue_dedupe",
-                  "queue_cancel", "queue_undo_cancel", "queue_cost_ok"):
+                  "queue_cancel", "queue_undo_cancel", "queue_cost_ok", "queue_unstick"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -946,6 +1000,8 @@ def _process_queue(action, cmd):
         return queue_undo_cancel(target)
     if action == "queue_cost_ok":
         return queue_cost_ok(target)
+    if action == "queue_unstick":
+        return queue_unstick(target, cmd.get("note"))
     return "failed", "不明なアクション: %s" % action
 
 
