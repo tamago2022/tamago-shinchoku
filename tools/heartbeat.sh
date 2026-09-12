@@ -112,6 +112,11 @@ while :; do
   #   新規登録された動画を見回るタスクを、1日1回だけ発車待ちへ積む（check_anthropic_reply.pyと
   #   同じ間引きパターン。新しいlaunchd便は増やさない）。
   ( python3 "$REPO/tools/daily_ingest_scheduler.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-12（787番）：「いまの現在地」1枚(status/genzaichi.md/.json)を実質30分おきで更新する。
+  #   憲法0番に「30分おき自動更新」と書いてあったのに実体（スケジューリング）が無かった穴を塞ぐ。
+  #   新しいlaunchd常駐は増やさず、既存の心臓に相乗り。内部で1500秒ゲートしているので
+  #   15秒ごとに呼んでも実際に本体が走るのは30分に1回だけ（daily_ingest_scheduler.pyと同じ間引き）。
+  ( python3 "$REPO/tools/genzaichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
