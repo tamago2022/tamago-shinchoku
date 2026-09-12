@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#769 LINEスタンプ申請機：鬼嫁ちゃん・ペラリーノウソッチ 貼るだけシート完成 確認ページ</title>
+<title>#769 LINEスタンプ申請機：鬼嫁ちゃん・ペラリーノウソッチ・珍獣ラシコル 貼るだけシート完成 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,45 +47,48 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #769 LINEスタンプ申請機：鬼嫁ちゃん・ペラリーノウソッチ 貼るだけシート完成</div>
-<h1>#769 LINEスタンプ申請機：鬼嫁ちゃん・ペラリーノウソッチ 貼るだけシート完成</h1>
-<div class="date">2026-09-12 Google Driveの読み取り不能(Resource deadlock avoided)を解消し、申請機を汎用化</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #769 LINEスタンプ申請機：鬼嫁ちゃん・ペラリーノウソッチ・珍獣ラシコル 貼るだけシート完成</div>
+<h1>#769 LINEスタンプ申請機：鬼嫁ちゃん・ペラリーノウソッチ・珍獣ラシコル 貼るだけシート完成</h1>
+<div class="date">2026-09-12 珍獣ラシコルを3キャラ目として追加。設定ファイル1つ追加→自動生成が実際に動くことを確認</div>
 
 <div class="fix">
-<p>Google Driveの同期不調で5回やり直しになっていた原因（ZIP・フォルダが『Resource deadlock avoided』で読めない）を、<code>fileproviderctl materialize</code>で強制ダウンロードする方式に変えて解消した。鬼嫁ちゃん（24枚・完成ZIP）とペラリーノウソッチ（24枚・個別PNG、フォルダのリンク数が65535という異常値だったもの）の両方とも、画像検品『検出24枚・規格OK24枚（370px以内・透過あり）』まで到達し、文言（タイトル・説明文・日英）もシートに埋まった状態。</p><p>この修正は<code>tools/line_stamp_pipeline.py</code>本体に恒久化したので、次に新しいキャラクターのフォルダが増えても同じ詰まりを自動で回避する。</p><p><b>まだ出来ないこと（正直な記録）</b>：LINE Creators Marketの実際の管理画面（審査リクエスト直前まで本当に進んでいるか）は、本セッションにブラウザ操作ツールが無いため確認できていない。下のシートをたまごさんご自身の画面へコピー＆貼り付けする必要がある（Requestボタンは絶対に押さない設計）。</p>
+<p>Google Driveの同期不調で5回やり直しになっていた原因（ZIP・フォルダが『Resource deadlock avoided』で読めない）を、<code>fileproviderctl materialize</code>で強制ダウンロードする方式に変えて解消した。鬼嫁ちゃん（24枚・完成ZIP）、ペラリーノウソッチ（24枚・個別PNG）に続き、<b>珍獣ラシコル</b>（24枚・個別PNG、同じくフォルダのリンク数が65535という異常値だったがmaterializeで即解消）も、画像検品『検出24枚・規格OK24枚（370px以内・透過あり）』まで到達し、文言（タイトル・説明文・日英・A/B案）もシートに埋まった状態。</p><p>珍獣ラシコルは<code>tools/line_stamp_configs/rashikoru.json</code>を1つ追加しただけで、<code>tools/line_stamp_pipeline.py --slug rashikoru --push</code>を実行するだけで貼るだけシートが自動生成された。「次のキャラはフォルダを置くだけ」の型が実際に3キャラ目で動くことを確認できたのが今回の一番の成果。</p><p><b>まだ出来ないこと（正直な記録）</b>：LINE Creators Marketの実際の管理画面（審査リクエスト直前まで本当に進んでいるか）は、本セッションにブラウザ操作ツールが一切無いため確認できていない（既存Chromeプロセスも別用途専用でLINEにログインしたものは無いことを実機で確認済み）。下のシートをたまごさんご自身の画面へコピー＆貼り付けする必要がある（Requestボタンは絶対に押さない設計）。</p>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>24枚</b><span>鬼嫁ちゃん：画像検品OK</span></div>
   <div class="num"><b>24枚</b><span>ペラリーノウソッチ：画像検品OK</span></div>
-  <div class="num"><b>0件</b><span>文言の未確定項目（両キャラとも）</span></div>
+  <div class="num"><b>24枚</b><span>珍獣ラシコル：画像検品OK（新規）</span></div>
+  <div class="num"><b>0件</b><span>文言の未確定項目（3キャラとも）</span></div>
 </div>
 
 <h2>実際のシート画面（②画像検品結果まで表示）</h2>
 <div class="shots">
   <div class="shot plain"><b>鬼嫁ちゃんの貼るだけシート</b><img src="img/769-oniyome-chan-paste-sheet.png" alt="鬼嫁ちゃんの貼るだけシート"></div>
   <div class="shot plain"><b>ペラリーノウソッチの貼るだけシート</b><img src="img/769-peralino-usocchi-paste-sheet.png" alt="ペラリーノウソッチの貼るだけシート"></div>
+  <div class="shot plain"><b>珍獣ラシコルの貼るだけシート（新規）</b><img src="img/769-rashikoru-paste-sheet.png" alt="珍獣ラシコルの貼るだけシート"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>① 鬼嫁ちゃん 貼るだけ申請シート</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html</a></li>
   <li><b>② ペラリーノウソッチ 貼るだけ申請シート</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html</a></li>
+  <li><b>③ 珍獣ラシコル 貼るだけ申請シート（新規）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-rashikoru-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-rashikoru-paste-sheet.html</a></li>
   <li><b>LINE Creators Market（ここからご自身のブックマークで管理画面へ）</b><a href="https://creator.line.me/ja/" target="_blank" rel="noopener">https://creator.line.me/ja/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>画像検品(2キャラ共通)</td><td class="yes">検出24枚・規格OK24枚・未確認0枚</td></tr>
-<tr><td>文言(タイトル・説明文 日英)</td><td class="yes">両キャラとも確定済み・貼るだけの状態</td></tr>
+<tr><td>画像検品(3キャラ共通)</td><td class="yes">検出24枚・規格OK24枚・未確認0枚</td></tr>
+<tr><td>文言(タイトル・説明文 日英)</td><td class="yes">3キャラとも確定済み・貼るだけの状態</td></tr>
 <tr><td>審査リクエスト</td><td class="no">押していません（押すのは本人のみ）</td></tr>
-<tr><td>申請機の汎用化</td><td class="yes">次のキャラはフォルダを置くだけで同じシートが自動生成される</td></tr>
+<tr><td>申請機の汎用化</td><td class="yes">珍獣ラシコルはconfig1つ追加のみで自動生成された（実証済み）</td></tr>
 </table>
 
 <footer>
-触らないもの：古い下書き「miketama」（ID 28343285）。削除・編集・上書きしない。ペラリーノウソッチのA案タイトルがLINE審査で落ちた場合は、tools/line_stamp_configs/peralino-usocchi.jsonのtitle_ja_planB等（B案）に差し替える。
+触らないもの：古い下書き「miketama」（ID 28343285）。削除・編集・上書きしない。ペラリーノウソッチのA案タイトルがLINE審査で落ちた場合はtools/line_stamp_configs/peralino-usocchi.jsonのB案に、珍獣ラシコルも同様にrashikoru.jsonのB案に差し替える。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
