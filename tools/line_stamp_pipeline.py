@@ -416,6 +416,12 @@ STYLE = """
   .ps-hint{font-size:0.78rem;color:#7a7568;margin:0 0 10px;}
   .ps-warn{background:#c4483a;color:#fff;border-radius:10px;padding:14px 16px;font-weight:700;
     font-size:1.02rem;margin:0 0 18px;text-align:center;}
+  .ps-howto{background:#fff8e1;border:2px solid #e0a800;border-radius:12px;padding:14px 16px;
+    margin:0 0 18px;font-size:0.95rem;line-height:1.7;}
+  .ps-howto b{color:#8a5a00;}
+  .ps-howto ol{margin:8px 0 0;padding-left:1.4em;}
+  .ps-howto a.ps-open{display:inline-block;margin-top:10px;background:#00b900;color:#fff;
+    text-decoration:none;font-weight:700;border-radius:8px;padding:9px 16px;font-size:0.9rem;}
 </style>
 """
 
@@ -455,9 +461,19 @@ def build_sheet_html(cfg, img_report):
     parts.append('<div class="ps-warn">⚠️ Requestは押さない。押すのはたまごさん本人が決めた時だけ。</div>')
     stamp_id = cfg.get("stamp_id") or "未取得（LINE Creators Marketで新規作成した時に決まる）"
     parts.append(
-        '<div class="ps-hint">スタンプID: %s／管理画面はご自身のブックマークか履歴から開いてください'
-        '（アカウント固有のURLはこのページには書きません）。下から順番どおりに貼れば審査直前まで進みます。</div>'
-        % mcp.esc(stamp_id)
+        '<div class="ps-howto">'
+        "<b>使い方（探さなくていいように、ここに全部書きます）</b>"
+        "<ol>"
+        "<li>下のボタン「LINE Creators Marketを開く」を押す（自分のログイン画面が開きます）</li>"
+        "<li>スタンプID <b>%s</b> の編集画面を開く</li>"
+        "<li>この下の項目を上から順に：<b>①「コピー」ボタンを押す → ②LINE側の同じ名前の欄をクリック → "
+        "③ Cmd+V（貼り付け） → ④次の項目へ</b>、を繰り返す（コピーはクリップボードに入るだけで、"
+        "LINE側には自動で貼られません。貼り付けは毎回ご自身でお願いします）</li>"
+        "<li>④まで貼り終えたら保存。Requestはまだ押さない</li>"
+        "</ol>"
+        '<a class="ps-open" href="https://creator.line.me/ja/dashboard" target="_blank" rel="noopener">'
+        "LINE Creators Marketを開く（マイページ）</a>"
+        "</div>" % mcp.esc(stamp_id)
     )
 
     parts.append('<div class="ps-section"><h3>① Display Information（表示情報）</h3>')
