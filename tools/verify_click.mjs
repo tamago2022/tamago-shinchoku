@@ -265,6 +265,23 @@ async function main() {
         clickError = String(e.message || e).slice(0, 150);
       }
       await sleep(CLICK_SETTLE_MS);
+      // href付き要素（外部/内部リンク）は実際のページ遷移がCLICK_SETTLE_MSの600msでは
+      // 終わらないことがあり、遷移中のURLを「無反応」と誤判定する事故があった
+      // （実測：GitHub Pages確認ページの「← 進捗表に戻る」リンク）。
+      // href付きだけ、URLが変わるまで最大4秒ポーリングして待つ。
+      if (el.href) {
+        const navWaitStart = Date.now();
+        while (Date.now() - navWaitStart < 4000) {
+          try {
+            const cur = await evalJson(send, `location.href`);
+            if (cur && before && cur !== before.url) break;
+          } catch {
+            /* ナビゲーション中は評価自体が失敗することがある＝遷移が進んでいる証拠 */
+            break;
+          }
+          await sleep(300);
+        }
+      }
       try {
         after = await evalJson(send, SNAPSHOT_EXPR);
       } catch {
