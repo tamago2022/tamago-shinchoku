@@ -2550,12 +2550,13 @@ function refreshMachineHealth(){
 }
 refreshMachineHealth();
 setInterval(()=>{ if(!document.hidden) refreshMachineHealth(); }, 60000);
-refreshHealth();
-// 798番⑤（AI検品差し戻し対応）：発車待ち/確認待ち/完了/後回し/手を止めた の
-//   5つの<details>が全部閉じている間はqueue_light.json（117KB）を一切取りに行かない。
+// 798番⑤（AI検品差し戻し対応・2026-09-14）：発車待ち/確認待ち/完了/後回し/手を止めた の
+//   5つの<details>が全部閉じている間はqueue_light.json（117KB）を初回ロード時も含めて
+//   一切取りに行かない。以前はここで無条件に1回叩いていたのがFAILの一因だった。
 //   どれか1つでも開いていれば、これまで通り10秒おきに見に行く（開いた瞬間はtoggleリスナーが1回叩く）。
 const QUEUE_DETAILS_IDS796 = ["queueSec","doneSec","checkSec","laterSec","stuckSec"];
 function anyQueueDetailsOpen796(){ return QUEUE_DETAILS_IDS796.some(id => detailsOpen(id)); }
+if(anyQueueDetailsOpen796()) refreshHealth();
 setInterval(()=>{ if(!document.hidden && anyQueueDetailsOpen796()) refreshHealth(); }, 10000);
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && anyQueueDetailsOpen796()) refreshHealth(); });
 
