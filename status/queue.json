@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-14 02:15",
+ "updatedAt": "2026-09-14 02:23",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -65,31 +65,6 @@
    "order": 23,
    "bgWaitCount": 1,
    "priority": 2
-  },
-  {
-   "n": 11,
-   "title": "プレイリストの曲を補給所にもカードとして入れる",
-   "why": "裏タグを仕込んで後から繋げるように",
-   "what": "プレイリストに入れた曲を、補給所のカードとしても登録します。裏タグ（_home-leave / _home-faraway など6パターン＋国コード）を付けておくと、あとで「アイルランドの帰れない歌だけ」のように引っ張れます。\n\n【やり直しの理由・2026-09-04】たまごさん確認：入れたところを見たい。カードのURLを出すこと。入れただけで報告しない。\n\n【一時停止・2026-09-04 20:45】たまごさん「今日はこの仕組みだけ。後も止めちゃってもいい。クレジットが足りない」→ 仕組み（発車→繰り上がり→確認URL→完了）以外は止めています。仕組みが回ったら再開します。\n\n【自動やり直し・09-04 22:22】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-05 05:28】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html / ③FAIL: img_count=0\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 09:24】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html / ③FAIL: img_count=0",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "worktree": "r11-0904",
-   "redoCount": 4,
-   "priority": 3,
-   "result": "この通知は先ほど実行済みだった`find`コマンドの完了報告で、既に内容は確認済み（`lovable-publish.mjs`はメインチェックアウト側にのみ存在）です。新しい対応は不要です。\n\n案件11番（プレイリストの曲を補給所にもカードとして入れる）は、本番反映・確認ページ公開まで完了済みです。\n\n【完了】プレイリスト8曲の補給所カード化、本番反映・実測確認済み\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html"
-   ],
-   "checkedAt": "2026-09-07T02:12:27+0900",
-   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html / ③FAIL: img_count=0",
-   "origin": "factory",
-   "order": 113,
-   "startedAt": "2026-09-07T02:04:07+09:00",
-   "sessionId": "b875e91a-645b-4c88-89df-ba6cef52298c",
-   "pid": 94931,
-   "okBy": "oni-kantoku-verify_check_pages-orchestrator-11-screenshot-fix",
-   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/11-home-playlist-cards.html / ③PASS: img_count=2"
   },
   {
    "n": 17,
@@ -5263,7 +5238,7 @@
    "title": "【最優先】「すぐ見たい」の別枠を作る＋優先順位の自動入れ替え",
    "why": "スマホから追加",
    "what": "【★このタスクは joy-relief-station のコード変更ではありません。リポジトリ違いを理由に止まらないでください】\n- 作業場所：**/Users/mac/Desktop/tamago-shinchoku**（進捗表・確認ページ・status配下）＋ブラウザ／メール。\n- joy-relief-station に変更を加える必要はありません。**「対象が違う」で差し戻さない。**\n- 確認ページは `share/check/<番号>-<名前>.html` に作り、tamago-shinchoku で git push（GitHub Pagesに出る）。\n- 2026-09-13 05:35 に一度、これを「誤配信」と判断して何もせず終了した実例あり。**二度目は無しでお願いします。**\n\n【最優先・仕組み】「すぐ見たい」の別枠を作る。優先順位の入れ替えを自動化する\n\nたまごさんの言葉（2026-09-13）：\n> 「**デジタル絵本も緊急というか、すぐ見たいやつ。すぐ見たいやつ、ちょっと別枠にしてくんないかな？\n> コピーが違ってるよとか、そんなのもう何にも急いでないのよ。\n> 今のパーソナライズ、コンシェルジュ、LINE申請、デジタル絵本、これはすぐ見たいの。別枠がいいな。\n> こういうの、こうやっていろんなこと言うけれども、俺の中で優先順位全然違うから。\n> そんなの1週間後でいいよってのもあれば、もう明日にでも見たいってのもあるから。\n> もうそしたら、タスクを、じゃあこれでいつでも後に列に回して、これを最初にやるとか、それも自動化したいね。**」\n\n■ 背景（これが今の問題）\nP1が12件あって全部が同じ顔で並んでいる。たまごさんの頭の中では「明日見たい」と「1週間後でいい」が\n混ざっているのに、進捗表からはその差が見えない。だから優先順位を毎回口で言わされている。\n＝これは「たまごさんを動かしている」状態。憲法19番違反。\n\n■ やること（4つ。全部やって本番に出すまでが1セット）\n\n【1】queue.json に `urgent: true` の旗を立てる仕組み（Dispatchが既に4件立てた。壊さないこと）\n  - 現在すでに立っているもの：#792(パーソナライズ) #790 #791 #786(LINE申請) #789(ZEN動画)\n  - `urgentReason` に「誰がいつ、なぜ」を1行で入れる。理由の無い旗は立てない。\n  - **旗は自動では立たない。立てるのはDispatchかたまごさんだけ。**\n\n【2】★進捗表の1画面目の一番上に「すぐ見たい」の枠を作る\n  - `status/queue.json` の `urgent:true` かつ status が done/cancelled でないものだけを並べる。\n  - **0件のときは枠ごと消す**（空の箱を見せない）。\n  - 1件ずつに出すもの：番号／短い題名（labelかtitleの先頭30字）／今の状態（待ち・走行中・確認待ち）／\n    走行中なら経過時間／成果URLがあれば押せるリンク。\n  - **この枠だけは畳まない（既定で開いている）。** 他は全畳みのまま（既存ルール）。\n  - 375px幅で1行が折り返して縦1文字にならないこと。**実機幅375pxでスクショを撮って確認する。**\n\n【3】★発車の順番を urgent 優先にする（tools/auto_launcher.py）\n  - 今の並び替えキーの一番左に `not urgent`（＝urgentが先）を足すだけ。priority より強くする。\n  - urgent が複数あるときは、その中で priority → 番号順。\n  - **走行中のものは絶対に列へ戻さない**（777番の教訓。二重課金で$55捨てた）。\n\n【4】★「急がないもの」を自動で後ろへ落とす仕分け\n  - 新しく積まれたタスクの題名・本文が次のどれかに当たり、かつ urgent が立っていなければ **priority=4** にする：\n    「コピーが違」「誤字」「表記ゆれ」「リンク切れ」「文言を直」「体裁」「整理」「リファクタ」「ラベル」\n  - たまごさんの言葉：「**コピーが違ってるよとか、そんなのもう何にも急いでないのよ。**」\n  - ただし **本番が落ちている・リンクが404** のような「壊れている」系は対象外（P1のまま）。\n  - 誤判定が怖いので、**落としたものは status/auto_demoted.jsonl に1行ずつ記録**して後から見えるようにする。\n\n【5】たまごさんが進捗表から旗を立てられるようにする（既存の「1番へ／最後尾へ」ボタンと同じ経路）\n  - 各タスクに「🔥すぐ見たい」トグルを1つ足す。押すと status/commands.json 経由で urgent が反転する。\n  - 既存の仕組みに相乗りする。新しい経路を作らない。\n\n■ 完了条件（全部そろって完了。1つでも欠けたらまだ）\n1. 進捗表の1画面目の一番上に「すぐ見たい」枠が出て、上の5件が並んでいる\n2. 375px幅のスクショを撮って、崩れていないことを目で確認した\n3. auto_launcher が urgent を先に発車させる（コードとテストの両方）\n4. auto_demoted.jsonl が動く\n5. GitHub Pages に反映済み（本番URLを開いて200＋中身を実測）\n6. 報告は1行＋URL。説明を書かない。\n\n■ 触るな\n- 走行中タスクのstatusを書き換えない\n- 既にurgentが立っている5件を消さない\n\n【触る検品(2段目)ではねられました・1回目・09-14 01:12】理由：押しても無反応11件：「すべて」(BUTTON)、「記事」(BUTTON)、「ページ」(BUTTON)\n実際に押しても反応しない要素があります。curlで読めても、押して動くかを`node /Users/mac/Desktop/tamago-shinchoku/tools/verify_click.mjs <URL>` で自分でも確認してから直してください。",
-   "status": "touchchecking",
+   "status": "verifying",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -5287,11 +5262,13 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/793-urgent-lane.html"
    ],
-   "touchPid": 3693,
-   "touchOutJson": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-54a15836.json",
-   "touchLog": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-54a15836.log",
-   "touchStartedAt": "2026-09-14T02:15:26+09:00",
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/793-urgent-lane.html"
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/793-urgent-lane.html",
+   "touchCheckNote": "押した結果：無反応0件・コンソールエラー0件（4件中4件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/share/check/793-urgent-lane.html）",
+   "verifyPid": 4144,
+   "verifySessionId": "c27650e4-3566-416f-8d25-0faf68101599",
+   "verifyLog": "/Users/mac/Desktop/tamago-shinchoku/status/verify-c27650e4.log",
+   "verifyStartedAt": "2026-09-14T02:16:39+09:00",
+   "verifyUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/793-urgent-lane.html"
   },
   {
    "n": 794,
