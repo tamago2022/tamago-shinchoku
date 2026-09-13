@@ -17,3 +17,8 @@ share/x-search/data.json
 
 # 2026-09-09（案件#670）：Gumroad/YouTubeのAPIキーは.envに置く（GitHub Pagesで公開されるため必ず除外）。
 .env
+
+# 2026-09-13（案件#687）：queue.jsonの世代バックアップはローカル自己防衛用（queue_store.pyが自動生成・直近50世代のみ保持）。
+# 大量の小ファイルでpre-commitの1MB超ガードに毎回ひっかかりqueue.json本体のコミットを圧迫していたため、
+# そもそもgit管理対象から外す（正本はqueue.json本体・historyはローカルの巻き戻り保険のみ）。
+status/queue_history/
