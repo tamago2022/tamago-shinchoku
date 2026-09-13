@@ -3519,7 +3519,7 @@ function renderUrgent(){
   const rows = all.filter(r => r.urgent === true && !["done","cancelled"].includes(r.status || "waiting"))
     .sort((a,b) => eff(a) - eff(b) || (a.n||0) - (b.n||0));
   if(!rows.length){ box.style.display = "none"; box.innerHTML = ""; return; }
-  box.style.display = "";
+  box.style.display = "block";
   const rowHtml = r => {
     const label = esc(((r.label || r.title || "").trim()).slice(0,30));
     const st = STATUS_JA[r.status] || r.status || "発車待ち";
