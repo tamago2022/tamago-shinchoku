@@ -309,11 +309,15 @@ async function main() {
       // href付き要素（外部/内部リンク）は実際のページ遷移がCLICK_SETTLE_MSの600msでは
       // 終わらないことがあり、遷移中のURLを「無反応」と誤判定する事故があった
       // （実測：GitHub Pages確認ページの「← 進捗表に戻る」リンク）。
-      // href付きだけ、URLが変わるまで最大4秒ポーリングして待つ。
+      // href付きだけ、URLが変わるまで最大NAV_WAIT_MSポーリングして待つ。
+      // 案件#802実測：遷移先の本番index.html(約340KB・多数の非同期fetch)への遷移で
+      // 4秒では時々足りず、実際は動くリンクを無反応と誤検知することがあった
+      // （4回連続実行で1回FAIL・3回PASSを実測）。8秒に伸ばして再現率を下げる。
+      const NAV_WAIT_MS = 8000;
       let newTabOpened = false;
       if (el.href) {
         const navWaitStart = Date.now();
-        while (Date.now() - navWaitStart < 4000) {
+        while (Date.now() - navWaitStart < NAV_WAIT_MS) {
           if (lastWindowOpenAt) {
             newTabOpened = true;
             break;
