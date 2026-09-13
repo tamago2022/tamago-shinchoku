@@ -151,7 +151,7 @@ async function main() {
 
     const top = Math.max(0, Math.floor(info.rect?.top || 0));
     const clip = { x: 0, y: top, width: 430, height: 1300, scale: 1 };
-    const shot = await send("Page.captureScreenshot", { format: "png", clip });
+    const shot = await send("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport: true });
     writeFileSync(OUT_FILE, Buffer.from(shot.data, "base64"));
     console.log("保存:", OUT_FILE);
     close();
