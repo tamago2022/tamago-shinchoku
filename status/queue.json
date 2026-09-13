@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-13 19:01",
+ "updatedAt": "2026-09-13 19:05",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -5923,7 +5923,7 @@
    "title": "【検品の根本修正】検品係が「ブラウザ禁止」で押せなかった→触る検品＋鬼監督を3段に繋ぐ",
    "why": "スマホから追加",
    "what": "【★検品の根本修正】検品係が「ブラウザを使うな」と命じられていた。押せない検品はPASSしか出せない\n\n【★このタスクは joy-relief-station のコード変更ではありません。リポジトリ違いを理由に止まらないでください】\n作業場所：**/Users/mac/Desktop/tamago-shinchoku**（`tools/auto_launcher.py` の検品部分）。確認ページは share/check/800-*.html。\n\n■たまごさんの言葉（2026-09-13）\n> 「**鬼監督の効果が全然感じられてないのよ。間違えたものがガンガン上がってきてるんだ、もう俺に。\n> 結局、俺が見つけて『違うよ』って言ってるわけじゃん。それがめちゃくちゃ手間なわけですよ。無駄なんですよ。\n> 直っているものだけ見せてほしいのよ。**」\n> 「**鬼監督は結局身内なわけじゃん。外部にやらせた方がいいと思う。Grok、Codex、Astraなのか。\n> 内部でできるんだったら内部でやってほしいのよ。**」\n\n■★★原因を特定済み（身内かどうか以前の問題）\n`tools/auto_launcher.py` の `build_verify_prompt()`（503行目付近）に、検品係への指示としてこう書いてある：\n> 「**`curl` 等で実際にURLを取得して中身を読んでください。**」\n> 「**ブラウザ・claude-in-chrome・screencapture は使わないでください。**許可ダイアログを出さないこと。」\n\n**＝検品係はボタンを押せない。HTMLを読むことしかできない。**\n- コンシェルジュの「話す」ボタンが**押しても無反応**でも、HTMLにコードはあるので **PASS**\n- 飛び出す絵本が**絵文字だけ**でも、ページは開くので **PASS**\n- **「押して何が起きるか」を一度も見ていなかった。**\n**この「ブラウザ禁止」は確認ポップアップを出さないために足したもの。安全のための一行が検品を無力化していた。**\n\n■★直し方（内部で直せる。外部AIは要らない）\n**ヘッドレスブラウザは許可ダイアログを出さない。**既にリポジトリに道具がある：\n`tools/_759_screenshot.mjs` / `tools/_759_screenshot_firstview.mjs` / `tools/line_stamp_shot.mjs` / `tools/_769_verify_live.mjs`\n\n【1】★検品を「読む」から「触る」に変える（新規 `tools/verify_click.mjs`）\n1. 対象URLを**375px幅**で開く\n2. **押せる要素（button / a / [role=button] / onclick付き）を全部拾う**\n3. **1つずつ実際に押し、押す前後で「URL・DOM・スクロール位置・表示テキスト」が1つでも変わったかを記録**\n4. **何も変わらなかった要素を「無反応」として一覧に出す**\n5. コンソールのエラーも拾う／押す前後のスクショを撮る\n**→ 押しても何も起きない要素が1つでもあれば、その時点で自動的に不合格。**\n\n【2】★検品プロンプトから「ブラウザを使うな」を外す\n- **claude-in-chrome と screencapture は引き続き禁止**（ポップアップが出る）。**nodeのヘッドレスだけ許可**し、その違いを明記。\n- 不合格の基準に足す：**押しても何も起きない要素がある／コンソールにエラー／依頼文にある要素が画面に無い／件数の指定（例「4件出す」）を満たしていない**（実際に数える）\n\n【3】★鬼監督（684番）が一度も走っていない\n- 684番「鬼監督を復活させて、完了したタスクを毎回チェックさせる」は**7日間 `waiting` のまま**だった（2026-09-13にholdへ移動済み）。**制度は作ったがパイプラインに1度も繋がっていなかった。**\n- → **3段にする：機械検品（存在するか）→ 触る検品（動くか）→ 鬼監督（過去にたまごさんが言ったことに照らして落とす）。3つ全部通ったものだけ `awaiting_check` に上げる。**\n- 鬼監督は skill `oni-kantoku` を読ませる。**鬼監督が動いた記録を `status/oni_kantoku_log.jsonl` に必ず残す**（799番の生死表がこれを見る）。\n\n【4】★外部AIは「測れないもの」だけ・週1\n- 押して動かない・件数不足・エラーは**機械で測れる。内部で足りる。**\n- **測れないもの（迷う・つまらない・気持ちよくない）だけ、週1回だけ外部（Grok/Codex/Astra）に同じ道を歩かせて答え合わせ。**\n- ※**テスター役はたまごさん自身がやると本人が宣言済み。こちらでは作らない。**\n\n【5】★「直っているものだけ見せる」ための安全弁\n- 検品に落ちたものは**たまごさんに上げない。**\n- 永久に上がらないのを防ぐため**797番の「やり直し2回で止める」と合流。**2回落ちたら走らせず、**2回とも何で落ちたかを添えてDispatchへ。たまごさんには行かない。**\n\n■完了条件\n1. `tools/verify_click.mjs` が動き、**無反応な要素を実際に検出できることを /cover-guide で実証**\n   （たまごさんが「話すボタンが無反応」と言った、まさにそれを機械が見つけられること）\n2. 検品プロンプトが更新され、nodeヘッドレスを使っている\n3. 3段の検品が繋がり、全部通ったものだけ確認待ちに上がる\n4. `status/oni_kantoku_log.jsonl` に鬼監督が動いた記録が残る\n5. **過去に「PASS」で上がっていたもののうち、新しい検品で落ちるものが何件あるかを実測して出す**（今までどれだけ素通ししていたかの実数）\n6. 報告は1行＋URL\n\n【触る検品(2段目)ではねられました・1回目・09-13 16:33】理由：押しても無反応10件：「話す」(BUTTON)、「笑いたい」(BUTTON)、「懐かしい」(BUTTON)\n実際に押しても反応しない要素があります。curlで読めても、押して動くかを`node /Users/mac/Desktop/tamago-shinchoku/tools/verify_click.mjs <URL>` で自分でも確認してから直してください。",
-   "status": "running",
+   "status": "touchchecking",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -5942,7 +5942,17 @@
    ],
    "startedAt": "2026-09-13T19:00:26+09:00",
    "sessionId": "604dde50-f13e-4cd6-b6fa-1676d9724419",
-   "pid": 19224
+   "finishedAt": "2026-09-13T19:05:27+09:00",
+   "result": "【完了】検品が「読むだけ」で押しても無反応なボタンを見逃していた穴を修正。実際にクリックして確かめる「触る検品」を新設し、機械検品→触る検品→鬼監督(AI検品)の3段を接続（無反応があれば自動不合格）。/cover-guideで無反応10件を実証、過去PASS済みの再検査で7件中2件が実は落ちるはずだったと実測。main合流・GitHub Pages反映済み（200確認済み）。\n\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/800-touch-check-3dan.html\n本番: https://tamago2022.github.io/tamago-shinchoku/share/check/800-touch-verify-oni-kantoku.html",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/800-touch-check-3dan.html",
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/800-touch-verify-oni-kantoku.html"
+   ],
+   "touchPid": 29154,
+   "touchOutJson": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-4260fd87.json",
+   "touchLog": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-4260fd87.log",
+   "touchStartedAt": "2026-09-13T19:05:30+09:00",
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/800-touch-check-3dan.html"
   },
   {
    "n": 801,
