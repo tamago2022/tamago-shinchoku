@@ -3,13 +3,13 @@
  "load": null,
  "cpu": null,
  "mem": null,
- "swapGB": 19331.75,
+ "swapGB": 19848.5,
  "diskFreeGB": null,
  "sessions": 4,
- "note": "上限4本・あと0本OK（5分平均ロード20.9（コア8×0.8超）、予兆（5分ロード比2.6）→1本減らす）",
- "measuredAt": "2026-09-13T19:11:55+09:00",
- "working": 3,
- "stalled": 1,
+ "note": "上限4本・あと0本OK（5分平均ロード18.0（コア8×0.8超）、予兆（5分ロード比2.3）→1本減らす）",
+ "measuredAt": "2026-09-13T19:16:05+09:00",
+ "working": 2,
+ "stalled": 2,
  "waiting": 0,
  "safeMax": 4,
  "moreOK": 0,
@@ -20,22 +20,22 @@
  "calibrationBasis": "標本不足→既定4本",
  "userActive": false,
  "predict": [
-  "5分ロード比2.6"
+  "5分ロード比2.3"
  ],
  "shedCandidates": [],
  "below": 0,
- "blockReason": "5分平均ロード20.9（コア8×0.8超）、予兆（5分ロード比2.6）→1本減らす",
- "load1": 17.34,
- "load5": 20.88,
- "load15": 16.96,
+ "blockReason": "5分平均ロード18.0（コア8×0.8超）、予兆（5分ロード比2.3）→1本減らす",
+ "load1": 11.97,
+ "load5": 18.04,
+ "load15": 16.68,
  "cores": 8,
- "loadRatio": 2.17,
+ "loadRatio": 1.5,
  "memPressure": "green",
- "memAvailGB": 5.9,
+ "memAvailGB": 5.7,
  "swapIncreasing": false,
- "ioMBs": 26.4,
+ "ioMBs": 69.12,
  "network": {
-  "pingMedianMs": 25.1,
+  "pingMedianMs": 24.9,
   "pingMaxMs": 41.1,
   "pingSamples": 20
  },
@@ -44,8 +44,15 @@
    "pid": 99053,
    "title": "Rusuban mimawari 30min",
    "kind": "stuck_tool",
-   "idleMin": 296.4,
+   "idleMin": 300.4,
    "dispatch": false
+  },
+  {
+   "pid": 16465,
+   "title": "queue.json巻き戻りで28件消失・復旧と恒久修正",
+   "kind": "asked",
+   "idleMin": 12.1,
+   "dispatch": true
   }
  ],
  "sessionList": [
@@ -53,7 +60,7 @@
    "cli": "28432587-2f68-4f96-94a1-0e38ac438aa2",
    "localId": "local_04311a99-3441-4f65-95c6-f972591f43b0",
    "startedAt": "2026-09-13T14:14:28+0900",
-   "elapsedMin": 297,
+   "elapsedMin": 301,
    "lastReportAt": null,
    "lastReport": "",
    "status": "報告なし3時間超",
@@ -69,8 +76,8 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 121,
-   "idleMin": 296.4,
+   "mb": 118,
+   "idleMin": 300.4,
    "kind": "stuck_tool",
    "model": "claude-opus-5",
    "turns": 9,
@@ -80,11 +87,11 @@
    "cli": "6a60871a-e57f-438a-a7a5-d1178b19b47a",
    "localId": "local_18de1131-362c-41eb-8a36-1733d9a5d3a9",
    "startedAt": "2026-09-13T10:40:21+0900",
-   "elapsedMin": 14,
+   "elapsedMin": 19,
    "lastReportAt": "2026-09-13T10:03:56.221Z",
    "lastReport": "668_*.py`の同型直接書き込みは9/9以降どこからも呼ばれない使い捨てスクリプトと確認し対象外。 判断待ち：無し（810番の積み直しはDispatch側で対応と明記されていたため未着手のまま）。",
-   "status": "作業中",
-   "color": "green",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [
@@ -99,9 +106,9 @@
    "title": "queue.json巻き戻りで28件消失・復旧と恒久修正",
    "dispatch": true,
    "isDispatchSelf": false,
-   "mb": 258,
-   "idleMin": 8.0,
-   "kind": "working",
+   "mb": 136,
+   "idleMin": 12.1,
+   "kind": "asked",
    "model": "claude-sonnet-5",
    "turns": 525,
    "lastActivityAt": "2026-09-13T10:03:56.221Z"
@@ -110,15 +117,15 @@
    "cli": "50f2d8b7-5a82-4005-91cb-ce7096133b45",
    "localId": null,
    "startedAt": "2026-09-13T19:00:14+0900",
-   "elapsedMin": 11,
-   "lastReportAt": "2026-09-13T10:11:39.895Z",
-   "lastReport": "両エージェントがバックグラウンドで走行中です。完了通知が届き次第、検品→必要ならbuilderへ差し戻し→release最終確認の順で進めます。しばらくお待ちください。",
+   "elapsedMin": 15,
+   "lastReportAt": "2026-09-13T10:14:53.932Z",
+   "lastReport": "release担当へ「待たずに今の結果だけ報告して」と指示を送りました。builderも並行して走行中です。両方の通知を待ちます。",
    "status": "作業中",
    "color": "green",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [],
-   "humanPushes": 0,
+   "humanPushes": 1,
    "dispatchPushes": 0,
    "watchdogResumes": 0,
    "done": false,
@@ -126,18 +133,18 @@
    "title": "【作り直し】案内所コンシェルジュ：話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない（794番・自動発車）",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 317,
-   "idleMin": 0.2,
+   "mb": 309,
+   "idleMin": 1.0,
    "kind": "working",
    "model": "claude-sonnet-5",
-   "turns": 114,
-   "lastActivityAt": "2026-09-13T10:11:39.895Z"
+   "turns": 117,
+   "lastActivityAt": "2026-09-13T10:14:53.932Z"
   },
   {
    "cli": "83d53454-8b63-451e-95da-e333d5d2cf34",
    "localId": null,
    "startedAt": "2026-09-13T19:01:09+0900",
-   "elapsedMin": 10,
+   "elapsedMin": 14,
    "lastReportAt": null,
    "lastReport": "",
    "status": "作業中",
@@ -153,15 +160,15 @@
    "title": "【見せる1枚】「正しいより楽しい」を体現した曲ページを1枚だけ本番に出す（803番・自動発車）",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 340,
+   "mb": 301,
    "idleMin": 0.1,
    "kind": "working",
    "model": "claude-sonnet-5",
-   "turns": 90,
-   "lastActivityAt": "2026-09-13T10:11:49.861Z"
+   "turns": 131,
+   "lastActivityAt": "2026-09-13T10:15:57.677Z"
   }
  ],
- "line": "負荷 測定不可% ｜ セッション4本（作業中3・止まり1） ｜ 上限4本・増やすな ｜ 空き測定不可GB",
+ "line": "負荷 測定不可% ｜ セッション4本（作業中2・止まり2） ｜ 上限4本・増やすな ｜ 空き測定不可GB",
  "modelCounts": {
   "claude-opus-5": 1,
   "claude-sonnet-5": 3
@@ -176,12 +183,12 @@
  "heartbeat": {
   "pid": 39221,
   "processAlive": true,
-  "stalledMin": 0.0,
+  "stalledMin": 0.2,
   "stalled": false,
   "note": "心臓は動いています"
  },
  "watchdog": {
-  "lastRun": "2026-09-13 19:12",
+  "lastRun": "2026-09-13 19:16",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -194,7 +201,14 @@
    "below": 0,
    "line": "現在4本／上限4本／目標3本／あと0本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 16465,
+    "title": "queue.json巻き戻りで28件消失・復旧と恒久修正",
+    "kind": "asked",
+    "why": "引き継ぎ済み→42546864"
+   }
+  ]
  },
  "metrics": {
   "stalls": 132,
@@ -206,15 +220,25 @@
   "autoResumesThisRun": 0,
   "handoffsThisRun": 0,
   "ignitionsThisRun": 0,
-  "humanPushes": 5,
+  "humanPushes": 6,
   "doneAlive": 0,
   "doneWithoutHumanPush": 0,
   "autonomyRatio": null,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
- "deployAlerts": [],
+ "deployAlerts": [
+  {
+   "t": "2026-09-13 19:16",
+   "cli": "6a60871a-e57f-438a-a7a5-d1178b19b47a",
+   "title": "queue.json巻き戻りで28件消失・復旧と恒久修正",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/687-queue-rollback-fix.html"
+   ]
+  }
+ ],
  "quota": {
-  "updatedAt": "2026-09-13 19:11",
+  "updatedAt": "2026-09-13 19:16",
   "estimated": true,
   "fablePct": null,
   "allPct": null,
@@ -222,7 +246,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-09-15 17:59",
   "daysLeft": 1.9,
-  "hoursLeft": 46.8,
+  "hoursLeft": 46.7,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -237,10 +261,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 0,
-  "allWeightedTokensSinceReset": 1657082663,
+  "allWeightedTokensSinceReset": 1658246986,
   "last6h": {
    "fable": 0,
-   "all": 87142425
+   "all": 82341359
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
