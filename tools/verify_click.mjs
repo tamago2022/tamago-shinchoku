@@ -132,9 +132,20 @@ const SNAPSHOT_EXPR = `JSON.stringify({
 // 要素（実例：「話す」ボタン）を見逃す事故があった。要素へ一時マーカー属性を直接付けて、
 // DOM順序が変わってもクリック時に正しく同じ要素を再取得できるようにする。
 const MARK_ATTR = "data-vc-mark";
+// 案件#795実測：閉じた<details>（このサイトの「できたもの」「次に発車」等の折りたたみセクション）の
+// 中身は、モダンなブラウザでは display:none ではなく content-visibility:hidden で隠される。
+// この方式だとoffsetWidth/offsetHeight/getClientRects()は非ゼロを返し続けるため、旧来のvisible判定では
+// 「たまごさんには見えていない・押せない」要素を「見える押せる要素」と誤認していた
+// （実例：「すべて」「記事」フィルターボタン・「工場に積む」ボタンが軒並み無反応FAILになった。
+//  実際にJSで直接.click()すると正しくclassList等は変化しており、実装側は壊れていなかった）。
+// 開閉トリガーであるsummary自身（またはその中の要素）は常に押せるので除外しない。
 const LIST_EXPR = `JSON.stringify(Array.from(document.querySelectorAll('button, a, [role="button"], [onclick]'))
   .map((el, i) => {
     el.setAttribute('${MARK_ATTR}', String(i));
+    const hasBox = !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    const closedDetails = el.closest('details:not([open])');
+    const insideSummary = !!el.closest('summary');
+    const hiddenByClosedDetails = !!(closedDetails && !insideSummary);
     return {
       i,
       tag: el.tagName,
@@ -142,7 +153,7 @@ const LIST_EXPR = `JSON.stringify(Array.from(document.querySelectorAll('button, 
       href: el.getAttribute('href') || null,
       target: el.getAttribute('target') || null,
       disabled: !!(el.disabled || el.getAttribute('aria-disabled') === 'true'),
-      visible: !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length),
+      visible: hasBox && !hiddenByClosedDetails,
     };
   })
   .filter(x => x.visible && !x.disabled))`;
