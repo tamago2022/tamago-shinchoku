@@ -62,17 +62,39 @@ GUARD_PAIRS = [
         "transform_a": lambda v: round(min(99.0, float(v)), 1) if v is not None else None,
         "tolerance": 0.6,
     },
-    {
-        "id": "fal_unit_cost_basis",
-        "desc": "fal 1本あたり単価の基準：直近7日の実測中央値（fal_cost_ledger.pyのrecentMedianUnitCostUsd7d）が正本。"
-                "他のツールがこれと違う固定値を単価の基準として使っていないか。"
-                "（2026-09-12：旧基準$2.43のまま更新されず実際は$6.74だった事故の再発防止）",
-        "a": {"file": "status/fal_cost_ledger.json", "path": ["summary", "recentMedianUnitCostUsd7d"]},
-        "b": {"file": "status/fal_cost_ledger.json", "path": ["summary", "recentMedianUnitCostUsd7d"]},
-        "tolerance": 0.01,
-        "note_if_none": "直近7日の実測記録がまだ無い（記録が増えれば自動でチェック対象になる）",
-    },
 ]
+
+
+# ---- fal単価の二重管理チェック（guard pairの値比較とは別の検出方式）----
+# 2026-09-12：旧基準$2.43をあちこちに書いたまま更新し忘れ、実際は$6.74だった事故の再発防止。
+# 「fal_cost_ledger.py の compute_summary() だけが単価の基準を計算する」を正本とし、
+# 他のファイルに単価らしき固定小数（$の後の1本あたり価格）がハードコードされていないかを走査する。
+HARDCODE_SCAN_EXTS = (".py", ".js", ".mjs")
+HARDCODE_SCAN_SKIP_FILES = {"number_audit.py", "fal_cost_ledger.py"}
+HARDCODE_SCAN_SKIP_DIRS = {".git", "node_modules", "__pycache__", "share", ".github"}
+
+
+def scan_hardcoded_fal_unit_cost():
+    """UNIT_COST的な変数名＋固定小数の代入を、fal_cost_ledger.py以外から探す。"""
+    import re
+    pattern = re.compile(r'(?:unit_?cost_?usd|UNIT_COST_USD|fal.{0,10}単価)\s*[:=]\s*\$?\s*(\d+\.\d+)',
+                          re.IGNORECASE)
+    hits = []
+    for root, dirs, files in os.walk(REPO):
+        dirs[:] = [d for d in dirs if d not in HARDCODE_SCAN_SKIP_DIRS]
+        for fn in files:
+            if not fn.endswith(HARDCODE_SCAN_EXTS):
+                continue
+            if fn in HARDCODE_SCAN_SKIP_FILES:
+                continue
+            path = os.path.join(root, fn)
+            try:
+                text = io.open(path, encoding="utf-8", errors="ignore").read()
+            except Exception:
+                continue
+            for m in pattern.finditer(text):
+                hits.append({"file": os.path.relpath(path, REPO), "match": m.group(0).strip()})
+    return hits
 
 
 def _fmt_val(v):
@@ -125,6 +147,23 @@ def check_pair(pair):
 def run_audit(pairs=None):
     pairs = pairs if pairs is not None else GUARD_PAIRS
     results = [check_pair(p) for p in pairs]
+    hardcode_hits = scan_hardcoded_fal_unit_cost()
+    if hardcode_hits:
+        results.append({
+            "id": "fal_unit_cost_hardcode",
+            "desc": "fal_cost_ledger.py以外にfal単価らしき固定値がハードコードされている"
+                    "（正本はfal_cost_ledger.pyのcompute_summary()の直近7日実測中央値のみのはず）",
+            "status": "conflict",
+            "hits": hardcode_hits,
+            "note": "%d件のハードコードを検出" % len(hardcode_hits),
+        })
+    else:
+        results.append({
+            "id": "fal_unit_cost_hardcode",
+            "desc": "fal単価のハードコード走査",
+            "status": "ok",
+            "note": "fal_cost_ledger.py以外に単価の固定値は見つからなかった",
+        })
     conflicts = [r for r in results if r["status"] == "conflict"]
     out = {
         "updatedAt": time.strftime("%Y-%m-%d %H:%M:%S"),
