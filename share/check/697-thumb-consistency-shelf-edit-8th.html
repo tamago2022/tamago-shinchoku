@@ -86,6 +86,7 @@
 <footer>
 【新発見・2026-09-13】mainへpush後、Lovable「公開」を繰り返し試行（CDP直接操作含む）したところ、Lovableエディタ画面の履歴パネルに2026-09-08 05:39以降のほぼ全コミットへ「ビルドに失敗しました」「プレビューが最新ではありません」が連続表示され続けていることを実測確認した。GitHubからの取り込み自体は正常(Pushed from GitHub表示あり)だが、Lovable側のプレビュービルドがサーバー側で継続的に失敗しており、公開操作をしても最後にビルドが成功した時点から更新されない状態。本番x-deployment-idが2026-09-08頃から不変なのはこれで説明がつく。これは過去複数セッションが報告してきた「suspicious activityブロック」とは別の、より根本的な症状。詳細はPENDING_DECISIONS.mdの2026-09-13付record 2件。コード側の実装・検品は完了しており、店主またはLovableサポートへの問い合わせで解消され次第、30分おき自動便が拾って公開される見込み。
 【再実測・2026-09-13 12:3x】本セッションでも改めて公開を試行し、同じ「ビルドに失敗しました」が全履歴に継続していることを確認（本番x-deployment-idは449ce840のまま不変）。「詳細」を開いてもビルド失敗自体のログではなく別の軽微エラーの自動修正提案が出るのみで、追加の手がかりは得られなかった。この確認ページの以前の版に非公開GitHubリンクが混入していた点は本セッションで除去済み。
+【再実測・2026-09-13 14:0x（10回目）】未試行だった2経路を追加で確認：①Lovable画面内をサポート・問い合わせ導線（テキスト・固定ウィジェット・iframe）で機械探索したが該当0件、②Lovable公式ステータスページ(status.lovable.dev)を確認したところ「All Systems Operational」で進行中の障害報告は無し。これは「suspicious activityブロックは全社障害ではなく、このプロジェクト固有の制限」という結論を補強する。公開クリックは今回も4回とも失敗、本番x-deployment-idは449ce840のまま不変。コード側（サムネ統一・棚編集ボタン・一覧への棚編集追加・4列目対策）はorigin/mainへ合流済みで追加変更なし。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
