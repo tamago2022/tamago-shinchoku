@@ -4031,7 +4031,31 @@
    "costsMoney": true,
    "costsMoneyWhy": "直接お金が出る可能性があるタスク。着手前に「何本でいくら」を出して確認を取ること（2026-09-08のルール）",
    "costEstimate": "本数の言及: 1・1・1・1 / 円額の言及: 50・300・300円（自動抽出・目視確認のうえ発車してください）"
+  },
+  {
+   "n": 461,
+   "title": "確認待ちに「まとめてOK」を付ける（3/4）",
+   "why": "大きい仕事の自動分割（元は441番）",
+   "what": "# 元の依頼\n---\n【最優先・今日中・小さい工事】確認待ちに「まとめてOK」を付ける。1個ずつ押させない。\n\nたまごさんの言葉（2026-09-06）:\n「このパチパチパチ、よっぽど楽なんだけど、こんなの1個1個やってらんないよね」\n\n★今82件ある。押すだけの形にはなったが、**1件ずつ82回は人間のやることではない。**\n★作るもの（進捗表 index.html）:\n 1. 各行に小さなチェックボックス。**「全部選ぶ」**と**「証拠のあるものだけ選ぶ」**の2つのボタン。\n 2. 上部に「選んだ◯件をまとめてOK」ボタン。1回の送信でまとめて queue_ok を流す（1件ずつ通信しない）。\n 3. **押した瞬間に画面から消す**（楽観的更新）。返事を待たせない。\n 4. まとめてOKの直後に「◯件を完了にしました／取り消す」を10秒だけ出す。押し間違いを戻せるようにする。\n 5. 赤（証拠なし・URLが開かない）は**「全部選ぶ」でも選ばれない。**別扱いにする。まとめてOKで事故らせない。\n 6. スマホの親指で押せる大きさ。文字が縦に潰れないこと。\n\n★中継所側（command_ingest.py）に、複数番号を1回で受ける口が無ければ足す（例: queue_ok に \"12,15,18\" を許す）。ALLOWED も忘れず更新。\n★見た目を触る前に tamago-tone を読む。\n★終わったら http://192.168.0.46:8788 と GitHub Pages の両方で実際に押してみて、82件が減るところのスクショを撮る。\n★報告は【完了】1行＋確認ページURL＋本番URL。\n---\n\n# ★この仕事は自動分割の一部です（3/4本目）\n元は大きすぎたため、機械が対象を一覧化したうえで10件ずつに割っています。**今回はここに書かれた対象だけ**を扱ってください（他の対象には手を出さない）。\n\n対象一覧（10件）：\n- queue.json n=333 title=「EagleのライブラリとGoogleドライブの中身を自動で同じにできないか調べて、できる方法を1つ実装する。たまごさんの希望：『Eagleに1枚追加したら自動的にDriveにも複製される。フォルダの関係性（Eagleのフォルダ構成）もDri」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/333-eagle-drive-sync.html\n- queue.json n=364 title=「棚編集　2番目に追加ボタン」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/364-shelf-second-add-button.html\n- queue.json n=396 title=「Björk『Crystalline』（Jools Holland Live）を入れる。素材 https://youtu.be/yHyCSVfYdTg （投稿者 realraylor）。たまごさんの指示そのまま：『ビョークのパフォーマンスね。」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/396-bjork-crystalline.html , https://joy-relief-station.lovable.app/cover-guide?artist=bjork&song=crystalline-jools-holland-live , https://joy-relief-station.lovable.app/shelf/music/dance , https://joy-relief-station.lovable.app/shelf/music/live\n- queue.json n=397 title=「サイト全体で「同じタイトルのページ・カードが2つ以上ある」ものを1つに統合する。①まず笑の棚の「失敗」と「失敗　人間だもの」を統合する。**統合後のタイトルはたまごさん指定で「ドジ　失敗　人間だもの」**。どちらかを消すのではなく両方の中身」status=awaiting_check redoCount=1 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/397-shippai-shelf-merge.html , https://joy-relief-station.lovable.app/shelf/laugh/shippai\n- queue.json n=398 title=「【1日1回の見回り】その日に外部から入ってきたリンク（たまごさんがXやLINEから投げたもの・自動仕入れで入ったもの）を拾って、**その日のうちに仕上げる**係を作る。たまごさんの言葉：『1日1回でいいから、今日外部から入ってきたリンクは何」status=awaiting_check redoCount=2 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/398-daily-link-triage.html , https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc\n- queue.json n=399 title=「『Sinking Monster Truck / flyingtower』のページを仕上げる。たまごさんが外部から入れたもので、まだ生のまま。やること：①**題名を日本語にする**（英語の原題＋投稿者名のままにしない。中身は『大勢を荷台に乗」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/399-monster-truck.html\n- queue.json n=401 title=「【卵劇場EP01 試作・3段階で作って比べる】たまごさんの指示：『安く無料でやるとこれ、お金かけて100円でやるとこれ、300円だとこれ、みたいに**両方見たい。無料でもクオリティが良ければいいけど、低いならお金かけた方を取るかもしれない*」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/401-ep01-3tier-compare.html\n- queue.json n=403 title=「【円卓の素材】テーマ『昔は人の仕事だったものが、AIの標準機能になる』を、円卓会議にかけられる形に整える。きっかけ：NHK『ネタドリ！』のAI失業回（https://www.web.nhk/tv/an/netadori/pl/series-」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/403-entaku-ai-shitsugyo.html\n- queue.json n=404 title=「サイト全体から**英語の原題や投稿者名がそのまま題名になっているページ・カード**を洗い出して、日本語の題名とコピーに書き直す。きっかけ：たまごさんが『Sinking Monster Truck / flyingtower』を見て『これだと」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/404-english-titles.html\n- queue.json n=406 title=「進捗表(/Users/mac/Desktop/tamago-shinchoku/index.html)の優先度表示から「P」を消して数字だけにする。きっかけ：たまごさんが『P って何の略なの？』と聞いた＝分かりにくいということ。Dispat」status=awaiting_check redoCount=0 urls:https://tamago2022.github.io/tamago-shinchoku/share/check/406-priority-no-p.html\n\n1件ごとに直しては終わり、ではなく、このバッチ内で1本の完了報告にまとめてよい。ただし完了条件（本番反映・URL報告）は通常の仕事と同じです。",
+   "status": "done",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "priority": 1,
+   "splitFrom": 441,
+   "splitIndex": 3,
+   "splitTotal": 4,
+   "startedAt": "2026-09-06T16:50:13+09:00",
+   "sessionId": "b85cf4f7-baf7-4ae6-9eb5-a4143a712a86",
+   "origin": "factory",
+   "finishedAt": "2026-09-06T18:09:08+09:00",
+   "result": "【完了】発車待ちの確認待ち10件（Eagle同期・棚編集ボタン・Björk追加・失敗棚統合・日次見回り・モンスタートラック仕上げ・卵劇場試作・円卓素材・英語タイトル日本語化・優先度P表記）を実際に検証し、証拠画像を付けてOKにした。ついでにLovable公開の取りこぼしと進捗表自体のエラー表示も直した。\n\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/\n本番: https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc",
+   "urls": [
+    "https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc"
+   ],
+   "checkedAt": "2026-09-06T18:17:25+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：10件とも確認ページ・本番URLを実測し依頼内容と一致（未完了点・既知バグは報告側が正直に開示済み、401番のプレビュー画像使い回しのみ軽微な指摘）"
   }
  ],
- "updatedAt": "2026-09-13 18:02"
+ "updatedAt": "2026-09-13 18:21"
 }
