@@ -49,17 +49,18 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #794 案内所コンシェルジュ 作り直し</div>
 <h1>#794 案内所コンシェルジュ 作り直し</h1>
-<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認／01:30追記で再確認</div>
 
 <div class="fix">
-話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない・卵が2匹、の5点を修正。main合流済み(commit b6e428eb)。<b>Lovable公開は「公開に失敗しました」でプラットフォーム側からブロック中</b>(18:03〜0:35の7時間で9回連続失敗を実測。自分の手では解除不能・店主かLovableサポート対応待ち)。
+話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない・卵が2匹、の5点を修正。main合流済み。<b>Lovable公開は「公開に失敗しました」でプラットフォーム側からブロック中</b>(18:03〜翌1:21の7時間20分で自動便が実測21回連続失敗。原因はコード側ではないことを今回のローカルビルドで確認済み＝下表参照。自分の手では解除不能・店主かLovableサポート対応待ち)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>1匹</b><span>卵の表示数(前:2匹)</span></div>
   <div class="num"><b>5件</b><span>猫検索の結果数(前:1件)</span></div>
-  <div class="num"><b>9回</b><span>公開失敗を確認した回数(7時間で連続)</span></div>
+  <div class="num"><b>21回</b><span>公開失敗を確認した回数(18:03〜翌1:21・連続)</span></div>
+  <div class="num"><b>0件</b><span>ローカル本番ビルドのエラー数(型チェック・ビルド両方)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -76,8 +77,8 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>GitHub main合流コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/b6e428eb" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/b6e428eb</a></li>
-  <li><b>本番(公開ブロック中・未反映)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>本番(公開ブロック中・まだ修正前の画面)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>Lovable編集画面(たまごさんのアカウントで開けます。「公開」ボタンの状態を直接見られます)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -88,11 +89,13 @@
 <tr><td>カードがその場で再生される(別ページに飛ばない)</td><td class="yes">直った</td></tr>
 <tr><td>戻ると案内所に戻る</td><td class="yes">直った</td></tr>
 <tr><td>卵が1匹になる</td><td class="yes">直った</td></tr>
-<tr><td>Lovable本番への公開反映</td><td class="no">ブロック中(プラットフォーム側「公開に失敗しました」。18:03〜0:35で9回連続失敗を実測)</td></tr>
+<tr><td>Lovable本番への公開反映</td><td class="no">ブロック中(プラットフォーム側「公開に失敗しました」。18:03〜翌1:21で自動便が21回連続失敗)</td></tr>
+<tr><td>コード側にビルドエラーが無いか(今回追加で検証)</td><td class="yes">エラー0件。型チェック(tsc --noEmit)・本番ビルド(npm run build)とも正常終了。公開失敗の原因はコードではなくLovableプラットフォーム側と判断</td></tr>
 </table>
 
 <footer>
-自分でヘッドレスブラウザ(tools/_794_walkthrough.mjs)を使い、たまごさんと同じ順番(開く→話す→猫→カード→戻る→夏の日)でローカル環境を実際に操作して撮影。全て気持ちよく動くことを確認済み。本番反映だけがLovable側の障害(公開失敗)で止まっている。
+自分でヘッドレスブラウザ(tools/_794_walkthrough.mjs)を使い、たまごさんと同じ順番(開く→話す→猫→カード→戻る→夏の日)でローカル環境を実際に操作して撮影。全て気持ちよく動くことを確認済み。本番反映だけがLovable側の障害(公開失敗)で止まっている。<br>
+01:30追記：自動便(30分おき)が18:03から翌1:21まで21回連続で「変更を公開」を試したが本番のx-deployment-idが一度も変わっていないことを実測（psr2.449ce840のまま）。念のためこのセッションでローカルの本番ビルド(npm run build)を最初から実行し、型チェック・ビルドともエラー0件で完走することを確認した。これによりコード側の欠陥が原因ではなく、Lovableプラットフォーム側の公開ブロック（サポート対応が必要な障害）である可能性がさらに高まった。AI側が試せる手段（自動便での再試行・CDP経由の状態確認・ローカルビルド検証）は尽くしており、解除にはたまごさん本人がLovable編集画面で「公開」ボタン付近のエラー詳細を確認するか、Lovableサポートへの問い合わせが必要。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
