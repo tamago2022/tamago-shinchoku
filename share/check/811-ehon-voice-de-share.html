@@ -49,10 +49,11 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #811 読み聞かせ絵本 D(渋い男性)+E(女の子)追加＋比較ページ共有ボタン</div>
 <h1>#811 読み聞かせ絵本 D(渋い男性)+E(女の子)追加＋比較ページ共有ボタン</h1>
-<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映・触る検品(verify_click.mjs)PASSまで実測確認</div>
 
 <div class="fix">
-783番の読み聞かせ絵本・声比較ページにD(MiniMax Deep_Voice_Man・渋い男性・1.0倍速)とE(MiniMax Sweet_Girl_2・女の子・1.0倍速)を追加。台本はA/B/Cと1文字も変えていない(桃太郎冒頭116文字)。あわせて747/783/一覧の比較ページ3枚に共有ボタン(ページ全体＋各案ごとの小さいボタン)を実装。スマホはnavigator.shareを使い、使えない場合はURLをコピーする。
+783番の読み聞かせ絵本・声比較ページにD(MiniMax Deep_Voice_Man・渋い男性・1.0倍速)とE(MiniMax Sweet_Girl_2・女の子・1.0倍速)を追加。台本はA/B/Cと1文字も変えていない(桃太郎冒頭116文字)。あわせて747/783/一覧の比較ページ3枚に共有ボタン(ページ全体＋各案ごとの小さいボタン)を実装。スマホはnavigator.shareを使い、使えない場合はURLをコピーする。<br><br>
+<b>追記：</b>1回目の触る検品で「📤 このページを共有」が押しても無反応、とNGを受けた。原因はnavigator.shareが環境によって失敗(NotAllowedError等)した時に何も表示していなかったこと。失敗時は必ずURLコピーへフォールバックするよう修正し、さらにコピー完了の案内(トースト)を同じ文言のまま連続表示すると変化が伝わりにくい問題も見つけたため、「どの案をコピーしたか」を毎回メッセージに含める形に直した。3回とも実際に機械でクリックして直った証拠をとった。
 </div>
 
 <h2>② 数字</h2>
@@ -80,7 +81,7 @@
 <tr><td>E音声ファイルが本番URLで200で取得できる</td><td class="yes">HTTP 200・298932バイト・audio/mp3 確認済み</td></tr>
 <tr><td>783ページ本番にcase-d/case-eアンカーとsharemini/shareTopBtnが存在する</td><td class="yes">本番HTMLをcurlで実測(件数一致)</td></tr>
 <tr><td>747/一覧ページ本番にも共有ボタンが反映されている</td><td class="yes">本番HTMLをcurlで実測</td></tr>
-<tr><td>共有ボタンをスマホで実際にタップした実機確認</td><td class="no">このセッションにブラウザ操作ツールが搭載されておらず未実施。JS構文はnode --checkで検証済み、navigator.share/clipboard.writeTextは標準API</td></tr>
+<tr><td>共有ボタン・案ごとの共有ボタンを実際にクリックして反応するか(tools/verify_click.mjs・機械によるタップ相当の検証)</td><td class="yes">783番=15件中15件反応・一覧=5件中5件反応・747番=共有ボタン全件反応(sharemini無反応0件)。747番に残る5件の無反応(コマ送り「▶自動」「1コマ▶」・B案「これにする」)は今回の共有ボタン実装と無関係な既存コード</td></tr>
 <tr><td>20円上限を超えていない</td><td class="yes">実費3.48円(見積もり通り)</td></tr>
 </table>
 
