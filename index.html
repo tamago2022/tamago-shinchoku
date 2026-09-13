@@ -808,6 +808,18 @@
 <div class="note" id="numberAuditNote" style="margin-top:6px"></div>
 </div></details>
 
+<!-- 813番（2026-09-14）：失敗台帳を機械可読にする。
+     たまごさん「失敗はしょうがない。1個1個確実に再発しないように潰していってほしい」
+     「これもデータだから、記録に残されて、なんなら共有されるべき」。
+     status/failures_summary.json（tools/failures_ledger.py --summary が書く）を読むだけ。
+     「潰した」と言えるのは①原因が実測②機械が気づく③わざと壊して確認、の3条件が揃った時だけ。 -->
+<details class="sec" id="failuresSec"><summary>🩹 失敗台帳 <small id="failuresMeta"></small></summary><div class="in">
+<div class="g" id="failuresSummary"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+<div class="note" style="margin-top:10px;font-weight:600">🔴 まだ潰していない失敗（直近）</div>
+<div id="failuresOpenList"><div class="card note">読み込み中…</div></div>
+<div class="note" id="failuresNote" style="margin-top:6px"><a href="status/failures.md" style="color:var(--green)">全件を読む（人が読む形）→</a></div>
+</div></details>
+
 <details class="sec"><summary>マシンとクレジット <small id="machineAge"></small></summary><div class="in">
 <div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
@@ -2069,6 +2081,48 @@ function refreshNumberAudit(){
 }
 if(detailsOpen('numberAuditSec')) refreshNumberAudit();
 setInterval(()=>{ if(!document.hidden && detailsOpen('numberAuditSec')) refreshNumberAudit(); }, 60000);
+
+/* ───── 813番：失敗台帳（2026-09-14） ─────
+   status/failures_summary.json（tools/failures_ledger.py --summary）を読むだけ。
+   「潰した」は①原因実測②機械のガード③わざと壊す逆テスト、の3条件が揃った時だけ。 */
+function renderFailuresSummary(d){
+  const box = document.getElementById("failuresSummary");
+  const meta = document.getElementById("failuresMeta");
+  if(!box) return;
+  if(!d){
+    box.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ記録が無い</div>`;
+    if(meta) meta.textContent = "";
+    return;
+  }
+  const w = d.weekly || {};
+  if(meta) meta.textContent = `潰した${d.preventedCount||0}／全${d.totalCount||0}件・赤${d.openCount||0}件`;
+  box.innerHTML = [
+    card(d.openCount ? "red" : "green", "まだ潰していない失敗", String(d.openCount||0), "", `<p>全${d.totalCount||0}件中（3条件が揃うまでは赤のまま）</p>`),
+    card(d.recurringCount ? "yellow" : "gray", "再発した失敗", String(d.recurringCount||0), "", `<p>同じ原因が2回目以降に達したもの</p>`),
+    card("gray", "今週：新規/再発/潰した", `${w.newCount||0} / ${w.recurringCount||0} / ${w.preventedCount||0}`, "", `<p>${esc(w.windowStart||"")}〜${esc(w.windowEnd||"")}・再発ゼロが続くほど良い</p>`),
+  ].join("");
+}
+function renderFailuresOpen(d){
+  const box = document.getElementById("failuresOpenList");
+  if(!box) return;
+  const top = (d && d.openTop) || [];
+  if(!top.length){
+    box.innerHTML = `<div class="card note">今は赤が無い</div>`;
+    return;
+  }
+  box.innerHTML = top.map(f => `<div class="row">
+    <div class="when">${esc(f.date||"")}</div>
+    <div class="ct">${esc(f.id||"")}：${esc(f.what||"")}</div>
+  </div>`).join("");
+}
+function refreshFailures(){
+  return fetch("status/failures_summary.json?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).then(d => {
+      withScrollLock796(()=>{ renderFailuresSummary(d); renderFailuresOpen(d); });
+    }).catch(()=>{});
+}
+if(detailsOpen('failuresSec')) refreshFailures();
+setInterval(()=>{ if(!document.hidden && detailsOpen('failuresSec')) refreshFailures(); }, 60000);
 
 /* ───── 492番：AI検品(Verifier)の実績を要約表示（2026-09-06） ─────
    status/ai_verify_stats.json（tools/auto_launcher.py の _record_ai_verify() が
