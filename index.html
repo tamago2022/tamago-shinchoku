@@ -1128,7 +1128,9 @@ function refreshArrivals(){
     .catch(()=>{});
 }
 refreshArrivals();
-setInterval(()=>{ if(!document.hidden) refreshArrivals(); }, 60000);
+// 798番⑤（AI検品差し戻し対応・2026-09-14）：new_arrivals.json（数KB）を60秒おき無条件から
+//   180秒おきへ間引く。トグルでは畳めない常設バナーなので0にはできないが、通信回数は1/3にする。
+setInterval(()=>{ if(!document.hidden) refreshArrivals(); }, 180000);
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refreshArrivals(); });
 window.addEventListener("pageshow", () => refreshArrivals());
 window.addEventListener("focus", () => refreshArrivals());
@@ -1604,6 +1606,15 @@ document.addEventListener("toggle", (e) => {
     numberAuditSec: () => { if(typeof refreshNumberAudit === "function") refreshNumberAudit(); },
     aiVerifySec: () => { if(typeof refreshAiVerify === "function") refreshAiVerify(); },
     kenpouSec: () => { if(typeof refreshKenpou === "function") refreshKenpou(); },
+    // 798番⑤（AI検品差し戻し対応・2026-09-14）：queue_light.json（117KB）は
+    //   発車待ち/確認待ち/完了/後回し/手を止めた の5つの<details>のどれかが開いている
+    //   時だけ意味がある表示。閉じたまま10秒おきに取り続けていたのが411KB/60秒の正体だった。
+    //   開いた瞬間だけ1回取りに行く（閉じている間は下のsetIntervalが自動でスキップする）。
+    queueSec: () => { if(typeof refreshHealth === "function") refreshHealth(); },
+    doneSec: () => { if(typeof refreshHealth === "function") refreshHealth(); },
+    checkSec: () => { if(typeof refreshHealth === "function") refreshHealth(); },
+    laterSec: () => { if(typeof refreshHealth === "function") refreshHealth(); },
+    stuckSec: () => { if(typeof refreshHealth === "function") refreshHealth(); },
   };
   const fn = map[el.id];
   if(fn) fn();
@@ -2537,8 +2548,13 @@ function refreshMachineHealth(){
 refreshMachineHealth();
 setInterval(()=>{ if(!document.hidden) refreshMachineHealth(); }, 60000);
 refreshHealth();
-setInterval(()=>{ if(!document.hidden) refreshHealth(); }, 10000);   // 中継所から直接読むので、10秒ごとに見に行く（タブが見えていない間は止める・798番⑥）
-document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refreshHealth(); });
+// 798番⑤（AI検品差し戻し対応）：発車待ち/確認待ち/完了/後回し/手を止めた の
+//   5つの<details>が全部閉じている間はqueue_light.json（117KB）を一切取りに行かない。
+//   どれか1つでも開いていれば、これまで通り10秒おきに見に行く（開いた瞬間はtoggleリスナーが1回叩く）。
+const QUEUE_DETAILS_IDS796 = ["queueSec","doneSec","checkSec","laterSec","stuckSec"];
+function anyQueueDetailsOpen796(){ return QUEUE_DETAILS_IDS796.some(id => detailsOpen(id)); }
+setInterval(()=>{ if(!document.hidden && anyQueueDetailsOpen796()) refreshHealth(); }, 10000);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && anyQueueDetailsOpen796()) refreshHealth(); });
 
 /* ───── 走行状況（machine.json の sessionList を読むだけ） ───── */
 const KIND_LABEL = {working:"作業中", asked:"判断待ち", stuck_tool:"承認待ち", idle_done:"終了・待機", unknown:"不明"};
@@ -4650,10 +4666,33 @@ function refreshMachine(){
 refreshMachine();
 refreshCommands();
 // 2026-09-03 リアルタイム化：開いている間、30秒おきに全部取り直す。手動リロード不要。新しい顔で古い数字を出さない
+// 798番⑤（AI検品差し戻し対応・2026-09-14）：queue_light.json（117KB）とcommands.json（50KB）を
+//   毎回無条件で取り直していたのが「実測60秒で411KB通信」の正体。queue_light.jsonは対応する
+//   <details>が開いている時だけ、commands.jsonは結果待ちのコマンドが残っている時だけに絞る。
+//   閉じていて・送ったコマンドも無ければ、この2本は完全に通信ゼロになる。
+function hasPendingCommands796(){
+  return Object.keys(SENT_CMDS || {}).some(id => !CMD_RESULTS || !CMD_RESULTS[id]);
+}
 const REFRESH_MS = 30000;
-function refreshAllLive(){ refreshMachine(); refreshWhiteboard(); refreshHealth(); refreshCommands(); }
+function refreshAllLive(){
+  refreshMachine(); refreshWhiteboard();
+  if(anyQueueDetailsOpen796()) refreshHealth();
+  if(hasPendingCommands796()) refreshCommands();
+}
 setInterval(()=>{ if(document.visibilityState === "visible") refreshAllLive(); }, REFRESH_MS);
 document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "visible") refreshAllLive(); });
+// コマンドボタンを押した直後は、結果が付くまで5秒おきの短い間隔で追いかける
+//   （30秒待たせない。全部解決したら自動で止まる＝押した後の間だけしか動かない）。
+let __cmdFastTimer796 = null;
+document.addEventListener("click", e=>{
+  if(!e.target.closest(".cmdbtn")) return;
+  if(__cmdFastTimer796) return;
+  __cmdFastTimer796 = setInterval(()=>{
+    if(document.hidden) return;
+    if(!hasPendingCommands796()){ clearInterval(__cmdFastTimer796); __cmdFastTimer796 = null; return; }
+    refreshCommands();
+  }, 5000);
+});
 
 /* ───── 弱点の自動集計（history.jsonl） ───── */
 function renderStats(text){
