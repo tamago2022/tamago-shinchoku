@@ -67,6 +67,9 @@
   <div class="shot after"><b>本番トップページ「数字の正しさ」棚（実機ヘッドレスChromeで撮影）</b><img src="img/795-number-audit.png" alt="後"></div>
 </div>
 
+<h2>③.5 触る検品（2段目）の再検証</h2>
+<div class="note">1回目の触る検品で「すべて」「記事」等18件が無反応FAILになったが、原因は実装ではなく検品ツール側のバグだった：閉じた折りたたみ（&lt;details&gt;）の中身は新しいブラウザ仕様で<code>content-visibility:hidden</code>になるため、実際は見えない・押せない要素を検品ツールが「見える押せる要素」と誤判定していた。<code>tools/verify_click.mjs</code>のvisible判定を修正し、再実行して<b>PASS（押せる要素は全て反応・5件中5件）</b>を確認した。合わせて、自動更新の巻き込まれで「クリック前に消えた」扱いになるケースを無反応から分離する修正も追加。</div>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番トップページ（数字の正しさ棚）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
