@@ -4772,7 +4772,75 @@
    "checkedAt": "2026-09-07T03:51:31+0900",
    "okBy": "ai-verifier-auto",
    "okNote": "鬼監督AI検品PASS：確認ページ・本番URLとも200で開け、data.json実測(1201件・123フォルダ・11色タグ)が確認ページの数字と一致、修正前後スクショ画像・修正コミットも実在を確認した"
+  },
+  {
+   "n": 477,
+   "title": "＋棚編集　2番目に追加ボタン",
+   "why": "スマホから追加",
+   "what": "棚編集　2番目に追加ボタン",
+   "status": "done",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "priority": 3,
+   "origin": "user",
+   "order": 119,
+   "startedAt": "2026-09-07T03:32:19+09:00",
+   "sessionId": "c599eba9-d8a4-4b6f-a8e5-acd156dd61ca",
+   "finishedAt": "2026-09-07T04:34:02+09:00",
+   "result": "本件（案件#477「＋棚編集 2番目に追加ボタン」）の対応が完了しました。\n\n【完了】\n- 内容：管理画面「棚編集」（`/admin/shelves`）の「棚を選ぶ」パネルに、まだその棚に入っていない素材だけ「2番目に＋」ボタンが増え、末尾ではなく先頭のすぐ後ろへ割り込ませて追加できるようになりました。\n- 店主が見る場所：本番 `https://joy-relief-station.lovable.app/admin/shelves`（店主専用パスワードで入る「棚編集」タブ内・各素材の「📥 棚を選ぶ」を開いた一覧）。\n- 完了段階：①実装 ②mainへ合流（コミット `90ced5bf`）③Lovable「公開」を押下・本番のx-deployment-idが切り替わったことを確認 ④本番配信JSの中に新機能特有の文言・部品名が実在することを確認、まで到達。パスワード保護ページのため実画面スクリーンショットは代行できず、④は「本番コードに実装が届いている」ことの機械的な裏取りに留まります。店主ご自身の実画面での最終合格はこれからです。\n\n【問題】特になし（実装中に見つけた1件のスコープ漏れ＝新規ボタンが別コンポーネントの外側から参照されていた不具合は、公開前に自分で発見し修正済みです）。",
+   "urls": [
+    "https://joy-relief-station.lovable.app/admin/shelves"
+   ],
+   "checkedAt": "2026-09-07T04:35:39+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：本番JSに「2番目に＋」ボタン・専用ツールチップ・成功トースト・未追加素材限定の条件分岐（!t.on）・末尾追加とは別の専用関数呼び出しが実在し、依頼内容と一致",
+   "urlsFixedAt": "2026-09-09T04:48:08+0900",
+   "urlsFixedNote": "668番:urls欄の『URL＋日本語説明の連結』記録ミスを機械修正（説明文を除去しクリーンなURLのみへ）"
+  },
+  {
+   "n": 594,
+   "title": "列が尽きたら自分で積む（止まらないための常設）",
+   "why": "スマホから追加",
+   "what": "【常設・列が尽きたら自分で積む】タスクがゼロになっても止まらない。先回りして仕組みを強くし続ける。\n\nたまごさんの言葉（2026-09-07）:\n「**この調子だと、あと数日でタスクゼロになるでしょう。そこでも止まらないように先回りして、サービス自体を強くして、便利に楽しくいけるかな**」\n「**仕組みを作るが4、自分のオーダーが1くらい。とにかく仕組みを強くする**」\n\n★**順番待ちが5本を切ったら、この仕事が自動で走って列を補充する。**\n たまごさんの新しい指示を待たない。**空っぽの列を作らない。**\n\n★積むものの優先順位（上から）\n 1. **壊れにくさ** … 曲が10倍に増えても壊れない形にする。\n    今のうちに、件数が増えると破綻する場所を1つずつ潰す。\n 2. **軽さ** … サクサクを守る。重くなった場所を見つけて直す。\n 3. **見つけられること（海外SEO・AIに拾われる）** … 別項目で常設化してある。\n 4. **自己改善** … 直近の失敗・やり直しの記録を読んで、同じ失敗が二度と起きない関門を作る。\n 5. **たまごさんが繰り返し言っていること** … 記憶と `oni-kantoku` を読み直して、\n    まだ機械で守られていないものを関門にする。\n 6. **仕入れ**（常設・584番）\n\n★積み方の決まり\n - **1回に3本まで。**列を溢れさせない。\n - **たまごさんに聞かない。**AI社員（`ai-shain`）で決めて積む。\n - **同じ題名が既に列にないか必ず確かめてから積む。**（重複が事故の元）\n - 題名は**たまごさんが読んで分かる日本語。**内輪の工事名を使わない。\n - **仕組み4：たまごさんのオーダー1**の比率を保つ。積むときに数える。\n\n★報告は要らない。**積んだことをたまごさんに知らせない。**進捗表に出るだけでよい。",
+   "status": "done",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "startedAt": "2026-09-07T03:51:15+09:00",
+   "sessionId": "5134fee4-f84b-40d5-b724-d312e2cf1ace",
+   "finishedAt": "2026-09-07T04:47:27+09:00",
+   "result": "【完了】曲データの名簿にあった「id空欄」17件を埋めて壊れにくくした（patrol検品17件→0件、本番反映済み）\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/594-song-id-backfill.html\n本番: https://joy-relief-station.lovable.app/cover-guide?artist=laruku&song=song-g9yokp1cnry",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/594-song-id-backfill.html",
+    "https://joy-relief-station.lovable.app/cover-guide?artist=laruku&song=song-g9yokp1cnry"
+   ],
+   "checkedAt": "2026-09-07T04:50:16+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：確認ページ・本番URL3件とも200で正常表示、内容が依頼(id空欄17件の穴埋め)と一致し矛盾なし"
+  },
+  {
+   "n": 599,
+   "title": "工場の仕組みを共通脳に書いて、他のAIが自分で読める形にする",
+   "why": "スマホから追加",
+   "what": "【水汲みをなくす】進捗表（止まらない工場）の仕組みを、他のAIが自分で読める形にする。\n\nたまごさんの言葉（2026-09-07）:\n「**この進捗表がめちゃくちゃいいって、ChatGPTに話して、あっちにも実装させる。OpenAI側も情報を欲しがってる。**\n なんかその、IPアドレスじゃねーよ、送ったら見れないって言うから、**情報出してあげて。ちょっと水汲みするから。\n あと、それを共通のとか AI brain にも入れといてね。今とりあえず俺が水汲みするから、その情報ください**」\n\n★**たまごさんが手で運んでいる状態＝こちらの負け。**次からは「あそこを読んで」で終わる形にする。\n\n## やること\n 1. **`ai-brain/AI_COMMON_BRIEFING.md`（GitHubの共通脳）に、工場の仕組みを1章として書く。**\n    リポジトリ `tamago2022/joy-relief-station`。ChatGPTはGitHubコネクタでここを直接読む。\n 2. 書く内容（他のAIが**自分の環境に移植できる**粒度で）\n    - 公開されている入口：進捗表 https://tamago2022.github.io/tamago-shinchoku/ ／\n      正本 https://github.com/tamago2022/tamago-shinchoku\n    - **`192.168.0.46:8788` は家のLANなので外から見えない。**正本は上の2つ、と明記する\n    - 部品と役割：`index.html`（画面）／`tools/heartbeat.sh`（15秒の心臓）／\n      `tools/auto_launcher.py`（発車係・指示書の全文）／`tools/command_ingest.py`（受信箱）／\n      `tools/machine_status_push.sh`（5分おきの見張り）／`tools/relay_server.py`（中継所）／\n      `status/queue.json`（列の正本）\n    - **止まらないための肝**を3つに絞って書く\n      ①心臓は「プロセスが在るか」ではなく「auto_launch.log が3分以内に伸びているか」で見る\n      ②`claude -p --permission-mode auto` の一発実行にして、**そもそも許可を聞けない構造**にする\n      ③完了報告の直前に**鬼監督**（`oni-kantoku`）を通し、落ちたら本人に見せずに自分で直す\n    - **踏んだ地雷**も正直に書く（他のAIが同じ穴に落ちないように）：\n      環境変数のトークンがキーチェーンの鍵を上書きして全滅した／心臓が12本立ち上がった／\n      指示文が400文字で切れていた／処理済みIDを忘れて重複61件／\n      「大きい仕事」の判定が本文まで見ていて同じ題名が10本に割れた／\n      作業場（worktree）がリポジトリの中にあって他のツールの一覧を汚した\n 3. **同じものを `AI出力/_ルール/` にも1本置く**（Vault側からも読めるように）。\n 4. **たまごさんに1本のURLを渡して終わる形にする。**「これを読んでと言うだけで済む」状態。\n\n★注意：**公開リポジトリに秘密を書かない。**APIキー・トークン・家のIP・個人情報は載せない。\n `joy-relief-station` は非公開だが、油断しない。\n★出す前に `oni-kantoku` を通す。\n★報告は3行だけ。**たまごさんがそのまま貼れるURLを1本。**",
+   "status": "done",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "order": 1,
+   "startedAt": "2026-09-07T04:30:30+09:00",
+   "sessionId": "557aae7f-5ac1-492b-ae21-183ad3184037",
+   "finishedAt": "2026-09-07T04:59:33+09:00",
+   "result": "mainへ反映されました。これで完了です。店主向けに簡潔に報告します。\n\n【完了】工場の仕組み（進捗表・自動運転の中身）を、他のAIも自分で読める場所へ記録しました。\n\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/599-ai-common-briefing-factory-doc.html\n本番: `ai-brain/AI_COMMON_BRIEFING.md`（GitHub `tamago2022/joy-relief-station` main反映済み）\n\nChatGPTには「GitHubコネクタでこのファイルを読んで」と言うだけで済みます。",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/599-ai-common-briefing-factory-doc.html"
+   ],
+   "checkedAt": "2026-09-07T05:02:26+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：確認ページ・進捗表ともHTTP200で開け、GitHub API照合で実ファイル存在も確認、内容(地雷6件・肝3つ)が依頼原文と数値一致"
   }
  ],
- "updatedAt": "2026-09-14 03:55"
+ "updatedAt": "2026-09-14 05:34"
 }
