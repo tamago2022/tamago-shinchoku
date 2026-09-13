@@ -496,6 +496,13 @@
   .qp[data-plevel="4"]{border:1px solid #5fb0c9; background:rgba(95,176,201,.22); color:#bfe6ef;}
   .qp[data-plevel="5"]{border:1px solid var(--sub); background:rgba(154,161,173,.22); color:var(--ink);}
   .qp:active{filter:brightness(1.25);}
+  /* 793番（2026-09-14）「🔥すぐ見たい」トグル。押していない時は控えめ、押した後（on）は
+     赤で目立たせる（画面の一番上の別枠と同じ色合い＝そこに出ている、と一目で分かる）。 */
+  .qurgent{flex:none; min-height:36px; padding:0 10px; border-radius:9px;
+    border:1px solid var(--line); background:#1a2028; color:var(--sub); font:inherit; font-size:0.72rem;
+    font-weight:700; white-space:nowrap; line-height:1;}
+  .qurgent.on{border-color:#ff5c5c; background:#3a1a16; color:#ffb3a0;}
+  .qurgent:active{filter:brightness(1.2);}
   /* 654番 優先度を一気に最後尾（P5）へ落とすボタン。qpの隣に置く。 */
   .qbottom{flex:none; min-height:36px; min-width:36px; padding:0; border-radius:9px;
     border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.78rem;
@@ -3501,7 +3508,35 @@ document.addEventListener("click", e=>{
 /* ───── 次に発車（予備軍）─────
    2026-09-04 たまごさん「そこにも俺、優先順位つけるよ」→ 各行のPボタンで1〜5を付けられる。
    付けた優先度は既存の優先度受信（Obsidian経由）と同じ仕組みに乗せる。 */
+/* 793番（2026-09-14）「すぐ見たい」別枠。urgent:true かつ未完了（done/cancelled以外）だけを
+   進捗表の一番上に出す。0件なら枠ごと消す（空の箱を見せない＝たまごさんの原則）。
+   renderQueue()の末尾から毎回呼ぶので、queue.jsonの読み直し・ボタン操作のたびに追随する。 */
+function renderUrgent(){
+  const box = document.getElementById("urgentBox");
+  if(!box) return;
+  const all = (window.__queue && window.__queue.items) || [];
+  const eff = r => (prioOf("Q" + r.n) || r.priority || 99);
+  const rows = all.filter(r => r.urgent === true && !["done","cancelled"].includes(r.status || "waiting"))
+    .sort((a,b) => eff(a) - eff(b) || (a.n||0) - (b.n||0));
+  if(!rows.length){ box.style.display = "none"; box.innerHTML = ""; return; }
+  box.style.display = "";
+  const rowHtml = r => {
+    const label = esc(((r.label || r.title || "").trim()).slice(0,30));
+    const st = STATUS_JA[r.status] || r.status || "発車待ち";
+    let elapsed = "";
+    if(r.status === "running" && r.startedAt){
+      const mins = Math.max(0, Math.round((Date.now() - new Date(r.startedAt).getTime()) / 60000));
+      elapsed = `<span class="ub-elapsed">経過${mins}分</span>`;
+    }
+    const urls = r.urls || [];
+    const link = urls.length ? `<a class="ub-link" href="${esc(urls[0])}" target="_blank" rel="noopener">→見る</a>` : "";
+    return `<div class="ub-row"><span class="ub-n">#${r.n}</span><span class="ub-t">${label}</span>`
+      + `<span class="ub-st">${esc(st)}</span>${elapsed}${link}</div>`;
+  };
+  box.innerHTML = `<div class="ub-head">🔥 すぐ見たい <b>${rows.length}</b>件</div>` + rows.map(rowHtml).join("");
+}
 function renderQueue(){
+  try{ renderUrgent(); }catch(_){}   // 793番：queueの読み直し・ボタン操作のたびに「すぐ見たい」枠も追随させる
   const box = document.getElementById("queue");
   // 2026-09-04 正本を queue.json に移した（auto_launcher.py が着火して status を書き換える）。
   //   data.js 側は残置。waiting のものだけを「次に発車」として出す。
@@ -3587,6 +3622,11 @@ function renderQueue(){
   const qCostOkHtml = (n, needsApproval, estimate) => needsApproval
     ? `<button class="qcostok" data-costok="${n}" title="${esc(estimate || "金額を確認してから押してください")}">💰OKで発車を許可</button>`
     : "";
+  // 793番（2026-09-14）「🔥すぐ見たい」トグル。既存の「1番へ／最後尾へ」と同じ経路
+  //   （sendCommandWithId → 中継所 → command_ingest.queue_urgent）に相乗り。旗を立てる/外すのは
+  //   ここ（たまごさん本人が押す）だけ。自動では立たない。
+  const qUrgentHtml = (n, isUrgent) => `<button class="qurgent${isUrgent ? " on" : ""}" data-qurgent="${n}" ` +
+    `title="${isUrgent ? "「すぐ見たい」を外す" : "「すぐ見たい」にする（別枠の一番上に出す）"}">🔥${isUrgent ? "すぐ見たい中" : "すぐ見たい"}</button>`;
   const rowHtml = (r,i,globalIdx)=>{
     const p = prioOf("Q" + r.n) || r.priority || 0;
     // 654番（2026-09-08）お金がかかるタスクは題名を赤字＋💴で目立たせる。
@@ -3608,6 +3648,7 @@ function renderQueue(){
           </details>
           <span class="qactions">
             ${qCostOkHtml(summary.allNs || r.n, groupNeedsApproval, r.costEstimate)}
+            ${qUrgentHtml(r.n, r.urgent === true)}
             ${qPrioHtml(r.n, p)}
             ${qJumpHtml(r.n)}
             ${qActionHtml(summary.allNs || r.n)}
@@ -3626,6 +3667,7 @@ function renderQueue(){
         </details>
         <span class="qactions">
           ${qCostOkHtml(r.n, needsApproval, r.costEstimate)}
+          ${qUrgentHtml(r.n, r.urgent === true)}
           ${qPrioHtml(r.n, p)}
           ${qJumpHtml(r.n)}
           ${qActionHtml(r.n)}
@@ -4060,6 +4102,17 @@ document.addEventListener("click", e=>{
   renderQueue();
   clearTimeout(QP_TIMER[n]);
   sendCommandWithId("qb" + n + "-" + Date.now(), "queue_prio", n + ":5", "⬇️最後尾（優先度5） " + n + "番");
+});
+// 793番（2026-09-14）「🔥すぐ見たい」トグル。押した瞬間に画面を先に変え（urgentを反転）、
+//   即座にMac側へ送る（連打まとめは不要＝1回で確定する操作）。
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-qurgent]"); if(!b) return;
+  const n = b.dataset.qurgent;
+  const it = ((window.__queue && window.__queue.items) || []).find(x => String(x.n) === String(n));
+  if(it) it.urgent = !it.urgent;   // 画面をすぐ切り替える（Mac側の反映を待たない）
+  renderQueue();
+  sendCommandWithId("qu" + n + "-" + Date.now(), "queue_urgent", n,
+    (it && it.urgent ? "🔥すぐ見たいにする " : "🔥すぐ見たいを外す ") + n + "番");
 });
 function tickClock(){
   const el = document.getElementById("clock"); if(!el) return;
