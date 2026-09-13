@@ -17,6 +17,12 @@
   li a b{font-weight:600;display:block;}
   li a small{color:var(--sub);font-size:0.8rem;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  /* 共有ボタン（811番） */
+  .sharebar{display:flex;justify-content:flex-end;margin:0 0 14px;}
+  .sharebtn{background:#3a5f7a;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:700;letter-spacing:0.02em;}
+  .sharebtn:active{opacity:0.8;}
+  .sharetoast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2a2a2a;color:#fff;padding:10px 18px;border-radius:20px;font-size:0.82rem;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:99999;white-space:nowrap;}
+  .sharetoast.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -26,15 +32,56 @@
 </div>
 
 <h1>案の比較台 一覧</h1>
+<div class="sharebar"><button type="button" class="sharebtn" id="shareTopBtn">📤 このページを共有</button></div>
 <div class="lead">Dispatchが作った案（GIF・動画・画像）を、スマホで並べて同時に再生して見比べ、「これにする」で選ぶページ。作るのは <code>tools/make_compare_page.py</code>。</div>
 <ul>
   <li><a href="747-oniyome-loop.html"><b>鬼嫁ちゃんループGIF 見比べ（747番）</b><small>ストップモーション風(A・6コマ)／小刻み揺れ(B・8コマ) 2026-09-11</small></a></li>
-  <li><a href="783-ehon-voice-compare.html"><b>読み聞かせ絵本・声3種聞き比べ（783番）</b><small>MiniMax／ElevenLabs／Qwen 3声・桃太郎冒頭・実費4.35円 2026-09-12</small></a></li>
+  <li><a href="783-ehon-voice-compare.html"><b>読み聞かせ絵本・声5種聞き比べ（783番）</b><small>MiniMax／ElevenLabs／Qwen 5声・桃太郎冒頭・実費7.83円 2026-09-13</small></a></li>
 </ul>
 <footer>公開リポジトリ（GitHub Pages）なので、載せてよいものだけを置く。1MB超のファイルは置かない。</footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+<script>
+/* ===== 共有ボタン（811番） ===== */
+var shinchokuToastEl = document.createElement("div");
+shinchokuToastEl.className = "sharetoast";
+shinchokuToastEl.id = "shinchokuToast";
+document.body.appendChild(shinchokuToastEl);
+function shinchokuToast(msg){
+  shinchokuToastEl.textContent = msg;
+  shinchokuToastEl.classList.add("show");
+  clearTimeout(shinchokuToastEl._t);
+  shinchokuToastEl._t = setTimeout(function(){ shinchokuToastEl.classList.remove("show"); }, 2200);
+}
+function shinchokuFallbackCopy(text){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    shinchokuToast("コピーしました");
+  }catch(e){ shinchokuToast("コピーできませんでした"); }
+}
+function shinchokuShare(url, title){
+  if(navigator.share){
+    navigator.share({title: title, url: url}).catch(function(){});
+    return;
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){ shinchokuToast("コピーしました"); }).catch(function(){ shinchokuFallbackCopy(url); });
+    return;
+  }
+  shinchokuFallbackCopy(url);
+}
+var shareTopBtn = document.getElementById("shareTopBtn");
+if(shareTopBtn){
+  shareTopBtn.addEventListener("click", function(){
+    shinchokuShare(location.href.split("#")[0], document.title);
+  });
+}
+</script>
 </body>
 </html>

@@ -35,6 +35,14 @@
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.75rem;}
   tr:last-child td{border-bottom:none;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:34px;line-height:1.6;}
+  /* 共有ボタン（811番） */
+  .sharebar{display:flex;justify-content:flex-end;margin:0 0 14px;position:relative;}
+  .sharebtn{background:var(--ao);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:700;letter-spacing:0.02em;}
+  .sharebtn:active{opacity:0.8;}
+  .sharemini{display:inline-block;margin-top:8px;background:#efe9db;color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:0.75rem;}
+  .sharemini:active{background:var(--line);}
+  .sharetoast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2a2a2a;color:#fff;padding:10px 18px;border-radius:20px;font-size:0.82rem;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:99999;white-space:nowrap;}
+  .sharetoast.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -44,46 +52,70 @@
 </div>
 
 <div class="date"><a href="./">案の比較台 一覧</a> ／ 783番</div>
-<h1>読み聞かせ絵本・声3種聞き比べ</h1>
-<div class="date">2026-09-12 生成・本番(GitHub Pages)反映まで確認済み</div>
-<div class="what">寝る前の読み聞かせ絵本（第1弾：桃太郎）の声を、まず文章だけで3種類作って聞き比べます。絵はまだ作っていません（声が決まってから着手）。落ち着いてゆっくり、盛り上げすぎない読み方を狙っています。気に入ったものを1つ選んでタップしてください。</div>
+<h1>読み聞かせ絵本・声5種聞き比べ</h1>
+<div class="date">2026-09-12 生成（A/B/C）・2026-09-13 D/E追加・本番(GitHub Pages)反映まで確認済み</div>
+<div class="sharebar"><button type="button" class="sharebtn" id="shareTopBtn">📤 このページを共有</button></div>
+<div class="what">寝る前の読み聞かせ絵本（第1弾：桃太郎）の声を、まず文章だけで5種類作って聞き比べます。絵はまだ作っていません（声が決まってから着手）。落ち着いてゆっくり、盛り上げすぎない読み方を狙っています。気に入ったものを1つ選んでタップしてください。</div>
 
 <div class="script">むかしむかし、あるところに、おじいさんとおばあさんが住んでいました。
 おじいさんは山へしばかりに、おばあさんは川へせんたくに行きました。
 おばあさんが川でせんたくをしていると、どんぶらこ、どんぶらこと、
 大きな桃がながれてきました。</div>
 
-<div class="card" data-key="A">
+<div class="card" data-key="A" id="case-a">
   <h2>A：MiniMax Speech-02 HD（Wise_Woman）</h2>
   <div class="meta">落ち着いた女性の声・話速をやや遅め(0.85倍)に設定。感情フラット。</div>
   <audio controls preload="none" src="../check/assets/783-ehon-voice-compare/minimax_speech02hd.mp3"></audio>
   <button type="button" class="pickbtn" data-key="A" data-name="A：MiniMax Speech-02 HD">これにする（A）</button>
   <div class="pickstatus" data-slot="A"></div>
+  <button type="button" class="sharemini" data-case="case-a" data-label="A：MiniMax Speech-02 HD（Wise_Woman）">🔗 Aのこれを共有</button>
 </div>
 
-<div class="card" data-key="B">
+<div class="card" data-key="B" id="case-b">
   <h2>B：ElevenLabs eleven-v3（Matilda）</h2>
   <div class="meta">安定性(stability)を高めに設定し、抑揚を抑えて淡々と読ませています。</div>
   <audio controls preload="none" src="../check/assets/783-ehon-voice-compare/elevenlabs_eleven_v3.mp3"></audio>
   <button type="button" class="pickbtn" data-key="B" data-name="B：ElevenLabs eleven-v3">これにする（B）</button>
   <div class="pickstatus" data-slot="B"></div>
+  <button type="button" class="sharemini" data-case="case-b" data-label="B：ElevenLabs eleven-v3（Matilda）">🔗 Bのこれを共有</button>
 </div>
 
-<div class="card" data-key="C">
+<div class="card" data-key="C" id="case-c">
   <h2>C：Qwen Audio 3.0 TTS Flash（Cherry）</h2>
   <div class="meta">Grok TTSはxAIのAPIキーが未設定のため用意できず、代わりに別系統(Alibaba)のTTSを3つ目としました。</div>
   <audio controls preload="none" src="../check/assets/783-ehon-voice-compare/qwen_audio3_tts.wav"></audio>
   <button type="button" class="pickbtn" data-key="C" data-name="C：Qwen Audio 3.0 TTS Flash">これにする（C）</button>
   <div class="pickstatus" data-slot="C"></div>
+  <button type="button" class="sharemini" data-case="case-c" data-label="C：Qwen Audio 3.0 TTS Flash（Cherry）">🔗 Cのこれを共有</button>
+</div>
+
+<div class="card" data-key="D" id="case-d">
+  <h2>D：MiniMax Speech-02 HD（Deep_Voice_Man・渋い男性）</h2>
+  <div class="meta">映画のナレーション風・50〜60代の落ち着いた低音を想定してvoice_id一覧から選定。話速は標準(1.0倍)。感情フラット。</div>
+  <audio controls preload="none" src="../check/assets/783-ehon-voice-compare/minimax_deep_voice_man.mp3"></audio>
+  <button type="button" class="pickbtn" data-key="D" data-name="D：MiniMax Speech-02 HD（渋い男性）">これにする（D）</button>
+  <div class="pickstatus" data-slot="D"></div>
+  <button type="button" class="sharemini" data-case="case-d" data-label="D：MiniMax Speech-02 HD（渋い男性）">🔗 Dのこれを共有</button>
+</div>
+
+<div class="card" data-key="E" id="case-e">
+  <h2>E：MiniMax Speech-02 HD（Sweet_Girl_2・女の子）</h2>
+  <div class="meta">優しい女の子の声。話速は標準(1.0倍)。感情フラット。</div>
+  <audio controls preload="none" src="../check/assets/783-ehon-voice-compare/minimax_sweet_girl2.mp3"></audio>
+  <button type="button" class="pickbtn" data-key="E" data-name="E：MiniMax Speech-02 HD（女の子）">これにする（E）</button>
+  <div class="pickstatus" data-slot="E"></div>
+  <button type="button" class="sharemini" data-case="case-e" data-label="E：MiniMax Speech-02 HD（女の子）">🔗 Eのこれを共有</button>
 </div>
 
 <h2 style="font-family:'Hiragino Mincho ProN','Yu Mincho',serif;font-weight:400;font-size:1.05rem;color:var(--sub);margin:28px 0 12px;">実費（fal公式の単価×実際に送った文字数116文字。生成の前後で1回ずつの精算のため誤差なし）</h2>
 <div class="nums">
-  <div class="num"><b>116文字</b><span>3モデルとも同じ台本</span></div>
+  <div class="num"><b>116文字</b><span>5モデルとも同じ台本</span></div>
   <div class="num"><b>1.74円</b><span>A：MiniMax（$0.10/1000字）</span></div>
   <div class="num"><b>1.74円</b><span>B：ElevenLabs（$0.10/1000字）</span></div>
   <div class="num"><b>0.87円</b><span>C：Qwen（$0.05/1000字）</span></div>
-  <div class="num"><b>4.35円</b><span>3本合計（上限20円以内）</span></div>
+  <div class="num"><b>1.74円</b><span>D：MiniMax 渋い男性（$0.10/1000字）</span></div>
+  <div class="num"><b>1.74円</b><span>E：MiniMax 女の子（$0.10/1000字）</span></div>
+  <div class="num"><b>7.83円</b><span>5本合計（上限20円以内）</span></div>
 </div>
 
 <table>
@@ -91,12 +123,14 @@
 <tr><td>A：MiniMax Speech-02 HD</td><td>fal-ai/minimax/speech-02-hd</td><td>1回</td><td>$0.10/1000文字</td><td>$0.0116（1.74円）</td></tr>
 <tr><td>B：ElevenLabs eleven-v3</td><td>fal-ai/elevenlabs/tts/eleven-v3</td><td>1回</td><td>$0.10/1000文字</td><td>$0.0116（1.74円）</td></tr>
 <tr><td>C：Qwen Audio 3.0 TTS Flash</td><td>alibaba/qwen-audio-3-tts</td><td>1回</td><td>$0.05/1000文字</td><td>$0.0058（0.87円）</td></tr>
-<tr><td colspan="4"><b>合計</b></td><td><b>$0.029（4.35円）</b></td></tr>
+<tr><td>D：MiniMax Speech-02 HD（渋い男性・1.0倍）</td><td>fal-ai/minimax/speech-02-hd</td><td>1回</td><td>$0.10/1000文字</td><td>$0.0116（1.74円）</td></tr>
+<tr><td>E：MiniMax Speech-02 HD（女の子・1.0倍）</td><td>fal-ai/minimax/speech-02-hd</td><td>1回</td><td>$0.10/1000文字</td><td>$0.0116（1.74円）</td></tr>
+<tr><td colspan="4"><b>合計</b></td><td><b>$0.0522（7.83円）</b></td></tr>
 </table>
 
 <footer>
-実費の出し方：fal.ai公式APIが返す1文字あたりの公式単価(billingMessage)に、実際に送った文字数(116文字)をかけた確定計算値です（$1=150円換算）。fal.ai管理画面のダッシュボードSubtotal前後差での確認も試みましたが、admin scope付きAPIキーが未設定（<code>~/.fal_admin_key</code>には過去にコマンド文字列が誤って保存されており実際のキーではなかった）のため今回も取得できませんでした（771番と同じ制約）。3モデルとも「テキスト量に対する定額課金」であるため、公式単価×実際の文字数は端数のない確定値です。<br><br>
-帳簿：<a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/fal_cost_ledger.json" target="_blank" rel="noopener">status/fal_cost_ledger.json</a>（783番で3件記録済み）<br>
+実費の出し方：fal.ai公式APIが返す1文字あたりの公式単価(billingMessage)に、実際に送った文字数(116文字)をかけた確定計算値です（$1=150円換算）。fal.ai管理画面のダッシュボードSubtotal前後差での確認も試みましたが、admin scope付きAPIキーが未設定（<code>~/.fal_admin_key</code>には過去にコマンド文字列が誤って保存されており実際のキーではなかった）のため今回も取得できませんでした（771番と同じ制約）。5モデルとも「テキスト量に対する定額課金」であるため、公式単価×実際の文字数は端数のない確定値です。D・Eの2本は2026-09-13に追加（予算10円・上限20円承認済み、2本合計3.48円）。<br><br>
+帳簿：<a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/fal_cost_ledger.json" target="_blank" rel="noopener">status/fal_cost_ledger.json</a>（783番で5件記録済み）<br>
 10本(1本5分)を作った場合の試算：1本5分の読み聞かせ音声は、この116文字(約17〜27秒)のペースなら概算で1,200〜1,800文字ほど必要（今回の3モデル平均単価 約0.075円/文字として）1本あたり約90〜135円、10本で約900〜1,350円。絵・動きを足す場合は別途（絵1枚6円・動き1枚75円の見積もりは783番の依頼文に記載のとおりで、今回は声のみのテストのため未着手）。
 </footer>
 
@@ -148,6 +182,51 @@ document.addEventListener("click", function(e){
   document.querySelectorAll(".pickbtn").forEach(function(x){ if(x !== b) x.disabled = true; });
   var slot = document.querySelector('.pickstatus[data-slot="' + key + '"]');
   if(slot){ slot.textContent = "発車待ちの列に送りました（届くまで30〜60秒）"; slot.classList.add("ok"); }
+});
+
+/* ===== 共有ボタン（811番） ===== */
+var shinchokuToastEl = document.createElement("div");
+shinchokuToastEl.className = "sharetoast";
+shinchokuToastEl.id = "shinchokuToast";
+document.body.appendChild(shinchokuToastEl);
+function shinchokuToast(msg){
+  shinchokuToastEl.textContent = msg;
+  shinchokuToastEl.classList.add("show");
+  clearTimeout(shinchokuToastEl._t);
+  shinchokuToastEl._t = setTimeout(function(){ shinchokuToastEl.classList.remove("show"); }, 2200);
+}
+function shinchokuFallbackCopy(text){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    shinchokuToast("コピーしました");
+  }catch(e){ shinchokuToast("コピーできませんでした"); }
+}
+function shinchokuShare(url, title){
+  if(navigator.share){
+    navigator.share({title: title, url: url}).catch(function(){});
+    return;
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){ shinchokuToast("コピーしました"); }).catch(function(){ shinchokuFallbackCopy(url); });
+    return;
+  }
+  shinchokuFallbackCopy(url);
+}
+var shareTopBtn = document.getElementById("shareTopBtn");
+if(shareTopBtn){
+  shareTopBtn.addEventListener("click", function(){
+    shinchokuShare(location.href.split("#")[0], document.title);
+  });
+}
+document.addEventListener("click", function(e){
+  var b = e.target.closest(".sharemini"); if(!b) return;
+  var caseId = b.dataset.case, label = b.dataset.label;
+  var url = location.href.split("#")[0] + "#" + caseId;
+  shinchokuShare(url, document.title + "（" + label + "）");
 });
 </script>
 </body>

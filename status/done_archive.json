@@ -4177,7 +4177,31 @@
    "checkedAt": "2026-09-06T20:25:21+0900",
    "okBy": "ai-verifier-auto",
    "okNote": "鬼監督AI検品PASS：確認ページ・本番GitHub上の4ファイルとも実在しHTTP200、内容も依頼(番組本編非複製・出典URL付き数字・落合陽一氏は「裏取りできず」と正直記載・4職種の標準機能化分析・危機/チャンス論を同熱量・反論明記・たまごさん記憶用の枠)と一致"
+  },
+  {
+   "n": 492,
+   "title": "仕組み：別AIが検品するVerifier",
+   "why": "スマホから追加",
+   "what": "【仕組み・最重要】作った本人に合否を判定させない。別のセッションが独立して検品する係（Verifier）を作る。★根拠：ループエンジニアリングの6つのインフラのうち、この工場に唯一無いのがこれ（Automations・Worktrees・Skills・MCP・Memoryは既にある）。世界的にも第一の課題は『検証の死角＝AIの《完了しました》は完了の証明ではない。無人で動くほど、ミスも無人のまま量産される』とされている。出典：https://jp.findy-team.io/blogs/loop-engineering/ ★作るもの：①仕事が終わって確認待ちに上がる前に、別プロセスのclaude（Sonnet）を1本だけ起動して検品させる。②Verifierに渡すのは『元の依頼文』と『報告』と『確認ページURL』だけ。作った側の言い分は渡さない。③Verifierがやること：確認ページを実際に開く／本番URLを実際に開く／スクショまたは数字が本当にあるか見る／依頼された内容と実際に変わったものが一致しているか見る。④判定は合格／不合格＋理由1行のみ。⑤不合格なら列に戻す（理由を what に追記）。⑥Verifierは実装しない。直さない。見るだけ。⑦検品にかかったクレジットを記録する（1件あたり数円のはず。高いようなら軽いモデルに落とす）。★auto_launcher.py の harvest の直前に挟む。機械的な検品（404・文字数）を担当する別タスクと役割が重ならないよう、こちらは中身の一致を見る担当とする。★確認ページに『何件検品して何件不合格にしたか、その理由の内訳』を出す。\n\n【自動やり直し・09-06 20:33】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
+   "status": "done",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "priority": 1,
+   "origin": "user",
+   "order": 17,
+   "redoCount": 1,
+   "startedAt": "2026-09-06T20:33:33+09:00",
+   "sessionId": "9c6405e8-8182-4c16-bdb8-d510f3d76816",
+   "finishedAt": "2026-09-06T20:41:19+09:00",
+   "result": "【完了】別AIが検品するVerifierは本番で稼働中。溜まっていた検品実績(70件・合格45/不合格24)を進捗表へ反映し本番に反映済み\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/492-ai-verifier-status.html\n本番: https://tamago2022.github.io/tamago-shinchoku/index.html",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/492-ai-verifier-status.html",
+    "https://tamago2022.github.io/tamago-shinchoku/index.html"
+   ],
+   "checkedAt": "2026-09-06T20:42:53+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：確認ページ・本番ともに200で開け、JSON実データ(70/45/24)と報告文の数字が一致し、進捗表への実績カード追加も本番コードで裏付けが取れた"
   }
  ],
- "updatedAt": "2026-09-13 20:26"
+ "updatedAt": "2026-09-13 20:43"
 }

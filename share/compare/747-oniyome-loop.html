@@ -34,6 +34,14 @@
   .pickstatus{min-height:1.4em;margin-top:8px;font-size:0.8rem;color:var(--sub);text-align:center;}
   .pickstatus.ok{color:var(--midori);font-weight:700;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:34px;line-height:1.6;}
+  /* 共有ボタン（811番） */
+  .sharebar{display:flex;justify-content:flex-end;margin:0 0 14px;}
+  .sharebtn{background:var(--ao);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:700;letter-spacing:0.02em;}
+  .sharebtn:active{opacity:0.8;}
+  .sharemini{display:inline-block;margin-top:8px;background:#efe9db;color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:0.75rem;}
+  .sharemini:active{background:var(--line);}
+  .sharetoast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2a2a2a;color:#fff;padding:10px 18px;border-radius:20px;font-size:0.82rem;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:99999;white-space:nowrap;}
+  .sharetoast.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -45,10 +53,11 @@
 <div class="date"><a href="./">案の比較台 一覧</a> ／ 747番</div>
 <h1>鬼嫁ちゃんループGIF 見比べ</h1>
 <div class="date">作成: 2026-09-11</div>
+<div class="sharebar"><button type="button" class="sharebtn" id="shareTopBtn">📤 このページを共有</button></div>
 <div class="what">ストップモーション風にコマ切り替えするA案と、小刻みに揺れるB案。どちらのループがいいか見比べてください。</div>
 
 <div class="row">
-  <div class="card" data-key="A">
+  <div class="card" data-key="A" id="case-a">
     <h2>A案：ストップモーション（6コマ）</h2>
     <div class="loopwrap"><img class="loopgif" src="img/747-oniyome/A.gif" alt="A案：ストップモーション（6コマ）" loading="lazy"></div>
     
@@ -64,8 +73,9 @@
     </div>
     <button type="button" class="pickbtn" data-key="A" data-name="A案：ストップモーション（6コマ）">これにする（A）</button>
     <div class="pickstatus" data-slot="A"></div>
+    <button type="button" class="sharemini" data-case="case-a" data-label="A案：ストップモーション（6コマ）">🔗 Aのこれを共有</button>
   </div>
-  <div class="card" data-key="B">
+  <div class="card" data-key="B" id="case-b">
     <h2>B案：小刻み揺れ（8コマ）</h2>
     <div class="loopwrap"><img class="loopgif" src="img/747-oniyome/B.gif" alt="B案：小刻み揺れ（8コマ）" loading="lazy"></div>
     
@@ -81,6 +91,7 @@
     </div>
     <button type="button" class="pickbtn" data-key="B" data-name="B案：小刻み揺れ（8コマ）">これにする（B）</button>
     <div class="pickstatus" data-slot="B"></div>
+    <button type="button" class="sharemini" data-case="case-b" data-label="B案：小刻み揺れ（8コマ）">🔗 Bのこれを共有</button>
   </div>
 </div>
 
@@ -159,6 +170,51 @@ document.addEventListener("click", function(e){
   document.querySelectorAll(".pickbtn").forEach(function(x){ if(x !== b) x.disabled = true; });
   var slot = document.querySelector('.pickstatus[data-slot="' + key + '"]');
   if(slot){ slot.textContent = "発車待ちの列に送りました（届くまで30〜60秒）"; slot.classList.add("ok"); }
+});
+
+/* ===== 共有ボタン（811番） ===== */
+var shinchokuToastEl = document.createElement("div");
+shinchokuToastEl.className = "sharetoast";
+shinchokuToastEl.id = "shinchokuToast";
+document.body.appendChild(shinchokuToastEl);
+function shinchokuToast(msg){
+  shinchokuToastEl.textContent = msg;
+  shinchokuToastEl.classList.add("show");
+  clearTimeout(shinchokuToastEl._t);
+  shinchokuToastEl._t = setTimeout(function(){ shinchokuToastEl.classList.remove("show"); }, 2200);
+}
+function shinchokuFallbackCopy(text){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    shinchokuToast("コピーしました");
+  }catch(e){ shinchokuToast("コピーできませんでした"); }
+}
+function shinchokuShare(url, title){
+  if(navigator.share){
+    navigator.share({title: title, url: url}).catch(function(){});
+    return;
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){ shinchokuToast("コピーしました"); }).catch(function(){ shinchokuFallbackCopy(url); });
+    return;
+  }
+  shinchokuFallbackCopy(url);
+}
+var shareTopBtn = document.getElementById("shareTopBtn");
+if(shareTopBtn){
+  shareTopBtn.addEventListener("click", function(){
+    shinchokuShare(location.href.split("#")[0], document.title);
+  });
+}
+document.addEventListener("click", function(e){
+  var b = e.target.closest(".sharemini"); if(!b) return;
+  var caseId = b.dataset.case, label = b.dataset.label;
+  var url = location.href.split("#")[0] + "#" + caseId;
+  shinchokuShare(url, document.title + "（" + label + "）");
 });
 </script>
 </body>
