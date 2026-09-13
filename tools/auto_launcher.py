@@ -667,15 +667,22 @@ def _record_touch_check(ok, reason, url, item_n=None, report=None):
 def _record_oni_kantoku(ok, reason, item_n, title, touch_summary=None, cost=None):
     """案件#800：鬼監督（3段目＝AI検品）が実際に動いた記録を1行ずつ残す。
     『制度は作ったが1度もパイプラインに繋がっていなかった』(684番)を繰り返さないため、
-    ここへの追記が『鬼監督が実際に回っている』ことの生の証拠になる。799番の生死表が見る想定。"""
+    ここへの追記が『鬼監督が実際に回っている』ことの生の証拠になる。
+
+    既存の oni_kantoku_log.jsonl は既に実在し（443〜450番台の一括監査スクリプト群が使用）、
+    tools/nikki_generator.py・tools/kenpou_check.py・tools/verify_check_pages.py が
+    `n` / `title` / `reason` / `checkedAt` / `decision`（"pass"で合格集計）というキー名を
+    前提に読んでいる。ここも同じキー名で書く（新しいキー名を作ると日誌・憲法点検から
+    この3段目の結果が見えなくなるため）。touchCheckSummary/costUsdは追加情報として足すだけ。"""
     row = {
-        "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+        "checkedAt": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
         "n": item_n,
         "title": title,
-        "verdict": "pass" if ok is True else ("fail" if ok is False else "error"),
+        "decision": "pass" if ok is True else ("fail" if ok is False else "error"),
         "reason": reason,
         "touchCheckSummary": touch_summary,
         "costUsd": cost,
+        "task": "800-touch-verify",
     }
     try:
         with io.open(ONI_KANTOKU_LOG, "a", encoding="utf-8") as f:
