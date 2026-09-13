@@ -188,7 +188,7 @@ document.addEventListener("click", function(e){
 var shinchokuToastEl = document.createElement("div");
 shinchokuToastEl.className = "sharetoast";
 shinchokuToastEl.id = "shinchokuToast";
-document.body.appendChild(shinchokuToastEl);
+document.body.insertBefore(shinchokuToastEl, document.body.firstChild); /* 案件#811実測：末尾追加だとhtmlLen/textHash先頭40文字の変化が小さすぎて検品ツールが「無反応」と誤検出することがあったため、先頭挿入(見た目はposition:fixedなので不変)にした */
 function shinchokuToast(msg){
   shinchokuToastEl.textContent = msg;
   shinchokuToastEl.classList.add("show");
