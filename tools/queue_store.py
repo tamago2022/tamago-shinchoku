@@ -28,6 +28,7 @@ import fcntl
 import io
 import json
 import os
+import sys
 import threading
 import time
 from contextlib import contextmanager
@@ -38,6 +39,9 @@ QUEUE_LOCK = os.path.join(REPO, "status", ".queue.lock")
 BLOCKED_LOG = os.path.join(REPO, "status", "queue_write_blocked.jsonl")
 HISTORY_DIR = os.path.join(REPO, "status", "queue_history")
 HISTORY_KEEP = 50
+# 2026-09-13 18:55事故（271件→0件）を受けて追加：この件数を下回ったら壊れているとみなす。
+# 通常運用では常に100件以上あるので、10件は絶対に安全な閾値（誤検知しない）。
+MIN_HEALTHY_ITEMS = 10
 
 
 # ---- 鍵：再入可能にする ----
@@ -82,12 +86,84 @@ def queue_lock(timeout=180.0):
         f.close()
 
 
-def load_queue():
-    """queue.jsonを読む（鍵は取らない＝素早い先読み・二重発車チェック用にはこちらを使う）。"""
+def _caller_identity():
+    """誰が(どのpid・どのコマンドライン)書こうとしたかを、queue_write_blocked.jsonlへ残すため。"""
     try:
-        return json.load(io.open(QUEUE, encoding="utf-8"))
+        return {"pid": os.getpid(), "argv": sys.argv}
+    except Exception:
+        return {"pid": None, "argv": None}
+
+
+def _latest_healthy_backup(min_items=MIN_HEALTHY_ITEMS):
+    """queue_history/の中から、直近でmin_items件以上ある世代を新しい順に探す。"""
+    try:
+        os.makedirs(HISTORY_DIR, exist_ok=True)
+        files = sorted(
+            (p for p in os.listdir(HISTORY_DIR) if p.startswith("queue-") and p.endswith(".json")),
+            reverse=True,
+        )
+    except Exception:
+        files = []
+    for fn in files:
+        path = os.path.join(HISTORY_DIR, fn)
+        try:
+            backup = json.load(io.open(path, encoding="utf-8"))
+        except Exception:
+            continue
+        if len(backup.get("items") or []) >= min_items:
+            return fn, backup
+    return None, None
+
+
+def _self_heal_if_corrupted(raw_text, q):
+    """queue.jsonが壊れて(件数が極端に少なく)いたら、直近の健全な世代バックアップから
+    自動で戻す。人を呼ばない（案件#687・2026-09-13 18:55の271件→0件事故で追加）。
+
+    save_queue()を経由しない直接書き込み（tools/verify_check_pages.py等・想定していない
+    書き込み経路）から壊れた場合でも、load_queue()を呼んだ**どのプロセスからでも**
+    この時点で気づいて自動修復できるようにする（書き込み側だけを塞ぐより裾野が広い安全弁）。
+    """
+    count = len(q.get("items") or [])
+    if count >= MIN_HEALTHY_ITEMS:
+        return q
+    fn, backup = _latest_healthy_backup()
+    if backup is None:
+        return q  # 直せる材料が無い。壊れたまま返す（これ以上悪化はさせない）
+    try:
+        broken_path = os.path.join(
+            REPO, "status", "queue.json.EMPTY-%s" % time.strftime("%Y%m%d-%H%M%S"))
+        with io.open(broken_path, "w", encoding="utf-8") as f:
+            f.write(raw_text)
+    except Exception:
+        pass
+    tmp = QUEUE + ".tmp"
+    with io.open(tmp, "w", encoding="utf-8") as f:
+        json.dump(backup, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, QUEUE)
+    try:
+        who = _caller_identity()
+        with io.open(os.path.join(REPO, "status", "queue_self_heal.log"), "a", encoding="utf-8") as f:
+            f.write("%s 🚑 自己修復: queue.jsonが%d件に壊れていた（読んだのはpid=%s %s）→ %s(%d件)から自動復元\n"
+                     % (time.strftime("%Y-%m-%d %H:%M:%S"), count, who.get("pid"), who.get("argv"),
+                        fn, len(backup.get("items") or [])))
+    except Exception:
+        pass
+    return backup
+
+
+def load_queue():
+    """queue.jsonを読む（鍵は取らない＝素早い先読み・二重発車チェック用にはこちらを使う）。
+    件数が壊れるほど少ない（MIN_HEALTHY_ITEMS未満）場合は、読んだこのタイミングで
+    直近の健全な世代バックアップから自動修復してから返す。"""
+    try:
+        with io.open(QUEUE, encoding="utf-8") as f:
+            raw = f.read()
+        q = json.loads(raw) if raw.strip() else {"items": []}
     except Exception:
         return {"items": []}
+    if len(q.get("items") or []) < MIN_HEALTHY_ITEMS:
+        q = _self_heal_if_corrupted(raw, q)
+    return q
 
 
 def snapshot_items(q):
@@ -122,10 +198,13 @@ def _write_history_backup(disk_q):
 
 def _log_blocked(disk_items, mine_items, merged_items, reason):
     try:
+        who = _caller_identity()
         os.makedirs(os.path.dirname(BLOCKED_LOG), exist_ok=True)
         row = {
             "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
             "reason": reason,
+            "pid": who.get("pid"),
+            "argv": who.get("argv"),
             "disk_count": len(disk_items),
             "mine_count": len(mine_items),
             "merged_count": len(merged_items),
@@ -191,6 +270,14 @@ def save_queue(q, snapshot=None, deleted_ns=None):
         if len(merged_items) < len(disk_items) and not deleted_ns:
             # 上のunexplainedチェックを通り抜けるケースは無いはずだが、念のための二重の安全弁。
             _log_blocked(disk_items, mine_items, merged_items, "item_count_decreased_no_deleted_ns")
+            return False
+
+        # 2026-09-13 18:55事故（271件→0件）を受けた最後の絶対安全弁：
+        # deleted_nsの計算がどれだけ正しくても、結果が異常に少なくなる書き込みは通さない
+        # （呼び出し側のバグでdeleted_nsに大量の番号が誤って入っていた、等のケースまで拾う）。
+        if len(disk_items) >= MIN_HEALTHY_ITEMS and len(merged_items) < MIN_HEALTHY_ITEMS:
+            _log_blocked(disk_items, mine_items, merged_items,
+                         "would_go_below_min_healthy:%d->%d" % (len(disk_items), len(merged_items)))
             return False
 
         _write_history_backup(disk)

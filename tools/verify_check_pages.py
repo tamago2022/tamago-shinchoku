@@ -40,8 +40,12 @@ import urllib.request
 from contextlib import contextmanager
 
 REPO = "/Users/mac/Desktop/tamago-shinchoku"
-QUEUE = os.path.join(REPO, "status", "queue.json")
-QUEUE_LOCK = os.path.join(REPO, "status", ".queue.lock")
+HERE = os.path.dirname(os.path.abspath(__file__))
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+import queue_store  # noqa: E402  案件#687：queue.jsonの安全な読み書き（差分マージ・自己修復）
+QUEUE = queue_store.QUEUE
+QUEUE_LOCK = queue_store.QUEUE_LOCK
 AUDIT_LOG = os.path.join(REPO, "status", "oni_kantoku_log.jsonl")
 PAGES_BASE = "https://tamago2022.github.io/tamago-shinchoku/"
 
