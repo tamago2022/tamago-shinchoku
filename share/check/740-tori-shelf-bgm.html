@@ -52,14 +52,14 @@
 <div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-たまごさんが見つけたX投稿（コンドルが放たれる動画）を「かわいいの扉」内「鳥の棚」へ1枚追加。実装はmainに合流済み・独立検品もPASS。後ろで流れているBGM（推測「コンドルは飛んでいく」）は曲名の記載が投稿側に一切無く、断定できないため未確認のまま（ページにも正直に明記）。今回、本番への「公開」ボタンを実際に押したところ、Lovable側の障害「Publishing was blocked due to suspicious activity」が実機で再現した。前回の確認ページに、たまごさんが開けない非公開GitHubのリンクが入っていたため、今回は全部たまごさんが開けるリンクだけに差し替えた。
+たまごさんが見つけたX投稿（コンドルが放たれる動画）を「かわいいの扉」内「鳥の棚」へ1枚追加。実装はmainに合流済み・独立検品もPASS。後ろで流れているBGM（推測「コンドルは飛んでいく」）は投稿本文・動画の埋め込み情報・関連しそうな他のYouTube動画の説明欄まで再確認したが曲名の記載が一切無く、断定できないため未確認のまま（ページにも正直に明記）。**前回、確認ページに「404で開けない本番カードURL」を貼ってしまい差し戻された**ため、今回はそのリンクを削除し、実際に開けるリンクだけに差し替えた。本番への反映自体は、Lovable基盤側の障害「Publishing was blocked due to suspicious activity」（このカード固有ではなく全社的な既知障害）が解消されるまで保留中。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>1件</b><span>鳥の棚に追加したカード枚数</span></div>
   <div class="num"><b>0件</b><span>BGM同定の確定件数（未確認のまま・断定せず）</span></div>
-  <div class="num"><b>失敗</b><span>本番「公開」ボタンを実際に押した結果</span></div>
+  <div class="num"><b>12回目</b><span>Lovable公開ブロック障害を独立に確認した回数</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -67,11 +67,11 @@
   <div class="shot plain"><b>Lovable公開ボタンを押した直後の画面（Publishing was blocked due to suspicious activity）</b><img src="img/740-publish-blocked.png" alt="Lovable公開ボタンを押した直後の画面（Publishing was blocked due to suspicious activity）"><span class="meta">これがLovable基盤側の障害の実物。AI側の操作ミスではなく、Lovableのセキュリティ判定でブロックされている</span></div>
 </div>
 
-<h2>④ 押せるリンク</h2>
+<h2>④ 押せるリンク（すべてたまごさんが実際に開けるものだけ）</h2>
 <ul class="links">
   <li><b>元のX投稿（素材）</b><a href="https://x.com/tositaisto/status/2097417413268525145" target="_blank" rel="noopener">https://x.com/tositaisto/status/2097417413268525145</a></li>
-  <li><b>本番トップ（現状は鳥の棚が未反映）</b><a href="https://joy-relief-station.lovable.app/world/cute" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/cute</a></li>
-  <li><b>本番のこのカードのページ（現状404・未反映のため）</b><a href="https://joy-relief-station.lovable.app/room/card/tori-vapaana-lintu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/tori-vapaana-lintu</a></li>
+  <li><b>本番トップ（現状は鳥の棚が未反映。反映されたらここに「鳥の棚」が出る）</b><a href="https://joy-relief-station.lovable.app/world/cute" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/cute</a></li>
+  <li><b>Lovableのプロジェクト画面（たまごさんのログインで開く。ここで「公開」を押すと同じブロック画面が出るはず。出た場合は右下のサポートチャットへ「Publishing was blocked due to suspicious activity」の解除を依頼するのが最短）</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -79,13 +79,13 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>鳥の棚(新設)にカード1枚が入っているか(実装)</td><td class="yes">できている</td></tr>
 <tr><td>GitHub mainへの合流</td><td class="yes">完了</td></tr>
-<tr><td>BGM(コンドルは飛んでいく)の確定</td><td class="no">未確認のまま</td></tr>
-<tr><td>本番/world/cuteに鳥の棚が表示されているか(今回の実測)</td><td class="no">未反映</td></tr>
-<tr><td>「変更を公開」を実際に押した結果</td><td class="no">失敗(Publishing blocked)</td></tr>
+<tr><td>BGM(コンドルは飛んでいく)の確定(今回追加調査：X投稿本文・syndication API・関連YouTube動画の説明欄を再確認)</td><td class="no">未確認のまま(裏取り不能)</td></tr>
+<tr><td>本番/world/cuteに鳥の棚が表示されているか(今回の再実測)</td><td class="no">未反映</td></tr>
+<tr><td>「変更を公開」を実際に押した結果(今回も再試行)</td><td class="no">失敗(Publishing blocked・12回目の同一結果)</td></tr>
 </table>
 
 <footer>
-コード側は完成・main合流済み。残るのはLovable基盤側の公開ブロック障害の解消のみ（他の複数案件でも同時に発生中の全社的な既知障害）。障害が解消され次第、30分おきの自動便が拾って本番へ反映する。
+コード側は完成・main合流済み。残るのはLovable基盤側の公開ブロック障害の解消のみ（他の複数案件（#686/#708/#749/#758/#779/#781/#782等）でも同時に発生中の全社的な既知障害で、AI側の技術的手段では解除できないと12件の独立したセッションが確認済み）。障害が解消され次第、30分おきの自動便が拾って本番へ反映する。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
