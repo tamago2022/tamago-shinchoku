@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#798 進捗表・第2段：ズレを秒単位に、通信をほぼゼロに（now.json+rev.txt+家はリアルタイム） 確認ページ</title>
+<title>#798 進捗表・第2段：ズレ秒単位＋通信ほぼゼロ 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,48 +47,46 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #798 進捗表・第2段：ズレを秒単位に、通信をほぼゼロに（now.json+rev.txt+家はリアルタイム）</div>
-<h1>#798 進捗表・第2段：ズレを秒単位に、通信をほぼゼロに（now.json+rev.txt+家はリアルタイム）</h1>
-<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #798 進捗表・第2段：ズレ秒単位＋通信ほぼゼロ</div>
+<h1>#798 進捗表・第2段：ズレ秒単位＋通信ほぼゼロ</h1>
+<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-進捗表いちばん上の『いまの現在地』バーが、データが変わっていない時は<b>通信も再描画も一切しない</b>方式になった。<code>status/now.json</code>(3.49KB)と<code>status/rev.txt</code>(20バイトのハッシュだけ)を新設。画面はrev.txtだけを30秒おきに見て、前回と同じなら何もしない。変わった時だけnow.jsonを1回だけ取って、その項目だけ書き換える(スクロール位置は動かさない)。家のMac(中継所)にいる時はSSEで<b>変わった瞬間</b>に届く(遅延1秒未満)。GitHub Pages(スマホ・外出先)はSSEが使えないので自動で30秒ポーリングに落ちる。
+進捗表の<b>発車待ち・確認待ち・完了・リモコン結果</b>などの重いデータを、これまでの「無条件で定期取得」から「画面に出ている時だけ・変化がある時だけ」に切り替えた。閉じたまま見ていない間は通信ゼロ。AI検品で「queue_light.json/commands.json/new_arrivals.jsonが無条件で回り続けている」と一度差し戻されたので、それを名指しで潰した上で再実測した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3.49KB</b><span>now.jsonの大きさ(目標5KB以下)</span></div>
-  <div class="num"><b>20B</b><span>rev.txtの大きさ</span></div>
-  <div class="num"><b>0px</b><span>30秒間のスクロール移動量(実測)</span></div>
-  <div class="num"><b>0回</b><span>データ不変時の60秒あたり再描画回数(実測)</span></div>
+  <div class="num"><b>109KB</b><span>60秒間の通信量（前は411KB）</span></div>
+  <div class="num"><b>29件</b><span>60秒間の通信回数（前は72件）</span></div>
+  <div class="num"><b>0px</b><span>30秒間のスクロール移動量</span></div>
+  <div class="num"><b>3.7KB</b><span>now.jsonの大きさ（目標5KB以下）</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
-  <div class="shot before"><b>観測開始（スクロールを600pxへ固定）</b><img src="img/798-before.png" alt="前"></div>
-  <div class="shot after"><b>30秒後（スクロール位置600pxのまま・データ不変で再描画ゼロ）</b><img src="img/798-after30s.png" alt="後"></div>
+  <div class="shot before"><b>観測開始直後</b><img src="img/798-net-before.png" alt="前"></div>
+  <div class="shot after"><b>30秒後（スクロール位置・見た目とも不動）</b><img src="img/798-net-after30s.png" alt="後"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番status/now.json</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/now.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/now.json</a></li>
-  <li><b>本番status/rev.txt</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/rev.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/rev.txt</a></li>
   <li><b>本番の進捗表</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>60秒あたりの通信回数(データ不変時)</td><td class="yes">前:2本(pace.json+genzaichi.json、無条件で毎回)→後:2本(rev.txtのみ、20B×2)</td></tr>
-<tr><td>60秒あたりの通信量(データ不変時)</td><td class="yes">前:約3,976バイト→後:約382バイト(実測。ヘッダ込み)</td></tr>
-<tr><td>ズレの最大幅</td><td class="yes">前:60秒(60秒間隔で無条件更新)→後:GitHub Pages30秒／家のSSE1秒未満(実測:接続200・relay_server.py実測遅延0.48秒)</td></tr>
-<tr><td>60秒あたりの再描画回数(データ不変時)</td><td class="yes">前:2回(毎回丸ごと書き換え)→後:0回(実測。MutationObserverで確認)</td></tr>
-<tr><td>30秒間のスクロール移動量</td><td class="yes">前:保険なし→後:0px(実測。600→600で変化なし)</td></tr>
-<tr><td>本番(GitHub Pages)反映</td><td class="yes">push済み・index.html/tools/pace.py/tools/relay_server.pyともにorigin/mainと一致</td></tr>
+<tr><td>60秒あたりの通信回数</td><td class="yes">72件 → 29件</td></tr>
+<tr><td>60秒あたりの通信量(KB)</td><td class="yes">411.5KB → 109.5KB</td></tr>
+<tr><td>ズレの最大幅（秒）</td><td class="yes">GitHub Pages経由：最大30秒（rev.txtポーリング）／家(SSE)：1秒未満（実測0.48秒）</td></tr>
+<tr><td>60秒あたりの再描画回数</td><td class="yes">0回 → 0回</td></tr>
+<tr><td>30秒間のスクロール移動量(px)</td><td class="yes">0px → 0px</td></tr>
+<tr><td>now.jsonの大きさ(KB)</td><td class="yes">3.68KB（目標5KB以下）</td></tr>
 </table>
 
 <footer>
-実測方法：ヘッドレスChrome(CDP)で本番URLを60秒間開き、Network通信・DOM再描画(MutationObserver)・スクロール位置(scrollY)をNode.jsで直接計測(tools/_798_measure.mjs)。ページ全体としては<code>queue_light.json</code>等(発車待ち一覧・726番担当の別セクション)が家のMacに直結できない環境では10秒おきに約30KB通信しており、これは798番のスコープ(パルス表示部分)の外。次の改善候補として受付台帳へ引き継ぎ済み。
+実測は tools/_798_measure.mjs（ヘッドレスChrome＋CDPでPerformance/Networkを直接計測、画面は一切表示しない）。SSEは中継所(192.168.0.46:8788)の/eventsで疎通確認済み（200 OK・接続直後にrev値を受信）。GitHub Pages（スマホ・外出先）はSSEの受け口が無いので自動で30秒ポーリングに落ちる。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
