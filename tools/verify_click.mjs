@@ -140,11 +140,20 @@ const LIST_EXPR = `JSON.stringify(Array.from(document.querySelectorAll('button, 
       tag: el.tagName,
       text: (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 30),
       href: el.getAttribute('href') || null,
+      target: el.getAttribute('target') || null,
       disabled: !!(el.disabled || el.getAttribute('aria-disabled') === 'true'),
       visible: !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length),
     };
   })
   .filter(x => x.visible && !x.disabled))`;
+
+// 案件#718実測：target="_blank"のリンク（確認ページの外部参照リンク等・全340枚の確認ページで
+// 使用中）は、押しても元のタブのlocation.hrefは変わらない。しかも本物のヘッドレスChromeでは
+// window.open()自体がポップアップとしてブロックされ「新しいタブ」すら実際には開かない
+// （/json/listで確認してもタブが増えないことを実測で確認済み）。そのためこのスクリプトは
+// 正しく動くリンクを毎回「無反応」と誤検知していた（実例：#718の確認ページ内のGitHubリンク）。
+// CDPには、ブロックされたかどうかに関わらずwindow.open()が呼ばれた瞬間に発火する
+// `Page.windowOpen` イベントがある（実測で確認済み）。これをクリックへの「反応」の証拠として使う。
 
 async function main() {
   const t0 = Date.now();
@@ -184,6 +193,7 @@ async function main() {
 
   try {
     const target = await findPage(port);
+    let lastWindowOpenAt = 0; // Page.windowOpenが発火した時刻（target="_blank"クリックの証拠）
     const { ready, send, close } = connect(target.webSocketDebuggerUrl, (method, params) => {
       if (method === "Runtime.consoleAPICalled" && params?.type === "error") {
         const msg = (params.args || []).map((a) => a.value ?? a.description ?? "").join(" ");
@@ -192,6 +202,9 @@ async function main() {
       if (method === "Runtime.exceptionThrown") {
         const desc = params?.exceptionDetails?.exception?.description || params?.exceptionDetails?.text || "";
         consoleErrors.push(("[uncaught] " + desc).slice(0, 200));
+      }
+      if (method === "Page.windowOpen") {
+        lastWindowOpenAt = Date.now();
       }
     });
     await ready;
@@ -259,6 +272,7 @@ async function main() {
           target.click();
           return true;
         })()`;
+        lastWindowOpenAt = 0; // このクリックで新たに発火したPage.windowOpenだけを見る
         const r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
         if (!r.result?.value) clickError = "要素が見つかりませんでした（クリック前にDOMから消えた＝マーカーが外れた）";
       } catch (e) {
@@ -269,9 +283,14 @@ async function main() {
       // 終わらないことがあり、遷移中のURLを「無反応」と誤判定する事故があった
       // （実測：GitHub Pages確認ページの「← 進捗表に戻る」リンク）。
       // href付きだけ、URLが変わるまで最大4秒ポーリングして待つ。
+      let newTabOpened = false;
       if (el.href) {
         const navWaitStart = Date.now();
         while (Date.now() - navWaitStart < 4000) {
+          if (lastWindowOpenAt) {
+            newTabOpened = true;
+            break;
+          }
           try {
             const cur = await evalJson(send, `location.href`);
             if (cur && before && cur !== before.url) break;
@@ -281,6 +300,12 @@ async function main() {
           }
           await sleep(300);
         }
+        // 案件#718実測：target="_blank"のリンク（確認ページ340枚が使用中）は元のタブの
+        // URLが変わらない。しかもヘッドレスChromeではwindow.open()自体がポップアップとして
+        // ブロックされ「新しいタブ」すら実際には開かない（/json/listで確認済み）ため、
+        // 上のURLポーリングだけでは絶対に「変化」を検知できず毎回無反応と誤検知していた。
+        // CDPの`Page.windowOpen`イベント（ブロックされても発火する）を反応の証拠として使う。
+        if (!newTabOpened && lastWindowOpenAt) newTabOpened = true;
       }
       try {
         after = await evalJson(send, SNAPSHOT_EXPR);
@@ -297,7 +322,8 @@ async function main() {
         clickError == null &&
         before &&
         after &&
-        (before.url !== after.url ||
+        (newTabOpened ||
+          before.url !== after.url ||
           Math.abs((before.scrollY || 0) - (after.scrollY || 0)) > 5 ||
           before.textHash !== after.textHash ||
           Math.abs((before.htmlLen || 0) - (after.htmlLen || 0)) > HTML_LEN_NOISE_THRESHOLD ||
