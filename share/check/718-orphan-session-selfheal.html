@@ -63,6 +63,13 @@
 
 
 
+<h2>③ 追記（09-13）：この確認ページ自身が「触る検品」に無反応1件で落とされた件</h2>
+<div class="note">
+原因は確認ページのGitHubリンク（target="_blank"で新しいタブに開く仕様）を、検品ツール(verify_click.mjs)が「押しても反応しない」と誤検知していたバグでした。ヘッドレスChromeではwindow.open自体がポップアップとしてブロックされ実際には新しいタブが開かないため（実測確認済み）、CDPの`Page.windowOpen`イベント（ブロックされても発火する）を反応の証拠として使うよう検品ツール本体を修正しました。<br>
+逆テスト：わざと押しても何もしないボタンを用意して検証 → 修正後も正しくFAILとして検出されることを確認済み（誤魔化しではなく本物の無反応だけ通す）。<br>
+修正箇所：<a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_click.mjs#L285-L311" target="_blank" rel="noopener">tools/verify_click.mjs#L285-L311</a>
+</div>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番の点検ダッシュボード</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
