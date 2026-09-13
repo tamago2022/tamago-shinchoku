@@ -29,6 +29,7 @@ import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEKI_PATH = os.path.join(REPO, "status", "dekimono.json")
+ONI_LOG_PATH = os.path.join(REPO, "status", "oni_kantoku_log.jsonl")
 
 DELIVER_TYPES = [
     ("動画", ["動画", "アニメ", "卵劇場", "EP0", "fal試作", "fal 試作", "カット再生", "ffmpeg", "微動ループ"]),
@@ -94,6 +95,29 @@ def classify_fix(title, result_text=""):
     return _match_type(text) or "修正"
 
 
+def _latest_verify_decision(n):
+    """802番（2026-09-14）：鬼監督・触る検品(status/oni_kantoku_log.jsonl)の、
+    このn番に対する一番新しい判定("pass"/"fail"/"error"/None)を返す。
+    「間違っているやつ」を『できたもの』棚に載せない、の判定材料。
+    ログ自体は時系列に追記されているので、最後に見つけた行が最新。壊れていても例外を出さない。"""
+    latest = None
+    try:
+        with io.open(ONI_LOG_PATH, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except Exception:
+                    continue
+                if row.get("n") == n:
+                    latest = row.get("decision")
+    except Exception:
+        return None
+    return latest
+
+
 def _load():
     if not os.path.exists(DEKI_PATH):
         return {"updatedAt": "", "items": []}
@@ -129,6 +153,11 @@ def _append(d, n, kind, t, title, result_text, urls, added_at=None):
             url = u
             break
     what = _first_line(result_text) or (title or "")
+    # 802番：登録時点で鬼監督ログにfail判定が付いていれば verified:false にして、
+    # 表示側（index.html renderDekita）が最初から棚に出さないようにする。
+    # ここは「登録した時点」の判定なので、後から検品NGが付いたものは
+    # tools/backfill_dekimono_verified.py の再走査（日次）で追いつく。
+    verified = _latest_verify_decision(n) != "fail"
     items.append({
         "n": n,
         "kind": kind,  # "new"=新しく作った／"fixed"=直した
@@ -137,6 +166,7 @@ def _append(d, n, kind, t, title, result_text, urls, added_at=None):
         "what": what,
         "url": url,
         "addedAt": added_at or time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+        "verified": verified,  # False＝検品NG（棚には出さない・記録は消さない）
     })
     d["items"] = items
     d["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")

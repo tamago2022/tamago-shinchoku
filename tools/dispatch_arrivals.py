@@ -21,6 +21,15 @@ dispatch_reported.json が消えている／壊れている場合も落ちない
 （2026-09-11実測：一度も作られておらず「未報告か既報告か」自体が判定不能になっていた）。
 無ければ空として扱い、二重に伝える方向に倒す（報告漏れの方がはるかに悪いため）。
 書き込み時は直前の内容を1世代だけ .bak として残す。
+
+【802番・2026-09-14追記】正本を dispatch_reported.jsonl（追記のみ・1行1件）へ変更した。
+たまごさん「渡した記録を直す」＝dispatch_reported.jsonは「全体を毎回丸ごと書き直す」形式で、
+同時に2プロセスが load→計算→save をすると片方の追記が後勝ちで消えるレースに弱かった
+（実測：この802番の着手時点で本体が2件しか入っていない瞬間があった）。
+jsonlは「行を追記するだけ」なので、同時に複数プロセスが書いても既存行が消えることはない
+（OSのappendはアトミック単位が小さく、行の途中で壊れても他の行は無事）。
+旧 .json は互換のためのスナップショットとして書き続ける（tools/shikumi.py・kenpou_check.py が
+まだ "ns" キーを読むため）。読み込みは jsonl を正本とし、.json は「jsonlが無い時の保険」に格下げ。
 """
 import io
 import json
@@ -31,33 +40,68 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
 REPORTED = os.path.join(REPO, "status", "dispatch_reported.json")
 REPORTED_BAK = REPORTED + ".bak"
+REPORTED_JSONL = os.path.join(REPO, "status", "dispatch_reported.jsonl")  # 802番：正本はこちら（追記のみ）
 
 # 1回の通知でURL付きを何件まで本文で見せるか（それ以上は件数だけにする＝情報過多を避ける）
 MAX_SHOW = 6
 
 
+def _read_jsonl_ns():
+    """dispatch_reported.jsonl（正本・追記のみ）から報告済みnsの集合を読む。壊れた行はスキップ。"""
+    ns = set()
+    updated_at = None
+    try:
+        with io.open(REPORTED_JSONL, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except Exception:
+                    continue  # 1行壊れていても他の行は生きる（jsonl化の狙いそのもの）
+                n = row.get("n")
+                if isinstance(n, int):
+                    ns.add(n)
+                    if row.get("reportedAt"):
+                        updated_at = row["reportedAt"]
+    except Exception:
+        pass
+    return ns, updated_at
+
+
 def load_reported():
-    """壊れていても消えていても、必ず {"ns": [...]} の形で返す。例外を外へ出さない。"""
-    try:
-        with io.open(REPORTED, encoding="utf-8") as f:
-            data = json.load(f)
-        if isinstance(data, dict) and isinstance(data.get("ns"), list):
-            return data
-    except Exception:
-        pass
-    # 壊れている／存在しない時は、直前の世代バックアップから拾えるなら拾う
-    try:
-        with io.open(REPORTED_BAK, encoding="utf-8") as f:
-            data = json.load(f)
-        if isinstance(data, dict) and isinstance(data.get("ns"), list):
-            return data
-    except Exception:
-        pass
-    return {"ns": []}
+    """壊れていても消えていても、必ず {"ns": [...]} の形で返す。例外を外へ出さない。
+    【802番】正本はjsonl。旧.json/.bakは「jsonlに無い古い記録を拾うための保険」として
+    常にマージする（union）。二重に持っていても実害は無く、取りこぼす方がはるかに悪い。"""
+    ns, updated_at = _read_jsonl_ns()
+    for path in (REPORTED, REPORTED_BAK):
+        try:
+            with io.open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict) and isinstance(data.get("ns"), list):
+                ns.update(n for n in data["ns"] if isinstance(n, int))
+                updated_at = updated_at or data.get("updatedAt")
+        except Exception:
+            continue
+    return {"ns": sorted(ns), "updatedAt": updated_at}
 
 
 def save_reported(data):
-    """世代バックアップを1つ残してから保存する。失敗しても呼び出し側は握りつぶす前提。"""
+    """802番：追記式に変更。新しく増えたns（従来のjsonl保存済み分との差分）だけを
+    dispatch_reported.jsonl へ1行ずつappendする（他の行・他プロセスの追記を壊さない）。
+    旧 .json は互換スナップショットとして書き直しておく（tools/shikumi.py等の既存読み手のため）。
+    失敗しても呼び出し側は握りつぶす前提。"""
+    ts = data.get("updatedAt") or time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+    before_ns, _ = _read_jsonl_ns()
+    new_ns = sorted(set(data.get("ns") or []) - before_ns)
+    if new_ns:
+        try:
+            with io.open(REPORTED_JSONL, "a", encoding="utf-8") as f:
+                for n in new_ns:
+                    f.write(json.dumps({"n": n, "reportedAt": ts}, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
     try:
         if os.path.exists(REPORTED):
             try:
@@ -67,9 +111,10 @@ def save_reported(data):
                     f.write(prev)
             except Exception:
                 pass
+        all_ns, _ = _read_jsonl_ns()
         tmp = REPORTED + ".tmp"
         with io.open(tmp, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=1)
+            json.dump({"ns": sorted(all_ns), "updatedAt": ts}, f, ensure_ascii=False, indent=1)
         os.replace(tmp, REPORTED)
     except Exception:
         pass

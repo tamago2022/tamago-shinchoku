@@ -253,6 +253,20 @@
     background:rgba(255,255,255,0.03); color:var(--sub); font-size:0.72rem; font-weight:600;}
   .dkdaterow button.on{background:var(--blue); border-color:var(--blue); color:#0d1420;}
   .dkempty{grid-column:1/-1;}
+  /* 802番（2026-09-14）「できたもの284件→見て嬉しいものだけ3〜5件・裏方は畳む」
+     既定は🎁だけ5件。「もっと見る」でじわっと増やす・🔧は1行の折りたたみに退避。 */
+  .dkmorebtn{display:block; width:100%; box-sizing:border-box; min-height:40px; margin:8px 0 2px;
+    border-radius:10px; border:1px dashed var(--line); background:rgba(255,255,255,0.03);
+    color:var(--sub); font-size:0.82rem; font-weight:700;}
+  .dkmorebtn:active{filter:brightness(1.2);}
+  .dkfixedfold{margin-top:10px; border-top:1px dashed var(--line); padding-top:8px;}
+  .dkfixedfold > summary{font-size:0.78rem; color:var(--dim); font-weight:600; cursor:pointer;}
+  .dkfixedfold .dkrow{opacity:0.75;}
+  /* 802番：判断待ち（あなたのOK待ち）を、他のどのバーよりも前に赤で出す1行バナー。 */
+  #pendingDecisionBar a{display:block; margin:0 0 10px; padding:10px 14px; border-radius:10px;
+    background:#3a1212; color:#ffb4b4; border:1px solid rgba(255,80,80,0.7); font-weight:800;
+    text-decoration:none; font-size:0.88rem;}
+  #pendingDecisionBar a:active{filter:brightness(1.2);}
   .ct{font-size:0.92rem; font-weight:700; line-height:1.35;}
   .cm{font-size:0.72rem; color:var(--sub); margin:3px 0 6px; font-variant-numeric:tabular-nums;}
   .cr{font-size:0.78rem; line-height:1.65; color:var(--fg); background:#161c24; border:1px solid var(--line);
@@ -654,6 +668,11 @@
      俺の中で優先順位全然違うから」。urgent:true（status/queue.json）かつ未完了のものだけを、
      他のどのバーよりも前に出す。0件のときは枠ごと消す（renderUrgent()参照）。 -->
 <div id="urgentBox"></div>
+
+<!-- 802番（2026-09-14）たまごさん「281件とか並んでてさ、もう気が遠くなるわけよ。しかも間違えてるやつ。
+     こういう大事なやつが埋もれるのはまたあれじゃん」。「終わりました（あなたのOK待ち）」＝checkSecの
+     件数を、他のどのバーよりも前に赤バナーで出す（renderCheck()内で更新・0件なら非表示）。 -->
+<div id="pendingDecisionBar" style="display:none"></div>
 
 <!-- 787番（2026-09-12）：「いまの現在地」1枚(status/genzaichi.json)の7項目を進捗表の
      一番上に出す。たまごさんは進捗表しか見ない、という指示に合わせ、他のどのバーよりも
@@ -1769,10 +1788,23 @@ function dkThumbInner(it){
   }
   return icon;
 }
+window.__dekimonoShowCount = 5; // 802番：既定は5件だけ。「もっと見る」で20→全部の3段階。
+function dkRowHtml(it, stale){
+  const stamp = it.addedAt ? formatStamp(it.addedAt) : "—";
+  const kindTag = it.kind === "fixed" ? `<span class="dktag" style="color:#e0954b;border-color:rgba(224,149,75,0.5)">🔧直した</span>` : `<span class="dktag">✨作った</span>`;
+  return `<a class="dkrow${stale ? " stale" : ""}" href="${esc(it.url || "#")}" target="_blank" rel="noopener">
+    <div class="dkthumb t-${esc(it.type||"")}">${dkThumbInner(it)}</div>
+    <div class="dkbody">
+      <div class="ct">${kindTag}<span class="dktag">${esc(it.type||"")}</span>${esc(it.title||"")}</div>
+      <div class="cm">${esc(it.what||"")}</div>
+      <div class="cm">${esc(stamp)}</div>
+    </div>
+  </a>`;
+}
 function renderDekita(){
   const box = document.getElementById("dekita"); if(!box) return;
   const meta = document.getElementById("dekitaMeta");
-  const all = (window.__dekimono && window.__dekimono.items) || [];
+  const raw = (window.__dekimono && window.__dekimono.items) || [];
   // 2026-09-11（752番）：0件（本当に無い）と読み込み失敗は意味が正反対なので絶対に混ぜない。
   //   一度もデータを持てていない（window.__dekimonoがまだ無い）＝読み込み中 or 失敗、これは0件と別扱い。
   if(!window.__dekimono){
@@ -1783,40 +1815,53 @@ function renderDekita(){
       : `<div class="card note">読み込み中…</div>`;
     return;
   }
+  // 802番（2026-09-14）「間違ってるやつ」対策：検品NG（verified===false）は棚に出さない。
+  //   dekimono.json自体からは1件も消さない（tools/backfill_dekimono_verified.pyが付ける印だけを見る）。
+  const all = raw.filter(it => it.verified !== false);
+  const ngCount = raw.length - all.length;
   const newCount = all.filter(it => it.kind !== "fixed").length;
   const fixedCount = all.filter(it => it.kind === "fixed").length;
   if(meta) meta.innerHTML = (window.__dekimonoStaleAt ? staleNoteHtml(window.__dekimonoStaleAt) + "　" : "")
-    + (all.length ? `${all.length}件（✨${newCount}・🔧${fixedCount}）` : "");
+    + (all.length ? `${all.length}件（✨${newCount}・🔧${fixedCount}）` : "")
+    + (ngCount ? `　<span style="color:#9aa0a6">検品NG${ngCount}件は非表示</span>` : "");
   const kindFilt = window.__dekimonoKind || "all";
   const typeFilt = window.__dekimonoFilter || "all";
   const days = window.__dekimonoDays || "all";
   const q = (window.__dekimonoQuery || "").trim().toLowerCase();
-  const rows = all.filter(it => {
+  const isDefaultView = (kindFilt === "all" && typeFilt === "all" && days === "all" && !q);
+  const matched = all.filter(it => {
     if(kindFilt !== "all" && (it.kind === "fixed" ? "fixed" : "new") !== kindFilt) return false;
     if(typeFilt !== "all" && it.type !== typeFilt) return false;
     if(!dkMatchesDate(it, days)) return false;
     if(q && !((it.title||"") + " " + (it.what||"")).toLowerCase().includes(q)) return false;
     return true;
-  }).slice().sort((a,b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
-  if(!rows.length){
+  });
+  // 802番：絞り込み無し（既定）の時だけ、🎁見て嬉しいもの（type!=="修正"）と
+  //   🔧裏方（修正）を分ける。何か絞り込んでいる時（例：種類「修正」を選んだ）は今まで通り全部見せる。
+  const giftPool = (isDefaultView ? matched.filter(it => it.type !== "修正") : matched)
+    .slice().sort((a,b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+  const fixedFolded = isDefaultView ? matched.filter(it => it.type === "修正") : [];
+  if(!giftPool.length && !fixedFolded.length){
     box.innerHTML = all.length
       ? `<div class="card note dkempty">この条件に一致するものはありません（絞り込みを変えてみてください）</div>`
       : `<div class="card note dkempty">まだありません（成果物ができるとここに積み上がります）</div>`;
     return;
   }
+  const showCount = window.__dekimonoShowCount || 5;
+  const rows = giftPool.slice(0, showCount);
+  const restCount = giftPool.length - rows.length;
+  const moreBtnHtml = restCount > 0
+    ? `<button type="button" class="dkmorebtn" id="dkMoreBtn" data-next="${showCount >= 20 ? "all" : "20"}">もっと見る（あと${restCount}件・タップで${showCount >= 20 ? "全部" : "20件まで"}表示）</button>`
+    : "";
+  const fixedFoldHtml = fixedFolded.length
+    ? `<details class="dkfixedfold"><summary>🔧 裏でやったこと（${fixedFolded.length}件・仕組みの修正。消してはいません）</summary><div class="g">${
+        fixedFolded.slice().sort((a,b)=> new Date(b.addedAt||0)-new Date(a.addedAt||0)).map(it=>dkRowHtml(it, false)).join("")
+      }</div></details>`
+    : "";
   box.innerHTML = (window.__dekimonoStaleAt ? `<div class="card note" style="grid-column:1/-1">${staleNoteHtml(window.__dekimonoStaleAt)}</div>` : "")
-    + rows.map(it => {
-    const stamp = it.addedAt ? formatStamp(it.addedAt) : "—";
-    const kindTag = it.kind === "fixed" ? `<span class="dktag" style="color:#e0954b;border-color:rgba(224,149,75,0.5)">🔧直した</span>` : `<span class="dktag">✨作った</span>`;
-    return `<a class="dkrow${window.__dekimonoStaleAt ? " stale" : ""}" href="${esc(it.url || "#")}" target="_blank" rel="noopener">
-      <div class="dkthumb t-${esc(it.type||"")}">${dkThumbInner(it)}</div>
-      <div class="dkbody">
-        <div class="ct">${kindTag}<span class="dktag">${esc(it.type||"")}</span>${esc(it.title||"")}</div>
-        <div class="cm">${esc(it.what||"")}</div>
-        <div class="cm">${esc(stamp)}</div>
-      </div>
-    </a>`;
-  }).join("");
+    + rows.map(it => dkRowHtml(it, !!window.__dekimonoStaleAt)).join("")
+    + moreBtnHtml
+    + fixedFoldHtml;
 }
 function refreshDekimono(){
   // 2026-09-11（752番）：726番のタイムアウト追加以降、ここだけタイムアウト無しの素のfetchのままで、
@@ -1846,25 +1891,34 @@ function refreshDekimono(){
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-dktype]"); if(!b) return;
   window.__dekimonoFilter = b.dataset.dktype;
+  window.__dekimonoShowCount = 5; // 802番：絞り込みを変えたら「もっと見る」も5件に戻す
   document.querySelectorAll("#dkfilters button").forEach(x => x.classList.toggle("on", x === b));
   renderDekita();
 });
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-dkkind]"); if(!b) return;
   window.__dekimonoKind = b.dataset.dkkind;
+  window.__dekimonoShowCount = 5;
   document.querySelectorAll("#dkkind button").forEach(x => x.classList.toggle("on", x === b));
   renderDekita();
 });
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-dkdays]"); if(!b) return;
   window.__dekimonoDays = b.dataset.dkdays;
+  window.__dekimonoShowCount = 5;
   document.querySelectorAll("#dkdaterow button").forEach(x => x.classList.toggle("on", x === b));
   renderDekita();
 });
 (function(){
   const inp = document.getElementById("dkq"); if(!inp) return;
-  inp.addEventListener("input", () => { window.__dekimonoQuery = inp.value; renderDekita(); });
+  inp.addEventListener("input", () => { window.__dekimonoQuery = inp.value; window.__dekimonoShowCount = 5; renderDekita(); });
 })();
+// 802番：「もっと見る」タップで 5→20→全部 の3段階。フィルタは変えずに表示件数だけ増やす。
+document.addEventListener("click", e=>{
+  const b = e.target.closest("#dkMoreBtn"); if(!b) return;
+  window.__dekimonoShowCount = b.dataset.next === "all" ? Infinity : 20;
+  renderDekita();
+});
 if(detailsOpen('dekitaSec')) refreshDekimono();
 setInterval(()=>{ if(!document.hidden && detailsOpen('dekitaSec')) refreshDekimono(); }, 60000);
 
@@ -3165,6 +3219,18 @@ function renderCheck(){
   const rows = allAwc.filter(r => r.origin === "user");
   const factoryRows = allAwc.filter(r => r.origin !== "user");
   document.getElementById("checkMeta").textContent = rows.length ? `${rows.length}件` : "";
+  // 802番：判断待ちが下の方に埋もれないよう、件数だけを一番上のバナーへも出す。
+  (function(){
+    const pdBar = document.getElementById("pendingDecisionBar"); if(!pdBar) return;
+    if(rows.length){
+      pdBar.style.display = "";
+      pdBar.innerHTML = `<a href="#checkSec" onclick="var s=document.getElementById('checkSec'); if(s) s.open=true;">`
+        + `⏸ 判断待ち ${rows.length}件・あなたのOKを待っています →見る</a>`;
+    } else {
+      pdBar.style.display = "none";
+      pdBar.innerHTML = "";
+    }
+  })();
   const groupMap = splitGroupsOf(all);
   const factoryFold = factoryRows.length ? `<details class="cmore cfactory"><summary>🏭 工場発（見なくてよいもの）${factoryRows.length}件・畳んでいます</summary>
       ${buildCheckEntries(factoryRows, groupMap).map(en => en.isGroup ? checkGroupRowHtml(en) : (()=>{
