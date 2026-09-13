@@ -52,14 +52,14 @@
 <div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない・卵が2匹、の5点を修正。main合流済み。Lovable公開は<b>「suspicious activity」でプラットフォーム側からブロック中</b>（今日3回確認済み・自分の手では解除不能）。
+話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない・卵が2匹、の5点を修正。main合流済み(commit b6e428eb)。<b>Lovable公開は「公開に失敗しました」でプラットフォーム側からブロック中</b>(18:03〜0:35の7時間で9回連続失敗を実測。自分の手では解除不能・店主かLovableサポート対応待ち)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>1匹</b><span>卵の表示数(前:2匹)</span></div>
   <div class="num"><b>5件</b><span>猫検索の結果数(前:1件)</span></div>
-  <div class="num"><b>0回</b><span>カード再生時のページ遷移(前:別ページへ)</span></div>
+  <div class="num"><b>9回</b><span>公開失敗を確認した回数(7時間で連続)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -71,6 +71,7 @@
   <div class="shot plain"><b>⑤「もっと詳しく」の詳細画面</b><img src="img/794-5a-detail-page.png" alt="⑤「もっと詳しく」の詳細画面"></div>
   <div class="shot plain"><b>⑥戻る→案内所(/cover-guide)に戻る</b><img src="img/794-5b-after-back.png" alt="⑥戻る→案内所(/cover-guide)に戻る"></div>
   <div class="shot plain"><b>⑦「夏の日」で検索→5件表示</b><img src="img/794-6-natsunohi-search.png" alt="⑦「夏の日」で検索→5件表示"></div>
+  <div class="shot plain"><b>⑧Lovable編集画面。「公開に失敗しました」が表示され続けている(0:35時点)</b><img src="img/794-8-lovable-publish-blocked.png" alt="⑧Lovable編集画面。「公開に失敗しました」が表示され続けている(0:35時点)"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
@@ -87,11 +88,11 @@
 <tr><td>カードがその場で再生される(別ページに飛ばない)</td><td class="yes">直った</td></tr>
 <tr><td>戻ると案内所に戻る</td><td class="yes">直った</td></tr>
 <tr><td>卵が1匹になる</td><td class="yes">直った</td></tr>
-<tr><td>Lovable本番への公開反映</td><td class="no">ブロック中(プラットフォーム側のsuspicious activity規制。今日3回確認済み・店主/Lovableサポート対応待ち)</td></tr>
+<tr><td>Lovable本番への公開反映</td><td class="no">ブロック中(プラットフォーム側「公開に失敗しました」。18:03〜0:35で9回連続失敗を実測)</td></tr>
 </table>
 
 <footer>
-自分でヘッドレスブラウザ(tools/_794_walkthrough.mjs)を使い、たまごさんと同じ順番(開く→話す→猫→カード→戻る→夏の日)でローカル環境を実際に操作して撮影。全て気持ちよく動くことを確認済み。本番反映だけがLovable側の障害で止まっている。
+自分でヘッドレスブラウザ(tools/_794_walkthrough.mjs)を使い、たまごさんと同じ順番(開く→話す→猫→カード→戻る→夏の日)でローカル環境を実際に操作して撮影。全て気持ちよく動くことを確認済み。本番反映だけがLovable側の障害(公開失敗)で止まっている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
