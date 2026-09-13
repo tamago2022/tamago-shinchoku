@@ -208,40 +208,43 @@ def handoff(cli):
 # 押したボタンの処理と、心臓（着火・回収）が同時に台帳を読み書きしていたため、
 # 片方が古い内容で上書きして押した結果が消えていた（lost update）。
 # 読む→書くの間ずっと鍵をかける（auto_launcher.py と同じ鍵ファイル）。
-import fcntl
-from contextlib import contextmanager
+# 2026-09-13（案件#687）：鍵とsave_queueの実体は `tools/queue_store.py` に一本化した。
+#   従来ここの queue_lock は「process()経由で呼ばれた時だけ」しか効いておらず、
+#   relay_server.py・daily_ingest_scheduler.py・kenpou_check.py・auto_launcher.py が
+#   queue_add() 等を**直接**呼ぶ経路には鍵が一切かかっていなかった（777〜804番28件消失の直接原因）。
+#   → _load_queue/_save_queue 自体を queue_store 経由にして、呼び出し元の鍵の有無に関わらず
+#     常に安全（差分マージ・件数減少ブロック・世代バックアップ）になるようにする。
+import queue_store  # noqa: E402
 
-QUEUE_LOCK = os.path.join(REPO, "status", ".queue.lock")
+QUEUE_LOCK = queue_store.QUEUE_LOCK
+queue_lock = queue_store.queue_lock
 
-
-@contextmanager
-def queue_lock(timeout=10.0):
-    f = open(QUEUE_LOCK, "a+")
-    t0 = time.time()
-    while True:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            break
-        except Exception:
-            if time.time() - t0 > timeout:
-                break
-            time.sleep(0.05)
-    try:
-        yield
-    finally:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        except Exception:
-            pass
-        f.close()
+# _load_queue() が読んだ時点の中身。同じプロセス内で直後に _save_queue() を呼んだ時、
+# 「自分が実際に変更した項目」だけを正確に見分けて重ね書きするために使う。
+# （このファイルの全ての queue_* 操作は `q = _load_queue(); ...; _save_queue(q)` の
+#   一直線パターンなので、モジュール変数1個の受け渡しで足りる＝並行呼び出しはprocess()側で
+#   queue_lock により直列化されている）
+_LAST_LOAD_SNAPSHOT = {}
 
 
 def _load_queue():
-    return load_json(QUEUE, {"items": []})
+    global _LAST_LOAD_SNAPSHOT
+    q = queue_store.load_queue()
+    _LAST_LOAD_SNAPSHOT = queue_store.snapshot_items(q)
+    return q
 
 
-def _save_queue(q):
-    save_json(QUEUE, q)
+def _save_queue(q, deleted_ns=None):
+    """deleted_ns：今回queue_delete/queue_dedupe等で意図的に消した番号のリスト。
+    渡さない限りitemsが減る書き込みは拒否される（案件#687）。"""
+    ok = queue_store.save_queue(q, snapshot=_LAST_LOAD_SNAPSHOT, deleted_ns=deleted_ns)
+    if not ok:
+        try:
+            with io.open(os.path.join(REPO, "status", "queue_light_build_errors.log"), "a", encoding="utf-8") as f:
+                f.write("%s _save_queue: 件数減少のため書き込みを拒否しました（queue_write_blocked.jsonl参照）\n"
+                        % time.strftime("%Y-%m-%d %H:%M:%S"))
+        except Exception:
+            pass
     # 2026-09-10（726番）queue.json保存の都度、軽量版queue_light.jsonも即時再生成する。
     #   これまでqueue_light.jsonはauto_launcher.pyの周回終端でしか作り直されず、
     #   さらに中継所(relay_server.py)の/queueはqueue.jsonをそのまま返していたため、
@@ -1112,7 +1115,7 @@ def queue_dedupe(_target=None):
     save_json(box, d)
     q["items"] = [x for x in items if x.get("n") not in drop]
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-    _save_queue(q)
+    _save_queue(q, deleted_ns=drop)
     return "done", "重複%d件を片づけました（deleted.jsonに控えてあります）" % len(drop)
 
 
@@ -1234,7 +1237,7 @@ def queue_delete(target):
     save_json(box, d)
     q["items"] = [x for x in items if x.get("n") not in deleted]
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-    _save_queue(q)
+    _save_queue(q, deleted_ns=deleted)
     if not deleted:
         return "failed", "queue.jsonに見つかりません: %r" % target
     if len(deleted) == 1:

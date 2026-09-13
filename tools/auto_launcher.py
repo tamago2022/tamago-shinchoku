@@ -39,6 +39,7 @@ REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import cost_risk  # noqa: E402  案件#676：お金がかかるタスクの自動判定・確認文言
 import redo_guard  # noqa: E402  案件#797：やり直し合計2回でstuck化する共通ガード
+import queue_store  # noqa: E402  案件#687：queue.jsonの安全な読み書き（差分マージ・世代バックアップ）
 QUEUE = os.path.join(REPO, "status", "queue.json")
 MACHINE = os.path.join(REPO, "status", "machine.json")
 QUOTA = os.path.join(REPO, "status", "quota.json")
@@ -113,40 +114,18 @@ def countable(s):
     return True
 
 
-# ---- 台帳の鍵（2026-09-05）----
+# ---- 台帳の鍵（2026-09-05／2026-09-13 queue_store.pyへ集約）----
 # たまごさん「完了に入ったものもあれば、反応しないものもあります」の原因。
 # 中継所（押したボタン）と心臓（着火・回収）が**同時に台帳を読み書きしていた**ため、
 # 片方が1秒前に読んだ古い内容で上書きし、押した結果が消えていた（lost update）。
 # 読む→書くの間ずっと鍵をかける。macOSの flock を使う（同一ファイルなので確実）。
-import fcntl
-from contextlib import contextmanager
+# 2026-09-13（案件#687）：鍵とsave_queueの実体は `tools/queue_store.py` に一本化した
+#   （command_ingest.py・relay_server.py等、queue.jsonに触る全プロセスで同じ実装を使うため）。
+import fcntl  # noqa: F401  他コードが `import fcntl` 経由で使う可能性に配慮し残置
+from contextlib import contextmanager  # noqa: F401
 
-QUEUE_LOCK = os.path.join(REPO, "status", ".queue.lock")
-
-
-@contextmanager
-def queue_lock(timeout=180.0):
-    f = io.open(QUEUE_LOCK, "a+")
-    t0 = time.time()
-    while True:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            break
-        except Exception:
-            if time.time() - t0 > timeout:
-                # 2026-09-05 ここで諦めて突入すると**同じ番号を2回発車してクレジットが二重に減る**
-                #   （実測：05:21に3件が二重に出た）。取れないなら、今回は何もしないで帰る。
-                log("鍵が取れないので今回は見送り（二重発車を防ぐ）")
-                raise RuntimeError("queue_lock timeout")
-            time.sleep(0.05)
-    try:
-        yield
-    finally:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        except Exception:
-            pass
-        f.close()
+QUEUE_LOCK = queue_store.QUEUE_LOCK
+queue_lock = queue_store.queue_lock
 
 
 # ---- 発車係は同時に1つだけ（2026-09-05）----
@@ -169,17 +148,24 @@ def only_one_launcher():
         return False
 
 
-def save_queue(q):
-    """台帳を安全に書く。
+def save_queue(q, snapshot=None, deleted_ns=None):
+    """台帳を安全に書く（実体は `queue_store.save_queue`）。
 
     2026-09-04：直接 open(w) で書いていたため、別のプロセス（受信箱の処理・Dispatch）が
     同時に書いた瞬間に**中身が二重になって壊れた**（実測：末尾214文字が重複しJSONとして読めなくなった）。
-    台帳が壊れると工場が丸ごと止まるので、一時ファイルに書いてから置き換える（原子的）。
+    → 一時ファイルに書いてから置き換える（原子的）。
+
+    2026-09-13（案件#687・777〜804番28件消失事故）：それだけでは足りなかった。
+    ここは鍵を持ったまま長時間（git worktree作成・claude -p起動）`q` を抱え続け、
+    最後に**丸ごと**書き戻す実装だったため、その間に command_ingest.queue_add() が
+    （鍵を取らない経路＝relay_server.py等からの直接呼び出しで）新しく積んだ項目が、
+    ここでの書き戻しで丸ごと消えた（777〜804番の実測消失）。
+    → 差分マージ書き込み・件数減少ブロック・世代バックアップ付きの `queue_store.save_queue` に委譲する。
+    `snapshot` を渡すと「自分が実際に変更した項目だけ」を正確に重ね書きできる
+    （`queue_store.snapshot_items(q)` を load 直後に取っておいて渡すこと。省略時は
+    自分が持っている項目を全部「自分が変更した」扱いにする＝保守的だが安全側）。
     """
-    tmp = QUEUE + ".tmp"
-    with io.open(tmp, "w", encoding="utf-8") as f:
-        json.dump(q, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, QUEUE)
+    return queue_store.save_queue(q, snapshot=snapshot, deleted_ns=deleted_ns)
 
 
 OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
@@ -1591,8 +1577,10 @@ def harvest(q):
     except Exception as e:
         log("確認待ちの掃き出しで失敗（本流は止めない）: %s" % e)
 
-    if any(x.get("_drop") for x in q.get("items", [])):
+    _dropped_ns = [x.get("n") for x in q.get("items", []) if x.get("_drop")]
+    if _dropped_ns:
         q["items"] = [x for x in q["items"] if not x.get("_drop")]
+        q["_pendingDeletedNs"] = sorted(set(q.get("_pendingDeletedNs") or []) | set(_dropped_ns))
     return changed
 
 
@@ -1716,6 +1704,10 @@ def _main_impl():
       items = q.get("items") or []
       if not items:
           return 0
+      # 案件#687：この時点の中身を控えておき、save_queue()へ渡す。
+      #   自分が「実際に変更した項目」だけを正確に見分けて重ね書きするため
+      #   （渡さないと保守的に「持っている項目は全部変更した」扱いになる）。
+      _snap = queue_store.snapshot_items(q)
       # 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かないよ」（火曜まで残り14%）
       #   → status/no_launch.flag があるあいだは**1本も発車させない**。
       #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。
@@ -1849,7 +1841,8 @@ def _main_impl():
               "status": "waiting", "limitMin": 10, "model": "claude-sonnet-5",
           })
           log("♻︎ 空回しを1本入れました（%d番・本物が出せないため）" % nxt)
-          save_queue(q)
+          save_queue(q, snapshot=_snap)
+          _snap = queue_store.snapshot_items(q)
 
       waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
       if credit_stop:
@@ -1887,7 +1880,8 @@ def _main_impl():
           cost_ok_waiting.append(it)
       if asked_now:
           q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-          save_queue(q)
+          save_queue(q, snapshot=_snap)
+          _snap = queue_store.snapshot_items(q)
       waiting = cost_ok_waiting
       if not waiting:
           log("見送り: 発車待ちは全部お金の確認待ち")
@@ -1896,20 +1890,29 @@ def _main_impl():
       # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
       #   1回の実行で1本だけだと、5分×3回で3本になるまで15分かかる。空いているぶんを一度に埋める。
       room = safe_max - alive
-      launched = 0
-      for item in waiting[:room]:
-          if launch_one(item, q, alive + launched, safe_max):
-              launched += 1
-      if launched:
+      to_launch = waiting[:room]
+
+  # ---- ここから先は鍵を離す（案件#687・要件④：鍵を持ったまま重い処理をしない）----
+  #   git worktree作成・claude -p起動は数秒〜数十秒（まれに300秒timeout）かかることがあり、
+  #   鍵を持ったままこれを行うと、その間 command_ingest.queue_add() 等（別プロセス）の
+  #   書き込みを長時間ブロックする。以前はブロックした挙げ句、無鍵の経路（relay_server.py等の
+  #   直接呼び出し）に割り込まれて丸ごと上書きが起きた（777〜804番28件消失・案件#687）。
+  #   着火1本ごとに save_queue()（差分マージ・短時間だけ鍵を取り直す）で都度保存するので、
+  #   45秒killに遭ってもそこまでの着火分は失われない。
+  launched = 0
+  for item in to_launch:
+      if launch_one(item, q, alive + launched, safe_max):
+          launched += 1
           q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-          save_queue(q)
+          save_queue(q, snapshot=_snap)
+          _snap = queue_store.snapshot_items(q)
           # 797番：genzaichi.pyが「発車0本が10分続いていないか」を見るための実測点。
           try:
               with io.open(LAST_LAUNCH_STAMP, "w", encoding="utf-8") as f:
                   f.write(time.strftime("%Y-%m-%dT%H:%M:%S+09:00"))
           except Exception:
               pass
-      return 0
+  return 0
 
 
 def launch_one(item, q, alive, safe_max):
@@ -2088,9 +2091,11 @@ def _harvest_pass():
         q = load(QUEUE, {})
         if not q.get("items"):
             return
+        _snap = queue_store.snapshot_items(q)
         if harvest(q):
             q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-            save_queue(q)
+            _deleted_ns = q.pop("_pendingDeletedNs", None)
+            save_queue(q, snapshot=_snap, deleted_ns=_deleted_ns)
 
 
 def main():

@@ -1,9 +1,9 @@
 {
- "totalChecked": 186,
- "totalPassed": 107,
+ "totalChecked": 188,
+ "totalPassed": 109,
  "totalFailed": 76,
  "totalErrors": 3,
- "totalCostUsd": 53.907,
+ "totalCostUsd": 54.4671,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -83,22 +83,6 @@
   "依頼の核心である本線案(status/now.json・rev.txt)が未実装": 1
  },
  "history": [
-  {
-   "ts": "2026-09-11T22:25:42+09:00",
-   "n": 741,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/741-shelf-edit-light.html",
-   "verdict": "pass",
-   "reason": "本番実測の秒数(3.08秒)・転送量(0.19MB)・実スクリーンショット2枚・コード上の構造変更(6.8MB本体の分離)がすべて裏取りでき、依頼内容と一致した",
-   "costUsd": 0.30104060000000005
-  },
-  {
-   "ts": "2026-09-12T00:58:31+09:00",
-   "n": 756,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/756-daily-ingest-2026-09-10.html",
-   "verdict": "fail",
-   "reason": "進捗表トップの1行（完了条件5）と固定URL share/check/daily-ingest.html（完了条件1・仕様セクション5）が実在せず、後続の自動タスク自身も同じ要件を未達として再要求している",
-   "costUsd": 0.4976062
-  },
   {
    "ts": "2026-09-12T01:26:14+09:00",
    "n": 755,
@@ -482,7 +466,23 @@
    "verdict": "pass",
    "reason": "queue_light.json/dispatch_outbox.jsonlを直接fetchし、770/771/513のstuck化・理由付きエスカレーション文言・686/741/769のwasteFlag・778〜781の(1/4)〜(4/4)ラベル前置き・発車0本20分の自己復旧記録(launch_silence_self_heal)まで実データで一致を確認、本番トップにも「手を止めた仕事」節",
    "costUsd": 0.4737663999999999
+  },
+  {
+   "ts": "2026-09-13T11:07:34+09:00",
+   "n": 718,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/718-orphan-session-selfheal.html",
+   "verdict": "pass",
+   "reason": "本番kenpou_check.jsonの`orphan_sessions`が赤→緑（0件）に変わり#705の根本原因(kenpou_check.py L500-533のharvest先呼び出し)を確認、確認ページのGitHubリンクもverify_click.mjsで実クリックし無反応0件・コンソールエラー0件を再現確認、修正箇所(verify_click.mjs L285-311のPage.wi",
+   "costUsd": 0.278976
+  },
+  {
+   "ts": "2026-09-13T11:10:56+09:00",
+   "n": 717,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/717-subete-button-fix.html",
+   "verdict": "pass",
+   "reason": "1MB超ファイルは憲法点検で緑確認済み、「すべて」ボタンも実クリック検証(39件中30件テスト・無反応0件)でDOM上の位置的にも対象内と確認でき、修正コード・確認ページ・画像もすべて整合",
+   "costUsd": 0.2811118
   }
  ],
- "updatedAt": "2026-09-13 07:00"
+ "updatedAt": "2026-09-13 11:10"
 }
