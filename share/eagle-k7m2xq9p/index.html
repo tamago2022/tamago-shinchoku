@@ -91,6 +91,16 @@ function matched(){
   });
 }
 function resetAndRender(){ SHOWN = PAGE; render(); }
+// タップした実感を必ず画面に出す（「すべて」を押した瞬間、既に全表示中だと見た目が
+// 一切変わらず「押しても無反応」に見えてしまうため。1.2秒だけ件数表示の代わりに出す）。
+function flashMeta(msg){
+  const el = document.getElementById("meta");
+  if(!el) return;
+  const restore = () => { render(); };
+  el.textContent = msg;
+  clearTimeout(flashMeta._t);
+  flashMeta._t = setTimeout(restore, 1200);
+}
 function render(){
   const list = matched();
   const shown = list.slice(0, SHOWN);
@@ -131,9 +141,20 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
   document.getElementById("tags").addEventListener("click", e=>{
     const b = e.target.closest("button"); if(!b) return;
     TAG = b.dataset.t || "";
+    if(TAG === ""){
+      // 「すべて」＝押した時だけタグではなく検索・フォルダ・色タグも含めて完全に解除する。
+      // 以前は「タグの絞り込みだけ」を解除しており、検索語や色タグが残ったままだと
+      // 押しても見た目が一切変わらず「無反応」に見えた（案件#800 検品ではねられた原因）。
+      FILTER = "";
+      FOLDER = "";
+      document.getElementById("q").value = "";
+      document.getElementById("folderSel").value = "";
+      [...document.querySelectorAll("#colorTags button")].forEach(x=>x.classList.remove("on"));
+    }
     [...document.querySelectorAll("#tags button")].forEach(x=>x.classList.toggle("on", x===b));
     [...document.querySelectorAll("#colorTags button")].forEach(x=>x.classList.remove("on"));
     resetAndRender();
+    flashMeta("すべて表示しました");
   });
   // Eagleが自動でつけた色タグ（_color:オレンジ系 等）で絞り込み。件数が多い順に。
   const cc = {};
