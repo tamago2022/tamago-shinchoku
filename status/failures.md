@@ -652,7 +652,7 @@
 ## 16. 「触る検品」の対象URLが、コードとは無関係なLovableプロジェクト管理画面(要ログイン)になっていた（778/779/780/781番）
 
 - **症状**：778番の1回目「触る検品NG：コンソールエラー1件」、780番「押しても無反応10件：『Close navigation men』『MANAGE COOKIES』」、781番「押しても無反応11件：『Close navigation men』『Search』」——いずれも英語UI文言で、実際には`https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1`（Lovableのプロジェクト編集画面そのもの、要ログイン）を検品していた。778/779/780/781番の実装対象は`joy-relief-station.lovable.app`本番サイトのFeedbackDoorコンポーネントであり、Lovable管理画面のUIとは完全に無関係。コード側は無罪なのに繰り返し不合格になっていた。
-- **原因（推定）**：`tools/auto_launcher.py`の`_pick_touch_target(check_url, urls)`は、完了報告の`urls`配列のうち「`/share/check/`を含まない`http`始まりのURL」を最優先で検品対象に選ぶ。この一連のLovable公開ブロック障害調査で、複数セッションが`.claude/PENDING_DECISIONS.md`の申し送り文中に`https://lovable.dev/projects/8ebdb648-...`（たまごさん向けの案内リンク）を書いており、これが何らかの経路（queue.jsonの復元処理や`urls`欄への誤混入）でtouch_target候補に紛れ込んだと見られる。
-- **直し方（今回の対応）**：778番の完了報告では、`urls`に本番の実ページURL（`joy-relief-station.lovable.app`配下）と確認ページURLだけを入れ、`https://lovable.dev/projects/...`は本文中に書いても`urls`配列には**絶対に入れない**運用で回避した。
+- **原因（推定）**：`tools/auto_launcher.py`の`_pick_touch_target(check_url, urls)`は、完了報告の`urls`配列のうち「`/share/check/`を含まない`http`始まりのURL」を最優先で検品対象に選ぶ。この一連のLovable公開ブロック障害調査で、複数セッションが`.claude/PENDING_DECISIONS.md`の申し送り文中や確認ページの「押せるリンク」欄に`https://lovable.dev/projects/8ebdb648-...`（たまごさん向けの案内リンク）を書いており、これが何らかの経路（queue.jsonの復元処理や`urls`欄への誤混入）でtouch_target候補に紛れ込んだと見られる。
+- **直し方（今回の対応）**：778番の完了報告・確認ページでは、`urls`および「押せるリンク」欄に本番の実ページURL（`joy-relief-station.lovable.app`配下）と確認ページURLだけを入れ、`https://lovable.dev/projects/...`は本文中の説明文だけに書いて`urls`配列や「押せるリンク」欄には**絶対に入れない**運用で回避した。
 - **二度と起こさないための仕掛け**：まだ無い（恒久修正候補：`_pick_touch_target`に`"lovable.dev/projects/" not in u`のような除外条件を足す）。次にこの症状（触る検品の失敗理由に英語UI文言・"Close navigation menu"・"MANAGE COOKIES"・"Search"等が出る）を見た担当は、**まずtouchUrlがlovable.dev/projectsになっていないか確認し、コード側を疑う前に検品対象URLの誤りを疑う**こと。
 - **日付**：2026-09-13（778/779/780/781番）
