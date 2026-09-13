@@ -183,47 +183,50 @@ function shinchokuToast(msg){
   clearTimeout(shinchokuToastEl._t);
   shinchokuToastEl._t = setTimeout(function(){ shinchokuToastEl.classList.remove("show"); }, 2200);
 }
-function shinchokuFallbackCopy(text){
+function shinchokuFallbackCopy(text, okMsg){
   try{
     var ta = document.createElement("textarea");
     ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
     document.body.appendChild(ta); ta.focus(); ta.select();
     document.execCommand("copy");
     document.body.removeChild(ta);
-    shinchokuToast("コピーしました");
+    shinchokuToast(okMsg || "コピーしました");
   }catch(e){ shinchokuToast("コピーできませんでした"); }
 }
-function shinchokuClipboardCopy(url){
+function shinchokuClipboardCopy(url, okMsg){
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(function(){ shinchokuToast("コピーしました"); }).catch(function(){ shinchokuFallbackCopy(url); });
+    navigator.clipboard.writeText(url).then(function(){ shinchokuToast(okMsg || "コピーしました"); }).catch(function(){ shinchokuFallbackCopy(url, okMsg); });
     return;
   }
-  shinchokuFallbackCopy(url);
+  shinchokuFallbackCopy(url, okMsg);
 }
-function shinchokuShare(url, title){
+function shinchokuShare(url, title, okMsg){
   if(navigator.share){
     // 案件#811実測：navigator.shareはある(=関数として存在する)のに、フォーカスが無い等の理由で
     // 失敗することがある。失敗を握りつぶすと押しても何も起きないように見えるため、
     // ユーザーが自分でキャンセルした場合(AbortError)以外は必ずコピーへフォールバックする。
     navigator.share({title: title, url: url}).catch(function(err){
       if(err && err.name === "AbortError") return;
-      shinchokuClipboardCopy(url);
+      shinchokuClipboardCopy(url, okMsg);
     });
     return;
   }
-  shinchokuClipboardCopy(url);
+  shinchokuClipboardCopy(url, okMsg);
 }
 var shareTopBtn = document.getElementById("shareTopBtn");
 if(shareTopBtn){
   shareTopBtn.addEventListener("click", function(){
-    shinchokuShare(location.href.split("#")[0], document.title);
+    shinchokuShare(location.href.split("#")[0], document.title, "このページのURLをコピーしました");
   });
 }
 document.addEventListener("click", function(e){
   var b = e.target.closest(".sharemini"); if(!b) return;
   var caseId = b.dataset.case, label = b.dataset.label;
   var url = location.href.split("#")[0] + "#" + caseId;
-  shinchokuShare(url, document.title + "（" + label + "）");
+  // 案件#811実測：トーストの文言が毎回「コピーしました」固定だと、直前に別の案を共有した
+  // 直後のクリックでは最終的なテキストが変わらずDOM変化なしと誤検出された(A案→B案の順で連続
+  // クリックすると2回目以降が無反応判定に見えた)。案のラベルを含めて毎回内容を変える。
+  shinchokuShare(url, document.title + "（" + label + "）", "「" + label + "」のURLをコピーしました");
 });
 </script>
 </body>
