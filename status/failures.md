@@ -656,3 +656,12 @@
 - **直し方（今回の対応）**：778番の完了報告・確認ページでは、`urls`および「押せるリンク」欄に本番の実ページURL（`joy-relief-station.lovable.app`配下）と確認ページURLだけを入れ、`https://lovable.dev/projects/...`は本文中の説明文だけに書いて`urls`配列や「押せるリンク」欄には**絶対に入れない**運用で回避した。
 - **二度と起こさないための仕掛け**：まだ無い（恒久修正候補：`_pick_touch_target`に`"lovable.dev/projects/" not in u`のような除外条件を足す）。次にこの症状（触る検品の失敗理由に英語UI文言・"Close navigation menu"・"MANAGE COOKIES"・"Search"等が出る）を見た担当は、**まずtouchUrlがlovable.dev/projectsになっていないか確認し、コード側を疑う前に検品対象URLの誤りを疑う**こと。
 - **日付**：2026-09-13（778/779/780/781番）
+
+## 17. 759番が3回目の重複発車を受けた（#15の恒久修正が未着手だったため）
+
+- **症状**：759番「できたものが新しく作った／直したで分けて探せるように」は、2026-09-12〜13にかけて実装・main合流・GitHub Pages本番反映・独立AI検品でpass判定・Dispatchへの完了報告まで全部終わっていた（`status/ai_verify_stats.json`のn:759の2つ目のエントリがverdict:"pass"、`status/dispatch_outbox.jsonl`にn:759でok:trueの行、`status/dispatch_reported.json`のns配列に759が含まれる）。それにもかかわらず`status/queue.json`上でstatusが"done"のまま固定されず、`tools/auto_launcher.py`に3回目の発車をされた（1回目は正規の完了、2回目は#15で発見・手動でdoneへ戻して対応、今回が3回目）。#15で「恒久修正（auto_launcher発車前チェックにpid生死確認を足す等）は未着手」としていた宿題が、案の定また同じ穴に落ちる形で顕在化した。
+- **原因**：#15と同じ（queue.json側の`status`が"done"へ正しく巻き戻らない書き込み経路がどこかにある。完全特定はできていない）。加えて#15の対応が「その場でqueue.jsonを1回doneへ書き戻す」個別対応にとどまり、`auto_launcher.py`側に再発防止のロジックを追加していなかったことが、3回目を招いた直接の原因。
+- **直し方（今回の対応）**：`tools/auto_launcher.py`の`main()`内、`waiting`を組み立てた直後・空き枠計算より前に、**発車直前の最終防波堤**を追加した。`status/dispatch_outbox.jsonl`を読み、waiting中の各itemの`n`と一致し`ok`がtruthyな行が既にあれば「もう完了報告済み」と判定し、発車せずにその場で`queue_store.load_queue()`で読み直した最新のqueue.jsonに対して該当itemのstatusを"done"へ書き戻し、noteに理由を追記して`queue_store.save_queue()`で保存し、`waiting`から除外する（queue.json側のstatusがどう転んでいても、外部の完了記録という動かぬ証拠で機械的に弾く設計。原因経路を完全特定できなくても症状そのものを塞ぐ）。
+- **二度と起こさないための仕掛け**：`auto_launcher.py`の発車ループが回るたびに毎回この照合を行うため、根本原因（queue.json巻き戻り経路）が再発しても、dispatch_outboxに完了記録さえあれば必ず発車前に弾かれる。次にこの症状（完了報告済みのnがwaitingとして再登場する）を見た担当は、まず`grep n:<番号> status/dispatch_outbox.jsonl`で重複発車でないか確認する（#15の教訓と同じ）。それでも突破するケースがあれば、queue.json側の書き込み経路（`command_ingest.py`・`relay_server.py`等）の巻き戻り箇所そのものを追う必要がある。
+- **日付**：2026-09-13（759番・3回目）
+- **追記（同日・店長のセルフレビュー）**：上記の初版ガード（「nが一致してdispatch_outbox.jsonlにok:trueがあるか」だけで判定）は、`command_ingest.py`の`queue_redo()`（680番・店主の「まだ直ってないよ、やり直して」指摘で発火する正規のやり直し機構）と衝突する致命的な欠陥を含んでいた。`queue_redo()`はやり直し時にitemの`status`を`waiting`へ戻すだけで、過去にoutboxへ書かれた`ok:true`の完了報告行は消さない設計のため、初版ガードのままだと「やり直し要求で正当に再オープンされた項目」まで「もう完了報告済み」と誤判定し、発車せずその場でdoneへ戻してしまい、やり直し機構そのものを永久に無効化するところだった（元の3重発火バグより悪い機能停止の回帰）。この欠陥は本番投入前に店長が独立にセルフレビューして発見・修正し、判定条件を「outboxの完了報告 と queue_redoがセットする`checkedAt`（正当な再オープン時刻）の新旧比較」へ直した。
