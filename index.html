@@ -618,9 +618,35 @@
     color:#ffe3a0; text-decoration:none; font-size:0.88rem; font-weight:700;}
   #dailyIngestBar a:active{opacity:0.75;}
   #dailyIngestBar .arrow{margin-left:auto; opacity:0.8; font-weight:400;}
+  /* 793番（2026-09-14）たまごさん「すぐ見たいやつ、ちょっと別枠にしてくんないかな？
+     俺の中で優先順位全然違うから」。urgent:true の未完了タスクだけを進捗表の一番上に出す。
+     0件のときは枠ごと消す（空の箱を見せない）。この枠だけは畳まない（既定で開いている）。
+     375px幅でも1行が縦1文字にならないよう、行内はflex-wrapで折り返す（固定pxではなく可変）。 */
+  #urgentBox{margin:0 0 12px; display:none; border:1px solid rgba(255,120,100,0.55); border-radius:14px;
+    background:linear-gradient(135deg,#3a1a16,#2a1210); overflow:hidden;}
+  #urgentBox .ub-head{padding:9px 14px; font-size:0.85rem; font-weight:800; color:#ffb3a0;
+    border-bottom:1px solid rgba(255,120,100,0.35); letter-spacing:.02em;}
+  #urgentBox .ub-row{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px;
+    padding:9px 14px; border-bottom:1px solid rgba(255,120,100,0.18); font-size:0.85rem;}
+  #urgentBox .ub-row:last-child{border-bottom:none;}
+  #urgentBox .ub-n{color:var(--sub); font-variant-numeric:tabular-nums; flex:0 0 auto;}
+  #urgentBox .ub-t{color:#ffe3da; font-weight:700; flex:1 1 160px; min-width:0;
+    overflow-wrap:anywhere;}
+  #urgentBox .ub-st{flex:0 0 auto; padding:2px 8px; border-radius:8px; font-size:0.75rem;
+    background:rgba(255,255,255,0.08); color:var(--kinari);}
+  #urgentBox .ub-elapsed{flex:0 0 auto; font-size:0.75rem; color:#ffc98a;}
+  #urgentBox .ub-link{flex:0 0 auto; color:var(--blue); text-decoration:none; font-weight:700;
+    font-size:0.8rem; padding:3px 8px; border:1px solid var(--blue); border-radius:8px;}
+  #urgentBox .ub-link:active{opacity:0.7;}
 </style>
 </head>
 <body>
+
+<!-- 793番（2026-09-14）たまごさん「すぐ見たいやつ、ちょっと別枠にしてくんないかな？
+     今のパーソナライズ、コンシェルジュ、LINE申請、デジタル絵本、これはすぐ見たいの。別枠がいいな。
+     俺の中で優先順位全然違うから」。urgent:true（status/queue.json）かつ未完了のものだけを、
+     他のどのバーよりも前に出す。0件のときは枠ごと消す（renderUrgent()参照）。 -->
+<div id="urgentBox"></div>
 
 <!-- 787番（2026-09-12）：「いまの現在地」1枚(status/genzaichi.json)の7項目を進捗表の
      一番上に出す。たまごさんは進捗表しか見ない、という指示に合わせ、他のどのバーよりも
@@ -2599,7 +2625,7 @@ function nowMoneyMark(s){ return (nowMoneyItem(s) || {}).costsMoney === true ? "
    たまごさん「同じ名前のタスクが4分の1とか4分の2とかあるんだけど、これ1本にできないの」（2026-09-06）。 */
 const STATUS_JA = {
   waiting: "発車待ち", running: "走行中", done: "おわり", cancelled: "取り消し",
-  awaiting_check: "確認待ち", later: "あとで", hold: "保留",
+  awaiting_check: "確認待ち", later: "あとで", hold: "保留", stuck: "手を止めた",
 };
 function splitGroupBaseTitle(it){
   // まとめ行のタイトルは分割元のoriginalTitle（無ければtitle）だけを表示し、

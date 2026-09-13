@@ -533,10 +533,13 @@ def queue_add(text, priority=None, label=None, origin=None):
     q["items"] = items
     q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
     _save_queue(q)
+    # 793番：メッセージは実際に保存した優先度（自動仕分けで変わっていればそれ）を出す。
+    final_p = item.get("priority")
+    demoted_note = "・急がない内容と判定して後回しにしました" if (final_p == 4 and p != 4) else ""
     if big_job:
         return "done", ("%d番：大きい仕事と判定したので、まず一覧作成だけを発車待ちに追加しました"
-                         "（P%s）。一覧ができたら自動で10件ずつに割ります" % (next_n, p if p else "-"))
-    return "done", "%d番として発車待ちに追加しました（P%s）" % (next_n, p if p else "-")
+                         "（P%s）。一覧ができたら自動で10件ずつに割ります" % (next_n, final_p if final_p else "-"))
+    return "done", "%d番として発車待ちに追加しました（P%s）%s" % (next_n, final_p if final_p else "-", demoted_note)
 
 
 def _split_targets(target):
