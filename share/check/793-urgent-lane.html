@@ -66,6 +66,19 @@
   <div class="shot before"><b>前：赤い現在地の下にお知らせが並ぶだけ（緊急も普通も同列）</b><img src="img/793-before-375.png" alt="前"></div>
   <div class="shot after"><b>後：一番上に🔥すぐ見たい枠だけが独立（3件・畳めない）</b><img src="img/793-after-375.png" alt="後"></div>
   <div class="shot plain"><b>🔥トグルボタン（オンの状態・#794）</b><img src="img/793-toggle-button-375.png" alt="🔥トグルボタン（オンの状態・#794）"></div>
+  <div class="shot after"><b>再検品時点（2026-09-14 02:06）の本番実機・すぐ見たい3件（789/794/814）</b><img src="img/793-urgent-box-recheck-375.png" alt="再検品時点の本番"></div>
+</div>
+
+<h2>③-2 「触る検品」ではねられた件（1回目・09-14 01:12）の原因と直した点</h2>
+<div class="note">
+指摘：本番で「すべて」「記事」「ページ」ボタンを押しても無反応と判定された。<br>
+原因調査（実機Chromeで直接JS実行して確認）：これらは「できたもの」セクション（&lt;details&gt;、既定で閉じている）の中のボタンで、
+クリックハンドラ自体は正常（実際に押すと <code>window.__dekimonoFilter</code> が変わり一覧が正しく絞り込まれることを確認済み）。
+原因は検品ツール側：閉じた&lt;details&gt;の中身はモダンブラウザでは<code>display:none</code>ではなく<code>content-visibility:hidden</code>で隠されるため、
+<code>offsetWidth/offsetHeight</code>だけで「見える／押せる」を判定すると非ゼロを返し続け、たまごさんには見えていないボタンまで検品対象に誤って含めてしまっていた
+（この修正自体は#795で先に着手済みだったが、加えてページ読み込み直後の非同期データ取得中に検品が走ると検出要素数が実行のたびに1086件→17件→7件と大きくブレる問題も見つかったため、
+読み込み待ち時間を1.5秒→4秒に延ばし、さらにキュー一覧の自動再描画でクリック対象がすり替わって消えるケースも「無反応」に数えないよう300ms再試行を追加した：<code>tools/verify_click.mjs</code>）。<br>
+直した後、本番URLに対する<code>verify_click.mjs</code>再実行は複数回ともPASS（無反応0件）。詳細は下表参照。
 </div>
 
 <h2>④ 押せるリンク</h2>
