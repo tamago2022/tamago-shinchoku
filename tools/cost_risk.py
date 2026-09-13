@@ -96,6 +96,8 @@ def _keyword_matches(text):
 
 
 def _classify_span(text, start, end, label):
+    before = text[max(0, start - _CONTEXT_WINDOW):start]
+    after = text[end:end + _CONTEXT_WINDOW]
     ctx = before + after
     is_past = any(w in ctx for w in _PAST_CONTEXT_WORDS)
     is_future = any(w in ctx for w in _FUTURE_CONTEXT_WORDS)
@@ -110,24 +112,25 @@ def _classify_span(text, start, end, label):
 
 def is_cost_risk(item):
     """お金がかかる可能性がある指示文か。
-    明示的なキーワード（fal.ai・課金・有料API等）は金額の有無に関わらず無条件True。
-    金額（円・ドル）だけの言及は、前後の文脈が「これから」の場合だけTrueにする。
-    過去の言及（捨てた・溶けた等）や文脈不明の金額だけでは費用ありと判定しない。"""
+    サービス名・契約行為そのものを指す明示的なキーワード（fal.ai・生成API等）は
+    金額の有無に関わらず無条件True。
+    金額（円・ドル）や「課金」「有料」系の言及は、前後の文脈が「これから」の場合だけTrueにする。
+    過去の言及（捨てた・溶けた等）や文脈不明のものだけでは費用ありと判定しない。"""
     text = _text_of(item)
     t = text.lower()
     if any(k in t for k in _EXPLICIT_KEYWORDS):
         return True
-    matches = _amount_matches(text)
+    matches = _amount_matches(text) + _keyword_matches(text)
     return any(mt["context"] == "future" for mt in matches)
 
 
 def estimate_note(item):
     """指示文から本数・金額の言及を拾って一言メモにする（自動抽出・雑でよい。
     厳密な計算はしない——最終判断は人が画面を見て行う）。
-    795番：過去の言及と判定した金額は出さない。将来の言及だけを実額候補として出し、
-    文脈が不明な金額は「要確認」として金額を空欄のまま伝える（埋めない）。"""
+    795番：過去の言及と判定した金額・キーワードは出さない。将来の言及だけを実額候補として出し、
+    文脈が不明なものは「要確認」として金額を空欄のまま伝える（埋めない）。"""
     text = _text_of(item)
-    matches = _amount_matches(text)
+    matches = _amount_matches(text) + _keyword_matches(text)
     future_amounts = [mt["label"] for mt in matches if mt["context"] == "future"]
     unknown_amounts = [mt["label"] for mt in matches if mt["context"] == "unknown"]
     past_amounts = [mt["label"] for mt in matches if mt["context"] == "past"]

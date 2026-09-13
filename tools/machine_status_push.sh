@@ -147,6 +147,13 @@ if ss:
 PYEOF
 } > "$REPO/status/_plan_usage_probe.txt" 2>&1
 python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
+
+# 795番（2026-09-14）：数字のズレをゼロに近づける常設の見張り番。5分おきの既存起動に相乗りする
+# （新しい常駐は増やさない。理由はpace.py冒頭のコメントと同じ）。
+# ①正本の食い違いを監査 ②fal1本単価の基準を直近7日実測中央値に更新 ③予測と実測のズレ率トップ5を再計算。
+python3 "$REPO/tools/number_audit.py" --quiet >/dev/null 2>&1 || true
+python3 "$REPO/tools/fal_cost_ledger.py" --recompute >/dev/null 2>&1 || true
+python3 "$REPO/tools/estimate_vs_actual.py" --report >/dev/null 2>&1 || true
 # 2026-09-03 たまごさん「進捗の数字がずれてる時点でダメ」。
 # Claudeアプリの実測ファイルは書き込みが止まることがあり（21:45で停止を確認）、推定に落ちると大きく外す。
 # 実際: 全モデル68% / Fable82% ← アプリ画面の値。推定: 111% / 88.5%。

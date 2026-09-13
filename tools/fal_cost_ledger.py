@@ -32,8 +32,9 @@ import argparse
 import io
 import json
 import os
+import statistics
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -169,6 +170,12 @@ def compute_summary(data=None):
     failed_total_yen = round(sum(
         r.get("totalCostYen") or 0 for r in records if r.get("result") == "failed_no_charge"), 2)
 
+    # 795番（2026-09-14）：1本単価の基準を「直近7日の実測中央値」に切り替える。
+    # 2026-09-12の事故：進捗表や見積もりが古い基準($2.43)を掲げ続け、実際は$6.74（2.8倍）だった。
+    # 固定値をどこかにハードコードして時々手で直す運用をやめ、呼ばれるたびにここで計算し直す
+    # （number_audit.py の fal_unit_cost_hardcode チェックが、この関数以外の固定値を見張る）。
+    recent_median = _recent_median_unit_cost(records, days=7)
+
     return {
         "thisMonth": this_month,
         "thisMonthTotalYen": month_total_yen,
@@ -187,6 +194,43 @@ def compute_summary(data=None):
         "discardedTotalYen": discarded_total_yen,
         "failedNoChargeTotalYen": failed_total_yen,
         "recordCount": len(records),
+        # 795番：出どころラベル（実測/推定/不明）を明示する。中央値そのものは実測記録の集計値。
+        "recentMedianUnitCostUsd7d": recent_median["usd"],
+        "recentMedianUnitCostYen7d": recent_median["yen"],
+        "recentMedianSampleCount7d": recent_median["count"],
+        "recentMedianLabel": recent_median["label"],
+        "recentMedianNote": recent_median["note"],
+    }
+
+
+def _recent_median_unit_cost(records, days=7):
+    """直近days日・採用済み(adopted)のunitCostを集めて中央値を出す（795番の1本単価基準）。
+    サンプルが無ければ label='不明'（埋めない。古い固定値へフォールバックしない）。"""
+    cutoff = datetime.now() - timedelta(days=days)
+    usd_vals, yen_vals = [], []
+    for r in records:
+        if r.get("result") != "adopted":
+            continue
+        try:
+            d = datetime.strptime((r.get("date") or "")[:10], "%Y-%m-%d")
+        except Exception:
+            continue
+        if d < cutoff:
+            continue
+        if r.get("unitCostUsd") is not None:
+            usd_vals.append(r["unitCostUsd"])
+        if r.get("unitCostYen") is not None:
+            yen_vals.append(r["unitCostYen"])
+    if not usd_vals and not yen_vals:
+        return {"usd": None, "yen": None, "count": 0, "label": "不明",
+                "note": "直近%d日の採用済み記録が無い（記録が増えれば自動で埋まる。古い固定値は使わない）" % days}
+    return {
+        "usd": round(statistics.median(usd_vals), 4) if usd_vals else None,
+        "yen": round(statistics.median(yen_vals), 2) if yen_vals else None,
+        "count": max(len(usd_vals), len(yen_vals)),
+        "label": "実測",
+        "note": "直近%d日・採用済み%d件の実測unitCostの中央値（呼ばれるたびに再計算・固定値ではない）" % (
+            days, max(len(usd_vals), len(yen_vals))),
     }
 
 
@@ -215,6 +259,8 @@ def _cli():
     ap = argparse.ArgumentParser(description="falの予算管理（モデル別コスト台帳）")
     ap.add_argument("--add", action="store_true", help="1件追加する")
     ap.add_argument("--summary", action="store_true", help="集計をJSONで表示する")
+    ap.add_argument("--recompute", action="store_true",
+                     help="新規追加なしでsummaryだけ再計算する（795番：直近7日中央値を毎回最新にする）")
     ap.add_argument("--check-budget", type=float, default=None, metavar="YEN",
                      help="この円数を使う前に上限を超えないか確認する")
     ap.add_argument("--n", type=int)
@@ -234,6 +280,14 @@ def _cli():
 
     if args.check_budget is not None:
         print(json.dumps(check_budget_before_spend(args.check_budget), ensure_ascii=False, indent=2))
+        return
+
+    if args.recompute:
+        data = load(LEDGER, {"records": [], "monthlyCapYen": DEFAULT_MONTHLY_CAP_YEN})
+        data["summary"] = compute_summary(data)
+        data["updatedAt"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+09:00")
+        _atomic_save(data)
+        print("再計算した: " + json.dumps(data["summary"], ensure_ascii=False))
         return
 
     if args.add:
