@@ -1606,6 +1606,7 @@ document.addEventListener("toggle", (e) => {
     numberAuditSec: () => { if(typeof refreshNumberAudit === "function") refreshNumberAudit(); },
     aiVerifySec: () => { if(typeof refreshAiVerify === "function") refreshAiVerify(); },
     kenpouSec: () => { if(typeof refreshKenpou === "function") refreshKenpou(); },
+    laterTabsSec: () => { if(typeof refreshLaterTabs === "function") refreshLaterTabs(); },
     // 798番⑤（AI検品差し戻し対応・2026-09-14）：queue_light.json（117KB）は
     //   発車待ち/確認待ち/完了/後回し/手を止めた の5つの<details>のどれかが開いている
     //   時だけ意味がある表示。閉じたまま10秒おきに取り続けていたのが411KB/60秒の正体だった。
@@ -1717,7 +1718,9 @@ function refreshCost(){
       withScrollLock796(()=>renderCostTop5(JSON.parse(text)));
     }).catch(()=>{});
 }
-refreshCost();
+// 798番⑤（AI検品差し戻し対応・2026-09-14）：閉じたまま毎回1回叩いていた初回呼び出しにも
+//   detailsOpen判定を付ける（閉じている間は一切取らない、を初回ロードにも徹底する）。
+if(detailsOpen('costSec')) refreshCost();
 setInterval(()=>{ if(!document.hidden && detailsOpen('costSec')) refreshCost(); }, 60000);
 
 /* ───── 616番：「できたもの」棚（2026-09-07） ─────
@@ -1862,7 +1865,7 @@ document.addEventListener("click", e=>{
   const inp = document.getElementById("dkq"); if(!inp) return;
   inp.addEventListener("input", () => { window.__dekimonoQuery = inp.value; renderDekita(); });
 })();
-refreshDekimono();
+if(detailsOpen('dekitaSec')) refreshDekimono();
 setInterval(()=>{ if(!document.hidden && detailsOpen('dekitaSec')) refreshDekimono(); }, 60000);
 
 /* ───── 632番：falの予算（モデル別）表示（2026-09-07） ─────
@@ -1931,7 +1934,7 @@ function refreshFalBudget(){
     })
     .catch(()=>{});
 }
-refreshFalBudget();
+if(detailsOpen('falBudgetSec')) refreshFalBudget();
 setInterval(()=>{ if(!document.hidden && detailsOpen('falBudgetSec')) refreshFalBudget(); }, 60000);
 
 /* ───── 795番：数字の正しさ（正本の食い違い＋予測と実測のズレ率トップ5）（2026-09-14） ─────
@@ -1994,7 +1997,7 @@ function refreshNumberAudit(){
     });
   }).catch(()=>{});
 }
-refreshNumberAudit();
+if(detailsOpen('numberAuditSec')) refreshNumberAudit();
 setInterval(()=>{ if(!document.hidden && detailsOpen('numberAuditSec')) refreshNumberAudit(); }, 60000);
 
 /* ───── 492番：AI検品(Verifier)の実績を要約表示（2026-09-06） ─────
@@ -2025,7 +2028,7 @@ function refreshAiVerify(){
       withScrollLock796(()=>renderAiVerify(JSON.parse(text)));
     }).catch(()=>{});
 }
-refreshAiVerify();
+if(detailsOpen('aiVerifySec')) refreshAiVerify();
 setInterval(()=>{ if(!document.hidden && detailsOpen('aiVerifySec')) refreshAiVerify(); }, 60000);
 
 /* ───── 715番：憲法遵守点検（2026-09-10） ─────
@@ -2086,7 +2089,7 @@ function refreshKenpou(){
       withScrollLock796(()=>renderKenpou(JSON.parse(text)));
     }).catch(()=>{});
 }
-refreshKenpou();
+if(detailsOpen('kenpouSec')) refreshKenpou();
 setInterval(()=>{ if(!document.hidden && detailsOpen('kenpouSec')) refreshKenpou(); }, 60000);
 
 /* ───── 652番：あとで見る棚（2026-09-09） ─────
@@ -2141,8 +2144,8 @@ function refreshLaterTabs(){
       withScrollLock796(()=>renderLaterTabs(JSON.parse(text)));
     }).catch(()=>{});
 }
-refreshLaterTabs();
-setInterval(()=>{ if(!document.hidden) refreshLaterTabs(); }, 300000);
+if(detailsOpen('laterTabsSec')) refreshLaterTabs();
+setInterval(()=>{ if(!document.hidden && detailsOpen('laterTabsSec')) refreshLaterTabs(); }, 300000);
 
 /* 2026-09-05 このページがMac自身から配られているとき（家のWi-Fiの中で http://192.168.x.x:8788 を
    開いたとき）は、**自分がいる場所がそのまま中継所**。トンネルを探しにいかない。
