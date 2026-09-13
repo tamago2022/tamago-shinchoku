@@ -778,6 +778,17 @@
 <div class="note" id="falBudgetNote" style="margin-top:6px"></div>
 </div></details>
 
+<!-- 795番（2026-09-14）：数字のズレをゼロに近づける「見張り番」。
+     たまごさん「計算、見立て、見積もり、なんかズレてるよね」。
+     ①正本の食い違い（number_conflicts.json）②予測と実測のズレ率トップ5（estimate_vs_actual_summary.json）
+     を1画面にまとめる。0件のときは緑で「食い違いなし」とだけ出す（空の箱を見せない）。 -->
+<details class="sec" id="numberAuditSec"><summary>📏 数字の正しさ <small id="numberAuditMeta"></small></summary><div class="in">
+<div class="g" id="numberAuditConflicts"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
+<div class="note" style="margin-top:10px;font-weight:600">📈 予測と実測のズレ率トップ5</div>
+<div id="numberAuditGaps"><div class="card note">読み込み中…</div></div>
+<div class="note" id="numberAuditNote" style="margin-top:6px"></div>
+</div></details>
+
 <details class="sec"><summary>マシンとクレジット <small id="machineAge"></small></summary><div class="in">
 <div class="meters" id="meters"></div>
 <div class="sum" id="healthSum"></div>
@@ -1590,6 +1601,7 @@ document.addEventListener("toggle", (e) => {
     costSec: () => { if(typeof refreshCost === "function") refreshCost(); },
     dekitaSec: () => { if(typeof refreshDekimono === "function") refreshDekimono(); },
     falBudgetSec: () => { if(typeof refreshFalBudget === "function") refreshFalBudget(); },
+    numberAuditSec: () => { if(typeof refreshNumberAudit === "function") refreshNumberAudit(); },
     aiVerifySec: () => { if(typeof refreshAiVerify === "function") refreshAiVerify(); },
     kenpouSec: () => { if(typeof refreshKenpou === "function") refreshKenpou(); },
   };
@@ -1873,6 +1885,10 @@ function renderFalBudget(d){
       ? card("gray", "1本あたり最安", `${s.cheapestPerUnit.unitCostYen}円`, "",
           `<p>${esc(s.cheapestPerUnit.model || "")}（${esc(s.cheapestPerUnit.what || "")}・${s.cheapestPerUnit.n}番）</p>`)
       : "",
+    // 795番：1本単価の基準は「直近7日の実測中央値」で毎回計算し直す（固定値のまま更新漏れを防ぐ）
+    card(s.recentMedianLabel === "実測" ? "gray" : "yellow", "1本単価の基準(直近7日実測中央値)",
+      s.recentMedianUnitCostYen7d != null ? `${s.recentMedianUnitCostYen7d}円` : "不明", "",
+      `<p>${esc(s.recentMedianNote || "")}</p>`),
   ].join("");
   modelBox.innerHTML = (s.byModel || []).map(b => card(
     "gray", esc(b.model), `${b.totalYen}円`, `<span class="n">${b.count}回</span>`,
@@ -1906,6 +1922,69 @@ function refreshFalBudget(){
 }
 refreshFalBudget();
 setInterval(()=>{ if(!document.hidden && detailsOpen('falBudgetSec')) refreshFalBudget(); }, 60000);
+
+/* ───── 795番：数字の正しさ（正本の食い違い＋予測と実測のズレ率トップ5）（2026-09-14） ─────
+   status/number_conflicts.json（tools/number_audit.py）と
+   status/estimate_vs_actual_summary.json（tools/estimate_vs_actual.py）を読むだけ。
+   どちらも5分おきの既存起動(machine_status_push.sh)に相乗りして更新される。 */
+function renderNumberConflicts(d){
+  const box = document.getElementById("numberAuditConflicts");
+  const meta = document.getElementById("numberAuditMeta");
+  if(!box) return;
+  const results = (d && d.results) || [];
+  const conflicts = results.filter(r => r.status === "conflict");
+  if(meta) meta.textContent = conflicts.length
+    ? `⚠️食い違い${conflicts.length}件` : `✅食い違いなし（${results.length}項目監査）`;
+  if(!results.length){
+    box.innerHTML = `<div class="card note" style="grid-column:1/-1">まだ監査結果が無い</div>`;
+    return;
+  }
+  box.innerHTML = results.map(r => {
+    const color = r.status === "conflict" ? "red" : (r.status === "unknown" ? "yellow" : "green");
+    const valLine = (r.a && r.b)
+      ? `<p>${esc(r.a.file)}#${esc(r.a.path)}=${esc(String(r.a.value))} ／ ${esc(r.b.file)}#${esc(r.b.path)}=${esc(String(r.b.value))}</p>`
+      : "";
+    const hitsLine = (r.hits || []).map(h => `<p>${esc(h.file)}: ${esc(h.match)}</p>`).join("");
+    return card(color, esc(r.id || ""), r.status === "conflict" ? "食い違い" : (r.status === "unknown" ? "不明" : "一致"),
+      "", `<p>${esc(r.note || "")}</p>${valLine}${hitsLine}`);
+  }).join("");
+}
+function renderEstimateVsActual(d){
+  const box = document.getElementById("numberAuditGaps");
+  const note = document.getElementById("numberAuditNote");
+  if(!box) return;
+  const top = (d && d.top) || [];
+  if(!top.length){
+    box.innerHTML = `<div class="card note">まだ突き合わせが無い（見積もりを1件記録すると増える）</div>`;
+    if(note) note.textContent = "";
+    return;
+  }
+  box.innerHTML = top.map(p => {
+    const color = p.needsFix ? "red" : "gray";
+    const ratioTxt = (p.ratio != null) ? `${p.ratio}倍` : "?";
+    return `<div class="row">
+      <div class="when">${p.n != null ? p.n + "番・" : ""}${esc(p.kind || "")}</div>
+      <div class="ct">見積 ${esc(String(p.estimateValue))}${esc(p.unit || "")} → 実測 ${esc(String(p.actualValue))}${esc(p.unit || "")}（${ratioTxt}）${p.needsFix ? " 🔴式を直す対象" : ""}</div>
+      <div class="cm">見積式: ${esc(p.estimateFormula || "")}</div>
+      <div class="cm">実測元: ${esc(p.actualSource || "")}</div>
+    </div>`;
+  }).join("");
+  if(note) note.textContent =
+    `${d.note || ""} 対象${d.pairCount || 0}組中${d.needsFixCount || 0}組が要修正。更新: ${d.updatedAt || "—"}`;
+}
+function refreshNumberAudit(){
+  Promise.all([
+    fetch("status/number_conflicts.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
+    fetch("status/estimate_vs_actual_summary.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
+  ]).then(([conflictsData, gapsData]) => {
+    withScrollLock796(()=>{
+      if(conflictsData) renderNumberConflicts(conflictsData);
+      if(gapsData) renderEstimateVsActual(gapsData);
+    });
+  }).catch(()=>{});
+}
+refreshNumberAudit();
+setInterval(()=>{ if(!document.hidden && detailsOpen('numberAuditSec')) refreshNumberAudit(); }, 60000);
 
 /* ───── 492番：AI検品(Verifier)の実績を要約表示（2026-09-06） ─────
    status/ai_verify_stats.json（tools/auto_launcher.py の _record_ai_verify() が

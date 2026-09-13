@@ -1690,6 +1690,32 @@ def _maybe_rebuild_queue_light():
         log("queue_light再生成に失敗（本体は継続）: %s" % e)
 
 
+def effective_priority(it, prio):
+    """発車待ち1件の「実効優先度」を返す。item自身が持つpriorityを最優先し、
+    無ければ古い priority.json の Qキー方式（prio辞書）へフォールバック。どちらも無指定なら9（最後）。
+    793番（2026-09-14）：_main_impl()内のネスト関数だったものをテスト可能な形でここへ切り出した
+    （動作は元のコードと完全に同一。tools/test_urgent_lane.py から直接呼べるようにするため）。"""
+    p = it.get("priority") or (prio or {}).get("Q%d" % it.get("n"))
+    return int(p) if p else 9
+
+
+def queue_rank_key(it, prio):
+    """発車待ちの並び替えキー。auto_launcher._main_impl()（実際の発車順）と
+    tools/test_urgent_lane.py（回帰テスト）の両方がこの1つの規則だけを見る。
+
+    並び：① urgent（すぐ見たい）が最優先 → ② 優先度（A=1〜E=5・空き枠F=6） →
+         ③ 手で並べ替えた順（order） → ④ 番号。
+
+    2026-09-13 たまごさん「すぐ見たいやつ、ちょっと別枠にしてくんないかな？
+    俺の中で優先順位全然違うから。1週間後でいいよってのもあれば、明日にでも見たいってのもある」
+    → urgent:true（すぐ見たい）は priority より強い。旗を立てるのはDispatchかたまごさんだけ
+    （command_ingest.queue_urgent／自動では立たない）。理由は urgentReason に入れる。"""
+    p = effective_priority(it, prio)
+    o = it.get("order")
+    u = 0 if it.get("urgent") else 1
+    return (u, p, int(o) if isinstance(o, int) else 10 ** 6, it.get("n") or 99)
+
+
 def _main_impl():
   # 2026-09-13（793番停止事故）：以前はここで harvest()（確認ページのURLを1本ずつ実際に
   #   開いて検品する content_check を含む・重い/ネットワーク待ちが起こりうる）を発車判定より
@@ -1800,30 +1826,16 @@ def _main_impl():
       # ---- 優先度順に並べる。たまごさんがPWAで付けたPが最優先、次に元の番号 ----
       # 682番（2026-09-09）画面表示は A〜E（＋空き枠F）の文字だが、中身の数字(1〜6)は変えていない。
       #   A=1 今すぐ／B=2 早めに／C=3 普通／D=4 後回し／E=5 いつでも／F=6 空き枠（安全弁だけ）。
-      #   この rank() は昔からある数字のままなので壊れない。
+      #   この規則は昔からある数字のままなので壊れない。
+      # 793番（2026-09-14）：並べ替えキー本体は queue_rank_key()（モジュール直下・テスト可能）へ
+      #   切り出した。ここでは prio 辞書を渡すだけの薄いラッパーに変える（動作は完全に同一）。
       prio = (load(PRIORITY, {}).get("priority") or {})
 
       def _effective_priority(it):
-          p = it.get("priority") or prio.get("Q%d" % it.get("n"))
-          return int(p) if p else 9
+          return effective_priority(it, prio)
 
       def rank(it):
-          # 2026-09-04：スマホの「＋発車待ちに追加」で作った項目はitem自身に"priority"を持つ
-          #   （queue_add・command_ingest.py）。既存のpriority.jsonのQキー方式より優先する。
-          p = _effective_priority(it)
-          # 2026-09-05 たまごさん「ドラッグアンドドロップで順番入れ替えられるようにしたい」
-          #   手で並べ替えた順（order）は、同じ優先度の中での並びとして最優先で効かせる。
-          #   並べ替えていないものは order が無いので、従来どおり番号順で後ろに付く。
-          o = it.get("order")
-          # 2026-09-13 たまごさん「すぐ見たいやつ、ちょっと別枠にしてくんないかな？
-          #   俺の中で優先順位全然違うから。1週間後でいいよってのもあれば、明日にでも見たいってのもある」
-          #   → urgent:true（すぐ見たい）は priority より強い。旗を立てるのは
-          #     Dispatchかたまごさんだけ（自動では立たない）。理由は urgentReason に入れる。
-          u = 0 if it.get("urgent") else 1
-          return (u,
-                  p,
-                  int(o) if isinstance(o, int) else 10 ** 6,
-                  it.get("n") or 99)
+          return queue_rank_key(it, prio)
 
       # 2026-09-05 たまごさん「何も動いてない状態は作らないで。何かしら回しといて。クレジット消費最小で」
       #   本物が出せない（週枠が上限・発車を止めている等）ときでも、工場は回っている状態を保つ。
