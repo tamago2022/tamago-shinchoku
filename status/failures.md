@@ -620,3 +620,31 @@
 - **直し方（今回の対応）**：無理に再試行せず、ハングしたnodeプロセスは放置（`kill`はauto mode classifierに拒否され、実害も小さいメモリ量だったため）。ブラウザ操作が要る作業自体を見送り、ファイル編集・git操作だけで完結する側の作業を先に進めた。
 - **二度と起こさないための仕掛け**：まだ無い。次にブラウザ自動化を試す担当は、着手前に`uptime`でload average 1分値を見て、**8を大きく超えている（目安2倍以上）場合は新規Chrome launchを試みず先に軽い作業から片づける**、を運用ルールとして推奨する（`auto_launcher.py`の既存の`really_bad`判定＝loadavg1>8とも整合）。
 - **日付**：2026-09-13（801番）
+
+
+---
+
+## 797番自動記録：発車が17分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が17分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-09-13 11:21
+
+
+---
+
+## 797番自動記録：発車が16分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が16分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-09-13 12:11
+
+---
+
+## 15. 完了済みのタスクがqueue.json上で"running"のまま残り、auto_launcherに二重発車された（759番）
+
+- **症状**：759番「できたものが新しく作った／直したで分けて探せるように」は、2026-09-12〜13にかけて実装・確認ページ・本番push・Dispatch報告（`dispatch_outbox.jsonl` 2026-09-13T00:46:25、`ok:true`）・`dekimono.json`への棚登録まで全部完了していたのに、`status/queue.json`のitems内では`status:"running"`のまま残っていた。そのため2026-09-13 11:55にauto_launcherが新しいpid/sessionIdで759番を再度発車し、まったく同じ仕事の後任セッションが立ち上がった。
+- **原因（推定）**：正常フローは`harvest()`が「status=running かつ pidが死んでいる」項目を回収してdoneにする。しかし759番の場合、前回セッションが（AI検品の自動PASS経路を通らず）dispatch_outbox.jsonlへの手動追記だけで終了し、`queue.json`側の`status`を`done`へ戻す処理を経由しなかったため、runningのまま取り残された。pidが死んでいればいずれharvestが拾うはずだが、その前にauto_launcherの発車ロジック側が同じnをrunningのまま新しいpidで上書き発車してしまった（発車前に「既にstatus=runningの項目は飛ばす」チェックが、前回pidの生死を見ずに素通りしている可能性がある）。
+- **直し方（今回の対応）**：再実装はせず、本番URL（`share/check/759-dekita-new-vs-fixed-nakameguro-recovered.html`・`status/dekimono.json`）をcurl/urllibで実測し、kind分類(new:59/fixed:222)・中目黒#749がkind:"fixed"で検索可能なことを確認。`queue_store.save_queue()`で759番のstatusを`done`に更新してcommit・push（コミット`79fc05d4`）。
+- **二度と起こさないための仕掛け**：まだ無い。次に同じ症状（発車直後に`share/check`や`dekimono.json`を検索すると同一nの完了記録が既にある）を見つけた担当は、まず`grep n:759 status/dispatch_outbox.jsonl`のように自分のn番号で検索して重複発車でないか確認してから着手するとクレジットの無駄打ちを避けられる。恒久修正（auto_launcher発車前チェックにpid生死確認を足す等）は未着手。
+- **日付**：2026-09-13（759番）
