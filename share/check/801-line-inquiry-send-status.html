@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#792 亮太さんページに実プレイリストを反映（792番） 確認ページ</title>
+<title>#801 LINE2窓口への問い合わせ・返信見張りの現状 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,42 +47,44 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #792 亮太さんページに実プレイリストを反映（792番）</div>
-<h1>#792 亮太さんページに実プレイリストを反映（792番）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #801 LINE2窓口への問い合わせ・返信見張りの現状</div>
+<h1>#801 LINE2窓口への問い合わせ・返信見張りの現状</h1>
 <div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-亮太さん向けパーソナライズページ（/welcome/chabo-friend）の安心4枠を、本人が実際に送ったYouTube URL付き追加プレイリストの中身に差し替えました。Tom Waits「Martha」／中島みゆき「わかれうた」／THE BLUE HEARTS「情熱の薔薇」／RCサクセション「雨あがりの夜空に」。冒険1枠（Edith Piaf「愛の讃歌」）の橋の理由も実データに合わせて書き直しました。甥っ子向け（/welcome/nephew-2020s）は既に本番で動いているため今回は変更していません。
+791番で確定した5項目の問い合わせ文面をそのまま使い、両窓口(Creators Market／スタンプメーカー)へ送る作業に着手。だが791番が実測済みの通り、フォームは<b>本人のLINE登録電話番号が必須</b>＋<b>画像キャプチャ保護</b>という本人確認の壁があり、これはAIエージェントには突破できない（電話番号を知らない・キャプチャは本人確認が目的のため）。加えて今回は着手時点でMac全体が高負荷（Chrome関連プロセス201個・load average最大27.6）で、確認用のheadless Chrome起動も3回ともハング／タイムアウトし送信を試みることさえできなかった。<br><br>そのため<b>今回は自動送信を見送り</b>、確実にできる①返信の見張り機構(tools/check_line_reply.py)を新設し既存の心臓(heartbeat.sh)へ相乗り登録②進捗表(data.js/index.html)に「LINEから返信が来たら知らせる」表示を追加、の2点を実装・main反映した。送信そのものは<b>791番の確認ページのコピペ文面を使い、たまごさんが選択肢を選んで本文を貼り、電話番号とキャプチャを入力して送信ボタンを押す</b>のが最短経路（AI側の技術的な壁のため、ここだけは人の手が必要）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>5枚</b><span>安心4:冒険1のカード枚数</span></div>
-  <div class="num"><b>PASS</b><span>独立検品（artistId/songId実在確認）</span></div>
-  <div class="num"><b>保留</b><span>Lovable公開（下記の事情）</span></div>
+  <div class="num"><b>1本</b><span>新設した見張りコード(check_line_reply.py)</span></div>
+  <div class="num"><b>1回</b><span>見張りコードの動作テスト(blocked:no_credentialで正常終了を確認)</span></div>
+  <div class="num"><b>0件</b><span>自動送信できた件数(本人確認の壁+Mac高負荷のため今回は0)</span></div>
+  <div class="num"><b>4回</b><span>headless Chrome起動を試した回数(全てタイムアウト/ハング)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装コミット(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/7a523a65" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/7a523a65</a></li>
-  <li><b>本番ページ（まだ旧データ）</b><a href="https://joy-relief-station.lovable.app/welcome/chabo-friend" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/welcome/chabo-friend</a></li>
-  <li><b>甥っ子ページ（既存・稼働中）</b><a href="https://joy-relief-station.lovable.app/welcome/nephew-2020s" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/welcome/nephew-2020s</a></li>
-  <li><b>なぜ好きかの分析（次に使い回せる形）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/7a523a65" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/7a523a65</a></li>
+  <li><b>①791番の確認ページ(コピペ用文面はここ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/791-line-inquiry-draft.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/791-line-inquiry-draft.html</a></li>
+  <li><b>②LINE Creators Marketへの問い合わせフォーム</b><a href="https://contact.line.me/serviceId/10569" target="_blank" rel="noopener">https://contact.line.me/serviceId/10569</a></li>
+  <li><b>③LINEスタンプメーカーへの問い合わせフォーム</b><a href="https://contact-cc.line.me/detailId/11844" target="_blank" rel="noopener">https://contact-cc.line.me/detailId/11844</a></li>
+  <li><b>④進捗表(LINE返信が来たらここに表示される)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>artistId/songId 5件が実在するか</td><td class="yes">tamago-verifierが確認済み</td></tr>
-<tr><td>家庭の重いエピソードを公開ページに書いていないか</td><td class="yes">確認済み・曲名レベルの事実のみ</td></tr>
-<tr><td>mainへマージされているか</td><td class="yes">コミット7a523a65</td></tr>
-<tr><td>Lovable本番に反映されているか</td><td class="no">公開ボタンが押せていない（下記）</td></tr>
+<tr><td>両窓口への自動送信</td><td class="yes">no</td></tr>
+<tr><td>791番の文面(コピペ用)を確定済みのまま維持</td><td class="yes">yes</td></tr>
+<tr><td>返信見張りコードの新設・心臓への登録</td><td class="yes">yes</td></tr>
+<tr><td>見張りコードの動作テスト(no_credentialで正常終了)</td><td class="yes">yes</td></tr>
+<tr><td>進捗表への「LINE返信あり」表示追加</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-2026-09-13 09:57追記：公開専用Chromeに溜まっていた重複タブ33個を8個に整理し、公開スクリプトの恒久バグ2件（①process.exit()がブラウザ接続の後片付けを飛ばしていた問題、②ポップオーバーのクリックが間に合わない問題への直接クリック対策）を修正してmainへ反映済みです。ただしこの作業環境全体のディスクI/O遅延が非常に重く、単純なgit操作すら数分〜10分以上かかる状態が断続的に発生しており、修正後も複数回の公開試行で接続タイムアウト・クリック失敗を繰り返しました。本番URLは09-13 09:57時点でも旧データのままです。30分おき自動便（com.tamago.joy-relief-station.lovable-publish）が環境負荷が下がり次第、拾って公開する見込みです。
+このページは #801 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

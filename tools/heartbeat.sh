@@ -108,6 +108,9 @@ while :; do
   #   新しいlaunchd便は増やさず、既存の心臓に相乗り。実際にIMAPへ繋ぐのはスクリプト内部で
   #   1日1回に間引いている（それ以外の15秒ごとの呼び出しは即座に戻るだけで負荷ゼロに近い）。
   ( python3 "$REPO/tools/check_anthropic_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-13（801番）：LINE Creators Market／スタンプメーカーへの問い合わせ返信を1日1回チェックする見張り。
+  #   check_anthropic_reply.pyと全く同じ間引きパターンで既存の心臓に相乗り（新しいlaunchd便は増やさない）。
+  ( python3 "$REPO/tools/check_line_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-11（756番）：毎朝の入荷見回り（707番）を手作業から自動へ。前日にjoy-relief-stationへ
   #   新規登録された動画を見回るタスクを、1日1回だけ発車待ちへ積む（check_anthropic_reply.pyと
   #   同じ間引きパターン。新しいlaunchd便は増やさない）。

@@ -672,6 +672,10 @@
      data.js の anthropicReply が null の間は display:none のまま（何も出さない）。 -->
 <div id="anthropicAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;"></div>
 
+<!-- 801番（2026-09-13）：LINE問い合わせ返信の見張り。626番のanthropicAlertと同じパターン。
+     data.js の lineReply が null の間は display:none のまま（何も出さない）。 -->
+<div id="lineReplyAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;"></div>
+
 <!-- 715番（2026-09-10）：憲法の遵守点検（毎日1回・自動）。
      たまごさん「たまごが言ったルールが引き継がれてないっていうのが、だから困るんだよね。
      だからそれを仕組みにして」→ 書いてあるルールのうち機械で測れるものを毎日チェックし、
@@ -4305,7 +4309,7 @@ function __dataReady2(){
   }
   __dataReadyRetries = 0;
   document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
-  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail();
+  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderLineReplyAlert(); renderMicAndDraftMail();
   saveShinchokuCache();
 };
 // 626番：Anthropic返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
@@ -4318,6 +4322,17 @@ function renderAnthropicAlert(){
   el.innerHTML = `🔔 Anthropicから返信が来ています（${esc(a.subject || "件名なし")} / ${esc(a.date || "")}）　`
     + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`
     + (a.summary ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.85;">${esc(a.summary)}</div>` : "");
+}
+// 801番：LINE問い合わせ返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
+function renderLineReplyAlert(){
+  const el = document.getElementById("lineReplyAlert");
+  if(!el) return;
+  const a = D && D.lineReply;
+  if(!a){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.style.display = "block";
+  el.innerHTML = `🔔 LINEから返信が来ています（${esc(a.subject || "件名なし")} / ${esc(a.date || "")}）　`
+    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`
+    + (a.body ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.9;">${esc(a.body)}</div>` : "");
 }
 // 683番：①マイク不具合の再現ログ（配列に1行足すだけで増える）②Anthropicへの下書きメール
 // （宛先・件名・本文入りでGmail作成画面を開くリンク。送信ボタンはたまごさんが押す）。

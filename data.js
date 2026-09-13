@@ -23,6 +23,18 @@ window.SHINCHOKU = {
           "(anthropicDraftMail)はまだたまごさん送信前のため、その返信はまだ存在しない。"
   },
 
+  // 801番（2026-09-13）：LINE Creators Market／LINEスタンプメーカーへ送った問い合わせ（自動化の可否・5項目）の
+  // 返信を1日1回チェックする見張り（tools/check_line_reply.py、既存の心臓＝heartbeat.shに相乗り）。
+  // gmail_app_password未設置のため626番のanthropicReplyと同じくblocked:no_credentialで止まっている
+  // （このファイルの下のlineWatchStatusに実測状態を記録）。パスワードが設定され次第、心臓が1日1回自動で拾う。
+  lineReply: null,
+  lineWatchStatus: {
+    state: "blocked_no_credential",
+    credPathExpected: "/Users/mac/.tamago/gmail_app_password",
+    note: "626番のAnthropic見張りと同じ理由（アプリパスワード未設置）で今は動いていない。" +
+          "たまごさんが上記パスに書き込めば、次のheartbeatサイクルから自動で拾い始める。"
+  },
+
   // 683番（2026-09-09）：マイク不具合の「再現条件を記録できる形」。新しい置き場所は作らず、
   // ここに配列で1行足すだけにする（626番のanthropicReplyと同じ手更新パターン）。
   // たまごさんが「またマイクが使えない」と言ったら、time・load・状況を1件足すだけでよい。
