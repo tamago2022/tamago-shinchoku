@@ -518,6 +518,12 @@ def queue_add(text, priority=None, label=None, origin=None):
         item["originalWhat"] = text
     if p is not None:
         item["priority"] = p
+    # 793番（2026-09-14）「急がないもの」を自動で後回しへ。urgentが立っていない新規タスクだけ対象。
+    if not item.get("urgent"):
+        demote, kw = _auto_demote_priority(title, text)
+        if demote:
+            _log_auto_demoted(next_n, title, kw, item.get("priority"))
+            item["priority"] = 4
     # 案件#676：新規で積む段階でお金の匂いを判定しておく。falは当面使わない方針なので、
     # 言及があれば無条件でお金の確認待ちにする（auto_launcher.pyがOKが出るまで発車しない）。
     if cost_risk.is_cost_risk(item) or cost_risk.is_fal_task(item):
@@ -920,6 +926,81 @@ def queue_prio(target):
     return "failed", "%d番がqueue.jsonに見つかりません" % n
 
 
+def queue_urgent(target):
+    """進捗表「🔥すぐ見たい」トグル → その番号の urgent を反転する（793番・2026-09-14）。
+
+    たまごさん「今のパーソナライズ、コンシェルジュ、LINE申請、デジタル絵本、これはすぐ見たいの。
+    別枠がいいな」「タスクを、これを最初にやるとか、それも自動化したいね」。
+    urgent は auto_launcher.py の rank() で priority より強く効く（2026-09-13 05:21 実装済み）。
+    旗は自動では立たない（立てるのはDispatchかたまごさんだけ）という原則を守るため、
+    このボタンでON にするときだけ、押した本人・時刻を urgentReason に必ず記録する。
+    target は番号1つ（"37"）。
+    """
+    try:
+        n = int(target)
+    except Exception:
+        return "failed", "番号が不正: %r" % target
+    q = _load_queue()
+    items = q.get("items") or []
+    it = _find_item(items, n)
+    if it is None:
+        return "failed", "%d番がqueue.jsonに見つかりません" % n
+    if it.get("urgent"):
+        it.pop("urgent", None)
+        it.pop("urgentReason", None)
+        msg = "%d番の🔥すぐ見たいを外しました" % n
+    else:
+        it["urgent"] = True
+        it["urgentReason"] = "たまごさんが進捗表の🔥ボタンで指定（%s）" % time.strftime("%Y-%m-%d %H:%M")
+        msg = "%d番を🔥すぐ見たいにしました" % n
+    q["items"] = items
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    return "done", msg
+
+
+# ---- 793番（2026-09-14）「急がないもの」を自動で後ろへ落とす仕分け ----
+# たまごさん「コピーが違ってるよとか、そんなのもう何にも急いでないのよ」。
+# 新しく積まれたタスク（queue_add経由）の題名・本文がここに当たり、かつ urgent が
+# 立っていなければ priority=4（D 後回し）に落とす。誤判定が怖いので、落とした記録は
+# 必ず status/auto_demoted.jsonl に1行残す（機械的に消すだけで終わらせない）。
+_DEMOTE_KEYWORDS = ("コピーが違", "誤字", "表記ゆれ", "リンク切れ", "文言を直",
+                    "体裁", "整理", "リファクタ", "ラベル")
+# 「壊れている」系（本番が落ちている・404等）は後回しにしない。上のキーワードに
+# 引っかかっても、こちらのどれかに当たれば対象外にする。
+_DEMOTE_EXCEPTIONS = ("落ちて", "404", "開けない", "真っ白", "止まって", "動かない",
+                      "フリーズ", "クラッシュ", "エラーで止")
+
+
+def _auto_demote_priority(title, text):
+    """(matched, keyword) を返す。matchedがTrueならpriority=4へ落としてよい。"""
+    hay = "%s %s" % (title or "", text or "")
+    for kw in _DEMOTE_EXCEPTIONS:
+        if kw in hay:
+            return False, None
+    for kw in _DEMOTE_KEYWORDS:
+        if kw in hay:
+            return True, kw
+    return False, None
+
+
+def _log_auto_demoted(n, title, keyword, original_priority):
+    path = _repo_status("auto_demoted.jsonl")
+    rec = {
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "n": n,
+        "title": title,
+        "matchedKeyword": keyword,
+        "originalPriority": original_priority,
+        "newPriority": 4,
+    }
+    try:
+        with io.open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
 def _repo_status(name):
     return os.path.join(REPO, "status", name)
 
@@ -957,7 +1038,7 @@ def process(cmd):
     action = cmd.get("action")
     if action in ("queue_ok", "queue_undo_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
                   "queue_pause", "queue_delete", "queue_order", "queue_dedupe",
-                  "queue_cancel", "queue_undo_cancel", "queue_cost_ok", "queue_unstick"):
+                  "queue_cancel", "queue_undo_cancel", "queue_cost_ok", "queue_unstick", "queue_urgent"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -1005,6 +1086,8 @@ def _process_queue(action, cmd):
         return queue_cost_ok(target)
     if action == "queue_unstick":
         return queue_unstick(target, cmd.get("note"))
+    if action == "queue_urgent":
+        return queue_urgent(target)
     return "failed", "不明なアクション: %s" % action
 
 
