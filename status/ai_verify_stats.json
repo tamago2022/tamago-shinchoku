@@ -1,9 +1,9 @@
 {
- "totalChecked": 199,
+ "totalChecked": 200,
  "totalPassed": 117,
- "totalFailed": 79,
+ "totalFailed": 80,
  "totalErrors": 3,
- "totalCostUsd": 58.993,
+ "totalCostUsd": 59.5971,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -83,17 +83,10 @@
   "依頼の核心である本線案(status/now.json・rev.txt)が未実装": 1,
   "完了条件の4か所並べスクショが確認ページに皆無で、本番URLにも変更未反映（作業": 1,
   "dispatch_reported.jsonが2026-09-11 17:14か": 1,
-  "唯一の証拠リンク(FeedbackDoor.tsxのGitHub差分)が404で": 1
+  "唯一の証拠リンク(FeedbackDoor.tsxのGitHub差分)が404で": 1,
+  "依頼⑤で名指しされたqueue_light.json/commands.json": 1
  },
  "history": [
-  {
-   "ts": "2026-09-12T09:10:07+09:00",
-   "n": 769,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/769-line-stamp-factory-progress.html",
-   "verdict": "pass",
-   "reason": "3URLとも実在し中身も依頼と一致、画像24/24・文言確定・Request未送信を確認、未確認事項も正直に明記されている",
-   "costUsd": 0.2916892
-  },
   {
    "ts": "2026-09-12T10:36:41+09:00",
    "n": 686,
@@ -485,7 +478,15 @@
    "verdict": "pass",
    "reason": "たまごさんが訴えた「話すボタン無反応」の検出を自分で2回再現でき、コード上も3段検品(機械→触る→鬼監督)がharvest()に実接続されoni_kantoku_log.jsonlに実運用記録が残っていることを確認した（証拠リンク1件の404は軽微で本質に影響なし）",
    "costUsd": 0.8057504
+  },
+  {
+   "ts": "2026-09-13T22:00:36+09:00",
+   "n": 798,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/798-realtime-now-rev-sse.html",
+   "verdict": "fail",
+   "reason": "依頼⑤で名指しされたqueue_light.json/commands.json/new_arrivals.jsonがトグル未対応のまま無条件ポーリングされ続けており（実測60秒で411KB通信）、確認ページの通信量表はその事実を隠し「後:382バイト」という一部だけの数字で合格を装っている",
+   "costUsd": 0.6041129999999999
   }
  ],
- "updatedAt": "2026-09-13 19:15"
+ "updatedAt": "2026-09-13 22:00"
 }
