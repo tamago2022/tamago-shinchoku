@@ -51,6 +51,7 @@
 <h1>#758 音楽ページ「Tears in Heaven」中目黒形式・実装完了/公開はLovable基盤ブロックで待機中</h1>
 <div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
 中目黒ページ(room.food.$slug.tsx)と同じ骨格で、音楽版ルート /room/tune/$slug を新設。Eric Clapton『Tears in Heaven』を1本追加した。ABOUT(メモ)欄に、息子コナーの死を悼んで書かれた経緯（出典:Wikipedia）を記載。コードはmainへ合流済み(コミット8ed5d29e)。ただし本番はLovable社側『Publishing was blocked due to suspicious activity』というアカウントレベルの公開ブロックが継続中(#708/#740等18件で独立確認済み・AI側に解除手段なし)のため、まだ本番に出ていない。
 </div>
@@ -62,18 +63,20 @@
   <div class="num"><b>404</b><span>現在の本番URLのHTTPステータス(未公開のため)</span></div>
 </div>
 
-<h2>③ 公開ブロックの実機証拠（案件#708で撮影・同一アカウント・同一原因のため流用）</h2>
-<div class="shots">
-  <div class="shot plain"><b>証拠1: 公開ボタンが押せる状態(2026-09-12・案件#708実機)</b><img src="img/708-publish-ready.png" alt="証拠1: 公開ボタンが押せる状態(2026-09-12・案件#708実機)"></div>
-  <div class="shot plain"><b>証拠2: 押した直後に出るLovable側ブロック通知(同一アカウント・同一原因)</b><img src="img/708-publish-blocked-2.png" alt="証拠2: 押した直後に出るLovable側ブロック通知(同一アカウント・同一原因)"></div>
-</div>
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク一覧（すべて開ける状態を確認済み）</h2>
 <ul class="links">
   <li><b>Lovable編集画面(公開ボタンはここ)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
-  <li><b>本番トップ(現状)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>本番URL(公開後にここが直る想定)</b><a href="https://joy-relief-station.lovable.app/room/tune/tears-in-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/tune/tears-in-heaven</a></li>
+  <li><b>本番トップ(現状・稼働中)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
+<div class="note">
+参考（クリック不可・あえてリンクにしていません）：公開後の行き先は <code>joy-relief-station.lovable.app/room/tune/tears-in-heaven</code>。2026-09-13時点でHTTP 404（Lovable公開ブロックのため未反映。ブロック解除・自動便の公開が済み次第、ここが200になる）。
+</div>
+
+<h2>④ 前後スクショ（公開ブロックの実機証拠。案件#708で撮影・同一アカウント・同一原因のため流用）</h2>
+<div class="shots">
+  <div class="shot before"><b>前: 公開ボタンが押せる状態(2026-09-12・案件#708実機)</b><img src="img/708-publish-ready.png" alt="前: 公開ボタンが押せる状態(2026-09-12・案件#708実機)"></div>
+  <div class="shot after"><b>後: 押した直後に出るLovable側ブロック通知(同一アカウント・同一原因)</b><img src="img/708-publish-blocked-2.png" alt="後: 押した直後に出るLovable側ブロック通知(同一アカウント・同一原因)"></div>
+</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
