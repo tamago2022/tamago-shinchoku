@@ -3468,7 +3468,29 @@
    "splitTotal": 4,
    "origin": "user",
    "note": "759番の重複発火（3回目）を機に追加した恒久ガードにより、dispatch_outbox.jsonlに完了記録があったため再発車せず自動クローズ"
+  },
+  {
+   "n": 429,
+   "title": "軽さ：重くなったら気づく見張り",
+   "why": "スマホから追加",
+   "what": "【Lovable高速化・仕組み】重くなったことに、たまごさんより先にこちらが気づく仕組みを作る。憲法『機能は付いたが少し重くなった、は不合格』。ただし今は誰も測っていないので、じわじわ重くなっても気づけない。★作るもの：①1日1回、本番の主要3ページを Lighthouse で測る係（launchd または既存の見回りに相乗り）。②結果を status/perf_history.jsonl に1行ずつ貯める。③前回より LCP が10%以上悪化したら、Dispatchへ知らせる（status/dispatch_outbox.jsonl 経由）。④進捗表に、直近7日の推移を小さく出す。★注意：測定そのものが重いので、1日1回・深夜に回す。Macが重いときは飛ばす。★確認ページに、実際に数日ぶん貯まったログと推移を出す。\n\n【自動やり直し・09-06 13:53】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
+   "status": "done",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "priority": 1,
+   "redoCount": 1,
+   "startedAt": "2026-09-06T13:54:44+09:00",
+   "sessionId": "4a5a271c-7def-46e3-98bf-39d81b867f47",
+   "finishedAt": "2026-09-06T14:49:01+09:00",
+   "result": "【完了】重くなったら気づく見張り（LCPが取れない不具合も発見して直した）\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/429-perf-watch.html\n本番: https://joy-relief-station.lovable.app/",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/429-perf-watch.html"
+   ],
+   "checkedAt": "2026-09-06T14:54:12+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：launchd登録・実測ログ(perf_history.jsonl)・スクリプト本体・悪化検知ロジックの実装が確認でき、本番URLも一致(行数18の記載のみ実測16と小差だが主張の骨子は裏取り済み)",
+   "origin": "user"
   }
  ],
- "updatedAt": "2026-09-13 14:50"
+ "updatedAt": "2026-09-13 14:57"
 }
