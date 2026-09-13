@@ -4668,15 +4668,16 @@ function refreshMachine(){
     }).catch(()=>{ if(!window.__machine) renderSessions(null); });
 }
 refreshMachine();
-refreshCommands();
 // 2026-09-03 リアルタイム化：開いている間、30秒おきに全部取り直す。手動リロード不要。新しい顔で古い数字を出さない
 // 798番⑤（AI検品差し戻し対応・2026-09-14）：queue_light.json（117KB）とcommands.json（50KB）を
 //   毎回無条件で取り直していたのが「実測60秒で411KB通信」の正体。queue_light.jsonは対応する
-//   <details>が開いている時だけ、commands.jsonは結果待ちのコマンドが残っている時だけに絞る。
-//   閉じていて・送ったコマンドも無ければ、この2本は完全に通信ゼロになる。
+//   <details>が開いている時だけ、commands.jsonは結果待ちのコマンドが残っている時（loadCmds()が
+//   localStorageから読み終えたSENT_CMDSに、まだ結果の付いていないIDが残っている時）だけに絞る。
+//   閉じていて・送ったコマンドも無ければ、この2本は初回ロード時も含めて完全に通信ゼロになる。
 function hasPendingCommands796(){
   return Object.keys(SENT_CMDS || {}).some(id => !CMD_RESULTS || !CMD_RESULTS[id]);
 }
+if(hasPendingCommands796()) refreshCommands();
 const REFRESH_MS = 30000;
 function refreshAllLive(){
   refreshMachine(); refreshWhiteboard();

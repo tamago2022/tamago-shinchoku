@@ -90,9 +90,16 @@ async function main() {
     await send("Page.enable");
     await send("Runtime.enable");
     await send("Network.enable");
+    await send("Network.setCacheDisabled", { cacheDisabled: true }); // CDN/ブラウザキャッシュで古いindex.htmlを掴まない
     await send("Target.activateTarget", { targetId: target.id });
 
-    await send("Page.navigate", { url: URL });
+    // 798番⑦の?v=一本化仕様に合わせ、実際のホーム画面アプリと同じ「?v=版ハッシュ」を付けて開く。
+    //   ?v=無しで開くとPAGE_BUILDが空のままcheckVersion()がlocation.replaceを起こし、
+    //   ページが2回読み込まれて計測が水増しされてしまう（実際のユーザーは?v=を保持し続ける）。
+    //   末尾に計測用タイムスタンプも足し、CDNの古いindex.htmlキャッシュも避ける。
+    const verJson = await (await fetch(URL + "status/version.json", { cache: "no-store" })).json();
+    const pageUrl = URL + "index.html?v=" + encodeURIComponent(verJson.v || "") + "&m798=" + Date.now();
+    await send("Page.navigate", { url: pageUrl });
     await sleep(4000); // 初回ロード安定待ち
 
     // 初期スクリーンショット
