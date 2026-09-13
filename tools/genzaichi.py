@@ -316,6 +316,22 @@ def write_vault_mirror(md_text):
         return "error: %s" % str(e)[:120]
 
 
+def run_shikumi_and_get_red_flags():
+    """799番：仕組みの生死表（tools/shikumi.py）を、この相乗りタイミングでついでに走らせる。
+    新しい常駐プロセスは作らない——既存のheartbeat.sh 30分おきゲート（このgenzaichi.build()自体の
+    ゲート）にそのまま乗せる。サブプロセスで独立実行するので、shikumi.py側で何が起きても
+    genzaichi本体の出力（進捗表1画面目）を壊さない。"""
+    try:
+        subprocess.run(
+            ["python3", os.path.join(REPO, "tools", "shikumi.py")],
+            cwd=REPO, capture_output=True, timeout=90,
+        )
+    except Exception as e:
+        return ["仕組みの生死表：実行に失敗しました(%s)" % str(e)[:80]]
+    data = jread("shikumi.json", {})
+    return list(data.get("redFlags") or [])
+
+
 def build():
     q = jread("queue.json", {"items": []}); items = q.get("items") or []
     h = jread("health.json"); p = jread("pace.json")
@@ -347,6 +363,11 @@ def build():
     if launch_silence_line:
         red_flags.append(launch_silence_line.replace("🔴 **", "").replace("**", ""))
 
+    # 799番：仕組みの生死表（dead判定・waiting3日超放置）もここで合流させる。
+    # 新しいUIコードは書かず、既存のred_flags描画（genzaichi.md／genzaichi.jsonのredFlags）に乗せる。
+    shikumi_lines = run_shikumi_and_get_red_flags()
+    red_flags.extend(shikumi_lines)
+
     L = []
     A = L.append
     A("# いまの現在地（%s 時点・自動生成・実質30分おき）" % now.strftime("%m-%d %H:%M"))
@@ -370,6 +391,8 @@ def build():
         A("- %s" % launch_silence_line)
     else:
         A("- ✅ 発車：10分以内に動いている")
+    for line in shikumi_lines:
+        A("- 🔴 **%s**" % line)
     A("")
     A("## 数字")
     A("- 走行 **%s / %s**（発車待ち %d件・うちP1 %d件）" % (h.get("sessions"), h.get("safeMax"), len(waiting), len(p1)))

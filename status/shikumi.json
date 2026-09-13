@@ -1,0 +1,119 @@
+{
+ "generatedAt": "2026-09-14T02:39:41.755367+09:00",
+ "items": [
+  {
+   "key": "heartbeat",
+   "name": "心臓（heartbeat）",
+   "lastRanAt": "2026-09-14T02:28:51.016215+09:00",
+   "countToday": 4,
+   "expect": "10分以内に更新",
+   "expectMin": 10,
+   "howMeasured": "status/heartbeat.logのmtime基準：現在10.8分沈黙（10分以内=alive／30分以内=slow／それ超=dead。心臓は常時動いているはずのプロセスなので分単位で厳しく見る）",
+   "verdict": "slow"
+  },
+  {
+   "key": "auto_launch",
+   "name": "発車（auto_launch）",
+   "lastRanAt": "2026-09-14T02:30:06.065894+09:00",
+   "countToday": 12,
+   "expect": "10分以内に1本発車",
+   "expectMin": 10,
+   "howMeasured": "status/.last_launch_atのmtime基準（genzaichi.launch_silence_min()を再利用）：現在9.6分沈黙（10分以内=alive／30分以内=slow／それ超=dead）。countTodayはauto_launch.logの本日分『🚀 自動発車』行数",
+   "verdict": "alive"
+  },
+  {
+   "key": "ai_verify",
+   "name": "AI検品",
+   "lastRanAt": "2026-09-14 02:33",
+   "countToday": 0,
+   "expect": "24時間以内に更新",
+   "expectMin": 1440,
+   "howMeasured": "status/ai_verify_stats.jsonのupdatedAt基準：現在0.1時間更新なし（24時間以内=alive／48時間以内=slow／それ超=dead。完了のたびに動くイベント駆動なので時間単位で見る）。countTodayはhistory配列のうち本日分のchecked件数",
+   "verdict": "alive"
+  },
+  {
+   "key": "oni_kantoku",
+   "name": "鬼監督",
+   "lastRanAt": "2026-09-14T02:33:43+09:00",
+   "countToday": 3,
+   "expect": "24時間以内に記録",
+   "expectMin": 1440,
+   "howMeasured": "status/oni_kantoku_log.jsonlの最終行checkedAt基準：現在0.1時間更新なし（24時間以内=alive、それ超=dead。イベント駆動〔完了のたび〕なので中間のslow帯は設けない）",
+   "verdict": "alive"
+  },
+  {
+   "key": "deploy",
+   "name": "Lovable公開",
+   "lastRanAt": "2026-09-13T00:00:49.278941+09:00",
+   "countToday": 0,
+   "expect": "24時間以内に更新",
+   "expectMin": 1440,
+   "howMeasured": "status/deploy_history.jsonのat基準（x-deployment-idが変わった時刻）：現在26.6時間更新なし（24時間以内=alive／48時間以内=slow／それ超=dead）。ネットワークは叩かずこのファイルの記録だけで判定する（0円）",
+   "verdict": "slow"
+  },
+  {
+   "key": "dispatch_outbox",
+   "name": "完了報告の押し出し",
+   "lastRanAt": "2026-09-14T02:26:51+09:00",
+   "countToday": 0,
+   "expect": "3時間以内に報告",
+   "expectMin": 180,
+   "howMeasured": "status/dispatch_outbox.jsonl（typeなし行）とstatus/dispatch_reported.jsonのns突き合わせ：未報告0件・最古計測不能時間経過（3時間以内=alive／6時間以内=slow／それ超=dead）",
+   "verdict": "alive"
+  },
+  {
+   "key": "genzaichi_md",
+   "name": "現在地の紙",
+   "lastRanAt": "2026-09-14T02:13:52.062311+09:00",
+   "countToday": null,
+   "expect": "60分以内に更新",
+   "expectMin": 60,
+   "howMeasured": "status/genzaichi.mdのmtime基準：現在25.8分更新なし（60分以内=alive／120分以内=slow／それ超=dead。heartbeat.sh相乗り・実質30分おき更新が前提）",
+   "verdict": "alive"
+  },
+  {
+   "key": "kenpou_check",
+   "name": "憲法点検",
+   "lastRanAt": "2026-09-13T13:57:48+09:00",
+   "countToday": 0,
+   "expect": "24時間以内に更新",
+   "expectMin": 1440,
+   "howMeasured": "status/kenpou_check.jsonのcheckedAt基準：現在12.7時間更新なし（24時間以内=alive／48時間以内=slow／それ超=dead。1日1回の日次点検なので時間単位で見る）",
+   "verdict": "alive"
+  },
+  {
+   "key": "fal_ledger",
+   "name": "費用台帳",
+   "lastRanAt": "2026-09-14T02:29:37+09:00",
+   "countToday": 0,
+   "expect": "7日以内に更新（支出が無ければ更新なしも正常）",
+   "expectMin": 10080,
+   "howMeasured": "status/fal_cost_ledger.jsonのmtime基準：現在0.0日更新なし（7日以内=alive／14日以内=slow／それ超=dead。支出が無い日は更新されなくて正常なので週〜2週間単位の緩い閾値にしている）",
+   "verdict": "alive"
+  },
+  {
+   "key": "urgent_lane",
+   "name": "すぐ見たい枠（urgent）",
+   "lastRanAt": "2026-09-14T02:39:41.755338+09:00",
+   "countToday": 4,
+   "expect": "-",
+   "expectMin": null,
+   "howMeasured": "status/queue.json内 urgent:true の件数をそのまま数えただけ（生死判定ではなく観測値）",
+   "verdict": "alive"
+  },
+  {
+   "key": "self",
+   "name": "仕組みの生死表（自分自身）",
+   "lastRanAt": "2026-09-14T02:39:41.755352+09:00",
+   "countToday": 1,
+   "expect": "実行するたびに更新",
+   "expectMin": null,
+   "howMeasured": "status/shikumi.json自身の生成時刻（生成できた時点で生きている証拠）",
+   "verdict": "alive"
+  }
+ ],
+ "deadCount": 0,
+ "queuedFixes": [],
+ "waitingEscalations": [],
+ "redFlags": []
+}

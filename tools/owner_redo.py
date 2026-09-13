@@ -106,6 +106,23 @@ def resolve_n(text, threshold=0.5):
     return top_it.get("n"), scored
 
 
+def _append_owner_pointed(n, note, title):
+    """799番：『たまごさんに直接言われた数』を自動でカウントするため、やり直し成功のたびに
+    1行だけ追記する（status/self_repair_weekly.jsonのownerToldCountが読む）。
+    既存の戻り値・挙動は一切変えない（追記処理を1箇所差し込むだけ）。"""
+    try:
+        row = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+            "n": n,
+            "note": (note or title or "")[:120],
+        }
+        path = os.path.join(REPO, "status", "owner_pointed_log.jsonl")
+        with io.open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--n", type=int, default=None, help="番号が分かっているとき")
@@ -142,9 +159,13 @@ def main():
     if args.priority:
         target = "%s:%d" % (target, args.priority)
 
+    it_before = command_ingest._find_item(_searchable_items(), n)
+    title_before = (it_before or {}).get("title") or ""
+
     with command_ingest.queue_lock():
         status, msg = command_ingest.queue_redo(target, args.note)
     if status == "done":
+        _append_owner_pointed(n, args.note, title_before)
         print("OK #%s %s" % (n, msg))
     else:
         print("FAILED #%s %s" % (n, msg))
