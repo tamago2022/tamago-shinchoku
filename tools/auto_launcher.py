@@ -500,11 +500,220 @@ VERIFY_MODEL = SONNET  # 2026-09-06：Verifierも今はSonnet固定。
 VERIFY_TIMEOUT_SEC = 600  # これを超えて生きていたら異常とみなし強制終了する安全弁
 
 
+# =====================================================================
+# 案件#800：検品を「読む」だけから「触る」へ。3段検品の2段目。
+#
+# たまごさんの言葉（2026-09-13）：
+#   「間違えたものがガンガン上がってきてるんだ、もう俺に。結局、俺が見つけて
+#    『違うよ』って言ってるわけじゃん。直っているものだけ見せてほしいのよ。」
+#
+# 原因：これまでの build_verify_prompt() は検品AIに「curlで読め・ブラウザは使うな」
+#   と命じていたため、HTMLにコードさえあれば「押しても無反応」でもPASSしていた
+#   （実例：コンシェルジュの「話す」ボタンが無反応でもPASSしていた）。
+#
+# 3段の位置づけ：
+#   1段目＝機械検品(content_check)：確認ページが存在し中身があるか（既存・変更なし）
+#   2段目＝触る検品(touch_check・ここ)：実際に押せる要素を headless Chrome で
+#           1つずつクリックし、押しても何も変わらない要素・コンソールエラーを検出する。
+#   3段目＝鬼監督(AI Verifier・start_verify/collect_verify)：たまごさんが過去に
+#           言ってきた基準（oni-kantoku）に照らして中身を判断する。
+#   3段すべて通ったものだけ、たまごさんの確認列（またはAI自動OK）へ進む。
+#
+# start_verifyと同じ設計：別プロセスをバックグラウンドで着火するだけで、
+# harvest()はここで同期待ちしない（45秒watchdogを超えて心臓を止めないため）。
+# =====================================================================
+TOUCH_CHECK_SCRIPT = os.path.join(REPO, "tools", "verify_click.mjs")
+TOUCH_CHECK_TIMEOUT_SEC = 280  # マシン高負荷時はheadless Chromeの起動に60〜90秒かかることがある実測込み
+TOUCH_CHECK_STATS = os.path.join(REPO, "status", "touch_check_stats.json")
+ONI_KANTOKU_LOG = os.path.join(REPO, "status", "oni_kantoku_log.jsonl")
+
+
+def _find_node():
+    for c in ("/opt/homebrew/bin/node", "/usr/local/bin/node", "/usr/bin/node"):
+        if os.path.exists(c):
+            return c
+    return "node"  # PATH頼み（最終フォールバック）
+
+
+def _pick_touch_target(check_url, urls):
+    """触る検品の対象URLを選ぶ。確認ページ(/share/check/)自体はボタンが少ないので、
+    実際に直した本物のページ（urlsのうち確認ページでないもの）を優先する。
+    それが無ければ確認ページを、それも無ければNone（＝この段は素通し）を返す。"""
+    for u in (urls or []):
+        if u and "/share/check/" not in u and u.startswith("http"):
+            return u
+    if check_url and check_url.startswith("http"):
+        return check_url
+    return None
+
+
+def start_touch_check(it, url):
+    """触る検品(2段目)を別プロセスで着火する。同期待ちしない。"""
+    if not url:
+        return False
+    new_id = str(uuid.uuid4())
+    outjson = os.path.join(REPO, "status", "touchcheck-%s.json" % new_id[:8])
+    logf = os.path.join(REPO, "status", "touchcheck-%s.log" % new_id[:8])
+    try:
+        cmd = [_find_node(), TOUCH_CHECK_SCRIPT, url, outjson]
+        with open(logf, "ab") as f:
+            p = subprocess.Popen(cmd, cwd=REPO, stdout=f, stderr=subprocess.STDOUT,
+                                 stdin=subprocess.DEVNULL, start_new_session=True)
+    except Exception as e:
+        log("触る検品の着火に失敗: %s" % e)
+        return False
+    it["touchPid"] = p.pid
+    it["touchOutJson"] = outjson
+    it["touchLog"] = logf
+    it["touchStartedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+    it["touchUrl"] = url
+    return True
+
+
+def collect_touch_check(it):
+    """status="touchchecking" の項目を回収する。戻り値の形はcollect_verifyと同じ：
+    None＝まだ検品中／(True/False/None, reason, report_dict)＝終了。"""
+    pid = it.get("touchPid")
+    alive = False
+    if pid:
+        try:
+            os.kill(int(pid), 0)
+            alive = True
+        except Exception:
+            alive = False
+    if alive:
+        try:
+            started = it.get("touchStartedAt") or ""
+            fmt = "%Y-%m-%dT%H:%M:%S"
+            t0 = datetime.strptime(started[:19], fmt)
+            now = datetime.strptime(time.strftime("%Y-%m-%dT%H:%M:%S"), fmt)
+            elapsed = (now - t0).total_seconds()
+        except Exception:
+            elapsed = 0
+        if elapsed > TOUCH_CHECK_TIMEOUT_SEC:
+            try:
+                os.kill(int(pid), 9)
+            except Exception:
+                pass
+            return None, "触る検品がタイムアウトしました（%d秒超）" % TOUCH_CHECK_TIMEOUT_SEC, None
+        return None
+    outjson = it.get("touchOutJson") or ""
+    report = None
+    try:
+        report = json.load(io.open(outjson, encoding="utf-8"))
+    except Exception:
+        pass
+    if not report:
+        return None, "触る検品の結果ファイルが読み取れませんでした（技術的な失敗として素通しします）", None
+    no_resp = report.get("noResponse") or report.get("unresponsive") or []
+    console_errs = report.get("consoleErrors") or []
+    tech_error = report.get("error")
+    ok = (not tech_error) and (not no_resp) and (not console_errs)
+    total_clickable = report.get("totalClickable", 0)
+    tested = report.get("tested", 0)
+    if ok:
+        reason = "無反応0件・コンソールエラー0件（%d件中%d件を実クリック）" % (total_clickable, tested)
+    else:
+        parts = []
+        if no_resp:
+            examples = "、".join("「%s」(%s)" % ((r.get("text") or "")[:20], r.get("tag") or "?")
+                                 for r in no_resp[:3])
+            parts.append("押しても無反応%d件%s" % (len(no_resp), "：" + examples if examples else ""))
+        if console_errs:
+            parts.append("コンソールエラー%d件" % len(console_errs))
+        if tech_error and not parts:
+            parts.append("検品自体が失敗：%s" % str(tech_error)[:150])
+        reason = "、".join(parts) or "触る検品で不合格判定"
+    # 技術的エラー（Chromeが開けなかった等）で押せる要素も無反応も0件のケースは、
+    # 中身の問題ではなくインフラの問題として技術的エラー扱いにする（素通し対象）。
+    if tech_error and not no_resp and not console_errs and tested == 0:
+        return None, "触る検品が技術的に失敗しました：%s" % str(tech_error)[:150], report
+    return ok, reason, report
+
+
+def _record_touch_check(ok, reason, url, item_n=None, report=None):
+    """実績を status/touch_check_stats.json に永続化する（他の*_stats.jsonと同じ形）。"""
+    stats = load(TOUCH_CHECK_STATS, {
+        "totalChecked": 0, "totalPassed": 0, "totalFailed": 0, "totalErrors": 0,
+        "totalUnresponsiveElements": 0, "history": [],
+    })
+    stats["totalChecked"] = int(stats.get("totalChecked") or 0) + 1
+    if ok is True:
+        stats["totalPassed"] = int(stats.get("totalPassed") or 0) + 1
+    elif ok is False:
+        stats["totalFailed"] = int(stats.get("totalFailed") or 0) + 1
+        no_resp = (report or {}).get("noResponse") or (report or {}).get("unresponsive") or []
+        stats["totalUnresponsiveElements"] = int(stats.get("totalUnresponsiveElements") or 0) + len(no_resp)
+    else:
+        stats["totalErrors"] = int(stats.get("totalErrors") or 0) + 1
+    hist = stats.get("history") or []
+    hist.append({
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+        "n": item_n, "url": url,
+        "verdict": "pass" if ok is True else ("fail" if ok is False else "error"),
+        "reason": reason,
+    })
+    stats["history"] = hist[-50:]
+    stats["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    try:
+        tmp = TOUCH_CHECK_STATS + ".tmp"
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            json.dump(stats, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, TOUCH_CHECK_STATS)
+    except Exception as e:
+        log("touch_check_stats書き込み失敗: %s" % e)
+
+
+def _record_oni_kantoku(ok, reason, item_n, title, touch_summary=None, cost=None):
+    """案件#800：鬼監督（3段目＝AI検品）が実際に動いた記録を1行ずつ残す。
+    『制度は作ったが1度もパイプラインに繋がっていなかった』(684番)を繰り返さないため、
+    ここへの追記が『鬼監督が実際に回っている』ことの生の証拠になる。799番の生死表が見る想定。"""
+    row = {
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+        "n": item_n,
+        "title": title,
+        "verdict": "pass" if ok is True else ("fail" if ok is False else "error"),
+        "reason": reason,
+        "touchCheckSummary": touch_summary,
+        "costUsd": cost,
+    }
+    try:
+        with io.open(ONI_KANTOKU_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception as e:
+        log("oni_kantoku_log書き込み失敗: %s" % e)
+
+
+# 鬼監督(たまごさんの分身)が積み重ねてきた関門を凝縮。全文（211行・関門0〜10）は
+# たまごさんのスキル`oni-kantoku`が正本。ここには検品AIへの指示として効く最重要項目だけを抜粋する。
+ONI_KANTOKU_GATES = """
+【鬼監督の関門（凝縮版・正本はスキルoni-kantoku）】以下に1つでも当てはまれば不合格：
+- 証拠が無い（押せる本番URL／前後スクショ／数字のいずれも無く、主張だけ）
+- 頼まれた範囲を超えて余計なものを足している、または頼まれた範囲を満たしていない
+  （「4件出す」等の件数指定があれば実際に数える）
+- 依頼文にある要素・機能が実際の画面に見当たらない
+- 同じ内容・同じ動画・同じカードが重複している
+- 噂・未確認情報を事実として書いている、生年を書いている（個人のみ）等の既知の禁止事項に触れている
+- 見た目が壊れている（文字が潰れる／重なる／サムネが無い箇所がある等）
+- 前より重くなっている（ページが明らかに遅い）
+- 「完了」と言っているのに本番URLで変化が確認できない
+"""
+
+
 def build_verify_prompt(it, check_url, urls):
-    """AI検品(Verifier)への指示文。渡すのは①元の依頼②作業した側の完了報告③確認ページ/本番URLの3つだけ。
-    作った側の言い分・判断理由・内部事情は一切渡さない。"""
+    """AI検品(Verifier=鬼監督3段目)への指示文。渡すのは①元の依頼②作業した側の完了報告
+    ③確認ページ/本番URL④すでに機械が実クリックした2段目「触る検品」の結果の4つ。
+    作った側の言い分・判断理由・内部事情は一切渡さない。
+
+    案件#800：以前は「curlで読め・ブラウザは使うな」と命じていたため、押しても無反応の
+    ボタンでもHTMLにコードさえあればPASSしていた。claude-in-chrome/screencaptureは
+    （許可ダイアログが出るため）引き続き禁止だが、**headless Chromeのnodeスクリプトは
+    許可ダイアログを出さないので使ってよい**。すでに2段目でその結果が出ているので、
+    それをそのまま判断材料として使うのが基本（自分で再実行してもよい）。"""
     target = check_url or (urls[0] if urls else "")
-    return """【AI検品・Verifier】あなたは検品専門です。この作業を行った本人ではありません。
+    touch_note = it.get("touchCheckNote") or "（このタスクでは触る検品を実行できませんでした。あなた自身が下記のnodeコマンドで確認してください）"
+    node_hint = "node %s <確認したいURL>" % TOUCH_CHECK_SCRIPT
+    return """【AI検品・鬼監督（Verifier）】あなたは検品専門です。この作業を行った本人ではありません。
 
 # 元の依頼
 {title}
@@ -518,18 +727,29 @@ def build_verify_prompt(it, check_url, urls):
 - 確認ページ（あれば必ず開く）: {check_url}
 - 本番URL（実際に開く）: {urls}
 
+# 2段目「触る検品」の結果（機械が実際にボタンを1つずつ押した結果。参考にすること）
+{touch_note}
+
 # やり方
 - `curl` 等で実際にURLを取得して中身を読んでください。
-- **ブラウザ・claude-in-chrome・screencapture は使わないでください。**許可ダイアログを出さないこと。
+- **claude-in-chrome・screencapture は使わないでください**（許可ダイアログが出て止まるため）。
+- **`{node_hint}` はheadless Chromeで許可ダイアログを出さないので、使ってよい・むしろ推奨。**
+  「押せると書いてあるのに実際は反応しない」を見つけるための唯一の手段です。
 - 確認ページがあれば必ず開き、依頼内容と実際の変化が一致するか確認してください。
 - 本番URLも実際に開き、確認ページの主張と食い違いがないか確認してください。
 - あなたは実装しません。直しません。**見るだけです。**
+
+{oni_gates}
 
 # 不合格の基準（どれか1つでも該当したら不合格）
 - URLが開けない
 - 中身が依頼と一致しない・的外れ
 - 検証可能な証拠（数字・リンク・スクショ）が無く、主張だけ
 - 「直した」と書いてあるのに、実際には変化の跡が無い
+- **押しても何も起きない要素がある**（触る検品の結果、またはあなた自身の確認で判明した場合）
+- **コンソールにエラーが出ている**
+- 依頼文が名指ししている要素・機能が実際の画面に見当たらない
+- 依頼文に件数の指定（例：「4件出す」）があるのに、実際に数えると満たしていない
 
 # 出力の最後（必ず単独の1行。この形式を厳守。パースするので変えないこと）
 VERIFY_RESULT: PASS - <合格理由を一言（日本語）>
@@ -541,6 +761,9 @@ VERIFY_RESULT: FAIL - <不合格理由を一言（日本語・具体的に）>
         result=(it.get("result") or "")[:1200],
         check_url=check_url or "（なし）",
         urls=", ".join(urls or []) or "（なし）",
+        touch_note=touch_note,
+        node_hint=node_hint,
+        oni_gates=ONI_KANTOKU_GATES,
     ), target
 
 
