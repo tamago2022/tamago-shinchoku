@@ -32,13 +32,22 @@ LINE Creators Market（creator.line.me）はブラウザ自動化を安全上の
 使い方:
   python3 tools/line_stamp_pipeline.py --push
   python3 tools/line_stamp_pipeline.py --slug oniyome-chan --push   # 1キャラだけ強制再生成
+
+790番追記（2026-09-13）：貼るだけシートに載せる全リンクを、生成のたびにHTTPステータスで
+死活確認する。200〜399以外（404含む）が1つでもあれば、そのキャラのシートは**上書きしない**
+（前に渡した公開URLを壊さない＝「一度渡したURLは殺さない」ルールのため、書きかけの壊れた
+シートに差し替えるより、直前まで生きていたシートを残す方を優先する）。ブロックした場合は
+dispatch_outboxへその旨を通知する。detect_dead_links()／check_links()がその実装。
 """
 import argparse
 import io
 import json
 import os
+import re
 import sys
 import time
+import urllib.error
+import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -67,6 +76,39 @@ except Exception:
     Image = None
 
 TASK_N = 769
+
+
+def check_url(url, timeout=8):
+    """1本のURLへHEAD（弾かれたらGET）を投げ、(status_code, error) を返す。
+    例外は握りつぶさず error 文字列で返す（呼び出し側が判定する）。"""
+    headers = {"User-Agent": "Mozilla/5.0 (tamago-link-check; +790)"}
+    for method in ("HEAD", "GET"):
+        try:
+            req = urllib.request.Request(url, method=method, headers=headers)
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return resp.status, None
+        except urllib.error.HTTPError as e:
+            if method == "HEAD" and e.code in (403, 405):
+                continue  # HEADを禁止するサーバーがあるのでGETで再挑戦
+            return e.code, str(e)
+        except Exception as e:  # noqa: BLE001
+            if method == "HEAD":
+                continue
+            return None, str(e)
+    return None, "unreachable"
+
+
+def check_links(urls, timeout=8):
+    """複数URLをまとめて死活確認する。戻り値は {url: {"status":..,"ok":..,"error":..}}。
+    200〜399をok扱いにする（LINE公式トップはリダイレクトを挟むことがあるため）。"""
+    report = {}
+    for u in urls:
+        if u in report:
+            continue
+        status, err = check_url(u, timeout=timeout)
+        ok = status is not None and 200 <= status < 400
+        report[u] = {"status": status, "ok": ok, "error": err}
+    return report
 
 
 def materialize(path, timeout=25):
@@ -603,6 +645,29 @@ def process_one(cfg, force=False, state=None, after_img=None):
         {"item": "審査リクエスト", "result": "押していません（押すのは本人のみ）", "ok": False},
     ]
 
+    # 790番：このシートに載る全リンク（linksリスト＋本文中のhref）をHTTPで実測する。
+    # 1本でも200〜399以外なら、このキャラのシートは公開ブロック（前回まで生きていた
+    # 公開URLを壊れたシートで上書きしない）。
+    href_in_body = re.findall(r'href="(https?://[^"]+)"', what_html)
+    all_link_urls = sorted(set([l["url"] for l in links] + href_in_body))
+    link_report = check_links(all_link_urls)
+    dead_links = [u for u, v in link_report.items() if not v["ok"]]
+    table.append({
+        "item": "リンク死活確認（自動・全%d本）" % len(all_link_urls),
+        "result": "、".join(
+            "%s→%s" % (u, ("OK %s" % v["status"] if v["ok"] else "NG %s" % (v["status"] if v["status"] is not None else v["error"])))
+            for u, v in link_report.items()
+        ) or "対象リンクなし",
+        "ok": not dead_links,
+    })
+
+    if dead_links:
+        return {
+            "slug": slug, "out_path": None, "url": None, "img_report": img_report,
+            "missing_text": missing_text, "blocked": True, "dead_links": dead_links,
+            "link_report": link_report,
+        }
+
     cfg_cfg = {
         "n": TASK_N,
         "slug": "%s-paste-sheet" % slug,
@@ -634,7 +699,7 @@ def process_one(cfg, force=False, state=None, after_img=None):
 
     url = "%s%s-%s.html" % (PAGES_BASE, cfg_cfg["n"], cfg_cfg["slug"])
     return {"slug": slug, "out_path": out_path, "url": url, "img_report": img_report,
-            "missing_text": missing_text}
+            "missing_text": missing_text, "blocked": False, "link_report": link_report}
 
 
 def main():
@@ -665,6 +730,10 @@ def main():
         after_img = shot_rel if os.path.isfile(shot_abs) else None
         r = process_one(cfg, state=state, after_img=after_img)
         results.append(r)
+        if r.get("blocked"):
+            # 790番：リンクが死んでいる回はstateを書き換えない
+            # （前回まで生きていた公開URLをそのまま残す）。
+            continue
         state.setdefault("sheets", {})[r["slug"]] = {
             "url": r["url"],
             "updatedAt": now_jst_str(),
@@ -675,15 +744,22 @@ def main():
     save_json(STATE_PATH, state)
 
     print(json.dumps({"newFolders": new_folders, "results": [
-        {"slug": r["slug"], "url": r["url"], "filesFound": r["img_report"].get("files_found", 0),
+        {"slug": r["slug"], "url": r["url"], "blocked": r.get("blocked", False),
+         "deadLinks": r.get("dead_links"),
+         "filesFound": r["img_report"].get("files_found", 0),
          "missingText": r["missing_text"]} for r in results
     ]}, ensure_ascii=False, indent=1))
 
-    # 新規フォルダ検知 or 未確定文言があるキャラは、進捗表へ1行通知。
+    # 新規フォルダ検知・未確定文言・リンク死活は、進捗表へ1行通知。
     notes = []
     for f in new_folders:
         notes.append("Driveに新しいスタンプフォルダ「%s」が増えました" % f)
     for r in results:
+        if r.get("blocked"):
+            notes.append(
+                "%s：リンク死活確認NGにつき公開ブロック（%s）。既存の公開シートは変更せず維持"
+                % (r["slug"], "、".join(r["dead_links"]))
+            )
         if r["missing_text"]:
             notes.append(
                 "%s：文言が未確定（%s）。tools/line_stamp_configs/%s.jsonを埋めれば次回自動反映"
@@ -693,8 +769,9 @@ def main():
         append_jsonl(OUTBOX, {
             "ts": now_jst_str(), "n": TASK_N,
             "title": "LINEスタンプ申請機（769番）の日次見回り",
-            "ok": True, "elapsedMin": 0,
-            "urls": [r["url"] for r in results],
+            "ok": not any(r.get("blocked") for r in results),
+            "elapsedMin": 0,
+            "urls": [r["url"] for r in results if r.get("url")],
             "result": " / ".join(notes),
         })
 
