@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-13 21:01",
+ "updatedAt": "2026-09-13 21:05",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1046,35 +1046,6 @@
    "checkedAt": "2026-09-09T12:46:07+0900",
    "okBy": "ai-verifier-auto",
    "okNote": "鬼監督AI検品PASS：本番・確認ページとも実測でP表記(P1〜P5)が画面上に0件、優先度なしは「—」、内部ログにのみ残る\"P\"文字列は非表示要素で実害なしと確認できた"
-  },
-  {
-   "n": 491,
-   "title": "仕組み：容量の見張り",
-   "why": "スマホから追加",
-   "what": "【仕組み】ディスクの空きを見張って、埋まる前に自分で片づける係を作る。いま本体の空きが19GB（466GB中446GB使用・96%）。動画を作り始めると足りなくなる。★★測り方を間違えないこと：macOSは起動ディスクが2つに分かれている。df -h / はシステム側（21GB）なので実態が見えない。必ず df -h /System/Volumes/Data を見る。★作るもの：①15分おきに空きを測る（軽い。dfだけ）。②30GBを切ったら、安全に消せるものだけ自動で片づける：作業場(.worktrees)の node_modules（bun installで作り直せる）、7日以上前のログ、__pycache__、ビルド成果物(dist)。③20GBを切ったら発車を止めてDispatchへ知らせる（no_launch.flag）。④壺と金庫は絶対に触らない：写真・動画・音楽・Eagleライブラリ・Vault・Driveの中身・ソフトウェアのdmg。迷ったら触らない。⑤何を消して何GB空いたかを1行ずつログに残す。★既にある tools/worktree_reaper.py（node_modules掃除）を土台にしてよい。★確認ページに、いまの空きと、消せる候補の一覧（消さずに一覧だけ）を出す。★参考：容量を食っている大物は Library/CloudStorage（Googleドライブのローカル実体）が134GB、書類/ソフトウェア1+2 のdmgが17GB。これらは消さない。\n\n【自動やり直し・09-06 20:30】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【AI検品(Verifier)ではねられました・1回目・09-06 20:47】理由：確認ページは「disk_guardian.logが20:23まで記録継続」と主張するが、本番のログは15:12で止まり06:17の1回しかコミットされておらず、候補件数も18件/17件で不一致。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "priority": 1,
-   "origin": "user",
-   "order": 16,
-   "redoCount": 1,
-   "aiVerifyFailCount": 1,
-   "startedAt": "2026-09-06T20:48:16+09:00",
-   "sessionId": "1069b63e-e798-4f28-b1b9-30c5bf56d0bd",
-   "pid": 16326,
-   "okBy": "oni-kantoku-verify_check_pages-491-2of2-redo",
-   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/491-disk-guardian-candidates-v2.html => 200 / https://tamago2022.github.io/tamago-shinchoku/share/check/491-disk-guardian-candidates.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/491-disk-guardian-candidates-v2.html / ③PASS: img_count=2",
-   "checkedAt": "2026-09-06T21:03:27+0900",
-   "costsMoney": true,
-   "costsMoneyWhy": "直接お金が出る可能性があるタスク。着手前に「何本でいくら」を出して確認を取ること（2026-09-08のルール）",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/491-disk-guardian-candidates-v2.html",
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/491-disk-guardian-candidates.html"
-   ],
-   "urlsFixedAt": "2026-09-09T04:50:17+0900",
-   "urlsFixedNote": "668番:urls欄が空だったがローカルに確認ページが実在したため復元",
-   "costEstimate": "本数の言及: 1・1・1・18・17（自動抽出・目視確認のうえ発車してください）"
   },
   {
    "n": 498,
