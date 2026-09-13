@@ -49,17 +49,17 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #803 Enya「Only Time」曲ページを事実ベースへ書き換え</div>
 <h1>#803 Enya「Only Time」曲ページを事実ベースへ書き換え</h1>
-<div class="date">2026-09-14 03:33 実装・main合流済み・「公開」ボタンをクリック済み・本番反映を15分実測</div>
+<div class="date">2026-09-14 05:51 実装・main合流済み・「公開」ボタンを2回クリック済み・本番はLovable側の恒久障害で未反映</div>
 
 <div class="fix">
-水道水コピー「深い悲しみを包み込むような、永遠のヒーリング・アンセム。」を、出典付きの事実2行（2001年に米国で最も放送された曲／収益を9・11消防士遺族基金へ全額寄付）へ書き換えた。押しても行き止まりだった曲ページに、同じ棚のEnya曲2本へのサムネイル付き関連導線も追加。コードはmainへ反映済み。「公開」ボタンは03:33:32に実際にクリックしたが、03:48:41時点(15分後)でも本番はまだ旧コピーのまま＝Lovable側の障害で未反映。
+水道水コピー「深い悲しみを包み込むような、永遠のヒーリング・アンセム。」を、出典付きの事実2行（2001年に米国で最も放送された曲／収益を9・11消防士遺族基金へ全額寄付）へ書き換えた。押しても行き止まりだった曲ページに、同じ棚のEnya曲2本へのサムネイル付き関連導線も追加。<b>コードはmainへ反映済み（origin/mainで確認済み）。</b>「公開」ボタンは2026-09-14に2回クリックした（03:33と05:36）が、いずれも15分待って本番を実測しても旧コピーのまま。<b>これは803番固有の不具合ではなく、Lovableのプロジェクト全体が「Publishing was blocked due to suspicious activity」で公開操作そのものをブロックされている恒久障害</b>（本日だけで24件以上の別案件が同一結論に到達済み、正本はjoy-relief-station側`.claude/KNOWN_ISSUES.md`冒頭）。AI側にこれ以上押す手段は無く、店主本人がLovable画面でサポートへ問い合わせるまで解除できない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2001</b><span>最多放送された年(Irish America Magazine実測)</span></div>
   <div class="num"><b>2</b><span>新設した関連導線(サムネ付き)</span></div>
-  <div class="num"><b>15分</b><span>公開クリック後に待った時間(反映は未確認)</span></div>
+  <div class="num"><b>2回・計30分</b><span>公開クリックの試行回数と待った合計時間(反映0件)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -67,7 +67,7 @@
   <div class="shot before"><b>前(書き換え前・上部)</b><img src="img/803-before-top.png" alt="前"></div>
   <div class="shot plain"><b>前(書き換え前・下部・行き止まりだった状態)</b><img src="img/803-before-bottom.png" alt="書き換え前・下部"></div>
 </div>
-<div class="note">after(直った後)の画面スクショはまだありません。「公開」ボタンは2026-09-14 03:33:32に実際にクリックし、15分後の03:48:41まで本番の見出しタグ(og:description)を実測しましたが、旧コピー「深い悲しみを包み込むような〜」のままでした。コードは直っていますが、本番画面自体がまだ切り替わっていません。</div>
+<div class="note">after(直った後)の画面スクショはまだありません。本番がLovable側の障害でまだ旧画面のままのため、撮っても旧コピーが写るだけになります。「公開」ボタンは2026-09-14に2回（03:33:32／05:36:45）実際にクリックし、いずれも15分待って本番の見出しタグ(og:description)とHTML本文を実測しましたが、旧コピー「深い悲しみを包み込むような〜」のままでした。x-deployment-idのUUID部分(449ce840...)も2回とも変化なし。コードは直っていますが、本番画面自体がまだ切り替わっていません。</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -81,12 +81,13 @@
 <tr><td>コピーを事実ベースへ書き換え</td><td class="yes">済み(main反映済み・コード上は確認済み)</td></tr>
 <tr><td>関連曲へのサムネイル導線を追加</td><td class="yes">済み(main反映済み)</td></tr>
 <tr><td>個人の生年を書いていないか</td><td class="yes">該当なし(Enyaは生年非記載)</td></tr>
-<tr><td>「公開」ボタンをクリックしたか</td><td class="yes">済み(2026-09-14 03:33:32・自動操作で実クリック)</td></tr>
-<tr><td>本番ページで実際に新コピーが表示されるか</td><td class="no">未反映(15分待って実測。og:descriptionも旧コピーのまま)</td></tr>
+<tr><td>「公開」ボタンをクリックしたか</td><td class="yes">済み(2026-09-14 03:33:32・05:36:45の計2回・自動操作で実クリック)</td></tr>
+<tr><td>本番ページで実際に新コピーが表示されるか</td><td class="no">未反映(2回とも15分待って実測。og:description・x-deployment-idとも変化なし)</td></tr>
+<tr><td>これは803番固有の問題か</td><td class="no">いいえ。本日だけで24件以上の別案件が同一のLovable公開ブロックに到達済み(joy-relief-station側KNOWN_ISSUES.md記録)</td></tr>
 </table>
 
 <footer>
-軽さ9点・楽しさ8点・美しさ8点(自己採点。ただし本番未反映のため店主が見られるのはまだ旧画面)。原因はコードではなくLovableプラットフォーム側の公開ブロック(18件以上の他案件と同一障害)。公開ボタンをこちらで押しても直らないため、Lovable社への問い合わせ、または店主本人がLovable画面で直接「公開」を押して同じ現象が出るかの確認が必要です。
+軽さ9点・楽しさ8点・美しさ8点(自己採点。ただし本番未反映のため店主が見られるのはまだ旧画面)。原因はコードではなくLovableプラットフォーム全体の公開ブロック(本日確認分だけで24件以上の他案件と同一障害・Publishing was blocked due to suspicious activity)。AI側で公開ボタンを押しても直らないことを2回の実測で確認済み。店主本人がLovable画面でサポートへ問い合わせるまで、この曲ページに限らずサイト全体の新規反映が止まっています。ブロックが解ければ30分おきの自動便が自動で反映します。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
