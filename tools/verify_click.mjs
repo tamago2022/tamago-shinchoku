@@ -279,7 +279,6 @@ async function main() {
       } catch {
         continue;
       }
-      let vanished = false;
       try {
         // querySelectorAllの通し番号ではなく、要素本体に付けたマーカー属性で再取得する
         // （直前のクリックでDOM順序が変わっても、同じ物理要素を確実に狙い撃つ）。
@@ -294,22 +293,17 @@ async function main() {
         let r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
         // 案件#793実測：このサイトのキュー一覧・できたもの一覧は数十秒おきの自動再描画
         // （renderQueue()等）でDOM全体が作り直され、無関係なタイミングでマーカー属性が
-        // 消えることがある。1回目に見失っただけで即「無反応」と断じると、実際は正しく
-        // 動くボタンまで誤FAILになるため、300ms待って同じマーカーを1回だけ探し直す。
+        // 消えることがある。1回目に見失っただけで即「消えた」と断じると、下の
+        // skippedDisappeared行きが増えて本来の無反応検出まで薄まるため、300ms待って
+        // 同じマーカーをもう一度だけ探し直してから、それでも駄目なら既存の
+        // disappearedBeforeClick判定（下）に委ねる。
         if (!r.result?.value) {
           await sleep(300);
           r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
         }
-        if (!r.result?.value) vanished = true;
+        if (!r.result?.value) clickError = "要素が見つかりませんでした（クリック前にDOMから消えた＝マーカーが外れた）";
       } catch (e) {
         clickError = String(e.message || e).slice(0, 150);
-      }
-      if (vanished) {
-        // 再試行してもなお見つからない＝クリック前に自動再描画でDOMごと入れ替わった可能性が高く、
-        // 「押しても反応しない」とは別物のテスト不能ケース。無反応件数には数えず、別枠で記録する。
-        result.skippedDynamic = (result.skippedDynamic || 0) + 1;
-        result.tested++;
-        continue;
       }
       await sleep(CLICK_SETTLE_MS);
       // href付き要素（外部/内部リンク）は実際のページ遷移がCLICK_SETTLE_MSの600msでは
