@@ -205,16 +205,25 @@ function shinchokuFallbackCopy(text){
     shinchokuToast("コピーしました");
   }catch(e){ shinchokuToast("コピーできませんでした"); }
 }
-function shinchokuShare(url, title){
-  if(navigator.share){
-    navigator.share({title: title, url: url}).catch(function(){});
-    return;
-  }
+function shinchokuClipboardCopy(url){
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(url).then(function(){ shinchokuToast("コピーしました"); }).catch(function(){ shinchokuFallbackCopy(url); });
     return;
   }
   shinchokuFallbackCopy(url);
+}
+function shinchokuShare(url, title){
+  if(navigator.share){
+    // 案件#811実測：navigator.shareはある(=関数として存在する)のに、フォーカスが無い等の理由で
+    // 失敗することがある。失敗を握りつぶすと押しても何も起きないように見えるため、
+    // ユーザーが自分でキャンセルした場合(AbortError)以外は必ずコピーへフォールバックする。
+    navigator.share({title: title, url: url}).catch(function(err){
+      if(err && err.name === "AbortError") return;
+      shinchokuClipboardCopy(url);
+    });
+    return;
+  }
+  shinchokuClipboardCopy(url);
 }
 var shareTopBtn = document.getElementById("shareTopBtn");
 if(shareTopBtn){
