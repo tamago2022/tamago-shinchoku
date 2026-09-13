@@ -413,8 +413,36 @@ fi
 #   commitが失敗する典型は「新しい変更が無いとき」。だが、その前に別経路（Cowork側）でcommitされた分が
 #   未pushで残っていることがあり、そのぶんが永久に公開されなかった（画面が更新されない実害）。
 #   → commitの成否に関わらず push まで進む。
+#
+# 2026-09-13（案件#687・queue.json等status/丸ごとの複数回ロールバック事故の真因）：
+#   ここの `git pull --rebase -q ... || true` が、**少なくとも2回**status/丸ごとの
+#   ロールバックを起こしていた（1回目 10:17:46＝777〜804番28件消失／2回目 11:14〜16:12の間＝
+#   その後の復旧分319件も含めて再度消失・264件/最大780番まで巻き戻り）。
+#   実測：`git pull --rebase`が実行中に未コミットの変更を自動でautostashへ退避 →
+#   rebase自体が完走せず失敗（`|| true`が握りつぶし誰にも気づかれなかった）→
+#   作業ツリーが古いorigin/mainの内容に取り残され、autostashは二度とpopされずに残った
+#   （実測：`.git/rebase-merge/autostash`。1回目の分はタグ`rescue-687-autostash-20260913`で保全済み）。
+#   → **rebaseそのものをやめてmergeにする。** mergeが失敗しても作業ツリーは「コンフリクト状態のまま」
+#   残るだけで、rebaseのautostashのように**サイレントに古い内容へ巻き戻ることは無い**。
+#   さらに、①次の周回開始時に壊れたrebase/merge残骸を検知したら自分で片付けてから進む、
+#   ②pull自体が失敗したら黙って続けず`git merge --abort`で必ず元へ戻し理由をログへ残す、を追加する。
+_REBASE_MARKER="$REPO/.git/rebase-merge"
+_REBASE_MARKER2="$REPO/.git/rebase-apply"
+_MERGE_MARKER="$REPO/.git/MERGE_HEAD"
+if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER" ]; then
+  echo "$(date '+%F %T') ⚠️ 前回の周回が壊れたrebase/merge状態を残していた→ 片付けてから進む" \
+    >> "$REPO/status/git_rebase_incidents.log"
+  git rebase --abort >/dev/null 2>&1 || true
+  git merge --abort >/dev/null 2>&1 || true
+  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
+fi
 git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || true
-git -c credential.helper='!gh auth git-credential' pull --rebase -q origin main >/dev/null 2>&1 || true
+if ! git -c credential.helper='!gh auth git-credential' pull --no-rebase -q origin main >/dev/null 2>&1; then
+  echo "$(date '+%F %T') 🛑 git pull(merge) が失敗→ merge --abort で必ず元の状態へ戻す（黙って進まない）" \
+    >> "$REPO/status/git_rebase_incidents.log"
+  git merge --abort >/dev/null 2>&1 || true
+  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
+fi
 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1
 }
 
