@@ -499,27 +499,40 @@ def main():
         pass
     io.open(STAMP, "w").write(str(int(time.time())))
 
-    # 重いときは何もしない（掃除でMacを重くしない）
+    # 2026-09-13（727番3回目・13/30回赤の根本原因）：
+    # このMacは3レーン常時稼働が標準で load average が普段から15を超える
+    # （実測20〜50）。旧ロジックは「load>15なら丸ごと何もしない」だったため、
+    # 掃除係が実質ずっと無効化されており、worktree件数がしきい値に張り付いた
+    # まま何時間も減らないのが真因だった（過去2回の#727はkenpou_check.pyを
+    # 手動再実行して一時的に緑に戻しただけで、根本原因を直していなかった）。
+    # 重い処理（node_modulesの再帰削除＝ディスクI/O）だけをload gateで抑え、
+    # 軽い処理（git worktree remove＝件数を直接減らす本体）は、本当に
+    # 異常な過負荷（60超）でない限り常に実行する。
     try:
-        if os.getloadavg()[0] > 15:
-            return 0
+        load1 = os.getloadavg()[0]
     except Exception:
-        pass
+        load1 = 0.0
+    if load1 > 60:
+        return 0
+    heavy_ok = load1 <= 15
 
     guard = running_paths()
 
     if os.path.isdir(WT_DIR):
-        sweep_node_modules(WT_DIR, guard)
+        if heavy_ok:
+            sweep_node_modules(WT_DIR, guard)
         sweep_worktrees(WT_DIR, guard)
 
     # 2026-09-09（685番）追加：`.claude/worktrees`配下も同じ4条件で片づける。
     if os.path.isdir(CLAUDE_WT_DIR):
-        sweep_node_modules(CLAUDE_WT_DIR, guard)
+        if heavy_ok:
+            sweep_node_modules(CLAUDE_WT_DIR, guard)
         sweep_worktrees(CLAUDE_WT_DIR, guard)
 
     # 2026-09-10（720番）追加：`Documents/AI作業/.worktrees`配下も同じ4条件で片づける。
     if os.path.isdir(DOCS_WT_DIR):
-        sweep_node_modules(DOCS_WT_DIR, guard)
+        if heavy_ok:
+            sweep_node_modules(DOCS_WT_DIR, guard)
         sweep_worktrees(DOCS_WT_DIR, guard)
 
     # 2026-09-09（685番）追加：git worktree list --porcelainを正本にして、
@@ -541,7 +554,8 @@ def main():
 
         dynamic_paths = [p for p in git_worktree_paths() if not _is_known(p)]
         if dynamic_paths:
-            sweep_node_modules_paths(dynamic_paths, guard)
+            if heavy_ok:
+                sweep_node_modules_paths(dynamic_paths, guard)
             sweep_paths(dynamic_paths, guard, "git worktree list(新規置き場所)")
     except Exception as e:
         log("git worktree list動的スイープ失敗: %s" % e)
