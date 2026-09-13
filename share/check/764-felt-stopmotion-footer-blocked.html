@@ -52,29 +52,36 @@
 <div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-全ページ共通レイアウト最下部にフェルト・ストップモーションのループ動画(<code>JoyReliefFooterLoop.tsx</code>)を実装。autoplay/loop/muted/playsInline/aspect-video(16:9)/prefers-reduced-motion対応まで完了しmainへ合流済み(コミットf65e41da)。ただしLovable側の「Publishing was blocked due to suspicious activity」という2026-09-08から続くプラットフォーム障害(12件以上の独立セッションで確認済み)により、本番への公開だけがブロックされている。
+①確認ページから、たまごさんが開くと404になる非公開リポジトリのリンクを削除し、押せるリンクだけに差し替えた。実装自体(フェルト・ストップモーションのループ動画footer)は9/12に完了・main合流済み。残るはLovable側「Publishing was blocked due to suspicious activity」というプラットフォーム障害(2026-09-08から継続・13件以上の独立セッションで同一障害を確認済み)による公開待ちのみ。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>GitHub main合流(コードsourceのHTTPステータス)</span></div>
-  <div class="num"><b>404</b><span>本番mp4のHTTPステータス(未反映の証拠)</span></div>
+  <div class="num"><b>13件</b><span>「公開ブロック」を実機で確認したセッション数</span></div>
+  <div class="num"><b>404</b><span>本番mp4のHTTPステータス(9/13 13:2x時点も未反映)</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番トップ(まだ動画は出ない)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>GitHub上の実装コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/f65e41da5cfccab1418efd3c08bfbcd3aec768e8" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/f65e41da5cfccab1418efd3c08bfbcd3aec768e8</a></li>
+  <li><b>本番トップ(まだ動画は出ない・押して確認できる)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番mp4への直リンク(今は404になることを自分で確かめられる)</b><a href="https://joy-relief-station.lovable.app/media/joy-relief-footer-loop.mp4" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/media/joy-relief-footer-loop.mp4</a></li>
 </ul>
+
+<h2>④ スクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain">
+    <b>公開ブロックの実機証拠（同一障害・#740で取得したもの）</b>
+    <img src="img/740-publish-blocked.png" alt="Lovable公開ブロックのエラー画面" loading="lazy">
+    <span class="meta">「公開」ボタンを押すと出る「Publishing was blocked due to suspicious activity」のエラー表示。#764も同じ障害でブロックされている。</span>
+  </div>
+</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>実装(autoplay/loop/muted/playsInline/aspect-video/reduced-motion)</td><td class="yes">完了</td></tr>
-<tr><td>main合流</td><td class="yes">完了(f65e41da)</td></tr>
-<tr><td>Lovable公開</td><td class="no">プラットフォーム側ブロックで不可</td></tr>
+<tr><td>main合流</td><td class="yes">完了(コミットf65e41da・2026-09-12)</td></tr>
+<tr><td>Lovable公開</td><td class="no">プラットフォーム側「suspicious activity」ブロックで不可(13件目の実測・2026-09-13時点も継続)</td></tr>
 </table>
 
 <footer>
