@@ -202,6 +202,7 @@ async function main() {
     tested: 0,
     autoOkLinkCount: 0,
     noResponse: [],
+    skippedDisappeared: [],
     consoleErrors: [],
     truncated: false,
     error: null,
@@ -278,6 +279,7 @@ async function main() {
       } catch {
         continue;
       }
+      let vanished = false;
       try {
         // querySelectorAllの通し番号ではなく、要素本体に付けたマーカー属性で再取得する
         // （直前のクリックでDOM順序が変わっても、同じ物理要素を確実に狙い撃つ）。
@@ -289,10 +291,25 @@ async function main() {
           return true;
         })()`;
         lastWindowOpenAt = 0; // このクリックで新たに発火したPage.windowOpenだけを見る
-        const r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
-        if (!r.result?.value) clickError = "要素が見つかりませんでした（クリック前にDOMから消えた＝マーカーが外れた）";
+        let r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
+        // 案件#793実測：このサイトのキュー一覧・できたもの一覧は数十秒おきの自動再描画
+        // （renderQueue()等）でDOM全体が作り直され、無関係なタイミングでマーカー属性が
+        // 消えることがある。1回目に見失っただけで即「無反応」と断じると、実際は正しく
+        // 動くボタンまで誤FAILになるため、300ms待って同じマーカーを1回だけ探し直す。
+        if (!r.result?.value) {
+          await sleep(300);
+          r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
+        }
+        if (!r.result?.value) vanished = true;
       } catch (e) {
         clickError = String(e.message || e).slice(0, 150);
+      }
+      if (vanished) {
+        // 再試行してもなお見つからない＝クリック前に自動再描画でDOMごと入れ替わった可能性が高く、
+        // 「押しても反応しない」とは別物のテスト不能ケース。無反応件数には数えず、別枠で記録する。
+        result.skippedDynamic = (result.skippedDynamic || 0) + 1;
+        result.tested++;
+        continue;
       }
       await sleep(CLICK_SETTLE_MS);
       // href付き要素（外部/内部リンク）は実際のページ遷移がCLICK_SETTLE_MSの600msでは
@@ -345,7 +362,18 @@ async function main() {
           Math.abs((before.htmlLen || 0) - (after.htmlLen || 0)) > HTML_LEN_NOISE_THRESHOLD ||
           before.openDialogCount !== after.openDialogCount);
 
-      if (!changed) {
+      // 案件#795実測（GitHub Pages版 tamago-shinchoku 進捗表・#740の教訓と同型）：
+      // 「要素が見つかりませんでした（クリック前にDOMから消えた）」は、その要素自身が
+      // 無反応だった証拠にはならない。この進捗表は10〜60秒おきの自動更新（refreshHealth等）と
+      // ライブフィードの再描画が常時走っており、直前の別要素へのクリック・ページ内ナビゲーション・
+      // ただの自動更新タイマーのどれかが割り込んでDOMを再構築すると、まだ処理待ちだった
+      // 後続要素のマーカーが軒並み外れる（1個の巻き込まれで無関係な要素まで無反応扱いになる）。
+      // 実際に壊れているボタンは要素ごと消えたりしない（押しても何も起きないだけ）ので、
+      // このケースはnoResponseに数えず、再検証が必要な別枠として記録しFAIL判定に使わない。
+      const disappearedBeforeClick = clickError != null && clickError.includes("クリック前にDOMから消えた");
+      if (!changed && disappearedBeforeClick) {
+        result.skippedDisappeared.push({ index: idx, tag: el.tag, text: el.text, href: el.href });
+      } else if (!changed) {
         result.noResponse.push({
           index: idx,
           tag: el.tag,
@@ -427,12 +455,19 @@ async function main() {
     autoOkLinkCount: result.autoOkLinkCount || 0,
     truncated: result.truncated,
     noResponseCount: result.noResponse.length,
+    skippedDisappearedCount: result.skippedDisappeared.length,
     consoleErrorCount: result.consoleErrors.length,
   }));
   if (result.noResponse.length) {
     console.log("--- 押しても反応しない要素 ---");
     for (const nr of result.noResponse) {
       console.log(`  [${nr.index}] <${nr.tag}> 「${nr.text}」 ${nr.href ? "href=" + nr.href : ""} — ${nr.reason}`);
+    }
+  }
+  if (result.skippedDisappeared.length) {
+    console.log("--- クリック前にDOMから消えていた要素（無反応扱いにしない・自動更新/他クリックの巻き込まれの可能性） ---");
+    for (const sd of result.skippedDisappeared) {
+      console.log(`  [${sd.index}] <${sd.tag}> 「${sd.text}」 ${sd.href ? "href=" + sd.href : ""}`);
     }
   }
   if (result.consoleErrors.length) {
