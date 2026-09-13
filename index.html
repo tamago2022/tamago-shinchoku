@@ -1553,6 +1553,20 @@ refreshPace();
    status/genzaichi.json（tools/genzaichi.pyがheartbeat.shに相乗りし実質30分おきに書く）を
    そのまま表示するだけ。paceBarと同じ「フェッチ失敗時は前回値を灰色で維持・0件と混同しない」
    方式（752番の教訓）。redFlagsが1件でもあれば赤で開いた状態、無ければ緑で畳んだ状態にする。 */
+// 802番：checkSecが閉じたままでも判断待ち件数が一番上に出るよう、genzaichi.json
+//   （既に常時取得している「いまの現在地」）に相乗りしてバナーを更新する。
+//   checkSecを開いた後はrenderCheck()側の実数（より新しい）で上書きされる＝そちらが優先。
+function renderPendingDecisionBarFromCount(count){
+  const pdBar = document.getElementById("pendingDecisionBar"); if(!pdBar) return;
+  if(count > 0){
+    pdBar.style.display = "";
+    pdBar.innerHTML = `<a href="#checkSec" onclick="var s=document.getElementById('checkSec'); if(s) s.open=true;">`
+      + `⏸ 判断待ち ${count}件・あなたのOKを待っています →見る</a>`;
+  } else {
+    pdBar.style.display = "none";
+    pdBar.innerHTML = "";
+  }
+}
 function renderGenzaichi(g){
   const bar = document.getElementById("genzaichiBar"); if(!bar) return;
   if(!g){
@@ -1562,11 +1576,13 @@ function renderGenzaichi(g){
       bar.className = "pacebar unsure stale";
       bar.open = (cached.data.redFlags && cached.data.redFlags.length > 0);
       bar.innerHTML = `<summary><div class="ph">${staleNoteHtml(cached.savedAt)}　いまの現在地は前回値を表示中</div></summary>`;
+      if(typeof cached.data.pendingDecisionCount === "number") renderPendingDecisionBarFromCount(cached.data.pendingDecisionCount);
     } else {
       bar.hidden = true;
     }
     return;
   }
+  if(typeof g.pendingDecisionCount === "number") renderPendingDecisionBarFromCount(g.pendingDecisionCount);
   bar.hidden = false;
   const red = g.redFlags || [];
   const genAt = g.generatedAt ? new Date(g.generatedAt).getTime() : null;
@@ -3219,18 +3235,8 @@ function renderCheck(){
   const rows = allAwc.filter(r => r.origin === "user");
   const factoryRows = allAwc.filter(r => r.origin !== "user");
   document.getElementById("checkMeta").textContent = rows.length ? `${rows.length}件` : "";
-  // 802番：判断待ちが下の方に埋もれないよう、件数だけを一番上のバナーへも出す。
-  (function(){
-    const pdBar = document.getElementById("pendingDecisionBar"); if(!pdBar) return;
-    if(rows.length){
-      pdBar.style.display = "";
-      pdBar.innerHTML = `<a href="#checkSec" onclick="var s=document.getElementById('checkSec'); if(s) s.open=true;">`
-        + `⏸ 判断待ち ${rows.length}件・あなたのOKを待っています →見る</a>`;
-    } else {
-      pdBar.style.display = "none";
-      pdBar.innerHTML = "";
-    }
-  })();
+  // 802番：checkSecを開いた後はこちらの実数（genzaichi.jsonより新しい）で上書きする。
+  if(typeof renderPendingDecisionBarFromCount === "function") renderPendingDecisionBarFromCount(rows.length);
   const groupMap = splitGroupsOf(all);
   const factoryFold = factoryRows.length ? `<details class="cmore cfactory"><summary>🏭 工場発（見なくてよいもの）${factoryRows.length}件・畳んでいます</summary>
       ${buildCheckEntries(factoryRows, groupMap).map(en => en.isGroup ? checkGroupRowHtml(en) : (()=>{

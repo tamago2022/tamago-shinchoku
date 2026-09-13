@@ -153,14 +153,41 @@ def done_today_ns(items):
     return ns
 
 
+def _reported_ns():
+    """802番（2026-09-14）修正：このファイルは長らく "reported" キーを読んでいたが、
+    dispatch_reported.json の実際のキーは "ns"（tools/dispatch_arrivals.pyが書く形）。
+    ずっと空集合が返り続けており、既に報告済みの番号まで「まだ渡していない完成品」に
+    混ざって出ていた（実例：検品NG済みの750番がunreportedDoneに出ていた）。
+    正本は追記式の dispatch_reported.jsonl（802番で新設）。旧.jsonも保険として合わせて読む。"""
+    ns = set()
+    try:
+        with io.open(os.path.join(ST, "dispatch_reported.jsonl"), encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except Exception:
+                    continue
+                if isinstance(row.get("n"), int):
+                    ns.add(row["n"])
+    except Exception:
+        pass
+    try:
+        data = json.load(open(os.path.join(ST, "dispatch_reported.json"), encoding="utf-8"))
+        if isinstance(data, dict):
+            ns.update(n for n in (data.get("ns") or []) if isinstance(n, int))
+    except Exception:
+        pass
+    return ns
+
+
 def unreported_completions():
     """まだ渡していない完成品。同じ番号は最後の1件だけ、URLのファイル名が
     自分の番号で始まっていないもの（番号違いのURL誤記録）は捨てる。"""
     today = now.strftime("%Y-%m-%d")
-    try:
-        rep = set(json.load(open(os.path.join(ST, "dispatch_reported.json"), encoding="utf-8")).get("reported", []))
-    except Exception:
-        rep = set()
+    rep = _reported_ns()
     picked = {}
     try:
         for line in open(os.path.join(ST, "dispatch_outbox.jsonl"), encoding="utf-8"):
@@ -334,6 +361,13 @@ def run_shikumi_and_get_red_flags():
 
 def build():
     q = jread("queue.json", {"items": []}); items = q.get("items") or []
+    # 802番（2026-09-14）：「たまごさんのOK待ち（判断待ち）」件数。
+    #   index.html側の checkSec は details が開かれた時しかqueue.jsonを取りに行かない
+    #   （軽さ優先の既存設計）ため、「一番上に常に出す」バナーはこのgenzaichi.json（既に
+    #   ページ最上部で常時読まれている）に相乗りさせる。判定は renderCheck() と同じ条件。
+    pending_decision_count = sum(
+        1 for x in items if x.get("status") == "awaiting_check" and x.get("origin") == "user"
+    )
     h = jread("health.json"); p = jread("pace.json")
     today = now.strftime("%Y-%m-%d")
     done_ns = done_today_ns(items)
@@ -441,6 +475,7 @@ def build():
         "launchSilentMin": round(launch_silence_min() or 0, 1) if launch_silence_min() is not None else None,
         "running": {"count": h.get("sessions"), "safeMax": h.get("safeMax")},
         "waitingCount": len(waiting),
+        "pendingDecisionCount": pending_decision_count,  # 802番：たまごさんのOK待ち件数
         "p1Count": len(p1),
         "doneToday": len(done_ns),
         "childSessionsToday": n_child,
