@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#687 status/丸ごとロールバック事故・真因と復旧 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.02rem;}
+  .warn{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:0.98rem;background:#fff3f1;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;margin-bottom:20px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);font-weight:700;}
+  code{background:#efe9db;border-radius:4px;padding:1px 5px;font-size:0.85em;}
+  pre{background:#1c1c1c;color:#d8d2c2;border-radius:10px;padding:14px;overflow-x:auto;font-size:0.76rem;line-height:1.5;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #687 status/丸ごとロールバック事故・真因と復旧</div>
+<h1>#687 status/丸ごとロールバック事故・真因と復旧</h1>
+<div class="date">2026-09-13 実測。当初「queue.jsonだけの問題」と見誤っていたが、たまごさんの指摘で調べ直し、git層の真因を特定・修理した。</div>
+
+<div class="warn">
+<b>調査の途中経過（正直に書く）</b>：最初の対応（下記③）はアプリ層の鍵（queue_lock）だけを直し、queue.jsonをtranscriptから手作業で復元した。しかしその後、<b>同じ事故がさらに発生し、その復元分ごと再度消えた</b>（289件→264件・776番は3回別内容に上書き）。原因はqueue.jsonの中ではなく、<b>もっと下のgit層</b>にあった。
+</div>
+
+<h2>① 真因：git pull --rebase が status/ を丸ごと巻き戻していた</h2>
+<div class="fix">
+<code>tools/machine_status_push.sh</code>（5分おき）と<code>tools/command_watch.sh</code>（30秒おき）の両方に、
+<code>git commit ... || true; git pull --rebase -q ... || true; git push ...</code>という同一パターンがあった。<br><br>
+<b>実測したメカニズム</b>：未コミットの変更が残っている状態で<code>pull --rebase</code>が走ると、gitが自動でそれらを<b>autostash</b>へ退避する。rebase自体が何らかの理由で完走できず失敗すると（<code>|| true</code>が握りつぶすため誰にも気づかれない）、作業ツリーは<b>古いorigin/mainの内容へサイレントに巻き戻り</b>、autostashは二度とpopされずに残る。<br><br>
+<b>この事故は今日が初めてではなかった</b>：<code>git fsck --dangling</code>で見つかったautostash残骸だけで、2026-09-02〜09-12の間に<b>12回</b>発生していたことを確認した（今回初めて実害＝番号の消失として顕在化した）。
+</div>
+
+<h2>② 実測の時系列</h2>
+<table>
+<tr><th>時刻</th><th>できごと</th></tr>
+<tr><td>10:17:46</td><td>1回目のrebase事故。queue.jsonが331件(最大804・777〜804番全部入り)→293件(最大776)へ巻き戻る。gitが自動生成したautostashコミットに巻き戻り前の完全な中身が残った（<b>タグ<code>rescue-687-autostash-20260913</code>で永久保全済み</b>）</td></tr>
+<tr><td>10:38</td><td>止血：事故発生時点のqueue.jsonを<code>status/queue.json.20260913-1038.rescue</code>として保全</td></tr>
+<tr><td>11:05〜11:14</td><td>アプリ層の修理：<code>tools/queue_store.py</code>新設（差分マージ・件数減少ブロック・世代バックアップ・鍵の再入可能化）。queue.jsonを子セッションのtranscriptから手作業で289件へ復元（この時点ではgit層の真因に気づいていなかった）</td></tr>
+<tr><td>11:14〜16:12のどこか</td><td><b>2回目のrebase事故</b>。復元した289件ごと再び264件(最大780)へ巻き戻る。776番はこの間に少なくとも3回、別内容へ次々に上書きされた（心臓の自動復活→ループエンジニアリング→毎朝の入荷見回り）</td></tr>
+<tr><td>16:1x台</td><td>再調査で気づき、真因（git pull --rebase）を特定。<code>com.tamago.machine-status</code>launchdジョブを一時停止（止血）</td></tr>
+<tr><td>直後</td><td><code>machine_status_push.sh</code>・<code>command_watch.sh</code>の両方を修理：<code>pull --rebase</code>→<code>pull --no-rebase</code>(merge)へ変更し、<b>即座にgit commit</b>（前回の反省：直した直後に3度目の事故で消えないように）</td></tr>
+<tr><td>直後</td><td>autostashコミット（タグ保全済み）から782〜805番の原文（title/why/what/status）を復元し<b>即座にgit commit</b>。777〜781番は別セッションが既に気づいて新しいラベル形式で再作成済みだったため、重複を避けて対象から除外</td></tr>
+</table>
+
+<h2>③ 修理の中身</h2>
+<table>
+<tr><th>対策</th><th>内容</th><th>状態</th></tr>
+<tr><td>rebase→mergeへ変更</td><td><code>machine_status_push.sh</code>・<code>command_watch.sh</code>の<code>pull --rebase</code>を<code>pull --no-rebase</code>に変更。mergeが失敗してもコンフリクト状態で残るだけで、rebaseのautostashのようにサイレントに巻き戻ることが無い構造にした</td><td class="yes">commit済み</td></tr>
+<tr><td>自己修復</td><td>周回開始時に壊れたrebase/merge残骸（<code>.git/rebase-merge</code>等）を検知したら自動で片付けてから進む。pullが失敗したら黙って続けず<code>merge --abort</code>で必ず元へ戻し、<code>status/git_rebase_incidents.log</code>へ記録する</td><td class="yes">commit済み</td></tr>
+<tr><td>アプリ層の差分マージ書き込み</td><td><code>tools/queue_store.py</code>：save_queue()は書く直前にディスク最新を読み直し、自分が実際に変更した項目だけを重ね書き。件数減少（説明の付かないもの）は<code>queue_write_blocked.jsonl</code>へ記録して拒否</td><td class="yes">commit済み・再現テスト2本PASS</td></tr>
+<tr><td>止血</td><td><code>com.tamago.machine-status</code>launchdジョブを一時停止→修理後に再開</td><td class="yes">実施</td></tr>
+<tr><td>永久保全</td><td>1回目の事故直後のautostashコミットに<code>git tag rescue-687-autostash-20260913</code>を付け、gcで消えないようにした</td><td class="yes">実施</td></tr>
+</table>
+
+<h2>④ 復旧できた番号・できなかった番号</h2>
+<table>
+<tr><th>番号</th><th>状態</th><th>根拠</th></tr>
+<tr><td>777〜781</td><td>対象外（別セッションが再作成済み）</td><td>「(1/4)」形式の新ラベルで既に稼働中。重複を避けて触らなかった</td></tr>
+<tr><td>782,783,785,787,791,797</td><td class="yes">done（原文どおり復元）</td><td>autostashの原本で既にdone。本番反映済みの完了記録</td></tr>
+<tr><td>792,800,801,796</td><td class="yes">awaiting_check</td><td>事故時点ではrunning/waitingだったが、その後の実セッションログで完了を確認。自己申告のため検品待ちへ</td></tr>
+<tr><td>794</td><td>waiting（再発車が必要）</td><td>事故時点ではrunning。その後3時間枠を使い切り未完了のまま終了</td></tr>
+<tr><td>784,786,788,789,790,793,795,798,799,802,803,804</td><td class="yes">waiting（原文どおり復元）</td><td>autostashの原本そのまま。788「毎朝の入荷見回り」・789「18_ZENを16:9に」など、前回「復旧不可」としていた2件も含め<b>全件、題名・本文とも復元できた</b></td></tr>
+<tr><td>805（旧776）</td><td class="yes">done（原文どおり復元）</td><td>776番は本事故で3回別内容に上書きされたため、元の内容（心臓の自動復活）を新番号で復元</td></tr>
+</table>
+<div class="note">
+前回の確認ページでは788・789番を「題名・本文とも復旧不可」としていたが、<b>今回はgit stashの原本が見つかったため全件復元できた</b>。訂正します。
+</div>
+
+<h2>⑤ 再現テストの結果</h2>
+<pre>$ python3 tools/test_queue_store.py
+PASS: ① 古いqueueを抱えたプロセスが最後に書き戻しても、他プロセスの追加は消えない
+PASS: ②-a deleted_nsを渡さない限り、itemsから漏れただけでは消えない（自己修復）
+PASS: ②-b 削除(deleted_ns)と並行追加のどちらも取りこぼさない
+PASS: ③ 自分が触っていない項目は、他プロセスの新しい変更を消さない
+全テストPASS
+
+$ python3 tools/test_queue_rollback_regression.py
+PASS: relay_server経由の直接queue_add()呼び出しが、
+      auto_launcherの長時間保持からの書き戻しに巻き込まれて消えない
+全テストPASS</pre>
+
+<h2>⑥ 正直な限界（隠さず書く）</h2>
+<div class="note">
+・queue.json以外の「done」履歴（進捗表に一度出た完了記録）が、今回の複数回のロールバックで一部失われている可能性がある。<b>実際に本番に出た成果物そのものは無事</b>（GitHub Pages・Lovable本番は別途pushされているため）だが、queue.json内の「いつ誰が何をdoneにしたか」の記録が一部欠落している可能性は残る。全件の追跡はしていない。<br>
+・rebase→merge化で今回の型の事故は防げるはずだが、mergeでもコンフリクトが起きた場合は人の目での解消が必要になる場合がある（サイレントな巻き戻りは無くなったが、コンフリクトの発生自体は無くならない）。<br>
+・777〜781番は今回意図的に触っていない（既に別セッションが再作成し稼働中のため）。念のため内容の重複が無いか、後で1回だけ目視確認をお勧めする。
+</div>
+
+<footer>
+このページは案件#687の対応記録です。<code>share/check/</code>配下・非公開扱い（noindex）。<br>
+永久保全タグ：<code>git show rescue-687-autostash-20260913:status/queue.json</code>で1回目の事故直前の完全な状態がいつでも見られる。
+</footer>
+</body>
+</html>
