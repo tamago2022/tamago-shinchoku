@@ -35,7 +35,12 @@ if (!URL_ARG) {
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const LOAD_TIMEOUT_MS = 20000;
-const SETTLE_MS = 1500;
+const SETTLE_MS = 4000;
+// 案件#793実測：この進捗表(index.html)は初回描画後、status/*.json群（queue.json等）を
+// 複数の非同期fetchで順次読み込んで再描画するため、SETTLE_MSが短いと「まだ一部しか
+// 描画されていない瞬間」を対象にしてしまい、同じURLを繰り返し検品しても検出件数が
+// 1086件→17件→7件のようにバラつき、無関係なボタンが「無反応」と誤検知される事故があった。
+// 1.5秒→4秒に伸ばし、主要な非同期描画が出そろってから要素収集を始める。
 const CLICK_SETTLE_MS = 600;
 const MAX_ELEMENTS = 30;      // これ以上は時間がかかりすぎるので打ち切る（心臓を止めない）
 const TIME_BUDGET_MS = 90000; // 全体の時間予算。超えたら残りは未検査として打ち切る
