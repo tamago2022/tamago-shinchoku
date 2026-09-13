@@ -63,23 +63,38 @@
 
 
 
+<h2>③ 実際に押した証拠</h2>
+<div class="shots">
+  <div class="shot before">
+    <b>2026-09-13 12:34　公開ポップオーバー（押せる状態）</b>
+    <img src="img/708-publish-ready.png" alt="押す前は開けていた画面。変更を公開ボタンが青く見える">
+    <span class="meta">「変更を公開」ボタンが青く表示され、「セキュリティの問題は見つかりませんでした」の表示も出ていた。</span>
+  </div>
+  <div class="shot after">
+    <b>2026-09-13 12:35　実際にクリックした直後</b>
+    <img src="img/708-publish-blocked-2.png" alt="クリック直後、右下に薄くブロックの通知が出た画面">
+    <span class="meta">右下に「Publishing was blocked due to...」の通知が薄く出て、公開は成立しなかった。</span>
+  </div>
+</div>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ(まだ直る前のまま)</b><a href="https://joy-relief-station.lovable.app/room/card/maru-cat" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/maru-cat</a></li>
-  <li><b>直した中身(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/9391f6cde8b37f20c881b901eba711eb26b5fbb5" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/9391f6cde8b37f20c881b901eba711eb26b5fbb5</a></li>
-  <li><b>Lovableのプロジェクト画面(サポートへの問い合わせはここから)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+  <li><b>本番ページ(このセッション時点でまだ直る前のまま。DevToolsのX-Deployment-IDが9/12から不変で確認済み)</b><a href="https://joy-relief-station.lovable.app/room/card/maru-cat" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/maru-cat</a></li>
+  <li><b>Lovableのプロジェクト画面(たまごさんのアカウントでログインすれば開ける。右上「公開」ボタンから同じ画面に行けます)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
 </ul>
+
+<div class="note">直した中身そのもの（GitHubのコミット）は非公開リポジトリのため、このページからは開けません。かわりに上の③でクリックの証拠を、下の表で確認結果を示します。</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>コード修正・GitHub main合流</td><td class="yes">完了</td></tr>
-<tr><td>Lovableの「公開」ボタンを押す</td><td class="yes">完了(押した後の状態)</td></tr>
-<tr><td>本番画面への反映</td><td class="no">Lovable社の公開ブロックで保留(サポート問い合わせ待ち)</td></tr>
+<tr><td>Lovableの「公開」ボタンを実際にクリック(本セッションで再実行)</td><td class="yes">完了(クリックは成立)</td></tr>
+<tr><td>本番画面への反映</td><td class="no">Lovable社が「不審な操作」として公開そのものを拒否しており未反映</td></tr>
 </table>
 
 <footer>
-このページは #708 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #708 のセッションが手作業で更新した確認資料。GitHubの非公開リンクは開けないため、このページから削除しました。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
