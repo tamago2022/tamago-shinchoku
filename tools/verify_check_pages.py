@@ -62,28 +62,12 @@ NEGATIVE_PATTERNS = [
 ]
 
 
-@contextmanager
-def queue_lock(timeout=180.0):
-    """status/.queue.lock を flock で排他する（auto_launcher.py と同じ方式）。"""
-    f = io.open(QUEUE_LOCK, "a+")
-    t0 = time.time()
-    while True:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            break
-        except Exception:
-            if time.time() - t0 > timeout:
-                f.close()
-                raise RuntimeError("queue_lock timeout（他セッションがqueue.jsonを触っている）")
-            time.sleep(0.2)
-    try:
-        yield
-    finally:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        except Exception:
-            pass
-        f.close()
+# 2026-09-13（案件#687）：ここに独自の queue_lock() 実装と、それを使った
+#   `with open(QUEUE, "w") as f: json.dump(d, f)`（丸ごと上書き・差分マージ無し・
+#   件数減少ガード無し）があった。18:55、271件のqueue.jsonが0件で書き込まれる
+#   事故が実際に発生し、この経路が容疑者の1つだった（直接書き込みでガードを迂回できるため）。
+#   → 鍵・読み書きの実体を `tools/queue_store.py` に一本化する。
+queue_lock = queue_store.queue_lock
 
 
 _URL_NOTE_STOP = "（`　\n\t"
@@ -219,10 +203,12 @@ def now_disp():
 
 
 def apply_results(results, task_tag):
-    """queue.jsonをロックして最新を読み直し、判定結果だけを反映する。"""
+    """queue.jsonをロックして最新を読み直し、判定結果だけを反映する。
+    書き込みは queue_store.save_queue()（差分マージ・件数減少ガード・世代バックアップ・
+    自己修復つき）に委譲する（案件#687：以前は丸ごと上書きで、事故の入口の1つだった）。"""
     with queue_lock():
-        with open(QUEUE, encoding="utf-8") as f:
-            d = json.load(f)
+        d = queue_store.load_queue()
+        snapshot = queue_store.snapshot_items(d)
 
         audit_lines = []
         by_n = {r["n"]: r for r in results}
@@ -271,9 +257,14 @@ def apply_results(results, task_tag):
 
         d["updatedAt"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-        with open(QUEUE, "w", encoding="utf-8") as f:
-            json.dump(d, f, ensure_ascii=False, indent=1)
-            f.write("\n")
+        ok = queue_store.save_queue(d, snapshot=snapshot)
+        if not ok:
+            audit_lines.append({
+                "n": None, "title": None,
+                "decision": "BLOCKED: save_queueが件数減少等で書き込みを拒否した"
+                            "（status/queue_write_blocked.jsonl参照）",
+                "reason": "", "checkedAt": now_iso(), "task": task_tag,
+            })
 
         with open(AUDIT_LOG, "a", encoding="utf-8") as f:
             for line in audit_lines:
@@ -289,8 +280,7 @@ def main():
     ap.add_argument("--task", default="manual", help="監査ログ・okByに残すタスク識別タグ（例: 444-2of9）")
     args = ap.parse_args()
 
-    with open(QUEUE, encoding="utf-8") as f:
-        d = json.load(f)
+    d = queue_store.load_queue()
     items_by_n = {it.get("n"): it for it in d["items"]}
 
     results = []
