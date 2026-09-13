@@ -1343,20 +1343,86 @@ def harvest(q):
                             % (it.get("n"), it.get("title"), reason))
                         continue
                 log("✅ 確認ページ検品OK %d番「%s」（%s）" % (it.get("n"), it.get("title"), check_url))
+            # 案件#800：3段検品の2段目「触る検品」。確認ページの中身が正しくても、
+            # 実際にボタンを押すと無反応、という事故を機械が先に見つける。
+            # ここもharvest()の45秒watchdogを超えないよう、別プロセスで着火するだけで同期待ちしない。
+            touch_target = _pick_touch_target(check_url, urls)
+            if touch_target and start_touch_check(it, touch_target):
+                it["status"] = "touchchecking"
+                changed = True
+                log("👆 触る検品へ回す %d番「%s」（%s）" % (it.get("n"), it.get("title"), touch_target))
             # 2026-09-06 新設（416番）：確認待ちに上げる前に、別プロセスのclaude(Sonnet)を1本だけ
-            # バックグラウンドで着火してAI検品(Verifier)させる。harvest()は15秒おきに軽く回る前提
-            # （heartbeat.sh）なので、ここでは絶対に同期待ちしない。結果は次回以降のharvest()で回収する。
-            if start_verify(it, check_url, urls):
+            # バックグラウンドで着火してAI検品(Verifier=鬼監督3段目)させる。harvest()は15秒おきに
+            # 軽く回る前提（heartbeat.sh）なので、ここでは絶対に同期待ちしない。
+            # 触る検品の対象URLが無かった／着火に失敗した場合は、従来どおり3段目へ直接進む。
+            elif start_verify(it, check_url, urls):
                 it["status"] = "verifying"
                 changed = True
-                log("🔎 AI検品へ回す %d番「%s」" % (it.get("n"), it.get("title")))
+                log("🔎 AI検品(鬼監督)へ回す %d番「%s」" % (it.get("n"), it.get("title")))
             else:
                 it["status"] = "awaiting_check"      # たまごさんの確認待ち（検品できないので素通し）
                 append_outbox(it, bool(urls))
-                log("✅ 終了を回収 %d番「%s」→ 確認待ち（URL %d本・AI検品は対象外）"
+                log("✅ 終了を回収 %d番「%s」→ 確認待ち（URL %d本・検品は対象外）"
                     % (it.get("n"), it.get("title"), len(urls)))
 
-    # ---- AI検品（Verifier）の回収（2026-09-06新設・416番）----
+    # ---- 触る検品（2段目）の回収（案件#800新設）----
+    # 上のループでstatus="touchchecking"にした項目を、別のループでバックグラウンドから回収する。
+    # PASS → 3段目(AI検品/鬼監督)へ進める。FAIL → 797番のredo_guardへ合流してやり直し。
+    # 技術的エラー(None) → この段は素通しして3段目へ直接進める（インフラの都合で仕事を止めない）。
+    for it in q.get("items", []):
+        if it.get("status") != "touchchecking":
+            continue
+        touch_outcome = collect_touch_check(it)
+        if touch_outcome is None:
+            continue  # まだ検品中。次回また見る
+        t_ok, t_reason, t_report = touch_outcome
+        t_url = it.get("touchUrl") or ""
+        _record_touch_check(t_ok, t_reason, t_url, it.get("n"), t_report)
+        for k in ("touchPid", "touchOutJson", "touchLog", "touchStartedAt"):
+            it.pop(k, None)
+        if t_ok is False:
+            fails = int(it.get("touchCheckFailCount") or 0) + 1
+            it["touchCheckFailCount"] = fails
+            redo_guard.note_fail_reason(it, "触る検品NG：%s" % t_reason)
+            if redo_guard.should_stuck(it):
+                redo_guard.mark_stuck(it, log)
+                changed = True
+                log("🛑 触る検品NG→797番のstuck化に合流 %d番「%s」（理由:%s）"
+                    % (it.get("n"), it.get("title"), t_reason))
+                continue
+            it["status"] = "hold" if it.get("holdNote") else "waiting"
+            it["priority"] = it.get("priority") or 2
+            it["what"] = (it.get("what") or "") + (
+                "\n\n【触る検品(2段目)ではねられました・%d回目・%s】理由：%s\n"
+                "実際に押しても反応しない要素があります。curlで読めても、押して動くかを"
+                "`node %s <URL>` で自分でも確認してから直してください。"
+                % (fails, time.strftime("%m-%d %H:%M"), t_reason, TOUCH_CHECK_SCRIPT))
+            for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                it.pop(k, None)
+            it.pop("touchUrl", None)
+            changed = True
+            log("🚫 触る検品NG %d番「%s」→ 列に戻す（%d回目・理由:%s）"
+                % (it.get("n"), it.get("title"), fails, t_reason))
+            continue
+        # PASS または 技術的エラー(None) → 3段目(鬼監督)へ進める。
+        # 技術的エラーの場合でも、その旨をtouchCheckNoteへ書き、鬼監督自身が
+        # 必要なら自分でnode検品を実行できるようにする（build_verify_promptが埋め込む）。
+        check_url2 = next((u for u in (it.get("urls") or []) if "/share/check/" in u), None)
+        it["touchCheckNote"] = (
+            ("押した結果：%s（対象: %s）" % (t_reason, t_url)) if t_url else "（触る検品は未実施）"
+        )
+        changed = True
+        if start_verify(it, check_url2, it.get("urls") or []):
+            it["status"] = "verifying"
+            log("🔎 触る検品%s→AI検品(鬼監督)へ %d番「%s」（理由:%s）"
+                % ("PASS" if t_ok else "技術的エラー", it.get("n"), it.get("title"), t_reason))
+        else:
+            it["status"] = "awaiting_check"
+            append_outbox(it, bool(it.get("urls")))
+            log("✅ 触る検品%s→検品対象外のため確認待ち %d番「%s」"
+                % ("PASS" if t_ok else "技術的エラー", it.get("n"), it.get("title")))
+
+    # ---- AI検品（Verifier=鬼監督3段目）の回収（2026-09-06新設・416番／2026-09-13案件#800で鬼監督化）----
     # 上のループでstatus="verifying"にした項目を、別のループでバックグラウンドから回収する。
     # ここも同期待ちしない：まだ生きていれば次回のharvest()にそのまま持ち越す。
     for it in q.get("items", []):
@@ -1367,6 +1433,8 @@ def harvest(q):
             continue  # まだ検品中。次回また見る
         ok, reason, cost = outcome
         target = it.get("verifyUrl") or ""
+        _record_oni_kantoku(ok, reason, it.get("n"), it.get("title"), it.get("touchCheckNote"), cost)
+        it.pop("touchCheckNote", None)
         _record_ai_verify(ok, reason, cost, target, it.get("n"))
         for k in ("verifyPid", "verifySessionId", "verifyLog", "verifyStartedAt", "verifyUrl"):
             it.pop(k, None)
@@ -1500,7 +1568,14 @@ def harvest(q):
                         log("📄 証拠ページが消えている %d番「%s」→ 検品にかけない"
                             % (it.get("n"), it.get("title")))
                         break
-                if start_verify(it, check_url, urls):
+                # 案件#800：バックログ掃き出し経路にも触る検品(2段目)を通す。
+                touch_target = _pick_touch_target(check_url, urls)
+                if touch_target and start_touch_check(it, touch_target):
+                    it["status"] = "touchchecking"
+                    changed = True
+                    log("👆 溜まっていた確認待ちを触る検品へ %d番「%s」（%s）"
+                        % (it.get("n"), it.get("title"), touch_target))
+                elif start_verify(it, check_url, urls):
                     it["status"] = "verifying"
                     changed = True
                     log("🔎 溜まっていた確認待ちを検品へ %d番「%s」"

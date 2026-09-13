@@ -31,10 +31,13 @@ STUCK_REDO_TOTAL = 2   # ここが797番の核。3ではなく2で止める。
 
 
 def redo_total(it):
-    """3つのカウンタの合計（Noneは0扱い）。この数字が2に達したらstuck化する。"""
+    """カウンタの合計（Noneは0扱い）。この数字が2に達したらstuck化する。
+    800番：3段検品の2段目「触る検品」（touchCheckFailCount）も同じ合計へ合流させる。
+    ここに合流させないと、触る検品だけで無限にやり直しループする穴が残るため。"""
     return (int(it.get("redoCount") or 0)
             + int(it.get("ownerRedoCount") or 0)
-            + int(it.get("aiVerifyFailCount") or 0))
+            + int(it.get("aiVerifyFailCount") or 0)
+            + int(it.get("touchCheckFailCount") or 0))
 
 
 def note_fail_reason(it, reason):
