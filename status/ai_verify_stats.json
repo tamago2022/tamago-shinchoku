@@ -1,9 +1,9 @@
 {
- "totalChecked": 188,
- "totalPassed": 109,
- "totalFailed": 76,
+ "totalChecked": 194,
+ "totalPassed": 113,
+ "totalFailed": 78,
  "totalErrors": 3,
- "totalCostUsd": 54.4671,
+ "totalCostUsd": 56.4873,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -80,57 +80,11 @@
   "提示された「本番URL」はLovable編集ダッシュボード(要ログインの空SPA": 1,
   "提示されたGitHubコミット/リポジトリURLが両方とも404で実在せず、「m": 1,
   "公開サイト5ページを実際に確認したが、依頼された新機能(あめちゃん・お礼メール・": 1,
-  "依頼の核心である本線案(status/now.json・rev.txt)が未実装": 1
+  "依頼の核心である本線案(status/now.json・rev.txt)が未実装": 1,
+  "完了条件の4か所並べスクショが確認ページに皆無で、本番URLにも変更未反映（作業": 1,
+  "dispatch_reported.jsonが2026-09-11 17:14か": 1
  },
  "history": [
-  {
-   "ts": "2026-09-12T01:26:14+09:00",
-   "n": 755,
-   "url": "https://joy-relief-station.lovable.app/cover-guide**",
-   "verdict": "pass",
-   "reason": "本番URLがHTTP200で開き、JSバンドル内に報告どおりの挨拶文言・話すボタン・匿名メモリ・反応ボタンの実装が実測で確認でき、報告に虚偽や誇張は見られなかった",
-   "costUsd": 0.315098
-  },
-  {
-   "ts": "2026-09-12T01:37:37+09:00",
-   "n": 756,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
-   "verdict": "pass",
-   "reason": "確認ページ・進捗表トップ行・status/daily_ingest_summary.jsonが一致し、4件の本番ページ(串焼き肉/チーズ/ソーセージ/フクロモモンガ)のtitleとog:descriptionが「後」のコピーと実際に一致（ヤギ型実例も含む）、過去日付ページも404にならず保持されていることを実URLで確認した",
-   "costUsd": 0.36971479999999995
-  },
-  {
-   "ts": "2026-09-12T03:11:43+09:00",
-   "n": 751,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/751-zen-beach-3models.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URL・3本の動画/画像すべて実在し目視確認、コスト台帳の実測(108円・上限150円以内)も報告内容と完全一致",
-   "costUsd": 0.3687428
-  },
-  {
-   "ts": "2026-09-12T04:11:33+09:00",
-   "n": 749,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/749-card-align-reconfirm-0912.html",
-   "verdict": "fail",
-   "reason": "追加指示②(PC商品カード説明文の3行制限)が提出スクショ自体で未解決(Maldon塩カード全文表示・空白の柱あり)と確認でき、報告の原因説明(Lovableビルド障害)も実際のCSSクラス競合バグと食い違う",
-   "costUsd": 0.5849708000000001
-  },
-  {
-   "ts": "2026-09-12T04:15:09+09:00",
-   "n": 763,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/763-phrase20-cashpoint.html",
-   "verdict": "pass",
-   "reason": "3本のURLすべて実測で開け、確認ページの数字・リンクは実在物（Poop Break実在・価格1.95ドル/ログイン要求フォーム）と一致し、未完了部分（フレーズ20自体の出品）も隠さず明記されている",
-   "costUsd": 0.2240704
-  },
-  {
-   "ts": "2026-09-12T04:19:52+09:00",
-   "n": 758,
-   "url": "https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1",
-   "verdict": "fail",
-   "reason": "本番URL（音楽ページ）が404で未公開。報告自体は正直だが完了条件4「Lovable公開まで押して本番URLを報告」が未達成",
-   "costUsd": 0.18782659999999998
-  },
   {
    "ts": "2026-09-12T05:47:08+09:00",
    "n": 771,
@@ -482,7 +436,55 @@
    "verdict": "pass",
    "reason": "1MB超ファイルは憲法点検で緑確認済み、「すべて」ボタンも実クリック検証(39件中30件テスト・無反応0件)でDOM上の位置的にも対象内と確認でき、修正コード・確認ページ・画像もすべて整合",
    "costUsd": 0.2811118
+  },
+  {
+   "ts": "2026-09-13T13:59:11+09:00",
+   "n": 718,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/718-orphan-session-selfheal.html",
+   "verdict": "pass",
+   "reason": "確認ページ200・本番JSON実測でorphan_sessions=green(count 0)・GitHub上のkenpou_check.py L522以降に自己修復コード(harvest先行呼び出し)実在確認・verify_click.mjsで独自にも5/5反応/エラー0件を再現確認",
+   "costUsd": 0.2168386
+  },
+  {
+   "ts": "2026-09-13T14:00:23+09:00",
+   "n": 717,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/717-big-files-cleanup.html",
+   "verdict": "pass",
+   "reason": "5件の名指しファイル全てが実測で1MB未満に縮小済み、本日の憲法点検も実測でgreen/0件、触る検品も無反応・エラー0件（ただし確認ページのフッターに古い説明が1文残っているので次回ついでに直すと良い）",
+   "costUsd": 0.4462198
+  },
+  {
+   "ts": "2026-09-13T14:07:15+09:00",
+   "n": 727,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/727-worktree-reaper-load-gate-fix.html",
+   "verdict": "pass",
+   "reason": "kenpou_check.jsonのworktree_countが実測green(53件)、確認ページの数字・原因説明・修正コミット内容が一致し、実クリックも全反応",
+   "costUsd": 0.1963792
+  },
+  {
+   "ts": "2026-09-13T14:19:12+09:00",
+   "n": 697,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/697-thumb-consistency-shelf-edit-8th.html",
+   "verdict": "fail",
+   "reason": "完了条件の4か所並べスクショが確認ページに皆無で、本番URLにも変更未反映（作業者自身が認めている)",
+   "costUsd": 0.1864086
+  },
+  {
+   "ts": "2026-09-13T14:31:52+09:00",
+   "n": 728,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/728-week-bar-labels.html",
+   "verdict": "pass",
+   "reason": "依頼4項目（開始時刻付き見出し・6時間目盛り・週起点の説明文・今日の定義注記）とレイアウト跳ね対策が本番コード・スクリーンショットの両方で確認でき、対象の確認ページは触る検品も再確認3連続PASS（無関係な既存バグは別スコープ）",
+   "costUsd": 0.5625859999999999
+  },
+  {
+   "ts": "2026-09-13T14:32:28+09:00",
+   "n": 750,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/750-unreported-completions-green.html",
+   "verdict": "fail",
+   "reason": "dispatch_reported.jsonが2026-09-11 17:14から更新停止しており、dispatch_outbox.jsonlのok:true完了28件（最古は約2日前のn=701〜最新n=717まで）が未反映のまま。「一致」「未報告0件」という主張は実データと矛盾しており、kenpou_check.jsonの緑表示自体が実態を反映していない。",
+   "costUsd": 0.41180459999999997
   }
  ],
- "updatedAt": "2026-09-13 11:10"
+ "updatedAt": "2026-09-13 14:32"
 }

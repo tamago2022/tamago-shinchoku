@@ -1845,6 +1845,101 @@ def _main_impl():
           _snap = queue_store.snapshot_items(q)
 
       waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
+
+      # ---- 759番3回目の重複発車を機に追加した恒久ガード（案件#759・2026-09-13）----
+      #   status/failures.md #15：759番は実装・本番push・Dispatch完了報告まで全部終わっていたのに
+      #   queue.json側のstatusが"running"のまま取り残され、auto_launcherに2回目・3回目の
+      #   重複発車をされた。harvest()やAI検品の自動PASS経路を通らずに終わったケースが原因で、
+      #   queue.json側の状態だけを見ていては再発する。
+      #   ここでは「dispatch_outbox.jsonlにok:trueの完了報告が既にあるn」を外から機械的に見つけ、
+      #   発車直前でその場でdoneへ戻して除外する（queue.json側の巻き戻り経路を完全解明できなくても、
+      #   症状そのものを塞ぐ最終防波堤）。
+      #
+      #   ---- 店長のセルフレビューによる修正（同日・2026-09-13）----
+      #   上のガードだけだと command_ingest.py の queue_redo()（正規の「まだ直ってないよ、
+      #   やり直して」機構・680番）と衝突する。queue_redo() は再オープン時に item の status を
+      #   waiting へ戻すだけで、過去の outbox の ok:true 行は一切消さない設計。そのため
+      #   「nが一致してok:trueがあるか」だけで判定すると、やり直し要求で再オープンされた項目まで
+      #   「もう完了報告済み」と誤判定してその場でdoneへ戻してしまい、やり直し機構そのものを
+      #   永久に無効化する（元の3重発火バグより悪い機能停止の回帰）。
+      #   そこで「そのnについて最後に確認できた事実（outboxのok:true）が、queue_redo()が
+      #   セットするcheckedAt（＝正当な理由での再オープン時刻）より古いかどうか」で判定し直す。
+      #   checkedAtがoutboxのtsより新しければ「完了報告のあとに正当な再オープンが起きた」ので
+      #   除外しない。checkedAtが無い・outbox以下ならこれまで通り巻き戻りバグとして除外する。
+      def _cmp_key(ts):
+          """ISO8601風の日時文字列から年月日時分秒だけを取り出す（先頭19文字）。
+          checkedAt（%Y-%m-%dT%H:%M:%S%z 例:+0900）と
+          outboxのts（%Y-%m-%dT%H:%M:%S+09:00 例:+09:00）はタイムゾーン表記の桁数が違うが、
+          本システムは常にJST単一タイムゾーンで動くため、末尾のオフセット部分を切り捨てて
+          年月日時分秒部分（先頭19文字）だけを文字列比較すれば安全に新旧判定できる。"""
+          s = str(ts or "")
+          return s[:19]
+
+      def _outbox_reported_ns():
+          """nごとの「最新のok:true行のts」を返す（n → ts の dict）。
+          同じnに複数回のok:true行があり得る（やり直し後に再度完了した場合等）ため、
+          setではなくdictにして一番新しいtsを保持する。"""
+          reported = {}
+          try:
+              with io.open(OUTBOX, encoding="utf-8") as f:
+                  for line in f:
+                      line = line.strip()
+                      if not line:
+                          continue
+                      try:
+                          row = json.loads(line)
+                      except Exception:
+                          continue
+                      if row.get("ok") and row.get("n") is not None:
+                          n = row.get("n")
+                          ts = row.get("ts") or ""
+                          prev = reported.get(n)
+                          if prev is None or _cmp_key(ts) >= _cmp_key(prev):
+                              reported[n] = ts
+          except Exception:
+              pass
+          return reported
+
+      _reported_ns = _outbox_reported_ns()
+
+      def _is_stale_completion(it):
+          """このwaiting項目が「理由なく巻き戻ったdoneの残骸」かどうかを判定する。
+          checkedAt（queue_redoが再オープン時にセットする＝正当なやり直し要求の時刻）が
+          outboxの最新ok:true報告より新しければ、やり直し要求のほうが後に起きているので
+          正当な再オープン＝発車対象として残す（False）。それ以外はTrue（除外対象）。"""
+          n = it.get("n")
+          outbox_ts = _reported_ns.get(n)
+          if outbox_ts is None:
+              return False
+          checked_at = it.get("checkedAt")
+          if checked_at and _cmp_key(checked_at) > _cmp_key(outbox_ts):
+              return False
+          return True
+
+      _dup_waiting = [it for it in waiting if _is_stale_completion(it)]
+      if _dup_waiting:
+          _dup_fresh_q = load(QUEUE, {})
+          _dup_fresh_snap = queue_store.snapshot_items(_dup_fresh_q)
+          _dup_fresh_items = {it2.get("n"): it2 for it2 in (_dup_fresh_q.get("items") or [])
+                               if it2.get("n") is not None}
+          for it in _dup_waiting:
+              n = it.get("n")
+              target = _dup_fresh_items.get(n)
+              if not target:
+                  continue
+              _old_note = (target.get("note") or "").rstrip()
+              _add_note = ("759番の重複発火（3回目）を機に追加した恒久ガードにより、"
+                           "dispatch_outbox.jsonlに完了記録があったため再発車せず自動クローズ")
+              target["note"] = (_old_note + "\n" + _add_note) if _old_note else _add_note
+              target["status"] = "done"
+              log("♻︎ 重複発車を防止しdoneへ戻しました %s番「%s」" % (n, target.get("title")))
+          save_queue(_dup_fresh_q, snapshot=_dup_fresh_snap)
+          _dup_ns = set(it.get("n") for it in _dup_waiting)
+          waiting = [it for it in waiting if it.get("n") not in _dup_ns]
+      if not waiting:
+          log("見送り: 発車待ちが空（重複発車ガードで全て除外）")
+          return 0
+
       if credit_stop:
           # 週枠が上限のあいだは、クレジットを使わないテストだけ通す
           waiting = [it for it in waiting if it.get("test")]
