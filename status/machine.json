@@ -3,11 +3,11 @@
  "load": null,
  "cpu": null,
  "mem": null,
- "swapGB": 23802.0,
+ "swapGB": 23372.25,
  "diskFreeGB": null,
  "sessions": 2,
- "note": "上限4本・あと2本OK（5分平均ロード9.5（コア8×0.8超）、5時間枠もったいない度90.6%→本数を上限4本まで増やす）",
- "measuredAt": "2026-09-14T10:14:54+09:00",
+ "note": "上限4本・あと2本OK（5分平均ロード18.0（コア8×0.8超）、予兆（5分ロード比2.2）→1本減らす）",
+ "measuredAt": "2026-09-14T10:27:46+09:00",
  "working": 0,
  "stalled": 1,
  "waiting": 1,
@@ -15,32 +15,34 @@
  "moreOK": 2,
  "hardMax": 8,
  "cap": 4,
- "target": 4,
+ "target": 3,
  "calibratedSafeN": 4,
  "calibrationBasis": "標本不足→既定4本",
  "userActive": true,
- "predict": [],
+ "predict": [
+  "5分ロード比2.2"
+ ],
  "shedCandidates": [
   {
    "pid": 32585,
    "title": "3回以上のリストをGitHubへ公開して他チームへ渡す",
-   "idleMin": 11.4
+   "idleMin": 24.2
   }
  ],
- "below": 2,
- "blockReason": "5分平均ロード9.5（コア8×0.8超）、5時間枠もったいない度90.6%→本数を上限4本まで増やす",
- "load1": 9.71,
- "load5": 9.46,
- "load15": 11.2,
+ "below": 1,
+ "blockReason": "5分平均ロード18.0（コア8×0.8超）、予兆（5分ロード比2.2）→1本減らす",
+ "load1": 36.52,
+ "load5": 17.98,
+ "load15": 12.9,
  "cores": 8,
- "loadRatio": 1.21,
+ "loadRatio": 4.57,
  "memPressure": "green",
- "memAvailGB": 6.3,
+ "memAvailGB": 6.0,
  "swapIncreasing": false,
- "ioMBs": 444.18,
+ "ioMBs": 134.54,
  "network": {
   "pingMedianMs": 23.8,
-  "pingMaxMs": 31.0,
+  "pingMaxMs": 165.9,
   "pingSamples": 20
  },
  "stalledList": [
@@ -48,7 +50,7 @@
    "pid": 38026,
    "title": "Rusuban mimawari 30min",
    "kind": "stuck_tool",
-   "idleMin": 50.7,
+   "idleMin": 63.5,
    "dispatch": false
   }
  ],
@@ -57,7 +59,7 @@
    "cli": "d61c65ca-925d-490b-b716-bf24822c6494",
    "localId": "local_04bc0e89-5fe6-4d30-bba1-8fab2f9bb04a",
    "startedAt": "2026-09-14T09:15:08+0900",
-   "elapsedMin": 59,
+   "elapsedMin": 72,
    "lastReportAt": null,
    "lastReport": "",
    "status": "承認待ち",
@@ -74,7 +76,7 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 122,
-   "idleMin": 50.7,
+   "idleMin": 63.5,
    "kind": "stuck_tool",
    "model": "claude-opus-5",
    "turns": 16,
@@ -84,7 +86,7 @@
    "cli": "844ba2d4-a838-4258-9ec3-11d939e3c57c",
    "localId": "local_5d10aebc-7fcd-473a-87b6-af5de4cd60eb",
    "startedAt": "2026-09-14T08:54:24+0900",
-   "elapsedMin": 80,
+   "elapsedMin": 93,
    "lastReportAt": "2026-09-14T01:03:26.373Z",
    "lastReport": "ージ（進捗表からもリンク済み）: https://tamago2022.github.io/tamago-shinchoku/share/check/840-repeated-unfixed.html",
    "status": "反映済み・報告なし",
@@ -105,8 +107,8 @@
    "title": "3回以上のリストをGitHubへ公開して他チームへ渡す",
    "dispatch": true,
    "isDispatchSelf": false,
-   "mb": 130,
-   "idleMin": 11.4,
+   "mb": 127,
+   "idleMin": 24.2,
    "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 147,
@@ -128,34 +130,43 @@
  "heartbeat": {
   "pid": 46529,
   "processAlive": true,
-  "stalledMin": 0.4,
+  "stalledMin": 0.2,
   "stalled": false,
   "note": "心臓は動いています"
  },
  "watchdog": {
-  "lastRun": "2026-09-14 10:15",
-  "resumed": [],
+  "lastRun": "2026-09-14 10:28",
+  "resumed": [
+   {
+    "pid": 32585,
+    "cli": "844ba2d4-a838-4258-9ec3-11d939e3c57c",
+    "title": "3回以上のリストをGitHubへ公開して他チームへ渡す",
+    "why": "話し終えて待機（未完了）",
+    "try": 1,
+    "resumePid": 62719
+   }
+  ],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
   "ignite": "着火せず: 取れる仕事なし（未着手/作業中）",
   "shed": null,
   "keep": {
-   "target": 4,
+   "target": 3,
    "alive": 2,
-   "below": 2,
-   "line": "現在2本／上限4本／目標4本／あと2本いける"
+   "below": 1,
+   "line": "現在2本／上限4本／目標3本／あと2本いける"
   },
   "stalledSkipped": []
  },
  "metrics": {
-  "stalls": 129,
-  "autoResumes": 81,
+  "stalls": 130,
+  "autoResumes": 82,
   "handoffs": 13,
   "hardCuts": 0,
   "ignitions": 11,
   "gated": 0,
-  "autoResumesThisRun": 0,
+  "autoResumesThisRun": 1,
   "handoffsThisRun": 0,
   "ignitionsThisRun": 0,
   "humanPushes": 6,
@@ -166,7 +177,7 @@
  },
  "deployAlerts": [
   {
-   "t": "2026-09-14 10:15",
+   "t": "2026-09-14 10:28",
    "cli": "844ba2d4-a838-4258-9ec3-11d939e3c57c",
    "title": "3回以上のリストをGitHubへ公開して他チームへ渡す",
    "urls": [
@@ -175,24 +186,24 @@
   }
  ],
  "quota": {
-  "updatedAt": "2026-09-14 10:14",
+  "updatedAt": "2026-09-14 10:27",
   "estimated": false,
   "fablePct": 0.0,
   "allPct": 99.0,
-  "allPctAsOf": "10:01:50",
-  "allPctAgeMin": 13.1,
+  "allPctAsOf": "10:16:50",
+  "allPctAgeMin": 11.0,
   "resetAt": "2026-09-15 17:59",
   "daysLeft": 1.3,
-  "hoursLeft": 31.7,
+  "hoursLeft": 31.5,
   "fableLevel": "ok",
   "allLevel": "stop",
   "warnPct": 75,
   "stopPct": 85,
   "daily": {
-   "fableAllowancePerDay": 75.6,
+   "fableAllowancePerDay": 76.1,
    "fableUsedLast24h": 0,
    "allAllowancePerDay": 0.8,
-   "allUsedLast24h": 17.6,
+   "allUsedLast24h": 17.3,
    "weeklyEvenPacePerDay": 14.3
   },
   "boost": {
@@ -207,13 +218,13 @@
   "allWeightedTokensSinceReset": 1803844238,
   "last6h": {
    "fable": 0,
-   "all": 17272006
+   "all": 16916715
   },
   "projection": {},
   "method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
   "source": "plan-usage-history.json",
-  "asOf": "10:01:50",
-  "ageMin": 13.1,
+  "asOf": "10:16:50",
+  "ageMin": 11.0,
   "weekdayTarget": 90.0,
   "weekdayTargetBase": 90,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
@@ -237,26 +248,26 @@
   },
   "session5h": {
    "pct": 1.0,
-   "resetAt": "2026-09-14 08:58",
+   "resetAt": "2026-09-14 08:00",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 0.16,
+   "recentPacePctPerHour": 0.13,
    "projectedPctAtReset": 1.0,
    "wasteRiskPct": 0.0,
    "mottainai": false,
    "source": "実測(plan-usage-history.json)",
-   "asOf": "10:01:50",
-   "ageMin": 13.1,
+   "asOf": "10:16:50",
+   "ageMin": 11.0,
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 0.158,
+   "allPacePctPerHour6h": 0.155,
    "aliveAvgLast6h": 1.7,
-   "pctPerSessionHour": 0.0922,
+   "pctPerSessionHour": 0.0893,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
    "sonnetSessionsForWeeklyCurve": null
   },
-  "line": "Fable週枠 0%（今日の目標90.0%・90.0pt下振れ→投入余地あり） ／ 全モデル 99%（10:01:50時点・曲線目標81.4%・17.6pt上振れ） ／ リセットまで 1.3日 ／ 5時間枠 1.0%・残0.0h（10:01:50時点）",
+  "line": "Fable週枠 0%（今日の目標90.0%・90.0pt下振れ→投入余地あり） ／ 全モデル 99%（10:16:50時点・曲線目標81.4%・17.6pt上振れ） ／ リセットまで 1.3日 ／ 5時間枠 1.0%・残0.0h（10:16:50時点）",
   "switches": [
    {
     "t": "2026-09-03 22:18",
