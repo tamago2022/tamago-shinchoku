@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-14 09:31",
+ "updatedAt": "2026-09-14 10:19",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1089,32 +1089,6 @@
    "finishedAt": "2026-09-07T19:17:48+09:00",
    "result": "origin/mainのfetchが完了するまで待機します（バックグラウンド実行中）。完了通知を受けて次の手順（再マージ→push→Lovable公開確認）へ進みます。",
    "urls": []
-  },
-  {
-   "n": 606,
-   "title": "鬼監督を機械にする（自己申告をやめて、数字で自動に突き返す）",
-   "why": "スマホから追加",
-   "what": "鬼監督を「読むチェックリスト」から「機械が測って自動で突き返す関門」にする。\n\nたまごさんの言葉（2026-09-07・バッジが目視できないほど小さいのを自分で見つけて）:\n「**鬼監督、自動で突き返さないと**」\n\n★**その通り。**今の鬼監督は、作った本人が読んで自己採点するチェックリスト。\n **自己申告なので、見落としたら素通りする。**現にバッジが目視できない大きさで本番に出て、\n たまごさんが見つけた。**これは鬼監督の敗北。**\n\n★作るもの：**本番のページを実際に見て、数字で測って、外れていたら自動で突き返す関門。**\n 人が見る前に落とす。押される前に落とす。\n\n## 機械で測れるもの（まずこれだけを自動にする。全部やろうとしない）\n 1. **バッジの比率** … 本番のページを開いて、サムネの短辺とバッジの実寸を測る。\n    お手本（akiko「ラブ・テーマ・フロム・スパルタカス」）の比率から**±2%を超えたら不合格。**\n    大きすぎても小さすぎても落とす。**位置（左上）も見る。**\n 2. **同じ動画の重複** … 1ページに同じ動画IDが2回以上あれば不合格。\n 3. **カードの高さのばらつき** … 同じ列のカードで高さが違えば不合格。\n 4. **本番URLが開くか** … 200が返るか。押して404なら不合格。\n 5. **報告に書いた変化が実際にあるか** … 「◯◯を直した」と書いてあるなら、その要素を本番で探す。\n 6. **重くなっていないか** … 前回との差。最初に落ちてくる量が増えていたら不合格。\n 7. **題名がURLになっていないか／同じ題名が2つ以上ないか／年号やコピーが空でないか**\n\n## 動かし方\n - **完了報告を出す前に、作ったセッション自身が必ず通す。**通らなければ報告させない。\n - **加えて、独立した見張りが1日1回、本番の代表ページを回って同じ検査をする。**\n   作った本人が通したかどうかに関わらず、**あとから壊れたものも見つける。**\n - 落ちたら**たまごさんに見せずに、自動でやり直しへ戻す。**\n   何が何%ずれていたかを1行だけ残す。\n\n## 大事なこと\n - **「たぶん大丈夫」を許さない。数字で判定する。**\n - **画面を撮って測る。**HTMLのCSSを読むだけでは、実際にどう見えるかは分からない\n   （今回のバッジも、設定の数字は13.8%のはずなのに、実際は目視できない大きさだった）。\n - たまごさんの画面を奪わない。**音を鳴らさない。**裏で回る。\n\n★まず**バッジの比率だけ**を機械で測れるようにして、実際に今の本番を測って数字を出す。\n そこが動いたら、2〜7を順に足していく。**一気に全部作らない。**\n★報告は3行だけ。**今の本番のバッジが何%だったかの数字を必ず入れる。**\n\n---\n【★2026-09-07 05:45・検査項目に追加】\n- **本編（主役）の動画の幅。**カード幅いっぱい（aspect-video）になっているか。\n  **主役が小さくなっていたら不合格。**（2026-09-07、カバーを半分にする作業が本編まで半分にした）\n- **「AをBにする」と言われて、A以外が変わっていたら不合格。**diffの範囲で機械的に見る。\n  同じ事故が2回起きている（①横スクロール10件→2列グリッドを全ページ追加 ②カバー半分→本編も半分）。\n\n\n【自動やり直し・09-07 08:32】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "order": 2,
-   "redoCount": 1,
-   "startedAt": "2026-09-07T09:03:40+09:00",
-   "sessionId": "4ff5e835-1781-4bde-a48f-4886d3a927b9",
-   "pid": 86562,
-   "finishedAt": "2026-09-07T09:47:40+0900",
-   "result": "鬼監督の関門①（バッジの比率）を、自己申告から実測の自動判定へ変えた。\n\n【完了】バッジの比率を自動測定し、実測13.8%で本番PASSを確認\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/606-oni-kantoku-badge-ratio.html\n本番: https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/606-oni-kantoku-badge-ratio.html",
-    "https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus",
-    "https://joy-relief-station.lovable.app/watch?v=s_vAwKnFlQk"
-   ],
-   "okBy": "oni-kantoku-verify_check_pages-606-oni-kantoku-badge-ratio",
-   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://joy-relief-station.lovable.app/cover-guide?artist=akiko&song=love-theme-from-spartacus => 200 / https://joy-relief-station.lovable.app/watch?v=s_vAwKnFlQk => 200 / ②PASS: evidence=True negative_hit=False source=/Users/mac/Desktop/tamago-shinchoku/share/check/606-oni-kantoku-badge-ratio.html（ローカル代替） / ③PASS: img_count=1",
-   "checkedAt": "2026-09-07T09:50:17+0900"
   },
   {
    "n": 607,
@@ -5861,6 +5835,22 @@
    "origin": "factory",
    "priority": 2,
    "kenpouCheckKey": "factory_stalled"
+  },
+  {
+   "n": 843,
+   "priority": 9,
+   "test": true,
+   "keepalive": true,
+   "testSeconds": 120,
+   "title": "【空回し】工場を止めないための2分の空タスク",
+   "why": "本物が出せない間も、止まっている状態を作らないため（クレジットは使いません）",
+   "what": "Claudeを起動しない空のタスクです。2分で終わり、台帳からは静かに消えます。",
+   "status": "running",
+   "limitMin": 10,
+   "model": "claude-sonnet-5",
+   "startedAt": "2026-09-14T10:19:41+09:00",
+   "sessionId": "f47ce5b9-a5ba-412f-a9c1-e7cc04abf95b",
+   "pid": 59198
   }
  ]
 }
