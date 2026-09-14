@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 2,
+  "purpose": "案件826：3チーム（Grok／OpenAI／Anthropic）の連携が実際に取れ始めたかを測る台帳。成功条件はたまごさんの手作業での橋渡し回数がゼロになること。",
+  "companyOsPaths": {
+    "note": "既存の充実したインフラを発見（2026-09-14）。新しいフォルダは作らず、そこにあった未実行handoffを先に片付けた。",
+    "claude_chatgpt_handoff": "joy-relief-station: ai-brain/handoff/CLAUDE_TO_CHATGPT.md, CHATGPT_TO_CLAUDE.md",
+    "sync_snapshots": "joy-relief-station: ai-brain/sync/<AI名>/latest.md（claude, chatgpt。grokは未参加）",
+    "company_os_full": "joy-relief-station: ai-brain/company-os/（ORG_CHART, ROUTING, EXECUTOR_REGISTRY.json, PUBLIC_LOOP_SYNC_PACKET等。ChatGPTが構築）",
+    "public_loop": "tamago-shinchoku: status/ai-company-loop.md（今回新設・PUBLIC_LOOP_SYNC_PACKET.mdの指示を実行）",
+    "aikotoba": "joy-relief-station: ai-brain/company-os/aikotoba.md（今回新設）"
+  },
+  "aikotoba": {
+    "word": "今週の本命は3チーム連携",
+    "setBy": "Claude",
+    "setAt": "2026-09-14",
+    "testLog": []
+  },
+  "metrics": {
+    "definitions": {
+      "1_bridgeCount": "たまごさんが手で橋渡しした回数（片方の出力をもう片方へ貼った回数）。目標0。",
+      "2_wroteToCompanyOs": "3チームがcompany-os相当の場所に書いた数（今週）",
+      "3_roundTrips": "往復が成立した回数（Aが書き→Bが返事し→Aがそれを受けて動いた）。目標: 最低1",
+      "4_aikotobaCorrect": "合言葉テストの正答（3チーム中2つ以上が目標）",
+      "5_routeChanges": "AIが別AIへ仕事を渡して実際に前へ進んだ件数。目標1以上",
+      "6_ownerToldMeCount": "たまごさんが『これ伝えといて』と言った回数。目標0"
+    }
+  },
+  "daily": [
+    {
+      "date": "2026-09-14",
+      "1_bridgeCount": 0,
+      "1_bridgeCountNote": "本セッションではたまごさんに何かを貼ってもらう依頼を一切していない。",
+      "2_wroteToCompanyOs": {
+        "claude": true,
+        "claudeEvidence": "ai-brain/handoff/CHATGPT_TO_CLAUDE.md 3件処理、ai-brain/sync/claude/latest.md 全面更新、ai-brain/company-os/aikotoba.md新設、tamago-shinchoku/status/ai-company-loop.md新設（すべて2026-09-14）",
+        "openai": true,
+        "openaiEvidence": "過去実績（実測確認）：(a) tamago-codex[bot]によるPR4件（task-107〜114、2026-07-14〜15）(b) ChatGPTが ai-brain/company-os/ 一式・ai-brain/principles/TAMAGO_OS.md・ai-brain/shared/TASK_HANDOFF_STANDARD.md・ai-brain/sync/chatgpt/latest.md を継続的に執筆（2026-08-31〜09-07）(c) 2026-09-07時点でGitHub直接書き込み可能と明記。ただし(a)は直近2ヶ月休眠、(b)(c)も直近1週間は新規更新なし＝一時的に停滞中だった。",
+        "grok": false,
+        "grokEvidence": "書き込み実績・接続経路とも確認できず。ai-brain/company-os/EXECUTOR_REGISTRY.jsonでも status: future_adapter と明記済み（設計上まだ未接続。Claude側の見落としではない）。"
+      },
+      "3_roundTrips": 1,
+      "3_roundTripsNote": "過去分：2026-08-31に ChatGPT→Claude PING往復 PROVEN と ai-brain/sync/chatgpt/latest.md に記載あり（実績として1件カウント）。ただしその後の続き（TAMAGO_OS読了・TASK_HANDOFF_STANDARD読了・RETURN PACKET返却をChatGPTが求めていた分）は2週間放置されていた。本日Claudeが読了・回答・RETURN PACKETまで完了させ、ChatGPT側が次に読んで反応すれば2件目の往復が成立する（現時点ではClaude→ChatGPTの片道が完了した状態）。",
+      "4_aikotobaCorrect": null,
+      "4_aikotobaNote": "本日合言葉を設定したのみ。テストはまだ実施していない（週1回・たまごさんが聞くタイミング待ち）。",
+      "5_routeChanges": 1,
+      "5_routeChangesNote": "ChatGPTが ai-brain/company-os/PUBLIC_LOOP_SYNC_PACKET.md で『Claude Codeまたは書き込み権限のある実行者がtamago-shinchokuへ転記・公開する』ことを依頼（2026-09-07）→ Claudeが実行し status/ai-company-loop.md として公開（2026-09-14）。ChatGPTからClaudeへ仕事が渡り、実際に前へ進んだ実例。",
+      "6_ownerToldMeCount": 1,
+      "6_ownerToldMeNote": "案件826の起票自体（たまごさんが今週の大目標として詳細な指示を書いた）を1回として計上。以後0件を目標に、AI側から先に動く。"
+    }
+  ],
+  "grokExperiment": {
+    "date": "2026-09-14",
+    "goal": "xAI API経由でGrokにcompany-osを読ませ意見を書かせられないか（写す時は written_by: Grok via Claude bridge と正直にラベル付けする前提）",
+    "triedRoutes": [
+      "joy-relief-station/.env, .env.local に XAI_API_KEY が無いことを確認",
+      "tamago-shinchoku/.env に XAI_API_KEY が無いことを確認",
+      "両リポジトリのtools/ワークフローをgrepしてもXAI_API_KEYの参照が見つからない",
+      "gh CLIが未インストールのためGitHub Actions secretsの登録有無は確認不可",
+      "ai-brain/company-os/EXECUTOR_REGISTRY.json を確認 → grokは status: future_adapter と設計時点で明記済み（未接続は既知）"
+    ],
+    "result": "鍵そのものが見つからないため、今回はGrok代筆（bridge）を実行していない。偽装や当て推量での代筆はしない。",
+    "nextSteps": [
+      "XAI_API_KEYが別環境（案件814側）に存在するなら、そちらのセッションと合流して試す",
+      "Grok公式のGitHub連携・MCPの有無を次回調べる",
+      "無ければ shared-brain/ への案内（README既存）どおり、Grok自身が円卓アプリ経由でcommitする運用を維持する"
+    ]
+  },
+  "openaiChannel": {
+    "mechanism": "(a) openai/codex-action（.github/workflows/tamago-codex-runner.yml, codex-dispatch.yml） (b) ChatGPT本体によるGitHub直接コミット（company-os執筆・2026-08-31〜09-07）",
+    "history": "(a) 2026-07-14〜15にtamago-codex[bot]がtask-107,108,109,114の4PRを自動実装 (b) ai-brain/company-os/一式・TAMAGO_OS.md・TASK_HANDOFF_STANDARD.md・sync/chatgpt/latest.mdを執筆",
+    "currentStatus": "(a)は直近2ヶ月休眠。(b)は直近1週間（2026-09-07以降）新規更新なし。",
+    "reactivation": "(a)の再稼働はOPENAI_API_KEYへの課金が発生するため店主の事前承認が必要（今回は実行していない）。(b)は課金不要でChatGPT側が次にこのリポジトリを開けば再開する。"
+  },
+  "staleHandoffsClearedToday": [
+    "ai-brain/company-os/PUBLIC_LOOP_SYNC_PACKET.md（2026-09-07起票→2026-09-14実行、7日放置）",
+    "ai-brain/handoff/CHATGPT_TO_CLAUDE.md『PR #383』（2026-09-07起票→2026-09-14調査完了、7日放置）",
+    "ai-brain/handoff/CHATGPT_TO_CLAUDE.md『PR #392』（2026-09-07起票→2026-09-14調査完了、7日放置）",
+    "ai-brain/handoff/CHATGPT_TO_CLAUDE.md『Project KOBITO』（2026-08-15起票→2026-09-14回答、30日放置）",
+    "ai-brain/sync/chatgpt/latest.mdのTAMAGO_OS読了要求（2026-08-31起票→2026-09-14完了、14日放置）"
+  ],
+  "log": [
+    {
+      "date": "2026-09-14",
+      "by": "Claude (案件826)",
+      "note": "既存company-osインフラを発見・棚卸し。5件の放置handoffを処理（上記staleHandoffsClearedToday）。Grok接続実験（鍵なしで不可と確認、設計上も未接続と判明）。OpenAI Codexチャネルの休眠を確認。renkei.json新設。"
+    }
+  ]
+}
