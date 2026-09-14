@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-15 02:48",
+ "updatedAt": "2026-09-15 02:55",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -5700,20 +5700,16 @@
    "shikumiCheckKey": "deploy"
   },
   {
-   "n": 848,
-   "priority": 9,
-   "test": true,
-   "keepalive": true,
-   "testSeconds": 120,
-   "title": "【空回し】工場を止めないための2分の空タスク",
-   "why": "本物が出せない間も、止まっている状態を作らないため（クレジットは使いません）",
-   "what": "Claudeを起動しない空のタスクです。2分で終わり、台帳からは静かに消えます。",
-   "status": "running",
-   "limitMin": 10,
+   "n": 849,
+   "title": "【自動検知】心臓（heartbeat） が動いていません",
+   "why": "スマホから追加",
+   "what": "【自動検知・799番 仕組みの生死表】次の仕組みがdead判定でした。\n\n・項目：心臓（heartbeat）\n・判定方法：status/heartbeat.logのmtime基準：現在53.9分沈黙（10分以内=alive／30分以内=slow／それ超=dead。心臓は常時動いているはずのプロセスなので分単位で厳しく見る）\n・countToday：2\n\nこの項目は仕組みの生死表(status/shikumi.json)で定期的（genzaichi.py相乗り・実質30分おき）に再点検されます。直したら次回の点検でalive/slowになっていることを確認してください。",
+   "status": "waiting",
+   "limitMin": 180,
    "model": "claude-sonnet-5",
-   "startedAt": "2026-09-15T02:48:59+09:00",
-   "sessionId": "9d8b4371-820b-46de-b7ad-7b9a6b85c20b",
-   "pid": 76674
+   "origin": "factory",
+   "priority": 2,
+   "shikumiCheckKey": "heartbeat"
   }
  ]
 }
