@@ -3,16 +3,16 @@
  "load": null,
  "cpu": null,
  "mem": null,
- "swapGB": 26972.0,
+ "swapGB": 25014.0,
  "diskFreeGB": null,
- "sessions": 1,
- "note": "上限4本・あと3本OK（5分平均ロード20.1（コア8×0.8超）、予兆（5分ロード比2.5）→1本減らす）",
- "measuredAt": "2026-09-14T21:28:56+09:00",
+ "sessions": null,
+ "note": "上限4本・あと4本OK（5分平均ロード14.1（コア8×0.8超））",
+ "measuredAt": "2026-09-14T21:35:57+09:00",
  "working": 0,
  "stalled": 0,
- "waiting": 1,
+ "waiting": 0,
  "safeMax": 4,
- "moreOK": 3,
+ "moreOK": 4,
  "hardMax": 8,
  "cap": 4,
  "target": 3,
@@ -20,61 +20,31 @@
  "calibrationBasis": "標本不足→既定4本",
  "userActive": false,
  "predict": [
-  "5分ロード比2.5"
+  "5分ロード比1.8"
  ],
  "shedCandidates": [],
- "below": 2,
- "blockReason": "5分平均ロード20.1（コア8×0.8超）、予兆（5分ロード比2.5）→1本減らす",
- "load1": 21.29,
- "load5": 20.08,
- "load15": 18.68,
+ "below": 3,
+ "blockReason": "5分平均ロード14.1（コア8×0.8超）",
+ "load1": 9.27,
+ "load5": 14.14,
+ "load15": 16.52,
  "cores": 8,
- "loadRatio": 2.66,
+ "loadRatio": 1.16,
  "memPressure": "green",
- "memAvailGB": 6.8,
+ "memAvailGB": 5.3,
  "swapIncreasing": false,
- "ioMBs": 16.89,
+ "ioMBs": 5.25,
  "network": {
-  "pingMedianMs": 32.5,
-  "pingMaxMs": 34.8,
-  "pingSamples": 4
+  "pingMedianMs": 24.4,
+  "pingMaxMs": 88.4,
+  "pingSamples": 20
  },
  "stalledList": [],
- "sessionList": [
-  {
-   "cli": "d7d541c3-0f26-4dd7-a7b8-7812e20be6f6",
-   "localId": "local_98686f76-5cf1-47c2-b683-f0bc25ffd62f",
-   "startedAt": "2026-09-14T21:15:11+0900",
-   "elapsedMin": 13,
-   "lastReportAt": null,
-   "lastReport": "",
-   "status": "止まっている",
-   "color": "red",
-   "urls": [],
-   "unreportedDeploy": false,
-   "deployUrls": [],
-   "humanPushes": 0,
-   "dispatchPushes": 0,
-   "watchdogResumes": 0,
-   "done": false,
-   "pid": 60580,
-   "title": "Rusuban mimawari 30min",
-   "dispatch": false,
-   "isDispatchSelf": false,
-   "mb": 177,
-   "idleMin": 13.7,
-   "kind": "idle_done",
-   "model": "<synthetic>",
-   "turns": 1,
-   "lastActivityAt": "2026-09-14T12:15:14.707Z"
-  }
- ],
- "line": "負荷 測定不可% ｜ セッション1本（作業中0・止まり0） ｜ 上限4本・あと3本OK ｜ 空き測定不可GB",
- "modelCounts": {
-  "<synthetic>": 1
- },
+ "sessionList": [],
+ "line": "負荷 測定不可% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き測定不可GB",
+ "modelCounts": {},
  "autonomy": {
-  "alive": 1,
+  "alive": 0,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
@@ -83,12 +53,12 @@
  "heartbeat": {
   "pid": 12890,
   "processAlive": true,
-  "stalledMin": 0.2,
+  "stalledMin": 0.0,
   "stalled": false,
   "note": "心臓は動いています"
  },
  "watchdog": {
-  "lastRun": "2026-09-14 21:29",
+  "lastRun": "2026-09-14 21:36",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -97,9 +67,9 @@
   "shed": null,
   "keep": {
    "target": 3,
-   "alive": 1,
-   "below": 2,
-   "line": "現在1本／上限4本／目標3本／あと3本いける"
+   "alive": 0,
+   "below": 3,
+   "line": "現在0本／上限4本／目標3本／あと4本いける"
   },
   "stalledSkipped": []
  },
@@ -121,15 +91,15 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-14 21:28",
+  "updatedAt": "2026-09-14 21:35",
   "estimated": true,
   "fablePct": null,
   "allPct": null,
   "allPctAsOf": null,
   "allPctAgeMin": null,
   "resetAt": "2026-09-15 17:59",
-  "daysLeft": 0.9,
-  "hoursLeft": 20.5,
+  "daysLeft": 0.8,
+  "hoursLeft": 20.4,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -147,7 +117,7 @@
   "allWeightedTokensSinceReset": 1822638870,
   "last6h": {
    "fable": 0,
-   "all": 16319199
+   "all": 13031461
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
@@ -162,7 +132,7 @@
   "weekdayTargetBase": 90,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
   "overPct": null,
-  "daysElapsedSinceReset": 6.1,
+  "daysElapsedSinceReset": 6.2,
   "ceilingDaysAtRecentPace": null,
   "fableCurve": {
    "target": 90.0,
@@ -173,7 +143,7 @@
    "note": "state=over→Fableゼロで絞る／under→Fable投入・本数増加の余地あり／on_track→曲線どおり"
   },
   "allCurve": {
-   "target": 87.1,
+   "target": 88.6,
    "overPct": null,
    "state": "unknown",
    "band": 10,
@@ -199,7 +169,7 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": null,
-  "line": "Fable週枠 ?%（今日の目標90.0%・?） ／ 全モデル ?%（推定時点・曲線目標87.1%・?） ／ リセットまで 0.9日 ／ 5時間枠 1.0%・残0.0h",
+  "line": "Fable週枠 ?%（今日の目標90.0%・?） ／ 全モデル ?%（推定時点・曲線目標88.6%・?） ／ リセットまで 0.8日 ／ 5時間枠 1.0%・残0.0h",
   "switches": [
    {
     "t": "2026-09-03 23:33",
