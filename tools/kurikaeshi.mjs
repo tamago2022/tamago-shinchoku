@@ -264,11 +264,12 @@ function cmdBump(args) {
     if (!item.task_numbers.includes(t)) item.task_numbers.push(t);
   }
 
+  // 注意：escalated確定はhandleEscalation成功後まで保留する。
+  // ここで先にescalated=trueを保存してしまうと、直後のgit push/gh issue comment失敗時に
+  // 「エスカレーション済みだが実際は未通知」という状態がJSONに固定され、
+  // !item.escalated ゲートにより以後二度と自動リトライされなくなる（2026-09-14検品指摘・修正）。
   let escalationInfo = null;
   if (item.count >= 3 && !item.escalated) {
-    item.escalated = true;
-    item.escalated_at = now;
-    item.status = 'escalated';
     escalationInfo = {
       key: item.key,
       label: item.label,
@@ -284,7 +285,18 @@ function cmdBump(args) {
   );
 
   if (escalationInfo) {
-    handleEscalation(escalationInfo);
+    try {
+      handleEscalation(escalationInfo);
+      // ここまで例外なく完了して初めてescalated=trueを保存する。
+      item.escalated = true;
+      item.escalated_at = escalationInfo.escalated_at;
+      item.status = 'escalated';
+      saveData(data);
+    } catch (err) {
+      console.error(
+        `[escalate] エスカレーション処理が失敗しました（escalatedは未確定のまま保存済み。次回bumpで自動的に再試行されます）: ${err.message}`
+      );
+    }
   }
 }
 
