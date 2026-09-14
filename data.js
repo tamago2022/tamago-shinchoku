@@ -3,7 +3,40 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
+  // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+  lovablePublishStatus: {
+      "updatedAt": "2026-09-14T06:48:44.718Z",
+      "autoTimerDisabled": true,
+      "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
+      "dailyCap": 6,
+      "consecutiveFailureStopAt": 2,
+      "dateJST": null,
+      "successCountToday": 0,
+      "consecutiveFailures": 0,
+      "stoppedForToday": false,
+      "lastResult": null,
+      "lastCheckedAt": null,
+      "lastPublishedSha": null,
+      "lastFailureReason": null,
+      "lastFailureAt": null
+  },
+  // LOVABLE_PUBLISH_STATUS:END
+
   generatedAt: "2026-09-01T00:20:00+09:00",
+
+  // 826番（2026-09-14）：たまごさんの今週の大目標「3チーム(Grok/OpenAI/Anthropic)連携が
+  // 取れ始めたと確認できる状態にする」の実測値。進捗表トップに小さく1枠表示する（renderRenkeiBar()）。
+  // 詳しい実測ログ・実験結果は status/renkei.json（このファイルは表示用の要約）。
+  renkei: {
+    updatedAt: "2026-09-14T16:30:00+09:00",
+    teams: { claude: true, openai: true, grok: false },
+    teamsNote: "openaiは過去実績(2026-07)ベース。直近2ヶ月は新規実行ゼロで休眠中。grokは接続経路未確立。",
+    bridgeCount: 0,
+    roundTrips: 0,
+    routeChanges: 0,
+    ownerToldMeCount: 1,
+    checkPageUrl: "share/check/826-renkei-shuhyo.html"
+  },
 
   // 626番（2026-09-07）：support@anthropic.comへ送った問い合わせの返信を1日1回チェックする見張り。
   // 見張り係(tools/check_anthropic_reply.py)は9/07からgmail_app_password未設置でblocked:no_credentialのまま
@@ -71,6 +104,20 @@ window.SHINCHOKU = {
     gmailSearchUrl: "https://mail.google.com/mail/u/0/#search/from%3Aanthropic.com",
     note: "651番・626番の実測どおり、この作業場にはGmail本文を読む/送るブラウザ手段がありません（IMAP=要アプリパスワード・Mail.app=Gmail未設定・既存Chrome=Lovable専用でGmail未ログイン・新規ブラウザ起動は憲法で禁止）。" +
           "そのため本文はここに事前生成し、gmailComposeUrlを開けば宛先・件名・本文入りでGmail作成画面が開く状態にしてあります。たまごさんが開いて送信ボタンを押すだけで送れます。"
+  },
+
+  // 820番（2026-09-14）：Lovable公開が「suspicious activity」でブロックされている件（2026-09-08頃から、
+  // 17件以上の独立セッションが同一結論に到達済み＝lovable-publish-blocked-suspicious-activityメモリ参照）の
+  // 解除依頼。アカウント所有者本人でないと通らないため送信はたまごさんが押す（683番と同じ型）。
+  // 宛先 support@lovable.dev は一般に知られているLovableのサポート窓口だが、AI側からアプリ内のチャット導線を
+  // 探索した結果は0件（ログイン後の画面のみ表示される可能性）。もし宛先不明で戻ってきた場合は、
+  // Lovableのプロジェクト画面右下や設定画面のヘルプアイコンから直接問い合わせるのが次の候補。
+  lovableSupportDraftMail: {
+    to: "support@lovable.dev",
+    subject: "Publishing blocked due to suspicious activity - joy-relief-station",
+    bodyJa: "Lovableサポート様\n\n弊プロジェクト「joy-relief-station」（https://joy-relief-station.lovable.app/ 、project id 8ebdb648-3686-4457-b42c-d01c493793b1）で、2026-09-08頃から「公開」ができなくなっています。公開ボタンを押すと「Publishing was blocked due to suspicious activity」と表示されます。\n\n自動化ツールで公開ボタンを押していたところ（GitHubのmainブランチと本番を同期させるため、30分おきに自動で押していました）、suspicious activity で公開がブロックされたと考えています。\n\n自動押下は既に停止しました。今後は手動または低頻度で運用します（1日数回まで、出す内容がある時だけ）。\n\n解除をお願いできますでしょうか。\n\nよろしくお願いいたします。\neggypop2010@gmail.com",
+    gmailComposeUrl: "https://mail.google.com/mail/?view=cm&fs=1&to=support%40lovable.dev&su=Publishing%20blocked%20due%20to%20suspicious%20activity%20-%20joy-relief-station&body=Hello%20Lovable%20Support%2C%0A%0AOur%20project%20%22joy-relief-station%22%20%28https%3A//joy-relief-station.lovable.app/%2C%20project%20id%208ebdb648-3686-4457-b42c-d01c493793b1%29%20has%20been%20unable%20to%20Publish%20since%20around%202026-09-08.%20Clicking%20Publish%20shows%20%22Publishing%20was%20blocked%20due%20to%20suspicious%20activity%22.%0A%0AWe%20were%20running%20an%20automated%20tool%20that%20clicked%20the%20Publish%20button%20on%20a%20schedule%20%28every%2030%20minutes%29%20to%20keep%20the%20production%20site%20in%20sync%20with%20our%20GitHub%20main%20branch.%20We%20believe%20this%20repeated%20automated%20clicking%20is%20what%20triggered%20the%20suspicious-activity%20block.%0A%0AWe%20have%20already%20stopped%20the%20automated%20clicking%20%28disabled%20the%20schedule%29%20and%20switched%20to%20publishing%20manually/at%20low%20frequency%20going%20forward%20%28at%20most%20a%20few%20times%20per%20day%2C%20only%20when%20there%20is%20something%20new%20to%20publish%29.%0A%0ACould%20you%20please%20lift%20the%20block%20on%20our%20project%20so%20we%20can%20publish%20again%3F%0A%0AThank%20you%2C%0Aeggypop2010%40gmail.com",
+    note: "宛先support@lovable.devは一般に知られる窓口を使用（アプリ内チャット導線はAI側の探索では見つからなかった）。開けば宛先・件名・本文入りでGmail作成画面が開くので、あとは送信ボタンを押すだけです。"
   },
 
   // ── 今動いているもの（手更新。リアルタイム連携ではない）──
