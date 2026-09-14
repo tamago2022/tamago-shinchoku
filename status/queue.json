@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-15 05:26",
+ "updatedAt": "2026-09-15 06:08",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1236,29 +1236,6 @@
    "costsMoney": true,
    "costsMoneyWhy": "直接お金が出る可能性があるタスク。着手前に「何本でいくら」を出して確認を取ること（2026-09-08のルール）",
    "costEstimate": "本数の言及: 1・1 / ドル額の言及: $10.0（自動抽出・目視確認のうえ発車してください）"
-  },
-  {
-   "n": 642,
-   "title": "【PC保守】工場がGoogleドライブから読むのをやめる（読む＝容量を食う）",
-   "why": "スマホから追加",
-   "what": "【PC保守・根本原因】工場がGoogleドライブから読むのをやめる。読んだら手元から捨てる。\n\n★**容量が異常に減った本当の理由が分かった（2026-09-08）。**\n **Googleドライブ（ストリーミング）は、読んだ瞬間にMacのディスクへコピーが落ちてきて、そのまま残る。**\n 外付けHDDと違って、**「読む＝容量を食う」。**\n そして**うちの工場が、この2日それを何度もやっていた。**\n - Eagleの同期（`tools/eagle_drive_sync.py`）\n - falの素材（`fal test` フォルダ）\n - 卵劇場EP01・EP02の制作パック\n - Driveの調査そのもの（620・638・640番）\n → **iMac HDDに同じものがあるのに、わざわざDriveから読んでいた。**\n\n たまごさんの言葉：\n > 「**俺はもう保管庫だと認識してるんだけれども。必要な時だけ引っ張ってくる場所。**」\n > 「**ハードディスクにある素材なら、わざわざローカルにコピーする必要は無いわけでしょ。\n >  ドライブとなると、それをやんなきゃいけないってこと。そこを俺は把握してなかった。**」\n ★**たまごさんの「保管庫」という認識のほうが正しい。うちがその使い方をしていなかった。**\n\n## 直すこと\n 1. **素材を読む順番を決める。**\n    **① Mac本体 → ② iMac HDD（外付け）→ ③ Googleドライブ**\n    **Driveは最後。そこにしか無いときだけ。**\n    工場のすべてのスクリプト・指示文でこの順番を守る。\n 2. **Driveから読んだら、読み終わったあとに手元から捨てる。**\n    （`fileproviderctl evict` 等。エラーになるなら、その事実を記録して次の手を書く）\n 3. **Driveを丸ごと走査しない。**`du`・`find`・全件同期のような、\n    **全ファイルに触る処理をDriveに対してやらない。**（触った瞬間に全部落ちてくる）\n    - **`tools/eagle_drive_sync.py` を必ず見直す。**Driveを舐めているなら止める。\n      Eagleのライブラリは**iMac HDDにもある。**そっちから読む。\n 4. **たまごさんが「Driveに置いた」と言ったものだけ、その1つを取りに行く。**\n    フォルダごと落とさない。**必要な1ファイルだけ。**\n 5. **工場の指示文に書く。**（`tools/prompt_rules/` に1件足す）\n    「**Googleドライブは保管庫。読むと容量を食う。素材はMac本体→外付け→Driveの順で探す。**」\n 6. **毎日1回、Driveのローカル使用量を測って記録する。**\n    増えていたら、**その日どのタスクがDriveを読んだかを突き止める。**\n\n## 確認\n - **今どれだけDriveのコピーが手元にあるかを実測する。**（`~/Library/CloudStorage/` の実サイズ）\n - **捨てられる分は捨てる。**捨てられないならエラーを記録して報告。\n - **クラウド側は絶対に消さない。**（たまごさんが自分で判断すると言っている）\n\n★**再起動でスワップ25GBが戻る。それはたまごさんがやる。こちらはDrive側を直す。**\n★報告は3行だけ。**Driveのローカル使用量が何GB→何GBになったか。**\n\n【自動やり直し・09-08 04:23】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【自動やり直し・09-08 04:29】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "order": 0,
-   "redoCount": 2,
-   "startedAt": "2026-09-08T05:49:07+09:00",
-   "sessionId": "7e5d62d4-ca8b-4075-b062-b186eb379866",
-   "finishedAt": "2026-09-08T06:07:46+09:00",
-   "result": "これで642番タスクは本番反映まで完了しました。\n\n【完了】工場（disk_guardian.py）が15分おき・1日96回もGoogleドライブをdu走査していたのを1日1回に削減し、「Driveは保管庫・読むと容量を食う」ルールを工場の指示文に新設\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/642-google-drive-read-stop.html\n本番: https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/disk_guardian.py\n\n補足（1行）：125.2GBの巨大フォルダ自体の解放は640/641番の結論どおりGUI操作待ちのまま未解決（AI側に実行手段なし）。",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/642-google-drive-read-stop.html"
-   ],
-   "checkedAt": "2026-09-08T06:08:19+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：確認ページ・本番disk_guardian.py・新設ルールファイルの3点とも実在し、「15分おき96回→1日1回」の変更内容と一致している"
   },
   {
    "n": 643,
@@ -5898,6 +5875,18 @@
    "origin": "factory",
    "priority": 2,
    "shikumiCheckKey": "deploy"
+  },
+  {
+   "n": 857,
+   "title": "【自動検知】発車（auto_launch） が動いていません",
+   "why": "スマホから追加",
+   "what": "【自動検知・799番 仕組みの生死表】次の仕組みがdead判定でした。\n\n・項目：発車（auto_launch）\n・判定方法：status/.last_launch_atのmtime基準（genzaichi.launch_silence_min()を再利用）：現在55.4分沈黙（10分以内=alive／30分以内=slow／それ超=dead）。countTodayはauto_launch.logの本日分『🚀 自動発車』行数\n・countToday：45\n\nこの項目は仕組みの生死表(status/shikumi.json)で定期的（genzaichi.py相乗り・実質30分おき）に再点検されます。直したら次回の点検でalive/slowになっていることを確認してください。",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "factory",
+   "priority": 2,
+   "shikumiCheckKey": "auto_launch"
   }
  ]
 }
