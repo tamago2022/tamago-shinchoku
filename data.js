@@ -150,7 +150,7 @@ window.SHINCHOKU = {
   {status:"hold", content:"Xania Monet重複ページの消し方", orderedAt:"2026-08-30T00:00:00+09:00", owner:"-", evidence:"", note:"①倉庫送り+30日以内対応 ②永久倉庫を新設、どちらか"},
   {status:"hold", content:"note月額980円プラン集約・年内月50万円目標", orderedAt:"2026-08-30T00:00:00+09:00", owner:"-", evidence:"", note:"最終決定は本人、と宣言台帳に明記済み"},
   {status:"hold", content:"部屋IDが開けない実害(羊文学↔スキマスイッチ衝突/ID重複12種24部屋/濁点文字化け137件 等)", orderedAt:"2026-08-31T18:45:00+09:00", owner:"見回り係", evidence:"", note:"調査資料は完成。ID付け替え・統合3件の可否をたまごさんに聞く必要あり"},
-  {status:"hold", content:"3回以上言われて未修正のもの一覧(#840)をOpenAI鬼監督・Grokへ共有", orderedAt:"2026-09-14T09:00:00+09:00", owner:"Dispatch", evidence:"https://tamago2022.github.io/tamago-shinchoku/share/check/840-repeated-unfixed.html", note:"GitHub push・Issue#390コメント済み。ここから正本(REPEATED_UNFIXED.md)へもリンクあり。3回で自動追記するstatus/kurikaeshi.json実装は進行中"},
+  {status:"hold", content:"3回以上の未修正 31件（先週:初回計測のため無し → 今週31件）", orderedAt:"2026-09-14T09:00:00+09:00", owner:"Dispatch", evidence:"https://tamago2022.github.io/tamago-shinchoku/share/check/840-repeated-unfixed.html", note:"一覧(#840)をOpenAI鬼監督・Grokへ共有済み。GitHub push・Issue#390コメント済み。ここから正本(REPEATED_UNFIXED.md)へもリンクあり。3回で自動追記するstatus/kurikaeshi.jsonは実装・独立検品とも完了(tools/kurikaeshi.mjs)。来週からこの件数を増減で比較する"},
 
   // --- 状態不明・止まっている(赤) ---
   {status:"red", content:"🚨Mac負荷が急上昇中(load average 222→296→581・6分間で悪化)", orderedAt:"2026-09-05T17:02:00+09:00", owner:"-", evidence:"", note:"claude CLIプロセス実測29本(同時走行3本の原則を大幅超過)。vite devサーバーが6h31m/6h10m/4h39m/3h32m連続稼働、Virtualization.frameworkのVMが119.9%CPU・3h25m。orphan_reaper.pyは孤児0件(devサーバーは設計上対象外のため主因を捕捉できず)。たまごさん本人による同時セッション数の手動整理を推奨。詳細は見張り番ログ.md 09-05 17:02"},
