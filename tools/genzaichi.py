@@ -360,6 +360,14 @@ def run_shikumi_and_get_red_flags():
 
 
 def build():
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(REPO, "tools"))
+        import shukan_haibun as _shukan_haibun
+        _haibun = _shukan_haibun.build_haibun()
+    except Exception:
+        _haibun = None
+
     q = jread("queue.json", {"items": []}); items = q.get("items") or []
     # 802番（2026-09-14）：「たまごさんのOK待ち（判断待ち）」件数。
     #   index.html側の checkSec は details が開かれた時しかqueue.jsonを取りに行かない
@@ -405,6 +413,15 @@ def build():
     L = []
     A = L.append
     A("# いまの現在地（%s 時点・自動生成・実質30分おき）" % now.strftime("%m-%d %H:%M"))
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(REPO, "tools"))
+        import konshu_mitai as _konshu_mitai
+        if _konshu_mitai.need_ask():
+            A("")
+            A("⚠️ **今週見たいものを3つ教えてください**（`status/konshu_mitai.json`が空です）")
+    except Exception:
+        pass
     A("")
     A("**Dispatchは会話の最初に、返事をする前にこの1枚を読む。ルールではなく『今の状態』がここにある。**")
     A("")
@@ -433,6 +450,12 @@ def build():
     A("- 今日の完了 **%d件**（9/06のピークは60件。20件を切ったら何かが詰まっている）" % len(done_ns))
     A("- 今日の子セッション **%d本・合計 $%.2f・1本平均 $%.2f**%s" % (n_child, cost, avg, "  ← 🔴 $3超は異常" if avg > 3 else ""))
     A("- クレジット 今日 **%s / %s**・週 **%s%%**" % (p.get("usedToday"), p.get("budgetToday"), p.get("allPct")))
+    if _haibun:
+        A("- 今週の配分：見たいもの %.0f%% / 裏方 %.0f%% / 予備 %.0f%%%s" % (
+            _haibun.get("mitaiPct", 0), _haibun.get("urakataPct", 0), _haibun.get("yobiPct", 0),
+            "  🔴逆転" if _haibun.get("reversed") else ""))
+    else:
+        A("- 今週の配分：未計測")
     A("")
     A("## 今すぐ走っているもの")
     if running:
@@ -493,6 +516,7 @@ def build():
         "unreportedDone": [
             {"n": n_, "title": t_, "url": u_} for n_, t_, u_ in unrep[-8:]
         ],
+        "weekHaibun": _haibun,
     }
     with open(os.path.join(ST, "genzaichi.json"), "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)

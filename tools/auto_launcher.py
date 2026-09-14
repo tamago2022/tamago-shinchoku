@@ -318,6 +318,24 @@ def _append_cost_confirm_outbox(it, message):
         log("cost_confirm outbox書き込み失敗（%s番）: %s" % (it.get("n"), e))
 
 
+def _append_cap_limit_outbox(it):
+    """案件#824：1本のタスクのcostEstimateが週予算の3%上限を超えたとき、1回だけ
+    dispatch_outbox へ確認を出す（_append_cost_confirm_outboxと同じ作法。nは文字列で
+    衝突を避ける）。"""
+    try:
+        row = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+            "n": "%s-caplimit" % it.get("n"),
+            "type": "cap_limit",
+            "title": it.get("title") or "",
+            "message": "%s番が上限に達しました。続けますか" % it.get("n"),
+        }
+        with io.open(OUTBOX, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception as e:
+        log("cap_limit outbox書き込み失敗（%s番）: %s" % (it.get("n"), e))
+
+
 def _strip_html_for_check(html):
     """タグを外してプレーンテキストにする（判定用・雑でよい）"""
     import re as _re
@@ -1994,6 +2012,38 @@ def _main_impl():
       waiting = cost_ok_waiting
       if not waiting:
           log("見送り: 発車待ちは全部お金の確認待ち")
+          return 0
+
+      # ---- 週の作業配分ゲート（案件#824・見たいもの60%／裏方30%／予備10%）----
+      #   裏方が枠(30%)を使い切った・曜日ルールでNGな日は、裏方タスクの新規発車を止める。
+      #   1本のコストが週予算の3%を超えるタスクも、上限確認が済むまで発車しない。
+      haibun = shukan_haibun.build_haibun()
+      blocked = shukan_haibun.urakata_blocked(haibun)
+      _haibun_gated = False
+      _haibun_gate_waiting = []
+      for it in waiting:
+          if blocked and shukan_kubun.classify_item(it) == "urakata":
+              if not it.get("urakataBlockedAt"):
+                  log("🚧 裏方の枠が上限のため発車を止めました %s番「%s」" % (it.get("n"), it.get("title")))
+                  it["urakataBlockedAt"] = time.strftime("%Y-%m-%d %H:%M:%S+09:00")
+                  _haibun_gated = True
+              continue
+          cost_estimate = it.get("costEstimate")
+          if isinstance(cost_estimate, (int, float)) and shukan_haibun.single_task_over_limit(cost_estimate, haibun):
+              if not it.get("capLimitAskedAt"):
+                  _append_cap_limit_outbox(it)
+                  it["capLimitAskedAt"] = time.strftime("%Y-%m-%d %H:%M:%S+09:00")
+                  _haibun_gated = True
+                  log("🚧 上限超えのため発車を止めました %s番「%s」" % (it.get("n"), it.get("title")))
+              continue
+          _haibun_gate_waiting.append(it)
+      if _haibun_gated:
+          q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+          save_queue(q, snapshot=_snap)
+          _snap = queue_store.snapshot_items(q)
+      waiting = _haibun_gate_waiting
+      if not waiting:
+          log("見送り: 発車待ちは全部週の配分ゲート待ち")
           return 0
 
       # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
