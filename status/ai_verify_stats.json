@@ -1,9 +1,9 @@
 {
- "totalChecked": 214,
+ "totalChecked": 215,
  "totalPassed": 121,
- "totalFailed": 85,
+ "totalFailed": 86,
  "totalErrors": 8,
- "totalCostUsd": 63.7331,
+ "totalCostUsd": 64.3466,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -89,17 +89,10 @@
   "依頼文で名指しされ「消すな」と明記された5件のうち4件(#792/#790/#7": 1,
   "shikumi.pyの日時パース(+0900形式非対応)が原因で鬼監督を誤ってd": 1,
   "本番URLのog:description等が旧コピーのままで、事実ベースの新コピ": 1,
-  "本番URL(joy-relief-station.lovable.app)のog": 1
+  "本番URL(joy-relief-station.lovable.app)のog": 1,
+  "依頼【5】の必須要件「本番未反映を進捗表に赤で出し続ける」が未実装。.lovab": 1
  },
  "history": [
-  {
-   "ts": "2026-09-12T19:46:01+09:00",
-   "n": 728,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/728-week-bar-labels.html",
-   "verdict": "pass",
-   "reason": "本番HTMLのbuildWeekBar関数に「18時〜」の開始時刻付き見出し・今日のマス内6時間刻み目盛り(wtick)・「週は火曜18:00に始まって次の火曜17:59に終わる」の常設文言・「今日」がカレンダー日である旨の注記、さらにpaceBarのhidden除去によるレイアウト跳ね対策まで、確認ページの主張どおり実装コードで裏取りできた",
-   "costUsd": 0.252407
-  },
   {
    "ts": "2026-09-12T20:15:54+09:00",
    "n": 776,
@@ -491,7 +484,15 @@
    "verdict": "pass",
    "reason": "今日の12件全登録・数字の整合性・潰した判定の3条件ロジック・実クリック検証すべて一致し、Anthropic下書きも未送信で適切に分離されている",
    "costUsd": 0.5808639999999999
+  },
+  {
+   "ts": "2026-09-14T16:12:10+09:00",
+   "n": 820,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/818-lovable-publish-ondemand.html",
+   "verdict": "fail",
+   "reason": "依頼【5】の必須要件「本番未反映を進捗表に赤で出し続ける」が未実装。.lovable-publish-pauseファイルが今も存在しスクリプト最上部で即終了するため連続失敗カウントが更新されず、進捗表の赤バナーが永久に非表示のまま（本番HTMLに「本番未反映」の文字列なし）。",
+   "costUsd": 0.6134666000000001
   }
  ],
- "updatedAt": "2026-09-14 06:56"
+ "updatedAt": "2026-09-14 16:12"
 }

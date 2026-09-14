@@ -40,6 +40,8 @@ sys.path.insert(0, HERE)
 import cost_risk  # noqa: E402  案件#676：お金がかかるタスクの自動判定・確認文言
 import redo_guard  # noqa: E402  案件#797：やり直し合計2回でstuck化する共通ガード
 import queue_store  # noqa: E402  案件#687：queue.jsonの安全な読み書き（差分マージ・世代バックアップ）
+import shukan_kubun  # noqa: E402  週の作業配分：見たいもの／裏方／予備の分類
+import shukan_haibun  # noqa: E402  週の作業配分：実績集計とゲート判定（裏方30%上限）
 QUEUE = os.path.join(REPO, "status", "queue.json")
 MACHINE = os.path.join(REPO, "status", "machine.json")
 QUOTA = os.path.join(REPO, "status", "quota.json")
