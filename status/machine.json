@@ -3,14 +3,14 @@
  "load": null,
  "cpu": null,
  "mem": null,
- "swapGB": 25954.75,
+ "swapGB": 22403.75,
  "diskFreeGB": null,
  "sessions": 1,
- "note": "上限4本・あと3本OK（5分平均ロード11.8（コア8×0.8超））",
- "measuredAt": "2026-09-15T03:51:14+09:00",
- "working": 1,
+ "note": "上限4本・あと3本OK（5分平均ロード26.9（コア8×0.8超）、スワップ増加中、予兆（スワップ増加・5分ロード比3.4）→1本減らす）",
+ "measuredAt": "2026-09-15T03:57:55+09:00",
+ "working": 0,
  "stalled": 0,
- "waiting": 0,
+ "waiting": 1,
  "safeMax": 4,
  "moreOK": 3,
  "hardMax": 8,
@@ -19,22 +19,25 @@
  "calibratedSafeN": 4,
  "calibrationBasis": "標本不足→既定4本",
  "userActive": false,
- "predict": [],
+ "predict": [
+  "スワップ増加",
+  "5分ロード比3.4"
+ ],
  "shedCandidates": [],
  "below": 2,
- "blockReason": "5分平均ロード11.8（コア8×0.8超）",
- "load1": 11.52,
- "load5": 11.79,
- "load15": 14.95,
+ "blockReason": "5分平均ロード26.9（コア8×0.8超）、スワップ増加中、予兆（スワップ増加・5分ロード比3.4）→1本減らす",
+ "load1": 19.91,
+ "load5": 26.93,
+ "load15": 22.05,
  "cores": 8,
- "loadRatio": 1.44,
+ "loadRatio": 2.49,
  "memPressure": "green",
- "memAvailGB": 7.1,
- "swapIncreasing": false,
- "ioMBs": 6.29,
+ "memAvailGB": 5.2,
+ "swapIncreasing": true,
+ "ioMBs": 404.56,
  "network": {
-  "pingMedianMs": 23.5,
-  "pingMaxMs": 39.8,
+  "pingMedianMs": 21.8,
+  "pingMaxMs": 46.9,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -43,11 +46,11 @@
    "cli": "a94aa2ee-8748-4772-ba4e-4e21d1a91954",
    "localId": null,
    "startedAt": "2026-09-15T03:45:05+0900",
-   "elapsedMin": 6,
+   "elapsedMin": 12,
    "lastReportAt": null,
    "lastReport": "",
-   "status": "作業中",
-   "color": "green",
+   "status": "止まっている",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": false,
    "deployUrls": [],
@@ -59,15 +62,15 @@
    "title": "【自動検知】Lovable公開 が動いていません（850番・自動発車）",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 254,
-   "idleMin": 6.1,
-   "kind": "working",
+   "mb": 195,
+   "idleMin": 12.7,
+   "kind": "idle_done",
    "model": "<synthetic>",
    "turns": 1,
    "lastActivityAt": "2026-09-14T18:45:07.255Z"
   }
  ],
- "line": "負荷 測定不可% ｜ セッション1本（作業中1・止まり0） ｜ 上限4本・あと3本OK ｜ 空き測定不可GB",
+ "line": "負荷 測定不可% ｜ セッション1本（作業中0・止まり0） ｜ 上限4本・あと3本OK ｜ 空き測定不可GB",
  "modelCounts": {
   "<synthetic>": 1
  },
@@ -81,17 +84,17 @@
  "heartbeat": {
   "pid": 42590,
   "processAlive": true,
-  "stalledMin": 0.1,
+  "stalledMin": 0.3,
   "stalled": false,
   "note": "心臓は動いています"
  },
  "watchdog": {
-  "lastRun": "2026-09-15 03:51",
+  "lastRun": "2026-09-15 03:58",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "着火せず: 取れる仕事なし（未着手/作業中）",
+  "ignite": "Mac危険（スワップ増加中）",
   "shed": null,
   "keep": {
    "target": 3,
@@ -99,7 +102,14 @@
    "below": 2,
    "line": "現在1本／上限4本／目標3本／あと3本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 94678,
+    "title": "（不明）",
+    "kind": "idle_done",
+    "why": "会話ログ/管理JSONと突合できない"
+   }
+  ]
  },
  "metrics": {
   "stalls": 135,
@@ -119,7 +129,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-15 03:51",
+  "updatedAt": "2026-09-15 03:57",
   "estimated": true,
   "fablePct": null,
   "allPct": null,
@@ -127,7 +137,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-09-15 17:59",
   "daysLeft": 0.6,
-  "hoursLeft": 14.1,
+  "hoursLeft": 14.0,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
