@@ -705,6 +705,10 @@
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
 
+<!-- 826番（2026-09-14）：たまごさんの今週の大目標「3チーム(Grok/OpenAI/Anthropic)連携」を
+     一番上に小さく1枠。data.js の renkei を読んで表示するだけ（重い処理なし）。 -->
+<div id="renkeiBar" style="margin:6px 0 10px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--line);font-size:0.8rem;line-height:1.6;"></div>
+
 <!-- 2026-09-09（たまごさん指示）「クレジット配分を一番上に」「同時稼働本数も分かるように」
      →この2枚を進捗表の一番最初、他のどのセクションよりも上に置く。 -->
 <!-- 728番（2026-09-12）「読み込み中が出たり消えたりで画面がぺこぺこ動く」対策（726番と同根）：
@@ -728,6 +732,12 @@
      data.js の lineReply が null の間は display:none のまま（何も出さない）。 -->
 <div id="lineReplyAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;"></div>
 
+<!-- 820番（2026-09-14）：Lovable公開便（自動でPublishを押す便）の連続失敗を赤で出す見張り。
+     30分おき自動便は無効化し、セッションが仕事を終えた時に手動で1回押すon-demand方式へ変更、
+     さらに1日6回上限・2回連続失敗で当日停止のガードを入れた。ここは「今その状態がどうなっているか」だけを見せる。
+     data.js の lovablePublishStatus を sync-lovable-publish-dashboard.mjs が毎回書き換える。 -->
+<div id="lovablePublishAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;"></div>
+
 <!-- 715番（2026-09-10）：憲法の遵守点検（毎日1回・自動）。
      たまごさん「たまごが言ったルールが引き継がれてないっていうのが、だから困るんだよね。
      だからそれを仕組みにして」→ 書いてあるルールのうち機械で測れるものを毎日チェックし、
@@ -744,6 +754,12 @@
 <details class="sec" id="micMailSec"><summary>🎙 マイク不具合ログ ＆ Anthropicへの下書き</summary><div class="in">
   <div id="micLogBox" style="font-size:0.85rem;line-height:1.6;"></div>
   <div id="anthropicDraftBox" style="margin-top:10px;font-size:0.85rem;line-height:1.6;"></div>
+</div></details>
+
+<!-- 820番（2026-09-14）：Lovableの「suspicious activityで公開ブロック」解除依頼の下書き。
+     アカウント本人でないと通らないため、送信はたまごさんが押す（683番のanthropicDraftMailと同じパターン）。 -->
+<details class="sec" id="lovableSupportSec"><summary>✉️ Lovable公開ブロック解除の問い合わせ下書き</summary><div class="in">
+  <div id="lovableSupportDraftBox" style="font-size:0.85rem;line-height:1.6;"></div>
 </div></details>
 
 <!-- 2026-09-07(616番) たまごさん「もうここにできてますよ、っていうコーナーが欲しい。
@@ -4570,7 +4586,7 @@ function renderStaleFromCache(cached){
   const when = new Date(cached.savedAt).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"});
   const upd = document.getElementById("updated");
   if(upd) upd.innerHTML = `<span style="color:#9aa0a6">⚠ 最新を読み込めず、${mins}分前（${esc(when)}時点）の内容を表示中</span>`;
-  try{ renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail(); }catch(e){ showErr(e); }
+  try{ renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail(); renderRenkeiBar(); }catch(e){ showErr(e); }
 }
 let __dataReadyRetries = 0;
 function __dataReady2(){
@@ -4613,9 +4629,23 @@ function __dataReady2(){
   }
   __dataReadyRetries = 0;
   document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
-  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderLineReplyAlert(); renderMicAndDraftMail();
+  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderLineReplyAlert(); renderMicAndDraftMail(); renderLovablePublishAlert(); renderRenkeiBar();
   saveShinchokuCache();
 };
+// 826番（2026-09-14）：3チーム連携バー。data.js の renkei を1枠だけ静かに表示する。
+function renderRenkeiBar(){
+  const el = document.getElementById("renkeiBar");
+  if(!el) return;
+  const r = D && D.renkei;
+  if(!r){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.style.display = "block";
+  const dot = (on) => on ? "●" : "○";
+  const bridgeColor = r.bridgeCount > 0 ? "#ffb4b4" : "#8ef0ae";
+  el.innerHTML = `🤝 連携　Claude ${dot(r.teams && r.teams.claude)} / OpenAI ${dot(r.teams && r.teams.openai)} / Grok ${dot(r.teams && r.teams.grok)}`
+    + `　往復 ${Number(r.roundTrips || 0)}回`
+    + `　<span style="color:${bridgeColor}">橋渡し ${Number(r.bridgeCount || 0)}回</span>`
+    + (r.checkPageUrl ? `　<a href="${esc(r.checkPageUrl)}" style="color:var(--kinari);text-decoration:underline;">確認ページ</a>` : "");
+}
 // 626番：Anthropic返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
 function renderAnthropicAlert(){
   const el = document.getElementById("anthropicAlert");
@@ -4638,6 +4668,21 @@ function renderLineReplyAlert(){
     + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`
     + (a.body ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.9;">${esc(a.body)}</div>` : "");
 }
+// 820番：Lovable公開便の連続失敗を赤で出す。0回・停止していない間は静かに何も出さない。
+function renderLovablePublishAlert(){
+  const el = document.getElementById("lovablePublishAlert");
+  if(!el) return;
+  const s = D && D.lovablePublishStatus;
+  if(!s || (!s.consecutiveFailures && !s.stoppedForToday)){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.style.display = "block";
+  const stopLine = s.stoppedForToday
+    ? `🛑 本日は${s.consecutiveFailures}回連続失敗のため、これ以上は押しに行っていません（日付が変わるまで停止中）。`
+    : `⚠️ 連続失敗 ${s.consecutiveFailures}回。`;
+  el.innerHTML = `${esc(stopLine)}\n`
+    + `本日の公開成功: ${esc(String(s.successCountToday ?? 0))}回 / 上限${esc(String(s.dailyCap ?? 6))}回　`
+    + `最終確認: ${esc(s.lastCheckedAt || "不明")}\n`
+    + (s.lastFailureReason ? `直近の失敗理由: ${esc(s.lastFailureReason)}` : "");
+}
 // 683番：①マイク不具合の再現ログ（配列に1行足すだけで増える）②Anthropicへの下書きメール
 // （宛先・件名・本文入りでGmail作成画面を開くリンク。送信ボタンはたまごさんが押す）。
 function renderMicAndDraftMail(){
@@ -4656,8 +4701,8 @@ function renderMicAndDraftMail(){
   }
   if(draftBox){
     const m = D && D.anthropicDraftMail;
-    if(!m){ draftBox.innerHTML = ""; return; }
-    draftBox.innerHTML =
+    if(!m){ draftBox.innerHTML = ""; }
+    else draftBox.innerHTML =
       `<div style="margin-bottom:6px;">Anthropicへの問い合わせ下書き（マイク断続不具合＋添付画像3割ロス）を用意しました。`
       + `下のボタンでGmailの作成画面が宛先・件名・本文入りで開きます。<b>あとは送信ボタンを押すだけ</b>です。</div>`
       + `<a href="${esc(m.gmailComposeUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border-radius:20px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);text-decoration:none;">✉️ Gmailの作成画面を開く（送信は自分で）</a>`
@@ -4665,6 +4710,18 @@ function renderMicAndDraftMail(){
       + `<details style="margin-top:8px;"><summary style="cursor:pointer;">日本語の文面（確認用）</summary>`
       + `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.82rem;">${esc(m.bodyJa || "")}</pre></details>`
       + (m.note ? `<div style="margin-top:8px;font-size:0.78rem;color:var(--sub);">${esc(m.note)}</div>` : "");
+  }
+  const lovBox = document.getElementById("lovableSupportDraftBox");
+  if(lovBox){
+    const lm = D && D.lovableSupportDraftMail;
+    if(!lm){ lovBox.innerHTML = ""; }
+    else lovBox.innerHTML =
+      `<div style="margin-bottom:6px;">Lovableサポートへの問い合わせ下書き（公開が suspicious activity でブロックされている件）を用意しました。`
+      + `下のボタンでGmailの作成画面が宛先・件名・本文入りで開きます。<b>あとは送信ボタンを押すだけ</b>です。</div>`
+      + `<a href="${esc(lm.gmailComposeUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border-radius:20px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);text-decoration:none;">✉️ Gmailの作成画面を開く（送信は自分で）</a>`
+      + `<details style="margin-top:8px;"><summary style="cursor:pointer;">日本語の文面（確認用）</summary>`
+      + `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.82rem;">${esc(lm.bodyJa || "")}</pre></details>`
+      + (lm.note ? `<div style="margin-top:8px;font-size:0.78rem;color:var(--sub);">${esc(lm.note)}</div>` : "");
   }
 }
 if(window.SHINCHOKU && window.SHINCHOKU_ALL) window.__dataReady();
