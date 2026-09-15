@@ -32,7 +32,7 @@ import sys
 import tempfile
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -1183,6 +1183,49 @@ def harvest(q):
             changed = True
             log("🔑 ログインが切れています。%d番は列に戻し、発車を止めました" % it.get("n"))
             continue
+        # ---- 週次利用上限の検知（2026-09-15・874番・実害あり）----
+        # 実測：2026-09-14 16:12〜2026-09-15 18:00の約26時間、"claude -p"の起動が
+        #   "You've hit your weekly limit · resets 6pm (Asia/Tokyo)" を1〜3秒で返し続けていた。
+        #   これが上の認証切れと同じ「仕事の中身の問題ではない」ケースなのに扱いが無かったため、
+        #   59件の正常な仕事が「URLが1本も無いまま終了」という通常失敗としてredo_guardに数えられ、
+        #   そのままstuckへ落ちた。副作用として鬼監督(AI検品)・Lovable公開等、複数の仕組みの
+        #   生死表が「dead」と誤検知した（実際に壊れていたのはコードではなく上限そのもの）。
+        # 認証切れと同じ思想：失敗として数えず列に静かに戻す。ただし週次上限は"人が動かなくても
+        #   時間が経てば直る"ので、resets時刻を読み取れれば自動再開する（読めなければ60分後に再試行、
+        #   まだ上限中ならこのブロックがまた検知して再セットする＝自己修復）。
+        if "weekly limit" in (raw or "").lower() or "weekly limit" in (result or "").lower():
+            _wl_resume = None
+            _wl_m = re.search(r"resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", raw or result or "", re.IGNORECASE)
+            if _wl_m:
+                try:
+                    hh = int(_wl_m.group(1)) % 12
+                    if (_wl_m.group(3) or "").lower() == "pm":
+                        hh += 12
+                    mm = int(_wl_m.group(2) or 0)
+                    _now = datetime.now()
+                    _cand = _now.replace(hour=hh, minute=mm, second=0, microsecond=0)
+                    if _cand <= _now:
+                        _cand += timedelta(days=1)
+                    _wl_resume = _cand.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+                except Exception:
+                    _wl_resume = None
+            if not _wl_resume:
+                _wl_resume = (datetime.now() + timedelta(minutes=60)).strftime("%Y-%m-%dT%H:%M:%S+09:00")
+            flag = os.path.join(REPO, "status", "no_launch.flag")
+            io.open(flag, "w", encoding="utf-8").write(
+                "Claudeの週次利用上限に達しています（weekly limit）。"
+                "resumeAt=%s まで新規発車を止めます。検知時刻:%s\n"
+                % (_wl_resume, time.strftime("%Y-%m-%d %H:%M")))
+            io.open(os.path.join(REPO, "status", "weekly_limit.flag"), "w", encoding="utf-8").write(
+                json.dumps({"detectedAt": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+                            "resumeAt": _wl_resume}, ensure_ascii=False))
+            it["status"] = "waiting"      # 失敗ではないので、そのまま列に戻す（やり直し回数も数えない）
+            for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                it.pop(k, None)
+            it.pop("pid", None)
+            changed = True
+            log("⏳ 週次利用上限を検知。%d番は列に戻し、発車を%sまで止めます" % (it.get("n"), _wl_resume))
+            continue
         # 2026-09-05 たまごさん「何も動いてない状態は作らないで。クレジット消費最小で」
         #   → 空回し（keepalive）は終わったら台帳から静かに消す。
         #     確認待ちに積むと、判定するものが増えるだけで意味がない（今日それで29件溜めた）。
@@ -1764,10 +1807,31 @@ def _main_impl():
       auth_only = False
       if os.path.exists(_flag):
           try:
-              auth_only = "ログインが切れています" in io.open(_flag, encoding="utf-8").read()
+              _flag_text = io.open(_flag, encoding="utf-8").read()
           except Exception:
-              auth_only = False
-          if not auth_only:
+              _flag_text = ""
+          auth_only = "ログインが切れています" in _flag_text
+          # 2026-09-15（874番）：週次利用上限で止めているだけなら、resumeAtを過ぎた時点で
+          #   自分で気づいて自動解除する（認証切れと違い、人が動かなくても時間が経てば直るため）。
+          if "週次利用上限" in _flag_text:
+              _wl = load(os.path.join(REPO, "status", "weekly_limit.flag"), {}) or {}
+              _resume_at = _wl.get("resumeAt") or ""
+              _past = False
+              if _resume_at:
+                  try:
+                      _past = datetime.strptime(_resume_at[:19], "%Y-%m-%dT%H:%M:%S") <= datetime.now()
+                  except Exception:
+                      _past = False
+              if _past:
+                  for _f in (_flag, os.path.join(REPO, "status", "weekly_limit.flag")):
+                      try:
+                          os.remove(_f)
+                      except Exception:
+                          pass
+                  log("⏳ 週次利用上限のresumeAtを過ぎたので発車を再開します")
+              else:
+                  return 0
+          elif not auth_only:
               return 0
       m = load(MACHINE, {})
       quota = load(QUOTA, {})
