@@ -67,6 +67,42 @@ GD_ROOT = (
 MAX_STICKER_PX = 370
 MIN_STICKER_COUNT_CHOICES = (8, 16, 24, 32, 40)
 
+# 769番追記（2026-09-16）：ラシコル申請中に実画面で
+# 「英語の説明文は、半角英数字、半角記号のみが入力できます」「160文字まで入力可能です」
+# （入力欄は261/160と表示）が出た。貼ってから気づくのを二度と起こさないための機械チェック。
+# 文字数・文字種の上限は「実画面で確認できたものだけ」を書く。日本語欄は上限未確認のため
+# ここには入れない（推測で決めない）。
+LINE_TEXT_LIMITS = {
+    "title_en": {"label": "タイトル（英語）", "max_len": 40, "ascii_only": True},
+    "desc_en": {"label": "説明文（英語）", "max_len": 160, "ascii_only": True},
+    "copyright": {"label": "コピーライト", "max_len": 50, "ascii_only": False},
+}
+
+# 全角記号は「半角英数字・半角記号のみ」規格に必ず違反するので、違反時に
+# 具体的な文字を指させるための代表例（他の全角文字も ascii_only 判定で拾う）。
+_FULLWIDTH_HINT_CHARS = ("—", "“", "”", "…", "　")
+
+
+def validate_stamp_fields(cfg):
+    """LINE Creators Marketの実画面規格に対する違反を列挙する。1件でもあれば公開ブロック対象。"""
+    violations = []
+    for field, rule in LINE_TEXT_LIMITS.items():
+        text = cfg.get(field) or ""
+        n = len(text)
+        if n > rule["max_len"]:
+            violations.append({
+                "field": field, "label": rule["label"],
+                "message": "%s：%d字オーバー（%d/%d字）" % (rule["label"], n - rule["max_len"], n, rule["max_len"]),
+            })
+        if rule["ascii_only"]:
+            bad_chars = sorted(set(c for c in text if ord(c) > 127))
+            if bad_chars:
+                violations.append({
+                    "field": field, "label": rule["label"],
+                    "message": "%s：全角記号を含む（%s）" % (rule["label"], "・".join(bad_chars)),
+                })
+    return violations
+
 sys.path.insert(0, HERE)
 import make_check_page as mcp  # noqa: E402
 
@@ -432,14 +468,17 @@ def inspect_images(dir_path, expected_count, timeout_each=2.0):
     return report
 
 
-def row(label, value_id, text):
+def row(label, value_id, text, max_len=None):
+    display_label = label
+    if max_len is not None and text is not None:
+        display_label = "%s（%d/%d）" % (label, len(text), max_len)
     if text is None:
         text = "★たまごさんが埋める（未確定）"
     return (
         '<div class="ps-row"><div class="ps-label">%s</div>'
         '<div class="ps-value" id="%s">%s</div>'
         '<button class="ps-copy" onclick="ps_copy(\'%s\',this)">コピー</button></div>'
-    ) % (mcp.esc(label), value_id, mcp.esc(text), value_id)
+    ) % (mcp.esc(display_label), value_id, mcp.esc(text), value_id)
 
 
 STYLE = """
@@ -519,13 +558,17 @@ def build_sheet_html(cfg, img_report):
     )
 
     parts.append('<div class="ps-section"><h3>① Display Information（表示情報）</h3>')
-    parts.append(row("タイトル（英語）", "f-title-en", cfg.get("title_en")))
+    parts.append(
+        '<div class="ps-hint">日本語のタイトル・説明文の文字数上限は実画面で未確認のため、'
+        "機械チェックの対象外（英語欄・コピーライトのみ自動チェック）。</div>"
+    )
+    parts.append(row("タイトル（英語）", "f-title-en", cfg.get("title_en"), max_len=LINE_TEXT_LIMITS["title_en"]["max_len"]))
     parts.append(row("タイトル（日本語）", "f-title-ja", cfg.get("title_ja")))
-    parts.append(row("説明文（英語）", "f-desc-en", cfg.get("desc_en")))
+    parts.append(row("説明文（英語）", "f-desc-en", cfg.get("desc_en"), max_len=LINE_TEXT_LIMITS["desc_en"]["max_len"]))
     parts.append(row("説明文（日本語）", "f-desc-ja", cfg.get("desc_ja")))
     parts.append(row("クリエイター名（英語）", "f-creator-en", cfg.get("creator_en")))
     parts.append(row("クリエイター名（日本語）", "f-creator-ja", cfg.get("creator_ja")))
-    parts.append(row("コピーライト表記", "f-copyright", cfg.get("copyright")))
+    parts.append(row("コピーライト表記", "f-copyright", cfg.get("copyright"), max_len=LINE_TEXT_LIMITS["copyright"]["max_len"]))
     parts.append(row("補足説明欄（AI利用の申告文）", "f-ai-note", cfg.get("ai_note")))
     parts.append(
         '<div class="ps-plain"><b>選択項目（コピー不要、選ぶだけ）</b><br>'
@@ -599,6 +642,18 @@ def build_sheet_html(cfg, img_report):
 
 def process_one(cfg, force=False, state=None, after_img=None):
     slug = cfg["slug"]
+
+    # 769番追記（2026-09-16）：LINE側の規格（文字数・半角/全角）に1件でも違反があれば、
+    # このキャラのシートは生成しない（違反した文言を貼るだけシートに載せて、また画面で
+    # 弾かれるのを二度と起こさないため。dead_links と同じ「壊れた版で上書きしない」方針）。
+    violations = validate_stamp_fields(cfg)
+    if violations:
+        return {
+            "slug": slug, "out_path": None, "url": None,
+            "img_report": {}, "missing_text": [], "blocked": True,
+            "dead_links": None, "violations": violations,
+        }
+
     img_dir = find_image_dir(cfg)
     img_report = inspect_images(img_dir, cfg.get("expected_image_count"))
 
@@ -624,6 +679,7 @@ def process_one(cfg, force=False, state=None, after_img=None):
         {"item": "文言(タイトル・説明文)",
          "result": ("未確定: " + "、".join(missing_text)) if missing_text else "確定済み・貼るだけの状態",
          "ok": not missing_text},
+        {"item": "規格チェック（英語欄・コピーライト）", "result": "違反なし", "ok": True},
         {"item": "画像フォルダ", "result": img_dir or "見つからない（Drive上に該当フォルダなし）",
          "ok": bool(img_dir)},
         {"item": "画像検品", "result": (
@@ -746,6 +802,7 @@ def main():
     print(json.dumps({"newFolders": new_folders, "results": [
         {"slug": r["slug"], "url": r["url"], "blocked": r.get("blocked", False),
          "deadLinks": r.get("dead_links"),
+         "violations": [v["message"] for v in (r.get("violations") or [])],
          "filesFound": r["img_report"].get("files_found", 0),
          "missingText": r["missing_text"]} for r in results
     ]}, ensure_ascii=False, indent=1))
@@ -755,7 +812,12 @@ def main():
     for f in new_folders:
         notes.append("Driveに新しいスタンプフォルダ「%s」が増えました" % f)
     for r in results:
-        if r.get("blocked"):
+        if r.get("blocked") and r.get("violations"):
+            notes.append(
+                "%s：LINE規格違反につき公開ブロック（%s）。tools/line_stamp_configs/%s.jsonを直せば次回自動反映"
+                % (r["slug"], "、".join(v["message"] for v in r["violations"]), r["slug"])
+            )
+        elif r.get("blocked"):
             notes.append(
                 "%s：リンク死活確認NGにつき公開ブロック（%s）。既存の公開シートは変更せず維持"
                 % (r["slug"], "、".join(r["dead_links"]))
