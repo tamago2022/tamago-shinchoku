@@ -47,12 +47,16 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #818 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</div>
-<h1>#818 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</h1>
-<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</div>
+<h1>#818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</h1>
+<div class="date">2026-09-14 実装 → AI検品1回目で不合格 → 2026-09-15 原因修正・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="note" style="border-left:3px solid var(--aka);">
+<b>2026-09-14 16:12 AI検品1回目で不合格</b>：「.lovable-publish-pause があると一時停止判定より前に即終了するため、本番未反映かどうかの判定・保存自体が一度も走らず、進捗表の『本番未反映』赤バナーが永久に出ない」という指摘。実際その通りで、一時停止中の間ずっと状態ファイルが更新されていなかった。
+</div>
 
 <div class="fix">
-30分おきにLovableの『公開』を自動で押しに行っていた便(com.tamago.joy-relief-station.lovable-publish)が、出すものが無い時も連打しているように見えていた疑いがある(18:03〜翌1:21に21回連続失敗)。①その30分タイマーを停止(消してはいない・plistにDisabled:trueを追加＋launchctl bootoutで即時停止・再開手順もplistのコメントに明記)。②公開スクリプト自体に、mainに新しい変更がある時だけ押す・1日6回まで・2回連続失敗したら当日は停止、の3つの歯止めを実装し、3パターンとも実際に動かして確認した(下の数字)。③連続失敗回数と『本番未反映』をこのページの進捗表に赤で常時表示するようにした。④Lovableサポートへの解除依頼メールを宛先・件名・本文入りで用意し、この進捗表から開くだけで送信できる状態にした(送信は店主本人)。
+<b>直したこと：</b>「本番未反映かどうか（origin/mainのHEAD ≠ 前回公開時のsha）」の判定と保存を、一時停止・日次上限・連続失敗停止のどのゲートよりも先に必ず実行する構造へ変更した。これにより、一時停止中でも『本番未反映』の赤バナーだけは連続失敗回数と切り離して出続ける。あわせて、ネットワーク不通でmain差分が取得できなかった場合に誤って『未反映ではない』へ戻ってしまうバグも修正（直前の値を維持するように変更）。
 </div>
 
 <h2>② 数字</h2>
@@ -60,29 +64,40 @@
   <div class="num"><b>停止済み(Disabled)</b><span>30分自動タイマー</span></div>
   <div class="num"><b>6回/日</b><span>新しい上限</span></div>
   <div class="num"><b>2回連続</b><span>失敗したら当日停止</span></div>
-  <div class="num"><b>0回</b><span>現在の連続失敗(実測)</span></div>
+  <div class="num" style="border-color:var(--aka);"><b style="color:var(--aka);">本番未反映</b><span>現在の実測値（下表参照）</span></div>
 </div>
 
-
+<h2>③ 今まさに本番で赤バナーが出ている状態（生きた実例）</h2>
+<div class="note">
+現時点の実データ：<code>mainUnpublished: true</code>（案件820の変更自体がまだLovable本番に出ていない）／<code>paused: true</code>（Lovable側 suspicious activity ブロック解除待ちのため意図的に一時停止中）／<code>consecutiveFailures: 0</code>。
+旧仕様なら「連続失敗0回」なので赤バナーは<b>出なかった</b>。新仕様では下記の文言が進捗表トップに実際に出ている：
+<div style="margin-top:8px;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.9rem;white-space:pre-wrap;">🔴 本番未反映：mainに新しい変更がありますが、一時停止中のため公開していません（Lovable側のsuspicious activityブロック解除待ち（.lovable-publish-pauseで一時停止中））。
+本日の公開成功: 0回 / 上限6回　最終確認: 2026-09-15T14:04:21.577Z</div>
+<span class="meta">↑進捗表のJSレンダー関数(renderLovablePublishAlert)を現在の本番data.jsで実際に実行して得た出力そのまま（node上でDOMをモックして実行・スクリーンショットではなく実行結果）。</span>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>進捗表（本番・ここで状態を見る）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
   <li><b>Lovable問い合わせ下書き（進捗表内の折りたたみ）</b><a href="https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec</a></li>
+  <li><b>joy-relief-station 側のコード変更（main合流済み）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/9782fb5a815fca6db82f13aab713e7d05af95699" target="_blank" rel="noopener">commit 9782fb5a</a></li>
+  <li><b>tamago-shinchoku 側のコード変更（main合流済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/c764a19f" target="_blank" rel="noopener">commit c764a19f</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>『出すものが無い』時に押さないか</td><td class="yes">OK(main差分ゼロを検知→CDPに触れず終了を実機確認)</td></tr>
-<tr><td>1日6回の上限で止まるか</td><td class="yes">OK(successCount=6で実行→押さずに終了を実機確認)</td></tr>
-<tr><td>2回連続失敗で当日停止するか</td><td class="yes">OK(consecutiveFailures=2で実行→押さずに終了を実機確認)</td></tr>
-<tr><td>進捗表に連続失敗回数が出るか</td><td class="yes">OK(テスト値1回を実際に赤バナーで表示させて確認、その後クリーンな実測値へ戻し済み)</td></tr>
-<tr><td>問い合わせ文が送信直前まで用意されているか</td><td class="yes">OK(宛先・件名・本文入りのGmail作成リンクを進捗表に設置。送信ボタンのみ店主)</td></tr>
+<tr><td>『出すものが無い』時に押さないか（ゲート3）</td><td class="yes">OK（main差分ゼロを検知→CDPに触れず終了を実行確認）</td></tr>
+<tr><td>1日6回の上限で止まるか（ゲート2）</td><td class="yes">OK（successCount=6で実行→押さずに終了を実行確認）</td></tr>
+<tr><td>2回連続失敗で当日停止するか（ゲート1）</td><td class="yes">OK（実際に2回連続でCDP未接続失敗を起こし、3回目がCDPに触れず即終了することまで確認）</td></tr>
+<tr><td><b>一時停止中でも『本番未反映』は表示され続けるか（ゲート0・検品指摘の核心）</b></td><td class="yes"><b>OK（修正後）</b>：一時停止のまま実行→mainUnpublished=true・paused=trueが保存され、進捗表に赤バナーが出ることを上記③で実行確認</td></tr>
+<tr><td>ネットワーク不通時にmainUnpublishedを誤って false にしないか</td><td class="yes">OK（テスト中に実際にgit ls-remoteがタイムアウトする事象が発生し、そのバグを発見→直前値維持へ修正して再確認）</td></tr>
+<tr><td>問い合わせ文が送信直前まで用意されているか</td><td class="yes">OK（宛先・件名・本文入りのGmail作成リンクを進捗表に設置。送信ボタンのみ店主）</td></tr>
+<tr><td>30分自動タイマーは無効化されたままか</td><td class="yes">OK（plist Disabled:true、再インストールスクリプト側もDisabled:trueで登録するよう修正済み＝再登録で自動復活しない）</td></tr>
 </table>
 
 <footer>
-このページは #818 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #818/#820 のセッションが更新した確認資料。書式は share/check/_template.html（共通の型）に揃えている。テストはすべてローカルの偽ダッシュボード（/tmp）へ向けて実行し、本番のtamago-shinchokuへは今回の正しい実測値のみを反映した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
