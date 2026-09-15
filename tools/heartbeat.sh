@@ -120,6 +120,10 @@ while :; do
   #   新しいlaunchd常駐は増やさず、既存の心臓に相乗り。内部で1500秒ゲートしているので
   #   15秒ごとに呼んでも実際に本体が走るのは30分に1回だけ（daily_ingest_scheduler.pyと同じ間引き）。
   ( python3 "$REPO/tools/genzaichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
+  #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
+  #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。
+  ( python3 "$REPO/tools/top_status.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""進捗表の一番上「今何が動いているか」だけを1画面ぶん、超軽量JSONにして書き出す。
+
+2026-09-16（882番）新設の理由：
+  たまごさん「一番気になってるとこ」＝一番上の赤い長文バナー（本番◯時間・no_launch.flag等）は
+  幅を取るだけで読まれていない。代わりに「今走ってる／次に発車／できたもの」を出してほしい、
+  という指示への対応。
+
+  既存の status/genzaichi.json は実質30分おきしか更新されない
+  （tools/genzaichi.py が heartbeat.sh に25分ゲートで相乗りしているため）。
+  「今すぐ走っているもの：0本」なのに実際は4本走っている、という食い違いは
+  このゲートの遅さ＋label/titleの取り違え（label は新規タスクには無く title に入る）が原因。
+
+  ここは genzaichi.py とは完全に独立させ、
+    ① 重い処理（本番HEAD確認・shikumi.py起動）をやらない
+    ② status/queue_light.json（auto_launcher.py／command_ingest.pyが毎サイクル書き直す。
+       常に生きた状態に近い）だけを読む
+  ことで、heartbeat.sh の15秒サイクルへ毎回相乗りしても軽いままにする。
+
+出力: status/top_status.json（数百バイト〜1KB程度）
+"""
+import io
+import json
+import os
+import sys
+import datetime
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HERE)
+ST = os.path.join(REPO, "status")
+QUEUE_LIGHT = os.path.join(ST, "queue_light.json")
+OUTBOX = os.path.join(ST, "dispatch_outbox.jsonl")
+NO_LAUNCH_FLAG = os.path.join(ST, "no_launch.flag")
+LAUNCH_CAP = os.path.join(ST, "launch_cap.json")
+LAST_LAUNCH = os.path.join(ST, ".last_launch_at")
+OUT = os.path.join(ST, "top_status.json")
+
+JST = datetime.timezone(datetime.timedelta(hours=9))
+
+sys.path.insert(0, HERE)
+try:
+    from auto_launcher import queue_rank_key  # 発車順の正本ロジックをそのまま流用（重複させない）
+except Exception:
+    def queue_rank_key(it, prio):
+        u = 0 if it.get("urgent") else 1
+        p = it.get("priority") or 9
+        o = it.get("order")
+        return (u, p, int(o) if isinstance(o, int) else 10 ** 6, it.get("n") or 99)
+
+
+def jread(p, d=None):
+    try:
+        with io.open(p, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return d if d is not None else {}
+
+
+def label_of(it):
+    # 726/802番の教訓と同じ穴：新規タスクは label ではなく title を持つ。両対応する。
+    return (it.get("label") or it.get("title") or "")[:48]
+
+
+def short_model(m):
+    if not m:
+        return ""
+    m = str(m).replace("claude-", "")
+    return m.replace("-", " ").title()
+
+
+def elapsed_min(started_at, now):
+    if not started_at:
+        return None
+    try:
+        t = datetime.datetime.fromisoformat(str(started_at))
+        return round((now - t).total_seconds() / 60, 1)
+    except Exception:
+        return None
+
+
+def recent_done(limit=3):
+    """直近の完了＋URL。dispatch_outbox.jsonlの末尾から、URLを持つ ok:true の行だけ拾う
+    （genzaichi.pyのunreported_completionsと同じURL妥当性チェック＝自分の番号で始まるものを優先）。"""
+    rows = []
+    try:
+        with io.open(OUTBOX, encoding="utf-8") as f:
+            lines = f.readlines()
+    except Exception:
+        return rows
+    picked = {}
+    for line in reversed(lines):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            d = json.loads(line)
+        except Exception:
+            continue
+        n_ = d.get("n")
+        if not isinstance(n_, int) or not d.get("ok"):
+            continue
+        if n_ in picked:
+            continue
+        urls = [u for u in (d.get("urls") or []) if "share/" in u or "lovable.app" in u]
+        if not urls:
+            continue
+        good = [u for u in urls if os.path.basename(u).split("-", 1)[0] == str(n_)]
+        picked[n_] = {
+            "n": n_,
+            "title": (d.get("title") or "")[:40],
+            "url": good[0] if good else urls[0],
+            "ts": d.get("ts"),
+        }
+        if len(picked) >= limit:
+            break
+    return list(picked.values())
+
+
+def stopped_reason():
+    """走行0本のときだけ呼ぶ。理由を1行で返す（無ければNone＝『分かりません』を機械が偽装しない）。"""
+    if os.path.exists(NO_LAUNCH_FLAG):
+        try:
+            content = io.open(NO_LAUNCH_FLAG, encoding="utf-8").read().strip()
+        except Exception:
+            content = ""
+        return "発車を止めています" + ("（%s）" % content[:60] if content else "")
+    cap = jread(LAUNCH_CAP, {})
+    if isinstance(cap.get("cap"), int) and cap.get("cap") <= 0:
+        return "同時本数の上限が0本になっています（%s）" % (cap.get("why") or "理由不明")
+    try:
+        age_min = (datetime.datetime.now(JST).timestamp() - os.path.getmtime(LAST_LAUNCH)) / 60
+        if age_min > 10:
+            return "発車が%.0f分止まっています（自動の立て直しが動いています）" % age_min
+    except FileNotFoundError:
+        pass
+    return "発車できるものが無いか、判定中です"
+
+
+def build():
+    now = datetime.datetime.now(JST)
+    q = jread(QUEUE_LIGHT, {"items": []})
+    items = q.get("items") or []
+    prio = (jread(os.path.join(ST, "priority.json"), {}).get("priority")) or {}
+
+    running = [x for x in items if x.get("status") == "running"]
+    running_sorted = sorted(running, key=lambda x: x.get("startedAt") or "")
+    running_now = [
+        {
+            "n": x.get("n"),
+            "label": label_of(x),
+            "elapsedMin": elapsed_min(x.get("startedAt"), now),
+            "model": short_model(x.get("model")),
+        }
+        for x in running_sorted
+    ]
+
+    waiting = [x for x in items if x.get("status") == "waiting"]
+    p1 = [x for x in waiting if (x.get("priority") or (prio.get("Q%d" % x.get("n")) if x.get("n") else None)) == 1]
+    p1_sorted = sorted(p1, key=lambda it: queue_rank_key(it, prio))
+    next_up = [{"n": x.get("n"), "label": label_of(x)} for x in p1_sorted[:3]]
+
+    payload = {
+        "generatedAt": now.isoformat(),
+        "runningNow": running_now,
+        "nextUp": next_up,
+        "recentDone": recent_done(3),
+        "stoppedReason": stopped_reason() if not running_now else None,
+    }
+    tmp = "%s.tmp.%d" % (OUT, os.getpid())
+    with io.open(tmp, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, OUT)
+    return payload
+
+
+if __name__ == "__main__":
+    result = build()
+    print("top_status.json を書きました（走行%d本）" % len(result["runningNow"]))

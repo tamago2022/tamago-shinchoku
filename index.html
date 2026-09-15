@@ -342,14 +342,20 @@
   /* wtrackはoverflow:hiddenで角丸を効かせているので、印（本来ここ/今ここ）はtrackの外にはみ出す
      ラベル付きのため、clipされない別レイヤー(.wmarks・wtrackの兄弟要素)に重ねて置く。 */
   .weekbar .wmarks{position:absolute; inset:0; pointer-events:none;}
-  .weekbar .wmk{position:absolute; top:-7px; bottom:-7px; width:0; border-left:3px solid var(--sub); z-index:2;}
+  .weekbar .wmk{position:absolute; top:-7px; bottom:-7px; width:0; border-left:3px solid var(--kinari); z-index:2;}
   .weekbar .wmk .wmf{position:absolute; left:0; transform:translateX(-50%); font-size:0.64rem; white-space:nowrap; padding:1px 5px; border-radius:5px; background:#0e1319; border:1px solid var(--line);}
-  .weekbar .wmk.wexp .wmf{top:-20px; color:var(--sub);}
-  .weekbar .wmk.wnow{border-left-color:var(--sub);}
-  .weekbar .wmk.wnow .wmf{bottom:-20px; color:var(--sub); font-weight:800; border-color:var(--sub);}
-  .weekbar .wmk.wnow.over{border-left-color:var(--red);}
-  .weekbar .wmk.wnow.over .wmf{color:var(--red); border-color:var(--red);}
+  .weekbar .wmk.wnow .wmf{bottom:-20px; color:var(--kinari); font-weight:800; border-color:var(--kinari);}
   .weekbar .wfoot{margin-top:6px; font-size:0.66rem; color:var(--dim); opacity:.85;}
+  /* 882番（2026-09-16）：「本来ここ」を日数の物差し（時間の棒）に置くのをやめ、
+     使用率(allPct)専用の棒を別に置いて、その上に目標(lineTarget)を薄い目盛りとして重ねる。
+     時間の棒（wtrack）と使用率の棒（wuse）は物差しが違うので、二度と同じ棒の上で混ぜない。 */
+  .weekbar .wuse{margin-top:10px;}
+  .weekbar .wuse .track{position:relative;}
+  .weekbar .wuse .tgt{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--kinari); opacity:.9; z-index:1;}
+  .weekbar .wuse .tgt.over{background:var(--red);}
+  .weekbar .wusetxt{margin-top:4px; font-size:0.72rem; color:var(--sub);}
+  .weekbar .wusetxt .over{color:var(--red); font-weight:700;}
+  .weekbar .wusetxt .under{color:var(--green);}
   .weeknums{font-size:0.82rem; color:var(--sub); margin-top:2px;}
   .weeknums b{color:var(--kinari);}
   .weeknums .over{color:var(--red); font-weight:800;}
@@ -699,11 +705,13 @@
      件数を、他のどのバーよりも前に赤バナーで出す（renderCheck()内で更新・0件なら非表示）。 -->
 <div id="pendingDecisionBar" style="display:none"></div>
 
-<!-- 787番（2026-09-12）：「いまの現在地」1枚(status/genzaichi.json)の7項目を進捗表の
-     一番上に出す。たまごさんは進捗表しか見ない、という指示に合わせ、他のどのバーよりも
-     前に置く。赤（本番停止・心臓停止）がある時だけ目立たせ、無い時は畳んだ状態にする
-     （paceBar/heartbeatBarと同じ「異常が無ければ邪魔しない」方針）。 -->
-<details id="genzaichiBar" class="pacebar"><summary><div class="ph">いまの現在地を読み込み中…</div></summary></details>
+<!-- 882番（2026-09-16）：たまごさん「1番上の赤い長文（本番◯時間・no_launch.flag…の羅列）は
+     幅を取るだけで読まれていない。それより『今走ってる／次に発車／できたもの』が知りたい」。
+     旧・genzaichiBar（<details>で赤旗を長々と繋げていたもの）を撤去し、常に開いたまま
+     「今どうなっているか」だけを出す軽い1枚に差し替える（status/top_status.json・数百バイト）。
+     本番停止・心臓停止など個別の異常は heartbeatBar・lovablePublishAlert が別枠で持っているため、
+     ここでの重複表示はしない。 -->
+<div id="genzaichiBar" class="pacebar" hidden><div class="ph">いまどうなっているか、読み込み中…</div></div>
 
 <!-- 732番（2026-09-11）：「先生（生成）が終わってるんだったら、ちょっと報告が欲しいよね。
      まだ？って言われる前に『できてますよ』ってお知らせしてほしい」「つけ麺屋でも
@@ -1446,37 +1454,56 @@ function modelChip(model){
    → 画面では二度と計算し直さず、p.lineTarget（pace.json）を唯一の正本として使う。
    （elapsedDaysは「今日はどの曜日マスか」というカレンダー位置の表示にだけ使い、
    目標％の計算には使わない＝役割を分ける）。 */
+/* 882番（2026-09-16）「グラフの時刻ズレ」の直し方：
+   横軸（wtrack・7日間）は時間の物差し、allPct/lineTargetは使用率の物差し。
+   この2つを同じ棒の上の縦線として混ぜていたのが「水と木の間でズレてる」の正体
+   （lineTarget=30.0%を日数の棒に置くと2.1日目＝木マスに来てしまう）。
+   → 「今ここ」は時間の物差し（daysLeftから直接計算）だけを使い、
+     使用率(allPct)と目標(lineTarget)は別枠の棒（wuse）で見せる。二度と混ぜない。 */
 function buildWeekBar(p){
   const days = ["火","水","木","金","土","日","月"];
   const daysLeft = (typeof p.daysLeft === "number") ? p.daysLeft : 7;
   const elapsedDays = Math.max(0, Math.min(7, 7 - daysLeft));
-  const expPct = (typeof p.lineTarget === "number" && !isNaN(p.lineTarget))
-    ? Math.max(0, Math.min(100, p.lineTarget))
-    : Math.max(0, Math.min(100, elapsedDays / 7 * 100)); // pace.jsonに無い時だけの保険
+  const nowTimePct = elapsedDays / 7 * 100; // 「今ここ」は経過時間だけで決める（使用率とは混ぜない）
   const dayIdx = Math.max(0, Math.min(6, Math.floor(elapsedDays)));
   const withinDayFrac = Math.max(0, Math.min(1, elapsedDays - Math.floor(elapsedDays))); // 今日のマスの中の進み具合（0〜1）
-  const nowPct = Math.max(0, Math.min(100, Number(p.allPct) || 0));
-  const overAmt = nowPct - expPct;
-  const isOver = overAmt > 0.5; // 誤差0.5%未満は「ほぼ同じ」として赤にしない
+  const nowD = new Date();
+  const weekdayJa = ["日","月","火","水","木","金","土"];
+  const nowLabel = `${weekdayJa[nowD.getDay()]} ${String(nowD.getHours()).padStart(2,"0")}:${String(nowD.getMinutes()).padStart(2,"0")}`;
+  const weekUsePct = Math.max(0, Math.min(100, Number(p.allPct) || 0));
+  const weekTargetPct = (typeof p.lineTarget === "number" && !isNaN(p.lineTarget)) ? Math.max(0, Math.min(100, p.lineTarget)) : null;
+  const overAmt = weekTargetPct != null ? weekUsePct - weekTargetPct : 0;
+  const isOver = weekTargetPct != null && overAmt > 0.5; // 誤差0.5%未満は「ほぼ同じ」として赤にしない
   const cells = days.map((d, i) => {
     const isToday = i === dayIdx;
+    const endLabel = days[(i + 1) % 7]; // 728番の教訓：見出しは開始時刻だけだと終わりが分からず誤解される→開始→終了で書く
     // 今日のマスにだけ6時間刻み（25/50/75%）の薄い目盛りを入れる（マスの幅＝24時間＝4分割）
     const ticks = isToday
       ? [25, 50, 75].map(pct => `<div class="wtick" style="left:${pct}%"></div>`).join("")
       : "";
     return `<div class="wcell${isToday ? " today" : ""}">
-        <span class="wcell-day">${d}</span><span class="wcell-time">18時〜</span>${ticks}
+        <span class="wcell-day">${isToday ? "今：" + esc(nowLabel) : d + "18:00→" + endLabel + "18:00"}</span>${ticks}
       </div>`;
   }).join("");
-  const html = `<div class="weekbar">
-      <div class="wtrack">${cells}</div>
+  const track = `<div class="wtrack">${cells}</div>
       <div class="wmarks">
-        <div class="wmk wexp" style="left:${expPct.toFixed(1)}%"><span class="wmf">本来ここ ${expPct.toFixed(1)}%</span></div>
-        <div class="wmk wnow${isOver ? " over" : ""}" style="left:${nowPct.toFixed(1)}%"><span class="wmf">今ここ ${nowPct.toFixed(1)}%</span></div>
-      </div>
-      <div class="wfoot">週は火曜18:00に始まって次の火曜17:59に終わる（1マス＝24時間・見出しはそのマスの開始時刻、今日のマスの中の点線は6時間ごと）</div>
+        <div class="wmk wnow" style="left:${nowTimePct.toFixed(1)}%"><span class="wmf">今ここ ${esc(nowLabel)}</span></div>
+      </div>`;
+  const targetTick = weekTargetPct != null
+    ? `<div class="tgt${isOver ? " over" : ""}" style="left:${weekTargetPct.toFixed(1)}%"></div>` : "";
+  const overTxt = weekTargetPct == null ? ""
+    : isOver ? `<span class="over">+${overAmt.toFixed(1)}%超過</span>`
+    : `<span class="under">まだ余裕（${Math.abs(overAmt).toFixed(1)}%ぶん）</span>`;
+  const usebar = `<div class="wuse">
+      <div class="track"><div class="fill" style="width:${weekUsePct}%"></div>${targetTick}</div>
+      <div class="wusetxt">週の使用 <b>${weekUsePct.toFixed(1)}%</b>${weekTargetPct != null ? `　／　目安 ${weekTargetPct.toFixed(1)}%　${overTxt}` : ""}</div>
     </div>`;
-  return {html, expPct, nowPct, overAmt, isOver, withinDayFrac};
+  const html = `<div class="weekbar">
+      ${track}
+      ${usebar}
+      <div class="wfoot">週は火曜18:00に始まって次の火曜17:59に終わる（1マス＝24時間・見出しはそのマスの開始→終了時刻、今日のマスだけ実時刻を出す。下の棒は使用率で、時間の棒とは別物）</div>
+    </div>`;
+  return {html, expPct: weekTargetPct, nowPct: weekUsePct, overAmt, isOver, withinDayFrac, nowTimePct};
 }
 function renderPace(p){
   const bar = document.getElementById("paceBar"); if(!bar) return;
@@ -1533,9 +1560,8 @@ function renderPace(p){
       ? `🟡 今日の目安${p.budgetToday}%のうち${p.usedToday}%使用（残りわずか）`
       : `🟢 今日はあと ${Math.max(0, (p.budgetToday - p.usedToday)).toFixed(1)}% 使えます（目安${p.budgetToday}%のうち${p.usedToday}%）`;
   const wb = buildWeekBar(p);
-  const weekOverTxt = wb.isOver
-    ? `<span class="over">+${wb.overAmt.toFixed(1)}%超過</span>`
-    : `<span class="under">まだ余裕（${Math.abs(wb.overAmt).toFixed(1)}%ぶん）</span>`;
+  // 882番：超過/余裕は今やグラフの中（wuseの下・wusetxt）に既にあるので、
+  //   ここで同じ内容をもう一度テキストで繰り返さない（たまごさん「シンプルにしたい」対応）。
   // 796番（2026-09-13）「余っている／超過の一言だけを出さない。必ず『残り何%を何日で＝1日何%』まで書く」
   //   → 残り(remainWeek)÷残り日数(daysLeft)を1日あたりの必要ペースとして出し、
   //     普段の目安(perDayEven=約13〜14%)と比べて「先行/追いつかない」を文章で言い切る。
@@ -1556,7 +1582,6 @@ function renderPace(p){
     + `使用${p.allPct}%。残り${p.remainWeek}%を${p.daysLeft}日で使う＝1日あたり${remainPerDayTxt}%。${paceVerdict}`;
   // 畳んだ状態でも見えるのはsummaryの中身だけ＝棒・週の数字・超過表示はここに置く（たまごさん「畳んでいても異常は分かること」）。
   bar.innerHTML = `<summary>${wb.html}
-      <div class="weeknums">今ここ <b>${wb.nowPct.toFixed(1)}%</b> ／ 本来ここ（目安） <b>${wb.expPct.toFixed(1)}%</b> ／ ${weekOverTxt}</div>
       <div class="ph">${head}</div>
       <div class="pd" style="font-weight:600">${paceSentence}</div>
       <div class="pmHint"></div></summary>
@@ -1611,46 +1636,60 @@ function renderPendingDecisionBarFromCount(count){
     pdBar.innerHTML = "";
   }
 }
+/* 882番（2026-09-16）：以前はここで「本番◯時間・心臓◯分沈黙」等をつなげた赤い長文を
+   genzaichiBarに丸ごと描いていた（たまごさん「幅取るだけで読まれていない、いらない」）。
+   本番停止・心臓停止は heartbeatBar・lovablePublishAlert が個別に既に持っているため、
+   ここでは genzaichi.json から「判断待ち件数」だけを取り出す（他の用途はもう無い）。
+   genzaichiBar自体の表示は renderTopStatus()（status/top_status.json・軽量・生きた値）に譲る。 */
 function renderGenzaichi(g){
-  const bar = document.getElementById("genzaichiBar"); if(!bar) return;
   if(!g){
     const cached = loadLastGood("genzaichi");
-    if(cached && cached.data){
-      bar.hidden = false;
-      bar.className = "pacebar unsure stale";
-      bar.open = (cached.data.redFlags && cached.data.redFlags.length > 0);
-      bar.innerHTML = `<summary><div class="ph">${staleNoteHtml(cached.savedAt)}　いまの現在地は前回値を表示中</div></summary>`;
-      if(typeof cached.data.pendingDecisionCount === "number") renderPendingDecisionBarFromCount(cached.data.pendingDecisionCount);
-    } else {
-      bar.hidden = true;
+    if(cached && cached.data && typeof cached.data.pendingDecisionCount === "number"){
+      renderPendingDecisionBarFromCount(cached.data.pendingDecisionCount);
     }
     return;
   }
   if(typeof g.pendingDecisionCount === "number") renderPendingDecisionBarFromCount(g.pendingDecisionCount);
-  bar.hidden = false;
-  const red = g.redFlags || [];
-  const genAt = g.generatedAt ? new Date(g.generatedAt).getTime() : null;
-  const ageMin = genAt ? Math.max(0, Math.round((Date.now() - genAt) / 60000)) : null;
-  const stale = ageMin != null && ageMin >= 40; // 実質30分おきなので40分超は「止まっている」扱い
-  bar.className = "pacebar " + (red.length ? "over" : "ok") + (stale ? " stale" : "");
-  bar.open = red.length > 0;
-  const head = red.length
-    ? `🔴 ${red.map(esc).join(" ／ ")}`
-    : `✅ 止まっていません（本番・心臓ともに正常）`;
-  const running = (g.runningNow || []).map(x => `${esc(String(x.n))} ${esc(x.label || "")}`).join("、") || "0本";
-  const nextP1 = (g.nextP1 || []).map(x => `${esc(String(x.n))} ${esc(x.label || "")}`).join(" / ") || "なし";
-  const unrep = g.unreportedDone || [];
-  bar.innerHTML = `<summary><div class="ph">${head}</div>
-      <div class="pmHint"></div></summary>
-    <div class="in">
-    <div class="pd">走行 <b>${esc(String(g.running && g.running.count))} / ${esc(String(g.running && g.running.safeMax))}</b>（発車待ち${esc(String(g.waitingCount))}件・うちP1 ${esc(String(g.p1Count))}件）</div>
-    <div class="pd">今日の完了 <b>${esc(String(g.doneToday))}件</b> ／ 子セッション${esc(String(g.childSessionsToday))}本・合計$${esc(String(g.costToday))}・1本平均$${esc(String(g.avgCostPerChild))}${(g.avgCostPerChild||0) > 3 ? "　🔴$3超は異常" : ""}</div>
-    <div class="pd">今すぐ走っているもの：${running}</div>
-    <div class="pd">次に出る（P1先頭）：${nextP1}</div>
-    <div class="pd">まだ渡していない完成品 <b>${esc(String(unrep.length))}件</b>${unrep.length ? "：" + unrep.slice(-3).map(x => esc(String(x.n))).join("、") + " など" : ""}</div>
-    <div class="pd" style="opacity:.7">${ageMin == null ? "" : (ageMin < 1 ? "たった今" : ageMin + "分前") + "時点の値（実質30分おき自動更新）"}</div>
-    </div>`;
 }
+/* 882番：「今どうなっているか」＝走行中・次に発車・できたもの、を軽量JSON1本だけで描く。
+   常に開いたまま（トグルにしない）＝開かなくても3秒で分かることが目的。 */
+function renderTopStatus(t){
+  const bar = document.getElementById("genzaichiBar"); if(!bar) return;
+  if(!t){
+    const cached = loadLastGood("topStatus");
+    if(cached && cached.data){ bar.hidden = false; paintTopStatus(cached.data, cached.savedAt); }
+    else bar.hidden = true;
+    return;
+  }
+  bar.hidden = false;
+  paintTopStatus(t, null);
+}
+function paintTopStatus(t, staleSavedAt){
+  const bar = document.getElementById("genzaichiBar"); if(!bar) return;
+  const running = t.runningNow || [];
+  bar.className = "pacebar " + (running.length ? "ok" : "warn");
+  const runHtml = running.length
+    ? running.map(x => `<div class="pd">🏃 <b>${esc(String(x.n))}</b> ${esc(x.label || "")}　${x.elapsedMin != null ? Math.round(x.elapsedMin) + "分経過" : ""}${x.model ? "　" + esc(x.model) : ""}</div>`).join("")
+    : `<div class="pd">💤 今は止まっています${t.stoppedReason ? "／" + esc(t.stoppedReason) : ""}</div>`;
+  const nextArr = t.nextUp || [];
+  const nextHtml = nextArr.length
+    ? `<div class="pd" style="margin-top:6px;opacity:.85">▶ 次に発車：${nextArr.map(x => `${esc(String(x.n))} ${esc(x.label || "")}`).join("　/　")}</div>`
+    : "";
+  const doneArr = t.recentDone || [];
+  const doneHtml = doneArr.length
+    ? `<div class="pd" style="margin-top:6px;opacity:.85">🎁 できたもの：${doneArr.map(x => `${esc(String(x.n))} ${esc(x.title || "")} <a href="${esc(x.url)}" target="_blank" rel="noopener">→見る</a>`).join("　")}</div>`
+    : "";
+  bar.innerHTML = `<div class="ph">今どうなっているか</div>${runHtml}${nextHtml}${doneHtml}`
+    + (staleSavedAt ? `<div class="pd">${staleNoteHtml(staleSavedAt)}</div>` : "");
+}
+function refreshTopStatus(){
+  return fetchWithTimeout("status/top_status.json?t=" + Date.now(), {cache:"no-store"}, 10000)
+    .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(t => { renderTopStatus(t); if(t) saveLastGood("topStatus", t); })
+    .catch(()=>{ renderTopStatus(null); });
+}
+refreshTopStatus();
+setInterval(()=>{ if(!document.hidden) refreshTopStatus(); }, 20000);
 function refreshGenzaichi(){
   return fetchWithTimeout("status/genzaichi.json?t=" + Date.now(), {cache:"no-store"}, 12000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })

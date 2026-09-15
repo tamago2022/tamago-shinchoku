@@ -2223,7 +2223,13 @@ def launch_one(item, q, alive, safe_max):
         return True
 
     # ---- worktree を切る ----
-    repo = q.get("repo") or "/Users/mac/Desktop/joy-relief-station"
+    # 2026-09-16：タスクごとに作業リポジトリを選べるようにした。
+    #   理由：進捗表(tamago-shinchoku)だけを直すタスクにも joy-relief-station の worktree を
+    #   切ろうとして、`git worktree add` が300秒×3回タイムアウトし、**15分待って発車失敗**
+    #   していた（882番・883番が実際にこれで出せなかった）。joy-relief-station は
+    #   .git 320MB＋登録済みworktree 77件で、切るのに時間がかかりすぎる。
+    #   触るのが tamago-shinchoku だけのタスクは item["repo"] でこちらを指す。
+    repo = item.get("repo") or q.get("repo") or "/Users/mac/Desktop/joy-relief-station"
     wt_name = item.get("worktree") or ("q%02d-0904" % item.get("n"))
     # 2026-09-06：作業場をリポジトリの外へ出した。
     #   たまごさんの言葉：「ChatGPT（Codex）の一覧にこっちのタスクが出てくる。
