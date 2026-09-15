@@ -49,17 +49,17 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #826 3チーム連携（Grok/OpenAI/Anthropic）の今の状態</div>
 <h1>#826 3チーム連携（Grok/OpenAI/Anthropic）の今の状態</h1>
-<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-15 実装・main合流・本番(GitHub Pages)反映まで実測確認（09-14分の続き・874番からの自動復旧）</div>
 
 <div class="fix">
-たまごさんの今週の大目標「3チーム連携が取れ始めたと確認できる」の実測です。既存のai-brain/company-os（ChatGPTが構築済み）を発見し、そこに1週間〜1ヶ月放置されていたhandoffを5件処理しました：ChatGPT宛KOBITO回答、大型PR2件の調査、TAMAGO_OS読了確認、そしてChatGPTが依頼していたstatus/ai-company-loop.mdの公開。往復1回・route change 1回が今回新たに成立しています。Grokは接続の鍵が見つからず、設計上も「未接続」と既に明記されていました。
+たまごさんの今週の大目標「3チーム連携が取れ始めたと確認できる」の実測です。前回(09-14)の押せるリンク欄に<b>たまごさんが開けない非公開リポジトリへの直リンクが3本残っていた不具合</b>を今回発見・修正しました（ミラーページを新設）。あわせて、前回セッションのjoy-relief-station側の変更（ChatGPT宛回答・現在地スナップショット）が実はmainへpushされずローカルに残っていたことも発見し、今回mainへ反映しました。ChatGPTへ新規依頼（Grokへ届く経路の有無）を追加送付。橋渡し0回は継続、往復1回・route change 1件は前回から変化なし（新しい往復の成立はChatGPTの反応待ち）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1回</b><span>往復が成立（ChatGPT依頼→Claude実行→公開まで）</span></div>
-  <div class="num"><b>1件</b><span>route change（ChatGPTからClaudeへ渡り前進）</span></div>
-  <div class="num"><b>5件</b><span>今日処理した放置handoff（最大30日放置）</span></div>
+  <div class="num"><b>1回</b><span>往復が成立（ChatGPT依頼→Claude実行→公開まで、累計）</span></div>
+  <div class="num"><b>1件</b><span>route change（ChatGPTからClaudeへ渡り前進、累計）</span></div>
+  <div class="num"><b>3本</b><span>今回修正した「開けないリンク」（非公開リポジトリ直リンク）</span></div>
   <div class="num"><b>0回</b><span>たまごさんが手で橋渡しした回数（今日）</span></div>
 </div>
 
@@ -68,10 +68,8 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>ai-company-loop.md（ChatGPT依頼を実行・公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/ai-company-loop.md" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/ai-company-loop.md</a></li>
-  <li><b>renkei.json（実測ログ本体）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/renkei.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/renkei.json</a></li>
-  <li><b>ChatGPTへの回答3件（KOBITO・PR#383・PR#392）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/handoff/CHATGPT_TO_CLAUDE.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/handoff/CHATGPT_TO_CLAUDE.md</a></li>
-  <li><b>Claudeの現在地スナップショット（TAMAGO_OS読了確認含む）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/sync/claude/latest.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/sync/claude/latest.md</a></li>
-  <li><b>合言葉</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/company-os/aikotoba.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/company-os/aikotoba.md</a></li>
+  <li><b>renkei.json（実測ログ本体）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/renkei.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/renkei.json</a></li>
+  <li><b>非公開リポジトリのミラー（ChatGPTへの回答3件・Claude現在地・合言葉、全部1ページに転記）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/mirror-826-joy-relief-station.md" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/mirror-826-joy-relief-station.md</a></li>
   <li><b>進捗表（🤝の1枠あり）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
@@ -79,15 +77,16 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>たまごさんが手で橋渡しした回数（今日）</td><td class="yes">0回</td></tr>
-<tr><td>3チームがcompany-osに書いたか</td><td class="no">Claude○ OpenAI(実績あり・再稼働) Grok×(設計上未接続)</td></tr>
-<tr><td>往復が最低1回成立</td><td class="yes">1回成立（ChatGPT依頼→Claude公開まで）</td></tr>
+<tr><td>3チームがcompany-osに書いたか</td><td class="no">Claude○ OpenAI(過去実績あり・今日の新規更新は未確認) Grok×(未接続、鍵なし)</td></tr>
+<tr><td>往復が最低1回成立</td><td class="yes">1回成立（累計、変化なし）</td></tr>
 <tr><td>合言葉テスト</td><td class="no">未実施（週1回・aikotoba.md設置済み）</td></tr>
-<tr><td>route change 1件以上</td><td class="yes">1件成立</td></tr>
-<tr><td>たまごさんが『これ伝えといて』と言った回数</td><td class="no">1回（本タスク起票分）</td></tr>
+<tr><td>route change 1件以上</td><td class="yes">1件成立（累計、変化なし）</td></tr>
+<tr><td>たまごさんが『これ伝えといて』と言った回数（今日）</td><td class="yes">0回</td></tr>
+<tr><td>前回の機械検品指摘（非公開リンクで404）</td><td class="yes">修正済み（3本すべてミラーページへ差し替え）</td></tr>
 </table>
 
 <footer>
-この案件は『仕組みを作った』では終わっていません。まだ橋渡し0回は達成できていますが往復は1回のみ。次はChatGPT・Grokが実際にこのボードを読んで反応するのを待つ番です（Grokは鍵が無く現状こちらからは動かせません）。
+この案件は『仕組みを作った』では終わっていません。橋渡し0回は継続できていますが、往復・route changeはまだ累計1件ずつのまま増えていません。次はChatGPTが新規依頼（Grok経路の確認）に反応するのを待つ番です（Grokは鍵が無く現状こちらからは動かせません）。作業環境のディスクが著しく重く、通常のgit cloneが完走しない状態だったため、今回はgit plumbing操作で安全に反映しました。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

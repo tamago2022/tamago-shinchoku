@@ -2,12 +2,13 @@
   "schemaVersion": 2,
   "purpose": "案件826：3チーム（Grok／OpenAI／Anthropic）の連携が実際に取れ始めたかを測る台帳。成功条件はたまごさんの手作業での橋渡し回数がゼロになること。",
   "companyOsPaths": {
-    "note": "既存の充実したインフラを発見（2026-09-14）。新しいフォルダは作らず、そこにあった未実行handoffを先に片付けた。",
+    "note": "既存の充実したインフラを発見（2026-09-14）。新しいフォルダは作らず、そこにあった未実行handoffを先に片付けた。非公開リポジトリ(joy-relief-station)への直リンクは店主が開けないため、2026-09-15に status/mirror-826-joy-relief-station.md へpublic-safeなミラーを新設した。",
     "claude_chatgpt_handoff": "joy-relief-station: ai-brain/handoff/CLAUDE_TO_CHATGPT.md, CHATGPT_TO_CLAUDE.md",
     "sync_snapshots": "joy-relief-station: ai-brain/sync/<AI名>/latest.md（claude, chatgpt。grokは未参加）",
     "company_os_full": "joy-relief-station: ai-brain/company-os/（ORG_CHART, ROUTING, EXECUTOR_REGISTRY.json, PUBLIC_LOOP_SYNC_PACKET等。ChatGPTが構築）",
     "public_loop": "tamago-shinchoku: status/ai-company-loop.md（今回新設・PUBLIC_LOOP_SYNC_PACKET.mdの指示を実行）",
-    "aikotoba": "joy-relief-station: ai-brain/company-os/aikotoba.md（今回新設）"
+    "aikotoba": "joy-relief-station: ai-brain/company-os/aikotoba.md（今回新設）",
+    "public_mirror": "tamago-shinchoku: status/mirror-826-joy-relief-station.md（2026-09-15新設。joy-relief-station側3ファイルの全文/抜粋ミラー、たまごさんが押せるように）"
   },
   "aikotoba": {
     "word": "今週の本命は3チーム連携",
@@ -46,6 +47,27 @@
       "5_routeChangesNote": "ChatGPTが ai-brain/company-os/PUBLIC_LOOP_SYNC_PACKET.md で『Claude Codeまたは書き込み権限のある実行者がtamago-shinchokuへ転記・公開する』ことを依頼（2026-09-07）→ Claudeが実行し status/ai-company-loop.md として公開（2026-09-14）。ChatGPTからClaudeへ仕事が渡り、実際に前へ進んだ実例。",
       "6_ownerToldMeCount": 1,
       "6_ownerToldMeNote": "案件826の起票自体（たまごさんが今週の大目標として詳細な指示を書いた）を1回として計上。以後0件を目標に、AI側から先に動く。"
+    },
+    {
+      "date": "2026-09-15",
+      "1_bridgeCount": 0,
+      "1_bridgeCountNote": "874番の週次利用上限からの自動復旧としての再開。たまごさんに何かを貼ってもらう依頼はしていない。",
+      "2_wroteToCompanyOs": {
+        "claude": true,
+        "claudeEvidence": "ai-brain/handoff/CLAUDE_TO_CHATGPT.mdへ新規依頼「ChatGPT側からGrokへ届く経路はあるか」を追加。ai-brain/sync/claude/latest.mdへ追記（EXECUTOR_REGISTRY.jsonに関する前回記述の訂正含む）。tamago-shinchoku側にmirror-826-joy-relief-station.md新設・renkei.json更新・確認ページのリンク修正。",
+        "openai": false,
+        "openaiEvidence": "今日(2026-09-15)時点でChatGPT側の新規書き込みは未確認（前回09-14分のcompany-os一式は既にorigin/mainに反映済みと確認したが、それは828番セッション時点の記録であり日付は09-14）。",
+        "grok": false,
+        "grokEvidence": "変わらず未接続。追加調査はしていない（前回の結論を維持）。"
+      },
+      "3_roundTrips": 1,
+      "3_roundTripsNote": "前回分の1回から変化なし。ChatGPTへの新規Grok経路質問はまだ回答が無いため、往復としてはまだカウントしない（送っただけの片道）。",
+      "4_aikotobaCorrect": null,
+      "4_aikotobaNote": "引き続き未実施。週1回・たまごさんが聞くタイミング待ち。",
+      "5_routeChanges": 1,
+      "5_routeChangesNote": "前回分から変化なし。新規route changeは今日は発生していない。",
+      "6_ownerToldMeCount": 0,
+      "6_ownerToldMeNote": "今日はたまごさん本人からの新規『これ伝えといて』発言は無い（874番は自動復旧システムからの起票のため0件でカウント）。"
     }
   ],
   "grokExperiment": {
@@ -88,6 +110,11 @@
       "date": "2026-09-14",
       "by": "Claude (案件828)",
       "note": "826番の基盤(TAMAGO_COMMON_BRAIN.md等)を土台に、世界事例調査(status/WORLD_CASES_828.md)・NOW.md(両リポジトリ・1000字以内・ChatGPT/Claude入口へ配線済み)・ChatGPT/Grok用の貼付短文(status/AI_ENTRY_PROMPTS.md)を新設。MCP/A2Aは個人アカウントのチャットUIには届かないと判断し不採用、『毎回1枚読ませる』方式を採用。Grok接続はxAI鍵なし・ブラウザ代行不可のため今回も未実施、短文の用意までが到達点。外部curl調査は自動モードの権限ブロックで不可、学習データ基準の記述である旨を明記した。"
+    },
+    {
+      "date": "2026-09-15",
+      "by": "Claude (874番からの自動復旧・案件826継続)",
+      "note": "①機械検品(09-14 16:08)が指摘した『joy-relief-stationへの直リンク3本が404になる』不具合が実は未修正のまま残っていたことを発見・修正（status/mirror-826-joy-relief-station.md新設、確認ページのリンクを張り替え）。②前回セッションのjoy-relief-station側変更（CHATGPT_TO_CLAUDE.md回答・latest.md・company-os新設）が実はmainへpushされずローカルに残っていたことを発見し、コミット・push処理を実施（並行して828番が同じリポジトリへ多数push済みだったため、隔離worktree+パッチ抽出方式で安全に反映）。③ChatGPTへ新規依頼を追加：Grokへ届く経路の有無を確認してほしい。④作業環境のディスクI/Oが極めて重く（tamago-shinchokuの通常cloneが30分以上かかりcheckout未完了、joy-relief-station側もworktree checkoutが数十分単位）、git plumbing操作（cat-file/hash-object等）とpartial clone(--filter=blob:none)で回避。"
     }
   ]
 }
