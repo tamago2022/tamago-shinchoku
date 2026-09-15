@@ -52,15 +52,17 @@
 <div class="date">2026-09-15 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-空き容量が1日約21〜22GBずつ減っていた実測を確認。最大の犯人はGoogle Drive上の音楽バックアップ67.2GB（AI側からは解放不可・要GUI操作）と、システム内部の古いディスク領域183GB（削除は要相談）。今回すぐ消せるゴミ（アプリキャッシュ・壊れたworktree・npmキャッシュ 計約10GB）は掃除済みで、空き容量を20.9GBから31.0GBまで回復させた。
+空き容量の減りが速い原因を実測。真犯人は2つ。①Google Driveが「ミラーモード」でクラウド上のデータをローカルにまるごとコピーしており（実測69GB）、Driveへ移動してもディスクは減らない構造になっている。②Desktop/.tmp.driveuploadというGoogle Drive同期の一時キューが9/5から<b>今も増え続けている</b>（実測12GB・19万個のファイル、直近10分でも81件増加=進行中）。<br><br>すぐ消せるゴミ（アプリキャッシュ・壊れたworktree・npmキャッシュ 計約10GB）は本日中にすでに回収し、空き容量を19.5GB→33.2GBへ回復させた。Claude関連（~/.claude 4.9GB）は1日あたり約0.18GBしか増えておらず、今回の犯人ではないと確認した。<br><br><b>iMacへ逃がせる候補（実行はたまごさんのOK後）</b>：Movies/.gallery(CapCut書き出しキャッシュ 5.0GB)、Documents/AI作業/obsidian_vault_backup_2026-09-06(過去のVaultバックアップ)、AI作業内の過去アーカイブ(2026-09-02・デスクトップ整理_2026-09-05)。<br><b>触ると壊れるもの</b>：リポジトリ本体(tamago-shinchoku/joy-relief-station)、.worktrees配下(走行中の可能性)、Obsidian Vault本体、~/.claude(トランスクリプト=記録)、Google Drive CloudStorage本体(移動すると同期が壊れる)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>20.9GB→31.0GB</b><span>空き容量（掃除前→後）</span></div>
-  <div class="num"><b>約10GB</b><span>今回すぐ回収できた容量</span></div>
-  <div class="num"><b>67.2GB</b><span>Google Drive音楽バックアップ(要GUI操作)</span></div>
-  <div class="num"><b>17GB</b><span>iMacへ逃がせる候補(1.5ヶ月前の退避物)</span></div>
+  <div class="num"><b>40.2GB→29.9GB</b><span>24時間の空き容量推移(実測ログ)</span></div>
+  <div class="num"><b>約21〜22GB/日</b><span>掃除前の純粋な減少ペース</span></div>
+  <div class="num"><b>12GB・19万件</b><span>.tmp.driveupload同期キュー(今も増加中)</span></div>
+  <div class="num"><b>69GB</b><span>Googleドライブのミラーモード実体(要GUI設定変更)</span></div>
+  <div class="num"><b>0.18GB/日</b><span>Claude関連の1日増加量(原因ではない)</span></div>
+  <div class="num"><b>33.2GB</b><span>現在の空き容量(目標30GB達成)</span></div>
 </div>
 
 
@@ -73,13 +75,14 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>Google Driveの67.2GBフォルダを空ける</td><td class="no">AI側では解放できず(evict失敗)。Google Driveアプリの設定でGUI操作が必要</td></tr>
-<tr><td>システム内部の古い領域183GB(空き容量の天井を圧迫)</td><td class="no">削除はシステムに関わるため要相談・今回は実行せず</td></tr>
-<tr><td>使われていないworktreeの残骸(約8GB・99件)</td><td class="no">大半が未完了か判別できず誤削除リスクがあるため保留・要確認</td></tr>
-<tr><td>アプリの一時キャッシュ・ゴミ箱の掃除(約6.9GB)</td><td class="yes">実行済み</td></tr>
-<tr><td>npmキャッシュの掃除(約3.9GB)</td><td class="yes">実行済み</td></tr>
-<tr><td>ログ・履歴ファイルに保存上限を追加(再発防止)</td><td class="yes">実行済み(disk_guardian.pyへ組み込み)</td></tr>
-<tr><td>空き容量30GB以上に回復</td><td class="yes">達成(31.0GB)</td></tr>
+<tr><td>Googleドライブをミラーモード→ストリーミングモードへ切替(69GB解放見込み)</td><td class="no">AI側では変更不可・Google Driveアプリの設定でGUI操作が必要</td></tr>
+<tr><td>.tmp.driveupload暴走キュー(12GB・今も増加)</td><td class="no">原因はGoogle Drive同期の異常。安全策はアプリの再起動(GUI操作)。AI側からの強制終了は同期中データの破損リスクがあるため見送った</td></tr>
+<tr><td>システム内部の古い旧ボリューム(旧Macintosh SSD等・約170GB)</td><td class="no">起動ディスク構成に関わるため削除は要相談・今回は未実行</td></tr>
+<tr><td>アプリキャッシュ・ゴミ箱・npmキャッシュ(約10GB)</td><td class="yes">実行済み</td></tr>
+<tr><td>queue_history/とClaude Desktopキャッシュに保存上限を追加(再発防止)</td><td class="yes">実行済み(disk_guardian.pyへ組み込み)</td></tr>
+<tr><td>Claude関連ゴミ(~/.claude 4.9GB)の仕分け</td><td class="yes">トランスクリプト4.8GBは記録として保持、1日の増加は約0.18GBで容量減少の原因ではないと確認</td></tr>
+<tr><td>iMacへ逃がせる候補の洗い出し</td><td class="yes">movies書き出しキャッシュ・過去バックアップ等を一覧化(上記参照)。移すのはOK待ち</td></tr>
+<tr><td>空き容量30GB以上に回復</td><td class="yes">達成(33.2GB)</td></tr>
 </table>
 
 <footer>
