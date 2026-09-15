@@ -498,6 +498,29 @@ def run_archive_done(dry_run=False):
             "beforeBytes": before, "afterBytes": after}
 
 
+def run_worktree_reaper(dry_run=False):
+    """876番（2026-09-15）：worktreeの残骸が114件・8.8GBまで溜まっていた
+    （joy-relief-station本体）。既存のtools/worktree_reaper.pyはずっと前から
+    あったが、launchd/cronどちらにも登録されておらず「誰かが手で叩いた時だけ」
+    動いていた＝仕組みになっていなかった。本メンテ係の日次実行に乗せることで、
+    以後は毎日自動で片づく（reaper自身が『走行中』『未保存の変更あり』は
+    残す判断をするので、ここでは呼ぶだけで安全）。"""
+    if dry_run:
+        return {"ran": False, "dryRun": True}
+    rc, out, err = _run(["python3", os.path.join(HERE, "worktree_reaper.py")], timeout=180)
+    return {"ran": rc == 0, "output": (out or err or "").strip()[-400:]}
+
+
+def run_archive_old_logs(dry_run=False):
+    """876番：status/直下のauto-launch-*.log・verify-*.logが710本まで
+    溜まっていた（796番で一度手当てされたが、その場限りで仕組みになっていなかった）。
+    本メンテ係の日次実行に乗せて、3日より古いものを毎日自動で倉庫へ移す。"""
+    if dry_run:
+        return {"ran": False, "dryRun": True}
+    rc, out, err = _run(["python3", os.path.join(HERE, "archive_old_launch_logs.py")], timeout=60)
+    return {"ran": rc == 0, "output": (out or err or "").strip()[:200]}
+
+
 # ---------------------------------------------------------------------------
 # 直せないものだけ dispatch_outbox.jsonl へ1行
 # ---------------------------------------------------------------------------
@@ -547,6 +570,8 @@ def main(argv=None):
     zombie_result = check_zombie_launch_agents(dry_run=args.dry_run)
     vite_result = check_vite_zombies(dry_run=args.dry_run)
     archive_result = run_archive_done(dry_run=args.dry_run)
+    worktree_result = run_worktree_reaper(dry_run=args.dry_run)
+    log_archive_result = run_archive_old_logs(dry_run=args.dry_run)
     later_tabs_result = check_later_tabs(dry_run=args.dry_run)
     disk_result = check_disk(history)
     load_result = check_load()
@@ -560,6 +585,8 @@ def main(argv=None):
         "launchAgents": zombie_result,
         "viteZombies": vite_result,
         "queueArchive": archive_result,
+        "worktreeReaper": worktree_result,
+        "logArchive": log_archive_result,
         "laterTabs": later_tabs_result,
         "disk": disk_result,
         "load": load_result,
