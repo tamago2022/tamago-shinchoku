@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-15 14:13",
+ "updatedAt": "2026-09-15 14:23",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -5890,6 +5890,33 @@
    "stuckAt": "2026-09-15T14:13:30+09:00",
    "stuckReasonSummary": "URLが1本も無いまま終了 ／ URLが1本も無いまま終了",
    "stuckRedoTotal": 2
+  },
+  {
+   "n": 859,
+   "title": "【自動検知】心臓（heartbeat） が動いていません",
+   "why": "スマホから追加",
+   "what": "【自動検知・799番 仕組みの生死表】次の仕組みがdead判定でした。\n\n・項目：心臓（heartbeat）\n・判定方法：status/heartbeat.logのmtime基準：現在54.8分沈黙（10分以内=alive／30分以内=slow／それ超=dead。心臓は常時動いているはずのプロセスなので分単位で厳しく見る）\n・countToday：2\n\nこの項目は仕組みの生死表(status/shikumi.json)で定期的（genzaichi.py相乗り・実質30分おき）に再点検されます。直したら次回の点検でalive/slowになっていることを確認してください。",
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "factory",
+   "priority": 2,
+   "shikumiCheckKey": "heartbeat",
+   "startedAt": "2026-09-15T14:23:57+09:00",
+   "sessionId": "cfd7a0d8-a069-43d5-a4c0-da2acaa0b56c",
+   "pid": 97442
+  },
+  {
+   "n": 860,
+   "title": "【自動検知】Lovable公開 が動いていません",
+   "why": "スマホから追加",
+   "what": "【自動検知・799番 仕組みの生死表】次の仕組みがdead判定でした。\n\n・項目：Lovable公開\n・判定方法：status/deploy_history.jsonのat基準（x-deployment-idが変わった時刻）：現在62.4時間更新なし（24時間以内=alive／48時間以内=slow／それ超=dead）。ネットワークは叩かずこのファイルの記録だけで判定する（0円）\n・countToday：0\n\nこの項目は仕組みの生死表(status/shikumi.json)で定期的（genzaichi.py相乗り・実質30分おき）に再点検されます。直したら次回の点検でalive/slowになっていることを確認してください。",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "factory",
+   "priority": 2,
+   "shikumiCheckKey": "deploy"
   }
  ]
 }
