@@ -1069,6 +1069,52 @@ def harvest(q):
     """
     import re
     changed = False
+
+    # ---- 3時間で切る（2026-09-15・たまごさん「全部3時間で切っちゃってください」）----
+    #   これまで limitMin は項目に書かれているだけで、**実際に切る処理がどこにも無かった。**
+    #   （34番「3時間を超えたセッションを自動で切る」は2026-09-04に完了扱いになっていたが実体が無い）
+    #   実害：たまごさん「20何時間もダラダラやらせないで。3時間やって進まなかったセッションは、
+    #        もう3時間やらせても大して進まない。できていなかったらスパッと新しい人に引き継いで」
+    #   ここで kill するだけでよい。死んだプロセスは、この下の既存の回収処理が
+    #   ログから結果とURLを拾って awaiting_check か waiting へ自動で振り分ける。
+    #   **列へ戻す判断は既存のまま。二重課金を増やす新しい経路は作らない。**
+    for it in q.get("items", []):
+        if it.get("status") != "running":
+            continue
+        pid = it.get("pid")
+        started = it.get("startedAt")
+        if not pid or not started:
+            continue
+        try:
+            st = time.mktime(time.strptime(started[:19], "%Y-%m-%dT%H:%M:%S"))
+        except Exception:
+            continue
+        limit_min = it.get("limitMin") or 180
+        try:
+            limit_min = min(int(limit_min), 180)   # 上限は常に3時間
+        except Exception:
+            limit_min = 180
+        elapsed_min = (time.time() - st) / 60.0
+        if elapsed_min <= limit_min:
+            continue
+        try:
+            os.kill(int(pid), 0)          # 生きているか
+        except Exception:
+            continue                       # 既に死んでいる＝下の回収に任せる
+        try:
+            os.kill(int(pid), 15)          # まず行儀よく
+            time.sleep(2)
+            try:
+                os.kill(int(pid), 0)
+                os.kill(int(pid), 9)       # 残っていたら強制
+            except Exception:
+                pass
+            it["cutAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+            it["cutReason"] = "%d分で3時間ルールにより打ち切り（次の担当へ引き継ぐ）" % int(elapsed_min)
+            changed = True
+            log("⏱ 3時間で切りました %s番「%s」（%d分）" % (it.get("n"), it.get("title"), int(elapsed_min)))
+        except Exception as e:
+            log("3時間カットに失敗 %s番: %s" % (it.get("n"), e))
     # 2026-09-13（793番停止事故）：確認待ちが複数件重なると、1件ずつのcontent_check
     #   （実URLを開く・最大30秒程度）が積み重なって合計45秒を超えうる。
     #   全体にも時間予算を持たせ、超えたら残りは次回のharvest()に回す（心臓を止めない）。

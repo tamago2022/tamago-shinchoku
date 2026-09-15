@@ -230,6 +230,15 @@ def main():
     total_between = lambda lo, hi: sum(v["fable"] + v["other"] for k, v in buckets.items() if lo <= int(k) <= hi)
     fable_now, all_now = cum(now, "fable"), cum(now, "fable") + cum(now, "other")
     real = real_usage(now)
+    # 2026-09-15：週がリセットされたのに、リセット前のサンプル（＝前の週の値）を
+    #   今週の使用率として使い続け、100%のまま発車が止まり続けた。
+    #   実測：リセット 17:59 に対し、最後のサンプルが 17:31（100%）。18時以降のサンプルが無かった。
+    #   → サンプルの取得時刻が今週の開始(since)より前なら、それは前の週のもの。今週の値として使わない。
+    if real and real.get("asOfT") is not None and real["asOfT"] < since:
+        real = None
+        _stale_prev_week = True
+    else:
+        _stale_prev_week = False
     if real:
         all_pct = real["sd"]
         fable_pct = round(all_pct * (fable_now / all_now), 1) if all_now > 0 else None
@@ -377,7 +386,18 @@ def main():
             need_weekly = (target_all_reset - (all_pct or 0)) / (pct_per_session_hour * days_left_w * 24) if days_left_w > 0 else None
             benchmark["sonnetSessionsForWeeklyCurve"] = round(need_weekly, 1) if need_weekly and need_weekly > 0 else None
 
+    # 新しい週に入ったのに実測も推定も出せない場合、前の週の値を引きずらず 0 から始める。
+    #   （何も使っていないのに100%で止まり続けるほうが被害が大きい）
+    #   ① 前の週のサンプルしか無い場合
+    #   ② 週が始まったばかり（24時間以内）で、実測も推定も出せない場合
+    #   どちらも「前の週の100%を引きずって工場を止め続ける」ほうが被害が大きいので 0 から始める。
+    #   （pace.py は allPct が None だと何も書かずに終了し、古い pace.json が残って発車が止まる）
+    _week_elapsed_h = 168.0 - hours_left
+    if all_pct is None and (_stale_prev_week or _week_elapsed_h <= 24):
+        all_pct = 0.0
+        _stale_prev_week = True
     out = {"updatedAt": time.strftime("%Y-%m-%d %H:%M"), "estimated": real is None,
+           "stalePrevWeekSample": _stale_prev_week,
            "fablePct": round(fable_pct, 1) if fable_pct is not None else None,
            "allPct": round(all_pct, 1) if all_pct is not None else None,
            "allPctAsOf": real["asOf"] if real else None, "allPctAgeMin": real["ageMin"] if real else None,

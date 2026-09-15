@@ -21,9 +21,20 @@ JST = shukan_kubun.JST
 
 def test_urakata_blocked_true_when_30_percent_or_more():
     """裏方コストが30%以上なら urakata_blocked() は True（新規発車を止める）。"""
-    haibun = {"urakataPct": 30.0, "dayRule": "urakata_ok"}
+    # 2026-09-15：週の支出が $10 未満だと割合が意味を持たないので判定しない仕様になった。
+    #   そのため、この検査では現実的な分母（$50）を与える。
+    haibun = {"urakataPct": 30.0, "dayRule": "urakata_ok", "totalCostUsd": 50.0}
     assert shukan_haibun.urakata_blocked(haibun) is True, \
         "裏方30%でブロックされなかった（新規裏方タスクが発車し続けてしまう）"
+
+
+def test_urakata_not_blocked_when_week_just_started():
+    """週が始まった直後（支出が小さい）は、割合でブロックしない。
+    2026-09-15の実害：リセット直後に裏方1本($1.52)だけ走った時点で urakataPct=100% になり、
+    その週の最初の1本目から裏方が全部止まった。"""
+    haibun = {"urakataPct": 100.0, "dayRule": "urakata_ok", "totalCostUsd": 1.52}
+    assert shukan_haibun.urakata_blocked(haibun) is False, \
+        "週初めの小さい分母でブロックされた（工場が週の頭から止まる）"
 
 
 def test_urakata_blocked_false_at_29_percent_on_urakata_ok_day():

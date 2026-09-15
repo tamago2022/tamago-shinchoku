@@ -143,7 +143,16 @@ def build_haibun(now=None):
 
 def urakata_blocked(haibun):
     """裏方の新規発車を止めるべきか。裏方が30%以上、または曜日ルールで裏方NGな日。"""
-    if (haibun.get("urakataPct") or 0.0) >= 30:
+    # 2026-09-15：週が始まった直後は分母が小さすぎて割合が意味を持たない。
+    #   実測：リセット直後、その週の支出が $1.52（自動検知の裏方1本）しか無い時点で
+    #   urakataPct=100% となり、**週の最初の1本目から裏方が全部止まった。**
+    #   → 週の支出が一定額に達するまでは、割合での判定をしない（曜日ルールだけ効かせる）。
+    MIN_DENOM_USD = 10.0
+    try:
+        _total = float(haibun.get("totalCostUsd") or 0.0)
+    except Exception:
+        _total = 0.0
+    if _total >= MIN_DENOM_USD and (haibun.get("urakataPct") or 0.0) >= 30:
         return True
     dr = haibun.get("dayRule")
     if dr in ("mitai_only", "urakata_finish_only"):
