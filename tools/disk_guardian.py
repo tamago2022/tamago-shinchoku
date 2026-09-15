@@ -78,6 +78,7 @@ INTERVAL = 900          # 15分に1回でよい。既存の5分間隔ジョブ(m
                         # 既に動いている5分間隔ジョブへの相乗り方式に切り替えた(2026-09-06)。
 MIN_AGE_SEC = 2 * 3600  # 触ってから2時間は残す（走行中の作業場を守る）
 OLD_LOG_SEC = 7 * 86400  # 7日以上前のログだけ対象
+QUEUE_HISTORY_KEEP = 20  # queue_history/は直近この世代数だけ残す（2026-09-15・876番）
 
 # 2026-09-06 03:20 **閾値を下げた。この見張りが工場を丸ごと止めてしまったため。**
 #   17.4GB残っていて発車0本・待機22本という、たまごさんが一番嫌う状態を作った。
@@ -133,6 +134,15 @@ APP_CACHE_ROOTS = APP_CACHE_ROOTS + (
     os.path.join(HOME, "Library/Caches/com.apple.python"),
     os.path.join(HOME, "Library/Caches/bun"),
     os.path.join(HOME, "Library/Caches/node-gyp"),
+)
+
+# 2026-09-15（876番・容量減り異常調査）：Claude Desktop(Electron)の
+# ブラウザキャッシュ相当。次回起動時に自身で作り直すだけの領域（実測 Cache 378MB
+# + Code Cache 228MB）。vm_bundles（Cowork実行用VMイメージ・9.2GB）はアプリ動作に
+# 必須のため意図的に対象外にしている。
+APP_CACHE_ROOTS = APP_CACHE_ROOTS + (
+    os.path.join(HOME, "Library/Application Support/Claude/Cache"),
+    os.path.join(HOME, "Library/Application Support/Claude/Code Cache"),
 )
 
 # 2026-09-07（620番タスクC・監視対象の拡張）：ブラウザ自動操作プロファイル
@@ -386,6 +396,22 @@ def candidates():
                                     "size_mb": dir_size_mb(fp)})
                 except Exception:
                     pass
+
+    # 2026-09-15（876番・容量減り異常調査）：queue_history/はqueue.jsonのスナップ
+    # ショットを世代管理無しで積み続けており、実測50世代・83MB（1世代あたり約1.6MB）。
+    # 直近QUEUE_HISTORY_KEEP世代だけ残し、それより古いものを候補にする
+    # （ファイル名にタイムスタンプが入っているため名前順=時系列順）。
+    qh_root = os.path.join(REPO, "status", "queue_history")
+    if os.path.isdir(qh_root) and is_allowed(qh_root):
+        try:
+            qh_files = sorted(fn for fn in os.listdir(qh_root) if fn.endswith(".json"))
+        except Exception:
+            qh_files = []
+        for fn in qh_files[:-QUEUE_HISTORY_KEEP] if len(qh_files) > QUEUE_HISTORY_KEEP else []:
+            fp = os.path.join(qh_root, fn)
+            if is_allowed(fp):
+                out.append({"path": fp, "kind": "queue_history_old", "worktree": "-",
+                            "protected": False, "age_ok": True, "size_mb": dir_size_mb(fp)})
 
     # 2026-09-09（685番）：ゴミ箱（~/.Trash）直下のトップレベル項目。店主が既に
     # Finderで「削除」を選んだ後の最終置き場であり、中身は既にis_forbidden()
