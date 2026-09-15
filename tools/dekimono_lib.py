@@ -134,6 +134,38 @@ def _save(d):
     os.replace(tmp, DEKI_PATH)
 
 
+# 825番（2026-09-15）：できたもの棚の1件表示を「日時＋カテゴリ＋1行＋ビフォーアフター＋URL」に
+# 簡略化するため、6種類の固定カテゴリ（ページ/曲/レイアウト/実装/仕組み/お金）を機械分類で付与する。
+# 1件に1つだけ。迷ったら「実装」。優先順位: お金 > レイアウト > 曲 > ページ > 仕組み > 実装(既定)。
+CATEGORY_MONEY_KW = ["fal", "課金", "予算", "帳簿", "gumroad", "決済", "売上", "円）", "ドル", "cost_ledger", "コスト管理"]
+CATEGORY_LAYOUT_KW = ["レイアウト", "崩れ", "見切れ", "はみ出", "幅", "フォント", "余白", "css", "デザイン崩",
+                       "潰れ", "小さすぎ", "ズレ", "375px", "aspect", "サイズ", "見た目"]
+CATEGORY_SONG_KW = ["曲", "歌", "アーティスト", "カバー", "プレイリスト", "音楽", "artist", "song", "歌詞", "原曲", "バンド"]
+CATEGORY_PAGE_KW = ["ページ", "棚", "カード", "リンク切れ", "死にリンク", "サムネ", "動線", "url", "サイト", "確認ページ"]
+CATEGORY_KUMI_KW = ["仕組み", "自動", "スクリプト", "集計", "ログ", "フロー", "launchd", "cron", "キュー", "queue",
+                     "バックフィル", "検品", "監視", "見張り", "進捗表", "引き継ぎ", "帳票", "パイプライン",
+                     "タイムアウト", "リトライ", "冪等", "同期", "工場", "セッション"]
+
+
+def categorize(title, what):
+    text = f"{title or ''} {what or ''}".lower()
+
+    def hit(kws):
+        return any(kw.lower() in text for kw in kws)
+
+    if hit(CATEGORY_MONEY_KW):
+        return "お金"
+    if hit(CATEGORY_LAYOUT_KW):
+        return "レイアウト"
+    if hit(CATEGORY_SONG_KW):
+        return "曲"
+    if hit(CATEGORY_PAGE_KW):
+        return "ページ"
+    if hit(CATEGORY_KUMI_KW):
+        return "仕組み"
+    return "実装"
+
+
 def _first_line(text, limit=80):
     if not text:
         return ""
@@ -153,6 +185,7 @@ def _append(d, n, kind, t, title, result_text, urls, added_at=None):
             url = u
             break
     what = _first_line(result_text) or (title or "")
+    category = categorize(title, what)
     # 802番：登録時点で鬼監督ログにfail判定が付いていれば verified:false にして、
     # 表示側（index.html renderDekita）が最初から棚に出さないようにする。
     # ここは「登録した時点」の判定なので、後から検品NGが付いたものは
@@ -162,6 +195,7 @@ def _append(d, n, kind, t, title, result_text, urls, added_at=None):
         "n": n,
         "kind": kind,  # "new"=新しく作った／"fixed"=直した
         "type": t,
+        "category": category,  # 825番：ページ/曲/レイアウト/実装/仕組み/お金
         "title": title or "",
         "what": what,
         "url": url,
