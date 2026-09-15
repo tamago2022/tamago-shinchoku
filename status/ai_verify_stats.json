@@ -1,9 +1,9 @@
 {
- "totalChecked": 215,
+ "totalChecked": 216,
  "totalPassed": 121,
- "totalFailed": 86,
+ "totalFailed": 87,
  "totalErrors": 8,
- "totalCostUsd": 64.3466,
+ "totalCostUsd": 64.8139,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -90,17 +90,10 @@
   "shikumi.pyの日時パース(+0900形式非対応)が原因で鬼監督を誤ってd": 1,
   "本番URLのog:description等が旧コピーのままで、事実ベースの新コピ": 1,
   "本番URL(joy-relief-station.lovable.app)のog": 1,
-  "依頼【5】の必須要件「本番未反映を進捗表に赤で出し続ける」が未実装。.lovab": 1
+  "依頼【5】の必須要件「本番未反映を進捗表に赤で出し続ける」が未実装。.lovab": 1,
+  "status/oni_kantoku_log.jsonlの最終行checkedA": 1
  },
  "history": [
-  {
-   "ts": "2026-09-12T20:15:54+09:00",
-   "n": 776,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/728-week-bar-labels.html",
-   "verdict": "pass",
-   "reason": "776番はimg実在・関連コミット実在・本番のボタンと停止表示・ソースのtmp競合修正まで実物で裏取りでき、728番も内容一致",
-   "costUsd": 0.3536134
-  },
   {
    "ts": "2026-09-12T20:26:12+09:00",
    "n": 750,
@@ -492,7 +485,15 @@
    "verdict": "fail",
    "reason": "依頼【5】の必須要件「本番未反映を進捗表に赤で出し続ける」が未実装。.lovable-publish-pauseファイルが今も存在しスクリプト最上部で即終了するため連続失敗カウントが更新されず、進捗表の赤バナーが永久に非表示のまま（本番HTMLに「本番未反映」の文字列なし）。",
    "costUsd": 0.6134666000000001
+  },
+  {
+   "ts": "2026-09-15T23:30:06+09:00",
+   "n": 874,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/874-oni-kantoku-weekly-limit-fix.html",
+   "verdict": "fail",
+   "reason": "status/oni_kantoku_log.jsonlの最終行checkedAtが2026-09-13T15:02:37+09:00のまま(現在まで約56時間更新なし・24時間基準を超過)で、修正コミット後も鬼監督のdead状態が実データ上解消されていない。awaiting_check38件が滞留しており修正対象(auto_launcher.py)は鬼監督本体のコードに触れていない",
+   "costUsd": 0.4672922
   }
  ],
- "updatedAt": "2026-09-14 16:12"
+ "updatedAt": "2026-09-15 23:30"
 }
