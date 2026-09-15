@@ -1859,8 +1859,11 @@ function dkThumbsHtml(it){
       <div class="dkbaimg"><img src="${esc(ba.after)}" loading="lazy" alt="後"><span class="dkbalabel">後</span></div>
     </div>`;
   }
+  // 825番: before/afterどちらか片方しか確認ページに無い時、実際に無いのが「後」なのか「前」なのかで
+  //   ラベルを分ける（beforeしか撮っていないページを「後のみ」と誤表示しない・嘘を書かない原則）。
   const only = ba.after || ba.before;
-  return `<div class="dkba"><div class="dkbaimg"><img src="${esc(only)}" loading="lazy" alt="後のみ"><span class="dkbalabel">後のみ</span></div></div>`;
+  const onlyLabel = ba.after ? "後のみ" : "前のみ（後は未確認）";
+  return `<div class="dkba"><div class="dkbaimg"><img src="${esc(only)}" loading="lazy" alt="${esc(onlyLabel)}"><span class="dkbalabel">${esc(onlyLabel)}</span></div></div>`;
 }
 window.__dekimonoShowCount = 5; // 802番：既定は5件だけ。「もっと見る」で20→全部の3段階。
 function dkRowHtml(it, stale){
