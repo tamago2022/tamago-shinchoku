@@ -1482,7 +1482,7 @@ function buildWeekBar(p){
       ? [25, 50, 75].map(pct => `<div class="wtick" style="left:${pct}%"></div>`).join("")
       : "";
     return `<div class="wcell${isToday ? " today" : ""}">
-        <span class="wcell-day">${isToday ? "今：" + esc(nowLabel) : d + "18:00→" + endLabel + "18:00"}</span>${ticks}
+        <span class="wcell-day">${isToday ? "今：" + esc(nowLabel) : d + "18→" + endLabel + "18"}</span>${ticks}
       </div>`;
   }).join("");
   const track = `<div class="wtrack">${cells}</div>
