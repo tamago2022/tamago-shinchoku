@@ -378,7 +378,7 @@ git add status/version.json >/dev/null 2>&1
 # 2026-09-09(685番) 事故の再発防止：disk_trend_report.json と disk_daily_history.json が
 #   この一覧に無かったため、disk_guardian.py/disk_trend.pyがローカルで何度更新しても
 #   本番(GitHub Pages)には永久に反映されず、確認ページが「止まって見える」誤診断の元になっていた。
-git add status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json status/disk_guardian.log status/disk_candidates.json status/later_tabs.json status/disk_trend_report.json status/disk_daily_history.json status/gdrive_daily_usage.json >/dev/null 2>&1
+git add status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json status/disk_guardian.log status/disk_candidates.json status/later_tabs.json status/disk_trend_report.json status/disk_daily_history.json status/gdrive_daily_usage.json status/genzaichi.json status/queue_light.json status/top_status.json >/dev/null 2>&1
 # 2026-09-13(798番) 事故の再発防止：status/now.json・status/rev.txt がこの一覧に無く、
 #   pace.pyがローカルで何度更新してもGitHub Pages（スマホ側）には永久に反映されず、
 #   画面のpollNow()が常にrev.txt 404を踏んで既存のrefreshPace/refreshGenzaichi頼みに
