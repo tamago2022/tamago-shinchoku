@@ -4706,20 +4706,32 @@ function renderLineReplyAlert(){
     + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`
     + (a.body ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.9;">${esc(a.body)}</div>` : "");
 }
-// 820番：Lovable公開便の連続失敗を赤で出す。0回・停止していない間は静かに何も出さない。
+// 820番：Lovable公開便の連続失敗・本番未反映を赤で出す。
+// 2026-09-15追記（検品1回目で不合格→修正）：consecutiveFailures/stoppedForTodayだけを見ていたため、
+// .lovable-publish-pauseで一時停止中は本当は本番未反映でもこのバナーが一切出なかった。
+// mainUnpublished（origin/mainのHEADがまだ公開に出ていない）を独立した条件として追加し、
+// 一時停止中・失敗0回の間も「本番未反映」自体は赤で出し続けるようにした。
 function renderLovablePublishAlert(){
   const el = document.getElementById("lovablePublishAlert");
   if(!el) return;
   const s = D && D.lovablePublishStatus;
-  if(!s || (!s.consecutiveFailures && !s.stoppedForToday)){ el.style.display = "none"; el.innerHTML = ""; return; }
+  if(!s || (!s.consecutiveFailures && !s.stoppedForToday && !s.mainUnpublished)){ el.style.display = "none"; el.innerHTML = ""; return; }
   el.style.display = "block";
-  const stopLine = s.stoppedForToday
-    ? `🛑 本日は${s.consecutiveFailures}回連続失敗のため、これ以上は押しに行っていません（日付が変わるまで停止中）。`
-    : `⚠️ 連続失敗 ${s.consecutiveFailures}回。`;
-  el.innerHTML = `${esc(stopLine)}\n`
-    + `本日の公開成功: ${esc(String(s.successCountToday ?? 0))}回 / 上限${esc(String(s.dailyCap ?? 6))}回　`
-    + `最終確認: ${esc(s.lastCheckedAt || "不明")}\n`
-    + (s.lastFailureReason ? `直近の失敗理由: ${esc(s.lastFailureReason)}` : "");
+  const lines = [];
+  if(s.mainUnpublished){
+    lines.push(s.paused
+      ? `🔴 本番未反映：mainに新しい変更がありますが、一時停止中のため公開していません（${esc(s.pauseReason || "理由不明")}）。`
+      : `🔴 本番未反映：mainに新しい変更（${esc(s.mainSha || "不明")}）がまだ公開されていません。`);
+  }
+  if(s.stoppedForToday){
+    lines.push(`🛑 本日は${s.consecutiveFailures}回連続失敗のため、これ以上は押しに行っていません（日付が変わるまで停止中）。`);
+  } else if(s.consecutiveFailures){
+    lines.push(`⚠️ 連続失敗 ${s.consecutiveFailures}回。`);
+  }
+  lines.push(`本日の公開成功: ${esc(String(s.successCountToday ?? 0))}回 / 上限${esc(String(s.dailyCap ?? 6))}回　`
+    + `最終確認: ${esc(s.lastCheckedAt || "不明")}`);
+  if(s.lastFailureReason) lines.push(`直近の失敗理由: ${esc(s.lastFailureReason)}`);
+  el.innerHTML = lines.join("\n");
 }
 // 683番：①マイク不具合の再現ログ（配列に1行足すだけで増える）②Anthropicへの下書きメール
 // （宛先・件名・本文入りでGmail作成画面を開くリンク。送信ボタンはたまごさんが押す）。
