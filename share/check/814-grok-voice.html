@@ -58,7 +58,7 @@ xAIのGrok Realtime Voice（人格Iris）を案内所ページに埋め込むコ
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>0件</b><span>配信中のJSからAPIキーの文字列を探した結果</span></div>
-  <div class="num"><b>24件目</b><span>本番が変わらないことを確認した回数(店主のせいではない障害・これ以上は再確認しません)</span></div>
+  <div class="num"><b>25件目</b><span>本番が変わらないことを確認した回数(店主のせいではない障害・これ以上は再確認しません)</span></div>
   <div class="num"><b>未作成</b><span>料金を記録するデータベース表</span></div>
 </div>
 
@@ -80,7 +80,7 @@ xAIのGrok Realtime Voice（人格Iris）を案内所ページに埋め込むコ
 </table>
 
 <footer>
-店主にお願いしたいこと：①Lovableの公開ブロック解除（サポートへの問い合わせ）②Lovable側の環境変数にXAI_API_KEYを設定③Supabaseに料金記録用の表を作る。この3つが揃うまでコード側でできることは無い。<br>2026-09-14 03:06追記：Lovableの「変更を公開」ボタンを実際に自動で押す試行も実施(専用の隔離ブラウザから)。ボタンは押せたが、直後に本番を確認しても中身は変わらず(deployment-idの中身は同じまま)。ブロックが解除待ちであることを実際の操作でも再確認した。<br>2026-09-14再開分：料金記録の表がまだ無い状態でボタンが押された場合も、画面は無反応にならず「今は声のご案内をお休み中」の案内＋おすすめ5枚に自動で切り替わる設計であることをコードで確認済み(黙って壊れない)。これ以降、状況が変わっていないかの確認は「本番ページのdeployment-idが変わったか」だけを見る1手だけに絞り、同じ検証は繰り返しません。
+店主にお願いしたいこと：①Lovableの公開ブロック解除（サポートへの問い合わせ）②Lovable側の環境変数にXAI_API_KEYを設定③Supabaseに料金記録用の表を作る。この3つが揃うまでコード側でできることは無い。<br>2026-09-14 03:06追記：Lovableの「変更を公開」ボタンを実際に自動で押す試行も実施(専用の隔離ブラウザから)。ボタンは押せたが、直後に本番を確認しても中身は変わらず(deployment-idの中身は同じまま)。ブロックが解除待ちであることを実際の操作でも再確認した。<br>2026-09-14再開分：料金記録の表がまだ無い状態でボタンが押された場合も、画面は無反応にならず「今は声のご案内をお休み中」の案内＋おすすめ5枚に自動で切り替わる設計であることをコードで確認済み(黙って壊れない)。これ以降、状況が変わっていないかの確認は「本番ページのdeployment-idが変わったか」だけを見る1手だけに絞り、同じ検証は繰り返しません。<br>2026-09-15/16追記（25件目）：本番のdeployment-idを再実測、前回と同一(449ce840-5728-41e2-8923-e33bf51ed479)のまま＝ブロック継続を確認。あわせて「GitHub Actions経由でSupabaseの表を作れないか」を新しい経路として調べたが、このリポジトリのGitHub Actions秘密鍵(SUPABASE_SERVICE_ROLE_KEY)は行の読み書き用でテーブル作成はできない仕組みと判明、この経路も店主側対応が必要という結論は変わらず。`.claude/TASK_BOARD.md`案件#142として台帳に記録済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
