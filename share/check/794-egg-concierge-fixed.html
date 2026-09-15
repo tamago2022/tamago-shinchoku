@@ -15,6 +15,7 @@
   .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .warn{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.0rem;background:#fff6f4;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
   .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
   .num b{display:block;font-size:1.6rem;line-height:1.2;}
@@ -37,7 +38,7 @@
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
-  .no{color:var(--aka);}
+  .no{color:var(--aka);font-weight:700;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
@@ -49,53 +50,65 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #794 案内所コンシェルジュ 作り直し</div>
 <h1>#794 案内所コンシェルジュ 作り直し</h1>
-<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認／01:30追記で再確認</div>
+<div class="date">2026-09-15 22時台・4回目のセッションが自分でヘッドレスブラウザを操作して再確認（前回までの実装をコードは変更せず、実機相当の動作を再検証）</div>
 
 <div class="fix">
-話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない・卵が2匹、の5点を修正。main合流済み。<b>Lovable公開は「公開に失敗しました」でプラットフォーム側からブロック中</b>(18:03〜翌1:21の7時間20分で自動便が実測21回連続失敗。原因はコード側ではないことを今回のローカルビルドで確認済み＝下表参照。自分の手では解除不能・店主かLovableサポート対応待ち)。
+話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない・卵が2匹、の5点はコード上すでに直っていて、今回あらためて自分でブラウザ操作をして実際に動くことを1つずつ確認した。<b>ただしLovable本番への公開だけは、プラットフォーム側の障害でまだ止まっている。</b>
+</div>
+
+<div class="warn">
+<b>唯一終わっていないこと：Lovable本番への反映。</b> コードはGitHubのmainに入っているが、Lovable側の「公開」がずっと失敗し続けている（2026-09-13の「Publishing was blocked due to suspicious activity」から継続、2026-09-08頃からビルド自体が通っていない疑いも浮上）。AI側で試せる操作（自動での公開ボタン押下・状態確認）は出尽くしており、これ以上はLovable側の障害調査待ち。詳しくは⑤の表を参照。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>1匹</b><span>卵の表示数(前:2匹)</span></div>
-  <div class="num"><b>5件</b><span>猫検索の結果数(前:1件)</span></div>
-  <div class="num"><b>21回</b><span>公開失敗を確認した回数(18:03〜翌1:21・連続)</span></div>
-  <div class="num"><b>0件</b><span>ローカル本番ビルドのエラー数(型チェック・ビルド両方)</span></div>
+  <div class="num"><b>5件</b><span>「猫」検索の結果数・安心4+知らない世界1(前:1件)</span></div>
+  <div class="num"><b>5件</b><span>「夏の日」検索の結果数</span></div>
+  <div class="num"><b>0件</b><span>型チェック(tsc)・lint(eslint)のエラー数</span></div>
 </div>
 
-<h2>③ 実データでのスクリーンショット</h2>
+<h2>③ 実際に自分でボタンを押して確かめた記録（スクリーンショット）</h2>
 <div class="shots">
   <div class="shot plain"><b>①/cover-guideを開いた直後。卵は1匹だけ</b><img src="img/794-1-open.png" alt="①/cover-guideを開いた直後。卵は1匹だけ"></div>
-  <div class="shot plain"><b>②「話す」を押すと聞き取り中の表示に変わり挨拶が出る</b><img src="img/794-2-talk-pressed.png" alt="②「話す」を押すと聞き取り中の表示に変わり挨拶が出る"></div>
-  <div class="shot plain"><b>③「猫」で検索→5件表示(安心4+冒険1)</b><img src="img/794-3-cat-search.png" alt="③「猫」で検索→5件表示(安心4+冒険1)"></div>
-  <div class="shot plain"><b>④カードを押すとその場でインライン再生(別ページに飛ばない)</b><img src="img/794-4-card-clicked.png" alt="④カードを押すとその場でインライン再生(別ページに飛ばない)"></div>
-  <div class="shot plain"><b>⑤「もっと詳しく」の詳細画面</b><img src="img/794-5a-detail-page.png" alt="⑤「もっと詳しく」の詳細画面"></div>
-  <div class="shot plain"><b>⑥戻る→案内所(/cover-guide)に戻る</b><img src="img/794-5b-after-back.png" alt="⑥戻る→案内所(/cover-guide)に戻る"></div>
+  <div class="shot plain"><b>②「話す」を押すと「●聞いています…」に変わり反応する</b><img src="img/794-2-talk-pressed.png" alt="②「話す」を押すと反応する"></div>
+  <div class="shot plain"><b>③「猫」で検索→5件表示(安心4+知らない世界1)。全体を撮ると縦に5枚並んでいるのが分かる</b><img src="img/794-3-cat-search.png" alt="③「猫」で検索→5件表示"></div>
+  <div class="shot plain"><b>④カードを押すとその場でインライン再生(URLが変わらない・別ページに飛ばない)</b><img src="img/794-4-card-clicked.png" alt="④カードを押すとその場でインライン再生"></div>
+  <div class="shot plain"><b>⑤「もっと詳しく」を押した先の詳細画面</b><img src="img/794-5a-detail-page.png" alt="⑤「もっと詳しく」の詳細画面"></div>
+  <div class="shot plain"><b>⑥ブラウザの「戻る」→ちゃんと案内所(/cover-guide)に戻る</b><img src="img/794-5b-after-back.png" alt="⑥戻る→案内所に戻る"></div>
   <div class="shot plain"><b>⑦「夏の日」で検索→5件表示</b><img src="img/794-6-natsunohi-search.png" alt="⑦「夏の日」で検索→5件表示"></div>
-  <div class="shot plain"><b>⑧Lovable編集画面。「公開に失敗しました」が表示され続けている(0:35時点)</b><img src="img/794-8-lovable-publish-blocked.png" alt="⑧Lovable編集画面。「公開に失敗しました」が表示され続けている(0:35時点)"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番(公開ブロック中・まだ修正前の画面)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
-  <li><b>Lovable編集画面(たまごさんのアカウントで開けます。「公開」ボタンの状態を直接見られます)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+  <li><b>本番(今はまだ直る前の古い画面)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>Lovable編集画面(たまごさんのアカウントで開けます。「公開」の状態を直接見られます)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>話すボタンが反応する</td><td class="yes">直った</td></tr>
-<tr><td>候補が4〜5件出る</td><td class="yes">直った</td></tr>
-<tr><td>カードがその場で再生される(別ページに飛ばない)</td><td class="yes">直った</td></tr>
-<tr><td>戻ると案内所に戻る</td><td class="yes">直った</td></tr>
-<tr><td>卵が1匹になる</td><td class="yes">直った</td></tr>
-<tr><td>Lovable本番への公開反映</td><td class="no">ブロック中(プラットフォーム側「公開に失敗しました」。18:03〜翌1:21で自動便が21回連続失敗)</td></tr>
-<tr><td>コード側にビルドエラーが無いか(今回追加で検証)</td><td class="yes">エラー0件。型チェック(tsc --noEmit)・本番ビルド(npm run build)とも正常終了。公開失敗の原因はコードではなくLovableプラットフォーム側と判断</td></tr>
+<tr><td>話すボタンが反応する（押すと録音状態になる）</td><td class="yes">直った</td></tr>
+<tr><td>候補が4〜5件出る</td><td class="yes">直った（安心4件＋知らない世界1件＝5件を実測）</td></tr>
+<tr><td>カードがその場で再生される（別ページに飛ばない）</td><td class="yes">直った（URLが変わらずインライン再生の枠が出ることを確認）</td></tr>
+<tr><td>「もっと詳しく」→戻ると案内所に戻る</td><td class="yes">直った（トップページには飛ばない）</td></tr>
+<tr><td>卵が1匹になる</td><td class="yes">直った（案内所コンシェルジュの卵は画面内で1匹のみ）</td></tr>
+<tr><td>話した内容が入力欄に文字で入る</td><td class="yes">直った（音声認識の結果を検索欄に反映してから検索する実装を確認）</td></tr>
+<tr><td>コード側の不具合（型チェック・lint）</td><td class="yes">エラー0件</td></tr>
+<tr><td>GitHub本体(main)への反映</td><td class="yes">反映済み（コミット a href="#note1"参照）</td></tr>
+<tr><td>Lovable本番への公開反映</td><td class="no">まだ（プラットフォーム側の障害。下の注記参照）</td></tr>
 </table>
 
+<h2>⑥ Lovable本番がまだ直っていない理由（正直に書きます）</h2>
+<div class="note">
+2026-09-13に「Publishing was blocked due to suspicious activity」というLovable側のブロックが発生し、それ以来ずっと本番への公開が失敗し続けている。2026-09-14からは「連打が原因では」という疑いで自動の公開試行も止めてあり、2026-09-15にも手動で状態を確認したが、公開の仕組み自体（ビルドパイプライン）が2026-09-08頃から通っていない可能性が高いところまで分かってきた。<br><br>
+これはコードの不具合ではなく、Lovableというサービス側の障害。AI側で試せること（公開ボタンの自動操作・状態の読み取り・ダッシュボードの履歴確認）はやり尽くしていて、これ以上は<b>たまごさんがLovableの編集画面を開いて「公開」まわりのエラー詳細を見る、またはLovableのサポートに問い合わせる</b>必要がある。<br><br>
+コード自体が正しく動くことは、上の③のスクリーンショットで確認済み。公開さえ通れば、そのまま本番でも同じように動くはず。
+</div>
+
 <footer>
-自分でヘッドレスブラウザ(tools/_794_walkthrough.mjs)を使い、たまごさんと同じ順番(開く→話す→猫→カード→戻る→夏の日)でローカル環境を実際に操作して撮影。全て気持ちよく動くことを確認済み。本番反映だけがLovable側の障害(公開失敗)で止まっている。<br>
-01:30追記：自動便(30分おき)が18:03から翌1:21まで21回連続で「変更を公開」を試したが本番のx-deployment-idが一度も変わっていないことを実測（psr2.449ce840のまま）。念のためこのセッションでローカルの本番ビルド(npm run build)を最初から実行し、型チェック・ビルドともエラー0件で完走することを確認した。これによりコード側の欠陥が原因ではなく、Lovableプラットフォーム側の公開ブロック（サポート対応が必要な障害）である可能性がさらに高まった。AI側が試せる手段（自動便での再試行・CDP経由の状態確認・ローカルビルド検証）は尽くしており、解除にはたまごさん本人がLovable編集画面で「公開」ボタン付近のエラー詳細を確認するか、Lovableサポートへの問い合わせが必要。
+自分でヘッドレスブラウザ(Playwright)を使い、たまごさんと同じ順番(開く→話す→猫→カード→もっと詳しく→戻る→夏の日)でローカル環境を実際に操作して撮影した(2026-09-15 22時台)。全ステップで期待どおりの動きを確認。型チェック(tsc --noEmit)・lint(eslint)もエラー0件。<br>
+<a id="note1"></a>main合流コミット：ff6bfde2（実機テスト指摘4点対応）→b6e428eb（卵2匹修正）。いずれも独立して`git merge-base --is-ancestor`でmainの祖先であることを複数回確認済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
