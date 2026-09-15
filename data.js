@@ -32,11 +32,11 @@ window.SHINCHOKU = {
   // 取れ始めたと確認できる状態にする」の実測値。進捗表トップに小さく1枠表示する（renderRenkeiBar()）。
   // 詳しい実測ログ・実験結果は status/renkei.json（このファイルは表示用の要約）。
   renkei: {
-    updatedAt: "2026-09-15T21:20:00+09:00",
+    updatedAt: "2026-09-15T21:40:00+09:00",
     teams: { claude: true, openai: true, grok: false },
-    teamsNote: "openaiは実績あり(Codexの過去PR4件＋ChatGPT本体によるcompany-os執筆)だが直近1〜2ヶ月は新規停止中だった→09-14にClaudeが5件の放置handoffを処理し再稼働の糸口を作った。grokはEXECUTOR_REGISTRY.json上も設計時点でstatus:future_adapter＝未接続、鍵なしで代筆も未実施。",
+    teamsNote: "openaiは実績あり(Codexの過去PR4件＋ChatGPT本体によるcompany-os執筆)＋21:07にGrok経路照会への回答を書き込み済み。grokはEXECUTOR_REGISTRY.json上も設計時点でstatus:future_adapter＝未接続、鍵なしで代筆も未実施。ChatGPT自身もGrok公式コネクタ・MCP・API経路は無いと回答（next_ownerはGrok対応の実行セッション自身）。",
     bridgeCount: 0,
-    roundTrips: 1,
+    roundTrips: 2,
     routeChanges: 1,
     ownerToldMeCount: 0,
     checkPageUrl: "share/check/826-renkei-shuhyo.html"
