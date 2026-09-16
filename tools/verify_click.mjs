@@ -315,6 +315,15 @@ async function main() {
       // （4回連続実行で1回FAIL・3回PASSを実測）。8秒に伸ばして再現率を下げる。
       const NAV_WAIT_MS = 8000;
       let newTabOpened = false;
+      // 案件#914実測：GitHub Pagesの進捗表トップ(index.html・多数の非同期fetchで重い)への
+      // 遷移中は、下のevalJson('location.href')自体がナビゲーションに巻き込まれて例外を
+      // 投げることがある。これまではその瞬間を「遷移が進んでいる証拠」とコメントに書きながら、
+      // 実際にはただbreakするだけでフラグに残していなかった。直後の afterスナップショット取得
+      // （341行目付近）がその不安定な瞬間に重なって失敗すると after = before に
+      // フォールバックし、「クリック前後で何も変化しませんでした」という誤判定になっていた
+      // （実測：3回に1回の頻度で再現。894番・892番・896番のstuck化の直接原因）。
+      // evalJson失敗そのものを「反応があった証拠」として navDetected に記録する。
+      let navDetected = false;
       if (el.href) {
         const navWaitStart = Date.now();
         while (Date.now() - navWaitStart < NAV_WAIT_MS) {
@@ -324,9 +333,13 @@ async function main() {
           }
           try {
             const cur = await evalJson(send, `location.href`);
-            if (cur && before && cur !== before.url) break;
+            if (cur && before && cur !== before.url) {
+              navDetected = true;
+              break;
+            }
           } catch {
             /* ナビゲーション中は評価自体が失敗することがある＝遷移が進んでいる証拠 */
+            navDetected = true;
             break;
           }
           await sleep(300);
@@ -337,28 +350,38 @@ async function main() {
         // 上のURLポーリングだけでは絶対に「変化」を検知できず毎回無反応と誤検知していた。
         // CDPの`Page.windowOpen`イベント（ブロックされても発火する）を反応の証拠として使う。
         if (!newTabOpened && lastWindowOpenAt) newTabOpened = true;
+        // 案件#914：遷移を検知した直後は新ページがまだ不安定（DOM構築中）で、
+        // 次のafter評価が失敗しやすい。少し待って安定させてから評価する。
+        if (navDetected || newTabOpened) await sleep(1200);
       }
+      let afterEvalFailed = false;
       try {
         after = await evalJson(send, SNAPSHOT_EXPR);
       } catch {
+        afterEvalFailed = true;
         after = before;
       }
 
       result.tested++;
-      const navigated = before && after && before.url !== after.url;
+      // 案件#914：evalJson失敗・遷移検知はそれ自体が「反応があった」証拠として navigated にも含める。
+      // これが無いと、後段の「元のURLへ戻す」処理が働かず、以降の要素が軒並り
+      // 「クリック前にDOMから消えた」誤検出（無害だが本来不要）を量産する。
+      const navigated = (navDetected || afterEvalFailed) || (before && after && before.url !== after.url);
       // htmlLenは広告・時刻表示・無関係な非同期再描画で数文字だけ揺れることがあるため、
       // 「意味のある変化」だけを拾うよう最小の差分しきい値を設ける（案件#800実測で調整）。
       const HTML_LEN_NOISE_THRESHOLD = 30;
       const changed =
         clickError == null &&
         before &&
-        after &&
         (newTabOpened ||
-          before.url !== after.url ||
-          Math.abs((before.scrollY || 0) - (after.scrollY || 0)) > 5 ||
-          before.textHash !== after.textHash ||
-          Math.abs((before.htmlLen || 0) - (after.htmlLen || 0)) > HTML_LEN_NOISE_THRESHOLD ||
-          before.openDialogCount !== after.openDialogCount);
+          navDetected ||
+          afterEvalFailed ||
+          (after &&
+            (before.url !== after.url ||
+              Math.abs((before.scrollY || 0) - (after.scrollY || 0)) > 5 ||
+              before.textHash !== after.textHash ||
+              Math.abs((before.htmlLen || 0) - (after.htmlLen || 0)) > HTML_LEN_NOISE_THRESHOLD ||
+              before.openDialogCount !== after.openDialogCount)));
 
       // 案件#795実測（GitHub Pages版 tamago-shinchoku 進捗表・#740の教訓と同型）：
       // 「要素が見つかりませんでした（クリック前にDOMから消えた）」は、その要素自身が
