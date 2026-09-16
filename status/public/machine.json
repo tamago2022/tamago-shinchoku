@@ -1,31 +1,31 @@
 {
- "measuredAt": "2026-09-16T22:17:29+09:00",
- "load": 253,
- "cpu": 36,
- "mem": 26,
- "swapGB": 7.89,
- "diskFreeGB": 259,
- "sessions": 6,
- "note": "2本超過（畳め）",
- "raw": "負荷 253% ｜ CPU 36% / メモリ圧迫 26% / スワップ 7.89GB / ディスク空き 259GB ｜ 稼働 6本 ｜ 2本超過（畳め）",
+ "measuredAt": "2026-09-16T23:14:57+09:00",
+ "load": 90,
+ "cpu": 16,
+ "mem": 28,
+ "swapGB": 7.51,
+ "diskFreeGB": 260,
+ "sessions": 3,
+ "note": "あと1本OK",
+ "raw": "負荷 90% ｜ CPU 16% / メモリ圧迫 28% / スワップ 7.51GB / ディスク空き 260GB ｜ 稼働 3本 ｜ あと1本OK",
  "watchdog": {
-  "lastRun": "2026-09-16 22:22",
+  "lastRun": "2026-09-16 23:15",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "空きなし（上限None本・目標2本・生存6本）",
+  "ignite": "空きなし（上限None本・目標2本・生存3本）",
   "shed": null,
   "keep": {
    "target": 2,
-   "alive": 6,
+   "alive": 3,
    "below": 0,
-   "line": "現在6本／上限None本／目標2本／あと0本いける"
+   "line": "現在3本／上限None本／目標2本／あと0本いける"
   },
   "stalledSkipped": []
  },
  "metrics": {
-  "stalls": 128,
+  "stalls": 129,
   "autoResumes": 79,
   "handoffs": 13,
   "hardCuts": 0,
@@ -42,25 +42,25 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-16 22:20",
+  "updatedAt": "2026-09-16 23:15",
   "estimated": false,
   "stalePrevWeekSample": false,
   "fablePct": 0.0,
-  "allPct": 13.0,
-  "allPctAsOf": "22:10:37",
-  "allPctAgeMin": 7.0,
+  "allPct": 14.0,
+  "allPctAsOf": "23:10:37",
+  "allPctAgeMin": 4.7,
   "resetAt": "2026-09-22 17:59",
   "daysLeft": 5.8,
-  "hoursLeft": 139.7,
+  "hoursLeft": 138.7,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
   "stopPct": 85,
   "daily": {
-   "fableAllowancePerDay": 17.2,
+   "fableAllowancePerDay": 17.3,
    "fableUsedLast24h": 0,
    "allAllowancePerDay": 14.9,
-   "allUsedLast24h": 10.7,
+   "allUsedLast24h": 10.2,
    "weeklyEvenPacePerDay": 14.3
   },
   "boost": {
@@ -72,16 +72,16 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 0,
-  "allWeightedTokensSinceReset": 198388593,
+  "allWeightedTokensSinceReset": 219968700,
   "last6h": {
    "fable": 0,
-   "all": 92910803
+   "all": 114490910
   },
   "projection": {},
   "method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
   "source": "plan-usage-history.json",
-  "asOf": "22:10:37",
-  "ageMin": 7.0,
+  "asOf": "23:10:37",
+  "ageMin": 4.7,
   "weekdayTarget": 30.0,
   "weekdayTargetBase": 30,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
@@ -98,7 +98,7 @@
   },
   "allCurve": {
    "target": 17.1,
-   "overPct": -4.1,
+   "overPct": -3.1,
    "state": "on_track",
    "band": 10,
    "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"
@@ -123,14 +123,14 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
-   "allPacePctPerHour6h": 1.015,
+   "allPacePctPerHour6h": 1.214,
    "aliveAvgLast6h": 4.0,
-   "pctPerSessionHour": 0.2537,
+   "pctPerSessionHour": 0.3036,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
    "sonnetSessionsFor5hWindow": null,
-   "sonnetSessionsForWeeklyCurve": 2.4
+   "sonnetSessionsForWeeklyCurve": 2.0
   },
-  "line": "Fable週枠 0%（今日の目標30.0%・30.0pt下振れ→投入余地あり） ／ 全モデル 13%（22:10:37時点・曲線目標17.1%・曲線どおり） ／ リセットまで 5.8日 ／ 5時間枠 1.0%・残0.0h",
+  "line": "Fable週枠 0%（今日の目標30.0%・30.0pt下振れ→投入余地あり） ／ 全モデル 14%（23:10:37時点・曲線目標17.1%・曲線どおり） ／ リセットまで 5.8日 ／ 5時間枠 1.0%・残0.0h",
   "switches": [
    {
     "t": "2026-09-03 22:18",
