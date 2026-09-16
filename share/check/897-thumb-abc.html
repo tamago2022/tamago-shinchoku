@@ -62,6 +62,15 @@
   <div class="num"><b>2px</b><span>CIが許容する高さの差(これを超えたら落ちる)</span></div>
 </div>
 
+<h2>実測の生データ（getBoundingClientRect・本番 /design-check・2026-09-17 再取得）</h2>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:0.82rem;overflow-x:auto;">A(主役) thumb-check-a: 320.0 x 180.0 px（比 1.778 ≒ 16:9）
+B(棚)   thumb-check-b: 176.0 x 176.0 px（比 1.000 = 1:1）
+C(関連) thumb-check-c: 218.0 x 122.6 px（比 1.778 ≒ 16:9）
+
+Bグループ横並び高さ（3枚）: 242.8, 242.8, 242.8 px → 差 0.0px
+Cグループ横並び高さ（3枚）: 179.4, 179.4, 179.4 px → 差 0.0px
+CI許容誤差（designRules.ts rowHeightTolerancePx）: 2.0px</pre>
+
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
   <div class="shot before"><b>897番の前（A/B/Cの見本が無い）</b><img src="img/897-before.png" alt="前"></div>
