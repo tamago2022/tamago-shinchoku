@@ -1,6 +1,6 @@
 #!/bin/bash
 # Macの負荷を measure して status/machine.json に書き、変わっていれば GitHub Pages へ push する。
-# 5分おきに launchd（com.tamago.machine-status）から呼ばれる。計測本体は /Users/mac/Desktop/machine_load.sh。
+# 5分おきに launchd（com.tamago.machine-status）から呼ばれる。計測本体は tools/machine_load.sh（リポジトリの中。外に置くと消える）。
 # 2026-09-03 15:xx リアルタイム化：launchdの新規ジョブ登録は2回ともAuto mode classifierにブロックされたため、
 # 「1回の起動の中で30秒おきに測る」方式に変更（新規ジョブ登録なし・既存の5分おき起動はそのまま）。
 # 1回の起動につき最大約260秒(=launchdの次の5分ティックが来る前)ループし続け、変化があれば即pushする。
@@ -9,7 +9,7 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 
 REPO="/Users/mac/Desktop/tamago-shinchoku"
 OUT="$REPO/status/machine.json"
-LOADSH="/Users/mac/Documents/AI作業/2026-09-02/スクリプト/machine_load.sh"
+LOADSH="$REPO/tools/machine_load.sh"
 mkdir -p "$REPO/status"
 
 # 1回の起動が約260秒に伸びたため、launchdの次の5分ティックと重なって二重起動しないようロックする
