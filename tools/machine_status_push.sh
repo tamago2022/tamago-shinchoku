@@ -117,8 +117,14 @@ if [ "$HB_ALIVE" = "1" ]; then
     HB_ALIVE=0
   fi
 fi
+# 2026-09-17（894番・Verifier差し戻し対応）：心臓の起動をここでの直接Popenから
+# launchd（com.tamago.tamago-shinchoku.heartbeat・KeepAlive=true）へ一本化した。
+# KeepAlive=trueなので、上のpkillで心臓を殺した瞬間、launchdが自分で（既定ThrottleInterval
+# ＝数秒〜十数秒）立て直す。5分便のこのロック（最悪7分）を待たずに戻るため、
+# 「3分以内に自分で戻る」を5分便経由ではなくOS自身の監視で満たす構造にした。
+# それでも万一plist未ロード等でlaunchd側に心臓がいなければ、保険としてkickstartも呼ぶ。
 if [ "$HB_ALIVE" = "0" ] && ! pgrep -f "tools/heartbeat.sh" >/dev/null 2>&1; then
-  python3 -c "import subprocess,sys; subprocess.Popen(['bash', sys.argv[1]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, start_new_session=True)" "$REPO/tools/heartbeat.sh" >/dev/null 2>&1 || true
+  launchctl kickstart -k "gui/$(id -u)/com.tamago.tamago-shinchoku.heartbeat" >/dev/null 2>&1 || true
 fi
 
 # 2026-09-03 追加：置き去りのgitロックを掃除する。

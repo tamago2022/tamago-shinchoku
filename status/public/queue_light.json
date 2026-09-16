@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-17 00:31",
+ "updatedAt": "2026-09-17 00:56",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1532,27 +1532,6 @@
    "checkedAt": "2026-09-12T03:11:43+0900",
    "okBy": "ai-verifier-auto",
    "okNote": "鬼監督AI検品PASS：確認ページ・本番URL・3本の動画/画像すべて実在し目視確認、コスト台帳の実測(108円・上限150円以内)も報告内容と完全一致"
-  },
-  {
-   "n": 756,
-   "title": "毎朝の入荷見回りを仕組みにする（707の自動化・ヤギの件も検出）",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "aiVerifyFailCount": 1,
-   "bgWaitCount": 1,
-   "startedAt": "2026-09-12T01:23:07+09:00",
-   "sessionId": "4a35b2fd-05c7-4351-ae94-845b9e1e6567",
-   "finishedAt": "2026-09-12T01:35:20+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html"
-   ],
-   "checkedAt": "2026-09-12T01:37:37+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：確認ページ・進捗表トップ行・status/daily_ingest_summary.jsonが一致し、4件の本番ページ(串焼き肉/チーズ/ソーセージ/フクロモモンガ)のtitleとog:descriptionが「後」のコピーと実際に一致（ヤギ型実例も含む）、過去日付ページも404にならず保持されていることを実URLで確認した"
   },
   {
    "n": 760,
@@ -3636,7 +3615,7 @@
   },
   {
    "n": 888,
-   "title": "【最優先】コンシェルジュと会話のキャッチボールができるようにする（キーワード→ライブラリの深くまで）",
+   "title": "【最優先】マイクを押して声で話して返事が返る、を1往復だけ通す",
    "why": "スマホから追加",
    "status": "running",
    "limitMin": 180,
@@ -3644,13 +3623,14 @@
    "origin": "user",
    "priority": 1,
    "urgent": true,
-   "label": "【最優先】コンシェルジュと会話のキャッチボールができるようにする（キーワード→ライブラリの深くまで）",
+   "label": "【最優先】マイクを押して声で話して返事が返る、を1往復だけ通す",
    "bgWaitCount": 2,
    "order": 0,
    "autoDemoteOverride": "たまごさんの最優先「とにかく会話のキャッチボール」（2026-09-16 19:45）",
-   "startedAt": "2026-09-16T23:56:04+09:00",
-   "sessionId": "54b4deab-7700-4831-ad02-f1e6f35c53a7",
-   "pid": 66835
+   "contentCheckFailCount": 1,
+   "startedAt": "2026-09-17T00:45:26+09:00",
+   "sessionId": "1ade361c-113a-4277-a461-0df898e404dc",
+   "pid": 84295
   },
   {
    "n": 889,
@@ -3723,27 +3703,21 @@
    "n": 894,
    "title": "【仕組み③】工場が止まらない：止まりの検知を直す＋巻き戻りを殺す",
    "why": "スマホから追加",
-   "status": "verifying",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 1,
    "urgent": true,
    "autoDemoteOverride": "たまごさん「仕組み作りの方が遥かに大事」（2026-09-16 23:15）",
-   "startedAt": "2026-09-16T23:36:20+09:00",
-   "sessionId": "ad5f4415-bb92-4020-9688-f610672ddb8f",
-   "finishedAt": "2026-09-17T00:30:33+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/894-factory-launch-stall.html",
-    "https://tamago2022.github.io/tamago-shinchoku/index.html"
-   ],
    "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/index.html",
-   "touchCheckNote": "押した結果：無反応0件・コンソールエラー0件（24件中12件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/index.html）",
-   "verifyPid": 79377,
-   "verifySessionId": "5abf0565-fec9-4dbc-8ec6-48fc1631ab9b",
-   "verifyLog": "/Users/mac/Desktop/tamago-shinchoku/status/verify-5abf0565.log",
-   "verifyStartedAt": "2026-09-17T00:31:12+09:00",
-   "verifyUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/894-factory-launch-stall.html"
+   "aiVerifyFailCount": 1,
+   "failReasons": [
+    "中核の合格条件「心臓を殺して3分以内に自分で戻ることを実際に確かめる」が、修正後の再テストで確認されておらず、現状のlaunchd構成(5分間隔・KeepAliveなし+新設7分ロック解除)では理論上も3分以内を満たせない"
+   ],
+   "startedAt": "2026-09-17T00:45:59+09:00",
+   "sessionId": "8cbee789-2c35-4f78-86b2-3267581a197b",
+   "pid": 84523
   },
   {
    "n": 895,
@@ -3827,7 +3801,7 @@
    "n": 900,
    "title": "【仕組み⑨】引き継ぎで落ちない：現在地1枚＋決定台帳＋「実物は文書より強い」",
    "why": "スマホから追加",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -3835,7 +3809,15 @@
    "urgent": true,
    "startedAt": "2026-09-17T00:30:51+09:00",
    "sessionId": "eb679e10-29f2-496f-9bfd-3ef09b4a6a01",
-   "pid": 79166
+   "finishedAt": "2026-09-17T00:45:26+09:00",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/900-handoff-genzaichi-kettei.html",
+    "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/ai-brain/kettei.json"
+   ],
+   "touchUrl": "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/ai-brain/kettei.json",
+   "checkedAt": "2026-09-17T00:48:25+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：確認ページ・kettei.json(決定4件・実物画像URL・評価根拠付)・genzaichi.mdの「待っているもの」「今週の残り枠」節・README.mdの「実物は文書より強い」憲法明文化・実物画像(JPEG 1400x814実在)を全て実URLで確認、クリック検品も5/5反応でエラー0件、依頼内容と完全一致"
   },
   {
    "n": 901,
@@ -3873,6 +3855,39 @@
    "origin": "factory",
    "priority": 3,
    "urakataBlockedAt": "2026-09-17 00:30:45+09:00"
+  },
+  {
+   "n": 904,
+   "title": "【仕組み⑪】着手前に絵1枚orABCDで解釈を合わせる（間違いを100→10に）",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "urgent": true
+  },
+  {
+   "n": 905,
+   "title": "【仕組み⑫】Geminiを繋ぐ（調べ物・要約はGemini／判断はClaude）＋世界の節約事例",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "urgent": true
+  },
+  {
+   "n": 906,
+   "title": "【重さ】画質を並べて指差しで決める＋「何が重いのか」を1枚で見せる",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "urgent": true
   }
  ]
 }
