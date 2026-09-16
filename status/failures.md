@@ -319,3 +319,17 @@
 - **日付**：2026-09-16〜17（894番）
 - **根拠**：`tools/genzaichi.py`の`_launch_has_room()`・`check_launch_silence()`、`tools/launch_watchdog.py`（新設）、`tools/heartbeat.sh`の15秒ループ追記、`tools/machine_status_push.sh`の`run_with_timeout`追加14箇所、`tools/factory_status.py`の`heartbeat_status()`・`launch_stall_status()`、`index.html`の`launchStallBar`・`renderLaunchStall()`、実機ログ`status/heartbeat.log`（23:31〜23:35の4回連続警告）、`vm_stat`/`sysctl vm.swapusage`実測（load 10.9・swap 6.9GB使用中）
 - **日付**：2026-09-16 23:55
+
+---
+
+## 27. launchdの「KeepAlive」も「StartInterval」も、心臓の3分以内復旧を保証しなかった（894番・2回連続で失敗してから確定した設計）
+
+- **症状**：894番の再検品で、Verifierから「心臓を殺して3分以内に自分で戻ることを実際に確かめていない。現状のlaunchd構成(5分間隔・KeepAliveなし+新設7分ロック解除)では理論上も3分以内を満たせない」と指摘された。実際に2つの設計を順に実機テストし、両方とも失敗した。
+  - **失敗1（KeepAlive=true）**：`tools/heartbeat.sh`を`com.tamago.tamago-shinchoku.heartbeat`としてKeepAlive=trueで登録し、`kill -9`で心臓を殺したところ、**129秒待っても自動復旧しなかった**（`launchctl list`は`最終exit -9`のまま`PID -`＝止まったまま）。手動で`launchctl kickstart -k`を呼んだ時だけ即座に起動した。
+  - **失敗2（StartInterval=30の外部ウォッチャー）**：`tools/heartbeat_watchdog.py`（.heartbeat_aliveが60秒古ければkickstartする軽量判定）を作り、`StartInterval=30`のlaunchdジョブとして登録したが、**237秒待っても一度も自動実行されなかった**（`status/heartbeat_watchdog.log`が空のまま。RunAtLoadでの初回起動しか動いていなかった）。
+- **原因**：launchdの`KeepAlive`は、シグナルによる強制終了（特にSIGKILL）を必ずしも「再起動すべき異常終了」として扱わない。`StartInterval`もApple実装上「おおよその間隔」でしかなく、高負荷時（本機は実測load 11台・スワップ6.7GB使用中）は特に信頼できない。
+- **直し方**：`tools/heartbeat_watchdog_loop.sh`（10秒おきに`heartbeat_watchdog.py`を呼ぶだけの常駐bashループ）を新設し、これを`com.tamago.tamago-shinchoku.heartbeat-watchdog`としてKeepAlive=true・RunAtLoad=trueで登録した。心臓(`heartbeat.sh`)自体も`com.tamago.tamago-shinchoku.heartbeat`としてKeepAlive=true・RunAtLoad=trueで登録し、`tools/machine_status_push.sh`側の心臓起動ロジックは直接Popenせず`launchctl kickstart -k`一本化に変更した。
+  実測（**同一手順で3回目のテスト**）：01:06:50に心臓をkill -9→ウォッチャーが「60秒超touchなし」を01:08:00に検知しkickstart→01:07:41(=t0+50.4秒)に新しい心臓プロセス起動を確認。**50.4秒で自己復旧**（合格ライン180秒に対し3.5倍の余裕）。
+- **二度と起こさないための仕掛け**：「launchdの管理機能（KeepAlive／StartInterval）に任せれば安全」という前提そのものを疑う設計に変更した。常駐ループでポーリングする方式は、`heartbeat.sh`自身がここ数日ずっと採用してきたパターン（15秒ループ）と同じで、実績があり枯れている。多層防御（ウォッチャー常駐ループ→5分便の保険ロジック→heartbeat.sh自身の二重起動防止）で、どれか1層が欠けても他が拾う構造にした。**今後「◯秒ごとに軽い処理を回したい」という要求が出た時、launchdの`StartInterval`を第一候補にしない**（今回2回連続で実測失敗している）。常駐ループ＋KeepAlive、またはheartbeat.sh自身への相乗りを優先する。
+- **日付**：2026-09-17（894番・3回目のテストで確定）
+- **根拠**：`~/Library/LaunchAgents/com.tamago.tamago-shinchoku.heartbeat.plist`・`com.tamago.tamago-shinchoku.heartbeat-watchdog.plist`（新設）、`tools/heartbeat_watchdog.py`・`tools/heartbeat_watchdog_loop.sh`（新設）、`tools/machine_status_push.sh`の心臓起動ロジック修正、`status/heartbeat_watchdog.log`・`status/heartbeat.log`の実測ログ（01:06:50 kill→01:08:00 検知→01:07:41 PID 93734起動、経過50.4秒）
