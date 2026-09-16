@@ -749,6 +749,10 @@
      一番上に小さく1枠。data.js の renkei を読んで表示するだけ（重い処理なし）。 -->
 <div id="renkeiBar" style="margin:6px 0 10px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--line);font-size:0.8rem;line-height:1.6;"></div>
 
+<!-- 893番（2026-09-17）：仕組み②「重くならない」。ページの重さの実測値を1行。
+     data.js の pageWeight を読んで表示するだけ（重い処理なし）。 -->
+<div id="pageWeightBar" style="margin:6px 0 10px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--line);font-size:0.8rem;line-height:1.6;"></div>
+
 <!-- 895番（2026-09-16）：外に出した仕事（Devin/ChatGPT/Grok）の台帳サマリを1行だけ。
      status/gaibu.json（tools/gaibu_ledger.py）を直接fetchする（自動更新される台帳のため、data.jsを経由しない）。 -->
 <div id="gaibuBar" style="margin:6px 0 10px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--line);font-size:0.8rem;line-height:1.6;"></div>
@@ -4674,7 +4678,7 @@ function renderStaleFromCache(cached){
   const when = new Date(cached.savedAt).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"});
   const upd = document.getElementById("updated");
   if(upd) upd.innerHTML = `<span style="color:#9aa0a6">⚠ 最新を読み込めず、${mins}分前（${esc(when)}時点）の内容を表示中</span>`;
-  try{ renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail(); renderRenkeiBar(); }catch(e){ showErr(e); }
+  try{ renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail(); renderRenkeiBar(); renderPageWeightBar(); }catch(e){ showErr(e); }
 }
 let __dataReadyRetries = 0;
 function __dataReady2(){
@@ -4717,7 +4721,7 @@ function __dataReady2(){
   }
   __dataReadyRetries = 0;
   document.getElementById("updated").textContent = `依頼一覧 ${window.SHINCHOKU_ALL ? window.SHINCHOKU_ALL.generatedAt : ""}`;
-  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderLineReplyAlert(); renderMicAndDraftMail(); renderLovablePublishAlert(); renderRenkeiBar();
+  renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderLineReplyAlert(); renderMicAndDraftMail(); renderLovablePublishAlert(); renderRenkeiBar(); renderPageWeightBar();
   saveShinchokuCache();
 };
 // 826番（2026-09-14）：3チーム連携バー。data.js の renkei を1枠だけ静かに表示する。
@@ -4733,6 +4737,25 @@ function renderRenkeiBar(){
     + `　往復 ${Number(r.roundTrips || 0)}回`
     + `　<span style="color:${bridgeColor}">橋渡し ${Number(r.bridgeCount || 0)}回</span>`
     + (r.checkPageUrl ? `　<a href="${esc(r.checkPageUrl)}" style="color:var(--kinari);text-decoration:underline;">確認ページ</a>` : "");
+}
+// 893番（2026-09-17）：仕組み②「重くならない」。data.js の pageWeight を1枠だけ静かに表示する。
+function renderPageWeightBar(){
+  const el = document.getElementById("pageWeightBar");
+  if(!el) return;
+  const w = D && D.pageWeight;
+  if(!w){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.style.display = "block";
+  const link = w.checkPageUrl ? `　<a href="${esc(w.checkPageUrl)}" style="color:var(--kinari);text-decoration:underline;">確認ページ</a>` : "";
+  if(w.status !== "measured" || w.totalGzipKB == null){
+    el.innerHTML = `⚖️ ページの重さ　まだ計測中（CIがmainへbaselineを自動生成するのを待っています）${link}`;
+    return;
+  }
+  const pages = w.pages || {};
+  const parts = Object.values(pages)
+    .filter(p => p && p.gzipKB != null)
+    .map(p => `${esc(p.label)} ${Number(p.gzipKB).toFixed(1)}KB`)
+    .join(" / ");
+  el.innerHTML = `⚖️ ページの重さ（gzip後）　合計 ${Number(w.totalGzipKB).toFixed(1)}KB　${parts}${link}`;
 }
 // 895番（2026-09-16）：外に出した仕事（Devin/ChatGPT/Grok）の台帳。status/gaibu.json を直接fetchして自己完結で描画する
 // （falセクション等と同じパターン。data.js経由にしないのは自動更新される台帳と手更新ファイルの二重管理を避けるため）。

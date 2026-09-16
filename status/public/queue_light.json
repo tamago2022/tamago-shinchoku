@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-17 01:00",
+ "updatedAt": "2026-09-17 01:29",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -2118,7 +2118,7 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html"
    ],
    "evidenceGone": true,
-   "evidenceCheckedAt": "2026-09-16T22:20:23+0900"
+   "evidenceCheckedAt": "2026-09-17T01:20:35+0900"
   },
   {
    "n": 793,
@@ -3628,9 +3628,13 @@
    "order": 0,
    "autoDemoteOverride": "たまごさんの最優先「とにかく会話のキャッチボール」（2026-09-16 19:45）",
    "contentCheckFailCount": 1,
-   "startedAt": "2026-09-17T00:45:26+09:00",
-   "sessionId": "1ade361c-113a-4277-a461-0df898e404dc",
-   "pid": 84295
+   "touchCheckFailCount": 1,
+   "failReasons": [
+    "触る検品NG：押しても無反応5件：「20代」(BUTTON)、「30代」(BUTTON)、「40代」(BUTTON)"
+   ],
+   "startedAt": "2026-09-17T01:28:43+09:00",
+   "sessionId": "215c64a7-06fd-4f47-b4a7-1636883d71ef",
+   "pid": 2918
   },
   {
    "n": 889,
@@ -3688,44 +3692,47 @@
    "n": 893,
    "title": "【仕組み②】重くならない：ページの重さに上限を設けCIで落とす",
    "why": "スマホから追加",
-   "status": "touchchecking",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 1,
    "urgent": true,
    "autoDemoteOverride": "たまごさん「仕組み作りの方が遥かに大事」（2026-09-16 23:15）",
-   "startedAt": "2026-09-16T23:35:42+09:00",
-   "sessionId": "40d7134a-e00a-44d6-a296-fca414e440c0",
-   "finishedAt": "2026-09-17T01:00:40+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/893-page-weight-ci.html"
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/893-page-weight-ci.html",
+   "aiVerifyFailCount": 1,
+   "failReasons": [
+    "合格条件「進捗表に現在の重さが出ている」が未達（進捗表トップページを全文検索しても\"重さ\"の表示が0件）"
    ],
-   "touchPid": 91550,
-   "touchOutJson": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-f2821465.json",
-   "touchLog": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-f2821465.log",
-   "touchStartedAt": "2026-09-17T01:00:40+09:00",
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/893-page-weight-ci.html"
+   "bgWaitCount": 1
   },
   {
    "n": 894,
    "title": "【仕組み③】工場が止まらない：止まりの検知を直す＋巻き戻りを殺す",
    "why": "スマホから追加",
-   "status": "running",
+   "status": "stuck",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 1,
    "urgent": true,
    "autoDemoteOverride": "たまごさん「仕組み作りの方が遥かに大事」（2026-09-16 23:15）",
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/index.html",
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/894-heartbeat-self-heal.html",
    "aiVerifyFailCount": 1,
    "failReasons": [
-    "中核の合格条件「心臓を殺して3分以内に自分で戻ることを実際に確かめる」が、修正後の再テストで確認されておらず、現状のlaunchd構成(5分間隔・KeepAliveなし+新設7分ロック解除)では理論上も3分以内を満たせない"
+    "中核の合格条件「心臓を殺して3分以内に自分で戻ることを実際に確かめる」が、修正後の再テストで確認されておらず、現状のlaunchd構成(5分間隔・KeepAliveなし+新設7分ロック解除)では理論上も3分以内を満たせない",
+    "触る検品NG：押しても無反応1件：「← 進捗表に戻る」(A)"
    ],
    "startedAt": "2026-09-17T00:45:59+09:00",
    "sessionId": "8cbee789-2c35-4f78-86b2-3267581a197b",
-   "pid": 84523
+   "finishedAt": "2026-09-17T01:12:52+09:00",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/894-heartbeat-self-heal.html"
+   ],
+   "touchCheckFailCount": 1,
+   "stuckAt": "2026-09-17T01:13:47+09:00",
+   "stuckReasonSummary": "中核の合格条件「心臓を殺して3分以内に自分で戻ることを実際に確かめる」が、修正後の再テストで確認されておらず、現状のlaunchd構成(5分間隔・KeepAliveなし+新設7分ロック解除)では理論上も3分以内を満たせない ／ 触る検品NG：押しても無反応1件：「← 進捗表に戻る」(A)",
+   "stuckRedoTotal": 2
   },
   {
    "n": 895,
@@ -3755,14 +3762,17 @@
    "n": 896,
    "title": "【仕組み⑤】外部連絡は押すだけで出る仕組み（宛先調べ・英日セット・画面を開く）",
    "why": "スマホから追加",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 1,
    "urgent": true,
    "autoDemoteOverride": "たまごさん「全てを仕組みで解決して」（2026-09-16 23:20）",
-   "urakataBlockedAt": "2026-09-17 00:30:45+09:00"
+   "urakataBlockedAt": "2026-09-17 00:30:45+09:00",
+   "startedAt": "2026-09-17T01:13:13+09:00",
+   "sessionId": "e1c63146-bb8a-4150-8f86-095b6521502a",
+   "pid": 95417
   },
   {
    "n": 897,
@@ -3851,7 +3861,8 @@
    "origin": "user",
    "priority": 1,
    "urgent": true,
-   "urakataBlockedAt": "2026-09-17 00:30:45+09:00"
+   "urakataBlockedAt": "2026-09-17 00:30:45+09:00",
+   "order": 1
   },
   {
    "n": 903,
@@ -3896,6 +3907,35 @@
    "origin": "user",
    "priority": 1,
    "urgent": true
+  },
+  {
+   "n": 907,
+   "title": "【最優先】コンシェルジュの声：トークンは発行されているが通話が成立しない。なぜ繋がらないかを突き止める",
+   "why": "スマホから追加",
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "urgent": true,
+   "order": 0,
+   "autoDemoteOverride": "たまごさんが3日待っている最優先（コンシェルジュと話す）の本当の詰まり",
+   "startedAt": "2026-09-17T01:24:00+09:00",
+   "sessionId": "16bd2514-0311-4c2b-9204-0af3687d85e3",
+   "pid": 541,
+   "label": "【最優先】コンシェルジュの声：トークンは発行されているが通話が成立しない。なぜ繋がらないかを突き止める"
+  },
+  {
+   "n": 908,
+   "title": "【仕組み⑬】人間なしで通しテスト（偽マイクで音声を流す）＋別AIに検品させる",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "urgent": true,
+   "order": 2
   }
  ]
 }
