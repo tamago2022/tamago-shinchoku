@@ -52,7 +52,8 @@
 <div class="date">2026-09-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-<p><b>対象</b>：X @lolmame318「この犬本当にすき」の犬カード。</p><p><b>直す前</b><br>タイトル：<code>愛嬌たっぷりな犬が一生懸命に動きを見せる様子</code><br>コピー：<code>投稿者が思わず「本当にすき」とこぼしてしまうほど魅力的な犬の姿。その一挙手一投足から目が離せなくなるような、愛くるしい瞬間が収められています。</code></p><p>→ 元投稿の一言だけから想像で書かれていて、動画の中身と違っていた（実際は兄弟が取っ組み合いをしていて犬が困っている場面）。</p><p><b>直した後（コードはmain合流済み）</b><br>タイトル：<code>兄弟の取っ組み合いに巻き込まれ、犬だけ本気で困り顔</code><br>コピー：<code>ソファの上で兄弟が本気の取っ組み合いを始めた瞬間、逃げ場をなくしたのは白い犬。耳を伏せてじっと固まり、こっちを見つめる目がなんとも言えない。周りは大騒ぎなのに犬だけ状況についていけていない——そのギャップに笑ってしまう一本。</code></p><p>実際にyt-dlpで動画をダウンロードし、ffmpegでフレームを抜いて目視確認した上で書き直した（下の3枚がその時に抜いたフレーム）。</p><p><b>⚠まだ本番には出ていません</b>：DB更新はGitHub Actionsの一度きり便で実行する設計だが、joy-relief-station側のGitHub Actionsが「支払いが失敗／利用上限」で12時間以上リポジトリ全体停止中（直近30件中22件失敗、他の定期自動化も同様に停止）。店主がGitHubのBilling設定を復旧すれば、push済みの修正便が自動的に走ってDB更新→本番の棚ページに反映される（Lovableの公開ボタンとは無関係）。</p>
+<p><b>対象</b>：X @lolmame318「この犬本当にすき」の犬カード。</p><p><b>直す前</b><br>タイトル：<code>愛嬌たっぷりな犬が一生懸命に動きを見せる様子</code><br>コピー：<code>投稿者が思わず「本当にすき」とこぼしてしまうほど魅力的な犬の姿。その一挙手一投足から目が離せなくなるような、愛くるしい瞬間が収められています。</code></p><p>→ 元投稿の一言だけから想像で書かれていて、動画の中身と違っていた（実際は兄弟が取っ組み合いをしていて犬が困っている場面）。</p><p><b>直した後（コードはmain合流済み）</b><br>タイトル：<code>兄弟の取っ組み合いに巻き込まれ、犬だけ本気で困り顔</code><br>コピー：<code>ソファの上で兄弟が本気の取っ組み合いを始めた瞬間、逃げ場をなくしたのは白い犬。耳を伏せてじっと固まり、こっちを見つめる目がなんとも言えない。周りは大騒ぎなのに犬だけ状況についていけていない——そのギャップに笑ってしまう一本。</code></p><p>実際にyt-dlpで動画をダウンロードし、ffmpegでフレームを抜いて目視確認した上で書き直した（下の3枚がその時に抜いたフレーム）。</p>
+<p style="background:#fff3ec;border:1px solid #e8c3ac;border-radius:8px;padding:10px 14px;"><b style="color:var(--aka);">⚠まだ本番には出ていません（2026-09-16 20:35 時点、読み取りで確認済み）。</b><br>直った文面はコードとしてmainへ入っているが、DBの書き換えはGitHub Actionsの一度きり便が実行する設計。<b style="color:var(--aka);">今そのGitHub Actions自体が、tamago2022アカウントの支払いエラーでリポジトリ全体止まっている</b>（直近30件中22件失敗）。<br>これはAI側では直せない、お金の設定の話（GitHubの「Settings → Billing and plans」で支払い方法を直すだけ）。店主が下のGitHub設定を開いて直すと、待っていた一度きり便が自動で動いてDBが書き換わり、この棚ページに反映される（Lovableの公開ボタンとは無関係）。</p>
 </div>
 
 <h2>② 数字</h2>
@@ -71,12 +72,11 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>棚のページ（本番・課金復旧後に反映）</b><a href="https://joy-relief-station.lovable.app/shelf/cute/inu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/inu</a></li>
-  <li><b>元のX投稿</b><a href="https://x.com/lolmame318/status/2099798415844745400" target="_blank" rel="noopener">https://x.com/lolmame318/status/2099798415844745400</a></li>
-  <li><b>修正スクリプト</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/fix-copy-879-lolmame-once.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/fix-copy-879-lolmame-once.mjs</a></li>
-  <li><b>動画未視聴を防ぐ仕組み(フレーム証跡ゲート)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/require-frame-evidence.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/require-frame-evidence.mjs</a></li>
-  <li><b>GH Actions実行状況</b><a href="https://github.com/tamago2022/joy-relief-station/actions" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/actions</a></li>
+  <li><b>棚のページ（本番・支払い設定が直ったら数分で反映）</b><a href="https://joy-relief-station.lovable.app/shelf/cute/inu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/inu</a></li>
+  <li><b>元のX投稿（実際の中身はこれ）</b><a href="https://x.com/lolmame318/status/2099798415844745400" target="_blank" rel="noopener">https://x.com/lolmame318/status/2099798415844745400</a></li>
+  <li><b>ここを直すとDB反映が動き出す：GitHubの支払い設定</b><a href="https://github.com/settings/billing" target="_blank" rel="noopener">https://github.com/settings/billing</a></li>
 </ul>
+<p class="note">修正スクリプト・保存ゲートのコード自体は非公開リポジトリの中にあるため、ここにはリンクを置いていません（開いても404になるため）。中身は上の「直した後」の文面と同じもので、コードとしてはmainへ入っています。</p>
 
 
 
