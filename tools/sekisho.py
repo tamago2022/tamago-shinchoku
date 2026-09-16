@@ -43,6 +43,9 @@
   6. designRules（あれば `config/designRules.json`）違反が無いか。無ければスキップ
   7. 依頼文の「合格条件／完了条件」の各行が、報告・確認ページのどこかで触れられているか
      （簡易な語の重なり判定。見落としはあり得るので鬼監督(AI検品)と併用する前提）
+  8. ★917番新規：外部AI(まずGrok/xAI)に「これ、たまごさんに見せていいか」を判定させる
+     （自分で自分に丸を付けない。tools/gaibu_kenpin.py。APIキー無し・クレジット切れ・
+     コスト上限超過の時はSKIPして素通し＝この関門1つだけの都合で他の合格を止めない）
 
 # 3回落ちたら
   `status/sekisho_state.json` に番号ごとの連続失敗回数を持つ。3回に達したら
@@ -60,6 +63,12 @@ import sys
 import time
 import urllib.error
 import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import gaibu_kenpin  # 917番：関門8＝外部AI(Grok)検品
+except Exception:
+    gaibu_kenpin = None
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_PATH = os.path.join(REPO, "status", "sekisho_state.json")
@@ -451,7 +460,7 @@ def _escalate_repeated_unfixed(n, reasons, fail_count):
 # ---------------------------------------------------------------------------
 
 def gate(n=None, url=None, check_url=None, report_text="", what_text="", skip_click=False,
-         timeout=10):
+         timeout=10, skip_gaibu=False):
     """全関門を上から順に走らせる。戻り値: (passed: bool, reasons: list[str], detail: dict)"""
     reasons = []
     detail = {}
@@ -497,6 +506,21 @@ def gate(n=None, url=None, check_url=None, report_text="", what_text="", skip_cl
     if not ok:
         reasons.append(reason)
 
+    # 917番：関門8＝外部AI(まずGrok)検品。ここまでの関門1〜7を全部通っていても、
+    # 「たまごさんに見せていい状態か」は自分（Claude）だけで丸を付けない。
+    # 別ベンダーのAIに依頼文・URL・本文・スクショの3点セットを渡して判定させる。
+    if gaibu_kenpin is not None and not skip_gaibu:
+        try:
+            g_ok, g_reason = gaibu_kenpin.check_gaibu_kenpin_for_url(
+                target, what_text=what_text, report_text=report_text, n=n)
+        except Exception as e:
+            g_ok, g_reason = True, "外部AI検品の呼び出しで例外が発生したためスキップ（%s）" % e
+        detail["8_gaibu_kenpin"] = g_reason
+        if not g_ok:
+            reasons.append("外部AI検品NG：%s" % g_reason)
+    else:
+        detail["8_gaibu_kenpin"] = "スキップ指定" if skip_gaibu else "gaibu_kenpinモジュール読み込み失敗のためスキップ"
+
     passed = not reasons
     _record(n, passed, reasons)
     return passed, reasons, detail
@@ -511,6 +535,8 @@ def main():
     ap.add_argument("--report", default="", help="報告文をそのまま渡す（--report-fileより弱い）")
     ap.add_argument("--what-file", default=None, help="依頼文（合格条件を含む）のファイルパス")
     ap.add_argument("--skip-click", action="store_true", help="触る検品(headless Chrome)を省略する")
+    ap.add_argument("--skip-gaibu", action="store_true",
+                     help="917番：外部AI(Grok)検品を省略する（頻繁な試し実行での課金を避けたい時用）")
     ap.add_argument("--timeout", type=int, default=10)
     ap.add_argument(
         "--local-file", default=None,
@@ -544,6 +570,7 @@ def main():
         n=args.n, url=args.url, check_url=args.check_url,
         report_text=report_text, what_text=what_text,
         skip_click=args.skip_click, timeout=args.timeout,
+        skip_gaibu=args.skip_gaibu,
     )
 
     print(json.dumps(detail, ensure_ascii=False, indent=1))
