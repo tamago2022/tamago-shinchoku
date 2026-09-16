@@ -979,3 +979,13 @@
 - **症状**：status/.last_launch_at が17分更新されておらず、10分ルールに抵触しました。
 - **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
 - **日付**：2026-09-15 21:58
+
+
+---
+
+## 879番：worktree（q879-0904）のsrc/が1000件超まるごと物理消失していた
+
+- **症状**：`/Users/mac/Documents/AI作業/.worktrees/q879-0904` のディスク上から`src/`（421ファイル）・`tools/jules-command-center/`・`tsconfig.json`・`vite.config.ts`等、計1025ファイルが物理的に消えていた。gitのインデックスには削除としてステージ済みだったがコミットはされておらず、HEAD（22251112）には無事に残っていた。同名で`q879-0904-021945`という別worktreeも存在しており、途中で壊れた作業の残骸とみられる。
+- **対応**：`git add -A`で全体を一旦ステージし`git diff --cached --stat`で実質差分を確認→純粋な欠損（HEADと内容一致）と判明→`git reset`でインデックスを戻し`git checkout HEAD -- .`でディスク上に復元。新規に追加されていた`.agents/skills/*`・`.codex/*`は無傷のまま残した。復元後は本来の作業（`src/`検索）が可能になった。
+- **教訓**：`.worktrees/qNNN-0904`という命名のworktreeで着手前に`ls src`が失敗したら、即座に消えたと決めつけず`git status`→`git diff --cached --stat`で実質差分を見てから復元すること。同じ番号にタイムスタンプ付きの別worktree（`qNNN-0904-HHMMSS`）が並んでいたら、前回セッションが壊れて再作成された痕跡と疑う。
+- **日付**：2026-09-16 19:10
