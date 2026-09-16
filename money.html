@@ -108,6 +108,12 @@
 </div>
 
 <div class="sec">
+  <div class="sech">🤝 外に出した仕事（Devin/ChatGPT/Grok） <small id="gaibuMeta"></small></div>
+  <div id="gaibuBox">読み込み中…</div>
+  <div class="note">台帳：status/gaibu.json（tools/gaibu_ledger.py）。Devinは5分おき自動同期。Devin APIには使用量取得手段が無いため（2026-09-16に確認済み）、金額は自己申告のみ。空欄は0円ではなく「未申告」。</div>
+</div>
+
+<div class="sec">
   <div class="sech">🎬 fal（従量課金） <small id="falMeta"></small></div>
   <div id="falBox">読み込み中…</div>
 </div>
@@ -285,6 +291,36 @@ function renderHero(){
     ${unregisteredActive > 0 ? `<div class="warn">継続中のうち${unregisteredActive}件、月額が未登録（合計に含まれていません）</div>` : ""}
   `;
 }
+
+/* ── 895番：外に出した仕事（Devin/ChatGPT/Grok）：status/gaibu.json（tools/gaibu_ledger.py）をそのまま読む ── */
+const STATUS_LABEL_JA = {requested:"依頼中", running:"作業中", pr_open:"PR待ち", done:"完了", failed:"失敗", stopped:"一時停止"};
+function renderGaibu(d){
+  const box = document.getElementById("gaibuBox");
+  const meta = document.getElementById("gaibuMeta");
+  if(!d || !d.summary){
+    box.innerHTML = `<div class="note">まだ記録が無い（外部AIへ仕事を1本出すたびに増える）</div>`;
+    return;
+  }
+  const s = d.summary;
+  if(meta) meta.textContent = `${s.totalCount}件・${yen(s.totalCostYen)}（申告分のみ）`;
+  const aiRows = ["Devin","ChatGPT","Grok"].map(ai => {
+    const a = s.byAi[ai] || {count:0, openCount:0, costUsd:0, costYen:0, capYen:0, warn:false, over:false};
+    const flag = a.over ? "🔴" : (a.warn ? "🟡" : "");
+    return `<div class="kv"><span>${flag} ${esc(ai)}（${a.count}件・未完${a.openCount}件）</span><span class="v">${yen(a.costYen)} / 上限${yen(a.capYen)}</span></div>`;
+  }).join("");
+  const items = (d.items || []).slice().sort((a,b) => (b.updatedAt||"").localeCompare(a.updatedAt||"")).slice(0, 8);
+  const itemRows = items.map(it => {
+    const st = STATUS_LABEL_JA[it.status] || it.status || "?";
+    const cost = it.costUsd != null ? fmtUsd(it.costUsd) : "未申告";
+    const link = it.resultUrl ? `<a href="${esc(it.resultUrl)}" target="_blank" rel="noopener">開く</a>` : "";
+    return `<div class="kv"><span>[${esc(it.ai)}] ${esc(it.what)}（${esc(st)}）</span><span class="v">${cost} ${link}</span></div>`;
+  }).join("");
+  box.innerHTML = aiRows + (itemRows ? `<div class="note" style="margin-top:8px;">直近の項目</div>${itemRows}` : "");
+}
+fetch("status/public/gaibu.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderGaibu).catch(()=>{
+    document.getElementById("gaibuBox").innerHTML = `<div class="note">読み込みに失敗しました</div>`;
+  });
 
 /* ── fal（従量課金）：既存の status/fal_cost_ledger.json（tools/fal_cost_ledger.py）をそのまま読む ── */
 function renderFal(d){

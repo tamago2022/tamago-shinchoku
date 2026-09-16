@@ -735,12 +735,23 @@
      （2026-09-05から実装済み・PWA側の入口が無かっただけ）。 -->
 <div id="heartbeatBar" style="display:none"></div>
 
+<!-- 894番（2026-09-16）：「発車待ちがあり、枠が空いているのに、N分発車していない」を
+     心臓の生死（heartbeatBar・上）とは別軸で検知する。心臓（ループ）は回っていても、
+     5分便のどこかがハングして実際の発車が起きていないケースを、queue.jsonの実データ
+     （待ち件数・走行本数・安全上限）から直接判定する（tools/factory_status.pyのlaunchStall）。
+     10分以上、余地があるのに発車が起きていなければ赤で出す。動いている間は何も出さない。 -->
+<div id="launchStallBar" style="display:none"></div>
+
 <h1>進捗表 <span id="clock" class="clock">--:--:--</span></h1>
 <div class="updated" id="updated">読み込み中…</div>
 
 <!-- 826番（2026-09-14）：たまごさんの今週の大目標「3チーム(Grok/OpenAI/Anthropic)連携」を
      一番上に小さく1枠。data.js の renkei を読んで表示するだけ（重い処理なし）。 -->
 <div id="renkeiBar" style="margin:6px 0 10px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--line);font-size:0.8rem;line-height:1.6;"></div>
+
+<!-- 895番（2026-09-16）：外に出した仕事（Devin/ChatGPT/Grok）の台帳サマリを1行だけ。
+     status/gaibu.json（tools/gaibu_ledger.py）を直接fetchする（自動更新される台帳のため、data.jsを経由しない）。 -->
+<div id="gaibuBar" style="margin:6px 0 10px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--line);font-size:0.8rem;line-height:1.6;"></div>
 
 <!-- 2026-09-09（たまごさん指示）「クレジット配分を一番上に」「同時稼働本数も分かるように」
      →この2枚を進捗表の一番最初、他のどのセクションよりも上に置く。 -->
@@ -4723,6 +4734,24 @@ function renderRenkeiBar(){
     + `　<span style="color:${bridgeColor}">橋渡し ${Number(r.bridgeCount || 0)}回</span>`
     + (r.checkPageUrl ? `　<a href="${esc(r.checkPageUrl)}" style="color:var(--kinari);text-decoration:underline;">確認ページ</a>` : "");
 }
+// 895番（2026-09-16）：外に出した仕事（Devin/ChatGPT/Grok）の台帳。status/gaibu.json を直接fetchして自己完結で描画する
+// （falセクション等と同じパターン。data.js経由にしないのは自動更新される台帳と手更新ファイルの二重管理を避けるため）。
+function renderGaibuBar(d){
+  const el = document.getElementById("gaibuBar");
+  if(!el) return;
+  if(!d || !d.summary){ el.style.display = "none"; el.innerHTML = ""; return; }
+  const s = d.summary;
+  el.style.display = "block";
+  const parts = ["Devin","ChatGPT","Grok"].map(ai => {
+    const a = s.byAi[ai] || {count:0, warn:false, over:false};
+    const flag = a.over ? "🔴" : (a.warn ? "🟡" : "");
+    return `${esc(ai)}${flag}${a.count}`;
+  }).join(" / ");
+  el.innerHTML = `🤝 外に出している仕事　${s.totalCount}件（${parts}）　未完 ${s.openCount}件`
+    + `　<a href="money.html" style="color:var(--kinari);text-decoration:underline;">お金の管理表</a>`;
+}
+fetch("status/public/gaibu.json?t=" + Date.now(), {cache:"no-store"})
+  .then(r => r.ok ? r.json() : null).then(renderGaibuBar).catch(()=>{});
 // 626番：Anthropic返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
 function renderAnthropicAlert(){
   const el = document.getElementById("anthropicAlert");
@@ -4916,6 +4945,27 @@ function renderHeartbeat(m){
     + `<button type="button" class="cmdbtn" data-action="restart_heartbeat" data-target="" data-label="心臓を起こす">🔁 心臓を起こす</button>`
     + `<span data-cmdid-slot></span></div>`;
 }
+/* 894番（2026-09-16）：心臓（renderHeartbeat・上）は「ループが回っているか」しか見ない。
+   ここは「発車待ちがあり枠が空いているのに、実際の発車が起きているか」を
+   machine.json.launchStall（factory_status.pyがqueue.jsonの実データから実測）で見る。
+   心臓が生きていても、5分便のどこかがハングしてmachine.json自体の更新が長時間止まる
+   ようなケースを取り逃がさないための別軸の検知（お金の確認待ち等の正当な停止は
+   factory_status.py側で既に除外済みなので、ここが赤なら本当の異常）。 */
+function renderLaunchStall(m){
+  const el = document.getElementById("launchStallBar");
+  if(!el) return;
+  const ls = m && m.launchStall;
+  if(!ls || !ls.stalled){ el.style.display = "none"; el.innerHTML = ""; return; }
+  const mins = ls.stalledMin != null ? ls.stalledMin : "?";
+  el.style.display = "block";
+  el.style.cssText = "display:block;margin:0 0 12px;padding:12px 14px;border-radius:14px;"
+    + "background:linear-gradient(135deg,#4a1414,#2b0d0d);border:1px solid rgba(255,120,120,0.5);"
+    + "color:#ffdada;font-weight:700;font-size:0.92rem;";
+  el.innerHTML = `<div>🚦 発車待ちが${esc(String(ls.waiting))}件あるのに${esc(String(mins))}分発車していません（走行${esc(String(ls.alive))}本／上限${esc(String(ls.safeMax))}本）</div>`
+    + `<div class="cmdrow" style="margin-top:8px">`
+    + `<button type="button" class="cmdbtn" data-action="restart_heartbeat" data-target="" data-label="心臓を起こす">🔁 心臓を起こす</button>`
+    + `<span data-cmdid-slot></span></div>`;
+}
 function refreshMachine(){
   return fetch("status/public/machine.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
@@ -4928,7 +4978,7 @@ function refreshMachine(){
         //   原因のかたち：ここは描画を1行に並べていたので、**どれか1つが転ぶと以降が全部描かれない。**
         //   今日この形のバグを何度も踏んだので、1本ずつ包んで、転んでも残りは描くようにする。
         window.__machine = m;
-        for(const fn of [() => renderHeartbeat(m), () => renderMachine(m), () => renderMeters(m), () => renderSessions(m),
+        for(const fn of [() => renderHeartbeat(m), () => renderLaunchStall(m), () => renderMachine(m), () => renderMeters(m), () => renderSessions(m),
                          () => renderNow(m), () => renderCapBar()]){
           try{ fn(); }catch(err){ showErr(err); }
         }

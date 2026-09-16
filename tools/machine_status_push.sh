@@ -173,14 +173,17 @@ if ss:
                                     (s.get("u") or {}).get("fh"), (s.get("u") or {}).get("sd")))
 PYEOF
 } > "$REPO/status/_plan_usage_probe.txt" 2>&1
-python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
 
 # 795番（2026-09-14）：数字のズレをゼロに近づける常設の見張り番。5分おきの既存起動に相乗りする
 # （新しい常駐は増やさない。理由はpace.py冒頭のコメントと同じ）。
 # ①正本の食い違いを監査 ②fal1本単価の基準を直近7日実測中央値に更新 ③予測と実測のズレ率トップ5を再計算。
-python3 "$REPO/tools/number_audit.py" --quiet >/dev/null 2>&1 || true
-python3 "$REPO/tools/fal_cost_ledger.py" --recompute >/dev/null 2>&1 || true
-python3 "$REPO/tools/estimate_vs_actual.py" --report >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/number_audit.py" --quiet >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/fal_cost_ledger.py" --recompute >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/estimate_vs_actual.py" --report >/dev/null 2>&1 || true
+# 895番（2026-09-16）：外に出した仕事の台帳（status/gaibu.json）。Devin分を5分おきに自動同期し、
+# 新しいPRが見つかったらdispatch_outbox.jsonlへ通知する（新規launchd常駐は増やさず既存5分便に相乗り）。
+run_with_timeout 30 python3 "$REPO/tools/gaibu_ledger.py" --sync-devin --quiet >/dev/null 2>&1 || true
 # 2026-09-03 たまごさん「進捗の数字がずれてる時点でダメ」。
 # Claudeアプリの実測ファイルは書き込みが止まることがあり（21:45で停止を確認）、推定に落ちると大きく外す。
 # 実際: 全モデル68% / Fable82% ← アプリ画面の値。推定: 111% / 88.5%。
@@ -242,15 +245,15 @@ PYEOF
 #   止めていた本当の理由＝再開がFableのままだったこと。それは session_watchdog.py 側で潰した：
 #   ①resume時に必ず --model claude-sonnet-5 を明示 ②status/no_fable.flag がある間はFable完全禁止。
 #   また止めたいときは status/no_fable.flag ではなくこの行をコメントに戻す（再開そのものが止まる）。
-python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
+run_with_timeout 60 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
 # 2026-09-03 孤児プロセス回収：セッション終了後もppid=1で残り続けるlint/build/test系の暴走プロセスを止める（ロード100%固定化の実害を確認して追加）
-python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
 # 2026-09-06(415番) 容量の見張り：/System/Volumes/Data の空きを測り、30GB未満なら
 #   .worktreesのnode_modules/dist/.output・7日超ログ・__pycache__だけを安全に片づけ、
 #   20GB未満ならstatus/no_launch.flagを立てて発車を止める。壺と金庫(写真/動画/音楽/
 #   Eagle/Vault/Drive/dmg)には一切触れない。launchdの新規登録が2回ブロックされたため
 #   既存の5分間隔ジョブに相乗り(内部で15分に1回だけ実処理・STAMPファイルで間引き)。
-python3 "$REPO/tools/disk_guardian.py" >/dev/null 2>&1 || true
+run_with_timeout 45 python3 "$REPO/tools/disk_guardian.py" >/dev/null 2>&1 || true
 # 2026-09-04 たまごさん「まず連続して走る仕組みを優先してね。順番に発車されるようにして、1日中回ってる状態を作るのが最優先」
 #   発車待ち(status/queue.json)から、マシンとクレジットに空きがあれば1本だけ自動で着火する。
 #   3時間縛り・URL報告のセットはプロンプト側に必ず入る。Fableは使わない（常にSonnet）。
@@ -268,7 +271,7 @@ python3 "$REPO/tools/disk_guardian.py" >/dev/null 2>&1 || true
 #   その便が**20:18で止まっていた**（スマホのボタンも、Dispatchからの指示も、Macに届かなくなっていた）。
 #   別便が1つ死ぬだけで工場が片肺になるので、この巡回の中で一緒に処理する。
 #   （command_watch.sh 側は残してよい。二重に走っても、処理済みファイルは消えるので害はない）
-python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
 # 2026-09-03 たまごさん「iPhoneでいいなと思ったスクショを、すかさず入れられるのかな。そのスピード感だと助かる」
 #   ① iCloud Driveの「Eagle_取り込み_iPhoneから」に入った画像をEagleへ登録して、取り込み済みへ移す
 #   ② Eagleライブラリ → スマホ用Webギャラリー（share/eagle-…）を差分更新
@@ -310,24 +313,24 @@ if [ ! -f "$_ltstamp" ] || [ -n "$(find "$_ltstamp" -mmin +1200 2>/dev/null)" ];
   touch "$_ltstamp"
 fi
 # 2026-09-03 本数の実測校正：load_history.jsonl＋heavy_events.jsonl → calibration.json（safeN/target）。次回の factory_status が読む
-python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-05 週の配分（天井に行かないためのペース）。今日いくつ使ったか／あといくつ使えるか
-python3 "$REPO/tools/pace.py" >/dev/null 2>&1 || true
+run_with_timeout 20 python3 "$REPO/tools/pace.py" >/dev/null 2>&1 || true
 # 2026-09-05 完了は1週間で「完了のひかえ」へ移す（画面を短く保つ・あとから辿れる）
-python3 "$REPO/tools/archive_done.py" >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/archive_done.py" >/dev/null 2>&1 || true
 # 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く
-python3 /Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py sync >/dev/null 2>&1 || true
+run_with_timeout 30 python3 /Users/mac/Desktop/joy-relief-station/ai-brain/live/whiteboard.py sync >/dev/null 2>&1 || true
 
 cd "$REPO" || return 0
 
 # 2026-09-03 たまごさんの優先度（PWA→Obsidian経由）を取り込み、priority.json とホワイトボードに反映
-python3 "$REPO/tools/priority_ingest.py" >/dev/null 2>&1 || true
+run_with_timeout 20 python3 "$REPO/tools/priority_ingest.py" >/dev/null 2>&1 || true
 
 # 2026-09-03 Macの健康管理：何を閉じれば／消せば楽になるか（実測。重い計測は30分に1回）
-python3 "$REPO/tools/health_candidates.py" >/dev/null 2>&1 || true
+run_with_timeout 45 python3 "$REPO/tools/health_candidates.py" >/dev/null 2>&1 || true
 
 # 2026-09-03 PWAリモコン：▶️動かす／⏸止める／🔁引き継ぐ／🗑閉じる のコマンドキューを実行（launchd新規登録がブロックされたため、この5分間隔ジョブに相乗り）
-python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
+run_with_timeout 30 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
 
 # 2026-09-02 PWA第3段階：セッションごとの航跡を1行ずつ積む（何時に始まり・何時に止まり・誰が起こしたか、を後から数えるため）
 python3 - "$OUT" "$REPO/status/history.jsonl" <<'PY' 2>/dev/null || true
@@ -408,7 +411,7 @@ PYVER
 ### 作業14分が実際に巻き戻りで失われた）。公開先を status/public/ という、
 ### **どの既存worktreeも過去に一度も追跡したことが無いパス**へ丸ごと移した。
 ### 存在すらしなかったパスは、どんな広いgit addでも誤って巻き込みようがない。
-PUBLISH_LIST="version.json pace.json launch_cap.json done_archive.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json"
+PUBLISH_LIST="version.json pace.json launch_cap.json done_archive.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
 mkdir -p "$REPO/status/public"
 for _f in $PUBLISH_LIST; do
   [ -f "$REPO/status/$_f" ] && cp -f "$REPO/status/$_f" "$REPO/status/public/$_f" 2>/dev/null
