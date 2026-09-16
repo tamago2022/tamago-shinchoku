@@ -743,8 +743,19 @@ def _run(args, timeout=None):
 
 def _push(paths=("status/kenpou_check.json", "status/kenpou_check_state.json",
                   "status/kenpou_check_log.jsonl", "status/queue.json"), retries=5, wait_sec=8):
+    # 2026-09-16: 公開先を status/public/ へ移した（status/直下は.gitignore対象外パス）。
+    import shutil as _shutil
+    os.makedirs(os.path.join(REPO, "status", "public"), exist_ok=True)
+    pub_paths = []
+    for _p in paths:
+        _name = os.path.basename(_p)
+        _src = os.path.join(REPO, _p)
+        _dst = os.path.join(REPO, "status", "public", _name)
+        if os.path.exists(_src):
+            _shutil.copyfile(_src, _dst)
+            pub_paths.append("status/public/%s" % _name)
     for attempt in range(1, retries + 1):
-        rc, out, err = _run(["git", "add", "-f"] + list(paths))
+        rc, out, err = _run(["git", "add"] + pub_paths)
         if rc != 0:
             print("add失敗(試行%d): %s" % (attempt, (out + err).strip()[:300]))
             time.sleep(wait_sec)

@@ -1047,7 +1047,7 @@ let __versionCheckBusy = false;
 function checkVersion(){
   if(__versionCheckBusy || PAGE_BUILD) return;
   __versionCheckBusy = true;
-  fetchWithTimeout("status/version.json?t=" + Date.now(), {cache:"no-store"}, 8000)
+  fetchWithTimeout("status/public/version.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : null)
     .then(j => {
       __versionCheckBusy = false;
@@ -1182,7 +1182,7 @@ function withScrollLock796(fn){
   }
 }
 function refreshArrivals(){
-  return fetchWithTimeout("status/new_arrivals.json?t=" + Date.now(), {cache:"no-store"}, 8000)
+  return fetchWithTimeout("status/public/new_arrivals.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : [])
     .then(list => {
       if(!Array.isArray(list)) return;
@@ -1215,7 +1215,7 @@ function fmtDailyIngestDate(d){
   return m ? (parseInt(m[2],10) + "月" + parseInt(m[3],10) + "日") : String(d||"");
 }
 function refreshDailyIngestBar(){
-  return fetchWithTimeout("status/daily_ingest_summary.json?t=" + Date.now(), {cache:"no-store"}, 8000)
+  return fetchWithTimeout("status/public/daily_ingest_summary.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : null)
     .then(s => {
       if(!s || typeof s.total !== "number") return;
@@ -1342,7 +1342,7 @@ let SENT_CMDS = {}; let CMD_RESULTS = {};
 function loadCmds(){ try { SENT_CMDS = JSON.parse(localStorage.getItem(CMD_KEY) || "{}") || {}; } catch(e){ SENT_CMDS = {}; } }
 function saveCmds(){ try { localStorage.setItem(CMD_KEY, JSON.stringify(SENT_CMDS)); } catch(e){} }
 function refreshCommands(){
-  return fetch("status/commands.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/commands.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
       if(text == null) throw new Error("empty");
       if(unchangedSince796("commands", text)) return;
@@ -1597,13 +1597,13 @@ function renderPace(p){
 }
 function refreshPace(){
   // 2026-09-11（752番）：タイムアウト無しの素のfetchのままだった。成功時はキャッシュも更新する。
-  return fetchWithTimeout("status/pace.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+  return fetchWithTimeout("status/public/pace.json?t=" + Date.now(), {cache:"no-store"}, 12000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
     .then(p => { renderPace(p); if(p) saveLastGood("pace", p); })
     .catch(()=>{ renderPace(null); });
 }
 function refreshQuota(){
-  return fetchWithTimeout("status/quota.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+  return fetchWithTimeout("status/public/quota.json?t=" + Date.now(), {cache:"no-store"}, 12000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
     .then(q => { if(q){ window.__quota = q; window.__quotaStaleAt = null; saveLastGood("quota", q); try{ renderFuel(); }catch(e){} } })
     .catch(()=>{
@@ -1683,7 +1683,7 @@ function paintTopStatus(t, staleSavedAt){
     + (staleSavedAt ? `<div class="pd">${staleNoteHtml(staleSavedAt)}</div>` : "");
 }
 function refreshTopStatus(){
-  return fetchWithTimeout("status/top_status.json?t=" + Date.now(), {cache:"no-store"}, 10000)
+  return fetchWithTimeout("status/public/top_status.json?t=" + Date.now(), {cache:"no-store"}, 10000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
     .then(t => { renderTopStatus(t); if(t) saveLastGood("topStatus", t); })
     .catch(()=>{ renderTopStatus(null); });
@@ -1691,7 +1691,7 @@ function refreshTopStatus(){
 refreshTopStatus();
 setInterval(()=>{ if(!document.hidden) refreshTopStatus(); }, 20000);
 function refreshGenzaichi(){
-  return fetchWithTimeout("status/genzaichi.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+  return fetchWithTimeout("status/public/genzaichi.json?t=" + Date.now(), {cache:"no-store"}, 12000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
     .then(g => { renderGenzaichi(g); if(g) saveLastGood("genzaichi", g); })
     .catch(()=>{ renderGenzaichi(null); });
@@ -1745,7 +1745,7 @@ let __nowRev = null;
 function applyNowRev(rev){
   rev = (rev || "").trim();
   if(!rev || rev === __nowRev) return; // 変わっていない→ここで打ち切り（now.jsonは取りに行かない・再描画もしない）
-  return fetchWithTimeout("status/now.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+  return fetchWithTimeout("status/public/now.json?t=" + Date.now(), {cache:"no-store"}, 12000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
     .then(data => {
       if(!data) return;
@@ -1829,7 +1829,7 @@ function renderCostTop5(d){
   if(src) src.textContent = d.priceSourceNote || "";
 }
 function refreshCost(){
-  return fetch("status/cost_by_task.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/cost_by_task.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
       if(text == null) throw new Error("empty");
       if(unchangedSince796("cost", text)) return;
@@ -2003,7 +2003,7 @@ function refreshDekimono(){
   //   通信が詰まると「読み込み失敗」なのに何も表示されず、次に renderDekita() が呼ばれた時
   //   window.__dekimono が空のまま＝「まだありません（0件）」と誤って見えていた。
   //   ①タイムアウトを付ける ②失敗時は前回成功データを灰色でstale表示 ③無ければ明示的にエラー表示、の3点で直す。
-  return fetchWithTimeout("status/dekimono.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+  return fetchWithTimeout("status/public/dekimono.json?t=" + Date.now(), {cache:"no-store"}, 12000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
     .then(d => {
       if(!d) throw new Error("empty body");
@@ -2099,7 +2099,7 @@ function renderFalBudget(d){
     `fal.aiダッシュボード(fal.ai/dashboard/usage-billing)との自動突き合わせは未実装（fal公式APIに課金取得口が無く404、ブラウザでの手動確認が必要と2026-09-07に確認済み）。更新: ${d.updatedAt || "—"}`;
 }
 function refreshFalBudget(){
-  return fetch("status/fal_cost_ledger.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/fal_cost_ledger.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null)
     .then(text => {
       if(text == null) return;
@@ -2163,8 +2163,8 @@ function renderEstimateVsActual(d){
 }
 function refreshNumberAudit(){
   Promise.all([
-    fetch("status/number_conflicts.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
-    fetch("status/estimate_vs_actual_summary.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
+    fetch("status/public/number_conflicts.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
+    fetch("status/public/estimate_vs_actual_summary.json?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(()=>null),
   ]).then(([conflictsData, gapsData]) => {
     withScrollLock796(()=>{
       if(conflictsData) renderNumberConflicts(conflictsData);
@@ -2209,7 +2209,7 @@ function renderFailuresOpen(d){
   </div>`).join("");
 }
 function refreshFailures(){
-  return fetch("status/failures_summary.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/failures_summary.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null).then(d => {
       withScrollLock796(()=>{ renderFailuresSummary(d); renderFailuresOpen(d); });
     }).catch(()=>{});
@@ -2238,7 +2238,7 @@ function renderAiVerify(d){
   ].join("") + (topReason ? card("gray", "不合格でいちばん多い理由", String(topReason[1]) + "件", "", `<p>${esc(topReason[0])}</p>`) : "");
 }
 function refreshAiVerify(){
-  return fetch("status/ai_verify_stats.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/ai_verify_stats.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
       if(text == null) throw new Error("empty");
       if(unchangedSince796("aiVerify", text)) return;
@@ -2299,7 +2299,7 @@ function renderKenpou(d){
   }
 }
 function refreshKenpou(){
-  return fetch("status/kenpou_check.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/kenpou_check.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
       if(text == null) throw new Error("empty");
       if(unchangedSince796("kenpou", text)) return;
@@ -2354,7 +2354,7 @@ function renderLaterTabs(d){
   grid.innerHTML = html;
 }
 function refreshLaterTabs(){
-  return fetch("status/later_tabs.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/later_tabs.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
       if(text == null) throw new Error("empty");
       if(unchangedSince796("laterTabs", text)) return;
@@ -2403,7 +2403,7 @@ function refreshRelay(){
     if(typeof trySseRealtime === "function") trySseRealtime(); // 798番⑧：家が見つかった瞬間に張り直す
     return Promise.resolve();
   }
-  return fetchWithTimeout("status/relay.json?t=" + Date.now(), {cache:"no-store"}, 8000)
+  return fetchWithTimeout("status/public/relay.json?t=" + Date.now(), {cache:"no-store"}, 8000)
     .then(r => r.ok ? r.json() : null).then(j => { window.__relay = j; flushCommands(); if(typeof trySseRealtime === "function") trySseRealtime(); })
     .catch(()=>{});
 }
@@ -2654,7 +2654,7 @@ function refreshHealth(){
   //   中継所（Mac直結）はそのまま生の台帳を読み、それ以外（公開コピー）は
   //   what/resultを抜いた軽量版 queue_light.json を読む（詳細は<details>展開時に遅延取得）。
   const src = relay ? (relay.replace(/\/$/, "") + "/queue?t=" + Date.now())
-                    : ("status/queue_light.json?t=" + Date.now());
+                    : ("status/public/queue_light.json?t=" + Date.now());
   return fetch(src, {cache:"no-store", headers: relay ? RELAY_HEADERS : {}, signal: ctrl && ctrl.signal})
     .then(r => { if(timer) clearTimeout(timer); if(!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
     .then(text => {
@@ -2678,7 +2678,7 @@ function refreshHealth(){
       if(timer) clearTimeout(timer);
       // 中継所がダメなら公開済みコピー（軽量版）で代用する（古いが、何も出ないよりまし）
       if(relay){
-        return fetch("status/queue_light.json?t=" + Date.now(), {cache:"no-store"})
+        return fetch("status/public/queue_light.json?t=" + Date.now(), {cache:"no-store"})
           .then(r => r.ok ? r.text() : null)
           .then(text => {
             done();
@@ -2713,7 +2713,7 @@ function dataSourceLabel(){
 window.__queueFullPromise = null;
 function fetchQueueFull(){
   if(window.__queueFullPromise) return window.__queueFullPromise;
-  window.__queueFullPromise = fetch("status/queue.json?t=" + Date.now(), {cache:"no-store"})
+  window.__queueFullPromise = fetch("status/public/queue.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.json() : null)
     .catch(()=>null);
   return window.__queueFullPromise;
@@ -2751,7 +2751,7 @@ window.__healthStaleAt = null;
 function refreshMachineHealth(){
   // 2026-09-11（752番）：タイムアウト無しの素のfetchのままだった。失敗時は前回成功データを
   //   灰色でstale表示、無ければ「まだ計測が無い」ではなく「読み込めませんでした」を出す。
-  return fetchWithTimeout("status/health.json?t=" + Date.now(), {cache:"no-store"}, 12000)
+  return fetchWithTimeout("status/public/health.json?t=" + Date.now(), {cache:"no-store"}, 12000)
     .then(r => { if(!r.ok) throw new Error("http " + r.status); return r.json(); })
     .then(h => {
       window.__health = h; window.__healthStaleAt = null;
@@ -4362,7 +4362,7 @@ function renderFuel(){
 }
 function refreshFuel(){
   return Promise.all([
-    fetch("status/launch_cap.json?t=" + Date.now(), {cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch("status/public/launch_cap.json?t=" + Date.now(), {cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),
     fetch("status/no_launch.flag?t=" + Date.now(), {cache:"no-store"}).then(r=>r.ok).catch(()=>false),
   ]).then(([cap, paused])=>{
     FUEL_CAP = cap && typeof cap.cap === "number" ? cap.cap : null;
@@ -4527,7 +4527,7 @@ function renderWhiteboard(w){
   void GROUPS; void buckets; void cardHtml;
 }
 function refreshWhiteboard(){
-  return fetch("status/whiteboard.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/whiteboard.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
       if(text == null) throw new Error("empty");
       if(unchangedSince796("whiteboard", text)) return;
@@ -4631,7 +4631,7 @@ function renderList(){
 loadPrio();
 loadCmds();
 // 共有側（priority.json：Mac側が Obsidian 経由で取り込んだもの）を先に読んでから描く
-const prioReady = fetchWithTimeout("status/priority.json?t=" + Date.now(), {cache:"no-store"}, 8000)
+const prioReady = fetchWithTimeout("status/public/priority.json?t=" + Date.now(), {cache:"no-store"}, 8000)
   .then(r => r.ok ? r.json() : null).then(j => {
     if(!j) return;
     // Mac側の形 {"priority":{"T004":1}, "stamps":{"T004":"ISO"}} を端末内の形 {"4":{p,t}} に直す
@@ -4917,7 +4917,7 @@ function renderHeartbeat(m){
     + `<span data-cmdid-slot></span></div>`;
 }
 function refreshMachine(){
-  return fetch("status/machine.json?t=" + Date.now(), {cache:"no-store"})
+  return fetch("status/public/machine.json?t=" + Date.now(), {cache:"no-store"})
     .then(r => r.ok ? r.text() : null).then(text => {
       if(text == null) throw new Error("empty");
       // 796番：前回と1バイトも変わっていなければ、parseもrenderもしない（=画面は動かさない）
@@ -5009,7 +5009,7 @@ function renderStats(text){
     <div class="note">「止まらず走り切った」が低いほど、人や見張り番が起こさないと終わらない運用。止まった回数が多い題名を直すのが近道。</div>
     ${list.filter(s=>s.stops>0).sort((a,b)=>b.stops-a.stops).slice(0,5).map(s=>`<div class="row">${esc(s.title||"（不明）")}<div class="meta">止まり${s.stops}回・起こされ${s.resumes}回</div></div>`).join("")}`;
 }
-fetch("status/history.jsonl?t=" + Date.now(), {cache:"no-store"})
+fetch("status/public/history.jsonl?t=" + Date.now(), {cache:"no-store"})
   .then(r => r.ok ? r.text() : "").then(renderStats).catch(()=>renderStats(""));
 
 /* ───── 2026-09-09（たまごさん指示）進捗表は必ず全部畳んだ状態で開く ─────

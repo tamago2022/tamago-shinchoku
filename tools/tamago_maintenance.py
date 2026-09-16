@@ -613,8 +613,23 @@ def _push(paths=("status/maintenance_check.json", "status/maintenance_check_log.
                   "status/dispatch_outbox.jsonl", "status/queue.json",
                   "status/done_archive.json", "share/done/index.html",
                   "status/later_tabs.json"), retries=5, wait_sec=8):
+    # 2026-09-16: status/配下は公開先を status/public/ へ移した（status/直下は.gitignore対象外パス）。
+    # status/以外(share/done/index.html等)はそのまま。
+    import shutil as _shutil
+    os.makedirs(os.path.join(REPO, "status", "public"), exist_ok=True)
+    real_paths = []
+    for _p in paths:
+        if _p.startswith("status/"):
+            _name = os.path.basename(_p)
+            _src = os.path.join(REPO, _p)
+            _dst = os.path.join(REPO, "status", "public", _name)
+            if os.path.exists(_src):
+                _shutil.copyfile(_src, _dst)
+                real_paths.append("status/public/%s" % _name)
+        else:
+            real_paths.append(_p)
     for attempt in range(1, retries + 1):
-        rc, out, err = _run(["git", "add", "-f"] + list(paths))
+        rc, out, err = _run(["git", "add"] + real_paths)
         if rc != 0:
             print("add失敗(試行%d): %s" % (attempt, (out + err).strip()[:300]))
             time.sleep(wait_sec)

@@ -425,7 +425,13 @@ def main():
 
 def push_repo():
     try:
-        subprocess.run(["git", "add", "-f", "status/later_tabs.json"], cwd=REPO, check=True)
+        # 2026-09-16: 公開先を status/public/later_tabs.json へ移した（status/直下は.gitignore対象外パス）。
+        os.makedirs(os.path.join(REPO, "status", "public"), exist_ok=True)
+        shutil.copyfile(
+            os.path.join(REPO, "status", "later_tabs.json"),
+            os.path.join(REPO, "status", "public", "later_tabs.json"),
+        )
+        subprocess.run(["git", "add", "status/public/later_tabs.json"], cwd=REPO, check=True)
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=REPO)
         if diff.returncode == 0:
             log("git: 差分なし（コミット省略）")

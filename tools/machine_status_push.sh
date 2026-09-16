@@ -401,26 +401,20 @@ except Exception:
 json.dump({"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
           io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 PYVER
-### 2026-09-16（緊急・queue.json/auto_launch.log巻き戻り事故の恒真対策）：
-### status/ を.gitignoreした。以後 status/ 配下は「-f（force）」を付けない限り
-### 二度とgit addされない＝他の古いworktree/セッションが`git add -A`のような
-### 広い範囲のaddを行っても、そこに残っていた何日も前のstatus/スナップショットが
-### 巻き込まれてcommit・pushされる事故（実測：685番の「作業中の自動生成ファイル退避コミット」が
-### auto_launch.logを2026-09-10の内容へ丸ごと巻き戻した）が起きなくなる。
-### 唯一の公開経路であるこの便だけは、-fで明示的に指定したファイルだけを公開し続ける。
-git add -f status/version.json >/dev/null 2>&1
-# 2026-09-09(685番) 事故の再発防止：disk_trend_report.json と disk_daily_history.json が
-#   この一覧に無かったため、disk_guardian.py/disk_trend.pyがローカルで何度更新しても
-#   本番(GitHub Pages)には永久に反映されず、確認ページが「止まって見える」誤診断の元になっていた。
-git add -f status/pace.json status/launch_cap.json status/done_archive.json status/machine.json status/history.jsonl status/whiteboard.json status/priority.json status/health.json status/commands.json status/queue.json status/quota.json status/relay.json status/ai_verify_stats.json status/disk_guardian.log status/disk_candidates.json status/later_tabs.json status/disk_trend_report.json status/disk_daily_history.json status/gdrive_daily_usage.json status/genzaichi.json status/queue_light.json status/top_status.json >/dev/null 2>&1
-# 2026-09-13(798番) 事故の再発防止：status/now.json・status/rev.txt がこの一覧に無く、
-#   pace.pyがローカルで何度更新してもGitHub Pages（スマホ側）には永久に反映されず、
-#   画面のpollNow()が常にrev.txt 404を踏んで既存のrefreshPace/refreshGenzaichi頼みに
-#   落ちたまま気づかれない事故になっていた（家のWi-Fi内だけ動いているように見えて実は違う）。
-git add -f status/now.json status/rev.txt >/dev/null 2>&1
-# 進捗表(index.html)が直接fetchしているが上のリストに無かったファイルも、
-# gitignore化にあわせて明示的に公開対象へ追加する（漏れると404で気づかれない事故になる）。
-git add -f status/genzaichi.md status/failures_summary.json status/daily_ingest_summary.json status/deleted.json status/dekimono.json status/kenpou_check.json status/new_arrivals.json status/number_conflicts.json status/cost_by_task.json status/estimate_vs_actual_summary.json status/fal_cost_ledger.json >/dev/null 2>&1
+### 2026-09-16（緊急・queue.json/auto_launch.log巻き戻り事故の恒久対策・23:08追記で強化）：
+### status/ を.gitignoreしただけでは足りなかった（`git add -f`で明示公開していた36ファイルは
+### status/直下という「昔から追跡されてきたパス」のままだったため、その36ファイルを昔から
+### 抱えている古いworktreeが広いgit addを行うと今度はそこが巻き込まれ、22:49発車の890番の
+### 作業14分が実際に巻き戻りで失われた）。公開先を status/public/ という、
+### **どの既存worktreeも過去に一度も追跡したことが無いパス**へ丸ごと移した。
+### 存在すらしなかったパスは、どんな広いgit addでも誤って巻き込みようがない。
+PUBLISH_LIST="version.json pace.json launch_cap.json done_archive.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json"
+mkdir -p "$REPO/status/public"
+for _f in $PUBLISH_LIST; do
+  [ -f "$REPO/status/$_f" ] && cp -f "$REPO/status/$_f" "$REPO/status/public/$_f" 2>/dev/null
+done
+# shellcheck disable=SC2086
+git add $(for _f in $PUBLISH_LIST; do echo "status/public/$_f"; done) >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1

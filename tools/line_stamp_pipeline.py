@@ -848,9 +848,23 @@ def _push(paths=(
     "tools/line_stamp_pipeline.py", "tools/line_stamp_shot.mjs",
 ), retries=5, wait_sec=6):
     import subprocess
+    import shutil as _shutil
+    # 2026-09-16: status/配下は公開先を status/public/ へ移した（status/直下は.gitignore対象外パス）。
+    os.makedirs(os.path.join(REPO, "status", "public"), exist_ok=True)
+    real_paths = []
+    for _p in paths:
+        if _p.startswith("status/"):
+            _name = os.path.basename(_p)
+            _src = os.path.join(REPO, _p)
+            _dst = os.path.join(REPO, "status", "public", _name)
+            if os.path.exists(_src):
+                _shutil.copyfile(_src, _dst)
+                real_paths.append("status/public/%s" % _name)
+        else:
+            real_paths.append(_p)
     for attempt in range(1, retries + 1):
         try:
-            subprocess.run(["git", "add", "-f"] + list(paths), cwd=REPO, check=False,
+            subprocess.run(["git", "add"] + real_paths, cwd=REPO, check=False,
                             capture_output=True, text=True, timeout=30)
             diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=REPO)
             if diff.returncode == 0:
