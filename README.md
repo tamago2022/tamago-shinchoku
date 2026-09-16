@@ -282,3 +282,42 @@ AIが承認済みの正解を何度も縮めてしまった（37・317・468・6
 - 前の週にできていたのに今週できなくなったことが何件あるか（目標0）
 - 同じ指摘（`ownerRedoCount`）を繰り返した回数（目標0。3回で自動エスカレーションする既存の仕組みと合流）
 - 0でなければ「引き継ぎが落ちた」として、`status/failures.md`へ何が落ちたかを1行ずつ書く
+
+## 関所(sekisho)：間違ったものが報告に上がってこない機械の門（2026-09-17新設・898番・仕組み⑦）
+
+たまごさんの言葉（そのまま）：「全て仕組みで解決して。自分が言ったことが確実に遂行される仕組み。
+『修正しました』って言って、間違えたものが上がってこない仕組み。」
+
+きっかけになった事故（同日）：①見本ページに「余白 上17px」と書いて出したが実測は9.6pxだった
+（誰も測っていなかった）②LINEの問い合わせを文面だけ渡し宛先も画面も出さなかった。
+どちらも**子セッションではなくDispatchが素通しした**。
+
+既存の3段検品（`content_check()`＝1段目・`verify_click.mjs`＝2段目「押しても無反応／コンソールエラー」・
+`start_verify()`＝3段目AI検品）はすでに動いていたが、**「書かれている数字が実測値と一致するか」を
+機械で見る仕組みが無かった**。`tools/sekisho.py`はその穴を埋める、単体でも呼べる関所。
+
+```
+python3 tools/sekisho.py --url <本番URL> [--check-url <確認ページURL>] [--n <番号>] [--skip-click]
+```
+
+- 関門①URLがあるか ②200を返すか ③押して無反応が無いか（`verify_click.mjs`を再利用） 
+  ④コンソールエラーが無いか（③と同じ結果） ⑤★新規：px/%の数字の主張が実測の跡と食い違っていないか
+  ⑥`config/designRules.json`（あれば）違反 ⑦依頼文の合格条件の各行が報告に触れられているか（簡易判定）
+- 最後に必ず1行 `SEKISHO_RESULT: PASS - ...` / `SEKISHO_RESULT: FAIL - <理由1> ／ <理由2>` を出す
+  （他の道具のVERDICT行と同じ形でパースされる前提）。終了コードもPASS=0/FAIL=1。
+- `harvest()`は確認ページ検品OKの直後（触る検品の前）で、この関所の⑤（数字の食い違い）を自動実行する。
+  落ちたら既存の`contentCheckFailCount`と同じ形で列に戻し、`sekishoFailCount`が3に達したら
+  `status/REPEATED_UNFIXED.md`と`status/dispatch_outbox.jsonl`（`type: "sekisho_repeated_unfixed"`）
+  の両方へ記録して人の目・他社AI行きの候補にする。
+- 子セッションには`tools/prompt_rules/always-17-sekisho-gate.md`で「報告する前に自分でも実行してから出す」
+  ことを常時注入する。**Dispatch自身が会話中に直接URLや数字を言う時も、同じコマンドを実行してから
+  発言する**——Dispatchの持続的な指示ファイルはこのリポジトリの外（iCloud上のObsidian Vault＝
+  `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain/AGENTS.md`）にあるため、
+  同ファイルの末尾へ「関所(sekisho)：報告の前に機械で確認する」節を追記済み（2026-09-17）。
+
+自己テスト（2026-09-17実施・3件とも狙い通りの結果）：
+1. わざと「上17px」と書きつつ実測「9.6px」を埋め込んだ確認ページ → `SEKISHO_RESULT: FAIL`（数字の食い違いを検出）
+2. 数字が一致する確認ページ → `SEKISHO_RESULT: PASS`
+3. 存在しないURL（404） → `SEKISHO_RESULT: FAIL`（ページが開けません）
+4. 同じ番号で3回連続FAILさせる → `status/REPEATED_UNFIXED.md`と`dispatch_outbox.jsonl`の両方に
+   エスカレーション行が実際に追記されることを確認済み

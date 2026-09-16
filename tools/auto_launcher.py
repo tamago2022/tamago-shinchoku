@@ -42,6 +42,7 @@ import redo_guard  # noqa: E402  案件#797：やり直し合計2回でstuck化�
 import queue_store  # noqa: E402  案件#687：queue.jsonの安全な読み書き（差分マージ・世代バックアップ）
 import shukan_kubun  # noqa: E402  週の作業配分：見たいもの／裏方／予備の分類
 import shukan_haibun  # noqa: E402  週の作業配分：実績集計とゲート判定（裏方30%上限）
+import sekisho  # noqa: E402  案件#898：関所＝報告の手前に置く機械の門（数字の主張と実測の食い違い等）
 QUEUE = os.path.join(REPO, "status", "queue.json")
 MACHINE = os.path.join(REPO, "status", "machine.json")
 QUOTA = os.path.join(REPO, "status", "quota.json")
@@ -1445,6 +1446,39 @@ def harvest(q):
                             % (it.get("n"), it.get("title"), reason))
                         continue
                 log("✅ 確認ページ検品OK %d番「%s」（%s）" % (it.get("n"), it.get("title"), check_url))
+            # 898番：関所(sekisho)。書かれている数字（px/%）が実測の跡と食い違っていないかを
+            #   ここで機械が見る（2026-09-16の事故：「上17px」と書いたが実測は9.6pxだった、への対策）。
+            #   ブラウザを使わない軽い判定なのでharvest()の時間予算内で同期実行してよい。
+            if check_url:
+                sek_ok, sek_reason = sekisho.check_number_claims_for_url(check_url, it.get("result") or "")
+                sekisho.record_result(it.get("n"), sek_ok, [] if sek_ok else [sek_reason])
+                if not sek_ok:
+                    fails = int(it.get("sekishoFailCount") or 0) + 1
+                    it["sekishoFailCount"] = fails
+                    if fails < 3:
+                        it["status"] = "hold" if it.get("holdNote") else "waiting"
+                        it["priority"] = it.get("priority") or 2
+                        it["what"] = (it.get("what") or "") + (
+                            "\n\n【関所(sekisho)ではねられました・%d回目・%s】理由：%s\n"
+                            "書いてある数字が、実測した跡と食い違っています。"
+                            "実際に測り直し、測った生の数字（「実測: ...」や<pre>）を確認ページに残してください。"
+                            % (fails, time.strftime("%m-%d %H:%M"), sek_reason))
+                        for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                            it.pop(k, None)
+                        changed = True
+                        log("🚫 関所(sekisho)NG %d番「%s」→ 列に戻す（%d回目・理由:%s）"
+                            % (it.get("n"), it.get("title"), fails, sek_reason))
+                        continue
+                    else:
+                        it["result"] = (it.get("result") or "") + (
+                            "\n\n【関所(sekisho)：3回連続ではねられたため人の目に回します】理由：%s" % sek_reason)
+                        it["status"] = "awaiting_check"
+                        append_outbox(it, bool(urls))
+                        log("⚠️ 関所(sekisho)3回連続NG %d番「%s」→ 人の目へ（理由:%s）"
+                            % (it.get("n"), it.get("title"), sek_reason))
+                        continue
+                else:
+                    log("✅ 関所(sekisho)OK %d番「%s」" % (it.get("n"), it.get("title")))
             # 案件#800：3段検品の2段目「触る検品」。確認ページの中身が正しくても、
             # 実際にボタンを押すと無反応、という事故を機械が先に見つける。
             # ここもharvest()の45秒watchdogを超えないよう、別プロセスで着火するだけで同期待ちしない。
