@@ -1,0 +1,217 @@
+{
+ "measuredAt": "2026-09-16T21:51:03+09:00",
+ "load": 314,
+ "cpu": 48,
+ "mem": 27,
+ "swapGB": 7.65,
+ "diskFreeGB": 260,
+ "sessions": 3,
+ "note": "あと1本OK",
+ "raw": "負荷 314% ｜ CPU 48% / メモリ圧迫 27% / スワップ 7.65GB / ディスク空き 260GB ｜ 稼働 3本 ｜ あと1本OK",
+ "watchdog": {
+  "lastRun": "2026-09-16 21:54",
+  "resumed": [],
+  "handedOff": [],
+  "ignited": [],
+  "unrecoverable": [],
+  "ignite": "空きなし（上限None本・目標2本・生存3本）",
+  "shed": null,
+  "keep": {
+   "target": 2,
+   "alive": 3,
+   "below": 0,
+   "line": "現在3本／上限None本／目標2本／あと0本いける"
+  },
+  "stalledSkipped": []
+ },
+ "metrics": {
+  "stalls": 127,
+  "autoResumes": 79,
+  "handoffs": 13,
+  "hardCuts": 0,
+  "ignitions": 11,
+  "gated": 0,
+  "autoResumesThisRun": 0,
+  "handoffsThisRun": 0,
+  "ignitionsThisRun": 0,
+  "humanPushes": 0,
+  "doneAlive": 0,
+  "doneWithoutHumanPush": 0,
+  "autonomyRatio": null,
+  "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
+ },
+ "deployAlerts": [],
+ "quota": {
+  "updatedAt": "2026-09-16 21:53",
+  "estimated": false,
+  "stalePrevWeekSample": false,
+  "fablePct": 0.0,
+  "allPct": 12.0,
+  "allPctAsOf": "21:40:37",
+  "allPctAgeMin": 11.2,
+  "resetAt": "2026-09-22 17:59",
+  "daysLeft": 5.8,
+  "hoursLeft": 140.1,
+  "fableLevel": "ok",
+  "allLevel": "ok",
+  "warnPct": 75,
+  "stopPct": 85,
+  "daily": {
+   "fableAllowancePerDay": 17.1,
+   "fableUsedLast24h": 0,
+   "allAllowancePerDay": 15.1,
+   "allUsedLast24h": 10.3,
+   "weeklyEvenPacePerDay": 14.3
+  },
+  "boost": {
+   "active": false,
+   "factor": 1.5,
+   "until": "2026-09-13",
+   "note": "通常期間（引き上げなし）"
+  },
+  "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
+  "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
+  "fableWeightedTokensSinceReset": 0,
+  "allWeightedTokensSinceReset": 182372478,
+  "last6h": {
+   "fable": 0,
+   "all": 76894688
+  },
+  "projection": {},
+  "method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
+  "source": "plan-usage-history.json",
+  "asOf": "21:40:37",
+  "ageMin": 11.2,
+  "weekdayTarget": 30.0,
+  "weekdayTargetBase": 30,
+  "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
+  "overPct": -30.0,
+  "daysElapsedSinceReset": 1.2,
+  "ceilingDaysAtRecentPace": null,
+  "fableCurve": {
+   "target": 30.0,
+   "overPct": -30.0,
+   "state": "under",
+   "headroomPct": 30.0,
+   "band": 10,
+   "note": "state=over→Fableゼロで絞る／under→Fable投入・本数増加の余地あり／on_track→曲線どおり"
+  },
+  "allCurve": {
+   "target": 17.1,
+   "overPct": -5.1,
+   "state": "on_track",
+   "band": 10,
+   "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"
+  },
+  "session5h": {
+   "pct": 1.0,
+   "resetAt": "2026-09-05 06:40",
+   "hoursLeft": 0.0,
+   "recentPacePctPerHour": 0.0,
+   "projectedPctAtReset": 1.0,
+   "wasteRiskPct": 0.0,
+   "mottainai": false,
+   "source": "推定(フォールバック)",
+   "anchor": {
+    "t": "2026-09-05T01:51:00",
+    "pct": 1.0,
+    "remainMin": 289.0,
+    "resetAt": "2026-09-05 06:40",
+    "setAt": "2026-09-05 01:51",
+    "source": "たまごさんのアプリ実測（2026-09-05 01:51 のスクショ）"
+   },
+   "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
+  },
+  "benchmark": {
+   "allPacePctPerHour6h": 0.843,
+   "aliveAvgLast6h": 4.0,
+   "pctPerSessionHour": 0.2108,
+   "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる",
+   "sonnetSessionsFor5hWindow": null,
+   "sonnetSessionsForWeeklyCurve": 2.9
+  },
+  "line": "Fable週枠 0%（今日の目標30.0%・30.0pt下振れ→投入余地あり） ／ 全モデル 12%（21:40:37時点・曲線目標17.1%・曲線どおり） ／ リセットまで 5.8日 ／ 5時間枠 1.0%・残0.0h",
+  "switches": [
+   {
+    "t": "2026-09-03 22:18",
+    "task": "🟢 T010 P3 [10] 未反映ブランチ 112本 ｜ 作業中 ｜ 担当:wd_9ebaaf8f ｜ 台帳回 ｜ 2026-09-03 22:18 監査完了",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 25.0
+   },
+   {
+    "t": "2026-09-03 23:33",
+    "task": "世界の暮らし×ノスタルジー接続  たまごさん（店主）の言葉、そのまま：\n\n「今やりたいのが、その『世界の暮らし』ってやつと、音楽の棚の『ノスタルジー』の棚をちょ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 24.5
+   },
+   {
+    "t": "2026-09-04 02:58",
+    "task": "HOME／ふるさと 各国プレイリスト  たまごさん（店主）の言葉、そのまま：\n\n「ノスタルジーの曲、ちょっと考えるところがあって。この曲は Danny Boy ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 88.5
+   },
+   {
+    "t": "2026-09-04 04:28",
+    "task": "🟢 T024 P1 [24] 指示待ちで止まる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_712117c9 ｜ 13回 ｜ 2026-09-04 04:27 ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 88.5
+   },
+   {
+    "t": "2026-09-04 06:17",
+    "task": "演者が同定されてない22件を直す  見回り（taste-intake-review）が「要対応」として溜めていた件を片づけてください。**たまごさんの判断は不要",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 23.9
+   },
+   {
+    "t": "2026-09-04 09:54",
+    "task": "未反映ブランチ112本の棚卸し  進捗表に「**未反映ブランチ112本**」と出ています。たまごさんはこれが何を意味するのか分からない状態です。**本番に出てい",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 23.6
+   },
+   {
+    "t": "2026-09-04 11:45",
+    "task": "イパネマの娘に高校生カバーを繋ぐ  たまごさん（店主）の言葉、そのまま：\n\n> 「**イパネマの娘、有名なイパネマの娘の関連に入れてください。素人だけど、10年",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 23.3
+   },
+   {
+    "t": "2026-09-04 13:24",
+    "task": "🟢 T024 P1 [24] 指示待ちで止まる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_123cf6c2 ｜ 13回 ｜ 2026-09-04 13:24 ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 23.6
+   },
+   {
+    "t": "2026-09-04 16:23",
+    "task": "驚の部屋・美の部屋を音楽の扉と同じ形に  たまごさん（店主）の言葉、そのまま：\n\n> 「この『驚の部屋』ね、**横並びじゃないじゃん。横並びにして。フォーマット",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 82
+   },
+   {
+    "t": "2026-09-04 16:26",
+    "task": "YouTube APIで動画を差し替え可能に  たまごさん（店主）の言葉：\n\n> 「**YouTube API、もう100回以上言ってるやつね。どんどんやりまし",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 82
+   }
+  ]
+ }
+}
