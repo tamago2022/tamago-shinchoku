@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# 案件#898・再設計（2026-09-17）：push直前に関所(sekisho)をもう一段かける。
+#
+# tools/make_check_page.py 側の関門（書き出し直前）だけだと、誰かが share/check/*.html
+# を手で直接編集・追加してpushした場合はすり抜けてしまう。pushという「origin/main へ
+# 反映される最後の1点」にも同じ判定（tools/sekisho.py の gate_local()）を強制することで、
+# 呼び忘れ・作り方の違いに関わらず「origin/main に乗っているページは必ず関所を通っている」
+# を保証する。
+#
+# これはgitフックなので、どのセッション・どのツール（Dispatch自身の直接pushも含む）が
+# 起動した push でも、プロンプトでの指示に頼らず必ず実行される。
+set -u
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$REPO_ROOT" ]; then
+  exit 0
+fi
+cd "$REPO_ROOT" || exit 0
+
+ZERO="0000000000000000000000000000000000000000"
+FAIL=0
+CHECKED=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # ブランチ削除pushはチェック対象外
+  if [ "$local_sha" = "$ZERO" ]; then
+    continue
+  fi
+  if [ "$remote_sha" = "$ZERO" ]; then
+    # 新規ブランチ：空ツリーとの差分で判定
+    base="$(git hash-object -t tree /dev/null)"
+  else
+    base="$remote_sha"
+  fi
+
+  files="$(git diff --name-only --diff-filter=ACM "$base" "$local_sha" -- 'share/check/*.html' 2>/dev/null)"
+  if [ -z "$files" ]; then
+    continue
+  fi
+
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in
+      */_template.html) continue ;;
+    esac
+    CHECKED=$((CHECKED + 1))
+    tmpfile="$(mktemp /tmp/sekisho-prepush.XXXXXX.html)"
+    if ! git show "$local_sha:$f" > "$tmpfile" 2>/dev/null; then
+      rm -f "$tmpfile"
+      continue
+    fi
+    echo "🚧 関所(sekisho)チェック: $f"
+    if ! python3 "$REPO_ROOT/tools/sekisho.py" --local-file "$tmpfile" --n "push-$(basename "$f")" >/tmp/sekisho-prepush.out 2>&1; then
+      echo "❌ 関所(sekisho)FAIL: $f"
+      grep "SEKISHO_RESULT" /tmp/sekisho-prepush.out || cat /tmp/sekisho-prepush.out
+      FAIL=1
+    fi
+    rm -f "$tmpfile"
+  done <<EOF
+$files
+EOF
+done
+
+if [ "$FAIL" != "0" ]; then
+  echo ""
+  echo "🚧 関所(sekisho)がFAILを検出したため、pushを中止しました。"
+  echo "   数字の主張(px/%)に実測の跡（「実測: ...」または<pre>の生データ）が"
+  echo "   無い、または実測と食い違っているページがあります。"
+  echo "   該当ページを直してから、もう一度pushしてください。"
+  echo "   (このチェックを外すことはできません。関所は例外なくpushの手前に置く、"
+  echo "    が案件#898そのものの要件です)"
+  exit 1
+fi
+
+if [ "$CHECKED" -gt 0 ]; then
+  echo "✅ 関所(sekisho)：push対象の確認ページ ${CHECKED} 件、すべて通過しました"
+fi
+exit 0
