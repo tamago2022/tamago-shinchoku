@@ -1,9 +1,9 @@
 {
- "totalChecked": 237,
- "totalPassed": 128,
- "totalFailed": 94,
- "totalErrors": 15,
- "totalCostUsd": 72.4212,
+ "totalChecked": 247,
+ "totalPassed": 133,
+ "totalFailed": 98,
+ "totalErrors": 16,
+ "totalCostUsd": 76.4711,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -98,89 +98,13 @@
   "コード修正・main反映は確認できたが本番復旧は未確認（health.json ": 1,
   "中核の合格条件「心臓を殺して3分以内に自分で戻ることを実際に確かめる」が、修正後": 1,
   "合格条件「進捗表に現在の重さが出ている」が未達（進捗表トップページを全文検索して": 1,
-  "Lovable宛スクショが「Gmail作成画面」と主張しつつ実際は未ログインのG": 1
+  "Lovable宛スクショが「Gmail作成画面」と主張しつつ実際は未ログインのG": 1,
+  "Dispatch自身が直接発言する経路は関所をコードで強制しておらずAGENTS": 1,
+  "pre-pushフックがmacOS(Darwin、実運用環境と同一)でmktem": 1,
+  "依頼にある「世界の節約事例を調べて一覧にする(Spotify以外にも)」が未達成": 1,
+  "検品バグの修正自体は本物で再現確認済みだが、依頼④「件数を進捗表に出す」が本番の": 1
  },
  "history": [
-  {
-   "ts": "2026-09-13T11:10:56+09:00",
-   "n": 717,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/717-subete-button-fix.html",
-   "verdict": "pass",
-   "reason": "1MB超ファイルは憲法点検で緑確認済み、「すべて」ボタンも実クリック検証(39件中30件テスト・無反応0件)でDOM上の位置的にも対象内と確認でき、修正コード・確認ページ・画像もすべて整合",
-   "costUsd": 0.2811118
-  },
-  {
-   "ts": "2026-09-13T13:59:11+09:00",
-   "n": 718,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/718-orphan-session-selfheal.html",
-   "verdict": "pass",
-   "reason": "確認ページ200・本番JSON実測でorphan_sessions=green(count 0)・GitHub上のkenpou_check.py L522以降に自己修復コード(harvest先行呼び出し)実在確認・verify_click.mjsで独自にも5/5反応/エラー0件を再現確認",
-   "costUsd": 0.2168386
-  },
-  {
-   "ts": "2026-09-13T14:00:23+09:00",
-   "n": 717,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/717-big-files-cleanup.html",
-   "verdict": "pass",
-   "reason": "5件の名指しファイル全てが実測で1MB未満に縮小済み、本日の憲法点検も実測でgreen/0件、触る検品も無反応・エラー0件（ただし確認ページのフッターに古い説明が1文残っているので次回ついでに直すと良い）",
-   "costUsd": 0.4462198
-  },
-  {
-   "ts": "2026-09-13T14:07:15+09:00",
-   "n": 727,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/727-worktree-reaper-load-gate-fix.html",
-   "verdict": "pass",
-   "reason": "kenpou_check.jsonのworktree_countが実測green(53件)、確認ページの数字・原因説明・修正コミット内容が一致し、実クリックも全反応",
-   "costUsd": 0.1963792
-  },
-  {
-   "ts": "2026-09-13T14:19:12+09:00",
-   "n": 697,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/697-thumb-consistency-shelf-edit-8th.html",
-   "verdict": "fail",
-   "reason": "完了条件の4か所並べスクショが確認ページに皆無で、本番URLにも変更未反映（作業者自身が認めている)",
-   "costUsd": 0.1864086
-  },
-  {
-   "ts": "2026-09-13T14:31:52+09:00",
-   "n": 728,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/728-week-bar-labels.html",
-   "verdict": "pass",
-   "reason": "依頼4項目（開始時刻付き見出し・6時間目盛り・週起点の説明文・今日の定義注記）とレイアウト跳ね対策が本番コード・スクリーンショットの両方で確認でき、対象の確認ページは触る検品も再確認3連続PASS（無関係な既存バグは別スコープ）",
-   "costUsd": 0.5625859999999999
-  },
-  {
-   "ts": "2026-09-13T14:32:28+09:00",
-   "n": 750,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/750-unreported-completions-green.html",
-   "verdict": "fail",
-   "reason": "dispatch_reported.jsonが2026-09-11 17:14から更新停止しており、dispatch_outbox.jsonlのok:true完了28件（最古は約2日前のn=701〜最新n=717まで）が未反映のまま。「一致」「未報告0件」という主張は実データと矛盾しており、kenpou_check.jsonの緑表示自体が実態を反映していない。",
-   "costUsd": 0.41180459999999997
-  },
-  {
-   "ts": "2026-09-13T14:40:14+09:00",
-   "n": 765,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/765-tobira-list.html",
-   "verdict": "pass",
-   "reason": "一覧ファイル(37件)・確認ページ・触る検品すべて依頼内容と一致し、実装範囲の逸脱もなし",
-   "costUsd": 0.3775102000000001
-  },
-  {
-   "ts": "2026-09-13T15:13:00+09:00",
-   "n": 760,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番4件・実クリック検証のすべてが報告内容と一致し、本番URLも報告に含まれている",
-   "costUsd": 0.2647914
-  },
-  {
-   "ts": "2026-09-13T16:11:06+09:00",
-   "n": 777,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
-   "verdict": "fail",
-   "reason": "唯一の証拠リンク(FeedbackDoor.tsxのGitHub差分)が404で開けず、本番URLもスクショも0のまま「実装完了」を主張している",
-   "costUsd": 0.31462139999999994
-  },
   {
    "ts": "2026-09-13T16:30:30+09:00",
    "n": 761,
@@ -500,7 +424,87 @@
    "verdict": "pass",
    "reason": "非公開リポへの開けないリンクを削除し要約を本文直書き＋obsidian://直リンクに作り直し済み。本番200・click検証5/5・コンソールエラー0件、ノート要約もVault実ファイルの内容（数字含む）と一致を確認した",
    "costUsd": 0.2919879999999999
+  },
+  {
+   "ts": "2026-09-17T04:18:04+09:00",
+   "n": 893,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/893-page-weight-ci.html",
+   "verdict": "pass",
+   "reason": "前回FAILの原因(進捗表に重さ表示なし)が解消され、実際にheadless Chromeでレンダリングして実測値の表示を確認、確認ページの数字とも一致・クリック検品もコンソールエラー0件で全反応",
+   "costUsd": 0.5905462
+  },
+  {
+   "ts": "2026-09-17T04:43:52+09:00",
+   "n": 898,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/898-sekisho-gate.html",
+   "verdict": "fail",
+   "reason": "Dispatch自身が直接発言する経路は関所をコードで強制しておらずAGENTS.mdへの指示文追記（プロンプト頼み）のみで、依頼の核心「★Dispatch自身も必ず通す・例外なし」＝「呼び忘れたら素通しになる欠陥の解消」が未達成",
+   "costUsd": 0.4547678
+  },
+  {
+   "ts": "2026-09-17T06:18:41+09:00",
+   "n": 898,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/898-sekisho-gate-v2.html",
+   "verdict": "fail",
+   "reason": "pre-pushフックがmacOS(Darwin、実運用環境と同一)でmktempのテンプレート形式非互換により常に失敗し、sekisho.pyのチェックが一度も実行されないままpushを通過させ「全て通過しました」と偽の成功表示を出すことを実測で確認（依頼の核心「push経路の例外なし強制」が未達成）",
+   "costUsd": 0.7130193999999999
+  },
+  {
+   "ts": "2026-09-17T06:25:56+09:00",
+   "n": 904,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/904-kaishaku-kaishaku-tool.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番コードとも実在し、judge/ask/answer/checkの主張(危険語×曖昧語判定・20字制限・二度聞かない)を実際にclone実行して再現確認、main合流・クリック検証も裏取り済み",
+   "costUsd": 0.41271679999999994
+  },
+  {
+   "ts": "2026-09-17T06:55:40+09:00",
+   "n": 916,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/916-card-shapes-mockup.html",
+   "verdict": "pass",
+   "reason": "カードの形A〜E全部・本物データの5レイアウト案・390/1280px両対応・仮文字なし・本番非破壊を確認、クリック検証も実行しエラーなし",
+   "costUsd": 0.272412
+  },
+  {
+   "ts": "2026-09-17T07:26:14+09:00",
+   "n": 905,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/905-gemini-bridge.html",
+   "verdict": "fail",
+   "reason": "依頼にある「世界の節約事例を調べて一覧にする(Spotify以外にも)」が未達成で、成果物にはSpotify1社の事例しか無い(他社事例ゼロ)にもかかわらず「世界の節約事例」と称している",
+   "costUsd": 0.30660099999999996
+  },
+  {
+   "ts": "2026-09-17T07:58:12+09:00",
+   "n": 905,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/905-gemini-bridge.html",
+   "verdict": "pass",
+   "reason": "1回目の指摘（Spotify1社のみ）が解消され、Anthropic Prompt Caching・EvenUp・Spellbookの3社が数字・向かない用途つきで追加済み。全リンクHTTP200、数字は公式ページ（claude.com/blog/prompt-caching、claude.com/customers）と一致確認済み。",
+   "costUsd": 0.29256499999999996
+  },
+  {
+   "ts": "2026-09-17T08:22:18+09:00",
+   "n": 917,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/917-gaibu-kenpin-grok.html",
+   "verdict": "pass",
+   "reason": "前回2回の指摘は実測で修正確認済み、実装・統合も実在確認済み。実地API判定のみ未完了だが誇張なく判断待ちと正直に報告されている",
+   "costUsd": 0.2789868
+  },
+  {
+   "ts": "2026-09-17T08:24:10+09:00",
+   "n": 914,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/914-verify-click-nav-fix.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-17T08:30:57+09:00",
+   "n": 914,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/914-verify-click-nav-fix.html",
+   "verdict": "fail",
+   "reason": "検品バグの修正自体は本物で再現確認済みだが、依頼④「件数を進捗表に出す」が本番の進捗表(index.html)に反映されておらず、確認ページ内だけに留まっている",
+   "costUsd": 0.7282598
   }
  ],
- "updatedAt": "2026-09-17 03:13"
+ "updatedAt": "2026-09-17 08:30"
 }

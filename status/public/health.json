@@ -1,72 +1,58 @@
 {
- "measuredAt": "2026-09-17T01:01:06+0900",
- "diskFreeGB": 260.0,
+ "measuredAt": "2026-09-17T08:34:21+0900",
+ "diskFreeGB": 255.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 107,
+ "load": 96,
  "memPressure": "green",
- "memAvailGB": 8.5,
- "sessions": 4,
+ "memAvailGB": 8.1,
+ "sessions": 6,
  "safeMax": 4,
  "moreOK": 0,
  "target": 4,
  "cap": 4,
  "calibratedSafeN": 4,
  "below": 0,
- "shedCandidates": [
-  {
-   "pid": 99287,
-   "title": "工場の心臓を起こす",
-   "idleMin": 84.4
-  }
- ],
+ "shedCandidates": [],
  "items": [
   {
+   "label": "Braveを閉じる",
+   "effect": "メモリ 6.89GB",
+   "gb": 6.89,
+   "kind": "mem",
+   "safe": true,
+   "app": "Brave Browser",
+   "how": "26プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 6.91GB",
-   "gb": 6.91,
+   "effect": "空き 6.66GB",
+   "gb": 6.66,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
   },
   {
-   "label": "Braveを閉じる",
-   "effect": "メモリ 5.12GB",
-   "gb": 5.12,
+   "label": "Chromeを閉じる",
+   "effect": "メモリ 5.25GB",
+   "gb": 5.25,
    "kind": "mem",
    "safe": true,
-   "app": "Brave Browser",
-   "how": "23プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "app": "Google Chrome",
+   "how": "56プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "Googleドライブのローカルキャッシュ",
-   "effect": "空き 3.1GB",
-   "gb": 3.1,
+   "effect": "空き 3.13GB",
+   "gb": 3.13,
    "kind": "disk",
    "safe": false,
    "how": "アップロード待ちが残っていると消せない"
   },
   {
-   "label": "Chromeを閉じる",
-   "effect": "メモリ 2.71GB",
-   "gb": 2.71,
-   "kind": "mem",
-   "safe": true,
-   "app": "Google Chrome",
-   "how": "28プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
-  },
-  {
-   "label": "終わって待機中のセッション 3本を畳む",
-   "effect": "メモリ 0.84GB・負荷↓",
-   "gb": 0.84,
-   "kind": "mem",
-   "safe": true,
-   "how": "Rusuban mimawa、工場の心臓を起こす、【仕組み③】工場が止まらない"
-  },
-  {
    "label": "ゴミ箱を空にする",
-   "effect": "空き 0.7GB",
-   "gb": 0.7,
+   "effect": "空き 0.92GB",
+   "gb": 0.92,
    "kind": "disk",
    "safe": false,
    "how": "捨てたつもりのもの。中身を一度見てから"
@@ -78,14 +64,38 @@
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
+  },
+  {
+   "label": "~/.npm/_npx を空にする",
+   "effect": "空き 0.4GB",
+   "gb": 0.4,
+   "kind": "disk",
+   "safe": true,
+   "how": "npx の一時置き場。作り直される"
+  },
+  {
+   "label": "終わって待機中のセッション 1本を畳む",
+   "effect": "メモリ 0.21GB・負荷↓",
+   "gb": 0.21,
+   "kind": "mem",
+   "safe": true,
+   "how": "Rusuban mimawa"
+  },
+  {
+   "label": "セッションを2本減らす（上限4本）",
+   "effect": "負荷 96%→上限内",
+   "gb": 0,
+   "kind": "load",
+   "safe": false,
+   "how": "どれを止めるかは作業内容次第。止めるなら引き継ぎメモを書かせてから"
   }
  ],
- "_duAt": 1789574302.0860028,
+ "_duAt": 1789601635.457154,
  "_du": {
-  "caches": 6.91,
-  "npx": 0.06,
-  "trash": 0.7,
-  "driveCache": 3.1,
+  "caches": 6.66,
+  "npx": 0.4,
+  "trash": 0.92,
+  "driveCache": 3.13,
   "nodeModules": 0.46,
   "nodeModulesList": [
    [
