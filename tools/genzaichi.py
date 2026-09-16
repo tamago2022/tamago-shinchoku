@@ -20,6 +20,18 @@ Dispatchが会話の最初に必ず読む1枚。ルールではなく「今の�
   - 「まだ渡していない完成品」に同じ番号が2回出る／番号と無関係なURLが混ざる事故 →
     番号ごとに最後の1件だけを残し、URLのファイル名が自分の番号で始まっていないものは捨てる。
   - Vault（Obsidian）側にも新規ファイルとして同じ7項目を置く（既存ノートは1文字も触らない）。
+
+2026-09-17 900番「仕組み⑨：引き継ぎで落ちない」での追記：
+  - 「待っているもの（返事待ち・本人しかできないこと）」を新設。中身は802番で既に計算済みだった
+    pending_decision_count（awaiting_check かつ origin=user）を、件数だけでなく実際の番号・題名まで
+    レンダリングするようにした（今までjsonのpendingDecisionCountにしか出ておらず、genzaichi.md
+    本体にはカウントすら出ていなかった）。
+  - 「今週の残り枠」を新設。pace.json の remainWeek/daysLeft/perDayEven を使う（新しい計測は増やさない）。
+  - 決定台帳 ai-brain/kettei.json（新設）と合わせて、「新しい担当は genzaichi.md と kettei.json の
+    2つだけ読めば仕事に入れる」を狙う。ルール（憲法）はREADME.mdに置いたまま、数字の実体
+    （バッジ28%等）はkettei.jsonへ集約し、根拠になった実物（画像）を必ず紐づける
+    （「実物は文書より強い」＝akikoのSpartacusバッジを文書の古い数字に合わせて縮めてしまった
+    事故の再発防止）。
 """
 import io, json, os, re, glob, subprocess, datetime, urllib.request, time
 
@@ -401,9 +413,10 @@ def build():
     #   index.html側の checkSec は details が開かれた時しかqueue.jsonを取りに行かない
     #   （軽さ優先の既存設計）ため、「一番上に常に出す」バナーはこのgenzaichi.json（既に
     #   ページ最上部で常時読まれている）に相乗りさせる。判定は renderCheck() と同じ条件。
-    pending_decision_count = sum(
-        1 for x in items if x.get("status") == "awaiting_check" and x.get("origin") == "user"
-    )
+    pending_decision_items = [
+        x for x in items if x.get("status") == "awaiting_check" and x.get("origin") == "user"
+    ]
+    pending_decision_count = len(pending_decision_items)
     h = jread("health.json"); p = jread("pace.json")
     today = now.strftime("%Y-%m-%d")
     done_ns = done_today_ns(items)
@@ -486,6 +499,9 @@ def build():
     A("- 今日の完了 **%d件**（9/06のピークは60件。20件を切ったら何かが詰まっている）" % len(done_ns))
     A("- 今日の子セッション **%d本・合計 $%.2f・1本平均 $%.2f**%s" % (n_child, cost, avg, "  ← 🔴 $3超は異常" if avg > 3 else ""))
     A("- クレジット 今日 **%s / %s**・週 **%s%%**" % (p.get("usedToday"), p.get("budgetToday"), p.get("allPct")))
+    if p.get("remainWeek") is not None:
+        A("- 今週の残り枠 **%.0f%%**（あと%.1f日・1日目安%.1f%%）" % (
+            p.get("remainWeek") or 0, p.get("daysLeft") or 0, p.get("perDayEven") or 0))
     if _haibun:
         A("- 今週の配分：見たいもの %.0f%% / 裏方 %.0f%% / 予備 %.0f%%%s" % (
             _haibun.get("mitaiPct", 0), _haibun.get("urakataPct", 0), _haibun.get("yobiPct", 0),
@@ -509,6 +525,16 @@ def build():
     A("## 次に出る（P1の先頭5件）")
     for x in sorted(p1, key=lambda y: -(y.get("n") or 0))[:5]:
         A("- %s %s" % (x.get("n"), (x.get("label") or "")[:48]))
+    A("")
+    A("## 待っているもの（返事待ち・本人しかできないこと）")
+    if pending_decision_items:
+        A("- 件数 **%d件**（たまごさんの確認・OK待ち）" % pending_decision_count)
+        for x in sorted(pending_decision_items, key=lambda y: -(y.get("n") or 0))[:5]:
+            A("- %s %s" % (x.get("n"), (x.get("title") or "")[:48]))
+        if pending_decision_count > 5:
+            A("- 他 %d件（進捗表の『判断待ち』欄で全件見られる）" % (pending_decision_count - 5))
+    else:
+        A("- なし")
     A("")
     A("## まだ渡していない完成品")
     unrep = unreported_completions()
@@ -535,6 +561,11 @@ def build():
         "running": {"count": running_count, "safeMax": safe_max_display},
         "waitingCount": len(waiting),
         "pendingDecisionCount": pending_decision_count,  # 802番：たまごさんのOK待ち件数
+        "pendingDecisionItems": [  # 900番：待っているもの（返事待ち・本人しかできないこと）を一覧でも
+            {"n": x.get("n"), "title": (x.get("title") or "")[:48]}
+            for x in sorted(pending_decision_items, key=lambda y: -(y.get("n") or 0))[:5]
+        ],
+        "weekRemainPct": p.get("remainWeek"),  # 900番：今週の残り枠
         "p1Count": len(p1),
         "doneToday": len(done_ns),
         "childSessionsToday": n_child,
