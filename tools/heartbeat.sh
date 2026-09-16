@@ -130,6 +130,13 @@ while :; do
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
   #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。
   ( python3 "$REPO/tools/top_status.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-16（894番）：発車0本の検知＋自己修復（tools/genzaichi.pyのcheck_launch_silence・
+  #   797/798番実装）は、genzaichi.py本体が「実質30分おき」に間引かれているせいで、
+  #   発車が10分止まっても最大約30分検知が遅れる穴があった。判定自体は軽量（ファイルの
+  #   更新時刻とmachine.jsonを読むだけ）なので、ここで毎サイクル（15秒おき）直接呼ぶ。
+  #   実装は tools/launch_watchdog.py（genzaichi.check_launch_silence()をそのまま再利用・
+  #   二重実装はしない）。
+  ( python3 "$REPO/tools/launch_watchdog.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
