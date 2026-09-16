@@ -3,26 +3,26 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                      // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                        // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-16T16:31:15.966Z",
+      "updatedAt": "2026-09-16T16:33:00.454Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
-      "dateJST": "2026-09-17",
+      "dateJST": null,
       "successCountToday": 0,
       "consecutiveFailures": 0,
       "stoppedForToday": false,
-      "lastResult": "fail",
-      "lastCheckedAt": "2026-09-16T16:31:15.565Z",
+      "lastResult": null,
+      "lastCheckedAt": null,
       "lastPublishedSha": null,
-      "lastFailureReason": "「変更を公開」を4回試したがクリックできなかった。画面を確認。",
-      "lastFailureAt": "2026-09-16T10:59:48.475Z",
-      "mainSha": "551f9503bb",
-      "mainUnpublished": true,
-      "paused": true,
-      "pauseReason": "Lovable側のsuspicious activityブロック解除待ち（.lovable-publish-pauseで一時停止中）"
+      "lastFailureReason": null,
+      "lastFailureAt": null,
+      "mainSha": null,
+      "mainUnpublished": false,
+      "paused": false,
+      "pauseReason": null
   },
   // LOVABLE_PUBLISH_STATUS:END
 
