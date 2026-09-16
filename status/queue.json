@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-16 09:25",
+ "updatedAt": "2026-09-16 20:26",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -25,32 +25,6 @@
    "urgent": false
   },
   {
-   "n": 4,
-   "title": "驚の部屋・美の部屋を「音楽の扉」と同じ形にする",
-   "why": "棚が縦にバーッと出ていて見づらい",
-   "what": "音楽の扉では、棚が横一列に並んでいて、押すと一覧でサムネイルが出ます。驚の部屋と美の部屋はその形になっておらず、全部が縦に並んで出てしまっています。音楽の扉に合わせます。新しく作るのではなく、既にある形に寄せます。\n\n【668番・差し戻し】queue.jsonのurls欄が空で確認ページも見つからず、result欄が「検品結果の通知を待っています。」というプレースホルダーのままdoneになっていました。仕事が終わった証拠が無いため、正直にwaitingへ戻します。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "worktree": "q04-0904",
-   "result": "【完了】驚の部屋は音楽の扉と同じ形式で本番稼働していることを実測確認しました\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/4-wonder-beauty-music-door-format.html\n本番: https://joy-relief-station.lovable.app/hidden/wonder\n（美の部屋 https://joy-relief-station.lovable.app/hidden/beauty は同じ実装ですが棚データが0件のため見た目確認は棚データ投入後）",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/4-wonder-beauty-music-door-format.html",
-    "https://joy-relief-station.lovable.app/hidden/wonder"
-   ],
-   "origin": "factory",
-   "redoCount": 1,
-   "aiVerifyFailCount": 1,
-   "priority": 2,
-   "cutCount": 1,
-   "cutAt": "2026-09-09T15:53:56+0900",
-   "bgWaitCount": 1,
-   "startedAt": "2026-09-09T16:28:56+09:00",
-   "sessionId": "82813f88-ec77-4e6d-99c7-b5f476700d2e",
-   "pid": 68270,
-   "finishedAt": "2026-09-09T16:55:00+09:00"
-  },
-  {
    "n": 6,
    "title": "外部から入れた曲の「曲名とアーティスト」を自動で埋める",
    "why": "URLを貼っただけだと曲名もアーティストも空のまま",
@@ -67,59 +41,6 @@
    "bgWaitCount": 1,
    "priority": 3,
    "urgent": false
-  },
-  {
-   "n": 17,
-   "title": "YouTube APIで動画を差し替えられるようにする",
-   "why": "急いでいない。実装はもう入っている",
-   "what": "棚の動画を、スマホから検索して差し替えられる機能です。コードは既に本番に入っていて、APIキーを通すところだけ残っています。たまごさんから「本当に急いでいない」との指定あり。\n\n【668番・差し戻し】queue.jsonのurls欄が空で確認ページも見つからず、result欄が「（結果が読み取れませんでした）」というプレースホルダーのままdoneになっていました。仕事が終わった証拠が無いため、正直にwaitingへ戻します。\n\n【自動やり直し・09-09 18:01】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "worktree": "q17-0904",
-   "checkNote": "たまごさん確認：動くようになった。80点。位置の直しは別タスクへ分離。",
-   "origin": "factory",
-   "redoCount": 2,
-   "priority": 2,
-   "startedAt": "2026-09-09T18:06:40+09:00",
-   "sessionId": "43848950-ba81-4b5f-9281-98ecec0fda50",
-   "finishedAt": "2026-09-09T18:39:23+09:00",
-   "result": "## 完了報告\n\n**17番・YouTube API動画差し替え機能：実装は完成・本番反映済み。残る1手だけ店主待ち。**\n\n- 調べた結果、この機能のコードは既に本番（Lovable）に完全に入っていました。棚編集からYouTube検索→差し替えできる仕組み、APIキーを安全に保管する仕組み（Supabase側の非公開保管庫）、キーを1回だけ貼る画面まで、すべて実在・稼働確認済みです。\n- **APIキーを貼る画面は `https://joy-relief-station.lovable.app/admin/inventory`（合言葉「@」でログイン）の「🔑 APIキー」タブです。**（前回セッションのメモにあった`/admin/video-health`は誤りだったので訂正しました）\n- ここに`YOUTUBE_DATA_API_KEY`を貼って保存する、この1回の操作だけが残っています。\n- AI側でこの投入を代行できないか試しましたが、環境の安全装置がこの種の本番書き込みを明確にブロックしており、無理に回避せず受け入れました。これは店主本人にしかできない操作だと確定した、ということです。\n- 判断・引き継ぎ内容は`.claude/TASK_BOARD.md`「発車待ち17番」／`.claude/PENDING_DECISIONS.md`に記録し、mainへ反映済みです（Dispatchの巡回で拾われます）。\n\nたまごさんへ：本当に急がなくて大丈夫です。手が空いた時に上のページで「🔑 APIキー」タブを開き、YouTubeのAPIキーを貼って保存だけお願いします。それだけで検索→差し替えがすぐ使えるようになります。",
-   "urls": [
-    "https://joy-relief-station.lovable.app/admin/inventory"
-   ],
-   "checkedAt": "2026-09-09T18:40:48+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：本番URLが200で応答し、配信JSバンドルにYOUTUBE_DATA_API_KEY・「🔑 APIキー」タブ・YouTube検索差し替え機能の文言が実データとして確認できた"
-  },
-  {
-   "n": 20,
-   "title": "走行中が空いたら自動で次を発車させる",
-   "why": "この「次に発車」を手動更新から自動へ",
-   "what": "いまこの発車待ちの一覧は手で書いています。これを、走行中のセッションが終わったら自動で一番上を着火する形にします。ここまで来ると「工場が止まらない」が完成します。\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 08:44】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html / ③FAIL: img_count=0\n\n【鬼監督(verify_check_pages.py)差し戻し・09-06 09:24】必須条件①②③をAND判定した結果FAIL。①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html / ③FAIL: img_count=0",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "worktree": "q20-0904",
-   "checkedAt": "2026-09-09T14:03:01+0900",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html"
-   ],
-   "result": "【完了】自動発車は本番稼働中。今日6.5時間で54回・41案件を無人で着火（20番自身も2回）。確認ページに実績あり。",
-   "verifyNote": "機械検品FAIL: ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html / ③FAIL: img_count=0",
-   "redoCount": 2,
-   "origin": "factory",
-   "originNote": "内部の仕組み改善・自己発案",
-   "originBy": "455番",
-   "order": 21,
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
-   "restoredAt": "2026-09-08T17:20:00+09:00",
-   "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
-   "startedAt": "2026-09-09T13:53:50+09:00",
-   "sessionId": "baa6d280-c3ce-410a-acfd-bf27c69961ab",
-   "pid": 10793,
-   "okBy": "oni-kantoku-verify_check_pages-orchestrator-20-recheck-0909",
-   "okNote": "機械検品PASS(①②③すべて満たす): ①PASS: https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html => 200 / ②PASS: evidence=True negative_hit=False source=https://tamago2022.github.io/tamago-shinchoku/share/check/20-auto-launch.html / ③PASS: img_count=1"
   },
   {
    "title": "留守番の見回り（30分おき）を止める",
@@ -448,31 +369,6 @@
    "resumeFrom": "c13d08ae-e2fb-4f60-a090-23e5fb95c209",
    "cutAt": "2026-09-09T13:13:59+0900",
    "urgent": false
-  },
-  {
-   "n": 489,
-   "title": "進捗表のP表記を数字に",
-   "why": "スマホから追加",
-   "what": "進捗表(/Users/mac/Desktop/tamago-shinchoku/index.html)の優先度表示から「P」を消して数字だけにする。きっかけ：たまごさんが『P って何の略なの？』と聞いた＝分かりにくいということ。Dispatchが『次にいじるときに変えます』と約束した宿題。★やること：①箱の見出し『P1 今すぐ』→『1 今すぐ』、『P2 高い』→『2 高い』…『P5 後回し』→『5 後回し』。②行のボタン『P3』→『3』、優先度なしの『P』→『—』。③優先度を選ぶ画面の『優先度（1＝今すぐ）』はそのまま残す（ここは説明なので分かりやすい）。④**それ以外は何も変えない。**見た目の大きさ・色・並びは触らない。⑤変更後、http://192.168.0.46:8788 と GitHub Pages の両方で実際に開いて、数字だけになっていることをスクショで確認する。⑥確認ページにビフォーアフターのスクショを出す。\n\n【655番・2026-09-08 追記】655番『進捗表のボタンを分かりやすくする』の実装時に統合対応済み。優先度ボタン(qp)の表示を『P1』〜『P5』ではなく色付き丸（🔴🟠🟡🔵⚪）に変更し、文字の「P」は完全に削除した（数字ボタンとの見分けも兼ねて色帯化。489番の「Pって何の略？」への回答＝Pという表記自体を無くす、という形で解決）。本番反映済み・確認ページ https://tamago2022.github.io/tamago-shinchoku/share/check/655-queue-buttons.html 参照。着火時はこの内容で完了として扱ってよい。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "priority": 3,
-   "origin": "user",
-   "order": 16,
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
-   "restoredAt": "2026-09-08T17:20:00+09:00",
-   "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
-   "startedAt": "2026-09-09T12:39:46+09:00",
-   "sessionId": "deff4753-8a16-495f-8a80-fb8322f2e385",
-   "finishedAt": "2026-09-09T12:42:07+09:00",
-   "result": "【完了】進捗表の優先度表示、655番の実装で「P」表記を完全撤去済み（色付き丸→さらに682番でA〜Fの文字表記に進化）。本番・GitHub Pages両方で実測確認済み（Pという文字表記は0件）\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/655-queue-buttons.html\n本番: https://tamago2022.github.io/tamago-shinchoku/",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/655-queue-buttons.html"
-   ],
-   "checkedAt": "2026-09-09T12:46:07+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：本番・確認ページとも実測でP表記(P1〜P5)が画面上に0件、優先度なしは「—」、内部ログにのみ残る\"P\"文字列は非表示要素で実害なしと確認できた"
   },
   {
    "n": 502,
@@ -991,27 +887,6 @@
    "order": 90
   },
   {
-   "n": 677,
-   "title": "進捗表で「もういらない」タスクをその場で取り消せるようにする",
-   "why": "スマホから追加",
-   "what": "たまごさんの言葉:「進捗表に俺がたまに見に行って、これはもういらないってやつをすぐ取り消せるようにしてほしいね。もう終わったやつも、またこれがあるよっていうのがあるから、それは消せるようにしたい。」\n\n■ やること\n1. 進捗表の各タスク行に「取り消し」を置く。既にボタンはあるが、Mac側の status/queue.json に本当に反映されているか確認する（2026-09-04に queue_ok / queue_redo で同じ問題があり、押した結果が端末のlocalStorageにしか残っていなかった前例がある）。\n2. 押したら obsidian://new → Vault → tools/command_ingest.py の既存の道に乗せて、queue.json の該当番号を cancelled にする。新しい道を作らない。\n3. 完了済みなのに列に残り続けて「またこれがあるよ」となるものも消せるようにする。完了・確認待ちの行にも同じ取り消しを置く。\n4. 取り消したものは消滅させず cancelled として記録に残す（作り直せるようにする）。誤操作のundoも用意する。\n5. スマホ幅375pxで押せる大きさにする。\n\n■ 完了条件\n本番 https://tamago2022.github.io/tamago-shinchoku/ で実際に1件取り消して、Mac側の queue.json が cancelled に変わることを自分で確認し、スクリーンショットを撮る。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 2,
-   "startedAt": "2026-09-09T10:28:04+09:00",
-   "sessionId": "859caf5a-2284-4dcd-b179-99b34f806f26",
-   "finishedAt": "2026-09-09T10:52:22+09:00",
-   "result": "【完了】進捗表の「取り消し」ボタンが実際は本番で全部弾かれていたバグを直しました（Mac側の受け口の許可リストに`queue_cancel`が抜けていた）\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/677-queue-cancel-fix.html\n本番: https://tamago2022.github.io/tamago-shinchoku/\n\n※ブラウザ操作ツールがこのセッションに無く実クリックのスクリーンショットは撮れなかったため、本番と同一の送信経路で実際にコマンドを送りqueue.jsonが変わることを実測し、確認ページに証拠として記録しました。",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/677-queue-cancel-fix.html"
-   ],
-   "checkedAt": "2026-09-09T11:01:36+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：修正コミット・queue.json実データ・本番JSの実装が主張と完全に一致し、queue_cancelが許可リストに追加されテスト692番が実際にcancelledへ反映されたことを裏付けで確認できた"
-  },
-  {
    "n": 678,
    "title": "たまごさんへの確認ポップアップをゼロに戻す（今日3〜4回出た）",
    "why": "スマホから追加",
@@ -1051,72 +926,6 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/679-short-report-url-required.html"
    ]
-  },
-  {
-   "n": 680,
-   "title": "「ここ直ってないよ、やり直して」の一言で自動的に列に戻す",
-   "why": "スマホから追加",
-   "what": "たまごさんの言葉:「画面が変わってる、オッケーみたいな。変わってないんだったらもう一回やり直してって、俺が口頭でここ治ってないよ、やり直してつったら、**またセッションが自動的に列に並ぶ位のノリにしたい**よね。」\n\n■ やること\n1. たまごさんが会話で「◯◯が直ってない」「やり直して」と言ったら、Dispatchがその場で該当番号を waiting に戻し、列の先頭へ移す。既に queue_redo があるので新設しない。**番号を言われなくても、題名の一部から該当を探して当てる。**\n2. 戻すときに「何が直っていなかったか」を1行だけ what に追記する。次のセッションが同じ間違いを繰り返さないため。\n3. 進捗表側でも同じことを1タップでできるようにする（677と連動）。\n4. 戻した回数を数え、同じタスクが3回戻ったら別のやり方に切り替える（同じ経路で4回目をやらない）。\n\n■ 完了条件\nたまごさんが一言「◯◯直ってないよ」と言うだけで、番号を調べずに列の先頭へ戻り、次に発車すること。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 2,
-   "startedAt": "2026-09-09T10:48:17+09:00",
-   "sessionId": "aadcf3b5-d78d-423f-a19f-0cf031ba18ca",
-   "finishedAt": "2026-09-09T11:20:53+09:00",
-   "result": "【完了】「◯◯直ってないよ、やり直して」の一言で番号を聞かずに列の先頭へ戻せるようにした（進捗表ボタン・Dispatch用CLIの両方に対応、3回目は別アプローチへ自動切替）\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/680-owner-redo.html\n本番: https://tamago2022.github.io/tamago-shinchoku/",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/680-owner-redo.html"
-   ],
-   "checkedAt": "2026-09-09T11:22:02+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：owner_redo.py・queue_redoのnote追記/3回目エスカレーション・進捗表の↩︎やり直しボタンのnoteプロンプトを本番コードで実際に確認し、確認ページの主張と一致した"
-  },
-  {
-   "n": 681,
-   "title": "世界のトップのやり方を常時調べて「うちもこうやります」まで出す係を常設する",
-   "why": "スマホから追加",
-   "what": "たまごさんの言葉:「**牛尾さんって言ってるのは、自分の知る限り世界のトップエンジニアが周辺にいる人、その真ん中にいる人だから。だからそのやり方を取り入れてって言ってるのね。常にアップデートされてるだろうからキャッチアップして。そういうリサーチャーみたいなのが必要なんだよね。**理想的には、自分がもう言ったら勝手にリサーチが走ってる位にしたいよ。今すぐじゃなくていいから、何時間後に『わかりました』って報告が欲しい。**今こうやってますから、うちもこうやります**って。世界トップに近づけて。目的は違うよ、ゲームを作ったりはしてない。だけど共通するところは多々あるはずでしょう。」\n\n■ 作るもの：常設のリサーチ係（【常設】タスク）\n1. **定点観測する情報源を決める。** 牛尾剛さん(note.com/simplearchitect)は既に14本精読済み（まとめ＝share/check/623-ushio-tsuyoshi-summary.html、Vault AI出力/リサーチ/牛尾剛_一流エンジニアのAI活用法_2026-09-07.md、共通脳 ai-brain/AI_COMMON_BRIEFING.md のコミット877f3f99）。**続きとして、彼の新着と、彼が言及している周辺の一次情報を追う。**加えてAnthropic/OpenAIの公式ドキュメント・エージェント運用の実践記事など、うちの「止まらない工場」に効くものだけ。流行の紹介記事は追わない。\n2. **数時間おきではなく1日1回でよい。** 走ったら必ず次の形で1枚に落とす：「向こうがやっていること（事実・出典URL付き）／うちの今のやり方／差分／うちが取り入れるなら具体的に何をどう変えるか／取り入れない場合はその理由」。\n3. **取り入れると決めたものは、その場で発車待ちのタスクとして積む。**報告して終わりにしない。ここが一番大事。\n4. **前提が違って真似できないものは、真似できない理由を明記して捨てる**（実例：牛尾さんの「詰まったら別モデルへ切り替え」は、うちのSonnet固定・Fable不使用の制約と噛み合わないため輸入しなかった）。\n5. 出典は一次情報のみ。本人の言葉と解釈を分ける。未確認は未確認と書く。\n\n■ 背景（これが最終目的）\n8月31日までにループエンジニアリングをやりたかった。ループエンジニアリング＝たまごさんの介入が極力無いまま工場が回り続け、勝手にアップデートして勝手に成長し、サイトも成長してぐるぐる回り続けること。**確認は最終手段。たまごさんを動かすのも最終手段。**自分で考えて、自分で改善して、自分で修復して、自分で目的を達成する。この係はその「勝手に成長する」部分の担当。\n\n【来ない通知を待って終わっていました・1回目・09-09 09:28】\n前回このタスクは「worktree作成の完了通知を待っています。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【確認ページの機械検品ではねられました・1回目・09-09 09:44】理由：たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/796237a7 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください。確認ページ https://tamago2022.github.io/tamago-shinchoku/share/check/681-engineering-research-role.html の中身を作り直してください。①何を直したか1行 ②数字（何件中何件） ③押せるリンク一覧 ④可能なら前後のスクリーンショット、の4つを必ず入れること。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "bgWaitCount": 1,
-   "contentCheckFailCount": 1,
-   "startedAt": "2026-09-09T10:04:15+09:00",
-   "sessionId": "3599e17a-08b5-4b33-aad4-d2e401ba1eb4",
-   "finishedAt": "2026-09-09T10:11:28+09:00",
-   "result": "実装のmain合流とlaunchd常設化は確認済み。今回の課題だった確認ページの不可視リンクを修正し、本番(GitHub Pages)への反映も実測確認できました。\n\n【完了】常設リサーチ係（世界トップ手法）を新設。確認ページの非公開リンクを本文埋め込みに差し替え\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/681-engineering-research-role.html\n本番: https://tamago2022.github.io/tamago-shinchoku/share/check/681-engineering-research-role.html",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/681-engineering-research-role.html"
-   ],
-   "checkedAt": "2026-09-09T10:12:18+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：前回の非公開リンクは撤去され本文埋め込みに差し替え済み、①直した内容②数字③押せるリンク2本(anthropic.com/note.comとも実際に200で開けて内容も記載通り)が揃っており依頼と一致している"
-  },
-  {
-   "n": 683,
-   "title": "マイクが使えなくなる件を切り分けて、Anthropicの返信も読む",
-   "why": "スマホから追加",
-   "what": "たまごさんの言葉:「マイクがしばしば使えないのはバグなのか。」\n\n■ 症状\nClaudeデスクトップアプリ（Cowork / Dispatch）の**音声入力（マイク）が、しばしば使えなくなる。**たまごさんは音声入力で指示を出すことが多いので、これが止まると仕事そのものが止まる。\n\n■ やること\n1. まず再現条件を記録できる形にする。いつ・どの画面・どのくらいの頻度で使えなくなるか。今後たまごさんが「またマイクが使えない」と言ったら、その時刻を1行足すだけで済む記録先を作る（既存の不具合トラッカーに寄せる。新しい置き場所を作らない）。\n2. Mac側で切り分けられることを全部やる。システム設定のマイク権限、他アプリがマイクを掴んでいないか、入力デバイスの選択、アプリの再起動で戻るか。**たまごさんに操作させず、こちらで調べられるところまで調べる。**\n3. うちの問題ではなくアプリ側の問題だと分かったら、運営（Anthropic）へ送る文面を英語＋日本語で用意し、Gmailの送信画面まで開いてあとは送信を押すだけの状態にする（skill: unei-houkoku の手順）。\n4. ついでに：2026-09-07にsupport@anthropic.comへ送った問い合わせの**返信を見張る係が9/07 23:37から死んでいる**（tools/check_anthropic_reply.py が blocked: no_credential。~/.tamago/gmail_app_password が無い）。返信が来ていても進捗表の anthropicReply が null のまま。**たまごさんにアプリパスワードを作らせずに読む方法**（Chromeのdispatchプロフィールで直接Gmailを開く等）で読み、内容を進捗表に出す。ブラウザは1タブだけ使い、終わったら必ず閉じる。\n\n■ 完了条件\n返信の中身が進捗表で読めること。マイクの件は、原因がこちら側かアプリ側かを切り分けた1行が残ること。\n\n■ 切り分けの決定的な手がかり（たまごさん 2026-09-09）\n「**スマホは常時使える。PCはダメ。**」\n→ 同じアカウント・同じClaudeで、iPhone側の音声入力は安定して動く。**Mac側だけが落ちる。**\nつまりサーバ側やアカウント側ではなく、**Macローカルの要因が濃厚**。優先して見るのはこの4つ：\n1. macOSのマイク権限（Claudeアプリにマイクが許可されているか。システム設定＞プライバシーとセキュリティ＞マイク）\n2. **他アプリがマイクを掴んでいる**（Brave 66プロセス・Zoom・aivisspeech-engine など。特にaivisspeech系は音声を扱うので疑う）\n3. 入力デバイスの選択が別のものに切り替わっている（Bluetoothイヤホン等が繋がると勝手に変わる）\n4. **マシン負荷**（health.json の load が 100 の状態が続いている。重すぎて音声入力が落ちている可能性）\nMacでダメになった瞬間の load と、その時マイクを掴んでいたプロセスを記録できるようにする。\n\n■ もう1件、同じくアプリ側の不具合（たまごさん 2026-09-09 06:19）\n「**あと30%の確率で、スクショを添付して送信しても反映されないから、もう一度スクショを撮る羽目になる。**」\nClaudeデスクトップアプリで画像を添付して送信すると、**約3割の確率でその画像がこちら（AI側）に届かない。**\nたまごさんは撮り直して送り直すことになり、毎回2倍の手間がかかっている。マイクの件と合わせて、\n**入力そのものが不安定＝仕事が止まる**ので、運営報告の優先度は高い。\n- マイクは「使えたり使えなかったり」。常に落ちているわけではない。**PCのみ。スマホは常時使える。**\n- 添付の取りこぼしも同じく断続的。\nこの2件を1通にまとめて、英語（送信用）＋日本語（たまごさん確認用）で文面を作り、\nGmailの送信画面に宛先・件名・本文を入れて、あとは送信を押すだけの状態にする（skill: unei-houkoku）。\n**たまごさんに文面を書かせない。**",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "startedAt": "2026-09-09T09:08:32+09:00",
-   "sessionId": "0fa96a07-3502-4b29-9708-80a8b4c58be6",
-   "finishedAt": "2026-09-09T09:41:55+09:00",
-   "result": "/tmp内の一時ファイルは害がないためそのままにして、報告へ進みます。\n\n【完了】マイク不具合の原因切り分け＋Anthropicからの返信を進捗表に表示\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/683-mic-issue-and-anthropic-mail.html\n本番: https://tamago2022.github.io/tamago-shinchoku/index.html",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/683-mic-issue-and-anthropic-mail.html",
-    "https://tamago2022.github.io/tamago-shinchoku/index.html"
-   ],
-   "checkedAt": "2026-09-09T09:44:45+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：確認ページ・本番index.html・data.jsの内容が一致し、マイク切り分けの1行結論（Mac側高負荷が最有力・アプリ側も残る）、Anthropic返信本文の表示、Gmail下書きリンクの中身、実機スクリーンショットまで全て実データで確認できた"
   },
   {
    "n": 684,
@@ -1225,27 +1034,6 @@
    "order": 90
   },
   {
-   "n": 689,
-   "title": "走行本数と使用率の数字を実測に合わせる（10本に見えて実は4本・週0%は怪しい）",
-   "why": "スマホから追加",
-   "what": "たまごさんの言葉:「今10本走ってるじゃん。**進捗表では10本走ってるように見える。**パソコンが重くならなければ大丈夫なんだけど。あとクレジットの減りが速くならないかなって。」「**クレジットが超余ってるのに、タスクが回ってない、1本しか回ってない、っていうのもおかしいのよ。**」\n\n■ 実測（2026-09-09 07:51）\n- health.json の sessions は **4本**。safeMax 4、moreOK 0、メモリ圧 緑、空き35GB、load 100。\n- **進捗表には10本に見えている。実際は4本。**検品中(verifying)や終わったものを数えている疑い。\n- pace.json は「今日 0.0% / 予算15.4%」「週 0%」。**丸1日以上動いて週0%はおかしい。**quota.json の allPct も 0（07:23時点）。**取得が壊れているか更新されていない可能性が高い。**\n\n■ やること\n1. 進捗表の走行本数を **health.json の sessions と一致**させる。何を1本と数えるか画面に書く（検品中は別枠）。Dispatch自身は数えない。\n2. **使用率が本当に0%なのか裏取りする。**取得元・取得時刻・失敗時の挙動を調べ、壊れているなら直す。**取れていないなら灰色で「取れていない」と出す。0%と表示して安心させるのが一番まずい。**\n3. **配分の考え方を画面に明記：週100%を火曜18:00リセットで7日で使い切る。1日の目安は約13〜14%。理想は火曜18:00に99.9%。超えたら赤。**\n4. **「余っているのに回っていない」も異常として出す。**走行がsafeMaxを下回り、発車待ちがあり、今日の予算が余っているのに発車していないなら黄色で理由を出す。0本は赤で「工場停止」。\n5. 重くなったら**本数を減らす前にモデルを落とす**方針も画面に書く。\n\n■ 完了条件\n進捗表の一番上だけで「今何本／あと何本積める／今日いくら使った／使いすぎか足りないか／いつ時点の数字か」が分かること。スクショを添える。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "startedAt": "2026-09-09T10:04:44+09:00",
-   "sessionId": "f8e3f6c9-d44d-4750-be06-8ec6cb323b59",
-   "finishedAt": "2026-09-09T10:31:50+09:00",
-   "result": "【完了】進捗表の走行本数・使用率をごまかさず実測に合わせた（4日間0%固定だった原因＝古い手入力ファイルの上書きを特定して修正）\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/689-shinchoku-honsu-shiyoritsu.html\n本番: https://tamago2022.github.io/tamago-shinchoku/",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/689-shinchoku-honsu-shiyoritsu.html"
-   ],
-   "checkedAt": "2026-09-09T10:33:25+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：確認ページ・本番URL・生データ(health.json/quota.json)の実測とコード実装がすべて一致し、4日間0%固定の原因特定と修正も裏付けられた"
-  },
-  {
    "n": 690,
    "title": "Latelyを見本の1ページに仕上げる（OK出たら全ページへ一括適用）",
    "why": "スマホから追加",
@@ -1293,55 +1081,6 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/691-bed-remote-hotkeys.html"
    ]
-  },
-  {
-   "n": 694,
-   "title": "🎥仕入:(1769) 資本主義の経済学史　〜現代人が知っ",
-   "why": "スマホから追加",
-   "what": "動画URL: https://www.youtube.com/watch?v=qBHnSEOZgGs&list=PLrfQXlteYeH7y1yeuWGbAGb3zOQpSp-tc&index=2 （(1769) 資本主義の経済学史　〜現代人が知っておくべきレジェンド学者たちの持論！〜【COTEN RADIO #234 】 - YouTube）をベッドから仕入れ登録依頼。存在確認・同定・棚判断まで仕入れフローに従って進めてください。\n\n【自動やり直し・09-09 13:36】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 3,
-   "cutCount": 2,
-   "cutAt": "2026-09-09T17:27:13+0900",
-   "redoCount": 1,
-   "sessionId": "80144a9a-cd0b-4db0-95ac-92040dceeb02",
-   "startedAt": "2026-09-09T17:27:33+09:00",
-   "finishedAt": "2026-09-09T17:28:26+09:00",
-   "result": "両方とも生きており、中身も正しく反映されています。前回と同一のこの案件は既に完了済みです。\n\n【完了】COTEN RADIO「資本主義の経済学史」を新規仕入れ・本番反映\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/694-coten-radio-234.html\n本番: https://joy-relief-station.lovable.app/cover-guide?artist=coten-radio&song=coten-radio-234-shihonshugi-keizaigakushi",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/694-coten-radio-234.html",
-    "https://joy-relief-station.lovable.app/cover-guide?artist=coten-radio&song=coten-radio-234-shihonshugi-keizaigakushi"
-   ],
-   "checkedAt": "2026-09-09T17:29:10+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：本番URL・確認ページとも実取得しHTTP200、タイトル・youtubeId・公式チャンネルが元動画と完全一致"
-  },
-  {
-   "n": 695,
-   "title": "🎥仕入:(1769) ポスト資本主義　ー現代人が彩る新た",
-   "why": "スマホから追加",
-   "what": "動画URL: https://www.youtube.com/watch?v=4Y3175Zv_B8&list=PLrfQXlteYeH7y1yeuWGbAGb3zOQpSp-tc&index=3 （(1769) ポスト資本主義　ー現代人が彩る新たな社会のグラデーションー【COTEN RADIO #235 】 - YouTube）をベッドから仕入れ登録依頼。存在確認・同定・棚判断まで仕入れフローに従って進めてください。",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 3,
-   "sessionId": "9077a694-f6ad-49a3-a576-93275c726a86",
-   "cutCount": 1,
-   "cutAt": "2026-09-09T17:27:13+0900",
-   "startedAt": "2026-09-09T17:27:59+09:00",
-   "finishedAt": "2026-09-09T17:28:28+09:00",
-   "result": "【完了】COTEN RADIO第235回「ポスト資本主義」を仕入れ登録・本番反映済み\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/695-coten-radio-235.html\n本番: https://joy-relief-station.lovable.app/cover-guide?artist=coten-radio&song=coten-radio-235-post-capitalism",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/695-coten-radio-235.html",
-    "https://joy-relief-station.lovable.app/cover-guide?artist=coten-radio&song=coten-radio-235-post-capitalism"
-   ],
-   "checkedAt": "2026-09-09T17:30:17+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：確認ページ・本番URLとも実取得しHTTP200、タイトル・動画ID・oEmbed同定が依頼内容（COTEN RADIO #235 ポスト資本主義）と一致"
   },
   {
    "n": 696,
@@ -3350,12 +3089,12 @@
    "sessionId": "232400a3-4f65-4fd9-9780-aa5c3b34a12f",
    "recoveredAt": "2026-09-13T16:30:39+09:00",
    "recoveredNote": "案件#687：queue.jsonロールバック事故（git pull --rebaseのautostash残骸問題）で消失した項目を、事故直後に自動生成されていたgit stashコミット（タグ rescue-687-autostash-20260913）から原文のまま復元。事故直後は走行中(running)だったが、その後3時間枠を使い切り自然終了(実セッションログで確認)。",
-   "result": "3時間枠を使い切り自然終了。完了報告あり：亮太さんページ実装完了・mainマージ済みだがLovable公開は未完了(環境負荷によるディスク遅延)。甥っ子の228曲プレイリストは未発見。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。",
+   "result": "3時間枠を使い切り自然終了。完了報告あり：亮太さんページ実装完了・mainマージ済みだがLovable公開は未完了(環境負荷によるディスク遅延)。甥っ子の228曲プレイリストは未発見。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。\n\n【証拠ページが見当たりません】https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html が開けません（たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/commit/7a523a65 は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください）。645番の容量確保で古い確認ページを外付けへ退避したためです。仕事のやり直しは不要。証拠だけが行方不明です。",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html"
    ],
    "evidenceGone": true,
-   "evidenceCheckedAt": "2026-09-16T09:10:25+0900"
+   "evidenceCheckedAt": "2026-09-16T19:08:21+0900"
   },
   {
    "n": 793,
@@ -3867,7 +3606,7 @@
    "title": "【案内所】Grok Realtime Voiceを埋め込む（キーを漏らさない・料金上限を先に決める）",
    "why": "スマホから追加",
    "what": "【案内所】Grok Realtime Voice を卵コンシェルジュに埋め込む（キーを絶対に漏らさない・料金の上限を先に決める）\n\n【★joy-relief-station が対象】本番：https://joy-relief-station.lovable.app/cover-guide\n確認ページ：/Users/mac/Desktop/tamago-shinchoku/share/check/814-grok-voice.html\n\n■たまごさんから渡された接続コード（原文そのまま。素材台帳にも記録すること）\n```js\n// npm install ws\nimport WebSocket from 'ws';\n\nconst ws = new WebSocket('wss://api.x.ai/v1/realtime?agent_id=agent_rLMJbIHgmw15s3NX', {\n  headers: { Authorization: `Bearer ${process.env.XAI_API_KEY}` },\n});\n\nws.on('open', () => {\n  ws.send(JSON.stringify({\n    type: 'conversation.item.create',\n    item: { type: 'message', role: 'user',\n      content: [{ type: 'input_text', text: 'Hello!' }] },\n  }));\n  ws.send(JSON.stringify({ type: 'response.create' }));\n});\n\nws.on('message', raw => {\n  const event = JSON.parse(raw.toString());\n  if (event.type === 'response.output_audio_transcript.delta') {\n    process.stdout.write(event.delta);\n  } else if (event.type === 'response.output_audio.delta') {\n    const pcm = Buffer.from(event.delta, 'base64'); // decode and play\n  }\n});\n```\nたまごさんの言葉（2026-09-13）：\n> 「**今Grok Voiceを試したら、なかなか良くて。今、案内所に埋め込めるように、人格付けと声を選んでいます。\n> 終わったらコードを渡すから、埋め込んでもらうことになると思う。**」\n> （agent_id は **agent_rLMJbIHgmw15s3NX**。人格と声はたまごさんが x.ai 側で設定済み／設定中）\n\n==================================================\n■★★★【1】最優先：APIキーを絶対にブラウザへ出さない\n==================================================\n**上のコードは Node（サーバー）用。そのままブラウザに持っていくと、\n`XAI_API_KEY` が訪問者全員に丸見えになる。**\n→ **拾われて他人に使われ、たまごさんに請求が来る。**（公開リポジトリにツイート4.7万件を\n　誤公開した前科があるので、この種の事故は現実に起きる）\n\n**守ること：**\n- **キーはブラウザのコードに一切出さない。**`.env` はgit管理下に入れない。\n- **公開リポジトリ（tamago-shinchoku）に絶対に置かない。**\n- 経路は次のどちらか。**どちらが安全で安いかを実測して決め、理由を1行で書く：**\n  - **(A) 中継サーバー**：こちら側のサーバーが x.ai と繋ぎ、ブラウザとはその中継とだけ話す\n  - **(B) 使い捨てトークン**：x.ai が短命トークンを発行できるなら、ブラウザにはそれだけ渡す\n    → **x.ai の公式ドキュメントで、ephemeral token / client secret の仕組みがあるか必ず確認する。**\n      あるなら (B) が正解。**無いなら (A)。**\n- **キーは、たまごさんに聞かない。** Obsidian か `.env.local` に既にあるはずなので**自分で探して読む。**\n  （2026-09-12にターミナルを3回打たせた前科がある。**人を動かさないのが最上位。**）\n\n==================================================\n■★★【2】お金の上限を先に決める（これが無いと本番に出さない）\n==================================================\n- **リアルタイム音声は従量課金。放っておくと青天井。**\n- **先に実測する：1分話すと何円か。**（短いテストを1回だけ。**円で出す。**）\n- **仕組みで止める：**\n  - **1回の会話は最大3分で自動終了**（切れる前に「また来てね」と言って終わる）\n  - **1人あたり1日◯回まで**\n  - **1日の合計上限を決めて、超えたら自動で文字だけの案内に切り替える**\n  - 使った分を `status/grok_voice_cost.json` に記録し、**進捗表に赤で出す**\n- **上限の具体的な数字は、1分の単価を実測してからDispatchへ出す。**\n  たまごさんが決める（「◯分でいくら、上限◯円でいいですか」）。**勝手に本番へ出さない。**\n\n==================================================\n■【3】案内所への入れ方\n==================================================\n- **794番（案内所の作り直し）の「話す」ボタンが入口。**\n  794で先に Web Speech API（文字起こし）を入れているので、**そこを差し替える形にする。**\n- 会話の流れ：\n  - 押す → マイク開始 → 話す → もう一度押す（または無音で終了）→ **Grokが声で返す**\n  - 返事の**文字も画面に出す**（`response.output_audio_transcript.delta`）。\n    **声だけにしない**（聞き逃す・音を出せない場所で使えない）\n  - 会話から**カードを4件出す**（794の要件と合流。1件では足りない）\n- **マイクが使えない／上限に達した／繋がらないときは、必ず文字の案内に落ちる。黙って無反応にしない。**\n- **卵は1匹**（794と合流）。\n\n==================================================\n■【4】出す前に自分で歩く\n==================================================\n- ヘッドレスでは音声が試せないので、**実機（375px幅のブラウザ）で自分で話しかけて、\n  最初から最後まで通す。**スクショと、返ってきた文字を記録する。\n- **押して何も起きない要素がゼロであること。**\n- **キーがブラウザ側に出ていないことを、実際に配信された JS を検索して証明する。**\n  （`grep` で `xai` `Bearer` `XAI_API_KEY` を配信ファイルから探して、無いことを見せる）\n\n■完了条件\n1. **配信されたJSにキーが含まれていないことの証拠**（検索結果のスクショか出力）\n2. 1分あたりの料金が円で出ている\n3. 上限の仕組み（3分・1日上限・超えたら文字へ）が動く\n4. 実機で自分で話して往復した記録（スクショ＋文字）\n5. 本番反映済み。報告は1行＋URL＋1分単価\n\n==================================================\n■★★★2026-09-13 たまごさんの正式な仕様（これが正本。上の内容と食い違う所はこちらを優先）\n==================================================\n> **ごきげん補給所の案内所ページ https://joy-relief-station.lovable.app/cover-guide に、\n> xAI Voice Agent「ごきげん補給所 案内人」を埋め込む。**\n>\n> 条件:\n> - **案内所の「話す」付近に、音声会話ボタンを置く**\n> - **xAI APIキーはフロントに出さない。サーバー側で Voice Agent セッションを作る**\n> - **エージェントは xAI console の Voice Agents で作成済み。Iris。Instructions はコンソール側を正とする**\n> - **電話番号は使わない。ブラウザのマイク会話のみ**\n> - **相手の言語（日/英/西/中など）で返す**\n> - **Today's picks だけ出さない。サイト全体の曲・笑い・旅・動物・食べ物も参照する**\n> - **会話は短く。雑談で何分も続けない。可能なら1セッションの最大分数を設定する**\n> - **キーは環境変数 XAI_API_KEY**\n> - **まずローカルまたはプレビューで動き、マイク許可→挨拶→おすすめ、まで確認する**\n>\n> **コンソールの Deployment に埋め込みコードがあればそれを使う。\n> なければ公式の Voice Agent / speech-to-speech のウェブ実装で最小構成にする。**\n\n■★★★キーの扱い（たまごさんの明示指示。1文字も違えない）\n> 「**APIキーはチャットに出さない。**\n> **`.env` の `XAI_API_KEY` を読むこと。**\n> **フロントのコードにキーを埋め込まない。**」\n\n**厳守すること：**\n- **キーの値を、報告・ログ・確認ページ・コミットメッセージ・チャットのどこにも書かない。**\n- **`.env` から読む。たまごさんに聞かない。**（既にあるはず。自分で探す）\n- **`.env` を git に入れない。**`.gitignore` を確認してから作業する。\n- **配信されたJSにキーが含まれていないことを、実際に検索して証明する**（これが完了条件）。\n- **万一キーが露出したら、即座にDispatchへ報告する。黙って直さない。**\n\n■★方針が確定した点（上の(A)(B)の検討は不要になった）\n- **サーバー側でセッションを作る＝経路(A)で確定。**\n- **まず xAI console の Deployment に埋め込みコードがあるか見る。あればそれを使う。**\n  無い場合だけ、公式ドキュメントの Voice Agent / speech-to-speech のウェブ実装で最小構成。\n- **Instructions（人格）はコンソール側が正。コードで上書きしない・複製しない。**\n  声は **Iris**。\n\n■★追加で守ること\n- **電話番号（telephony）の機能は一切使わない。**\n- **相手の言語で返す。**日本語で話しかけられたら日本語、英語なら英語。\n  （サイトは既に 日本語/English/中文/Español/한국어 の切替を持っている。そこと矛盾させない）\n- **Today's picks だけを出さない。**サイト全体（**曲・笑い・旅・動物・食べ物**）の棚を参照させる。\n  → **何を参照できるかをエージェントに渡す仕組み**が要る（棚の索引を渡す／検索の口を用意する）。\n- **会話は短く。1セッションの最大分数を設定する**（たまごさん明示）。雑談で伸ばさない。\n  → お金の上限（上記【2】）と同じ仕組みで実現する。\n\n■★最初の確認（本番より先に、ここまでを見せる）\n**ローカルまたはプレビューで「マイク許可 → 挨拶 → おすすめが出る」まで動かして、\nその記録（スクショ＋返ってきた文字）をDispatchに出す。**\n本番反映はその後。\n\n\n==================================================\n■★★2026-09-13 たまごさんの追加（お金と、探し方）\n==================================================\n> 「**一応、今上限は5ドルにしてあるんだ。xAIコンソールでね。1人で長々と話し込まれないように。\n> まだ全然使う人が少ないからいいんだけれども、\n> とりあえず5ドルでどれぐらいもつのかを、自分も含めテストしていくから。友達にも触ってもらうので。**」\n> 「**Today's picksをお勧めするのはいいんだけれども、30,000曲あるしね。\n> いろんな食べ物も旅もあるから、探りながら、ほんとにパッと出せるようにしてあげてね。**」\n\n■★お金：**xAIコンソール側で上限5ドル設定済み（たまごさんが設定）。ハード上限があるので暴走はしない。**\n**→ この案件の目的の1つは「5ドルで何分もつか」を測ること。**\n- **1分あたりの単価を実測して、`status/grok_voice_cost.json` に書く。**\n- **進捗表に「5ドルのうち、あと何分／何ドル残っているか」を出す。**（たまごさんが見るのは進捗表だけ）\n- **残り1ドルを切ったら赤。**残りゼロになったら**自動で文字の案内に落ちる**（黙って沈黙しない）。\n- **1セッションの最大分数**を設定する（たまごさん「1人で長々と話し込まれないように」）。\n  **まず3分で置いて、実測の単価が分かったら見直す。**\n- ※上限5ドルはコンソール側の壁。**こちら側でも同じ上限を持って、二重に止める。**\n  （片方が効かなかったときのため）\n\n■★★探し方：**30,000曲＋食べ物＋旅＋動物＋笑い。索引を丸ごと渡すのは不可能。**\n**→ エージェントに「検索の口」を渡す。**（function calling / tool）\n- 用意する口の例（**実際のデータ構造を実査してから決める**）：\n  - `search_songs(keyword, mood, era, language)` → 上位5件（題名・アーティスト・サムネ・URL）\n  - `search_food(dish or ingredient)` → 上位5件\n  - `search_world(world)` → 音/食/愛/笑/旅/踊/喜 の棚から\n  - `get_todays_picks()` → 今日のおすすめ\n- **返すのは常に4〜5件。1件で返さない。**（案内所の既存の指摘と同じ）\n- **返り値にはサムネイルURLを必ず含める**（テキストだけの行を作らない＝憲法）\n- **「安心4：冒険1」の比率**を守る（好き4つ＋知らない世界1つ）。\n- **速さが命。**検索が2秒を超えたら会話が死ぬ。\n  **索引を事前に軽く作っておく**（全曲を毎回なめない）。**応答時間を実測して報告する。**\n\n■完了条件に追加\n7. 「5ドルのうち残り◯ドル／◯分」が進捗表に出ている\n8. 検索の口が動き、**1問い合わせで4〜5件**返る。**応答時間を実測**（目標2秒以内）\n9. 残高ゼロ・エラー時に**文字の案内へ自動で落ちる**\n\n\n【来ない通知を待って終わっていました・1回目・09-13 23:10】\n前回このタスクは「tamago-memoryの続き調査をバックグラウンドで実行中です。完了通知を待ちます。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【自動やり直し・09-14 01:57】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【来ない通知を待って終わっていました・2回目・09-14 02:29】\n前回このタスクは「Lovable公開スクリプトの完了通知を待ちます（最大15分程度かかります）。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【来ない通知を待って終わっていました・3回目・09-14 03:03】\n前回このタスクは「ビルドはまだ完了していません。完了通知を待ちます。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【来ない通知を待って終わっていました・4回目・09-16 02:29】\n前回このタスクは「バックグラウンドの`git worktree add`完了を待っています（自動通知が届き次第、TASK_BOARD.mdへの追記をpushして最終報告します）。ここでは手動確認（ポーリング）はせず、通知を待ちます。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【来ない通知を待って終わっていました・5回目・09-16 03:55】\n前回このタスクは「公開実行(b2keyrwm9)の完了通知を待機します。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【来ない通知を待って終わっていました・6回目・09-16 04:26】\n前回このタスクは「blj7lmmoj(Lovable公開の再実行)の完了通知を待っています。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n────────────────────────────\n## ★2026-09-16 04:40 くろちゃんから（Lovable公開は今できない）\n\n**Lovableの公開が 09-13 00:00 から76時間ブロックされている（suspicious activity）。\nさらに 04:35、たまごさんのPCで Brave も Chrome も Lovable からログアウトされた。スマホだけ入れる。**\n30分おきの自動公開便は止めた（`joy-relief-station/.lovable-publish-pause`）。\nサポートの返事待ち（support@lovable.dev・人の返事は24時間以内の予定）。\n\n**だからこのタスクは「mainへ合流するところまで」で完了とする。**\n- **Lovableの「公開」を押そうとしないこと。**押しても通らないし、叩くほど疑われる。\n- `node scripts/patrol/lovable-publish.mjs` を走らせないこと。\n- 「本番で確認」ができないことを理由に stuck にしないこと。**mainに入ってテストが通っていれば完了。**\n- 報告には「**mainまで完了。Lovableの公開ブロックが解けたら本番に出ます**」と1行だけ書く。\n\n\n【来ない通知を待って終わっていました・7回目・09-16 04:48】\n前回このタスクは「待ちます。tamago-memoryの調査結果が届くまで、他の作業は並行させず、通知を待ちます(ポーリングはしません)。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。",
-   "status": "waiting",
+   "status": "stuck",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -3883,15 +3622,24 @@
    "redoCount": 1,
    "failReasons": [
     "URLが1本も無いまま終了",
-    "触る検品NG：押しても無反応5件：「話す」(BUTTON)、「20代」(BUTTON)、「30代」(BUTTON)"
+    "触る検品NG：押しても無反応5件：「話す」(BUTTON)、「20代」(BUTTON)、「30代」(BUTTON)",
+    "本番反映免除は妥当だが、料金の円実測・実機音声往復のスクショと文字記録・検索応答の実測・上限動作の実証がすべて欠落しており、依頼の完了条件を満たしていない"
    ],
    "cutCount": 2,
-   "touchUrl": "https://joy-relief-station.lovable.app/cover-guide",
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/814-grok-voice.html",
    "touchCheckFailCount": 1,
-   "stuckAt": "2026-09-14T03:42:59+09:00",
-   "stuckReasonSummary": "URLが1本も無いまま終了 ／ 触る検品NG：押しても無反応5件：「話す」(BUTTON)、「20代」(BUTTON)、「30代」(BUTTON)",
-   "stuckRedoTotal": 2,
-   "urakataBlockedAt": "2026-09-15 23:28:37+09:00"
+   "stuckAt": "2026-09-16T19:56:57+09:00",
+   "stuckReasonSummary": "触る検品NG：押しても無反応5件：「話す」(BUTTON)、「20代」(BUTTON)、「30代」(BUTTON) ／ 本番反映免除は妥当だが、料金の円実測・実機音声往復のスクショと文字記録・検索応答の実測・上限動作の実証がすべて欠落しており、依頼の完了条件を満たしていない",
+   "stuckRedoTotal": 3,
+   "urakataBlockedAt": "2026-09-15 23:28:37+09:00",
+   "startedAt": "2026-09-16T19:08:15+09:00",
+   "sessionId": "6c66c29c-9dd7-40ad-85d5-308c0dc17623",
+   "finishedAt": "2026-09-16T19:39:13+09:00",
+   "result": "【完了】mainまで完了。Lovableの公開ブロックが解けたら本番に出ます\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/814-grok-voice.html\n本番: 未反映（Lovableがsuspicious activityで76時間超ブロック中、09-16 04:35にログイン自体も切断されサポート返信待ちのため、指示どおり公開ボタンは押していません）",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/814-grok-voice.html"
+   ],
+   "aiVerifyFailCount": 1
   },
   {
    "n": 815,
@@ -4787,8 +4535,8 @@
    "n": 879,
    "title": "【毎日1回】動画を見ずに書いたコピーを直す＋ビフォーアフターで1日1枚",
    "why": "スマホから追加",
-   "what": "【★毎日1回】動画を見ずに書いたコピーを直す＋ビフォーアフターで1日1回まとめて出す\n\n【★joy-relief-station が対象】確認ページ：/Users/mac/Desktop/tamago-shinchoku/share/check/884-copy-naoshi.html\n\n■たまごさんの言葉（2026-09-16・実物のスクショあり）\n> 「**これもさ、犬がね、子供たちが暴れて、ちょっと怯えてる動画なんだけど、内容が違うから。\n> こういうのを今、一個一個足してるんだよね。**」\n> 「**間違いでも、そのまま、俺は書き直さないでやってるから。これも頼むよ。\n> ビフォーアフターみたいに『これがこうなった』っていう感じで、1日1回でいいから。**」\n\n**★たまごさんは、わざと直さずに残してくれている。＝こちらが直すのが仕事。**\n\n==================================================\n■★今回の実例（これを直す）\n==================================================\nページ：X @lolmame318「この犬本当にすき」\n- **今のタイトル**：`愛嬌たっぷりな犬が一生懸命に動きを見せる様子`\n- **今のコピー**：`投稿者が思わず「本当にすき」とこぼしてしまうほど魅力的な犬の姿。その一挙手一投足から目が離せなくなるような、愛くるしい瞬間が収められています。`\n- **実際の中身（たまごさんの証言）**：**子供たちが暴れていて、犬がちょっと怯えている。**\n\n**→ 動画を見ずに、元投稿の「この犬本当にすき」だけから想像で書いている。**\n**→ 既存ルール「動画を見てからコピーを書く」が守られていない。**\n\n**★直すときは、必ず自分で動画を見てから書く。**（フレームを数枚抜いて内容を確認する）\n**★たまごさんの証言をそのまま書き写すのではなく、自分で見て確かめる。**\n\n==================================================\n■【1】★★毎日1回、コピーと中身が合っているかを点検する\n==================================================\n**既存の「毎朝の入荷見回り」に足す。新しい常駐を作らない。**\n\n**点検のしかた（1件ずつ）：**\n1. **動画からフレームを数枚抜く**（開始・中間・終盤）\n2. **元投稿の文・タイトル・概要欄を読む**\n3. **今のタイトルとコピーが、抜いたフレームと合っているかを見る**\n4. 合っていなければ**書き直す**\n5. 書き直したら **2問テスト**（①ファンは動くか ②初めての人は興味を持つか）と**水道水チェック**を通す\n\n**★合っていない典型（今回の型）：**\n- **元投稿の一言だけから想像で書いている**（動画を見ていない）\n- 「魅力的な」「愛くるしい」「目が離せない」など、**中身を見なくても書ける言葉だけで出来ている**\n- → **この言葉が並んでいたら、動画を見ていない疑いが濃い。優先して点検する。**\n\n**★1日あたりの件数は、クレジットとマシンに合わせて自動で決める。**全部を一気にやらない。\n\n==================================================\n■【2】★★ビフォーアフターで1日1回まとめて出す（たまごさん明示）\n==================================================\n**`share/check/` に「今日直したコピー」のページを1日1枚。**\n\n1件の見え方：\n```\n[ここが違っていた]\n タイトル： 愛嬌たっぷりな犬が一生懸命に動きを見せる様子\n コピー：   投稿者が思わず「本当にすき」とこぼしてしまうほど…\n\n[こう直した]\n タイトル： （新しいタイトル）\n コピー：   （新しいコピー）\n\n 実際の中身： 子供たちが暴れていて、犬が少し怯えている\n [ 動画のフレーム画像 ]   → 本番URL\n```\n- **1日1回、まとめて1枚。**1件ずつ報告しない。\n- **進捗表に1行だけ：「今日直したコピー ◯件」→押すとこのページ。**\n- **直した件数と、残りの未点検件数を出す。**\n\n==================================================\n■【3】★根本（830番と合流）\n==================================================\n- **入荷の時点で、動画を見てからコピーを書く**ようにする。後から直すのをゼロに近づける。\n- **「動画を見た記録（抜いたフレーム）が無いコピーは保存できない」**ようにする（838番の型と合流）。\n- **今ある全ページに1回この点検を回して、疑いのある件数を出す。**\n\n■完了条件\n1. 今回の1件（@lolmame318 の犬）が直っていて、本番で見られる\n2. 毎日1回の点検が自動で走る\n3. ビフォーアフターのページが1日1枚できて、進捗表から1行で開ける\n4. 全ページを1回点検して、**疑いのある件数**が出ている\n5. 報告は「今日直したコピー ◯件＋URL」の1行だけ\n\n==================================================\n■★★★2026-09-16 たまごさんの訂正（Dispatchが的外れだった。ここが正本）\n==================================================\n> 「**いや、そうじゃなくて。何が追加されたかをちゃんと検知して、それを精査してって話。\n> できれば動画を見て欲しいんだ。フレーズの問題じゃないんだね。**」\n> 「**これももう5回以上は言ってるからね。スマホとかでポチポチ追加してるから、\n> 1日1回でもいいから、何が入ってきたかを把握して、動画に合ったコピーなりタイトルなりをつけてください。\n> 仕組みにして。**」\n> 「**とにかくフレーズじゃないよ。問題は、とにかく、あなたが中身を見ること。\n> そしたらズレないから。**」\n\n**★Dispatchの取り違え：「怪しい言葉が並んでいるページを探す」と書いた。それは的外れ。**\n**★正しくは：新しく入ったものは全部、例外なく、動画の中身を見てから書く。**\n**★探すのではない。入ってきたものを、見る。**\n\n==================================================\n■★やること（これだけ。他は要らない）\n==================================================\n### ① 何が入ってきたかを検知する\n- **たまごさんはスマホからポチポチ追加している。**その追加を1日1回拾う。\n- 検知のしかた：前日からの差分（新しく増えたカード・曲・動画）を出す。\n  **`status/daily_ingest_summary.json` が既にある。それを使う。無ければ作る。**\n- **1件も取りこぼさない。**「何件入ってきたか」を必ず数字で出す。\n\n### ② ★★動画の中身を実際に見る（ここが本体）\n**「見る」の実体：**\n- **動画をダウンロードして、フレームを数枚抜く**（開始・1/4・中間・3/4・終盤の5枚程度）\n  - YouTube・X どちらも `yt-dlp` で取得できる。**動画本体は見終わったら消す（容量）。**\n  - 音が重要そうなものは字幕・自動字幕も取る\n- **抜いたフレームを実際に画像として読む。**\n- **元投稿の文・タイトル・概要欄も読む。**\n- **★これをやらずにコピーを書くことを、構造的に不可能にする**（838番の型と合流）。\n  **抜いたフレームの記録が無いコピーは保存できないようにする。**\n\n### ③ 動画に合ったタイトルとコピーをつける\n- **見た内容に合わせて書く。**元投稿の一言から想像で書かない。\n- 実例（今回の失敗）：X @lolmame318「この犬本当にすき」\n  - つけたコピー：「愛嬌たっぷりな犬が一生懸命に動きを見せる様子」「愛くるしい瞬間」\n  - **実際：子供たちが暴れていて、犬が少し怯えている。**\n  - **＝元投稿の一言だけから書いた。動画を見ていない。**\n- 書いたら **2問テスト**（①ファンは動くか ②初めての人は興味を持つか）を自分で通す。\n\n### ④ 1日1回・ビフォーアフターで1枚\n- **1日1回まとめて。**1件ずつ報告しない。\n- 1枚に：**[前のタイトル/コピー] → [新しいタイトル/コピー] ＋ 抜いたフレーム画像 ＋ 本番URL**\n- **進捗表は1行だけ：「昨日入ってきた ◯件／コピーを直した ◯件」**\n\n### ⑤ 誰がやるか（たまごさんの問い「あなたと言うからバブルなのかわからないけれども」）\n- **やるのは Claude Code の子セッション**（Mac上で動くので、動画をダウンロードしてフレームを抜ける）。\n- **Lovable ではない。Lovableは表示するだけ。**\n- **既存の「毎朝の入荷見回り」に相乗りする。新しい常駐を作らない。**\n\n==================================================\n■★これは5回以上言われている\n==================================================\n- **人が気をつける方式をやめる。**（50回言われたバッジと同じ構造）\n- **「フレームを抜いた記録が無いと保存できない」**という形で、機械が止める。\n\n■完了条件\n1. 前日に入ってきた件数が毎日出る（取りこぼしゼロ）\n2. **1件ずつ、実際にフレームを抜いて見た記録がある**\n3. タイトルとコピーが中身に合っている\n4. ビフォーアフター1枚が1日1回できる\n5. **フレームの記録が無いコピーが保存できないことを、テストで実証**\n6. 報告は「昨日 ◯件／直した ◯件＋URL」の1行だけ\n\n\n────────────────────────────\n## ★2026-09-16 04:40 くろちゃんから（Lovable公開は今できない）\n\n**Lovableの公開が 09-13 00:00 から76時間ブロックされている（suspicious activity）。\nさらに 04:35、たまごさんのPCで Brave も Chrome も Lovable からログアウトされた。スマホだけ入れる。**\n30分おきの自動公開便は止めた（`joy-relief-station/.lovable-publish-pause`）。\nサポートの返事待ち（support@lovable.dev・人の返事は24時間以内の予定）。\n\n**だからこのタスクは「mainへ合流するところまで」で完了とする。**\n- **Lovableの「公開」を押そうとしないこと。**押しても通らないし、叩くほど疑われる。\n- `node scripts/patrol/lovable-publish.mjs` を走らせないこと。\n- 「本番で確認」ができないことを理由に stuck にしないこと。**mainに入ってテストが通っていれば完了。**\n- 報告には「**mainまで完了。Lovableの公開ブロックが解けたら本番に出ます**」と1行だけ書く。\n\n\n【来ない通知を待って終わっていました・1回目・09-16 04:48】\n前回このタスクは「tamago-memoryへ調査を委任しました。完了通知を待ちます。調査完了後、tamago-builderへ実装を委任します。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。",
-   "status": "waiting",
+   "what": "【★毎日1回】動画を見ずに書いたコピーを直す＋ビフォーアフターで1日1回まとめて出す\n\n【★joy-relief-station が対象】確認ページ：/Users/mac/Desktop/tamago-shinchoku/share/check/884-copy-naoshi.html\n\n■たまごさんの言葉（2026-09-16・実物のスクショあり）\n> 「**これもさ、犬がね、子供たちが暴れて、ちょっと怯えてる動画なんだけど、内容が違うから。\n> こういうのを今、一個一個足してるんだよね。**」\n> 「**間違いでも、そのまま、俺は書き直さないでやってるから。これも頼むよ。\n> ビフォーアフターみたいに『これがこうなった』っていう感じで、1日1回でいいから。**」\n\n**★たまごさんは、わざと直さずに残してくれている。＝こちらが直すのが仕事。**\n\n==================================================\n■★今回の実例（これを直す）\n==================================================\nページ：X @lolmame318「この犬本当にすき」\n- **今のタイトル**：`愛嬌たっぷりな犬が一生懸命に動きを見せる様子`\n- **今のコピー**：`投稿者が思わず「本当にすき」とこぼしてしまうほど魅力的な犬の姿。その一挙手一投足から目が離せなくなるような、愛くるしい瞬間が収められています。`\n- **実際の中身（たまごさんの証言）**：**子供たちが暴れていて、犬がちょっと怯えている。**\n\n**→ 動画を見ずに、元投稿の「この犬本当にすき」だけから想像で書いている。**\n**→ 既存ルール「動画を見てからコピーを書く」が守られていない。**\n\n**★直すときは、必ず自分で動画を見てから書く。**（フレームを数枚抜いて内容を確認する）\n**★たまごさんの証言をそのまま書き写すのではなく、自分で見て確かめる。**\n\n==================================================\n■【1】★★毎日1回、コピーと中身が合っているかを点検する\n==================================================\n**既存の「毎朝の入荷見回り」に足す。新しい常駐を作らない。**\n\n**点検のしかた（1件ずつ）：**\n1. **動画からフレームを数枚抜く**（開始・中間・終盤）\n2. **元投稿の文・タイトル・概要欄を読む**\n3. **今のタイトルとコピーが、抜いたフレームと合っているかを見る**\n4. 合っていなければ**書き直す**\n5. 書き直したら **2問テスト**（①ファンは動くか ②初めての人は興味を持つか）と**水道水チェック**を通す\n\n**★合っていない典型（今回の型）：**\n- **元投稿の一言だけから想像で書いている**（動画を見ていない）\n- 「魅力的な」「愛くるしい」「目が離せない」など、**中身を見なくても書ける言葉だけで出来ている**\n- → **この言葉が並んでいたら、動画を見ていない疑いが濃い。優先して点検する。**\n\n**★1日あたりの件数は、クレジットとマシンに合わせて自動で決める。**全部を一気にやらない。\n\n==================================================\n■【2】★★ビフォーアフターで1日1回まとめて出す（たまごさん明示）\n==================================================\n**`share/check/` に「今日直したコピー」のページを1日1枚。**\n\n1件の見え方：\n```\n[ここが違っていた]\n タイトル： 愛嬌たっぷりな犬が一生懸命に動きを見せる様子\n コピー：   投稿者が思わず「本当にすき」とこぼしてしまうほど…\n\n[こう直した]\n タイトル： （新しいタイトル）\n コピー：   （新しいコピー）\n\n 実際の中身： 子供たちが暴れていて、犬が少し怯えている\n [ 動画のフレーム画像 ]   → 本番URL\n```\n- **1日1回、まとめて1枚。**1件ずつ報告しない。\n- **進捗表に1行だけ：「今日直したコピー ◯件」→押すとこのページ。**\n- **直した件数と、残りの未点検件数を出す。**\n\n==================================================\n■【3】★根本（830番と合流）\n==================================================\n- **入荷の時点で、動画を見てからコピーを書く**ようにする。後から直すのをゼロに近づける。\n- **「動画を見た記録（抜いたフレーム）が無いコピーは保存できない」**ようにする（838番の型と合流）。\n- **今ある全ページに1回この点検を回して、疑いのある件数を出す。**\n\n■完了条件\n1. 今回の1件（@lolmame318 の犬）が直っていて、本番で見られる\n2. 毎日1回の点検が自動で走る\n3. ビフォーアフターのページが1日1枚できて、進捗表から1行で開ける\n4. 全ページを1回点検して、**疑いのある件数**が出ている\n5. 報告は「今日直したコピー ◯件＋URL」の1行だけ\n\n==================================================\n■★★★2026-09-16 たまごさんの訂正（Dispatchが的外れだった。ここが正本）\n==================================================\n> 「**いや、そうじゃなくて。何が追加されたかをちゃんと検知して、それを精査してって話。\n> できれば動画を見て欲しいんだ。フレーズの問題じゃないんだね。**」\n> 「**これももう5回以上は言ってるからね。スマホとかでポチポチ追加してるから、\n> 1日1回でもいいから、何が入ってきたかを把握して、動画に合ったコピーなりタイトルなりをつけてください。\n> 仕組みにして。**」\n> 「**とにかくフレーズじゃないよ。問題は、とにかく、あなたが中身を見ること。\n> そしたらズレないから。**」\n\n**★Dispatchの取り違え：「怪しい言葉が並んでいるページを探す」と書いた。それは的外れ。**\n**★正しくは：新しく入ったものは全部、例外なく、動画の中身を見てから書く。**\n**★探すのではない。入ってきたものを、見る。**\n\n==================================================\n■★やること（これだけ。他は要らない）\n==================================================\n### ① 何が入ってきたかを検知する\n- **たまごさんはスマホからポチポチ追加している。**その追加を1日1回拾う。\n- 検知のしかた：前日からの差分（新しく増えたカード・曲・動画）を出す。\n  **`status/daily_ingest_summary.json` が既にある。それを使う。無ければ作る。**\n- **1件も取りこぼさない。**「何件入ってきたか」を必ず数字で出す。\n\n### ② ★★動画の中身を実際に見る（ここが本体）\n**「見る」の実体：**\n- **動画をダウンロードして、フレームを数枚抜く**（開始・1/4・中間・3/4・終盤の5枚程度）\n  - YouTube・X どちらも `yt-dlp` で取得できる。**動画本体は見終わったら消す（容量）。**\n  - 音が重要そうなものは字幕・自動字幕も取る\n- **抜いたフレームを実際に画像として読む。**\n- **元投稿の文・タイトル・概要欄も読む。**\n- **★これをやらずにコピーを書くことを、構造的に不可能にする**（838番の型と合流）。\n  **抜いたフレームの記録が無いコピーは保存できないようにする。**\n\n### ③ 動画に合ったタイトルとコピーをつける\n- **見た内容に合わせて書く。**元投稿の一言から想像で書かない。\n- 実例（今回の失敗）：X @lolmame318「この犬本当にすき」\n  - つけたコピー：「愛嬌たっぷりな犬が一生懸命に動きを見せる様子」「愛くるしい瞬間」\n  - **実際：子供たちが暴れていて、犬が少し怯えている。**\n  - **＝元投稿の一言だけから書いた。動画を見ていない。**\n- 書いたら **2問テスト**（①ファンは動くか ②初めての人は興味を持つか）を自分で通す。\n\n### ④ 1日1回・ビフォーアフターで1枚\n- **1日1回まとめて。**1件ずつ報告しない。\n- 1枚に：**[前のタイトル/コピー] → [新しいタイトル/コピー] ＋ 抜いたフレーム画像 ＋ 本番URL**\n- **進捗表は1行だけ：「昨日入ってきた ◯件／コピーを直した ◯件」**\n\n### ⑤ 誰がやるか（たまごさんの問い「あなたと言うからバブルなのかわからないけれども」）\n- **やるのは Claude Code の子セッション**（Mac上で動くので、動画をダウンロードしてフレームを抜ける）。\n- **Lovable ではない。Lovableは表示するだけ。**\n- **既存の「毎朝の入荷見回り」に相乗りする。新しい常駐を作らない。**\n\n==================================================\n■★これは5回以上言われている\n==================================================\n- **人が気をつける方式をやめる。**（50回言われたバッジと同じ構造）\n- **「フレームを抜いた記録が無いと保存できない」**という形で、機械が止める。\n\n■完了条件\n1. 前日に入ってきた件数が毎日出る（取りこぼしゼロ）\n2. **1件ずつ、実際にフレームを抜いて見た記録がある**\n3. タイトルとコピーが中身に合っている\n4. ビフォーアフター1枚が1日1回できる\n5. **フレームの記録が無いコピーが保存できないことを、テストで実証**\n6. 報告は「昨日 ◯件／直した ◯件＋URL」の1行だけ\n\n\n────────────────────────────\n## ★2026-09-16 04:40 くろちゃんから（Lovable公開は今できない）\n\n**Lovableの公開が 09-13 00:00 から76時間ブロックされている（suspicious activity）。\nさらに 04:35、たまごさんのPCで Brave も Chrome も Lovable からログアウトされた。スマホだけ入れる。**\n30分おきの自動公開便は止めた（`joy-relief-station/.lovable-publish-pause`）。\nサポートの返事待ち（support@lovable.dev・人の返事は24時間以内の予定）。\n\n**だからこのタスクは「mainへ合流するところまで」で完了とする。**\n- **Lovableの「公開」を押そうとしないこと。**押しても通らないし、叩くほど疑われる。\n- `node scripts/patrol/lovable-publish.mjs` を走らせないこと。\n- 「本番で確認」ができないことを理由に stuck にしないこと。**mainに入ってテストが通っていれば完了。**\n- 報告には「**mainまで完了。Lovableの公開ブロックが解けたら本番に出ます**」と1行だけ書く。\n\n\n【来ない通知を待って終わっていました・1回目・09-16 04:48】\n前回このタスクは「tamago-memoryへ調査を委任しました。完了通知を待ちます。調査完了後、tamago-builderへ実装を委任します。」と言い残して終わっています。**その通知は来ません。**\n`claude -p` は一発実行なので、バックグラウンドに投げた処理の完了通知を受け取る口が構造的にありません。\n**バックグラウンド実行（& や run_in_background）を使わないでください。**\n外部コマンドは必ず `timeout` を付けて前で待つ。ビルドやlintは同期で回す。\nmainへのpushが環境の安全装置で弾かれる場合は、`status/inbox/` に `{\"id\":\"...\",\"action\":\"git_push\",\"target\":\"\"}` を1本置けばホスト側が押します（2026-09-08新設）。\n\n【確認ページの機械検品ではねられました・1回目・09-16 20:20】理由：たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/fix-copy-879-lolmame-once.mjs は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください。確認ページ https://tamago2022.github.io/tamago-shinchoku/share/check/879-copy-naoshi-lolmame.html の中身を作り直してください。①何を直したか1行 ②数字（何件中何件） ③押せるリンク一覧 ④可能なら前後のスクリーンショット、の4つを必ず入れること。",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -4798,7 +4546,11 @@
    "order": 13,
    "costsMoney": false,
    "autoDemoteOverride": "たまごさんが実機で見つけたもの。自動で落とさない",
-   "bgWaitCount": 1
+   "bgWaitCount": 1,
+   "contentCheckFailCount": 1,
+   "startedAt": "2026-09-16T20:25:48+09:00",
+   "sessionId": "f3e21d95-d826-4afc-94d9-cb70e5669a71",
+   "pid": 13684
   },
   {
    "n": 880,
@@ -4816,8 +4568,8 @@
    "n": 881,
    "title": "【特命・第1段】重さの監査だけ（コードは1行も変えない）→S/A/B/Cでランキング",
    "why": "スマホから追加",
-   "what": "【特命】ごきげん補給所を「古いiPhoneでも軽いサイト」にする（監査→ランキング→S/Aから実装）\n\n【★joy-relief-station が対象】確認ページ：/Users/mac/Desktop/tamago-shinchoku/share/check/885-karuku.html\n\n■たまごさんの特命（2026-09-16・原文のまま）\n\n対象：tamago2022/joy-relief-station\n\n目的：\n見た目や機能を増やす仕事ではない。\n現在のごきげん補給所について、「なぜ重いのか」を**実コードと実測値から特定**し、\nスマホ・旧Macでも軽快に動く構造へ改善する。\n\n重要：\n**憶測で修正しない。必ずコード、bundle、Network、描画量、データ取得量を確認してから判断する。**\n\n**まず現状を変更せず監査する。**\n\n以下を測定・調査すること。\n\n**1. 初回ロード**\n- transferred bytes ／ JS bundleサイズ ／ CSSサイズ ／ 初期データ取得量 ／ request数\n- LCP ／ INP ／ CLS ／ TTFB\n\n**2. JavaScript / React**\n- 巨大bundle ／ 不要依存 ／ route単位code splitting不足\n- dynamic import / lazy load可能箇所\n- 無駄な再render ／ useEffect暴走 ／ event listener残留 ／ memory leak\n- 再生後フリーズにつながる処理\n\n**3. データ**\n- 全曲・全アーティストなど巨大データを初期ロードしていないか\n- 不要なJSON import ／ Supabaseのselect * ／ pagination不足 ／ limit不足\n- クライアント側で巨大配列を保持していないか\n\n**4. DOM**\n- 一覧カードを大量に同時レンダリングしていないか\n- virtualization可能箇所 ／ hidden要素まで大量生成していないか\n\n**5. メディア**\n- YouTube iframeを一覧表示時から生成していないか ／ thumbnailで代替可能か\n- 動画・画像のlazy loading ／ preload / autoplay ／ 巨大画像 ／ 不要なanimation\n\n**6. キャッシュ**\n- 静的データ・画像・API・Supabase について適切なキャッシュ戦略があるか\n\n**7. モバイル**\n- **特にiPhone Safari相当の低メモリ環境を重視する。**\n- **「高性能PCで動く」は合格にしない。**\n\n■監査後\n重さへの寄与が大きい順に **S：致命的／A：大きい／B：中程度／C：軽微** でランキングする。\n各項目について **原因 → 現在の実装 → なぜ重いか → 修正方法 → 改善予測 → 副作用** まで示す。\nその後、**安全なS/A項目から実装修正する。**\n\n■【最重要設計原則】\nごきげん補給所は巨大化しても、**初期表示コストを増やしてはいけない。**\n曲が500曲でも15,000曲でも、最初に必要なのは**「今見えているもの」だけ。**\n\n原則：\n**必要になるまで読まない。必要になるまで描画しない。\n必要になるまで再生部品を作らない。必要になるまで通信しない。**\n**Lazy / Split / Paginate / Virtualize / Cache を標準思想とする。**\n\n■【禁止】\n- **見た目を勝手に変更しない**\n- **コンテンツを削除しない**\n- **動いている70%を壊さない**\n- **全部書き直す大規模リファクタを最初からしない**\n- **「軽くなった気がする」で完了しない**\n\n■【合格条件】\n修正前・修正後を**同条件で計測し、数値で比較する。**\n最低限、**初期JS／転送量／request数／LCP／INP／DOM node数／メモリ使用傾向**を Before / After で提出。\n**改善が確認できた項目だけ完了扱い。**\n\n特に、次との因果も調査すること：\n- **トップ白画面**\n- **動画再生後フリーズ**\n- **スマホ操作時のクラッシュ／固まり**\n- **画面遷移の引っ掛かり**\n\n最終目的は、**「機能を減らさず、感じる待ち時間を極小化すること」。**\n\n==================================================\n■★既に分かっている手がかり（ここから調べ始めてよい。ただし必ず実測で確かめる）\n==================================================\n- **741番**：「棚編集が4MBのcoverGuideを開くたびに読んでいる」疑い（未解決）\n- **726番**：「進捗表が重い（queue.jsonが2.6MB・毎回まるごと読んでいる）」3回やり直し\n- **428番**：「軽さ：データを一度に全部読まない」3回やり直し\n- **808番**：Lovableのモバイルプレビューが「Couldn't load preview」で日常的に落ちる\n  → **Lovable側も「optimize it for mobile」と言っている＝素直に重い**\n- **たまごさんの既存の憲法**：「軽さは機能より優先」「軽さ・楽しさ・美しさが命」\n  「機能は付いたが少し重くなった、は不合格」\n\n==================================================\n■★進め方（3時間で切れるので、段階を分ける）\n==================================================\n**第1段（このタスク）：監査だけ。1行もコードを変えない。**\n- 測る → ランキング（S/A/B/C）→ 各項目に 原因/実装/なぜ重い/修正方法/改善予測/副作用\n- **確認ページに表で出す。**\n- **ここで終わってよい。**実装は次のタスクへ。\n\n**第2段以降：S から1つずつ。1タスク1項目。**\n- **1項目ごとに Before/After の数値を出す。**\n- **改善が数値で確認できたものだけ完了。**\n\n■報告のしかた\n- **1行＋URL。**「監査が終わりました＋URL」\n- **3時間で終わらなければ「完了できていない」＋どこまで測れたか1行。**\n\n==================================================\n■★★★2026-09-16 Dispatchが実測：重さの犯人が数字で出た（ここから始めること）\n==================================================\n`/Users/mac/Desktop/joy-relief-station/src` を実測：\n\n| ファイル | サイズ |\n|---|---|\n| **src/lib/coverGuide.ts** | **6.0MB** |\n| src/lib/coverGuide.profiles.generated.ts | 2.1MB |\n| src/lib/youtubeIdMap.generated.ts | 1.4MB |\n| src/lib/videoHealthReport.generated.ts | 0.5MB |\n| **src 合計** | **31MB** |\n\n**→ この4つで10MB。TypeScriptの中に直書きされているので、ビルドに全部入る。**\n**→ スマホで開くたびに、これを読み込んで解析している。**\n**→ たまごさん：「重すぎてPCのブラウザでページも開かない」。原因の本命はこれ。**\n\n**★2026-09-16に入った「遅延描画」の対応は、出す順番を変えただけで読む量は変わっていない。**\n**だから体感は変わらないはず。ここを直さない限り、他を何万回直しても軽くならない。**\n\n■★★これを S（致命的）として最優先で扱う\n**やること：`coverGuide.ts`（6MB）を画面から切り離す。**\n1. **必要な曲だけを読む形にする**（1曲のページを開くのに、6MB全部は要らない）\n2. 選択肢を比べて、**たまごさんの得になるほうを選ぶ：**\n   - ① 曲ごとのJSONに分割して、必要なときだけ fetch する（静的ファイル・キャッシュが効く）\n   - ② Supabase等のDBへ移して、検索とページングをサーバー側でやる\n   - ③ 索引（軽い一覧用の小さいデータ）と本体（曲ページ用の詳細）を分ける\n   - **①〜③の Before/After の予測値を出してから決める。**\n3. **たまごさんの原則を守る：**\n   **「曲が500曲でも15,000曲でも、最初に必要なのは今見えているものだけ」**\n   → **コンテンツが増えても初期表示コストが増えない形にする。**\n\n■★たまごさんの言葉（2026-09-16）\n> 「**重すぎてPCのブラウザでページも開かないのよ。\n> 今もあっちにコメントを届けるだけでも、重くてめちゃくちゃ時間かかった。**」\n> 「**コンテンツは足して増えるばっかりだから、それに耐えうる構築をしてくださいっていうのは何回も伝えてるよね。\n> めちゃくちゃ大事だからね。時間がどんどん経つっていうのは、お金がどんどん減るっていうのと一緒だからさ。**」\n> 「**とにかく軽く保って、Lovableがサクサク動くようにやってね。**」\n\n**★「何回も伝えている」＝繰り返し案件。人が気をつける方式にしない。**\n**→ 監査のあと、「初期ロードのサイズが閾値を超えたらCIで落ちる」ガードも入れる。**\n**（1MBを超えたら赤、など。数字は監査の結果を見て決める）**\n\n\n────────────────────────────\n## ★2026-09-16 04:40 くろちゃんから（Lovable公開は今できない）\n\n**Lovableの公開が 09-13 00:00 から76時間ブロックされている（suspicious activity）。\nさらに 04:35、たまごさんのPCで Brave も Chrome も Lovable からログアウトされた。スマホだけ入れる。**\n30分おきの自動公開便は止めた（`joy-relief-station/.lovable-publish-pause`）。\nサポートの返事待ち（support@lovable.dev・人の返事は24時間以内の予定）。\n\n**だからこのタスクは「mainへ合流するところまで」で完了とする。**\n- **Lovableの「公開」を押そうとしないこと。**押しても通らないし、叩くほど疑われる。\n- `node scripts/patrol/lovable-publish.mjs` を走らせないこと。\n- 「本番で確認」ができないことを理由に stuck にしないこと。**mainに入ってテストが通っていれば完了。**\n- 報告には「**mainまで完了。Lovableの公開ブロックが解けたら本番に出ます**」と1行だけ書く。\n\n\n【自動やり直し・09-16 04:48】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。",
-   "status": "waiting",
+   "what": "【特命】ごきげん補給所を「古いiPhoneでも軽いサイト」にする（監査→ランキング→S/Aから実装）\n\n【★joy-relief-station が対象】確認ページ：/Users/mac/Desktop/tamago-shinchoku/share/check/885-karuku.html\n\n■たまごさんの特命（2026-09-16・原文のまま）\n\n対象：tamago2022/joy-relief-station\n\n目的：\n見た目や機能を増やす仕事ではない。\n現在のごきげん補給所について、「なぜ重いのか」を**実コードと実測値から特定**し、\nスマホ・旧Macでも軽快に動く構造へ改善する。\n\n重要：\n**憶測で修正しない。必ずコード、bundle、Network、描画量、データ取得量を確認してから判断する。**\n\n**まず現状を変更せず監査する。**\n\n以下を測定・調査すること。\n\n**1. 初回ロード**\n- transferred bytes ／ JS bundleサイズ ／ CSSサイズ ／ 初期データ取得量 ／ request数\n- LCP ／ INP ／ CLS ／ TTFB\n\n**2. JavaScript / React**\n- 巨大bundle ／ 不要依存 ／ route単位code splitting不足\n- dynamic import / lazy load可能箇所\n- 無駄な再render ／ useEffect暴走 ／ event listener残留 ／ memory leak\n- 再生後フリーズにつながる処理\n\n**3. データ**\n- 全曲・全アーティストなど巨大データを初期ロードしていないか\n- 不要なJSON import ／ Supabaseのselect * ／ pagination不足 ／ limit不足\n- クライアント側で巨大配列を保持していないか\n\n**4. DOM**\n- 一覧カードを大量に同時レンダリングしていないか\n- virtualization可能箇所 ／ hidden要素まで大量生成していないか\n\n**5. メディア**\n- YouTube iframeを一覧表示時から生成していないか ／ thumbnailで代替可能か\n- 動画・画像のlazy loading ／ preload / autoplay ／ 巨大画像 ／ 不要なanimation\n\n**6. キャッシュ**\n- 静的データ・画像・API・Supabase について適切なキャッシュ戦略があるか\n\n**7. モバイル**\n- **特にiPhone Safari相当の低メモリ環境を重視する。**\n- **「高性能PCで動く」は合格にしない。**\n\n■監査後\n重さへの寄与が大きい順に **S：致命的／A：大きい／B：中程度／C：軽微** でランキングする。\n各項目について **原因 → 現在の実装 → なぜ重いか → 修正方法 → 改善予測 → 副作用** まで示す。\nその後、**安全なS/A項目から実装修正する。**\n\n■【最重要設計原則】\nごきげん補給所は巨大化しても、**初期表示コストを増やしてはいけない。**\n曲が500曲でも15,000曲でも、最初に必要なのは**「今見えているもの」だけ。**\n\n原則：\n**必要になるまで読まない。必要になるまで描画しない。\n必要になるまで再生部品を作らない。必要になるまで通信しない。**\n**Lazy / Split / Paginate / Virtualize / Cache を標準思想とする。**\n\n■【禁止】\n- **見た目を勝手に変更しない**\n- **コンテンツを削除しない**\n- **動いている70%を壊さない**\n- **全部書き直す大規模リファクタを最初からしない**\n- **「軽くなった気がする」で完了しない**\n\n■【合格条件】\n修正前・修正後を**同条件で計測し、数値で比較する。**\n最低限、**初期JS／転送量／request数／LCP／INP／DOM node数／メモリ使用傾向**を Before / After で提出。\n**改善が確認できた項目だけ完了扱い。**\n\n特に、次との因果も調査すること：\n- **トップ白画面**\n- **動画再生後フリーズ**\n- **スマホ操作時のクラッシュ／固まり**\n- **画面遷移の引っ掛かり**\n\n最終目的は、**「機能を減らさず、感じる待ち時間を極小化すること」。**\n\n==================================================\n■★既に分かっている手がかり（ここから調べ始めてよい。ただし必ず実測で確かめる）\n==================================================\n- **741番**：「棚編集が4MBのcoverGuideを開くたびに読んでいる」疑い（未解決）\n- **726番**：「進捗表が重い（queue.jsonが2.6MB・毎回まるごと読んでいる）」3回やり直し\n- **428番**：「軽さ：データを一度に全部読まない」3回やり直し\n- **808番**：Lovableのモバイルプレビューが「Couldn't load preview」で日常的に落ちる\n  → **Lovable側も「optimize it for mobile」と言っている＝素直に重い**\n- **たまごさんの既存の憲法**：「軽さは機能より優先」「軽さ・楽しさ・美しさが命」\n  「機能は付いたが少し重くなった、は不合格」\n\n==================================================\n■★進め方（3時間で切れるので、段階を分ける）\n==================================================\n**第1段（このタスク）：監査だけ。1行もコードを変えない。**\n- 測る → ランキング（S/A/B/C）→ 各項目に 原因/実装/なぜ重い/修正方法/改善予測/副作用\n- **確認ページに表で出す。**\n- **ここで終わってよい。**実装は次のタスクへ。\n\n**第2段以降：S から1つずつ。1タスク1項目。**\n- **1項目ごとに Before/After の数値を出す。**\n- **改善が数値で確認できたものだけ完了。**\n\n■報告のしかた\n- **1行＋URL。**「監査が終わりました＋URL」\n- **3時間で終わらなければ「完了できていない」＋どこまで測れたか1行。**\n\n==================================================\n■★★★2026-09-16 Dispatchが実測：重さの犯人が数字で出た（ここから始めること）\n==================================================\n`/Users/mac/Desktop/joy-relief-station/src` を実測：\n\n| ファイル | サイズ |\n|---|---|\n| **src/lib/coverGuide.ts** | **6.0MB** |\n| src/lib/coverGuide.profiles.generated.ts | 2.1MB |\n| src/lib/youtubeIdMap.generated.ts | 1.4MB |\n| src/lib/videoHealthReport.generated.ts | 0.5MB |\n| **src 合計** | **31MB** |\n\n**→ この4つで10MB。TypeScriptの中に直書きされているので、ビルドに全部入る。**\n**→ スマホで開くたびに、これを読み込んで解析している。**\n**→ たまごさん：「重すぎてPCのブラウザでページも開かない」。原因の本命はこれ。**\n\n**★2026-09-16に入った「遅延描画」の対応は、出す順番を変えただけで読む量は変わっていない。**\n**だから体感は変わらないはず。ここを直さない限り、他を何万回直しても軽くならない。**\n\n■★★これを S（致命的）として最優先で扱う\n**やること：`coverGuide.ts`（6MB）を画面から切り離す。**\n1. **必要な曲だけを読む形にする**（1曲のページを開くのに、6MB全部は要らない）\n2. 選択肢を比べて、**たまごさんの得になるほうを選ぶ：**\n   - ① 曲ごとのJSONに分割して、必要なときだけ fetch する（静的ファイル・キャッシュが効く）\n   - ② Supabase等のDBへ移して、検索とページングをサーバー側でやる\n   - ③ 索引（軽い一覧用の小さいデータ）と本体（曲ページ用の詳細）を分ける\n   - **①〜③の Before/After の予測値を出してから決める。**\n3. **たまごさんの原則を守る：**\n   **「曲が500曲でも15,000曲でも、最初に必要なのは今見えているものだけ」**\n   → **コンテンツが増えても初期表示コストが増えない形にする。**\n\n■★たまごさんの言葉（2026-09-16）\n> 「**重すぎてPCのブラウザでページも開かないのよ。\n> 今もあっちにコメントを届けるだけでも、重くてめちゃくちゃ時間かかった。**」\n> 「**コンテンツは足して増えるばっかりだから、それに耐えうる構築をしてくださいっていうのは何回も伝えてるよね。\n> めちゃくちゃ大事だからね。時間がどんどん経つっていうのは、お金がどんどん減るっていうのと一緒だからさ。**」\n> 「**とにかく軽く保って、Lovableがサクサク動くようにやってね。**」\n\n**★「何回も伝えている」＝繰り返し案件。人が気をつける方式にしない。**\n**→ 監査のあと、「初期ロードのサイズが閾値を超えたらCIで落ちる」ガードも入れる。**\n**（1MBを超えたら赤、など。数字は監査の結果を見て決める）**\n\n\n────────────────────────────\n## ★2026-09-16 04:40 くろちゃんから（Lovable公開は今できない）\n\n**Lovableの公開が 09-13 00:00 から76時間ブロックされている（suspicious activity）。\nさらに 04:35、たまごさんのPCで Brave も Chrome も Lovable からログアウトされた。スマホだけ入れる。**\n30分おきの自動公開便は止めた（`joy-relief-station/.lovable-publish-pause`）。\nサポートの返事待ち（support@lovable.dev・人の返事は24時間以内の予定）。\n\n**だからこのタスクは「mainへ合流するところまで」で完了とする。**\n- **Lovableの「公開」を押そうとしないこと。**押しても通らないし、叩くほど疑われる。\n- `node scripts/patrol/lovable-publish.mjs` を走らせないこと。\n- 「本番で確認」ができないことを理由に stuck にしないこと。**mainに入ってテストが通っていれば完了。**\n- 報告には「**mainまで完了。Lovableの公開ブロックが解けたら本番に出ます**」と1行だけ書く。\n\n\n【自動やり直し・09-16 04:48】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【確認ページの機械検品ではねられました・1回目・09-16 19:53】理由：たまごさんが開けないリンクが貼ってあります（https://github.com/tamago2022/joy-relief-station は非公開リポジトリで、本人が押すと404になります）。証拠は本人が開ける場所に置いてください。確認ページ https://tamago2022.github.io/tamago-shinchoku/share/check/881-karuku-kansa.html の中身を作り直してください。①何を直したか1行 ②数字（何件中何件） ③押せるリンク一覧 ④可能なら前後のスクリーンショット、の4つを必ず入れること。",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -4831,7 +4583,11 @@
    "redoCount": 1,
    "failReasons": [
     "URLが1本も無いまま終了"
-   ]
+   ],
+   "contentCheckFailCount": 1,
+   "startedAt": "2026-09-16T20:25:47+09:00",
+   "sessionId": "34214ed4-bd14-485b-95c7-59e15ce67ed2",
+   "pid": 13678
   },
   {
    "n": 882,
@@ -4856,38 +4612,39 @@
    "n": 883,
    "title": "【LINE】申請の貼り付けまで自分でやる（たまごさんに15項目×3を打たせない）",
    "why": "スマホから追加",
-   "what": "【LINE申請を自動化する・たまごさんに貼らせない】\n\nたまごさんの言葉：「**これも自動化できないんだっけ**」\n最上位ルール：**たまごさんを動かさないで進める方法が最優先。**貼り付け15項目×3キャラを人にやらせない。\n\n## 前提（もう終わっていること・やり直さない）\n- 3キャラ分の申請文言は完成し、**文字数も機械で検証済み**（全項目 規格内）。\n  設定：`tools/line_stamp_configs/{rashikoru,peralino-usocchi,oniyome-chan}.json`\n  貼り紙：`share/check/769-<name>-paste-sheet.html`\n- 規格：タイトル英40／タイトル日40／説明英160／説明日160／コピーライト50。英語欄は半角のみ。\n\n## やること\n1. **ログイン済みChromeにCDPで繋いで、LINE Creators Marketの入力欄へ実際に打ち込む。**\n   - 既にある道具を使う：`tools/start_chrome_line_login.sh`（ログイン用Chromeを起動）、\n     `tools/line_login_check.mjs`（ログイン状態の確認）、`tools/line_stamp_shot.mjs`（CDP操作の書き方の見本）。\n   - **たまごさんの普段のブラウザ(Brave)には絶対に触らない。**専用プロファイルだけ。\n   - `tools/line_stamp_shot.mjs` は一時プロファイルなので**そのままではログインが無い。**\n     ログイン済みプロファイルに繋ぐ版を新しく作る（`tools/line_stamp_fill.mjs`）。\n2. **1キャラで通しでやってみて、入った所・入らなかった所を1行ずつ書く。**\n   - `creator.line.me` が自動操作を弾くなら、**弾かれた場所を具体的に記録する。**\n     「できない」で終わらせない。別経路（キーボード入力の再現／貼り付けイベント／別の入力方法）を最低3つ試す。\n3. **入力が全部入ったらスクショを撮って確認ページに出す。**\n   **「リクエスト」ボタンは押してよい**（たまごさんの許可済み・2026-09-12の○×表）。\n   ただし**押す前に、入った全項目のスクショを1枚出す。**\n4. 3キャラとも同じ手順で通す。\n\n## 合格条件\n- **たまごさんの手数がゼロ、もしくは「見て確認」1回だけ。**\n- 入力後のスクショが3キャラ分ある\n- 弾かれた場合は、**試した経路を全部1行ずつ書いた上で**、残った手数だけをたまごさんに渡す\n\n## 絶対にやらないこと\n- 古い下書き「miketama」（ID 28343285）を削除・編集・上書きしない\n- Braveを触らない",
-   "status": "touchchecking",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "repo": "/Users/mac/Desktop/tamago-shinchoku",
-   "startedAt": "2026-09-16T04:48:44+09:00",
-   "sessionId": "1ee63966-e1fc-4f2b-9041-0dbf7e6f29f2",
-   "finishedAt": "2026-09-16T09:10:21+09:00",
-   "result": "最終確認まで実機で完了しました。\n\n【一部完了】LINE申請を自動で貼り付ける道具（line_stamp_fill.mjs）を新設・本番反映。3キャラとも「ログイン確認→未ログインなら安全停止」を実機確認済み。ただしLINEへのログインだけはたまごさん本人にしかできない認証行為で、まだ一度も行われていないため、実際の15項目入力とスクショはまだ撮れていません。\n\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/883-line-stamp-autofill.html\n本番コード: https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/line_stamp_fill.mjs\n\n残る手数は1つだけ：ターミナルで `bash tools/start_chrome_line_login.sh` を実行してLINEにログイン（これだけは本人でないとできません）。それが終われば `node tools/line_stamp_fill.mjs rashikoru`（他2キャラも同様）で3キャラ分が自動入力されます。",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/883-line-stamp-autofill.html"
-   ],
-   "touchPid": 66235,
-   "touchOutJson": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-28c240ed.json",
-   "touchLog": "/Users/mac/Desktop/tamago-shinchoku/status/touchcheck-28c240ed.log",
-   "touchStartedAt": "2026-09-16T09:10:24+09:00",
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/883-line-stamp-autofill.html"
-  },
-  {
-   "n": 884,
-   "title": "【工場】計測が45分止まっている＝machine_load.shが消えている（心臓が5分おきに殺されている）",
-   "why": "スマホから追加",
-   "what": "【工場の計測が45分止まっている】原因はもう特定してある。探し直さないこと。\n\n## 実測（2026-09-16 04:05）\n- `status/health.json` の `measuredAt` が **03:20 のまま45分更新されていない**\n- その中で **`diskFreeGB: null` / `load: null`**（本来は数字が入る）\n- `status/heartbeat.log` が15秒おきにこれを吐き続けている：\n  `🚨 立て直しの便（machine_status_push.sh）が2754秒（約45分）更新していません`\n  さらに5分おきに `💤 心臓が5分間なにも書いていません。詰まっているとみなして入れ直します`\n  → **心臓が5分おきに殺されて立て直されている。**（03:45 / 04:04 に実際に再起動された）\n\n## ★原因\n`tools/machine_status_push.sh` の28行目：\n```\nLOADSH=\"/Users/mac/Documents/AI作業/2026-09-02/スクリプト/machine_load.sh\"\n```\n**このファイルが存在しない。**Desktop・Documents/AI作業・tamago-shinchoku のどこを探しても無い（find済み）。\nファイル冒頭のコメントは `/Users/mac/Desktop/machine_load.sh` と書いてあり、**コメントと変数が食い違っている。**\nどちらのパスにも実体が無い＝**掃除のどこかで消えた。**\n\n`factory_status.py --write` が本線でフォールバックが `machine_load.sh` だが、\n**health.json の load/diskFreeGB が null ということは factory_status.py 側も計測に失敗している。**\n\n## やること\n1. **まず `python3 tools/factory_status.py --write` を手で走らせて、エラーを最後まで読む。**\n   （憶測で直さない。出たエラーを1行そのまま記録に残す）\n2. 失敗している計測（ロード・ディスク空き）を直す。macOS の `sysctl -n vm.loadavg` と `df -g /` で取れる。\n3. **`machine_load.sh` を作り直す。**出力の形は `tools/machine_status_push.sh` の中のパース部分がそのまま正本：\n   `負荷 12% ｜ CPU 9% / メモリ圧迫 58% / スワップ 0.20GB / ディスク空き 61GB ｜ 稼働 14本 ｜ あと3本OK`\n   置き場は `tools/machine_load.sh`（**リポジトリの中に置く。外に置くとまた消える**）。\n   `machine_status_push.sh` の `LOADSH` もそこへ向け直し、冒頭コメントも直す。\n4. **`sessions` が常に0なのも直す。**走行本数は `status/queue.json` の `status==\"running\"` を数えるのが正しい。\n5. 直したら **5分待って `health.json` の `measuredAt` が動くことと、\n   `heartbeat.log` から🚨と💤が消えることを実際に見て確かめる。**\n\n## ついでに分かったこと（別タスクに回してよい）\nhealth.json の items より：**Chrome 143プロセス 9.14GB / Brave 59プロセス 16.94GB。合わせて26GB。**\nこれがPCが重い一番の理由。タブの閉じ忘れ（憲法第三条）の実害がここに出ている。\n\n## 絶対にやらないこと\n- 走行中のセッションを殺さない\n- `tools/auto_launcher.py` を手で叩かない（走行中が全部waitingに戻る）\n\n────────────────────────────\n## ★これが進捗表の「今すぐ走っているもの：0本」の正体（04:24 に突き止めた）\n\n`status/genzaichi.json` の中身（04:06生成）：\n```\n\"runningNow\": [814, 825, 879, 881]   ← queue.json から数えている。正しい\n\"running\": {\"count\": 0, \"safeMax\": 4} ← health.json の sessions を使っている。0のまま\n```\n**同じ画面の中で「4本」と「0本」が両方出ている。**\n\n`tools/genzaichi.py` 449行目：\n```python\nA(\"- 走行 **%s / %s**\" % (h.get(\"sessions\"), h.get(\"safeMax\")))   # h = health.json\n```\n→ health.json の `sessions` は **machine_load.sh が無いせいで常に 0**。\n\n**つまり：machine_load.sh が消えている → health.json が壊れる → 進捗表が「0本」と嘘をつく。全部1本の線でつながっている。**\n\n## 追加でやること\n6. **`genzaichi.py` の走行本数を `queue.json` の `status==\"running\"` の件数から出す。**\n   health.json の `sessions` に頼らない（壊れたら嘘をつく作りをやめる）。\n7. **`safeMax` も、health.json が40分以上古かったら「測定できていません」と出す。**\n   古い数字を新しい顔で出さない（たまごさんのルール：古いデータは灰色）。\n",
+   "what": "【LINE申請を自動化する・たまごさんに貼らせない】\n\nたまごさんの言葉：「**これも自動化できないんだっけ**」\n最上位ルール：**たまごさんを動かさないで進める方法が最優先。**貼り付け15項目×3キャラを人にやらせない。\n\n## 前提（もう終わっていること・やり直さない）\n- 3キャラ分の申請文言は完成し、**文字数も機械で検証済み**（全項目 規格内）。\n  設定：`tools/line_stamp_configs/{rashikoru,peralino-usocchi,oniyome-chan}.json`\n  貼り紙：`share/check/769-<name>-paste-sheet.html`\n- 規格：タイトル英40／タイトル日40／説明英160／説明日160／コピーライト50。英語欄は半角のみ。\n\n## やること\n1. **ログイン済みChromeにCDPで繋いで、LINE Creators Marketの入力欄へ実際に打ち込む。**\n   - 既にある道具を使う：`tools/start_chrome_line_login.sh`（ログイン用Chromeを起動）、\n     `tools/line_login_check.mjs`（ログイン状態の確認）、`tools/line_stamp_shot.mjs`（CDP操作の書き方の見本）。\n   - **たまごさんの普段のブラウザ(Brave)には絶対に触らない。**専用プロファイルだけ。\n   - `tools/line_stamp_shot.mjs` は一時プロファイルなので**そのままではログインが無い。**\n     ログイン済みプロファイルに繋ぐ版を新しく作る（`tools/line_stamp_fill.mjs`）。\n2. **1キャラで通しでやってみて、入った所・入らなかった所を1行ずつ書く。**\n   - `creator.line.me` が自動操作を弾くなら、**弾かれた場所を具体的に記録する。**\n     「できない」で終わらせない。別経路（キーボード入力の再現／貼り付けイベント／別の入力方法）を最低3つ試す。\n3. **入力が全部入ったらスクショを撮って確認ページに出す。**\n   **「リクエスト」ボタンは押してよい**（たまごさんの許可済み・2026-09-12の○×表）。\n   ただし**押す前に、入った全項目のスクショを1枚出す。**\n4. 3キャラとも同じ手順で通す。\n\n## 合格条件\n- **たまごさんの手数がゼロ、もしくは「見て確認」1回だけ。**\n- 入力後のスクショが3キャラ分ある\n- 弾かれた場合は、**試した経路を全部1行ずつ書いた上で**、残った手数だけをたまごさんに渡す\n\n## 絶対にやらないこと\n- 古い下書き「miketama」（ID 28343285）を削除・編集・上書きしない\n- Braveを触らない\n\n【AI検品(Verifier)ではねられました・1回目・09-16 19:42】理由：入力後スクショが3キャラ分とも0件で合格条件未達、自動入力の核心ロジックも実機未検証のまま「本番反映」と報告されている。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。",
    "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 1,
+   "repo": "/Users/mac/Desktop/tamago-shinchoku",
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/883-line-stamp-autofill.html",
+   "aiVerifyFailCount": 1,
+   "failReasons": [
+    "入力後スクショが3キャラ分とも0件で合格条件未達、自動入力の核心ロジックも実機未検証のまま「本番反映」と報告されている"
+   ]
+  },
+  {
+   "n": 884,
+   "title": "【工場】計測が45分止まっている＝machine_load.shが消えている（心臓が5分おきに殺されている）",
+   "why": "スマホから追加",
+   "what": "【工場の計測が45分止まっている】原因はもう特定してある。探し直さないこと。\n\n## 実測（2026-09-16 04:05）\n- `status/health.json` の `measuredAt` が **03:20 のまま45分更新されていない**\n- その中で **`diskFreeGB: null` / `load: null`**（本来は数字が入る）\n- `status/heartbeat.log` が15秒おきにこれを吐き続けている：\n  `🚨 立て直しの便（machine_status_push.sh）が2754秒（約45分）更新していません`\n  さらに5分おきに `💤 心臓が5分間なにも書いていません。詰まっているとみなして入れ直します`\n  → **心臓が5分おきに殺されて立て直されている。**（03:45 / 04:04 に実際に再起動された）\n\n## ★原因\n`tools/machine_status_push.sh` の28行目：\n```\nLOADSH=\"/Users/mac/Documents/AI作業/2026-09-02/スクリプト/machine_load.sh\"\n```\n**このファイルが存在しない。**Desktop・Documents/AI作業・tamago-shinchoku のどこを探しても無い（find済み）。\nファイル冒頭のコメントは `/Users/mac/Desktop/machine_load.sh` と書いてあり、**コメントと変数が食い違っている。**\nどちらのパスにも実体が無い＝**掃除のどこかで消えた。**\n\n`factory_status.py --write` が本線でフォールバックが `machine_load.sh` だが、\n**health.json の load/diskFreeGB が null ということは factory_status.py 側も計測に失敗している。**\n\n## やること\n1. **まず `python3 tools/factory_status.py --write` を手で走らせて、エラーを最後まで読む。**\n   （憶測で直さない。出たエラーを1行そのまま記録に残す）\n2. 失敗している計測（ロード・ディスク空き）を直す。macOS の `sysctl -n vm.loadavg` と `df -g /` で取れる。\n3. **`machine_load.sh` を作り直す。**出力の形は `tools/machine_status_push.sh` の中のパース部分がそのまま正本：\n   `負荷 12% ｜ CPU 9% / メモリ圧迫 58% / スワップ 0.20GB / ディスク空き 61GB ｜ 稼働 14本 ｜ あと3本OK`\n   置き場は `tools/machine_load.sh`（**リポジトリの中に置く。外に置くとまた消える**）。\n   `machine_status_push.sh` の `LOADSH` もそこへ向け直し、冒頭コメントも直す。\n4. **`sessions` が常に0なのも直す。**走行本数は `status/queue.json` の `status==\"running\"` を数えるのが正しい。\n5. 直したら **5分待って `health.json` の `measuredAt` が動くことと、\n   `heartbeat.log` から🚨と💤が消えることを実際に見て確かめる。**\n\n## ついでに分かったこと（別タスクに回してよい）\nhealth.json の items より：**Chrome 143プロセス 9.14GB / Brave 59プロセス 16.94GB。合わせて26GB。**\nこれがPCが重い一番の理由。タブの閉じ忘れ（憲法第三条）の実害がここに出ている。\n\n## 絶対にやらないこと\n- 走行中のセッションを殺さない\n- `tools/auto_launcher.py` を手で叩かない（走行中が全部waitingに戻る）\n\n────────────────────────────\n## ★これが進捗表の「今すぐ走っているもの：0本」の正体（04:24 に突き止めた）\n\n`status/genzaichi.json` の中身（04:06生成）：\n```\n\"runningNow\": [814, 825, 879, 881]   ← queue.json から数えている。正しい\n\"running\": {\"count\": 0, \"safeMax\": 4} ← health.json の sessions を使っている。0のまま\n```\n**同じ画面の中で「4本」と「0本」が両方出ている。**\n\n`tools/genzaichi.py` 449行目：\n```python\nA(\"- 走行 **%s / %s**\" % (h.get(\"sessions\"), h.get(\"safeMax\")))   # h = health.json\n```\n→ health.json の `sessions` は **machine_load.sh が無いせいで常に 0**。\n\n**つまり：machine_load.sh が消えている → health.json が壊れる → 進捗表が「0本」と嘘をつく。全部1本の線でつながっている。**\n\n## 追加でやること\n6. **`genzaichi.py` の走行本数を `queue.json` の `status==\"running\"` の件数から出す。**\n   health.json の `sessions` に頼らない（壊れたら嘘をつく作りをやめる）。\n7. **`safeMax` も、health.json が40分以上古かったら「測定できていません」と出す。**\n   古い数字を新しい顔で出さない（たまごさんのルール：古いデータは灰色）。\n\n\n【AI検品(Verifier)ではねられました・1回目・09-16 20:20】理由：コード修正・main反映は確認できたが本番復旧は未確認（health.json measuredAtが約15時間停止、heartbeat.logは4日近く更新なしでload/diskFreeGBもnullのまま）。依頼の必須条件「5分待って本番で🚨💤消滅を確認」が未達成。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。",
+   "status": "running",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
    "urgent": true,
-   "repo": "/Users/mac/Desktop/tamago-shinchoku"
+   "repo": "/Users/mac/Desktop/tamago-shinchoku",
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/status/health.json",
+   "aiVerifyFailCount": 1,
+   "failReasons": [
+    "コード修正・main反映は確認できたが本番復旧は未確認（health.json measuredAtが約15時間停止、heartbeat.logは4日近く更新なしでload/diskFreeGBもnullのまま）。依頼の必須条件「5分待って本番で🚨💤消滅を確認」が未達成"
+   ],
+   "startedAt": "2026-09-16T20:26:20+09:00",
+   "sessionId": "66e59395-c4fa-4969-b6b8-755c38a62428",
+   "pid": 13860
   },
   {
    "n": 885,
@@ -4900,6 +4657,53 @@
    "origin": "factory",
    "priority": 2,
    "kenpouCheckKey": "unreported_completions"
+  },
+  {
+   "n": 886,
+   "title": "【仕入れ】プレイリスト起点でひたすら入れる（何千曲・止めずに回す）",
+   "why": "スマホから追加",
+   "what": "【仕入れ・止めずに回し続ける】何百曲じゃなく何千曲。たまごさんのプレイリストを起点にする。\n\nたまごさんの言葉（2026-09-16 19:00）：\n> 「**今クレジット全然余裕があるので、ひたすら仕入れはやっといて。\n> 何百曲と言わず、何千曲やっといて。何か自分のプレイリストを参考にしてやってくださいね。**\n> 仕入れは1本走らせてもいいんじゃないの。今も容量余ってるからね。ちゃんとそれも使わないともったいないから。」\n\n週の使用率は 8%（目安30%）。**枠は余っている。止まっているのが一番もったいない。**\n\n## 起点にするもの\n- たまごさんのSpotifyプレイリスト：https://open.spotify.com/playlist/31bBXeyFAGLHm1DbzVAIfK\n  （リポジトリ内で53回参照されている＝これが本命。もう1本 `2q7R4b6y54RFZUIarYXUTK` もある）\n- 既存の棚・既存の曲ページ・`src/lib/coverGuide.ts` に入っている曲\n- **既に入っているものと重複しないこと。**入れる前に必ず突き合わせる。\n\n## やり方（ブラウザを開かない方法を優先）\n- YouTube oEmbed（`https://www.youtube.com/oembed?url=...&format=json`）\n- YouTube Data API（キーは `.env.local` の `YOUTUBE_DATA_API_KEY`）\n- WebSearch / web_fetch\n- **実ブラウザは最後の手段。**開いたら必ずミュート→読む→閉じる→閉じたことを確認（憲法第三条）。\n\n## 守ること\n- **嘘・憶測で事実を書かない。**裏が取れないものは雰囲気コピーに逃げる。\n- **個人アーティストの生年を書かない**（バンドの結成年は可）。\n- **片道リンクを作らない。**曲→アーティスト／アーティスト→曲を必ず両方向で通す。\n- **静止画だけの動画は載せない。**\n- **既存の「棚」への追加はしない。**仕入れ（新規ページ作成・DB登録）は自律的にやってよいが、\n  棚に並べる（キュレーション）のはたまごさんの指示があるときだけ。\n- **AIカバーは「（原アーティスト名）（AIカバー）」と明記し、原曲への導線を必ず付ける。**\n\n## ★Lovableの公開は今できない\n09-13 00:00 から公開がブロックされている（suspicious activity）。\n**mainへ合流するところまでで完了とする。**「本番で確認できない」を理由に stuck にしないこと。\n`.lovable-publish-pause` を消さない。公開を押そうとしない。\n\n## 進め方（3時間で切られる前提で組む）\n- **1件ずつ確定させて、そのつどコミットする。**まとめて最後にやらない。\n- 3時間で切られても、**そこまでの分が全部残っている状態**にする。\n- 進んだ件数を `status/` 配下に1行ずつ書き足す（何件目まで終わったか）。再開する人が続きから入れるように。\n\n## 完了の形\n- **入れた件数**（例：今回 120件）\n- 確認ページ1枚（入れたものの一覧・サムネ付き）\n- 重複0件・片道リンク0件を機械で数えた結果\n\n終わらなければ「**◯件まで終わりました。残り◯件。**」と書いて次へ引き継ぐ。",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 2
+  },
+  {
+   "n": 887,
+   "title": "【LINE】ログインの窓をこちらで開けて、あとは本人がログインするだけにする",
+   "why": "スマホから追加",
+   "what": "【LINE申請・最後の1手をたまごさんにターミナルで打たせない】\n\n883番で `tools/line_stamp_fill.mjs`（LINEの申請欄に自動で貼り付ける道具）ができた。\n残っているのは「LINEに一度ログインする」だけ。**だが883番の報告は\n「ターミナルで `bash tools/start_chrome_line_login.sh` を打ってください」で終わっている。\nこれは禁止事項。**\n\nたまごさんのルール（最上位）：\n> 「**『試してみて』『ターミナルでこれを打って』は、自分で調べる手を尽くしていない証拠。**」\n> 「たまごさんは頭脳とアイデア担当。実務は極力AI。」\n\n**本人にしかできないのは「LINEのIDとパスワードを入れる」その1点だけ。\nウィンドウを開くところまでは、こちらが全部やる。**\n\n## やること\n\n1. **`bash tools/start_chrome_line_login.sh` を、このセッションが自分で走らせる。**\n   （Mac上で動いているのだから打てる。たまごさんに打たせない）\n   - 専用プロファイルのChromeが立ち上がって、LINE Creators Marketのログイン画面が出る状態にする。\n   - **Braveには絶対に触らない。**\n   - **画面を奪わない**（osascript の activate / screencapture は禁止）。\n2. **開いたら、その画面のスクショを撮って確認ページに貼る。**\n   たまごさんが「この窓でログインすればいいんだな」と一目で分かる形にする。\n3. **Dispatchへ「窓は開けました。あとはログインするだけです」と1行で返す。**\n   ターミナルのコマンドを報告文に書かない。\n4. たまごさんがログインしたら（`tools/line_login_check.mjs` で確認できる）、\n   **`node tools/line_stamp_fill.mjs` を3キャラ分まわして、15項目を実際に貼り付ける。**\n   - 貼り終わったらスクショを3枚撮る。\n   - **「リクエスト」ボタンは押してよい**（2026-09-12の○×表で許可済み）。ただし**押す前にスクショを出す。**\n   - 古い下書き「miketama」（ID 28343285）は削除・編集・上書きしない。\n\n## 合格条件\n- **たまごさんの手数が「ログイン1回」だけになっていること。**\n- 3キャラとも15項目が実際に入ったスクショがあること\n- ターミナルのコマンドを1行もたまごさんに見せていないこと",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1
+  },
+  {
+   "n": 888,
+   "title": "【最優先】コンシェルジュと会話のキャッチボールができるようにする（キーワード→ライブラリの深くまで）",
+   "why": "スマホから追加",
+   "what": "【最優先】コンシェルジュのマイクを、本当に喋れる状態にする\n\nたまごさんの言葉そのまま（2026-09-16 19:30・実際に触った上での指摘）：\n> 「**コンシェルジュに行ったらマイクボタンついてるんだけど、マイクだよね。\n> それを、もうとにかく会話ができるようにしたいの。俺がテストしたい。**」\n> 「**ほぼほぼ今70点。で、マイクをとにかく繋げてください。**」\n\n**点数は70点。落ちている30点の本体がマイク。**\n\n## 状態\n- 文字で「雨」と入れると4件返ってくるところまでは動いている（たまごさん確認済み・ここは良い）\n- **マイクのボタンは出ているが、押しても会話にならない。**\n- 814番（Grok/xAI Realtime Voiceの埋め込み）が走行中。**この指摘は814の続き。**\n\n## やること\n1. **押したら実際に声が入って、返事が返ってくるところまで通す。**\n   - マイクの許可（getUserMedia）が取れているか、実際にブラウザで押して確かめる。\n   - 音声が xAI / Grok Realtime へ届いているか、ネットワークタブで実測する。\n   - 返事が音で返ってくるか、耳で（＝再生イベントで）確かめる。\n2. **APIキーをフロントに出さない。**`.env` の `XAI_API_KEY` をサーバー側で読む。\n   キーをチャットにもコードにも書かない。\n3. **料金の上限を先に決める。**xAIコンソールの上限は5ドルに設定済み（たまごさん申告）。\n   **使う前に「◯回で合計◯円」をDispatchへ出す。**勝手に走らせない。\n4. **★自分で人間として通しで触ってから出す。**\n   押して何も起きないボタンが1つでもあれば出さない。\n   「マイクを押す→喋る→返事が返る」を1回通した記録（スクショ or ログ）が無い報告は未完了。\n\n## 合格条件\n- **たまごさんがマイクを押して、声で話しかけて、返事が返ってくる。**\n- 1往復でいい。まず1往復を確実に通す。\n\n────────────────────────────\n## ★★★2026-09-16 19:45 たまごさん本人の言葉（これが本命。ここを読む）\n\n> 「**とにかく何より優先なのが会話のキャッチボール。会話でキャッチボールができること。\n> 後はもうほんとに瑣末なことなので、全然後回しでもいいです。**」\n> 「**今ね、Today's Pickが進めてくれるんだけど、中の3曲にアクセスできてない。\n> 深いところまでライブラリにアクセスできてないから、**そこで棚（タグ）が生きてくるわけでしょ。\n> **ユーザーがこういう感じって言ったら、そのタグを拾ってパッと出せるように。**」\n> 「**ほんとにユーザーが求めてるもの、自分ですら分からなかった・知らなかった望みすら当ててほしい**けどね。\n> まぁちょっとそこに近づけていくから、**とにかくユーザーのキーワードから、ライブラリにあるものをすぐ出せるように。**」\n> 「**でも、これが全部アンケートになってるわけだよ。全部アンケートになってるわけだから、もう仕入れ情報にもなってる。**」\n> 「**とにかく会話のキャッチボールだよ。俺と話せるようになったら、俺いろいろ振ってみるから、\n> どこまで出せるかなっていうのをテストするからよろしくね。**」\n\n## ★このタスクの本体は「会話のキャッチボール」。マイクはその一部。\n\n**合格の形：たまごさんが話しかける → 返ってくる → また話しかける → また返ってくる。\nこれが声でも文字でも成立すること。まず1往復、次に3往復。**\n\n### 今わかっている実害（たまごさんが実際に触って見つけた）\n1. **マイクのボタンは出るが、押しても会話にならない。**\n2. **Today's Pick は出るが、その中の3曲にアクセスできていない。**\n   → **ライブラリの深いところまで手が届いていない。**ここが一番の実害。\n3. 文字で「雨」と入れると4件返る（ここは動いている・70点の中身）\n\n### やること（この順番）\n1. **キーワード → ライブラリ検索を、浅いところで止めない。**\n   - 3万曲＋食べ物＋動物の全体を探せるようにする。Today's Pickの中だけで完結させない。\n   - **棚のタグを拾って引く。**「こういう感じ」という曖昧な言い方からタグへ橋を架ける。\n   - 出せなかったときは黙って1件に減らさない。**「見つからなかった」と言って、近いものを出す。**\n2. **往復できるようにする。**1回答えて終わりにしない。前の発言を覚えて次に繋げる。\n3. **マイクを繋ぐ。**押す→喋る→返事が返る、を1往復通す。\n   - APIキーはフロントに出さない（`.env` の `XAI_API_KEY` をサーバー側で読む）\n   - 使う前に「◯回で合計◯円」をDispatchへ出す。xAIコンソールの上限は5ドル。\n4. **会話のログを残す。**たまごさんの言葉：「**これが全部アンケートになってる。仕入れ情報にもなってる。**」\n   → 何を聞かれて、何を出して、何が刺さらなかったかを残す。個人情報は残さない。\n\n### ★自分で人間として通しで触ってから出す\n押して何も起きないボタンが1つでもあれば出さない。\n**「話しかける→返る→また話しかける→また返る」を自分で1回やった記録が無い報告は未完了。**\nたまごさんは「話せるようになったら、いろいろ振ってテストする」と言っている。\n**振られて壊れる状態で渡さない。**\n",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "urgent": true,
+   "label": "【最優先】コンシェルジュと会話のキャッチボールができるようにする（キーワード→ライブラリの深くまで）"
+  },
+  {
+   "n": 889,
+   "title": "【コンシェルジュ】その場で再生を基本にする＋なぜ出したかを1行付ける",
+   "why": "スマホから追加",
+   "what": "【コンシェルジュ】その場で再生できるのを基本にする（ページに飛ばさない）\n\nたまごさんの言葉そのまま（2026-09-16 19:30）：\n> 「**『見に行く』っていうのを押すと、ここで再生ができるようになるのね。\n> 基本的にもここで再生できるようにして、『見に行く』っていうのもページに飛ばしちゃってください。\n> そのページに行くでもいいけれども、その場で見れるのは基本にしてください。**」\n\n## やること\n1. **コンシェルジュが出したカードは、その場で再生できるのを既定にする。**\n   カードの中で再生が始まる。会話の流れが途切れない。\n2. 「見に行く」は残してよいが、**それは曲ページへ行くための入口。**\n   **その場で見られることのほうが基本。**\n3. 動画の枠は**常に16:9**。縦動画でも16:9。**左右の黒帯は出てよい**（たまごさん確定・比率を出し分けない）。\n4. サムネはカード幅いっぱいの `aspect-video`。小さいサムネにしない。\n\n## もう1つの指摘（同じ会話で）\n> 「**ちょっと雨って書いたら、お笑いのも1個入ってて、ちょっとその文面がよく分かんなかった。**」\n- 「雨」で出た4件のうち1件がお笑いで、**なぜそれが出てきたのかの説明（1行）が分からなかった。**\n- **おすすめには必ず「なぜこれを出したか」を1行付ける**（離島と橋のUX＝根拠の1行が橋そのもの）。\n- 比率は **安心4：冒険1**。お笑いが混じること自体は悪くない。**説明が無いのが問題。**\n\n## 合格条件\n- カードの中で再生が始まる（押して実際に鳴るところまで自分で確かめる）\n- おすすめ1件ごとに「なぜ出したか」が1行付いている\n- 16:9で揃っている",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 2,
+   "urgent": false
   }
  ]
 }

@@ -1937,8 +1937,10 @@ def _main_impl():
       alive = max(alive, queue_alive)
       safe_max = m.get("safeMax")
       if safe_max is None:
-          log("見送り: safeMaxが取れない")
-          return 0
+          # 2026-09-16：「測れないから止まる」は工場を丸ごと止める最も損な止まり方。
+          # machine.jsonが古い/壊れている間も、安全な既定値3本で発車自体は続ける。
+          safe_max = 3
+          log("safeMaxが取れないため既定値3本で発車を続けます")
       # たまごさんが進捗表で決めた「同時に走る本数」。マシンの安全上限より小さい方を採る。
       cap = (load(os.path.join(REPO, "status", "launch_cap.json"), {}) or {}).get("cap")
       if isinstance(cap, int):
