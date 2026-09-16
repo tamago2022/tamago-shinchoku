@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-09-15T09:11:53+09:00",
+ "checkedAt": "2026-09-16T09:10:31+09:00",
  "overallColor": "red",
- "redCount": 1,
+ "redCount": 3,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,8 +23,8 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 0,
-   "detail": "最終記録から約17.0時間経過（2026-09-14T16:12:10+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）"
+   "count": 1,
+   "detail": "最終記録から約3.3時間経過（2026-09-16T05:50:00+0900）／直近24時間の完了4件中、鬼監督の記録が付いているのは3件"
   },
   {
    "key": "done_missing_url",
@@ -36,16 +36,16 @@
   {
    "key": "factory_stalled",
    "label": "工場が止まったまま放置されていないか",
-   "color": "green",
-   "count": 0,
-   "detail": "発車待ちが無い（またはお金の確認待ちのみ）・正常"
+   "color": "red",
+   "count": 64,
+   "detail": "最終発車から4.4時間・発車待ち64件・空き4枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回841番 → 今回857番（減少なし）"
+   "detail": "前回857番 → 今回884番（減少なし）"
   },
   {
    "key": "big_files",
@@ -73,21 +73,31 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 93,
-   "detail": "93件（しきい値100件以内）"
+   "count": 82,
+   "detail": "82件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
-   "color": "green",
-   "count": 0,
-   "detail": "未報告の完了は無い（dispatch_outboxとdispatch_reportedが一致）"
+   "color": "red",
+   "count": 1,
+   "detail": "未報告の完了が1件たまっている（最古は約4.7時間前：#825）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
    "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "factory_stalled",
+   "skipped": "既にこの点検が積んだ842番が未解決のため積み直さない"
+  },
+  {
+   "key": "unreported_completions",
+   "status": "done",
+   "message": "885番として発車待ちに追加しました（P2）",
+   "n": 885
   }
  ]
 }
