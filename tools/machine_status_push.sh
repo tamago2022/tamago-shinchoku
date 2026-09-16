@@ -471,6 +471,13 @@ if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER
   rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
 fi
 git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || true
+# 2026-09-16（緊急・queue.json 239→234件・887/888/889番消失事故）：
+#   status/ は1秒おきに書き換わる「生きている台帳」なのに、この5分おきのpullが
+#   古いorigin/mainの中身でそれを丸ごと上書きしていた（#687と同型の再発）。
+#   .gitattributes の `status/** merge=ours` で「マージ時はこちら側を必ず勝たせる」よう
+#   したが、その属性を有効にするカスタムマージドライバの登録はリポジトリに同梱できない
+#   ローカルgit設定なので、ここで毎回（安価・冪等）保証しておく。
+git config merge.ours.driver true 2>/dev/null || true
 if ! git -c credential.helper='!gh auth git-credential' pull --no-rebase -q origin main >/dev/null 2>&1; then
   echo "$(date '+%F %T') 🛑 git pull(merge) が失敗→ merge --abort で必ず元の状態へ戻す（黙って進まない）" \
     >> "$REPO/status/git_rebase_incidents.log"
