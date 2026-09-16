@@ -82,12 +82,18 @@ function fieldPlan(cfg, plan) {
 async function findLoginState(ctx) {
   const page = await ctx.newPage();
   try {
-    await page.goto("https://creator.line.me/ja/dashboard", { waitUntil: "domcontentloaded", timeout: 20000 });
+    // 2026-09-16是正（案件#883）：/ja/dashboard は実在しないURL（404）だったため、
+    // 旧ロジックは404ページを常にLOGGED_INと誤判定するバグがあった。line_login_check.mjs
+    // と同じ「マイページ」リンクのhref判定へ修正（/signup/line_authなら未ログイン）。
+    await page.goto("https://creator.line.me/ja/", { waitUntil: "domcontentloaded", timeout: 20000 });
     await page.waitForTimeout(1200);
     const url = page.url();
-    const text = await page.evaluate(() => document.body.innerText.slice(0, 300));
-    const loggedIn = !/login|signin|登録はこちら/i.test(url) && !text.includes("登録はこちら");
-    return { loggedIn, url, page };
+    const mypageHref = await page.evaluate(() => {
+      const a = Array.from(document.querySelectorAll("a")).find((el) => el.textContent.includes("マイページ"));
+      return a ? a.getAttribute("href") : null;
+    });
+    const loggedIn = !!mypageHref && !mypageHref.includes("/signup/line_auth");
+    return { loggedIn, url, mypageHref, page };
   } catch (e) {
     await page.close().catch(() => {});
     throw e;
@@ -194,6 +200,7 @@ async function main() {
       console.log(JSON.stringify({
         state: "NOT_LOGIN",
         url: login.url,
+        mypageHref: login.mypageHref,
         browser: version.Browser || null,
         detail: "Chromeは起動していますがLINEに未ログインです。フォームには一切触れず停止しました。",
       }));

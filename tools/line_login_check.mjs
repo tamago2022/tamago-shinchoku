@@ -31,14 +31,22 @@ async function main() {
   const ctx = browser.contexts()[0];
   const page = await ctx.newPage();
   try {
-    await page.goto("https://creator.line.me/ja/dashboard", { waitUntil: "domcontentloaded", timeout: 20000 });
+    // 2026-09-16是正（案件#883）：/ja/dashboard は実在しないURL（404「指定された
+    // ページは存在しません」）だったため、旧ロジック（本文にlogin/登録はこちらを
+    // 含まない=ログイン済み、という判定）は404ページを常にLOGGED_INと誤判定する
+    // バグがあった。正しいトップページ(/ja/)から「マイページ」リンクの実際の遷移先
+    // (href)で判定する方式に修正。未ログイン時はhrefが/signup/line_authになる。
+    await page.goto("https://creator.line.me/ja/", { waitUntil: "domcontentloaded", timeout: 20000 });
     await page.waitForTimeout(1500);
-    const url = page.url();
-    const text = await page.evaluate(() => document.body.innerText.slice(0, 300));
-    const loggedIn = !/login|signin|登録はこちら/i.test(url) && !text.includes("登録はこちら");
+    const mypageHref = await page.evaluate(() => {
+      const a = Array.from(document.querySelectorAll("a")).find((el) => el.textContent.includes("マイページ"));
+      return a ? a.getAttribute("href") : null;
+    });
+    const loggedIn = !!mypageHref && !mypageHref.includes("/signup/line_auth");
     console.log(JSON.stringify({
       state: loggedIn ? "LOGGED_IN" : "NOT_LOGIN",
-      url,
+      url: page.url(),
+      mypageHref,
       browser: version.Browser || null,
     }));
   } finally {
