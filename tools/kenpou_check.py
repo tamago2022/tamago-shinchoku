@@ -744,7 +744,7 @@ def _run(args, timeout=None):
 def _push(paths=("status/kenpou_check.json", "status/kenpou_check_state.json",
                   "status/kenpou_check_log.jsonl", "status/queue.json"), retries=5, wait_sec=8):
     for attempt in range(1, retries + 1):
-        rc, out, err = _run(["git", "add"] + list(paths))
+        rc, out, err = _run(["git", "add", "-f"] + list(paths))
         if rc != 0:
             print("add失敗(試行%d): %s" % (attempt, (out + err).strip()[:300]))
             time.sleep(wait_sec)

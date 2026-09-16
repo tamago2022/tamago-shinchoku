@@ -22,8 +22,11 @@ if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER
   git merge --abort >/dev/null 2>&1 || true
   rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
 fi
-if git status --porcelain -- status/commands.json 2>/dev/null | grep -q .; then
-  git add status/commands.json >/dev/null 2>&1
+# 2026-09-16：status/ を.gitignoreしたため、素の`git status --porcelain`は
+#   ignore対象のcommands.jsonを二度と拾わなくなる（--ignoredを付けない限り無視される）。
+#   -fで強制addしたうえで、実際にインデックスへ差分が乗ったかどうかで判定する。
+git add -f status/commands.json >/dev/null 2>&1
+if ! git diff --cached --quiet -- status/commands.json 2>/dev/null; then
   git -c user.name="command-ingest" -c user.email="command-ingest@local" commit -q -m "cmd: 実行結果 $(date +%H:%M)" >/dev/null 2>&1 || exit 0
   if ! git -c credential.helper='!gh auth git-credential' pull --no-rebase -q origin main >/dev/null 2>&1; then
     echo "$(date '+%F %T') 🛑 command_watch: git pull(merge) 失敗→ merge --abort で元へ戻す" \

@@ -22,3 +22,15 @@ share/x-search/data.json
 # 大量の小ファイルでpre-commitの1MB超ガードに毎回ひっかかりqueue.json本体のコミットを圧迫していたため、
 # そもそもgit管理対象から外す（正本はqueue.json本体・historyはローカルの巻き戻り保険のみ）。
 status/queue_history/
+
+# 2026-09-16（緊急・queue.json/auto_launch.log巻き戻り事故の恒久対策）：
+# status/ は工場が1秒おきに書き換えている「生きている台帳」。他の古いworktree/セッションが
+# `git add -A`のような広い範囲のaddを（悪意なく）実行すると、そこに残っていた何日も前の
+# status/スナップショットが巻き込まれてcommit・pushされ、本物のstatus/を丸ごと古い内容で
+# 上書きしてしまう事故が繰り返し起きた（実測：685番が原因でauto_launch.logが2026-09-10の内容へ、
+# 888/883番の走行状態が消える形でqueue.jsonが巻き戻った）。
+# status/ 配下はここでgit管理対象から外し、唯一の公開経路である
+# tools/machine_status_push.sh（および他の少数の公開スクリプト）だけが
+# `git add -f`で明示的に指定したファイルを公開する形にする。
+# これにより「他セッションの広いgit add」は二度とstatus/を巻き込まなくなる。
+status/

@@ -425,7 +425,7 @@ def main():
 
 def push_repo():
     try:
-        subprocess.run(["git", "add", "status/later_tabs.json"], cwd=REPO, check=True)
+        subprocess.run(["git", "add", "-f", "status/later_tabs.json"], cwd=REPO, check=True)
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=REPO)
         if diff.returncode == 0:
             log("git: 差分なし（コミット省略）")

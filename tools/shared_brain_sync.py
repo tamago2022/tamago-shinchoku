@@ -211,7 +211,7 @@ def sync():
 def push_repo():
     try:
         subprocess.run(
-            ["git", "add", "shared-brain", "status/shared_brain_sync_state.json"],
+            ["git", "add", "shared-brain"],
             cwd=REPO,
             check=True,
         )

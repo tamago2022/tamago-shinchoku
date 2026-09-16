@@ -614,7 +614,7 @@ def _push(paths=("status/maintenance_check.json", "status/maintenance_check_log.
                   "status/done_archive.json", "share/done/index.html",
                   "status/later_tabs.json"), retries=5, wait_sec=8):
     for attempt in range(1, retries + 1):
-        rc, out, err = _run(["git", "add"] + list(paths))
+        rc, out, err = _run(["git", "add", "-f"] + list(paths))
         if rc != 0:
             print("add失敗(試行%d): %s" % (attempt, (out + err).strip()[:300]))
             time.sleep(wait_sec)

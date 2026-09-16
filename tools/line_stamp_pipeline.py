@@ -850,7 +850,7 @@ def _push(paths=(
     import subprocess
     for attempt in range(1, retries + 1):
         try:
-            subprocess.run(["git", "add"] + list(paths), cwd=REPO, check=False,
+            subprocess.run(["git", "add", "-f"] + list(paths), cwd=REPO, check=False,
                             capture_output=True, text=True, timeout=30)
             diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=REPO)
             if diff.returncode == 0:
