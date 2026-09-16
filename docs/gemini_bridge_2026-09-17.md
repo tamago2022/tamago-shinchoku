@@ -16,14 +16,51 @@
 - 委譲1回あたり**10〜30秒のレイテンシ**が発生する。350行未満の小さい読み込みには向かない
   （委譲のオーバーヘッドが節約を上回る）。
 
-## 2. Gemini 2.5 Flashの料金（ai.google.dev/gemini-api/docs/pricing、2026-09-17時点で確認済み）
+## 2. 世界の節約事例（Spotify以外にも・一次情報のみ）
+
+**1回目の提出でSpotify社1件しか無いと検品で指摘された。以下、他社の一次情報を追加で確認した
+（未確認は「未確認」と正直に書く。裏の取れない数字は書かない）。**
+
+### Anthropic公式：Prompt Caching（`claude.com/blog/prompt-caching`、2026-09-17に実際に開いて確認）
+
+- 原文どおりの数字：**「reducing costs by up to 90% and latency by up to 85% for long
+  prompts」**。
+- 実測例（原文どおり）：本1冊分（10万トークン）をキャッシュして対話 → レイテンシ
+  11.5秒→2.4秒（-79%）、コスト-90%。マルチターン会話（10ターン）→ レイテンシ約10秒→約2.5秒
+  （-75%）、コスト-53%。
+- 何に使う仕組みか：**長文ドキュメントとの対話・要約・コーディング支援・エージェントのツール
+  利用**（＝今回のGemini委譲と同じ「調べ物・要約」寄りの場面で効果が出ている）。
+- **今回の仕組み⑫との違い（向かない用途とは別に、混同しないよう明記）：** Prompt Cachingは
+  「同じ内容を繰り返し読む」時にキャッシュが効く仕組みで、初回の読み込みコスト自体は下がらない。
+  Gemini委譲（別モデルへ渡す）とは仕組みが違う節約手段であり、両方使うことも可能。
+- 向かない用途：本文に明記なし（未確認）。
+
+### Anthropic導入企業事例（`claude.com/customers`、`claude.com/customers/evenup`、
+`claude.com/customers/spellbook`、2026-09-17に実際に開いて確認）
+
+- **EvenUp**：文書作成にかかる時間が**15時間→15分**（法律文書作成。人間の最終確認を前提にした
+  数字で、「判断は人間・Claudeが持つ」という今回の設計思想と同じ切り分け）。
+- **Spellbook**：月間**53万件の契約審査**をAIで処理（契約審査は法務判断が絡むため、最終承認は
+  人間側に残す設計。今回の「判断はClaudeが持つ、Geminiには渡さない」と同じ考え方）。
+
+### 確認は取れたが数字が非公開だったもの（盛らずにそのまま記録）
+
+- **Google Gemini公式ドキュメント**（`ai.google.dev/gemini-api/docs/caching`）：Context
+  Cachingでキャッシュヒット時に自動でコストが下がる仕組みの説明はあるが、削減率の具体的な数字
+  は非公開。
+- **Duolingo公式ブログ**（`blog.duolingo.com/duolingo-max`）：GPT-4活用の説明はあるが、コスト
+  削減の具体的な数字は非公開。
+- **OpenAI公式のKlarna事例**：ドメイン自体にアクセスできず未確認（今回は不採用。裏が取れて
+  いない数字を伝聞で書かない）。
+
+## 3. Gemini 2.5 Flashの料金（ai.google.dev/gemini-api/docs/pricing、2026-09-17時点で確認済み）
 
 - **無料枠あり**（Google AI Studio経由、1日あたり一定件数まで無料）。
 - 有料時も非常に安い：**入力 $0.30 / 1Mトークン、出力 $2.50 / 1Mトークン**。
 
-## 3. 今回tamago-shinchoku向けに作った3点
+## 4. 今回tamago-shinchoku向けに作った3点
 
-### 3-1. `tools/gemini_delegate.py`
+### 4-1. `tools/gemini_delegate.py`
 
 Gemini API（`generativelanguage.googleapis.com`のREST APIを`urllib.request`で直接叩く。
 外部ライブラリの追加インストールなし・python3標準ライブラリのみ）を使うCLI。
@@ -46,12 +83,12 @@ python3 tools/gemini_delegate.py summarize --path 大きいファイル --questi
 - **`GEMINI_API_KEY`が`.env`に無い場合は、キーの値を一切扱わず、分かりやすい日本語メッセージを
   出して終了コード1で自分だけ終わる。**
 
-### 3-2. `.claude/skills/gemini-delegate/SKILL.md`
+### 4-2. `.claude/skills/gemini-delegate/SKILL.md`
 
 「大きいファイル・大きいログを読みたくなったら、まずこのスキルを検討する」ガイド。呼び出し例と、
 向かない用途（編集・デバッグ・設計判断・安全性が絡む場面では使わない）を明記済み。
 
-### 3-3. `tools/estimate_gemini_savings.py`
+### 4-3. `tools/estimate_gemini_savings.py`
 
 「大きい読み込みがどれだけの頻度で発生していそうか」を実測ログから概算するスクリプト。
 
@@ -67,7 +104,7 @@ python3 tools/gemini_delegate.py summarize --path 大きいファイル --questi
 python3 tools/estimate_gemini_savings.py
 ```
 
-## 4. `tools/estimate_gemini_savings.py`の実行結果（2026-09-17実測・直近40セッション）
+## 5. `tools/estimate_gemini_savings.py`の実行結果（2026-09-17実測・直近40セッション）
 
 ```
 サンプルしたセッション数: 40（~/.claude/projects/-Users-mac-Desktop-tamago-shinchoku）
@@ -90,7 +127,7 @@ Read呼び出しが1回以上あったセッション数: 4 / 40
   Bashコマンドの中身からファイルサイズを正確に判定するのは今回のスクリプトの範囲外とした）。
   正確なトークン数の計測ではなく、あくまで「発生頻度」の概算である。
 
-## 5. Google/YouTube/X連携の調査結果
+## 6. Google/YouTube/X連携の調査結果
 
 - **YouTube**：`.env`に既に`YOUTUBE_DATA_API_KEY`がある。動画の字幕・概要欄テキストを取得して
   Geminiへ渡し、要約・トレンド調査させる設計は技術的に可能（技術的な接続経路が既に揃っている、
@@ -99,7 +136,7 @@ Read呼び出しが1回以上あったセッション数: 4 / 40
 - **X（Twitter）**：公式APIが有料化されており、Gemini経由であっても無料での大量データ取得は
   困難。この制約は裏取りできていない楽観的な見通しを書かず、正直にそのまま記録する。
 
-## 6. 今後の使い方
+## 7. 今後の使い方
 
 - `GEMINI_API_KEY`を`.env`に追記すれば、`tools/gemini_delegate.py`は即座に使える状態になっている
   （今回はキーが未設定のため、実際のAPI疎通テストは未実施。エラー時の日本語メッセージが正しく
@@ -107,7 +144,7 @@ Read呼び出しが1回以上あったセッション数: 4 / 40
 - 追記の仕方：`.env`に `GEMINI_API_KEY=<Google AI Studioで取得した値>` という行を追記してください
   （キーの値そのものはここには書かない）。
 
-## 7. 向かない用途セット（再掲・最重要）
+## 8. 向かない用途セット（再掲・最重要）
 
 - コードの編集・デバッグには使わない。
 - 設計判断・アーキテクチャの意思決定には使わない。

@@ -71,7 +71,15 @@ Spotify社公式ブログ(2026-09-03)の実測: 90%削減(Javaモノレポ・bul
   <div class="num"><b>$0.30/$2.50</b><span>Gemini 2.5 Flash 入力/出力 100万トークンあたり料金(無料枠あり・公式価格ページで確認)</span></div>
 </div>
 
-
+<h2>③ 世界の節約事例（Spotify以外にも・一次情報のみ・2026-09-17に実際に開いて確認）</h2>
+<div class="note">1回目提出はSpotify1社のみだった指摘を受け、他社の一次情報を追加で確認した。数字が確認できなかったもの(Google Gemini公式ドキュメント／Duolingo公式ブログ)、ドメインブロックで開けなかったもの(OpenAI公式Klarna事例)は採用せず「未確認」のまま docs/gemini_bridge_2026-09-17.md §2 に正直に記録している。</div>
+<table>
+<tr><th>会社</th><th>数字（原文どおり）</th><th>何に使ったか</th><th>向かない用途・注記</th></tr>
+<tr><td>Spotify</td><td>Javaモノレポのbulk-readで平均<b>90%</b>トークン削減</td><td>大きいファイルの読み込み・要約の委譲</td><td>編集・デバッグ・設計判断には使わない(実際にスレッド安全性バグを見逃した例あり)</td></tr>
+<tr><td>Anthropic（Prompt Caching）</td><td>長いプロンプトで<b>コスト最大90%削減・レイテンシ最大85%削減</b>（本1冊対話：11.5秒→2.4秒）</td><td>長文ドキュメントとの対話・要約・コーディング支援</td><td>「繰り返し読む」時に効く別方式の節約。初回読み込みコストは下がらない</td></tr>
+<tr><td>Anthropic導入事例：EvenUp</td><td>文書作成が<b>15時間→15分</b></td><td>法律文書のドラフト作成</td><td>人間の最終確認込みの数字</td></tr>
+<tr><td>Anthropic導入事例：Spellbook</td><td>月間<b>53万件</b>の契約審査を処理</td><td>契約審査の一次チェック</td><td>最終承認は人間側に残す設計</td></tr>
+</table>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -80,6 +88,8 @@ Spotify社公式ブログ(2026-09-03)の実測: 90%削減(Javaモノレポ・bul
   <li><b>まとめドキュメント(世界の節約事例+効果測定)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/gemini_bridge_2026-09-17.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/gemini_bridge_2026-09-17.md</a></li>
   <li><b>効果測定スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/estimate_gemini_savings.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/estimate_gemini_savings.py</a></li>
   <li><b>Spotify社一次情報(90%削減の出典)</b><a href="https://engineering.atspotify.com/2026/9/portal-by-spotify-cut-my-claude-code-token-usage-by-90" target="_blank" rel="noopener">https://engineering.atspotify.com/2026/9/portal-by-spotify-cut-my-claude-code-token-usage-by-90</a></li>
+  <li><b>Anthropic公式 Prompt Caching(他社事例①・90%削減の出典)</b><a href="https://claude.com/blog/prompt-caching" target="_blank" rel="noopener">https://claude.com/blog/prompt-caching</a></li>
+  <li><b>Anthropic導入企業事例一覧(他社事例②③・EvenUp/Spellbook)</b><a href="https://claude.com/customers" target="_blank" rel="noopener">https://claude.com/customers</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -91,6 +101,7 @@ Spotify社公式ブログ(2026-09-03)の実測: 90%削減(Javaモノレポ・bul
 <tr><td>既存ファイルの削除・上書きが無いか(git status)</td><td class="yes">OK</td></tr>
 <tr><td>ドキュメントに向かない用途(編集/デバッグ/設計判断/安全性推論)を明記</td><td class="yes">OK</td></tr>
 <tr><td>実測数字とドキュメント記載の数字が一致(独立検品で再実行し比較)</td><td class="yes">OK</td></tr>
+<tr><td>世界の節約事例がSpotify以外にもあるか(1回目の指摘への対応)</td><td class="yes">OK(Spotify+Anthropic本体+導入事例2社の計4件、全て一次情報URLをWebFetchで実際に開いて確認。数字が非公開だったGoogle/Duolingo、開けなかったOpenAI/Klarnaは不採用と正直に記載)</td></tr>
 </table>
 
 <footer>
