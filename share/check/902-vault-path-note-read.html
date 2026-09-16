@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#902 Vaultの場所記録＋ノート2本を読んだ確認 確認ページ</title>
+<title>#902 Vaultの場所記録＋指定ノート2本の中身確認 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,32 +47,37 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #902 Vaultの場所記録＋ノート2本を読んだ確認</div>
-<h1>#902 Vaultの場所記録＋ノート2本を読んだ確認</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #902 Vaultの場所記録＋指定ノート2本の中身確認</div>
+<h1>#902 Vaultの場所記録＋指定ノート2本の中身確認</h1>
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-Obsidian Vault(tamago_brain)の実体パスをai-brain/vault_path.txtへ記録し、mainへ反映した。あわせて指定された2本のノート（わざわざ社長はエンジニア／devin指示文）を読んで要約した。
+たまごさんが「読んどいて」と指した2本のノートを実際に読み、要約をこのページに直接書いた（GitHub非公開リポの外部リンクに頼らず、中身をこの場で示す形に作り直した）。あわせてVault(tamago_brain)の実体パスを特定し、joy-relief-stationのmainへ記録済み（実体：/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2</b><span>読んだノート数</span></div>
-  <div class="num"><b>iCloud配下</b><span>Vaultの実体場所</span></div>
+  <div class="num"><b>2</b><span>指定されたノートを読んだ数</span></div>
+  <div class="num"><b>1</b><span>Vault実体パスの特定(mainへ記録済み)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>vault_path.txt（本番mainのファイル）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/vault_path.txt" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/vault_path.txt</a></li>
-  <li><b>記録したコミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/d63165ad" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/d63165ad</a></li>
+  <li><b>①ノートを開く（Obsidian）パン屋 わざわざ 社長はエンジニア</b><a href="obsidian://open?vault=tamago_brain&amp;file=パン屋　わざわざ　社長はエンジニア" target="_blank" rel="noopener">obsidian://open?vault=tamago_brain&amp;file=パン屋　わざわざ　社長はエンジニア</a></li>
+  <li><b>②ノートを開く（Obsidian）devin 指示文</b><a href="obsidian://open?vault=tamago_brain&amp;file=devin 指示文" target="_blank" rel="noopener">obsidian://open?vault=tamago_brain&amp;file=devin 指示文</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①パン屋わざわざ 社長はエンジニア</td><td class="yes">長野のパン屋「わざわざ」平田社長のnote記事。コード未経験の経営者がAI(Claude)と発注自動化から着手し、最終的に会社の基幹システム(通称Buddha)を自作。週1回2時間の経営会議が月1回で足りるようになり、基幹システム費用は月15万円→4万8千円に削減(年120万円減)。商品マスタ(全データの一元化)を核に、AI事務社員「ジムくん」・パン分配自動化・経営ダッシュボードなど26個のしくみを構築。クレーム/返品/謝罪など人間対応すべき領域は明確に線引き。ノート下部にはたまごさん自身の書き込みがあり「たまごさんが今やろうとしていることとほぼ同型」として、ごきげん補給所編集部向けの「GOOD VIBES CORE」翻訳表・実装担当割り振り案まで叩き台化されている。単なる読み物ではなく、AI組織設計にそのまま転用する狙いのノート</td></tr>
+<tr><td>②devin 指示文</td><td class="yes">Devin(Cloud/Desktop/CLI)の使い分けを整理したノート。Cloudで3タスクを同時に走らせただけでDaily quota 82%・Weekly quota 41%を消費した反省から、Desktop/CLIの「SWE-1.7 Unlimited」を主戦場にし、Cloudへの/handoffは例外運用へ切り替える方針。Claude Codeへの実際の指示文入り：Desktop/CLI導入確認→/model一覧記録→実案件1件を/plan→実装→テスト→/loopで最後まで通す→前後のquotaを実測→表にまとめて報告。「Unlimitedだから無料と決めつけず必ず実測する」が最重要ルールと明記。今回902番が3本同時・リポジトリ全体スキャンでquotaを浪費した反省と合わせ、明日は「軽い反復修正はDesktop/CLI」「難しい判断・3回失敗したらClaude Codeへ昇格」という役割分担で投げ直す材料にする狙い</td></tr>
+</table>
 
 <footer>
-このページは #902 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+vault_path.txt本体はjoy-relief-stationの非公開リポジトリにあり本人が直接開けないため、確認ページのリンクは本人のVaultを直接開けるobsidian://形式に絞った。実体パスと要約はこのページの本文にそのまま書いてある。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
