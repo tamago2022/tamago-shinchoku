@@ -236,12 +236,18 @@ def cmd_send(args):
         else:
             record["notes"].append(f"Gmail下書き直接保存はスキップ/失敗: {err}")
         url = gmail_compose_url(to_addr, subject, body)
+        # 「押すだけ」の本体はこのURL自体。たまごさん本人のログイン済みブラウザでこのリンクを
+        # 開けば to/subject/body が自動で入った下書き作成画面になる（Gmail公式のURL仕様）。
+        # 自動化用Chrome(~/.tamago/chrome-line)は896番2回目時点でGoogle未ログインのため、
+        # そちらで開いたスクショは「実際にどう見えるか」の証拠にならない（未ログイン広告ページになる）。
+        # そのため compose_url を記録に残し、確認ページ側でクリック可能なリンクとして提示する方式へ変更。
+        record["compose_url"] = url
         shot_name = f"{record['id']}-gmail.png"
         cdp_port = info.get("cdp_port", DEFAULT_CDP_PORT)
         res = open_and_shot(url, shot_name, cdp_port)
         if res.get("ok"):
             record["screenshots"].append(f"share/check/renraku/{shot_name}")
-            record["notes"].append("Gmail作成画面をブラウザで開いてスクショ済み（ログイン状態次第でログイン画面の場合あり）")
+            record["notes"].append("参考: 自動化用Chrome(未ログイン)でも開けることは確認したが、ログイン未済のため広告/ログイン画面が写るだけで文面反映の証拠にはならない。本番の「押すだけ」はcompose_urlをたまごさん本人のログイン済みブラウザで開く経路")
         else:
             record["notes"].append(f"ブラウザでの表示確認は失敗: {res.get('error')}")
 
@@ -260,16 +266,37 @@ def cmd_send(args):
                 click_res = run_node(["click", str(cdp_port), tab_id, post_click])
                 if click_res.get("ok") and click_res.get("clicked"):
                     record["notes"].append(f"「{post_click}」をクリックしてフォーム本体へ到達")
-                    shot_name2 = f"{record['id']}-form-after-click.png"
-                    shot_path2 = os.path.join(SHOT_DIR, shot_name2)
-                    run_node(["shot", str(cdp_port), tab_id, shot_path2])
-                    record["screenshots"].append(f"share/check/renraku/{shot_name2}")
                 else:
                     record["notes"].append(f"「{post_click}」のクリックに失敗: {click_res}")
-                    record["screenshots"].append(f"share/check/renraku/{shot_name}")
+
+            # 返信用メールアドレス欄・自由記述本文欄がmadoguchiに登録されていれば自動入力する
+            # （896番2回目：これが無いとフォームを開いただけで本文欄が空欄のまま止まっていた）
+            email_selector = info.get("email_selector")
+            if email_selector and tab_id:
+                email_b64 = base64.b64encode(GMAIL_ADDR.encode("utf-8")).decode("ascii")
+                fill_res = run_node(["fill", str(cdp_port), tab_id, email_selector, email_b64])
+                if fill_res.get("ok") and fill_res.get("filled"):
+                    record["notes"].append("返信用メールアドレス欄を自動入力済み")
+                else:
+                    record["notes"].append(f"メールアドレス欄の自動入力に失敗: {fill_res}")
+
+            body_selector = info.get("body_selector")
+            if body_selector and tab_id:
+                body_b64 = base64.b64encode(body.encode("utf-8")).decode("ascii")
+                fill_res = run_node(["fill", str(cdp_port), tab_id, body_selector, body_b64])
+                if fill_res.get("ok") and fill_res.get("filled"):
+                    record["notes"].append("自由記述の本文欄を自動入力済み（「カテゴリ」「詳細」の選択だけ手動で残る。選択後に本文欄が画面に現れる）")
+                else:
+                    record["notes"].append(f"本文欄の自動入力に失敗: {fill_res}")
+
+            if tab_id:
+                shot_name2 = f"{record['id']}-form-filled.png"
+                shot_path2 = os.path.join(SHOT_DIR, shot_name2)
+                run_node(["shot", str(cdp_port), tab_id, shot_path2])
+                record["screenshots"].append(f"share/check/renraku/{shot_name2}")
             else:
                 record["screenshots"].append(f"share/check/renraku/{shot_name}")
-            record["notes"].append("フォームを開いてスクショ済み。カテゴリ等の選択はサービス固有のため専用スクリプトが必要な場合あり")
+            record["notes"].append("フォームを開いてスクショ済み。カテゴリ等のカスタムselectはサービス固有のUIのため選択だけ手動で残る")
         else:
             record["notes"].append(f"フォームを開けなかった: {res.get('error')}")
     else:
