@@ -230,6 +230,31 @@ def launch_silence_min():
         return None  # まだ一度も発車したことが無い（新規環境）。異常とは扱わない
 
 
+def _launch_has_room():
+    """走行本数が安全上限（safeMax）未満か＝新規発車の余地があるかを判定する。
+
+    894番（2026-09-16）で見つけた誤検知：安全弁の空回しタスクは
+    `running_now=[]かつlaunchable=[]`の時にしか追加されない（auto_launcher.py）。
+    つまり「発車待ちはあるが、走行本数が既に上限いっぱい」という**正当な満員状態**では
+    空回しタスクも入らず、.last_launch_at が10分を超えて更新されないことが普通に起こる。
+    それを毎回「異常」として扱うと、満員で待っているだけの正常時にまで自己修復
+    （心臓/5分便の蹴り直し）を誤爆させてしまう（実機で確認：走行4本／上限4本の満員中に
+    18分沈黙で誤って「異常」判定・自己修復が動いた）。
+    machine.json.safeMax が取れない間は、auto_launcher.py 側の安全な既定値と同じ3本を使う
+    （894番の別項目「測れないときに止まらない」との一貫性）。"""
+    try:
+        m = json.load(io.open(os.path.join(ST, "machine.json"), encoding="utf-8"))
+    except Exception:
+        m = {}
+    safe_max = m.get("safeMax")
+    if safe_max is None:
+        safe_max = 3
+    alive = m.get("sessions")
+    if alive is None:
+        return True  # 走行本数も分からない→安全側（余地ありとみなし、通常どおり沈黙を疑う）
+    return alive < safe_max
+
+
 def _self_heal_launch_silence(silence_min):
     """止まっていたら、たまごさんに言われる前に自分で立て直しを試みる。
     やること（既存の安全な手段だけを使う。新しい破壊的操作はしない）：
@@ -281,7 +306,7 @@ def check_launch_silence():
     連続して赤の間は1回だけ dispatch_outbox・failures.md へ書く（毎30分スパムしない）。
     発車が再開したら次の沈黙エピソードのためにアラート済みスタンプを消す。"""
     silence_min = launch_silence_min()
-    if silence_min is None or silence_min <= 10:
+    if silence_min is None or silence_min <= 10 or _launch_has_room() is False:
         try:
             if os.path.exists(LAUNCH_SILENCE_ALERT_STAMP):
                 os.remove(LAUNCH_SILENCE_ALERT_STAMP)

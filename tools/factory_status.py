@@ -777,18 +777,27 @@ def build():
                      "ratio": round(len(auto) / len(done), 2) if done else None,
                      "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"}
     d["heartbeat"] = heartbeat_status()
+    d["launchStall"] = launch_stall_status(alive, sm, credit_stop=(qj.get("allLevel") == "stop"))
     return d
 
 
 def heartbeat_status():
     """工場の心臓（heartbeat.sh）が生きているか・何分止まっているかを実測する（776番）。
 
-    心臓は15秒おきに必ず何か（着火判定・受信箱チェック）を行い、その中で
-    auto_launch.log（着火ログ）を更新する仕組みになっている。プロセスが「居る」だけでは
-    中で詰まっていても分からない（実際、pgrepには見えるのに180秒以上何も進んでいない
-    事故が2026-09-12に230分続いた）。判定は必ず「実際に仕事が進んでいるか」の実測でやる。
+    心臓は15秒おきに必ず何か（着火判定・受信箱チェック）を行う。
+
+    2026-09-16（894番）：この判定はもともと auto_launch.log（着火ログ＝実際に発車/回収が
+    あった時だけ書かれる）の更新時刻を見ていたため、「発車待ちが無いだけ」の時間帯でも
+    「詰まっている」と誤判定していた（実測：04:37〜19:07の14時間30分、誤判定が正常な
+    心臓を繰り返し強制終了し続け、発車ゼロが続いた＝案件#3507f20e6で機械側の生死判定
+    (machine_status_push.sh)は .heartbeat_alive touchファイル基準へ切り替え済みだったが、
+    この画面表示用の関数だけ旧ロジックのまま取り残されていた＝表示と実際の生死判定が
+    食い違っていたので統一する）。
+    心臓は毎周期・何もしなくても .heartbeat_alive を touch するので、判定材料はそちらへ
+    差し替える（.heartbeat_alive が無い古い環境向けに auto_launch.log をフォールバックで残す）。
     """
     pidf = os.path.join(REPO, "status", "heartbeat.pid")
+    alivef = os.path.join(REPO, "status", ".heartbeat_alive")
     logf = os.path.join(REPO, "status", "auto_launch.log")
     alive = False
     pid = None
@@ -800,18 +809,89 @@ def heartbeat_status():
         alive = False
     stalled_min = None
     try:
-        stalled_min = round((time.time() - os.path.getmtime(logf)) / 60.0, 1)
+        stalled_min = round((time.time() - os.path.getmtime(alivef)) / 60.0, 1)
     except Exception:
-        pass
-    # 10分（=STALL_MINと同じ基準）以上ログが進んでいなければ「止まっている」とみなす。
-    # プロセスが居るかどうかは判定に使わない（居るのに詰まっているケースを見逃さないため）。
-    stalled = bool(stalled_min is not None and stalled_min >= 10)
+        try:
+            stalled_min = round((time.time() - os.path.getmtime(logf)) / 60.0, 1)
+        except Exception:
+            pass
+    # 10分（=STALL_MINと同じ基準）以上「ループが回っている証拠」が更新されていなければ
+    # 「止まっている」とみなす。プロセスが居るかどうかは判定に使わない
+    # （居るのに詰まっているケースを見逃さないため）。
+    stalled = bool(stalled_min is not None and stalled_min >= STALL_MIN)
     return {
         "pid": pid,
         "processAlive": alive,
         "stalledMin": stalled_min,
         "stalled": stalled,
         "note": ("💤 心臓が%s分止まっています" % stalled_min) if stalled else "心臓は動いています",
+    }
+
+
+def launch_stall_status(alive, safe_max, credit_stop=False):
+    """発車待ちがあり、枠が空いているのに、一定時間発車が起きていない状態を検知する（894番）。
+
+    heartbeat_status()（上）は「心臓（ループ）が回っているか」だけを見ており、
+    心臓が回っていても実際の発車が起きていないケース（例：5分便のどこかがハングして
+    machine.json自体の更新が長時間止まる／safeMaxの見積もりが実態と食い違ったまま
+    固定される）を捕捉できない。
+
+    2026-09-16（894番・実装当初の反省）：判定材料に独自の状態ファイルを新設しようとしたが、
+    「発車が起きたか」の実測は既に tools/genzaichi.py が .last_launch_at（798番・
+    auto_launcher.py が本物/空回し問わず何か1本着火するたび更新）で持っており、
+    自己修復（心臓/5分便の蹴り直し）・failures.md記録までセットで798番実装済みだった。
+    真実の源を二重に持つと食い違いの元になるので、ここでは genzaichi.py の計測を
+    そのまま再利用し、この関数は「画面表示用に、待ち件数などの説明を添える」役に絞る。
+    room判定（走行本数が安全上限未満か）も genzaichi._launch_has_room() と同じ関数を使う
+    （待ち会・埋まっているだけの正常な満員状態を異常と誤検知しないため。実機で誤検知を
+    確認し、genzaichi.py側に先に修正を入れた＝ここも同じ関数を呼ぶだけで自動的に直る）。
+    """
+    try:
+        q = json.load(open(os.path.join(REPO, "status", "queue.json"), encoding="utf-8"))
+    except Exception:
+        q = {}
+    items = q.get("items") or []
+
+    def launchable(it):
+        if it.get("status") != "waiting":
+            return False
+        if it.get("costsMoney") and not it.get("costApproved"):
+            return False
+        if it.get("urakataBlockedAt"):
+            return False
+        if it.get("capLimitAskedAt"):
+            return False
+        if credit_stop and not it.get("test"):
+            return False
+        return True
+
+    waiting_n = len([it for it in items if launchable(it)])
+    room = max(0, (safe_max or 0) - alive)
+
+    try:
+        gz_spec = importlib.util.spec_from_file_location(
+            "genzaichi", os.path.join(HERE, "genzaichi.py"))
+        gz = importlib.util.module_from_spec(gz_spec)
+        gz_spec.loader.exec_module(gz)
+        stalled_min = gz.launch_silence_min()
+        has_room = gz._launch_has_room()
+    except Exception:
+        stalled_min = None
+        has_room = True
+
+    # 走行本数が既に安全上限いっぱい（has_room=False）なら、それは「満員で待っているだけ」の
+    # 正当な状態であり、異常ではない（894番の実機テストで見つけた誤検知：走行4本／上限4本の
+    # 満員中に沈黙時間だけを見て赤警告を出していた。has_roomがFalseの間は数字だけ見せて赤にしない）。
+    stalled = bool(stalled_min is not None and stalled_min >= STALL_MIN and has_room)
+    return {
+        "waiting": waiting_n,
+        "room": room,
+        "alive": alive,
+        "safeMax": safe_max,
+        "stalledMin": stalled_min,
+        "stalled": stalled,
+        "note": ("🚦 発車待ちが%d件あるのに%s分発車していません（走行%d本／上限%s本）"
+                 % (waiting_n, stalled_min, alive, safe_max)) if stalled else "発車は正常です",
     }
 
 
