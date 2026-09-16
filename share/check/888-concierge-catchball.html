@@ -52,35 +52,33 @@
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-マイクを押しても会話にならない・Today's Pickの3曲にアクセスできない、という店主実害への対応。テキストチャットに「もっと」「他には」の継続語対応を追加し1往復で終わらせず話し続けられるようにした。音声検索の口(voiceConcierge.ts)にも死んだ動画を除外するフィルタを追加。実装はmainへ合流済みだが、Lovable「suspicious activity」公開ブロック（26件目の独立確認）により本番画面はまだ変わっていない。
+マイクを押しても会話にならない・Today's Pickの曲に手が届かない、という店主実害への対応。案内所のテキストチャットに『もっと』『他には』の継続語対応を追加し、1往復で終わらせず話し続けられるようにした。検索が見つからなかった時は黙って別のものを出さず『ぴったりのは見つからなかったけど、近いものを置いておくね』と正直に伝えるよう修正。音声検索の口にも死んだ動画を除外するフィルタを追加。実装はmainへ合流済みだが、Lovableの公開ブロックにより本番画面はまだ変わっていない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>28f1a7ff</b><span>会話継続語+深い検索フィルタのコミット</span></div>
-  <div class="num"><b>0件</b><span>本番配信JSの814/888番新規文字列(ブロック継続の証拠)</span></div>
-  <div class="num"><b>200</b><span>SupabaseのvoiceUsageLogテーブル存在確認(店主側マイグレーション適用済み)</span></div>
+  <div class="num"><b>3件</b><span>今回mainへ合流した修正コミット数</span></div>
+  <div class="num"><b>0件</b><span>新規tsc/eslintエラー</span></div>
+  <div class="num"><b>未反映</b><span>Lovable公開ブロック継続中</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainコミット(継続語対応+フィルタ)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/28f1a7ff" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/28f1a7ff</a></li>
-  <li><b>mainコミット(記録更新)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/c9ff3c80" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/c9ff3c80</a></li>
-  <li><b>KNOWN_ISSUES.md該当箇所</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md</a></li>
   <li><b>本番(まだ変わっていません)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>テキストチャットの継続語対応(もっと/他には)</td><td class="yes">実装・mainへpush済み</td></tr>
+<tr><td>検索0件時に正直に伝える文言</td><td class="yes">実装・mainへpush済み</td></tr>
 <tr><td>音声検索の死んだ動画除外</td><td class="yes">実装・mainへpush済み</td></tr>
-<tr><td>tsc/eslint(変更ファイルのみ)</td><td class="yes">新規エラー0</td></tr>
-<tr><td>Supabase voice_usage_logテーブル</td><td class="yes">店主側で適用済みを確認(以前は不在エラーだった)</td></tr>
-<tr><td>Lovable公開ブロック解除</td><td class="no">未解除(26件目の独立確認、店主のサポート問い合わせ待ち)</td></tr>
-<tr><td>本番でマイクを押して声で会話</td><td class="no">未達(公開ブロック+このサンドボックスにマイク/スピーカー無し)</td></tr>
+<tr><td>tsc/eslint(変更ファイル)</td><td class="yes">新規エラー0</td></tr>
+<tr><td>Lovable公開ブロック解除</td><td class="no">未解除。店主のサポート問い合わせ待ち</td></tr>
+<tr><td>本番でマイクを押して声で会話</td><td class="no">未達(本番未反映+作業環境にマイク/スピーカー無し)</td></tr>
 </table>
 
 <footer>
