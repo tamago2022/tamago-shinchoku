@@ -67,6 +67,12 @@ run_with_timeout() {
 
 echo "$(date '+%F %T') 心臓を起動しました（pid $$）" >> "$LOG"
 while :; do
+  # 2026-09-16：詰まり判定を auto_launch.log の更新（=実際に発車/回収があった時だけ書かれる）
+  # に頼っていたため、「走行0本で書くことが無いだけ」でも詰まっていると誤判定し、
+  # machine_status_push.sh が正常な心臓を何度も殺して立て直す事故が起きた
+  # （殺した拍子に子の auto_launcher.py が孤児化してロックを握ったまま残り、発車が止まった）。
+  # ループが回っている事実そのものを、何もしなくても毎周期touchするこのファイルで示す。
+  touch "$REPO/status/.heartbeat_alive" 2>/dev/null || true
   # 自分が正規の心臓でなくなっていたら（誰かが入れ直した）静かに退く
   CUR="$(cat "$PIDF" 2>/dev/null || true)"
   if [ -n "${CUR:-}" ] && [ "$CUR" != "$$" ]; then

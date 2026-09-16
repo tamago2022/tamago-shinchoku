@@ -2270,17 +2270,21 @@ def launch_one(item, q, alive, safe_max):
         subprocess.run(["git", "-C", repo, "worktree", "prune"], capture_output=True, timeout=20)
     except Exception:
         pass
+    # 2026-09-16：300秒×3回（最大15分）待って初めて失敗が分かる作りだったため、
+    #   worktree1本の発車失敗が丸ごと15分の空白になっていた（882/883/884/874番で実際に発生）。
+    #   ここで長く粘っても次の周回でどのみち再挑戦するだけなので、短く見切って次へ回す方が損が小さい。
+    WT_ADD_TIMEOUT = 90
     if not os.path.isdir(wt):
         try:
             subprocess.run(["git", "-C", repo, "worktree", "add", wt,
                             "-b", "claude/" + wt_name],
-                           check=True, capture_output=True, timeout=300)
+                           check=True, capture_output=True, timeout=WT_ADD_TIMEOUT)
         except Exception:
             # 2026-09-04：ブランチが既にある等で失敗する（exit 128）。既存ブランチに繋ぐ形で作り直す。
             try:
                 subprocess.run(["git", "-C", repo, "worktree", "add", wt,
                                 "claude/" + wt_name],
-                               check=True, capture_output=True, timeout=300)
+                               check=True, capture_output=True, timeout=WT_ADD_TIMEOUT)
             except Exception:
                 # それでもダメなら名前を変えて切る。ここで止まらない（止まると工場が止まる）
                 wt_name = wt_name + "-" + time.strftime("%H%M%S")
@@ -2288,7 +2292,7 @@ def launch_one(item, q, alive, safe_max):
                 try:
                     subprocess.run(["git", "-C", repo, "worktree", "add", wt,
                                     "-b", "claude/" + wt_name],
-                                   check=True, capture_output=True, timeout=300)
+                                   check=True, capture_output=True, timeout=WT_ADD_TIMEOUT)
                 except subprocess.CalledProcessError as e3:
                     err = (e3.stderr or b"").decode("utf-8", "ignore")[:300] if isinstance(e3.stderr, bytes) else str(e3.stderr)[:300]
                     log("worktree作成に失敗（3回試した） %s: %s" % (wt_name, err.replace("\n", " ")))

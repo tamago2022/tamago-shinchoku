@@ -9,8 +9,26 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 
 REPO="/Users/mac/Desktop/tamago-shinchoku"
 OUT="$REPO/status/machine.json"
-LOADSH="/Users/mac/Documents/AI作業/2026-09-02/スクリプト/machine_load.sh"
+LOADSH="$REPO/tools/machine_load.sh"
 mkdir -p "$REPO/status"
+
+# 2026-09-16：run_once()内の factory_status.py --write がタイムアウト無しで呼ばれていたため、
+# 重い状態下でこれ自体がハング(UN)すると、run_once()を含むこの便まるごと（＝心臓の生死を
+# 見直す処理も含めて）何十分も止まった。実測：29分ハング→その間ずっと心臓の再起動判定が
+# 走らず、心臓が落ちても誰も気づけなかった。ここで使うため早い位置に定義しておく
+# （下の方にある同名関数と役割は同じ・呼び出しは全て定義パース後なのでどちらでも動くが、
+# ここで先に定義して即使う）。
+run_with_timeout() {
+  local secs="$1"; shift
+  "$@" &
+  local cpid=$!
+  ( sleep "$secs" 2>/dev/null; kill -9 "$cpid" 2>/dev/null ) &
+  local watcher=$!
+  wait "$cpid" 2>/dev/null
+  local rc=$?
+  kill "$watcher" 2>/dev/null; wait "$watcher" 2>/dev/null
+  return $rc
+}
 
 # 1回の起動が約260秒に伸びたため、launchdの次の5分ティックと重なって二重起動しないようロックする
 LOCK="$REPO/status/.machine_status_push.lock"
@@ -59,16 +77,25 @@ fi
 # ---- 2026-09-06 00:16 **生きているのに詰まっている心臓を見つける。**----
 # プロセスが在るかどうかだけで見ていたので、**中で固まっていても「生きている」と判定して
 # 立て直さなかった。**実際 00:13 を最後に発車も受信箱も3分間止まったまま誰も気づかなかった。
-# 心臓は15秒ごとに必ず auto_launch.log へ何か書く。**3分以上伸びていなければ詰まっている。**
 # 中継所の生死を「外から叩いて確かめた」のと同じ考え方で、心臓も**仕事が進んでいるか**で見る。
+# 2026-09-16：判定材料を auto_launch.log（実際に発車/回収があった時だけ書かれる＝
+# 「走行0本で何もすることが無い」だけでも詰まっていると誤判定していた）から、
+# 心臓が毎周期・何もなくても必ずtouchする .heartbeat_alive に変更した。
+# 実害：この誤判定で正常な心臓を何度も殺し、殺した拍子に子（auto_launcher.py等）が
+# 孤児化してロックファイルを握ったまま残り、発車が14時間止まった（14時間工場停止事故）。
 if [ "$HB_ALIVE" = "1" ]; then
   NOW_S=$(date +%s)
-  LOG_S=$(stat -f %m "$REPO/status/auto_launch.log" 2>/dev/null || echo 0)
+  LOG_S=$(stat -f %m "$REPO/status/.heartbeat_alive" 2>/dev/null || echo 0)
   if [ "$(( NOW_S - LOG_S ))" -gt 180 ]; then
-    echo "$(date '+%F %T') 💤 心臓が$(( (NOW_S - LOG_S) / 60 ))分間なにも書いていません。詰まっているとみなして入れ直します" >> "$REPO/status/heartbeat.log"
+    echo "$(date '+%F %T') 💤 心臓が$(( (NOW_S - LOG_S) / 60 ))分間touchしていません。詰まっているとみなして入れ直します" >> "$REPO/status/heartbeat.log"
     pkill -f "tools/heartbeat.sh" >/dev/null 2>&1 || true
+    # 心臓本体だけでなく、その場で回っていた子（孤児化してロックを握り続ける原因）も一緒に片づける。
+    pkill -f "tools/auto_launcher.py" >/dev/null 2>&1 || true
+    pkill -f "tools/command_ingest.py" >/dev/null 2>&1 || true
     sleep 1
     pkill -9 -f "tools/heartbeat.sh" >/dev/null 2>&1 || true
+    pkill -9 -f "tools/auto_launcher.py" >/dev/null 2>&1 || true
+    pkill -9 -f "tools/command_ingest.py" >/dev/null 2>&1 || true
     rm -f "$HBPID" 2>/dev/null || true
     HB_ALIVE=0
   fi
@@ -97,7 +124,7 @@ fi
 run_once() {
 # 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
 # factory_status.py が失敗したら従来どおり machine_load.sh 単体で最低限のJSONを書く（止まらない）。
-if python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
+if run_with_timeout 90 python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
   :
 else
 LINE=$(bash "$LOADSH" 2>/dev/null || echo "")
@@ -464,17 +491,7 @@ LOOP_END=$(( $(date +%s) + 260 ))
 # 2026-09-12（776番）：heartbeat.sh と同じ保険をここにも入れる。この5分便の中でも
 #   auto_launcher.py/command_ingest.pyを直接呼んでいるため、心臓側だけ直しても
 #   この経路がハングすればやはり「詰まって見える」状態になりうる。
-run_with_timeout() {
-  local secs="$1"; shift
-  "$@" &
-  local cpid=$!
-  ( sleep "$secs" 2>/dev/null; kill -9 "$cpid" 2>/dev/null ) &
-  local watcher=$!
-  wait "$cpid" 2>/dev/null
-  local rc=$?
-  kill "$watcher" 2>/dev/null; wait "$watcher" 2>/dev/null
-  return $rc
-}
+# （run_with_timeout はファイル冒頭で定義済み・ここでは使うだけ）
 quick_tick() {
   run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"   >/dev/null 2>&1 || true
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py"  >/dev/null 2>&1 || true

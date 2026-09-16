@@ -37,7 +37,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 OUT = os.path.join(REPO, "status", "machine.json")
-LOADSH = "/Users/mac/Documents/AI作業/2026-09-02/スクリプト/machine_load.sh"
+LOADSH = os.path.join(HERE, "machine_load.sh")
 VAULT = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain"
 KANSHI = os.path.join(VAULT, ".claude", "hooks", "tamago_kanshi.py")
 
