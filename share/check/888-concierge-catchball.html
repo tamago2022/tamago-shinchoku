@@ -55,6 +55,10 @@
 店主実機報告「マイクを押しても会話にならない」の原因を特定：案内所の🎙️話すボタンがブラウザ内蔵のWeb Speech API任せで、Brave等では黙って死んでいた。案件814で作った本物のxAI Grok Realtime Voice（VoiceConciergeSession）へ繋ぎ変え、APIキー未設定時も黙って落ちず「今は声のご案内をお休み中」と伝わるようにした。実装・main合流は完了。<b>Lovableの公開だけが、店主対応待ちの既知プラットフォーム障害でブロックされていて本番にまだ出ていない</b>（コード側の問題ではない、29回以上の独立確認あり）。
 </div>
 
+<div class="note">
+<b>ついでに気づいたこと：</b>本番の案内所ページを調べたところ、今回直した🎙️話すボタンの少し下に、もう一つ「卵コンシェルジュに話しかけてみる」という<b>別の丸いボタン</b>が既にあり、こちらは既に本物のxAI Grok音声（今回私が繋いだのと同じ仕組み）に接続済みで本番に出ています。もしLovable側の環境変数に<code>XAI_API_KEY</code>を設定済みなら、公開ブロックとは無関係に<b>今すぐこの下のボタンだけ試せる可能性があります</b>（未設定ならこちらも「お休み中」と出るはずです）。
+</div>
+
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>1件</b><span>main合流した修正コミット(6b870636)</span></div>
@@ -73,12 +77,12 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>🎙️話すボタンをGrok Realtime Voiceへ接続</td><td class="yes">yes</td></tr>
-<tr><td>APIキー未設定時のフォールバック文言</td><td class="yes">yes</td></tr>
-<tr><td>tsc/eslint(変更ファイルのみ)</td><td class="yes">yes</td></tr>
-<tr><td>mainへpush(6b870636)</td><td class="yes">yes</td></tr>
-<tr><td>Lovable「公開」を押す</td><td class="yes">no</td></tr>
-<tr><td>本番で実際にマイクを押して声で会話</td><td class="yes">no</td></tr>
+<tr><td>🎙️話すボタンをGrok Realtime Voiceへ接続</td><td class="yes">実装済み・main合流済み</td></tr>
+<tr><td>APIキー未設定時のフォールバック文言</td><td class="yes">実装済み(黙って落ちない)</td></tr>
+<tr><td>tsc/eslint(変更ファイルのみ)</td><td class="yes">新規エラー0</td></tr>
+<tr><td>mainへpush</td><td class="yes">完了(6b870636)</td></tr>
+<tr><td>Lovable「公開」を押す</td><td class="no">ブロック継続で押せず(店主対応待ち)</td></tr>
+<tr><td>本番で実際にマイクを押して声で会話</td><td class="no">未達(本番未反映のため)</td></tr>
 </table>
 
 <footer>
