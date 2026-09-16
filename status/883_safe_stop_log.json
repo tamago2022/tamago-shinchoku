@@ -1,0 +1,24 @@
+{
+  "purpose": "案件#883 line_stamp_fill.mjsの安全停止(未ログイン時にフォームへ一切触れず停止する)を、3キャラ分すべて実機で確認した記録。フォーム入力ロジック自体(fillByLabel)はログイン後でしか検証できないため未検証のまま。",
+  "measured_at": "2026-09-16T19:00:00+09:00",
+  "cdp_url": "http://127.0.0.1:9224",
+  "login_check": { "state": "NO_CHROME", "detail": "9224番でChromeが起動していません" },
+  "fill_attempts": [
+    {
+      "slug": "rashikoru",
+      "state": "NO_CHROME",
+      "detail": "9224番でChromeが起動していません。たまごさんが tools/start_chrome_line_login.sh を実行しログインするまで、この先には進めません（ログインは本人にしかできない認証行為のため）。"
+    },
+    {
+      "slug": "peralino-usocchi",
+      "state": "NO_CHROME",
+      "detail": "9224番でChromeが起動していません。たまごさんが tools/start_chrome_line_login.sh を実行しログインするまで、この先には進めません（ログインは本人にしかできない認証行為のため）。"
+    },
+    {
+      "slug": "oniyome-chan",
+      "state": "NO_CHROME",
+      "detail": "9224番でChromeが起動していません。たまごさんが tools/start_chrome_line_login.sh を実行しログインするまで、この先には進めません（ログインは本人にしかできない認証行為のため）。"
+    }
+  ],
+  "conclusion": "3キャラとも、フォームへ一切触れずJSONで安全に停止することを実機確認した。これは「安全装置が機能すること」の証拠であり、「ログイン後のフォーム自動入力ロジック(fillByLabelの3戦略)が正しく動くこと」の証拠ではない。後者は未検証のまま。"
+}

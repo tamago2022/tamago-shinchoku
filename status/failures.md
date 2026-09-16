@@ -1016,3 +1016,22 @@
 - **症状**：status/.last_launch_at が46分更新されておらず、10分ルールに抵触しました。
 - **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
 - **日付**：2026-09-16 19:53
+
+
+---
+
+## 🚨緊急・879番で発見：joy-relief-stationのGitHub Actionsが課金上限で12時間以上全滅している
+
+- **症状**：`gh run list --repo tamago2022/joy-relief-station`の直近30件中22件が失敗。最古の失敗は2026-09-15 22:24（Tamago Branch Sweep）。原因は全て同一：「The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings」。案件#879用に新設した一度きり修正便（Tamago Once Fix Copy 879）もこれで失敗し、DBの犬カード修正が実行できていない。
+- **影響範囲**：Tamago Role Sweep（無人巡回）・Tamago Manager（管理職AI）・Tamago Task Ledger Sync・Quality Gate・Tamago Branch Sweepなど、joy-relief-station側の**定期自動化が軒並み12時間以上停止している**。これは案件#879単体の問題ではなく、リポジトリ横断でscheduled taskが機能不全になっている。
+- **対応（AI側では不可）**：GitHubの支払い方法の失敗、または利用上限の引き上げが必要。**店主本人がGitHub（tamago2022アカウント）の「Settings > Billing & plans」を確認する必要がある。**AI側にはこの操作を行う権限・手段が無い（確認義務③金銭に該当）。
+- **回避策**：ローカルにSUPABASE_SERVICE_ROLE_KEYが無いため、GH Actionsが使えない間はDBへの書き込み系の一度きり便は実行できない（読み取り専用の調査・修正案の準備までは可能）。
+- **日付**：2026-09-16 19:55
+
+## 883番：LINE Creators Market申請フォーム自動入力機、独立検品で1回目FAIL
+
+- **症状**：案件#883「LINE Creators Market申請フォームの自動入力機」の確認ページが、独立検品で1回目FAIL。ログイン後のフォーム自動入力ロジック（ラベル文言からinput/textareaを探す処理）を一度も実機で検証できていないのに、確認ページの日付行に「本番反映まで実測確認」と書いてしまい、未検証を検証済みのように報告した。
+- **原因**：ログイン後のフォーム自動入力ロジックは、たまごさん本人のログインなしには実機検証できないという構造的制約があるのに、その手前で「反映」と誇大に書いた。
+- **対応（直し方）**：ログイン不要な範囲での検証（3キャラ分＝rashikoru／peralino-usocchi／oniyome-chanの安全停止を実機確認したログ`status/883_safe_stop_log.json`、creator.line.meトップページのDOM下調べ）を追加し、未検証部分は確認ページの表・数字・文章すべてで「未検証」と明記した。さらに調査の過程で、LINE Creators Market利用規約12.11条（BOT・技術的手段による不正操作の禁止）・4.6条（違反時アカウント削除・復旧不可）により、この自動化が規約違反＝アカウント削除リスクを伴う可能性があると判明したため、確認ページに警告（`⚠️実行前に必ず読んでほしいこと`）を追加し、実行前にLINE公式（`status/791_email_draft.md`の下書き）へ問い合わせるよう推奨する内容に変更した。
+- **教訓**：「本人ログインでしか進まない壁」の手前でできる検証を尽くす前に「反映」と言ってはいけない。また、自動化の実装を進める前に、対象サービスの利用規約（BOT操作禁止条項の有無）を先に確認する癖をつける。
+- **日付**：2026-09-16

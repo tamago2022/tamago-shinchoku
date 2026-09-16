@@ -17,6 +17,18 @@
  *     いない）ため、ラベルテキストに基づく複数戦略のフォールバックで探す。
  *     見つからなかった項目は失敗として記録し、黙って諦めない。
  *
+ * 2026-09-16 是正（案件#883・1回目FAIL対応）で追加調査したこと：
+ *   ログイン不要な https://creator.line.me/ja/ トップページをheadless Chromeで
+ *   一度だけ開きDOM構造を覗いた（742/769番と同じ安全方式：一時プロファイル→
+ *   CDP接続→終了後SIGKILL＆プロファイル削除）。結果、トップページは
+ *   #root/#next等の一般的なSPAルートIDを持たず、チェックボックス1個以外に
+ *   input/textareaが存在しなかった（＝申請フォームはログイン後にしか描画され
+ *   ない）。つまりトップページの下調べでは fillByLabel の3戦略が的外れで
+ *   ないかを確認できなかった。これは「調べたが分からなかった」という正直な
+ *   結果であり、フォーム自体の検証にはたまごさん本人のログインが必須という
+ *   結論を裏付けるものだった。下の pageStats（総input/textarea数）は、
+ *   ログイン後に初めて実行された時、原因の切り分けをしやすくするために追加。
+ *
  * 使い方：
  *   node tools/line_stamp_fill.mjs <slug> [--shot <出力png絶対パス>] [--plan A|B]
  *   例）node tools/line_stamp_fill.mjs rashikoru --shot /tmp/rashikoru-filled.png
@@ -87,13 +99,18 @@ async function findLoginState(ctx) {
 // 戦略2: テキストを含む要素の直後の input/textarea 兄弟
 // 戦略3: placeholder一致
 async function fillByLabel(page, labels, value) {
+  // 失敗時の切り分け用に、どのラベル候補が何個見つかったか（strategy別）を残す。
+  const diagnostics = [];
   for (const label of labels) {
+    const perLabel = { label, getByLabelCount: 0, textMatchFound: false, placeholderCount: 0 };
     // 戦略1
     try {
       const loc = page.getByLabel(label, { exact: false });
-      if ((await loc.count()) > 0) {
+      const count = await loc.count();
+      perLabel.getByLabelCount = count;
+      if (count > 0) {
         await loc.first().fill(value);
-        return { ok: true, strategy: "getByLabel", label };
+        return { ok: true, strategy: "getByLabel", label, diagnostics: [...diagnostics, perLabel] };
       }
     } catch {
       /* 次の戦略へ */
@@ -109,9 +126,10 @@ async function fillByLabel(page, labels, value) {
         return scope ? scope.querySelector("input, textarea") : null;
       }, label);
       const el = handle.asElement();
+      perLabel.textMatchFound = !!el;
       if (el) {
         await el.fill(value);
-        return { ok: true, strategy: "sibling", label };
+        return { ok: true, strategy: "sibling", label, diagnostics: [...diagnostics, perLabel] };
       }
     } catch {
       /* 次の戦略へ */
@@ -119,15 +137,31 @@ async function fillByLabel(page, labels, value) {
     // 戦略3: placeholder
     try {
       const loc = page.locator(`input[placeholder*="${label}"], textarea[placeholder*="${label}"]`);
-      if ((await loc.count()) > 0) {
+      const count = await loc.count();
+      perLabel.placeholderCount = count;
+      if (count > 0) {
         await loc.first().fill(value);
-        return { ok: true, strategy: "placeholder", label };
+        return { ok: true, strategy: "placeholder", label, diagnostics: [...diagnostics, perLabel] };
       }
     } catch {
       /* 諦める */
     }
+    diagnostics.push(perLabel);
   }
-  return { ok: false };
+  return { ok: false, diagnostics };
+}
+
+// 失敗時、ページ全体のinput/textarea総数を取得（「ラベルが見つからない」のか
+// 「フォームがまだ描画されていない」のかの切り分け用）。
+async function pageFieldStats(page) {
+  try {
+    return await page.evaluate(() => ({
+      inputCount: document.querySelectorAll("input").length,
+      textareaCount: document.querySelectorAll("textarea").length,
+    }));
+  } catch {
+    return { inputCount: null, textareaCount: null };
+  }
 }
 
 async function main() {
@@ -185,8 +219,18 @@ async function main() {
       }
       const result = await fillByLabel(page, f.labels, f.value);
       if (result.ok) filled.push({ field: f.key, strategy: result.strategy, label: result.label });
-      else failed.push({ field: f.key, reason: "ラベルに一致する入力欄が見つからなかった", triedLabels: f.labels });
+      else
+        failed.push({
+          field: f.key,
+          reason: "ラベルに一致する入力欄が見つからなかった",
+          triedLabels: f.labels,
+          diagnostics: result.diagnostics,
+        });
     }
+
+    // 失敗が1件でもあれば、ページ全体のinput/textarea総数も添える
+    // （「ラベルが違う」のか「フォームがまだ描画されていない」のかの切り分け用）。
+    const pageStats = failed.length > 0 ? await pageFieldStats(page) : null;
 
     let screenshot = null;
     if (shot) {
@@ -201,6 +245,7 @@ async function main() {
       url: page.url(),
       filled,
       failed,
+      pageStats,
       screenshot,
       note: "Requestボタンは押していません（このスクリプトの責任範囲外）。",
     }, null, 0));
