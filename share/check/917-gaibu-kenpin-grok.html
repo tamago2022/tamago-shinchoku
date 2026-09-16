@@ -51,8 +51,9 @@
 <h1>#917 917番：外部AI(Grok)検品を関所の最後に追加</h1>
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-関所(sekisho)の最後に関門8として tools/gaibu_kenpin.py を追加。依頼文・成果物URL・本文・スクショの3点セットをxAI Grokへ渡し「たまごさんに見せていい状態か」をOK/NGで判定させる。自分(Claude)だけで自分の成果物に丸を付けない仕組み。<b>xAIチーム(gokigen-voice)にクレジットが無く(HTTP403 permission-denied)、実際のOK/NG判定はまだ確認できていない</b>。ロジック自体はモックでNG伝播・OK伝播・コスト帳簿記録・日次上限SKIPの4項目を検証済み。クレジットが入り次第、次回のsekisho実行で自動的に本物の判定が動く設計。
+前回(1回目)は確認ページに店主専用のログイン必須リンク(console.x.ai)をそのまま貼っており、機械検品がそれを開こうとして403で弾かれた。今回はそのリンクを押せるリンク一覧から外し、テキスト説明に変更。あわせて実装内容を1行で：関所(sekisho)の最後に関門8として tools/gaibu_kenpin.py を追加。依頼文・成果物URL・本文・スクショの3点セットをxAI Grokへ渡し「たまごさんに見せていい状態か」をOK/NGで判定させる、自分(Claude)だけで自分の成果物に丸を付けない仕組み。<b>xAIチーム(gokigen-voice)にクレジットが無く(HTTP403 permission-denied、実機で再確認済み)、実際のOK/NG判定はまだ確認できていない</b>。ロジック自体はモックでNG伝播・OK伝播・コスト帳簿記録・日次上限SKIPの4項目を検証済み。クレジットが入り次第、次回のsekisho実行で自動的に本物の判定が動く設計。
 </div>
 
 <h2>② 数字</h2>
@@ -92,7 +93,7 @@ cap=1で確認 -> ok=False reason=本日の呼び出し回数が上限(1回)に�
   <li><b>実装：gaibu_kenpin.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py</a></li>
   <li><b>統合：sekisho.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/sekisho.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/sekisho.py</a></li>
   <li><b>スクショ取得：gaibu_kenpin_shot.mjs</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin_shot.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin_shot.mjs</a></li>
-  <li><b>xAIクレジット購入(店主のみ操作可)</b><a href="https://console.x.ai/team/3e0b4d97-4d0d-458e-9f22-8758b9d65f2b" target="_blank" rel="noopener">https://console.x.ai/team/3e0b4d97-4d0d-458e-9f22-8758b9d65f2b</a></li>
+  <li><b>xAIクレジット購入(店主のみ操作可・ログイン必須のためリンク化せず)</b>console.x.ai にログインし、チーム「gokigen-voice」でクレジットを購入すると次回の関門8実行から自動でOK/NG判定が動きます。</li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
