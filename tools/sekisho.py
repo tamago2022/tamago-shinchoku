@@ -212,7 +212,7 @@ def check_number_claims(html_text, report_text=""):
 
     if not measured_nums:
         return False, (
-            "px/%の数字を主張していますが（%s）、実測した跡（「実測」の記載や<pre>/<code>の生データ）"
+            "px/%%の数字を主張していますが（%s）、実測した跡（「実測」の記載や<pre>/<code>の生データ）"
             "が見つかりません。実際に測った数字を書いてください"
             % ", ".join(_fmt_num(v) for v in claim_nums[:5])
         )
