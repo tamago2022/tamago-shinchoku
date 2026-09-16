@@ -170,6 +170,22 @@ def check_click_and_console(url, timeout=45):
 
 NUM_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(px|%|％)")
 EVIDENCE_KEYWORDS = ("実測", "measured", "getBoundingClientRect", "computed")
+# キーワードのすぐ後ろに「:」「：」「→」のどれかが来て、その直後にある数字だけを
+# 「実測の跡」とみなす（この形式は本セッションの指示文自身が「実測: ...」の形で
+# 書けと명示している標準フォーマット）。
+# ★2026-09-17・2回目の修正：1回目の修正（250文字→40文字の距離制限）だけでは
+#   まだ不十分だった。確認ページの型（_template.html）は日付行の直後に本文が
+#   続く構造で、日付行の定型文「…本番(GitHub Pages)反映まで実測確認」に含まれる
+#   「実測」の一語から、本文の無関係な数字主張までわずか数文字しか離れておらず
+#   （実測確認 余白は上17px）、距離だけでは区別できなかった（#898確認ページ生成の
+#   自己テストで実際に再現した）。「実測確認」は測定“結果”ではなく測定“工程”の
+#   説明であり、値そのものが直後に来ない。コロン／矢印という明示的な区切りを
+#   必須にすることで、地の文の「実測」と、値を報告する「実測: ...」を区別する。
+EVIDENCE_NUM_RE = re.compile(
+    r"(?:%s)[^0-9:：→]{0,10}[:：→]\s*(\d+(?:\.\d+)?)\s*(px|%%|％)"
+    % "|".join(re.escape(k) for k in EVIDENCE_KEYWORDS),
+    re.IGNORECASE,
+)
 
 
 def check_number_claims(html_text, report_text=""):
@@ -190,14 +206,11 @@ def check_number_claims(html_text, report_text=""):
     for ct in code_texts:
         measured_nums += [float(v) for v, _u in NUM_RE.findall(ct)]
 
-    # 本文中で「実測」等のキーワードから250文字以内にある数字も実測扱い
-    evidence_ranges = []
-    for kw in EVIDENCE_KEYWORDS:
-        for m in re.finditer(re.escape(kw), plain):
-            evidence_ranges.append((m.start(), m.start() + 250))
+    # キーワードに近接した数字（「実測: 9.6px」等）だけを実測扱いにする
+    evidence_spans = [m.span(1) for m in EVIDENCE_NUM_RE.finditer(plain)]
 
     def _in_evidence(pos):
-        return any(a <= pos <= b for a, b in evidence_ranges)
+        return any(a <= pos < b for a, b in evidence_spans)
 
     claim_nums = []
     for m in NUM_RE.finditer(plain):

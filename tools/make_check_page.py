@@ -45,6 +45,9 @@ CHECK_DIR = os.path.join(REPO, "share", "check")
 TEMPLATE_PATH = os.path.join(CHECK_DIR, "_template.html")
 PAGES_BASE = "https://tamago2022.github.io/tamago-shinchoku/share/check/"
 
+sys.path.insert(0, HERE)
+import sekisho  # noqa: E402  案件#898・再設計：確認ページが生まれる瞬間に関所(sekisho)を通す
+
 
 def esc(s):
     return html.escape(str(s), quote=True)
@@ -216,6 +219,16 @@ def main():
             "（鬼監督の機械検品③がimg無しを問答無用でFAILにするため、事前に防ぐ）。"
         ),
     )
+    ap.add_argument(
+        "--allow-unmeasured-numbers",
+        help=(
+            "px/%%の数字を主張しているが実測の跡（「実測」の記載や<pre>/<code>の生データ）が"
+            "無いページを、理由付きで明示的に書き出す（例: '--allow-unmeasured-numbers "
+            "\"件数の話でありpxの実測は不要\"'）。指定しない限り、関所(sekisho)が"
+            "実測なし・実測と食い違いを検出した時点で書き出しを拒否する"
+            "（案件#898：2026-09-16に「上17px」と書いたが実測は9.6pxだった事故の再発防止）。"
+        ),
+    )
     args = ap.parse_args()
 
     cfg = {}
@@ -310,6 +323,27 @@ def main():
         out_path = os.path.join(REPO, out_path)
 
     html_out = render(cfg)
+
+    # 案件#898・再設計：確認ページが「生まれる瞬間」に関所(sekisho)を通す。
+    # 報告の手前ではなくここで止めることで、Dispatchが関所コマンドを呼び忘れても、
+    # share/check/ に実測の跡が無い数字主張のページがそもそも存在できなくなる
+    # （2026-09-16「上17px」と書いたが実測は9.6pxだった事故と同型の穴を、
+    #  ページの発生源そのもので塞ぐ）。
+    passed, reasons, _detail = sekisho.gate_local(html_out)
+    if not passed:
+        allow_reason = args.allow_unmeasured_numbers
+        if not allow_reason:
+            print(
+                "エラー: 関所(sekisho)がこのページを通しませんでした。理由：%s\n"
+                "実際に測った生の数字を<pre>か「実測: ...」の形で本文に含めるか、"
+                "本当に実測不要な事情がある時だけ --allow-unmeasured-numbers \"理由\" を付けてください。"
+                "（このページは書き出されていません）" % " ／ ".join(reasons),
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        print("⚠️ 関所(sekisho)FAILを理由付きで許可して書き出します：%s（理由：%s）"
+              % (" ／ ".join(reasons), allow_reason))
+
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html_out)
 
