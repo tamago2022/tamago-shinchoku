@@ -52,26 +52,32 @@
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-本番(joy-relief-station.lovable.app)は現在まだ旧方式(TanStack Start createServerFnがnode:process.envのXAI_API_KEYを読む)で動作中(cover-guide-DIRwwIMg.jsに音声コード配信済みを実測確認、voice-session文字列は0件=Supabase移設版はまだ本番未反映)。Lovable公式ドキュメント(docs.lovable.dev/features/build-secrets)に「Build secrets are available on Enterprise plans」と明記されており、たまごさんのワークスペースはこの画面に到達できない(実測済み)。この経路でしかprocess.envへ本番サーバー側の値を注入できないため、env.XAI_API_KEYは本番で未設定=空である可能性が極めて高い。ただし注意点として、ブラウザ側コードはserverFn呼び出しの例外(catch)時も同一の「not_configured」表示文言を出す実装のため、UIの文言だけでは『本物のnot_configuredレスポンス』と『呼び出し自体の失敗』を100%は区別できない。いずれにせよ行き着く先は同じ壁(Lovableのサーバー側環境変数注入手段がEnterprise限定で使えない)。同じ907番の先行セッションが既にこの壁を回避する修正(XAI_API_KEYをSupabase Edge Function側へ移設)をコードとして実装済み(コミット4ebf1662等)だが、まだmainへ未マージ・本番未反映。
+本番(joy-relief-station.lovable.app)がnot_configuredを返す理由を再調査。前回セッションは『XAI_API_KEYはLovableのBuild secrets(Enterpriseプラン限定)でしか設定できない』という前提でSupabase Edge Functionへ移設する対応をしたが、この前提は誤りだった可能性が高いと判明した。Lovable公式ドキュメント(docs.lovable.dev/features/secrets)を実際に読んだところ、OPENAI_API_KEYやSTRIPE_SECRET_KEYのようなランタイムAPIキーは『Secrets』(More→Cloud→Secrets、全プラン対応・Enterprise不要)に置くもので、Enterprise限定なのは別機能の『Build secrets』(npmトークン等ビルド時専用)だけだった。env.XAI_API_KEYが空であること自体は事実だが、『Enterpriseで無理』という壁は無く、正しい画面(Secrets)にまだ入力されていないだけの可能性が高い。今回はコードを直していない・調査結果のみ。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>Enterprise限定</b><span>Lovable公式docs:Build secrets</span></div>
-  <div class="num"><b>0件</b><span>本番JS内voice-session文字列(Supabase移設は未反映)</span></div>
-  <div class="num"><b>1件</b><span>本番JS内agent_rLMJbIHgmw15s3NX(音声コード自体は配信済み)</span></div>
+  <div class="num"><b>2件中2件</b><span>公式ドキュメントで実際に文言を確認できたページ数</span></div>
+  <div class="num"><b>Enterprise限定=1機能</b><span>Build secretsのみ。Secrets(Cloud)は全プラン対応と公式記載</span></div>
+  <div class="num"><b>0件</b><span>本番JS内voice-session文字列(前回実測を再確認・変化なし=直していない証拠)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>Lovable公式:Build secrets</b><a href="https://docs.lovable.dev/features/build-secrets" target="_blank" rel="noopener">https://docs.lovable.dev/features/build-secrets</a></li>
-  <li><b>本番の案内所(cover-guide)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
-  <li><b>先行修正コミット(未マージ)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/4ebf16626e8ddabe394f34c5ee587b4953c4147d" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/4ebf16626e8ddabe394f34c5ee587b4953c4147d</a></li>
+  <li><b>Lovable公式:Secrets(新しい発見の核心)</b><a href="https://docs.lovable.dev/features/secrets" target="_blank" rel="noopener">https://docs.lovable.dev/features/secrets</a></li>
+  <li><b>Lovable公式:Build secrets(前回の根拠・別機能と判明)</b><a href="https://docs.lovable.dev/features/build-secrets" target="_blank" rel="noopener">https://docs.lovable.dev/features/build-secrets</a></li>
+  <li><b>本番の案内所(まだnot_configuredのまま・未修正)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>OPENAI_API_KEY等のランタイムAPIキーの置き場所はEnterprise限定か</td><td class="no">いいえ(Secrets=全プラン対応)</td></tr>
+<tr><td>Enterprise限定なのはBuild secrets(npmトークン等ビルド時専用)のみか</td><td class="yes">はい</td></tr>
+<tr><td>今回コードを変更したか</td><td class="no">していない(調査のみ)</td></tr>
+</table>
 
 <footer>
 このページは #907 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
