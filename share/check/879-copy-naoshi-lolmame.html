@@ -52,13 +52,14 @@
 <div class="date">2026-09-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-<p><b>対象</b>：X @lolmame318「この犬本当にすき」の犬カード。</p><p><b>直す前</b><br>タイトル：<code>愛嬌たっぷりな犬が一生懸命に動きを見せる様子</code><br>コピー：<code>投稿者が思わず「本当にすき」とこぼしてしまうほど魅力的な犬の姿。その一挙手一投足から目が離せなくなるような、愛くるしい瞬間が収められています。</code></p><p>→ 元投稿の一言だけから想像で書かれていて、動画の中身と違っていた（実際は兄弟が取っ組み合いをしていて犬が困っている場面）。</p><p><b>直した後</b><br>タイトル：<code>兄弟の取っ組み合いに巻き込まれ、犬だけ本気で困り顔</code><br>コピー：<code>ソファの上で兄弟が本気の取っ組み合いを始めた瞬間、逃げ場をなくしたのは白い犬。耳を伏せてじっと固まり、こっちを見つめる目がなんとも言えない。周りは大騒ぎなのに犬だけ状況についていけていない——そのギャップに笑ってしまう一本。</code></p><p>実際にyt-dlpで動画をダウンロードし、ffmpegでフレームを抜いて目視確認した上で書き直した（下の3枚がその時に抜いたフレーム）。</p>
+<p><b>対象</b>：X @lolmame318「この犬本当にすき」の犬カード。</p><p><b>直す前</b><br>タイトル：<code>愛嬌たっぷりな犬が一生懸命に動きを見せる様子</code><br>コピー：<code>投稿者が思わず「本当にすき」とこぼしてしまうほど魅力的な犬の姿。その一挙手一投足から目が離せなくなるような、愛くるしい瞬間が収められています。</code></p><p>→ 元投稿の一言だけから想像で書かれていて、動画の中身と違っていた（実際は兄弟が取っ組み合いをしていて犬が困っている場面）。</p><p><b>直した後（コードはmain合流済み）</b><br>タイトル：<code>兄弟の取っ組み合いに巻き込まれ、犬だけ本気で困り顔</code><br>コピー：<code>ソファの上で兄弟が本気の取っ組み合いを始めた瞬間、逃げ場をなくしたのは白い犬。耳を伏せてじっと固まり、こっちを見つめる目がなんとも言えない。周りは大騒ぎなのに犬だけ状況についていけていない——そのギャップに笑ってしまう一本。</code></p><p>実際にyt-dlpで動画をダウンロードし、ffmpegでフレームを抜いて目視確認した上で書き直した（下の3枚がその時に抜いたフレーム）。</p><p><b>⚠まだ本番には出ていません</b>：DB更新はGitHub Actionsの一度きり便で実行する設計だが、joy-relief-station側のGitHub Actionsが「支払いが失敗／利用上限」で12時間以上リポジトリ全体停止中（直近30件中22件失敗、他の定期自動化も同様に停止）。店主がGitHubのBilling設定を復旧すれば、push済みの修正便が自動的に走ってDB更新→本番の棚ページに反映される（Lovableの公開ボタンとは無関係）。</p>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>1件</b><span>今回直したカード数</span></div>
   <div class="num"><b>5枚</b><span>抜いたフレーム枚数</span></div>
+  <div class="num"><b>22/30</b><span>直近のGH Actions失敗数(課金停止)</span></div>
 </div>
 
 <h2>実際に抜いたフレーム（これを見てから書き直した）</h2>
@@ -70,16 +71,17 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>棚のページ（本番・修正反映先）</b><a href="https://joy-relief-station.lovable.app/shelf/cute/inu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/inu</a></li>
+  <li><b>棚のページ（本番・課金復旧後に反映）</b><a href="https://joy-relief-station.lovable.app/shelf/cute/inu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/inu</a></li>
   <li><b>元のX投稿</b><a href="https://x.com/lolmame318/status/2099798415844745400" target="_blank" rel="noopener">https://x.com/lolmame318/status/2099798415844745400</a></li>
   <li><b>修正スクリプト</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/fix-copy-879-lolmame-once.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/fix-copy-879-lolmame-once.mjs</a></li>
   <li><b>動画未視聴を防ぐ仕組み(フレーム証跡ゲート)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/require-frame-evidence.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/require-frame-evidence.mjs</a></li>
+  <li><b>GH Actions実行状況</b><a href="https://github.com/tamago2022/joy-relief-station/actions" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/actions</a></li>
 </ul>
 
 
 
 <footer>
-mainへpush→GitHub Actions一度きり便がDBを更新。Supabaseの内容がそのまま棚ページに出るためLovableの公開ボタンとは無関係に反映される。
+mainへpush済み。GitHub Actionsの課金が復旧すれば一度きり便が自動でDBを更新し、Lovableの公開ボタンを押さなくても本番の棚ページに反映される。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
