@@ -49,19 +49,25 @@ window.SHINCHOKU = {
   // ここは実測値を店主に見えるところへ1行出すための表示用の要約（renderPageWeightBar()）。
   // 数字はmainへのpush直後にCIが自動生成するbaseline(scripts/perf-budget.json)から手で転記する。
   pageWeight: {
-    updatedAt: "2026-09-17T01:40:00+09:00",
-    status: "baseline_pending",
-    statusNote: "CI(.github/workflows/quality-gate.yml)がmainへのpush時に自動でbaselineを作る仕組みを" +
-                "今回投入。実測値の反映(mainへの自動commit)を待っている段階。反映され次第pages以下を実数へ更新する。",
-    totalGzipKB: null,
+    updatedAt: "2026-09-17T03:44:00+09:00",
+    status: "measured",
+    statusNote: "CIのmainへのpush時の自動baseline生成は、893番と無関係な既存の仕入れ検品エラー" +
+                "（youtubeIdMap.generated.tsのずれ1件・動画IDがPENDINGのまま13件）でBuildへ" +
+                "到達できておらず未実行（原因は.claude/PENDING_DECISIONS.md案件893番に記録）。" +
+                "そのためnpm install/buildが通るローカル環境で実ビルドし、手動でbaselineを" +
+                "確定してmainへコミット(scripts/perf-budget.json)した。1.1MBのダミーJSを" +
+                "足して再計測しCIが落ちる(exit 1)ことも実地確認済み。案内所（/cover-guide）が" +
+                "2.6MB(gzip後)と突出して重いが、これは既存の実態を上限として固定したもので" +
+                "今回悪化させたものではない（減らす作業は別タスク）。",
+    totalGzipKB: 3988.9,
     pages: {
-      top: { label: "トップ（/）", gzipKB: null },
-      song: { label: "曲ページ（/room/card/$slug）", gzipKB: null },
-      shelfList: { label: "棚一覧（/world/$worldId）", gzipKB: null },
-      guide: { label: "案内所（/cover-guide）", gzipKB: null }
+      top: { label: "トップ（/）", gzipKB: 896.0 },
+      song: { label: "曲ページ（/room/card/$slug）", gzipKB: 5.4 },
+      shelfList: { label: "棚一覧（/world/$worldId）", gzipKB: 5.0 },
+      guide: { label: "案内所（/cover-guide）", gzipKB: 2615.2 }
     },
     ciUrl: "https://github.com/tamago2022/joy-relief-station/actions/workflows/quality-gate.yml",
-    checkPageUrl: "share/check/893-page-weight.html"
+    checkPageUrl: "share/check/893-page-weight-ci.html"
   },
 
   // 626番（2026-09-07）：support@anthropic.comへ送った問い合わせの返信を1日1回チェックする見張り。
