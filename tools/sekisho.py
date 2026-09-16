@@ -251,6 +251,45 @@ def record_result(n, passed, reasons):
     _record(n, passed, reasons or [])
 
 
+def gate_local(html_text, report_text="", what_text=""):
+    """★898番・再設計（検品NG後の再実装、2026-09-17）：
+    URLを取りに行かず、手元のHTML文字列だけで判定する版。
+
+    1回目の実装は「報告の手前」だけを塞いでおり、Dispatch自身が直接発言する
+    経路（会話でそのまま結果を伝える）はプロンプト頼みのままでコードで強制
+    できていなかった（検品指摘・2026-09-17 04:43）。
+
+    そこで「報告の手前」ではなく「confirmページが生まれる瞬間」
+    （tools/make_check_page.py の書き出し直前）と「pushされる瞬間」
+    （.githooks/pre-push）の2箇所に、この関数を直接差し込む。
+    これなら share/check/ に存在するファイル・origin/main に乗ったコミットは
+    すでにこの関門を通ったものしかあり得ず、「呼び忘れたら素通しになる」穴が
+    構造的に無くなる。
+
+    戻り値: (passed: bool, reasons: list[str], detail: dict)"""
+    reasons = []
+    detail = {}
+
+    ok, reason = check_number_claims(html_text, report_text)
+    detail["5_number_claims"] = reason
+    if not ok:
+        reasons.append(reason)
+
+    ok, reason = check_design_rules(html_text)
+    detail["6_design_rules"] = reason
+    if not ok:
+        reasons.append(reason)
+
+    if what_text:
+        ok, reason, _missing = check_acceptance_lines(what_text, report_text, html_text)
+        detail["7_acceptance_lines"] = reason
+        if not ok:
+            reasons.append(reason)
+
+    passed = not reasons
+    return passed, reasons, detail
+
+
 # ---------------------------------------------------------------------------
 # 関門6：designRules（仕組み①の設定ファイル）
 # ---------------------------------------------------------------------------
@@ -460,6 +499,11 @@ def main():
     ap.add_argument("--what-file", default=None, help="依頼文（合格条件を含む）のファイルパス")
     ap.add_argument("--skip-click", action="store_true", help="触る検品(headless Chrome)を省略する")
     ap.add_argument("--timeout", type=int, default=10)
+    ap.add_argument(
+        "--local-file", default=None,
+        help="★898番再設計：URLを取りに行かず、手元のHTMLファイルをそのまま関所にかける"
+             "（make_check_page.pyの書き出し直前・.githooks/pre-pushのpush直前から使う）",
+    )
     args = ap.parse_args()
 
     report_text = args.report or ""
@@ -468,6 +512,20 @@ def main():
     what_text = ""
     if args.what_file and os.path.exists(args.what_file):
         what_text = io.open(args.what_file, encoding="utf-8", errors="ignore").read()
+
+    if args.local_file:
+        html_text = io.open(args.local_file, encoding="utf-8", errors="ignore").read()
+        passed, reasons, detail = gate_local(
+            html_text, report_text=report_text, what_text=what_text,
+        )
+        _record(args.n, passed, reasons)
+        print(json.dumps(detail, ensure_ascii=False, indent=1))
+        if passed:
+            print("SEKISHO_RESULT: PASS - 全関門を通過しました（ローカル判定）")
+            sys.exit(0)
+        else:
+            print("SEKISHO_RESULT: FAIL - %s" % " ／ ".join(reasons))
+            sys.exit(1)
 
     passed, reasons, detail = gate(
         n=args.n, url=args.url, check_url=args.check_url,
