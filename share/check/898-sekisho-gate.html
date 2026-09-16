@@ -57,8 +57,8 @@
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3/3</b><span>自己テスト合格(嘘の数字→FAIL・一致→PASS・404→FAIL)</span></div>
-  <div class="num"><b>3回</b><span>連続失敗でREPEATED_UNFIXED.md＋dispatch_outboxへ自動エスカレーション</span></div>
+  <div class="num"><b>3/3</b><span>自己テスト合格件数</span></div>
+  <div class="num"><b>3回</b><span>連続失敗でREPEATED_UNFIXED.mdへ自動エスカレーション</span></div>
 </div>
 
 
@@ -73,10 +73,10 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>嘘の数字(上17px・実測9.6px埋め込み)</td><td class="yes">SEKISHO_RESULT: FAIL(数字の食い違いを検出)</td></tr>
-<tr><td>数字が一致するページ</td><td class="yes">SEKISHO_RESULT: PASS</td></tr>
-<tr><td>存在しないURL(404)</td><td class="yes">SEKISHO_RESULT: FAIL(ページが開けません)</td></tr>
-<tr><td>同じ番号で3回連続FAIL</td><td class="yes">REPEATED_UNFIXED.md+dispatch_outbox.jsonlに追記</td></tr>
+<tr><td>確認ページの数字が主張とズレているケースを再現</td><td class="yes">SEKISHO_RESULT: FAILで検出</td></tr>
+<tr><td>確認ページの数字が主張と一致するケースを再現</td><td class="yes">SEKISHO_RESULT: PASS</td></tr>
+<tr><td>存在しないURL(404)を再現</td><td class="yes">SEKISHO_RESULT: FAILで検出</td></tr>
+<tr><td>同じ番号で3回連続FAILを再現</td><td class="yes">REPEATED_UNFIXED.mdとdispatch_outbox.jsonlに自動追記</td></tr>
 </table>
 
 <footer>
