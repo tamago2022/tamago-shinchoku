@@ -284,9 +284,12 @@ def _self_heal_launch_silence(silence_min):
             actions.append("心臓の立て直しを試みましたが失敗: %s" % str(e)[:100])
     else:
         try:
+            # 2026-09-17（894番）：高負荷下（実機実測 load 10.9・スワップ6.9GB）で
+            # launchctl kickstart 自体が10秒でタイムアウトすることを確認した
+            # （launchdへの応答も遅れるほどの負荷では10秒は短すぎる）。20秒へ延ばす。
             subprocess.run(
                 ["launchctl", "kickstart", "-k", "gui/%d/com.tamago.machine-status" % os.getuid()],
-                capture_output=True, timeout=10,
+                capture_output=True, timeout=20,
             )
             actions.append("心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました")
         except Exception as e:

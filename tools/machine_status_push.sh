@@ -31,9 +31,26 @@ run_with_timeout() {
 }
 
 # 1回の起動が約260秒に伸びたため、launchdの次の5分ティックと重なって二重起動しないようロックする
+# 2026-09-17（894番）：「プロセスが生きているか」だけで門前払いしていたため、前のインスタンスが
+# 高負荷（実機実測：load 10.9・スワップ6.9GB）で詰まったまま何分も居座ると、後続の便が
+# 5分おきに毎回すぐ諦めて終了し続け、心臓の生死判定・復旧チャンス（この便の冒頭にある）
+# 自体が何分も回ってこなくなる事故を実機で確認した（心臓を意図的に止めるテストで、
+# 通常なら約260秒で終わるはずのこの便が18分以上動かなかった）。
+# 生きているだけでなく、ロックの経過時間も見る：420秒（7分。正常な1回の巡回は約260秒
+# なので十分な余裕）を超えて残っていたら「詰まっている」とみなし、前のインスタンスを
+# 片づけて自分がロックを取り直す（門前払いを続けない＝止まった瞬間に自分で立て直す）。
 LOCK="$REPO/status/.machine_status_push.lock"
-if [ -f "$LOCK" ] && kill -0 "$(cat "$LOCK" 2>/dev/null)" 2>/dev/null; then
-  exit 0
+if [ -f "$LOCK" ]; then
+  LOCK_PID="$(cat "$LOCK" 2>/dev/null || true)"
+  LOCK_AGE=$(( $(date +%s) - $(stat -f %m "$LOCK" 2>/dev/null || echo 0) ))
+  if [ -n "${LOCK_PID:-}" ] && kill -0 "$LOCK_PID" 2>/dev/null; then
+    if [ "$LOCK_AGE" -gt 420 ]; then
+      echo "$(date '+%F %T') 💀 前回の便(pid $LOCK_PID)が${LOCK_AGE}秒（約$((LOCK_AGE / 60))分）ロックを握ったまま詰まっています。片づけて入れ替わります" >> "$REPO/status/heartbeat.log"
+      kill -9 "$LOCK_PID" 2>/dev/null || true
+    else
+      exit 0
+    fi
+  fi
 fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
