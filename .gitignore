@@ -59,3 +59,10 @@ status/*
 # 公開ファイルは status/public/ 配下へ移し、ここだけ明示的に追跡を許可する。
 !status/public
 !status/public/**
+
+# 2026-09-17（896番）：status/failures.mdと同じ理由（追記だけで蓄積される恒久記録であり、
+# 1秒おきに書き換わる「生きている台帳」ではない）で、renraku(外部連絡)の窓口台帳と送信記録も
+# ここで明示的に追跡を復活させる。他セッションの広いgit addに巻き込まれるリスクは
+# failures.mdと同水準（追記のみ・件数が減る書き込みが起こりにくい）と判断。
+!status/renraku_madoguchi.json
+!status/renraku.json
