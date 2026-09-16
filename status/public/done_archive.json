@@ -4861,7 +4861,30 @@
    "checkedAt": "2026-09-10T00:56:21+0900",
    "okBy": "ai-verifier-auto",
    "okNote": "鬼監督AI検品PASS：本番HTMLに週7等分バー(weekbar/wmarks、本来ここ=灰/今ここ=赤+超過表示)とdetails折りたたみ(畳んでも超過%が見える)が実装され、pace.jsonも実データを返し、旧エラー文言はコメントのみでtextContent表示からは消えている"
+  },
+  {
+   "n": 702,
+   "title": "赤が出ても発車が止まらない（capが週の予算を見ていない＋上限で凍結するバグ）",
+   "why": "スマホから追加",
+   "what": "**赤の表示は出るようになったが、赤が出ても発車が止まらない。**（2026-09-09 20:00・実測）\n\n■ 実測\n- 進捗表：「今日の目安11.7%に対して今30%（+18.3%超過）」と赤で出ている。週枠100%のうち今週30%を1日目で使用。\n- ところが status/launch_cap.json は **cap 5 のまま。最終更新 09:23:27（11時間前）。**理由欄は「5時間枠の着地見込み8%（目標88%）」。\n- **つまり発車の上限は「5時間枠の着地見込み」だけで決まっていて、週の予算オーバーを一切見ていない。**赤が出ても本数が減らない。\n\n■ 見つけたバグ（tools/pace.py）\n```\nif new_cap != cap_now and (used is None or used < DAILY_CAP):\n```\n`DAILY_CAP = 30`。**usedToday が30に達した瞬間、この条件が偽になり、capを書き換えなくなる。**\n＝ **一番capを下げたいときに、capが凍結する。**（今まさにこの状態。usedToday=30.0）\n\n■ やること\n1. **上の凍結バグを直す。**上限に達したときこそ下げる。下げる方向の変更は DAILY_CAP に関係なく必ず書く。\n2. **capの計算に週の予算を入れる。**今は5時間枠の着地見込みだけ。週の線（pace.json の overLine / state）を必ず見る。**state が over のときは cap を下げる。**\n3. **超過が大きいときは段階を決める。**+5%超＝cap-1、+10%超＝cap-2、+15%超＝新規発車を止めて走行中だけ走らせる。走行0本にはしない（0本が最悪）。\n4. **逆も入れる。**週の予算が余っていて走行が少ないなら cap を上げる。「クレジットが超余ってるのにタスクが1本しか回ってない」も異常。\n5. **capを変えたら理由を進捗表に1行出す。**「週の予算を+18%超えたので5→3にしました」。黙って変えない。\n6. 進捗表の一番上に「**データを読み込めませんでした。開き直してください。**」が出ている。これも直す。読み込み失敗の原因を突き止め、失敗時は古い値を灰色で出して「いつ時点か」を書く。**真っ白にして開き直させない。**\n\n■ なぜ最優先か\nたまごさんが何度も言っている「**7日で使い切る。天井に行かない。かといって余ってるのに回ってないのもおかしい**」を、**画面に出すだけで実行していない状態。**赤が出ても止まらないなら、赤の意味がない。\n\n【AI検品(Verifier)ではねられました・1回目・09-10 00:56】理由：本番JSON(launch_cap.json)を直接確認すると今もcap=5・旧理由文・元バグ報告と同一の古いタイムスタンプ(15時間半更新なし)のままで、報告にある「週予算超過を検知し自動で3へ低下」を実機で確認できない。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。\n\n【AI検品(Verifier)ではねられました・2回目・09-10 01:30】理由：確認ページは「本番JSONが5→3へ自動更新・実測OK」と主張するが、実際の本番launch_cap.jsonはcap=5・updatedAtも1回目却下時と同一のまま変化なし。fuelNotesも空で理由表示の主張も裏付けなし。。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直してください。",
+   "status": "done",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "user",
+   "priority": 1,
+   "aiVerifyFailCount": 2,
+   "startedAt": "2026-09-10T01:34:14+09:00",
+   "sessionId": "3c75019c-cd8a-40da-8514-2cf39f75e8aa",
+   "finishedAt": "2026-09-10T01:49:50+09:00",
+   "result": "Independent verifier confirmed PASS with real production checks. Now reporting to Dispatch per the required 3-line format.\n\n【完了】発車上限(cap)の凍結バグを直し、週の使いすぎ具合を見て本数を上下させる仕組みを本番に反映しました\n確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/702-launch-cap-weekly-budget-fix.html\n本番: https://tamago2022.github.io/tamago-shinchoku/status/launch_cap.json （実測cap=5固定→3、理由「週の予算を+13.2%超過」に変化。独立検品で合格確認済み）",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/702-launch-cap-weekly-budget-fix.html",
+    "https://tamago2022.github.io/tamago-shinchoku/status/launch_cap.json"
+   ],
+   "checkedAt": "2026-09-10T01:52:28+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：本番launch_cap.jsonが実際にcap=5→3・新タイムスタンプ・週予算超過の理由文に更新され、pace.py/index.htmlの現物コードにも凍結バグ修正・週予算段階判定・理由表示・読み込み失敗フォールバックが全て実装されていることを実測確認した"
   }
  ],
- "updatedAt": "2026-09-17 00:58"
+ "updatedAt": "2026-09-17 02:15"
 }

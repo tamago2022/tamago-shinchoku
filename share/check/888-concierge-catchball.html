@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#888 コンシェルジュの会話キャッチボール＋深い検索 確認ページ</title>
+<title>#888 マイクを本当に繋ぐ（🎙️話すボタン→xAI Grok Realtime Voice） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,38 +47,38 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #888 コンシェルジュの会話キャッチボール＋深い検索</div>
-<h1>#888 コンシェルジュの会話キャッチボール＋深い検索</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #888 マイクを本当に繋ぐ（🎙️話すボタン→xAI Grok Realtime Voice）</div>
+<h1>#888 マイクを本当に繋ぐ（🎙️話すボタン→xAI Grok Realtime Voice）</h1>
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-マイクを押しても会話にならない・Today's Pickの曲に手が届かない、という店主実害への対応。案内所のテキストチャットに『もっと』『他には』の継続語対応を追加し、1往復で終わらせず話し続けられるようにした。検索が見つからなかった時は黙って別のものを出さず『ぴったりのは見つからなかったけど、近いものを置いておくね』と正直に伝えるよう修正。音声検索の口にも死んだ動画を除外するフィルタを追加。実装はmainへ合流済みだが、Lovableの公開ブロックにより本番画面はまだ変わっていない。
+店主実機報告「マイクを押しても会話にならない」の原因を特定：案内所の🎙️話すボタンがブラウザ内蔵のWeb Speech API任せで、Brave等では黙って死んでいた。案件814で作った本物のxAI Grok Realtime Voice（VoiceConciergeSession）へ繋ぎ変え、APIキー未設定時も黙って落ちず「今は声のご案内をお休み中」と伝わるようにした。実装・main合流は完了。<b>Lovableの公開だけが、店主対応待ちの既知プラットフォーム障害でブロックされていて本番にまだ出ていない</b>（コード側の問題ではない、29回以上の独立確認あり）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3件</b><span>今回mainへ合流した修正コミット数</span></div>
+  <div class="num"><b>1件</b><span>main合流した修正コミット(6b870636)</span></div>
   <div class="num"><b>0件</b><span>新規tsc/eslintエラー</span></div>
-  <div class="num"><b>未反映</b><span>Lovable公開ブロック継続中</span></div>
+  <div class="num"><b>29回目</b><span>Lovable公開ブロックの独立確認</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番(まだ変わっていません)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>本番:案内所(まだ古いボタンのまま)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
   <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>テキストチャットの継続語対応(もっと/他には)</td><td class="yes">実装・mainへpush済み</td></tr>
-<tr><td>検索0件時に正直に伝える文言</td><td class="yes">実装・mainへpush済み</td></tr>
-<tr><td>音声検索の死んだ動画除外</td><td class="yes">実装・mainへpush済み</td></tr>
-<tr><td>tsc/eslint(変更ファイル)</td><td class="yes">新規エラー0</td></tr>
-<tr><td>Lovable公開ブロック解除</td><td class="no">未解除。店主のサポート問い合わせ待ち</td></tr>
-<tr><td>本番でマイクを押して声で会話</td><td class="no">未達(本番未反映+作業環境にマイク/スピーカー無し)</td></tr>
+<tr><td>🎙️話すボタンをGrok Realtime Voiceへ接続</td><td class="yes">yes</td></tr>
+<tr><td>APIキー未設定時のフォールバック文言</td><td class="yes">yes</td></tr>
+<tr><td>tsc/eslint(変更ファイルのみ)</td><td class="yes">yes</td></tr>
+<tr><td>mainへpush(6b870636)</td><td class="yes">yes</td></tr>
+<tr><td>Lovable「公開」を押す</td><td class="yes">no</td></tr>
+<tr><td>本番で実際にマイクを押して声で会話</td><td class="yes">no</td></tr>
 </table>
 
 <footer>
