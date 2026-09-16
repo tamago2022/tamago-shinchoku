@@ -3,26 +3,26 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                    // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                      // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-16T16:11:55.880Z",
+      "updatedAt": "2026-09-16T16:31:15.966Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
-      "dateJST": null,
+      "dateJST": "2026-09-17",
       "successCountToday": 0,
       "consecutiveFailures": 0,
       "stoppedForToday": false,
-      "lastResult": null,
-      "lastCheckedAt": null,
+      "lastResult": "fail",
+      "lastCheckedAt": "2026-09-16T16:31:15.565Z",
       "lastPublishedSha": null,
-      "lastFailureReason": null,
-      "lastFailureAt": null,
-      "mainSha": null,
-      "mainUnpublished": false,
-      "paused": false,
-      "pauseReason": null
+      "lastFailureReason": "「変更を公開」を4回試したがクリックできなかった。画面を確認。",
+      "lastFailureAt": "2026-09-16T10:59:48.475Z",
+      "mainSha": "551f9503bb",
+      "mainUnpublished": true,
+      "paused": true,
+      "pauseReason": "Lovable側のsuspicious activityブロック解除待ち（.lovable-publish-pauseで一時停止中）"
   },
   // LOVABLE_PUBLISH_STATUS:END
 
@@ -40,6 +40,28 @@ window.SHINCHOKU = {
     routeChanges: 1,
     ownerToldMeCount: 0,
     checkPageUrl: "share/check/826-renkei-shuhyo.html"
+  },
+
+  // 893番（2026-09-17）：仕組み②「重くならない：ページの重さに上限を設けCIで落とす」。
+  // joy-relief-station側の scripts/check-page-weight.mjs が、トップ／曲ページ／棚一覧／
+  // 案内所それぞれのビルド後JS量(gzip後)を測り、scripts/perf-budget.json の上限と比較して
+  // 太ったらCIを落とす仕組み(.github/workflows/quality-gate.yml に組み込み済み)。
+  // ここは実測値を店主に見えるところへ1行出すための表示用の要約（renderPageWeightBar()）。
+  // 数字はmainへのpush直後にCIが自動生成するbaseline(scripts/perf-budget.json)から手で転記する。
+  pageWeight: {
+    updatedAt: "2026-09-17T01:40:00+09:00",
+    status: "baseline_pending",
+    statusNote: "CI(.github/workflows/quality-gate.yml)がmainへのpush時に自動でbaselineを作る仕組みを" +
+                "今回投入。実測値の反映(mainへの自動commit)を待っている段階。反映され次第pages以下を実数へ更新する。",
+    totalGzipKB: null,
+    pages: {
+      top: { label: "トップ（/）", gzipKB: null },
+      song: { label: "曲ページ（/room/card/$slug）", gzipKB: null },
+      shelfList: { label: "棚一覧（/world/$worldId）", gzipKB: null },
+      guide: { label: "案内所（/cover-guide）", gzipKB: null }
+    },
+    ciUrl: "https://github.com/tamago2022/joy-relief-station/actions/workflows/quality-gate.yml",
+    checkPageUrl: "share/check/893-page-weight.html"
   },
 
   // 626番（2026-09-07）：support@anthropic.comへ送った問い合わせの返信を1日1回チェックする見張り。
