@@ -380,6 +380,14 @@ def build():
     today = now.strftime("%Y-%m-%d")
     done_ns = done_today_ns(items)
     running = [x for x in items if x.get("status") == "running"]
+    running_count = len(running)  # health.jsonのsessionsはmachine_load.sh依存で壊れると0になる→queue.jsonの実数を正とする
+    try:
+        # Python 3.9のfromisoformatは health.json の "+0900"(コロン無し)形式を読めないためstrptimeを使う
+        h_measured = datetime.datetime.strptime(h.get("measuredAt"), "%Y-%m-%dT%H:%M:%S%z")
+        health_age_min = (now - h_measured).total_seconds() / 60
+    except Exception:
+        health_age_min = None
+    safe_max_display = "測定できていません" if (health_age_min is None or health_age_min > 40) else h.get("safeMax")
     waiting = [x for x in items if x.get("status") == "waiting"]
     p1 = [x for x in waiting if x.get("priority") == 1]
     n_child, cost = child_costs_today()
@@ -446,7 +454,7 @@ def build():
         A("- 🔴 **%s**" % line)
     A("")
     A("## 数字")
-    A("- 走行 **%s / %s**（発車待ち %d件・うちP1 %d件）" % (h.get("sessions"), h.get("safeMax"), len(waiting), len(p1)))
+    A("- 走行 **%s / %s**（発車待ち %d件・うちP1 %d件）" % (running_count, safe_max_display, len(waiting), len(p1)))
     A("- 今日の完了 **%d件**（9/06のピークは60件。20件を切ったら何かが詰まっている）" % len(done_ns))
     A("- 今日の子セッション **%d本・合計 $%.2f・1本平均 $%.2f**%s" % (n_child, cost, avg, "  ← 🔴 $3超は異常" if avg > 3 else ""))
     A("- クレジット 今日 **%s / %s**・週 **%s%%**" % (p.get("usedToday"), p.get("budgetToday"), p.get("allPct")))
@@ -496,7 +504,7 @@ def build():
         "deploy": {"hoursSinceUpdate": dep_h, "deploymentId": dep_id},
         "heartbeatSilentMin": hb_min,
         "launchSilentMin": round(launch_silence_min() or 0, 1) if launch_silence_min() is not None else None,
-        "running": {"count": h.get("sessions"), "safeMax": h.get("safeMax")},
+        "running": {"count": running_count, "safeMax": safe_max_display},
         "waitingCount": len(waiting),
         "pendingDecisionCount": pending_decision_count,  # 802番：たまごさんのOK待ち件数
         "p1Count": len(p1),
