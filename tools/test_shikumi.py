@@ -96,6 +96,19 @@ def run():
     if escalated_ns != {901}:
         failures.append("urgent_promotedのescalationsは901番だけのはず：実際%r" % escalated_ns)
 
+    # ④ 861番：重複チケット判定の状態集合が、queue.json実測の全status値を
+    #    カバーしているか（"touchchecking"・"stuck"が漏れて重複発行された実例の再発防止）。
+    observed_statuses = {
+        "waiting", "running", "hold", "stuck", "awaiting_check", "touchchecking", "verifying",
+    }
+    missing = observed_statuses - set(sk.OPEN_QUEUE_STATUSES)
+    if missing:
+        failures.append(
+            "OPEN_QUEUE_STATUSESに実在のstatus値が抜けています（重複発行の再発防止漏れ）: %r" % missing
+        )
+    if "done" in sk.OPEN_QUEUE_STATUSES or "merged" in sk.OPEN_QUEUE_STATUSES:
+        failures.append("done/mergedは終了状態なのでOPEN_QUEUE_STATUSESに含めてはいけない")
+
     if failures:
         print("FAIL（%d件）" % len(failures))
         for f in failures:
@@ -104,6 +117,7 @@ def run():
     print(
         "PASS：tier()の境界判定、parse_ts()の複数フォーマット対応、"
         "compute_waiting_escalations()のurgent自動昇格(24時間)と3日超赤旗、"
+        "OPEN_QUEUE_STATUSESの網羅性（861番）、"
         "どちらも799番の要求どおりに動いています"
     )
     return 0
