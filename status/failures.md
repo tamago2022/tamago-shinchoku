@@ -406,3 +406,15 @@
 - 2026-09-18 00:49 【843号】外部検品(OpenAI)が4回連続FIX。直し方を変える必要あり：依頼原文の「完了条件：...その本番URLがDispatchに届いている。」に対応する送信ログ／スクショ／Dispatch投稿の証拠が提出物に無い（提出物はGitHub PagesのURLとcommitのみで、Dispatch受領を示す記録が無い）
 
 - 2026-09-18 01:12 【852号】kenpin_gate.pyの外部検品チケットが本日の呼び出し上限(30回/日・全社合算)到達によりSKIPのままpending化。ただしsekisho.py側の同時実行分（--n 852・--what-file/--report-file付き）は上限到達前に完走しOpenAI検品OK済み（status/gaibu_kenpin_ledger.json 01:08:25 verdict=OK, n=852）。--can-deliverは自チケットのstate=passedのみを見るため、素通り設計(SKIP時はブロックしない)がkenpin_gate側のticketには及んでおらず、状態が食い違ったまま翌日(cap reset)まで--can-deliverがNGを返し続ける。sekisho.pyのPASSを一次証拠として報告を進めた。
+
+
+---
+
+## 797番自動記録：発車が11分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が11分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired）。たまごさんが claude にログインし直すまで発車を止めます。2026-09-18 03:19）。正当な理由か人の目で確認してください
+- **日付**：2026-09-18 03:54
+
+- 2026-09-18 04:45 【939番】**origin/mainとローカルmainが02:42から2時間以上分岐したまま、5分便のpullが毎回衝突→pushが1回も成功していなかった**（`git_rebase_incidents.log` 03:00:23／03:18:11／03:59:17／04:41:07 の「🛑 git pull(merge)が失敗→merge --abortで元へ戻す」が同じ原因の4回分）。衝突していたのは `index.html` 1ファイルだけで、**両側に同じ再設計が別commitで入っていた**（origin=12147b6e3／ローカル=5分便の「status: Mac負荷 03:59」が同じ変更を巻き込んで別commit化）のが原因。ローカル側は待機列の読み込みタイムアウト20秒化と「読めなかっただけで0件と言わない」修正を追加で含む**上位互換**だったので、ローカル側を採用してマージcommit(52abf91a4)を作り、分岐を解消した（origin側だけにある分は0件になり、以後は早送りでpushできる状態）。**merge --abortで元へ戻すだけでは永久に直らない**——衝突ファイルを人（またはセッション）が1回決めない限り、5分便は同じ失敗を無限に繰り返す。次に同じログが並んだら、まず `git diff <merge-base> origin/main -- <衝突ファイル>` と ローカル側を見比べて、**どちらが上位互換かを決める**。
+- 2026-09-18 04:45 【939番】上の作業中、**Cowork(Linuxサンドボックス)側からのgit操作はファイル削除ができない**ため `.git/index.lock`／`HEAD.lock`／`refs/heads/main.lock` を取り残し、工場のロック掃除係(`git_lock_reaper.py`)に3回片付けてもらった（04:41:32／04:44:32／04:49:48）。**Cowork側でgitを触るときは `GIT_INDEX_FILE=/tmp/...` を使い、`commit-tree`＋`refs/heads/main` 直書きで済ませる**（`git add`／`git commit`／`git update-ref` はロックを掴んで残す）。
