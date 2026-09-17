@@ -22,6 +22,12 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 #   材料にしていた worktree も末尾で消しているため、今このまま走らせても NG で終わるだけ。
 # 【2026-09-18・937番】メール登録と目安箱の受け皿工事へ委譲先を差し替え。
 #   936番（ページ最下部の統合）は status/_936/PHASE=idle で用済み。
+# 【2026-09-18・938番】たまごさんが本番で見つけた2点（上部の重複ブロック／ページごとの標準要素の抜け）。
+#   937番のセッションが同じ口を使っている最中なので **exec で奪わず**、938を1回走らせてから
+#   いつも通り937へ渡す。938は status/_938/PHASE が idle なら即 exit 0 する（＝完全に無害）。
+_ME="/Users/mac/Desktop/tamago-shinchoku/tools/_938_jrs_kenpin.sh"
+if [ -f "${_ME}" ]; then bash "${_ME}" || true; fi
+
 _NEXT="/Users/mac/Desktop/tamago-shinchoku/tools/_937_jrs_mail.sh"
 if [ -f "${_NEXT}" ]; then exec bash "${_NEXT}"; fi
 _NEXT="/Users/mac/Desktop/tamago-shinchoku/tools/_936_jrs_bottom_merge.sh"
