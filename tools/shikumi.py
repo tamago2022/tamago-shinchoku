@@ -511,14 +511,47 @@ def _append_self_repair_log(key, n, action):
         pass
 
 
+# 861番（2026-09-18）で拡張：queue.jsonの実際のstatus値は
+# waiting/running/hold/stuck/awaiting_check/verifying/touchchecking/merged/done の9種
+# （859番がrunning→touchchecking→verifyingと遷移するのを本番で実測して確認）。
+# 元の判定は"verifying"と"awaiting_check"は含んでいたが、実在する
+# "touchchecking"（外部検品が触って確認中）と"stuck"（詰まって止まっているだけで
+# 解決はしていない）が抜けていた。この2つが漏れていたせいで、その状態のあいだに
+# 新しい重複チケットが積まれる余地が残っていた（843→849→852→854→859→861と同じ
+# heartbeat dead誤検知が6回連続で重複発行された実例。真因は843で直っていたのに、
+# 直る前の古い検知がバックログとして残り、1件ずつ別セッションが同じ確認を繰り返した）。
+# done/merged/stopped等の終了状態はここに含めない（含めると本当に終わった項目まで
+# 「開いている」扱いになり、新規のdead検知が二度と積めなくなってしまう）。
+OPEN_QUEUE_STATUSES = (
+    "waiting", "running", "hold", "stuck", "touchchecking", "awaiting_check", "verifying",
+)
+
+
 def _already_tagged_open(ci, key):
     q = ci._load_queue()
     for it in q.get("items", []):
-        if it.get("shikumiCheckKey") == key and it.get("status") in (
-            "waiting", "running", "awaiting_check", "verifying", "hold",
-        ):
+        if it.get("shikumiCheckKey") == key and it.get("status") in OPEN_QUEUE_STATUSES:
             return it.get("n")
     return None
+
+
+def find_duplicate_open_siblings(key, exclude_n=None):
+    """同じshikumiCheckKeyでまだ開いている（未doneの）queue項目を全部返す。
+    861番の教訓：真因が直った後もバックログの重複チケットが1件ずつ個別セッションで
+    処理され、同じ内容の確認ページが6枚も量産された。次に同じ現象が起きた時、
+    どのチケットが重複バックログかを1コマンドで洗い出せるようにする（自動でdoneに
+    書き換えはしない＝queue.jsonへ直接書かないルールを守るため、洗い出しのみ）。"""
+    import command_ingest as ci
+    q = ci._load_queue()
+    out = []
+    for it in q.get("items", []):
+        if it.get("shikumiCheckKey") != key:
+            continue
+        if exclude_n is not None and it.get("n") == exclude_n:
+            continue
+        if it.get("status") in OPEN_QUEUE_STATUSES:
+            out.append({"n": it.get("n"), "status": it.get("status"), "title": it.get("title")})
+    return out
 
 
 def auto_queue_fix(item, do_queue=True):
@@ -664,7 +697,22 @@ def build(do_queue=True):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-queue", action="store_true", help="deadが出てもタスクを積まない（動作確認用）")
+    ap.add_argument(
+        "--find-duplicates", metavar="KEY",
+        help="861番の再発防止：指定したshikumiCheckKeyでまだ開いている重複チケットの番号を洗い出す"
+             "（queue.jsonは書き換えない・確認専用）",
+    )
     args = ap.parse_args()
+
+    if args.find_duplicates:
+        sibs = find_duplicate_open_siblings(args.find_duplicates)
+        if not sibs:
+            print("重複なし：%sで開いているチケットはありません" % args.find_duplicates)
+        else:
+            print("%s で開いているチケット %d件：" % (args.find_duplicates, len(sibs)))
+            for s in sibs:
+                print("  #%s [%s] %s" % (s["n"], s["status"], s["title"]))
+        return 0
 
     result = build(do_queue=not args.no_queue)
     print("仕組みの生死表 完了：%d項目中%d件がdead" % (len(result["items"]), result["deadCount"]))
