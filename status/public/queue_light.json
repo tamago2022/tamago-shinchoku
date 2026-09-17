@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-17 16:45",
+ "updatedAt": "2026-09-17 16:50",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -21,24 +21,27 @@
    "resumeFrom": "dcbaa72d-17a0-4f5b-a298-f88f98fbbba9",
    "cutAt": "2026-09-09T17:27:13+0900",
    "priority": 3,
-   "urgent": false
+   "urgent": false,
+   "holdReviewLog": "【931番棚卸し・2026-09-17】棚卸し確認済み。再開条件(画像が出ないページの実例URL)がまだ発生していないためhold継続が妥当。既存のholdNote「出ないページに出くわしたときに確認する」は変更しない。"
   },
   {
    "n": 6,
    "title": "外部から入れた曲の「曲名とアーティスト」を自動で埋める",
    "why": "URLを貼っただけだと曲名もアーティストも空のまま",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "worktree": "q06-0904",
-   "holdNote": "次に曲を持ってきたときに、その場で埋まるかどうかで確認する。それまで聞かない。",
+   "holdNote": null,
    "origin": "factory",
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "order": 90,
    "bgWaitCount": 1,
    "priority": 3,
-   "urgent": false
+   "urgent": false,
+   "reopenNote": "【931番棚卸し・2026-09-17】前回セッションはバックグラウンド待ちで実装未完了のまま終了(resultも空欄)。生きている案件のため再開。次は同期実行(timeout付き・前で待つ)で最後まで実装すること。",
+   "reopenedAt": "2026-09-17T16:52:54+09:00"
   },
   {
    "title": "留守番の見回り（30分おき）を止める",
@@ -55,14 +58,16 @@
    "holdNote": "取り消し。たまごさん「留守番の見回りはやめない。30分に1回やってくれ」（2026-09-04 22:38）",
    "origin": "user",
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "holdReviewLog": "【931番棚卸し・2026-09-17】棚卸し確認済み。たまごさん本人が2026-09-04に見回り継続を明言し依頼自体が撤回済み(既にholdNoteが「取り消し」)。運用は変更なく継続稼働中のためhold継続が妥当。",
+   "staleLevel": "red"
   },
   {
    "n": 42,
    "priority": 5,
    "title": "アーティストページの無い曲に、アーティストページを作る",
    "why": "たまごさん「実際にいる人物だから、アーティストページも作ってあげて」",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "redoCount": 2,
@@ -75,15 +80,18 @@
    "originNote": "たまごさん「実際にいる人物だから、アーティストページも作ってあげて」の引用あり",
    "originBy": "456番",
    "order": 90,
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
-   "urgent": false
+   "holdNote": null,
+   "urgent": false,
+   "reopenNote": "【931番棚卸し・2026-09-17】容量条件(20GB)は空き21GiBで実測クリア。ただし09-06に鬼監督から「確認ページに実物スクショ(<img>)が無い」で差し戻し済み・未解決のまま。生きている案件のため再開。次はブラウザ内蔵スクショを確認ページに貼ってから再提出すること。",
+   "reopenedAt": "2026-09-17T16:52:54+09:00",
+   "staleLevel": "red"
   },
   {
    "n": 157,
    "priority": 4,
    "title": "「飼い主大好き」が2つあるので1つに統合する",
    "why": "たまごさん「これダブってるのがある。全然後回しでいい。優先順位30以下」",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "redoCount": 2,
@@ -91,11 +99,13 @@
    "pausedAt": "2026-09-06T01:57:00+0900",
    "order": 90,
    "origin": "user",
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
+   "holdNote": null,
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "bgWaitCount": 1,
-   "urgent": false
+   "urgent": false,
+   "reopenNote": "【931番棚卸し・2026-09-17】容量条件(20GB)は空き21GiBで実測クリア。生きている案件のため再開。",
+   "reopenedAt": "2026-09-17T16:52:54+09:00"
   },
   {
    "n": 400,
@@ -112,7 +122,8 @@
    "order": 101,
    "finishedAt": "2026-09-07T02:59:54+09:00",
    "urls": [],
-   "fullTitle": "面白動画のBGMから原曲へ繋ぐとき、**どちら向きに出すかをボタン1つで決められる**ようにする。たまごさんの言葉：『ここからセリーヌ・ディオンは紹介してもいいよ。後ろで流れてる曲これですって。山下達郎も原曲を紹介してあげてもいい。**けど"
+   "fullTitle": "面白動画のBGMから原曲へ繋ぐとき、**どちら向きに出すかをボタン1つで決められる**ようにする。たまごさんの言葉：『ここからセリーヌ・ディオンは紹介してもいいよ。後ろで流れてる曲これですって。山下達郎も原曲を紹介してあげてもいい。**けど",
+   "staleLevel": "red"
   },
   {
    "n": 431,
@@ -152,7 +163,8 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/441-confirm-list-441.html"
    ],
-   "holdNote": "【927番棚卸し・2026-09-17】本件が作った「確認待ち一覧＋まとめてOK」UIは、本日のindex.html軽量化(コミット1e8257513・362KB→8KB、旧UIはindex_full.htmlへ退避)で表示先ごと撤去された。表示対象が無い状態のため保留。新しい確認列UIを作る時に、この機能の再利用可否を判断すること。"
+   "holdNote": "【927番棚卸し・2026-09-17】本件が作った「確認待ち一覧＋まとめてOK」UIは、本日のindex.html軽量化(コミット1e8257513・362KB→8KB、旧UIはindex_full.htmlへ退避)で表示先ごと撤去された。表示対象が無い状態のため保留。新しい確認列UIを作る時に、この機能の再利用可否を判断すること。",
+   "staleLevel": "red"
   },
   {
    "n": 458,
@@ -175,74 +187,83 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/458-queue-origin-batch4-fix.html",
     "https://tamago2022.github.io/tamago-shinchoku/"
    ],
-   "holdNote": "【927番棚卸し・2026-09-17】origin==\"user\"フィルタ(旧index.html内、コミット83cf3bbc/dfad97d85)は実装されていたが、本日のindex.html軽量化(1e8257513)で確認列UI自体が撤去され適用先が無くなった。データ側のoriginタグ付け(queue.json内、未設定は2件のみ)は生きているので無駄ではないが、表示機能が無い状態のため保留。新UI側で復活する時に再利用すること。"
+   "holdNote": "【927番棚卸し・2026-09-17】origin==\"user\"フィルタ(旧index.html内、コミット83cf3bbc/dfad97d85)は実装されていたが、本日のindex.html軽量化(1e8257513)で確認列UI自体が撤去され適用先が無くなった。データ側のoriginタグ付け(queue.json内、未設定は2件のみ)は生きているので無駄ではないが、表示機能が無い状態のため保留。新UI側で復活する時に再利用すること。",
+   "staleLevel": "red"
   },
   {
    "n": 469,
    "title": "Björk Crystalline",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 4,
    "origin": "user",
    "order": 90,
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
+   "holdNote": null,
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "contentCheckFailCount": 1,
-   "urgent": false
+   "urgent": false,
+   "reopenNote": "【931番棚卸し・2026-09-17】容量条件(20GB)は空き21GiBで実測クリア。生きている案件のため再開。",
+   "reopenedAt": "2026-09-17T16:52:54+09:00"
   },
   {
    "n": 470,
    "title": "素材写真をGoogleドライブへ自動で送る仕組みを作る",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 3,
    "origin": "user",
    "order": 90,
    "aiVerifyFailCount": 2,
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
+   "holdNote": null,
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
-   "urgent": false
+   "urgent": false,
+   "reopenNote": "【931番棚卸し・2026-09-17】容量条件(20GB)は空き21GiBで実測クリア。生きている案件のため再開。",
+   "reopenedAt": "2026-09-17T16:52:54+09:00"
   },
   {
    "n": 486,
    "title": "重複タイトルの統合",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 3,
    "origin": "user",
    "order": 90,
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
+   "holdNote": null,
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "redoCount": 1,
-   "urgent": false
+   "urgent": false,
+   "reopenNote": "【931番棚卸し・2026-09-17】容量条件(20GB)は空き21GiBで実測クリア。生きている案件のため再開。",
+   "reopenedAt": "2026-09-17T16:52:54+09:00"
   },
   {
    "n": 487,
    "title": "原曲へ繋ぐ向きのボタン",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 3,
    "origin": "user",
    "order": 90,
-   "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
+   "holdNote": null,
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "sessionId": "c13d08ae-e2fb-4f60-a090-23e5fb95c209",
    "cutCount": 1,
    "resumeFrom": "c13d08ae-e2fb-4f60-a090-23e5fb95c209",
    "cutAt": "2026-09-09T13:13:59+0900",
-   "urgent": false
+   "urgent": false,
+   "reopenNote": "【931番棚卸し・2026-09-17】容量条件(20GB)は空き21GiBで実測クリア。生きている案件のため再開。",
+   "reopenedAt": "2026-09-17T16:52:54+09:00"
   },
   {
    "n": 502,
@@ -266,7 +287,8 @@
    ],
    "urlsRestoredAt": "2026-09-08T18:47:00+0900",
    "urlsRestoredWhy": "確認ページは実在していたが、台帳のurlsが検品NGの処理で消えていた。ファイル名から拾い直した。",
-   "holdNote": "【927番棚卸し・2026-09-17】origin/main実測で全項目確認済み：①②日本語題名・コピー(src/routes/watch.tsx MANUAL_WATCH_OVERRIDES『満員御礼のモンスタートラック、泥水にドボン』)、③タイタニックのテーマとの関連(artistId:celine-dion、片道のみ・celine-dion側songsにはw1gCW_66zzcの混入無しを確認)、⑤shippai(失敗)棚に追加済み(worlds.ts、コミット20da2ba7)。コードは完成、現在Lovable公開ブロック中のため反映待ちのみ。ブロック解除後に本番URL実測してdone化。\n\n【927番棚卸し2巡目・2026-09-17 16:20】Lovable公開ブロックは解消済み（本番反映されている）と確認。本番 https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc のSSR HTMLで①②(満員御礼のモンスタートラック、泥水にドボン)はPASS。ただし③（タイタニック／セリーヌ関連の表示）はSSR HTML内に文字列0件で確認できず——effectiveArtist(watch.tsx 743行目)はliveArtistというクライアント側stateで、useEffect等でAPI取得後に初めてセットされる実装のため、静的HTML比較では原理的に検証不可（クライアントサイドJS実行後にブラウザで見ないと分からない）。過去にAI検品(Verifier)がまさに同じ理由で1回falseにしている。安全側に倒し、doneにはせずholdのまま維持。次回はブラウザでの実機確認（またはSSR側でeffectiveArtistの初期値化）が必要。owner判断待ちではない。"
+   "holdNote": "【927番棚卸し・2026-09-17】origin/main実測で全項目確認済み：①②日本語題名・コピー(src/routes/watch.tsx MANUAL_WATCH_OVERRIDES『満員御礼のモンスタートラック、泥水にドボン』)、③タイタニックのテーマとの関連(artistId:celine-dion、片道のみ・celine-dion側songsにはw1gCW_66zzcの混入無しを確認)、⑤shippai(失敗)棚に追加済み(worlds.ts、コミット20da2ba7)。コードは完成、現在Lovable公開ブロック中のため反映待ちのみ。ブロック解除後に本番URL実測してdone化。\n\n【927番棚卸し2巡目・2026-09-17 16:20】Lovable公開ブロックは解消済み（本番反映されている）と確認。本番 https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc のSSR HTMLで①②(満員御礼のモンスタートラック、泥水にドボン)はPASS。ただし③（タイタニック／セリーヌ関連の表示）はSSR HTML内に文字列0件で確認できず——effectiveArtist(watch.tsx 743行目)はliveArtistというクライアント側stateで、useEffect等でAPI取得後に初めてセットされる実装のため、静的HTML比較では原理的に検証不可（クライアントサイドJS実行後にブラウザで見ないと分からない）。過去にAI検品(Verifier)がまさに同じ理由で1回falseにしている。安全側に倒し、doneにはせずholdのまま維持。次回はブラウザでの実機確認（またはSSR側でeffectiveArtistの初期値化）が必要。owner判断待ちではない。",
+   "staleLevel": "red"
   },
   {
    "n": 509,
@@ -291,13 +313,14 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/509-cover-parody-halfsize-list.html",
     "https://tamago2022.github.io/tamago-shinchoku/status/split/509-list.json"
    ],
-   "holdNote": "【928番棚卸し・2026-09-17】一覧(93件)はローカルstatus/split/509-list.jsonに実在するが、報告にあった自動分割の子タスク656〜665番はqueue.json・deleted.jsonのどちらにも存在せず(queue.json巻き戻り事故等で消失した可能性)。status/がgit追跡除外されたため一覧もGitHub Pagesでは404。再分割・再投入が必要。"
+   "holdNote": "【928番棚卸し・2026-09-17】一覧(93件)はローカルstatus/split/509-list.jsonに実在するが、報告にあった自動分割の子タスク656〜665番はqueue.json・deleted.jsonのどちらにも存在せず(queue.json巻き戻り事故等で消失した可能性)。status/がgit追跡除外されたため一覧もGitHub Pagesでは404。再分割・再投入が必要。",
+   "staleLevel": "red"
   },
   {
    "n": 584,
    "title": "仕入れ：曲を増やす（常設）",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -309,7 +332,10 @@
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "bgWaitCount": 1,
-   "urgent": false
+   "urgent": false,
+   "revivedAt": "2026-09-17T16:53:01+09:00",
+   "revivedReason": "932番棚卸し・2026-09-17再確認: 常設の仕入れタスク（列が空いたら走る埋め草）。584番自身のholdNote(590番棚卸し)でも『継続稼働を確認済み』とある。止めておく積極的な理由がないため再開(waiting)へ戻す。",
+   "staleLevel": "red"
   },
   {
    "n": 586,
@@ -320,7 +346,10 @@
    "order": 90,
    "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
    "urgent": false,
-   "limitMin": 180
+   "limitMin": 180,
+   "blockedNote": "932番棚卸し・2026-09-17再確認: タイトル『テストA』・本文(what)は空。実案件ではないテスト項目のためhold継続。既存資産として削除はしない。",
+   "holdReviewedAt": "2026-09-17T16:53:01+09:00",
+   "staleLevel": "red"
   },
   {
    "n": 587,
@@ -331,7 +360,10 @@
    "order": 90,
    "holdNote": "PC保守優先（2026-09-07 23:05）。容量が20GBに戻ったら列へ戻す",
    "urgent": false,
-   "limitMin": 180
+   "limitMin": 180,
+   "blockedNote": "932番棚卸し・2026-09-17再確認: タイトル『テストB』・本文(what)は空。586と同じくテスト項目のためhold継続。既存資産として削除はしない。",
+   "holdReviewedAt": "2026-09-17T16:53:01+09:00",
+   "staleLevel": "red"
   },
   {
    "n": 589,
@@ -351,7 +383,8 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/589-gdrive-warehouse.html"
    ],
-   "holdNote": "【928番棚卸し・2026-09-17】報告にある実装ファイルtools/gdrive-warehouse/fetch.pyはtamago-shinchokuリポジトリの全履歴を検索しても一度も追加されていない。確認ページ(数字のみ)は実在するが実装コード不在、3回連続不合格は妥当。再実装が必要。"
+   "holdNote": "【928番棚卸し・2026-09-17】報告にある実装ファイルtools/gdrive-warehouse/fetch.pyはtamago-shinchokuリポジトリの全履歴を検索しても一度も追加されていない。確認ページ(数字のみ)は実在するが実装コード不在、3回連続不合格は妥当。再実装が必要。",
+   "staleLevel": "red"
   },
   {
    "n": 595,
@@ -368,13 +401,14 @@
    "sessionId": "aece8d52-69d4-462b-a113-17e663982eb0",
    "finishedAt": "2026-09-07T22:36:14+09:00",
    "urls": [],
-   "holdNote": "【928番棚卸し・2026-09-17】セッションはlint/tscチェック完了待ちのまま2026-09-07 22:36で停止、以降10日間進展なし。海外SEO(構造化データ・OGP・sitemap整備)の実装がmainに反映された痕跡なし。再着手が必要。"
+   "holdNote": "【928番棚卸し・2026-09-17】セッションはlint/tscチェック完了待ちのまま2026-09-07 22:36で停止、以降10日間進展なし。海外SEO(構造化データ・OGP・sitemap整備)の実装がmainに反映された痕跡なし。再着手が必要。",
+   "staleLevel": "red"
   },
   {
    "n": 596,
    "title": "曲が増えても壊れない形にする（常設）",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -386,7 +420,9 @@
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "bgWaitCount": 1,
-   "urgent": false
+   "urgent": false,
+   "revivedAt": "2026-09-17T16:53:01+09:00",
+   "revivedReason": "932番棚卸し・2026-09-17再確認: 保留理由は『PC保守優先・容量20GB以上に戻ったら再開』(2026-09-07 23:05)。実測(df -h /)で空き251GB・使用率8%、swap free 1.3GBを確認。条件を満たしたため再開(waiting)へ戻す。"
   },
   {
    "n": 597,
@@ -402,13 +438,14 @@
    "sessionId": "010b57d6-dac9-4c91-8765-9e1c929e6317",
    "finishedAt": "2026-09-07T05:19:52+09:00",
    "urls": [],
-   "holdNote": "【928番棚卸し・2026-09-17】セッションはlint/tscチェック完了待ちのまま2026-09-07 05:19で停止、以降10日間進展なし。プレイリスト・保存機能の実装がmainに反映された痕跡なし。再着手が必要。"
+   "holdNote": "【928番棚卸し・2026-09-17】セッションはlint/tscチェック完了待ちのまま2026-09-07 05:19で停止、以降10日間進展なし。プレイリスト・保存機能の実装がmainに反映された痕跡なし。再着手が必要。",
+   "staleLevel": "red"
   },
   {
    "n": 598,
    "title": "触っていて楽しいをリサーチして1つ作って出す（常設）",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -422,7 +459,9 @@
    "cutCount": 1,
    "resumeFrom": "10ef45f4-53d6-4577-8e77-2c1b0a56f2d8",
    "cutAt": "2026-09-09T05:26:50+0900",
-   "urgent": false
+   "urgent": false,
+   "revivedAt": "2026-09-17T16:53:01+09:00",
+   "revivedReason": "932番棚卸し・2026-09-17再確認: 596番と同じ保留理由（PC保守優先）。実測で空き251GB(基準20GBを大幅にクリア)のため再開(waiting)へ戻す。"
   },
   {
    "n": 604,
@@ -439,7 +478,8 @@
    "sessionId": "69dd9f25-3a69-4942-ab2c-bae7799e4363",
    "finishedAt": "2026-09-07T16:26:31+09:00",
    "urls": [],
-   "holdNote": "【928番棚卸し・2026-09-17】セッションは「3件の完了を待機」のまま2026-09-07 16:26で停止、以降10日間進展なし。ダークモード・多言語対応の実装がmainに反映された痕跡なし。再着手が必要。"
+   "holdNote": "【928番棚卸し・2026-09-17】セッションは「3件の完了を待機」のまま2026-09-07 16:26で停止、以降10日間進展なし。ダークモード・多言語対応の実装がmainに反映された痕跡なし。再着手が必要。",
+   "staleLevel": "red"
   },
   {
    "n": 605,
@@ -457,7 +497,8 @@
    "sessionId": "b8c4428c-d837-4273-9e88-8c6ee5af738a",
    "finishedAt": "2026-09-07T19:17:48+09:00",
    "urls": [],
-   "holdNote": "【928番棚卸し・2026-09-17】セッションはorigin/main fetch待ちのまま2026-09-07 19:17で停止、以降10日間進展なし。URL診断→メール機能(商売の芯)の実装がmainに反映された痕跡なし。再着手が必要。"
+   "holdNote": "【928番棚卸し・2026-09-17】セッションはorigin/main fetch待ちのまま2026-09-07 19:17で停止、以降10日間進展なし。URL診断→メール機能(商売の芯)の実装がmainに反映された痕跡なし。再着手が必要。",
+   "staleLevel": "red"
   },
   {
    "n": 609,
@@ -474,7 +515,8 @@
    "sessionId": "94ee2f0f-34f9-4ebf-a3f0-dedc3066ac3e",
    "finishedAt": "2026-09-07T17:32:33+09:00",
    "urls": [],
-   "holdNote": "【928番棚卸し・2026-09-17】セッションはLovable公開処理待ちのまま2026-09-07 17:32で停止、以降10日間進展なし。マイクロギフト「あめちゃん」機能の実装がmainに反映された痕跡なし。再着手が必要。"
+   "holdNote": "【928番棚卸し・2026-09-17】セッションはLovable公開処理待ちのまま2026-09-07 17:32で停止、以降10日間進展なし。マイクロギフト「あめちゃん」機能の実装がmainに反映された痕跡なし。再着手が必要。",
+   "staleLevel": "red"
   },
   {
    "n": 610,
@@ -506,13 +548,15 @@
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "redoCount": 1,
-   "urgent": false
+   "urgent": false,
+   "blockedNote": "932番棚卸し・2026-09-17再確認: 再開条件『621番(ブラウザ統合)の後に再開』は09-17時点で621自身がまだstatus=holdのまま未達成（専用ヘッドレスChrome・排他鍵の仕組みもtools/に未実装）。先に再開するとブラウザ占有事故が再発するリスクがあるため、案件は生きているがhold継続。621番が片付き次第、最優先で再開する。",
+   "holdReviewedAt": "2026-09-17T16:53:01+09:00"
   },
   {
    "n": 613,
    "title": "動画が消えたら自動で倉庫へ引っ込めて、代わりを探して繋ぎ直す",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -526,7 +570,9 @@
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "resumeFrom": "d3c8cd68-569f-46c4-a102-e4b63619fb24",
    "cutAt": "2026-09-09T14:00:04+0900",
-   "urgent": false
+   "urgent": false,
+   "revivedAt": "2026-09-17T16:53:01+09:00",
+   "revivedReason": "932番棚卸し・2026-09-17再確認: 保留理由はPC保守優先（638番/容量）のみで、ブラウザ依存の記載なし（既存のdead-youtube.json・videoHealthReport.generated.ts・videoReplacements.generated.tsの3点セットを使う機械的スイープ）。実測で容量条件を満たし621番(ブラウザ統合)待ちにも該当しないため再開(waiting)へ戻す。"
   },
   {
    "n": 614,
@@ -542,7 +588,9 @@
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "aiVerifyFailCount": 1,
-   "urgent": false
+   "urgent": false,
+   "blockedNote": "932番棚卸し・2026-09-17再確認: 611番と同じく621番(ブラウザ統合)待ちが未達成。加えて前回AI検品(Verifier)で『22曲読み取り0件・GitHub blob 404』としてはねられた実績あり。ブラウザ占有事故の再発防止と、前回不合格の原因（ブラウザなしでは読み取れないページ）が解消していないためhold継続。",
+   "holdReviewedAt": "2026-09-17T16:53:01+09:00"
   },
   {
    "n": 618,
@@ -598,13 +646,14 @@
    "urls": [],
    "costsMoney": true,
    "costsMoneyWhy": "直接お金が出る可能性があるタスク。着手前に「何本でいくら」を出して確認を取ること（2026-09-08のルール）",
-   "costEstimate": "本数の言及: 1・1 / ドル額の言及: $10.0（自動抽出・目視確認のうえ発車してください）"
+   "costEstimate": "本数の言及: 1・1 / ドル額の言及: $10.0（自動抽出・目視確認のうえ発車してください）",
+   "staleLevel": "red"
   },
   {
    "n": 643,
    "title": "「名カバー」に別の曲のカバーが出ている（関連動画へ回す）",
    "why": "スマホから追加",
-   "status": "hold",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -614,7 +663,9 @@
    "restoredAt": "2026-09-08T17:20:00+09:00",
    "restoreWhy": "空きが62GBに戻ったので退避を解除（20GB以上で復帰の約束どおり）",
    "bgWaitCount": 1,
-   "urgent": false
+   "urgent": false,
+   "revivedAt": "2026-09-17T16:53:01+09:00",
+   "revivedReason": "932番棚卸し・2026-09-17再確認: 保留理由はPC保守優先のみ（たまごさん『全く優先ではない』＝急がない・列の後ろでよい、の指示であって停止指示ではない）。全ページ機械走査での修正のためブラウザ不要。容量条件を実測で満たしたため再開(waiting)へ戻す（優先度は最下位のままでよい）。"
   },
   {
    "n": 671,
@@ -719,7 +770,8 @@
    "ownerRedoCount": 1,
    "priority": 3,
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "staleLevel": "yellow"
   },
   {
    "n": 685,
@@ -805,7 +857,8 @@
    "order": 90,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 698,
@@ -878,7 +931,8 @@
    "order": 90,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 709,
@@ -905,7 +959,9 @@
    "origin": "user",
    "priority": 3,
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "blockedNote": "932番棚卸し・2026-09-17再確認: たまごさん本人の明示指示『工場を発射しないでください。後で見るからね』(2026-09-10)が現行方針。ai-brain/kettei.jsonにも解除の決定記録なし。案件（Måneskin THE FIRST TAKE仕入れ）は生きているが、owner判断待ちのためhold継続。710がOKになったら711番も連動して再開する。",
+   "holdReviewedAt": "2026-09-17T16:53:01+09:00"
   },
   {
    "n": 711,
@@ -916,9 +972,10 @@
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 3,
-   "blockedNote": "2026-09-10 07:xx: 710番(Måneskin単曲)がまだhold(たまごさん「後で見るから発射しないで」で未実装・未OK)のため、30曲の本実装(カード作成・DB登録・棚追加・双方向リンク・本番反映)は着手しなかった。準備は完了：Obsidianノート「the first take.md」から30曲URL一覧を確認、素材台帳(AI出力/_ルール/素材台帳.md)に既に確定済み(2026-09-10欄)。次回再発車時は710のOK確認から開始する。",
+   "blockedNote": "【933番棚卸し・2026-09-17再確認】710番(Måneskin単曲・見本)を確認したところ、710は今も status=hold のまま（たまごさん本人の指示『工場を発射しないでください。後で見るからね』が2026-09-10時点から未解除、ai-brain/kettei.jsonにも解除の決定記録なし）。711は『710のOK後』という明示条件付きのため、710未OKの今は再開(waiting)へ戻さずhold継続が正しい判断。案件自体は生きている（30曲分の素材台帳は確定済み・破棄しない）。710がOKになった時点で最優先に再開する。",
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "holdReviewedAt": "2026-09-17T16:51:37+09:00"
   },
   {
    "n": 712,
@@ -968,7 +1025,8 @@
    "costAskedAt": "2026-09-10T07:12:31+09:00",
    "priority": 3,
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "staleLevel": "yellow"
   },
   {
    "n": 719,
@@ -988,7 +1046,8 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/719-disk-cleanup-imac-hdd.html"
    ],
-   "holdNote": "【930番棚卸し・2026-09-17】719番(デスクトップ整理+iMac HDD引っ越し、7回目・09-11時点で空き84GB/目標100GB未達)は、より新しく包括的な876番(容量最優先・2026-09-15、空き容量33.2GBまで回復・Googleドライブのミラーモード/tmp.driveuploadキューという真犯人を特定・worktree残骸削除・自動化接続まで実施済み)に実質統合された。719番単独での継続調査は不要と判断しholdへ。iMacへの追加移動候補は876番側で店主のOK待ちとして継続する。"
+   "holdNote": "【930番棚卸し・2026-09-17】719番(デスクトップ整理+iMac HDD引っ越し、7回目・09-11時点で空き84GB/目標100GB未達)は、より新しく包括的な876番(容量最優先・2026-09-15、空き容量33.2GBまで回復・Googleドライブのミラーモード/tmp.driveuploadキューという真犯人を特定・worktree残骸削除・自動化接続まで実施済み)に実質統合された。719番単独での継続調査は不要と判断しholdへ。iMacへの追加移動候補は876番側で店主のOK待ちとして継続する。",
+   "staleLevel": "yellow"
   },
   {
    "n": 721,
@@ -1091,7 +1150,8 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/731-desktop-offload-tracelist.html"
    ],
-   "holdNote": "【930番棚卸し・2026-09-17】731番(719番の検証=移動したもの19件中18件の行き先確認、ZoomRecordingsのみ未発見)は、719番自体が876番に実質統合されたため、残りの厳密一致証明・ZoomRecordings追跡の優先度は低いと判断しholdへ。容量まわりの調査は876番の継続として扱う。"
+   "holdNote": "【930番棚卸し・2026-09-17】731番(719番の検証=移動したもの19件中18件の行き先確認、ZoomRecordingsのみ未発見)は、719番自体が876番に実質統合されたため、残りの厳密一致証明・ZoomRecordings追跡の優先度は低いと判断しholdへ。容量まわりの調査は876番の継続として扱う。",
+   "staleLevel": "yellow"
   },
   {
    "n": 734,
@@ -1113,7 +1173,8 @@
     "https://joy-relief-station.lovable.app/room/food/nakameguro-korean-kominka",
     "https://joy-relief-station.lovable.app/room/food/sendai-miyage-okashi",
     "https://joy-relief-station.lovable.app/world/food"
-   ]
+   ],
+   "staleLevel": "yellow"
   },
   {
    "n": 740,
@@ -1144,7 +1205,8 @@
    "order": 90,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 743,
@@ -1179,7 +1241,10 @@
    "costApprovedBy": "たまごさん（2026-09-11に金額を提示して許可済み：745=59円／751=上限150円）",
    "label": "【停止中】鬼嫁ちゃん1枚を動かすテスト（LINE停止に合わせて保留）",
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "blockedNote": "【933番棚卸し・2026-09-17再確認】2026-09-12にLINEスタンプ制作全体をCodex側へ移管済み、『たまごさんから「やっぱりお願いします」が来たら再開する』が現行方針のため、本工場側では引き続き対象外（不要ではないが現在は停止中）。59円のfal生成は未実行のまま・上限枠(costApproved)も現状維持。再開トリガーが来るまでhold継続。",
+   "holdReviewedAt": "2026-09-17T16:51:37+09:00",
+   "staleLevel": "yellow"
   },
   {
    "n": 746,
@@ -1226,7 +1291,8 @@
    "aiVerifyFailCount": 2,
    "contentCheckFailCount": 1,
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "staleLevel": "yellow"
   },
   {
    "n": 766,
@@ -1259,7 +1325,8 @@
    "ownerRedoCount": 1,
    "priority": 3,
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "staleLevel": "yellow"
   },
   {
    "n": 768,
@@ -1292,7 +1359,8 @@
    "label": "【最優先・お金】falの実費と台帳が倍ズレ（CSVで突合）",
    "costAskedAt": "2026-09-12T05:03:45+09:00",
    "urgent": false,
-   "order": 90
+   "order": 90,
+   "staleLevel": "yellow"
   },
   {
    "n": 771,
@@ -1317,7 +1385,8 @@
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/771-ltx25-mist-oneway-cost.html",
     "https://v3b.fal.media/files/b/0aaa0a2f/uuC0zCybxgxvM6Fbs-MR__HW4ZtB5p.mp4"
-   ]
+   ],
+   "staleLevel": "yellow"
   },
   {
    "n": 772,
@@ -1397,7 +1466,8 @@
    "order": 90,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 778,
@@ -1431,7 +1501,8 @@
    "order": 90,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 780,
@@ -1515,7 +1586,8 @@
    "stuckRedoTotal": 3,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 790,
@@ -1588,7 +1660,8 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html"
    ],
    "evidenceGone": true,
-   "evidenceCheckedAt": "2026-09-17T16:22:40+0900"
+   "evidenceCheckedAt": "2026-09-17T16:22:40+0900",
+   "staleLevel": "yellow"
   },
   {
    "n": 793,
@@ -1625,7 +1698,8 @@
    "stuckRedoTotal": 2,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 794,
@@ -1845,7 +1919,8 @@
    "stuckRedoTotal": 2,
    "statusBefore": "stuck",
    "revivedAt": "2026-09-17T07:44:04+09:00",
-   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない"
+   "revivedReason": "914番（触る検品の誤判定）で殺された疑い。検品が直るまで stuck を信用しない",
+   "staleLevel": "yellow"
   },
   {
    "n": 804,
@@ -3881,7 +3956,7 @@
    "n": 919,
    "title": "【GO済み・72円】ZEN 2本：16:9拡張→1080pループ動画→Grok/OpenAI/Geminiで検品",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "stuck",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -3896,16 +3971,16 @@
    "urgentReason": "たまごさん「1時間とかで見たい」。72円GO済み。",
    "redoCount": 1,
    "failReasons": [
-    "URLが1本も無いまま終了"
-   ],
-   "startedAt": "2026-09-17T09:29:17+09:00",
-   "sessionId": "01fa0d69-a837-443f-afce-aa2e715bb0bc",
-   "finishedAt": "2026-09-17T10:06:08+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/919-zen-loop-video.html"
+    "URLが1本も無いまま終了",
+    "【931番・鬼監督判定FAIL】完了報告文が『外部AI検品OK』と書きつつ、直後に『AI検品：AI検品がタイムアウトしました(600秒超)』を2回記録=検品が実際には通っていない矛盾。依頼原文の完了条件6/7(1920x1080・5秒のffprobe実測値)と条件5(ループのRMSE数値)も報告文に無く証拠不足。外部AI検品を確実に完走させ、実測数値を書いてから再提出すること。"
    ],
    "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/919-zen-loop-video.html",
-   "backlogVerified": true
+   "backlogVerified": true,
+   "checkedAt": "2026-09-17T16:50:09+0900",
+   "ownerRedoCount": 1,
+   "stuckAt": "2026-09-17T16:50:09+09:00",
+   "stuckReasonSummary": "URLが1本も無いまま終了 ／ 【931番・鬼監督判定FAIL】完了報告文が『外部AI検品OK』と書きつつ、直後に『AI検品：AI検品がタイムアウトしました(600秒超)』を2回記録=検品が実際には通っていない矛盾。依頼原文の完了条件6/7(1920x1080・5秒のffprobe実測値)と条件5(ループのRMSE数値)も報告文に無く証拠不足。外部AI検品を確実に完走させ、実測数値を書いてから再提出すること。",
+   "stuckRedoTotal": 2
   },
   {
    "n": 920,
@@ -4051,7 +4126,7 @@
    "n": 927,
    "title": "(1/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "running",
+   "status": "stuck",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -4059,14 +4134,19 @@
    "splitIndex": 1,
    "splitTotal": 7,
    "origin": "user",
-   "redoCount": 1,
+   "redoCount": 2,
    "failReasons": [
+    "URLが1本も無いまま終了",
     "URLが1本も無いまま終了"
    ],
    "contentCheckFailCount": 1,
    "startedAt": "2026-09-17T16:44:21+09:00",
    "sessionId": "bdb676bd-d94a-490d-8970-1fa299fcec86",
-   "pid": 49508
+   "finishedAt": "2026-09-17T16:49:00+09:00",
+   "urls": [],
+   "stuckAt": "2026-09-17T16:49:00+09:00",
+   "stuckReasonSummary": "URLが1本も無いまま終了 ／ URLが1本も無いまま終了",
+   "stuckRedoTotal": 2
   },
   {
    "n": 928,
@@ -4150,7 +4230,7 @@
    "n": 930,
    "title": "(4/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "verifying",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -4158,20 +4238,11 @@
    "splitIndex": 4,
    "splitTotal": 7,
    "origin": "user",
-   "startedAt": "2026-09-17T16:29:39+09:00",
-   "sessionId": "0316c3c9-9eb6-4522-94fe-c503b26455b7",
-   "finishedAt": "2026-09-17T16:44:23+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/930-awaiting-check-triage-batch4.html",
-    "https://tamago2022.github.io/tamago-shinchoku/status/public/queue.json"
-   ],
    "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/status/public/queue.json",
-   "touchCheckNote": "押した結果：無反応0件・コンソールエラー0件（0件中0件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/status/public/queue.json）",
-   "verifyPid": 49758,
-   "verifySessionId": "6329bbbb-8d3f-4553-85e1-76fd79e135bc",
-   "verifyLog": "/Users/mac/Desktop/tamago-shinchoku/status/verify-6329bbbb.log",
-   "verifyStartedAt": "2026-09-17T16:45:02+09:00",
-   "verifyUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/930-awaiting-check-triage-batch4.html"
+   "aiVerifyFailCount": 1,
+   "failReasons": [
+    "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで、検証時点(09-17 16:46)の本番health.json/genzaichi.json/now.json/pace.json/top_status.jsonが軒並み3〜4時間更新停止しており、884番が直したはずの「計測パイプラインが止まる」症状が本番で再発中"
+   ]
   },
   {
    "n": 931,
@@ -4193,27 +4264,33 @@
    "n": 932,
    "title": "(6/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "splitFrom": 923,
    "splitIndex": 6,
    "splitTotal": 7,
-   "origin": "user"
+   "origin": "user",
+   "startedAt": "2026-09-17T16:47:53+09:00",
+   "sessionId": "9772d2cb-a84b-4267-9dd2-7ba8df92afd1",
+   "pid": 50668
   },
   {
    "n": 933,
    "title": "(7/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "splitFrom": 923,
    "splitIndex": 7,
    "splitTotal": 7,
-   "origin": "user"
+   "origin": "user",
+   "startedAt": "2026-09-17T16:48:59+09:00",
+   "sessionId": "16adaca1-359e-4196-826d-e141916a7025",
+   "pid": 50898
   }
  ]
 }
