@@ -10,7 +10,7 @@
 /* 余白・寸法に % を使わない（横長のとき上が詰まる事故の原因）。すべて px / rem。 */
 :root{
   --ink:#1c1a17; --sub:#6d675f; --line:#ddd7cd; --paper:#f7f4ee; --card:#fffdf9;
-  --green:#2f7a48; --amber:#9a6a12; --grey:#8a847c; --red:#a33b2a;
+  --green:#2f7a48; --amber:#9a6a12; --grey:#8a847c; --red:#a33b2a; --blue:#2f6fb0;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -38,16 +38,20 @@ ul{list-style:none; margin:0; padding:0}
 li{padding:7px 0; border-top:1px solid #eee7dc}
 li:first-child{border-top:0}
 .n{font-variant-numeric:tabular-nums; color:var(--sub); margin-right:6px}
+.ord{display:inline-block; min-width:22px; color:var(--sub); font-variant-numeric:tabular-nums}
 .meta{font-size:12px; color:var(--sub)}
 a{color:#2a5b8f}
 .empty{color:var(--grey); font-size:14px}
+.red{color:var(--red); font-weight:600}
 /* 週の目盛り：pace.json 一本だけを見る */
 .big{font-size:30px; font-variant-numeric:tabular-nums; line-height:1.2}
-.gauge{position:relative; height:10px; border:1px solid var(--line); border-radius:6px; background:#efe9df; overflow:hidden; margin:8px 0 6px}
+.gauge{position:relative; height:14px; border:1px solid var(--line); border-radius:6px; background:#efe9df; margin:10px 0 8px}
 /* 全幅を取るのに % を使わない（left/right:0 で伸ばす）。
    以前は width:0 が残ったまま scaleX を掛けていたので、0×0.31=0 で棒が一度も描かれていなかった。 */
-.gauge i{position:absolute; left:0; top:0; right:0; bottom:0; background:var(--green); transform:scaleX(0); transform-origin:left center}
+.gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:5px; background:var(--green); transform:scaleX(0); transform-origin:left center}
 .gauge.over i{background:var(--red)}
+/* 「本来ここ」の青い線。位置は JS が実測した px で置く（% を使わない） */
+.gauge b{position:absolute; top:-5px; bottom:-5px; left:0; width:3px; border-radius:1px; background:var(--blue); box-shadow:0 0 0 1px var(--card); transform:translateX(0)}
 .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:baseline}
 .d-green{background:var(--green)} .d-amber{background:var(--amber)} .d-grey{background:var(--grey)}
 .tally{display:flex; gap:16px; flex-wrap:wrap; margin-top:4px; font-size:14px}
@@ -56,14 +60,6 @@ summary{cursor:pointer; font-size:13px; color:var(--sub); min-height:32px; paddi
 details .body{font-size:13px; color:var(--sub); padding-top:6px}
 footer{margin-top:18px; font-size:12px; color:var(--sub)}
 footer a{margin-right:14px; display:inline-block; padding:4px 0}
-/* 案件820：Lovable公開便の赤バナー（本番未反映・連続失敗）。軽量版へ差し替えた際に
-   一度消えてしまっていたのをここで復元する。既定は非表示、問題がある時だけ出す。 */
-.alert-red{
-  background:#fbe9e6; border:1px solid var(--red); color:var(--red);
-  border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:13px; display:none;
-}
-.alert-red.show{display:block}
-.alert-red b{display:block; margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -75,22 +71,34 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   <button id="reload" type="button">押して読み直す</button>
 </header>
 
-<!-- 案件820：Lovable公開の赤バナー -->
-<div class="alert-red" id="lovableAlert"></div>
-
 <!-- ① いま走っているもの -->
 <section class="card">
   <h2>いま走っているもの</h2>
   <ul id="running"><li class="empty">…</li></ul>
 </section>
 
-<!-- ② 次に発車 -->
+<!-- ② 次に発車（上から順に出る） -->
 <section class="card">
-  <h2>次に発車</h2>
+  <h2>次に発車（上から順に出る）</h2>
   <ul id="next"><li class="empty">…</li></ul>
 </section>
 
-<!-- ③ できたもの -->
+<!-- ③ 週の残り -->
+<section class="card">
+  <h2>週の残り</h2>
+  <div class="big" id="remain">…</div>
+  <div class="gauge" id="gauge"><i id="gfill"></i><b id="gline"></b></div>
+  <div class="meta" id="paceNums"></div>
+  <div class="meta" id="paceDays"></div>
+</section>
+
+<!-- ④ お金・フォルダ・サブスク -->
+<section class="card">
+  <h2>お金・フォルダ・サブスク</h2>
+  <ul id="cash"><li class="empty">…</li></ul>
+</section>
+
+<!-- ⑤ できたもの -->
 <section class="card">
   <h2>できたもの</h2>
   <ul id="done"><li class="empty">…</li></ul>
@@ -106,20 +114,10 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   </details>
 </section>
 
-<!-- ④ 週の残り -->
-<section class="card">
-  <h2>週の残り</h2>
-  <div class="big" id="remain">…</div>
-  <div class="gauge" id="gauge"><i></i></div>
-  <div class="meta" id="paceMeta"></div>
-</section>
-
 <footer>
   <a href="index_full.html">前の進捗表（全部入り）</a>
   <a href="share/done/">できたもの一覧</a>
   <a href="money.html">お金</a>
-  <!-- 案件820【4】：Lovableサポートへの問い合わせ下書き。タップでメールアプリが宛先・件名・本文入りで開く（送信はここで押すだけ）。 -->
-  <a href="mailto:support@lovable.dev?subject=Publishing%20blocked%20as%20%22suspicious%20activity%22%20%E2%80%94%20request%20to%20unblock&amp;body=Hello%2C%0A%0AMy%20project%20%28joy-relief-station%2C%20https%3A//lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1%29%20has%20been%20unable%20to%20publish%20since%202026-09-13.%0AEvery%20attempt%20fails%20with%20a%20%22suspicious%20activity%22%20block.%20Production%20%28https%3A//joy-relief-station.lovable.app%29%20has%20now%20been%20stale%20for%20over%2070%20hours%20%28x-deployment-id%20fixed%20since%20around%202026-09-08%20at%20449ce840-5728-41e2-8923-e33bf51ed479%29%20while%20dozens%20of%20completed%20changes%20sit%20unpublished.%0A%0AExact%20error%20shown%3A%20%22Publishing%20was%20blocked%20due%20to%20suspicious%20activity.%20Contact%20support%20if%20you%20believe%20this%20is%20a%20mistake.%22%0A%0ATo%20be%20transparent%3A%20I%20had%20an%20automation%20script%20pressing%20the%20Publish%20button%20on%20a%2030-minute%20schedule.%20I%20believe%20that%20frequency%20is%20what%20triggered%20the%20block.%20I%20have%20already%20stopped%20that%20automation%20%28disabled%20the%20scheduled%20job%20on%202026-09-14%29%20and%20will%20switch%20to%20publishing%20only%20when%20there%20are%20actual%20changes%2C%20at%20most%20a%20few%20times%20per%20day.%0A%0ACould%20you%20please%20remove%20the%20block%20on%20this%20account/project%3F%20I%20am%20happy%20to%20follow%20any%20guidance%20you%20have%20on%20acceptable%20publishing%20frequency.%0A%0AThank%20you." id="lovableSupportSec">Lovableへ問い合わせ（送るだけ）</a>
 </footer>
 
 </div>
@@ -132,57 +130,192 @@ function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c
 function put(el, rows){
   el.innerHTML = rows.length ? rows.join("") : '<li class="empty">ありません</li>';
 }
+function yen(n){ return n == null ? "未取得" : Math.round(n).toLocaleString() + "円"; }
 
-// 案件820：Lovable公開便（本番未反映・連続失敗）の赤バナー。
-// mainUnpublished===true の間は、一時停止中・連続失敗0回でも「本番未反映」自体は出し続ける
-// （794/818番の教訓：一時停止していても未反映の事実は消えない。消すと『気づかれない』事故になる）。
-function renderLovablePublishAlert(d){
-  var el = $("lovableAlert");
-  var s = d && d.lovablePublish;
-  if (!s || (!s.mainUnpublished && !s.consecutiveFailures && !s.stoppedForToday)) {
-    el.className = "alert-red"; el.innerHTML = ""; return;
-  }
-  var lines = [];
-  if (s.mainUnpublished) {
-    lines.push(s.paused
-      ? "本番未反映：mainに新しい変更がありますが、一時停止中のため公開していません（" + esc(s.pauseReason || "理由不明") + "）。"
-      : "本番未反映：main（" + esc(s.mainSha || "不明") + "）がまだ公開されていません。");
-  }
-  if (s.consecutiveFailures) {
-    lines.push("連続失敗 " + s.consecutiveFailures + " 回" +
-      (s.stoppedForToday ? "（本日はもう押しません・上限" + s.consecutiveFailureStopAt + "回）" : ""));
-  }
-  if (s.lastFailureReason) {
-    lines.push("直近の失敗：" + esc(String(s.lastFailureReason).slice(0, 80)));
-  }
-  el.className = "alert-red show";
-  el.innerHTML = "<b>🔴 Lovable公開</b>" + lines.join("<br>");
+// 通信が細いときに無言で止まらないよう、必ず時間で切る（既存の方針と同じ）
+function getJson(url, ms){
+  return new Promise(function(resolve, reject){
+    var done = false;
+    var t = setTimeout(function(){ if(!done){ done = true; reject(new Error("timeout")); } }, ms || 8000);
+    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(j){ if(!done){ done = true; clearTimeout(t); resolve(j); } })
+      .catch(function(e){ if(!done){ done = true; clearTimeout(t); reject(e); } });
+  });
 }
 
-function render(d){
-  var s = d.generatedAt ? String(d.generatedAt).replace("T"," ").slice(0,16) : "";
-  $("stamp").textContent = s ? (s + " 時点") : "";
-  renderLovablePublishAlert(d);
+/* ───────── 週の残り：バーは1本。青い線が「本来ここ」 ─────────
+   週は 火曜18:00 →翌火曜18:00 の168時間。日割り13%ではなく、
+   いまの時刻まで見て連続で計算する（火曜の途中・金曜の朝晩でズレるため）。 */
+var WEEK_HOURS = 168;
+var PACE = null;
 
-  // ① 走行中
+function weekStartOf(resetAt){
+  if(!resetAt) return null;
+  var end = new Date(String(resetAt).replace(" ", "T"));
+  if(isNaN(end)) return null;
+  return { start: new Date(end.getTime() - WEEK_HOURS * 3600000), end: end };
+}
+// 「本来ここ」＝経過時間の割合（0〜1）
+function idealFrac(){
+  var w = PACE && weekStartOf(PACE.resetAt);
+  if(!w) return null;
+  var f = (Date.now() - w.start.getTime()) / (WEEK_HOURS * 3600000);
+  return Math.max(0, Math.min(1, f));
+}
+// 青い線は実測した px で置く（幅に % を使わない）
+function placeLine(){
+  var g = $("gauge"), b = $("gline"), f = idealFrac();
+  if(f == null){ b.style.display = "none"; return; }
+  b.style.display = "block";
+  b.style.transform = "translateX(" + Math.round(g.clientWidth * f) + "px)";
+}
+window.addEventListener("resize", placeLine);
+
+function renderPace(p){
+  PACE = p || null;
+  if(!p){
+    $("remain").textContent = "—";
+    $("paceNums").textContent = "pace の記録が読めませんでした";
+    $("paceDays").textContent = "";
+    return;
+  }
+  var remain = p.remainWeek;
+  $("remain").textContent = (remain == null ? "—" : remain + "%") + " 残り";
+
+  var g = $("gauge");
+  g.className = "gauge" + (p.state === "over" ? " over" : "");
+  var used = Math.max(0, Math.min(100, 100 - (remain == null ? 100 : remain)));
+  $("gfill").style.transform = "scaleX(" + (used / 100) + ")";
+  placeLine();
+
+  var f = idealFrac();
+  $("paceNums").textContent = "現在 " + Math.round(used) + "% ／ 本来 " +
+    (f == null ? "—" : Math.round(f * 100) + "%");
+
+  // 残り日数は1行だけ。週末が読めることが目的。
+  var d = p.daysLeft;
+  var line = (d == null) ? "" : "あと " + (Math.round(d * 10) / 10) + "日";
+  if(d != null && d >= 2) line += "・日曜と月曜が読みどころ";
+  if(p.resetAt) line += "（" + esc(p.resetAt) + " リセット）";
+  $("paceDays").textContent = line;
+}
+
+/* ───────── 走行中 ───────── */
+function dur(min){
+  if(min == null) return "";
+  var m = Math.round(min), h = Math.floor(m / 60);
+  return (h ? h + "時間" : "") + (m % 60) + "分";
+}
+function renderRunning(d){
   var r = (d.runningNow || []).map(function(x){
+    var over = x.elapsedMin != null && x.elapsedMin >= 180;
     var meta = [];
-    if (x.elapsedMin != null) meta.push(Math.round(x.elapsedMin) + "分");
-    if (x.model) meta.push(x.model);
-    return '<li><span class="n">' + esc(x.n) + '</span>' + esc(x.label) +
-      (meta.length ? '<div class="meta">' + esc(meta.join(" ・ ")) + '</div>' : '') + '</li>';
+    if(x.elapsedMin != null) meta.push(dur(x.elapsedMin) + (over ? " 🔴3時間超" : ""));
+    if(x.model) meta.push(x.model);
+    return '<li><span class="n">' + esc(x.n) + '番</span>' + esc(x.label) +
+      (meta.length ? '<div class="meta' + (over ? ' red' : '') + '">' + esc(meta.join(" ・ ")) + '</div>' : '') + '</li>';
   });
-  if (!r.length && d.stoppedReason) r = ['<li class="empty">' + esc(d.stoppedReason) + '</li>'];
+  if(!r.length) r = ['<li class="empty red">' + esc(d.stoppedReason || "1本も走っていません") + '</li>'];
   put($("running"), r);
+}
 
-  // ② 次に発車
-  put($("next"), (d.nextUp || []).map(function(x){
-    return '<li><span class="n">' + esc(x.n) + '</span>' + esc(x.label) + '</li>';
-  }));
+/* ───────── 次に発車（待機列）─────────
+   top_status.json の nextUp が空でも「ありません」で止めない。
+   発車待ちの正本 queue_light.json を最初の表示のあとに読んで、実際の並び順を出す。 */
+function pri(x){ return x.priority == null ? 9 : x.priority; }
+function rankCmp(a, b){
+  var A = [a.urgent ? 0 : 1, pri(a), a.order == null ? 9999 : a.order, a.n];
+  var B = [b.urgent ? 0 : 1, pri(b), b.order == null ? 9999 : b.order, b.n];
+  for(var i = 0; i < A.length; i++){ if(A[i] !== B[i]) return A[i] - B[i]; }
+  return 0;
+}
+function renderNext(list, total){
+  if(!list.length){
+    $("next").innerHTML = '<li class="empty red">待機列が0件です（このままだと次が発車しません）</li>';
+    return;
+  }
+  var rows = list.map(function(x, i){
+    return '<li><span class="ord">' + (i + 1) + '.</span><span class="n">' +
+      esc(x.n) + '番</span>' + esc(x.title || x.label) + '</li>';
+  });
+  if(total > list.length) rows.push('<li class="meta">ほか ' + (total - list.length) + ' 件</li>');
+  $("next").innerHTML = rows.join("");
+}
+function loadQueue(fallback){
+  getJson("status/public/queue_light.json", 12000).then(function(q){
+    var arr = (q && q.items) || [];
+    var w = arr.filter(function(x){ return x.status === "waiting"; });
+    var hasNonF = w.some(function(x){ return pri(x) !== 6; });
+    var pool = hasNonF ? w.filter(function(x){ return pri(x) !== 6; }) : w;
+    pool.sort(rankCmp);
+    renderNext(pool.slice(0, 6), pool.length);
+  }).catch(function(){
+    renderNext(fallback || [], (fallback || []).length);
+  });
+}
 
-  // ③ できたもの
+/* ───────── お金・フォルダ・サブスク ─────────
+   元データが無いものは推測せず「未取得」と出す。 */
+function loadCash(){
+  Promise.all([
+    getJson("status/public/fal_cost_ledger.json").catch(function(){ return null; }),
+    getJson("status/public/gaibu.json").catch(function(){ return null; }),
+    getJson("status/public/machine.json").catch(function(){ return null; })
+  ]).then(function(a){
+    var fal = a[0], gaibu = a[1], mac = a[2];
+    var rows = [];
+
+    // お金：実費が記録されているのは fal と 外に出した仕事だけ
+    var recs = (fal && fal.records) || null;
+    var today = null, week = null;
+    if(recs){
+      var d = new Date(), pad = function(v){ return (v < 10 ? "0" : "") + v; };
+      var todayISO = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+      var w = PACE && weekStartOf(PACE.resetAt);
+      var wISO = w ? (w.start.getFullYear() + "-" + pad(w.start.getMonth() + 1) + "-" + pad(w.start.getDate())) : null;
+      today = 0; week = wISO ? 0 : null;
+      recs.forEach(function(r){
+        var y = Number(r.totalCostYen) || 0;
+        if(r.date === todayISO) today += y;
+        if(wISO && r.date >= wISO) week += y;
+      });
+    }
+    var falMonth = fal && fal.summary ? fal.summary.thisMonthTotalYen : null;
+    var soto = gaibu && gaibu.summary ? gaibu.summary.totalCostYen : null;
+    var month = (falMonth == null && soto == null) ? null : (falMonth || 0) + (soto || 0);
+    rows.push('<li>お金　今日 ' + yen(today) + ' ／ 今週 ' + yen(week) + ' ／ 今月 ' + yen(month) +
+      '<div class="meta">内訳：fal ' + yen(falMonth) + ' ＋ 外に出した仕事 ' + yen(soto) +
+      '。OpenAI・xAI・Lovableクレジットは未取得</div></li>');
+
+    // フォルダ：50GBを切ったら赤
+    var free = mac ? mac.diskFreeGB : null;
+    if(free == null){
+      rows.push('<li>フォルダ　空き 未取得</li>');
+    } else {
+      var low = free < 50;
+      rows.push('<li' + (low ? ' class="red"' : '') + '>フォルダ　空き ' + Math.round(free) + 'GB' +
+        (low ? '（50GBを切っています）' : '') + '</li>');
+    }
+
+    // サブスク：台帳が公開側に無い（金額・次の請求日は端末側にしかない）
+    rows.push('<li>サブスク　未取得<div class="meta">金額と次の請求日は <a href="money.html">お金の管理表</a> に入っています</div></li>');
+
+    $("cash").innerHTML = rows.join("");
+  });
+}
+
+/* ───────── 描画 ───────── */
+function render(d){
+  var s = d.generatedAt ? String(d.generatedAt).replace("T", " ").slice(0, 16) : "";
+  $("stamp").textContent = s ? (s + " 時点") : "";
+
+  renderRunning(d);
+
+  // まず top_status の nextUp を出し、そのあと本物の列で上書きする
+  renderNext((d.nextUp || []).slice(0, 6), (d.nextUp || []).length);
+
   put($("done"), (d.recentDone || []).map(function(x){
-    var t = x.ts ? String(x.ts).replace("T"," ").slice(5,16) : "";
+    var t = x.ts ? String(x.ts).replace("T", " ").slice(5, 16) : "";
     var title = esc(x.title);
     var body = x.url
       ? '<span class="dot d-green"></span><a href="' + esc(x.url) + '">' + title + '</a>'
@@ -199,27 +332,11 @@ function render(d){
       '<span class="meta">（完了 ' + v.total + ' 件）</span>'
     : '<span class="meta">検証の記録がまだありません</span>';
 
-  // ④ 週の残り（pace.json 一本だけ）
-  var p = d.pace;
-  if (p) {
-    var remain = p.remainWeek;
-    $("remain").textContent = (remain == null ? "—" : remain + "%") + " 残り";
-    var g = $("gauge");
-    g.className = "gauge" + (p.state === "over" ? " over" : "");
-    // 使った割合ぶんだけ横に伸ばす（幅に % を使わず scaleX で出す）
-    var used = Math.max(0, Math.min(100, 100 - (remain == null ? 100 : remain)));
-    g.firstChild.style.transform = "scaleX(" + (used / 100) + ")";
-    var meta = [];
-    if (p.usedToday != null && p.budgetToday != null)
-      meta.push("今日 " + p.usedToday + "% / 予算 " + p.budgetToday + "%");
-    if (p.daysLeft != null) meta.push("あと " + p.daysLeft + "日");
-    if (p.resetAt) meta.push(p.resetAt + " リセット");
-    if (p.updatedAt) meta.push(p.updatedAt + " 時点");
-    $("paceMeta").textContent = meta.join(" ・ ") + "（pace.json 一本）";
-  } else {
-    $("remain").textContent = "—";
-    $("paceMeta").textContent = "pace の記録が読めませんでした";
-  }
+  renderPace(d.pace);
+
+  // 最初の表示が終わってから重いものを読む（1枚目の軽さを壊さない）
+  loadQueue(d.nextUp || []);
+  loadCash();
 }
 
 function load(manual){
@@ -244,6 +361,7 @@ window.addEventListener("load", function(){
   var l = document.createElement("link");
   l.rel = "manifest"; l.href = "manifest.webmanifest";
   document.head.appendChild(l);
+  placeLine();
 });
 </script>
 </body>
