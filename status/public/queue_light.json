@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-17 16:22",
+ "updatedAt": "2026-09-17 16:34",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -118,7 +118,7 @@
    "n": 431,
    "title": "仕組み：外部から入れた分を1日1回仕上げる",
    "why": "スマホから追加",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -127,12 +127,9 @@
    "aiVerifyFailCount": 1,
    "startedAt": "2026-09-17T16:05:32+09:00",
    "sessionId": "02349e07-f684-4cf5-9f93-971fb5bceb15",
-   "finishedAt": "2026-09-06T16:27:10+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/431-gaibu-shiage-jitsubutsu-kakunin.html"
-   ],
-   "origin": "user",
-   "pid": 31607
+   "finishedAt": "2026-09-17T16:26:02+09:00",
+   "urls": [],
+   "origin": "user"
   },
   {
    "n": 441,
@@ -179,27 +176,6 @@
     "https://tamago2022.github.io/tamago-shinchoku/"
    ],
    "holdNote": "【927番棚卸し・2026-09-17】origin==\"user\"フィルタ(旧index.html内、コミット83cf3bbc/dfad97d85)は実装されていたが、本日のindex.html軽量化(1e8257513)で確認列UI自体が撤去され適用先が無くなった。データ側のoriginタグ付け(queue.json内、未設定は2件のみ)は生きているので無駄ではないが、表示機能が無い状態のため保留。新UI側で復活する時に再利用すること。"
-  },
-  {
-   "n": 465,
-   "title": "「こちらもどうぞ」の暴走を全ページ戻す＋10件＋高さ揃え（1/2）",
-   "why": "大きい仕事の自動分割（元は452番）",
-   "status": "hold",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "priority": 1,
-   "splitFrom": 452,
-   "splitIndex": 1,
-   "splitTotal": 2,
-   "origin": "factory",
-   "redoCount": 2,
-   "startedAt": "2026-09-06T20:25:06+09:00",
-   "sessionId": "30a3237c-d0c0-428e-9a99-60beaee122d2",
-   "finishedAt": "2026-09-06T21:04:11+09:00",
-   "urls": [],
-   "costsMoney": true,
-   "costEstimate": "本数の言及: 10・10・10・10・10・10・2・10・10・10・0・10・1・1・1・1（自動抽出・目視確認のうえ発車してください）",
-   "holdNote": "【927番棚卸し・2026-09-17】コードはmain合流済み(d94641f3横スクロール1行に復元、80e6db35高さ不揃いを実機測定で修正)。現在Lovable公開ブロック中(status/public/top_status.json参照、2026-09-16〜「公開ボタンが見つからない」)のため反映待ちのみ。owner判断待ちではない。ブロック解除後に本番URLを実測し直してdone化すること。"
   },
   {
    "n": 469,
@@ -290,7 +266,7 @@
    ],
    "urlsRestoredAt": "2026-09-08T18:47:00+0900",
    "urlsRestoredWhy": "確認ページは実在していたが、台帳のurlsが検品NGの処理で消えていた。ファイル名から拾い直した。",
-   "holdNote": "【927番棚卸し・2026-09-17】origin/main実測で全項目確認済み：①②日本語題名・コピー(src/routes/watch.tsx MANUAL_WATCH_OVERRIDES『満員御礼のモンスタートラック、泥水にドボン』)、③タイタニックのテーマとの関連(artistId:celine-dion、片道のみ・celine-dion側songsにはw1gCW_66zzcの混入無しを確認)、⑤shippai(失敗)棚に追加済み(worlds.ts、コミット20da2ba7)。コードは完成、現在Lovable公開ブロック中のため反映待ちのみ。ブロック解除後に本番URL実測してdone化。"
+   "holdNote": "【927番棚卸し・2026-09-17】origin/main実測で全項目確認済み：①②日本語題名・コピー(src/routes/watch.tsx MANUAL_WATCH_OVERRIDES『満員御礼のモンスタートラック、泥水にドボン』)、③タイタニックのテーマとの関連(artistId:celine-dion、片道のみ・celine-dion側songsにはw1gCW_66zzcの混入無しを確認)、⑤shippai(失敗)棚に追加済み(worlds.ts、コミット20da2ba7)。コードは完成、現在Lovable公開ブロック中のため反映待ちのみ。ブロック解除後に本番URL実測してdone化。\n\n【927番棚卸し2巡目・2026-09-17 16:20】Lovable公開ブロックは解消済み（本番反映されている）と確認。本番 https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc のSSR HTMLで①②(満員御礼のモンスタートラック、泥水にドボン)はPASS。ただし③（タイタニック／セリーヌ関連の表示）はSSR HTML内に文字列0件で確認できず——effectiveArtist(watch.tsx 743行目)はliveArtistというクライアント側stateで、useEffect等でAPI取得後に初めてセットされる実装のため、静的HTML比較では原理的に検証不可（クライアントサイドJS実行後にブラウザで見ないと分からない）。過去にAI検品(Verifier)がまさに同じ理由で1回falseにしている。安全側に倒し、doneにはせずholdのまま維持。次回はブラウザでの実機確認（またはSSR側でeffectiveArtistの初期値化）が必要。owner判断待ちではない。"
   },
   {
    "n": 509,
@@ -998,7 +974,7 @@
    "n": 719,
    "title": "デスクトップを汚さない＋iMac HDDへ引っ越して内蔵の空きを100GB以上にする",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "hold",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -1011,7 +987,8 @@
    "finishedAt": "2026-09-11T00:48:40+09:00",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/719-disk-cleanup-imac-hdd.html"
-   ]
+   ],
+   "holdNote": "【930番棚卸し・2026-09-17】719番(デスクトップ整理+iMac HDD引っ越し、7回目・09-11時点で空き84GB/目標100GB未達)は、より新しく包括的な876番(容量最優先・2026-09-15、空き容量33.2GBまで回復・Googleドライブのミラーモード/tmp.driveuploadキューという真犯人を特定・worktree残骸削除・自動化接続まで実施済み)に実質統合された。719番単独での継続調査は不要と判断しholdへ。iMacへの追加移動候補は876番側で店主のOK待ちとして継続する。"
   },
   {
    "n": 721,
@@ -1047,7 +1024,7 @@
    "n": 726,
    "title": "進捗表が重い（queue.jsonが2.6MB・毎回まるごと読んでいる）",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -1056,56 +1033,10 @@
    "bgWaitCount": 1,
    "startedAt": "2026-09-11T00:52:40+09:00",
    "sessionId": "b5b257b6-7532-4cfa-9456-8ea5f486c106",
-   "finishedAt": "2026-09-11T01:12:08+09:00",
+   "finishedAt": "2026-09-17T16:37:47+09:00",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/726-queue-light-timeout.html"
    ]
-  },
-  {
-   "n": 727,
-   "title": "憲法点検：リポジトリ内のworktree（作業場）件数",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "factory",
-   "priority": 2,
-   "kenpouCheckKey": "worktree_count",
-   "startedAt": "2026-09-13T13:46:44+09:00",
-   "sessionId": "f300ad2b-e308-4e17-9104-40e7d842076a",
-   "finishedAt": "2026-09-13T14:04:55+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/727-worktree-reaper-load-gate-fix.html",
-    "https://tamago2022.github.io/tamago-shinchoku/status/kenpou_check.json"
-   ],
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/status/kenpou_check.json",
-   "checkedAt": "2026-09-13T14:07:15+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：kenpou_check.jsonのworktree_countが実測green(53件)、確認ページの数字・原因説明・修正コミット内容が一致し、実クリックも全反応"
-  },
-  {
-   "n": 728,
-   "title": "進捗表の週の目盛りが18時間ずれて見える（見出しが火水木…で実際は火18時区切り）",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 2,
-   "touchCheckFailCount": 1,
-   "failReasons": [
-    "触る検品NG：押しても無反応1件：「← 進捗表に戻る」(A)"
-   ],
-   "startedAt": "2026-09-13T14:17:16+09:00",
-   "sessionId": "1ab96a5b-a026-4ee7-a269-a376117371be",
-   "finishedAt": "2026-09-13T14:22:35+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/728-week-bar-labels.html"
-   ],
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/728-week-bar-labels.html",
-   "checkedAt": "2026-09-13T14:31:52+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：依頼4項目（開始時刻付き見出し・6時間目盛り・週起点の説明文・今日の定義注記）とレイアウト跳ね対策が本番コード・スクリーンショットの両方で確認でき、対象の確認ページは触る検品も再確認3連続PASS（無関係な既存バグは別スコープ）"
   },
   {
    "n": 729,
@@ -1141,7 +1072,7 @@
    "n": 731,
    "title": "【一覧作成】【最優先】整理を止めて、移動したもの全部の行き先を1件残らず証明する",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "hold",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -1159,7 +1090,8 @@
    "finishedAt": "2026-09-11T01:25:42+09:00",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/731-desktop-offload-tracelist.html"
-   ]
+   ],
+   "holdNote": "【930番棚卸し・2026-09-17】731番(719番の検証=移動したもの19件中18件の行き先確認、ZoomRecordingsのみ未発見)は、719番自体が876番に実質統合されたため、残りの厳密一致証明・ZoomRecordings追跡の優先度は低いと判断しholdへ。容量まわりの調査は876番の継続として扱う。"
   },
   {
    "n": 734,
@@ -1295,78 +1227,6 @@
    "contentCheckFailCount": 1,
    "urgent": false,
    "order": 90
-  },
-  {
-   "n": 760,
-   "title": "毎朝の入荷見回り（2026-09-10分・自動）",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "factory",
-   "priority": 3,
-   "redoCount": 1,
-   "failReasons": [
-    "URLが1本も無いまま終了"
-   ],
-   "startedAt": "2026-09-13T15:03:49+09:00",
-   "sessionId": "b345e3ce-dbeb-44bd-8172-9e2e891f0dde",
-   "finishedAt": "2026-09-13T15:09:22+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/756-daily-ingest-2026-09-10.html"
-   ],
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
-   "checkedAt": "2026-09-13T15:13:00+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：確認ページ・本番4件・実クリック検証のすべてが報告内容と一致し、本番URLも報告に含まれている"
-  },
-  {
-   "n": 761,
-   "title": "毎朝の入荷見回り（2026-09-11分・自動）",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "factory",
-   "priority": 3,
-   "startedAt": "2026-09-13T15:06:24+09:00",
-   "sessionId": "c7b83f0e-9bab-4629-8cc5-8329f3d1cddd",
-   "finishedAt": "2026-09-13T16:24:16+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest-2026-09-11.html"
-   ],
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/daily-ingest.html",
-   "checkedAt": "2026-09-13T16:30:30+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：サムネイル3件の食い違いを実画像で確認・修正内容も映像と一致・DB未反映も本番curlで裏取り済みで報告どおり正直に開示されている"
-  },
-  {
-   "n": 765,
-   "title": "【一覧作成】【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "bigJob": true,
-   "phase": "list",
-   "originalTitle": "【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録",
-   "originalWhat": "【2位相当】全ページの下に「扉」を作る。感想をもらい、メール登録につなげ、間違いを直す輪を回す\n\nたまごさんの言葉（2026-09-11・そのまま）：\n> 「**一応、今作ってもらったから、それぞれのページの下。これもまず小さくテスト、1ページにしてほしいな。**こっちPCとあれで確かめるから。\n> **こちらもどうぞ、扉だね。**\n> **フィードバックの文言も変えたいなぁ。これ実際に機能するようにして。**\n> **もうこれ、ここでアンケート取って、でもここでもメール登録流そうよ。**\n> 『**感想送ってくれたら定期便送りますよ**』みたいな。『**不定期であなたの好きなものを送ります**』。\n> 『**案内所で聞く。あなたの好きを教えてください。URLでもいいですよ**』みたいな感じで。\n> **もう全ページでアンケート＋リスト取りをしよう。でも『よろしければね』。『登録してくれたらお届けします』。**\n> **またそれで登録してもらって、毎回のメールで精度を高めるように、パーソナライズできるように。そういう仕組みも作っていこう。**\n> **そしたらほら、商品リリースしたらお知らせできるじゃん。**\n> でもさぁ、**パッと入ってきて、多分、商品のある棚にたどり着けないと思うんだよね。どこにあるか分からないからね。**\n> この下に、じゃあ、**今作ってくれたGIFを貼って。**\n> **『間違いとかもあると思います。手探りでやり始めたばかりだから、間違いもあると思いますが、すぐお知らせください。すぐ対応します』みたいな。でペコリってやってる感じ。**\n> **これもだから、間違いもお客さんに見つけてもらって、すぐ直せるような。お礼のメールだとか、自動化もそうだよ。ここもプロトタイプでいいから、そういう仕組みを取り入れたいな。**\n> **もちろん、お客さんからクレームなり『ここは違うよ』とか入ったら、自動的にタスクに回るように。**\n> **もちろんお礼のメールと、あめちゃんを3個つける。『ありがとう。これ面白いですよ、よろしければ見てくださいね』みたいな。**」\n\n==================================================\n■ これが何なのか（Dispatchの読み）\n==================================================\n\n**これは「飾り」ではない。ファネルの一番大事な継ぎ目。**\n- **メール登録＝唯一の資産。**フォロワーは借り物、リストは自分のもの。\n- **商品（フレーズ20）ができても、お知らせする先がなければ売れない。**たまごさん本人が「商品リリースしたらお知らせできるじゃん」と言った通り。\n- **間違いを客に見つけてもらって直す**＝品質の輪が回り出す。1人でやるより速い。\n→ **761番（フレーズ20）の次に大事。この2つが両輪。**\n\n==================================================\n■ 作るもの：ページ最下部の「扉」\n==================================================\n\n**まず1ページだけ。**（たまごさんがPCとスマホで確かめてから全ページへ）\n\n### 置くもの（上から順に）\n\n**① ペコリ（フェルトのストップモーション）**\n- 素材は完成済み。`joy-relief-footer-stopmotion.zip`（762番に詳細）\n- **動きは「空舞台→左右から登場→中央→お辞儀→退場」。お辞儀で少し止まる。**\n- **MP4が本番。**GIFは使わない。自動再生・無音・ループ・playsinline・動きを減らす設定に対応。\n- **※ZIPがまだMacに無い。**たまごさんがChatGPTからダウンロードして置く必要がある（本人にしかできない1点）。\n　**届くまでは、この枠を空けたまま他を先に作る。止まらない。**\n\n**② 手探りであることを正直に言う文**\n- たまごさんの言葉をそのまま活かす：\n　「**まだ手探りで始めたばかりです。間違いもあると思います。見つけたら、すぐ教えてください。すぐ直します。**」\n- **謝り倒さない。**卑屈にしない。**ペコリの動きと合わせて、軽く。**\n- **これが信頼になる。**完璧なフリより強い。\n\n**③ 感想・間違いの報告（実際に機能させる。今のは飾り）**\n- **今のフィードバック欄は機能していない。文言も変える。**\n- 送る内容：自由記述＋「どのページで」（自動で入る）\n- **送信したら、その場で「ありがとう」が出る。**\n- **送られた内容は自動でタスクに回る。**（下の④）\n\n**④ ★指摘が入ったら自動でタスクになる**\n- 届いた指摘を `queue.json` に自動で積む。**人が転記しない。**\n- **「間違いの指摘」は優先度を上げる。**（お客さんが見つけた不具合＝一番痛い）\n- 直ったら、**送ってくれた人にお礼のメールを返す。**（下の⑤）\n\n**⑤ ★お礼のメール＋あめちゃん3個**\n- たまごさんの言葉：「**お礼のメールと、あめちゃんを3個つける。『ありがとう。これ面白いですよ、よろしければ見てくださいね』みたいな。**」\n- **あめちゃん＝押し売りしない小さな贈り物**（既存の考え方）。\n- 中身は**その人が見たページに近いカード3枚。**「お礼に、これどうぞ」。**売り込みではない。**\n- **「よろしければ」を必ず添える。**\n\n**⑥ メール登録（リスト取り）**\n- 文言の方向（たまごさんの言葉から）：\n　「**あなたの好きを教えてください。URLでもいいですよ。**」\n　「**よろしければ、登録してくれたらお届けします。不定期で、あなたの好きそうなものを。**」\n- **押し売りしない。ドアをポンと置くだけ。**（憲法：押させない、置くだけ）\n- **感想を送った直後が一番いいタイミング。**「感想ありがとう。よければ、こういうの届けましょうか？」\n- 登録は**メールアドレスだけ。**名前も何も聞かない。**手数を増やさない。**\n\n**⑦ 商品の棚への入口（たまごさんが指摘した穴）**\n- たまごさんの言葉：「**パッと入ってきて、多分、商品のある棚にたどり着けないと思うんだよね。どこにあるか分からないからね。**」\n- → **商品がどこにあるか分かる導線を、この扉の中に1本置く。**\n- **ただし押し売りしない。**「こちらもどうぞ」の並びの1つとして。\n\n==================================================\n■ 集めた「好き」は、次のメールの精度に使う\n==================================================\n\n> 「**毎回のメールで精度を高めるように、パーソナライズできるように。**」\n\n- 感想・送られたURL・押されたカードを、**その人の「好き」として貯める。**\n- **推測と本人が言ったことを分ける。**（755番のユーザーメモリと同じ設計。**別の入れ物を作らない。同じ所に貯める。**）\n- **来るほど当たるようになる。**1回目より10回目、10回目より100回目。\n\n==================================================\n■ 完了条件\n==================================================\n\n1. **1ページだけ**に扉が入っている（たまごさんがPC・スマホで確認できる状態）\n2. **感想フォームが実際に動く**（送れる・その場でお礼が出る）\n3. **送られた内容が自動でタスクに積まれる**（手で転記していない）\n4. **メール登録ができる**（アドレスだけ・押し売りしない文言）\n5. **お礼のメール＋あめちゃん3個**の仕組みが動く（プロトタイプでよい）\n6. **商品の棚への入口が1本ある**\n7. PC・スマホ両方のスクショ\n8. **軽くなっていること。**（憲法：軽さは機能より優先。重くなったら不合格）\n\n■ Dispatchからの補足\n- **たまごさんに質問しない。**止まってよいのは不可逆な4つだけ。\n- **メールの一斉送信はしない。**（不可逆）仕組みを作って、送るのは許可が出てから。\n- **ZIPが無くても止まらない。**動画の枠だけ空けて、他を全部作る。\n- 文言は skill `bonjovi-ojisan-kobun` の温度で。**事務的にしない。**\n- 出す前に `oni-kantoku` と `page-kenpin`。",
-   "priority": 2,
-   "label": "【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋登録",
-   "startedAt": "2026-09-13T14:26:04+09:00",
-   "sessionId": "4b874d42-d6cf-4fa2-9bd9-519ac685ee85",
-   "finishedAt": "2026-09-13T14:35:45+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/765-tobira-list.html"
-   ],
-   "backlogVerified": true,
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/765-tobira-list.html",
-   "checkedAt": "2026-09-13T14:40:14+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：一覧ファイル(37件)・確認ページ・触る検品すべて依頼内容と一致し、実装範囲の逸脱もなし"
   },
   {
    "n": 766,
@@ -1728,7 +1588,7 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/792-ryota-personalize-real-data.html"
    ],
    "evidenceGone": true,
-   "evidenceCheckedAt": "2026-09-17T13:22:26+0900"
+   "evidenceCheckedAt": "2026-09-17T16:22:40+0900"
   },
   {
    "n": 793,
@@ -1844,7 +1704,7 @@
    "n": 796,
    "title": "【進捗表】ぐるぐる読み込みが止まらない・重い・週の目盛りが3種類で食い違う",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -1865,7 +1725,8 @@
    "recoveredNote": "案件#687：queue.jsonロールバック事故（git pull --rebaseのautostash残骸問題）で消失した項目を、事故直後に自動生成されていたgit stashコミット（タグ rescue-687-autostash-20260913）から原文のまま復元。autostash時点(10:17:46)ではwaitingだったが、その後実際に完了(実セッションログ df19d2e8 で確認)。",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/796-shinchoku-loading-loop-fix.html"
-   ]
+   ],
+   "finishedAt": "2026-09-17T16:37:47+09:00"
   },
   {
    "n": 798,
@@ -1981,7 +1842,7 @@
    "n": 802,
    "title": "【読む量を減らす】できたもの284件→見て嬉しいもの3〜5件だけ・裏方は畳む・判断待ちを一番上に",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -2001,7 +1862,7 @@
    ],
    "startedAt": "2026-09-14T03:40:18+09:00",
    "sessionId": "d355167a-8ae0-4ceb-9430-77a09e610a49",
-   "finishedAt": "2026-09-14T04:09:04+09:00",
+   "finishedAt": "2026-09-17T16:37:47+09:00",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/802-dekimono-read-less.html",
     "https://tamago2022.github.io/tamago-shinchoku/index.html"
@@ -3155,7 +3016,7 @@
    "n": 884,
    "title": "【工場】計測が45分止まっている＝machine_load.shが消えている（心臓が5分おきに殺されている）",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -3169,7 +3030,7 @@
    ],
    "startedAt": "2026-09-16T20:26:20+09:00",
    "sessionId": "66e59395-c4fa-4969-b6b8-755c38a62428",
-   "finishedAt": "2026-09-16T22:20:19+09:00",
+   "finishedAt": "2026-09-17T16:37:47+09:00",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/884-machine-load-restore.html",
     "https://tamago2022.github.io/tamago-shinchoku/status/health.json"
@@ -3289,7 +3150,7 @@
    "n": 892,
    "title": "【仕組み①】何回も言わせない：数字の正本を1か所に＋CIで機械検査",
    "why": "スマホから追加",
-   "status": "running",
+   "status": "stuck",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -3300,7 +3161,8 @@
    "touchCheckFailCount": 0,
    "failReasons": [
     "URLが1本も無いまま終了",
-    "【訂正・09-17（案件#914）】これは検品側のバグでした。「← 進捗表に戻る」クリック後、遷移中の評価失敗でafter=beforeへフォールバックし無反応と誤判定していました（verify_click.mjs修正済み・5回連続再検証でPASS確認済み）。この指摘によるtouchCheckFailCount分は取り消します。"
+    "【訂正・09-17（案件#914）】これは検品側のバグでした。「← 進捗表に戻る」クリック後、遷移中の評価失敗でafter=beforeへフォールバックし無反応と誤判定していました（verify_click.mjs修正済み・5回連続再検証でPASS確認済み）。この指摘によるtouchCheckFailCount分は取り消します。",
+    "直前の関所が要求した実測の生データ（「実測:」記載や<pre>/<code>）が確認ページに無く、数字も8/8(ページ記載)対11/11(実測)で食い違っている"
    ],
    "redoCount": 1,
    "statusBefore": "stuck",
@@ -3334,7 +3196,16 @@
    "sekishoFailCount": 1,
    "startedAt": "2026-09-17T16:22:21+09:00",
    "sessionId": "2ab3a2bd-5634-4ed9-b2e1-204dbc14f066",
-   "pid": 39070
+   "finishedAt": "2026-09-17T16:29:39+09:00",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/892-badge-design-rules-ci.html",
+    "https://joy-relief-station.lovable.app/design-check"
+   ],
+   "touchUrl": "https://joy-relief-station.lovable.app/design-check",
+   "aiVerifyFailCount": 1,
+   "stuckAt": "2026-09-17T16:34:29+09:00",
+   "stuckReasonSummary": "【訂正・09-17（案件#914）】これは検品側のバグでした。「← 進捗表に戻る」クリック後、遷移中の評価失敗でafter=beforeへフォールバックし無反応と誤判定していました（verify_click.mjs修正済み・5回連続再検証でPASS確認済み）。この指摘によるtouchCheckFailCount分は取り消します。 ／ 直前の関所が要求した実測の生データ（「実測:」記載や<pre>/<code>）が確認ページに無く、数字も8/8(ページ記載)対11/11(実測)で食い違っている",
+   "stuckRedoTotal": 2
   },
   {
    "n": 893,
@@ -4339,27 +4210,33 @@
    "n": 929,
    "title": "(3/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "splitFrom": 923,
    "splitIndex": 3,
    "splitTotal": 7,
-   "origin": "user"
+   "origin": "user",
+   "startedAt": "2026-09-17T16:26:02+09:00",
+   "sessionId": "a366e44f-ab8d-4dfc-912b-8f34007f9e76",
+   "pid": 40836
   },
   {
    "n": 930,
    "title": "(4/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
    "splitFrom": 923,
    "splitIndex": 4,
    "splitTotal": 7,
-   "origin": "user"
+   "origin": "user",
+   "startedAt": "2026-09-17T16:29:39+09:00",
+   "sessionId": "0316c3c9-9eb6-4522-94fe-c503b26455b7",
+   "pid": 42456
   },
   {
    "n": 931,
