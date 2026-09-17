@@ -49,7 +49,11 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</div>
 <h1>#818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</h1>
-<div class="date">2026-09-14 実装 → AI検品1回目で不合格 → 2026-09-15 原因修正・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-14 実装 → AI検品1回目で不合格 → 2026-09-15 原因修正・main合流・本番(GitHub Pages)反映まで実測確認 → 2026-09-17 再確認（実測値を最新に更新）</div>
+
+<div class="note" style="border-left:3px solid var(--midori);">
+<b>2026-09-17 追記（再確認）</b>：queue上でこの案件が「urls無しで終了」「stuck→revived」を繰り返していたため、憲法番人セッションが実装・本番反映を最初からもう一度たどり直した。結果：<b>コード変更は問題なくorigin/mainへ合流済み</b>（commit <code>9782fb5a</code>、現在のorigin/main HEADの祖先）。launchdの30分便は今も無効化されたまま（<code>Disabled: true</code>）。Lovable側の一時停止（<code>.lovable-publish-pause</code>）は解除済みで、実際にon-demandで公開を試みるようになっている（今日2026-09-17早朝に実行し「公開」ボタン検出で1回失敗→連続失敗1回で記録・停止せず継続、という設計通りの動きを実機ログで確認）。この失敗は「suspicious activityブロック」ではなく別の画面遷移由来のクリック失敗で、#820のゲート機構そのものは正しく機能している。下記③の数値は2026-09-17時点の実測に更新した。
+</div>
 
 <div class="note" style="border-left:3px solid var(--aka);">
 <b>2026-09-14 16:12 AI検品1回目で不合格</b>：「.lovable-publish-pause があると一時停止判定より前に即終了するため、本番未反映かどうかの判定・保存自体が一度も走らず、進捗表の『本番未反映』赤バナーが永久に出ない」という指摘。実際その通りで、一時停止中の間ずっと状態ファイルが更新されていなかった。
@@ -67,13 +71,15 @@
   <div class="num" style="border-color:var(--aka);"><b style="color:var(--aka);">本番未反映</b><span>現在の実測値（下表参照）</span></div>
 </div>
 
-<h2>③ 今まさに本番で赤バナーが出ている状態（生きた実例）</h2>
+<h2>③ 今まさに本番で赤バナーが出ている状態（生きた実例・2026-09-17時点に更新）</h2>
 <div class="note">
-現時点の実データ：<code>mainUnpublished: true</code>（案件820の変更自体がまだLovable本番に出ていない）／<code>paused: true</code>（Lovable側 suspicious activity ブロック解除待ちのため意図的に一時停止中）／<code>consecutiveFailures: 0</code>。
-旧仕様なら「連続失敗0回」なので赤バナーは<b>出なかった</b>。新仕様では下記の文言が進捗表トップに実際に出ている：
-<div style="margin-top:8px;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.9rem;white-space:pre-wrap;">🔴 本番未反映：mainに新しい変更がありますが、一時停止中のため公開していません（Lovable側のsuspicious activityブロック解除待ち（.lovable-publish-pauseで一時停止中））。
-本日の公開成功: 0回 / 上限6回　最終確認: 2026-09-15T14:04:21.577Z</div>
-<span class="meta">↑進捗表のJSレンダー関数(renderLovablePublishAlert)を現在の本番data.jsで実際に実行して得た出力そのまま（node上でDOMをモックして実行・スクリーンショットではなく実行結果）。</span>
+現時点の実データ（<code>https://tamago2022.github.io/tamago-shinchoku/data.js</code> の <code>lovablePublishStatus</code> を実際にWebFetchで取得して確認）：<code>mainUnpublished: true</code>／<code>paused: false</code>（Lovable側のブロックは解除され、一時停止も解除済み）／<code>consecutiveFailures: 1</code>（今朝の実行が1回失敗し記録された）／<code>autoTimerDisabled: true</code>／<code>dailyCap: 6</code>／<code>consecutiveFailureStopAt: 2</code>。
+進捗表トップの<code>id="lovablePublishAlert"</code>（<code>renderLovablePublishAlert()</code>が上記データを読んで書き換える箱）には、この条件で以下の内容が表示される：
+<div style="margin-top:8px;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.9rem;white-space:pre-wrap;">🔴 本番未反映：mainに新しい変更（bb28b3c64a）がまだ公開されていません。
+⚠️ 連続失敗 1回。
+本日の公開成功: 0回 / 上限6回　最終確認: 2026-09-16T18:43:50.279Z
+直近の失敗理由: 「公開」ボタンが見つからない。画面がエディタでない可能性。</div>
+<span class="meta">↑<code>index.html</code>の生ソース（787行目）に <code>&lt;div id="lovablePublishAlert"&gt;</code> が静的に存在し、JSが上記data.jsの値でinnerHTMLを書き換える実装。本番data.jsの値自体は2026-09-17に憲法番人セッションが実行した<code>sync-lovable-publish-dashboard.mjs</code>のpush後、実際にWebFetchで取得して確認済み。</span>
 </div>
 
 <h2>④ 押せるリンク</h2>
