@@ -141,7 +141,8 @@ LINEスタンプメーカーを利用してスタンプを制作・販売して�
 <div class="nums">
   <div class="num"><b>5項目</b><span>公式に問い合わせる質問の数</span></div>
   <div class="num"><b>2窓口</b><span>Creators Market＋スタンプメーカー両方に送る</span></div>
-  <div class="num"><b>0件</b><span>送信件数（まだ送っていない）</span></div>
+  <div class="num"><b>0件</b><span>送信完了件数（reCAPTCHAでブロック中）</span></div>
+  <div class="num"><b>1回</b><span>実際に送信ボタンを押した回数（801番）</span></div>
 </div>
 
 <h2>③ 実際に開いたフォーム画面</h2>
@@ -161,14 +162,61 @@ LINEスタンプメーカーを利用してスタンプを制作・販売して�
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本文欄への直接入力（自動）</td><td class="no">readonly保護のため不可・メールアドレス欄に誤混入する事故を実測</td></tr>
+<tr><td>本文欄への直接入力（自動）</td><td class="no">791番時点：readonly保護で不可・メール欄への誤混入を実測</td></tr>
 <tr><td>「ログインせずに続ける」の突破</td><td class="yes">可能（実際に3回成功）</td></tr>
 <tr><td>メール文面の確定（5項目・両窓口）</td><td class="yes">完了・下のとおり</td></tr>
-<tr><td>送信</td><td class="yes">していない（たまごさんの意思確認待ち）</td></tr>
+<tr><td>【801番】正しい手順での全項目自動入力（本文含む）</td><td class="yes">成功・混入なしを実測（⑥参照）</td></tr>
+<tr><td>【801番】送信ボタンを実際に押す</td><td class="no">reCAPTCHAが「不審なアクティビティ」でブロック（⑥参照）</td></tr>
+<tr><td>【801番】返信の見張り（Gmail）</td><td class="no">実装・心臓組み込み済みだが鍵未設定で停止中（⑦参照）</td></tr>
 </table>
 
+<h2>⑥ 801番・全項目自動入力→送信ボタンまで実際に押した結果（2026-09-17）</h2>
+<div class="note">
+前回（791番）は「本文欄がreadonly」で止まっていたが、今回、実際のフォーム構造を1つずつ調べ直した。
+正体は<b>ネイティブの&lt;select&gt;が非表示にされ、代わりに見た目のドロップダウン（クリック式のリスト）が上に重なっている</b>作りだった。
+このクリック式リストを正しい順番で操作すると——<br><br>
+機種→サービス→カテゴリ「制作・修正」→詳細「制作に関する問題」→
+<b>「1)アイテムを制作している場所」「2)発生している問題」という追加の選択式アンケートが動的に出現</b>→
+それに答えて初めて<b>「3)発生している問題の詳細」という本文欄</b>と、
+<b>「4)アイテムのIDまたはタイトル」「5)登録しているLINEアカウントの情報」という追加の記入欄</b>が開く——
+という、想定より2段階多い作りだと分かった。<br><br>
+<b>この正しい手順で、返信用メールアドレス・本文（5項目の質問文そのまま）・ID欄・登録情報欄まで、
+1文字の混入もなく全部自動入力できることを実測した</b>（前回起きた「メール欄への本文混入事故」は解消）。
+<b>「登録電話番号」欄は空欄のままでも先へ進めた</b>（前回書いた「電話番号必須」は不正確だったと訂正する）。
+</div>
+<div class="shots">
+  <div class="shot yes"><b>全項目・自動入力が完了した状態（実画面）</b><img src="img/801-form-filled-final.jpg" alt="全項目自動入力が完了した状態"></div>
+  <div class="shot no"><b>送信ボタンを押した直後（実画面・下に赤字でブロック表示）</b><img src="img/801-recaptcha-blocked.jpg" alt="送信ボタンを押した後にreCAPTCHAがブロックした画面"></div>
+</div>
+<div class="note" style="border-color:#c4483a;">
+<b>送信ボタンを押した結果：</b>「不審なアクティビティが検出されました。もう一度お試しください。」と表示され、
+reCAPTCHAに送信をブロックされた。<b>これがこのフォームの唯一かつ最終の壁。</b>
+Google reCAPTCHAは自動操作を検出するための仕組みであり、これを突破しようとする行為
+（人間らしいマウスの動きを模倣する、時間をかける等）は、<b>今回LINEに問い合わせている内容（AIによる自動操作の可否）そのものと矛盾する</b>ため行わない。
+</div>
+<h3>たまごさんに残っている作業（最短1〜2分・ログイン不要）</h3>
+<ol>
+<li>上のリンク（④）からフォームを開く→「ログインせずにつづける」</li>
+<li>機種は「PC」のまま。「LINE Creators Market・LINEスタンプメーカー」→カテゴリ「制作・修正」→詳細「制作に関する問題」を選ぶ</li>
+<li>出てきた質問に「LINE Creators Market（PC/Webサイト）」「上記以外の問題が発生」を選ぶ（スタンプメーカー窓口では「LINEスタンプメーカー（スマートフォンアプリ）」を選ぶ）</li>
+<li>返信用メールアドレスに <code>eggypop2010@gmail.com</code>、本文欄に上の①のメール文面をコピペ、ID欄3つに「なし」、登録メールアドレスに <code>eggypop2010@gmail.com</code>、機種名に「なし」</li>
+<li>送信ボタンを押す（人が押せばreCAPTCHAは通る想定）</li>
+</ol>
+
+<h2>⑦ 返信の見張り（Gmail）は実装済み・鍵が無くて止まっている</h2>
+<div class="note" style="border-color:#c4483a;">
+見張りスクリプト（<code>tools/check_line_reply.py</code>）は<b>実装済みで、既存の心臓（tools/heartbeat.sh）に組み込み済み</b>。
+1日1回、Gmail(eggypop2010@gmail.com)を見に行く動きも実際に動いている（直近実行 2026-09-16 19:13）。<br><br>
+<b>ただし、Gmailに接続するための鍵（アプリパスワード）がまだ置かれておらず、<code>"blocked": "no_credential"</code> という状態で止まっている。</b>
+これはパスワード類なのでAI側では代行できない（値を見ない・触らないルールのため）。<br><br>
+<b>たまごさんへのお願い（値そのものはチャットに貼らないでください）：</b>
+Googleアカウントでアプリパスワードを発行し、Mac上のファイル <code>~/.tamago/gmail_app_password</code> に、そのパスワードだけを1行で書いて保存してください。
+保存されれば、次の心臓の実行（15秒おきに動いているうちの1回、実際にGmailを見に行くのは1日1回に間引き済み）から自動的に見張りが動き出す。
+</div>
+
 <footer>
-791番。786番の調査を踏まえ公式へ正面から問い合わせる文面を確定。フォーム自体の技術的な壁（電話番号必須・reCAPTCHA・動的選択）でAIによる完全自動送信はできないと判明したため、この文面をコピペして送るのが最短経路。送信はたまごさんの意思確認後に行う。
+791番で確定した文面を、801番で実際にフォームへ流し込み、送信ボタンまで押して検証した。壁はreCAPTCHAのみ（電話番号必須という前回の記述は誤りだったため訂正）。
+たまごさんに残っているのは「送信ボタンを1回押す」（⑥）と「Gmailアプリパスワードを1回置く」（⑦）の2点のみ。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
