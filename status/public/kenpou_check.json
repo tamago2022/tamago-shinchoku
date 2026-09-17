@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-09-16T09:10:31+09:00",
+ "checkedAt": "2026-09-17T09:10:07+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 2,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,8 +23,8 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 1,
-   "detail": "最終記録から約3.3時間経過（2026-09-16T05:50:00+0900）／直近24時間の完了4件中、鬼監督の記録が付いているのは3件"
+   "count": 0,
+   "detail": "最終記録から約0.5時間経過（2026-09-17T08:37:01+09:00）／直近24時間の完了10件中、鬼監督の記録が付いているのは10件"
   },
   {
    "key": "done_missing_url",
@@ -36,23 +36,23 @@
   {
    "key": "factory_stalled",
    "label": "工場が止まったまま放置されていないか",
-   "color": "red",
-   "count": 64,
-   "detail": "最終発車から4.4時間・発車待ち64件・空き4枠あり"
+   "color": "green",
+   "count": 0,
+   "detail": "最終発車から0.6時間・発車待ち95件・空き4枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回857番 → 今回884番（減少なし）"
+   "detail": "前回726番 → 今回924番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
-   "color": "green",
-   "count": 0,
-   "detail": "1MB超のファイルは無い（status/queue.json は生きた台帳のため対象外・音声は717番で全て圧縮/分割済み）"
+   "color": "red",
+   "count": 2,
+   "detail": "status/public/queue.json(1.8MB)、status/public/done_archive.json(1.0MB)"
   },
   {
    "key": "check_page_404",
@@ -73,15 +73,15 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 82,
-   "detail": "82件（しきい値100件以内）"
+   "count": 91,
+   "detail": "91件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
-   "color": "red",
-   "count": 1,
-   "detail": "未報告の完了が1件たまっている（最古は約4.7時間前：#825）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "color": "green",
+   "count": 0,
+   "detail": "未報告の完了は無い（dispatch_outboxとdispatch_reportedが一致）"
   }
  ],
  "queuedFixes": [
@@ -90,14 +90,10 @@
    "skipped": "既存の714番と同じ内容のためスキップ"
   },
   {
-   "key": "factory_stalled",
-   "skipped": "既にこの点検が積んだ842番が未解決のため積み直さない"
-  },
-  {
-   "key": "unreported_completions",
+   "key": "big_files",
    "status": "done",
-   "message": "885番として発車待ちに追加しました（P2）",
-   "n": 885
+   "message": "925番として発車待ちに追加しました（P2）",
+   "n": 925
   }
  ]
 }
