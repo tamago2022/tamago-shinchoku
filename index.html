@@ -43,8 +43,10 @@ a{color:#2a5b8f}
 .empty{color:var(--grey); font-size:14px}
 /* 週の目盛り：pace.json 一本だけを見る */
 .big{font-size:30px; font-variant-numeric:tabular-nums; line-height:1.2}
-.gauge{height:10px; border:1px solid var(--line); border-radius:6px; background:#efe9df; overflow:hidden; margin:8px 0 6px}
-.gauge i{display:block; height:10px; background:var(--green); transform:scaleX(0); transform-origin:left center}
+.gauge{position:relative; height:10px; border:1px solid var(--line); border-radius:6px; background:#efe9df; overflow:hidden; margin:8px 0 6px}
+/* 全幅を取るのに % を使わない（left/right:0 で伸ばす）。
+   以前は width:0 が残ったまま scaleX を掛けていたので、0×0.31=0 で棒が一度も描かれていなかった。 */
+.gauge i{position:absolute; left:0; top:0; right:0; bottom:0; background:var(--green); transform:scaleX(0); transform-origin:left center}
 .gauge.over i{background:var(--red)}
 .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:baseline}
 .d-green{background:var(--green)} .d-amber{background:var(--amber)} .d-grey{background:var(--grey)}
@@ -97,7 +99,7 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
 <section class="card">
   <h2>週の残り</h2>
   <div class="big" id="remain">…</div>
-  <div class="gauge" id="gauge"><i style="width:0"></i></div>
+  <div class="gauge" id="gauge"><i></i></div>
   <div class="meta" id="paceMeta"></div>
 </section>
 
