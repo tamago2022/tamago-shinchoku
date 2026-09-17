@@ -43,6 +43,7 @@ import queue_store  # noqa: E402  案件#687：queue.jsonの安全な読み書�
 import shukan_kubun  # noqa: E402  週の作業配分：見たいもの／裏方／予備の分類
 import shukan_haibun  # noqa: E402  週の作業配分：実績集計とゲート判定（裏方30%上限）
 import sekisho  # noqa: E402  案件#898：関所＝報告の手前に置く機械の門（数字の主張と実測の食い違い等）
+CLAUDE_PROJECTS_DIR = os.path.expanduser("~/.claude/projects")
 QUEUE = os.path.join(REPO, "status", "queue.json")
 MACHINE = os.path.join(REPO, "status", "machine.json")
 QUOTA = os.path.join(REPO, "status", "quota.json")
@@ -184,6 +185,77 @@ def _elapsed_min(started, finished):
         return round((t1 - t0).total_seconds() / 60.0, 1)
     except Exception:
         return None
+
+
+_CUT_NOTE_RE = re.compile(r"^【中断から再開・.*?─{10,}\n\n", re.DOTALL)
+
+
+def _find_transcript_by_session(session_id):
+    """894番：sessionId（transcriptのファイル名）から ~/.claude/projects 配下を探す。
+    見つからなくても例外を投げない（呼び出し頻度は「結果なしで切られた時」だけなので軽い）。"""
+    if not session_id:
+        return None
+    try:
+        fn = session_id + ".jsonl"
+        for root, _dirs, files in os.walk(CLAUDE_PROJECTS_DIR):
+            if fn in files:
+                return os.path.join(root, fn)
+    except Exception:
+        pass
+    return None
+
+
+def _last_assistant_text(transcript_path, max_len=280):
+    """894番：transcriptの末尾だけを読み、直近のassistant発言テキストを短く取り出す。
+    全文パースは重いので末尾200KBだけ読む（切られた直後に呼ぶための軽量版）。"""
+    if not transcript_path:
+        return ""
+    try:
+        with io.open(transcript_path, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            f.seek(max(0, size - 200000), os.SEEK_SET)
+            data = f.read().decode("utf-8", "ignore")
+        text = ""
+        for ln in data.splitlines():
+            if '"type":"assistant"' not in ln:
+                continue
+            try:
+                e = json.loads(ln)
+            except Exception:
+                continue
+            c = (e.get("message") or {}).get("content")
+            if isinstance(c, list):
+                t = "".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
+                if t.strip():
+                    text = t.strip()
+        return text[-max_len:] if text else ""
+    except Exception:
+        return ""
+
+
+def _inject_cut_note(it, elapsed_min):
+    """894番「工場が止まらない」：間引き・強制カット・クラッシュ等、理由を問わず
+    『結果を残さず切られた』仕事は、次に着火する指示文（build_prompt→item["what"]）の
+    先頭に「何分走って、どこまで進んでいたか」を焼き込む。
+    --resume できる間（50分以内）は会話自体が残るので実害は薄いが、50分超で🧊コールドスタート
+    （launch_oneが resumeFrom を捨てて新規セッションで立て直す分岐）になると会話は失われ、
+    build_prompt() が item["what"] をそのまま渡すだけになる。ここで焼き込んでおけば、
+    コールドスタートでも『切られた＝最初からやり直し』にならない。
+    cutCountが重なってもノートが際限なく伸びないよう、既存ノートは1個だけに置き換える。
+    """
+    try:
+        what = _CUT_NOTE_RE.sub("", it.get("what") or "", count=1)
+        tail = _last_assistant_text(_find_transcript_by_session(it.get("sessionId")))
+        elapsed_str = ("%d分" % elapsed_min) if elapsed_min is not None else "不明な時間"
+        lines = ["【中断から再開・%s走行・%s】\n" % (elapsed_str, time.strftime("%m-%d %H:%M"))]
+        lines.append("**このタスクは前回すでに%s走っています。ゼロからではなく続きとして扱ってください。**\n" % elapsed_str)
+        if tail:
+            lines.append("直前までの様子（前回セッション最後の発言の末尾）：\n> %s\n" % tail.replace("\n", "\n> "))
+        lines.append("─" * 20 + "\n\n")
+        it["what"] = "".join(lines) + what
+    except Exception:
+        pass  # 記録の失敗で発車自体を止めない
 
 
 def short_report(it):
@@ -1328,19 +1400,23 @@ def harvest(q):
         if not (result or "").strip() and '"result"' not in (raw or ""):
             cut = int(it.get("cutCount") or 0)
             if cut < 5:
+                # 894番：この時点でelapsed_minとsessionIdをまだ持っているうちに記録する
+                #   （下のfor文でstartedAtを消してしまうため、消す前に計算する）
+                elapsed_min = _elapsed_min(it.get("startedAt"), time.strftime("%Y-%m-%dT%H:%M:%S+09:00"))
                 it["cutCount"] = cut + 1
                 it["status"] = "hold" if it.get("holdNote") else "waiting"
                 if it.get("sessionId"):
                     it["resumeFrom"] = it["sessionId"]   # 続きから起こす
                     # 切られた時刻を残す。1時間放置すると起こすほうが高くつくため（下の🧊）
                     it["cutAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+                _inject_cut_note(it, elapsed_min)  # 894番：「切られた＝最初からやり直し」を無くす
                 it["priority"] = it.get("priority") or 2
                 for k in ("finishedAt", "result", "urls", "startedAt"):
                     it.pop(k, None)
                 it.pop("pid", None)
                 changed = True
-                log("✂︎ 途中で切られたので続きから再開へ %d番「%s」（%d回目）"
-                    % (it.get("n"), it.get("title"), cut + 1))
+                log("✂︎ 途中で切られたので続きから再開へ %d番「%s」（%d回目・%s分走行）"
+                    % (it.get("n"), it.get("title"), cut + 1, elapsed_min if elapsed_min is not None else "?"))
                 continue
             # 5回続けて切られるなら、切られ方そのものがおかしい。人の目に回す。
             it["result"] = ("【5回続けて途中で切られました】仕事の中身の問題ではなく、"
