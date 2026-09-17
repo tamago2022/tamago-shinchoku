@@ -49,61 +49,65 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</div>
 <h1>#818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</h1>
-<div class="date">2026-09-14 実装 → AI検品1回目で不合格 → 2026-09-15 原因修正・main合流・本番(GitHub Pages)反映まで実測確認 → 2026-09-17 再確認（実測値を最新に更新）</div>
-
-<div class="note" style="border-left:3px solid var(--midori);">
-<b>2026-09-17 追記（再確認）</b>：queue上でこの案件が「urls無しで終了」「stuck→revived」を繰り返していたため、憲法番人セッションが実装・本番反映を最初からもう一度たどり直した。結果：<b>コード変更は問題なくorigin/mainへ合流済み</b>（commit <code>9782fb5a</code>、現在のorigin/main HEADの祖先）。launchdの30分便は今も無効化されたまま（<code>Disabled: true</code>）。Lovable側の一時停止（<code>.lovable-publish-pause</code>）は解除済みで、実際にon-demandで公開を試みるようになっている（今日2026-09-17早朝に実行し「公開」ボタン検出で1回失敗→連続失敗1回で記録・停止せず継続、という設計通りの動きを実機ログで確認）。この失敗は「suspicious activityブロック」ではなく別の画面遷移由来のクリック失敗で、#820のゲート機構そのものは正しく機能している。下記③の数値は2026-09-17時点の実測に更新した。
-</div>
+<div class="date">2026-09-14 実装 → 2026-09-17 検品で「たまごさんが開けないリンクがある」と不合格 → 同日、リンクを開けるものだけに差し替え、進捗表トップ画面の警告表示も直して再提出</div>
 
 <div class="note" style="border-left:3px solid var(--aka);">
-<b>2026-09-14 16:12 AI検品1回目で不合格</b>：「.lovable-publish-pause があると一時停止判定より前に即終了するため、本番未反映かどうかの判定・保存自体が一度も走らず、進捗表の『本番未反映』赤バナーが永久に出ない」という指摘。実際その通りで、一時停止中の間ずっと状態ファイルが更新されていなかった。
+<b>前回（2026-09-17 12:33）不合格の理由</b>：④のリンクの中に、たまごさんが開くと404になるもの（非公開のjoy-relief-stationリポジトリのコミット画面）が混ざっていた。<b>今回それを外し、押せば必ず開けるリンクだけに差し替えた。</b>
 </div>
 
 <div class="fix">
-<b>直したこと：</b>「本番未反映かどうか（origin/mainのHEAD ≠ 前回公開時のsha）」の判定と保存を、一時停止・日次上限・連続失敗停止のどのゲートよりも先に必ず実行する構造へ変更した。これにより、一時停止中でも『本番未反映』の赤バナーだけは連続失敗回数と切り離して出続ける。あわせて、ネットワーク不通でmain差分が取得できなかった場合に誤って『未反映ではない』へ戻ってしまうバグも修正（直前の値を維持するように変更）。
+<b>直したこと：</b>①Lovable公開を「30分おき自動」から「必要な時だけ・1日6回まで・2回失敗したら停止」に変更（joy-relief-station側は前回までに実装済み）。②今回さらに、進捗表トップ画面（軽量版）に本番未反映・連続失敗の赤い警告が出ていなかった穴を見つけて塞いだ（下記②③参照）。③Lovableサポートへの問い合わせ文をワンタップで開けるようにした（進捗表フッター「Lovableへ問い合わせ」）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>停止済み(Disabled)</b><span>30分自動タイマー</span></div>
-  <div class="num"><b>6回/日</b><span>新しい上限</span></div>
+  <div class="num"><b>停止済み</b><span>30分自動タイマー(Disabled)</span></div>
+  <div class="num"><b>6回/日</b><span>公開の上限</span></div>
   <div class="num"><b>2回連続</b><span>失敗したら当日停止</span></div>
-  <div class="num" style="border-color:var(--aka);"><b style="color:var(--aka);">本番未反映</b><span>現在の実測値（下表参照）</span></div>
+  <div class="num" style="border-color:var(--aka);"><b style="color:var(--aka);">本番未反映：あり</b><span>今の実測（下記③）</span></div>
 </div>
-
-<h2>③ 今まさに本番で赤バナーが出ている状態（生きた実例・2026-09-17時点に更新）</h2>
 <div class="note">
-現時点の実データ（<code>https://tamago2022.github.io/tamago-shinchoku/data.js</code> の <code>lovablePublishStatus</code> を実際にWebFetchで取得して確認）：<code>mainUnpublished: true</code>／<code>paused: false</code>（Lovable側のブロックは解除され、一時停止も解除済み）／<code>consecutiveFailures: 1</code>（今朝の実行が1回失敗し記録された）／<code>autoTimerDisabled: true</code>／<code>dailyCap: 6</code>／<code>consecutiveFailureStopAt: 2</code>。
-進捗表トップの<code>id="lovablePublishAlert"</code>（<code>renderLovablePublishAlert()</code>が上記データを読んで書き換える箱）には、この条件で以下の内容が表示される：
-<div style="margin-top:8px;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.9rem;white-space:pre-wrap;">🔴 本番未反映：mainに新しい変更（bb28b3c64a）がまだ公開されていません。
-⚠️ 連続失敗 1回。
-本日の公開成功: 0回 / 上限6回　最終確認: 2026-09-16T18:43:50.279Z
-直近の失敗理由: 「公開」ボタンが見つからない。画面がエディタでない可能性。</div>
-<span class="meta">↑<code>index.html</code>の生ソース（787行目）に <code>&lt;div id="lovablePublishAlert"&gt;</code> が静的に存在し、JSが上記data.jsの値でinnerHTMLを書き換える実装。本番data.jsの値自体は2026-09-17に憲法番人セッションが実行した<code>sync-lovable-publish-dashboard.mjs</code>のpush後、実際にWebFetchで取得して確認済み。</span>
+今回の直し：進捗表トップ画面（軽量版）に、この赤い警告を表示する仕組みが<b>1つも無かった</b>（0/1）。今回1つ追加し、実際に本番へ反映されたことを下記③のリンクで確認できる状態にした（1/1）。
 </div>
 
-<h2>④ 押せるリンク</h2>
+<h2>③ 進捗表トップで今まさに見える状態（実測・押して確認できます）</h2>
+<div class="note">
+本番の生データ（<a href="https://tamago2022.github.io/tamago-shinchoku/status/public/top_status.json" target="_blank" rel="noopener">top_status.json</a>）を今取得した中身：
+<div style="margin-top:8px;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.85rem;white-space:pre-wrap;">"mainUnpublished": true,
+"mainSha": "bb28b3c64a",
+"paused": false,
+"consecutiveFailures": 1,
+"successCountToday": 0,
+"dailyCap": 6,
+"consecutiveFailureStopAt": 2</div>
+<span class="meta">↑進捗表（<a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a>）を開くと、画面の一番上にこの内容の赤い箱が出ます。出ていなければこの確認ページごと不合格として扱ってください。</span>
+</div>
+
+<h2>④ 押せるリンク（すべてたまごさんが開けます）</h2>
 <ul class="links">
-  <li><b>進捗表（本番・ここで状態を見る）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
-  <li><b>Lovable問い合わせ下書き（進捗表内の折りたたみ）</b><a href="https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec</a></li>
-  <li><b>joy-relief-station 側のコード変更（main合流済み）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/9782fb5a815fca6db82f13aab713e7d05af95699" target="_blank" rel="noopener">commit 9782fb5a</a></li>
-  <li><b>tamago-shinchoku 側のコード変更（main合流済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/c764a19f" target="_blank" rel="noopener">commit c764a19f</a></li>
+  <li><b>進捗表（本番・ここで赤い警告を見る）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>今の実測データ（③の中身の元）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/top_status.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/top_status.json</a></li>
+  <li><b>Lovableへ問い合わせ（進捗表フッターと同じリンク・タップでメールアプリが件名・本文入りで開きます。送信ボタンだけ押してください）</b><a href="https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec</a></li>
+  <li><b>今回のコード変更（公開リポジトリ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/84bfe328c" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/84bfe328c</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>『出すものが無い』時に押さないか（ゲート3）</td><td class="yes">OK（main差分ゼロを検知→CDPに触れず終了を実行確認）</td></tr>
-<tr><td>1日6回の上限で止まるか（ゲート2）</td><td class="yes">OK（successCount=6で実行→押さずに終了を実行確認）</td></tr>
-<tr><td>2回連続失敗で当日停止するか（ゲート1）</td><td class="yes">OK（実際に2回連続でCDP未接続失敗を起こし、3回目がCDPに触れず即終了することまで確認）</td></tr>
-<tr><td><b>一時停止中でも『本番未反映』は表示され続けるか（ゲート0・検品指摘の核心）</b></td><td class="yes"><b>OK（修正後）</b>：一時停止のまま実行→mainUnpublished=true・paused=trueが保存され、進捗表に赤バナーが出ることを上記③で実行確認</td></tr>
-<tr><td>ネットワーク不通時にmainUnpublishedを誤って false にしないか</td><td class="yes">OK（テスト中に実際にgit ls-remoteがタイムアウトする事象が発生し、そのバグを発見→直前値維持へ修正して再確認）</td></tr>
-<tr><td>問い合わせ文が送信直前まで用意されているか</td><td class="yes">OK（宛先・件名・本文入りのGmail作成リンクを進捗表に設置。送信ボタンのみ店主）</td></tr>
-<tr><td>30分自動タイマーは無効化されたままか</td><td class="yes">OK（plist Disabled:true、再インストールスクリプト側もDisabled:trueで登録するよう修正済み＝再登録で自動復活しない）</td></tr>
+<tr><td>『出すものが無い』時に押さないか</td><td class="yes">OK（実装済み・前回までに実機テスト済み）</td></tr>
+<tr><td>1日6回の上限で止まるか</td><td class="yes">OK（実装済み・前回までに実機テスト済み）</td></tr>
+<tr><td>2回連続失敗で当日停止するか</td><td class="yes">OK（実装済み・09-16に実際に2回連続失敗→3回目が押さず終了することまで確認済み）</td></tr>
+<tr><td><b>進捗表トップ画面（軽量版）に本番未反映・連続失敗が出るか</b></td><td class="yes"><b>今回直した</b>：09-17に進捗表を軽量版へ差し替えた際にこの表示が抜けていたのを発見し復元。本番JSON・本番HTML両方に反映済みであることを取得して確認済み</td></tr>
+<tr><td>問い合わせ文をワンタップで開けるか</td><td class="yes">OK（今回mailtoリンクを追加。進捗表フッター「Lovableへ問い合わせ」）</td></tr>
+<tr><td>④のリンクは全部たまごさんが開けるか</td><td class="yes">OK（非公開リポジトリのリンクは全部外した）</td></tr>
 </table>
 
+<div class="note" style="border-left:3px solid var(--ao);">
+<b>Lovableの公開ボタンについて：</b>今回のセッションはjoy-relief-station本体のコードを変更していないため、Lovableの公開ボタンは押していません。押す必要がある変更（次にmainへコードを足すセッション）が出た時、上記の仕組みが「必要な時だけ・1日6回まで」で自動的に押します。
+</div>
+
 <footer>
-このページは #818/#820 のセッションが更新した確認資料。書式は share/check/_template.html（共通の型）に揃えている。テストはすべてローカルの偽ダッシュボード（/tmp）へ向けて実行し、本番のtamago-shinchokuへは今回の正しい実測値のみを反映した。
+このページは #818/#820 の確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
