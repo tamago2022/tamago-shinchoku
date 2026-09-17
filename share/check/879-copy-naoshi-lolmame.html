@@ -49,17 +49,18 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #879 動画を見ずに書かれたコピーを直しました（案件#879）</div>
 <h1>#879 動画を見ずに書かれたコピーを直しました（案件#879）</h1>
-<div class="date">2026-09-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-17 実装・main合流を実測確認（本番DBはGitHub Actionsの課金停止待ち）</div>
 
 <div class="fix">
 <p><b>対象</b>：X @lolmame318「この犬本当にすき」の犬カード。</p><p><b>直す前</b><br>タイトル：<code>愛嬌たっぷりな犬が一生懸命に動きを見せる様子</code><br>コピー：<code>投稿者が思わず「本当にすき」とこぼしてしまうほど魅力的な犬の姿。その一挙手一投足から目が離せなくなるような、愛くるしい瞬間が収められています。</code></p><p>→ 元投稿の一言だけから想像で書かれていて、動画の中身と違っていた（実際は兄弟が取っ組み合いをしていて犬が困っている場面）。</p><p><b>直した後（コードはmain合流済み）</b><br>タイトル：<code>兄弟の取っ組み合いに巻き込まれ、犬だけ本気で困り顔</code><br>コピー：<code>ソファの上で兄弟が本気の取っ組み合いを始めた瞬間、逃げ場をなくしたのは白い犬。耳を伏せてじっと固まり、こっちを見つめる目がなんとも言えない。周りは大騒ぎなのに犬だけ状況についていけていない——そのギャップに笑ってしまう一本。</code></p><p>実際にyt-dlpで動画をダウンロードし、ffmpegでフレームを抜いて目視確認した上で書き直した（下の3枚がその時に抜いたフレーム）。</p>
-<p style="background:#fff3ec;border:1px solid #e8c3ac;border-radius:8px;padding:10px 14px;"><b style="color:var(--aka);">⚠まだ本番には出ていません（2026-09-16 20:35 時点、読み取りで確認済み）。</b><br>直った文面はコードとしてmainへ入っているが、DBの書き換えはGitHub Actionsの一度きり便が実行する設計。<b style="color:var(--aka);">今そのGitHub Actions自体が、tamago2022アカウントの支払いエラーでリポジトリ全体止まっている</b>（直近30件中22件失敗）。<br>これはAI側では直せない、お金の設定の話（GitHubの「Settings → Billing and plans」で支払い方法を直すだけ）。店主が下のGitHub設定を開いて直すと、待っていた一度きり便が自動で動いてDBが書き換わり、この棚ページに反映される（Lovableの公開ボタンとは無関係）。</p>
+<p style="background:#fff3ec;border:1px solid #e8c3ac;border-radius:8px;padding:10px 14px;"><b style="color:var(--aka);">⚠まだ本番DBには出ていません（2026-09-17 実測・読み取りで確認済み。タイトルはまだ「愛嬌たっぷりな犬が…」のまま）。</b><br>直った文面と、それを書き込む一度きり便（スクリプト＋GitHub Actionsワークフロー）は両方ともmainへ入っている。ただしDBの書き込みはそのGitHub Actionsが実行する設計で、<b style="color:var(--aka);">今そのGitHub Actions自体が、tamago2022アカウントの支払いエラーでリポジトリ全体止まっている</b>（直近30件中22件失敗、2026-09-15夜から継続）。<br>これはAI側では直せない、お金の設定の話（GitHub本体アプリ内の「Settings → Billing and plans」で支払い方法を直すだけ）。ここにリンクは置かない（ログインしていない状態で開くと開けないページのため）。店主がご自身のGitHubアプリ／サイトから開いて直すと、待っていた一度きり便が自動で動いてDBが書き換わり、この棚ページに反映される（Lovableの公開ボタンとは無関係）。</p>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>1件</b><span>今回直したカード数</span></div>
   <div class="num"><b>5枚</b><span>抜いたフレーム枚数</span></div>
+  <div class="num"><b>2/2</b><span>main合流済み（スクリプト＋ワークフロー）</span></div>
   <div class="num"><b>22/30</b><span>直近のGH Actions失敗数(課金停止)</span></div>
 </div>
 
@@ -74,14 +75,13 @@
 <ul class="links">
   <li><b>棚のページ（本番・支払い設定が直ったら数分で反映）</b><a href="https://joy-relief-station.lovable.app/shelf/cute/inu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/inu</a></li>
   <li><b>元のX投稿（実際の中身はこれ）</b><a href="https://x.com/lolmame318/status/2099798415844745400" target="_blank" rel="noopener">https://x.com/lolmame318/status/2099798415844745400</a></li>
-  <li><b>ここを直すとDB反映が動き出す：GitHubの支払い設定</b><a href="https://github.com/settings/billing" target="_blank" rel="noopener">https://github.com/settings/billing</a></li>
 </ul>
-<p class="note">修正スクリプト・保存ゲートのコード自体は非公開リポジトリの中にあるため、ここにはリンクを置いていません（開いても404になるため）。中身は上の「直した後」の文面と同じもので、コードとしてはmainへ入っています。</p>
+<p class="note">修正スクリプト・GitHub Actionsワークフローのコード自体は非公開リポジトリの中にあるため、ここにはリンクを置いていません（開いても404になるため）。中身は上の「直した後」の文面と同じもので、両方ともmainへ入っています。GitHubの支払い設定ページも、ログインしていない状態で開くと404になるためリンクを置いていません（店主ご自身のGitHubアプリ／サイトから「Settings → Billing and plans」を開いてください）。</p>
 
 
 
 <footer>
-mainへpush済み。GitHub Actionsの課金が復旧すれば一度きり便が自動でDBを更新し、Lovableの公開ボタンを押さなくても本番の棚ページに反映される。
+mainへpush済み（スクリプト・ワークフローとも）。GitHub Actionsの課金が復旧すれば一度きり便が自動でDBを更新し、Lovableの公開ボタンを押さなくても本番の棚ページに反映される。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
