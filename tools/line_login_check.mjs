@@ -23,10 +23,10 @@ const CDP_URL = "http://127.0.0.1:9224";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function findOrMakePage() {
-  const list = await (await fetch(`${CDP_URL}/json/list`, { signal: AbortSignal.timeout(3000) })).json();
+  const list = await (await fetch(`${CDP_URL}/json/list`, { signal: AbortSignal.timeout(8000) })).json();
   let page = list.find((t) => t.type === "page" && !String(t.url || "").startsWith("chrome://"));
   if (page) return page;
-  page = await (await fetch(`${CDP_URL}/json/new?about:blank`, { method: "PUT", signal: AbortSignal.timeout(3000) })).json();
+  page = await (await fetch(`${CDP_URL}/json/new?about:blank`, { method: "PUT", signal: AbortSignal.timeout(8000) })).json();
   return page;
 }
 
@@ -75,7 +75,9 @@ async function waitComplete(send) {
 async function main() {
   let version;
   try {
-    version = await (await fetch(`${CDP_URL}/json/version`, { signal: AbortSignal.timeout(3000) })).json();
+    // 790番実測：このMacは常時高負荷で、3秒だと重い瞬間にタイムアウトしNO_CHROMEに
+    // 誤判定することがあった（実際はChromeは起動していた）。8秒に伸ばして安定させる。
+    version = await (await fetch(`${CDP_URL}/json/version`, { signal: AbortSignal.timeout(8000) })).json();
   } catch {
     console.log(JSON.stringify({ state: "NO_CHROME", detail: "9224番でChromeが起動していません" }));
     return;
