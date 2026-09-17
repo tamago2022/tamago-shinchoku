@@ -3,22 +3,22 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                  // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-17T05:56:15.805Z",
+      "updatedAt": "2026-09-17T05:56:41.237Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
       "dateJST": "2026-09-17",
       "successCountToday": 0,
-      "consecutiveFailures": 2,
-      "stoppedForToday": true,
-      "lastResult": "fail",
-      "lastCheckedAt": "2026-09-17T05:56:15.692Z",
+      "consecutiveFailures": 0,
+      "stoppedForToday": false,
+      "lastResult": null,
+      "lastCheckedAt": "2026-09-17T05:56:41.127Z",
       "lastPublishedSha": null,
-      "lastFailureReason": "ERR browserType.connectOverCDP: Timeout 45000ms exceeded.\nCall log:\n  - <ws preparing> retrieving websocket url from http://127.0.0.1:9223\n  - <ws connecting> ws://127.0.0.1:9223/devtools/browser/3d4ba582-fbbd-443a-a13d-f8ba548f2cae\n  - <ws connected> ws://127.0.0.1:9223/devtools/browser/3d4ba582-fbbd-443a-a13d-f8ba548f2cae\n",
-      "lastFailureAt": "2026-09-17T05:56:15.692Z",
+      "lastFailureReason": null,
+      "lastFailureAt": null,
       "mainSha": "4301f63838",
       "mainUnpublished": true,
       "paused": false,
