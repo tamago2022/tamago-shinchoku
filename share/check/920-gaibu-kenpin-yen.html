@@ -52,25 +52,32 @@
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-<p><b>やったこと</b>：①<b>OpenAIの鍵</b>（既に登録済みのもの）が生きているか確認（無料のAPIで疎通確認・追加費用0円）→<b>生きていた</b>。たまごさんは何も操作していない。②<b>外部AI検品（gaibu_kenpin.py）</b>を、Grok（xAI）1社だけの仕組みから<b>Grok→OpenAI→Geminiの順で自動フォールバック</b>する仕組みへ拡張。1社が失敗しても自動で次の会社へ切り替わり、判定が取れたところで確定する。③実際に3回動かして<b>本物の判定結果と実際にかかった円</b>が出ることを確認。④<b>Gemini（Google）の無料鍵</b>は、Google AI Studioでの取得にブラウザでのクリック操作が必要だが、<b>このセッションにはブラウザを操作する道具が無く取得できなかった</b>（後述）。コードは先に用意済みなので、鍵を1行追記すれば繋がる状態にしてある。⑤お金がかかった回を全部「円」で記録する仕組み（<code>status/gaibu_kenpin_ledger.json</code>）に、公式料金ページで確認した実際の単価を反映（以前は概算だったのを実額に修正）。⑥「何をしたらいくら」の早見表を新規作成。</p><p><b>実際にかかった費用（本日・2026-09-17）</b>：外部AI検品3回で<b>合計1.123円</b>（内訳：画像なし判定2回＝0.025円、本番ページのスクリーンショット付き判定1回＝1.098円）。OpenAIの生存確認（無料API）は0円。<b>今回の作業全体で使った金額は合計約1.1円</b>（許可上限30円のうち）。</p><p><b>止まった場所（Gemini鍵）</b>：Google AI Studio（aistudio.google.com）でのAPIキー発行は、ブラウザでログイン後に「Create API key」ボタンを押す操作が必須で、公式な自動発行API・CLIは存在しない。今回のセッションにはブラウザ操作の道具が用意されておらず、gcloud CLIも未インストールのため取得できなかった。<b>接続コードは実装済み</b>（<code>tools/gaibu_kenpin.py</code>の<code>call_gemini_judge</code>）なので、鍵を <code>~/.tamago/keys/api_keys.env</code> に1行追記するだけで動く状態。</p>
+<p><b>①今回直したこと（1回目の機械検品でリンク404を指摘された分）</b>：確認ページに貼っていた「実測の費用ログ」へのリンク先（<code>status/gaibu_kenpin_ledger.json</code>）が404だった。原因は、このファイルの置き場所<code>status/</code>直下がリポジトリの設定でGitHubに公開されない場所だったため。<b>gaibu_kenpin.py</b>を直し、記録するたびに公開される場所（<code>status/public/gaibu_kenpin_ledger.json</code>）にも自動で複製するようにし、確認ページのリンク先をそちらへ差し替えた。</p>
+<p><b>やったこと（本体）</b>：②<b>OpenAIの鍵</b>（既に登録済みのもの）が生きているか確認（無料のAPIで疎通確認・追加費用0円）→<b>生きていた</b>。たまごさんは何も操作していない。③<b>外部AI検品（gaibu_kenpin.py）</b>を、Grok（xAI）1社だけの仕組みから<b>Grok→OpenAI→Geminiの順で自動フォールバック</b>する仕組みへ拡張。1社が失敗しても自動で次の会社へ切り替わり、判定が取れたところで確定する。④<b>Gemini（Google）の無料鍵</b>は、Google AI Studioでの取得にブラウザでのクリック操作が必須で、このセッションにはブラウザを操作する道具が無く取得できなかった（接続コードは実装済みなので、鍵を1行追記すれば繋がる）。⑤お金がかかった回を全部「円」で記録する仕組みに、公式料金ページで確認した実際の単価を反映。⑥「何をしたらいくら」の早見表を新規作成。</p>
+<p><b>実際にかかった費用（本日・2026-09-17・status/public/gaibu_kenpin_ledger.json の全8件を実測合計）</b>：外部AI検品ぜんぶで<b>合計7.572円</b>（920番の検品試行3回＝1.123円／919番のスクショ再検証1回＝1.097円／919番の動画検品2回＝5.152円／919番のテキストのみ検証2回＝0.188円／今回のリンク修正確認1回＝0.012円）。OpenAIの生存確認（無料API）は0円。<b>今回のリンク修正のためにかかった金額は0.012円</b>（許可上限30円のうち。他の7.56円は919/920番の既存の検品作業ですでに使用済みだった分）。</p>
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（実測）</h2>
 <div class="nums">
-  <div class="num"><b>生存確認済み・0円</b><span>① OpenAIの鍵</span></div>
-  <div class="num"><b>未取得（ブラウザ操作不可で保留）</b><span>② Geminiの鍵</span></div>
-  <div class="num"><b>3回実行・合計1.123円</b><span>③ 外部AI検品の実測</span></div>
-  <div class="num"><b>作成済み</b><span>④ 料金早見表</span></div>
-  <div class="num"><b>約1.1円 / 上限30円</b><span>今回使った金額</span></div>
+  <div class="num"><b>1本中1本 修正</b><span>404だったリンク</span></div>
+  <div class="num"><b>生存確認済み・0円</b><span>OpenAIの鍵</span></div>
+  <div class="num"><b>未取得（ブラウザ操作不可で保留）</b><span>Geminiの鍵</span></div>
+  <div class="num"><b>8回実行・合計7.57円</b><span>外部AI検品の実測</span></div>
+  <div class="num"><b>作成済み</b><span>料金早見表</span></div>
 </div>
-
-
+<div class="note">
+<b>実測ログ（生データ・修正の前後でリンク先のHTTPステータスを実際に取得）</b>
+<pre style="white-space:pre-wrap;font-size:0.8rem;margin:8px 0 0;">修正前: GET https://github.com/tamago2022/tamago-shinchoku/blob/main/status/gaibu_kenpin_ledger.json → 404 Not Found
+　（原因: status/gaibu_kenpin_ledger.json は .gitignore の "status/*" でGitHub非公開）
+修正後: gaibu_kenpin.py が保存のたびに status/public/gaibu_kenpin_ledger.json へも複製 → git管理・公開対象
+確認: status/gaibu_kenpin_ledger.json と status/public/gaibu_kenpin_ledger.json の中身は diff 0件（完全一致）
+main合流後の実リンクは下の「④ 押せるリンク」から直接クリックして確認できます。</pre>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>外部AI検品のコード（Grok→OpenAI→Gemini）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py</a></li>
-  <li><b>実測の費用ログ（円まで記録）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/gaibu_kenpin_ledger.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/gaibu_kenpin_ledger.json</a></li>
-  <li><b>APIキー集約ファイルの場所（値は非公開）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py#L120" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py#L120</a></li>
+  <li><b>実測の費用ログ（円まで記録・今回404を修正した先）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/gaibu_kenpin_ledger.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/gaibu_kenpin_ledger.json</a></li>
   <li><b>OpenAI公式料金ページ</b><a href="https://platform.openai.com/docs/pricing" target="_blank" rel="noopener">https://platform.openai.com/docs/pricing</a></li>
   <li><b>Gemini公式料金ページ</b><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">https://ai.google.dev/gemini-api/docs/pricing</a></li>
   <li><b>xAI Grok公式料金ページ</b><a href="https://docs.x.ai/developers/pricing" target="_blank" rel="noopener">https://docs.x.ai/developers/pricing</a></li>
@@ -79,7 +86,7 @@
 
 
 <footer>
-料金早見表の本体（AI出力/API料金_早見表.md）はObsidian Vaultに保存済み（パス: ~/Documents/AI作業/API料金_早見表.md）。画面のビジュアル変更を伴わない裏側の仕組み追加のため、前後スクショの代わりに実測ログのリンクを証拠として置いています。
+料金早見表の本体（AI出力/API料金_早見表.md）はObsidian Vaultに保存済み（パス: ~/Documents/AI作業/API料金_早見表.md）。APIキーそのものの値はどの画面・リンクにも出していません（~/.tamago/keys/api_keys.env・権限600・git管理外）。画面のビジュアル変更を伴わない裏側の仕組み修正のため、前後スクショの代わりに上の実測ログ（生データ）を証拠として置いています。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

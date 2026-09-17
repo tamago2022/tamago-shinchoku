@@ -54,6 +54,11 @@ import urllib.request
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LEDGER_PATH = os.path.join(REPO, "status", "gaibu_kenpin_ledger.json")
+# 【920番・2026-09-17修正】status/直下は.gitignoreの`status/*`でGitHub非公開のため、
+# 確認ページから押せるリンクにするには status/public/ 配下（!status/public/** で例外化済み）へも
+# 複製する必要がある（他ツールと同じパターン。tamago_maintenance.py の _push() を参照）。
+# これを忘れていたため機械検品1回目でリンク404となった。
+LEDGER_PUBLIC_PATH = os.path.join(REPO, "status", "public", "gaibu_kenpin_ledger.json")
 SHOT_TOOL = os.path.join(REPO, "tools", "gaibu_kenpin_shot.mjs")
 TMP_SHOT_DIR = os.path.join(REPO, "status", "gaibu_kenpin_shots")
 
@@ -168,6 +173,15 @@ def _save_ledger(ledger):
     with io.open(tmp, "w", encoding="utf-8") as f:
         json.dump(ledger, f, ensure_ascii=False, indent=1)
     os.replace(tmp, LEDGER_PATH)
+    # 確認ページから押せるリンクにするため status/public/ へも複製する（git管理対象）。
+    try:
+        os.makedirs(os.path.dirname(LEDGER_PUBLIC_PATH), exist_ok=True)
+        tmp_pub = LEDGER_PUBLIC_PATH + ".tmp"
+        with io.open(tmp_pub, "w", encoding="utf-8") as f:
+            json.dump(ledger, f, ensure_ascii=False, indent=1)
+        os.replace(tmp_pub, LEDGER_PUBLIC_PATH)
+    except Exception:
+        pass
 
 
 def _today_records(ledger):
