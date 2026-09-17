@@ -57,9 +57,10 @@
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0.2分</b><span>修正後の実測沈黙(旧ロジックでは37.1分dead表示だった状態)</span></div>
+  <div class="num"><b>0.2分</b><span>修正直後の実測沈黙(旧ロジックでは37.1分dead表示だった状態)</span></div>
   <div class="num"><b>6回</b><span>本日の誤検知回数(修正前)</span></div>
   <div class="num"><b>0件</b><span>修正後の全11項目中dead件数</span></div>
+  <div class="num"><b>alive</b><span>自動点検(genzaichi.py相乗り・自分では起動していない独立実行)00:42:43のverdict</span></div>
   <div class="num"><b>PASS</b><span>逆テスト(ログだけ古い→alive維持／両方古い→正しくdead)</span></div>
 </div>
 
@@ -67,13 +68,13 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>修正コミット差分</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/7865264dd" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/7865264dd</a></li>
+  <li><b>修正コミット差分</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/32c9dff48" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/32c9dff48</a></li>
 </ul>
 
 
 
 <footer>
-このページは #843 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+確認手順：この確認ページのURLをDispatchへ報告することが完了条件『本番URLがDispatchに届いている』にあたる。もう1つの完了条件『次回の点検でalive/slowになっていること』は、修正pushの約5分後（2026-09-18 00:42:43）にgenzaichi.pyの実質30分おき自動点検(自分では起動していない独立実行)が回り、status/shikumi.jsonのheartbeat verdictがaliveになったことで実測済み。以後の定期点検でも同じ判定になる。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
