@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-17 17:07",
+ "updatedAt": "2026-09-17 17:10",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -2709,7 +2709,7 @@
    "n": 874,
    "title": "【自動検知】鬼監督 が動いていません",
    "why": "スマホから追加",
-   "status": "running",
+   "status": "waiting",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "factory",
@@ -2721,9 +2721,6 @@
     "status/oni_kantoku_log.jsonlの最終行checkedAtが2026-09-13T15:02:37+09:00のまま(現在まで約56時間更新なし・24時間基準を超過)で、修正コミット後も鬼監督のdead状態が実データ上解消されていない。awaiting_check38件が滞留しており修正対象(auto_launcher.py)は鬼監督本体のコードに触れていない"
    ],
    "urakataBlockedAt": "2026-09-15 23:39:57+09:00",
-   "startedAt": "2026-09-17T16:58:59+09:00",
-   "sessionId": "9d0b7fcc-972d-4631-a7a2-f2bfd23bd7ea",
-   "pid": 55435,
    "original_text": "【自動検知・799番 仕組みの生死表】鬼監督がdead判定（status/oni_kantoku_log.jsonlの最終行checkedAtが24時間超更新なし）。\n1回目AI検品ではねられた理由：checkedAtが2026-09-13T15:02:37+09:00のまま(56時間更新なし)で、\n修正コミット後も鬼監督のdead状態が実データ上解消されていない。修正対象(auto_launcher.py)は\n鬼監督本体のコードに触れていない。依頼内容と実際の変化が一致するよう、報告と確認ページを作り直すこと。\n完了条件：本番反映され、本番URLがDispatchに届いていること。\n",
    "interpretation": "鬼監督(oni_kantoku_log.jsonl)が更新されない真因を、鬼監督本体のコードだけでなく上流(心臓heartbeat.sh・\nauto_launcher.py)まで遡って特定し、実データ(shikumi.json verdict・ログの継続記録)で「alive」に\n復旧していることを実測で示す。確認ページ(share/check/)＋証拠JSON(status/public/)をmainへpushし、\nGitHub PagesのURLをDispatchへ報告する。\n",
    "inspections": [],
@@ -2742,7 +2739,8 @@
      "note": "本番相当のGitHub Pages上でHTTP 200を実測：確認ページ https://tamago2022.github.io/tamago-shinchoku/share/check/874-oni-kantoku-alive-recovery.html 、証拠JSON https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/oni_kantoku_874_evidence.json 。push後githooks/pre-pushのsekisho関門もPASS"
     }
    ],
-   "functionTestPassAt": "2026-09-17T17:08:17+09:00"
+   "functionTestPassAt": "2026-09-17T17:08:17+09:00",
+   "contentCheckFailCount": 1
   },
   {
    "n": 875,
