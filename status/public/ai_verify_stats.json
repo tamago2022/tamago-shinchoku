@@ -1,9 +1,9 @@
 {
- "totalChecked": 271,
+ "totalChecked": 276,
  "totalPassed": 146,
- "totalFailed": 105,
+ "totalFailed": 110,
  "totalErrors": 20,
- "totalCostUsd": 83.5764,
+ "totalCostUsd": 85.3099,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -109,49 +109,14 @@
   "直前の関所が要求した実測の生データ（「実測:」記載や<pre>/<code>）が": 1,
   "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで": 1,
   "884番の完了報告はhealth.jsonのみ検証しているが、now.json/": 1,
-  "891番の確認ページが提示する証拠リンク（status/dispatch_out": 1
+  "891番の確認ページが提示する証拠リンク（status/dispatch_out": 1,
+  "本番URL（status/911_devin_cli_first_task.md": 1,
+  "queue.jsonは依然として約1.75MB（1,835,231バイト）で1M": 1,
+  "本番URLを実測すると新コピーは反映されておらず旧文面「愛嬌たっぷりな犬が一生懸": 1,
+  "本番のkenpou_check.jsonでbig_files項目が依然red(c": 1,
+  "確認ページは「queue.json[n=431/712].urlsへ記録される」": 1
  },
  "history": [
-  {
-   "ts": "2026-09-16T04:27:18+09:00",
-   "n": 878,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/878-line-text-limit.html",
-   "verdict": "pass",
-   "reason": "3キャラ全ての英語説明文が160字以内・半角のみに短縮され本番3URL(769-rashikoru/peralino/oniyome)全てHTTP200で表示、規格チェック関数を実際に261字違反設定で走らせシート生成ブロックを実機確認、残り字数表示(143/160等)あり、4URL全てheadless Chromeで無反応0件・コンソールエラー0件",
-   "costUsd": 0.6403487999999998
-  },
-  {
-   "ts": "2026-09-16T09:10:24+09:00",
-   "n": 825,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/825-dekimono-v2.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URL・4枚のスクショ・288件のJSONデータ・実クリック検品を全て実測し、依頼の6完了条件（1件簡素化表示／くわしく畳み保存／カテゴリ6種絞込／fal検索12件一致／初期表示5件／無反応0件）を全て確認",
-   "costUsd": 0.45385080000000017
-  },
-  {
-   "ts": "2026-09-16T19:42:17+09:00",
-   "n": 883,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/883-line-stamp-autofill.html",
-   "verdict": "fail",
-   "reason": "入力後スクショが3キャラ分とも0件で合格条件未達、自動入力の核心ロジックも実機未検証のまま「本番反映」と報告されている",
-   "costUsd": 0.3501744
-  },
-  {
-   "ts": "2026-09-16T19:56:55+09:00",
-   "n": 814,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/814-grok-voice.html",
-   "verdict": "fail",
-   "reason": "本番反映免除は妥当だが、料金の円実測・実機音声往復のスクショと文字記録・検索応答の実測・上限動作の実証がすべて欠落しており、依頼の完了条件を満たしていない",
-   "costUsd": 0.19843400000000003
-  },
-  {
-   "ts": "2026-09-16T20:20:21+09:00",
-   "n": 884,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/884-machine-load-restore.html",
-   "verdict": "fail",
-   "reason": "コード修正・main反映は確認できたが本番復旧は未確認（health.json measuredAtが約15時間停止、heartbeat.logは4日近く更新なしでload/diskFreeGBもnullのまま）。依頼の必須条件「5分待って本番で🚨💤消滅を確認」が未達成",
-   "costUsd": 0.300749
-  },
   {
    "ts": "2026-09-16T22:24:37+09:00",
    "n": 884,
@@ -511,7 +476,47 @@
    "verdict": "fail",
    "reason": "891番の確認ページが提示する証拠リンク（status/dispatch_outbox.jsonl のraw URL）が404で、.gitignoreのstatus/*除外設定によりこの経路は恒久的に開けない構造的欠陥のため",
    "costUsd": 0.39299580000000006
+  },
+  {
+   "ts": "2026-09-17T19:55:34+09:00",
+   "n": 911,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/status/911_devin_cli_first_task.md",
+   "verdict": "fail",
+   "reason": "本番URL（status/911_devin_cli_first_task.md）が404で存在せず、証拠が確認できない",
+   "costUsd": 0.24398939999999997
+  },
+  {
+   "ts": "2026-09-17T20:34:56+09:00",
+   "n": 925,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/925-queue-done-archive-cleanup.html",
+   "verdict": "fail",
+   "reason": "queue.jsonは依然として約1.75MB（1,835,231バイト）で1MB超のまま本番公開されており、実体を軽量化せず点検の除外パスに追加して検知をすり抜けさせただけで「解消」の主張と実態が一致しない",
+   "costUsd": 0.169976
+  },
+  {
+   "ts": "2026-09-17T20:47:25+09:00",
+   "n": 879,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/879-copy-naoshi-lolmame.html",
+   "verdict": "fail",
+   "reason": "本番URLを実測すると新コピーは反映されておらず旧文面「愛嬌たっぷりな犬が一生懸命に動きを見せる様子」のままで、依頼の核心（1件を直して本番で見られる）が未達成。加えて完了条件②〜⑤（毎日自動点検・仕組み化・ビフォーアフター1日1枚・全件棚卸し）は報告内で明記の通り全て未着手。",
+   "costUsd": 0.7361369999999999
+  },
+  {
+   "ts": "2026-09-17T21:08:06+09:00",
+   "n": 925,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/925-queue-gzip-real-fix.html",
+   "verdict": "fail",
+   "reason": "本番のkenpou_check.jsonでbig_files項目が依然red(count18)のまま、かつその点検実行時刻(20:28)が修正の本番反映(21:03)より前で「次回点検で緑」という依頼の合格条件を一度も満たしておらず、確認ページも本番結果でなく作業者側ローカル実行の結果で代替している",
+   "costUsd": 0.3109954
+  },
+  {
+   "ts": "2026-09-17T21:24:45+09:00",
+   "n": 934,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/934-done-missing-url-431-712.html",
+   "verdict": "fail",
+   "reason": "確認ページは「queue.json[n=431/712].urlsへ記録される」と主張するが、直近の公開データ(queue_light.json)では#431/#712のurlsが空配列のまま、#924/#929はurlsキー自体が存在せず、実際の変化の跡が無い",
+   "costUsd": 0.272418
   }
  ],
- "updatedAt": "2026-09-17 19:40"
+ "updatedAt": "2026-09-17 21:24"
 }
