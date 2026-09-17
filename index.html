@@ -114,6 +114,19 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   </details>
 </section>
 
+<!-- ⑥ 公式のアップデート（939番・2026-09-18）
+     たまごさん：「アップデートとかも自分で情報を取りに行ってね。毎日1回でもいいから、
+     公式が発表しているものもあるだろうし、いいもの、効率化するものはどんどん取り入れていって。」
+     画面を埋めないよう、見えるのは1行だけ。中身はトグルの中に畳む。 -->
+<section class="card" id="koushikiCard" hidden>
+  <h2>公式のアップデート</h2>
+  <div class="meta" id="koushikiLine">…</div>
+  <details id="koushiki">
+    <summary>効率化に効きそうなもの（公式の発表だけ）</summary>
+    <div class="body"><ul id="koushikiList"><li class="empty">…</li></ul></div>
+  </details>
+</section>
+
 <footer>
   <a href="index_full.html">前の進捗表（全部入り）</a>
   <a href="share/done/">できたもの一覧</a>
@@ -339,6 +352,29 @@ function render(d){
   // 最初の表示が終わってから重いものを読む（1枚目の軽さを壊さない）
   loadQueue(d.nextUp || []);
   loadCash();
+  loadKoushiki();
+}
+
+/* ───────── 公式のアップデート（939番）─────────
+   status/public/koushiki_updates.json は tools/koushiki_update_watch.py が1日1回だけ
+   書き換える（公式ドメインの許可リストで縛ってある）。ここは読んで出すだけ。
+   ファイルが無い日・読めない日は、カードごと出さない（「ありません」で場所を取らない）。 */
+function loadKoushiki(){
+  getJson("status/public/koushiki_updates.json", 8000).then(function(j){
+    var items = (j && j.items) || [];
+    if(!items.length) return;
+    $("koushikiCard").hidden = false;
+    var top = items[0];
+    $("koushikiLine").textContent =
+      (top.date ? top.date + "・" : "") + (top.source || "") + " ほか " + items.length + "件";
+    put($("koushikiList"), items.slice(0, 12).map(function(it){
+      var t = esc(it.title);
+      var head = '<span class="meta">' + esc(it.source || "") + '</span> ';
+      return "<li>" + head + (it.url
+        ? '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + t + "</a>"
+        : t) + "</li>";
+    }));
+  }).catch(function(){ /* 無い日は黙って出さない */ });
 }
 
 function load(manual){

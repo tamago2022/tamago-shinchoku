@@ -687,3 +687,109 @@ FIXのときこの道具は**たまごさんへ通知を出さない**。同じ�
 flock で検品係を1本に制限している（`auto_launcher.only_one_launcher()` と同じ実装・同じ理由）。
 5分便だけに置いていた時はMacが重くて20分以上回ってこないことを実測したため、心臓側にも相乗りさせた
 （検品待ちが空なら listdir 1回で戻るので負荷はほぼゼロ）。
+
+## 子セッションの枷を1か所に畳んだ（2026-09-18新設・939番）
+
+たまごさんの言葉（そのまま）：「**自ら改善して、自ら賢くなろうとしてくださいね。常に進化していってね。
+まずは間違いを繰り返さないってことかな。何回も言わせないようにする仕組み作りからかな。**」
+
+これまでDispatchは子セッションを立てるたび、禁止事項（たまごさんに確認を出さない／computer-useを使わない／
+Chromeのタブを増やさない／Lovableのエージェントを使わない 等）を**毎回手で書いていた**。
+書いた回は事故が起きず、**書き忘れた回だけ同じ事故が起きた**＝人の記憶が単一障害点だった。
+
+- **正本**：`tools/session_preamble.md`。冒頭に「**追記のしかた**」（1事故＝1行・日付と案件番号を必ず付ける・
+  本文200行以内・状況別ルールは `tools/prompt_rules/topic-*.md` へ）を書いてある。**育てる前提のファイル。**
+- **貼り忘れゼロの仕掛け**：`tools/auto_launcher.py` の `build_prompt()` が
+  `_load_session_preamble()` でこれを読み、**ヘッダーより前＝指示文のいちばん先頭**に差し込む。
+  `prompt_rules/INDEX.json` の `always` に足す形は採らなかった——**索引から足し忘れる余地を残さない**ため、
+  ファイルが存在するだけで必ず入る形にした（INDEX.jsonを1行も触らずに効く）。読めなければ空文字で発車は止めない。
+- 628番の「肥大化させない」原則を守るため、内容が完全に重複した `always-09-time-limit` と
+  `always-11-prohibitions` を `INDEX.json` から外した（ファイル自体は履歴として残す）。
+  実測：指示文は 41,413バイト → **40,707バイト**（枷を足したのに減った）。
+- **手で子セッションを立てるときだけ**、`tools/session_preamble.md` の中身をコピペする。
+
+## 公式のアップデートを1日1回だけ自分で拾う（2026-09-18新設・939番）
+
+たまごさんの言葉（そのまま）：「**アップデートとかも自分で情報を取りに行ってね。毎日1回でもいいから、
+公式が発表しているものもあるだろうし、いいもの、効率化するものはどんどん取り入れていって。**」
+
+- **道具**：`tools/koushiki_update_watch.py`。手で今すぐ動かすなら `--now`、取るだけなら `--dry-run`。
+- **公式だけ**：`ALLOWED_HOSTS`（code.claude.com／platform.claude.com／support.claude.com／
+  anthropic.com／openai.com／docs.x.ai／docs.lovable.dev／docs.devin.ai）に無いホストは
+  **見に行かない**。「SEOまとめ記事やSNSの伝聞は使わない」を人の記憶ではなく機械で守る。
+- **効率化に効くものだけ**：`EFFICIENCY_KEYWORDS`（parallel／background／cache／cost／skill／plugin／
+  subagent／thread／mcp／limit 等）に1つも当たらない行は捨てる。1取得元あたり最大8件。
+- **定期タスクは作らない**（たまごさん指定）：心臓（`heartbeat.sh`）は起動時に読んだシェル本体を
+  使い続けるので、シェルに行を足しても動いている心臓には届かない（触ると二重起動事故）。
+  **心臓が毎周回で呼ぶPythonファイルは毎回読み直される**ので、`tools/daily_ingest_scheduler.py` の
+  `_koushiki_update_watch()` に相乗りさせた。実際に外へ出るのは `status/.koushiki_update_last` で
+  1日1回に間引く。
+- **出す先**：`status/public/koushiki_updates.json`（最新40件）。`status/` 直下ではなく
+  **`status/public/` でなければgitに乗らない**（`.gitignore` が `status/*` を除外し public だけ例外化）。
+- **進捗表の見え方**：`index.html` の `#koushikiCard`（`loadKoushiki()`）。**見えるのは1行だけ**で、
+  中身はトグル（`<details>`）に畳む。件数0の日はカードごと出さない。
+- **取得元が落ちても他を止めない**：1つずつ try/except で囲み、失敗は `sourceErrors` に残すだけ。
+  JSで描くページ（support.claude.com＝Intercom）は0件になることがある＝取れた分だけ出す。
+
+## Claude Codeの「プロジェクト」機能を公式で裏取りした（2026-09-18・939番）
+
+たまごさんがXの投稿（@masahirochaen）を共有。**公式ドキュメントで裏を取った結果、投稿の内容はほぼ正しい**：
+<https://code.claude.com/docs/en/claude-projects>
+
+- 1つの会話がClaude（司令塔）、タスクごとに**スレッド**が立つ。各スレッドは**クラウドセッション**で、
+  専用ブランチ・repo複製・PR作成・auto-fixまで担当する。**PCを閉じても動き続ける。**
+- **Pro／Maxの公開ベータ・段階展開**。サイドバー（claude.ai/code またはデスクトップアプリのCodeタブ）に
+  「Projects」が出ていれば使える。出ていなければ順番待ち。**Team／Enterpriseは未対応。**
+- ★**この工場をそのまま移すことはできない。**公式の明記：スレッドが触れるのは
+  **GitHubのリポジトリとアップロードしたファイルだけ**で、「Macの上にしか無いファイル・道具」には届かない
+  （"not on files or tools that exist only on your machine"／"A local session can't be part of a project"）。
+  つまり **Lovableの「公開」ボタン・Chrome・Eagle・Obsidian Vault・heartbeat.sh・launchd は全滅**。
+  `tamago-shinchoku` リポジトリの中だけで完結する仕事（進捗表・tools/・share/）なら向いている。
+- **枠の食い方**：スレッド1本＝1セッション分。**1日200スレッドが上限**。既定はOpus・高effortなので
+  たまごさんの週枠を今より速く削る。使うなら `Project settings > General` で
+  **Thread model を Sonnet・effortを下げる**のが先（`tools/session_preamble.md` の「Sonnet固定」と同じ理由）。
+- **使い方1行**：claude.ai/code のサイドバー →「Projects」→「New project」→ `tamago2022/tamago-shinchoku` を
+  Contextに足し、Project instructions に `tools/session_preamble.md` の中身を貼る（上限16,000文字）。
+
+## 子セッションの枷を1か所に畳んだ（2026-09-18新設・939番）
+
+たまごさんの言葉（そのまま）：「**自ら改善して、自ら賢くなろうとしてくださいね。常に進化していってね。
+まずは間違いを繰り返さないってことかな。何回も言わせないようにする仕組み作りからかな。**」
+
+これまでDispatchは子セッションを立てるたび、禁止事項（たまごさんに確認を出さない／computer-useを使わない／
+Chromeのタブを増やさない／Lovableのエージェントを使わない 等）を**毎回手で書いていた**。
+書いた回は事故が起きず、**書き忘れた回だけ同じ事故が起きた**＝人の記憶が単一障害点だった。
+
+- **正本**：`tools/session_preamble.md`。冒頭に「**追記のしかた**」（1事故＝1行・日付と案件番号を必ず付ける・
+  本文200行以内・状況別ルールは `tools/prompt_rules/topic-*.md` へ）を書いてある。**育てる前提のファイル。**
+- **貼り忘れゼロの仕掛け**：`tools/auto_launcher.py` の `build_prompt()` が
+  `_load_session_preamble()` でこれを読み、**ヘッダーより前＝指示文のいちばん先頭**に差し込む。
+  `prompt_rules/INDEX.json` の `always` に足す形は採らなかった——**索引から足し忘れる余地を残さない**ため、
+  ファイルが存在するだけで必ず入る形にした（INDEX.jsonを1行も触らずに効く）。読めなければ空文字で発車は止めない。
+- 628番の「肥大化させない」原則を守るため、内容が完全に重複した `always-09-time-limit` と
+  `always-11-prohibitions` を `INDEX.json` から外した（ファイル自体は履歴として残す）。
+  実測：指示文は 41,413バイト → **40,707バイト**（枷を足したのに減った）。
+- **手で子セッションを立てるときだけ**、`tools/session_preamble.md` の中身をコピペする。
+
+## 公式のアップデートを1日1回だけ自分で拾う（2026-09-18新設・939番）
+
+たまごさんの言葉（そのまま）：「**アップデートとかも自分で情報を取りに行ってね。毎日1回でもいいから、
+公式が発表しているものもあるだろうし、いいもの、効率化するものはどんどん取り入れていって。**」
+
+- **道具**：`tools/koushiki_update_watch.py`。手で今すぐ動かすなら `--now`、取るだけなら `--dry-run`。
+- **公式だけ**：`ALLOWED_HOSTS`（code.claude.com／platform.claude.com／support.claude.com／
+  anthropic.com／openai.com／docs.x.ai／docs.lovable.dev／docs.devin.ai）に無いホストは
+  **見に行かない**。「SEOまとめ記事やSNSの伝聞は使わない」を人の記憶ではなく機械で守る。
+- **効率化に効くものだけ**：`EFFICIENCY_KEYWORDS`（parallel／background／cache／cost／skill／plugin／
+  subagent／thread／mcp／limit 等）に1つも当たらない行は捨てる。1取得元あたり最大8件。
+- **定期タスクは作らない**（たまごさん指定）：心臓（`heartbeat.sh`）は起動時に読んだシェル本体を
+  使い続けるので、シェルに行を足しても動いている心臓には届かない（触ると二重起動事故）。
+  **心臓が毎周回で呼ぶPythonファイルは毎回読み直される**ので、`tools/daily_ingest_scheduler.py` の
+  `_koushiki_update_watch()` に相乗りさせた。実際に外へ出るのは `status/.koushiki_update_last` で
+  1日1回に間引く。
+- **出す先**：`status/public/koushiki_updates.json`（最新40件）。`status/` 直下ではなく
+  **`status/public/` でなければgitに乗らない**（`.gitignore` が `status/*` を除外し public だけ例外化）。
+- **進捗表の見え方**：`index.html` の `#koushikiCard`（`loadKoushiki()`）。**見えるのは1行だけ**で、
+  中身はトグル（`<details>`）に畳む。件数0の日はカードごと出さない。
+- **取得元が落ちても他を止めない**：1つずつ try/except で囲み、失敗は `sourceErrors` に残すだけ。
+  JSで描くページ（support.claude.com＝Intercom）は0件になることがある＝取れた分だけ出す。

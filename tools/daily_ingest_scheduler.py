@@ -105,9 +105,33 @@ def build_what(target_date_str):
     ) % (target_date_str, target_date_str, target_date_str)
 
 
+def _koushiki_update_watch():
+    """939番の相乗り（2026-09-18）：公式のアップデートを1日1回だけ拾う。
+
+    たまごさん指定で**定期タスク（scheduled task）は作らない**。心臓(heartbeat.sh)は
+    起動時に読んだ本体を使い続けるので、心臓のシェル本体に行を足しても動いている心臓には
+    届かない（触ると二重起動事故）。一方**心臓が毎周回で呼ぶPythonファイルは毎回読み直される**
+    ので、そこへ1行足すのが唯一の安全な入れ方。だからここに相乗りさせる。
+
+    間引きは koushiki_update_watch.py 側が status/.koushiki_update_last で行う（1日1回）。
+    絶対に例外を外へ出さない＝入荷見回り本体を巻き込んで止めない。
+    """
+    try:
+        import subprocess
+        subprocess.Popen(
+            [sys.executable, os.path.join(HERE, "koushiki_update_watch.py")],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        pass
+
+
 def main():
     now = datetime.now(JST)
     today_str = now.strftime("%Y-%m-%d")
+    # 入荷見回りを今日もう積んだかに関わらず、公式アップデートの見回りは毎周回で声をかける
+    # （実際に外へ出るのは1日1回。下の早期returnより前に置く必要がある）。
+    _koushiki_update_watch()
     if already_queued_today(today_str):
         return 0
     target_date = (now - timedelta(days=1)).strftime("%Y-%m-%d")

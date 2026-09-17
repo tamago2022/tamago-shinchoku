@@ -1817,6 +1817,30 @@ def _load_rule_file(name):
         return ""
 
 
+SESSION_PREAMBLE = os.path.join(HERE, "session_preamble.md")
+
+
+def _load_session_preamble():
+    """tools/session_preamble.md を指示文のいちばん先頭に入れるために読む（2026-09-18・939番）。
+
+    たまごさんの言葉（そのまま）：
+    「まずは間違いを繰り返さないってことかな。何回も言わせないようにする仕組み作りからかな。」
+
+    これまでDispatchが子セッションを立てるとき、禁止事項（たまごさんに確認を出さない／
+    computer-useを使わない／Chromeのタブを増やさない 等）を**毎回手で書いていた**。
+    書いた回は事故が起きず、書き忘れた回だけ同じ事故が起きた＝人の記憶が単一障害点だった。
+
+    ここで機械側に寄せる。INDEX.jsonのalwaysリストに足す形は採らない：
+    **索引から足し忘れる余地を残したくない**ため、ファイルの存在だけで必ず先頭に入る形にした
+    （INDEX.jsonを1行も触らずに効く）。読めなければ空文字を返して発車自体は止めない。
+    """
+    try:
+        return io.open(SESSION_PREAMBLE, encoding="utf-8").read().rstrip("\n")
+    except Exception as e:
+        log("session_preamble読み込み失敗: %s" % e)
+        return ""
+
+
 def _prompt_topic_matches(text, keywords):
     t = (text or "").lower()
     return any((k or "").lower() in t for k in (keywords or []))
@@ -1864,7 +1888,13 @@ def build_prompt(item):
 """.format(n=n, title=title, what=what)
 
     idx = load(PROMPT_INDEX, {"always": [], "topics": []})
-    parts = [header]
+    # 939番：共通の枷はヘッダーより前＝指示文のいちばん先頭に置く。
+    # 後ろに置くと、長い依頼文(what)で埋まった時に読み飛ばされる実測があったため。
+    parts = []
+    preamble = _load_session_preamble()
+    if preamble:
+        parts.append(preamble)
+    parts.append(header)
     for name in idx.get("always") or []:
         text = _load_rule_file(name)
         if text:
