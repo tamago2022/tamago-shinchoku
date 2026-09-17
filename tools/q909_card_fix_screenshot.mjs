@@ -148,7 +148,7 @@ async function runAt(port, width, height, outFile) {
         scrollHeight: document.body.scrollHeight,
       });
     })()`);
-    console.log(\`[\${width}px] ページ状態:\`, info);
+    console.log(`[${width}px] ページ状態:`, info);
 
     await shoot(send, width, Math.min(height, JSON.parse(info).scrollHeight || height), outFile);
     close();
