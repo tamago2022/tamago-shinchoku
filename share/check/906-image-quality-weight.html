@@ -52,7 +52,7 @@
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-<p><b>誤解を解く材料：</b>「6MBのcoverGuide.ts」は画像ではなく、3万曲ぶんの曲名・動画IDが並んだ文字データ。動画サムネはYouTube側から配信されており再生ボタンを押すまで読み込まれない。<b>実際に自社で「生のまま」置いていて重いのは、下のバッジ画像のような静止画。</b></p><p><b>方針：</b>「画質を落とす」のではなく「必要な分だけ渡す」。下の①〜⑤を見比べて、どこまで容量を落としても荒れて見えないか、iPhone・PC両方の実機で指差してください。番号が小さいほど軽い版です。</p>
+<p><b>誤解を解く材料：</b>「6MBのcoverGuide.ts」は画像ではなく、3万曲ぶんの曲名・動画IDが並んだ文字データ。動画サムネはYouTube側から配信されており再生ボタンを押すまで読み込まれない。<b>実際に自社で「生のまま」置いていて重いのは、下のバッジ画像のような静止画。</b></p><p><b>方針：</b>「画質を落とす」のではなく「必要な分だけ渡す」。下の①〜⑤を見比べて、どこまで容量を落としても荒れて見えないか、iPhone・PC両方の実機で指差してください。番号が小さいほど軽い版です。</p><p><b>追記(本番を直接測って判明)：</b>本番(joy-relief-station.lovable.app)は既にリポジトリの元ファイル(2.53MB)をそのまま配ってはおらず、512X341px・168KBまで自動で縮めて配信していた。それでもまだ①〜⑤で見る「必要な分」より大きい。</p>
 </div>
 
 <h2>② 数字</h2>
@@ -61,23 +61,23 @@
   <div class="num"><b>11.57MB</b><span>└うち文字(JS+CSS・曲データ含む)</span></div>
   <div class="num"><b>12.60MB</b><span>└うち画像(バッジ・キャラ絵など)</span></div>
   <div class="num"><b>2.52MB</b><span>coverGuide.js・転送時(gzip圧縮後)実測</span></div>
-  <div class="num"><b>2.53MB</b><span>②concierge-pickバッジの元ファイル</span></div>
-  <div class="num"><b>44.6KB</b><span>②を大きく縮めた版(目標50KB)</span></div>
+  <div class="num"><b>2.53MB</b><span>②concierge-pickバッジのリポジトリ元ファイル</span></div>
+  <div class="num"><b>168KB</b><span>②の本番配信サイズ(自動縮小済み・実測)</span></div>
 </div>
 
 <h2>① 画質の見比べ（concierge-pickバッジ・タップで原寸表示）</h2>
 <div class="shots">
-  <div class="shot plain"><b>①元のまま</b><a href="img/906-image-quality/concierge-original.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-original.png" alt="①元のまま"></a><span class="meta">2.53MB・実際にサイトが今配っているファイル</span></div>
+  <div class="shot plain"><b>①元のまま</b><a href="img/906-image-quality/concierge-original.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-original.png" alt="①元のまま"></a><span class="meta">2.53MB・リポジトリの元ファイル</span></div>
   <div class="shot plain"><b>②Retinaで必要な分だけ</b><a href="img/906-image-quality/concierge-1376px.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-1376px.png" alt="②Retinaで必要な分だけ"></a><span class="meta">979.6KB・主役カード相当の最大表示サイズ</span></div>
   <div class="shot plain"><b>③500KB版</b><a href="img/906-image-quality/concierge-500kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-500kb.png" alt="③500KB版"></a><span class="meta">353.0KB</span></div>
-  <div class="shot plain"><b>④150KB版</b><a href="img/906-image-quality/concierge-150kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-150kb.png" alt="④150KB版"></a><span class="meta">149.8KB</span></div>
+  <div class="shot plain"><b>④150KB版</b><a href="img/906-image-quality/concierge-150kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-150kb.png" alt="④150KB版"></a><span class="meta">149.8KB・本番配信版とほぼ同じ重さ</span></div>
   <div class="shot plain"><b>⑤50KB版</b><a href="img/906-image-quality/concierge-50kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-50kb.png" alt="⑤50KB版"></a><span class="meta">44.6KB・かなり縮めた版</span></div>
   <div class="shot plain"><b>参考：WebP(原寸のまま)</b><a href="img/906-image-quality/concierge.webp" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge.webp" alt="参考：WebP(原寸のまま)"></a><span class="meta">272.4KB・PNGと同じ大きさでこの軽さ</span></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>今の本番concierge-pick.png（原寸そのまま配信中）</b><a href="https://joy-relief-station.lovable.app/badges/concierge-pick.png" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/concierge-pick.png</a></li>
+  <li><b>今の本番concierge-pick.png（実際に配信されているファイル・168KB）</b><a href="https://joy-relief-station.lovable.app/badges/concierge-pick.png" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/concierge-pick.png</a></li>
   <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
@@ -97,12 +97,13 @@
 </table>
 
 <footer>
-<p>実測の生データ（すべてPython/PIL・vite buildの実ファイルから直接測定。丸め・推測なし）</p><pre>実測: バッジ画像 元1536pxX1024px 2650238byte(2.53MB)
+<p>実測の生データ（すべてPython/PIL・vite buildの実ファイル・本番へのHTTP取得から直接測定。丸め・推測なし）</p><pre>実測: バッジ画像 リポジトリ元1536pxX1024px 2650238byte(2.53MB)
 実測: バッジ画像 1376px版 1376pxX917px 1003122byte(979.6KB)
 実測: バッジ画像 500KB版 800pxX533px 361482byte(353.0KB)
 実測: バッジ画像 150KB版 500pxX333px 153386byte(149.8KB)
 実測: バッジ画像 50KB版 250pxX167px 45670byte(44.6KB)
 実測: バッジ画像 webp版 1536pxX1024px 278908byte(272.4KB)
+実測: バッジ画像 本番配信中の実物 512pxX341px 168121byte(164.2KB)(2026-09-17取得)
 実測: coverGuide.js 生7940481byte(7.57MB) gzip後2646435byte(2.52MB)
 実測: index.js 生2329070byte(2.22MB) gzip後912314byte(890.9KB)
 実測: styles.css 生207970byte(203.1KB) gzip後30978byte(30.3KB)
