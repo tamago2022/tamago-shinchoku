@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#819 819号：鬼監督の生死確認 確認ページ</title>
+<title>#819 819号：鬼監督の生死確認（自動の次回点検で復旧を確認） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,19 +47,19 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #819 819号：鬼監督の生死確認</div>
-<h1>#819 819号：鬼監督の生死確認</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #819 819号：鬼監督の生死確認（自動の次回点検で復旧を確認）</div>
+<h1>#819 819号：鬼監督の生死確認（自動の次回点検で復旧を確認）</h1>
 <div class="date">2026-09-18 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-自動検知タスク819号（2026-09-14発生）の原因は、2026-09-09 14:03〜2026-09-16 22:24の実測176.4時間（約7.3日）にわたり status/oni_kantoku_log.jsonl に検品記録が1件も書かれていなかったこと（週次利用上限で工場全体の処理が止まっていた期間と一致）。auto_launcher.pyの週次利用上限からの自動復旧策が入ったことで 09-16 22:24 に記録が再開し、以後は1〜2時間おきに継続している。今回 tools/shikumi.py --no-queue で再計測し、鬼監督を含む11項目すべてが green(alive) であることを確認した。
+自動検知タスク819号（2026-09-14発生）の原因は、2026-09-09 14:03:01〜2026-09-16 22:24:36の実測176.4時間（約7.3日）にわたりstatus/oni_kantoku_log.jsonlに検品記録が1件も書かれていなかったこと（週次利用上限で工場全体の処理が止まっていた期間と一致、auto_launcher.pyの週次利用上限からの自動復旧策で解消済み）。手元での手動実行だけで済ませず、heartbeat.sh相乗り(実質30分おき)によるgenzaichi.py→shikumi.pyの<b>自動・自然実行</b>が2026-09-18 00:42:43に走るのを実際に待って確認した。その直前、2026-09-18 00:39:46に外部検品パイプラインが別タスク(823号)を検品した際oni_kantoku_log.jsonlへ新しい行が自動で書き込まれ（生ログ下記）、その結果を反映したshikumi.jsonの自動生成分がverdict=alive・countToday=1・0.0時間更新なしを示している。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>176.4h</b><span>止まっていた実測ギャップ(09-09 14:03→09-16 22:24)</span></div>
-  <div class="num"><b>2.6h</b><span>今回計測した鬼監督の最終更新からの経過(24h以内=alive)</span></div>
-  <div class="num"><b>11/11</b><span>shikumi.py全項目がalive(dead=0)</span></div>
+  <div class="num"><b>176.4h</b><span>止まっていた実測ギャップ(2026-09-09 14:03:01→2026-09-16 22:24:36)</span></div>
+  <div class="num"><b>0.0h</b><span>自動の次回点検(00:42:43生成)時点での鬼監督の最終更新経過(24h以内=alive)</span></div>
+  <div class="num"><b>11/11</b><span>同じ自動点検でshikumi.py全項目がalive(dead=0)</span></div>
 </div>
 
 
@@ -70,7 +70,14 @@
   <li><b>shikumi.json実物(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/shikumi.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/shikumi.json</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>oni_kantoku_log.jsonl最終行のcheckedAt(生ログ)</td><td class="yes">2026-09-18T00:39:46+09:00</td></tr>
+<tr><td>shikumi.json oni_kantoku.lastRanAt(自動点検・手動実行なし)</td><td class="yes">2026-09-18T00:39:46+09:00</td></tr>
+<tr><td>shikumi.json oni_kantoku.verdict(自動点検生成 2026-09-18T00:42:43)</td><td class="yes">alive</td></tr>
+<tr><td>shikumi.json deadCount(11項目中)</td><td class="yes">0</td></tr>
+</table>
 
 <footer>
 このページは #819 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
