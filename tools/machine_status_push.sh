@@ -555,6 +555,16 @@ fi
 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1
 }
 
+# 2026-09-18（931番）：Claudeが作ったChromeタブの孤児を掃く。
+#   子セッションはそれぞれ自分のタブグループを作るが、**他のセッションからは見えないし閉じられない**
+#   （tabs_context_mcpは自分の分しか返さない）。セッションが落ちると孤児として残り、
+#   実際に10枚以上溜まってたまごさんのMacが重くなり、タイピングも音声入力もできなくなった。
+#   → セッションの外側（この工場）から掃く。新しいlaunchd常駐は増やさず既存の便に相乗り
+#     （既存方針と同じ）。スクリプト内部で1時間ゲートしているので5分おきに呼んでも実走は1時間に1回。
+#   ★Chromeが起動していなければ何もしない（起こさない）。activateしない。前面タブは閉じない。
+#     たまごさんの作業タブは閉じない（見分けがつかないものは残す）。
+( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+
 # 約260秒（次の5分ティックが来る前）、間を空けずに回し続ける。走行中↔停止の切り替わりをできるだけ早くPWAへ反映するため。
 # factory_status.py自体が実測27秒かかる（ps/lsof/transcriptスキャン）ので、固定sleepは入れず作業時間そのものを間隔にする
 LOOP_END=$(( $(date +%s) + 260 ))

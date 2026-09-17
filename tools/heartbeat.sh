@@ -151,6 +151,16 @@ while :; do
   #   ディレクトリを1回見るだけで即座に戻るので、15秒おきに呼んでも負荷はほぼゼロ。
   #   投げっぱなしにして心臓は待たない（他の相乗りと同じ形）。
   ( python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-18（931番）：Claudeが作ったChromeタブの孤児を掃く（5分便にも同じ行がある。
+  #   スクリプト内部で1時間ゲートしているので二重には走らない＝kenpin_gateと同じ相乗りの形）。
+  #   Chromeが起動していなければ即座に戻るだけ。activateしない・前面タブは閉じない・
+  #   たまごさんの作業タブは閉じない。
+  ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-18（931番）：取り残された .git のロックが工場のgitを丸ごと止める事故への自己修復。
+  #   Cowork（サンドボックス）側のセッションがgitの途中で打ち切られると index.lock が残り、
+  #   以後 add/commit が全てrc=128で失敗する。しかもマウント越しにはunlinkできず本人が片付けられない。
+  #   5分以上放置＋gitプロセスが1本も無い時だけ消す（worktree_reaper.pyと同じ立ち位置）。
+  ( python3 "$REPO/tools/git_lock_reaper.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
