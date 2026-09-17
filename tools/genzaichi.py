@@ -383,6 +383,30 @@ def write_vault_mirror(md_text):
         return "error: %s" % str(e)[:120]
 
 
+def run_stale_marker_and_get_red_flags():
+    """933番(7/7)：tools/stale_marker.py（awaiting_check件数の見張り＋7日以上停滞の印付け）を
+    この相乗りタイミングでついでに走らせ、赤旗行を作る。新しい常駐プロセスは追加しない
+    （run_shikumi_and_get_red_flags()と同じ、既存heartbeat.sh 30分おきゲートへの相乗り）。"""
+    try:
+        subprocess.run(
+            ["python3", os.path.join(REPO, "tools", "stale_marker.py")],
+            cwd=REPO, capture_output=True, timeout=60,
+        )
+    except Exception as e:
+        return ["stale_marker：実行に失敗しました(%s)" % str(e)[:80]]
+    s = jread("stale_summary.json", {})
+    lines = []
+    n_check = int(s.get("awaitingCheckCount") or 0)
+    if s.get("awaitingCheckOverLimit"):
+        lines.append("確認待ちが%d件（10件超）たまっています。鬼監督で仕分けてください" % n_check)
+    red = s.get("red") or []
+    if red:
+        top = "・".join("%s番(%s日)" % (r.get("n"), r.get("ageDays")) for r in red[:5])
+        more = "、他%d件" % (len(red) - 5) if len(red) > 5 else ""
+        lines.append("7日以上動いていない案件が%d件：%s%s" % (len(red), top, more))
+    return lines
+
+
 def run_shikumi_and_get_red_flags():
     """799番：仕組みの生死表（tools/shikumi.py）を、この相乗りタイミングでついでに走らせる。
     新しい常駐プロセスは作らない——既存のheartbeat.sh 30分おきゲート（このgenzaichi.build()自体の
@@ -458,6 +482,8 @@ def build():
     # 新しいUIコードは書かず、既存のred_flags描画（genzaichi.md／genzaichi.jsonのredFlags）に乗せる。
     shikumi_lines = run_shikumi_and_get_red_flags()
     red_flags.extend(shikumi_lines)
+    stale_lines = run_stale_marker_and_get_red_flags()
+    red_flags.extend(stale_lines)
 
     L = []
     A = L.append
@@ -492,6 +518,8 @@ def build():
     else:
         A("- ✅ 発車：10分以内に動いている")
     for line in shikumi_lines:
+        A("- 🔴 **%s**" % line)
+    for line in stale_lines:
         A("- 🔴 **%s**" % line)
     A("")
     A("## 数字")

@@ -778,7 +778,51 @@ def build():
                      "note": "終了報告済みのうち、人（たまご/Dispatch）に押されずに完了した割合。見張り番の再開は機械なので人に数えない"}
     d["heartbeat"] = heartbeat_status()
     d["launchStall"] = launch_stall_status(alive, sm, credit_stop=(qj.get("allLevel") == "stop"))
+    d["awaitingCheck"] = awaiting_check_status()
+    d["stale"] = stale_status()
     return d
+
+
+AWAITING_CHECK_LIMIT = 10
+
+
+def awaiting_check_status():
+    """933番(7/7)：たまごさんの確認待ち(awaiting_check)が溜まりすぎていないかを数える。
+
+    たまごさん「確認しきれない。2週間以上前のことまだやってる」への対応。
+    2026-09-06以降、確認待ちに上がる前に鬼監督(AI検品)が自動でPASS/FAILを判定し、
+    PASSは人を待たずdoneへ自動昇格する仕組みが既に動いている（auto_launcher.py の
+    start_verify/collect_verify）。それでも技術的エラーや検品対象外で awaiting_check に
+    溜まることはあるので、ここで件数だけ機械的に数えて閾値超過を警告する
+    （AIを呼ばない・queue.jsonを読むだけの0円チェック）。
+    """
+    try:
+        q = json.load(open(os.path.join(REPO, "status", "queue.json"), encoding="utf-8"))
+    except Exception:
+        q = {}
+    items = q.get("items") or []
+    n = len([it for it in items if it.get("status") == "awaiting_check"])
+    over = n > AWAITING_CHECK_LIMIT
+    return {
+        "count": n,
+        "limit": AWAITING_CHECK_LIMIT,
+        "over": over,
+        "note": ("⚠️ 確認待ちが%d件（%d件超）たまっています。鬼監督で仕分けてください"
+                 % (n, AWAITING_CHECK_LIMIT)) if over else "確認待ちは%d件（正常）" % n,
+    }
+
+
+def stale_status():
+    """933番(7/7)：7日以上動いていない案件（waiting/hold/awaiting_check等）に印を付けた
+    結果（tools/stale_marker.pyが書く status/stale_summary.json）を、そのままここへ載せる。
+    ここでは判定し直さず既存ファイルを読むだけ（判定ロジックの正本は stale_marker.py 一本）。"""
+    try:
+        with open(os.path.join(REPO, "status", "stale_summary.json"), encoding="utf-8") as f:
+            s = json.load(f)
+    except Exception:
+        return {"available": False, "note": "stale_summary.json未生成（tools/stale_marker.pyを実行してください）"}
+    s["available"] = True
+    return s
 
 
 def heartbeat_status():
