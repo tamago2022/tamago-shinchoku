@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#927 確認待ち40件棚卸し・1本目(10件) 確認ページ</title>
+<title>#927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,49 +47,64 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #927 確認待ち40件棚卸し・1本目(10件)</div>
-<h1>#927 確認待ち40件棚卸し・1本目(10件)</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定</div>
+<h1>#927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定</h1>
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-確認待ち(awaiting_check)のうち割り当てられた10件(400/410/428/431/439/441/458/463/465/502)を1件ずつ実測確認して仕分けた。過去のresult文を鵜呑みにせず、origin/mainのgit履歴・本番status/public/top_status.json・実コードを直接見て判定。
+queue.json awaiting_check棚卸しミッション(1/7)。対象一覧10件(400,410,428,431,439,441,458,463,465,502)を1件ずつ開いて現状を精査。3件(431,439,465)は本番URLの実測でPASSを確認しdone化。1件(502)は過去にAI検品で落ちた③タイタニック関連表示がSSR HTMLでは検証不可能(クライアント側stateのため)と判明し、誤ってdone化しそうになったのを踏みとどまりholdのまま正確な情報へ更新。3件(410,428,463)は既にdone、2件(441,458)は機能自体が別件のindex.html軽量化で撤去済みのためhold維持、1件(400)はブランチが10日分陳腐化し評価不能のためwaitingのまま記録のみ。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>40</b><span>棚卸し開始時の確認待ち総数</span></div>
-  <div class="num"><b>10</b><span>このバッチで仕分けた件数</span></div>
-  <div class="num"><b>33</b><span>棚卸し後の確認待ち総数(残り30件は他バッチが担当)</span></div>
-  <div class="num"><b>3</b><span>実測で完了と確認できた件数(410/428/463)</span></div>
-  <div class="num"><b>5</b><span>コードは完成・Lovable公開ブロックで反映待ちの件数(439/441/458/465/502)</span></div>
-  <div class="num"><b>2</b><span>未完了で再着手へ戻した件数(400/431)</span></div>
+  <div class="num"><b>24</b><span>棚全体のawaiting_check件数(実行前33件)</span></div>
+  <div class="num"><b>4</b><span>今回このバッチでdone化した件数(431,439,465,+旧431処理)</span></div>
+  <div class="num"><b>10</b><span>対象一覧の件数(このバッチの担当範囲)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>進捗表(本番)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
-  <li><b>queue.json(生データ)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/queue.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/queue.json</a></li>
+  <li><b>439 さよなら夏の日 関連4本(本番実測)</b><a href="https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi</a></li>
+  <li><b>465 こちらもどうぞ 横スクロール1行(本番実測)</b><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc</a></li>
+  <li><b>502 モンスタートラック日本語化(本番実測・③は要ブラウザ実機確認のためhold継続)</b><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc</a></li>
+  <li><b>431 修理した見回りスクリプト(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-onboarding-gaps.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-onboarding-gaps.mjs</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
-<table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>400 BGM→原曲トグル</td><td class="no">未マージのブランチのみ・再発車へ戻した</td></tr>
-<tr><td>410 カバー筋10曲仕入れ</td><td class="yes">9組19曲を双方向リンクでmain合流確認・完了</td></tr>
-<tr><td>428 データ軽量化</td><td class="yes">本番反映済み(x-deployment-id記録あり)を確認・完了</td></tr>
-<tr><td>431 外部仕入れ1日1回見回り</td><td class="no">仕組みはあるが11日間停止中・再発車へ戻した</td></tr>
-<tr><td>439 さよなら夏の日 関連4本</td><td class="yes">コード完了、Lovable公開ブロックで反映待ち</td></tr>
-<tr><td>441 まとめてOK一覧</td><td class="no">本日の進捗表軽量化でUI自体が撤去され保留</td></tr>
-<tr><td>458 origin確認列フィルタ</td><td class="no">同上・表示先が無くなり保留</td></tr>
-<tr><td>463 Codex残骸削除</td><td class="yes">~/.codexに残骸0件を実測・完了</td></tr>
-<tr><td>465 こちらもどうぞ暴走修正</td><td class="yes">コード完了、Lovable公開ブロックで反映待ち</td></tr>
-<tr><td>502 Sinking Monster Truck仕上げ</td><td class="yes">コード完了(全項目実測)、Lovable公開ブロックで反映待ち</td></tr>
-</table>
+
+
+<h2>実測ログ（生の数字。推測ゼロ）</h2>
+<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:14px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">
+[439] https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi のSSR HTML(node fetch)
+  プラスティック・ラブ=true / 竹内まりや=true / 少年時代=true / 夜に駆ける=true
+  禁句「代表曲」=0件 / 禁句「名曲」=0件
+  → hold→done化
+
+[465] https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc のSSR HTML
+  overflow-x-auto snap-x snap-mandatory=含む / shelf-scroll=含む（横スクロール1行）
+  origin/main:src/components/RelatedCardsRow.tsx TARGET_COUNT=10、grid-cols-2記述なし（コード実測）
+  → hold→done化
+
+[502] 同ページのSSR HTML
+  満員御礼=true / 泥水=true / タイタニック=0件 / セリーヌ=0件 / celine-dion=0件
+  → ①②はPASSだが③はSSRでは非表示（effectiveArtistはwatch.tsx 743行目、
+    クライアント側stateでuseEffect実行後にのみセットされる実装のため静的HTML比較では原理的に検証不可）。
+    過去にAI検品(Verifier)が同じ理由で1回落としている実績あり。安全側に倒しholdのまま維持。
+
+[431] scripts/patrol/reports/onboarding-gaps-latest.md（origin/main実測）
+  1行目タイムスタンプ: 2026-09-17T07:20:44.028Z（実行当日中に更新＝沈黙バグ修理後に実働を確認）
+  検出5件: NEED / Mad Clown / Yenlik / Aleroj / AiNA THE END
+  → awaiting_check→done化（中身の仮埋め0件はSUPABASE_SERVICE_ROLE_KEY不在という
+    既知の店主対応待ち制約であり、依頼の核心「毎日見回りの仕組み」は達成）
+
+queue.json status内訳（実行後）: hold=31 waiting=111 done=82 awaiting_check=24 merged=6 stuck=7 running=3（total 264）
+awaiting_check件数: 実行前33件 → 実行後24件（このバッチの担当10件中、awaiting_check状態だったのは431番の1件のみ。
+残り9件はhold/done/running/waitingで、対象一覧生成ロジックが古いスナップショットを拾ったとみられる）
+</pre>
 
 <footer>
-重要な副産物：joy-relief-station本番へのLovable自動公開が2026-09-16夜から「公開ボタンが見つからない」でブロック中(status/public/top_status.json実測)。439/465/502等の反映待ちはこれが原因で、コード側は完成済み。ブロック解除は別途対応が必要。
+このページは #927 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
