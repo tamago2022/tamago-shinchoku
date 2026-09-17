@@ -153,7 +153,11 @@ def _find_node():
     return "node"
 
 
-def check_click_and_console(url, timeout=45):
+def check_click_and_console(url, timeout=130):
+    # 790番実測(2026-09-17)：verify_click.mjs自身のクリックループ予算(TIME_BUDGET_MS)は
+    # 90秒あり、Mac高負荷時は実測46秒かかることもある(起動・ページロード含む)。旧デフォルト
+    # 45秒だと本当は無反応0件・コンソールエラー0件でPASSのはずのページまで「触る検品がタイム
+    # アウトしました」でFAILにしていた(誤検知)。130秒に伸ばして実測ベースで安全側に倒す。
     if not os.path.exists(VERIFY_CLICK):
         return True, "verify_click.mjsが見つからないためスキップ"
     try:
