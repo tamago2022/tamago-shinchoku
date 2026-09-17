@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-09-17T09:10:07+09:00",
+ "checkedAt": "2026-09-17T18:25:03+09:00",
  "overallColor": "red",
- "redCount": 2,
+ "redCount": 4,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,36 +23,36 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 0,
-   "detail": "最終記録から約0.5時間経過（2026-09-17T08:37:01+09:00）／直近24時間の完了10件中、鬼監督の記録が付いているのは10件"
+   "count": 10,
+   "detail": "最終記録から約1.1時間経過（2026-09-17T17:21:13+09:00）／直近24時間の完了32件中、鬼監督の記録が付いているのは22件"
   },
   {
    "key": "done_missing_url",
    "label": "URL無しで完了(done)になった仕事",
-   "color": "green",
-   "count": 0,
-   "detail": "直近24時間の完了はすべてURL付き"
+   "color": "red",
+   "count": 4,
+   "detail": "直近24時間で完了した仕事のうちURLが空のもの：#431、#712、#924、#929"
   },
   {
    "key": "factory_stalled",
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "最終発車から0.6時間・発車待ち95件・空き4枠あり"
+   "detail": "走行3本／上限3本（枠が埋まっているだけ・正常）"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回726番 → 今回924番（減少なし）"
+   "detail": "前回924番 → 今回933番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
-   "count": 2,
-   "detail": "status/public/queue.json(1.8MB)、status/public/done_archive.json(1.0MB)"
+   "count": 20,
+   "detail": "share/check/assets/919-zen/chashitsu_loop_1920x1080.mp4(7.1MB)、share/check/assets/919-zen/kuroihama_loop_1920x1080.mp4(7.1MB)、share/check/ref/badge-ohon-recommendation-badge.png(4.1MB)、share/check/assets/919-zen/frames/chashitsu_last.png(3.0MB)、share/check/assets/919-zen/frames/chashitsu_first.png(2.9MB)"
   },
   {
    "key": "check_page_404",
@@ -72,9 +72,9 @@
   {
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
-   "color": "green",
-   "count": 91,
-   "detail": "91件（しきい値100件以内）"
+   "color": "red",
+   "count": 110,
+   "detail": "110件（しきい値100件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。worktree_reaper.pyが動いているか確認し、片づけを進めること）"
   },
   {
    "key": "unreported_completions",
@@ -87,13 +87,19 @@
  "queuedFixes": [
   {
    "key": "ctx_1m",
-   "skipped": "既存の714番と同じ内容のためスキップ"
+   "skipped": "--no-queue指定のため積んでいない"
+  },
+  {
+   "key": "done_missing_url",
+   "skipped": "--no-queue指定のため積んでいない"
   },
   {
    "key": "big_files",
-   "status": "done",
-   "message": "925番として発車待ちに追加しました（P2）",
-   "n": 925
+   "skipped": "--no-queue指定のため積んでいない"
+  },
+  {
+   "key": "worktree_count",
+   "skipped": "--no-queue指定のため積んでいない"
   }
  ]
 }
