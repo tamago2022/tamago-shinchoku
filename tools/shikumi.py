@@ -317,15 +317,38 @@ def check_ai_verify():
 # ───────────────────────── ④鬼監督 ─────────────────────────
 
 def check_oni_kantoku():
+    """866番の実例：2026-09-09 14:03〜09-16 22:24の176時間、鬼監督(3段目AI検品)の
+    ログが1行も増えなかった。実体は鬼監督自体の故障ではなく、上流のauto_launcher(発車係)が
+    週次利用上限にぶつかって1週間止まっていたため、鬼監督に渡す『完了イベント』自体が
+    発生しなかったこと（auto_launcher側の恒久対策は別コミットで対応済み）。
+
+    heartbeat(#843/#861)・auto_launch(#925)で既に採用した『本当に壊れているか、単に
+    見るべきイベントが無いだけか』を区別するパターンを、ここにも同じ形で適用する
+    （二重実装を避けるためcheck_auto_launch()をそのまま呼ぶ）。発車係自体がdead/slowの間は
+    鬼監督の沈黙を別障害として二重にチケット化しない。発車係がalive（イベントは流れているはず）
+    なのに鬼監督が24時間沈黙している場合だけ、本物のdeadとして扱う。"""
     rows = read_jsonl(os.path.join(ST, "oni_kantoku_log.jsonl"))
     last_ts = rows[-1].get("checkedAt") if rows else None
     hrs = hours_since(last_ts)
-    verdict = tier(hrs, 24, 24)  # 二択（alive/dead）。完了イベント駆動なので中間のslow帯は設けない
+    raw_verdict = tier(hrs, 24, 24)  # 二択（alive/dead）。完了イベント駆動なので中間のslow帯は設けない
     today = today_str()
     cnt = sum(1 for r in rows if str(r.get("checkedAt") or "")[:10] == today)
+
+    verdict = raw_verdict
+    suppressed_note = ""
+    if raw_verdict == "dead":
+        launch = check_auto_launch()
+        if launch["verdict"] != "alive":
+            verdict = "alive"
+            suppressed_note = (
+                "。ただし発車（auto_launch）自体がdead/slow（%s）で、完了イベントが発生していない"
+                "ため沈黙は正常。二重に故障扱いしない（866番）" % launch["verdict"]
+            )
+
     how = (
         "status/oni_kantoku_log.jsonlの最終行checkedAt基準：現在%s時間更新なし（24時間以内=alive、"
-        "それ超=dead。イベント駆動〔完了のたび〕なので中間のslow帯は設けない）" % _fmt(hrs)
+        "それ超=dead。イベント駆動〔完了のたび〕なので中間のslow帯は設けない）%s"
+        % (_fmt(hrs), suppressed_note)
     )
     return mk("oni_kantoku", "鬼監督", last_ts, cnt, "24時間以内に記録", 24 * 60, how, verdict)
 
