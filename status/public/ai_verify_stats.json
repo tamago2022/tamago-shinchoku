@@ -1,9 +1,9 @@
 {
- "totalChecked": 266,
- "totalPassed": 143,
- "totalFailed": 103,
+ "totalChecked": 269,
+ "totalPassed": 145,
+ "totalFailed": 104,
  "totalErrors": 20,
- "totalCostUsd": 82.1868,
+ "totalCostUsd": 82.985,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -107,33 +107,10 @@
   "pre-pushフックは各環境でcore.hooksPath設定(install": 1,
   "画像は1枚(concierge-pick)のみで依頼の「2〜3枚選ぶ」件数指定を": 1,
   "直前の関所が要求した実測の生データ（「実測:」記載や<pre>/<code>）が": 1,
-  "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで": 1
+  "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで": 1,
+  "884番の完了報告はhealth.jsonのみ検証しているが、now.json/": 1
  },
  "history": [
-  {
-   "ts": "2026-09-15T23:48:05+09:00",
-   "n": 801,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/791-line-inquiry-draft.html",
-   "verdict": "fail",
-   "reason": "LINE2窓口への送信・Gmail見張りが1件も実行されておらず、送信証拠(スクショ・受付番号)も皆無。期限当日(9/15火)にもかかわらず前回と同一の「ツール無し」判断を追認しただけで、代替手段の試行や別セッションへの実行依頼も行われていない。",
-   "costUsd": 0.18065399999999998
-  },
-  {
-   "ts": "2026-09-16T00:06:04+09:00",
-   "n": 826,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/826-renkei-shuhyo.html",
-   "verdict": "error",
-   "reason": "AI検品がタイムアウトしました（600秒超）",
-   "costUsd": null
-  },
-  {
-   "ts": "2026-09-16T00:06:33+09:00",
-   "n": 876,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/876-yoryou.html",
-   "verdict": "error",
-   "reason": "AI検品がタイムアウトしました（600秒超）",
-   "costUsd": null
-  },
   {
    "ts": "2026-09-16T03:12:00+09:00",
    "n": 826,
@@ -509,7 +486,31 @@
    "verdict": "pass",
    "reason": "hold711/745は理由付きで妥当にhold継続、10件超警告(factory_status.py)と7日stale印(stale_marker.py→genzaichi.md)がqueue.json実データ(awaiting_check8件・red17件・yellow19件)と一致して実際に稼働、本番HEADはorigin/mainと同一でpush済み、確認ページも実クリックで無反応・コンソ",
    "costUsd": 0.5142313999999999
+  },
+  {
+   "ts": "2026-09-17T17:16:50+09:00",
+   "n": 880,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/880-genzaichi-dead-recovery.html",
+   "verdict": "pass",
+   "reason": "本番genzaichi.mdのLast-Modifiedが取得時刻の13秒前で実際に更新されており、確認ページ・証拠JSON（alive判定）と整合、触る検品も無反応/エラー0件",
+   "costUsd": 0.18205359999999998
+  },
+  {
+   "ts": "2026-09-17T17:21:13+09:00",
+   "n": 930,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/934-batch4-triage.html",
+   "verdict": "fail",
+   "reason": "884番の完了報告はhealth.jsonのみ検証しているが、now.json/pace.jsonが検証時点(17:20)でbuiltAt/updatedAt「13:37:21」のまま約3時間43分更新停止しており、前回FAILの症状（計測が止まる）が別ファイルで再現中",
+   "costUsd": 0.2596568
+  },
+  {
+   "ts": "2026-09-17T18:28:46+09:00",
+   "n": 874,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/874-oni-kantoku-alive-recovery.html",
+   "verdict": "pass",
+   "reason": "壊れていたリンクはtools/shikumi.pyへ修正され4リンク全て実測200、証拠JSONに回復の具体数字（09-13停止→09-16 19:54修正→以後39-42件連続記録）があり、touch検品も無反応・エラー0件でPASS",
+   "costUsd": 0.35638620000000004
   }
  ],
- "updatedAt": "2026-09-17 17:06"
+ "updatedAt": "2026-09-17 18:28"
 }

@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-17 17:10",
+ "updatedAt": "2026-09-17 18:50",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1154,29 +1154,6 @@
    "staleLevel": "yellow"
   },
   {
-   "n": 734,
-   "title": "【実験】写真（静止画）2件を棚に入れて、どう見えるか確かめる",
-   "why": "スマホから追加",
-   "status": "awaiting_check",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "bgWaitCount": 5,
-   "aiVerifyFailCount": 3,
-   "redoCount": 1,
-   "startedAt": "2026-09-11T11:54:37+09:00",
-   "sessionId": "e6c7d74c-4999-4607-8e96-99c03c20069f",
-   "finishedAt": "2026-09-11T12:16:54+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/734-photo-cards-experiment.html",
-    "https://joy-relief-station.lovable.app/room/food/nakameguro-korean-kominka",
-    "https://joy-relief-station.lovable.app/room/food/sendai-miyage-okashi",
-    "https://joy-relief-station.lovable.app/world/food"
-   ],
-   "staleLevel": "yellow"
-  },
-  {
    "n": 740,
    "title": "鳥の棚に動物の動画を1本入れる（後ろで流れている曲も特定してつなぐ）",
    "why": "スマホから追加",
@@ -1386,7 +1363,9 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/771-ltx25-mist-oneway-cost.html",
     "https://v3b.fal.media/files/b/0aaa0a2f/uuC0zCybxgxvM6Fbs-MR__HW4ZtB5p.mp4"
    ],
-   "staleLevel": "yellow"
+   "staleLevel": "yellow",
+   "ownerJudgeNote": "【930番棚卸し4/7・2026-09-17】動画(もやが戻らない海辺・カメラ完全固定)は完成し本番反映済み、オプティカルフロー解析でも客観検証済み。ただし「実費を1円まで確定」だけは未達——fal.ai公式Billing APIはadmin権限が無く403、ブラウザ操作ツールもこのセッション群には無く2セッション独立で確認済み(同じ経路を試すのは3回目になるため打ち止め)。計算値$0.0548(約8.2円、承認上限$1.00以内)を「計算値であり実測ではない」と正直に明記済み。金額精度そのものへの拘りをたまごさんが明言しているため、この計算値で良しとするかはたまごさん本人がfal.aiの請求ダッシュボードを見て判断する以外にAI側から取れる手段が無い。鬼監督の判定範囲外として判断待ちに残す。",
+   "needsOwnerJudgment": true
   },
   {
    "n": 772,
@@ -1639,7 +1618,7 @@
    "n": 792,
    "title": "【最重要・要確認】パーソナライズ実地テスト：亮太さん＋甥っ子に「好きそうで知らないもの」を出す",
    "why": "スマホから追加",
-   "status": "awaiting_check",
+   "status": "hold",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -1661,7 +1640,9 @@
    ],
    "evidenceGone": true,
    "evidenceCheckedAt": "2026-09-17T16:22:40+0900",
-   "staleLevel": "yellow"
+   "staleLevel": "yellow",
+   "holdNote": "【930番棚卸し4/7・2026-09-17】亮太さんページの実装・main合流(commit 7a523a65)は完了。Lovable公開のみ未完了。原因を実機で特定：joy-relief-stationのLovable自動公開便(com.tamago.joy-relief-station.lovable-publish)は案件820(2026-09-14, 30分おき連打がsuspicious activity扱いされる懸念)でlaunchdレベルのDisabled=trueのままon-demand専用に方針転換されており、on-demand手動実行も今回試したが「本日は3回連続失敗のため停止中(日付が変わるまで/--forceで解除)」の安全装置に阻まれた。直近3失敗の実原因は「『公開』ボタンが見つからない。画面がエディタでない可能性」(status/lovable_publish_fail.jsonl実測)＝公開専用Chrome(CDP:9223)の画面状態そのものに問題があり、このセッションにはブラウザ操作ツールが無く画面を直接確認・復旧できない。--forceでの強行は原因不明のまま誤クリックのリスクがあるため見送り。930番の範囲を超える別系統の障害(公開パイプライン自体の生死)のためholdへ落とし、公開専用Chromeの画面復旧ができるセッション/たまごさん本人へ引き継ぐ。",
+   "heldAt": "2026-09-17T17:15:31+09:00"
   },
   {
    "n": 793,
@@ -2147,33 +2128,6 @@
    "order": 90,
    "costsMoney": false,
    "urgentReason": "今週98%到達・見たいものが1つも出せなかった（2026-09-14）"
-  },
-  {
-   "n": 825,
-   "title": "【できたもの2】日時＋カテゴリ＋1行＋ビフォーアフター＋URLだけ・詳細は畳む・検索",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "costsMoney": false,
-   "costEstimate": "本数の言及: 1・1・1・5・127・1・1・5（自動抽出・目視確認のうえ発車してください）",
-   "label": "【できたもの2】日時＋カテゴリ＋1行＋ビフォーアフター＋URL・詳細は畳む・検索",
-   "urgent": true,
-   "order": 8,
-   "urakataBlockedAt": "2026-09-14 16:32:24+09:00",
-   "startedAt": "2026-09-16T03:46:20+09:00",
-   "sessionId": "fc6a8bfa-0108-423f-a68d-116c9237bc4d",
-   "finishedAt": "2026-09-16T04:26:51+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/825-dekimono-v2.html",
-    "https://tamago2022.github.io/tamago-shinchoku/index.html"
-   ],
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/index.html",
-   "checkedAt": "2026-09-16T09:10:24+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：確認ページ・本番URL・4枚のスクショ・288件のJSONデータ・実クリック検品を全て実測し、依頼の6完了条件（1件簡素化表示／くわしく畳み保存／カテゴリ6種絞込／fal検索12件一致／初期表示5件／無反応0件）を全て確認"
   },
   {
    "n": 828,
@@ -2709,13 +2663,13 @@
    "n": 874,
    "title": "【自動検知】鬼監督 が動いていません",
    "why": "スマホから追加",
-   "status": "waiting",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "factory",
    "priority": 2,
    "shikumiCheckKey": "oni_kantoku",
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/index.html",
+   "touchUrl": "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/oni_kantoku_874_evidence.json",
    "aiVerifyFailCount": 1,
    "failReasons": [
     "status/oni_kantoku_log.jsonlの最終行checkedAtが2026-09-13T15:02:37+09:00のまま(現在まで約56時間更新なし・24時間基準を超過)で、修正コミット後も鬼監督のdead状態が実データ上解消されていない。awaiting_check38件が滞留しており修正対象(auto_launcher.py)は鬼監督本体のコードに触れていない"
@@ -2725,8 +2679,8 @@
    "interpretation": "鬼監督(oni_kantoku_log.jsonl)が更新されない真因を、鬼監督本体のコードだけでなく上流(心臓heartbeat.sh・\nauto_launcher.py)まで遡って特定し、実データ(shikumi.json verdict・ログの継続記録)で「alive」に\n復旧していることを実測で示す。確認ページ(share/check/)＋証拠JSON(status/public/)をmainへpushし、\nGitHub PagesのURLをDispatchへ報告する。\n",
    "inspections": [],
    "state": "submitted",
-   "kenpinUpdatedAt": "2026-09-17T17:08:17+09:00",
-   "selfCheckPassAt": "2026-09-17T17:08:17+09:00",
+   "kenpinUpdatedAt": "2026-09-17T18:24:04+09:00",
+   "selfCheckPassAt": "2026-09-17T18:24:04+09:00",
    "kenpinNotes": [
     {
      "ts": "2026-09-17T17:08:17+09:00",
@@ -2737,10 +2691,30 @@
      "ts": "2026-09-17T17:08:17+09:00",
      "field": "functionTestPassAt",
      "note": "本番相当のGitHub Pages上でHTTP 200を実測：確認ページ https://tamago2022.github.io/tamago-shinchoku/share/check/874-oni-kantoku-alive-recovery.html 、証拠JSON https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/oni_kantoku_874_evidence.json 。push後githooks/pre-pushのsekisho関門もPASS"
+    },
+    {
+     "ts": "2026-09-17T18:24:04+09:00",
+     "field": "selfCheckPassAt",
+     "note": "確認ページの404リンク(status/shikumi.py)をtools/shikumi.pyへ修正・全5リンクをpython urllibで200実測。数字をshikumi.py再実行の実測値(alive・1.0h・countToday40・修正後42件)へ更新。①②③④の見出しを明示。sekisho.py --local-fileでPASS"
+    },
+    {
+     "ts": "2026-09-17T18:24:04+09:00",
+     "field": "functionTestPassAt",
+     "note": "本番GitHub Pages上で確認ページ(200)・掲載5リンク全て200を実測。python3 tools/shikumi.pyをその場で再実行しoni_kantoku verdict=alive(1.0時間更新なし・11項目中0件dead)を再確認"
     }
    ],
-   "functionTestPassAt": "2026-09-17T17:08:17+09:00",
-   "contentCheckFailCount": 1
+   "functionTestPassAt": "2026-09-17T18:24:04+09:00",
+   "contentCheckFailCount": 1,
+   "startedAt": "2026-09-17T18:16:42+09:00",
+   "sessionId": "72b54f14-cb88-48c4-9cee-22ec73616c42",
+   "finishedAt": "2026-09-17T18:25:29+09:00",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/874-oni-kantoku-alive-recovery.html",
+    "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/oni_kantoku_874_evidence.json"
+   ],
+   "checkedAt": "2026-09-17T18:28:46+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：壊れていたリンクはtools/shikumi.pyへ修正され4リンク全て実測200、証拠JSONに回復の具体数字（09-13停止→09-16 19:54修正→以後39-42件連続記録）があり、touch検品も無反応・エラー0件でPASS"
   },
   {
    "n": 875,
@@ -2761,29 +2735,6 @@
    "order": 90
   },
   {
-   "n": 876,
-   "title": "【最優先・容量】減りが速い原因を突き止める＋ゴミ掃除＋iMacへ逃がす分の割り出し",
-   "why": "スマホから追加",
-   "status": "awaiting_check",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "label": "【最優先・容量】減りが速い原因＋ゴミ掃除＋iMacへ逃がす分の割り出し",
-   "urgent": true,
-   "order": 0,
-   "costsMoney": false,
-   "autoDemoteOverride": "たまごさんが最優先と明言（2026-09-15）",
-   "startedAt": "2026-09-15T23:28:38+09:00",
-   "sessionId": "7ff8e1ab-2dd2-4070-bb52-029d338823fd",
-   "finishedAt": "2026-09-15T23:52:43+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/876-yoryou.html"
-   ],
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/876-yoryou.html",
-   "backlogVerified": true
-  },
-  {
    "n": 877,
    "title": "毎朝の入荷見回り（2026-09-15分・自動）",
    "why": "スマホから追加",
@@ -2793,35 +2744,6 @@
    "origin": "factory",
    "priority": 3,
    "urakataBlockedAt": "2026-09-17 00:30:45+09:00"
-  },
-  {
-   "n": 878,
-   "title": "【今すぐ】申請シートの英語説明文が規格違反（160字超・全角記号）→直して機械で弾く",
-   "why": "スマホから追加",
-   "status": "done",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "origin": "user",
-   "priority": 1,
-   "label": "【今すぐ】申請シートの英語説明文が規格違反→直して機械で弾く",
-   "urgent": true,
-   "order": 0,
-   "costsMoney": false,
-   "reportImmediately": true,
-   "autoDemoteOverride": "たまごさんが申請中に詰まっている。最優先",
-   "sessionId": "3d58310b-90c6-4e63-8377-50743b3463f5",
-   "cutCount": 1,
-   "resumeFrom": "3d58310b-90c6-4e63-8377-50743b3463f5",
-   "startedAt": "2026-09-16T03:34:35+09:00",
-   "finishedAt": "2026-09-16T03:55:25+09:00",
-   "urls": [
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/878-line-text-limit.html",
-    "https://tamago2022.github.io/tamago-shinchoku/share/check/769-rashikoru-paste-sheet.html"
-   ],
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/share/check/878-line-text-limit.html",
-   "checkedAt": "2026-09-16T04:27:18+0900",
-   "okBy": "ai-verifier-auto",
-   "okNote": "鬼監督AI検品PASS：3キャラ全ての英語説明文が160字以内・半角のみに短縮され本番3URL(769-rashikoru/peralino/oniyome)全てHTTP200で表示、規格チェック関数を実際に261字違反設定で走らせシート生成ブロックを実機確認、残り字数表示(143/160等)あり、4URL全てheadless Chromeで無反応0件・コンソールエラー0件"
   },
   {
    "n": 879,
@@ -2844,7 +2766,7 @@
    "n": 880,
    "title": "【自動検知】現在地の紙 が動いていません",
    "why": "スマホから追加",
-   "status": "running",
+   "status": "done",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "factory",
@@ -2853,7 +2775,15 @@
    "urakataBlockedAt": "2026-09-17 00:30:45+09:00",
    "startedAt": "2026-09-17T17:03:35+09:00",
    "sessionId": "6b9ce64f-2717-42bf-9a25-d1c57a2f6bc6",
-   "pid": 57724
+   "finishedAt": "2026-09-17T17:15:11+09:00",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/880-genzaichi-dead-recovery.html",
+    "https://tamago2022.github.io/tamago-shinchoku/status/public/genzaichi.md"
+   ],
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/status/public/genzaichi.md",
+   "checkedAt": "2026-09-17T17:16:50+0900",
+   "okBy": "ai-verifier-auto",
+   "okNote": "鬼監督AI検品PASS：本番genzaichi.mdのLast-Modifiedが取得時刻の13秒前で実際に更新されており、確認ページ・証拠JSON（alive判定）と整合、触る検品も無反応/エラー0件"
   },
   {
    "n": 881,
@@ -2934,16 +2864,14 @@
    "repo": "/Users/mac/Desktop/tamago-shinchoku",
    "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/status/health.json",
    "aiVerifyFailCount": 1,
-   "failReasons": [
-    "コード修正・main反映は確認できたが本番復旧は未確認（health.json measuredAtが約15時間停止、heartbeat.logは4日近く更新なしでload/diskFreeGBもnullのまま）。依頼の必須条件「5分待って本番で🚨💤消滅を確認」が未達成"
-   ],
    "startedAt": "2026-09-16T20:26:20+09:00",
    "sessionId": "66e59395-c4fa-4969-b6b8-755c38a62428",
    "finishedAt": "2026-09-17T16:37:47+09:00",
    "urls": [
     "https://tamago2022.github.io/tamago-shinchoku/share/check/884-machine-load-restore.html",
-    "https://tamago2022.github.io/tamago-shinchoku/status/health.json"
-   ]
+    "https://tamago2022.github.io/tamago-shinchoku/status/public/health.json"
+   ],
+   "reverifiedAt": "2026-09-17T17:15:31+09:00"
   },
   {
    "n": 885,
@@ -2955,7 +2883,11 @@
    "origin": "factory",
    "priority": 2,
    "kenpouCheckKey": "unreported_completions",
-   "urakataBlockedAt": "2026-09-17 00:30:45+09:00"
+   "urakataBlockedAt": "2026-09-17 00:30:45+09:00",
+   "redoCount": 1,
+   "failReasons": [
+    "URLが1本も無いまま終了"
+   ]
   },
   {
    "n": 886,
@@ -2965,7 +2897,11 @@
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
-   "priority": 2
+   "priority": 2,
+   "sessionId": "12745e2d-bea7-4bba-9274-a6c77a8069eb",
+   "cutCount": 1,
+   "resumeFrom": "12745e2d-bea7-4bba-9274-a6c77a8069eb",
+   "cutAt": "2026-09-17T18:48:54+0900"
   },
   {
    "n": 887,
@@ -3023,18 +2959,21 @@
    "n": 889,
    "title": "【コンシェルジュ】その場で再生を基本にする＋なぜ出したかを1行付ける",
    "why": "スマホから追加",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
    "priority": 2,
-   "urgent": false
+   "urgent": false,
+   "startedAt": "2026-09-17T18:25:29+09:00",
+   "sessionId": "b1751490-c86c-4267-bf2e-ac0e7f56ce97",
+   "pid": 90030
   },
   {
    "n": 890,
    "title": "【決定・実装】バッジ＝短辺の28%／余白＝短辺6.5%を上下同じpx／左上／good-cover.pngで統一",
    "why": "スマホから追加",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -3042,7 +2981,10 @@
    "urgent": false,
    "autoDemoteOverride": "たまごさん「バッジは後回しでいい。仕組み作りのほうが遥かに大事」（2026-09-16 23:15）",
    "bgWaitCount": 3,
-   "urakataBlockedAt": "2026-09-17 00:30:45+09:00"
+   "urakataBlockedAt": "2026-09-17 00:30:45+09:00",
+   "startedAt": "2026-09-17T18:28:12+09:00",
+   "sessionId": "fb30e1e2-7725-4523-95c0-5b1eb37d65b5",
+   "pid": 91622
   },
   {
    "n": 891,
@@ -3998,7 +3940,7 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/923-awaiting-check-list.html"
    ],
    "evidenceGone": true,
-   "evidenceCheckedAt": "2026-09-17T15:23:40+0900"
+   "evidenceCheckedAt": "2026-09-17T18:23:44+0900"
   },
   {
    "n": 924,
@@ -4161,7 +4103,7 @@
    "n": 930,
    "title": "(4/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "running",
+   "status": "stuck",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -4169,14 +4111,22 @@
    "splitIndex": 4,
    "splitTotal": 7,
    "origin": "user",
-   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/status/public/queue.json",
-   "aiVerifyFailCount": 1,
+   "touchUrl": "https://tamago2022.github.io/tamago-shinchoku/status/public/health.json",
+   "aiVerifyFailCount": 2,
    "failReasons": [
-    "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで、検証時点(09-17 16:46)の本番health.json/genzaichi.json/now.json/pace.json/top_status.jsonが軒並み3〜4時間更新停止しており、884番が直したはずの「計測パイプラインが止まる」症状が本番で再発中"
+    "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで、検証時点(09-17 16:46)の本番health.json/genzaichi.json/now.json/pace.json/top_status.jsonが軒並み3〜4時間更新停止しており、884番が直したはずの「計測パイプラインが止まる」症状が本番で再発中",
+    "884番の完了報告はhealth.jsonのみ検証しているが、now.json/pace.jsonが検証時点(17:20)でbuiltAt/updatedAt「13:37:21」のまま約3時間43分更新停止しており、前回FAILの症状（計測が止まる）が別ファイルで再現中"
    ],
    "startedAt": "2026-09-17T16:57:28+09:00",
    "sessionId": "fa0946c0-cfce-4e59-a12c-c6684e5584f5",
-   "pid": 54650
+   "finishedAt": "2026-09-17T17:19:33+09:00",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/934-batch4-triage.html",
+    "https://tamago2022.github.io/tamago-shinchoku/status/public/health.json"
+   ],
+   "stuckAt": "2026-09-17T17:21:13+09:00",
+   "stuckReasonSummary": "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで、検証時点(09-17 16:46)の本番health.json/genzaichi.json/now.json/pace.json/top_status.jsonが軒並み3〜4時間更新停止しており、884番が直したはずの「計測パイプラインが止まる」症状が本番で再発中 ／ 884番の完了報告はhealth.jsonのみ検証しているが、now.json/pace.jsonが検証時点(17:20)でbuiltAt/updatedAt「13:37:21」のまま約3時間43分更新停止しており、前回FAILの症状（計測が止まる）が別ファイルで再現中",
+   "stuckRedoTotal": 2
   },
   {
    "n": 931,
