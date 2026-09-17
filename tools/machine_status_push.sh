@@ -207,6 +207,13 @@ run_with_timeout 30 python3 "$REPO/tools/estimate_vs_actual.py" --report >/dev/n
 # 895番（2026-09-16）：外に出した仕事の台帳（status/gaibu.json）。Devin分を5分おきに自動同期し、
 # 新しいPRが見つかったらdispatch_outbox.jsonlへ通知する（新規launchd常駐は増やさず既存5分便に相乗り）。
 run_with_timeout 30 python3 "$REPO/tools/gaibu_ledger.py" --sync-devin --quiet >/dev/null 2>&1 || true
+# 921番（2026-09-17）：外部検品を「顧問」ではなく《品質ゲート》にする（tools/kenpin_gate.py）。
+#   たまごさん「Claudeが作ったものを、未検品のまま、たまごさんへ返さない、を仕組みにする」。
+#   検品待ち(status/kenpin/pending/)に積まれた依頼票を、ここでホスト側から自動でChatGPT(OpenAI API)へ
+#   投げ、判定を号番号(queue.json)へ書き戻す。**たまごさんが画面から画面へ文章を運ぶ必要を無くすのが目的**
+#   （11章・伝書鳩ゼロ化）。新しいlaunchd常駐は増やさず既存5分便に相乗り（他の仕組みと同じ方針）。
+#   queue.jsonへの書き込みは、このホスト上の経路だけが行う（kenpin_gate.py冒頭「なぜ直接書かないか」）。
+run_with_timeout 150 python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet >/dev/null 2>&1 || true
 # 2026-09-03 たまごさん「進捗の数字がずれてる時点でダメ」。
 # Claudeアプリの実測ファイルは書き込みが止まることがあり（21:45で停止を確認）、推定に落ちると大きく外す。
 # 実際: 全モデル68% / Fable82% ← アプリ画面の値。推定: 111% / 88.5%。
