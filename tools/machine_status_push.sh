@@ -346,6 +346,8 @@ fi
 run_with_timeout 30 python3 "$REPO/tools/calibrate.py" --quiet >/dev/null 2>&1 || true
 # 2026-09-05 週の配分（天井に行かないためのペース）。今日いくつ使ったか／あといくつ使えるか
 run_with_timeout 20 python3 "$REPO/tools/pace.py" >/dev/null 2>&1 || true
+# 2026-09-17 完了の検証（記録されたURLの実物と番号が一致したときだけ緑）。status/verify_log.jsonl を書く
+run_with_timeout 30 python3 "$REPO/tools/verify_done.py" >/dev/null 2>&1 || true
 # 2026-09-05 完了は1週間で「完了のひかえ」へ移す（画面を短く保つ・あとから辿れる）
 run_with_timeout 30 python3 "$REPO/tools/archive_done.py" >/dev/null 2>&1 || true
 # 2026-09-03 ホワイトボード同期：PWAの優先度(status/priority.json)を正本へ取り込み、写し(status/whiteboard.json)を書く
@@ -441,7 +443,7 @@ PYVER
 ### 作業14分が実際に巻き戻りで失われた）。公開先を status/public/ という、
 ### **どの既存worktreeも過去に一度も追跡したことが無いパス**へ丸ごと移した。
 ### 存在すらしなかったパスは、どんな広いgit addでも誤って巻き込みようがない。
-PUBLISH_LIST="version.json pace.json launch_cap.json done_archive.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
+PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json done_archive.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
 mkdir -p "$REPO/status/public"
 for _f in $PUBLISH_LIST; do
   [ -f "$REPO/status/$_f" ] && cp -f "$REPO/status/$_f" "$REPO/status/public/$_f" 2>/dev/null

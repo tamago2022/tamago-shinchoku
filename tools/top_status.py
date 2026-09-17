@@ -137,6 +137,28 @@ def stopped_reason():
     return "発車できるものが無いか、判定中です"
 
 
+def pace_block():
+    """週の目盛りは status/pace.json 一本だけを見る。
+    quota.json など別の残り%を混ぜない（本番で『残り69%』と『残り71%』が同じ画面に出ていた原因）。
+    ここでは pace.json の値をそのまま写すだけで、計算し直さない。"""
+    p = jread(os.path.join(ST, "pace.json"), {})
+    if not p:
+        return None
+    keys = ("updatedAt", "allPct", "remainWeek", "usedToday", "budgetToday",
+            "daysLeft", "state", "resetAt", "dataOk")
+    out = {k: p.get(k) for k in keys if p.get(k) is not None}
+    out["source"] = "status/pace.json"
+    return out
+
+
+def verify_block():
+    """完了の検証（tools/verify_done.py が書く要約）。無ければ null＝機械が偽装しない。"""
+    v = jread(os.path.join(ST, "verify_summary.json"), {})
+    if not v:
+        return None
+    return {k: v.get(k) for k in ("updatedAt", "total", "verified", "recheck", "unverified")}
+
+
 def build():
     now = datetime.datetime.now(JST)
     q = jread(QUEUE_LIGHT, {"items": []})
@@ -166,6 +188,8 @@ def build():
         "nextUp": next_up,
         "recentDone": recent_done(3),
         "stoppedReason": stopped_reason() if not running_now else None,
+        "pace": pace_block(),
+        "verify": verify_block(),
     }
     tmp = "%s.tmp.%d" % (OUT, os.getpid())
     with io.open(tmp, "w", encoding="utf-8") as f:
