@@ -366,6 +366,16 @@ def main():
 
     tabs = list_tabs()
     if tabs is None:
+        # ★ここでも必ず記録を残す。これが無いと「Chromeが起動していないので何もしていない」と
+        #   「この道具がそもそも呼ばれていない」の区別がつかず、次の担当が実際に迷う
+        #   （2026-09-18、この道具を作った本人が23分ぶん迷った）。
+        if args.recon:
+            write_json(RECON_PATH, {
+                "updatedAt": now_iso(),
+                "windows": 0, "tabs": 0, "wouldClose": 0,
+                "note": "Chromeが起動していません（起動はしません）",
+                "detail": [],
+            })
         if args.sweep:
             touch_gate()
             append_sweep_log({"ts": now_iso(), "closed": 0, "seen": 0,

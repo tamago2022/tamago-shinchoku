@@ -45,6 +45,20 @@ def main():
     except Exception:
         pass
 
+    # 2026-09-18（931番）：Chromeの孤児タブ掃除も同じ理由でここから呼ぶ。
+    #   heartbeat.sh / machine_status_push.sh にも行を入れてあるが、心臓は入れ替わるまで
+    #   新しい行を実行せず、5分便はlaunchdごと止まっていることがある（実測：298分停止）。
+    #   掃除機は内部で1時間ゲートしているので、毎サイクル呼んでも実際に閉じるのは1時間に1回。
+    #   Chromeが起動していなければ pgrep 1回で即座に戻る。
+    try:
+        import subprocess
+        subprocess.run(
+            [sys.executable, os.path.join(HERE, "chrome_tab_sweeper.py"),
+             "--recon", "--sweep", "--quiet"],
+            capture_output=True, timeout=40)
+    except Exception:
+        pass
+
     try:
         genzaichi.check_launch_silence()
     except Exception:

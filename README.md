@@ -506,6 +506,37 @@ URLの見た目では、Claudeが開いたのか たまごさんが開いたの�
 自己テスト（判定4件・すべて狙い通り）：gitなし3分→残す／gitなし6分→消す／
 git走行中6分→残す／git走行中20分→消す。
 
+### ★★★ Cowork（サンドボックス）側から git commit / push をしない（2026-09-18・実測の結論）
+
+この931番の作業で**同じ穴に4回落ちた**ので、原因と作法を残す。
+
+**なぜダメか（実測）：**
+
+- サンドボックスはマウント越しに `.git` 配下を**作れるが消せない**（`unlink`＝Operation not permitted）。
+  gitは「ロックを作る→処理→ロックを消す」で動くので、**commit/update-refのたびに
+  `HEAD.lock` / `index.lock` / `refs/heads/main.lock` が必ず取り残される。**
+- 取り残されたロックは**工場全体のgitを止める**（add/commit/pull/pushが全て `rc=128`）。
+  実測：`git pull(merge) が失敗` が 03:00:23 に発生。掃除機が拾うまで最大15分かかる。
+- `git commit` は `.git/COMMIT_EDITMSG` を書いてから読み直すが、この読み直しが
+  マウント越しでは `could not read commit message: No such file or directory` で落ちる（実測）。
+  そのため `commit-tree` + `update-ref` の配管コマンドを使う必要があり、さらに
+  **`update-ref` が `HEAD.lock` を残す。**
+- `push` はできない（サンドボックスに `gh` が無く、`gh auth git-credential` が引けない）。
+
+**ではどうするか：**
+
+```
+git add -- <触ったファイルだけをパス指定>     # ← ここまでで止める
+```
+
+**あとはMac側の5分便（`machine_status_push.sh`）が `git commit` → `pull` → `push` をやる。**
+`git add` はロックを残しにくく（残っても掃除機が拾う）、5分便はMac上で動くので
+`unlink` も認証も問題なく通る。**「積むだけ積んで、押すのはMacに任せる」**のが正しい分担。
+
+**★`git add` は必ずパス指定で。**`git add -A` / `git add .` は絶対にやらない
+（他セッションが載せかけている物・`status/` の生きた台帳・`__pycache__` を巻き込む。
+過去にqueue.jsonが28件/5件/271件消えた3回の事故と同じ経路）。
+
 ### 自己テスト（2026-09-18実施・12件すべて狙い通り）
 
 判定部（`classify()`／`update_history()`）はMac・Chromeに依存しないので、偽のタブ情報を渡して

@@ -16,6 +16,17 @@
 set -uo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
+# 【2026-09-18・936番】joy_push（command_ingest.py）の口はこの1本しか無いので、
+#   新しい joy-relief-station 側の直しがある時はそちらへ委譲する。
+#   このスクリプト本来の仕事（930番のフッター点滅バグ）は2026-09-17に push 済みで、
+#   材料にしていた worktree も末尾で消しているため、今このまま走らせても NG で終わるだけ。
+# 【2026-09-18・937番】メール登録と目安箱の受け皿工事へ委譲先を差し替え。
+#   936番（ページ最下部の統合）は status/_936/PHASE=idle で用済み。
+_NEXT="/Users/mac/Desktop/tamago-shinchoku/tools/_937_jrs_mail.sh"
+if [ -f "${_NEXT}" ]; then exec bash "${_NEXT}"; fi
+_NEXT="/Users/mac/Desktop/tamago-shinchoku/tools/_936_jrs_bottom_merge.sh"
+if [ -f "${_NEXT}" ]; then exec bash "${_NEXT}"; fi
+
 JOY="/Users/mac/Desktop/joy-relief-station"
 SRC_WT="${JOY}/.claude/worktrees/footer-flash-0917"
 TMP_WT="/tmp/jrs-930-footer-flash"
