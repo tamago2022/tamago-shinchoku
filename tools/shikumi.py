@@ -208,18 +208,63 @@ def check_heartbeat():
 # ───────────────────────── ②発車（auto_launch） ─────────────────────────
 
 def check_auto_launch():
+    """発車係の生死を、2つの別々の実測で見る（2026-09-17・925番で修正）。
+
+    直す前の欠陥：`.last_launch_at`（＝**本当に1本着火した**時刻）のmtimeだけを見て
+    「10分更新が無ければdead」と判定していた。ところが `.last_launch_at` は
+    auto_launcher.py が実際に着火した時にしか書かれない。走行が上限いっぱい（満員）で
+    正当に見送っている間は永遠に更新されないので、**発車係が15秒おきに元気に回っていても
+    必ず赤になる**。実測（09-17 09:27）：auto_launch.log は17秒おきに
+    「見送り: 走行4本／上限4本（空きなし）」を書き続けていた＝発車係は生きていたのに、
+    この項目だけが「35.8分沈黙＝dead」と報告し、genzaichi.py本体の7項目の方は
+    （894番で入れた満員ガード `_launch_has_room()` のおかげで）同じファイルの中で
+    「✅発車：10分以内に動いている」と出していた。**同じ1枚に✅と🔴が両方載る**という
+    矛盾の出どころはここ。嘘をついていたのは `.last_launch_at` 側の判定。
+
+    直した後の見方：
+      ①発車係そのものの生死＝`status/auto_launch.log` のmtime（周回のたびに必ず書かれる）。
+      ②着火が無いこと＝`.last_launch_at`。ただし**空き枠がある時だけ**異常とみなす
+        （894番で genzaichi 側に入れた `_launch_has_room()` をそのまま再利用。二重実装しない）。
+    """
     import genzaichi  # 既存のlaunch_silence_min()をそのまま使う（798番の判定と二重実装しない）
     age_min = genzaichi.launch_silence_min()
-    # genzaichi側は「未計測=まだ一度も発車したことが無い新規環境」を異常扱いしない設計。
-    # shikumiでも同じ判断（新規環境をいきなりdead扱いしない）を踏襲する。
-    verdict = "alive" if age_min is None else tier(age_min, 10, 30)
     path = os.path.join(ST, "auto_launch.log")
+    loop_age = mtime_age_min(path)          # ①発車係が周回しているか
+    try:
+        has_room = genzaichi._launch_has_room()
+    except Exception:
+        has_room = True                     # 測れない時は安全側（通常どおり沈黙を疑う）
+
+    if loop_age is None or loop_age > 30:
+        # 発車係そのものが回っていない＝本物のdead（ログが1行も増えていない）
+        verdict = "dead"
+        why = "発車係のログ自体が%s分伸びていません＝常駐が止まっています" % _fmt(loop_age)
+    elif loop_age > 10:
+        verdict = "slow"
+        why = "発車係のログが%s分伸びていません（遅れ気味）" % _fmt(loop_age)
+    elif age_min is None:
+        # genzaichi側は「未計測=まだ一度も発車したことが無い新規環境」を異常扱いしない設計。
+        # shikumiでも同じ判断（新規環境をいきなりdead扱いしない）を踏襲する。
+        verdict = "alive"
+        why = "発車係は%s分前に周回済み。着火の記録はまだありません（新規環境）" % _fmt(loop_age)
+    elif not has_room:
+        verdict = "alive"
+        why = ("発車係は%s分前に周回済み。着火が%s分無いのは**走行が上限いっぱいで正当に"
+               "見送っている**ためで、異常ではありません" % (_fmt(loop_age), _fmt(age_min)))
+    else:
+        verdict = tier(age_min, 10, 30)
+        why = ("発車係は%s分前に周回済み・空き枠もあるのに、着火が%s分ありません"
+               % (_fmt(loop_age), _fmt(age_min)))
+
     today = today_str()
     cnt = sum(1 for ln in read_lines(path) if ln.startswith(today) and "🚀 自動発車" in ln)
     how = (
-        "status/.last_launch_atのmtime基準（genzaichi.launch_silence_min()を再利用）：現在%s分沈黙"
-        "（10分以内=alive／30分以内=slow／それ超=dead）。countTodayはauto_launch.logの本日分"
-        "『🚀 自動発車』行数" % _fmt(age_min)
+        "2つを別々に見る：①発車係の生死＝status/auto_launch.logのmtime（現在%s分）"
+        "②着火の間隔＝status/.last_launch_atのmtime（現在%s分沈黙・"
+        "genzaichi.launch_silence_min()を再利用）。②は空き枠がある時だけ異常とみなす"
+        "（genzaichi._launch_has_room()を再利用。満員での見送りは正常）。判定：%s。"
+        "countTodayはauto_launch.logの本日分『🚀 自動発車』行数"
+        % (_fmt(loop_age), _fmt(age_min), why)
     )
     return mk(
         "auto_launch", "発車（auto_launch）",
