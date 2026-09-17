@@ -544,6 +544,22 @@ def build():
     else:
         A("- なし")
     A("")
+    A("## 未解決の失敗（924番・引き継ぎで見落とすな）")
+    try:
+        import failures_ledger as _fl
+        _entries = _fl.load_all()
+        _open = _fl.list_open(_entries)
+        _recur = [e for e in _open if (e.get("recurrence") or 0) >= 1]
+        if _open:
+            A("- 未解決 **%d件**（うち再発 **%d件**）── `python3 tools/failures_ledger.py --list-open`"
+              % (len(_open), len(_recur)))
+            for e in sorted(_open, key=lambda x: x.get("date", ""), reverse=True)[:3]:
+                A("- %s %s" % (e.get("id"), (e.get("what") or "")[:56]))
+        else:
+            A("- なし（すべて再発防止まで潰し済み）")
+    except Exception as _e:
+        A("- （failures_ledger読み込み失敗: %s）" % _e)
+    A("")
     A("---")
     A("*このファイルは tools/genzaichi.py が自動生成する。手で書き換えない。*")
 

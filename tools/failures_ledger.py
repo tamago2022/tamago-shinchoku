@@ -197,14 +197,47 @@ def write_summary():
     return summary
 
 
+def quick_add(what, root_cause="", how_found="その場でたまごさんに指摘された", n=""):
+    """924番【仕組み⑯】失敗が自動で記録に流れる形にする。
+    たまごさんの言葉：『怒られた・指摘された内容が、その場で記憶ファイルと引き継ぎ書に
+    入るようにする。人が後でまとめる形だと忙しい日に落ちる』（クロ丸は9/14〜16の44時間、
+    記録が1本も無かった）。
+    `--add-json`はファイルを別途作る手間があり、忙しい時ほど後回しにされる。
+    このコマンドは指摘を受けたその場で1行で流せるようにする最短の入口。"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    now_s = datetime.now().strftime("%Y%m%d%H%M%S")
+    entry = {
+        "id": "F-%s-quick" % now_s,
+        "date": today,
+        "what": what,
+        "howFound": how_found,
+        "rootCause": root_cause or "（未特定・後で埋める）",
+        "queueRef": n,
+    }
+    saved, sim = append_entry(entry)
+    return saved, sim
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--add-json", help="1件分のJSONファイルを追記する")
+    ap.add_argument("--quick", help="怒られた・指摘された内容を、その場で1行で記録する（詳細JSON不要）")
+    ap.add_argument("--root-cause", default="", help="--quickと併用。分かっていれば原因も添える")
+    ap.add_argument("--n", default="", help="--quickと併用。関連する号番号")
     ap.add_argument("--list-open", action="store_true")
     ap.add_argument("--weekly", action="store_true")
     ap.add_argument("--check-recurrence", help="rootCauseのキーワードで既存の似た失敗を探す")
     ap.add_argument("--summary", action="store_true")
     args = ap.parse_args()
+
+    if args.quick:
+        saved, sim = quick_add(args.quick, args.root_cause, n=args.n)
+        print("QUICK追記:", saved["id"], "|", saved["what"][:60])
+        if sim:
+            print("⚠ 似たrootCauseの既存失敗が%d件見つかりました（再発の疑い）:" % len(sim))
+            for e, overlap in sim:
+                print("  -", e.get("id"), "|", e.get("what", "")[:60], "| 一致語:", overlap)
+        return
 
     if args.add_json:
         entry = json.load(io.open(args.add_json, encoding="utf-8"))

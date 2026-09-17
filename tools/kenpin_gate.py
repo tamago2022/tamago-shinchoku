@@ -569,6 +569,33 @@ def _call_vendor(provider, prompt):
     return None, [], "", "", "", None, "%s：%s" % (provider, " / ".join(errs))
 
 
+def _build_oni_line(n, ticket, gaps, blindspot, one_line, provider, model):
+    """924番【仕組み⑯】鬼監督を『姿が見える』形にする。
+    たまごさんの言葉：『報告に👹が何を見て・何を落として・何を通したかを必ず1行付ける』
+    『同じClaudeの中でやったら大丈夫じゃねになる』（＝ChatGPTという外のAIが実際に見た跡を残す）。
+    PASSに至るまでにこの号番号で出た過去のFIX指摘（gaps）を『落とした』欄に集約する
+    （＝この関門を通る過程で実際に何を拾って直させたかが見える）。"""
+    seen = ticket.get("title") or ("%s号の提出物" % n)
+    url = ticket.get("url") or ""
+    if url:
+        seen = "%s（%s）" % (seen, url)
+    prior_gaps = []
+    try:
+        it2 = _find_item(queue_store.load_queue(), n) or {}
+        for ins in (it2.get("inspections") or []):
+            if ins.get("verdict") == "FIX":
+                prior_gaps.extend(ins.get("gaps") or [])
+    except Exception:
+        pass
+    if prior_gaps:
+        dropped = " ／ ".join(prior_gaps[:3])
+    elif blindspot:
+        dropped = "指摘は無かったが見落とし候補として『%s』" % blindspot
+    else:
+        dropped = "無し（一発PASS）"
+    return "👹見た：%s ／落とした：%s ／通した：%s(%s)「%s」" % (seen, dropped, provider, model, one_line)
+
+
 def _apply_result(ticket, verdict, gaps, blindspot, one_line, provider, model, cost_row):
     """判定を号番号（queue.json）へ書き戻し、状態を進める。"""
     n, seq = ticket["n"], ticket["seq"]
@@ -596,11 +623,13 @@ def _apply_result(ticket, verdict, gaps, blindspot, one_line, provider, model, c
 
     # 5章：FIXはたまごさんへ戻さない。通知が飛ぶのはPASSのときと、堂々巡りのときだけ。
     if verdict == "PASS":
+        oni_line = _build_oni_line(n, ticket, gaps, blindspot, one_line, provider, model)
         _outbox({
             "ts": result["ts"], "n": "%s-kenpin" % n, "type": "kenpin_pass",
             "title": ticket.get("title") or "",
-            "message": "【%s号】外部検品PASS（%s / %s）%s" % (n, provider, model, one_line),
+            "message": "【%s号】外部検品PASS（%s / %s）%s\n%s" % (n, provider, model, one_line, oni_line),
             "urls": [ticket.get("url")] if ticket.get("url") else [],
+            "oniLine": oni_line,
         })
     elif fix_streak[0] >= FIX_STREAK_ESCALATE:
         _outbox({
@@ -735,9 +764,26 @@ def cmd_status(n):
 # 9章：最終提出条件（3つ揃っているか機械で見る）
 # ---------------------------------------------------------------------------
 
+def _hikitsugi_gate_ok():
+    """924番【仕組み⑯】引き継ぎを読んだかの関所。本日合格記録があるかだけを見る
+    （軽い・ネットワーク不要・queue.jsonに触らない）。"""
+    try:
+        import hikitsugi_gate as hg  # noqa
+    except Exception as e:
+        # 道具自体が読めない事故は素通りさせない方針だが、輸入エラーで全号ブロックすると
+        # 本末転倒なので、ここは警告だけにして通す（道具の壊れはこの関所では検知しない）。
+        return True, "hikitsugi_gate読み込み失敗（この関所は無視）: %s" % e
+    import io as _io
+    import contextlib as _cl
+    buf = _io.StringIO()
+    with _cl.redirect_stdout(buf):
+        rc = hg.cmd_check()
+    return (rc == 0), buf.getvalue().strip()
+
+
 def cmd_can_deliver(n):
-    """Claude自己検品PASS＋外部検品PASS＋実機能テストPASS の3つが揃っているかを機械で答える。
-    揃っていなければ非ゼロで落ちる＝報告の直前に呼べばゲートになる。"""
+    """Claude自己検品PASS＋外部検品PASS＋実機能テストPASS＋引き継ぎを読んだか の4つが
+    揃っているかを機械で答える。揃っていなければ非ゼロで落ちる＝報告の直前に呼べばゲートになる。"""
     q = queue_store.load_queue()
     it = _find_item(q, n)
     if it is None:
@@ -753,10 +799,14 @@ def cmd_can_deliver(n):
         ng.append("Claude自己検品の記録がありません（--mark-self-check で記録する）")
     if not (it.get("functionTestPassAt")):
         ng.append("実機能テストの記録がありません（--mark-function-test で記録する）")
+    hik_ok, hik_msg = _hikitsugi_gate_ok()
+    if not hik_ok:
+        ng.append("引き継ぎ（現在地・決定台帳）を読んだ確認が取れていません（%s。"
+                   "tools/hikitsugi_gate.py --generate → --answer-file で先に受かる）" % hik_msg)
     if ng:
         print("KENPIN_DELIVER: NG - %s" % " ／ ".join(ng))
         return 1
-    print("KENPIN_DELIVER: OK - 3条件そろいました")
+    print("KENPIN_DELIVER: OK - 4条件そろいました（%s）" % hik_msg)
     return 0
 
 
