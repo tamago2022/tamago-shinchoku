@@ -159,6 +159,50 @@ def verify_block():
     return {k: v.get(k) for k in ("updatedAt", "total", "verified", "recheck", "unverified")}
 
 
+# joy-relief-station 側の状態ファイル（案件820：Lovable公開便）。
+# クロスリポジトリ参照だが、sync-lovable-publish-dashboard.mjs も同じ os.homedir()+Desktop 前提で
+# data.js を直接書いているのと同じやり方（このマシン内で完結する運用なので固定パスで問題ない）。
+JOY_REPO = os.path.join(os.path.expanduser("~"), "Desktop", "joy-relief-station")
+LOVABLE_STATE = os.path.join(JOY_REPO, "status", "lovable_publish_state.json")
+LOVABLE_FAIL_LOG = os.path.join(JOY_REPO, "status", "lovable_publish_fail.jsonl")
+
+
+def lovable_publish_block():
+    """案件820：軽量版へ差し替えた際に本番未反映・連続失敗の赤バナーが消えていたのを埋め直す。
+    index.html の renderLovablePublishAlert() が mainUnpublished / consecutiveFailures / paused を見る。
+    ファイルが無い・壊れている場合は null を返し、機械が『問題なし』を偽装しない。"""
+    s = jread(LOVABLE_STATE, None)
+    if not s:
+        return None
+    last_fail_reason = None
+    last_fail_at = None
+    try:
+        with io.open(LOVABLE_FAIL_LOG, encoding="utf-8") as f:
+            lines = [ln.strip() for ln in f if ln.strip()]
+        if lines:
+            last = json.loads(lines[-1])
+            last_fail_reason = last.get("reason")
+            last_fail_at = last.get("ts")
+    except Exception:
+        pass
+    return {
+        "mainUnpublished": bool(s.get("mainUnpublished")),
+        "mainSha": (s.get("mainSha") or "")[:10] or None,
+        "paused": bool(s.get("paused")),
+        "pauseReason": s.get("pauseReason"),
+        "consecutiveFailures": s.get("consecutiveFailures") or 0,
+        "stoppedForToday": bool(s.get("stoppedForToday")),
+        "successCountToday": s.get("successCount") or 0,
+        "dailyCap": 6,
+        "consecutiveFailureStopAt": 2,
+        "lastResult": s.get("lastResult"),
+        "lastCheckedAt": s.get("lastCheckedAt"),
+        "lastFailureReason": last_fail_reason,
+        "lastFailureAt": last_fail_at,
+        "autoTimerDisabled": True,
+    }
+
+
 def build():
     now = datetime.datetime.now(JST)
     q = jread(QUEUE_LIGHT, {"items": []})
@@ -190,6 +234,7 @@ def build():
         "stoppedReason": stopped_reason() if not running_now else None,
         "pace": pace_block(),
         "verify": verify_block(),
+        "lovablePublish": lovable_publish_block(),
     }
     tmp = "%s.tmp.%d" % (OUT, os.getpid())
     with io.open(tmp, "w", encoding="utf-8") as f:

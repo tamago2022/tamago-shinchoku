@@ -3,24 +3,24 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                          // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                            // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-17T04:41:28.443Z",
+      "updatedAt": "2026-09-17T04:43:02.725Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
       "dateJST": "2026-09-17",
-      "successCountToday": 0,
+      "successCountToday": 1,
       "consecutiveFailures": 0,
       "stoppedForToday": false,
-      "lastResult": null,
-      "lastCheckedAt": "2026-09-17T04:41:28.314Z",
-      "lastPublishedSha": null,
+      "lastResult": "success",
+      "lastCheckedAt": "2026-09-17T04:43:02.614Z",
+      "lastPublishedSha": "4d4b047311",
       "lastFailureReason": null,
       "lastFailureAt": null,
       "mainSha": "4d4b047311",
-      "mainUnpublished": true,
+      "mainUnpublished": false,
       "paused": false,
       "pauseReason": null
   },

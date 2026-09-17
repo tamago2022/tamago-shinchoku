@@ -56,6 +56,14 @@ summary{cursor:pointer; font-size:13px; color:var(--sub); min-height:32px; paddi
 details .body{font-size:13px; color:var(--sub); padding-top:6px}
 footer{margin-top:18px; font-size:12px; color:var(--sub)}
 footer a{margin-right:14px; display:inline-block; padding:4px 0}
+/* 案件820：Lovable公開便の赤バナー（本番未反映・連続失敗）。軽量版へ差し替えた際に
+   一度消えてしまっていたのをここで復元する。既定は非表示、問題がある時だけ出す。 */
+.alert-red{
+  background:#fbe9e6; border:1px solid var(--red); color:var(--red);
+  border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:13px; display:none;
+}
+.alert-red.show{display:block}
+.alert-red b{display:block; margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -66,6 +74,9 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   <span class="stamp" id="stamp">読み込み中…</span>
   <button id="reload" type="button">押して読み直す</button>
 </header>
+
+<!-- 案件820：Lovable公開の赤バナー -->
+<div class="alert-red" id="lovableAlert"></div>
 
 <!-- ① いま走っているもの -->
 <section class="card">
@@ -120,9 +131,36 @@ function put(el, rows){
   el.innerHTML = rows.length ? rows.join("") : '<li class="empty">ありません</li>';
 }
 
+// 案件820：Lovable公開便（本番未反映・連続失敗）の赤バナー。
+// mainUnpublished===true の間は、一時停止中・連続失敗0回でも「本番未反映」自体は出し続ける
+// （794/818番の教訓：一時停止していても未反映の事実は消えない。消すと『気づかれない』事故になる）。
+function renderLovablePublishAlert(d){
+  var el = $("lovableAlert");
+  var s = d && d.lovablePublish;
+  if (!s || (!s.mainUnpublished && !s.consecutiveFailures && !s.stoppedForToday)) {
+    el.className = "alert-red"; el.innerHTML = ""; return;
+  }
+  var lines = [];
+  if (s.mainUnpublished) {
+    lines.push(s.paused
+      ? "本番未反映：mainに新しい変更がありますが、一時停止中のため公開していません（" + esc(s.pauseReason || "理由不明") + "）。"
+      : "本番未反映：main（" + esc(s.mainSha || "不明") + "）がまだ公開されていません。");
+  }
+  if (s.consecutiveFailures) {
+    lines.push("連続失敗 " + s.consecutiveFailures + " 回" +
+      (s.stoppedForToday ? "（本日はもう押しません・上限" + s.consecutiveFailureStopAt + "回）" : ""));
+  }
+  if (s.lastFailureReason) {
+    lines.push("直近の失敗：" + esc(String(s.lastFailureReason).slice(0, 80)));
+  }
+  el.className = "alert-red show";
+  el.innerHTML = "<b>🔴 Lovable公開</b>" + lines.join("<br>");
+}
+
 function render(d){
   var s = d.generatedAt ? String(d.generatedAt).replace("T"," ").slice(0,16) : "";
   $("stamp").textContent = s ? (s + " 時点") : "";
+  renderLovablePublishAlert(d);
 
   // ① 走行中
   var r = (d.runningNow || []).map(function(x){
