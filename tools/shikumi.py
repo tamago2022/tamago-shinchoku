@@ -192,17 +192,41 @@ def _fmt(v, digits=1):
 # ───────────────────────── ①心臓（heartbeat） ─────────────────────────
 
 def check_heartbeat():
-    path = os.path.join(ST, "heartbeat.log")
-    age_min = mtime_age_min(path)
+    """843番（2026-09-18）で修正：heartbeat.logのmtimeだけを見る誤検知を直す。
+
+    直す前の欠陥：heartbeat.log は tools/heartbeat.sh が**条件付きでしか書かない**
+    （警告発生時・毎正時20秒だけの「心臓は動いています」チェックポイント）。
+    machine_status_push.sh 等の外側が健全な時は、心臓のループ自体は15秒おきに
+    元気に回っていても、ログには**最大60分近く何も書かれない**。その結果、
+    実際は生きているのに「37分沈黙＝dead」と誤検知していた（本番実測：countToday=6）。
+    これは #925「発車（auto_launch）」で見つかったのと同じ誤検知パターン
+    （イベント駆動ログのmtimeだけで常駐ループの生死を測ると、健全でも沈黙が続くだけでdead扱いになる）。
+
+    直した後の見方：heartbeat.sh が**毎周期（15秒おき）必ずtouchする**
+    status/.heartbeat_alive（コメント「ループが回っている事実そのものを、何もしなくても
+    毎周期touchするこのファイルで示す」）と、従来のheartbeat.logの**新しい方**をループの
+    生死とする。どちらもファイルが存在しない場合だけdead（でっち上げない）。
+    """
+    log_path = os.path.join(ST, "heartbeat.log")
+    alive_path = os.path.join(ST, ".heartbeat_alive")
+    log_age = mtime_age_min(log_path)
+    alive_age = mtime_age_min(alive_path)
+    ages = [a for a in (log_age, alive_age) if a is not None]
+    age_min = min(ages) if ages else None
+    best_path = log_path
+    if alive_age is not None and (log_age is None or alive_age <= log_age):
+        best_path = alive_path
     verdict = tier(age_min, 10, 30)
     today = today_str()
-    cnt = sum(1 for ln in read_lines(path) if ln.startswith(today) and "心臓は動いています" in ln)
+    cnt = sum(1 for ln in read_lines(log_path) if ln.startswith(today) and "心臓は動いています" in ln)
     how = (
-        "status/heartbeat.logのmtime基準：現在%s分沈黙"
-        "（10分以内=alive／30分以内=slow／それ超=dead。心臓は常時動いているはずのプロセスなので"
-        "分単位で厳しく見る）" % _fmt(age_min)
+        "status/.heartbeat_alive（ループが15秒おきに必ずtouch）とstatus/heartbeat.log"
+        "（警告時・毎正時のみ書く）のうち新しい方のmtime基準：現在%s分沈黙"
+        "（10分以内=alive／30分以内=slow／それ超=dead。heartbeat.logだけを見ると"
+        "健全な時でも最大60分近く沈黙し誤ってdead判定していたため、#925と同じ理由で"
+        "毎周期更新される.heartbeat_aliveも合わせて見る。2026-09-18・843番で修正）" % _fmt(age_min)
     )
-    return mk("heartbeat", "心臓（heartbeat）", mtime_iso(path), cnt, "10分以内に更新", 10, how, verdict)
+    return mk("heartbeat", "心臓（heartbeat）", mtime_iso(best_path), cnt, "10分以内に更新", 10, how, verdict)
 
 
 # ───────────────────────── ②発車（auto_launch） ─────────────────────────
