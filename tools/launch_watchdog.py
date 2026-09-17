@@ -32,6 +32,19 @@ import genzaichi  # noqa: E402
 
 
 def main():
+    # 2026-09-18（931番）：取り残された .git のロックも「止まった瞬間に自分で立て直す」対象。
+    #   Cowork（サンドボックス）側のセッションがgitの途中で打ち切られると index.lock 等が残り、
+    #   以後このリポジトリの add/commit が全て rc=128 で失敗する（5分便の push も発車も止まる）。
+    #   しかもマウント越しには unlink が許されておらず、**ロックを作った本人が片付けられない。**
+    #   heartbeat.sh に直接行を足しても、走っている心臓はループ本体をメモリに持っているため
+    #   入れ替わるまで効かない（実測）。**毎サイクル必ず再読み込みされるこのpython側**に置くのが
+    #   一番早く効く（launch_watchdog.py が genzaichi の関数を借りているのと同じ相乗りの形）。
+    try:
+        import git_lock_reaper
+        git_lock_reaper.reap(quiet=True)
+    except Exception:
+        pass
+
     try:
         genzaichi.check_launch_silence()
     except Exception:

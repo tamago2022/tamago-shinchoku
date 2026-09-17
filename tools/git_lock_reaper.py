@@ -37,7 +37,14 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GITDIR = os.path.join(REPO, ".git")
 LOG = os.path.join(REPO, "status", "git_rebase_incidents.log")  # 既存のgit事故ログへ相乗り
 
-STALE_SECONDS = 300  # 5分。`git add` が巨大ファイルを掴んでいる可能性を考えて長めに取る
+STALE_SECONDS = 300   # 5分。`git add` が巨大ファイルを掴んでいる可能性を考えて長めに取る
+# ★2026-09-18 実測で分かった穴：この工場は auto_launcher / command_ingest / 5分便が
+#   gitを絶えず叩いているので、「gitプロセスが1本も無い」という条件だけだと
+#   **静かな瞬間が来ず、ロックが何十分も片付かないことがある**
+#   （実測：`refs/heads/main.lock` が8分以上放置され、15秒おきに呼ばれていても消えなかった）。
+#   正常な git の操作が**15分**ロックを握り続けることは無いので、そこまで古ければ
+#   gitが走っていても消す。これが無いと、この道具は「動いているのに直らない」状態になる。
+HARD_STALE_SECONDS = 900  # 15分
 
 # 消してよいロックだけを名指しする。**ワイルドカードで .git 配下を舐めない。**
 LOCK_PATTERNS = (
@@ -74,12 +81,14 @@ def log(msg):
         pass
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--quiet", action="store_true")
-    args = ap.parse_args()
+def reap(dry_run=False, quiet=False):
+    """他のスクリプトからも関数として呼べる本体。
 
+    ★なぜ関数にしたか（2026-09-18の実測）：`heartbeat.sh` に行を足しても、
+      **走っている心臓はループ本体をメモリに持っているので、心臓が入れ替わるまで効かない。**
+      一方 python のファイルは毎回の呼び出しで読み直される。そこで毎サイクル必ず呼ばれる
+      `tools/launch_watchdog.py` から `reap()` を呼ぶことで、心臓の入れ替えを待たずに効かせる。
+    """
     found = []
     now = time.time()
     for pat in LOCK_PATTERNS:
@@ -91,38 +100,51 @@ def main():
             found.append((p, age))
 
     if not found:
-        if not args.quiet:
+        if not quiet:
             print("LOCK_REAPER: OK - 取り残されたロックはありません")
         return 0
 
     stale = [(p, a) for p, a in found if a >= STALE_SECONDS]
     if not stale:
-        if not args.quiet:
+        if not quiet:
             print("LOCK_REAPER: SKIP - ロックはあるがまだ新しい（%d件）" % len(found))
         return 0
 
     if git_is_running():
-        if not args.quiet:
-            print("LOCK_REAPER: SKIP - gitが走っているので触りません（%d件）" % len(stale))
-        return 0
+        # gitが走っている時は、15分以上放置された「明らかな置き土産」だけに限って片付ける。
+        stale = [(p, a) for p, a in stale if a >= HARD_STALE_SECONDS]
+        if not stale:
+            if not quiet:
+                print("LOCK_REAPER: SKIP - gitが走っているので触りません（%d件）" % len(found))
+            return 0
 
     removed = 0
     for p, age in stale:
-        if args.dry_run:
-            if not args.quiet:
+        if dry_run:
+            if not quiet:
                 print("LOCK_REAPER: DRYRUN - %s（%d分放置）" % (p, age // 60))
             continue
         try:
             os.remove(p)
             removed += 1
-            log("🧹 取り残された git ロックを片付けました: %s（%d分放置・gitプロセスなし）"
-                % (os.path.relpath(p, REPO), age // 60))
+            log("🧹 取り残された git ロックを片付けました: %s（%d分放置・%s）"
+                % (os.path.relpath(p, REPO), age // 60,
+                   "15分超なのでgit走行中でも片付けた" if age >= HARD_STALE_SECONDS
+                   else "gitプロセスなし"))
         except OSError as e:
             log("⚠️ git ロックを消せませんでした: %s（%s）" % (os.path.relpath(p, REPO), e))
 
-    if not args.quiet:
+    if not quiet:
         print("LOCK_REAPER: OK - %d件のロックを片付けました" % removed)
     return 0
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--quiet", action="store_true")
+    args = ap.parse_args()
+    return reap(dry_run=args.dry_run, quiet=args.quiet)
 
 
 if __name__ == "__main__":

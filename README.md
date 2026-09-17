@@ -481,12 +481,30 @@ URLの見た目では、Claudeが開いたのか たまごさんが開いたの�
 `ORIG_HEAD.lock` / `config.lock` / `packed-refs.lock` / `refs/**/*.lock`）。
 **ワイルドカードで `.git` 配下を舐めない。** 片付けたら既存の `status/git_rebase_incidents.log` へ1行残す。
 
-実機で通した記録（2026-09-18）：
+**★heartbeat.sh に行を足しただけでは効かない（この作業で実測して分かったこと）：**
+**走っている心臓（bash）はループ本体をメモリに持っているので、心臓が入れ替わるまで新しい行は実行されない。**
+一方 python のファイルは呼び出しごとに読み直される。そこで `git_lock_reaper.reap()` を関数として公開し、
+**毎サイクル必ず呼ばれる `tools/launch_watchdog.py`（894番・「止まった瞬間に自分で立て直す」係）から
+呼ぶ**ようにした（`launch_watchdog.py` が `genzaichi.check_launch_silence()` を借りているのと同じ形）。
+心臓の入れ替えを待たずに効く。**心臓・5分便への行も残してあるので、経路は3本ある。**
+
+もうひとつの実測：この工場は `auto_launcher` / `command_ingest` / 5分便がgitを絶えず叩いているため、
+「gitプロセスが1本も無い時だけ消す」だけでは**静かな瞬間が来ずロックが何十分も片付かない**
+（`refs/heads/main.lock` が24分放置されたのを実測）。正常なgit操作が15分ロックを握ることは無いので、
+**15分を超えたらgitが走っていても消す**（`HARD_STALE_SECONDS`）。これが無いとこの道具は
+「動いているのに直らない」状態になる。
+
+実機で通した記録（2026-09-18・すべてMac側の実行ログ）：
 ```
-02:21 index.lock / next-index-20.lock が取り残される（gitが全て rc=128 で失敗）
-02:26 心臓が git_lock_reaper.py を実行 → 2件とも片付き、git が復活
-02:31:44 🧹 取り残された git ロックを片付けました: .git/HEAD.lock（5分放置・gitプロセスなし）
+02:21    index.lock / next-index-20.lock が取り残される（git が全て rc=128 で失敗）
+02:26    2件とも片付き、git が復活
+02:31:44 🧹 .git/HEAD.lock（5分放置・gitプロセスなし）
+02:37:39 🧹 .git/HEAD.lock（5分放置・gitプロセスなし）
+02:57:34 🧹 .git/refs/heads/main.lock（24分放置・15分超なのでgit走行中でも片付けた）
 ```
+
+自己テスト（判定4件・すべて狙い通り）：gitなし3分→残す／gitなし6分→消す／
+git走行中6分→残す／git走行中20分→消す。
 
 ### 自己テスト（2026-09-18実施・12件すべて狙い通り）
 
