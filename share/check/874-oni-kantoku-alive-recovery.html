@@ -51,35 +51,46 @@
 <h1>#874 鬼監督の死亡判定を解消（原因は心臓の誤爆・09-16 19:54修正・以後継続稼働を実測）</h1>
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-鬼監督(status/oni_kantoku_log.jsonl)が26時間更新なしdead判定だった件。真因は鬼監督本体ではなく上流の心臓(heartbeat.sh)にあった：発車待ちが無いだけの正常な心臓を『詰まった』と誤判定して繰り返し強制終了し、道連れでauto_launcher.pyが孤児化・ロックファイル握ったまま14時間発車ゼロになっていた。commit 3507f20e6(09-16 19:54・origin/main反映済み)でheartbeat.shの判定材料を差し替え、心臓を殺す時に子も片づけるよう修正。以後18時間以上、鬼監督ログは継続して書き込まれている。
+鬼監督(status/oni_kantoku_log.jsonl)が26時間更新なしdead判定だった件。真因は鬼監督本体ではなく上流の心臓(heartbeat.sh)にあった：発車待ちが無いだけの正常な心臓を『詰まった』と誤判定して繰り返し強制終了し、道連れでauto_launcher.pyが孤児化・ロックファイル握ったまま14時間発車ゼロになっていた。commit 3507f20e6(09-16 19:54・origin/main反映済み)でheartbeat.shの判定材料を差し替え、心臓を殺す時に子も片づけるよう修正。以後22時間以上、鬼監督ログは継続して書き込まれている。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>alive</b><span>現在のshikumi.json判定(oni_kantoku)</span></div>
-  <div class="num"><b>0.0時間</b><span>最終記録からの経過(24h基準)</span></div>
-  <div class="num"><b>37件</b><span>本日(09-17)のcountToday</span></div>
-  <div class="num"><b>39件</b><span>根本修正(09-16 19:54)以後の記録件数</span></div>
+  <div class="num"><b>alive</b><span>現在のshikumi.json判定(oni_kantoku)・18:19再実行で再確認</span></div>
+  <div class="num"><b>1.0時間</b><span>最終記録からの経過(24h基準)</span></div>
+  <div class="num"><b>40件</b><span>本日(09-17)のcountToday</span></div>
+  <div class="num"><b>42件</b><span>根本修正(09-16 19:54)以後の記録件数</span></div>
 </div>
 
 
 
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク一覧</h2>
 <ul class="links">
   <li><b>証拠JSON(生データ)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/oni_kantoku_874_evidence.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/oni_kantoku_874_evidence.json</a></li>
   <li><b>根本原因の修正コミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/3507f20e6d9f540420f3e3228a89f6a74a52bc45" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/3507f20e6d9f540420f3e3228a89f6a74a52bc45</a></li>
-  <li><b>鬼監督ログ本体(oni_kantoku_log.jsonl・gitignore対象のためローカルのみ)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/shikumi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/shikumi.py</a></li>
+  <li><b>判定ロジック本体(shikumi.py・24時間基準でaliveを判定するコード)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shikumi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shikumi.py</a></li>
+  <li><b>根本原因の修正ファイル(heartbeat.sh)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh</a></li>
 </ul>
+
+<h2>④ スクリーンショットについて</h2>
+<div class="note">この件は画面を持たないバックエンドの仕組み(生死判定のログ)の修復のため、見た目のスクリーンショットは無い。代わりに、shikumi.pyをその場で再実行した生の判定結果テキストを「⑤ 何をどう確かめたか」に載せている。</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>shikumi.jsonのoni_kantoku verdict</td><td class="yes">alive</td></tr>
-<tr><td>最終記録から24時間以内</td><td class="yes">0.0時間(基準24時間)</td></tr>
+<tr><td>最終記録から24時間以内</td><td class="yes">1.0時間(基準24時間・18:19時点で再実行)</td></tr>
 <tr><td>根本原因(heartbeat.sh誤検知)がmainへpush済み</td><td class="yes">3507f20e6・origin/main反映確認済み</td></tr>
-<tr><td>根本修正後も記録が止まっていないか(18時間超の継続)</td><td class="yes">39件連続記録・最新17:02:27</td></tr>
+<tr><td>根本修正後も記録が止まっていないか(22時間超の継続)</td><td class="yes">42件連続記録・最新17:21:13</td></tr>
 </table>
+
+<div class="note" style="margin-top:12px;">
+<b>実測: python3 tools/shikumi.py の再実行結果(18:19)</b>
+<pre style="white-space:pre-wrap;font-size:0.78rem;margin:8px 0 0;background:#faf7ef;border-radius:8px;padding:10px;">仕組みの生死表 完了：11項目中0件がdead
+🟢 鬼監督：status/oni_kantoku_log.jsonlの最終行checkedAt基準：現在1.0時間更新なし（24時間以内=alive、それ超=dead。イベント駆動〔完了のたび〕なので中間のslow帯は設けない）</pre>
+</div>
 
 <footer>
 このページは #874 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
