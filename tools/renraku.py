@@ -55,6 +55,11 @@ GMAIL_ADDR = "eggypop2010@gmail.com"
 GMAIL_CRED_PATH = os.path.expanduser("~/.tamago/gmail_app_password")
 JST = timezone(timedelta(hours=9))
 STALE_DAYS = 14
+# 891番：毎日メールの見張り（朝・夜の2回想定）。heartbeatは15秒おきに呼ぶが、
+# 実際にIMAPへ繋ぐのはここで間引く（check_anthropic_reply.py/check_line_reply.pyと同じ設計）。
+CHECK_STATE_PATH = os.path.join(ROOT, "status", ".renraku_check_state.json")
+CHECK_INTERVAL_HOURS = 10
+DISPATCH_OUTBOX = os.path.join(ROOT, "status", "dispatch_outbox.jsonl")
 # 相手ごとにどのプロファイル(CDPポート)で開くか。今のところ全窓口を chrome-line(9224) に集約
 # （新規プロファインは初回ログインの人手が要るため増やさない。896番の判断）。
 DEFAULT_CDP_PORT = 9224
@@ -345,9 +350,53 @@ def get_body_text(msg):
         return ""
 
 
+def append_dispatch(n, title, message, extra=None):
+    """891番：見張りの結果をDispatchへ届ける唯一の口。要約せず全文をそのまま入れること。"""
+    row = {
+        "ts": now_iso(),
+        "n": n,
+        "type": "renraku_check",
+        "title": title,
+        "message": message,
+    }
+    if extra:
+        row.update(extra)
+    try:
+        with open(DISPATCH_OUTBOX, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def _check_state():
+    return load_json(CHECK_STATE_PATH, {})
+
+
+def _save_check_state(st):
+    save_json(CHECK_STATE_PATH, st)
+
+
 def cmd_check(args):
     """既に送った(reply_received=false)相手について、Gmailで新着を探す。
-    926番check_line_reply.py / check_anthropic_reply.pyと同じ骨組みを汎用化。"""
+    926番check_line_reply.py / check_anthropic_reply.pyと同じ骨組みを汎用化。
+
+    891番：毎日（朝・夜の2回想定）の見張り。heartbeatから15秒おきに呼ばれても、
+    実際にIMAPへ繋ぐのはCHECK_INTERVAL_HOURSで間引く（--forceで手動テスト時は無視）。
+    新着・2週間未着・認証情報なしは、それぞれ1回だけdispatch_outboxへ全文で通知する
+    （要約しない。都合よく解釈しない、原文のまま渡す、というたまごさんの指示のため）。"""
+    st = _check_state()
+    force = getattr(args, "force", False)
+    if not force:
+        last = st.get("lastCheckedAt")
+        if last:
+            try:
+                if datetime.now(JST) - datetime.fromisoformat(last) < timedelta(hours=CHECK_INTERVAL_HOURS):
+                    return
+            except Exception:
+                pass
+    st["lastCheckedAt"] = now_iso()
+    _save_check_state(st)
+
     data = load_json(RECORD_PATH, {"sent": []})
     madoguchi = load_madoguchi()
     pending = [r for r in data.get("sent", []) if not r.get("reply_received")]
@@ -358,7 +407,24 @@ def cmd_check(args):
     M, err = imap_connect()
     if err:
         print(f"Gmail接続不可: {err}（~/.tamago/gmail_app_password 未設置。設置され次第このコマンドが自動で動く）")
+        if not st.get("credentialMissingNotified"):
+            append_dispatch(
+                891,
+                "【毎日】メールの見張り（LINEの返事待ち）",
+                (
+                    "見張りの仕組みは実装済みですが、Gmail接続用のアプリパスワードが未設置のため動けません。\n"
+                    f"設置先: {GMAIL_CRED_PATH}（1行だけ、パスワード文字列そのものを書く）\n"
+                    "設置され次第、次の見回り（最大10時間以内）で自動的に動き出します。"
+                ),
+                extra={"blocked": "no_credential", "credPathExpected": GMAIL_CRED_PATH},
+            )
+            st["credentialMissingNotified"] = True
+            _save_check_state(st)
         return
+    else:
+        if st.get("credentialMissingNotified"):
+            st["credentialMissingNotified"] = False
+            _save_check_state(st)
 
     changed = False
     for rec in pending:
@@ -390,6 +456,21 @@ def cmd_check(args):
             rec["reply_checked_at"] = now_iso()
             changed = True
             print(f"新着あり: {rec['to']} ← {rec['reply_from']}")
+            is_en = all(ord(c) < 128 for c in rec["reply_text"][:200]) if rec["reply_text"] else False
+            note = "（英文の可能性があります。日本語訳を添えて伝えてください）\n\n" if is_en else ""
+            append_dispatch(
+                891,
+                f"【返信あり】{info.get('aliases', [rec['to']])[0] if info.get('aliases') else rec['to']} から返信が来ました",
+                (
+                    f"差出人: {rec['reply_from']}\n"
+                    f"件名: {rec.get('reply_subject','')}\n"
+                    f"日時: {rec['reply_checked_at']}\n"
+                    f"{note}"
+                    "---本文（原文そのまま。要約なし）---\n"
+                    f"{rec['reply_text']}"
+                ),
+                extra={"to": rec["to"], "toLabel": rec.get("to_label", rec["to"])},
+            )
         except Exception as e:
             print(f"{rec['to']} のチェックでエラー: {e}")
         finally:
@@ -411,6 +492,16 @@ def cmd_check(args):
         sent_dt = datetime.fromisoformat(rec["sent_at"])
         if datetime.now(JST) - sent_dt > timedelta(days=STALE_DAYS):
             print(f"未着報告(1回のみ): {rec['to']} は{STALE_DAYS}日経っても返信が来ていません")
+            append_dispatch(
+                891,
+                f"【未着・{STALE_DAYS}日経過】{rec.get('to_label', rec['to'])} から返信が来ていません",
+                (
+                    f"送信日時: {rec['sent_at']}\n"
+                    f"件名: {rec.get('subject','')}\n"
+                    f"{STALE_DAYS}日経っても返信が来ていません（この通知は1回のみ）。"
+                ),
+                extra={"to": rec["to"], "toLabel": rec.get("to_label", rec["to"])},
+            )
             rec["stale_reported"] = True
             save_json(RECORD_PATH, data)
 
@@ -432,7 +523,8 @@ def main():
     lp = sub.add_parser("list", help="窓口台帳を表示")
     lp.set_defaults(func=cmd_list)
 
-    cp = sub.add_parser("check", help="返信が来ていないか1回だけ確認する")
+    cp = sub.add_parser("check", help="返信が来ていないか確認する（heartbeatから頻繁に呼ばれても内部で1日2回程度に間引く）")
+    cp.add_argument("--force", action="store_true", help="間引きを無視して今すぐ確認する（動作確認用）")
     cp.set_defaults(func=cmd_check)
 
     args = p.parse_args()
