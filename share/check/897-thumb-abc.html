@@ -82,12 +82,16 @@ CI許容誤差（designRules.ts rowHeightTolerancePx）: 2.0px</pre>
   <li><b>本番の見本ページ(A/B/Cが並んでいる)</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
 </ul>
 
-<h2>⑤ 追記：触る検品(2段目)ではねられた指摘への対応</h2>
+<h2>⑤ 追記：触る検品(2段目)ではねられた指摘への対応（コード修正済み・本番反映は保留中）</h2>
 <div class="note">
-897番のA/B/C実装そのものではなく、全ページ共通の下部ミニプレーヤーにある「次のページへ進む」「画面の一番上へ」の2つのボタンが、押しても画面が変わらず無反応と判定された。原因は897番のコードではなく、進む履歴が無い時／既に一番上にいる時に何も起きない既存の挙動。実装自体は正しいが「押しても何も起きない」体験は良くないため、何も起きない時だけ一言（トースト）を返すよう修正した。
+897番のA/B/C実装そのものではなく、全ページ共通の下部ミニプレーヤーにある「次のページへ進む」「画面の一番上へ」の2つのボタンが、押しても画面が変わらず無反応と判定された。原因は897番のコードではなく、進む履歴が無い時／既に一番上にいる時に何も起きない既存の挙動。実装自体は正しいが「押しても何も起きない」体験は良くないため、何も起きない時だけ一言（トースト）を返すよう修正した（コミット<code>a13258ad</code>、origin/mainへ合流済み）。
+</div>
+<div class="note" style="border-left:3px solid var(--aka);">
+<b style="color:var(--aka);">本番未反映（Lovable基盤側の問題）：</b> mainへの合流から1時間37分・手動公開試行6回待っても本番に出ない。Lovable編集画面を直接確認したところ、①「Publishing was blocked due to suspicious activity」ブロックが現役継続中、②直近の全pushが「ビルドに失敗しました」表示のまま、の2つを確認した。コード側の問題ではなく、店主本人がLovableサポートへ問い合わせない限り解除できない段階（詳細は<code>.claude/KNOWN_ISSUES.md</code>）。反映後にあらためて<code>node tools/verify_click.mjs</code>で無反応0件を確認する。
 </div>
 <div class="nums">
-  <div class="num"><b>2件→0件</b><span>node tools/verify_click.mjs の無反応判定（修正前→修正後）</span></div>
+  <div class="num"><b>2件</b><span>修正前(本番)の無反応判定（node tools/verify_click.mjs実測）</span></div>
+  <div class="num"><b>未反映</b><span>修正はmain合流済みだがLovable本番にはまだ出ていない</span></div>
 </div>
 <pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:0.82rem;overflow-x:auto;">修正前（本番、2026-09-17 07:48実測）:
 実測: {"totalClickable":11,"tested":11,"noResponseCount":2}
