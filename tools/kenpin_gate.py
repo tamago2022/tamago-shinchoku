@@ -88,6 +88,15 @@ STATES = ("draft", "submitted", "fix_required", "passed", "delivered")
 # 後で Grok/Gemini を足せるよう、順番だけの定義にしてある（1社目で判定が返ったらそこで確定）。
 VENDOR_ORDER = ("OpenAI", "Grok", "Gemini")
 
+# ★このゲート専用のOpenAIモデル順（gaibu_kenpin.py の OPENAI_MODEL_CANDIDATES とは別に持つ）。
+# 2026-09-17 実測：gpt-4o-mini は「最大3つ」と指示しても毎回3つ埋めてくる癖が強く、
+#   915号の事前ゲートで4回連続 FIX を出した。4回目の指摘は
+#   「具体性を欠いている」「証拠が示されていない」のように**依頼原文のどの行とも紐づかない**
+#   抽象的な文言ばかりで、検品として成立していなかった（＝どれだけ直しても永久に通らない）。
+#   ここは「通す/直させる」を決める門なので、賢い方（gpt-5-mini）を第一候補にする。
+#   単価は $0.25/$2.00 per 1M（gaibu_kenpin.PRICING に登録済み）で、1回あたり1円未満のまま。
+OPENAI_MODEL_CANDIDATES = ["gpt-5-mini", "gpt-4o-mini"]
+
 # 3回続けて FIX が出たら、AI同士で堂々巡りしているとみなしてたまごさんに1点だけ聞く（6章）。
 FIX_STREAK_ESCALATE = 3
 
@@ -103,6 +112,10 @@ SYSTEM_PROMPT = (
     "2. 『たぶん大丈夫』『おそらく問題ない』で通さない。確認できない条件があるなら『直させる』。\n"
     "3. 実装の好みや、依頼に書かれていない改善案を理由に差し戻さない。判定材料は依頼原文だけ。\n"
     "4. kind が pre（お金が出る前の事前ゲート）のときは、**元依頼と実行プロンプトの一致だけ**を見る。\n"
+    "   ★このときテスト結果・スクショ・ログは**まだ存在しない**（これから実行するから事前に見せている）。"
+    "   『実行結果が示されていない』『証拠が無い』を理由に差し戻してはいけない。"
+    "   見るべきは『実行したときに依頼の条件を満たせる書き方になっているか』だけ。"
+    "   合格条件が曖昧で機械で判定できない書き方になっている場合は差し戻してよい。\n"
     "   費用の妥当性についての意見は『たまごさんが見落としていそうな点』の欄に書く。\n"
     "5. kind が post（実装後ゲート）のときは、報告の中に『自分で人間の経路を最後まで通した証拠』"
     "（実URL・スクショ・ログ・テスト結果・APIレスポンス等）があるかも見る。"
@@ -113,7 +126,16 @@ SYSTEM_PROMPT = (
     ' "gaps": ["ズレている点1", "ズレている点2", "ズレている点3"],'
     ' "blindspot": "たまごさんが見落としていそうな点を1つ",'
     ' "one_line": "20字以内の一言"}\n'
-    "gaps は最大3つ。通すときは空配列。blindspot は通す・直させるどちらでも必ず1つ書く。"
+    "gaps は最大3つ。通すときは空配列。blindspot は通す・直させるどちらでも必ず1つ書く。\n"
+    "\n"
+    "★gaps の書き方（2026-09-17・実測で必要になった縛り）：\n"
+    "  **無理に3つ埋めない。**差し戻す必要が無ければ gaps は空配列にして『通す』と答える。\n"
+    "  1つ書くたびに、**依頼原文のどの一文と、提出物のどの記述が食い違うか**を対にして書く。\n"
+    "  『具体性が不足している』『明確化が不十分』『証拠が示されていない』のような、"
+    "  依頼原文の特定の一文を指していない抽象的な指摘は**理由として認めない**（書かないこと）。\n"
+    "  提出物がその条件に触れていないなら『依頼原文の◯番「（引用）」に対応する記述が提出物に無い』の形で書く。\n"
+    "  これは、この仕組みの依頼者が『確認しました／直っていますに証拠能力は無い』と言っているのと同じ基準を、"
+    "  検品する側にも課すためのもの。曖昧な差し戻しは検品として成立していない。"
 )
 
 
@@ -508,7 +530,7 @@ def _call_vendor(provider, prompt):
         return None, [], "", "", "", None, "Gemini：%s" % " / ".join(errs)
 
     if provider == "OpenAI":
-        api_url, models, key_names = gk.OPENAI_URL, gk.OPENAI_MODEL_CANDIDATES, ("OPENAI_API_KEY",)
+        api_url, models, key_names = gk.OPENAI_URL, OPENAI_MODEL_CANDIDATES, ("OPENAI_API_KEY",)
     else:
         api_url, models, key_names = gk.XAI_URL, gk.GROK_MODEL_CANDIDATES, ("XAI_API_KEY",)
 
@@ -639,7 +661,32 @@ def run_one(ticket_path, quiet=False):
     return "SKIP", "全社とも判定できませんでした（%s）" % " / ".join(skips)
 
 
+RUN_LOCK = os.path.join(REPO, "status", ".kenpin_gate.lock")
+_run_lock_f = None
+
+
+def only_one_runner():
+    """検品係は同時に1つだけ。先客がいれば False を返して静かに帰る。
+
+    2026-09-17（926番）：`--run-pending` は心臓（15秒おき）と5分便の**両方**から呼ばれる。
+    鍵が無いと、同じ依頼票を2つのプロセスが同時に拾って**同じ検品を2回課金**する
+    （auto_launcher.py が「同じ番号が2回発車してクレジットが二重に減った」実測から
+    only_one_launcher() を入れたのと全く同じ理由・同じ実装）。"""
+    global _run_lock_f
+    try:
+        import fcntl
+        _run_lock_f = io.open(RUN_LOCK, "a+")
+        fcntl.flock(_run_lock_f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except Exception:
+        return False
+
+
 def cmd_run_pending(max_jobs, quiet):
+    if not only_one_runner():
+        if not quiet:
+            print("KENPIN_RESULT: SKIP - 先に走っている検品係がいます（二重課金しないため見送り）")
+        return 2
     # 先に溜まっているops（原文・解釈・状態の変更）をqueue.jsonへ反映してから投げる。
     apply_ops(quiet=quiet)
     os.makedirs(PENDING_DIR, exist_ok=True)

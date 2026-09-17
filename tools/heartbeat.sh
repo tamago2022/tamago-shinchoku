@@ -137,6 +137,14 @@ while :; do
   #   実装は tools/launch_watchdog.py（genzaichi.check_launch_silence()をそのまま再利用・
   #   二重実装はしない）。
   ( python3 "$REPO/tools/launch_watchdog.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-17（926番）：外部検品ゲート。status/kenpin/pending/ に積まれた依頼票を
+  #   ChatGPT(OpenAI API)へ投げて判定を号番号(queue.json)へ戻す。5分便(machine_status_push.sh)にも
+  #   同じ行があるが、その便はMacが重いと何十分も回ってこないことが実測されており（このログの
+  #   「立て直しの便が◯分更新していません」）、検品の往復が止まると「未検品のものを
+  #   たまごさんへ返さない」という仕組みそのものが死ぬ。検品待ちが空のときは
+  #   ディレクトリを1回見るだけで即座に戻るので、15秒おきに呼んでも負荷はほぼゼロ。
+  #   投げっぱなしにして心臓は待たない（他の相乗りと同じ形）。
+  ( python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
