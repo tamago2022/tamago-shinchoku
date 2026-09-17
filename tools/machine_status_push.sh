@@ -359,7 +359,10 @@ cd "$REPO" || return 0
 run_with_timeout 20 python3 "$REPO/tools/priority_ingest.py" >/dev/null 2>&1 || true
 
 # 2026-09-03 Macの健康管理：何を閉じれば／消せば楽になるか（実測。重い計測は30分に1回）
-run_with_timeout 45 python3 "$REPO/tools/health_candidates.py" >/dev/null 2>&1 || true
+# 2026-09-17（930番棚卸し・884番再発対応）：セッション過多で負荷995%まで振れた実機で、
+# 45秒だと health_candidates.py がタイムアウトでSIGKILLされ続け、status/health.jsonの
+# measuredAtが4時間以上進まなくなる事故を実測で確認した（factory_status.pyと同じ90秒に揃える）。
+run_with_timeout 90 python3 "$REPO/tools/health_candidates.py" >/dev/null 2>&1 || true
 
 # 2026-09-03 PWAリモコン：▶️動かす／⏸止める／🔁引き継ぐ／🗑閉じる のコマンドキューを実行（launchd新規登録がブロックされたため、この5分間隔ジョブに相乗り）
 run_with_timeout 30 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
