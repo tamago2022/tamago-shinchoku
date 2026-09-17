@@ -26,12 +26,15 @@ import fcntl
 import io
 import json
 import os
+import sys
 import time
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
 QUEUE = os.path.join(REPO, "status", "queue.json")
 ARCHIVE = os.path.join(REPO, "status", "done_archive.json")
 PAGE_DIR = os.path.join(REPO, "share", "done")
@@ -161,6 +164,14 @@ def main():
             save(ARCHIVE, arch)
             print("完了を%d件、ひかえへ移しました" % len(moved))
     write_page(load(ARCHIVE, {"items": []}).get("items", []))
+    # 925番：公開リポジトリの1MB超ファイル対策。正本(status/done_archive.json)は
+    # フルのまま保つが、公開用コピー(status/public/done_archive.json)は
+    # what/resultを抜いた軽量版に差し替える（build_done_archive_light.py）。
+    try:
+        import build_done_archive_light
+        build_done_archive_light.build()
+    except Exception as e:
+        print("軽量版の再構築に失敗（正本には影響なし）: %s" % e)
     return 0
 
 

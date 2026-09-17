@@ -139,9 +139,15 @@ find "$REPO/.git/objects" -maxdepth 2 -name "tmp_obj_*" -mmin +5 -delete 2>/dev/
 
 # 2026-09-12(717番) pre-commit hookの自己修復：.git/hooksは追跡対象外なので、
 #   何かの拍子に消えても（別worktreeでの再clone等）ここで毎回作り直す。1MB超ガードの最終防波堤。
-if [ ! -x "$REPO/.git/hooks/pre-commit" ] && [ -f "$REPO/tools/git-hooks/pre-commit" ]; then
-  cp "$REPO/tools/git-hooks/pre-commit" "$REPO/.git/hooks/pre-commit" 2>/dev/null || true
-  chmod +x "$REPO/.git/hooks/pre-commit" 2>/dev/null || true
+# 2026-09-17（925番）：「無ければ作る」(-x判定)だと、tools/git-hooks/pre-commit を
+#   直しても既にインストール済みのhookは古い中身のまま置き去りになる（今回、旧EXEMPT_REGEX
+#   が'status/public/queue.json'に一致せず数時間ブロックし続けた実害の一因）。
+#   中身が違う時は毎回上書きして常に最新に揃える（コストはファイルコピー1回のみ）。
+if [ -f "$REPO/tools/git-hooks/pre-commit" ]; then
+  if ! cmp -s "$REPO/tools/git-hooks/pre-commit" "$REPO/.git/hooks/pre-commit" 2>/dev/null; then
+    cp "$REPO/tools/git-hooks/pre-commit" "$REPO/.git/hooks/pre-commit" 2>/dev/null || true
+    chmod +x "$REPO/.git/hooks/pre-commit" 2>/dev/null || true
+  fi
 fi
 
 run_once() {
@@ -446,13 +452,20 @@ PYVER
 ### 作業14分が実際に巻き戻りで失われた）。公開先を status/public/ という、
 ### **どの既存worktreeも過去に一度も追跡したことが無いパス**へ丸ごと移した。
 ### 存在すらしなかったパスは、どんな広いgit addでも誤って巻き込みようがない。
-PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json done_archive.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
+### 925番（1MB超ファイル対策）：done_archive.json（正本）はwhat/result込みで1MB超。
+### PUBLISH_LISTから外し、単純cpをやめてwhat/resultを抜いた軽量版を直接
+### status/public/done_archive.json へ書き出す（build_done_archive_light.py）。
+### 正本 status/done_archive.json 自体は変更しない。
+PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
 mkdir -p "$REPO/status/public"
+[ -f "$REPO/status/done_archive.json" ] && python3 "$REPO/tools/build_done_archive_light.py" >/dev/null 2>&1
 for _f in $PUBLISH_LIST; do
   [ -f "$REPO/status/$_f" ] && cp -f "$REPO/status/$_f" "$REPO/status/public/$_f" 2>/dev/null
 done
 # shellcheck disable=SC2086
 git add $(for _f in $PUBLISH_LIST; do echo "status/public/$_f"; done) >/dev/null 2>&1
+# done_archive.jsonはPUBLISH_LISTから外した軽量版専用ファイルなので個別にadd
+[ -f "$REPO/status/public/done_archive.json" ] && git add "status/public/done_archive.json" >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1

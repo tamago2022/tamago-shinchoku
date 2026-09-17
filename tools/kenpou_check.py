@@ -76,8 +76,15 @@ BIG_FILE_LIMIT = 1_000_000  # 1MB
 #   なり、これは技術的な圧縮ではなく体験設計の変更なので独断で狭めない。
 #   （tweets_data.jsonは同じ717番で5分割して解消済み・こちらは静的データなので圧縮ではなく
 #   分割で対応、queue.jsonのような生きた単一ファイルには分割が使えないため方式が異なる）
+#
+# 2026-09-17（925番・パス修正）：git ls-tree上の実パスは "status/public/queue.json"
+#   （公開コピー）であり、旧prefix "status/queue.json" では一致せず対象外指定が
+#   効いていなかった（この点検自体が誤検知していた）。正しいパスへ直す。
+#   なお同じく1MB超だった status/public/done_archive.json は、対象外にせず
+#   実際にサイズを削った（build_done_archive_light.pyでwhat/resultを除いた
+#   公開用軽量版に差し替え・正本 status/done_archive.json はフルのまま保持）。
 BIG_FILE_EXEMPT_PREFIXES = (
-    "status/queue.json",
+    "status/public/queue.json",
 )
 
 

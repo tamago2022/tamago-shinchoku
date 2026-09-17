@@ -21,7 +21,11 @@ BIG=0
 # 2026-09-13（案件#687）：queue.jsonは唯一の正本データ（テキストJSON・バイナリで太らせる類ではない）。
 # このガードにかかって7時間以上origin/mainへコミットされず、災害復旧のたびに巻き戻りが起きる元凶になっていた。
 # 正本は例外にする（動画・画像・バイナリだけを対象にする、というこのフック本来の目的に立ち返る）。
-EXEMPT_REGEX='^status/queue\.json$'
+# 2026-09-17（925番）：公開先は status/public/queue.json （公開コピー）で、旧regexは
+# status/queue.json（正本）にしかマッチせず、公開コピーの方は2026-09-17 02:16から
+# ずっとこのガードでunstageされ続けていた（=進捗表の公開データが更新されずスタック）。
+# 正本・公開コピーの両方を対象に含める。
+EXEMPT_REGEX='^status/(public/)?queue\.json$'
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   [ -f "$f" ] || continue
