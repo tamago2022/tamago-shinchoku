@@ -456,9 +456,16 @@ PYVER
 ### PUBLISH_LISTから外し、単純cpをやめてwhat/resultを抜いた軽量版を直接
 ### status/public/done_archive.json へ書き出す（build_done_archive_light.py）。
 ### 正本 status/done_archive.json 自体は変更しない。
-PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json queue.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
+### 925番（2回目の修正・queue.json）：queue.jsonの単純cpも1MB超の原因そのものだった
+### （1回目は点検の除外パスに追加してすり抜けさせただけでAI検品にはねられた）。
+### what/resultは実際にfetchQueueFull()で使われているため中身は削れない。
+### 中身は一切削らずgzip圧縮のみで物理的に縮める（1.8MB→約480KB）。
+### PUBLISH_LISTからも外し、単純cpをやめてstatus/public/queue.json.gzへ
+### 圧縮版を書き出す（build_queue_public_gz.py）。正本status/queue.jsonは変更しない。
+PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
 mkdir -p "$REPO/status/public"
 [ -f "$REPO/status/done_archive.json" ] && python3 "$REPO/tools/build_done_archive_light.py" >/dev/null 2>&1
+[ -f "$REPO/status/queue.json" ] && python3 "$REPO/tools/build_queue_public_gz.py" >/dev/null 2>&1
 for _f in $PUBLISH_LIST; do
   [ -f "$REPO/status/$_f" ] && cp -f "$REPO/status/$_f" "$REPO/status/public/$_f" 2>/dev/null
 done
@@ -466,6 +473,12 @@ done
 git add $(for _f in $PUBLISH_LIST; do echo "status/public/$_f"; done) >/dev/null 2>&1
 # done_archive.jsonはPUBLISH_LISTから外した軽量版専用ファイルなので個別にadd
 [ -f "$REPO/status/public/done_archive.json" ] && git add "status/public/done_archive.json" >/dev/null 2>&1
+# queue.json.gzも同様にPUBLISH_LISTから外した圧縮版専用ファイルなので個別にadd。
+# 旧・生コピー（status/public/queue.json）が残っていればgitの追跡から外す（.gzへ一本化）。
+[ -f "$REPO/status/public/queue.json.gz" ] && git add "status/public/queue.json.gz" >/dev/null 2>&1
+if git ls-files --error-unmatch "status/public/queue.json" >/dev/null 2>&1; then
+  git rm --cached -q "status/public/queue.json" >/dev/null 2>&1
+fi
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1

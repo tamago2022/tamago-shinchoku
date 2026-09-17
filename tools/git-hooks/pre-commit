@@ -18,20 +18,17 @@ cd "$REPO_ROOT" || exit 0
 LIMIT=1000000
 LOG="$REPO_ROOT/status/blocked_large_files.log"
 BIG=0
-# 2026-09-13（案件#687）：queue.jsonは唯一の正本データ（テキストJSON・バイナリで太らせる類ではない）。
-# このガードにかかって7時間以上origin/mainへコミットされず、災害復旧のたびに巻き戻りが起きる元凶になっていた。
-# 正本は例外にする（動画・画像・バイナリだけを対象にする、というこのフック本来の目的に立ち返る）。
-# 2026-09-17（925番）：公開先は status/public/queue.json （公開コピー）で、旧regexは
-# status/queue.json（正本）にしかマッチせず、公開コピーの方は2026-09-17 02:16から
-# ずっとこのガードでunstageされ続けていた（=進捗表の公開データが更新されずスタック）。
-# 正本・公開コピーの両方を対象に含める。
-EXEMPT_REGEX='^status/(public/)?queue\.json$'
+# 2026-09-13（案件#687）〜2026-09-17（925番）：queue.json（正本・公開コピー）を
+# このガードの対象外にしていた期間があったが、925番でAI検品にはねられた
+# （「除外パスに追加して検知をすり抜けさせただけ」＝誤魔化し）。
+# 925番の正しい修正：公開コピーは status/public/queue.json.gz（gzip圧縮・約480KB）
+# 一本化し、中身を削らず物理的に1MB未満へ縮めた（build_queue_public_gz.py）。
+# これにより queue.json 自体を例外にする理由が無くなったため撤去する
+# （#687の教訓＝正本コミットを止めない、はそもそも status/queue.json が
+# .gitignoreで管理対象外のため実際にはこのフックを通らないので影響しない）。
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   [ -f "$f" ] || continue
-  if [[ "$f" =~ $EXEMPT_REGEX ]]; then
-    continue
-  fi
   sz=$(wc -c < "$f" 2>/dev/null || echo 0)
   if [ "${sz:-0}" -gt "$LIMIT" ] 2>/dev/null; then
     git reset -q HEAD -- "$f" >/dev/null 2>&1 || true

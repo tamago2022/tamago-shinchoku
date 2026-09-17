@@ -2726,10 +2726,22 @@ function dataSourceLabel(){
   return "公開コピー(数分遅れの場合あり)";
 }
 window.__queueFullPromise = null;
+/* 925番：公開コピーの生JSON(status/public/queue.json・1.8MB超)を憲法点検が1MB超で
+   赤にしていた。中身(what/result)は実際にここで使っているため削れず、gzip圧縮だけで
+   物理的に縮めた(status/public/queue.json.gz・約480KB／build_queue_public_gz.py参照)。
+   DecompressionStream("gzip")はSafari 16.4+/Chrome 80+/Firefox 113+で使える標準API。
+   無い端末（極めて古いブラウザ）では詳細だけ開けない状態にフォールバックする
+   （一覧表示・軽量版queue_light.jsonでの動作には影響しない）。 */
 function fetchQueueFull(){
   if(window.__queueFullPromise) return window.__queueFullPromise;
-  window.__queueFullPromise = fetch("status/public/queue.json?t=" + Date.now(), {cache:"no-store"})
-    .then(r => r.ok ? r.json() : null)
+  window.__queueFullPromise = fetch("status/public/queue.json.gz?t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok ? r.blob() : null)
+    .then(blob => {
+      if(!blob) return null;
+      if(typeof DecompressionStream === "undefined") return null;
+      const stream = blob.stream().pipeThrough(new DecompressionStream("gzip"));
+      return new Response(stream).json();
+    })
     .catch(()=>null);
   return window.__queueFullPromise;
 }

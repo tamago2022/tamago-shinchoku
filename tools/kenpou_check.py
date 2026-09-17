@@ -66,26 +66,21 @@ BIG_FILE_LIMIT = 1_000_000  # 1MB
 #   よってこの2ディレクトリの対象外指定は不要になったため撤去した（今後また肥大したら
 #   同じく圧縮/分割で解決すること。対象外リストへ戻すのは禁止＝再発防止）。
 #
-# 2026-09-12(717番・追記)：status/queue.json は対象外にする。
-#   理由：これは「発車待ちの正本」＝稼働中の生きた台帳であり、静的なアセットではない
-#   （見張り番・auto_launcher.py・PWA進捗表が秒〜分単位で読み書きする）。サイズの主因は
-#   直近1週間分の完了済み項目（実測：全339件のうち243件がdone/cancelled）で、これは
-#   たまごさんの既存の指示（2026-09-05「完了も1週間経ったら自動で消える。だけどその後で
-#   たどれるようにしといて」）に基づく `tools/archive_done.py` の7日保持ポリシーで既に
-#   管理されている。1MB未満に切り詰めるには保持日数を短くする＝表示の仕様を変えることに
-#   なり、これは技術的な圧縮ではなく体験設計の変更なので独断で狭めない。
-#   （tweets_data.jsonは同じ717番で5分割して解消済み・こちらは静的データなので圧縮ではなく
-#   分割で対応、queue.jsonのような生きた単一ファイルには分割が使えないため方式が異なる）
+# 2026-09-12(717番・追記)：一時期 status/queue.json を対象外にしていたが、
+#   2026-09-17（925番）にAI検品で「実体を軽量化せず除外パスへ追加してすり抜けさせただけ」
+#   とはねられた（1回目の修正は "status/queue.json" → "status/public/queue.json" へ
+#   パスを直しただけで、公開ファイルの実サイズは1.75MBのまま何も変わっていなかった）。
 #
-# 2026-09-17（925番・パス修正）：git ls-tree上の実パスは "status/public/queue.json"
-#   （公開コピー）であり、旧prefix "status/queue.json" では一致せず対象外指定が
-#   効いていなかった（この点検自体が誤検知していた）。正しいパスへ直す。
-#   なお同じく1MB超だった status/public/done_archive.json は、対象外にせず
-#   実際にサイズを削った（build_done_archive_light.pyでwhat/resultを除いた
-#   公開用軽量版に差し替え・正本 status/done_archive.json はフルのまま保持）。
-BIG_FILE_EXEMPT_PREFIXES = (
-    "status/public/queue.json",
-)
+# 925番・2回目の修正：queue.jsonは fetchQueueFull()（index_full.htmlの発車待ち/確認待ち
+#   詳細表示）が実際に読んでいるため、done_archive.jsonのようにwhat/resultを削る方式は
+#   使えない（削ると詳細表示が空になる＝機能を壊す）。保持日数を短くする体験設計変更も
+#   独断ではやらない。代わりに中身を一切削らずgzip圧縮のみで物理的に縮める
+#   （build_queue_public_gz.py。実測1.85MB→約480KB、可逆・無損失）。
+#   公開コピーの実体は status/public/queue.json.gz へ一本化し、
+#   index_full.html の fetchQueueFull() は DecompressionStream("gzip") で解凍してから使う。
+#   これにより対象外リストそのものが不要になったため撤去した（今後また肥大したら
+#   同じく圧縮/分割で解決すること。対象外リストを使った誤魔化しへ戻すのは禁止＝再発防止）。
+BIG_FILE_EXEMPT_PREFIXES = ()
 
 
 def load(p, default):
@@ -394,7 +389,7 @@ def check_big_files(limit_bytes=BIG_FILE_LIMIT):
         "count": len(big),
         "detail": (
             "、".join("%s(%.1fMB)" % (p, s / 1e6) for p, s in big[:5])
-        ) if big else "1MB超のファイルは無い（%s は生きた台帳のため対象外・音声は717番で全て圧縮/分割済み）" % "・".join(BIG_FILE_EXEMPT_PREFIXES),
+        ) if big else "1MB超のファイルは無い（対象外リストは使っていない。queue.jsonは925番でgzip圧縮、音声は717番で全て圧縮/分割して物理的に縮めた）",
     }
 
 
@@ -749,7 +744,7 @@ def _run(args, timeout=None):
 
 
 def _push(paths=("status/kenpou_check.json", "status/kenpou_check_state.json",
-                  "status/kenpou_check_log.jsonl", "status/queue.json"), retries=5, wait_sec=8):
+                  "status/kenpou_check_log.jsonl"), retries=5, wait_sec=8):
     # 2026-09-16: 公開先を status/public/ へ移した（status/直下は.gitignore対象外パス）。
     import shutil as _shutil
     os.makedirs(os.path.join(REPO, "status", "public"), exist_ok=True)
@@ -761,6 +756,19 @@ def _push(paths=("status/kenpou_check.json", "status/kenpou_check_state.json",
         if os.path.exists(_src):
             _shutil.copyfile(_src, _dst)
             pub_paths.append("status/public/%s" % _name)
+    # 925番：queue.jsonは単純cpをやめてgzip圧縮版(queue.json.gz)だけを公開する
+    #   （中身を削らず物理的に縮める。build_queue_public_gz.py参照）。
+    try:
+        import build_queue_public_gz
+        build_queue_public_gz.build()
+        pub_paths.append("status/public/queue.json.gz")
+    except Exception as e:
+        print("queue.json.gz再構築に失敗（続行）: %s" % e)
+    # 旧・生コピーが追跡に残っていれば外す（.gzへ一本化。rm --cachedがそのまま
+    #   ステージするので、この後のgit addの対象パスには含めない＝存在しないパスを
+    #   addしてエラーになるのを避ける）。
+    if _run(["git", "ls-files", "--error-unmatch", "status/public/queue.json"])[0] == 0:
+        _run(["git", "rm", "--cached", "-q", "status/public/queue.json"])
     for attempt in range(1, retries + 1):
         rc, out, err = _run(["git", "add"] + pub_paths)
         if rc != 0:
