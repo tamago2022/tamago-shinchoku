@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-17 16:09",
+ "updatedAt": "2026-09-17 16:22",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -133,29 +133,6 @@
    ],
    "origin": "user",
    "pid": 31607
-  },
-  {
-   "n": 439,
-   "title": "「さよなら夏の日」の関連を4本にする",
-   "why": "スマホから追加",
-   "status": "hold",
-   "limitMin": 180,
-   "model": "claude-sonnet-5",
-   "priority": 1,
-   "order": 15,
-   "redoCount": 2,
-   "cutCount": 1,
-   "origin": "user",
-   "urlsRestoredAt": "2026-09-08T18:47:00+0900",
-   "urlsRestoredWhy": "確認ページは実在していたが、台帳のurlsが検品NGの処理で消えていた。ファイル名から拾い直した。",
-   "backlogVerified": true,
-   "aiVerifyFailCount": 1,
-   "contentCheckFailCount": 1,
-   "startedAt": "2026-09-08T21:09:18+09:00",
-   "sessionId": "fd237c4c-e77a-4c1f-bf52-93f6a45d596e",
-   "finishedAt": "2026-09-08T21:30:12+09:00",
-   "urls": [],
-   "holdNote": "【927番棚卸し・2026-09-17】コードはmain合流済み(6c1246dc関連4本表示/e792977a強制転送撤去/7c01d75d禁句除去)。現在Lovable公開が「公開ボタンが見つからない」で連続失敗しブロック中(status/public/top_status.json lovablePublish.lastFailureAt=2026-09-16T18:43、mainUnpublished=true)。owner判断待ちではなく外部ブロック解除待ちのみ。ブロック解除後に本番URLを実測し直してdone化すること。"
   },
   {
    "n": 441,
@@ -3312,7 +3289,7 @@
    "n": 892,
    "title": "【仕組み①】何回も言わせない：数字の正本を1か所に＋CIで機械検査",
    "why": "スマホから追加",
-   "status": "waiting",
+   "status": "running",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "origin": "user",
@@ -3354,7 +3331,10 @@
     }
    ],
    "functionTestPassAt": "2026-09-17T16:07:57+09:00",
-   "sekishoFailCount": 1
+   "sekishoFailCount": 1,
+   "startedAt": "2026-09-17T16:22:21+09:00",
+   "sessionId": "2ab3a2bd-5634-4ed9-b2e1-204dbc14f066",
+   "pid": 39070
   },
   {
    "n": 893,
@@ -4317,7 +4297,7 @@
    "n": 928,
    "title": "(2/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
    "why": "大きい仕事の自動分割（元は923番）",
-   "status": "running",
+   "status": "awaiting_check",
    "limitMin": 180,
    "model": "claude-sonnet-5",
    "priority": 1,
@@ -4327,7 +4307,33 @@
    "origin": "user",
    "startedAt": "2026-09-17T16:01:21+09:00",
    "sessionId": "1d464207-6cf9-4887-9f81-4c984f3c9dfe",
-   "pid": 29564
+   "pid": 29564,
+   "original_text": "【確認待ち40件の棚卸し】(2/7) 対象10件：509,513,589,593,595,597,604,605,607,609を鬼監督(oni-kantoku)で判定する。\nPASSならdoneへ、店主にしか判断できない好み/掲載可否/デザイン最終判定ならそのまま判断待ちへ残す、\nもう不要/解決済みならholdへ理由1行を添えて落とす。\n完了条件：本番に反映され、本番URLがDispatchに届いていること。バックグラウンド実行禁止・前で待つ・お金は使わない。\n",
+   "interpretation": "対象10件それぞれについて、report/urls/git commit/本番og:title等を実測して判定する。\n- 実際にコード・コミット・本番反映が確認できたもの(513/593/607)はdone化し、result内の誤記URL等を訂正する。\n- 実装コードが存在しない、またはセッションが停止したまま長期間進展がないもの(509/589/595/597/604/605/609)はholdへ理由付きで落とす。\n- 「店主にしか判断できない」に該当する案件は今回の10件中ゼロ件だった。\n- queue.json/status/public/queue_light.jsonをpush、確認ページ(share/check/928-awaiting-check-batch2.html)を作成しsekisho.py PASSを確認する。\n",
+   "inspections": [],
+   "state": "submitted",
+   "kenpinUpdatedAt": "2026-09-17T16:21:36+09:00",
+   "selfCheckPassAt": "2026-09-17T16:21:36+09:00",
+   "kenpinNotes": [
+    {
+     "ts": "2026-09-17T16:21:36+09:00",
+     "field": "selfCheckPassAt",
+     "note": "sekisho.py --skip-click --skip-gaibu でPASS確認。10件それぞれgit log/curl/HTTPステータスで実測済み"
+    },
+    {
+     "ts": "2026-09-17T16:21:36+09:00",
+     "field": "functionTestPassAt",
+     "note": "queue.json実測(status変化33→23件を確認)、GitHub Pages公開URL200を実測、607番はjoy-relief-station本番og:titleを実測して修正済みを確認"
+    }
+   ],
+   "functionTestPassAt": "2026-09-17T16:21:36+09:00",
+   "urls": [
+    "https://tamago2022.github.io/tamago-shinchoku/share/check/928-awaiting-check-batch2.html",
+    "https://tamago2022.github.io/tamago-shinchoku/status/public/queue_light.json"
+   ],
+   "finishedAt": "2026-09-17T16:22:21+09:00",
+   "evidenceGone": true,
+   "evidenceCheckedAt": "2026-09-17T16:22:23+0900"
   },
   {
    "n": 929,
