@@ -88,6 +88,8 @@
 <tr><td>~/.tamago/chrome-line(ログイン専用プロファイル)</td><td class="yes">作成済み・CDP 9224番も起動中(883番で準備済み)</td></tr>
 <tr><td>ログイン状態(生CDPで直接、画面は前面に出さず実測)</td><td class="no">NOT_LOGIN(mypageHref=/signup/line_auth＝未ログイン、3回連続で再現)</td></tr>
 <tr><td>tools/line_login_check.mjsのバグ修理</td><td class="yes">playwright依存が原因のERRORを解消し生CDP方式に書き直し、3回連続で正しい判定を確認</td></tr>
+<tr><td>ログイン不要でURL推測できないか(/ja/mypage /ja/home /ja/console /ja/creator /ja/my /ja/top /ja/main を実測)</td><td class="no">7パターン全て404(推測での特定は不可能と確認)</td></tr>
+<tr><td>マイページボタンのhref静的解析</td><td class="no">/signup/line_auth(LINE公式OAuth誘導リンク。ログイン後のリダイレクト先はLINE側サーバーセッションが動的に決めるため、クライアント側の解析・推測では特定不可能な設計と確認)</td></tr>
 </table>
 
 <footer>
