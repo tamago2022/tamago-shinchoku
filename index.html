@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>進捗表</title>
-<link rel="manifest" href="manifest.webmanifest">
+<!-- manifest は読み終わってから足す（ホーム画面アプリは今までどおり使えるまま、
+     最初の表示の通信には混ぜない。manifest はアイコンまで引っ張って load を遅らせる） -->
 <style>
 /* 余白・寸法に % を使わない（横長のとき上が詰まる事故の原因）。すべて px / rem。 */
 :root{
@@ -195,6 +196,13 @@ $("reload").addEventListener("click", function(){
 });
 // 自動更新はしない（ページごと読み直していたのが、見ている途中で位置がずれる原因だった）
 load(false);
+
+// ホーム画面アプリ用の manifest は、最初の表示が終わってから足す
+window.addEventListener("load", function(){
+  var l = document.createElement("link");
+  l.rel = "manifest"; l.href = "manifest.webmanifest";
+  document.head.appendChild(l);
+});
 </script>
 </body>
 </html>
