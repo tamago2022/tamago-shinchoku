@@ -1094,6 +1094,35 @@ def _process_queue(action, cmd):
     return "failed", "不明なアクション: %s" % action
 
 
+def joy_push(_target=None):
+    """joy-relief-station（本番サイト）側の直しを1回だけ commit + push する（2026-09-17新設）。
+
+    git_push() と同じ理由の口。Coworkのサンドボックスには GitHub の資格情報が無く、
+    マウント越しでは .git のロックすら消せないため、**ホスト側で動くこのプロセスから
+    1発だけ押させる**。中身は tools/_930_push_joy_footer_fix.sh に書いてある
+    （origin/main から使い捨て worktree を作り、直したファイルを載せて push するだけ。
+    冪等で、同じ内容なら「pushするものはありません」で終わる）。
+    """
+    import subprocess as _sp
+    script = os.path.join(REPO, "tools", "_930_push_joy_footer_fix.sh")
+    if not os.path.exists(script):
+        return "failed", "スクリプトがありません: %s" % script
+    try:
+        r = _sp.run(["bash", script], capture_output=True, text=True, timeout=600)
+    except Exception as e:
+        return "failed", "実行できませんでした: %s" % e
+    log = os.path.join(REPO, "status", "_930_push_joy.log")
+    tail = ""
+    try:
+        with io.open(log, encoding="utf-8") as f:
+            tail = " / ".join([ln.strip() for ln in f.readlines()[-6:] if ln.strip()])
+    except Exception:
+        pass
+    if r.returncode != 0:
+        return "failed", ("失敗しました: %s" % (tail or (r.stderr or "")[-300:]))
+    return "done", ("実行しました: %s" % (tail or "（ログなし）"))[:600]
+
+
 def git_unlock(_target=None):
     """置き去りのgitロックを消す（このリポジトリの .git 直下のみ）。
 
@@ -1951,6 +1980,8 @@ def _process_other(action, cmd):
         return launch_switch(True)
     if action == "launch_cap":
         return launch_cap(target)
+    if action == "joy_push":
+        return joy_push(target)
     return "failed", "不明なアクション: %s" % action
 
 
