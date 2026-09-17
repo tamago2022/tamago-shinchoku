@@ -1,0 +1,30 @@
+{
+  "n": 880,
+  "title": "現在地の紙(genzaichi.md) dead判定の解消",
+  "detectedAt": "2026-09-17T17:03:35+09:00",
+  "detected": {
+    "verdict": "dead",
+    "staleMinutes": 125.5
+  },
+  "rootCause": "5分便(tools/machine_status_push.sh)が13:19頃の実行で構文エラー(line 555)により異常終了。launchdジョブがStartInterval=300・KeepAlive無しの設定のため、異常終了後の状態からlaunchd側の次回起動が約210分間走らず、heartbeat.sh内のkickstart呼び出し(launchctl kickstart -k)も繰り返し試みられていたが復旧しなかった。genzaichi.md自体はheartbeat.sh相乗り更新でその間もalive寄りに保たれていたが、5分便停止の影響でmachine.json等の連動更新も止まっていた。",
+  "action": [
+    "tools/machine_status_push.sh を手動フォアグラウンド実行し、現行コードは構文エラーが無く正常動作することを確認(bash -n終了コード0)",
+    "/bin/launchctl kickstart -k gui/501/com.tamago.machine-status で本来のlaunchdジョブを強制再起動",
+    "failures_ledgerへ記録(F-20260917170957-quick)"
+  ],
+  "verification": {
+    "machine_json_updates": ["17:06:42", "17:08:58"],
+    "genzaichi_md_updates": ["17:00:06", "17:09:46"],
+    "shikumi_verdict_after": {
+      "key": "genzaichi_md",
+      "lastRanAt": "2026-09-17T17:09:46.280437+09:00",
+      "howMeasured": "現在0.2分更新なし",
+      "verdict": "alive"
+    },
+    "auto_push_continuity_commits": [
+      "3dfadaef2 status: Mac負荷 17:08",
+      "bee5aec04 status: Mac負荷 17:09",
+      "f1c83b386 status: Mac負荷 17:11"
+    ]
+  }
+}
