@@ -108,14 +108,34 @@ _WS_RE = re.compile(r"[\s　]+")
 
 
 def fetch_text(url, timeout=25):
-    """ページを実際に取得して、タグを落とした本文を返す。取れなければ None。"""
+    """ページを実際に取得して、タグを落とした本文を返す。取れなければ None。
+
+    2026-09-19：SecondHandSongs が素のurllibを 403 で弾き、**裏の取れている事実
+    （「Girl Talk」の作者 Neal Hefti / Bobby Troup・原曲1965年）が
+    「独立したもう1本が取れない」で落ちた**。門が厳しいのは正しいが、
+    取りに行き方が下手で落とすのは関所の失点なので、ブラウザと同じ頭で2回叩く。
+    """
+    heads = (
+        {"User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/127.0.0.0 Safari/537.36"),
+         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+         "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+         "Cache-Control": "no-cache"},
+        {"User-Agent": UA, "Accept-Language": "ja,en;q=0.8"},
+    )
+    raw = None
+    for h in heads:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=h),
+                                        timeout=timeout) as resp:
+                raw = resp.read(3_000_000)
+            break
+        except Exception:
+            continue
+    if raw is None:
+        return None
     try:
-        req = urllib.request.Request(url, headers={
-            "User-Agent": UA,
-            "Accept-Language": "ja,en;q=0.8",
-        })
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read(3_000_000)
         enc = "utf-8"
         m = re.search(rb'charset=["\']?([A-Za-z0-9_\-]+)', raw[:4000])
         if m:

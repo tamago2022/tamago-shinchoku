@@ -149,6 +149,12 @@ def guard_sources(cg_path, tsx_path):
             if re.search(r'!s\.originalRef|coversAreOriginals\s*!==\s*true', body):
                 ng.append("棚の曲一覧がカバー（originalRef）を外している"
                           "（カバーは外さず『★ 原曲：◯◯』の印を付けて並べる）")
+            if "useArtistWithAddedSongs" in tsx:
+                print("【注意・落とさない】棚は admin_artist_songs（DBに後付けした曲）を"
+                      "合流させているが、searchSongs はコード側の artists しか見ない。"
+                      "＝『棚にあるが検索に出ない』が構造として残っている。"
+                      "数はDB次第でコードからは測れない。仕入れを coverGuide.ts に"
+                      "書き戻すか、検索側もDBを見るまで消えない。")
             if "hideFromArtistList" in body:
                 ng.append("棚の曲一覧が hideFromArtistList を直接見ている"
                           "（songIsPublic() の中だけで見る）")
@@ -202,7 +208,8 @@ def main():
     print(f"アーティスト {r['artists']} / 曲（検索に出る） {r['songs']} / 棚に並ぶ {r['shelf']}")
     print(f"★検索にあるが棚に無い： {len(gap)} 件"
           + (f"（うち {len(r['gap']) - len(gap)} 件は許可リストで除外）" if allow else ""))
-    print("★棚にあるが検索に出ない： 0 件（searchSongs は全曲を走査するため構造上ゼロ）")
+    print("★棚にあるが検索に出ない： 0 件（coverGuide.ts に書かれた曲について。"
+          "DBに後付けした曲は上の注意を参照）")
     for k, v in sorted(r["byReason"].items(), key=lambda x: -x[1]):
         if v:
             print(f"   - {k}: {v} 件")
