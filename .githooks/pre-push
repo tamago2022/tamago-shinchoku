@@ -21,6 +21,9 @@ ZERO="0000000000000000000000000000000000000000"
 FAIL=0
 CHECKED=0
 
+# pushのref一覧はstdinから1回しか読めない。関所を2段かけるので先に受け取っておく。
+REFS="$(cat)"
+
 while read -r local_ref local_sha remote_ref remote_sha; do
   # ブランチ削除pushはチェック対象外
   if [ "$local_sha" = "$ZERO" ]; then
@@ -59,7 +62,44 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   done <<EOF
 $files
 EOF
-done
+done <<REFSEOF
+$REFS
+REFSEOF
+
+# ------------------------------------------------------------------
+# 関所その2（案件#946・2026-09-19）：曲ページに「裏の取れていない断定」を通さない。
+#
+# きっかけ：akiko「Do You Know?」のコピーに「2002年に発表されたオリジナル・バラード」。
+# 2002年は裏が取れたが、「オリジナル」は作詞作曲クレジットが無いまま書かれていた。
+# 事実には出典。取れないなら書かない。これをpushの手前に強制する。
+#
+# 判定は tools/sekisho/gate_fact_source.py。既存分は status/fact_source_baseline.json に
+# 「借金」として記録済みで、pushは止めない。新しく増えた未出典の断定だけを止める。
+# ------------------------------------------------------------------
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO" ] && continue
+  if [ "$remote_sha" = "$ZERO" ]; then
+    base="$(git hash-object -t tree /dev/null)"
+  else
+    base="$remote_sha"
+  fi
+  ffiles="$(git diff --name-only --diff-filter=ACM "$base" "$local_sha" 2>/dev/null | grep -E 'coverGuide\.ts$' || true)"
+  [ -z "$ffiles" ] && continue
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    tmpf="$(mktemp /tmp/sekisho-fact.XXXXXX.ts)"
+    git show "$local_sha:$f" > "$tmpf" 2>/dev/null || { rm -f "$tmpf"; continue; }
+    echo "🚧 関所(出典)チェック: $f"
+    if ! python3 "$REPO_ROOT/tools/sekisho/gate_fact_source.py" "$tmpf" --strict; then
+      FAIL=1
+    fi
+    rm -f "$tmpf"
+  done <<EOF2
+$ffiles
+EOF2
+done <<REFSEOF2
+$REFS
+REFSEOF2
 
 if [ "$FAIL" != "0" ]; then
   echo ""
