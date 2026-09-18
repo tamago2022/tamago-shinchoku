@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>カード書式 一覧（現物・実寸）</title>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --sub:#6b645c;
+    --line:#ddd6cc;
+    --paper:#f6f3ec;
+    --card:#fffdf8;
+    --muted:#ece7dd;
+    --border:#ddd6cc;
+    --ok:#2f6f4f;
+    --ng:#b0392c;
+    --warn:#a8741a;
+    --soft:0 1px 3px rgba(0,0,0,.08);
+    --lift:0 8px 24px rgba(0,0,0,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    font-size:13px;line-height:1.7;-webkit-font-smoothing:antialiased;
+  }
+  header{padding:28px 24px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+  h1{font-size:19px;margin:0 0 6px;letter-spacing:.04em}
+  header p{margin:0 0 4px;color:var(--sub);font-size:12px;max-width:62em}
+  .summary{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .stat{border:1px solid var(--line);background:var(--paper);padding:6px 12px;border-radius:3px;font-size:12px}
+  .stat b{font-size:15px;font-variant-numeric:tabular-nums}
+  main{padding:0 24px 90px}
+  section{margin-top:34px;padding-top:20px;border-top:1px solid var(--line)}
+  section:first-child{border-top:0}
+  h2{font-size:15px;margin:0 0 3px;letter-spacing:.04em}
+  h2 .tag{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:var(--ink);color:var(--paper);padding:1px 8px;border-radius:2px;
+    margin-right:8px;font-size:12px;
+  }
+  h2 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
+  .where{color:var(--sub);font-size:11.5px;margin:0 0 14px}
+  .where code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;background:var(--muted);padding:0 4px;border-radius:2px}
+  .row{display:flex;gap:26px;align-items:flex-start;overflow-x:auto;padding:4px 0 10px}
+  .pane{flex:0 0 auto}
+  .pane-h{font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;margin-bottom:6px}
+  .frame{background:var(--paper);border:1px dashed #bdb3a4;padding:12px;border-radius:4px}
+  .w375{width:375px}
+  .wdesk{width:700px}
+  .wdesk-s{width:460px}
+
+  /* ---- 共通ダミーサムネ ---- */
+  .th{
+    position:relative;width:100%;overflow:hidden;background:
+      repeating-linear-gradient(135deg,#cfc7ba 0 10px,#c4bbad 10px 20px);
+  }
+  .th .rt{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+    color:rgba(0,0,0,.42);letter-spacing:.1em;
+  }
+  .v169{aspect-ratio:16/9}
+  .v11{aspect-ratio:1/1}
+
+  /* ---- 管理ボタン（実物の見た目に寄せたダミー） ---- */
+  .adm{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:6.5%;pointer-events:none}
+  .adm .grp{display:flex;align-items:center;gap:6px}
+  .ibtn{
+    width:26px;height:26px;border-radius:999px;background:rgba(0,0,0,.45);
+    color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;
+    backdrop-filter:blur(2px);
+  }
+  .tbtn{
+    font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid rgba(28,26,23,.5);
+    background:rgba(255,253,248,.9);color:var(--ink);box-shadow:var(--soft);white-space:nowrap;
+  }
+  .badge-chip{
+    font-size:9px;letter-spacing:.14em;color:#fff;background:rgba(0,0,0,.62);
+    padding:2px 7px;border-radius:999px;
+  }
+  .badge-img{
+    position:absolute;left:6.5%;top:6.5%;height:28%;aspect-ratio:1/1;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#3a3530,#15120f);
+    border:2px solid #c8a23c;box-shadow:0 2px 5px rgba(0,0,0,.35);opacity:.92;
+  }
+
+  /* ================= A-1 VideoCard ================= */
+  .vc{border-radius:24px;background:var(--card);box-shadow:var(--lift);overflow:hidden}
+  .vc .th{border-radius:24px 24px 0 0}
+  .vc .play{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.9);
+    display:flex;align-items:center;justify-content:center;box-shadow:var(--lift);
+    font-size:20px;color:var(--ink);padding-left:4px;
+  }
+  .desk .vc .play{width:80px;height:80px;font-size:24px}
+  .vc .toprow{position:absolute;left:12px;top:12px;right:12px;display:flex;justify-content:space-between;gap:8px}
+  .vc .corner{position:absolute;right:16px;bottom:12px;font-size:10px;letter-spacing:.3em;color:rgba(255,255,255,.85)}
+  .vc .body{padding:20px}
+  .desk .vc .body{padding:28px}
+  .vc .ttl{font-family:"Hiragino Mincho ProN",serif;font-size:20px;line-height:1.35;margin:0}
+  .desk .vc .ttl{font-size:24px}
+  .vc .cpy{margin:8px 0 0;font-size:14px;color:var(--sub);line-height:1.8}
+  .desk .vc .cpy{font-size:16px}
+  .vc .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;border-radius:999px;
+    border:1px solid var(--border);background:var(--paper);color:var(--ink);
+    padding:6px 14px;font-size:12px;font-weight:500;
+  }
+  .pill.ghost{border-color:var(--border);color:var(--sub);padding:4px 12px;font-size:11px}
+  .vc .head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .vc .sharebox{display:flex;gap:6px;flex:0 0 auto}
+
+  /* ================= A-2/A-3 16:9 ミニ（NextUpCard / AlsoRecommendedCards） ================= */
+  .ac{border-radius:24px 24px 0 0;overflow:hidden;background:var(--muted)}
+  .acwrap{width:100%}
+  .acwrap .cap{padding:10px 2px 0}
+  .acwrap .cap .t{font-family:"Hiragino Mincho ProN",serif;font-size:14px;line-height:1.4}
+  .acwrap .cap .s{font-size:11px;color:var(--sub);margin-top:3px}
+
+  /* ================= B ShelfCardView ================= */
+  .sc{
+    border-radius:16px;padding:12px;background:rgba(255,253,248,.6);
+    box-shadow:var(--soft);
+  }
+  .sc .th{border-radius:12px;margin-bottom:12px}
+  .sc .play{
+    position:absolute;right:8px;bottom:8px;width:44px;height:44px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:15px;padding-left:2px;box-shadow:var(--lift);
+  }
+  .sc .ttl{font-family:"Hiragino Mincho ProN",serif;font-size:14px;line-height:1.3;margin:0;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .desk .sc .ttl{font-size:16px}
+  .sc .cpy{font-size:12px;color:var(--sub);margin:4px 0 0;line-height:1.7;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+  .sc .dsc{font-size:11px;color:rgba(107,100,92,.75);margin:8px 0 0;line-height:1.7;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+
+  /* ================= C 関連（FramedThumb） ================= */
+  .rc{border-radius:12px;border:1px solid var(--border);background:var(--card);overflow:hidden}
+  .rc .body{padding:12px}
+  .rc .ttl{font-size:13px;line-height:1.4;margin:0;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .rc .art{font-size:11px;color:var(--sub);margin:3px 0 0}
+  .rc .cpy{font-size:11px;color:var(--sub);margin:6px 0 0;line-height:1.7;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .rc .cta{font-size:11px;margin:9px 0 0;color:var(--ink);font-weight:600}
+
+  .shelfrow{display:flex;gap:12px}
+
+  /* ---- 事実リスト ---- */
+  ul.facts{margin:12px 0 0;padding:0;list-style:none;font-size:12px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2px 24px}
+  ul.facts li{padding:2px 0;border-bottom:1px dotted #e5ded3}
+  ul.facts li b{font-weight:600;display:inline-block;min-width:9.5em;color:var(--sub)}
+  .x{color:var(--ng);font-weight:700}
+  .o{color:var(--ok);font-weight:700}
+  .q{color:var(--warn);font-weight:700}
+
+  /* ---- 比較表 ---- */
+  table{border-collapse:collapse;width:100%;font-size:11.5px;margin-top:10px}
+  th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  thead th{background:var(--ink);color:var(--paper);font-weight:600;font-size:11px;letter-spacing:.03em}
+  tbody th{background:var(--card);font-weight:600;width:11em}
+  td.bad{background:#f7e2de}
+  td.good{background:#e2efe6}
+  td.unk{background:#efeae0;color:var(--sub)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;margin-top:10px;color:var(--sub)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:13px;height:13px;border:1px solid var(--line);display:inline-block}
+  .note{font-size:11.5px;color:var(--sub);margin-top:14px;max-width:62em}
+  .rec{border:1px solid var(--line);background:var(--card);padding:12px 14px;border-radius:4px;margin-top:14px;font-size:12.5px}
+  ol.list{font-size:12px;color:var(--sub);margin:8px 0 0;padding-left:1.3em;columns:2;column-gap:32px}
+  ol.list li{padding:1px 0;break-inside:avoid}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>カード書式 一覧（現物・実寸）</h1>
+  <p>サイト内でカードを描いている書式を、実物と同じ寸法・同じ文字サイズで並べた。上から下に眺めるだけで違いが分かるようにしてある。統一案は入れていない。</p>
+  <p>出典：<code>src/lib/designRules.ts</code>（見た目の数字の正本）／<code>src/routes/design-check.tsx</code>（CI実測用の見本）／<code>VideoCard.tsx</code>／<code>ShelfCardView.tsx</code>／<code>CardBadges.tsx</code>。このフォルダにある実コードだけを根拠にした。</p>
+  <div class="summary">
+    <span class="stat">正本の分類 <b>3</b> 種（A 主役／B 棚／C 関連）</span>
+    <span class="stat">正本が挙げる実装 <b>7</b> 件</span>
+    <span class="stat">現物を再現した書式 <b>5</b> 枚</span>
+    <span class="stat">揃っていない項目 <b style="color:#b0392c">11</b> 件</span>
+    <span class="stat">正本に載っていない描画箇所 <b style="color:#b0392c">12</b> ファイル</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ A-1 VideoCard ============ -->
+<section>
+  <h2><span class="tag">A-1</span>VideoCard<small>主役・曲ページのメイン動画カード</small></h2>
+  <p class="where">出典 <code>src/components/VideoCard.tsx</code>（全文あり・1115行）　使われている場所：曲ページ（cover-guide）／ROOMページ（room.card.$slug ほか）／watch</p>
+  <div class="row">
+    <div class="pane mob">
+      <div class="pane-h">375px（iPhone）</div>
+      <div class="frame w375">
+        <div class="vc">
+          <div class="th v169">
+            <div class="rt">16 : 9</div>
+            <div class="badge-img"></div>
+            <div class="toprow"><span class="badge-chip">タグ</span><span class="badge-chip" style="background:#b0392c">LIVE</span></div>
+            <div class="play">▶</div>
+            <div class="corner">GOKIGEN</div>
+            <div class="adm"><div class="grp"><div class="ibtn">🏷️</div><div class="ibtn">…</div></div><div class="grp"><span class="badge-chip">特集</span></div></div>
+          </div>
+          <div class="body">
+            <div class="head">
+              <h3 class="ttl">ここに曲のタイトルが入る。折り返しても切らない</h3>
+              <div class="sharebox"><div class="ibtn" style="background:rgba(0,0,0,.2);color:#1c1a17">↗</div></div>
+            </div>
+            <p class="cpy">ここにコピーが入る。行数の制限はかかっていないので、長いと長いまま全部出る。</p>
+            <div class="pills">
+              <span class="pill">Spotify</span><span class="pill">Apple Music</span><span class="pill">YouTube Music</span>
+              <span class="pill ghost">YouTubeでさらに探す</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pane desk">
+      <div class="pane-h">デスクトップ</div>
+      <div class="frame wdesk">
+        <div class="vc">
+          <div class="th v169">
+            <div class="rt">16 : 9</div>
+            <div class="badge-img"></div>
+            <div class="toprow"><span class="badge-chip">タグ</span><span class="badge-chip" style="background:#b0392c">LIVE</span></div>
+            <div class="play">▶</div>
+            <div class="corner">GOKIGEN</div>
+            <div class="adm"><div class="grp"><div class="ibtn">🏷️</div><div class="ibtn">…</div></div><div class="grp"><span class="badge-chip">特集</span></div></div>
+          </div>
+          <div class="body">
+            <div class="head">
+              <h3 class="ttl">ここに曲のタイトルが入る。折り返しても切らない</h3>
+              <div class="sharebox"><div class="ibtn" style="background:rgba(0,0,0,.2);color:#1c1a17">↗</div></div>
+            </div>
+            <p class="cpy">ここにコピーが入る。行数の制限はかかっていないので、長いと長いまま全部出る。</p>
+            <div class="pills">
+              <span class="pill">Spotify</span><span class="pill">Apple Music</span><span class="pill">YouTube Music</span>
+              <span class="pill ghost">YouTubeでさらに探す</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><b>サムネ比率</b>16:9（<code>aspect-video</code>）</li>
+    <li><b>カード枠</b>あり／<code>bg-card</code> 不透明・<code>shadow-lift</code> <span class="x">▲</span></li>
+    <li><b>カードの角丸</b>24px（<code>rounded-3xl</code>） <span class="x">▲</span></li>
+    <li><b>サムネの角丸</b>上2角だけ 24px（<code>rounded-t-3xl</code>） <span class="x">▲</span></li>
+    <li><b>内側の余白</b>20px ／ デスクトップ 28px <span class="x">▲</span></li>
+    <li><b>見出し</b><code>h2</code>・20px／24px・明朝・行数制限なし <span class="x">▲</span></li>
+    <li><b>アーティスト名</b>別行では出ない（<code>artist</code> はストリーミング検索用） <span class="x">▲</span></li>
+    <li><b>コピー</b>1段・14px／16px・行数制限なし <span class="x">▲</span></li>
+    <li><b>「この1本をみる →」</b>なし <span class="x">▲</span></li>
+    <li><b>再生ボタン</b>中央・64px／80px・白丸 <span class="x">▲</span></li>
+    <li><b>ジャンルラベル</b>左上に <code>badge</code> 文字チップ（10px）</li>
+    <li><b>バッジ</b>CardBadges（共通窓口） <span class="o">●</span></li>
+    <li><b>管理ボタン</b>CardActionCluster＋「棚編集」は <em>shelfTarget がある時だけ</em> <span class="x">▲</span></li>
+    <li><b>その他</b>共有ボタン・ストリーミング3種・サムネ一覧を内蔵</li>
+  </ul>
+</section>
+
+<!-- ============ A-2 NextUpCard ============ -->
+<section>
+  <h2><span class="tag">A-2</span>NextUpCard<small>次はこの1本（NextUpGrid で横並び）</small></h2>
+  <p class="where">出典 <code>src/routes/design-check.tsx</code> 見本3・見本4A（実物と同一クラス <code>aspect-video w-full rounded-t-3xl bg-muted</code>）　<span class="q">※ NextUpCard.tsx 本体はこのフォルダに無い。下の見出し・小見出しの体裁は design-check の props（title / subtitle）から起こした再現</span></p>
+  <div class="row">
+    <div class="pane mob">
+      <div class="pane-h">375px（iPhone）</div>
+      <div class="frame w375">
+        <div class="acwrap" style="width:343px">
+          <div class="ac th v169"><div class="rt">16 : 9</div><div class="badge-img"></div></div>
+          <div class="cap">
+            <div class="t">とても長いタイトルをここに置いて折り返しの挙動を試す長文タイトル例</div>
+            <div class="s">小見出し（subtitle）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pane desk">
+      <div class="pane-h">デスクトップ（NextUpGrid で3枚並ぶ）</div>
+      <div class="frame wdesk">
+        <div style="display:flex;gap:16px">
+          <div class="acwrap" style="width:212px">
+            <div class="ac th v169"><div class="rt">16 : 9</div></div>
+            <div class="cap"><div class="t">あ</div><div class="s">小見出し</div></div>
+          </div>
+          <div class="acwrap" style="width:212px">
+            <div class="ac th v169"><div class="rt">16 : 9</div><div class="badge-img"></div></div>
+            <div class="cap"><div class="t">とても長いタイトルをここに置いて折り返しの挙動を試す長文タイトル例</div><div class="s">小見出し</div></div>
+          </div>
+          <div class="acwrap" style="width:212px">
+            <div class="ac th v169"><div class="rt">16 : 9</div></div>
+            <div class="cap"><div class="t">い</div><div class="s">小見出し</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><b>サムネ比率</b>16:9（A＝主役と同一）</li>
+    <li><b>カード枠</b><span class="q">未確認</span>（design-check では枠なしで置かれている）</li>
+    <li><b>サムネの角丸</b>上2角 24px（<code>rounded-t-3xl</code>）</li>
+    <li><b>中に出る要素</b>title ／ subtitle ／ youtubeId ／ onClick の4つだけ</li>
+    <li><b>アーティスト名</b>専用の欄なし（subtitle に混ぜる作り） <span class="x">▲</span></li>
+    <li><b>コピー</b>専用の欄なし <span class="x">▲</span></li>
+    <li><b>「この1本をみる →」</b><span class="q">未確認</span></li>
+    <li><b>バッジ</b>CardBadges（<code>NextUpCard.tsx:82</code>） <span class="o">●</span></li>
+    <li><b>管理ボタン</b><span class="q">未確認</span></li>
+    <li><b>CIの検査</b>横並び3枚の高さのずれ 2px まで（<code>rowHeightTolerancePx</code>）</li>
+    <li><b>呼び名の訂正</b>旧称「半分」は廃止、実装は幅いっぱいなので A に統合済み（897番）</li>
+  </ul>
+</section>
+
+<!-- ============ A-3 AlsoRecommendedCards ============ -->
+<section>
+  <h2><span class="tag">A-3</span>AlsoRecommendedCards<small>こちらもいかがでしょう</small></h2>
+  <p class="where">出典 <code>src/lib/designRules.ts</code> <code>card.variants.A.usedIn</code>（<code>aspect-video w-full</code>・幅いっぱい）　<span class="q">※ 本体はこのフォルダに無い。比率と幅ルールだけが確定事実</span></p>
+  <div class="row">
+    <div class="pane mob">
+      <div class="pane-h">375px（iPhone）</div>
+      <div class="frame w375">
+        <div class="acwrap" style="width:343px">
+          <div class="ac th v169"><div class="rt">16 : 9</div><div class="badge-img"></div></div>
+          <div class="cap"><div class="t">こちらもいかがでしょう（見出しの体裁は未確認）</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="pane desk">
+      <div class="pane-h">デスクトップ</div>
+      <div class="frame wdesk-s">
+        <div class="acwrap" style="width:436px">
+          <div class="ac th v169"><div class="rt">16 : 9</div><div class="badge-img"></div></div>
+          <div class="cap"><div class="t">こちらもいかがでしょう（見出しの体裁は未確認）</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><b>サムネ比率</b>16:9</li>
+    <li><b>幅ルール</b>full（カード幅いっぱい）</li>
+    <li><b>それ以外</b><span class="q">未確認</span>（枠・角丸・見出し・コピー・CTA・管理ボタン）</li>
+  </ul>
+</section>
+
+<!-- ============ B ShelfCardView ============ -->
+<section>
+  <h2><span class="tag">B</span>ShelfCardView<small>棚・世界ページ・アーティストページ・隠し棚</small></h2>
+  <p class="where">出典 <code>src/components/ShelfCardView.tsx</code>（全文あり・551行）　幅は 160px（〜640px）／180px（sm）／200px（md〜）の固定ステップ</p>
+  <div class="row">
+    <div class="pane mob">
+      <div class="pane-h">375px（iPhone）／幅160px</div>
+      <div class="frame w375">
+        <div class="shelfrow">
+          <div class="sc" style="width:160px">
+            <div class="th v11"><div class="rt">1 : 1</div><div class="badge-img"></div>
+              <div class="play">▶</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🗑</div><div class="ibtn">🏷️</div><div class="ibtn">…</div><span class="tbtn">棚編集</span></div></div>
+            </div>
+            <h3 class="ttl">曲名 / アーティスト名（2行で切る）</h3>
+            <p class="cpy">ここに whisper が入る。3行で切られる。3行で切られる。3行で切られる。</p>
+            <p class="dsc">description があるカードだけ、さらにもう1段この小さい文字が出る。</p>
+          </div>
+          <div class="sc" style="width:160px">
+            <div class="th v11"><div class="rt">1 : 1</div>
+              <div class="play">▶</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🗑</div><div class="ibtn">🏷️</div><div class="ibtn">…</div><span class="tbtn">棚編集</span></div></div>
+            </div>
+            <h3 class="ttl">短いタイトル</h3>
+            <p class="cpy">コピー1行。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pane desk">
+      <div class="pane-h">デスクトップ／幅200px</div>
+      <div class="frame wdesk">
+        <div class="shelfrow">
+          <div class="sc" style="width:200px">
+            <div class="th v11"><div class="rt">1 : 1</div><div class="badge-img"></div>
+              <div class="play">▶</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🗑</div><div class="ibtn">🏷️</div><div class="ibtn">…</div><span class="tbtn">棚編集</span></div><div class="grp"><span class="badge-chip">特集</span></div></div>
+            </div>
+            <h3 class="ttl">曲名 / アーティスト名（2行で切る）</h3>
+            <p class="cpy">ここに whisper が入る。3行で切られる。3行で切られる。3行で切られる。</p>
+            <p class="dsc">description があるカードだけ、さらにもう1段この小さい文字が出る。</p>
+          </div>
+          <div class="sc" style="width:200px">
+            <div class="th v11"><div class="rt">1 : 1</div>
+              <div class="play">▶</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🗑</div><div class="ibtn">🏷️</div><div class="ibtn">…</div><span class="tbtn">棚編集</span></div></div>
+            </div>
+            <h3 class="ttl">短いタイトル</h3>
+            <p class="cpy">コピー1行。</p>
+          </div>
+          <div class="sc" style="width:200px">
+            <div class="th v11" style="background:linear-gradient(140deg,#d8b48c,#8e5a3c)">
+              <div class="rt" style="color:rgba(255,255,255,.7)">1 : 1（写真なし）</div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px">🥚</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🗑</div><div class="ibtn">🏷️</div><div class="ibtn">…</div><span class="tbtn">棚編集</span></div></div>
+            </div>
+            <h3 class="ttl">写真が無いカードは絵文字＋低ポリのタイル</h3>
+            <p class="cpy">コピー。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><b>サムネ比率</b>1:1（<code>aspect-square</code>） <span class="x">▲ ここだけ正方形</span></li>
+    <li><b>カード枠</b>あり／<code>bg-card/60</code> <em>半透明</em>・<code>shadow-soft</code> <span class="x">▲</span></li>
+    <li><b>カードの角丸</b>16px（<code>rounded-2xl</code>） <span class="x">▲</span></li>
+    <li><b>サムネの角丸</b>4角とも 12px（<code>rounded-xl</code>） <span class="x">▲</span></li>
+    <li><b>内側の余白</b>12px（<code>p-3</code>・スマホもデスクトップも同じ） <span class="x">▲</span></li>
+    <li><b>見出し</b><code>h3</code>・14px／16px・明朝・<em>2行で切る</em> <span class="x">▲</span></li>
+    <li><b>アーティスト名</b>別行ではなく「曲名 / アーティスト名」をタイトルに焼き込む <span class="x">▲</span></li>
+    <li><b>コピー</b><em>2段</em>（whisper 12px／3行 ＋ description 11px／3行） <span class="x">▲ ここだけ2段</span></li>
+    <li><b>「この1本をみる →」</b>なし <span class="x">▲</span></li>
+    <li><b>再生ボタン</b>右下・44px・黒丸（<code>bg-black/55</code>） <span class="x">▲</span></li>
+    <li><b>ジャンルラベル</b>コード上は無し。<span class="q">スクショの「音楽」は CardBadges 右下の Magazine 文字チップの可能性（未確定）</span></li>
+    <li><b>バッジ</b>CardBadges（共通窓口） <span class="o">●</span></li>
+    <li><b>管理ボタン</b>CardActionCluster ＋「棚編集」を <em>常に</em> 出す → 実画面で4個 <span class="x">▲</span></li>
+    <li><b>その他</b>「近日入荷」の覆い、写真が無い時は低ポリタイル＋絵文字</li>
+  </ul>
+</section>
+
+<!-- ============ C 関連 ============ -->
+<section>
+  <h2><span class="tag">C</span>RelatedCardsRow / RelatedArtistsShelf / RelatedProjectsShelf<small>原曲・名カバー・関連アーティストの横スクロール</small></h2>
+  <p class="where">出典 <code>src/routes/design-check.tsx</code> 見本4C（実物の共通部品 <code>FramedThumb</code> をそのまま使った見本）＋<code>designRules.ts</code> <code>card.variants.C</code>。枠のクラスは <code>rounded-xl border border-border bg-card overflow-hidden</code>、中身の余白 12px、見出し2行で切る。<span class="q">※「この1本をみる →」は実画面のスクショで確認した要素。3部品のどれが出しているかはこのフォルダのコードでは特定できていない</span></p>
+  <div class="row">
+    <div class="pane mob">
+      <div class="pane-h">375px（iPhone・横スクロール）</div>
+      <div class="frame w375" style="overflow-x:auto">
+        <div class="shelfrow">
+          <div class="rc" style="width:220px;flex:0 0 auto">
+            <div class="th v169"><div class="rt">16 : 9</div><div class="badge-img"></div>
+              <div class="adm"><div class="grp"><div class="ibtn">🏷️</div><div class="ibtn">…</div></div></div>
+            </div>
+            <div class="body">
+              <h3 class="ttl">少し長めのタイトルで折り返しを見る関連カード見本です</h3>
+              <div class="art">アーティスト名</div>
+              <p class="cpy">ここにコピーが入る。2行で切る。</p>
+              <div class="cta">この1本をみる →</div>
+            </div>
+          </div>
+          <div class="rc" style="width:220px;flex:0 0 auto">
+            <div class="th v169"><div class="rt">16 : 9</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🏷️</div><div class="ibtn">…</div></div></div>
+            </div>
+            <div class="body">
+              <h3 class="ttl">関連</h3>
+              <div class="art">アーティスト名</div>
+              <p class="cpy">コピー。</p>
+              <div class="cta">この1本をみる →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pane desk">
+      <div class="pane-h">デスクトップ（横スクロール）</div>
+      <div class="frame wdesk" style="overflow-x:auto">
+        <div class="shelfrow">
+          <div class="rc" style="width:220px;flex:0 0 auto">
+            <div class="th v169"><div class="rt">16 : 9</div><div class="badge-img"></div>
+              <div class="adm"><div class="grp"><div class="ibtn">🏷️</div><div class="ibtn">…</div></div></div>
+            </div>
+            <div class="body">
+              <h3 class="ttl">少し長めのタイトルで折り返しを見る関連カード見本です</h3>
+              <div class="art">アーティスト名</div>
+              <p class="cpy">ここにコピーが入る。2行で切る。</p>
+              <div class="cta">この1本をみる →</div>
+            </div>
+          </div>
+          <div class="rc" style="width:220px;flex:0 0 auto">
+            <div class="th v169"><div class="rt">16 : 9</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🏷️</div><div class="ibtn">…</div></div></div>
+            </div>
+            <div class="body">
+              <h3 class="ttl">関連カード見本</h3>
+              <div class="art">アーティスト名</div>
+              <p class="cpy">コピー。</p>
+              <div class="cta">この1本をみる →</div>
+            </div>
+          </div>
+          <div class="rc" style="width:220px;flex:0 0 auto">
+            <div class="th v169"><div class="rt">16 : 9</div>
+              <div class="adm"><div class="grp"><div class="ibtn">🏷️</div><div class="ibtn">…</div></div></div>
+            </div>
+            <div class="body">
+              <h3 class="ttl">関連</h3>
+              <div class="art">アーティスト名</div>
+              <p class="cpy">コピー。</p>
+              <div class="cta">この1本をみる →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><b>サムネ比率</b>16:9（<code>FramedThumb</code>）</li>
+    <li><b>カード枠</b>あり／<code>bg-card</code> 不透明＋<em>1px の罫線</em>（他の2書式に罫線は無い） <span class="x">▲</span></li>
+    <li><b>カードの角丸</b>12px（<code>rounded-xl</code>） <span class="x">▲</span></li>
+    <li><b>サムネの角丸</b>カード側の <code>overflow-hidden</code> で上2角だけ 12px <span class="x">▲</span></li>
+    <li><b>内側の余白</b>12px <span class="x">▲</span></li>
+    <li><b>見出し</b>13px・ゴシック・2行で切る <span class="x">▲</span></li>
+    <li><b>アーティスト名</b>別行で出る（スクショ実測） <span class="x">▲</span></li>
+    <li><b>コピー</b>1段・11px・2行で切る <span class="x">▲</span></li>
+    <li><b>「この1本をみる →」</b><em>あり</em>（この書式だけ） <span class="x">▲</span></li>
+    <li><b>再生ボタン</b>なし（カードごと遷移） <span class="x">▲</span></li>
+    <li><b>バッジ</b>CardBadges（<code>RelatedCardsRow.tsx:447</code>） <span class="o">●</span></li>
+    <li><b>管理ボタン</b>実画面で2個（🏷️・…）。「棚編集」なし <span class="x">▲</span></li>
+    <li><b>幅ルール</b>scroll（横スクロール・見本は 220px 固定）</li>
+  </ul>
+</section>
+
+<!-- ============ 比較表 ============ -->
+<section>
+  <h2>比較表 — どこが揃っていないか</h2>
+  <p class="where">縦＝カード書式、横＝項目。赤＝書式ごとに違う、緑＝全部揃っている、灰＝このフォルダのコードでは確認できない。</p>
+  <table>
+    <thead>
+      <tr>
+        <th>項目</th><th>A-1 VideoCard</th><th>A-2 NextUpCard</th><th>A-3 AlsoRecommended</th><th>B ShelfCardView</th><th>C 関連3部品</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><th>① サムネ比率</th>
+        <td class="bad">16:9</td><td class="bad">16:9</td><td class="bad">16:9</td><td class="bad">1:1</td><td class="bad">16:9</td></tr>
+      <tr><th>② カード枠</th>
+        <td class="bad">不透明・影あり・罫線なし</td><td class="unk">未確認</td><td class="unk">未確認</td><td class="bad">半透明・影よわめ・罫線なし</td><td class="bad">不透明・罫線1px</td></tr>
+      <tr><th>③ カードの角丸</th>
+        <td class="bad">24px</td><td class="unk">未確認</td><td class="unk">未確認</td><td class="bad">16px</td><td class="bad">12px</td></tr>
+      <tr><th>④ サムネの角丸</th>
+        <td class="bad">上2角 24px</td><td class="bad">上2角 24px</td><td class="unk">未確認</td><td class="bad">4角 12px</td><td class="bad">上2角 12px</td></tr>
+      <tr><th>⑤ 内側の余白</th>
+        <td class="bad">20 / 28px</td><td class="unk">未確認</td><td class="unk">未確認</td><td class="bad">12px 固定</td><td class="bad">12px</td></tr>
+      <tr><th>⑥ 見出し</th>
+        <td class="bad">h2・20/24px・明朝・無制限</td><td class="bad">14px・明朝</td><td class="unk">未確認</td><td class="bad">h3・14/16px・明朝・2行</td><td class="bad">13px・ゴシック・2行</td></tr>
+      <tr><th>⑦ アーティスト名</th>
+        <td class="bad">別行なし</td><td class="bad">subtitle に混ぜる</td><td class="unk">未確認</td><td class="bad">タイトルに「曲名 / 名前」で焼き込む</td><td class="bad">別行で出す</td></tr>
+      <tr><th>⑧ コピー</th>
+        <td class="bad">1段・行数制限なし</td><td class="bad">欄なし</td><td class="unk">未確認</td><td class="bad">2段（3行＋3行）</td><td class="bad">1段・2行</td></tr>
+      <tr><th>⑨「この1本をみる →」</th>
+        <td class="bad">なし</td><td class="unk">未確認</td><td class="unk">未確認</td><td class="bad">なし</td><td class="bad">あり</td></tr>
+      <tr><th>⑩ 再生ボタン</th>
+        <td class="bad">中央・64/80px・白</td><td class="unk">未確認</td><td class="unk">未確認</td><td class="bad">右下・44px・黒</td><td class="bad">なし</td></tr>
+      <tr><th>⑪ 管理ボタン</th>
+        <td class="bad">2〜3個（棚編集は条件つき）</td><td class="unk">未確認</td><td class="unk">未確認</td><td class="bad">4個（棚編集つき）</td><td class="bad">2個</td></tr>
+      <tr><th>⑫ バッジ</th>
+        <td class="good">CardBadges</td><td class="good">CardBadges</td><td class="unk">未確認</td><td class="good">CardBadges</td><td class="good">CardBadges</td></tr>
+      <tr><th>⑬ ジャンルラベル</th>
+        <td class="unk">左上 文字チップ</td><td class="unk">未確認</td><td class="unk">未確認</td><td class="unk">コード上は無し</td><td class="unk">未確認</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    <span><i class="sw" style="background:#f7e2de"></i>書式ごとに違う（11項目）</span>
+    <span><i class="sw" style="background:#e2efe6"></i>全部揃っている（1項目）</span>
+    <span><i class="sw" style="background:#efeae0"></i>このフォルダのコードでは確認できない</span>
+  </div>
+</section>
+
+<!-- ============ 正本に載っていない描画箇所 ============ -->
+<section>
+  <h2>正本に載っていない、カードを描いている場所</h2>
+  <p class="where"><code>designRules.ts</code> の <code>card.variants</code> は「実在する全実装」として7件を挙げているが、実際に <code>&lt;CardBadges&gt;</code> を置いてカードを描いているファイルは16件ある。差分の12件はどの分類にも登録されていない。</p>
+  <ol class="list">
+    <li><code>ArtistCrossPostRelatedSection.tsx</code></li>
+    <li><code>JourneySection.tsx</code></li>
+    <li><code>NextRecommendations.tsx</code></li>
+    <li><code>RelatedTrailSection.tsx</code></li>
+    <li><code>RelatedVideosForArtist.tsx</code></li>
+    <li><code>ShelfPicksSection.tsx</code></li>
+    <li><code>SpokesHubCoversSection.tsx</code></li>
+    <li><code>WatchLikeYouMight.tsx</code></li>
+    <li><code>routes/cover-guide.tsx</code>（2か所）</li>
+    <li><code>routes/hub.$hubId.tsx</code>（2か所）</li>
+    <li><code>routes/search.tsx</code></li>
+    <li><code>routes/shelf.$worldId.$shelfId.tsx</code></li>
+  </ol>
+  <p class="note">※ このフォルダに実コードがあるのは <code>VideoCard.tsx</code> と <code>ShelfCardView.tsx</code> の2件だけ（<code>status/_938/snapshot_main/</code>）。残りは <code>designRules.ts</code>・<code>design-check.tsx</code>・調査ログから分かる範囲だけを書いた。灰色のマスは「調べていない」ではなく「このフォルダに材料が無い」という意味。</p>
+  <p class="note">※ 色と影は本番のCSS変数（<code>--card</code> / <code>--muted</code> / <code>--ink</code> / <code>--border</code>）に対応させた近似色。比率・角丸・余白・文字サイズ・行数制限はコードに書かれている実数値そのまま。</p>
+</section>
+
+<section>
+  <h2>いま分かっている勘どころ（3行）</h2>
+  <div class="rec">
+    揃っているのはバッジだけ。角丸・余白・見出し・コピーの段数・再生ボタン・管理ボタンは、書式ごとに全部違う。<br>
+    いちばん効くのは ⑨「この1本をみる →」と ⑪管理ボタンの個数。同じ画面に出る書式どうしで有無が割れているので、目で見てすぐ気づく。<br>
+    どちらを正にするかを決める前に、正本に載っていない12件を分類に入れないと、また同じズレが生えてくる。
+  </div>
+</section>
+
+</main>
+</body>
+</html>
