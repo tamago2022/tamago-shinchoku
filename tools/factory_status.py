@@ -714,6 +714,20 @@ def build():
     # 落とすなら誰か：Dispatch発で「終わって待機」のもの（会話は残る・--resume で戻せる）。動いているものは落とさない
     shed = [s for s in ss if s["kind"] == "idle_done" and s.get("dispatch")]
     shed.sort(key=lambda x: -(x["idleMin"] or 0))
+    # ---- 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収 ----
+    # なぜ「ここ」なのか（実測）：5分便(machine_status_push.sh)と心臓(heartbeat.sh)は
+    #   07:15〜07:29を最後に両方とも止まっていた（machine.json・.heartbeat_alive・
+    #   heartbeat.pid がすべて凍結）。にもかかわらず heavy_events.jsonl は 07:45 / 08:15 /
+    #   08:51 / 09:16 と更新され続けていた＝**この factory_status.py だけは今も呼ばれている。**
+    #   Mac上で生きていることが実測で確認できた唯一の経路なので、ここに相乗りする。
+    # 投げっぱなし（Popen・start_new_session）にして factory_status は一切待たない。
+    #   本体側に2分の間引きがあるので、何度呼ばれても重ならない・負荷も増えない。
+    try:
+        subprocess.Popen(["python3", os.path.join(HERE, "machine_health.py"), "--reap"],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         start_new_session=True)
+    except Exception:
+        pass
     if pressure == "red" or (load_ratio5 is not None and load_ratio5 > 2.0):
         try:
             subprocess.run(["python3", os.path.join(HERE, "mark_heavy.py"), "自動検知: %s" % ("メモリ赤" if pressure == "red" else "5分ロード比%.1f" % load_ratio5),

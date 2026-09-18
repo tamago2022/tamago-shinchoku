@@ -55,6 +55,19 @@ fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
 
+# ---- 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収 ----
+# 実測：07:26の machine.json が 負荷5046% / スワップ17.06GB。しかしその数字しか無く、
+#   **何がどれだけ食っているのかを持っている場所がどこにも無かった**
+#   （status/heavy_events.jsonl は上位3本の名前だけ）。
+# ここは launchd が直接起動するので、心臓が死んでいても必ず走る＝最後の掃除係。
+#   重い計測より前・ロックを取った直後に置く（後ろに置くと30分以上回ってこない実測あり）。
+# 落とすのは「工場が自分で起動して終わり損ねたもの」だけ：自動操作用のChrome、
+#   tools配下の撮影スクリプト(.mjs)、心臓に相乗りしている即戻り設計のpythonが15分以上
+#   生きているもの、中継所のトンネルの残骸。たまごさんのBrave・エディタ・Obsidian・
+#   Eagle・生成系（動画/画像/ナレーション）には一切当たらない（NEVERで除外）。
+# 新しいlaunchd便は増やさない（既存便への相乗り＝この工場の決まり）。
+run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>&1 || true
+
 # ---- 残骸の掃除（2026-09-05 17:05・実害あり）----
 # たまごさん「Mac重たいよ」。実測：5分平均ロードが238（8コアのMacで通常8以下）。
 # 原因は、中継所のトンネルを立て直すたびに起動していた localtunnel(npx/node) と cloudflared が、
@@ -580,6 +593,13 @@ LOOP_END=$(( $(date +%s) + 260 ))
 quick_tick() {
   run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"   >/dev/null 2>&1 || true
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py"  >/dev/null 2>&1 || true
+  # 944番（2026-09-18）：外部AI（Grok/ChatGPT/Gemini）への代行係。
+  #   Cowork/Dispatchのサンドボックスからは api.openai.com / api.x.ai /
+  #   generativelanguage.googleapis.com へ回線が出ない（実測）。このMacからは出る。
+  #   → 向こうは status/gaibu_jobs/pending/ に仕事票を置くだけ。実際に叩くのはここ。
+  #   ★pendingが空なら数ミリ秒で何もせず終わるので、15秒おきに呼んでも工場は重くならない。
+  #   ★この便を止めないよう、バックグラウンドに逃がして150秒で打ち切る（前で待たない）。
+  ( run_with_timeout 150 python3 "$REPO/tools/gaibu_runner.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
 }
 while :; do
   run_once

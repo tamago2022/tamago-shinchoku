@@ -83,7 +83,11 @@ OPENAI_MODEL_CANDIDATES = ["gpt-4o-mini", "gpt-5-mini"]
 #   無料枠がありカード登録不要（Google AI Studioで発行）。$0.30/$2.50 per 1M（画像入力込み）。
 GEMINI_MODEL_CANDIDATES = ["gemini-2.5-flash"]
 
-DEFAULT_DAILY_CALL_CAP = 30
+# 2026-09-18（943番）：回数上限30回/日が、金額側にまだ7割の余裕がある段階（28.96円／100円）で
+#   検品ゲートを丸ごと止めていた（850号の失敗 F-20260918011032「本日のコスト上限(30回/日)到達で処理不能」）。
+#   実測単価は1回あたり約0.97円なので、**金額上限100円/日の方が先に当たる**＝歯止めは弱まらない。
+#   お金の上限(100円/日)は一切変えず、回数だけ120回に広げる。
+DEFAULT_DAILY_CALL_CAP = 120
 DEFAULT_DAILY_YEN_CAP = 100.0
 USD_TO_YEN = 150.0
 

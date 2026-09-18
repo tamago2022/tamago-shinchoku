@@ -65,8 +65,25 @@ run_with_timeout() {
   return $rc
 }
 
+# ---- 2026-09-18（Cowork側から設置）相乗りスクリプトの起動そのものを間引く ----
+# 実測で見えた「重いほど重くなる」仕組み：
+#   このループには「投げっぱなし(&)」の python3 が14本並んでいて、15秒ごとに全部を起動する。
+#   ＝**1分あたり約56回、pythonインタプリタを起動していた。**
+#   どれも中で「1時間に1回」「1日に1回」に間引いているので"仕事"はしていないが、
+#   **インタプリタ起動のコストだけは毎回満額かかる。**
+#   さらに、Macが重いほど1本あたりの起動が延びるのに、心臓は待たずに次の15秒へ進むので、
+#   同じスクリプトが何本も重なって走り、重いほどもっと重くなる（正のフィードバック）。
+#   実測：2026-09-18 07:11〜07:16 auto_launcher.py/command_ingest.pyが45秒の強制終了を連発し、
+#        07:15にこの心臓自体が停止。以後 machine.json は07:26から1時間半更新されなかった。
+# → 中で1時間・1日に間引いているものを、15秒おきに叩き起こす理由はどこにも無い。
+#   **起動の頻度そのもの**をここで落とす。中の間引き設定は一切変えない＝挙動は変わらない。
+#   毎分の起動回数：約56回 → 約12回（約8割減）。
+TICK=0
+tick_every() { [ "$(( TICK % $1 ))" -eq 0 ]; }
+
 echo "$(date '+%F %T') 心臓を起動しました（pid $$）" >> "$LOG"
 while :; do
+  TICK=$(( (TICK + 1) % 40 ))   # 15秒 × 40 = 10分で一周
   # 2026-09-16：詰まり判定を auto_launch.log の更新（=実際に発車/回収があった時だけ書かれる）
   # に頼っていたため、「走行0本で書くことが無いだけ」でも詰まっていると誤判定し、
   # machine_status_push.sh が正常な心臓を何度も殺して立て直す事故が起きた
@@ -96,42 +113,54 @@ while :; do
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ command_ingest.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
+  # ---- ここから下は「投げっぱなしの相乗り」。tick_every で起動の頻度を落としてある ----
+  # 数字の根拠は各行のコメントに書いてある「中の間引き」そのもの。
+  # それより細かく叩く意味は無いので、中の間引きに合わせた周期で呼ぶ。
   # ログインが戻ったら自分で気づいて再開する（10分に1回だけ試す）
-  python3 "$REPO/tools/auth_watch.py"     >/dev/null 2>&1 || true
+  #   ← 元から「10分に1回」と書いてあったのに毎サイクル起動していた。10分に揃える。
+  tick_every 40 && python3 "$REPO/tools/auth_watch.py"     >/dev/null 2>&1 || true
   # 2026-09-05：中継所（進捗表→Mac）が死ぬと、たまごさんがボタンを押しても何も届かない。
   #   5分便まかせだと最大5分間ボタンが効かないままなので、心臓でも2分に1回見る。
   #   **投げっぱなしにして心臓は待たない**（対話待ちで工場を止めた07:03の事故の教訓）。
   #   生死は「プロセスが居るか」ではなく「外から叩いて200が返るか」で見る。道は2本（relay_watch.py）。
-  ( python3 "$REPO/tools/relay_watch.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：元コメント「2分に1回見る」に合わせる（15秒×8=2分）
+  tick_every 8 && ( python3 "$REPO/tools/relay_watch.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-05 使い終わった作業場(git worktree)を片づける。放っておくと51個溜まり、
   #   ChatGPT(Codex)がそれを1つずつ「プロジェクト」として拾ってたまごさんの画面を汚す。
   #   本流に入っていて・未保存の変更が無くて・2時間以上経ったものだけ消す（30分に1回）。
-  ( python3 "$REPO/tools/worktree_reaper.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中で30分に間引いている。10分おきの起動で十分
+  tick_every 40 && ( python3 "$REPO/tools/worktree_reaper.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-07（620番）：確認ページ(share/check)が上限も掃除も無いまま増え続けていた。
   #   60日以上さわられていないものだけ、店主が拾えるようゴミ箱へ退避する（6時間に1回でよい）。
-  ( python3 "$REPO/tools/check_page_pruner.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中で6時間に間引いている
+  tick_every 40 && ( python3 "$REPO/tools/check_page_pruner.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-07（626番）：support@anthropic.comへの問い合わせ返信を1日1回チェックする見張り。
   #   新しいlaunchd便は増やさず、既存の心臓に相乗り。実際にIMAPへ繋ぐのはスクリプト内部で
   #   1日1回に間引いている（それ以外の15秒ごとの呼び出しは即座に戻るだけで負荷ゼロに近い）。
-  ( python3 "$REPO/tools/check_anthropic_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中で1日1回に間引いている
+  tick_every 40 && ( python3 "$REPO/tools/check_anthropic_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-13（801番）：LINE Creators Market／スタンプメーカーへの問い合わせ返信を1日1回チェックする見張り。
   #   check_anthropic_reply.pyと全く同じ間引きパターンで既存の心臓に相乗り（新しいlaunchd便は増やさない）。
-  ( python3 "$REPO/tools/check_line_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中で1日1回に間引いている
+  tick_every 40 && ( python3 "$REPO/tools/check_line_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-17（891番）：外部連絡窓口台帳(renraku_madoguchi.json)に登録した全窓口(LINE Creators
   #   Market・LINEスタンプメーカー・Lovable・Anthropic)への返信を毎日（朝・夜の2回想定）見張る。
   #   check_anthropic_reply.py/check_line_reply.pyと同じ間引きパターンで既存の心臓に相乗り
   #   （renraku.py内部でCHECK_INTERVAL_HOURSに間引くので、15秒ごとに呼んでも負荷は増えない）。
   #   新着・2週間未着・認証情報なしは status/dispatch_outbox.jsonl へ全文そのまま1回だけ通知する。
-  ( python3 "$REPO/tools/renraku.py" check >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中でCHECK_INTERVAL_HOURSに間引いている
+  tick_every 40 && ( python3 "$REPO/tools/renraku.py" check >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-11（756番）：毎朝の入荷見回り（707番）を手作業から自動へ。前日にjoy-relief-stationへ
   #   新規登録された動画を見回るタスクを、1日1回だけ発車待ちへ積む（check_anthropic_reply.pyと
   #   同じ間引きパターン。新しいlaunchd便は増やさない）。
-  ( python3 "$REPO/tools/daily_ingest_scheduler.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中で1日1回に間引いている
+  tick_every 40 && ( python3 "$REPO/tools/daily_ingest_scheduler.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-12（787番）：「いまの現在地」1枚(status/genzaichi.md/.json)を実質30分おきで更新する。
   #   憲法0番に「30分おき自動更新」と書いてあったのに実体（スケジューリング）が無かった穴を塞ぐ。
   #   新しいlaunchd常駐は増やさず、既存の心臓に相乗り。内部で1500秒ゲートしているので
   #   15秒ごとに呼んでも実際に本体が走るのは30分に1回だけ（daily_ingest_scheduler.pyと同じ間引き）。
-  ( python3 "$REPO/tools/genzaichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中で1500秒(25分)に間引いている
+  tick_every 8 && ( python3 "$REPO/tools/genzaichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
   #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。
@@ -142,7 +171,8 @@ while :; do
   #   更新時刻とmachine.jsonを読むだけ）なので、ここで毎サイクル（15秒おき）直接呼ぶ。
   #   実装は tools/launch_watchdog.py（genzaichi.check_launch_silence()をそのまま再利用・
   #   二重実装はしない）。
-  ( python3 "$REPO/tools/launch_watchdog.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：発車0本の検知。30秒おきで十分（元は15秒）
+  tick_every 2 && ( python3 "$REPO/tools/launch_watchdog.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-17（926番）：外部検品ゲート。status/kenpin/pending/ に積まれた依頼票を
   #   ChatGPT(OpenAI API)へ投げて判定を号番号(queue.json)へ戻す。5分便(machine_status_push.sh)にも
   #   同じ行があるが、その便はMacが重いと何十分も回ってこないことが実測されており（このログの
@@ -150,17 +180,35 @@ while :; do
   #   たまごさんへ返さない」という仕組みそのものが死ぬ。検品待ちが空のときは
   #   ディレクトリを1回見るだけで即座に戻るので、15秒おきに呼んでも負荷はほぼゼロ。
   #   投げっぱなしにして心臓は待たない（他の相乗りと同じ形）。
-  ( python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：検品の往復。30秒おきで十分（元は15秒）
+  tick_every 2 && ( python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-18（931番）：Claudeが作ったChromeタブの孤児を掃く（5分便にも同じ行がある。
   #   スクリプト内部で1時間ゲートしているので二重には走らない＝kenpin_gateと同じ相乗りの形）。
   #   Chromeが起動していなければ即座に戻るだけ。activateしない・前面タブは閉じない・
   #   たまごさんの作業タブは閉じない。
-  ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：中で1時間に間引いている
+  tick_every 40 && ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-18（931番）：取り残された .git のロックが工場のgitを丸ごと止める事故への自己修復。
   #   Cowork（サンドボックス）側のセッションがgitの途中で打ち切られると index.lock が残り、
   #   以後 add/commit が全てrc=128で失敗する。しかもマウント越しにはunlinkできず本人が片付けられない。
   #   5分以上放置＋gitプロセスが1本も無い時だけ消す（worktree_reaper.pyと同じ立ち位置）。
-  ( python3 "$REPO/tools/git_lock_reaper.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 起動の間引き（2026-09-18）：5分以上放置のロックが対象。2分おきで十分
+  tick_every 8 && ( python3 "$REPO/tools/git_lock_reaper.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-18（944番）：外部AI（Grok/ChatGPT/Gemini）への代行係。
+  #   Cowork/Dispatchのサンドボックスからは api.openai.com / api.x.ai /
+  #   generativelanguage.googleapis.com へ回線が出ない（実測）。このMacからは出る。
+  #   向こうは status/gaibu_jobs/pending/ に仕事票を置くだけで、実際に叩くのはここ。
+  #   ★5分便(machine_status_push.sh)にも同じ行があるが、その便は実測で25分以上止まることが
+  #     あるため（今日07:24〜）、kenpin_gateと同じく心臓側にも置いて二重化する。
+  #     待ちが空ならディレクトリを1回見るだけで即座に戻るので、15秒おきでも負荷はほぼゼロ。
+  # 起動の間引き（2026-09-18）：外部AI代行。30秒おきで十分（元は15秒）
+  tick_every 2 && ( python3 "$REPO/tools/gaibu_runner.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収。
+  #   5分便にも sales-watch便にも同じ1行がある（＝経路の三重化）。本体が2分で
+  #   間引くので、15秒おきに呼んでも実際に測るのは2分に1回だけ＝負荷は増えない。
+  #   kenpin_gate等と同じ「投げっぱなしにして心臓は待たない」形。
+  # 起動の間引き（2026-09-18）：本体が2分で間引いている
+  tick_every 8 && ( python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

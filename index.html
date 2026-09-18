@@ -127,6 +127,19 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   </details>
 </section>
 
+<!-- ⑦ 外部AIの検品（944番・2026-09-18）
+     たまごさん：「例のOpenAIに検品させるやつ、実際に動いてるの？ やりとり見れるの？」
+     → 動いている。ただし記録がJSONのままで読めなかった。1行だけ見せて、中身はトグルに畳む。
+     元データ： status/public/kenpin_mieru.json（tools/kenpin_mieru.py が自動生成） -->
+<section class="card" id="kenpinCard" hidden>
+  <h2>外部AIの検品</h2>
+  <div class="meta" id="kenpinLine">…</div>
+  <details id="kenpin">
+    <summary>やりとりを全部見る（出したもの／指摘／直した内容／PASSまで何回）</summary>
+    <div class="body"><ul id="kenpinList"><li class="empty">…</li></ul></div>
+  </details>
+</section>
+
 <footer>
   <a href="index_full.html">前の進捗表（全部入り）</a>
   <a href="share/done/">できたもの一覧</a>
@@ -353,6 +366,7 @@ function render(d){
   loadQueue(d.nextUp || []);
   loadCash();
   loadKoushiki();
+  loadKenpin();
 }
 
 /* ───────── 公式のアップデート（939番）─────────
@@ -375,6 +389,42 @@ function loadKoushiki(){
         : t) + "</li>";
     }));
   }).catch(function(){ /* 無い日は黙って出さない */ });
+}
+
+/* ───────── 外部AIの検品（944番・2026-09-18）─────────
+   たまごさん「例のOpenAIに検品させるやつ、実際に動いてるの？ やりとり見れるの？」
+   status/public/kenpin_mieru.json は tools/kenpin_mieru.py が自動生成する。ここは読んで出すだけ。
+   見えるのは1行だけ。開くと号ごとに「何往復して、何を指摘されて、PASSまで何回か」が出る。 */
+function loadKenpin(){
+  getJson("status/public/kenpin_mieru.json", 8000).then(function(j){
+    var cases = (j && j.cases) || [];
+    if(!cases.length) return;
+    $("kenpinCard").hidden = false;
+    var rounds = 0, fixes = 0, yenSum = 0, passed = 0;
+    cases.forEach(function(c){
+      rounds += c.rounds || 0; fixes += c.fixes || 0;
+      yenSum += c.costYen || 0; if(c.passed) passed++;
+    });
+    $("kenpinLine").textContent =
+      cases.length + "件の案件で " + rounds + "往復・直させたのが " + fixes + "回・"
+      + passed + "件がPASS・合計 " + (Math.round(yenSum * 100) / 100) + "円";
+
+    put($("kenpinList"), cases.slice(0, 20).map(function(c){
+      var head = "<b>" + c.n + "号</b> " + (c.passed ? "✅PASS" : "まだ通っていない")
+        + ' <span class="meta">' + c.rounds + "往復／直させた" + c.fixes + "回／"
+        + (Math.round((c.costYen || 0) * 1000) / 1000) + "円</span>";
+      var title = c.title ? '<div class="meta">' + esc(c.title) + "</div>" : "";
+      var steps = (c.rows || []).map(function(r){
+        var mark = r.verdict === "PASS" ? "✅通した" : (r.verdict === "FIX" ? "🔴直させた" : "⚪️判定できず");
+        return '<div class="meta">第' + r.seq + "回 " + mark + "（" + esc(r.provider || "") + "）"
+          + (r.gap ? "：" + esc(r.gap) : "") + "</div>";
+      }).join("");
+      var link = c.publicTxt
+        ? '<div><a href="' + esc(c.publicTxt) + '" target="_blank" rel="noopener">やりとりの全文を読む</a></div>'
+        : "";
+      return "<li>" + head + title + steps + link + "</li>";
+    }));
+  }).catch(function(){ /* 無ければ黙って出さない */ });
 }
 
 function load(manual){

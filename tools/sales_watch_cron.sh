@@ -5,6 +5,14 @@
 # 定期実行台帳: AI出力/_ルール/定期実行台帳.md に登録済み（com.tamago.tamago-shinchoku.sales-watch）。
 cd "/Users/mac/Desktop/tamago-shinchoku" || exit 1
 
+# 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収。
+#   5分便(com.tamago.machine-status)と心臓(heartbeat.sh)が両方とも止まると、
+#   「何がMacを食っているか」を測る手段が1つも残らないことが実測で分かった
+#   （07:26を最後にmachine.jsonが1時間半更新されず、その間の実測値はどこにも無かった）。
+#   → 独立した別のlaunchd便であるここにも同じ1行を置いて、経路を二重化する。
+#   本体は2分の間引き付きなので、どちらから呼ばれても重ならない・負荷も増えない。
+python3 tools/machine_health.py --reap >/dev/null 2>&1 || true
+
 # 他セッションの未push分と衝突しないよう、まず取り込む（ff-onlyのみ・失敗しても続行）
 git fetch origin --quiet 2>/dev/null
 git merge --ff-only origin/main --quiet 2>/dev/null
