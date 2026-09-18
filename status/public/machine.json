@@ -1,16 +1,16 @@
 {
- "raw": "負荷 88% ｜ CPU 44% / メモリ圧迫 12% / スワップ 3.40GB / ディスク空き 263GB ｜ 稼働 1本 ｜ あと3本OK",
- "load": 88,
- "cpu": 44,
+ "raw": "負荷 79% ｜ CPU 36% / メモリ圧迫 12% / スワップ 3.40GB / ディスク空き 263GB ｜ 稼働 1本 ｜ あと3本OK",
+ "load": 79,
+ "cpu": 36,
  "mem": 12,
  "swapGB": 3484.0,
  "diskFreeGB": 263.0,
  "sessions": 0,
- "note": "上限4本・あと4本OK（5分平均ロード7.7（コア8×0.8超）、実測上限1本）",
- "measuredAt": "2026-09-19T03:09:27+09:00",
+ "note": "上限4本・あと4本OK（CPU36%・メモリ空き7.2GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限1本）",
+ "measuredAt": "2026-09-19T03:11:16+09:00",
  "working": 0,
  "stalled": 0,
- "waiting": 1,
+ "waiting": 2,
  "safeMax": 4,
  "moreOK": 4,
  "hardMax": 8,
@@ -22,19 +22,19 @@
  "predict": [],
  "shedCandidates": [],
  "below": 1,
- "blockReason": "5分平均ロード7.7（コア8×0.8超）、実測上限1本",
- "load1": 7.07,
- "load5": 7.69,
- "load15": 7.04,
+ "blockReason": "CPU36%・メモリ空き7.2GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限1本",
+ "load1": 6.38,
+ "load5": 7.49,
+ "load15": 7.05,
  "cores": 8,
- "loadRatio": 0.88,
+ "loadRatio": 0.8,
  "memPressure": "green",
  "memAvailGB": 7.2,
  "swapIncreasing": false,
- "ioMBs": 1.81,
+ "ioMBs": 12.13,
  "network": {
-  "pingMedianMs": 83.9,
-  "pingMaxMs": 255.0,
+  "pingMedianMs": 38.4,
+  "pingMaxMs": 170.9,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -43,7 +43,7 @@
    "cli": "faa9aaee-84ee-4fea-a95c-0b99f7e2aa4b",
    "localId": "local_e84bb121-bbe0-4443-a67a-1748d26c1331",
    "startedAt": "2026-09-19T02:44:22+0900",
-   "elapsedMin": 25,
+   "elapsedMin": 26,
    "lastReportAt": "2026-09-18T17:45:19.115Z",
    "lastReport": "r072）」を1本、Sonnetで始めました（CMは§51、カバーは§63から）。メモリは問題なし、あと3本まで同時に動かせます。 問題：なし。メールの見回りは時間外なのでスキップ。 判断待ち：なし。",
    "status": "完了",
@@ -60,7 +60,7 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 380,
-   "idleMin": 24.0,
+   "idleMin": 25.8,
    "kind": "idle_done",
    "model": "claude-opus-5",
    "turns": 10,
@@ -70,11 +70,11 @@
    "cli": "5c4524df-4b8c-4f46-bff0-923fb4a9f954",
    "localId": null,
    "startedAt": "2026-09-19T02:59:46+0900",
-   "elapsedMin": 7,
+   "elapsedMin": 9,
    "lastReportAt": null,
    "lastReport": "",
-   "status": "作業中",
-   "color": "green",
+   "status": "止まっている",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": false,
    "deployUrls": [],
@@ -87,8 +87,8 @@
    "dispatch": false,
    "isDispatchSelf": true,
    "mb": 344,
-   "idleMin": 9.6,
-   "kind": "working",
+   "idleMin": 11.4,
+   "kind": "idle_done",
    "model": "<synthetic>",
    "turns": 1,
    "lastActivityAt": "2026-09-18T17:59:50.547Z"
@@ -97,7 +97,7 @@
    "cli": null,
    "localId": null,
    "startedAt": "2026-09-19T03:02:18+0900",
-   "elapsedMin": 7,
+   "elapsedMin": 8,
    "lastReportAt": null,
    "lastReport": "",
    "status": "不明",
@@ -113,7 +113,7 @@
    "title": "（不明）",
    "dispatch": false,
    "isDispatchSelf": true,
-   "mb": 325,
+   "mb": 335,
    "idleMin": null,
    "kind": "unknown",
    "model": null,
@@ -124,7 +124,7 @@
    "cli": null,
    "localId": null,
    "startedAt": "2026-09-19T03:02:40+0900",
-   "elapsedMin": 6,
+   "elapsedMin": 8,
    "lastReportAt": null,
    "lastReport": "",
    "status": "不明",
@@ -148,7 +148,7 @@
    "lastActivityAt": null
   }
  ],
- "line": "負荷 88% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き263.0GB",
+ "line": "負荷 79% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き263.0GB",
  "modelCounts": {
   "claude-opus-5": 1,
   "<synthetic>": 1,
@@ -164,7 +164,7 @@
  "heartbeat": {
   "pid": 23161,
   "processAlive": true,
-  "stalledMin": 0.2,
+  "stalledMin": 0.0,
   "stalled": false,
   "note": "心臓は動いています"
  },
@@ -173,7 +173,7 @@
   "room": 4,
   "alive": 0,
   "safeMax": 4,
-  "stalledMin": 1.8486622850100198,
+  "stalledMin": 1.2314476092656454,
   "stalled": false,
   "note": "発車は正常です"
  },
@@ -461,7 +461,7 @@
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-09-19 03:09",
+  "lastRun": "2026-09-19 03:11",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -474,7 +474,14 @@
    "below": 0,
    "line": "現在4本／上限4本／目標1本／あと4本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 78195,
+    "title": "（不明）",
+    "kind": "idle_done",
+    "why": "会話ログ/管理JSONと突合できない"
+   }
+  ]
  },
  "metrics": {
   "stalls": 132,
@@ -494,7 +501,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-19 03:09",
+  "updatedAt": "2026-09-19 03:11",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
