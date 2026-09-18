@@ -3,23 +3,23 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                            // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                              // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-17T19:46:23.623Z",
+      "updatedAt": "2026-09-18T16:22:31.095Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
-      "dateJST": "2026-09-18",
+      "dateJST": "2026-09-19",
       "successCountToday": 0,
-      "consecutiveFailures": 1,
+      "consecutiveFailures": 0,
       "stoppedForToday": false,
       "lastResult": "fail",
-      "lastCheckedAt": "2026-09-17T19:46:23.365Z",
+      "lastCheckedAt": "2026-09-18T16:22:30.549Z",
       "lastPublishedSha": null,
       "lastFailureReason": "ERR browserType.connectOverCDP: Timeout 180000ms exceeded.\nCall log:\n  - <ws preparing> retrieving websocket url from http://127.0.0.1:9223\n  - <ws connecting> ws://127.0.0.1:9223/devtools/browser/b96f55da-bb4d-4def-9f55-341199927769\n  - <ws connected> ws://127.0.0.1:9223/devtools/browser/b96f55da-bb4d-4def-9f55-341199927769\n",
       "lastFailureAt": "2026-09-17T19:46:23.365Z",
-      "mainSha": "a10d4a8fb5",
+      "mainSha": "8faaa8549e",
       "mainUnpublished": true,
       "paused": false,
       "pauseReason": null
