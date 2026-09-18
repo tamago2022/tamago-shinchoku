@@ -12,14 +12,54 @@ import re
 import sys
 
 
-def _strip_for_scan(src: str):
+_TOK = re.compile(
+    r'//[^\n]*'                      # 行コメント
+    r'|/\*[\s\S]*?\*/'               # ブロックコメント
+    r'|"(?:[^"\\\n]|\\.)*"'          # 二重引用符（JSは改行をまたげない）
+    r'|\'(?:[^\'\\\n]|\\.)*\''       # 単引用符（同上）
+    r'|`(?:[^`\\]|\\.)*`'            # テンプレート文字列
+)
+
+
+def _blank(s: str, keep_edges: bool) -> str:
+    """中身を空白に潰す。改行だけは残す（行番号をずらさないため）。"""
+    body = "".join(" " if c != "\n" else "\n" for c in s)
+    if keep_edges and len(s) >= 2:
+        return s[0] + body[1:-1] + s[-1]
+    return body
+
+
+def _strip_for_scan(src: str) -> str:
+    """文字列・コメントの中身だけを空白に潰した走査用の写し。位置は元と1対1。
+
+    引用符をまたいで対応がずれると棚がまるごと読み落とされる
+    （実測：Enya と 原田知世 の2棚・40曲が消えていた）。
+    JSの文字列は改行をまたげないので、そこで必ず切る。閉じられない引用符
+    （歌詞の中の don't、T'en Va Pas）は文字列として扱わない。
+    """
+    out = []
+    last = 0
+    for m in _TOK.finditer(src):
+        out.append(src[last:m.start()])
+        tok = m.group(0)
+        out.append(_blank(tok, keep_edges=tok[0] in "\"'`"))
+        last = m.end()
+    out.append(src[last:])
+    return "".join(out)
+
+
+def _strip_for_scan_old(src: str):
     """文字列リテラル・コメントの中を空白に潰した走査用の写しを作る。
     位置は元と1対1で保つ（オフセットがずれると切り出せないため）。"""
     out = list(src)
     i, n = 0, len(src)
     while i < n:
         c = src[i]
-        if c in "\"'`":
+        # 文字列の囲みは " と ` だけを見る。coverGuide.ts のデータは全部 " 囲みで、
+        # ' はコメントや歌詞の中のアポストロフィ（don't, T'en Va Pas）として出てくる。
+        # ' を囲みとして扱うと、そこから先の対応がずれて棚がまるごと読み落とされる
+        # （実測：Enya と 原田知世 の2棚・40曲が消えていた）。
+        if c in "\"`":
             q = c
             j = i + 1
             while j < n:
@@ -54,14 +94,17 @@ def _strip_for_scan(src: str):
 
 def _match_brace(scan: str, start: int) -> int:
     """scan[start] == '{' から対応する '}' の位置を返す。"""
-    depth = 0
+    pairs = {"}": "{", "]": "["}
+    stack = []
     for i in range(start, len(scan)):
         c = scan[i]
         if c in "{[":
-            depth += 1
+            stack.append(c)
         elif c in "}]":
-            depth -= 1
-            if depth == 0:
+            if not stack or stack[-1] != pairs[c]:
+                return -1          # 対応が壊れている。飲み込まずに諦める
+            stack.pop()
+            if not stack:
                 return i
     return -1
 
@@ -116,8 +159,6 @@ def parse_deep(path: str):
             continue
         obj_end = _match_brace(scan, obj_start)
         if obj_end < 0:
-            continue
-        if any(s <= obj_start < e for s, e in seen_spans):
             continue
         head = scan[obj_start:m.start()]
         mid = KEY_ID.search(head)

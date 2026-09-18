@@ -233,6 +233,14 @@ run_with_timeout 30 python3 "$REPO/tools/gaibu_ledger.py" --sync-devin --quiet >
 #   （11章・伝書鳩ゼロ化）。新しいlaunchd常駐は増やさず既存5分便に相乗り（他の仕組みと同じ方針）。
 #   queue.jsonへの書き込みは、このホスト上の経路だけが行う（kenpin_gate.py冒頭「なぜ直接書かないか」）。
 run_with_timeout 150 python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet >/dev/null 2>&1 || true
+# 2026-09-19 入荷の関所（tools/nyuka_sekisho.py）。たまごさん「入荷したときにバチっと決まる
+#   仕組みを作ってください。30,000曲を巡回するのは大変でしょう」。
+#   曲が1曲入った瞬間に、①出典を実際に取得して事実を照合 ②別人混入を止める ③文脈を決める
+#   ④コピーを書く ⑤外部AIが0〜100点で採点し80点未満は通さない、を全部通す。
+#   Cowork側のサンドボックスからは外部ネットワークも鍵も届かない（実測 Tunnel 403）ので、
+#   向こうは status/nyuka/pending/ へ積むだけ。**実際に通すのはここ（鍵とネットがあるMac側）**。
+#   新しいlaunchd常駐は増やさず既存5分便に相乗り（上のkenpin_gateと同じ方針）。
+run_with_timeout 200 python3 "$REPO/tools/nyuka_sekisho.py" --run-pending --quiet >/dev/null 2>&1 || true
 # 2026-09-03 たまごさん「進捗の数字がずれてる時点でダメ」。
 # Claudeアプリの実測ファイルは書き込みが止まることがあり（21:45で停止を確認）、推定に落ちると大きく外す。
 # 実際: 全モデル68% / Fable82% ← アプリ画面の値。推定: 111% / 88.5%。
