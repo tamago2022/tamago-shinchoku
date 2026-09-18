@@ -1,7 +1,7 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>947 ごきげん補給所・案内人（声で話せる試作）</title>
+<title>ごきげん補給所・案内人（声で話せる試作）</title>
 <style>html,body{margin:0;background:#0d0b09}</style></head><body>
 <style>
   :root{
@@ -226,8 +226,11 @@
   draw();
 
   /* ── つなぐ ───────────────────────────────────────── */
-  async function mintEphemeral(sk,voice){
-    const body={ session:{ type:"realtime", model:"gpt-realtime",
+  // 新しい名前から順に試す。名前が変わってもここだけ足せば直る。
+  const MODELS=["gpt-realtime-2.1","gpt-realtime","gpt-realtime-2.1-mini"];
+
+  async function mintEphemeral(sk,voice,model){
+    const body={ session:{ type:"realtime", model:model,
       instructions:INSTRUCTIONS,
       audio:{ input:{ turn_detection:{ type:"server_vad", threshold:0.5,
                         prefix_padding_ms:300, silence_duration_ms:600,
@@ -254,9 +257,12 @@
     logEl.innerHTML="";
 
     // ① 使い捨ての鍵をとる。取れなければ鍵で直接つなぐ（どちらでも動くようにしてある）
-    let token=sk, viaEk=false;
-    try{ token=await mintEphemeral(sk,voice); viaEk=true; }
-    catch(e){ say("sys","使い捨て鍵は取れませんでした（"+e.message+"）。鍵で直接つなぎます。"); }
+    let token=sk, viaEk=false, model=MODELS[0], lastErr="";
+    for(const m of MODELS){
+      try{ token=await mintEphemeral(sk,voice,m); viaEk=true; model=m; break; }
+      catch(e){ lastErr=e.message; }
+    }
+    if(!viaEk) say("sys","使い捨て鍵は取れませんでした（"+lastErr+"）。鍵で直接つなぎます。");
 
     try{
       pc=new RTCPeerConnection();
@@ -297,12 +303,20 @@
 
       const offer=await pc.createOffer();
       await pc.setLocalDescription(offer);
-      const r=await fetch("https://api.openai.com/v1/realtime/calls?model=gpt-realtime",{
-        method:"POST", body:offer.sdp,
-        headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/sdp" }
-      });
-      if(!r.ok){ throw new Error("calls "+r.status+": "+(await r.text()).slice(0,300)); }
-      await pc.setRemoteDescription({type:"answer",sdp:await r.text()});
+
+      const tryModels = viaEk ? [model] : MODELS;
+      let answer=null, err="";
+      for(const m of tryModels){
+        const r=await fetch("https://api.openai.com/v1/realtime/calls?model="+encodeURIComponent(m),{
+          method:"POST", body:offer.sdp,
+          headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/sdp" }
+        });
+        if(r.ok){ answer=await r.text(); model=m; break; }
+        err="calls "+r.status+"（"+m+"）: "+(await r.text()).slice(0,240);
+        if(r.status===401||r.status===403) break; // 鍵の問題。他のモデルを試しても同じ
+      }
+      if(!answer) throw new Error(err||"つながりませんでした");
+      await pc.setRemoteDescription({type:"answer",sdp:answer});
     }catch(e){
       say("sys","つながりませんでした → "+e.message);
       setState("失敗しました"); goEl.disabled=false; close();
