@@ -143,6 +143,11 @@
   table.spec th,table.spec td{border:1px solid var(--line);padding:5px 10px;text-align:left}
   table.spec th{background:#ece7dd;font-weight:600}
   footer{padding:24px;border-top:1px solid var(--line);color:var(--sub);font-size:11px}
+  /* 946番の追補セクション用 */
+  .wrap{padding:0 24px 32px;max-width:1100px}
+  .ok{color:var(--ok);font-weight:700}
+  .ng{color:var(--ng);font-weight:700}
+  table.spec td b{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -494,6 +499,120 @@ setTimeout(measureAll, 400);
     文書側の「短辺の12〜15%」「15〜20%」は<b>古い</b>。実測の28%（1210×646のカードでバッジ高さ182px＝28.2%）が正。
   </div>
 </div>
+
+
+<!-- ============================================================
+     【946番・2026-09-19】絵の余白の実測（上px／左px）
+     たまごさん：「寄ってないよ。比べてみてよ、銀のバッジと。」
+     この見本帳は今まで**ダミーのSVG**で描いていたので、
+     「箱は合っているのに絵が偏っている」事故を素通ししていた。
+     ここでは本物のPNGを使い、箱ではなく**絵**の余白をpxで出す。
+     ============================================================ -->
+<div class="wrap" id="ink946">
+  <h2 style="margin:28px 0 6px;font-size:16px">絵の余白の実測（上px／左px）— 946番</h2>
+  <div class="note" style="margin-bottom:14px">
+    CSSが置くのは<b>画像の箱</b>で、箱の中で絵がどこにいるかは見ていない。
+    だから箱の上余白px＝左余白pxが完全に一致していても、<b>目に見える絵</b>は角から離れることがある。
+    実際 <code>concierge-pick.png</code> は 1536×1024 の canvas に対して絵が
+    左に 484px も空けて置かれており（アルファ値8以上で実測）、
+    672×378 の枠で <b>左57.96px／上33.87px＝1.71倍のズレ</b>になっていた。
+    たまごさんの実測「左110px／上67px」（2倍のスクリーンショット＝左55／上33.5）と一致する。<br>
+    下の表は <code>getBoundingClientRect()</code> で箱を実測し、
+    そこへ PNG から実測した「絵の位置の割合」を足した<b>絵の余白px</b>。
+    <span class="ok">揃っている</span>＝上と左の差が0.5px以内、かつ金と銀の差が0.5px以内。
+  </div>
+  <div id="ink946out"></div>
+</div>
+
+<script>
+/* PNGの中で絵がどこにいるか。tools/_946_fix_badge_png.py が
+   アルファ値8以上（＝目に見える）で実測した値。画像の「高さ」で割った比率。
+   CSSは height 指定・width:auto なので、横方向もこの比率で効く。 */
+const INK946 = {
+  '銀 good-cover.png（95点・正本）':
+    { url:'https://joy-relief-station.lovable.app/badges/good-cover.png',
+      png:'432×512', ink:'328×408', left:0.101562, top:0.101562, h:0.796875 },
+  '金 concierge-pick.png（直す前）':
+    { url:null, png:'1536×1024', ink:'875×815', left:0.315430, top:0.087891, h:0.795898 },
+  '金 concierge-pick.png（直した後）':
+    { url:'https://joy-relief-station.lovable.app/badges/concierge-pick.png',
+      png:'541×512', ink:'437×408', left:0.101562, top:0.101562, h:0.796875 },
+};
+/* 本番で実測した枠。数字は headless Chrome の getBoundingClientRect() 実測値。 */
+const FRAMES946 = [
+  { label:'曲ページの大きいプレイヤー（1440px幅）', w:686, h:386 },
+  { label:'たまごさんのお手本（95点）',             w:672, h:378 },
+  { label:'アーティストページのカード（1440px幅）', w:336, h:189 },
+  { label:'正方形カード（1440px幅）',               w:176, h:176 },
+  { label:'アーティストページのカード（375px幅）',   w:325, h:183 },
+  { label:'正方形カード（375px幅）',                w:136, h:136 },
+];
+
+(function(){
+  const INSET = 0.065, SIZE = 0.28;   /* designRules.ts の正本 */
+  const out = document.getElementById('ink946out');
+  let html = '';
+  for (const f of FRAMES946){
+    /* 実物と同じCSSで箱を描いて、箱の余白を実測する（書き写した値を使わない） */
+    const box = document.createElement('div');
+    box.style.cssText = 'position:absolute;left:-9999px;top:0;width:'+f.w+'px;height:'+f.h+'px';
+    box.innerHTML = '<span style="position:absolute;inset:0;container-type:size">'
+      + '<span style="padding:min(6.5cqw,6.5cqh);height:100%;display:flex;flex-direction:column">'
+      + '<span style="display:flex;align-items:flex-start;gap:min(3cqw,3cqh);width:100%">'
+      + '<i data-m style="display:block;height:min(28cqw,28cqh);width:10px"></i>'
+      + '</span></span></span>';
+    document.body.appendChild(box);
+    const mark = box.querySelector('[data-m]');
+    const r0 = box.getBoundingClientRect(), r1 = mark.getBoundingClientRect();
+    const boxLeft = +(r1.left - r0.left).toFixed(3);
+    const boxTop  = +(r1.top  - r0.top ).toFixed(3);
+    const boxH    = +r1.height.toFixed(3);
+    document.body.removeChild(box);
+
+    const rows = Object.entries(INK946).map(([name, k]) => {
+      const L = boxLeft + boxH * k.left;
+      const T = boxTop  + boxH * k.top;
+      const H = boxH * k.h;
+      return { name, k, L, T, H };
+    });
+    const silver = rows[0];
+    html += '<h3 style="margin:22px 0 6px;font-size:14px">'+f.label+'　<span style="color:var(--sub);font-weight:400">枠 '+f.w+'×'+f.h+'px　／　箱の余白 上'+boxTop+'px・左'+boxLeft+'px（＝一致）</span></h3>';
+    html += '<table class="spec" style="width:100%"><tr><th>バッジ</th><th>PNG</th><th>絵</th>'
+         + '<th>絵の<b>上</b>余白px</th><th>絵の<b>左</b>余白px</th><th>上−左</th><th>絵の高さpx</th><th>銀との差</th><th>判定</th></tr>';
+    for (const r of rows){
+      const d  = +(r.T - r.L).toFixed(3);
+      const dS = +(Math.max(Math.abs(r.T-silver.T), Math.abs(r.L-silver.L), Math.abs(r.H-silver.H))).toFixed(3);
+      const ok = Math.abs(d) <= 0.5 && dS <= 0.5;
+      html += '<tr><td>'+r.name+'</td><td><code>'+r.k.png+'</code></td><td><code>'+r.k.ink+'</code></td>'
+           + '<td><b>'+r.T.toFixed(2)+'</b></td><td><b>'+r.L.toFixed(2)+'</b></td>'
+           + '<td class="'+(Math.abs(d)<=0.5?'ok':'ng')+'">'+(d>0?'+':'')+d+'</td>'
+           + '<td>'+r.H.toFixed(2)+'</td>'
+           + '<td class="'+(dS<=0.5?'ok':'ng')+'">'+dS+'</td>'
+           + '<td class="'+(ok?'ok':'ng')+'">'+(ok?'✅ 揃っている':'❌ 揃っていない')+'</td></tr>';
+    }
+    html += '</table>';
+
+    /* 目でも見る。たまごさん：「数字が合っていても、目で見て角に寄っていなければ不合格。」 */
+    html += '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px">';
+    for (const r of rows){
+      if (!r.k.url) continue;
+      const w = Math.min(f.w, 340), s = w / f.w;
+      html += '<figure style="margin:0"><div style="position:relative;width:'+w+'px;height:'+(f.h*s)+'px;'
+           + 'background:#2b2724;overflow:hidden;border-radius:6px">'
+           + '<span style="position:absolute;inset:0;container-type:size">'
+           + '<span style="padding:min(6.5cqw,6.5cqh);height:100%;display:flex;flex-direction:column">'
+           + '<span style="display:flex;align-items:flex-start;gap:min(3cqw,3cqh);width:100%">'
+           + '<img src="'+r.k.url+'" alt="" style="height:min(28cqw,28cqh);width:auto;display:block;opacity:.92">'
+           + '</span></span></span>'
+           + '<span style="position:absolute;left:0;top:0;width:'+(r.L*s)+'px;height:1px;background:#e8b64c"></span>'
+           + '<span style="position:absolute;left:0;top:0;width:1px;height:'+(r.T*s)+'px;background:#e8b64c"></span>'
+           + '</div><figcaption style="font-size:11px;color:var(--sub);margin-top:4px">'+r.name+'</figcaption></figure>';
+    }
+    html += '</div>';
+  }
+  out.innerHTML = html;
+})();
+</script>
 
 </body>
 </html>
