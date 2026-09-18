@@ -42,6 +42,13 @@ def main():
     try:
         import git_lock_reaper
         git_lock_reaper.reap(quiet=True)
+        # 2026-09-19（配達係）：ロックを片付けたあと、**commit済みなのに誰もpushして
+        #   いない分を押し出す。**サンドボックス側には GitHub の資格情報が無いので
+        #   （実測：could not read Username for 'https://github.com'）、
+        #   セッションが commit したものは、この工場の誰かが運ばない限り公開されない。
+        #   実測この日、5分便が22分止まり、commit済みのページが公開URLで404のままだった。
+        #   commit はしない・押し出すだけなので、勝手に何かを公開することはない。
+        git_lock_reaper.push_out(quiet=True)
     except Exception:
         pass
 
