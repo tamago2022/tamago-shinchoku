@@ -32,9 +32,25 @@ MIN_NAME_LEN = 4
 
 
 def norm(s: str) -> str:
-    """比較用に潰す：全角半角・大小文字・記号の差を消す。"""
+    """比較用に潰す：全角半角・大小文字・アクセント・記号の差を消す。"""
     s = unicodedata.normalize("NFKC", s).lower()
+    s = "".join(c for c in unicodedata.normalize("NFD", s)
+                if not unicodedata.combining(c))
     return re.sub(r"[\s'\"’“”・.,\-_/()\[\]]+", "", s)
+
+
+PAREN = re.compile(r"[（(\[].*?[)）\]]")
+SUFFIX = re.compile(r"\b(jr|sr|ii|iii|official|topic)\b", re.I)
+
+
+def base_name(s: str) -> str:
+    """同一人物判定用。括弧書き・Jr.・The を落とした芯の名前。
+    「山下達郎」と「山下達郎 (AOR/LP)」は同じ人。別人扱いしない。"""
+    s = PAREN.sub("", s)
+    s = SUFFIX.sub("", s)
+    s = re.sub(r"^the\s+", "", s.strip(), flags=re.I)
+    s = re.sub(r"['’]\d{2}$", "", s.strip())   # モーニング娘。'26
+    return norm(s)
 
 
 def build_name_index(artists):
@@ -57,55 +73,141 @@ def find_collisions(artists):
             if len(n) >= MIN_NAME_LEN:
                 names.append((n, a["id"], nm))
     out = []
+    seen = set()
     for short, sid, sraw in names:
         for long, lid, lraw in names:
-            if sid == lid or short == long:
+            if sid == lid or short == long or short not in long:
                 continue
-            if short in long:
-                out.append({"short_id": sid, "short": sraw,
-                            "long_id": lid, "long": lraw})
+            k = (sid, lid)
+            if k in seen:
+                continue
+            seen.add(k)
+            out.append({"short_id": sid, "short": sraw,
+                        "long_id": lid, "long": lraw})
     return out
 
 
-def check(artists):
-    """本体：各アーティストの曲を1曲ずつ関門に通す。"""
-    idx = build_name_index(artists)
-    by_id = {a["id"]: a for a in artists}
-    blocked, hold = [], []
+SEG_SPLIT = re.compile(r"[-–—/|｜／:：~〜]|\bfeat\.?\b|\bft\.?\b|\bwith\b", re.I)
 
+
+def segments(title: str):
+    """曲名を「演者が書かれがちな位置」で切る。"""
+    return [norm(p) for p in SEG_SPLIT.split(title) if norm(p)]
+
+
+def check(artists):
+    """本体：各アーティストの曲を1曲ずつ関門に通す。
+
+    関門A（=今回の事故）：自分の名前が別アーティストの名前の一部になっている組で、
+      曲名にその「長いほうの名前」が入っている。akiko の棚に AKIKO YANO が入る型。
+      これは必ず落とす。
+    関門B：曲名の「演者が書かれる位置」に別アーティストの名前が丸ごと入っている。
+      共演の可能性があるので保留＝載せない側に倒す。
+    """
+    by_id = {a["id"]: a for a in artists}
+    # 正規化名 → id。長い名前を優先して当てるため長さ順に持つ
+    name_owner = {}
     for a in artists:
-        self_names = {norm(x) for x in [a["name"]] + a.get("aliases", [])}
+        for nm in [a["name"]] + a.get("aliases", []):
+            n = norm(nm)
+            if len(n) >= MIN_NAME_LEN:
+                name_owner.setdefault(n, {"ids": set(), "raw": nm})
+                name_owner[n]["ids"].add(a["id"])
+
+    # 同一人物の重複登録（棚違い）を別人扱いしないための芯の名前
+    base_of = {}
+    for a in artists:
+        parts = []
+        for x in [a["name"]] + a.get("aliases", []):
+            # 括弧書き（棚の区別）を先に落としてから「/」で割る。
+            # 「山下達郎 (AOR/LP)」を AOR と LP で割ってしまわないように。
+            parts.extend(p for p in re.split(r"[/／]", PAREN.sub("", x)) if p.strip())
+        base_of[a["id"]] = {base_name(p) for p in parts
+                            if len(base_name(p)) >= MIN_NAME_LEN}
+
+    def same_person(id1, id2):
+        return bool(base_of.get(id1, set()) & base_of.get(id2, set()))
+
+    blocked, hold = [], []
+    for a in artists:
+        self_names = {norm(x) for x in [a["name"]] + a.get("aliases", [])
+                      if len(norm(x)) >= MIN_NAME_LEN}
+        # 関門A用：自分の名前を「含んでしまう」別人の長い名前
+        traps = {}
+        for me in self_names:
+            for n, info in name_owner.items():
+                if n == me or me not in n:
+                    continue
+                others = {i for i in info["ids"]
+                          if i != a["id"] and not same_person(i, a["id"])}
+                if others:
+                    traps[n] = (info["raw"], others)
+
         for s in a["songs"]:
             title_n = norm(s["title"])
-            raw = s["raw"]
-            has_cover_mark = bool(COVER_MARK.search(raw))
+            segs = set(segments(s["title"]))
+            if COVER_MARK.search(s["raw"]):
+                continue                      # カバーは例外＝通す
 
-            # 曲名の中に「別人の名前」が入っていないか
-            hits = set()
-            for name_n, ids in idx.items():
-                if name_n in self_names:
+            # --- 関門A ---
+            hitA = {}
+            for n, (raw, others) in traps.items():
+                if n in title_n:
+                    hitA[raw] = others
+            if hitA:
+                ids = set().union(*hitA.values())
+                # 別人名を曲名から取り除いても、まだ本人の名前が残っているなら
+                # 本人の曲に相手が客演しているだけかもしれない。落とさず保留にする。
+                stripped = title_n
+                for raw in hitA:
+                    stripped = stripped.replace(norm(raw), "")
+                if any(sn in stripped for sn in self_names):
+                    hold.append({
+                        "gate": "B", "artist_id": a["id"], "artist": a["name"],
+                        "song_id": s["id"], "title": s["title"], "line": s["line"],
+                        "other": sorted(by_id[i]["name"] for i in ids if i in by_id),
+                        "other_ids": sorted(ids),
+                        "why": "本人名も曲名に入っている。共演か要確認",
+                    })
                     continue
-                if name_n in title_n:
-                    # 自分の名前を含んでいるだけの長い名前（akiko ⊂ akikoyano）も
-                    # 「別人」として扱う。ここが今回の事故の入口。
-                    hits |= (ids - {a["id"]})
-            if not hits:
+                blocked.append({
+                    "gate": "A", "artist_id": a["id"], "artist": a["name"],
+                    "song_id": s["id"], "title": s["title"], "line": s["line"],
+                    "other": sorted(by_id[i]["name"] for i in ids if i in by_id),
+                    "other_ids": sorted(ids),
+                    "why": "曲名に「自分の名前を含む別人のフルネーム」が入っている＝本人でない",
+                })
                 continue
 
-            rec = {
-                "artist_id": a["id"], "artist": a["name"],
-                "song_id": s["id"], "title": s["title"], "line": s["line"],
-                "other": sorted(by_id[i]["name"] for i in hits if i in by_id),
-                "other_ids": sorted(hits),
-            }
-            if has_cover_mark:
-                continue                      # カバーは例外＝通す
-            if FEAT_MARK.search(s["title"]):
-                rec["why"] = "共演表記あり（feat./with/x）。本人名義か要確認"
-                hold.append(rec)              # 判定できない＝保留
-            else:
-                rec["why"] = "曲名が別アーティストの名前を含む。本人の曲でない疑い"
-                blocked.append(rec)           # 別人＝載せない
+            # --- 関門B ---
+            hitB = set()
+            for seg in segs:
+                info = name_owner.get(seg)
+                if info and seg not in self_names:
+                    hitB |= {i for i in info["ids"]
+                             if i != a["id"] and not same_person(i, a["id"])}
+            # --- 関門C：名前が衝突しうるアーティストの「出所不明の曲」 ---
+            # note も year も originalRef も無い＝名前で検索して拾っただけの曲。
+            # 名前が他人と衝突する棚では、それは別人の疑いがある。
+            if traps and 'note: ""' in s["raw"] and "year:" not in s["raw"] \
+                    and "originalRef" not in s["raw"]:
+                hold.append({
+                    "gate": "C", "artist_id": a["id"], "artist": a["name"],
+                    "song_id": s["id"], "title": s["title"], "line": s["line"],
+                    "other": sorted({r for r, _ in traps.values()}),
+                    "other_ids": sorted(set().union(*[o for _, o in traps.values()])),
+                    "why": "出所不明（note/year/originalRefなし）＋名前が衝突する棚。名前検索で拾った別人の疑い",
+                })
+                continue
+
+            if hitB:
+                hold.append({
+                    "gate": "B", "artist_id": a["id"], "artist": a["name"],
+                    "song_id": s["id"], "title": s["title"], "line": s["line"],
+                    "other": sorted(by_id[i]["name"] for i in hitB if i in by_id),
+                    "other_ids": sorted(hitB),
+                    "why": "曲名の演者位置に別アーティスト名が丸ごと入っている。本人名義か要確認",
+                })
     return blocked, hold
 
 
@@ -118,8 +220,11 @@ def main():
 
     print(f"# 関門：アーティスト {len(artists)} 組 / "
           f"曲 {sum(len(a['songs']) for a in artists)} 本を点検")
-    print(f"# 別人混入（載せない）: {len(blocked)} 件")
-    print(f"# 判定保留（載せない側に倒す）: {len(hold)} 件")
+    nb = sum(1 for r in hold if r["gate"] == "B")
+    nc = sum(1 for r in hold if r["gate"] == "C")
+    print(f"# 関門A 別人混入（載せない）: {len(blocked)} 件")
+    print(f"# 関門B 共演・演者位置に別人名（要確認＝載せない側）: {nb} 件")
+    print(f"# 関門C 出所不明＋名前衝突（要確認＝載せない側）: {nc} 件")
     print(f"# 同表記の罠（名前が名前に含まれる組）: {len(collisions)} 組")
     print()
     for r in blocked:
@@ -127,7 +232,7 @@ def main():
               f"「{r['title']}」 ← {'/'.join(r['other'])}")
     print()
     for r in hold:
-        print(f"[保留] {r['artist']}({r['artist_id']}) L{r['line']}  "
+        print(f"[保留{r['gate']}] {r['artist']}({r['artist_id']}) L{r['line']}  "
               f"「{r['title']}」 ← {'/'.join(r['other'])}")
 
     if "--json" in sys.argv:
