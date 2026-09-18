@@ -133,7 +133,11 @@ def _err_text(e):
 #   {"vendor","label","ok","text","model","usage","costYen","seconds","error","searched"}
 # ---------------------------------------------------------------------------
 
-def ask(vendor, messages, search=False, timeout=90, max_tokens=None, temperature=None):
+def ask(vendor, messages, search=False, timeout=90, max_tokens=None, temperature=None,
+        models=None):
+    """models を渡すと、その社の既定リスト（安い順）ではなく指定したモデルを先頭から試す。
+    ★2026-09-19 実測：既定は gpt-4o-mini が先頭で、返ってくる答えが浅く「検索できませんでした」
+      で終わる。難しい問いのときは賢いモデルを指名できる口が要る。"""
     t0 = time.time()
     base = {"vendor": vendor, "label": LABEL[vendor], "ok": False, "text": "",
             "model": "", "usage": {}, "costYen": 0.0, "seconds": 0.0,
@@ -146,7 +150,7 @@ def ask(vendor, messages, search=False, timeout=90, max_tokens=None, temperature
         return base
 
     errs = []
-    for model in CHAT_MODELS[vendor]:
+    for model in (models or CHAT_MODELS[vendor]):
         try:
             if vendor == "gemini":
                 text, usage, searched = _call_gemini(key, model, messages, search, timeout)

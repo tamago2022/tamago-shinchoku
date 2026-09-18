@@ -49,7 +49,12 @@ RECON_PATH = os.path.join(STATUS, "chrome_tabs_recon.json")   # .gitignore済み
 SWEEP_LOG = os.path.join(STATUS, "chrome_sweep.json")          # .gitignore済み（status/*）
 HISTORY_PATH = os.path.join(STATUS, "chrome_tab_history.json")  # .gitignore済み（status/*）
 GATE_PATH = os.path.join(STATUS, ".chrome_sweep_last")
-GATE_SECONDS = 3600  # 1時間に1回
+# ★2026-09-19 実測でここを詰めた。
+#   直す前：1時間に1回。しかも **Chromeが起動していなくても gate を消費していた**。
+#   実際のログ（status/chrome_sweep.json）：02:28「Chrome起動してない」→ 1枚も閉じずに1時間分を消費、
+#   03:29 も同じ。そして 04:07 にChromeが起動して孤児タブが2枚あるのに、04:29 まで掃けない状態だった。
+#   → gate は「実際に掃いたときだけ」進める。間隔も15分に詰める（osascriptで読むだけなので軽い）。
+GATE_SECONDS = 900  # 15分に1回
 
 # 「一度も前面に来ていない」を孤児の証拠として採用するまでの条件（両方満たすこと）
 ORPHAN_MIN_SAMPLES = 120      # 心臓（15秒おき）で約30分ぶんの観測回数
@@ -267,6 +272,55 @@ def classify(tab, hist=None):
     return "keep", "Claudeが作ったと確証が持てない（見分けがつかないものは残す）"
 
 
+# ---------------------------------------------------------------------------
+# 3-c. 「同じURLが何枚も開いている」を畳む（世の中で普通に使われている手）
+# ---------------------------------------------------------------------------
+# 出どころ：AppleScriptでChromeの重複タブを閉じる、という定番の手
+#   （Olaf Alders "Closing Duplicate Tabs With AppleScript" ほか、同種のスクリプトが多数ある）
+#
+# なぜこれが要るか（2026-09-19 実測）：
+#   孤児の空タブを2枚掃いた後も6枚残り、その中身は
+#     ・同一URLの app.devin.ai が **3枚**
+#     ・同一URLの github.com/…/pull/425 が **2枚**
+#   だった。これは NEVER_CLOSE（たまごさんの作業タブになりうる）で守られていて永遠に減らない。
+#   しかし **同じURLの2枚目以降を閉じても、そのページは1枚目に残ったまま**で、何も失われない。
+#   「見分けがつかないものは残す」という憲法に真っ向から沿ったまま、実際に枚数が減る唯一の手。
+#
+# 守ること：
+#   ・残すのは各URLにつき1枚。前面タブがあればそれを残す。無ければ一番手前（index最小）を残す。
+#   ・URLが空／about:blank／newtab は対象外（別ルールで既に扱っている）。
+#   ・ウィンドウをまたいでは畳まない（別ウィンドウは別の用途で開いている可能性がある）。
+def mark_duplicates(judged):
+    """同一ウィンドウ内で同一URLが2枚以上あるとき、1枚だけ残して残りを close にする。"""
+    groups = {}
+    for i, (t, (verdict, why)) in enumerate(judged):
+        url = (t.get("url") or "").strip()
+        if not url or url in CLOSE_EXACT:
+            continue
+        groups.setdefault((t["win"], url), []).append(i)
+
+    out = list(judged)
+    for (_win, _url), idxs in groups.items():
+        if len(idxs) < 2:
+            continue
+        # 残す1枚を決める：前面タブ優先、無ければ一番手前
+        keep = None
+        for i in idxs:
+            if out[i][0].get("active"):
+                keep = i
+                break
+        if keep is None:
+            keep = min(idxs, key=lambda i: out[i][0]["idx"])
+        for i in idxs:
+            if i == keep:
+                continue
+            if out[i][0].get("active"):
+                continue  # 念のため。前面タブは何があっても閉じない
+            t = out[i][0]
+            out[i] = (t, ("close", "同じURLが%d枚開いている重複（1枚は残す）" % len(idxs)))
+    return out
+
+
 CLOSE_SCRIPT = r'''
 tell application "Google Chrome"
   set w to window %WIN%
@@ -377,15 +431,18 @@ def main():
                 "detail": [],
             })
         if args.sweep:
-            touch_gate()
+            # ★touch_gate() を**呼ばない**。Chromeが居ないのは「掃く仕事が無かった」であって
+            #   「掃いた」ではない。ここで gate を進めると、Chromeが起きた直後の一番溜まって
+            #   いる時間帯を素通りしてしまう（2026-09-19 実測でそうなっていた）。
             append_sweep_log({"ts": now_iso(), "closed": 0, "seen": 0,
-                              "note": "Chromeが起動していない／読めなかった"})
+                              "note": "Chromeが起動していない（gateは進めない）"})
         if not args.quiet:
             print("SWEEP_RESULT: SKIP - Chromeが起動していません（起動はしません）")
         return 0
 
     hist = update_history(tabs)
     judged = [(t, classify(t, hist)) for t in tabs]
+    judged = mark_duplicates(judged)
     targets = [(t, why) for t, (verdict, why) in judged if verdict == "close"]
 
     if args.recon:

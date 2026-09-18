@@ -142,6 +142,22 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                 elif job.get("kind") == "tanomu":
                     import tanomu
                     out = tanomu.run_job(job["payload"])
+                elif job.get("kind") == "sweep":
+                    # Chromeタブ掃除機を工場側で今すぐ走らせる（サンドボックスからは
+                    # osascriptが使えないため）。呼べるのはこの1本だけ＝白名簿。
+                    import subprocess
+                    cmd = [sys.executable, os.path.join(HERE, "chrome_tab_sweeper.py"),
+                           "--recon", "--sweep", "--force"]
+                    if job["payload"].get("dryRun"):
+                        cmd.append("--dry-run")
+                    r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+                    out = {"ok": r.returncode == 0, "stdout": r.stdout[-2000:],
+                           "stderr": r.stderr[-1000:], "totalYen": 0.0}
+                elif job.get("kind") == "diag":
+                    # 窓口が通らないとき「向こうに何が有るのか」を工場側で聞きに行く。
+                    # 鍵の値は出さない（gaibu_diag.py 側で保証）。
+                    import gaibu_diag
+                    out = gaibu_diag.run_job(job["payload"])
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except Exception:

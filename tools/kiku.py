@@ -119,7 +119,8 @@ def run_job(payload):
     results = []
     for vendor in ais:
         msgs = build_messages(question, n, vendor, threads, search)
-        res = gkuchi.ask(vendor, msgs, search=search, timeout=120)
+        res = gkuchi.ask(vendor, msgs, search=search, timeout=120,
+                         models=(payload.get("models") or {}).get(vendor))
         gkuchi.record(n or 0, "kiku:" + question[:40], res, note="944番 窓口(kiku.py)")
         results.append(res)
 
