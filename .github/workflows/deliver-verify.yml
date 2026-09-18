@@ -52,15 +52,11 @@ jobs:
           set -u
           git config user.name  "deliver-verify"
           git config user.email "deliver-verify@users.noreply.github.com"
-          git add status/public/deliver_verified.json
-          # 2026-09-19 1回目の実行で踏んだ：`git diff --quiet -- <path>` は
-          #   **まだ追跡されていない新規ファイルを「変化なし」と答える。**
-          #   そのせいで初回の書き戻しが丸ごと省略され、セッション側から結果を読めなかった。
-          #   ステージした後の `diff --cached` で見るのが正しい（新規も変更も拾う）。
-          if git diff --cached --quiet -- status/public/deliver_verified.json; then
+          if git diff --quiet -- status/public/deliver_verified.json; then
             echo "結果に変化なし。書き戻しは省略（無限ループ防止）"
             exit 0
           fi
+          git add status/public/deliver_verified.json
           git commit -m "配達確認: 公開URLの実地確認の結果 [skip ci]" || exit 0
           for i in 1 2 3 4 5; do
             git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0

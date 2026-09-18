@@ -139,83 +139,12 @@ def reap(dry_run=False, quiet=False):
     return 0
 
 
-def push_out(quiet=False):
-    """commit済みなのに誰もpushしていない分を、押し出すだけ。commitはしない。
-
-    2026-09-19（配達係の工事中に実機で踏んだ）：
-      このリポジトリで origin へ push できる出口は事実上2つ
-      （machine_status_push.sh の5分便と command_watch.sh の30秒便）しか無く、
-      **どちらも「自分が書いたファイルが変わったとき」にしか push しない。**
-      一方 Cowork/Dispatch のサンドボックスには GitHub の資格情報が無い
-      （実測：`could not read Username for 'https://github.com'`）。
-      つまりセッション側が commit したものは、**誰かのファイルが偶然変わるまで
-      公開されない。**しかも実測でこの日、5分便は22分以上死んでいた。
-      結果：commitは出来ているのに公開URLが永久に404、という
-      「たまごさんに押せないものを渡す」事故の温床そのものになっていた。
-
-    → 心臓から2分おきに必ず呼ばれるこの道具に「未pushがあれば押し出す」だけ足す。
-      commit はしないので、この道具が勝手に何かを公開することはない。
-      あくまで「誰かが公開すると決めて commit したもの」を運ぶだけ。
-    """
-    # rebase/merge の途中なら触らない（中途半端な状態を公開しない）
-    for marker in ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD"):
-        if os.path.exists(os.path.join(GITDIR, marker)):
-            if not quiet:
-                print("PUSH_OUT: SKIP - %s の途中なので触りません" % marker)
-            return 0
-
-    def git(*args, timeout=120):
-        return subprocess.run(["git", "-C", REPO, *args],
-                              capture_output=True, text=True, timeout=timeout)
-
-    try:
-        r = git("rev-list", "--count", "@{u}..HEAD", timeout=30)
-        if r.returncode != 0:
-            if not quiet:
-                print("PUSH_OUT: SKIP - 上流が分からない")
-            return 0
-        ahead = int((r.stdout or "0").strip() or 0)
-    except Exception as e:  # noqa: BLE001
-        if not quiet:
-            print("PUSH_OUT: SKIP - 数えられませんでした（%s）" % e)
-        return 0
-
-    if ahead <= 0:
-        if not quiet:
-            print("PUSH_OUT: OK - 未pushのcommitはありません")
-        return 0
-
-    try:
-        p = git("-c", "credential.helper=!gh auth git-credential",
-                "push", "origin", "HEAD:main", timeout=180)
-    except Exception as e:  # noqa: BLE001
-        log("⚠️ 未pushの%d件を押し出せませんでした（%s）" % (ahead, e))
-        return 0
-
-    if p.returncode == 0:
-        log("📮 誰もpushしていなかったcommit %d件を押し出しました" % ahead)
-        if not quiet:
-            print("PUSH_OUT: OK - %d件を押し出しました" % ahead)
-    else:
-        err = (p.stderr or "").strip().splitlines()
-        log("⚠️ 未pushの%d件を押し出せませんでした: %s"
-            % (ahead, err[-1] if err else "理由不明"))
-        if not quiet:
-            print("PUSH_OUT: NG - %s" % (err[-1] if err else "理由不明"))
-    return 0
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--quiet", action="store_true")
-    ap.add_argument("--no-push", action="store_true",
-                    help="ロックの片付けだけして、未pushの押し出しはしない")
     args = ap.parse_args()
-    rc = reap(dry_run=args.dry_run, quiet=args.quiet)
-    if not args.dry_run and not args.no_push:
-        push_out(quiet=args.quiet)
-    return rc
+    return reap(dry_run=args.dry_run, quiet=args.quiet)
 
 
 if __name__ == "__main__":
