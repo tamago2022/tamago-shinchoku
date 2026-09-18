@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-19 00:35",
+ "updatedAt": "2026-09-19 00:39",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -3259,9 +3259,27 @@
    "urgentReason": "shikumi.pyが自動検知：dead判定タスクが24時間waitingのまま(oni_kantoku)",
    "original_text": "【自動検知】鬼監督 が動いていません\nstatus/oni_kantoku_log.jsonlの最終行checkedAtが24.7時間更新なし（countToday=0）。\n直したら次回の点検でalive/slowになっていることを確認する。\n874番の週次利用上限自動復旧を受けて、改めて最初から仕上げる。\nLovable公開は09-13から76時間ブロック中のため、このタスクはmainへ合流するところまでで完了とする。\n",
    "interpretation": "アラートの原因は鬼監督スクリプト自体の故障ではなく、週次利用上限で工場全体（キュー処理）が\n止まっていたことによる副次症状（874番で既に恒久対策済み・auto_launcher.py）。\n着手時点でstatus/shikumi.jsonのoni_kantoku項目を実測したところ、verdict=alive・\nlastRanAt=2026-09-18T02:26:57+09:00（0.0時間経過）・countToday=21で、既に自己復旧していた。\nこのチケットでは、鬼監督が復旧して稼働していることを確認ページとして証拠化し、\ntamago-shinchoku（GitHub Pages）本番へpushして反映することを完了条件とする\n（joy-relief-station/Lovableとは無関係の別リポジトリのため、Lovable公開ブロックの影響を受けない）。\n",
-   "inspections": [],
-   "state": "submitted",
-   "kenpinUpdatedAt": "2026-09-18T02:34:15+09:00",
+   "inspections": [
+    {
+     "seq": 1,
+     "ts": "2026-09-19T00:35:53+09:00",
+     "kind": "post",
+     "vendor": "OpenAI",
+     "model": "gpt-5-mini",
+     "verdict": "FIX",
+     "gaps": [
+      "依頼原文の「直したら次回の点検でalive/slowになっていることを確認する。」に対応する記述が提出物に無い（提出物はログが数分おきに更新されていると述べるのみで、次回点検でのverdict=aliveまたはslowを示すログ／スクショ／抜粋が提示されていない）",
+      "依頼原文の「status/oni_kantoku_log.jsonlの最終行checkedAtが24.7時間更新なし（countToday=0）。」に対応する記述が提出物に無い（開始時点での最終行が24.7時間更新なしであったことを示すログやスクショ等の証拠が提示されていない）"
+     ],
+     "blindspot": "ログやタイムスタンプの更新があるだけでは、verdictが明示的にalive/slowに切り替わった証拠にならない点を見落としているかもしれません",
+     "one_line": "alive確認の証拠を提示して",
+     "costYen": 1.025,
+     "submissionRef": "status/kenpin/868/001-submission.md",
+     "resultRef": "status/kenpin/868/001-result.json"
+    }
+   ],
+   "state": "fix_required",
+   "kenpinUpdatedAt": "2026-09-19T00:35:53+09:00",
    "selfCheckPassAt": "2026-09-18T02:34:15+09:00",
    "kenpinNotes": [
     {
@@ -3288,7 +3306,8 @@
    "urls": [],
    "stuckAt": "2026-09-18T03:17:41+09:00",
    "stuckReasonSummary": "URLが1本も無いまま終了 ／ URLが1本も無いまま終了",
-   "stuckRedoTotal": 2
+   "stuckRedoTotal": 2,
+   "kenpinFixStreak": 1
   },
   {
    "n": 869,
@@ -4375,9 +4394,29 @@
    "stuckRedoTotal": 2,
    "original_text": "【ZENテスト・2本の動画】たまごさんの依頼原文は必ず最初に読むこと：\n/Users/mac/Documents/AI作業/素材/ZEN_2026-09-17/依頼内容_原文.md\n★そこに書いてある「完了条件9項目」が合否。1つでも外したら不合格。\n\n🚨🚨 このセッションはバックグラウンド実行を使うな。すべて前で待て（timeout付き）。\n「完了通知を待ちます」で終わったら死亡扱い。\n\n🚨🚨🚨 【お金の栓】たまごさんのGOが出るまで fal を1回も叩くな。1円も使うな。\n　合計69円（$0.46）で見積り済み。たまごさんは30円のつもりだった＝超過しているので Dispatch が確認中。\n　GOが来たらDispatchが `status/queue.json` のこの項目に go:true を書き込む。\n　**go:true が無い状態で generate したら、それだけで重大事故。**\n\n===== GOが出るまでにやること（全部タダ。ここまでは今すぐ進める）=====\n\n(A) 素材の確認\n　~/Documents/AI作業/素材/ZEN_2026-09-17/18_ZEN_chashitsu.png（茶室・1122x1402）\n　~/Documents/AI作業/素材/ZEN_2026-09-17/22_ZEN_kuroihama.png（黒砂の海岸・1122x1402）\n　両方とも縦。16:9にするには横を 2492px まで伸ばす（縦1402は切らない）。\n\n(B) パイプラインのスクリプトを書き切る（実行はしない）\n　~/Documents/AI作業/scripts/zen_loop_video.py\n　工程1: fal-ai/bytedance/seedream/v4/edit で 16:9 へ横拡張（$0.03/枚）\n　　- プロンプトは「左右に自然に continue させる。中央の被写体・構図・光・色は一切変えない」\n　　- 縦を切らない。元の1122x1402の範囲がそのまま中央に残ること\n　工程2: minimax/h3-max-turbo/image-to-video、resolution=\"1080p\"、duration=5（$0.04/秒）\n　　- ★ image_url と end_image_url の両方に「同じ拡張済み静止画」を入れる\n　　　→ 最後のコマが最初のコマに戻る＝継ぎ目なしループ。追加料金なし。これが肝。\n　　- prompt に必ず入れる英語：\n　　　\"locked-off static camera, tripod, absolutely no camera movement,\n　　　 no pan, no tilt, no zoom, no push-in, no dolly, no parallax,\n　　　 the frame does not move at all. seamless loop.\"\n　　- 茶室: \"only the greenery outside the round window sways very gently in a faint breeze;\n　　　 everything else is completely still. the stone object, the floor, the shadows,\n　　　 the cherry branch do not move. subtle, slow, barely perceptible motion.\"\n　　　（影の揺れは任意。難しければ緑だけでよい＝たまごさんの許可済み）\n　　- 海岸: \"waves roll in and recede naturally, clouds drift slowly across the sky;\n　　　 the stone object and the rocks remain completely still.\"\n　工程3: 出力を ffprobe で実測 → 1920x1080 / 5秒 であることを数字で確認\n　　（1080pが1920x1080で出なかった場合のみ、fal-ai/topaz/upscale/video で1080pへ。\n　　　＋$0.02/秒＝2本で30円の追加。その時は必ず先にDispatchへ報告して止まる）\n　工程4: ループ検証を機械でやる\n　　- 最初のフレームと最後のフレームを ffmpeg で抜き出し、画素差（RMSE）を測る\n　　- 数値を報告に必ず書く。「ループしてます」だけは禁止\n　★ 使った金額を毎回 status/gaibu.json 形式の台帳に円で記録する\n\n(C) 外部AI検品の準備（917番＝仕組み⑭と同じ器を使う。無ければこの中で作る）\n　渡す3点セット：①依頼内容_原文.md の全文 ②成果物 ③「たまごさんに見せていい状態か」の問い\n　必ず添える前提：「たまごさんは非エンジニア。検査用画面・専門用語・仮データは見せてはいけない」\n　聞く観点（これをそのまま質問文に入れる）：\n　　1. 16:9になっているか。元の縦の絵が切られていないか\n　　2. カメラが動いていないか（パン・ズーム・寄りが1ミリでもあったらNG）\n　　3. 動いてほしいものだけ動いているか（茶室＝外の緑／海岸＝波と雲）\n　　4. 動いてはいけないものが動いていないか（石のオブジェが溶ける・形が変わるのは一発NG）\n　　5. ループの継ぎ目が見えないか\n　　6. 1920x1080か\n　　7. たまごさんに見せていい状態か。NGならどこが\n　使うAI：Grok（xAIの鍵＝TAMAGO's team `momotaro` または `gokigen-voice`、残高$10）を必ず1本。\n　Devinは復活していれば追加。ChatGPT/Geminiは鍵が無ければ飛ばす（揃うまで待たない）。\n　★判定とその理由を全部 台帳に残す。たまごさんが後から「それ検品の件なんだけど」と\n　　言えるように、誰がどの観点でOKを出したかを1件ずつ記録する。\n　★NGが1つでも出たら渡さない。直して再検品。\n\n(D) ここまで終わったらDispatchへ「準備完了・GO待ち」と1行返す。**falは叩かない。**\n\n===== GO（go:true）が来てからやること =====\n1. スクリプトを1回だけ走らせる。**2本だけ。**やり直しは勝手にやらず必ず報告してから\n2. ffprobe の実測値（幅×高さ×秒数）とループRMSEを出す\n3. 外部AI検品を通す。NGなら直して再検品\n4. 全部PASSしたら Dispatch へ：動画2本のファイルパス＋実測値＋検品結果＋実際に使った円\n5. 報告は1行＋成果物。原因・経緯・言い訳は書かない\n\n作業リポジトリ: /Users/mac/Desktop/tamago-shinchoku\n\n【自動やり直し・09-17 08:43】前回はURLを1本も出さずに終わりました。たまごさんの決まり：**画面が変わって、本番のURLを報告して、はじめて完了。**本番に出したページのURLを必ず報告に含めること。どうしても出せない事情があるなら、その理由を1行だけ書くこと。\n\n【たまごさんのやり直し指摘・1回目・09-17 16:50】【931番・鬼監督判定FAIL】完了報告文が『外部AI検品OK』と書きつつ、直後に『AI検品：AI検品がタイムアウトしました(600秒超)』を2回記録=検品が実際には通っていない矛盾。依頼原文の完了条件6/7(1920x1080・5秒のffprobe実測値)と条件5(ループのRMSE数値)も報告文に無く証拠不足。外部AI検品を確実に完走させ、実測数値を書いてから再提出すること。",
    "interpretation": "# 919号・今回のセッションの解釈\n\n## 事実確認（実測に基づく）\n- 919号の動画2本は **2026-09-17 09:42〜09:46 にすでに生成済み**で、\n  `share/check/assets/919-zen/{chashitsu,kuroihama}_loop_1920x1080.mp4` として origin/main にpush済み。\n- 承認額は72円。**その72円はすでに使い切っている**（生成は完了しているため）。\n- 前回のFAIL理由は「本番URLが報告に無い」「外部AI検品がタイムアウトして実際には通っていないのに\n  『検品OK』と書いた」「ffprobe実測値・ループRMSEが報告文に無い」。\n  → **不足していたのは生成ではなく、検証と見せ方。**\n\n## 今回やること（追加課金 0円）\n1. 既存2本を自分で実測する（ffprobe・全124コマのRMSE・領域別の時間方向標準偏差）。\n2. たまごさんが見て嬉しい1枚のページを新規に作り、本番(GitHub Pages)へ出す。\n   `share/zen/index.html`。1MB超を公開側に置かない規則に合わせ、\n   ページ内の再生用は1440x810へ再エンコード（759KB/890KB）、原寸1920x1080へのリンクも置く。\n3. 合否を正直に書く。\n\n## 実測の結論\n- **黒砂海岸＝合格**：1920x1080／5.17秒（124コマ・24fps）／隣り合うコマの差 平均RMSE 3.52（＝静止画ではない）／\n  継ぎ目（最後→最初）RMSE 3.80。波と雲だけが動き、石は動いていない。\n- **茶室＝不合格**：頼んでいない白い靄が部屋を流れ、止まっているべき石・掛軸・畳の明るさが変わる。\n  石の平均輝度 99.5→124.6（先頭→31コマ目）。掛軸（動くはずのない壁の軸）の時間方向の標準偏差 17.91 に対し、\n  動いてよい窓の緑は 33.64。先頭コマとの最大差 58.72（海岸は 36.49）。\n  → 依頼原文の「everything else is completely still」に反する。\n- カメラのズームは疑ったが、**実測では拡大率1.02倍相当で靄によるノイズと区別できなかったため、\n  ズームしたとは主張しない**（測れていないことは書かない）。\n\n## 費用\n- **0本 × 0円 ＝ 0円**（新規生成なし）。既に使った72円＝承認済みの72円ちょうど。\n- 茶室の作り直しは約30円かかるため、承認なしには実行しない。\n",
-   "inspections": [],
-   "state": "submitted",
-   "kenpinUpdatedAt": "2026-09-18T02:14:07+09:00"
+   "inspections": [
+    {
+     "seq": 1,
+     "ts": "2026-09-19T00:36:25+09:00",
+     "kind": "pre",
+     "vendor": "OpenAI",
+     "model": "gpt-5-mini",
+     "verdict": "FIX",
+     "gaps": [
+      "依頼原文のB「パイプラインのスクリプトを書き切る（~/Documents/AI作業/scripts/zen_loop_video.py）…工程1〜4 を明記する）」に対応する記述が提出物に無い",
+      "依頼原文のC「渡す3点セット：①依頼内容_原文.md の全文 ②成果物 ③『たまごさんに見せていい状態か』の問い…聞く観点1〜7 をそのまま質問文に入れる。使うAI：Grok を必ず1本。」に対応する記述が提出物に無い",
+      "依頼原文のD「ここまで終わったらDispatchへ『準備完了・GO待ち』と1行返す。falは叩かない。」に対応する記述が提出物に無い"
+     ],
+     "blindspot": "Grok（momotaro／gokigen-voice）用のAPI鍵と残高$10の利用可否を確認しておくこと",
+     "one_line": "準備項目を明記して",
+     "costYen": 1.056,
+     "submissionRef": "status/kenpin/919/001-submission.md",
+     "resultRef": "status/kenpin/919/001-result.json"
+    }
+   ],
+   "state": "fix_required",
+   "kenpinUpdatedAt": "2026-09-19T00:36:25+09:00",
+   "kenpinFixStreak": 1
   },
   {
    "n": 921,
@@ -5024,9 +5063,9 @@
    "status": "running",
    "limitMin": 10,
    "model": "claude-sonnet-5",
-   "startedAt": "2026-09-19T00:35:02+09:00",
-   "sessionId": "d3322708-3c37-4d23-8f7f-bae449402f29",
-   "pid": 5826
+   "startedAt": "2026-09-19T00:39:50+09:00",
+   "sessionId": "a720ea09-0556-4cf7-9a78-036307c2a1d5",
+   "pid": 7423
   }
  ]
 }
