@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#708 「深刻なバグ」ラベルの正体調査・修正 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #708 「深刻なバグ」ラベルの正体調査・修正</div>
+<h1>#708 「深刻なバグ」ラベルの正体調査・修正</h1>
+<div class="date">2026-09-12 コード修正・main合流・独立検品は完了／Lovable基盤障害で公開は反映待ち</div>
+
+<div class="fix">
+猫の動画ページ左下に見切れて出ていた「深刻なバグ」の正体は、<code>src/routes/__root.tsx</code>のエラー画面が、回線の瞬断等で一瞬だけ出てすぐ自然に治る一時的なエラーまで「重大」としてLovable側へ報告していたこと。この誤報を止める修正（コミット<code>9391f6cd</code>）を実装し、mainへ合流済み。Lovableの「変更を公開」も複数回押したが、Lovable側のビルド基盤が2026-09-08から詰まったままで、この修正はまだ本番の画面に出ていない（他の案件#152・#686・#690と同じ基盤障害）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1箇所</b><span>特定した誤報経路(reportLovableError)</span></div>
+  <div class="num"><b>main合流済</b><span>コード修正の反映状況</span></div>
+  <div class="num"><b>公開待ち</b><span>Lovable基盤障害のため(09-08〜)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>猫の動画ページ(証拠・エラー文字なし)</b><img src="img/708-maru-cat-thumb.jpg" alt="猫の動画ページ(証拠・エラー文字なし)"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>猫の動画ページ(本番・現時点ではまだ旧バージョン配信中)</b><a href="https://joy-relief-station.lovable.app/room/card/maru-cat" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/maru-cat</a></li>
+  <li><b>修正コミット(GitHub・非公開リポジトリのため未ログインだと404表示になりますが、git上には実在しmainに合流済みです)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/9391f6cde8b37f20c881b901eba711eb26b5fbb5" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/9391f6cde8b37f20c881b901eba711eb26b5fbb5</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>独立検品(tamago-verifier)</td><td class="yes">合格・型チェック/lintとも新規エラー0件</td></tr>
+<tr><td>コミットがoriginのmainの祖先か(git merge-base)</td><td class="yes">該当・確認済み</td></tr>
+<tr><td>「深刻」「重大」の残存文字列チェック(全文検索)</td><td class="yes">無関係な曲コピー2件のみ・画面表示には影響なし</td></tr>
+<tr><td>Lovable「変更を公開」クリック</td><td class="yes">実行成功(複数回)</td></tr>
+<tr><td>本番反映(x-deployment-id変化)</td><td class="no">不変・Lovableビルド基盤の障害で反映待ち</td></tr>
+<tr><td>Lovableビルド履歴パネル</td><td class="no">直近10件すべて「ビルドに失敗しました」表示(09-08 5:39以降)</td></tr>
+</table>
+
+<footer>
+コードの修正自体は完了しmainに合流済み。公開が反映されないのはコードの不具合ではなく、Lovable側のビルドパイプライン自体が2026-09-08から全面停止していることが原因（同時期に発生した案件#152・#686・#690と同一の基盤障害）。復旧すればこの修正を含む09-08以降の全変更が追加作業なしで一括反映される見込み。詳細は.claude/PENDING_DECISIONS.mdの2026-09-12・708号車の項。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

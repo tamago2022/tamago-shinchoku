@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#890 カード種類×バッジ 実寸見本（余白px指定・実測版）</title>
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;padding:20px 16px 60px;background:#161616;color:#eee;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;}
+  h1{font-size:1.05rem;font-weight:700;margin:0 0 4px;}
+  .date{color:#999;font-size:0.78rem;margin-bottom:18px;}
+  table{border-collapse:collapse;width:100%;max-width:760px;margin:0 0 10px;font-size:0.82rem;background:#1f1f1f;}
+  th,td{border:1px solid #3a3a3a;padding:6px 10px;text-align:left;}
+  th{background:#2a2a2a;color:#bbb;}
+  .refwrap{display:flex;gap:14px;align-items:flex-start;margin:0 0 18px;flex-wrap:wrap;}
+  .refwrap img{max-width:280px;border-radius:6px;border:1px solid #3a3a3a;}
+  .refcap{font-size:0.78rem;color:#999;max-width:280px;}
+  h2{font-size:0.92rem;color:#bbb;border-top:1px solid #333;padding-top:18px;margin:26px 0 12px;font-weight:700;}
+  .grid{display:flex;flex-wrap:wrap;gap:22px;}
+  .cardwrap{background:#1f1f1f;border-radius:8px;padding:12px;}
+  .cardlabel{font-size:0.8rem;font-weight:700;color:#ddd;margin-bottom:4px;}
+  .dims{font-size:0.7rem;color:#999;margin-bottom:8px;}
+  .variants{display:flex;gap:14px;flex-wrap:wrap;}
+  .variant{display:flex;flex-direction:column;gap:4px;}
+  .vlabel{font-size:0.72rem;color:#ddd;font-weight:700;}
+  .thumb{position:relative;border-radius:6px;overflow:hidden;background:#000;}
+  .thumb img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+  .badge{position:absolute;aspect-ratio:1/1;background-image:url(data:image/png;base64,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);background-size:contain;background-repeat:no-repeat;background-position:top left;}
+  .meas{font-size:0.72rem;color:#7fd88f;font-weight:700;}
+  .warn{color:#ff8a65;}
+  .fixlist{font-size:0.8rem;line-height:2;background:#1f1f1f;border-radius:8px;padding:12px 16px;max-width:760px;}
+  .fixlist code{color:#ffce4a;}
+  .note{font-size:0.8rem;line-height:1.9;background:#1f1f1f;border-radius:8px;padding:12px 16px;max-width:760px;color:#ccc;margin:0 0 22px;}
+</style>
+</head>
+<body>
+<h1>#890 カード種類×バッジ 実寸見本（余白px指定・実測版）</h1>
+<div class="date">2026-09-16 作成／本番コードは変更していません。余白はCSS%をやめ、長辺（幅）の5%から計算したpxを直接指定。実測値(getBoundingClientRect)を各カードの下に緑字で表示</div>
+
+<h2>お手本と現行ルールの数字の食い違い</h2>
+<table>
+<tr><th>測ったもの</th><th>バッジの短辺比</th><th>余白（上／左）</th></tr>
+<tr><td>Vimeo Staff Pick（お手本）</td><td>29.6%</td><td>12px／12px</td></tr>
+<tr><td>「Recommendation Badge」資料の絵</td><td>28.8%</td><td>21px／20px</td></tr>
+<tr><td>同じ資料の文字「約12〜15%」</td><td>12〜15%</td><td>—</td></tr>
+<tr><td>憲法の文字「15〜20%以下」</td><td>15〜20%</td><td>—</td></tr>
+</table>
+<div class="refwrap">
+  <img src="ref/badge-ohon-vimeo-staffpick.jpg">
+  <div class="refcap">お手本画像：Vimeo Staff Pick（share/check/ref/badge-ohon-vimeo-staffpick.jpg）</div>
+</div>
+
+<div class="note">
+25/29/35/40/45%の5段階にした理由：たまごさんが「30%くらいが近い、45%まで見てみたい」と発言したこと／Vimeo Staff Pickのお手本を実測したら短辺比29.6%で、うちの憲法文言「短辺15〜20%以下」の方が間違いだったと判明したこと、の2点による。<br>
+このページの誠実性について：サムネイル画像はYouTubeの汎用サムネイル（hqdefault.jpg）であり、実際にjoy-relief-station本番ページをブラウザで開いて撮影したスクリーンショットではありません。コード上の実寸px・アスペクト比・バッジ配置ロジックの数値（実際の値）を使って再現したレイアウトです。このセッション環境ではネットワークアクセス制約により外部ブラウザ操作・headless browserのインストール（npm install／curl等）が行えなかったための代替です。
+</div>
+
+<h2>スマホ390px幅のとき（実寸px・余白＝幅の5%固定・バッジ25/29/35/40/45%）</h2>
+<div class="grid">
+
+  <div class="cardwrap">
+    <div class="cardlabel">① メインの曲（16:9ヒーロー） <span style="color:#7fd88f;font-size:0.72rem;">✅実装済み</span></div>
+    <div class="dims">実寸 342×192px（短辺192px）／余白17.1px固定／VideoCard.tsx／曲ページ1か所</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="m1-25" style="width:342px;height:192px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:17.1px;left:17.1px;height:48.0px;"></div>
+      </div>
+      <div class="meas" id="m1-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="m1-29" style="width:342px;height:192px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:17.1px;left:17.1px;height:55.7px;"></div>
+      </div>
+      <div class="meas" id="m1-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="m1-35" style="width:342px;height:192px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:17.1px;left:17.1px;height:67.2px;"></div>
+      </div>
+      <div class="meas" id="m1-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="m1-40" style="width:342px;height:192px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:17.1px;left:17.1px;height:76.8px;"></div>
+      </div>
+      <div class="meas" id="m1-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="m1-45" style="width:342px;height:192px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:17.1px;left:17.1px;height:86.4px;"></div>
+      </div>
+      <div class="meas" id="m1-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">② シェルフカード（1:1） <span style="color:#7fd88f;font-size:0.72rem;">✅実装済み</span></div>
+    <div class="dims">実寸 160×160px（短辺160px）／余白8.0px固定／ShelfCardView.tsx／棚一覧・アーティストページ等（同じ形）</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="m2-25" style="width:160px;height:160px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.0px;left:8.0px;height:40.0px;"></div>
+      </div>
+      <div class="meas" id="m2-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="m2-29" style="width:160px;height:160px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.0px;left:8.0px;height:46.4px;"></div>
+      </div>
+      <div class="meas" id="m2-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="m2-35" style="width:160px;height:160px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.0px;left:8.0px;height:56.0px;"></div>
+      </div>
+      <div class="meas" id="m2-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="m2-40" style="width:160px;height:160px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.0px;left:8.0px;height:64.0px;"></div>
+      </div>
+      <div class="meas" id="m2-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="m2-45" style="width:160px;height:160px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.0px;left:8.0px;height:72.0px;"></div>
+      </div>
+      <div class="meas" id="m2-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">③ 関連 <span style="color:#ff8a65;font-size:0.72rem;">⬜未実装・想定</span></div>
+    <div class="dims">実寸 267×150px（短辺150px）／余白13.4px固定／RelatedCardsRow.tsx／曲ページ</div>
+    <div class="dims" style="color:#ff8a65;">※現状このコンポーネントにバッジの実装はありません。ここに示すのは「もし付けるなら」の想定サイズ感です。</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="m3-25" style="width:267px;height:150px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:13.4px;left:13.4px;height:37.5px;"></div>
+      </div>
+      <div class="meas" id="m3-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="m3-29" style="width:267px;height:150px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:13.4px;left:13.4px;height:43.5px;"></div>
+      </div>
+      <div class="meas" id="m3-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="m3-35" style="width:267px;height:150px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:13.4px;left:13.4px;height:52.5px;"></div>
+      </div>
+      <div class="meas" id="m3-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="m3-40" style="width:267px;height:150px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:13.4px;left:13.4px;height:60.0px;"></div>
+      </div>
+      <div class="meas" id="m3-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="m3-45" style="width:267px;height:150px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:13.4px;left:13.4px;height:67.5px;"></div>
+      </div>
+      <div class="meas" id="m3-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">④ おすすめ／こちらもどうぞ <span style="color:#7fd88f;font-size:0.72rem;">✅実装済み</span></div>
+    <div class="dims">実寸 136×136px（短辺136px）／余白6.8px固定／NextRecommendations.tsx／「こちらも、いかがでしょう」の自動表示</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="m4-25" style="width:136px;height:136px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:6.8px;left:6.8px;height:34.0px;"></div>
+      </div>
+      <div class="meas" id="m4-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="m4-29" style="width:136px;height:136px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:6.8px;left:6.8px;height:39.4px;"></div>
+      </div>
+      <div class="meas" id="m4-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="m4-35" style="width:136px;height:136px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:6.8px;left:6.8px;height:47.6px;"></div>
+      </div>
+      <div class="meas" id="m4-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="m4-40" style="width:136px;height:136px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:6.8px;left:6.8px;height:54.4px;"></div>
+      </div>
+      <div class="meas" id="m4-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="m4-45" style="width:136px;height:136px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:6.8px;left:6.8px;height:61.2px;"></div>
+      </div>
+      <div class="meas" id="m4-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">⑤ 関連アーティスト／関連プロジェクト <span style="color:#ff8a65;font-size:0.72rem;">⬜未実装・想定</span></div>
+    <div class="dims">実寸 220×123.8px（短辺123.8px）／余白11.0px固定／RelatedArtistsShelf.tsx・RelatedProjectsShelf.tsx（同じ形・aspect-video 16:9）</div>
+    <div class="dims" style="color:#ff8a65;">※現状このコンポーネントにバッジの実装はありません。ここに示すのは「もし付けるなら」の想定サイズ感です。</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="m5-25" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:30.9px;"></div>
+      </div>
+      <div class="meas" id="m5-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="m5-29" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:35.9px;"></div>
+      </div>
+      <div class="meas" id="m5-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="m5-35" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:43.3px;"></div>
+      </div>
+      <div class="meas" id="m5-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="m5-40" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:49.5px;"></div>
+      </div>
+      <div class="meas" id="m5-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="m5-45" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:55.7px;"></div>
+      </div>
+      <div class="meas" id="m5-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+</div>
+
+<h2>横長1280px幅のとき（実寸px・余白＝幅の5%固定・バッジ25/29/35/40/45%）</h2>
+<div class="grid">
+
+  <div class="cardwrap">
+    <div class="cardlabel">① メインの曲（16:9ヒーロー） <span style="color:#7fd88f;font-size:0.72rem;">✅実装済み</span></div>
+    <div class="dims">実寸 688×387px（短辺387px）／余白34.4px固定／VideoCard.tsx／曲ページ1か所</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="d1-25" style="width:688px;height:387px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:34.4px;left:34.4px;height:96.8px;"></div>
+      </div>
+      <div class="meas" id="d1-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="d1-29" style="width:688px;height:387px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:34.4px;left:34.4px;height:112.2px;"></div>
+      </div>
+      <div class="meas" id="d1-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="d1-35" style="width:688px;height:387px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:34.4px;left:34.4px;height:135.4px;"></div>
+      </div>
+      <div class="meas" id="d1-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="d1-40" style="width:688px;height:387px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:34.4px;left:34.4px;height:154.8px;"></div>
+      </div>
+      <div class="meas" id="d1-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="d1-45" style="width:688px;height:387px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:34.4px;left:34.4px;height:174.2px;"></div>
+      </div>
+      <div class="meas" id="d1-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">② シェルフカード（1:1） <span style="color:#7fd88f;font-size:0.72rem;">✅実装済み</span></div>
+    <div class="dims">実寸 200×200px（短辺200px）／余白10.0px固定／ShelfCardView.tsx／棚一覧・アーティストページ等（同じ形）</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="d2-25" style="width:200px;height:200px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:10.0px;left:10.0px;height:50.0px;"></div>
+      </div>
+      <div class="meas" id="d2-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="d2-29" style="width:200px;height:200px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:10.0px;left:10.0px;height:58.0px;"></div>
+      </div>
+      <div class="meas" id="d2-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="d2-35" style="width:200px;height:200px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:10.0px;left:10.0px;height:70.0px;"></div>
+      </div>
+      <div class="meas" id="d2-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="d2-40" style="width:200px;height:200px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:10.0px;left:10.0px;height:80.0px;"></div>
+      </div>
+      <div class="meas" id="d2-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="d2-45" style="width:200px;height:200px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:10.0px;left:10.0px;height:90.0px;"></div>
+      </div>
+      <div class="meas" id="d2-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">③ 関連 <span style="color:#ff8a65;font-size:0.72rem;">⬜未実装・想定</span></div>
+    <div class="dims">実寸 165×93px（短辺93px）／余白8.3px固定／RelatedCardsRow.tsx／曲ページ</div>
+    <div class="dims" style="color:#ff8a65;">※現状このコンポーネントにバッジの実装はありません。ここに示すのは「もし付けるなら」の想定サイズ感です。</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="d3-25" style="width:165px;height:93px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.3px;left:8.3px;height:23.3px;"></div>
+      </div>
+      <div class="meas" id="d3-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="d3-29" style="width:165px;height:93px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.3px;left:8.3px;height:27.0px;"></div>
+      </div>
+      <div class="meas" id="d3-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="d3-35" style="width:165px;height:93px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.3px;left:8.3px;height:32.5px;"></div>
+      </div>
+      <div class="meas" id="d3-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="d3-40" style="width:165px;height:93px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.3px;left:8.3px;height:37.2px;"></div>
+      </div>
+      <div class="meas" id="d3-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="d3-45" style="width:165px;height:93px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.3px;left:8.3px;height:41.9px;"></div>
+      </div>
+      <div class="meas" id="d3-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">④ おすすめ／こちらもどうぞ <span style="color:#7fd88f;font-size:0.72rem;">✅実装済み</span></div>
+    <div class="dims">実寸 176×176px（短辺176px）／余白8.8px固定／NextRecommendations.tsx／「こちらも、いかがでしょう」の自動表示</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="d4-25" style="width:176px;height:176px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.8px;left:8.8px;height:44.0px;"></div>
+      </div>
+      <div class="meas" id="d4-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="d4-29" style="width:176px;height:176px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.8px;left:8.8px;height:51.0px;"></div>
+      </div>
+      <div class="meas" id="d4-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="d4-35" style="width:176px;height:176px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.8px;left:8.8px;height:61.6px;"></div>
+      </div>
+      <div class="meas" id="d4-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="d4-40" style="width:176px;height:176px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.8px;left:8.8px;height:70.4px;"></div>
+      </div>
+      <div class="meas" id="d4-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="d4-45" style="width:176px;height:176px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:8.8px;left:8.8px;height:79.2px;"></div>
+      </div>
+      <div class="meas" id="d4-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="cardwrap">
+    <div class="cardlabel">⑤ 関連アーティスト／関連プロジェクト <span style="color:#ff8a65;font-size:0.72rem;">⬜未実装・想定</span></div>
+    <div class="dims">実寸 220×123.8px（短辺123.8px）／余白11.0px固定／RelatedArtistsShelf.tsx・RelatedProjectsShelf.tsx（同じ形・aspect-video 16:9）</div>
+    <div class="dims" style="color:#ff8a65;">※現状このコンポーネントにバッジの実装はありません。ここに示すのは「もし付けるなら」の想定サイズ感です。</div>
+    <div class="variants">
+    <div class="variant">
+      <div class="vlabel">25%</div>
+      <div class="thumb" id="d5-25" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:30.9px;"></div>
+      </div>
+      <div class="meas" id="d5-25-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">29%</div>
+      <div class="thumb" id="d5-29" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:35.9px;"></div>
+      </div>
+      <div class="meas" id="d5-29-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">35%</div>
+      <div class="thumb" id="d5-35" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:43.3px;"></div>
+      </div>
+      <div class="meas" id="d5-35-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">40%</div>
+      <div class="thumb" id="d5-40" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:49.5px;"></div>
+      </div>
+      <div class="meas" id="d5-40-meas">実測待ち…</div>
+    </div>
+    <div class="variant">
+      <div class="vlabel">45%</div>
+      <div class="thumb" id="d5-45" style="width:220px;height:123.8px;">
+        <img class="bg" src="https://img.youtube.com/vi/s_vAwKnFlQk/hqdefault.jpg">
+        <div class="badge" data-badge="1" style="top:11.0px;left:11.0px;height:55.7px;"></div>
+      </div>
+      <div class="meas" id="d5-45-meas">実測待ち…</div>
+    </div>
+    </div>
+  </div>
+
+</div>
+
+<h2>「15〜20%」「12〜15%」の記述箇所（まだ直していません）</h2>
+<div class="fixlist">
+<code>AGENTS.md:106</code>「サムネイル上のバッジは短辺の15〜20%以下」<br>
+<code>AGENTS.md:179</code>「短辺の15〜20%以下・四隅配置が基準」<br>
+<code>CLAUDE.md:79</code>「バッジは短辺15〜20%以下」<br>
+<code>.claude/manuals/02-shelf-editor-ui.md:9</code>「短辺の15〜20%以下・四隅に控えめ配置」<br>
+<code>ai-brain/company-os/REPEATED_UNFIXED.md:29</code>「短辺の15〜20%以下・左上固定」<br>
+（コード側の現在値：<code>src/lib/badgeKinds.ts</code>の<code>CONCIERGE_BADGE_SIZE_CLASS</code>は固定px（<code>h-11 md:h-14</code>等）で指定されており、%ベースの比率定数はまだ存在しません（<code>.claude/manuals/02-shelf-editor-ui.md</code>に「固定pxをやめて比率にする」が既知の未解決債務として記載あり）。<code>BADGE_TARGET_SHORT_SIDE_RATIO</code>・<code>BADGE_INSET_RATIO</code>という定数名はコード上に存在しません（grep一致ゼロ、2026-09-16確認）
+</div>
+
+<script>
+document.querySelectorAll('[id$="-meas"]').forEach(function(el){
+  var cardId = el.id.replace('-meas','');
+  var thumb = document.getElementById(cardId);
+  if(!thumb) return;
+  var badge = thumb.querySelector('[data-badge]');
+  var tr = thumb.getBoundingClientRect();
+  var br = badge.getBoundingClientRect();
+  var top = (br.top - tr.top).toFixed(1);
+  var left = (br.left - tr.left).toFixed(1);
+  var match = Math.abs(top-left) < 0.2 ? '（上下左右そろっている）' : '（食い違いあり）';
+  el.textContent = '実測: 上' + top + 'px／左' + left + 'px ' + match;
+  if (Math.abs(top-left) >= 0.2) el.classList.add('warn');
+});
+</script>
+</body>
+</html>

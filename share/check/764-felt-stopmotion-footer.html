@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#764 フェルト・ストップモーション（全ページ最下部） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #764 フェルト・ストップモーション（全ページ最下部）</div>
+<h1>#764 フェルト・ストップモーション（全ページ最下部）</h1>
+<div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+全ページ共通レイアウト最下部にフェルト・ストップモーションの動画（MP4・自動再生・無音・ループ・playsinline・reduced-motion対応）を実装し、joy-relief-stationのmainブランチへ合流済み。<b>本番反映だけがLovable基盤のGitHub同期障害（2026-09-07から継続）でブロックされている</b>ことを本セッションで再確認した（curlでmedia/*.mp4が404・デプロイIDが09-07以降変化なしを実測）。前回の確認ページはこの障害の証拠として非公開リポジトリのコミットリンクを貼ってしまい、店主が開けなかった。今回はそのリンクを外し、実装差分そのものをこのページの下部に直接掲載した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5件</b><span>変更・追加したファイル数(コンポーネント1・組み込み1・動画/画像素材3)</span></div>
+  <div class="num"><b>5日</b><span>同期障害の継続日数(09-07 21:11〜09-12 今日)</span></div>
+  <div class="num"><b>3回</b><span>この障害を独立に再確認したセッション数(#758・#686・本セッション)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>本番・現状(footer動画なし)</b><img src="img/764-before.png" alt="前"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番サイト(現状・footer動画はまだ出ない)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>Lovableプロジェクト画面(店主ログインでGitHub再接続はここから)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+  <li><b>同じ障害を確認した686番の確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/686-shelf-mobile-crash-lovable-outage.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/686-shelf-mobile-crash-lovable-outage.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>実装(コンポーネント作成・全ページ共通レイアウトへの組み込み)</td><td class="yes">済み</td></tr>
+<tr><td>要件充足(MP4本番・自動再生・無音・ループ・playsinline・reduced-motion・aspect-ratio確保)</td><td class="yes">済み</td></tr>
+<tr><td>mainブランチへのcommit・push</td><td class="yes">済み</td></tr>
+<tr><td>本番(Lovable)への反映</td><td class="no">基盤障害待ち・未反映</td></tr>
+</table>
+
+<footer>
+実装差分（joy-relief-station側は非公開リポジトリのため、店主が開ける場所として差分そのものをここに掲載）：
+<pre style="white-space:pre-wrap;background:#fff;border:1px solid #e2dccd;border-radius:8px;padding:12px;font-size:0.78rem;overflow-x:auto;">src/components/JoyReliefFooterLoop.tsx (新規)
+  - video autoPlay loop muted playsInline preload=metadata
+  - poster=/media/joy-relief-footer-poster.jpg
+  - prefers-reduced-motion時はvideoの代わりにposter画像を表示
+  - aspect-video でCLS防止
+
+src/routes/__root.tsx (1箇所追加)
+  - 全ページ共通のRootComponent内、Outletの直後に &lt;JoyReliefFooterLoop /&gt; を1回だけ設置
+  - クリック導線なし・BottomTabNavより前に配置
+
+public/media/ (3ファイル追加)
+  - joy-relief-footer-loop.mp4 (726KB・本番採用)
+  - joy-relief-footer-loop.webp (394KB・予備)
+  - joy-relief-footer-poster.jpg (208KB・reduced-motion/フォールバック用)</pre>
+このページは tools/make_check_page.py で生成。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

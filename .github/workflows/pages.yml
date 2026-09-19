@@ -1,0 +1,48 @@
+name: GitHub Pages に公開
+#
+# 2026-09-19（963番）配信の道を、作業の道から外した。
+#
+# それまで：main に push があるたび、ここが **リポジトリ丸ごと(681MB)** を Pages の成果物として
+#   上げ直していた。main には9人の書き手と17個のworktreeが居るうえ、機械（5分おきの巡回）が
+#   status/public/ の写しを1日73回 commit していたので、**1日274回この重い便が走っていた**。
+#   その裏で git は232回詰まっていた（「向こうが先で合流できない」64回ほか）。
+#
+# いま：配信専用の枝 gh-pages を1本立て、**書き手はMacの tools/pages_publish.sh ただ1本**にした。
+#   その枝は履歴を常に1コミットに固定して force push する＝
+#   **書き手が1人・履歴1コミット・毎回force なので、非fast-forwardが原理的に起きない。**
+#   main は人間の作業だけの道に戻り、機械は main に一切書かない。
+#   （Homebrewが5分おきのgit配信をJSONへ、CocoaPodsがCDNへ、cargoがsparse indexへ移したのと同じ一手）
+#
+# 配信される住所は1文字も変わらない： https://tamago2022.github.io/tamago-shinchoku/
+on:
+  push:
+    branches: [gh-pages]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  # 769番6回目で発見：このリポジトリは自動ジョブが1〜2分おきにcommitし続ける。
+  # cancel-in-progress:true だと新しいpushのたびに直前のデプロイが即キャンセルされ、
+  # 確認ページの更新が本番に反映されないまま「直っていない」扱いになる事故が起きていた。
+  # false にすると実行はキューイングされ、1つずつ最後まで完了する（最新コミットの
+  # 内容は少し遅れても必ず反映される）。
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

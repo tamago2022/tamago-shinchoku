@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#708 本番「深刻なバグ」ラベル：直った、あとはLovable社の公開ブロック解除待ち 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #708 本番「深刻なバグ」ラベル：直った、あとはLovable社の公開ブロック解除待ち</div>
+<h1>#708 本番「深刻なバグ」ラベル：直った、あとはLovable社の公開ブロック解除待ち</h1>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+本番で見切れて出ていた黒いラベル「深刻なバグ」の正体を特定。原因は、サイトのエラー画面が、回線の瞬断など一瞬で自己回復する軽いエラーまで『重大』としてLovable側へ報告していたこと。この直しは9月12日に完成し、GitHubのmainに入っている。本番へ出す最後の一押し（Lovableの公開ボタン）も押した後の状態だが、Lovable社のシステムが『Publishing was blocked due to suspicious activity（不審な操作として公開をブロックしました）』とアカウントレベルで拒否しており、8件以上の独立した確認で同じ壁にあたっている。これはこちらの操作では解除できない、Lovable社側のセキュリティ判断によるもの。解除にはLovableのサポートチャット（画面右下）へ問い合わせが必要。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>449ce840…</b><span>9/12から今日まで変わらない本番の識別番号(不変=未反映の証拠)</span></div>
+  <div class="num"><b>8件以上</b><span>同じ壁(公開ブロック)に到達した独立セッションの数</span></div>
+</div>
+
+
+
+<h2>③ 実際に押した証拠</h2>
+<div class="shots">
+  <div class="shot before">
+    <b>2026-09-13 12:34　公開ポップオーバー（押せる状態）</b>
+    <img src="img/708-publish-ready.png" alt="押す前は開けていた画面。変更を公開ボタンが青く見える">
+    <span class="meta">「変更を公開」ボタンが青く表示され、「セキュリティの問題は見つかりませんでした」の表示も出ていた。</span>
+  </div>
+  <div class="shot after">
+    <b>2026-09-13 12:35　実際にクリックした直後</b>
+    <img src="img/708-publish-blocked-2.png" alt="クリック直後、右下に薄くブロックの通知が出た画面">
+    <span class="meta">右下に「Publishing was blocked due to...」の通知が薄く出て、公開は成立しなかった。</span>
+  </div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ(このセッション時点でまだ直る前のまま。DevToolsのX-Deployment-IDが9/12から不変で確認済み)</b><a href="https://joy-relief-station.lovable.app/room/card/maru-cat" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/maru-cat</a></li>
+  <li><b>Lovableのプロジェクト画面(たまごさんのアカウントでログインすれば開ける。右上「公開」ボタンから同じ画面に行けます)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+</ul>
+
+<div class="note">直した中身そのもの（GitHubのコミット）は非公開リポジトリのため、このページからは開けません。かわりに上の③でクリックの証拠を、下の表で確認結果を示します。</div>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>コード修正・GitHub main合流</td><td class="yes">完了</td></tr>
+<tr><td>Lovableの「公開」ボタンを実際にクリック(本セッションで再実行)</td><td class="yes">完了(クリックは成立)</td></tr>
+<tr><td>本番画面への反映</td><td class="no">Lovable社が「不審な操作」として公開そのものを拒否しており未反映</td></tr>
+</table>
+
+<footer>
+このページは #708 のセッションが手作業で更新した確認資料。GitHubの非公開リンクは開けないため、このページから削除しました。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

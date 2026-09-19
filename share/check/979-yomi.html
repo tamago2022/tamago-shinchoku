@@ -1,0 +1,308 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案内人の読み方 ― King Gnu を「キングヌー」にする</title>
+<style>
+:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
+--rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;font-size:16px}
+.wrap{max-width:60rem;margin:0 auto;padding:7vw 6vw 14vw}
+.eyebrow{font-size:.68rem;letter-spacing:.42em;color:var(--faint);margin:0 0 1.6rem}
+h1{font-weight:400;font-size:clamp(1.45rem,5vw,2.3rem);letter-spacing:.09em;margin:0 0 .4rem;line-height:1.5}
+.sub{color:var(--faint);font-size:.8rem;letter-spacing:.12em;margin:0 0 3.2rem}
+.verdict{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:2rem 0;margin:0 0 3.2rem}
+.verdict p{margin:0 0 1.1rem;font-size:clamp(1rem,2.7vw,1.13rem);line-height:1.95}
+.verdict p:last-child{margin-bottom:0}
+.verdict .n{color:var(--accent);letter-spacing:.3em;font-size:.7rem;margin-right:.9em;vertical-align:.18em}
+.big{color:var(--accent)}
+h2{font-weight:400;font-size:.74rem;letter-spacing:.34em;color:var(--faint);
+ margin:4.2rem 0 1.4rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:1px;
+ background:var(--rule);border:1px solid var(--rule);margin:0 0 1.4rem}
+.card{background:var(--paper);padding:1.2rem .9rem}
+.card b{display:block;font-weight:400;font-size:clamp(1.5rem,6vw,2rem);letter-spacing:.02em;line-height:1.2}
+.card span{display:block;font-size:.68rem;letter-spacing:.14em;color:var(--faint);margin-top:.5rem}
+.card.red b{color:var(--accent)} .card.ok b{color:var(--ok)}
+pre{background:rgba(34,48,74,.05);border-left:2px solid var(--ok);padding:1rem 1rem;
+ font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;line-height:1.75;
+ overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;white-space:pre}
+pre.ng{border-left-color:var(--accent)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.swipe{display:none;font-size:.68rem;letter-spacing:.2em;color:var(--accent);margin:0 0 .5rem}
+@media(max-width:47rem){.swipe{display:block}}
+table{border-collapse:collapse;width:100%;font-size:.82rem}
+table.wide{min-width:34rem}
+th,td{text-align:left;padding:.75rem .7rem;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.7}
+th{font-weight:400;font-size:.64rem;letter-spacing:.14em;color:var(--faint);border-bottom:1px solid var(--ink);white-space:nowrap}
+td.y{color:var(--accent);white-space:nowrap}
+td.name{word-break:break-word}
+p.note{font-size:.86rem;color:var(--faint);margin:1rem 0 0}
+ol,ul{padding-left:1.2rem}
+li{margin:.5rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82em;
+ background:rgba(34,48,74,.06);padding:.1em .35em;border-radius:2px;word-break:break-all}
+.foot{margin-top:5rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+ font-size:.7rem;letter-spacing:.1em;color:var(--faint)}
+</style></head><body><div class="wrap">
+<p class="eyebrow">979 ― 検品</p>
+<h1>案内人の読み方<br>King Gnu を「キングヌー」にする</h1>
+<p class="sub">2026-09-21 ／ ごきげん補給所</p>
+<div class="verdict">
+<p><span class="n">01</span>アーティスト <span class="big">2507件中 1897件</span>に読みが付きました。読みを渡さないのは、外国名で案内人がそのまま読める <b>451件</b>。人（外部AI）に確かめてもらうのは <span class="big">149件</span>だけです。</p>
+<p><span class="n">02</span>King Gnu が <b>キングヌー</b>として案内人に渡ることを、機械で確かめました（下のテスト）。<b>耳で音を聞く確認はまだです</b>（音声APIは有料。走らせる前に必ず値段を出します）。</p>
+<p><span class="n">03</span>新しいアーティストが入荷したら <code>bash tools/yomi/run.sh</code> の1本で読みが付き直し、<b>危ないものだけ赤で残ります</b>。1回きりの手作業にしていません。</p>
+</div>
+<h2>数</h2>
+<div class="cards">
+<div class="card ok"><b>1772</b><span>そのまま使える</span></div>
+<div class="card "><b>135</b><span>推定・要確認</span></div>
+<div class="card red"><b>149</b><span>赤・機械では読めない</span></div>
+<div class="card "><b>451</b><span>外国名（案内人が読む）</span></div>
+<div class="card ok"><b>3238</b><span>曲名にも読みが付いた</span></div>
+<div class="card "><b>8020</b><span>日本語の曲名ぜんぶ</span></div>
+</div>
+<p class="note">曲名は日本語のもの 8020件のうち 3238件。残りは動画タイトルそのままのものが多く、読みの元が無いので案内人にまかせています。</p>
+<h2>どこから読みを取ったか</h2>
+<div class="scroll"><table><tr><th>出どころ</th><th>件数</th></tr>
+<tr><td>既存データ aliases のカタカナ</td><td>1452</td></tr>
+<tr><td>名前がすでにカタカナ</td><td>201</td></tr>
+<tr><td>idのローマ字と形態素解析が一致</td><td>73</td></tr>
+<tr><td>既知辞書</td><td>67</td></tr>
+<tr><td>形態素解析</td><td>57</td></tr>
+<tr><td>既存データ aliases のひらがな</td><td>43</td></tr>
+<tr><td>名前がひらがな</td><td>10</td></tr>
+<tr><td>id のローマ字</td><td>4</td></tr>
+<tr><td>idのローマ字=オキナワミニョウ／形態素解析=オキナワミンヨウ</td><td>1</td></tr>
+<tr><td>idのローマ字=モリタカチサト／形態素解析=モリタカセンリ</td><td>1</td></tr>
+<tr><td>idのローマ字=ミワ・ヨシダ／形態素解析=ヨシダミワ</td><td>1</td></tr>
+<tr><td>idのローマ字=トシヒコ・タハラ／形態素解析=タハラトシヒコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ナオコ・ケン／形態素解析=ケンナオコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ショネン・ジダイ・モヴィエ／形態素解析=ショウネンジダイキゴウエイガイチキュウキュウレイキゴウ</td><td>1</td></tr>
+<tr><td>idのローマ字=エアソン・チャン／形態素解析=チンエキシュンキゴウイーソンチャンキゴウ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヒロミ・サト／形態素解析=サトウヒロミ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヨコ・オギノメ／形態素解析=オギノメヨウコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ナオコ・カワイ／形態素解析=カワイナオコ</td><td>1</td></tr>
+<tr><td>idのローマ字=テルヒコ・アオイ／形態素解析=アオイテルヒコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ハコ・ヤマサキ／形態素解析=ヤマザキハコ</td><td>1</td></tr>
+<tr><td>idのローマ字=チハル・マツヤ／形態素解析=マツヤマチハル</td><td>1</td></tr>
+<tr><td>idのローマ字=カズマサ・オダ／形態素解析=オタワタダシ</td><td>1</td></tr>
+<tr><td>idのローマ字=カズヨシ・ナカムラ／形態素解析=ナカムラカズヨシ</td><td>1</td></tr>
+<tr><td>idのローマ字=ミナミ・コセツ／形態素解析=ミナミコウセツトカグヤヒメ</td><td>1</td></tr>
+<tr><td>idのローマ字=ゲン・ホシノ／形態素解析=ホシノゲン</td><td>1</td></tr>
+<tr><td>idのローマ字=フジ・カゼ／形態素解析=フジイフウ</td><td>1</td></tr>
+<tr><td>idのローマ字=オサム・ショ・キタジマ／形態素解析=キタジマオサム</td><td>1</td></tr>
+<tr><td>idのローマ字=キンゴ・ハマダ／形態素解析=ハマダキンゴ</td><td>1</td></tr>
+<tr><td>idのローマ字=マリヤ・スズキ／形態素解析=スズキマミコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ダイチ・ミウラ／形態素解析=ミウラタイチ</td><td>1</td></tr>
+<tr><td>idのローマ字=マリ・イヤジマ／形態素解析=イイジママリ</td><td>1</td></tr>
+<tr><td>idのローマ字=マリヤ・アサダ／形態素解析=アサダマモル</td><td>1</td></tr>
+<tr><td>idのローマ字=ナオコ・グシマ／形態素解析=グシマナオコ</td><td>1</td></tr>
+<tr><td>idのローマ字=タカノリ・ジンナイ／形態素解析=ジンナイタカノリ</td><td>1</td></tr>
+<tr><td>idのローマ字=テツロ・オダ／形態素解析=オダテツロウ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヨシユキ・オサワ／形態素解析=オオサワヨシユキ</td><td>1</td></tr>
+<tr><td>idのローマ字=ユリエ・コクブ／形態素解析=コクブユリエ</td><td>1</td></tr>
+<tr><td>idのローマ字=ギ・ド／形態素解析=ヨシノフジマル</td><td>1</td></tr>
+<tr><td>idのローマ字=ラ・ム／形態素解析=キクチモモコ</td><td>1</td></tr>
+<tr><td>idのローマ字=マイ・ヤマネ／形態素解析=ヤマネマイ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヤスヒロ・アベ／形態素解析=アベヤスヒロ</td><td>1</td></tr>
+<tr><td>idのローマ字=ナナコ・サト／形態素解析=サトウナナコ</td><td>1</td></tr>
+<tr><td>idのローマ字=アミ・オザキ／形態素解析=オザキアミ</td><td>1</td></tr>
+<tr><td>idのローマ字=トシタロ／形態素解析=イナガキジュンイチ</td><td>1</td></tr>
+<tr><td>idのローマ字=コヘイ・タナカ／形態素解析=タナカコウヘイ</td><td>1</td></tr>
+<tr><td>idのローマ字=ユキ・カジウラ／形態素解析=カジウラユキ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヒロノブ・カゲヤマ／形態素解析=カゲヤマヒロノブ</td><td>1</td></tr>
+<tr><td>idのローマ字=カズヨシ・サイト／形態素解析=サイトウカズヨシ</td><td>1</td></tr>
+<tr><td>idのローマ字=シリツ・エビス・チュガク／形態素解析=シリツエビスチュウガク</td><td>1</td></tr>
+<tr><td>idのローマ字=タマキ・コジ／形態素解析=タマキコウジ</td><td>1</td></tr>
+<tr><td>idのローマ字=キヨタカ・スギヤマ／形態素解析=スギヤマキヨタカ</td><td>1</td></tr>
+<tr><td>idのローマ字=エイイチ・オタキ／形態素解析=オオタキエイイチ</td><td>1</td></tr>
+<tr><td>idのローマ字=ミナミ・ハマベ／形態素解析=ミナミ</td><td>1</td></tr>
+<tr><td>idのローマ字=タツオ・カモン／形態素解析=カモンタツオ</td><td>1</td></tr>
+<tr><td>idのローマ字=ハチダイ・ナカムラ／形態素解析=ナカムラハチダイ</td><td>1</td></tr>
+<tr><td>idのローマ字=マキ・ノミヤ／形態素解析=ノノミヤマキ</td><td>1</td></tr>
+<tr><td>idのローマ字=タカコ・マミネ／形態素解析=ミネカワタカコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ノリキ／形態素解析=ノリキソウイチ</td><td>1</td></tr>
+<tr><td>idのローマ字=ムキンチ／形態素解析=ムカイタイチ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヨネクラトリョ／形態素解析=ヨネクラトシノリ</td><td>1</td></tr>
+<tr><td>idのローマ字=ユウリ／形態素解析=ユリ</td><td>1</td></tr>
+<tr><td>idのローマ字=ナカシマ・ミカ／形態素解析=ナカジマミカ</td><td>1</td></tr>
+<tr><td>idのローマ字=ナナセ・アイカワ／形態素解析=アイカワナナセ</td><td>1</td></tr>
+<tr><td>idのローマ字=メイコ・ナカハラ／形態素解析=ナカハラメイコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ケンジロ・サキヤ／形態素解析=サキタニケンジロウ</td><td>1</td></tr>
+<tr><td>idのローマ字=キノクニ・ヤ・マナミ／形態素解析=キノクニヤマミ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヒロシ・フジワラ／形態素解析=フジワラヒロシ</td><td>1</td></tr>
+<tr><td>idのローマ字=オツカ・アイ／形態素解析=オオツカアイ</td><td>1</td></tr>
+<tr><td>idのローマ字=ナリアキ・オブクロ／形態素解析=コブクロシゲアキ</td><td>1</td></tr>
+<tr><td>idのローマ字=シゲル・マツザキ／形態素解析=マツザキシゲル</td><td>1</td></tr>
+<tr><td>idのローマ字=アキコ・ヤノ／形態素解析=ヤノアキコ</td><td>1</td></tr>
+<tr><td>idのローマ字=マコト・クボタ／形態素解析=クボタマコトトユウヤケガクダン</td><td>1</td></tr>
+<tr><td>idのローマ字=ユキヒロ・タカハシ／形態素解析=タカハシユキヒロ</td><td>1</td></tr>
+<tr><td>idのローマ字=アキラ・テラオ／形態素解析=テラオソウ</td><td>1</td></tr>
+<tr><td>idのローマ字=タカコ・マミヤ／形態素解析=マミヤタカコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ユミ・ムラタ／形態素解析=ムラタユミ</td><td>1</td></tr>
+<tr><td>idのローマ字=カツミ・ホリイ／形態素解析=ホリイカツミ</td><td>1</td></tr>
+<tr><td>idのローマ字=ギンジ・イト／形態素解析=イトウギンジ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヒロミ・オタ／形態素解析=オオタヒロミ</td><td>1</td></tr>
+<tr><td>idのローマ字=タツヒコ・ヤマモト／形態素解析=ヤマモトタツヒコ</td><td>1</td></tr>
+<tr><td>idのローマ字=トモコ・アラン／形態素解析=アラントモコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ヒロミ・イワサキ／形態素解析=イワサキヒロミ</td><td>1</td></tr>
+<tr><td>idのローマ字=ミキ・イマイ／形態素解析=イマイミキ</td><td>1</td></tr>
+<tr><td>idのローマ字=マコト・マツシタ／形態素解析=マツシタマコト</td><td>1</td></tr>
+<tr><td>idのローマ字=ジュンコ・オハシ／形態素解析=オオハシジュンコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ミキ・マツバラ／形態素解析=マツバラミキ</td><td>1</td></tr>
+<tr><td>idのローマ字=トシキ・カドマツ／形態素解析=カドマツトシオ</td><td>1</td></tr>
+<tr><td>idのローマ字=タエコ・オヌキ／形態素解析=オオヌキタエコ</td><td>1</td></tr>
+<tr><td>idのローマ字=マサカツ・タカギ／形態素解析=タカギマサカツ</td><td>1</td></tr>
+<tr><td>idのローマ字=サノ／形態素解析=サノモトハル</td><td>1</td></tr>
+<tr><td>idのローマ字=ハマダ／形態素解析=ハマダショウゴ</td><td>1</td></tr>
+<tr><td>idのローマ字=バイショ・チエコ／形態素解析=バイショウチエコ</td><td>1</td></tr>
+<tr><td>idのローマ字=カワグチ・キョコ／形態素解析=カワグチキョウコ</td><td>1</td></tr>
+<tr><td>idのローマ字=アメミヤ・トモコ／形態素解析=アマミヤトモコ</td><td>1</td></tr>
+<tr><td>idのローマ字=サカモト・シンタロ／形態素解析=サカモトシンタロウ</td><td>1</td></tr>
+<tr><td>idのローマ字=キタロ／形態素解析=キタロウ</td><td>1</td></tr>
+<tr><td>idのローマ字=ユリ・タナカ／形態素解析=タナカユウリ</td><td>1</td></tr>
+<tr><td>idのローマ字=カレン・アオキ／形態素解析=アオキカレン</td><td>1</td></tr>
+<tr><td>idのローマ字=ヒトミトイ／形態素解析=イチジュウサンジュウイチ</td><td>1</td></tr>
+<tr><td>idのローマ字=タカラユウコ／形態素解析=コウラユウコ</td><td>1</td></tr>
+<tr><td>idのローマ字=ワシオレイナ／形態素解析=ワシオレナ</td><td>1</td></tr>
+<tr><td>idのローマ字=ミヤモトヒロジ／形態素解析=ミヤモトコウジ</td><td>1</td></tr>
+<tr><td>idのローマ字=ナカジマメグミ／形態素解析=ナカジマアイ</td><td>1</td></tr>
+<tr><td>idのローマ字=コバヤシワタシ／形態素解析=コバヤシワタクシ</td><td>1</td></tr>
+<tr><td>idのローマ字=イトウケント／形態素解析=イトウタケト</td><td>1</td></tr>
+<tr><td>idのローマ字=ミキショウコ／形態素解析=ミキセイコ</td><td>1</td></tr>
+<tr><td>idのローマ字=イズツカナエ／形態素解析=イヅツカナエ</td><td>1</td></tr>
+<tr><td>idのローマ字=スズキランラン／形態素解析=スズキララ</td><td>1</td></tr>
+<tr><td>idのローマ字=オオヒラミズキ／形態素解析=オオヒラミキ</td><td>1</td></tr>
+<tr><td>idのローマ字=トウヤマミレイ／形態素解析=トウマミレイ</td><td>1</td></tr>
+<tr><td>idのローマ字=シマズアヤ／形態素解析=シマヅアヤ</td><td>1</td></tr>
+<tr><td>idのローマ字=イノヒデフミ／形態素解析=イイノシュウジ</td><td>1</td></tr>
+</table></div>
+<p class="note">いちばん大きいのは <b>すでに持っていたデータ</b>（coverGuide.ts の aliases）。King Gnu も「キングヌー」を最初から持っていました。<b>案内人がそれを見ていなかった</b>のが原因です。</p>
+<h2>King Gnu が正しく渡るか（自動テスト）</h2>
+<pre>OK   King Gnu の読み  → キングヌー
+OK   YOASOBI の読み  → ヨアソビ
+OK   Official髭男dism の読み  → オフィシャルヒゲダンディズム
+OK   RADWIMPS の読み  → ラッドウィンプス
+OK   BUMP OF CHICKEN の読み  → バンプ・オブ・チキン
+OK   ONE OK ROCK の読み  → ワンオクロック
+OK   米津玄師 の読み（当て字。形態素解析だけだとヨネツゲンシで外す）  → ヨネヅケンシ
+OK   ヨルシカ の読み  → ヨルシカ
+OK   指示文に King Gnu=キングヌー が入っている
+OK   指示文に「英語読みに直さない」が入っている
+OK   検索結果に yomi が付く  → キングヌー
+OK   元の name は壊していない  → King Gnu
+OK   曲名にも読みが付く  → ハクジツ
+OK   音声APIへ送る本文にカタカナの「キングヌー」が入っている
+OK   function_call_output にも yomi が入って返る
+OK   辞書 1897 件がすべてカタカナ  → 
+OK   指示文に固定する名前の数 249
+
+全部通りました。</pre>
+<p class="note">走らせ方：<code>node tools/yomi/test_yomi.mjs</code>。音声APIに送る本文そのものを組み立てて、カタカナが入っているかを見ています。</p>
+<h2>赤 ― 機械では読めないので確かめてもらうもの（149件）</h2>
+<p class="swipe">← 横にスワイプ</p><div class="scroll"><table class="wide">
+<tr><th>名前</th><th>機械の案</th><th>なぜ危ないか</th></tr>
+<tr><td class="name">Sinéad O’Connor</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">Céline Dion</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">Beyoncé feat. Jay-Z</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">沖縄民謡</td><td class="y">オキナワミニョウ</td><td>読みの候補が2つに割れている：idのローマ字=オキナワミニョウ／形態素解析=オキナワミンヨウ（不一致）</td></tr>
+<tr><td class="name">B’z</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">森高千里</td><td class="y">モリタカチサト</td><td>読みの候補が2つに割れている：idのローマ字=モリタカチサト／形態素解析=モリタカセンリ（不一致）</td></tr>
+<tr><td class="name">Guns N’ Roses</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">大象體操 (Elephant Gym)</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">落日飛車 (Sunset Rollercoaster)</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">林憶蓮 (サンディ・ラム)</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">葉蒨文 (サリー・イェー)</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">吉田美和</td><td class="y">ミワ・ヨシダ</td><td>読みの候補が2つに割れている：idのローマ字=ミワ・ヨシダ／形態素解析=ヨシダミワ（不一致）</td></tr>
+<tr><td class="name">田原俊彦</td><td class="y">トシヒコ・タハラ</td><td>読みの候補が2つに割れている：idのローマ字=トシヒコ・タハラ／形態素解析=タハラトシヒコ（不一致）</td></tr>
+<tr><td class="name">研ナオコ</td><td class="y">ナオコ・ケン</td><td>読みの候補が2つに割れている：idのローマ字=ナオコ・ケン／形態素解析=ケンナオコ（不一致）</td></tr>
+<tr><td class="name">少年時代（映画・1990）</td><td class="y">ショネン・ジダイ・モヴィエ</td><td>読みの候補が2つに割れている：idのローマ字=ショネン・ジダイ・モヴィエ／形態素解析=ショウネンジダイキゴウエイガイチキュウキュウレイキゴウ</td></tr>
+<tr><td class="name">Sơn Tùng M-TP</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">茄子蛋 (EggPlantEgg)</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">No Party For Cao Dong (草東沒有派對)</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">Omnipotent Youth Society (萬能青年旅店)</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">陳奕迅 (イーソン・チャン)</td><td class="y">エアソン・チャン</td><td>読みの候補が2つに割れている：idのローマ字=エアソン・チャン／形態素解析=チンエキシュンキゴウイーソンチャンキゴウ（不一致）</td></tr>
+<tr><td class="name">佐藤ひろ美</td><td class="y">ヒロミ・サト</td><td>読みの候補が2つに割れている：idのローマ字=ヒロミ・サト／形態素解析=サトウヒロミ（不一致）</td></tr>
+<tr><td class="name">KAN</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">荻野目洋子</td><td class="y">ヨコ・オギノメ</td><td>読みの候補が2つに割れている：idのローマ字=ヨコ・オギノメ／形態素解析=オギノメヨウコ（不一致）</td></tr>
+<tr><td class="name">河合奈保子</td><td class="y">ナオコ・カワイ</td><td>読みの候補が2つに割れている：idのローマ字=ナオコ・カワイ／形態素解析=カワイナオコ（不一致）</td></tr>
+<tr><td class="name">あおい輝彦</td><td class="y">テルヒコ・アオイ</td><td>読みの候補が2つに割れている：idのローマ字=テルヒコ・アオイ／形態素解析=アオイテルヒコ（不一致）</td></tr>
+<tr><td class="name">TMG / 松本孝弘</td><td class="y">—</td><td>読みの元データ無し</td></tr>
+<tr><td class="name">山崎ハコ</td><td class="y">ハコ・ヤマサキ</td><td>読みの候補が2つに割れている：idのローマ字=ハコ・ヤマサキ／形態素解析=ヤマザキハコ（不一致）</td></tr>
+<tr><td class="name">松山千春</td><td class="y">チハル・マツヤ</td><td>読みの候補が2つに割れている：idのローマ字=チハル・マツヤ／形態素解析=マツヤマチハル（不一致）</td></tr>
+<tr><td class="name">小田和正</td><td class="y">カズマサ・オダ</td><td>読みの候補が2つに割れている：idのローマ字=カズマサ・オダ／形態素解析=オタワタダシ（不一致）</td></tr>
+<tr><td class="name">中村一義</td><td class="y">カズヨシ・ナカムラ</td><td>読みの候補が2つに割れている：idのローマ字=カズヨシ・ナカムラ／形態素解析=ナカムラカズヨシ（不一致）</td></tr>
+<tr><td class="name">南こうせつとかぐや姫</td><td class="y">ミナミ・コセツ</td><td>読みの候補が2つに割れている：idのローマ字=ミナミ・コセツ／形態素解析=ミナミコウセツトカグヤヒメ（不一致）</td></tr>
+<tr><td class="name">METAFIVE</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">Seikima-II</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">星野 源</td><td class="y">ゲン・ホシノ</td><td>読みの候補が2つに割れている：idのローマ字=ゲン・ホシノ／形態素解析=ホシノゲン（不一致）</td></tr>
+<tr><td class="name">藤井 風</td><td class="y">フジ・カゼ</td><td>読みの候補が2つに割れている：idのローマ字=フジ・カゼ／形態素解析=フジイフウ（不一致）</td></tr>
+<tr><td class="name">喜多嶋修</td><td class="y">オサム・ショ・キタジマ</td><td>読みの候補が2つに割れている：idのローマ字=オサム・ショ・キタジマ／形態素解析=キタジマオサム（不一致）</td></tr>
+<tr><td class="name">濱田金吾</td><td class="y">キンゴ・ハマダ</td><td>読みの候補が2つに割れている：idのローマ字=キンゴ・ハマダ／形態素解析=ハマダキンゴ（不一致）</td></tr>
+<tr><td class="name">鈴木真海子</td><td class="y">マリヤ・スズキ</td><td>読みの候補が2つに割れている：idのローマ字=マリヤ・スズキ／形態素解析=スズキマミコ（不一致）</td></tr>
+<tr><td class="name">三浦大知</td><td class="y">ダイチ・ミウラ</td><td>読みの候補が2つに割れている：idのローマ字=ダイチ・ミウラ／形態素解析=ミウラタイチ（不一致）</td></tr>
+<tr><td class="name">Lisa Ono</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">飯島真理</td><td class="y">マリ・イヤジマ</td><td>読みの候補が2つに割れている：idのローマ字=マリ・イヤジマ／形態素解析=イイジママリ（不一致）</td></tr>
+<tr><td class="name">麻田マモル</td><td class="y">マリヤ・アサダ</td><td>読みの候補が2つに割れている：idのローマ字=マリヤ・アサダ／形態素解析=アサダマモル（不一致）</td></tr>
+<tr><td class="name">具島直子</td><td class="y">ナオコ・グシマ</td><td>読みの候補が2つに割れている：idのローマ字=ナオコ・グシマ／形態素解析=グシマナオコ（不一致）</td></tr>
+<tr><td class="name">陣内孝則</td><td class="y">タカノリ・ジンナイ</td><td>読みの候補が2つに割れている：idのローマ字=タカノリ・ジンナイ／形態素解析=ジンナイタカノリ（不一致）</td></tr>
+<tr><td class="name">織田哲郎</td><td class="y">テツロ・オダ</td><td>読みの候補が2つに割れている：idのローマ字=テツロ・オダ／形態素解析=オダテツロウ（不一致）</td></tr>
+<tr><td class="name">大沢誉志幸</td><td class="y">ヨシユキ・オサワ</td><td>読みの候補が2つに割れている：idのローマ字=ヨシユキ・オサワ／形態素解析=オオサワヨシユキ（不一致）</td></tr>
+<tr><td class="name">国分友里恵</td><td class="y">ユリエ・コクブ</td><td>読みの候補が2つに割れている：idのローマ字=ユリエ・コクブ／形態素解析=コクブユリエ（不一致）</td></tr>
+<tr><td class="name">芳野藤丸</td><td class="y">ギ・ド</td><td>読みの候補が2つに割れている：idのローマ字=ギ・ド／形態素解析=ヨシノフジマル（不一致）</td></tr>
+<tr><td class="name">菊池桃子 (ラ・ムー)</td><td class="y">ラ・ム</td><td>読みの候補が2つに割れている：idのローマ字=ラ・ム／形態素解析=キクチモモコ（不一致）</td></tr>
+<tr><td class="name">山根麻衣</td><td class="y">マイ・ヤマネ</td><td>読みの候補が2つに割れている：idのローマ字=マイ・ヤマネ／形態素解析=ヤマネマイ（不一致）</td></tr>
+<tr><td class="name">安部恭弘</td><td class="y">ヤスヒロ・アベ</td><td>読みの候補が2つに割れている：idのローマ字=ヤスヒロ・アベ／形態素解析=アベヤスヒロ（不一致）</td></tr>
+<tr><td class="name">佐藤奈々子</td><td class="y">ナナコ・サト</td><td>読みの候補が2つに割れている：idのローマ字=ナナコ・サト／形態素解析=サトウナナコ（不一致）</td></tr>
+<tr><td class="name">S. Kiyotaka &amp; Omega Tribe</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">Hitomi Tohyama</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">Tetsuji Hayashi</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">Junichi Inagaki</td><td class="y">—</td><td>英字名だが日本のアーティスト（機械では読めない）</td></tr>
+<tr><td class="name">尾崎亜美</td><td class="y">アミ・オザキ</td><td>読みの候補が2つに割れている：idのローマ字=アミ・オザキ／形態素解析=オザキアミ（不一致）</td></tr>
+<tr><td class="name">稲垣潤一</td><td class="y">トシタロ</td><td>読みの候補が2つに割れている：idのローマ字=トシタロ／形態素解析=イナガキジュンイチ（不一致）</td></tr>
+<tr><td class="name">田中公平</td><td class="y">コヘイ・タナカ</td><td>読みの候補が2つに割れている：idのローマ字=コヘイ・タナカ／形態素解析=タナカコウヘイ（不一致）</td></tr>
+<tr><td class="name">梶浦由記</td><td class="y">ユキ・カジウラ</td><td>読みの候補が2つに割れている：idのローマ字=ユキ・カジウラ／形態素解析=カジウラユキ（不一致）</td></tr>
+</table></div>
+<p class="note">ここに出しているのは先頭60件。全部は <code>share/yomi/yomi-review.json</code> にあります。</p>
+<h2>読みが2つに割れているもの（74件）</h2>
+<div class="scroll"><table class="wide"><tr><th>名前</th><th>採った読み</th><th>候補</th></tr>
+<tr><td class="name">B&#x27;z</td><td class="y">ビーズ</td><td>ビイズ / ビーズ</td></tr>
+<tr><td class="name">class</td><td class="y">クラス</td><td>クラス / ツクイカツユキ / ヒウラタカノリ</td></tr>
+<tr><td class="name">SOUL’d OUT</td><td class="y">ソールドアウト</td><td>ソウルドアウト / ソールドアウト / ディギーモー</td></tr>
+<tr><td class="name">松任谷由実</td><td class="y">マツトウヤユミ</td><td>アライユミ / マツトウヤユミ / ユーミン</td></tr>
+<tr><td class="name">Official髭男dism</td><td class="y">オフィシャルヒゲダンディズム</td><td>オフィシャルヒゲダンディズム / ヒゲダン</td></tr>
+<tr><td class="name">THE BLUE HEARTS</td><td class="y">ザ・ブルーハーツ</td><td>ザ・ブルーハーツ / ブルーハーツ</td></tr>
+<tr><td class="name">忌野清志郎 / RCサクセション / ザ・タイマーズ</td><td class="y">アールシーサクセション</td><td>アールシーサクセション / ザ・タイマーズ / タイマーズ</td></tr>
+<tr><td class="name">Michael Jackson / The Jackson 5</td><td class="y">マイケルジャクソン</td><td>ジャクソンファイブ / マイケルジャクソン / マイケル・ジャクソン</td></tr>
+<tr><td class="name">T-SQUARE</td><td class="y">ティースクエア</td><td>ザスクエア / ティースクェア / ティースクエア</td></tr>
+<tr><td class="name">Xania Monet</td><td class="y">ザニア・モネ</td><td>ザニア・モネ / ゼイニア・モネ</td></tr>
+<tr><td class="name">Eric Clapton</td><td class="y">エリッククラプトン</td><td>エリッククラプトン / クラプトン</td></tr>
+<tr><td class="name">Sinéad O&#x27;Connor</td><td class="y">シニード・オコナー</td><td>シニードオコナー / シニード・オコナー / シネード・オコナー</td></tr>
+<tr><td class="name">George Michael</td><td class="y">ジョージマイケル</td><td>ジョージマイケル / ワム</td></tr>
+<tr><td class="name">The Weeknd</td><td class="y">ザウィークエンド</td><td>ウィークエンド / ザウィークエンド</td></tr>
+<tr><td class="name">Lady Gaga</td><td class="y">レディーガガ</td><td>ガガ / レディーガガ</td></tr>
+<tr><td class="name">Louis Armstrong</td><td class="y">ルイアームストロング</td><td>サッチモ / ルイアームストロング</td></tr>
+<tr><td class="name">明治製菓</td><td class="y">チョコレート</td><td>アーモンド / チョコレート</td></tr>
+<tr><td class="name">資生堂</td><td class="y">サマーキャンペーン</td><td>サマーキャンペーン / ティセラ</td></tr>
+<tr><td class="name">A-Mei (張惠妹)</td><td class="y">アーメイ</td><td>アミット / アーメイ</td></tr>
+<tr><td class="name">ハウス食品</td><td class="y">ハウス</td><td>カレー / シチュー / ハウス</td></tr>
+<tr><td class="name">花王</td><td class="y">エッセンシャル</td><td>エッセンシャル / メリット</td></tr>
+<tr><td class="name">D.A.N.</td><td class="y">ディーエーエヌ</td><td>ダン / ディーエーエヌ</td></tr>
+<tr><td class="name">P-Funk (Parliament/Funkadelic)</td><td class="y">パーラメント</td><td>パーラメント / ファンカデリック</td></tr>
+<tr><td class="name">Nulbarich</td><td class="y">ヌルバリッチ</td><td>ナルバリッチ / ヌルバリッチ</td></tr>
+<tr><td class="name">[Alexandros]</td><td class="y">シャンペイン</td><td>アレキラー・ビーツ / シャンペイン</td></tr>
+</table></div>
+<h2>仕組み</h2>
+<ol>
+<li><b>読みを起こす</b>（0円）― 手で入れた辞書 → 既存データの aliases → id のローマ字 → 形態素解析（Sudachi）の順。2つの結果が一致したものだけ「確定」にする。<code>tools/yomi/build_yomi.py</code></li>
+<li><b>案内人が読む形にする</b> ― <code>share/yomi/yomi.js</code> を書き出す。検索結果に <code>yomi</code> を足し、指示文の末尾に読みを固定する1ブロックを付ける。</li>
+<li><b>危ないものだけ外に出す</b> ― <code>tools/yomi/out/kaigi-question.md</code> を tamago2022/ai-kaigi の Issue に貼り、ChatGPT(Codex) と Gemini(Jules) に読ませる。<b>2社が一致したものは自動で採用</b>、割れたものだけ人が見る。<code>tools/yomi/merge_answers.py</code></li>
+<li><b>次から自動</b> ― 入荷のたび <code>bash tools/yomi/run.sh</code>。読みが付き、テストが走り、赤だけが残る。</li>
+</ol>
+<h2>音声APIは読み仮名を受け取れるのか</h2>
+<p>受け取れません。いま使っている <b>speech-to-speech</b>（OpenAI Realtime／xAI realtime）は SSML や発音記号のタグを持たず、<b>言葉で指示するか、渡す文字そのものを変えるか</b>の二択です。なので本筋どおり、<b>渡すテキストをカタカナにする</b>方式にしました。</p>
+<div class="foot">つくり： tools/yomi/ ／ 辞書： share/yomi/yomi.js ／ 赤の一覧： share/yomi/yomi-review.json</div>
+</div></body></html>

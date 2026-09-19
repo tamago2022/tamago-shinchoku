@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#823 発車（auto_launch）：自然な次回点検でalive・実際の🚀発車ログも確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #823 発車（auto_launch）：自然な次回点検でalive・実際の🚀発車ログも確認</div>
+<h1>#823 発車（auto_launch）：自然な次回点検でalive・実際の🚀発車ログも確認</h1>
+<div class="date">2026-09-18 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+823番の検知は「満員で正当に見送り中」を誤ってdead判定していた古いスナップショットに基づくものでした。根本原因は<code>tools/shikumi.py</code>のcheck_auto_launch()に既に修正済みです（コミット<code>809d2d64c</code>・2026-09-17 09:54、genzaichi._launch_has_room()を再利用し、走行枠が満員での見送りを異常と見なさない判定へ直っています）。今回コード変更はせず、heartbeat.sh相乗り（実質30分おき）の<strong>自然な次回点検</strong>（手動実行ではない）が実際に走るのを待って、生死表がaliveへ戻っていることと、本日分の実際の『🚀 自動発車』ログ行の両方を実測しました（1回目の外部検品差し戻し＝『見送り行しかなく🚀行が無い』への対応）。<br><br><strong>実測した生ログ（status/auto_launch.log 本日分の🚀自動発車行・直近8件）</strong><pre>2026-09-18 00:31:19 🚀 自動発車 819番「【自動検知】鬼監督 が動いていません」→ pid 43949 / session dd55b3b9（走行2本→3本・上限3本）
+2026-09-18 00:31:38 🚀 自動発車 823番「【自動検知】発車（auto_launch） が動いていません」→ pid 44116 / session 1c171d09（走行2本→3本・上限3本）
+2026-09-18 00:31:55 🚀 自動発車 843番「【自動検知】心臓（heartbeat） が動いていません」→ pid 44221 / session 4d00a248（走行2本→3本・上限3本）
+2026-09-18 00:37:38 🚀 自動発車 846番「【自動検知】Lovable公開 が動いていません」→ pid 46855 / session 7d8c48dc（走行2本→3本・上限3本）
+2026-09-18 00:43:25 🚀 自動発車 823番「【自動検知】発車（auto_launch） が動いていません」→ pid 49966 / session e18fd087（走行2本→3本・上限3本）
+2026-09-18 00:46:11 🚀 自動発車 847番「【自動検知】Lovable公開 が動いていません」→ pid 51446 / session 64aa3c10（走行2本→3本・上限3本）
+2026-09-18 00:51:09 🚀 自動発車 819番「【自動検知】鬼監督 が動いていません」→ pid 53768 / session 16a542a1（走行2本→3本・上限3本）
+2026-09-18 00:52:12 🚀 自動発車 847番「【自動検知】Lovable公開 が動いていません」→ pid 54257 / session 3a04e5e1（走行2本→3本・上限3本）</pre><br><br><strong>数字の注記：</strong>shikumi.jsonのcountToday(9件)と、この確認ページの厳密な実カウント(8件)がずれています。原因は自動検品の差し戻しメッセージ自体が『🚀 自動発車』という文字列を引用しており、countTodayの単純な部分一致カウントがそれも1行として数えてしまうためと特定しました（発車が実際に8件起きたこと自体は下の生ログで裏付けています）。今回のタスク（alive/dead判定の誤検知）とは別の、countTodayの数え方に関する軽微な副作用のため、コード修正は本号のスコープ外としました。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>alive</b><span>自然な次回点検でのverdict</span></div>
+  <div class="num"><b>9件</b><span>本日の自動発車回数(countToday・実測)</span></div>
+  <div class="num"><b>8件</b><span>本日分🚀ログの実総数</span></div>
+  <div class="num"><b>2026-09-18T00:55:06.452134+09:00</b><span>自然な次回点検の生成時刻(手動実行ではない)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>根本修正コミット(shikumi.py・809d2d64c)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/809d2d64c9704ac988ba2329b4eb7cca13986426" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/809d2d64c9704ac988ba2329b4eb7cca13986426</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>生死表(shikumi.json)のauto_launch.verdict</td><td class="yes">alive</td></tr>
+<tr><td>本日の🚀自動発車ログが実在するか</td><td class="yes">8件</td></tr>
+</table>
+
+<footer>
+このページは #823 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

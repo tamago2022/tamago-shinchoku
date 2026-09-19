@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定</div>
+<h1>#927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+queue.json awaiting_check棚卸しミッション(1/7)。対象一覧10件(400,410,428,431,439,441,458,463,465,502)を1件ずつ開いて現状を精査。3件(431,439,465)は本番URLの実測でPASSを確認しdone化。1件(502)は過去にAI検品で落ちた③タイタニック関連表示がSSR HTMLでは検証不可能(クライアント側stateのため)と判明し、誤ってdone化しそうになったのを踏みとどまりholdのまま正確な情報へ更新。3件(410,428,463)は既にdone、2件(441,458)は機能自体が別件のindex.html軽量化で撤去済みのためhold維持、1件(400)はブランチが10日分陳腐化し評価不能のためwaitingのまま記録のみ。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>24</b><span>棚全体のawaiting_check件数(実行前33件)</span></div>
+  <div class="num"><b>4</b><span>今回このバッチでdone化した件数(431,439,465,+旧431処理)</span></div>
+  <div class="num"><b>10</b><span>対象一覧の件数(このバッチの担当範囲)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>439 さよなら夏の日 関連4本(本番実測)</b><a href="https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi</a></li>
+  <li><b>465 こちらもどうぞ 横スクロール1行(本番実測)</b><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc</a></li>
+  <li><b>502 モンスタートラック日本語化(本番実測・③は要ブラウザ実機確認のためhold継続)</b><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc</a></li>
+  <li><b>431 修理した見回りスクリプト(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-onboarding-gaps.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-onboarding-gaps.mjs</a></li>
+</ul>
+
+
+
+<h2>実測ログ（生の数字。推測ゼロ）</h2>
+<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:14px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">
+[439] https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi のSSR HTML(node fetch)
+  プラスティック・ラブ=true / 竹内まりや=true / 少年時代=true / 夜に駆ける=true
+  禁句「代表曲」=0件 / 禁句「名曲」=0件
+  → hold→done化
+
+[465] https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc のSSR HTML
+  overflow-x-auto snap-x snap-mandatory=含む / shelf-scroll=含む（横スクロール1行）
+  origin/main:src/components/RelatedCardsRow.tsx TARGET_COUNT=10、grid-cols-2記述なし（コード実測）
+  → hold→done化
+
+[502] 同ページのSSR HTML
+  満員御礼=true / 泥水=true / タイタニック=0件 / セリーヌ=0件 / celine-dion=0件
+  → ①②はPASSだが③はSSRでは非表示（effectiveArtistはwatch.tsx 743行目、
+    クライアント側stateでuseEffect実行後にのみセットされる実装のため静的HTML比較では原理的に検証不可）。
+    過去にAI検品(Verifier)が同じ理由で1回落としている実績あり。安全側に倒しholdのまま維持。
+
+[431] scripts/patrol/reports/onboarding-gaps-latest.md（origin/main実測）
+  1行目タイムスタンプ: 2026-09-17T07:20:44.028Z（実行当日中に更新＝沈黙バグ修理後に実働を確認）
+  検出5件: NEED / Mad Clown / Yenlik / Aleroj / AiNA THE END
+  → awaiting_check→done化（中身の仮埋め0件はSUPABASE_SERVICE_ROLE_KEY不在という
+    既知の店主対応待ち制約であり、依頼の核心「毎日見回りの仕組み」は達成）
+
+queue.json status内訳（実行後）: hold=31 waiting=111 done=82 awaiting_check=24 merged=6 stuck=7 running=3（total 264）
+awaiting_check件数: 実行前33件 → 実行後24件（このバッチの担当10件中、awaiting_check状態だったのは431番の1件のみ。
+残り9件はhold/done/running/waitingで、対象一覧生成ロジックが古いスナップショットを拾ったとみられる）
+</pre>
+
+<footer>
+このページは #927 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#906 画質を指差しで決める／何が重いのか 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#b8860b;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  h3{font-size:0.95rem;color:var(--ink);margin:22px 0 8px;font-weight:700;}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 8px;}
+  .shot{flex:1 1 160px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/16px 16px;}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  .imgblock{margin:0 0 30px;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  /* 棒グラフ */
+  .barrow{margin:0 0 12px;}
+  .barlabel{font-size:0.82rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .tag{display:inline-block;font-size:0.7rem;padding:2px 8px;border-radius:99px;font-weight:700;color:#fff;}
+  .tag.aka{background:var(--aka);}
+  .tag.midori{background:var(--midori);}
+  .tag.ki{background:var(--ki);}
+  .bartrack{background:#efe9db;border-radius:6px;height:22px;position:relative;overflow:hidden;}
+  .barfill{height:100%;border-radius:6px;}
+  .barfill.aka{background:var(--aka);}
+  .barfill.midori{background:var(--midori);}
+  .barfill.ki{background:var(--ki);}
+  .barval{position:absolute;right:8px;top:0;height:100%;display:flex;align-items:center;font-size:0.78rem;font-weight:700;color:var(--ink);}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:0.78rem;margin:0 0 16px;color:var(--sub);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .legend i{width:10px;height:10px;border-radius:99px;display:inline-block;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #906 画質を指差しで決める／何が重いのか</div>
+<h1>#906 画質を指差しで決める／何が重いのか</h1>
+<div class="date">2026-09-17 実装・main合流不要（GitHub Pages確認ページ）・実測やり直し版（1回目差し戻しの指摘を反映：画像3枚に増量／④を棒グラフ＋要る要らない分類に変更）</div>
+
+<div class="fix">
+<p><b>誤解を解く材料：</b>「6MBのcoverGuide.ts」は画像ではなく、3万曲ぶんの曲名・動画IDが並んだ文字データ。動画サムネはYouTube側から配信されており再生ボタンを押すまで読み込まれない。<b>実際に自社で「生のまま」置いていて重いのは、下のバッジ・キャラ絵のような静止画。</b></p>
+<p><b>方針：</b>「画質を落とす」のではなく「必要な分だけ渡す」。下の①を見比べて、どこまで容量を落としても荒れて見えないか、iPhone・PC両方の実機で指差してください。番号が小さいほど軽い版です。</p>
+<p><b>追記(本番を直接測って判明)：</b>本番(joy-relief-station.lovable.app)は既にconcierge-pick.pngをリポジトリの元ファイル(2.53MB)のまま配ってはおらず、512×341px・168KBまで自動で縮めて配信していた。それでもまだ①で見る「必要な分」より大きい。</p>
+</div>
+
+<h2>① 画質の見比べ（実際にサイトで使っている画像・3枚・タップで原寸表示）</h2>
+
+<div class="imgblock">
+<h3>A. concierge-pick.png（「コンシェルジュのイチオシ」バッジ）</h3>
+<div class="shots">
+  <div class="shot"><b>①元のまま</b><a href="img/906-image-quality/concierge-original.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-original.png" alt="①元のまま"></a><span class="meta">2.53MB・1536×1024</span></div>
+  <div class="shot"><b>②Retinaで必要な分だけ</b><a href="img/906-image-quality/concierge-1376px.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-1376px.png" alt="②Retinaで必要な分だけ"></a><span class="meta">979.6KB・1376×917</span></div>
+  <div class="shot"><b>③500KB版</b><a href="img/906-image-quality/concierge-500kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-500kb.png" alt="③500KB版"></a><span class="meta">353.0KB・800×533</span></div>
+  <div class="shot"><b>④150KB版</b><a href="img/906-image-quality/concierge-150kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-150kb.png" alt="④150KB版"></a><span class="meta">149.8KB・500×333・本番配信版とほぼ同じ重さ</span></div>
+  <div class="shot"><b>⑤50KB版</b><a href="img/906-image-quality/concierge-50kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge-50kb.png" alt="⑤50KB版"></a><span class="meta">44.6KB・250×167</span></div>
+  <div class="shot"><b>参考：WebP(原寸のまま)</b><a href="img/906-image-quality/concierge.webp" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/concierge.webp" alt="参考：WebP原寸"></a><span class="meta">272.4KB・1536×1024・PNGと同じ大きさでこの軽さ</span></div>
+</div>
+</div>
+
+<div class="imgblock">
+<h3>B. egg-concierge-chef.png（コンシェルジュ衣装・カードの棚タイル用サムネ／1:1）</h3>
+<div class="shots">
+  <div class="shot"><b>①元のまま</b><a href="img/906-image-quality/chef-original.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/chef-original.png" alt="①元のまま"></a><span class="meta">1.09MB・1024×1024</span></div>
+  <div class="shot"><b>②必要な分だけ(400px)</b><a href="img/906-image-quality/chef-400px.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/chef-400px.png" alt="②必要な分だけ"></a><span class="meta">170.2KB・400×400</span></div>
+  <div class="shot"><b>③150KB版</b><a href="img/906-image-quality/chef-150kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/chef-150kb.png" alt="③150KB版"></a><span class="meta">149.7KB・374×374</span></div>
+  <div class="shot"><b>④50KB版</b><a href="img/906-image-quality/chef-50kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/chef-50kb.png" alt="④50KB版"></a><span class="meta">49.6KB・206×206</span></div>
+  <div class="shot"><b>参考：WebP(原寸のまま)</b><a href="img/906-image-quality/chef.webp" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/chef.webp" alt="参考：WebP原寸"></a><span class="meta">29.6KB・1024×1024・PNGの1/38の軽さ</span></div>
+</div>
+</div>
+
+<div class="imgblock">
+<h3>C. memory-door-egg.png（「記憶の扉」の見出しアイコン・実際の表示は最大80×80px）</h3>
+<div class="shots">
+  <div class="shot"><b>①元のまま</b><a href="img/906-image-quality/memdoor-original.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/memdoor-original.png" alt="①元のまま"></a><span class="meta">858.6KB・1024×1024</span></div>
+  <div class="shot"><b>②必要な分だけ(160px)</b><a href="img/906-image-quality/memdoor-160px.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/memdoor-160px.png" alt="②必要な分だけ"></a><span class="meta">18.5KB・160×160・Retina(2倍)でも足りる実サイズ</span></div>
+  <div class="shot"><b>③50KB版</b><a href="img/906-image-quality/memdoor-50kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/memdoor-50kb.png" alt="③50KB版"></a><span class="meta">49.6KB・278×278</span></div>
+  <div class="shot"><b>④20KB版</b><a href="img/906-image-quality/memdoor-20kb.png" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/memdoor-20kb.png" alt="④20KB版"></a><span class="meta">19.9KB・168×168</span></div>
+  <div class="shot"><b>参考：WebP(原寸のまま)</b><a href="img/906-image-quality/memdoor.webp" target="_blank" rel="noopener"><img style="cursor:zoom-in" src="img/906-image-quality/memdoor.webp" alt="参考：WebP原寸"></a><span class="meta">27.0KB・1024×1024</span></div>
+</div>
+<p class="note">この画像だけは特に極端で、<b>実際に画面に出る大きさが80×80pxしかないのに、1024×1024pxで配っている（実寸の約13倍）。</b>②の160px版でも荒れていないか、ここを一番よく見てください。</p>
+</div>
+
+<h2>② 数字（画像1枚あたり）</h2>
+<div class="nums">
+  <div class="num"><b>24.17MB</b><span>参考：ビルド全体の総容量（旧計測）</span></div>
+  <div class="num"><b>2.53MB → 979.6KB</b><span>A：元のまま→Retinaで必要な分だけ</span></div>
+  <div class="num"><b>1.09MB → 170.2KB</b><span>B：元のまま→必要な分だけ(400px)</span></div>
+  <div class="num"><b>858.6KB → 18.5KB</b><span>C：元のまま→必要な分だけ(160px)・約46分の1</span></div>
+</div>
+
+<h2>④ 何が重いのか（実際にビルドされた資材・大きい順10件・転送量実測）</h2>
+<div class="legend">
+  <span><i style="background:#c4483a"></i>今は要らない（検索・関連曲を使うまで届かなくていい）</span>
+  <span><i style="background:#b8860b"></i>画面に出たら要る（loading="lazy"・出ないページには届かない）</span>
+  <span><i style="background:#3a7a52"></i>要る（アプリ・デザインの動作に必須）</span>
+</div>
+
+<div class="barrow"><div class="barlabel">coverGuide.js（3万曲データ・gzip転送量）<span class="tag aka">今は要らない</span></div><div class="bartrack"><div class="barfill aka" style="width:100.0%"></div><span class="barval">2.51MB</span></div></div>
+<div class="barrow"><div class="barlabel">egg-concierge-chef.png（コンシェルジュ・シェフ衣装／上のB）<span class="tag ki">画面に出たら要る(lazy)</span></div><div class="bartrack"><div class="barfill ki" style="width:43.4%"></div><span class="barval">1.09MB</span></div></div>
+<div class="barrow"><div class="barlabel">egg-concierge-rocker.png（コンシェルジュ・ロッカー衣装）<span class="tag ki">画面に出たら要る(lazy)</span></div><div class="bartrack"><div class="barfill ki" style="width:41.0%"></div><span class="barval">1.03MB</span></div></div>
+<div class="barrow"><div class="barlabel">egg-concierge-apology.png（コンシェルジュ・謝罪ポーズ）<span class="tag ki">画面に出たら要る(lazy)</span></div><div class="bartrack"><div class="barfill ki" style="width:36.6%"></div><span class="barval">942.2KB</span></div></div>
+<div class="barrow"><div class="barlabel">index.js（アプリ本体・gzip転送量）<span class="tag midori">要る</span></div><div class="bartrack"><div class="barfill midori" style="width:34.5%"></div><span class="barval">887.9KB</span></div></div>
+<div class="barrow"><div class="barlabel">memory-door-egg.png（記憶の扉アイコン／上のC）<span class="tag ki">画面に出たら要る(lazy)</span></div><div class="bartrack"><div class="barfill ki" style="width:33.4%"></div><span class="barval">858.6KB</span></div></div>
+<div class="barrow"><div class="barlabel">egg-concierge-tuxedo.png（コンシェルジュ・タキシード）<span class="tag ki">画面に出たら要る(lazy)</span></div><div class="bartrack"><div class="barfill ki" style="width:31.6%"></div><span class="barval">812.9KB</span></div></div>
+<div class="barrow"><div class="barlabel">egg-concierge-summer-t.png（コンシェルジュ・夏Tシャツ）<span class="tag ki">画面に出たら要る(lazy)</span></div><div class="bartrack"><div class="barfill ki" style="width:30.5%"></div><span class="barval">783.6KB</span></div></div>
+<div class="barrow"><div class="barlabel">egg-concierge-rain-happy.png（コンシェルジュ・雨の日）<span class="tag ki">画面に出たら要る(lazy)</span></div><div class="bartrack"><div class="barfill ki" style="width:29.5%"></div><span class="barval">759.2KB</span></div></div>
+<div class="barrow"><div class="barlabel">styles.css（デザイン・gzip転送量）<span class="tag midori">要る</span></div><div class="bartrack"><div class="barfill midori" style="width:1.2%"></div><span class="barval">29.7KB</span></div></div>
+
+<div class="nums" style="margin-top:18px;">
+  <div class="num"><b>9.59MB</b><span>この10件の合計（転送量ベース）</span></div>
+  <div class="num"><b>3.41MB</b><span>└うち文字(JS+CSS・gzip)＝coverGuide+index+styles</span></div>
+  <div class="num"><b>6.18MB</b><span>└うち画像(6枚・lazy)</span></div>
+  <div class="num"><b>2.51MB</b><span>└今は要らないのに必ず届く分（coverGuide.js）</span></div>
+</div>
+<p class="note">ホーム（扉が6枚並ぶトップページ）だけを開いている間は、上の表の画像6枚（chef〜rain-happy）はどれも届かない（実コードを確認：ホームはこれらを描画しない・<code>loading="lazy"</code>で画面に出て初めて要求される）。ホームを開いた時点で必ず届くのは <b>index.js＋styles.css＋coverGuide.js</b>。そのうちcoverGuide.jsの2.51MBだけが「検索や関連曲を使わないのに、今は要らないのに届いている」分。</p>
+
+<h2>⑤ 押せるリンク</h2>
+<ul class="links">
+  <li><b>今の本番concierge-pick.png（実際に配信されているファイル・168KB）</b><a href="https://joy-relief-station.lovable.app/badges/concierge-pick.png" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/concierge-pick.png</a></li>
+  <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+<h2>⑥ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>concierge-pick.png 各段階</td><td class="yes">Python(PIL)で実測生成・上の①A参照</td></tr>
+<tr><td>egg-concierge-chef.png 各段階</td><td class="yes">Python(PIL)で実測生成・上の①B参照</td></tr>
+<tr><td>memory-door-egg.png 各段階</td><td class="yes">Python(PIL)で実測生成・上の①C参照</td></tr>
+<tr><td>memory-door-egg.png の実表示サイズ</td><td class="yes">src/components/MemoryDoor.tsx 実コード：w-16 h-16 md:w-20 md:h-20（64〜80px）</td></tr>
+<tr><td>egg-concierge-chef.png の使われ方</td><td class="yes">src/lib/worlds.ts で thumb として使用・カード側は loading="lazy"</td></tr>
+<tr><td>ホーム(/)が実際に描画する画像</td><td class="yes">src/routes/index.tsx を実読み：扉6枚(w.image)とegg-concierge.png(マスコット)のみ。chef/rocker/apology/tuxedo/summer-t/rain-happy/memory-door-eggはどれも描画しない</td></tr>
+<tr><td>coverGuide-*.js（3万曲の曲データ）</td><td class="yes">生7.57MB／転送2.51MB(gzip・本日実測)</td></tr>
+<tr><td>index-*.js（アプリ本体コード）</td><td class="yes">生2.22MB／転送887.9KB(gzip・本日実測)</td></tr>
+<tr><td>styles.css（デザイン）</td><td class="yes">生203.1KB／転送29.7KB(gzip・本日実測)</td></tr>
+<tr><td>本番concierge-pick.png</td><td class="yes">HTTP直接取得・512×341px・168KB（リポジトリ元とは別に本番側で既に自動縮小済み）</td></tr>
+</table>
+
+<footer>
+<p>実測の生データ（すべてPython/PIL・vite buildの実ファイル・本番へのHTTP取得・実コード読み取りから直接測定。丸め・推測なし）</p><pre>実測: concierge-pick 元1536x1024 2650238byte(2.53MB)
+実測: concierge-pick 1376px版 1376x917 1003122byte(979.6KB)
+実測: concierge-pick 500KB版 800x533 361482byte(353.0KB)
+実測: concierge-pick 150KB版 500x333 153386byte(149.8KB)
+実測: concierge-pick 50KB版 250x167 45670byte(44.6KB)
+実測: concierge-pick webp版 1536x1024 278908byte(272.4KB)
+実測: concierge-pick 本番配信中の実物 512x341 168121byte(164.2KB)(2026-09-17取得)
+実測: egg-concierge-chef 元1024x1024 1141829byte(1.09MB)
+実測: egg-concierge-chef 400px版 400x400 174277byte(170.2KB)
+実測: egg-concierge-chef 150KB版 374x374 153275byte(149.7KB)
+実測: egg-concierge-chef 50KB版 206x206 50799byte(49.6KB)
+実測: egg-concierge-chef webp版 1024x1024 30308byte(29.6KB)
+実測: memory-door-egg 元1024x1024 879219byte(858.6KB)
+実測: memory-door-egg 実際の表示サイズ 80px(PC・md:w-20 h-20) / 64px(スマホ・w-16 h-16)（src/components/MemoryDoor.tsx実コードより）
+実測: memory-door-egg 元画像1024px÷実表示80px=12.8倍(約13倍)
+実測: memory-door-egg 160px版 160x160 18927byte(18.5KB)
+実測: memory-door-egg 50KB版 278x278 50795byte(49.6KB)
+実測: memory-door-egg 20KB版 168x168 20414byte(19.9KB)
+実測: memory-door-egg webp版 1024x1024 27650byte(27.0KB)
+実測: coverGuide.js 生7940481byte(7.57MB) gzip後2633875byte(2.51MB)(2026-09-17実測)
+実測: index.js 生2329070byte(2.22MB) gzip後909170byte(887.9KB)(2026-09-17実測)
+実測: styles.css 生207970byte(203.1KB) gzip後30455byte(29.7KB)(2026-09-17実測)
+実測: egg-concierge-rocker.png 1080383byte(1.03MB)
+実測: egg-concierge-apology.png 964849byte(942.2KB)
+実測: egg-concierge-tuxedo.png 832403byte(812.9KB)
+実測: egg-concierge-summer-t.png 802357byte(783.6KB)
+実測: egg-concierge-rain-happy.png 777424byte(759.2KB)
+
+参考:依頼文の計算値(実測ではなく設計上の必要幅。たまごさんの目での確認が優先)
+計算: 主役カード(16:9) 表示688px Retina2倍で必要1376px 今配布2000px超
+計算: 棚タイル(1:1) 表示200px Retina2倍で必要400px 今配布2000px超
+計算: 関連カード 表示267px Retina2倍で必要534px 今配布2000px超
+</pre><p>この確認ページは #906 のセッションが tools/make_check_page.py の書式(share/check/_template.html)に揃えて手動生成。1回目のAI検品差し戻し（画像1枚のみ・棒グラフと要る/要らない分類が無い）を受け、画像を3枚（A/B/C）に増量し、④を棒グラフ＋3色タグへ作り直した。</p>
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1037｜自動チャージを切った／切れなかった</title>
+<style>
+:root{--bg:#0b0b0c;--fg:#f2efe9;--dim:#8d8a84;--line:#26262a;--ok:#6fd08c;--ng:#ff6b5e;--warn:#ffc65c;--card:#141417}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Sans",sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}
+.wrap{max-width:980px;margin:0 auto;padding:24px 14px 80px}
+h1{font-size:21px;margin:0 0 4px;letter-spacing:.02em}
+.sub{color:var(--dim);font-size:12.5px;margin:0 0 20px}
+h2{font-size:15px;margin:34px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+th,td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:400;font-size:11.5px;white-space:nowrap;background:#121215}
+tr:last-child td{border-bottom:0}
+.ok{color:var(--ok)}.ng{color:var(--ng)}.warn{color:var(--warn)}
+.dim{color:var(--dim)}
+.w{font-weight:600}
+a{color:#8fc4ff;word-break:break-all}
+.src{color:var(--dim);font-size:11px;display:block;margin-top:3px;word-break:break-all}
+.box{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:12px 14px;margin:12px 0;font-size:13px}
+.box.ng{border-left-color:var(--ng)}
+.box.ok{border-left-color:var(--ok)}
+.box>b:first-child{display:block;margin-bottom:5px;color:var(--fg)}
+code{background:#1d1d21;border-radius:4px;padding:1px 5px;font-size:11.5px;word-break:break-all}
+footer{margin-top:44px;color:var(--dim);font-size:11.5px;border-top:1px solid var(--line);padding-top:14px}
+@media(max-width:420px){h1{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>自動チャージ ― 切った／切れなかった</h1>
+<p class="sub">2026-09-23 13:12〜13:22 JST に画面を開いて確かめたもの。<br>
+切ったのは<b>自動チャージの設定だけ</b>です。課金は1円も押していません。プランの契約・解約も押していません。アカウント・チームも消していません。</p>
+
+<div class="box ok">
+<b>先に結論</b>
+出ていた自動チャージは <b>xAI の1本だけ</b>。それは切りました（切った後にページを読み直して「Auto top-up is disabled」を確認済み）。
+Devin は<b>もともとOFF</b>。残り7つは、このChromeが未ログインのため<b>こちらでは切れません</b>。押すだけのリンクを下に置きました。
+</div>
+
+<h2>表</h2>
+<div class="tw">
+<table>
+<thead><tr>
+<th>財布</th><th>自動チャージ</th><th>こちらで切れたか</th><th>押すリンク</th><th>切った時刻</th>
+</tr></thead>
+<tbody>
+
+<tr>
+<td class="w">xAI<span class="src">TAMAGO's team<br>69b11444-99e0-474b-b888-8598da9f8eed</span></td>
+<td class="ng w">ON だった<span class="src">残高が $5 以下になったら $5（786円）を自動請求。9/16の入金はこれ。</span></td>
+<td class="ok w">✅ 切った<span class="src">画面を読み直して確認：「Auto top-up is <b>disabled</b>」／ボタンも「Enable auto top-up」に変わった（2026-09-23 13:13 JST・console.x.ai）</span></td>
+<td><a href="https://console.x.ai/team/69b11444-99e0-474b-b888-8598da9f8eed/settings/billing">console.x.ai の Billing</a><span class="src">押すのは0回（もう切れています）。戻したいときだけ「Enable auto top-up」1クリック。</span></td>
+<td class="w">9/23 13:12<span class="src">JST</span></td>
+</tr>
+
+<tr>
+<td class="w">xAI（もう1本）<span class="src">goodvibes チーム<br>3e0b4d97-4d0d-458e-9f22-8758b9d65f2b</span></td>
+<td class="warn w">未実測<span class="src">画面そのものが開けないため、ONかOFFか分かりません。</span></td>
+<td class="ng w">切れません<span class="src">eggypop2010 のログインでは、このチームのURLを開いても TAMAGO's team に飛ばされます（2026-09-23 13:16 JST 実測）。＝別のログインの持ち物です。</span></td>
+<td class="dim">開ける口がありません<span class="src">どのログインのものかが<b>特定できていません</b>。推測で消させないため、リンクは出しません。</span></td>
+<td class="dim">—</td>
+</tr>
+
+<tr>
+<td class="w">Devin</td>
+<td class="ok w">もともとOFF<span class="src">「Enable auto-reload」トグルがOFF／「Auto-reload spend this cycle: $0.00」（app.devin.ai・2026-09-23 13:18 JST 実測）＝9/20以降もONになっていません。</span></td>
+<td class="dim">切る必要なし<span class="src">何も押していません（Cancelで閉じました）。</span></td>
+<td><a href="https://app.devin.ai/settings/billing">Devin の Plans → Configure auto-reload settings</a><span class="src">見るだけなら2クリック（ページ → ボタン）。</span></td>
+<td class="dim">—</td>
+</tr>
+
+<tr>
+<td class="w">OpenAI<span class="src">チャッピー・GPT Live・検品</span></td>
+<td class="warn w">未実測<span class="src">残高0（insufficient_quota）なのは9/23 10:25に実測済みですが、auto-recharge の設定が残っているかは見ていません。</span></td>
+<td class="ng w">切れません<span class="src">このChromeが platform.openai.com に未ログイン。ログイン画面に飛ばされました（2026-09-23 13:19 JST 実測）。パスワードはこちらでは打ちません。</span></td>
+<td><a href="https://platform.openai.com/settings/organization/billing/overview">Billing overview（自動チャージはこの画面の中）</a><span class="src">ログイン後、このURLに直行。そこから「Auto recharge」をOFFにするまで1〜2クリック。</span></td>
+<td class="dim">—</td>
+</tr>
+
+<tr>
+<td class="w">fal.ai<span class="src">画像・動画・音声</span></td>
+<td class="warn w">未実測</td>
+<td class="ng w">切れません<span class="src">未ログイン。ログイン画面に飛ばされました（2026-09-23 13:20 JST 実測）。</span></td>
+<td><a href="https://fal.ai/dashboard/usage-billing/billing">fal の Billing</a><span class="src">ログイン後このURLに直行（実測でここへ転送されました）。</span></td>
+<td class="dim">—</td>
+</tr>
+
+<tr>
+<td class="w">GitHub</td>
+<td class="dim">サブスク（自動チャージとは別）<span class="src">Actions の従量分があるかは未実測。</span></td>
+<td class="ng w">切れません<span class="src">未ログイン。ログイン画面に飛ばされました（2026-09-23 13:21 JST 実測）。</span></td>
+<td><a href="https://github.com/settings/billing/summary">GitHub の Billing summary</a><span class="src">ログイン後このURLに直行。使用量の上限（spending limit）もこの画面。</span></td>
+<td class="dim">—</td>
+</tr>
+
+<tr>
+<td class="w">Supabase</td>
+<td class="dim">サブスク（自動チャージとは別）</td>
+<td class="ng w">切れません<span class="src">未ログイン。ログイン画面に飛ばされました（2026-09-23 13:21 JST 実測）。</span></td>
+<td><a href="https://supabase.com/dashboard/org/_/billing">Supabase の Billing</a><span class="src">ログイン後このURLに直行。</span></td>
+<td class="dim">—</td>
+</tr>
+
+<tr>
+<td class="w">Lovable</td>
+<td class="dim">サブスク（自動チャージとは別）</td>
+<td class="ng w">切れません<span class="src">ページが読み込み中のまま中身が出ませんでした（2026-09-23 13:21 JST 実測）。</span></td>
+<td><a href="https://lovable.dev/settings/plans">Lovable の Plans</a><span class="src">ログイン後このURLに直行。</span></td>
+<td class="dim">—</td>
+</tr>
+
+<tr>
+<td class="w">Genspark</td>
+<td class="dim">サブスク（自動チャージとは別）<span class="src">10/4 にキャンセル予定、とたまごさんから聞いています（こちらでは確かめていません）。</span></td>
+<td class="ng w">切れません<span class="src">画面が空のまま何も描かれませんでした（2026-09-23 13:22 JST 実測）。</span></td>
+<td><a href="https://www.genspark.ai/me/settings/subscription">Genspark の Subscription</a><span class="src">ログイン後このURLに直行。</span></td>
+<td class="dim">—</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<h2>切ったことで起きること（隠さず書きます）</h2>
+<div class="box ng">
+<b>xAI の残高 $9.41（1,479円）を使い切ると、声が止まります。</b>
+切った画面に出ている文言そのまま：「Auto top-up is disabled - you will lose access to the API when credits run out」。
+声の単価は 428秒で$0.57＝1分$0.08（1032番の実測）。割り算すると <b>117分ぶん</b>です。
+足すときは console.x.ai の「Add credits」で、そのとき<b>入れた分だけ</b>入ります（自動では増えません）。
+</div>
+
+<h2>APIで切れるか、を先に調べた結果</h2>
+<div class="box">
+<b>xAI：APIでは切れません。</b>
+公式の Management API（Billing Management）に並んでいる口は、請求先情報・請求書・支払い方法・後払いの上限・前払い残高・手動トップアップ・使用量の7つだけで、
+<b>自動チャージ（auto top-up）を切る口はありません</b>（<code>docs.x.ai/developers/rest-api-reference/management/billing.md</code> を取得して全項目を確認・2026-09-23）。
+加えて Management キーはどこにも置かれていません。だから画面で切りました。
+</div>
+
+<h2>xAIの一本化 ― いま分かっていること</h2>
+<div class="tw">
+<table>
+<thead><tr><th>チーム</th><th>残高</th><th>鍵</th><th>自動チャージ</th><th>ここで動いているもの</th></tr></thead>
+<tbody>
+<tr>
+<td class="w">TAMAGO's team<span class="src">69b11444-99e0-474b-b888-8598da9f8eed<br>eggypop2010@gmail.com / TAMAGO GAJIRO</span></td>
+<td class="w">$9.41<span class="src">1,479円</span></td>
+<td>4本<span class="src">Default API Key（…hgNb／30日 $0.61／2日前）・momotaro（…NxKd／&lt;$0.01／7日前）・joy-relief-station-voice（…wDvZ／未使用）・gokigen-voice（…9wgI／未使用）</span></td>
+<td class="ok w">切った<span class="src">9/23 13:12 JST</span></td>
+<td class="w">声（アイリス）<span class="src">…hgNb の30日使用額 $0.61 と、声の使用額 $0.61 が一致。他3本は0。＝声はこの鍵で動いています（1032番）。</span></td>
+</tr>
+<tr>
+<td class="w">goodvibes<span class="src">3e0b4d97-4d0d-458e-9f22-8758b9d65f2b</span></td>
+<td class="warn">見えません</td>
+<td>1本<span class="src">xai-…DXm7（Macに置いてある鍵）／<code>team_blocked: true</code></span></td>
+<td class="warn">未実測</td>
+<td class="dim w">いま何も動いていません<span class="src">この鍵での文字相談（Grok）は、すでに403で止まっています（status/ai_daicho.jsonl:26「team_blocked=true / credits無しで403」）。</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="box ng">
+<b>「0のやつ」は、まだ特定できていません。</b>
+goodvibes チームは <b>eggypop2010 のログインからは開けません</b>（そのチームIDのURLを開くと TAMAGO's team に転送される・13:16 実測）。
+つまり<b>別のログイン</b>の持ち物です。どのメールアドレスのアカウントかは、こちらからは分かりません。
+<b>推測で消させないので、削除のリンクは出しません。</b>そのログインが分かれば、この行は埋まります。
+</div>
+
+<div class="box ok">
+<b>消しても止まるものは、いま1つもありません。</b>
+goodvibes 側で動いているものはゼロ（上の表のとおり、すでに403で止まっている）。
+声は TAMAGO's team の Default API Key で動いているので、goodvibes を消しても声は鳴り続けます。
+</div>
+
+<h2>できなかったこと</h2>
+<div class="box ng">
+<b>Macの鍵の差し替えは、このセッションからはできません。</b>
+差し替え先のファイル <code>~/.tamago/keys/api_keys.env</code> は、このセッションが見られる場所（Desktop/tamago-shinchoku）の外にあります。
+だから「鍵を入れ替えた」も「声を鳴らして確かめた」も、<b>今回はやれていません</b>。できたふりは書きません。
+なお、声そのものは Supabase 側の鍵（TAMAGO's team の Default API Key）で通っているので、Macの鍵が止まっていても声は鳴ります。止まっているのは<b>文字でのGrok相談だけ</b>です。
+</div>
+
+<footer>
+1037番／2026-09-23。押したのは「xAIの自動チャージをOFFにする」の1つだけ。課金・プラン変更・削除は1つも押していません。<br>
+前に出した数字との食い違い：ありません（xAIの残高 $9.41＝1,479円、単価1分13円は1032番と同じ）。
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#909 X投稿カードの動画黒画面・案内所誤配置・ボタン無反応を修理 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #909 X投稿カードの動画黒画面・案内所誤配置・ボタン無反応を修理</div>
+<h1>#909 X投稿カードの動画黒画面・案内所誤配置・ボタン無反応を修理</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix" style="border-left-color:var(--aka);background:#fff;padding:14px 16px;border-radius:0 10px 10px 0;">
+<b style="color:var(--aka);display:block;margin-bottom:6px;">★2026-09-22 08:5x 訂正 ― このページの「①は直りました」は間違いでした。</b>
+下の⑤の表は、本番ページの<b>HTMLに文字列があるか</b>だけを見て「直った」と書いていました。
+きょう本番をChromeで実際に開いて測ったら、<b>動画は出ていません。</b>
+<ul style="margin:8px 0 0;padding-left:1.2em;">
+<li><b>「動画を読み込めませんでした。」が本番の画面の一番上に出ている。</b>9秒待っても
+<code>readyState=0 / videoWidth=0 / duration=null</code>。</li>
+<li>ページの中の <code>&lt;video&gt;</code> は<b>1本だけ</b>で、中身は足元の飾りのループ映像
+（<code>/media/joy-relief-footer-loop.mp4</code>・こちらは206で正常）。
+<b>カード本体の映像の要素が、そもそも生えていない。</b></li>
+<li><code>?tweet=</code> だけで開くと、アプリが付け直すクエリが
+<code>&amp;v=&amp;title=&amp;whisper=&amp;thumb=</code> と<b>全部空</b>。
+＝<b>Xの投稿から映像のURLを解決できていない。</b>解決できていないのにカードを表に出している。</li>
+<li>案内所のブロック（「まだ手探りで始めたばかりです」）は<b>いちばん上から足元へ移っただけで、まだ /watch に出ている。</b></li>
+<li>④のボタンは<b>本番で直っていました</b>（<code>aria-pressed="false"</code> を実機で確認）。
+Lovable公開待ちではなく、もう出ています。</li>
+</ul>
+<div style="margin-top:8px;">直し方は前から決まっているとおり：<b>映像が解決できなかったカードは、入口で弾いて表に出さない。</b>
+「読み込めませんでした」を出して済ませない（憲法：空・壊れたプレースホルダーを出さない）。</div>
+</div>
+
+<div class="fix">
+X投稿カードページの4点を修理：①動画poster黒画面 ②FeedbackDoorラベル「案内所」→「ひとこと目安箱」誤配置 ③ナビラベル文字潰れ予防（想定される狭い画面幅向けにwhitespace-nowrap追加、幅の実測は未実施） ④FeedbackDoor/FriendTestトグルボタンの無反応感（aria-pressed＋選択中✓マーク追加、触る検品の誤検知対策）。GitHub origin/mainコミット276cdcab時点。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+<div class="note">（数字なし）</div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ（該当の投稿カード）</b><a href="https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fsorealfoods%2Fstatus%2F2094374611983196394" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fsorealfoods%2Fstatus%2F2094374611983196394</a></li>
+  <li><b>GitHubリポジトリ（origin/main）</b><a href="https://github.com/tamago2022/joy-relief-station" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①動画poster黒画面修理</td><td class="no"><b>直っていません（2026-09-22 実機で確認）。</b>「動画を読み込めませんでした。」が本番に出ている。09-17の「本番反映済み」は誤りでした</td></tr>
+<tr><td>②FeedbackDoorラベル「ひとこと目安箱」化</td><td class="yes">本番反映済み（09-22 実機でも文言を確認）</td></tr>
+<tr><td>③ナビラベルwhitespace-nowrap（文字潰れ予防）</td><td class="yes">09-22に375px幅で実測。潰れなし</td></tr>
+<tr><td>④トグルボタンaria-pressed＋✓マーク</td><td class="yes"><b>本番に出ています</b>（09-22 実機で <code>aria-pressed</code> を確認）。09-17の「公開待ち」は解消済み</td></tr>
+<tr><td>案内所ブロックが /watch に出ていないこと</td><td class="no"><b>まだ出ています。</b>最下部の <code>section.mt-16.pt-8</code> の中に「買ってよかった棚／気分診断／ひとこと目安箱」ごと居る</td></tr>
+</table>
+
+<footer>
+<b>2026-09-22 の実測方法</b>：本番ページをChromeで実際に開き、<code>video</code> 要素の
+<code>readyState / videoWidth / duration</code>、ボタンの <code>aria-pressed</code>、
+375px幅での <code>scrollWidth</code> を数字で読んだ。文字列があるかどうかでは判定していない。<br><br>
+<b>2026-09-17 の実測方法（＝この表を間違えた方法）</b>：本番ページをWebFetchで取得し文字列有無を確認。「ひとこと目安箱」の文字列あり＝①②③は本番反映済み。「aria-pressed」の文字列なし＝④はmain合流済みだがLovable公開未実行（自動公開便待ち）。Lovable手動公開スクリプトを2回試行したが公開ボタン未検出のため失敗、30分おきの自動便（launchd）に委ねている状態。390pxはコミットメッセージ由来の想定値でありpx単位の実測は行っていない。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

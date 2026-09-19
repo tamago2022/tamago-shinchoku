@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#897 サムネの大きさにA/B/Cの名前をつけた 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #897 サムネの大きさにA/B/Cの名前をつけた</div>
+<h1>#897 サムネの大きさにA/B/Cの名前をつけた</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+サムネイルの大きさをA(主役・16:9・幅いっぱい)/B(棚・正方形)/C(関連・16:9・横スクロール小さめ)の3種類に名前を付けて1か所(src/lib/designRules.ts)にまとめた。本番の見本ページ(/design-check)にA/B/Cを実寸で並べ、横並びカードの高さが完全に揃っていることをCIが機械検査するようにした。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3種類</b><span>サムネの名前(A/B/C)に整理</span></div>
+  <div class="num"><b>0px</b><span>B・Cグループの横並び高さの差(実測)</span></div>
+  <div class="num"><b>2px</b><span>CIが許容する高さの差(これを超えたら落ちる)</span></div>
+</div>
+
+<h2>実測の生データ（getBoundingClientRect・本番 /design-check・2026-09-17 再取得）</h2>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:0.82rem;overflow-x:auto;">A(主役) thumb-check-a: 320.0 x 180.0 px（比 1.778 ≒ 16:9）
+B(棚)   thumb-check-b: 176.0 x 176.0 px（比 1.000 = 1:1）
+C(関連) thumb-check-c: 218.0 x 122.6 px（比 1.778 ≒ 16:9）
+
+Bグループ横並び高さ（3枚）: 242.8, 242.8, 242.8 px → 差 0.0px
+Cグループ横並び高さ（3枚）: 179.4, 179.4, 179.4 px → 差 0.0px
+CI許容誤差（designRules.ts rowHeightTolerancePx）: 2.0px</pre>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>897番の前（A/B/Cの見本が無い）</b><img src="img/897-before.png" alt="前"></div>
+  <div class="shot after"><b>897番の後（本番。A/B/Cが並び、高さが揃っている）</b><img src="img/897-after.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の見本ページ(A/B/Cが並んでいる)</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
+</ul>
+
+<h2>⑤ 追記：触る検品(2段目)ではねられた指摘への対応（コード修正済み・本番反映は保留中）</h2>
+<div class="note">
+897番のA/B/C実装そのものではなく、全ページ共通の下部ミニプレーヤーにある「次のページへ進む」「画面の一番上へ」の2つのボタンが、押しても画面が変わらず無反応と判定された。原因は897番のコードではなく、進む履歴が無い時／既に一番上にいる時に何も起きない既存の挙動。実装自体は正しいが「押しても何も起きない」体験は良くないため、何も起きない時だけ一言（トースト）を返すよう修正した（コミット<code>a13258ad</code>、origin/mainへ合流済み）。
+</div>
+<div class="note" style="border-left:3px solid var(--aka);">
+<b style="color:var(--aka);">本番未反映（Lovable基盤側の問題）：</b> mainへの合流から1時間37分・手動公開試行6回待っても本番に出ない。Lovable編集画面を直接確認したところ、①「Publishing was blocked due to suspicious activity」ブロックが現役継続中、②直近の全pushが「ビルドに失敗しました」表示のまま、の2つを確認した。コード側の問題ではなく、店主本人がLovableサポートへ問い合わせない限り解除できない段階（詳細は<code>.claude/KNOWN_ISSUES.md</code>）。反映後にあらためて<code>node tools/verify_click.mjs</code>で無反応0件を確認する。
+</div>
+<div class="nums">
+  <div class="num"><b>2件</b><span>修正前(本番)の無反応判定（node tools/verify_click.mjs実測）</span></div>
+  <div class="num"><b>未反映</b><span>修正はmain合流済みだがLovable本番にはまだ出ていない</span></div>
+</div>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:0.82rem;overflow-x:auto;">修正前（本番、2026-09-17 07:48実測）:
+実測: {"totalClickable":11,"tested":11,"noResponseCount":2}
+--- 押しても反応しない要素 ---
+  [9] BUTTON 「次のページへ進む」
+  [10] BUTTON 「画面の一番上へ」
+CLICK_VERDICT: FAIL - 押しても反応しない要素が2件あります（11件中）</pre>
+<div class="shots">
+  <div class="shot before"><b>修正前：押しても無反応（スクショ）</b><img src="img/897-miniplayer-before.noresponse-9.png" alt="修正前"></div>
+</div>
+
+
+
+<footer>
+このページは #897 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

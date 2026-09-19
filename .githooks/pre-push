@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+# 案件#898・再設計（2026-09-17）：push直前に関所(sekisho)をもう一段かける。
+#
+# tools/make_check_page.py 側の関門（書き出し直前）だけだと、誰かが share/check/*.html
+# を手で直接編集・追加してpushした場合はすり抜けてしまう。pushという「origin/main へ
+# 反映される最後の1点」にも同じ判定（tools/sekisho.py の gate_local()）を強制することで、
+# 呼び忘れ・作り方の違いに関わらず「origin/main に乗っているページは必ず関所を通っている」
+# を保証する。
+#
+# これはgitフックなので、どのセッション・どのツール（Dispatch自身の直接pushも含む）が
+# 起動した push でも、プロンプトでの指示に頼らず必ず実行される。
+set -u
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$REPO_ROOT" ]; then
+  exit 0
+fi
+cd "$REPO_ROOT" || exit 0
+
+ZERO="0000000000000000000000000000000000000000"
+FAIL=0
+CHECKED=0
+
+# pushのref一覧はstdinから1回しか読めない。関所を2段かけるので先に受け取っておく。
+REFS="$(cat)"
+
+# 鬼監督はここ（いちばん先）で走らせる。網につなぐ必要が無く一瞬で終わるので、
+# 時間のかかる関所(sekisho)より前に落とした方が、直すまでの待ち時間が短くなる。
+# ------------------------------------------------------------------
+# 関所その3（2026-09-22）：鬼監督を「呼ばれたら見る表」から「通らないと出られない門」にする。
+#
+# きっかけ：たまごさん「俺の分身が欲しい。鬼監督が近いんだけど、ちゃんと機能してるのかな」
+# 実測したら、鬼監督もkenpin_gateも**どの機械にも呼ばれていなかった**
+#   $ grep -c "kenpin_gate|鬼監督" .githooks/pre-push .git/hooks/pre-commit  → 両方 0
+# 呼べと書いてあるのは tools/prompt_rules/always-18 だけ＝思い出したときしか通らない。
+#
+# 判定の本体は tools/oni_gate.py の1か所だけに置いた（1018番と同じ直し方）。
+# ここはそれを呼ぶだけ。規則を足したいときも、このファイルは二度と触らない。
+# 既にあるページの違反は status/oni_baseline.json に借金として記録済みで止めない。
+# ------------------------------------------------------------------
+ONI_FILES=""
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO" ] && continue
+  if [ "$remote_sha" = "$ZERO" ]; then
+    base="$(git hash-object -t tree /dev/null)"
+  else
+    base="$remote_sha"
+  fi
+  ofiles="$(git diff --name-only --diff-filter=ACM "$base" "$local_sha" -- 'share/check/*.html' 2>/dev/null)"
+  [ -z "$ofiles" ] && continue
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in */_template.html) continue ;; esac
+    tmpo="/tmp/oni-$(echo "$f" | tr '/' '_')"
+    git show "$local_sha:$f" > "$tmpo" 2>/dev/null || continue
+    # 借金の照合はファイル名で行うので、元の名前のまま置き直す
+    mkdir -p "/tmp/onigate/$(dirname "$f")" 2>/dev/null || true
+    mv "$tmpo" "/tmp/onigate/$f" 2>/dev/null || continue
+    ONI_FILES="$ONI_FILES /tmp/onigate/$f"
+  done <<EOF3
+$ofiles
+EOF3
+done <<REFSEOF3
+$REFS
+REFSEOF3
+
+if [ -n "$ONI_FILES" ]; then
+  echo "🚧 鬼監督チェック: $(echo $ONI_FILES | wc -w) 件"
+  if ! python3 "$REPO_ROOT/tools/oni_gate.py" $ONI_FILES --strict; then
+    FAIL=1
+    ONI_FAIL=1
+  fi
+fi
+rm -rf /tmp/onigate 2>/dev/null || true
+
+if [ "${ONI_FAIL:-0}" != "0" ]; then
+  echo ""
+  echo "🚧 鬼監督が止めたため、pushを中止しました。"
+  echo "   上に出ている分を直してから、もう一度pushしてください。"
+  echo "   （たまごさんに見せる前にここで落とすのが鬼監督の仕事です）"
+  exit 1
+fi
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # ブランチ削除pushはチェック対象外
+  if [ "$local_sha" = "$ZERO" ]; then
+    continue
+  fi
+  if [ "$remote_sha" = "$ZERO" ]; then
+    # 新規ブランチ：空ツリーとの差分で判定
+    base="$(git hash-object -t tree /dev/null)"
+  else
+    base="$remote_sha"
+  fi
+
+  files="$(git diff --name-only --diff-filter=ACM "$base" "$local_sha" -- 'share/check/*.html' 2>/dev/null)"
+  if [ -z "$files" ]; then
+    continue
+  fi
+
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in
+      */_template.html) continue ;;
+    esac
+    CHECKED=$((CHECKED + 1))
+    tmpfile="$(mktemp /tmp/sekisho-prepush.XXXXXX.html)"
+    if ! git show "$local_sha:$f" > "$tmpfile" 2>/dev/null; then
+      rm -f "$tmpfile"
+      continue
+    fi
+    echo "🚧 関所(sekisho)チェック: $f"
+    if ! python3 "$REPO_ROOT/tools/sekisho.py" --local-file "$tmpfile" --n "push-$(basename "$f")" >/tmp/sekisho-prepush.out 2>&1; then
+      echo "❌ 関所(sekisho)FAIL: $f"
+      grep "SEKISHO_RESULT" /tmp/sekisho-prepush.out || cat /tmp/sekisho-prepush.out
+      FAIL=1
+    fi
+    rm -f "$tmpfile"
+  done <<EOF
+$files
+EOF
+done <<REFSEOF
+$REFS
+REFSEOF
+
+# ------------------------------------------------------------------
+# 関所その2（案件#946・2026-09-19）：曲ページに「裏の取れていない断定」を通さない。
+#
+# きっかけ：akiko「Do You Know?」のコピーに「2002年に発表されたオリジナル・バラード」。
+# 2002年は裏が取れたが、「オリジナル」は作詞作曲クレジットが無いまま書かれていた。
+# 事実には出典。取れないなら書かない。これをpushの手前に強制する。
+#
+# 判定は tools/sekisho/gate_fact_source.py。既存分は status/fact_source_baseline.json に
+# 「借金」として記録済みで、pushは止めない。新しく増えた未出典の断定だけを止める。
+# ------------------------------------------------------------------
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO" ] && continue
+  if [ "$remote_sha" = "$ZERO" ]; then
+    base="$(git hash-object -t tree /dev/null)"
+  else
+    base="$remote_sha"
+  fi
+  ffiles="$(git diff --name-only --diff-filter=ACM "$base" "$local_sha" 2>/dev/null | grep -E 'coverGuide\.ts$' || true)"
+  [ -z "$ffiles" ] && continue
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    tmpf="$(mktemp /tmp/sekisho-fact.XXXXXX.ts)"
+    git show "$local_sha:$f" > "$tmpf" 2>/dev/null || { rm -f "$tmpf"; continue; }
+    echo "🚧 関所(出典)チェック: $f"
+    if ! python3 "$REPO_ROOT/tools/sekisho/gate_fact_source.py" "$tmpf" --strict; then
+      FAIL=1
+    fi
+    rm -f "$tmpf"
+  done <<EOF2
+$ffiles
+EOF2
+done <<REFSEOF2
+$REFS
+REFSEOF2
+
+
+if [ "$FAIL" != "0" ]; then
+  echo ""
+  echo "🚧 関所(sekisho)がFAILを検出したため、pushを中止しました。"
+  echo "   数字の主張(px/%)に実測の跡（「実測: ...」または<pre>の生データ）が"
+  echo "   無い、または実測と食い違っているページがあります。"
+  echo "   該当ページを直してから、もう一度pushしてください。"
+  echo "   (このチェックを外すことはできません。関所は例外なくpushの手前に置く、"
+  echo "    が案件#898そのものの要件です)"
+  exit 1
+fi
+
+if [ "$CHECKED" -gt 0 ]; then
+  echo "✅ 関所(sekisho)：push対象の確認ページ ${CHECKED} 件、すべて通過しました"
+fi
+exit 0

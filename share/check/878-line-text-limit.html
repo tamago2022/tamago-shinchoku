@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#878 申請シートの英語説明文がLINE規格違反(160字超・全角記号)→3キャラ短縮＋機械チェックで二度と貼らせない 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #878 申請シートの英語説明文がLINE規格違反(160字超・全角記号)→3キャラ短縮＋機械チェックで二度と貼らせない</div>
+<h1>#878 申請シートの英語説明文がLINE規格違反(160字超・全角記号)→3キャラ短縮＋機械チェックで二度と貼らせない</h1>
+<div class="date">2026-09-16 tools/line_stamp_pipeline.py に規格チェックを機械化・全キャラ確認済み</div>
+
+<div class="fix">
+<p>ラシコル申請中に実画面で「英語の説明文は半角英数字・半角記号のみ」「160文字まで」（表示は261/160）と弾かれた件。3キャラの英語説明文を全て160字以内・半角のみへ短縮し、<code>tools/line_stamp_pipeline.py</code>に規格チェック(<code>validate_stamp_fields</code>)を実装。1件でも違反(文字数超過・全角混入)があればそのキャラのシートを生成しない(<code>process_one</code>が<code>out_path=None</code>で止める)。各シートには実画面と同じ「37/40」のような残り字数表示も追加した。</p>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件/3キャラ</b><span>現状の規格違反(全員クリア)</span></div>
+  <div class="num"><b>143字/160字</b><span>ラシコル説明文(旧261字から短縮)</span></div>
+  <div class="num"><b>144字/160字</b><span>ペラリーノ説明文</span></div>
+  <div class="num"><b>119字/160字</b><span>鬼嫁ちゃん説明文</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>ラシコル 貼るだけ申請シート（本番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-rashikoru-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-rashikoru-paste-sheet.html</a></li>
+  <li><b>ペラリーノ・ウソッチ 貼るだけ申請シート（本番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html</a></li>
+  <li><b>鬼嫁ちゃん 貼るだけ申請シート（本番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>ラシコル 説明文(英語)</td><td class="yes">143/160字・半角のみ・違反なし</td></tr>
+<tr><td>ペラリーノ・ウソッチ 説明文(英語)</td><td class="yes">144/160字・半角のみ・違反なし</td></tr>
+<tr><td>鬼嫁ちゃん 説明文(英語)</td><td class="yes">119/160字・半角のみ・違反なし</td></tr>
+<tr><td>機械テスト①: わざと161字を入れる</td><td class="yes">「1字オーバー(161/160字)」を検出し、シート生成をブロック(out_path=None)</td></tr>
+<tr><td>機械テスト②: わざと全角記号(—“”…)を混入</td><td class="yes">「全角記号を含む」を検出しブロック</td></tr>
+<tr><td>本番URL死活確認(3本)</td><td class="yes">3本ともHTTP 200・字数表示(37/40等)も本番反映済みをcurlで実測</td></tr>
+</table>
+
+<footer>
+このページは #878 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

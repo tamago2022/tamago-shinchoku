@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#799 仕組みの生死表（799番） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #799 仕組みの生死表（799番）</div>
+<h1>#799 仕組みの生死表（799番）</h1>
+<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさん自身が6回見つけた事故（鬼監督7日間waiting放置・検品担当のブラウザ禁止不整合・Lovable5日停止・発車0本2.5時間・週の目盛り3種類不一致・進捗表5秒再描画）を受け、AIを呼ばずログを読むだけ(0円)で主要11項目の生死を判定する<code>tools/shikumi.py</code>を新設。dead判定は既存のqueue_add()へ自動でタスクを積む（重複投入なし）。waitingが24時間放置された仕組み系タスクはurgentへ自動昇格、72時間放置は赤旗として現在地の紙(genzaichi.md)へ合流。新しい常駐プロセスは追加せず、既存のgenzaichi.py(heartbeat.sh相乗り・実質30分おき)からsubprocessで呼ぶだけ。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>11</b><span>点検項目数</span></div>
+  <div class="num"><b>0</b><span>本番実行でdead判定だった件数</span></div>
+  <div class="num"><b>7</b><span>逆テストで意図的にdeadにした際の検知件数</span></div>
+  <div class="num"><b>7/7</b><span>逆テストで自動queue投入された件数(819〜825番)</span></div>
+  <div class="num"><b>0</b><span>再実行での重複投入(0件=正常)</span></div>
+  <div class="num"><b>6</b><span>owner_pointed_log初回シード件数(たまごさんに言われた今週の事例)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表（本番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>仕組みの生死表・生データ（本番JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/shikumi.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/shikumi.json</a></li>
+  <li><b>週次サマリ・生データ（本番JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/self_repair_weekly.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/self_repair_weekly.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>回帰テスト(tools/test_shikumi.py)：tier()境界判定・parse_ts()複数フォーマット・urgent自動昇格ロジック</td><td class="yes">PASS</td></tr>
+<tr><td>本番実行：python3 tools/shikumi.py が正常終了しstatus/shikumi.jsonを生成</td><td class="yes">完了・11項目中0件dead</td></tr>
+<tr><td>逆テスト①：/tmp隔離コピーでheartbeat.log等を意図的に古くしdead化</td><td class="yes">7項目がdead判定</td></tr>
+<tr><td>逆テスト②：dead項目がqueue.json(819〜825番)へ自動投入されshikumiCheckKeyが付与</td><td class="yes">7件とも投入成功</td></tr>
+<tr><td>逆テスト③：同じ条件で2回目実行しても重複投入されない</td><td class="yes">全件skipped_duplicate</td></tr>
+<tr><td>本番status/配下は隔離テストによる汚染なし(/tmp上のコピーのみで実施)</td><td class="yes">queue.json等は798番AI検品等の既存自動処理由来の差分のみ</td></tr>
+</table>
+
+<footer>
+このページは #799 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

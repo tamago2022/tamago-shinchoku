@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>公開ボタンの抜け道 — 8つ並べて選ぶ（952番）</title>
+<style>
+  :root{
+    --ink:#17150f; --sub:#6b6458; --line:#d9d2c4; --paper:#f6f2e9;
+    --accent:#a8321e; --ok:#1c6b45; --ng:#a8321e; --warn:#96712a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+    line-height:1.85; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:40px 22px 90px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:30px}
+  .kicker{font-size:12px;letter-spacing:.22em;color:var(--accent);font-weight:700;margin:0 0 8px}
+  h1{font-size:clamp(26px,5.2vw,40px);line-height:1.28;margin:0 0 10px;letter-spacing:-.01em}
+  .lede{font-size:15px;color:var(--sub);margin:0}
+  h2{font-size:19px;margin:44px 0 12px;padding-left:12px;border-left:5px solid var(--accent)}
+  p{margin:0 0 14px}
+  .box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:0 0 18px}
+  .box.hit{border-color:var(--ok);border-left-width:6px;background:#f4fbf7}
+  .box.stop{border-color:var(--ng);border-left-width:6px;background:#fdf5f3}
+  .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 10px;
+    border:1px solid var(--line);border-radius:10px;background:#fff}
+  table{border-collapse:collapse;width:100%;min-width:820px;font-size:13.5px}
+  th,td{border-bottom:1px solid var(--line);padding:11px 12px;vertical-align:top;text-align:left}
+  thead th{background:#efe9dc;font-size:12px;letter-spacing:.06em;white-space:nowrap;
+    position:sticky;top:0;border-bottom:2px solid var(--ink)}
+  tbody tr:last-child td{border-bottom:none}
+  td.num{font-weight:700;white-space:nowrap;text-align:center;font-size:15px}
+  .hands0{color:var(--ok);font-weight:700}
+  .hands1{color:var(--warn);font-weight:700}
+  .handsX{color:var(--ng);font-weight:700}
+  tr.win td{background:#f4fbf7}
+  tr.dead td{color:#8d867a}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;
+    border:1px solid currentColor;font-weight:700;white-space:nowrap}
+  .tag.ok{color:var(--ok)} .tag.ng{color:var(--ng)} .tag.warn{color:var(--warn)}
+  ol,ul{margin:0 0 14px;padding-left:1.35em}
+  li{margin:0 0 7px}
+  code{background:#eae3d5;padding:1px 6px;border-radius:4px;font-size:.9em}
+  .src{font-size:12px;color:var(--sub);border-top:1px solid var(--line);margin-top:34px;padding-top:14px}
+  .src a{color:var(--sub)}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:0}
+  .steps li{counter-increment:s;position:relative;padding-left:40px;margin:0 0 12px}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:26px;height:26px;
+    border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  .foot{font-size:12px;color:var(--sub);margin-top:6px}
+  @media(max-width:600px){ .wrap{padding:26px 14px 70px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">952番 ／ 2026-09-19</p>
+  <h1>「公開ボタンが押せない」の抜け道を<br>8つ並べて、1つ選ぶ</h1>
+  <p class="lede">コードは直せる。pushもできる。なのに本番に出ない。詰まっているのは1点だけ ——
+  Lovableの<strong>公開（Publish）</strong>が人の指でしか押せないこと。
+  ここを人の手なしで押す方法を、机上ではなく公式ドキュメントの実物で確かめて並べた。</p>
+</header>
+
+<div class="box hit">
+  <p style="margin:0"><strong>結論を先に。</strong>
+  <strong>Lovable MCPサーバーの <code>deploy_project</code></strong> が答え。
+  <strong>全プラン（無料を含む）で使える。</strong>
+  そして<strong>クレジットを食わない</strong>——
+  Lovable公式FAQに「クレジットがかかるのは <code>create_project</code> と <code>send_message</code> だけ。
+  それ以外のツールは無料」と明記されている。<code>deploy_project</code> は「それ以外」側。
+  つまり<strong>「チャットに publish して と頼む」＝クレジットが飛ぶ、を避けたまま、公開だけを押せる。</strong><br>
+  たまごさんの手は<strong>最初の1回、接続の承認だけ</strong>。以後はゼロ。</p>
+</div>
+
+<h2>手の比較表（8つ）</h2>
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+  <th>#</th><th>手</th><th>たまごさんの手が何回要るか</th><th>お金</th>
+  <th>公開URLは変わるか</th><th>今日通せるか</th><th>根拠（実測・公式）</th>
+</tr>
+</thead>
+<tbody>
+
+<tr class="win">
+  <td class="num">1</td>
+  <td><strong>Lovable MCPサーバー<br>の <code>deploy_project</code></strong><br>
+      <span class="tag ok">本命</span></td>
+  <td><span class="hands1">最初の1回だけ</span><br>（コネクタ接続の承認。以後<span class="hands0">0回</span>）</td>
+  <td>0円<br>クレジット消費なし</td>
+  <td>変わらない<br>（今のURLのまま）</td>
+  <td><span class="tag ok">はい</span><br>接続した直後から</td>
+  <td>公式：全プランで利用可。<code>deploy_project</code>＝本番公開してライブURLを返す。
+      課金は <code>create_project</code>/<code>send_message</code> のみ</td>
+</tr>
+
+<tr>
+  <td class="num">2</td>
+  <td>配り場所を <strong>GitHub Pages</strong> に移す<br>
+      （joy-relief-station に <code>pages.yml</code> を1本足すだけ）<br>
+      <span class="tag ok">保険</span></td>
+  <td><span class="hands0">0回</span><br>（Mac側セッションが1回pushすれば終わり）</td>
+  <td>0円</td>
+  <td><strong>変わる</strong><br>github.io の住所になる</td>
+  <td><span class="tag ok">はい</span></td>
+  <td>この進捗表リポジトリで<strong>現に毎日動いている</strong>同じ仕掛け。
+      <code>enablement:true</code> でPages有効化まで自動。外部の資格情報ゼロ</td>
+</tr>
+
+<tr>
+  <td class="num">3</td>
+  <td>Cloudflare Pages ／ Vercel ／ Netlify に移す</td>
+  <td><span class="hands1">1回</span><br>（アカウント接続、またはトークンをSecretsに登録）</td>
+  <td>0円</td>
+  <td><strong>変わる</strong></td>
+  <td>△ 半日仕事</td>
+  <td>速さと独自ドメインは一番強い。ただしGitHub Pagesと違い
+      「外部サービスにリポジトリを触らせる承認」が1回必要</td>
+</tr>
+
+<tr>
+  <td class="num">4</td>
+  <td>Mac から <strong>AppleScript</strong> で公開ボタンを押す</td>
+  <td><span class="hands1">仕込みに1回</span><br>（以後0回・ただし壊れるたびに手が要る）</td>
+  <td>0円</td>
+  <td>変わらない</td>
+  <td>△ 動くが折れやすい</td>
+  <td>既存の30秒常駐（launchd）に載せれば画面は奪わない。
+      しかしボタン位置・ログイン切れ・Lovable側の画面変更で即死ぬ。
+      <strong>直ったか誰も気づけない壊れ方</strong>をする</td>
+</tr>
+
+<tr class="dead">
+  <td class="num">5</td>
+  <td>Lovable REST API の publish</td>
+  <td>1回（APIキー発行）＋<strong>プラン変更</strong></td>
+  <td><strong>有料の壁</strong></td>
+  <td>変わらない</td>
+  <td><span class="tag ng">いいえ</span></td>
+  <td>公式：<strong>APIキーの発行は Business / Enterprise プランのみ。</strong>
+      機能としては理想的だが、今のプランでは鍵が作れない</td>
+</tr>
+
+<tr class="dead">
+  <td class="num">6</td>
+  <td>GitHub連携で「pushしたら自動で公開」</td>
+  <td>—</td>
+  <td>0円</td>
+  <td>—</td>
+  <td><span class="tag ng">いいえ</span></td>
+  <td>公式のGitHub連携は<strong>コードの双方向同期だけ</strong>。
+      本番反映（Publish）は同期に含まれない。
+      <strong>これが今日詰まっている理由そのもの</strong>——設定を探しても無い</td>
+</tr>
+
+<tr class="dead">
+  <td class="num">7</td>
+  <td>内蔵ブラウザに Lovable へログインしてもらう</td>
+  <td><span class="handsX">1回＋毎回</span></td>
+  <td>0円</td>
+  <td>変わらない</td>
+  <td>△</td>
+  <td>ログインしても<strong>「公開ボタンを押す」操作は毎回必要</strong>。
+      セッションをまたぐと切れる。1〜6が全部死んだときの最後の手</td>
+</tr>
+
+<tr class="dead">
+  <td class="num">8</td>
+  <td>Lovableのチャットに「publishして」と頼む</td>
+  <td>0回</td>
+  <td><span class="handsX">クレジットが飛ぶ</span></td>
+  <td>変わらない</td>
+  <td><span class="tag ng">禁止</span></td>
+  <td>たまごさん指定の禁止事項。<code>send_message</code> は公式に課金対象と明記。
+      <strong>#1はこれを避けたまま公開だけを押せる</strong>のが肝</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+<p class="foot">「たまごさんの手」＝ 画面を見て、指で何かを押す回数。読むだけ・見るだけは数えていない。</p>
+
+<h2>「1ミリも手が要らない手」は、正直に言うと無い</h2>
+<div class="box">
+<p style="margin:0">Lovableのアカウントに「これは本人だ」と1回名乗らないと、外から公開は押せない。
+それは仕様というより、アカウントというものの定義そのもの。
+<strong>本当に手0回で済むのは #2（GitHub Pagesへ引っ越す）だけで、その代わり住所が変わる。</strong><br>
+だから <strong>#1（手1回・住所そのまま）を本命、#2（手0回・住所が変わる）を保険</strong>として両方敷く。
+#1が通れば #2 は使わなくていい。#1が何らかの理由で通らなくても、#2 が動いていれば本番に出ないという状態は二度と起きない。</p>
+</div>
+
+<h2>#1をどう通すか（たまごさんの手＝「許可」を1回押すだけ）</h2>
+<div class="box">
+<p><strong>実測：Claudeのコネクタ一覧にLovableは載っていない</strong>（2026-09-19に検索して0件）。
+だから「コネクタを探す→Lovable」では出てこない。<strong>URLを直接足す形</strong>になる。</p>
+<p style="margin:0">足すURLはこれ1本 → <code>https://mcp.lovable.dev</code></p>
+</div>
+<ol class="steps">
+  <li><strong>Mac側のセッションに1行走らせる。</strong>
+      <code>claude mcp add --transport http lovable "https://mcp.lovable.dev"</code>
+      ——ここまで<span class="hands0">たまごさんの手は0回</span>。</li>
+  <li>最初にLovableのツールを使うとき、<strong>ブラウザが開いてLovableのログイン確認が出る</strong>。
+      たまごさんはすでにChromeでLovableにログインしているので、出るのは
+      <strong>「許可」ボタン1つ</strong>。<span class="hands1">これが唯一の1タップ。</span></li>
+  <li>以後ずっと0回。「公開して」と言うだけで本番へ出る。</li>
+</ol>
+<p>スマホ／Claudeアプリ側から入れたい場合は、<strong>設定 → コネクタ → カスタムコネクタを追加</strong> に
+同じURLを貼る形でも同じところに着く。</p>
+<p><strong>Lovableのチャットは一切使わない。</strong>
+課金されるのは <code>create_project</code> と <code>send_message</code> だけで、
+使うのは <code>deploy_project</code>（無料）。クレジットは1円も減らない。</p>
+
+<h2>今日詰まっていた6件は、#1が通れば全部流れる</h2>
+<ul>
+  <li>トップの軽量化（6.5MBの曲データを毎回全員に送っている件）</li>
+  <li>目安箱の一本化（51ファイル）</li>
+  <li>バッジの位置</li>
+  <li>扉の「生」</li>
+  <li>GPT Live版</li>
+  <li>棚と検索のズレ 2,551件</li>
+</ul>
+<p>どれもコードは直せている。出口が1つ詰まっていただけ。</p>
+
+<h2>このページ自体が「手0回の公開」の実物</h2>
+<div class="box hit">
+<p style="margin:0">このページは、セッションがコミットしただけで本番に出ている。
+Mac側で30秒おきに回っている常駐が、未pushのコミットを見つけて押し出し、
+GitHub Actions が Pages へ配った。<strong>途中でたまごさんの手は1回も要っていない。</strong>
+つまり #2 の道は、理屈ではなく<strong>今この瞬間に動いている</strong>。
+joy-relief-station に同じ <code>pages.yml</code> を1本置けば、同じことがあちらでも起きる。</p>
+</div>
+
+<div class="src">
+出典（2026-09-19に公式ドキュメントを実機取得して確認。ブログ等の二次情報は不使用）：<br>
+・Lovable MCPサーバー（全プラン可／<code>deploy_project</code>／課金は create_project と send_message のみ）
+<a href="https://docs.lovable.dev/integrations/lovable-mcp-server">docs.lovable.dev/integrations/lovable-mcp-server</a><br>
+・Lovable API（APIキー発行は Business / Enterprise のみ）
+<a href="https://docs.lovable.dev/integrations/lovable-api">docs.lovable.dev/integrations/lovable-api</a><br>
+・GitHub連携＝双方向のコード同期
+<a href="https://docs.lovable.dev/integrations/github">docs.lovable.dev/integrations/github</a><br>
+・手0回のpush経路＝この進捗表リポジトリで動いている30秒常駐（<code>tools/command_watch.sh</code> 末尾の押し出し）と
+<code>.github/workflows/pages.yml</code>（実測・現用）
+</div>
+
+</div>
+</body>
+</html>

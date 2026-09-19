@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1031 トーキングアバター A・B・C ― 押して喋らせて比べる台</title>
+<script src="assets/kagi/kagi.js"></script>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;--mi:#b0a894;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:860px;margin-left:auto;margin-right:auto;overflow-x:hidden;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.04em;margin:0 0 6px;line-height:1.5;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.04em;margin:38px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:14px;word-break:break-word;}
+  .fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.0rem;}
+  .fix p{margin:0 0 10px;} .fix p:last-child{margin:0;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 14px;}
+  .warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:0.88rem;margin:0 0 14px;}
+
+  /* ── 口くらべ ── */
+  .kuchi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 14px;}
+  .faces{display:flex;gap:10px;}
+  .facebox{flex:1 1 0;min-width:0;text-align:center;}
+  .facelabel{font-size:0.78rem;line-height:1.35;color:var(--sub);margin:0 0 6px;min-height:2.7em;}
+  .facelabel b{display:block;font-size:0.9rem;color:var(--ink);}
+  .stage{position:relative;width:100%;aspect-ratio:444/412;background:#efe9db;border-radius:10px;overflow:hidden;}
+  .stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;}
+  .stage canvas{position:absolute;left:0;top:0;}
+  .nowkana{font-family:"Hiragino Mincho ProN",serif;font-size:1.5rem;letter-spacing:.1em;text-align:center;color:var(--ao);min-height:1.6em;margin:6px 0 2px;}
+  .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+  button.b{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
+    padding:10px 16px;font-size:0.92rem;font-family:inherit;cursor:pointer;line-height:1.3;}
+  button.b:active{background:#efe9db;}
+  button.b[disabled]{opacity:.45;cursor:default;}
+  button.b.main{border-color:var(--ao);color:var(--ao);font-weight:700;}
+  button.b.go{border-color:var(--aka);color:var(--aka);font-weight:700;}
+  .tiny{font-size:0.78rem;color:var(--sub);line-height:1.55;margin:8px 0 0;}
+  .say{font-size:0.84rem;color:var(--ao);min-height:1.5em;margin:8px 0 0;word-break:break-word;}
+
+  /* ── 声くらべ ── */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:0 0 10px;}
+  .card h3{margin:0 0 4px;font-size:1.0rem;}
+  .card h3 .tag{font-size:0.72rem;border-radius:999px;padding:2px 9px;margin-left:7px;vertical-align:middle;font-weight:600;}
+  .t-ok{background:#e6f0e8;color:var(--midori);}
+  .t-ng{background:#f6e6e4;color:var(--aka);}
+  .t-key{background:#f3ecdb;color:var(--ki);}
+  .card .yen{font-size:0.9rem;color:var(--ink);margin:2px 0 6px;}
+  .card .yen b{font-size:1.15rem;color:var(--aka);}
+  .card p{margin:0 0 6px;font-size:0.87rem;line-height:1.6;}
+
+  /* ── 表 ── */
+  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 6px;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%;}
+  table{border-collapse:separate;border-spacing:0;font-size:0.84rem;min-width:640px;}
+  th,td{padding:8px 7px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.7rem;line-height:1.3;}
+  th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:#fff;border-right:1px solid var(--line);
+    font-size:0.8rem;padding-left:10px;min-width:118px;font-weight:600;white-space:normal;line-height:1.35;}
+  th.t{background:#efe9db;z-index:3;}
+  tr:last-child td{border-bottom:none;}
+  td.n{font-size:1.0rem;font-weight:700;white-space:nowrap;}
+  .c-ok{color:var(--midori);} .c-ng{color:var(--aka);} .c-un{color:var(--mi);}
+  ul.plain{list-style:none;margin:0 0 14px;padding:0;}
+  ul.plain li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;font-size:0.88rem;line-height:1.6;}
+  ul.plain li b.h{display:block;margin-bottom:3px;font-size:0.95rem;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.82em;word-break:break-all;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+  @media (max-width:420px){
+    body{font-size:15px;padding-left:11px;padding-right:11px;}
+    h1{font-size:1.1rem;}
+    .faces{gap:7px;}
+    .facelabel{font-size:0.72rem;min-height:3.4em;}
+    button.b{padding:9px 13px;font-size:0.86rem;}
+    table{font-size:0.8rem;} th.t,td.t{min-width:104px;font-size:0.76rem;}
+  }
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1031 ／ 前の便：<a href="./974-fal-avatar-nedan.html">#974 falの値段</a>・<a href="./961-talking-avatar-jirei.html">#961 やってる会社一覧</a>・<a href="./431-seihon.html">#431 いまの案内人</a></div>
+
+<h1>トーキングアバター ― 押して喋らせて、自分で比べる台</h1>
+<div class="date">2026-09-23 作成／金額はすべて公式の料金ページから取って、1ドル＝<b>157.18円</b>で円にしました（<a href="https://api.frankfurter.dev/v1/latest?base=USD&amp;symbols=JPY" target="_blank" rel="noopener">欧州中央銀行の参照レート・2026-09-22</a>）</div>
+
+<div class="fix">
+<p><b>1.　混乱の正体は「口」と「受け答え」を1つの問題にしていたことです。</b>
+<b>口は絵の問題で、1回作れば追加料金は0円。</b>声と受け答えだけが分単位でお金が出ます。
+だからこの台は、<b>口は3つとも同じものにして、声だけ差し替えて</b>あります。比べるのは声と値段だけです。</p>
+
+<p><b>2.　「GPT Liveの方が安い」は、公式の数字を並べると逆でした。</b>
+アイリス（xAI）は<b>定額で12.6円/分</b>。GPT Liveは<b>上限15.1円/分</b>。
+いちばん安いのは<b>Gemini Live（上限3.6円/分、無料枠なら0円）</b>です。表は下にあります。</p>
+
+<p><b>3.　★口が不自然な原因は、推測ではなくコードの中にありました。</b>
+いまの案内人（<code>assets/431-seihon/avatar431.js</code>）は、<b>口の「開き」を音の大きさだけで決めています</b>（<code>var want = Math.min(1, lv * 1.95)</code>）。
+母音ごとの開き方の数字は<b>同じファイルにもう書いてあるのに、1度も使われていません</b>（<code>VIS[vis][1]</code> がコード中に出てこない）。
+だから「あ」も「い」も「う」も同じ開き方になる。<b>すでに在る数字を使うだけで直ります。追加料金0円。</b>
+下の台で、左右に並べて見比べられます。</p>
+</div>
+
+<h2>① 口くらべ ― 同じ台本・同じ拍で、式だけ変えた2つ</h2>
+
+<div class="kuchi">
+  <div class="faces">
+    <div class="facebox">
+      <div class="facelabel"><b>いまの口</b>音の大きさだけで開閉</div>
+      <div class="stage" id="stageA"><img src="assets/431-seihon/img/concierge.png" alt="案内人（いまの口）"><canvas></canvas></div>
+    </div>
+    <div class="facebox">
+      <div class="facelabel"><b>直した口</b>母音ごとに形が変わる</div>
+      <div class="stage" id="stageB"><img src="assets/431-seihon/img/concierge.png" alt="案内人（直した口）"><canvas></canvas></div>
+    </div>
+  </div>
+  <div class="nowkana" id="nowkana">&nbsp;</div>
+
+  <div class="btnrow">
+    <button class="b main" id="btnAiueo">あ い う え お</button>
+    <button class="b main" id="btnSerifu">「こんにちは。今日はどんな感じ？」</button>
+    <button class="b" id="btnMamimu">ま み む め も（唇が閉じる）</button>
+  </div>
+  <div class="btnrow">
+    <button class="b" id="btnSlow">ゆっくり：<span id="slowState">切</span></button>
+    <button class="b" id="btnVoice">声を出す：<span id="voiceState">入</span></button>
+    <button class="b" id="btnStop">とめる</button>
+  </div>
+  <div class="say" id="kuchiSay">&nbsp;</div>
+  <p class="tiny">
+    左右とも<b>同じ台本・同じ拍</b>で動かしています。違うのは式だけです。<br>
+    ・左＝<b>たてはばは音の大きさ由来の一定の開閉／よこはばだけ母音を55%だけ混ぜる</b>（いま本番で動いている式）<br>
+    ・右＝<b>たてはば・よこはばとも母音の表（<code>VIS</code>）をそのまま使う／ま行・ば行・ぱ行の前に唇を閉じる</b><br>
+    声は<b>この端末に入っている読み上げ（Web Speech API）</b>です。<b>0円・鍵なし</b>。声と口のタイミングは端末ごとに前後します（口の形を見比べる台なので、ずれても比べられます）。
+  </p>
+</div>
+
+<div class="note">
+<b>本物の音声で同じことをする（Geminiの声・鍵が要ります）</b><br>
+下の「C」の欄に鍵を入れると、<b>本物の日本語音声を作って、その音から</b>左右の口を動かせます（音の解析は <a href="https://github.com/wass08/wawa-lipsync" target="_blank" rel="noopener">wawa-lipsync</a>・MIT）。1回およそ0.02円。
+<div class="btnrow"><button class="b" id="btnRealVoice">本物の声で口を動かす</button></div>
+<div class="say" id="realSay">&nbsp;</div>
+</div>
+
+<h2>② 声くらべ ― A・B・C・D</h2>
+
+<div class="card">
+  <h3>A　アイリス（xAI Grok Voice）<span class="tag t-ok" id="tagA">窓口は生きている</span></h3>
+  <div class="yen"><b>12.6円/分</b>（$0.08/分の定額。聞くも喋るも込み）</div>
+  <p>鍵は <code>XAI_API_KEY2</code>。置き場はMacではなく<b>Supabase の Secrets</b>で、窓口は <code>voice-session</code>。
+  <b>本番でもう鳴っています</b>ので、この台では作り直さず<b>本物を鳴らしに行きます</b>（作り直すと、比べているものが「声」ではなく「別の実装」になります）。</p>
+  <p>2026-09-23 10:56 の実測：窓口の財布は<b>上限 $4.50 のうち $1.96 使用済み、残り約 $2.54 ＝ 約399円 ＝ 約31分</b>。<b>使いすぎないでください。</b></p>
+  <div class="btnrow">
+    <button class="b go" id="btnA">本物のアイリスを鳴らす（別ページ）</button>
+    <button class="b" id="btnABal">いまの残りを見る</button>
+  </div>
+  <div class="say" id="sayA">&nbsp;</div>
+  <p class="tiny">★<code>voice</code> と <code>turn_detection</code> は必ず明示すること（未指定だと既定値で埋められて、早回し／無反応になります）。</p>
+</div>
+
+<div class="card">
+  <h3>B　GPT Live（OpenAI Realtime）<span class="tag t-ng">残高切れ</span></h3>
+  <div class="yen"><b>上限 15.1円/分</b>（聞く1分＋喋る1分の合計。実際はこれ以下）</div>
+  <p>★<b>今は鳴らせません。</b>OpenAI側が残高切れ（<code>429 insufficient_quota</code>）です。課金はたまごさんの判断なので、この台では<b>見積りだけ</b>出します。</p>
+  <div class="btnrow"><button class="b" id="btnB">入れたら何分喋れるか、出す</button></div>
+  <div class="say" id="sayB">&nbsp;</div>
+  <p class="tiny">★この15.1円/分は<b>OpenAI自身が書いた換算</b>から出しています。現行の料金ページには「1分＝何円」は書かれていません（→ 下の「取れなかったもの」）。</p>
+</div>
+
+<div class="card">
+  <h3>C　Gemini Live（Google）<span class="tag t-key" id="tagC">鍵が要る</span></h3>
+  <div class="yen"><b>上限 3.6円/分</b>（無料枠で使えるうちは <b>0円</b>）</div>
+  <p>★<b>いちばん安い候補です。</b>しかも<b>この台の上でそのまま鳴らせます</b>（静的なHTML1枚で繋がる形は、<a href="./966-gemini-live-tamago.html" target="_blank" rel="noopener">#966</a> でもう通してあります）。
+  鍵はこの端末の中だけに保存され、Google以外のどこにも送りません。</p>
+  <div class="btnrow">
+    <button class="b main" id="btnC">同じ台詞を、Geminiの声で喋らせる</button>
+    <button class="b" id="btnCLive">会話する（#966の台へ）</button>
+  </div>
+  <div class="say" id="sayC">&nbsp;</div>
+</div>
+
+<div class="card">
+  <h3>D　この端末の読み上げ<span class="tag t-ok">いま鳴る</span></h3>
+  <div class="yen"><b>0円</b>（鍵なし・通信なし）</div>
+  <p>受け答えはできません（決まった文を読むだけ）。<b>口の作りを確かめる用</b>と、鍵が無いときの逃げ道です。</p>
+  <div class="btnrow"><button class="b main" id="btnD">同じ台詞を、この端末の声で喋らせる</button></div>
+  <div class="say" id="sayD">&nbsp;</div>
+</div>
+
+<h2>③ 1分あたり、いくら（同じものさしで並べる）</h2>
+
+<div class="wrap">
+<table>
+<thead><tr>
+  <th class="t">声（頭と耳も込み）</th><th>1分あたり</th><th>月額</th><th>いま鳴るか</th><th>受け答え</th><th>公式の出典</th>
+</tr></thead>
+<tbody>
+<tr><td class="t">D　端末の読み上げ<br><span style="font-weight:400;font-size:0.9em;color:#7a7568;">Web Speech API</span></td>
+  <td class="n c-ok">0円</td><td>0円</td><td class="c-ok">◯</td><td class="c-ng">✕ 読むだけ</td>
+  <td><a href="https://developer.mozilla.org/ja/docs/Web/API/SpeechSynthesis" target="_blank" rel="noopener">MDN</a></td></tr>
+<tr><td class="t">C　Gemini Live<br><span style="font-weight:400;font-size:0.9em;color:#7a7568;">gemini-3.8-live</span></td>
+  <td class="n c-ok">0〜3.6円</td><td>0円</td><td class="c-ok">◯ 鍵を入れれば</td><td class="c-ok">◯</td>
+  <td><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">ai.google.dev</a></td></tr>
+<tr><td class="t">A　アイリス<br><span style="font-weight:400;font-size:0.9em;color:#7a7568;">xAI Grok Voice</span></td>
+  <td class="n">12.6円</td><td>0円</td><td class="c-ok">◯ 本番で鳴っている</td><td class="c-ok">◯</td>
+  <td><a href="https://docs.x.ai/developers/models" target="_blank" rel="noopener">docs.x.ai</a></td></tr>
+<tr><td class="t">B　GPT Live<br><span style="font-weight:400;font-size:0.9em;color:#7a7568;">gpt-realtime</span></td>
+  <td class="n">上限 15.1円</td><td>0円</td><td class="c-ng">✕ 残高切れ</td><td class="c-ok">◯</td>
+  <td><a href="https://openai.com/api/pricing/" target="_blank" rel="noopener">openai.com</a></td></tr>
+<tr><td class="t">（参考）HeyGen<br><span style="font-weight:400;font-size:0.9em;color:#7a7568;">LiveAvatar・絵まで込み</span></td>
+  <td class="n c-ng">15.7〜31.4円</td><td class="c-ng">2,986円〜</td><td class="c-un">─ 未契約</td><td class="c-ok">◯</td>
+  <td><a href="https://help.heygen.com/en/articles/12758516-introducing-liveavatar" target="_blank" rel="noopener">help.heygen.com</a></td></tr>
+</tbody>
+</table>
+</div>
+<p class="tiny">
+数え方：★<b>A は定額</b>（$0.08/分。聞くも喋るも込み）。★<b>B と C は「聞いた1分＋喋った1分」を足した上限</b>で、実際の会話は交互なのでこれ以下になります。
+B＝入力 $32/1Mトークン・出力 $64/1Mトークン に、OpenAI自身が公式ブログに書いた換算（音声入力 約$0.06/分・出力 約$0.24/分 ＝ 当時の $100/$200 per 1M）から出した<b>600トークン/分（聞く）・1,200トークン/分（喋る）</b>を当てはめた値：$0.0192＋$0.0768＝<b>$0.096/分</b>。
+（★OpenAI自身が「聞く」と「喋る」で別のトークン数を前提にしています。その対応をそのまま持ってきました。<b>推測は足していません。</b>）
+C＝公式ページが $/分 を直接書いています（入力 $0.005/分・出力 $0.018/分 ＝ $0.023/分）。
+HeyGen＝1クレジット $0.10 で Full 30秒（＝$0.20/分）／Lite 1分（＝$0.10/分）、Starter $19/月。
+</p>
+
+<h2>④ 口を、NVIDIAのハンバーガー屋に近づける道（安い順）</h2>
+
+<div class="warn">
+★<b>先に結論。NVIDIAの口（Audio2Face）は、ブラウザだけでは動きません。</b>
+公式のシステム要件はCUDA対応のNVIDIA GPU（L4/RTX4090級の24GB〜）＋Linux/Windowsで、
+ブラウザ側はWebRTCで<b>サーバのGPUが描いた映像を受け取っているだけ</b>です。
+さらに、クラウドで借りる口（build.nvidia.com の Audio2Face-3D）は<b>いま「deprecated」表示で、料金ページ自体がありません</b>。
+＝<b>「Audio2Faceを繋ぐ」は、今日できる選択肢ではありません。</b>
+</div>
+
+<ul class="plain">
+<li><b class="h">1. 母音の口をブラウザで描く　―　0円　★これを今日やりました</b>
+いま動いているコードに<b>すでに書いてある数字（<code>VIS</code> の表）を使うだけ</b>。追加のGPUも通信も課金もゼロ。
+<b>「あ」「い」「う」で口の形が変わり、ま行・ば行・ぱ行で唇が閉じる。</b>一番安くて、一番効きます。上の台で見比べてください。
+<span class="tiny">出典：<a href="https://github.com/wass08/wawa-lipsync" target="_blank" rel="noopener">wawa-lipsync（MIT）</a>／VRMの口は A・I・U・E・O の5母音（#961で調べ済み）</span></li>
+
+<li><b class="h">2. Live2D Cubism ／ VRM に作り替える　―　ソフトは0円（絵の作り直しが要る）</b>
+口の形を母音ごとのパーツに分けて持つ2Dリグ。ブラウザで動き、背景は最初から別レイヤー。
+<b>1より綺麗になりますが、案内人の絵をパーツに分解し直す手間がかかります。</b>1で足りるなら急ぎません。</li>
+
+<li><b class="h">3. HeyGen LiveAvatar を繋ぐ　―　15.7〜31.4円/分＋月2,986円〜</b>
+繋ぐだけでいちばん綺麗。ただし<b>喋っている間ずっとお金が出ます</b>（声の代金とは別に）。
+背景は不透明な映像で来るので、後から差し替えるのは緑背景の機種だけ。
+<span class="tiny">出典：<a href="https://help.heygen.com/en/articles/12758516-introducing-liveavatar" target="_blank" rel="noopener">HeyGen 公式ヘルプ</a></span></li>
+
+<li><b class="h">4. Audio2Face を自前のGPUで動かす　―　ソフト代0円・GPU代が要る</b>
+2025年9月にオープンソース化されています。<b>SDKはMIT、学習用フレームワークはApache-2.0、モデル重みはNVIDIA Open Model License。</b>
+必要なのはCUDA 12.8以上・ドライバR570以上・L4/RTX4090（24GB）級以上のGPU、OSはUbuntu 24.04（NIMコンテナ）。<b>マルチGPU非対応（1インスタンス1GPU）。</b>
+<span class="tiny">出典：<a href="https://github.com/NVIDIA/Audio2Face-3D-SDK" target="_blank" rel="noopener">NVIDIA/Audio2Face-3D-SDK</a>／<a href="https://docs.nvidia.com/ace/audio2face-3d-microservice/latest/text/support-matrix.html" target="_blank" rel="noopener">サポートマトリクス</a>／<a href="https://huggingface.co/nvidia/Audio2Face-3D-v3.0" target="_blank" rel="noopener">モデル重み</a></span></li>
+
+<li><b class="h">5. Tokkio 一式（＝あのハンバーガー屋そのもの）　―　複数GPU＋Kubernetes</b>
+Tokkioは「喋るキオスク」の参考構成。WebRTC（VST/coturn）でブラウザと繋ぎ、SDRが複数GPU上のPod（ACE Controller・Animation Graph・Unreal Renderer）へ振り分ける分散構成。
+<b>単体のGPUやブラウザだけでは完結しません。</b>
+<span class="tiny">出典：<a href="https://docs.nvidia.com/ace/tokkio/5.0/overview/architecture.html" target="_blank" rel="noopener">Tokkio Architecture</a></span></li>
+</ul>
+
+<h2>⑤ 取れなかったもの（どの口が閉じているか）</h2>
+<ul class="plain">
+<li><b class="h">OpenAI の「音声1分＝何トークン」</b>
+現行の <a href="https://openai.com/api/pricing/" target="_blank" rel="noopener">料金ページ</a>・<a href="https://platform.openai.com/docs/guides/realtime" target="_blank" rel="noopener">Realtimeガイド</a>・models/gpt-realtime のどこにも<b>記載がありません</b>。
+代わりに、2024-10-01の公式ブログ「<a href="https://openai.com/index/introducing-the-realtime-api/" target="_blank" rel="noopener">Introducing the Realtime API</a>」にある
+<b>"approximately $0.06 per minute of audio input and $0.24 per minute of audio output"</b>（当時 $100/$200 per 1M）から換算しました。
+<b>実測で裏を取ろうとしましたが、残高切れ（429）で1回も鳴らせていません。</b></li>
+<li><b class="h">gpt-realtime-mini の音声単価</b>
+公式ページの本文に音声トークンの行が出てきませんでした（テキストは $0.60/$2.40 が取れています）。第三者記事に $10/$20 とありますが<b>公式では確認できていないので表に入れていません。</b></li>
+<li><b class="h">Gemini Live の1分あたりの上限回数</b>
+「AI Studio を見てください」とだけ書かれていて、<b>静的な公式ページには実数がありません</b>（<a href="https://ai.google.dev/gemini-api/docs/rate-limits" target="_blank" rel="noopener">rate-limits</a>）。無料枠が何分で尽きるかは、使ってみるまで分かりません。</li>
+<li><b class="h">D-ID / Simli / Tavus の分単価</b>
+料金カードがJavaScript描画で、本文からは取れませんでした。第三者記事の数字はあえて載せていません。</li>
+<li><b class="h">build.nvidia.com の Audio2Face-3D の値段</b>
+エンドポイントが <b>"This NIM Endpoint has been deprecated"</b> 表示で、<b>料金ページ自体が存在しません。</b></li>
+</ul>
+
+<h2>⑥ 次にやること（決めました）</h2>
+<div class="fix">
+<p><b>口は「1」で行きます。</b>案内人（<code>avatar431.js</code>）の口を、母音の表を使う式に差し替える。追加料金0円。
+HeyGenもAudio2Faceも、ここが直ってから比べれば十分です。</p>
+<p><b>声は「C（Gemini Live）を土台、Aは残す」で行きます。</b>Cは0〜3.6円/分でいちばん安く、この台の上で鳴る。
+Aは12.6円/分ですが<b>すでに本番で鳴っていて、たまごさんの理想の声</b>なので、残り31分ぶんは<b>「この声じゃないとダメか」を決めるためだけ</b>に使ってください。</p>
+<p><b>Bは、たまごさんが課金を決めるまで触りません。</b>公式の数字で並べる限り、Aより安くはありませんでした。</p>
+</div>
+
+<footer>
+作り：#1031／口の比較は <code>assets/431-seihon/avatar431.js</code> の <code>VIS</code> 表と口の形（<code>MOUTH</code>）をそのまま使っています（絵は承認済みPNG・1画素も触っていません）。<br>
+声の解析は <a href="https://github.com/wass08/wawa-lipsync" target="_blank" rel="noopener">wawa-lipsync</a>（MIT）。Gemini への繋ぎは <a href="https://github.com/google-gemini/gemini-live-api-examples" target="_blank" rel="noopener">Google 公式サンプル</a>（Apache-2.0）。<br>
+金額はすべて公式の料金ページから取得。1ドル＝157.18円（欧州中央銀行の参照レート・2026-09-22）で換算しています。
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   顔（avatar431.js から MOUTH と VIS をそのまま移植。
+   変えたのは「たてはばを何から決めるか」の1点だけ＝ mode）
+   ═══════════════════════════════════════════════════════════════ */
+var SRCW=444, SRCH=412;
+var MOUTH={ x:217, x0:191, x1:244, y0:207, y1:206, cy:233,
+            lip:2.2, depth:24, inset:5, hole:"#43200f" };
+var VIS={
+  viseme_sil:[1.00,0.00], viseme_PP:[0.75,0.05], viseme_FF:[0.85,0.25],
+  viseme_TH: [0.90,0.35], viseme_DD:[0.90,0.45], viseme_kk:[0.95,0.50],
+  viseme_CH: [0.80,0.40], viseme_SS:[0.90,0.20], viseme_nn:[0.85,0.25],
+  viseme_RR: [0.90,0.50], viseme_aa:[1.25,1.00], viseme_E: [1.35,0.55],
+  viseme_I:  [1.40,0.30], viseme_O: [0.85,0.90], viseme_U: [0.60,0.60]
+};
+
+function makeFace(stageEl, mode){
+  var img=stageEl.querySelector("img"), cv=stageEl.querySelector("canvas");
+  var ctx=cv.getContext("2d");
+  var box={w:0,h:0,s:1,dx:0,dy:0};
+  function fit(){
+    var w=img.clientWidth,h=img.clientHeight; if(!w||!h) return;
+    var dpr=Math.min(2,window.devicePixelRatio||1);
+    cv.style.width=w+"px"; cv.style.height=h+"px";
+    cv.style.left=img.offsetLeft+"px"; cv.style.top=img.offsetTop+"px";
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    var s=Math.min(w/SRCW,h/SRCH);
+    box={w:w,h:h,s:s,dx:(w-SRCW*s)/2,dy:h-SRCH*s};
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  if(img.complete) fit(); else img.addEventListener("load",fit);
+  window.addEventListener("resize",fit);
+  var X=function(x){return box.dx+x*box.s;}, Y=function(y){return box.dy+y*box.s;};
+
+  var vis="viseme_sil", visAt=-9e9, amp=0, vx=1, t=0, lv=0, analyser=null, pulse=0;
+
+  function lipPoint(u,wide){
+    var k=1-u;
+    var x=k*k*MOUTH.x0+2*k*u*MOUTH.x+u*u*MOUTH.x1;
+    var y=k*k*MOUTH.y0+2*k*u*MOUTH.cy+u*u*MOUTH.y1;
+    return [MOUTH.x+(x-MOUTH.x)*wide, y];
+  }
+  function draw(){
+    if(!box.w){fit();} if(!box.w) return;
+    ctx.clearRect(0,0,box.w,box.h);
+    var s=box.s, open=amp, wide=vx;
+    if(open>0.008){
+      var d=open*MOUTH.depth;
+      var iu=MOUTH.inset/(MOUTH.x1-MOUTH.x0);
+      var a=lipPoint(iu,wide), b=lipPoint(1-iu,wide);
+      var upX=MOUTH.x, upY=MOUTH.cy+MOUTH.lip*2, loY=MOUTH.cy+MOUTH.lip*2+d*2;
+      ctx.beginPath();
+      ctx.moveTo(X(a[0]),Y(a[1]+MOUTH.lip));
+      ctx.quadraticCurveTo(X(upX),Y(upY),X(b[0]),Y(b[1]+MOUTH.lip));
+      ctx.quadraticCurveTo(X(upX),Y(loY),X(a[0]),Y(a[1]+MOUTH.lip));
+      ctx.closePath();
+      ctx.fillStyle=MOUTH.hole; ctx.fill();
+      var top=Y(MOUTH.cy), bot=Y(MOUTH.cy+d+4);
+      var g=ctx.createLinearGradient(0,top,0,bot);
+      g.addColorStop(0,"rgba(0,0,0,.62)"); g.addColorStop(.55,"rgba(0,0,0,.12)");
+      g.addColorStop(1,"rgba(92,44,24,.30)");
+      ctx.fillStyle=g; ctx.fill();
+      ctx.globalAlpha=Math.min(.5,open*.9);
+      ctx.beginPath();
+      ctx.moveTo(X(a[0]),Y(a[1]+MOUTH.lip));
+      ctx.quadraticCurveTo(X(upX),Y(loY),X(b[0]),Y(b[1]+MOUTH.lip));
+      ctx.lineWidth=Math.max(1,1.6*s); ctx.lineCap="round";
+      ctx.strokeStyle="rgba(214,150,120,.75)"; ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
+  (function loop(){
+    t++;
+    if(analyser){
+      var n=analyser.frequencyBinCount, d=new Uint8Array(n);
+      analyser.getByteFrequencyData(d);
+      var cut=Math.floor(n*0.12), topi=Math.floor(n*0.5), lo=0, hi=0, i;
+      for(i=0;i<cut;i++) lo+=d[i];
+      for(i=cut;i<topi;i++) hi+=d[i];
+      lo/=cut*255; hi/=(topi-cut)*255;
+      lv+=(Math.min(1,lo*1.4+hi)-lv)*0.35;
+      if(lv<0.03) lv*=0.6;
+    } else { lv*=0.85; }
+
+    /* 声が無いとき（台本で動かすとき）の「音の大きさ」のかわり。
+       1文字ごとに立ち上がって減衰する＝本物の音量と同じ拍にする。左右で同じものを使う。 */
+    if(pulse>0) pulse=Math.max(0.42,pulse*0.955);
+
+    var fresh=(performance.now()-visAt)<260;
+    var want, wantW;
+    if(mode==="amp"){
+      /* ★いま本番で動いている式そのまま：たてはばは音の大きさ／よこはばだけ母音を55%混ぜる */
+      want = analyser ? Math.min(1, lv*1.95) : pulse;
+      wantW = (fresh&&VIS[vis]) ? (1+(VIS[vis][0]-1)*0.55) : 1;
+    }else{
+      /* ★直した式：たてはばも母音の表から取る（VIS[vis][1] を使う）。音の大きさは「鳴っているか」だけに使う */
+      var gate = analyser ? Math.min(1, lv*2.6) : pulse;
+      var v = (VIS[vis]||VIS.viseme_sil);
+      want = v[1]*Math.max(0.35, Math.min(1, gate*1.25));
+      if(vis==="viseme_sil") want=0;
+      wantW = v[0];
+    }
+    amp += (want-amp)*(want>amp?0.40:0.16);
+    if(amp<0.006) amp=0;
+    vx += (wantW-vx)*0.30;
+    draw();
+    requestAnimationFrame(loop);
+  })();
+
+  return {
+    attach:function(a){analyser=a;},
+    viseme:function(v){ if(VIS[v]){ vis=v; visAt=performance.now(); } },
+    pulse:function(p){ pulse=p; },
+    reset:function(){ vis="viseme_sil"; pulse=0; }
+  };
+}
+
+var faceA=makeFace(document.getElementById("stageA"),"amp");
+var faceB=makeFace(document.getElementById("stageB"),"viseme");
+
+/* ═══════════════════════════════════════════════════════════════
+   かな → 母音（viseme）。ま行・ば行・ぱ行は、前に「唇を閉じる」を挟む。
+   ═══════════════════════════════════════════════════════════════ */
+var KANA_V={};
+(function(){
+  var rows=[
+    ["あかさたなはまやらわがざだばぱ","viseme_aa"],
+    ["いきしちにひみりぎじぢびぴ","viseme_I"],
+    ["うくすつぬふむゆるぐずづぶぷ","viseme_U"],
+    ["えけせてねへめれげぜでべぺ","viseme_E"],
+    ["おこそとのほもよろをごぞどぼぽ","viseme_O"]
+  ];
+  rows.forEach(function(r){ r[0].split("").forEach(function(c){ KANA_V[c]=r[1]; }); });
+  "んン".split("").forEach(function(c){ KANA_V[c]="viseme_nn"; });
+})();
+var CLOSE_FIRST="まみむめもばびぶべぼぱぴぷぺぽ";
+
+function toSteps(text){
+  var out=[];
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(c==="。"||c==="、"||c==="？"||c==="！"||c===" "||c==="　"){ out.push({v:"viseme_sil",k:" ",w:1.2}); continue; }
+    if(c==="っ"||c==="ッ"){ out.push({v:"viseme_sil",k:"っ",w:0.6}); continue; }
+    if(c==="ー"){ if(out.length) out.push({v:out[out.length-1].v,k:"ー",w:0.9}); continue; }
+    if(CLOSE_FIRST.indexOf(c)>=0) out.push({v:"viseme_PP",k:c,w:0.35});
+    var v=KANA_V[c];
+    if(v) out.push({v:v,k:c,w:1});
+    else  out.push({v:"viseme_sil",k:c,w:0.8});
+  }
+  out.push({v:"viseme_sil",k:" ",w:1.5});
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   口くらべの再生
+   ═══════════════════════════════════════════════════════════════ */
+var SERIFU="こんにちは。今日はどんな感じ？";
+/* 口を動かすほうは、かなで持つ（漢字のままだと母音が取れず、口が止まって見える） */
+var SERIFU_KANA="こんにちは。きょうはどんなかんじ？";
+var slow=false, useVoice=true, timer=null;
+var kanaEl=document.getElementById("nowkana"), kSay=document.getElementById("kuchiSay");
+function say(el,msg){ el.textContent=msg||" "; }
+
+function stopAll(){
+  if(timer){ clearTimeout(timer); timer=null; }
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+  faceA.reset(); faceB.reset(); faceA.pulse(0); faceB.pulse(0);
+  kanaEl.textContent=" ";
+}
+
+function runSteps(text, kana){
+  stopAll();
+  var steps=toSteps(kana||text);
+  var base=slow?190:125;
+  if(useVoice){
+    try{
+      var u=new SpeechSynthesisUtterance(text);
+      u.lang="ja-JP"; u.rate=slow?0.72:1.0;
+      var vs=window.speechSynthesis.getVoices()||[];
+      for(var i=0;i<vs.length;i++){ if((vs[i].lang||"").indexOf("ja")===0){ u.voice=vs[i]; break; } }
+      window.speechSynthesis.speak(u);
+    }catch(e){ say(kSay,"この端末では読み上げが使えませんでした（口だけ動きます）"); }
+  }
+  var i=0;
+  (function step(){
+    if(i>=steps.length){ faceA.pulse(0); faceB.pulse(0); kanaEl.textContent=" "; timer=null; return; }
+    var s=steps[i++];
+    faceA.viseme(s.v); faceB.viseme(s.v);
+    var p = (s.v==="viseme_sil") ? 0 : 1.0;
+    faceA.pulse(p); faceB.pulse(p);
+    kanaEl.textContent = (s.k===" ")?" ":s.k;
+    timer=setTimeout(step, base*s.w);
+  })();
+}
+
+document.getElementById("btnAiueo").onclick=function(){ say(kSay,"「あいうえお」―★右だけ、1文字ごとに口の形が変わります。"); runSteps("あいうえお"); };
+document.getElementById("btnSerifu").onclick=function(){ say(kSay,"案内人の第一声。左は開き方がずっと同じ、右は母音で変わります。"); runSteps(SERIFU,SERIFU_KANA); };
+document.getElementById("btnMamimu").onclick=function(){ say(kSay,"★ここが一番分かりやすい所。右だけ、ま行の前に唇がいったん閉じます。"); runSteps("まみむめも"); };
+document.getElementById("btnStop").onclick=function(){ stopAll(); say(kSay,"とめました。"); };
+document.getElementById("btnSlow").onclick=function(){
+  slow=!slow; document.getElementById("slowState").textContent=slow?"入":"切";
+  say(kSay,slow?"ゆっくりにしました。もう一度押してください。":"速さを戻しました。");
+};
+document.getElementById("btnVoice").onclick=function(){
+  useVoice=!useVoice; document.getElementById("voiceState").textContent=useVoice?"入":"切";
+  say(kSay,useVoice?"声を出します。":"口だけ動かします（無音）。");
+};
+try{ window.speechSynthesis.onvoiceschanged=function(){}; }catch(e){}
+
+/* ═══════════════════════════════════════════════════════════════
+   本物の音声（Gemini TTS）→ 実際の音から左右の口を動かす
+   繋ぎ方は #966（Google公式サンプル準拠）から移植
+   ═══════════════════════════════════════════════════════════════ */
+var Lipsync=null;
+(function(){
+  var s=document.createElement("script");
+  s.type="module";
+  s.textContent='import { Lipsync } from "https://cdn.jsdelivr.net/npm/wawa-lipsync@0.0.2/dist/wawa-lipsync.es.js"; window.__Lipsync = Lipsync;';
+  document.head.appendChild(s);
+})();
+
+var actx=null, lip=null, realAudio=null, wired=false;
+function b64ToBytes(b64){ var s=atob(b64), a=new Uint8Array(s.length);
+  for(var i=0;i<s.length;i++) a[i]=s.charCodeAt(i); return a; }
+function wavFromPcm16(bytes,rate){
+  var n=bytes.length, buf=new ArrayBuffer(44+n), v=new DataView(buf);
+  var w=function(o,s){ for(var i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVEfmt "); v.setUint32(16,16,true);
+  v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,rate,true);
+  v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,"data"); v.setUint32(40,n,true);
+  new Uint8Array(buf,44).set(bytes);
+  return new Blob([buf],{type:"audio/wav"});
+}
+function hirouOto(obj){
+  var best=null, mime="";
+  (function walk(o){
+    if(!o||typeof o!=="object") return;
+    for(var k in o){ var v=o[k];
+      if(typeof v==="string"){
+        if((k==="data"||k==="audio"||k==="b64_json")&&v.length>2000&&(!best||v.length>best.length)) best=v;
+        if(/mime/i.test(k)) mime=v;
+      } else walk(v);
+    }
+  })(obj);
+  return {b64:best, mime:mime};
+}
+function getKey(){
+  try{ return (window.TamagoKagi&&window.TamagoKagi.get())||""; }catch(e){ return ""; }
+}
+async function tsukuruKoe(voice,key,serifu){
+  var r=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+    method:"POST",
+    headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
+    body:JSON.stringify({ model:"gemini-2.5-flash-preview-tts", input:serifu,
+      response_format:{type:"audio"}, generation_config:{ speech_config:[{voice:voice}] } })
+  });
+  if(!r.ok){ var t=await r.text().catch(function(){return "";}); throw new Error(r.status+" "+t.slice(0,180)); }
+  var ct=r.headers.get("content-type")||"", blob;
+  if(ct.indexOf("json")>=0){
+    var j=await r.json(), got=hirouOto(j);
+    if(!got.b64) throw new Error("音が入っていませんでした");
+    var bytes=b64ToBytes(got.b64), m=/rate=(\d+)/.exec(got.mime||"");
+    blob=(got.mime&&/mpeg|mp3|wav|ogg/i.test(got.mime))?new Blob([bytes],{type:got.mime})
+        :wavFromPcm16(bytes, m?parseInt(m[1],10):24000);
+  }else blob=await r.blob();
+  return URL.createObjectURL(blob);
+}
+function wireAudio(){
+  if(wired) return true;
+  if(!window.__Lipsync) return false;
+  Lipsync=window.__Lipsync;
+  lip=new Lipsync({fftSize:2048,historySize:10});
+  actx=lip.audioContext;
+  lip.analyser.connect(actx.destination);
+  faceA.attach(lip.analyser); faceB.attach(lip.analyser);
+  (function tick(){ try{ lip.processAudio(); var v=lip.viseme;
+    if(v){ faceA.viseme(v); faceB.viseme(v); } }catch(e){}
+    requestAnimationFrame(tick); })();
+  wired=true; return true;
+}
+async function honmonoNoKoe(targetSayEl, serifu){
+  var key=getKey();
+  if(!key){ say(targetSayEl,"Geminiの鍵がまだ入っていません。画面の「・」（鍵）から入れてください。");
+            try{ window.TamagoKagi&&window.TamagoKagi.ask(); }catch(e){} return; }
+  if(!wireAudio()){ say(targetSayEl,"音の解析部品（wawa-lipsync）がまだ届いていません。数秒おいてもう一度押してください。"); return; }
+  stopAll();
+  say(targetSayEl,"声を作っています…");
+  try{
+    var url=await tsukuruKoe("Kore",key,serifu||SERIFU);
+    try{ realAudio&&realAudio.pause(); }catch(e){}
+    realAudio=new Audio(url);
+    try{ var src=actx.createMediaElementSource(realAudio); src.connect(lip.analyser); }catch(e){}
+    if(actx.state==="suspended"){ try{ await actx.resume(); }catch(e){} }
+    await realAudio.play();
+    say(targetSayEl,"本物の音声で口が動いています（左＝音の大きさ／右＝母音）。およそ0.02円。");
+  }catch(e){
+    say(targetSayEl,"出ませんでした → "+e.message);
+  }
+}
+document.getElementById("btnRealVoice").onclick=function(){ honmonoNoKoe(document.getElementById("realSay"),SERIFU); };
+
+/* ═══════════════════════════════════════════════════════════════
+   A・B・C・D のボタン
+   ═══════════════════════════════════════════════════════════════ */
+var VOICE_EP="https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session";
+var YEN=157.18;
+
+document.getElementById("btnA").onclick=function(){
+  window.open("https://joy-relief-station.lovable.app/cover-guide","_blank","noopener");
+  say(document.getElementById("sayA"),"別のタブで本番の案内人を開きました。「話す」を押すとアイリスが鳴ります。残り約31分ぶんです。");
+};
+document.getElementById("btnABal").onclick=async function(){
+  var el=document.getElementById("sayA");
+  say(el,"窓口に聞いています…");
+  try{
+    var r=await fetch(VOICE_EP,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"create"})});
+    var j=await r.json();
+    if(!j || j.ok===false){ say(el,"窓口は生きていますが断られました（"+(j&&j.error||r.status)+"）"); return; }
+    var spent=j.spentUsd, cap=j.budgetLimitUsd;
+    if(typeof spent==="number"&&typeof cap==="number"){
+      var nokori=Math.max(0,cap-spent);
+      say(el,"残り $"+nokori.toFixed(2)+" ＝ 約"+Math.round(nokori*YEN)+"円 ＝ 約"+Math.floor(nokori/0.08)+"分（$0.08/分）");
+      document.getElementById("tagA").textContent="残り約"+Math.floor(nokori/0.08)+"分";
+    } else say(el,"窓口は 200 を返しましたが、財布の数字は入っていませんでした。");
+  }catch(e){ say(el,"窓口に届きませんでした → "+e.message); }
+};
+
+document.getElementById("btnB").onclick=function(){
+  var el=document.getElementById("sayB");
+  var perMin=0.0192+0.0768;               /* $/分（聞く1分＋喋る1分） */
+  var yenMin=perMin*YEN;
+  var lines=[];
+  [1000,3000,5000].forEach(function(y){
+    lines.push(y.toLocaleString()+"円 → 約"+Math.floor(y/yenMin)+"分");
+  });
+  say(el,"1分 約"+yenMin.toFixed(1)+"円（上限）。"+lines.join("／")+"。★いまは残高切れ（429）なので鳴りません。");
+};
+
+document.getElementById("btnC").onclick=function(){ honmonoNoKoe(document.getElementById("sayC"),SERIFU); };
+document.getElementById("btnCLive").onclick=function(){
+  window.open("./966-gemini-live-tamago.html","_blank","noopener");
+  say(document.getElementById("sayC"),"別のタブで #966 の台を開きました。こちらは会話ができます。");
+};
+
+document.getElementById("btnD").onclick=function(){
+  say(document.getElementById("sayD"),"この端末の声で喋っています。0円・通信なし。");
+  useVoice=true; document.getElementById("voiceState").textContent="入";
+  runSteps(SERIFU,SERIFU_KANA);
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+/* 鍵が入っているかを見て、Cの札を塗り替える */
+(function(){
+  function paint(){
+    if(getKey()){ var t=document.getElementById("tagC");
+      t.textContent="鍵は入っている"; t.className="tag t-ok"; }
+  }
+  paint(); window.addEventListener("load",function(){ setTimeout(paint,400); });
+})();
+</script>
+</body>
+</html>

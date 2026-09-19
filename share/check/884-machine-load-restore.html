@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#884 884番: machine_load.sh 復旧（本番で復旧を実測確認） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #884 884番: machine_load.sh 復旧（本番で復旧を実測確認）</div>
+<h1>#884 884番: machine_load.sh 復旧（本番で復旧を実測確認）</h1>
+<div class="date">2026-09-16 20:32 実測。1回目の検品で「本番復旧が未確認」として差し戻されたため、時間をおいて本番の実測値で再確認した</div>
+
+<div class="fix">
+工場の計測(status/health.json)が止まっていた原因は tools/machine_load.sh が消えていたこと。tools/machine_status_push.sh と tools/factory_status.py の参照先を作り直したファイルへ向け直し main へ反映(commit ba42a286c)。加えて本番Macで別に起きていた約14.5時間のシステムフリーズが19:04頃に解消し、19:53にmachine_load.shが本番へ実配置された。19:20:54を最後にheartbeat.logの🚨🚨💤は本番から消え、以後1時間以上再発なし。health.jsonのload/diskFreeGBもnullから実数に戻った。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>71分以上</b><span>19:20:54を最後に🚨🚨💤が本番heartbeat.logから消えて以降の経過(20:32時点)</span></div>
+  <div class="num"><b>null→247/258GB</b><span>health.jsonのload/diskFreeGB(修正前null→現在は実数)</span></div>
+  <div class="num"><b>20:29:38</b><span>health.jsonの最新measuredAt(20:32確認時点で2〜3分以内の最新)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番health.json(生データ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/health.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/health.json</a></li>
+  <li><b>コミット(main)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/ba42a286c148b9dc24e7d92c2de51bfa19a95301" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/ba42a286c148b9dc24e7d92c2de51bfa19a95301</a></li>
+  <li><b>修正後のmachine_load.sh(main)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/machine_load.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/machine_load.sh</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>コード修正・main反映</td><td class="yes">yes</td></tr>
+<tr><td>本番へmachine_load.sh配置(19:53)</td><td class="yes">yes</td></tr>
+<tr><td>本番health.jsonのload/diskFreeGBが実数化</td><td class="yes">yes</td></tr>
+<tr><td>本番heartbeat.logから🚨🚨💤が消え1時間以上再発なし</td><td class="yes">yes</td></tr>
+<tr><td>genzaichi.pyの走行本数をqueue.json実数から算出</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #884 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

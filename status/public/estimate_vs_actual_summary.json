@@ -1,0 +1,83 @@
+{
+  "updatedAt": "2026-09-23 20:43:02",
+  "pairCount": 5,
+  "needsFixCount": 5,
+  "top": [
+    {
+      "id": "771-fal_cost_yen-20260914T005551-6c41bc",
+      "n": 771,
+      "kind": "fal_cost_yen",
+      "unit": "円",
+      "estimateValue": 8.2,
+      "estimateFormula": "過去1回の単価実測を掛け算しただけ（推定を実測と呼んでいた）",
+      "estimateAt": "2026-09-14T00:55:51+09:00",
+      "actualValue": 108,
+      "actualSource": "fal.aiダッシュボード 2026-09-12 手動確認",
+      "actualAt": "2026-09-14T00:55:51+09:00",
+      "ratio": 13.171,
+      "gapScore": 13.171,
+      "needsFix": true
+    },
+    {
+      "id": "x-week_budget_over_pct-20260914T005551-d4a914",
+      "n": null,
+      "kind": "week_budget_over_pct",
+      "unit": "pt",
+      "estimateValue": 15.8,
+      "estimateFormula": "pace.pyの直線モデル（経過日数÷7）で計算",
+      "estimateAt": "2026-09-14T00:55:51+09:00",
+      "actualValue": -20.0,
+      "actualSource": "quota_estimate.pyの曲線モデル（weekdayTargetBase）2026-09-13実測",
+      "actualAt": "2026-09-14T00:55:51+09:00",
+      "ratio": -1.266,
+      "gapScore": 3.266,
+      "needsFix": true
+    },
+    {
+      "id": "x-fal_unit_cost_usd-20260914T005551-fa7a8c",
+      "n": null,
+      "kind": "fal_unit_cost_usd",
+      "unit": "$",
+      "estimateValue": 2.43,
+      "estimateFormula": "旧基準を更新せず使い続けていた（直近7日実測中央値に切り替え済み・795番）",
+      "estimateAt": "2026-09-14T00:55:51+09:00",
+      "actualValue": 6.74,
+      "actualSource": "fal.aiダッシュボード 2026-09-12 実測",
+      "actualAt": "2026-09-14T00:55:51+09:00",
+      "ratio": 2.774,
+      "gapScore": 2.774,
+      "needsFix": true
+    },
+    {
+      "id": "751-fal_cost_yen-20260914T005551-da7462",
+      "n": 751,
+      "kind": "fal_cost_yen",
+      "unit": "円",
+      "estimateValue": 108,
+      "estimateFormula": "過去1回の単価実測を掛け算しただけ（推定を実測と呼んでいた）",
+      "estimateAt": "2026-09-14T00:55:51+09:00",
+      "actualValue": 232,
+      "actualSource": "fal.aiダッシュボード 2026-09-12 手動確認",
+      "actualAt": "2026-09-14T00:55:51+09:00",
+      "ratio": 2.148,
+      "gapScore": 2.148,
+      "needsFix": true
+    },
+    {
+      "id": "793-cost_risk_detection_yen-20260914T005551-50b0a5",
+      "n": 793,
+      "kind": "cost_risk_detection_yen",
+      "unit": "$",
+      "estimateValue": 55.0,
+      "estimateFormula": "cost_risk.pyが本文中の「二重課金で$55捨てた」という過去の損失額をそのまま将来費用として抽出",
+      "estimateAt": "2026-09-14T00:55:51+09:00",
+      "actualValue": 0.0,
+      "actualSource": "dispatch-2026-09-13 手動確認（お金は出ない）",
+      "actualAt": "2026-09-14T00:55:51+09:00",
+      "ratio": 0.0,
+      "gapScore": 2.0,
+      "needsFix": true
+    }
+  ],
+  "note": "ズレ率(gapScore)が2倍を超えた式は、その場で直す（たまごさんに毎回謝るのではなく式そのものを直す）"
+}

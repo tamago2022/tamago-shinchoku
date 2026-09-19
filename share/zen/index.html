@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>ZEN ループ｜黒砂の海岸</title>
+<style>
+  :root{
+    --bg:#161c26;          /* 夜の藍 */
+    --panel:#1e2632;
+    --ink:#e9e2d4;         /* 生成り */
+    --sub:#8b8878;
+    --line:#2c3644;
+    --aka:#c1442e;         /* 差し色は1点だけ */
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);}
+  body{
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:16px;line-height:1.9;
+    padding:0 0 calc(env(safe-area-inset-bottom) + 64px);
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 18px;}
+
+  /* 見出し：細く、上品に。中央に置かない */
+  header{padding:54px 0 30px;}
+  .kicker{font-size:0.66rem;letter-spacing:0.42em;color:var(--aka);text-transform:uppercase;margin:0 0 14px;}
+  h1{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:200;
+    font-size:1.55rem;letter-spacing:0.24em;margin:0 0 10px;line-height:1.6;
+  }
+  .lead{color:var(--sub);font-size:0.86rem;letter-spacing:0.04em;margin:0;max-width:34em;}
+
+  section{padding:22px 0 10px;}
+  h2{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:200;
+    font-size:1.02rem;letter-spacing:0.2em;margin:0 0 4px;
+  }
+  .sub{color:var(--sub);font-size:0.76rem;letter-spacing:0.12em;margin:0 0 16px;}
+
+  .stage{position:relative;background:#000;border-radius:3px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,0.45);}
+  .stage video{display:block;width:100%;height:auto;}
+  .cap{color:var(--sub);font-size:0.8rem;margin:12px 0 0;letter-spacing:0.04em;}
+
+  .facts{display:flex;flex-wrap:wrap;gap:0;margin:22px 0 0;border-top:1px solid var(--line);}
+  .facts div{flex:1 1 150px;padding:14px 0 12px;border-bottom:1px solid var(--line);}
+  .facts b{display:block;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:200;font-size:1.3rem;letter-spacing:0.06em;}
+  .facts span{display:block;color:var(--sub);font-size:0.68rem;letter-spacing:0.08em;margin-top:2px;}
+
+  a.dl{
+    display:inline-block;margin:18px 0 0;padding:13px 20px;min-height:44px;
+    border:1px solid var(--line);border-radius:2px;color:var(--ink);text-decoration:none;
+    font-size:0.82rem;letter-spacing:0.12em;background:var(--panel);
+  }
+  a.dl:active{background:#26303e;}
+
+  hr.sep{border:none;border-top:1px solid var(--line);margin:56px 0 0;}
+
+  .flag{display:inline-block;font-size:0.68rem;letter-spacing:0.18em;color:var(--aka);border:1px solid var(--aka);border-radius:2px;padding:3px 9px;margin:0 0 12px;}
+  .why{color:var(--sub);font-size:0.84rem;max-width:36em;}
+  .why b{color:var(--ink);font-weight:600;}
+  .evid{width:100%;border-radius:3px;border:1px solid var(--line);display:block;margin:16px 0 0;}
+
+  footer{color:#5f5d54;font-size:0.72rem;letter-spacing:0.06em;margin-top:54px;line-height:1.9;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#0f131a;border-bottom:1px solid #2c3644;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="wrap">
+
+<header>
+  <p class="kicker">zen loop &nbsp;/&nbsp; 919</p>
+  <h1>動かない絵を、<br>5秒だけ動かした。</h1>
+  <p class="lead">縦長の静止画1枚を左右へ伸ばして16:9にし、そこから継ぎ目のないループを作る。カメラは三脚に据えたまま、動くものだけが動く。</p>
+</header>
+
+<section>
+  <h2>黒砂の海岸</h2>
+  <p class="sub">波と雲だけが動く／石は動かない</p>
+  <div class="stage">
+    <video id="v1" src="kuroihama_web.mp4" poster="kuroihama_poster.jpg"
+           autoplay loop muted playsinline preload="metadata"></video>
+  </div>
+  <p class="cap">玄武岩の柱と、積まれた石。寄せて返す波のあいだ、石だけが5秒前とまったく同じ場所にいる。</p>
+
+  <div class="facts">
+    <div><b>1920×1080</b><span>実測: ffprobe</span></div>
+    <div><b>5.17秒</b><span>実測: 124コマ / 24fps</span></div>
+    <div><b>3.52</b><span>実測: 隣り合うコマの差 平均RMSE（動いている証拠）</span></div>
+    <div><b>3.80</b><span>実測: 継ぎ目（最後→最初）のRMSE</span></div>
+  </div>
+
+  <a class="dl" href="../check/assets/919-zen/kuroihama_loop_1920x1080.mp4" target="_blank" rel="noopener">原寸1920×1080のmp4を開く</a>
+</section>
+
+<hr class="sep">
+
+<section>
+  <h2>茶室</h2>
+  <p class="sub">差し戻し（見せる状態になっていない）</p>
+  <span class="flag">やり直し</span>
+  <div class="stage">
+    <video id="v2" src="chashitsu_web.mp4" poster="chashitsu_poster.jpg"
+           autoplay loop muted playsinline preload="metadata"></video>
+  </div>
+  <p class="why">
+    注文は「外の緑だけがそよぐ。ほかは完全に止まったまま」でした。実物は<b>頼んでいない白い靄が部屋じゅうを流れ</b>、
+    止まっているはずの石・畳・壁の掛軸まで、その靄に覆われて明るさが変わります。
+    実測: 石の平均の明るさ 99.5 → 124.6（先頭コマ→31コマ目）。動くはずのない掛軸の時間方向の標準偏差 17.91 に対し、
+    動いてよい窓の緑は 33.64 ——止まっているべきものが、緑の半分以上動いています。先頭コマとの差も中盤で最大 58.72（海岸は 36.49）。
+    直すには茶室1本の作り直し（約30円）が要ります。承認済みの72円は使い切っているので、まだ手を付けていません。
+  </p>
+  <img class="evid" src="chashitsu_evidence.jpg" alt="茶室の12コマを時間順に並べたもの。中盤で白い靄が部屋を流れ、最後に元へ戻る">
+  <p class="cap">上：12コマを時間順に並べたもの。左上が最初、右下が最後。中盤（1段目の右・2段目）で白い靄が部屋を横切っている。</p>
+  <a class="dl" href="../check/assets/919-zen/chashitsu_loop_1920x1080.mp4" target="_blank" rel="noopener">原寸1920×1080のmp4を開く</a>
+</section>
+
+<footer>
+  919／ZEN 2本。素材：18_ZEN_chashitsu.png・22_ZEN_kuroihama.png（縦1122×1402）。<br>
+  16:9への横伸ばし＝fal seedream v4 edit、動画化＝minimax h3-max-turbo 1080p 5秒。使った金額は承認済みの72円のみ（このページの制作で追加の課金なし）。
+</footer>
+
+</div>
+
+<script>
+// 自動再生が拒否された端末では、黙って止まったままにせず操作できるようにする
+document.querySelectorAll('video').forEach(function(v){
+  var p = v.play();
+  if (p && typeof p.catch === 'function') {
+    p.catch(function(){ v.controls = true; });
+  }
+  v.addEventListener('click', function(){
+    if (v.paused) { v.play().catch(function(){ v.controls = true; }); } else { v.pause(); v.controls = true; }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>手紙の降る夜</title>
+<style>
+  body{margin:0;background:#111;color:#ccc;font:13px/1.4 ui-monospace,Menlo,monospace;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px}
+  canvas#c{width:min(94vw,760px);height:auto;background:#000;box-shadow:0 0 0 1px #333}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
+  button{background:#222;color:#ddd;border:1px solid #444;padding:4px 10px;cursor:pointer;font:inherit}
+  input[type=range]{width:320px}
+</style>
+<canvas id="c" width="1080" height="1080"></canvas>
+<script src="./core.js"></script>
+<script>
+'use strict';
+// ============================================================
+// 手紙の降る夜 / A NIGHT OF FALLING LETTERS
+// 描き方は alesha-pro/tools の hand-drawn-canvas-animation（MIT）の core.js を丸ごと使う。
+// お手本は share/ohon/ohon.json（Kevin Ngo / Claude Opus 5.5）。
+// 決まり：Math.random は使わない・最終canvasにグラデーションは置かない・塗りと線は一致させない。
+// ============================================================
+
+const PAL_ = makePalette({
+  paper:'#2a2f68', paperBand:null, night:'#242a5e', ink:'#12131f',
+  chalk:'#f2ead6', chalkDim:'#b9b096', guide:'rgba(242,234,214,.5)',
+  fills:['#2a2f68','#3b3576','#4a3f72','#1d2450','#e0876a','#f2c14a'],
+  shade:'#161a3c', light:'#f2ead6', blush:'#e79a95',
+  accents:['#e0876a','#f2c14a','#4f9e93','#d4534a'],
+  inks:['#f2ead6','#e0876a'], finish:'flat',
+}, 'paperInk');
+
+const CR = {
+  sky:'#2a2f68', skyHi:'#343a78', skyLo:'#20265a',
+  cream:'#f2ead6', creamDim:'#ded2b4',
+  coral:'#e0876a', coralDk:'#c96f52', coralLt:'#eca089',
+  gold:'#f2c14a', goldDk:'#d19a2c', warm:'#f5cf55',
+  wall:'#4a3f72', wallDk:'#3b3160',
+  pink:'#e8a0a4', pinkDk:'#d2868c',
+  teal:'#4f9e93', tealDk:'#3d7e76',
+  skin:'#e9c29c', hair:'#3f2a22',
+  tan:'#c8a271', leaf:'#5c8a4a', red:'#d4534a', black:'#12131f',
+  house:'#1d2450', houseDk:'#161b3e', houseLt:'#28305e',
+};
+
+// ---- 小さい道具（全部 core.js の上に乗せるだけ） --------------------------
+// 塗りは gouache（不透明）。縁はわざと塗りとズラした crayon で引く。
+function body(c, pts, fill, o={}){
+  const { line = CR.cream, lw = 2.4, seed = 1, al = .97, close = true } = o;
+  const p = polyPath(spline(pts, 5, close), close);
+  gouache(c, p, fill, al);
+  if (line) crayon(c, pts, line, lw, seed, close);
+  return p;
+}
+// 筆跡のムラ。塗った上に、同系色を少しズラして何度も置く。
+function strokes(c, path, box, color, n, seed, o={}){
+  const r = rng(seed), [bx,by,bw,bh] = box;
+  c.save(); c.clip(path); c.globalAlpha = o.al ?? .28; c.strokeStyle = color;
+  c.lineCap='round';
+  for(let i=0;i<n;i++){
+    const x = bx + r()*bw, y = by + r()*bh, L = (o.len ?? 90)*(.4+r()), a = (o.angle ?? -1.5) + (r()-.5)*(o.spread ?? .25);
+    c.lineWidth = (o.w ?? 7)*(.5+r());
+    c.beginPath(); c.moveTo(x,y);
+    c.quadraticCurveTo(x+Math.cos(a)*L*.5+(r()-.5)*6, y+Math.sin(a)*L*.5+(r()-.5)*6,
+                       x+Math.cos(a)*L, y+Math.sin(a)*L);
+    c.stroke();
+  }
+  c.restore();
+}
+function star5(c, x, y, R, color, seed){
+  const pts=[]; for(let i=0;i<10;i++){ const a=-Math.PI/2+i/10*TAU, r=i%2?R*.44:R; pts.push([x+Math.cos(a)*r, y+Math.sin(a)*r]); }
+  gouache(c, polyPath(spline(pts,3,true), true), color, .95);
+  crayon(c, pts, shade(color,.75), 1.1, seed, true);
+}
+function plus(c, x, y, s, color, seed, w=2.6){
+  c.save(); c.strokeStyle=color; c.lineWidth=w; c.lineCap='round';
+  wob(c, [[x-s,y],[x+s,y]], 1.1, seed); wob(c, [[x,y-s],[x,y+s]], 1.1, seed+3);
+  c.restore();
+}
+// ちぎった紙のような白い雲の縁
+function tornCloud(c, y, amp, seed, color, w){
+  const r = rng(seed), pts=[];
+  for(let x=-30;x<=W+30;x+=26) pts.push([x, y + (r()-.5)*amp*2 + Math.sin(x*.013+seed)*amp*.8]);
+  c.save(); c.strokeStyle=color; c.lineWidth=w; c.lineCap='round'; c.globalAlpha=.9;
+  wob(c, pts, 2.2, seed+11);
+  c.restore();
+}
+// 窓。十字の桟つき。町の家はこれを並べるだけ。
+function litWindow(c, x, y, w, h, seed, k=1){
+  const p = rectPath(x, y, w, h);
+  gouache(c, p, mix(CR.warm, CR.house, 1-k), .96);
+  c.save(); c.strokeStyle = CR.houseDk; c.lineWidth = 2.2; c.lineCap='round';
+  wob(c, [[x+w/2, y],[x+w/2, y+h]], .9, seed);
+  wob(c, [[x, y+h/2],[x+w, y+h/2]], .9, seed+5);
+  c.restore();
+  crayon(c, [[x,y],[x+w,y],[x+w,y+h],[x,y+h]], CR.creamDim, 1.2, seed+9, true);
+}
+
+// ---- 場面 ---------------------------------------------------------------
+function scene(c, tau, i){
+  const T = tau;
+  night(c, CR.sky, 5);
+
+  // 空のムラ。縦の筆跡を3層。
+  const all = rectPath(0,0,W,H);
+  strokes(c, all, [0,0,W,H*.72], CR.skyHi, 90, 21, {al:.20, len:150, angle:-1.55, w:12});
+  strokes(c, all, [0,0,W,H*.72], CR.skyLo, 70, 22, {al:.18, len:170, angle:-1.55, w:14});
+  strokes(c, all, [0,H*.12,W,H*.3], CR.skyHi, 40, 23, {al:.13, len:220, angle:-1.5, w:22});
+
+  // 雲の縁（ちぎった紙）
+  tornCloud(c, H*.225, 9, 3, CR.cream, 3.0);
+  tornCloud(c, H*.245, 6, 8, alpha(CR.cream,.5), 1.6);
+  tornCloud(c, H*.40, 8, 14, CR.cream, 2.6);
+  tornCloud(c, H*.425, 5, 19, alpha(CR.cream,.45), 1.4);
+
+  // 月
+  (function moon(){
+    const mx = W*.145, my = H*.105, R = 62;
+    const outer=[], inner=[];
+    for(let a=Math.PI*.42; a<=Math.PI*1.62; a+=.09) outer.push([mx+Math.cos(a)*R, my+Math.sin(a)*R]);
+    for(let a=Math.PI*1.62; a>=Math.PI*.42; a-=.09) inner.push([mx+Math.cos(a)*R*1.06+R*.58, my+Math.sin(a)*R*1.02]);
+    const pts = outer.concat(inner);
+    const p = body(c, pts, CR.cream, {line:CR.creamDim, lw:2.0, seed:31});
+    hatch(c, p, [mx-R, my-R, R*2, R*2], {angle:.9, gap:7, len:13, jitter:3, color:CR.creamDim, alpha:.32, width:1.1, seed:4});
+    grain(c, p, [mx-R,my-R,R*2,R*2], 90, CR.creamDim, .35, 6, 1.4);
+  })();
+
+  // 星・十字・金の短い線
+  const rs = rng(77);
+  for(let k=0;k<17;k++){
+    const x = 40 + rs()*(W-80), y = 30 + rs()*(H*.52);
+    if (x>W*.30 && x<W*.78 && y>H*.10 && y<H*.34) continue;
+    star5(c, x, y, 9 + rs()*7, CR.gold, 100+k);
+  }
+  for(let k=0;k<9;k++) plus(c, 60+rs()*(W-120), 40+rs()*(H*.46), 8+rs()*5, CR.cream, 200+k);
+  for(let k=0;k<22;k++){
+    const x = W*.40 + rs()*(W*.40), y = H*.06 + rs()*(H*.34);
+    const a = -1.1 + rs()*2.2;
+    c.save(); c.strokeStyle = CR.gold; c.lineWidth = 3.4; c.lineCap='round'; c.globalAlpha=.9;
+    wob(c, [[x,y],[x+Math.cos(a)*15, y+Math.sin(a)*15]], 1.0, 300+k); c.restore();
+  }
+
+  // 花火（顔つき）
+  (function firework(){
+    const fx = W*.575, fy = H*.215;
+    const g = clamp(settle(T, .35, {dur:1.5, k:.5}), 0, 1);
+    const n = 12;
+    for(let k=0;k<n;k++){
+      const a = k/n*TAU - Math.PI/2 + .13;
+      const L = (142 + (k%3)*18) * (.35 + .65*g);
+      const w0 = 25 - (k%2)*4;
+      const x0 = fx+Math.cos(a)*46, y0 = fy+Math.sin(a)*46;
+      const x1 = fx+Math.cos(a)*(46+L), y1 = fy+Math.sin(a)*(46+L);
+      const px = -Math.sin(a), py = Math.cos(a);
+      const pts = [
+        [x0+px*w0*.5, y0+py*w0*.5],
+        [lerp(x0,x1,.5)+px*w0*.52, lerp(y0,y1,.5)+py*w0*.52],
+        [x1+px*w0*.44, y1+py*w0*.44],
+        [x1+Math.cos(a)*w0*.50, y1+Math.sin(a)*w0*.50],
+        [x1-px*w0*.44, y1-py*w0*.44],
+        [lerp(x0,x1,.5)-px*w0*.52, lerp(y0,y1,.5)-py*w0*.52],
+        [x0-px*w0*.5, y0-py*w0*.5],
+      ];
+      const p = body(c, pts, CR.coral, {line:null, seed:400+k});
+      // 花弁の中の筆跡
+      strokes(c, p, [Math.min(x0,x1)-30, Math.min(y0,y1)-30, Math.abs(x1-x0)+60, Math.abs(y1-y0)+60],
+              CR.coralDk, 8, 420+k, {al:.30, len:L*.6, angle:a, spread:.12, w:4});
+    }
+    // 中心の丸
+    const face = polyPath(spline(blob(fx, fy, 55, 52, 9, {amp:.05}), 5, true), true);
+    gouache(c, face, CR.coral, .99);
+    strokes(c, face, [fx-56, fy-54, 112, 108], CR.coralDk, 14, 430, {al:.26, len:70, angle:1.1, spread:.5, w:6});
+    // 顔
+    const ey = fy - 4;
+    [[-20, 1],[20, 1]].forEach(([dx, s], k)=>{
+      gouache(c, polyPath(spline(blob(fx+dx, ey, 9, 11, 40+k, {amp:.06}),4,true), true), CR.black, 1);
+      c.save(); c.fillStyle = CR.cream; c.beginPath();
+      c.arc(fx+dx-2.5, ey-3.4, 2.7, 0, TAU); c.fill(); c.restore();
+    });
+    // 頬
+    [[-39, 0],[39, 1]].forEach(([dx,k])=>{
+      c.save(); c.globalAlpha=.55; gouache(c, polyPath(spline(blob(fx+dx, ey+15, 10.5, 6.5, 50+k, {amp:.08}),4,true), true), CR.pink, .8); c.restore();
+    });
+    // 口
+    c.save(); c.strokeStyle = CR.black; c.lineWidth = 3.4; c.lineCap='round';
+    wob(c, [[fx-13, ey+16],[fx-5, ey+23],[fx+5, ey+23],[fx+13, ey+16]], .9, 55);
+    c.restore();
+  })();
+
+  // 紙飛行機 ＋ 破線の軌跡
+  function plane(c, x, y, s, rot, seed, trail){
+    if (trail){
+      c.save(); c.strokeStyle = alpha(CR.cream,.55); c.lineWidth=1.8; c.setLineDash([9,11]); c.lineCap='round';
+      const pts=[]; for(let u=0;u<=1.001;u+=.08) pts.push([x - Math.cos(rot)*s*7*u, y - Math.sin(rot)*s*7*u - Math.sin(u*2.4)*s*1.4]);
+      wob(c, pts, 1.6, seed+2); c.setLineDash([]); c.restore();
+    }
+    c.save(); c.translate(x,y); c.rotate(rot); c.scale(s,s);
+    body(c, [[-26,-11],[30,0],[-26,13],[-16,1]], CR.cream, {line:CR.creamDim, lw:1.4, seed:seed});
+    c.strokeStyle = CR.creamDim; c.lineWidth = 1.2; wob(c, [[-26,-11],[-16,1],[-26,13]], 1.0, seed+7);
+    squiggleText(c, -20, -4, 26, 2, {color:alpha(CR.wallDk,.75), seed:seed+9, lineH:6, amp:1.6, width:.8});
+    c.restore();
+  }
+  const dr = (t,ph)=> Math.sin(t*.9+ph)*6;
+  plane(c, W*.855, H*.205 + dr(T,0), 1.05, -.30, 61, true);
+  plane(c, W*.735, H*.345 + dr(T,2.1), .88, -.20, 71, true);
+  plane(c, W*.925, H*.470 + dr(T,4.0), 1.00, -.16, 81, true);
+
+  // ---- 左：家の壁と窓 ----
+  const WX = -20, WY = H*.335, WW = W*.545, WH = H - WY + 20;
+  (function house(){
+    // 屋根の梁
+    const beam = [[WX-10, WY+16],[WX+WW*.52, WY-6],[WX+WW*1.00, WY+30],[WX+WW*1.00, WY+58],[WX-10, WY+46]];
+    body(c, beam, CR.houseDk, {line:CR.cream, lw:2.2, seed:501});
+
+    // 壁
+    const wall = rectPath(WX, WY+46, WW+20, WH);
+    gouache(c, wall, CR.wall, .99);
+    strokes(c, wall, [WX, WY+46, WW+20, WH], CR.wallDk, 80, 510, {al:.20, len:130, angle:-1.55, w:12});
+    strokes(c, wall, [WX, WY+46, WW+20, WH], '#564a80', 50, 511, {al:.14, len:120, angle:-1.55, w:10});
+    // 壁いちめんの手書き模様
+    c.save(); c.clip(wall);
+    for(let row=0; row<34; row++){
+      squiggleText(c, WX+16, WY+78 + row*17, WW-10, 1,
+        {color:alpha('#6a5c9a', .5), seed:600+row, lineH:6, amp:2.6, width:1.0, gap:.3});
+    }
+    c.restore();
+    crayon(c, [[WX+WW+20, WY+46],[WX+WW+20, H+20]], CR.cream, 2.2, 520);
+
+    // 窓（枠・カーテン・中）
+    const bx = WX+72, by = WY+120, bw = WW-150, bh = WH-300;
+    const frame = rectPath(bx-26, by-26, bw+52, bh+52);
+    gouache(c, frame, CR.cream, .99);
+    grain(c, frame, [bx-26,by-26,bw+52,bh+52], 900, CR.tan, .35, 530, 2.2);
+    grain(c, frame, [bx-26,by-26,bw+52,bh+52], 400, CR.wallDk, .22, 531, 1.6);
+    crayon(c, [[bx-26,by-26],[bx+bw+26,by-26],[bx+bw+26,by+bh+26],[bx-26,by+bh+26]], CR.creamDim, 2.0, 532, true);
+
+    const inner = rectPath(bx, by, bw, bh);
+    gouache(c, inner, CR.warm, .99);
+    strokes(c, inner, [bx,by,bw,bh], CR.goldDk, 46, 540, {al:.22, len:110, angle:-1.55, w:9});
+    glow(c, bx+bw/2, by+bh*.55, bw*.9, '#ffd77a', .35 + .05*Math.sin(T*1.7));
+
+    // カーテン
+    [[bx, 1],[bx+bw-96, -1]].forEach(([cx0, sgn], k)=>{
+      const pts = [[cx0, by],[cx0+96*(k?1:1), by],[cx0+96, by+bh],[cx0, by+bh]];
+      const cp = polyPath(pts, true);
+      gouache(c, cp, CR.pink, .97);
+      strokes(c, cp, [cx0, by, 96, bh], CR.pinkDk, 26, 550+k, {al:.30, len:150, angle:-1.55, w:7});
+      crayon(c, pts, CR.creamDim, 1.6, 552+k, true);
+    });
+
+    // 女の子
+    (function girl(){
+      const gx = bx + bw*.42, gy = by + bh*.66;
+      // 体
+      body(c, [[gx-92, gy+96],[gx-78, gy+2],[gx-30, gy-26],[gx+30, gy-26],[gx+78, gy+2],[gx+92, gy+96]],
+           CR.teal, {line:CR.cream, lw:2.4, seed:560});
+      // 腕（左右に分ける。机の上で交差させない）
+      body(c, [[gx-80, gy+6],[gx-56, gy+60],[gx-6, gy+84],[gx-10, gy+100],[gx-70, gy+80],[gx-94, gy+26]],
+           CR.teal, {line:CR.cream, lw:2.0, seed:561});
+      body(c, [[gx+80, gy+6],[gx+58, gy+56],[gx+18, gy+82],[gx+22, gy+98],[gx+72, gy+76],[gx+94, gy+26]],
+           CR.teal, {line:CR.cream, lw:2.0, seed:568});
+      // 襟
+      body(c, [[gx-34, gy-24],[gx, gy+18],[gx+34, gy-24],[gx+6, gy-32],[gx-6, gy-32]],
+           CR.cream, {line:CR.creamDim, lw:1.6, seed:562});
+      // 顔
+      const head = body(c, blob(gx, gy-74, 56, 60, 563, {amp:.045}), CR.skin, {line:CR.hair, lw:1.6, seed:563});
+      // 髪
+      body(c, [[gx-62, gy-64],[gx-60, gy-108],[gx-26, gy-136],[gx+26, gy-136],[gx+60, gy-108],[gx+62, gy-60],
+               [gx+48, gy-58],[gx+44, gy-96],[gx-44, gy-96],[gx-48, gy-58]],
+           CR.hair, {line:null, seed:564});
+      body(c, [[gx-64, gy-60],[gx-66, gy-18],[gx-46, gy-16],[gx-44, gy-58]], CR.hair, {line:null, seed:565});
+      body(c, [[gx+64, gy-60],[gx+66, gy-18],[gx+46, gy-16],[gx+44, gy-58]], CR.hair, {line:null, seed:566});
+      // ヘアピン
+      body(c, [[gx+16, gy-104],[gx+44, gy-96],[gx+42, gy-88],[gx+14, gy-96]], CR.gold, {line:CR.goldDk, lw:1.2, seed:567});
+      // 目
+      [[-21],[21]].forEach(([dx],k)=>{
+        gouache(c, polyPath(spline(blob(gx+dx, gy-72, 8.5, 10.5, 570+k, {amp:.05}),4,true), true), CR.black, 1);
+        c.save(); c.fillStyle=CR.cream; c.beginPath(); c.arc(gx+dx-2.6, gy-75.5, 2.8, 0, TAU); c.fill(); c.restore();
+      });
+      // 頬
+      [[-36],[36]].forEach(([dx],k)=>{
+        c.save(); c.globalAlpha=.6;
+        gouache(c, polyPath(spline(blob(gx+dx, gy-52, 12, 7.5, 575+k, {amp:.07}),4,true), true), CR.pink, .85);
+        c.restore();
+      });
+      // 口
+      c.save(); c.strokeStyle=CR.hair; c.lineWidth=2.6; c.lineCap='round';
+      wob(c, [[gx-9, gy-48],[gx, gy-42],[gx+9, gy-48]], .9, 578); c.restore();
+      // 鉛筆
+      c.save(); c.strokeStyle='#3b6fb0'; c.lineWidth=9; c.lineCap='round';
+      wob(c, [[gx-28, gy+112],[gx+34, gy+84]], 1.0, 579); c.restore();
+      c.save(); c.strokeStyle=CR.tan; c.lineWidth=9; c.lineCap='round';
+      wob(c, [[gx+34, gy+84],[gx+46, gy+78]], .8, 584); c.restore();
+      // 手
+      gouache(c, polyPath(spline(blob(gx+16, gy+96, 17, 13, 580, {amp:.06}),4,true), true), CR.skin, .98);
+      gouache(c, polyPath(spline(blob(gx-18, gy+100, 16, 12, 581, {amp:.06}),4,true), true), CR.skin, .98);
+    })();
+
+    // サボテンの鉢
+    (function pot(){
+      const px = bx+bw-74, py = by+bh-18;
+      body(c, [[px-30, py-44],[px+30, py-44],[px+22, py],[px-22, py]], CR.tan, {line:CR.creamDim, lw:1.6, seed:590});
+      body(c, [[px-34, py-52],[px+34, py-52],[px+32, py-40],[px-32, py-40]], CR.tan, {line:CR.creamDim, lw:1.4, seed:591});
+      body(c, blob(px, py-82, 15, 34, 592, {amp:.07}), CR.leaf, {line:'#46693a', lw:1.4, seed:592});
+      body(c, blob(px-24, py-70, 9, 19, 593, {amp:.08}), CR.leaf, {line:'#46693a', lw:1.2, seed:593});
+      body(c, blob(px+23, py-66, 8, 17, 594, {amp:.08}), CR.leaf, {line:'#46693a', lw:1.2, seed:594});
+      for(let k=0;k<6;k++){ const a=k/6*TAU;
+        c.save(); c.strokeStyle=CR.red; c.lineWidth=3.2; c.lineCap='round';
+        wob(c, [[px, py-118],[px+Math.cos(a)*13, py-118+Math.sin(a)*13]], .8, 595+k); c.restore(); }
+      gouache(c, polyPath(spline(blob(px, py-118, 5, 5, 596, {amp:.1}),3,true), true), CR.gold, 1);
+    })();
+
+    // 窓台
+    body(c, [[bx-56, by+bh+26],[bx+bw+56, by+bh+26],[bx+bw+50, by+bh+62],[bx-50, by+bh+62]],
+         CR.tan, {line:CR.creamDim, lw:2.0, seed:598});
+
+    // ツル
+    c.save(); c.strokeStyle='#4f7a3f'; c.lineWidth=3.2; c.lineCap='round';
+    const vine=[]; for(let y=WY+52;y<H+20;y+=34) vine.push([WX+42 + Math.sin(y*.021)*16, y]);
+    wob(c, vine, 2.2, 599); c.restore();
+    const rv = rng(610);
+    for(let y=WY+70;y<H;y+=42){
+      const x = WX+42 + Math.sin(y*.021)*16, a = (rv()<.5?-1:1);
+      gouache(c, polyPath(spline(blob(x+a*17, y, 13, 8, 611+y, {amp:.09}),4,true), true), CR.leaf, .96);
+    }
+  })();
+
+  // ---- 右：町 ----
+  (function town(){
+    const base = H + 10;
+    const hs = [
+      {x:W*.615, w:W*.135, top:H*.560, roof:'peak', seed:701},
+      {x:W*.742, w:W*.105, top:H*.470, roof:'peak', seed:702},
+      {x:W*.833, w:W*.175, top:H*.545, roof:'peak', seed:703},
+      {x:W*.600, w:W*.150, top:H*.700, roof:'flat', seed:704},
+      {x:W*.745, w:W*.130, top:H*.660, roof:'peak', seed:705},
+      {x:W*.860, w:W*.160, top:H*.720, roof:'flat', seed:706},
+      {x:W*.655, w:W*.140, top:H*.820, roof:'flat', seed:707},
+      {x:W*.820, w:W*.200, top:H*.860, roof:'flat', seed:708},
+    ];
+    hs.forEach((h, idx)=>{
+      const col = idx%3===0 ? CR.house : (idx%3===1 ? CR.houseLt : CR.houseDk);
+      let pts;
+      if (h.roof==='peak') pts = [[h.x, h.top+52],[h.x+h.w/2, h.top-38],[h.x+h.w, h.top+52],[h.x+h.w, base],[h.x, base]];
+      else pts = [[h.x-8, h.top+8],[h.x+h.w+8, h.top+8],[h.x+h.w, h.top+36],[h.x+h.w, base],[h.x, base],[h.x, h.top+36]];
+      const p = body(c, pts, col, {line:CR.cream, lw:2.0, seed:h.seed});
+      const box = [h.x-10, h.top-40, h.w+20, base-h.top+50];
+      strokes(c, p, box, shade(col,.8), 26, h.seed+30, {al:.26, len:90, angle:-1.55, w:9});
+      // 壁の細かい手書き模様
+      c.save(); c.clip(p);
+      for(let row=0; row<7; row++)
+        squiggleText(c, h.x+10, h.top+86+row*46, h.w-16, 1,
+          {color:alpha('#3d4a86',.5), seed:h.seed*7+row, lineH:9, amp:3.2, width:1.1});
+      // 赤い破線・青緑の波線
+      c.strokeStyle = alpha(CR.red,.55); c.lineWidth=1.8; c.setLineDash([8,8]);
+      wob(c, [[h.x-10, h.top+70],[h.x+h.w+10, h.top+58]], 2.0, h.seed+41); c.setLineDash([]);
+      c.strokeStyle = alpha(CR.teal,.45); c.lineWidth=1.8;
+      const wv=[]; for(let x=h.x-10;x<h.x+h.w+10;x+=14) wv.push([x, h.top+150+Math.sin(x*.05+idx)*9]);
+      if(wv.length>1) wob(c, wv, 1.4, h.seed+43);
+      c.restore();
+      // 窓
+      const cols = Math.max(2, Math.round(h.w/64)), rows = Math.max(2, Math.round((base-h.top-80)/92));
+      const rw = rng(h.seed+60);
+      for(let a=0;a<cols;a++) for(let b=0;b<rows;b++){
+        if (rw() < .30) continue;
+        const ww = 26, wh = 30;
+        const x = h.x + (h.w - cols*ww - (cols-1)*18)/2 + a*(ww+18);
+        const y = h.top + 96 + b*84;
+        if (y+wh > base-14) continue;
+        litWindow(c, x, y, ww, wh, h.seed*11+a*3+b, rw()<.18 ? .25 : 1);
+      }
+    });
+
+    // 屋根の上の黒猫
+    (function cat(){
+      const cx = W*.800, cy = H*.470 + 18;
+      body(c, [[cx-26, cy],[cx-22, cy-46],[cx-14, cy-62],[cx-8, cy-46],[cx+8, cy-46],[cx+14, cy-62],[cx+22, cy-46],[cx+26, cy]],
+           CR.black, {line:alpha(CR.cream,.6), lw:1.4, seed:750});
+      c.save(); c.strokeStyle=CR.black; c.lineWidth=7; c.lineCap='round';
+      wob(c, [[cx+24, cy-6],[cx+46, cy-14],[cx+50, cy-40]], 1.4, 751); c.restore();
+    })();
+  })();
+
+  // 全体に紙の粒
+  grain(c, all, [0,0,W,H], 2600, '#000000', .06, 900, 1.7);
+  grain(c, all, [0,0,W,H], 1500, CR.cream, .05, 901, 1.5);
+}
+
+defineFilm({
+  palette: PAL_,
+  format: { ar:'1:1', width: 1080 },
+  fps: 12,
+  timeline: [ { name:'手紙の降る夜', dur: 6, twos: true, fn: scene } ],
+});
+</script>

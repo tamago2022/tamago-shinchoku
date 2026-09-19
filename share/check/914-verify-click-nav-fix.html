@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#914 検品が壊れていた：「← 進捗表に戻る」で3本stuckにされた件を修正 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #914 検品が壊れていた：「← 進捗表に戻る」で3本stuckにされた件を修正</div>
+<h1>#914 検品が壊れていた：「← 進捗表に戻る」で3本stuckにされた件を修正</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+触る検品(verify_click.mjs)が、確認ページの「← 進捗表に戻る」リンクを押した直後、遷移先(重い進捗表トップ)がまだ不安定な瞬間に画面の状態を読もうとして失敗し、「変化なし＝無反応」と誤判定していました。実際には遷移は起きており、直前のクリックは反応していました。評価が失敗すること自体を「反応した証拠」として扱うよう直しました。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3回に1回</b><span>修正前：894番URLで再現した失敗頻度（実測）</span></div>
+  <div class="num"><b>8回</b><span>修正後：894番URL5回＋896番URL3回、連続PASS（実測）</span></div>
+  <div class="num"><b>4件</b><span>同じ理由(戻るリンク)で落ちた案件数：892・894・896・917番</span></div>
+  <div class="num"><b>3件</b><span>そのうちstuck(手止め)まで至った案件：892・894・896番</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>修正前：無反応1件でFAIL（894番URL・3回目の実行で再現）</b><img src="img/914-verify-click-before.png" alt="前"></div>
+  <div class="shot after"><b>修正後：無反応0件でPASS（894番URL・5回連続）</b><img src="img/914-verify-click-after.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>修正したverify_click.mjs（GitHub）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_click.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_click.mjs</a></li>
+  <li><b>894番の確認ページ（対象URL）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/894-heartbeat-self-heal.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/894-heartbeat-self-heal.html</a></li>
+  <li><b>896番の確認ページ（対象URL）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/896-renraku-gaibu-renraku-v2.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/896-renraku-gaibu-renraku-v2.html</a></li>
+  <li><b>進捗表トップ（本番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>894番の確認ページを繰り返し検品</td><td class="yes">修正前3回に1回FAIL→修正後5回連続PASS</td></tr>
+<tr><td>896番の確認ページを繰り返し検品</td><td class="yes">修正前は本番ログでFAIL実測→修正後3回連続PASS</td></tr>
+<tr><td>本当に無反応なリンク／ボタンは今も検出できるか(逆テスト)</td><td class="yes">ローカルにdead link/working buttonを含むテストページを用意→dead linkは正しくFAIL検出を維持</td></tr>
+<tr><td>892・894・896・917番のtouchCheckFailCountとfailReasons</td><td class="yes">検品バグ由来の分を取り消し、訂正メモを追記(queue.json)</td></tr>
+</table>
+
+<footer>
+このページは #914 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

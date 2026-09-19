@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#896 外部連絡いっぱつ（renraku.py） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #896 外部連絡いっぱつ（renraku.py）</div>
+<h1>#896 外部連絡いっぱつ（renraku.py）</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+相手を指定するだけで、窓口を調べ・英日文面をセットし・送信ボタン手前まで画面を自動で開く仕組み。LINEは完全自動でお問い合わせフォーム到達まで実演成功。Lovable(海外窓口)は英日セット文面の自動生成まで実演成功、Gmail下書きの完全自動化はログイン済みプロファイルが未整備のため次の一歩として申し送り。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3件</b><span>今回調査し窓口台帳に登録(LINE Creators Market/LINEスタンプメーカー/Lovable)</span></div>
+  <div class="num"><b>2件</b><span>実際に通しで動かした実演(LINE・Lovable)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>LINE: お問い合わせフォーム到達(自動クリック後)</b><img src="share/check/renraku/line_creators_market-20260917-013511-form-after-click.png" alt="LINE: お問い合わせフォーム到達(自動クリック後)"></div>
+  <div class="shot plain"><b>Lovable: Gmail作成画面(ログイン未済のため入口で停止)</b><img src="share/check/renraku/lovable-20260917-013653-gmail.png" alt="Lovable: Gmail作成画面(ログイン未済のため入口で停止)"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>（リンクなし）</b></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>LINE窓口を自動で開き「ログインせずにつづける」を自動クリック</td><td class="yes">お問い合わせフォームへ到達</td></tr>
+<tr><td>Lovable宛メールの英日セット文面を自動生成</td><td class="yes">件名・本文とも英語+区切り線+日本語で生成</td></tr>
+<tr><td>Gmail下書きをブラウザ作成画面で自動表示</td><td class="no">ログイン未済のプロファイルのため作成画面止まり(要一度だけの設定)</td></tr>
+<tr><td>窓口台帳(status/renraku_madoguchi.json)への貯蔵</td><td class="yes">LINE2件・Lovable・Anthropicの計4件を記録、二度と同じ調べ物をしない</td></tr>
+</table>
+
+<footer>
+実装: tools/renraku.py・tools/_renraku_cdp.mjs（新設）／窓口台帳: status/renraku_madoguchi.json／送信記録: status/renraku.json。次の一歩（要たまごさんの一度だけの設定）は shared-brain/00_INBOX/896_renraku_gmail_login_needed.md に記録。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

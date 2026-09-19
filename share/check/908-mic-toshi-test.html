@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#908 仕組み⑬：人間なしで音声案内の通しテスト（偽マイク）＋別AI検品 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #908 仕組み⑬：人間なしで音声案内の通しテスト（偽マイク）＋別AI検品</div>
+<h1>#908 仕組み⑬：人間なしで音声案内の通しテスト（偽マイク）＋別AI検品</h1>
+<div class="date">2026-09-17 実装・main合流・Lovable公開・本番で実測確認 済み</div>
+
+<div class="fix">
+店主がマイクで実機テストしなくても、話すボタンを押す→接続→返事、を人間なしで確認できる仕組み（偽マイク通しテスト）を作った。それを本番へ実行したところ、店主が実際に報告した「話すボタンを押すと『つないでいます…』のまま固まる」不具合の実物を捕まえた。原因は、うまくいかなかった時にメッセージだけ切り替わってボタンの表示を元に戻すのを忘れていたバグ。直して本番へ公開し、3秒以内にボタンが「🎙️ 話す」へ戻ることを実測で確認した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>約55秒→約1秒</b><span>固まっていた時間（直す前→直した後）</span></div>
+  <div class="num"><b>3秒以内</b><span>店主の要求（ボタンが戻るまで）を実測でクリア</span></div>
+  <div class="num"><b>3件</b><span>本番へ反映したコミット数</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット（直す前 → 直した後）</h2>
+<div class="shots">
+  <div class="shot before"><b>直す前：クリック後もずっと「つないでいます…」のまま固まる（実測 約55秒）</b><img src="img/908-chrome-after.png" alt="直す前"></div>
+  <div class="shot after"><b>直した後：クリックから4秒後、ボタンが「🎙️ 話す」へ自動で戻る</b><img src="img/908-chrome-after-fixed.png" alt="直した後"></div>
+</div>
+<div class="note">どちらも吹き出しは同じ「今は声のご案内をお休み中」（声のご案内そのものが動く／動かないの話は別件・#907で店主対応待ち中）。今回直したのは、動かなかった時に画面が固まらず、ちゃんと元の状態に戻ること。</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>テスト対象の本番ページ（案内所・話すボタンあり）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>この確認ページ自体</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/908-mic-toshi-test.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/908-mic-toshi-test.html</a></li>
+</ul>
+<div class="note">コードの中身は非公開リポジトリにあるためリンクは載せていません（たまごさんが開けないリンクは載せない方針）。確認は上の本番ページと、このページの数字・画像だけで足ります。</div>
+
+<h2>⑤ 何をどう確かめたか（本番URLに対して人間なしで実行）</h2>
+<table>
+<tr><th>確認項目</th><th>直す前</th><th>直した後</th></tr>
+<tr><td>話すボタンを押す</td><td class="yes">接続(connecting)まで到達</td><td class="yes">接続(connecting)まで到達</td></tr>
+<tr><td>うまくいかなかった時のメッセージ</td><td class="yes">「今は声のご案内をお休み中」が出る</td><td class="yes">同左</td></tr>
+<tr><td>その時のボタン表示</td><td class="no">「つないでいます…」のまま約55秒固まる</td><td class="yes">約1秒で「🎙️ 話す」へ復帰</td></tr>
+<tr><td>3秒ルール（店主要求）</td><td class="no">満たさない</td><td class="yes">満たす（実測1〜4秒で復帰）</td></tr>
+<tr><td>独立検品（tamago-verifier・別セッション）</td><td colspan="2" class="yes">型チェック(tsc)・lintエラー0件、ロジック確認済み</td></tr>
+</table>
+
+<h2>⑥ 何を直したか（実装の中身・1行ずつ）</h2>
+<ul class="links">
+<li><b>根本原因の修正</b>接続に失敗した時、吹き出しのメッセージだけ切り替えてボタンの表示を戻し忘れていた作り忘れを修正（案内所メインのチャット部品）。</li>
+<li><b>3秒タイムアウトを追加</b>接続の呼び出し・つながる処理そのものに3秒の上限を設け、超えたら必ず「今は声のご案内をお休み中」へ切り替わるようにした（多重の安全策として2箇所に実装）。</li>
+<li><b>通しテストの仕組み自体</b>偽の音声ファイルをマイク代わりに流し、話すボタンを自動で押して接続→返事までを確認する仕組み（前回セッションで実装・main合流済み）。</li>
+</ul>
+
+<footer>
+このテスト・確認作業はすべてヘッドレスの独立プロファイルで実行しており、店主の画面には一切触れていない。声のご案内そのもの（xAIとの接続）が本番で動くかどうかは、店主側の設定（#907で特定済み・Lovableの「More→Cloud→Secrets」への鍵の設定）待ちの別件。今回の直しは、その設定が済むまでの間も画面が固まらず気持ちよく使えるようにするもの。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

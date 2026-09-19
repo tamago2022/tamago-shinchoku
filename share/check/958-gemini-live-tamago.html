@@ -1,0 +1,934 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="assets/kagi/kagi.js"></script>
+<meta name="robots" content="noindex,nofollow">
+<title>958 ごきげん補給所・案内人（Google版・横一列／鳴らしたまま話せる）</title>
+<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>
+  :root{
+    --bg:#12100d; --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
+    --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227;
+  }
+  *{box-sizing:border-box}
+  .wrap{max-width:720px;margin:0 auto;padding:24px 14px 64px;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
+  .stage{background:radial-gradient(120% 90% at 50% 20%,#1d1a15 0%,#12100d 70%);
+    border-radius:20px;padding:16px 12px 14px;border:1px solid #2b2620}
+  @media(max-width:430px){.wrap{padding:16px 8px 56px}.stage{padding:14px 8px 12px}}
+  .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    color:#e8dcc0;letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 10px}
+  #tamako{display:block;width:100%;max-width:220px;margin:0 auto}
+  #tamako svg{display:block;width:100%;height:auto;overflow:visible}
+  .state{text-align:center;color:#b5aa93;font-size:.78rem;letter-spacing:.08em;margin:6px 0 2px;min-height:1.2em}
+  .meter{text-align:center;color:#9d947f;font-size:.72rem;line-height:1.7;margin:2px 0 0}
+  .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid #e2dccd}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
+     font-size:1rem;letter-spacing:.06em;margin:0 0 10px;color:var(--sub)}
+  input[type=password],input[type=text]{width:100%;padding:11px 12px;border:1px solid #d8d1c0;
+    border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button{flex:1 1 140px;padding:14px 18px;border-radius:12px;border:none;cursor:pointer;
+    font-size:16px;font-weight:700;letter-spacing:.06em;font-family:inherit}
+  #go{background:var(--midori);color:#fff}
+  #go:disabled{background:#c3bdb0;cursor:not-allowed}
+  #stop{background:#fff;color:var(--aka);border:1px solid #e0cfcb}
+  .note{font-size:.78rem;color:var(--sub);line-height:1.7;margin-top:10px}
+  .log{margin-top:14px;max-height:230px;overflow-y:auto}
+  .line{padding:8px 12px;border-radius:12px;margin:6px 0;font-size:.92rem;line-height:1.65}
+  .line.me{background:#e7eef3;color:#22303a}
+  .line.her{background:#fff;border:1px solid #e2dccd}
+  .line.sys{background:#f7e9e7;color:var(--aka);font-size:.82rem}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .chips label{font-size:.8rem;padding:6px 11px;border-radius:999px;border:1px solid #d8d1c0;
+    background:#fff;cursor:pointer}
+  .chips input{display:none}
+  .chips input:checked + span{font-weight:800;color:var(--midori)}
+
+  /* ── 札：横一列に4つ。Spotify／YouTube Music の横並び棚と同じ組み方
+        （小さい定寸の札・上にサムネ・題は2行で切る・押しても画面は動かない） ── */
+  .tray{margin-top:14px}
+  .tray h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:.76rem;
+    letter-spacing:.1em;color:#b5aa93;text-align:center;margin:0 0 8px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-items:stretch}
+  .card{display:block;width:100%;text-align:left;padding:0;background:#1b1813;
+    border:1px solid #2f2a23;border-radius:9px;overflow:hidden;cursor:pointer;font-weight:400;
+    flex:none;position:relative;transition:border-color .15s,transform .15s;height:100%}
+  .card:hover{border-color:#4a4236}
+  .card.sel{border-color:var(--kin);transform:translateY(-2px)}
+  .card .thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#2a251f}
+  .card .body{padding:5px 6px 7px}
+  .card .tag{position:absolute;top:3px;left:3px;font-size:.54rem;letter-spacing:.04em;color:#f0e8d6;
+    background:rgba(18,16,13,.78);border-radius:999px;padding:1px 5px;line-height:1.5}
+  /* 題が1行でも2行でも札の高さを変えない（並べたときガタガタにしない） */
+  .card .t{margin:0;font-size:.6rem;line-height:1.35;font-weight:700;color:#efe7d6;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    height:2.7em}
+  .card .a{margin:2px 0 0;font-size:.54rem;color:#9d947f;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;height:1.5em;line-height:1.5}
+  .card .num{position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;
+    background:rgba(18,16,13,.78);color:#e8dcc0;font-size:.55rem;line-height:14px;text-align:center}
+  .card.sel .num{background:var(--kin);color:#2a2622;font-weight:700}
+  @media(min-width:560px){.card .t{font-size:.72rem}.card .a{font-size:.62rem}
+    .card .tag{font-size:.6rem}.cards{gap:8px}}
+  .empty{color:#8a8172;font-size:.8rem;text-align:center;line-height:1.8;padding:14px 6px}
+
+  /* ── 押した札の真下に開く（Google画像の展開と同じ。別の場所へ飛ばさない） ── */
+  .player{display:none;margin:10px 0 0;background:#0a0908;border-radius:12px;
+    border:1px solid #38332b;position:relative}
+  .player.on{display:block}
+  .player .caret{position:absolute;top:-7px;width:12px;height:12px;background:#0a0908;
+    border-left:1px solid #38332b;border-top:1px solid #38332b;transform:translateX(-50%) rotate(45deg);
+    transition:left .18s}
+  .player .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;
+    border-radius:12px 12px 0 0;overflow:hidden}
+  .player .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .player .meta{padding:8px 10px 0}
+  .player .pt{margin:0;color:#f0e8d6;font-size:.86rem;font-weight:700;line-height:1.4}
+  .player .pa{margin:2px 0 0;color:#9d947f;font-size:.72rem}
+  .prow{display:flex;gap:6px;padding:8px 10px 10px;flex-wrap:wrap}
+  .prow button{flex:1 1 84px;padding:9px 6px;font-size:.74rem;border-radius:9px;letter-spacing:.02em}
+  .b-skip{background:#2a2622;color:#e8dcc0;border:1px solid #3a352c}
+  .b-next{background:#2a2622;color:#e8dcc0;border:1px solid #3a352c}
+  .b-talk{background:var(--midori);color:#fff}
+  .b-big{background:var(--kin);color:#2a2622}
+  .thru{display:flex;align-items:center;gap:8px;padding:0 10px 10px;color:#9d947f;font-size:.7rem;
+    line-height:1.5;cursor:pointer}
+  .thru input{width:16px;height:16px;flex:0 0 auto;accent-color:var(--midori)}
+  .thru b{color:#e8dcc0}
+  .micdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4a4236;
+    margin-right:5px;vertical-align:middle}
+  .micdot.on{background:var(--aka);box-shadow:0 0 0 3px rgba(196,72,58,.18)}
+
+  #more{background:#1b1813;color:#c9c0ad;border:1px solid #2f2a23;font-size:.8rem;padding:10px 14px}
+  #more:disabled{opacity:.4;cursor:not-allowed}
+  details.settings{margin-top:16px;border-top:1px dashed #ddd5c4;padding-top:12px}
+  details.settings summary{cursor:pointer;font-size:.78rem;color:var(--sub)}
+  table.cost{width:100%;border-collapse:collapse;margin-top:8px;font-size:.72rem}
+  table.cost td{border-top:1px solid #e6e0d1;padding:4px 2px;color:var(--sub)}
+  table.cost td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  .kv{font-size:.72rem;color:var(--sub);line-height:1.8;margin-top:8px}
+  .stock{font-size:.7rem;color:#8a8172;line-height:1.7;text-align:center;margin:8px 0 0}
+</style>
+
+<div class="wrap">
+  <div class="stage">
+    <p class="kanban">ご き げ ん 補 給 所 ・ 案 内 人</p>
+    <div id="tamako"></div>
+    <div class="state" id="state">「話す」を押してください</div>
+    <div class="meter" id="meter"></div>
+
+    <div class="tray">
+      <h3 id="trayTitle">— 差し出された札 —</h3>
+      <div class="cards" id="cards"></div>
+      <div class="empty" id="empty">
+        まだ何も出ていません。<br>「うれしい気分」「しずかなやつ」と話しかけてみてください。
+      </div>
+
+      <div class="player" id="player">
+        <div class="caret" id="caret"></div>
+        <div class="frame" id="frame"><div id="yt"></div></div>
+        <div class="meta">
+          <p class="pt" id="pTitle"></p>
+          <p class="pa" id="pArtist"></p>
+        </div>
+        <label class="thru">
+          <input type="checkbox" id="thru" checked>
+          <span><span class="micdot" id="micdot"></span><b>鳴らしたまま話す</b>
+            曲を小さくしてマイクを開けたままにします。そのぶん時間は課金されます。</span>
+        </label>
+        <div class="prow">
+          <button class="b-skip" id="pSkip">30秒すすむ</button>
+          <button class="b-next" id="pNext">次の札</button>
+          <button class="b-talk" id="pStop">とめて話す</button>
+          <button class="b-big"  id="pBig">大きい画面</button>
+        </div>
+      </div>
+
+      <div class="row"><button id="more" disabled>ほかのを見せて</button></div>
+      <p class="stock" id="stock"></p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <button id="go">話す</button>
+      <button id="stop">やめる</button>
+    </div>
+    <div class="note">
+      札は横に4つ並びます。押すと<b>その札の真下でそのまま鳴ります</b>。別の札を押せばその場で切り替わります。
+      曲ページへ飛ぶのは「大きい画面」を押したときだけです。<br>
+      いくらかかっているかは、顔の下に実測で出ます。上限に当たったらこの画面が勝手に切ります。
+    </div>
+    <div class="log" id="log"></div>
+    <p style="text-align:right;margin:10px 0 0"><a href="#" id="devLink"
+       style="font-size:.7rem;color:#c3bdb0;text-decoration:none">・</a></p>
+
+    <details class="settings" id="settings" hidden>
+      <summary>お店の人の設定（お客さんは触らなくて大丈夫です）</summary>
+      <h2 style="margin-top:14px">鍵（Google AI Studio）</h2>
+      <input id="gkey" type="password" placeholder="AIza...（Gemini）" autocomplete="off" spellcheck="false">
+      <div class="note">
+        鍵はこの端末のブラウザの中だけに残ります。つなぐときは、この鍵で
+        <b>使い捨ての入場券（ephemeral token・30分）</b>を1枚もらい、
+        そちらで Google につなぎます。鍵そのものは通話には使いません。
+      </div>
+      <h2 style="margin-top:16px">どの案内人（モデル）</h2>
+      <div class="chips" id="models"></div>
+      <h2 style="margin-top:16px">声</h2>
+      <div class="chips" id="voices"></div>
+      <h2 style="margin-top:16px">いま何にいくら（実測）</h2>
+      <table class="cost" id="costTable"></table>
+      <div class="kv">
+        値段の出どころ：<a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank"
+        rel="noopener">Gemini API の公式の値段表</a>。
+        音声 入 $0.005／分、音声 出 $0.018／分（1ドル157円で換算）。<br>
+        中身の作り：<a href="https://github.com/google-gemini/gemini-live-api-examples"
+        target="_blank" rel="noopener">Google の公式サンプル</a>（Apache-2.0）、
+        <a href="https://github.com/wass08/wawa-lipsync" target="_blank" rel="noopener">wawa-lipsync</a>（MIT）、
+        再生は <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank"
+        rel="noopener">YouTube IFrame Player API</a> の公式の使い方そのまま。
+      </div>
+    </details>
+  </div>
+</div>
+
+<script src="assets/958-gemini/tamako.js"></script>
+<script src="assets/958-gemini/geminilive.js"></script>
+<script type="module">
+import { Lipsync } from "https://cdn.jsdelivr.net/npm/wawa-lipsync@0.0.2/dist/wawa-lipsync.es.js";
+
+const $=id=>document.getElementById(id);
+const gkeyEl=$("gkey"), goEl=$("go"), stopEl=$("stop");
+const stateEl=$("state"), logEl=$("log"), meterEl=$("meter");
+const cardsEl=$("cards"), emptyEl=$("empty"), moreEl=$("more");
+const YEN=157;
+
+/* ══════════════ 値段（公式の表そのまま）══════════════ */
+const PRICE={ audioInPerMin:0.005, audioOutPerMin:0.018 };
+
+const MODELS=[
+  ["gemini-3.1-flash-live-preview","3.1 Flash Live"],
+  ["gemini-3.8-live","3.8 Live（Google の既定）"]
+];
+const VOICES=["Puck","Charon","Kore","Fenrir","Aoede","Leda","Orus","Zephyr"];
+
+function paintChips(box,list,storeKey,def){
+  const cur=(()=>{ try{return localStorage.getItem(storeKey)||def;}catch(e){return def;} })();
+  box.innerHTML="";
+  list.forEach(item=>{
+    const [v,t]=Array.isArray(item)?item:[item,item];
+    const l=document.createElement("label");
+    l.innerHTML=`<input type="radio" name="${storeKey}" value="${v}"${v===cur?" checked":""}><span>${t}</span>`;
+    box.appendChild(l);
+  });
+  if(!box.querySelector("input:checked")) box.querySelector("input").checked=true;
+  box.addEventListener("change",e=>{ try{localStorage.setItem(storeKey,e.target.value);}catch(_){} });
+}
+paintChips($("models"),MODELS,"tamago_gemini_model",MODELS[0][0]);
+paintChips($("voices"),VOICES,"tamago_gemini_voice","Puck");
+const pick=k=>(document.querySelector(`input[name=${k}]:checked`)||{}).value;
+try{ const k=localStorage.getItem("tamago_gemini_key"); if(k) gkeyEl.value=k; }catch(_){}
+
+/* ══════════════ 棚 ══════════════ */
+const ASSET="assets/953-songs/";
+const CAT={ head:null, joy:null, t:{}, a:{}, loading:null,
+  async load(){
+    if(this.head) return;
+    if(this.loading) return this.loading;
+    this.loading=Promise.all([
+      fetch(ASSET+"head.json").then(r=>r.json()),
+      fetch(ASSET+"joy.json").then(r=>r.ok?r.json():{cards:[],kind:{}}).catch(()=>({cards:[],kind:{}}))
+    ]).then(([h,j])=>{ this.head=h; this.joy=j; paintStock(); });
+    return this.loading;
+  },
+  async title(n){ if(!this.t[n]) this.t[n]=fetch(ASSET+"t/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
+                  return this.t[n]; },
+  async byArtist(n){ if(!this.a[n]) this.a[n]=fetch(ASSET+"a/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
+                  return this.a[n]; }
+};
+const KIND_JA={music:"音楽",food:"食",cute:"動物",laugh:"笑い",travel:"旅",dance:"踊り",joy:"ことば"};
+const KINDS=Object.keys(KIND_JA);
+
+/* どの棚に何枚あるか。からっぽの棚は案内人に最初から知らせて、
+   「無いのに音楽で埋める」を構造的に起こせなくする。 */
+function stockCount(){
+  const o={music:CAT.head?CAT.head.n||0:0};
+  for(const k of KINDS) if(k!=="music") o[k]=0;
+  if(CAT.joy&&CAT.joy.cards) for(const c of CAT.joy.cards){ if(c.k!=="music") o[c.k]=(o[c.k]||0)+1; }
+  return o;
+}
+function paintStock(){
+  const s=stockCount();
+  const aru=KINDS.filter(k=>s[k]>0).map(k=>KIND_JA[k]+" "+s[k]);
+  const nai=KINDS.filter(k=>!s[k]).map(k=>KIND_JA[k]);
+  $("stock").innerHTML="いま棚にあるもの："+aru.join("／")
+    +(nai.length?('<br><span style="color:#a8564c">'+nai.join("・")+" の棚はまだ空です（仕入れ待ち）</span>"):"");
+}
+
+const norm=s=>String(s).normalize("NFKC").toLowerCase()
+  .replace(/[\s'’`\-_.,!?/()（）「」『』・:;"]+/g," ").trim();
+const bucketOf=pre=>(pre.charCodeAt(0)*131+(pre.length>1?pre.charCodeAt(1):0))%(CAT.head?CAT.head.nb:128);
+function prefixes(s){ const o=new Set(); for(const w of norm(s).split(" ")) if(w) o.add(w.slice(0,2)); return [...o]; }
+function tidy(title){
+  let p=0;
+  if(title.length>45) p-=60; else if(title.length>30) p-=20;
+  if(/[|｜]/.test(title)) p-=50;
+  if(/[【】]/.test(title)) p-=25;
+  if(/[☀-⟿✨🎵🔥]/u.test(title)) p-=30;
+  return p;
+}
+const shown=new Set();
+let pool=[], poolLabel="";
+
+async function findSongs({artists=[], mood=[], song_title=""}){
+  await CAT.load();
+  const A=CAT.head.A;
+  const an=artists.map(norm).filter(Boolean);
+  const mo=mood.map(norm).filter(x=>x.length>=2);
+  const artScore=new Map();
+  A.forEach((a,i)=>{
+    const name=norm(a.n);
+    const alias=(a.al||[]).map(norm);
+    const about=norm([(a.ab||""),(a.g||[]).join(" "),(a.e||[]).join(" ")].join(" "));
+    let sc=0;
+    for(const q of an){
+      if(name===q) sc+=120;
+      else if(q.length>=4 && name.includes(q)) sc+=70;
+      else if(alias.some(x=>x===q)) sc+=70;
+    }
+    for(const q of mo){ if(about.includes(q)) sc+=25; }
+    if(sc) artScore.set(i,sc);
+  });
+  const out=[], seen=new Set();
+  const push=(row,sc)=>{
+    const k=row[0]+"/"+row[1];
+    if(seen.has(k)||shown.has(k)) return;
+    seen.add(k);
+    out.push({ai:row[0],sid:row[1],title:row[2],year:row[3]||0,yt:row[4]||"",
+      sc:sc+tidy(row[2])+(row[3]?10:0)+((row[5]===1)?45:0)+Math.random()*8});
+  };
+  if(artScore.size){
+    const top=[...artScore.entries()].sort((a,b)=>b[1]-a[1]).slice(0,20);
+    const keep=new Map(top);
+    const nums=[...new Set(top.map(([i])=>i%CAT.head.nb))].slice(0,24);
+    const packs=await Promise.all(nums.map(n=>CAT.byArtist(n)));
+    for(const rows of packs) for(const row of rows){
+      const sc=keep.get(row[0]); if(sc) push(row,sc);
+    }
+  }
+  const st=norm(song_title);
+  if(st){
+    const nums=[...new Set(prefixes(st).map(bucketOf))].slice(0,4);
+    const packs=await Promise.all(nums.map(n=>CAT.title(n)));
+    for(const rows of packs) for(const row of rows){
+      const t=norm(row[2]);
+      let sc=0;
+      if(t===st) sc=200; else if(t.includes(st)) sc=120; else if(st.includes(t)&&t.length>=3) sc=90;
+      if(sc) push(row,sc+(artScore.get(row[0])||0));
+    }
+  }
+  out.sort((x,y)=>y.sc-x.sc);
+  return spread(out);
+}
+/* ★種類を1つに固定して引く。music へ横流れさせない。 */
+function findKind(kind, mood){
+  if(!CAT.joy||!CAT.joy.cards.length) return [];
+  const mo=(mood||[]).map(norm).filter(x=>x.length>=2);
+  const out=[];
+  for(const c of CAT.joy.cards){
+    if(c.k!==kind) continue;
+    const hay=norm((c.t||"")+" "+(c.w||""));
+    let sc=8;
+    for(const q of mo) if(hay.includes(q)) sc+=30;
+    out.push(Object.assign(joyCard(c),{sc:sc+Math.random()*10}));
+  }
+  out.sort((a,b)=>b.sc-a.sc);
+  return out;
+}
+function spread(list){
+  const byA=new Map();
+  for(const s of list){ if(!byA.has(s.ai)) byA.set(s.ai,[]); byA.get(s.ai).push(s); }
+  const order=[...byA.keys()].sort((a,b)=>byA.get(b)[0].sc-byA.get(a)[0].sc);
+  const out=[]; let left=true;
+  while(left){
+    left=false;
+    for(const ai of order){ const q=byA.get(ai); if(q.length){ out.push(q.shift()); left=true; } }
+  }
+  return out;
+}
+const artistOf=s=>CAT.head.A[s.ai];
+const cardUrl=s=>CAT.head.base+"?artist="+encodeURIComponent(CAT.head.A[s.ai].i)
+                 +"&song="+encodeURIComponent(s.sid);
+/* fact ＝ 棚のデータにそのまま書いてあることだけ。ここに無いことは案内人に喋らせない。 */
+const songCard=s=>{
+  const a=artistOf(s);
+  return {kind:"music",title:s.title,
+    sub:a.n+(s.year?("　"+s.year+"年"):""),
+    thumb:"https://i.ytimg.com/vi/"+s.yt+"/mqdefault.jpg", yt:s.yt, url:cardUrl(s),
+    key:"m:"+s.ai+"/"+s.sid,
+    fact:{ artist:a.n, year:s.year||null,
+           about:(a.ab||"").slice(0,140)||null,
+           genre:(a.g||[]).join("・")||null, era:(a.e||[]).join("・")||null } };
+};
+const ytOf=u=>{ const m=/\/vi\/([A-Za-z0-9_-]{6,})\//.exec(u||""); return m?m[1]:""; };
+const joyCard=c=>({kind:c.k,title:c.t,sub:c.w||"",thumb:c.i,yt:ytOf(c.i),
+  url:(CAT.joy.base||"")+c.u, key:"j:"+c.u,
+  fact:{ hitokoto:c.w||null }});
+const kindJa=k=>KIND_JA[k]||"";
+
+/* ══════════════ 再生（YouTube IFrame Player API・公式の使い方）══════════════
+   公式どおり enablejsapi=1 ＋ youtube-nocookie.com をホストにして YT.Player を作る。
+   こうすると 音量（＝鳴らしたまま話すためのダッキング）・スキップ・停止 が手に入る。
+   生の <iframe> のままではこれが一切できず、「曲が鳴っている間はマイクを切る」しか
+   打つ手が無かった。ここが 70点 の天井だった場所。                               */
+const playerEl=$("player"), caretEl=$("caret");
+let yt=null, ytReady=false, playing=null, playIdx=-1, dealt=[];
+
+function loadYT(){
+  return new Promise(res=>{
+    if(window.YT&&window.YT.Player) return res();
+    const prev=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=()=>{ try{prev&&prev();}catch(_){} res(); };
+    if(!document.getElementById("ytapi")){
+      const s=document.createElement("script"); s.id="ytapi";
+      s.src="https://www.youtube.com/iframe_api"; document.head.appendChild(s);
+    }
+    setTimeout(res,6000);   // 読めなくても画面は死なせない
+  });
+}
+async function openPlayer(c,idx){
+  playing=c; playIdx=idx;
+  [...cardsEl.children].forEach((el,i)=>el.classList.toggle("sel",i===idx));
+  caretEl.style.left=((idx+0.5)/Math.max(1,dealt.length)*100)+"%";
+  $("pTitle").textContent=c.title;
+  $("pArtist").textContent=c.sub;
+  playerEl.classList.add("on");
+  await loadYT();
+  if(window.YT&&window.YT.Player){
+    if(yt&&ytReady){ try{ yt.loadVideoById(c.yt); }catch(_){} }
+    else{
+      yt=new YT.Player("yt",{
+        host:"https://www.youtube-nocookie.com",
+        videoId:c.yt,
+        playerVars:{autoplay:1,rel:0,playsinline:1,enablejsapi:1,
+                    modestbranding:1,origin:location.origin},
+        events:{ onReady:e=>{ ytReady=true; e.target.playVideo(); applyAudio(); } }
+      });
+    }
+  }else{
+    // API が読めなかったときだけ、素の埋め込みに落とす（音量は触れない）
+    $("frame").innerHTML='<iframe allow="autoplay; encrypted-media" allowfullscreen '
+      +'src="https://www.youtube-nocookie.com/embed/'+encodeURIComponent(c.yt)
+      +'?autoplay=1&rel=0&playsinline=1"></iframe>';
+  }
+  applyAudio();
+  if(live()) tellModel("（画面の合図）お客さんが"+(idx+1)+"番の「"+c.title+"」を押して、いま鳴り始めました。"
+    +(thruOn()?"曲は小さくしてあり、マイクは開いたままです。曲の音には返事をせず、お客さんの声にだけ答えてください。":"")
+    +"ひとこと短くそえるだけにしてください。道具は呼ばないこと。");
+}
+function stopPlay(talk){
+  try{ yt&&ytReady&&yt.stopVideo(); }catch(_){}
+  if(!window.YT||!window.YT.Player) $("frame").innerHTML='<div id="yt"></div>';
+  playerEl.classList.remove("on"); playing=null; playIdx=-1;
+  [...cardsEl.children].forEach(el=>el.classList.remove("sel"));
+  applyAudio();
+  if(talk!==false){ setState(live()?"聞いています":"やめました");
+    if(live()) tellModel("（画面の合図）お客さんが曲を止めました。いま話せます。短く一言どうぞ。道具は呼ばないこと。"); }
+}
+const thruOn=()=>$("thru").checked;
+function setVol(v){ try{ yt&&ytReady&&yt.setVolume(v); }catch(_){} }
+
+/* 音のさばき方（ここが「鳴らしながら話す」の本体）
+   お手本＝スマートスピーカーのダッキング：呼びかけの瞬間に音楽を下げ、
+   アシスタントが喋っている間はさらに下げ、終わったら戻す。
+   合わせて getUserMedia の echoCancellation で、スピーカーから出た曲の音を
+   マイク入力から差し引く（AEC）。この2つは同じ問題への定番の組み合わせ。 */
+function applyAudio(){
+  const on=!!playing;
+  const modelTalking = outAt > actx.currentTime + 0.02;
+  if(!on){ setMic(live()); $("micdot").classList.toggle("on",live()); return; }
+  if(thruOn()){
+    setMic(live());
+    setVol(modelTalking?8:22);
+    setState(modelTalking?"聴きながら（案内人が話しています）":"聴きながら、話せます");
+  }else{
+    setMic(false); setVol(100);
+    setState("聴いています（話すときは『とめて話す』）");
+  }
+  $("micdot").classList.toggle("on", thruOn()&&live());
+}
+setInterval(()=>{ if(playing) applyAudio(); },150);
+$("thru").addEventListener("change",applyAudio);
+$("pSkip").addEventListener("click",()=>{ try{ if(yt&&ytReady) yt.seekTo(yt.getCurrentTime()+30,true); }catch(_){} });
+$("pNext").addEventListener("click",()=>{
+  for(let i=playIdx+1;i<dealt.length;i++){ if(dealt[i].yt){ openPlayer(dealt[i],i); return; } }
+  for(let i=0;i<dealt.length;i++){ if(dealt[i].yt&&i!==playIdx){ openPlayer(dealt[i],i); return; } }
+});
+$("pStop").addEventListener("click",()=>stopPlay(true));
+$("pBig").addEventListener("click",()=>{ if(playing) window.open(playing.url,"_blank","noopener"); });
+
+function drawCards(list){
+  cardsEl.innerHTML=""; dealt=list;
+  if(!list.length){ emptyEl.style.display="block"; return; }
+  emptyEl.style.display="none";
+  list.forEach((c,i)=>{
+    const b=document.createElement("button"); b.className="card"; b.type="button";
+    const img=document.createElement("img"); img.className="thumb"; img.loading="lazy"; img.alt="";
+    img.src=c.thumb; img.onerror=()=>{img.style.visibility="hidden"};
+    const body=document.createElement("div"); body.className="body";
+    const t=document.createElement("p"); t.className="t"; t.textContent=c.title;
+    const ar=document.createElement("p"); ar.className="a"; ar.textContent=c.sub;
+    body.append(t,ar);
+    const ja=kindJa(c.kind);
+    if(ja){ const tag=document.createElement("span"); tag.className="tag"; tag.textContent=ja;
+            b.appendChild(tag); }
+    const num=document.createElement("span"); num.className="num"; num.textContent=i+1;
+    b.append(img,body,num);
+    b.addEventListener("click",()=>{ c.yt?openPlayer(c,i):window.open(c.url,"_blank","noopener"); });
+    cardsEl.appendChild(b);
+  });
+}
+let page=0;
+function dealFour(){
+  const take=[];
+  while(take.length<4 && pool.length){
+    const c=pool.shift();
+    if(shown.has(c.key)) continue;
+    shown.add(c.key); take.push(c);
+  }
+  if(take.length) page++;
+  stopPlay(false);
+  drawCards(take);
+  moreEl.disabled = pool.length===0;
+  $("trayTitle").textContent = take.length
+    ? "— "+(poolLabel||"どうぞ")+"　"+page+"枚目 —"
+    : "— この棚は、ここで打ち止めです —";
+  return take;
+}
+/* 出した4枚の「答えられること」を、棚のデータからそのまま作って案内人に渡す。
+   ここに書いてないことは喋らせない（＝作り話の入り口を塞ぐ）。 */
+function factSheet(list){
+  return list.map((c,i)=>{
+    const f=c.fact||{};
+    const bits=[];
+    if(c.kind==="music"){
+      bits.push("アーティスト＝"+f.artist);
+      bits.push(f.year?("発表年＝"+f.year+"年"):"発表年＝棚に記載なし（言わないこと）");
+      if(f.genre) bits.push("分類＝"+f.genre);
+      if(f.era)   bits.push("年代＝"+f.era);
+      if(f.about) bits.push("アーティスト紹介文（棚の本文）＝"+f.about);
+    }else{
+      bits.push("種類＝"+kindJa(c.kind));
+      if(f.hitokoto) bits.push("棚に書いてある一文＝"+f.hitokoto);
+    }
+    return (i+1)+".「"+c.title+"」／"+bits.join("／");
+  }).join("\n");
+}
+async function newSearch(args,label){
+  page=0;
+  await CAT.load();
+  const kind=args.kind||"music";
+  let list;
+  if(kind==="music"){
+    list=(await findSongs(args)).map(songCard);
+  }else{
+    list=findKind(kind, args.mood||[]);      // ★音楽へ落ちない
+  }
+  pool=list; poolLabel=label||"";
+  return dealFour();
+}
+moreEl.addEventListener("click",()=>{
+  const got=dealFour();
+  tellModel(got.length
+    ? "（画面の合図）お客さんが「ほかのを見せて」を押しました。次の4枚はもう画面に出し終えています。\n"
+      +factSheet(got)
+      +"\n道具は呼ばないこと。1〜2枚だけ名前を出して短く一言そえてください。"
+    : "（画面の合図）もう在庫がありません。道具は呼ばずに、正直に「この棚はここまで」と伝えて、別の種類を聞いてください。");
+});
+
+/* ══════════════ 顔 ══════════════ */
+const face=Tamako.stand($("tamako"));
+
+/* ══════════════ 口パク（wawa-lipsync・MIT）══════════════ */
+const lip=new Lipsync({fftSize:2048,historySize:10});
+const actx=lip.audioContext;
+lip.analyser.connect(actx.destination);
+face.attach(lip.analyser);
+(function tick(){ lip.processAudio(); face.viseme(lip.viseme); requestAnimationFrame(tick); })();
+
+/* ══════════════ 財布（1日100円で止まる栓）══════════════ */
+const SAIFU={
+  capDefault:100,
+  day(){ const d=new Date(Date.now()+9*3600e3); return d.toISOString().slice(0,10); },
+  kDay(){ return "tamago_voice_yen_"+this.day(); },
+  cap(){ try{ const v=parseFloat(localStorage.getItem("tamago_voice_cap_yen"));
+              return (isFinite(v)&&v>0)?v:this.capDefault; }catch(_){ return this.capDefault; } },
+  setCap(v){ try{ localStorage.setItem("tamago_voice_cap_yen",String(v)); }catch(_){} paintMeter(); },
+  today(){ try{ const v=parseFloat(localStorage.getItem(this.kDay())); return isFinite(v)?v:0; }
+           catch(_){ return 0; } },
+  put(v){ try{ localStorage.setItem(this.kDay(),String(Math.max(0,v))); }catch(_){} },
+  base:0, stopped:false,
+  hajime(){ this.base=this.today(); this.stopped=false; },
+  nokori(){ return this.cap()-this.today(); }
+};
+function saifuKire(){
+  if(SAIFU.stopped) return;
+  SAIFU.stopped=true;
+  try{ closeAll(); }catch(_){}
+  try{ stopPlay(false); }catch(_){}
+  goEl.disabled=false;
+  setState("今日のぶんは使い切りました");
+  say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）に達したので切りました。"
+    +"続けるなら下の「1日の上限」を上げてください。（Google側の上限とは別に、この画面で止めています）");
+}
+
+/* ══════════════ 実測メーター ══════════════ */
+const USE={micSec:0,outSec:0,usd:0,apiIn:0,apiOut:0,apiTotal:0};
+let startedAt=0, meterTimer=0;
+function cost(){
+  USE.usd = USE.micSec/60*PRICE.audioInPerMin + USE.outSec/60*PRICE.audioOutPerMin;
+  return USE.usd;
+}
+function paintMeter(){
+  const sec=startedAt?(Date.now()-startedAt)/1000:0;
+  const yen=cost()*YEN;
+  const perMin=sec>5?(yen/(sec/60)):0;
+  if(startedAt) SAIFU.put(SAIFU.base+yen);
+  const kyou=SAIFU.today(), cap=SAIFU.cap();
+  const nokori=Math.max(0,cap-kyou);
+  meterEl.innerHTML=`${Math.floor(sec/60)}分${String(Math.floor(sec%60)).padStart(2,"0")}秒 ／ `
+    +`<b>${yen.toFixed(1)}円</b>`+(perMin?`（このペースで1分 約${perMin.toFixed(1)}円）`:"")
+    +`<br>今日ここまで <b>${kyou.toFixed(1)}円</b> ／ 上限 ${cap.toFixed(0)}円`
+    +`（あと ${nokori.toFixed(1)}円）`
+    +`<br><span style="opacity:.7">実測（マイクを開けていた ${USE.micSec.toFixed(0)}秒 ＋ `
+    +`返ってきた声 ${USE.outSec.toFixed(0)}秒）</span>`;
+  if(startedAt && kyou>=cap) saifuKire();
+  paintCostTable();
+}
+function paintCostTable(){
+  const y=v=>v*YEN;
+  const rows=[
+    ["聞く（マイクを開けていた秒数）", USE.micSec.toFixed(1)+"秒", y(USE.micSec/60*PRICE.audioInPerMin)],
+    ["喋る（返ってきた声の秒数）",     USE.outSec.toFixed(1)+"秒", y(USE.outSec/60*PRICE.audioOutPerMin)]
+  ];
+  let html=rows.map(([k,v,c])=>`<tr><td>${k}</td><td>${v}　${c.toFixed(2)}円</td></tr>`).join("")
+    +`<tr><td><b>合計</b></td><td><b>$${USE.usd.toFixed(5)}（${(USE.usd*YEN).toFixed(2)}円）</b></td></tr>`;
+  if(USE.apiTotal){
+    html+=`<tr><td>Googleが返してきたトークン数（参考）</td><td>入 ${USE.apiIn.toLocaleString()}`
+      +` ／ 出 ${USE.apiOut.toLocaleString()} ／ 計 ${USE.apiTotal.toLocaleString()}</td></tr>`;
+  }
+  $("costTable").innerHTML=html;
+}
+
+/* ══════════════ 案内人の仕込み ══════════════ */
+const INSTRUCTIONS=[
+  "あなたは「ごきげん補給所」の案内人、たまこ。日本語だけで、短く、やわらかく話す。1回の返事は2文まで。",
+  "英語で話しかけられても日本語で答える。",
+  "",
+  "■ ここは音楽屋ではありません",
+  "この店の棚は7種類。music（音楽）/ food（食）/ cute（動物）/ laugh（笑い）/ travel（旅）/ dance（踊り）/ joy（ことば）。",
+  "",
+  "■ いちばん大事な手順：先に「種類」を決める",
+  "お客さんの言葉から、まず kind を1つ決める。決めてから hikidashi を呼ぶ。",
+  "  「動物」「犬」「猫」「かわいい」        → kind:\"cute\"",
+  "  「食べ物」「ごはん」「お腹すいた」      → kind:\"food\"",
+  "  「旅」「どこか行きたい」「景色」        → kind:\"travel\"",
+  "  「笑いたい」「面白いもの」「お笑い」    → kind:\"laugh\"",
+  "  「踊り」「ダンス」                      → kind:\"dance\"",
+  "  「ことば」「詩」「名言」                → kind:\"joy\"",
+  "  「曲」「音楽」「しずかなやつ」など音の話 → kind:\"music\"",
+  "★ 動物を頼まれたのに音楽を出す、のような取り違えは失格。種類が分からなければ、",
+  "  勝手に music にせず「どの棚にしましょう？」と一度だけ聞く。",
+  "",
+  "■ 棚がからっぽだったとき",
+  "道具が empty:true を返したら、それはその棚に在庫が無いということ。",
+  "正直に「◯◯の棚は、まだ用意できていません」と言う。",
+  "★ 代わりに曲を出さない。無いものを有るように言わない。別の種類（食・旅・踊り・音楽）を勧める。",
+  "",
+  "■ kind:\"music\" のときだけ artists を書く",
+  "artists ＝ その気分に似合うと思う実在のアーティスト名を、あなたの知識から8〜15組。多いほどよい。",
+  "mood    ＝ 気分や手ざわりの言葉（ジャズ、アシッドジャズ、80年代、ソウル、アンビエント等）。",
+  "song_title ＝ お客さんが曲名を口に出したときだけ。気分のときは空にする。",
+  "★ 気分の言葉を artists に入れてはいけない。★ 気分のときに song_title を使ってはいけない。",
+  "例：「うれしい気分」→ kind:\"music\", artists:[\"Stevie Wonder\",\"Earth, Wind & Fire\",\"Jamiroquai\",",
+  "  \"Pharrell Williams\",\"Kool & The Gang\",\"久保田利伸\",\"山下達郎\",\"Bruno Mars\",\"The Jackson 5\",\"Chic\"],",
+  "  mood:[\"ソウル\",\"ファンク\",\"ディスコ\"]",
+  "kind が music 以外のときは artists は空でよい。mood だけ入れる。",
+  "",
+  "■ 出した4枚について聞かれたら（うんちく）",
+  "道具の返事と、そのあと画面から届く「事実シート」に書いてあることだけを答える。",
+  "★ そこに書いていないことは、たとえ知っていても言わない。「それは分かりません」と正直に言う。",
+  "★ 発表年・受賞・売上・「代表曲」「オリジナル」「初の」は、事実シートに無ければ絶対に言わない。",
+  "★ 曲名・アーティスト名を口に出してよいのは、道具が返してきたものだけ。",
+  "",
+  "■ カードが出たあと",
+  "4枚全部は読み上げない。1〜2枚だけ名前を出して短く一言。",
+  "「押すと、その札の下でそのまま鳴りますよ」と伝える。曲ページへ誘導しない。",
+  "曲が鳴っている間も話しかけられます。後ろで鳴っている曲の音には返事をせず、お客さんの声にだけ答える。",
+  "「他は？」と言われたら、画面の下の『ほかのを見せて』を押してもらう。道具は呼び直さない。",
+  "最初のひとことは「こんばんは。今日はどんな気分で来られました？」のように短く。"
+].join("\n");
+
+/* ══════════════ つなぐ ══════════════ */
+let api=null, mic=null, mctx=null, msrc=null, mnode=null, micOn=true;
+let outAt=0, sources=[], retried=false, gotSetup=false, stopping=false;
+const live=()=>!!(api&&api.connected);
+const say=(cls,txt)=>{ const d=document.createElement("div"); d.className="line "+cls;
+  d.textContent=txt; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; };
+const setState=s=>{stateEl.textContent=s;};
+function setMic(on){ micOn=on; if(mic) mic.getAudioTracks().forEach(t=>t.enabled=on); }
+function tellModel(text){ if(live()) api.sendTextMessage(text); }
+
+async function mintToken(key){
+  const now=Date.now();
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens",{
+    method:"POST",
+    headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
+    body:JSON.stringify({
+      uses:1,
+      expireTime:new Date(now+30*60*1000).toISOString(),
+      newSessionExpireTime:new Date(now+60*1000).toISOString()
+    })
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j.name){
+    throw new Error("入場券がもらえませんでした（"+r.status+"）"+
+      ((j.error&&j.error.message)?"："+j.error.message:""));
+  }
+  return j.name;
+}
+
+const WS_V1ALPHA="wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=";
+const WS_V1BETA ="wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=";
+
+async function connect(){
+  if(SAIFU.nokori()<=0){
+    say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）を使い切っています。"
+      +"明日また使えます。今すぐ続けるなら下の「1日の上限」を上げてください。");
+    setState("今日のぶんは使い切りました"); paintMeter(); return;
+  }
+  /* ★969：鍵は全ページ共通の1本から取る。欄が空でも端末に入っていれば話せる。 */
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi){ window.TamagoKagi.ask(); }
+            else { say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+                   $("settings").hidden=false; $("settings").open=true; }
+            return; }
+  try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
+
+  SAIFU.hajime();
+  goEl.disabled=true; logEl.innerHTML="";
+  shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; stopPlay(false);
+  USE.micSec=USE.outSec=USE.usd=USE.apiIn=USE.apiOut=USE.apiTotal=0;
+  retried=false; stopping=false;
+  try{ await actx.resume(); }catch(_){}
+  CAT.load().catch(()=>{});
+  loadYT();
+  setState("つないでいます…"); startedAt=Date.now();
+  clearInterval(meterTimer); meterTimer=setInterval(paintMeter,1000);
+  try{ await open(WS_V1ALPHA, key); }
+  catch(err){ say("sys","つながりませんでした → "+err.message);
+    setState("失敗しました"); goEl.disabled=false; closeAll(); }
+}
+
+async function open(wsBase, key){
+  const token=await mintToken(key);
+  gotSetup=false;
+
+  api=new GeminiLiveAPI(token, pick("tamago_gemini_model"));
+  api.serviceUrl = wsBase + token;
+  api.setSystemInstructions(INSTRUCTIONS);
+  api.setResponseModalities(["AUDIO"]);
+  api.setVoice(pick("tamago_gemini_voice"));
+  api.setInputAudioTranscription(true);
+  api.setOutputAudioTranscription(true);
+  api.setEnableFunctionCalls(true);
+
+  const f=new FunctionCallDefinition(
+    "hikidashi",
+    "棚を1種類だけ引く。ここが返したものだけが実在する。4枚の札が横一列に出て、押すとその札の下でそのまま鳴る。",
+    { type:"object", properties:{
+        kind:{type:"string", enum:["music","food","cute","laugh","travel","dance","joy"],
+          description:"どの棚を引くか。必ず先に1つ決める。music=音楽 food=食 cute=動物 laugh=笑い travel=旅 dance=踊り joy=ことば。動物を頼まれたら必ず cute。music に流さないこと。"},
+        artists:{type:"array",items:{type:"string"},
+          description:"kind が music のときだけ。似合う実在のアーティスト名を8〜15組。ここが結果の質を決める。"},
+        mood:{type:"array",items:{type:"string"},
+          description:"気分・ジャンル・年代の言葉。曲名は入れない。"},
+        song_title:{type:"string",
+          description:"kind が music で、かつお客さんが曲名を口に出したときだけ。"},
+        label:{type:"string",description:"この棚につける短い見出し。例：うれしい夜に"}
+      } },
+    ["kind"]
+  );
+  api.addFunction(f);
+
+  api.onOpen=()=>{ setState("聞いています"); };
+  api.onError=()=>{ say("sys","つなぎめでエラーが出ました。"); };
+  api.onClose=async(ev)=>{
+    if(!stopping && !gotSetup && !retried && wsBase===WS_V1ALPHA){
+      retried=true;
+      say("sys","つなぎ先を v1beta に替えてもう一度試します。");
+      try{ await open(WS_V1BETA, key); return; }
+      catch(e){ say("sys","そちらも駄目でした → "+e.message); }
+    }
+    if(startedAt){ setState("切れました"); goEl.disabled=false; }
+  };
+  api.onRawMessage=(m)=>{
+    const u=m&&m.usageMetadata; if(!u) return;
+    USE.apiIn   = Math.max(USE.apiIn,   u.promptTokenCount||0);
+    USE.apiOut  = Math.max(USE.apiOut,  u.responseTokenCount||0);
+    USE.apiTotal= Math.max(USE.apiTotal,u.totalTokenCount||0);
+  };
+  api.onReceiveResponse=onResponse;
+
+  api.connect();
+  await startMicPump();
+}
+
+async function onResponse(r){
+  switch(r.type){
+    case "SETUP COMPLETE":
+      gotSetup=true; setState("聞いています");
+      say("sys","つながりました。話しかけてください。");
+      await CAT.load().catch(()=>{});
+      { const s=stockCount();
+        const aru=KINDS.filter(k=>s[k]>0).map(k=>k+"("+KIND_JA[k]+")="+s[k]+"件");
+        const nai=KINDS.filter(k=>!s[k]).map(k=>k+"("+KIND_JA[k]+")");
+        tellModel("（画面の合図・お客さんの声ではありません。返事はしないでください）"
+          +"いまの在庫："+aru.join("、")
+          +(nai.length?("。在庫ゼロの棚："+nai.join("、")
+            +"。この棚を頼まれたら、正直に『まだ用意できていません』と言い、代わりに曲を出さないこと。"):"")); }
+      break;
+    case "AUDIO": playPcm(r.data); break;
+    case "INPUT_TRANSCRIPTION":
+      if(r.data.text) say("me",r.data.text); break;
+    case "OUTPUT_TRANSCRIPTION":
+      if(r.data.text) say("her",r.data.text); break;
+    case "INTERRUPTED": stopAudio(); break;
+    case "TOOL_CALL": await onToolCall(r.data); break;
+  }
+}
+
+async function onToolCall(toolCall){
+  const responses=[];
+  for(const fc of (toolCall.functionCalls||[])){
+    let payload, got=[];
+    try{
+      const a=fc.args||{};
+      const kind=KINDS.includes(a.kind)?a.kind:"music";
+      got=await newSearch(
+        {kind, artists:a.artists||[], mood:a.mood||[], song_title:a.song_title||""},
+        a.label||KIND_JA[kind]);
+      if(got.length){
+        payload={ok:true, kind, kind_ja:KIND_JA[kind], count:got.length, rest:pool.length,
+          cards:got.map((c,i)=>({no:i+1,title:c.title,by:c.sub,kind:c.kind})),
+          note:"この4枚だけが実在する。ここに無い名前を口に出さないこと。札は画面に出し終えた。押せばその札の下で鳴る。"};
+        say("sys","棚（"+KIND_JA[kind]+"）から "+got.length+"枚："+got.map(s=>s.title).join(" / "));
+      }else if(kind!=="music"){
+        payload={ok:false, empty:true, kind, kind_ja:KIND_JA[kind], count:0,
+          note:"この棚は在庫ゼロ。正直に『"+KIND_JA[kind]+"の棚はまだ用意できていません』と言うこと。"
+               +"代わりに曲を出さない。別の種類を勧めること。道具をもう一度呼ばない。"};
+        say("sys","棚（"+KIND_JA[kind]+"）は在庫ゼロ。案内人に正直に言わせます。");
+      }else{
+        payload={ok:false, empty:false, kind, count:0,
+          note:"見つからなかった。artists にもっと多くのアーティスト名を入れて呼び直すこと。曲名を作らないこと。"};
+        say("sys","棚を引きましたが 0件でした。");
+      }
+    }catch(err){
+      payload={ok:false,error:String(err&&err.message||err)};
+      say("sys","棚を引けませんでした："+payload.error);
+    }
+    responses.push({ id:fc.id, name:fc.name, response:{ result:payload } });
+  }
+  if(responses.length) api.sendToolResponse(responses);
+  // 道具の返事とは別に、答えてよい事実だけを渡す
+  if(dealt.length) tellModel(
+    "（画面の合図・お客さんの声ではありません。これには返事をしないでください）\n"
+    +"いま出ている4枚について答えてよいのは、次に書いてあることだけです。\n"
+    +factSheet(dealt)
+    +"\nここに無いこと（発表年・受賞・売上・代表曲かどうか等）は、聞かれても「それは分かりません」と答えてください。");
+}
+
+/* マイク。Live API は 16kHz・16bit・モノラルの生PCM。
+   echoCancellation:true ＝ スピーカーから出た曲の音をマイク入力から差し引く（AEC）。
+   これがあるので「鳴らしたまま話す」ができる。ダッキングと二段構えにしている。 */
+async function startMicPump(){
+  if(mnode) return;
+  mic=await navigator.mediaDevices.getUserMedia(
+    {audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  mctx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
+  if(mctx.state==="suspended") await mctx.resume();
+  msrc=mctx.createMediaStreamSource(mic);
+  mnode=mctx.createScriptProcessor(2048,1,1);
+  mnode.onaudioprocess=ev=>{
+    if(!live()||!micOn) return;
+    const f=ev.inputBuffer.getChannelData(0);
+    USE.micSec += f.length/mctx.sampleRate;
+    const buf=new ArrayBuffer(f.length*2), view=new DataView(buf);
+    for(let i=0;i<f.length;i++){ const v=Math.max(-1,Math.min(1,f[i]));
+      view.setInt16(i*2, v<0?v*0x8000:v*0x7FFF, true); }
+    let bin=""; const b=new Uint8Array(buf);
+    for(let i=0;i<b.length;i+=8192) bin+=String.fromCharCode.apply(null,b.subarray(i,i+8192));
+    api.sendAudioMessage(btoa(bin));
+  };
+  msrc.connect(mnode); mnode.connect(mctx.destination);
+  applyAudio();
+}
+
+function playPcm(b64){
+  if(actx.state==="suspended") actx.resume();
+  const bin=atob(b64), n=bin.length>>1;
+  const buf=actx.createBuffer(1,n,24000), ch=buf.getChannelData(0);
+  for(let i=0;i<n;i++){ let v=(bin.charCodeAt(i*2+1)<<8)|bin.charCodeAt(i*2);
+    if(v>=0x8000) v-=0x10000; ch[i]=v/32768; }
+  const src=actx.createBufferSource(); src.buffer=buf;
+  src.connect(lip.analyser);
+  const now=actx.currentTime; if(outAt<now+0.06) outAt=now+0.06;
+  src.start(outAt); outAt+=buf.duration;
+  USE.outSec += buf.duration;
+  sources.push(src);
+  src.onended=()=>{ const i=sources.indexOf(src); if(i>=0) sources.splice(i,1); };
+}
+function stopAudio(){
+  sources.forEach(s=>{ try{s.stop()}catch(_){} });
+  sources=[]; outAt=0;
+}
+function closeAll(){
+  stopping=true;
+  try{ api&&api.disconnect(); }catch(_){}
+  try{ mnode&&mnode.disconnect(); msrc&&msrc.disconnect(); }catch(_){}
+  if(mic) mic.getTracks().forEach(t=>t.stop());
+  stopAudio();
+  api=null; mic=null; mnode=null; msrc=null;
+  clearInterval(meterTimer);
+  paintMeter();
+  startedAt=0;
+  $("micdot").classList.remove("on");
+}
+
+/* 1日の上限を変える口 */
+(function(){
+  try{
+    const box=document.createElement("p");
+    box.style.cssText="text-align:center;color:#9d947f;font-size:.74rem;margin:6px 0 0";
+    box.innerHTML='1日の上限 <input id="capIn" type="number" min="10" step="10" '
+      +'style="width:5.5em;background:#1a1712;color:#e8e2d4;border:1px solid #3a352c;'
+      +'border-radius:6px;padding:2px 4px;text-align:right"> 円 '
+      +'<button id="capSet" style="background:#2a2622;color:#e8e2d4;border:1px solid #3a352c;'
+      +'border-radius:6px;padding:2px 8px;cursor:pointer;flex:0 0 auto;font-size:.74rem">決める</button>';
+    meterEl.parentNode.insertBefore(box,meterEl.nextSibling);
+    const inp=box.querySelector("#capIn"); inp.value=SAIFU.cap();
+    box.querySelector("#capSet").addEventListener("click",()=>{
+      const v=parseFloat(inp.value); if(isFinite(v)&&v>0) SAIFU.setCap(v);
+    });
+  }catch(_){}
+  paintMeter();
+})();
+
+CAT.load().catch(()=>{});
+$("devLink").addEventListener("click",e=>{ e.preventDefault();
+  const d=$("settings"); d.hidden=false; d.open=true; });
+goEl.addEventListener("click",connect);
+stopEl.addEventListener("click",()=>{ closeAll(); stopPlay(false);
+  setState("やめました"); goEl.disabled=false; });
+</script>
+</body></html>

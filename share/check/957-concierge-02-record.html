@@ -1,0 +1,410 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ごきげん補給所・案内所｜No.02 QUIET RECORD COUNTER</title>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   No.02「QUIET RECORD COUNTER（静かなレコード店）」
+   ★原案の絵に寄せる：
+     上に横長の写真の帯（暗い緑のレコード店）／その中のカウンターの上に案内人／
+     右に黒板の立て札／写真の左に明朝の白抜き／写真の下に生成りのカードが重なる／
+     おすすめは四角い写真＋右端に黒いレコード盤が半分はみ出す4枚／
+     下に角丸の白い横長ボタン「他を見せて ——」。
+   ── 正本: status/952_seihon/concierge-concept-02-08.md
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --green-d:#0d1711; --green:#16261d; --green-l:#24392c;
+  --paper:#f2e9d6; --paper2:#e9dec6; --line:#d8c9a6;
+  --ink:#2a241b; --sub:#867a63; --aka:#8d4a30; --kin:#c0a05a;
+  --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#e7dcc4}
+body{font-family:var(--sans);color:var(--ink);-webkit-text-size-adjust:100%}
+.shell{max-width:1180px;margin:0 auto;background:var(--paper);min-height:100vh;
+  box-shadow:0 0 60px rgba(60,44,20,.14)}
+
+/* ── ヘッダー ─────────────────────────────────────── */
+.head{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px 36px 16px}
+.head .brand{flex:0 0 auto;white-space:nowrap;font-family:var(--serif);font-size:1rem;letter-spacing:.3em;color:var(--ink)}
+.head .brand small{display:block;font-family:var(--sans);font-size:.56rem;
+  letter-spacing:.32em;color:var(--sub);margin-top:5px}
+.head nav{font-size:.62rem;letter-spacing:.26em;color:var(--sub)}
+.head nav span{margin-left:14px}
+
+/* ── 横長の写真の帯 ───────────────────────────────── */
+.plate{position:relative;margin:0 36px;background:var(--green-d);overflow:hidden}
+.stage{position:relative;display:block}
+.stage::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;
+  background:linear-gradient(90deg,rgba(8,15,11,.88) 0%,rgba(8,15,11,.62) 52%,rgba(8,15,11,0) 100%);
+  pointer-events:none;z-index:1}
+.plate .copy,.plate .onbar,.plate .slate,.plate .ringwrap{z-index:2}
+.plate .scene{display:block;width:100%;height:auto}
+/* 写真の左に、明朝の白抜き */
+.plate .copy{position:absolute;left:5%;top:12%;width:27%;max-width:268px;color:#f4ecd9;
+  text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.plate .copy h1{font-family:var(--serif);font-weight:400;margin:0 0 16px;
+  font-size:clamp(1.15rem,2.2vw,1.85rem);line-height:1.85;letter-spacing:.12em}
+.plate .copy p{font-family:var(--serif);margin:0;font-size:clamp(.66rem,1.05vw,.8rem);
+  line-height:2.3;letter-spacing:.1em;color:#ddd3bd}
+.plate .copy .en{display:block;margin-top:18px;font-family:var(--sans);font-size:.52rem;
+  letter-spacing:.24em;color:#a9b3a4}
+/* カウンターの上に立つ案内人 */
+.plate .onbar{position:absolute;left:50%;bottom:7.5%;transform:translateX(-50%);
+  width:15.5%;min-width:96px}
+.plate .onbar svg{display:block;width:100%;height:auto}
+/* 黒板の立て札 */
+.plate .slate{position:absolute;left:64.5%;bottom:9%;width:19%;min-width:118px;
+  background:#1a211b;border:3px solid #6b5334;border-radius:2px;padding:10px 8px;
+  text-align:center;box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.plate .slate b{display:block;font-family:var(--serif);font-weight:400;color:#ecdfc2;
+  font-size:.62rem;letter-spacing:.2em;margin-bottom:6px}
+.plate .slate i{display:block;font-style:normal;font-family:var(--serif);color:#b8c4b3;
+  font-size:.54rem;letter-spacing:.08em;line-height:1.8}
+/* ベル＝会話のはじまり（店の中に溶かす） */
+.plate .ringwrap{position:absolute;left:24%;bottom:6.5%;text-align:center}
+button.ring{display:block;background:none;border:0;padding:0;cursor:pointer;width:58px}
+button.ring svg{display:block;width:100%;height:auto}
+button.ring:hover svg{transform:translateY(-2px)}
+button.ring:focus-visible{outline:2px solid var(--kin);outline-offset:4px}
+button.ring:disabled{opacity:.45;cursor:not-allowed}
+.plate .ringwrap .cap{display:block;margin-top:7px;font-family:var(--serif);color:#d9cdb2;
+  font-size:.56rem;letter-spacing:.14em;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+button.quiet{margin-top:6px;background:none;border:0;color:#b6ab92;cursor:pointer;
+  font-size:.56rem;letter-spacing:.12em;text-decoration:underline;font-family:var(--sans)}
+body.talking button.ring,body.talking .plate .ringwrap .cap{display:none}
+body:not(.talking) button.quiet{display:none}
+
+/* ── 写真の下に重なる生成りのカード ───────────────── */
+.sheet{position:relative;margin:-54px 72px 0;background:var(--paper);
+  border:1px solid var(--line);padding:34px 42px 40px;
+  box-shadow:0 -6px 30px rgba(50,36,16,.1)}
+.state{font-family:var(--serif);font-size:.68rem;letter-spacing:.16em;color:var(--sub);
+  text-align:center;margin:0 0 20px;min-height:1.2em}
+.meter{font-size:.62rem;color:#a2967c;text-align:center;margin:-14px 0 18px;
+  font-variant-numeric:tabular-nums;min-height:1em}
+
+/* ── 会話（あなた＝赤茶の小さいラベル／ごきげん店主＝墨のラベル） ── */
+.log{max-width:760px;margin:0 auto;display:grid;gap:18px}
+.line{display:block}
+.line .ava{display:none}
+.line .who{display:inline-block;font-size:.56rem;letter-spacing:.18em;padding:3px 9px;
+  border-radius:2px;margin-bottom:8px;font-family:var(--sans)}
+.line.her .who{background:var(--ink);color:var(--paper)}
+.line.me .who{background:var(--aka);color:#fbf3e4}
+.line .txt{display:block;font-family:var(--serif);font-size:.93rem;line-height:2.1;
+  letter-spacing:.06em}
+.line.me .txt{color:#6d5a44}
+.line.sys{font-size:.72rem;color:var(--aka);text-align:center}
+.line.sys .txt{font-size:.72rem;line-height:1.9}
+.devlink{font-size:.62rem;color:var(--sub);margin-left:.6em}
+
+/* ── 店主からのおすすめ ───────────────────────────── */
+.tray{margin:38px 0 0}
+.tray .rule{display:flex;align-items:baseline;justify-content:center;position:relative;
+  border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:26px}
+.tray h2{font-family:var(--serif);font-weight:400;font-size:.85rem;letter-spacing:.24em;
+  margin:0;color:var(--ink)}
+.tray h2::before{content:"— "}.tray h2::after{content:" —"}
+.tray .said{position:absolute;right:0;bottom:12px;margin:0;font-size:.52rem;
+  letter-spacing:.24em;color:var(--sub)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+
+a.card{display:block;text-decoration:none;color:inherit}
+.pic{position:relative;display:block;padding-right:13%}
+.thumb{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;
+  background:var(--paper2);border:1px solid var(--line)}
+.thumb img{display:block;width:100%;height:100%;object-fit:cover;
+  transition:transform .5s cubic-bezier(.2,.7,.3,1)}
+a.card:hover .thumb img{transform:scale(1.04)}
+.thumb.noimg{background:repeating-linear-gradient(45deg,#e6dbc2 0 9px,#e0d4b8 9px 18px)}
+/* ★四角い写真の右端に、黒いレコード盤が半分はみ出す */
+.disc{position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:26%;aspect-ratio:1/1;pointer-events:none;
+  clip-path:inset(0 0 0 0);filter:drop-shadow(-2px 3px 6px rgba(40,26,8,.34))}
+.disc svg{display:block;width:100%;height:100%}
+a.card:hover .disc{transform:translate(4px,-50%)}
+.disc,a.card:hover .disc,.thumb img{transition:transform .35s ease}
+/* カテゴリの小さなモチーフ（店内の紙もの） */
+.motif{position:absolute;left:7px;bottom:7px;width:26px;height:26px;border-radius:50%;
+  background:rgba(242,233,214,.95);display:grid;place-items:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.motif svg{width:16px;height:16px}
+.motif .d{fill:#2a241b}.motif .r{fill:none;stroke:#f2e9d6;stroke-width:1.1}
+.motif .l{fill:#8d4a30}.motif .h{fill:#f2e9d6}
+.motif .s{fill:none;stroke:#f2e9d6;stroke-width:1.3;stroke-linecap:round}
+.cat-travel .motif .r{fill:var(--kin);stroke:none}
+.cat-video .motif .r,.cat-laugh .motif .r{fill:#e8dcc0;stroke:none}
+.cat-music .disc{display:block}
+
+.body{display:block;padding:14px 13% 0 0}
+.kind,.kind-en,.arrow{display:none}          /* 02では出さない（原案どおり） */
+.t{display:-webkit-box;font-family:var(--serif);font-size:.92rem;line-height:1.7;
+  letter-spacing:.04em;margin:0 0 7px;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden}
+.s{display:-webkit-box;font-size:.7rem;color:var(--sub);line-height:1.8;margin:0 0 10px;
+  -webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.tags{display:flex;flex-wrap:wrap;gap:7px}
+.tags span{font-size:.58rem;letter-spacing:.06em;color:#9b8a68}
+
+.empty{grid-column:1/-1;font-family:var(--serif);color:var(--sub);font-size:.84rem;
+  line-height:2.2;padding:38px 10px;text-align:center;border:1px dashed var(--line)}
+.peek{display:inline-block;margin:12px 0 0;background:none;border:0;
+  border-bottom:1px solid var(--sub);color:var(--ink);cursor:pointer;
+  font-family:var(--serif);font-size:.82rem;letter-spacing:.12em;padding:4px 2px}
+/* ★角丸の白い横長ボタン */
+.morewrap{text-align:center;margin-top:34px}
+button#more{background:#fffdf7;border:1px solid var(--line);border-radius:999px;
+  cursor:pointer;padding:15px 62px;font-family:var(--serif);font-size:.88rem;
+  letter-spacing:.2em;color:var(--ink);box-shadow:0 2px 0 rgba(180,160,120,.4)}
+button#more:hover:not(:disabled){background:#fff}
+button#more:active{transform:translateY(1px);box-shadow:none}
+button#more:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── 店の裏（開発用）。?dev=1 のときだけ出る ───────── */
+.urakuchi{margin:48px auto 0;max-width:760px;border-top:1px solid var(--line);padding-top:12px}
+.urakuchi[hidden]{display:none}
+.urakuchi summary{cursor:pointer;color:#a2967c;font-size:.68rem;letter-spacing:.16em;list-style:none}
+.urakuchi summary::-webkit-details-marker{display:none}
+.urakuchi .in{padding:12px 0 0;font-size:.76rem;color:var(--sub);line-height:1.9}
+.urakuchi input{width:100%;padding:10px 12px;border:1px solid var(--line);
+  font-family:ui-monospace,monospace;font-size:14px;background:#fffdf7;color:var(--ink)}
+.voices{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.voices label{border:1px solid var(--line);padding:5px 11px;font-size:.74rem;cursor:pointer;background:#fffdf7}
+.voices input{display:none}
+.voices input:checked + span{font-weight:700;color:#3e6b4a}
+
+/* ── 足もと ───────────────────────────────────────── */
+.foot{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:26px 36px 30px;border-top:1px solid var(--line);margin-top:34px}
+.foot .brand{font-family:var(--serif);font-size:.76rem;letter-spacing:.26em;color:var(--ink)}
+.foot .brand small{display:block;font-family:var(--sans);font-size:.5rem;
+  letter-spacing:.3em;color:var(--sub);margin-top:4px}
+.foot .en{font-size:.55rem;letter-spacing:.24em;color:var(--sub);text-align:right}
+.foot .en a{color:var(--sub)}
+
+/* ── スマホ（375px。縦1列、カードは2×2） ───────────── */
+@media(max-width:880px){
+  .cards{grid-template-columns:repeat(2,1fr);gap:20px}
+  .sheet{margin:-40px 24px 0;padding:26px 22px 32px}
+  .plate{margin:0 18px}
+  .head,.foot{padding-left:20px;padding-right:20px}
+}
+@media(max-width:640px){
+  .head{flex-wrap:wrap;padding-top:15px}
+  .head nav{width:100%;margin-top:9px;font-size:.52rem;letter-spacing:.2em}
+  .head nav span{margin-left:0;margin-right:14px}
+  .plate .scene{height:210px;width:100%}
+  .plate{margin:0 14px}
+  .plate .copy{position:static;width:auto;max-width:none;padding:18px 16px 4px;
+    text-shadow:none;background:var(--green-d)}
+  .plate .copy h1{font-size:1.2rem;margin-bottom:12px}
+  .plate .copy p{font-size:.7rem}
+  .plate .onbar{width:19%;min-width:66px;bottom:9%}
+  .plate .slate{left:auto;right:4%;bottom:10%;width:30%;min-width:0;padding:6px 4px}
+  .plate .slate b{font-size:.52rem;letter-spacing:.12em}
+  .plate .slate i{font-size:.46rem}
+  .plate .ringwrap{left:6%;bottom:7%}
+  button.ring{width:44px}
+  .plate .ringwrap .cap{font-size:.5rem}
+  .sheet{margin:-28px 14px 0;padding:22px 16px 28px}
+  .tray .rule{flex-direction:column;align-items:center;gap:8px}
+  .tray .said{position:static}
+  .body{padding-right:13%}
+  .pic{padding-right:13%}
+  .t{font-size:.84rem}
+  button#more{padding:14px 34px;font-size:.82rem;width:100%}
+  .foot{flex-direction:column;align-items:flex-start;gap:10px}
+  .foot .en{text-align:left}
+}
+</style>
+</head><body>
+
+<div class="shell">
+
+  <header class="head">
+    <span class="brand">ごきげん補給所<small>JOY RELIEF STATION</small></span>
+    <nav aria-label="案内"><span>RECORDS</span><span>CONVERSATION</span><span>ABOUT</span></nav>
+  </header>
+
+  <!-- ① 横長の写真の帯（暗い緑のレコード店。カウンターの上に案内人） -->
+  <section class="plate">
+    <div class="stage">
+    <svg class="scene" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="air" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1b3125"/><stop offset=".62" stop-color="#132219"/>
+          <stop offset="1" stop-color="#0c150f"/>
+        </linearGradient>
+        <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#ffd58a" stop-opacity=".52"/>
+          <stop offset="1" stop-color="#ffd58a" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#8a6034"/><stop offset=".14" stop-color="#6e4826"/>
+          <stop offset="1" stop-color="#432c17"/>
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="520" fill="url(#air)"/>
+
+      <!-- 奥のレコード棚 -->
+      <g id="shelves"></g>
+
+      <!-- 額装のポスター -->
+      <g font-family="Georgia,serif" text-anchor="middle">
+        <rect x="520" y="56" width="196" height="132" fill="#101c14" stroke="#7b6136" stroke-width="5"/>
+        <text x="618" y="110" fill="#e6d9b6" font-size="21" letter-spacing="3">GOOD MUSIC</text>
+        <text x="618" y="144" fill="#c6b88f" font-size="19" letter-spacing="3">BETTER DAYS</text>
+        <rect x="905" y="46" width="228" height="104" fill="#121e15" stroke="#7b6136" stroke-width="5"/>
+        <text x="1019" y="90" fill="#e6d9b6" font-size="15" letter-spacing="1">Small Finds Make</text>
+        <text x="1019" y="118" fill="#e6d9b6" font-size="15" letter-spacing="1">Brighter Days.</text>
+        <rect x="922" y="182" width="194" height="76" fill="#101c14" stroke="#6d5630" stroke-width="4"/>
+        <text x="1019" y="228" fill="#c9bb92" font-size="15" letter-spacing="2.4">A BRIGHTER TOMORROW</text>
+      </g>
+
+      <!-- 木のカウンター -->
+      <rect x="0" y="392" width="1200" height="128" fill="url(#bar)"/>
+      <rect x="0" y="392" width="1200" height="5" fill="#a97a44"/>
+      <g stroke="#ffffff" stroke-opacity=".05">
+        <path d="M0 418h1200M0 448h1200M0 478h1200"/>
+      </g>
+
+      <!-- 緑のシェードの卓上ランプ -->
+      <ellipse cx="452" cy="392" rx="210" ry="120" fill="url(#glow)"/>
+      <g>
+        <rect x="447" y="300" width="9" height="92" fill="#6d5c38"/>
+        <ellipse cx="451" cy="392" rx="34" ry="8" fill="#5b4a2c"/>
+        <path d="M388 300h126l-16 34H404z" fill="#24503a"/>
+        <path d="M388 300h126l-5 11H393z" fill="#2f6349"/>
+        <path d="M404 334h94l-4 7h-86z" fill="#f2d79a"/>
+      </g>
+
+      <!-- 小さな観葉植物 -->
+      <g transform="translate(1092 352)">
+        <path d="M-26 40h52l-7 40h-38z" fill="#7d5a32"/>
+        <path d="M-28 34h56v8h-56z" fill="#93693a"/>
+        <g fill="#3c6a45">
+          <path d="M0 34C-4 8-22 0-30 -4c4 18 14 32 30 38z"/>
+          <path d="M0 34C4 6 22 -2 30 -6c-4 20-14 34-30 40z"/>
+          <path d="M0 36C-2 6 2 -12 4 -22c8 18 6 42-4 58z"/>
+        </g>
+      </g>
+    </svg>
+
+    <!-- 真鍮のベル＝会話のはじまり -->
+    <div class="ringwrap">
+      <button class="ring" id="start" aria-label="カウンターのベルを鳴らして、案内人に話しかける">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <ellipse cx="32" cy="57" rx="24" ry="5" fill="#8a6a2e"/>
+          <path d="M32 14c-11 0-19 9-19 21v11h38V35c0-12-8-21-19-21z" fill="#d7ab53"/>
+          <path d="M32 14c-6 0-11 3-14 8 3-2 8-4 14-4s11 2 14 4c-3-5-8-8-14-8z" fill="#f0d288"/>
+          <rect x="8" y="46" width="48" height="7" rx="3.5" fill="#b98f3c"/>
+          <circle cx="32" cy="10" r="5" fill="#e6c477"/>
+        </svg>
+      </button>
+      <span class="cap">ベルを鳴らす</span>
+      <button class="quiet" id="stop">会話を終える</button>
+    </div>
+
+    <!-- カウンターの上に立つ案内人 -->
+    <div class="onbar" id="tamako"></div>
+
+    <!-- 黒板の立て札 -->
+    <div class="slate">
+      <b>ごきげん補給所</b>
+      <i>レコードと、<br>ちょっといい時間を。</i>
+    </div>
+    </div>
+
+    <!-- 写真の左に、明朝の白抜き -->
+    <div class="copy">
+      <h1>話してくれて、<br>ありがとう。</h1>
+      <p>音楽も、めしも、いきものも。<br>
+         ぜんぶ同じ棚に置いてあります。<br>
+         今日の気分を、ひとこと教えてください。</p>
+      <span class="en">A LITTLE OASIS IN THE INTERNET DESERT.</span>
+    </div>
+
+  </section>
+
+  <!-- ② 写真の下に重なる生成りのカード -->
+  <section class="sheet">
+    <p class="state" id="state">カウンターのベルを鳴らすと、店主が出てきます</p>
+    <p class="meter" id="meter"></p>
+
+    <div class="log" id="log"></div>
+
+    <section class="tray">
+      <div class="rule">
+        <h2 id="trayTitle">店主からのおすすめ</h2>
+        <p class="said">PICKS FOR YOUR MOMENT</p>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div class="empty" id="empty">
+        まだ何も出ていません。<br>
+        「なんか疲れた」「お腹すいた」「猫が見たい」——<br>そんな言い方で大丈夫です。
+      </div>
+      <div class="morewrap"><button id="more" disabled>他を見せて ——</button></div>
+    </section>
+
+    <details class="urakuchi">
+      <summary>店の裏（開発用）</summary>
+      <div class="in">
+        <p>OpenAIの鍵。この端末のブラウザの中だけに保存され、送り先は api.openai.com だけです。</p>
+        <input id="key" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+        <div class="voices" id="voices"></div>
+        <p>料金のめやす：話しっぱなしで 1分およそ47円（gpt-realtime・1ドル155円換算）。
+           棚：<span id="catStat">まだ読み込んでいません</span></p>
+      </div>
+    </details>
+  </section>
+
+  <footer class="foot">
+    <span class="brand">ごきげん補給所<small>JOY RELIEF STATION</small></span>
+    <span class="en">GOOD MUSIC. BRIGHTER DAYS.<br>
+      <a href="957-concierge-08-salon.html">→ No.08 SALON CONVERSATION</a></span>
+  </footer>
+</div>
+
+<script src="assets/957-concierge/tamako.js"></script>
+<script src="assets/957-concierge/core.js"></script>
+<script>
+(function(){
+  /* 奥のレコード棚。画像は読まず、その場で並べる（正本§12 軽さ） */
+  var g=document.getElementById("shelves"), NS="http://www.w3.org/2000/svg", i, x;
+  [[396,208,190],[610,72,276],[610,208,276],[896,268,150]].forEach(function(box){
+    var bx=box[0],by=box[1],bw=box[2];
+    var r=document.createElementNS(NS,"rect");
+    r.setAttribute("x",bx);r.setAttribute("y",by);r.setAttribute("width",bw);
+    r.setAttribute("height",108);r.setAttribute("fill","#0d1811");
+    r.setAttribute("stroke","#4a3a21");r.setAttribute("stroke-width","4");
+    g.appendChild(r);
+    for(x=bx+7;x<bx+bw-7;x+=6){
+      var s=document.createElementNS(NS,"rect"), h=76+((x*37)%26);
+      s.setAttribute("x",x);s.setAttribute("y",by+104-h);
+      s.setAttribute("width",5);s.setAttribute("height",h);
+      s.setAttribute("fill","hsl("+(28+(x*13)%34)+","+(18+(x*7)%16)+"%,"+(20+(x*11)%16)+"%)");
+      g.appendChild(s);
+    }
+  });
+
+  /* ★案内人＝多面体の卵／ピンク縁の3Dメガネ／赤いボウタイ（原案の姿） */
+  var face = Tamako.stand(document.getElementById("tamako"));
+
+  Concierge.boot({
+    face: face,
+    whoHer:"ごきげん店主", whoMe:"あなた",
+    trayDefault:"店主からのおすすめ",
+    stateConnecting:"奥から出てくるところです…",
+    stateListening:"聞いています。話しかけてください",
+    stateTalking:"店主が話しています",
+    stateClosed:"会話が切れました",
+    stateStopped:"またどうぞ",
+    stateFailed:"つながりませんでした",
+    stateNoKey:"いまは声の支度ができていません"
+  });
+})();
+</script>
+</body></html>

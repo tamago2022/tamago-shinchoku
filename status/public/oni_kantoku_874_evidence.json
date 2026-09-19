@@ -1,0 +1,117 @@
+{
+  "capturedAt": "2026-09-17T17:05:24.274707+09:00",
+  "shikumi_oni_kantoku": {
+    "key": "oni_kantoku",
+    "name": "鬼監督",
+    "lastRanAt": "2026-09-17T17:02:27+09:00",
+    "countToday": 37,
+    "expect": "24時間以内に記録",
+    "expectMin": 1440,
+    "howMeasured": "status/oni_kantoku_log.jsonlの最終行checkedAt基準：現在0.0時間更新なし（24時間以内=alive、それ超=dead。イベント駆動〔完了のたび〕なので中間のslow帯は設けない）",
+    "verdict": "alive"
+  },
+  "rootCauseCommit": {
+    "sha": "3507f20e6d9f540420f3e3228a89f6a74a52bc45",
+    "title": "工場停止(14時間)の心臓復旧・真因修正・worktreeタイムアウト短縮",
+    "committedAt": "2026-09-16T19:54:19+09:00",
+    "summary": "心臓(heartbeat.sh)の生死判定がauto_launch.logの更新(=仕事があった時だけ書かれる)を見ていたため、発車待ちが無いだけでも詰まったと誤判定し正常な心臓を繰り返し強制終了。殺した拍子に子(auto_launcher.py)が孤児化しロックファイルを握ったまま残留、14時間発車ゼロになっていた。heartbeat.shに無条件touchする.heartbeat_aliveを新設し詰まり判定の材料をauto_launch.logからこちらへ差し替え。心臓を殺す時に孤児化しうる子も一緒に片づけるよう修正。",
+    "pushedToOriginMain": true
+  },
+  "recoveryTimeline": {
+    "staleUntil": "2026-09-13T15:02:37+09:00",
+    "firstEntryAfterRootCauseFix": {
+      "checkedAt": "2026-09-16T22:24:36+09:00",
+      "n": 884,
+      "title": "【工場】計測が45分止まっている＝machine_load.shが消えている（心臓が5分おきに殺されている）",
+      "decision": "error",
+      "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（0件中0件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/status/health.json）",
+      "costUsd": 0.4826834,
+      "task": "800-touch-verify"
+    },
+    "latestEntry": "2026-09-17T17:02:27+09:00",
+    "entriesSinceRootCauseFix": 39
+  },
+  "logTailLast8": [
+    {
+      "checkedAt": "2026-09-17T15:45:34+09:00",
+      "n": 897,
+      "title": "【仕組み⑥】サムネの大きさにA/B/Cの名前をつける＋高さ揃えをCIで守る",
+      "decision": "error",
+      "reason": "AI検品がタイムアウトしました（600秒超）",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（4件中4件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/share/check/897-thumb-abc.html）",
+      "costUsd": null,
+      "task": "800-touch-verify"
+    },
+    {
+      "checkedAt": "2026-09-17T15:51:02+09:00",
+      "n": 906,
+      "title": "【重さ】画質を並べて指差しで決める＋「何が重いのか」を1枚で見せる",
+      "decision": "pass",
+      "reason": "前回差し戻し2点（画像3枚化・棒グラフ+要る要らない分類）を解消済みで、数字は実測と一致しクリック検証もエラー無し",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（21件中5件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/share/check/906-image-quality-weight.html）",
+      "costUsd": 0.2995946,
+      "task": "800-touch-verify"
+    },
+    {
+      "checkedAt": "2026-09-17T15:56:32+09:00",
+      "n": 897,
+      "title": "【仕組み⑥】サムネの大きさにA/B/Cの名前をつける＋高さ揃えをCIで守る",
+      "decision": "error",
+      "reason": "AI検品がタイムアウトしました（600秒超）",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（4件中4件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/share/check/897-thumb-abc.html）",
+      "costUsd": null,
+      "task": "800-touch-verify"
+    },
+    {
+      "checkedAt": "2026-09-17T16:06:09+09:00",
+      "n": 926,
+      "title": "【仕組み⑮】外部検品を品質ゲートにする（未検品のままたまごさんへ返さない）",
+      "decision": "pass",
+      "reason": "926番はtamago-shinchoku側で実装済み・検品段階(queue.json state:verifying)まで進行中であることを実ファイルで確認、joy-relief-station側の「誤配信・対応不要」判断はqueue.json/routing-fixメモの実記録と一致し正確。924番確認ページもURL200・内容一致・機械クリック済み。",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（8件中5件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/share/check/924-hikitsugi-oni-daidai.html）",
+      "costUsd": 0.3769744,
+      "task": "800-touch-verify"
+    },
+    {
+      "checkedAt": "2026-09-17T16:34:29+09:00",
+      "n": 892,
+      "title": "【仕組み①】何回も言わせない：数字の正本を1か所に＋CIで機械検査",
+      "decision": "fail",
+      "reason": "直前の関所が要求した実測の生データ（「実測:」記載や<pre>/<code>）が確認ページに無く、数字も8/8(ページ記載)対11/11(実測)で食い違っている",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（11件中11件を実クリック）（対象: https://joy-relief-station.lovable.app/design-check）",
+      "costUsd": 0.3520904,
+      "task": "800-touch-verify"
+    },
+    {
+      "checkedAt": "2026-09-17T16:49:00+09:00",
+      "n": 930,
+      "title": "(4/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
+      "decision": "fail",
+      "reason": "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで、検証時点(09-17 16:46)の本番health.json/genzaichi.json/now.json/pace.json/top_status.jsonが軒並み3〜4時間更新停止しており、884番が直したはずの「計測パイプラインが止まる」症状が本番で再発中",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（0件中0件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/status/public/queue.json）",
+      "costUsd": 0.8115462000000001,
+      "task": "800-touch-verify"
+    },
+    {
+      "checkedAt": "2026-09-17T17:00:59+09:00",
+      "n": 932,
+      "title": "(6/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
+      "decision": "pass",
+      "reason": "対象10件(584/586/587/596/598/611/613/614/643/710)の判定内容がqueue.jsonの実データと完全一致し、waiting5件/hold継続5件の振り分け理由も妥当（テスト項目・ブラウザ統合待ち・本人指示）。ディスク実測251GBも一致、main反映済み、確認ページ200応答・クリック検品3/3でエラー0件。",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（3件中3件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/share/check/932-hold-review-584-710.html）",
+      "costUsd": 0.328313,
+      "task": "800-touch-verify"
+    },
+    {
+      "checkedAt": "2026-09-17T17:02:27+09:00",
+      "n": 931,
+      "title": "(5/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
+      "decision": "pass",
+      "reason": "対象10件（awaiting_check 919・hold 1/6/30/42/157/469/470/486/487)の判定が queue.json・公開queue_light.json・確認ページで完全一致し、919は矛盾検品でFAIL差し戻し、hold9件中7件がwaitingへ再開・2件は理由付きでhold継続、commitはoriginにpush済み、verify_click.mjsでも",
+      "touchCheckSummary": "押した結果：無反応0件・コンソールエラー0件（0件中0件を実クリック）（対象: https://tamago2022.github.io/tamago-shinchoku/status/public/queue_light.json）",
+      "costUsd": 0.3537878,
+      "task": "800-touch-verify"
+    }
+  ]
+}

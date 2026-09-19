@@ -1,0 +1,53 @@
+{
+  "about": "967 覆面調査員：お客さんのふりをして案内人に言う言葉。ここを足せば試す数が増える。",
+  "target": "share/check/959-gemini-live-tamago.html",
+  "cases": [
+    {"id":"A1","g":"名前の聞き取り","say":"青葉市子、ある？","want":{"kind":"music","artist":"青葉市子"}},
+    {"id":"A2","g":"名前の聞き取り","say":"あおばいちこの曲かけて","want":{"kind":"music","artist":"青葉市子"}},
+    {"id":"A3","g":"名前の聞き取り","say":"青葉一子ってあるかな","want":{"kind":"music","artist":"青葉市子"},"note":"聞き間違い・誤変換"},
+    {"id":"A4","g":"名前の聞き取り","say":"ハリー・ベラフォンテ聞きたい","want":{"kind":"music","artist":"Harry Belafonte"}},
+    {"id":"A5","g":"名前の聞き取り","say":"ハリーベラフォンティある？","want":{"kind":"music","artist":"Harry Belafonte"},"note":"聞き間違い"},
+    {"id":"A6","g":"名前の聞き取り","say":"King Gnuある？","want":{"kind":"music","artist":"King Gnu"}},
+    {"id":"A7","g":"名前の聞き取り","say":"キング・ヌーある？","want":{"kind":"music","artist":"King Gnu"},"note":"中黒が入った聞き取り"},
+    {"id":"A8","g":"名前の聞き取り","say":"ユーミン聞きたい","want":{"kind":"music","artist":"松任谷由実"}},
+    {"id":"A9","g":"名前の聞き取り","say":"ゆーみんの、ある？","want":{"kind":"music","artist":"松任谷由実"}},
+    {"id":"A10","g":"名前の聞き取り","say":"坂本龍一かけて","want":{"kind":"music","artist":"坂本龍一"}},
+    {"id":"A11","g":"名前の聞き取り","say":"さかもとりゅういち、ある？","want":{"kind":"music","artist":"坂本龍一"}},
+    {"id":"A12","g":"名前の聞き取り","say":"教授のやつ、ある？","want":{"kind":"music","artist":"坂本龍一"},"note":"通称"},
+
+    {"id":"B1","g":"地域","say":"アジアの曲が聴きたい","want":{"kind":"music"}},
+    {"id":"B2","g":"地域","say":"日本の曲でお願い","want":{"kind":"music"}},
+    {"id":"B3","g":"地域","say":"ブラジルの曲ある？","want":{"kind":"music"}},
+    {"id":"B4","g":"地域","say":"韓国の曲かけて","want":{"kind":"music"}},
+    {"id":"B5","g":"地域","say":"北欧の曲が聴きたいな","want":{"kind":"music"}},
+
+    {"id":"C1","g":"棚","say":"動物の見たい","want":{"kind":"cute"}},
+    {"id":"C2","g":"棚","say":"踊りのやつ","want":{"kind":"dance"}},
+    {"id":"C3","g":"棚","say":"なんか食べ物の","want":{"kind":"food"}},
+    {"id":"C4","g":"棚","say":"ことば、名言みたいなの","want":{"kind":"joy"}},
+    {"id":"C5","g":"棚","say":"旅の気分","want":{"kind":"travel"}},
+    {"id":"C6","g":"棚","say":"笑える動画ない？","want":{"kind":"laugh"}},
+
+    {"id":"D1","g":"気分","say":"うれしい気分","want":{"kind":"music"}},
+    {"id":"D2","g":"気分","say":"しずかなやつ","want":{"kind":"music"}},
+    {"id":"D3","g":"気分","say":"泣きたい","want":{"kind":"music"}},
+    {"id":"D4","g":"気分","say":"寝る前に聴くやつ","want":{"kind":"music"}},
+
+    {"id":"E1","g":"意地悪","say":"ポッドキャストある？","want":{"kind":"ASK"},"note":"棚に無い種類。musicに落とさず一度だけ聞き返すのが正解"},
+    {"id":"E2","g":"意地悪","say":"なんかいい感じの","want":{"kind":"ASK"},"note":"曖昧。どの棚か一度だけ聞くのが正解"},
+    {"id":"E3","g":"意地悪","say":"猫の動画と、しずかな曲、両方ちょうだい","want":{"kind":"ONE"},"note":"2つ同時。kindは1つに決めるのが正解"},
+    {"id":"E4","g":"意地悪","say":"踊れるやつ…あ、やっぱり食べ物で","want":{"kind":"food"},"note":"途中で気が変わる"},
+    {"id":"E5","g":"意地悪","say":"架空田太郎の曲ある？","want":{"kind":"music","artist":"__NONE__"},"note":"存在しない人。0件で正直に言うのが正解"},
+
+    {"id":"G1","g":"旅の続き","say":"ノラ・ジョーンズ","want":{"kind":"music","artist":"Norah Jones"}},
+    {"id":"G2","g":"旅の続き","say":"この感じで、次","want":{"kind":"MORE"},"note":"『ほかのを見せて』。道具を呼び直さず、次の4枚。重複ゼロが正解","after":"G1"}
+  ],
+  "fukabori": {
+    "on":"A10",
+    "q":[
+      {"id":"F1","say":"1番の曲、何年の？","need":"year"},
+      {"id":"F2","say":"これって代表曲なの？","need":"__NEVER__"},
+      {"id":"F3","say":"このアーティスト、どんな人？","need":"about"}
+    ]
+  }
+}

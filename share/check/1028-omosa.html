@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1028 ごきげん補給所の重さ（実測・4つの数字）</title>
+<style>
+:root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;}
+*{box-sizing:border-box;}
+body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 14px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+a{color:var(--ao);}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.05em;margin:0 0 6px;}
+h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.05em;margin:36px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+.date{color:var(--sub);font-size:0.8rem;margin-bottom:18px;}
+.fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.04rem;}
+.fix p{margin:0 0 10px;} .fix p:last-child{margin:0;}
+.note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
+.warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;}
+table{width:100%;border-collapse:collapse;font-size:0.84rem;min-width:520px;}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+tr:last-child td{border-bottom:none;}
+.no{color:var(--aka);font-weight:700;} .yes{color:var(--midori);font-weight:700;} .mi{color:var(--ki);font-weight:700;}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;min-width:0;}
+.card .k{font-size:0.72rem;color:var(--sub);letter-spacing:.04em;margin:0 0 4px;}
+.card .v{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.5rem;line-height:1.25;margin:0 0 3px;word-break:break-word;}
+.card .s{font-size:0.75rem;color:var(--sub);line-height:1.5;}
+.card.bad .v{color:var(--aka);} .card.ok .v{color:var(--midori);} .card.mid .v{color:var(--ki);}
+.bar{height:9px;border-radius:5px;background:#e8e2d4;overflow:hidden;display:flex;margin:4px 0 2px;}
+.bar i{display:block;height:100%;}
+.leg{font-size:0.72rem;color:var(--sub);}
+code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;word-break:break-all;}
+footer{color:var(--sub);font-size:0.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+@media (max-width:420px){ body{font-size:15px;padding-left:11px;padding-right:11px;} .cards{grid-template-columns:1fr;} table{font-size:0.8rem;} h1{font-size:1.15rem;} }
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1028</div>
+<h1>ごきげん補給所は、どれだけ重いのか ― 測りました</h1>
+<div class="date">2026-09-23 10:46〜11:48 実測／叩いた先：<code>https://joy-relief-station.lovable.app/</code>（Lovable配信の本番）／測った道具：<code>tools/omosa.mjs</code>（headless Chrome・課金0）</div>
+
+<div class="fix">
+<p>★<b>今回は「軽くする」ことは一切していません。「重さを測る物差し」を作りました。</b></p>
+<p>理由：<b>物差しが無いと「軽くしました」が本当かどうか誰にも分からないからです。</b>
+今日だけで「動いているのに何も取れていない“嘘の緑”」を何件も見つけました。同じ轍を踏まないように、先に目盛りを打ちます。</p>
+<p>この4つの数字は <code>node tools/omosa.mjs</code> で<b>いつでも同じ手順で測り直せます。</b>
+進捗表にも1行で出ます（<code>tools/hantei.py</code> の <code>omosa()</code>）。<b>前より重くなったら赤になります。</b></p>
+</div>
+
+<h2>1. 4つの数字</h2>
+<div class="cards"><div class="card bad"><p class="k">① トップが送ってくる量</p><p class="v">2.92 MB</p><p class="s">34本の通信（キャッシュ無し・1280px）</p></div><div class="card bad"><p class="k">② 棚編集の反応</p><p class="v">28秒でも出ない</p><p class="s">棚編集の画面は開くが「読み込み中…」のまま中身が来ない</p></div><div class="card bad"><p class="k">③ URLを貼って落ちた回数</p><p class="v">6回中6回</p><p class="s">曲ページのURLを開いて実測（100.0%・1回あたり0.0秒）</p></div><div class="card ok"><p class="k">④ スマホ幅(375px)</p><p class="v">測れていません</p><p class="s">横はみ出しは測れていません</p></div></div>
+<div class='fix'><p><b>一番でかい1つ＝</b><code>joy-relief-station.lovable.app/assets/youtube-id-map-D3kTqsFk.js</code><br><b>819 KB</b>（送られてくる量の<b>27%</b>／JS全体の<b>57%</b>）。これは<b>gzipで縮めた後の、実際に線を流れる大きさ</b>です。</p><p>★過去にDevinが2回とも「<code>youtube-id-map</code>が犯人」と当てていました。<b>今日叩き直しても、やはりこれが1位でした。</b>見立てではなく実測です。</p></div>
+
+<h2>2. 何が重いのか（内訳）</h2>
+<div class="bar"><i style="width:47.87%;background:#c4483a"></i><i style="width:26.61%;background:#3a5f7a"></i><i style="width:23.71%;background:#8a6a1f"></i><i style="width:1.11%;background:#3a7a52"></i><i style="width:0.37%;background:#5f8a7a"></i><i style="width:0.27%;background:#7a7568"></i><i style="width:0.05%;background:#c9c2b2"></i></div>
+<p class="leg"><span style="color:#c4483a">■</span>JS 1434 KB(48%)　<span style="color:#3a5f7a">■</span>画像 797 KB(27%)　<span style="color:#8a6a1f">■</span>動画音声 710 KB(24%)　<span style="color:#3a7a52">■</span>CSS 33 KB(1%)　<span style="color:#5f8a7a">■</span>データ(JSON) 11 KB(0%)　<span style="color:#7a7568">■</span>HTML 8 KB(0%)　<span style="color:#c9c2b2">■</span>その他 2 KB(0%)</p>
+
+
+<h2>3. でかい順に10本</h2>
+<div class="wrap"><table>
+<tr><th>もの</th><th>種類</th><th>大きさ</th><th>割合</th></tr>
+<tr><td><code>joy-relief-station.lovable.app/assets/youtube-id-map-D3kTqsFk.js</code></td><td>JS</td><td style='white-space:nowrap'>819 KB</td><td>27%</td></tr><tr><td><code>joy-relief-station.lovable.app/media/joy-relief-footer-loop.mp4</code></td><td>動画音声</td><td style='white-space:nowrap'>710 KB</td><td>24%</td></tr><tr><td><code>joy-relief-station.lovable.app/assets/index-DoN_G9Cx.js</code></td><td>JS</td><td style='white-space:nowrap'>560 KB</td><td>19%</td></tr><tr><td><code>joy-relief-station.lovable.app/media/joy-relief-footer-poster.jpg</code></td><td>画像</td><td style='white-space:nowrap'>203 KB</td><td>7%</td></tr><tr><td><code>joy-relief-station.lovable.app/assets/world-laugh-BNoeiEfF.jpg</code></td><td>画像</td><td style='white-space:nowrap'>152 KB</td><td>5%</td></tr><tr><td><code>joy-relief-station.lovable.app/assets/world-travel-DcYsdVDb.jpg</code></td><td>画像</td><td style='white-space:nowrap'>116 KB</td><td>4%</td></tr><tr><td><code>joy-relief-station.lovable.app/assets/world-dance-CzWAQ1GK.jpg</code></td><td>画像</td><td style='white-space:nowrap'>90 KB</td><td>3%</td></tr><tr><td><code>joy-relief-station.lovable.app/assets/world-joy-C9Bt9Kfd.jpg</code></td><td>画像</td><td style='white-space:nowrap'>71 KB</td><td>2%</td></tr><tr><td><code>joy-relief-station.lovable.app/assets/world-food-BH1Rsmij.jpg</code></td><td>画像</td><td style='white-space:nowrap'>47 KB</td><td>2%</td></tr><tr><td><code>joy-relief-station.lovable.app/assets/world-music-CIbWXy9K.jpg</code></td><td>画像</td><td style='white-space:nowrap'>45 KB</td><td>2%</td></tr>
+</table></div>
+<p class="leg">※ 大きさは<b>gzipで縮めた後・線を実際に流れる量</b>。キャッシュを切って毎回まっさらで測っています。</p>
+
+<h2>3-2. 「URLを貼っても落ちる」を回数で</h2><div class='note'>★たまごさんの言葉は<b>2通りに読めます。決めつけずに両方やりました。</b><b>(あ)</b>＝棚編集の中の欄にYouTubeのURLを貼る。<b>(い)</b>＝曲ページのURLを開く。</div><div class='wrap'><table><tr><th>どの読み方か</th><th>試した</th><th>落ちた</th><th>割合</th><th>落ちたときに起きていたこと</th></tr><tr><td><b>(い) 曲ページのURLを開く</b><br><span class='leg'>1280px</span></td><td>6回</td><td class='no'>6回</td><td>100.0%</td><td>画面が5049ms止まった／画面が8000ms返事をしない／画面が固まって返事をしない／画面が4040ms止まった</td></tr><tr><td><b>(あ) 棚編集の欄にYouTubeのURLを貼る</b></td><td colspan='4' class='mi'>測れていません — 貼る所にたどり着けませんでした</td></tr></table></div><p class='leg'>※「落ちた」の定義＝描画係が死んだ／8秒返事をしない／中身が真っ白／画面が3秒以上止まった、のどれか。人の目ではなく機械が同じ基準で毎回判定します。</p>
+
+
+
+<h2>4. この物差しの使い方</h2>
+<div class="note">
+<b>測り直す</b> … 工場（Mac）で <code>node tools/omosa.mjs</code>。<br>
+<b>サンドボックスから頼む</b> … <code>gaibu_kuchi.enqueue_job("kakunin", {"mode":"omosa","runs":20})</code><br>
+<b>何を測るか変える</b> … <code>tools/omosa_target.json</code> だけ直す（URL・試行回数・幅）。<br>
+<b>進捗表の1行</b> … <code>tools/hantei.py</code> の <code>omosa()</code>。前回比+5%超で🔴。<br>
+<b>この紙を作り直す</b> … <code>python3 tools/omosa_page.py</code>（数字は必ず <code>status/omosa_last.json</code> から読みます。手打ちしません）。<br>
+★<b>新しい常駐（定期タスク）は1つも増やしていません。</b>呼ばれたときだけ走ります。
+</div>
+
+<h2>5. 正直に書いておくこと</h2>
+<div class="warn">★<b>棚編集の「押してから動くまで何秒か」は、そもそも中身が出てこないので測れていません。</b>出したのは「開いてから 28秒待っても『読み込み中…』が消えない」という数字です。鍵（管理ログイン）を使えば違う結果になる可能性がありますが、<b>鍵を使う測定はしていません</b>（物差しは課金0・鍵なしで誰でも回せる形にしたいため）。<br>★<b>(あ)『棚編集の欄にYouTubeのURLを貼る』は回数が出ていません。</b>理由：不明。<b>『落ちなかった』ではありません。『測れていない』です。</b>数える箱はもう出来ているので、棚編集の中に入れさえすれば同じ手順で数字が出ます。<br>★<b>375pxの数字が入っていません。</b>測定が途中で終わっています。<br>★<b>「毎回じゃないけど落ちる」を回数で出す、という宿題は残っています。</b>今日できたのは『何回試して何回落ちたか』を数える箱まで。中身を埋めるには棚編集の中に入る必要があります。</div>
+
+<footer>
+2026-09-23 #1028／生の数字：<code>status/omosa_last.json</code>・履歴 <code>status/omosa_log.jsonl</code><br>
+測った道具：<code>tools/omosa.mjs</code>（headless Chrome を一時プロファイルで起動し使用後SIGKILL。たまごさんの普段のChromeには触っていません。GETのみ・保存や送信のボタンは押していません・課金0）<br>
+測るのにかかった時間：136秒
+</footer>
+</body>
+</html>

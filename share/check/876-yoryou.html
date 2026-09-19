@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#876 容量が減る原因の実測＋掃除＋iMacへ逃がす候補 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #876 容量が減る原因の実測＋掃除＋iMacへ逃がす候補</div>
+<h1>#876 容量が減る原因の実測＋掃除＋iMacへ逃がす候補</h1>
+<div class="date">2026-09-15 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+空き容量の減りが速い原因を実測。真犯人は2つ。①Google Driveが「ミラーモード」でクラウド上のデータをローカルにまるごとコピーしており（実測69GB）、Driveへ移動してもディスクは減らない構造になっている。②Desktop/.tmp.driveuploadというGoogle Drive同期の一時キューが9/5から<b>今も増え続けている</b>（実測12GB・19万個のファイル、直近10分でも81件増加=進行中）。<br><br>すぐ消せるゴミ（アプリキャッシュ・壊れたworktree・npmキャッシュ 計約10GB）は本日中にすでに回収し、空き容量を19.5GB→33.2GBへ回復させた。Claude関連（~/.claude 4.9GB）は1日あたり約0.18GBしか増えておらず、今回の犯人ではないと確認した。<br><br><b>iMacへ逃がせる候補（実行はたまごさんのOK後）</b>：Movies/.gallery(CapCut書き出しキャッシュ 5.0GB)、Documents/AI作業/obsidian_vault_backup_2026-09-06(過去のVaultバックアップ)、AI作業内の過去アーカイブ(2026-09-02・デスクトップ整理_2026-09-05)。<br><b>触ると壊れるもの</b>：リポジトリ本体(tamago-shinchoku/joy-relief-station)、.worktrees配下(走行中の可能性)、Obsidian Vault本体、~/.claude(トランスクリプト=記録)、Google Drive CloudStorage本体(移動すると同期が壊れる)。<br><br>
+<b>追加分（別セッションで並行実施）</b>：joy-relief-stationの完了済みworktree残骸44件を実際に削除（走行中・未完了タスクは自動判定でスキップ、114件→72件）。tools/tamago_maintenance.pyの日次実行にtools/worktree_reaper.py（worktree残骸の自動整理）とtools/archive_old_launch_logs.py（古いログの自動退避）を新たに接続し、以後は毎朝9:25の定期実行で自動的に片づく仕組みにした（今まではどちらも手で叩いた時しか動かなかった）。tamago-shinchoku本体の.gitはgit gc --aggressiveを実行中（肥大化した1000件超のブランチ履歴の圧縮、完了まで数時間かかる見込み・安全な圧縮のみで履歴は消えない）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>40.2GB→29.9GB</b><span>24時間の空き容量推移(実測ログ)</span></div>
+  <div class="num"><b>約21〜22GB/日</b><span>掃除前の純粋な減少ペース</span></div>
+  <div class="num"><b>12GB・19万件</b><span>.tmp.driveupload同期キュー(今も増加中)</span></div>
+  <div class="num"><b>69GB</b><span>Googleドライブのミラーモード実体(要GUI設定変更)</span></div>
+  <div class="num"><b>0.18GB/日</b><span>Claude関連の1日増加量(原因ではない)</span></div>
+  <div class="num"><b>33.2GB</b><span>現在の空き容量(目標30GB達成)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>（リンクなし）</b></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Googleドライブをミラーモード→ストリーミングモードへ切替(69GB解放見込み)</td><td class="no">AI側では変更不可・Google Driveアプリの設定でGUI操作が必要</td></tr>
+<tr><td>.tmp.driveupload暴走キュー(12GB・今も増加)</td><td class="no">原因はGoogle Drive同期の異常。安全策はアプリの再起動(GUI操作)。AI側からの強制終了は同期中データの破損リスクがあるため見送った</td></tr>
+<tr><td>システム内部の古い旧ボリューム(旧Macintosh SSD等・約170GB)</td><td class="no">起動ディスク構成に関わるため削除は要相談・今回は未実行</td></tr>
+<tr><td>アプリキャッシュ・ゴミ箱・npmキャッシュ(約10GB)</td><td class="yes">実行済み</td></tr>
+<tr><td>queue_history/とClaude Desktopキャッシュに保存上限を追加(再発防止)</td><td class="yes">実行済み(disk_guardian.pyへ組み込み)</td></tr>
+<tr><td>Claude関連ゴミ(~/.claude 4.9GB)の仕分け</td><td class="yes">トランスクリプト4.8GBは記録として保持、1日の増加は約0.18GBで容量減少の原因ではないと確認</td></tr>
+<tr><td>iMacへ逃がせる候補の洗い出し</td><td class="yes">movies書き出しキャッシュ・過去バックアップ等を一覧化(上記参照)。移すのはOK待ち</td></tr>
+<tr><td>空き容量30GB以上に回復</td><td class="yes">達成(33.2GB、その後も30GB前後を維持)</td></tr>
+<tr><td>worktree残骸（joy-relief-station・114件）の削除</td><td class="yes">実行済み・44件削除（走行中・未完了は自動判定でスキップ）。114件→72件</td></tr>
+<tr><td>worktree_reaper.py・archive_old_launch_logs.pyの自動化</td><td class="yes">tamago_maintenance.pyの日次実行(毎朝9:25)に接続済み。以後は手で叩かなくても毎日片づく</td></tr>
+<tr><td>tamago-shinchoku本体の.git肥大化(2.4GB)</td><td class="no">git gc --aggressive実行中（システム負荷が高く数時間かかる見込み・完了は次回計測で確認）</td></tr>
+</table>
+
+<footer>
+このページは #876 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

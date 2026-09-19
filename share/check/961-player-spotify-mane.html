@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>961｜曲を止めずにページを移る（Spotifyのやり方をそのまま）</title>
+<style>
+  :root{
+    --paper:#f6f3ec; --ink:#1c1a17; --sub:#6b645a; --line:#ddd6c9;
+    --accent:#b4482a; --ok:#2f6b3f; --ng:#a8321f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.75}
+  .wrap{max-width:46rem;margin:0 auto;padding:2.2rem 1.25rem 11rem}
+  h1{font-size:1.45rem;line-height:1.45;margin:0 0 .3rem;letter-spacing:.01em}
+  .lede{color:var(--sub);font-size:.92rem;margin:0 0 2rem}
+  h2{font-size:1.02rem;margin:2.4rem 0 .7rem;padding-bottom:.35rem;border-bottom:1px solid var(--line)}
+  p{margin:.55rem 0}
+  .note{font-size:.88rem;color:var(--sub)}
+  pre{background:#fff;border:1px solid var(--line);border-radius:.5rem;
+    padding:.85rem .95rem;overflow:auto;font-size:.8rem;line-height:1.6;margin:.8rem 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  a{color:var(--accent)}
+  .nav{display:flex;gap:.5rem;flex-wrap:wrap;margin:.2rem 0 1.2rem}
+  .nav button{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
+    border-radius:999px;padding:.45rem .95rem;font-size:.88rem;cursor:pointer}
+  .nav button[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  #stage{border:1px solid var(--line);background:#fff;border-radius:.7rem;padding:1.1rem 1.15rem;min-height:9rem}
+  #stage h3{margin:.1rem 0 .5rem;font-size:1.05rem}
+  .meter{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:1rem 0}
+  .meter div{background:#fff;border:1px solid var(--line);border-radius:.5rem;padding:.6rem .7rem;text-align:center}
+  .meter b{display:block;font-size:1.5rem;line-height:1.2}
+  .meter span{font-size:.72rem;color:var(--sub)}
+  .verdict{font-weight:700}
+  .verdict.ok{color:var(--ok)} .verdict.ng{color:var(--ng)}
+  /* 常駐プレイヤー：ページ（#stage）の外にいる。ここが肝 */
+  #player{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+    padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom));display:flex;align-items:center;gap:.8rem;z-index:50}
+  #player img{width:44px;height:44px;border-radius:.35rem;flex:0 0 auto}
+  #player .t{flex:1 1 auto;min-width:0}
+  #player .t b{display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #player .t span{font-size:.75rem;color:var(--sub)}
+  #player button{appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    border-radius:999px;width:2.6rem;height:2.6rem;font-size:1rem;cursor:pointer;flex:0 0 auto}
+  #player button.ghost{background:#fff;color:var(--ink)}
+  ol,ul{padding-left:1.25rem} li{margin:.3rem 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>曲を止めずにページを移る／画面を消しても流れる</h1>
+<p class="lede">961番・2026-09-19。Spotifyのやり方をそのまま真似した実物。このページの中で実際に動きます。</p>
+
+<h2>まず触ってみてください</h2>
+<p>下の丸い再生ボタンを押して、音が出たら、そのまま下の「トップ／曲／案内所／目安箱」を順番に押してページを移ってください。<strong>音は一度も途切れません。</strong>そのあと、スマホの画面を消してください。<strong>消しても流れ続けます。ロック画面に曲名と絵と再生ボタンが出ます。</strong></p>
+
+<div class="nav" id="nav"></div>
+<div id="stage"></div>
+
+<div class="meter">
+  <div><b id="mNav">0</b><span>ページを移った回数</span></div>
+  <div><b id="mCut">0</b><span>音が途切れた回数</span></div>
+  <div><b id="mSec">0</b><span>鳴っている秒数</span></div>
+</div>
+<p class="verdict" id="verdict">まだ再生していません。</p>
+
+<h2>なぜ途切れないのか（Spotifyと同じ形）</h2>
+<p>Spotifyのウェブ版は、曲を鳴らす部品が「ページの中」ではなく「ページの外側」に置いてあります。画面の中身だけを差し替え、鳴らす部品には一切触らない。だから曲は切れない。ここでやっているのも同じで、鳴らしている <code>&lt;audio&gt;</code> は <code>#stage</code>（＝ページの中身）の外にいて、ページを移っても作り直されません。</p>
+<p>ごきげん補給所も同じ形になっています。<code>src/routes/__root.tsx</code> の中で、ページの中身（<code>&lt;Outlet /&gt;</code>）より<strong>外側</strong>に <code>&lt;MiniPlayer /&gt;</code> と <code>&lt;AudioEngine /&gt;</code> が置いてある。つまり土台はもうできています。</p>
+
+<h2>画面を消しても流れる条件（ここを外すと必ず止まる）</h2>
+<ul>
+  <li><strong>音は <code>&lt;audio&gt;</code> 要素で鳴らす。</strong>Web Audio API（AudioContext）で鳴らすと、iPhoneは画面を消した瞬間に止めます。鳴っている <code>&lt;audio&gt;</code> だけが、バックグラウンドでも音の権利を持ち続けます。</li>
+  <li><strong>その <code>&lt;audio&gt;</code> をページ遷移で消さない。</strong>消した瞬間に音の権利も消えます。</li>
+  <li><strong>ロック画面の表示は Media Session API で渡す。</strong><code>navigator.mediaSession.metadata</code> に曲名・アーティスト・アルバム・アートワークを入れ、<code>setActionHandler</code> で再生／一時停止／前の曲／次の曲／シークを受け取ります。渡さないと「ブラウザ」としか出ません。</li>
+</ul>
+
+<h2>YouTubeの規約は、本当に壁か（条文で確認した）</h2>
+<p>壁です。推測ではなく、YouTube API サービスの規約にそのまま書いてあります。</p>
+<pre>YouTube API Services - Developer Policies
+  I. Additional Prohibitions
+  「You and your API Clients must not ... 9. create, include, or promote features
+   that play content, including audio or video components, from a background player,
+   meaning a player that is not displayed in the page, tab, or screen that the user is viewing」
+  出典 https://developers.google.com/youtube/terms/developer-policies
+
+YouTube API Services - Required Minimum Functionality
+  「Embedded players must have a viewport that is at least 200px by 200px.」
+  「You must not display overlays, frames, or other visual elements in front of
+   any part of a YouTube embedded player, including player controls.」
+  出典 https://developers.google.com/youtube/terms/required-minimum-functionality</pre>
+<p>読み方はこうです。</p>
+<ul>
+  <li><strong>画面を消して流し続ける＝禁止。</strong>「ユーザーが見ている画面に表示されていないプレイヤー」で鳴らすな、と名指しで書いてある。YouTubeの曲でこれをやる道は、規約上ありません。</li>
+  <li><strong>ページを移っても切れない＝禁止されていない。</strong>プレイヤーが画面に見えたまま残るなら条文に触れません。ただし見えている枠は小さくできず、上に何かを重ねることもできません（上の2つ目の引用）。つまりYouTubeのまま残せるのは「そこそこ大きい、何も被せない、見えている小窓」までです。</li>
+</ul>
+
+<h2>だから、代わりの道を3つ</h2>
+<ol>
+  <li><strong>自前の音源を持つ（これが本命）</strong>。権利の取れている音／自分たちで録った音を <code>&lt;audio&gt;</code> で鳴らす。画面オフもロック画面表示も、規約の壁なしで全部できます。ごきげん補給所には <code>AudioEngine</code>（自前音源の常駐オーディオ）がもう入っているので、足りないのは音源と、下に書いた Media Session の配線だけです。</li>
+  <li><strong>再生そのものは Spotify / Apple Music に渡す</strong>。曲ごとに各サービスへ飛ばす。ネイティブアプリがバックグラウンド再生を担当するので、画面を消しても流れ、LINEの返信もできます。ごきげん補給所は「探す場所・選ぶ場所」に徹する。規約違反ゼロ、作る量も一番少ない。</li>
+  <li><strong>YouTubeの曲は「見えている小窓」までで諦める</strong>。ページを移っても切れない小窓は合法なので、そこまでは実装する。画面オフのときは音を止め、ロック画面には出さない。YouTube枠は規約どおり小さくせず、上に何も重ねない。</li>
+</ol>
+<p class="note">3つを混ぜられます。曲ごとに「自前音源あり／Spotifyへ渡す／YouTube小窓まで」の3種類を持たせ、自前音源のある曲だけ画面オフで流す、という形が現実的です。</p>
+
+<h2>ごきげん補給所に足す配線（そのまま貼れる形）</h2>
+<p>ロック画面に曲名・絵・再生ボタンを出す部分です。<code>AudioEngine</code> の <code>&lt;audio&gt;</code> に対して1回呼ぶだけ。</p>
+<pre>// src/lib/mediaSession.ts
+export type NowPlaying = { title: string; artist: string; album?: string; artwork?: string };
+
+export function attachMediaSession(
+  audio: HTMLAudioElement,
+  track: NowPlaying,
+  handlers: { next?: () => void; prev?: () => void } = {},
+) {
+  if (!("mediaSession" in navigator)) return;
+  const ms = navigator.mediaSession;
+
+  ms.metadata = new MediaMetadata({
+    title: track.title,
+    artist: track.artist,
+    album: track.album ?? "ごきげん補給所",
+    artwork: track.artwork
+      ? [96, 128, 192, 256, 384, 512].map((s) => ({
+          src: track.artwork!, sizes: `${s}x${s}`, type: "image/png",
+        }))
+      : [],
+  });
+
+  const set = (a: MediaSessionAction, fn: (() =&gt; void) | null) =&gt; {
+    try { ms.setActionHandler(a, fn as never); } catch { /* 端末が対応していない動作は黙って無視 */ }
+  };
+  set("play",  () =&gt; { void audio.play(); });
+  set("pause", () =&gt; audio.pause());
+  set("stop",  () =&gt; { audio.pause(); audio.currentTime = 0; });
+  set("seekbackward", () =&gt; { audio.currentTime = Math.max(0, audio.currentTime - 10); });
+  set("seekforward",  () =&gt; { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
+  set("seekto", (d: any) =&gt; { if (typeof d?.seekTime === "number") audio.currentTime = d.seekTime; });
+  set("previoustrack", handlers.prev ?? null);
+  set("nexttrack",     handlers.next ?? null);
+
+  const sync = () =&gt; {
+    ms.playbackState = audio.paused ? "paused" : "playing";
+    if (Number.isFinite(audio.duration) &amp;&amp; audio.duration &gt; 0 &amp;&amp; "setPositionState" in ms) {
+      try {
+        ms.setPositionState({
+          duration: audio.duration,
+          playbackRate: audio.playbackRate,
+          position: Math.min(audio.currentTime, audio.duration),
+        });
+      } catch { /* 値が揃わない瞬間は無視 */ }
+    }
+  };
+  audio.addEventListener("play", sync);
+  audio.addEventListener("pause", sync);
+  audio.addEventListener("timeupdate", sync);
+  audio.addEventListener("loadedmetadata", sync);
+  sync();
+}</pre>
+<p class="note">やってはいけないこと：ページ遷移で <code>&lt;audio&gt;</code> を作り直す／<code>src</code> を空にする／AudioContext で鳴らし直す。どれも画面オフで止まります。</p>
+
+<h2>機械で動かした結果（このページの中身をそのまま実行）</h2>
+<p>ブラウザを開かずに、このページのスクリプトをそのまま実行して、ページを8回移し替えたときの数字です。</p>
+<pre>$ node harness.js 961-player-spotify-mane.html
+再生後            : paused=false
+ページを移った回数 : 8
+音が途切れた回数   : 0
+移動後 paused      : false
+曲送り後の途切れ   : 0
+ロック画面の操作   : 8種すべて登録
+ロック画面の表示   : 朝のいれかわり / 卵商店街 / 絵6枚
+自分で止めた時     : 途切れ 0 → 0
+
+判定: OK（8回移って途切れ0・ロック画面の配線あり）</pre>
+<p class="note">これは筋が通っていることの確認までです。画面を消して本当に流れ続けるか・ロック画面に絵が出るかは、たまごさんの実機でしか確かめられません。上のボタンで試してください。</p>
+
+<h2>目安箱の門番（同じ日にもう1つ）</h2>
+<p>954番で見つかった「目安箱が緑の見出しの箱の中に入っていた」は、置き場所を直しても次のページでまた起きます。ページ側に置けること自体を塞ぎました。コミットの手前で止まります。</p>
+<pre>$ python3 tools/gate_meyasubako.py --selftest
+OK  自己テスト6件すべて通過（事故サンプル検出／正常系素通し／順序違反検出／別関数ごしの設置／ストップモーション最後／コメント誤検出なし）
+
+$ git commit   # ページに目安箱を置いたコミット
+✗ src/routes/watch.tsx:1041  &lt;FeedbackDoor /&gt; をページ側に置いている。目安箱は __root.tsx の1箇所だけ（規則1）
+✗ src/routes/watch.tsx:1041  &lt;FeedbackDoor /&gt; が &lt;section&gt;（919行目・見出し／ヒーローの箱）の中にある
+🚧 目安箱の門番がコミットを止めました。</pre>
+
+<h2>このページで何を測っているか</h2>
+<pre id="raw">（まだ計測していません）</pre>
+<p class="note">「音が途切れた回数」は、こちらが止めていないのに <code>pause</code> / <code>emptied</code> / <code>stalled</code> が起きた回数です。ページを移って0のままなら、途切れていません。</p>
+
+</div>
+
+<!-- ★常駐プレイヤー：#stage（ページの中身）の外にいる。ページを移っても作り直さない -->
+<div id="player" hidden>
+  <img id="pArt" alt="">
+  <div class="t"><b id="pTitle">—</b><span id="pArtist">—</span></div>
+  <button id="pPrev" class="ghost" aria-label="前の曲">◀︎</button>
+  <button id="pPlay" aria-label="再生">▶</button>
+  <button id="pNext" class="ghost" aria-label="次の曲">▶︎</button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- 音を1本だけ作る（ページの外側・二度と作り直さない） ----------
+  var audio = new Audio();
+  audio.preload = "auto";
+  audio.loop = false;
+  audio.setAttribute("playsinline", "");
+
+  // 外部ファイルに頼らず、その場で音を合成して WAV にする（回線が無くても鳴る）
+  function makeWav(seconds, notes) {
+    var rate = 22050, n = Math.floor(rate * seconds);
+    var buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf), i;
+    function s(o, str) { for (var k = 0; k < str.length; k++) v.setUint8(o + k, str.charCodeAt(k)); }
+    s(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); s(8, "WAVEfmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true); s(36, "data"); v.setUint32(40, n * 2, true);
+    for (i = 0; i < n; i++) {
+      var t = i / rate;
+      var idx = Math.floor(t / 0.5) % notes.length;
+      var f = notes[idx];
+      var env = Math.min(1, (t % 0.5) * 12) * Math.max(0, 1 - (t % 0.5) / 0.5);
+      var y = (Math.sin(2 * Math.PI * f * t) * 0.55 + Math.sin(2 * Math.PI * f * 2 * t) * 0.18) * env * 0.32;
+      v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, y)) * 32767, true);
+    }
+    return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+  }
+
+  function makeArt(hue, label) {
+    var c = document.createElement("canvas"); c.width = c.height = 512;
+    var g = c.getContext("2d");
+    g.fillStyle = "hsl(" + hue + ",26%,90%)"; g.fillRect(0, 0, 512, 512);
+    g.fillStyle = "hsl(" + hue + ",38%,38%)";
+    for (var i = 0; i < 5; i++) { g.beginPath(); g.arc(120 + i * 62, 300 + Math.sin(i) * 60, 46 - i * 5, 0, 7); g.fill(); }
+    g.fillStyle = "#1c1a17"; g.font = "bold 74px sans-serif"; g.fillText(label, 44, 120);
+    return c.toDataURL("image/png");
+  }
+
+  var tracks = [
+    { title: "ごきげんの合図", artist: "卵商店街", notes: [392, 440, 523, 659], hue: 28 },
+    { title: "朝のいれかわり", artist: "卵商店街", notes: [349, 440, 523, 587], hue: 150 },
+    { title: "案内所のうた",   artist: "卵商店街", notes: [330, 392, 494, 587], hue: 205 }
+  ];
+  tracks.forEach(function (t, i) { t.src = makeWav(12, t.notes); t.art = makeArt(t.hue, String(i + 1)); });
+
+  var cur = 0, navCount = 0, cutCount = 0, wantPlaying = false, switching = false;
+
+  var el = {
+    player: document.getElementById("player"),
+    art: document.getElementById("pArt"), title: document.getElementById("pTitle"),
+    artist: document.getElementById("pArtist"), play: document.getElementById("pPlay"),
+    prev: document.getElementById("pPrev"), next: document.getElementById("pNext"),
+    nav: document.getElementById("nav"), stage: document.getElementById("stage"),
+    mNav: document.getElementById("mNav"), mCut: document.getElementById("mCut"),
+    mSec: document.getElementById("mSec"), verdict: document.getElementById("verdict"),
+    raw: document.getElementById("raw")
+  };
+  el.player.hidden = false;
+
+  // ---------- Media Session（ロック画面に出す） ----------
+  function attachMediaSession(t) {
+    if (!("mediaSession" in navigator)) return;
+    var ms = navigator.mediaSession;
+    try {
+      ms.metadata = new MediaMetadata({
+        title: t.title, artist: t.artist, album: "ごきげん補給所",
+        artwork: [96, 128, 192, 256, 384, 512].map(function (s) {
+          return { src: t.art, sizes: s + "x" + s, type: "image/png" };
+        })
+      });
+    } catch (e) {}
+    function set(a, fn) { try { ms.setActionHandler(a, fn); } catch (e) {} }
+    set("play", function () { wantPlaying = true; audio.play(); });
+    set("pause", function () { wantPlaying = false; audio.pause(); });
+    set("stop", function () { wantPlaying = false; audio.pause(); audio.currentTime = 0; });
+    set("seekbackward", function () { audio.currentTime = Math.max(0, audio.currentTime - 10); });
+    set("seekforward", function () { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
+    set("seekto", function (d) { if (d && typeof d.seekTime === "number") audio.currentTime = d.seekTime; });
+    set("previoustrack", function () { go(-1); });
+    set("nexttrack", function () { go(1); });
+    syncPosition();
+  }
+  function syncPosition() {
+    if (!("mediaSession" in navigator)) return;
+    var ms = navigator.mediaSession;
+    ms.playbackState = audio.paused ? "paused" : "playing";
+    if (isFinite(audio.duration) && audio.duration > 0 && ms.setPositionState) {
+      try {
+        ms.setPositionState({
+          duration: audio.duration, playbackRate: audio.playbackRate,
+          position: Math.min(audio.currentTime, audio.duration)
+        });
+      } catch (e) {}
+    }
+  }
+
+  function load(i, autoplay) {
+    cur = (i + tracks.length) % tracks.length;
+    var t = tracks[cur];
+    switching = true;
+    setTimeout(function () { switching = false; }, 400);
+    audio.src = t.src;
+    el.art.src = t.art; el.title.textContent = t.title; el.artist.textContent = t.artist;
+    attachMediaSession(t);
+    if (autoplay) { wantPlaying = true; audio.play().catch(function () {}); }
+  }
+  function go(d) { load(cur + d, true); }
+
+  el.play.addEventListener("click", function () {
+    if (audio.paused) { wantPlaying = true; if (!audio.src) load(0, false); audio.play().catch(function () {}); }
+    else { wantPlaying = false; audio.pause(); }
+  });
+  el.prev.addEventListener("click", function () { go(-1); });
+  el.next.addEventListener("click", function () { go(1); });
+
+  audio.addEventListener("play", function () { el.play.textContent = "❚❚"; syncPosition(); render(); });
+  audio.addEventListener("pause", function () {
+    el.play.textContent = "▶";
+    if (wantPlaying && !switching) { cutCount++; }  // こちらが止めていないのに止まった＝途切れ
+    syncPosition(); render();
+  });
+  ["emptied", "stalled", "abort"].forEach(function (ev) {
+    // 曲を切り替えた直後は emptied が出て当たり前なので数えない
+    audio.addEventListener(ev, function () { if (wantPlaying && !switching) { cutCount++; render(); } });
+  });
+  audio.addEventListener("ended", function () { go(1); });
+  audio.addEventListener("timeupdate", function () { syncPosition(); render(); });
+
+  // ---------- ページ（#stage だけを差し替える。プレイヤーには触らない） ----------
+  var pages = [
+    { id: "top", label: "トップ", h: "ごきげん補給所", b: "ここがトップ。曲を鳴らしたまま、下のボタンで別のページへ移ってください。プレイヤーは画面の外にいるので、何も起きません。" },
+    { id: "song", label: "曲", h: "曲のページ", b: "曲の説明が入るページ。ここへ来ても音は切れません。Spotifyで曲ページを開いても再生が続くのと同じことです。" },
+    { id: "guide", label: "案内所", h: "名カバー案内所", b: "別の棚へ移りました。これが「曲を再生したまま違う検索をする」状態です。" },
+    { id: "box", label: "目安箱", h: "目安箱", b: "目安箱はページの一番下に1つだけ。ストップモーションがその下で終わり。順番は __root.tsx が決めています。" }
+  ];
+  var current = "top";
+  function render() {
+    el.mNav.textContent = navCount;
+    el.mCut.textContent = cutCount;
+    el.mSec.textContent = Math.floor(playedMs / 1000);
+    var v = el.verdict;
+    if (playedMs === 0) { v.textContent = "まだ再生していません。"; v.className = "verdict"; }
+    else if (navCount === 0) { v.textContent = "鳴っています。次はページを移ってみてください。"; v.className = "verdict"; }
+    else if (cutCount === 0) { v.textContent = "○ ページを " + navCount + " 回移って、途切れ 0 回。"; v.className = "verdict ok"; }
+    else { v.textContent = "× 途切れが " + cutCount + " 回ありました。"; v.className = "verdict ng"; }
+    el.raw.textContent =
+      "ページを移った回数 : " + navCount + "\n" +
+      "音が途切れた回数   : " + cutCount + "\n" +
+      "鳴っていた時間(ms) : " + playedMs + "\n" +
+      "audio.paused       : " + audio.paused + "\n" +
+      "audio.currentTime  : " + (Math.round(audio.currentTime * 100) / 100) + "\n" +
+      "mediaSession対応   : " + ("mediaSession" in navigator) + "\n" +
+      "setPositionState   : " + (("mediaSession" in navigator) && !!navigator.mediaSession.setPositionState) + "\n" +
+      "audio要素の親      : " + (audio.parentNode ? "DOM内" : "DOMの外（ページ差し替えの影響を受けない）");
+  }
+  var playedMs = 0, lastTick = 0;
+  setInterval(function () {
+    var now = Date.now();
+    if (!audio.paused) { if (lastTick) playedMs += now - lastTick; }
+    lastTick = now; render();
+  }, 500);
+
+  function show(id, push) {
+    var p = pages.filter(function (x) { return x.id === id; })[0] || pages[0];
+    current = p.id;
+    el.stage.innerHTML = "<h3></h3><p></p>";
+    el.stage.querySelector("h3").textContent = p.h;
+    el.stage.querySelector("p").textContent = p.b;
+    Array.prototype.forEach.call(el.nav.children, function (b) {
+      b.setAttribute("aria-current", b.dataset.id === p.id ? "page" : "false");
+    });
+    if (push) { history.pushState({ id: p.id }, "", "#" + p.id); navCount++; }
+    render();
+  }
+  pages.forEach(function (p) {
+    var b = document.createElement("button");
+    b.textContent = p.label; b.dataset.id = p.id;
+    b.addEventListener("click", function () { show(p.id, true); });
+    el.nav.appendChild(b);
+  });
+  window.addEventListener("popstate", function (e) { show((e.state && e.state.id) || "top", false); });
+
+  load(0, false);
+  show(location.hash.replace("#", "") || "top", false);
+  render();
+})();
+</script>
+</body>
+</html>

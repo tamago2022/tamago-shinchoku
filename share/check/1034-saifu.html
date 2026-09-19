@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1034｜財布の一覧</title>
+<style>
+:root{--bg:#0b0b0c;--fg:#f2efe9;--dim:#8d8a84;--line:#26262a;--ok:#6fd08c;--ng:#ff6b5e;--warn:#ffc65c;--card:#141417}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Sans",sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}
+.wrap{max-width:980px;margin:0 auto;padding:24px 14px 80px}
+h1{font-size:22px;margin:0 0 4px;letter-spacing:.02em}
+.sub{color:var(--dim);font-size:12.5px;margin:0 0 22px}
+h2{font-size:16px;margin:36px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:680px}
+th,td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:400;font-size:11.5px;white-space:nowrap;background:#121215}
+tr:last-child td{border-bottom:0}
+.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ok{color:var(--ok)}.ng{color:var(--ng)}.warn{color:var(--warn)}
+.dim{color:var(--dim)}
+code{background:#1d1d21;border-radius:4px;padding:1px 5px;font-size:11.5px;word-break:break-all}
+.src{color:var(--dim);font-size:11px;display:block;margin-top:3px;word-break:break-all}
+.big{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 16px 12px;margin:0 0 8px}
+.big .y{font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.big .y span{font-size:15px;font-weight:400;color:var(--dim)}
+.big .k{font-size:12.5px;color:var(--dim);margin:0 0 2px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 6px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.big .y{font-size:25px}}
+.q{background:#141417;border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:11px 13px;margin:10px 0;font-size:13px}
+ul{padding-left:19px;margin:8px 0}
+li{margin:5px 0;font-size:13px}
+footer{margin-top:46px;color:var(--dim);font-size:11.5px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>財布の一覧 ─ どこから何円出ているか</h1>
+<p class="sub">2026-09-23 12:28:42 に叩いて確かめたもの。ドルは <b>1ドル＝157.16円</b>（2026-09-22 時点・console.x.ai の表示から）で円に直しています。<br>
+<b class="warn">月額（サブスク）と、使った分（従量）は別の表にしています。</b>混ざると分からなくなるので。</p>
+
+<div class="grid">
+<div class="big">
+<p class="k">9月にカードから出たと<b>公式の画面で確かめられた</b>額</p>
+<p class="y">3,185<span> 円</span></p>
+<p class="src">xAI 入金 1,572円（console.x.ai）＋ Devin オンデマンド 1,613円（app.devin.ai の画面）</p>
+</div>
+<div class="big">
+<p class="k">＋ <b>こちら側の計算</b>（公式の請求書ではない）</p>
+<p class="y">1,374<span> 円</span></p>
+<p class="src">fal 24件・<code>status/fal_cost_ledger.json</code>（単価×回数）</p>
+</div>
+<div class="big">
+<p class="k">＋ <b>たまごさんの申告</b>（どの製品かは未特定）</p>
+<p class="y">2,900<span> 円</span></p>
+<p class="src">「その2,900円のサブスク」＝たまごさん本人の言葉。請求の実物はこちらから見えません</p>
+</div>
+</div>
+
+<div class="q">
+<b>合計 7,459円</b>。ただし <b class="ng">未実測が6件</b>あります（OpenAIに入れた額／Devinのプラン$20がいつ引かれたか／Gensparkのプラン月額と残クレジット／Lovable／Supabase／GitHub）。
+<b>この7,459円は「取れた分の合計」で、9月の総額ではありません。</b>
+</div>
+
+<h2>① 月額（サブスク）＝毎月決まった額</h2>
+<div class="tw">
+<table>
+<tr><th>財布</th><th class="n">月額</th><th>何に使われるか</th><th>自動更新</th><th>どこで叩いたか</th></tr>
+
+<tr>
+<td><b>「2,900円のサブスク」</b><br><span class="dim">＝どの製品か特定できていません</span></td>
+<td class="n">2,900円</td>
+<td>不明</td>
+<td class="warn">不明</td>
+<td class="dim">たまごさん本人の言葉だけ。<b class="ng">請求書・カード明細・領収メールをこちらから読む口が1つもありません。</b>
+<span class="src">★測れたこと：Google の一番安いAI月額は <b>Google AI Plus 1,200円/月</b>（blog.google 公式・日本）＝2,900円ではない。<br>
+★<b>たまごさんが30秒で決められること</b>：カード明細かメールで「2,900」の行を見て、送り主が Anthropic／Google／Genspark のどれか、1語だけ教えてください。それでこの行が埋まります。</span></td>
+</tr>
+
+<tr>
+<td><b>Devin</b><br><span class="dim">Pro プラン</span></td>
+<td class="n">$20<br>＝3,143円</td>
+<td>コードを書かせる（オンデマンドとは別枠）</td>
+<td class="warn">2026-10-16 まで有効</td>
+<td class="dim">app.devin.ai の公式画面「Current plan: Pro $20/month（Ends on October 16, 2026）」／2026-09-20 17:44・たまごさん撮影
+<span class="src">★<b>いつカードから引かれたかは取れません。</b>Devinの使用量API＝<code>GET /v1/enterprise/consumption</code> は <b>HTTP 403</b>「Contact support to enable the consumption API」（2026-09-23 12:28 実測）。<b>この口は閉じています。</b></span></td>
+</tr>
+
+<tr>
+<td><b>Genspark</b></td>
+<td class="n ng">取れない</td>
+<td>調査（Super Agent）</td>
+<td class="dim">10/4 にキャンセル予定</td>
+<td class="dim"><code>$ gsk me</code> → <b class="ng">そのコマンドが入っていません（FileNotFound）</b>／2026-09-23 12:28 実測
+<span class="src">★公式CLI <code>@genspark/cli</code> が<b>Macに入っていない</b>ので、残クレジットも月額も機械では読めません。たまごさんのスクショの <b>1,969</b> は参考値のままです（こちらでは確かめていません）。</span></td>
+</tr>
+
+<tr>
+<td><b>Lovable</b>／<b>Supabase</b></td>
+<td class="n ng">取れない</td>
+<td>ごきげん補給所の本番（ページ・DB・声の中継）</td>
+<td class="dim">不明</td>
+<td class="dim">Lovable：認証がまだ取れていません（同意ボタンが押されていない）／2026-09-23 12:00 実測・<code>tools/kaitsuu.py</code>
+<span class="src">Supabaseの管理トークンはどこにも置かれていません（<code>status/_937/snapshot/.env</code> にあるのは公開キーだけ）。<b>この口は閉じています。</b></span></td>
+</tr>
+
+<tr>
+<td><b>GitHub</b></td>
+<td class="n ng">取れない</td>
+<td>ページの公開・自動便（Actions）</td>
+<td class="dim">不明</td>
+<td class="dim"><code>GET /users/tamago2022/settings/billing/actions</code> → <b class="ng">HTTP 404</b>（2026-09-21 08:13 実測）／2026-09-23 12:28 は<b>トークンが置かれていないため叩けず</b>
+<span class="src"><b class="ng">★訂正します。</b>「GitHub Actionsは1円も払っていないことが実測済み」と前に書きましたが、<b>それを裏づける実測はありません。</b>取れているのは上の404と、<b>「tamago2022アカウントのGitHub Actions課金停止（2026-09-15夜〜・直近30件中22件失敗）」</b>という記録だけです（<code>status/kenpin/879/interpretation.md:12</code>）。<b>0円だとは言えません。未実測です。</b></span></td>
+</tr>
+</table>
+</div>
+
+<h2>② 使った分（従量）＝叩いた回数だけ増える</h2>
+<div class="tw">
+<table>
+<tr><th>財布</th><th class="n">今いくら残っているか</th><th class="n">使った分（9月）</th><th>何に使われるか</th><th>自動チャージ</th><th>どこで叩いたか</th></tr>
+
+<tr>
+<td><b>xAI</b><br><span class="dim">アイリスの声</span></td>
+<td class="n ok">$9.41<br>＝1,479円</td>
+<td class="n">93円<br><span class="dim">入金は1,572円</span></td>
+<td>声（<code>grok-voice-think-fast-2.0</code> の1種類だけ・428秒）</td>
+<td class="ng"><b>ON</b><br><span class="dim">$5以下で<br>$5＝786円</span></td>
+<td class="dim">console.x.ai の公式画面（TAMAGO's team）／2026-09-23・1032番で実測
+<span class="src">入金 9/13 $5（自分で購入）＋ 9/16 $5（<b>自動チャージ</b>）＝$10.00＝1,572円。使ったのは93円。<br>
+単価の実測：<b>428秒で$0.57＝1分あたり約13円。</b><br>
+★声だけは <b>ブラウザ→Supabase→xAI</b> と流れるので、<b class="ng">こちらの予算の栓を通りません。</b>止める場所は xAI の $5 上限と、この自動チャージOFFの2つだけです。</span></td>
+</tr>
+
+<tr>
+<td><b>fal.ai</b><br><span class="dim">画像・動画・音声</span></td>
+<td class="n ng">取れない</td>
+<td class="n warn">1,374円<br><span class="dim">こちら計算</span></td>
+<td>動画（1本30〜60円）・画像（1枚6円）・音声</td>
+<td class="dim">不明</td>
+<td class="dim"><b>鍵がMacに置かれていません</b>（2026-09-23 12:28 実測）＝<b>いま叩ける状態ではありません。</b>最後の記録は 9/17。
+<span class="src">1,374.35円＝<code>status/fal_cost_ledger.json</code> の9月24件を足した額（単価×回数の<b>こちら計算</b>。公式の請求書ではありません）。内訳の山は 9/7 の動画12本＝720円、9/6 の動画3本＝170円。<br>
+残高の口：<code>rest.alpha.fal.ai/billing/user_spending</code>・<code>/billing</code>・<code>api.fal.ai/v1/billing</code> すべて <b>HTTP 404</b>（2026-09-21 08:01 実測）。<b>この口は閉じています。</b></span></td>
+</tr>
+
+<tr>
+<td><b>OpenAI</b><br><span class="dim">チャッピー・GPT Live・検品</span></td>
+<td class="n ng">0円<br><span class="dim">（残高切れ）</span></td>
+<td class="n ng">取れない</td>
+<td>文字での相談・検品・声（Realtime）</td>
+<td class="dim">不明</td>
+<td class="dim">鍵は生きています（<code>GET /v1/models</code> → <b>200</b>／2026-09-23 12:28）。でも本物の仕事は <b>insufficient_quota</b> で落ちています（2026-09-23 10:25・<code>tools/kaitsuu.py</code>）＝<b>残高0</b>。
+<span class="src">実額の口：<code>GET /v1/organization/costs</code> → <b>HTTP 403</b>「Missing scopes: api.usage.read」（2026-09-23 12:28 実測）。管理鍵が無いため。<b>この口は閉じています。</b>＝<b class="ng">今月OpenAIにいくら入れたかは、こちらからは1円も読めません。</b></span></td>
+</tr>
+
+<tr>
+<td><b>Gemini</b><br><span class="dim">（Google）</span></td>
+<td class="n ok">0円</td>
+<td class="n ok">0円</td>
+<td>いまは何にも使われていません</td>
+<td class="ok">なし</td>
+<td class="dim"><b>鍵がMacのどこにも置かれていません</b>（<code>tools/zandaka.py</code> が3か所を見て0件／2026-09-23 12:28 実測）＝<b>この口からは1円も出ていません。</b></td>
+</tr>
+
+<tr>
+<td><b>Devin</b><br><span class="dim">オンデマンド</span></td>
+<td class="n ng">−$0.26<br>＝空</td>
+<td class="n">$10.26<br>＝1,613円</td>
+<td>コードを書かせる（プランの枠を超えた分）</td>
+<td class="warn">9/18時点で<br><b>OFF</b></td>
+<td class="dim">app.devin.ai の公式画面「Remaining balance $-0.26／Your on-demand usage $10.26」／2026-09-20 17:44・たまごさん撮影
+<span class="src">鍵は生きています（<code>GET /v1/sessions</code> → <b>200</b>／2026-09-23 12:28）。<br>
+うち <b>$8.85＝1,391円</b> は 9/18 07:35〜9/20 17:44 の間に減ったもの（公式画面2点の差）。<b class="ng">★訂正：972番ではこれを「1,327円」と書きました。</b>$8.85 という<b>ドルの額は同じ</b>で、あちらは1ドル150円、このページは実測した157.16円で直しているためです。<br>
+自動チャージは <b>9/18 時点で OFF</b>（Auto-reload spend this cycle: $0.00）。<b>9/20以降にONになっていないかは未確認。</b>画面を1回見ないと分かりません。</span></td>
+</tr>
+
+<tr>
+<td><b>xAI（もう1本の鍵）</b><br><span class="dim">goodvibes チーム</span></td>
+<td class="n">0円<br><span class="dim">＝止められている</span></td>
+<td class="n ok">0円</td>
+<td>文字での相談（いま使えません）</td>
+<td class="ok">なし</td>
+<td class="dim"><code>GET https://api.x.ai/v1/api-key</code> → <b>200</b>／2026-09-23 12:28 実測。返ってきた本文に <b><code>"name":"goodvibes"</code>／<code>"team_blocked":true</code></b>。
+<span class="src">★<b>これが「Grokが403で通らない」の正体です。</b>Macに置いてある鍵は <b>goodvibes チーム</b>のもので、<b>チームごと止められています</b>（team_id 3e0b4d97…）。お金が入っているのは <b>TAMAGO's team</b>（team_id 69b11444…・$9.41）で、そちらの鍵は Supabase の中にあります。<b>別の財布です。</b></span></td>
+</tr>
+
+<tr>
+<td><b>Anthropic API</b><br><span class="dim">（従量・使うなら）</span></td>
+<td class="n ok">—</td>
+<td class="n ok">0円</td>
+<td>いまは何にも使われていません</td>
+<td class="ok">なし</td>
+<td class="dim">リポ全体を機械で探して、<code>api.anthropic.com</code> を叩くコードは <b>0件</b>（2026-09-23 実測・grep）。<b>このプランの月額とは別物です。</b></td>
+</tr>
+</table>
+</div>
+
+<h2>③ 上に無い財布が他に無いか（洗った記録）</h2>
+<div class="tw">
+<table>
+<tr><th>どこを洗ったか</th><th>結果</th></tr>
+<tr><td><code>.env</code>（このリポ）</td><td>鍵3本だけ：<code>YOUTUBE_DATA_API_KEY</code>／<code>GUMROAD_ACCESS_TOKEN</code>／<code>DEVIN_API_KEY</code>。<b>お金が出るのは Devin だけ</b>（YouTube Data APIとGumroadの読み取りは無料枠）。<span class="src">実測：<code>$ sed -n 's/^\([A-Za-z0-9_]*\)=.*/\1/p' .env</code> → 3行</span></td></tr>
+<tr><td>Mac側の鍵の置き場3か所</td><td><code>~/.tamago/keys/api_keys.env</code>／<code>~/Documents/AI作業/_鍵/keys.env</code>／同<code>/.env</code> を見て、<b>ある＝xAI・OpenAI・Devin の3本</b>、<b>ない＝Gemini・fal・GitHub・OpenAI管理鍵の4本</b>。<span class="src">実測：<code>status/1034_zandaka_jissoku.json</code> の <code>keys</code>（2026-09-23 12:28:42）</span></td></tr>
+<tr><td>リポ全体のコード（有料APIの行き先）</td><td>見つかった行き先は <b>api.x.ai／api.openai.com／generativelanguage.googleapis.com／queue.fal.run／api.devin.ai</b> の5社だけ。<b>これ以外の課金先は0件。</b><span class="src">実測：<code>$ grep -rEo "https://(api\.openai\.com|api\.x\.ai|generativelanguage…|fal\.run|api\.devin\.ai)…" tools/ *.py</code> → 該当5社・40行</span></td></tr>
+<tr><td>請求メール</td><td class="ng"><b>読めません。</b>Gmailの口が閉じています（アプリパスワードのファイルが置かれていません／2026-09-23 12:00 実測・<code>tools/kaitsuu.py</code>）。<b>★ここが開くまで「他に財布は無い」とは言えません。</b></td></tr>
+</table>
+</div>
+<p class="sub">★<b>「他に無い」とは書きません。</b>上の4本で洗えたのは<b>コードと鍵の置き場だけ</b>です。カード明細と請求メールが読めないので、そこに何が並んでいるかは分かりません。</p>
+
+<h2>④ 覆面テストにお金はかかるか（たまごさんの質問への答え）</h2>
+<div class="tw">
+<table>
+<tr><th>何を調べたか</th><th>結果</th></tr>
+<tr><td><b>覆面テスト本体（<code>tools/fukumen.py</code> 679行）</b></td><td class="ok"><b>0円。AIを1回も呼びません。</b><span class="src">実測：<code>$ grep -cE "api\.openai|api\.x\.ai|generativelanguage|fal\.run|api\.anthropic|gaibu_kuchi|Bearer" tools/fukumen.py tools/fukumen_report.py tools/fukumen_daily.py</code> → <b>3ファイルすべて 0件</b>。読み込んでいるのは playwright（ブラウザ）だけ（<code>tools/fukumen.py:540</code>）。</span></td></tr>
+<tr><td><b>案内人への30問</b></td><td class="ok"><b>いまの本番では0円です（AIを呼んでいません）。</b><span class="src">実測：本番サイトのソース控え（<code>status/_952/recon/</code>・2026-09-19 取得）を全部検索して <b><code>functions.invoke</code> が0件</b>。案内人の入力欄があるページ（<code>HIT_src_routes_cover-guide.tsx</code>）で supabase を使っているのは <code>.from("cover_guide_feedback")</code> ＝<b>DBの読み書きだけ</b>で、AIのエッジ関数を呼ぶ行がありません。<br>★<b>「声の財布を使うはず」は違いました。</b>声（話す）は別の口です。★ただしこの控えは<b>9/19 時点</b>のものなので、それ以降に本番が変わっていれば話は変わります。</span></td></tr>
+<tr><td><b>「50円分だけテストして」はできるか</b></td><td class="ok"><b>できます。</b><code>python3 tools/yosan.py --set xai 50</code>。51円目は叩けません（下で実演）。</td></tr>
+</table>
+</div>
+
+<h2>⑤ 使いすぎが構造的に起きないようにした（予算の栓）</h2>
+<p class="sub"><code>tools/yosan.py</code> を新しく作りました。<b>既定は全財布 0円＝止まっています。</b>たまごさんが額を言った分だけ開きます。</p>
+<div class="tw">
+<table>
+<tr><th>実演</th><th>結果（そのまま貼っています）</th></tr>
+<tr><td><b>上限10円で11円目が止まるか</b><br><code>$ python3 tools/yosan.py --self-test</code></td><td class="ok"><b>8件中8件 想定どおり</b>（10円→4円◯／9円◯／11円目✕／0円にしたら1銭も✕／知らない財布✕）<span class="src">記録：<code>status/1034_yosan_jissoku.jsonl</code></span></td></tr>
+<tr><td><b>★本物の口が本当に止まるか</b><br>OpenAIの上限を10円にして、すでに9.5円使った状態で実際に <code>gaibu_kuchi.ask()</code> を呼んだ</td><td class="ok"><b>止まりました。1文字も送っていません（costYen 0.0）。</b>返ってきた文：
+<pre style="white-space:pre-wrap;font-size:11.5px;background:#1d1d21;padding:9px;border-radius:6px;margin:6px 0">上限で止めました。OpenAI（チャッピー・検品・GPT Live）／今日 の上限 10円・
+すでに使った 9.50円・残り 0.50円 に対して、この1回の見積りが 3.57円 です。
+→ あと 3.07円 あれば「ChatGPT(OpenAI) に 520文字 聞く（返事の上限 1500 トークン）」ができます。
+→ 開けるなら: python3 tools/yosan.py --set openai 14</pre>
+<span class="src">★<b>黙って止まりません。</b>「あと何円あれば何ができるか」まで書いて、<code>status/yosan.jsonl</code> と朝の知らせの両方に残します。</span></td></tr>
+<tr><td><b>fal の使い捨ての口（動画1本30円）も止まるか</b><br><code>$ python3 tools/_636_gen_images.py</code></td><td class="ok"><b>上限0円で止まりました。</b>「あと 30.00円 あれば『_636_gen_images.py を走らせる』ができます」</td></tr>
+</table>
+</div>
+
+<p class="sub"><b>栓を通した口</b>（<code>$ python3 tools/yosan.py --kuchi</code> で全部並びます）</p>
+<div class="tw">
+<table>
+<tr><th>口</th><th>財布</th><th>栓</th></tr>
+<tr><td><code>tools/gaibu_kuchi.py</code> の <code>ask()</code></td><td>OpenAI／xAI／Gemini</td><td class="ok">◯ 通る<span class="src">ここが <code>kiku.py</code>・<code>nageru.py chappy</code>・<code>gaibu_kenpin.py</code> の元なので、この1本で3つの口が同時に塞がります</span></td></tr>
+<tr><td><code>tools/tanomu.py</code> の <code>run_job()</code></td><td>xAI（画像）／fal</td><td class="ok">◯ 通る</td></tr>
+<tr><td><code>tools/devin_start.py</code></td><td>Devin</td><td class="ok">◯ 通る<span class="src">1セッション約93円で見積もる（$8.85÷15本＝$0.59×157.16円・972番の公式画面差分から）</span></td></tr>
+<tr><td><code>_919_step1_widen</code>／<code>_919_step2_video</code>／<code>_636_gen_images</code>／<code>_636_gen_videos</code>／<code>_771_gen_video</code>／<code>_783_gen_voices</code></td><td>fal</td><td class="ok">◯ 通る（6本・今日足しました）</td></tr>
+<tr><td><code>gsk</code>（Genspark公式CLI）</td><td>Genspark</td><td class="ng">✕ 通らない<span class="src">このリポの外（Macに入れるCLI）。いまMacに入っていないので、そもそも走りません</span></td></tr>
+<tr><td>Supabase voice-session（Lovable側）</td><td>xAI（声）</td><td class="ng">✕ 通らない<span class="src"><b>★ここだけは構造的に塞げません。</b>声はブラウザ→Supabase→xAI と流れ、こちらのコードを1行も通りません。止める場所は xAIコンソールの $5 上限と、自動チャージOFFの2つ。</span></td></tr>
+</table>
+</div>
+
+<h2>⑥ たまごさんが押すこと（こちらは1円も押していません）</h2>
+<ul>
+<li><b>xAIの自動チャージを止めるか決める。</b>いまONで、残高$5以下になると$5＝786円が自動で請求されます。残高は$9.41なので、あと1,479円ぶん喋ったら次が引かれます（1分13円＝約113分）。→ <code>console.x.ai</code> の「Manage auto top-up」</li>
+<li><b>Devinの自動チャージが9/20以降にONになっていないか、画面で1回見る。</b>残高は空（−$0.26）なので、OFFなら勝手には増えません。→ <code>app.devin.ai</code> の Usage</li>
+<li><b>「2,900円」の送り主を1語だけ教える。</b>カード明細かメールで「2,900」の行の送り主（Anthropic／Google／Gensparkなど）。それでこの表が埋まります。</li>
+<li><b>OpenAIにいくら入れるか決める。</b>入れないままなら0円です（いまは insufficient_quota で止まっています）。</li>
+</ul>
+
+<h2>⑦ OpenAIに入れると何分喋れるか（公式の料金表から）</h2>
+<div class="tw">
+<table>
+<tr><th>モデル</th><th class="n">公式の単価</th><th class="n">1分あたり</th><th class="n">$5＝786円 入れると</th></tr>
+<tr><td><code>gpt-realtime-2.1</code></td><td class="n">音声 入力 $32／出力 $64<br><span class="dim">（100万トークンあたり）</span></td><td class="n">約$0.058<br>＝約9.1円</td><td class="n">約 <b>86分</b></td></tr>
+<tr><td><code>gpt-realtime-mini</code></td><td class="n">音声 入力 $10／出力 $20</td><td class="n">約$0.018<br>＝約2.8円</td><td class="n">約 <b>277分</b></td></tr>
+<tr><td class="dim">（比較）xAI の声<br><code>grok-voice-think-fast-2.0</code></td><td class="n dim">—</td><td class="n dim">約13円<br><span class="src">実測</span></td><td class="n dim">約 60分</td></tr>
+</table>
+</div>
+<p class="sub">単価の出典：<a href="https://developers.openai.com/api/docs/pricing" style="color:#9ec7ff">developers.openai.com/api/docs/pricing</a>（音声 $32／$64・mini $10／$20・100万トークンあたり）。<br>
+1分＝何トークンかは、OpenAI公式が <a href="https://openai.com/index/introducing-the-realtime-api/" style="color:#9ec7ff">Realtime API の発表</a>で「音声入力 $100／100万トークン ＝ <b>1分あたり約$0.06</b>」と書いているので、<b>1分＝約600トークン</b>として割り戻した計算です（入力1分＋出力1分で数えています）。<b>この「1分あたり」はこちらの計算であって、公式が1分単位で出している額ではありません。</b><br>
+xAIの13円だけは実測（428秒で$0.57・console.x.ai）。</p>
+
+<h2>⑧ Geminiは「その2,900円以外に請求が来る」のか</h2>
+<div class="q">
+<b>いまは来ません。鍵が1本も置かれていないので、1円も出ていません</b>（2026-09-23 12:28 実測）。<br>
+<b>これから使う場合</b>：Gemini API は、<b>請求先（billing）を自分で設定しない限り課金されません。</b>無料枠を超えたら<b>エラーで止まるだけ</b>で、勝手に請求は立ちません（<a href="https://ai.google.dev/gemini-api/docs/rate-limits" style="color:#9ec7ff">公式・Rate limits</a>／<a href="https://ai.google.dev/gemini-api/docs/billing" style="color:#9ec7ff">公式・Billing</a>）。<br>
+つまり<b>「無料枠のAI Studioの鍵」で使えば、その2,900円とは別の請求は来ません。</b>請求が来るのは、Google Cloud の請求先を紐づけて有料ティアにしたときだけです。前払いクレジットを使い切った場合も、そのアカウントの全プロジェクトで<b>即座に止まる</b>と公式に書かれています。
+</div>
+
+<h2>⑨ 取れなかったもの（黙って飲み込まない・6件）</h2>
+<div class="tw">
+<table>
+<tr><th>取れなかったこと</th><th>どの口が閉じているか</th></tr>
+<tr><td>今月OpenAIにいくら入れたか</td><td><code>GET /v1/organization/costs</code> → <b>403</b>「Missing scopes: api.usage.read」。<b>管理鍵（admin key）が無い。</b></td></tr>
+<tr><td>Devinのプラン$20がいつ引かれたか</td><td><code>GET /v1/enterprise/consumption</code> → <b>403</b>「Contact support to enable」</td></tr>
+<tr><td>Gensparkの残クレジットと月額</td><td><code>$ gsk me</code> → <b>コマンドが入っていない</b>。<code>www.genspark.ai/credit-usage</code> はログイン必須（パスワードは入れない決まり）</td></tr>
+<tr><td>falの公式残高</td><td>残高API 3本すべて <b>404</b>。鍵もMacに無い</td></tr>
+<tr><td>GitHub Actionsに払ったか</td><td>課金API <b>404</b>、トークンも無い。<b class="ng">★前に「0円と実測済み」と書いたのは間違いでした。訂正します。</b></td></tr>
+<tr><td>Lovable・Supabaseの月額</td><td>Lovableは同意が未取得、Supabaseは管理トークンが無い</td></tr>
+</table>
+</div>
+
+<footer>
+1034番／2026-09-23。数字はすべて上の表の「どこで叩いたか」に書いた場所から取っています。<br>
+実測の生データ：<code>status/1034_zandaka_jissoku.json</code>（叩いた9本の生の返事）・<code>status/1034_yosan_jissoku.jsonl</code>（栓の実演）<br>
+道具：<code>tools/zandaka.py</code>（残高を叩く・GETだけ・白名簿・課金0）／<code>tools/yosan.py</code>（予算の栓）<br>
+このページは <code>tools/kazu_gate.py</code>（数字の門）を通してから出しています。<br>
+★<b>課金・プラン変更・解約を1つも押していません。</b>金額を出すところまでが、こちらの仕事です。
+</footer>
+
+</div>
+</body>
+</html>

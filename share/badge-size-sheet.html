@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>サムネイル比率 × バッジ 見本帳（実寸・実測）</title>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --sub:#6b645c;
+    --line:#ddd6cc;
+    --paper:#f6f3ec;
+    --card:#fffdf8;
+    --ok:#2f6f4f;
+    --ng:#b0392c;
+    --warn:#a8741a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    font-size:13px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    padding:28px 24px 20px;
+    border-bottom:1px solid var(--line);
+    background:var(--card);
+  }
+  h1{font-size:19px;margin:0 0 6px;letter-spacing:.04em}
+  header p{margin:0;color:var(--sub);font-size:12px;max-width:60em}
+  .summary{
+    display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;
+  }
+  .stat{
+    border:1px solid var(--line);background:var(--paper);
+    padding:6px 12px;border-radius:3px;font-size:12px;
+  }
+  .stat b{font-size:15px;font-variant-numeric:tabular-nums}
+  main{padding:0 24px 80px}
+  section{
+    margin-top:36px;padding-top:20px;border-top:1px solid var(--line);
+  }
+  section:first-child{border-top:0}
+  h2{font-size:15px;margin:0 0 2px;letter-spacing:.05em}
+  h2 .ratio{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:var(--ink);color:var(--paper);
+    padding:1px 8px;border-radius:2px;margin-right:8px;font-size:13px;
+  }
+  .where{color:var(--sub);font-size:11.5px;margin:0 0 14px}
+  h3{font-size:12px;margin:22px 0 8px;color:var(--sub);letter-spacing:.08em;font-weight:600}
+  .row{
+    display:flex;gap:18px;align-items:flex-start;
+    overflow-x:auto;padding:4px 0 14px;
+  }
+  .cell{flex:0 0 auto}
+  .cell > .label{
+    font-size:11px;font-weight:600;margin-bottom:5px;letter-spacing:.03em;
+  }
+  .thumb{
+    position:relative;width:100%;overflow:hidden;border-radius:6px;
+    background:
+      repeating-linear-gradient(135deg,#cfc7ba 0 10px,#c4bbad 10px 20px);
+    box-shadow:0 1px 3px rgba(0,0,0,.18);
+  }
+  .thumb.bare{outline:1px dashed #a49a8b;outline-offset:-1px}
+  /* ===== 本番コードと同一のバッジCSS（CardBadges.tsx / badgeKinds.ts / designRules.ts） ===== */
+  .badge-container{
+    position:absolute;inset:0;
+    container-type:size;
+    pointer-events:none;z-index:10;
+  }
+  .badge-stack{
+    padding:min(6.5cqw,6.5cqh);       /* BADGE_INSET_RATIO */
+    height:100%;display:flex;flex-direction:column;
+    justify-content:space-between;align-items:stretch;
+  }
+  .badge-top{
+    display:flex;align-items:flex-start;
+    gap:min(3cqw,3cqh);width:100%;
+  }
+  .badge-bottom{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:min(3cqw,3cqh);width:100%;
+  }
+  img.badge{
+    height:min(28cqw,28cqh);          /* BADGE_IMAGE_STYLE */
+    width:auto;display:block;flex:none;opacity:.92;
+    filter:drop-shadow(0 2px 5px rgba(0,0,0,.35));
+  }
+  .chip{
+    font-size:clamp(6px,min(5.5cqw,5.5cqh),9px);  /* CHIP_STYLE */
+    line-height:1.2;
+    display:inline-flex;align-items:center;
+    border-radius:2px;background:rgba(0,0,0,.7);
+    padding:.25em .6em;font-weight:500;text-transform:uppercase;
+    letter-spacing:.25em;color:rgba(255,255,255,.9);
+    box-shadow:0 0 0 1px rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.45);
+    backdrop-filter:blur(4px);white-space:nowrap;
+  }
+  /* 旧・幅基準だけの指定（比較用・不採用） */
+  .legacy .badge-stack{padding:6.5%}
+  .legacy img.badge{height:28cqh}
+  .legacy .chip{font-size:clamp(6px,5.5cqw,9px)}
+  /* ===== ここまで ===== */
+  .cap{
+    margin-top:6px;font-size:10.5px;line-height:1.55;color:var(--sub);
+    font-variant-numeric:tabular-nums;
+  }
+  .cap .n{color:var(--ink)}
+  .cap .pct{font-weight:700}
+  .pct.ok{color:var(--ok)}
+  .pct.ng{color:var(--ng)}
+  .flag{
+    display:inline-block;background:var(--ng);color:#fff;
+    padding:0 5px;border-radius:2px;font-size:10px;font-weight:700;
+    margin-left:4px;letter-spacing:.05em;
+  }
+  .flag.warn{background:var(--warn)}
+  .note{
+    border-left:3px solid var(--warn);background:#fdf8ee;
+    padding:10px 14px;margin:16px 0;font-size:11.5px;line-height:1.7;
+  }
+  .note.bad{border-left-color:var(--ng);background:#fdf0ee}
+  .note b{letter-spacing:.03em}
+  .viewports{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  .vp{
+    border:1px solid var(--line);background:var(--card);
+    border-radius:6px;padding:12px;
+  }
+  .vp > .vpl{font-size:11px;font-weight:700;margin-bottom:8px;color:var(--sub)}
+  .vp .inner{overflow-x:auto}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:#ece7dd;padding:1px 4px;border-radius:2px;font-size:11px;
+  }
+  table.spec{border-collapse:collapse;font-size:11.5px;margin:10px 0 0}
+  table.spec th,table.spec td{border:1px solid var(--line);padding:5px 10px;text-align:left}
+  table.spec th{background:#ece7dd;font-weight:600}
+  footer{padding:24px;border-top:1px solid var(--line);color:var(--sub);font-size:11px}
+  /* 946番の追補セクション用 */
+  .wrap{padding:0 24px 32px;max-width:1100px}
+  .ok{color:var(--ok);font-weight:700}
+  .ng{color:var(--ng);font-weight:700}
+  table.spec td b{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>サムネイル比率 × バッジ 見本帳（実寸・ブラウザ実測）</h1>
+  <p>
+    寸法は文書ではなく<b>実物のコード</b>から取った：<code>src/lib/designRules.ts</code>（28% / 余白6.5%）、
+    <code>src/lib/badgeKinds.ts</code>（<code>min(28cqw,28cqh)</code>）、<code>src/components/CardBadges.tsx</code>（チップ <code>clamp(6px,min(5.5cqw,5.5cqh),9px)</code>）。
+    このページのバッジCSSは<b>そのコードの丸写し</b>で、下の数字は描画後に <code>getBoundingClientRect()</code> で実測したもの（書き写した値ではない）。
+    バッジ画像は単色ダミー（実画像と同じ縦横比 151:182 = 0.83）。
+  </p>
+  <div class="summary" id="summary"></div>
+</header>
+
+<main id="main"></main>
+
+<footer>
+  目標：バッジ高さ＝サムネイル<b>短辺の28%</b>（±1pt）／余白＝短辺の6.5%／文字チップ＝短辺の5.5%（6〜9pxで頭打ち）。
+  <code>28cqh</code> は高さの28%、<code>28cqw</code> は幅の28%。短辺の28%にしたいなら <code>min(28cqw,28cqh)</code>。
+</footer>
+
+<script>
+/* ---------- ダミーのバッジ画像（実画像と同じ縦横比 151:182） ---------- */
+function dummyBadge(color, mark){
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151 182">' +
+    '<path d="M75.5 4 141 30v62c0 42-29 68-65.5 86C39 160 10 134 10 92V30Z" fill="'+color+'"/>' +
+    '<path d="M75.5 4 141 30v62c0 42-29 68-65.5 86C39 160 10 134 10 92V30Z" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="5"/>' +
+    '<text x="75.5" y="104" font-family="sans-serif" font-size="46" font-weight="700" fill="#fff" text-anchor="middle">'+mark+'</text>' +
+    '</svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+const IMG = {
+  concierge: dummyBadge('#a8332a','推'),
+  good:      dummyBadge('#1f6150','名'),
+};
+
+/* ---------- バッジの組み合わせ ---------- */
+const KINDS = ['concierge','good-cover','ai','magazine'];
+const COMBOS = [
+  {key:[],                                            label:'バッジ無し（素）'},
+  {key:['concierge'],                                 label:'concierge のみ'},
+  {key:['good-cover'],                                label:'good-cover のみ'},
+  {key:['ai'],                                        label:'ai のみ'},
+  {key:['magazine'],                                  label:'magazine のみ'},
+  {key:['concierge','good-cover'],                    label:'concierge + good-cover'},
+  {key:['concierge','ai'],                            label:'concierge + ai'},
+  {key:['concierge','magazine'],                      label:'concierge + magazine'},
+  {key:['good-cover','ai'],                           label:'good-cover + ai'},
+  {key:['ai','magazine'],                             label:'ai + magazine'},
+  {key:['concierge','good-cover','ai'],               label:'左上3つ（画像2＋AI）'},
+  {key:['concierge','good-cover','ai','magazine'],    label:'★ 全部'},
+];
+
+/* ---------- 実際に使われている比率（コードから洗い出し） ---------- */
+const SECTIONS = [
+  {
+    id:'a',
+    ratio:'16 : 9',
+    ar:16/9,
+    title:'A（主役）／C（関連） — aspect-video',
+    where:'曲ページのメイン動画（VideoCard / NextUpCard / AlsoRecommendedCards）＋ 原曲・名カバー・関連アーティストの横スクロール（RelatedCardsRow / RelatedArtistsShelf / RelatedProjectsShelf＝共通部品 FramedThumb）',
+    main:{w:320,label:'A 主役・design-check 基準'},
+    variants:[
+      {w:220,label:'C 関連（横スクロール・実寸220px）'},
+      {w:320,label:'A 主役（design-check 見本）'},
+      {w:640,label:'A 主役（中画面）'},
+      {w:1210,label:'A 主役（28%の根拠になった実測資料 1210×646）'},
+    ],
+  },
+  {
+    id:'b',
+    ratio:'1 : 1',
+    ar:1,
+    title:'B（棚） — aspect-square',
+    where:'棚一覧・アーティストページ・隠し棚（ShelfCardView。カード幅 w-[160/180/200]px − p-3 の左右24px ＝ サムネ実寸 136/156/176px）',
+    main:{w:176,label:'棚カード md（200px − p-3）'},
+    variants:[
+      {w:136,label:'棚 sm（160px − p-3）'},
+      {w:156,label:'棚 sm↑（180px − p-3）'},
+      {w:176,label:'棚 md（200px − p-3）'},
+    ],
+  },
+  {
+    id:'c',
+    ratio:'9 : 16',
+    ar:9/16,
+    title:'縦型 — TikTok 埋め込み',
+    where:'VideoCard.tsx:762（TikTok埋め込みのみ。<code>aspectRatio:"9 / 16"</code>・maxHeight 80vh）',
+    main:{w:240,label:'TikTok 埋め込み（幅240px相当）'},
+    variants:[
+      {w:200,label:'縦型 200px幅'},
+      {w:300,label:'縦型 300px幅'},
+      {w:343,label:'縦型 343px幅（375px画面の全幅）'},
+    ],
+  },
+];
+
+/* ---------- カード1枚を組み立てる ---------- */
+function buildCard(ar, w, kinds, opts){
+  opts = opts || {};
+  const cell = document.createElement('div');
+  cell.className = 'cell';
+  cell.style.width = w + 'px';
+
+  if (opts.label){
+    const l = document.createElement('div');
+    l.className = 'label';
+    l.textContent = opts.label;
+    cell.appendChild(l);
+  }
+
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (kinds.length ? '' : ' bare');
+  thumb.style.aspectRatio = String(ar);
+  if (opts.legacy) thumb.classList.add('legacy');
+
+  if (kinds.length){
+    const container = document.createElement('div');
+    container.className = 'badge-container';
+    const stack = document.createElement('div');
+    stack.className = 'badge-stack';
+
+    const top = document.createElement('div');
+    top.className = 'badge-top';
+    if (kinds.includes('concierge')){
+      const im = document.createElement('img');
+      im.className = 'badge'; im.src = IMG.concierge; im.alt='concierge';
+      im.dataset.kind = 'concierge';
+      top.appendChild(im);
+    }
+    if (kinds.includes('good-cover')){
+      const im = document.createElement('img');
+      im.className = 'badge'; im.src = IMG.good; im.alt='good-cover';
+      im.dataset.kind = 'good-cover';
+      top.appendChild(im);
+    }
+    if (kinds.includes('ai')){
+      const c = document.createElement('span');
+      c.className = 'chip'; c.textContent = 'AI'; c.dataset.kind='ai';
+      top.appendChild(c);
+    }
+    stack.appendChild(top);
+
+    if (kinds.includes('magazine')){
+      const bot = document.createElement('div');
+      bot.className = 'badge-bottom';
+      const c = document.createElement('span');
+      c.className = 'chip'; c.textContent = 'Magazine'; c.dataset.kind='magazine';
+      bot.appendChild(c);
+      stack.appendChild(bot);
+    }
+    container.appendChild(stack);
+    thumb.appendChild(container);
+  }
+  cell.appendChild(thumb);
+
+  const cap = document.createElement('div');
+  cap.className = 'cap';
+  cap.dataset.measure = '1';
+  cell.appendChild(cap);
+  cell.__thumb = thumb;
+  cell.__cap = cap;
+  cell.__kinds = kinds;
+  cell.__legacy = !!opts.legacy;
+  cell.__ratio = opts.ratioLabel || '';
+  return cell;
+}
+
+/* ---------- ページ生成 ---------- */
+const main = document.getElementById('main');
+
+SECTIONS.forEach(function(sec){
+  const s = document.createElement('section');
+  s.innerHTML =
+    '<h2><span class="ratio">'+sec.ratio+'</span>'+sec.title+'</h2>' +
+    '<p class="where">使われている場所：'+sec.where+'</p>';
+
+  const h3a = document.createElement('h3');
+  h3a.textContent = 'バッジ4種の全組み合わせ（'+sec.main.label+'・実寸 '+sec.main.w+'px 幅）';
+  s.appendChild(h3a);
+
+  const row = document.createElement('div');
+  row.className = 'row';
+  COMBOS.forEach(function(c){
+    row.appendChild(buildCard(sec.ar, sec.main.w, c.key, {label:c.label, ratioLabel:sec.ratio}));
+  });
+  s.appendChild(row);
+
+  const h3b = document.createElement('h3');
+  h3b.textContent = 'この比率で実際に使われている実寸すべて（全部載せ／素 を並べて比較）';
+  s.appendChild(h3b);
+
+  const row2 = document.createElement('div');
+  row2.className = 'row';
+  sec.variants.forEach(function(v){
+    row2.appendChild(buildCard(sec.ar, v.w, KINDS, {label:v.label+'（全部載せ）', ratioLabel:sec.ratio}));
+    row2.appendChild(buildCard(sec.ar, v.w, [], {label:'└ 同寸・素', ratioLabel:sec.ratio}));
+  });
+  s.appendChild(row2);
+
+  main.appendChild(s);
+});
+
+/* ---------- 参考：片側%（幅基準）だけの旧指定との比較 ---------- */
+(function(){
+  const s = document.createElement('section');
+  s.innerHTML =
+    '<h2>参考：<code>cqh</code>片側指定・<code>%</code>余白（旧・不採用）との差</h2>' +
+    '<p class="where">'+
+    '<code>28cqh</code> は「高さの28%」。横長カードでは短辺＝高さなので一致するが、余白に <code>padding:6.5%</code>（＝幅基準）を使うと' +
+    '<b>横長で上下だけ詰まる</b>。縦長カードでは逆に <code>cqh</code> がふくれる。左が本番（すべて <code>min(Ncqw,Ncqh)</code>＝短辺基準）、右が旧指定。</p>';
+  const row = document.createElement('div');
+  row.className = 'row';
+  [[16/9,320,'16:9'],[1,176,'1:1'],[9/16,240,'9:16']].forEach(function(t){
+    row.appendChild(buildCard(t[0], t[1], KINDS, {label:t[2]+'／本番 min(cqw,cqh)', ratioLabel:t[2]}));
+    row.appendChild(buildCard(t[0], t[1], KINDS, {label:t[2]+'／旧 cqh・%余白', legacy:true, ratioLabel:t[2]}));
+  });
+  s.appendChild(row);
+  main.appendChild(s);
+})();
+
+/* ---------- 画面幅を変えたときの見え方 ---------- */
+(function(){
+  const s = document.createElement('section');
+  s.innerHTML =
+    '<h2>画面幅：375px（スマホ）と 横長（デスクトップ）</h2>' +
+    '<p class="where">同じ部品を、幅375pxの枠と幅いっぱいの枠に置いたもの。' +
+    'バッジは<b>カード自身</b>のコンテナクエリで決まるため、画面幅が変わっても短辺比率は動かない（＝その確認）。</p>';
+  const wrap = document.createElement('div');
+  wrap.className = 'viewports';
+
+  function vp(label, width){
+    const d = document.createElement('div');
+    d.className = 'vp';
+    d.style.width = width ? (width+26)+'px' : '100%';
+    d.innerHTML = '<div class="vpl">'+label+'</div>';
+    const inner = document.createElement('div');
+    inner.className = 'inner';
+    const r = document.createElement('div');
+    r.className = 'row';
+    // 主役（全幅）＋ 棚2枚 ＋ 関連1枚
+    const mainW = width ? width : 720;
+    r.appendChild(buildCard(16/9, Math.min(mainW, 720), KINDS, {label:'主役 16:9（枠いっぱい）', ratioLabel:'16:9'}));
+    r.appendChild(buildCard(1, 136, KINDS, {label:'棚 1:1 136px', ratioLabel:'1:1'}));
+    r.appendChild(buildCard(1, 176, KINDS, {label:'棚 1:1 176px', ratioLabel:'1:1'}));
+    r.appendChild(buildCard(16/9, 220, KINDS, {label:'関連 16:9 220px', ratioLabel:'16:9'}));
+    inner.appendChild(r);
+    d.appendChild(inner);
+    return d;
+  }
+  wrap.appendChild(vp('375px（スマホ）', 375));
+  wrap.appendChild(vp('横長（デスクトップ・この画面の幅いっぱい）', 0));
+  s.appendChild(wrap);
+  main.appendChild(s);
+})();
+
+/* ---------- 実測して数字を入れる ---------- */
+let flagged = 0, measured = 0;
+function measureAll(){
+  flagged = 0; measured = 0;
+  document.querySelectorAll('.cell').forEach(function(cell){
+    const thumb = cell.__thumb, cap = cell.__cap;
+    if (!thumb || !cap) return;
+    const r = thumb.getBoundingClientRect();
+    const W = r.width, H = r.height, S = Math.min(W,H);
+    const lines = [];
+    lines.push('比率 <span class="n">'+ (cell.__ratio||'') +'</span>　カード <span class="n">'+ W.toFixed(0)+'×'+H.toFixed(0) +'px</span>　短辺 <span class="n">'+S.toFixed(0)+'px</span>');
+
+    const countable = !cell.__legacy;
+    const badges = thumb.querySelectorAll('[data-kind]');
+    if (!badges.length){
+      lines.push('バッジ無し（素の画）');
+    }
+    badges.forEach(function(b){
+      const br = b.getBoundingClientRect();
+      const pct = br.height / S * 100;
+      const kind = b.dataset.kind;
+      const isImg = (kind==='concierge' || kind==='good-cover');
+      if (countable) measured++;
+      let cls, tail='';
+      if (isImg){
+        const off = Math.abs(pct - 28);
+        cls = off <= 1 ? 'ok' : 'ng';
+        if (off > 1){ if (countable) flagged++; tail = '<span class="flag">28%から '+(pct<28?'−':'+')+off.toFixed(1)+'pt</span>'; }
+      } else {
+        // 文字チップ：font-size が 5.5% で出ているか（clamp で頭打ちになっていないか）
+        const fs = parseFloat(getComputedStyle(b).fontSize);
+        const fpct = fs / S * 100;
+        const off = Math.abs(fpct - 5.5);
+        cls = off <= 0.2 ? 'ok' : 'ng';
+        if (off > 0.2){
+          if (countable) flagged++;
+          tail = '<span class="flag warn">文字 5.5%→'+fpct.toFixed(1)+'%（'+(fs>=9?'上限9px':'下限6px')+'で頭打ち）</span>';
+        }
+        lines.push(kind+'：'+br.width.toFixed(0)+'×'+br.height.toFixed(0)+'px（文字'+fs.toFixed(1)+'px）　短辺比 <span class="pct '+cls+'">'+pct.toFixed(1)+'%</span>'+tail);
+        return;
+      }
+      lines.push(kind+'：'+br.width.toFixed(0)+'×'+br.height.toFixed(0)+'px　短辺比 <span class="pct '+cls+'">'+pct.toFixed(1)+'%</span>'+tail);
+    });
+    cap.innerHTML = lines.join('<br>');
+  });
+
+  document.getElementById('summary').innerHTML =
+    '<div class="stat">使われている比率　<b>'+SECTIONS.length+'</b> 種類（16:9 / 1:1 / 9:16）</div>' +
+    '<div class="stat">バッジ　<b>4</b> 種（concierge・good-cover・ai・magazine）</div>' +
+    '<div class="stat">組み合わせ　<b>'+COMBOS.length+'</b> 通り × 比率'+SECTIONS.length+'</div>' +
+    '<div class="stat">実測したバッジ　<b>'+measured+'</b> 個</div>' +
+    '<div class="stat">目標から外れたもの　<b style="color:var(--ng)">'+flagged+'</b> 個（旧指定の比較欄は数えない）</div>';
+}
+
+/* 画像の読み込み後に測る */
+window.addEventListener('load', measureAll);
+window.addEventListener('resize', function(){ clearTimeout(window.__t); window.__t=setTimeout(measureAll,150); });
+setTimeout(measureAll, 60);
+setTimeout(measureAll, 400);
+</script>
+
+<div style="padding:0 24px 40px">
+  <div class="note bad">
+    <b>文字チップ（AI／Magazine）だけ、大きいカードで置いていかれる</b><br>
+    画像バッジ（concierge／good-cover）は <code>min(28cqw,28cqh)</code> のおかげで<b>3比率・全サイズで28.0%ちょうど</b>。ズレは1件も無い。
+    ところが文字チップは <code>clamp(6px, …, 9px)</code> の<b>上限9px</b>に当たるため、短辺が約164pxを超えると5.5%から下へ外れていく
+    （短辺180px＝5.0%／240px＝3.8%／360px＝2.5％／681px＝1.3%）。主役カードほど「文字チップだけ豆粒」になる。
+    直すなら上限9pxを上げるか、上限そのものを外す。
+  </div>
+  <div class="note bad">
+    <b>コードを読んで見つかった食い違い（この見本帳もコード通りに描いている）</b><br>
+    <code>CardBadges.tsx</code> の下段は <code>justifyContent:"space-between"</code>。管理UI（🏷️／•••）が無い一般表示では
+    Magazine チップ<b>1つだけ</b>が子要素になるため、space-between は効かず <b>右下ではなく左下</b>に出る。
+    仕様（右下固定）と実装がズレている。直すなら Magazine 側に <code>marginLeft:"auto"</code> を足すのが最小。
+  </div>
+  <div class="note">
+    <b>3:4 と 4:3 はコード上に存在しない。</b>
+    <code>aspect-video</code>（16:9）50か所、<code>aspect-square</code>（1:1）8か所、<code>aspectRatio:"9 / 16"</code>（TikTok埋め込み）1か所。
+    それ以外の比率はソースに1つも無い。<code>designRules.ts</code> の <code>card.variants</code>（A=16/9・B=1・C=16/9）とも一致する。
+  </div>
+  <div class="note">
+    <b>数字の出どころ（文書ではなくコード）</b>
+    <table class="spec">
+      <tr><th>もの</th><th>コードの書き方</th><th>出どころ</th></tr>
+      <tr><td>バッジ画像の高さ</td><td><code>min(28cqw, 28cqh)</code></td><td>badgeKinds.ts <code>BADGE_IMAGE_STYLE</code> ← designRules.ts <code>targetShortSideRatioPct:28</code></td></tr>
+      <tr><td>四隅の余白</td><td><code>min(6.5cqw, 6.5cqh)</code></td><td>badgeKinds.ts <code>BADGE_INSET_RATIO</code> ← <code>cornerInsetPercent:6.5</code></td></tr>
+      <tr><td>バッジ同士の間</td><td><code>min(3cqw, 3cqh)</code></td><td>CardBadges.tsx <code>TOP_ROW_STYLE</code> / <code>BOTTOM_ROW_STYLE</code></td></tr>
+      <tr><td>文字チップ</td><td><code>clamp(6px, min(5.5cqw,5.5cqh), 9px)</code></td><td>CardBadges.tsx <code>CHIP_STYLE</code>（945番で片側 <code>5.5cqw</code> から修正済み）</td></tr>
+      <tr><td>許容誤差</td><td>±1pt</td><td>designRules.ts <code>toleranceRatioPct:1</code></td></tr>
+    </table>
+    文書側の「短辺の12〜15%」「15〜20%」は<b>古い</b>。実測の28%（1210×646のカードでバッジ高さ182px＝28.2%）が正。
+  </div>
+</div>
+
+
+<!-- ============================================================
+     【946番・2026-09-19】絵の余白の実測（上px／左px）
+     たまごさん：「寄ってないよ。比べてみてよ、銀のバッジと。」
+     この見本帳は今まで**ダミーのSVG**で描いていたので、
+     「箱は合っているのに絵が偏っている」事故を素通ししていた。
+     ここでは本物のPNGを使い、箱ではなく**絵**の余白をpxで出す。
+     ============================================================ -->
+<div class="wrap" id="ink946">
+  <h2 style="margin:28px 0 6px;font-size:16px">絵の余白の実測（上px／左px）— 946番</h2>
+  <div class="note" style="margin-bottom:14px">
+    CSSが置くのは<b>画像の箱</b>で、箱の中で絵がどこにいるかは見ていない。
+    だから箱の上余白px＝左余白pxが完全に一致していても、<b>目に見える絵</b>は角から離れることがある。
+    実際 <code>concierge-pick.png</code> は 1536×1024 の canvas に対して絵が
+    左に 484px も空けて置かれており（アルファ値8以上で実測）、
+    672×378 の枠で <b>左57.96px／上33.87px＝1.71倍のズレ</b>になっていた。
+    たまごさんの実測「左110px／上67px」（2倍のスクリーンショット＝左55／上33.5）と一致する。<br>
+    下の表は <code>getBoundingClientRect()</code> で箱を実測し、
+    そこへ PNG から実測した「絵の位置の割合」を足した<b>絵の余白px</b>。
+    <span class="ok">揃っている</span>＝上と左の差が0.5px以内、かつ金と銀の差が0.5px以内。
+  </div>
+  <div id="ink946out"></div>
+</div>
+
+<script>
+/* PNGの中で絵がどこにいるか。tools/_946_fix_badge_png.py が
+   アルファ値8以上（＝目に見える）で実測した値。画像の「高さ」で割った比率。
+   CSSは height 指定・width:auto なので、横方向もこの比率で効く。 */
+const INK946 = {
+  '銀 good-cover.png（95点・正本）':
+    { url:'https://joy-relief-station.lovable.app/badges/good-cover.png',
+      png:'432×512', ink:'328×408', left:0.101562, top:0.101562, h:0.796875 },
+  '金 concierge-pick.png（直す前）':
+    { url:null, png:'1536×1024', ink:'875×815', left:0.315430, top:0.087891, h:0.795898 },
+  '金 concierge-pick.png（直した後）':
+    { url:'https://joy-relief-station.lovable.app/badges/concierge-pick.png',
+      png:'541×512', ink:'437×408', left:0.101562, top:0.101562, h:0.796875 },
+};
+/* 本番で実測した枠。数字は headless Chrome の getBoundingClientRect() 実測値。 */
+const FRAMES946 = [
+  { label:'曲ページの大きいプレイヤー（1440px幅）', w:686, h:386 },
+  { label:'たまごさんのお手本（95点）',             w:672, h:378 },
+  { label:'アーティストページのカード（1440px幅）', w:336, h:189 },
+  { label:'正方形カード（1440px幅）',               w:176, h:176 },
+  { label:'アーティストページのカード（375px幅）',   w:325, h:183 },
+  { label:'正方形カード（375px幅）',                w:136, h:136 },
+];
+
+(function(){
+  const INSET = 0.065, SIZE = 0.28;   /* designRules.ts の正本 */
+  const out = document.getElementById('ink946out');
+  let html = '';
+  for (const f of FRAMES946){
+    /* 実物と同じCSSで箱を描いて、箱の余白を実測する（書き写した値を使わない） */
+    const box = document.createElement('div');
+    box.style.cssText = 'position:absolute;left:-9999px;top:0;width:'+f.w+'px;height:'+f.h+'px';
+    box.innerHTML = '<span style="position:absolute;inset:0;container-type:size">'
+      + '<span style="padding:min(6.5cqw,6.5cqh);height:100%;display:flex;flex-direction:column">'
+      + '<span style="display:flex;align-items:flex-start;gap:min(3cqw,3cqh);width:100%">'
+      + '<i data-m style="display:block;height:min(28cqw,28cqh);width:10px"></i>'
+      + '</span></span></span>';
+    document.body.appendChild(box);
+    const mark = box.querySelector('[data-m]');
+    const r0 = box.getBoundingClientRect(), r1 = mark.getBoundingClientRect();
+    const boxLeft = +(r1.left - r0.left).toFixed(3);
+    const boxTop  = +(r1.top  - r0.top ).toFixed(3);
+    const boxH    = +r1.height.toFixed(3);
+    document.body.removeChild(box);
+
+    const rows = Object.entries(INK946).map(([name, k]) => {
+      const L = boxLeft + boxH * k.left;
+      const T = boxTop  + boxH * k.top;
+      const H = boxH * k.h;
+      return { name, k, L, T, H };
+    });
+    const silver = rows[0];
+    html += '<h3 style="margin:22px 0 6px;font-size:14px">'+f.label+'　<span style="color:var(--sub);font-weight:400">枠 '+f.w+'×'+f.h+'px　／　箱の余白 上'+boxTop+'px・左'+boxLeft+'px（＝一致）</span></h3>';
+    html += '<table class="spec" style="width:100%"><tr><th>バッジ</th><th>PNG</th><th>絵</th>'
+         + '<th>絵の<b>上</b>余白px</th><th>絵の<b>左</b>余白px</th><th>上−左</th><th>絵の高さpx</th><th>銀との差</th><th>判定</th></tr>';
+    for (const r of rows){
+      const d  = +(r.T - r.L).toFixed(3);
+      const dS = +(Math.max(Math.abs(r.T-silver.T), Math.abs(r.L-silver.L), Math.abs(r.H-silver.H))).toFixed(3);
+      const ok = Math.abs(d) <= 0.5 && dS <= 0.5;
+      html += '<tr><td>'+r.name+'</td><td><code>'+r.k.png+'</code></td><td><code>'+r.k.ink+'</code></td>'
+           + '<td><b>'+r.T.toFixed(2)+'</b></td><td><b>'+r.L.toFixed(2)+'</b></td>'
+           + '<td class="'+(Math.abs(d)<=0.5?'ok':'ng')+'">'+(d>0?'+':'')+d+'</td>'
+           + '<td>'+r.H.toFixed(2)+'</td>'
+           + '<td class="'+(dS<=0.5?'ok':'ng')+'">'+dS+'</td>'
+           + '<td class="'+(ok?'ok':'ng')+'">'+(ok?'✅ 揃っている':'❌ 揃っていない')+'</td></tr>';
+    }
+    html += '</table>';
+
+    /* 目でも見る。たまごさん：「数字が合っていても、目で見て角に寄っていなければ不合格。」 */
+    html += '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px">';
+    for (const r of rows){
+      if (!r.k.url) continue;
+      const w = Math.min(f.w, 340), s = w / f.w;
+      html += '<figure style="margin:0"><div style="position:relative;width:'+w+'px;height:'+(f.h*s)+'px;'
+           + 'background:#2b2724;overflow:hidden;border-radius:6px">'
+           + '<span style="position:absolute;inset:0;container-type:size">'
+           + '<span style="padding:min(6.5cqw,6.5cqh);height:100%;display:flex;flex-direction:column">'
+           + '<span style="display:flex;align-items:flex-start;gap:min(3cqw,3cqh);width:100%">'
+           + '<img src="'+r.k.url+'" alt="" style="height:min(28cqw,28cqh);width:auto;display:block;opacity:.92">'
+           + '</span></span></span>'
+           + '<span style="position:absolute;left:0;top:0;width:'+(r.L*s)+'px;height:1px;background:#e8b64c"></span>'
+           + '<span style="position:absolute;left:0;top:0;width:1px;height:'+(r.T*s)+'px;background:#e8b64c"></span>'
+           + '</div><figcaption style="font-size:11px;color:var(--sub);margin-top:4px">'+r.name+'</figcaption></figure>';
+    }
+    html += '</div>';
+  }
+  out.innerHTML = html;
+})();
+</script>
+
+</body>
+</html>

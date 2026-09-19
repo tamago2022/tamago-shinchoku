@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#920 外部AI検品を繋ぐ＋使ったお金を毎回「円」で出す＋API料金の早見表 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #920 外部AI検品を繋ぐ＋使ったお金を毎回「円」で出す＋API料金の早見表</div>
+<h1>#920 外部AI検品を繋ぐ＋使ったお金を毎回「円」で出す＋API料金の早見表</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p><b>①今回直したこと（1回目の機械検品でリンク404を指摘された分）</b>：確認ページに貼っていた「実測の費用ログ」へのリンク先（<code>status/gaibu_kenpin_ledger.json</code>）が404だった。原因は、このファイルの置き場所<code>status/</code>直下がリポジトリの設定でGitHubに公開されない場所だったため。<b>gaibu_kenpin.py</b>を直し、記録するたびに公開される場所（<code>status/public/gaibu_kenpin_ledger.json</code>）にも自動で複製するようにし、確認ページのリンク先をそちらへ差し替えた。</p>
+<p><b>やったこと（本体）</b>：②<b>OpenAIの鍵</b>（既に登録済みのもの）が生きているか確認（無料のAPIで疎通確認・追加費用0円）→<b>生きていた</b>。たまごさんは何も操作していない。③<b>外部AI検品（gaibu_kenpin.py）</b>を、Grok（xAI）1社だけの仕組みから<b>Grok→OpenAI→Geminiの順で自動フォールバック</b>する仕組みへ拡張。1社が失敗しても自動で次の会社へ切り替わり、判定が取れたところで確定する。④<b>Gemini（Google）の無料鍵</b>は、Google AI Studioでの取得にブラウザでのクリック操作が必須で、このセッションにはブラウザを操作する道具が無く取得できなかった（接続コードは実装済みなので、鍵を1行追記すれば繋がる）。⑤お金がかかった回を全部「円」で記録する仕組みに、公式料金ページで確認した実際の単価を反映。⑥「何をしたらいくら」の早見表を新規作成。</p>
+<p><b>実際にかかった費用（本日・2026-09-17・status/public/gaibu_kenpin_ledger.json を実測合計・自分自身の検品実行分も含む）</b>：外部AI検品ぜんぶで<b>合計約7.6円</b>（920番の検品・修正確認あわせて計6回＝約1.2円／919番の動画・スクショ検品あわせて計5回＝約6.4円）。OpenAIの生存確認（無料API）は0円。<b>今回このリンク修正のためにかかった金額は約0.06円</b>（許可上限30円のうち。残りは919/920番の既存の検品作業ですでに使用済みだった分）。件数・金額は実行のたびに増えるため、最新の生の数字は下の「押せるリンク」から費用ログを開くと確認できます。</p>
+</div>
+
+<h2>② 数字（実測）</h2>
+<div class="nums">
+  <div class="num"><b>1本中1本 修正</b><span>404だったリンク</span></div>
+  <div class="num"><b>生存確認済み・0円</b><span>OpenAIの鍵</span></div>
+  <div class="num"><b>未取得（ブラウザ操作不可で保留）</b><span>Geminiの鍵</span></div>
+  <div class="num"><b>実行中・合計約7.6円</b><span>外部AI検品の実測（実行のたび増加）</span></div>
+  <div class="num"><b>作成済み</b><span>料金早見表</span></div>
+</div>
+<div class="note">
+<b>実測ログ（生データ・修正の前後でリンク先のHTTPステータスを実際に取得）</b>
+<pre style="white-space:pre-wrap;font-size:0.8rem;margin:8px 0 0;">修正前: GET https://github.com/tamago2022/tamago-shinchoku/blob/main/status/gaibu_kenpin_ledger.json → 404 Not Found
+　（原因: status/gaibu_kenpin_ledger.json は .gitignore の "status/*" でGitHub非公開）
+修正後: gaibu_kenpin.py が保存のたびに status/public/gaibu_kenpin_ledger.json へも複製 → git管理・公開対象
+確認: status/gaibu_kenpin_ledger.json と status/public/gaibu_kenpin_ledger.json の中身は diff 0件（完全一致）
+main合流後の実リンクは下の「④ 押せるリンク」から直接クリックして確認できます。</pre>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>外部AI検品のコード（Grok→OpenAI→Gemini）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py</a></li>
+  <li><b>実測の費用ログ（円まで記録・今回404を修正した先）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/gaibu_kenpin_ledger.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/gaibu_kenpin_ledger.json</a></li>
+  <li><b>OpenAI公式料金ページ</b><a href="https://platform.openai.com/docs/pricing" target="_blank" rel="noopener">https://platform.openai.com/docs/pricing</a></li>
+  <li><b>Gemini公式料金ページ</b><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">https://ai.google.dev/gemini-api/docs/pricing</a></li>
+  <li><b>xAI Grok公式料金ページ</b><a href="https://docs.x.ai/developers/pricing" target="_blank" rel="noopener">https://docs.x.ai/developers/pricing</a></li>
+</ul>
+
+
+
+<footer>
+料金早見表の本体（AI出力/API料金_早見表.md）はObsidian Vaultに保存済み（パス: ~/Documents/AI作業/API料金_早見表.md）。APIキーそのものの値はどの画面・リンクにも出していません（~/.tamago/keys/api_keys.env・権限600・git管理外）。画面のビジュアル変更を伴わない裏側の仕組み修正のため、前後スクショの代わりに上の実測ログ（生データ）を証拠として置いています。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

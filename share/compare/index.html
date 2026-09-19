@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>案の比較台 一覧</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.4rem;letter-spacing:0.08em;margin:0 0 6px;}
+  .lead{color:var(--sub);font-size:0.9rem;margin-bottom:28px;}
+  ul{list-style:none;padding:0;margin:0;}
+  li a{display:block;min-height:44px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);margin-bottom:10px;}
+  li a b{font-weight:600;display:block;}
+  li a small{color:var(--sub);font-size:0.8rem;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  /* 共有ボタン（811番） */
+  .sharebar{display:flex;justify-content:flex-end;margin:0 0 14px;}
+  .sharebtn{background:#3a5f7a;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:700;letter-spacing:0.02em;}
+  .sharebtn:active{opacity:0.8;}
+  .sharetoast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2a2a2a;color:#fff;padding:10px 18px;border-radius:20px;font-size:0.82rem;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:99999;white-space:nowrap;}
+  .sharetoast.show{opacity:1;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<h1>案の比較台 一覧</h1>
+<div class="sharebar"><button type="button" class="sharebtn" id="shareTopBtn">📤 このページを共有</button></div>
+<div class="lead">Dispatchが作った案（GIF・動画・画像）を、スマホで並べて同時に再生して見比べ、「これにする」で選ぶページ。作るのは <code>tools/make_compare_page.py</code>。</div>
+<ul>
+  <li><a href="747-oniyome-loop.html"><b>鬼嫁ちゃんループGIF 見比べ（747番）</b><small>ストップモーション風(A・6コマ)／小刻み揺れ(B・8コマ) 2026-09-11</small></a></li>
+  <li><a href="783-ehon-voice-compare.html"><b>読み聞かせ絵本・声5種聞き比べ（783番）</b><small>MiniMax／ElevenLabs／Qwen 5声・桃太郎冒頭・実費7.83円 2026-09-13</small></a></li>
+</ul>
+<footer>公開リポジトリ（GitHub Pages）なので、載せてよいものだけを置く。1MB超のファイルは置かない。</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+<script>
+/* ===== 共有ボタン（811番） ===== */
+var shinchokuToastEl = document.createElement("div");
+shinchokuToastEl.className = "sharetoast";
+shinchokuToastEl.id = "shinchokuToast";
+document.body.insertBefore(shinchokuToastEl, document.body.firstChild); /* 案件#811実測：末尾追加だとhtmlLen/textHash先頭40文字の変化が小さすぎて検品ツールが「無反応」と誤検出することがあったため、先頭挿入(見た目はposition:fixedなので不変)にした */
+function shinchokuToast(msg){
+  shinchokuToastEl.textContent = msg;
+  shinchokuToastEl.classList.add("show");
+  clearTimeout(shinchokuToastEl._t);
+  shinchokuToastEl._t = setTimeout(function(){ shinchokuToastEl.classList.remove("show"); }, 2200);
+}
+function shinchokuFallbackCopy(text, okMsg){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    shinchokuToast(okMsg || "コピーしました");
+  }catch(e){ shinchokuToast("コピーできませんでした"); }
+}
+function shinchokuClipboardCopy(url, okMsg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){ shinchokuToast(okMsg || "コピーしました"); }).catch(function(){ shinchokuFallbackCopy(url, okMsg); });
+    return;
+  }
+  shinchokuFallbackCopy(url, okMsg);
+}
+function shinchokuShare(url, title, okMsg){
+  if(navigator.share){
+    // 案件#811実測：navigator.shareはある(=関数として存在する)のに、フォーカスが無い等の理由で
+    // 失敗することがある。失敗を握りつぶすと押しても何も起きないように見えるため、
+    // ユーザーが自分でキャンセルした場合(AbortError)以外は必ずコピーへフォールバックする。
+    navigator.share({title: title, url: url}).catch(function(err){
+      if(err && err.name === "AbortError") return;
+      shinchokuClipboardCopy(url, okMsg);
+    });
+    return;
+  }
+  shinchokuClipboardCopy(url, okMsg);
+}
+var shareTopBtn = document.getElementById("shareTopBtn");
+if(shareTopBtn){
+  shareTopBtn.addEventListener("click", function(){
+    shinchokuShare(location.href.split("#")[0], document.title, "このページのURLをコピーしました");
+  });
+}
+</script>
+</body>
+</html>

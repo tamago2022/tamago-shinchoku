@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#740 鳥の棚に動物動画を追加＋BGM確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #740 鳥の棚に動物動画を追加＋BGM確認</div>
+<h1>#740 鳥の棚に動物動画を追加＋BGM確認</h1>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんが見つけたX投稿（コンドルが放たれる動画）を「かわいいの扉」内「鳥の棚」へ1枚追加。実装はmainに合流済み・独立検品もPASS。後ろで流れているBGM（推測「コンドルは飛んでいく」）は投稿本文・動画の埋め込み情報・関連しそうな他のYouTube動画の説明欄まで再確認したが曲名の記載が一切無く、断定できないため未確認のまま（ページにも正直に明記）。本番への反映自体は、Lovable基盤側の障害「Publishing was blocked due to suspicious activity」（このカード固有ではなく全社的な既知障害）が解消されるまで保留中。
+</div>
+
+<div class="fix" style="border-color:var(--ao);">
+<b>【今回追加】「触る検品」でFAILした件を切り分けました。</b>このカードのコードが原因ではありません。<br>
+①「▶ボタン2件が無反応」→ 同じ作り（xUrlのみ・youtubeIdなし）の**既存の別カード**`highway-to-hell-rock-soul`（今回とは無関係・以前からmainで動作中）で同じ検品ツールを単独実行したところ、無反応が<b>12件</b>出ました。中身は「はい/いいえ」（Cookie同意）と「家/検索/棚/扉/好き/前のページに戻る/次のページへ進む/画面の一番上へ」（全ページ共通の下部ナビ）で、実装は常設(fixed)のため本来消えません。原因は検品ツール側：「前のページに戻る」を押した瞬間にページ遷移が起き、それ以降まだ調べていなかった要素の参照が軒並み「消えた」と誤判定される作りでした（本件のカード固有の不具合ではない）。<br>
+②「コンソールエラー2件」→ 本番の`/world/cute`だけでなく`/world/music`（鳥の棚と無関係）でも同じ`React error #418`が再現しました。鳥の棚のカードはまだ本番未反映（Lovable公開ブロックのため）なので、このエラーは元々サイト全体に存在していた別件の不具合です。<br>
+どちらも詳細を`status/failures.md`（18番・19番）へ記録し、次にこの検品ツールを触る担当が同じ勘違いをしないようにしました。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1件</b><span>鳥の棚に追加したカード枚数</span></div>
+  <div class="num"><b>0件</b><span>BGM同定の確定件数（未確認のまま・断定せず）</span></div>
+  <div class="num"><b>17回目</b><span>Lovable公開ブロック障害を独立に確認した回数</span></div>
+  <div class="num"><b>2件</b><span>切り分けた検品ツール側の誤検出（下記参照）</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>Lovable公開ボタンを押した直後の画面（Publishing was blocked due to suspicious activity）</b><img src="img/740-publish-blocked.png" alt="Lovable公開ボタンを押した直後の画面（Publishing was blocked due to suspicious activity）"><span class="meta">これがLovable基盤側の障害の実物。AI側の操作ミスではなく、Lovableのセキュリティ判定でブロックされている</span></div>
+</div>
+
+<h2>④ 押せるリンク（すべてたまごさんが実際に開けるものだけ）</h2>
+<ul class="links">
+  <li><b>元のX投稿（素材）</b><a href="https://x.com/tositaisto/status/2097417413268525145" target="_blank" rel="noopener">https://x.com/tositaisto/status/2097417413268525145</a></li>
+  <li><b>本番トップ（現状は鳥の棚が未反映。反映されたらここに「鳥の棚」が出る）</b><a href="https://joy-relief-station.lovable.app/world/cute" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/cute</a></li>
+  <li><b>Lovableのプロジェクト画面（たまごさんのログインで開く。ここで「公開」を押すと同じブロック画面が出るはず。出た場合は右下のサポートチャットへ「Publishing was blocked due to suspicious activity」の解除を依頼するのが最短）</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>鳥の棚(新設)にカード1枚が入っているか(実装)</td><td class="yes">できている</td></tr>
+<tr><td>GitHub mainへの合流</td><td class="yes">完了</td></tr>
+<tr><td>BGM(コンドルは飛んでいく)の確定(今回追加調査：X投稿本文・syndication API・関連YouTube動画の説明欄を再確認)</td><td class="no">未確認のまま(裏取り不能)</td></tr>
+<tr><td>本番/world/cuteに鳥の棚が表示されているか(今回の再実測)</td><td class="no">未反映</td></tr>
+<tr><td>「変更を公開」を実際に押した結果(今回も再試行)</td><td class="no">失敗(Publishing blocked・12回目の同一結果)</td></tr>
+</table>
+
+<footer>
+コード側は完成・main合流済み。残るのはLovable基盤側の公開ブロック障害の解消のみ（他の複数案件（#686/#708/#749/#758/#779/#781/#782等）でも同時に発生中の全社的な既知障害で、AI側の技術的手段では解除できないと12件の独立したセッションが確認済み）。障害が解消され次第、30分おきの自動便が拾って本番へ反映する。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
