@@ -3,22 +3,22 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                                              // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                                                // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-19T10:38:20.695Z",
+      "updatedAt": "2026-09-19T10:40:53.829Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
       "dateJST": "2026-09-19",
       "successCountToday": 0,
-      "consecutiveFailures": 3,
+      "consecutiveFailures": 4,
       "stoppedForToday": true,
       "lastResult": "fail",
-      "lastCheckedAt": "2026-09-19T10:38:18.021Z",
+      "lastCheckedAt": "2026-09-19T10:40:52.100Z",
       "lastPublishedSha": null,
-      "lastFailureReason": "ERR browserType.connectOverCDP: Protocol error (Browser.setDownloadBehavior): Browser context management is not supported.\nCall log:\n  - <ws preparing> retrieving websocket url from http://127.0.0.1:9223\n  - <ws connecting> ws://127.0.0.1:9223/devtools/browser/40f9b2ac-f8ac-4378-9645-d9a5efadb05d\n  - <ws connected> ws://127.0.0.1:9223/devtools/browser/40f9b2ac-f8ac-4378-9645-d9a5efadb05d\n  - <ws disconnecting> ws://127.0.0.1:9223/devtools/browser/40f9b2ac-f8ac-4378-9645-d9a5efadb05d\n  - <ws disconnected> ws://127.0.0.1:9223/devtools/browser/40f9b2ac-f8ac-4378-9645-d9a5efadb05d code=1000 reason=\n",
-      "lastFailureAt": "2026-09-18T16:38:46.540Z",
+      "lastFailureReason": "「公開」ボタンが見つからない。画面がエディタでない可能性。URL: https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1",
+      "lastFailureAt": "2026-09-19T10:40:52.100Z",
       "mainSha": "a9ea41a8b3",
       "mainUnpublished": true,
       "paused": false,
