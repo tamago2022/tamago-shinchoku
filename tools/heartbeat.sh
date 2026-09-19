@@ -197,6 +197,16 @@ while :; do
   #   5分以上放置＋gitプロセスが1本も無い時だけ消す（worktree_reaper.pyと同じ立ち位置）。
   # 起動の間引き（2026-09-18）：5分以上放置のロックが対象。2分おきで十分
   tick_every 8 && ( python3 "$REPO/tools/git_lock_reaper.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-19（Cowork側から設置）GitHubの見張り番。
+  #   たまごさん「チャッピーがGitHubに上げたら、俺が言わなくても即座に気づくようにして。水汲みゼロ」
+  #   実害：joy-relief-stationにIssueが置かれても、たまごさんが口で伝えるまで誰も気づかなかった。
+  #   ★「5分ごとに全部見に行く」形ではない。ETag(If-None-Match)を付けた条件付きGETなので、
+  #     変化が無い回は 304 が返るだけ＝**本文0バイト・レート制限の消費0**（公式ドキュメント記載）。
+  #   ★中に60秒ゲートがあるので、呼ばれすぎても外へは出ない（状態ファイルを1つ読んで即戻る）。
+  #     心臓の一周は混むと実測40〜50秒まで伸びるので、呼ぶ側は短い方(2周=約30〜100秒)に倒す。
+  #   拾ったら status/queue.json の発車待ちへ自分で積む。着火は auto_launcher がやる＝人は押さない。
+  #   ★吐き出したものは status/github_watch_err.log に残す（黙って死ぬのを防ぐ）。
+  tick_every 2 && ( python3 "$REPO/tools/github_watch.py" >> "$REPO/status/github_watch_err.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-18（944番）：外部AI（Grok/ChatGPT/Gemini）への代行係。
   #   Cowork/Dispatchのサンドボックスからは api.openai.com / api.x.ai /
   #   generativelanguage.googleapis.com へ回線が出ない（実測）。このMacからは出る。

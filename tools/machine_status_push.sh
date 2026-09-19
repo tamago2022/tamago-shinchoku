@@ -610,6 +610,10 @@ quick_tick() {
   #   ★pendingが空なら数ミリ秒で何もせず終わるので、15秒おきに呼んでも工場は重くならない。
   #   ★この便を止めないよう、バックグラウンドに逃がして150秒で打ち切る（前で待たない）。
   ( run_with_timeout 150 python3 "$REPO/tools/gaibu_runner.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-19：GitHubの見張り番（tools/github_watch.py）。心臓にも同じ1行がある＝経路の二重化。
+  #   心臓が落ちている間もGitHubの新着に気づけるようにするため。
+  #   ★内部で60秒ゲートしているので、両方から呼ばれても外へ出るのは1分に1回だけ。
+  ( run_with_timeout 60 python3 "$REPO/tools/github_watch.py" >> "$REPO/status/github_watch_err.log" 2>&1 & ) >/dev/null 2>&1
 }
 while :; do
   run_once

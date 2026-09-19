@@ -283,7 +283,25 @@ def save_queue(q, snapshot=None, deleted_ns=None):
         _write_history_backup(disk)
 
         result = dict(q)
-        result["items"] = sorted(merged_items, key=lambda x: (x.get("n") is None, x.get("n") or 0))
+        # 2026-09-19（GitHub見張り番の工事中に実機で踏んだ）：
+        #   ここで n をそのまま並べ替えていたため、**1件でも n が文字列("950")の項目が
+        #   混ざっていると TypeError で保存が丸ごと落ちる。**
+        #   実害：その状態のまま、発車待ちへの追加が全部失敗していた（スマホの
+        #   「＋発車待ちに追加」もDispatchからの積み込みも同じ道を通る）。しかも
+        #   呼び出し側は例外を握りつぶす場所が多く、**黙って積まれない**（誰も気づけない）。
+        #   → 並べ替えの時は数として見る。ついでに項目自身の n も数へ直しておく。
+        def _n_as_int(v):
+            try:
+                return int(v)
+            except Exception:
+                return None
+        for _it in merged_items:
+            _v = _n_as_int(_it.get("n"))
+            if _v is not None and _it.get("n") != _v:
+                _it["n"] = _v
+        result["items"] = sorted(merged_items,
+                                 key=lambda x: (_n_as_int(x.get("n")) is None,
+                                                _n_as_int(x.get("n")) or 0))
         if "repo" not in result and "repo" in disk:
             result["repo"] = disk["repo"]
 
