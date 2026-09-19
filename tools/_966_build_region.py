@@ -240,6 +240,10 @@ def main():
 
     r, srcmap = {}, {}
     for a in arts:
+        # ★ 会社・映画・ジャンル・お笑い等（kind が music 以外）には地域を付けない。
+        #   付けると「日本の曲」で JR東海 や 花王 が出る（2026-09-20 自己検査で実際に出た）。
+        if a.get("kind") not in (None, "music"):
+            continue
         ab = a.get("about") or gab.get(a["id"]) or ""
         code, why = region_of(a["name"], ab, a["id"])
         if code:
