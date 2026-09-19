@@ -1,0 +1,148 @@
+#!/bin/bash
+# 963番：公開（進捗表＝スマホの画面）を main から切り離す、ただ1人の書き手。
+#
+# ■ 何が起きていたか（実測）
+#   ・この工場の git は 232回 詰まっていた（push失敗95／「向こうが先で合流できない」64／
+#     取り残しロック23／pull失敗9）。
+#   ・詰まりの主犯は **5分おきに status/public/ の写しを main へ commit+push していたこの経路**。
+#     9人の書き手と17個のworktreeが同じ main を触っているところへ、機械が1日73回
+#     割り込んでいた。人間側の作業は毎回その後ろに並ばされ、合流できずに失敗していた。
+#   ・さらに .github/workflows/pages.yml は main への push のたびに
+#     **リポジトリ丸ごと(681MB)** を Pages の成果物として上げ直していた。
+#
+# ■ 直し方（穴に段ボールを貼るのではなく、パイプごと替える）
+#   達人側の答えは一致している：
+#     Homebrew … 5分間隔のgit配信が潰れたのでJSON配信へ移した
+#     CocoaPods … GitHubにCPU制限をかけられてCDNへ移した
+#     cargo     … gitインデックスをやめて sparse index へ移した
+#   いずれも「**配信の道を、作業の道から外す**」という同じ一手。ここでも同じことをする。
+#
+#   公開用の枝 gh-pages を1本立て、**この1本だけが書き手**になる。
+#   履歴は常に1コミットに固定し、毎回 force push する。
+#   → 書き手が1人しか居ない枝に、履歴1コミットで force push するのだから、
+#     「向こうが先で合流できない(non-fast-forward)」は**原理的に起きない**。
+#   → main は人間の作業だけの道に戻る。機械は main に一切書かない。
+#
+# ■ たまごさんに渡した URL は1本も変わらない
+#   枝を変えるだけで、配信されるサイトの中身と場所（https://tamago2022.github.io/tamago-shinchoku/）
+#   は同じ。index.html も share/check/*.html も status/public/*.json も、今までどおりの住所に出る。
+#
+# ■ 何を載せるか（ここが事故の分かれ目）
+#   載せるのは次の2つだけ。どちらも**今すでに公開されているもの**しか含まない。
+#     (1) main が追跡しているファイル（git archive HEAD＝追跡外のゴミは原理的に入らない）
+#     (2) status/public/ の生きた中身（＝今までスマホへ届いていたもの）
+#   作業ディレクトリを `git add -A` で丸ごと拾うことは**しない**。
+#   過去にツイート47,011件(12MB)を誤って公開した事故は「share/ を丸ごとaddしていた」ため。
+#   同じ形を二度と作らない。加えて (2) には下の関所を通す。
+#
+#   関所（status/public/ の中だけに掛ける。main追跡分は今も公開中なので触らない）：
+#     ・1MBを超えるものは載せない
+#     ・.env / *.pem / *key* / *token* / *secret* / id_rsa は名前だけで弾く
+#     ・載せた顔ぶれは status/pages_publish_files.txt に毎回書き出す（後から目で見られる）
+#
+# ■ 使い方
+#   tools/pages_publish.sh          … 変化があれば公開する（machine_status_push.sh から毎周呼ぶ）
+#   tools/pages_publish.sh --force  … 変化が無くても公開する（切り替え時の確認用）
+set -u
+
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+PAGES="$HOME/.tamago-pages"          # ★ Desktop の外に置く。worktree_reaper にも他セッションにも見えない
+BRANCH="gh-pages"
+URL="https://github.com/tamago2022/tamago-shinchoku.git"
+LOG="$REPO/status/pages_publish.log"
+LIST="$REPO/status/pages_publish_files.txt"
+LOCK="$REPO/status/.pages_publish.lock"
+export PATH="$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+FORCE=0
+[ "${1:-}" = "--force" ] && FORCE=1
+
+log() { echo "$(date '+%F %T') $*" >> "$LOG"; }
+
+# ---- 二本走らせない（古い錠は壊れたものとみなして奪う）----
+if [ -f "$LOCK" ]; then
+  AGE=$(( $(date +%s) - $(stat -f %m "$LOCK" 2>/dev/null || echo 0) ))
+  if [ "$AGE" -lt 300 ]; then exit 0; fi
+fi
+echo "$$ $(date '+%F %T')" > "$LOCK"
+trap 'rm -f "$LOCK" 2>/dev/null || true' EXIT INT TERM
+
+# ---- 初回だけ：公開用の作業場を作る ----
+# ★ --shared を使う。main の中身(681MB)を**コピーせずに**参照するので一瞬で終わり、
+#   push のときも「向こうが既に持っているもの」として除外されるため、上りはほぼ写しの分だけ。
+if [ ! -d "$PAGES/.git" ]; then
+  log "公開用の作業場を作ります: $PAGES"
+  rm -rf "$PAGES" 2>/dev/null || true
+  git clone --shared --no-checkout --quiet "$REPO" "$PAGES" || { log "🛑 作業場が作れませんでした"; exit 1; }
+  git -C "$PAGES" remote set-url origin "$URL"
+  git -C "$PAGES" config user.name  "tamago-pages"
+  git -C "$PAGES" config user.email "tamago-pages@users.noreply.github.com"
+  git -C "$PAGES" config gc.auto 0          # 勝手な掃除で共有元を触らせない
+  git -C "$PAGES" switch --orphan "$BRANCH" --quiet 2>/dev/null \
+    || git -C "$PAGES" checkout --orphan "$BRANCH" --quiet
+  rm -f "$PAGES/.git/lastmain" 2>/dev/null || true
+fi
+
+cd "$PAGES" || { log "🛑 $PAGES へ入れませんでした"; exit 1; }
+
+# ---- (1) main の追跡ファイルを反映（main の HEAD が動いたときだけ）----
+CUR="$(git -C "$REPO" rev-parse HEAD 2>/dev/null || echo "")"
+[ -z "$CUR" ] && { log "🛑 main の HEAD が読めませんでした"; exit 1; }
+if [ "$CUR" != "$(cat "$PAGES/.git/lastmain" 2>/dev/null || echo "")" ]; then
+  # 消えたファイルを残さないため、一度さらにしてから展開し直す。
+  # ★ .git だけは絶対に消さない。
+  find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
+  # git archive は**追跡しているものしか出さない**＝置きっぱなしのゴミは原理的に入らない
+  if ! git -C "$REPO" archive "$CUR" | tar -x -C "$PAGES"; then
+    log "🛑 main の中身を取り出せませんでした（今回は公開を見送る）"
+    exit 1
+  fi
+  echo "$CUR" > "$PAGES/.git/lastmain"
+  log "main の中身を入れ替えました（$CUR）"
+fi
+
+# ---- (2) 生きた写し（status/public/）を上書き ----
+mkdir -p "$PAGES/status/public"
+rsync -a --delete "$REPO/status/public/" "$PAGES/status/public/" 2>/dev/null || {
+  log "🛑 写しの同期に失敗（今回は公開を見送る）"; exit 1; }
+
+# ---- 関所：status/public/ の中だけを見る ----
+BLOCKED=0
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  rm -f "$f"
+  log "🛑 公開から外しました（1MB超）: ${f#./}"
+  BLOCKED=$((BLOCKED+1))
+done < <(find ./status/public -type f -size +1024k 2>/dev/null)
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  rm -f "$f"
+  log "🛑 公開から外しました（名前が危ない）: ${f#./}"
+  BLOCKED=$((BLOCKED+1))
+done < <(find ./status/public -type f \( -name '.env*' -o -name '*.pem' -o -name '*key*' \
+          -o -name '*token*' -o -name '*secret*' -o -name 'id_rsa*' \) 2>/dev/null)
+
+# 載せた顔ぶれを必ず書き出す（後から目で確かめられるように）
+{ echo "# $(date '+%F %T') 公開に載せた status/public/ の顔ぶれ"; \
+  find ./status/public -type f | sed 's|^\./status/public/||' | sort; } > "$LIST" 2>/dev/null || true
+
+# ---- 変化が無ければ何もしない（＝押し合いにならない）----
+git add -A >/dev/null 2>&1
+if [ "$FORCE" -eq 0 ] && git diff --cached --quiet 2>/dev/null; then
+  exit 0
+fi
+
+MSG="公開（進捗表）$(date '+%F %T') / main=$(echo "$CUR" | cut -c1-9)"
+# ★ 履歴は常に1コミット。親を持たせない＝ **非fast-forwardが起きようがない**
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  git commit --amend -q --no-edit -m "$MSG" >/dev/null 2>&1 || true
+else
+  git commit -q -m "$MSG" >/dev/null 2>&1 || true
+fi
+
+if git -c credential.helper='!gh auth git-credential' push --force --quiet origin "HEAD:refs/heads/$BRANCH" 2>>"$LOG"; then
+  log "公開しました（写しの関所で外したもの: ${BLOCKED}件）"
+else
+  log "🛑 公開の push に失敗しました"
+  exit 1
+fi
