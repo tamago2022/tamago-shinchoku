@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#896 外部連絡いっぱつ（renraku.py）2回目：押すだけに近づけた分と、まだ手が要る分 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #896 外部連絡いっぱつ（renraku.py）2回目：押すだけに近づけた分と、まだ手が要る分</div>
+<h1>#896 外部連絡いっぱつ（renraku.py）2回目：押すだけに近づけた分と、まだ手が要る分</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+相手キーを指定するだけで、窓口を調べ・英日セットの文面を作り・送信ボタン手前まで自動で開く仕組み。前回の検品で「Gmailスクショが未ログイン広告ページ」「LINEの本文欄が空欄」という指摘を受け、この2点だけを今回直接調べ直した。結論：メール宛（Lovable/Anthropic）は<b>「押すだけ」を達成</b>（下のリンクを開けば、たまごさん本人のログイン済みGmailに件名・本文が入った状態の下書きが開く）。LINE宛はメールアドレス欄・本文欄への自動入力は実装・動作を確認したが、LINE側のフォームがカテゴリ選択に応じてFAQページへ誘導する設計になっており、自由記述の入力欄が画面に現れないカテゴリがあることを実機で確認した。そのため<b>LINEは「開く→カテゴリを2回選ぶ→下の本文をコピペ→送信」までが今回の到達点</b>（完全な1クリックではない）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2件</b><span>今回窓口台帳から実際に送信テストした相手（LINE Creators Market・Lovable）</span></div>
+  <div class="num"><b>4件</b><span>窓口台帳(status/renraku_madoguchi.json)に登録済みの相手</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>LINEフォーム: メールアドレス欄を自動入力した直後</b><img src="renraku/line_creators_market-20260917-032138-form-filled.png" alt="LINEフォーム: メールアドレス欄を自動入力した直後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>Lovable宛メール下書きを開く（クリックでeggypop2010@gmail.comのログイン済みブラウザに件名・本文入りで開く）</b><a href="https://mail.google.com/mail/u/0/?view=cm&amp;fs=1&amp;tf=cm&amp;to=support%40lovable.dev&amp;su=Question%20about%20AI%20agent%20automation%20of%20the%20Publish%20button%20and%20other%20UI%20controls%20/%20Publish%E3%83%9C%E3%82%BF%E3%83%B3%E7%AD%89%E3%81%AEAI%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E8%87%AA%E5%8B%95%E6%93%8D%E4%BD%9C%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%EF%BC%88%E8%A6%8F%E7%B4%84%E4%B8%8A%E3%81%AE%E5%8F%AF%E5%90%A6%E7%A2%BA%E8%AA%8D%EF%BC%89&amp;body=Hello%20Lovable%20team%2C%20I%20am%20a%20Lovable%20user%20%28project%3A%20joy-relief-station%29.%20With%20my%20own%20explicit%20instruction%2C%20I%20use%20an%20AI%20coding%20agent%20to%20help%20operate%20my%20project%2C%20including%20clicking%20the%20Publish%20button%20and%20other%20UI%20controls%20on%20my%20behalf%20via%20browser%20automation%2C%20under%20my%20own%20logged-in%20browser%20session.%20Could%20you%20confirm%20whether%20this%20is%20permitted%20under%20your%20Terms%20of%20Service%3F%0A%0A----------%0A%0ALovable%E3%83%81%E3%83%BC%E3%83%A0%E6%A7%98%E3%80%81joy-relief-station%E3%81%A8%E3%81%84%E3%81%86%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%82%92%E9%81%8B%E5%96%B6%E3%81%97%E3%81%A6%E3%81%84%E3%82%8BLovable%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%81%A7%E3%81%99%E3%80%82%E7%A7%81%E3%81%AFAI%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E3%82%92%E4%BD%BF%E3%81%84%E3%80%81%E8%87%AA%E5%88%86%E3%81%AE%E6%98%8E%E7%A4%BA%E7%9A%84%E3%81%AA%E6%8C%87%E7%A4%BA%E3%81%AE%E3%82%82%E3%81%A8%E3%81%A7%E3%80%81%E8%87%AA%E5%88%86%E3%81%8C%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E6%B8%88%E3%81%BF%E3%81%AE%E3%83%96%E3%83%A9%E3%82%A6%E3%82%B6%E3%82%BB%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%9F%E3%83%96%E3%83%A9%E3%82%A6%E3%82%B6%E8%87%AA%E5%8B%95%E6%93%8D%E4%BD%9C%E3%81%AB%E3%82%88%E3%82%8A%E3%80%81%E5%85%AC%E9%96%8B%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E5%90%AB%E3%82%80%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%81%AE%E6%93%8D%E4%BD%9C%E3%82%92%E4%BB%A3%E8%A1%8C%E3%81%95%E3%81%9B%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%E3%80%82%E3%81%93%E3%82%8C%E3%81%8C%E8%B2%B4%E7%A4%BE%E3%81%AE%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84%E4%B8%8A%E8%AA%8D%E3%82%81%E3%82%89%E3%82%8C%E3%82%8B%E3%81%8B%E7%A2%BA%E8%AA%8D%E3%81%95%E3%81%9B%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82" target="_blank" rel="noopener">https://mail.google.com/mail/u/0/?view=cm&amp;fs=1&amp;tf=cm&amp;to=support%40lovable.dev&amp;su=Question%20about%20AI%20agent%20automation%20of%20the%20Publish%20button%20and%20other%20UI%20controls%20/%20Publish%E3%83%9C%E3%82%BF%E3%83%B3%E7%AD%89%E3%81%AEAI%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E8%87%AA%E5%8B%95%E6%93%8D%E4%BD%9C%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%EF%BC%88%E8%A6%8F%E7%B4%84%E4%B8%8A%E3%81%AE%E5%8F%AF%E5%90%A6%E7%A2%BA%E8%AA%8D%EF%BC%89&amp;body=Hello%20Lovable%20team%2C%20I%20am%20a%20Lovable%20user%20%28project%3A%20joy-relief-station%29.%20With%20my%20own%20explicit%20instruction%2C%20I%20use%20an%20AI%20coding%20agent%20to%20help%20operate%20my%20project%2C%20including%20clicking%20the%20Publish%20button%20and%20other%20UI%20controls%20on%20my%20behalf%20via%20browser%20automation%2C%20under%20my%20own%20logged-in%20browser%20session.%20Could%20you%20confirm%20whether%20this%20is%20permitted%20under%20your%20Terms%20of%20Service%3F%0A%0A----------%0A%0ALovable%E3%83%81%E3%83%BC%E3%83%A0%E6%A7%98%E3%80%81joy-relief-station%E3%81%A8%E3%81%84%E3%81%86%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%82%92%E9%81%8B%E5%96%B6%E3%81%97%E3%81%A6%E3%81%84%E3%82%8BLovable%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%81%A7%E3%81%99%E3%80%82%E7%A7%81%E3%81%AFAI%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E3%82%92%E4%BD%BF%E3%81%84%E3%80%81%E8%87%AA%E5%88%86%E3%81%AE%E6%98%8E%E7%A4%BA%E7%9A%84%E3%81%AA%E6%8C%87%E7%A4%BA%E3%81%AE%E3%82%82%E3%81%A8%E3%81%A7%E3%80%81%E8%87%AA%E5%88%86%E3%81%8C%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E6%B8%88%E3%81%BF%E3%81%AE%E3%83%96%E3%83%A9%E3%82%A6%E3%82%B6%E3%82%BB%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%9F%E3%83%96%E3%83%A9%E3%82%A6%E3%82%B6%E8%87%AA%E5%8B%95%E6%93%8D%E4%BD%9C%E3%81%AB%E3%82%88%E3%82%8A%E3%80%81%E5%85%AC%E9%96%8B%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E5%90%AB%E3%82%80%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%81%AE%E6%93%8D%E4%BD%9C%E3%82%92%E4%BB%A3%E8%A1%8C%E3%81%95%E3%81%9B%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%E3%80%82%E3%81%93%E3%82%8C%E3%81%8C%E8%B2%B4%E7%A4%BE%E3%81%AE%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84%E4%B8%8A%E8%AA%8D%E3%82%81%E3%82%89%E3%82%8C%E3%82%8B%E3%81%8B%E7%A2%BA%E8%AA%8D%E3%81%95%E3%81%9B%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82</a></li>
+  <li><b>LINE Creators Marketのお問い合わせフォームを開く</b><a href="https://contact-cc.line.me/serviceId/10569" target="_blank" rel="noopener">https://contact-cc.line.me/serviceId/10569</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Lovable宛: 件名・本文の英日セット自動生成</td><td class="yes">できた</td></tr>
+<tr><td>Lovable宛: 押すだけでログイン済みGmail下書きが開くリンク(compose_url)</td><td class="yes">できた</td></tr>
+<tr><td>Lovable宛: IMAP経由でGmail下書きフォルダへ直接保存</td><td class="no">未達（要 ~/.tamago/gmail_app_password 設置、次の一歩）</td></tr>
+<tr><td>LINE宛: 返信用メールアドレス欄の自動入力</td><td class="yes">できた</td></tr>
+<tr><td>LINE宛: 自由記述の本文欄へのDOM自動入力（裏側）</td><td class="yes">できた</td></tr>
+<tr><td>LINE宛: その本文欄が画面に表示され送信ボタンだけ残る状態</td><td class="no">未達（カテゴリによりFAQ誘導へ分岐する仕様を実機で確認。次の一歩）</td></tr>
+<tr><td>窓口台帳(status/renraku_madoguchi.json)への貯蔵</td><td class="yes">できた（4件、二度と同じ調べ物をしない）</td></tr>
+</table>
+
+<h2>⑥ LINE宛：本文をコピーして貼り付ける用（本文欄が画面に出た後、ここをそのまま貼る）</h2>
+<div class="note" style="white-space:pre-wrap;">お世話になっております。LINE Creators Marketでスタンプを制作・販売しております miketamawae と申します。申請作業の効率化について、規約上の可否を正面からご確認させてください。素材はすべて本人が用意したものです。この素材を使って、申請フォームへの入力・アップロード・審査リクエストの送信を、本人の依頼でAIエージェントに代行させることは、貴社の利用規約上認められますか。お忙しいところ恐れ入りますが、ご回答いただけますと幸いです。</div>
+
+<footer>
+実装: tools/renraku.py・tools/_renraku_cdp.mjs／窓口台帳: status/renraku_madoguchi.json／送信記録: status/renraku.json／LINE本文コピー用とAnthropic分は shared-brain/00_INBOX/896_renraku_gmail_login_needed.md に記録。送信ボタンは一切自動で押さない（そのコードが存在しない）。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

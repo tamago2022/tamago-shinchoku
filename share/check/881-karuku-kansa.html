@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#881 ごきげん補給所 重さ監査（第1段・コード変更なし） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #881 ごきげん補給所 重さ監査（第1段・コード変更なし）</div>
+<h1>#881 ごきげん補給所 重さ監査（第1段・コード変更なし）</h1>
+<div class="date">2026-09-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p><b>対象：joy-relief-station（ごきげん補給所）。今回はコードを1行も変えず、実測だけを行った。</b></p><p>発車時のヒント文には「coverGuide.ts 6MBがそのまま重さの犯人」とあったが、実際は<b>大半のページで既に解消済み</b>（過去の複数セッションの修理・コミットf0e8ce43ほか）。ただし実ビルドを直接調べたところ、<b>曲詳細ページ(room.card.$slug)と棚ページ(shelf.$worldId.$shelfId)の2つだけ、同じ修理が漏れていて今も静的importのままだった</b>。これが今回の最重要発見（S級）。</p><h2>① 過去に報告された重さ事故は今どうなっているか（実測で確認）</h2><table><tr><th>過去に報告された重さ</th><th>今の状態（実測）</th></tr><tr><td>coverGuide.ts（曲名簿）8.5MB超が共通バンドルに混入</td><td class="yes">大半は解消済み。/watch・棚カード(ShelfCardView)・管理画面は動的import化済みで、トップ・世界ページのバンドルには含まれない。<b>ただし下記S-1・S-2の2ページだけ未修理</b></td></tr><tr><td>音楽の扉ページでスクロール中にJSが重い（真っ白になる）</td><td class="yes">解消済み。content-visibility:auto導入で実測439ms→80ms（-82%）。styles.cssに実測値がコメントとして残っている</td></tr><tr><td>棚カード1枚ごとにwindow.addEventListenerが張られ数百個化</td><td class="yes">ShelfCardView.tsxでは解消済み（単一の通知窓口=hubに統合）。<b>ただしVideoCard.tsxに同じ形のコードが未修理で残っている（下記B-3）</b></td></tr><tr><td>速さの回帰ガード(scripts/check-perf-guards.mjs・10項目)</td><td class="yes">main上で今回<b>10/10 PASS</b>を実行して確認（コード変更なし・検査のみ）。<b>ただしこのガードは今回見つかったS-1・S-2のファイルを監視対象に含めていない＝盲点</b></td></tr></table><h2>② 今回の監査で見つかった「まだ残っている」重さ　S/A/B/Cランキング</h2><h3 style='color:#c4483a;'>S（致命的）</h3><table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重いか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr><tr><td>S-1</td><td>曲詳細ページ(room.card.$slug.tsx)がcoverGuide.tsを静的import</td><td>src/routes/room.card.$slug.tsx:13 <code>import { getArtist } from "@/lib/coverGuide"</code>。実ビルド後チャンクを直接grepし、room.card._slug-CRYtCPto.js から coverGuide-Br22yDSr.js への静的ESM importを確認（import()ではなく同期import）</td><td>曲名簿全体(7.3MB/gzip後2.65MB)を、単発のgetArtist()関数1つのためだけに毎回同期ロードする。曲詳細ページは最も開かれるページ種別の1つと推定。同じ問題は既にwatch.tsxで動的import化して解決済みなのに、このページにだけ適用されていない（修理の適用漏れ）</td><td>import { getArtist } from "@/lib/coverGuide" を、watch.tsxと同じ await import("@/lib/coverGuide") 形式の遅延importへ変更</td><td>曲詳細ページの初期JS転送量が-2.65MB(gzip)程度になる見込み（watch.tsx修理時と同型のパターン）</td><td>getArtist()呼び出し箇所をasync化する必要があり、表示までの一瞬のローディング状態を作る必要がある。既存UIの出方を壊さない配慮が必要（リスク：中）</td></tr><tr><td>S-2</td><td>棚ページ(shelf.$worldId.$shelfId.tsx)も同じく静的import</td><td>src/routes/shelf.$worldId.$shelfId.tsx:22 <code>import { getArtist } from "@/lib/coverGuide"</code>。ビルド後チャンクshelf._worldId._shelfId-D4SD27Vf.jsからも同じ静的importを確認</td><td>S-1と同型。棚ページを開く度に2.65MB(gzip)のJSを同期ロードする</td><td>S-1と同じ動的import化</td><td>S-1と同じ規模の削減見込み</td><td>S-1と同じ（リスク：中）</td></tr></table><p style='font-size:0.85rem;color:#7a7568;'>※S-1・S-2は同一パターンの修理漏れで、まとめて1件の作業として直せる。速さの回帰ガードにもこの2ファイルを追加すれば再発防止になる。</p><h3 style='color:#b5651d;'>A（大きい）</h3><table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重い／危ないか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr><tr><td>A-1</td><td>速さの回帰ガードがCIに未接続</td><td>.github/workflows/quality-gate.ymlはビルド・仕入れ検品・YouTube IDマップ検査のみ実行。npm run check:perfの呼び出しなし</td><td>このガードは過去に本番で実際に起きた重さ事故の再発防止用。ガード自身のコメントに「直した修理が別セッションの上書きで本番から消えた」実例が記録されている。CI未接続だと同じ事故（今回のS-1/S-2のような修理漏れ含む）が誰にも気づかれず本番に出続ける</td><td>quality-gate.ymlのBuildステップに run: npm run check:perf -- --main を1行追加。あわせてS-1/S-2の2ファイルをルールに追加</td><td>速度そのものは変わらない（監視の追加）。将来の重さ回帰を機械的に抑える</td><td>ビルド時間+数百ms程度。文字列一致のため大規模リファクタ時はルール更新が必要</td></tr><tr><td>A-2</td><td>全ページ共通の"index"チャンクが大きい</td><td>実ビルド実測：index-rPhaV_qI.js = 3,031.58KB(minify)/1,288.25KB(gzip)。React/ReactDOM/TanStack Query/lucide-react等のベンダーコードで、ほぼ全チャンクから参照される</td><td>低速回線・低メモリのiPhone Safariでは、どのページを開いても最初に1.29MBのJSを読み終えるまで画面が動かない。「トップ白画面」の一因の疑いがあるが、LCP/TTIの実機計測はまだ行っていない（次段階の宿題）</td><td>manualChunksでベンダーコードをさらに用途別に分割。使用頻度の低い管理者向けコンポーネントが混入していないか調査</td><td>未検証（疑いの段階。次段階で計測してから数値を出す）</td><td>チャンク分割を増やすとHTTPリクエスト数は増える（HTTP/2下では影響小）</td></tr><tr><td>A-3</td><td>「一押し」バッジ画像が圧縮・リサイズされていない</td><td>public/badges/concierge-pick.png が2,592KB(1536×1024px)。表示先ConciergePickBadge.tsxでは32〜40px角の小バッジとして使用（コメントに「短辺の15〜20%以下」と明記）</td><td>loading="lazy"は付いているが、表示サイズの40倍近い解像度の画像をそのまま配信・デコードしている。「一押し」カードが複数並ぶページでは1枚あたり2.6MBが積み重なる</td><td>実表示サイズ（32〜40px角）に十分な解像度までリサイズしてPNG/WebPで再書き出し</td><td>該当画像1枚あたり-2.5MB程度（一般的なリサイズ+圧縮で数十KBまで削減可能な見込み）</td><td>見た目の解像度は下がるが表示サイズが小さいため体感差はほぼ無い見込み。ロゴ等で複数箇所から参照されていないか確認要</td></tr></table><h3 style='color:#8a6d1f;'>B（中程度）</h3><table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重いか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr><tr><td>B-1</td><td>音楽の扉ページのDOM要素数そのものが多い</td><td>実測記録(styles.cssコメント)：1ページにDOM要素25,855個・img要素1,711個・リンク1,780本。content-visibility:autoはスクロール中の計算コストは下げるが、DOM要素自体は開いた瞬間に全部生成される(消えない)</td><td>低メモリのiPhone Safariでは、DOM要素数の多さ自体がメモリ確保・GCの負担になる。店主が報告している「スマホ操作時のクラッシュ／固まり」との直接の因果は未確定（次段階で実機検証が必要）</td><td>棚単位のvirtualization(react-window等)導入、または「最初は上位N棚だけ描画しスクロールに応じて追加生成」する段階的レンダリング</td><td>未検証。DOMノード数・メモリ確保量を数分の一に減らせる可能性はあるが、スクロール復元(scrollMemory.ts)やCtrl+F検索性への影響を検証しながら進める必要あり</td><td>実装難度は中〜高。既存のスクロール位置復元・検索性を壊さない設計が必須。今回の監査範囲では最も慎重な検証が要る項目</td></tr><tr><td>B-2</td><td>棚ページのカード一覧が件数無制限</td><td>shelf.$worldId.$shelfId.tsxの cards.map(...) に上限なし。worlds.tsのgetVisibleShelfCards()にもslice/limitなし。ただし各行のサムネはimg loading="lazy"済みで画像の即時ダウンロードは発生しない</td><td>大きい棚を開くとDOM行数がそのまま増える(B-1と同系統の問題)</td><td>1ページの表示件数に上限を設け、以降はページング/もっと見るボタンにする</td><td>未検証</td><td>「全曲一覧で見たい」という利用シーンがあれば体験が変わるため、上限値の設計は要検討</td></tr><tr><td>B-3</td><td>VideoCard.tsxにShelfCardViewと同型の未修理コードが残存</td><td>VideoCard.tsx:409-410 window.addEventListener("gokigen:card-rewritten", onRewritten) をコンポーネント1枚ごとに直接張っている（cleanupはあるため真のメモリリークではない）。ShelfCardView.tsxは既にこれを単一hub方式に修理済み</td><td>VideoCardが同時に多数マウントされるページ(room.*ページのvideos.map等)で、書き換え通知のたびに全インスタンス分のハンドラが走る。今回grepした範囲では1ページ数本程度でShelfCardViewの「数百枚」ほどの規模ではないが、動画本数が増えると再燃しうる</td><td>ShelfCardView.tsxと同じ単一hub方式(subscribeRewrite相当)へ統一する</td><td>未検証(現状件数では体感差は小さい見込み。将来の予防措置)</td><td>リスク小。既存のリライト通知の到達範囲を変えないよう注意</td></tr><tr><td>B-4</td><td>管理画面向けサーバー関数にselect("*")＋limitなし</td><td>adminShelves.functions.ts / inventory.functions.ts / adminTodos.functions.ts / coverGuideAdmin.functions.ts等、計10〜11箇所。いずれも管理画面専用で一般来訪者の経路ではない</td><td>現在の件数では致命傷ではなさそうだが、データが増え続ける前提だと将来的に管理画面が重くなる</td><td>各箇所にlimit/rangeを追加し、必要なカラムだけ取得する</td><td>現時点では体感差はほぼ無い見込み(未計測)。データ増加への予防措置としての価値が主</td><td>管理画面側にページングUIが必要になる分、実装コストはやや掛かる。一般ユーザー体験には影響なし</td></tr></table><h3 style='color:#3a7a52;'>C（軽微）</h3><table><tr><th>#</th><th>原因</th><th>なぜ軽微か</th><th>修正方法</th><th>改善予測</th></tr><tr><td>C-1</td><td>静的アセットの明示的キャッシュ戦略(_headers/Service Worker等)がリポジトリ内に無い</td><td>Viteのcontent-hashファイル名は「同じ内容なら同じURLに一生涯留まる」設計のため、多くのホスティングはデフォルトで長期キャッシュを返す。実害は未実測</td><td>次段階でLovable本番のResponse Headersをcurl -Iで実測し、弱ければ_headers等で明示指定する</td><td>未計測（まず実測してから判断すべき項目）</td></tr></table><h2>③ 確認済み・問題なし（実測して確認したもの）</h2><ul><li>YouTube埋め込み：一覧・カードは&lt;img loading="lazy"&gt;のサムネイルのみを表示し、iframeは再生ボタンを押した時だけ生成（VideoCard.tsx実装を直接確認）</li><li>route単位のcode splitting：vite.config.tsでloader／component／pendingComponent／errorComponent／notFoundComponent すべてが分割対象（過去にloaderが漏れて8MBが混入した事故があり、修正済み）</li><li>検索(search.tsx)はサーバー側で60件に上限済み。publicListArtistsも2000件上限済み</li><li>公開ページ側のSupabase問い合わせにselect("*")＋limitなしは無し（該当は全て管理画面専用）</li><li>useMergedShelves.tsは世界(worldId)単位でクエリキー分割・staleTime5分でキャッシュ</li></ul><h2>④ 今回の実測で最も重さへの寄与が大きい上位3つ</h2><ol><li><b>S-1/S-2：曲詳細ページと棚ページがcoverGuideを静的importしたまま</b>――最頻訪問ページ種別で毎回2.65MB(gzip)を同期ロード。修理パターンは既に確立済み(watch.tsx)なので、横展開するだけで直せる</li><li><b>A-2：全ページ共通indexチャンク 1.29MB(gzip)</b>――全ページの初期表示に必ず乗る</li><li><b>B-1：扉ページDOM 25,855個</b>――低メモリ端末でのクラッシュ疑いの最有力候補（要実機検証）</li></ol><h2>⑤ 次段階（実装フェーズ）でやること</h2><ol><li>S-1・S-2（room.card.$slug / shelf.$worldId.$shelfIdの動的import化）――既に確立済みの修理パターンの横展開。最優先・リスク中</li><li>A-1（CI接続。あわせてS-1/S-2をガード対象に追加）――安全でリスクが低い</li><li>A-3（バッジ画像リサイズ）――安全でリスクが低い、即着手可能</li><li>A-2の原因調査――indexチャンクの中身をビルド解析ツールで可視化してから着手判断</li><li>B-1――実機(iPhone Safari相当)でのメモリ計測を先に行ってから、virtualizationの要否を判断</li></ol>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>S級2件</b><span>曲詳細ページ・棚ページがcoverGuide.tsを静的import(未修理)</span></div>
+  <div class="num"><b>2.65MB</b><span>S-1/S-2で毎回同期ロードされるJS量(gzip後・実測)</span></div>
+  <div class="num"><b>1.29MB</b><span>全ページ共通indexチャンク(gzip後・実ビルド計測)</span></div>
+  <div class="num"><b>10/10 PASS</b><span>速さの回帰ガード(main・今回実測・S-1/S-2は監視対象外)</span></div>
+  <div class="num"><b>25,855個</b><span>扉ページの初期DOM要素数(img 1,711/リンク1,780)</span></div>
+  <div class="num"><b>2.59MB</b><span>圧縮されていない一押しバッジ画像(表示は32〜40px角)</span></div>
+</div>
+
+
+
+<h2>実測ログ（生データ・そのまま転記）</h2>
+<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;line-height:1.6;">
+実測: [npm run build 実ビルド出力より・そのままの行]
+.output/public/assets/coverGuide-Br22yDSr.js              7468.02 kB │ gzip: 2645.83 kB
+.output/public/assets/room.card._slug-CRYtCPto.js           14.10 kB │ gzip:    5.00 kB
+.output/public/assets/shelf._worldId._shelfId-D4SD27Vf.js   13.04 kB │ gzip:    4.87 kB
+.output/public/assets/index-rPhaV_qI.js                   3031.58 kB │ gzip: 1288.25 kB
+
+実測: [src/styles.css:159-161 の実測コメントより]
+音楽の扉ページ DOM要素25,855個・img要素1,711個・リンク1,780本
+JS実行時間 439ms → 80ms（-82%）
+
+実測: [src/components/ConciergePickBadge.tsx:44,50-52 の実測コメントより]
+表示サイズ h-8 md:h-10 = 32px/40px（短辺の約16%、ガイドライン上限は短辺の15〜20%以下）
+
+実測: [public/badges/concierge-pick.png を直接開いて確認]
+ファイルサイズ 2650238 bytes（2588.1KB）／ ピクセル寸法 1536x1024px
+</pre>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番トップ（ごきげん補給所）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>S-1の実例：曲詳細ページ（毎回2.65MBを読み込んでいる1ページ）</b><a href="https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen</a></li>
+  <li><b>S-2の実例：棚ページ（同じく毎回2.65MBを読み込んでいる1ページ）</b><a href="https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta</a></li>
+</ul>
+<p style="font-size:0.82rem;color:#7a7568;">※コード上の箇所（ファイル名・行番号）は上の表に記載済み。リポジトリは非公開のためリンクは省略。</p>
+
+
+
+<footer>
+第1段（監査のみ・コード変更なし）。実測はmainブランチのソース実サイズ＋実ビルド(npm run build)＋速さの回帰ガード(check-perf-guards.mjs)の実行結果に基づく。第2段でS級から着手し、Before/Afterの数値を出す。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

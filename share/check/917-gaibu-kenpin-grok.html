@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#917 917番：外部AI(Grok)検品を関所の最後に追加 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #917 917番：外部AI(Grok)検品を関所の最後に追加</div>
+<h1>#917 917番：外部AI(Grok)検品を関所の最後に追加</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<h2>① 何を直したか</h2>
+<div class="fix">
+前回(1回目)は確認ページに店主専用のログイン必須リンク(console.x.ai)をそのまま貼っており、機械検品がそれを開こうとして403で弾かれた。今回はそのリンクを押せるリンク一覧から外し、テキスト説明に変更。あわせて実装内容を1行で：関所(sekisho)の最後に関門8として tools/gaibu_kenpin.py を追加。依頼文・成果物URL・本文・スクショの3点セットをxAI Grokへ渡し「たまごさんに見せていい状態か」をOK/NGで判定させる、自分(Claude)だけで自分の成果物に丸を付けない仕組み。<b>xAIチーム(gokigen-voice)にクレジットが無く(HTTP403 permission-denied、実機で再確認済み)、実際のOK/NG判定はまだ確認できていない</b>。ロジック自体はモックでNG伝播・OK伝播・コスト帳簿記録・日次上限SKIPの4項目を検証済み。クレジットが入り次第、次回のsekisho実行で自動的に本物の判定が動く設計。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4/4</b><span>モックテスト成功件数</span></div>
+  <div class="num"><b>30回/100円</b><span>1日の上限（超過でSKIP・課金停止）</span></div>
+</div>
+
+
+
+<h2>③ 実行ログ（実測：モックテスト4件・モデル名実在確認）</h2>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">=== 実機確認：モデル名の実在確認（2026-09-17）===
+grok-4 / grok-4-fast / grok-4-0709 / grok-3 / grok-code-fast-1 → HTTP403 permission-denied（実在・クレジット無しで弾かれた）
+grok-2-1212 / grok-2-vision-1212 / grok-4-vision / grok-vision-beta / grok-4-1212 → HTTP400 Model not found（廃止済み）
+
+=== モックテスト1: NG判定の伝播 ===
+verdict=NG reasons=['中身が「あ」だけで内容が無い', 'たまごさんに見せる情報が無い']
+
+=== モックテスト2: OK判定の伝播 ===
+verdict=OK reasons=[]
+
+=== モックテスト3: コスト帳簿への記録 ===
+ n=917-selftest-ng verdict=NG costYen=1.99
+ n=917-selftest-ok verdict=OK costYen=1.92
+
+=== モックテスト4: 日次上限に達したらSKIP ===
+cap=1で確認 -> ok=False reason=本日の呼び出し回数が上限(1回)に達しました（2回実行済み）
+
+=== ALL SELFTEST PASSED ===
+
+※上記はcall_grok_judge()をモンキーパッチした自己完結テスト（分岐・帳簿・上限ロジックの検証）。
+　xAIチームのクレジットが無いため、本物のAPIでの「あ」だけのページ→NG、良いページ→OKの
+　実地確認はまだ行えていません（下の表④で明記）。</pre>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実装：gaibu_kenpin.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin.py</a></li>
+  <li><b>統合：sekisho.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/sekisho.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/sekisho.py</a></li>
+  <li><b>スクショ取得：gaibu_kenpin_shot.mjs</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin_shot.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gaibu_kenpin_shot.mjs</a></li>
+  <li><b>xAIクレジット購入(店主のみ操作可・ログイン必須のためリンク化せず)</b>console.x.ai にログインし、チーム「gokigen-voice」でクレジットを購入すると次回の関門8実行から自動でOK/NG判定が動きます。</li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>関門8をsekisho.pyのgate()へ統合</td><td class="yes">統合済み・実URLで動作確認済み</td></tr>
+<tr><td>APIキー無し/クレジット切れ時に他の関門をブロックしない</td><td class="yes">SKIP扱いで素通し・実機確認済み</td></tr>
+<tr><td>モデル名の実在確認(grok-4系)</td><td class="yes">HTTP403で実在確認・旧名はHTTP400で廃止と判明</td></tr>
+<tr><td>実際のNG判定（空ページ→NG）</td><td class="no">xAIクレジット待ちのため未実施</td></tr>
+<tr><td>実際のOK判定（良いページ→OK）</td><td class="no">xAIクレジット待ちのため未実施</td></tr>
+</table>
+
+<footer>
+3時間枠内で完了。実装・関所統合・モックロジック検証は完了。xAIチームのクレジットが無いため、実際のGrok API判定(OK/NG)は未実施＝依頼の合格条件の一部は未達成。店主がxAIコンソールでクレジット購入後、次のsekisho.py実行で自動的に実地テストが動きます。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

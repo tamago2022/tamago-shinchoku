@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#801 LINE公式への問い合わせ 送信を実際に試した結果（reCAPTCHAで自動送信不可と確定） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #801 LINE公式への問い合わせ 送信を実際に試した結果</div>
+<h1>#801 LINE公式への問い合わせ 送信を実際に試した結果</h1>
+<div class="date">2026-09-13 文面確定 → 2026-09-17 全項目自動入力＋送信ボタンまで実際に押して検証・結果を追記</div>
+
+<div class="note" style="border-color:#c4483a;">
+<b>2026-09-17 追記（801番）：</b>送信ボタンを実際に押すところまで試した結果、<b>reCAPTCHAが「不審なアクティビティが検出されました」でブロックした。</b>
+これはLINE側の意図的なボット対策であり、今回の問い合わせ内容自体が「AIエージェントによる自動操作の可否」を尋ねるものであるため、
+<b>これを技術的に回避しようとする行為はしない。</b>詳しくは下の「⑥ 実際に送信を試した結果」を参照。
+<b>結論：完全自動送信は不可能。たまごさんが最後に送信ボタンを1回押すだけで完了する状態まで用意した。</b>
+</div>
+
+<div class="fix">
+
+786番の調査（規約12.11条はBOTの「不正操作」を禁止しているが、申請フォーム入力を名指しで禁止していない＝解釈は不明）を受け、
+推測で判断せず<b>公式に正面から5項目を問い合わせる</b>文面を確定した。両窓口（LINE Creators Market／LINEスタンプメーカー）向けにそれぞれ用意。
+<br><br>
+<b>実際にフォームを開いて調べた結果（新事実）：</b>このお問い合わせフォームは
+①「機種→サービス→カテゴリ→詳細」という4段階の選択式（動的に選択肢が変わる）、
+②Creators Market側は「登録電話番号」「登録メールアドレス」が<b>必須</b>（本人確認情報）、
+③自由記述の本文欄は選択が完了するまで非表示（readonly）、
+④reCAPTCHA・画像キャプチャで保護——という構造だった。
+このため<b>AIエージェントによる完全無人の入力・送信は、この画面では技術的に不可</b>（本人のLINE登録電話番号の入力とreCAPTCHA通過が必要なため）。
+下の文面はコピペしてそのまま貼れる状態にした。<b>送信はまだしていない。</b>
+<br><br>
+<h2>① メール文面（コピペ用・LINE Creators Market宛）</h2>
+<div class="note"><b>宛先：</b> https://contact.line.me/serviceId/10569　<b>登録メールアドレス欄：</b> eggypop2010@gmail.com</div>
+<pre style="white-space:pre-wrap;background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:14px;font-size:0.85rem;line-height:1.6;">【件名】スタンプ申請作業の自動化について（規約上の可否のご確認）
+
+お世話になっております。
+LINE Creators Marketでスタンプを制作・販売しております miketamawae と申します。
+
+申請作業の効率化について、規約上の可否を正面からご確認させてください。
+
+現在、自分で用意した画像・タイトル・説明文の素材を使い、AIエージェント（自動化ツール）に、申請フォームへの入力・画像のアップロード・審査リクエストの送信までを代行させることを検討しております。隠さずお伝えしますと、これが実現できれば、毎回の管理画面への入力作業（画像アップロード、タイトル・説明文の入力、販売設定の選択）にかかる時間を大きく減らせると考えております。
+
+お伺いしたいのは次の5点です。
+
+1. 素材（画像・タイトル・説明文）はすべて本人が用意したものです。この素材を使って、申請フォームへの入力・アップロード・審査リクエストの送信を、本人（アカウント名義人）の依頼でAIエージェントに代行させることは、貴社の利用規約上認められますか。
+
+2. 認められない場合、どこまでの自動化であれば認められますか（例：素材作成のみは可／入力の下書き保存までは可／入力自体も可／審査リクエストの送信も可、など、具体的な境界線をご教示いただけますと幸いです）。
+
+3. 利用規約12.11条「本サービスのサーバやネットワークシステムに支障を与える行為、BOT、チートツール、その他の技術的手段を利用して本サービスを不正に操作する行為」とありますが、本人の依頼で本人のアカウントを操作する上記のような自動化は、この条項に該当しますか。
+
+4. 該当する場合、アカウントの停止や削除の対象になりますか。利用規約4.6条「クリエイターの本サービスにおけるすべての権利は、理由を問わず、アカウントが削除された時点で消滅します」「アカウントの復旧はできません」を拝読した上でのご質問です。
+
+5. 公式に用意された自動投稿の手段（APIや一括登録の窓口など）はございますか。もしあるようでしたら、そちらを利用したいと考えております。
+
+なお、大量のアカウント作成や、他のクリエイターのデータの取得を行う意図は一切ございません。自分自身のアカウントで、自分が制作した作品を登録する作業のみが対象です。
+
+お忙しいところ恐れ入りますが、ご回答いただけますと幸いです。
+</pre>
+<h2>② メール文面（コピペ用・LINEスタンプメーカー宛）</h2>
+<div class="note"><b>宛先：</b> https://contact-cc.line.me/detailId/11844　<b>登録メールアドレス欄：</b> eggypop2010@gmail.com</div>
+<pre style="white-space:pre-wrap;background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:14px;font-size:0.85rem;line-height:1.6;">【件名】スタンプ申請作業の自動化について（規約上の可否のご確認）
+
+お世話になっております。
+LINEスタンプメーカーを利用してスタンプを制作・販売しております miketamawae と申します。
+
+申請作業の効率化について、規約上の可否を正面からご確認させてください。
+
+現在、自分で用意した画像・タイトル・説明文の素材を使い、AIエージェント（自動化ツール）に、申請フォームへの入力・画像のアップロード・審査リクエストの送信までを代行させることを検討しております。隠さずお伝えしますと、これが実現できれば、毎回の管理画面への入力作業（画像アップロード、タイトル・説明文の入力、販売設定の選択）にかかる時間を大きく減らせると考えております。
+
+お伺いしたいのは次の5点です。
+
+1. 素材（画像・タイトル・説明文）はすべて本人が用意したものです。この素材を使って、申請フォームへの入力・アップロード・審査リクエストの送信を、本人（アカウント名義人）の依頼でAIエージェントに代行させることは、貴社の利用規約上認められますか。
+
+2. 認められない場合、どこまでの自動化であれば認められますか（例：素材作成のみは可／入力の下書き保存までは可／入力自体も可／審査リクエストの送信も可、など、具体的な境界線をご教示いただけますと幸いです）。
+
+3. 貴社の利用規約には、BOTやチートツール等の技術的手段を用いて本サービスを不正に操作する行為を禁じる条項があると理解しております（LINE Creators Market利用規約12.11条に相当する条項）。本人の依頼で本人のアカウントを操作する上記のような自動化は、この条項に該当しますか。
+
+4. 該当する場合、アカウントの停止や削除の対象になりますか。アカウントが削除された場合、権利が復旧できないと理解した上でのご質問です。
+
+5. 公式に用意された自動投稿の手段（APIや一括登録の窓口など）はございますか。もしあるようでしたら、そちらを利用したいと考えております。
+
+なお、大量のアカウント作成や、他のクリエイターのデータの取得を行う意図は一切ございません。自分自身のアカウントで、自分が制作した作品を登録する作業のみが対象です。
+
+お忙しいところ恐れ入りますが、ご回答いただけますと幸いです。
+</pre>
+
+<br><br>
+<div class="note" style="border-color:#c4483a;">
+<b>⚠ 実際に自動入力を試して分かったこと：</b>本文欄（<code>mdInput01SummaryTextarea</code>）は<b>readonly（編集不可）</b>で、
+機種→サービス→カテゴリ→詳細の4段階を正しく選び終えるまで開放されない設計だった。
+これを知らずに無理やり入力を試みたところ、<b>本文がなぜか「返信用メールアドレス」欄に混じって入ってしまう事故</b>が実際に起きた
+（送信はしていないため実害はないが、この画面のままでは自動入力は危険と判明）。
+<b>だからこそ、AIによる完全自動送信ではなく、この文面を人が読んでコピペで貼るのが最も安全で確実。</b>
+</div>
+
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5項目</b><span>公式に問い合わせる質問の数</span></div>
+  <div class="num"><b>2窓口</b><span>Creators Market＋スタンプメーカー両方に送る</span></div>
+  <div class="num"><b>0件</b><span>送信完了件数（reCAPTCHAでブロック中）</span></div>
+  <div class="num"><b>1回</b><span>実際に送信ボタンを押した回数（801番）</span></div>
+</div>
+
+<h2>③ 実際に開いたフォーム画面</h2>
+<div class="shots">
+  <div class="shot plain"><b>LINE Creators Market お問い合わせフォーム（実画面）</b><img src="img/791-form-creators-market.png" alt="LINE Creators Market お問い合わせフォーム（実画面）"></div>
+  <div class="shot plain"><b>LINEスタンプメーカー お問い合わせフォーム（実画面）</b><img src="img/791-form-sticker-maker.png" alt="LINEスタンプメーカー お問い合わせフォーム（実画面）"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>問い合わせ先1：LINE Creators Market</b><a href="https://contact.line.me/serviceId/10569" target="_blank" rel="noopener">https://contact.line.me/serviceId/10569</a></li>
+  <li><b>問い合わせ先2：LINEスタンプメーカー</b><a href="https://contact-cc.line.me/detailId/11844" target="_blank" rel="noopener">https://contact-cc.line.me/detailId/11844</a></li>
+  <li><b>規約原文（12.11条・4.6条を確認済み）</b><a href="https://creator.line.me/ja/terms/" target="_blank" rel="noopener">https://creator.line.me/ja/terms/</a></li>
+  <li><b>786番の調査結果（3案比較・推奨B案）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/786-line-stamp-automation-research.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/786-line-stamp-automation-research.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本文欄への直接入力（自動）</td><td class="no">791番時点：readonly保護で不可・メール欄への誤混入を実測</td></tr>
+<tr><td>「ログインせずに続ける」の突破</td><td class="yes">可能（実際に3回成功）</td></tr>
+<tr><td>メール文面の確定（5項目・両窓口）</td><td class="yes">完了・下のとおり</td></tr>
+<tr><td>【801番】正しい手順での全項目自動入力（本文含む）</td><td class="yes">成功・混入なしを実測（⑥参照）</td></tr>
+<tr><td>【801番】送信ボタンを実際に押す</td><td class="no">reCAPTCHAが「不審なアクティビティ」でブロック（⑥参照）</td></tr>
+<tr><td>【801番】返信の見張り（Gmail）</td><td class="no">実装・心臓組み込み済みだが鍵未設定で停止中（⑦参照）</td></tr>
+</table>
+
+<h2>⑥ 801番・全項目自動入力→送信ボタンまで実際に押した結果（2026-09-17）</h2>
+<div class="note">
+前回（791番）は「本文欄がreadonly」で止まっていたが、今回、実際のフォーム構造を1つずつ調べ直した。
+正体は<b>ネイティブの&lt;select&gt;が非表示にされ、代わりに見た目のドロップダウン（クリック式のリスト）が上に重なっている</b>作りだった。
+このクリック式リストを正しい順番で操作すると——<br><br>
+機種→サービス→カテゴリ「制作・修正」→詳細「制作に関する問題」→
+<b>「1)アイテムを制作している場所」「2)発生している問題」という追加の選択式アンケートが動的に出現</b>→
+それに答えて初めて<b>「3)発生している問題の詳細」という本文欄</b>と、
+<b>「4)アイテムのIDまたはタイトル」「5)登録しているLINEアカウントの情報」という追加の記入欄</b>が開く——
+という、想定より2段階多い作りだと分かった。<br><br>
+<b>この正しい手順で、返信用メールアドレス・本文（5項目の質問文そのまま）・ID欄・登録情報欄まで、
+1文字の混入もなく全部自動入力できることを実測した</b>（前回起きた「メール欄への本文混入事故」は解消）。
+<b>「登録電話番号」欄は空欄のままでも先へ進めた</b>（前回書いた「電話番号必須」は不正確だったと訂正する）。
+</div>
+<div class="shots">
+  <div class="shot yes"><b>全項目・自動入力が完了した状態（実画面）</b><img src="img/801-form-filled-final.jpg" alt="全項目自動入力が完了した状態"></div>
+  <div class="shot no"><b>送信ボタンを押した直後（実画面・下に赤字でブロック表示）</b><img src="img/801-recaptcha-blocked.jpg" alt="送信ボタンを押した後にreCAPTCHAがブロックした画面"></div>
+</div>
+<div class="note" style="border-color:#c4483a;">
+<b>送信ボタンを押した結果：</b>「不審なアクティビティが検出されました。もう一度お試しください。」と表示され、
+reCAPTCHAに送信をブロックされた。<b>これがこのフォームの唯一かつ最終の壁。</b>
+Google reCAPTCHAは自動操作を検出するための仕組みであり、これを突破しようとする行為
+（人間らしいマウスの動きを模倣する、時間をかける等）は、<b>今回LINEに問い合わせている内容（AIによる自動操作の可否）そのものと矛盾する</b>ため行わない。
+</div>
+<h3>たまごさんに残っている作業（最短1〜2分・ログイン不要）</h3>
+<ol>
+<li>上のリンク（④）からフォームを開く→「ログインせずにつづける」</li>
+<li>機種は「PC」のまま。「LINE Creators Market・LINEスタンプメーカー」→カテゴリ「制作・修正」→詳細「制作に関する問題」を選ぶ</li>
+<li>出てきた質問に「LINE Creators Market（PC/Webサイト）」「上記以外の問題が発生」を選ぶ（スタンプメーカー窓口では「LINEスタンプメーカー（スマートフォンアプリ）」を選ぶ）</li>
+<li>返信用メールアドレスに <code>eggypop2010@gmail.com</code>、本文欄に上の①のメール文面をコピペ、ID欄3つに「なし」、登録メールアドレスに <code>eggypop2010@gmail.com</code>、機種名に「なし」</li>
+<li>送信ボタンを押す（人が押せばreCAPTCHAは通る想定）</li>
+</ol>
+
+<h2>⑦ 返信の見張り（Gmail）は実装済み・鍵が無くて止まっている</h2>
+<div class="note" style="border-color:#c4483a;">
+見張りスクリプト（<code>tools/check_line_reply.py</code>）は<b>実装済みで、既存の心臓（tools/heartbeat.sh）に組み込み済み</b>。
+1日1回、Gmail(eggypop2010@gmail.com)を見に行く動きも実際に動いている（直近実行 2026-09-16 19:13）。<br><br>
+<b>ただし、Gmailに接続するための鍵（アプリパスワード）がまだ置かれておらず、<code>"blocked": "no_credential"</code> という状態で止まっている。</b>
+これはパスワード類なのでAI側では代行できない（値を見ない・触らないルールのため）。<br><br>
+<b>たまごさんへのお願い（値そのものはチャットに貼らないでください）：</b>
+Googleアカウントでアプリパスワードを発行し、Mac上のファイル <code>~/.tamago/gmail_app_password</code> に、そのパスワードだけを1行で書いて保存してください。
+保存されれば、次の心臓の実行（15秒おきに動いているうちの1回、実際にGmailを見に行くのは1日1回に間引き済み）から自動的に見張りが動き出す。
+</div>
+
+<footer>
+791番で確定した文面を、801番で実際にフォームへ流し込み、送信ボタンまで押して検証した。壁はreCAPTCHAのみ（電話番号必須という前回の記述は誤りだったため訂正）。
+たまごさんに残っているのは「送信ボタンを1回押す」（⑥）と「Gmailアプリパスワードを1回置く」（⑦）の2点のみ。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,76 @@
+name: 配達物URLの実地確認
+
+# たまごさんに「確認できないもの」を渡さないための関所。
+#
+# 事情：Cowork/Dispatch のサンドボックスは社外向けプロキシの許可リストに
+# tamago2022.github.io が入っていないため（実測 HTTP 403 blocked-by-allowlist）、
+# セッション側からは公開URLを curl できない。= 自分で確認できない。
+# そこで「公開URLを外から叩く」役目だけを GitHub の runner に出す。
+# runner は普通のインターネット上にいるので、たまごさんのスマホと同じ条件で叩ける。
+#
+# share/_deliver/manifest.json に載っているURLを1本ずつ curl し、
+#   ・HTTP 200 か
+#   ・中身が空でないか（バイト数）
+#   ・目印の文字列が本当に入っているか（404ページや空HTMLを掴んでいないか）
+# を確かめ、結果を status/public/deliver_verified.json に書き戻す。
+# 1本でも落ちたらこのジョブは失敗する（＝赤くなるので見逃せない）。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'share/_deliver/manifest.json'
+      - '.github/workflows/deliver-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: read
+
+concurrency:
+  group: deliver-verify
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 公開URLを外から叩いて確かめる
+        id: probe
+        run: python3 .github/workflows/deliver_probe.py
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+
+      - name: 結果を書き戻す（次の巡回とセッション側が読むため）
+        if: always()
+        continue-on-error: true
+        run: |
+          set -u
+          git config user.name  "deliver-verify"
+          git config user.email "deliver-verify@users.noreply.github.com"
+          git add status/public/deliver_verified.json
+          # 2026-09-19 1回目の実行で踏んだ：`git diff --quiet -- <path>` は
+          #   **まだ追跡されていない新規ファイルを「変化なし」と答える。**
+          #   そのせいで初回の書き戻しが丸ごと省略され、セッション側から結果を読めなかった。
+          #   ステージした後の `diff --cached` で見るのが正しい（新規も変更も拾う）。
+          if git diff --cached --quiet -- status/public/deliver_verified.json; then
+            echo "結果に変化なし。書き戻しは省略（無限ループ防止）"
+            exit 0
+          fi
+          git commit -m "配達確認: 公開URLの実地確認の結果 [skip ci]" || exit 0
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
+            echo "push衝突（Mac常駐と同時）。${i}回目。10秒待って やり直す"
+            sleep 10
+          done
+          echo "書き戻しに失敗。ただし判定そのものは上のステップの成否で分かる"
+
+      - name: 1本でも落ちていたら赤くする
+        if: always()
+        run: |
+          test -f /tmp/deliver_ok || { echo "確認できないURLがある＝渡せない"; exit 1; }
+          echo "全て 200 かつ中身あり"

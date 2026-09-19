@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /Users/mac/Desktop/tamago-shinchoku
+python3 tools/make_check_page.py --n 450 --slug oni-kantoku-batch8 --title "鬼監督判定：確認待ちバッチ8/9(414-424)" --what "確認待ちに溜まっていた9件(414,415,416,418,420,421,422,423,424)を、確認ページ・生JSON・実装コードを自分でHTTP取得/grepして独立に裏取りし、全件を自動OKにした。419は未実行(証拠なし)のため判定対象外のまま据え置き。" --num "9件|自動OKにした件数" --num "0件|赤で差し戻した件数" --num "1件|判定不能(たまごさんへ)" --link "queue.json(判定後)|https://tamago2022.github.io/tamago-shinchoku/status/queue.json" --link "oni_kantoku_log.jsonl(判定根拠)|https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl" --link "進捗表|https://tamago2022.github.io/tamago-shinchoku/index.html" --allow-no-screenshot "9件とも既存のai_verify_stats.json実データ・実装コードのHTTP直接取得で裏取り済み(UI差分の無い仕組み系タスクのため前例と同基準でスクショ省略)" --print-url

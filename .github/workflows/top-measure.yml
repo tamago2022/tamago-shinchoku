@@ -1,0 +1,83 @@
+name: ごきげん補給所トップの重さを測る
+
+# なぜ要るか：deliver-verify.yml と同じ事情。Cowork/Dispatch のサンドボックスは社外向け
+# プロキシの許可リストで joy-relief-station.lovable.app へ出られない（実測 403）。
+# つまりセッション側からは「速くなったか」を自分で確かめられない。
+# そこで測る仕事だけ GitHub の runner に出し、結果を status/public/top_measure.json として
+# 持ち帰らせる。セッション側は github.com 経由でそれを読む（許可リストに入っている）。
+#
+# 測るもの（たまごさんのスマホと同じ条件＝キャッシュ無しの初回訪問）：
+#   ・load までの秒数
+#   ・実際に降ってきた転送バイト数（encodedBodySize の合計）
+#   ・リクエスト本数
+# ばらつきがあるので3回測って中央値を採る。
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '測るURL'
+        required: false
+        default: 'https://joy-relief-station.lovable.app/'
+      label:
+        description: '見出し（before / after など）'
+        required: false
+        default: 'after'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: top-measure
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Playwright を入れる
+        run: npm i -D playwright@1.47.2 && npx playwright install --with-deps chromium
+
+      - name: 測る
+        env:
+          TARGET_URL: ${{ inputs.url }}
+          LABEL: ${{ inputs.label }}
+        run: node .github/workflows/top_measure.mjs
+
+      - name: 直す前と同じ測り方でも測る（HTML＋直に読むJSだけ）
+        if: always()
+        run: node .github/workflows/top_bytes.mjs
+
+      - name: 結果を書き戻す
+        if: always()
+        continue-on-error: true
+        run: |
+          set -u
+          git config user.name  "top-measure"
+          git config user.email "top-measure@users.noreply.github.com"
+          git add status/public/top_measure.json status/public/top_bytes.json
+          if git diff --cached --quiet -- status/public/top_measure.json status/public/top_bytes.json; then
+            echo "変化なし。書き戻しは省略"
+            exit 0
+          fi
+          git commit -m "計測: トップの重さ [skip ci]" || exit 0
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
+            echo "push衝突。${i}回目。10秒待ってやり直す"
+            sleep 10
+          done
+          echo "書き戻しに失敗"
+
+      - name: 見出しに出す
+        if: always()
+        run: |
+          cat status/public/top_measure.json >> "$GITHUB_STEP_SUMMARY" || true
+          cat status/public/top_bytes.json >> "$GITHUB_STEP_SUMMARY" || true

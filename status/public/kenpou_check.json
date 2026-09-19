@@ -1,0 +1,97 @@
+{
+ "checkedAt": "2026-09-18T00:07:28+09:00",
+ "overallColor": "red",
+ "redCount": 2,
+ "items": [
+  {
+   "key": "ctx_1m",
+   "label": "1Mコンテキストで走った子セッション",
+   "color": "red",
+   "count": 25,
+   "sample": 25,
+   "detail": "直近25本の子セッション中25本が標準200kを超えるコンテキスト窓（実測1M）で走っていた（CLAUDE.md/AGENTS.mdの『1M context/extended contextは使わない』に違反）"
+  },
+  {
+   "key": "fable_model",
+   "label": "Fableモデルの混入（Sonnet固定違反）",
+   "color": "green",
+   "count": 0,
+   "sample": 25,
+   "detail": "直近25本はすべてSonnet固定で走っていた"
+  },
+  {
+   "key": "oni_kantoku_alive",
+   "label": "鬼監督が完了のたびに自動で動いているか",
+   "color": "green",
+   "count": 10,
+   "detail": "最終記録から約2.2時間経過（2026-09-17T21:57:45+09:00）／直近24時間の完了33件中、鬼監督の記録が付いているのは23件"
+  },
+  {
+   "key": "done_missing_url",
+   "label": "URL無しで完了(done)になった仕事",
+   "color": "green",
+   "count": 0,
+   "detail": "直近24時間の完了はすべてURL付き"
+  },
+  {
+   "key": "factory_stalled",
+   "label": "工場が止まったまま放置されていないか",
+   "color": "green",
+   "count": 0,
+   "detail": "最終発車から2.3時間・発車待ち88件・空き2枠あり"
+  },
+  {
+   "key": "queue_max_regression",
+   "label": "queue.jsonの最大番号が前回より減っていないか",
+   "color": "green",
+   "count": 0,
+   "detail": "前回937番 → 今回938番（減少なし）"
+  },
+  {
+   "key": "big_files",
+   "label": "公開リポジトリの1MB超ファイル",
+   "color": "red",
+   "count": 18,
+   "detail": "share/check/assets/919-zen/chashitsu_loop_1920x1080.mp4(7.1MB)、share/check/assets/919-zen/kuroihama_loop_1920x1080.mp4(7.1MB)、share/check/ref/badge-ohon-recommendation-badge.png(4.1MB)、share/check/assets/919-zen/frames/chashitsu_last.png(3.0MB)、share/check/assets/919-zen/frames/chashitsu_first.png(2.9MB)"
+  },
+  {
+   "key": "check_page_404",
+   "label": "渡し済みの確認ページURLが404になっていないか",
+   "color": "green",
+   "count": 0,
+   "sample": 15,
+   "detail": "直近15件の確認ページはすべて200だった"
+  },
+  {
+   "key": "orphan_sessions",
+   "label": "対話待ち・放置されたセッション",
+   "color": "green",
+   "count": 0,
+   "detail": "放置されたセッションは無い"
+  },
+  {
+   "key": "worktree_count",
+   "label": "リポジトリ内のworktree（作業場）件数",
+   "color": "green",
+   "count": 96,
+   "detail": "96件（しきい値100件以内）"
+  },
+  {
+   "key": "unreported_completions",
+   "label": "未報告の完了が溜まっていないか",
+   "color": "green",
+   "count": 0,
+   "detail": "未報告の完了は無い（dispatch_outboxとdispatch_reportedが一致）"
+  }
+ ],
+ "queuedFixes": [
+  {
+   "key": "ctx_1m",
+   "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "big_files",
+   "skipped": "既にこの点検が積んだ937番が未解決のため積み直さない"
+  }
+ ]
+}

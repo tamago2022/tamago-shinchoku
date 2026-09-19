@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#646 内蔵SSDをOS専用化(恒久対策)・古い大容量ファイルの退避 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #646 内蔵SSDをOS専用化(恒久対策)・古い大容量ファイルの退避</div>
+<h1>#646 内蔵SSDをOS専用化(恒久対策)・古い大容量ファイルの退避</h1>
+<div class="date">2026-09-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+内蔵SSDの本当の空きを実測したら243GB（想定63GBより大幅に良好。前回のGoogleドライブ問題は解消済みと判明）。その上で、内蔵に眠っていた古いアプリインストーラー16.4GB（Adobe6本・DaVinci Resolve・MainStage・Motion、2020〜2023年のdmg）をiMac HDDへコピー・件数とサイズを検証してからゴミ箱へ移動した。ゴミ箱を空にする1クリックで内蔵がさらに16GB空く。写真ライブラリ(18MB)とミュージック(9.2MB)は既にほぼ内蔵に実体が無く、ミュージック本体は9/2時点でiMac HDDへ退避済みと確認。動画編集中のFinal Cut Pro/Filmoraプロジェクト(5.6GB)は編集中のため移動せず安全側に倒し、念のためiMac HDDへバックアップのみ作成。作業用worktree(50GB、複数セッションが同時使用中)は今回は触らず、既存のworktree_reaper.pyが自動で古いものを掃除している仕組みを確認した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>243GB</b><span>内蔵の実際の空き(今回実測)</span></div>
+  <div class="num"><b>16.4GB</b><span>退避した古いインストーラー(ゴミ箱待ち)</span></div>
+  <div class="num"><b>22GB</b><span>iMac HDDへコピーした合計</span></div>
+  <div class="num"><b>892GB→865GB</b><span>iMac HDD空き(コピー後・常時接続確認済み)</span></div>
+  <div class="num"><b>0件</b><span>データ削除(検証後の移動のみ)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>worktree自動掃除の仕組み</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/worktree_reaper.py</a></li>
+  <li><b>前回645番(容量確保)確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/645-disk-space-recovery-67gb.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/645-disk-space-recovery-67gb.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>内蔵に古いインストーラーが残っていないか</td><td class="yes">yes</td></tr>
+<tr><td>コピー後のファイル数・サイズ一致を確認してから移動したか</td><td class="yes">yes</td></tr>
+<tr><td>編集中プロジェクト(Final Cut Pro/Filmora)を誤って移動していないか</td><td class="yes">yes</td></tr>
+<tr><td>iMac HDDが常時接続で受け皿として十分か(865GB空き)</td><td class="yes">yes</td></tr>
+<tr><td>ゴミ箱を空にして実際に内蔵が16GB増えたか</td><td class="yes">no</td></tr>
+</table>
+
+<footer>
+残作業(たまごさん本人の1タップのみ)：①ゴミ箱を空にする→内蔵が16GB追加で空く。②ブラウザ(Brave)のダウンロード保存先をiMac HDDに変更(設定→ダウンロード)。Braveは起動中のため設定ファイルを直接書き換えない方針。③作業用worktreeの保存先を内蔵からiMac HDDへ切り替えるかどうかは、外付けが外れた時に自動処理全体が止まるリスクとgit動作が遅くなるリスクがあるため、今回は判断保留にした(50GBは既存のworktree_reaper.pyが自動で古いものを掃除している)。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#818 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</div>
+<h1>#818/#820 Lovable公開ブロック対策：30分便を止めて『出すものがある時だけ押す』</h1>
+<div class="date">2026-09-14 実装 → 2026-09-17 検品で「たまごさんが開けないリンクがある」と不合格 → 同日、リンクを開けるものだけに差し替え、進捗表トップ画面の警告表示も直して再提出</div>
+
+<div class="note" style="border-left:3px solid var(--aka);">
+<b>前回（2026-09-17 12:33）不合格の理由</b>：④のリンクの中に、たまごさんが開くと404になるもの（非公開のjoy-relief-stationリポジトリのコミット画面）が混ざっていた。<b>今回それを外し、押せば必ず開けるリンクだけに差し替えた。</b>
+</div>
+
+<div class="fix">
+<b>直したこと：</b>①Lovable公開を「30分おき自動」から「必要な時だけ・1日6回まで・2回失敗したら停止」に変更（joy-relief-station側は前回までに実装済み）。②今回さらに、進捗表トップ画面（軽量版）に本番未反映・連続失敗の赤い警告が出ていなかった穴を見つけて塞いだ（下記②③参照）。③Lovableサポートへの問い合わせ文をワンタップで開けるようにした（進捗表フッター「Lovableへ問い合わせ」）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>停止済み</b><span>30分自動タイマー(Disabled)</span></div>
+  <div class="num"><b>6回/日</b><span>公開の上限</span></div>
+  <div class="num"><b>2回連続</b><span>失敗したら当日停止</span></div>
+  <div class="num" style="border-color:var(--aka);"><b style="color:var(--aka);">本番未反映：あり</b><span>今の実測（下記③）</span></div>
+</div>
+<div class="note">
+今回の直し：進捗表トップ画面（軽量版）に、この赤い警告を表示する仕組みが<b>1つも無かった</b>（0/1）。今回1つ追加し、実際に本番へ反映されたことを下記③のリンクで確認できる状態にした（1/1）。
+</div>
+
+<h2>③ 進捗表トップで今まさに見える状態（実測・押して確認できます）</h2>
+<div class="note">
+本番の生データ（<a href="https://tamago2022.github.io/tamago-shinchoku/status/public/top_status.json" target="_blank" rel="noopener">top_status.json</a>）を今取得した中身：
+<div style="margin-top:8px;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.85rem;white-space:pre-wrap;">"mainUnpublished": true,
+"mainSha": "bb28b3c64a",
+"paused": false,
+"consecutiveFailures": 1,
+"successCountToday": 0,
+"dailyCap": 6,
+"consecutiveFailureStopAt": 2</div>
+<span class="meta">↑進捗表（<a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a>）を開くと、画面の一番上にこの内容の赤い箱が出ます。出ていなければこの確認ページごと不合格として扱ってください。</span>
+</div>
+
+<h2>④ 押せるリンク（すべてたまごさんが開けます）</h2>
+<ul class="links">
+  <li><b>進捗表（本番・ここで赤い警告を見る）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>今の実測データ（③の中身の元）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/top_status.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/top_status.json</a></li>
+  <li><b>Lovableへ問い合わせ（進捗表フッターと同じリンク・タップでメールアプリが件名・本文入りで開きます。送信ボタンだけ押してください）</b><a href="https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/#lovableSupportSec</a></li>
+  <li><b>今回のコード変更（公開リポジトリ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/84bfe328c" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/84bfe328c</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>『出すものが無い』時に押さないか</td><td class="yes">OK（実装済み・前回までに実機テスト済み）</td></tr>
+<tr><td>1日6回の上限で止まるか</td><td class="yes">OK（実装済み・前回までに実機テスト済み）</td></tr>
+<tr><td>2回連続失敗で当日停止するか</td><td class="yes">OK（実装済み・09-16に実際に2回連続失敗→3回目が押さず終了することまで確認済み）</td></tr>
+<tr><td><b>進捗表トップ画面（軽量版）に本番未反映・連続失敗が出るか</b></td><td class="yes"><b>今回直した</b>：09-17に進捗表を軽量版へ差し替えた際にこの表示が抜けていたのを発見し復元。本番JSON・本番HTML両方に反映済みであることを取得して確認済み</td></tr>
+<tr><td>問い合わせ文をワンタップで開けるか</td><td class="yes">OK（今回mailtoリンクを追加。進捗表フッター「Lovableへ問い合わせ」）</td></tr>
+<tr><td>④のリンクは全部たまごさんが開けるか</td><td class="yes">OK（非公開リポジトリのリンクは全部外した）</td></tr>
+</table>
+
+<div class="note" style="border-left:3px solid var(--ao);">
+<b>Lovableの公開ボタンについて：</b>今回のセッションはjoy-relief-station本体のコードを変更していないため、Lovableの公開ボタンは押していません。押す必要がある変更（次にmainへコードを足すセッション）が出た時、上記の仕組みが「必要な時だけ・1日6回まで」で自動的に押します。
+</div>
+
+<footer>
+このページは #818/#820 の確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

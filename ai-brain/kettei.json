@@ -1,0 +1,72 @@
+{
+  "_readme": "決定台帳（900番『仕組み⑨：引き継ぎで落ちない』で新設）。たまごさんが決めた数字・仕様を1件1行で貯める。新しい担当は status/public/genzaichi.md と このファイルの2つだけ読めば仕事に入れる。文書（CLAUDE.md/AGENTS.md等）には数字を書かない。決定台帳とコード（sourceOfTruthFile）だけが数字を持つ。904番『仕組み⑪：着手前に絵1枚orABCDで解釈を合わせる』で kind:\"interpretation\" のエントリも同じ台帳に貯めるようになった（tools/kaishaku.py が読み書きする。同じkeyに対する二度目のaskは既決定を返して聞き直さない）。",
+  "principle": {
+    "id": "jitsubutsu-yori-bunsho-ga-tsuyoi",
+    "title": "実物は文書より強い",
+    "text": "たまごさんが『これが正解』と示した実物（画像・ページ）は、どんな文書のルールよりも強い。実物を文書のルールに合わせて直してはいけない。実物と文書の数字が食い違ったら、実物を実測して文書の方を書き換える。文書を先に信じて実物を縮めた・変えたことが、繰り返し事故の原因になった。",
+    "incident": "akikoさん『Love Theme From Spartacus』のバッジは、たまごさんが『これがサンプルだよ』と承認した正解の実物だった。それを古い文書の『短辺の15〜20%以下』という数字に合わせて、AIが繰り返し（37・317・468・602・690番）小さくしてしまい、10回以上同じ指摘を受けた。890番で正解の実測資料（badge-ohon-recommendation-badge.jpg）を測り直し、28%が正しい数字だと確定した。",
+    "howToApply": "①数字を変える判断をする前に、根拠になった『実物』（承認された画像・ページ）が無いか探す。②実物があれば、その実物を実測した値を採用し、文書側の古い数字を書き換える（逆はやらない）。③新しい決定は必ずこの台帳へ1行足し、evidenceImageに実物のURLを紐づける。④evidenceImageが無い『決定』は仮決定として扱い、実物が見つかり次第これで上書きする。"
+  },
+  "decisions": [
+    {
+      "id": "badge-height-ratio-28pct",
+      "decidedAt": "2026-09-16",
+      "decidedBy": "たまごさん（2026-09-16 21:47）",
+      "what": "バッジの高さ",
+      "value": "サムネイル短辺の28%",
+      "supersedes": "短辺の15〜20%以下（旧ルール。文書側の数字が古いまま実物に合っていなかった）",
+      "evidenceImage": "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/share/check/ref/badge-ohon-recommendation-badge.jpg",
+      "evidenceMeasurement": "サムネ(16:9ヒーロー)1210×646px・バッジ実寸151×182px → 182/646=28.2% → 28%に決定",
+      "sourceOfTruthFile": "joy-relief-station: src/lib/badgeKinds.ts の BADGE_TARGET_SHORT_SIDE_RATIO",
+      "appliesTo": [
+        "①メインの曲(16:9)",
+        "②シェルフカード(1:1)",
+        "③関連",
+        "④おすすめ／こちらもどうぞ",
+        "⑤関連アーティスト"
+      ],
+      "queueRef": 890
+    },
+    {
+      "id": "badge-inset-6-5pct-same-px",
+      "decidedAt": "2026-09-16",
+      "decidedBy": "たまごさん（2026-09-16 21:47）",
+      "what": "バッジの余白（上・左）",
+      "value": "サムネイル短辺の6.5%を、上と左に『同じpx』で入れる",
+      "supersedes": "BADGE_INSET_RATIO = \"3%\"（CSSの%直書き。高さ基準%と幅基準%がズレて横長カードで上が詰まっていた）",
+      "evidenceImage": "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/share/check/ref/badge-ohon-recommendation-badge.jpg",
+      "evidenceMeasurement": "余白 上48px=7.4%・左40px=6.2% → 短辺基準で揃えると6.5%",
+      "sourceOfTruthFile": "joy-relief-station: src/lib/badgeKinds.ts の BADGE_INSET_RATIO（短辺基準pxで計算し直す。CSSの%では書かない）",
+      "note": "top:6.5%とleft:6.5%はCSS上は別基準（高さ基準／幅基準）になり横長カードで必ず上が詰まる。短辺からpxを計算して両方に同じ数値を入れること。",
+      "queueRef": 890
+    },
+    {
+      "id": "badge-image-good-cover-png",
+      "decidedAt": "2026-09-16",
+      "decidedBy": "たまごさん（2026-09-16 21:47）",
+      "what": "バッジの絵",
+      "value": "public/badges/good-cover.png（コンシェルジュ推しは concierge-pick.png）をそのまま使う。金メダル等の別デザインに差し替えない",
+      "evidenceImage": "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/share/check/ref/badge-ohon-recommendation-badge.jpg",
+      "evidenceMeasurement": "実測比151/182=0.830が good-cover.png の実寸432×512(比0.844)とほぼ一致＝資料はこの画像そのもの",
+      "sourceOfTruthFile": "joy-relief-station: public/badges/good-cover.png",
+      "queueRef": 890
+    },
+    {
+      "id": "badge-applies-to-all-5-card-kinds",
+      "decidedAt": "2026-09-16",
+      "decidedBy": "たまごさん（2026-09-16 21:47）",
+      "what": "バッジ規格の適用範囲",
+      "value": "5種類のカード全部に同じ定数を適用する。1種類だけ直して終わりにしない",
+      "evidenceImage": "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/share/check/ref/badge-ohon-recommendation-badge.jpg",
+      "sourceOfTruthFile": "joy-relief-station: src/lib/badgeKinds.ts を参照する全コンポーネント",
+      "appliesTo": [
+        "①メインの曲(16:9)",
+        "②シェルフカード(1:1)",
+        "③関連",
+        "④おすすめ／こちらもどうぞ",
+        "⑤関連アーティスト"
+      ],
+      "queueRef": 890
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#883 LINE申請の自動貼り付け機(line_stamp_fill.mjs)を新設 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #883 LINE申請の自動貼り付け機(line_stamp_fill.mjs)を新設</div>
+<h1>#883 LINE申請の自動貼り付け機(line_stamp_fill.mjs)を新設</h1>
+<div class="date">2026-09-16 実装・確認ページはGitHub Pages反映済み（LINE申請フォームへの自動入力はログイン待ち・未検証のまま）</div>
+
+<div class="fix">
+たまごさんに15項目×3キャラを手打ちさせないための自動入力スクリプトを作りました。ログイン済みChromeに繋いで文言を自動で貼る仕組みです。ただし<b>LINEへのログインだけは、たまごさん本人にしかできません</b>（パスワード入力はAIが代行できない認証行為のため）。<code>tools/start_chrome_line_login.sh</code>をターミナルで1回実行してログインしていただければ、その後は入力自体は自動でできる状態まで用意しました。<b>ただし下の「⚠️実行前に必ず読んでほしいこと」だけは、ログインする前に目を通してください。</b>
+</div>
+
+<div class="note" style="border:2px solid var(--aka);">
+<b style="color:var(--aka);">⚠️ 実行前に必ず読んでほしいこと（今回の是正で新たに分かったこと）</b><br>
+LINE Creators Marketの利用規約には、次の2条があります（2026-09-13に<a href="https://creator.line.me/ja/terms/" target="_blank" rel="noopener">https://creator.line.me/ja/terms/</a>の原文で確認済み）。<br>
+・<b>12.11条</b>：「本サービスのサーバやネットワークシステムに支障を与える行為、BOT、チートツール、その他の技術的手段を利用して本サービスを不正に操作する行為」を禁止<br>
+・<b>4.6条</b>：規約違反等でアカウントが削除された場合、「クリエイターの本サービスにおけるすべての権利は消滅」し「アカウントの復旧はできません」<br>
+この<code>line_stamp_fill.mjs</code>はCDP経由でフォームへ自動入力する道具なので、12.11条の「技術的手段による操作」に該当するかどうかは、<b>LINE公式に確認しないと分かりません</b>。該当した場合、4.6条により、これまで作った珍獣ラシコル・ぺらリノ・鬼嫁ちゃんのスタンプ・審査履歴・販売実績が全部消え、復旧できなくなります。<br>
+すでに2026-09-13時点で、この点をLINE公式へ問い合わせるメール下書き（<code>status/791_email_draft.md</code>）まで用意していますが、<b>まだ送信していません</b>。<b>こちらの推奨は「先にこの問い合わせメールを送り、公式回答を得てから実行するかどうかを決める」こと</b>です。メール送信はたまごさん自身の意思での外部連絡になるため、AI側では代行せず、下書きを用意するところまでにしています。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3/3</b><span>3キャラとも安全停止を実機確認</span></div>
+  <div class="num"><b>0回</b><span>たまごさんが打った文字数（今回はゼロ）</span></div>
+  <div class="num"><b>2つ</b><span>残っている手数（①規約確認メールを送る判断 ②ログイン）</span></div>
+</div>
+
+<h2>③ 今回の是正（1回目FAILへの対応）</h2>
+<div class="note">
+前回は、ログイン後のフォーム自動入力ロジック（ラベル文言からinput/textareaを探す処理）を一度も実機で試せていないのに、確認ページの日付行に「本番反映まで実測確認」と書いてしまい、独立検品でFAILしました。今回は次の2点だけを、ログイン不要な範囲で正直に積み増しました。<br>
+・3キャラ分（rashikoru／peralino-usocchi／oniyome-chan）すべてで、未ログイン時にフォームへ一切触れず安全停止することを実機で確認（<code>status/883_safe_stop_log.json</code>）。<br>
+・ログイン不要な creator.line.me トップページをheadlessで一度覗いたところ、申請フォーム自体はログイン後にしか描画されないため、入力欄探索ロジックの妥当性はここでは確認できなかった（分からなかったことをそのまま記録）。失敗時にページ内のinput/textarea総数を記録する診断ログを追加し、次回ログイン後に実行された時、原因の切り分けがしやすいようにした。<br>
+<b>「フォーム項目への自動入力そのもの」は、今回も検証できていません。</b>これは偽らず、下の表にもそのまま残します。
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実装したコード(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/line_stamp_fill.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/line_stamp_fill.mjs</a></li>
+  <li><b>ログイン手順スクリプト(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/start_chrome_line_login.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/start_chrome_line_login.sh</a></li>
+  <li><b>LINE公式への問い合わせメール下書き(未送信)(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/791_email_draft.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/791_email_draft.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>ログイン確認→未ログインなら安全停止(3キャラとも実行)</td><td class="yes">OK</td></tr>
+<tr><td>LINE公式の代替API(Developers一覧)が無いことの確認</td><td class="yes">OK(無いと確定)</td></tr>
+<tr><td>フォーム項目への自動入力そのもの</td><td class="no">ログイン待ち・未検証</td></tr>
+<tr><td>規約12.11条(BOT操作禁止)への該当有無</td><td class="no">未確認・LINE公式への問い合わせが必要</td></tr>
+</table>
+
+<footer>
+次の一手は2つ、順番があります：<br>
+①（推奨）まず <code>status/791_email_draft.md</code> の内容でLINE公式（<a href="https://contact.line.me/serviceId/10569" target="_blank" rel="noopener">https://contact.line.me/serviceId/10569</a>）へ規約上の可否を問い合わせ、回答を待つ。<br>
+②回答が「問題ない」、またはリスクを承知の上で進めると決めた場合のみ、ターミナルで bash tools/start_chrome_line_login.sh を実行してログインし、node tools/line_stamp_fill.mjs rashikoru（他のキャラは peralino-usocchi／oniyome-chan）を実行する（Requestボタンは押しません）。<br>
+それまでの間は、769番で作った「貼るだけシート」（<a href="769-rashikoru-paste-sheet.html">rashikoru</a>／<a href="769-peralino-usocchi-paste-sheet.html">peralino-usocchi</a>／<a href="769-oniyome-chan-paste-sheet.html">oniyome-chan</a>）で、たまごさん自身がコピー＆貼り付けする方法が規約上安全です。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

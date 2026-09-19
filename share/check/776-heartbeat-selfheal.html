@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#776 工場の心臓が止まっても、誰も起こさず自動で復活する形にした 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #776 工場の心臓が止まっても、誰も起こさず自動で復活する形にした</div>
+<h1>#776 工場の心臓が止まっても、誰も起こさず自動で復活する形にした</h1>
+<div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+今日230分（12:58〜16:49）心臓が止まりたまごさんが待たされた事故を受け、①心臓が固まる根本原因（tmpファイル競合・DNS解決タイムアウト漏れ）を潰し②立て直しの便(machine_status_push.sh)自体が死んでも心臓側から蹴り直す相互監視を追加③進捗表から押すだけで心臓を起こせるボタン④10分止まったら進捗表が赤くなる表示、を実装。最後に本当に心臓をわざと殺して、誰も操作せず自動で生き返ることを実測した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3.4分</b><span>わざと心臓を殺してから、誰も操作せず自動で生き返るまでの実測時間</span></div>
+  <div class="num"><b>230分</b><span>今日の本物の事故（12:58〜16:49・対策前）</span></div>
+  <div class="num"><b>0回</b><span>自動復活テスト中、たまごさんやDispatchが操作した回数</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>実測：意図的にkill→3.4分後に自動で心臓が生き返った記録</b><img src="img/776-heartbeat-selftest.svg" alt="実測：意図的にkill→3.4分後に自動で心臓が生き返った記録"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実測タイムライン画像</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/img/776-heartbeat-selftest.svg" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/img/776-heartbeat-selftest.svg</a></li>
+  <li><b>進捗表（心臓の停止表示が出る場所）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>変更コミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/04760e54" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/04760e54</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>心臓が固まる原因（tmp競合・DNS解決タイムアウト漏れ）を塞いだ</td><td class="yes">直った</td></tr>
+<tr><td>立て直しの便(machine_status_push.sh)自体が死んでも心臓側から蹴り直す</td><td class="yes">直った</td></tr>
+<tr><td>進捗表から押すだけで心臓を起こせる（🔁心臓を起こすボタン）</td><td class="yes">直った</td></tr>
+<tr><td>10分止まったら進捗表の一番上に赤で「心臓が◯分止まっています」と出る</td><td class="yes">直った</td></tr>
+<tr><td>わざと心臓を殺して自動復活を実測（誰も操作せず3.4分で復活）</td><td class="yes">直った</td></tr>
+</table>
+
+<footer>
+230分停止の根本原因として最も疑わしかったのは、確認ページの機械検品(content_check)がDNS解決待ちで無期限にブロックする既知のPythonの穴（urllib.request.urlopenのtimeoutはDNS解決には効かない）。socket.setdefaulttimeout()で塞いだ。launchd便自体が死ぬケースへの備えとして、心臓(15秒おき)からmachine.jsonの更新時刻を見てlaunchctl kickstartする相互監視も追加した。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

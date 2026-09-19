@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#814 案内所にGrok Realtime Voiceを実装（本番反映はLovable側の障害待ち） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #814 案内所にGrok Realtime Voiceを実装（本番反映はLovable側の障害待ち）</div>
+<h1>#814 案内所にGrok Realtime Voiceを実装（本番反映はLovable側の障害待ち）</h1>
+<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+xAIのGrok Realtime Voice（人格Iris）を案内所ページに埋め込むコードは完成し、mainへ合流済み。APIキーはサーバーの中だけで使い、ブラウザには短命トークンしか渡らない設計。ただし本番サイトはLovable側の公開ブロック（#794と同一の既知障害）が続いており、22回目の確認でもまだ画面に反映されていない。あわせて、料金台帳用のデータベース表もまだ作られていないことが分かった。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>配信中のJSからAPIキーの文字列を探した結果</span></div>
+  <div class="num"><b>25件目</b><span>本番が変わらないことを確認した回数(店主のせいではない障害・これ以上は再確認しません)</span></div>
+  <div class="num"><b>未作成</b><span>料金を記録するデータベース表</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の案内所ページ（まだ声のボタンは出ません）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>Lovableの公開ボタン（押しても失敗が続いています）</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>APIキーがブラウザに漏れていないか</td><td class="yes">漏れていない(0件)</td></tr>
+<tr><td>実装がmainに入っているか</td><td class="yes">入っている(031db61c)</td></tr>
+<tr><td>本番画面に声のボタンが出ているか</td><td class="no">まだ出ていない(公開ブロック中)</td></tr>
+<tr><td>料金記録用のデータベース表があるか</td><td class="no">まだ無い(適用待ち)</td></tr>
+</table>
+
+<footer>
+店主にお願いしたいこと：①Lovableの公開ブロック解除（サポートへの問い合わせ）②Lovable側の環境変数にXAI_API_KEYを設定③Supabaseに料金記録用の表を作る。この3つが揃うまでコード側でできることは無い。<br>2026-09-14 03:06追記：Lovableの「変更を公開」ボタンを実際に自動で押す試行も実施(専用の隔離ブラウザから)。ボタンは押せたが、直後に本番を確認しても中身は変わらず(deployment-idの中身は同じまま)。ブロックが解除待ちであることを実際の操作でも再確認した。<br>2026-09-14再開分：料金記録の表がまだ無い状態でボタンが押された場合も、画面は無反応にならず「今は声のご案内をお休み中」の案内＋おすすめ5枚に自動で切り替わる設計であることをコードで確認済み(黙って壊れない)。これ以降、状況が変わっていないかの確認は「本番ページのdeployment-idが変わったか」だけを見る1手だけに絞り、同じ検証は繰り返しません。<br>2026-09-15/16追記（25件目）：本番のdeployment-idを再実測、前回と同一(449ce840-5728-41e2-8923-e33bf51ed479)のまま＝ブロック継続を確認。あわせて「GitHub Actions経由でSupabaseの表を作れないか」を新しい経路として調べたが、このリポジトリのGitHub Actions秘密鍵(SUPABASE_SERVICE_ROLE_KEY)は行の読み書き用でテーブル作成はできない仕組みと判明、この経路も店主側対応が必要という結論は変わらず。`.claude/TASK_BOARD.md`案件#142として台帳に記録済み。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

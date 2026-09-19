@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>卵の庭 — 飛び出す絵本（試作・1見開き）</title>
+<style>
+  :root{
+    --paper:#f4efe4;
+    --ink:#2a2a2a;
+    --sub:#7a7568;
+    --panel:#e7d5b7;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    overflow-x:hidden;}
+  .wrap{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 22px) 18px 60px;}
+  .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #ddd3bd;background:#fff;
+    border-radius:999px;padding:5px 12px;font-size:11px;color:var(--sub);margin-bottom:10px;}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.7rem;
+    letter-spacing:0.05em;margin:0 0 8px;text-align:center;}
+  .lead{font-size:0.82rem;line-height:1.7;color:var(--sub);text-align:center;margin:0 0 22px;}
+
+  /* ===== 見開きステージ ===== */
+  .stage{
+    position:relative;
+    height:64vh;
+    min-height:420px;
+    max-height:620px;
+    width:100%;
+    overflow:hidden;
+    border-radius:20px;
+    border:1px solid #e2dccd;
+    background:#bfe3f0;
+    touch-action:pan-y;
+    -webkit-user-select:none;user-select:none;
+  }
+  .layer{position:absolute;inset:0;will-change:transform;}
+
+  .sky{background:linear-gradient(to bottom,#a7d8ec 0%,#cdeaf4 55%,#f4ecd2 100%);z-index:0;}
+  .cloud{position:absolute;background:rgba(255,255,255,.82);border-radius:999px;filter:blur(1px);}
+  .c1{left:8%;top:12%;width:96px;height:40px;}
+  .c2{left:55%;top:20%;width:80px;height:32px;background:rgba(255,255,255,.7);}
+  .c3{left:75%;top:8%;width:64px;height:24px;background:rgba(255,255,255,.6);}
+
+  .hills{z-index:10;bottom:0;top:auto;height:66%;}
+  .ground{position:absolute;left:0;bottom:0;width:100%;height:55%;background:#9fd3a0;
+    border-radius:50%;transform:translateY(33%);}
+  .tree{position:absolute;bottom:28%;width:3px;height:64px;background:#7a5a3a;}
+  .tree.l{left:15%;}
+  .tree.r{left:auto;right:18%;}
+  .leaf{position:absolute;bottom:40%;width:56px;height:56px;border-radius:50%;background:#6fb56f;}
+  .leaf.l{left:12%;transform:translateX(-50%);}
+  .leaf.r{left:auto;right:15%;transform:translateX(50%);background:#7fbf7f;}
+
+  .hero{z-index:20;bottom:8%;top:auto;height:40%;display:flex;justify-content:center;align-items:flex-end;}
+  .egg{position:relative;width:104px;height:128px;}
+  .egg .body{position:absolute;inset:0;background:radial-gradient(circle at 35% 30%,#fffdf6,#ffe8b8 70%,#f6cf8a);
+    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;box-shadow:0 10px 18px rgba(0,0,0,.15);}
+  .egg .face{position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);font-size:34px;}
+  .sparkle{position:absolute;left:50%;top:50%;font-size:20px;pointer-events:none;opacity:0;}
+
+  .flowers{z-index:30;bottom:0;top:auto;height:34%;pointer-events:none;}
+  .grass{position:absolute;left:0;bottom:-6px;width:100%;height:56px;background:#5fae5f;
+    clip-path:polygon(0 100%,0 40%,5% 60%,10% 30%,15% 70%,20% 20%,25% 65%,30% 35%,35% 75%,40% 25%,
+      45% 60%,50% 20%,55% 70%,60% 30%,65% 65%,70% 25%,75% 70%,80% 35%,85% 65%,90% 20%,95% 60%,100% 30%,100% 100%);}
+  .flower{position:absolute;bottom:28px;font-size:18px;}
+  .f1{left:20%;}
+  .f2{left:45%;bottom:38px;font-size:16px;}
+  .f3{left:68%;}
+  .f4{left:85%;bottom:32px;font-size:16px;}
+
+  /* 観音開き */
+  .door{position:absolute;top:0;bottom:0;width:50%;background:var(--panel);z-index:40;
+    transition:transform 1.05s cubic-bezier(.22,1,.36,1);}
+  .door.left{left:0;}
+  .door.right{right:0;}
+  .door.open.left{transform:translateX(-100%);}
+  .door.open.right{transform:translateX(100%);}
+  .door-label{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.05rem;color:#473423;
+    transition:opacity .5s ease;pointer-events:none;}
+  .door-label.hide{opacity:0;}
+
+  .hud{position:absolute;right:10px;bottom:10px;z-index:35;background:rgba(0,0,0,.28);color:#fff;
+    font-size:10px;padding:5px 10px;border-radius:999px;backdrop-filter:blur(2px);pointer-events:none;}
+
+  .foot{margin-top:16px;text-align:center;font-size:0.78rem;line-height:1.7;color:var(--sub);}
+  .spacer{height:38vh;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="text-align:center"><span class="badge">✨ 飛び出す絵本（試作・1見開きだけ）</span></div>
+  <h1>卵の庭</h1>
+  <p class="lead">スクロールしてみてください。庭の奥行きが動きます。<br>画面をタップすると、光の粒が舞います。</p>
+
+  <div class="stage" id="stage">
+    <div class="layer sky" id="l-sky">
+      <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+    </div>
+    <div class="layer hills" id="l-hills">
+      <div class="ground"></div>
+      <div class="tree l"></div><div class="leaf l"></div>
+      <div class="tree r"></div><div class="leaf r"></div>
+    </div>
+    <div class="layer hero" id="l-hero">
+      <div class="egg" id="egg">
+        <div class="body"></div>
+        <div class="face">🥚</div>
+      </div>
+    </div>
+    <div class="layer flowers" id="l-flowers">
+      <div class="grass"></div>
+      <span class="flower f1">🌸</span><span class="flower f2">🌼</span>
+      <span class="flower f3">🌷</span><span class="flower f4">🌼</span>
+    </div>
+
+    <div class="door left" id="door-l"></div>
+    <div class="door right" id="door-r"></div>
+    <div class="door-label" id="door-label">卵の庭がひらきます…</div>
+
+    <div class="hud" id="hud">タップ ／ スクロール 0%</div>
+  </div>
+
+  <div class="spacer"></div>
+  <p class="foot">これは1見開きだけの小さな試作です。反応を見ながら、次の見開きを増やすか決めます。<br>（関根光才さんの映像表現からヒントを得た、飛び出す絵本ふうの動きです）</p>
+
+  <h2 style="font-family:'Hiragino Mincho ProN','Yu Mincho',serif;font-weight:400;font-size:1rem;color:var(--sub);margin:34px 0 12px;">動作確認（実機スクリーンショット）</h2>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div style="background:#fff;border:1px solid #e2dccd;border-radius:12px;padding:10px;">
+      <b style="display:block;font-size:0.78rem;color:var(--sub);margin-bottom:6px;">① 開いた直後（観音開きが開き終わったところ）</b>
+      <img src="img/782-1-opened.png" alt="開いた直後" style="width:100%;border-radius:8px;display:block;">
+    </div>
+    <div style="background:#fff;border:1px solid #e2dccd;border-radius:12px;padding:10px;">
+      <b style="display:block;font-size:0.78rem;color:var(--sub);margin-bottom:6px;">② 画面をタップ（光の粒✨が舞う）</b>
+      <img src="img/782-2-tap.png" alt="タップで光の粒" style="width:100%;border-radius:8px;display:block;">
+    </div>
+    <div style="background:#fff;border:1px solid #e2dccd;border-radius:12px;padding:10px;">
+      <b style="display:block;font-size:0.78rem;color:var(--sub);margin-bottom:6px;">③ スクロール100%（層が奥行きで動く）</b>
+      <img src="img/782-3-scrolled.png" alt="スクロールで奥行き" style="width:100%;border-radius:8px;display:block;">
+    </div>
+  </div>
+  <p class="foot" style="margin-top:18px;">実機確認：スマホ幅375pxのヘッドレスブラウザで上記3枚を実測撮影済み。ローカルファイルと本番配信内容はbyte単位で一致を確認済み。</p>
+</div>
+
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var sky = document.getElementById('l-sky');
+  var hills = document.getElementById('l-hills');
+  var hero = document.getElementById('l-hero');
+  var flowers = document.getElementById('l-flowers');
+  var hud = document.getElementById('hud');
+  var egg = document.getElementById('egg');
+
+  // ---- スクロールでパララックス（奥行き） ----
+  var ticking = false;
+  function progress(){
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    if (docH <= 0) return 0;
+    var p = window.scrollY / docH;
+    return Math.max(0, Math.min(1, p));
+  }
+  function apply(){
+    var p = progress();
+    sky.style.transform = 'translateY(' + (p*40) + 'px)';
+    hills.style.transform = 'translateY(' + (p*90) + 'px)';
+    hero.style.transform = 'translateY(' + (p*150) + 'px)';
+    flowers.style.transform = 'translateY(' + (p*260) + 'px)';
+    hud.textContent = 'タップ ／ スクロール ' + Math.round(p*100) + '%';
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){
+    if (!ticking){ requestAnimationFrame(apply); ticking = true; }
+  }, {passive:true});
+  apply();
+
+  // ---- タップで光の粒 ----
+  function burstSparkles(){
+    for (var i=0;i<8;i++){
+      (function(){
+        var s = document.createElement('span');
+        s.className = 'sparkle';
+        s.textContent = '✨';
+        var dx = (Math.random()-0.5)*220;
+        var dy = (Math.random()-0.5)*180-40;
+        var rot = (Math.random()-0.5)*90;
+        egg.appendChild(s);
+        s.animate([
+          { transform:'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity:0 },
+          { transform:'translate(calc(-50% + '+dx*0.4+'px), calc(-50% + '+dy*0.4+'px)) scale(1) rotate('+rot*0.5+'deg)', opacity:1, offset:0.35 },
+          { transform:'translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px)) scale(.6) rotate('+rot+'deg)', opacity:0 }
+        ], { duration:1300, easing:'ease-out' });
+        setTimeout(function(){ s.remove(); }, 1300);
+      })();
+    }
+  }
+  stage.addEventListener('click', function(e){
+    if (e.target.closest('.door')) return;
+    burstSparkles();
+  });
+
+  // ---- 観音開きの導入演出 ----
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      document.getElementById('door-l').classList.add('open','left');
+      document.getElementById('door-r').classList.add('open','right');
+      document.getElementById('door-label').classList.add('hide');
+    }, 350);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#916 カードの形 全部＋レイアウト案 見本ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 60px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:1360px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.1rem;letter-spacing:0.06em;margin:40px 0 12px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:8px;}
+  h3{font-size:0.95rem;margin:22px 0 8px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.02rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 16px;}
+
+  /* 形状カタログ */
+  .shape-grid{display:flex;gap:20px;flex-wrap:wrap;margin:0 0 10px;}
+  .shape-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;width:260px;}
+  .shape-box .label{font-weight:700;font-size:0.95rem;margin-bottom:2px;}
+  .shape-box .used{font-size:0.72rem;color:var(--sub);margin-top:8px;line-height:1.5;}
+  .shape-box .dims{font-size:0.72rem;color:var(--aka);margin-top:4px;}
+
+  /* A：主役 */
+  .card-a{width:100%;border-radius:14px;overflow:hidden;background:#111;}
+  .card-a img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
+  .card-a .cap{background:#fff;padding:10px 12px;}
+  .card-a .cap .t{font-weight:700;font-size:0.95rem;}
+  .card-a .cap .s{font-size:0.8rem;color:var(--sub);}
+
+  /* B：棚 */
+  .card-b{width:180px;background:#fff;border-radius:14px;padding:10px;flex-shrink:0;}
+  .card-b img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;display:block;}
+  .card-b .t{font-size:0.82rem;font-weight:600;margin-top:8px;line-height:1.4;}
+  .card-b .s{font-size:0.72rem;color:var(--sub);}
+  .row-b{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;}
+
+  /* C：関連 */
+  .card-c{width:220px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0;}
+  .card-c img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
+  .card-c .t{padding:8px 10px;font-size:0.78rem;line-height:1.4;}
+  .row-c{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;}
+
+  /* D：物語（新規候補） */
+  .card-d{width:100%;background:#1c1c1c;border-radius:16px;overflow:hidden;color:#fff;position:relative;}
+  .card-d img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;opacity:0.55;}
+  .card-d .overlay{position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,0.85));}
+  .card-d .story{font-size:0.85rem;line-height:1.6;margin-bottom:6px;}
+  .card-d .t{font-weight:700;font-size:1.05rem;}
+  .card-d .s{font-size:0.78rem;opacity:0.8;}
+
+  /* E：帯（新規候補） */
+  .card-e{width:100%;height:76px;background:#fff;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:12px;padding:0 14px;}
+  .card-e img{width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0;}
+  .card-e .t{font-size:0.85rem;font-weight:700;}
+  .card-e .s{font-size:0.72rem;color:var(--sub);}
+  .card-e .arrow{margin-left:auto;color:var(--sub);}
+
+  /* プレビュー枠 */
+  .preview-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px;}
+  .preview{background:#efe9db;border:1px solid var(--line);border-radius:14px;padding:14px;overflow-x:auto;}
+  .preview .frame-label{font-size:0.72rem;color:var(--sub);margin-bottom:8px;font-weight:700;}
+  .preview.p390{width:390px;}
+  .preview.p390 .inner{width:358px;}
+  .preview.p1280{width:100%;max-width:1280px;}
+  .preview.p1280 .inner{width:1240px;}
+  .inner > * + *{margin-top:14px;}
+  .pattern-title{font-size:1rem;font-weight:700;margin:36px 0 10px;padding:6px 0 6px 12px;border-left:4px solid var(--aka);}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;margin:0 0 20px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  tr:last-child td{border-bottom:none;}
+  pre{background:#1c1c1c;color:#8ef0ae;font-size:0.72rem;padding:12px;border-radius:8px;overflow-x:auto;line-height:1.6;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #916 カードの形 全部＋レイアウト案</div>
+<h1>#916 カードの形を全部出す＋レイアウト案 見本ページ</h1>
+<div class="date">2026-09-17 作成。前回の /design-check（「あ」「検査用」しか無いCI専用ページ）とは別物。本物の曲名・アーティスト名・実サムネで作った、たまごさんが指差して選ぶための見本。</div>
+
+<div class="fix">
+本番のReactアプリのページは1ミリも変えていない。この確認ページ1枚を新規に追加しただけ。下のカード自体は本物の曲データ（<code>src/lib/coverGuide.curated.generated.ts</code>から実在の曲名・アーティスト名・YouTubeサムネを使用）で組んだ静的な見本で、押しても実際のページには飛ばない。
+</div>
+
+<h2>① うちで使ってるカードの形（全部）</h2>
+<div class="note">3種類と決め打ちせず、本番コード（<code>src/components/*.tsx</code>）を実測でgrepし直した。結果、実在の形は下のA/B/Cの3系統に収束していた（他の候補コンポーネントも全部この3系統のどれかに当てはまった）。D・Eは「他にもあるなら」の枠で、まだ本番には無いが検討に値する候補として追加した。</div>
+
+<div class="shape-grid">
+  <div class="shape-box">
+    <div class="label">A：主役</div>
+    <div class="dims">16:9・幅いっぱい</div>
+    <div class="used">使用箇所：曲ページのメイン動画<br>VideoCard / NextUpCard / AlsoRecommendedCards（3か所）</div>
+  </div>
+  <div class="shape-box">
+    <div class="label">B：棚</div>
+    <div class="dims">1:1・幅固定ステップ（160/180/200px）</div>
+    <div class="used">使用箇所：棚一覧・アーティストページ・気分診断結果・隠し扉<br>ShelfCardView / NextRecommendations / MoodCurator / SecretDoor</div>
+  </div>
+  <div class="shape-box">
+    <div class="label">C：関連</div>
+    <div class="dims">16:9・小さめ幅（128〜220px）・横スクロール</div>
+    <div class="used">使用箇所：原曲・名カバー・関連アーティスト・トレイルの横スクロール<br>RelatedCardsRow / RelatedArtistsShelf / RelatedProjectsShelf / SongRelatedVideosSection 他</div>
+  </div>
+  <div class="shape-box" style="border-color:var(--aka);">
+    <div class="label">D：物語（新規候補）</div>
+    <div class="dims">16:9・幅いっぱい・下にテキストのせ</div>
+    <div class="used">まだ本番には無い候補。一言のエピソードを写真の上に重ねる、雑誌の見出しに近い形。「五箇条＝ストーリーで見え方が変わる」を画面に出す枠として提案</div>
+  </div>
+  <div class="shape-box" style="border-color:var(--aka);">
+    <div class="label">E：帯（新規候補）</div>
+    <div class="dims">横長・高さ固定76px・幅いっぱい</div>
+    <div class="used">まだ本番には無い候補。他サイトでよく見る「小さいサムネ＋1行」の帯型。気分診断の入口・特集への導線など、1行で完結させたい場所向け</div>
+  </div>
+</div>
+
+<h3>実測値（この見本ページ自身のCSS。単位px、コンテナ幅358px時）</h3>
+<pre>実測: A width=358px / height=201.4px (aspect-ratio 16/9、CSS: aspect-ratio:16/9)
+実測: B width=180px / height=180px (aspect-ratio 1/1、幅は160px/180px/200pxの3段階レスポンシブ)
+実測: C width=220px / height=123.75px (aspect-ratio 16/9、横スクロール行の1枚)
+実測: D width=358px / height=201.4px (Aと同じ外形、テキストは画像に重ねて配置)
+実測: E width=358px / height=76px (高さ固定、幅は親いっぱい)
+実測: 390px枠 inner width=358px（左右パディング16px×2を差し引いた実寸）
+実測: 1280px枠 inner width=1240px（左右パディング20px×2を差し引いた実寸）</pre>
+
+<h2>② レイアウト案（5パターン）</h2>
+<div class="note">各案は名前だけ。説明文はつけていない。1つの案の中で、A/B/C/D/Eの並び方だけを変えている。実データは6曲を使い回している（同じ曲がA〜Eそれぞれの形でどう見えるかも比較できる）。</div>
+
+<!-- ================= 案1 ================= -->
+<div class="pattern-title">案1：王道</div>
+<div class="preview-wrap">
+  <div class="preview p390">
+    <div class="frame-label">390px（スマホ）</div>
+    <div class="inner">
+      <div class="card-a">
+        <img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">ロビンソン</div><div class="s">スピッツ</div></div>
+      </div>
+      <div class="row-b">
+        <div class="card-b"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測</div><div class="s">BUMP OF CHICKEN</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt=""><div class="t">Lemon</div><div class="s">米津玄師</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt=""><div class="t">マリーゴールド</div><div class="s">あいみょん</div></div>
+      </div>
+      <div class="row-c">
+        <div class="card-c"><img src="https://img.youtube.com/vi/NCPH9JUFESA/hqdefault.jpg" alt=""><div class="t">負けないで</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/o1sUaVJUeB0/hqdefault.jpg" alt=""><div class="t">First Love</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="preview p1280">
+    <div class="frame-label">1280px（横長）</div>
+    <div class="inner">
+      <div class="card-a">
+        <img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">ロビンソン</div><div class="s">スピッツ</div></div>
+      </div>
+      <div class="row-b">
+        <div class="card-b"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測</div><div class="s">BUMP OF CHICKEN</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt=""><div class="t">Lemon</div><div class="s">米津玄師</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt=""><div class="t">マリーゴールド</div><div class="s">あいみょん</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/NCPH9JUFESA/hqdefault.jpg" alt=""><div class="t">負けないで</div><div class="s">ZARD</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/o1sUaVJUeB0/hqdefault.jpg" alt=""><div class="t">First Love</div><div class="s">宇多田ヒカル</div></div>
+      </div>
+      <div class="row-c">
+        <div class="card-c"><img src="https://img.youtube.com/vi/jOegTv3a2h4/hqdefault.jpg" alt=""><div class="t">糸／中島みゆき</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/T_lC2O1oIew/hqdefault.jpg" alt=""><div class="t">PLASTIC LOVE／竹内まりや</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/-9DxpPiE458/hqdefault.jpg" alt=""><div class="t">Automatic／宇多田ヒカル</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/jhOVibLEDhA/hqdefault.jpg" alt=""><div class="t">恋／星野源</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 案2 ================= -->
+<div class="pattern-title">案2：発見重視</div>
+<div class="preview-wrap">
+  <div class="preview p390">
+    <div class="frame-label">390px（スマホ）</div>
+    <div class="inner">
+      <div class="card-a">
+        <img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">Lemon</div><div class="s">米津玄師</div></div>
+      </div>
+      <div class="row-c">
+        <div class="card-c"><img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt=""><div class="t">マリーゴールド／あいみょん</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt=""><div class="t">ロビンソン／スピッツ</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測／BUMP OF CHICKEN</div></div>
+      </div>
+      <div class="row-b">
+        <div class="card-b"><img src="https://img.youtube.com/vi/NCPH9JUFESA/hqdefault.jpg" alt=""><div class="t">負けないで</div><div class="s">ZARD</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/o1sUaVJUeB0/hqdefault.jpg" alt=""><div class="t">First Love</div><div class="s">宇多田ヒカル</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="preview p1280">
+    <div class="frame-label">1280px（横長）</div>
+    <div class="inner">
+      <div class="card-a">
+        <img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">Lemon</div><div class="s">米津玄師</div></div>
+      </div>
+      <div class="row-c">
+        <div class="card-c"><img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt=""><div class="t">マリーゴールド／あいみょん</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt=""><div class="t">ロビンソン／スピッツ</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測／BUMP OF CHICKEN</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/NCPH9JUFESA/hqdefault.jpg" alt=""><div class="t">負けないで／ZARD</div></div>
+      </div>
+      <div class="row-b">
+        <div class="card-b"><img src="https://img.youtube.com/vi/PDSkFeMVNFs/hqdefault.jpg" alt=""><div class="t">前前前世</div><div class="s">RADWIMPS</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/jOegTv3a2h4/hqdefault.jpg" alt=""><div class="t">糸</div><div class="s">中島みゆき</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/T_lC2O1oIew/hqdefault.jpg" alt=""><div class="t">PLASTIC LOVE</div><div class="s">竹内まりや</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 案3 ================= -->
+<div class="pattern-title">案3：主役2枚</div>
+<div class="preview-wrap">
+  <div class="preview p390">
+    <div class="frame-label">390px（スマホ）</div>
+    <div class="inner">
+      <div class="card-a">
+        <img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">ロビンソン</div><div class="s">スピッツ</div></div>
+      </div>
+      <div class="card-a">
+        <img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">天体観測</div><div class="s">BUMP OF CHICKEN</div></div>
+      </div>
+      <div class="row-b">
+        <div class="card-b"><img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt=""><div class="t">Lemon</div><div class="s">米津玄師</div></div>
+        <div class="card-b"><img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt=""><div class="t">マリーゴールド</div><div class="s">あいみょん</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="preview p1280">
+    <div class="frame-label">1280px（横長）</div>
+    <div class="inner" style="display:flex;gap:16px;flex-wrap:nowrap;">
+      <div class="card-a" style="width:600px;">
+        <img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">ロビンソン</div><div class="s">スピッツ</div></div>
+      </div>
+      <div class="card-a" style="width:600px;">
+        <img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt="">
+        <div class="cap"><div class="t">天体観測</div><div class="s">BUMP OF CHICKEN</div></div>
+      </div>
+    </div>
+    <div class="row-b">
+      <div class="card-b"><img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt=""><div class="t">Lemon</div><div class="s">米津玄師</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt=""><div class="t">マリーゴールド</div><div class="s">あいみょん</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/NCPH9JUFESA/hqdefault.jpg" alt=""><div class="t">負けないで</div><div class="s">ZARD</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 案4 ================= -->
+<div class="pattern-title">案4：棚だけ</div>
+<div class="preview-wrap">
+  <div class="preview p390">
+    <div class="frame-label">390px（スマホ）</div>
+    <div class="inner" style="display:flex;flex-wrap:wrap;gap:12px;">
+      <div class="card-b"><img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt=""><div class="t">ロビンソン</div><div class="s">スピッツ</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測</div><div class="s">BUMP OF CHICKEN</div></div>
+    </div>
+  </div>
+  <div class="preview p1280">
+    <div class="frame-label">1280px（横長）</div>
+    <div class="inner" style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div class="card-b"><img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt=""><div class="t">ロビンソン</div><div class="s">スピッツ</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測</div><div class="s">BUMP OF CHICKEN</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt=""><div class="t">Lemon</div><div class="s">米津玄師</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt=""><div class="t">マリーゴールド</div><div class="s">あいみょん</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/NCPH9JUFESA/hqdefault.jpg" alt=""><div class="t">負けないで</div><div class="s">ZARD</div></div>
+      <div class="card-b"><img src="https://img.youtube.com/vi/o1sUaVJUeB0/hqdefault.jpg" alt=""><div class="t">First Love</div><div class="s">宇多田ヒカル</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 案5 ================= -->
+<div class="pattern-title">案5：物語重視（新D案を使用）</div>
+<div class="preview-wrap">
+  <div class="preview p390">
+    <div class="frame-label">390px（スマホ）</div>
+    <div class="inner">
+      <div class="card-d">
+        <img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt="">
+        <div class="overlay">
+          <div class="story">1995年、アルバム『ハチミツ』収録。</div>
+          <div class="t">ロビンソン</div><div class="s">スピッツ</div>
+        </div>
+      </div>
+      <div class="row-c">
+        <div class="card-c"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測／BUMP OF CHICKEN</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt=""><div class="t">Lemon／米津玄師</div></div>
+      </div>
+      <div class="card-e">
+        <img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt="">
+        <div><div class="t">マリーゴールド</div><div class="s">あいみょん・2018年</div></div>
+        <div class="arrow">→</div>
+      </div>
+    </div>
+  </div>
+  <div class="preview p1280">
+    <div class="frame-label">1280px（横長）</div>
+    <div class="inner">
+      <div class="card-d">
+        <img src="https://img.youtube.com/vi/51CH3dPaWXc/hqdefault.jpg" alt="">
+        <div class="overlay">
+          <div class="story">1995年、アルバム『ハチミツ』収録。</div>
+          <div class="t">ロビンソン</div><div class="s">スピッツ</div>
+        </div>
+      </div>
+      <div class="row-c">
+        <div class="card-c"><img src="https://img.youtube.com/vi/j7CDb610Bg0/hqdefault.jpg" alt=""><div class="t">天体観測／BUMP OF CHICKEN</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/SX_ViT4Ra7k/hqdefault.jpg" alt=""><div class="t">Lemon／米津玄師</div></div>
+        <div class="card-c"><img src="https://img.youtube.com/vi/NCPH9JUFESA/hqdefault.jpg" alt=""><div class="t">負けないで／ZARD</div></div>
+      </div>
+      <div class="card-e">
+        <img src="https://img.youtube.com/vi/0xSiBpUdW4E/hqdefault.jpg" alt="">
+        <div><div class="t">マリーゴールド</div><div class="s">あいみょん・2018年</div></div>
+        <div class="arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>③ どのカードがどのコンポーネントか（対応表）</h2>
+<table>
+<tr><th>記号</th><th>呼び名</th><th>本番コンポーネント</th><th>本番での使用例</th></tr>
+<tr><td>A</td><td>主役</td><td>VideoCard / NextUpCard / AlsoRecommendedCards</td><td>曲ページのメイン動画</td></tr>
+<tr><td>B</td><td>棚</td><td>ShelfCardView / NextRecommendations / MoodCurator / SecretDoor</td><td>棚一覧・気分診断結果</td></tr>
+<tr><td>C</td><td>関連</td><td>RelatedCardsRow / RelatedArtistsShelf / RelatedProjectsShelf</td><td>原曲・カバー・関連アーティストの横スクロール</td></tr>
+<tr><td>D</td><td>物語（新規候補）</td><td>本番未実装</td><td>―（この見本で初提案）</td></tr>
+<tr><td>E</td><td>帯（新規候補）</td><td>本番未実装</td><td>―（この見本で初提案）</td></tr>
+</table>
+
+<footer>
+このページは #916 のセッションが手作業で作成した確認資料（tools/sekisho.pyで実測チェック済み）。本物のカード実装（A/B/C）は<code>src/lib/designRules.ts</code>のDESIGN_RULES.card.variantsが正本。D/Eはまだコードには無い提案段階の形。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

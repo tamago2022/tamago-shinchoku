@@ -1,0 +1,68 @@
+# 2026-09-04: 中継所(relay)整備時に誤って41MBのcloudflaredバイナリをcommitしてしまった事故の再発防止。
+# 単体バイナリはMac側ローカル(~/.tamago/bin/)へ置く運用にしたため、tools/bin/配下はgit管理対象外にする。
+tools/bin/
+
+# 2026-09-05 認証まわりは絶対に公開しない（このリポジトリはGitHub Pagesで公開されている）
+status/auth_login.log
+status/auth_login_url.txt
+status/auth_code.txt
+status/auth_login.pid
+status/auth_login_done.txt
+status/.claude_token
+
+# 2026-09-09（案件#667）：たまごさん本人の実ツイート全文索引（47,011件）はプライバシー配慮のため
+# 公開GitHub Pagesに置かない。ローカルで tools/build_x_tweet_search_proto.py を実行して
+# 生成し、share/x-search/ 配下でローカルのまま(file://)使う想定。公開版は data.demo.json（サンプル）を使う。
+share/x-search/data.json
+
+# 2026-09-09（案件#670）：Gumroad/YouTubeのAPIキーは.envに置く（GitHub Pagesで公開されるため必ず除外）。
+.env
+
+# 2026-09-13（案件#687）：queue.jsonの世代バックアップはローカル自己防衛用（queue_store.pyが自動生成・直近50世代のみ保持）。
+# 大量の小ファイルでpre-commitの1MB超ガードに毎回ひっかかりqueue.json本体のコミットを圧迫していたため、
+# そもそもgit管理対象から外す（正本はqueue.json本体・historyはローカルの巻き戻り保険のみ）。
+status/queue_history/
+
+# 2026-09-16（緊急・queue.json/auto_launch.log巻き戻り事故の恒久対策）：
+# status/ は工場が1秒おきに書き換えている「生きている台帳」。他の古いworktree/セッションが
+# `git add -A`のような広い範囲のaddを（悪意なく）実行すると、そこに残っていた何日も前の
+# status/スナップショットが巻き込まれてcommit・pushされ、本物のstatus/を丸ごと古い内容で
+# 上書きしてしまう事故が繰り返し起きた（実測：685番が原因でauto_launch.logが2026-09-10の内容へ、
+# 888/883番の走行状態が消える形でqueue.jsonが巻き戻った）。
+# status/ 配下はここでgit管理対象から外し、唯一の公開経路である
+# tools/machine_status_push.sh（および他の少数の公開スクリプト）だけが
+# `git add -f`で明示的に指定したファイルを公開する形にする。
+# これにより「他セッションの広いgit add」は二度とstatus/を巻き込まなくなる。
+# （status/public/ だけ例外的に追跡する。ディレクトリごと除外する`status/`ではなく
+#  `status/*`＝直下エントリだけを対象にする書き方でないと、下の`!status/public/`による
+#  再取り込みがgitの仕様上効かないため、この書き方にしている）
+status/*
+
+# 2026-09-17（894番）：status/failures.md（工場が止まった原因と直し方の学習台帳）は
+# 「1秒おきに書き換わる生きている台帳」ではなく「追記だけで蓄積される恒久記録」という
+# 別の性質を持つのに、上のstatus/*除外に巻き込まれて追跡解除されていた（894番作業中に発見）。
+# このMacのローカルにしか残らなくなり、リポジトリ本体の学習資産としては失われてしまうため、
+# status/public/と同じ考え方でここだけ明示的に例外化して追跡を復活させる。
+# 巻き戻りリスクは低い（追記のみのファイルで、queue.jsonのように件数が減る書き込みが
+# 起こりにくい）。
+!status/failures.md
+
+# 2026-09-16 追記（同日23:08・890番の作業14分が巻き戻りで失われた再発を受けて）：
+# 上の対策（status/直下36ファイルをgit add -fで明示公開）だけでは不十分だった。
+# 「新しいworktreeが今日以降にstatus/直下を持たない」だけで、既に存在している古いworktree
+# （main分岐が古い時点のもの）は、そのworktreeが作られた時点でstatus/直下がまだ
+# git追跡対象だった名残でqueue.json等を自分のインデックスに持ったままになっており、
+# **そういう古いworktreeが広いgit addを行うと、今回のstatus/直下36ファイルもまだ巻き込まれうる**
+# （実測：22:49発車の890番作業が14分後に巻き戻りでwaitingへ戻った）。
+# 根治は「これまで一度もgit追跡されたことが無い、真に新しいパス」に公開先を移すこと。
+# どんな古いworktreeも、存在すらしなかったパスを誤ってaddすることはできないため。
+# 公開ファイルは status/public/ 配下へ移し、ここだけ明示的に追跡を許可する。
+!status/public
+!status/public/**
+
+# 2026-09-17（896番）：status/failures.mdと同じ理由（追記だけで蓄積される恒久記録であり、
+# 1秒おきに書き換わる「生きている台帳」ではない）で、renraku(外部連絡)の窓口台帳と送信記録も
+# ここで明示的に追跡を復活させる。他セッションの広いgit addに巻き込まれるリスクは
+# failures.mdと同水準（追記のみ・件数が減る書き込みが起こりにくい）と判断。
+!status/renraku_madoguchi.json
+!status/renraku.json

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#758 音楽ページ「Tears in Heaven」中目黒形式・実装完了/公開はLovable基盤ブロックで待機中 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #758 音楽ページ「Tears in Heaven」中目黒形式・実装完了/公開はLovable基盤ブロックで待機中</div>
+<h1>#758 音楽ページ「Tears in Heaven」中目黒形式・実装完了/公開はLovable基盤ブロックで待機中</h1>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<h2>① 何を直したか</h2>
+<div class="fix">
+中目黒ページ(room.food.$slug.tsx)と同じ骨格で、音楽版ルート /room/tune/$slug を新設。Eric Clapton『Tears in Heaven』を1本追加した。ABOUT(メモ)欄に、息子コナーの死を悼んで書かれた経緯（出典:Wikipedia）を記載。コードはmainへ合流済み(コミット8ed5d29e)。ただし本番はLovable社側『Publishing was blocked due to suspicious activity』というアカウントレベルの公開ブロックが継続中(#708/#740等18件で独立確認済み・AI側に解除手段なし)のため、まだ本番に出ていない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1本</b><span>実装した音楽ページ(Tears in Heaven)</span></div>
+  <div class="num"><b>18件+</b><span>同一のLovable公開ブロックを独立確認した案件数</span></div>
+  <div class="num"><b>404</b><span>現在の本番URLのHTTPステータス(未公開のため)</span></div>
+</div>
+
+<h2>③ 押せるリンク一覧（すべて開ける状態を確認済み）</h2>
+<ul class="links">
+  <li><b>Lovable編集画面(公開ボタンはここ)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+  <li><b>本番トップ(現状・稼働中)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+<div class="note">
+参考（クリック不可・あえてリンクにしていません）：公開後の行き先は <code>joy-relief-station.lovable.app/room/tune/tears-in-heaven</code>。2026-09-13時点でHTTP 404（Lovable公開ブロックのため未反映。ブロック解除・自動便の公開が済み次第、ここが200になる）。
+</div>
+
+<h2>④ 前後スクショ（公開ブロックの実機証拠。案件#708で撮影・同一アカウント・同一原因のため流用）</h2>
+<div class="shots">
+  <div class="shot before"><b>前: 公開ボタンが押せる状態(2026-09-12・案件#708実機)</b><img src="img/708-publish-ready.png" alt="前: 公開ボタンが押せる状態(2026-09-12・案件#708実機)"></div>
+  <div class="shot after"><b>後: 押した直後に出るLovable側ブロック通知(同一アカウント・同一原因)</b><img src="img/708-publish-blocked-2.png" alt="後: 押した直後に出るLovable側ブロック通知(同一アカウント・同一原因)"></div>
+</div>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>コード実装(音楽メモページ1本)</td><td class="yes">完了</td></tr>
+<tr><td>GitHub main合流</td><td class="yes">完了</td></tr>
+<tr><td>Lovable本番への公開</td><td class="no">Lovableアカウントブロックで不可</td></tr>
+<tr><td>375px/PC横長スクショ</td><td class="no">本番非公開のため撮影不可・下記に同一原因の実機証拠を代替掲載</td></tr>
+</table>
+
+<footer>
+本件はコードの不具合ではなく、Lovableアカウント側のセキュリティ判断による公開ブロック。たまごさん、またはLovable画面を操作できる人が上記編集画面で「公開」を押し、同じブロックが出るか確認のうえLovableサポートへ解除を依頼するのが最短。解除され次第、30分おきの自動便が未反映分を拾って公開する。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
