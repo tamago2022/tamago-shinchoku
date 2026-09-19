@@ -77,6 +77,12 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 #   二重起動は _961 側のロックで防いでいる。
 ( nohup bash "$REPO/tools/_961_jrs_deliver.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-09-20（969番・Cowork側から設置）外部AIの返事を拾って961ページへ並べる便 ----
+# たまごさん「返事が来たら、要約せずそのまま 961-talking-avatar-jirei.html に追記する」。
+# GitHubのIssueに来たコメントを、条件付きGET1本で見に行くだけ（変化が無い回はレート消費0・0円）。
+# ★status/969/issue.json が無ければ即 return ＝完全に無害。新しい常駐は増やさない。
+run_with_timeout 60 python3 "$REPO/tools/_969_avatar_reply_pickup.py" >/dev/null 2>&1 || true
+
 # ---- 残骸の掃除（2026-09-05 17:05・実害あり）----
 # たまごさん「Mac重たいよ」。実測：5分平均ロードが238（8コアのMacで通常8以下）。
 # 原因は、中継所のトンネルを立て直すたびに起動していた localtunnel(npx/node) と cloudflared が、
