@@ -49,9 +49,10 @@ setup-token）も実測したが `401 OAuth access token is invalid` で死ん�
 3. 1年の期限が近づいたら、30日前・14日前・7日前・3日前に1回ずつだけ知らせる。
    **切れてから慌てない。切れる前に言う。**
 4. 本当に鍵が無くなったときだけ、たまごさんに1行で頼む。
-   頼み方は「ターミナルを開いて…」ではなく
-   **「デスクトップの『ログインしなおす_押すだけ.command』をダブルクリック」1回だけ。**
-   あとは全部この係が引き取る。
+   頼み方は**「いつも使っているClaudeのアプリで、1回ログインし直す」だけ**。
+   ファイルを渡さない・ダブルクリックさせない・ターミナルを開かせない
+   （2026-09-20 たまごさん指定。過去に「ダブルクリックで開きます」が開けず実害あり）。
+   鍵が戻ったことはこの係が自分で気づいて、発車も自分で再開する。
 
 値（トークン本体）は読み出さない・ログにも報告にも書かない。長さと生死だけ扱う。
 """
@@ -73,7 +74,6 @@ LOG = os.path.join(STATUS, "auth_keeper.log")
 TOKEN_PATH = os.path.expanduser("~/.tamago/claude_token")
 USE_TOKEN = os.path.expanduser("~/.tamago/use_token")
 MINTED_PATH = os.path.expanduser("~/.tamago/claude_token.minted")
-BUTTON = os.path.join(REPO, "ログインしなおす_押すだけ.command")
 
 CLAUDE = os.path.expanduser("~/.local/bin/claude")
 if not os.path.exists(CLAUDE):
@@ -206,7 +206,7 @@ def raise_flags(reason):
         io.open(AUTH_FLAG, "w", encoding="utf-8").write(time.strftime("%F %H:%M"))
         io.open(NO_LAUNCH, "w", encoding="utf-8").write(
             "Claudeのログインが切れています（%s）。枠の問題ではありません。"
-            "『ログインしなおす_押すだけ.command』を1回ダブルクリックすれば直ります。%s\n"
+            "いつものClaudeのアプリで1回ログインし直せば、こちらで気づいて自動で再開します。%s\n"
             % (reason, time.strftime("%F %H:%M")))
     except Exception:
         pass
@@ -266,26 +266,24 @@ def main():
                     if d <= w and not (st.get("warned") or {}).get(str(w)):
                         st.setdefault("warned", {})[str(w)] = True
                         notify("expire-%d" % w,
-                               "🔑 Claudeのログイン用トークンが、あと%d日で期限切れになります。"
-                               "『ログインしなおす_押すだけ.command』を1回ダブルクリックしてください"
-                               "（作り直すと、また1年もちます）。" % d, st)
+                               "🔑 Claudeのログインが、あと%d日で期限切れになります。"
+                               "いつものClaudeのアプリで1回ログインし直しておいてください"
+                               "（切れてから慌てないように、先に声をかけています）。" % d, st)
                         break
         else:
             # キーチェーンの/loginのOAuthで動いている＝また数日で切れる形のまま。
-            notify("switch-to-token",
-                   "🔑 いまのログインは /login のOAuth（数日〜で切れる形）で動いています。"
-                   "『ログインしなおす_押すだけ.command』を1回ダブルクリックしておくと、"
-                   "1年もつ形（setup-token）に替わって、以後この件で呼ばれなくなります。", st)
+            # /login のOAuthで動いている＝寿命が短い形。ただし、たまごさんに
+            # 「別のやり方で入れ直して」と頼むのは新しい手間なので、ここでは黙って動かす。
+            # 切れる3日前に公式CLIが警告を出すので、その時にだけ1行お願いする（下のexpire系）。
+            pass
         log("生きています（%s）" % st["source"])
     else:
         raise_flags(why)
         st["lastNgWhy"] = why
         notify("expired",
                "🔑 Claudeのログインが切れました（%s）。枠の問題ではありません。"
-               "AI側では鍵を作れない一点なので、ここだけお願いします："
-               "たまごさんのフォルダ（tamago-shinchoku）の中の"
-               "『ログインしなおす_押すだけ.command』をダブルクリック→"
-               "開いたブラウザで許可→出たコードを貼る。以後は1年おきです。" % why, st)
+               "鍵だけはAIには作れません。いつものClaudeのアプリで1回ログインし直してください。"
+               "戻ったことはこちらで気づいて、発車も自動で再開します。" % why, st)
         log("切れています（%s）" % why)
 
     save_state(st)

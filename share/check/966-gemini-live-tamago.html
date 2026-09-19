@@ -1634,6 +1634,10 @@ paintSW();
 paintTempo();   /* ★964：中身は空でも表の形は先に出す（測る前に何が測られるか見えるように） */
 $("devLink").addEventListener("click",e=>{ e.preventDefault();
   const d=$("settings"); d.hidden=false; d.open=true; });
+/* 頭の ABOUT は「お店の機械」を開いてから行く（押して何も起きない口を作らない） */
+document.querySelectorAll('.head-nav a[href="#kikai"]').forEach(a=>{
+  a.addEventListener("click",()=>{ $("kikai").open=true; });
+});
 goEl.addEventListener("click",connect);
 stopEl.addEventListener("click",()=>{ closeAll(); stopPlay(false);
   setState("やめました"); goEl.disabled=false; });

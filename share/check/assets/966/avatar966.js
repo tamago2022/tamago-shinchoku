@@ -41,7 +41,7 @@
     rig.className = "tmk-rig";
     var img = document.createElement("img");
     img.className = "tmk-body";
-    img.src = (opt.src || "assets/966/egg-body.png");
+    img.src = (opt.src || "assets/966/egg-body-lit.png");
     img.alt = "ごきげん補給所の案内人";
     var cv = document.createElement("canvas");
     cv.className = "tmk-face";

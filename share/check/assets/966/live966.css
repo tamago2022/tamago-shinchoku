@@ -8,19 +8,19 @@
    958番が thumb に承認写真を差し込んだのと同じやり方で、ここも写真に置き換える。
    配置・余白・階層・比率には触れていない。 */
 .concept-02 .hero-record{
-  background-image:url(hero-record.jpg);
-  background-size:cover;
-  background-position:center bottom;
+  background-image:
+    linear-gradient(100deg,rgba(8,11,8,.86) 0%,rgba(8,11,8,.84) 27%,rgba(8,11,8,.44) 47%,rgba(8,11,8,.04) 66%,rgba(8,11,8,0) 100%),
+    linear-gradient(0deg,rgba(8,11,8,.34) 0%,rgba(8,11,8,.30) 9%,rgba(8,11,8,0) 30%),
+    url(hero-record.jpg);
+  background-size:cover,cover,cover;
+  background-position:center,center,center bottom;
   background-repeat:no-repeat;
 }
 .concept-02 .hero-record::before{content:none}   /* カウンターは写真の中にある */
-.concept-02 .hero-record::after{                  /* 文字を読ませるための影だけ足す */
-  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:
-    linear-gradient(100deg,rgba(8,11,8,.82) 0 30%,rgba(8,11,8,.34) 50%,transparent 66%),
-    linear-gradient(0deg,rgba(8,11,8,.30) 0 12%,transparent 34%);
-}
 .record-copy{z-index:2}
+/* 承認モックでは小さい欧文も生成りの文字。暗い写真の上で灰色は読めない。 */
+.concept-02 .hero-record .eyebrow,
+.concept-02 .hero-record .micro{color:rgba(247,240,228,.74)}
 
 /* ── 案内人（喋る箱）──────────────────────────────────
    正本の .record-owner img の指定（幅・高さ・contain・影）をそのまま受けるため、
@@ -31,7 +31,7 @@
 /* 吹き出しの横の小さい丸（承認済みPNGをそのまま丸く抜くだけ） */
 .tmk-ava{
   display:block;width:34px;height:34px;border-radius:50%;
-  background:#efe7d6 url(egg-body.png) no-repeat center 62%/150% auto;
+  background:#efe7d6 url(egg-body-lit.png) no-repeat center 62%/150% auto;
   border:1px solid rgba(66,56,44,.18)
 }
 .tmk-ava.you{background:#e3e8de;position:relative}
@@ -137,8 +137,11 @@ table.cost td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:780px){
   .head-action{display:inline-block;min-width:0;padding:9px 16px}
   .mobile-menu{display:none}
-  .concept-02 .hero-record::after{
-    background:linear-gradient(170deg,rgba(10,13,10,.74) 0 30%,rgba(10,13,10,.18) 56%,transparent 72%)}
+  .concept-02 .hero-record{
+    background-image:
+      linear-gradient(172deg,rgba(8,11,8,.80) 0%,rgba(8,11,8,.78) 34%,rgba(8,11,8,.26) 58%,rgba(8,11,8,0) 74%),
+      linear-gradient(0deg,rgba(8,11,8,.34) 0%,rgba(8,11,8,.30) 10%,rgba(8,11,8,0) 30%),
+      url(hero-record.jpg)}
   .rec-card .rec-title{min-height:2.8em}
   .kikai{width:min(calc(100% - 24px),430px)}
   .prow button{flex:1 1 44%}
