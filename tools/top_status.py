@@ -50,6 +50,14 @@ try:
     _mjr.run()
 except Exception:
     pass
+
+# --- Lovableの同意ボタンをいつ押しても拾えるようにする見張り（962番）-----------
+# トークンが取れたら即座に何もしなくなる。
+try:
+    import lovable_auth_keeper as _lak
+    _lak.run()
+except Exception:
+    pass
 # ---------------------------------------------------------------------------
 
 import io
