@@ -161,6 +161,11 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, _957_push
                     importlib.reload(_957_push)
                     out = _957_push.run_job(job.get("payload") or {})
+                elif job.get("kind") == "oausage":
+                    # 960番 OpenAIの実額を読むだけ（GETのみ・課金0・鍵の値は出さない）。
+                    import importlib, _960_oa_usage
+                    importlib.reload(_960_oa_usage)
+                    out = _960_oa_usage.run_job(job.get("payload") or {})
                 elif job.get("kind") == "diag":
                     # 窓口が通らないとき「向こうに何が有るのか」を工場側で聞きに行く。
                     # 鍵の値は出さない（gaibu_diag.py 側で保証）。

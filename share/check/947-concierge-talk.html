@@ -667,6 +667,41 @@
       +(LAGS.length>1?`　平均${avg.toFixed(1)}秒`:"");
   }
   let startedAt=0, meterTimer=0;
+
+  /* ── 財布（1日いくらまで喋れるか）────────────────────────────────
+     なぜ要るか（2026-09-19・たまごさんの言葉）:
+       「あれで本当に金がかかるなら全然実用的じゃない。多分、俺の金がどんどん溶けていく。」
+     OpenAI側の上限設定とは**別に、こちら側で止める**。
+     数え方は見積もりではなく、このページが既に出している実測
+     （APIが返したトークン数 × 公式単価／送った音声の秒数）をそのまま日ぐりで積む。
+     ★財布が空になったら「つなげない」「喋っている途中なら切る」。 */
+  const SAIFU={
+    capDefault:100,                      // 1日100円。設定で変えられる。
+    day(){ const d=new Date(Date.now()+9*3600e3); return d.toISOString().slice(0,10); },
+    kDay(){ return "tamago_voice_yen_"+this.day(); },
+    cap(){ try{ const v=parseFloat(localStorage.getItem("tamago_voice_cap_yen"));
+                return (isFinite(v)&&v>0)?v:this.capDefault; }catch(_){ return this.capDefault; } },
+    setCap(v){ try{ localStorage.setItem("tamago_voice_cap_yen",String(v)); }catch(_){}
+               paintMeter(); },
+    today(){ try{ const v=parseFloat(localStorage.getItem(this.kDay())); return isFinite(v)?v:0; }
+             catch(_){ return 0; } },
+    put(v){ try{ localStorage.setItem(this.kDay(),String(Math.max(0,v))); }catch(_){} },
+    base:0,                              // つないだ時点での「今日ここまで」
+    stopped:false,
+    hajime(){ this.base=this.today(); this.stopped=false; },
+    nokori(){ return this.cap()-this.today(); }
+  };
+  function saifuKire(){                  // 財布が空。喋っているなら切る。
+    if(SAIFU.stopped) return;
+    SAIFU.stopped=true;
+    try{ closeAll(); }catch(_){}
+    try{ closePlayer(false); }catch(_){}
+    goEl.disabled=false;
+    setState("今日のぶんは使い切りました");
+    say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）に達したので切りました。"
+      +"続けるなら設定で上限を上げてください。（OpenAI側の上限とは別に、この画面で止めています）");
+  }
+
   function addUsage(u){
     if(!u) return;
     const i=u.input_token_details||{}, o=u.output_token_details||{}, c=i.cached_tokens_details||{};
@@ -688,9 +723,16 @@
     else if(e.perMin){ yen=sec/60*e.perMin*YEN; how="定額（つないだ時間）"; }
     else{ yen=USE.usd*YEN; how=USE.turns?"実測（APIが返したトークン数）":"まだ喋っていません"; }
     const perMin=sec>5?(yen/(sec/60)):0;
+    // ★このセッションぶんを「今日の合計」に積む（1秒ごとに書くので、落ちても消えない）
+    if(startedAt) SAIFU.put(SAIFU.base+yen);
+    const kyou=SAIFU.today(), cap=SAIFU.cap();
+    const nokori=Math.max(0,cap-kyou);
     meterEl.innerHTML=`${Math.floor(sec/60)}分${String(Math.floor(sec%60)).padStart(2,"0")}秒 ／ `
-      +`<b>${yen.toFixed(1)}円</b>`+(perMin?`（このペースで1分 約${perMin.toFixed(0)}円）`:"")
+      +`<b>${yen.toFixed(1)}円</b>`+(perMin?`（このペースで1分 約${perMin.toFixed(1)}円）`:"")
+      +`<br>今日ここまで <b>${kyou.toFixed(1)}円</b> ／ 上限 ${cap.toFixed(0)}円`
+      +`（あと ${nokori.toFixed(1)}円）`
       +`<br><span style="opacity:.7">${how}</span>`;
+    if(startedAt && kyou>=cap) saifuKire();
   }
   function paintCostTable(){
     if(isSplit()){
@@ -986,6 +1028,13 @@
 
   async function connect(){
     const e=ENGINES[engineKey], voice=currentVoice();
+    // ★財布が空なら、つながせない（OpenAI側の上限とは別の、こちら側の栓）
+    if(SAIFU.nokori()<=0){
+      say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）を使い切っています。"
+        +"明日また使えます。今すぐ続けるなら設定で上限を上げてください。");
+      setState("今日のぶんは使い切りました"); paintMeter(); return;
+    }
+    SAIFU.hajime();
     goEl.disabled=true; logEl.innerHTML="";
     shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; closePlayer(false);
     Object.keys(USE).forEach(k=>USE[k]=0);
@@ -1180,8 +1229,28 @@
     if(mic) mic.getTracks().forEach(t=>t.stop());
     if(audioEl) audioEl.remove();
     dc=pc=mic=audioEl=ws=wsNode=wsSrc=null; analyser=null; speaking=false;
-    itemIds.length=0; handled.clear(); clearInterval(meterTimer); paintMeter();
+    itemIds.length=0; handled.clear(); clearInterval(meterTimer);
+    paintMeter();            // ★最後にもう一度だけ今日の合計へ積む
+    startedAt=0;             // ★止めた後は時間を数えない（二重に積まないため）
   }
+  /* ★1日の上限を変える口。客前に出す（怖いのは「いくらまで」が見えないこと）。 */
+  (function(){
+    try{
+      const box=document.createElement("p");
+      box.style.cssText="text-align:center;color:#9d947f;font-size:.74rem;margin:6px 0 0";
+      box.innerHTML='1日の上限 <input id="capIn" type="number" min="10" step="10" '
+        +'style="width:5.5em;background:#1a1712;color:#e8e2d4;border:1px solid #3a352c;'
+        +'border-radius:6px;padding:2px 4px;text-align:right"> 円 '
+        +'<button id="capSet" style="background:#2a2622;color:#e8e2d4;border:1px solid #3a352c;'
+        +'border-radius:6px;padding:2px 8px;cursor:pointer">決める</button>';
+      meterEl.parentNode.insertBefore(box,meterEl.nextSibling);
+      const inp=box.querySelector("#capIn"); inp.value=SAIFU.cap();
+      box.querySelector("#capSet").addEventListener("click",()=>{
+        const v=parseFloat(inp.value); if(isFinite(v)&&v>0) SAIFU.setCap(v);
+      });
+    }catch(_){}
+    paintMeter();
+  })();
   goEl.addEventListener("click",connect);
   stopEl.addEventListener("click",()=>{ closeAll(); closePlayer(false);
     setState("やめました"); goEl.disabled=false; });
