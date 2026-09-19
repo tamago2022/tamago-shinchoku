@@ -97,7 +97,10 @@ def check_nesting(path, src):
                     % (path, _line_of(src, m.start()), name, hero[-1][0], hero[-1][1])
                 )
             continue
-        if low not in BOX_TAGS and not (low == "div" and HERO_CLASS_RE.search(attrs or "")):
+        # div は開閉の対応を正しく追えない（属性なしの </div> が大量にある）ので
+        # 数えない。section/header/article/aside だけを見る。これで954番の事故
+        # （<section> の中に目安箱）は確実に捕まえられ、誤検出は出ない。
+        if low not in BOX_TAGS:
             continue
         if selfclose == "/":
             continue
@@ -107,8 +110,7 @@ def check_nesting(path, src):
                     del stack[i:]
                     break
         else:
-            is_hero = low in BOX_TAGS or bool(HERO_CLASS_RE.search(attrs or ""))
-            stack.append((low, _line_of(src, m.start()), is_hero))
+            stack.append((low, _line_of(src, m.start()), True))
     return bad
 
 
@@ -279,8 +281,45 @@ export function RootComponent() {
 """
 
 
+INDIRECT_ROOT_GOOD = """
+function RoomRecommendationsMount() {
+  return (<><OtherRoomsStrip /><FriendTest /></>);
+}
+function RootComponent() {
+  return (
+    <div>
+      <div className="min-h-[100svh] w-full"><Outlet /></div>
+      <RoomRecommendationsMount />
+      <JoyReliefFooterLoop />
+      <BottomTabNav />
+    </div>
+  );
+}
+"""
+
+INDIRECT_ROOT_BAD = """
+function RoomRecommendationsMount() {
+  return (<><OtherRoomsStrip /><FriendTest /></>);
+}
+function RootComponent() {
+  return (
+    <div>
+      <div className="min-h-[100svh] w-full"><Outlet /></div>
+      <JoyReliefFooterLoop />
+      <RoomRecommendationsMount />
+    </div>
+  );
+}
+"""
+
+
 def selftest():
     fails = []
+
+    if check_root("src/routes/__root.tsx", INDIRECT_ROOT_GOOD):
+        fails.append("別関数ごしの正しい設置を誤ってFAILにした")
+    if not check_root("src/routes/__root.tsx", INDIRECT_ROOT_BAD):
+        fails.append("ストップモーションが目安箱より上なのを見逃した")
 
     b, _ = check_file("src/routes/watch.tsx", BAD_SAMPLE)
     if len(b) < 2:
@@ -304,7 +343,7 @@ def selftest():
         print("NG  " + f)
     if fails:
         return 1
-    print("OK  自己テスト4件すべて通過（事故サンプル検出／正常系素通し／順序違反検出／コメント誤検出なし）")
+    print("OK  自己テスト6件すべて通過（事故サンプル検出／正常系素通し／順序違反検出／別関数ごしの設置／ストップモーション最後／コメント誤検出なし）")
     return 0
 
 
