@@ -1,16 +1,16 @@
 {
- "raw": "負荷 191% ｜ CPU 38% / メモリ圧迫 22% / スワップ 11.81GB / ディスク空き 255GB ｜ 稼働 1本 ｜ あと3本OK",
- "load": 191,
- "cpu": 38,
+ "raw": "負荷 171% ｜ CPU 60% / メモリ圧迫 22% / スワップ 11.46GB / ディスク空き 255GB ｜ 稼働 1本 ｜ あと3本OK",
+ "load": 171,
+ "cpu": 60,
  "mem": 22,
- "swapGB": 12088.5,
+ "swapGB": 11730.5,
  "diskFreeGB": 255.0,
  "sessions": 1,
- "note": "上限4本・あと3本OK（CPU38%・メモリ空き6.4GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比2.0）→1本減らす）",
- "measuredAt": "2026-09-19T17:57:09+09:00",
+ "note": "上限4本・あと3本OK（5分平均ロード15.2（コア8×0.8超）、予兆（5分ロード比1.9）→1本減らす）",
+ "measuredAt": "2026-09-19T18:13:01+09:00",
  "working": 0,
  "stalled": 1,
- "waiting": 0,
+ "waiting": 1,
  "safeMax": 4,
  "moreOK": 3,
  "hardMax": 8,
@@ -20,23 +20,23 @@
  "calibrationBasis": "実測（2本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比2.0"
+  "5分ロード比1.9"
  ],
  "shedCandidates": [],
  "below": 1,
- "blockReason": "CPU38%・メモリ空き6.4GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比2.0）→1本減らす",
- "load1": 15.29,
- "load5": 15.71,
- "load15": 25.57,
+ "blockReason": "5分平均ロード15.2（コア8×0.8超）、予兆（5分ロード比1.9）→1本減らす",
+ "load1": 13.72,
+ "load5": 15.21,
+ "load15": 19.8,
  "cores": 8,
- "loadRatio": 1.91,
+ "loadRatio": 1.72,
  "memPressure": "green",
- "memAvailGB": 6.4,
+ "memAvailGB": 6.3,
  "swapIncreasing": false,
- "ioMBs": 10.98,
+ "ioMBs": 24.72,
  "network": {
-  "pingMedianMs": 26.3,
-  "pingMaxMs": 58.4,
+  "pingMedianMs": 23.3,
+  "pingMaxMs": 34.8,
   "pingSamples": 20
  },
  "stalledList": [
@@ -44,7 +44,7 @@
    "pid": 56175,
    "title": "Rusuban mimawari 30min",
    "kind": "stuck_tool",
-   "idleMin": 521.4,
+   "idleMin": 537.3,
    "dispatch": false
   }
  ],
@@ -53,7 +53,7 @@
    "cli": "645ebd59-4638-4b95-a64b-76227e5153fa",
    "localId": "local_cfc18341-2821-4a9b-8b06-431207d01333",
    "startedAt": "2026-09-19T09:14:20+0900",
-   "elapsedMin": 522,
+   "elapsedMin": 538,
    "lastReportAt": null,
    "lastReport": "",
    "status": "報告なし3時間超",
@@ -70,17 +70,44 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 115,
-   "idleMin": 521.4,
+   "idleMin": 537.3,
    "kind": "stuck_tool",
    "model": "claude-opus-5",
    "turns": 16,
    "lastActivityAt": "2026-09-19T00:15:41.235Z"
   },
   {
+   "cli": "30ddbefc-a422-49a0-bc87-e7b9e437ed97",
+   "localId": null,
+   "startedAt": "2026-09-19T18:01:49+0900",
+   "elapsedMin": 9,
+   "lastReportAt": null,
+   "lastReport": "",
+   "status": "止まっている",
+   "color": "red",
+   "urls": [],
+   "unreportedDeploy": false,
+   "deployUrls": [],
+   "humanPushes": 0,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 44697,
+   "title": "（不明）",
+   "dispatch": false,
+   "isDispatchSelf": true,
+   "mb": 244,
+   "idleMin": 11.0,
+   "kind": "idle_done",
+   "model": "<synthetic>",
+   "turns": 1,
+   "lastActivityAt": "2026-09-19T09:01:53.935Z"
+  },
+  {
    "cli": null,
    "localId": null,
    "startedAt": "2026-09-19T16:52:20+0900",
-   "elapsedMin": 64,
+   "elapsedMin": 80,
    "lastReportAt": null,
    "lastReport": "",
    "status": "不明",
@@ -96,61 +123,7 @@
    "title": "（不明）",
    "dispatch": false,
    "isDispatchSelf": true,
-   "mb": 366,
-   "idleMin": null,
-   "kind": "unknown",
-   "model": null,
-   "turns": 0,
-   "lastActivityAt": null
-  },
-  {
-   "cli": null,
-   "localId": null,
-   "startedAt": "2026-09-19T17:19:01+0900",
-   "elapsedMin": 38,
-   "lastReportAt": null,
-   "lastReport": "",
-   "status": "不明",
-   "color": "gray",
-   "urls": [],
-   "unreportedDeploy": false,
-   "deployUrls": [],
-   "humanPushes": 0,
-   "dispatchPushes": 0,
-   "watchdogResumes": 0,
-   "done": false,
-   "pid": 25444,
-   "title": "（不明）",
-   "dispatch": false,
-   "isDispatchSelf": true,
-   "mb": 278,
-   "idleMin": null,
-   "kind": "unknown",
-   "model": null,
-   "turns": 0,
-   "lastActivityAt": null
-  },
-  {
-   "cli": null,
-   "localId": null,
-   "startedAt": "2026-09-19T17:29:13+0900",
-   "elapsedMin": 27,
-   "lastReportAt": null,
-   "lastReport": "",
-   "status": "不明",
-   "color": "gray",
-   "urls": [],
-   "unreportedDeploy": false,
-   "deployUrls": [],
-   "humanPushes": 0,
-   "dispatchPushes": 0,
-   "watchdogResumes": 0,
-   "done": false,
-   "pid": 29827,
-   "title": "（不明）",
-   "dispatch": false,
-   "isDispatchSelf": true,
-   "mb": 298,
+   "mb": 367,
    "idleMin": null,
    "kind": "unknown",
    "model": null,
@@ -158,13 +131,14 @@
    "lastActivityAt": null
   }
  ],
- "line": "負荷 191% ｜ セッション1本（作業中0・止まり1） ｜ 上限4本・あと3本OK ｜ 空き255.0GB",
+ "line": "負荷 171% ｜ セッション1本（作業中0・止まり1） ｜ 上限4本・あと3本OK ｜ 空き255.0GB",
  "modelCounts": {
   "claude-opus-5": 1,
-  "不明": 3
+  "<synthetic>": 1,
+  "不明": 1
  },
  "autonomy": {
-  "alive": 4,
+  "alive": 3,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
@@ -173,7 +147,7 @@
  "heartbeat": {
   "pid": 84548,
   "processAlive": true,
-  "stalledMin": 0.2,
+  "stalledMin": 0.1,
   "stalled": false,
   "note": "心臓は動いています"
  },
@@ -182,7 +156,7 @@
   "room": 3,
   "alive": 1,
   "safeMax": 4,
-  "stalledMin": 1.3640267213185628,
+  "stalledMin": 1.6851302107175192,
   "stalled": false,
   "note": "発車は正常です"
  },
@@ -193,7 +167,7 @@
   "note": "確認待ちは10件（正常）"
  },
  "stale": {
-  "measuredAt": "2026-09-19T17:40:29+09:00",
+  "measuredAt": "2026-09-19T18:06:32+09:00",
   "totalActive": 165,
   "yellowCount": 8,
   "redCount": 25,
@@ -211,7 +185,7 @@
     "title": "本番に出ている「深刻なバグ」というラベルの正体を突き止めて消す",
     "status": "waiting",
     "since": "2026-09-13T14:10:56+09:00",
-    "ageDays": 6.1,
+    "ageDays": 6.2,
     "staleLevel": "yellow"
    },
    {
@@ -251,7 +225,7 @@
     "title": "【最優先】「すぐ見たい」の別枠を作る＋優先順位の自動入れ替え",
     "status": "waiting",
     "since": "2026-09-14T02:15:25+09:00",
-    "ageDays": 5.6,
+    "ageDays": 5.7,
     "staleLevel": "yellow"
    },
    {
@@ -309,7 +283,7 @@
     "title": "Googleドライブを本当に使える倉庫にする（根本原因）",
     "status": "hold",
     "since": "2026-09-06T23:55:37+09:00",
-    "ageDays": 12.7,
+    "ageDays": 12.8,
     "staleLevel": "red"
    },
    {
@@ -345,19 +319,19 @@
     "staleLevel": "red"
    },
    {
+    "n": 605,
+    "title": "好きなURLを入れる→診断→星→メールで作り直して送る（商売の芯）",
+    "status": "hold",
+    "since": "2026-09-07T19:17:48+09:00",
+    "ageDays": 12.0,
+    "staleLevel": "red"
+   },
+   {
     "n": 609,
     "title": "マイクロギフト「あめちゃん」（好きな曲を軽く贈れる）",
     "status": "hold",
     "since": "2026-09-07T17:32:33+09:00",
     "ageDays": 12.0,
-    "staleLevel": "red"
-   },
-   {
-    "n": 605,
-    "title": "好きなURLを入れる→診断→星→メールで作り直して送る（商売の芯）",
-    "status": "hold",
-    "since": "2026-09-07T19:17:48+09:00",
-    "ageDays": 11.9,
     "staleLevel": "red"
    },
    {
@@ -417,19 +391,19 @@
     "staleLevel": "red"
    },
    {
+    "n": 684,
+    "title": "鬼監督を復活させて、完了したタスクを毎回チェックさせる",
+    "status": "waiting",
+    "since": "2026-09-11T07:00:55+09:00",
+    "ageDays": 8.5,
+    "staleLevel": "red"
+   },
+   {
     "n": 745,
     "title": "【まず0円】静止画に無料で動きをつけてポップアップ規格(300KB以下)に収まるか試す",
     "status": "hold",
     "since": "2026-09-11T06:25:41+09:00",
     "ageDays": 8.5,
-    "staleLevel": "red"
-   },
-   {
-    "n": 684,
-    "title": "鬼監督を復活させて、完了したタスクを毎回チェックさせる",
-    "status": "waiting",
-    "since": "2026-09-11T07:00:55+09:00",
-    "ageDays": 8.4,
     "staleLevel": "red"
    },
    {
@@ -470,7 +444,7 @@
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-09-19 17:57",
+  "lastRun": "2026-09-19 18:13",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -483,7 +457,14 @@
    "below": 1,
    "line": "現在1本／上限4本／目標2本／あと3本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 44697,
+    "title": "（不明）",
+    "kind": "idle_done",
+    "why": "会話ログ/管理JSONと突合できない"
+   }
+  ]
  },
  "metrics": {
   "stalls": 132,
@@ -503,22 +484,22 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-19 17:57",
+  "updatedAt": "2026-09-19 18:13",
   "estimated": false,
   "stalePrevWeekSample": false,
   "fablePct": 0.0,
   "allPct": 64.0,
   "allPctAsOf": "17:17:02",
-  "allPctAgeMin": 40.1,
+  "allPctAgeMin": 56.0,
   "resetAt": "2026-09-22 17:59",
   "daysLeft": 3.0,
-  "hoursLeft": 72.0,
+  "hoursLeft": 71.8,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
   "stopPct": 85,
   "daily": {
-   "fableAllowancePerDay": 33.3,
+   "fableAllowancePerDay": 33.4,
    "fableUsedLast24h": 0,
    "allAllowancePerDay": 12.0,
    "allUsedLast24h": 0.3,
@@ -542,7 +523,7 @@
   "method": "実測（Claudeアプリ自身のplan-usage-history.jsonが正。Fableとの内訳だけ会話ログのトークン比で分配）",
   "source": "plan-usage-history.json",
   "asOf": "17:17:02",
-  "ageMin": 40.1,
+  "ageMin": 56.0,
   "weekdayTarget": 70.0,
   "weekdayTargetBase": 70,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
@@ -568,18 +549,18 @@
    "pct": 3.0,
    "resetAt": "2026-09-19 15:32",
    "hoursLeft": 0.0,
-   "recentPacePctPerHour": 0.4,
+   "recentPacePctPerHour": 0.39,
    "projectedPctAtReset": 3.0,
    "wasteRiskPct": 0.0,
    "mottainai": false,
    "source": "実測(plan-usage-history.json)",
    "asOf": "17:17:02",
-   "ageMin": 40.1,
+   "ageMin": 56.0,
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": {
    "allPacePctPerHour6h": 0.0,
-   "aliveAvgLast6h": 3.1,
+   "aliveAvgLast6h": 3.0,
    "pctPerSessionHour": 0.0,
    "note": "標本6h未満だと不安定。走らせ続けるほど精度が上がる"
   },

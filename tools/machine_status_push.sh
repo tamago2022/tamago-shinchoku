@@ -68,6 +68,13 @@ trap 'rm -f "$LOCK"' EXIT
 # 新しいlaunchd便は増やさない（既存便への相乗り＝この工場の決まり）。
 run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>&1 || true
 
+# ---- 2026-09-19（961番・Cowork側から設置）本番に出ていないものを出し切る便 ----
+# joy-relief-station への反映（joy_push）の口は、スマホのボタンから来た時にしか回らない。
+# 実測：今日は 11:17 を最後に7時間回っていない＝直したものが何時間も本番に出ないまま溜まる。
+# ここ（5分おきに必ず launchd から起動される便）に相乗りする。新しい常駐は増やさない。
+# ★status/_961/PHASE が idle（既定）なら即 exit 0 ＝完全に無害。用が済んだら idle に戻す。
+run_with_timeout 240 bash "$REPO/tools/_961_jrs_deliver.sh" >/dev/null 2>&1 || true
+
 # ---- 残骸の掃除（2026-09-05 17:05・実害あり）----
 # たまごさん「Mac重たいよ」。実測：5分平均ロードが238（8コアのMacで通常8以下）。
 # 原因は、中継所のトンネルを立て直すたびに起動していた localtunnel(npx/node) と cloudflared が、

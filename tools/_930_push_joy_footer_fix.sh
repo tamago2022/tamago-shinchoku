@@ -33,6 +33,11 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 # 【2026-09-19・954番】Xの投稿ページで本文に動画が出ず巨大な空白になるバグ。
 #   **exec で奪わない**（938/951と同じ形）。status/_954/PHASE が idle なら即 exit 0＝無害。
 #   ★この行を消さないこと。用が済んだら status/_954/PHASE を idle にして示す。
+# 【2026-09-19・961番】本番に出ていないものを出し切る便。**exec で奪わない**（938/951/954と同じ形）。
+#   status/_961/PHASE が idle なら即 exit 0＝無害。★この行を消さないこと。
+_ME961="/Users/mac/Desktop/tamago-shinchoku/tools/_961_jrs_deliver.sh"
+if [ -f "${_ME961}" ]; then bash "${_ME961}" || true; fi
+
 _ME954="/Users/mac/Desktop/tamago-shinchoku/tools/_954_jrs_xcard.sh"
 if [ -f "${_ME954}" ]; then bash "${_ME954}" || true; fi
 
