@@ -46,6 +46,7 @@ body.talking button.pill{display:none}
 body:not(.talking) button.quiet{display:none}
 
 /* ── 横長の写真（砂漠のオアシス） ─────────────────── */
+.stage{position:relative;display:block}
 .plate{position:relative;margin:0 40px;overflow:hidden;border-radius:3px;
   box-shadow:0 18px 40px rgba(70,62,42,.13)}
 .plate .scene{display:block;width:100%;height:auto}
@@ -227,6 +228,7 @@ a.card:hover .arrow{background:var(--midori);color:#fff;border-color:var(--midor
 
   <!-- ① 横長の写真（砂漠のオアシス／大理石のカウンター） -->
   <section class="plate">
+    <div class="stage">
     <svg class="scene" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
         <linearGradient id="veil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fdfbf5" stop-opacity=".88"/><stop offset="1" stop-color="#fdfbf5" stop-opacity="0"/></linearGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
@@ -315,6 +317,15 @@ a.card:hover .arrow{background:var(--midori);color:#fff;border-color:var(--midor
       </g>
     </svg>
 
+    <!-- 大理石のカウンターの上に立つ案内人（右寄り） -->
+    <div class="onbar" id="tamako"></div>
+
+    <!-- 金色のネームプレート -->
+    <div class="plate-name">
+      <b>ごきげん補給所</b><i>CONCIERGE</i>
+    </div>
+    </div>
+
     <!-- 写真の左に、明朝で -->
     <div class="copy">
       <h1>話すことで、<br><em>少し、やさしい明日へ。</em></h1>
@@ -323,13 +334,6 @@ a.card:hover .arrow{background:var(--midori);color:#fff;border-color:var(--midor
     </div>
     <span class="en">GOOD CONVERSATION BRIGHTENS<br>A BRIGHTER TOMORROW.</span>
 
-    <!-- 大理石のカウンターの上に立つ案内人（右寄り） -->
-    <div class="onbar" id="tamako"></div>
-
-    <!-- 金色のネームプレート -->
-    <div class="plate-name">
-      <b>ごきげん補給所</b><i>CONCIERGE</i>
-    </div>
   </section>
 
   <!-- ② 会話（吹き出し／左に丸い顔アイコン） -->

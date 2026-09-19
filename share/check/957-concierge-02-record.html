@@ -36,7 +36,8 @@ body{font-family:var(--sans);color:var(--ink);-webkit-text-size-adjust:100%}
 
 /* ── 横長の写真の帯 ───────────────────────────────── */
 .plate{position:relative;margin:0 36px;background:var(--green-d);overflow:hidden}
-.plate::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;
+.stage{position:relative;display:block}
+.stage::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;
   background:linear-gradient(90deg,rgba(8,15,11,.88) 0%,rgba(8,15,11,.62) 52%,rgba(8,15,11,0) 100%);
   pointer-events:none;z-index:1}
 .plate .copy,.plate .onbar,.plate .slate,.plate .ringwrap{z-index:2}
@@ -231,6 +232,7 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
 
   <!-- ① 横長の写真の帯（暗い緑のレコード店。カウンターの上に案内人） -->
   <section class="plate">
+    <div class="stage">
     <svg class="scene" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
         <linearGradient id="air" x1="0" y1="0" x2="0" y2="1">
@@ -292,15 +294,6 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
       </g>
     </svg>
 
-    <!-- 写真の左に、明朝の白抜き -->
-    <div class="copy">
-      <h1>話してくれて、<br>ありがとう。</h1>
-      <p>音楽も、めしも、いきものも。<br>
-         ぜんぶ同じ棚に置いてあります。<br>
-         今日の気分を、ひとこと教えてください。</p>
-      <span class="en">A LITTLE OASIS IN THE INTERNET DESERT.</span>
-    </div>
-
     <!-- 真鍮のベル＝会話のはじまり -->
     <div class="ringwrap">
       <button class="ring" id="start" aria-label="カウンターのベルを鳴らして、案内人に話しかける">
@@ -324,6 +317,17 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
       <b>ごきげん補給所</b>
       <i>レコードと、<br>ちょっといい時間を。</i>
     </div>
+    </div>
+
+    <!-- 写真の左に、明朝の白抜き -->
+    <div class="copy">
+      <h1>話してくれて、<br>ありがとう。</h1>
+      <p>音楽も、めしも、いきものも。<br>
+         ぜんぶ同じ棚に置いてあります。<br>
+         今日の気分を、ひとこと教えてください。</p>
+      <span class="en">A LITTLE OASIS IN THE INTERNET DESERT.</span>
+    </div>
+
   </section>
 
   <!-- ② 写真の下に重なる生成りのカード -->
