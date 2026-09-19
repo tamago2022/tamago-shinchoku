@@ -99,7 +99,7 @@
   </p>
 
   <div class="jump">
-    <a href="#bunkai">分解図</a><a href="#kaigai">海外</a><a href="#nihon">日本</a>
+    <a href="#bunkai">分解図</a><a href="#tagengo">★多言語</a><a href="#kaigai">海外</a><a href="#nihon">日本</a>
     <a href="#kojin">個人</a><a href="#shippai">失敗</a><a href="#ai3">AI3社</a><a href="#te">おすすめ</a>
   </div>
 
@@ -168,87 +168,103 @@
   <!-- ══════ 海外 ══════ -->
   <div class="panel" id="kaigai">
     <h2><span class="n">A-1</span>海外で、実際にやっている会社</h2>
-    <p class="sub">1ドル150円で換算。背景◯＝公式に緑背景/透過を出せると書いてある。</p>
+    <p class="sub">1ドル150円で換算。背景◯＝公式に緑背景/透過を出せると書いてある。<br>
+    <b>切替</b>＝◯相手の言語を聞き分ける／△利用者が先に選ぶ／×単一／?記載なし</p>
     <div class="tblwrap"><table>
-      <tr><th>名前</th><th>何をしている</th><th>技術</th><th>月いくら</th><th>背景</th></tr>
+      <tr><th>名前</th><th>何をしている</th><th>言語数</th><th>切替</th><th>技術</th><th>月いくら</th><th>背景</th></tr>
+
+      <tr><td class="nm"><a href="https://docs.tavus.io/sections/conversational-video-interface/language-support" target="_blank" rel="noopener">Tavus CVI</a><br><span class="chk y"></span></td>
+      <td>会話ビデオAPI。営業ロープレ・面接・受付</td>
+      <td><b>43言語</b></td><td class="ok">◯<br><span class="chk">"language":"multilingual"<br>で会話中ずっと自動判別</span></td><td>自社＋WebRTC</td>
+      <td class="yen">無料20分〜<b>$22</b><br>Growth $397<br>超過$0.32/分</td><td class="ok">◯<br><span class="chk">apply_greenscreen:true</span></td></tr>
 
       <tr><td class="nm"><a href="https://www.liveavatar.com/" target="_blank" rel="noopener">HeyGen LiveAvatar</a><br><span class="chk y"></span></td>
-      <td>1080p対話アバターAPI。初フレーム0.3秒</td><td>自社拡散＋LiveKit</td>
-      <td class="yen">無料〜<b>$19</b>(2,850円)<br>Business $475<br>≒$0.10/分</td><td class="ok">◯<br><span class="chk">緑で来る＋公式クロマキー手順</span></td></tr>
+      <td>1080p対話アバターAPI。初フレーム0.3秒</td>
+      <td>40言語超</td><td class="ng">×〜△<br><span class="chk">作成時に言語を固定<br>STTはDeepgram/AssemblyAI</span></td><td>自社拡散＋LiveKit</td>
+      <td class="yen">無料〜<b>$19</b>(2,850円)<br>Business $475<br>≒$0.10〜0.20/分</td><td class="ok">◯<br><span class="chk">緑で来る＋公式手順</span></td></tr>
 
-      <tr><td class="nm"><a href="https://www.tavus.io/cvi" target="_blank" rel="noopener">Tavus CVI</a><br><span class="chk y"></span></td>
-      <td>会話ビデオAPI。営業ロープレ・面接・受付</td><td>自社＋WebRTC</td>
-      <td class="yen">無料20分〜<b>$22</b><br>Growth $397<br>超過$0.32/分</td><td class="ok">◯<br><span class="chk">apply_greenscreen:true 1個</span></td></tr>
+      <tr><td class="nm"><a href="https://docs.anam.ai/concepts/multilingual" target="_blank" rel="noopener">Anam.ai</a><br><span class="chk y"></span></td>
+      <td>リアルタイム対話アバター。写実性が最高クラス</td>
+      <td><b>70言語超</b></td><td class="mb">△<br><span class="chk">公式が「オンボーディングに<br>言語選択画面を置け」と推奨。<br>会話中の変更は不可</span></td><td>自社＋WebRTC(Pion)</td>
+      <td class="yen">無料30分〜<b>$12</b><br>Explorer $49<br>$0.16→0.04/分</td><td class="ok">◯</td></tr>
 
-      <tr><td class="nm"><a href="https://anam.ai/" target="_blank" rel="noopener">Anam.ai</a><br><span class="chk y"></span></td>
-      <td>リアルタイム対話アバター。70言語。写実性が最高クラス</td><td>自社＋WebRTC(Pion)</td>
-      <td class="yen">無料30分〜<b>$12</b><br>Explorer $49<br>$0.16→0.04/分</td><td class="ok">◯<br><span class="chk">公式クックブックあり</span></td></tr>
-
-      <tr><td class="nm"><a href="https://www.simli.com/" target="_blank" rel="noopener">Simli</a><br><span class="chk y"></span></td>
-      <td>「AIエージェントの顔レイヤー」。最安・最速特化</td><td>ガウシアンスプラッティング</td>
-      <td class="yen"><b>$0.009/分</b><br>(1.35円/分)<br>月50分無料</td><td class="mb">△<br><span class="chk">公式記述なし</span></td></tr>
-
-      <tr><td class="nm"><a href="https://www.bithuman.ai/#live" target="_blank" rel="noopener">bitHuman</a><br><span class="chk y"></span></td>
-      <td>端末内ローカル実行可。ネット不要のキオスク向き</td><td>自社＋LiveKit</td>
-      <td class="yen">$0.04/分<br>自己ホスト$0.01/分</td><td class="mb">△〜◯</td></tr>
-
-      <tr><td class="nm"><a href="https://www.d-id.com/ai-agents/" target="_blank" rel="noopener">D-ID Agents</a><br><span class="chk y"></span></td>
-      <td>ノーコードで対話アバター。Web/キオスクに埋込</td><td>自社V4＋WebRTC</td>
-      <td class="yen"><b>$5.90</b>(885円)<br>Pro $29／Adv $196<br>≒$0.35/分</td><td class="ng">×<br><span class="chk">透過はdeprecated・500エラー報告</span></td></tr>
-
-      <tr><td class="nm"><a href="https://www.digitalhumans.com/" target="_blank" rel="noopener">UneeQ</a><br><span class="chk y"></span></td>
-      <td>老舗3Dデジタルヒューマン。UBS／ドイツテレコム／ASB銀行</td><td><b>Unreal Engine</b></td>
+      <tr><td class="nm"><a href="https://docs.uneeq.io/configuration-options" target="_blank" rel="noopener">UneeQ</a><br><span class="chk y"></span></td>
+      <td>老舗3Dデジタルヒューマン。UBS／ドイツテレコム／ASB銀行</td>
+      <td><b>理解74／発話43</b><br><span class="chk">製品ページは「約100言語」<br>＝社内で数字が不統一</span></td>
+      <td class="mb">△<br><span class="chk">speechRecognitionLocales<br>＝<b>最大4ロケール</b>を事前指定</span></td><td><b>Unreal Engine</b></td>
       <td class="yen">$899〜(13.5万円)<br>本番は要見積</td><td class="mb">△</td></tr>
 
+      <tr><td class="nm"><a href="https://akool.com/enterprise/streaming-avatar" target="_blank" rel="noopener">Akool Streaming</a><br><span class="chk y"></span></td>
+      <td>ライブ配信・対話＋リアルタイム翻訳</td>
+      <td><b>140言語超</b></td><td>?</td><td>自社</td>
+      <td class="yen"><b>$15〜30</b><br>Business $249</td><td class="mb">△</td></tr>
+
+      <tr><td class="nm"><a href="https://docs.bithuman.ai/" target="_blank" rel="noopener">bitHuman</a><br><span class="chk y"></span></td>
+      <td>端末内ローカル実行可。ネット不要のキオスク向き</td>
+      <td>50言語超</td><td>?</td><td>自社＋LiveKit</td>
+      <td class="yen">$0.04/分<br>自己ホスト$0.01/分</td><td class="mb">△〜◯</td></tr>
+
+      <tr><td class="nm"><a href="https://help.d-id.com/hc/en-us/articles/31262417885585" target="_blank" rel="noopener">D-ID Agents</a><br><span class="chk y"></span></td>
+      <td>ノーコードで対話アバター。Web/キオスクに埋込</td>
+      <td>TTS側119言語<br><span class="chk">Agents本体の数は記載なし</span></td><td>?</td><td>自社V4＋WebRTC</td>
+      <td class="yen"><b>$4.70〜</b><br>Pro $29／Adv $196<br>≒$0.35/分</td><td class="ng">×<br><span class="chk">透過はdeprecated</span></td></tr>
+
+      <tr><td class="nm"><a href="https://www.simli.com/" target="_blank" rel="noopener">Simli</a><br><span class="chk y"></span></td>
+      <td>「AIエージェントの顔レイヤー」。最安・最速特化</td>
+      <td><span class="chk">言語の概念なし<br>上流のTTS依存</span></td><td>上流次第</td><td>ガウシアンスプラッティング</td>
+      <td class="yen"><b>$0.009/分</b><br>(1.35円/分)</td><td class="mb">△</td></tr>
+
+      <tr><td class="nm"><a href="https://support.soulmachines.com/support/solutions/articles/101000545468-supported-languages" target="_blank" rel="noopener">Soul Machines</a><br><span class="chk y"></span></td>
+      <td class="ng"><b>⚠️2026年2月 受任者管理入り。実質退場</b></td>
+      <td>17言語</td><td>?</td><td>3Dレンダ</td>
+      <td class="yen">$40,000/年<br>(月50万円)</td><td class="mb">△</td></tr>
+
+      <tr><td class="nm"><a href="https://www.synthesia.io/pricing" target="_blank" rel="noopener">Synthesia</a><br><span class="chk y"></span></td>
+      <td>法人<b>動画生成</b>の最大手。対話型ではない</td>
+      <td>ナレーション<b>160言語超</b><br>吹替140／翻訳80</td><td class="ng">×<br><span class="chk">文の途中では声を<br>切り替えられないと公式明記</span></td><td>自社</td>
+      <td class="yen"><b>$29</b>(4,350円)<br>Creator $89</td><td class="mb">◯動画／△対話</td></tr>
+
       <tr><td class="nm"><a href="https://www.beyondpresence.ai/pricing" target="_blank" rel="noopener">Beyond Presence</a><br><span class="chk y"></span></td>
-      <td>Teams/Meet/Zoomにアバターが参加できる</td><td>自社＋LiveKit</td>
+      <td>Teams/Meet/Zoomにアバターが参加できる</td><td>?</td><td>?</td><td>自社＋LiveKit</td>
       <td class="yen">無料40分〜<b>€49</b><br>€0.0875/分〜</td><td class="mb">△</td></tr>
 
       <tr><td class="nm"><a href="https://www.hedra.com/app/avatar" target="_blank" rel="noopener">Hedra Live</a><br><span class="chk y"></span></td>
-      <td>写真1枚からアバター生成。sub-100ms</td><td>Character-3＋LiveKit</td>
+      <td>写真1枚からアバター生成。sub-100ms</td><td>?</td><td>?</td><td>Character-3＋LiveKit</td>
       <td class="yen"><b>$15</b>(2,250円)<br>$0.05/分</td><td class="mb">△</td></tr>
 
       <tr><td class="nm"><a href="https://lemonslice.com/" target="_blank" rel="noopener">Lemon Slice</a><br><span class="chk y"></span></td>
-      <td><b>写実以外（カートゥーン等）も選べる</b>。手の表現が上位</td><td>Diffusion Transformer</td>
-      <td class="yen">$0.21/分<br>(31.5円/分)</td><td class="mb">△</td></tr>
-
-      <tr><td class="nm"><a href="https://akool.com/apps/streaming-avatar" target="_blank" rel="noopener">Akool Streaming</a><br><span class="chk y"></span></td>
-      <td>ライブ配信・対話＋動画翻訳</td><td>自社</td>
-      <td class="yen"><b>$15〜30</b><br>Business $249</td><td class="mb">△</td></tr>
-
-      <tr><td class="nm"><a href="https://www.synthesia.io/" target="_blank" rel="noopener">Synthesia</a><br><span class="chk y"></span></td>
-      <td>法人動画の最大手。対話版は一般提供前</td><td>自社</td>
-      <td class="yen"><b>$29</b>(4,350円)<br>Creator $89</td><td class="mb">◯動画／△対話</td></tr>
+      <td><b>写実以外（カートゥーン等）も選べる</b></td><td>?</td><td>?</td><td>Diffusion Transformer</td>
+      <td class="yen">$0.21/分</td><td class="mb">△</td></tr>
 
       <tr><td class="nm"><a href="https://www.yepic.ai/blog/real-time-ai-avatars-public-spaces" target="_blank" rel="noopener">Yepic AI</a><br><span class="chk y"></span></td>
-      <td>リヤドのAIサミットで<b>5mの対話アバターを実設置</b></td><td>自社感情認識</td>
-      <td class="yen">要問合せ<br>旧$29〜179</td><td class="mb">△</td></tr>
+      <td>リヤドのAIサミットで<b>5mの対話アバターを実設置</b></td><td>?</td><td>?</td><td>自社感情認識</td>
+      <td class="yen">要問合せ</td><td class="mb">△</td></tr>
 
       <tr><td class="nm"><a href="https://developer.nvidia.com/ace/tokkio-showcase" target="_blank" rel="noopener">NVIDIA ACE / Tokkio</a><br><span class="chk y"></span></td>
-      <td>3D接客の参照設計。<a href="https://github.com/NVIDIA-AI-Blueprints/digital-human" target="_blank" rel="noopener">GitHubに設計図</a></td><td>Riva＋Audio2Face＋Omniverse</td>
-      <td class="yen">AI Enterprise<br>$4,500/GPU/年<br>＋GPU実費</td><td class="ok">◯<br><span class="chk">3Dなので自由</span></td></tr>
-
-      <tr><td class="nm"><a href="https://www.nvidia.com/en-us/case-studies/hippocratic-ai/" target="_blank" rel="noopener">Hippocratic AI</a><br><span class="chk y"></span></td>
-      <td><b>実運用中</b>。UHS傘下2病院で退院後フォロー</td><td>ACE＋自社LLM</td>
-      <td class="yen"><b>$9/時間</b><br>(1,350円/時)</td><td class="ok">◯</td></tr>
-
-      <tr><td class="nm"><a href="https://www.servicenow.com/company/media/press-room/nvidia-ai-avatars.html" target="_blank" rel="noopener">ServiceNow</a><br><span class="chk y"></span></td>
-      <td>Now Assistのサービス担当をアバター化</td><td>ACE×Now Platform</td><td class="yen">非公開</td><td class="ok">◯</td></tr>
-
-      <tr><td class="nm"><a href="https://nvidianews.nvidia.com/news/digital-humans-ace-generative-ai-microservices" target="_blank" rel="noopener">Dell / Inventec / Aww</a><br><span class="chk y"></span></td>
-      <td>小売・医療のデジタルアシスタント／immaのリアルタイム対話化</td><td>ACE NIM</td><td class="yen">非公開</td><td class="ok">◯</td></tr>
+      <td>3D接客の参照設計。<a href="https://github.com/NVIDIA-AI-Blueprints/digital-human" target="_blank" rel="noopener">GitHubに設計図</a></td>
+      <td><span class="chk">Riva次第</span></td><td>?</td><td>Riva＋Audio2Face＋Omniverse</td>
+      <td class="yen">$4,500/GPU/年<br>＋GPU実費</td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://blogs.nvidia.com/blog/avatar-solutions-enhance-development/" target="_blank" rel="noopener">AT&amp;T × Quantiphi</a><br><span class="chk y"></span></td>
-      <td>24/7多言語ヘルプデスクをTokkioで構築</td><td>Omniverse ACE</td><td class="yen">受託</td><td class="ok">◯</td></tr>
+      <td><b>24/7 多言語</b>ヘルプデスクをTokkioで構築</td>
+      <td><span class="chk">「多言語」とのみ</span></td><td>?</td><td>Omniverse ACE</td><td class="yen">受託</td><td class="ok">◯</td></tr>
+
+      <tr><td class="nm"><a href="https://www.nvidia.com/en-us/case-studies/hippocratic-ai/" target="_blank" rel="noopener">Hippocratic AI</a><br><span class="chk y"></span></td>
+      <td><b>実運用中</b>。UHS傘下2病院で退院後フォロー</td><td>?</td><td>?</td><td>ACE＋自社LLM</td>
+      <td class="yen"><b>$9/時間</b></td><td class="ok">◯</td></tr>
+
+      <tr><td class="nm"><a href="https://www.servicenow.com/company/media/press-room/nvidia-ai-avatars.html" target="_blank" rel="noopener">ServiceNow</a><br><span class="chk y"></span></td>
+      <td>Now Assistのサービス担当をアバター化</td><td>?</td><td>?</td><td>ACE×Now Platform</td><td class="yen">非公開</td><td class="ok">◯</td></tr>
+
+      <tr><td class="nm"><a href="https://nvidianews.nvidia.com/news/digital-humans-ace-generative-ai-microservices" target="_blank" rel="noopener">Dell / Inventec / Aww</a><br><span class="chk y"></span></td>
+      <td>小売・医療のデジタルアシスタント／immaの対話化</td><td>?</td><td>?</td><td>ACE NIM</td><td class="yen">非公開</td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://www.d-id.com/visual-agents-customer-examples/" target="_blank" rel="noopener">PepsiCo (Gatorade)</a><br><span class="chk y"></span></td>
-      <td>水分補給コーチ"Anna"。D-IDの実名公開事例</td><td>D-ID</td><td class="yen">D-ID従量</td><td class="ng">×</td></tr>
-
-      <tr><td class="nm"><a href="https://www.soulmachines.com/digital-workforce-pricing" target="_blank" rel="noopener">Soul Machines</a><br><span class="chk y"></span></td>
-      <td class="ng"><b>⚠️2026年2月 受任者管理入り。実質退場。</b>Mercedes・ANZ・Air NZは離脱済</td><td>3Dレンダ</td>
-      <td class="yen">$40,000/年<br>(月50万円)</td><td class="mb">△</td></tr>
+      <td>水分補給コーチ"Anna"。D-IDの実名公開事例</td><td>?</td><td>?</td><td>D-ID</td><td class="yen">D-ID従量</td><td class="ng">×</td></tr>
     </table></div>
-    <p class="hint">★背景の差し替えが<b>公式に書いてある</b>のは、HeyGen・Tavus・Anam・NVIDIA ACE の4つだけです。残りは書いていない（＝聞かないと分からない）。</p>
+    <p class="hint">★背景の差し替えが<b>公式に書いてある</b>のは、HeyGen・Tavus・Anam・NVIDIA ACE の4つだけ。<br>
+    ★★<b>「相手の言語を聞き分けて切り替える」と公式ドキュメントに書いてあるのは Tavus だけです。</b>
+    「100言語対応」を謳う製品の大半は、実運用では<b>先に言語を決める方式</b>でした。Anam に至っては公式が「言語選択画面を置け」と書いています。</p>
   </div>
 
   <!-- ══════ 日本 ══════ -->
