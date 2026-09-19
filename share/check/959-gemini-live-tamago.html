@@ -241,6 +241,19 @@
       <table class="cost" id="tempoTable"></table>
       <h2 style="margin-top:16px">いま何にいくら（実測）</h2>
       <table class="cost" id="costTable"></table>
+
+      <h2 style="margin-top:18px">30分話し込んだらいくらか</h2>
+      <table class="cost" id="sanjuTable"></table>
+      <div class="note">
+        上の「計算した額」は、<b>公式の単価 × この画面が数えた秒数</b>です。
+        画面の顔の下にも、話している間ずっと「このまま30分で 約◯円」が出ます。<br>
+        <b>Googleが実際に請求している額は、この画面からは取れません。</b>
+        Gemini API の鍵は「使った分を教える口」を持っていないためです（鍵で聞けるのは
+        トークン数まで。上の表の一番下がそれです）。実際の請求額は Google の請求画面でだけ見られます →
+        <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">Google Cloud の請求</a>
+        ／<a href="https://aistudio.google.com/usage" target="_blank" rel="noopener">AI Studio の使用状況</a>。
+        どちらもたまごさんのログインが要ります。
+      </div>
       <div class="kv">
         値段の出どころ：<a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank"
         rel="noopener">Gemini API の公式の値段表</a>。
@@ -526,8 +539,27 @@ function paintTempo(msg){
   rows.push(["②＋③ 頭脳と声を分けた形",
     (TEMPO.brain.length&&TEMPO.tts.length)
       ?`<b>${s(avg(TEMPO.brain)+avg(TEMPO.tts))}</b>`:"—"]);
-  rows.push(["④ Grok Voice（xAI）","測れませんでした（"+XAI_PROBE+"）"]);
+  /* ★964：ここから下は「たまごさんのMacで実際に叩いて出た数字」。
+     2026-09-20 00:18〜00:30 実測。3回ずつ。憶測は1つも入れていない。 */
+  rows.push(["④ OpenAI Realtime（音声のまま往復・別の会社）",
+    "<b>0.41／0.44／0.41秒</b>（頼んでから最初の音まで・3回）"]);
+  rows.push(["⑤ OpenAI 頭脳＋OpenAI TTS（声を分けた形）",
+    "頭脳 1.21／1.29秒 ＋ 声 2.96／3.20／5.01秒 ＝ <b>約4.2〜6.3秒</b>"]);
+  rows.push(["⑥ Grok Voice・Iris（xAI）","<b>測れませんでした</b>（"+XAI_PROBE+"）"]);
   let html=rows.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  html+=`<tr><td colspan="2" style="color:#2a2622;line-height:1.85;padding-top:10px">`
+    +`<b>① と ④ は測り方が違います。</b>①は「こちらが喋り終わったと機械が気づいてから」、`
+    +`④は「文字で頼んでから」。①には“喋り終わりを聞き分ける時間”が入っています。`
+    +`同じ物差しでは比べられないので、そのまま両方書いています。<br>`
+    +`<b>それでも言えること：</b>このテンポはGoogleだから出ているのではありません。`
+    +`<b>「音声のまま往復する」形だから</b>出ています。`
+    +`④のとおり、別の会社でも音声のまま往復すれば同じ速さの土俵に乗ります。`
+    +`遅くなるのは会社を替えたときではなく、<b>音声のまま往復するのをやめて`
+    +`「文章を作る → 別の声に読ませる」に分けたとき</b>（⑤＝実測で4〜6秒）。<br>`
+    +`<b>引き換えになるもの：</b>音声のまま往復する形は速いかわりに、`
+    +`声はその会社が持っている顔ぶれからしか選べません（Googleなら上の30人）。`
+    +`⑤に分ければ世の中のどの声でも使えますが、実測で3〜5秒ぶん間が空きます。`
+    +`</td></tr>`;
   if(TEMPO.brain.length&&TEMPO.tts.length&&hei){
     const sa=(avg(TEMPO.brain)+avg(TEMPO.tts))/1000-hei;
     html+=`<tr><td colspan="2" style="color:#2a2622;line-height:1.8;padding-top:8px">`
@@ -981,6 +1013,37 @@ function paintCostTable(){
       +` ／ 出 ${USE.apiOut.toLocaleString()} ／ 計 ${USE.apiTotal.toLocaleString()}</td></tr>`;
   }
   $("costTable").innerHTML=html;
+  paintSanju();
+}
+/* ★964：30分の見積り。3通り出す。どれも公式単価 × 秒数で、憶測は入れない。
+   出どころ：https://ai.google.dev/gemini-api/docs/pricing
+   Live API の音声 入 $0.005／分・出 $0.018／分。1ドル157円。 */
+function paintSanju(){
+  const t=$("sanjuTable"); if(!t) return;
+  const ti=PRICE.audioInPerMin, to=PRICE.audioOutPerMin;
+  const en=u=>(u*YEN);
+  const rows=[];
+  /* ① いま実際に出ているペースから */
+  const sec=startedAt?(Date.now()-startedAt)/1000:0;
+  const yen=cost()*YEN;
+  if(sec>20){
+    rows.push(["いまのあなたの話し方のまま30分",
+      "<b>約"+(yen/(sec/60)*30).toFixed(0)+"円</b>（"+Math.floor(sec)+"秒ぶんの実測から）"]);
+  }else{
+    rows.push(["いまのあなたの話し方のまま30分",
+      "話し始めると出ます（20秒ぶん溜まってから）"]);
+  }
+  /* ② 2026-09-19 の実測（2分07秒で3.1円）から */
+  rows.push(["前に測ったぶん（2分07秒で3.1円）から30分",
+    "<b>約"+(3.1/(127/60)*30).toFixed(0)+"円</b>"]);
+  /* ③ 上限：30分ずっとマイクを開け、30分ずっと喋り返した場合 */
+  rows.push(["いちばん高い場合（30分ずっと聞き、30分ずっと喋る）",
+    "<b>約"+en((ti+to)*30).toFixed(0)+"円</b>（$"+((ti+to)*30).toFixed(3)+"）"]);
+  /* ④ 下限：マイクだけ30分開けて、こちらは一言も喋らない */
+  rows.push(["いちばん安い場合（30分マイクを開けるだけ）",
+    "<b>約"+en(ti*30).toFixed(0)+"円</b>（$"+(ti*30).toFixed(3)+"）"]);
+  rows.push(["1日の栓","<b>"+SAIFU.cap().toFixed(0)+"円</b>。ここに当たるとこの画面が勝手に切ります"]);
+  t.innerHTML=rows.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("");
 }
 
 /* ══════════════ 案内人の仕込み ══════════════ */
