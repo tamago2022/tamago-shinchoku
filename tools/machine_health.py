@@ -63,7 +63,7 @@ NEVER = re.compile(
 #   （tools/*.py を丸ごと対象にすると、本当に長い生成系を巻き込む）。
 SHORT_LIVED_PY = (
     "auto_launcher|command_ingest|auth_watch|relay_watch|worktree_reaper|"
-    "check_page_pruner|check_anthropic_reply|check_line_reply|renraku|"
+    "check_page_pruner|check_anthropic_reply|check_line_reply|check_line_shinsa|renraku|"
     "daily_ingest_scheduler|genzaichi|top_status|launch_watchdog|kenpin_gate|"
     "chrome_tab_sweeper|git_lock_reaper|gaibu_runner|orphan_reaper|"
     "session_watchdog|factory_status|machine_health"

@@ -189,4 +189,15 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    rc = main()
+    # 974番（2026-09-20）：ラシコルの審査結果の見張りを、この呼び出しに相乗りさせる。
+    #   heartbeat.sh にも1行足してあるが、動いている心臓はループ本体を既に読み込み済みで、
+    #   入れ直すまで新しい行を読まない。ここに置けば**心臓を入れ直さなくても今日から効く**。
+    #   中で30分に間引き＋錠を持っているので、両方から呼ばれても二重には走らない。
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import check_line_shinsa
+        check_line_shinsa.main()
+    except Exception:
+        pass
+    sys.exit(rc)

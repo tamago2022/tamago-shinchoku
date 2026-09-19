@@ -143,6 +143,10 @@ while :; do
   #   check_anthropic_reply.pyと全く同じ間引きパターンで既存の心臓に相乗り（新しいlaunchd便は増やさない）。
   # 起動の間引き（2026-09-18）：中で1日1回に間引いている
   tick_every 40 && ( python3 "$REPO/tools/check_line_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-20（974番）：珍獣ラシコルの【審査結果】メールの見張り。801番と同じ相乗り方式。
+  #   801番は「問い合わせの返信」用でDONEフラグを別に持つため、審査結果はこちらで別に見る。
+  #   たまごさんが「すぐ」と言っているので、中の間引きだけ30分（IMAP接続は30分に1回）。
+  tick_every 40 && ( python3 "$REPO/tools/check_line_shinsa.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-17（891番）：外部連絡窓口台帳(renraku_madoguchi.json)に登録した全窓口(LINE Creators
   #   Market・LINEスタンプメーカー・Lovable・Anthropic)への返信を毎日（朝・夜の2回想定）見張る。
   #   check_anthropic_reply.py/check_line_reply.pyと同じ間引きパターンで既存の心臓に相乗り
