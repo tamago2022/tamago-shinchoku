@@ -151,7 +151,11 @@ done < <(find ./status/public -type f \( -name '.env*' -o -name '*.pem' -o -name
   find ./status/public -type f | sed 's|^\./status/public/||' | sort; } > "$LIST" 2>/dev/null || true
 
 # ---- 変化が無ければ何もしない（＝押し合いにならない）----
-git add -A >/dev/null 2>&1
+# ★ --force を付ける。ここに置いたものは「main が追跡しているもの」と
+#   「status/public/ の生きた中身」だけで、既に全部よそへ出ているもの。
+#   .gitignore に引っかかって**黙って公開から落ちる**ほうが危ない
+#   （実測：status/fact_source_baseline.json が最初の1回で落ちていた）。
+git add -A --force >/dev/null 2>&1
 if [ "$FORCE" -eq 0 ] && git diff --cached --quiet 2>/dev/null; then
   exit 0
 fi

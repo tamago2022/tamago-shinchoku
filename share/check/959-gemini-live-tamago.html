@@ -114,6 +114,31 @@
   table.cost td:last-child{text-align:right;font-variant-numeric:tabular-nums}
   .kv{font-size:.72rem;color:var(--sub);line-height:1.8;margin-top:8px}
   .stock{font-size:.7rem;color:#8a8172;line-height:1.7;text-align:center;margin:8px 0 0}
+
+  /* ── ★964：声の入れ替え口 ── */
+  .koebar{text-align:center;margin:8px 0 0}
+  .koebar button{flex:none;background:#1b1813;color:#d8cfb8;border:1px solid #3a352c;
+    border-radius:999px;padding:7px 16px;font-size:.76rem;font-weight:400;letter-spacing:.04em}
+  .koebar button b{color:var(--kin);font-weight:700}
+  .koebar #koeSub{color:#8a8172;font-size:.7rem}
+  .koeArrow{color:#8a8172;font-size:.7rem}
+  .koedraw{background:#16130f;border:1px solid #2f2a23;border-radius:14px;
+    margin:8px 0 0;padding:10px 10px 12px}
+  .kd-h{margin:0 0 7px;font-size:.68rem;letter-spacing:.08em;color:#8a8172}
+  .kd-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:5px}
+  .kd{display:flex;align-items:center;gap:0;background:#1b1813;border:1px solid #2f2a23;
+    border-radius:9px;overflow:hidden}
+  .kd .pick{flex:1 1 auto;min-width:0;text-align:left;background:none;border:none;color:#d8cfb8;
+    padding:6px 4px 6px 8px;font-size:.7rem;font-weight:400;line-height:1.3;cursor:pointer}
+  .kd .pick i{display:block;font-style:normal;color:#8a8172;font-size:.62rem}
+  .kd .try{flex:0 0 auto;background:#221e19;border:none;border-left:1px solid #2f2a23;
+    color:#c9a227;padding:6px 8px;font-size:.72rem;cursor:pointer;font-weight:400}
+  .kd.on{border-color:var(--kin);background:#241f16}
+  .kd.on .pick{color:#f0e8d6;font-weight:700}
+  .kd.dead{opacity:.45}
+  .kd.dead .pick,.kd.dead .try{cursor:not-allowed;color:#8a8172}
+  .kd .try.busy{color:#5f594d}
+  .kd-note{margin:10px 0 0;font-size:.66rem;color:#7d7466;line-height:1.7}
 </style>
 
 <div class="wrap">
@@ -123,6 +148,21 @@
     <div class="state" id="state">「話す」を押してください</div>
     <div class="meter" id="meter"></div>
     <div class="sw" id="sw"></div>
+
+    <!-- ★964：声をその場で入れ替える口。設定の奥ではなく、顔のすぐ下に置く。 -->
+    <div class="koebar">
+      <button id="koeBtn" type="button">声：<b id="koeNow">Puck</b><span id="koeSub"></span>　<span class="koeArrow">ほかの声にする ▾</span></button>
+    </div>
+    <div class="koedraw" id="koedraw" hidden>
+      <p class="kd-h">Google（この案内人の声。話している途中でも入れ替えられます）</p>
+      <div class="kd-list" id="koeList"></div>
+      <p class="kd-h" style="margin-top:12px">ほかの会社の声</p>
+      <div class="kd-list" id="koeOther"></div>
+      <p class="kd-note" id="koeNote">
+        ▶ を押すとその声で同じ台詞を1本だけ作って鳴らします（1本 約0.02円）。
+        名前を押すと案内人の声がその場で入れ替わります。
+      </p>
+    </div>
 
     <div class="tray">
       <h3 id="trayTitle">— 差し出された札 —</h3>
@@ -184,9 +224,21 @@
       <h2 style="margin-top:16px">声</h2>
       <div class="chips" id="voices"></div>
       <p class="note" style="margin-top:8px">
-        30人ぶんを同じ台詞で聴き比べられます →
-        <a href="959-koe-erabi.html">959 声えらび</a>
+        ふだんは顔の下の「ほかの声にする」から入れ替えてください（話している途中でもできます）。
+        30人ぶんを1本ずつ作って並べて聴くなら → <a href="959-koe-erabi.html">959 声えらび</a>
       </p>
+
+      <h2 style="margin-top:18px">テンポを測る（声のやり方を変えると何秒になるか）</h2>
+      <div class="note">
+        いまの形は<b>音声のまま往復（Live）</b>。声はGoogleの30人から選べますが、他社の声は使えません。<br>
+        声を選べる範囲を広げるには<b>頭脳と声を分ける</b>（文章を作ってから、別の声で読ませる）しかありません。
+        そのぶん何秒遅くなるのかを、下のボタンで<b>この端末から実際に測ります</b>（3回ずつ・約0.1円）。
+      </div>
+      <div class="row">
+        <button id="tempoBtn" style="background:#2a2622;color:#e8dcc0;border:1px solid #3a352c;
+          font-size:.82rem;padding:10px 14px">3回ずつ測る</button>
+      </div>
+      <table class="cost" id="tempoTable"></table>
       <h2 style="margin-top:16px">いま何にいくら（実測）</h2>
       <table class="cost" id="costTable"></table>
       <div class="kv">
@@ -263,6 +315,249 @@ paintChips($("models"),MODELS,"tamago_gemini_model",MODELS[0][0]);
 paintChips($("voices"),VOICES,"tamago_gemini_voice","Puck");
 const pick=k=>(document.querySelector(`input[name=${k}]:checked`)||{}).value;
 try{ const k=localStorage.getItem("tamago_gemini_key"); if(k) gkeyEl.value=k; }catch(_){}
+
+/* ══════════════ ★964：声をその場で入れ替える ══════════════
+   なぜ別ページ（959 声えらび）を畳んでここに入れたか：
+   Live API は「つないだ後に声だけ差し替える」口を持っていない（公式の
+   speechConfig は setup のときに1回だけ渡す）。だから入れ替え＝つなぎ直し。
+   つなぎ直しは1秒ちょっとで終わるので、札も帳簿も残したまま裏でやる。
+   ──「次の会話からこの声」を、押した瞬間に自動でやる、という意味。 */
+const VOICE_JA=Object.fromEntries(VOICES.map(([n,t])=>[n,t.split("／")[1]||""]));
+/* ほかの会社の声。押せない理由は、憶測ではなく実際に叩いた結果を書く。 */
+const OTHER_VOICES=[
+  {id:"xai-iris",  name:"Iris",      by:"xAI（Grok Voice）", why:"xAIに残高がありません"},
+  {id:"xai-grok",  name:"Grok Voice",by:"xAI",               why:"xAIに残高がありません"}
+];
+let voiceNow=(()=>{ try{return localStorage.getItem("tamago_gemini_voice")||"Puck";}catch(e){return "Puck";} })();
+const SERIFU_TRY="こんばんは。今日はどんな気分で来られました？";
+const TRY_CACHE=new Map();
+let tryAudio=new Audio(), tryBusy="";
+
+function paintKoeBar(){
+  $("koeNow").textContent=voiceNow;
+  $("koeSub").textContent=VOICE_JA[voiceNow]?("（"+VOICE_JA[voiceNow]+"）"):"";
+}
+function paintKoeList(){
+  const box=$("koeList"); box.innerHTML="";
+  for(const [n] of VOICES){
+    const d=document.createElement("div");
+    d.className="kd"+(n===voiceNow?" on":"");
+    d.innerHTML=`<button class="pick" type="button">${n}<i>${VOICE_JA[n]||""}</i></button>`
+      +`<button class="try${tryBusy===n?" busy":""}" type="button">${tryBusy===n?"…":"▶"}</button>`;
+    d.querySelector(".pick").onclick=()=>setVoice(n);
+    d.querySelector(".try").onclick=()=>kikuKoe(n);
+    box.appendChild(d);
+  }
+  const ob=$("koeOther"); ob.innerHTML="";
+  for(const o of OTHER_VOICES){
+    const d=document.createElement("div");
+    d.className="kd dead";
+    d.title=o.why;
+    d.innerHTML=`<button class="pick" type="button" disabled>${o.name}<i>${o.by}</i></button>`
+      +`<button class="try" type="button" disabled>—</button>`;
+    ob.appendChild(d);
+  }
+  $("koeNote").innerHTML=
+    "▶ を押すと、その声で同じ台詞を1本だけ作って鳴らします（1本 約0.02円）。"
+    +"名前を押すと案内人の声がその場で入れ替わります（話している途中でもできます）。<br>"
+    +'<span style="color:#a8564c">'+OTHER_VOICES.map(o=>o.name).join("・")
+    +" は "+OTHER_VOICES[0].why+"（"+XAI_PROBE+"）。勝手に買い足すことはしません。</span>";
+}
+/* xAIを実際に叩いた結果。憶測ではなく、返ってきた文をそのまま置く。
+   2026-09-20 00:18 に api.x.ai/v1/chat/completions を叩いた返事：
+     403 permission-denied
+     "Your newly created team doesn't have any credits or licenses yet." */
+const XAI_PROBE="2026-09-20 実測：403 permission-denied／残高も利用権もありません";
+
+async function setVoice(n){
+  if(n===voiceNow) return;
+  voiceNow=n;
+  try{ localStorage.setItem("tamago_gemini_voice",n); }catch(_){}
+  const r=document.querySelector(`input[name=tamago_gemini_voice][value="${n}"]`);
+  if(r) r.checked=true;
+  paintKoeBar(); paintKoeList();
+  if(live()){ await tsunagiNaosu(n); }
+  else say("sys","声を "+n+"（"+(VOICE_JA[n]||"")+"）にしました。次に「話す」を押すとこの声になります。");
+}
+
+/* 声だけ替えてつなぎ直す。札・帳簿・ストップウォッチは消さない。 */
+let swapping=false;
+async function tsunagiNaosu(n){
+  if(swapping) return; swapping=true;
+  const key=gkeyEl.value.trim();
+  say("sys","声を "+n+"（"+(VOICE_JA[n]||"")+"）に入れ替えています…");
+  setState("声を入れ替えています…");
+  const t0=performance.now();
+  try{
+    stopping=true;
+    try{ api&&api.disconnect(); }catch(_){}
+    try{ mnode&&mnode.disconnect(); msrc&&msrc.disconnect(); }catch(_){}
+    if(mic) mic.getTracks().forEach(t=>t.stop());
+    stopAudio();
+    api=null; mic=null; mnode=null; msrc=null;
+    retried=false; gotSetup=false; stopping=false; modelFell=false;
+    await open(WS_V1ALPHA, key);
+    SWAP.list.push((performance.now()-t0)/1000);
+    say("sys","入れ替えました（"+((performance.now()-t0)/1000).toFixed(2)+"秒）。そのまま話しかけてください。");
+    paintSW();
+  }catch(e){
+    say("sys","入れ替えに失敗しました → "+e.message+"　もう一度「話す」を押してください。");
+    setState("切れました"); goEl.disabled=false;
+  }finally{ swapping=false; }
+}
+/* 入れ替えに何秒かかったかも実測して画面に出す（憶測を書かないため） */
+const SWAP={ list:[], heikin(){ return this.list.length?this.list.reduce((a,b)=>a+b,0)/this.list.length:0; } };
+
+/* ══════════ 試聴（959 声えらび と同じ作り。ページを分けずここで鳴らす） ══════════ */
+const TTS_MODEL="gemini-2.5-flash-preview-tts";
+function wavFromPcm16(bytes, rate){
+  const n=bytes.length, buf=new ArrayBuffer(44+n), v=new DataView(buf);
+  const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVEfmt "); v.setUint32(16,16,true);
+  v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,rate,true);
+  v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,"data"); v.setUint32(40,n,true);
+  new Uint8Array(buf,44).set(bytes);
+  return new Blob([buf],{type:"audio/wav"});
+}
+const b64ToBytes=b64=>{ const s=atob(b64), a=new Uint8Array(s.length);
+  for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i); return a; };
+function hirouOto(obj){
+  let best=null, mime="";
+  (function walk(o){
+    if(!o||typeof o!=="object") return;
+    for(const k of Object.keys(o)){
+      const v=o[k];
+      if(typeof v==="string"){
+        if((k==="data"||k==="audio"||k==="b64_json") && v.length>2000
+           && (!best||v.length>best.length)) best=v;
+        if(/mime/i.test(k)) mime=v;
+      } else walk(v);
+    }
+  })(obj);
+  return {b64:best, mime};
+}
+/* 1本の声を作る。返り値に「何秒でできたか」を付ける＝テンポの実測にそのまま使う。 */
+async function tsukuruKoe(voice, key, serifu){
+  const t0=performance.now();
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+    method:"POST",
+    headers:{ "x-goog-api-key":key, "Content-Type":"application/json" },
+    body:JSON.stringify({ model:TTS_MODEL, input:serifu||SERIFU_TRY,
+      response_format:{type:"audio"}, generation_config:{ speech_config:[{voice}] } })
+  });
+  if(!r.ok){ const t=await r.text().catch(()=>""); throw new Error(r.status+" "+t.slice(0,200)); }
+  const ct=r.headers.get("content-type")||"";
+  let blob;
+  if(ct.includes("json")){
+    const j=await r.json(); const {b64,mime}=hirouOto(j);
+    if(!b64) throw new Error("音が入っていませんでした");
+    const bytes=b64ToBytes(b64), m=/rate=(\d+)/.exec(mime||"");
+    blob=(mime&&/mpeg|mp3|wav|ogg/i.test(mime))?new Blob([bytes],{type:mime})
+        :wavFromPcm16(bytes, m?parseInt(m[1],10):24000);
+  }else blob=await r.blob();
+  return { url:URL.createObjectURL(blob), ms:performance.now()-t0 };
+}
+async function kikuKoe(n){
+  const c=TRY_CACHE.get(n);
+  if(c&&c.url){ try{tryAudio.pause();}catch(_){} tryAudio=new Audio(c.url); tryAudio.play().catch(()=>{}); return; }
+  const key=gkeyEl.value.trim();
+  if(!key){ say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+            $("settings").hidden=false; $("settings").open=true; return; }
+  if(SAIFU.nokori()<=0){ say("sys","今日の上限を使い切っています。"); return; }
+  tryBusy=n; paintKoeList();
+  try{
+    const got=await tsukuruKoe(n,key,SERIFU_TRY);
+    TRY_CACHE.set(n,got);
+    SAIFU.put(SAIFU.today()+0.02);
+    try{tryAudio.pause();}catch(_){}
+    tryAudio=new Audio(got.url); tryAudio.play().catch(()=>{});
+    say("sys",n+" の声："+(got.ms/1000).toFixed(1)+"秒でできました。");
+  }catch(e){
+    say("sys",n+" の声は出ませんでした → "+e.message);
+  }finally{ tryBusy=""; paintKoeList(); paintMeter(); }
+}
+$("koeBtn").addEventListener("click",()=>{
+  const d=$("koedraw"); d.hidden=!d.hidden; if(!d.hidden) paintKoeList();
+});
+paintKoeBar();
+
+/* ══════════ ★964：テンポの実測 ══════════
+   問い「Googleだからこのテンポなのか。他だとやれるのか」への答えを、
+   憶測ではなくこの端末の往復時間で出す。測るのは2本だけ：
+     ① 頭脳（文章）の最初の1文字が届くまで … streamGenerateContent（公式の alt=sse）
+     ② その文章を声にするのにかかる時間   … interactions（TTS）
+   ①＋② が「頭脳と声を分けた形」の秒数。Live（音声のまま往復）は
+   顔の下のストップウォッチが会話のたびに測っている。両方を並べて出す。 */
+const TEMPO={ brain:[], tts:[], done:false };
+async function hakaruAtama(key){
+  const t0=performance.now();
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"
+    +"gemini-2.5-flash:streamGenerateContent?alt=sse",{
+    method:"POST", headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
+    body:JSON.stringify({
+      systemInstruction:{parts:[{text:"日本語で20字以内。短く。"}]},
+      contents:[{role:"user",parts:[{text:"うれしい気分の曲ある？"}]}]})
+  });
+  if(!r.ok){ const t=await r.text().catch(()=>""); throw new Error(r.status+" "+t.slice(0,160)); }
+  const rd=r.body.getReader(), dec=new TextDecoder();
+  let buf="";
+  while(true){
+    const {value,done}=await rd.read();
+    if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    if(buf.indexOf('"text"')>=0){ try{rd.cancel();}catch(_){} break; }
+  }
+  return performance.now()-t0;
+}
+function paintTempo(msg){
+  const t=$("tempoTable");
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+  const s=v=>(v/1000).toFixed(2)+"秒";
+  const rows=[];
+  const hei=STOP.heikin();
+  rows.push(["① いまの形：音声のまま往復（Live）",
+    hei?`<b>${hei.toFixed(2)}秒</b>（この端末で${STOP.list.length}回）`
+       :"まだ測れていません（話しかけると出ます）"]);
+  rows.push(["② 頭脳だけ（文章の最初の1文字まで）",
+    TEMPO.brain.length?`${s(avg(TEMPO.brain))}（${TEMPO.brain.length}回）`:"—"]);
+  rows.push(["③ 声にする（同じ台詞を1本作る）",
+    TEMPO.tts.length?`${s(avg(TEMPO.tts))}（${TEMPO.tts.length}回）`:"—"]);
+  rows.push(["②＋③ 頭脳と声を分けた形",
+    (TEMPO.brain.length&&TEMPO.tts.length)
+      ?`<b>${s(avg(TEMPO.brain)+avg(TEMPO.tts))}</b>`:"—"]);
+  rows.push(["④ Grok Voice（xAI）","測れませんでした（"+XAI_PROBE+"）"]);
+  let html=rows.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  if(TEMPO.brain.length&&TEMPO.tts.length&&hei){
+    const sa=(avg(TEMPO.brain)+avg(TEMPO.tts))/1000-hei;
+    html+=`<tr><td colspan="2" style="color:#2a2622;line-height:1.8;padding-top:8px">`
+      +`<b>引き換えになるもの：</b>声を選べる形（②＋③）にすると、`
+      +`いまの形より<b>1回あたり ${sa>0?"約"+sa.toFixed(2)+"秒 遅くなります":"遅くなりませんでした"}</b>。`
+      +`いまの形は速いかわりに<b>Googleの30人からしか選べません</b>。`
+      +`</td></tr>`;
+  }
+  if(msg) html+=`<tr><td colspan="2" style="color:#c4483a">${msg}</td></tr>`;
+  t.innerHTML=html;
+}
+$("tempoBtn").addEventListener("click",async()=>{
+  const key=gkeyEl.value.trim();
+  if(!key){ paintTempo("Geminiの鍵が空です。上の欄に入れてください。"); return; }
+  const b=$("tempoBtn"); b.disabled=true; b.textContent="測っています…";
+  TEMPO.brain=[]; TEMPO.tts=[];
+  for(let i=0;i<3;i++){
+    try{ TEMPO.brain.push(await hakaruAtama(key)); }
+    catch(e){ paintTempo("頭脳を測れませんでした → "+e.message); }
+    paintTempo();
+  }
+  for(let i=0;i<3;i++){
+    try{ const g=await tsukuruKoe(voiceNow,key,"はい、探しますね。"); TEMPO.tts.push(g.ms);
+         SAIFU.put(SAIFU.today()+0.02); }
+    catch(e){ paintTempo("声を測れませんでした → "+e.message); }
+    paintTempo();
+  }
+  TEMPO.done=true; paintTempo(); paintMeter();
+  b.disabled=false; b.textContent="もう一度測る";
+});
 
 /* ══════════════ 棚 ══════════════ */
 const ASSET="assets/953-songs/";
@@ -604,7 +899,32 @@ const SAIFU={
   put(v){ try{ localStorage.setItem(this.kDay(),String(Math.max(0,v))); }catch(_){} },
   base:0, stopped:false,
   hajime(){ this.base=this.today(); this.stopped=false; },
-  nokori(){ return this.cap()-this.today(); }
+  nokori(){ return this.cap()-this.today(); },
+  /* ★964：今月ここまで。日ごとの帳簿を1日目から足すだけ（新しい置き場を作らない）。 */
+  tsuki(){
+    let s=0; const m=this.day().slice(0,7);
+    try{
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k && k.indexOf("tamago_voice_yen_"+m)===0){
+          const v=parseFloat(localStorage.getItem(k)); if(isFinite(v)) s+=v;
+        }
+      }
+    }catch(_){}
+    return s;
+  },
+  tsukiHi(){
+    let n=0; const m=this.day().slice(0,7);
+    try{
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k && k.indexOf("tamago_voice_yen_"+m)===0){
+          const v=parseFloat(localStorage.getItem(k)); if(isFinite(v)&&v>0) n++;
+        }
+      }
+    }catch(_){}
+    return n;
+  }
 };
 function saifuKire(){
   if(SAIFU.stopped) return;
@@ -631,10 +951,18 @@ function paintMeter(){
   if(startedAt) SAIFU.put(SAIFU.base+yen);
   const kyou=SAIFU.today(), cap=SAIFU.cap();
   const nokori=Math.max(0,cap-kyou);
+  /* ★964：たまごさんの問い「30分話し込んだらいくら」。憶測ではなく、
+     いま実際に出ているペース（1分あたりの円）を30倍して出す。話すほど正確になる。 */
+  const han=perMin?perMin*30:0;
+  const tsuki=SAIFU.tsuki(), hi=SAIFU.tsukiHi();
   meterEl.innerHTML=`${Math.floor(sec/60)}分${String(Math.floor(sec%60)).padStart(2,"0")}秒 ／ `
     +`<b>${yen.toFixed(1)}円</b>`+(perMin?`（このペースで1分 約${perMin.toFixed(1)}円）`:"")
+    +(han?`<br><b style="color:#c9a227">このまま30分で 約${han.toFixed(0)}円</b>`
+         +`<span style="opacity:.7">（実測ペース×30。話す量が増えれば上がります）</span>`:"")
     +`<br>今日ここまで <b>${kyou.toFixed(1)}円</b> ／ 上限 ${cap.toFixed(0)}円`
     +`（あと ${nokori.toFixed(1)}円）`
+    +`<br>今月ここまで <b>${tsuki.toFixed(1)}円</b>`
+    +`<span style="opacity:.7">（${SAIFU.day().slice(0,7)}・使った日 ${hi}日）</span>`
     +`<br><span style="opacity:.7">実測（マイクを開けていた ${USE.micSec.toFixed(0)}秒 ＋ `
     +`返ってきた声 ${USE.outSec.toFixed(0)}秒）</span>`;
   if(startedAt && kyou>=cap) saifuKire();
@@ -738,7 +1066,9 @@ function paintSW(){
   el.innerHTML = (STOP.hatsuoto?`押してから最初の声まで <b>${(STOP.hatsuoto/1000).toFixed(2)}秒</b>　`:"")
     + (n?`喋り終えてから返事まで <b>${last.toFixed(2)}秒</b>`
         +`<span class="sw-sub">（${n}回の平均 ${hei.toFixed(2)}秒／直す前の作りなら約2.2秒）</span>`
-       :`<span class="sw-sub">話しかけると、ここに「喋り終えてから返事までの秒数」が出ます</span>`);
+       :`<span class="sw-sub">話しかけると、ここに「喋り終えてから返事までの秒数」が出ます</span>`)
+    + (SWAP.list.length?`<br><span class="sw-sub">声の入れ替えにかかった時間 ${SWAP.list.length}回の平均 `
+        +`${SWAP.heikin().toFixed(2)}秒</span>`:"");
 }
 const live=()=>!!(api&&api.connected);
 const say=(cls,txt)=>{ const d=document.createElement("div"); d.className="line "+cls;
@@ -818,7 +1148,7 @@ async function open(wsBase, key){
 
   api.setSystemInstructions(INSTRUCTIONS);
   api.setResponseModalities(["AUDIO"]);
-  api.setVoice(pick("tamago_gemini_voice"));
+  api.setVoice(voiceNow);   /* ★964：ここが「いま選ばれている声」。入れ替えるとつなぎ直してここを通る */
   api.setInputAudioTranscription(true);
   api.setOutputAudioTranscription(true);
   api.setEnableFunctionCalls(true);
@@ -1045,6 +1375,7 @@ function closeAll(){
 
 CAT.load().catch(()=>{});   /* ★押す前に大棚(324KB)を先に取っておく。これは958から既にこの形 */
 paintSW();
+paintTempo();   /* ★964：中身は空でも表の形は先に出す（測る前に何が測られるか見えるように） */
 $("devLink").addEventListener("click",e=>{ e.preventDefault();
   const d=$("settings"); d.hidden=false; d.open=true; });
 goEl.addEventListener("click",connect);
