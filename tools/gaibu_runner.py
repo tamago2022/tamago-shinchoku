@@ -153,6 +153,10 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
                     out = {"ok": r.returncode == 0, "stdout": r.stdout[-2000:],
                            "stderr": r.stderr[-1000:], "totalYen": 0.0}
+                elif job.get("kind") == "jrsdata":
+                    import importlib, _952_data_fetch
+                    importlib.reload(_952_data_fetch)
+                    out = _952_data_fetch.run_job(job.get("payload") or {})
                 elif job.get("kind") == "diag":
                     # 窓口が通らないとき「向こうに何が有るのか」を工場側で聞きに行く。
                     # 鍵の値は出さない（gaibu_diag.py 側で保証）。
