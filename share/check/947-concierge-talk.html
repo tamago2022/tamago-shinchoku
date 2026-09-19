@@ -140,7 +140,9 @@
     </div>
     <div class="note">
       札を押すと、この画面の中でそのまま鳴ります。
-      <b>曲ページへ飛ぶのは「大きい画面で見る」を押したときだけ</b>です。
+      <b>曲ページへ飛ぶのは「大きい画面で見る」を押したときだけ</b>です。<br>
+      <b>安い版</b>は、喋り終わってから返事が来ます（一拍待つかわりに、黙っている時間はタダ）。
+      いくらかかったか・何秒待ったかは、顔の下に実測で出ます。
     </div>
     <div class="log" id="log"></div>
     <p style="text-align:right;margin:10px 0 0"><a href="#" id="devLink"
@@ -226,7 +228,8 @@
     if(!ENGINES[k]) return;
     engineKey=k; try{localStorage.setItem("tamago_engine",k);}catch(_){}
     const r=document.querySelector(`#engines input[value="${k}"]`); if(r) r.checked=true;
-    paintMode(); paintVoices(); showPriceNote(); paintMeter(); paintCostTable(); paintLag();
+    paintMode(); paintVoices(); showPriceNote(); paintMeter(); paintCostTable();
+    if(!isSplit()) $("lag").textContent=""; else paintLag();
   }
 
   const eBox=$("engines");
