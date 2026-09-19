@@ -244,6 +244,19 @@ def main():
             if p:
                 hit_product, hit_via = p, "author_page"
 
+    # ★1回だけ：Creators Market側に「審査の状態を外から取れる公開の口」が有るかを実測する。
+    #   結論を書き置くためだけの確認。深追いしない（1回きり・以後は叩かない）。
+    #   このスクリプトはCookieを1つも持たないので、送るのはただのGET＝管理画面には何も起きない。
+    if "creatorProbe" not in st:
+        cu = "https://creator.line.me/ja/mypage/"
+        cc, cb, cfinal = get(cu)
+        st["creatorProbe"] = {
+            "at": now().isoformat(), "url": cu, "code": cc,
+            "finalUrl": cfinal, "bytes": len(cb),
+            "note": "審査状態はログインの向こうにしか無い＝外から取れる公開の口は無い、"
+                    "という判断の根拠。だから店（store.line.me）側を見ている。",
+        }
+
     st["lastCheckedEpoch"] = time.time()
     st["lastCheckedAt"] = now().isoformat()
     st["probes"] = probes
