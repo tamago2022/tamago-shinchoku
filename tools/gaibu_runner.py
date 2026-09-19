@@ -171,6 +171,12 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     # 鍵の値は出さない（gaibu_diag.py 側で保証）。
                     import gaibu_diag
                     out = gaibu_diag.run_job(job["payload"])
+                elif job.get("kind") == "keijiban":
+                    # 965番 AI掲示板（GitHub Issue）。GET/POSTともに api.github.com の
+                    # 白名簿repoだけ（_965_keijiban.py 側の ALLOW_REPO で保証）。課金0。
+                    import importlib, _965_keijiban
+                    importlib.reload(_965_keijiban)
+                    out = _965_keijiban.run_job(job.get("payload") or {})
                 elif job.get("kind") == "kakunin":
                     # 961番 出したページが本当に200で見えるかを工場側から叩く。
                     # GETのみ・課金0・行き先は tamago2022.github.io の中だけ
