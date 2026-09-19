@@ -427,3 +427,5 @@
 - **症状**：status/.last_launch_at が13分更新されておらず、10分ルールに抵触しました。
 - **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired）。たまごさんが claude にログインし直すまで発車を止めます。2026-09-18 03:19）。正当な理由か人の目で確認してください
 - **日付**：2026-09-19 17:18
+- 2026-09-19 962番: Chrome拡張(claude-in-chrome)が壊れた状態。tabs_context_mcpが返したtabIdを次の呼び出しで「グループに無い」と全部弾く。タブ操作が一切できない＝Lovableの「公開」ボタンをブラウザで押す道は今日は塞がっている（lovablePublishのconsecutiveFailures=4もこれが原因の可能性）。→ ブラウザで粘らず、MCPの deploy_project に移る。
+- 2026-09-19 962番: 「Macに claude CLI が無い」は誤り。実際は /Users/mac/.local/bin/claude にある。whichだけで判定するとサンドボックス側のPATHを見てしまう。Macの上で確かめるには心臓(heartbeat)経由でPythonを1回走らせる。
