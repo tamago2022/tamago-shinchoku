@@ -45,6 +45,11 @@ REPO_SLUG = "tamago2022/joy-relief-station"
 API = "https://api.github.com"
 WORK = os.path.join(REPO, "status", "969")
 ISSUE_JSON = os.path.join(WORK, "issue.json")
+# 2026-09-20 追加：見張る先を増やせるようにした。
+#   joy-relief-station は非公開なので、外のAI（Grok等）はIssueを読めない（実測404）。
+#   同じ問いを公開リポジトリ tamago2022/ai-kaigi にも立てたので、両方を見る。
+#   ★新しい常駐は増やしていない。この1本が両方を見るだけ。
+TARGETS_JSON = os.path.join(WORK, "targets.json")
 SEEN_JSON = os.path.join(WORK, "seen.json")
 LOG = os.path.join(WORK, "pickup.log")
 PAGE = os.path.join(REPO, "share", "check", "961-talking-avatar-jirei.html")
@@ -109,10 +114,25 @@ def _block(c):
     )
 
 
-def main():
+def _targets():
+    """見張る先の一覧。issue.json（1件目）＋ targets.json（増やした分）。"""
+    out = []
     issue = _load(ISSUE_JSON, {})
-    number = issue.get("number")
-    if not number:
+    if issue.get("number"):
+        out.append((issue.get("repo") or REPO_SLUG, int(issue["number"])))
+    for t in (_load(TARGETS_JSON, []) or []):
+        try:
+            pair = (t["repo"], int(t["number"]))
+        except Exception:
+            continue
+        if pair not in out:
+            out.append(pair)
+    return out
+
+
+def main():
+    targets = _targets()
+    if not targets:
         return 0  # まだIssueが立っていない＝何もしない（無害）
 
     token = github_watch.gh_token()
@@ -122,25 +142,37 @@ def main():
 
     state = _load(SEEN_JSON, {})
     seen = set(state.get("ids") or [])
-    etag = state.get("etag")
+    etags = dict(state.get("etags") or {})
+    # 旧い形（etagが1本だけ）からの引き継ぎ
+    if state.get("etag") and targets:
+        etags.setdefault("%s#%s" % targets[0], state["etag"])
 
-    url = "%s/repos/%s/issues/%s/comments?per_page=100" % (API, REPO_SLUG, number)
-    try:
-        code, data, new_etag = _get(url, token, etag)
-    except Exception as e:
-        _log("読めませんでした: %s" % (e,))
-        return 0
-    if code == 304 or not data:
-        return 0
+    fresh = []
+    for slug, number in targets:
+        key = "%s#%s" % (slug, number)
+        url = "%s/repos/%s/issues/%s/comments?per_page=100" % (API, slug, number)
+        try:
+            code, data, new_etag = _get(url, token, etags.get(key))
+        except Exception as e:
+            _log("%s を読めませんでした: %s" % (key, e))
+            continue
+        etags[key] = new_etag
+        if code == 304 or not data:
+            continue
+        for c in data:
+            if c.get("id") in seen:
+                continue
+            if "<!-- tamago-factory -->" in (c.get("body") or ""):
+                continue
+            c["_from"] = key
+            fresh.append(c)
 
-    fresh = [c for c in data
-             if c.get("id") not in seen
-             and "<!-- tamago-factory -->" not in (c.get("body") or "")]
+    def _save():
+        io.open(SEEN_JSON, "w", encoding="utf-8").write(json.dumps(
+            {"ids": sorted(seen), "etags": etags}, ensure_ascii=False, indent=1))
+
     if not fresh:
-        state["etag"] = new_etag
-        state["ids"] = sorted(seen)
-        io.open(SEEN_JSON, "w", encoding="utf-8").write(
-            json.dumps(state, ensure_ascii=False, indent=1))
+        _save()
         return 0
 
     try:
@@ -160,9 +192,9 @@ def main():
     io.open(PAGE, "w", encoding="utf-8").write(page)
 
     seen.update(c.get("id") for c in fresh)
-    io.open(SEEN_JSON, "w", encoding="utf-8").write(json.dumps(
-        {"ids": sorted(seen), "etag": new_etag}, ensure_ascii=False, indent=1))
-    _log("%d件をページに足しました（Issue #%s）" % (len(fresh), number))
+    _save()
+    _log("%d件をページに足しました（%s）" % (
+        len(fresh), ", ".join(sorted({c["_from"] for c in fresh}))))
     return len(fresh)
 
 
