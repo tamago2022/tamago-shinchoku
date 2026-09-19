@@ -25,6 +25,20 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 # 【2026-09-18・938番】たまごさんが本番で見つけた2点（上部の重複ブロック／ページごとの標準要素の抜け）。
 #   937番のセッションが同じ口を使っている最中なので **exec で奪わず**、938を1回走らせてから
 #   いつも通り937へ渡す。938は status/_938/PHASE が idle なら即 exit 0 する（＝完全に無害）。
+# 【2026-09-19・951番】トップの軽量化。**exec で奪わない**（938と同じ形）。
+#   status/_951/PHASE が idle なら即 exit 0 する＝完全に無害。
+#   ★この行は 10:08 に一度消えていた（別のセッションがこのファイルを書き直した）。
+#     消すと951側のセッションは手も足も出なくなるので、用が済むまで残すこと。
+#     用が済んだかどうかは status/_951/PHASE を idle にすることで示す。
+# 【2026-09-19・954番】Xの投稿ページで本文に動画が出ず巨大な空白になるバグ。
+#   **exec で奪わない**（938/951と同じ形）。status/_954/PHASE が idle なら即 exit 0＝無害。
+#   ★この行を消さないこと。用が済んだら status/_954/PHASE を idle にして示す。
+_ME954="/Users/mac/Desktop/tamago-shinchoku/tools/_954_jrs_xcard.sh"
+if [ -f "${_ME954}" ]; then bash "${_ME954}" || true; fi
+
+_ME951="/Users/mac/Desktop/tamago-shinchoku/tools/_951_jrs_top_light.sh"
+if [ -f "${_ME951}" ]; then bash "${_ME951}" || true; fi
+
 _ME="/Users/mac/Desktop/tamago-shinchoku/tools/_938_jrs_kenpin.sh"
 if [ -f "${_ME}" ]; then bash "${_ME}" || true; fi
 

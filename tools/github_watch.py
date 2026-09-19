@@ -69,7 +69,8 @@ WATCH_REPOS = ["tamago2022/joy-relief-station"]
 
 GATE_SECONDS = 60          # 実際に外へ出る間隔。これより細かく呼ばれても即座に戻る
 MAX_ADD_PER_RUN = 3        # 1回の見回りで積む上限（流し込み事故の防止）
-BOOTSTRAP_HOURS = 24       # 初回だけ：この時間内に動いたものまで遡って拾う
+BOOTSTRAP_HOURS = 24       # 初回だけ：この時間内に置かれたものまで遡って拾う
+MAX_CATCHUP = 12           # 初回の遡りで積む総数の上限（発車待ちを溢れさせない安全弁）
 BODY_LIMIT = 2000          # 指示文に載せるIssue本文の長さ
 
 # 工場自身が書いたものを、見張り番が拾い直して無限に増やさないための印。
@@ -276,8 +277,19 @@ def check_repo(repo, token, st, budget):
         # ★ETagは「全部さばき終えてから」保存する。
         #   先に保存すると、この下で例外が出たとき次の回が304になり、
         #   **拾えなかったものを二度と見なくなる**（実機で踏んだ）。
+        # 見張り番が「何を見たのか」を1枚だけ残す（次の担当が、拾われなかった理由を追えるように）
+        try:
+            with open(os.path.join(REPO, "status", "github_watch_last_page.json"), "w", encoding="utf-8") as f:
+                json.dump({"repo": repo, "at": time.strftime("%F %T"), "cutoff": _epoch_to_iso(cutoff),
+                           "items": [{"n": x.get("number"), "created": x.get("created_at"),
+                                      "title": (x.get("title") or "")[:40]} for x in data]},
+                          f, ensure_ascii=False, indent=1)
+        except Exception:
+            pass
+        capped = False
         for it in sorted(data, key=lambda x: x.get("updated_at") or ""):
             if picked >= budget:
+                capped = True    # ★途中で止まった。このあとETagを保存してはいけない
                 break
             num = it.get("number")
             key = "issue:%s#%s" % (repo, num)
@@ -301,7 +313,11 @@ def check_repo(repo, token, st, budget):
             just_queued.add(str(num))
             picked += 1 if status == "done" else 0
             log("%s #%s「%s」→ %s（%s）" % (repo, num, (it.get("title") or "")[:40], status, msg))
-        st["etags"][url] = etag
+        # ★2026-09-19 実機で踏んだ：1回の上限で break した回にもETagを保存していたため、
+        #   **次の回が304になり、積み残した分を二度と見なくなった**（#431がこれで消えた）。
+        #   最後まで見きった回だけETagを持つ。
+        if not capped:
+            st["etags"][url] = etag
     elif code in (403, 429):
         reset = (data or {}).get("_reset")
         st["nextCheckAt"] = float(reset) if reset else now + 900
@@ -319,8 +335,10 @@ def check_repo(repo, token, st, budget):
     if code == 304:
         st["stats"]["notModified"] += 1
     elif code == 200 and isinstance(data, list):
+        capped_c = False
         for c in sorted(data, key=lambda x: x.get("updated_at") or ""):
             if picked >= budget:
+                capped_c = True
                 break
             cid = c.get("id")
             key = "comment:%s" % cid
@@ -355,7 +373,8 @@ def check_repo(repo, token, st, budget):
                 label="GH%s コメント: %s" % (num, (idata.get("title") or "")[:40]))
             picked += 1 if status == "done" else 0
             log("%s #%s へのコメント → %s（%s）" % (repo, num, status, msg))
-        st["etags"][curl] = etag
+        if not capped_c:
+            st["etags"][curl] = etag
     elif code and code != 304:
         log("コメント一覧が %s で返った（%s）" % (code, repo))
 
@@ -391,7 +410,13 @@ def main():
             log("%s の見回りで例外: %s / %s" % (repo, e, traceback.format_exc().replace("\n", " | ")[-600:]))
     # 基準線を進めるのは、最後まで転ばずに回れたときだけ。
     # 転んだ回に進めると、その回に拾えなかったものが永久に拾われなくなる。
-    if ok and picked < MAX_ADD_PER_RUN:
+    # 初回の遡り（24時間分）で積んだ総数。ここに上限を置かないと、
+    # 昨日から溜まっていた分だけ発車待ちが一気に膨らむ。
+    st["catchup"] = st.get("catchup", 0) + picked
+    if st["catchup"] >= MAX_CATCHUP and _iso_to_epoch(st.get("since") or "") < started - 3600:
+        log("初回の遡りで%d件まで積んだ。ここで基準線を今に進める（これ以降は新着だけ）" % st["catchup"])
+        st["since"] = _epoch_to_iso(started)
+    elif ok and picked < MAX_ADD_PER_RUN:
         st["since"] = _epoch_to_iso(started)
     elif picked >= MAX_ADD_PER_RUN:
         # 上限まで積んだ回は基準線を進めない。積みきれなかった分を次の回で拾う
