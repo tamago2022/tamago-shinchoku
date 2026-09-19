@@ -743,7 +743,21 @@
   let spOn=false, spKey="", spVoice="coral", spCtx=null, spNode=null, spSrc=null;
   let spHist=[], spBusy=false, spSpeak=false, spAt=0, spQ=null, spEndTimer=0, spSr=24000;
 
+  // 送る前に16kHzへ落とす。文字起こしは16kHzで足りるので、上りが軽くなる＝返事が早くなる。
+  function to16k(chunks,sr){
+    let n=0; for(const c of chunks) n+=c.length;
+    const src=new Float32Array(n); let o=0;
+    for(const c of chunks){ src.set(c,o); o+=c.length; }
+    if(sr<=16000) return {data:src,sr:sr};
+    const m=Math.round(n*16000/sr), out=new Float32Array(m), step=n/m;
+    for(let i=0;i<m;i++){
+      const x=i*step, i0=Math.floor(x), i1=Math.min(n-1,i0+1), f=x-i0;
+      out[i]=src[i0]*(1-f)+src[i1]*f;
+    }
+    return {data:out,sr:16000};
+  }
   function wavBlob(chunks,sr){
+    const r=to16k(chunks,sr); chunks=[r.data]; sr=r.sr;
     let n=0; for(const c of chunks) n+=c.length;
     const buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
     const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
@@ -769,7 +783,8 @@
     spVoice=voice; spHist=[]; spBusy=false; spSpeak=false; spAt=0;
     spQ=Promise.resolve(); LAG={t0:0,tStt:0,tThink:0,tFirst:0}; LAGS=[]; paintLag();
     Object.keys(SPUSE).forEach(k=>SPUSE[k]=0);
-    spCtx=new (window.AudioContext||window.webkitAudioContext)();
+    try{ spCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000}); }
+    catch(_){ spCtx=new (window.AudioContext||window.webkitAudioContext)(); }
     if(spCtx.state==="suspended") await spCtx.resume();
     spSr=spCtx.sampleRate;
     mic=await navigator.mediaDevices.getUserMedia(
@@ -966,10 +981,16 @@
     goEl.disabled=true; logEl.innerHTML="";
     shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; closePlayer(false);
     Object.keys(USE).forEach(k=>USE[k]=0);
+    Object.keys(SPUSE).forEach(k=>SPUSE[k]=0);
+    LAGS=[]; LAG={t0:0,tStt:0,tThink:0,tFirst:0}; paintLag();
     CAT.load().catch(()=>{});
     setState("つないでいます…"); startedAt=Date.now();
     clearInterval(meterTimer); meterTimer=setInterval(paintMeter,1000);
-    try{ e.vendor==="xai" ? await connectGrok(voice) : await connectOpenAI(voice,e); }
+    try{
+      if(e.vendor==="xai") await connectGrok(voice);
+      else if(e.vendor==="split") await connectSplit(voice);
+      else await connectOpenAI(voice,e);
+    }
     catch(err){ say("sys","つながりませんでした → "+err.message);
       setState("失敗しました"); goEl.disabled=false; closeAll(); }
   }
@@ -1141,6 +1162,7 @@
   }
 
   function closeAll(){
+    spClose();
     try{dc&&dc.close()}catch(_){}
     try{pc&&pc.close()}catch(_){}
     try{ws&&ws.close()}catch(_){}
