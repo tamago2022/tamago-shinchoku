@@ -648,9 +648,10 @@
               + SPUSE.ttsSec/60*p.ttsPerMin;
   }
   // 返事の遅れ（実測）。t0＝喋り終わりを拾った瞬間
-  let LAG={t0:0,tStt:0,tThink:0,tFirst:0}, LAGS=[];
+  let LAG={t0:0,tStt:0,tThink:0,tFirst:0,voice:false}, LAGS=[];
   function paintLag(){
     if(!isSplit()&&!LAGS.length){ lagEl.textContent=""; return; }
+    if(!LAG.voice) return;                       // 声で話しかけた分だけ測る
     if(!LAG.tFirst){ lagEl.textContent = LAG.t0? "返事をつくっています…" : ""; return; }
     const tot=(LAG.tFirst-LAG.t0)/1000;
     const a=(LAG.tStt-LAG.t0)/1000, b=(LAG.tThink-LAG.tStt)/1000, c=(LAG.tFirst-LAG.tThink)/1000;
@@ -677,7 +678,7 @@
     const e=ENGINES[engineKey];
     let yen,how;
     if(e.vendor==="split"){ spCost(); yen=SPUSE.usd*YEN;
-      how=SPUSE.turns?"実測（送った音声の秒数・APIが返したトークン数・返ってきた声の秒数）":"まだ喋っていません"; }
+      how=SPUSE.usd>0?"実測（送った音声の秒数・APIが返したトークン数・返ってきた声の秒数）":"まだ喋っていません"; }
     else if(e.perMin){ yen=sec/60*e.perMin*YEN; how="定額（つないだ時間）"; }
     else{ yen=USE.usd*YEN; how=USE.turns?"実測（APIが返したトークン数）":"まだ喋っていません"; }
     const perMin=sec>5?(yen/(sec/60)):0;
@@ -827,7 +828,7 @@
   /* ① 聞く：喋り終わりを拾ったので、その塊だけ文字起こしに送る */
   async function spHeard(chunks,dur){
     if(spBusy) return;
-    spBusy=true; LAG={t0:performance.now(),tStt:0,tThink:0,tFirst:0}; paintLag();
+    spBusy=true; LAG={t0:performance.now(),tStt:0,tThink:0,tFirst:0,voice:true}; paintLag();
     setState("聞き取っています…");
     let text="";
     try{
@@ -956,7 +957,7 @@
   function spTell(text,quiet){
     spHist.push({role:"system",content:text}); spPrune();
     if(quiet||playing||spBusy||!spOn) return;
-    spBusy=true; LAG={t0:performance.now(),tStt:0,tThink:0,tFirst:0};
+    spBusy=true; LAG={t0:performance.now(),tStt:0,tThink:0,tFirst:0,voice:false};
     LAG.tStt=LAG.t0;
     spTurn().catch(e=>say("sys","返事が作れませんでした："+e.message))
       .then(()=>{ spBusy=false; paintMeter(); paintCostTable(); });
@@ -982,7 +983,7 @@
     shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; closePlayer(false);
     Object.keys(USE).forEach(k=>USE[k]=0);
     Object.keys(SPUSE).forEach(k=>SPUSE[k]=0);
-    LAGS=[]; LAG={t0:0,tStt:0,tThink:0,tFirst:0}; paintLag();
+    LAGS=[]; LAG={t0:0,tStt:0,tThink:0,tFirst:0,voice:false}; lagEl.textContent="";
     CAT.load().catch(()=>{});
     setState("つないでいます…"); startedAt=Date.now();
     clearInterval(meterTimer); meterTimer=setInterval(paintMeter,1000);
