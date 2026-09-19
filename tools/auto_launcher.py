@@ -2053,7 +2053,16 @@ def _main_impl():
       _running_any = any(it.get("status") == "running" for it in items)
       _test_waiting = any(it.get("status") == "waiting" and it.get("test") for it in items)
       if credit_stop and _running_any and not _test_waiting:
-          log("見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
+          # ★2026-09-19：ここは長らく理由を取り違えて書いていた。credit_stop は
+          #   「週枠が上限」だけでなく「Claudeのログインが切れている(auth_only)」でも立つ。
+          #   実際 09-18 03:19 からログイン切れで本物が1本も出ていないのに、ログには
+          #   「週枠が上限（all=None%）」とだけ出続け、読んだ人が枠の問題だと誤診していた。
+          #   止まっている本当の理由を、そのまま書く。
+          if auth_only:
+              log("見送り: Claudeのログインが切れています（status/no_launch.flag。"
+                  "claude にログインし直すまで本物は1本も出せません。戻れば auth_watch.py が自動で再開します）")
+          else:
+              log("見送り: 週枠が上限（all=%s%%）" % quota.get("allPct"))
           return 0
 
       # 2026-09-04 machine.json は重い計測（27秒〜）でしか書き変わらないので、最大5分ぶん古い。

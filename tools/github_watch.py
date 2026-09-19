@@ -67,6 +67,20 @@ LOG = os.path.join(REPO, "status", "github_watch.log")
 # 見張る先。ここを増やせば複数リポジトリを見られる（1リポジトリあたり条件付きGET2本）。
 WATCH_REPOS = ["tamago2022/joy-relief-station"]
 
+# 2026-09-19 たまごさん「向こうが置いたら、こちらが勝手に気づいて、勝手に反映する」
+#   Issueのコメントだけ見ていると、**画像だけ置かれた回に誰も気づかない。**
+#   チャッピーは main に直接pushできる（実証済み）ので、置き場そのものを見る。
+#   見方は①②と同じ条件付きGET（ETag）＝中身が変わらない回は304・レート消費0。
+#   増やすときはここに1行足すだけ（新しい常駐もスクリプトも要らない）。
+WATCH_DIRS = {
+    "tamago2022/joy-relief-station": [
+        {"path": "src/assets/concierge/approved",
+         "issue": 431,
+         "where": "案内所コンシェルジュ No.02（静かなレコード店）／No.08（サロン会話）のページ",
+         "spec": "docs/design/concierge-html-css/ のHTML/CSS（これが実装の正本。画像は視覚QA用）"},
+    ],
+}
+
 GATE_SECONDS = 60          # 実際に外へ出る間隔。これより細かく呼ばれても即座に戻る
 MAX_ADD_PER_RUN = 3        # 1回の見回りで積む上限（流し込み事故の防止）
 BOOTSTRAP_HOURS = 24       # 初回だけ：この時間内に置かれたものまで遡って拾う
@@ -136,22 +150,40 @@ def gh_token():
     for k in ("GITHUB_TOKEN", "GH_TOKEN"):
         if os.environ.get(k):
             return os.environ[k].strip()
-    # ---- ② gitの資格情報から取る（★実機ではこれが本命）----
+    # ---- ② ghの実体を先に当たる ----
+    # ★2026-09-19 実機で踏んだ：見張り番が15分おきに「トークンが取れない」で寝ていた。
+    #   原因は2つ。(a) 実体が **~/.local/bin/gh** にあり、下の候補に入っていなかった。
+    #   (b) 先に呼んでいた `git credential fill` が資格情報ヘルパの無応答で毎回15秒待たされ、
+    #       TimeoutExpired で落ちていた（＝gh本体まで到達する前に終わっていた）。
+    #   → 実体を先に、git credential は後ろへ。待ち時間も8秒に縮める。
+    for exe in (os.path.expanduser("~/.local/bin/gh"), "/opt/homebrew/bin/gh",
+                "/usr/local/bin/gh", "/usr/bin/gh"):
+        if not os.path.exists(exe):
+            continue
+        try:
+            r = subprocess.run([exe, "auth", "token"], capture_output=True, text=True, timeout=15)
+            tok = (r.stdout or "").strip()
+            if tok:
+                return tok
+            diag.append("%s rc=%s" % (exe, r.returncode))
+        except Exception as e:
+            diag.append("%s %s" % (exe, type(e).__name__))
+    # ---- ③ gitの資格情報から取る ----
     # このリポジトリは毎分 push できている＝gitはGitHubの資格情報を持っている。
     # `git credential fill` は設定されている保管庫（osxkeychain / gh）から取り出すだけ。
     # 対話は絶対にさせない（GIT_TERMINAL_PROMPT=0）。止まったら工場が止まる。
     try:
         env = dict(os.environ, GIT_TERMINAL_PROMPT="0")
         r = subprocess.run(["git", "credential", "fill"], input="protocol=https\nhost=github.com\n\n",
-                           capture_output=True, text=True, timeout=15, cwd=REPO, env=env)
+                           capture_output=True, text=True, timeout=8, cwd=REPO, env=env)
         m = re.search(r"^password=(.+)$", r.stdout or "", re.M)
         if m and m.group(1).strip():
             return m.group(1).strip()
         diag.append("git credential rc=%s" % r.returncode)
     except Exception as e:
         diag.append("git credential %s" % type(e).__name__)
-    # ---- ③ gh 本体 ----
-    for exe in ("/opt/homebrew/bin/gh", "/usr/local/bin/gh", "/usr/bin/gh", "gh"):
+    # ---- ④ gh 本体（PATH経由・最後の望み）----
+    for exe in ("gh",):
         try:
             r = subprocess.run([exe, "auth", "token"], capture_output=True, text=True, timeout=15)
             tok = (r.stdout or "").strip()
@@ -225,6 +257,14 @@ def _epoch_to_iso(t):
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t))
 
 
+def _jst_hm(iso):
+    """GitHubのUTC時刻を、たまごさんが読む日本時間の「09-19 21:23」にする。"""
+    t = _iso_to_epoch(iso)
+    if not t:
+        return time.strftime("%m-%d %H:%M")
+    return time.strftime("%m-%d %H:%M", time.localtime(t))
+
+
 def queue_add(text, label, priority=2):
     sys.path.insert(0, TOOLS)
     import command_ingest
@@ -251,6 +291,89 @@ def _instruction(repo, kind, number, title, url, body, author):
         "--- 本文（先頭%d字） ---" % BODY_LIMIT,
         (body or "")[:BODY_LIMIT],
     ])
+
+
+def _wiring_instruction(repo, conf, files):
+    """置き場に新しく置かれたものを、本番まで通しきるための指示文。
+    ★ここで「出したら自分でURLを開いて確かめる」「足りなければ自分でIssueに書く」
+      「たまごさんへの報告は1行」まで書き切る。書かないと、また人に戻ってくる。"""
+    path = conf["path"]
+    lines = [
+        "【タスク】チャッピー（ChatGPT）が %s の %s に新しいものを置いた。%s へ配線して本番に出す。"
+        % (repo, path, conf.get("where") or "該当ページ"),
+        "【出どころ】https://github.com/%s/tree/main/%s" % (repo, path),
+        "　たまごさんが口で伝えたものではない。工場が自分で気づいて積んだ。たまごさんに聞かない。",
+        "",
+        "【置かれたもの】",
+    ]
+    for f in files:
+        lines.append("　・%s（%s バイト）" % (f.get("name"), f.get("size")))
+    lines += [
+        "",
+        "【やること】",
+        "1. 実装の正本は %s。画像は視覚QA用であって、これを見て似せ直す作業ではない＝配線作業。"
+        % (conf.get("spec") or "リポジトリ内の設計正本"),
+        "2. 置かれたものを該当箇所へ配線する。元案を勝手に再デザインしない・平均化しない。",
+        "3. 本番に出す。出したら★自分でそのURLを開き、画像が実際に表示されていることを確かめる。",
+        "　（200が返るだけでは足りない。出ていなければ直してから終わる）",
+        "4. 足りない／使えないもの（寸法違い・文字が焼き込まれている・背景が抜けていない等）があれば、",
+        "　★Issue #%s に自分でコメントして頼む。たまごさんを通さない。" % conf.get("issue"),
+        "　書き方＝ファイル名＋1行の理由。責めない、短く、具体的に。",
+        "　★コメント本文の先頭に必ず %s を入れる（入れないと見張り番が自分の書き込みを拾って増殖する）。"
+        % FACTORY_MARK,
+        "5. たまごさんへの報告は1行だけ。",
+        "　「チャッピーの◯◯を反映しました＋URL」または「チャッピーに◯◯を頼みました」。",
+        "　やりとりの中身は貼らない。質問しない。判断は自分でして『こう決めた』と書く。",
+    ]
+    return "\n".join(lines)
+
+
+def check_watch_dirs(repo, token, st, seen, budget):
+    """③ 置き場そのものを見る。条件付きGET（1棚につき1本）。積んだ件数を返す。"""
+    picked = 0
+    for conf in WATCH_DIRS.get(repo, []):
+        if picked >= budget:
+            break
+        durl = "https://api.github.com/repos/%s/contents/%s" % (repo, conf["path"])
+        code, data, etag = api_get(durl, token, st["etags"].get(durl))
+        st["stats"]["checks"] += 1
+        if code == 304:
+            st["stats"]["notModified"] += 1
+            continue
+        if code == 404:
+            # 棚がまだ無い。毎回書くとログが埋まるので、たまにだけ残す
+            if int(time.time()) % 3600 < 60:
+                log("%s に %s はまだ無い（置かれたら次の回で拾う）" % (repo, conf["path"]))
+            continue
+        if code != 200 or not isinstance(data, list):
+            if code:
+                log("%s の %s が %s で返った" % (repo, conf["path"], code))
+            continue
+        # sha込みで覚える＝同じ名前で差し替えられたときも「新しい」と分かる
+        fresh, keys = [], []
+        for f in data:
+            if (f.get("type") or "") != "file":
+                continue
+            key = "file:%s@%s" % (f.get("path"), (f.get("sha") or "")[:12])
+            if key in seen:
+                continue
+            fresh.append(f)
+            keys.append(key)
+        if not fresh:
+            st["etags"][durl] = etag
+            continue
+        names = [f.get("name") or "?" for f in fresh]
+        status, msg = queue_add(
+            _wiring_instruction(repo, conf, fresh),
+            label="チャッピーの画像%d枚を配線して本番に出す（%s）重複OK" % (len(fresh), names[0][:24]))
+        log("%s の %s に新着%d枚（%s）→ %s（%s）"
+            % (repo, conf["path"], len(fresh), "/".join(names[:4]), status, msg))
+        if status == "done":
+            # ★積めた回だけ覚える。積めなかった回に覚えると、二度と拾わなくなる
+            seen.update(keys)
+            st["etags"][durl] = etag
+            picked += 1
+    return picked
 
 
 def _skip_body(body):
@@ -370,13 +493,29 @@ def check_repo(repo, token, st, budget):
                              "【新しいコメント】\n%s\n\n【Issue本文】\n%s"
                              % (c.get("body") or "", idata.get("body") or ""),
                              user.get("login") or "?"),
-                label="GH%s コメント: %s" % (num, (idata.get("title") or "")[:40]))
+                # ★2026-09-19 実機で踏んだ、いちばん高くついた穴：
+                #   題名を「GH431 コメント: <号の題名>」にしていたため、**同じ号への
+                #   2通目以降が全部「1通目と同じ題名」＝重複と判定され、黙って捨てられていた。**
+                #   実測：#431 でチャッピーの返信が 17:06 / 21:23 / 21:42 / 22:02 の4通、
+                #   いずれも「970番と同じ内容です」で消えた。たまごさんが手で運び直していたのはこれ。
+                #   コメントは1通ごとに別の出来事。題名に投稿者と時刻を入れて必ず別物にし、
+                #   さらに「重複OK」を付けて題名照合そのものを通す。
+                #   同じ通を二度積まないのは comment id の seen が保証しているので二重にはならない。
+                label="GH%s %sさんの返信（%s）重複OK"
+                      % (num, user.get("login") or "?", _jst_hm(c.get("created_at") or "")))
             picked += 1 if status == "done" else 0
             log("%s #%s へのコメント → %s（%s）" % (repo, num, status, msg))
         if not capped_c:
             st["etags"][curl] = etag
     elif code and code != 304:
         log("コメント一覧が %s で返った（%s）" % (code, repo))
+
+    # ---- ③ 置き場（画像だけ置かれた回に気づくための目）----
+    try:
+        if picked < budget:
+            picked += check_watch_dirs(repo, token, st, seen, budget - picked)
+    except Exception as e:
+        log("置き場の見回りで例外: %s" % e)
 
     st["seen"] = list(seen)
     return picked
