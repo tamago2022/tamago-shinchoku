@@ -256,6 +256,13 @@ run_with_timeout 150 python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet 
 #   向こうは status/nyuka/pending/ へ積むだけ。**実際に通すのはここ（鍵とネットがあるMac側）**。
 #   新しいlaunchd常駐は増やさず既存5分便に相乗り（上のkenpin_gateと同じ方針）。
 run_with_timeout 200 python3 "$REPO/tools/nyuka_sekisho.py" --run-pending --quiet >/dev/null 2>&1 || true
+# 976番（2026-09-20）【珍獣ラシコル】審査通過の見張り。メールではなく**LINE STOREの公開ページ**を見る。
+#   974番(check_line_shinsa.py)はGmailの鍵が無くて "blocked":"no_credential" のまま一度も見ていない。
+#   審査が通れば販売ページが誰でも見える所に出る＝ログインも鍵も要らない。そこだけを叩く。
+#   ★新しいlaunchd常駐は作らない。この5分便に相乗りするだけ。
+#   ★中で5分ゲートしているので何度呼ばれても外へ出るのは5分に1回・GETは1〜3本。
+#   ★見つけて通知したら .line_store_found が立ち、以後は数ミリ秒で何もせず終わる。
+( run_with_timeout 60 python3 "$REPO/tools/line_store_watch.py" >> "$REPO/status/line_store_watch.log" 2>&1 & ) >/dev/null 2>&1
 # 2026-09-03 たまごさん「進捗の数字がずれてる時点でダメ」。
 # Claudeアプリの実測ファイルは書き込みが止まることがあり（21:45で停止を確認）、推定に落ちると大きく外す。
 # 実際: 全モデル68% / Fable82% ← アプリ画面の値。推定: 111% / 88.5%。
