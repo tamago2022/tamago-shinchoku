@@ -447,7 +447,7 @@
     }
   }
 
-  let page=0;
+  let page=0, lastDealAt=0, lastDealt=[];
   function dealFour(){
     const take=[];
     while(take.length<4 && pool.length){
@@ -456,6 +456,7 @@
       shown.add(c.key); take.push(c);
     }
     if(take.length) page++;
+    lastDealAt=Date.now(); lastDealt=take;
     drawCards(take);
     moreEl.disabled = pool.length===0;
     $("trayTitle").textContent = take.length
@@ -485,10 +486,12 @@
   }
   moreEl.addEventListener("click",()=>{
     const got=dealFour();
+    // ★道具を呼ばせない。ボタン側でもう4枚めくり終えている。呼ばせるとさらに4枚飛ぶ。
     tellModel(got.length
-      ? "お客さんが「ほかのを見せて」を押しました。いま出ている4枚："
-        +got.map(c=>`「${c.title}」`).join("、")+"。短く一言そえてください。"
-      : "もう在庫がありません。正直に「この気分の棚はここまで」と伝えて、別の気分を聞いてください。");
+      ? "お客さんが「ほかのを見せて」を押しました。次の4枚はもう画面に出し終えています："
+        +got.map(c=>`「${c.title}」`).join("、")
+        +"。more_songs も search_songs も呼ばないこと。短く一言そえるだけにしてください。"
+      : "もう在庫がありません。道具は呼ばずに、正直に「この気分の棚はここまで」と伝えて、別の気分を聞いてください。");
   });
 
   /* ══════════════ 顔 ══════════════ */
@@ -782,7 +785,7 @@
     if(!spKey) throw new Error("OpenAIの鍵が空です（設定の中に入れてください）");
     try{ localStorage.setItem("tamago_openai_key",spKey); }catch(_){}
     spVoice=voice; spHist=[]; spBusy=false; spSpeak=false; spAt=0;
-    spQ=Promise.resolve(); LAG={t0:0,tStt:0,tThink:0,tFirst:0}; LAGS=[]; paintLag();
+    spQ=Promise.resolve(); LAG={t0:0,tStt:0,tThink:0,tFirst:0,voice:false}; LAGS=[]; lagEl.textContent="";
     Object.keys(SPUSE).forEach(k=>SPUSE[k]=0);
     try{ spCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000}); }
     catch(_){ spCtx=new (window.AudioContext||window.webkitAudioContext)(); }
@@ -943,7 +946,8 @@
     src.start(spAt); spAt+=buf.duration;
     speaking=true; if(!playing) setState("話しています");
     if(!LAG.tFirst && LAG.t0){ LAG.tFirst=performance.now();
-      LAGS.push(LAG.tFirst-LAG.t0); if(LAGS.length>20) LAGS.shift(); paintLag(); }
+      if(LAG.voice){ LAGS.push(LAG.tFirst-LAG.t0); if(LAGS.length>20) LAGS.shift(); }
+      paintLag(); }
     clearTimeout(spEndTimer);
     spEndTimer=setTimeout(spSaidAll,(spAt-spCtx.currentTime)*1000+260);
     paintMeter(); paintCostTable();
@@ -1113,7 +1117,9 @@
       if(name==="search_songs") got=await newSearch(
         {artists:args.artists||[],mood:args.mood||[],song_title:args.song_title||"",
          categories:args.categories||[]}, args.label||"");
-      else if(name==="more_songs") got=dealFour();
+      // ボタンでめくった直後に案内人まで more_songs を呼ぶと、4枚すっ飛ばしてしまう。
+      // 2.5秒以内の呼び直しは、いま出ている4枚をそのまま返して二重めくりを止める。
+      else if(name==="more_songs") got=(Date.now()-lastDealAt<2500)?lastDealt:dealFour();
     }catch(err){ say("sys","棚を引けませんでした："+err.message); }
     const payload=got.length?{ok:true,count:got.length,rest:pool.length,
       songs:got.map(c=>({title:c.title,by:c.sub,kind:c.kind})),
