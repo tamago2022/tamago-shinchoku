@@ -66,6 +66,18 @@ def main():
     except Exception:
         pass
 
+    # 2026-09-19（962番）：サンドボックスから工場側のコマンドを走らせる口。
+    #   status/_962/PHASE が idle（既定）なら bash が1回起動して即 exit 0 するだけ。
+    #   5分便（machine_status_push.sh）に相乗りすると往復が5分かかるので、
+    #   毎サイクル再読み込みされるこの python 側にも置く（931番と同じ形）。
+    try:
+        import subprocess
+        subprocess.run(
+            ["bash", os.path.join(HERE, "_962_jrs_images.sh")],
+            capture_output=True, timeout=240)
+    except Exception:
+        pass
+
     try:
         genzaichi.check_launch_silence()
     except Exception:
