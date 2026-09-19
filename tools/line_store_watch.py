@@ -68,6 +68,24 @@ HEADERS = {
 
 PRODUCT_RE = re.compile(r"/stickershop/product/(\d+)")
 AUTHOR_RE = re.compile(r"/stickershop/author/([A-Za-z0-9._%-]+)")
+TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S | re.I)
+COUNT_RE = re.compile(r"([0-9,]+)\s*件")
+
+
+def marks(body):
+    """『どう返っているか』の控え。実測の跡を残すためだけの、判定に使わない欄。
+
+    ★注意：検索ページのHTMLは、結果が0件でも検索語をそのまま <title> や
+      検索窓のvalueに埋めて返す。つまり **『珍獣ラシコル』という文字がある＝出ている、では無い。**
+      判定に使ってよいのは商品リンク(/stickershop/product/<id>)が在るかどうかだけ。
+    """
+    t = TITLE_RE.search(body)
+    c = COUNT_RE.search(body)
+    return {
+        "title": re.sub(r"\s+", " ", t.group(1)).strip()[:120] if t else "",
+        "countText": c.group(0) if c else "",
+        "productLinks": sorted(set(PRODUCT_RE.findall(body)))[:12],
+    }
 
 
 def now():
@@ -184,7 +202,7 @@ def main():
     u1 = "https://store.line.me/search/sticker/ja?q=%s" % q
     c1, b1, _ = get(u1)
     probes.append({"name": "search_html", "url": u1, "code": c1, "bytes": len(b1),
-                   "hasName": STICKER_NAME in b1})
+                   "hasName": STICKER_NAME in b1, "marks": marks(b1)})
     if c1 == 200:
         p = scan_for_sticker(b1)
         if p:
@@ -196,7 +214,7 @@ def main():
               "&type=ALL&includeFacets=false" % q)
         c2, b2, _ = get(u2, accept_json=True)
         probes.append({"name": "search_api", "url": u2, "code": c2, "bytes": len(b2),
-                       "hasName": STICKER_NAME in b2})
+                       "hasName": STICKER_NAME in b2, "body": b2[:300]})
         if c2 == 200:
             p = scan_for_sticker(b2)
             if p:
@@ -208,7 +226,7 @@ def main():
         u3 = "https://store.line.me/stickershop/author/%s/ja" % author
         c3, b3, _ = get(u3)
         probes.append({"name": "author_page", "url": u3, "code": c3, "bytes": len(b3),
-                       "hasName": STICKER_NAME in b3})
+                       "hasName": STICKER_NAME in b3, "marks": marks(b3)})
         if c3 == 200:
             p = scan_for_sticker(b3)
             if p:
