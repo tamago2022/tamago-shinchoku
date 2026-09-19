@@ -215,10 +215,22 @@ def main():
         c2, b2, _ = get(u2, accept_json=True)
         probes.append({"name": "search_api", "url": u2, "code": c2, "bytes": len(b2),
                        "hasName": STICKER_NAME in b2, "body": b2[:300]})
+        # ★JSONには /stickershop/product/ という文字列が入らないので、
+        #   HTML用の scan_for_sticker は使えない（使うと永久に見つからない）。
+        #   実測した未公開時の中身：{"totalCount":0,"items":[],"facets":[]}
+        #   → totalCount と items[].title を直接見る。ここが一番確かな口。
         if c2 == 200:
-            p = scan_for_sticker(b2)
-            if p:
-                hit_product, hit_via = p, "search_api"
+            try:
+                data = json.loads(b2)
+            except Exception:
+                data = {}
+            for item in (data.get("items") or []):
+                title = str(item.get("title") or item.get("name") or "")
+                if STICKER_NAME in title:
+                    pid = str(item.get("id") or item.get("productId") or "")
+                    if pid.isdigit():
+                        hit_product, hit_via = pid, "search_api"
+                        break
 
     # ③ 作者ページ
     author = discover_author(st)
