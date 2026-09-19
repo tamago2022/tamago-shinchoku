@@ -159,11 +159,17 @@ function put(el, rows){
 function yen(n){ return n == null ? "未取得" : Math.round(n).toLocaleString() + "円"; }
 
 // 通信が細いときに無言で止まらないよう、必ず時間で切る（既存の方針と同じ）
+/* 948番（2026-09-19）たまごさん「以前のデータじゃなくて、新規のやつがスパンと出るように」。
+   実測した原因：ここは fetch にキャッシュ指定が無かった。GitHub Pages は配信に
+   Cache-Control: max-age=600 を付けてくる（index_full.html 1054行目に実測の記録あり）ので、
+   指定が無いと最大10分前のJSONがそのまま画面に出ていた。
+   {cache:"no-store"} にして毎回サーバーから取り直す。ここで読むのはJSONだけで、
+   画像・アイコン・CSSはこの指定の外なので、キャッシュが効いたまま＝軽さは壊れない。 */
 function getJson(url, ms){
   return new Promise(function(resolve, reject){
     var done = false;
     var t = setTimeout(function(){ if(!done){ done = true; reject(new Error("timeout")); } }, ms || 8000);
-    fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    fetch(url, {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
       .then(function(j){ if(!done){ done = true; clearTimeout(t); resolve(j); } })
       .catch(function(e){ if(!done){ done = true; clearTimeout(t); reject(e); } });
   });
@@ -267,14 +273,27 @@ function renderNext(list, total){
   if(total > list.length) rows.push('<li class="meta">ほか ' + (total - list.length) + ' 件</li>');
   $("next").innerHTML = rows.join("");
 }
+/* 948番（2026-09-19）たまごさん「以前のやつが残ってる。追いかけで読むんじゃなくて。」
+   実測した原因：ここは queue_light.json（実測 314KB。コード内の古いコメントは117KBのまま）を
+   読んでいて、スマホでは数秒かかる。その間 top_status.json の nextUp を先に出していたので、
+   「前の並びが出る → 数秒後にパッと別の並びへ入れ替わる」が毎回起きていた。
+   直し方：トップが実際に使う7項目だけの queue_next.json（実測 18KB）を新しく作り、
+   それ1本を読んでから一発で出す。先に古い並びを出すのをやめる（読んでいる間は「読み込み中…」）。 */
+function renderQueueFrom(arr){
+  var w = arr.filter(function(x){ return x.status === "waiting"; });
+  var hasNonF = w.some(function(x){ return pri(x) !== 6; });
+  var pool = hasNonF ? w.filter(function(x){ return pri(x) !== 6; }) : w;
+  pool.sort(rankCmp);
+  renderNext(pool.slice(0, 6), pool.length);
+}
 function loadQueue(fallback){
-  getJson("status/public/queue_light.json", 20000).then(function(q){
-    var arr = (q && q.items) || [];
-    var w = arr.filter(function(x){ return x.status === "waiting"; });
-    var hasNonF = w.some(function(x){ return pri(x) !== 6; });
-    var pool = hasNonF ? w.filter(function(x){ return pri(x) !== 6; }) : w;
-    pool.sort(rankCmp);
-    renderNext(pool.slice(0, 6), pool.length);
+  getJson("status/public/queue_next.json", 12000).then(function(q){
+    renderQueueFrom((q && q.items) || []);
+  }).catch(function(){
+    // 極小版がまだ配信に乗っていない時だけ、太いほうを読む（これまでと同じ動き）。
+    return getJson("status/public/queue_light.json", 20000).then(function(q){
+      renderQueueFrom((q && q.items) || []);
+    });
   }).catch(function(){
     // 読めなかっただけで「0件」と言わない。赤の「0件」は本当に列が空のときだけ。
     if((fallback || []).length){ renderNext(fallback, fallback.length); return; }
@@ -339,8 +358,10 @@ function render(d){
 
   renderRunning(d);
 
-  // まず top_status の nextUp を出し、そのあと本物の列で上書きする
-  renderNext((d.nextUp || []).slice(0, 6), (d.nextUp || []).length);
+  /* 948番：ここで nextUp を先に出して、あとから本物の列で上書きしていた＝
+     「前の並びが出て、パッと切り替わる」の正体。上書きはやめて、読めるまでは何も主張しない。
+     たまごさん「古いものを見せるより、何も出さないほうがいい」。 */
+  $("next").innerHTML = '<li class="empty">読み込み中…</li>';
 
   put($("done"), (d.recentDone || []).map(function(x){
     var t = x.ts ? String(x.ts).replace("T", " ").slice(5, 16) : "";
@@ -428,10 +449,14 @@ function loadKenpin(){
 }
 
 function load(manual){
-  // 既定の読み込みは ?t= を付けない（毎回ちがう数字を付けるとキャッシュが一切効かない）。
-  // 押して読み直したときだけ、その1回に限り新しい数字を付ける。
+  /* 948番（2026-09-19）ここが「以前のデータが出る」の直接の原因だった。
+     以前は自動の読み込みだけキャッシュ指定を外していた（軽くするため）。だが GitHub Pages は
+     Cache-Control: max-age=600 を付けて配信するので、開くたびに最大10分前の top_status.json が
+     そのまま出ていた。中身は実測 2.5KB。これを毎回取り直しても重くならない。
+     URLは変えない（?t= を毎回変えると中継のキャッシュが一切効かず、かえって遅くなる）。
+     キャッシュを読まないのは {cache:"no-store"} の指定のほうで担保する。 */
   var url = manual ? (SRC + "?r=" + Date.now()) : SRC;
-  fetch(url, manual ? {cache:"no-store"} : {})
+  fetch(url, {cache:"no-store"})
     .then(function(res){ if(!res.ok) throw new Error(res.status); return res.json(); })
     .then(render)
     .catch(function(e){ $("stamp").textContent = "読めませんでした（" + e.message + "）"; });

@@ -88,9 +88,52 @@ def build(queue_path=QUEUE, out_path=QUEUE_LIGHT, keep=DONE_KEEP):
     with io.open(tmp, "w", encoding="utf-8") as f:
         json.dump(light, f, ensure_ascii=False, indent=1)
     os.replace(tmp, out_path)
+
+    # 948番：トップ専用の極小ファイルも同時に作る（待機列だけ・7項目だけ）。
+    #   ここで失敗しても queue_light.json 側は既に書けているので、本体は絶対に止めない。
+    try:
+        _write_queue_next(q, items)
+    except Exception:
+        pass
+
     return light
+
+
+def _write_queue_next(q, items, out_path=QUEUE_NEXT):
+    """トップの「次に発車」が読むぶんだけの極小ファイルを書く。
+
+    待機中（status == "waiting"）の項目だけを、7フィールドに削って出す。
+    トップはこれを1回読んで一発で描く（古い並びを先に出して上書きする作りをやめるため）。
+    """
+    waiting = [it for it in items if it.get("status") == "waiting"]
+    slim = []
+    for it in waiting:
+        row = {}
+        for k in NEXT_FIELDS:
+            v = it.get(k)
+            if v is not None:
+                row[k] = v
+        slim.append(row)
+    slim.sort(key=lambda it: it.get("n") or 0)
+
+    out = {
+        "updatedAt": q.get("updatedAt"),
+        "note": "トップの「次に発車」専用。待機中のみ・7項目のみ（tools/build_queue_light.py が生成）",
+        "items": slim,
+    }
+    # これは画面が読むだけのファイルなので、改行と空白を入れずに詰めて書く（そのぶん軽い）。
+    tmp = "%s.tmp.%d" % (out_path, os.getpid())
+    with io.open(tmp, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(tmp, out_path)
+    return out
 
 
 if __name__ == "__main__":
     result = build()
     print("queue_light.json を書きました（items: %d件）" % len(result.get("items") or []))
+    try:
+        _n = len(json.load(io.open(QUEUE_NEXT, encoding="utf-8")).get("items") or [])
+        print("queue_next.json を書きました（待機 %d件・%dバイト）" % (_n, os.path.getsize(QUEUE_NEXT)))
+    except Exception as _e:
+        print("queue_next.json は書けませんでした: %s" % _e)

@@ -450,21 +450,32 @@ if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; th
 
 # 2026-09-04 画面の世代を書き出す。スマホのホーム画面アプリが古いindex.htmlを握ったままになる問題への対応。
 #   index.html の中身のハッシュを status/version.json に置き、画面側が違いを見つけたら ?v=… で開き直す。
+# 948番（2026-09-19）：v は index.html のハッシュしか見ていなかったので、index_full.html を
+#   直しても全部入りの画面には伝わらず、逆に index.html を直すだけで全部入りの画面まで
+#   開き直しが走っていた（314KBの再取得）。画面ごとに別々のハッシュを持たせる。
 python3 - "$REPO" <<'PYVER' >/dev/null 2>&1 || true
 import hashlib, io, json, os, sys, time
 repo = sys.argv[1]
-try:
-    h = hashlib.sha1(io.open(os.path.join(repo, "index.html"), "rb").read()).hexdigest()[:10]
-except Exception:
+def sha(name):
+    try:
+        return hashlib.sha1(io.open(os.path.join(repo, name), "rb").read()).hexdigest()[:10]
+    except Exception:
+        return None
+h = sha("index.html")
+hf = sha("index_full.html")
+if not h:
     sys.exit(0)
 p = os.path.join(repo, "status", "version.json")
 try:
-    if json.load(io.open(p, encoding="utf-8")).get("v") == h:
+    old = json.load(io.open(p, encoding="utf-8"))
+    if old.get("v") == h and old.get("vFull") == hf:
         sys.exit(0)
 except Exception:
     pass
-json.dump({"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
-          io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+out = {"v": h, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+if hf:
+    out["vFull"] = hf
+json.dump(out, io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 PYVER
 ### 2026-09-16（緊急・queue.json/auto_launch.log巻き戻り事故の恒久対策・23:08追記で強化）：
 ### status/ を.gitignoreしただけでは足りなかった（`git add -f`で明示公開していた36ファイルは
@@ -483,7 +494,7 @@ PYVER
 ### 中身は一切削らずgzip圧縮のみで物理的に縮める（1.8MB→約480KB）。
 ### PUBLISH_LISTからも外し、単純cpをやめてstatus/public/queue.json.gzへ
 ### 圧縮版を書き出す（build_queue_public_gz.py）。正本status/queue.jsonは変更しない。
-PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
+PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json queue_next.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
 mkdir -p "$REPO/status/public"
 [ -f "$REPO/status/done_archive.json" ] && python3 "$REPO/tools/build_done_archive_light.py" >/dev/null 2>&1
 [ -f "$REPO/status/queue.json" ] && python3 "$REPO/tools/build_queue_public_gz.py" >/dev/null 2>&1
