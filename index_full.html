@@ -1059,6 +1059,21 @@ let __versionCheckBusy = false;
 //   （実測：headless計測30秒で3回、フルページ314KB＋status/配下ほぼ全部を毎回再取得＝
 //   「ぐるぐる読み込みが止まらない」の主因の一つ）。すでに一度 ?v= を付けて開き直した後は
 //   （＝PAGE_BUILDが非空になった後は）二度と比較しない＝1タブにつき最大1回だけに絞る。
+/* ───── 948番（2026-09-19）ここが「以前の画面が出て、5秒後にパッと切り替わる」の正体 ─────
+   たまごさん「以前の画面が出て、5秒後ぐらいにパッと切り替わる。あれやめてくんないかな」。
+   実測でわかったこと：
+     ① ?v= を付けずに開くと PAGE_BUILD が空。空はどんなハッシュとも一致しないので、
+        中身が最新でも必ず location.replace が走る＝開くたびに毎回1回、画面が入れ替わる。
+        798番の「1タブ最大1回」はこの入れ替えを1回に抑えただけで、無くしてはいなかった。
+     ② version.json の v は index.html（トップ）のハッシュだった。この全部入りの画面とは
+        別のファイルなので、トップを1文字直しただけでこちらまで開き直していた。
+   直し方：自分が最後に読み込めた世代を localStorage に控えておき、それと今の世代が
+   同じなら開き直さない（＝ふだんは画面の入れ替えが一切起きない）。
+   違うときだけ、本当に新しい版が出た時だけ、1回開き直す。比べる相手も vFull（この画面自身の
+   ハッシュ。無ければ従来どおり v）に直す。 */
+const VKEY = "tamago_full_build";
+function seenBuild(){ try { return localStorage.getItem(VKEY) || ""; } catch(e){ return ""; } }
+function rememberBuild(v){ try { localStorage.setItem(VKEY, v); } catch(e){} }
 function checkVersion(){
   if(__versionCheckBusy || PAGE_BUILD) return;
   __versionCheckBusy = true;
@@ -1066,10 +1081,22 @@ function checkVersion(){
     .then(r => r.ok ? r.json() : null)
     .then(j => {
       __versionCheckBusy = false;
-      const v = j && j.v;
-      if(v && v !== PAGE_BUILD){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
+      const v = (j && (j.vFull || j.v)) || "";
+      if(!v) return;
+      const seen = seenBuild();
+      // 初めて開いた端末（控えが無い）＝いま取ってきたHTMLがそのまま最新なので開き直さない。
+      if(!seen){ rememberBuild(v); return; }
+      // 控えと同じ＝いま表示している画面は最新の版。開き直す理由が無い。
+      if(seen === v) return;
+      // ここに来るのは本当に新しい版が出たときだけ。1回だけ開き直す。
+      rememberBuild(v);
+      location.replace(location.pathname + "?v=" + encodeURIComponent(v));
     }).catch(()=>{ __versionCheckBusy = false; });
 }
+// ?v= を付けて開き直した直後は、その版を「いま動いている版」として控える。
+// forceHardReload は ?v=<時刻> を使うので、10桁のハッシュの形をしている時だけ控える
+// （時刻を控えてしまうと、次に開いたとき必ず食い違って余計な開き直しが1回増える）。
+if(PAGE_BUILD && /^[0-9a-f]{10}$/.test(PAGE_BUILD)) rememberBuild(PAGE_BUILD);
 // 押すと強制的に読み直せるボタン用（#nowAge が赤いときのタップ、右上の鮮度表示など）。
 // バージョンが同じでも、画面が固まって見えるときの最後の手段として必ず新しいURLへ飛ばす。
 window.forceHardReload = function(){

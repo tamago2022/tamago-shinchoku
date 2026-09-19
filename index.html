@@ -448,6 +448,41 @@ function loadKenpin(){
   }).catch(function(){ /* 無ければ黙って出さない */ });
 }
 
+/* ───── 948番（2026-09-19）公開したら、その場で新しい画面になるようにする ─────
+   たまごさん「以前の画面が出て、5秒後ぐらいにパッと切り替わる。あれやめてくんないかな」。
+   全部入りの画面（index_full.html）は、?v= が付いていない初回はどんな版とも一致しないため、
+   中身が最新でも必ず1回 location.replace していた＝開くたびに画面が入れ替わっていた。
+   ここでは同じ轍を踏まない。自分が最後に読み込めた版を控えておき、
+     ・控えと同じ／初めての端末 → 開き直さない（ふだんは入れ替えが一切起きない）
+     ・本当に新しい版が出たときだけ → 何も描く前に1回だけ開き直す
+   version.json は実測64バイト。読めない日に画面を止めないよう、待つのは最大900ミリ秒。 */
+var VKEY = "tamago_top_build";
+var PAGE_BUILD = (location.search.match(/[?&]v=([^&]+)/) || [])[1] || "";
+function seenBuild(){ try { return localStorage.getItem(VKEY) || ""; } catch(e){ return ""; } }
+function rememberBuild(v){ try { localStorage.setItem(VKEY, v); } catch(e){} }
+if(PAGE_BUILD && /^[0-9a-f]{10}$/.test(PAGE_BUILD)) rememberBuild(PAGE_BUILD);
+
+function versionGate(){
+  return new Promise(function(resolve){
+    if(PAGE_BUILD){ resolve(true); return; }
+    var settled = false;
+    var go = function(){ if(!settled){ settled = true; resolve(true); } };
+    setTimeout(go, 900);
+    fetch("status/public/version.json", {cache:"no-store"})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        var v = j && j.v;
+        if(!v){ go(); return; }
+        var seen = seenBuild();
+        if(!seen || seen === v){ rememberBuild(v); go(); return; }
+        rememberBuild(v);
+        // ここは「本当に新しい版が出ている」ときだけ通る。描く前に入れ替える。
+        location.replace(location.pathname + "?v=" + encodeURIComponent(v));
+      })
+      .catch(go);
+  });
+}
+
 function load(manual){
   /* 948番（2026-09-19）ここが「以前のデータが出る」の直接の原因だった。
      以前は自動の読み込みだけキャッシュ指定を外していた（軽くするため）。だが GitHub Pages は
@@ -456,9 +491,13 @@ function load(manual){
      URLは変えない（?t= を毎回変えると中継のキャッシュが一切効かず、かえって遅くなる）。
      キャッシュを読まないのは {cache:"no-store"} の指定のほうで担保する。 */
   var url = manual ? (SRC + "?r=" + Date.now()) : SRC;
-  fetch(url, {cache:"no-store"})
-    .then(function(res){ if(!res.ok) throw new Error(res.status); return res.json(); })
-    .then(render)
+  var data = fetch(url, {cache:"no-store"})
+    .then(function(res){ if(!res.ok) throw new Error(res.status); return res.json(); });
+  // 版の確認とデータ取得は同時に走らせる（順番に待つと、そのぶん表示が遅れるだけ）。
+  // 版が古いと分かったときは versionGate が開き直すので、この Promise は解決しない
+  // ＝古い中身を一度も描かないまま新しい画面へ移る。
+  Promise.all([data, manual ? Promise.resolve(true) : versionGate()])
+    .then(function(a){ render(a[0]); })
     .catch(function(e){ $("stamp").textContent = "読めませんでした（" + e.message + "）"; });
 }
 
