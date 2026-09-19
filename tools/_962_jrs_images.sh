@@ -37,17 +37,25 @@ trap 'rm -rf "${LOCK}" 2>/dev/null || true' EXIT
 # 1回走ったら自分で idle に戻す（同じ手順を何十回も繰り返さない）
 echo idle > "${WORK}/PHASE"
 
-{
-  echo "=== run $(date '+%F %T') ==="
-  STEP="${WORK}/run_step.sh"
-  if [ ! -f "${STEP}" ]; then
-    echo "NG: run_step.sh がありません"
-  else
-    nice -n 10 bash "${STEP}" 2>&1 | tail -n 400
-    echo "step rc=${PIPESTATUS[0]}"
-  fi
-  echo "=== done $(date '+%F %T') ==="
-} >>"${LOG}" 2>&1
-
-tail -n 1200 "${LOG}" >"${LOG}.tmp" && mv "${LOG}.tmp" "${LOG}"
+# 呼び出し元（launch_watchdog.py の subprocess.run）は240秒で打ち切る。
+# 手順によっては公開待ちで数分かかるので、**親から切り離して**走らせ、呼び出し元は即座に返す。
+# 標準出力はログへ直に向ける（パイプを掴んだままにしない＝親が待たされない）。
+STEP="${WORK}/run_step.sh"
+if [ ! -f "${STEP}" ]; then
+  echo "$(date '+%F %T') NG: run_step.sh がありません" >>"${LOG}"
+  exit 0
+fi
+# ロックは子が持ち続ける必要があるので、trapを外して子に引き継ぐ
+trap - EXIT
+(
+  trap 'rm -rf "${LOCK}" 2>/dev/null || true' EXIT
+  {
+    echo "=== run $(date '+%F %T') ==="
+    nice -n 10 bash "${STEP}" 2>&1
+    echo "step rc=$?"
+    echo "=== done $(date '+%F %T') ==="
+    tail -n 1200 "${LOG}" >"${LOG}.tmp" 2>/dev/null && mv "${LOG}.tmp" "${LOG}" 2>/dev/null
+  } >>"${LOG}" 2>&1
+) </dev/null >/dev/null 2>&1 &
+disown 2>/dev/null || true
 exit 0
