@@ -28,7 +28,7 @@ body{font-family:var(--sans);color:var(--ink);-webkit-text-size-adjust:100%}
 /* ── ヘッダー ─────────────────────────────────────── */
 .head{display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:20px 36px 16px}
-.head .brand{font-family:var(--serif);font-size:1rem;letter-spacing:.3em;color:var(--ink)}
+.head .brand{flex:0 0 auto;white-space:nowrap;font-family:var(--serif);font-size:1rem;letter-spacing:.3em;color:var(--ink)}
 .head .brand small{display:block;font-family:var(--sans);font-size:.56rem;
   letter-spacing:.32em;color:var(--sub);margin-top:5px}
 .head nav{font-size:.62rem;letter-spacing:.26em;color:var(--sub)}
@@ -193,16 +193,17 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
   .head,.foot{padding-left:20px;padding-right:20px}
 }
 @media(max-width:640px){
-  .head{padding-top:15px}
-  .head nav{font-size:.5rem;letter-spacing:.16em}
-  .head nav span{margin-left:8px}
+  .head{flex-wrap:wrap;padding-top:15px}
+  .head nav{width:100%;margin-top:9px;font-size:.52rem;letter-spacing:.2em}
+  .head nav span{margin-left:0;margin-right:14px}
+  .plate .scene{height:210px;width:100%}
   .plate{margin:0 14px}
   .plate .copy{position:static;width:auto;max-width:none;padding:18px 16px 4px;
     text-shadow:none;background:var(--green-d)}
   .plate .copy h1{font-size:1.2rem;margin-bottom:12px}
   .plate .copy p{font-size:.7rem}
-  .plate .onbar{width:23%;min-width:78px;bottom:9%}
-  .plate .slate{left:auto;right:5%;bottom:10%;width:34%;min-width:0;padding:7px 5px}
+  .plate .onbar{width:19%;min-width:66px;bottom:9%}
+  .plate .slate{left:auto;right:4%;bottom:10%;width:30%;min-width:0;padding:6px 4px}
   .plate .slate b{font-size:.52rem;letter-spacing:.12em}
   .plate .slate i{font-size:.46rem}
   .plate .ringwrap{left:6%;bottom:7%}
