@@ -270,7 +270,8 @@ def main():
         for s in songs:
             all_rows.append([ai, s["id"], s["title"],
                              s.get("year") if isinstance(s.get("year"), int) else 0,
-                             s.get("youtubeId") or (s.get("altYoutubeIds") or [""])[0]])
+                             s.get("youtubeId") or (s.get("altYoutubeIds") or [""])[0],
+                             1 if s.get("pick") else 0])
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "t").mkdir(exist_ok=True)
@@ -289,6 +290,19 @@ def main():
     for row in all_rows:
         for pre in sorted(tokens(row[2]))[:4]:
             buckets[bucket(pre)].append(row)
+
+    # アーティスト別の棚。気分・名前で当たった人の曲を、丸ごと引くための棚。
+    abuckets = {i: [] for i in range(NBUCKET)}
+    for row in all_rows:
+        abuckets[row[0] % NBUCKET].append(row)
+    (OUT_DIR / "a").mkdir(exist_ok=True)
+    amax = 0
+    for i, rows in abuckets.items():
+        ap = OUT_DIR / "a" / f"{i}.json"
+        ap.write_text(json.dumps(rows, ensure_ascii=False, separators=(",", ":")),
+                      encoding="utf-8")
+        amax = max(amax, ap.stat().st_size)
+    print(f"アーティスト別の棚 {NBUCKET}枚 / いちばん大きい棚 {amax/1024:.0f}KB")
 
     sizes = []
     for i, rows in buckets.items():
