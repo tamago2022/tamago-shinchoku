@@ -27,6 +27,13 @@ def _fetch_paths(payload):
     rc,tree,e=_git(["ls-tree","-r","--name-only",ref,"docs/design/concierge-html-css/"])
     io.open(os.path.join(out,"_tree.txt"),"w",encoding="utf-8").write(tree or e or "")
     log.append("tree %d件"%len((tree or "").splitlines()))
+    for path in (payload.get("bin") or []):
+        r=subprocess.run(["git","show","%s:%s"%(ref,path)],cwd=CLONE,capture_output=True,timeout=120)
+        if r.returncode==0 and r.stdout:
+            io.open(os.path.join(out,os.path.basename(path)),"wb").write(r.stdout)
+            got.append(os.path.basename(path));log.append("取得(画像) %s (%d bytes)"%(path,len(r.stdout)))
+        else:
+            log.append("×取れない %s"%path)
     for path in (payload.get("files") or []):
         rc2,body,e2=_git(["show","%s:%s"%(ref,path)])
         if rc2==0 and body is not None:
@@ -39,7 +46,7 @@ def _fetch_paths(payload):
 
 def run_job(payload=None):
     payload=payload or {}
-    if payload.get("files"):
+    if payload.get("files") or payload.get("bin"):
         return _fetch_paths(payload)
     log=[];os.makedirs(OUT,exist_ok=True);got=[]
     if not os.path.isdir(CLONE): return {"ok":False,"error":"clone なし","totalYen":0.0}
