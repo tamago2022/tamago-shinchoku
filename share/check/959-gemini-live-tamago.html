@@ -402,12 +402,17 @@ async function tsunagiNaosu(n){
   setState("声を入れ替えています…");
   const t0=performance.now();
   try{
-    stopping=true;
-    try{ api&&api.disconnect(); }catch(_){}
+    /* 古いつなぎめの耳を先に塞ぐ。塞がないと、切った知らせが後から届いて
+       「切れたからつなぎ直す」の道に入り、二重につながってしまう（二重課金の芽）。 */
+    try{ if(api){ api.onClose=()=>{}; api.onError=()=>{}; api.onReceiveResponse=()=>{};
+                  api.onRawMessage=()=>{}; api.disconnect(); } }catch(_){}
     try{ mnode&&mnode.disconnect(); msrc&&msrc.disconnect(); }catch(_){}
+    /* 音の箱も必ず閉じる。閉じないと入れ替えるたびに1つずつ増えて、
+       数回で「これ以上作れません」になる（ブラウザの上限）。 */
+    try{ if(mctx && mctx.state!=="closed") await mctx.close(); }catch(_){}
     if(mic) mic.getTracks().forEach(t=>t.stop());
     stopAudio();
-    api=null; mic=null; mnode=null; msrc=null;
+    api=null; mic=null; mnode=null; msrc=null; mctx=null;
     retried=false; gotSetup=false; stopping=false; modelFell=false;
     await open(WS_V1ALPHA, key);
     SWAP.list.push((performance.now()-t0)/1000);
@@ -1408,9 +1413,11 @@ function closeAll(){
   stopping=true;
   try{ api&&api.disconnect(); }catch(_){}
   try{ mnode&&mnode.disconnect(); msrc&&msrc.disconnect(); }catch(_){}
+  /* ★964：音の箱を閉じる。やめる→話すを繰り返しても増えないようにする。 */
+  try{ if(mctx && mctx.state!=="closed") mctx.close(); }catch(_){}
   if(mic) mic.getTracks().forEach(t=>t.stop());
   stopAudio();
-  api=null; mic=null; mnode=null; msrc=null;
+  api=null; mic=null; mnode=null; msrc=null; mctx=null;
   clearInterval(meterTimer);
   paintMeter();
   startedAt=0;
