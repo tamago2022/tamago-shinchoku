@@ -38,6 +38,7 @@ GITDIR = os.path.join(REPO, ".git")
 LOG = os.path.join(REPO, "status", "git_rebase_incidents.log")  # 既存のgit事故ログへ相乗り
 
 STALE_SECONDS = 300   # 5分。`git add` が巨大ファイルを掴んでいる可能性を考えて長めに取る
+MAX_AUTO_MERGE = 40   # 手元がこれ以上先に進んでいたら、自動では合流しない（人が見る）
 # ★2026-09-18 実測で分かった穴：この工場は auto_launcher / command_ingest / 5分便が
 #   gitを絶えず叩いているので、「gitプロセスが1本も無い」という条件だけだと
 #   **静かな瞬間が来ず、ロックが何十分も片付かないことがある**
@@ -168,22 +169,82 @@ def push_out(quiet=False):
         return subprocess.run(["git", "-C", REPO, *args],
                               capture_output=True, text=True, timeout=timeout)
 
-    try:
-        r = git("rev-list", "--count", "@{u}..HEAD", timeout=30)
+    # 2026-09-19 実測で踏んだ穴：**pull せずに push だけ試していた。**
+    #   このリポジトリの origin/main には、こちら以外にも書き手がいる
+    #   （.github/workflows/deliver-verify.yml が確認結果を [skip ci] で押し戻す）。
+    #   ところがこの道具は `@{u}..HEAD`＝**手元の古い origin/main** としか比べず、
+    #   fetch もしないまま push していた。向こうが1歩でも進んでいると
+    #   non-fast-forward で弾かれ、以後30秒おきに同じ失敗を延々と繰り返す。
+    #   実測：09:20:42 から 09:42:09 まで、同じ「failed to push」を22分間。
+    #   その間 commit 済みのものは1つも公開されない＝配達が丸ごと止まる。
+    # → 押す前に必ず fetch して、向こうが進んでいたら merge で合流してから押す。
+    #   合流がこけたら必ず --abort で元に戻す（中途半端な状態を残さない）。
+    def _count(rng):
+        r = git("rev-list", "--count", rng, timeout=30)
         if r.returncode != 0:
-            if not quiet:
-                print("PUSH_OUT: SKIP - 上流が分からない")
-            return 0
-        ahead = int((r.stdout or "0").strip() or 0)
+            return None
+        try:
+            return int((r.stdout or "0").strip() or 0)
+        except ValueError:
+            return None
+
+    try:
+        f = git("-c", "credential.helper=!gh auth git-credential",
+                "fetch", "origin", "main", timeout=120)
+        if f.returncode != 0 and not quiet:
+            print("PUSH_OUT: 注意 - fetchに失敗（古い手元の記録で判断します）")
+    except Exception as e:  # noqa: BLE001
+        if not quiet:
+            print("PUSH_OUT: 注意 - fetchできませんでした（%s）" % e)
+
+    try:
+        ahead = _count("origin/main..HEAD")
+        behind = _count("HEAD..origin/main")
     except Exception as e:  # noqa: BLE001
         if not quiet:
             print("PUSH_OUT: SKIP - 数えられませんでした（%s）" % e)
+        return 0
+
+    if ahead is None or behind is None:
+        if not quiet:
+            print("PUSH_OUT: SKIP - 上流が分からない")
         return 0
 
     if ahead <= 0:
         if not quiet:
             print("PUSH_OUT: OK - 未pushのcommitはありません")
         return 0
+
+    # 手元が異常に進んでいるときは自動で合流しない（人が見るべき状態）
+    if behind > 0 and ahead > MAX_AUTO_MERGE:
+        log("⚠️ 手元が%d件先・向こうが%d件先。自動の合流は見送りました（多すぎます）"
+            % (ahead, behind))
+        if not quiet:
+            print("PUSH_OUT: SKIP - 差が大きいので自動では触りません")
+        return 0
+
+    if behind > 0:
+        # ★rebase は使わない。case#687（2026-09-13）で禁じ手になっている：
+        #   autostash がこのリポジトリ全体の未コミットの変更を巻き込んで退避し、
+        #   失敗時に黙って古い内容へ巻き戻す事故を10日で12回起こした。
+        #   command_watch.sh / machine_status_push.sh と同じく merge に揃える。
+        #   こけても --abort で元に戻すだけで、黙った巻き戻りは起きない。
+        try:
+            mg = git("-c", "core.mergeAutoStash=false",
+                     "merge", "--no-edit", "origin/main", timeout=300)
+        except Exception as e:  # noqa: BLE001
+            log("⚠️ 向こうが%d件先でしたが、合流できませんでした（%s）" % (behind, e))
+            return 0
+        if mg.returncode != 0:
+            git("merge", "--abort", timeout=120)
+            err = (mg.stderr or mg.stdout or "").strip().splitlines()
+            log("⚠️ 向こうが%d件先。合流がこけたので元に戻しました: %s"
+                % (behind, err[-1] if err else "理由不明"))
+            if not quiet:
+                print("PUSH_OUT: NG - 合流できないので元に戻しました")
+            return 0
+        log("🔁 向こうが%d件先だったので、手元の%d件と合流しました" % (behind, ahead))
+        ahead = _count("origin/main..HEAD") or ahead
 
     try:
         p = git("-c", "credential.helper=!gh auth git-credential",
