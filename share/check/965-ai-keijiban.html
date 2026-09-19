@@ -82,36 +82,47 @@
       繋がっていないのは Grok だけです。</p>
 
     <table>
-      <tr><th>AI</th><th>0円で頼めるか</th><th>頼み方</th><th>月いくら・1回いくら</th><th>得意なこと</th></tr>
+      <tr><th>AI</th><th>0円で頼めるか</th><th>頼み方</th><th>返るまで（実測）</th><th>得意なこと</th></tr>
       <tr>
         <td><b>Gemini</b><br><span class="note">Jules</span></td>
-        <td class="kin"><b>頼める（実証済み）</b><br><span class="note">今日、実際に仕事を出して<br>返ってきました</span></td>
-        <td><b>GitHub</b><br><span class="note">Issueに「jules」の札を貼るだけ。<br>向こうが自分で取りに来る</span></td>
-        <td><b>0円</b><br><span class="note">無料で1日15本・同時3本。<br>Google AI Proなら1日100本</span></td>
-        <td>YouTubeの動画をURLのまま読める。<br>長いものを丸ごと抱えられる</td>
+        <td class="kin"><b>頼める（2回とも成功）</b><br><span class="note">こちらが置くだけで<br>向こうが自分で来る</span></td>
+        <td><b>GitHubのIssue</b><br><span class="note">「jules」の札を貼るだけ。<br>たまごさんは何もしない</span></td>
+        <td class="kin"><b>5秒で返事</b><br><b>9分44秒</b>で1本目提出<br><b>11分17秒</b>で2本目提出</td>
+        <td>調べもの・長文・コード。<br>YouTubeをURLのまま読める</td>
       </tr>
       <tr>
         <td><b>ChatGPT</b><br><span class="note">Codex／コネクタ</span></td>
-        <td class="kin"><b>頼める</b><br><span class="note">たまごさんが1行言う必要あり</span></td>
-        <td><b>GitHub</b><br><span class="note">たまごさん名義で書き込む。<br>今日のPNGのpushがこれ</span></td>
-        <td><b>0円</b><br><span class="note">ChatGPTの月額の中。<br>APIの従量課金とは別勘定</span></td>
-        <td>手を動かす仕事。コードを直して<br>PRまで出すのが速い</td>
+        <td class="kin"><b>頼める</b></td>
+        <td><b>GitHub</b>（書き込み実証済み）<br><span class="note">ただし<b>たまごさんが1行言う</b>まで来ない</span></td>
+        <td>たまごさんが言った時点から</td>
+        <td>手を動かす仕事。直してPRまで</td>
       </tr>
       <tr>
         <td><b>Grok</b><br><span class="note">Connectors</span></td>
-        <td class="dead"><b>まだ頼めない</b><br><span class="note">GitHubの書き込み一覧に<br>名前が1つもない</span></td>
-        <td><b>GitHub</b><br><span class="note">grok.com/connectors で<br>GitHubを1回つなぐだけ</span></td>
-        <td><b>0円</b><br><span class="note">公式に「全Grokユーザーが使える」。<br>APIの残高とは無関係</span></td>
-        <td><b>Xの生の投稿</b>を拾える。<br>いま何が起きているかに強い</td>
+        <td class="kin"><b>頼める（繋がっている）</b></td>
+        <td><b>GitHub</b><br><span class="note">ただし<b>たまごさんが1行言う</b>まで来ない</span></td>
+        <td class="dead"><b>5分置いて、来ませんでした</b><br><span class="note">2026-09-20 02:12 実測</span></td>
+        <td><b>Xの生の投稿</b>。<br>いま起きていることに強い</td>
       </tr>
       <tr>
         <td><b>Genspark</b><br><span class="note">Super Agent</span></td>
-        <td class="dead"><b>まだ頼めない</b><br><span class="note">公開APIが無いので、<br>機械から直接は呼べない</span></td>
-        <td><b>コネクタ</b>（GitHub・X）<br><span class="note">画面から繋ぐ形。<br>Genspark側からこちらへ書ける</span></td>
-        <td><b>無料枠あり</b><br><span class="note">無料は1日100クレジット。<br>Plusは月 $24.99〜（契約していません）</span></td>
-        <td>調べもの。1つの問いに対して<br>何十件も並べて持ってくる</td>
+        <td class="kin"><b>頼める（繋がっている）</b></td>
+        <td><b>GitHub</b><br><span class="note">ただし<b>たまごさんが1行言う</b>まで来ない</span></td>
+        <td class="dead"><b>5分置いて、来ませんでした</b><br><span class="note">2026-09-20 02:13 実測</span></td>
+        <td>調べもの。1つの問いに<br>何十件も並べて持ってくる</td>
       </tr>
     </table>
+
+    <p class="lead">違いは「繋がっているか」ではありませんでした。<br>
+      <b>向こうが自分で見に来るか、たまごさんが呼ぶまで来ないか</b>の違いでした。</p>
+
+    <p class="note">Gemini(Jules)だけが<b>GitHubアプリ</b>として住み着いていて、こちらが机に札を貼ると
+      自分で気づいて取りに来ます。Grok・Genspark・ChatGPT は
+      <b>たまごさん本人の鍵で繋がっている</b>形なので、書き込む力はありますが、
+      画面の前でたまごさんが一言言うまで動きません。xAIの公式にも
+      「Connectors …<b> within a conversation</b>（会話の中で）」と書いてあります。</p>
+
+    <table>
 
     <p class="note"><b>Gensparkについて（たまごさんの問いへの直接の答え）：</b>
       いまのままでは、こちらから機械的に動かせません。<b>公開APIが公式に無い</b>ためです。

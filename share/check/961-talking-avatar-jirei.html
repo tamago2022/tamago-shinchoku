@@ -165,6 +165,233 @@
     </table></div>
   </div>
 
+  <!-- ══════ 多言語 ══════ -->
+  <div class="panel dark" id="tagengo">
+    <h2><span class="n">★多言語</span>「英語で話しかけたら英語になる」は、どこまで本当か</h2>
+    <p class="sub">たまごさんの新しい軸。結論から言うと、ここは<b>業界全体がごまかしている場所</b>でした。</p>
+
+    <div class="kome">
+      <b>「100言語対応」の正体。</b><br>
+      AVITAは公式に分けて書いています ——「<b>オペレーター応対時 約100言語／AI応対時 7言語</b>」。<br>
+      つまり<b>100言語は翻訳エンジンの上限値</b>で、<b>AIが自分で喋れるのは7言語</b>。中の人が出てきて初めて100言語になる。<br>
+      そして日本の現場で実際に動いているのは、ほぼ<b>4言語（日・英・中・韓）</b>でした。JR東・南海・日立・ugo・成田・沖縄、全部4言語です。
+    </div>
+
+    <h2 style="margin-top:16px"><span class="n">層</span>切り替わるのは「ページ全体」か「喋りだけ」か</h2>
+    <p class="sub">★3つの層は完全に別物で、<b>自動で連動するものは1つもありません。</b>全部それぞれ仕込む必要がある。</p>
+    <div class="flow" style="grid-template-columns:52px 1fr 60px 1fr">
+      <div class="hd"></div><div class="hd">何が切り替わる</div><div class="hd">自動か</div><div class="hd">実態</div>
+
+      <div class="st">層1<br>文言</div>
+      <div>ページ全体のUI文字（i18n）</div>
+      <div class="ng">×</div>
+      <div>事前に翻訳した辞書を引くだけ。<b>音声の判定結果とは繋がっていない</b>ので、繋ぐコードを自分で書く</div>
+
+      <div class="st">層2<br>喋り</div>
+      <div>耳(ASR)→頭(LLM)→声(TTS)</div>
+      <div class="mb">△</div>
+      <div>3つとも別々に言語設定がある。<b>全部揃えないと破綻する</b>（耳は英語・声は日本語、が起きる）</div>
+
+      <div class="st">層3<br>口</div>
+      <div>口の形（viseme）</div>
+      <div class="ng">×</div>
+      <div class="hl"><b>ここが一番見落とされます。</b>Azure公式に「visemeは言語とロケールで変わる」と明記。22種類を用意しているが<b>2D出力は en-US だけ</b></div>
+    </div>
+    <div class="kome">
+      <b>ただし、Live2D / VRM は話が別です。</b><br>
+      VRMの口は <b>A・I・U・E・O の5母音だけ</b>（公式仕様）。母音駆動なので<b>言語を跨いでも「それらしく」動きます</b>。<br>
+      弱点は、英語の <b>f / v（下唇を噛む）、p / b / m（唇を閉じる）、th</b> が表現できないこと。<br>
+      → <b>口の形だけで言えば、個人の5母音方式のほうが多言語に強い。</b>Azureの22 visemeは作り分けている代わりにロケールに縛られています。
+    </div>
+
+    <h2 style="margin-top:16px"><span class="n">耳</span>何言語まで「自動で」聞き分けられるのか＝天井</h2>
+    <p class="sub">★ここが本丸。候補言語をいくつ挙げられるかが、そのまま天井です。</p>
+    <div class="tblwrap"><table>
+      <tr><th>部品</th><th>候補の上限</th><th>リアルタイム</th><th>注意</th></tr>
+      <tr><td class="nm"><a href="https://developers.deepgram.com/docs/multilingual-code-switching" target="_blank" rel="noopener">Deepgram <code>language=multi</code></a><br><span class="chk y"></span></td>
+      <td class="ok"><b>単語ごとに<br>言語タグを返す</b></td><td class="ok">◯</td>
+      <td class="ok">★<b>コードスイッチングに正面から対応した唯一の設計。</b>「No recuerdo mi bank password」を単語単位で es/en に割る</td></tr>
+      <tr><td class="nm"><a href="https://developers.deepgram.com/docs/language-detection" target="_blank" rel="noopener">Deepgram <code>detect_language</code></a><br><span class="chk y"></span></td>
+      <td>35言語</td><td class="ng">×</td><td class="ng"><b>ストリーミング非対応。</b>接客には使えない（HeyGenのSTTがこれ）</td></tr>
+      <tr><td class="nm"><a href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-identification" target="_blank" rel="noopener">Azure continuous LID</a><br><span class="chk y"></span></td>
+      <td><b>10言語</b></td><td class="ok">◯</td><td class="ng">同一文の中の言語変化は<b>検出しないと公式明記</b></td></tr>
+      <tr><td class="nm">Azure at-start LID<br><span class="chk y"></span></td><td><b>4言語</b></td><td class="ok">◯</td>
+      <td class="ng"><b>候補にない言語でも、候補のどれかを必ず返す</b>（仏英を候補に独語を話すと仏か英になる）</td></tr>
+      <tr><td class="nm"><a href="https://docs.cloud.google.com/speech-to-text/docs/multiple-languages" target="_blank" rel="noopener">Google STT V2</a><br><span class="chk y"></span></td>
+      <td class="ng"><b>3言語</b></td><td class="mb">△</td><td>まだPreview。公式が「<b>少ないほど当たる</b>」と書いている</td></tr>
+      <tr><td class="nm"><a href="https://www.assemblyai.com/docs/speech-to-text/pre-recorded-audio/automatic-language-detection" target="_blank" rel="noopener">AssemblyAI</a><br><span class="chk y"></span></td>
+      <td>上限なし</td><td class="mb">△</td><td class="ng"><b>15〜90秒の発話を推奨</b>と公式明記。接客の一言では足りない</td></tr>
+      <tr><td class="nm"><a href="https://github.com/ggml-org/whisper.cpp" target="_blank" rel="noopener">Whisper / whisper.cpp</a><br><span class="chk y"></span></td>
+      <td class="ok"><b>99言語</b></td><td class="mb">△</td><td><code>language=auto</code> で自動。ただし<b>冒頭30秒で決め打ち</b>する</td></tr>
+      <tr><td class="nm"><a href="https://developer.mozilla.org/ja/docs/Web/API/SpeechRecognition/lang" target="_blank" rel="noopener">Web Speech API</a><br><span class="chk y"></span></td>
+      <td class="ng"><b>1言語だけ</b></td><td class="ok">◯</td>
+      <td class="ng">★<b>これが個人実装の壁です。</b><code>lang</code>は単一値で、音声から言語を判定する機能が存在しない</td></tr>
+      <tr><td class="nm"><a href="https://github.com/xenova/whisper-web" target="_blank" rel="noopener">transformers.js + Whisper</a><br><span class="chk y"></span></td>
+      <td class="ok"><b>99言語</b></td><td class="mb">△</td>
+      <td class="ok">★<b>その壁をブラウザだけで越える唯一の現実解。サーバ不要・0円。</b>モデル約290MBの初回DLが重い</td></tr>
+    </table></div>
+
+    <h2 style="margin-top:16px"><span class="n">声</span>1つの声のまま、言語を跨げるか</h2>
+    <p class="sub">★キャラの声が言語ごとに変わると接客として破綻します。ここは重要。</p>
+    <div class="tblwrap"><table>
+      <tr><th>TTS</th><th>言語数</th><th>同じ声のまま跨げるか</th><th>月いくら</th></tr>
+      <tr><td class="nm"><a href="https://elevenlabs.io/docs/overview/models" target="_blank" rel="noopener">ElevenLabs Multilingual v2</a><br><span class="chk y"></span></td>
+      <td><b>29言語</b></td><td class="ok">◯ <span class="chk">公式が "and accent" と明記＝<b>訛りも一緒についてくる</b></span></td>
+      <td class="yen">Starter <b>$6</b><br>Creator $22／Pro $99</td></tr>
+      <tr><td class="nm">ElevenLabs Flash v2.5<br><span class="chk y"></span></td><td><b>32言語</b></td><td class="ok">◯</td>
+      <td class="yen">同上<br><span class="chk">★数値の正規化が既定で無効。電話番号・日付が変に読まれる</span></td></tr>
+      <tr><td class="nm"><a href="https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/introducing-new-multilingual-voices-supporting-41-languages-and-accents-with-aut/3891443" target="_blank" rel="noopener">Azure multilingual voice</a><br><span class="chk y"></span></td>
+      <td><b>41言語</b></td><td class="ok">◯ <span class="chk">★<b>auto language detection 付き</b>。個人が使える中では一番素直</span></td><td class="yen">従量のみ</td></tr>
+      <tr><td class="nm"><a href="https://huggingface.co/coqui/XTTS-v2" target="_blank" rel="noopener">Coqui XTTS-v2</a><br><span class="chk y"></span></td>
+      <td>17言語</td><td class="ok">◯ <span class="chk">6秒の音声でクローン</span></td>
+      <td class="yen"><b>0円</b>（自前GPU）<br><span class="chk ng"></span><b>★商用不可のライセンス。しかもCoqui社は2024年解散＝買う相手がいない。地雷</b></td></tr>
+      <tr><td class="nm"><a href="https://github.com/litagin02/Style-Bert-VITS2" target="_blank" rel="noopener">Style-Bert-VITS2</a><br><span class="chk y"></span></td>
+      <td>日英中3言語<br><span class="chk">JP-Extra版は日本語のみ</span></td><td class="mb">△</td><td class="yen"><b>0円</b> OSS<br><span class="chk">日本語は強いが多言語の主軸には向かない</span></td></tr>
+      <tr><td class="nm"><a href="https://voicevox.hiroshiba.jp/" target="_blank" rel="noopener">VOICEVOX</a><br><span class="chk y"></span></td>
+      <td class="ng">日本語のみ</td><td class="ng">×</td><td class="yen"><b>0円</b>・商用可</td></tr>
+    </table></div>
+
+    <h2 style="margin-top:16px"><span class="n">金</span>多言語で実際に売れた数字</h2>
+    <div class="tblwrap"><table>
+      <tr><th>誰が</th><th>何をした</th><th>言語数</th><th>出た数字</th></tr>
+      <tr><td class="nm"><a href="https://www.digitalhumans.com/case-studies/deutsche-telekom-case-study" target="_blank" rel="noopener">ドイツテレコム<br>Selena／Max</a><br><span class="chk y"></span></td>
+      <td>★<b>ECサイトで通信商材を対話販売</b>。いま一番「売っている」事例</td><td><span class="chk">ドイツ語<br>多言語数は非公表</span></td>
+      <td class="ok"><b>CVR 5.6倍<br>カゴ落ち 9%減<br>顧客評価 4.2/5</b><br><span class="chk">※プレスリリース側は5.8倍。公式ケーススタディの5.6倍を採用</span></td></tr>
+      <tr><td class="nm"><a href="https://www.digitalhumans.com/case-studies/city-of-amarillo" target="_blank" rel="noopener">米アマリロ市<br>Emma</a><br><span class="chk y"></span></td>
+      <td>★<b>多言語の数字が一番揃っている事例。</b>住民の1/4が家庭で英語を話さない</td>
+      <td class="ok"><b>約100言語</b><br><span class="chk">公式明記</span></td>
+      <td class="ok"><b>公開8週で16,800件<br>満足度98%<br>年180万ドル削減</b></td></tr>
+      <tr><td class="nm"><a href="https://www.digitalhumans.com/case-studies/noel-leeming" target="_blank" rel="noopener">Noel Leeming<br>Nola</a><br><span class="chk y"></span></td>
+      <td>★<b>家電量販の店頭キオスクで実際に売り場誘導・商品相談</b></td><td>?</td>
+      <td><b>オンライン版で1日1,000件</b><br><span class="chk">2週間で立ち上げ</span></td></tr>
+      <tr><td class="nm"><a href="https://www.digitalhumans.com/case-studies/kiehls" target="_blank" rel="noopener">Kiehl's／L'Oréal<br>Eve</a><br><span class="chk y"></span></td>
+      <td>★<b>店頭で肌質診断→スキンケアを推奨</b>する白衣のAI美容部員</td><td>?</td>
+      <td><b>最初の2週で2,000件超</b></td></tr>
+      <tr><td class="nm"><a href="https://www.digitalhumans.com/case-studies/city-of-amarillo" target="_blank" rel="noopener">UneeQ 全体平均</a><br><span class="chk y"></span></td>
+      <td>同社が公表している平均値</td><td>—</td>
+      <td>エンゲージメント300%増<br>カゴ落ち10%減／CVR2倍</td></tr>
+      <tr><td class="nm"><a href="https://aiforum.org.nz/2019/11/06/chatbot-or-digital-humans-part-of-daily-life-in-nz/" target="_blank" rel="noopener">ANZ銀行 Jamie</a><br><span class="chk y"></span></td>
+      <td>Web上のデジタル行員</td><td>?</td><td><b>100日で12,000会話</b></td></tr>
+      <tr><td class="nm"><a href="https://about.avatarin.com/blog/9660/" target="_blank" rel="noopener">avatarin newme<br>万博・愛知県ブース</a><br><span class="chk y"></span></td>
+      <td>★<b>日本で数少ない実数公表。</b>遠隔アバター3台</td><td>3言語<br>日英中</td>
+      <td class="ok"><b>7日間で延べ2,167組</b></td></tr>
+      <tr><td class="nm"><a href="https://newsroom.bankofamerica.com/content/newsroom/press-releases/2025/08/a-decade-of-ai-innovation--bofa-s-virtual-assistant-erica-surpas.html" target="_blank" rel="noopener">BofA Erica<br><span class="chk">※顔なし</span></a><br><span class="chk y"></span></td>
+      <td>★<b>比較対象。顔を持たないAIでもこれだけ使われる</b></td><td>英＋西<br>2言語</td>
+      <td><b>累計32億回・5,000万人</b></td></tr>
+    </table></div>
+
+    <h2 style="margin-top:16px"><span class="n">空港</span>多言語の数字を出しているのは空港だけ</h2>
+    <div class="tblwrap"><table>
+      <tr><th>どこ</th><th>何を置いた</th><th>言語数</th><th>切替</th></tr>
+      <tr><td class="nm"><a href="https://www.khou.com/article/news/local/houston-airport-robot-helper/285-60b7ec70-fe27-45c3-9403-aedf0a742b2d" target="_blank" rel="noopener">ヒューストン IAH</a><br><span class="chk y"></span></td>
+      <td>国際線到着エリアで90日パイロット。成功すればBush20台＋Hobby4台へ</td><td class="ok"><b>88言語</b></td><td class="mb">△</td></tr>
+      <tr><td class="nm"><a href="https://www.prnewswire.com/news-releases/introducing-spheres-very-own-robot-aura-301932009.html" target="_blank" rel="noopener">ラスベガス Sphere<br>Aura</a><br><span class="chk y"></span></td>
+      <td>ヒューマノイド5体が来場者を出迎え・案内・雑談</td><td class="ok"><b>83言語</b><br><span class="chk">報道ベース。公式は15主要＋147方言</span></td><td>?</td></tr>
+      <tr><td class="nm"><a href="https://www.passengerterminaltoday.com/news/wayfinding/boston-logan-deploys-amelia-ai-hologram-for-passenger-wayfinding.html" target="_blank" rel="noopener">ボストン Logan<br>Amelia</a><br><span class="chk y"></span></td>
+      <td>Protoホログラム9台でゲート・飲食・手荷物を案内</td><td><b>40言語</b></td><td class="mb">△</td></tr>
+      <tr><td class="nm"><a href="https://www.mappedin.com/resources/news/miami-international-airport-launches-ai-conversational-agents/" target="_blank" rel="noopener">マイアミ MIA</a><br><span class="chk y"></span></td>
+      <td>AIホログラム4台。経路QRを生成</td><td>音声<b>40</b>／文字<b>100超</b><br><span class="chk">★アバターの方が言語が少ない</span></td><td>?</td></tr>
+      <tr><td class="nm"><a href="https://www.avinteractive.com/news/displays/first-airport-terminal-deploys-fully-interactive-hologram-13-05-2026/" target="_blank" rel="noopener">ラガーディア Bridget</a><br><span class="chk y"></span></td>
+      <td><b>世界初の空港ターミナル常設インタラクティブ・ホログラム</b></td><td class="ng">2言語<br>英＋西</td><td>?</td></tr>
+      <tr><td class="nm"><a href="https://news.delta.com/innovation-incheon-robot-guides-robot-food-delivery" target="_blank" rel="noopener">仁川空港</a><br><span class="chk y"></span></td>
+      <td>案内ロボット（アバターではなく実機）</td><td>案内4／通訳6</td><td class="mb">△</td></tr>
+      <tr><td class="nm"><a href="https://www.digitalhumans.com/case-studies/qatar-airways" target="_blank" rel="noopener">カタール航空 Sama 2.0</a><br><span class="chk y"></span></td>
+      <td>世界初のAIバーチャル客室乗務員</td><td class="ng">2言語<br>英＋アラビア語</td><td class="mb">△</td></tr>
+    </table></div>
+    <p class="hint">★<b>ドバイDXB・アブダビ・NEOM・Marriott・Hilton・Mashreq銀行には、喋るアバターの常設事例を見つけられませんでした。</b>
+    DXBは25言語の自動アナウンス（音声のみ・一方向）だけです。無いものは無いと書いています。</p>
+  </div>
+
+  <!-- ══════ 日本の多言語 ══════ -->
+  <div class="panel" id="tagengo-jp">
+    <h2><span class="n">★多言語</span>日本の多言語アバター</h2>
+    <p class="sub">★自動切替が<b>公式に書いてある</b>のは3つだけ。あとは「何言語対応」としか書いていない。</p>
+    <div class="tblwrap"><table>
+      <tr><th>名前</th><th>何をしている</th><th>言語数</th><th>切替</th><th>出た数字</th></tr>
+
+      <tr><td class="nm"><a href="https://prtimes.jp/main/html/rd/p/000000103.000010333.html" target="_blank" rel="noopener">JetB うちのAI Avatar<br>×埼玉県長瀞町「とろにゃん」</a><br><span class="chk y"></span></td>
+      <td>★<b>日本で一番はっきり自動切替と書いてある事例。</b>町のマスコットを3Dアバター化して庁舎窓口＋観光案内所に設置</td>
+      <td class="ok"><b>15言語</b></td>
+      <td class="ok">◯<br><span class="chk">公式に「<b>話しかけるだけで<br>15言語に自動対応。<br>言語ごとの個別設定は不要</b>」</span></td>
+      <td>実証2026/3〜8月末<br><b>利用料無料</b>／年間約300万人の観光地</td></tr>
+
+      <tr><td class="nm"><a href="https://prtimes.jp/main/html/rd/p/000000053.000085375.html" target="_blank" rel="noopener">AVITA AVACOM</a><br><span class="chk y"></span></td>
+      <td>★<b>「100言語」の内訳を正直に分けて書いている唯一の会社</b></td>
+      <td><b>人が出ると約100言語<br>AIだけなら7言語</b></td>
+      <td class="ok">◯<br><span class="chk">公式に「<b>言語の自動検出機能</b>」</span></td><td>非公表</td></tr>
+
+      <tr><td class="nm"><a href="https://www.tokyo-np.co.jp/article/383457" target="_blank" rel="noopener">京王電鉄「こころ」</a><br><span class="chk y"></span></td>
+      <td>新宿・聖蹟桜ヶ丘の改札にタブレット。AI自動→難問は遠隔オペレーターへ</td>
+      <td><b>約100言語</b></td><td class="ok">◯</td><td>実証2025/1〜3<br>件数非公表</td></tr>
+
+      <tr><td class="nm"><a href="https://www.ntt-west.co.jp/news/2501/250108a.html" target="_blank" rel="noopener">Osaka Metro 梅田駅<br>×NTT西日本 ugo</a><br><span class="chk y"></span></td>
+      <td>案内ロボ＋NTT版LLM tsuzumi で駅ナカ店舗を案内</td>
+      <td><b>4言語</b>日英中韓</td>
+      <td class="ok">◯寄り<br><span class="chk">「<b>お客さまの使用する言語に合わせ</b>」</span></td><td>実証2025/1〜3</td></tr>
+
+      <tr><td class="nm"><a href="https://www.tifana.ai/products/personchat" target="_blank" rel="noopener">AIさくらさん</a><br><span class="chk y"></span></td>
+      <td>日本で一番広く入っている。受付・案内・発券・決済＋有人切替</td>
+      <td><b>80言語以上</b><br><span class="chk">製品ページに明記</span></td>
+      <td class="ng">?<br><span class="chk">★<b>自動切替の記載が<br>どのページにも無い</b></span></td>
+      <td><b>月間200時間の接客を代行</b><br><span class="chk">製品ページの公称</span></td></tr>
+
+      <tr><td class="nm"><a href="https://prtimes.jp/main/html/rd/p/000000028.000074248.html" target="_blank" rel="noopener">沖縄JTB<br>多言語AIコンシェルジュ</a><br><span class="chk y"></span></td>
+      <td>那覇空港（国内線2・国際線1）＋観光情報センター2の計5機。観光庁のオーバーツーリズム事業</td>
+      <td><b>アバター4言語<br>チャットボット20言語超</b><br><span class="chk">★アバターの方が少ない</span></td><td class="mb">△</td>
+      <td>サイネージ5機<br>実証2025/10〜2026/1</td></tr>
+
+      <tr><td class="nm"><a href="https://www.jreast.co.jp/press/2019/tokyo/20190618_to01.pdf" target="_blank" rel="noopener">JR東日本 案内AI</a><br><span class="chk y"></span></td>
+      <td>駅サイネージ型AI案内</td><td>基本<b>4言語</b><br>さくらさんは8言語</td><td>?</td><td><b>8駅30カ所35台</b></td></tr>
+
+      <tr><td class="nm"><a href="https://www.holdings.toppan.com/ja/news/2021/03/newsrelease210331_1.html" target="_blank" rel="noopener">TOPPAN BotFriends Vision<br>仙台・盛岡・秋田・新青森駅</a><br><span class="chk y"></span></td>
+      <td>多言語AIサイネージ＋遠隔有人のハイブリッド。JR東オリジナルキャラ「陸奥めぐ」。方言認識の検証も実施</td>
+      <td><span class="chk">記載なし</span></td><td>?</td>
+      <td><b>2025年度までに関連受注含め50億円</b>の売上目標</td></tr>
+
+      <tr><td class="nm"><a href="https://solution.toppan.co.jp/bpo/service/voicebiz.html" target="_blank" rel="noopener">TOPPAN VoiceBiz</a><br><span class="chk y"></span></td>
+      <td>窓口向け音声AI翻訳（アバターと組み合わせる部品）</td>
+      <td>音声入力<b>11</b>／出力<b>9</b><br>機械翻訳<b>30</b></td><td>?</td><td>非公表</td></tr>
+
+      <tr><td class="nm"><a href="https://www.nankai.co.jp/news/230119.html" target="_blank" rel="noopener">南海電鉄<br>難波・関西空港駅</a><br><span class="chk y"></span></td>
+      <td>乗換・周辺観光・ICカード案内。特急ラピート乗り場の案内</td>
+      <td><b>4言語</b>日英中韓</td><td>?</td>
+      <td>導入前は<b>翻訳機で1件3〜5分</b></td></tr>
+
+      <tr><td class="nm"><a href="https://kyodonewsprwire.jp/release/202411119669" target="_blank" rel="noopener">ヤマトHD×Spiral.AI<br>羽田空港「ケンゾウ」</a><br><span class="chk y"></span></td>
+      <td>第2・第3ターミナルのサイネージで施設・鉄道・宅急便・手荷物預かりを案内</td>
+      <td><b>3言語</b>日英中</td><td>?</td><td>実証2024/11〜12</td></tr>
+
+      <tr><td class="nm"><a href="https://www.oki.com/jp/press/2022/07/z22023.html" target="_blank" rel="noopener">OKI×関西エアポート</a><br><span class="chk y"></span></td>
+      <td>関空T1でAI無人案内＋オペレーター遠隔支援＋自動多言語翻訳</td>
+      <td><span class="chk">「自動多言語翻訳」とのみ</span></td><td>?</td><td>実証2022/7〜2023/1</td></tr>
+
+      <tr><td class="nm"><a href="https://www.ntt.com/about-us/press-releases/news/article/2025/0401.html" target="_blank" rel="noopener">ALSOK×NTT Com<br>大阪・関西万博</a><br><span class="chk y"></span></td>
+      <td>いのちの未来パビリオンにアバター3台。AI自動→難問はALSOKオペレーターへ。tsuzumi活用</td>
+      <td><span class="chk">記載なし</span></td><td>?</td><td>アバター3台</td></tr>
+
+      <tr><td class="nm"><a href="https://prtimes.jp/main/html/rd/p/000000189.000018339.html" target="_blank" rel="noopener">SELFBOT×日立<br>北海道の観光案内</a><br><span class="chk y"></span></td>
+      <td>RAG搭載の音声AIアバターをサイネージに。約2ヶ月で構築</td>
+      <td><b>4言語</b>日英中韓</td><td>?</td><td>北海道内数か所で実証</td></tr>
+
+      <tr><td class="nm"><a href="https://digital-highlights.hitachi.co.jp/_ct/17750346" target="_blank" rel="noopener">日立 AI駅係員</a><br><span class="chk y"></span></td>
+      <td>AIアバター搭載タッチパネルで駅周辺案内</td><td><b>4言語</b>日英中韓</td><td>?</td><td>非公表</td></tr>
+
+      <tr><td class="nm"><a href="https://avatarwork.pasonagroup.co.jp/facility/concierge/" target="_blank" rel="noopener">パソナ<br>アバターコンシェルジュ</a><br><span class="chk y"></span></td>
+      <td>ホテル向け。オペレーター＋自動翻訳</td><td><b>100言語</b><br><span class="chk">※中の人ありき</span></td><td class="mb">△</td><td>非公表</td></tr>
+
+      <tr><td class="nm"><a href="https://www.tifana.ai/works/20210105/" target="_blank" rel="noopener">成田空港 infotouch</a><br><span class="chk y"></span></td>
+      <td>施設案内・フライト情報・アクセス案内</td><td><b>4言語</b>日英中韓</td><td>?</td><td>非公表</td></tr>
+
+      <tr><td class="nm"><a href="https://www.tifana.ai/lg-products/lg-personchat" target="_blank" rel="noopener">福岡県粕屋町役場</a><br><span class="chk y"></span></td>
+      <td>庁舎案内・手続きガイド</td><td><b>4言語</b>日英中韓</td><td>?</td><td>非公表</td></tr>
+    </table></div>
+    <div class="kome">
+      <b>免税店・百貨店は空白地帯でした。</b>三越伊勢丹・ドンキ・ラオックスに、店頭AIアバター接客の実例は見つかりません。
+      三越伊勢丹はWeb多言語化とメタバースで、店頭の喋るアバターではない。<br>
+      <b>削減額や待ち時間短縮の具体値を出している日本の事例は、ゼロでした。</b>出ているのは「月間200時間代行」「7日で2,167組」「8駅35台」「50億円の受注目標」だけです。
+    </div>
+  </div>
+
   <!-- ══════ 海外 ══════ -->
   <div class="panel" id="kaigai">
     <h2><span class="n">A-1</span>海外で、実際にやっている会社</h2>
@@ -342,58 +569,116 @@
     <h2><span class="n">A-3</span>金のない人たちが、どうやっているか</h2>
     <p class="sub">★ここが一番のお手本です。上の企業と見た目はほぼ同じで、値段が10〜100倍違う。</p>
     <div class="tblwrap"><table>
-      <tr><th>名前</th><th>何か</th><th>部品</th><th>月いくら</th><th>背景</th></tr>
+      <tr><th>名前</th><th>何か</th><th>言語</th><th>切替</th><th>部品</th><th>月いくら</th><th>背景</th></tr>
+
+      <tr><td class="nm"><a href="https://github.com/semperai/amica" target="_blank" rel="noopener">Amica</a><br><span class="chk y"></span></td>
+      <td>★<b>多言語の自動判別を、ブラウザの中だけで本当にやっている代表格。</b>VRM 3Dキャラと音声・視覚で対話。感情エンジン付き</td>
+      <td class="ok"><b>99言語</b></td>
+      <td class="ok">◯寄り<br><span class="chk">transformers.js＋Whisper<br>をブラウザ内で回す</span></td>
+      <td>three.js＋three-vrm<br>＋Whisper＋ElevenLabs</td>
+      <td class="yen"><b>0円</b><br><span class="chk">大半がMIT</span></td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://aituberkit.com" target="_blank" rel="noopener">AITuberKit</a><br><span class="chk y"></span><br><a href="https://github.com/tegnike/aituber-kit" target="_blank" rel="noopener">GitHub</a></td>
       <td><b>これが本命の見本。</b>VRM・Live2D・PNGTuber対応、LLM15種、TTS11種、<b>デジタルサイネージモード＋人感検知つき</b></td>
+      <td>ドキュメント6言語<br><span class="chk">音声は繋ぐTTS次第</span></td>
+      <td class="ng">×〜△<br><span class="chk">★<a href="https://github.com/tegnike/aituber-kit/issues/223" target="_blank" rel="noopener">Issue #223</a>：OSとChromeの<br>言語設定が英語だと<br>常に英語で読み取る不具合</span></td>
       <td>Next.js＋three-vrm／Cubism</td>
       <td class="yen"><b>本体0円</b><br>＋LLM従量 数百〜数千円<br><span class="chk">商用は別ライセンス</span></td><td class="ok">◯</td></tr>
 
+      <tr><td class="nm"><a href="https://github.com/Open-LLM-VTuber/Open-LLM-VTuber" target="_blank" rel="noopener">Open-LLM-VTuber</a><br><span class="chk y"></span></td>
+      <td>ハンズフリー音声対話＋Live2D。<b>完全ローカル／オフラインで動く</b>。Win/Mac/Linux</td>
+      <td class="ok"><b>ASRを選べる<br>＝99言語も可</b></td>
+      <td class="ok">◯可能<br><span class="chk">Faster-Whisper／whisper.cpp<br>／sherpa-onnx から選ぶ</span></td>
+      <td>Live2D＋任意ASR/TTS</td>
+      <td class="yen"><b>0円</b> OSS</td><td class="ok">◯</td></tr>
+
+      <tr><td class="nm"><a href="https://github.com/xenova/whisper-web" target="_blank" rel="noopener">whisper-web<br>(transformers.js)</a><br><span class="chk y"></span></td>
+      <td>★<b>ブラウザの中でWhisperを回す。サーバ不要。</b>Web Speech APIの「1言語だけ」の壁を越える唯一の現実解</td>
+      <td class="ok"><b>99言語</b></td>
+      <td class="ok">◯<br><span class="chk">モデル約290MBの<br>初回DLが重い</span></td>
+      <td>transformers.js</td>
+      <td class="yen"><b>0円</b></td><td>—</td></tr>
+
       <tr><td class="nm"><a href="https://chatvrm.glitch.me" target="_blank" rel="noopener">ChatVRM</a><br><span class="chk y"></span><br><a href="https://github.com/pixiv/ChatVRM" target="_blank" rel="noopener">GitHub(pixiv)</a></td>
       <td>ブラウザだけで3Dキャラと音声会話。pixiv製。<span class="chk">公式デモは停止、後継がglitch版</span></td>
+      <td>日本語</td><td class="ng">×</td>
       <td>three-vrm＋GPT＋Koeiro</td><td class="yen"><b>0円</b>＋APIキー実費</td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://pixiv.github.io/three-vrm/docs/" target="_blank" rel="noopener">three-vrm</a><br><span class="chk y"></span></td>
       <td>Three.jsでVRMを出す土台。VRoid Studio(無料)のモデルがそのまま載る</td>
+      <td>—<br><span class="chk">口は5母音<br>＝言語非依存</span></td><td>—</td>
       <td>three.js</td><td class="yen"><b>0円</b></td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://live2d.github.io/" target="_blank" rel="noopener">Live2D 公式Webサンプル</a><br><span class="chk y"></span><br><a href="https://github.com/Live2D/CubismWebSamples" target="_blank" rel="noopener">GitHub</a></td>
       <td>Live2D本家のブラウザ表示サンプル。ここから始められる</td>
+      <td>—<br><span class="chk">口は母音駆動</span></td><td>—</td>
       <td>Cubism SDK for Web</td><td class="yen"><b>0円</b><br><span class="chk">小規模は無償枠</span></td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://github.com/stevenjoezhang/live2d-widget" target="_blank" rel="noopener">live2d-widget</a><br><span class="chk y"></span></td>
       <td><b>script1行でサイトに看板娘が常駐する。</b>透過ウィジェットなのでサイトの背景がそのまま出る</td>
+      <td>—</td><td>—</td>
       <td>jsDelivr配信</td><td class="yen"><b>0円</b></td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://store.steampowered.com/app/1325860/VTube_Studio/" target="_blank" rel="noopener">VTube Studio＋OBS</a><br><span class="chk y"></span></td>
       <td><b>背景差し替えが一番確実に効く構成。</b>VTS側「透過(OBS)」ON＋OBS側「透過を許可」</td>
+      <td>—</td><td>—</td>
       <td>Live2D＋OBS</td>
       <td class="yen"><b>本体0円</b><br>透かし消し<b>¥1,520買切</b></td><td class="ok">◯</td></tr>
 
+      <tr><td class="nm"><a href="https://elevenlabs.io/docs/overview/models" target="_blank" rel="noopener">ElevenLabs<br>Multilingual v2</a><br><span class="chk y"></span></td>
+      <td>★<b>個人が多言語をやるなら声はここ。</b>同じ声のまま言語を跨げる</td>
+      <td class="ok"><b>29言語</b><br>Flash v2.5は32</td><td class="ok">◯<br><span class="chk">訛りも一緒についてくる</span></td>
+      <td>API</td><td class="yen">Starter <b>$6</b><br>Creator $22</td><td>—</td></tr>
+
       <tr><td class="nm"><a href="https://voicevox.hiroshiba.jp/" target="_blank" rel="noopener">VOICEVOX</a><br><span class="chk y"></span></td>
       <td>日本語TTS。<b>完全無料・商用可</b>・話者50種以上。AITuberKitが標準対応</td>
+      <td class="ng">日本語のみ</td><td class="ng">×</td>
       <td>ローカル/API</td><td class="yen"><b>0円</b></td><td>—</td></tr>
+
+      <tr><td class="nm"><a href="https://github.com/litagin02/Style-Bert-VITS2" target="_blank" rel="noopener">Style-Bert-VITS2</a><br><span class="chk y"></span></td>
+      <td>感情表現の強い日本語TTS。AITuberKitが標準対応</td>
+      <td>日英中3言語<br><span class="chk">JP-Extraは日本語のみ</span></td><td class="mb">△</td>
+      <td>OSS</td><td class="yen"><b>0円</b><br><span class="chk">学習にはGPU 8〜12GB</span></td><td>—</td></tr>
+
+      <tr><td class="nm"><a href="https://huggingface.co/coqui/XTTS-v2" target="_blank" rel="noopener">Coqui XTTS-v2</a><br><span class="chk y"></span></td>
+      <td>6秒の音声で声をクローンし、言語を跨いで喋らせる</td>
+      <td>17言語</td><td class="ok">◯</td>
+      <td>OSS／自前GPU</td>
+      <td class="yen"><b>0円</b><br><span class="ng">★商用不可。Coqui社は<br>2024年解散＝買う相手がいない</span></td><td>—</td></tr>
+
+      <tr><td class="nm"><a href="https://github.com/ggml-org/whisper.cpp" target="_blank" rel="noopener">whisper.cpp</a><br><span class="chk y"></span></td>
+      <td>Whisperをローカルで回す。耳の担当</td>
+      <td class="ok"><b>99言語</b></td><td class="ok">◯<br><span class="chk">language=auto</span></td>
+      <td>C/C++</td><td class="yen"><b>0円</b></td><td>—</td></tr>
 
       <tr><td class="nm"><a href="https://github.com/koduki/ai-tuber" target="_blank" rel="noopener">紅月れん（koduki）</a><br><span class="chk y"></span></td>
       <td>GCP上でOBSを回して自動配信するAITuberの<b>実運用コード</b></td>
+      <td>日本語</td><td class="ng">×</td>
       <td>GCP＋OBS</td><td class="yen">0円＋GCP実費<br>数百〜数千円</td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://github.com/tegnike/aituber-list" target="_blank" rel="noopener">AITuber一覧</a><br><span class="chk y"></span></td>
       <td><b>いま実際に動いているAITuberの名簿。</b>1日2回更新。生きた実例を掘るならここが入口</td>
+      <td>—</td><td>—</td>
       <td>—</td><td class="yen"><b>0円</b></td><td>—</td></tr>
 
       <tr><td class="nm"><a href="https://github.com/Hana-ame/live2d-viewer" target="_blank" rel="noopener">live2d-viewer</a><br><span class="chk y"></span></td>
       <td>完全フロントエンドのCubismビューア。公式7体内蔵＋自前モデル読込</td>
+      <td>—</td><td>—</td>
       <td>WebGL</td><td class="yen"><b>0円</b></td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://qiita.com/daisuke_ishii/items/8f48e1d20e16c0dd31a5" target="_blank" rel="noopener">Qiita：ブラウザでLive2Dと話す</a><br><span class="chk y"></span></td>
       <td>個人が書いた手順書。localhostで動くところまで</td>
+      <td>日本語</td><td class="ng">×</td>
       <td>Cubism SDK</td><td class="yen"><b>0円</b></td><td class="ok">◯</td></tr>
 
       <tr><td class="nm"><a href="https://github.com/livekit/agents" target="_blank" rel="noopener">LiveKit Agents</a><br><span class="chk y"></span></td>
       <td>音声エージェントのOSS土台。上のアバターと繋ぐ配管</td>
+      <td>—</td><td>—</td>
       <td>WebRTC</td><td class="yen">無料枠〜小額従量</td><td>—</td></tr>
     </table></div>
+    <p class="hint">★<b>多言語だけで言えば、個人のほうが企業より前に出られます。</b>
+    transformers.js＋Whisper をブラウザで回せば<b>99言語の自動判別が0円・サーバ不要</b>で成立する。
+    一方、企業向けの公式ドキュメントで自動切替を明記しているのは Tavus だけでした。</p>
     <div class="kome">
       <b>差額の正体。</b>企業向けの最安公開値が「初期30万円〜」、個人側が「初期0円・月数百円」。<br>
       この10〜100倍の差は、<b>RAG・多言語・有人エスカレーション・SLA・サイネージ機器・保守</b>の代金であって、<br>
@@ -424,6 +709,35 @@
       「ケーブル会社のボットが<b>偽のタイピング音</b>を鳴らした。ボットはボットでいい、<b>騙そうとするな</b>」（<a href="https://news.ycombinator.com/item?id=43654421" target="_blank" rel="noopener">原文</a>）<br>
       <span class="chk">★日本語圏で「撤退した」という一次情報は見つかりませんでした。検索結果がほぼ全部ベンダーの導入事例記事です。これ自体が所見です。</span>
     </div>
+
+    <h2 style="margin-top:18px"><span class="n">★多言語</span>多言語にすると、さらにこう壊れます</h2>
+    <div class="tblwrap"><table>
+      <tr><th>何が</th><th>どう壊れるか</th><th>出どころ</th></tr>
+      <tr><td class="nm">訛りの強い英語</td>
+      <td class="ng">★<b>フィンランド語やアラビア語と誤判定され、その誤検出した言語で書き起こす。</b>つまり文字起こしではなく<b>勝手に翻訳が起きて、話者が使っていない言語で出力される</b></td>
+      <td><a href="https://www.assemblyai.com/docs/speech-to-text/pre-recorded-audio/automatic-language-detection" target="_blank" rel="noopener">AssemblyAI公式</a><span class="chk y"></span></td></tr>
+      <tr><td class="nm">候補にない言語</td>
+      <td class="ng"><b>「わからない」という答えが存在しない。</b>必ず候補のどれかを返す。日英中で組んだ店に韓国語の客が来ると、必ず日英中のどれかとして処理される</td>
+      <td><a href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-identification" target="_blank" rel="noopener">Azure公式</a><span class="chk y"></span></td></tr>
+      <tr><td class="nm">日本語＋英単語<br>（コードスイッチング）</td>
+      <td class="ng">★★<b>ここが日本の接客に直撃します。</b>Azureは「同一文の中の言語変化は検出しない」と公式に明記。「そのWi-Fiのパスワードって」が毎日発生するのに、そこが一番弱い</td>
+      <td><a href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-identification" target="_blank" rel="noopener">Azure公式</a><span class="chk y"></span></td></tr>
+      <tr><td class="nm">短い発話</td>
+      <td class="ng">★<b>接客の発話形態と、言語判定が得意な条件が真逆。</b>AssemblyAIは「15〜90秒を推奨」、Googleは「候補が少ないほど当たる」。現場は「トイレどこ？」の数秒</td>
+      <td><a href="https://docs.cloud.google.com/speech-to-text/docs/multiple-languages" target="_blank" rel="noopener">Google公式</a><span class="chk y"></span></td></tr>
+      <tr><td class="nm">Whisperの決め打ち</td>
+      <td class="ng"><b>冒頭30秒で言語を決めてしまう。</b>日本語で始まって英語に続く音声が、全体として日本語と誤検出された報告</td>
+      <td><a href="https://github.com/m-bain/whisperX/issues/466" target="_blank" rel="noopener">whisperX #466</a><span class="chk n"></span></td></tr>
+      <tr><td class="nm">ElevenLabsの誤読</td>
+      <td class="ng">文中に別言語が混ざると<b>英語の発音にフォールバックする</b>。モデルは句の境界でしか言語を判定しないので、句読点や改行を自分で入れる前処理が要る</td>
+      <td><a href="https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices" target="_blank" rel="noopener">ElevenLabs公式</a><span class="chk n"></span></td></tr>
+      <tr><td class="nm">Deepgramの罠</td>
+      <td class="ng"><b>言語自動検出がストリーミングで使えない。</b>HeyGenのSTTがこれなので、HeyGenで「勝手に聞き分ける」のは現状かなり難しい</td>
+      <td><a href="https://developers.deepgram.com/docs/language-detection" target="_blank" rel="noopener">Deepgram公式</a><span class="chk y"></span></td></tr>
+      <tr><td class="nm">AITuberKitの実害</td>
+      <td class="ng">OSとChromeの言語設定が英語だと、<b>日本語で話しかけても常に英語で読み取る</b></td>
+      <td><a href="https://github.com/tegnike/aituber-kit/issues/223" target="_blank" rel="noopener">Issue #223</a><span class="chk y"></span></td></tr>
+    </table></div>
   </div>
 
   <!-- ══════ AI3社 ══════ -->
@@ -585,14 +899,24 @@
       ブラウザの中で絵を作る方式だけが、canvasが透けて、後ろを自由に敷ける。<br>
       しかもAITuberKitには<b>デジタルサイネージモードと人感検知が最初から入っています</b>。接客用に作られている。
     </p>
-    <p class="kane">かかる金：本体0円／VTube Studio透かし消し ¥1,520買切／LLM・TTS従量 月数百〜数千円。<br>
-    ★商用で使うなら作者の商用ライセンスが別途必要です（個別見積）。そこだけ先に確認が要ります。</p>
+    <p class="why" style="margin-top:12px">
+      <b>多言語も、ここに足すのが一番安く済みます。</b>耳は <b>transformers.js＋Whisper をブラウザの中で</b>回せば
+      <b>99言語の自動判別が0円・サーバ不要</b>。声は <b>ElevenLabs Multilingual v2（29言語・$6/月）</b>なら
+      キャラの声を変えずに言語を跨げる。口は VRM の5母音なので、言語が変わっても勝手についてきます。<br>
+      <b>実際に動いている見本が既にあります</b> —
+      <a href="https://github.com/semperai/amica" target="_blank" rel="noopener">Amica</a>
+      がまさにこの構成（three-vrm＋transformers.js＋Whisper）で、ほぼMITライセンスです。
+    </p>
+    <p class="kane">かかる金：本体0円／VTube Studio透かし消し ¥1,520買切／LLM従量 月数百〜数千円／多言語の声を足すなら ElevenLabs $6〜22（900〜3,300円）。<br>
+    ★商用で使うなら AITuberKit 作者の商用ライセンスが別途必要です（個別見積）。そこだけ先に確認が要ります。<br>
+    ★Coqui XTTS-v2 は無料で多言語クローンができますが<b>商用不可、かつ会社が解散していてライセンスを買う相手がいません</b>。触らないほうがいいです。</p>
   </div>
 
   <p class="foot">
-    961号・2026-09-20 作成／全リンクは押せる状態で置いています<br>
+    961号・2026-09-20 作成（多言語の軸を追加）／全リンクは押せる状態で置いています<br>
     ★表の「未確認」は、検索結果にタイトルは出たが本文を開けなかったものです。開いて確かめてください。<br>
-    外部AIに聞くのにかかった金額：<b>合計 28円</b>（0.069＋2.548＋25.866）。課金・契約・アカウント作成はしていません。
+    ★<b>「切替」欄の「?」は、公式ページに書いていなかったという意味です。</b>できないという意味ではありません。聞けば分かります。<br>
+    外部AIに聞くのにかかった金額：<b>合計 28円</b>（0.069＋2.548＋25.866）。多言語の追加調査は<b>0円</b>。課金・契約・アカウント作成はしていません。
   </p>
 </div>
 </body></html>
