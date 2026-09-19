@@ -132,6 +132,8 @@ for (const c of CASES.cases) {
   }
 
   /* ── 採点（機械判定のみ）──────────────────────────── */
+  /* たまごさんの軸は「頼んだ種類のものが出たか（4件中何件）」。
+     ○か×かではなく、4枚のうち何枚が頼んだものだったかで点を付ける。 */
   const w = c.want || {};
   if (w.kind === "ASK") {
     r.atari = b.act === "ask";
@@ -179,6 +181,12 @@ for (const c of CASES.cases) {
     r.bad.push(`4枚のうち同じ人が重なっている（${r.betsu}組しか居ない）`);
   if (r.ms > 1000) r.bad.push(`棚引きに ${r.ms}ms かかった`);
 
+  /* 4枚中何枚が頼んだものだったか（0〜1）。名指しはここが効く */
+  if (w.artist && w.artist !== "__NONE__") r.ten = (r.hit || 0) / 4;
+  else if (w.kind && !["ASK", "ONE", "MORE"].includes(w.kind))
+    r.ten = r.cards.length ? r.cards.filter((x) => x.kind === w.kind).length / 4 : (r.atari ? 1 : 0);
+  else r.ten = r.atari ? 1 : 0;
+
   if (r.cards.length) lastCards = r.cards.map((x) => x.key);
   rows.push(r);
 }
@@ -200,7 +208,7 @@ const rate = (f) => (scored.length ? scored.filter(f).length / scored.length : 0
 const withCards = rows.filter((r) => r.cards.length);
 const onk = withCards.filter((r) => r.ongaku);   /* 重なり・バラけは曲の棚だけで測る */
 const pt = {
-  atari:   rate((r) => r.atari) * 40,
+  atari:   (scored.reduce((s, r) => s + (r.ten || 0), 0) / scored.length) * 40,
   kudoku:  (withCards.length ? withCards.filter((r) => (!r.ongaku || r.betsu === r.cards.length) && !r.kasanari).length / withCards.length : 0) * 20,
   tanoshi: (onk.length ? onk.reduce((s, r) => s + r.betsu / Math.max(1, r.cards.length), 0) / onk.length : 0) * 20,
   hayasa:  (withCards.length ? withCards.filter((r) => r.ms <= 1000).length / withCards.length : 0) * 10,
@@ -250,6 +258,7 @@ const out = {
 };
 fs.writeFileSync(path.join(ROOT, "tools/967_fukumen_result.json"), JSON.stringify(out, null, 1));
 console.log(`${out.n}問  総合 ${total}点`);
-for (const r of rows) console.log(` ${r.atari === undefined ? "―" : r.atari ? "○" : "×"} ${r.id} ${r.say}  → ${r.names.join(" / ") || "(なし)"}${r.bad.length ? "\n      ⚠ " + r.bad.join(" ／ ") : ""}`);
+const mk = (r) => (r.ten === undefined ? "―" : r.ten >= 0.75 ? "○" : r.ten > 0 ? "△" : "×");
+for (const r of rows) console.log(` ${mk(r)} ${r.id} ${r.say}  → ${r.names.join(" / ") || "(なし)"}${r.bad.length ? "\n      ⚠ " + r.bad.join(" ／ ") : ""}`);
 console.log("\n直すところ 多い順:");
 naosu.slice(0, 6).forEach((x, i) => console.log(` ${i + 1}. (${x.n}件) ${x.k}  [${x.ids.join(",")}]`));

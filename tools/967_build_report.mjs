@@ -15,12 +15,13 @@ const hiduke = `${day.getFullYear()}.${String(day.getMonth() + 1).padStart(2, "0
 
 /* ── 直すところ：数字は全部 result.json から ─────────────── */
 const namae = D.rows.filter((r) => r.want && r.want.artist && r.want.artist !== "__NONE__");
-const namaeNG = namae.filter((r) => !r.atari || r.hit === 1);
+const namaeNG = namae.filter((r) => (r.hit || 0) < 2);
+const heikin = (namae.reduce((s, r) => s + (r.hit || 0), 0) / namae.length).toFixed(1);
 const NAOSU = [
   {
     midashi: "名前を言っても、その人が出てこない",
-    kazu: `${namaeNG.length} / ${namae.length} 問`,
-    hon: `名指しで頼んだ ${namae.length} 問すべてで、頼んだ本人が 4枚中 0〜1枚 しか出なかった。`
+    kazu: `${namaeNG.length} / ${namae.length} 問　4枚中ならして ${heikin} 枚`,
+    hon: `名指しで頼んだ ${namae.length} 問すべてで、頼んだ本人は 4枚中 0〜1枚 しか出なかった（ならして ${heikin} 枚）。`
        + `「坂本龍一かけて」で出たのは 矢野顕子・Kraftwerk・青葉市子・松任谷由実 の4枚で、本人は1枚も無い。`,
     naze: `棚の中では、お客さんが名指しした名前も、案内人が自分で足した8〜14組の名前も、同じ点（120点）で並ぶ。`
         + `そのあと「1組につき1枚ずつ」配るので、上位4組に入れなければ本人は0枚、入っても1枚で終わる。`,
@@ -61,10 +62,12 @@ const jiku = [
 ];
 
 const gyou = D.rows.map((r) => {
-  const mark = r.atari === undefined ? "―" : r.atari ? "○" : "×";
-  return `<tr class="${r.atari === false ? "ng" : ""}">
+  const t = r.ten;
+  const mark = t === undefined ? "―" : t >= 0.75 ? "○" : t > 0 ? "△" : "×";
+  const cls = t >= 0.75 ? "ok" : t > 0 ? "sa" : "x";
+  return `<tr class="${t < 0.75 ? "ng" : ""}">
   <td class="id">${esc(r.id)}</td>
-  <td class="mk ${r.atari ? "ok" : r.atari === false ? "x" : ""}">${mark}</td>
+  <td class="mk ${cls}">${mark}</td>
   <td class="say">${esc(r.say)}</td>
   <td class="got">${r.names.length ? r.names.map((n) => esc(n)).join(" ／ ") : '<i>出さなかった（これが正解の問）</i>'}</td>
   <td class="bad">${r.bad.map((b) => esc(b)).join("<br>")}</td>
@@ -114,6 +117,7 @@ tr.ng{background:rgba(193,68,46,.05)}
 .id{color:#a39a85;font-size:.68rem;white-space:nowrap}
 .mk{font-size:.95rem;width:1.4em}
 .mk.x{color:var(--shu)}
+.mk.sa{color:#b58a3a}
 .say{white-space:nowrap}
 .got{color:#5d6b82}
 .bad{color:var(--shu);font-size:.7rem}
@@ -133,7 +137,7 @@ a{color:var(--shu)}
 <h1>案内人（959）に、お客さんのふりをして ${D.n}問きいてきました</h1>
 <p class="sub">${hiduke}　対象：${esc(D.target)}</p>
 
-<div class="ten"><b>${D.total}</b><span>点／100点　${D.n}問</span></div>
+<div class="ten"><b>${D.total}</b><span>点／100点　${D.n}問　○は「4枚のうち3枚以上が頼んだもの」</span></div>
 <div class="jiku">
 ${jiku.map(([n, v, m]) => `  <div><span>${n}</span><span class="bar"><i style="width:${(v / m) * 100}%"></i></span><em>${v.toFixed(0)}／${m}</em></div>`).join("\n")}
 </div>
