@@ -44,6 +44,15 @@
     color:#d8cfb8;line-height:2}
   .log b{color:#e8c86a}
   .log .t{color:#7d7563}
+
+  .ima{background:#1c1913;border-radius:14px;padding:16px 14px;margin-top:14px;color:#e8dcc0}
+  .ima h3{font-family:"Hiragino Mincho ProN",serif;font-weight:400;font-size:.92rem;margin:0 0 8px;color:#e8c86a}
+  .hito{background:#f4efe4;color:#2a2622;border-radius:10px;padding:12px 12px;margin:8px 0 0;
+    font-size:.82rem;line-height:1.85;word-break:break-all;user-select:all;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .genbun{background:#fbf8f1;border:1px solid #e2dccd;border-radius:10px;padding:13px;
+    margin-top:12px;font-size:.76rem;line-height:1.9;white-space:pre-wrap;word-break:break-word;
+    max-height:360px;overflow:auto;user-select:all;color:#2a2622}
 </style></head><body>
 <div class="wrap">
   <div class="head">
@@ -52,6 +61,78 @@
     <p>たまごさんの読みが当たっていました。GitHub経由なら、API代は1円もかかりません。<br>
        Geminiには今日、実際に仕事を2本出して、2本とも提出まで受け取りました。<br>
        2026-09-20 01:23〜02:20 実測／この調査でかかった金額 <b>0円</b></p>
+  </div>
+
+
+  <!-- ★969番：いますぐ使う（2026-09-20 追加） -->
+  <div class="panel">
+    <h2>★ いますぐ：喋る卵のアバターの調べものを、0円で外に出す
+      <small>お題はもう立ててあります。たまごさんは1行言うだけです</small></h2>
+
+    <p class="lead">GitHubにお題を1本置きました。<b>Issue #446</b>です。<br>
+      Genspark と Grok の画面で、下の1行をそのまま言う（貼る）だけで動きます。</p>
+
+    <div class="ima">
+      <h3>① Gensparkの画面で、これを言う</h3>
+      <p class="hito">https://github.com/tamago2022/joy-relief-station/issues/446 を見て、書いてあることを全部調べて、このIssueのコメントで答えて。時間はかかっていい。</p>
+      <h3 style="margin-top:14px">② Grokの画面で、これを言う</h3>
+      <p class="hito">https://github.com/tamago2022/joy-relief-station/issues/446 を見て、書いてあることを全部調べて、このIssueのコメントで答えて。Xの投稿からの20件も忘れずに。</p>
+    </div>
+
+    <a class="btn" href="https://github.com/tamago2022/joy-relief-station/issues/446" target="_blank" rel="noopener">お題（Issue #446）を開く</a>
+
+    <div class="ok"><b>返事は、たまごさんが貼らなくていいです。</b>
+      コメントが来たら5分以内にこちらが拾って、<b>要約せず原文のまま</b>
+      961号のページへ並べます。かかるお金は0円です。<br>
+      → <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/961-talking-avatar-jirei.html" target="_blank" rel="noopener">961号：返事が並ぶページ</a></div>
+
+    <p class="note">出したお題の全文（コピーできます。別のAIに直接貼るときはこれを使ってください）：</p>
+    <div class="genbun">喋る卵のキャラクターをWebサイトに置きたい。以下を全部調べて、**このIssueのコメントで答えてください。**
+時間はかかっていい。急ぎません。深さを優先してください。
+
+---
+
+## 【今あるもの】（すでに動いているもの。作り直す必要はない）
+
+- **頭脳と声＝Gemini Live API。** 実測で1分あたり1.2〜1.5円。喋り終えてから返事が始まるまで約1.4秒。これは動いている。
+- **キャラ＝1枚のPNGを「体・目・口」に切って、層（レイヤー）で動かしている。** 全部で42KB、外部ライブラリ0、月0円。呼吸でゆっくり揺れる。口は音の大きさ（音量）で開け閉めしている。
+- **キャラの中身は差し替える前提で作ってある。** 中の箱は「母音・呼吸・揺れ」の3つの数値だけを受け取る形にしてあるので、描画のやり方は丸ごと入れ替えられる。
+
+## 【やりたいこと】
+
+- NVIDIA Project Tokkio や HeyGen のような、**口が音素（母音・子音）で動き、体が自然に揺れる**トーキングアバター。
+- **背景を差し替えられること。**（キャラと背景は別レイヤーであること）
+- **ブラウザとスマホで動くこと。GPUサーバーは持っていない。**
+- **月額はできるだけ0円に近く。**
+- 卵の形のオリジナルキャラクター。**実写の人間ではない。**
+
+## 【聞きたいこと】（①〜⑦すべてに答えてください）
+
+1. **この条件で一番良い作り方を、手順つきで。** 使うライブラリ名とバージョンまで書いてください。
+2. **卵のキャラを、その方式で使える形にするには、誰が何を作ればいいか。**（3Dモデル？ Live2Dの分割パーツ？ 誰に頼めるか、いくらかかるか）
+3. **口を音素で動かす部分**の、ブラウザで動く実装を、**動くサンプルのURL付きで。**
+4. **体の揺れ・呼吸・視線**を自然にする定石。**止まった人形に見せない方法。**
+5. **同じことをやっている個人の実例を、GitHubリポジトリのURL付きで10件。**
+6. **やってみて失敗した話・途中でやめた話**があれば。
+7. **スマホでの重さ（FPS・ファイル容量）の実測が載っている記事。**
+
+## 【答え方】（ここを守ってください）
+
+- **結論を先に1つ。** そのあと手順。
+- **URLは必ず付ける。実際に見られるものだけ。**
+- **分からないことは「分からない」と書いてください。推測を事実として書かないでください。**
+- 答えは**このIssueのコメント**に書いてください。（ファイルやPRではなく、コメントで）
+
+---
+
+## 【Grokへ・追加で1つだけ】
+
+- **Xの投稿から、喋るアバターを実際にサイトに置いている個人・企業を、URL付きで20件。日本語の投稿も含めて。**
+
+---
+
+&lt;sub&gt;※このIssueは掲示板です。Genspark・Grok・その他のAIが、それぞれコメントで答えます。他の人の答えを消したり書き換えたりしないでください。コメントは自動で拾われ、要約せずそのまま公開ページに並べられます。&lt;/sub&gt;
+</div>
   </div>
 
   <!-- ⓪ 本丸 -->
