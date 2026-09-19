@@ -18,6 +18,15 @@
   .meter{text-align:center;color:#c9bda4;font-size:.74rem;margin:4px 0 0;
     font-variant-numeric:tabular-nums;line-height:1.6}
   .meter b{color:var(--kin);font-size:.95rem}
+  .lag{text-align:center;color:#9d947f;font-size:.72rem;margin:3px 0 0;
+    font-variant-numeric:tabular-nums;line-height:1.6;min-height:1.1em}
+  .lag b{color:#d8cdb4}
+  .mode{display:flex;gap:8px;margin:0 0 12px}
+  .mode label{flex:1 1 0;text-align:center;font-size:.84rem;font-weight:700;padding:10px 6px;
+    border-radius:12px;border:1px solid #d8d1c0;background:#fff;cursor:pointer;line-height:1.35}
+  .mode label.on{background:var(--midori);border-color:var(--midori);color:#fff}
+  .mode label small{display:block;font-size:.66rem;font-weight:400;opacity:.8;margin-top:3px}
+  .mode input{display:none}
   .panel{background:var(--paper);border-radius:16px;padding:18px;margin-top:14px;border:1px solid #e2dccd}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1rem;
      letter-spacing:.06em;margin:0 0 10px;color:var(--sub)}
@@ -97,6 +106,7 @@
     <canvas id="face" width="680" height="680"></canvas>
     <div class="state" id="state">「話す」を押してください</div>
     <div class="meter" id="meter"></div>
+    <div class="lag" id="lag"></div>
 
     <div class="player" id="player">
       <div class="frame" id="frame"></div>
@@ -123,6 +133,7 @@
   </div>
 
   <div class="panel">
+    <div class="mode" id="mode"></div>
     <div class="row">
       <button id="go">話す</button>
       <button id="stop">やめる</button>
@@ -152,7 +163,7 @@
         値段の出どころ：
         <a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener">OpenAI</a>／
         <a href="https://docs.x.ai/developers/model-capabilities/audio/voice" target="_blank" rel="noopener">xAI</a>。
-        1ドル155円で換算。<a href="955-cost-measure.html">同じ台本で3つ実測する台</a>／<a href="953-voice-compare.html">声くらべ</a>
+        1ドル157円で換算。<a href="955-cost-measure.html">同じ台本で3つ実測する台</a>／<a href="953-voice-compare.html">声くらべ</a>
       </div>
     </details>
   </div>
@@ -164,7 +175,8 @@
   const keyEl=$("key"), xkeyEl=$("xkey"), goEl=$("go"), stopEl=$("stop");
   const stateEl=$("state"), logEl=$("log"), meterEl=$("meter");
   const cardsEl=$("cards"), emptyEl=$("empty"), moreEl=$("more");
-  const YEN=155;
+  const lagEl=$("lag");
+  const YEN=157;
   // 正本§8：鍵・モデル・声の生UIは客前に出さない。?dev=1 のときだけ開く。
   try{
     const dev=new URLSearchParams(location.search).get("dev")==="1";
@@ -175,36 +187,66 @@
   try{ const k=localStorage.getItem("tamago_xai_key");    if(k) xkeyEl.value=k; }catch(e){}
 
   /* ── 値段表（2026-09-19 公式より書き写し。1Mトークンあたりのドル） ── */
+  /* 安い版の中身と値段（2026-09-19 公式より書き写し）
+     聞く gpt-4o-mini-transcribe $0.003/分 ／ 考える gpt-4o-mini 入$0.15・出$0.60（100万トークン）
+     喋る gpt-4o-mini-tts 文字入$0.60（100万トークン）＋出た声 約$0.015/分            */
+  const SPLIT={ stt:"gpt-4o-mini-transcribe", chat:"gpt-4o-mini", tts:"gpt-4o-mini-tts",
+    price:{ sttPerMin:0.003, chatIn:0.15, chatOut:0.60, ttsTextIn:0.60, ttsPerMin:0.015 } };
+
   const ENGINES={
-    mini:{ label:"OpenAI mini（既定・安い）", vendor:"openai",
+    split:{ label:"安い版（聞く・考える・喋るを分ける）", vendor:"split",
+      short:"安い版", hint:"約2〜3円/分・すこし遅い" },
+    mini:{ label:"速い版（リアルタイム mini）", vendor:"openai",
+      short:"速い版", hint:"約15円/分・返事が即",
       models:["gpt-realtime-2.1-mini","gpt-realtime-mini"],
       price:{audioIn:10,audioCached:0.30,audioOut:20,textIn:0.60,textCached:0.06,textOut:2.40}},
-    full:{ label:"OpenAI 本式（高い）", vendor:"openai",
+    full:{ label:"リアルタイム本式（いちばん高い）", vendor:"openai",
       models:["gpt-realtime-2.1","gpt-realtime"],
       price:{audioIn:32,audioCached:0.40,audioOut:64,textIn:4.00,textCached:0.40,textOut:24.00}},
     grok:{ label:"xAI Grok（定額）", vendor:"xai",
       models:["grok-voice-latest"], perMin:0.08}
   };
-  let engineKey=(()=>{ try{return localStorage.getItem("tamago_engine")||"mini";}catch(e){return "mini";} })();
-  if(!ENGINES[engineKey]) engineKey="mini";
+  let engineKey=(()=>{ try{return localStorage.getItem("tamago_engine")||"split";}catch(e){return "split";} })();
+  if(!ENGINES[engineKey]) engineKey="split";
+  const isSplit=()=>ENGINES[engineKey].vendor==="split";
+
+  /* 表に出す切り替え（安い版／速い版）。細かい4択は設定の中のまま残す。 */
+  function paintMode(){
+    const box=$("mode"); box.innerHTML="";
+    [["split","安い版","2〜3円/分・少し待つ"],["mini","速い版","約15円/分・即返事"]].forEach(([k,t,h])=>{
+      const l=document.createElement("label");
+      if(k===engineKey) l.className="on";
+      l.innerHTML=`<input type="radio" name="mode" value="${k}"${k===engineKey?" checked":""}>`
+                 +`${t}<small>${h}</small>`;
+      l.querySelector("input").addEventListener("change",()=>setEngine(k));
+      box.appendChild(l);
+    });
+  }
+  function setEngine(k){
+    if(!ENGINES[k]) return;
+    engineKey=k; try{localStorage.setItem("tamago_engine",k);}catch(_){}
+    const r=document.querySelector(`#engines input[value="${k}"]`); if(r) r.checked=true;
+    paintMode(); paintVoices(); showPriceNote(); paintMeter(); paintCostTable(); paintLag();
+  }
 
   const eBox=$("engines");
   Object.entries(ENGINES).forEach(([k,e])=>{
     const l=document.createElement("label");
     l.innerHTML=`<input type="radio" name="eng" value="${k}"${k===engineKey?" checked":""}><span>${e.label}</span>`;
-    l.querySelector("input").addEventListener("change",()=>{
-      engineKey=k; try{localStorage.setItem("tamago_engine",k);}catch(_){}
-      paintVoices(); showPriceNote(); paintMeter(); paintCostTable();
-    });
+    l.querySelector("input").addEventListener("change",()=>setEngine(k));
     eBox.appendChild(l);
   });
   function showPriceNote(){
     const e=ENGINES[engineKey];
-    $("engineNote").innerHTML = e.perMin
+    $("engineNote").innerHTML = e.vendor==="split"
+      ? `音声を文字にする $${SPLIT.price.sttPerMin}/分・考える $${SPLIT.price.chatIn}／$${SPLIT.price.chatOut}（100万トークン）・
+         声にする 約$${SPLIT.price.ttsPerMin}/分（出た声の長さぶん）。<b>黙っている時間はタダ</b>。`
+      : e.perMin
       ? `1分あたり $${e.perMin}（約${(e.perMin*YEN).toFixed(0)}円）の定額。つないだ時間ぶんだけ。`
       : `トークン課金。音声 入 $${e.price.audioIn}／出 $${e.price.audioOut}（100万トークンあたり）。
          分ではなく<b>喋った量</b>で決まります。`;
   }
+  paintMode();
   showPriceNote();
 
   /* ══════════════ 棚 ══════════════ */
@@ -504,9 +546,12 @@
   /* ══════════════ 声 ══════════════ */
   const OA_VOICES=["marin","cedar","alloy","ash","ballad","coral","echo","sage","shimmer","verse"];
   const XA_VOICES=["iris","eve","carina","luna","ara","celeste","aurora","liora"];
+  // 音声合成(gpt-4o-mini-tts)で使える声。日本語が素直な順に並べてある。
+  const TTS_VOICES=["coral","sage","shimmer","alloy","ballad","nova","fable","echo","ash","verse"];
   let wanted=""; try{ wanted=new URLSearchParams(location.search).get("voice")||""; }catch(e){}
   function paintVoices(){
-    const list=ENGINES[engineKey].vendor==="xai"?XA_VOICES:OA_VOICES;
+    const v=ENGINES[engineKey].vendor;
+    const list = v==="xai"?XA_VOICES : v==="split"?TTS_VOICES : OA_VOICES;
     const box=$("voices"); box.innerHTML="";
     list.forEach((v,i)=>{
       const on=(wanted&&v===wanted)||(!wanted&&i===0);
@@ -518,7 +563,8 @@
   }
   paintVoices();
   const currentVoice=()=>(document.querySelector('input[name=v]:checked')||{}).value
-                         ||(ENGINES[engineKey].vendor==="xai"?"iris":"marin");
+                         ||(ENGINES[engineKey].vendor==="xai"?"iris"
+                           :ENGINES[engineKey].vendor==="split"?"coral":"marin");
 
   /* ══════════════ 案内人の仕込み ══════════════ */
   const INSTRUCTIONS=[
@@ -573,6 +619,15 @@
       description:"同じ気分のまま次の4枚。「他は？」と言われたらこれ。",
       parameters:{ type:"object", properties:{} } }
   ];
+  // 安い版は Chat Completions なので道具の入れ物の形がちがう（中身は同じ）
+  const CHAT_TOOLS=TOOLS.map(t=>({type:"function",
+    function:{name:t.name,description:t.description,parameters:t.parameters}}));
+  const SPLIT_INSTRUCTIONS=INSTRUCTIONS+"\n\n"+[
+    "■ この版だけの約束（声にして読み上げるため）",
+    "返事は必ず短く。1〜2文、合わせて60字以内。長いと待たせるし高くつく。",
+    "箇条書き・記号・絵文字・URLを書かない。耳で聞いて分かる文だけ。",
+    "数字は読み上げる形で書く（1972年 → 千九百七十二年 とはせず「1972年」でよい）。"
+  ].join("\n");
 
   const sessionConfig=voice=>({ type:"realtime",
     instructions:INSTRUCTIONS, tools:TOOLS, tool_choice:"auto",
@@ -583,6 +638,27 @@
 
   /* ══════════════ 実測メーター ══════════════ */
   const USE={audioIn:0,audioCached:0,audioOut:0,textIn:0,textCached:0,textOut:0,usd:0,turns:0};
+  // 安い版の実測入れもの。sttSec＝実際に送った音声の秒数、ttsSec＝実際に返ってきた声の秒数。
+  const SPUSE={sttSec:0,chatIn:0,chatOut:0,ttsChars:0,ttsSec:0,usd:0,turns:0};
+  function spCost(){
+    const p=SPLIT.price;
+    SPUSE.usd = SPUSE.sttSec/60*p.sttPerMin
+              + (SPUSE.chatIn*p.chatIn + SPUSE.chatOut*p.chatOut)/1e6
+              + (SPUSE.ttsChars*p.ttsTextIn)/1e6
+              + SPUSE.ttsSec/60*p.ttsPerMin;
+  }
+  // 返事の遅れ（実測）。t0＝喋り終わりを拾った瞬間
+  let LAG={t0:0,tStt:0,tThink:0,tFirst:0}, LAGS=[];
+  function paintLag(){
+    if(!isSplit()&&!LAGS.length){ lagEl.textContent=""; return; }
+    if(!LAG.tFirst){ lagEl.textContent = LAG.t0? "返事をつくっています…" : ""; return; }
+    const tot=(LAG.tFirst-LAG.t0)/1000;
+    const a=(LAG.tStt-LAG.t0)/1000, b=(LAG.tThink-LAG.tStt)/1000, c=(LAG.tFirst-LAG.tThink)/1000;
+    const avg=LAGS.length?LAGS.reduce((x,y)=>x+y,0)/LAGS.length/1000:tot;
+    lagEl.innerHTML=`返事の遅れ <b>${tot.toFixed(1)}秒</b>`
+      +`（聞き取り${a.toFixed(1)}／考える${b.toFixed(1)}／声${c.toFixed(1)}）`
+      +(LAGS.length>1?`　平均${avg.toFixed(1)}秒`:"");
+  }
   let startedAt=0, meterTimer=0;
   function addUsage(u){
     if(!u) return;
@@ -600,7 +676,9 @@
     const sec=startedAt?(Date.now()-startedAt)/1000:0;
     const e=ENGINES[engineKey];
     let yen,how;
-    if(e.perMin){ yen=sec/60*e.perMin*YEN; how="定額（つないだ時間）"; }
+    if(e.vendor==="split"){ spCost(); yen=SPUSE.usd*YEN;
+      how=SPUSE.turns?"実測（送った音声の秒数・APIが返したトークン数・返ってきた声の秒数）":"まだ喋っていません"; }
+    else if(e.perMin){ yen=sec/60*e.perMin*YEN; how="定額（つないだ時間）"; }
     else{ yen=USE.usd*YEN; how=USE.turns?"実測（APIが返したトークン数）":"まだ喋っていません"; }
     const perMin=sec>5?(yen/(sec/60)):0;
     meterEl.innerHTML=`${Math.floor(sec/60)}分${String(Math.floor(sec%60)).padStart(2,"0")}秒 ／ `
@@ -608,6 +686,21 @@
       +`<br><span style="opacity:.7">${how}</span>`;
   }
   function paintCostTable(){
+    if(isSplit()){
+      spCost();
+      const p=SPLIT.price, y=v=>v*YEN;
+      const rows=[
+        ["① 聞く（送った音声）", SPUSE.sttSec.toFixed(1)+"秒", y(SPUSE.sttSec/60*p.sttPerMin)],
+        ["② 考える 入", SPUSE.chatIn.toLocaleString()+" トークン", y(SPUSE.chatIn*p.chatIn/1e6)],
+        ["② 考える 出", SPUSE.chatOut.toLocaleString()+" トークン", y(SPUSE.chatOut*p.chatOut/1e6)],
+        ["③ 喋る 文字", SPUSE.ttsChars.toLocaleString()+" 文字", y(SPUSE.ttsChars*p.ttsTextIn/1e6)],
+        ["③ 喋る 出た声", SPUSE.ttsSec.toFixed(1)+"秒", y(SPUSE.ttsSec/60*p.ttsPerMin)]
+      ];
+      $("costTable").innerHTML=rows.map(([k,v,c])=>
+        `<tr><td>${k}</td><td>${v}　${c.toFixed(2)}円</td></tr>`).join("")
+        +`<tr><td><b>合計</b></td><td><b>$${SPUSE.usd.toFixed(5)}（${(SPUSE.usd*YEN).toFixed(2)}円）</b></td></tr>`;
+      return;
+    }
     const p=ENGINES[engineKey].price;
     const rows=[["音声 入（新しい分）",USE.audioIn],["音声 入（キャッシュ）",USE.audioCached],
       ["音声 出",USE.audioOut],["文字 入",USE.textIn+USE.textCached],["文字 出",USE.textOut]];
@@ -625,7 +718,7 @@
   let pc=null,dc=null,mic=null,audioEl=null,ac=null;
   let ws=null,wsCtx=null,wsAt=0,wsNode=null,wsSrc=null,micOn=true;
   const itemIds=[]; const KEEP=8;
-  const live=()=>(dc&&dc.readyState==="open")||(ws&&ws.readyState===1);
+  const live=()=>(dc&&dc.readyState==="open")||(ws&&ws.readyState===1)||spOn;
   const say=(cls,txt)=>{ const d=document.createElement("div"); d.className="line "+cls;
     d.textContent=txt; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; };
   const setState=s=>{stateEl.textContent=s;};
@@ -634,12 +727,239 @@
     if(dc&&dc.readyState==="open") dc.send(s); else if(ws&&ws.readyState===1) ws.send(s); }
   function tellModel(text,quiet){
     if(!live()) return;
+    if(spOn){ spTell(text,quiet); return; }
     send({type:"conversation.item.create",
       item:{type:"message",role:"system",content:[{type:"input_text",text}]}});
     if(!quiet && !playing) send({type:"response.create"});
   }
   // 古い発話を捨てる。これをしないと毎回の返事に会話全部の音声がぶら下がり、値段が雪だるまになる
   function prune(){ while(itemIds.length>KEEP) send({type:"conversation.item.delete",item_id:itemIds.shift()}); }
+
+  /* ══════════════ 安い版：聞く → 考える → 喋る を分けてつなぐ ══════════════
+     リアルタイムAPIは「黙っている時間」にも音声トークンが流れるので高い。
+     ここでは①喋り終わりを画面側で見つけて、その分だけ文字起こしに送り、
+     ②文字だけで考えさせ、③返事を文の切れ目ごとに音声合成して、順に鳴らす。
+     黙っている時間はタダになる。そのかわり返事は一拍遅れる（画面に実測で出す）。 */
+  let spOn=false, spKey="", spVoice="coral", spCtx=null, spNode=null, spSrc=null;
+  let spHist=[], spBusy=false, spSpeak=false, spAt=0, spQ=null, spEndTimer=0, spSr=24000;
+
+  function wavBlob(chunks,sr){
+    let n=0; for(const c of chunks) n+=c.length;
+    const buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
+    const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+    w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVEfmt ");
+    v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+    w(36,"data"); v.setUint32(40,n*2,true);
+    let o=44;
+    for(const c of chunks) for(let i=0;i<c.length;i++){
+      const x=Math.max(-1,Math.min(1,c[i])); v.setInt16(o,x<0?x*0x8000:x*0x7FFF,true); o+=2; }
+    return new Blob([buf],{type:"audio/wav"});
+  }
+  function spAnalyser(){
+    if(!analyser){ analyser=spCtx.createAnalyser(); analyser.fftSize=512;
+      analyser.smoothingTimeConstant=0.4; analyser.connect(spCtx.destination); }
+    return analyser;
+  }
+
+  async function connectSplit(voice){
+    spKey=keyEl.value.trim();
+    if(!spKey) throw new Error("OpenAIの鍵が空です（設定の中に入れてください）");
+    try{ localStorage.setItem("tamago_openai_key",spKey); }catch(_){}
+    spVoice=voice; spHist=[]; spBusy=false; spSpeak=false; spAt=0;
+    spQ=Promise.resolve(); LAG={t0:0,tStt:0,tThink:0,tFirst:0}; LAGS=[]; paintLag();
+    Object.keys(SPUSE).forEach(k=>SPUSE[k]=0);
+    spCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(spCtx.state==="suspended") await spCtx.resume();
+    spSr=spCtx.sampleRate;
+    mic=await navigator.mediaDevices.getUserMedia(
+      {audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    spSrc=spCtx.createMediaStreamSource(mic);
+    spNode=spCtx.createScriptProcessor(2048,1,1);
+
+    let floor=0.004, pre=[], rec=null, voiced=0, silent=0;
+    const FR=2048/spSr;                       // 1こまの長さ（秒）
+    const PRE=Math.ceil(0.30/FR);             // 頭を切らないための先読み
+    spNode.onaudioprocess=ev=>{
+      if(!spOn) return;
+      const f=ev.inputBuffer.getChannelData(0), c=new Float32Array(f);
+      let s=0; for(let i=0;i<c.length;i++) s+=c[i]*c[i];
+      const rms=Math.sqrt(s/c.length);
+      if(!micOn||spBusy||spSpeak||playing){ rec=null; voiced=0; silent=0; pre.length=0; return; }
+      const ON=Math.max(0.018,floor*3.2), OFF=Math.max(0.010,floor*1.8);
+      if(!rec){
+        floor=floor*0.97+rms*0.03;
+        pre.push(c); if(pre.length>PRE) pre.shift();
+        if(rms>ON){ if(++voiced>=2){ rec=pre.slice(); pre=[]; silent=0;
+                      setState("聞いています…"); } }
+        else voiced=0;
+      }else{
+        rec.push(c);
+        if(rms<OFF) silent++; else silent=0;
+        const dur=rec.length*FR;
+        if((silent*FR>=0.55 && dur>0.5) || dur>15){
+          const take=rec; rec=null; voiced=0; silent=0; pre=[];
+          if(dur>=0.5) spHeard(take,dur-silent*FR*0.5);
+        }
+      }
+    };
+    spSrc.connect(spNode); spNode.connect(spCtx.destination);
+    spOn=true; micOn=true;
+    setState("聞いています。話しかけてください");
+    spTell("お客さんが画面を開きました。短く挨拶して、今日どんな気分か聞いてください。");
+  }
+
+  /* ① 聞く：喋り終わりを拾ったので、その塊だけ文字起こしに送る */
+  async function spHeard(chunks,dur){
+    if(spBusy) return;
+    spBusy=true; LAG={t0:performance.now(),tStt:0,tThink:0,tFirst:0}; paintLag();
+    setState("聞き取っています…");
+    let text="";
+    try{
+      const fd=new FormData();
+      fd.append("file",wavBlob(chunks,spSr),"a.wav");
+      fd.append("model",SPLIT.stt);
+      fd.append("language","ja");
+      fd.append("response_format","json");
+      const r=await fetch("https://api.openai.com/v1/audio/transcriptions",
+        {method:"POST",headers:{Authorization:"Bearer "+spKey},body:fd});
+      if(!r.ok) throw new Error(r.status+" "+(await r.text()).slice(0,140));
+      const j=await r.json();
+      text=String(j.text||"").trim();
+      SPUSE.sttSec+=dur;                       // 実測：実際に送った音声の秒数
+      LAG.tStt=performance.now();
+    }catch(e){ say("sys","聞き取れませんでした："+e.message);
+      spBusy=false; setState("聞いています"); paintMeter(); paintCostTable(); return; }
+    // 無音を拾ったときの空うちを捨てる（ここで捨てれば以降はタダ）
+    if(!text || text.length<2 || /^[。、．，…\s]*$/.test(text)){
+      spBusy=false; setState("聞いています"); paintMeter(); paintCostTable(); return; }
+    say("me",text);
+    spHist.push({role:"user",content:text}); spPrune();
+    try{ await spTurn(); }catch(e){ say("sys","返事が作れませんでした："+e.message); }
+    SPUSE.turns++; spBusy=false;
+    paintMeter(); paintCostTable();
+  }
+
+  /* ②③ 考える → 喋る。道具を呼んだら棚を引いて、もう一周する */
+  async function spTurn(){
+    for(let round=0; round<3; round++){
+      const calls=await spChat();
+      if(!calls.length) return;
+      spHist.push({role:"assistant",content:null,
+        tool_calls:calls.map(c=>({id:c.id,type:"function",
+          function:{name:c.name,arguments:c.args||"{}"}}))});
+      for(const c of calls){
+        setState("棚を見ています…");
+        const payload=await toolRun(c.name,c.args);
+        spHist.push({role:"tool",tool_call_id:c.id,content:JSON.stringify(payload)});
+      }
+    }
+  }
+
+  /* ② 考える：ストリームで受けて、文の切れ目が来た端から③へ流す */
+  async function spChat(){
+    const body={ model:SPLIT.chat, temperature:0.8, max_tokens:200,
+      messages:[{role:"system",content:SPLIT_INSTRUCTIONS}].concat(spHist),
+      tools:CHAT_TOOLS, tool_choice:"auto",
+      stream:true, stream_options:{include_usage:true} };
+    const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",
+      headers:{Authorization:"Bearer "+spKey,"Content-Type":"application/json"},
+      body:JSON.stringify(body)});
+    if(!r.ok) throw new Error(r.status+" "+(await r.text()).slice(0,140));
+    const rd=r.body.getReader(), dec=new TextDecoder();
+    let sb="", content="", pend="", calls=[];
+    for(;;){
+      const {value,done}=await rd.read(); if(done) break;
+      sb+=dec.decode(value,{stream:true});
+      let p;
+      while((p=sb.indexOf("\n"))>=0){
+        const line=sb.slice(0,p).trim(); sb=sb.slice(p+1);
+        if(!line.startsWith("data:")) continue;
+        const d=line.slice(5).trim(); if(!d||d==="[DONE]") continue;
+        let j; try{ j=JSON.parse(d); }catch(_){ continue; }
+        if(j.usage){ SPUSE.chatIn+=j.usage.prompt_tokens||0;
+                     SPUSE.chatOut+=j.usage.completion_tokens||0; paintMeter(); }
+        const ch=j.choices&&j.choices[0]; if(!ch) continue;
+        const dl=ch.delta||{};
+        if(dl.tool_calls) for(const tc of dl.tool_calls){
+          const i=tc.index||0;
+          calls[i]=calls[i]||{id:"",name:"",args:""};
+          if(tc.id) calls[i].id=tc.id;
+          if(tc.function&&tc.function.name) calls[i].name+=tc.function.name;
+          if(tc.function&&tc.function.arguments) calls[i].args+=tc.function.arguments;
+        }
+        if(dl.content){
+          if(!LAG.tThink){ LAG.tThink=performance.now(); }
+          content+=dl.content; pend+=dl.content;
+          const m=/^([\s\S]*?[。！？!?\n])/.exec(pend);
+          if(m && m[1].replace(/\s/g,"").length>=8){ spSay(m[1].trim()); pend=pend.slice(m[1].length); }
+        }
+      }
+    }
+    if(pend.trim()) spSay(pend.trim());
+    if(content.trim()) say("her",content.trim());
+    return calls.filter(Boolean);
+  }
+
+  /* ③ 喋る：文ごとに音声合成して、順番に鳴らす。口の動きはこの音に合わせる */
+  function spSay(text){
+    if(!text) return;
+    SPUSE.ttsChars+=text.length;
+    spSpeak=true;
+    spQ=spQ.then(()=>spTts(text)).catch(e=>say("sys","声が出せませんでした："+e.message));
+  }
+  async function spTts(text){
+    if(!spOn) return;
+    const r=await fetch("https://api.openai.com/v1/audio/speech",{method:"POST",
+      headers:{Authorization:"Bearer "+spKey,"Content-Type":"application/json"},
+      body:JSON.stringify({model:SPLIT.tts,voice:spVoice,input:text,response_format:"wav",
+        speed:1.05,
+        instructions:"やわらかく落ち着いた日本語で、親しみをこめて。少しだけ早口に。"})});
+    if(!r.ok) throw new Error(r.status+" "+(await r.text()).slice(0,120));
+    const ab=await r.arrayBuffer();
+    if(!spOn) return;
+    const buf=await new Promise((ok,ng)=>{ try{ const p=spCtx.decodeAudioData(ab,ok,ng);
+      if(p&&p.then) p.then(ok,ng); }catch(e){ ng(e); } });
+    SPUSE.ttsSec+=buf.duration;                 // 実測：返ってきた声の長さ
+    const now=spCtx.currentTime;
+    if(spAt<now+0.06) spAt=now+0.06;
+    const src=spCtx.createBufferSource(); src.buffer=buf; src.connect(spAnalyser());
+    src.start(spAt); spAt+=buf.duration;
+    speaking=true; if(!playing) setState("話しています");
+    if(!LAG.tFirst && LAG.t0){ LAG.tFirst=performance.now();
+      LAGS.push(LAG.tFirst-LAG.t0); if(LAGS.length>20) LAGS.shift(); paintLag(); }
+    clearTimeout(spEndTimer);
+    spEndTimer=setTimeout(spSaidAll,(spAt-spCtx.currentTime)*1000+260);
+    paintMeter(); paintCostTable();
+  }
+  function spSaidAll(){
+    speaking=false; spSpeak=false;
+    if(spOn && !playing) setState("聞いています");
+  }
+
+  // 画面側の出来事（札を押した・ほかのを見せて）を、安い版にも同じように伝える
+  function spTell(text,quiet){
+    spHist.push({role:"system",content:text}); spPrune();
+    if(quiet||playing||spBusy||!spOn) return;
+    spBusy=true; LAG={t0:performance.now(),tStt:0,tThink:0,tFirst:0};
+    LAG.tStt=LAG.t0;
+    spTurn().catch(e=>say("sys","返事が作れませんでした："+e.message))
+      .then(()=>{ spBusy=false; paintMeter(); paintCostTable(); });
+  }
+  // 会話が伸びるほど毎回の「考える 入」が増える。直近5往復だけ残す。
+  function spPrune(){
+    if(spHist.length<=18) return;
+    let seen=0;
+    for(let i=spHist.length-1;i>=0;i--){
+      if(spHist[i].role==="user" && ++seen===5){ spHist=spHist.slice(i); return; }
+    }
+  }
+  function spClose(){
+    spOn=false; spSpeak=false; spBusy=false; clearTimeout(spEndTimer);
+    try{ spNode&&(spNode.onaudioprocess=null); spNode&&spNode.disconnect(); spSrc&&spSrc.disconnect(); }catch(_){}
+    try{ spCtx&&spCtx.close(); }catch(_){}
+    spNode=spSrc=spCtx=null; spKey=""; spAt=0;
+  }
 
   async function connect(){
     const e=ENGINES[engineKey], voice=currentVoice();
@@ -763,7 +1083,8 @@
   }
 
   const handled=new Set();
-  async function runTool(name,argsRaw,callId){
+  // 棚を実際に引く。速い版・安い版の両方から呼ぶ共通部分。
+  async function toolRun(name,argsRaw){
     let args={}; try{ args=JSON.parse(argsRaw||"{}"); }catch(_){}
     let got=[];
     try{
@@ -778,6 +1099,10 @@
       :{ok:false,count:0,rest:0,
       note:"棚に見つからなかった。artists にもっと多くのアーティスト名を入れて呼び直すこと。曲名を作らないこと。"};
     if(got.length) say("sys","棚から "+got.length+"枚："+got.map(s=>s.title).join(" / "));
+    return payload;
+  }
+  async function runTool(name,argsRaw,callId){
+    const payload=await toolRun(name,argsRaw);
     send({type:"conversation.item.create",
       item:{type:"function_call_output",call_id:callId,output:JSON.stringify(payload)}});
     send({type:"response.create"});
