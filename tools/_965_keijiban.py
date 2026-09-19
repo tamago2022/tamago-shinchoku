@@ -120,14 +120,26 @@ def run_job(payload):
                     "url": d.get("html_url"), "totalYen": 0.0}
 
         if action == "read":
+            code, head = _req("%s/repos/%s/issues/%s" % (API, repo, payload["number"]), token)
             code, d = _req("%s/repos/%s/issues/%s/comments?per_page=100" % (API, repo, payload["number"]),
                            token)
             return {"ok": True, "repo": repo, "action": action,
+                    "title": (head or {}).get("title"),
+                    "bodyWho": ((head or {}).get("user") or {}).get("login"),
+                    "body": ((head or {}).get("body") or "")[:6000],
                     "comments": [{"who": (c.get("user") or {}).get("login"),
                                   "type": (c.get("user") or {}).get("type"),
                                   "at": c.get("created_at"),
                                   "text": (c.get("body") or "")[:4000]} for c in (d or [])],
                     "totalYen": 0.0}
+
+        if action == "prfiles":
+            code, d = _req("%s/repos/%s/pulls/%s/files?per_page=30" % (API, repo, payload["number"]), token)
+            out = []
+            for f in (d or []):
+                out.append({"name": f.get("filename"), "add": f.get("additions"),
+                            "patch": (f.get("patch") or "")[:6000]})
+            return {"ok": True, "repo": repo, "action": action, "files": out, "totalYen": 0.0}
 
         return {"ok": False, "error": "知らない action: %s" % action, "totalYen": 0.0}
     except Exception as e:
