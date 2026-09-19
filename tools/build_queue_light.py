@@ -28,6 +28,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 QUEUE = os.path.join(REPO, "status", "queue.json")
 QUEUE_LIGHT = os.path.join(REPO, "status", "queue_light.json")
+# 948番（2026-09-19）トップ（index.html）の「次に発車」専用の極小ファイル。
+#   実測：queue_light.json は 314KB まで太っていた（コード内のコメントは117KB時代のまま）。
+#   トップは最初に top_status.json の nextUp を出してから queue_light.json で上書きしていたので、
+#   スマホでは「前の並びが出て、数秒後にパッと切り替わる」＝たまごさんが嫌がっている動きになる。
+#   トップが実際に使う7つの項目だけを持つファイルを別に作り、上書きではなく一発で出す。
+QUEUE_NEXT = os.path.join(REPO, "status", "queue_next.json")
+# 「次に発車」が読むフィールドだけ（index.html の pri/rankCmp/renderNext が使うものが全部）。
+NEXT_FIELDS = ("n", "title", "label", "status", "priority", "order", "urgent")
 
 # 軽量版から取り除くフィールド（ブラックリスト）。
 STRIP_FIELDS = ("what", "result")

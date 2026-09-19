@@ -253,6 +253,8 @@
     try{ localStorage.setItem(SAVED,sk); }catch(e){}
     const voice=document.querySelector('input[name=v]:checked').value;
 
+    if(!tsukaeruka()) return;          // ★財布が空ならつながせない
+    SAIFU.stopped=false;
     goEl.disabled=true; setState("つないでいます…");
     logEl.innerHTML="";
 
@@ -323,6 +325,67 @@
     }
   }
 
+  /* ── 財布（1日いくらまで喋れるか）★2026-09-19 追加 ──────────────
+     このページは gpt-realtime（いちばん高い口）につなぐのに、値段が1つも出ていなかった。
+     たまごさんの言葉：「多分、俺の金がどんどん溶けていく。」
+     そこで **OpenAI側の上限とは別に、この画面で止める**。
+     数え方は見積もりではない。response.done が返してくる実測のトークン数に
+     公式単価（2026-09-19 実機確認・$/100万トークン）を掛けたもの。 */
+  const YEN=157;
+  const RT_PRICE={audioIn:32,audioCached:0.40,audioOut:64,textIn:4.00,textCached:0.40,textOut:24.00};
+  const SAIFU={
+    capDefault:100,
+    day(){ return new Date(Date.now()+9*3600e3).toISOString().slice(0,10); },
+    kDay(){ return "tamago_voice_yen_"+this.day(); },
+    cap(){ try{ const v=parseFloat(localStorage.getItem("tamago_voice_cap_yen"));
+                return (isFinite(v)&&v>0)?v:this.capDefault; }catch(_){ return this.capDefault; } },
+    today(){ try{ const v=parseFloat(localStorage.getItem(this.kDay())); return isFinite(v)?v:0; }
+             catch(_){ return 0; } },
+    tasu(yen){ try{ localStorage.setItem(this.kDay(),String(this.today()+Math.max(0,yen))); }catch(_){} },
+    nokori(){ return this.cap()-this.today(); },
+    stopped:false
+  };
+  const saifuEl=(()=>{
+    try{
+      const p=document.createElement("p");
+      p.style.cssText="text-align:center;color:#9d947f;font-size:.76rem;margin:6px 0 0";
+      stateEl.parentNode.insertBefore(p,stateEl.nextSibling);
+      return p;
+    }catch(_){ return null; }
+  })();
+  function paintSaifu(){
+    if(!saifuEl) return;
+    saifuEl.innerHTML="今日ここまで <b>"+SAIFU.today().toFixed(1)+"円</b> ／ 上限 "
+      +SAIFU.cap().toFixed(0)+"円（あと "+Math.max(0,SAIFU.nokori()).toFixed(1)+"円）";
+  }
+  paintSaifu();
+  function saifuKire(){
+    if(SAIFU.stopped) return;
+    SAIFU.stopped=true;
+    close(); setState("今日のぶんは使い切りました"); goEl.disabled=false;
+    say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）に達したので切りました。"
+      +"OpenAI側の上限とは別に、この画面で止めています。");
+  }
+  function tsukaeruka(){                     // つなぐ前の栓
+    if(SAIFU.nokori()>0) return true;
+    say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）を使い切っています。明日また使えます。");
+    setState("今日のぶんは使い切りました"); paintSaifu(); return false;
+  }
+  function kazoeru(usage){                   // 実測のトークン数→円
+    if(!usage) return;
+    const i=usage.input_token_details||{}, o=usage.output_token_details||{};
+    const c=i.cached_tokens_details||{};
+    const aC=c.audio_tokens||0, tC=c.text_tokens||0;
+    const aIn=Math.max(0,(i.audio_tokens||0)-aC), tIn=Math.max(0,(i.text_tokens||0)-tC);
+    const usd=(aIn*RT_PRICE.audioIn + aC*RT_PRICE.audioCached
+              +(o.audio_tokens||0)*RT_PRICE.audioOut
+              +tIn*RT_PRICE.textIn + tC*RT_PRICE.textCached
+              +(o.text_tokens||0)*RT_PRICE.textOut)/1e6;
+    SAIFU.tasu(usd*YEN);
+    paintSaifu();
+    if(SAIFU.nokori()<=0) saifuKire();
+  }
+
   let buf="";
   function onEvent(raw){
     let ev; try{ ev=JSON.parse(raw);}catch(e){return;}
@@ -336,7 +399,8 @@
         say("her",ev.transcript||buf); buf=""; break;
       case "conversation.item.input_audio_transcription.completed":
         if(ev.transcript) say("me",ev.transcript); break;
-      case "response.done": speaking=false; setState("聞いています"); break;
+      case "response.done": speaking=false; setState("聞いています");
+        kazoeru(ev.response&&ev.response.usage); break;
     }
   }
 
