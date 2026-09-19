@@ -3,276 +3,161 @@
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
-<title>966 ごきげん補給所・案内人（耳・地域・7つの棚を直した版）</title>
-<style>html,body{margin:0;background:#0d0b09}</style></head><body>
-<style>
-  :root{
-    --bg:#12100d; --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
-    --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227;
-  }
-  *{box-sizing:border-box}
-  .wrap{max-width:720px;margin:0 auto;padding:24px 14px 64px;
-    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
-  .stage{background:radial-gradient(120% 90% at 50% 20%,#1d1a15 0%,#12100d 70%);
-    border-radius:20px;padding:16px 12px 14px;border:1px solid #2b2620}
-  @media(max-width:430px){.wrap{padding:16px 8px 56px}.stage{padding:14px 8px 12px}}
-  .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-    color:#e8dcc0;letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 10px}
-  #tamako{display:block;width:100%;max-width:220px;margin:0 auto}
-  #tamako svg{display:block;width:100%;height:auto;overflow:visible}
-  .state{text-align:center;color:#b5aa93;font-size:.78rem;letter-spacing:.08em;margin:6px 0 2px;min-height:1.2em}
-  .meter{text-align:center;color:#9d947f;font-size:.72rem;line-height:1.7;margin:2px 0 0}
-  /* ★959：ストップウォッチ。数字は画面に出す。 */
-  .sw{text-align:center;color:#b5aa93;font-size:.74rem;line-height:1.8;margin:5px 0 0;
-    font-variant-numeric:tabular-nums;min-height:1.3em}
-  .sw b{color:var(--kin);font-size:1.02rem}
-  .sw .sw-sub{color:#7d7466;font-size:.68rem}
-  .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid #e2dccd}
-  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
-     font-size:1rem;letter-spacing:.06em;margin:0 0 10px;color:var(--sub)}
-  input[type=password],input[type=text]{width:100%;padding:11px 12px;border:1px solid #d8d1c0;
-    border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace}
-  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  button{flex:1 1 140px;padding:14px 18px;border-radius:12px;border:none;cursor:pointer;
-    font-size:16px;font-weight:700;letter-spacing:.06em;font-family:inherit}
-  #go{background:var(--midori);color:#fff}
-  #go:disabled{background:#c3bdb0;cursor:not-allowed}
-  #stop{background:#fff;color:var(--aka);border:1px solid #e0cfcb}
-  .note{font-size:.78rem;color:var(--sub);line-height:1.7;margin-top:10px}
-  .log{margin-top:14px;max-height:230px;overflow-y:auto}
-  .line{padding:8px 12px;border-radius:12px;margin:6px 0;font-size:.92rem;line-height:1.65}
-  .line.me{background:#e7eef3;color:#22303a}
-  .line.her{background:#fff;border:1px solid #e2dccd}
-  .line.sys{background:#f7e9e7;color:var(--aka);font-size:.82rem}
-  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-  .chips label{font-size:.8rem;padding:6px 11px;border-radius:999px;border:1px solid #d8d1c0;
-    background:#fff;cursor:pointer}
-  .chips input{display:none}
-  .chips input:checked + span{font-weight:800;color:var(--midori)}
+<title>966 ごきげん補給所・案内人（正本 No.02 Quiet Record Counter）</title>
+<!-- 正本：Issue #431 の DESIGN-LOCK SOURCE。1行も書き換えていない。 -->
+<link rel="stylesheet" href="assets/958-concierge/concierge.css">
+<!-- 966で足したぶんだけ（正本に無い機能の見た目・承認済み写真の配線） -->
+<link rel="stylesheet" href="assets/966/live966.css">
+</head><body>
 
-  /* ── 札：横一列に4つ。Spotify／YouTube Music の横並び棚と同じ組み方
-        （小さい定寸の札・上にサムネ・題は2行で切る・押しても画面は動かない） ── */
-  .tray{margin-top:14px}
-  .tray h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:.76rem;
-    letter-spacing:.1em;color:#b5aa93;text-align:center;margin:0 0 8px}
-  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-items:stretch}
-  .card{display:block;width:100%;text-align:left;padding:0;background:#1b1813;
-    border:1px solid #2f2a23;border-radius:9px;overflow:hidden;cursor:pointer;font-weight:400;
-    flex:none;position:relative;transition:border-color .15s,transform .15s;height:100%}
-  .card:hover{border-color:#4a4236}
-  .card.sel{border-color:var(--kin);transform:translateY(-2px)}
-  .card .thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#2a251f}
-  .card .body{padding:5px 6px 7px}
-  .card .tag{position:absolute;top:3px;left:3px;font-size:.54rem;letter-spacing:.04em;color:#f0e8d6;
-    background:rgba(18,16,13,.78);border-radius:999px;padding:1px 5px;line-height:1.5}
-  /* 題が1行でも2行でも札の高さを変えない（並べたときガタガタにしない） */
-  .card .t{margin:0;font-size:.6rem;line-height:1.35;font-weight:700;color:#efe7d6;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-    height:2.7em}
-  .card .a{margin:2px 0 0;font-size:.54rem;color:#9d947f;white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis;height:1.5em;line-height:1.5}
-  .card .num{position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;
-    background:rgba(18,16,13,.78);color:#e8dcc0;font-size:.55rem;line-height:14px;text-align:center}
-  .card.sel .num{background:var(--kin);color:#2a2622;font-weight:700}
-  @media(min-width:560px){.card .t{font-size:.72rem}.card .a{font-size:.62rem}
-    .card .tag{font-size:.6rem}.cards{gap:8px}}
-  .empty{color:#8a8172;font-size:.8rem;text-align:center;line-height:1.8;padding:14px 6px}
+<main class="prototype-shell concept-02" data-concept="02">
+  <header class="site-head">
+    <a class="brand" href="../../index.html" aria-label="ごきげん補給所">
+      <span class="brand-ja">ごきげん補給所</span>
+      <span class="brand-en">JOY RELIEF STATION</span>
+    </a>
+    <nav class="head-nav" aria-label="案内">
+      <a href="#picks">RECORDS</a><a href="#talk">CONVERSATION</a><a href="#kikai">ABOUT</a>
+    </nav>
+    <button class="head-action" id="go" type="button">話す</button>
+    <button class="head-action stopping" id="stop" type="button">やめる</button>
+  </header>
 
-  /* ── 押した札の真下に開く（Google画像の展開と同じ。別の場所へ飛ばさない） ── */
-  .player{display:none;margin:10px 0 0;background:#0a0908;border-radius:12px;
-    border:1px solid #38332b;position:relative}
-  .player.on{display:block}
-  .player .caret{position:absolute;top:-7px;width:12px;height:12px;background:#0a0908;
-    border-left:1px solid #38332b;border-top:1px solid #38332b;transform:translateX(-50%) rotate(45deg);
-    transition:left .18s}
-  .player .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;
-    border-radius:12px 12px 0 0;overflow:hidden}
-  .player .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  .player .meta{padding:8px 10px 0}
-  .player .pt{margin:0;color:#f0e8d6;font-size:.86rem;font-weight:700;line-height:1.4}
-  .player .pa{margin:2px 0 0;color:#9d947f;font-size:.72rem}
-  .prow{display:flex;gap:6px;padding:8px 10px 10px;flex-wrap:wrap}
-  .prow button{flex:1 1 84px;padding:9px 6px;font-size:.74rem;border-radius:9px;letter-spacing:.02em}
-  .b-skip{background:#2a2622;color:#e8dcc0;border:1px solid #3a352c}
-  .b-next{background:#2a2622;color:#e8dcc0;border:1px solid #3a352c}
-  .b-talk{background:var(--midori);color:#fff}
-  .b-big{background:var(--kin);color:#2a2622}
-  .thru{display:flex;align-items:center;gap:8px;padding:0 10px 10px;color:#9d947f;font-size:.7rem;
-    line-height:1.5;cursor:pointer}
-  .thru input{width:16px;height:16px;flex:0 0 auto;accent-color:var(--midori)}
-  .thru b{color:#e8dcc0}
-  .micdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4a4236;
-    margin-right:5px;vertical-align:middle}
-  .micdot.on{background:var(--aka);box-shadow:0 0 0 3px rgba(196,72,58,.18)}
-
-  #more{background:#1b1813;color:#c9c0ad;border:1px solid #2f2a23;font-size:.8rem;padding:10px 14px}
-  #more:disabled{opacity:.4;cursor:not-allowed}
-  details.settings{margin-top:16px;border-top:1px dashed #ddd5c4;padding-top:12px}
-  details.settings summary{cursor:pointer;font-size:.78rem;color:var(--sub)}
-  table.cost{width:100%;border-collapse:collapse;margin-top:8px;font-size:.72rem}
-  table.cost td{border-top:1px solid #e6e0d1;padding:4px 2px;color:var(--sub)}
-  table.cost td:last-child{text-align:right;font-variant-numeric:tabular-nums}
-  .kv{font-size:.72rem;color:var(--sub);line-height:1.8;margin-top:8px}
-  .stock{font-size:.7rem;color:#8a8172;line-height:1.7;text-align:center;margin:8px 0 0}
-
-  /* ── ★964：声の入れ替え口 ── */
-  .koebar{text-align:center;margin:8px 0 0}
-  .koebar button{flex:none;background:#1b1813;color:#d8cfb8;border:1px solid #3a352c;
-    border-radius:999px;padding:7px 16px;font-size:.76rem;font-weight:400;letter-spacing:.04em}
-  .koebar button b{color:var(--kin);font-weight:700}
-  .koebar #koeSub{color:#8a8172;font-size:.7rem}
-  .koeArrow{color:#8a8172;font-size:.7rem}
-  .koedraw{background:#16130f;border:1px solid #2f2a23;border-radius:14px;
-    margin:8px 0 0;padding:10px 10px 12px}
-  .kd-h{margin:0 0 7px;font-size:.68rem;letter-spacing:.08em;color:#8a8172}
-  .kd-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:5px}
-  .kd{display:flex;align-items:center;gap:0;background:#1b1813;border:1px solid #2f2a23;
-    border-radius:9px;overflow:hidden}
-  .kd .pick{flex:1 1 auto;min-width:0;text-align:left;background:none;border:none;color:#d8cfb8;
-    padding:6px 4px 6px 8px;font-size:.7rem;font-weight:400;line-height:1.3;cursor:pointer}
-  .kd .pick i{display:block;font-style:normal;color:#8a8172;font-size:.62rem}
-  .kd .try{flex:0 0 auto;background:#221e19;border:none;border-left:1px solid #2f2a23;
-    color:#c9a227;padding:6px 8px;font-size:.72rem;cursor:pointer;font-weight:400}
-  .kd.on{border-color:var(--kin);background:#241f16}
-  .kd.on .pick{color:#f0e8d6;font-weight:700}
-  .kd.dead{opacity:.45}
-  .kd.dead .pick,.kd.dead .try{cursor:not-allowed;color:#8a8172}
-  .kd .try.busy{color:#5f594d}
-  .kd-note{margin:10px 0 0;font-size:.66rem;color:#7d7466;line-height:1.7}
-</style>
-
-<div class="wrap">
-  <div class="stage">
-    <p class="kanban">ご き げ ん 補 給 所 ・ 案 内 人</p>
-    <div id="tamako"></div>
-    <div class="state" id="state">「話す」を押してください</div>
-    <div class="meter" id="meter"></div>
-    <div class="sw" id="sw"></div>
-
-    <!-- ★964：声をその場で入れ替える口。設定の奥ではなく、顔のすぐ下に置く。 -->
-    <div class="koebar">
-      <button id="koeBtn" type="button">声：<b id="koeNow">Puck</b><span id="koeSub"></span>　<span class="koeArrow">ほかの声にする ▾</span></button>
-    </div>
-    <div class="koedraw" id="koedraw" hidden>
-      <p class="kd-h">Google（この案内人の声。話している途中でも入れ替えられます）</p>
-      <div class="kd-list" id="koeList"></div>
-      <p class="kd-h" style="margin-top:12px">ほかの会社の声</p>
-      <div class="kd-list" id="koeOther"></div>
-      <p class="kd-note" id="koeNote">
-        ▶ を押すとその声で同じ台詞を1本だけ作って鳴らします（1本 約0.02円）。
-        名前を押すと案内人の声がその場で入れ替わります。
-      </p>
+  <section class="hero-record" aria-labelledby="record-title">
+    <div class="record-copy">
+      <div class="eyebrow">QUIET RECORD COUNTER</div>
+      <h1 class="display" id="record-title">話してくれて、<br>ありがとう。</h1>
+      <p>ここは、ネットの砂漠にある小さなレコード店。<br>あなたの今に寄り添う、4枚を選びます。</p>
+      <div class="micro">A LITTLE OASIS<br>IN THE INTERNET DESERT.</div>
     </div>
 
-    <div class="tray">
-      <h3 id="trayTitle">— 差し出された札 —</h3>
-      <div class="cards" id="cards"></div>
-      <div class="empty" id="empty">
-        まだ何も出ていません。<br>「うれしい気分」「しずかなやつ」と話しかけてみてください。
+    <div class="record-owner" id="tamako" data-slot="concierge-avatar"></div>
+  </section>
+
+  <section class="conversation" id="talk" aria-label="会話" data-slot="conversation">
+    <div id="log">
+      <div class="conversation-row">
+        <div class="who"><span class="tmk-ava" aria-hidden="true"></span>ごきげん店主</div>
+        <p class="say" data-slot="assistant-message">いらっしゃい。右上の「話す」を押して、声をかけてください。
+          「うれしい気分」「しずかなやつ」——そのくらいで大丈夫です。</p>
       </div>
-
-      <div class="player" id="player">
-        <div class="caret" id="caret"></div>
-        <div class="frame" id="frame"><div id="yt"></div></div>
-        <div class="meta">
-          <p class="pt" id="pTitle"></p>
-          <p class="pa" id="pArtist"></p>
-        </div>
-        <label class="thru">
-          <input type="checkbox" id="thru" checked>
-          <span><span class="micdot" id="micdot"></span><b>鳴らしたまま話す</b>
-            曲を小さくしてマイクを開けたままにします。そのぶん時間は課金されます。</span>
-        </label>
-        <div class="prow">
-          <button class="b-skip" id="pSkip">30秒すすむ</button>
-          <button class="b-next" id="pNext">次の札</button>
-          <button class="b-talk" id="pStop">とめて話す</button>
-          <button class="b-big"  id="pBig">大きい画面</button>
-        </div>
-      </div>
-
-      <div class="row"><button id="more" disabled>ほかのを見せて</button></div>
-      <p class="stock" id="stock"></p>
     </div>
+  </section>
+  <p class="micro" id="state">「話す」を押してください</p>
+
+  <section class="recommendations" id="picks" aria-labelledby="picks-02">
+    <div class="section-head">
+      <h2 id="picks-02">店主からのおすすめ</h2>
+      <span class="line"></span>
+      <span class="micro" id="trayTitle">PICKS FOR YOUR MOMENT</span>
+    </div>
+
+    <div class="recommend-grid" id="cards" data-slot="recommendation-grid"></div>
+    <p class="rec-empty" id="empty">
+      まだ何も出ていません。<br>話しかけると、ここに4枚ならびます。
+    </p>
+
+    <div class="player" id="player">
+      <div class="caret" id="caret"></div>
+      <div class="frame" id="frame"><div id="yt"></div></div>
+      <div class="meta">
+        <p class="pt" id="pTitle"></p>
+        <p class="pa" id="pArtist"></p>
+      </div>
+      <label class="thru">
+        <input type="checkbox" id="thru" checked>
+        <span><span class="micdot" id="micdot"></span><b>鳴らしたまま話す</b>
+          — 曲を小さくして、マイクを開けたままにします。</span>
+      </label>
+      <div class="prow">
+        <button class="b-skip" type="button" id="pSkip">30秒すすむ</button>
+        <button class="b-next" type="button" id="pNext">次の札</button>
+        <button class="b-talk" type="button" id="pStop">とめて話す</button>
+        <button class="b-big"  type="button" id="pBig">大きい画面</button>
+      </div>
+    </div>
+
+    <div class="more-wrap"><button class="more-button" type="button" id="more" disabled>他を見せて　↻</button></div>
+    <p class="micro" id="stock" style="text-align:center;margin-top:14px"></p>
+  </section>
+
+  <footer class="site-foot">
+    <div class="brand"><span class="brand-ja">ごきげん補給所</span><span class="brand-en">JOY RELIEF STATION</span></div>
+    <div class="micro">GOOD MUSIC. BRIGHTER DAYS.</div>
+  </footer>
+</main>
+
+<details class="kikai" id="kikai">
+  <summary>お店の機械（声・かかっているお金・設定）</summary>
+
+  <h2>いま何秒・いくら</h2>
+  <p class="meter" id="meter"></p>
+  <p class="sw" id="sw"></p>
+
+  <h2>声</h2>
+  <p><button id="koeBtn" type="button">声：<b id="koeNow">Puck</b><span id="koeSub"></span>　ほかの声にする ▾</button></p>
+  <div class="koedraw" id="koedraw" hidden>
+    <p class="kv">Google（この案内人の声。話している途中でも入れ替えられます）</p>
+    <div class="kd-list" id="koeList"></div>
+    <p class="kv" style="margin-top:12px">ほかの会社の声</p>
+    <div class="kd-list" id="koeOther"></div>
+    <p class="kv" id="koeNote">
+      ▶ を押すとその声で同じ台詞を1本だけ作って鳴らします（1本 約0.02円）。
+      名前を押すと案内人の声がその場で入れ替わります。
+    </p>
   </div>
 
-  <div class="panel">
-    <div class="row">
-      <button id="go">話す</button>
-      <button id="stop">やめる</button>
-    </div>
-    <div class="note">
-      札は横に4つ並びます。押すと<b>その札の真下でそのまま鳴ります</b>。別の札を押せばその場で切り替わります。
-      曲ページへ飛ぶのは「大きい画面」を押したときだけです。<br>
-      いくらかかっているかは、顔の下に実測で出ます。上限に当たったらこの画面が勝手に切ります。<br>
-      <b>966で直したところ：</b>①名前の聞き取り（「青葉市子」「ハリー・ベラフォンテ」）
-      ②「アジア」「日本」「ブラジル」などの地域でしぼる
-      ③動物・笑い・旅・ことばの棚（空だったので本番から入れ直し）
-      ④同じ案内を二度言わない。
-    </div>
-    <div class="log" id="log"></div>
-    <p style="text-align:right;margin:10px 0 0"><a href="#" id="devLink"
-       style="font-size:.7rem;color:#c3bdb0;text-decoration:none">・</a></p>
+  <p style="text-align:right;margin:10px 0 0"><a href="#" id="devLink">・</a></p>
 
-    <details class="settings" id="settings" hidden>
-      <summary>お店の人の設定（お客さんは触らなくて大丈夫です）</summary>
-      <h2 style="margin-top:14px">鍵（Google AI Studio）</h2>
-      <input id="gkey" type="password" placeholder="AIza...（Gemini）" autocomplete="off" spellcheck="false">
-      <div class="note">
-        鍵はこの端末のブラウザの中だけに残ります。つなぐときは、この鍵で
-        <b>使い捨ての入場券（ephemeral token・30分）</b>を1枚もらい、
-        そちらで Google につなぎます。鍵そのものは通話には使いません。
-      </div>
-      <h2 style="margin-top:16px">どの案内人（モデル）</h2>
-      <div class="chips" id="models"></div>
-      <h2 style="margin-top:16px">声</h2>
-      <div class="chips" id="voices"></div>
-      <p class="note" style="margin-top:8px">
-        ふだんは顔の下の「ほかの声にする」から入れ替えてください（話している途中でもできます）。
-        30人ぶんを1本ずつ作って並べて聴くなら → <a href="959-koe-erabi.html">959 声えらび</a>
-      </p>
+  <details class="settings" id="settings" hidden>
+    <summary>お店の人の設定（お客さんは触らなくて大丈夫です）</summary>
+    <h2>鍵（Google AI Studio）</h2>
+    <input id="gkey" type="password" placeholder="AIza...（Gemini）" autocomplete="off" spellcheck="false">
+    <p class="kv">
+      鍵はこの端末のブラウザの中だけに残ります。つなぐときは、この鍵で
+      <b>使い捨ての入場券（ephemeral token・30分）</b>を1枚もらい、そちらで Google につなぎます。
+      鍵そのものは通話には使いません。
+    </p>
+    <h2>どの案内人（モデル）</h2>
+    <div class="chips" id="models"></div>
+    <h2>声（全部）</h2>
+    <div class="chips" id="voices"></div>
+    <p class="kv">30人ぶんを1本ずつ作って並べて聴くなら → <a href="959-koe-erabi.html">959 声えらび</a></p>
 
-      <h2 style="margin-top:18px">テンポを測る（声のやり方を変えると何秒になるか）</h2>
-      <div class="note">
-        いまの形は<b>音声のまま往復（Live）</b>。声はGoogleの30人から選べますが、他社の声は使えません。<br>
-        声を選べる範囲を広げるには<b>頭脳と声を分ける</b>（文章を作ってから、別の声で読ませる）しかありません。
-        そのぶん何秒遅くなるのかを、下のボタンで<b>この端末から実際に測ります</b>（3回ずつ・約0.1円）。
-      </div>
-      <div class="row">
-        <button id="tempoBtn" style="background:#2a2622;color:#e8dcc0;border:1px solid #3a352c;
-          font-size:.82rem;padding:10px 14px">3回ずつ測る</button>
-      </div>
-      <table class="cost" id="tempoTable"></table>
-      <h2 style="margin-top:16px">いま何にいくら（実測）</h2>
-      <table class="cost" id="costTable"></table>
+    <h2>テンポを測る</h2>
+    <p class="kv">
+      いまの形は<b>音声のまま往復（Live）</b>。声はGoogleの30人から選べますが、他社の声は使えません。
+      声を選べる範囲を広げるには<b>頭脳と声を分ける</b>しかありません。
+      そのぶん何秒遅くなるのかを、下のボタンで<b>この端末から実際に測ります</b>（3回ずつ・約0.1円）。
+    </p>
+    <div class="row"><button id="tempoBtn" type="button">3回ずつ測る</button></div>
+    <table class="cost" id="tempoTable"></table>
 
-      <h2 style="margin-top:18px">30分話し込んだらいくらか</h2>
-      <table class="cost" id="sanjuTable"></table>
-      <div class="note">
-        上の「計算した額」は、<b>公式の単価 × この画面が数えた秒数</b>です。
-        画面の顔の下にも、話している間ずっと「このまま30分で 約◯円」が出ます。<br>
-        <b>Googleが実際に請求している額は、この画面からは取れません。</b>
-        Gemini API の鍵は「使った分を教える口」を持っていないためです（鍵で聞けるのは
-        トークン数まで。上の表の一番下がそれです）。実際の請求額は Google の請求画面でだけ見られます →
-        <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">Google Cloud の請求</a>
-        ／<a href="https://aistudio.google.com/usage" target="_blank" rel="noopener">AI Studio の使用状況</a>。
-        どちらもたまごさんのログインが要ります。
-      </div>
-      <div class="kv">
-        値段の出どころ：<a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank"
-        rel="noopener">Gemini API の公式の値段表</a>。
-        音声 入 $0.005／分、音声 出 $0.018／分（1ドル157円で換算）。<br>
-        中身の作り：<a href="https://github.com/google-gemini/gemini-live-api-examples"
-        target="_blank" rel="noopener">Google の公式サンプル</a>（Apache-2.0）、
-        <a href="https://github.com/wass08/wawa-lipsync" target="_blank" rel="noopener">wawa-lipsync</a>（MIT）、
-        再生は <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank"
-        rel="noopener">YouTube IFrame Player API</a> の公式の使い方そのまま。
-      </div>
-    </details>
-  </div>
-</div>
+    <h2>いま何にいくら（実測）</h2>
+    <table class="cost" id="costTable"></table>
 
-<script src="assets/958-gemini/tamako.js"></script>
+    <h2>30分話し込んだらいくらか</h2>
+    <table class="cost" id="sanjuTable"></table>
+    <p class="kv">
+      「計算した額」は<b>公式の単価 × この画面が数えた秒数</b>です。
+      <b>Googleが実際に請求している額は、この画面からは取れません。</b>
+      実際の請求額は →
+      <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">Google Cloud の請求</a>
+      ／<a href="https://aistudio.google.com/usage" target="_blank" rel="noopener">AI Studio の使用状況</a>。
+    </p>
+    <p class="kv">
+      値段の出どころ：<a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Gemini API の公式の値段表</a>。
+      音声 入 $0.005／分、音声 出 $0.018／分（1ドル157円で換算）。<br>
+      中身の作り：<a href="https://github.com/google-gemini/gemini-live-api-examples" target="_blank" rel="noopener">Google の公式サンプル</a>（Apache-2.0）、
+      <a href="https://github.com/wass08/wawa-lipsync" target="_blank" rel="noopener">wawa-lipsync</a>（MIT）、
+      再生は <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank" rel="noopener">YouTube IFrame Player API</a> の公式の使い方そのまま。<br>
+      画面の形：Issue #431 の正本 <code>docs/design/concierge-html-css/</code>（No.02 Quiet Record Counter）。
+      絵は承認済み PNG のみ。新しい絵は作っていません。
+    </p>
+  </details>
+</details>
+
+<script src="assets/966/avatar966.js"></script>
 <script src="assets/958-gemini/geminilive.js"></script>
 <script type="module">
 import { Lipsync } from "https://cdn.jsdelivr.net/npm/wawa-lipsync@0.0.2/dist/wawa-lipsync.es.js";
@@ -1039,23 +924,36 @@ $("pNext").addEventListener("click",()=>{
 $("pStop").addEventListener("click",()=>stopPlay(true));
 $("pBig").addEventListener("click",()=>{ if(playing) window.open(playing.url,"_blank","noopener"); });
 
+/* 札は正本 No.02 の .rec-card をそのまま使う。
+   （rec-no ／ rec-media.record ＝レコード盤がはみ出す形 ／ cover に写真 ／ rec-title ／ rec-copy）
+   押せるようにするため a ではなく button にしただけ。 */
+const KIND_EN={music:"MUSIC",video:"VISUAL",article:"ARTICLE",food:"LIFESTYLE"};
 function drawCards(list){
   cardsEl.innerHTML=""; dealt=list;
   if(!list.length){ emptyEl.style.display="block"; return; }
   emptyEl.style.display="none";
   list.forEach((c,i)=>{
-    const b=document.createElement("button"); b.className="card"; b.type="button";
-    const img=document.createElement("img"); img.className="thumb"; img.loading="lazy"; img.alt="";
-    img.src=c.thumb; img.onerror=()=>{img.style.visibility="hidden"};
-    const body=document.createElement("div"); body.className="body";
-    const t=document.createElement("p"); t.className="t"; t.textContent=c.title;
-    const ar=document.createElement("p"); ar.className="a"; ar.textContent=c.sub;
-    body.append(t,ar);
+    const b=document.createElement("button");
+    b.className="rec-card"; b.type="button";
+    b.dataset.slot="recommendation-card"; b.dataset.category=c.kind||"music";
+
+    const no=document.createElement("div"); no.className="rec-no";
+    no.textContent=String(i+1).padStart(2,"0")+" / "+(KIND_EN[c.kind]||"PICK");
+
+    const media=document.createElement("div"); media.className="rec-media record";
+    const cover=document.createElement("span"); cover.className="cover";
+    if(c.thumb) cover.style.backgroundImage="url("+c.thumb+")";
+    media.appendChild(cover);
+
+    const t=document.createElement("h3"); t.className="rec-title"; t.textContent=c.title;
+    const p=document.createElement("p"); p.className="rec-copy"; p.textContent=c.sub||"";
+
+    const meta=document.createElement("div"); meta.className="rec-meta";
     const ja=kindJa(c.kind);
-    if(ja){ const tag=document.createElement("span"); tag.className="tag"; tag.textContent=ja;
-            b.appendChild(tag); }
-    const num=document.createElement("span"); num.className="num"; num.textContent=i+1;
-    b.append(img,body,num);
+    if(ja){ const s=document.createElement("span"); s.textContent=ja; meta.appendChild(s); }
+    if(c.fact&&c.fact.genre){ const s=document.createElement("span"); s.textContent=c.fact.genre; meta.appendChild(s); }
+
+    b.append(no,media,t,p,meta);
     b.addEventListener("click",()=>{ c.yt?openPlayer(c,i):window.open(c.url,"_blank","noopener"); });
     cardsEl.appendChild(b);
   });
@@ -1073,8 +971,8 @@ function dealFour(){
   drawCards(take);
   moreEl.disabled = pool.length===0;
   $("trayTitle").textContent = take.length
-    ? "— "+(poolLabel||"どうぞ")+"　"+page+"枚目 —"
-    : "— この棚は、ここで打ち止めです —";
+    ? (poolLabel||"PICKS FOR YOUR MOMENT")+"　"+page+"枚目"
+    : "この棚は、ここで打ち止めです";
   return take;
 }
 /* 出した4枚の「答えられること」を、棚のデータからそのまま作って案内人に渡す。
@@ -1119,7 +1017,7 @@ moreEl.addEventListener("click",()=>{
 });
 
 /* ══════════════ 顔 ══════════════ */
-const face=Tamako.stand($("tamako"));
+const face=Tamako966.stand($("tamako"));
 
 /* ══════════════ 口パク（wawa-lipsync・MIT）══════════════ */
 const lip=new Lipsync({fftSize:2048,historySize:10});
@@ -1368,8 +1266,24 @@ function paintSW(){
         +`${SWAP.heikin().toFixed(2)}秒</span>`:"");
 }
 const live=()=>!!(api&&api.connected);
-const say=(cls,txt)=>{ const d=document.createElement("div"); d.className="line "+cls;
-  d.textContent=txt; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; };
+/* 会話は正本 No.02 の .conversation-row（左＝だれ／右＝ことば）をそのまま使う。 */
+const WHO={me:"あなた",her:"ごきげん店主",sys:"お知らせ"};
+const say=(cls,txt)=>{
+  const row=document.createElement("div");
+  row.className="conversation-row"+(cls==="sys"?" sys":"");
+  const who=document.createElement("div");
+  who.className="who"+(cls==="me"?" user":"");
+  if(cls!=="sys"){
+    const av=document.createElement("span");
+    av.className="tmk-ava"+(cls==="me"?" you":""); av.setAttribute("aria-hidden","true");
+    who.appendChild(av);
+  }
+  who.appendChild(document.createTextNode(WHO[cls]||""));
+  const p=document.createElement("p"); p.className="say"; p.textContent=txt;
+  row.append(who,p);
+  logEl.appendChild(row);
+  row.scrollIntoView({block:"nearest",behavior:"smooth"});
+};
 const setState=s=>{stateEl.textContent=s;};
 function setMic(on){ micOn=on; if(mic) mic.getAudioTracks().forEach(t=>t.enabled=on); }
 function tellModel(text){ if(live()) api.sendTextMessage(text); }
@@ -1702,12 +1616,10 @@ function closeAll(){
 (function(){
   try{
     const box=document.createElement("p");
-    box.style.cssText="text-align:center;color:#9d947f;font-size:.74rem;margin:6px 0 0";
+    box.className="kv"; box.style.cssText="margin:8px 0 0";
     box.innerHTML='1日の上限 <input id="capIn" type="number" min="10" step="10" '
-      +'style="width:5.5em;background:#1a1712;color:#e8e2d4;border:1px solid #3a352c;'
-      +'border-radius:6px;padding:2px 4px;text-align:right"> 円 '
-      +'<button id="capSet" style="background:#2a2622;color:#e8e2d4;border:1px solid #3a352c;'
-      +'border-radius:6px;padding:2px 8px;cursor:pointer;flex:0 0 auto;font-size:.74rem">決める</button>';
+      +'style="width:6em;text-align:right"> 円 '
+      +'<button id="capSet" type="button">決める</button>';
     meterEl.parentNode.insertBefore(box,meterEl.nextSibling);
     const inp=box.querySelector("#capIn"); inp.value=SAIFU.cap();
     box.querySelector("#capSet").addEventListener("click",()=>{
