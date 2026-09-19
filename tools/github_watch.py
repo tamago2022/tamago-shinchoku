@@ -129,7 +129,11 @@ def load_state():
 def save_state(st):
     st["seen"] = list(dict.fromkeys(st.get("seen") or []))[-3000:]
     st["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    tmp = STATE + ".tmp"
+    # ★2026-09-19 実機で踏んだ：心臓と5分便の両方から同時に呼ばれることがあり、
+    #   同じ名前の .tmp を2つの process が取り合って os.replace が FileNotFoundError で落ちていた。
+    #   落ちた側は**覚えた内容を1回ぶん丸ごと捨てる**＝同じものを二度拾う／拾い落とす原因になる。
+    #   置き場所は process ごとに分ける（os.replace 自体は同一ファイルシステム上で原子的）。
+    tmp = "%s.%d.tmp" % (STATE, os.getpid())
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(st, f, ensure_ascii=False, indent=1)
     os.replace(tmp, STATE)
@@ -521,7 +525,27 @@ def check_repo(repo, token, st, budget):
     return picked
 
 
+def _single_instance():
+    """同時に2本走らせない（2026-09-19）。
+    心臓(heartbeat.sh)と5分便(machine_status_push.sh)の両方から呼ばれる二重化のせいで、
+    同じ瞬間に2本が動き、覚え書き(state)を互いに上書きしていた。先に取った1本だけ通す。
+    鍵が取れなければ黙って戻る＝どちらにせよ次の回（15秒後）にまた来る。"""
+    global _LOCK_F
+    try:
+        import fcntl
+        _LOCK_F = open(os.path.join(REPO, "status", ".github_watch.lock"), "a+")
+        fcntl.flock(_LOCK_F.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except Exception:
+        return False
+
+
+_LOCK_F = None
+
+
 def main():
+    if not _single_instance():
+        return 0
     st = load_state()
     now = time.time()
     if now < st.get("nextCheckAt", 0):
