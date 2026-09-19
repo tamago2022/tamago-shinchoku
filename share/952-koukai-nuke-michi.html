@@ -196,14 +196,26 @@
 #1が通れば #2 は使わなくていい。#1が何らかの理由で通らなくても、#2 が動いていれば本番に出ないという状態は二度と起きない。</p>
 </div>
 
-<h2>#1をどう通すか（たまごさんの手＝3タップ）</h2>
+<h2>#1をどう通すか（たまごさんの手＝「許可」を1回押すだけ）</h2>
+<div class="box">
+<p><strong>実測：Claudeのコネクタ一覧にLovableは載っていない</strong>（2026-09-19に検索して0件）。
+だから「コネクタを探す→Lovable」では出てこない。<strong>URLを直接足す形</strong>になる。</p>
+<p style="margin:0">足すURLはこれ1本 → <code>https://mcp.lovable.dev</code></p>
+</div>
 <ol class="steps">
-  <li>Claudeの入力欄の <strong>＋</strong> を押す</li>
-  <li><strong>コネクタ → コネクタを探す</strong>、検索欄に <strong>Lovable</strong> と入れる</li>
-  <li><strong>接続</strong> を押す。Lovableのログイン画面が出たら <strong>許可</strong> を押す</li>
+  <li><strong>Mac側のセッションに1行走らせる。</strong>
+      <code>claude mcp add --transport http lovable "https://mcp.lovable.dev"</code>
+      ——ここまで<span class="hands0">たまごさんの手は0回</span>。</li>
+  <li>最初にLovableのツールを使うとき、<strong>ブラウザが開いてLovableのログイン確認が出る</strong>。
+      たまごさんはすでにChromeでLovableにログインしているので、出るのは
+      <strong>「許可」ボタン1つ</strong>。<span class="hands1">これが唯一の1タップ。</span></li>
+  <li>以後ずっと0回。「公開して」と言うだけで本番へ出る。</li>
 </ol>
-<p>これで終わり。以後は「公開して」と言うだけで、画面を開かずに本番へ出る。
-<strong>Lovableのチャットは一切使わないので、クレジットは1円も減らない。</strong></p>
+<p>スマホ／Claudeアプリ側から入れたい場合は、<strong>設定 → コネクタ → カスタムコネクタを追加</strong> に
+同じURLを貼る形でも同じところに着く。</p>
+<p><strong>Lovableのチャットは一切使わない。</strong>
+課金されるのは <code>create_project</code> と <code>send_message</code> だけで、
+使うのは <code>deploy_project</code>（無料）。クレジットは1円も減らない。</p>
 
 <h2>今日詰まっていた6件は、#1が通れば全部流れる</h2>
 <ul>
