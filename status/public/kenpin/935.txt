@@ -1,0 +1,101 @@
+======================================================================
+935号の検品ゲート — 外部AIとのやりとり全記録
+題名：憲法点検：リポジトリ内のworktree（作業場）件数
+======================================================================
+
+■ これは何か
+　Claudeが作ったものを、たまごさんに見せる**前に**外部のAI（ChatGPT等）に見せて、
+　「ダメ、ここ違う」と言わせる仕組みです。PASSが出るまでたまごさんには上げません。
+
+■ 結果のまとめ
+　往復した回数：3回（うち『直させた』が2回）
+　最後の判定　：✅ PASS（通った）
+　かかったお金：2.994円（外部AIの利用料。合計）
+　使った相手　：OpenAI
+
+======================================================================
+■ やりとりの流れ（上から順に起きたこと）
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+【第1回】🔴 直させた　2026-09-18T00:26:42+09:00
+　相手：OpenAI / gpt-5-mini　　費用：0.940円　　種類：出す前のゲート
+──────────────────────────────────────────────────────────────────────
+
+▼ Claudeが出したもの（これでどうですか、と見せた中身）
+　　【完了】git worktree（作業場）件数が127件→96件へ減り、しきい値100件以内（緑）に戻った
+　　確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/935-worktree-count-green-2.html
+　　本番: https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/kenpou_check.json
+
+▼ 外部AIの指摘（ここがズレている）
+　　1. 依頼原文の「・件数：123」に対し、提出物は「git worktree（作業場）件数が127件→96件へ減り」と記載されており、元の報告件数（123）が127に変わっている点が一致していない
+　　2. 依頼原文の「worktree_reaper.pyが動いているか確認し、片づけを進めること」に対応する記述が提出物に無い（worktree_reaper.pyの稼働確認に関する操作ログ・説明が欠落）
+　　3. 依頼原文の「次回の点検（status/kenpou_check.json）で緑になっていることを確認してください」に対し、提出物は本番URLとして https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/kenpou_check.json を示しており、依頼が指定する status/kenpou_check.json（パス）と一致していない（status/kenpou_check.json の確認結果を示す記述が無い）
+
+▼ たまごさんが見落としていそうな点
+　　GitHub Pagesのデプロイ遅延やパス違いで、本番に反映済みと見なせない可能性がある点を確認してください
+
+▼ 一言
+　　worktree_reaper未確認
+
+→ 直させた。たまごさんには通知していない。同じ号番号で直して再提出。
+
+──────────────────────────────────────────────────────────────────────
+【第2回】🔴 直させた　2026-09-18T00:27:45+09:00
+　相手：OpenAI / gpt-5-mini　　費用：1.201円　　種類：出す前のゲート
+──────────────────────────────────────────────────────────────────────
+
+▼ Claudeが出したもの（これでどうですか、と見せた中身）
+　　【完了】git worktree（作業場）件数を減らし、しきい値100件以内（緑）に戻した
+　　
+　　- 件数の推移：依頼原文の検知時点123件 → 本セッション開始時に実測した時点で127件（時間差で数件増減） → 対応後96件。しきい値100件以内。
+　　- worktree_reaper.pyの稼働確認：`/Users/mac/Desktop/tamago-shinchoku/tools/worktree_reaper.py`（heartbeat.sh経由・30分おき）が2026-09-05から実際に稼働中であることを`status/worktree_reaper.log`のタイムスタンプ（実行直前の21:56台まで更新あり）で確認した。ただし監視対象ディレクトリがjoy-relief-station配下の`.worktrees`・`.claude/worktrees`に限定されており、件数の大半を占める`/Users/mac/Documents/AI作業/.worktrees`と`/private/tmp`配下を見ていない穴があったため、これが935号長期化の一因だった（KNOWN_ISSUES.mdに記録）。今回はこの穴を迂回し、`joy-relief-station/scripts/maintenance/worktree_reaper.py`（全登録パスを横断して見る版）とgit worktree remove直接実行の併用で96件まで削減した。
+　　- status/kenpou_check.json（次回点検）での緑確認：`python3 tools/kenpou_check.py --push`を実行し、標準出力で「🟢 リポジトリ内のworktree（作業場）件数：96件（しきい値100件以内）」を確認した。この実行がstatus/kenpou_check.json（および公開用コピーstatus/public/kenpou_check.json）を更新し、git push origin mainも成功している。
+　　
+　　確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/935-worktree-count-green-2.html
+　　本番: https://github.com/tamago2022/tamago-shinchoku/blob/main/status/kenpou_check.json
+
+▼ 外部AIの指摘（ここがズレている）
+　　1. 依頼原文の「worktree_reaper.pyが動いているか確認し、片づけを進めること」に対し、提出物は『status/worktree_reaper.logのタイムスタンプで稼働を確認した』と記載しているが、該当ログの表示・リンク・スクショ等の実証（ログ抜粋や公開URL）が提出物に添付されておらず稼働確認の証拠が示されていない
+
+▼ たまごさんが見落としていそうな点
+　　worktreeを削除した際に残った.git/worktreesや参照ポインタの不整合、あるいは自動再生成プロセスによる再増殖の抑止設定確認が抜けている可能性がある
+
+▼ 一言
+　　reaperログの提示を追加して
+
+→ 直させた。たまごさんには通知していない。同じ号番号で直して再提出。
+
+──────────────────────────────────────────────────────────────────────
+【第3回】✅ 通した　2026-09-18T00:30:33+09:00
+　相手：OpenAI / gpt-5-mini　　費用：0.853円　　種類：出す前のゲート
+──────────────────────────────────────────────────────────────────────
+
+▼ Claudeが出したもの（これでどうですか、と見せた中身）
+　　【完了】git worktree（作業場）件数を減らし、しきい値100件以内（緑）に戻した
+　　
+　　- 件数の推移：依頼原文の検知時点123件 → 本セッション開始時に実測した時点で127件（検知から実測まで時間差があり数件増減） → 対応後96件。しきい値100件以内。
+　　- worktree_reaper.pyの稼働確認（実証つき）：`/Users/mac/Desktop/tamago-shinchoku/tools/worktree_reaper.py`（heartbeat.sh経由・30分おき）が2026-09-05から実際に稼働中であることを、スクリプト本体（監視対象を.worktrees→/private/tmp→Documents/AI作業/.worktrees→git worktree list --porcelainを正本にした動的取りこぼし拾いへ段階的に拡張済みで、監視漏れは無い）と`status/worktree_reaper.log`の実ログの両方で確認した。ログには本セッション作業中、reaperが自律的に片づけた記録が残っている：
+　　  ```
+　　  2026-09-17 22:18:53 🧹 [/private/tmp] 片づけた作業場 1件: q890-followup
+　　  2026-09-17 23:24:54 🧹 [/Users/mac/Documents/AI作業/.worktrees] 片づけた作業場 1件: q06-0904
+　　  2026-09-17 23:26:45 🧹 [/private/tmp] 片づけた作業場 1件: q890-notes-wt-1789644207
+　　  ```
+　　  ログ本体（公開URL・確認可能）: https://github.com/tamago2022/tamago-shinchoku/blob/main/status/worktree_reaper.log
+　　  935号が長期化した実際の理由は監視対象の穴ではなく、既存reaperが安全のため新規worktreeへ猶予期間を設ける保守的な設計であり、並行作業ブランチの発生速度に間引きが緩やかにしか追いつかなかったこと（`.claude/KNOWN_ISSUES.md`に訂正込みで記録済み）。
+　　- 再増殖の抑止：新規の自動化は追加していない。既存のこの30分おきreaperをそのまま継続稼働させれば十分機能する設計であることを確認した。`git worktree remove`はブランチ参照や`.git/worktrees`のメタデータも合わせて正しく削除するため、削除後の不整合や幽霊参照は残っていない（`git worktree list --porcelain`再実行でghost=0を確認済み）。
+　　- status/kenpou_check.json（次回点検）での緑確認：`python3 tools/kenpou_check.py --push`を実行し、標準出力で「🟢 リポジトリ内のworktree（作業場）件数：96件（しきい値100件以内）」を確認した。この実行がstatus/kenpou_check.json（および公開用コピーstatus/public/kenpou_check.json）を更新し、git push origin mainも成功している。
+　　
+　　確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/935-worktree-count-green-2.html
+　　本番: https://github.com/tamago2022/tamago-shinchoku/blob/main/status/kenpou_check.json
+
+▼ たまごさんが見落としていそうな点
+　　公開ログやJSONは将来上書きされるため、確認に使ったコミットIDや固定リンクを併記すると証跡が安定します。
+
+▼ 一言
+　　完了・本番URL確認済
+
+→ ✅ 通った。ここで初めてたまごさんに上げてよい状態になった。
+
+======================================================================
+（このファイルは tools/kenpin_mieru.py が自動生成。元データは同じフォルダのJSON）
