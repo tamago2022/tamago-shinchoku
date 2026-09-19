@@ -73,7 +73,9 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 # 実測：今日は 11:17 を最後に7時間回っていない＝直したものが何時間も本番に出ないまま溜まる。
 # ここ（5分おきに必ず launchd から起動される便）に相乗りする。新しい常駐は増やさない。
 # ★status/_961/PHASE が idle（既定）なら即 exit 0 ＝完全に無害。用が済んだら idle に戻す。
-run_with_timeout 240 bash "$REPO/tools/_961_jrs_deliver.sh" >/dev/null 2>&1 || true
+# ★この便を止めないよう、バックグラウンドへ逃がす（公開ボタンは押してから反映までが長い）。
+#   二重起動は _961 側のロックで防いでいる。
+( nohup bash "$REPO/tools/_961_jrs_deliver.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
 
 # ---- 残骸の掃除（2026-09-05 17:05・実害あり）----
 # たまごさん「Mac重たいよ」。実測：5分平均ロードが238（8コアのMacで通常8以下）。
