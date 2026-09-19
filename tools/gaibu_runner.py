@@ -171,6 +171,13 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     # 鍵の値は出さない（gaibu_diag.py 側で保証）。
                     import gaibu_diag
                     out = gaibu_diag.run_job(job["payload"])
+                elif job.get("kind") == "kakunin":
+                    # 961番 出したページが本当に200で見えるかを工場側から叩く。
+                    # GETのみ・課金0・行き先は tamago2022.github.io の中だけ
+                    # （白名簿は kakunin.py 側の ALLOW_PREFIX で保証）。
+                    import importlib, kakunin
+                    importlib.reload(kakunin)
+                    out = kakunin.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except Exception:
