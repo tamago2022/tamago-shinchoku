@@ -85,20 +85,44 @@ fi
 
 cd "$PAGES" || { log "🛑 $PAGES へ入れませんでした"; exit 1; }
 
-# ---- (1) main の追跡ファイルを反映（main の HEAD が動いたときだけ）----
+# ---- (1) main の追跡ファイルを反映 ----
+# ★ 毎回まるごと展開し直さない。681MBを展開すると3分以上かかり、5分おきの巡回が詰まる。
+#   前回どこまで映したかを .git/lastmain に覚えておき、**その差分だけ**を映す。
+#   main の1コミットで動くのはたいてい数ファイルなので、2回目以降は一瞬で終わる。
 CUR="$(git -C "$REPO" rev-parse HEAD 2>/dev/null || echo "")"
 [ -z "$CUR" ] && { log "🛑 main の HEAD が読めませんでした"; exit 1; }
-if [ "$CUR" != "$(cat "$PAGES/.git/lastmain" 2>/dev/null || echo "")" ]; then
-  # 消えたファイルを残さないため、一度さらにしてから展開し直す。
-  # ★ .git だけは絶対に消さない。
-  find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
-  # git archive は**追跡しているものしか出さない**＝置きっぱなしのゴミは原理的に入らない
-  if ! git -C "$REPO" archive "$CUR" | tar -x -C "$PAGES"; then
-    log "🛑 main の中身を取り出せませんでした（今回は公開を見送る）"
-    exit 1
+LAST="$(cat "$PAGES/.git/lastmain" 2>/dev/null || echo "")"
+
+sync_one() {  # $1=コミット $2=パス
+  local d; d="$PAGES/$(dirname "$2")"
+  mkdir -p "$d" 2>/dev/null || return 0
+  if ! git -C "$REPO" show "$1:$2" > "$PAGES/$2" 2>/dev/null; then
+    rm -f "$PAGES/$2" 2>/dev/null || true
+  fi
+}
+
+if [ "$CUR" != "$LAST" ]; then
+  # 前回の印が無い／その印を main がもう知らない（掃除された等）→ 最初から全部映す
+  if [ -z "$LAST" ] || ! git -C "$REPO" cat-file -e "$LAST^{commit}" 2>/dev/null; then
+    log "main の中身をまるごと映します（初回・時間がかかります）"
+    find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
+    # git archive は**追跡しているものしか出さない**＝置きっぱなしのゴミは原理的に入らない
+    if ! git -C "$REPO" archive "$CUR" | tar -x -C "$PAGES"; then
+      log "🛑 main の中身を取り出せませんでした（今回は公開を見送る）"
+      exit 1
+    fi
+  else
+    # 消えたもの
+    while IFS= read -r -d '' f; do
+      [ -n "$f" ] && rm -f "$PAGES/$f" 2>/dev/null || true
+    done < <(git -C "$REPO" diff --no-renames -z --name-only --diff-filter=D "$LAST" "$CUR" 2>/dev/null)
+    # 増えたもの・変わったもの
+    while IFS= read -r -d '' f; do
+      [ -n "$f" ] && sync_one "$CUR" "$f"
+    done < <(git -C "$REPO" diff --no-renames -z --name-only --diff-filter=ACMRTX "$LAST" "$CUR" 2>/dev/null)
   fi
   echo "$CUR" > "$PAGES/.git/lastmain"
-  log "main の中身を入れ替えました（$CUR）"
+  log "main の中身を $(echo "$LAST" | cut -c1-9) → $(echo "$CUR" | cut -c1-9) へ追従しました"
 fi
 
 # ---- (2) 生きた写し（status/public/）を上書き ----
