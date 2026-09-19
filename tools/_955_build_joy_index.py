@@ -146,8 +146,14 @@ def main():
         ("foodCards.ts", "/room/food/", "food"),
         # extraCards.ts は種類が混ざっていて（音楽の動画も入っている）、
         # 機械的に「ことば」と貼ると嘘になる。分類が取れるまで入れない。
-        ("danceCards.ts", "/room/card/", "dance"),
-        ("summerCards.ts", "/room/card/", "travel"),
+        # 行き先とkindは、各ファイル自身のdocstringと本番ページで裏を取った値。
+        #   /room/dance/d-soraki        … 200。パンくず「案内所トップ > 踊り」
+        #   /room/summer/anri-windy-summer … 200。パンくず「案内所トップ > 音楽 > 夏の棚」
+        # 以前は両方とも /room/card/ を貼っていて、本番に存在しない行き先だった（リンク切れ）。
+        # summerCards は「夏に聴きたい曲」なので travel ではなく music。
+        # 「旅に出たい」と言われて松田聖子が出る事故は、ここが原因だった。
+        ("danceCards.ts", "/room/dance/", "dance"),
+        ("summerCards.ts", "/room/summer/", "music"),
     ]:
         f = SRC / name
         if f.exists():
