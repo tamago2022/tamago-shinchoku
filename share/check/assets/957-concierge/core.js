@@ -27,6 +27,11 @@
     music: "音楽", video: "動画", food: "食べもの",
     animal: "動物", travel: "旅", word: "ことば", laugh: "笑い",
   };
+  // 08の原案にある小さい英字ラベル
+  const CAT_EN = {
+    music: "MUSIC", video: "VISUAL", food: "LIFESTYLE",
+    animal: "CREATURES", travel: "JOURNEY", word: "ARTICLE", laugh: "COMEDY",
+  };
 
   const shelf = {
     head: null, picks: null, bucket: {}, seeds: null, loading: null,
@@ -98,7 +103,9 @@
         else if (hay.includes(q)) sc += q.length >= 3 ? 34 : 14;
       }
       if (sc) out.push({ kind: "seed", cat: c.cat, title: c.title, sub: c.copy,
-                         yt: c.yt, url: c.url, key: "s:" + c.id, sc: sc });
+                         yt: c.yt, url: c.url, key: "s:" + c.id, sc: sc,
+                         tags: [CAT_LABEL[c.cat] || ""].concat(c.tags || [])
+                                 .filter(Boolean).slice(0, 3) });
     }
     return out;
   }
@@ -124,8 +131,11 @@
       if (seen.has(key)) return;
       seen.add(key);
       const a = A[row[0]];
+      const tg = [a.n].concat(a.g || []);
+      if (row[3]) tg.push(row[3] + "年");
       out.push({
         kind: "song", cat: "music", title: row[2], sub: a.n + (row[3] ? "　" + row[3] + "年" : ""),
+        tags: tg.slice(0, 3),
         yt: row[4] || "", key: key,
         url: shelf.head.base + "?artist=" + encodeURIComponent(a.i) + "&song=" + encodeURIComponent(row[1]),
         sc: sc + tidy(row[2]) + (row[3] ? 10 : 0),
@@ -218,13 +228,26 @@
     laugh: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="4.5" width="21" height="15" rx="1.5" class="d"/><rect x="3.4" y="6.2" width="2" height="2" class="h"/><rect x="3.4" y="15.4" width="2" height="2" class="h"/><rect x="18.6" y="6.2" width="2" height="2" class="h"/><rect x="18.6" y="15.4" width="2" height="2" class="h"/><path d="M8.4 10.4c.9 3.4 6.3 3.4 7.2 0" class="s"/></svg>',
   };
 
+  // レコード盤（02の原案：四角い写真の右端から半分はみ出す）
+  const DISC =
+    '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+    '<circle cx="32" cy="32" r="31" fill="#15120e"/>' +
+    '<circle cx="32" cy="32" r="31" fill="none" stroke="#3a332a" stroke-width="1"/>' +
+    '<circle cx="32" cy="32" r="25" fill="none" stroke="#2c2620" stroke-width=".9"/>' +
+    '<circle cx="32" cy="32" r="20" fill="none" stroke="#2c2620" stroke-width=".9"/>' +
+    '<circle cx="32" cy="32" r="15.5" fill="none" stroke="#2c2620" stroke-width=".9"/>' +
+    '<circle cx="32" cy="32" r="11" fill="#b4472f"/>' +
+    '<circle cx="32" cy="32" r="2.1" fill="#f3e7d0"/></svg>';
+
   function card(c) {
     const a = document.createElement("a");
     a.className = "card cat-" + c.cat;
     a.href = c.url; a.target = "_blank"; a.rel = "noopener";
     a.setAttribute("data-cat", c.cat);
 
-    const fig = document.createElement("div");
+    const pic = document.createElement("span");
+    pic.className = "pic";
+    const fig = document.createElement("span");
     fig.className = "thumb";
     if (c.yt) {
       const img = document.createElement("img");
@@ -238,17 +261,34 @@
     mo.className = "motif";
     mo.innerHTML = MOTIF[c.cat] || MOTIF.music;
     fig.appendChild(mo);
+    pic.appendChild(fig);
 
-    const body = document.createElement("div");
+    // レコード盤。02では見え、08では隠す（ページのCSSが決める）
+    const disc = document.createElement("span");
+    disc.className = "disc"; disc.innerHTML = DISC;
+    pic.appendChild(disc);
+
+    const body = document.createElement("span");
     body.className = "body";
-    const kind = document.createElement("p");
+    const kind = document.createElement("span");
     kind.className = "kind"; kind.textContent = CAT_LABEL[c.cat] || "";
-    const t = document.createElement("p");
+    const en = document.createElement("span");
+    en.className = "kind-en"; en.textContent = CAT_EN[c.cat] || "";
+    const t = document.createElement("span");
     t.className = "t"; t.textContent = c.title;
-    const s = document.createElement("p");
-    s.className = "s"; s.textContent = c.sub || "";
-    body.append(kind, t, s);
-    a.append(fig, body);
+    const sub = document.createElement("span");
+    sub.className = "s"; sub.textContent = c.sub || "";
+    const tags = document.createElement("span");
+    tags.className = "tags";
+    for (const w of (c.tags || []).slice(0, 3)) {
+      const h = document.createElement("span");
+      h.textContent = "#" + String(w).replace(/\s+/g, "");
+      tags.appendChild(h);
+    }
+    const arrow = document.createElement("span");
+    arrow.className = "arrow"; arrow.setAttribute("aria-hidden", "true"); arrow.textContent = "\u2192";
+    body.append(en, kind, t, sub, tags, arrow);
+    a.append(pic, body);
     return a;
   }
 
@@ -314,15 +354,39 @@
       key: $("key"), voices: $("voices"), meter: $("meter"), stat: $("catStat"),
     };
     const SAVED = "tamago_openai_key";
+    // ★客前に出すもの：会話と札だけ。鍵・声・接続の話は ?dev=1 のときだけ。
+    const DEV = /[?&]dev=1/.test(location.search);
+    const ura = document.querySelector(".urakuchi");
+    if (ura && !DEV) ura.setAttribute("hidden", "hidden");
     try { const k = localStorage.getItem(SAVED); if (k) el.key.value = k; } catch (e) {}
 
     const face = opt.face || { level() {}, speaking() {} };
 
+    const WHO = { her: opt.whoHer || "案内人", me: opt.whoMe || "あなた", sys: "" };
     function say(cls, txt) {
       if (!el.log) return;
       const d = document.createElement("div");
-      d.className = "line " + cls; d.textContent = txt;
+      d.className = "line " + cls;
+      if (cls !== "sys" && global.Tamako) {
+        const av = document.createElement("span");
+        av.className = "ava";
+        // ★案内人＝ヒーローに立っている本人の顔。あなた＝人のシルエット。
+        av.innerHTML = cls === "her" ? global.Tamako.avatar() : global.Tamako.you();
+        d.appendChild(av);
+      }
+      const bub = document.createElement("span");
+      bub.className = "bub";
+      if (WHO[cls]) {
+        const w = document.createElement("span");
+        w.className = "who"; w.textContent = WHO[cls];
+        bub.appendChild(w);
+      }
+      const tx = document.createElement("span");
+      tx.className = "txt"; tx.textContent = txt;
+      bub.appendChild(tx);
+      d.appendChild(bub);
       el.log.appendChild(d); el.log.scrollTop = el.log.scrollHeight;
+      return d;
     }
     function setState(s) { if (el.state) el.state.textContent = s; }
 
@@ -482,10 +546,14 @@
     async function connect() {
       const sk = (el.key.value || "").trim();
       if (!sk) {
-        say("sys", "まだ店の鍵が入っていません。いちばん下の「店の裏（開発用）」から入れてください。");
+        const line = say("sys", "いま声の支度ができていません。しばらくしてからどうぞ。");
+        if (line) {
+          const a = document.createElement("a");
+          a.href = location.pathname + "?dev=1"; a.className = "devlink"; a.textContent = "（店の裏）";
+          line.querySelector(".bub").appendChild(a);
+        }
         setState(opt.stateNoKey || "準備ができていません");
-        const d = document.querySelector("details.urakuchi");
-        if (d) { d.open = true; el.key.focus(); }
+        if (DEV && ura) { ura.open = true; el.key.focus(); }
         return;
       }
       try { localStorage.setItem(SAVED, sk); } catch (e) {}
