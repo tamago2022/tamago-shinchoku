@@ -24,11 +24,28 @@ LOG="$REPO/status/heartbeat.log"
 #   4本走っていたので4つに増えていた。走行中に同じ仕事が2つ並ぶのも同じ理由。
 # コメントに「二重起動しない」と書いてあったが、**実装が無かった。**書いただけでは効かない。
 PIDF="$REPO/status/heartbeat.pid"
+# ---- 2026-09-20（975番）「既に心臓が動いています」が5秒おきに無限に書かれていた ----
+# 実測：2026-09-20 03:58〜04:12 のログが、この1行だけで埋まっていた（1日あたり約17,000行）。
+#   仕組み：launchd の心臓便は KeepAlive=true / ThrottleInterval=5。
+#   ところが本物の心臓(pid 84548)は launchd の外から起動されていたため、
+#   launchd便が起動 → ここで「既に居る」と分かって exit 0 → launchdが5秒後にまた起動、
+#   を永久に繰り返していた（launchctl list でも心臓便のPIDが常に空だった）。
+#   ログが5秒ごとに1行ずつ太り、下の「たまに刈る」で200行に刈られるので、
+#   **本当に知りたい記録（いつ詰まったか・いつ交代したか）が全部流されて消えていた。**
+# 直し方：exit しない。**控えとして待つ。**launchdから見れば起動しっぱなし＝再起動churnが止まる。
+#   先代が消えたらそのまま自分が心臓になる（下の $$ 書き込みへ落ちる）＝自己修復は今までどおり。
 if [ -f "$PIDF" ]; then
   OLD="$(cat "$PIDF" 2>/dev/null || true)"
   if [ -n "${OLD:-}" ] && [ "$OLD" != "$$" ] && kill -0 "$OLD" 2>/dev/null; then
-    echo "$(date '+%F %T') 既に心臓が動いています（pid $OLD）。この起動はやめます" >> "$LOG"
-    exit 0
+    echo "$(date '+%F %T') 既に心臓が動いています（pid $OLD）。控えとして待機します（pid $$）" >> "$LOG"
+    while :; do
+      CUR="$(cat "$PIDF" 2>/dev/null || true)"
+      [ -z "${CUR:-}" ] && break                      # PIDファイルが消えた＝先代が退いた
+      [ "$CUR" = "$$" ] && break                      # 自分が正規になった
+      kill -0 "$CUR" 2>/dev/null || break             # 先代が死んだ＝自分が引き継ぐ
+      sleep 30
+    done
+    echo "$(date '+%F %T') 先代が居なくなったので、控え（pid $$）が心臓を引き継ぎます" >> "$LOG"
   fi
 fi
 echo $$ > "$PIDF"
