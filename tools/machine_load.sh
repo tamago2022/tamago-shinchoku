@@ -32,7 +32,14 @@ fi
 SWAP_USED_MB=$(sysctl vm.swapusage 2>/dev/null | sed -E 's/.*used = ([0-9.]+)M.*/\1/')
 SWAP_GB=$(awk -v m="${SWAP_USED_MB:-0}" 'BEGIN{printf "%.2f", m/1024}')
 
-DISK_FREE_GB=$(df -g / 2>/dev/null | awk 'NR==2{print $4}')
+# 2026-09-20（968番）★測る場所を直した。
+#   それまで `df -g /` を見ていた。このMacの / は「macOS Sonoma」システムボリュームで、
+#   本当の置き場所である Data ボリューム(/System/Volumes/Data)とは空きが全く違う。
+#   実測 2026-09-20 03:04：`df / `→270GB、`df /System/Volumes/Data`→114GB。
+#   ＝machine.json も進捗表も**156GB多い嘘の数字**を出し続けていた（実測「ディスク空き 252GB」）。
+#   Data ボリュームには 500GB の quota がかかっており(diskutil apfs list で確認)、
+#   工場が実際に書けるのはそちらの空き。disk_guardian.py も同じ場所を見ている（数字が一致する）。
+DISK_FREE_GB=$(df -g /System/Volumes/Data 2>/dev/null | awk 'NR==2{print $4}')
 DISK_FREE_GB=${DISK_FREE_GB:-0}
 
 SESS=$(python3 -c "
