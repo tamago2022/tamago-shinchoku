@@ -16,7 +16,9 @@
 .concept-02 .hero-record::before{content:none}   /* カウンターは写真の中にある */
 .concept-02 .hero-record::after{                  /* 文字を読ませるための影だけ足す */
   content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:linear-gradient(100deg,rgba(10,13,10,.72) 0 26%,rgba(10,13,10,.20) 46%,transparent 62%);
+  background:
+    linear-gradient(100deg,rgba(8,11,8,.82) 0 30%,rgba(8,11,8,.34) 50%,transparent 66%),
+    linear-gradient(0deg,rgba(8,11,8,.30) 0 12%,transparent 34%);
 }
 .record-copy{z-index:2}
 
@@ -45,10 +47,10 @@
 #stop{display:none}
 
 /* ── 会話（正本 .conversation-row をそのまま。左に丸アイコン）── */
-.conversation-row .who{display:flex;align-items:center;gap:8px}
+.conversation-row .who{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
 .conversation-row.sys{background:rgba(143,61,46,.06)}
 .conversation-row.sys .say{color:var(--brick);font:12px/1.9 var(--sans)}
-#state{margin:10px 0 0;text-align:right}
+#state{margin:12px 0 0;padding:0 46px 0 34px;text-align:right}
 
 /* ── 札（正本 .rec-card を button にしただけ）───────────── */
 button.rec-card{
