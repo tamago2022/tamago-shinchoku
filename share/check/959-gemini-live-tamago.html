@@ -22,6 +22,11 @@
   #tamako svg{display:block;width:100%;height:auto;overflow:visible}
   .state{text-align:center;color:#b5aa93;font-size:.78rem;letter-spacing:.08em;margin:6px 0 2px;min-height:1.2em}
   .meter{text-align:center;color:#9d947f;font-size:.72rem;line-height:1.7;margin:2px 0 0}
+  /* ★959：ストップウォッチ。数字は画面に出す。 */
+  .sw{text-align:center;color:#b5aa93;font-size:.74rem;line-height:1.8;margin:5px 0 0;
+    font-variant-numeric:tabular-nums;min-height:1.3em}
+  .sw b{color:var(--kin);font-size:1.02rem}
+  .sw .sw-sub{color:#7d7466;font-size:.68rem}
   .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid #e2dccd}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
      font-size:1rem;letter-spacing:.06em;margin:0 0 10px;color:var(--sub)}
@@ -117,6 +122,7 @@
     <div id="tamako"></div>
     <div class="state" id="state">「話す」を押してください</div>
     <div class="meter" id="meter"></div>
+    <div class="sw" id="sw"></div>
 
     <div class="tray">
       <h3 id="trayTitle">— 差し出された札 —</h3>
@@ -177,6 +183,10 @@
       <div class="chips" id="models"></div>
       <h2 style="margin-top:16px">声</h2>
       <div class="chips" id="voices"></div>
+      <p class="note" style="margin-top:8px">
+        30人ぶんを同じ台詞で聴き比べられます →
+        <a href="959-koe-erabi.html">959 声えらび</a>
+      </p>
       <h2 style="margin-top:16px">いま何にいくら（実測）</h2>
       <table class="cost" id="costTable"></table>
       <div class="kv">
@@ -220,7 +230,18 @@ const MODELS=[
   ["gemini-3.1-flash-live-preview","3.1 Flash Live（道具を待つ＝遅い）"]
 ];
 const NONBLOCK_OK = m => m.indexOf("3.8")>=0;
-const VOICES=["Puck","Charon","Kore","Fenrir","Aoede","Leda","Orus","Zephyr"];
+/* ★959：8人だけだったのを、Google公式の30人ぜんぶに。一言はGoogleが付けているもの。
+   出どころ https://ai.google.dev/gemini-api/docs/speech-generation */
+const VOICES=[
+  ["Sulafat","あたたかい"],["Achird","人なつこい"],["Vindemiatrix","やさしい"],["Aoede","風とおしがいい"],
+  ["Zephyr","明るい"],["Puck","陽気"],["Charon","よく知っている"],["Kore","きっぱり"],
+  ["Fenrir","はしゃぐ"],["Leda","若い"],["Orus","きっぱり"],["Callirrhoe","のんき"],
+  ["Autonoe","明るい"],["Enceladus","息まじり"],["Iapetus","すっきり"],["Umbriel","のんき"],
+  ["Algieba","なめらか"],["Despina","なめらか"],["Erinome","すっきり"],["Algenib","しゃがれ"],
+  ["Rasalgethi","よく知っている"],["Laomedeia","陽気"],["Achernar","やわらかい"],["Alnilam","きっぱり"],
+  ["Schedar","ならし"],["Gacrux","大人びた"],["Pulcherrima","前のめり"],["Zubenelgenubi","くだけた"],
+  ["Sadachbia","生きがいい"],["Sadaltager","物知り"]
+].map(([n,j])=>[n,n+"／"+j]);
 
 function paintChips(box,list,storeKey,def){
   const cur=(()=>{ try{return localStorage.getItem(storeKey)||def;}catch(e){return def;} })();
@@ -639,6 +660,13 @@ const INSTRUCTIONS=[
   "あなたは「ごきげん補給所」の案内人、たまこ。日本語だけで、短く、やわらかく話す。1回の返事は2文まで。",
   "英語で話しかけられても日本語で答える。",
   "",
+  "■ ★間を空けない（959でいちばん大事）",
+  "1回の返事は、長くても2文・合わせて40字まで。言い切ったら止まる。説明を足さない。",
+  "hikidashi を呼ぶときは、呼ぶ前に必ず短い一言を先に言う。",
+  "  例：「はい、探しますね」「ちょっと見てきます」「いいですね、待ってて」",
+  "道具は裏で走るので、待っている間も黙らないこと。結果が届いたら、そこから続けて話す。",
+  "考えている間に無音を作らない。迷ったら先に「うーん」でもいいから声を出す。",
+  "",
   "■ ここは音楽屋ではありません",
   "この店の棚は7種類。music（音楽）/ food（食）/ cute（動物）/ laugh（笑い）/ travel（旅）/ dance（踊り）/ joy（ことば）。",
   "",
@@ -1015,7 +1043,8 @@ function closeAll(){
   paintMeter();
 })();
 
-CAT.load().catch(()=>{});
+CAT.load().catch(()=>{});   /* ★押す前に大棚(324KB)を先に取っておく。これは958から既にこの形 */
+paintSW();
 $("devLink").addEventListener("click",e=>{ e.preventDefault();
   const d=$("settings"); d.hidden=false; d.open=true; });
 goEl.addEventListener("click",connect);

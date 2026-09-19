@@ -149,6 +149,20 @@
   <div class="panel">
     <h2><span class="n">四</span>テンポ：遅かった理由と、直したところ</h2>
     <ol class="te" id="tempo"></ol>
+    <div class="row">
+      <a class="btn-main" href="959-gemini-live-tamago.html"
+         style="text-decoration:none;text-align:center;line-height:1.4;display:block">
+        直した案内人を開く（959）</a>
+      <a class="btn-sub" href="958-gemini-live-tamago.html"
+         style="text-decoration:none;text-align:center;line-height:1.4;display:block;flex:0 1 auto">
+        直す前（958）</a>
+    </div>
+    <p class="note">
+      959を開いて話しかけると、画面の真ん中に
+      <b>「喋り終えてから返事まで ◯.◯◯秒」</b>が毎回出ます。958にはこの表示がありません。
+      直す前の作りでは、公式サンプルの初期値のまま <b>2.0秒</b> 黙って待ってから返事を始めていたので、
+      マイクの送り方（0.13秒）と合わせて <b>約2.2秒</b>。ここが出発点です。
+    </p>
     <p class="kv" id="tempoSrc"></p>
   </div>
 </div>
@@ -454,16 +468,24 @@ const TEMPO=[
   +"＝棚を探し終わるまで、案内人は一言も喋れない。これが「遅い」の正体です。",
   "<b>gemini-3.8-live</b> に替えて、道具に <code>behavior: NON_BLOCKING</code> を付け、"
   +"返すときに <code>scheduling: INTERRUPT</code> を付ける。裏で棚を探しながら先に喋れるようになります。"],
- ["棚（324KB）を、押してから取りに行っていた",
-  "head.json が 324KB。押した直後に取りに行くので、その分まるごと待ちになっていました。",
-  "ページを開いた瞬間に取りに行く（押す前に手元に揃える）。"],
+ ["棚を探しに行く時間そのものは、そんなに悪くなかった",
+  "実測（たまごさんの公開ページから3回ずつ）：大棚 head.json は 324KB で "
+  +"<b>冷えていて0.78秒・温まって0.23秒</b>。これはページを開いた瞬間に取りに行く作りに既になっていました。"
+  +"押したあとに取りに行くのは、アーティスト別の小棚だけで <b>0.28秒</b>。"
+  +"つまり「棚が重いから遅い」のではありません。"
+  +"<b>その0.3秒のあいだ、案内人が一言も喋れないこと</b>が問題でした（上の一つ目）。",
+  "上の一つ目を直せば、この0.3秒は喋りながら裏で済みます。棚の側は触りません。"],
  ["マイクの音を 128ms ずつまとめて送っていた",
   "2048サンプル ÷ 16000Hz ＝ <b>128ms</b>。Googleの手引きは「Send audio in chunks of 20ms to 40ms」"
   +"「Don't buffer input audio significantly」。",
   "512サンプル＝<b>32ms</b> に。1回あたり 96ms 早く届きます。"],
- ["黙ってから返事を始めるまで、既定で約800ms 待っていた",
-  "Googleは silenceDurationMs の既定を「approximately 800ms」と書いています。",
-  "<b>500ms</b> に（公式の推奨帯 500〜800ms の下端）。毎回 約300ms 早くなります。"],
+ ["★いちばん重い：喋り終えてから <b>2秒</b> 黙って待っていた",
+  "958番が使っているGoogle公式サンプル geminilive.js の初期値が "
+  +"<code>silence_duration_ms: 2000</code>。Google自身の手引きにはこう書いてあります："
+  +"「<b>Too high (e.g., 2000ms+): The system waits a long time after the user stops speaking, "
+  +"increasing perceived latency before the model responds.</b>」"
+  +"「Recommended (500ms–800ms)」。<b>公式サンプルの初期値が、公式が「高すぎる」と書いた値でした。</b>",
+  "推奨帯の下端 <b>500ms</b> へ。喋り終えるたびに <b>1.5秒</b> 早くなります。"],
  ["長話をしていた",
   "上限が無いので、気分が乗ると長く喋る。長いと、次に口を挟むまでが遠い。",
   "<code>maxOutputTokens</code> で頭を押さえ、台詞にも「短く」を入れる。"]
