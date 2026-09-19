@@ -56,6 +56,13 @@
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .card .a{font-size:.76rem;color:var(--sub);margin:0}
   .card .go{font-size:.72rem;color:var(--midori);margin:6px 0 0;font-weight:700}
+  .card .tag{display:inline-block;font-size:.64rem;letter-spacing:.12em;padding:2px 8px;
+    border-radius:999px;background:#e8e1d2;color:#6d6558;margin:0 0 5px;font-weight:700}
+  .card.k-food  .tag{background:#f3e3d6;color:#8a5a33}
+  .card.k-travel .tag{background:#dde8ef;color:#3a5f7a}
+  .card.k-dance .tag{background:#efdfe8;color:#7a3a5f}
+  .card.k-joy   .tag{background:#e4ebdf;color:#3a5f3a}
+  .card.k-cute  .tag{background:#f6e6ea;color:#9a4a5a}
   #more{background:#fff;color:var(--ao);border:1px solid #cfdae0}
   #more:disabled{opacity:.4;cursor:not-allowed}
   .empty{color:#8d8578;font-size:.82rem;text-align:center;padding:18px 6px;line-height:1.8}
@@ -125,8 +132,10 @@
       <b>曲ページへ飛ぶのは「大きい画面で見る」を押したときだけ</b>です。
     </div>
     <div class="log" id="log"></div>
+    <p style="text-align:right;margin:10px 0 0"><a href="#" id="devLink"
+       style="font-size:.7rem;color:#c3bdb0;text-decoration:none">・</a></p>
 
-    <details class="settings" id="settings">
+    <details class="settings" id="settings" hidden>
       <summary>お店の人の設定（お客さんは触らなくて大丈夫です）</summary>
       <h2 style="margin-top:14px">どの案内人を雇うか</h2>
       <div class="chips" id="engines"></div>
@@ -156,6 +165,12 @@
   const stateEl=$("state"), logEl=$("log"), meterEl=$("meter");
   const cardsEl=$("cards"), emptyEl=$("empty"), moreEl=$("more");
   const YEN=155;
+  // 正本§8：鍵・モデル・声の生UIは客前に出さない。?dev=1 のときだけ開く。
+  try{
+    const dev=new URLSearchParams(location.search).get("dev")==="1";
+    const had=localStorage.getItem("tamago_openai_key")||localStorage.getItem("tamago_xai_key");
+    if(dev || !had) $("settings").hidden=false;
+  }catch(_){ $("settings").hidden=false; }
   try{ const k=localStorage.getItem("tamago_openai_key"); if(k) keyEl.value=k; }catch(e){}
   try{ const k=localStorage.getItem("tamago_xai_key");    if(k) xkeyEl.value=k; }catch(e){}
 
@@ -194,11 +209,14 @@
 
   /* ══════════════ 棚 ══════════════ */
   const ASSET="assets/953-songs/";
-  const CAT={ head:null, t:{}, a:{}, loading:null,
+  const CAT={ head:null, joy:null, t:{}, a:{}, loading:null,
     async load(){
       if(this.head) return;
       if(this.loading) return this.loading;
-      this.loading=fetch(ASSET+"head.json").then(r=>r.json()).then(h=>{this.head=h});
+      this.loading=Promise.all([
+        fetch(ASSET+"head.json").then(r=>r.json()),
+        fetch(ASSET+"joy.json").then(r=>r.ok?r.json():{cards:[],kind:{}}).catch(()=>({cards:[],kind:{}}))
+      ]).then(([h,j])=>{ this.head=h; this.joy=j; });
       return this.loading;
     },
     async title(n){ if(!this.t[n]) this.t[n]=fetch(ASSET+"t/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
@@ -286,6 +304,25 @@
     return spread(out);
   }
 
+  /* 音楽以外の棚を、気分の言葉で引く。
+     正本§3：一度に4件、そこに音楽以外も混ざって見えること。 */
+  function findJoy(mood, categories){
+    if(!CAT.joy||!CAT.joy.cards.length) return [];
+    const mo=(mood||[]).map(norm).filter(x=>x.length>=2);
+    const want=(categories||[]).filter(k=>k&&k!=="music");
+    const out=[];
+    for(const c of CAT.joy.cards){
+      if(c.k==="music") continue;
+      if(want.length && !want.includes(c.k)) continue;
+      const hay=norm((c.t||"")+" "+(c.w||""));
+      let sc=8;
+      for(const q of mo) if(hay.includes(q)) sc+=30;
+      out.push(Object.assign(joyCard(c),{sc:sc+Math.random()*10}));
+    }
+    out.sort((a,b)=>b.sc-a.sc);
+    return out;
+  }
+
   /* 同じ人の曲で4枚が埋まらないように、1曲ずつ持ち回りにする。
      （そうしないと「うれしい」で Earth, Wind & Fire だけが4枚出る） */
   function spread(list){
@@ -308,29 +345,41 @@
   const cardUrl=s=>CAT.head.base+"?artist="+encodeURIComponent(CAT.head.A[s.ai].i)
                    +"&song="+encodeURIComponent(s.sid);
 
+  // 音楽の曲を「札」の形に
+  const songCard=s=>({kind:"music",title:s.title,
+    sub:artistName(s)+(s.year?("　"+s.year+"年"):""),
+    thumb:"https://i.ytimg.com/vi/"+s.yt+"/mqdefault.jpg", yt:s.yt, url:cardUrl(s),
+    key:"m:"+s.ai+"/"+s.sid});
+
+  // 音楽以外の札（食・旅・踊り・ことば…）。正本§3「音楽しかない」と誤認させない
+  const ytOf=u=>{ const m=/\/vi\/([A-Za-z0-9_-]{6,})\//.exec(u||""); return m?m[1]:""; };
+  const joyCard=c=>({kind:c.k,title:c.t,sub:c.w||"",thumb:c.i,yt:ytOf(c.i),
+    url:(CAT.joy.base||"")+c.u, key:"j:"+c.u});
+  const kindJa=k=>((CAT.joy&&CAT.joy.kind&&CAT.joy.kind[k])||{}).ja||"";
+
   /* ══════════════ その場の再生窓 ══════════════ */
   const playerEl=$("player"), frameEl=$("frame");
   let playing=null;
-  function openPlayer(s){
-    playing=s; frameEl.innerHTML="";
+  function openPlayer(c){
+    playing=c; frameEl.innerHTML="";
     const f=document.createElement("iframe");
     f.allow="autoplay; encrypted-media; picture-in-picture";
     f.allowFullscreen=true; f.referrerPolicy="strict-origin-when-cross-origin";
-    f.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(s.yt)+"?autoplay=1&rel=0&playsinline=1";
+    f.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(c.yt)+"?autoplay=1&rel=0&playsinline=1";
     frameEl.appendChild(f);
-    $("pTitle").textContent=s.title;
-    $("pArtist").textContent=artistName(s)+(s.year?("　"+s.year+"年"):"");
+    $("pTitle").textContent=c.title;
+    $("pArtist").textContent=c.sub;
     playerEl.classList.add("on");
     playerEl.scrollIntoView({behavior:"smooth",block:"nearest"});
     setMic(false);
     setState("聴いています（話すときは『止めて案内人と話す』）");
-    tellModel("お客さんが「"+s.title+"／"+artistName(s)+"」をこの画面で再生しました。いまは黙って待つこと。",true);
+    tellModel("お客さんが「"+c.title+"」をこの画面で再生しました。いまは黙って待つこと。",true);
   }
   function closePlayer(back){
     frameEl.innerHTML=""; playerEl.classList.remove("on"); playing=null;
     if(back!==false){ setMic(true); setState(live()?"聞いています":"やめました"); }
   }
-  $("pBig").addEventListener("click",()=>{ if(playing) window.open(cardUrl(playing),"_blank","noopener"); });
+  $("pBig").addEventListener("click",()=>{ if(playing) window.open(playing.url,"_blank","noopener"); });
   $("pTalk").addEventListener("click",()=>closePlayer(true));
   $("pClose").addEventListener("click",()=>closePlayer(true));
 
@@ -338,28 +387,31 @@
     cardsEl.innerHTML="";
     if(!list.length){ emptyEl.style.display="block"; return; }
     emptyEl.style.display="none";
-    for(const s of list){
-      const b=document.createElement("button"); b.className="card"; b.type="button";
+    for(const c of list){
+      const b=document.createElement("button"); b.className="card k-"+c.kind; b.type="button";
       const img=document.createElement("img"); img.className="thumb"; img.loading="lazy"; img.alt="";
-      img.src="https://i.ytimg.com/vi/"+s.yt+"/mqdefault.jpg";
-      img.onerror=()=>{img.style.visibility="hidden"};
+      img.src=c.thumb; img.onerror=()=>{img.style.visibility="hidden"};
       const body=document.createElement("div"); body.className="body";
-      const t=document.createElement("p"); t.className="t"; t.textContent=s.title;
-      const ar=document.createElement("p"); ar.className="a";
-      ar.textContent=artistName(s)+(s.year?("　"+s.year+"年"):"");
-      const go=document.createElement("p"); go.className="go"; go.textContent="▶ ここで聴く";
+      const ja=kindJa(c.kind);
+      if(ja){ const tag=document.createElement("span"); tag.className="tag"; tag.textContent=ja;
+              body.appendChild(tag); }
+      const t=document.createElement("p"); t.className="t"; t.textContent=c.title;
+      const ar=document.createElement("p"); ar.className="a"; ar.textContent=c.sub;
+      const go=document.createElement("p"); go.className="go";
+      go.textContent=c.yt?"▶ ここで聴く・見る":"→ ひらく";
       body.append(t,ar,go); b.append(img,body);
-      b.addEventListener("click",()=>openPlayer(s));
+      b.addEventListener("click",()=>{ c.yt?openPlayer(c):window.open(c.url,"_blank","noopener"); });
       cardsEl.appendChild(b);
     }
   }
+
   let page=0;
   function dealFour(){
     const take=[];
     while(take.length<4 && pool.length){
-      const s=pool.shift(), k=s.ai+"/"+s.sid;
-      if(shown.has(k)) continue;
-      shown.add(k); take.push(s);
+      const c=pool.shift();
+      if(shown.has(c.key)) continue;
+      shown.add(c.key); take.push(c);
     }
     if(take.length) page++;
     drawCards(take);
@@ -371,14 +423,29 @@
   }
   async function newSearch(args,label){
     lastArgs=args; page=0;
-    pool=await findSongs(args); poolLabel=label||"";
+    await CAT.load();
+    const music=(await findSongs(args)).map(songCard);
+    const cats=args.categories||[];
+    const onlyMusic = cats.length===1 && cats[0]==="music";
+    const joy = onlyMusic ? [] : findJoy(args.mood||[], cats);
+    // 正本§3：音楽しかない、と誤認させない。4枚のうち1〜2枚は音楽以外を入れる。
+    if(joy.length && music.length){
+      const mixed=[];
+      let mi=0, ji=0;
+      while(mi<music.length || ji<joy.length){
+        for(let k=0;k<3 && mi<music.length;k++) mixed.push(music[mi++]);
+        if(ji<joy.length) mixed.push(joy[ji++]);
+      }
+      pool=mixed;
+    } else pool = music.length? music : joy;
+    poolLabel=label||"";
     return dealFour();
   }
   moreEl.addEventListener("click",()=>{
     const got=dealFour();
     tellModel(got.length
       ? "お客さんが「ほかのを見せて」を押しました。いま出ている4枚："
-        +got.map(s=>`「${s.title}」／${artistName(s)}`).join("、")+"。短く一言そえてください。"
+        +got.map(c=>`「${c.title}」`).join("、")+"。短く一言そえてください。"
       : "もう在庫がありません。正直に「この気分の棚はここまで」と伝えて、別の気分を聞いてください。");
   });
 
@@ -457,6 +524,11 @@
   const INSTRUCTIONS=[
     "あなたは「ごきげん補給所」の案内人、アイリス。日本語で、短く、やわらかく。1回の返事は2文まで。",
     "",
+    "■ ここは音楽屋ではありません",
+    "この店に置いてあるのは、音楽・動画・食べもの・動物・旅・踊り・ことば・笑い、ぜんぶ「ごきげんの種」です。",
+    "『音楽しかない店』と思わせないこと。気分の相談には、音楽以外の札も混ぜて差し出す。",
+    "お客さんが「音楽で」と言ったときだけ categories を [\"music\"] にする。",
+    "",
     "■ 破ったら失格の約束",
     "曲名・アーティスト名を口に出してよいのは、道具 search_songs が返してきたものだけ。",
     "自分の記憶の曲名をそのまま言わない。棚に無いかもしれないから。",
@@ -493,6 +565,8 @@
           description:"気分・ジャンル・年代の言葉。曲名は入れない。"},
         song_title:{type:"string",
           description:"お客さんが曲名を口に出したときだけ。気分のときは空にする。"},
+        categories:{type:"array",items:{type:"string"},
+          description:"出す種類。music/food/travel/dance/joy から。省略すると音楽と音楽以外が混ざる。「音楽だけ」と言われたときだけ [\"music\"] にする。"},
         label:{type:"string",description:"この棚につける短い見出し。例：うれしい夜に"}
       }, required:["artists"] } },
     { type:"function", name:"more_songs",
@@ -543,6 +617,9 @@
          :`<tr><td><b>合計</b></td><td><b>定額なので時間で決まります</b></td></tr>`);
   }
   paintCostTable();
+  // 裏口（客には「・」にしか見えない）。押すと設定が開く。
+  $("devLink").addEventListener("click",e=>{ e.preventDefault();
+    const d=$("settings"); d.hidden=false; d.open=true; });
 
   /* ══════════════ つなぐ ══════════════ */
   let pc=null,dc=null,mic=null,audioEl=null,ac=null;
@@ -691,11 +768,12 @@
     let got=[];
     try{
       if(name==="search_songs") got=await newSearch(
-        {artists:args.artists||[],mood:args.mood||[],song_title:args.song_title||""}, args.label||"");
+        {artists:args.artists||[],mood:args.mood||[],song_title:args.song_title||"",
+         categories:args.categories||[]}, args.label||"");
       else if(name==="more_songs") got=dealFour();
     }catch(err){ say("sys","棚を引けませんでした："+err.message); }
     const payload=got.length?{ok:true,count:got.length,rest:pool.length,
-      songs:got.map(s=>({title:s.title,artist:artistName(s),year:s.year||undefined})),
+      songs:got.map(c=>({title:c.title,by:c.sub,kind:c.kind})),
       note:"この曲だけが実在する。ここに無い曲名を口に出さないこと。カードは画面に出し終えた。押せばその場で鳴る。"}
       :{ok:false,count:0,rest:0,
       note:"棚に見つからなかった。artists にもっと多くのアーティスト名を入れて呼び直すこと。曲名を作らないこと。"};
