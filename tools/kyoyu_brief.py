@@ -123,6 +123,24 @@ def _state_ja(it):
     return "発車待ち"
 
 
+def _num(v, default):
+    """★2026-09-20 修理：台帳の priority / n が文字列("2" や "高" や "")で入っていることがあり、
+    そのまま数と比べると TypeError で共有ブリーフごと落ちる（＝kiku も tanomu も丸ごと死ぬ）。
+    数にできるものは数に、できないものは default に倒す。ここで絶対に例外を出さない。"""
+    if v is None or v is True or v is False:
+        return default
+    if isinstance(v, (int, float)):
+        return v
+    try:
+        return int(str(v).strip())
+    except Exception:
+        pass
+    try:
+        return float(str(v).strip())
+    except Exception:
+        return default
+
+
 def _pick_cases(items, max_cases, focus_n=None):
     """いま話題になりうる案件だけを選ぶ。全部載せると読まれない。"""
     def rank(it):
@@ -137,11 +155,11 @@ def _pick_cases(items, max_cases, focus_n=None):
             score -= 40
         if it.get("urgent"):
             score -= 30
-        if (it.get("priority") or 9) <= 2:
+        if _num(it.get("priority"), 9) <= 2:
             score -= 10
         if stat == "done":
             score += 200
-        return (score, -(it.get("n") or 0))
+        return (score, -_num(it.get("n"), 0))
 
     pool = [it for it in items if it.get("status") != "done"]
     pool.sort(key=rank)

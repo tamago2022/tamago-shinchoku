@@ -156,21 +156,47 @@ done < <(find ./status/public -type f \( -name '.env*' -o -name '*.pem' -o -name
 #   .gitignore に引っかかって**黙って公開から落ちる**ほうが危ない
 #   （実測：status/fact_source_baseline.json が最初の1回で落ちていた）。
 git add -A --force >/dev/null 2>&1
-if [ "$FORCE" -eq 0 ] && git diff --cached --quiet 2>/dev/null; then
+
+# 向こう（GitHub）が今どこまで持っているか。これと手元が同じなら本当に出すものが無い。
+REMOTE_HAVE="$(git rev-parse --verify --quiet "refs/remotes/origin/$BRANCH" 2>/dev/null || echo "")"
+LOCAL_HEAD="$(git rev-parse --verify --quiet HEAD 2>/dev/null || echo "")"
+if [ "$FORCE" -eq 0 ] && git diff --cached --quiet 2>/dev/null \
+   && [ -n "$REMOTE_HAVE" ] && [ "$REMOTE_HAVE" = "$LOCAL_HEAD" ]; then
   exit 0
 fi
+# ★ここが大事：中身に変化が無くても、**前回のpushが落ちていたら必ずやり直す。**
+#  （2026-09-20 実測：1回目の push が回線都合で落ちた後、
+#    「変化が無い」だけで抜けてしまい、配信が00:11のまま止まった。
+#    画面は真っ白にはならないが、**古いまま生き続ける**＝一番たちが悪い壊れ方。）
 
 MSG="公開（進捗表）$(date '+%F %T') / main=$(echo "$CUR" | cut -c1-9)"
 # ★ 履歴は常に1コミット。親を持たせない＝ **非fast-forwardが起きようがない**
-if git rev-parse --verify HEAD >/dev/null 2>&1; then
-  git commit --amend -q --no-edit -m "$MSG" >/dev/null 2>&1 || true
-else
-  git commit -q -m "$MSG" >/dev/null 2>&1 || true
+if ! git diff --cached --quiet 2>/dev/null || [ -z "$LOCAL_HEAD" ]; then
+  if [ -n "$LOCAL_HEAD" ]; then
+    git commit --amend -q --no-edit -m "$MSG" >/dev/null 2>&1 || true
+  else
+    git commit -q -m "$MSG" >/dev/null 2>&1 || true
+  fi
 fi
 
-if git -c credential.helper='!gh auth git-credential' push --force --quiet origin "HEAD:refs/heads/$BRANCH" 2>>"$LOG"; then
+# ★ 3回まで粘る。Macが重いと回線が切れることが実際にある（実測: curl 55 Recv failure）。
+OK=0
+for _try in 1 2 3; do
+  if git -c credential.helper='!gh auth git-credential' \
+       push --force --quiet --no-progress origin "HEAD:refs/heads/$BRANCH" 2>>"$LOG"; then
+    OK=1; break
+  fi
+  log "…公開の push が落ちました（${_try}回目）。15秒待ってやり直します"
+  sleep 15
+done
+
+if [ "$OK" -eq 1 ]; then
+  # ★ 向こうが持っている地点を手元に必ず書き戻す。
+  #   これが無いと git は「向こうは何も持っていない」と思い込み、
+  #   毎回 600MB を上げ直そうとして回線が落ちる（今回の失敗の再発源）。
+  git update-ref "refs/remotes/origin/$BRANCH" HEAD 2>/dev/null || true
   log "公開しました（写しの関所で外したもの: ${BLOCKED}件）"
 else
-  log "🛑 公開の push に失敗しました"
+  log "🛑 公開の push に3回とも失敗しました。次の周回でまたやり直します"
   exit 1
 fi
