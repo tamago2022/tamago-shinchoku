@@ -510,16 +510,28 @@ mkdir -p "$REPO/status/public"
 for _f in $PUBLISH_LIST; do
   [ -f "$REPO/status/$_f" ] && cp -f "$REPO/status/$_f" "$REPO/status/public/$_f" 2>/dev/null
 done
-# shellcheck disable=SC2086
-git add $(for _f in $PUBLISH_LIST; do echo "status/public/$_f"; done) >/dev/null 2>&1
-# done_archive.jsonはPUBLISH_LISTから外した軽量版専用ファイルなので個別にadd
-[ -f "$REPO/status/public/done_archive.json" ] && git add "status/public/done_archive.json" >/dev/null 2>&1
-# queue.json.gzも同様にPUBLISH_LISTから外した圧縮版専用ファイルなので個別にadd。
-# 旧・生コピー（status/public/queue.json）が残っていればgitの追跡から外す（.gzへ一本化）。
-[ -f "$REPO/status/public/queue.json.gz" ] && git add "status/public/queue.json.gz" >/dev/null 2>&1
-if git ls-files --error-unmatch "status/public/queue.json" >/dev/null 2>&1; then
-  git rm --cached -q "status/public/queue.json" >/dev/null 2>&1
-fi
+### ---- 2026-09-20（963番）ここで写しを main へ commit するのを**やめた** ----
+### それまで：この5分便が status/public/ の写しを main へ commit+push していた。
+###   実測＝**1日73回**。9人の書き手と17個のworktreeが居る main へ、機械が5分おきに
+###   割り込む形だったため、人間側の作業が毎回その後ろに並ばされ、
+###   git は232回詰まっていた（push失敗95／「向こうが先で合流できない」64／
+###   取り残しロック23／pull失敗9）。
+###   さらに main への push のたびに .github/workflows/pages.yml が
+###   **リポジトリ丸ごと(681MB)** を Pages へ上げ直していた（1日274回）。
+###
+### いま：配信専用の枝 gh-pages を立て、**書き手は tools/pages_publish.sh ただ1本**にした。
+###   その枝は履歴を常に1コミットに固定して毎回 force push する＝
+###   **書き手が1人・履歴1コミット・毎回force なので、非fast-forwardが原理的に起きない。**
+###   main は人間の作業だけの道に戻り、機械は main へ一切書かない。
+###   （上の cp ループはそのまま残す。status/public/ にファイルが揃っていること自体は、
+###     公開係がそこを丸ごと映すために今までどおり必要だから。）
+###
+### たまごさんに渡したURLは1本も変わらない：
+###   https://tamago2022.github.io/tamago-shinchoku/ も share/check/*.html も同じ住所のまま。
+###
+### ★公開係は**待たない**（投げっぱなし）。この便を1秒も遅らせないため。
+###   中で変化が無ければ即座に戻るので、毎周呼んでも重くならない。
+( "$REPO/tools/pages_publish.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
 git add index.html data.js said.js share tools >/dev/null 2>&1
@@ -579,7 +591,20 @@ if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER
   git merge --abort >/dev/null 2>&1 || true
   rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
 fi
-git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "status: Mac負荷 $(date +%H:%M)" >/dev/null 2>&1 || true
+git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "画面・共有資料・道具の更新 $(date +%H:%M)" >/dev/null 2>&1 || true
+
+# ---- 2026-09-20（963番）main への pull/push を「出すものがある時だけ」にした ----
+# それまで：下の pull と push は**毎周（約60秒おき）無条件で**走っていた。
+#   出すものが1つも無い回でも main を触りに行くので、他の書き手と正面衝突し続けていた。
+#   実測の詰まり232回のうち「向こうが先で合流できない」64回・pull失敗9回はここが発生源。
+# いま：最後に push できた地点(.last_main_push)から HEAD が1歩も動いていなければ、
+#   **main には一切触らない**。写しは gh-pages 側（単一書き手）へ出ているので、
+#   ここが黙っていても画面は今までどおり更新される。
+_LASTPUSH_F="$REPO/status/.last_main_push"
+_HEAD_NOW="$(git rev-parse HEAD 2>/dev/null || echo x)"
+if [ "$_HEAD_NOW" = "$(cat "$_LASTPUSH_F" 2>/dev/null || echo '')" ]; then
+  return 0
+fi
 # 2026-09-16（緊急・queue.json 239→234件・887/888/889番消失事故）：
 #   status/ は1秒おきに書き換わる「生きている台帳」なのに、この5分おきのpullが
 #   古いorigin/mainの中身でそれを丸ごと上書きしていた（#687と同型の再発）。
@@ -593,7 +618,10 @@ if ! git -c credential.helper='!gh auth git-credential' pull --no-rebase -q orig
   git merge --abort >/dev/null 2>&1 || true
   rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
 fi
-git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1
+if git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1; then
+  # 出し切った地点を覚えておく。次の周回はここから1歩も動いていなければ main を触らない。
+  git rev-parse HEAD > "$_LASTPUSH_F" 2>/dev/null || true
+fi
 }
 
 # 2026-09-18（931番）：Claudeが作ったChromeタブの孤児を掃く。
