@@ -36,6 +36,10 @@ body{font-family:var(--sans);color:var(--ink);-webkit-text-size-adjust:100%}
 
 /* ── 横長の写真の帯 ───────────────────────────────── */
 .plate{position:relative;margin:0 36px;background:var(--green-d);overflow:hidden}
+.plate::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;
+  background:linear-gradient(90deg,rgba(8,15,11,.88) 0%,rgba(8,15,11,.62) 52%,rgba(8,15,11,0) 100%);
+  pointer-events:none;z-index:1}
+.plate .copy,.plate .onbar,.plate .slate,.plate .ringwrap{z-index:2}
 .plate .scene{display:block;width:100%;height:auto}
 /* 写真の左に、明朝の白抜き */
 .plate .copy{position:absolute;left:5.2%;top:12%;width:30%;max-width:300px;color:#f4ecd9;
@@ -59,7 +63,7 @@ body{font-family:var(--sans);color:var(--ink);-webkit-text-size-adjust:100%}
 .plate .slate i{display:block;font-style:normal;font-family:var(--serif);color:#b8c4b3;
   font-size:.54rem;letter-spacing:.08em;line-height:1.8}
 /* ベル＝会話のはじまり（店の中に溶かす） */
-.plate .ringwrap{position:absolute;left:8%;bottom:6%;text-align:center}
+.plate .ringwrap{position:absolute;left:24%;bottom:6.5%;text-align:center}
 button.ring{display:block;background:none;border:0;padding:0;cursor:pointer;width:58px}
 button.ring svg{display:block;width:100%;height:auto;
   filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
@@ -109,7 +113,7 @@ body:not(.talking) button.quiet{display:none}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
 
 a.card{display:block;text-decoration:none;color:inherit}
-.pic{position:relative;display:block;padding-right:16px}
+.pic{position:relative;display:block;padding-right:13%}
 .thumb{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;
   background:var(--paper2);border:1px solid var(--line)}
 .thumb img{display:block;width:100%;height:100%;object-fit:cover;
@@ -118,7 +122,7 @@ a.card:hover .thumb img{transform:scale(1.04)}
 .thumb.noimg{background:repeating-linear-gradient(45deg,#e6dbc2 0 9px,#e0d4b8 9px 18px)}
 /* ★四角い写真の右端に、黒いレコード盤が半分はみ出す */
 .disc{position:absolute;right:0;top:50%;transform:translateY(-50%);
-  width:42%;aspect-ratio:1/1;pointer-events:none;
+  width:26%;aspect-ratio:1/1;pointer-events:none;
   clip-path:inset(0 0 0 0);filter:drop-shadow(-2px 3px 6px rgba(40,26,8,.34))}
 .disc svg{display:block;width:100%;height:100%}
 a.card:hover .disc{transform:translate(4px,-50%)}
@@ -135,7 +139,7 @@ a.card:hover .disc{transform:translate(4px,-50%)}
 .cat-video .motif .r,.cat-laugh .motif .r{fill:#e8dcc0;stroke:none}
 .cat-music .disc{display:block}
 
-.body{display:block;padding:14px 16px 0 0}
+.body{display:block;padding:14px 13% 0 0}
 .kind,.kind-en,.arrow{display:none}          /* 02では出さない（原案どおり） */
 .t{display:-webkit-box;font-family:var(--serif);font-size:.92rem;line-height:1.7;
   letter-spacing:.04em;margin:0 0 7px;-webkit-line-clamp:2;-webkit-box-orient:vertical;
@@ -201,14 +205,14 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
   .plate .slate{left:auto;right:5%;bottom:10%;width:34%;min-width:0;padding:7px 5px}
   .plate .slate b{font-size:.52rem;letter-spacing:.12em}
   .plate .slate i{font-size:.46rem}
-  .plate .ringwrap{left:5%;bottom:7%}
+  .plate .ringwrap{left:6%;bottom:7%}
   button.ring{width:44px}
   .plate .ringwrap .cap{font-size:.5rem}
   .sheet{margin:-28px 14px 0;padding:22px 16px 28px}
   .tray .rule{flex-direction:column;align-items:center;gap:8px}
   .tray .said{position:static}
-  .body{padding-right:10px}
-  .pic{padding-right:12px}
+  .body{padding-right:13%}
+  .pic{padding-right:13%}
   .t{font-size:.84rem}
   button#more{padding:14px 34px;font-size:.82rem;width:100%}
   .foot{flex-direction:column;align-items:flex-start;gap:10px}
@@ -248,9 +252,9 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
 
       <!-- 額装のポスター -->
       <g font-family="Georgia,serif" text-anchor="middle">
-        <rect x="70" y="52" width="196" height="132" fill="#101c14" stroke="#7b6136" stroke-width="5"/>
-        <text x="168" y="106" fill="#e6d9b6" font-size="21" letter-spacing="3">GOOD MUSIC</text>
-        <text x="168" y="140" fill="#c6b88f" font-size="19" letter-spacing="3">BETTER DAYS</text>
+        <rect x="470" y="56" width="196" height="132" fill="#101c14" stroke="#7b6136" stroke-width="5"/>
+        <text x="568" y="110" fill="#e6d9b6" font-size="21" letter-spacing="3">GOOD MUSIC</text>
+        <text x="568" y="144" fill="#c6b88f" font-size="19" letter-spacing="3">BETTER DAYS</text>
         <rect x="905" y="46" width="228" height="104" fill="#121e15" stroke="#7b6136" stroke-width="5"/>
         <text x="1019" y="90" fill="#e6d9b6" font-size="15" letter-spacing="1">Small Finds Make</text>
         <text x="1019" y="118" fill="#e6d9b6" font-size="15" letter-spacing="1">Brighter Days.</text>
@@ -266,13 +270,13 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
       </g>
 
       <!-- 緑のシェードの卓上ランプ -->
-      <ellipse cx="236" cy="392" rx="210" ry="120" fill="url(#glow)"/>
+      <ellipse cx="452" cy="392" rx="210" ry="120" fill="url(#glow)"/>
       <g>
-        <rect x="231" y="300" width="9" height="92" fill="#6d5c38"/>
-        <ellipse cx="235" cy="392" rx="34" ry="8" fill="#5b4a2c"/>
-        <path d="M172 300h126l-16 34H188z" fill="#24503a"/>
-        <path d="M172 300h126l-5 11H177z" fill="#2f6349"/>
-        <path d="M188 334h94l-4 7h-86z" fill="#f2d79a"/>
+        <rect x="447" y="300" width="9" height="92" fill="#6d5c38"/>
+        <ellipse cx="451" cy="392" rx="34" ry="8" fill="#5b4a2c"/>
+        <path d="M388 300h126l-16 34H404z" fill="#24503a"/>
+        <path d="M388 300h126l-5 11H393z" fill="#2f6349"/>
+        <path d="M404 334h94l-4 7h-86z" fill="#f2d79a"/>
       </g>
 
       <!-- 小さな観葉植物 -->
@@ -284,12 +288,6 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
           <path d="M0 34C4 6 22 -2 30 -6c-4 20-14 34-30 40z"/>
           <path d="M0 36C-2 6 2 -12 4 -22c8 18 6 42-4 58z"/>
         </g>
-      </g>
-      <!-- カウンターに置かれた一枚 -->
-      <g transform="translate(940 404)">
-        <rect x="-52" y="-4" width="104" height="104" rx="2" fill="#1a2a1f" stroke="#5e6b58" stroke-width="2"/>
-        <circle cx="0" cy="48" r="34" fill="#0e0d0b"/><circle cx="0" cy="48" r="12" fill="#a8562f"/>
-        <circle cx="0" cy="48" r="2.4" fill="#e9dcbd"/>
       </g>
     </svg>
 
@@ -372,7 +370,7 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
 (function(){
   /* 奥のレコード棚。画像は読まず、その場で並べる（正本§12 軽さ） */
   var g=document.getElementById("shelves"), NS="http://www.w3.org/2000/svg", i, x;
-  [[300,96,150],[300,232,150],[560,96,320],[560,252,320],[700,96,190]].forEach(function(box){
+  [[396,208,190],[610,72,276],[610,208,276],[896,268,150]].forEach(function(box){
     var bx=box[0],by=box[1],bw=box[2];
     var r=document.createElementNS(NS,"rect");
     r.setAttribute("x",bx);r.setAttribute("y",by);r.setAttribute("width",bw);
