@@ -77,13 +77,20 @@
   <tbody></tbody>
 </table>
 
-<h2>3. 嘘のログ</h2>
+<h2>3. 台帳に載っていない定期便</h2>
+<p class="small">ここが空でない限り、明日また同じことが起きる。載せるまで赤は消えない。</p>
+<table id="t-unlisted">
+  <thead><tr><th style="width:18em">走っているもの</th><th>なぜ赤か</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>4. 嘘のログ</h2>
 <table id="t-lies">
   <thead><tr><th>どこ</th><th>言っていること</th><th>本当</th></tr></thead>
   <tbody></tbody>
 </table>
 
-<h2>4. 黙って飲み込んでいる箇所（ソースから機械的に）</h2>
+<h2>5. 黙って飲み込んでいる箇所（ソースから機械的に）</h2>
 <p class="small" id="swallow-note"></p>
 <table id="t-swallow">
   <thead><tr><th style="width:16em">場所</th><th>何をしているか</th></tr></thead>
@@ -124,7 +131,8 @@ function render(d){
   }
   b.className = 'banner on' + (d.redCount ? '' : ' clear');
   b.textContent = d.redCount
-    ? '赤 '+d.redCount+'件（鍵'+d.redKeys+'・見張り'+d.redWatchers+'・嘘'+d.redLies+'）'
+    ? '赤 '+d.redCount+'件（鍵'+d.redKeys+'・見張り'+d.redWatchers+
+      '・嘘'+d.redLies+'・台帳外'+(d.redUnlisted||0)+'）'
     : '赤 0件。全部、叩いて通っています。';
 
   const tb=document.querySelector('#t-keys tbody');
@@ -155,6 +163,17 @@ function render(d){
       '<td class="num">'+(w.catches||0)+'</td>'+
       '<td class="small">'+esc(w.blocked||'—')+'</td>';
     tw.appendChild(tr);
+  });
+
+  const tu=document.querySelector('#t-unlisted tbody');
+  if(!(d.unlisted||[]).length){
+    tu.innerHTML='<tr><td colspan="2" class="small">ありません。'+
+      '定期的に走っているものは全部、台帳に載っています。</td></tr>';
+  } else (d.unlisted||[]).forEach(u=>{
+    const tr=document.createElement('tr'); tr.className='red';
+    tr.innerHTML='<td class="small"><code>'+esc(u.script)+'</code></td>'+
+      '<td class="small">'+esc(u.why)+'</td>';
+    tu.appendChild(tr);
   });
 
   const tl=document.querySelector('#t-lies tbody');
