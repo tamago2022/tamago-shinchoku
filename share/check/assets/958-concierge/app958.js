@@ -370,8 +370,24 @@ const INSTRUCTIONS=[
 let api=null, mic=null, mctx=null, msrc=null, mnode=null, micOn=true;
 let outAt=0, sources=[], retried=false, gotSetup=false, stopping=false;
 const live=()=>!!(api&&api.connected);
-const say=(cls,txt)=>{ if(window.Seihon&&Seihon.say){ return Seihon.say(cls,txt); } const d=document.createElement("div"); d.className="line "+cls;
-  d.textContent=txt; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; };
+/* ★970：tsuzuki=true は「喋っている途中の続き」。新しい行を足さず、同じ行に文字を足す。 */
+let akiLine=null, akiCls=null;
+const say=(cls,txt,tsuzuki)=>{
+  txt=(txt==null?"":String(txt));
+  if(!txt.replace(/[\s　]/g,"")) return;                 /* 空なら行を作らない */
+  if(window.Seihon&&Seihon.say){ return Seihon.say(cls,txt,tsuzuki); }
+  if(tsuzuki&&akiLine&&akiCls===cls&&logEl.contains(akiLine)){
+    const mae=akiLine.textContent||"";
+    if(!(mae.slice(-txt.length)===txt)) akiLine.textContent=mae+txt;
+    logEl.scrollTop=logEl.scrollHeight; return;
+  }
+  const d=document.createElement("div"); d.className="line "+cls;
+  d.textContent=txt; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight;
+  akiLine=tsuzuki?d:null; akiCls=tsuzuki?cls:null;
+};
+/* 話し終わり。次の台詞は新しい行から。 */
+const sayOwari=()=>{ akiLine=null; akiCls=null;
+  if(window.Seihon&&Seihon.seal) Seihon.seal(); };
 const setState=s=>{stateEl.textContent=s;};
 function setMic(on){ micOn=on; if(mic) mic.getAudioTracks().forEach(t=>t.enabled=on); }
 function tellModel(text){ if(live()) api.sendTextMessage(text); }
@@ -419,7 +435,7 @@ async function connect(){
   try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
 
   SAIFU.hajime();
-  goEl.disabled=true; logEl.innerHTML="";
+  goEl.disabled=true; logEl.innerHTML=""; sayOwari();
   shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; closePlayer(false);
   USE.micSec=USE.outSec=USE.usd=USE.apiIn=USE.apiOut=USE.apiTotal=0;
   retried=false; stopping=false;
@@ -495,11 +511,13 @@ async function onResponse(r){
       say("sys","つながりました。話しかけてください。");
       break;
     case "AUDIO": playPcm(r.data); break;
+    /* ★970：切れ端は同じ行に足していく（1発言＝1行） */
     case "INPUT_TRANSCRIPTION":
-      if(r.data.text) say("me",r.data.text); break;
+      if(r.data.text) say("me",r.data.text,true); break;
     case "OUTPUT_TRANSCRIPTION":
-      if(r.data.text) say("her",r.data.text); break;
-    case "INTERRUPTED": stopAudio(); break;
+      if(r.data.text) say("her",r.data.text,true); break;
+    case "TURN COMPLETE": sayOwari(); break;        /* 話し終わり＝行を閉じる */
+    case "INTERRUPTED": stopAudio(); sayOwari(); break;
     case "TOOL_CALL": await onToolCall(r.data); break;
   }
 }

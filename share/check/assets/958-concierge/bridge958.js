@@ -67,6 +67,19 @@
     "#tamako svg{width:100%;height:100%;overflow:visible}",
     "body.tmg958-talking #tamako{opacity:1}",
     "body.tmg958-talking [data-slot=\"concierge-avatar\"] img{opacity:0;transition:opacity .45s ease}",
+    /* ★970：会話は1発言1行。名前は本文の横に小さく、縦は詰める。
+       （正本の「左＝だれ／右＝ことば」はそのまま。余白と字の大きさだけ寄せた） */
+    ".conversation-row{padding:12px 18px;gap:12px;align-items:baseline}",
+    ".conversation-row .say{line-height:1.7}",
+    ".conversation-row[data-sys=\"1\"] .who{opacity:.55;font-weight:600}",
+    ".conversation-row[data-sys=\"1\"] .say{opacity:.62;font-size:12px}",
+    "@media (max-width:780px){",
+    "  .conversation-row{grid-template-columns:54px 1fr;gap:8px;padding:7px 12px}",
+    "  .conversation-row + .conversation-row{border-top:1px solid rgba(80,68,53,.10)}",
+    "  .conversation-row .say{font-size:12.5px;line-height:1.55;letter-spacing:.01em}",
+    "  .conversation-row .who{font-size:9px;line-height:1.55;white-space:nowrap}",
+    "  .conversation-row[data-sys=\"1\"] .say{font-size:11px}",
+    "}",
   ].join("\n");
   document.head.appendChild(css);
 
@@ -125,11 +138,40 @@
                 animal: "thumb-cat", travel: "thumb-travel", word: "thumb-sky",
                 laugh: "thumb-plant" };
 
+  /* ★970：1回の発言＝1行。
+     喋りながら届く切れ端を、そのたびに新しい行にしていたので、ひとつの台詞が
+     「どんな」「ことでもお話し」「くださいね。」と3行に割れ、名前も3回出ていた。
+     いまは、同じ人が喋っている間は同じ行の中で文字が増えていく（LINEと同じ）。 */
+  var akiRow = null, akiCls = null;
+
+  function yoseru(row) {
+    try {
+      var r = row.getBoundingClientRect();
+      if (r.bottom > (window.innerHeight || 0)) row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (e) {}
+  }
+
   var Seihon = {
-    say: function (cls, txt) {
+    say: function (cls, txt, tsuzuki) {
       if (!conv || !rowHer) return;
-      /* ★969：同じお知らせを続けて2回並べない。
-         （「Geminiの鍵が空です」が2つ並んで出ていた） */
+      txt = (txt == null ? "" : String(txt));
+
+      /* 中身が空なら行を作らない（「---」だけの行が出ていた） */
+      if (!txt.replace(/[\s　]/g, "")) return;
+
+      /* 喋っている途中の続き＝同じ行に足す。行も名前も増やさない。 */
+      if (tsuzuki && akiRow && akiCls === cls && conv.contains(akiRow)) {
+        var ap = akiRow.querySelector(".say");
+        if (ap) {
+          var mae = ap.textContent || "";
+          /* 同じ切れ端が二重に届くことがあるので、そのときは足さない */
+          if (!(txt && mae.slice(-txt.length) === txt)) ap.textContent = mae + txt;
+          yoseru(akiRow);
+          return;
+        }
+      }
+
+      /* ★969：同じお知らせを続けて2回並べない。 */
       if (cls === "sys") {
         var last = conv.lastElementChild;
         if (last && last.getAttribute("data-sys") === "1") {
@@ -137,6 +179,7 @@
           if (lp && lp.textContent === txt) return;
         }
       }
+
       var tpl = cls === "me" ? (rowMe || rowHer) : rowHer;
       var row = tpl.cloneNode(true);
       var p = row.querySelector(".say");
@@ -147,11 +190,13 @@
         row.setAttribute("data-sys", "1");
       }
       conv.appendChild(row);
-      try {
-        var r = row.getBoundingClientRect();
-        if (r.bottom > (window.innerHeight || 0)) row.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      } catch (e) {}
+      akiRow = tsuzuki ? row : null;
+      akiCls = tsuzuki ? cls : null;
+      yoseru(row);
     },
+
+    /* 話し終わり。次の台詞は新しい行から始める。 */
+    seal: function () { akiRow = null; akiCls = null; },
     drawCards: function (list, onPick) {
       if (!grid || !cardTpl) return;
       grid.innerHTML = "";

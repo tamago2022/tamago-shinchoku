@@ -1273,7 +1273,18 @@ function paintSW(){
 const live=()=>!!(api&&api.connected);
 /* 会話は正本 No.02 の .conversation-row（左＝だれ／右＝ことば）をそのまま使う。 */
 const WHO={me:"あなた",her:"ごきげん店主",sys:"お知らせ"};
-const say=(cls,txt)=>{
+/* ★970：1回の発言＝1行。喋りながら届く切れ端は、同じ行の中で文字が増えていく。 */
+let akiRow=null, akiCls=null;
+const sayOwari=()=>{ akiRow=null; akiCls=null; };
+const say=(cls,txt,tsuzuki)=>{
+  txt=(txt==null?"":String(txt));
+  if(!txt.replace(/[\s\u3000]/g,"")) return;            /* 空なら行を作らない */
+  if(tsuzuki&&akiRow&&akiCls===cls&&logEl.contains(akiRow)){
+    const ap=akiRow.querySelector(".say");
+    if(ap){ const mae=ap.textContent||"";
+      if(!(mae.slice(-txt.length)===txt)) ap.textContent=mae+txt;
+      akiRow.scrollIntoView({block:"nearest",behavior:"smooth"}); return; }
+  }
   const row=document.createElement("div");
   row.className="conversation-row"+(cls==="sys"?" sys":"");
   const who=document.createElement("div");
@@ -1287,6 +1298,7 @@ const say=(cls,txt)=>{
   const p=document.createElement("p"); p.className="say"; p.textContent=txt;
   row.append(who,p);
   logEl.appendChild(row);
+  akiRow=tsuzuki?row:null; akiCls=tsuzuki?cls:null;
   row.scrollIntoView({block:"nearest",behavior:"smooth"});
 };
 const setState=s=>{stateEl.textContent=s;};
@@ -1330,7 +1342,7 @@ async function connect(){
   try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
 
   SAIFU.hajime();
-  goEl.disabled=true; logEl.innerHTML="";
+  goEl.disabled=true; logEl.innerHTML=""; sayOwari();
   shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; stopPlay(false);
   ANNAI.reset();   /* ★966：案内の回数は、話し始めるたびに0に戻す */
   USE.micSec=USE.outSec=USE.usd=USE.apiIn=USE.apiOut=USE.apiTotal=0;
@@ -1481,11 +1493,13 @@ async function onResponse(r){
             +"。この棚を頼まれたら、正直に『まだ用意できていません』と言い、代わりに曲を出さないこと。"):"")); }
       break;
     case "AUDIO": STOP.oto(); playPcm(r.data); break;
+    /* ★970：切れ端は同じ行に足していく（1発言＝1行） */
     case "INPUT_TRANSCRIPTION":
-      if(r.data.text) say("me",r.data.text); break;
+      if(r.data.text) say("me",r.data.text,true); break;
     case "OUTPUT_TRANSCRIPTION":
-      if(r.data.text) say("her",r.data.text); break;
-    case "INTERRUPTED": stopAudio(); break;
+      if(r.data.text) say("her",r.data.text,true); break;
+    case "TURN COMPLETE": sayOwari(); break;
+    case "INTERRUPTED": stopAudio(); sayOwari(); break;
     case "TOOL_CALL": await onToolCall(r.data); break;
   }
 }
