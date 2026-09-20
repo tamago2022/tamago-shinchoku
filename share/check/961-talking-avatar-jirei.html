@@ -908,6 +908,99 @@
     </div>
   </div>
 
+  <!-- ══════ 追記：Grokの答え（たまごさんが直接もらったもの） ══════ -->
+  <div class="panel dark" id="grok-genbun">
+    <h2><span class="n">追</span>Grokの答え ─ 原文まま</h2>
+    <p class="sub">★ 上の「Grokの言い分／届きませんでした」の欄は、<b>こちらのAPIから403で届かなかった</b>という記録です。<br>
+      その後、<b>たまごさんがGrokに直接聞いて、返事を受け取りました。</b>掲示板を通していないので経路は違いますが、
+      外部AIの答えとして同じ扱いにします。<b>要約せず、届いたままを置きます。</b></p>
+
+    <div class="aibox ai-x">
+      <div class="aihd"><span>Grokの言い分（直接）</span><span class="tag">2026-09-20 ／ たまごさんが受領</span></div>
+      <div class="aibody">1. ★★クレジットを入れなくても、Playgroundならirisが無料で試せる。
+　- Voice Agent: https://console.x.ai/playground/voice/agent（xAI公式が「Try it now for free」と出している）
+　- TTS: https://console.x.ai/team/default/voice/text-to-speech（「No API key」を選ぶ）
+　- ★irisはビルトインの声。Toneは "Friendly, upbeat / Sales Support"。クローン費用なし。
+
+2. 403の理由＝鍵ではなく、チームのプリペイド残高が0円。請求上限の初期値が$0。1ドルでも入れれば消える。
+　- SuperGrokの課金とAPIクレジットは別口座。
+
+3. ★現行の単価（2026-09）
+　- Speech-to-Speech（双方向会話）：$0.08/分 ← 今の形はこれ
+　- テキスト入力イベント：$0.004/回
+　- TTSだけ：$15/100万文字
+　- STT：$0.10/時（バッチ）／$0.20/時（ストリーミング）
+　- ★古いページの $0.05/分 は使わない。$0.08 で見積もる。
+　- 目安＝3分で$0.24／1日100セッション×2分で$16／月1,000分で約$80。声だけの値段。映像は別。
+　- 同時接続は Tier 0 で 10本/チーム。
+
+4. ★公式の正しい形＝サーバーでephemeral tokenを発行 → ブラウザはWebSocketだけ。APIキーをフロントに置かない。
+　- wss://api.x.ai/v1/realtime?model=grok-voice-latest
+　- 最初に送る：{"type":"session.update","session":{"voice":"iris","instructions":"...","turn_detection":{"type":"server_vad"}}}
+　- 返り：response.output_audio.delta（base64 PCM）
+　- ★★公式サンプル： https://github.com/xai-org/xai-cookbook/tree/main/voice-examples/agent/web
+　- 公式ドキュメント：docs.x.ai/developers/model-capabilities/audio/speech-to-speech ／ docs.x.ai/developers/pricing
+
+5. Grokの勧める順＝①Playgroundで無課金確認 ②少額クレジットで403消し ③公式cookbookのWeb Agentを自分のドメインに載せる（声だけ） ④顔は後から</div>
+      <div class="genbun">原文まま。たまごさんがGrokから直接受領／こちらのAPI経由ではないため、かかった金額は0円。</div>
+    </div>
+
+    <div class="kome">
+      <b>この答えの裏取りを、xAIの公式ページでやりました。結果は970号に置いてあります。</b><br>
+      ★ <b>3.の単価は、4つとも公式と一致していました。</b>（Speech-to-Speech $0.08/分、テキスト入力 $0.004/回、TTS $15/100万文字、STT $0.10・$0.20/時）<br>
+      ★ <b>iris がビルトインの声で、Tone が Friendly・upbeat／Sales・Support というのも、公式の声一覧と一致。</b>クローン費用は要りません。<br>
+      ★ <b>4.の接続の形も公式と一致。</b>grok-voice-latest は grok-voice-think-fast-2.0 の別名でした。<br>
+      ★ ただし <b>1.の「クレジットなしで無料で試せる」は、確かめられませんでした。</b>
+      Playgroundを開くとログイン画面に転送され（/team/default/voice/agents 宛）、公式ドキュメントに「無料」とは書かれていません。
+      <b>チームの下にぶら下がる作りなので、残高が要る可能性があります。</b>開いてみないと分かりません。<br>
+      ★ <b>3.の「同時接続は Tier 0 で10本」も確かめていません。</b>
+    </div>
+  </div>
+
+  <!-- ══════ 追記：日本でやっている3社 ══════ -->
+  <div class="panel">
+    <h2><span class="n">追</span>日本でやっている会社 ─ 3件を足しました</h2>
+    <p class="sub">★ 上の一覧は「売っている道具」の表です。こちらは<b>「日本で実際に動かしている会社」</b>を足したものです。</p>
+    <div class="tblwrap">
+    <table>
+      <tr><th>会社</th><th>やっていること</th><th>何で確かめたか</th></tr>
+      <tr>
+        <td class="nm">ジールス<br>（ZEALS）</td>
+        <td>LINE公式アカウント上のチャット接客（チャットコマース）が本業。
+          導入企業400社超と自社で名乗っています。<br>
+          現在は「Omakase AI」というマルチモーダルAIエージェント基盤、LINE向けの「ZEALS AI Agent」、
+          ロボットOS「Omakase OS」を掲げ、<b>オンラインと実店舗の両方</b>を狙っています。<br>
+          ★<b>顔付きのアバターが主軸というより、対話の中身と導線が主軸の会社</b>です。</td>
+        <td><a href="https://zeals.ai/" target="_blank" rel="noopener">zeals.ai</a><br>
+          <span class="chk y"></span></td>
+      </tr>
+      <tr>
+        <td class="nm">EmbodyMe</td>
+        <td>2016年創業。動画生成の生成AIを作ってきた会社。<br>
+          <b>「xpression chat」</b>＝写真1枚が生きているようにリアルタイムで動き、
+          ChatGPTを内蔵して自然に会話するアプリを出しています。<br>
+          ★<b>961号の言い方でいえば「サーバで絵を作る」型の日本勢</b>にあたります。</td>
+        <td><a href="https://aismiley.co.jp/ai_news/embodyme-xpression-chat-ai-app/" target="_blank" rel="noopener">AIsmiley（リリース記事）</a><br>
+          <span class="chk n"></span>公式サイトは開けませんでした</td>
+      </tr>
+      <tr>
+        <td class="nm">NTTスマートコネクト</td>
+        <td><b>2026年9月8日から実証実験を開始</b>（株式会社OneAIの協力）。<br>
+          東振テクニカルの製品紹介サイト、「心なし研削盤（センタレス）」のページに
+          <b>AIアバター接客機能</b>を置き、製品理解・資料請求への誘導・商談機会の創出を検証中。<br>
+          中身は<b>シナリオ型</b>。自由記述への対応は「検討を進める」段階。<br>
+          ★<b>2026年度中の事業化をめざす</b>と書いています。<b>まだ売り物ではありません。</b></td>
+        <td><a href="https://www.nttsmc.com/news/2026/20260908.html" target="_blank" rel="noopener">nttsmc.com ニュースリリース（2026-09-08）</a><br>
+          <span class="chk y"></span></td>
+      </tr>
+    </table>
+    </div>
+    <p class="hint">
+      ★ <b>3社とも「値段」を公開していません。</b>だから上の一覧の金額欄には入れていません。<br>
+      ★ NTTスマートコネクトのものは<b>実証実験</b>です。今日から買えるものとして数えないでください。
+    </p>
+  </div>
+
   <!-- ══════ おすすめ ══════ -->
   <div class="osusume" id="te">
     <h2><span class="n">★</span>こちらで取れる手は、これ1つ</h2>
