@@ -878,6 +878,60 @@ def expiry_notices(rows):
 
 
 # =====================================================================
+# ---- 2026-09-21（971番・Cowork側から設置）本番のページが「最後まで描けているか」を見る ----
+# なぜ要るか：/watch が「200は返るのに中身が空（ブラウザは読み込み中のまま）」という
+#   壊れ方を、たまごさんが自分で見つけるまで誰も気づけなかった（実測・2026-09-21）。
+#   「200が返った」では不合格。**中身の語が入っているかまで見る**。
+#   さらに、語を知らないページでも効く共通の印として `<!--$!-->` を見る。
+#   これはReactが「サーバー側でこの部分を描けなかった」ときだけ残す印。
+# 新しい常駐は増やさない：この台帳（5分便に相乗り）の中で一緒に叩くだけ。
+JRS_ORIGIN = "https://joy-relief-station.lovable.app"
+ROUTE_CHECKS = [
+    ("/", "トップ", "ひとこと目安箱"),
+    ("/watch?v=w1gCW_66zzc", "動画ページ(/watch)", "ごきげん補給所トップへ戻る"),
+    ("/room/card/living-yakutia-cold-village", "部屋カード", "ひとこと目安箱"),
+    ("/cover-guide?artist=southern&song=kibou-no-wadachi", "名カバー案内所", "ひとこと目安箱"),
+    ("/checkup", "今日の気分診断", "ひとこと目安箱"),
+]
+
+
+def route_rows():
+    """本番の主要ルートを叩いて、中身の語が入っているかまで見る。"""
+    out = []
+    for path, label, word in ROUTE_CHECKS:
+        url = JRS_ORIGIN + path
+        code, body = None, ""
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "tamago-kagi-daicho/971"})
+            with urllib.request.urlopen(req, timeout=25,
+                                        context=ssl.create_default_context()) as r:
+                code = r.status
+                body = r.read().decode("utf-8", "ignore")
+        except urllib.error.HTTPError as e:
+            code = e.code
+        except Exception as e:
+            code = None
+            body = ""
+        has_word = bool(body) and (word in body)
+        ssr_broken = bool(body) and ("<!--$!-->" in body)
+        closed = bool(body) and ("</html>" in body)
+        red = (code != 200) or (not has_word) or ssr_broken or (not closed)
+        if code != 200:
+            why = "HTTP %s が返りました" % code
+        elif ssr_broken:
+            why = "サーバー側でこの部分を描けなかった印（<!--$!-->）が残っています＝中身が空のまま出ています"
+        elif not has_word:
+            why = "200は返るのに『%s』がどこにも無い＝本体が描かれていません" % word
+        elif not closed:
+            why = "最後まで送られていません（</html>が無い）"
+        else:
+            why = ""
+        out.append(dict(path=path, label=label, code=code, bytes=len(body),
+                        word=word, hasWord=has_word, ssrBroken=ssr_broken,
+                        red=red, why=why, at=time.time()))
+    return out
+
+
 def build(force=False):
     os.makedirs(PUBLIC, exist_ok=True)
     prev = load(OUT_JSON, {}) or {}
@@ -908,6 +962,8 @@ def build(force=False):
     unlisted = unlisted_scan()
     lies = lie_scan(by_id)
     notices = expiry_notices(rows)
+    routes = route_rows()
+    red_routes = [r for r in routes if r["red"]]
 
     red_keys = [r for r in rows if r["status"] == "ng"]
     red_watch = [w for w in watchers if w["red"]]
@@ -918,7 +974,8 @@ def build(force=False):
         swallows=swallows, swallowTotal=swallow_total,
         unlisted=unlisted,
         lies=lies, notices=notices,
-        redCount=len(red_keys) + len(red_watch) + len(lies) + len(unlisted),
+        routes=routes, redRoutes=len(red_routes),
+        redCount=len(red_keys) + len(red_watch) + len(lies) + len(unlisted) + len(red_routes),
         redKeys=len(red_keys), redWatchers=len(red_watch), redLies=len(lies),
         redUnlisted=len(unlisted),
     )
@@ -929,8 +986,12 @@ def build(force=False):
         headline=("鍵・つながりに赤が%d件（動いているのに何も取れていない／切れている）"
                   % out["redCount"]) if out["redCount"] else "鍵・つながりは全部通っています",
         at=out["generatedAt"]))
-    log("台帳を更新：赤%d件（鍵%d・見張り%d・嘘%d・台帳外%d）"
-        % (out["redCount"], len(red_keys), len(red_watch), len(lies), len(unlisted)))
+    log("台帳を更新：赤%d件（鍵%d・見張り%d・嘘%d・台帳外%d・ページ%d）"
+        % (out["redCount"], len(red_keys), len(red_watch), len(lies), len(unlisted),
+           len(red_routes)))
+    if red_routes:
+        log("🚨 本番のページが描き切れていません：%s"
+            % "／".join("%s(%s)" % (r["label"], r["why"]) for r in red_routes))
     return out
 
 
