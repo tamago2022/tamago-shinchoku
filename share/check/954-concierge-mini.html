@@ -702,18 +702,41 @@
     await pc.setRemoteDescription({type:"answer",sdp:answer});
   }
 
-  async function connectGrok(voice){
+  // ── 2026-09-20（976番）鍵をブラウザに置かない形に直した ──
+  // 残高のあるxAIの鍵（XAI_API_KEY2）は Supabase の Secrets の中だけに在り、
+  // ごきげん補給所の窓口 voice-session が**短命トークンだけ**を返す。鍵はここまで来ない。
+  // 窓口が死んでいるときだけ、設定に貼った鍵で今までどおり直に取りにいく。
+  const XAI_MADOGUCHI="https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session";
+  async function grokToken(){
+    try{
+      const r=await fetch(XAI_MADOGUCHI,{method:"POST",
+        headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create"})});
+      if(r.ok){
+        const j=await r.json();
+        const t=(j&&j.clientSecret&&j.clientSecret.value)||(j&&j.value);
+        if(t) return {token:t, agentId:(j.agentId||"")};
+      }
+    }catch(_){}
     const sk=xkeyEl.value.trim();
-    if(!sk) throw new Error("xAIの鍵が空です（設定の中に入れてください）");
+    if(!sk) throw new Error("窓口が使えず、設定のxAIの鍵も空です");
     try{ localStorage.setItem("tamago_xai_key",sk); }catch(_){}
-    const r=await fetch("https://api.x.ai/v1/realtime/client_secrets",{
+    const r2=await fetch("https://api.x.ai/v1/realtime/client_secrets",{
       method:"POST",headers:{Authorization:"Bearer "+sk,"Content-Type":"application/json"},
       body:JSON.stringify({session:{type:"realtime",model:"grok-voice-latest"}})});
-    if(!r.ok) throw new Error("使い捨て鍵が取れません "+r.status+" "+(await r.text()).slice(0,160));
-    const j=await r.json();
-    const token=j.value||(j.client_secret&&j.client_secret.value)||j.secret;
-    if(!token) throw new Error("使い捨て鍵が返りませんでした");
-    ws=new WebSocket("wss://api.x.ai/v1/realtime?model=grok-voice-latest",["xai-client-secret."+token]);
+    if(!r2.ok) throw new Error("使い捨て鍵が取れません "+r2.status+" "+(await r2.text()).slice(0,160));
+    const j2=await r2.json();
+    const t2=j2.value||(j2.client_secret&&j2.client_secret.value)||j2.secret;
+    if(!t2) throw new Error("使い捨て鍵が返りませんでした");
+    return {token:t2, agentId:""};
+  }
+
+  async function connectGrok(voice){
+    const sess=await grokToken();
+    const token=sess.token;
+    const wsUrl=sess.agentId
+      ? "wss://api.x.ai/v1/realtime?agent_id="+encodeURIComponent(sess.agentId)
+      : "wss://api.x.ai/v1/realtime?model=grok-voice-latest";
+    ws=new WebSocket(wsUrl,["xai-client-secret."+token]);
     ws.onopen=async()=>{
       setState("聞いています。話しかけてください");
       send({type:"session.update",session:{voice,instructions:INSTRUCTIONS,tools:TOOLS,tool_choice:"auto",

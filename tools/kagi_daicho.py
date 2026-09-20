@@ -287,8 +287,42 @@ def probe_xai():
     c, h = http_code("https://api.x.ai/v1/models", {"Authorization": "Bearer " + k})
     s, d = verdict(c, h)
     if c == 403:
-        d = "403 通らない（鍵は有効でも残高/権限が無い形）"
+        d = ("403 通らない（鍵は有効でも残高/権限が無い形。"
+             "この鍵はチーム goodvibes のもの。★残高のある鍵は別に在る → 下の xai_koe の行）")
     return dict(status=s, detail=d)
+
+
+# 2026-09-20（976番）たまごさん「10ドル入ってるやつがあるでしょ。それ繋ぎましょうよ」
+#   ★台帳が見落としていた形＝**鍵がMacのディスク上に無い**。
+#   残高のあるxAIの鍵(XAI_API_KEY2)は Supabase(Lovable) の Secrets の中だけに在り、
+#   ファイルを探す限り永久に見つからない。だから「鍵の置き場」ではなく
+#   **その鍵を使う窓口を叩いて**通るかどうかで見る。値には触れない。
+XAI_VOICE_EP = ("https://eecdooahvromxykbldud.supabase.co"
+                "/functions/v1/voice-session")
+
+
+def probe_xai_koe():
+    try:
+        req = urllib.request.Request(
+            XAI_VOICE_EP, data=json.dumps({"action": "create"}).encode(),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=25) as r:
+            body = json.loads(r.read().decode("utf-8", "replace"))
+        if not body.get("ok"):
+            return dict(status="ng",
+                        detail="窓口は生きているが断られた（%s）" % scrub(str(body.get("error"))))
+        spent = body.get("spentUsd")
+        cap = body.get("budgetLimitUsd")
+        note = ""
+        if isinstance(spent, (int, float)) and isinstance(cap, (int, float)):
+            nokori = max(0.0, cap - spent)
+            note = ("窓口の財布：上限 $%.2f のうち $%.2f 使用済み／残り 約$%.2f"
+                    "（$0.08=約12円/分 なら約%d分）" % (cap, spent, nokori, int(nokori / 0.08)))
+        return dict(status="ok", detail="200 短命トークンが出た（声が鳴る）", note=note)
+    except urllib.error.HTTPError as e:
+        return dict(status="ng", detail="HTTP %s で通らない" % e.code)
+    except Exception as e:
+        return dict(status="ng", detail="窓口に届かない（%s）" % scrub(repr(e))[:80])
 
 
 def probe_gemini():
@@ -457,9 +491,16 @@ LEDGER = [
                "（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。"
                "それは 969_kagi_kanmon.py が見ている）",
          fix="Google AI Studio で無料発行して鍵ファイルへ"),
-    dict(id="xai", what="Grok / xAI（外部代行）", where="~/.tamago/keys/api_keys.env",
+    dict(id="xai", what="Grok / xAI（文字での外部代行）", where="~/.tamago/keys/api_keys.env",
          probe=probe_xai, stops="Grokへの相談ができない",
-         fix="鍵は有効でも残高が要る。console.x.ai で残高を入れる"),
+         fix="この鍵のチーム(goodvibes)に残高が要る。console.x.ai で入れる。"
+             "★声は別の鍵で既に通っている（下の行）ので、声のために入れる必要は無い"),
+    dict(id="xai_koe", what="xAI 声（iris）の窓口＝残高のある方の鍵",
+         where="Supabase Secrets の XAI_API_KEY2（★ディスク上には無い）",
+         probe=probe_xai_koe,
+         stops="ごきげん補給所の「話す」と 970号の台が鳴らなくなる",
+         fix="Lovable→クラウド→Secrets の XAI_API_KEY2 を見る。"
+             "窓口＝supabase/functions/voice-session"),
     dict(id="fal", what="fal.ai（画像・動画・音声）", where="~/.tamago/keys/api_keys.env",
          probe=probe_fal, stops="絵と動画が1枚も作れない",
          fix="fal.ai で鍵を作り直して鍵ファイルへ"),

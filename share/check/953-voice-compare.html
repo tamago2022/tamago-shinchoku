@@ -320,8 +320,19 @@
 
     // ブラウザは WebSocket にヘッダを付けられないので、使い捨て鍵を取って
     // sec-websocket-protocol に載せる（xAI公式の手順）
-    let token=null;
+    let token=null, xaAgent="";
+    // 2026-09-20（976番）まず窓口(voice-session)から短命トークンをもらう。鍵はブラウザに来ない。
     try{
+      const rm=await fetch("https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session",{
+        method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create"})});
+      if(rm.ok){
+        const jm=await rm.json();
+        const tm=(jm&&jm.clientSecret&&jm.clientSecret.value)||(jm&&jm.value);
+        if(tm){ token=tm; xaAgent=jm.agentId||""; }
+      }
+    }catch(_){}
+    try{
+      if(token) throw "skip";
       const r=await fetch("https://api.x.ai/v1/realtime/client_secrets",{
         method:"POST",
         headers:{Authorization:"Bearer "+sk,"Content-Type":"application/json"},
@@ -332,13 +343,17 @@
       token=j.value||(j.client_secret&&j.client_secret.value)||j.secret;
       if(!token) throw new Error("使い捨て鍵が返りませんでした："+JSON.stringify(j).slice(0,160));
     }catch(e){
+      if(e==="skip"){ /* 窓口で取れているので何もしない */ }else{
       status(xaSt,"使い捨て鍵が取れませんでした → "+e.message
         +"\n（鍵が正しいか、xAI側で Voice が有効かを見てください）","bad");
       return;
+      }
     }
 
     try{
-      xaWs=new WebSocket("wss://api.x.ai/v1/realtime?model=grok-voice-latest",
+      xaWs=new WebSocket(xaAgent
+                           ? "wss://api.x.ai/v1/realtime?agent_id="+encodeURIComponent(xaAgent)
+                           : "wss://api.x.ai/v1/realtime?model=grok-voice-latest",
                          ["xai-client-secret."+token]);
       xaCtx=null;
       xaWs.onopen=()=>{

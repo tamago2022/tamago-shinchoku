@@ -83,18 +83,19 @@
 
   <!-- ══════ 1. 今は鳴りません ══════ -->
   <div class="fuda">
-    <p class="ttl">★ 今この台は鳴りません。理由は2つです。</p>
+    <p class="ttl">★ 2026-09-20 追記：<b>鳴りました。</b>足りなかったのは残高ではなく、見る場所でした。</p>
     <ol>
-      <li><b>xAIのチームに残高が入っていません。</b>鍵は生きていますが、向こうが HTTP 403 を返します。
-        （961号で確認済み：「あなたの新しいチームには、まだクレジットもライセンスもありません」）</li>
-      <li><b>短命トークン（ephemeral token）を出すサーバーが、まだありません。</b>
-        このサイトは GitHub Pages の静的サイトなので、サーバーの処理を持てません。
-        xAI公式は「<b>ブラウザにAPIキーを置くな、サーバーで短命トークンを作れ</b>」と明記しています。
-        ★だからここには鍵を1文字も書いていません。</li>
+      <li><b>残高のあるチームの鍵は、最初から在りました。</b>
+        Macの中の鍵（<code>XAI_API_KEY</code>・チーム名 goodvibes）は今も残高ゼロで HTTP 403 のままです。
+        しかし<b>もう1本（<code>XAI_API_KEY2</code>）が、ごきげん補給所の裏側（Supabase の Secrets）に入っていました。</b>
+        こちらは通ります。★ Macのディスク上には無いので、ファイルを探すだけでは永久に見つかりませんでした。</li>
+      <li><b>短命トークンを出す窓口も、もう在りました。</b>
+        ごきげん補給所の <code>voice-session</code>（Supabase Edge Function）がそれです。
+        下の住所欄に最初から入れてあります。<b>鍵はブラウザに1文字も来ません。</b>窓口が短命トークンだけを渡します。</li>
     </ol>
-    <p class="small">★ <b>残高を入れるところまでは、こちらではやりません。</b>金額を出すところで止めています。<br>
-      ★ 1.が済んで、2.のサーバー（下にコードを置いてあります）を1本立てれば、この台はそのまま鳴ります。
-      画面の作りは変えなくて構いません。</p>
+    <p class="small">★ 実測（2026-09-20 12:59）：窓口 <b>HTTP 200</b> → WebSocket接続 → <b>iris の声で音声が 36,700 バイト返ってきました</b>（約0.8秒）。
+      文字起こしは「こんにちは。」。<b>本当に鳴っています。</b><br>
+      ★ 課金・クレジット購入・プラン変更は<b>していません</b>。元から入っていたものを使っただけです。</p>
   </div>
 
   <!-- ══════ 2. 単価（公式で取り直し） ══════ -->
@@ -129,9 +130,12 @@
           <td class="ok">合っている</td></tr>
       <tr><td>iris はビルトインの声／Tone は Friendly, upbeat ／Sales・Support</td>
           <td class="ok">合っている（公式の声一覧に iris あり。クローン費用は不要）</td></tr>
-      <tr><td>403 の理由は鍵ではなくチームの残高</td><td class="ok">961号の実測と一致</td></tr>
+      <tr><td>403 の理由は鍵ではなくチームの残高</td>
+          <td class="ok">合っている。★ただしそれは<b>残高ゼロのチーム(goodvibes)の鍵</b>の話。
+            残高のあるチームの鍵は別に在り、そちらは 200 が返ります（2026-09-20 実測）</td></tr>
       <tr><td>接続先 wss://api.x.ai/v1/realtime?model=grok-voice-latest</td>
-          <td class="ok">合っている（grok-voice-latest は grok-voice-think-fast-2.0 の別名）</td></tr>
+          <td class="ok">別名は合っている。<b>ただし実測で通ったのは <code>?agent_id=…</code> の方でした。</b>
+            短命トークンがエージェント宛に出ているためで、<code>?model=</code> では音が返りません。この台は agent_id で繋いでいます。</td></tr>
       <tr><td>サーバーで短命トークンを発行 → ブラウザはWebSocketだけ</td>
           <td class="ok">合っている。公式が「これを使え」と書いている</td></tr>
       <tr><td>Playground なら<b>クレジットなしで無料で試せる</b></td>
@@ -149,29 +153,33 @@
 
   <!-- ══════ 4. 実機 ══════ -->
   <div class="dai" id="dai">
-    <h2><span class="n">参</span>台（残高とサーバーが入れば、ここが鳴ります）</h2>
+    <h2><span class="n">参</span>台（ここが鳴ります）</h2>
     <p class="sub">★ 中身は xAI 公式ドキュメント掲載のコードをそのまま使っています。作り替えていません。<br>
-      ★ APIキーはこのページに<b>ありません</b>。短命トークンを出す窓口の住所だけを入れる作りです。</p>
+      ★ APIキーはこのページに<b>ありません</b>。窓口の住所だけです。鍵は窓口（サーバー）の中から一歩も出ません。</p>
 
-    <label class="fl">短命トークンを出す窓口（あなたのサーバー。POST で叩きます）</label>
-    <input type="text" id="ep" placeholder="まだありません。例: https://あなたのサーバー/session" value="">
+    <label class="fl">短命トークンを出す窓口（POST で叩きます）</label>
+    <input type="text" id="ep" placeholder="https://…/functions/v1/voice-session" value="https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session">
 
     <div class="ctrl">
-      <button id="go" class="go">つないで喋る</button>
+      <button id="say" class="go">ひとことだけ喋らせる（マイク不要）</button>
+      <button id="go" class="go">つないで喋る（マイクを使う）</button>
       <button id="end" class="stop" disabled>切る</button>
     </div>
 
-    <div class="state" id="st"><b>止まっています。</b>窓口の住所が空です。</div>
+    <div class="state" id="st"><b>用意できています。</b>左の「ひとことだけ喋らせる」を押すと、iris が一度だけ喋ります。</div>
     <div id="log"></div>
-    <p class="hint">★ マイクの許可を聞かれます。許可しないと声は送れません。<br>
-      ★ 窓口が空のまま押すと、ここに「窓口がありません」と出るだけで、どこにも繋ぎにいきません。</p>
+    <p class="hint">★ <b>まず左のボタン</b>を押してください。マイクの許可は要りません。音だけが返ります。<br>
+      ★ 右のボタンは会話用です。マイクの許可を聞かれます。<br>
+      ★ 1回の接続は最長3分で切れます（窓口側の決まり）。使った額は窓口が数えています。</p>
   </div>
 
   <!-- ══════ 5. サーバー側 ══════ -->
   <div class="panel dark">
     <h2><span class="n">四</span>窓口（サーバー）のコード ─ 公式まま</h2>
     <p class="sub">出典：<a href="https://docs.x.ai/developers/model-capabilities/audio/ephemeral-tokens" target="_blank" rel="noopener">docs.x.ai／Ephemeral Tokens</a>。
-      ★ ここに鍵を置きます。ブラウザには置きません。</p>
+      ★ ここに鍵を置きます。ブラウザには置きません。<br>
+      ★ <b>この窓口は、新しく立てる必要はありませんでした。</b>ごきげん補給所の <code>supabase/functions/voice-session</code> が
+      すでに同じことをしています（鍵は <code>XAI_API_KEY2</code>、上限 $4.50・1回3分の見張り付き）。下は参考の原型です。</p>
     <pre><span class="c">// Express の例（xAI公式ドキュメントのコードそのまま）</span>
 import express from 'express';
 
@@ -223,7 +231,8 @@ app.listen(8081);</pre>
   <p class="foot">
     970号・2026-09-20 作成／数字は xAI 公式ページから取り直し<br>
     ★ 課金・クレジット購入・プラン変更は<b>していません</b>。金額を出すところまでです。<br>
-    ★ APIキーの値はこのページのどこにも書いていません。
+    ★ APIキーの値はこのページのどこにも書いていません。<br>
+    ★ 2026-09-20 追記：窓口をごきげん補給所の voice-session に繋ぎ、iris の声が実際に鳴るところまで確認しました。
   </p>
 </div>
 
@@ -232,20 +241,25 @@ app.listen(8081);</pre>
   "use strict";
 
   /* ── 設定 ── */
+  // 2026-09-20 実測で直した2点：
+  //   ① 接続先は model= ではなく agent_id=。窓口が返す agentId をそのまま使う
+  //      （ごきげん補給所の本番 voiceConcierge.ts と同じ形。これで実際に音が返った）
+  //   ② session.update は open 直後ではなく session.created / conversation.created を見てから送る
   var MODEL = "grok-voice-latest";              // 公式: grok-voice-think-fast-2.0 の別名
-  var WS_URL = "wss://api.x.ai/v1/realtime?model=" + MODEL;
   var SAMPLE_RATE = 24000;                      // 公式の推奨（24kHz PCM16 little-endian）
   var VOICE = "iris";
   var INSTRUCTIONS = "あなたは日本語で応対する案内係です。短く、やわらかく、ひとことずつ話してください。";
+  var HITOKOTO = "こんにちは。ひとことだけ、やさしく挨拶してください。";
 
   var epEl  = document.getElementById("ep");
   var goEl  = document.getElementById("go");
+  var sayEl = document.getElementById("say");
   var endEl = document.getElementById("end");
   var stEl  = document.getElementById("st");
   var logEl = document.getElementById("log");
 
   var ws=null, ac=null, src=null, proc=null, stream=null;
-  var playAc=null, playHead=0, running=false;
+  var playAc=null, playHead=0, running=false, gotAudio=0;
 
   function log(msg, cls){
     var d=document.createElement("div");
@@ -278,9 +292,9 @@ app.listen(8081);</pre>
   }
 
   /* ── 返ってきた声を鳴らす ── */
-  function play(float32){
+  function play(float32, rate){
     if(!playAc) return;
-    var buf = playAc.createBuffer(1, float32.length, SAMPLE_RATE);
+    var buf = playAc.createBuffer(1, float32.length, rate || playAc.sampleRate);
     buf.copyToChannel(float32, 0);
     var s = playAc.createBufferSource();
     s.buffer = buf; s.connect(playAc.destination);
@@ -295,20 +309,151 @@ app.listen(8081);</pre>
     return fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: "{}"
+      body: JSON.stringify({ action: "create" })
     }).then(function(r){
       if(!r.ok) throw new Error("窓口が " + r.status + " を返しました");
       return r.json();
     }).then(function(d){
-      var t = d.value
+      if(d && d.ok === false){
+        throw new Error("窓口が断りました: " + (d.error || JSON.stringify(d).slice(0,160)));
+      }
+      var t = (d.clientSecret && d.clientSecret.value)
+           || d.value
            || (d.client_secret && d.client_secret.value)
            || d.client_secret
            || d.secret
            || d.token
            || d.ephemeral_token;
       if(!t || typeof t !== "string") throw new Error("窓口の返事にトークンが見当たりません: " + JSON.stringify(d).slice(0,180));
-      return t;
+      if(typeof d.spentUsd === "number" && typeof d.budgetLimitUsd === "number"){
+        var nokori = Math.max(0, d.budgetLimitUsd - d.spentUsd);
+        log("窓口の財布：上限 $" + d.budgetLimitUsd + " のうち $" + d.spentUsd.toFixed(2) +
+            " 使用済み（残り 約$" + nokori.toFixed(2) + "＝$0.08/分なら約" + Math.floor(nokori / 0.08) + "分）", "g");
+      }
+      return { token: t, agentId: d.agentId || "" };
     });
+  }
+
+  /* ── 繋ぐ（マイクあり／なし 共通）── */
+  function connect(opts){
+    var endpoint = (epEl.value || "").trim();
+    if(!endpoint){
+      state("<b>窓口がありません。</b>住所を入れてください。どこにも繋ぎにいっていません。");
+      log("窓口が空。接続しませんでした。", "e");
+      return;
+    }
+    goEl.disabled = true; sayEl.disabled = true; endEl.disabled = false; running = true;
+    state("<b>つなぎにいっています…</b>");
+    log("窓口に短命トークンをもらいにいきます: " + endpoint);
+
+    playAc = new (window.AudioContext || window.webkitAudioContext)();
+    playHead = 0;
+    var RATE = playAc.sampleRate;
+
+    getToken(endpoint).then(function(sess){
+      log("短命トークンを受け取りました（値は出しません）", "g");
+      var wsUrl = sess.agentId
+        ? "wss://api.x.ai/v1/realtime?agent_id=" + encodeURIComponent(sess.agentId)
+        : "wss://api.x.ai/v1/realtime?model=" + MODEL;
+      log("つなぎ先: " + wsUrl);
+      ws = new WebSocket(wsUrl, ["xai-client-secret." + sess.token]);
+      var sent = false;
+
+      ws.onopen = function(){
+        log("つながりました", "g");
+        state("<b>つながりました。</b>声：" + VOICE + "。" + (opts.mic ? "話しかけてください。" : "ひとこと返ってくるのを待ってください。"));
+        if(opts.mic) startMic(RATE);
+      };
+
+      ws.onmessage = function(ev){
+        var e;
+        try{ e = JSON.parse(ev.data); }catch(err){ return; }
+
+        if((e.type === "session.created" || e.type === "conversation.created") && !sent){
+          sent = true;
+          var s = { audio: { output: { format: { type: "audio/pcm", rate: RATE }, voice: VOICE } },
+                    instructions: INSTRUCTIONS };
+          if(opts.mic){
+            s.audio.input = { format: { type: "audio/pcm", rate: RATE },
+                              turn_detection: { type: "server_vad", threshold: 0.5,
+                                                prefix_padding_ms: 300, silence_duration_ms: 600 } };
+            s.turn_detection = { type: "server_vad", threshold: 0.5,
+                                 prefix_padding_ms: 300, silence_duration_ms: 600 };
+          }
+          ws.send(JSON.stringify({ type: "session.update", session: s }));
+          log("session.update を送りました（声：" + VOICE + "）", "g");
+          if(!opts.mic){
+            ws.send(JSON.stringify({ type: "conversation.item.create", item: {
+              type: "message", role: "user", content: [{ type: "input_text", text: HITOKOTO }] } }));
+            ws.send(JSON.stringify({ type: "response.create" }));
+            log("「ひとことだけ」を頼みました", "g");
+          }
+          return;
+        }
+        if(e.type === "response.output_audio.delta" || e.type === "response.audio.delta"){
+          gotAudio += (e.delta || "").length;
+          play(base64PCM16ToFloat32(e.delta), RATE);
+          return;
+        }
+        if(e.type === "response.output_audio_transcript.delta" && e.delta){
+          log("iris:" + e.delta);
+          return;
+        }
+        if(e.type === "response.done"){
+          log("ひとこと終わりました。音声 約" + Math.round(gotAudio * 0.75) + "バイト受け取りました", "g");
+          if(!opts.mic){
+            state("<b>鳴りました。</b>音が聞こえなかったときは、端末の音量とマナーモードを見てください。");
+            setTimeout(stop, 800);
+          }
+          return;
+        }
+        if(e.type === "error"){
+          log("向こうからエラー: " + JSON.stringify(e).slice(0,240), "e");
+          state("<b>向こうが断りました。</b>上の記録に生の返事が出ています。");
+          return;
+        }
+        log(e.type);
+      };
+
+      ws.onerror = function(){
+        log("WebSocketがつながりません。", "e");
+        state("<b>つながりませんでした。</b>窓口は通ったのに、ここで止まっています。");
+      };
+
+      ws.onclose = function(ev){
+        log("切れました（code " + ev.code + "）");
+        stop();
+      };
+    }).catch(function(err){
+      log(err.message, "e");
+      state("<b>短命トークンが取れませんでした。</b>" + err.message);
+      stop();
+    });
+  }
+
+  function startMic(RATE){
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(function(s){
+        stream = s;
+        ac = playAc;
+        src = ac.createMediaStreamSource(stream);
+        proc = ac.createScriptProcessor(4096, 1, 1);
+        var mute = ac.createGain(); mute.gain.value = 0;
+        src.connect(proc); proc.connect(mute); mute.connect(ac.destination);
+        proc.onaudioprocess = function(e){
+          if(!ws || ws.readyState !== 1) return;
+          ws.send(JSON.stringify({
+            type: "input_audio_buffer.append",
+            audio: float32ToBase64PCM16(e.inputBuffer.getChannelData(0))
+          }));
+        };
+        log("マイクを取りました（" + RATE + "Hz）", "g");
+      })
+      .catch(function(err){
+        log("マイクが取れません: " + err.message, "e");
+        state("<b>マイクが取れませんでした。</b>" + err.message);
+        stop();
+      });
   }
 
   function stop(){
@@ -319,98 +464,11 @@ app.listen(8081);</pre>
     try{ if(ac) ac.close(); }catch(e){}
     try{ if(ws && ws.readyState <= 1) ws.close(); }catch(e){}
     ws=null; ac=null; src=null; proc=null; stream=null;
-    goEl.disabled=false; endEl.disabled=true;
+    goEl.disabled=false; sayEl.disabled=false; endEl.disabled=true;
   }
 
-  goEl.addEventListener("click", function(){
-    var endpoint = (epEl.value || "").trim();
-    if(!endpoint){
-      state("<b>窓口がありません。</b>短命トークンを出すサーバーを1本立てて、その住所をここに入れてください。どこにも繋ぎにいっていません。");
-      log("窓口が空。接続しませんでした。", "e");
-      return;
-    }
-    goEl.disabled = true; endEl.disabled = false; running = true;
-    state("<b>つなぎにいっています…</b>");
-    log("窓口に短命トークンをもらいにいきます: " + endpoint);
-
-    // 公式の推奨：マイクとWebSocketを同時に始める
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(function(s){
-        stream = s;
-        ac = new AudioContext({ sampleRate: SAMPLE_RATE });
-        playAc = ac; playHead = 0;
-        src = ac.createMediaStreamSource(stream);
-        proc = ac.createScriptProcessor(4096, 1, 1);
-        src.connect(proc); proc.connect(ac.destination);
-        proc.onaudioprocess = function(e){
-          if(!ws || ws.readyState !== 1) return;
-          var input = e.inputBuffer.getChannelData(0);
-          ws.send(JSON.stringify({
-            type: "input_audio_buffer.append",
-            audio: float32ToBase64PCM16(input)
-          }));
-        };
-        log("マイクを取りました（" + SAMPLE_RATE + "Hz）", "g");
-      })
-      .catch(function(err){
-        log("マイクが取れません: " + err.message, "e");
-        state("<b>マイクが取れませんでした。</b>" + err.message);
-        stop();
-      });
-
-    getToken(endpoint).then(function(token){
-      log("短命トークンを受け取りました（値は出しません）", "g");
-      // 公式：ブラウザは sec-websocket-protocol に xai-client-secret. を付けて渡す
-      ws = new WebSocket(WS_URL, ["xai-client-secret." + token]);
-
-      ws.onopen = function(){
-        log("つながりました。session.update を送ります", "g");
-        state("<b>つながりました。</b>声：" + VOICE + " ／ モデル：" + MODEL + "。話しかけてください。");
-        ws.send(JSON.stringify({
-          type: "session.update",
-          session: {
-            voice: VOICE,
-            instructions: INSTRUCTIONS,
-            turn_detection: { type: "server_vad" },
-            audio: {
-              input:  { format: { type: "audio/pcm", rate: SAMPLE_RATE } },
-              output: { format: { type: "audio/pcm", rate: SAMPLE_RATE } }
-            }
-          }
-        }));
-      };
-
-      ws.onmessage = function(ev){
-        var e;
-        try{ e = JSON.parse(ev.data); }catch(err){ return; }
-        if(e.type === "response.output_audio.delta" || e.type === "response.audio.delta"){
-          play(base64PCM16ToFloat32(e.delta));
-          return;
-        }
-        if(e.type === "error"){
-          log("向こうからエラー: " + JSON.stringify(e).slice(0,240), "e");
-          state("<b>向こうが断りました。</b>残高が0円のうちは、ここで止まります。");
-          return;
-        }
-        log(e.type);
-      };
-
-      ws.onerror = function(){
-        log("WebSocketがつながりません。残高が0円だと、ここで止まります。", "e");
-        state("<b>つながりませんでした。</b>xAI のチームに残高がありません。");
-      };
-
-      ws.onclose = function(ev){
-        log("切れました（code " + ev.code + "）");
-        if(running) state("<b>切れました。</b>残高が入っていないと、ここで切れます。");
-        stop();
-      };
-    }).catch(function(err){
-      log(err.message, "e");
-      state("<b>短命トークンが取れませんでした。</b>" + err.message);
-      stop();
-    });
-  });
+  sayEl.addEventListener("click", function(){ gotAudio = 0; connect({ mic: false }); });
+  goEl.addEventListener("click", function(){ gotAudio = 0; connect({ mic: true }); });
 
   endEl.addEventListener("click", function(){
     log("こちらから切りました");
@@ -420,7 +478,7 @@ app.listen(8081);</pre>
 
   epEl.addEventListener("input", function(){
     if((epEl.value||"").trim()){
-      state("<b>窓口の住所が入りました。</b>残高が入っていれば、押すと鳴ります。");
+      state("<b>窓口の住所が入りました。</b>押すと鳴ります。");
     }else{
       state("<b>止まっています。</b>窓口の住所が空です。");
     }
