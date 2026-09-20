@@ -1275,20 +1275,28 @@ function paintSW(){
 const live=()=>!!(api&&api.connected);
 /* 会話は正本 No.02 の .conversation-row（左＝だれ／右＝ことば）をそのまま使う。 */
 const WHO={me:"あなた",her:"ごきげん店主",sys:"お知らせ"};
-/* ★970：1回の発言＝1行。喋りながら届く切れ端は、同じ行の中で文字が増えていく。 */
-let akiRow=null, akiCls=null;
-const sayOwari=()=>{ akiRow=null; akiCls=null; };
+/* ★974：ドラクエ／ビジュアルノベルの台詞窓と同じ作りにする。
+   　窓は1枚しかない。新しい発言が、古い発言を上書きする。
+   　行は増えない＝ページは下に伸びない。窓の高さはCSSで固定してある。
+   　喋っている途中は、その窓の中で文字が増える（そこは970のまま保つ）。
+   お手本：ドラクエのメッセージウィンドウ／ADVの台詞窓。
+   　（textBobber・Dialogue-Animator と同じ「1枠・入れ替え・窓の中だけ送る」型）
+   ★過去のやりとりは残さない。畳んだ履歴も置かない（たまごさんの指示：消えていい）。 */
+let akiCls=null;
+const sayOwari=()=>{ akiCls=null; };
+const sueOku=p=>{ p.scrollTop=p.scrollHeight; };   /* 窓の中だけ送る。ページは動かさない */
 const say=(cls,txt,tsuzuki)=>{
   txt=(txt==null?"":String(txt));
-  if(!txt.replace(/[\s\u3000]/g,"")) return;            /* 空なら行を作らない */
-  if(tsuzuki&&akiRow&&akiCls===cls&&logEl.contains(akiRow)){
-    const ap=akiRow.querySelector(".say");
+  if(!txt.replace(/[\s\u3000]/g,"")) return;            /* 空なら窓を書き換えない */
+  const ima=logEl.firstElementChild;
+  if(tsuzuki&&akiCls===cls&&ima){
+    const ap=ima.querySelector(".say");
     if(ap){ const mae=ap.textContent||"";
       if(!(mae.slice(-txt.length)===txt)) ap.textContent=mae+txt;
-      akiRow.scrollIntoView({block:"nearest",behavior:"smooth"}); return; }
+      sueOku(ap); return; }
   }
   const row=document.createElement("div");
-  row.className="conversation-row"+(cls==="sys"?" sys":"");
+  row.className="conversation-row"+(cls==="sys"?" sys":"")+" irekae";
   const who=document.createElement("div");
   who.className="who"+(cls==="me"?" user":"");
   if(cls!=="sys"){
@@ -1299,9 +1307,9 @@ const say=(cls,txt,tsuzuki)=>{
   who.appendChild(document.createTextNode(WHO[cls]||""));
   const p=document.createElement("p"); p.className="say"; p.textContent=txt;
   row.append(who,p);
-  logEl.appendChild(row);
-  akiRow=tsuzuki?row:null; akiCls=tsuzuki?cls:null;
-  row.scrollIntoView({block:"nearest",behavior:"smooth"});
+  logEl.replaceChildren(row);                      /* ← 積まない。入れ替える。 */
+  akiCls=tsuzuki?cls:null;
+  sueOku(p);
 };
 const setState=s=>{stateEl.textContent=s;};
 function setMic(on){ micOn=on; if(mic) mic.getAudioTracks().forEach(t=>t.enabled=on); }
@@ -1344,7 +1352,8 @@ async function connect(){
   try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
 
   SAIFU.hajime();
-  goEl.disabled=true; logEl.innerHTML=""; sayOwari();
+  goEl.disabled=true; sayOwari();
+  say("sys","つないでいます…");   /* ★974：窓は空にしない。上書きして次の言葉を待つ。 */
   shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; stopPlay(false);
   ANNAI.reset();   /* ★966：案内の回数は、話し始めるたびに0に戻す */
   USE.micSec=USE.outSec=USE.usd=USE.apiIn=USE.apiOut=USE.apiTotal=0;

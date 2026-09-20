@@ -52,6 +52,23 @@
 .conversation-row.sys .say{color:var(--brick);font:12px/1.9 var(--sans)}
 #state{margin:12px 0 0;padding:0 46px 0 34px;text-align:right}
 
+/* ── ★974：台詞窓（ドラクエ式）──────────────────────────
+   窓は1枚。高さは固定。下にスペースを取らない＝ページは絶対に伸びない。
+   長い返事は窓の中だけが送られる（ページは動かない）。 */
+#log{height:158px;overflow:hidden}
+#log .conversation-row{height:100%;box-sizing:border-box;border-top:0}
+#log .say{
+  max-height:122px;overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:rgba(80,68,53,.28) transparent;
+}
+#log .say::-webkit-scrollbar{width:4px}
+#log .say::-webkit-scrollbar-thumb{background:rgba(80,68,53,.28);border-radius:4px}
+#log .say::-webkit-scrollbar-track{background:transparent}
+/* 入れ替わったことが分かる程度に。動きは小さく。 */
+#log .conversation-row.irekae{animation:tmk-irekae .24s ease-out}
+@keyframes tmk-irekae{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#log .conversation-row.irekae{animation:none}}
+
 /* ── 札（正本 .rec-card を button にしただけ）───────────── */
 button.rec-card{
   display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
@@ -146,4 +163,10 @@ table.cost td:last-child{text-align:right;font-variant-numeric:tabular-nums}
   .kikai{width:min(calc(100% - 24px),430px)}
   .prow button{flex:1 1 44%}
   #state{text-align:left}
+}
+
+/* ★974：台詞窓（狭い画面）。ここでも高さは固定。ページは伸びない。 */
+@media (max-width:780px){
+  #log{height:136px}
+  #log .say{max-height:108px}
 }

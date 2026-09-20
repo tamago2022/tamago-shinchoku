@@ -47,8 +47,10 @@
   background:
     radial-gradient(120% 90% at 20% 10%,rgba(255,246,226,.85),transparent 48%),
     radial-gradient(130% 100% at 88% 72%,rgba(26,16,8,.75),transparent 54%);
-  -webkit-mask-image:url(img/concierge-nomouth.png);
-          mask-image:url(img/concierge-nomouth.png);
+  /* ★974：口を消したPNGは使わない（消し跡が四角い染みとして出ていたため）。
+     承認済みPNGそのものを型紙にする。輪郭は同じなので影のかかり方は変わらない。 */
+  -webkit-mask-image:url(img/concierge.png);
+          mask-image:url(img/concierge.png);
   -webkit-mask-size:contain;          mask-size:contain;
   -webkit-mask-position:center bottom;mask-position:center bottom;
   -webkit-mask-repeat:no-repeat;      mask-repeat:no-repeat;
@@ -67,7 +69,7 @@
 
 /* 吹き出しの横の小さい丸も、承認済みの案内人に合わせる */
 .tmk-ava{
-  background:#efe7d6 url(img/concierge-nomouth.png) no-repeat center 26%/165% auto;
+  background:#efe7d6 url(img/concierge.png) no-repeat center 26%/165% auto;
 }
 
 @media (max-width:780px){
