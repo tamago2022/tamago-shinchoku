@@ -467,6 +467,58 @@ def probe_relay():
     return dict(status="ok", detail="%d 返事があります" % c)
 
 
+# ---- 2026-09-20（1010番）Macの重さ ----------------------------------
+# たまごさん実測：swap 14.96GB／負荷68%。**閲覧中にブラウザがリロード・クラッシュする原因そのもの。**
+# 09-19にも同じ形で起きている。「重い」は感想ではなく数字なので、台帳の1行にして自動で赤にする。
+# 新しい常駐は増やさない＝この台帳（既にある5分便から呼ばれている）に相乗りする。
+# しきい値：swapの使用が10GBを超えたら赤。負荷(1分平均)が12を超えたら赤。
+SWAP_RED_MB = 10 * 1024
+LOAD_RED = 12.0
+
+
+def probe_mac_omosa():
+    def sysctl(name):
+        try:
+            return subprocess.run(["sysctl", "-n", name], capture_output=True,
+                                  text=True, timeout=8).stdout.strip()
+        except Exception:
+            return ""
+    used_mb = None
+    m = re.search(r"used\s*=\s*([0-9.]+)M", sysctl("vm.swapusage"))
+    if m:
+        used_mb = float(m.group(1))
+    load1 = None
+    m = re.search(r"([0-9.]+)", sysctl("vm.loadavg"))
+    if m:
+        load1 = float(m.group(1))
+    if used_mb is None and load1 is None:
+        return dict(status="unknown", detail="測れませんでした")
+    swap_txt = "swap %.1fGB" % (used_mb / 1024.0) if used_mb is not None else "swap 不明"
+    load_txt = "負荷 %.1f" % load1 if load1 is not None else "負荷 不明"
+    # 何が食っているかを1つだけ添える（名前だけ・中身は読まない）
+    top = ""
+    try:
+        out = subprocess.run(["ps", "-Ao", "rss=,comm="], capture_output=True,
+                             text=True, timeout=10).stdout
+        best = (0, "")
+        for line in out.splitlines():
+            parts = line.strip().split(None, 1)
+            if len(parts) == 2 and parts[0].isdigit() and int(parts[0]) > best[0]:
+                best = (int(parts[0]), parts[1])
+        if best[0]:
+            top = "／一番食っているのは %s（%.1fGB）" % (
+                os.path.basename(best[1])[:40], best[0] / 1048576.0)
+    except Exception:
+        pass
+    red = (used_mb is not None and used_mb > SWAP_RED_MB) or \
+          (load1 is not None and load1 > LOAD_RED)
+    if red:
+        return dict(status="ng",
+                    detail="%s・%s（しきい値 swap10GB／負荷12を超えています）%s"
+                           % (swap_txt, load_txt, top))
+    return dict(status="ok", detail="%s・%s%s" % (swap_txt, load_txt, top))
+
+
 # 台帳の本体。ここに並んでいないものは「無い」ことにする。
 LEDGER = [
     dict(id="claude", what="Claudeの鍵（発車そのもの）", where="キーチェーン／~/.tamago/claude_token",
@@ -522,6 +574,12 @@ LEDGER = [
     dict(id="relay", what="中継所（スマホのボタン→Mac）", where="127.0.0.1:8788",
          probe=probe_relay, stops="たまごさんがボタンを押しても何も起きない",
          fix="relay_watch が自分で立て直す"),
+    dict(id="mac_omosa", what="Macの重さ（swapと負荷）",
+         where="sysctl vm.swapusage / vm.loadavg（しきい値 swap10GB・負荷12）",
+         probe=probe_mac_omosa,
+         stops="**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
+         fix="仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・"
+             "主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない"),
 ]
 
 
