@@ -524,6 +524,14 @@ mkdir -p "$REPO/status/public"
 # ★status/public/ へ直接書くのでPUBLISH_LISTへの追加は要らない（下の公開にそのまま乗る）。
 # ★値（鍵の中身）は読まない・書かない。通ったか通らないかだけ。
 run_with_timeout 120 python3 "$REPO/tools/kagi_daicho.py" >/dev/null 2>&1 || true
+# ---- 2026-09-20（971番・Cowork側から設置）外部から入れたもののコピー日報 ----
+# たまごさん「毎日、昨日なら昨日の外部から入ったものを釣って、コピーはこうです、っていうのも知りたい」。
+# 実測：毎朝の入荷見回り（756番）は09-12〜09-19の8本が積まれたまま1本も走っていなかった。
+# 積む係は居たが、結果を毎日1枚にして出す係が居なかった＝誰も気づかないまま9日。ここがその1枚。
+# ★新しい常駐は増やさない。中で30分ゲートしているので5分おきに呼んでも外へ出るのは30分に1回。
+# ★status/public/ へ直接書くのでPUBLISH_LISTへの追加は要らない（下の公開にそのまま乗る）。
+# ★鍵の値は書き出さない（名前と、通ったか通らないかだけ）。
+run_with_timeout 90 python3 "$REPO/tools/gaibu_copy_nippou.py" >/dev/null 2>&1 || true
 [ -f "$REPO/status/done_archive.json" ] && python3 "$REPO/tools/build_done_archive_light.py" >/dev/null 2>&1
 [ -f "$REPO/status/queue.json" ] && python3 "$REPO/tools/build_queue_public_gz.py" >/dev/null 2>&1
 for _f in $PUBLISH_LIST; do
