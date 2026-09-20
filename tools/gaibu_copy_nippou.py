@@ -344,6 +344,21 @@ def build():
             out["source"] = "取れていない"
             out["red"].append("admin_stock に繋がらない（%s）" % type(e).__name__)
 
+    # 出した1枚が本当に外から見えるかを、ここ（ネットがあるMac側）で毎回確かめる。
+    # 「公開しました」のログではなく、**実際に叩いた番号**だけを載せる。
+    page = "https://tamago2022.github.io/tamago-shinchoku/971-gaibu-copy-nippou.html"
+    try:
+        req = urllib.request.Request(page, method="HEAD")
+        with urllib.request.urlopen(req, timeout=20) as r:
+            out["publicCheck"] = {"url": page, "status": r.status}
+    except urllib.error.HTTPError as e:
+        out["publicCheck"] = {"url": page, "status": e.code}
+    except Exception as e:
+        out["publicCheck"] = {"url": page, "status": None, "why": type(e).__name__}
+    if (out["publicCheck"] or {}).get("status") != 200:
+        out["red"].append("この1枚が外から見えていない（%s）"
+                          % ((out["publicCheck"] or {}).get("status") or "繋がらない"))
+
     # 赤の決まり（969番の台帳と同じ）：走っているのに収穫0なら赤。
     nr = out["patrol"]["notRun"]
     if nr:
