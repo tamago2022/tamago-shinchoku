@@ -1288,6 +1288,13 @@ const sueOku=p=>{ p.scrollTop=p.scrollHeight; };   /* 窓の中だけ送る。�
 const say=(cls,txt,tsuzuki)=>{
   txt=(txt==null?"":String(txt));
   if(!txt.replace(/[\s\u3000]/g,"")) return;            /* 空なら窓を書き換えない */
+  /* ★974：中の指示に対する相づちを、窓に出さない。
+     画面から送っている「（画面の合図・お客さんの声ではありません。返事はしないでください）」に
+     案内人が英語で "understand" と返してしまい、それが窓の一番上に出ていた。
+     日本語がひとつも無い短い相づちは、お客さんへの言葉ではないので捨てる。 */
+  if(cls==="her" && !/[\u3040-\u30ff\u4e00-\u9fff]/.test(txt)
+     && txt.trim().length<=28
+     && /^[\s"'.,!?\-]*(i\s+)?(understand(ing|s|ed)?|understood|ok|okay|got\s+it|acknowledged|noted|sure|right|roger|yes|yep|affirmative|copy\s+that|all\s+right|alright)[\s"'.,!?\-]*$/i.test(txt.trim())) return;
   const ima=logEl.firstElementChild;
   if(tsuzuki&&akiCls===cls&&ima){
     const ap=ima.querySelector(".say");
