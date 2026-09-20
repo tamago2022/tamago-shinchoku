@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-20 02:32",
+ "updatedAt": "2026-09-20 09:43",
  "note": "発車待ちの正本。見張り番が上から着火する。たまごさんはPWAのPボタンで優先度を付ける。",
  "repo": "/Users/mac/Desktop/joy-relief-station",
  "items": [
@@ -1572,7 +1572,7 @@
    ],
    "evidenceGone": true,
    "evidenceCheckedAt": "2026-09-17T16:22:40+0900",
-   "staleLevel": "yellow",
+   "staleLevel": "red",
    "holdNote": "【930番棚卸し4/7・2026-09-17】亮太さんページの実装・main合流(commit 7a523a65)は完了。Lovable公開のみ未完了。原因を実機で特定：joy-relief-stationのLovable自動公開便(com.tamago.joy-relief-station.lovable-publish)は案件820(2026-09-14, 30分おき連打がsuspicious activity扱いされる懸念)でlaunchdレベルのDisabled=trueのままon-demand専用に方針転換されており、on-demand手動実行も今回試したが「本日は3回連続失敗のため停止中(日付が変わるまで/--forceで解除)」の安全装置に阻まれた。直近3失敗の実原因は「『公開』ボタンが見つからない。画面がエディタでない可能性」(status/lovable_publish_fail.jsonl実測)＝公開専用Chrome(CDP:9223)の画面状態そのものに問題があり、このセッションにはブラウザ操作ツールが無く画面を直接確認・復旧できない。--forceでの強行は原因不明のまま誤クリックのリスクがあるため見送り。930番の範囲を超える別系統の障害(公開パイプライン自体の生死)のためholdへ落とし、公開専用Chromeの画面復旧ができるセッション/たまごさん本人へ引き継ぐ。",
    "heldAt": "2026-09-17T17:15:31+09:00"
   },
@@ -4348,7 +4348,8 @@
    ],
    "state": "passed",
    "kenpinUpdatedAt": "2026-09-17T12:17:04+09:00",
-   "kenpinFixStreak": 0
+   "kenpinFixStreak": 0,
+   "staleLevel": "yellow"
   },
   {
    "n": 918,
@@ -4475,7 +4476,7 @@
     "https://tamago2022.github.io/tamago-shinchoku/share/check/923-awaiting-check-list.html"
    ],
    "evidenceGone": true,
-   "evidenceCheckedAt": "2026-09-20T01:13:34+0900"
+   "evidenceCheckedAt": "2026-09-20T07:15:26+0900"
   },
   {
    "n": 925,
@@ -4666,7 +4667,7 @@
    ],
    "finishedAt": "2026-09-17T16:22:21+09:00",
    "evidenceGone": true,
-   "evidenceCheckedAt": "2026-09-20T01:14:24+0900",
+   "evidenceCheckedAt": "2026-09-20T07:16:07+0900",
    "kenpinFixStreak": 1
   },
   {
@@ -5377,19 +5378,45 @@
    "priority": 4
   },
   {
-   "n": 996,
-   "priority": 9,
-   "test": true,
-   "keepalive": true,
-   "testSeconds": 120,
-   "title": "【空回し】工場を止めないための2分の空タスク",
-   "why": "本物が出せない間も、止まっている状態を作らないため（クレジットは使いません）",
-   "status": "running",
-   "limitMin": 10,
+   "n": 997,
+   "title": "GH446 【調査依頼】喋る卵のキャラクターをWebサイトに置きたい（口が音素で動く／背景差し替え／スマホ／月0",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
    "model": "claude-sonnet-5",
-   "startedAt": "2026-09-20T02:32:55+09:00",
-   "sessionId": "dbe89195-1d39-4be3-8d3c-e7cc07ac2067",
-   "pid": 2129
+   "origin": "factory",
+   "priority": 2
+  },
+  {
+   "n": 998,
+   "title": "【自動検知】AI検品 が動いていません",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "factory",
+   "priority": 2,
+   "shikumiCheckKey": "ai_verify"
+  },
+  {
+   "n": 1000,
+   "title": "GH447 【P0】15分見回りの修復成果を累積保持する（monotonic regression修正）",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "factory",
+   "priority": 2
+  },
+  {
+   "n": 1001,
+   "title": "GH390 tamago2022さんの返信（09-20 08:35）",
+   "why": "スマホから追加",
+   "status": "waiting",
+   "limitMin": 180,
+   "model": "claude-sonnet-5",
+   "origin": "factory",
+   "priority": 2
   }
  ]
 }
