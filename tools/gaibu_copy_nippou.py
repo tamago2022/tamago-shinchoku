@@ -57,7 +57,8 @@ OUT_JSON = os.path.join(PUBLIC, "gaibu_copy_nippou.json")
 GATE = os.path.join(STATUS, ".gaibu_copy_nippou_last")
 JRS = "/Users/mac/Desktop/joy-relief-station"
 DAYS = 7
-GATE_SEC = 30 * 60
+GATE_SEC = 10 * 60
+FORCE = os.path.join(STATUS, ".gaibu_copy_nippou_force")
 
 
 # ---------------------------------------------------------------- 水道水の判定
@@ -132,22 +133,49 @@ def read_env_names(path):
     return out
 
 
-def find_supabase():
-    """(url, key, 鍵の名前, 見た場所) を返す。無ければ (None, None, None, 理由)。"""
-    tried = []
-    for rel in (".env", ".env.local", ".env.production", "scripts/patrol/.env"):
+RE_SB_URL = re.compile(r"https://[a-z0-9]{8,}\.supabase\.co")
+RE_SB_KEY = re.compile(r"\b(eyJ[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{10,}"
+                       r"|sb_(?:secret|publishable)_[A-Za-z0-9_\-]{10,})")
+
+ENV_RELS = (".env", ".env.local", ".env.production", ".env.development",
+            ".env.example", "scripts/patrol/.env", "scripts/.env",
+            "supabase/.env", "ai-brain/.env")
+SRC_RELS = ("src/integrations/supabase/client.ts",
+            "src/integrations/supabase/client.js",
+            "src/lib/supabaseClient.ts", "src/lib/supabase.ts",
+            "scripts/patrol/supabase.mjs", "scripts/patrol/_supabase.mjs",
+            "scripts/lib/supabase.mjs")
+
+
+def _read(p):
+    try:
+        return io.open(p, encoding="utf-8", errors="replace").read()
+    except Exception:
+        return ""
+
+
+def find_supabase(diag):
+    """(url, key, 鍵の名前, 見た場所) を返す。無ければ (None, None, None, 理由)。
+
+    値（鍵の中身）はこの関数の戻り値から一歩も外へ出さない。
+    diag には「在ったか／無かったか」と**名前だけ**を積む。
+    """
+    if not os.path.isdir(JRS):
+        diag.append("joy-relief-station が %s に無い" % JRS)
+        return None, None, None, "joy-relief-station のフォルダ自体が見つからない"
+
+    # ① .env 系（名前で拾う）
+    for rel in ENV_RELS:
         p = os.path.join(JRS, rel)
         if not os.path.exists(p):
             continue
-        tried.append(rel)
         env = read_env_names(p)
-        url = None
-        for k in env:
-            if "SUPABASE" in k.upper() and k.upper().endswith("URL"):
-                url = env[k]
-                break
+        names = [k for k in env if "SUPABASE" in k.upper()]
+        diag.append("%s あり（SUPABASE系の名前 %d個）" % (rel, len(names)))
+        url = next((env[k] for k in env
+                    if "SUPABASE" in k.upper() and k.upper().endswith("URL") and env[k]), None)
         key = keyname = None
-        for pref in ("SERVICE_ROLE", "SERVICE", "ANON", "KEY"):
+        for pref in ("SERVICE_ROLE", "SERVICE", "SECRET", "ANON", "PUBLISHABLE", "KEY"):
             for k in env:
                 ku = k.upper()
                 if "SUPABASE" in ku and pref in ku and env[k]:
@@ -157,9 +185,20 @@ def find_supabase():
                 break
         if url and key:
             return url.rstrip("/"), key, keyname, rel
-    if not tried:
-        return None, None, None, "joy-relief-station に .env が見つからない"
-    return None, None, None, "見た(%s)が SUPABASE の URL と鍵が揃っていない" % "・".join(tried)
+
+    # ② Lovableが吐くクライアント等、ソースに直書きされているもの
+    for rel in SRC_RELS:
+        p = os.path.join(JRS, rel)
+        if not os.path.exists(p):
+            continue
+        s = _read(p)
+        mu, mk = RE_SB_URL.search(s), RE_SB_KEY.search(s)
+        diag.append("%s あり（URL %s・鍵 %s）" % (rel, "有" if mu else "無", "有" if mk else "無"))
+        if mu and mk:
+            return mu.group(0).rstrip("/"), mk.group(0), "ソース直書き", rel
+
+    diag.append("既知の置き場に SUPABASE の URL と鍵が揃っていない")
+    return None, None, None, "joy-relief-station の既知の置き場に鍵が無い（置き場を1か所決める必要あり）"
 
 
 def fetch_stock(url, key, since_iso):
@@ -224,9 +263,26 @@ def build():
         "byDay": [],
         "todo": [],
         "total": {"in": 0, "written": 0, "todo": 0},
+        "diag": [],
     }
 
-    url, key, keyname, where = find_supabase()
+    # 既存パイプラインが吐くレポートが在るか（在れば、鍵が無くてもここから数えられる）
+    rep = os.path.join(JRS, "scripts/patrol/reports/today-ingest-copy-latest.json")
+    if os.path.exists(rep):
+        d0 = load(rep, None)
+        if isinstance(d0, dict):
+            out["diag"].append("既存レポートあり（中身の見出し：%s）"
+                               % "・".join(list(d0.keys())[:8]))
+        elif isinstance(d0, list):
+            out["diag"].append("既存レポートあり（配列 %d件・1件目の見出し：%s）"
+                               % (len(d0), "・".join(list(d0[0].keys())[:8])
+                                  if d0 and isinstance(d0[0], dict) else "—"))
+        else:
+            out["diag"].append("既存レポートあり（読めなかった）")
+    else:
+        out["diag"].append("既存レポート（scripts/patrol/reports/today-ingest-copy-latest.json）が無い")
+
+    url, key, keyname, where = find_supabase(out["diag"])
     if not url:
         out["source"] = "取れていない"
         out["sourceNote"] = where
@@ -236,6 +292,9 @@ def build():
         try:
             rows = fetch_stock(url, key, since.isoformat())
             out["source"] = "admin_stock"
+            if rows and isinstance(rows[0], dict):
+                # 列の名前だけ控える（値は書かない）。取りこぼした列を後から直せるように。
+                out["diag"].append("admin_stock の列：" + "・".join(sorted(rows[0].keys())))
             buckets = {}
             for r in rows:
                 if not isinstance(r, dict):
@@ -290,14 +349,26 @@ def build():
 
 def main():
     force = os.environ.get("NIPPOU_FORCE") == "1"
-    if not force and os.path.exists(GATE):
+    # 前回が赤（正本から数えられていない）なら、30分ゲートで寝かせない。
+    # 「赤のまま座っている」を作らないため（969番の台帳と同じ考え方）。
+    prev = load(OUT_JSON, {}) or {}
+    stuck_red = prev.get("source") != "admin_stock"
+    if os.path.exists(FORCE):
+        force = True
+        try:
+            os.remove(FORCE)
+        except Exception:
+            pass
+    if not force and not stuck_red and os.path.exists(GATE):
         if time.time() - os.path.getmtime(GATE) < GATE_SEC:
             return
     out = build()
     save(OUT_JSON, out)
-    os.makedirs(os.path.dirname(GATE), exist_ok=True)
-    with io.open(GATE, "w", encoding="utf-8") as f:
-        f.write(datetime.now(JST).strftime("%Y-%m-%d %H:%M"))
+    try:
+        with io.open(GATE, "w", encoding="utf-8") as f:
+            f.write(datetime.now(JST).strftime("%Y-%m-%d %H:%M"))
+    except Exception:
+        pass  # 印が書けなくても日報そのものは出す（止まらない）
 
 
 if __name__ == "__main__":
