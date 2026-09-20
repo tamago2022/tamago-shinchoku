@@ -518,6 +518,12 @@ PYVER
 ### 圧縮版を書き出す（build_queue_public_gz.py）。正本status/queue.jsonは変更しない。
 PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json queue_next.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
 mkdir -p "$REPO/status/public"
+# ---- 2026-09-20（969番）鍵・つながりの台帳 ----
+# 「走っているのに何も取れていない」を自動で赤にする係。新しい常駐は増やさず、この5分便に相乗り。
+# 中で30分に間引くので、5分おきに呼んでも外を叩くのは30分に1回だけ。
+# ★status/public/ へ直接書くのでPUBLISH_LISTへの追加は要らない（下の公開にそのまま乗る）。
+# ★値（鍵の中身）は読まない・書かない。通ったか通らないかだけ。
+run_with_timeout 120 python3 "$REPO/tools/kagi_daicho.py" >/dev/null 2>&1 || true
 [ -f "$REPO/status/done_archive.json" ] && python3 "$REPO/tools/build_done_archive_light.py" >/dev/null 2>&1
 [ -f "$REPO/status/queue.json" ] && python3 "$REPO/tools/build_queue_public_gz.py" >/dev/null 2>&1
 for _f in $PUBLISH_LIST; do

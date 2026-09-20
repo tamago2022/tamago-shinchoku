@@ -71,6 +71,11 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   <button id="reload" type="button">押して読み直す</button>
 </header>
 
+<!-- 969番：鍵・つながりの台帳。赤が1つでもあればここに出る（無ければ何も出ない） -->
+<a id="kagi-alert" href="969-kagi-daicho.html"
+   style="display:none;margin:0 0 14px;padding:11px 13px;border:2px solid #b3261e;
+          color:#b3261e;font-weight:700;text-decoration:none;line-height:1.5"></a>
+
 <!-- ① いま走っているもの -->
 <section class="card">
   <h2>いま走っているもの</h2>
@@ -144,6 +149,7 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   <a href="index_full.html">前の進捗表（全部入り）</a>
   <a href="share/done/">できたもの一覧</a>
   <a href="money.html">お金</a>
+  <a href="969-kagi-daicho.html">鍵・つながりの台帳</a>
 </footer>
 
 </div>
@@ -507,6 +513,25 @@ $("reload").addEventListener("click", function(){
 });
 // 自動更新はしない（ページごと読み直していたのが、見ている途中で位置がずれる原因だった）
 load(false);
+
+// 969番：鍵・つながりの台帳。赤が1つでもあるときだけ、ここに1行出す。
+// 赤が0のときは**何も出さない**（見えるところを足し算し続けない）。
+fetch("status/public/kagi_daicho_top.json?t=" + Date.now())
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var el = $("kagi-alert");
+    if (!el) return;
+    if (d && d.notMeasuredYet) {
+      el.textContent = "鍵・つながりの台帳：まだ1回も実測していません（押すと開きます）";
+      el.style.display = "block";
+      return;
+    }
+    if (d && d.redCount > 0) {
+      el.textContent = "🔒 " + d.headline + " → 押すと台帳が開きます";
+      el.style.display = "block";
+    }
+  })
+  .catch(function(){ /* 台帳が無くても進捗表は普通に出る */ });
 
 // ホーム画面アプリ用の manifest は、最初の表示が終わってから足す
 window.addEventListener("load", function(){
