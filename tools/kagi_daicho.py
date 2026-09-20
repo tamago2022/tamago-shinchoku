@@ -98,6 +98,16 @@ def log(msg):
         pass
 
 
+def scrub(s, limit=140):
+    """外へ出す文字列から、鍵に見えるものを機械的に落とす。
+       ★進捗表リポは公開。ログの1行をそのまま載せて鍵が混ざる事故を、形で止める。"""
+    s = str(s or "")
+    s = re.sub(r'[A-Za-z0-9_\-]{20,}', '〈伏せた〉', s)     # 長い英数字の塊＝鍵の形
+    s = re.sub(r'(?i)(bearer|key|token|password|secret)\s*[:=]\s*\S+',
+               r'\1=〈伏せた〉', s)
+    return s[:limit]
+
+
 def load(path, default=None):
     try:
         with io.open(path, encoding="utf-8") as f:
@@ -295,13 +305,18 @@ def probe_gemini():
 def probe_github():
     k = find_key(("GITHUB_TOKEN", "GH_TOKEN"))
     if not k:
-        try:
-            p = subprocess.run(["gh", "auth", "token"], capture_output=True,
-                               text=True, timeout=15)
-            if p.returncode == 0 and p.stdout.strip():
-                k = p.stdout.strip()
-        except Exception:
-            pass
+        # launchd から呼ばれるとPATHが細いので、実体を直接探す（「gh が無い」と
+        # 「ログインしていない」を取り違えない）
+        for gh in ("gh", "/opt/homebrew/bin/gh", "/usr/local/bin/gh",
+                   os.path.expanduser("~/.local/bin/gh")):
+            try:
+                p = subprocess.run([gh, "auth", "token"], capture_output=True,
+                                   text=True, timeout=15)
+                if p.returncode == 0 and p.stdout.strip():
+                    k = p.stdout.strip()
+                    break
+            except Exception:
+                continue
     if not k:
         return dict(status="ng", detail="トークンが取れません（gh auth login が要る）")
     c, h = http_code("https://api.github.com/user",
@@ -313,7 +328,12 @@ def probe_github():
 
 
 def probe_fal():
-    k = find_key(("FAL_KEY", "FAL_API_KEY")) or read_file_secret("~/.tamago/fal_key")
+    # ★置き場が枝分かれしている（実測）：_636_gen_images.py は ~/.fal_key を読んでいる。
+    #   台帳は「本当に使われている置き場」を全部見る。見ていない置き場があると、
+    #   生きている鍵を「無い」と書く＝台帳自身が嘘をつく。
+    k = (find_key(("FAL_KEY", "FAL_API_KEY"))
+         or read_file_secret("~/.fal_key")
+         or read_file_secret("~/.tamago/fal_key"))
     if not k:
         return dict(status="ng", detail="鍵が置かれていません")
     c, h = http_code(
@@ -397,7 +417,7 @@ def probe_hassha():
     flag = os.path.join(STATUS, "no_launch.flag")
     if os.path.exists(flag):
         try:
-            why = io.open(flag, encoding="utf-8").read().strip()[:80]
+            why = scrub(io.open(flag, encoding="utf-8").read().strip(), 110)
         except Exception:
             why = ""
         return dict(status="ng", detail="発車が止められています（%s）" % why)
@@ -421,14 +441,21 @@ LEDGER = [
     dict(id="gmail", what="Gmail（メールの見張り4本の目）", where="~/.tamago/gmail_app_password",
          probe=probe_gmail, stops="LINE審査・Anthropic・外部窓口の返信に**誰も気づかない**",
          fix="Googleアカウントでアプリパスワードを作り、そのファイルに置く"),
-    dict(id="github", what="GitHub（見張り番と公開）", where="gh auth / GITHUB_TOKEN",
-         probe=probe_github, stops="Issueに気づかない・進捗表が更新されない",
+    dict(id="github", what="GitHub（ghのトークン＝見張り番の目）",
+         where="gh auth token / GITHUB_TOKEN",
+         probe=probe_github,
+         stops="チャッピーがIssueを置いても誰も気づかない"
+               "（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
          fix="gh auth login"),
     dict(id="openai", what="OpenAI（外部検品・代行）", where="~/.tamago/keys/api_keys.env",
          probe=probe_openai, stops="鬼監督の外部検品と、詰まった仕事の逃がし先が消える",
          fix="platform.openai.com で鍵を作り直して鍵ファイルへ"),
-    dict(id="gemini", what="Gemini（外部代行）", where="~/.tamago/keys/api_keys.env",
-         probe=probe_gemini, stops="安い代行先が消える（Claudeの枠を食う）",
+    dict(id="gemini", what="Gemini（外部代行・サーバ側）",
+         where="~/.tamago/keys/api_keys.env の GEMINI_API_KEY",
+         probe=probe_gemini,
+         stops="安い代行先が消えてClaudeの枠を食う"
+               "（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。"
+               "それは 969_kagi_kanmon.py が見ている）",
          fix="Google AI Studio で無料発行して鍵ファイルへ"),
     dict(id="xai", what="Grok / xAI（外部代行）", where="~/.tamago/keys/api_keys.env",
          probe=probe_xai, stops="Grokへの相談ができない",
@@ -473,15 +500,29 @@ WATCHERS = [
          catch_flags=["anthropic_reply_done.flag"]),
     dict(id="renraku", label="外部連絡窓口の見張り（全窓口）",
          state=".renraku_check_state.json", need="gmail", catch_flags=[]),
-    dict(id="github_watch", label="GitHub見張り番", state=None, need="github",
-         run_files=["github_watch_state.json", ".github_watch.lock"],
-         catch_flags=[]),
+    dict(id="github_watch", label="GitHub見張り番", state="github_watch_state.json",
+         need="github", catch_flags=[],
+         # ★この子だけは自分で数えている（stats）。数えているものがあるなら、それを使う。
+         catch_counter=["stats.notModified", "stats.picked"],
+         err_log="github_watch_err.log"),
     dict(id="auth_keeper", label="ログインの番人", state="auth_keeper.json",
-         need="claude", catch_flags=[]),
+         need="claude", catch_flags=[], err_log="auth_keeper.log"),
+    # ↓この2本は 2026-09-20、台帳の「台帳外あぶり出し」が自分で見つけて足したもの。
+    #   （手で名簿を書いている限り、足し忘れた1本が必ず「誰も見ていない見張り」になる）
+    dict(id="line_store_watch", label="LINEストアの見張り",
+         state="line_store_watch.json", need="gmail", catch_flags=[],
+         err_log="line_store_watch.log"),
+    dict(id="avatar_reply", label="アバターの返信拾い（969）",
+         state="969/seen.json", need="github", catch_flags=[],
+         catch_counter=[], err_log="969/pickup.log"),
 ]
 
+# 「実際に何かを取れた」跡として認める名前。
+# ★lastProbeAt を入れてある：番人の仕事は「答えを取ってくること」であって、
+#   その答えが○でも✕でも**取れている**。取れていないのは、叩けもしなかった時だけ。
 CATCH_KEYS = ("lastHitAt", "lastFoundAt", "foundCount", "hits", "found",
-              "lastNewAt", "notifiedAt", "lastNotifiedAt", "lastCatchAt")
+              "lastNewAt", "notifiedAt", "lastNotifiedAt", "lastCatchAt",
+              "lastProbeAt", "ids", "probes")
 BLOCK_KEYS = ("blocked", "skipped", "error", "lastError", "credentialMissingNotified")
 
 
@@ -509,6 +550,16 @@ def watcher_rows():
             m = mtime(os.path.join(STATUS, cf))
             if m and (caught_at is None or m > caught_at):
                 caught_at = m
+        # 自分で数えている子は、その数を使う（0なら取れていない）
+        counter_total = None
+        for dotted in w.get("catch_counter", []):
+            cur = st
+            for part in dotted.split("."):
+                cur = (cur or {}).get(part) if isinstance(cur, dict) else None
+            if isinstance(cur, (int, float)):
+                counter_total = (counter_total or 0) + cur
+        if counter_total is not None:
+            caught_at = run_at if counter_total > 0 else None
         # 黙って飲み込まれている理由
         blocked = ""
         for k in BLOCK_KEYS:
@@ -519,6 +570,18 @@ def watcher_rows():
             if v is True:
                 blocked = k
                 break
+        # 黙って死んでいないか（吐き出したものが残っているのに誰も見ていない、を拾う）
+        if not blocked and w.get("err_log"):
+            ep = os.path.join(STATUS, w["err_log"])
+            ea = age(ep)
+            if ea is not None and ea < 86400:
+                try:
+                    tail = [l for l in io.open(ep, encoding="utf-8", errors="ignore")
+                            .read().split("\n") if l.strip()][-1:]
+                except Exception:
+                    tail = []
+                if tail and re.search(r"(Error|Traceback|Exception|Failed)", tail[0]):
+                    blocked = "吐き出している：" + scrub(tail[0])
         # 走行回数・収穫回数（今日から積む。跡が進んだ回だけ数える）
         c = counts.get(w["id"], {"runs": 0, "catches": 0, "seenRun": 0, "seenCatch": 0})
         if run_at and run_at > (c.get("seenRun") or 0):
@@ -528,7 +591,12 @@ def watcher_rows():
             c["catches"] = c.get("catches", 0) + 1
             c["seenCatch"] = caught_at
         counts[w["id"]] = c
-        red = bool(run_at) and not caught_at
+        # 赤の条件は2つ。どちらかに当たれば赤。
+        #   ① 走っているのに、取れた跡が1つも無い
+        #   ② 鍵が無い／吐き出している（取れた跡があっても、これは見逃さない）
+        red = (bool(run_at) and not caught_at) \
+            or ("credential" in blocked.lower()) \
+            or blocked.startswith("吐き出している")
         rows.append(dict(id=w["id"], label=w["label"], need=w.get("need", ""),
                          lastRunAt=run_at, lastCatchAt=caught_at,
                          runs=c["runs"], catches=c["catches"],
@@ -553,6 +621,8 @@ def swallow_scan(limit=60):
     for name in sorted(os.listdir(tools)):
         if not name.endswith(".py") or name.startswith("_"):
             continue
+        if name in ("kagi_daicho.py", "kagi_gate.py"):
+            continue          # 台帳が自分を告発しても意味が無い（表に出すのが仕事）
         path = os.path.join(tools, name)
         try:
             lines = io.open(path, encoding="utf-8", errors="ignore").read().split("\n")
@@ -573,7 +643,68 @@ def swallow_scan(limit=60):
                                                  "return None", "return False"):
                 hits.append(dict(file=name, line=i + 1,
                                  why="例外を丸ごと握り潰している（何が起きたか残らない）"))
+    # ★並べ順が大事。数の多い「例外の握り潰し」で、数の少ない
+    #   「鍵が無いのを黙って飲み込んでいる」が埋もれたら、この表を作った意味が無い。
+    rank = {"鍵が無いことを state に書くだけで終わっている": 0,
+            "blocked を記録するだけで、外へ出していない": 1}
+    hits.sort(key=lambda h: rank.get(h["why"], 2))
     return hits[:limit], len(hits)
+
+
+# =====================================================================
+# C-2. 台帳に載っていない定期便を、自分で見つける
+#   ★ここが「また起きる」を止める要。
+#     台帳が手書きの名簿のままなら、明日だれかが見張りを1本足した瞬間に
+#     **その1本だけが台帳の外**になり、今日と同じ「誰も見ていない見張り」が生まれる。
+#     だから、実際に定期的に叩かれているものを心臓と5分便の台本から読み取って、
+#     台帳に載っていないものを名指しで出す。載せるまで赤は消えない。
+# =====================================================================
+CALL_PAT = re.compile(r'tools/([A-Za-z0-9_]+)\.py')
+# 台帳に載せなくていいもの（数える対象ではない道具・台帳自身）
+NOT_WATCHERS = {
+    "kagi_daicho", "kagi_gate", "top_status", "genzaichi", "launch_watchdog",
+    "auto_launcher", "command_ingest", "machine_health", "worktree_reaper",
+    "git_lock_reaper", "check_page_pruner", "chrome_tab_sweeper",
+    "build_queue_light", "build_queue_public_gz", "build_done_archive_light",
+    "factory_status", "quota_estimate", "number_audit", "pace", "calibrate",
+    "verify_done", "archive_done", "priority_ingest", "health_candidates",
+    "orphan_reaper", "session_watchdog", "disk_guardian", "relay_watch",
+    "auth_watch", "fal_cost_ledger", "estimate_vs_actual", "gaibu_ledger",
+    "kenpin_gate", "nyuka_sekisho", "gaibu_runner", "eagle_inbox",
+    "eagle_gallery", "later_tabs_snapshot", "daily_ingest_scheduler",
+    "machine_load", "disk_trend",
+}
+
+
+def unlisted_scan():
+    known = {w["id"] for w in WATCHERS}
+    # 台帳の見張りIDとスクリプト名は必ずしも同じではないので、別名も許す
+    alias = {"line_shinsa": "check_line_shinsa", "line_reply": "check_line_reply",
+             "anthropic_reply": "check_anthropic_reply", "renraku": "renraku",
+             "github_watch": "github_watch", "auth_keeper": "auth_keeper",
+             "line_store_watch": "line_store_watch",
+             "avatar_reply": "_969_avatar_reply_pickup"}
+    known_scripts = set(alias.get(k, k) for k in known)
+    found = set()
+    for sh in ("heartbeat.sh", "machine_status_push.sh"):
+        p = os.path.join(REPO, "tools", sh)
+        try:
+            for line in io.open(p, encoding="utf-8", errors="ignore"):
+                s = line.strip()
+                if s.startswith("#") or "python3" not in s:
+                    continue
+                for name in CALL_PAT.findall(s):
+                    found.add(name)
+        except Exception:
+            continue
+    out = []
+    for name in sorted(found - known_scripts - NOT_WATCHERS):
+        if not os.path.exists(os.path.join(REPO, "tools", name + ".py")):
+            continue
+        out.append(dict(script="tools/%s.py" % name,
+                        why="定期的に走っているのに、台帳に載っていません"
+                            "（＝走っているか・取れているかを誰も見ていない）"))
+    return out
 
 
 # =====================================================================
@@ -605,7 +736,7 @@ def lie_scan(ledger_by_id):
             if tails.count(top) > len(tails) * 0.8:
                 lies.append(dict(
                     where="status/heartbeat.log",
-                    said=top[:60],
+                    said=scrub(top, 60),
                     truth="直近50行の%d行が同じ1行です。本当の記録が押し流されています"
                           % tails.count(top),
                     fix="同じ行は1回だけ書く（連続分は回数にまとめる）"))
@@ -675,6 +806,7 @@ def build(force=False):
     by_id = {r["id"]: r for r in rows}
     watchers = watcher_rows()
     swallows, swallow_total = swallow_scan()
+    unlisted = unlisted_scan()
     lies = lie_scan(by_id)
     notices = expiry_notices(rows)
 
@@ -685,9 +817,11 @@ def build(force=False):
         generatedAtEpoch=time.time(),
         rows=rows, watchers=watchers,
         swallows=swallows, swallowTotal=swallow_total,
+        unlisted=unlisted,
         lies=lies, notices=notices,
-        redCount=len(red_keys) + len(red_watch) + len(lies),
+        redCount=len(red_keys) + len(red_watch) + len(lies) + len(unlisted),
         redKeys=len(red_keys), redWatchers=len(red_watch), redLies=len(lies),
+        redUnlisted=len(unlisted),
     )
     save(OUT_JSON, out)
     # 進捗表のトップが読む1行（赤が1つでもあれば出る）
@@ -696,8 +830,8 @@ def build(force=False):
         headline=("鍵・つながりに赤が%d件（動いているのに何も取れていない／切れている）"
                   % out["redCount"]) if out["redCount"] else "鍵・つながりは全部通っています",
         at=out["generatedAt"]))
-    log("台帳を更新：赤%d件（鍵%d・見張り%d・嘘%d）"
-        % (out["redCount"], len(red_keys), len(red_watch), len(lies)))
+    log("台帳を更新：赤%d件（鍵%d・見張り%d・嘘%d・台帳外%d）"
+        % (out["redCount"], len(red_keys), len(red_watch), len(lies), len(unlisted)))
     return out
 
 
