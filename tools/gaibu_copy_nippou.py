@@ -299,13 +299,21 @@ def build():
             for r in rows:
                 if not isinstance(r, dict):
                     continue
+                if r.get("deleted_at"):
+                    continue  # 消したものは数えない
                 created = pick(r, ["created_at", "createdAt", "inserted_at"])
                 day = created[:10] if created else "?"
                 title = pick(r, ["title", "name", "song_title"])
-                copy = pick(r, ["whisper", "copy", "lead", "description", "note"])
-                artist = pick(r, ["artist", "artist_name", "channel_title",
-                                  "channel", "author", "source_name"])
-                link = pick(r, ["url", "source_url", "link", "youtube_url"])
+                # コピー＝whisper（カードの一言）。note は曲ページの長い方なので数に入れない。
+                copy = pick(r, ["whisper", "copy", "lead"])
+                artist = pick(r, ["detected_artist_id", "artist", "artist_name",
+                                  "channel_title", "channel", "author"])
+                if not artist:
+                    artist = "アーティスト未判定"
+                link = pick(r, ["url", "source_url", "link", "youtube_url", "ref"])
+                kind = pick(r, ["kind"])
+                if link and not link.startswith("http"):
+                    link = ("https://youtu.be/" + link) if kind == "youtube" else ""
                 reason = judge(title, copy)
                 b = buckets.setdefault(day, {"date": day, "in": 0, "written": 0, "todo": 0})
                 b["in"] += 1
@@ -313,7 +321,8 @@ def build():
                     b["todo"] += 1
                     out["todo"].append({
                         "date": day, "title": title or "（題名なし）",
-                        "artist": artist or "（アーティスト不明）",
+                        "artist": artist,
+                        "kind": kind,
                         "copy": copy, "why": reason, "url": link,
                         "id": r.get("id"),
                     })
