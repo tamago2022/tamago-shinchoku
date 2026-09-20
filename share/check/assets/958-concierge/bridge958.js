@@ -128,6 +128,15 @@
   var Seihon = {
     say: function (cls, txt) {
       if (!conv || !rowHer) return;
+      /* ★969：同じお知らせを続けて2回並べない。
+         （「Geminiの鍵が空です」が2つ並んで出ていた） */
+      if (cls === "sys") {
+        var last = conv.lastElementChild;
+        if (last && last.getAttribute("data-sys") === "1") {
+          var lp = last.querySelector(".say");
+          if (lp && lp.textContent === txt) return;
+        }
+      }
       var tpl = cls === "me" ? (rowMe || rowHer) : rowHer;
       var row = tpl.cloneNode(true);
       var p = row.querySelector(".say");

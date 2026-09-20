@@ -1,5 +1,6 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="assets/kagi/kagi.js"></script>
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
@@ -397,7 +398,7 @@ async function setVoice(n){
 let swapping=false;
 async function tsunagiNaosu(n){
   if(swapping) return; swapping=true;
-  const key=gkeyEl.value.trim();
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
   say("sys","声を "+n+"（"+(VOICE_JA[n]||"")+"）に入れ替えています…");
   setState("声を入れ替えています…");
   const t0=performance.now();
@@ -479,9 +480,12 @@ async function tsukuruKoe(voice, key, serifu){
 async function kikuKoe(n){
   const c=TRY_CACHE.get(n);
   if(c&&c.url){ try{tryAudio.pause();}catch(_){} tryAudio=new Audio(c.url); tryAudio.play().catch(()=>{}); return; }
-  const key=gkeyEl.value.trim();
-  if(!key){ say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
-            $("settings").hidden=false; $("settings").open=true; return; }
+  /* ★969：鍵は全ページ共通の1本から取る。欄が空でも端末に入っていれば話せる。 */
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi){ window.TamagoKagi.ask(); }
+            else { say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+                   $("settings").hidden=false; $("settings").open=true; }
+            return; }
   if(SAIFU.nokori()<=0){ say("sys","今日の上限を使い切っています。"); return; }
   tryBusy=n; paintKoeList();
   try{
@@ -577,8 +581,9 @@ function paintTempo(msg){
   t.innerHTML=html;
 }
 $("tempoBtn").addEventListener("click",async()=>{
-  const key=gkeyEl.value.trim();
-  if(!key){ paintTempo("Geminiの鍵が空です。上の欄に入れてください。"); return; }
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi) window.TamagoKagi.ask();
+            else paintTempo("Geminiの鍵が空です。上の欄に入れてください。"); return; }
   const b=$("tempoBtn"); b.disabled=true; b.textContent="測っています…";
   TEMPO.brain=[]; TEMPO.tts=[];
   for(let i=0;i<3;i++){
@@ -1173,9 +1178,12 @@ async function connect(){
       +"明日また使えます。今すぐ続けるなら下の「1日の上限」を上げてください。");
     setState("今日のぶんは使い切りました"); paintMeter(); return;
   }
-  const key=gkeyEl.value.trim();
-  if(!key){ say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
-            $("settings").hidden=false; $("settings").open=true; return; }
+  /* ★969：鍵は全ページ共通の1本から取る。欄が空でも端末に入っていれば話せる。 */
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi){ window.TamagoKagi.ask(); }
+            else { say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+                   $("settings").hidden=false; $("settings").open=true; }
+            return; }
   try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
 
   SAIFU.hajime();

@@ -1,5 +1,6 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="assets/kagi/kagi.js"></script>
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
@@ -408,8 +409,9 @@ async function hiku(nm){
 
 function shikaru(msg){ errEl.style.display="block"; errEl.textContent=msg; }
 function kagi(){
-  const k=($("gkey").value||"").trim();
-  if(!k){ shikaru("Geminiの鍵が空です。いちばん下の「鍵」を開いて貼ってください。"); return ""; }
+  const k=(($("gkey")||{}).value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!k){ if(window.TamagoKagi) window.TamagoKagi.ask();
+          else shikaru("Geminiの鍵が空です。いちばん下の「鍵」を開いて貼ってください。"); return ""; }
   try{ localStorage.setItem("tamago_gemini_key",k); }catch(_){}
   return k;
 }

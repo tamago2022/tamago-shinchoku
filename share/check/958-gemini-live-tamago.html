@@ -1,5 +1,6 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="assets/kagi/kagi.js"></script>
 <meta name="robots" content="noindex,nofollow">
 <title>958 ごきげん補給所・案内人（Google版・横一列／鳴らしたまま話せる）</title>
 <style>html,body{margin:0;background:#0d0b09}</style></head><body>
@@ -706,9 +707,12 @@ async function connect(){
       +"明日また使えます。今すぐ続けるなら下の「1日の上限」を上げてください。");
     setState("今日のぶんは使い切りました"); paintMeter(); return;
   }
-  const key=gkeyEl.value.trim();
-  if(!key){ say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
-            $("settings").hidden=false; $("settings").open=true; return; }
+  /* ★969：鍵は全ページ共通の1本から取る。欄が空でも端末に入っていれば話せる。 */
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi){ window.TamagoKagi.ask(); }
+            else { say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+                   $("settings").hidden=false; $("settings").open=true; }
+            return; }
   try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
 
   SAIFU.hajime();

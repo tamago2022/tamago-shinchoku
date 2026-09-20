@@ -406,9 +406,16 @@ async function connect(){
       +"明日また使えます。今すぐ続けるなら下の「1日の上限」を上げてください。");
     setState("今日のぶんは使い切りました"); paintMeter(); return;
   }
-  const key=gkeyEl.value.trim();
-  if(!key){ say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
-            $("settings").hidden=false; $("settings").open=true; return; }
+  /* ★969：鍵は「共通の1本」から取る。欄が空でも、端末に入っていれば話せる。 */
+  const KAGI=window.TamagoKagi;
+  const key=(gkeyEl.value||"").trim() || (KAGI?KAGI.get():"");
+  if(!key){
+    /* 文句を2度並べない。鍵を入れる場所そのものを出す。 */
+    if(KAGI){ KAGI.ask(); }
+    else { say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+           $("settings").hidden=false; $("settings").open=true; }
+    return;
+  }
   try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
 
   SAIFU.hajime();
