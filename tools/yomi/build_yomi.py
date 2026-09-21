@@ -57,6 +57,24 @@ KNOWN = {
  "四星球":"スーシンチュウ","フレデリック":"フレデリック","ペトロールズ":"ペトロールズ",
 }
 
+# ── 形態素解析（任意）。入っていれば漢字の読みを起こす。無ければ静かに諦める ──
+_TOK = None
+def sudachi(text):
+    global _TOK
+    if _TOK is False: return None
+    if _TOK is None:
+        try:
+            from sudachipy import Dictionary, SplitMode
+            _TOK = (Dictionary().create(), SplitMode.C)
+        except Exception:
+            _TOK = False; return None
+    tk, mode = _TOK
+    try:
+        out = "".join(m.reading_form() for m in tk.tokenize(text, mode))
+    except Exception:
+        return None
+    return out if out and KATA.match(out) else None
+
 def norm(s):
     return unicodedata.normalize("NFKC", s).strip()
 
@@ -94,12 +112,19 @@ def derive(name, aid, aliases):
         if HIRA.match(a) and len(a) >= 2:
             return hira2kata(a.strip()), "既存データ aliases のひらがな", "high"
     if HAS_JA.search(name):
-        k = romaji_to_kana(aid)
-        if k: return k, f"id のローマ字（{aid}）", "mid"
-        for a in aliases:
-            if ROMAJI_ID.match(a):
-                k = romaji_to_kana(a)
-                if k: return k, f"aliases のローマ字（{a}）", "mid"
+        rk = romaji_to_kana(aid)
+        if not rk:
+            for a in aliases:
+                if ROMAJI_ID.match(a):
+                    rk = romaji_to_kana(a)
+                    if rk: break
+        sk = sudachi(re.sub(r'[\s・]', '', name))
+        if rk and sk:
+            if re.sub(r'[・ー\s]', '', rk) == re.sub(r'[・ー\s]', '', sk):
+                return rk, "idのローマ字と形態素解析が一致", "high"
+            return rk, f"idのローマ字={rk}／形態素解析={sk}（不一致）", "conflict"
+        if rk: return rk, f"id のローマ字（{aid}）", "mid"
+        if sk: return sk, "形態素解析（読みの裏取り無し）", "mid"
     return None, "読みの元データ無し", "none"
 
 DANGER_SYM = re.compile(r'[0-90-9&+*#@/\\_~^|]')
@@ -137,8 +162,11 @@ def classify(x, y, conf):
             return "foreign", reasons          # 外国名。案内人がそのまま読める
         reasons.append("読みの元データ無し")
         return "red", reasons
+    if conf == "conflict":
+        reasons.append("読みの候補が2つに割れている：" + x.get("_why", ""))
+        return "red", reasons
     if conf == "mid":
-        reasons.append("idのローマ字からの推定（当て字なら外れる）")
+        reasons.append("推定（当て字なら外れる）")
         return "yellow", reasons
     if reasons:
         return "yellow", reasons
@@ -168,6 +196,7 @@ def main():
     dic, detail, review, buckets = {}, [], [], {"green":0,"yellow":0,"red":0,"foreign":0}
     for x in arts:
         y, why, conf = derive(x["name"], x["id"], x["aliases"])
+        x["_why"] = why
         band, reasons = classify(x, y, conf)
         buckets[band] += 1
         e = {"type":"artist","id":x["id"],"name":x["name"],"yomi":y,
@@ -190,14 +219,25 @@ def main():
             if KATA.match(n): y, why, conf = n, "曲名がカタカナ", "high"
             elif HIRA.match(n): y, why, conf = hira2kata(n), "曲名がひらがな", "high"
             else:
-                k2 = romaji_to_kana(s["id"])
-                y, why, conf = (k2, "曲idのローマ字（%s）" % s["id"], "mid") if k2 else (None, "読みの元データ無し", "none")
-            if y:
+                rk = romaji_to_kana(s["id"])
+                sk = sudachi(re.sub(r'[\s・]', '', n)) if len(n) <= 40 else None
+                if rk and sk and re.sub(r'[・ー\s]', '', rk) == re.sub(r'[・ー\s]', '', sk):
+                    y, why, conf = rk, "曲idのローマ字と形態素解析が一致", "high"
+                elif rk and sk:
+                    y, why, conf = rk, f"曲idのローマ字={rk}／形態素解析={sk}（不一致）", "conflict"
+                elif rk:
+                    y, why, conf = rk, "曲idのローマ字（%s）" % s["id"], "mid"
+                elif sk:
+                    y, why, conf = sk, "形態素解析（裏取り無し）", "mid"
+                else:
+                    y, why, conf = None, "読みの元データ無し", "none"
+            if y and conf != "conflict":
                 sdic.setdefault(x["id"], {})[t] = y
-                if conf == "mid":
-                    sreview.append({"type":"song","artist":x["id"],"id":s["id"],
-                                    "name":t,"yomi":y,"src":why,"conf":conf,
-                                    "band":"yellow","reasons":["曲idのローマ字からの推定"]})
+            if conf in ("mid", "conflict"):
+                sreview.append({"type":"song","artist":x["id"],"id":s["id"],
+                                "name":t,"yomi":y,"src":why,"conf":conf,
+                                "band":"red" if conf == "conflict" else "yellow",
+                                "reasons":[why if conf == "conflict" else "推定（裏取りが1本だけ）"]})
 
     os.makedirs(outdir, exist_ok=True)
     def w(n, o): json.dump(o, open(os.path.join(outdir, n), "w", encoding="utf-8"),
