@@ -317,7 +317,11 @@ def sweep_own_junk(dry_run):
 # ★たまごさんのアプリは一切触らない。落とすのは「工場が自分で立てて、工場自身が
 #   『止まっている』と判定したセッション」だけ。判定は新しく作らず、
 #   status/machine.json の stalledList（factory_status.pyが毎回書いている）をそのまま読む。
-ORPHAN_IDLE_MIN = 360   # 6時間まったく動いていないもの。これ未満は触らない
+# 2026-09-21（986番）実測で下げた。360分（6時間）では、15時間46分まったく動いていない
+#   "Rusuban mimawari 30min"(pid 99564) すら**1回も回収されていなかった**。
+#   machine.json が自分で color:red / kind:stuck_tool と書いているものを6時間見逃す意味は無い。
+#   120分＝2時間、一度も動いていないものだけ。これ未満には触らない。
+ORPHAN_IDLE_MIN = 120
 
 
 def reap_our_orphans(dry_run):
@@ -336,8 +340,16 @@ def reap_our_orphans(dry_run):
         if s.get("kind") not in ("stuck_tool", "idle_done"):
             continue
         # 本当にまだ居るか・本当に自分たちのものかを、落とす直前にもう一度確かめる
+        # ★2026-09-21（986番）ここに実害のあるバグがあった。
+        #   `ps -o command=` は **幅で切り詰める**。実測の戻り値は
+        #     "/Users/mac/Libra 127748"
+        #   だった（/Users/mac/Library/... が "Libra" で切れている）。
+        #   その結果、下の身元確認 "claude" in cmd.lower() が偽になり、
+        #   本物のclaudeセッションを「claudeのプロセスではない」として**毎回見逃していた。**
+        #   status/mac_souji.json の orphan_sessions が freedBytes:0 だったのはこれが理由。
+        #   -ww を付けて切り詰めを止める。
         try:
-            cmd = subprocess.run(["ps", "-o", "command=,rss=", "-p", str(pid)],
+            cmd = subprocess.run(["ps", "-ww", "-o", "command=,rss=", "-p", str(pid)],
                                  capture_output=True, text=True, timeout=10).stdout.strip()
         except Exception as e:
             item["detail"].append({"pid": pid, "error": "psが失敗: %r" % (e,)})
