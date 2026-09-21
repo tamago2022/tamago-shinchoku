@@ -254,12 +254,20 @@ def looks_orphan(url, hist):
             and (h.get("lastSeen", 0) - h.get("firstSeen", 0)) >= ORPHAN_MIN_AGE_SEC)
 
 
-def classify(tab, hist=None):
-    """('close'|'keep', 理由) を返す。迷ったら必ず keep。"""
+def classify(tab, hist=None, reserved=None):
+    """('close'|'keep', 理由) を返す。迷ったら必ず keep。
+
+    reserved: 978番「予約閉栓」で先に決まった閉じる対象 {(win, idx): 理由}。
+      セッションが**開く前に**自分で置いた票の期限が切れたもの＝作った本人が
+      「落ちたら閉じてよい」と宣言済みなので、NEVER_CLOSE より先に判定してよい。
+      ただし前面タブ（active）は何があっても閉じない（この上の行が先に効く）。
+    """
     hist = hist or {}
     url = (tab.get("url") or "").strip()
     if tab.get("active"):
         return "keep", "ウィンドウの前面タブ（たまごさんが見ている可能性）"
+    if reserved and (tab.get("win"), tab.get("idx")) in reserved:
+        return "close", reserved[(tab.get("win"), tab.get("idx"))]
     for rx in _never:
         if rx.search(url):
             return "keep", "たまごさんの作業タブになりうるサービス"
@@ -379,9 +387,73 @@ def append_sweep_log(entry, keep=200):
     })
 
 
+# ---------------------------------------------------------------------------
+# 978番「予約閉栓」：セッションが途中で死んでも孤児が残らないようにする
+# ---------------------------------------------------------------------------
+# たまごさんの枷：**「最後にまとめて閉じる」は禁止。セッションは途中で死ぬ。**
+# 2026-09-21 実測：claude-in-chrome 拡張は tabs_context_mcp がタブIDを返した直後の1手で
+# 「このセッションのタブグループに無い」を5回中5回返した。その間に recon のタブ数は
+# 14枚→18枚に増えている＝**タブは消えていない。拡張側の登録だけが消え、タブ本体が孤児になる。**
+# この状態では「セッションが自分で閉じる」は原理的に間に合わない（閉じる相手を見失っている）。
+# → タブを**開く前に**外側（この掃除機）へ票を預けさせ、心拍が止まったら掃除機が閉じる。
+#
+# 安全側（この道具の憲法をそのまま継承する）：
+#   ・前面タブ（active）は閉じない（classify の1行目が先に効く）
+#   ・ウィンドウの最後の1枚は閉じない（CLOSE_SCRIPT の SKIP_LAST）
+#   ・**たまごさんが一度でも前面に出したURLは閉じない**（history の everActive）
+#   ・票に書いた枚数までしか閉じない（同じURLをたまごさんも開いていたら巻き添えにしない）
+#   ・閉じる直前にindexのURLが票と一致するか確認する（SKIP_MOVED）
+try:
+    import chrome_reserve as _reserve
+except ImportError:  # 単体で置かれた場合でも掃除機は止めない
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    try:
+        import chrome_reserve as _reserve
+    except ImportError:
+        _reserve = None
+
+
+def pick_reserved(tabs, hist):
+    """期限切れの票から、閉じてよいタブ {(win, idx): 理由} を作る。票が無ければ空。"""
+    if _reserve is None:
+        return {}
+    try:
+        exp = _reserve.expired_urls()
+    except Exception:
+        return {}
+    if not exp:
+        return {}
+    hist = hist or {}
+    out = {}
+    for url, info in exp.items():
+        h = hist.get(url) or {}
+        if h.get("everActive"):
+            continue  # たまごさんが前面に出したことがある＝本人のもの。触らない
+        # 同じURLのタブのうち、前面でないものを **後ろ（index大＝後から開かれた方）から** 取る
+        cands = [t for t in tabs
+                 if (t.get("url") or "").strip() == url and not t.get("active")]
+        cands.sort(key=lambda t: (t["win"], t["idx"]), reverse=True)
+        for t in cands[:max(1, int(info.get("count", 1)))]:
+            out[(t["win"], t["idx"])] = ("予約閉栓：票 %s の心拍が止まった（セッションが落ちた）"
+                                         % ",".join(str(i) for i in info.get("ids", [])))
+    return out
+
+
+def has_expired_reserve():
+    """期限切れの票が1枚でもあれば、15分の間引きを待たずに今すぐ掃く。"""
+    if _reserve is None:
+        return False
+    try:
+        return bool(_reserve.expired_urls())
+    except Exception:
+        return False
+
+
 def gate_ok(force):
     if force:
         return True
+    if has_expired_reserve():
+        return True  # 孤児が確定しているのに15分待つ理由が無い
     try:
         last = os.path.getmtime(GATE_PATH)
     except OSError:
@@ -441,7 +513,8 @@ def main():
         return 0
 
     hist = update_history(tabs)
-    judged = [(t, classify(t, hist)) for t in tabs]
+    reserved = pick_reserved(tabs, hist)
+    judged = [(t, classify(t, hist, reserved)) for t in tabs]
     judged = mark_duplicates(judged)
     targets = [(t, why) for t, (verdict, why) in judged if verdict == "close"]
 
