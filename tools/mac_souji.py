@@ -646,13 +646,27 @@ def relief_pass(dry_run):
         rreason = ("今回%s片付いた（候補%d件）。走行%d回・累計%s"
                    % (_b(freed), targets, rruns, _b(rtotal)))
 
-    # ---- 経路そのものが死んでいないか。30分来ていなければ、色に関係なく赤 ----
+    # ---- 経路そのものが死んでいないか ----
     # 「走った回数>0 なのに片付き=0」と同じくらい危ないのが「そもそも呼ばれなくなった」。
     # weekly-mac-maintenance はこれで半年気づかれなかった。
-    if last and (time.time() - last) > 1800:
+    # ★ただし「前回から何分空いたか」で赤にしてはいけない（2026-09-21 実測で誤報を出した）。
+    #   23:28に**正常に走った直後**に「618分呼ばれていない＝経路が死んでいる」と赤を出した。
+    #   前回が12:39、その間にMacが再起動していただけで、経路は生きていた。
+    #   Macが寝ていた・落ちていた時間と、経路が壊れた時間は、この差分では区別できない。
+    #   → 判定は「**いま**心臓が動いているか」で行う。心臓は生きている限り15秒ごとに
+    #     status/.heartbeat_alive をtouchするので、これが古ければ本当に経路が死んでいる。
+    #   空いた時間は事実として記録だけする（隠さない）。色には使わない。
+    gap_min = int((time.time() - last) / 60) if last else None
+    hb_age = None
+    try:
+        hb_age = time.time() - os.path.getmtime(os.path.join(STATUS, ".heartbeat_alive"))
+    except OSError:
+        pass
+    route_dead = (hb_age is None) or (hb_age > 1800)
+    if route_dead:
         rcolor = "red"
-        rreason = ("軽い掃除が%d分呼ばれていない＝心臓からの経路が死んでいる。"
-                   % int((time.time() - last) / 60)) + rreason
+        rreason = ("心臓が%s動いていない＝経路が死んでいる。"
+                   % ("一度も" if hb_age is None else "%d分" % int(hb_age / 60))) + rreason
 
     ledger["relief"] = {
         "lastRunAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -664,6 +678,9 @@ def relief_pass(dry_run):
         "calls": ledger.get("reliefCalls", 0),
         "lastTargets": targets,
         "totalTargets": ttotal,
+        "gapMinutes": gap_min,          # 前回から空いた時間（事実として残す。色には使わない）
+        "heartbeatAgeSec": None if hb_age is None else int(hb_age),
+        "routeDead": route_dead,
         "totalFreedBytes": rtotal,
         "totalFreedHuman": _b(rtotal),
         "runsWithZeroFreed": ledger.get("reliefRunsWithZeroFreed", 0),
@@ -701,6 +718,19 @@ def main():
     args = sys.argv[1:]
     force = "--force" in args
     dry = "--dry-run" in args
+
+    # ---- 使い走り窓口(status/mac_jobs)の経路を二重にする（2026-09-21・986番）----
+    # 実測：23:33〜23:50の17分間、窓口が1本も捌けなかった。
+    #   原因は窓口そのものではなく、**窓口を回す経路が心臓1本しか無かったこと。**
+    #   心臓は auto_launcher.py の45秒強制終了を繰り返して落ち続け（23:29:58/23:33:11/23:42:50に再起動）、
+    #   その心臓から15秒おきに呼ばれる top_status.py が止まり、窓口も道連れになった。
+    #   ★見張りを増やすのではなく、経路を増やす。ここは5分便(launchd)からも呼ばれるので、
+    #     心臓が落ちている間も窓口が回る。mac_job_runner側にロックがあるので二重には走らない。
+    try:
+        import mac_job_runner
+        mac_job_runner.run()
+    except Exception:
+        pass
 
     # ---- 先に10分ごとの軽い掃き掃除。週1のゲートで return される前に必ず通す ----
     # ★ここを週1ゲートの後ろに置くと、週に1回しか掃けない。それが986番までの状態だった。
