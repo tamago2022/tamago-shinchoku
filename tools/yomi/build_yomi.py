@@ -98,9 +98,24 @@ def parse(path):
                      "about": (ab.group(1)[:120] if ab else ""), "songs": songs})
     return arts
 
+# 外部AI2社が一致した答え／人が直したもの。ここが最優先。
+_MANUAL = None
+def manual():
+    global _MANUAL
+    if _MANUAL is None:
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "manual.json")
+        try:
+            _MANUAL = json.load(open(p, encoding="utf-8"))
+        except Exception:
+            _MANUAL = {}
+    return _MANUAL
+
 def derive(name, aid, aliases):
     """(読み, 根拠, 自信) を返す。読めなければ (None, 理由, 'none')"""
     n = norm(name)
+    m = manual()
+    if name in m: return m[name], "外部AI2社が一致（manual.json）", "high"
+    if n in m: return m[n], "外部AI2社が一致（manual.json）", "high"
     if n in KNOWN: return KNOWN[n], "既知辞書（公式表記）", "high"
     if name in KNOWN: return KNOWN[name], "既知辞書（公式表記）", "high"
     for a in aliases:
