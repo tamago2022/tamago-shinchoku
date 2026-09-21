@@ -68,7 +68,15 @@ STALL_MIN = 15
 MAX_TRIES = 3
 MAX_PER_RUN = 2
 HANDOFF_HOURS = 3
-HANDOFF_TURNS = 100
+# 2026-09-22 100 → 80。
+#   実測：同じ「ターンで切る」規則が、この工場の中で2つの違う数字になっていた。
+#     tools/session_preamble.md:89                  … 「80ターン、または3時間で切る」
+#     tools/prompt_rules/always-15-...md:18         … 「80ターンか3時間で切る」
+#     ここ（機械が実際に見ている唯一の数字）        … 100
+#   AIに読ませる紙は80と言い、機械は100で動いていた。1018番（進捗表が26時間ウソの緑を
+#   出していた件）とまったく同じ「同じ規則が2か所に別々に書いてある」病気。
+#   紙の方は自己申告なので守られない。**機械が見ている数字の方を、紙に合わせる。**
+HANDOFF_TURNS = 80
 MAX_HANDOFF_PER_RUN = 1
 # 2026-09-04 たまごさん34番「3時間を超えたセッションを自動で切る」への対応。
 # 既存の HANDOFF_HOURS は s["idle"]（放置＝止まっている時間）にしか効かない。decide() は
@@ -655,7 +663,15 @@ def main():
             if alive >= machine.get("hardMax", 8):
                 append(LOG_MD, "- %s ⏸ 引き継ぎ見送り: 「%s」(%s) %s だが生存%d本で固定上限" % (now(), title, s["cli"][:8], why, alive))
                 skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "固定上限（生存%d本）" % alive}); continue
-            if h >= MAX_HANDOFF_PER_RUN or headless_alive >= MAX_HEADLESS:
+            # 2026-09-22 ターン超えだけは「1回の見回りにつき1本」の枠から外す。
+            #   たまごさん「セッションが80ターンで畳む決まりを守らず143〜190ターン走って
+            #   落ちています。今日4本がこれで死にました。気をつけるでは直りません」
+            #   ターンを使い切った船は、放っておけば必ず沈む。沈むまで待つ理由が無い。
+            #   4本同時に超えても1本ずつしか畳まないと、残り3本は次の見回り（5分後）まで
+            #   走り続けて、その間もターンが増える＝143〜190まで伸びる理屈と合う。
+            #   Macを守る枠（生存本数の固定上限・headlessの本数）はそのまま残す。
+            turn_ceiling = "ターン超" in str(why)
+            if (h >= MAX_HANDOFF_PER_RUN and not turn_ceiling) or headless_alive >= MAX_HEADLESS:
                 skipped.append({"pid": s["pid"], "title": title, "kind": s["kind"], "why": "今回の引き継ぎ上限／headless %d本" % headless_alive}); continue
             if dry:
                 handed.append({"pid": s["pid"], "cli": s["cli"], "title": title, "why": why, "dry": True}); h += 1; continue

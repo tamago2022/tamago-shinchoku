@@ -510,8 +510,24 @@ const CAT={ head:null, joy:null, reg:null, t:{}, a:{}, loading:null,
   async title(n){ if(!this.t[n]) this.t[n]=fetch(ASSET+"t/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
                   return this.t[n]; },
   async byArtist(n){ if(!this.a[n]) this.a[n]=fetch(ASSET+"a/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
-                  return this.a[n]; }
+                  return this.a[n]; },
+  /* ★1020：その曲について**うちの棚に書いてある一文**。tools/_1020_add_note_to_shelf.py が作る。
+     ★探すときには読まない。**札が4枚出てから、その4枚が入っている棚だけ読む。**
+     （最初は a/ の中に混ぜたが、探す棚が 2,984KB→3,992KB になって重くなったのでやめた。
+       いまの形なら、4枚出しても増えるのは約36KBだけ。探す速さは1バイトも変わらない。） */
+  no:{},
+  async notes(n){ if(!this.no[n]) this.no[n]=fetch(ASSET+"n/"+n+".json").then(r=>r.ok?r.json():{}).catch(()=>({}));
+                  return this.no[n]; }
 };
+/* 画面に出た札の「うちの言葉」だけを埋める。出ていないものは取りに行かない。 */
+async function fillNotes(list){
+  if(!CAT.head) return;
+  const hitsuyou=[...new Set((list||[]).filter(c=>c.nkey!=null).map(c=>c.ai%CAT.head.nb))];
+  if(!hitsuyou.length) return;
+  const tana=await Promise.all(hitsuyou.map(n=>CAT.notes(n)));
+  const hako={}; for(const t of tana) Object.assign(hako,t);
+  for(const c of list){ if(c.nkey&&hako[c.nkey]&&c.fact) c.fact.note=hako[c.nkey]; }
+}
 const KIND_JA={music:"音楽",food:"食",cute:"動物",laugh:"笑い",travel:"旅",dance:"踊り",joy:"ことば"};
 const KINDS=Object.keys(KIND_JA);
 
@@ -529,6 +545,97 @@ const ANNAI={
   say(k){ const c=this.n[k]||0, m=this.max[k]||1;
           if(c>=m) return false; this.n[k]=c+1; return true; },
   reset(){ this.n={}; }
+};
+
+/* ══════════════ ★1020：察する ══════════════
+   たまごさん 2026-09-22：
+   「仕事ができる店員というか、仕事ができるスナックのママじゃないけどさ、
+     相手を察して『もしかしたらこの人はこういうのが好きなんじゃないか』って。
+     目標は『おじさん、わかってるね』『俺の欲しいものわかってるね』みたいな感じ。」
+
+   言葉だけでは分からない。**押したか／押さずに通り過ぎたか**が、いちばん正直な返事。
+   ここに溜めたものを、次に棚を引くとき案内人に渡す。
+   ＝趣味の違う2人に同じものを返せなくなる（構造で止める。お願いでは直らない）。 */
+const KYAKU={
+  oshi:[], suru:[], tobashi:0, osita:null, koe:[],
+  reset(){ this.oshi=[]; this.suru=[]; this.tobashi=0; this.osita=new Set(); this.koe=[]; },
+  osu(c){ this.osita.add(c.key); if(this.oshi.length<8) this.oshi.push(c); },
+  /* いま出ている札を引っ込めるとき、押されなかったものを「素通り」に落とす */
+  nagasu(list){ for(const c of (list||[])) if(!this.osita.has(c.key) && this.suru.length<24) this.suru.push(c); },
+  iu(t){ if(t) this.koe.push(t); if(this.koe.length>6) this.koe.shift(); },
+  /* 案内人に渡す「この人について分かっていること」。無理に作らない。**あるときだけ言う。** */
+  mikata(){
+    const o=[];
+    if(this.oshi.length){
+      const n=this.oshi.slice(-3).map(c=>"「"+c.title+"」"+((c.fact&&c.fact.artist)?("／"+c.fact.artist):""));
+      o.push("この人が実際に押したもの："+n.join("、")+"。ここが当たっている線。");
+      const er={};
+      for(const c of this.oshi) for(const e of ((c.fact&&c.fact.eraList)||[])) er[e]=(er[e]||0)+1;
+      const top=Object.keys(er).sort((a,b)=>er[b]-er[a])[0];
+      if(top&&er[top]>=2) o.push("押したものは "+top.replace("s","年代")+" に寄っている。");
+    }
+    if(!this.oshi.length && this.suru.length>=4)
+      o.push("★この人は、ここまで出した"+this.suru.length+"枚を1枚も押していない。"
+            +"同じ線をもう一度出さないこと。方向を変えるか、思い切って外れ値を1枚出すこと。");
+    else if(this.suru.length>=4)
+      o.push("素通りされたのは："+this.suru.slice(-4).map(c=>"「"+c.title+"」").join("、")+"。この線はもう出さない。");
+    if(this.tobashi>=2) o.push("すぐ次へ飛ばしている。入りの長いものは避けること。");
+    return o.join("\n");
+  }
+};
+KYAKU.reset();
+
+/* ══════════════ ★1020：メールの誘いは、一人につき1回だけ ══════════════
+   たまごさん 2026-09-22：
+   「毎回やるとうざいから、話の流れで『一人につき1回』くらい、自然に伝える感じで。
+     『登録したら得だな』と実感してもらって、実際に登録につなげる」
+
+   ★調べた実例をそのまま使う（似せるのではなく、そのまま）。出典は下に置く。
+   ① 出さない。**相手が何かを押した直後にだけ、1回。**
+      NN/g（n=452・23種の広告を1〜7で採点）で**いちばん嫌われたのが「画面を覆うモーダル」**
+      （デスクトップ平均5.09／モバイル5.45、モバイルのほうが嫌われる）。
+      → だからポップアップは作らない。**窓も覆わない。小さな1行だけ。**
+      https://www.nngroup.com/articles/most-hated-advertising-techniques/
+   ② **押して初めて入力に進む2段階にする。**Omnisend の12.4億回の表示を集計した比較で、
+      クリック起点の2ステップ 4.1% がいちばん高く、ふつうのモーダル 2.95% より上。
+      https://bdow.com/stories/email-signup-benchmarks/
+   ③ **逃げ道を先に書く。**Austin Kleon のニュースレター頁はこの1行だけ：
+      「Not ready to sign up yet? You can read the latest issue here.」
+      https://austinkleon.com/newsletter/
+   ④ **中身を数で言う。**James Clear：「3 short ideas from me, 2 quotes from others,
+      and 1 question for you to ponder.」→「登録して」ではなく「何が届くか」を書く。
+      https://jamesclear.com/3-2-1
+   ⑤ **気に入った直後に言う。**Backlinko は、読んだ記事に合わせた誘いに変えただけで
+      そのページの登録率 0.54%→4.82%。About頁（＝もう好きな人が来る頁）は記事の4倍取れた。
+      https://backlinko.com/increase-conversions
+
+   受け皿は新しく作らない。**本番の「ひとこと目安箱」を使う**（2026-09-18に本番バンドルで
+   「登録すると、あなた好みのものを不定期でお届けします」を確認済み＝感想を送ったあとに出るボタン）。 */
+const MAIL={
+  KEY:"tamago_mail_sasoi_1020",
+  SAKI:"https://joy-relief-station.lovable.app/",
+  sunda(){ try{ return !!localStorage.getItem(this.KEY); }catch(_){ return false; } },
+  sumu(){ try{ localStorage.setItem(this.KEY,new Date().toISOString()); }catch(_){} },
+  el:null,
+  /* 押した直後に1回だけ。2回目以降はこの関数ごと何もしない。 */
+  dasu(c){
+    if(this.sunda()||this.el) return false;
+    this.sumu();
+    const p=document.createElement("p");
+    p.className="micro";
+    p.style.cssText="text-align:center;margin-top:14px;line-height:2";
+    p.innerHTML='気に入ったものが見つかったら、'
+      +'<a href="'+this.SAKI+'" target="_blank" rel="noopener" '
+      +'style="color:inherit;text-decoration:underline">同じ手ざわりのものを、見つけたときだけお送りします</a>'
+      +'　<button type="button" style="border:0;background:none;padding:0;font:inherit;'
+      +'color:inherit;opacity:.6;cursor:pointer;text-decoration:underline">いまはいいです</button>';
+    p.querySelector("button").addEventListener("click",()=>{ p.remove(); MAIL.el=null; });
+    const anchor=document.querySelector(".more-wrap");
+    if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(p,anchor.nextSibling);
+    else return false;
+    this.el=p;
+    return true;
+  }
 };
 
 /* どの棚に何枚あるか。からっぽの棚は案内人に最初から知らせて、
@@ -614,10 +721,13 @@ function dist(a,b,max){
 }
 
 /* 名簿を「耳で引ける形」に組み直す。ページを開いた時ではなく、棚を読んだ時に1回だけ。 */
-let EAR=null, VOCAB=[];
+let EAR=null, VOCAB=[], ERAN=null;
 function buildEar(){
   if(EAR||!CAT.head) return;
   const A=CAT.head.A;
+  /* ★1020：棚の年代ごとの人数を数えておく。「珍しい」はここからしか言わない。
+     世の中で珍しいかは分からない。**うちの棚で何組いるか**なら数えられる。 */
+  ERAN={}; for(const a of A) for(const e of (a.e||[])) ERAN[e]=(ERAN[e]||0)+1;
   EAR={ exact:new Map(), keys:[] };   // keys=[{k, i}] 総当たり用
   const put=(k,i)=>{ if(!k||k.length<2) return;
     if(!EAR.exact.has(k)) EAR.exact.set(k,i);
@@ -695,20 +805,27 @@ async function findSongs({artists=[], mood=[], song_title="", region=""}){
   await CAT.load();
   buildEar();
   const A=CAT.head.A;
-  const an=artists.map(norm).filter(Boolean);
-  const mo=mood.map(norm).filter(x=>x.length>=2);
-  const artScore=new Map();
+  /* ★1020：正規化する前の原文も持っておく。「どの言葉からこの人に行き当たったか」を
+     案内人に返すため。ここが無いと、案内人は4枚の出どころを知らないまま喋ることになり、
+     「アーティスト名と年」を読み上げるしかなくなる＝たまごさんの言う「シンプルすぎる」。 */
+  const anRaw=artists.filter(x=>norm(x)), an=anRaw.map(norm);
+  const moRaw=mood.filter(x=>norm(x).length>=2), mo=moRaw.map(norm);
+  const artScore=new Map(), artWhy=new Map();
+  const why=(i,t)=>{ if(!artWhy.has(i)) artWhy.set(i,t); };
   A.forEach((a,i)=>{
     const name=norm(a.n);
     const alias=(a.al||[]).map(norm);
     const about=norm([(a.ab||""),(a.g||[]).join(" "),(a.e||[]).join(" ")].join(" "));
     let sc=0;
-    for(const q of an){
-      if(name===q) sc+=120;
-      else if(q.length>=4 && name.includes(q)) sc+=70;
-      else if(alias.some(x=>x===q)) sc+=70;
+    for(let qi=0;qi<an.length;qi++){
+      const q=an[qi];
+      if(name===q){ sc+=120; why(i,"たどった線＝「"+anRaw[qi]+"」そのもの"); }
+      else if(q.length>=4 && name.includes(q)){ sc+=70; why(i,"たどった線＝「"+anRaw[qi]+"」"); }
+      else if(alias.some(x=>x===q)){ sc+=70; why(i,"たどった線＝「"+anRaw[qi]+"」（別名で一致）"); }
     }
-    for(const q of mo){ if(about.includes(q)) sc+=25; }
+    for(let mi=0;mi<mo.length;mi++){
+      if(about.includes(mo[mi])){ sc+=25; why(i,"棚の紹介文に「"+moRaw[mi]+"」と書いてある"); }
+    }
     if(sc) artScore.set(i,sc);
   });
   /* ★966 耳：そのままの字で当たらなかった名前を、音の近さで拾い直す。
@@ -716,7 +833,9 @@ async function findSongs({artists=[], mood=[], song_title="", region=""}){
   for(const q of artists){
     const nq=norm(q);
     if([...artScore.keys()].some(i=>norm(A[i].n)===nq)) continue;
-    for(const h of earFind(q)) if(!artScore.has(h.i)) artScore.set(h.i,h.sc);
+    for(const h of earFind(q)) if(!artScore.has(h.i)){
+      artScore.set(h.i,h.sc); why(h.i,"聞こえた音「"+q+"」に近い名前として棚から拾った");
+    }
   }
   /* ★966 地域：くくりの外の人はここで落とす。点数で下げるのではなく**外す。**
      （点数で下げるやり方だったから「アジアの曲」でボウイとレイ・チャールズが出た） */
@@ -756,7 +875,8 @@ async function findSongs({artists=[], mood=[], song_title="", region=""}){
           const v=byCountry.get(code);
           if(round>=v.length) continue;
           const p=v[round];
-          if(!artScore.has(p.i)){ artScore.set(p.i, 60-round*3+Math.min(10,p.c)); added++; }
+          if(!artScore.has(p.i)){ artScore.set(p.i, 60-round*3+Math.min(10,p.c));
+            why(p.i,(REGION_JA[region]||region)+"の棚から"); added++; }
           if(added>=24) break;
         }
       }
@@ -769,6 +889,7 @@ async function findSongs({artists=[], mood=[], song_title="", region=""}){
     if(seen.has(k)||shown.has(k)) return;
     seen.add(k);
     out.push({ai:row[0],sid:row[1],title:row[2],year:row[3]||0,yt:row[4]||"",
+      why:artWhy.get(row[0])||"",
       sc:sc+tidy(row[2])+(row[3]?10:0)+((row[5]===1)?45:0)+Math.random()*8});
   };
   if(artScore.size){
@@ -820,6 +941,70 @@ function spread(list){
   }
   return out;
 }
+/* ══════════ ★1020：珍しさは「うちの棚で数えられること」だけで言う ══════════
+   たまごさん 2026-09-22：「こういうのも珍しいじゃん、こんなシベリアのグループなんてさ。
+     こういうのをコンシェルジュがおすすめできるのか」
+
+   ここでいちばん危ないのは「世の中で珍しい」と言ってしまうこと。裏が取れない。
+   （関所 sekisho-jijitsu-shutten：取れない断定は書かない）
+   でも **「うちの棚には◯組しかいない」なら数えられる。** 数えた結果しか言わせない。
+   ＝案内人は珍しいものを珍しいと言えるのに、嘘は1つも言えない。 */
+/* ★1020：棚には「曲ではない人」も混ざっている（俳優・映画・お笑い）。
+   2026-09-20 に「日本の曲」で 犬・JR東海・千鳥 が出た事故と同じ根。地域の棚では外してあるが、
+   こちらは**こちらから珍しいものとして差し出す**ので、もっと厳しく落とす。
+   判定は棚の紹介文に書いてあることだけで行う。迷ったら落とす側に倒す（関所の決まり）。
+   ※「映画音楽作曲家」は音楽の人なので残す。落とすのは俳優・監督・お笑い・番組そのもの。 */
+const NAMUSIC_AB=/俳優|女優|声優|お笑い|芸人|漫才|コンビ。|落語|タレント|監督。|監督、|年公開|テレビ番組|バラエティ|ドラマ作品|アナウンサー/;
+function kyokuJanai(a){
+  if(/[（(]\s*(映画|ドラマ|番組|アニメ|CM)/.test(a.n||"")) return true;
+  return NAMUSIC_AB.test(a.ab||"");
+}
+function usuiEra(a){                 /* その人が持つ年代のうち、棚でいちばん薄いもの */
+  if(!ERAN) return null;
+  let thin=null;
+  for(const e of (a.e||[])) if(ERAN[e] && (thin===null||ERAN[e]<ERAN[thin])) thin=e;
+  return (thin && ERAN[thin]<=300) ? thin : null;
+}
+function mezurashi(a){
+  const o=[];
+  if(a.c===1) o.push("棚にこの人は1曲だけ");
+  else if(a.c===2) o.push("棚にこの人は2曲だけ");
+  const t=usuiEra(a);
+  if(t) o.push("棚に"+t.replace("s","年代")+"の人は"+ERAN[t]+"組だけ（全"+CAT.head.A.length+"組中）");
+  return o;
+}
+/* 会話の始めに案内人へ渡す「いま棚にある珍しいもの」。
+   ★名前と根拠をこちらから渡すから、案内人は自分から珍しいものを出せるのに、嘘は言えない。
+   条件：紹介文（ab）がある＝その人について話せる材料が棚にある人だけ。作り話の芽を断つ。 */
+function mezuraList(){
+  if(!CAT.head||!ERAN) return [];
+  const A=CAT.head.A, o=[];
+  const tane=A.map((a,i)=>({a,i,p:boukenTen({fact:{kazu:a.c||0,eraList:a.e||[],note:a.ab||""}})}))
+              .filter(x=>x.p>=24 && x.a.ab && !kyokuJanai(x.a))
+              .sort((x,y)=>y.p-x.p);
+  /* 同じ年代の人ばかり6組並べない。1つの年代から2組まで。
+     （最初に作ったとき、6組とも40年代になった。それでは「珍しい＝古い」しか言えない。） */
+  const kazoe={};
+  for(const x of tane){
+    if(o.length>=6) break;
+    const m=mezurashi(x.a);
+    if(!m.length) continue;
+    const key=usuiEra(x.a)||("kyoku"+x.a.c);
+    if((kazoe[key]||0)>=2) continue;
+    kazoe[key]=(kazoe[key]||0)+1;
+    o.push("・"+x.a.n+"（"+m.join("／")+"）"+(x.a.ab?("　棚の紹介文＝"+x.a.ab.slice(0,60)):""));
+  }
+  return o;
+}
+/* 冒険札の選び方。珍しさの点が高いものを1枚だけ混ぜる（下の dealFour で5枚に1枚）。 */
+function boukenTen(c){
+  const f=c.fact||{}; let p=0;
+  if(f.nonMusic) return 0;     /* 俳優・映画・お笑いは冒険札にしない */
+  if(f.kazu===1) p+=34; else if(f.kazu===2) p+=16;
+  if(ERAN) for(const e of (f.eraList||[])) if(ERAN[e]&&ERAN[e]<=300) p+=Math.max(6,42-ERAN[e]/8);
+  if(f.note) p+=12;            /* うちの言葉が付いている＝人が一度見た曲。冒険でも外れにくい */
+  return p;
+}
 const artistOf=s=>CAT.head.A[s.ai];
 const cardUrl=s=>CAT.head.base+"?artist="+encodeURIComponent(CAT.head.A[s.ai].i)
                  +"&song="+encodeURIComponent(s.sid);
@@ -830,9 +1015,15 @@ const songCard=s=>{
     sub:a.n+(s.year?("　"+s.year+"年"):""),
     thumb:"https://i.ytimg.com/vi/"+s.yt+"/mqdefault.jpg", yt:s.yt, url:cardUrl(s),
     key:"m:"+s.ai+"/"+s.sid,
+    ai:s.ai, nkey:s.ai+"/"+s.sid,      /* ★1020：あとから「うちの言葉」を取りに行くための番地 */
     fact:{ artist:a.n, year:s.year||null,
            about:(a.ab||"").slice(0,140)||null,
-           genre:(a.g||[]).join("・")||null, era:(a.e||[]).join("・")||null } };
+           genre:(a.g||[]).join("・")||null, era:(a.e||[]).join("・")||null,
+           /* ★1020：ここから下が、今まで案内人に渡していなかった材料。 */
+           note:null,                         /* うちの棚の一文。札が出てから fillNotes が入れる */
+           why:s.why||null,                   /* どの線をたどってこの人に行き当たったか */
+           kazu:a.c||0, eraList:(a.e||[]), nonMusic:kyokuJanai(a),
+           mezu:mezurashi(a) } };
 };
 const ytOf=u=>{ const m=/\/vi\/([A-Za-z0-9_-]{6,})\//.exec(u||""); return m?m[1]:""; };
 const joyCard=c=>({kind:c.k,title:c.t,sub:c.w||"",thumb:c.i,yt:ytOf(c.i),
@@ -886,9 +1077,19 @@ async function openPlayer(c,idx){
       +'?autoplay=1&rel=0&playsinline=1"></iframe>';
   }
   applyAudio();
+  KYAKU.osu(c);                         /* ★1020：押したもの＝いちばん正直な返事。覚えておく */
+  /* ★1020：メールの誘いは、押した直後にだけ・一人につき1回だけ。
+     1枚目ではまだ「気に入った」と言えないので、**2枚目を押したとき**に1回だけ出す。
+     （Backlinko：もう好きになっている人のところで言うと、記事本文の4倍取れた） */
+  const sasou = (KYAKU.oshi.length>=2) && MAIL.dasu(c);
   if(live()) tellModel("（画面の合図）お客さんが"+(idx+1)+"番の「"+c.title+"」を押して、いま鳴り始めました。"
     +(thruOn()?"曲は小さくしてあり、マイクは開いたままです。曲の音には返事をせず、お客さんの声にだけ答えてください。":"")
-    +"ひとこと短くそえるだけにしてください。道具は呼ばないこと。");
+    +"ひとこと短くそえるだけにしてください。道具は呼ばないこと。"
+    +(sasou?"\n★この人はもう2枚押しています。この一言のあとに、**この会話で1回だけ**"
+            +"『気に入ったものが見つかったら、同じ手ざわりのものを見つけたときだけお送りします』"
+            +"という意味のことを、あなたの言葉で1文だけ添えてください。画面の下にもう小さく出してあります。"
+            +"★売り込まない。急かさない。『今はいいです』と言われたら、それで終わりにしてもう二度と言わない。"
+            +"★二度と言わない。これが最初で最後です。":""));
 }
 function stopPlay(talk){
   try{ yt&&ytReady&&yt.stopVideo(); }catch(_){}
@@ -923,8 +1124,9 @@ function applyAudio(){
 }
 setInterval(()=>{ if(playing) applyAudio(); },150);
 $("thru").addEventListener("change",applyAudio);
-$("pSkip").addEventListener("click",()=>{ try{ if(yt&&ytReady) yt.seekTo(yt.getCurrentTime()+30,true); }catch(_){} });
-$("pNext").addEventListener("click",()=>{
+$("pSkip").addEventListener("click",()=>{ KYAKU.tobashi++;
+  try{ if(yt&&ytReady) yt.seekTo(yt.getCurrentTime()+30,true); }catch(_){} });
+$("pNext").addEventListener("click",()=>{ KYAKU.tobashi++;
   for(let i=playIdx+1;i<dealt.length;i++){ if(dealt[i].yt){ openPlayer(dealt[i],i); return; } }
   for(let i=0;i<dealt.length;i++){ if(dealt[i].yt&&i!==playIdx){ openPlayer(dealt[i],i); return; } }
 });
@@ -965,18 +1167,37 @@ function drawCards(list){
     cardsEl.appendChild(b);
   });
 }
-let page=0;
+let page=0, slot=0;
+/* ★1020：安心4：冒険1（たまごさんの既定）。
+   5枚に1枚だけ、素直な上位ではなく**棚の外れ値**を出す。全部を珍しいものにしない。
+   冒険札も、いま引いた棚の中にある実在のものだけ。作らない・外から持ってこない。 */
+function hitomai(){
+  if(slot%5!==4 || pool.length<2) return pool.shift();
+  let bi=-1, best=24;                       /* この点に届かないなら冒険にしない＝無理に珍しくしない */
+  for(let i=0;i<Math.min(pool.length,40);i++){
+    if(shown.has(pool[i].key)) continue;
+    const t=boukenTen(pool[i]);
+    if(t>best){ best=t; bi=i; }
+  }
+  if(bi<0) return pool.shift();
+  const c=pool.splice(bi,1)[0]; c.bouken=true; return c;
+}
 function dealFour(){
+  KYAKU.nagasu(dealt);             /* ★1020：引っ込める前に「押されなかったもの」を覚える */
   const take=[];
   while(take.length<4 && pool.length){
-    const c=pool.shift();
+    const c=hitomai();
+    if(!c) break;
     if(shown.has(c.key)) continue;
-    shown.add(c.key); take.push(c);
+    shown.add(c.key); take.push(c); slot++;
   }
   if(take.length) page++;
   stopPlay(false);
   drawCards(take);
   moreEl.disabled = pool.length===0;
+  /* ★1020：ここが「入口の一言」の置き場。新しい枠は作らない。正本にもともとある
+     見出し横の1行（#trayTitle）に、案内人が書いたドアの一言をそのまま出す。
+     たまごさん：「カードはドアです。そのカードの中に入ると小さな旅が始まる。」 */
   $("trayTitle").textContent = take.length
     ? (poolLabel||"PICKS FOR YOUR MOMENT")+"　"+page+"枚目"
     : "この棚は、ここで打ち止めです";
@@ -985,7 +1206,7 @@ function dealFour(){
 /* 出した4枚の「答えられること」を、棚のデータからそのまま作って案内人に渡す。
    ここに書いてないことは喋らせない（＝作り話の入り口を塞ぐ）。 */
 function factSheet(list){
-  return list.map((c,i)=>{
+  const rows=list.map((c,i)=>{
     const f=c.fact||{};
     const bits=[];
     if(c.kind==="music"){
@@ -993,16 +1214,35 @@ function factSheet(list){
       bits.push(f.year?("発表年＝"+f.year+"年"):"発表年＝棚に記載なし（言わないこと）");
       if(f.genre) bits.push("分類＝"+f.genre);
       if(f.era)   bits.push("年代＝"+f.era);
+      /* ★1020：ここが今回いちばん効く行。棚に書いてある、その曲の一文。
+         人が書いた言葉なので、案内人が作らなくてよくなる＝作り話が減り、中身が濃くなる。 */
+      if(f.note) bits.push("うちの棚に書いてある一文＝"+f.note);
       if(f.about) bits.push("アーティスト紹介文（棚の本文）＝"+f.about);
+      if(f.why)  bits.push("この札が出てきた理由＝"+f.why);
+      if(f.mezu&&f.mezu.length) bits.push("棚での珍しさ＝"+f.mezu.join("／"));
+      if(c.bouken) bits.push("★これが今回の冒険の1枚（安心3枚＋冒険1枚で出している）");
     }else{
       bits.push("種類＝"+kindJa(c.kind));
       if(f.hitokoto) bits.push("棚に書いてある一文＝"+f.hitokoto);
     }
     return (i+1)+".「"+c.title+"」／"+bits.join("／");
-  }).join("\n");
+  });
+  /* ★1020：この4枚を並べて見たときの「見立て」。画面に出ている4枚だけを見て言えること
+     しか書かない（＝見れば誰でも確かめられる＝絶対に間違えない）。 */
+  const ys=list.map(c=>(c.fact&&c.fact.year)||0).filter(Boolean);
+  if(ys.length>=3){
+    const mn=Math.min(...ys), mx=Math.max(...ys);
+    if(mx-mn>=25){
+      const furui=list.find(c=>c.fact&&c.fact.year===mn);
+      if(furui) rows.push("見立て：この4枚は"+mn+"年から"+mx+"年までばらけている。"
+        +"いちばん古いのは「"+furui.title+"」。");
+    }
+  }
+  return rows.join("\n");
 }
 async function newSearch(args,label){
-  page=0;
+  page=0; slot=0;
+  KYAKU.nagasu(dealt);        /* ★1020：棚を替える＝前の4枚は素通りされたということ */
   await CAT.load();
   const kind=args.kind||"music";
   let list;
@@ -1014,11 +1254,14 @@ async function newSearch(args,label){
   pool=list; poolLabel=label||"";
   return dealFour();
 }
-moreEl.addEventListener("click",()=>{
+moreEl.addEventListener("click",async()=>{
+  const mikata=KYAKU.mikata();          /* ★1020：押す前に読む。押した後だと今の4枚が混ざる */
   const got=dealFour();
+  await fillNotes(got);                 /* ★1020：出た4枚のぶんだけ、うちの言葉を取りに行く */
   tellModel(got.length
     ? "（画面の合図）お客さんが「ほかのを見せて」を押しました。次の4枚はもう画面に出し終えています。\n"
       +factSheet(got)
+      +(mikata?"\n【この人について分かっていること】\n"+mikata:"")
       +"\n道具は呼ばないこと。1〜2枚だけ名前を出して短く一言そえてください。"
     : "（画面の合図）もう在庫がありません。道具は呼ばずに、正直に「この棚はここまで」と伝えて、別の種類を聞いてください。");
 });
@@ -1209,6 +1452,31 @@ const INSTRUCTIONS=[
   "★ 発表年・受賞・売上・「代表曲」「オリジナル」「初の」は、事実シートに無ければ絶対に言わない。",
   "★ 曲名・アーティスト名を口に出してよいのは、道具が返してきたものだけ。",
   "",
+  "■ ★察する（1020でいちばん大事）",
+  "道具の返事のあとに【この人について分かっていること】が届くことがあります。**必ずそれに従って次を変える。**",
+  "  押したものが書いてある → 次はその線に寄せる。「◯◯を押した人なら、これも」",
+  "  1枚も押していないと書いてある → ★同じ線をもう一度出さない。方向を変えるか、外れ値を1枚出す。",
+  "  素通りされたと書いてあるもの → もう名前を出さない。",
+  "★この人が押したものだけが、この人の答えです。言葉より、押したかどうかを信じる。",
+  "★趣味の違う2人に同じ返しをしない。前の会話の続きのような言い方をしない。",
+  "",
+  "■ ★珍しいものを、自分から出してよい（ただし根拠のあるときだけ）",
+  "会話の始めに「いま棚にある珍しいもの」を何組か渡します。名前はそこにあるものだけ使う。",
+  "切り出してよいのは3つの場面だけ：",
+  "  ①「なんでもいい」「おまかせ」と言われたとき",
+  "  ② 2回続けて1枚も押されなかったとき",
+  "  ③ 押した曲の線から、渡した珍しい組に自然につながるとき",
+  "そのときは「うちだと珍しいのが1組いますよ」と一言だけ言って、その名前を artists に入れて hikidashi を呼ぶ。",
+  "★「珍しい」と言ってよいのは、渡された数字の根拠があるときだけ（棚に◯組だけ／棚に1曲だけ）。",
+  "★「世界的に珍しい」「知る人ぞ知る」「幻の」は絶対に言わない。裏が取れていない。**うちの棚の話だけをする。**",
+  "★毎回は出さない。安心を4、冒険を1。全部を珍しいもので埋めたら失格。",
+  "",
+  "■ ★メールの案内は、この会話で1回だけ",
+  "自分からは絶対に切り出さない。画面から「この人はもう2枚押しています」という合図が来たときだけ、1文そえる。",
+  "★合図が来ていないのに言うのは失格。★2回言うのも失格。しつこいのがいちばん嫌われます。",
+  "★脅さない。誘う。「登録しないと見られません」「今だけ」は禁止。",
+  "★何が届くのかを具体的に一言で。例：「気に入ったのと同じ手ざわりのものを、見つけたときだけお送りします」",
+  "★断られたら「わかりました」で終わり。言い換えて粘らない。もう二度と言わない。",
   "",
   "■ ★地域・国を言われたら region に入れる（966でいちばん大事）",
   "「アジア」「日本」「韓国」「台湾」「中国」「香港」「タイ」「インド」「ブラジル」",
@@ -1230,8 +1498,23 @@ const INSTRUCTIONS=[
   "  「いちご」のように聞こえても、棚に当たれば正しい人が返ってくる。",
   "★ 0件で返ってきたら、作らずに「その名前は棚に見つかりませんでした」と正直に言う。",
   "",
-  "■ カードが出たあと",
-  "4枚全部は読み上げない。1〜2枚だけ名前を出して短く一言。",
+  "■ ★カードが出たあと＝ドアの一言（ここが1020の本体）",
+  "たまごさんの言葉：「カードはドアです。そのカードの中に入ると小さな旅が始まる。」",
+  "だから、札の説明をしてはいけない。**ドアの向こうに何があるかを匂わせる。**",
+  "4枚全部は読み上げない。名前を並べない。**1枚だけ選んで、1文。**長さはこれまでどおり短いまま。",
+  "★その1文には必ず『なぜ今この人にこれなのか』を入れる。**事実の読み上げは禁止。**",
+  "  不合格：「スティーヴィー・ワンダーの1976年の曲です」（事実を平たく言っただけ。あなたが無い）",
+  "  不合格：「代表曲のひとつです」「名曲です」「人気があります」（誰にでも書ける・裏も無い）",
+  "  合格：「さっきの『しずかなやつ』なら、2番目がいちばん近いです」",
+  "  合格：「これ、棚に1曲しか入っていない人です」",
+  "  合格：「3枚は安心して聴けるほう。4枚目だけ、ちょっと変わったのを混ぜました」",
+  "  合格：「いちばん古いのは1曲目です」（★シートの『見立て』にそう書いてあるときだけ）",
+  "★年の引き算をしない。「50年前」「半世紀前」「◯年前」は禁止。今が何年かをあなたは知りません。",
+  "  シートに書いてある年（例：1979年）をそのまま言うか、言わないか、どちらかです。",
+  "★材料は事実シートの3つ：『この札が出てきた理由』『棚での珍しさ』『うちの棚に書いてある一文』。",
+  "  この3つから**1つだけ**選んで1文にする。3つ並べたら喋りすぎ＝失格。",
+  "★『うちの棚に書いてある一文』はそのまま読み上げない。手がかりにして、自分の言葉で短く言う。",
+  "★言い切ったら止まる。付け足さない。うんちくを並べたら負けです。",
   "曲ページへ誘導しない。",
   "★ 同じ案内を繰り返さない。「押すと、その札の下でそのまま鳴ります」「大きい画面で見ますか」は",
   "  この会話で1回言ったら、もう二度と言わない。道具の返事に「もう済んでいる」と書いてあったら、",
@@ -1363,6 +1646,8 @@ async function connect(){
   say("sys","つないでいます…");   /* ★974：窓は空にしない。上書きして次の言葉を待つ。 */
   shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; stopPlay(false);
   ANNAI.reset();   /* ★966：案内の回数は、話し始めるたびに0に戻す */
+  KYAKU.reset();   /* ★1020：察するための覚えも、話し始めるたびに0に戻す */
+  dealt=[];
   USE.micSec=USE.outSec=USE.usd=USE.apiIn=USE.apiOut=USE.apiTotal=0;
   retried=false; stopping=false;
   try{ await actx.resume(); }catch(_){}
@@ -1445,7 +1730,9 @@ async function open(wsBase, key){
           description:"国や地域で絞るときだけ。アジア=asia 日本=jp 韓国=kr 台湾=tw 中国=cn 香港=hk タイ=th インド=in ブラジル=br ジャマイカ=jm キューバ=cu 北欧=nordic アフリカ=africa イギリス=gb/uk アメリカ=us 中南米=latin。地域の話が出ていないときは空にする。"},
         song_title:{type:"string",
           description:"kind が music で、かつお客さんが曲名を口に出したときだけ。"},
-        label:{type:"string",description:"この棚につける短い見出し。例：うれしい夜に"}
+        /* ★1020：label は「棚の名前」ではなく「ドアの一言」。画面の見出し横に出る。
+           たまごさん：「カードはドアです。ドアの奥にはあなたの知らないものが待ってる。」 */
+        label:{type:"string",description:"画面の見出し横に出る短い言葉。棚の名前ではなく『ドアの一言』にする。12字まで。不合格：『音楽』『うれしい曲』。合格：『うれしい夜に』『雨の日の逃げ道』『眠れない人の棚』"}
       } },
     ["kind"]
   );
@@ -1505,10 +1792,16 @@ async function onResponse(r){
       { const s=stockCount();
         const aru=KINDS.filter(k=>s[k]>0).map(k=>k+"("+KIND_JA[k]+")="+s[k]+"件");
         const nai=KINDS.filter(k=>!s[k]).map(k=>k+"("+KIND_JA[k]+")");
+        const mz=mezuraList();
         tellModel("（画面の合図・お客さんの声ではありません。返事はしないでください）"
           +"いまの在庫："+aru.join("、")
           +(nai.length?("。在庫ゼロの棚："+nai.join("、")
-            +"。この棚を頼まれたら、正直に『まだ用意できていません』と言い、代わりに曲を出さないこと。"):"")); }
+            +"。この棚を頼まれたら、正直に『まだ用意できていません』と言い、代わりに曲を出さないこと。"):"")
+          /* ★1020：珍しいものを案内人が自分から出せるようにする。
+             ただし**名前と根拠をこちらから渡す。**渡していない人を「珍しい」と言わせない。 */
+          +(mz.length?("\n【いま棚にある珍しいもの（根拠つき）】\n"+mz.join("\n")
+            +"\nこの名前と根拠だけが使えます。ここに無い人を『珍しい』と言わないこと。"
+            +"出すのは、おまかせと言われたとき／2回続けて札が押されなかったときだけ。"):"")); }
       break;
     case "AUDIO": STOP.oto(); playPcm(r.data); break;
     /* ★970：切れ端は同じ行に足していく（1発言＝1行） */
@@ -1576,11 +1869,18 @@ async function onToolCall(toolCall){
   }
   if(responses.length) api.sendToolResponse(responses);
   // 道具の返事とは別に、答えてよい事実だけを渡す
-  if(dealt.length) tellModel(
-    "（画面の合図・お客さんの声ではありません。これには返事をしないでください）\n"
-    +"いま出ている4枚について答えてよいのは、次に書いてあることだけです。\n"
-    +factSheet(dealt)
-    +"\nここに無いこと（発表年・受賞・売上・代表曲かどうか等）は、聞かれても「それは分かりません」と答えてください。");
+  if(dealt.length){
+    /* ★1020：ここは道具の返事を返した**あと**。案内人はもう喋り始めているので、
+       ここで待っても間は空かない。だから「うちの言葉」はここで取りに行く。 */
+    await fillNotes(dealt);
+    const mikata=KYAKU.mikata();
+    tellModel(
+      "（画面の合図・お客さんの声ではありません。これには返事をしないでください）\n"
+      +"いま出ている4枚について答えてよいのは、次に書いてあることだけです。\n"
+      +factSheet(dealt)
+      +(mikata?"\n【この人について分かっていること。ここから次の一手を変えてください】\n"+mikata:"")
+      +"\nここに無いこと（発表年・受賞・売上・代表曲かどうか等）は、聞かれても「それは分かりません」と答えてください。");
+  }
 }
 
 /* マイク。Live API は 16kHz・16bit・モノラルの生PCM。
