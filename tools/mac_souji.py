@@ -442,10 +442,261 @@ def save(obj):
     os.replace(tmp, OUT_JSON)
 
 
+# ================================================================ 毎回の軽い掃き掃除
+# 2026-09-21（986番）なぜ「週1」とは別に要るのか（実測）
+#   週1の掃除は**ディスク**には効いた（4.5GB）。だがMacが詰まった原因はディスクではなかった。
+#   12:00の実測：memory_pressure は「空き85%」でメモリ自体は赤ではない。詰まっていたのは
+#     ・load average 46.03（コア8本）
+#     ・swap used 18.4GB / 残り1.0GB、Swapouts 3億回
+#   そしてCPUを食っていた上位は Brave 167% / Google Drive 137% / mds_stores 48%。
+#   ★落ち葉は「週1でまとめて」ではなく「毎日掃く」もの。孤児セッションは2時間で溜まる。
+#   ここは週1のゲートより手前に置き、10分ごとに軽いものだけを掃く。
+RELIEF_STAMP = os.path.join(STATUS, ".mac_souji_relief_at")
+RELIEF_GATE_SECONDS = 600          # 10分。心臓は10分に1回ここを呼ぶ
+
+# Spotlightに舐めさせない場所（=工場が機械的に書き換え続けるところだけ）
+#   実測：status/ は**5分で91ファイル**書き換わる。1つ書くたびに fsevents → mdworker →
+#   mds_stores が索引し直す。12:12の実測で mds_stores 48.7% + mdworker 6本。
+#   ★消す操作ではない。目印を1つ置くだけ。要らなくなったら rm 1回で元に戻る。
+#   ★リポジトリの**根**には置かない（たまごさんの原稿がSpotlightで探せなくなるため）。
+NEVER_INDEX_DIRS = [
+    os.path.join(STATUS),
+    os.path.join(STATUS, "queue_history"),
+    os.path.join(REPO, ".git"),
+    "/Users/mac/Desktop/joy-relief-station/node_modules",
+    "/Users/mac/Desktop/joy-relief-station/.output",
+    "/Users/mac/Desktop/joy-relief-station/.nuxt",
+]
+
+
+def mark_never_index(dry_run):
+    """機械が書き換え続ける場所だけSpotlightの索引から外す。1バイトも消さない。"""
+    item = {"name": "spotlight_exclude", "freedBytes": 0, "detail": [], "error": None}
+    for d in NEVER_INDEX_DIRS:
+        if not os.path.isdir(d):
+            item["detail"].append({"path": d, "state": "ディレクトリが無い（対象外）"})
+            continue
+        marker = os.path.join(d, ".metadata_never_index")
+        if os.path.exists(marker):
+            item["detail"].append({"path": d, "state": "既に索引除外済み"})
+            continue
+        if dry_run:
+            item["detail"].append({"path": d, "state": "索引除外を付ける予定"})
+            continue
+        try:
+            io.open(marker, "w").write("")
+            item["detail"].append({"path": d, "state": "索引除外を付けた"})
+        except Exception as e:
+            item["detail"].append({"path": d, "state": "付けられなかった", "error": "%r" % (e,)})
+    return item
+
+
+def reap_own_leftovers(dry_run):
+    """★自分たち（Cowork側のセッション）が撒いた取り残しを掃く。
+
+    実測：986番の調査中、`top -l 1` を使ったジョブが180秒の強制終了に2回かかり、
+      その top が**Macの上に生き残って35%のCPUを食っていた**（12:12の計測で確認）。
+      調べに行った側が新しいゴミを置いて帰る、が一番みっともない。
+    掃くのは自分たちの使い走り窓口(status/mac_jobs)由来のものだけ。
+    """
+    item = {"name": "own_leftovers", "freedBytes": 0, "detail": [], "error": None}
+    # 1) 180秒で強制終了された調査コマンドの生き残り
+    for pat in ("top -l", "vm_stat -c"):
+        try:
+            r = subprocess.run(["pgrep", "-f", pat], capture_output=True,
+                               text=True, timeout=10)
+        except Exception as e:
+            item["detail"].append({"pattern": pat, "error": "%r" % (e,)})
+            continue
+        for line in (r.stdout or "").split():
+            try:
+                p = int(line)
+            except ValueError:
+                continue
+            try:
+                rss = int(subprocess.run(["ps", "-o", "rss=", "-p", str(p)],
+                                         capture_output=True, text=True,
+                                         timeout=10).stdout.strip() or 0) * 1024
+            except Exception:
+                rss = None
+            if dry_run:
+                item["detail"].append({"pid": p, "pattern": pat, "wouldKill": True})
+                continue
+            try:
+                os.kill(p, 9)
+                item["freedBytes"] += rss or 0
+                item["detail"].append({"pid": p, "pattern": pat, "killed": True,
+                                       "freedBytes": rss or 0})
+            except Exception as e:
+                item["detail"].append({"pid": p, "pattern": pat, "killed": False,
+                                       "error": "%r" % (e,)})
+    # 2) 使い走り窓口の壊れたロック（240秒を超えて残っているもの＝走者はもう居ない）
+    lock = os.path.join(STATUS, "mac_jobs", ".runner.lock")
+    try:
+        if os.path.exists(lock) and (time.time() - os.path.getmtime(lock)) > 300:
+            size = os.path.getsize(lock)
+            if dry_run:
+                item["detail"].append({"path": lock, "wouldFreeBytes": size})
+            else:
+                os.remove(lock)
+                item["freedBytes"] += size
+                item["detail"].append({"path": lock, "freedBytes": size,
+                                       "note": "5分以上残っていた壊れたロックを外した"})
+    except Exception as e:
+        item["detail"].append({"path": lock, "error": "%r" % (e,)})
+    return item
+
+
+def relief_pass(dry_run):
+    """10分ごとの軽い掃き掃除。週1のゲートより手前で走る。
+
+    ★重いものは一切やらない（du も top も使わない）。実測で top は負荷35のMacから
+      180秒以内に返ってこなかった。ここが重くなったら心臓が詰まる。
+    """
+    ledger = load_ledger()
+    ledger["reliefCalls"] = ledger.get("reliefCalls", 0) + 1
+    try:
+        last = os.path.getmtime(RELIEF_STAMP)
+    except OSError:
+        last = 0
+    if not dry_run and (time.time() - last) < RELIEF_GATE_SECONDS:
+        save(ledger)
+        return None
+
+    before = vm_snapshot()
+    items = [
+        reap_our_orphans(dry_run),
+        reap_own_leftovers(dry_run),
+        sweep_our_logs(dry_run),
+        sweep_own_junk(dry_run),
+        mark_never_index(dry_run),
+    ]
+    freed = sum((i.get("freedBytes") or 0) for i in items)
+    after = vm_snapshot()
+
+    if not dry_run:
+        try:
+            io.open(RELIEF_STAMP, "w").write(time.strftime("%F %T"))
+        except Exception:
+            pass
+        ledger["reliefRuns"] = ledger.get("reliefRuns", 0) + 1
+        ledger["reliefTotalFreedBytes"] = ledger.get("reliefTotalFreedBytes", 0) + freed
+        if freed <= 0:
+            ledger["reliefRunsWithZeroFreed"] = ledger.get("reliefRunsWithZeroFreed", 0) + 1
+
+    # ---- 「候補が何件あったか」を数える。ここが赤と緑を分ける要（2026-09-21・986番）----
+    # ★最初の実装は「走った回数>0 かつ 片付き=0 → 赤」だけだった。ところがそれだと
+    #   **床が綺麗なときも永久に赤**になる（実測：12:20の初回が赤。直前に手で掃いた後だったため）。
+    #   永久に赤い印は、見る人が必ず無視するようになる＝警報として死ぬ。
+    #   本当に危ないのは「掃くものが目の前にあったのに、1バイトも取れなかった」＝経路が壊れている方。
+    #   だから候補数(targets)を数えて、その2つを区別する。数字はどちらも必ず外に出す。
+    def _targets(it):
+        if it["name"] == "spotlight_exclude":
+            return 0          # 印を置くだけ。バイトを取る係ではない
+        n = 0
+        for x in (it.get("detail") or []):
+            e = x.get("error") or ""
+            if "既に居ません" in e or "触りません" in e:
+                continue      # 元から居ない／自分たちのものではない＝候補ではない
+            n += 1
+        return n
+
+    targets = sum(_targets(i) for i in items)
+    rruns = ledger.get("reliefRuns", 0)
+    rtotal = ledger.get("reliefTotalFreedBytes", 0)
+    if not dry_run:
+        ledger["reliefTotalTargets"] = ledger.get("reliefTotalTargets", 0) + targets
+    ttotal = ledger.get("reliefTotalTargets", 0)
+
+    if rruns > 0 and rtotal <= 0 and ttotal > 0:
+        rcolor = "red"
+        rreason = ("軽い掃除が%d回走り、掃く候補を延べ%d件見つけたのに、片付いたバイト数は0。"
+                   "動いているのに何も取れていない" % (rruns, ttotal))
+    elif freed <= 0 and targets > 0:
+        rcolor = "red"
+        rreason = ("今回、掃く候補が%d件あったのに0バイトしか取れなかった"
+                   "（走行%d回・累計%s）" % (targets, rruns, _b(rtotal)))
+    elif freed <= 0:
+        rcolor = "green"
+        rreason = ("今回は掃く落ち葉が無かった（候補0件）。走行%d回・累計%s"
+                   % (rruns, _b(rtotal)))
+    else:
+        rcolor = "green"
+        rreason = ("今回%s片付いた（候補%d件）。走行%d回・累計%s"
+                   % (_b(freed), targets, rruns, _b(rtotal)))
+
+    # ---- 経路そのものが死んでいないか。30分来ていなければ、色に関係なく赤 ----
+    # 「走った回数>0 なのに片付き=0」と同じくらい危ないのが「そもそも呼ばれなくなった」。
+    # weekly-mac-maintenance はこれで半年気づかれなかった。
+    if last and (time.time() - last) > 1800:
+        rcolor = "red"
+        rreason = ("軽い掃除が%d分呼ばれていない＝心臓からの経路が死んでいる。"
+                   % int((time.time() - last) / 60)) + rreason
+
+    ledger["relief"] = {
+        "lastRunAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "gateSeconds": RELIEF_GATE_SECONDS,
+        "dryRun": dry_run,
+        "lastFreedBytes": freed,
+        "lastFreedHuman": _b(freed),
+        "runs": rruns,
+        "calls": ledger.get("reliefCalls", 0),
+        "lastTargets": targets,
+        "totalTargets": ttotal,
+        "totalFreedBytes": rtotal,
+        "totalFreedHuman": _b(rtotal),
+        "runsWithZeroFreed": ledger.get("reliefRunsWithZeroFreed", 0),
+        "color": rcolor,
+        "reason": rreason,
+        "memoryBefore": before,
+        "memoryAfter": after,
+        "items": items,
+        "route": "心臓(heartbeat.sh)が10分ごと・5分便が5分ごとに mac_souji.py を呼ぶ。"
+                 "許可ダイアログの要る定期タスクは使っていない",
+    }
+    save(ledger)
+    try:
+        with io.open(OUT_JSONL, "a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "t": ledger["relief"]["lastRunAt"], "pass": "relief",
+                "dryRun": dry_run, "runs": rruns, "freedBytes": freed,
+                "totalFreedBytes": rtotal, "color": rcolor,
+                "memFreeMBBefore": before.get("freeMB"),
+                "memFreeMBAfter": after.get("freeMB"),
+                "swapUsedGBBefore": before.get("swapUsedGB"),
+                "swapUsedGBAfter": after.get("swapUsedGB"),
+                "swapFreeGBBefore": before.get("swapFreeGB"),
+                "swapFreeGBAfter": after.get("swapFreeGB"),
+                "perItem": {i["name"]: i.get("freedBytes") for i in items},
+                "errors": [{"item": i["name"], "error": i["error"]}
+                           for i in items if i.get("error")],
+            }, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+    return ledger["relief"]
+
+
 def main():
     args = sys.argv[1:]
     force = "--force" in args
     dry = "--dry-run" in args
+
+    # ---- 先に10分ごとの軽い掃き掃除。週1のゲートで return される前に必ず通す ----
+    # ★ここを週1ゲートの後ろに置くと、週に1回しか掃けない。それが986番までの状態だった。
+    try:
+        r = relief_pass(dry)
+        if r and ("--quiet" not in args):
+            print("[軽い掃除/%s] %s" % (r["color"], r["reason"]))
+    except Exception:
+        import traceback
+        try:
+            with io.open(OUT_JSONL, "a", encoding="utf-8") as f:
+                f.write(json.dumps({"t": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+                                    "pass": "relief",
+                                    "crash": traceback.format_exc()},
+                                   ensure_ascii=False) + "\n")
+        except Exception:
+            pass
 
     # 週1に間引く。★間引きで戻ったときも「呼ばれたことは数える」。
     #   呼ばれているのに一度も掃けていない、という状態を見えるようにするため。
