@@ -340,31 +340,46 @@ def reap_our_orphans(dry_run):
         if s.get("kind") not in ("stuck_tool", "idle_done"):
             continue
         # 本当にまだ居るか・本当に自分たちのものかを、落とす直前にもう一度確かめる
-        # ★2026-09-21（986番）ここに実害のあるバグがあった。
-        #   `ps -o command=` は **幅で切り詰める**。実測の戻り値は
-        #     "/Users/mac/Libra 127748"
-        #   だった（/Users/mac/Library/... が "Libra" で切れている）。
+        # ★2026-09-21（986番）ここに実害のあるバグがあった。実測で確かめた正体：
+        #   元のコードは `ps -o command=,rss=` を使っていた。BSD(macOS)のpsは
+        #   **command を最後の列に置かないと16文字で切り詰める。**
+        #   実測の戻り値： "/Users/mac/Libra 127748"
+        #     （/Users/mac/Library/Application Support/... が "Libra" で切れている）
         #   その結果、下の身元確認 "claude" in cmd.lower() が偽になり、
         #   本物のclaudeセッションを「claudeのプロセスではない」として**毎回見逃していた。**
-        #   status/mac_souji.json の orphan_sessions が freedBytes:0 だったのはこれが理由。
-        #   -ww を付けて切り詰めを止める。
+        #   status/mac_souji.json の orphan_sessions が freedBytes:0 だったのはこれが理由で、
+        #   15時間46分止まっていた pid 99564 もこれで生き延びていた。
+        #   ★最初 -ww を足して直したつもりになったが、実測では**何も変わらなかった**
+        #     （23文字のまま／2026-09-21 12:23）。幅の問題ではなく**列の順番**の問題。
+        #   直し方：rss を先に、command を最後に置く。
         try:
-            cmd = subprocess.run(["ps", "-ww", "-o", "command=,rss=", "-p", str(pid)],
+            raw = subprocess.run(["ps", "-ww", "-o", "rss=,command=", "-p", str(pid)],
                                  capture_output=True, text=True, timeout=10).stdout.strip()
         except Exception as e:
             item["detail"].append({"pid": pid, "error": "psが失敗: %r" % (e,)})
             continue
-        if not cmd:
+        if not raw:
             item["detail"].append({"pid": pid, "error": "既に居ません（掃除不要）"})
             continue
-        if "claude" not in cmd.lower():
-            item["detail"].append({"pid": pid, "error": "claudeのプロセスではないので触りません: %s"
-                                                        % cmd[:120]})
+        parts = raw.split(None, 1)
+        rss = None
+        cmd = raw
+        if len(parts) == 2:
+            try:
+                rss = int(parts[0]) * 1024
+            except ValueError:
+                rss = None
+            cmd = parts[1]
+        # 身元確認は「claudeという字が入っている」ではなく、claude CLIの実体パスで見る。
+        # たまごさんのClaude.app本体（/Applications/Claude.app）には絶対に触らない。
+        if "claude-code/" not in cmd or "/claude" not in cmd:
+            item["detail"].append({"pid": pid,
+                                   "error": "claude CLIではないので触りません: %s" % cmd[:120]})
             continue
-        try:
-            rss = int(cmd.split()[-1]) * 1024
-        except Exception:
-            rss = None
+        if "/Applications/" in cmd:
+            item["detail"].append({"pid": pid,
+                                   "error": "たまごさんのアプリなので触りません: %s" % cmd[:120]})
+            continue
         entry = {"pid": pid, "title": s.get("title"), "idleMin": idle,
                  "rssBytes": rss, "cmd": cmd[:160]}
         if dry_run:
