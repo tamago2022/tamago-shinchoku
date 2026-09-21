@@ -24,6 +24,63 @@ CHECKED=0
 # pushのref一覧はstdinから1回しか読めない。関所を2段かけるので先に受け取っておく。
 REFS="$(cat)"
 
+# 鬼監督はここ（いちばん先）で走らせる。網につなぐ必要が無く一瞬で終わるので、
+# 時間のかかる関所(sekisho)より前に落とした方が、直すまでの待ち時間が短くなる。
+# ------------------------------------------------------------------
+# 関所その3（2026-09-22）：鬼監督を「呼ばれたら見る表」から「通らないと出られない門」にする。
+#
+# きっかけ：たまごさん「俺の分身が欲しい。鬼監督が近いんだけど、ちゃんと機能してるのかな」
+# 実測したら、鬼監督もkenpin_gateも**どの機械にも呼ばれていなかった**
+#   $ grep -c "kenpin_gate|鬼監督" .githooks/pre-push .git/hooks/pre-commit  → 両方 0
+# 呼べと書いてあるのは tools/prompt_rules/always-18 だけ＝思い出したときしか通らない。
+#
+# 判定の本体は tools/oni_gate.py の1か所だけに置いた（1018番と同じ直し方）。
+# ここはそれを呼ぶだけ。規則を足したいときも、このファイルは二度と触らない。
+# 既にあるページの違反は status/oni_baseline.json に借金として記録済みで止めない。
+# ------------------------------------------------------------------
+ONI_FILES=""
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO" ] && continue
+  if [ "$remote_sha" = "$ZERO" ]; then
+    base="$(git hash-object -t tree /dev/null)"
+  else
+    base="$remote_sha"
+  fi
+  ofiles="$(git diff --name-only --diff-filter=ACM "$base" "$local_sha" -- 'share/check/*.html' 2>/dev/null)"
+  [ -z "$ofiles" ] && continue
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in */_template.html) continue ;; esac
+    tmpo="/tmp/oni-$(echo "$f" | tr '/' '_')"
+    git show "$local_sha:$f" > "$tmpo" 2>/dev/null || continue
+    # 借金の照合はファイル名で行うので、元の名前のまま置き直す
+    mkdir -p "/tmp/onigate/$(dirname "$f")" 2>/dev/null || true
+    mv "$tmpo" "/tmp/onigate/$f" 2>/dev/null || continue
+    ONI_FILES="$ONI_FILES /tmp/onigate/$f"
+  done <<EOF3
+$ofiles
+EOF3
+done <<REFSEOF3
+$REFS
+REFSEOF3
+
+if [ -n "$ONI_FILES" ]; then
+  echo "🚧 鬼監督チェック: $(echo $ONI_FILES | wc -w) 件"
+  if ! python3 "$REPO_ROOT/tools/oni_gate.py" $ONI_FILES --strict; then
+    FAIL=1
+    ONI_FAIL=1
+  fi
+fi
+rm -rf /tmp/onigate 2>/dev/null || true
+
+if [ "${ONI_FAIL:-0}" != "0" ]; then
+  echo ""
+  echo "🚧 鬼監督が止めたため、pushを中止しました。"
+  echo "   上に出ている分を直してから、もう一度pushしてください。"
+  echo "   （たまごさんに見せる前にここで落とすのが鬼監督の仕事です）"
+  exit 1
+fi
+
 while read -r local_ref local_sha remote_ref remote_sha; do
   # ブランチ削除pushはチェック対象外
   if [ "$local_sha" = "$ZERO" ]; then
@@ -100,6 +157,7 @@ EOF2
 done <<REFSEOF2
 $REFS
 REFSEOF2
+
 
 if [ "$FAIL" != "0" ]; then
   echo ""

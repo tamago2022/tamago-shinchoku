@@ -200,6 +200,23 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, kakunin
                     importlib.reload(kakunin)
                     out = kakunin.run_job(job.get("payload") or {})
+                elif job.get("kind") == "horu":
+                    # 2026-09-22 仕入れ：周辺を掘る係を工場側で走らせる。
+                    #   サンドボックスからは musicbrainz.org / last.fm に**出られない**
+                    #   （プロキシが 403 でトンネルを塞ぐ。実測 2026-09-22 07:41）。
+                    #   ＝向こうは「どこを掘るか」を書いた票を置くだけ。掘るのはここ。
+                    #   GETだけ・鍵を使わない・**課金0**。棚には一切書かない
+                    #   （書き先は status/shiire_kouho/ だけ＝shuhen_horu.py 側で保証）。
+                    import importlib, shuhen_horu
+                    importlib.reload(shuhen_horu)
+                    out = shuhen_horu.run_job(job.get("payload") or {})
+                elif job.get("kind") == "douga":
+                    # 2026-09-22 仕入れ：候補の動画が「公式か／静止画だけでないか」を確かめる。
+                    #   YouTube の oEmbed（鍵不要・**課金0**）だけを叩く。行き先は
+                    #   www.youtube.com/oembed の1本だけ＝douga_check.py 側の白名簿で保証。
+                    import importlib, douga_check
+                    importlib.reload(douga_check)
+                    out = douga_check.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except Exception:

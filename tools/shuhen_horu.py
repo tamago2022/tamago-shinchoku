@@ -60,7 +60,62 @@ MB = "https://musicbrainz.org/ws/2"
 
 # アジアに必ず寄り道するための入口。ここを通ることで、
 # 英語圏の「似ている」だけで終わらないようにする。
-ASIA_ANCHORS = ("Hanggai", "The HU", "LEENALCHI", "Minyo Crusaders")
+# 2026-09-22 追加：ABAO（阿爆／阿仍仍）。台湾・パイワン族。
+#   前回（初回）の実測で**台湾の同ポジションが1件も出てこなかった**ため、入口を1本足した。
+#   裏：第31回金曲奨でアルバム『kinakaian 母親的舌頭』が年度アルバム賞・原住民語アルバム賞、
+#       収録曲「Thank You 感謝」が年度楽曲賞で最多3冠（フォーカス台湾 2020-10-13）。
+#       https://japan.cna.com.tw/topic/column/202010130001.aspx
+#   ★ここに名前を置くのは「Last.fm の隣を取りに行く入口」としてだけ。棚には出さない。
+ASIA_ANCHORS = ("Hanggai", "The HU", "LEENALCHI", "Minyo Crusaders", "ABAO")
+
+# ---- 2026-09-22 追加：掘り方をもう1本（隣に頼らない道）----
+# なぜ足したか（実測）：初回の28件に**台湾が0件**だった。
+#   原因は道が1本しか無かったこと。Last.fm の「似ている」は聴き手の数で決まるので、
+#   聴き手の少ない言語圏は、いくらアンカーを足しても隣に並ばない。
+#   ＝アンカーを増やすだけでは構造的に届かない。**別の原理の道**が要る。
+# 足した道：MusicBrainz の「土地 × タグ」検索。
+#   誰かに似ているかどうかを一切見ない。「その土地で、その手触りに札が付いている人」を直接引く。
+#   鍵不要・0円。Spotifyの関連アーティスト(Deprecated)には触らない。
+# たまごさんの指示：中国・韓国・台湾は必ず含める。だから MUST に置いて毎回通す。
+AREA_MUST = ("Taiwan", "China", "South Korea")
+# 土地側で引くときの札。OTYKENの位置＝「その土地の言葉・伝統の歌い方 × いまの音」。
+# ★2回に分けて引く。理由は実測（2026-09-22 07:50・台湾で初回を走らせた結果）：
+#   広い札を一度に投げたら、返ってきたのは 鄧麗君・蔡琴・羅大佑 だった。
+#   全員たしかに台湾で、たしかに "folk" の札が付いている。**でも位置が違う。**
+#   向こうの "folk" は「campus folk（校園民歌）」＝1970年代の学生フォークにも付く札で、
+#   OTYKEN の位置（その土地の言葉・伝統の歌い方 × いまの音）とは別物だった。
+#   ＝広い札で引くと、土地は合っているのに**位置がずれたものが上位を埋める。**
+#   だから「その土地の言葉・先住の歌」を名指しする狭い札を**先に**通し、
+#   0件のときだけ広い札へ落ちる。どちらで取れたかは候補に必ず書き残す。
+AREA_TAGS_NARROW = ("indigenous", "aboriginal", "throat singing",
+                    "ethnic", "world music")
+AREA_TAGS_WIDE = ("indigenous", "aboriginal", "folk", "world music",
+                  "traditional", "ethnic", "throat singing")
+AREA_TAGS = AREA_TAGS_NARROW
+
+# ---- 3本目：民族・言語の名前で引く（2026-09-22）----
+# なぜ要るか（実測 2026-09-22 07:53）：
+#   狭い札（indigenous / aboriginal）で台湾を引いたら**0件**だった。
+#   中国は同じ札で 杭盖乐队（Hanggai・内モンゴル）が一発で出た。
+#   ＝向こうの札付けの厚さが土地によって違う。**台湾には「先住」の札がほとんど無い。**
+#   札が無いものは、札で引くかぎり永久に出てこない。だから札を使わない道をもう1本足す。
+# 足した道：**その土地の民族・言語の名前そのもので引く。**
+#   MusicBrainz の検索は名前・別名・注記（disambiguation）にも当たるので、
+#   「Paiwan の歌い手」と注記されている人は、札が1つも無くてもここで引っかかる。
+# 台湾の16族は原住民族委員会（政府機関）が公認しているもの。
+#   https://www.cip.gov.tw/zh-tw/tribe/grid-list/index.html?cumid=8F19BF08AE220D65
+#   https://www.tacp.gov.tw/about/sixteen-tribes
+# ★ここに並べるのは「検索語」であって、棚に入れる根拠ではない。
+#   引っかかった人を本人と確定するのは、今までどおり MBID／ISNI の同定だけ。
+AREA_PEOPLES = {
+    "Taiwan": ("Paiwan", "Amis", "Bunun", "Atayal", "Puyuma", "Rukai",
+               "Tsou", "Saisiyat", "Tao", "Thao", "Kavalan", "Truku",
+               "Sakizaya", "Seediq", "aboriginal", "indigenous"),
+    "China": ("Mongolian", "Uyghur", "Tibetan", "Yi", "Miao", "Zhuang",
+              "throat singing", "indigenous"),
+    "South Korea": ("pansori", "minyo", "gugak", "samulnori",
+                    "traditional korean", "folk"),
+}
 
 # 候補から外す語。**素人カバー・静止画だけの動画・切り抜き**を入口で落とす。
 NG_WORDS = (
@@ -156,6 +211,120 @@ def looks_amateur(text):
 
 
 # ---------------------------------------------------------------------------
+# 土地から引く（隣に頼らない2本目の道・2026-09-22）
+# ---------------------------------------------------------------------------
+
+def area_dig(area, tags=AREA_TAGS, limit=12):
+    """MusicBrainz を「土地 × 札」で引く。誰かに似ているかは見ない。
+
+    返すのは (候補のリスト, 使ったURL, 取れなかった理由)。
+    ★0件なら0件と返す。**推測で埋めない。**向こうの札付けが薄い土地では
+      本当に0件になるので、それは「札が薄い」という事実として上へ返す。
+    """
+    q = 'area:"%s" AND (%s)' % (
+        area, " OR ".join('tag:"%s"' % t for t in tags))
+    url = "%s/artist?query=%s&fmt=json&limit=%d" % (
+        MB, urllib.parse.quote(q), limit)
+    try:
+        j = _get_json(url)
+    except Exception as e:
+        return [], url, "MusicBrainzに届きませんでした（%s）" % e
+    out = []
+    for a in (j.get("artists") or []):
+        # 同定は済んでいる（MBIDで引いた本人そのもの）＝名前一致ではない。
+        name = a.get("name") or ""
+        if not name or looks_amateur(name):
+            continue
+        got_area = ((a.get("area") or {}).get("name")
+                    or (a.get("begin-area") or {}).get("name") or "")
+        # ★土地で引いたのに土地が違うものが混じることがある（検索の点数の都合）。
+        #   名前や札で「それっぽいから」と拾わない。土地が一致したものだけ通す。
+        if got_area and area.lower() not in got_area.lower():
+            continue
+        out.append({
+            "name": name, "mbid": a.get("id"),
+            "isni": (a.get("isnis") or [None])[0],
+            "area": got_area or area,
+            "type": a.get("type"),
+            "began": (a.get("life-span") or {}).get("begin"),
+            "disambiguation": a.get("disambiguation"),
+            "tags": [t.get("name") for t in (a.get("tags") or [])],
+            "src": url,
+        })
+    return out, url, ""
+
+
+def people_dig(area, limit=12):
+    """民族・言語の名前で引く（札に頼らない3本目）。
+    札が1つも付いていなくても、注記に「Paiwan の歌い手」とあれば引っかかる。"""
+    words = AREA_PEOPLES.get(area)
+    if not words:
+        return [], "", "この土地の民族・言語の名前を持っていません"
+    q = 'area:"%s" AND (%s)' % (area, " OR ".join('"%s"' % w for w in words))
+    url = "%s/artist?query=%s&fmt=json&limit=%d" % (
+        MB, urllib.parse.quote(q), limit)
+    try:
+        j = _get_json(url)
+    except Exception as e:
+        return [], url, "MusicBrainzに届きませんでした（%s）" % e
+    out = []
+    for a in (j.get("artists") or []):
+        name = a.get("name") or ""
+        if not name or looks_amateur(name):
+            continue
+        got_area = ((a.get("area") or {}).get("name")
+                    or (a.get("begin-area") or {}).get("name") or "")
+        if got_area and area.lower() not in got_area.lower():
+            continue
+        blob = "%s %s %s" % (name, a.get("disambiguation") or "",
+                             " ".join(t.get("name") or ""
+                                      for t in (a.get("tags") or [])))
+        # ★ここが肝。土地が合っているだけでは通さない。
+        #   **民族・言語の名前が本当に本文に出ているものだけ**通す。
+        #   これを外すと、前回の 鄧麗君・蔡琴 と同じ「土地は合うが位置が違う」に戻る。
+        hit = [w for w in words if w.lower() in blob.lower()]
+        if not hit:
+            continue
+        # ★MusicBrainz の「まとめ枠」を落とす（実測 2026-09-22 07:56）。
+        #   民族名で引いたら Atayal Tribe / Paiwan Tribe / Kavalan People が並んだ。
+        #   これは**その民族の録音をまとめて置くための枠**で（注記に catch-all とある）、
+        #   実在の歌い手でも団体でもない。ここを通すと「曲を入れられない名前」が候補に混ざる。
+        dis = (a.get("disambiguation") or "").lower()
+        if "catch-all" in dis or "catchall" in dis:
+            continue
+        if re.search(r"\b(Tribe|People|Peoples)$", name):
+            continue
+        out.append({
+            "name": name, "mbid": a.get("id"),
+            "isni": (a.get("isnis") or [None])[0],
+            "area": got_area or area, "type": a.get("type"),
+            "began": (a.get("life-span") or {}).get("begin"),
+            "disambiguation": a.get("disambiguation"),
+            "tags": [t.get("name") for t in (a.get("tags") or [])],
+            "hit": hit, "src": url,
+        })
+    return out, url, ""
+
+
+def area_dig2(area, limit=12):
+    """3段で引く。狭い札 → 民族・言語の名前 → 広い札。
+    返り：(候補, 使ったURL, 取れなかった理由, どれで取れたか)
+    ★「広いほうで取れた」ことを隠さない。位置がずれている可能性の印として残す。"""
+    rows, url, why = area_dig(area, AREA_TAGS_NARROW, limit)
+    if rows:
+        return rows, url, "", "狭い札（先住・その土地の歌）"
+    time.sleep(1.1)
+    rows2, url2, why2 = people_dig(area, limit)
+    if rows2:
+        return rows2, url2, "", "民族・言語の名前（札に頼らない道）"
+    time.sleep(1.1)
+    rows3, url3, why3 = area_dig(area, AREA_TAGS_WIDE, limit)
+    if rows3:
+        return rows3, url3, "", "広い札（★位置がずれている可能性あり。人が見る）"
+    return [], url3, (why or why2 or why3 or "3つとも0件"), "取れず"
+
+
+# ---------------------------------------------------------------------------
 # 1本掘る
 # ---------------------------------------------------------------------------
 
@@ -206,10 +375,49 @@ def dig(entry_artist, entry_song="", include_asia=True, per=10, sleep=1.1):
                 "src": page, "identitySrc": ident["src"],
                 "video": "未確認",
             })
-    asia = [c for c in result["candidates"] if c["axis"].endswith("アジア")]
+    # ---- 2本目の道：土地から引く（2026-09-22）----
+    # 隣（Last.fm）を1件も見ない。たまごさんの指示で 中国・韓国・台湾 は毎回必ず通す。
+    if include_asia:
+        for area in AREA_MUST:
+            rows, url, why, how = area_dig2(area)
+            time.sleep(sleep)
+            if why:
+                result["notYetChecked"].append("土地から引けなかった：%s（%s）" % (area, why))
+                continue
+            if not rows:
+                result["notYetChecked"].append(
+                    "土地から引いたが0件：%s（向こうの札付けが薄い。"
+                    "別の札か別の道が要る）／ %s" % (area, url))
+                continue
+            for r in rows:
+                key = (r.get("mbid") or r["name"])
+                if key in got:
+                    continue
+                got.add(key)
+                result["candidates"].append({
+                    "name": r["name"], "mbid": r.get("mbid"),
+                    "isni": r.get("isni"), "area": r.get("area"),
+                    "axis": "同ポジション・アジア（土地から）",
+                    "why": "%s の土地から直接引いた（%s）。誰かに似ているかは"
+                           "一切見ていない。札：%s"
+                           % (area, how, "・".join(r.get("tags") or []) or "無し"),
+                    "from": {"artist": entry_artist, "song": entry_song},
+                    "tags": r.get("tags"), "src": url, "identitySrc": url,
+                    "video": "未確認",
+                })
+
+    asia = [c for c in result["candidates"] if "アジア" in c["axis"]]
     if include_asia and not asia:
         result["notYetChecked"].append(
             "アジアの候補が0件で終わった。英語圏に偏った回として記録する。")
+    # ★たまごさんの指示（中国・韓国・台湾は必ず含める）が実際に果たせたかを、毎回数える。
+    for area in (AREA_MUST if include_asia else ()):
+        n = sum(1 for c in result["candidates"]
+                if area.lower() in (c.get("area") or "").lower())
+        if n == 0:
+            result["notYetChecked"].append(
+                "★%s が0件のまま終わった回。指示は「必ず含める」なので、"
+                "これは満たせていない。" % area)
     return result
 
 
@@ -222,6 +430,43 @@ def _load(path, default):
         return json.load(io.open(path, encoding="utf-8"))
     except Exception:
         return default
+
+
+def _merge_save(path, res):
+    """★上書きしない。前に居た候補を必ず残してから書く。
+
+    なぜ要るか（2026-09-22 08:00 実害）：
+      この道具を掘り直したとき、前の回に**人が出典付きで書いた28件**が
+      まるごと消えた。status/ はgitが見ていないので、履歴からも戻せなかった
+      （公開済みのHTMLから拾い直して復旧した）。
+      「掘るたびに前の仕事が消える」道具は、走れば走るほど損をする。
+    合わせ方：MBIDがあればMBID、無ければ名前で1件と見る。
+      **先に居たほうを残す。**手書きの note/fact を機械の一行で上書きしない。
+    """
+    old = _load(path, {})
+    def key(c):
+        return (c.get("mbid") or re.sub(r"[^0-9a-z぀-鿿]", "",
+                                        (c.get("name") or "").lower())[:20])
+    seen, merged = {}, []
+    for c in (old.get("candidates") or []) + (res.get("candidates") or []):
+        k = key(c)
+        if k in seen:
+            if c.get("mbid") and not seen[k].get("mbid"):
+                seen[k]["mbid"] = c["mbid"]
+            continue
+        seen[k] = dict(c)
+        merged.append(seen[k])
+    for i, c in enumerate(merged):
+        c["n"] = i + 1
+    out = dict(old)
+    out.update({k: v for k, v in res.items() if k != "candidates"})
+    out["candidates"] = merged
+    if old.get("entry") and not res.get("entry"):
+        out["entry"] = old["entry"]      # 入口の手書きを消さない
+    out["kept"] = len(old.get("candidates") or [])
+    out["addedThisRun"] = len(merged) - len(old.get("candidates") or [])
+    _save(path, out)
+    return out["addedThisRun"]
 
 
 def _save(path, obj):
@@ -249,7 +494,7 @@ def watch(max_new=2):
     for artist, song in todo[:max_new]:
         res = dig(artist, song)
         slug = re.sub(r"[^a-z0-9]+", "-", artist.lower()).strip("-") or "unknown"
-        _save(os.path.join(OUT_DIR, "%s.json" % slug), res)
+        _merge_save(os.path.join(OUT_DIR, "%s.json" % slug), res)
         added += len(res["candidates"])
         seen.add(artist)
     run["runs"] += 1
@@ -277,6 +522,67 @@ def report():
     return 0
 
 
+# ---------------------------------------------------------------------------
+# 工場側の代行係から呼ばれる口（2026-09-22）
+# ---------------------------------------------------------------------------
+
+def run_job(payload):
+    """tools/gaibu_runner.py が kind="horu" のときに呼ぶ。
+
+    なぜ要るか（実測 2026-09-22 07:41）：
+      Cowork/Dispatch のサンドボックスからは musicbrainz.org にも last.fm にも
+      **回線が出ない**（プロキシが CONNECT に 403 を返す）。このMacからは出る。
+      ＝向こうは「どこを掘るか」の票を置くだけ、掘るのはこちら、という形にする。
+
+    payload:
+      mode    … "artist"（入口から掘る）／"area"（土地から引くだけ）／"watch"
+      artist  … mode=artist のときの入口
+      song    … 任意
+      areas   … mode=area のときの土地。省略なら AREA_MUST（中国・韓国・台湾）
+
+    ★金は一切かからない（鍵の要る先を1つも叩かない）。
+    ★棚には書かない。書き先は status/shiire_kouho/ だけ。
+    """
+    mode = (payload or {}).get("mode") or "artist"
+    if mode == "area":
+        areas = (payload or {}).get("areas") or list(AREA_MUST)
+        found, miss, hows = {}, [], {}
+        for a in areas:
+            rows, url, why, how = area_dig2(a)
+            hows[a] = how
+            if why:
+                miss.append("%s：%s" % (a, why))
+            elif not rows:
+                miss.append("%s：0件（札が薄い）／%s" % (a, url))
+            found[a] = rows
+            time.sleep(1.1)
+        return {"ok": any(found.values()), "mode": "area", "found": found,
+                "howTaken": hows, "notYetChecked": miss, "totalYen": 0.0}
+    if mode == "watch":
+        added, dug = watch()
+        return {"ok": True, "mode": "watch", "dug": dug, "added": added,
+                "totalYen": 0.0}
+    artist = (payload or {}).get("artist") or ""
+    if not artist:
+        return {"ok": False, "error": "入口のアーティスト名が空です", "totalYen": 0.0}
+    res = dig(artist, (payload or {}).get("song") or "")
+    slug = re.sub(r"[^a-z0-9]+", "-", artist.lower()).strip("-") or "unknown"
+    _merge_save(os.path.join(OUT_DIR, "%s.json" % slug), res)
+    run = _load(RUN_JSON, {"runs": 0, "candidates": 0, "history": []})
+    run["runs"] += 1
+    run["candidates"] += len(res["candidates"])
+    run["history"].append({"at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                           "dug": 1, "added": len(res["candidates"]),
+                           "via": "工場の代行係"})
+    run["history"] = run["history"][-50:]
+    _save(RUN_JSON, run)
+    return {"ok": True, "mode": "artist", "artist": artist,
+            "added": len(res["candidates"]),
+            "asia": sum(1 for c in res["candidates"] if "アジア" in c["axis"]),
+            "savedTo": "status/shiire_kouho/%s.json" % slug,
+            "notYetChecked": res["notYetChecked"], "totalYen": 0.0}
+
+
 def main():
     args = sys.argv[1:]
     if "--report" in args:
@@ -287,10 +593,28 @@ def main():
         song = args[args.index("--song") + 1] if "--song" in args else ""
         res = dig(artist, song)
         slug = re.sub(r"[^a-z0-9]+", "-", artist.lower()).strip("-")
-        _save(os.path.join(OUT_DIR, "%s.json" % slug), res)
+        _merge_save(os.path.join(OUT_DIR, "%s.json" % slug), res)
         print("%s：候補 %d件／同定できず %d件"
               % (artist, len(res["candidates"]), len(res["notYetChecked"])))
         return 0
+    if "--area" in args:
+        # 2本目の道だけを単体で試す（台湾が本当に出るのかを、その場で見るため）
+        i = args.index("--area")
+        areas = [args[i + 1]] if len(args) > i + 1 and not args[i + 1].startswith("--") \
+            else list(AREA_MUST)
+        rc = 0
+        for a in areas:
+            rows, url, why, how = area_dig2(a)
+            print("── %s ──（%s） %s" % (a, how, why or "%d件" % len(rows)))
+            print("   %s" % url)
+            for r in rows:
+                print("   ・%s ／ %s ／ 札:%s ／ %s"
+                      % (r["name"], r.get("area"),
+                         "・".join(r.get("tags") or []) or "無し", r.get("mbid")))
+            if not rows:
+                rc = 1
+            time.sleep(1.1)
+        return rc
     if "--watch" in args:
         added, dug = watch()
         if not ("--quiet" in args):

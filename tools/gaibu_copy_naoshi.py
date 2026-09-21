@@ -66,7 +66,8 @@ FORCE = os.path.join(STATUS, ".gaibu_copy_naoshi_force")
 LOCK = os.path.join(STATUS, ".gaibu_copy_naoshi.lock")
 
 MORNING_HOUR = 6          # 朝6時以降の最初の便で走る
-LOCK_STALE_SEC = 30 * 60  # 30分以上握ったままのロックは詰まりとみなす
+LOCK_STALE_SEC = 60 * 60  # 60分以上握ったままのロックは詰まりとみなす
+DEADLINE_SEC = 20 * 60    # 1回の持ち時間。超えたら残りは次の回へ（Macを占有し続けない）
 MAX_PER_RUN = 25          # 1回で直す上限（Macを占有しないため。残りは翌朝に回る）
 #   ふだん入ってくるのは1日3〜4件なので、この数字が効くのは溜まりを片づける日だけ。
 #   控えの口は1件2〜3秒なので、25件でも1〜2分。claude -p が生きている日は
@@ -463,7 +464,16 @@ def run(since_days=14):
             out["redCount"] = len(out["red"])
             return out
 
+    t0 = time.time()
     for i, t in enumerate(targets[:MAX_PER_RUN], 1):
+        if time.time() - t0 > DEADLINE_SEC:
+            # Macを何十分も占有しない。**残ったことを隠さない。**次の回が続きから拾う。
+            out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
+                                 "was": t["copy"], "why": t["why"],
+                                 "reason": "この回の持ち時間（%d分）を使い切った。次の回で続きをやる"
+                                           % (DEADLINE_SEC // 60)})
+            log("持ち時間切れ。%d件目以降は次の回へ" % i)
+            break
         log("  %d/%d %s" % (i, min(len(targets), MAX_PER_RUN), (t["title"] or "")[:40]))
         text, why_ng = ask_claude(t["title"], t["copy"], t["url"], diag)
         if not text:

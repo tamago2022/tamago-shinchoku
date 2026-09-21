@@ -302,6 +302,12 @@ while :; do
   #   ★走った回数と実際に片付いたバイト数の両方を status/mac_souji.json に残し、
   #     「走行>0 なのに 片付き=0」は赤で出す。投げっぱなしにして心臓は待たない。
   tick_every 40 && ( python3 "$REPO/tools/mac_souji.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-22 鬼監督の口。やり残しを自分で見つけて、1日1本だけ言い出す。
+  #   たまごさん「俺が言わなくても仕事が進むようにしてほしい。
+  #              『これできてないからここ進めよう』だとか、そこも半自動化したい」
+  #   中で1日1回に間引く（status/.oni_kuchi_last）ので、ここは緩く呼べばよい。
+  #   AIを1回も呼ばないので、何度呼んでもクレジットは0円。定期タスクも新しい常駐も作らない。
+  tick_every 240 && ( python3 "$REPO/tools/oni_kuchi.py" >> "$REPO/status/oni_kuchi.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
