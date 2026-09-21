@@ -13,6 +13,7 @@
     --faint:rgba(34,48,74,.60);
   }
   *{box-sizing:border-box}
+  html,body{overflow-x:hidden;max-width:100%}
   html{-webkit-text-size-adjust:100%}
   body{
     margin:0; background:var(--paper); color:var(--ink);
@@ -42,7 +43,9 @@
     text-transform:uppercase;margin:4.5rem 0 1.5rem;
     padding-bottom:.7rem;border-bottom:1px solid var(--rule)
   }
-  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -1px}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -1px;max-width:100%}
+  .swipe{display:none;font-size:.7rem;letter-spacing:.2em;color:var(--accent);margin:0 0 .6rem}
+  @media(max-width:47rem){.swipe{display:block}}
   table{border-collapse:collapse;width:100%;min-width:46rem;font-size:.84rem}
   th,td{
     text-align:left;padding:.85rem .8rem;border-bottom:1px solid var(--rule);
@@ -93,6 +96,7 @@
   </div>
 
   <h2>falに載っているもの　全部</h2>
+  <p class="swipe">← 表は横にすべります →</p>
   <div class="scroll">
   <table>
     <thead>
