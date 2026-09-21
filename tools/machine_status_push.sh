@@ -273,6 +273,15 @@ run_with_timeout 150 python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet 
 #   向こうは status/nyuka/pending/ へ積むだけ。**実際に通すのはここ（鍵とネットがあるMac側）**。
 #   新しいlaunchd常駐は増やさず既存5分便に相乗り（上のkenpin_gateと同じ方針）。
 run_with_timeout 200 python3 "$REPO/tools/nyuka_sekisho.py" --run-pending --quiet >/dev/null 2>&1 || true
+# 2026-09-22 周辺を掘る（tools/shuhen_horu.py）。たまごさん「自分が音楽を入れたら、
+#   その周辺のヒット曲や、似たような影響・同ポジションのグループを探して仕入れ候補に
+#   しておいてほしい。（まだ棚には入れないで）」。
+#   ★入荷が置かれた側から気づいて勝手に走る。言われてから動かない。
+#   ★書き込むのは status/shiire_kouho/ だけ。棚（coverGuide.ts）には触らない。
+#   ★0円の道だけ（MusicBrainz / Last.fmの公開ページ / Wikipedia）。鍵を使わない。
+#   ★1回で掘る入口は2本まで。相手のサーバーを叩きすぎない。
+#   新しいlaunchd常駐は増やさず既存5分便に相乗り（上2つと同じ方針）。
+run_with_timeout 200 python3 "$REPO/tools/shuhen_horu.py" --watch --quiet >/dev/null 2>&1 || true
 # 976番（2026-09-20）【珍獣ラシコル】審査通過の見張り。メールではなく**LINE STOREの公開ページ**を見る。
 #   974番(check_line_shinsa.py)はGmailの鍵が無くて "blocked":"no_credential" のまま一度も見ていない。
 #   審査が通れば販売ページが誰でも見える所に出る＝ログインも鍵も要らない。そこだけを叩く。
