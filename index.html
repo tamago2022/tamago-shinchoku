@@ -386,6 +386,40 @@ function loadCash(){
         '。心臓と5分便に相乗り（定期タスクは使っていない）</div></li>');
     }
 
+    /* 2026-09-21（986番）10分ごとの軽い掃き掃除（孤児セッション・肥大ログ・自分たちの取り残し）。
+       ★赤にする条件は3つ。「走った」だけでは緑にしない。
+         1. 掃く候補があったのに0バイトしか取れなかった（＝経路が壊れている）
+         2. 30分以上呼ばれていない（＝心臓からの経路が死んだ）
+         3. まだ1回も走っていない
+       候補が0件で0バイトは**緑**。床が綺麗なだけで、壊れてはいない。
+       （最初これも赤にしていたが、掃除直後は必ず赤になり、永久に赤い＝警報として死ぬ） */
+    var rel = souji && souji.relief;
+    if(souji){
+      if(!rel){
+        rows.push('<li class="red">10分ごとの掃除　まだ動いていません' +
+          '<div class="meta">status/public/mac_souji.json に relief がありません</div></li>');
+      } else {
+        var rRuns    = Number(rel.runs || 0);
+        var rFreed   = Number(rel.totalFreedBytes || 0);
+        var rTargets = Number(rel.totalTargets || 0);
+        var rMs      = rel.lastRunAt ? Date.parse(rel.lastRunAt) : NaN;
+        var rAgeMin  = isNaN(rMs) ? null : (Date.now() - rMs) / 60000;
+        var rDead    = (rAgeMin != null && rAgeMin > 30);
+        var rStuck   = (rRuns > 0 && rFreed <= 0 && rTargets > 0);
+        var rBad     = rStuck || rDead || rRuns === 0;
+        var rWhy = rStuck
+          ? ('走った' + rRuns + '回・候補' + rTargets + '件あったのに片付いた0バイト（動いているのに何も取れていない）')
+          : (rRuns === 0 ? 'まだ1回も走っていません'
+            : (rDead ? Math.floor(rAgeMin) + '分呼ばれていません（心臓からの経路が死んでいます）' : ''));
+        rows.push('<li' + (rBad ? ' class="red"' : '') + '>10分ごとの掃除　' +
+          (rBad ? rWhy : ('累計 ' + esc(rel.totalFreedHuman || '0.0B') + ' 片付いた')) +
+          '<div class="meta">走行 ' + rRuns + '回／呼ばれた ' + Number(rel.calls || 0) + '回' +
+          '／候補 累計' + rTargets + '件／直近 ' + esc(rel.lastFreedHuman || '未取得') +
+          '／最終 ' + (rel.lastRunAt ? esc(String(rel.lastRunAt).replace("T", " ").slice(0, 16)) : '未実行') +
+          '。孤児セッション・肥大ログ・自分たちの取り残しを掃く</div></li>');
+      }
+    }
+
     // サブスク：台帳が公開側に無い（金額・次の請求日は端末側にしかない）
     rows.push('<li>サブスク　未取得<div class="meta">金額と次の請求日は <a href="money.html">お金の管理表</a> に入っています</div></li>');
 
