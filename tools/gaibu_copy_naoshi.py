@@ -122,6 +122,20 @@ PROMPT = """あなたは「ごきげん補給所」のコピーを書く編集�
 NO_MATERIAL とだけ出す。"""
 
 
+LOG = os.path.join(STATUS, "gaibu_copy_naoshi.log")
+
+
+def log(msg):
+    """自分で足跡を残す。**呼ぶ側のログ任せにしない。**
+    実測（2026-09-22 06:36）：シェル側のログだけに頼っていたら、1回目が何も残さずに
+    消えていて、走ったのか落ちたのかすら分からなかった。"""
+    try:
+        with io.open(LOG, "a", encoding="utf-8") as f:
+            f.write("%s %s\n" % (datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S"), msg))
+    except Exception:
+        pass
+
+
 def load(path, default=None):
     try:
         with io.open(path, encoding="utf-8") as f:
@@ -326,7 +340,9 @@ def run(since_days=14):
         return out
 
     out["targets"] = len(targets)
-    for t in targets[:MAX_PER_RUN]:
+    log("対象 %d件（今回は最大%d件まで直す）" % (len(targets), MAX_PER_RUN))
+    for i, t in enumerate(targets[:MAX_PER_RUN], 1):
+        log("  %d/%d %s" % (i, min(len(targets), MAX_PER_RUN), (t["title"] or "")[:40]))
         text, why_ng = ask_claude(t["title"], t["copy"], t["url"], diag)
         if not text:
             out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
@@ -401,10 +417,29 @@ def main():
             if last == now.strftime("%Y-%m-%d"):
                 return
     if not take_lock():
+        log("前の回がまだ走っているので見送り")
         return
+    log("開始（force=%s）" % force)
     try:
-        out = run()
+        try:
+            out = run()
+        except Exception as e:
+            # 落ちたことを**隠さない。**次の回が同じところで落ちるかどうかも分かる形で残す。
+            import traceback
+            log("落ちた：%s %s" % (type(e).__name__, e))
+            log(traceback.format_exc()[-800:])
+            prev = load(OUT_JSON, {}) or {}
+            out = {"generatedAt": datetime.now(JST).strftime("%Y-%m-%d %H:%M"),
+                   "runs": int(prev.get("runs") or 0) + 1,
+                   "fixedTotal": int(prev.get("fixedTotal") or 0),
+                   "targets": 0, "fixed": 0, "skipped": 0,
+                   "changes": [], "skips": [],
+                   "history": (prev.get("history") or [])[:HISTORY_KEEP],
+                   "red": ["直す係が途中で落ちた（%s: %s）" % (type(e).__name__, e)],
+                   "redCount": 1, "diag": []}
         save(OUT_JSON, out)
+        log("終わり：対象%s 直した%s 直せず%s" % (out.get("targets"), out.get("fixed"),
+                                             out.get("skipped")))
         try:
             with io.open(GATE, "w", encoding="utf-8") as f:
                 f.write(now.strftime("%Y-%m-%d %H:%M"))

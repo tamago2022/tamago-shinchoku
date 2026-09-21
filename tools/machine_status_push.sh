@@ -77,6 +77,23 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 #   二重起動は _961 側のロックで防いでいる。
 ( nohup bash "$REPO/tools/_961_jrs_deliver.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-09-22（971番の相棒・Cowork側から設置）コピーを毎朝ひとりでに直す係 ----
+# たまごさん「外部追加分のコピーを全部直す ⇨ これはもう毎日やること」。
+# 実測：数える係（971・下の方）は毎朝きちんと「手つかず16件」を出していた。だが直す係が
+#   居なかったので、16件は16件のまま座り続けた。**数えるだけでは減らない。**ここが直す係。
+# ★置き場所をここにした理由（実測で1回はまった）：この便の下の方には
+#   「機械の数字が前回と同じなら return 0」という早期returnがある。最初そこの後ろに
+#   置いたため、変化の無い間は一度も呼ばれなかった（06:23〜06:35、1回も走らず）。
+#   ここはロックを取った直後＝launchdが起こせば必ず通る場所。**心臓が死んでいても回る。**
+# ★新しい常駐・新しい定期タスクは増やさない（この工場の決まり）。
+# ★中で1日1回ゲートする（朝6時以降の最初の便だけ走る）。手で回すときは
+#   status/.gaibu_copy_naoshi_force を置く。
+# ★書き直しに claude -p を使うので1件あたり数十秒かかる。この便を1秒も遅らせないため
+#   バックグラウンドへ逃がす。二重起動は naoshi 側のロック（30分で剥がれる）で防ぐ。
+# ★呼んだこと自体をログに残す（「呼んだつもりで呼べていない」を見えなくしないため）。
+echo "$(date '+%F %T') naoshi 呼び出し" >> "$REPO/status/gaibu_copy_naoshi.log"
+( nohup python3 "$REPO/tools/gaibu_copy_naoshi.py" >>"$REPO/status/gaibu_copy_naoshi.log" 2>&1 & ) >/dev/null 2>&1
+
 # ---- 2026-09-20（969番・Cowork側から設置）外部AIの返事を拾って961ページへ並べる便 ----
 # たまごさん「返事が来たら、要約せずそのまま 961-talking-avatar-jirei.html に追記する」。
 # GitHubのIssueに来たコメントを、条件付きGET1本で見に行くだけ（変化が無い回はレート消費0・0円）。
@@ -532,16 +549,9 @@ run_with_timeout 120 python3 "$REPO/tools/kagi_daicho.py" >/dev/null 2>&1 || tru
 # ★status/public/ へ直接書くのでPUBLISH_LISTへの追加は要らない（下の公開にそのまま乗る）。
 # ★鍵の値は書き出さない（名前と、通ったか通らないかだけ）。
 run_with_timeout 90 python3 "$REPO/tools/gaibu_copy_nippou.py" >/dev/null 2>&1 || true
-# ---- 2026-09-22（971番の相棒・Cowork側から設置）コピーを毎朝ひとりでに直す係 ----
-# たまごさん「外部追加分のコピーを全部直す ⇨ これはもう毎日やること」。
-# 実測：数える係（上の971）は毎朝きちんと「手つかず16件」を出していた。だが直す係が
-#   居なかったので、16件は16件のまま座り続けた。数えるだけでは減らない。ここが直す係。
-# ★新しい常駐は増やさない。この5分便（launchdが直接起こす＝心臓が死んでいても回ってくる）に相乗り。
-# ★中で1日1回ゲートする（朝6時以降の最初の便だけ走る）。手で回すときは
-#   status/.gaibu_copy_naoshi_force を置く。
-# ★書き直しに claude -p を使うので1件あたり数十秒かかる。この便を1秒も遅らせないため
-#   バックグラウンドへ逃がす。二重起動は naoshi 側のロック（30分で剥がれる）で防ぐ。
-( nohup python3 "$REPO/tools/gaibu_copy_naoshi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+# ※「コピーを毎朝直す係」はこの下ではなく、**この便の冒頭**（ロックを取った直後）に置いた。
+#   ここは上の早期return（数字が前回と同じなら return 0）より後ろなので、
+#   変化が無い日は一度も回ってこない＝毎朝の約束が守れないため。
 [ -f "$REPO/status/done_archive.json" ] && python3 "$REPO/tools/build_done_archive_light.py" >/dev/null 2>&1
 [ -f "$REPO/status/queue.json" ] && python3 "$REPO/tools/build_queue_public_gz.py" >/dev/null 2>&1
 for _f in $PUBLISH_LIST; do
