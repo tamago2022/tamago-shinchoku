@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>973 Devinの$8.85は、いつ・何に消えたのか</title>
+<style>
+  :root{--paper:#f4efe4;--ink:#2a2622;--sub:#8d8578;--aka:#c4483a;--midori:#3a7a52}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#0d0b09}
+  .wrap{max-width:780px;margin:0 auto;padding:26px 14px 72px;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
+  .head{text-align:center;color:#e8dcc0;margin:0 0 18px}
+  .head .no{font-size:.7rem;letter-spacing:.3em;color:#8a8172}
+  .head h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
+    font-size:1.45rem;letter-spacing:.05em;margin:6px 0 8px;line-height:1.55}
+  .head p{font-size:.76rem;color:#9d947f;margin:0;line-height:1.8}
+  .answer{background:#1c1a16;border:1px solid #3a352b;border-radius:16px;padding:20px 16px;
+    margin-top:14px;color:#f0e7d2}
+  .answer .big{font-size:1.02rem;font-weight:700;line-height:1.85;margin:0}
+  .answer .big b{color:#e8c76a}
+  .answer .sub{font-size:.79rem;color:#a89f8b;line-height:1.85;margin:12px 0 0}
+  .panel{background:var(--paper);border-radius:16px;padding:20px 15px;margin-top:14px;
+    border:1px solid #e2dccd}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.04rem;
+    letter-spacing:.04em;margin:0 0 4px;color:var(--ink);border-bottom:1px solid #e2dccd;padding-bottom:8px}
+  h2 small{display:block;font-size:.7rem;color:var(--sub);letter-spacing:.02em;margin-top:5px;
+    font-family:-apple-system,sans-serif}
+  p{line-height:1.9;font-size:.85rem;margin:12px 0 0}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.76rem}
+  th,td{border-top:1px solid #e6e0d1;padding:7px 4px;text-align:left;vertical-align:top;line-height:1.65}
+  th{color:var(--sub);font-weight:400;font-size:.7rem;border-top:none}
+  td.d{white-space:nowrap;font-variant-numeric:tabular-nums;color:#4a453d;width:5.6em}
+  td.d span{color:var(--sub);font-size:.92em}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;width:3.6em}
+  td.s{color:var(--sub);width:4.4em;font-size:.92em}
+  tr.in td{background:#fbf3df}
+  tr.in td.t{font-weight:700}
+  tr.mark td{background:#2a2622;color:#f0e7d2;font-size:.76rem;line-height:1.7;
+    border-top:2px solid #2a2622;padding:9px 8px}
+  tr.mark td b{color:#e8c76a}
+  tr.mark td span{color:#a89f8b;font-size:.92em}
+  ul{margin:10px 0 0;padding-left:1.15em;font-size:.82rem;line-height:1.9}
+  li{margin-bottom:5px}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:.92em;background:#e9e3d4;
+    padding:1px 5px;border-radius:4px;word-break:break-all}
+  .raw{background:#2a2622;color:#e4dcc9;border-radius:10px;padding:12px 12px;margin-top:10px;
+    font-family:ui-monospace,Menlo,monospace;font-size:.7rem;line-height:1.8;
+    white-space:pre-wrap;word-break:break-all}
+  .raw b{color:#e8c76a;font-weight:400}
+  .warn{background:#f7e9e7;border-radius:10px;padding:12px 13px;font-size:.79rem;
+    color:#8e372c;line-height:1.85;margin-top:14px}
+  .ok{background:#eaf1ec;border-radius:10px;padding:12px 13px;font-size:.79rem;
+    color:#2c5540;line-height:1.85;margin-top:14px}
+  .note{font-size:.73rem;color:var(--sub);line-height:1.85;margin-top:12px}
+  .foot{color:#6f6758;font-size:.7rem;text-align:center;margin-top:26px;line-height:1.9}
+  a{color:#2f5f45}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="no">9 7 3</div>
+    <h1>Devinの $8.85 は、<br>いつ・何に消えたのか</h1>
+    <p>公式APIを叩いて返ってきたものと、公式画面の実測値だけで組みました。<br>
+       推測は1円も入れていません。</p>
+  </div>
+
+  <div class="answer">
+    <p class="big">消えた先は <b>8本のセッション</b>。走った時間は合計 <b>530分</b>（8時間50分）。<br>
+      ただし <b>どの1本がいくらだったかは、取れません。</b></p>
+    <p class="sub">Devinには使用額を日付や件名で取る口が無く、公式が「サポートに連絡して有効化してくれ」と
+      返してくる状態のままだからです（下に生の文言を置きました）。<br>
+      言い切れるのは「この8本以外にあり得ない」ところまでです。</p>
+  </div>
+
+  <div class="panel">
+    <h2>減った2時点と、そのあいだに走ったもの
+      <small>時刻は日本時間。セッションは 2026-09-21 09:15 に Devin公式API（GET /v1/sessions）が返した20件そのまま。<br>
+      色の付いた8本が、$8.85 が減った窓の中で走ったものです。</small></h2>
+    <table>
+      <tr><th>開始 → 終了</th><th>セッション名</th><th>分</th><th>状態</th></tr>
+<tr><td class="d">09/16 20:05<br><span>→ 09/16 21:51</span></td><td class="t">Access tamago2022/joy-relief-station</td><td class="n">105.7</td><td class="s">finished</td></tr>
+<tr><td class="d">09/16 22:16<br><span>→ 09/16 22:57</span></td><td class="t">joy-relief-station 軽量化</td><td class="n">41.1</td><td class="s">finished</td></tr>
+<tr><td class="d">09/16 22:16<br><span>→ 09/16 22:57</span></td><td class="t">Optimize joy-relief-station Images</td><td class="n">41.2</td><td class="s">finished</td></tr>
+<tr><td class="d">09/16 22:16<br><span>→ 09/16 22:57</span></td><td class="t">joy-relief-station unused cleanup</td><td class="n">41.1</td><td class="s">finished</td></tr>
+<tr><td class="d">09/17 22:42<br><span>→ 09/17 23:31</span></td><td class="t">Replace Client Types with Any</td><td class="n">48.7</td><td class="s">finished</td></tr>
+<tr><td class="d">09/18 01:24<br><span>→ 09/18 02:01</span></td><td class="t">index.htmlを進捗表に差し替え</td><td class="n">37.4</td><td class="s">finished</td></tr>
+<tr><td class="d">09/18 01:50<br><span>→ 09/18 03:20</span></td><td class="t">Fix Card Overlay Layout</td><td class="n">90.1</td><td class="s">finished</td></tr>
+<tr><td class="d">09/18 03:10<br><span>→ 09/18 03:40</span></td><td class="t">tamago2022/joy-relief-station main</td><td class="n">30.2</td><td class="s">finished</td></tr>
+<tr><td class="d">09/18 03:13<br><span>→ 09/18 04:11</span></td><td class="t">Dynamically Import coverGuide</td><td class="n">58.3</td><td class="s">finished</td></tr>
+<tr class="mark"><td colspan="4"><b>2026-09-18 07:35</b>　公式画面：使用 <b>$1.41</b>／残り <b>$8.59</b>　<span>（Weekly枠 79%使用・auto-reload OFF）</span></td></tr>
+<tr class="in"><td class="d">09/18 22:31<br><span>→ 09/18 23:05</span></td><td class="t">Today&#x27;s Work Summary</td><td class="n">34.1</td><td class="s">finished</td></tr>
+<tr class="in"><td class="d">09/19 03:04<br><span>→ 09/19 03:41</span></td><td class="t">バッジ寸法：片側cq単位をmin()に直す</td><td class="n">36.9</td><td class="s">finished</td></tr>
+<tr class="in"><td class="d">09/19 03:07<br><span>→ 09/19 03:38</span></td><td class="t">Add GPT Live Iris Lab</td><td class="n">31.4</td><td class="s">finished</td></tr>
+<tr class="in"><td class="d">09/19 03:39<br><span>→ 09/19 04:27</span></td><td class="t">Add GPT Live Lab Page</td><td class="n">48.8</td><td class="s">finished</td></tr>
+<tr class="in"><td class="d">09/19 03:41<br><span>→ 09/19 08:53</span></td><td class="t">FeedbackDoorを最下部に一本化</td><td class="n">312.2</td><td class="s">finished</td></tr>
+<tr class="in"><td class="d">09/20 10:33<br><span>→ 09/20 11:02</span></td><td class="t">トップページ初回表示の軽量化</td><td class="n">28.8</td><td class="s">finished</td></tr>
+<tr class="in"><td class="d">09/20 10:34<br><span>→ 09/20 10:53</span></td><td class="t">軸違いの%を修正</td><td class="n">19.4</td><td class="s">finished</td></tr>
+<tr class="in"><td class="d">09/20 10:34<br><span>→ 09/20 10:52</span></td><td class="t">toolsスクリプトの棚卸し</td><td class="n">18.4</td><td class="s">finished</td></tr>
+<tr class="mark end"><td colspan="4"><b>2026-09-20 17:44</b>　公式画面：使用 <b>$10.26</b>／残高 <b>$-0.26</b>　<span>（たまごさん撮影）</span></td></tr>
+<tr><td class="d">09/20 17:48<br><span>→ 09/20 18:39</span></td><td class="t">トップページの速度原因調査</td><td class="n">51.3</td><td class="s">finished</td></tr>
+<tr><td class="d">09/20 18:10<br><span>→ 09/20 18:40</span></td><td class="t">share/checkの軸違い%修正</td><td class="n">29.7</td><td class="s">finished</td></tr>
+<tr><td class="d">09/20 18:13<br><span>→ 09/20 18:40</span></td><td class="t">toolsスクリプトの棚卸し</td><td class="n">26.4</td><td class="s">finished</td></tr>    </table>
+    <p class="note">この窓のちょうど外側に注意。9/18 07:35 の時点で走っていたセッションは1本もありません
+      （直前の1本は 04:11 に終わっています）。9/20 17:44 の次の1本が始まるのは 17:48 で、4分あとです。
+      <b>つまり、どちらの境目もセッションがまたいでいません。</b>窓の中身はこの8本でちょうど閉じています。</p>
+    <p class="note">なお工場側の台帳（gaibu.json）には21件ありますが、1件（9/17 19:50「Devin CLIの導入準備」）は
+      APIのセッションではなく、こちらで書いた記録です。APIが返すのは上の20件だけで、それ以上は返ってきません。</p>
+  </div>
+
+  <div class="panel">
+    <h2>① 実測で取れた事実<small>叩いて返ってきたもの・画面に写っているものだけ</small></h2>
+    <ul>
+      <li><b>セッション一覧は取れた。</b>2026-09-21 09:15、Macの上から <code>GET /v1/sessions</code> → HTTP 200、20件。</li>
+      <li><b>個票も20件すべて取れた。</b><code>GET /v1/session/{id}</code> → 200。</li>
+      <li><b>その生JSONに、消費量を示すキーは1つも無い。</b>返ってきたキーの全部がこれです —
+        <code>session_id</code> <code>status</code> <code>status_enum</code> <code>title</code>
+        <code>created_at</code> <code>updated_at</code> <code>snapshot_id</code> <code>playbook_id</code>
+        <code>tags</code> <code>requesting_user_email</code> <code>pull_request</code>
+        <code>structured_output</code>（個票はこれに <code>messages</code> が加わるだけ）。
+        ACU・金額・使用量にあたるものは無し。</li>
+      <li><b>2026-09-18 07:35</b>：使用 $1.41 ／ 残り $8.59。Daily枠 59%使用・Weekly枠 79%使用。
+        auto-reload は OFF（Auto-reload spend this cycle: $0.00）。
+        <span class="note">出どころ：<code>status/devin-night-2026-09-18.md</code>。すべて app.devin.ai の画面から書き取ったもの。</span></li>
+      <li><b>2026-09-20 17:44</b>：使用 $10.26 ／ 残高 $-0.26。
+        <span class="note">出どころ：たまごさん撮影の app.devin.ai の画面。</span></li>
+      <li><b>差は $8.85。</b>この2点のあいだに走ったセッションは8本、合計530.0分。</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>② 取れなかったもの<small>どの口を叩いて、公式が何と返したか。文言はそのまま</small></h2>
+    <div class="raw">GET /v1/enterprise/consumption
+  -> HTTP 400  <b>{"detail":"Both start_date and end_date parameters are required"}</b>
+
+GET /v1/enterprise/consumption?start_date=2026-09-17&amp;end_date=2026-09-21
+  -> HTTP 403  <b>{"detail":"Contact support to enable the consumption API"}</b>
+
+GET /v1/usage              -> HTTP 404  {"detail":"Not Found"}
+GET /v1/billing            -> HTTP 404  {"detail":"Not Found"}
+GET /v1/organization/usage -> HTTP 404  {"detail":"Not Found"}
+GET /v1/acu                -> HTTP 404  {"detail":"Not Found"}
+GET /v1/enterprise/usage   -> HTTP 404  {"detail":"Not Found"}</div>
+    <p>日付を付けて叩き直しても 403 のままです。<b>金額の口はアカウント側で閉じています。</b>
+      これは今日あらためて叩いた結果で、9/21 08:0x に972番が叩いたときとまったく同じ文言でした。</p>
+    <p><b>管理画面（Usage / Billing）は、今回は読めませんでした。</b>
+      ブラウザ側の口が12回とも途中で切れ、
+      もう一方の道（Macから既に開いているタブを読む）も、Chromeがこう返して止まりました —</p>
+    <div class="raw">AppleScript からの JavaScript の実行がオフになっています。
+オンにするには、メニューバーから [表示] &gt; [デベロッパー] &gt;
+[Apple Events からの JavaScript を許可] を選択してください。</div>
+    <p class="note">見に行った先は <code>https://app.devin.ai/org/tamago2022/settings/usage</code> です。
+      画面に明細（transaction history / usage log）があるかどうかは、<b>見ていないので「無い」とは書きません。</b>
+      課金のボタン（Purchase on-demand usage／Configure auto-reload／Manage billing）には一切触れていません。</p>
+  </div>
+
+  <div class="panel">
+    <h2>③ 言えること／言えないこと</h2>
+    <div class="ok"><b>言えること。</b>$8.85 が減ったのは 9/18 07:35 〜 9/20 17:44 のあいだで、
+      そのあいだに走ったのは上の8本だけ。境目をまたいだセッションは1本もない。
+      だから <b>この8本以外に消えた先は無い</b>と言えます。<br>
+      もう1つ。9/18 07:35 の時点で auto-reload は OFF で、9/20 の残高は $-0.26＝マイナスのまま。
+      <b>勝手に足されてはいません。</b></div>
+    <div class="warn"><b>言えないこと。</b>8本のうち<b>どれがいくらか</b>は取れません。
+      日ごとの内訳も、1本あたりの単価も同じです。理由は1つだけ —
+      <b>Devinが金額の口を閉じていて、画面の数字も合計しか出ないから。</b><br>
+      「たぶんこの長い1本が重い」といった言い方もしません。裏が取れていません。</div>
+    <p class="note">ここで無理に割り算をしないのが今回の趣旨です。530分を$8.85で割れば1分あたりの数字は作れますが、
+      その数字には「含まれている枠を使い切ったのがどこか」が入っていません。作った瞬間に、
+      たまごさんが後から検算できない数字になります。</p>
+  </div>
+
+  <div class="panel">
+    <h2>④ 次に、この金額を見えるようにするには</h2>
+    <ul>
+      <li><b>Devinのサポートに consumption API を開けてもらう。</b>403の文言が
+        「Contact support to enable the consumption API」＝<b>向こうが開ければ取れる</b>と言っています。
+        開けば日付で取れるようになり、この調べもの自体が要らなくなります。</li>
+      <li>それが通るまでは、<b>画面の数字を1日1回だけ書き留める</b>のが唯一の道です。
+        合計しか出ない数字でも、毎日取れば「いつ増えたか」は日単位まで絞れます。</li>
+      <li>画面を機械で読めるようにするなら、Chromeの
+        [表示] &gt; [デベロッパー] &gt; [Apple Events からの JavaScript を許可] を1回オンにするだけで、
+        Macの側から読めるようになります。</li>
+    </ul>
+  </div>
+
+  <p class="foot">973番／2026-09-21 作成。数字はすべて、叩いて返ってきたものと画面の実測です。</p>
+
+</div>
+</body>
+</html>
