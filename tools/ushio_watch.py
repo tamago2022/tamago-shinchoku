@@ -23,12 +23,13 @@
   1. note（note.com/simplearchitect）… 本人の一次発信。新刊の告知もここに出る
   2. 本人の記事の中から外に張られたリンク … ＝「本人が紹介している世界トップの実践」
   3. X（@sandayuu）… 認証なしで読める公開タイムラインだけ。取れなければ sourceErrors に残す
-  4. 文藝春秋BOOKS の著者ページ … 新刊・重版
+  ※文藝春秋BOOKSは2026-09-22に外した。著者ページから本の一覧が機械で読めず0件のままで、
+    **永久に赤を出し続ける取得元を置いておくのは害**だと判断した。新刊はnoteの告知で取れている。
 
 出す先：status/public/ushio_watch.json（進捗表とcheckページが読む）
   {"updatedAt","runs","pickedTotal","pickedThisRun","heldTotal","red",
    "items":[{"date","source","title","url","uchi","where"}],
-   "held":[{...}], "sourceErrors":[...]}
+   "held":[{...}], "sourceErrors":[...], "perSource":{取得元:{読めた,打ち手つき}}}
 
 手で今すぐ動かしたいとき：
   python3 tools/ushio_watch.py --now       # 間引きを無視して即取得
@@ -284,15 +285,23 @@ def src_books():
     return out
 
 
-SOURCES = [("note", src_note_with_links), ("X", src_x), ("文藝春秋BOOKS", src_books)]
+# ★文藝春秋BOOKSは外した（2026-09-22）。理由：著者ページの作りからは本の一覧が機械で読めず、
+#   直しても0件のままだった。**永久に赤を出し続ける取得元を置いておくのは害**なので外す。
+#   新刊は note の告知で実際に取れている（『持たざる者の戦略』を実測で拾えた）。
+SOURCES = [("note", src_note_with_links), ("X", src_x)]
 
 
 def collect():
-    items, errors = [], []
+    items, errors, per = [], [], {}
     for name, fn in SOURCES:
         try:
-            items.extend(fn() or [])
+            got = fn() or []
+            items.extend(got)
+            # ★取得元ごとに「読めた件数」「打ち手が付いた件数」を残す。
+            #   取得は出来たが1件も残らなかった取得元を、黙って0件にしないため。
+            per[name] = {"読めた": len(got), "打ち手つき": len([g for g in got if g.get("uchi")])}
         except Exception as e:
+            per[name] = {"読めた": 0, "打ち手つき": 0}
             errors.append({"source": name, "error": "%s: %s" % (type(e).__name__, e)})
     uniq, seen = [], set()
     for it in items:
@@ -301,7 +310,7 @@ def collect():
             continue
         seen.add(k)
         uniq.append(it)
-    return uniq, errors
+    return uniq, errors, per
 
 
 def push_to_queue(held):
@@ -406,7 +415,7 @@ def main(argv):
     if not force and not dry and already_ran_today(today):
         return 0
 
-    items, errors = collect()
+    items, errors, per = collect()
     picked = [i for i in items if i.get("uchi")]
     held = [i for i in items if not i.get("uchi")]
 
@@ -437,6 +446,7 @@ def main(argv):
         "items": merged[:KEEP],
         "held": held[:10],
         "sourceErrors": errors,
+        "perSource": per,
     }
     try:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
