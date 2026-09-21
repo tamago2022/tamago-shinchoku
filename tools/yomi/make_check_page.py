@@ -112,6 +112,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82em;
         ("red", st["red"], "赤・機械では読めない"),
         ("", st["foreign_auto"], "外国名（案内人が読む）"),
         ("ok", st["songs_dict"], "曲名にも読みが付いた"),
+        ("", st["songs_ja"], "日本語の曲名ぜんぶ"),
     ]:
         A('<div class="card %s"><b>%d</b><span>%s</span></div>' % (cls, n, lab))
     A('</div>')
