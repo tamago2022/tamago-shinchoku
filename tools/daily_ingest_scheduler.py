@@ -126,12 +126,38 @@ def _koushiki_update_watch():
         pass
 
 
+def _ushio_watch():
+    """1019番の相乗り（2026-09-22）：牛尾剛さんの発信を1日1回だけ拾い、
+    1件ごとに「だからうちはこうする」を付ける常設の係。
+
+    たまごさんの言葉：「言ったら勝手にリサーチが走ってて、何時間後に『今こうやってますから、
+    うちもこうやります』と報告が来る位にしたい。」
+
+    入れ方の理由は上の _koushiki_update_watch と全く同じ（939番のコメント参照）：
+    **新しい定期タスク・新しいlaunchd便は作らない。心臓のシェル本体も触らない。**
+    心臓が毎周回で読み直すPythonファイル（＝ここ）へ1行足すのが唯一の安全な入れ方。
+
+    間引きは ushio_watch.py 側が status/.ushio_watch_last で行う（1日1回）。
+    絶対に例外を外へ出さない＝入荷見回り本体を巻き込んで止めない。
+    """
+    try:
+        import subprocess
+        subprocess.Popen(
+            [sys.executable, os.path.join(HERE, "ushio_watch.py")],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        pass
+
+
 def main():
     now = datetime.now(JST)
     today_str = now.strftime("%Y-%m-%d")
     # 入荷見回りを今日もう積んだかに関わらず、公式アップデートの見回りは毎周回で声をかける
     # （実際に外へ出るのは1日1回。下の早期returnより前に置く必要がある）。
     _koushiki_update_watch()
+    # 1019番：牛尾さんの見回りも同じ位置に置く（早期returnより前）。
+    _ushio_watch()
     if already_queued_today(today_str):
         return 0
     target_date = (now - timedelta(days=1)).strftime("%Y-%m-%d")

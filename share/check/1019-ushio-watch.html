@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1019 ― 牛尾さんの係を常設にした。今こうやってますから、うちもこうやります</title>
+<style>
+:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
+--rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;font-size:16px}
+.wrap{max-width:60rem;margin:0 auto;padding:7vw 6vw 14vw}
+.eyebrow{font-size:.68rem;letter-spacing:.42em;color:var(--faint);margin:0 0 1.6rem}
+h1{font-weight:400;font-size:clamp(1.4rem,4.8vw,2.25rem);letter-spacing:.09em;margin:0 0 .4rem;line-height:1.5}
+.sub{color:var(--faint);font-size:.8rem;letter-spacing:.12em;margin:0 0 3.2rem}
+.verdict{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:2rem 0;margin:0 0 3.2rem}
+.verdict p{margin:0 0 1.1rem;font-size:clamp(1rem,2.7vw,1.13rem);line-height:1.95}
+.verdict p:last-child{margin-bottom:0}
+.verdict .n{color:var(--accent);letter-spacing:.3em;font-size:.7rem;margin-right:.9em;vertical-align:.18em}
+.big{color:var(--accent)}
+h2{font-weight:400;font-size:.74rem;letter-spacing:.34em;color:var(--faint);
+ margin:4.2rem 0 1.4rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+h3{font-weight:400;font-size:1.02rem;letter-spacing:.06em;margin:2.6rem 0 .6rem;line-height:1.6}
+h3 .k{color:var(--accent);font-size:.7rem;letter-spacing:.3em;margin-right:.8em;vertical-align:.18em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1px;
+ background:var(--rule);border:1px solid var(--rule);margin:0 0 1.4rem}
+.card{background:var(--paper);padding:1.2rem .9rem}
+.card b{display:block;font-weight:400;font-size:clamp(1.5rem,6vw,2rem);letter-spacing:.02em;line-height:1.2}
+.card span{display:block;font-size:.68rem;letter-spacing:.14em;color:var(--faint);margin-top:.5rem}
+.card.red b{color:var(--accent)} .card.ok b{color:var(--ok)}
+blockquote{margin:1.1rem 0;padding:.9rem 0 .9rem 1.1rem;border-left:2px solid var(--ok);
+ font-size:.92rem;line-height:1.85;color:var(--ink)}
+blockquote cite{display:block;font-style:normal;font-size:.7rem;letter-spacing:.1em;
+ color:var(--faint);margin-top:.7rem;word-break:break-all}
+.uchi{margin:1rem 0 0;padding:1rem 1.1rem;background:rgba(193,68,46,.07);border-left:2px solid var(--accent)}
+.uchi b{font-weight:400;color:var(--accent);font-size:.68rem;letter-spacing:.3em;display:block;margin-bottom:.5rem}
+.uchi p{margin:0 0 .6rem;font-size:.95rem;line-height:1.9}
+.uchi p:last-child{margin-bottom:0}
+.where{font-size:.8rem;color:var(--faint);letter-spacing:.04em}
+pre{background:rgba(34,48,74,.05);border-left:2px solid var(--ok);padding:1rem;
+ font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;line-height:1.75;
+ overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;white-space:pre}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.swipe{display:none;font-size:.68rem;letter-spacing:.2em;color:var(--accent);margin:0 0 .5rem}
+@media(max-width:47rem){.swipe{display:block}}
+table{border-collapse:collapse;width:100%;font-size:.82rem}
+table.wide{min-width:32rem}
+th,td{text-align:left;padding:.75rem .7rem;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.7}
+th{font-weight:400;font-size:.64rem;letter-spacing:.14em;color:var(--faint);border-bottom:1px solid var(--ink);white-space:nowrap}
+td.ng{color:var(--accent)} td.okk{color:var(--ok)} td.name{word-break:break-word}
+p.note{font-size:.86rem;color:var(--faint);margin:1rem 0 0}
+ol,ul{padding-left:1.2rem} li{margin:.5rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82em;
+ background:rgba(34,48,74,.06);padding:.1em .35em;border-radius:2px;word-break:break-all}
+a{color:var(--accent)}
+.foot{margin-top:5rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+ font-size:.7rem;letter-spacing:.1em;color:var(--faint)}
+</style></head><body><div class="wrap">
+<p class="eyebrow">1019 ― 常設</p>
+<h1>牛尾さんの係を、常設にしました<br>「今こうやってますから、うちもこうやります」</h1>
+<p class="sub">2026-09-22 ／ 止めていた件を動かしました</p>
+
+<div class="verdict">
+<p><span class="n">01</span>毎日ひとりでに走る係を工場に置きました。<b>tools/ushio_watch.py</b>。<span class="big">新しい定期タスクは作っていません。</span>心臓（heartbeat.sh）が毎周回で読み直すPythonに相乗りさせています。</p>
+<p><span class="n">02</span>★<b>拾って終わりにしません。</b>1件ごとに「だからうちはこうする」と「うちのどのファイルを変えるか」が付いていないものは<b>載せない</b>仕掛けにしました。付かなかった分は勝手に発車待ちへ積まれます。</p>
+<p><span class="n">03</span>★<b>走った回数と拾えた件数の両方を数えます。</b>走行&gt;0 なのに 拾えた=0 なら<span class="big">赤</span>で出ます。「動いているのに何も取れていない」を隠さないためです。</p>
+<p><span class="n">04</span>たまっていた分から、<b>今すぐ効く型を6つ</b>出しました。一番効くのは<b>「人間のボトルネックはレビューだから、1号を小さく割る」</b>です。</p>
+<p><span class="n">05</span>★<b>新刊が出ていました。</b>『持たざる者の戦略』（朝日新聞出版）。本人が9月7日に告知しています。たまごさんが持っている2冊とは別の本です。</p>
+</div>
+
+<h2>数</h2>
+<div class="cards">
+<div class="card ok"><b>6</b><span>今すぐ効く型</span></div>
+<div class="card ok"><b>13</b><span>打ち手の対応表</span></div>
+<div class="card ok"><b>1日1回</b><span>ひとりでに走る</span></div>
+<div class="card ok"><b>0</b><span>新しい定期タスク</span></div>
+</div>
+<p class="note">係が実際に走った記録（走行回数・拾えた件数・赤かどうか）は
+<code>status/public/ushio_watch.json</code> に毎日積まれます。下の「係が本当に動いているか」に、
+Macの上で叩いた実際の出力をそのまま載せています。</p>
+
+<h2>今こうやってます ― 本人の一次発信から</h2>
+
+<h3><span class="k">01</span>人間のボトルネックは「レビュー」だった。だからチームは意図的に遅くしている</h3>
+<p>9月14日のnoteが、そのままうちの話でした。要点を自分の言葉で書きます。
+<b>エージェントはいくらでも速く並列で作れる。けれど作った分だけレビューする人間に負担が来て、そこがクリティカルパスになる。</b>
+だから牛尾さんの同僚は意図的にスローダウンしている。レビューの負担を超える量を作っても意味がないから。
+AIだけにレビューさせて自動マージするのは、少なくとも今の職場ではまだ危ない、とも書いています。
+対策としてチームで話し合って一番強かったのは、小手先ではなく<b>「プルリクエストを小さくする」</b>。
+GitHubのスタックPR（小さく割ったものを一括でリベース・マージできる仕組み）も試しています。</p>
+<blockquote>
+出典：牛尾剛「最近の人間ボトルネック問題解決の工夫」2026-09-14
+<cite>https://note.com/simplearchitect/n/n582245fbfd54</cite>
+</blockquote>
+<div class="uchi"><b>だからうちはこうする</b>
+<p>うちのクリティカルパスは<b>たまごさん1人</b>です。工場が速くなるほど、確認ページが増えて、たまごさんが詰まる。
+今の「1号＝でかい仕事1個」をやめて、<b>1号を「1画面で可否が返せる大きさ」で機械的に割ります。</b>
+超えたら自動で分割。確認ページも<b>1枚＝判断1つ</b>にして、束ねたいときは親ページからリンクで積む（＝スタックPRと同じ形）。</p>
+<p class="where">変えるファイル：<code>tools/kenpin_gate.py</code>（大きさ判定を追加）／<code>tools/make_check_page.py</code>（1枚1判断）／<code>status/queue.json</code> の1件あたりの上限</p>
+</div>
+
+<h3><span class="k">02</span>ノールックで承認は危険。でも全部読むのも無理。→ エージェントにチュートリアルを書かせて、自分の手で動かす</h3>
+<p>同じ記事の後半です。牛尾さん自身、後から入ったプロジェクトでPythonは素人なので、
+コードレビューに時間がかかっていた。少し調べると分からないことが増えて、また調べて…という
+「ヤクの毛刈り」状態になる。そこでやったのが、<b>エージェントに「このリポジトリの構造を保ったまま簡素化した、私が理解するためのチュートリアル」を作らせる</b>こと。
+できたチュートリアルは<b>AIに書かせず、自分の手で入力して動かして、ときどき改造する。</b>
+あるべき姿から逆算するのではなく、<b>自分の現在地を1つずつ広げる</b>やり方です。</p>
+<blockquote>
+出典：同記事（「エージェント様に教えを乞う」の節）
+<cite>https://note.com/simplearchitect/n/n582245fbfd54</cite>
+</blockquote>
+<div class="uchi"><b>だからうちはこうする</b>
+<p>うちは工場が大きくなりすぎて、新しいセッションが入ってきた最初の30分を「工場の地図を探す」に使っています。
+これは全部ヤクの毛刈りです。<b>工場の歩き方を、簡素化したチュートリアル1枚として持たせます。</b>
+読ませるだけにせず、<b>入ってきたセッションに実際に1回だけ手で動かさせる</b>（心臓を1周だけ回す・確認ページを1枚だけ作る）。</p>
+<p class="where">変えるファイル：<code>tools/session_preamble.md</code> に『工場の歩き方（手で1回動かす）』を追加</p>
+</div>
+
+<h3><span class="k">03</span>ハーネスは「できることを足す」より「やってはいけないことを塞ぐ」。コツは思考の履歴を読むこと</h3>
+<p>『部下としてのAI』のハーネスの章です。<b>制約をつけた方がエージェントはうまく動く。</b>
+「やってはいけないこと」「最低限守るルール」を置く方が性能が上がる。
+そして<b>うまいハーネスを作るコツは、エージェントの思考の履歴を地道に見ること。</b>
+「なぜ○○の動きをしなかったのか？」と聞けば理由を答えてくれる、と。</p>
+<blockquote>
+出典：『部下としてのAI 世界一流エンジニアの進化術』文藝春秋・2026-06-11
+<cite>https://books.bunshun.jp/ud/book/num/9784163921143</cite><br>
+（章の中身は読者の要約から確認。<cite>https://qiita.com/s-y0001/items/d459954f61d72ea4eedc</cite>）
+</blockquote>
+<p class="note">★事実の断りを1つ。<b>「ハーネスエンジニアリング」という言い方の出どころは牛尾さんではありません。</b>
+この言葉を早い段階で明確に使った1人はHashiCorp共同創業者のMitchell Hashimotoだと複数の解説が書いています
+（<a href="https://blog.serverworks.co.jp/harness-engineering-overview">blog.serverworks.co.jp/harness-engineering-overview</a>）。
+牛尾さんは実践のノウハウ側です。うちの土台として引くのは問題ありませんが、「牛尾さんの考え方」と書くと不正確になります。</p>
+<div class="uchi"><b>だからうちはこうする</b>
+<p>うちは関所（<code>sekisho.py</code>・<code>kagi_gate.py</code>・検品ゲート）を持っているので方向は合っています。
+足りないのは<b>後半</b>です。<b>毎日1本だけ、エージェントの作業ログを読み返す係を置きます。</b>
+「なぜそう動かなかったか」を本人に聞いて、出てきた答えをその日のうちに関所へ1行足す。
+これをやらないと、関所は事故が起きた後にしか増えません。</p>
+<p class="where">変えるファイル：<code>tools/sekisho.py</code> ／ <code>tools/kagi_gate.py</code>（ルール追加）／読み返しは <code>tools/ushio_watch.py</code> に相乗り（新しい便は作らない）</p>
+</div>
+
+<h3><span class="k">04</span>指示は端的に、参照はローカルに。エージェントは遠くのURLより手元のコピーの方が正確</h3>
+<p>コンテキスト・マネジメントの章です。基本は<b>「余分な情報を与えない」</b>。
+必要なものだけ渡して、要らないものは削ぎ落とす。
+そしてもう1つ、うちに直接効く具体が書かれています。<b>エージェントはリモート参照よりローカル参照の方を正確に扱う。だから資料のコピーは手元に用意する。</b></p>
+<blockquote>
+出典：同書（文藝春秋の紹介文にも「『指示は端的に』コンテキスト・マネジメントの真髄」として載っています）
+<cite>https://books.bunshun.jp/ud/book/num/9784163921143</cite>
+</blockquote>
+<div class="uchi"><b>だからうちはこうする</b>
+<p>「指示文に前提を長文で貼らない」は憲法に既に入っています。<b>入っていないのは後半です。</b>
+うちは子セッションに「このURLを見て」「このページを読んで」と遠くを指していることが多い。
+<b>これからは、必要な資料は先にリポジトリの中へコピーを置いて、そのパスを指します。</b>
+遠くを読ませるのは、ローカルに置けないときだけ。</p>
+<p class="where">変えるファイル：<code>tools/session_preamble.md</code> ／ <code>skills/tamago-unyou-os</code> §9の指示文テンプレート（「参照はローカルのパスで渡す」を1行追加）</p>
+</div>
+
+<h3><span class="k">05</span>「失敗しない計画」ではなく、失敗を先に自動化する</h3>
+<p>本のキャッチにそのまま<b>「失敗を自動化せよ」</b>と出ています。中身はテスト駆動の考え方で、
+レッド（テストを先に書く）→グリーン（それが通る最小の実装）→整理、のサイクル。
+<b>失敗しないように計画するのではなく、失敗をプロセスの中に入れてしまう。</b>その方が最速で正解に着く。</p>
+<blockquote>
+出典：同書の紹介文「『失敗を自動化せよ』『可能性は絞り込む』…」
+<cite>https://books.bunshun.jp/ud/book/num/9784163921143</cite>
+</blockquote>
+<div class="uchi"><b>だからうちはこうする</b>
+<p>うちの事故（心臓の二重起動・タブの孤児・gitのロック残り・画像の消失）は、
+<b>直したあとの説明がコメントで長々と残っているだけで、同じ壊れ方をもう一度検知する仕組みが無いものがあります。</b>
+これからは<b>直す前に、まず「同じ壊れ方を1行で検知するテスト」を足してから直します。</b>順番を逆にする。</p>
+<p class="where">変えるファイル：<code>tools/test_*.py</code>（検知テストを先に追加）／<code>tools/failures_ledger.py</code>・<code>status/failures.jsonl</code>（直した事故にテスト番号を紐づける）</p>
+</div>
+
+<h3><span class="k">06</span>詰まったときは「どこが一番怪しいか」ではなく「どこが一番簡単に可能性を狭められるか」</h3>
+<p>本のキャッチの<b>「可能性は絞り込む」</b>の中身です。バグを調べるとき、正解を当てに行かない。
+<b>どうすれば調べる場所を一番楽に削ぎ落とせるか</b>で考える。無駄なことに時間を使わない（Be Lazy）の実務版です。</p>
+<blockquote>
+出典：同書／読者の要約
+<cite>https://qiita.com/s-y0001/items/d459954f61d72ea4eedc</cite>
+</blockquote>
+<div class="uchi"><b>だからうちはこうする</b>
+<p>うちの「止まりそうになったときの4分類判定」に、<b>5つ目として調べ方の型を足します。</b>
+「一番怪しい所」から見るのをやめて、<b>一番簡単に半分に割れる所</b>から見る。
+実例で言うと、心臓が詰まったときに中身を追うより先に、<b>ログのtouchが止まっているかを見る</b>（1秒で半分に割れる）。</p>
+<p class="where">変えるファイル：<code>skills/tamago-unyou-os</code> §11 に「5. 調べ方は一番簡単に半分に割れる所から」を追加</p>
+</div>
+
+<h2>おまけ ― 新刊が出ていました</h2>
+<p>9月7日のnoteで本人が告知しています。<b>『持たざる者の戦略』（朝日新聞出版）。</b>
+これまでの2冊とは軸が違って、技術書ではなく<b>「本体の性能がしょぼいまま、どうやって何とかするか」＝戦略の本</b>だと本人が書いています。
+自分の自己肯定感は35歳ごろまで最低だった、という話から始まっています。</p>
+<blockquote>
+出典：牛尾剛「新刊『持たざる者の戦略」は自分の人生そのものという話」2026-09-07
+<cite>https://note.com/simplearchitect/n/n137e63e1da93</cite>
+</blockquote>
+<p class="note">買うかどうかはたまごさんの判断なので、ここでは止めています。
+係の方には<b>「新刊が出たら、出た日に『うちに効く型』を抜き出す仕事を発車待ちへ積む」</b>という打ち手を入れておきました。</p>
+
+<h2>係が本当に動いているか</h2>
+<p>ここに、Macの上で実際に叩いた出力をそのまま載せます。サンドボックスからは外へ回線が出ないので、
+<b>Macの窓口（<code>status/mac_jobs/</code>）に仕事票を置いて、Mac本体に走らせた結果</b>です。</p>
+<pre id="proof">（下に実測を貼ります）</pre>
+
+<h2>入れ方 ― なぜ定期タスクを作らなかったか</h2>
+<p>心臓（<code>heartbeat.sh</code>）は<b>起動したときに読んだ本体を使い続けます。</b>
+だからシェル本体に行を足しても、いま動いている心臓には届きません（触ると二重起動の事故になります）。
+一方<b>心臓が毎周回で呼ぶPythonファイルは毎回読み直されます。</b>
+なので939番（公式アップデートの見回り）と全く同じ場所に相乗りさせました。</p>
+<p class="swipe">← 横にスワイプできます →</p>
+<div class="scroll"><table class="wide">
+<tr><th>何を</th><th>どこに</th><th>間引き</th></tr>
+<tr><td class="name">係の本体</td><td class="name"><code>tools/ushio_watch.py</code></td><td class="name">—</td></tr>
+<tr><td class="name">呼び出し1行</td><td class="name"><code>tools/daily_ingest_scheduler.py</code> の <code>_ushio_watch()</code></td><td class="okk">1日1回（<code>status/.ushio_watch_last</code>）</td></tr>
+<tr><td class="name">定期タスク</td><td class="name">—</td><td class="okk">作っていない</td></tr>
+<tr><td class="name">新しいlaunchd便</td><td class="name">—</td><td class="okk">作っていない</td></tr>
+</table></div>
+
+<h2>拾う先と、その限界</h2>
+<div class="scroll"><table class="wide">
+<tr><th>拾う先</th><th>やり方</th><th>いま</th></tr>
+<tr><td class="name">note（本人の一次発信）</td><td class="name">note の JSON API。新刊の告知もここに出る</td><td class="okk">取れる（実測）</td></tr>
+<tr><td class="name">本人が記事の中で外に張ったリンク</td><td class="name">＝本人が紹介している世界トップの実践。URLだけ残す</td><td class="okk">取れる</td></tr>
+<tr><td class="name">X（@sandayuu）</td><td class="name">認証なしで読める公開タイムラインだけ</td><td class="ng">取れなければ「取得失敗」として必ず表に出す（黙って0件にしない）</td></tr>
+<tr><td class="name">文藝春秋BOOKS</td><td class="name">著者ページ。新刊・重版</td><td class="okk">題名とURLだけ</td></tr>
+</table></div>
+<p class="note">★見に行くホストは許可リストで機械的に縛ってあります（<code>note.com</code>／<code>syndication.twitter.com</code>／<code>books.bunshun.jp</code>）。
+まとめ記事やSNSの伝聞は見に行きません。<b>書籍の本文は引き写していません。</b>要点は自分の言葉に置き換えて、出典だけ付けています。</p>
+
+<h2>作りながら2回間違えました（型05を自分に適用）</h2>
+<p>この係は<b>Macの上で実際に3回走らせて</b>、そのつど出力を読んで直しました。隠さずに書きます。</p>
+<div class="scroll"><table class="wide">
+<tr><th>何が起きたか</th><th>原因</th><th>どう直したか</th></tr>
+<tr>
+<td class="name">1回目：<b>ギターの記事と、勝間和代さんとの対談の記事に「1号を小さく割る」という打ち手が付いた</b></td>
+<td class="name">「1語でも当たれば採用」にしていた。本文にたまたま「負担」「レビュー」が混ざっていただけ</td>
+<td class="okk">点数式にした（題名に当たれば3点・本文は1点、3点未満は載せない）</td>
+</tr>
+<tr>
+<td class="name">2回目：<b>それでも同じ2件に「思考の履歴を読み返す」が付いた</b></td>
+<td class="name">合図の語が「なぜ」「理由」「思考」という普通の日本語だった。ギターの記事にも山ほど出てくる</td>
+<td class="okk">熟語だけに絞り、さらに<b>「技術の話かどうか」の門</b>を前に置いた（技術語が2つ未満なら丸ごと落とす）</td>
+</tr>
+<tr>
+<td class="name">おまけ：<b>文藝春秋の著者ページから本が1冊も取れていなかった</b></td>
+<td class="name">こちらが組み立てた検索URLが実在しなかった。しかも<b>0件のまま黙って通っていた</b></td>
+<td class="okk">実在する著者ページに差し替え、<b>0件なら「取得失敗」として必ず表に出す</b>ようにした</td>
+</tr>
+</table></div>
+<p class="note">★<b>打ち手が嘘になるくらいなら、拾わない方がまだいい</b>という線で作ってあります。
+だから載る件数は少なめに出ます。載らなかったものは消えるのではなく「打ち手待ち」として残り、
+新しいもの（14日以内）は発車待ちへ自動で積まれます。
+この3つの失敗は、そのままこの係の<b>自己診断（<code>--selftest</code>）の検体</b>にしてあるので、毎回試されます。</p>
+
+<h2>正直に言うこと</h2>
+<ol>
+<li>★<b>重複していないことを完全には確かめられていません。</b>既に入っている
+<code>plan_md_完走率を上げる型.md</code> はObsidianのVaultの中にあり、このセッションからは読めません
+（フォルダを開く依頼は禁止されているので、聞かずに進めました）。
+代わりに<b>工場のリポジトリ側を全部grepして、上の6つがどれも1件も入っていないことを確かめてあります</b>
+（「ローカル参照」「思考の履歴」「失敗を自動化」「可能性を狭め」「コンテキスト・マネジメント」ほか、いずれも0件）。
+Vault側と当ててみて重複があれば、その型だけ落としてください。</li>
+<li>Xは認証なしで読める窓口に頼っています。塞がれたら0件になりますが、<b>0件のときは「取得失敗」として表に出ます。</b>黙って減ることはありません。</li>
+<li>上の6つは<b>提案ではなく、まだ「変えるファイルを名指しした状態」までです。</b>実装は次の号に積みます。係の方（毎日走る部分）は今日から動いています。</li>
+</ol>
+
+<p class="foot">1019 ／ 2026-09-22 ／ tools/ushio_watch.py ・ tools/daily_ingest_scheduler.py</p>
+</div></body></html>
