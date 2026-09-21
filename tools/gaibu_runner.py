@@ -177,6 +177,22 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, _965_keijiban
                     importlib.reload(_965_keijiban)
                     out = _965_keijiban.run_job(job.get("payload") or {})
+                elif job.get("kind") == "daicho":
+                    # 977番：外部AI台帳の回収係。投げたのに返り0のスレッドだけを名指しで読む。
+                    # GETのみ・課金0・行き先は _965_keijiban.ALLOW_REPO の中だけ。
+                    import importlib, ai_daicho
+                    importlib.reload(ai_daicho)
+                    out = ai_daicho.run_job(job.get("payload") or {})
+                elif job.get("kind") == "ghwatch":
+                    # 977番：GitHubの見張り番を工場側で今すぐ1回走らせる。
+                    #   サンドボックスからは api.github.com に出られないので、
+                    #   「投げた直後に返りを確かめる」ができなかった（＝15秒〜15分待つしかない）。
+                    #   呼べるのは github_watch.py の1本だけ＝白名簿。引数も取らない。
+                    import subprocess
+                    r = subprocess.run([sys.executable, os.path.join(HERE, "github_watch.py"), "--force"],
+                                       capture_output=True, text=True, timeout=120)
+                    out = {"ok": r.returncode == 0, "stdout": (r.stdout or "")[-3000:],
+                           "stderr": (r.stderr or "")[-1500:], "totalYen": 0.0}
                 elif job.get("kind") == "kakunin":
                     # 961番 出したページが本当に200で見えるかを工場側から叩く。
                     # GETのみ・課金0・行き先は tamago2022.github.io の中だけ

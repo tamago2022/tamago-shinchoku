@@ -33,7 +33,13 @@ if HERE not in sys.path:
 
 import github_watch  # noqa: E402  ★トークンの取り方はここに1本化されている
 
-ALLOW_REPO = ("tamago2022/joy-relief-station", "tamago2022/tamago-shinchoku")
+# ★2026-09-22（977番）：公開の掲示板 tamago2022/ai-kaigi を追加。
+#   理由＝Grok / Genspark は**非公開リポが読めない**（たまごさん実測）。
+#   joy-relief-station は .env が入っているので絶対に公開にしない。だから別の公開repoを掲示板にする。
+#   ★ai-kaigi へ書くものは全世界から読める。秘密の混入検査は tools/nageru.py 側で機械的にやる。
+ALLOW_REPO = ("tamago2022/joy-relief-station", "tamago2022/tamago-shinchoku",
+              "tamago2022/ai-kaigi")
+PUBLIC_REPO = ("tamago2022/ai-kaigi", "tamago2022/tamago-shinchoku")
 API = "https://api.github.com"
 
 
@@ -80,9 +86,16 @@ def _bots(repo, token):
         for it in (data or []):
             add(it.get("user"), where)
 
-    code, data = _req("%s/repos/%s/commits?per_page=100" % (API, repo), token)
-    for c in (data or []):
-        add(c.get("author"), "commits")
+    # ★2026-09-22：中身がまだ1つも無いrepo（掲示板として作っただけの ai-kaigi）は
+    #   /commits が 409「Git Repository is empty.」を返す。これは異常ではない。
+    #   ここで例外にすると、Issueは数えられているのに人口調査ごと失敗扱いになる。
+    try:
+        code, data = _req("%s/repos/%s/commits?per_page=100" % (API, repo), token)
+        for c in (data or []):
+            add(c.get("author"), "commits")
+    except urllib.error.HTTPError as e:
+        if e.code != 409:
+            raise
 
     rows = sorted(who.values(), key=lambda d: -(d["issues"] + d["comments"] + d["commits"]))
     return rows
@@ -119,6 +132,27 @@ def run_job(payload):
             return {"ok": True, "repo": repo, "action": action,
                     "url": d.get("html_url"), "totalYen": 0.0}
 
+        if action == "label":
+            # 977番：既に立っている号にラベルを貼る（Julesの起こし方はこれ・公式ドキュメント）。
+            code, d = _req("%s/repos/%s/issues/%s/labels" % (API, repo, payload["number"]),
+                           token, "POST", {"labels": payload["labels"]})
+            return {"ok": True, "repo": repo, "action": action,
+                    "labels": [x.get("name") for x in (d or [])], "totalYen": 0.0}
+
+        if action == "exists":
+            # 977番：掲示板そのものが在るか（公開/非公開も）。GETだけ・課金0。
+            try:
+                code, d = _req("%s/repos/%s" % (API, repo), token)
+                return {"ok": True, "repo": repo, "action": action, "exists": True,
+                        "private": bool((d or {}).get("private")),
+                        "url": (d or {}).get("html_url"),
+                        "openIssues": (d or {}).get("open_issues_count"), "totalYen": 0.0}
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    return {"ok": True, "repo": repo, "action": action, "exists": False,
+                            "totalYen": 0.0}
+                raise
+
         if action == "read":
             code, head = _req("%s/repos/%s/issues/%s" % (API, repo, payload["number"]), token)
             code, d = _req("%s/repos/%s/issues/%s/comments?per_page=100" % (API, repo, payload["number"]),
@@ -127,7 +161,11 @@ def run_job(payload):
                     "title": (head or {}).get("title"),
                     "bodyWho": ((head or {}).get("user") or {}).get("login"),
                     "body": ((head or {}).get("body") or "")[:6000],
-                    "comments": [{"who": (c.get("user") or {}).get("login"),
+                    # ★977番：id を足した。台帳（ai_daicho.py）が「同じ返事を二度数えない」
+                    #   照合に使う。Issue番号で照合すると、同じ号への2通目以降が
+                    #   重複扱いで消える（2026-09-19にチャッピーの返信4通が消えた事故）。
+                    "comments": [{"id": c.get("id"),
+                                  "who": (c.get("user") or {}).get("login"),
                                   "type": (c.get("user") or {}).get("type"),
                                   "at": c.get("created_at"),
                                   "text": (c.get("body") or "")[:4000]} for c in (d or [])],

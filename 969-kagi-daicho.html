@@ -97,6 +97,16 @@
   <tbody></tbody>
 </table>
 
+<h2>6. 本番のページが最後まで描けているか（叩いて中身まで見る）</h2>
+<p class="small">「200が返った」では合格にしない。<b>その画面にしか出ない語</b>が入っているか、
+Reactが「ここを描けなかった」と残す印（&lt;!--$!--&gt;）が無いか、
+最後まで送り切っているか、まで見る。5分便に相乗り・新しい常駐は増やしていない。</p>
+<table id="t-routes">
+  <thead><tr><th style="width:3.5em">今</th><th>ページ</th>
+  <th class="num" style="width:4.5em">HTTP</th><th>何が起きているか</th></tr></thead>
+  <tbody></tbody>
+</table>
+
 <footer>
   <div id="meta"></div>
   <div style="margin-top:6px">
@@ -134,6 +144,26 @@ function render(d){
     ? '赤 '+d.redCount+'件（鍵'+d.redKeys+'・見張り'+d.redWatchers+
       '・嘘'+d.redLies+'・台帳外'+(d.redUnlisted||0)+'）'
     : '赤 0件。全部、叩いて通っています。';
+
+  // 971番：本番のページが最後まで描けているか
+  {
+    const tb=document.querySelector('#t-routes tbody');
+    if(tb){
+      tb.innerHTML='';
+      (d.routes||[]).forEach(r=>{
+        const m = r.red ? MARK.ng : MARK.ok;
+        const tr=document.createElement('tr');
+        tr.innerHTML='<td class="'+m[1]+'">'+m[0]+'</td>'
+          +'<td>'+esc(r.label)+'<div class="small">'+esc(r.path)+'</div></td>'
+          +'<td class="num">'+esc(r.code)+'</td>'
+          +'<td>'+(r.red?esc(r.why):'中身まで出ています（'+esc(r.bytes)+'バイト）')+'</td>';
+        tb.appendChild(tr);
+      });
+      if(!(d.routes||[]).length){
+        tb.innerHTML='<tr><td colspan="4" class="small">まだ1回も叩いていません。5分便が次に回ったとき入ります。</td></tr>';
+      }
+    }
+  }
 
   const tb=document.querySelector('#t-keys tbody');
   (d.rows||[]).forEach(r=>{

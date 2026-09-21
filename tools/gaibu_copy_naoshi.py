@@ -67,7 +67,10 @@ LOCK = os.path.join(STATUS, ".gaibu_copy_naoshi.lock")
 
 MORNING_HOUR = 6          # 朝6時以降の最初の便で走る
 LOCK_STALE_SEC = 30 * 60  # 30分以上握ったままのロックは詰まりとみなす
-MAX_PER_RUN = 12          # 1回で直す上限（Macを占有しないため。残りは翌朝に回る）
+MAX_PER_RUN = 25          # 1回で直す上限（Macを占有しないため。残りは翌朝に回る）
+#   ふだん入ってくるのは1日3〜4件なので、この数字が効くのは溜まりを片づける日だけ。
+#   控えの口は1件2〜3秒なので、25件でも1〜2分。claude -p が生きている日は
+#   黙りを2回見た時点でその回は控えに任せるので、150秒×25を焼くことはない。
 CLAUDE_TIMEOUT = 150
 HISTORY_KEEP = 200
 
@@ -98,17 +101,38 @@ PROMPT = """あなたは「ごきげん補給所」のコピーを書く編集�
 下の1件について、カードに載せる一言（whisper）を書き直してください。
 
 【型：ボンジョビおじさん構文】
-・曲紹介・動画紹介を書かない。**ただの行為を、小さな事件に変える。**
-　例：電車に乗るだけ → 全員ボンジョビ部に入部／公園で歌うだけ → 町内会ロックフェス
-・短く。1文か2文。全部で60〜90文字。
-・クリックしたくなるものに。誘う。脅さない。煽らない。
+コピーがつまらなくなる原因は決まっています。**紹介文を書いてしまうから。**
+この棚が欲しいのは紹介ではなく、**ただの行為が小さな事件に変わる瞬間**です。
 
-【絶対の禁止】
-・「収められています」「が映し出され」「する様子」「様子が」などの説明テンプレ。
-・「必見」「見逃せない」「話題」「反響」「絶賛」「バズ」など、観測していない他人の反応。
-・「代表曲のひとつ」のような誰にでも書ける説明文。
-・**材料に書かれていないことを足さない。**国名・年号・人物名・関係・受賞・数字を、
-　材料に無いのに書いたらその時点で失格。裏が取れないものは書かない。
+　電車に乗るだけ　→　全員ボンジョビ部に入部
+　公園で歌うだけ　→　町内会ロックフェス
+　車でバラードを聴くだけ　→　ふたりだけの教会
+　ラジオを聴くだけ　→　夜の逃げ道が鳴る
+
+良い文の手ざわり（この温度・この長さ・この終わり方）：
+　狭い車の中が、ふたりだけの教会になる。
+　小さなラジオから、夜の逃げ道が鳴っている。
+　濡れた街に、ロックンロールのエンジンがかかる。
+　強がってる人の背中を、そっと知ってくれてる歌。
+
+この4つに共通していることを守ってください：
+　・読み手に一度も命令していない。「〜しよう」「〜してみて」「〜しませんか」が無い。
+　・「！」が1つも無い。
+　・言い切りで終わる。誘うのは、行きたくさせることであって、呼びかけることではない。
+　・題名をそのまま置き直していない。
+
+【長さ】1文、長くて2文。全部で25〜60文字。短いほど強い。
+
+【絶対の禁止】これを1つでもやったら不合格です。
+・「収められています」「が映し出され」「する様子」などの説明テンプレ。
+・「必見」「お見逃しなく」「間違いなし」「体感しよう」「話題」「反響」「絶賛」など、
+　煽る語・観測していない他人の反応。
+・「！」「!」を使うこと。
+・「〜しよう」「〜してみて」「〜しませんか」「〜に参加」など、読み手への呼びかけ・命令。
+・**材料に書かれていないことを足すこと。**国名・地名・年号・人物名・関係・受賞・数字・
+　匂い・音・天気を、材料に無いのに書いたら、その時点で失格です。
+　（実例：題名が「初レモン赤ちゃん」だけなのに「街全体がフレッシュな香りで満たされる」と
+　　書いたものがありました。これは嘘です。書いてはいけません。）
 ・たまごさん個人を主語にしない。
 
 【材料】ここに書いてあることだけが、あなたが知っている全部です。
@@ -119,7 +143,7 @@ PROMPT = """あなたは「ごきげん補給所」のコピーを書く編集�
 【出し方】
 書き直した一言だけを1行で出す。前置き・説明・かぎかっこ・箇条書きを付けない。
 材料が薄すぎて、何かを足さないと1行も書けない場合は、無理に書かず
-NO_MATERIAL とだけ出す。"""
+NO_MATERIAL とだけ出す。**薄いまま無理に書くより、NO_MATERIAL の方が正解です。**"""
 
 
 LOG = os.path.join(STATUS, "gaibu_copy_naoshi.log")
@@ -201,8 +225,14 @@ def clean(s):
     return s.strip()
 
 
+CLAUDE_DOWN = [None]   # この回で claude が寝ていると分かったら、以降は待たずに控えへ回す
+CLAUDE_SILENT = [0]    # 黙ったまま返らなかった回数
+
+
 def ask_claude(title, copy, url, diag):
     """claude -p に書き直させる。通らなければ (None, 理由) を返す。嘘のログを書かない。"""
+    if CLAUDE_DOWN[0]:
+        return None, CLAUDE_DOWN[0]
     prompt = PROMPT % {"title": title or "（題名なし）",
                        "copy": copy or "（まだ無い）",
                        "url": url or "（無い）"}
@@ -212,6 +242,11 @@ def ask_claude(title, copy, url, diag):
                            cwd=os.path.expanduser("~"), stdin=subprocess.DEVNULL,
                            env=claude_env())
     except subprocess.TimeoutExpired:
+        # 実測（2026-09-22 06:53〜）：認証が切れていると `claude -p` は
+        # エラーを返さずただ黙る＝1件ごとに150秒を捨てる。2回黙ったらこの回は控えに任せる。
+        CLAUDE_SILENT[0] += 1
+        if CLAUDE_SILENT[0] >= 2:
+            CLAUDE_DOWN[0] = "claude -p が黙ったまま返らない（%d回連続）" % CLAUDE_SILENT[0]
         return None, "claude -p が %d秒で返らなかった" % CLAUDE_TIMEOUT
     except FileNotFoundError:
         return None, "claude コマンドが見つからない（%s）" % CLAUDE
@@ -219,9 +254,12 @@ def ask_claude(title, copy, url, diag):
         return None, "claude -p が起動できない（%s）" % type(e).__name__
     out = (r.stdout or "") + (r.stderr or "")
     if "Failed to authenticate" in out or "OAuth session expired" in out:
-        return None, "claudeの認証が切れている（OAuth session expired）"
+        # 1件で分かったことを25件ぶん繰り返さない（150秒×25＝1時間を無駄に焼かない）
+        CLAUDE_DOWN[0] = "claudeの認証が切れている（OAuth session expired）"
+        return None, CLAUDE_DOWN[0]
     if "usage limit" in out.lower() or "rate limit" in out.lower():
-        return None, "claudeの利用上限に当たった"
+        CLAUDE_DOWN[0] = "claudeの利用上限に当たった"
+        return None, CLAUDE_DOWN[0]
     try:
         j = json.loads(r.stdout or "{}")
         text = j.get("result") or ""
@@ -235,6 +273,75 @@ def ask_claude(title, copy, url, diag):
     if "NO_MATERIAL" in text:
         return None, "材料が題名だけで、足さずには書けない（動画を見ないと書けない）"
     return text, None
+
+
+# ---------------------------------------------------------------- 書き手の控え
+# 実測（2026-09-22 06:47・1回目の本番）：`claude -p` が
+#   「OAuth session expired」で12件とも落ちた。＝**書き手が1人だと、その1人が寝た日は
+#   仕組み全体が0件になる。**たまごさんに「ログインし直して」と頼む間も止めないために、
+#   工場が既に持っている外部の口（tools/gaibu_kuchi.py）へ降りる。
+# お金：1件あたり 入力約500トークン＋出力約80トークン。25件で gpt-4o-mini なら
+#   合計 約0.005ドル＝**1円未満**。使った実額は gaibu_kuchi 側の台帳に毎回載る。
+FALLBACK_VENDORS = ("openai", "gemini", "grok")
+# 実測（2026-09-22 07:00・1回目）：既定の先頭 gpt-4o-mini に書かせたら12件中ほぼ全部が
+#   「〜しよう！」の呼びかけになり、1件は材料に無い匂いまで足した（嘘）。**安い方から
+#   順に試す既定のままでは、この棚の文は書けない。**賢い方を先頭に指名する。
+#   値段差：1件あたり0.013円→約0.06円。25件で1.5円。ここは値段より文の質を採る。
+FALLBACK_MODELS = {"openai": ["gpt-5-mini", "gpt-4o", "gpt-4o-mini"]}
+
+
+def ask_fallback(title, copy, url, diag):
+    """claude -p が使えない日の控えの書き手。通らなければ (None, 理由) を返す。"""
+    try:
+        import gaibu_kuchi as kuchi
+    except Exception as e:
+        return None, "控えの口が読み込めない（%s）" % type(e).__name__
+    prompt = PROMPT % {"title": title or "（題名なし）",
+                       "copy": copy or "（まだ無い）",
+                       "url": url or "（無い）"}
+    tried = []
+    for v in FALLBACK_VENDORS:
+        try:
+            if not kuchi.find_key(v):
+                tried.append("%s=鍵なし" % v)
+                continue
+            r = kuchi.ask(v, [{"role": "user", "content": prompt}], timeout=60,
+                          models=FALLBACK_MODELS.get(v))
+        except Exception as e:
+            tried.append("%s=%s" % (v, type(e).__name__))
+            continue
+        if r.get("ok") and r.get("text"):
+            diag.append("控えの口 %s／%s／%s円" % (v, r.get("model"), r.get("costYen")))
+            t = clean(r["text"])
+            if t and "NO_MATERIAL" not in t:
+                return t, None
+            if "NO_MATERIAL" in (t or ""):
+                return None, "材料が題名だけで、足さずには書けない（動画を見ないと書けない）"
+            tried.append("%s=空" % v)
+        else:
+            tried.append("%s=%s" % (v, (r.get("error") or "不明")[:60]))
+    return None, "控えの口も通らなかった（%s）" % "／".join(tried)
+
+
+def write_probe(url, key, row_id, current, diag):
+    """**書ける鍵かどうかを、書き直す前に1回だけ確かめる。**
+
+    実測で一番こわいのは「コピーは全部作ったのに、書き戻しが RLS で弾かれて0件」。
+    今の値をそのまま入れ直すだけなので、中身は1文字も変わらない。
+    """
+    try:
+        _rep, st = patch_copy(url, key, row_id, current)
+        diag.append("書き戻しの下見：HTTP %s（書ける）" % st)
+        return True, None
+    except urllib.error.HTTPError as e:
+        body = ""
+        try:
+            body = e.read().decode("utf-8", "replace")[:160]
+        except Exception:
+            pass
+        return False, "書き戻しが HTTP %d で弾かれる（鍵が読み取り専用の可能性）%s" % (e.code, body)
+    except Exception as e:
+        return False, "書き戻しの下見が通らない（%s）" % type(e).__name__
 
 
 def patch_copy(url, key, row_id, text):
@@ -341,15 +448,45 @@ def run(since_days=14):
 
     out["targets"] = len(targets)
     log("対象 %d件（今回は最大%d件まで直す）" % (len(targets), MAX_PER_RUN))
+
+    # 書き直す前に、書き戻せる鍵かどうかを1回だけ確かめる（中身は変えない下見）。
+    # ここで弾かれるなら、コピーを25本作っても1本も載らない。先に赤にする。
+    if targets:
+        p = targets[0]
+        ok, why = write_probe(url, key, p["id"], p["copy"], diag)
+        out["canWrite"] = ok
+        if not ok:
+            out["red"].append("書き戻せない：" + why)
+            log("書き戻しの下見で弾かれた：" + why)
+            out["skipped"] = 0
+            out["remaining"] = len(targets)
+            out["redCount"] = len(out["red"])
+            return out
+
     for i, t in enumerate(targets[:MAX_PER_RUN], 1):
         log("  %d/%d %s" % (i, min(len(targets), MAX_PER_RUN), (t["title"] or "")[:40]))
         text, why_ng = ask_claude(t["title"], t["copy"], t["url"], diag)
+        if not text:
+            # 書き手が1人だとその1人が寝た日に0件になる。控えの口へ降りる。
+            text2, why2 = ask_fallback(t["title"], t["copy"], t["url"], diag)
+            if text2:
+                text, why_ng = text2, None
+            else:
+                why_ng = "%s／控え：%s" % (why_ng, why2)
         if not text:
             out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
                                  "was": t["copy"], "why": t["why"], "reason": why_ng})
             continue
         # 書き直したものを**同じ判定にもう一度かける。**水道水のままなら書き戻さない。
         again = nippou.judge(t["title"], text)
+        if again:
+            # 1回だけ、どこが引っかかったかを伝えて書き直させる（黙って捨てない）
+            t2 = dict(t)
+            t2["copy"] = (t["copy"] or "") + "\n（直前に書いた案「%s」は %s で不合格でした。" \
+                                             "同じ手は使わないでください）" % (text, again)
+            text2, _ = ask_fallback(t["title"], t2["copy"], t["url"], diag)
+            if text2 and not nippou.judge(t["title"], text2):
+                text, again = text2, None
         if again:
             out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
                                  "was": t["copy"], "why": t["why"],

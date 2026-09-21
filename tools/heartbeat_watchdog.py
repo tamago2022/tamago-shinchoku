@@ -40,9 +40,28 @@ import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALIVE = os.path.join(REPO, "status", ".heartbeat_alive")
+PROGRESS = os.path.join(REPO, "status", ".heartbeat_progress")
 LOG = os.path.join(REPO, "status", "heartbeat_watchdog.log")
 LABEL = "com.tamago.tamago-shinchoku.heartbeat"
-STALE_SECS = 60  # 心臓の1周期15秒の4倍。それでも無反応なら死んでいるとみなす。
+
+# ---- 2026-09-22（1018番）1つの信号で「生死」と「進行」を兼務させるのをやめた ----
+# 上のdocstringの【確定した形】には「心臓が毎周期(15秒)必ずtouchする」と書いてあるが、
+# **これは事実ではなかった。**心臓は1周の中で auto_launcher(最大45秒)と
+# command_ingest(最大45秒)を順番に待つので、1周は普通に60〜140秒かかる。
+# 実測（このログ全349件）：死亡宣告の中央値73秒・最小60秒。600秒超はたった3件。
+#   ＝346件（99.1%）は**生きている心臓を殺していた。**
+#   kickstart -k は kill を伴うため、殺された拍子に auto_launcher.py が孤児化して
+#   ロックを握ったまま残り、投げた仕事が一度も走りきらなくなっていた。
+# Kubernetes が liveness と readiness を分けているのと同じ理由。
+# liveness に「仕事が終わったか」を混ぜると、仕事が重いだけで再起動ループになる。
+#   ALIVE    … 心臓の中の専用子プロセスが5秒ごとに打つ。仕事に邪魔されない＝純粋な生死。
+#   PROGRESS … 1周を回りきった時だけ書かれる。本当に固まった時だけ古くなる。
+# 判定：
+#   鼓動が止まった          → 本当に死んだ。今までどおり即kickstart（実測50.4秒で復旧）。
+#   鼓動はあるが進行が古い  → 本当に固まった。ここで初めてkickstart。
+#   鼓動があり進行も新しい  → 何秒かかっていようが健康。**絶対に触らない。**
+STALE_SECS = 60        # 鼓動は5秒おき。12回分打たなければ、シェルごと落ちている。
+STUCK_SECS = 600       # 1周の実測最長は約140秒。その4倍以上なら本当に固まっている。
 
 
 def log(msg: str) -> None:
@@ -60,11 +79,15 @@ def log(msg: str) -> None:
         pass
 
 
-def alive_age() -> float:
+def age_of(path: str, missing: float = float("inf")) -> float:
     try:
-        return time.time() - os.path.getmtime(ALIVE)
+        return time.time() - os.path.getmtime(path)
     except OSError:
-        return float("inf")  # ファイルが無い＝最初から死んでいる扱い
+        return missing
+
+
+def alive_age() -> float:
+    return age_of(ALIVE)
 
 
 def kickstart() -> tuple[int, str]:
@@ -82,10 +105,27 @@ def kickstart() -> tuple[int, str]:
 
 
 def main() -> int:
-    age = alive_age()
-    if age <= STALE_SECS:
-        return 0  # 正常。ログも書かない（太らせない）
-    log(f"💀 心臓が{age:.0f}秒（{STALE_SECS}秒超）touchしていません。launchdへkickstartを依頼します")
+    beat = age_of(ALIVE)
+    # 進行ファイルが無い＝旧版の心臓がまだ走っている／起動直後。
+    # ここを「無い＝固まっている」と読むと、入れ替えの最中に見張りが暴走して
+    # 10秒ごとにkickstartを打ち続ける（＝直した側が新しい誤殺を作る）。
+    # 鼓動さえあれば生きているのは確かなので、進行が無い間は0（＝健康）として扱う。
+    prog = age_of(PROGRESS, missing=0.0)
+
+    if beat > STALE_SECS:
+        reason = f"💀 鼓動が{beat:.0f}秒（{STALE_SECS}秒超）止まっています＝心臓ごと落ちた"
+    elif prog > STUCK_SECS:
+        # 鼓動はあるのに1周が終わらない＝本当に固まっている。ここは残す価値のある再起動。
+        reason = (
+            f"🧊 鼓動はある（{beat:.0f}秒前）のに、1周が{prog:.0f}秒"
+            f"（{STUCK_SECS}秒超）終わっていません＝本当に固まっています"
+        )
+    else:
+        # 何秒仕事にかかっていようが、生きていて周っているなら健康。触らない。
+        # 2026-09-22以前はここで殺していた（349件中346件がこのケース＝99.1%が誤殺）。
+        return 0
+
+    log(f"{reason}。launchdへkickstartを依頼します")
     rc, msg = kickstart()
     if rc == 0:
         log("→ kickstart成功")

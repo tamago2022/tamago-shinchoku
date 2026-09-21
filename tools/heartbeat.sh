@@ -49,11 +49,42 @@ if [ -f "$PIDF" ]; then
   fi
 fi
 echo $$ > "$PIDF"
+
+# ---- 2026-09-22（1018番）「生きてる」と「仕事が進んでる」を1つの信号で兼務するのをやめた ----
+# 実測（heartbeat_watchdog.log 全349件）：
+#   心臓の「死亡宣告」の中央値は73秒、最小60秒。600秒を超えたのは**349件中わずか3件**。
+#   ＝ 346件（99.1%）は死んでいない。**忙しかっただけの心臓を、見張りが殺していた。**
+# なぜそうなったか：
+#   .heartbeat_alive は下のループの**先頭で1回だけ** touch していた。
+#   ところが同じループの中で auto_launcher(最大45秒) と command_ingest(最大45秒) を
+#   順番に待つので、1周が90秒を超えうる。見張りの閾値は60秒。**構造的に必ず超える。**
+#   見張り側のコメントは「心臓は15秒ごとにtouchする」と書いてあるが、それは事実ではなかった。
+#   そして kickstart -k は kill を伴うので、殺された拍子に auto_launcher.py が孤児化して
+#   ロックを握ったまま残り、**投げた仕事が一度も走りきらない**（順番待ちのリセット）。
+# 直し方（穴を塞がない。信号の素材を替える）：
+#   Kubernetes が liveness probe と readiness probe を分けている理由と同じ。
+#   liveness に「仕事が終わったか」を混ぜると、仕事が重いだけで全部再起動になる。
+#   → 鼓動は**仕事に絶対に邪魔されない専用の子プロセス**が5秒ごとに打つ。
+#     これは「シェルが存在するか」だけを表す。仕事が何秒かかっていても打ち続ける。
+#   → 「仕事が進んでいるか」は別ファイル .heartbeat_progress に、1周終わるたびに書く。
+#     本当に固まった時はこちらが古くなるので、見張りはそれを見る（下の閾値は10分）。
+#   これで「忙しい」と「死んだ」が初めて区別できる。信号は1か所（この2ファイル）だけ。
+ALIVE_F="$REPO/status/.heartbeat_alive"
+PROGRESS_F="$REPO/status/.heartbeat_progress"
+touch "$ALIVE_F" "$PROGRESS_F" 2>/dev/null || true
+MAIN_PID=$$
+( while kill -0 "$MAIN_PID" 2>/dev/null; do
+    touch "$ALIVE_F" 2>/dev/null || true
+    sleep 5
+  done ) &
+BEATER_PID=$!
+
 # 退くときは「自分のPIDが書いてあるときだけ」消す。
 # 2026-09-05 17:25 これを付けずに無条件で消していたため、交代した古い心臓が
 #   **新しい心臓のPIDファイルまで道連れに消して**、誰も居ないのに居るように見えたり、
 #   逆に立て直しの判断が狂ったりした（17:17を最後に心臓が止まった）。
 cleanup_pid() {
+  kill "$BEATER_PID" 2>/dev/null || true
   if [ "$(cat "$PIDF" 2>/dev/null || true)" = "$$" ]; then rm -f "$PIDF" 2>/dev/null || true; fi
 }
 trap cleanup_pid EXIT INT TERM
@@ -105,8 +136,10 @@ while :; do
   # に頼っていたため、「走行0本で書くことが無いだけ」でも詰まっていると誤判定し、
   # machine_status_push.sh が正常な心臓を何度も殺して立て直す事故が起きた
   # （殺した拍子に子の auto_launcher.py が孤児化してロックを握ったまま残り、発車が止まった）。
-  # ループが回っている事実そのものを、何もしなくても毎周期touchするこのファイルで示す。
-  touch "$REPO/status/.heartbeat_alive" 2>/dev/null || true
+  # 2026-09-22（1018番）ここで touch するのはやめた。上の専用の子プロセスが5秒ごとに打つ。
+  #   ここで打つと「1周が終わるまで次の鼓動が無い」＝1周90秒なら60秒の見張りに必ず殺される。
+  #   鼓動＝生存、下の .heartbeat_progress＝仕事の進行。役割を混ぜない。
+  CYCLE_STARTED_AT=$(date +%s)
   # 自分が正規の心臓でなくなっていたら（誰かが入れ直した）静かに退く
   CUR="$(cat "$PIDF" 2>/dev/null || true)"
   if [ -n "${CUR:-}" ] && [ "$CUR" != "$$" ]; then
@@ -234,6 +267,13 @@ while :; do
   #   拾ったら status/queue.json の発車待ちへ自分で積む。着火は auto_launcher がやる＝人は押さない。
   #   ★吐き出したものは status/github_watch_err.log に残す（黙って死ぬのを防ぐ）。
   tick_every 2 && ( python3 "$REPO/tools/github_watch.py" >> "$REPO/status/github_watch_err.log" 2>&1 & ) >/dev/null 2>&1
+
+  # 977番（2026-09-22）：外部AI台帳の回収係。
+  #   見張り番（github_watch.py）はETagと基準線で「いま新しいもの」しか拾わない。
+  #   タイミングが1秒ずれた回・上限に当たった回・トークンで寝ていた回の返事を取りこぼす。
+  #   こちらは別の原理で動く＝「投げたのに返り0のスレッド」だけを名指しで読みに行く。
+  #   ★赤が0件なら通信を1本も出さずに終わる（--gated）。工場は重くならない。
+  tick_every 2 && ( python3 "$REPO/tools/ai_daicho.py" --collect --gated >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-18（944番）：外部AI（Grok/ChatGPT/Gemini）への代行係。
   #   Cowork/Dispatchのサンドボックスからは api.openai.com / api.x.ai /
   #   generativelanguage.googleapis.com へ回線が出ない（実測）。このMacからは出る。
@@ -267,5 +307,10 @@ while :; do
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
     echo "$(date '+%F %T') 心臓は動いています" >> "$LOG"
   fi
+  # ---- 2026-09-22（1018番）1周を最後まで回りきった事実だけをここに書く ----
+  # 鼓動(.heartbeat_alive)＝シェルが生きている。これ(.heartbeat_progress)＝1周が終わった。
+  # 本当に固まった時だけ、こちらが古くなる。見張りはこの2つを別々に見る。
+  # 中身に1周の所要秒数を残す＝「見張りの閾値が実測と合っているか」を後から数字で言える。
+  echo "$(date '+%F %T') cycle_secs=$(( $(date +%s) - CYCLE_STARTED_AT ))" > "$PROGRESS_F" 2>/dev/null || true
   sleep 15
 done
