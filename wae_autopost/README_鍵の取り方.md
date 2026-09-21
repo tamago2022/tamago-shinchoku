@@ -63,3 +63,35 @@ Meta Business Suiteの投稿画面には `<input type="file">` が**1個も存�
 ## お金
 Instagram Platform のコンテンツ公開API＝**無料**。上限は24時間あたり100投稿。
 （公式: developers.facebook.com/docs/instagram-platform/content-publishing / 2026-06-30更新）
+
+---
+
+## 追記 2026-09-22｜Collabs（共同投稿）が通ることが分かった
+
+8/19に「Meta Business Suiteの編集画面にCollabsが無い」で止まっていた件。
+**探す場所が違っていた。Business Suiteの画面ではなく、APIのパラメータとして公式に存在する。**
+
+> **collaborators** — For Feed image, Reels and Carousels only.
+> A list of up to 3 instagram usernames as collaborators on an ig media. Not supported for Stories.
+> — https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media/
+
+わえの投稿はフィード画像なので対象。`queue.json` の全11本に `collaborators: ["wae0815"]` を設定済み。
+**鍵を貼れば、1本目から本人との共同投稿として出る。**
+
+鍵を貼ったら、投稿の前にCollabsの疎通を1回確かめる（こちらで走らせる）：
+`post.py --collabtest` → 公開せずにコンテナを1個作るだけで、Collabsが通るかを実際に叩いて確かめる。
+24時間で勝手に消える。たまごさんが打つものではない。
+
+※ 万一Collabsが拒否されても、投稿自体は止まらない。Collabs抜きで出して理由をログに残す作りにしてある。
+
+## なぜCollabsが前より重要になったか（2026-04-30の方針転換）
+
+Adam Mosseri（Instagram責任者）の発表：
+**投稿の大半が他人のコンテンツのアカウントは、フォロワー以外にレコメンドされなくなった。**
+過去30日のローリング判定。従来リールのみだったのが写真・カルーセルにも拡大。
+**クレジット表記や軽微な編集では「オリジナル」扱いにならないと明言された。**
+
+そのうえでリーチを保つ正規ルートとして名指しされたのは3つだけ：
+**①リミックス ②公式Repostボタン ③Collab投稿**
+
+出典: https://petapixel.com/2026/04/30/new-instagram-policies-target-reposted-content/

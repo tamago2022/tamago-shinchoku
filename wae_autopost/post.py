@@ -91,8 +91,10 @@ def cmd_show(q, log):
     done = {e["id"] for e in log if e.get("result") == "ok"}
     for it in q["items"]:
         mark = "済" if it["id"] in done else ("次→" if nxt and it["id"] == nxt["id"] else "  ")
+        cl = it.get("collaborators") or q.get("collaborators") or []
         print(f"\n{'='*70}\n[{mark}] {it['id']}  画像: {os.path.basename(it['image'])}"
-              f"  (実在: {'○' if os.path.exists(it['image']) else RED+'×'+OFF})\n{'-'*70}")
+              f"  (実在: {'○' if os.path.exists(it['image']) else RED+'×'+OFF})"
+              f"  共同投稿: {'＋'.join('@'+u for u in cl) if cl else RED+'なし'+OFF}\n{'-'*70}")
         print(it["caption"])
     print(f"\n{'='*70}")
 
@@ -105,6 +107,35 @@ def cmd_check(env):
     r = http(f"{GRAPH}/{ig}?fields=username,followers_count,media_count&access_token={urllib.parse.quote(tok)}")
     print(GRN + f"○ 鍵OK: @{r.get('username')} 投稿数{r.get('media_count')} フォロワー{r.get('followers_count')}" + OFF)
     return 0
+
+def cmd_collabtest(env, q):
+    """Collabs（共同投稿）が本当に通るかを、公開せずに実際に叩いて確かめる。
+    コンテナを1個作るだけ。公開しない。24時間で自動的に消える。"""
+    tok = env.get("META_ACCESS_TOKEN"); ig = env.get("IG_USER_ID"); page = env.get("FB_PAGE_ID")
+    if not (tok and ig and page):
+        print(RED + "× 鍵がまだ無いので叩けません。README_鍵の取り方.md の5手順を1回だけ" + OFF); return 1
+    collabs = q.get("collaborators") or []
+    if not collabs:
+        print(RED + "× queue.json に collaborators が入っていません" + OFF); return 1
+    it = q["items"][0]
+    print(f"… @{collabs[0]} を共同投稿者にしてコンテナを1個だけ作ります（公開はしません）")
+    up = http(f"{GRAPH}/{page}/photos", data={"published": "false", "access_token": tok}, files={"source": it["image"]})
+    ph = http(f"{GRAPH}/{up['id']}?fields=images&access_token={urllib.parse.quote(tok)}")
+    img_url = sorted(ph["images"], key=lambda x: -x["width"])[0]["source"]
+    base = {"image_url": img_url, "caption": "collab test (not published)", "access_token": tok}
+    try:
+        c = http(f"{GRAPH}/{ig}/media", data={**base, "collaborators": json.dumps(collabs[:3])})
+        print(GRN + f"○ Collabs 通った。コンテナID={c['id']}（公開していません）" + OFF)
+        print(GRN + f"  → {', '.join('@'+u for u in collabs[:3])} に招待が飛ぶ形で投稿できます" + OFF)
+        return 0
+    except Exception as e:
+        print(RED + f"× Collabs 拒否された。返ってきたもの↓\n{e}" + OFF)
+        try:
+            http(f"{GRAPH}/{ig}/media", data=base)
+            print("  ※ collaborators を外すと同じリクエストは通る＝原因はCollabsの指定だけ")
+        except Exception as e2:
+            print(f"  ※ collaborators を外しても通らない＝原因は別: {str(e2)[:300]}")
+        return 1
 
 def cmd_post(env, q, log, dry=False):
     if os.path.exists(STOP):
@@ -125,8 +156,24 @@ def cmd_post(env, q, log, dry=False):
         up = http(f"{GRAPH}/{page}/photos", data={"published": "false", "access_token": tok}, files={"source": it["image"]})
         ph = http(f"{GRAPH}/{up['id']}?fields=images&access_token={urllib.parse.quote(tok)}")
         img_url = sorted(ph["images"], key=lambda x: -x["width"])[0]["source"]
-        # 2) Instagramコンテナを作る
-        c = http(f"{GRAPH}/{ig}/media", data={"image_url": img_url, "caption": it["caption"], "access_token": tok})
+        # 2) Instagramコンテナを作る（Collabs＝共同投稿つき）
+        params = {"image_url": img_url, "caption": it["caption"], "access_token": tok}
+        collabs = it.get("collaborators") or q.get("collaborators") or []
+        if collabs:
+            # 公式仕様: フィード画像・リール・カルーセルのみ。最大3人。ストーリーズは非対応。
+            # developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media/
+            params["collaborators"] = json.dumps(collabs[:3])
+        try:
+            c = http(f"{GRAPH}/{ig}/media", data=params)
+        except RuntimeError as e:
+            if collabs and "collaborator" in str(e).lower():
+                # Collabsだけが原因なら、投稿自体は落とさずCollabs抜きで出す（理由はログに残す）
+                print(RED + f"※ Collabs拒否({collabs})。Collabs抜きで投稿します: {str(e)[:200]}" + OFF)
+                params.pop("collaborators")
+                c = http(f"{GRAPH}/{ig}/media", data=params)
+                collabs = []
+            else:
+                raise
         # 3) 公開
         for _ in range(12):
             st = http(f"{GRAPH}/{c['id']}?fields=status_code&access_token={urllib.parse.quote(tok)}")
@@ -134,7 +181,8 @@ def cmd_post(env, q, log, dry=False):
             time.sleep(5)
         pub = http(f"{GRAPH}/{ig}/media_publish", data={"creation_id": c["id"], "access_token": tok})
         perm = http(f"{GRAPH}/{pub['id']}?fields=permalink&access_token={urllib.parse.quote(tok)}").get("permalink", "")
-        log.append({"id": it["id"], "result": "ok", "at": jst_now().isoformat(), "media_id": pub["id"], "permalink": perm})
+        log.append({"id": it["id"], "result": "ok", "at": jst_now().isoformat(), "media_id": pub["id"],
+                    "permalink": perm, "collaborators": collabs})
         json.dump(log, open(LOG, "w"), ensure_ascii=False, indent=2)
         write_status(True, f"投稿できた: {it['id']}", {"permalink": perm, "remaining": len(q['items']) - len([e for e in log if e.get('result')=='ok'])})
         print(GRN + f"○ 投稿完了 {it['id']}  {perm}" + OFF)
@@ -151,10 +199,12 @@ def main():
     ap.add_argument("--show", action="store_true")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--post", action="store_true")
+    ap.add_argument("--collabtest", action="store_true")
     a = ap.parse_args()
     env = load_env(); q = load_queue(); log = load_log()
     if a.show:  return cmd_show(q, log) or 0
     if a.check: return cmd_check(env)
+    if a.collabtest: return cmd_collabtest(env, q)
     if a.post:  return cmd_post(env, q, log)
     ap.print_help(); return 0
 
