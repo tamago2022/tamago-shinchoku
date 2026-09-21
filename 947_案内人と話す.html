@@ -97,6 +97,8 @@
   </div>
 </div>
 
+<!-- 名前の読み辞書（自動生成）。読み込めなくても案内人は動く。 -->
+<script src="share/yomi/yomi.js"></script>
 <script>
 (function(){
   const $ = id => document.getElementById(id);
@@ -113,7 +115,9 @@
     "正解を押し付けない。「これが好きならこれも」という差し出し方をする。",
     "事実があやしいときは断定しない。年号や売上のような数字は、自信がなければ言わない。",
     "最初のひとことは「こんばんは。今日はどんな気分で来られました？」のように、短く迎える。"
-  ].join("\n");
+  ].join("\n")
+  // ★ 名前の読み方。King Gnu を「キング・ヌー」と読ませないための一撃。
+  + (window.TAMAGO_YOMI ? "\n" + window.TAMAGO_YOMI.instruction() : "");
 
   let pc=null, dc=null, mic=null, audioEl=null, ac=null, analyser=null, raf=0;
   let level=0, bright=0, speaking=false, blink=0, nextBlink=60, t=0;
