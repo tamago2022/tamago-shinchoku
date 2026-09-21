@@ -323,9 +323,14 @@ function loadCash(){
   Promise.all([
     getJson("status/public/fal_cost_ledger.json").catch(function(){ return null; }),
     getJson("status/public/gaibu.json").catch(function(){ return null; }),
-    getJson("status/public/machine.json").catch(function(){ return null; })
+    getJson("status/public/machine.json").catch(function(){ return null; }),
+    /* 840番（2026-09-21）毎週のMac掃除。定期タスク weekly-mac-maintenance は走ってはいたが
+       許可ダイアログを押す人が居ないためMacの実ファイルに届かず、毎回「何も実行できなかった」
+       と返していた。★動いているのに何も取れていない、が一番たちの悪い壊れ方。
+       だから「走った回数」ではなく「実際に片付いたバイト数」をここに出す。 */
+    getJson("status/public/mac_souji.json").catch(function(){ return null; })
   ]).then(function(a){
-    var fal = a[0], gaibu = a[1], mac = a[2];
+    var fal = a[0], gaibu = a[1], mac = a[2], souji = a[3];
     var rows = [];
 
     // お金：実費が記録されているのは fal と 外に出した仕事だけ
@@ -358,6 +363,27 @@ function loadCash(){
       var low = free < 50;
       rows.push('<li' + (low ? ' class="red"' : '') + '>フォルダ　空き ' + Math.round(free) + 'GB' +
         (low ? '（50GBを切っています）' : '') + '</li>');
+    }
+
+    /* 毎週のMac掃除：★「走った回数>0 なのに 片付いた=0」は赤。
+       走っただけで緑にしない。8日以上掃けていない（＝経路が死んだ）ときも赤。 */
+    if(!souji){
+      rows.push('<li>毎週のMac掃除　未取得<div class="meta">status/public/mac_souji.json がまだありません</div></li>');
+    } else {
+      var runs  = Number(souji.runs || 0);
+      var total = Number(souji.totalFreedBytes || 0);
+      var lastMs = souji.lastRunAt ? Date.parse(souji.lastRunAt) : NaN;
+      var ageDay = isNaN(lastMs) ? null : (Date.now() - lastMs) / 86400000;
+      var bad = (runs > 0 && total <= 0) || (ageDay != null && ageDay > 8) || runs === 0;
+      var why = (runs > 0 && total <= 0)
+        ? '走った' + runs + '回・片付いた0バイト（動いているのに何も取れていない）'
+        : (runs === 0 ? 'まだ1回も掃けていません'
+          : (ageDay != null && ageDay > 8 ? Math.floor(ageDay) + '日掃けていません' : ''));
+      rows.push('<li' + (bad ? ' class="red"' : '') + '>毎週のMac掃除　' +
+        (bad ? why : ('累計 ' + esc(souji.totalFreedHuman || '') + ' 片付いた')) +
+        '<div class="meta">走行 ' + runs + '回／直近 ' + esc(souji.lastFreedHuman || '未取得') +
+        '／最終 ' + (souji.lastRunAt ? esc(String(souji.lastRunAt).replace("T", " ").slice(0, 16)) : '未実行') +
+        '。心臓と5分便に相乗り（定期タスクは使っていない）</div></li>');
     }
 
     // サブスク：台帳が公開側に無い（金額・次の請求日は端末側にしかない）

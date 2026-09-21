@@ -249,6 +249,19 @@ while :; do
   #   kenpin_gate等と同じ「投げっぱなしにして心臓は待たない」形。
   # 起動の間引き（2026-09-18）：本体が2分で間引いている
   tick_every 8 && ( python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-21（840番）毎週のMac掃除。5分便(machine_status_push.sh)にも同じ1行がある＝経路の二重化。
+  #   なぜここへ移したか（実測）：定期タスク weekly-mac-maintenance は毎週走ってはいたが、
+  #   定期実行のスコープでは許可ダイアログを押す人が居ないので、Macの実ファイルに一度も
+  #   届いていなかった（毎回「何も実行できなかった」＋毎回たまごさんに質問）。
+  #   ★動いているのに何も取れていない、が一番たちの悪い壊れ方。
+  #   → 許可の要る経路をやめて、許可の要らない工場側（心臓とこの5分便）に寄せる。
+  #     新しい定期タスク・新しいlaunchd便は作らない。
+  #   ★中で**週1**に間引いている（status/.mac_souji_at）。10分おきに呼んでも実走は週1回。
+  #     掃く判定は tools/disk_guardian.py の既存ロジックをそのまま使う（二重実装しない）。
+  #     Brave・たまごさんのアプリ・作り直せないものには一切触らない。
+  #   ★走った回数と実際に片付いたバイト数の両方を status/mac_souji.json に残し、
+  #     「走行>0 なのに 片付き=0」は赤で出す。投げっぱなしにして心臓は待たない。
+  tick_every 40 && ( python3 "$REPO/tools/mac_souji.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

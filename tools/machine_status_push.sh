@@ -516,7 +516,7 @@ PYVER
 ### 中身は一切削らずgzip圧縮のみで物理的に縮める（1.8MB→約480KB）。
 ### PUBLISH_LISTからも外し、単純cpをやめてstatus/public/queue.json.gzへ
 ### 圧縮版を書き出す（build_queue_public_gz.py）。正本status/queue.jsonは変更しない。
-PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json queue_next.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json"
+PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json queue_next.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json mac_souji.json"
 mkdir -p "$REPO/status/public"
 # ---- 2026-09-20（969番）鍵・つながりの台帳 ----
 # 「走っているのに何も取れていない」を自動で赤にする係。新しい常駐は増やさず、この5分便に相乗り。
@@ -662,6 +662,20 @@ fi
 #   ★Chromeが起動していなければ何もしない（起こさない）。activateしない。前面タブは閉じない。
 #     たまごさんの作業タブは閉じない（見分けがつかないものは残す）。
 ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+
+# 2026-09-21（840番）毎週のMac掃除。★新しい定期タスク・新しいlaunchd便は作っていない。
+#   理由（実測）：定期タスク weekly-mac-maintenance は毎週走ってはいたが、定期実行の
+#   スコープでは許可ダイアログを押す人が居ないためMacの実ファイルに一度も届かず、
+#   毎回「何も実行できなかった」と返していた（＝動いているのに何も取れていない）。
+#   許可の要る経路をやめて、許可の要らない工場側（この便と心臓）に寄せる。
+#   ★中で**週1**に間引いているので、5分おきに呼んでも実際に掃くのは週1回だけ。
+#     間引きで戻る回は状態ファイルを1つ読むだけ＝負荷はほぼゼロ。
+#   ★掃く判定は tools/disk_guardian.py の既存ロジックをそのまま使う（二重実装しない）。
+#     Brave・たまごさんのアプリ・作り直せないものには一切触らない。
+#   ★走った回数と実際に片付いたバイト数の両方を status/mac_souji.json に残す。
+#     走行>0 なのに 片付き=0 は赤で出る。
+#   この便を止めないよう、バックグラウンドへ逃がして10分で打ち切る（前で待たない）。
+( run_with_timeout 600 python3 "$REPO/tools/mac_souji.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
 
 # 約260秒（次の5分ティックが来る前）、間を空けずに回し続ける。走行中↔停止の切り替わりをできるだけ早くPWAへ反映するため。
 # factory_status.py自体が実測27秒かかる（ps/lsof/transcriptスキャン）ので、固定sleepは入れず作業時間そのものを間隔にする
