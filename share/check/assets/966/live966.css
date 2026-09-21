@@ -81,6 +81,25 @@ button.rec-card:focus-visible{outline:2px solid var(--forest);outline-offset:2px
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em
 }
 .rec-card .rec-copy{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ★1023：入口の一言（札はドア）。
+   ・**1行しか出さない。**どんなに長い文が来ても nowrap＋… で切る。札は下に伸びない。
+   ・**空でも高さを取る**（min-height）。あとから文字が入っても札の位置が動かない
+     ＝押そうとした瞬間に札がずれる、が起きない。
+   ・正本の色だけを使う（--forest）。新しい色は作っていない。
+   ・左の細い罫は「ここが入口」の目印。枠で囲うと札の中に札ができるので、線1本だけ。 */
+.rec-card .rec-door{
+  margin:7px 0 0;padding-left:8px;min-height:1.7em;
+  border-left:2px solid rgba(38,76,59,.38);
+  color:var(--forest);font:12px/1.7 var(--serif);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+/* 言うことが無い札には**何も書かない**（水で薄めない）。
+   ただし高さは残す＝4枚の背が揃う。線だけが宙に浮くのは見苦しいので、線も消す。 */
+.rec-card .rec-door:empty{border-left-color:transparent}
+/* ★1023：下のボタンは、その人ごとに言葉が変わる。**丸い1行のまま**にする（2行に折らない）。 */
+.more-button{white-space:nowrap}
+@media (max-width:780px){ .rec-card .rec-door{font-size:11px} }
 .rec-empty{
   margin:0;padding:34px 10px;text-align:center;
   font-size:13px;line-height:2;color:var(--muted)

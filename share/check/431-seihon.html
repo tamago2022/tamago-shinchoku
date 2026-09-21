@@ -721,13 +721,27 @@ function dist(a,b,max){
 }
 
 /* 名簿を「耳で引ける形」に組み直す。ページを開いた時ではなく、棚を読んだ時に1回だけ。 */
-let EAR=null, VOCAB=[], ERAN=null;
+let EAR=null, VOCAB=[], ERAN=null, KUNIN=null, KUNIWAKARU=0;
 function buildEar(){
   if(EAR||!CAT.head) return;
   const A=CAT.head.A;
   /* ★1020：棚の年代ごとの人数を数えておく。「珍しい」はここからしか言わない。
      世の中で珍しいかは分からない。**うちの棚で何組いるか**なら数えられる。 */
   ERAN={}; for(const a of A) for(const e of (a.e||[])) ERAN[e]=(ERAN[e]||0)+1;
+  /* ★1023：産地ごとの人数。たまごさんの例そのもの——
+     「こんなシベリアのグループなんて珍しいじゃん」。
+     年代だけでは「珍しい＝古い」しか言えなかった。**どこの人かでも数える。**
+     ★数えられるのは region.json に載っている人だけ（いまは2,475組中1,289組）。
+       だから「棚に1組だけ」ではなく **「産地の分かっている◯組のなかで1組」** と言う。
+       ここを省くと、載っていない人のぶんだけ嘘になる。 */
+  KUNIN={}; KUNIWAKARU=0;
+  if(CAT.reg&&CAT.reg.r){
+    const mochi=new Set(A.map(a=>a.i));
+    for(const id in CAT.reg.r){
+      if(!mochi.has(id)) continue;
+      const c=CAT.reg.r[id]; KUNIN[c]=(KUNIN[c]||0)+1; KUNIWAKARU++;
+    }
+  }
   EAR={ exact:new Map(), keys:[] };   // keys=[{k, i}] 総当たり用
   const put=(k,i)=>{ if(!k||k.length<2) return;
     if(!EAR.exact.has(k)) EAR.exact.set(k,i);
@@ -784,6 +798,44 @@ const REGION_JA={
   de:"ドイツ", it:"イタリア", se:"スウェーデン", no:"ノルウェー", is:"アイスランド",
   au:"オーストラリア"
 };
+/* ★1023：国コード→日本語の国名。**国名は事実で、意見ではない**ので言い切ってよい。
+   ここに無いコードの人には、産地の一言を付けない（ローマ字2文字のまま出さない）。 */
+const KUNI_JA=Object.assign({},REGION_JA,{
+  ru:"ロシア", ua:"ウクライナ", pl:"ポーランド", cz:"チェコ", hu:"ハンガリー",
+  gr:"ギリシャ", tr:"トルコ", pt:"ポルトガル", es:"スペイン", nl:"オランダ",
+  be:"ベルギー", at:"オーストリア", ch:"スイス", dk:"デンマーク", fi:"フィンランド",
+  ie:"アイルランド", il:"イスラエル", ir:"イラン", lb:"レバノン", eg:"エジプト",
+  ma:"モロッコ", dz:"アルジェリア", ml:"マリ", sn:"セネガル", bj:"ベナン",
+  ke:"ケニア", tz:"タンザニア", cd:"コンゴ民主共和国", za:"南アフリカ", gh:"ガーナ",
+  ar:"アルゼンチン", cl:"チリ", pe:"ペルー", co:"コロンビア", ve:"ベネズエラ",
+  uy:"ウルグアイ", pa:"パナマ", tt:"トリニダード・トバゴ", pr:"プエルトリコ",
+  do:"ドミニカ共和国", ht:"ハイチ", vn:"ベトナム", ph:"フィリピン", my:"マレーシア",
+  sg:"シンガポール", mn:"モンゴル", np:"ネパール", pk:"パキスタン", nz:"ニュージーランド"
+});
+/* その人の産地が「うちの棚で薄い」かどうか。薄いときだけ国名を返す。
+   ★しきい値は8組。これ以上いる国（日本553・アメリカ311・イギリス125…）で
+     「珍しい」と言ったら、それは嘘になる。 */
+function usuiKuni(a){
+  if(!KUNIN||!CAT.reg||!CAT.reg.r) return null;
+  const c=CAT.reg.r[a.i]; if(!c) return null;
+  const ja=KUNI_JA[c]; if(!ja) return null;
+  return (KUNIN[c]<=8) ? {code:c, ja, n:KUNIN[c]} : null;
+}
+/* 産地の日本語名。分かっている人だけ。（事実シート＝声のほうへ渡す用。全部渡す） */
+function kuniOf(a){
+  if(!CAT.reg||!CAT.reg.r) return null;
+  const c=CAT.reg.r[a.i]; if(!c) return null;
+  return KUNI_JA[c]||null;
+}
+/* 札のドアに刷ってよい産地。
+   ★大きい国では刷らない。棚は 日本548・アメリカ321・イギリス125。
+     「日本の棚から」は、誰に出しても当たる＝ドアではない＝水道水。
+     60組以下の国（韓国40・ジャマイカ33・ブラジル20・台湾18・タイ11…）だけ、ドアになる。 */
+function kuniDoor(a){
+  if(!KUNIN||!CAT.reg||!CAT.reg.r) return null;
+  const c=CAT.reg.r[a.i]; if(!c||!(KUNIN[c]<=60)) return null;
+  return KUNI_JA[c]||null;
+}
 /* その地域に入るアーティストの番号を集める。region.json に載っていない人は入れない。 */
 function regionSet(key){
   if(!key||!CAT.reg||!CAT.reg.r) return null;
@@ -963,7 +1015,10 @@ function usuiEra(a){                 /* その人が持つ年代のうち、棚�
   if(!ERAN) return null;
   let thin=null;
   for(const e of (a.e||[])) if(ERAN[e] && (thin===null||ERAN[e]<ERAN[thin])) thin=e;
-  return (thin && ERAN[thin]<=300) ? thin : null;
+  /* ★1023：しきい値を 300 から 120 に下げた。
+     実測：60年代は276組いる。それを「276組だけ」と言うのは「だけ」が嘘になる。
+     120以下で残るのは 50年代102組・40年代10組の2つ。ここなら「だけ」と言ってよい。 */
+  return (thin && ERAN[thin]<=120) ? thin : null;
 }
 function mezurashi(a){
   const o=[];
@@ -971,6 +1026,9 @@ function mezurashi(a){
   else if(a.c===2) o.push("棚にこの人は2曲だけ");
   const t=usuiEra(a);
   if(t) o.push("棚に"+t.replace("s","年代")+"の人は"+ERAN[t]+"組だけ（全"+CAT.head.A.length+"組中）");
+  /* ★1023：産地の薄さ。★分母を必ず付ける。載っていない人がいるので「棚に1組だけ」は言えない。 */
+  const k=usuiKuni(a);
+  if(k) o.push("産地の分かっている"+KUNIWAKARU+"組のうち、"+k.ja+"は"+k.n+"組だけ");
   return o;
 }
 /* 会話の始めに案内人へ渡す「いま棚にある珍しいもの」。
@@ -979,7 +1037,7 @@ function mezurashi(a){
 function mezuraList(){
   if(!CAT.head||!ERAN) return [];
   const A=CAT.head.A, o=[];
-  const tane=A.map((a,i)=>({a,i,p:boukenTen({fact:{kazu:a.c||0,eraList:a.e||[],note:a.ab||""}})}))
+  const tane=A.map((a,i)=>({a,i,p:boukenTen({fact:{kazu:a.c||0,eraList:a.e||[],note:a.ab||"",kuni:usuiKuni(a)}})}))
               .filter(x=>x.p>=24 && x.a.ab && !kyokuJanai(x.a))
               .sort((x,y)=>y.p-x.p);
   /* 同じ年代の人ばかり6組並べない。1つの年代から2組まで。
@@ -1003,6 +1061,9 @@ function boukenTen(c){
   if(f.kazu===1) p+=34; else if(f.kazu===2) p+=16;
   if(ERAN) for(const e of (f.eraList||[])) if(ERAN[e]&&ERAN[e]<=300) p+=Math.max(6,42-ERAN[e]/8);
   if(f.note) p+=12;            /* うちの言葉が付いている＝人が一度見た曲。冒険でも外れにくい */
+  /* ★1023：産地が薄い人を冒険札に上げる。たまごさんの「シベリアのグループ」はここで当たる。
+     年代の点だけだと、冒険札がいつも古い曲になっていた。 */
+  if(f.kuni && f.kuni.n<=8) p+=Math.max(10,40-f.kuni.n*4);
   return p;
 }
 const artistOf=s=>CAT.head.A[s.ai];
@@ -1023,6 +1084,8 @@ const songCard=s=>{
            note:null,                         /* うちの棚の一文。札が出てから fillNotes が入れる */
            why:s.why||null,                   /* どの線をたどってこの人に行き当たったか */
            kazu:a.c||0, eraList:(a.e||[]), nonMusic:kyokuJanai(a),
+           /* ★1023：産地。kuni＝薄い国のときだけ（数つき）／kuniJa＝分かっていれば必ず */
+           kuni:usuiKuni(a), kuniJa:kuniOf(a), kuniDoor:kuniDoor(a),
            mezu:mezurashi(a) } };
 };
 const ytOf=u=>{ const m=/\/vi\/([A-Za-z0-9_-]{6,})\//.exec(u||""); return m?m[1]:""; };
@@ -1078,6 +1141,7 @@ async function openPlayer(c,idx){
   }
   applyAudio();
   KYAKU.osu(c);                         /* ★1020：押したもの＝いちばん正直な返事。覚えておく */
+  paintMore();                          /* ★1023：押した瞬間に、下の一枚もその人のものになる */
   /* ★1020：メールの誘いは、押した直後にだけ・一人につき1回だけ。
      1枚目ではまだ「気に入った」と言えないので、**2枚目を押したとき**に1回だけ出す。
      （Backlinko：もう好きになっている人のところで言うと、記事本文の4倍取れた） */
@@ -1137,10 +1201,71 @@ $("pBig").addEventListener("click",()=>{ if(playing) window.open(playing.url,"_b
    （rec-no ／ rec-media.record ＝レコード盤がはみ出す形 ／ cover に写真 ／ rec-title ／ rec-copy）
    押せるようにするため a ではなく button にしただけ。 */
 const KIND_EN={music:"MUSIC",video:"VISUAL",article:"ARTICLE",food:"LIFESTYLE"};
+
+/* ══════════════ ★1023：入口の一言（札はドア）══════════════
+   たまごさん 2026-09-22：
+   「カードはドアです。ドアの奥にはあなたの知らないものが待ってる。脅さない、誘う。」
+   「コンシェルジュが短く受け答えしてるのはすごくいいんだけど、ちょっとシンプルすぎる。
+     事実を平たく言ってるだけ。『おじさん、わかってるね』にしたい。」
+
+   ★ここは「長くする」直しではない。**1行のまま、中身を替える。**
+   これまでの札の1行は `アーティスト名　1979年` だけだった＝誰が見ても同じ＝「あなた」が無い。
+   そこに**もう1行だけ**、「なぜこの札がいま出ているのか」を足す。行数は1行しか増えない。
+
+   ★材料は棚に書いてあることだけ。案内人（AI）は1文字も書かない＝0円・作り話ゼロ。
+   ★4枚が同じ文言にならないように、使った種類は1回ずつしか使わない。
+     （同じ札が4枚並ぶのは「わかってない」の見本） */
+function doorLine(c,tsukatta){
+  const f=c.fact||{}; if(!f) return "";
+  if(c.kind!=="music") return f.hitokoto?String(f.hitokoto).slice(0,18):"";
+  const tane=[];
+  /* ① 今日の冒険の1枚（安心4：冒険1のうちの1）。いちばん強いドア。 */
+  if(c.bouken) tane.push(["bouken","これが今日の冒険の1枚"]);
+  /* ①' うちの棚に**人が書いた**その曲の一文（「やさしい告白。」「踊りたい夜。」）。
+         いちばん良いドアはこれ。機械には書けない。
+         ★ただし届くのは札を出したあと（fillNotes）。だから1周目は空振りして、
+           2周目（paintDoors）で**空いている札に入る。**
+           ＝一度出した文字が読んでいる途中で入れ替わらない。 */
+  if(f.note){
+    const n=String(f.note).replace(/\s+/g," ").trim();
+    const kugiri=n.search(/[。！？]/);
+    const atama=(kugiri>=5?n.slice(0,kugiri):n.slice(0,22));
+    if(atama.length>=5) tane.push(["note",atama+(kugiri>=5?"。":"…")]);
+  }
+  /* ② 産地が薄い国。たまごさんの「シベリアのグループ」がここ。
+        ★札には**数を書かない。**「棚に1組だけ」は、どこの人か分かっていない組が
+          まだ1,185組あるので嘘になる。数つきの言い方（分母つき）は声のほうへ回す。
+          札に出すのは、確かめられる事実だけ——**この人はロシアの人です。** */
+  if(f.kuni) tane.push(["kuni",f.kuni.ja+"の棚から"]);
+  /* ③ うちの棚にこの人の曲が1曲しかない */
+  if(f.kazu===1) tane.push(["kazu","棚に、この人はこの1曲だけ"]);
+  /* ④ 棚で薄い年代（年代は全2,475組ぶん揃っているので、数を言ってよい）
+        ★276組いる60年代で「棚に少ない」と言ったら水道水。薄いものだけ。 */
+  if(ERAN) for(const e of (f.eraList||[])){
+    if(ERAN[e]&&ERAN[e]<=120){ tane.push(["era","棚に"+e.replace("s","年代")+"は"+ERAN[e]+"組"]); break; }
+  }
+  /* ⑤ あなたの言葉からどう辿り着いたか。
+        ★f.why は機械の言い方（例「たどった線＝「Stevie Wonder」そのもの」
+          「棚の紹介文に「ソウル」と書いてある」）。**そのまま切って出すと意味不明になる。**
+          中の「…」だけを抜いて、その語だけを見せる。抜けなければ出さない。 */
+  if(f.why){
+    const q=/「([^」]{1,14})」/.exec(String(f.why));
+    /* ★抜いた語が、その札のアーティスト名そのものだったら出さない。
+       すぐ上の行に同じ名前が書いてある（例：Stevie Wonder の札に「“Stevie Wonder”の線から」）。
+       同じことを2回書くのは「わかってない」の見本。 */
+    const onaji=q && f.artist && (norm(f.artist).indexOf(norm(q[1]))>=0 || norm(q[1]).indexOf(norm(f.artist))>=0);
+    if(q && !onaji) tane.push(["why","“"+q[1]+"”の線から"]);
+  }
+  /* ⑦ 産地は分かるが珍しくない国。最後の手。★同じ「kuni」の札にする＝国の一言は4枚に1枚まで。 */
+  if(f.kuniDoor) tane.push(["kuni",f.kuniDoor+"の棚から"]);
+  for(const [k,t] of tane){ if(!tsukatta.has(k)){ tsukatta.add(k); return t; } }
+  return "";                       /* ★水で薄めない。無いときは何も出さない。 */
+}
 function drawCards(list){
   cardsEl.innerHTML=""; dealt=list;
   if(!list.length){ emptyEl.style.display="block"; return; }
   emptyEl.style.display="none";
+  const tsukatta=DOORS_USED=new Set();
   list.forEach((c,i)=>{
     const b=document.createElement("button");
     b.className="rec-card"; b.type="button";
@@ -1157,14 +1282,34 @@ function drawCards(list){
     const t=document.createElement("h3"); t.className="rec-title"; t.textContent=c.title;
     const p=document.createElement("p"); p.className="rec-copy"; p.textContent=c.sub||"";
 
+    /* ★1023：入口の一言。**必ず1行ぶんの高さを確保して置く。**
+       あとから「うちの棚の一文」が届いて文字が入っても、札の高さが動かない
+       （＝押そうとした瞬間に札がずれる、が起きない）。 */
+    const door=document.createElement("p"); door.className="rec-door";
+    door.textContent=doorLine(c,tsukatta);
+
     const meta=document.createElement("div"); meta.className="rec-meta";
     const ja=kindJa(c.kind);
     if(ja){ const s=document.createElement("span"); s.textContent=ja; meta.appendChild(s); }
     if(c.fact&&c.fact.genre){ const s=document.createElement("span"); s.textContent=c.fact.genre; meta.appendChild(s); }
 
-    b.append(no,media,t,p,meta);
+    b.append(no,media,t,p,door,meta);
     b.addEventListener("click",()=>{ c.yt?openPlayer(c,i):window.open(c.url,"_blank","noopener"); });
     cardsEl.appendChild(b);
+  });
+}
+/* ★1023：「うちの棚の一文」は札が出たあとに届く（fillNotes）。
+   届いたぶんだけ、まだ空いているドアに文字を入れる。**高さは動かない**（min-height で確保済み）。
+   ★すでに文字が入っている札は触らない＝読んでいる途中で文が入れ替わらない。 */
+let DOORS_USED=new Set();
+function paintDoors(list){
+  if(!list||!list.length) return;
+  const tsukatta=DOORS_USED;      /* 出したときに使った種類を引き継ぐ＝同じ文言が2枚出ない */
+  [...cardsEl.children].forEach((el,i)=>{
+    const d=el.querySelector(".rec-door"); if(!d) return;
+    if(d.textContent){ return; }
+    const t=doorLine(list[i],tsukatta);
+    if(t) d.textContent=t;
   });
 }
 let page=0, slot=0;
@@ -1195,13 +1340,32 @@ function dealFour(){
   stopPlay(false);
   drawCards(take);
   moreEl.disabled = pool.length===0;
-  /* ★1020：ここが「入口の一言」の置き場。新しい枠は作らない。正本にもともとある
-     見出し横の1行（#trayTitle）に、案内人が書いたドアの一言をそのまま出す。
-     たまごさん：「カードはドアです。そのカードの中に入ると小さな旅が始まる。」 */
+  paintMore();                      /* ★1023：下の一枚も、その人ごとに */
+  /* 見出し横の1行（#trayTitle）は、いま何の棚の何枚目かだけ。 */
   $("trayTitle").textContent = take.length
     ? (poolLabel||"PICKS FOR YOUR MOMENT")+"　"+page+"枚目"
     : "この棚は、ここで打ち止めです";
   return take;
+}
+/* ══════════════ ★1023：一番下の「こちらもどうぞ」をその人ごとに ══════════════
+   たまごさん 2026-09-22：「一番下の『こちらもどうぞ』は、その人ごとに。」
+
+   これまでは誰が来ても `他を見せて ↻` の一枚看板だった。
+   押したか／1枚も押さなかったかは、こちらが既に持っている（KYAKU）。**持っているなら使う。**
+   ★お願いではなく構造。案内人（AI）を1回も呼ばないので 0円・待ち時間0。
+   ★長くしない。ボタンは丸い1行のまま（min-width:270px の中に収まる長さで切る）。 */
+function paintMore(){
+  if(!moreEl) return;
+  if(pool.length===0){ moreEl.textContent="この棚は、ここまで"; return; }
+  const o=KYAKU.oshi;
+  if(o.length){
+    const t=o[o.length-1].title||"";
+    moreEl.textContent="「"+(t.length>7?t.slice(0,7)+"…":t)+"」の隣を　↻";
+    return;
+  }
+  /* 1枚も押されていない＝いまの線は外れている。同じ顔で「他を見せて」と言わない。 */
+  if(KYAKU.suru.length>=4){ moreEl.textContent="いまのは忘れて、別の線で　↻"; return; }
+  moreEl.textContent="他を見せて　↻";
 }
 /* 出した4枚の「答えられること」を、棚のデータからそのまま作って案内人に渡す。
    ここに書いてないことは喋らせない（＝作り話の入り口を塞ぐ）。 */
@@ -1219,6 +1383,8 @@ function factSheet(list){
       if(f.note) bits.push("うちの棚に書いてある一文＝"+f.note);
       if(f.about) bits.push("アーティスト紹介文（棚の本文）＝"+f.about);
       if(f.why)  bits.push("この札が出てきた理由＝"+f.why);
+      /* ★1023：産地。region.json に載っている人だけ。載っていない人には書かない（推測しない）。 */
+      if(f.kuniJa) bits.push("産地＝"+f.kuniJa);
       if(f.mezu&&f.mezu.length) bits.push("棚での珍しさ＝"+f.mezu.join("／"));
       if(c.bouken) bits.push("★これが今回の冒険の1枚（安心3枚＋冒険1枚で出している）");
     }else{
@@ -1258,6 +1424,7 @@ moreEl.addEventListener("click",async()=>{
   const mikata=KYAKU.mikata();          /* ★1020：押す前に読む。押した後だと今の4枚が混ざる */
   const got=dealFour();
   await fillNotes(got);                 /* ★1020：出た4枚のぶんだけ、うちの言葉を取りに行く */
+  paintDoors(got);                      /* ★1023 */
   tellModel(got.length
     ? "（画面の合図）お客さんが「ほかのを見せて」を押しました。次の4枚はもう画面に出し終えています。\n"
       +factSheet(got)
@@ -1511,8 +1678,14 @@ const INSTRUCTIONS=[
   "  合格：「いちばん古いのは1曲目です」（★シートの『見立て』にそう書いてあるときだけ）",
   "★年の引き算をしない。「50年前」「半世紀前」「◯年前」は禁止。今が何年かをあなたは知りません。",
   "  シートに書いてある年（例：1979年）をそのまま言うか、言わないか、どちらかです。",
-  "★材料は事実シートの3つ：『この札が出てきた理由』『棚での珍しさ』『うちの棚に書いてある一文』。",
-  "  この3つから**1つだけ**選んで1文にする。3つ並べたら喋りすぎ＝失格。",
+  "★材料は事実シートの4つ：『この札が出てきた理由』『棚での珍しさ』『産地』『うちの棚に書いてある一文』。",
+  "  この4つから**1つだけ**選んで1文にする。並べたら喋りすぎ＝失格。",
+  "★1023：札にはもう、こちらで短い一言が1行だけ刷ってあります（例「ロシアの棚から」「棚に、この人はこの1曲だけ」）。",
+  "  **そこに刷ってあることを、そのまま声で繰り返さない。**繰り返したら二度手間＝失格。",
+  "  声で言うのは、刷っていないほう——『なぜ“あなたに”それなのか』です。",
+  "★産地の数を言うときは、シートに書いてある言い方をそのまま使う",
+  "  （例「産地の分かっている1,289組のうち、ロシアは1組だけ」）。",
+  "  ★「棚に1組だけ」と縮めない。どこの人か分かっていない組がまだあるので、縮めると嘘になります。",
   "★『うちの棚に書いてある一文』はそのまま読み上げない。手がかりにして、自分の言葉で短く言う。",
   "★言い切ったら止まる。付け足さない。うんちくを並べたら負けです。",
   "曲ページへ誘導しない。",
@@ -1873,6 +2046,7 @@ async function onToolCall(toolCall){
     /* ★1020：ここは道具の返事を返した**あと**。案内人はもう喋り始めているので、
        ここで待っても間は空かない。だから「うちの言葉」はここで取りに行く。 */
     await fillNotes(dealt);
+    paintDoors(dealt);            /* ★1023：うちの言葉が届いたら、空いているドアに入れる */
     const mikata=KYAKU.mikata();
     tellModel(
       "（画面の合図・お客さんの声ではありません。これには返事をしないでください）\n"
