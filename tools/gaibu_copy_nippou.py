@@ -359,6 +359,36 @@ def build():
         out["red"].append("この1枚が外から見えていない（%s）"
                           % ((out["publicCheck"] or {}).get("status") or "繋がらない"))
 
+    # ---- 直す係（gaibu_copy_naoshi.py）の成績をここに合流させる ----
+    # たまごさん（2026-09-22）「走った回数と、直した件数の両方を数える。
+    #   走った>0 なのに 直した=0 は赤」。数えるだけの1枚にしない。
+    na = load(os.path.join(PUBLIC, "gaibu_copy_naoshi.json"), {}) or {}
+    out["naoshi"] = {
+        "ranAt": na.get("generatedAt"),
+        "runs": na.get("runs") or 0,
+        "targets": na.get("targets") or 0,
+        "fixed": na.get("fixed") or 0,
+        "fixedTotal": na.get("fixedTotal") or 0,
+        "remaining": na.get("remaining"),
+        "changes": (na.get("changes") or [])[:30],
+        "history": (na.get("history") or [])[:30],
+        "skips": (na.get("skips") or [])[:30],
+        "red": na.get("red") or [],
+    }
+    if not na:
+        out["red"].append("直す係（gaibu_copy_naoshi）がまだ一度も走っていない")
+    else:
+        today = now.strftime("%Y-%m-%d")
+        if (na.get("generatedAt") or "")[:10] != today:
+            out["red"].append("直す係が今日まだ走っていない（最後に走ったのは %s）"
+                              % (na.get("generatedAt") or "不明"))
+        if (na.get("targets") or 0) > 0 and (na.get("fixed") or 0) == 0:
+            out["red"].append("直す係は走ったのに1件も直っていない（対象%d件）"
+                              % na.get("targets"))
+        for r in (na.get("red") or []):
+            if r not in out["red"]:
+                out["red"].append(r)
+
     # 赤の決まり（969番の台帳と同じ）：走っているのに収穫0なら赤。
     nr = out["patrol"]["notRun"]
     if nr:

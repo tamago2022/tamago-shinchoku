@@ -21,6 +21,15 @@
   .banner ul{margin:6px 0 0;padding-left:1.1em;font-weight:400;font-size:13px}
   h2{font-size:13px;letter-spacing:.14em;color:var(--sub);margin:24px 0 8px;
      font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+  h3.h3{font-size:12px;letter-spacing:.08em;margin:18px 0 6px;font-weight:700}
+  .nums{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+  .nums .cell{border:1px solid var(--rule);background:#fff;padding:8px 12px;min-width:92px}
+  .nums .cell.bad{border-color:var(--red)}
+  .nums .k{font-size:10.5px;letter-spacing:.1em;color:var(--sub);display:block}
+  .nums .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .nums .cell.bad .v{color:var(--red)}
+  .was{color:var(--sub);text-decoration:line-through;font-size:12.5px}
+  .now{font-weight:700}
   table{width:100%;border-collapse:collapse;font-size:13.5px}
   th{text-align:left;font-size:11px;letter-spacing:.1em;color:var(--sub);
      font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule);
@@ -62,7 +71,26 @@
   <tbody></tbody>
 </table>
 
-<h2>2. まだ書けていないもの</h2>
+<h2>2. 直す係：走った回数と、直した件数</h2>
+<p class="small">数えるだけでは減らない。<strong>走った&gt;0 なのに 直した=0 は赤。</strong>
+   動いているのに何も取れていないのが、一番たちの悪い壊れ方だから。</p>
+<div id="naoshi-nums" class="nums"></div>
+
+<h3 class="h3">こう直した（前 → 後）</h3>
+<table id="t-fix">
+  <thead><tr><th>曲／動画</th><th>前</th><th>後</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h3 class="h3">直せなかったもの（理由をそのまま出す）</h3>
+<p class="small">見ていない動画を想像で書くことになるものは、<strong>書かずに残す。</strong>
+   黙って飲み込まない。</p>
+<table id="t-skip">
+  <thead><tr><th>曲／動画</th><th>なぜ直せなかったか</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>3. まだ書けていないもの</h2>
 <p class="small">直近のものが上。「代表曲のひとつ。」のような水道水コピーも手つかずに数える。</p>
 <table id="t-todo">
   <thead><tr>
@@ -71,7 +99,7 @@
   <tbody></tbody>
 </table>
 
-<h2>3. 毎朝の入荷見回りは走ったか</h2>
+<h2>4. 毎朝の入荷見回りは走ったか</h2>
 <table id="t-patrol">
   <thead><tr><th>対象日</th><th>番号</th><th>今</th></tr></thead>
   <tbody></tbody>
@@ -80,7 +108,10 @@
 <footer>
   <div id="meta"></div>
   <div style="margin-top:6px">
-    作り：<code>tools/gaibu_copy_nippou.py</code>（5分便に相乗り・新しい常駐は増やしていない）／
+    数える係：<code>tools/gaibu_copy_nippou.py</code>／
+    直す係：<code>tools/gaibu_copy_naoshi.py</code>（朝6時以降の最初の便で1日1回）。
+    どちらも5分便 <code>machine_status_push.sh</code> に相乗り＝
+    <strong>心臓が死んでいても launchd が直接起こすので回ってくる。</strong>新しい常駐は増やしていない／
     正本：joy-relief-station の <code>admin_stock</code>（<code>created_at</code>＝入荷日時）
   </div>
 </footer>
@@ -89,6 +120,8 @@
 <script>
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,
   c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function cell(k,v,bad){return '<div class="cell'+(bad?' bad':'')+'">'+
+  '<span class="k">'+esc(k)+'</span><span class="v">'+esc(v)+'</span></div>';}
 
 fetch('status/public/gaibu_copy_nippou.json?t='+Date.now())
  .then(r=>r.json()).then(render)
@@ -137,6 +170,46 @@ function render(d){
       '<td class="hide-sp small">'+(x.copy?esc(x.copy):'（空）')+'</td>'+
       '<td class="small ng">'+esc(x.why)+'</td>';
     tt.appendChild(tr);
+  });
+
+  // ---- 直す係 ----
+  const n=d.naoshi||{};
+  const zero = (n.targets||0)>0 && (n.fixed||0)===0;
+  document.getElementById('naoshi-nums').innerHTML=
+    cell('走った回数（累計）', n.runs||0, !(n.runs||0)) +
+    cell('今回の対象', n.targets||0, false) +
+    cell('今回直した', n.fixed||0, zero) +
+    cell('まだ残り', (n.remaining==null?'—':n.remaining), !!n.remaining) +
+    cell('直した累計', n.fixedTotal||0, false);
+
+  const tf=document.querySelector('#t-fix tbody');
+  const fixes=(n.changes&&n.changes.length)?n.changes:(n.history||[]);
+  if(!fixes.length){
+    tf.innerHTML='<tr class="red"><td colspan="3" class="small">'+
+      (n.ranAt?'走ったが、まだ1件も直っていません。理由は下の表に出ています。'
+             :'直す係がまだ一度も走っていません。')+'</td></tr>';
+  }else fixes.slice(0,40).forEach(x=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td><span class="what">'+esc(x.title)+'</span>'+
+        '<span class="where">'+esc(x.date||'')+
+        (x.at?' ／ 直した '+esc(x.at):'')+
+        (x.url?' ／ <a href="'+esc(x.url)+'" target="_blank" rel="noopener">元</a>':'')+
+        '</span></td>'+
+      '<td class="was">'+(x.was?esc(x.was):'（空）')+'</td>'+
+      '<td class="now">'+esc(x.now)+'</td>';
+    tf.appendChild(tr);
+  });
+
+  const ts=document.querySelector('#t-skip tbody');
+  if(!(n.skips||[]).length){
+    ts.innerHTML='<tr><td colspan="2" class="small">ありません。</td></tr>';
+  }else (n.skips||[]).forEach(x=>{
+    const tr=document.createElement('tr'); tr.className='red';
+    tr.innerHTML='<td><span class="what">'+esc(x.title)+'</span>'+
+        '<span class="where">'+esc(x.date||'')+'</span></td>'+
+      '<td class="small ng">'+esc(x.reason)+
+        (x.draft?'<span class="where">書いた案：'+esc(x.draft)+'</span>':'')+'</td>';
+    ts.appendChild(tr);
   });
 
   const tp=document.querySelector('#t-patrol tbody');
