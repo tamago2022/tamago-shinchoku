@@ -58,12 +58,19 @@ def build():
             continue
         for x in st.get("done", []):
             d = get(x["sid"])
+            # 実測（2026-09-22 09:37）：こちらの依頼文は type="initial_user_message"。
+            # ここで拾ってしまうと「自分の依頼文を答えとして紙に貼る」ことになる。
+            # Devinの発言は type == "devin_message" だけ。
             body = ""
-            for m in reversed(d.get("messages") or []):
+            dev = [m for m in (d.get("messages") or [])
+                   if str(m.get("type") or "") == "devin_message"]
+            for m in reversed(dev):
                 t = str(m.get("message") or "")
                 if t.strip():
                     body = t
                     break
+            if not body:
+                body = "（Devinは一言も書かずに終わりました。枠切れの空振りの可能性があります）"
             out.append("## %s %s（%s分）\n\n- セッション: %s\n- PR: %s\n\n%s\n" % (
                 binname, x.get("name"), x.get("minutes"), x.get("url"),
                 (x.get("pr") or {}).get("url") or "なし", body))

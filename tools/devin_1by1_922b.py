@@ -425,7 +425,7 @@ def main():
     cur["msgs"] = len(msgs)
     cur["pr"] = pr
     if msgs:
-        _dev = [m for m in msgs if str(m.get("type") or "") != "user_message"]
+        _dev = [m for m in msgs if str(m.get("type") or "") == "devin_message"]
         cur["last"] = str((_dev[-1] if _dev else msgs[-1]).get("message") or "")[:1500]
         cur["devMsgs"] = len(_dev)
 
@@ -442,7 +442,10 @@ def main():
         # 依頼文の中には「答え：」という字が入っている（終わりの合図の指定）ので、
         # 「最後の1通に答え：がある」だけでは、こちらの依頼文を自分の返事と数えてしまう。
         # なので **Devin側の発言（type が user_message でないもの）** だけを見る。
-        dev = [m for m in msgs if str(m.get("type") or "") != "user_message"]
+        # 実測（2026-09-22 09:37）：こちらの依頼文の type は "user_message" ではなく
+        # **"initial_user_message"**（username="TAMAGO"）。除外の書き方を間違えると
+        # 依頼文を自分の答えと数える。Devinの発言は type == "devin_message" だけ。
+        dev = [m for m in msgs if str(m.get("type") or "") == "devin_message"]
         last_msg = str((dev[-1].get("message") if dev else "") or "")
         got = bool(pr) or ("答え：" in last_msg)
         if got:
