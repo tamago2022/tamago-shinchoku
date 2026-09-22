@@ -51,6 +51,27 @@
 <h1>#909 X投稿カードの動画黒画面・案内所誤配置・ボタン無反応を修理</h1>
 <div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<div class="fix" style="border-left-color:var(--aka);background:#fff;padding:14px 16px;border-radius:0 10px 10px 0;">
+<b style="color:var(--aka);display:block;margin-bottom:6px;">★2026-09-22 08:5x 訂正 ― このページの「①は直りました」は間違いでした。</b>
+下の⑤の表は、本番ページの<b>HTMLに文字列があるか</b>だけを見て「直った」と書いていました。
+きょう本番をChromeで実際に開いて測ったら、<b>動画は出ていません。</b>
+<ul style="margin:8px 0 0;padding-left:1.2em;">
+<li><b>「動画を読み込めませんでした。」が本番の画面の一番上に出ている。</b>9秒待っても
+<code>readyState=0 / videoWidth=0 / duration=null</code>。</li>
+<li>ページの中の <code>&lt;video&gt;</code> は<b>1本だけ</b>で、中身は足元の飾りのループ映像
+（<code>/media/joy-relief-footer-loop.mp4</code>・こちらは206で正常）。
+<b>カード本体の映像の要素が、そもそも生えていない。</b></li>
+<li><code>?tweet=</code> だけで開くと、アプリが付け直すクエリが
+<code>&amp;v=&amp;title=&amp;whisper=&amp;thumb=</code> と<b>全部空</b>。
+＝<b>Xの投稿から映像のURLを解決できていない。</b>解決できていないのにカードを表に出している。</li>
+<li>案内所のブロック（「まだ手探りで始めたばかりです」）は<b>いちばん上から足元へ移っただけで、まだ /watch に出ている。</b></li>
+<li>④のボタンは<b>本番で直っていました</b>（<code>aria-pressed="false"</code> を実機で確認）。
+Lovable公開待ちではなく、もう出ています。</li>
+</ul>
+<div style="margin-top:8px;">直し方は前から決まっているとおり：<b>映像が解決できなかったカードは、入口で弾いて表に出さない。</b>
+「読み込めませんでした」を出して済ませない（憲法：空・壊れたプレースホルダーを出さない）。</div>
+</div>
+
 <div class="fix">
 X投稿カードページの4点を修理：①動画poster黒画面 ②FeedbackDoorラベル「案内所」→「ひとこと目安箱」誤配置 ③ナビラベル文字潰れ予防（想定される狭い画面幅向けにwhitespace-nowrap追加、幅の実測は未実施） ④FeedbackDoor/FriendTestトグルボタンの無反応感（aria-pressed＋選択中✓マーク追加、触る検品の誤検知対策）。GitHub origin/mainコミット276cdcab時点。
 </div>
@@ -71,14 +92,18 @@ X投稿カードページの4点を修理：①動画poster黒画面 ②Feedback
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>①動画poster黒画面修理</td><td class="yes">本番反映済み（origin/mainコミット97b450c6）</td></tr>
-<tr><td>②FeedbackDoorラベル「ひとこと目安箱」化</td><td class="yes">本番反映済み・WebFetch実測で文字列確認</td></tr>
-<tr><td>③ナビラベルwhitespace-nowrap（文字潰れ予防・幅は未実測）</td><td class="yes">本番反映済み（origin/mainコミット4d4b0473）</td></tr>
-<tr><td>④トグルボタンaria-pressed＋✓マーク</td><td class="no">mainへ合流済み（コミット276cdcab）・Lovable公開待ちで本番未反映</td></tr>
+<tr><td>①動画poster黒画面修理</td><td class="no"><b>直っていません（2026-09-22 実機で確認）。</b>「動画を読み込めませんでした。」が本番に出ている。09-17の「本番反映済み」は誤りでした</td></tr>
+<tr><td>②FeedbackDoorラベル「ひとこと目安箱」化</td><td class="yes">本番反映済み（09-22 実機でも文言を確認）</td></tr>
+<tr><td>③ナビラベルwhitespace-nowrap（文字潰れ予防）</td><td class="yes">09-22に375px幅で実測。潰れなし</td></tr>
+<tr><td>④トグルボタンaria-pressed＋✓マーク</td><td class="yes"><b>本番に出ています</b>（09-22 実機で <code>aria-pressed</code> を確認）。09-17の「公開待ち」は解消済み</td></tr>
+<tr><td>案内所ブロックが /watch に出ていないこと</td><td class="no"><b>まだ出ています。</b>最下部の <code>section.mt-16.pt-8</code> の中に「買ってよかった棚／気分診断／ひとこと目安箱」ごと居る</td></tr>
 </table>
 
 <footer>
-実測方法：本番ページをWebFetchで取得し文字列有無を確認。「ひとこと目安箱」の文字列あり＝①②③は本番反映済み。「aria-pressed」の文字列なし＝④はmain合流済みだがLovable公開未実行（自動公開便待ち）。Lovable手動公開スクリプトを2回試行したが公開ボタン未検出のため失敗、30分おきの自動便（launchd）に委ねている状態。390pxはコミットメッセージ由来の想定値でありpx単位の実測は行っていない。
+<b>2026-09-22 の実測方法</b>：本番ページをChromeで実際に開き、<code>video</code> 要素の
+<code>readyState / videoWidth / duration</code>、ボタンの <code>aria-pressed</code>、
+375px幅での <code>scrollWidth</code> を数字で読んだ。文字列があるかどうかでは判定していない。<br><br>
+<b>2026-09-17 の実測方法（＝この表を間違えた方法）</b>：本番ページをWebFetchで取得し文字列有無を確認。「ひとこと目安箱」の文字列あり＝①②③は本番反映済み。「aria-pressed」の文字列なし＝④はmain合流済みだがLovable公開未実行（自動公開便待ち）。Lovable手動公開スクリプトを2回試行したが公開ボタン未検出のため失敗、30分おきの自動便（launchd）に委ねている状態。390pxはコミットメッセージ由来の想定値でありpx単位の実測は行っていない。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
