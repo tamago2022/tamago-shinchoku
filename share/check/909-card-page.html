@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>909 ― カードページに出ていた、見えてはいけないもの2つを外しました</title>
+<style>
+:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
+--rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;font-size:16px}
+.wrap{max-width:60rem;margin:0 auto;padding:7vw 6vw 14vw}
+.eyebrow{font-size:.68rem;letter-spacing:.42em;color:var(--faint);margin:0 0 1.6rem}
+h1{font-weight:400;font-size:clamp(1.4rem,4.8vw,2.25rem);letter-spacing:.09em;margin:0 0 .4rem;line-height:1.5}
+.sub{color:var(--faint);font-size:.8rem;letter-spacing:.12em;margin:0 0 3.2rem}
+.verdict{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:2rem 0;margin:0 0 3.2rem}
+.verdict p{margin:0 0 1.1rem;font-size:clamp(1rem,2.7vw,1.13rem);line-height:1.95}
+.verdict p:last-child{margin-bottom:0}
+.verdict .n{color:var(--accent);letter-spacing:.3em;font-size:.7rem;margin-right:.9em;vertical-align:.18em}
+.big{color:var(--accent)}
+h2{font-weight:400;font-size:.74rem;letter-spacing:.34em;color:var(--faint);
+ margin:4.2rem 0 1.4rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+h3{font-weight:400;font-size:1.02rem;letter-spacing:.06em;margin:2.6rem 0 .6rem;line-height:1.6}
+h3 .k{color:var(--accent);font-size:.7rem;letter-spacing:.3em;margin-right:.8em;vertical-align:.18em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1px;
+ background:var(--rule);border:1px solid var(--rule);margin:0 0 1.4rem}
+.card{background:var(--paper);padding:1.2rem .9rem}
+.card b{display:block;font-weight:400;font-size:clamp(1.5rem,6vw,2rem);letter-spacing:.02em;line-height:1.2}
+.card span{display:block;font-size:.68rem;letter-spacing:.14em;color:var(--faint);margin-top:.5rem}
+.card.red b{color:var(--accent)} .card.ok b{color:var(--ok)}
+blockquote{margin:1.1rem 0;padding:.9rem 0 .9rem 1.1rem;border-left:2px solid var(--ok);
+ font-size:.92rem;line-height:1.85;color:var(--ink)}
+blockquote cite{display:block;font-style:normal;font-size:.7rem;letter-spacing:.1em;
+ color:var(--faint);margin-top:.7rem;word-break:break-all}
+.uchi{margin:1rem 0 0;padding:1rem 1.1rem;background:rgba(193,68,46,.07);border-left:2px solid var(--accent)}
+.uchi b{font-weight:400;color:var(--accent);font-size:.68rem;letter-spacing:.3em;display:block;margin-bottom:.5rem}
+.uchi p{margin:0 0 .6rem;font-size:.95rem;line-height:1.9}
+.uchi p:last-child{margin-bottom:0}
+pre{background:rgba(34,48,74,.05);border-left:2px solid var(--ok);padding:1rem;
+ font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;line-height:1.75;
+ overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;white-space:pre}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.swipe{display:none;font-size:.68rem;letter-spacing:.2em;color:var(--accent);margin:0 0 .5rem}
+@media(max-width:47rem){.swipe{display:block}}
+table{border-collapse:collapse;width:100%;font-size:.82rem}
+table.wide{min-width:32rem}
+th,td{text-align:left;padding:.75rem .7rem;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.7}
+th{font-weight:400;font-size:.64rem;letter-spacing:.14em;color:var(--faint);border-bottom:1px solid var(--ink);white-space:nowrap}
+td.ng{color:var(--accent)} td.okk{color:var(--ok)} td.name{word-break:break-word}
+p.note{font-size:.86rem;color:var(--faint);margin:1rem 0 0}
+ol,ul{padding-left:1.2rem} li{margin:.5rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82em;
+ background:rgba(34,48,74,.06);padding:.1em .35em;border-radius:2px;word-break:break-all}
+a{color:var(--accent)}
+.foot{margin-top:5rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+ font-size:.7rem;letter-spacing:.1em;color:var(--faint)}
+</style></head><body><div class="wrap">
+
+<p class="eyebrow">909 ― カードページ</p>
+<h1>動画の無いところに、動画の枠だけが置いてありました</h1>
+<p class="sub">2026-09-22 ／ たまごさん「案内所行こうとしたら、それの上に出てきた」</p>
+
+<div class="verdict">
+<p><span class="n">4日</span>この1本は、<span class="big">9月18日から止まっていました。</span>直す人の手がカードページのコードに届かなかったからです。</p>
+<p><span class="n">なおした</span>動画も写真も取れなかったカードは、<span class="big">枠ごと出すのをやめました。</span>「動画を読み込めませんでした。」の箱も消しました。</p>
+<p><span class="n">なおした</span>案内所のブロックを、<span class="big">カードページから外しました。</span>案内所は、案内所のある場所が持ちます。</p>
+</div>
+
+<div class="cards">
+<div class="card red"><b>4日</b><span>止まっていた日数</span></div>
+<div class="card ok"><b>2/2</b><span>直した箇所</span></div>
+<div class="card ok"><b>17</b><span>足した行</span></div>
+<div class="card ok"><b>9</b><span>消した行</span></div>
+</div>
+
+<h2>たまごさんが言ったこと</h2>
+<blockquote>まだ手探りで始めたばかりです、とか、そのバグがちょろちょろ出てくるよ。いろんなところで。案内所行こうとしたら、それの上に出てきた、だとか。それは直してくださいね。<cite>2026-09-17 01:54</cite></blockquote>
+
+<h2>① 動画の無いカードを、表に出さないようにした</h2>
+<p>X（旧Twitter）の投稿を貼ったカードページで、<b>タイトルとひとことはあるのに、映像の場所が真っ黒</b>のままでした。ひとことには「〜デザートの映像です」と書いてあるのに、映像がありません。</p>
+<p>調べると、投稿から映像の在りかを解けなかったときに、<b>解けなかったという事実を伏せたまま、カードの枠だけを出していました。</b></p>
+
+<h3><span class="k">直し方</span>出せないなら、出さない</h3>
+<ul>
+<li>動画も写真も取れなかったX投稿は、空の枠ではなく<b>本物のXの埋め込み</b>へ落とす（そこには映像があります）</li>
+<li>YouTubeのIDもX投稿も解けなかったときの「動画を読み込めませんでした。」の箱は<b>消した</b></li>
+</ul>
+<p class="note">憲法の2つ。<b>空・壊れたプレースホルダーを出さない。動画が出せないなら、そのカード自体を出さない。</b>この2つを、書いてあるとおりにしただけです。</p>
+
+<div class="uchi"><b>消したあと、ページは空になりませんか</b>
+<p>なりません。上の見出しとひとこと、下の「この動画が好きなら」のおすすめは、そのまま残ります。消えるのは<b>中身の無い黒い箱だけ</b>です。</p>
+</div>
+
+<h2>② 案内所のブロックを、カードページから外した</h2>
+<p>「まだ手探りで始めたばかりです。間違いもあると思います。」から始まる案内所のブロックが、<b>1本の動画を見るためのページに出ていました。</b>たまごさんの「案内所行こうとしたら、それの上に出てきた」はこれです。</p>
+<p>カードページは、動画を1本見る場所です。案内所の入口を置く場所ではありません。トップ・部屋・アーティストページ側は<b>今までどおり案内所を持ちます</b>（そこは触っていません）。</p>
+
+<h2>実際に変えた行</h2>
+<div class="scroll"><p class="swipe">← よこにスクロールできます</p>
+<pre>src/routes/watch.tsx   17行ふやして 9行けした
+
+- import { FeedbackDoor } from "@/components/FeedbackDoor";
+-         &lt;FeedbackDoor /&gt;
+
+- {isTweet &amp;&amp; tweetInfo &amp;&amp; liveTweetCard ? (
++ {isTweet &amp;&amp;
++  tweetInfo &amp;&amp;
++  liveTweetCard &amp;&amp;
++  (liveVideoUrl || (liveTweetCard.photoUrls?.length ?? 0) &gt; 0) ? (
+
+- ) : (
+-   &lt;div className="rounded-2xl border border-border bg-card p-6 text-center"&gt;
+-     &lt;p&gt;動画を読み込めませんでした。&lt;/p&gt;
+-   &lt;/div&gt;
+- )}
++ ) : null}</pre></div>
+
+<h2>どこまで入ったか</h2>
+<div class="scroll"><p class="swipe">← よこにスクロールできます</p>
+<table class="wide">
+<tr><th>こと</th><th>いま</th></tr>
+<tr><td class="name">joy-relief-station の main に入った</td><td class="okk">入った（<code>c9de49f6</code>）</td></tr>
+<tr><td class="name">文法の検査（esbuild・tsx）</td><td class="okk">通った</td></tr>
+<tr><td class="name">本番（Lovable）への公開</td><td class="ng">できない（ログイン切れ・同意待ち）</td></tr>
+<tr><td class="name">本番の画面で見て確かめる</td><td class="ng">公開できないので、まだ見ていない</td></tr>
+</table></div>
+
+<div class="uchi"><b>正直に書いておきます</b>
+<p>この直しは<b>本番の画面ではまだ確かめていません。</b>Lovableの公開が止まっているからです（叩くほど疑われるので、押していません）。</p>
+<p>公開が戻ったら、見るところは3つだけ。<b>①黒い箱が無いこと ②案内所のブロックが無いこと ③上の見出しとおすすめは残っていること。</b></p>
+</div>
+
+<h2>手が届かなかった理由（次の人へ）</h2>
+<p>この1本が4日動かなかったのは、難しかったからではありません。<b>直す人のところに、直すファイルが無かった</b>からです。</p>
+<ul>
+<li>サンドボックスに見えているのは <code>tamago-shinchoku</code> だけで、<code>joy-relief-station</code> は見えない</li>
+<li>Macの手元のチェックアウトは、mainより<b>2059コミット古い枝</b>に居た</li>
+</ul>
+<p>今回は、枝を動かさず・チェックアウトもせずに、gitの配管だけで main の上に1コミット積みました。<b>手元の作業ツリーには1文字も触っていません。</b></p>
+
+<p class="foot">2026-09-22 ／ 台帳909番 ／ joy-relief-station main <code>c9de49f6</code></p>
+</div></body></html>
