@@ -597,6 +597,25 @@ def one(name):
     return rec
 
 
+def _thinner(new, old):
+    """取り直した素材が、前のものより中身が少ないか。"""
+    def size(r):
+        mb = (r.get("musicbrainz") or {})
+        return (len(mb.get("candidates") or []),
+                len(((r.get("works") or {}) or {}).get("recordings") or []),
+                sum(len((r.get(k) or {}).get("text") or "")
+                    for k in ("wikipedia_en", "wikipedia_ja")))
+    n_c, n_r, n_t = size(new)
+    o_c, o_r, o_t = size(old)
+    if n_c == 0 and o_c > 0:
+        return True
+    if n_r == 0 and o_r >= 3:
+        return True
+    if n_t == 0 and o_t > 0 and n_c <= o_c:
+        return True
+    return False
+
+
 def queue_names(n):
     sys.path.insert(0, HERE)
     import fes_meibo
@@ -650,6 +669,18 @@ def main():
     for nm in names:
         rec = one(nm)
         p = os.path.join(RAW, slug(nm) + ".json")
+        # ★取り直しで**前より痩せた素材**を上書きしない（2026-09-23 実測）。
+        #   MusicBrainzが一時的に落ちる／弾かれると候補0件が返る。そのまま上書きすると、
+        #   前に取れていた mbid も曲も消え、「同定できない組」に化ける（TURNSTILEで実際に起きた）。
+        #   取れなかったのは今日の通信の都合であって、事実が変わったわけではない。
+        if os.path.exists(p):
+            try:
+                old = json.loads(io.open(p, encoding="utf-8").read())
+            except Exception:
+                old = None
+            if old and _thinner(rec, old):
+                print("%-34s ★前より痩せたので上書きしない（前の素材を残す）" % nm[:34])
+                continue
         io.open(p, "w", encoding="utf-8").write(
             json.dumps(rec, ensure_ascii=False, indent=1))
         mb = rec["musicbrainz"]

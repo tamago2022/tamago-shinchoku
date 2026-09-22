@@ -50,8 +50,13 @@ def pick(rec, n=5):
         rg = rg_by_title.get(tl)
         if not rg:
             continue
+        # ★年は「一番古い日付」を採る。再発盤の年を初出のように書かないため。
+        #   （実測：American Football「Never Meant」は1999年の曲だが、
+        #     release-group の並びでは2024年の再発が当たる）
+        dates = [x for x in (rg.get("date"), rc.get("first")) if x]
         out.append({"title": t, "mbid": rc.get("mbid"),
-                    "date": rg.get("date") or rc.get("first") or "",
+                    "date": min(dates) if dates else "",
+                    "rgDate": rg.get("date") or "", "recFirst": rc.get("first") or "",
                     "rgTitle": rg.get("title"), "rgType": rg.get("type"),
                     "rgMbid": rg.get("mbid")})
     if len(out) < n:
@@ -69,6 +74,7 @@ def pick(rec, n=5):
             have.add(tl)
             extra.append({"title": t, "mbid": rc.get("mbid"),
                           "date": rc.get("first") or "",
+                          "rgDate": "", "recFirst": rc.get("first") or "",
                           "rgTitle": "", "rgType": "", "rgMbid": ""})
         extra.sort(key=lambda r: r["date"] or "9999")
         out += extra[:max(0, n - len(out))]
@@ -121,6 +127,11 @@ def build(slug, n=5, shelf_note="まだ棚に無い（フジロック'26の穴�
             "crossCheck": (rec.get("crossCheck") or {}).get("why", ""),
         },
         "identifyProblem": "",
+        "★年の読み方": ("ここの年は **MusicBrainzに登録されている日付**。"
+                   "再録・再発があると初出の年と食い違う（実測：American Football"
+                   "「Never Meant」は 2024-07-31 の登録だが、曲そのものはもっと古い）。"
+                   "★棚に『1999年の曲』のように書くなら、そのときに初出を別で取り直すこと。"
+                   "ここの年を初出として写さない。"),
         "★まだ書いていないこと": ("音の印象（どう聴こえるか）は1曲も書いていない。"
                           "聴かずに書けば嘘になるため。棚に出すときに、音を確かめてから書く。"
                           "動画も未確認（素人カバー・静止画だけの動画を弾く検品がまだ）。"),
@@ -134,6 +145,9 @@ def build(slug, n=5, shelf_note="まだ棚に無い（フジロック'26の穴�
     #   音の印象は書かない。聴いていないものを「こう聴こえる」と書いたら、それは嘘になる
     #   （skill sekisho-jijitsu-shutten／たまごさん「裏の取れないものは書かない」）。
     tags = "・".join((top.get("tags") or [])[:3])
+    # 名簿の名前に枠の名前が付いていることがある（「… (Selected by ROOKIE A GO-GO)」）。
+    # 曲名に付けるのは**出演者の名前だけ**にする。
+    disp = sf.re.sub(r"\s*[（(][^（()）]*[）)]\s*$", "", rec["name"]).strip() or rec["name"]
     last = len(songs) - 1
     for i, s in enumerate(songs, 1):
         year = (s["date"] or "")[:4]
@@ -141,14 +155,18 @@ def build(slug, n=5, shelf_note="まだ棚に無い（フジロック'26の穴�
         if s["rgType"] and s["rgType"].lower() == "album":
             alb = "・アルバム %s" % s["rgTitle"]
         d["candidates"].append({
-            "name": "%s「%s」（%s%s）" % (rec["name"], s["title"], year or "年不明", alb),
+            "name": "%s「%s」（%s%s）" % (disp, s["title"], year or "年不明", alb),
             "area": top.get("area") or "",
             "asia": (top.get("country") or "") in ("JP", "KR", "TW", "TH", "ID", "PH", "IN", "CN"),
             "why": _why(i - 1, last, s, tags, top),
             "fact": (("MusicBrainz に、このアーティスト（mbid %s…）の%s『%s』が %s で登録。"
                       % ((top.get("mbid") or "")[:8],
                          {"Single": "シングル", "EP": "EP", "Album": "アルバム"}.get(
-                             s["rgType"], "作品"), s["rgTitle"], s["date"] or "日付不明"))
+                             s["rgType"], "作品"), s["rgTitle"],
+                         (s["date"] or "日付不明") +
+                         ("（この作品の登録は %s。録音の初出は %s）" % (s["rgDate"], s["recFirst"])
+                          if s.get("rgDate") and s.get("recFirst")
+                          and s["rgDate"] != s["recFirst"] else "")))
                      if s["rgMbid"] else
                      ("MusicBrainz に、このアーティスト（mbid %s…）の録音『%s』が %s で登録"
                       "（録音 mbid %s…）。"
