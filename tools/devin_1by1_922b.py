@@ -430,7 +430,13 @@ def main():
     if stt in ("finished", "blocked", "expired"):
         cur["finishedAt"] = time.strftime("%F %T")
         cur["minutes"] = mins
-        got = bool(pr) or (len(msgs) >= 2)
+        # 実測（2026-09-22 09:30）：「msgsが2通以上＝返ってきた」では数え間違える。
+        # Eは5分で finished になったが、最後の1通は
+        #   「読みました。実測を進めて、終わりの合図1通だけ送ります。」
+        # という**返事**だった（＝返事を書いてまた寝た）。これを返りに数えると嘘の数字になる。
+        # 本物の返りは「PRのURL」か「答え：で始まる本文」のどちらかだけ。
+        last_msg = str((msgs[-1].get("message") if msgs else "") or "")
+        got = bool(pr) or ("答え：" in last_msg)
         if got:
             st["returned"] = st.get("returned", 0) + 1
             daicho("in", cur["name"], ref=(pr or {}).get("url") or cur.get("url"),
