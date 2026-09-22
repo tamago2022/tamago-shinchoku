@@ -634,7 +634,8 @@ WATCHERS = [
     dict(id="nyuka_hiduke", label="入荷日付の埋め（1024）", state="nyuka_hiduke.log",
          need="", catch_flags=[], catch_grep=r"→ 棚へ"),
     dict(id="shuhen_horu", label="周辺を掘る（仕入れ候補）",
-         state="shuhen_horu.json", need="", catch_flags=[]),
+         state="shiire_kouho/_run.json", need="", catch_flags=[],
+         catch_counter=["candidates"]),
     dict(id="avatar_reply", label="アバターの返信拾い（969）",
          state="969/seen.json", need="github", catch_flags=[],
          catch_counter=[], err_log="969/pickup.log",
@@ -839,6 +840,9 @@ NOT_WATCHERS = {
     "kenpin_gate", "nyuka_sekisho", "gaibu_runner", "eagle_inbox",
     "eagle_gallery", "later_tabs_snapshot", "daily_ingest_scheduler",
     "machine_load", "disk_trend",
+    # 2026-09-23：ai_daicho は「外部AIとの往復」として hantei.gaibu_ai() が
+    # 投げた本数／返った本数で既に measured。台帳にもう1行作ると同じものを2回数える。
+    "ai_daicho",
 }
 
 
@@ -849,7 +853,9 @@ def unlisted_scan():
              "anthropic_reply": "check_anthropic_reply", "renraku": "renraku",
              "github_watch": "github_watch", "auth_keeper": "auth_keeper",
              "line_store_watch": "line_store_watch",
-             "avatar_reply": "_969_avatar_reply_pickup"}
+             "avatar_reply": "_969_avatar_reply_pickup",
+             # 2026-09-23：台帳に載せた8本の別名（名前とスクリプト名が違うもの）
+             "nyuka_hiduke": "_1024_nyuka_hiduke"}
     known_scripts = set(alias.get(k, k) for k in known)
     found = set()
     for sh in ("heartbeat.sh", "machine_status_push.sh"):

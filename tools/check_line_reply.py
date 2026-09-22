@@ -48,7 +48,20 @@ def log_state(**kv):
             st = json.load(open(STATE_PATH, encoding="utf-8"))
         except Exception:
             st = {}
+    # ★1026番（2026-09-23）たまごさん「投げるのをやめる（催促も回数も増やさない）」
+    #   鍵が無い間、この紙を毎回書き換えていたので、台帳が「78回走った」と数えていた。
+    #   実際には1度もGmailに繋ぎに行っていない。**理由が前と同じなら、書き換えない。**
+    #   赤は消えない（blocked はそのまま残る）。増えるのをやめるだけ。
+    #   ※ st.update(kv) の**前に**見る。後で見ると必ず一致して、永久に書かなくなる。
+    if kv.get("blocked") and st.get("blocked") == kv.get("blocked") \
+            and os.path.exists(STATE_PATH):
+        return
     st.update(kv)
+    # 鍵が戻って実際に読めた回は、**前の止め札を必ず消す**。
+    # 消さないと、直ったのに赤が残り続ける（それも嘘のログ）。
+    if "found" in kv or "hits" in kv:
+        st.pop("blocked", None)
+        st.pop("credentialMissingNotified", None)
     st["lastRunAt"] = datetime.now(JST).isoformat()
     os.makedirs(os.path.dirname(STATE_PATH), exist_ok=True)
     json.dump(st, open(STATE_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=2)

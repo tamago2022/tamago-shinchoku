@@ -426,6 +426,95 @@ def identify_ok(cands, need=95, gap=10):
     return True, "1位 %s・2位 %s（%s差）で本人を決められる" % (s1, s2, s1 - s2)
 
 
+def artist_urls(mbid):
+    """MusicBrainzの「この人の外部リンク」。★ここに本物の橋がある。
+
+    MusicBrainzは artist に Wikipedia / Wikidata / 公式サイト のURLを関係として持っている。
+    つまり **mbid と Wikipedia の記事は、こちらが推測しなくても向こうで繋がっている。**
+    同名が並んで1位2位が僅差でも、「1位の外部リンクが、いま採った記事と同じ」なら、
+    それは別々の2つの出どころが同じ人を指したということ＝同定の裏が取れた、と言ってよい。
+    """
+    u = "https://musicbrainz.org/ws/2/artist/%s?inc=url-rels&fmt=json" % mbid
+    code, body = get(u, timeout=25)
+    if code != 200:
+        return {"ok": False, "http": code, "src": u}
+    try:
+        rels = json.loads(body).get("relations") or []
+    except Exception:
+        return {"ok": False, "http": code, "src": u}
+    return {"ok": True, "src": u,
+            "urls": [{"type": r.get("type"),
+                      "url": ((r.get("url") or {}).get("resource") or "")}
+                     for r in rels]}
+
+
+def _wiki_page_key(url):
+    m = re.match(r"https?://([a-z\-]+)\.wikipedia\.org/wiki/(.+)$", url or "")
+    if not m:
+        return None
+    return m.group(1) + ":" + norm(urllib.parse.unquote(m.group(2)).replace("_", " "))
+
+
+def wikidata_titles(qid):
+    """Wikidataの項目が指しているWikipediaの題（en/ja）。
+
+    ★MusicBrainzの外部リンクは、いまはWikipediaを直接持たず **Wikidata だけ**のことが多い
+      （2026-09-23 実測：Turnstile も Mogwai も GRAPEVINE も wikipedia の関係が無い）。
+      Wikidata を1回引けば、そこから同じ人のWikipediaの題が出る。橋は繋がったまま。
+    """
+    u = "https://www.wikidata.org/wiki/Special:EntityData/%s.json" % qid
+    code, body = get(u, timeout=25)
+    if code != 200:
+        return {}
+    try:
+        ent = list(json.loads(body)["entities"].values())[0]
+        sl = ent.get("sitelinks") or {}
+    except Exception:
+        return {}
+    out = {}
+    for site, lang in (("enwiki", "en"), ("jawiki", "ja")):
+        t = (sl.get(site) or {}).get("title")
+        if t:
+            out[lang] = t
+    return out
+
+
+def cross_check(mbid, wiki_urls):
+    """MusicBrainzの1位と、採ったWikipediaの記事が**同じものを指しているか**。
+
+    戻り値: ("confirmed"|"contradicted"|"unknown", 説明, 生のURL一覧)
+    """
+    got = artist_urls(mbid)
+    if not got.get("ok"):
+        return "unknown", "MusicBrainzの外部リンクが読めなかった（HTTP %s）" % got.get("http"), got
+    mine = {_wiki_page_key(u) for u in wiki_urls if _wiki_page_key(u)}
+    theirs = {_wiki_page_key(x["url"]) for x in got["urls"] if _wiki_page_key(x["url"])}
+    via = "MusicBrainzのWikipediaリンク"
+    if not theirs:
+        # Wikidata経由で橋を架け直す（いまのMusicBrainzはこちらしか持っていないことが多い）
+        qids = [re.search(r"/(Q\d+)\s*$", x["url"]).group(1)
+                for x in got["urls"]
+                if "wikidata.org/wiki/Q" in (x["url"] or "")
+                and re.search(r"/(Q\d+)\s*$", x["url"])]
+        for q in qids[:1]:
+            time.sleep(0.3)
+            for lang, t in (wikidata_titles(q) or {}).items():
+                theirs.add(lang + ":" + norm(t))
+            if theirs:
+                via = "MusicBrainz→Wikidata（%s）→Wikipedia" % q
+    if not theirs:
+        return "unknown", "MusicBrainz側にWikipedia／Wikidataのリンクが無い", got
+    if not mine:
+        return "unknown", "こちらにWikipediaの記事が無い", got
+    both = mine & theirs
+    if both:
+        return "confirmed", ("MusicBrainzの1位とWikipediaの記事が同じものを指している"
+                             "（%s／%s）" % (via, "・".join(sorted(both)))), got
+    return "contradicted", ("MusicBrainzの1位が指すWikipedia（%s）と、こちらが採った記事（%s）が"
+                            "違う。★別人の疑い。" % ("・".join(sorted(theirs))[:80],
+                                              "・".join(sorted(mine))[:80])), got
+
+
 def works(mbid):
     """★曲名を人間の記憶から書かない。**識別子から引く。**
 
@@ -481,6 +570,20 @@ def one(name):
     # 同定の1位が十分に強いときだけ、その mbid で作品を引く（弱いときは引かない＝別人の曲を混ぜない）
     cands = (rec["musicbrainz"].get("candidates") or []) if rec["musicbrainz"].get("ok") else []
     ok_id, why_id = identify_ok(cands)
+    # ★同名が並んでいて決められないときでも、諦める前に「橋」を1回だけ見る。
+    #   MusicBrainzの1位が持っている外部リンクが、こちらが採ったWikipediaの記事と同じなら、
+    #   別々の2つの出どころが同じ人を指したということ＝裏が取れた（推測ではない）。
+    wiki_urls = [ (rec.get("wikipedia_en") or {}).get("url"),
+                  (rec.get("wikipedia_ja") or {}).get("url") ]
+    wiki_urls = [u for u in wiki_urls if u]
+    if cands and cands[0].get("mbid") and (cands[0].get("score") or 0) >= 95 and wiki_urls:
+        time.sleep(1.1)
+        verdict, why_x, _raw = cross_check(cands[0]["mbid"], wiki_urls)
+        rec["crossCheck"] = {"verdict": verdict, "why": why_x}
+        if verdict == "confirmed" and not ok_id:
+            ok_id, why_id = True, "同名が並んでいたが裏が取れた：%s" % why_x
+        elif verdict == "contradicted":
+            ok_id, why_id = False, why_x
     rec["identifyOk"] = ok_id
     rec["identifyWhy"] = why_id
     if ok_id:

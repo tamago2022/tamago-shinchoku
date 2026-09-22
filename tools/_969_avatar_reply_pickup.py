@@ -124,7 +124,12 @@ def _post(url, token, payload, timeout=25):
     req.add_header("Content-Type", "application/json")
     req.add_header("User-Agent", "tamago-969-pickup")
     with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.getcode()
+        body = r.read().decode("utf-8", "ignore")
+    try:
+        cid = (json.loads(body or "null") or {}).get("id")
+    except Exception:
+        cid = None
+    return r.getcode(), cid
 
 
 # ★2026-09-23（1026番）ここが今回の本丸。
@@ -164,12 +169,16 @@ def _ensure_woken(slug, number, wakes, token):
         how, arg = WAKE_HOW[w]
         try:
             if how == "labels":
-                code = _post("%s/repos/%s/issues/%s/labels" % (API, slug, number),
-                             token, {"labels": arg})
+                code, cid = _post("%s/repos/%s/issues/%s/labels" % (API, slug, number),
+                                  token, {"labels": arg})
             else:
-                code = _post("%s/repos/%s/issues/%s/comments" % (API, slug, number),
-                             token, {"body": arg})
-            done[w] = {"at": time.strftime("%F %T"), "code": code}
+                code, cid = _post("%s/repos/%s/issues/%s/comments" % (API, slug, number),
+                                  token, {"body": arg})
+            # ★起こすために自分が書いたコメントのidを必ず控える。
+            #   2026-09-23 00:13 実測の事故：控えていなかったので、
+            #   「@codex 上のお題をお願いします。」が**外部AIからの返事としてページに載った**。
+            #   自分の声を自分で拾う＝いちばんたちの悪い「取れた」の嘘。
+            done[w] = {"at": time.strftime("%F %T"), "code": code, "commentId": cid}
             _log("%s を起こしました（%s・HTTP %s）" % (key, w, code))
         except Exception as e:                      # 握り潰さない。理由を残して赤にする
             done[w] = {"error": str(e)[:200], "at": time.strftime("%F %T")}
@@ -267,6 +276,13 @@ def main():
     if state.get("etag") and targets:
         etags.setdefault("%s#%s" % targets[0], state["etag"])
 
+    # 起こすために自分が書いたコメントのid（＝拾ってはいけないもの）
+    my_wake_ids = set()
+    for per_target in (_load(WOKE_JSON, {}) or {}).values():
+        for rec in (per_target or {}).values():
+            if isinstance(rec, dict) and rec.get("commentId"):
+                my_wake_ids.add(rec["commentId"])
+
     fresh = []
     for slug, number in targets:
         key = "%s#%s" % (slug, number)
@@ -279,10 +295,18 @@ def main():
         etags[key] = new_etag
         if code == 304 or not data:
             continue
+        owner = slug.split("/")[0].lower()
         for c in data:
             if c.get("id") in seen:
                 continue
             if "<!-- tamago-factory -->" in (c.get("body") or ""):
+                continue
+            # ★自分の声を自分で拾わない。印だけに頼ると、起こすための呼びかけ
+            #   （@codex …／印は付けられない）が「外部AIからの返事」として載る。
+            #   実測で1回載った（2026-09-23 00:13）。印・id・名札の3重で止める。
+            if c.get("id") in my_wake_ids:
+                continue
+            if ((c.get("user") or {}).get("login") or "").lower() == owner:
                 continue
             c["_from"] = key
             fresh.append(c)
