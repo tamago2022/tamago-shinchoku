@@ -94,6 +94,20 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 echo "$(date '+%F %T') naoshi 呼び出し" >> "$REPO/status/gaibu_copy_naoshi.log"
 ( nohup python3 "$REPO/tools/gaibu_copy_naoshi.py" >>"$REPO/status/gaibu_copy_naoshi.log" 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-09-22（1024番・Cowork側から設置）棚に入ったものへ「入荷日」を付ける係 ----
+# たまごさん「これから入るものには、必ず入荷日が付くようにする（仕入れの仕組み側に足す）」。
+# 入荷日は棚の正本（joy-relief-station の coverGuide.ts）のgit履歴から引く（0円・読むだけ）。
+# **台帳を持ち回らない。**毎回gitから引き直すので、途中で台帳が壊れても次の便で必ず直る。
+# ★1日1回だけ（丸ごと1回31秒かかるので、5分おきに回すと無駄）。
+# ★joy-relief-station が無ければ中で即 return ＝完全に無害。新しい常駐は増やさない。
+# ★この便を1秒も遅らせないためバックグラウンドへ逃がす。
+_NY_STAMP="$REPO/status/.nyuka_hiduke_done"
+if [ ! -f "$_NY_STAMP" ] || [ "$(date +%F)" != "$(cat "$_NY_STAMP" 2>/dev/null)" ]; then
+  date +%F > "$_NY_STAMP"
+  ( nohup python3 "$REPO/tools/_1024_nyuka_hiduke.py" \
+      >>"$REPO/status/nyuka_hiduke.log" 2>&1 & ) >/dev/null 2>&1
+fi
+
 # ---- 2026-09-20（969番・Cowork側から設置）外部AIの返事を拾って961ページへ並べる便 ----
 # たまごさん「返事が来たら、要約せずそのまま 961-talking-avatar-jirei.html に追記する」。
 # GitHubのIssueに来たコメントを、条件付きGET1本で見に行くだけ（変化が無い回はレート消費0・0円）。

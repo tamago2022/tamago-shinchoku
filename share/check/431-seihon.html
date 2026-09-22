@@ -494,7 +494,7 @@ $("tempoBtn").addEventListener("click",async()=>{
 
 /* ══════════════ 棚 ══════════════ */
 const ASSET="assets/953-songs/";
-const CAT={ head:null, joy:null, reg:null, t:{}, a:{}, loading:null,
+const CAT={ head:null, joy:null, reg:null, ny:null, t:{}, a:{}, loading:null,
   async load(){
     if(this.head) return;
     if(this.loading) return this.loading;
@@ -503,8 +503,13 @@ const CAT={ head:null, joy:null, reg:null, t:{}, a:{}, loading:null,
       fetch(ASSET+"joy.json").then(r=>r.ok?r.json():{cards:[],kind:{}}).catch(()=>({cards:[],kind:{}})),
       /* ★966：どこの人か。tools/_966_build_region.py が棚のデータから作る。
          取れなかった人は入っていない（推測で埋めない）。 */
-      fetch(ASSET+"region.json").then(r=>r.ok?r.json():{r:{},group:{}}).catch(()=>({r:{},group:{}}))
-    ]).then(([h,j,g])=>{ this.head=h; this.joy=j; this.reg=g; buildEar(); paintStock(); });
+      fetch(ASSET+"region.json").then(r=>r.ok?r.json():{r:{},group:{}}).catch(()=>({r:{},group:{}})),
+      /* ★1024：いつ入荷したか。tools/_1024_nyuka_hiduke.py が**棚の正本のgit履歴**から引く。
+         中身は「窓（直近45日）の中にいる人だけ」＝約12KB。載っていない人＝最近ではない。
+         ファイルが無い／空でも、ただ「最近入荷」と言わなくなるだけ（壊れない）。 */
+      fetch(ASSET+"nyuka.json").then(r=>r.ok?r.json():{a:{}}).catch(()=>({a:{}}))
+    ]).then(([h,j,g,n])=>{ this.head=h; this.joy=j; this.reg=g; this.ny=n||{a:{}};
+                           buildEar(); paintStock(); });
     return this.loading;
   },
   async title(n){ if(!this.t[n]) this.t[n]=fetch(ASSET+"t/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
@@ -1054,6 +1059,45 @@ function mezuraList(){
   }
   return o;
 }
+/* ══════════════ ★1024：最近入荷したもの ══════════════
+   たまごさん 2026-09-22「最近入荷したなかでも面白いのがありますよ、と言わせたい」。
+
+   1023番は言わせなかった。**棚に入荷日が1つも無かったから。**裏の取れないことは言わせない。
+   1024番で、棚の正本（joy-relief-station の coverGuide.ts）のgit履歴から
+   「その id の行が初めて足された日」＝入荷日を引いた。34,240曲のうち33,588曲に日付が付いた。
+
+   ★「最近」＝**直近45日**（曖昧にしない）。根拠は tools/_1024_nyuka_hiduke.py の冒頭に実測で書いた。
+     棚に物が入るのは「便」でまとまって来るので、30日だと0件、60日だと棚の6割になる。
+   ★窓の中に1組も居なければ、下の saikinList() が空を返し、案内人は**何も言わない**。 */
+function nyukaHi(a){          /* その人が棚に来た日。最近でなければ null */
+  if(!a||!CAT.ny||!CAT.ny.a) return null;
+  return CAT.ny.a[a.i]||null;
+}
+/* 札に刷る1行。「8月に入ったばかり」。★数も年も足さない（1行に入らない）。 */
+function nyukaDoor(a){
+  const d=nyukaHi(a); if(!d) return "";
+  const m=/^(\d{4})-(\d{2})-/.exec(d); if(!m) return "";
+  const ima=(CAT.ny.asOf||"").slice(0,7);
+  return (d.slice(0,7)===ima?"今月":(+m[2])+"月")+"入ったばかり";
+}
+/* 会話の始めに案内人へ渡す「最近入荷したなかでも面白いもの」。
+   ★「面白い」を印象で決めない。**最近入った人のうち、冒険札の資格（珍しさ24点）が
+     立つ人だけ。**点の中身は棚の数字（曲数・年代の薄さ・産地の薄さ）＝全部裏が取れる。
+   ★紹介文（ab）がある人だけ＝その人について話せる材料が棚にある人だけ。 */
+function saikinList(){
+  if(!CAT.head||!CAT.ny||!CAT.ny.a) return [];
+  const o=[];
+  for(const a of CAT.head.A){
+    const d=nyukaHi(a); if(!d) continue;
+    if(!a.ab||kyokuJanai(a)) continue;
+    const t=boukenTen({fact:{kazu:a.c||0,eraList:a.e||[],note:a.ab||"",kuni:usuiKuni(a)}});
+    if(t<24) continue;
+    const m=mezurashi(a); if(!m.length) continue;
+    o.push({t,d,s:"・"+a.n+"（"+d+"に入荷／"+m.join("／")+"）　棚の紹介文＝"+a.ab.slice(0,60)});
+  }
+  o.sort((x,y)=>y.t-x.t);
+  return o.slice(0,4).map(x=>x.s);   /* ★4組まで。新着で埋めない（安心4：冒険1を壊さない） */
+}
 /* 冒険札の選び方。珍しさの点が高いものを1枚だけ混ぜる（下の dealFour で5枚に1枚）。 */
 function boukenTen(c){
   const f=c.fact||{}; let p=0;
@@ -1086,6 +1130,8 @@ const songCard=s=>{
            kazu:a.c||0, eraList:(a.e||[]), nonMusic:kyokuJanai(a),
            /* ★1023：産地。kuni＝薄い国のときだけ（数つき）／kuniJa＝分かっていれば必ず */
            kuni:usuiKuni(a), kuniJa:kuniOf(a), kuniDoor:kuniDoor(a),
+           /* ★1024：入荷日。nyuka＝札に刷る1行／nyukaHi＝声のほうで使える日付 */
+           nyuka:nyukaDoor(a), nyukaHi:nyukaHi(a),
            mezu:mezurashi(a) } };
 };
 const ytOf=u=>{ const m=/\/vi\/([A-Za-z0-9_-]{6,})\//.exec(u||""); return m?m[1]:""; };
@@ -1232,6 +1278,9 @@ function doorLine(c,tsukatta){
     const atama=(kugiri>=5?n.slice(0,kugiri):n.slice(0,22));
     if(atama.length>=5) tane.push(["note",atama+(kugiri>=5?"。":"…")]);
   }
+  /* ①'' ★1024：最近入荷したばかり。**日付という裏がある**ので言ってよい。
+          札には月までしか書かない（1行に日付は入らない）。日は声のほうへ回す。 */
+  if(f.nyuka) tane.push(["nyuka",f.nyuka]);
   /* ② 産地が薄い国。たまごさんの「シベリアのグループ」がここ。
         ★札には**数を書かない。**「棚に1組だけ」は、どこの人か分かっていない組が
           まだ1,185組あるので嘘になる。数つきの言い方（分母つき）は声のほうへ回す。
@@ -1386,6 +1435,8 @@ function factSheet(list){
       /* ★1023：産地。region.json に載っている人だけ。載っていない人には書かない（推測しない）。 */
       if(f.kuniJa) bits.push("産地＝"+f.kuniJa);
       if(f.mezu&&f.mezu.length) bits.push("棚での珍しさ＝"+f.mezu.join("／"));
+      /* ★1024：入荷日。**日付があるときだけ**。無い人に「最近入った」と言わせない。 */
+      if(f.nyukaHi) bits.push("うちの棚に来た日＝"+f.nyukaHi+"（＝最近入荷。これは言ってよい）");
       if(c.bouken) bits.push("★これが今回の冒険の1枚（安心3枚＋冒険1枚で出している）");
     }else{
       bits.push("種類＝"+kindJa(c.kind));
@@ -1637,6 +1688,14 @@ const INSTRUCTIONS=[
   "★「珍しい」と言ってよいのは、渡された数字の根拠があるときだけ（棚に◯組だけ／棚に1曲だけ）。",
   "★「世界的に珍しい」「知る人ぞ知る」「幻の」は絶対に言わない。裏が取れていない。**うちの棚の話だけをする。**",
   "★毎回は出さない。安心を4、冒険を1。全部を珍しいもので埋めたら失格。",
+  "",
+  "■ ★1024：最近入荷したものを、自分から出してよい（日付が渡されているときだけ）",
+  "会話の始めに【最近入荷したなかでも面白いもの】を渡すことがあります。**渡された時だけ**、",
+  "「最近入荷したなかでも面白いのがありますよ」と一言だけ言って、その名前を artists に入れて hikidashi を呼ぶ。",
+  "★渡されていないときは、この話を**一度もしない。**「新しいのが入りました」も言わない。裏が無い。",
+  "★「面白い」の中身は、渡した根拠（棚に◯組だけ／棚に1曲だけ／産地）です。それ以外の理由で面白いと言わない。",
+  "★「話題の」「今アツい」「バズっている」は絶対に言わない。うちの棚の外のことは知りません。",
+  "★これも安心4：冒険1の中の1枚です。**新着だけを並べたら失格。**この話は会話で1回まで。",
   "",
   "■ ★メールの案内は、この会話で1回だけ",
   "自分からは絶対に切り出さない。画面から「この人はもう2枚押しています」という合図が来たときだけ、1文そえる。",
@@ -1965,7 +2024,7 @@ async function onResponse(r){
       { const s=stockCount();
         const aru=KINDS.filter(k=>s[k]>0).map(k=>k+"("+KIND_JA[k]+")="+s[k]+"件");
         const nai=KINDS.filter(k=>!s[k]).map(k=>k+"("+KIND_JA[k]+")");
-        const mz=mezuraList();
+        const mz=mezuraList(), sk=saikinList();
         tellModel("（画面の合図・お客さんの声ではありません。返事はしないでください）"
           +"いまの在庫："+aru.join("、")
           +(nai.length?("。在庫ゼロの棚："+nai.join("、")
@@ -1974,7 +2033,13 @@ async function onResponse(r){
              ただし**名前と根拠をこちらから渡す。**渡していない人を「珍しい」と言わせない。 */
           +(mz.length?("\n【いま棚にある珍しいもの（根拠つき）】\n"+mz.join("\n")
             +"\nこの名前と根拠だけが使えます。ここに無い人を『珍しい』と言わないこと。"
-            +"出すのは、おまかせと言われたとき／2回続けて札が押されなかったときだけ。"):"")); }
+            +"出すのは、おまかせと言われたとき／2回続けて札が押されなかったときだけ。"):"")
+          /* ★1024：最近入荷したもの。**日付という裏があるときだけ渡す。**
+             渡さなければ案内人はこの話を一度もしない（＝1023番と同じ、黙ったまま）。 */
+          +(sk.length?("\n【最近入荷したなかでも面白いもの（"+(CAT.ny.sakai||"")+"以降に棚へ入った人・根拠つき）】\n"
+            +sk.join("\n")
+            +"\nこの名前と日付だけが使えます。ここに無い人を『最近入った』と言わないこと。"
+            +"この話は会話で1回まで。新着だけを並べないこと（安心4：冒険1）。"):"")); }
       break;
     case "AUDIO": STOP.oto(); playPcm(r.data); break;
     /* ★970：切れ端は同じ行に足していく（1発言＝1行） */
