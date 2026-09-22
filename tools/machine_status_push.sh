@@ -287,6 +287,10 @@ run_with_timeout 150 python3 "$REPO/tools/kenpin_gate.py" --run-pending --quiet 
 #   向こうは status/nyuka/pending/ へ積むだけ。**実際に通すのはここ（鍵とネットがあるMac側）**。
 #   新しいlaunchd常駐は増やさず既存5分便に相乗り（上のkenpin_gateと同じ方針）。
 run_with_timeout 200 python3 "$REPO/tools/nyuka_sekisho.py" --run-pending --quiet >/dev/null 2>&1 || true
+# 2026-09-22 1025番：門0（棚に出せるか）の見張り。
+#   14曲が「関所を通った」まま3日間 done/ で止まっていた。止まっていた場所が暗かったから。
+#   done/ を数えて status/public/nyuka_shelf.json に出す＝進捗表から見える。★14ファイル読むだけ。
+run_with_timeout 30 python3 "$REPO/tools/nyuka_sekisho.py" --shelf-check >/dev/null 2>&1 || true
 # 2026-09-22 周辺を掘る（tools/shuhen_horu.py）。たまごさん「自分が音楽を入れたら、
 #   その周辺のヒット曲や、似たような影響・同ポジションのグループを探して仕入れ候補に
 #   しておいてほしい。（まだ棚には入れないで）」。

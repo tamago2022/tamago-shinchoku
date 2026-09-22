@@ -91,8 +91,33 @@ def kind_of(name):
     return "出演者"
 
 
+def load_kouho():
+    """仕入れ候補（status/shiire_kouho/*.json）に名前が積んであるアーティスト。
+
+    ★これは**棚ではない。**棚に出すかどうかはたまごさんの判断（憲法・棚の最終判断）。
+    ここで数えるのは「もう素材が揃っていて、あとは判断待ち」の組。
+    率を2本出すのは、**棚の率（本当の数字）を薄めないため**。
+    """
+    d = os.path.join(REPO, "status", "shiire_kouho")
+    got = {}
+    if not os.path.isdir(d):
+        return got
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith(".json") or fn.startswith("_"):
+            continue
+        try:
+            o = json.load(io.open(os.path.join(d, fn), encoding="utf-8"))
+        except Exception:
+            continue
+        nm = ((o.get("entry") or {}).get("artist") or "").strip()
+        if nm and (o.get("candidates") or []):
+            got[norm(nm)] = {"file": fn, "n": len(o["candidates"])}
+    return got
+
+
 def coverage():
     shelf, shelf_path = load_shelf()
+    kouho = load_kouho()
     files = sorted(f for f in os.listdir(MEIBO)
                    if f.endswith(".json") and not f.startswith("_"))
     report = {"shelfSource": shelf_path, "shelfArtists": len(shelf),
@@ -112,8 +137,13 @@ def coverage():
                 row["howMatched"] = "名前一致（同定はまだ）"
                 have.append(row)
             else:
+                k = kouho.get(norm(a))
+                if k:
+                    row["kouho"] = k["n"]
+                    row["kouhoFile"] = k["file"]
                 holes.append(row)
         total = len(have) + len(holes)
+        stocked = len([h for h in holes if h.get("kouho")])
         report["festivals"].append({
             "festival": d.get("festival"), "source": d.get("source"),
             "takenAt": d.get("takenAt"),
@@ -121,6 +151,9 @@ def coverage():
             "counted": total, "have": len(have), "holes": len(holes),
             "notMusicians": len(skipped),
             "naiRate": round(len(holes) * 100.0 / total, 1) if total else 0.0,
+            # ★候補まで積んだ分を引いた率。棚の率とは別物として必ず両方出す。
+            "stocked": stocked,
+            "naiRateWithKouho": round((len(holes) - stocked) * 100.0 / total, 1) if total else 0.0,
             "queue": holes,      # 有名な順＝名簿の上から。これが仕入れ待ち行列
             "already": have,
         })
@@ -137,6 +170,8 @@ def main():
     for f in r["festivals"]:
         print("%s ／ 数えた%d組：棚にある%d・穴%d ／ それはありませんね率 %.1f%%"
               % (f["festival"], f["counted"], f["have"], f["holes"], f["naiRate"]))
+        print("   └ 候補まで積んだ %d組 ／ 候補まで含めた率 %.1f%%（★棚出しはたまごさんの判断）"
+              % (f.get("stocked", 0), f.get("naiRateWithKouho", f["naiRate"])))
         if "--queue" in sys.argv:
             for h in f["queue"][:40]:
                 print("   %3d. %s" % (h["rank"], h["name"]))

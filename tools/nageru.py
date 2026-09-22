@@ -92,13 +92,36 @@ ROUTE = {
         "note": "Julesは `jules` ラベルで起きる（公式ドキュメント＋実測）。終わるとPRを立てて知らせてくる。",
     },
     "copilot": {
-        "how": "gh-issue", "repo": PRIVATE_REPO,
+        # ★2026-09-22 実測で閉めた。**4つの口を全部叩いて、全部ダメだった。**
+        #   ① Issue #457 を立てて `@copilot` で起こした
+        #      → 60秒後も、その後も **コメントは自分の呼びかけ1件だけ。返事0・👀の反応も0。**
+        #        （Copilotは受け取ると👀を付ける仕様。付いていない＝そもそも受け取っていない）
+        #   ② REST で担当者に `copilot-swe-agent[bot]` を入れる（公式の起こし方）
+        #      → **403 Forbidden**。`Copilot` でも黙って無視され assignees は空のまま。
+        #   ③ GraphQL `suggestedActors(capabilities:[CAN_BE_ASSIGNED])`
+        #      → 両リポとも **`tamago2022` ただ1人。Copilotが候補に出ない。**
+        #        （公式：候補に出ないリポでは coding agent は使えない）
+        #   ④ `gh agent-task create`（gh 2.98.0・preview の専用コマンド）
+        #      → PATではなく **gh 自身のOAuth（gho_・tamago2022でログイン済み）** で叩いても
+        #        **403 Forbidden**。
+        #   ＝どの口も「権利が無い」で閉じている。回数を増やしても催促しても1件も返らない。
+        #   開けるための条件は **Copilot の有料プラン（Pro / Pro+ / Business）に入り、
+        #   coding agent を有効にすること**＝課金。課金はたまごさんの判断（不可逆の1つ）。
+        "how": "blocked",
+        "blocked": ("GitHub Copilotは今どの口からも返りません。"
+                    "Issueに@copilotと書いても反応0（👀も付かない）、"
+                    "担当者にcopilot-swe-agent[bot]を入れると403、"
+                    "割り当て候補にCopilotが居ない（両リポとも）、"
+                    "gh agent-task create もOAuthで403。"
+                    "開けるにはCopilotの有料プラン（Pro/Pro+/Business）＝たまごさんの判断。"
+                    "代わりに chappy（ChatGPT直）か Jules へ投げてください。"),
+        "repo": PRIVATE_REPO,
         "title": "【GitHub Copilotに頼む】%s",
         "labels": [],
         "head": "この号はGitHub Copilotへの依頼です。\n",
         "foot": RETURN_RULE,
         "wake": "@copilot 上のお題をお願いします。",
-        "note": "★未実測。@copilotで起きるかは確かめていない。",
+        "note": "★2026-09-22 閉鎖。4つの口を実測して全部403／無反応。課金が入るまで投げない。",
     },
     # ★2026-09-22（977番）追加：GitHubのbotを待たずに、その場で返事が返る口。
     #   なぜ足したか＝実測。たまごさんが言っていた「宛先一覧にチャッピーが無い」はその通りだった。
