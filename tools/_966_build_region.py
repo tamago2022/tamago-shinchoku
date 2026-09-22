@@ -115,6 +115,9 @@ WORD = {
     "gb": ["イギリスの", "英国の", "英国出身", "イギリス出身", "イングランド出身",
            "ロンドン出身", "リヴァプール出身", "リバプール出身", "マンチェスター出身",
            "スコットランド", "ウェールズ", "バーミンガム出身", "シェフィールド出身",
+           # ★1024：北アイルランドはイギリス。「アイルランド出身」が中に入っていて
+           #   アイルランド共和国にされていた（実測：Snow Patrol）。長いほうを先に当てる。
+           "北アイルランド出身", "北アイルランド",
            "ブリストル出身", "グラスゴー出身", "UKの", "英国王室属領"],
     "ie": ["アイルランドの", "アイルランド出身", "ダブリン出身"],
     "fr": ["フランスの", "フランス出身", "パリ出身"],
@@ -285,26 +288,45 @@ def _bun(ab, i):
     return ab[a:(b + 1 if b >= 0 else len(ab))]
 
 
-def deai_ok(ab, w, i, kuni_kazu):
-    """その一致を、出自の根拠として採ってよいか。採ってよければ True。
+# ★1024：**生まれた場所は、国籍とは限らない。**
+#   実測：Meshell Ndegeocello の概要は「ドイツ生まれ。…アメリカのベーシスト」。
+#   軍人家庭でベルリン生まれのアメリカ人を、ドイツの人にしてしまっていた（小野リサも同じ形）。
+#   そこで根拠に強さを付けて、**弱い根拠が先に出てきても、強い根拠が後にあればそちらを採る。**
+#     3 ＝ 出自の名乗り（「アメリカのベーシスト」「カナダ出身」「日本人」「日本で結成」）
+#     2 ＝ 場所つきの名乗り（「台湾・台北生まれ」「ハワイ州ホノルル出身」）
+#     1 ＝ 生まれ・育ち・住まい・州県だけ（国籍とは限らない）
+#   同じ強さなら、概要の**先に出てきたほう**を採る（ここは1023までと同じ）。
+NAMA = re.compile(r"(生まれ|育ち|在住|移住|州$|県$|府$)")
 
-    kuni_kazu ＝ その概要に出てくる国コードの種類数（1なら他に候補が無い）。
-    """
+
+def deai_tsuyosa(ab, w, i, kuni_kazu):
+    """その一致を出自の根拠として採ってよいか。採るなら強さ(3/2/1)、採らないなら0。"""
     ato = ab[i + len(w): i + len(w) + 26]
-    if TSUYOI.search(w):                 # 「◯◯出身」「◯◯県」…そのものが出自
-        return True
+    yowai = 1 if NAMA.search(w) else 0
+    if "・" in w:                        # 「台湾・台北生まれ」「アメリカ・◯◯出身」＝場所つきの名乗り
+        # ★ただし「育ち」は出自ではない。實測：當山ひとみ「アメリカ・沖縄育ちの日本の歌手」。
+        #   沖縄はアメリカの街ではないが、機械にそれは分からない。**育ちは弱い**と決めておく。
+        return 1 if w.endswith("育ち") else 3
+    if TSUYOI.search(w):                 # 「◯◯出身」「◯◯人」「◯◯県」…そのものが出自
+        return 1 if yowai else 3
     if w.endswith("の"):                 # 「◯◯の」＝後ろに人を指す語が要る
         if HITO.search(ato) or DEDOKORO.search(ato):
-            return True
+            return 3
         # 人を指す語が無くても、**他に候補の国が1つも無く、影響の言い方も仕事の話も
         # 無い**なら採る（「日本の音楽シーンにおいて…」型の日本のバンドを落とさない）。
-        return (kuni_kazu <= 1 and not EIKYOU.search(_bun(ab, i))
-                and not SHIGOTO.search(ato[:14]))
+        if (kuni_kazu <= 1 and not EIKYOU.search(_bun(ab, i))
+                and not SHIGOTO.search(ato[:14])):
+            return 1
+        return 0
+    if yowai:                            # 「ドイツ生まれ」「京都府」…弱い根拠（国籍とは限らない）
+        return 1
     # 裸の国名・ジャンル名
     if DEDOKORO.search(ab[i + len(w): i + len(w) + 12]):
-        return True
-    return (kuni_kazu <= 1 and not EIKYOU.search(_bun(ab, i))
-            and not SHIGOTO.search(ato[:14]))
+        return 2
+    if (kuni_kazu <= 1 and not EIKYOU.search(_bun(ab, i))
+            and not SHIGOTO.search(ato[:14])):
+        return 1
+    return 0
 for k in KEN:
     WORD["jp"].append(k + "県出身")
     WORD["jp"].append(k + "県")
@@ -359,11 +381,16 @@ def region_of(name, about, aid=None):
             if mo:
                 ate.append((mo.start(), code, mo.group(0)))
     # ★1024：ここで**読み方の関所**を通す。通らなかった一致は無かったことにする。
+    #   残ったものは「強い根拠が先／同じ強さなら概要の先に出てきたほうが先」に並べる。
     kuni_kazu = len({c for _, c, _ in ate})
-    nokori = [x for x in ate if deai_ok(ab, x[2], x[0], kuni_kazu)]
+    nokori = []
+    for i, code, w in ate:
+        t = deai_tsuyosa(ab, w, i, kuni_kazu)
+        if t:
+            nokori.append((-t, i, code, w))
     nokori.sort()
     if nokori:
-        i, code, w = nokori[0]
+        _, i, code, w = nokori[0]
         return code, "概要に「%s」" % w
     # ② 名前の文字づかい。ひらがなは日本語にしか無い
     if HANGUL.search(name):
@@ -420,6 +447,15 @@ MIHON = [
      "1024：「◯◯が生んだ」も出自の名乗り"),
     ("當山ひとみ", "アメリカ・沖縄育ちの背景を持つ日本の歌手。", "jp",
      "1023：「アメリカ・」だけでは決めない。名前のひらがなが効く"),
+    ("Snow Patrol", "スコットランドおよび北アイルランド出身のメンバーで構成されるバンド。", "gb",
+     "1024：北アイルランドはイギリス。「アイルランド出身」が中に隠れている"),
+    ("Meshell Ndegeocello",
+     "1968年、ドイツ生まれ。軍人の父とともに各地を移り、のちにワシントンD.C.で育った"
+     "アメリカのベーシスト／シンガー。", "us",
+     "1024：**生まれた場所は国籍とは限らない。**あとにある「アメリカの…」のほうが強い"),
+    ("Kishore Kumar",
+     "インド映画音楽（ボリウッド）の黄金期を支えた伝説的なプレイバックシンガー。", "in",
+     "1024：ジャンル名でも、他に国の候補が無く影響の言い方も無ければ採ってよい"),
 ]
 
 
