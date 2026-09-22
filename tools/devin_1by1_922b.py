@@ -425,7 +425,9 @@ def main():
     cur["msgs"] = len(msgs)
     cur["pr"] = pr
     if msgs:
-        cur["last"] = str(msgs[-1].get("message") or "")[:1500]
+        _dev = [m for m in msgs if str(m.get("type") or "") != "user_message"]
+        cur["last"] = str((_dev[-1] if _dev else msgs[-1]).get("message") or "")[:1500]
+        cur["devMsgs"] = len(_dev)
 
     if stt in ("finished", "blocked", "expired"):
         cur["finishedAt"] = time.strftime("%F %T")
@@ -435,7 +437,13 @@ def main():
         #   「読みました。実測を進めて、終わりの合図1通だけ送ります。」
         # という**返事**だった（＝返事を書いてまた寝た）。これを返りに数えると嘘の数字になる。
         # 本物の返りは「PRのURL」か「答え：で始まる本文」のどちらかだけ。
-        last_msg = str((msgs[-1].get("message") if msgs else "") or "")
+        # さらに実測（2026-09-22 09:32）：枠切れで空振りした1本は、
+        # messages に**こちらが投げた依頼文そのもの**が1通だけ入って戻る。
+        # 依頼文の中には「答え：」という字が入っている（終わりの合図の指定）ので、
+        # 「最後の1通に答え：がある」だけでは、こちらの依頼文を自分の返事と数えてしまう。
+        # なので **Devin側の発言（type が user_message でないもの）** だけを見る。
+        dev = [m for m in msgs if str(m.get("type") or "") != "user_message"]
+        last_msg = str((dev[-1].get("message") if dev else "") or "")
         got = bool(pr) or ("答え：" in last_msg)
         if got:
             st["returned"] = st.get("returned", 0) + 1
