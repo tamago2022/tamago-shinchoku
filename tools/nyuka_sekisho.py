@@ -86,6 +86,53 @@ UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) nyuka-sekisho/1.0"
 
 
 # ===========================================================================
+# 門0：棚に出せるか（動画idが無いものを「通った」にしない）
+# ===========================================================================
+#
+# 足した理由（2026-09-22・1024番の申し送りにあった穴）:
+#   友川カズキ10曲・特撮3曲・akiko1曲の**14曲が門1〜門5を全部通って done/ に入った。
+#   なのに棚に1曲も出ていない。**理由は youtubeId が無いから。押しても何も鳴らない。
+#   関所が「PASS」と言ったのに棚に出せない＝**通ったのか通っていないのか分からない状態**で
+#   3日間止まっていた。しかも done/ の中なので、誰も気づかない（進捗表にも出ない）。
+#
+#   これは1曲ずつ拾う話ではなく、**関所に門が1つ足りなかった**という話。
+#   札は「押したら鳴る」までが1枚。鳴らない札は札ではない。
+#   だから入口で落とす。落ちれば hold/ に理由つきで残り、進捗表から見える。
+#
+# ★ここで動画を探しには行かない。探した結果が正しい保証が無いから（関所の掟）。
+#   「動画idを人が確かめて入れる」までが仕入れ、と決める。
+
+YT_ID = re.compile(r"^[A-Za-z0-9_-]{11}$")
+YT_URL = re.compile(
+    r"(?:youtube\.com/(?:watch\?(?:[^&]*&)*v=|embed/|shorts/|live/)|youtu\.be/)"
+    r"([A-Za-z0-9_-]{11})")
+
+
+def gate0_shelf(item):
+    """棚に出せるか。出せないなら理由を返す（空文字なら出せる）。
+
+    youtubeUrl しか無い入荷票は、URLから11文字のidを機械で取り出して埋める。
+    取り出せない／形が違うものは通さない。**探しには行かない。**
+    """
+    yid = (item.get("youtubeId") or "").strip()
+    if not yid:
+        for k in ("youtubeUrl", "youtube", "movieUrl", "url"):
+            m = YT_URL.search(str(item.get(k) or ""))
+            if m:
+                yid = m.group(1)
+                item["youtubeId"] = yid
+                item["youtubeIdFrom"] = k
+                break
+    if not yid:
+        return ("動画idが無い（押しても何も鳴らないので札にできない）。"
+                "入荷票に \"youtubeId\": \"<11文字>\" を入れてから積み直してください")
+    if not YT_ID.match(yid):
+        return "動画idの形が違う（11文字の英数字・_・- のはず）: %r" % yid[:40]
+    item["youtubeId"] = yid
+    return ""
+
+
+# ===========================================================================
 # 門1の心臓部：出典の機械照合
 # ===========================================================================
 
@@ -548,6 +595,16 @@ def run_gates(item, quiet=False):
            "title": item.get("title"), "url": item.get("url"),
            "at": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"), "gates": {}}
 
+    # 門0 棚に出せるか ------------------------------------------------------
+    # ★採点にお金を使う前にここで落とす。鳴らない札にAPI代を払う意味が無い。
+    block = gate0_shelf(item)
+    out["youtubeId"] = item.get("youtubeId")
+    out["gates"]["0_shelf"] = ("NG: " + block) if block else "OK"
+    if block:
+        say("門0 棚：出せない … %s" % block)
+        return _hold(out, "棚に出せない（門0）: %s" % block)
+    say("門0 棚：出せる（動画id %s）" % item.get("youtubeId"))
+
     # 門1 ----------------------------------------------------------------
     kept, dropped = gate1_facts(item.get("facts"))
     out["facts"] = kept
@@ -680,6 +737,12 @@ def cmd_submit(path):
         item["id"] = re.sub(r"[^A-Za-z0-9]+", "-",
                             "%s-%s" % (item.get("artist", ""), item.get("title", "")))[:60].strip("-") \
                      or str(int(time.time()))
+    # ★門0はここでも見る。**積む前に落とす**＝鳴らない札が pending/ に溜まらない。
+    block = gate0_shelf(item)
+    if block:
+        print("積めません（門0・棚に出せない）: %s" % block)
+        print("  %s ― %s" % (item.get("artist", "?"), item.get("title", "?")))
+        return 1
     item["submittedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
     os.makedirs(PENDING_DIR, exist_ok=True)
     p = os.path.join(PENDING_DIR, "%s.json" % item["id"])
@@ -749,7 +812,67 @@ def cmd_selftest():
     assert "カバー" not in s3b, \
         "関所が壊れている：曲を書いて渡した人が、他人の曲を歌った人にされた"
 
+    # 門0（2026-09-22）。見本は**実際に3日間止まっていた14曲**の形。作った例ではない。
+    nashi = {"id": "tomokawa-kazuki-inu", "artist": "友川カズキ", "title": "犬・秋田・1976",
+             "url": "https://tomokawakazuki.com/"}
+    b0 = gate0_shelf(nashi)
+    print("動画idの無い入荷票 → %s" % (b0 or "(通ってしまった)"))
+    assert b0, "関所が壊れている：押しても鳴らない札が「通った」になった"
+
+    kara = {"id": "x", "artist": "a", "title": "b",
+            "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10s"}
+    b1 = gate0_shelf(kara)
+    print("URLしか無い入荷票 → %s（idを取り出せたら正しい）"
+          % (b1 or ("OK id=" + kara["youtubeId"])))
+    assert not b1 and kara["youtubeId"] == "dQw4w9WgXcQ", \
+        "関所が壊れている：YouTubeのURLから動画idを取り出せなくなった"
+
+    hen = {"id": "y", "artist": "a", "title": "b", "youtubeId": "https://youtu.be/"}
+    b2 = gate0_shelf(hen)
+    print("形の違う動画id → %s" % (b2 or "(通ってしまった)"))
+    assert b2, "関所が壊れている：11文字でないものが動画idとして通った"
+
     print("SELFTEST: OK")
+    return 0
+
+
+def cmd_shelf_check():
+    """done/ に「通ったのに棚へ出せないもの」が残っていないか数えて、**進捗表から見える所**に出す。
+
+    done/ の中は誰も見ない。14曲が3日間そこで止まっていたのに誰も気づかなかったのは、
+    止まっている場所が暗かったから。数を status/public に出して、暗がりを無くす。
+    """
+    rows = []
+    if os.path.isdir(DONE_DIR):
+        for fn in sorted(os.listdir(DONE_DIR)):
+            if not fn.endswith(".json"):
+                continue
+            try:
+                d = json.load(io.open(os.path.join(DONE_DIR, fn), encoding="utf-8"))
+            except Exception:
+                continue
+            block = gate0_shelf(d)
+            if block:
+                rows.append({"id": d.get("id"), "artist": d.get("artist"),
+                             "title": d.get("title"), "at": d.get("at"),
+                             "why": block.split("。")[0]})
+    out = {
+        "asOf": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+        "tsumatteru": len(rows),
+        "hitokoto": ("棚に出せず止まっているものはありません。" if not rows else
+                     "関所は通ったのに**棚に出せない**ものが %d曲あります。"
+                     "動画idが無いので押しても鳴りません。"
+                     "入荷票に youtubeId を入れて積み直すと棚に出ます。" % len(rows)),
+        "rows": rows,
+    }
+    p = os.path.join(REPO, "status", "public", "nyuka_shelf.json")
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with io.open(p, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    print("棚に出せず止まっているもの: %d曲" % len(rows))
+    for r in rows:
+        print("  ・%s ― %s（%s）" % (r["artist"], r["title"], (r["at"] or "")[:10]))
+    print("書きました: %s" % p)
     return 0
 
 
@@ -761,11 +884,15 @@ def main():
     ap.add_argument("--run-pending", action="store_true", help="積まれた分を通す（Mac側の便から）")
     ap.add_argument("--max-jobs", type=int, default=3)
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--shelf-check", dest="shelf_check", action="store_true",
+                    help="通ったのに棚へ出せないものを数えて status/public に出す")
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args()
 
     if a.selftest:
         return cmd_selftest()
+    if a.shelf_check:
+        return cmd_shelf_check()
     if a.submit:
         if not a.json_path:
             print("--json が必要です")
