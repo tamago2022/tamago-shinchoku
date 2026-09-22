@@ -494,6 +494,11 @@ if [ -n "$(git status --porcelain --untracked-files=normal -- \
       index.html data.js said.js tools status/pace.json 2>/dev/null | head -1)" ]; then
   HIST_CHANGED=1
 fi
+# 2026-09-22（コミットの口の1本化）：status/commit_inbox/ に紙が1枚でも置かれていたら、
+#   マシンの数字が前回と同じでもこの便を進める。ここを通さないと、サンドボックスが
+#   置いた紙が「変化なし」で早期returnされ、何時間も載らないことがある。
+#   status/ は.gitignore対象なので git status では見えない。ふつうのファイル有無で見る。
+if ls "$REPO"/status/commit_inbox/*.json >/dev/null 2>&1; then HIST_CHANGED=1; fi
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
 # 2026-09-04 画面の世代を書き出す。スマホのホーム画面アプリが古いindex.htmlを握ったままになる問題への対応。
@@ -590,6 +595,14 @@ done
 ( "$REPO/tools/pages_publish.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
 # 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
 # ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
+# ---- 2026-09-22 コミットの口の1本化：サンドボックスが置いた紙をここで回収する ----
+#   Cowork（サンドボックス）側がマウント越しに自分で git add/commit を叩くと、
+#   この5分便とぶつかって .git/index.lock の取り合いになり、しかも向こうは
+#   残ったロックを消せない（Operation not permitted）＝工場のgitが丸ごと止まる。
+#   2026-09-22に何度も再発したため、**ロックを後から消すのをやめて、口そのものを1本にした。**
+#   向こうは status/commit_inbox/ に紙を置くだけ（gitを叩かない）。回収はここ1か所。
+#   commit / push はこの下の1本だけが持つ。投げっぱなしにはしない（addが済んでから下のcommitへ進む必要があるため）。
+python3 "$REPO/tools/commit_kuchi.py" --drain --quiet >/dev/null 2>&1 || true
 git add index.html data.js said.js share tools >/dev/null 2>&1
 # 2026-09-22（977番）追加：番号付きの単票ページ（969/971/972/977…）も載せる。
 #   ここに無いと、作っても永久に公開されない（977-ai-renkei.html で気づいた）。
