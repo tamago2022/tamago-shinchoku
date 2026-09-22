@@ -31,6 +31,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -58,7 +59,6 @@ MARK = "<!-- 969:返事ここまで -->"
 
 def _log(msg):
     try:
-        import time
         with io.open(LOG, "a", encoding="utf-8") as f:
             f.write("%s %s\n" % (time.strftime("%F %T"), msg))
     except Exception:
@@ -114,26 +114,146 @@ def _block(c):
     )
 
 
+def _post(url, token, payload, timeout=25):
+    """GitHubへ1回だけ書く（起こすため）。失敗は握り潰さず呼び元へ返す。"""
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("Authorization", "Bearer %s" % token)
+    req.add_header("Accept", "application/vnd.github+json")
+    req.add_header("X-GitHub-Api-Version", "2022-11-28")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("User-Agent", "tamago-969-pickup")
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.getcode()
+
+
+# ★2026-09-23（1026番）ここが今回の本丸。
+#
+#   81回走って0件だった原因は「拾い口が壊れていた」ではなく、
+#   **誰も起こしていなかった**（status/969_返信0件の原因.md の実測）。
+#   977番でも同じ事故が起きている＝2回目＝個人の落ち度ではなく仕組みの不在。
+#
+#   だから「今回の的に引き金を1回打つ」のでは直らない（＝穴を塞ぐだけ）。
+#   **見張りと引き金を同じ1本にする。**この先どんな先を足しても、
+#   見張り始めた瞬間に必ず起こしている。起こし方の書いていない先は見張らない。
+#
+#   起こし方は実測で確かめたものだけ（作法の出どころは tools/nageru.py と同じ）:
+#     jules … `jules` ラベルを貼る（公式ドキュメント：jules.google/docs/running-tasks/）
+#     codex … `@codex` とコメントする（本文に書いても起きない・#450で実測）
+WAKE_HOW = {
+    "jules": ("labels", ["jules"]),
+    "codex": ("comment", "@codex 上のお題をお願いします。"),
+}
+WOKE_JSON = os.path.join(WORK, "woke.json")
+
+
+def _ensure_woken(slug, number, wakes, token):
+    """まだ起こしていない先を起こす。**1回だけ。**催促はしない（回数を増やさない）。
+
+    戻り値: (起こし済みか, 止まっている理由)
+    """
+    woke = _load(WOKE_JSON, {})
+    key = "%s#%s" % (slug, number)
+    done = dict(woke.get(key) or {})
+    todo = [w for w in (wakes or []) if w in WAKE_HOW and not done.get(w)]
+    unknown = [w for w in (wakes or []) if w not in WAKE_HOW]
+    if unknown:
+        _log("%s：知らない起こし方 %s（実測で確かめたのは %s）"
+             % (key, "・".join(unknown), "・".join(sorted(WAKE_HOW))))
+    for w in todo:
+        how, arg = WAKE_HOW[w]
+        try:
+            if how == "labels":
+                code = _post("%s/repos/%s/issues/%s/labels" % (API, slug, number),
+                             token, {"labels": arg})
+            else:
+                code = _post("%s/repos/%s/issues/%s/comments" % (API, slug, number),
+                             token, {"body": arg})
+            done[w] = {"at": time.strftime("%F %T"), "code": code}
+            _log("%s を起こしました（%s・HTTP %s）" % (key, w, code))
+        except Exception as e:                      # 握り潰さない。理由を残して赤にする
+            done[w] = {"error": str(e)[:200], "at": time.strftime("%F %T")}
+            _log("%s を起こせませんでした（%s）: %s" % (key, w, e))
+    if todo or unknown:
+        woke[key] = done
+        try:
+            io.open(WOKE_JSON, "w", encoding="utf-8").write(
+                json.dumps(woke, ensure_ascii=False, indent=1))
+        except Exception as e:
+            _log("起こした記録を残せませんでした: %s" % e)
+    ok = [w for w in (wakes or []) if (done.get(w) or {}).get("code")]
+    if ok:
+        return True, ""
+    if not wakes:
+        return False, "起こす引き金が書いてありません（targets.json の wake が空）"
+    errs = "／".join("%s:%s" % (w, (done.get(w) or {}).get("error", "未実行"))
+                    for w in wakes)
+    return False, "起こせていません（%s）" % errs
+
+
 def _targets():
-    """見張る先の一覧。issue.json（1件目）＋ targets.json（増やした分）。"""
-    out = []
-    issue = _load(ISSUE_JSON, {})
-    if issue.get("number"):
-        out.append((issue.get("repo") or REPO_SLUG, int(issue["number"])))
+    """見張る先の一覧。**起こす引き金があり、実際に起こせた先だけを返す。**
+
+    戻り値: (見張る先[(slug,number)], 止めた先[(key, 理由)])
+    """
+    conf = {}
     for t in (_load(TARGETS_JSON, []) or []):
         try:
-            pair = (t["repo"], int(t["number"]))
+            conf[(t["repo"], int(t["number"]))] = t
         except Exception:
             continue
-        if pair not in out:
-            out.append(pair)
-    return out
+    pairs = []
+    issue = _load(ISSUE_JSON, {})
+    if issue.get("number"):
+        pairs.append((issue.get("repo") or REPO_SLUG, int(issue["number"])))
+    for pair in conf:
+        if pair not in pairs:
+            pairs.append(pair)
+
+    token = github_watch.gh_token()
+    watch, stopped = [], []
+    for slug, number in pairs:
+        key = "%s#%s" % (slug, number)
+        wakes = (conf.get((slug, number)) or {}).get("wake") or []
+        if isinstance(wakes, str):
+            wakes = [wakes]
+        if not wakes:
+            # ★見張らない。見張ると「走った回数」だけが永久に増えて赤が消えない。
+            stopped.append((key, (conf.get((slug, number)) or {}).get("why")
+                            or "起こす引き金が書いてありません"))
+            continue
+        if not token:
+            stopped.append((key, "GitHubのトークンが取れませんでした（gh auth login が要る）"))
+            continue
+        ok, why = _ensure_woken(slug, number, wakes, token)
+        if ok:
+            watch.append((slug, number))
+        else:
+            stopped.append((key, why))
+    return watch, stopped
 
 
 def main():
-    targets = _targets()
+    targets, stopped = _targets()
+
+    # ★止めた先は、黙って捨てない。state に書いて鍵台帳（hantei）の赤に出す。
+    #   「走った回数だけ増えて中身が0」を作らないため、見張れる先が1つも無い日は
+    #   **seen.json を書き換えない**（書き換えると mtime が進み、台帳が1回走ったと数える）。
+    if stopped:
+        _log("見張りません：" + "／".join("%s（%s）" % (k, w) for k, w in stopped))
     if not targets:
-        return 0  # まだIssueが立っていない＝何もしない（無害）
+        why = "／".join("%s：%s" % (k, w) for k, w in stopped) or "見張る先がまだありません"
+        try:
+            io.open(os.path.join(WORK, "blocked.json"), "w", encoding="utf-8").write(
+                json.dumps({"blocked": why, "at": time.strftime("%F %T")},
+                           ensure_ascii=False, indent=1))
+        except Exception:
+            pass
+        return 0
+    try:
+        os.remove(os.path.join(WORK, "blocked.json"))
+    except OSError:
+        pass
 
     token = github_watch.gh_token()
     if not token:

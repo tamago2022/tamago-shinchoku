@@ -62,6 +62,9 @@ from datetime import datetime, timedelta, timezone
 JST = timezone(timedelta(hours=9))
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+import hantei  # noqa: E402  ★判定と数え方は、ここではなく hantei.py にしか書かない
 STATUS = os.path.join(REPO, "status")
 PUBLIC = os.path.join(STATUS, "public")
 OUT_JSON = os.path.join(PUBLIC, "kagi_daicho.json")
@@ -611,9 +614,33 @@ WATCHERS = [
     dict(id="line_store_watch", label="LINEストアの見張り",
          state="line_store_watch.json", need="gmail", catch_flags=[],
          err_log="line_store_watch.log"),
+    # ↓ここから8本は 2026-09-23（1026番）に足した。
+    #   台帳の「台帳外あぶり出し」は前から見つけていたのに、その結果は台帳JSONの奥にしか出ず、
+    #   赤の一覧（hantei）には1行も出ていなかった＝**見つけているのに出していない**。
+    #   ＝2026-09-20に2本、今日8本。手書きの名簿である限り、明日また増える。
+    #   だから名簿に足すだけで終わらせず、下の auto_watchers() で**自動で台帳入り**にした。
+    dict(id="commit_kuchi", label="コミットの口（909）", state="commit_kuchi.log",
+         need="", catch_flags=[], catch_grep=r"✅ 回収"),
+    dict(id="gaibu_copy_naoshi", label="外部コピーの直し",
+         state="public/gaibu_copy_naoshi.json", need="",
+         catch_flags=[], catch_counter=["fixedTotal"]),
+    dict(id="gaibu_copy_nippou", label="外部コピー日報（971）",
+         state="public/gaibu_copy_nippou.json", need="",
+         catch_flags=[], catch_counter=["total.written"]),
+    dict(id="mac_souji", label="Macの掃除", state="mac_souji.json", need="",
+         catch_flags=[], catch_counter=["totalFreedBytes"]),
+    dict(id="oni_kuchi", label="鬼監督の口", state="oni_kuchi.md", need="",
+         catch_flags=[], catch_grep=r"^## "),
+    dict(id="nyuka_hiduke", label="入荷日付の埋め（1024）", state="nyuka_hiduke.log",
+         need="", catch_flags=[], catch_grep=r"→ 棚へ"),
+    dict(id="shuhen_horu", label="周辺を掘る（仕入れ候補）",
+         state="shuhen_horu.json", need="", catch_flags=[]),
     dict(id="avatar_reply", label="アバターの返信拾い（969）",
          state="969/seen.json", need="github", catch_flags=[],
-         catch_counter=[], err_log="969/pickup.log"),
+         catch_counter=[], err_log="969/pickup.log",
+         # 2026-09-23：見張れない理由（起こせていない等）はここに書かれる。
+         # state に無い理由を読み落として「原因不明の赤」にしないため。
+         extra_state="969/blocked.json"),
 ]
 
 # 「実際に何かを取れた」跡として認める名前。
@@ -625,10 +652,41 @@ CATCH_KEYS = ("lastHitAt", "lastFoundAt", "foundCount", "hits", "found",
 BLOCK_KEYS = ("blocked", "skipped", "error", "lastError", "credentialMissingNotified")
 
 
+def auto_watchers():
+    """★ここが1026番の「素材を替える」。
+
+    台帳がずっと**手書きの名簿**だったので、誰かが定期便を1本足すたびに、
+    その1本だけが「走ったか・取れたかを誰も見ていない」状態で生まれていた。
+    2026-09-20に2本、2026-09-23に8本。名簿に足すだけでは、明日また増える。
+
+    → 心臓と5分便の台本から実際に呼ばれているものを読み取って、
+      名簿に無いものを**自動で台帳に入れる**。跡が見つからないものは
+      「跡を残していないので測れません」と赤で出す（緑にしない・隠さない）。
+    """
+    known = {w["id"] for w in WATCHERS}
+    rows = []
+    for r in unlisted_scan():
+        name = os.path.basename(r.get("script", "")).replace(".py", "")
+        if not name or name in known:
+            continue
+        # 跡を決まった置き場から探す（名前の約束だけで見つける＝手で書かない）
+        state = None
+        for cand in ("public/%s.json" % name, "%s.json" % name,
+                     "%s.log" % name, "%s.md" % name, "%s.jsonl" % name):
+            if os.path.exists(os.path.join(STATUS, cand)):
+                state = cand
+                break
+        rows.append(dict(id="auto:%s" % name,
+                         label="%s（名簿に無いので自動で台帳入り）" % name,
+                         state=state, need="", catch_flags=[],
+                         no_trace=(state is None)))
+    return rows
+
+
 def watcher_rows():
     counts = load(COUNTS, {}) or {}
     rows = []
-    for w in WATCHERS:
+    for w in WATCHERS + auto_watchers():
         st = {}
         run_at = None
         if w.get("state"):
@@ -659,10 +717,26 @@ def watcher_rows():
                 counter_total = (counter_total or 0) + cur
         if counter_total is not None:
             caught_at = run_at if counter_total > 0 else None
+        # JSONではない跡（ログ・メモ）は、成功の印が入っているかで見る。
+        # ★印を決めずに「ファイルが新しい＝取れた」にすると、空回しでも点く緑になる。
+        if w.get("catch_grep") and w.get("state"):
+            try:
+                body = io.open(os.path.join(STATUS, w["state"]),
+                               encoding="utf-8", errors="ignore").read()[-20000:]
+                caught_at = run_at if re.search(w["catch_grep"], body, re.M) else None
+            except Exception:
+                caught_at = None
         # 黙って飲み込まれている理由
         blocked = ""
+        if w.get("no_trace"):
+            blocked = ("跡を残していないので、走ったか・取れたかを測れません"
+                       "（status/ に同じ名前の .json か .log を残せば、翌回から自動で測ります）")
+        # state の外に書かれた理由も読む（読み落とすと「原因不明の赤」になる）
+        look = dict(st)
+        if w.get("extra_state"):
+            look.update(load(os.path.join(STATUS, w["extra_state"]), {}) or {})
         for k in BLOCK_KEYS:
-            v = st.get(k)
+            v = look.get(k)
             if v and v is not True:
                 blocked = "%s=%s" % (k, v)
                 break
@@ -681,25 +755,18 @@ def watcher_rows():
                     tail = []
                 if tail and re.search(r"(Error|Traceback|Exception|Failed)", tail[0]):
                     blocked = "吐き出している：" + scrub(tail[0])
-        # 走行回数・収穫回数（今日から積む。跡が進んだ回だけ数える）
-        c = counts.get(w["id"], {"runs": 0, "catches": 0, "seenRun": 0, "seenCatch": 0})
-        if run_at and run_at > (c.get("seenRun") or 0):
-            c["runs"] = c.get("runs", 0) + 1
-            c["seenRun"] = run_at
-        if caught_at and caught_at > (c.get("seenCatch") or 0):
-            c["catches"] = c.get("catches", 0) + 1
-            c["seenCatch"] = caught_at
+        # 走行回数・収穫回数・赤の判定は **tools/hantei.py にしか書かない**。
+        # 2026-09-22（1018番）に規則を hantei へ引っ越したのに、ここには古い写しが
+        # 残っていた＝同じ規則が2か所。片方だけ直る日が必ず来る（実際そうなっていた）。
+        c = hantei.tally(counts.get(w["id"]), run_at, caught_at, blocked)
         counts[w["id"]] = c
-        # 赤の条件は2つ。どちらかに当たれば赤。
-        #   ① 走っているのに、取れた跡が1つも無い
-        #   ② 鍵が無い／吐き出している（取れた跡があっても、これは見逃さない）
-        red = (bool(run_at) and not caught_at) \
-            or ("credential" in blocked.lower()) \
-            or blocked.startswith("吐き出している")
+        h = hantei.judge(c["runs"], c["catches"], blocked=blocked, label=w["label"])
+        # 「吐き出している」は取れた跡があっても見逃さない（judgeのblockedで拾われる）
+        red = h["red"]
         rows.append(dict(id=w["id"], label=w["label"], need=w.get("need", ""),
                          lastRunAt=run_at, lastCatchAt=caught_at,
                          runs=c["runs"], catches=c["catches"],
-                         blocked=blocked, red=red))
+                         blocked=blocked, red=red, line=h["line"]))
     save(COUNTS, counts)
     return rows
 
@@ -981,10 +1048,27 @@ def build(force=False):
     )
     save(OUT_JSON, out)
     # 進捗表のトップが読む1行（赤が1つでもあれば出る）
+    #
+    # ★2026-09-23（1026番）実測で見つけた抜け：
+    #   「走った◯本 → 取れた◯本」は status/genzaichi.md（Dispatchが読む紙）にしか出ておらず、
+    #   **たまごさんが実際に開く進捗表（index.html）の一番上には1文字も出ていなかった。**
+    #   1018番で形にしたつもりが、届く場所に届いていなかった＝これも「動いているのに何も取れていない」。
+    #   数字は hantei.kojo() から取る（judge と同じ1か所。ここで数え直さない）。
+    kasegi = None
+    try:
+        k = hantei.kojo(6)
+        kasegi = dict(hours=k["hours"], runs=k["runs"], catches=k["catches"],
+                      karamawashi=k.get("karamawashi", 0), red=k["red"],
+                      blocked=hantei.yakusu(k["blocked"]),
+                      line="直近%d時間 走った%d本 → 取れた%d本" % (
+                          k["hours"], k["runs"], k["catches"]))
+    except Exception as e:  # noqa: BLE001
+        kasegi = dict(red=True, line="稼ぎの数が取れません", blocked=str(e)[:200])
     save(os.path.join(PUBLIC, "kagi_daicho_top.json"), dict(
         redCount=out["redCount"],
         headline=("鍵・つながりに赤が%d件（動いているのに何も取れていない／切れている）"
                   % out["redCount"]) if out["redCount"] else "鍵・つながりは全部通っています",
+        kasegi=kasegi,
         at=out["generatedAt"]))
     log("台帳を更新：赤%d件（鍵%d・見張り%d・嘘%d・台帳外%d・ページ%d）"
         % (out["redCount"], len(red_keys), len(red_watch), len(lies), len(unlisted),

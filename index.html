@@ -71,6 +71,14 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   <button id="reload" type="button">押して読み直す</button>
 </header>
 
+<!-- ★1026番（2026-09-23）：一番上は「走った◯本 → 取れた◯本」。
+     1018番でこの形にしたつもりが、出ていたのは status/genzaichi.md（Dispatchが読む紙）だけで、
+     たまごさんが実際に開くこの進捗表には1文字も出ていなかった（実測）。
+     緑の根拠は「着火したか」ではなく **本物が取れた本数だけ**（判定は tools/hantei.py の1か所）。 -->
+<div id="kasegi"
+     style="display:none;margin:0 0 14px;padding:12px 13px;border:2px solid #16130f;
+            background:#fff;line-height:1.6"></div>
+
 <!-- 969番：鍵・つながりの台帳。赤が1つでもあればここに出る（無ければ何も出ない） -->
 <a id="kagi-alert" href="969-kagi-daicho.html"
    style="display:none;margin:0 0 14px;padding:11px 13px;border:2px solid #b3261e;
@@ -601,8 +609,35 @@ fetch("status/public/kagi_daicho_top.json?t=" + Date.now())
       el.textContent = "🔒 " + d.headline + " → 押すと台帳が開きます";
       el.style.display = "block";
     }
+    renderKasegi(d && d.kasegi, d && d.at);
   })
-  .catch(function(){ /* 台帳が無くても進捗表は普通に出る */ });
+  .catch(function(){ renderKasegi(null, null); });
+
+/* ★1026番：一番上の「走った◯本 → 取れた◯本」。
+   読めなかったときに何も出さない＝黙って飲み込む、なので、読めなかったことを赤で出す。 */
+function renderKasegi(k, at){
+  var el = $("kasegi");
+  if(!el) return;
+  el.style.display = "block";
+  if(!k){
+    el.style.borderColor = "#b3261e"; el.style.color = "#b3261e";
+    el.innerHTML = "<b>🔴 走った／取れたの数が読めません</b>"
+      + "<div style='font-size:12px;margin-top:4px'>status/public/kagi_daicho_top.json が取れませんでした。"
+      + "数が出ないときは緑にしない決まりです。</div>";
+    return;
+  }
+  var red = !!k.red;
+  el.style.borderColor = red ? "#b3261e" : "#16130f";
+  el.style.color = red ? "#b3261e" : "#16130f";
+  var head = (red ? "🔴 " : "✅ ") + esc(k.line || "");
+  var sub = [];
+  if(k.karamawashi) sub.push("うち空回し " + esc(k.karamawashi) + "本（空回しは1本も数に入れていません）");
+  if(k.blocked) sub.push("止めているもの：" + esc(k.blocked));
+  if(at) sub.push("実測 " + esc(String(at).replace("T", " ").slice(0, 16)));
+  el.innerHTML = "<b style='font-size:15px'>" + head + "</b>"
+    + (sub.length ? "<div style='font-size:12px;margin-top:5px;line-height:1.55'>"
+        + sub.join("<br>") + "</div>" : "");
+}
 
 // ホーム画面アプリ用の manifest は、最初の表示が終わってから足す
 window.addEventListener("load", function(){

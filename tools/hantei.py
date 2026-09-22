@@ -57,6 +57,47 @@ SWALLOW_WORDS = ("no_credential", "empty_credential", "401", "403",
                  "expired", "invalid_token", "ログイン", "認証")
 
 
+# 機械の言葉 → たまごさんが読んで次の一手が分かる言葉。
+# ★「blocked=no_credential」は嘘ではないが、**読んでも何をすればいいか分からない**。
+#   分からない表示は、結局あとで人が読み直して原因を掘ることになる＝飲み込んでいるのと同じ。
+#   翻訳もここ1か所に置く（各見張りに書かない）。
+YAKU = (
+    ("no_credential",
+     "Gmailを読む鍵（アプリパスワード）が置かれていません"
+     "（置き場 /Users/mac/.tamago/gmail_app_password）。"
+     "★これはたまごさんにしか置けません。置けば次の30分以内に自動で見張りが始まります"),
+    ("empty_credential",
+     "Gmailを読む鍵のファイルはありますが、中身が空です"
+     "（置き場 /Users/mac/.tamago/gmail_app_password）。★たまごさんにしか直せません"),
+    ("credentialMissingNotified",
+     "鍵が無いことを1回知らせたあと、そのまま止まっています"
+     "（上と同じ Gmail の鍵）。★たまごさんにしか直せません"),
+    ("401", "断られました（401＝鍵が違う・切れている）"),
+    ("403", "断られました（403＝その鍵に権利が無い。課金か権限の追加が要ることが多い）"),
+    ("unauthorized", "断られました（鍵が通っていません）"),
+    ("forbidden", "断られました（権利がありません）"),
+)
+
+
+def yakusu(blocked):
+    """止まっている理由を、読んで次の一手が分かる言葉にする。
+    元の機械の言葉は**消さずに括弧で残す**（嘘にしないため）。"""
+    s = (blocked or "").strip()
+    if not s:
+        return s
+    # ★既に日本語で理由が書いてあるものは、絶対に置き換えない。
+    #   最初の版は「403」という3文字が文中にあるだけで文全体を決まり文句にすり替え、
+    #   Genspark（403とは別の理由で閉まっている）の説明を消してしまった＝新しい嘘。
+    #   翻訳が要るのは「no_credential」のような、そのままでは読めない短い機械語だけ。
+    if len(s) > 60 or re.search(r"[ぁ-んァ-ヶ一-龥]", s):
+        return s
+    low = s.lower()
+    for key, jp in YAKU:
+        if key.lower() in low:
+            return "%s（機械の言葉：%s）" % (jp, s)
+    return s
+
+
 def judge(runs, catches, blocked="", label=""):
     """唯一の判定。**これ以外の場所に同じifを書かない。**
 
@@ -68,7 +109,7 @@ def judge(runs, catches, blocked="", label=""):
 
     if blocked:
         red, mark = True, "🔴"
-        why = "止められています：%s" % blocked
+        why = "止められています：%s" % yakusu(blocked)
     elif runs == 0:
         red, mark = False, "⚪"
         why = "まだ走っていません"
@@ -82,6 +123,42 @@ def judge(runs, catches, blocked="", label=""):
     line = "%s %s%s" % (mark, (label + "：") if label else "", why)
     return dict(red=red, mark=mark, line=line, why=why,
                 runs=runs, catches=catches, blocked=blocked)
+
+
+def tally(prev, run_at, caught_at, blocked=""):
+    """走った／取れたの数え方。**この1か所にしか書かない。**
+
+    1026番（2026-09-23）たまごさん：
+      「直せないもの（鍵が無い・権利が無い・課金が要る）は、赤のまま理由つきで出す。
+        隠さない。**投げるのをやめる**（催促も回数も増やさない）。」
+
+    実測（2026-09-22 23:40）：
+      LINE審査結果の見張り … 走った78回・取れた0回
+      だがこの78回は**1度もGmailに繋ぎに行っていない**。鍵が無いので、
+      state に "blocked": "no_credential" と書いて即 return しているだけ。
+      それを「走った」と数えていたので、直しようのない赤が毎分ふくらんでいた。
+
+    → **叩けもしなかった回は、走ったに数えない。**
+      止まっている事実は blocked が持っていて、judge() が必ず理由ごと赤で出す。
+      数が増えないだけで、赤は1件も消えない（隠していない）。
+
+    prev: {"runs":int,"catches":int,"seenRun":float,"seenCatch":float}
+    戻り値: 更新後の同じ形（prev は書き換えない）
+    """
+    c = dict(runs=int((prev or {}).get("runs") or 0),
+             catches=int((prev or {}).get("catches") or 0),
+             seenRun=(prev or {}).get("seenRun") or 0,
+             seenCatch=(prev or {}).get("seenCatch") or 0)
+    blocked_now = bool((blocked or "").strip())
+    if run_at and run_at > (c["seenRun"] or 0):
+        if not blocked_now:
+            c["runs"] += 1
+        # 見た跡は blocked でも進める（同じ回を何度も数えないため）
+        c["seenRun"] = run_at
+    if caught_at and caught_at > (c["seenCatch"] or 0):
+        c["catches"] += 1
+        c["seenCatch"] = caught_at
+    return c
 
 
 def surface_swallowed(text):
@@ -240,11 +317,85 @@ def gaibu_ai():
         swallowed = ""
         for e in (a.get("errs") or []):
             swallowed = surface_swallowed(e.get("err")) or swallowed
-        r = judge(runs, catches, label=label)
+        # ★2026-09-23（1026番）実測で見つけた嘘：
+        #   Grok・Genspark・Copilot は台帳に blocked=1 と理由まで書いてあるのに、
+        #   過去に投げた跡（out>0）があるせいで上の if を通り抜け、
+        #   「**走った3回 → 取れた0回。動いているのに何も産んでいません**」とだけ出ていた。
+        #   ＝ **壊れているように見えて、本当は「課金・権利が無くて口が閉まっている」**。
+        #   理由を持っているのに出さないのは、黙って飲み込むのと同じ。
+        #   judge() は blocked を渡せば必ず理由を出す。渡していなかっただけ。
+        r = judge(runs, catches, blocked=(a.get("blockedWhy") or "")
+                  if a.get("blocked") else "", label=label)
         if swallowed and not r["red"]:
             r["line"] += "（飲み込まれかけた語：%s）" % swallowed
         rows.append(r)
     return rows
+
+
+# ---------------------------------------------------------------------
+# 台帳に載っていない定期便（＝誰も走った／取れたを見ていないもの）
+#   ★1026番（2026-09-23）実測：8本あった。
+#     kagi_daicho.unlisted_scan() は前から見つけていたが、その結果は
+#     台帳のJSONの奥にしか出ず、hantei の一覧（＝赤の正本）には1行も出ていなかった。
+#     見つけているのに出していない＝これも「黙って飲み込んでいる」。ここで表に出す。
+# ---------------------------------------------------------------------
+def daicho_gai():
+    try:
+        import kagi_daicho
+        rows = kagi_daicho.unlisted_scan()
+    except Exception as e:  # noqa: BLE001
+        return [judge(1, 0, blocked="台帳外の点検が走りません：%s" % e, label="台帳外")]
+    out = []
+    for r in rows:
+        out.append(judge(1, 0, blocked="台帳に載っていません（走ったか・取れたかを誰も見ていない）",
+                         label="台帳外 %s" % r.get("script", "?")))
+    return out
+
+
+# ---------------------------------------------------------------------
+# 見張り先の関所：**起こす引き金が無い先を、見張りに登録させない**
+#   ★969番（アバターの返信拾い・81回走って0件）と977番（外部AI）で
+#     まったく同じ事故が2回起きた＝個人の落ち度ではなく仕組みの不在。
+#     どちらも「投げたつもりで、誰も起こしていなかった」。
+#     穴を塞ぐ（今回の的だけ直す）のではなく、**登録の材料を替える**：
+#     これから先、引き金の書いていない見張り先は通らない。
+# ---------------------------------------------------------------------
+# 実測で確かめた「起こし方」。ここに無いものは、起こせると名乗れない。
+#   jules  … `jules` ラベルを貼る（公式ドキュメント＋実測）
+#   codex  … `@codex` とコメントする（本文に書いても起きない・実測 #450）
+#   devin  … API（別経路）
+#   human  … 人間が読む板。相手が居るので引き金は要らない
+WAKE_KINDS = ("jules", "codex", "devin", "human")
+
+
+def wake_gate(targets):
+    """見張り先の一覧を受け取り、(通った先, 止めた理由の行) を返す。
+
+    targets: [{"repo": "...", "number": 1, "wake": "jules"}, ...]
+    wake が無い／知らない値／起こした跡が無い先は **通さない**。
+    通さなかったことは必ず行として返す（黙って捨てない）。
+    """
+    ok, stopped = [], []
+    for t in (targets or []):
+        key = "%s#%s" % (t.get("repo"), t.get("number"))
+        wake = (t.get("wake") or "").strip().lower()
+        if not wake:
+            stopped.append(judge(1, 0, label="見張り先 %s" % key,
+                                 blocked="起こす引き金が書いてありません"
+                                         "（jules/codex/devin/human のどれかを wake に書く）"))
+            continue
+        if wake not in WAKE_KINDS:
+            stopped.append(judge(1, 0, label="見張り先 %s" % key,
+                                 blocked="知らない起こし方です：%s（実測で確かめたのは %s）"
+                                         % (wake, "・".join(WAKE_KINDS))))
+            continue
+        if wake != "human" and not t.get("wokeAt"):
+            stopped.append(judge(1, 0, label="見張り先 %s" % key,
+                                 blocked="まだ1度も起こしていません（wake=%s の引き金を打つまで、"
+                                         "ここは永久に0件のまま走り続けます）" % wake))
+            continue
+        ok.append(t)
+    return ok, stopped
 
 
 def audit():
@@ -252,6 +403,7 @@ def audit():
     out = [kojo(6)]
     out.extend(suteta_henji())
     out.extend(gaibu_ai())
+    out.extend(daicho_gai())
     try:
         import kagi_daicho  # 同じtools/にある。判定はこちらへ寄せる。
         for row in kagi_daicho.watcher_rows():
