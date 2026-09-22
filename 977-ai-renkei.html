@@ -27,6 +27,9 @@
   .card.green{border-left-color:var(--ok)}
   .card.yellow{border-left-color:var(--amber)}
   .card.red{border-left-color:var(--red);background:rgba(179,38,30,.04)}
+  .card.black{border-left-color:#2b2b2b;background:rgba(0,0,0,.035)}
+  .card.black .state{color:#2b2b2b}
+  .blocked{color:#2b2b2b;font-size:12.5px;margin-top:6px;line-height:1.55}
   .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
              flex-wrap:wrap}
   .name{font-weight:700;font-size:16px}
@@ -80,14 +83,17 @@
 <footer id="foot"></footer>
 </div>
 <script>
-const MARK={green:"🟢",yellow:"🟡",red:"🔴",gray:"⚪"};
+/* black … 「投げても返らないと実測で分かったので、こちらから投げるのをやめた口」。
+   赤（直すべき穴）と分けている。赤は直せるが、黒はたまごさんの判断（課金・向こうの画面の操作）が要る。 */
+const MARK={green:"🟢",yellow:"🟡",red:"🔴",gray:"⚪",black:"⚫"};
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 fetch('status/public/ai_daicho.json?t='+Date.now())
  .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
  .then(d=>{
   document.getElementById('asof').textContent =
     '台帳の時点: '+(d.updatedAt||'').replace('T',' ').slice(0,16)+
-    '　／　合計 投げ '+d.totals.out+'（うち失敗 '+d.totals.outFail+'） 返り '+d.totals.in;
+    '　／　合計 投げ '+d.totals.out+'（うち失敗 '+d.totals.outFail+'） 返り '+d.totals.in+
+    ((d.totals.blocked||0)?'　／　投げずに止めた '+d.totals.blocked:'');
 
   const reds=(d.ai||[]).filter(a=>a.color==='red');
   const b=document.getElementById('banner');
@@ -111,7 +117,11 @@ fetch('status/public/ai_daicho.json?t='+Date.now())
     el.className='card '+a.color;
     let h='<div class="top"><span class="name">'+MARK[a.color]+' '+esc(a.label)+'</span>'+
           '<span class="state">'+esc(a.state)+'</span></div>'+
-          '<div class="counts">投げた '+a.out+' ／ そのうち失敗 '+a.outFail+' ／ 返ってきた '+a['in']+'</div>';
+          '<div class="counts">投げた '+a.out+' ／ そのうち失敗 '+a.outFail+' ／ 返ってきた '+a['in']+
+          ((a.blocked||0)?' ／ <b>投げずに止めた '+a.blocked+'</b>':'')+'</div>';
+    if(a.blocked&&a.blockedWhy){
+      h+='<div class="blocked">⚫ 止めている理由：'+esc(a.blockedWhy)+'</div>';
+    }
     (a.errs||[]).forEach(e=>{
       h+='<div class="err">✕ '+esc(e.err)+'　<span style="color:var(--sub)">'+
          esc((e.at||'').slice(5,16).replace('T',' '))+'</span></div>';

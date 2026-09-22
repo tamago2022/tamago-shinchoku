@@ -200,10 +200,58 @@ def suteta_henji():
     return rows
 
 
+AI_DAICHO = os.path.join(STATUS, "ai_daicho.json")
+
+
+def gaibu_ai():
+    """977番：他社AIとの往復に、同じ規則を当てる。
+
+    走った = 投げた回数 ／ 取れた = 返ってきた回数。
+    **「投げました」だけで緑にしない。**返りの実数が0なら赤。
+
+    2026-09-22の実測で分かったこと（この行を作った理由）：
+      ai-kaigi（公開掲示板）の #4/#5/#6 は、GitHub APIを直接叩いてコメント数0だった。
+      こちらが捨てていたのでも、届いていなかったのでもない。**返事が存在しなかった。**
+      理由＝ai-kaigi に入っている人は tamago2022 ただ1人で、botが1体も居ない。
+      grok / genspark ラベルは貼れるが、それを読みに来るアプリが無い＝ラベルは飾り。
+      → 「投げた回数」だけを見ていると、この穴は永遠に緑のままになる。だからここで数える。
+
+    閉鎖中の口（投げても返らないと実測済みで、投げるのをやめた口）は
+    赤にしない。赤は「直すべき穴」の色で、閉鎖は判断済みの状態だから。
+    ただし黙らせない——理由をそのまま1行で出す。
+    """
+    import json
+    try:
+        with io.open(AI_DAICHO, encoding="utf-8") as f:
+            d = json.load(f) or {}
+    except Exception as e:  # noqa: BLE001
+        return [judge(1, 0, blocked="外部AI台帳が読めません：%s" % e, label="外部AIとの往復")]
+    rows = []
+    for a in (d.get("ai") or []):
+        label = "外部AI %s" % a.get("label", a.get("ai"))
+        runs, catches = int(a.get("out") or 0), int(a.get("in") or 0)
+        if a.get("blocked") and runs == 0:
+            r = judge(0, 0, label=label)
+            r["line"] = "⚫ %s：閉鎖中・投げていません（%s）" % (
+                label, (a.get("blockedWhy") or "理由なし")[:120])
+            rows.append(r)
+            continue
+        # 飲み込まれがちな失敗理由（401/403/no_credential/skip）は拾って表に出す
+        swallowed = ""
+        for e in (a.get("errs") or []):
+            swallowed = surface_swallowed(e.get("err")) or swallowed
+        r = judge(runs, catches, label=label)
+        if swallowed and not r["red"]:
+            r["line"] += "（飲み込まれかけた語：%s）" % swallowed
+        rows.append(r)
+    return rows
+
+
 def audit():
     """全部の緑に同じ規則を当てた結果を返す（リスト）。"""
     out = [kojo(6)]
     out.extend(suteta_henji())
+    out.extend(gaibu_ai())
     try:
         import kagi_daicho  # 同じtools/にある。判定はこちらへ寄せる。
         for row in kagi_daicho.watcher_rows():

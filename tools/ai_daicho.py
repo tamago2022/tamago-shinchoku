@@ -55,6 +55,10 @@ JST = timezone(timedelta(hours=9))
 # githubLogin … その相手がGitHubで名乗る名前。帰りを自動判定するときに使う。
 AI = {
     "codex":    {"label": "ChatGPT(Codex)", "githubLogin": ["chatgpt-codex-connector[bot]", "chatgpt-codex[bot]"]},
+    # ★2026-09-22（977番）追加。たまごさんが「宛先一覧にチャッピーが無い」と言っていた相手。
+    #   Codex（GitHubのbot）とは別人。こちらは **OpenAIのAPIに直接聞く口**で、
+    #   投げたその場で返事が返る（実測2.4〜2.6秒）。GitHubのbotを待たない＝返り0が起きない。
+    "chappy":   {"label": "チャッピー(ChatGPT直)", "githubLogin": []},
     "jules":    {"label": "Gemini(Jules)",  "githubLogin": ["google-labs-jules[bot]"]},
     "devin":    {"label": "Devin",          "githubLogin": ["devin-ai-integration[bot]"]},
     "grok":     {"label": "Grok",           "githubLogin": ["grok", "grok-bot"]},
@@ -68,7 +72,8 @@ for _k, _v in AI.items():
         BY_LOGIN[_l.lower()] = _k
 
 # 「投げたのに返ってこない」とみなすまでの時間（時間）。相手ごとに速さが違う。
-SILENT_HOURS = {"codex": 6, "jules": 6, "devin": 12, "grok": 24, "genspark": 48, "copilot": 6}
+SILENT_HOURS = {"codex": 6, "jules": 6, "devin": 12, "grok": 24, "genspark": 48, "copilot": 6,
+                "chappy": 1}
 DEFAULT_SILENT_HOURS = 24
 
 
@@ -79,7 +84,8 @@ def now_iso():
 def ai_key(name):
     """名札を正規化する。知らない名前は例外にする（黙って別の棚を作らない）。"""
     k = (name or "").strip().lower()
-    alias = {"chatgpt": "codex", "openai": "codex", "gpt": "codex",
+    alias = {"chatgpt": "chappy", "openai": "chappy", "gpt": "chappy",
+             "チャッピー": "chappy", "chappie": "chappy",
              "gemini": "jules", "google": "jules", "xai": "grok"}
     k = alias.get(k, k)
     if k not in AI:
@@ -149,7 +155,7 @@ def summarize():
     per = {}
     for k in AI:
         per[k] = {"ai": k, "label": AI[k]["label"],
-                  "out": 0, "outFail": 0, "in": 0,
+                  "out": 0, "outFail": 0, "in": 0, "blocked": 0, "blockedWhy": "",
                   "lastOutAt": None, "lastInAt": None,
                   "openThreads": [], "errs": [], "state": "未使用", "color": "gray"}
     threads = {}   # thread -> {"ai":…, "outAt":…, "topic":…, "ref":…, "in":0}
@@ -159,6 +165,15 @@ def summarize():
             continue
         d = per[k]
         if r.get("dir") == "out":
+            # ★2026-09-22（977番）：「閉まっていると分かっていて投げなかった」行は
+            #   **投げた回数に数えない。**数えると「投げた>0・返り0＝赤」になり、
+            #   直すべき穴（投げたのに返らない）と、判断済みで投げていない口の区別がつかなくなる。
+            #   たまごさん「返事が来ないからといって投げる回数を増やさない。素材を替える。」
+            #   ＝投げていないことは、投げた回数ではなく『閉鎖』として別に数えるのが正しい。
+            if r.get("blocked"):
+                d["blocked"] += 1
+                d["blockedWhy"] = r.get("err") or ""
+                continue
             d["out"] += 1
             d["lastOutAt"] = r["at"]
             if not r.get("ok"):
@@ -188,7 +203,10 @@ def summarize():
 
     for k, d in per.items():
         overdue = [t for t in d["openThreads"] if t["overdue"]]
-        if d["out"] == 0 and d["in"] == 0:
+        if d["blocked"] and d["out"] == 0 and d["in"] == 0:
+            # 閉鎖中。赤（直すべき穴）ではなく、黒（判断待ち／投げない）として出す。
+            d["state"], d["color"] = "閉鎖中・投げていない（%d回止めた）" % d["blocked"], "black"
+        elif d["out"] == 0 and d["in"] == 0:
             d["state"], d["color"] = "未使用", "gray"
         elif d["outFail"] and d["outFail"] == d["out"]:
             # 投げること自体が全部失敗している
@@ -202,12 +220,16 @@ def summarize():
             d["state"], d["color"] = "双方向◯（ただし行きが%d回失敗）" % d["outFail"], "yellow"
         else:
             d["state"], d["color"] = "双方向◯（投げ%d・返り%d）" % (d["out"], d["in"]), "green"
+        if d["blocked"] and d["color"] != "black":
+            # 過去に実際に投げた分は残しつつ、「今は閉めてあるので回数は増えない」を明記する
+            d["state"] += "／今は閉鎖・投げていない"
         d["errs"] = d["errs"][-5:]
 
     out = {"updatedAt": now_iso(),
            "totals": {"out": sum(d["out"] for d in per.values()),
                       "outFail": sum(d["outFail"] for d in per.values()),
-                      "in": sum(d["in"] for d in per.values())},
+                      "in": sum(d["in"] for d in per.values()),
+                      "blocked": sum(d["blocked"] for d in per.values())},
            "ai": [per[k] for k in AI]}
     tmp = "%s.%d.tmp" % (SUM, os.getpid())
     with io.open(tmp, "w", encoding="utf-8") as f:

@@ -100,18 +100,52 @@ ROUTE = {
         "wake": "@copilot 上のお題をお願いします。",
         "note": "★未実測。@copilotで起きるかは確かめていない。",
     },
-    "grok": {
-        "how": "gh-issue", "repo": PUBLIC_BOARD,
-        "title": "【Grokに聞く】%s",
+    # ★2026-09-22（977番）追加：GitHubのbotを待たずに、その場で返事が返る口。
+    #   なぜ足したか＝実測。たまごさんが言っていた「宛先一覧にチャッピーが無い」はその通りだった。
+    #   Codex（GitHubのbot）とは別人で、経路がまったく違う：
+    #     Codex … Issueを立てて@codexで起こす → botが返すのを待つ（待ち時間がある・枠切れで黙る）
+    #     chappy … OpenAIのAPIに直接聞く → **その場で返る**（実測2.4〜2.6秒・待ちゼロ）
+    #   返ってきた本文は掲示板にも貼るので、後からたまごさんが目で確認できる。
+    "chappy": {
+        "how": "api", "vendor": "openai", "repo": PUBLIC_BOARD,
+        "models": ["gpt-4o", "gpt-4o-mini"],
+        "maxTokens": 2000,
+        "title": "【チャッピー(ChatGPT直)に聞く】%s",
         "labels": [],
-        "head": ("Grokへ。これは公開の掲示板です。ここに書いたものは全世界から読めます。\n"
-                 "この号は Grok への相談です。\n"),
-        "foot": RETURN_RULE +
-                "・Grokはこちらから自動で起こせません。たまごさんがGrokの画面でこのURLを渡します。\n",
-        "note": "★Grokは非公開repoが読めない（たまごさん実測）ので公開掲示板を使う。",
+        "head": "この号はチャッピー（ChatGPTのAPIに直接聞いた分）の記録です。\n",
+        "foot": "",
+        "note": "APIに直接聞くので、投げたその場で返る。GitHubのbotを待たない。",
+    },
+    "grok": {
+        # ★2026-09-22 実測でこの口は閉めた。投げても絶対に返らないと分かったため。
+        #   ① 掲示板経由：ai-kaigi #4 は 16時間以上たってコメント0。GitHub API直叩きで確認。
+        #      理由＝ai-kaigi に入っている人は tamago2022 ただ1人。**botが1体も居ない。**
+        #      grok ラベルは貼れるが、それを見に来るアプリが存在しない＝ラベルは飾り。
+        #   ② API経由（api.x.ai）：鍵はあるが全モデル HTTP 403。サーバの言い分そのまま＝
+        #      「Your newly created team doesn't have any credits or licenses yet」/ team_blocked=true。
+        #      ＝**課金しないと1文字も返らない。**課金はたまごさんの判断（不可逆の1つ）。
+        #   → 投げる回数を増やしても催促を足しても1件も返らない。だから投げない。素材を替える＝chappy。
+        "how": "blocked",
+        "blocked": ("Grokは今どちらの口からも返りません。"
+                    "掲示板(ai-kaigi)はbotが1体も居ないので誰も読みません（GitHub API実測・コメント0）。"
+                    "APIは team_blocked=true / credits無しで403（x.ai実測）。"
+                    "使うにはx.aiのteamへの課金がいります＝たまごさんの判断。"
+                    "代わりに chappy（ChatGPT直）へ投げてください。"),
+        "title": "【Grokに聞く】%s",
+        "repo": PUBLIC_BOARD,
+        "note": "★2026-09-22 閉鎖。課金が入るまで投げない。",
     },
     "genspark": {
-        "how": "gh-issue", "repo": PUBLIC_BOARD,
+        # ★2026-09-22 実測でこの口も閉めた。#5 は16時間以上たってコメント0（GitHub API直叩き）。
+        #   起こす手段がこちらに一つも無い以上、投げるのは「投げた回数」を水増しするだけ。
+        "how": "blocked",
+        "blocked": ("Gensparkはこちらから起こす手段がありません（実測）。"
+                    "api.genspark.ai/docs.genspark.ai は名前解決せず、www.genspark.ai/api/mcp は403。"
+                    "掲示板(ai-kaigi)に @genspark-ai-developer と書いても無反応、"
+                    "#5 は16時間以上コメント0（GitHub API実測）。"
+                    "開けるとしたら Genspark側の画面でWorkflowのスケジュールを1つ仕込む道だけ＝"
+                    "たまごさんの1回の操作がいります。代わりに chappy（ChatGPT直）へ投げてください。"),
+        "repo": PUBLIC_BOARD,
         "title": "【Gensparkに頼む】%s",
         "labels": [],
         "head": ("@genspark-ai-developer この号はあなたへの依頼です。\n"
@@ -215,6 +249,20 @@ def nageru(ai, topic, body="", n=None, dry_run=False, wait_sec=240):
                 "how": r["how"], "repo": repo, "title": title, "body": full,
                 "note": r.get("note", "")}
 
+    # ---- 閉まっている口（投げても返らないと実測済み）----
+    # ★たまごさん「返事が来ないからといって投げる回数を増やさない。素材を替える。」
+    #   なので **投げずに止める**。止めたことは台帳に ok=false で残す（黙って飲み込まない）。
+    if r["how"] == "blocked":
+        err = "投げませんでした（この口は閉まっています）: " + r.get("blocked", "")
+        # blocked=True … 台帳側で「投げた回数」に数えないための印（→ ai_daicho.summarize）
+        ai_daicho.append("out", ai, topic=topic, ok=False, err=err, extra={"blocked": True})
+        ai_daicho.summarize()
+        return {"ok": False, "error": err, "ai": ai, "blocked": True}
+
+    # ---- APIに直接聞く（その場で返る）----
+    if r["how"] == "api":
+        return _nageru_api(ai, r, topic, (body or topic).strip(), title, n, wait_sec)
+
     # ---- Devin だけは経路が違う ----
     if r["how"] == "devin":
         return _nageru_devin(ai, topic, (body or topic).strip() + r["foot"], n)
@@ -254,6 +302,86 @@ def nageru(ai, topic, body="", n=None, dry_run=False, wait_sec=240):
     ai_daicho.summarize()
     return {"ok": True, "ai": ai, "label": label, "thread": thread, "woke": woke,
             "number": res.get("number"), "url": res.get("url"), "note": r.get("note", "")}
+
+
+def _nageru_api(ai, r, topic, body, title, n=None, wait_sec=240):
+    """★977番：GitHubのbotを待たずに、APIへ直接聞いてその場で返事を受け取る口。
+
+    なぜこの形にしたか（2026-09-22の実測に基づく）：
+      掲示板(ai-kaigi)に投げる形は、**向こう側に読む人も機械も居なかった**。
+      16時間以上たってコメント0。こちらが捨てていたのではなく、返事が存在しなかった。
+      待つ相手を替えるのではなく、**待たない形に素材を替える**のがこの関数。
+
+    台帳の数え方：
+      投げた＝out を1行。返ってきた＝in を1行。**同じ呼び出しの中で両方書く。**
+      失敗しても out は必ず書く（飲み込まない）。
+      返事の本文は掲示板にも1件貼るので、たまごさんが後から目で確認できる。
+    """
+    vendor = r.get("vendor", "openai")
+    ai_daicho.append("out", ai, topic=topic, ref="", ok=True)
+    try:
+        # ★モデルの指定を省略しない（2026-09-22の実測でここを踏んだ）。
+        #   gaibu_kuchi の既定は安い順なので gpt-4o-mini が先に当たる。実際に返ってきた文は
+        #   自分のモデル名を「GPT-4」と名乗り、出典の怪しい事故例を断定で書いてきた。
+        #   ＝線は通っているのに、中身が使えない。憲法11（事実／推測を混ぜない）に触る。
+        #   なので考える相手にはgpt-4oを先頭に置く。gpt-5系は「考える分」でトークンを
+        #   使い切って本文が空で返ることがあるため（実測：4000でようやく116字）、先頭には置かない。
+        res = gkuchi.ask(vendor, [{"role": "user", "content": body}], timeout=120,
+                         models=r.get("models"), max_tokens=r.get("maxTokens"))
+    except Exception as e:
+        err = "%s: %s" % (type(e).__name__, e)
+        ai_daicho.append("out", ai, topic="返事の受け取り（%s）" % topic, ok=False, err=err)
+        ai_daicho.summarize()
+        return {"ok": False, "error": err, "ai": ai}
+
+    if not res.get("ok"):
+        # ★no_credential / 401 / 403 / skip を飲み込まない。理由をそのまま残す。
+        err = str(res.get("error") or "理由不明")
+        ai_daicho.append("out", ai, topic="返事の受け取り（%s）" % topic, ok=False, err=err)
+        ai_daicho.summarize()
+        return {"ok": False, "error": err, "ai": ai}
+
+    text = (res.get("text") or "").strip()
+    if not text:
+        err = "返事は返ったが本文が空でした（model=%s）" % res.get("model")
+        ai_daicho.append("out", ai, topic="返事の受け取り（%s）" % topic, ok=False, err=err)
+        ai_daicho.summarize()
+        return {"ok": False, "error": err, "ai": ai}
+
+    # 掲示板に「お題＋返事」を1件残す。返事そのものが公開に出るので、ここでも秘密検査を通す。
+    repo = r.get("repo", PUBLIC_BOARD)
+    ttl = r["title"] % topic
+    if n:
+        ttl = "%s（%s号）" % (ttl, n)
+    record = "".join([
+        "<!-- tamago-factory -->\n", r.get("head", ""), "\n",
+        "【お題】\n", body, "\n\n",
+        "【返事】（%s・%s秒）\n" % (res.get("model") or vendor, res.get("seconds") or 0), text, "\n",
+    ])
+    url, number = "", None
+    hits = scan_secrets(ttl + "\n" + record) if repo == PUBLIC_BOARD else []
+    if hits:
+        ai_daicho.append("out", ai, topic="掲示板への記録（%s）" % topic, ok=False,
+                         err="公開掲示板への記録を止めました: " + " / ".join(hits))
+    else:
+        gres = _run_factory("keijiban", {"repo": repo, "action": "issue",
+                                         "title": ttl, "body": record,
+                                         "labels": r.get("labels") or []}, wait_sec=wait_sec)
+        if gres.get("ok"):
+            url, number = gres.get("url") or "", gres.get("number")
+        else:
+            # 掲示板に残せなくても、返事は返っている。数えるのは返事の方。残せなかったことは別に残す。
+            ai_daicho.append("out", ai, topic="掲示板への記録（%s）" % topic, ok=False,
+                             err="返事は返りましたが掲示板に残せませんでした: %s" % (gres.get("error") or "理由不明"))
+
+    thread = _thread_key(repo, number) if number else ("api:%s" % vendor)
+    ai_daicho.append("in", ai, thread=thread, topic=topic, ref=url, ok=True,
+                     who=(res.get("model") or vendor),
+                     extra={"chars": len(text)})
+    ai_daicho.summarize()
+    return {"ok": True, "ai": ai, "label": ai_daicho.AI[ai]["label"], "thread": thread,
+            "url": url, "number": number, "model": res.get("model"),
+            "text": text, "note": r.get("note", "")}
 
 
 def _nageru_devin(ai, topic, body, n=None):
@@ -298,7 +426,8 @@ def _nageru_devin(ai, topic, body, n=None):
 
 def main():
     ap = argparse.ArgumentParser(description="他のAIに仕事を投げる1本の口")
-    ap.add_argument("ai", nargs="?", help="codex / jules / grok / genspark / devin / copilot")
+    ap.add_argument("ai", nargs="?",
+                    help="chappy / codex / jules / devin / copilot（grok・gensparkは閉鎖中）")
     ap.add_argument("topic", nargs="?", help="お題（1行）")
     ap.add_argument("--body", default="", help="詳しい依頼文")
     ap.add_argument("--body-file", default="", help="依頼文をファイルから読む")
