@@ -1,0 +1,102 @@
+<!doctype html><html lang="ja"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Devinに払う価値があるか（実測 2026-09-24）</title>
+<style>
+body{font-family:-apple-system,"Hiragino Sans",sans-serif;max-width:780px;margin:0 auto;padding:24px 18px 80px;line-height:1.85;color:#1b1b1b;background:#fbfaf7}
+h1{font-size:22px;border-bottom:3px solid #1b1b1b;padding-bottom:8px}
+h2{font-size:17px;margin-top:34px;border-left:6px solid #d33;padding-left:10px}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+th,td{border:1px solid #ccc;padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f0ede6}
+.ng{color:#c00;font-weight:700}.ok{color:#0a7;font-weight:700}
+code{background:#eee;padding:1px 5px;border-radius:3px;font-size:13px}
+.box{background:#fff;border:2px solid #1b1b1b;padding:14px 16px;margin:18px 0}
+small{color:#666}
+</style>
+<h1>Devinに払う価値があるか（実測 2026-09-24 06:47 JST）</h1>
+
+<div class="box">
+<b>今日Devinには1本も投げられない。</b>セッション作成APIが
+<code>403 {"detail":"Your organization has a billing error. Error: out_of_quota"}</code>を返す（＝残高切れ）。<br>
+<b>金は1円も出ていない。</b>予算の栓（<code>tools/yosan.py</code>）は1本ぶん94円だけ開けて、すぐ0円に戻した。
+</div>
+
+<h2>① 今やらせていること</h2>
+<p class="ng">0本。</p>
+<p>セッション総数26本、すべて <code>finished</code>。いちばん新しいのは <b>2026-09-22 00:27</b>。
+＝2日間なにも投げていない。<small>（<code>GET /v1/sessions?limit=100</code> http=200）</small></p>
+
+<h2>② 今まで何をやったか</h2>
+<table>
+<tr><th></th><th>本数</th><th>実測</th></tr>
+<tr><td>投げた</td><td>26本</td><td>sessions API</td></tr>
+<tr><td>PRが返ってきた</td><td>5本（19.2%）</td><td>各セッションの <code>pull_request</code> を1本ずつ読んだ</td></tr>
+<tr><td><b>mainに入った</b></td><td><b>3本</b></td><td><code>git log origin/main --grep</code> 実測</td></tr>
+<tr><td><b>本番で確認できた</b></td><td class="ng"><b>1本</b></td><td>下記</td></tr>
+</table>
+<table>
+<tr><th>PR</th><th>main</th><th>本番</th></tr>
+<tr><td>#425 FeedbackDoorを最下部に一本化</td><td class="ok">入った <code>0d7e9905</code></td><td class="ok">出ている（本番HTMLに痕跡・200）</td></tr>
+<tr><td>#424 バッジ寸法を min() に直す</td><td class="ok">入った <code>9e2a58de</code></td><td>中身がCSS。目で見ないと分からない＝<b>未確認</b></td></tr>
+<tr><td>#426 GPT Live lab ページ</td><td class="ok">入った <code>21d9a760</code></td><td class="ng">出ていない（<code>/lab/gpt-live</code> は404）</td></tr>
+<tr><td>#448 トップページの速度原因調査</td><td class="ng">入っていない</td><td class="ng">—</td></tr>
+<tr><td>#455 トップページの重さ調査</td><td class="ng">入っていない</td><td class="ng">—</td></tr>
+</table>
+<p>＝ <b>26本投げて、補給所を開いて分かる形で出たのは1本。</b>残り21本はPRすら返さず、調べて喋って終わっている。</p>
+
+<h2>③ これからやらせること（3本・目に見えるものだけ）</h2>
+<p>依頼文は3本とも書いてある。<b>残高が入り次第、この順で1本ずつ投げる。</b></p>
+<ol>
+<li><b>補給所が軽くなる</b>（約1.37MB → 1MB以下、LCP 3.3秒 → 2.5秒以下）</li>
+<li><b>投げ込み箱が本番で使える</b>（棚のボタンを押しても何も起きない状態を直す）</li>
+<li><b>曲カードの水道水コピーを本番で置き換える</b></li>
+</ol>
+<p>3本とも本文に入れる文言：<br>
+<code>返事を書くな。質問をするな。終わりの合図はPull RequestのURLだけ。</code><br>
+<code>完了の条件：本番で開けること。pushだけでは完了ではない。</code><br>
+<code>触るな：棚のデータ、たまごさんのファイル。</code></p>
+
+<h2>④ ごきげん補給所の何が変わったか</h2>
+<div class="box">
+<b>Devinのおかげで変わったと言えるのは1つだけ。</b>
+「ごきげんの扉（FeedbackDoor）がページの最下部に1本化された」（#425・9/18）。
+本番 <a href="https://joy-relief-station.lovable.app/">https://joy-relief-station.lovable.app/</a> は200で、この痕跡がある。<br><br>
+<b>それ以外は、開いても分からない。</b>重さも投げ込み箱もコピーも、Devinは触れていない。
+</div>
+
+<h2>⑤ 1件あたりいくらか</h2>
+<table>
+<tr><th>項目</th><th>実測</th></tr>
+<tr><td>今月いくら払ったか</td><td class="ng">取れない。<code>/v1/enterprise/consumption</code> は http=403「Contact support to enable the consumption API」。<code>/v1/usage</code>・<code>/v1/billing</code>・<code>/v1/consumption</code> は404。手元の帳簿にDevinの円は0件</td></tr>
+<tr><td>手書きで残っている唯一の数字</td><td>$8.85＝1,391円（9/18〜9/20の15本・<code>status/1050_hikitsugi_soto_hatarakite.md:29</code>）※APIで裏が取れない</td></tr>
+<tr><td>その数字で割ると</td><td>1,391円 ÷ 本番に出た1件 ＝ <b>1件 1,391円</b></td></tr>
+<tr><td>「稼働率6.7%」</td><td class="ng">この数字の根拠になる計算がrepo内に1件も無い。使わない</td></tr>
+<tr><td>Jules</td><td>0円・別マシン</td></tr>
+</table>
+
+<h2>⑥ 先に、こちらの使い方の失敗</h2>
+<ol>
+<li><b>依頼文に「返事を書くな。終わりの合図はPRのURLだけ」を入れていなかった</b> → 21本が喋って <code>finished</code> で死んだ</li>
+<li><b>まとめて投げていた</b>（9/20 01:33〜01:34に3本同時、9/20 09:10〜09:13に3本同時）</li>
+<li><b>返ってきたPRを受け取っていない</b>（#448・#455はPRのまま2日以上放置、mainに入っていない）</li>
+<li><b>mainに入れたのに公開を押していない</b>（#426は9/18にmainへ入ったのに本番は404）</li>
+<li><b>向いていない仕事を投げていた</b>（「〜の原因特定」「〜の棚卸し」＝答えが決まっていない調べもの。この形の仕事は1本もPRを返していない）</li>
+<li><b>3時間で交代させていない</b>（投げっぱなし）</li>
+</ol>
+<p>他の外の働き手も同じ疑いがある：<br>
+<b>Jules</b>＝0円なのに投げている本数が少ない（使い切れていない）。<br>
+<b>Genspark</b>＝成果を検品に通した記録が無い（測れていない）。</p>
+
+<h2>判定</h2>
+<div class="box">
+<b>まだ判定できない。こちらの使い方が悪かった。</b><br><br>
+26本のうち21本は「返事を書くな」を入れていない依頼文で殺している。
+これはDevinの能力ではなくこちらの失敗。<br><br>
+ただし<b>今日は判定のしようもない</b>。残高が切れていて1本も立たないから。<br><br>
+<b>たまごさんが押すところ（こちらは押さない）：</b>
+<a href="https://app.devin.ai/settings/billing">https://app.devin.ai/settings/billing</a><br>
+足すなら「何本ぶん・いくら」を先に決める。上の3本を試すだけなら <b>3本＝約264円</b>。<br>
+この3本のうち本番に出たのが0本なら、そこで切る。
+</div>
+<p><small>実測ログ（Mac）：<code>status/mac_jobs/done/1a_devin_jissoku.out</code>／<code>1b_devin_kane.out</code>／<code>0001_devin_pr.out</code>／<code>0002_devin_nage.out</code>／<code>0006_merged_local.out</code>／<code>0008_honban2.out</code></small></p>
+</html>

@@ -134,7 +134,10 @@ def judge(runs, catches, blocked="", label=""):
 # ★「pushした＝出た」と数えない。本番の x-deployment-id の**UUIDが変わるまで**は
 #   「出ていない」。ごきげん補給所は GitHub Pages ではなく Lovable配信で、
 #   mainに入れただけでは本番は古いまま（2026-09-23 に4回踏んだ）。
-KOHYOU_MATIGIRE_SEC = 1800   # mainが動いてから30分、本番が動かなければ赤
+# ★1055番（2026-09-24）30分→10分に縮めた。実測で「押す→出る」は1〜5分で終わっている
+#   （status/kohyou_osu.log の09-24の7回：平均3分06秒／最長5分14秒）。30分待つ設計は、その差のぶんだけ
+#   本番を古いままにしていた。押すのは無料なので、待つ理由が無い。
+KOHYOU_MATIGIRE_SEC = 600    # mainが動いてから10分、本番が動かなければ赤
 
 
 def kohyou_han(status=0, error="", deploy_key="", prev_deploy_key="",
@@ -171,8 +174,12 @@ def kohyou_han(status=0, error="", deploy_key="", prev_deploy_key="",
 # ★1041番：赤になったとき「公開ボタンを押してよいか」の規則。**ここだけ**に書く。
 #   押す係（tools/kohyou_osu.py）は測って、この関数に渡すだけ。
 #   見る係（tools/kohyou_kanshi.py）は押さない。押す係は判定を書かない。
-KOHYOU_OSU_AIDA_SEC = 900      # 一度押したら15分は押し直さない
-KOHYOU_OSU_HI_JOUGEN = 12      # 1日に押してよい回数の上限（押すのは無料。暴走だけ止める）
+KOHYOU_OSU_AIDA_SEC = 600      # 一度押したら10分は押し直さない
+# ★1055番（2026-09-24）12→96。実測：09-23は9回・09-24は06:33までで既に7回押している。
+#   上限12だと昼前に使い切り、そのあと本番は**その日いっぱい古いまま**になる。
+#   押すのは無料（deployは全プラン無料）なので、上限は「暴走を止める柵」であって
+#   「1日の配給」ではない。10分に1回×24時間＝96が物理的な上限なので、そこに合わせる。
+KOHYOU_OSU_HI_JOUGEN = 96      # 1日に押してよい回数の上限（押すのは無料。暴走だけ止める）
 
 
 def kohyou_osu_han(hantei="", machi_sha="", now=0.0, last_press_at=0.0,

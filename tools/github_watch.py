@@ -779,6 +779,27 @@ def check_repo(repo, token, st, budget):
                 # こちらが捨てたのか永久に区別できない。誰の何通かを残す。
                 _drop(st, "閉じた号への返信：#%s %sさん" % (num, login))
                 continue
+            # ★1055番（2026-09-24）同じ号にもう発車待ちの票があるなら、**新しい票を作らない。**
+            #   その票の本文の末尾に返事を1通ぶん足すだけにする。
+            #   実測：この日の発車待ち197件のうち69件がGitHubの号ひもつきで、
+            #   #446が6件・#390が5件・#447が5件・#431が4件と、同じ号の重複で山になっていた。
+            #   たまごさん「Jules/Devinの返事が溜まって処理されない」の本体がこれ。
+            #   1通も捨てない（本文に必ず入る）が、仕事票は号ひとつにつき1枚に保つ。
+            try:
+                if TOOLS not in sys.path:
+                    sys.path.insert(0, TOOLS)
+                import gaibu_henji_matome as _matome
+                _saki = _matome.fold(
+                    repo, num,
+                    "%sさんの返信（%s）" % (login, _jst_hm(c.get("created_at") or "")),
+                    c.get("body") or "", c.get("html_url") or "")
+            except Exception as _e:
+                _saki = None
+                log("まとめに失敗（新しい票を作ります）: %r" % (_e,))
+            if _saki:
+                log("%s #%s へのコメント → %s番の票に足した（新しい票は作らない）"
+                    % (repo, num, _saki))
+                continue
             status, msg = queue_add(
                 _instruction(repo, "comment", num, idata.get("title") or "",
                              c.get("html_url") or "",

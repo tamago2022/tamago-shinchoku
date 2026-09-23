@@ -62,7 +62,10 @@ WATCH = [
 ]
 
 INTERVAL_SEC = 300      # 心臓は15秒おきに呼ぶので、実際に叩くのは5分に1回だけ
-MATIGIRE_SEC = 1800     # mainが動いてから30分、本番が動かなければ赤
+# ★1055番（2026-09-24）ここに数字を持たせていたせいで、規則が2か所になっていた。
+#   tools/hantei.py の KOHYOU_MATIGIRE_SEC を 30分→10分にしても、この係は30分のまま
+#   「黄（30分で赤）」を出し続け、押す係は永久に押さなかった。規則は1か所だけにする。
+MATIGIRE_SEC = None     # = tools/hantei.py の KOHYOU_MATIGIRE_SEC を使う
 UA = "tamago-kohyou-kanshi/1.0 (+1038)"
 
 

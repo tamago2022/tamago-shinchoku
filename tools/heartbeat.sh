@@ -354,6 +354,12 @@ while :; do
   #   ★たまごさんにしか押せないもの（鍵・本人確認・金銭・取り消せない公開）だけを載せる。
   #   こちらで進められるものを載せた時点でこの紙の負け。中で1日1回に間引く（status/.kakunin_machi_at）。
   tick_every 240 && ( python3 "$REPO/tools/kakunin_machi.py" >> "$REPO/status/kakunin_machi.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1058番）Gensparkへ自動で流す配管。たまごさん「俺が水汲みをやらないと動かせない」
+  #   ★サンドボックスからは gsk に手が届かない（実測）。Macで常に動いているのはこの心臓だけ。
+  #   ★番号が選ばれていないあいだは、ファイルを1枚読んで即戻る＝**通信0・クレジット0**。
+  #     選ばれて初めて流れ始める。中で60秒に間引く＋1日の上限（10/4までの日割り）で止まる。
+  #   投げっぱなしにして心臓は待たない。新しい常駐も定期タスクも作らない。
+  tick_every 4 && ( python3 "$REPO/tools/genspark_nagashi.py" --quiet >> "$REPO/status/gsk/nagashi.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

@@ -577,6 +577,54 @@ def find_duplicate_open_siblings(key, exclude_n=None):
     return out
 
 
+def auto_close_recovered(check_items, do_queue=True):
+    """★1055番（2026-09-24）自動検知の「戻ったら閉じる」半分。
+
+    実測（status/shikumi.json 06:29）：
+      Lovable公開 alive ／ 現在地の紙 alive ／ 憲法点検 alive ／ AI検品 slow
+      なのに、その4つが出したチケット #875・#946・#978・#998 は開いたままで、
+      現在地の紙の**赤に9行のうち4行**が「もう直っている赤」だった。
+
+    この見張りは「壊れたら立てる」しか持っておらず、「戻ったら畳む」が無かった。
+    だから赤が減らず、本物の赤が埋もれる。ここで戻った分を閉じる。
+
+    閉じる条件は、チケット本文が自分で書いている条件そのまま：
+      「直したら次回の点検で alive/slow になっていることを確認してください」
+    ＝ alive か slow に戻っていれば、そのチケットの用は済んでいる。
+
+    ★勝手に消さない。status を done にして doneNote に理由を書くだけ。
+    """
+    if not do_queue:
+        return []
+    import command_ingest as ci
+    modoshita = {it["key"]: it for it in check_items if it["verdict"] in ("alive", "slow")}
+    if not modoshita:
+        return []
+    tojita = []
+    with ci.queue_lock():
+        q = ci._load_queue()
+        for it in q.get("items") or []:
+            key = it.get("shikumiCheckKey")
+            if not key or key not in modoshita:
+                continue
+            if it.get("status") not in OPEN_QUEUE_STATUSES:
+                continue
+            m = modoshita[key]
+            it["status"] = "done"
+            it["urgent"] = False
+            it["doneNote"] = ("【自動検知】%s が %s に戻ったので自動で閉じました（1055番）。%s"
+                              % (m["name"], m["verdict"], m["howMeasured"]))
+            it["doneAt"] = now_jst().isoformat()
+            tojita.append({"n": it.get("n"), "key": key,
+                           "name": m["name"], "verdict": m["verdict"]})
+        if tojita:
+            q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+            ci._save_queue(q)
+    for t in tojita:
+        _append_self_repair_log(t["key"], t["n"], "auto_closed_recovered")
+    return tojita
+
+
 def auto_queue_fix(item, do_queue=True):
     key = item["key"]
     if not do_queue:
@@ -676,12 +724,6 @@ def build(do_queue=True):
     with ci.queue_lock():
         q = ci._load_queue()
         items = q.get("items") or []
-        ledger = update_waiting_since(items)
-        escalations, red_lines_stale, changed = compute_waiting_escalations(items, ledger)
-        if changed:
-            q["items"] = items
-            q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
-            ci._save_queue(q)
 
     check_items = [
         check_heartbeat(),
@@ -697,6 +739,21 @@ def build(do_queue=True):
         check_self(),
     ]
 
+    # ★1055番：先に「戻ったものが出したチケット」を畳む。畳んでから数えないと、
+    #   もう直っている件が「176時間waitingのまま放置」の赤として出続ける。
+    tojita = auto_close_recovered(check_items, do_queue=do_queue)
+
+    # 畳んだあとの queue で、放置の赤を数え直す（順番が命）
+    with ci.queue_lock():
+        q = ci._load_queue()
+        items = q.get("items") or []
+        ledger = update_waiting_since(items)
+        escalations, red_lines_stale, changed = compute_waiting_escalations(items, ledger)
+        if changed:
+            q["items"] = items
+            q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+            ci._save_queue(q)
+
     dead_items = [it for it in check_items if it["verdict"] == "dead"]
     queued = [r for r in (auto_queue_fix(it, do_queue=do_queue) for it in dead_items) if r]
 
@@ -709,6 +766,7 @@ def build(do_queue=True):
         "items": check_items,
         "deadCount": len(dead_items),
         "queuedFixes": queued,
+        "autoClosedRecovered": tojita,
         "waitingEscalations": escalations,
         "redFlags": red_flags,
     }
