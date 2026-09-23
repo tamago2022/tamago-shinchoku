@@ -37,6 +37,7 @@ ALLOWED = {
     "queue_cancel", "queue_undo_cancel",  # 2026-09-09（677番）：進捗表の「取り消し」ボタンがここに無くて弾かれていた
     "queue_urgent",  # 793番（2026-09-14）：🔥すぐ見たいトグル
     "nagekomi", "nagekomi_shiji",  # 1036番：投げ込み箱（URL1本＋一言／後からまとめて喋る振り分け）
+    "kagi_install",  # 1041番：Supabaseの鍵の受け口。★値は cmd["kagi"]。target に入れない（下のlogがtargetを書く）
     "priority_set", "resume", "stop", "close_app", "handoff", "launch_pause", "launch_resume", "launch_cap", "git_unlock", "push_unlock",
 }
 ORIGIN = "https://tamago2022.github.io"

@@ -371,6 +371,20 @@ def find_write_key(diag):
     if not url:
         return None, None, None, where
     best = (key, keyname, where, 5)
+
+    # ★1041番：たまごさんが画面から貼った service_role の鍵は、公開リポジトリの外
+    #   （~/.tamago/supabase_service_role・権限600・git管理外）に置く。
+    #   在れば一番強い鍵として採る。値はここから一歩も外へ出さない。
+    _kp = os.path.expanduser("~/.tamago/supabase_service_role")
+    if os.path.exists(_kp):
+        try:
+            _v = io.open(_kp, encoding="utf-8").read().strip()
+        except Exception:
+            _v = ""
+        if _v:
+            diag.append("~/.tamago/supabase_service_role あり（貼られた鍵を使う）")
+            best = (_v, "SUPABASE_SERVICE_ROLE_KEY", "~/.tamago/supabase_service_role", -1)
+
     rank = {"SERVICE_ROLE": 0, "SERVICE": 1, "SECRET": 2, "PUBLISHABLE": 4, "ANON": 4}
     for rel in nippou.ENV_RELS:
         p = os.path.join(nippou.JRS, rel)

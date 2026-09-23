@@ -168,6 +168,45 @@ def kohyou_han(status=0, error="", deploy_key="", prev_deploy_key="",
     return {"hantei": h, "riyuu": why, "red": h == "赤"}
 
 
+# ★1041番：赤になったとき「公開ボタンを押してよいか」の規則。**ここだけ**に書く。
+#   押す係（tools/kohyou_osu.py）は測って、この関数に渡すだけ。
+#   見る係（tools/kohyou_kanshi.py）は押さない。押す係は判定を書かない。
+KOHYOU_OSU_AIDA_SEC = 900      # 一度押したら15分は押し直さない
+KOHYOU_OSU_HI_JOUGEN = 12      # 1日に押してよい回数の上限（押すのは無料。暴走だけ止める）
+
+
+def kohyou_osu_han(hantei="", machi_sha="", now=0.0, last_press_at=0.0,
+                   last_press_sha="", press_count_today=0, akirameta_sha="",
+                   phase="", aida_sec=None, hi_jougen=None):
+    """公開ボタンを押すか。戻り値: dict(osu=bool, riyuu=str)
+
+    引数は**測った事実だけ**：
+      hantei            … 見る係の判定（赤/黄/青）
+      machi_sha         … まだ本番に出ていないコミット
+      phase             … 押した直後の確かめ待ちなら "verifying"
+      akirameta_sha     … 押しても出なかったコミット（同じ相手に何度も押さない）
+    """
+    aida = int(aida_sec or KOHYOU_OSU_AIDA_SEC)
+    jougen = int(hi_jougen or KOHYOU_OSU_HI_JOUGEN)
+    if phase == "verifying":
+        return {"osu": False, "riyuu": "さっき押したところ。出たかを確かめている最中です"}
+    if hantei != "赤":
+        return {"osu": False, "riyuu": "赤ではないので押しません（今は%s）" % (hantei or "不明")}
+    if not machi_sha:
+        return {"osu": False, "riyuu": "本番が叩けない種類の赤です。公開を押しても直りません"}
+    if akirameta_sha and akirameta_sha == machi_sha:
+        return {"osu": False,
+                "riyuu": "%s では既に押したのに出ませんでした。もう押さず、赤のまま人を呼びます"
+                         % machi_sha}
+    if press_count_today >= jougen:
+        return {"osu": False, "riyuu": "今日はもう%d回押しました（上限）。赤のまま残します" % jougen}
+    machi = int(now - last_press_at) if last_press_at else aida + 1
+    if machi < aida:
+        return {"osu": False, "riyuu": "%d分前に押したばかり（あと%d分待つ）"
+                                       % (machi // 60, (aida - machi) // 60 + 1)}
+    return {"osu": True, "riyuu": "赤で、%s がまだ出ていないので公開を押します" % machi_sha}
+
+
 def tally(prev, run_at, caught_at, blocked=""):
     """走った／取れたの数え方。**この1か所にしか書かない。**
 

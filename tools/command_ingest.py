@@ -1936,6 +1936,71 @@ def auth_install_token(_target=None):
 
 
 
+def kagi_install(cmd):
+    """★1041番：たまごさんがSupabaseの画面からコピーした service_role の鍵を受け取る。
+
+    **値はどこにも残さない。**
+      - `target` には入れさせない（relay_server が target をログに書くため。★ここが要）
+      - 受け取ったら ~/.tamago/supabase_service_role（600・git管理外・share/の外）へ入れるだけ
+      - 戻す文にも、ログにも、画面にも、値も先頭数文字も出さない
+    置いたあと、その場で**捨て行を1つ入れて必ず消す**下見をして、通ったかだけを返す。
+    """
+    v = (cmd.get("kagi") or "").strip()
+    if not v:
+        return "failed", "鍵が空です"
+    if len(v) < 30 or (" " in v) or ("\n" in v):
+        return "failed", "鍵の形をしていません（長さ%d文字）。もう一度コピーしてください" % len(v)
+
+    # 読み取り専用の鍵を間違えて貼ったときは、置かずにその場で止める
+    if v.startswith("eyJ"):
+        try:
+            import base64 as _b64
+            seg = v.split(".")[1]
+            seg += "=" * (-len(seg) % 4)
+            role = json.loads(_b64.urlsafe_b64decode(seg.encode()).decode("utf-8", "replace")).get("role")
+        except Exception:
+            role = None
+        if role and role != "service_role":
+            return "failed", ("これは「%s」の鍵です（読み取り専用）。"
+                              "service_role と書いてある方をコピーしてください" % role)
+    elif not v.startswith("sb_secret_"):
+        return "failed", "service_role（または sb_secret_ で始まる鍵）ではないようです"
+
+    d = os.path.expanduser("~/.tamago")
+    os.makedirs(d, exist_ok=True)
+    p = os.path.join(d, "supabase_service_role")
+    with io.open(p, "w", encoding="utf-8") as f:
+        f.write(v)
+    os.chmod(p, 0o600)
+    del v
+
+    # その場で下見（入れて、必ず消す）。通ったかどうかだけを返す。
+    try:
+        sys.path.insert(0, os.path.join(REPO, "tools"))
+        import tana as _tana
+        import nagekomi_shelf as _ns
+        diag = []
+        url, key, keyname, where = _tana.keys(diag)
+        if not url:
+            return "done", "鍵は置きました。ただしSupabaseのURLが見つかりません（%s）" % where
+        shelf_id = ""
+        try:
+            _st, rows = _tana._req(url, key, "/rest/v1/admin_shelf_picks?select=shelf_id&limit=1")
+            shelf_id = (rows or [{}])[0].get("shelf_id") or ""
+        except Exception:
+            pass
+        r = _ns.kagi_shirabe(shelf_id)
+        dk = r.get("dekita") or {}
+        ok = dk.get("admin_stock INSERT") == "通った" and (
+            not shelf_id or dk.get("admin_shelf_picks INSERT") == "通った")
+        msg = "／".join("%s：%s" % (k, val) for k, val in dk.items())
+        if ok:
+            return "done", "通りました。これで投げ込み箱から棚まで自動で入ります（%s）" % msg
+        return "failed", "鍵は置きましたが、まだ入れられません（%s）" % msg
+    except Exception as e:
+        return "done", "鍵は置きました。下見だけ走りませんでした（%s）" % type(e).__name__
+
+
 def auth_token_check(_target=None):
     """トークンが正しく置けているか、中身を出さずに確かめる。"""
     p = os.path.expanduser("~/.tamago/claude_token")
@@ -1970,6 +2035,9 @@ def _process_other(action, cmd):
             return ("done" if r.get("ok") else "failed"), r.get("message", "")
         except Exception as e:
             return "failed", "投げ込み箱が受け取れませんでした：%s" % e
+    # 1041番：鍵の受け口。★値は cmd["kagi"]。target には入れない（target はログに出るため）
+    if action == "kagi_install":
+        return kagi_install(cmd)
     if action == "close_app":
         return close_app(target)
     if action == "resume":
