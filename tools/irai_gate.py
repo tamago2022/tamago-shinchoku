@@ -232,21 +232,67 @@ def kuchi_genspark(bun):
         return {"who": "genspark", "yes": None, "why": "",
                 "error": "残高%.3fがこの門の床%.0fを割っています＝叩きません" % (mae, CREDIT_YUKA)}
     try:
-        # ★--task_name は必須（実測：無いと rc=1 "Missing required option: --task_name"）
+        # ★--task_name と --instructions の2つが必須（実測・2026-09-24。順に出た
+        #   "--task_name" → "--instructions" → "--query"）。3つとも要る。
         rc, so, se = _run([GSK, "task", "create", "super_agent",
                            "--task_name", "依頼の門",
-                           "--query", bun, "--output", "json"], timeout=900)
+                           "--instructions", bun, "--query", TOI,
+                           "--output", "json"], timeout=900)
     except subprocess.TimeoutExpired:
         return {"who": "genspark", "yes": None, "why": "", "error": "時間切れ（10分）"}
-    ato = gsk_zandaka()
-    tsukatta = None if (mae is None or ato is None) else round(mae - ato, 3)
     if rc != 0:
+        ato = gsk_zandaka()
+        tsukatta = None if (mae is None or ato is None) else round(mae - ato, 3)
         return {"who": "genspark", "yes": None, "why": "",
                 "error": ("rc=%d %s" % (rc, (se or so)[:200])), "credit": tsukatta}
-    ans = _gsk_honbun(so)
+    # ★ここは非同期。create は「受け付けました」を返すだけ（実測 2026-09-24）。
+    #   受領書を答えだと思って読むと「はい」に化ける危険があるので、必ず終わるまで待つ。
+    ans = _gsk_matsu(so)
+    ato = gsk_zandaka()
+    tsukatta = None if (mae is None or ato is None) else round(mae - ato, 3)
     yes, why = yomu(ans)
     return {"who": "genspark", "yes": yes, "why": why, "error": "",
             "credit": tsukatta, "nama": ans[:1200]}
+
+
+GSK_MACHI_BYOU = 600     # 待つ上限（秒）
+GSK_MACHI_KANKAKU = 15
+
+
+def _gsk_matsu(so):
+    """create の返事から札(run_id / project_id)を拾い、終わるまで status を叩いて答えを取る。"""
+    try:
+        d = json.loads(so)
+    except Exception:
+        return (so or "").strip()
+    fuda = None
+    for key in ("run_id", "project_id", "id"):
+        v = ((d.get("data") or d) or {}).get(key)
+        if isinstance(v, str) and v.strip():
+            fuda = v.strip()
+            if key == "run_id":
+                break
+    if not fuda:
+        m = re.search(r"sb_task_run::[\w:-]+", so or "")
+        fuda = m.group(0) if m else None
+    if not fuda:
+        return (so or "").strip()
+    owari = time.time() + GSK_MACHI_BYOU
+    saigo = ""
+    while time.time() < owari:
+        time.sleep(GSK_MACHI_KANKAKU)
+        try:
+            rc, s2, _ = _run([GSK, "task", "status", fuda, "--output", "json"], timeout=120)
+        except Exception:
+            continue
+        if rc != 0:
+            continue
+        saigo = s2
+        low = s2.lower()
+        if any(w in low for w in ('"completed"', '"finished"', '"success"', '"done"',
+                                  '"failed"', '"error"', '"stopped"')):
+            break
+    return _gsk_honbun(saigo or so)
 
 
 def _gsk_honbun(so):
