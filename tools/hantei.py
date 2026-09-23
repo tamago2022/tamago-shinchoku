@@ -1240,3 +1240,102 @@ def watashi_kanmon():
     r = judge(1, 1, label="渡す門の見張り")
     r["line"] = "✅ 渡す門 … 見本で%d件落とし、正しい見本は通しました" % len(a)
     return r
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 1049番【依頼の門】― 「たまごさんが頼んだものに、これは答えているか」
+#
+# ■ たまごさんの言葉（2026-09-24・そのまま）
+#   「不完全なものが俺に上がってくるのを極力減らしたい。目標はゼロに近づけて。
+#     『違う、そうじゃないから』っていうのが、まずだるい。」
+#
+# ■ 既にある門との違い（だから1つ足りていなかった）
+#   出典の無い数字   → kazu_gate     日本語   → oni_gate
+#   絵               → e_gate        開いて動くか → watashi_gate / sumaho_gate
+#   ★頼んだものに答えているか → ここ。**機械には判定できない。**だから外のAIに見せる。
+#
+# ■ 規則（これが全部・他所に同じifを書かない）
+#   ・生きている口が0     → 🔴 止める（「誰にも見せていない＝見ていない」）
+#   ・「いいえ」が1つでも → 🔴 止める。理由をそのまま出す（言い換えない）
+#   ・はい／いいえに読めない返事 → 🔴 止める（測っていない＝通っていない）
+#   ・「はい」が2社       → 通す
+#   ・「はい」が1社だけ（もう1社が動かない）→ 通す。ただし「1社だけで見た」を必ず記録に残す
+# ══════════════════════════════════════════════════════════════════════
+
+IRAI_HITSUYOU_SHA = 2   # 本来見せたい社数
+
+
+def irai_han(answers):
+    """依頼の門の判定。answers は tools/irai_gate.py が外のAIから受け取った実測の返事。
+
+    answers: [{"who": "genspark", "yes": True/False/None, "why": "…", "error": "…"}, …]
+    戻り値: dict(ok, stop, note, kiita, ikiteru)
+      ok   … True なら たまごさんに渡してよい
+      stop … 止める理由の一覧（空なら通す）
+      note … 記録に必ず残す但し書き（「1社だけで見た」等）。無ければ空文字
+    ここではAIを1回も呼ばない＝この関数だけで机の上で試験できる。
+    """
+    rows = list(answers or [])
+    ikiteru = [r for r in rows if not (r.get("error") or "").strip()]
+    shinda = [r for r in rows if (r.get("error") or "").strip()]
+    stop, note = [], ""
+
+    if not ikiteru:
+        riyuu = "／".join("%s：%s" % (r.get("who"), str(r.get("error"))[:80]) for r in shinda) \
+            or "外のAIを1社も呼べていません"
+        stop.append("外のAIが1社も動きませんでした＝**誰もこれを見ていません**。"
+                    "見ていないものは渡しません（%s）" % riyuu)
+        return {"ok": False, "stop": stop, "note": "", "kiita": len(rows), "ikiteru": 0}
+
+    # 読めない返事は「はい」に丸めない。★ここを緩めると門が静かに素通りするようになる。
+    yomenai = [r for r in ikiteru if r.get("yes") is None]
+    for r in yomenai:
+        stop.append("%s の返事が はい／いいえ に読めませんでした：%s"
+                    % (r.get("who"), (str(r.get("why") or "")[:100] or "(空)")))
+
+    iie = [r for r in ikiteru if r.get("yes") is False]
+    for r in iie:
+        stop.append("%s が「いいえ」：%s" % (r.get("who"), str(r.get("why") or "").strip()[:200]))
+
+    hai = [r for r in ikiteru if r.get("yes") is True]
+    if not stop and len(hai) < IRAI_HITSUYOU_SHA:
+        note = ("★1社だけで見ました（%s）。%s は動きませんでした：%s"
+                % ("・".join(str(r.get("who")) for r in hai),
+                   "・".join(str(r.get("who")) for r in shinda) or "もう1社",
+                   "／".join(str(r.get("error"))[:60] for r in shinda) or "呼べていません"))
+
+    return {"ok": not stop, "stop": stop, "note": note,
+            "kiita": len(rows), "ikiteru": len(ikiteru)}
+
+
+def irai_kanmon():
+    """★門そのものが効いているかを毎回みる。見本で落ちなくなったら赤。
+
+    watashi_kanmon / e_gate と同じ考え方。門は静かに素通りするようになっても誰も気づかない。
+    """
+    miru = [
+        # わざと落ちる見本
+        ([{"who": "A", "yes": False, "why": "絵本ではなく静止画の羅列です"},
+          {"who": "B", "yes": True, "why": ""}], False, "1社でも「いいえ」"),
+        ([{"who": "A", "yes": None, "why": "うーん"},
+          {"who": "B", "yes": True, "why": ""}], False, "読めない返事"),
+        ([{"who": "A", "yes": None, "why": "", "error": "429"},
+          {"who": "B", "yes": None, "why": "", "error": "team_blocked"}], False, "口が0"),
+        # 通る見本
+        ([{"who": "A", "yes": True, "why": ""},
+          {"who": "B", "yes": True, "why": ""}], True, "2社とも「はい」"),
+    ]
+    for ans, hazu, label in miru:
+        r = irai_han(ans)
+        if r["ok"] != hazu:
+            return judge(1, 0, label="依頼の門の見張り",
+                         blocked="見本『%s』の判定がずれました（出たのは ok=%s）" % (label, r["ok"]))
+    # 1社だけのときは通すが、但し書きが消えていないこと
+    r = irai_han([{"who": "A", "yes": True, "why": ""},
+                  {"who": "B", "yes": None, "why": "", "error": "429"}])
+    if not r["ok"] or "1社だけ" not in r["note"]:
+        return judge(1, 0, label="依頼の門の見張り",
+                     blocked="1社だけで通したのに『1社だけで見た』が記録に残っていません")
+    res = judge(1, 1, label="依頼の門の見張り")
+    res["line"] = "✅ 依頼の門 … 見本%d本すべて想定どおり" % (len(miru) + 1)
+    return res

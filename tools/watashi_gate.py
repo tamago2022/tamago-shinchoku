@@ -134,6 +134,9 @@ SNAP_JS = r"""
   }
   return {
     text_bytes: new Blob([txt]).size,
+    // ★1049番【依頼の門】が読む「画面に実際に出た文字」。
+    //   コードではなく描画された結果を外のAIに見せるために要る。長さだけは制限する。
+    text: txt.slice(0, 6000),
     painted_nodes: painted,
     html_len: (body ? body.innerHTML.length : 0),
     scroll_w: Math.max(document.documentElement.scrollWidth, body ? body.scrollWidth : 0),
@@ -255,6 +258,7 @@ def measure(path, shots=True):
                 obs["open_error"] = "10秒たっても画面を読めませんでした: %s" % str(ex)[:140]
                 return obs
             obs.update({"text_bytes": snap["text_bytes"],
+                        "text": snap.get("text") or "",   # ★1049番：画面に出た文字そのもの
                         "painted_nodes": snap["painted_nodes"],
                         "canvases": snap["canvases"]})
             blanks = [("%dx%d" % (c["w"], c["h"])) for c in snap["canvases"] if c.get("blank")]
