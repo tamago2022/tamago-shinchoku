@@ -179,6 +179,55 @@ def run_job(payload):
                             "patch": (f.get("patch") or "")[:6000]})
             return {"ok": True, "repo": repo, "action": action, "files": out, "totalYen": 0.0}
 
+        if action == "prstate":
+            # ★1027番：名指しのPRが**mainに入ったか**だけを見る。GETのみ・課金0。
+            #   Jules が立てたPRは作者が tamago2022 になる（GitHub Appが持ち主の名で押すため）。
+            #   だから作者で数えると Jules の分が全部たまごさんの分に混ざる。名指しで見るのはそのため。
+            out = []
+            for num in (payload.get("numbers") or []):
+                code, p = _req("%s/repos/%s/pulls/%s" % (API, repo, num), token)
+                out.append({"number": num,
+                            "title": (p or {}).get("title"),
+                            "author": (((p or {}).get("user") or {}).get("login")),
+                            "state": (p or {}).get("state"),
+                            "merged": bool((p or {}).get("merged_at")),
+                            "mergedAt": (p or {}).get("merged_at"),
+                            "additions": (p or {}).get("additions"),
+                            "deletions": (p or {}).get("deletions"),
+                            "changedFiles": (p or {}).get("changed_files"),
+                            "createdAt": (p or {}).get("created_at"),
+                            "url": (p or {}).get("html_url")})
+            return {"ok": True, "repo": repo, "action": action, "prs": out, "totalYen": 0.0}
+
+        if action == "prstats":
+            # ★1027番：「返事を書いた数」と「本番に出た数」を分けて数えるための口。
+            #   誰がPRを何本立てて、そのうち何本が**mainに入ったか**（merged）を数える。
+            #   コメントの数だけ見ていると、返事が多い子＝役に立った子に見えてしまう。
+            #   Devinで「15本中1本しか入らなかった（6.7%）」を見落としたのがこれ。
+            #   GETのみ・課金0・白名簿repoの中だけ。
+            out, page = {}, 1
+            while page <= 5:
+                code, d = _req("%s/repos/%s/pulls?state=all&per_page=100&page=%d" % (API, repo, page), token)
+                if not d:
+                    break
+                for p in d:
+                    who = ((p.get("user") or {}).get("login")) or "?"
+                    r = out.setdefault(who, {"login": who,
+                                             "type": ((p.get("user") or {}).get("type")),
+                                             "opened": 0, "merged": 0, "closedUnmerged": 0, "open": 0})
+                    r["opened"] += 1
+                    if p.get("merged_at"):
+                        r["merged"] += 1
+                    elif p.get("state") == "closed":
+                        r["closedUnmerged"] += 1
+                    else:
+                        r["open"] += 1
+                if len(d) < 100:
+                    break
+                page += 1
+            rows = sorted(out.values(), key=lambda x: -x["opened"])
+            return {"ok": True, "repo": repo, "action": action, "prs": rows, "totalYen": 0.0}
+
         return {"ok": False, "error": "知らない action: %s" % action, "totalYen": 0.0}
     except Exception as e:
         return {"ok": False, "error": _err(e), "totalYen": 0.0}
