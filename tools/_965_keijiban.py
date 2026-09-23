@@ -171,6 +171,37 @@ def run_job(payload):
                                   "text": (c.get("body") or "")[:4000]} for c in (d or [])],
                     "totalYen": 0.0}
 
+        if action == "content":
+            # 2026-09-23（1027番・区間5＝検品）：**mainに入れる前に**中身を読むための口。
+            #   PRのpatchは6000字で切れるので、検品の材料にならない（実測）。
+            #   ここは GET のみ・白名簿repoの中だけ・課金0。書き込みは一切しない。
+            ref = payload.get("ref") or "HEAD"
+            code, d = _req("%s/repos/%s/contents/%s?ref=%s"
+                           % (API, repo, payload["path"], ref), token)
+            import base64 as _b64
+            txt = ""
+            if isinstance(d, dict) and d.get("content"):
+                txt = _b64.b64decode(d["content"]).decode("utf-8", "ignore")
+            return {"ok": bool(txt), "repo": repo, "action": action,
+                    "path": payload["path"], "ref": ref,
+                    "bytes": len(txt.encode("utf-8")), "text": txt, "totalYen": 0.0}
+
+        if action == "prmerge":
+            # 2026-09-23（1027番・区間6＝mainに入れる）：**検品を通った票だけ**を入れる口。
+            #   ★ここは「誰も走っていなかった区間」を人（＝こちら）が走るための足であって、
+            #     AIに自動でmergeさせるためのものではない。呼ぶ側が tools/hantei.py の
+            #     区間5判定を通してから呼ぶこと（通っていない票を入れない）。
+            #   白名簿repoの中だけ・課金0。
+            num = payload["number"]
+            body = {"merge_method": payload.get("method") or "squash"}
+            if payload.get("title"):
+                body["commit_title"] = payload["title"]
+            code, d = _req("%s/repos/%s/pulls/%s/merge" % (API, repo, num),
+                           token, "PUT", body)
+            return {"ok": bool((d or {}).get("merged")), "repo": repo, "action": action,
+                    "number": num, "httpCode": code, "sha": (d or {}).get("sha"),
+                    "message": (d or {}).get("message"), "totalYen": 0.0}
+
         if action == "prfiles":
             code, d = _req("%s/repos/%s/pulls/%s/files?per_page=30" % (API, repo, payload["number"]), token)
             out = []

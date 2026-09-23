@@ -27,7 +27,14 @@ import time
 import urllib.error
 import urllib.request
 
-ALLOW_PREFIX = ("https://tamago2022.github.io/",)
+# 2026-09-23（1027番・区間8）：出したものを叩いて確かめる先は、うちが出している2か所。
+#   ・tamago2022.github.io      … 進捗表・確認ページ（GitHub Pages）
+#   ・joy-relief-station.lovable.app … ごきげん補給所の本番（Lovableが main から配信）
+#   ★joy-relief-station は GitHub Pages **ではない**。mainに入れただけでは本番に出ない。
+#     だから「mainに入った＝出た」と数えていると、区間7（公開）の詰まりが見えない。
+#   GETだけ・鍵を使わない・課金0 は変えていない。
+ALLOW_PREFIX = ("https://tamago2022.github.io/",
+                "https://joy-relief-station.lovable.app/")
 UA = "tamago-kakunin/1.0 (+961)"
 
 

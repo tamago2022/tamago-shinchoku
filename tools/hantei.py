@@ -44,6 +44,7 @@ import datetime
 import io
 import os
 import re
+import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATUS = os.path.join(REPO, "status")
@@ -398,9 +399,131 @@ def wake_gate(targets):
     return ok, stopped
 
 
+# ---------------------------------------------------------------------
+#  コミットの口 ― 「積んだ枚数」と「回収された枚数」を数える（1027番・2026-09-23）
+# ---------------------------------------------------------------------
+#
+# なぜ足したか（実測）:
+#   2026-09-22に「コミットする口を1本にした」。ところが翌日 09:53 に置いた3枚が
+#   10:01 まで回収されず、前のセッションは「口が詰まっている」と判断して止まった。
+#   ★実測すると詰まっていなかった。回収は 10:01:53 に成功している（commit_kuchi.log）。
+#   詰まりではなく**遅さ**だった。今日1日の実測：
+#       受付 09:53:12 → 回収 10:01:53   （8分41秒）
+#       受付 00:30:34 → 回収 00:40:45   （10分11秒）
+#       受付 22:10:30 → 回収 23:17:47   （7分17秒）
+#     さらに main のコミット間隔は 9〜28分（「5分便」という名前だが5分ではない）。
+#
+#   ＝ 「5分で出る」と思って待った人が、8分で「壊れている」と誤診する。
+#     直すべきは口ではなく、**待ち時間が誰にも見えないこと**だった。
+#     穴（回収されない）を塞ぐのではなく、**素材（何分待っているか）を出す。**
+#
+# 規則（上の RULE と同じ型で書く）:
+#   積んだ = 0                       → ⚪ まだ何も置いていない
+#   積んだ > 0・回収 = 積んだ          → ✅ 全部出ている
+#   積んだ > 0・回収 < 積んだ          → 待っている紙がある。
+#       最古の紙が LATE_SEC 以内     → ✅（正常な待ち。慌てて触らない）
+#       最古の紙が LATE_SEC を超えた → 🔴 **回収が止まっている**
+#
+# ★LATE_SEC を 15分にした理由：実測の最悪が 10分11秒。5分便は1回の起動が約260秒
+#   走り、launchd は5分おき＝最悪で約9分ずれる。15分を超えたら実測の外＝本物の異常。
+LATE_SEC = 15 * 60
+
+
+def commit_kuchi():
+    """コミットの口：積んだ枚数と回収された枚数を数えて、差が出たら赤にする。"""
+    inbox = os.path.join(STATUS, "commit_inbox")
+    if not os.path.isdir(inbox):
+        return judge(1, 0, label="コミットの口",
+                     blocked="status/commit_inbox/ がありません（口そのものが無い）")
+
+    def _papers(d):
+        p = os.path.join(inbox, d) if d else inbox
+        if not os.path.isdir(p):
+            return []
+        return [os.path.join(p, f) for f in os.listdir(p) if f.endswith(".json")]
+
+    machi = _papers("")            # まだ回収されていない紙
+    sumi = _papers("done")         # 回収された紙
+    dame = _papers("rejected")     # 関所で断られた紙
+    tsunda = len(machi) + len(sumi) + len(dame)
+    kaishu = len(sumi) + len(dame)
+
+    if tsunda == 0:
+        return judge(0, 0, label="コミットの口")
+
+    if not machi:
+        r = judge(tsunda, kaishu, label="コミットの口")
+        r["line"] = "✅ コミットの口 … 積んだ%d枚／回収%d枚（差0）" % (tsunda, kaishu)
+        return r
+
+    now = time.time()
+    matsu = int(now - min(os.path.getmtime(p) for p in machi))
+    fun = matsu // 60
+    if matsu <= LATE_SEC:
+        r = judge(tsunda, kaishu, label="コミットの口")
+        r["line"] = ("✅ コミットの口 … 積んだ%d枚／回収%d枚／★待ち%d枚（最古%d分・"
+                     "%d分までは正常な待ちです。触らないでください）"
+                     % (tsunda, kaishu, len(machi), fun, LATE_SEC // 60))
+        return r
+
+    return judge(tsunda, kaishu, label="コミットの口",
+                 blocked=("★待ち%d枚が%d分たっても回収されていません（正常は%d分以内）。"
+                          "Mac側の5分便（tools/machine_status_push.sh）が動いているか、"
+                          "status/commit_kuchi.log の最後の『✅ 回収』の時刻を見てください"
+                          % (len(machi), fun, LATE_SEC // 60)))
+
+
+# ---------------------------------------------------------------------
+#  区間5（検品）― 出していいかを、AIに聞かずに機械だけで判定する
+# ---------------------------------------------------------------------
+#
+# なぜ機械だけでやるか（実測）:
+#   Claude子セッションの自己検品は310件中169件合格＝54.5%。
+#   ＝**自分の仕事を自分では見られていない。**（oni_gate.py の冒頭と同じ理由）
+#   だからここではAIを1回も呼ばない。全部ただの文字列判定。課金0。毎回同じ答えが出る。
+#
+# 使い道：外から来たPRを **mainに入れる前に** 通す受け口。
+#   「そこまで運んできてくれてありがとう。ここから先はこちらが運ぶ」の“ここ”。
+# 375px（iPhone SE / mini の幅）で横スクロールが出る書き方を、静的に見つける。
+#   ★ただし「表だけを箱の中で横スクロールさせる」のは、たまごさんのページで
+#     ずっと使ってきた**正しい型**（.wrap{overflow-x:auto} で囲んだ table）。
+#     これを赤にすると、直っているページまで赤くなって誰も見なくなる。
+#     だから **箱（overflow-x:auto）がある表は通す。それ以外の固定幅だけ止める。**
+_CSS_RULE = re.compile(r"([^{}]+)\{([^{}]*)\}")
+_CSS_WIDTH = re.compile(r"(?:^|[;\s])(?:min-)?width\s*:\s*(\d{3,5})px", re.I)
+
+
+def kensa_html(text, name=""):
+    """HTMLの中身を機械だけで検品する。返り値: (通ったか, [理由...])"""
+    ng = []
+    t = text or ""
+    if len(t.strip()) < 200:
+        ng.append("中身が空か短すぎます（%dバイト）" % len(t.encode("utf-8")))
+    if "</html>" not in t.lower():
+        ng.append("</html> まで届いていません（途中で切れた可能性）")
+    if "<title" not in t.lower():
+        ng.append("<title> がありません")
+    if "name=\"viewport\"" not in t.lower().replace("'", '"'):
+        ng.append("viewport の指定がありません（スマホで縮小表示になります）")
+    hako = "overflow-x:auto" in t.replace(" ", "").lower()
+    for sel, decl in _CSS_RULE.findall(t):
+        m = _CSS_WIDTH.search(";" + decl)
+        if not m or int(m.group(1)) <= 375:
+            continue
+        s = sel.strip().lower()
+        if hako and ("table" in s or s.startswith("th") or s.startswith("td")):
+            continue  # 箱で横スクロールさせる表＝正しい型なので通す
+        ng.append("375pxより広い固定幅があります（%s に %spx）＝画面ごと横に流れます"
+                  % (sel.strip()[:40], m.group(1)))
+        break
+    if len(t.encode("utf-8")) > 1024 * 1024:
+        ng.append("1MBを超えています（公開に載せない決まり）")
+    return (not ng), ng
+
+
 def audit():
     """全部の緑に同じ規則を当てた結果を返す（リスト）。"""
-    out = [kojo(6)]
+    out = [kojo(6), commit_kuchi()]
     out.extend(suteta_henji())
     out.extend(gaibu_ai())
     out.extend(daicho_gai())
