@@ -66,7 +66,11 @@
 <a class="back" href="./nagekomi-c5fd9d5791b32e88.html">投げ込み箱にもどる</a>
 
 <script>
-var DATA = null, FILT = "";
+var DATA = null, FILT = "", SEEN = "";
+function stamp(){
+  var d = new Date(), z = function(n){ return (n<10?"0":"")+n; };
+  return z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds());
+}
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
@@ -82,7 +86,8 @@ function stClass(s){ return s==="棚に入った" ? "b" : (s==="入れられな�
 function render(){
   var host = document.getElementById("list");
   var now = document.getElementById("nowShowing");
-  if(now){ now.textContent = "いま見ているもの：" + (FILT || "ぜんぶ"); }
+  if(now){ now.textContent = "いま見ているもの：" + (FILT || "ぜんぶ")
+             + (SEEN ? "　／　" + SEEN + " に取り直しました" : ""); }
   if(!DATA){ host.innerHTML = '<p class="empty">一覧がまだ読めません。少し待ってから開き直してください。</p>'; return; }
   var c = DATA.counts || {};
   document.getElementById("c0").textContent = DATA.shown || 0;
@@ -115,24 +120,36 @@ document.getElementById("bar").addEventListener("click", function(e){
   FILT = b.getAttribute("data-f") || "";
   [].forEach.call(this.querySelectorAll("button"), function(x){
     x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+  /* ★1050番：押したら必ず最新を取り直す。
+     たまごさんの「開き直せば最新が出ます」を、開き直さずに済むようにする。
+     ＝どのボタンを押しても、更新時刻が進んで画面が必ず変わる。 */
+  load();
   render();
 });
 
-function getJSON(u){
-  return fetch(u + (u.indexOf("?")<0?"?":"&") + "t=" + Date.now(), {cache:"no-store"})
+/* ★1050番：中継所（localtunnel）は bypass-tunnel-reminder を付けないと
+   511 Network Authentication Required を返す＝画面のconsoleに赤が出続けていた。
+   投げ込み箱の側は最初から付けていた。こちらだけ付いていなかった。 */
+function getJSON(u, head){
+  return fetch(u + (u.indexOf("?")<0?"?":"&") + "t=" + Date.now(),
+               head ? {cache:"no-store", headers:head} : {cache:"no-store"})
     .then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
 }
 
 /* 中継所（Macの生の写し）を先に見る。駄目なら公開済みコピー。 */
-getJSON("../status/public/relay.json").then(function(j){
-  var u = j && j.url ? j.url.replace(/\/$/,"") : null;
-  return u ? getJSON(u + "/status/nagekomi_list.json") : null;
-}).catch(function(){ return null; }).then(function(live){
-  if(live && live.items) { DATA = live; render(); return; }
-  return getJSON("../status/public/nagekomi_list.json").then(function(pub){
-    DATA = pub; render();
+function load(){
+  return getJSON("../status/public/relay.json").then(function(j){
+    var u = j && j.url ? j.url.replace(/\/$/,"") : null;
+    return u ? getJSON(u + "/status/nagekomi_list.json",
+                       {"bypass-tunnel-reminder":"1"}) : null;
+  }).catch(function(){ return null; }).then(function(live){
+    if(live && live.items) { DATA = live; SEEN = stamp(); render(); return; }
+    return getJSON("../status/public/nagekomi_list.json").then(function(pub){
+      DATA = pub; SEEN = stamp(); render();
+    });
   });
-});
+}
+load();
 </script>
 </body>
 </html>

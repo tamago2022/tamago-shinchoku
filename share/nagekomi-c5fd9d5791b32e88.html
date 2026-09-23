@@ -202,35 +202,46 @@ function filtered(){
    → 押した棚は ✓ を付けて文字ごと変える／上に「行き先：「◯◯」の棚」を必ず出す。 */
 function drawTana(){
   var box = document.getElementById("tana");
+  var p = document.getElementById("tanaPicked");
+  var f = document.getElementById("f");
+  var more = document.getElementById("more");
+  /* ★1050番：選んだら、棚の一覧は畳んで**選んだ1つだけ**にする。
+     押したのかどうかが一目で分かる／寝ながら片手のときに画面から迷子が消える。
+     もう一度押せば一覧に戻る（選び直せる）。 */
+  if(SHELF){
+    box.innerHTML = "";
+    var one = document.createElement("button");
+    one.type = "button";
+    one.setAttribute("aria-pressed", "true");
+    one.style.gridColumn = "1/3";
+    one.innerHTML = "<span>✓ 「"+SHELF.title.replace(/[<>&]/g,"")+"」の棚へ入れます</span>"
+                  + "<span class='w'>押すと選び直せます</span>";
+    one.addEventListener("click", function(){ SHELF = null; SHOW = 8; drawTana(); });
+    box.appendChild(one);
+    if(f){ f.hidden = true; }
+    more.hidden = true;
+    if(p){ p.textContent = "行き先：「"+SHELF.title+"」の棚"; p.className = "picked on"; }
+    return;
+  }
+  if(f){ f.hidden = false; }
+  if(p){ p.textContent = "行き先：まだ決めていない（このままでも送れます）"; p.className = "picked"; }
   var A = filtered();
   box.innerHTML = "";
   var n = Math.min(SHOW, A.length);
   for(var i=0;i<n;i++){
     (function(s){
-      var on = !!(SHELF && SHELF.title === s.title);
       var b = document.createElement("button");
       b.type = "button";
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-      b.innerHTML = "<span>"+(on ? "✓ " : "")+s.title.replace(/[<>&]/g,"")+"</span>"
-                  + (s.world ? "<span class='w'>"+s.world.replace(/[<>&]/g,"")+"</span>" : "")
-                  + (on ? "<span class='w'>ここへ入れます（もう一度押すと取り消し）</span>" : "");
-      b.addEventListener("click", function(){
-        SHELF = on ? null : s;   /* もう一度押せば取り消し */
-        drawTana();
-      });
+      b.setAttribute("aria-pressed", "false");
+      b.innerHTML = "<span>"+s.title.replace(/[<>&]/g,"")+"</span>"
+                  + (s.world ? "<span class='w'>"+s.world.replace(/[<>&]/g,"")+"</span>" : "");
+      b.addEventListener("click", function(){ SHELF = s; drawTana(); });
       box.appendChild(b);
     })(A[i]);
   }
-  var more = document.getElementById("more");
   more.hidden = A.length <= SHOW;
   more.textContent = "もっと見る（あと "+(A.length-SHOW)+"）";
   if(!A.length) box.innerHTML = "<p class='hint' style='grid-column:1/3;margin:0'>その言葉の棚は見つかりません（押さずに送れます）</p>";
-  var p = document.getElementById("tanaPicked");
-  if(p){
-    p.textContent = SHELF ? ("行き先：「"+SHELF.title+"」の棚")
-                          : "行き先：まだ決めていない（このままでも送れます）";
-    p.className = SHELF ? "picked on" : "picked";
-  }
 }
 document.getElementById("more").addEventListener("click", function(){ SHOW += 12; drawTana(); });
 document.getElementById("f").addEventListener("input", function(){ SHOW = 8; drawTana(); });
