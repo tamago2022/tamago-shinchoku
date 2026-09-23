@@ -204,7 +204,14 @@ def _call_openai_style(key, url, model, messages, search, timeout, vendor, max_t
             body.pop("temperature", None)
             retried = True
         if not retried:
-            raise
+            # ★2026-09-23 実測で直した穴：ここで素の `raise` をすると、
+            #   上の e.read() で本文（＝断られた理由）を既に吸い出してしまっているため、
+            #   _err_text がもう一度 read() しても**空**になる。
+            #   結果、画面に出るのは「HTTP 429 」だけで、
+            #   「回数の出しすぎ（待てば通る）」なのか
+            #   「残高切れ insufficient_quota（お金の話＝たまごさんの判断）」なのかが分からない。
+            #   ＝直せるものを直せなくする穴なので、理由を持たせて投げ直す。
+            raise RuntimeError("HTTP %s %s" % (e.code, (detail or "")[:400]))
         j = _post_json(url, body, {"Content-Type": "application/json",
                                    "Authorization": "Bearer %s" % key}, timeout)
     ch = (j.get("choices") or [{}])[0]

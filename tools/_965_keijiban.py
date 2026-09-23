@@ -171,6 +171,35 @@ def run_job(payload):
                                   "text": (c.get("body") or "")[:4000]} for c in (d or [])],
                     "totalYen": 0.0}
 
+        if action == "putfile":
+            # 2026-09-23（1027番・区間7＝本番に公開する）★迂回路。
+            #   実測：tools/pages_publish.sh が 09:25 を最後に完走しなくなった
+            #   （main には追従するのに push まで行かず、成功も失敗も記録に残らない）。
+            #   ＝ 配信係が1人しか居ないので、その1人が黙って止まると**出す手が無くなる。**
+            #   そこで「出す口」をもう1本だけ用意する：GitHubのContents APIで
+            #   **名指しの1ファイルだけ**を gh-pages に置く。丸ごとpushはしない。
+            #   ★pages_publish が復帰すれば、同じ中身で force push されるので衝突しない。
+            import base64 as _b64
+            path, branch = payload["path"], payload.get("branch") or "gh-pages"
+            raw = payload["text"].encode("utf-8")
+            if len(raw) > 1024 * 1024:
+                return {"ok": False, "error": "1MB超は公開に載せません（%dバイト）" % len(raw),
+                        "totalYen": 0.0}
+            sha = None
+            try:
+                _c, _d = _req("%s/repos/%s/contents/%s?ref=%s" % (API, repo, path, branch), token)
+                sha = (_d or {}).get("sha")
+            except Exception:
+                sha = None
+            body = {"message": payload.get("message") or ("公開（1ファイル）%s" % path),
+                    "content": _b64.b64encode(raw).decode("ascii"), "branch": branch}
+            if sha:
+                body["sha"] = sha
+            code, d = _req("%s/repos/%s/contents/%s" % (API, repo, path), token, "PUT", body)
+            return {"ok": code in (200, 201), "repo": repo, "action": action,
+                    "path": path, "branch": branch, "bytes": len(raw), "httpCode": code,
+                    "commit": ((d or {}).get("commit") or {}).get("sha"), "totalYen": 0.0}
+
         if action == "content":
             # 2026-09-23（1027番・区間5＝検品）：**mainに入れる前に**中身を読むための口。
             #   PRのpatchは6000字で切れるので、検品の材料にならない（実測）。

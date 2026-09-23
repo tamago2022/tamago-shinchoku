@@ -233,6 +233,34 @@ def _run_factory(kind, payload, wait_sec=240):
     return res
 
 
+def _run_factory_kiku(payload, wait_sec=240):
+    """★鍵が読めない環境（サンドボックス）から、工場（Mac）に代わりに聞いてもらう。
+
+    なぜ要るか（2026-09-23 実測）：
+      chappy の口は gaibu_kuchi.ask を**その場で**呼ぶ作りだった。鍵は工場側にしか無いので、
+      Dispatch から `nageru.py chappy` を叩くと毎回
+      「ChatGPT(OpenAI)の鍵が見つかりません」で落ちる＝1文字も投げられない。
+      Issueの口は最初から工場に代行させていたので、**API の口にも同じ道を足しただけ。**
+
+    戻り値は gaibu_kuchi.ask と同じ形に揃える（ok / text / model / seconds）。
+      ＝呼ぶ側（_nageru_api）は代行かどうかを意識しなくてよい。
+    """
+    jid = gkuchi.enqueue_job("kiku", payload)
+    res = gkuchi.wait_job(jid, wait_sec=wait_sec)
+    if res is None:
+        return {"ok": False,
+                "error": "工場からの返事が%d秒来ませんでした（jobId=%s）" % (wait_sec, jid)}
+    if not res.get("ok") and not res.get("results"):
+        return {"ok": False, "error": res.get("error") or "理由不明"}
+    for one in (res.get("results") or []):
+        if one.get("ok") and (one.get("text") or "").strip():
+            return one
+    # ★空で返った・全部失敗した、を飲み込まない。理由をそのまま上に返す。
+    whys = [str(o.get("error") or "本文が空") for o in (res.get("results") or [])]
+    return {"ok": False, "error": "工場は動きましたが返事が取れませんでした: "
+                                  + (" / ".join(whys) or (res.get("error") or "理由不明"))}
+
+
 def _thread_key(repo, number):
     return "gh:%s#%s" % (repo, number)
 
@@ -342,15 +370,38 @@ def _nageru_api(ai, r, topic, body, title, n=None, wait_sec=240):
     """
     vendor = r.get("vendor", "openai")
     ai_daicho.append("out", ai, topic=topic, ref="", ok=True)
+
+    # ★2026-09-23 実測で直した穴：
+    #   この口は「APIに直接聞く」ので、**鍵が読める場所でしか動かなかった。**
+    #   サンドボックス（Cowork/Dispatch）には .env も ~/.tamago/keys も無いので
+    #   `python3 tools/nageru.py chappy …` が丸ごと
+    #   「ChatGPT(OpenAI)の鍵が見つかりません」で落ちる＝投げた0／返り0。
+    #   GitHub Issueの口（_run_factory）は最初から工場（Mac）に代行させていたのに、
+    #   API の口だけ代行の道が無かった。**同じ道を通す。**
+    #   代行の形は kiku（944番の窓口）。中身は同じ gaibu_kuchi.ask で、鍵は工場側にある。
+    if not gkuchi.find_key(vendor):
+        job = {"question": body, "ais": [vendor],
+               "models": {vendor: r.get("models")} if r.get("models") else {}}
+        fres = _run_factory_kiku(job, wait_sec=wait_sec)
+        if not fres.get("ok"):
+            err = str(fres.get("error") or "理由不明")
+            ai_daicho.append("out", ai, topic="返事の受け取り（%s）" % topic, ok=False, err=err)
+            ai_daicho.summarize()
+            return {"ok": False, "error": err, "ai": ai}
+        res = fres
+    else:
+        res = None
+
     try:
-        # ★モデルの指定を省略しない（2026-09-22の実測でここを踏んだ）。
-        #   gaibu_kuchi の既定は安い順なので gpt-4o-mini が先に当たる。実際に返ってきた文は
-        #   自分のモデル名を「GPT-4」と名乗り、出典の怪しい事故例を断定で書いてきた。
-        #   ＝線は通っているのに、中身が使えない。憲法11（事実／推測を混ぜない）に触る。
-        #   なので考える相手にはgpt-4oを先頭に置く。gpt-5系は「考える分」でトークンを
-        #   使い切って本文が空で返ることがあるため（実測：4000でようやく116字）、先頭には置かない。
-        res = gkuchi.ask(vendor, [{"role": "user", "content": body}], timeout=120,
-                         models=r.get("models"), max_tokens=r.get("maxTokens"))
+        if res is None:
+            # ★モデルの指定を省略しない（2026-09-22の実測でここを踏んだ）。
+            #   gaibu_kuchi の既定は安い順なので gpt-4o-mini が先に当たる。実際に返ってきた文は
+            #   自分のモデル名を「GPT-4」と名乗り、出典の怪しい事故例を断定で書いてきた。
+            #   ＝線は通っているのに、中身が使えない。憲法11（事実／推測を混ぜない）に触る。
+            #   なので考える相手にはgpt-4oを先頭に置く。gpt-5系は「考える分」でトークンを
+            #   使い切って本文が空で返ることがあるため（実測：4000でようやく116字）、先頭には置かない。
+            res = gkuchi.ask(vendor, [{"role": "user", "content": body}], timeout=120,
+                             models=r.get("models"), max_tokens=r.get("maxTokens"))
     except Exception as e:
         err = "%s: %s" % (type(e).__name__, e)
         ai_daicho.append("out", ai, topic="返事の受け取り（%s）" % topic, ok=False, err=err)
