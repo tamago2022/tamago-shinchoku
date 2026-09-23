@@ -346,6 +346,13 @@ while :; do
   #   中で1日1回に間引く（status/.soto_hatarakite_at）ので、ここは緩く呼べばよい。
   #   AIを1回も呼ばない・外へ1回も出ない＝クレジット0円。投げっぱなしにして心臓は待たない。
   tick_every 240 && ( python3 "$REPO/tools/soto_hatarakite.py" >> "$REPO/status/soto_hatarakite.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1059番）サブスクのお知らせ係。たまごさん「全てのサブスク、3日ぐらい前から
+  #   アナウンスして。もう更新が迫ってるって。3日連続お知らせしてくださいね」
+  #   ★更新日の3日前・2日前・前日に、status/dispatch_outbox.jsonl へ**1行だけ**積む。
+  #     更新日を過ぎたら止まる。同じ日に2回は言わない（status/subsc_shirase_sent.json）。
+  #   ★お金の紙(1051番)より先に呼ぶ＝紙は書き直された数字を写すだけ。新しい常駐も定期タスクも作らない。
+  #   中で1日1回に間引く（status/.subsc_shirase_at）。外へ出るのは為替レート1本だけ＝0円。
+  tick_every 240 && ( python3 "$REPO/tools/subsc_shirase.py" >> "$REPO/status/subsc_shirase.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
   tick_every 240 && ( python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1 & ) >/dev/null 2>&1

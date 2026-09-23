@@ -81,28 +81,37 @@ def tsukatta():
 
 
 def subs():
-    """毎月決まって出ていくもの。★使っていないものを上に寄せる。"""
-    ks = {k["id"]: k.get("status") for k in (_load(os.path.join(PUBLIC, "kaitsuu.json"), {}) or {}).get("keys", [])}
+    """毎月決まって出ていくもの。★使っていないものを上に寄せる。
+
+    1059番（2026-09-24）：行をここに手で並べるのをやめた。正本は **status/subsc.json**、
+    「あと何日か」と円は tools/subsc_shirase.py が毎日書き直す
+    （status/public/subsc_shirase.json）。★お金の紙はこれを写すだけ＝数字が2か所で食い違わない。
+    """
+    d = _load(os.path.join(PUBLIC, "subsc_shirase.json"), {}) or {}
+    src = d.get("rows") or []
+    if not src:                                   # まだ1回も走っていない時だけ台帳を直に読む
+        src = (_load(os.path.join(STATUS, "subsc.json"), {}) or {}).get("items", [])
+        src = [dict(r, nokori=None, yen=None) for r in src]
     gs = (_load(os.path.join(STATUS, "1045", "me_after.json"), {}) or {}).get("data", {})
-    rows = [
-        dict(name="Claude", getsu=TORENAI, tsugi="取れていない",
-             tsukau="使っている（発車がこれで動く：`cat status/public/kaitsuu.json|\"claude\"`）" if ks.get("claude") else
-                    "使っている（いまログインが切れている：`cat status/public/kaitsuu.json|\"claude\"`）"),
-        dict(name="Genspark", getsu=TORENAI, tsugi="2026-10-04 に終了・繰り越し無し（status/1049_hikitsugi_irai_gate.md:13）",
-             tsukau="使っていない（採用 0件：`cat status/public/uketori_machi.json`）"),
-        dict(name="Lovable", getsu=TORENAI, tsugi="取れていない",
-             tsukau="使っている（本番の置き場・トークンは通る：`cat status/public/kaitsuu.json|\"lovable\"`）"),
-        dict(name="Devin", getsu="従量。栓の上限 20ドル/月（status/public/gaibu.json:11）", tsugi="オンデマンド",
-             tsukau="使っている（返り7件：`cat status/ai_daicho.jsonl|\"ai\": \"devin\"`）"),
-        dict(name="GitHub", getsu=TORENAI, tsugi="取れていない",
-             tsukau="使っている（PRの受け渡しがこれ：`cat status/public/uketori_machi.json`）"),
-        dict(name="ElevenLabs", getsu=TORENAI, tsugi="取れていない",
-             tsukau="使っていない（お金の台帳に記録が出てこない：`cat status/public/fal_cost_ledger.json`）"),
-        dict(name="Spotify", getsu=TORENAI, tsugi="取れていない",
-             tsukau="使っていない（お金の台帳に記録が出てこない：`cat status/public/fal_cost_ledger.json`）"),
-    ]
-    if gs.get("plan"):
-        rows[1]["getsu"] = "取れていない。plan は %s（`cat status/1045/me_after.json`）" % gs["plan"]
+    rate_moto = d.get("rateMoto") or ""
+    rows = []
+    for r in src:
+        getsu = r.get("kata") or TORENAI
+        if r.get("yen") is not None:
+            getsu = "約%s円（%s ドル × その日のレート：%s）" % (
+                format(r["yen"], ","), r.get("usd"), rate_moto)
+        elif r.get("usd") is not None:
+            getsu = "%s ドル。円は%s" % (r["usd"], rate_moto)
+        tsugi = r.get("tsugi") or "取れていない"
+        if r.get("nokori") is not None:
+            tsugi = "%s（あと%d日）" % (tsugi, r["nokori"])
+        tsukau = r.get("tsukau") or "取れていない"
+        if r.get("tsukau_moto"):
+            tsukau = "%s（%s）" % (tsukau, r["tsukau_moto"])
+        if r.get("id") == "genspark" and gs.get("plan"):
+            getsu = "取れていない。plan は %s（`cat status/1045/me_after.json`）" % gs["plan"]
+        rows.append(dict(name=r.get("name"), getsu=getsu, tsugi=tsugi, tsukau=tsukau,
+                         yameru=r.get("yameru") or "取れていない（確かめていない）"))
     rows.sort(key=lambda r: 0 if r["tsukau"].startswith("使っていない") else 1)
     return rows
 
@@ -145,9 +154,12 @@ def build():
     tomeru = [r for r in s if r["tsukau"].startswith("使っていない")]
     torenai = sum(1 for r in s if r["getsu"].startswith("取れていない")) + \
         sum(1 for r in f if r["nokori"].startswith("取れていない"))
+    # 1059番：更新が3日以内に迫っているものは、紙の一番上にも1行だけ出す
+    #   （知らせ本体は tools/subsc_shirase.py → status/dispatch_outbox.jsonl。ここは写すだけ）
+    semaru = (_load(os.path.join(PUBLIC, "subsc_shirase.json"), {}) or {}).get("shirase") or []
     d = dict(generatedAt=datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S"),
              kon=kon, sen=sen, konYen=kon_yen, senYen=sen_yen, daichou=src,
-             subs=s, saifu=f, tomeruN=len(tomeru), torenaiN=torenai)
+             subs=s, saifu=f, tomeruN=len(tomeru), torenaiN=torenai, semaru=semaru)
     for row in d["subs"] + d["saifu"]:
         for k in list(row):
             if isinstance(row[k], str):
@@ -175,12 +187,16 @@ def html(d):
     a('<div class="big"><span>今月ここまで（%s）</span><b>%s円</b>'
       '<span>先月（%s）は %s円 ／ 台帳に載っている分だけ：%s（`cat status/public/fal_cost_ledger.json`）</span></div>'
       % (d["kon"], format(d["konYen"], ","), d["sen"], format(d["senYen"], ","), "・".join(d["daichou"])))
+    for g in d.get("semaru") or []:
+        a('<p class="red" style="margin:0 0 8px">%s</p>' % g)
     a('<h2>A 毎月決まって出ていくもの</h2><div class="wrap"><table>')
-    a('<tr><th>名前</th><th>月額</th><th>次の請求日</th><th>使っているか</th></tr>')
+    a('<tr><th>名前</th><th>月額</th><th>次の更新日</th><th>使っているか</th><th>止める入り口</th></tr>')
     for r in d["subs"]:
         off = ' class="off"' if r["tsukau"].startswith("使っていない") else ""
-        a('<tr%s><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'
-          % (off, r["name"], r["getsu"], r["tsugi"], r["tsukau"]))
+        ya = r.get("yameru") or ""
+        ya = ('<a href="%s">%s</a>' % (ya, ya)) if ya.startswith("http") else ya
+        a('<tr%s><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'
+          % (off, r["name"], r["getsu"], r["tsugi"], r["tsukau"], ya))
     a('</table></div>')
     a('<h2>B 使った分だけ出ていくもの</h2><div class="wrap"><table>')
     a('<tr><th>名前</th><th>今いくら残っているか</th><th>今月使った</th><th>自動チャージ</th><th>上限</th></tr>')
