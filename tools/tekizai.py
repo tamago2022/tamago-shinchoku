@@ -457,7 +457,9 @@ def html(d):
       'お金は tools/soto_hatarakite.py（1050番）の結果をそのまま写していて、ここでは計算し直していない。</p>')
     a('<p class="v k">仕事を割り振るとき： $ python3 tools/tekizai.py --shigoto "&lt;仕事の一文&gt;"</p>')
     a('</body></html>')
-    return "\n".join(h)
+    # ★紙にする直前に、`cat <path>` を <path>:<行番号> へ開く。
+    #   これをやらないと tools/kazu_gate.py が出典として読めない（門は行単位で見る）。
+    return soto.shusshou("\n".join(h))
 
 
 def run(force=False):

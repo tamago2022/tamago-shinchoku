@@ -316,6 +316,34 @@ def check_ai_verify():
 
 # ───────────────────────── ④鬼監督 ─────────────────────────
 
+def _kanryou_kensuu_since(last_ts):
+    """★1055番：last_ts より後に終わった「本物の」仕事の本数。
+
+    数えないもの（数えたら嘘になるもの）：
+      ・空回し（test / keepalive）… Claudeを1本も起こしていない2分の空タスク
+      ・機械が自動で畳んだ票（auto_close_recovered が閉じたもの）
+    どちらも「鬼監督が見るべき完成品」ではない。
+    """
+    since = parse_ts(last_ts)
+    n = 0
+    try:
+        with io.open(os.path.join(ST, "queue.json"), encoding="utf-8") as f:
+            items = (json.load(f) or {}).get("items") or []
+    except Exception:
+        return 0
+    for it in items:
+        if it.get("status") not in ("done", "merged"):
+            continue
+        if it.get("test") or it.get("keepalive"):
+            continue
+        if "自動で閉じました" in (it.get("doneNote") or ""):
+            continue
+        t = parse_ts(it.get("doneAt") or it.get("finishedAt"))
+        if t and (since is None or t > since):
+            n += 1
+    return n
+
+
 def check_oni_kantoku():
     """866番の実例：2026-09-09 14:03〜09-16 22:24の176時間、鬼監督(3段目AI検品)の
     ログが1行も増えなかった。実体は鬼監督自体の故障ではなく、上流のauto_launcher(発車係)が
