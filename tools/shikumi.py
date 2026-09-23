@@ -344,6 +344,22 @@ def check_oni_kantoku():
                 "。ただし発車（auto_launch）自体がdead/slow（%s）で、完了イベントが発生していない"
                 "ため沈黙は正常。二重に故障扱いしない（866番）" % launch["verdict"]
             )
+        else:
+            # ★1055番（2026-09-24）866番の判定に穴が1つ残っていた。
+            #   発車係は「回っている」だけで alive になる。ところがこの日、回っていた127本は
+            #   **全部が空回し（keepalive）**で、本物の完了は0本だった（Claudeのログイン切れ）。
+            #   鬼監督は完了のたびに動く係なので、完了が0なら黙っているのが正しい。
+            #   それを「鬼監督が動いていません」と赤で出すと、直しようのない赤が毎日立ち、
+            #   本物の赤が埋もれる。**完了が実際に何本あったかで決める。**
+            honmono = _kanryou_kensuu_since(last_ts)
+            if honmono == 0:
+                verdict = "alive"
+                suppressed_note = (
+                    "。ただしこの間の**本物の完了は0本**（空回しを除く）で、"
+                    "鬼監督は完了のたびに動く係なので沈黙は正常。二重に故障扱いしない（1055番）"
+                )
+            else:
+                suppressed_note = "。この間に本物の完了が%d本あったのに鬼監督が動いていない" % honmono
 
     how = (
         "status/oni_kantoku_log.jsonlの最終行checkedAt基準：現在%s時間更新なし（24時間以内=alive、"
