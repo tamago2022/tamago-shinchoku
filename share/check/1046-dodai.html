@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>#1046 土台を替える ― いまの卵を捨てて、Live2D にする</title>
+<style>
+:root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;--mi:#b0a894;}
+*{box-sizing:border-box;}
+body{margin:0;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 44px);
+  background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  font-size:16px;line-height:1.75;max-width:820px;margin-left:auto;margin-right:auto;overflow-x:hidden;}
+a{color:var(--ao);}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:.05em;margin:0 0 6px;line-height:1.55;}
+h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.04rem;letter-spacing:.05em;
+  margin:40px 0 13px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+.date{color:var(--sub);font-size:.8rem;margin-bottom:16px;word-break:break-word;}
+.ketsu{background:#fff;border-left:4px solid var(--midori);border-radius:0 12px 12px 0;padding:16px 18px;margin:0 0 14px;}
+.ketsu .l1{font-family:"Hiragino Mincho ProN",serif;font-size:1.12rem;line-height:1.6;margin:0 0 8px;}
+.ketsu .l2{font-size:.92rem;color:var(--sub);margin:0;}
+.warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 12px 12px 0;padding:13px 16px;font-size:.9rem;margin:0 0 14px;}
+.note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 16px;font-size:.89rem;margin:0 0 13px;}
+.note p{margin:0 0 8px;} .note p:last-child{margin:0;}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%;}
+table{border-collapse:separate;border-spacing:0;font-size:.83rem;min-width:660px;}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:center;vertical-align:top;line-height:1.5;}
+th{background:#efe9db;color:var(--sub);font-weight:600;font-size:.7rem;}
+th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:#fff;border-right:1px solid var(--line);
+  font-size:.79rem;padding-left:10px;min-width:112px;font-weight:600;white-space:normal;}
+th.t{background:#efe9db;z-index:3;}
+tr:last-child td{border-bottom:none;}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.c-ok{color:var(--midori);font-weight:700;} .c-ng{color:var(--aka);font-weight:700;} .c-un{color:var(--mi);}
+.sel{background:#f6f2e6;}
+ul.plain{list-style:none;margin:0 0 14px;padding:0;}
+ul.plain li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 9px;font-size:.89rem;line-height:1.65;}
+ul.plain li b.h{display:block;margin-bottom:4px;font-size:.96rem;}
+ol.step{margin:0 0 14px;padding-left:1.2em;font-size:.9rem;}
+ol.step li{margin:0 0 9px;line-height:1.65;}
+code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
+.small{font-size:.8rem;color:var(--sub);line-height:1.6;}
+footer{color:var(--sub);font-size:.78rem;margin-top:48px;line-height:1.6;border-top:1px solid var(--line);padding-top:15px;}
+@media (max-width:420px){
+  body{font-size:15px;padding-left:11px;padding-right:11px;}
+  h1{font-size:1.12rem;} .ketsu .l1{font-size:1.02rem;}
+  table{font-size:.79rem;} th.t,td.t{min-width:100px;font-size:.75rem;}
+}
+</style>
+</head>
+<body>
+
+<p class="date"><a href="../../index.html">← 進捗表に戻る</a>　／　前の便：<a href="./1042-kuchi.html">#1042 口</a>・<a href="./1031-avatar-abc.html">#1031 A・B・C</a></p>
+
+<h1>土台を替える ― いまの卵を捨てて、Live2D にする</h1>
+<p class="date">2026-09-24 作成／数字はすべて「どこで叩いたか」を付けてあります。取れなかったものは「取れなかった」と書いてあります。</p>
+
+<div class="ketsu">
+  <p class="l1"><b>いまの卵（canvasに口を描き足す式）を捨てて、Live2D Cubism にします。</b></p>
+  <p class="l2">理由：卵の絵をそのまま素材に使えて、目・まぶた・眉・顔の向き・髪の揺れ・呼吸が全部動き、たまごさんの規模なら<b>ライセンス料0円</b>だから。3Dにすると卵の絵が使えなくなり、動画APIにすると1分ごとにお金が出ます。</p>
+</div>
+
+<div class="warn">
+  <b>先に、お手本の話を正しておきます。</b>お手本にした Grok のコンパニオン（Ani）は、<b>xAI が2026年7月24日に「実験だった。近く終了する」と言い、9月にはアプリから消えています</b>（→ 下の §2）。
+  つまり<b>お手本はもう買えません。</b>追いかける先は「Aniという製品」ではなく、<b>Aniが持っていた3つの性質</b>です。それは §1 に書きました。
+</div>
+
+<h2>1. お手本を実際に見た（あの投稿に何が映っているか）</h2>
+
+<div class="note">
+  <p>見たもの：<a href="https://x.com/cumulo_autumn/status/1944735244940448211" target="_blank" rel="noopener">あき先生(Aki) @cumulo_autumn の投稿</a>（2025年7月14日・再生374.7万）。Chromeで開いて実際に見ました（2026-09-24）。</p>
+  <p>映っているもの：iPhoneの画面を机に置いて撮った動画。紫の部屋に、金髪ツインテール・黒のゴシックドレスの女の子が<b>全身で立っている</b>。画面下に「初めまして。」の吹き出し、マイク・スピーカー・カメラのボタン、右上に Capture。</p>
+  <p><b>2Dではなく3Dです。</b>髪の束・ドレスのひだ・ベルトの金具に、光の当たり方で出る陰影と反射が付いています。平面の絵を曲げたものではありません。</p>
+  <p class="small">★正直に：動画の再生そのものは<b>できませんでした。</b>ログインしていないXは動画を配ってくれず、<code>video</code>の長さが <code>null</code>・縦横が <code>0</code> のままでした（Chromeで確認・2026-09-24）。だから下の「動いているもの」は、<b>止まった画から確実に言えることだけ</b>に絞ってあります。</p>
+</div>
+
+<p><b>何が「生きている」と感じさせているのか ― 3つに絞るとこれです。</b></p>
+<ul class="plain">
+  <li><b class="h">① 口ではなく、全身がそこに立っている</b>顔のアップではなく、足まで入った全身。だから「画面の中に人がいる」に見えます。いまの卵は<b>顔だけを切り抜いた絵</b>なので、どれだけ口を直してもここに届きません。<b>これが一番大きい差です。</b></li>
+  <li><b class="h">② 目が、こちらを見ている</b>瞳に光が入り、視線が正面で止まっています。人は口より先に目を見ます。いまの卵は<b>目が1ミリも動きません。</b></li>
+  <li><b class="h">③ 布と髪に重さがある</b>ツインテールとスカートのひだが、体とは別に垂れています。止まっていても「さっきまで動いていた形」に見えます。いまの卵には揺れる部品がありません。</li>
+</ul>
+
+<h2>2. 中身が何でできているか（公式で確認した結果）</h2>
+
+<div class="note">
+  <p><b class="c-ng">公式には公開されていません。</b>xAI（現 SpaceXAI）の公式ニュース一覧 <a href="https://x.ai/news" target="_blank" rel="noopener">x.ai/news</a> を全部読みました（Chromeで開いて全文取得・2026-09-24）。2023年11月から2026年9月まで<b>84本ありますが、コンパニオン／Ani に触れた記事は1本もありません。</b>発表記事も、終了の告知も、技術の説明も、公式には存在しません。</p>
+  <p>代わりに公式が出した唯一の言葉として出回っているのは、アプリ内のGrokが返した文面の<b>スクリーンショット</b>です（2026年7月24日・「3Dアバターのコンパニオン機能は実験だった。近く終了する」）。これは<b>二次情報</b>なので、ここでは「そう報じられている」までにします。</p>
+  <p class="small">確認できたこと＝①x.ai/news にコンパニオンの記事が無いこと ②止まった画から3Dだと分かること。<br>
+  確認できていないこと＝①どのエンジンで作られたか ②動きが手付けか自動生成か ③終了日。</p>
+  <p class="small">したがって<b>「NVIDIAのハンバーガーショップ」も「Aniの中身」も、真似しようにも設計図が無い。</b>こちらが握れるのは §1 の3つの性質だけです。そこだけを狙います。</p>
+</div>
+
+<h2>3. 3つを並べる</h2>
+
+<div class="wrap">
+<table>
+<thead><tr>
+  <th class="t">　</th>
+  <th>いまの卵<br>（2D平面・口6形）</th>
+  <th>Grok コンパニオン<br>（Ani）</th>
+  <th>NVIDIA<br>ハンバーガーショップ</th>
+</tr></thead>
+<tbody>
+<tr><td class="t">何でできているか</td>
+  <td>1枚のPNG＋canvasに口を描き足す自作コード</td>
+  <td>3Dのキャラクター（画から確認）。エンジンは<b class="c-un">非公開</b></td>
+  <td>NVIDIA ACE（Audio2Face＋Riva＋Omniverse）</td></tr>
+<tr><td class="t">動く部位</td>
+  <td><b class="c-ng">口だけ</b>（目・眉・首・髪・体は固定）</td>
+  <td>全身・目・髪・布（画から確認）</td>
+  <td>顔の筋肉ぜんぶ＋体</td></tr>
+<tr><td class="t">必要なもの</td>
+  <td>絵1枚（もう在る）</td>
+  <td>3Dモデル制作＋モーション＋アプリ</td>
+  <td>NVIDIAのGPU。<b class="c-ng">ブラウザでは動かない</b>（#1031で実測済み）</td></tr>
+<tr><td class="t">初期費用</td>
+  <td class="n">0円（もう払い済み）</td>
+  <td class="n c-un">不明（公開されていない）</td>
+  <td class="n c-ng">GPU代。個人の机には乗らない</td></tr>
+<tr><td class="t">1分あたりの円</td>
+  <td class="n c-ok">0円<br><span class="small">（絵は課金されない。声だけ別勘定）</span></td>
+  <td class="n c-un">不明。<b>そもそも2026年9月に終了</b></td>
+  <td class="n c-ng">GPUの時間課金</td></tr>
+<tr><td class="t">個人が今日から<br>始められるか</td>
+  <td class="c-ok">している</td>
+  <td class="c-ng">できない（製品が消えた）</td>
+  <td class="c-ng">できない</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small">ハンバーガーショップの行は #1031 の実測（ブラウザで動かない・GPU必須）をそのまま引いています。新しく叩き直してはいません。</p>
+
+<h2>4. で、何にするか ― 候補5つを重さで並べた</h2>
+
+<p class="small">数字は<b>Chromeで実際にそのURLを叩いて、返ってきたバイト数を数えたもの</b>です（2026-09-24・全部 HTTP 200）。「絵・モデルを除いた、動かすための部品だけ」の大きさです。</p>
+
+<div class="wrap">
+<table>
+<thead><tr>
+  <th class="t">候補</th><th>動かす部品の大きさ<br>（実測・素のバイト）</th><th>初期費用</th><th>1分あたり</th>
+  <th>卵の絵を<br>そのまま使えるか</th><th>動く部位</th><th>今日から</th>
+</tr></thead>
+<tbody>
+<tr class="sel"><td class="t">★Live2D Cubism<br>（Web SDK）</td>
+  <td class="n c-ok"><b>769.0 KB</b><br><span class="small">心臓202.3＋pixi449.5＋つなぎ117.1</span></td>
+  <td class="n c-ok">0円<br><span class="small">Editorは無料DL・42日PRO体験</span></td>
+  <td class="n c-ok">0円</td>
+  <td class="c-ok"><b>使える</b><br><span class="small">絵をパーツに切る作業は要る</span></td>
+  <td>目・まぶた・眉・口・顔の向き・髪の揺れ・呼吸</td>
+  <td class="c-ok">できる</td></tr>
+<tr><td class="t">VRM＋Three.js</td>
+  <td class="n"><b>799.3 KB</b><br><span class="small">three 655.0＋three-vrm 143.9</span></td>
+  <td class="n">0円</td><td class="n c-ok">0円</td>
+  <td class="c-ng"><b>使えない</b><br><span class="small">3Dモデルを一から作り直し</span></td>
+  <td>全身・表情・視線</td>
+  <td class="c-un">モデル制作が先</td></tr>
+<tr><td class="t">Rive</td>
+  <td class="n c-ng"><b>1,378.3 KB</b><br><span class="small">js 213.9＋wasm 1,164.4</span></td>
+  <td class="n">0円（無料枠）</td><td class="n c-ok">0円</td>
+  <td class="c-un">描き直し</td>
+  <td>作った分だけ（声に自動で合わない）</td>
+  <td class="c-un">作り直し</td></tr>
+<tr><td class="t">HeyGen／Simli／<br>Tavus のAPI</td>
+  <td class="n">映像を受け取るので<br>通信が出続ける</td>
+  <td class="n c-ng">契約が要る</td>
+  <td class="n c-ng">分ごとに出る</td>
+  <td class="c-ng">写真から別人を作る</td>
+  <td>顔・上半身</td>
+  <td class="c-ng">課金の判断が先</td></tr>
+<tr><td class="t">NVIDIA ACE／<br>Audio2Face</td>
+  <td class="n c-ng">ブラウザで動かない</td>
+  <td class="n c-ng">GPU</td><td class="n c-ng">GPU時間</td>
+  <td class="c-ng">3Dが要る</td><td>顔の筋肉</td>
+  <td class="c-ng">できない</td></tr>
+<tr><td class="t"><span class="small">参考</span><br>いまの卵</td>
+  <td class="n c-ok"><b>324.5 KB</b><br><span class="small">コード15.9＋絵308.6</span></td>
+  <td class="n c-ok">0円</td><td class="n c-ok">0円</td>
+  <td class="c-ok">—</td><td class="c-ng">口だけ</td><td class="c-ok">動いている</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="warn">
+  <b>軽さについて、隠さずに書きます。</b>Live2D にすると、いまの卵（324.5 KB）に対して<b>部品が769.0 KB 増えます。</b>約3.4倍です。たまごさんの「軽さが最優先」に、これは正面からぶつかります。<br>
+  <b>逃げ方は1つだけ：最初は読み込まない。</b>トップを開いた瞬間には1バイトも取りに行かず、<b>「話しかける」を押した人にだけ</b>769 KB を払わせます。押さない人にとっては今より重くなりません。#1046の台はその形で作ってあります。<br>
+  <span class="small">なお Rive は「軽い2Dアニメ」と言われていますが、実測は1,378.3 KB で<b>候補の中でいちばん重い</b>（wasmが1MB超）。ここは思い込みと逆でした。</span>
+</div>
+
+<h2>5. 卵のどこまでが流用で、どこから作り直しか</h2>
+
+<div class="wrap">
+<table>
+<thead><tr><th class="t">いま在るもの</th><th>どうなるか</th><th>なぜ</th></tr></thead>
+<tbody>
+<tr><td class="t">卵の絵<br><code>concierge.png</code></td><td class="c-ok"><b>そのまま資産</b></td><td>Live2Dは<b>絵そのものを貼って動かす</b>方式。描き直さない</td></tr>
+<tr><td class="t">口を消した絵<br><code>concierge-nomouth.png</code></td><td class="c-ok"><b>そのまま使える</b></td><td>パーツ分けの下地として、むしろこれが要る</td></tr>
+<tr><td class="t">かな→口の形の表<br><code>kanaToViseme()</code></td><td class="c-ok"><b>そのまま移せる</b></td><td>Live2D側のパラメータ名に差し替えるだけ。考え方は同じ</td></tr>
+<tr><td class="t">声（xAI／Gemini）</td><td class="c-ok"><b>そのまま</b></td><td>土台を替えても声の口は変わらない</td></tr>
+<tr><td class="t">口を描くコード<br><code>avatar431.js</code> の描画部</td><td class="c-ng"><b>捨てる</b></td><td>canvasに口を手で描く仕事がまるごと無くなる</td></tr>
+<tr><td class="t">揺れ・呼吸・影の自作</td><td class="c-ng"><b>捨てる</b></td><td>Live2Dが持っている。自作を残すと二重に動く</td></tr>
+<tr><td class="t"><b>新しく要るもの</b></td><td class="c-un">卵の絵を<b>パーツに切る</b><br>（目・まぶた・眉・口・髪・体）</td><td>ここだけは人の手。Cubism Editor（無料DL・42日PRO体験）で組む</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small">つまり<b>捨てるのは実装だけで、絵は1枚も捨てません。</b>たまごさんの読み通りです。</p>
+
+<h2>6. 今日やったこと（着手した1本）</h2>
+
+<div class="note">
+  <p><b>Live2D を選び、公式の実行部品と公式のサンプルキャラクターを、そのままブラウザに読み込む台を1枚作りました。</b>オリジナルのコードは書いていません。</p>
+  <p>→ <a href="https://tamago2022.github.io/tamago-shinchoku/share/ohon/1046-live2d.html" target="_blank" rel="noopener"><b>#1046 Live2D を動かす台を開く</b></a></p>
+  <p><b>通ったところ</b>（全部 Chrome で叩いて確認・2026-09-24）</p>
+  <ul style="margin:0 0 8px;padding-left:1.2em" class="small">
+    <li>Live2D社が自分で配っている心臓 <code>live2dcubismcore.min.js</code> … <b>200</b>／207,155バイト</li>
+    <li>pixi.js 6.5.10 … <b>200</b>／460,333バイト　　pixi-live2d-display 0.4.0 … <b>200</b>／119,922バイト</li>
+    <li>Live2D公式サンプル Hiyori の <code>model3.json</code> … <b>200</b>／1,736バイト（moc3 443,648・テクスチャ 1,814,312）</li>
+    <li>ページ上で3本とも読み込み成功（<code>Live2DCubismCore</code>・<code>PIXI</code>・<code>PIXI.live2d</code> がすべて存在）</li>
+  </ul>
+  <p><b class="c-ng">通らなかったところ（正直に）</b></p>
+  <p class="small">この作業用のChromeは <b>WebGL が切ってあり</b>（<code>canvas.getContext('webgl')</code> が <code>false</code>・2026-09-24 実測）、Live2Dは WebGL でしか描けないので、<b>この端末では立ちませんでした。</b>部品は全部届いています。<b>たまごさんのiPhoneやふつうのMacのChromeでは立つはずですが、こちらでは確認できていません。</b>開いてみて、立たなかったら教えてください。</p>
+  <p class="small">★この台はまだ <code>share/ohon/</code>（材料置き場）に置いてあります。<code>share/check/</code> に出すには絵の門を通す必要があり、<b>いま外の判定役がいない</b>ため、規則どおり止めてあります。</p>
+</div>
+
+<h2>7. 次の一歩（この順）</h2>
+<ol class="step">
+  <li><b>上の台をiPhoneで開いて、公式サンプルの子が立つか見る。</b>立てば土台は確定。立たなければ Live2D は落として VRM に行く。<b>ここだけたまごさんの目が要ります。</b></li>
+  <li>立ったら、<code>concierge.png</code> を<b>パーツに切る</b>（目・まぶた・眉・口・髪・体）。Cubism Editor を無料DL。ここが一番時間がかかる工程で、外注もできる。</li>
+  <li>切った卵を Live2D で動かし、いまの声（xAI／Gemini）を口のパラメータに繋ぐ。<code>kanaToViseme()</code> はそのまま移せる。</li>
+  <li>本番（ごきげん補給所）には<b>「話しかける」を押した人にだけ</b>読み込む形で載せる。トップの初回表示は1バイトも増やさない。</li>
+</ol>
+
+<h2>8. 叩いたURL（全部）</h2>
+<ul class="plain">
+  <li><b class="h">見た投稿</b><a href="https://x.com/cumulo_autumn/status/1944735244940448211" target="_blank" rel="noopener">x.com/cumulo_autumn/status/1944735244940448211</a><br><span class="small">Chromeで開いて本文・投稿日・再生数を取得。動画の再生は不可（ログイン無し）。</span></li>
+  <li><b class="h">xAI公式ニュース一覧</b><a href="https://x.ai/news" target="_blank" rel="noopener">x.ai/news</a><br><span class="small">Chromeで全文取得。2023-11〜2026-09 の全記事にコンパニオン／Aniの記載なし。</span></li>
+  <li><b class="h">Live2D SDKリリースライセンス（公式）</b><a href="https://www.live2d.com/sdk/license/" target="_blank" rel="noopener">live2d.com/sdk/license/</a><br><span class="small">原文：「個人や小規模事業者はライセンス契約・支払いは不要（拡張性アプリケーションを除く）」。小規模事業者＝直近年商1,000万円未満（<a href="https://help.live2d.com/en/sdk/sdk_007/" target="_blank" rel="noopener">公式ヘルプ sdk_007</a>）。</span></li>
+  <li><b class="h">Cubism Editor ダウンロード（公式）</b><a href="https://www.live2d.com/cubism/download/editor/" target="_blank" rel="noopener">live2d.com/cubism/download/editor/</a><br><span class="small">原文：「42日間限定でPRO機能を試しいただけます」。初期費用0円。</span></li>
+  <li><b class="h">Live2D公式サンプル（Live2D社のGitHub）</b><a href="https://github.com/Live2D/CubismWebSamples" target="_blank" rel="noopener">github.com/Live2D/CubismWebSamples</a></li>
+  <li><b class="h">動かす部品（MIT）</b><a href="https://github.com/pixijs/pixijs" target="_blank" rel="noopener">pixijs/pixijs</a> ／ <a href="https://github.com/guansss/pixi-live2d-display" target="_blank" rel="noopener">guansss/pixi-live2d-display</a> ／ <a href="https://github.com/pixiv/three-vrm" target="_blank" rel="noopener">pixiv/three-vrm</a> ／ <a href="https://github.com/rive-app/rive-wasm" target="_blank" rel="noopener">rive-app/rive-wasm</a></li>
+</ul>
+
+<h2>9. 確認できたこと／できていないこと</h2>
+<div class="wrap">
+<table>
+<thead><tr><th class="t">　</th><th>中身</th></tr></thead>
+<tbody>
+<tr><td class="t c-ok">確認できた</td><td style="text-align:left">投稿に映っているものが3Dの全身キャラだということ／x.ai/news にコンパニオンの記事が1本も無いこと／Live2Dは個人・小規模事業者はライセンス0円だということ／Cubism Editorが無料でDLできること／候補5つの部品の実バイト数（全部200）／3本のライブラリがブラウザで読み込めること</td></tr>
+<tr><td class="t c-ng">確認できていない</td><td style="text-align:left">Aniが何のエンジンで作られたか（公開されていない）／Aniの動きが手付けか自動生成か／コンパニオン終了の正確な日付（公式発表が存在しない）／<b>Live2Dのキャラクターが実際に画面に立つところ</b>（この作業機はWebGLが切ってある）／卵をパーツに切るのにかかる時間</td></tr>
+</tbody>
+</table>
+</div>
+
+<footer>
+  この便では、口を1ミリも触っていません。触ったのは土台の選び方だけです。<br>
+  <a href="../../index.html">進捗表に戻る</a>　／　<a href="https://tamago2022.github.io/tamago-shinchoku/share/ohon/1046-live2d.html">Live2Dの台</a>
+</footer>
+
+</body>
+</html>
