@@ -53,6 +53,16 @@ QUEUE = os.path.join(REPO, "status", "queue.json")
 CLAUDE = os.environ.get("CLAUDE_BIN") or (os.path.expanduser("~/.local/bin/claude")
         if os.path.exists(os.path.expanduser("~/.local/bin/claude")) else "claude")
 
+# ---- 1158番：claude は必ず関所を通す（2026-09-26）----
+# 同時起動の競合で refreshToken が空を書き戻され鍵ごと消える事故を、
+# 起動口で物理的に止める。上限は status/dojisu_jougen.json の「同時上限」。
+# 関所は引数をそのまま素通しするので、呼ぶ側のコードは1文字も変わらない。
+_KANMON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1158_kanmon.py")
+if os.path.exists(_KANMON):
+    os.environ.setdefault("KANMON_CLAUDE_BIN", CLAUDE)
+    CLAUDE = _KANMON
+
+
 # 2026-09-03 たまごさん指定：絶対に閉じない（Chromeを含めるのは『Happy Place Station | Lovable』の
 # ウィンドウを巻き込まないため。プロセス単位のquitではウィンドウ単位の除外ができないので全体を除外する）
 EXCLUDED_APPS = {"Brave Browser", "Google Chrome"}
@@ -88,26 +98,17 @@ def dokudoku_publish(target, cmd_id=None):
 # ---- 認証トークン（2026-09-05）----
 # `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
 # こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
-def claude_env():
-    """CLIに渡す環境。**環境変数のトークンは原則使わない**（2026-09-05に実測）。
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import claude_auth as _claude_auth
 
-    `CLAUDE_CODE_OAUTH_TOKEN` を渡すと、キーチェーンに入っている**正しい鍵より優先される。**
-    9/05は `/login` が成功して「Logged in as eggypop2010@gmail.com」と出ているのに、
-    ここで古い壊れたトークン（79文字）を被せていたせいで「OAuth session expired」が続いた。
-    キーチェーンを正本にする。環境変数を使いたいときだけ ~/.tamago/use_token を置く。
+
+def claude_env():
+    """正本は tools/claude_auth.py（2026-09-25に1か所へ集約）。
+
+    ここに実体を置くと、4か所のコピーが直すたびにずれる。呼ぶだけにする。
     """
-    env = dict(os.environ)
-    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
-    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
-        return env
-    p = os.path.expanduser("~/.tamago/claude_token")
-    try:
-        t = io.open(p, encoding="utf-8").read().strip()
-        if t:
-            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
-    except Exception:
-        pass
-    return env
+    return _claude_auth.claude_env()
 
 
 def run(cmd, timeout=10, env=None):
@@ -2026,15 +2027,25 @@ def _process_other(action, cmd):
             import nagekomi as _nk
             if action == "nagekomi":
                 # ★1039番：箱の棚ボタンで選んだ行き先をそのまま持って上がる
+                # ★1043番：機械の試し投げには印をつける（たまごさんの一覧に混ぜない）
+                # ★1164番：棚は複数来る（箱でポチポチ押した分だけ）。
+                #   古い箱からは shelf/shelfId しか来ないので、両方受ける。
                 r = _nk.add(target or cmd.get("url") or "",
                             cmd.get("memo") or cmd.get("note") or "",
-                            cmd.get("shelf"), cmd.get("shelfId"))
+                            cmd.get("shelf"), cmd.get("shelfId"),
+                            test=bool(cmd.get("test")),
+                            shelves=cmd.get("shelves"))
             else:
                 r = _nk.shiji(target or cmd.get("text") or cmd.get("memo") or "",
                               cmd.get("shelf"))
             return ("done" if r.get("ok") else "failed"), r.get("message", "")
         except Exception as e:
             return "failed", "投げ込み箱が受け取れませんでした：%s" % e
+    # 1042番：通し確認（空荷）。★これが通れば「トンネル→受け口→ここ(command_ingest)」が
+    #   本当に生きている。/health の200では受け口の中身が古くても緑になるので根拠にしない。
+    #   台帳(nagekomi.jsonl)には1行も書かない＝何度やってもたまごさんの一覧は汚れない。
+    if action == "soutuu":
+        return soutuu(cmd)
     # 1041番：鍵の受け口。★値は cmd["kagi"]。target には入れない（target はログに出るため）
     if action == "kagi_install":
         return kagi_install(cmd)
@@ -2152,5 +2163,25 @@ def main():
         save_json(OUT, out)
 
 
+def soutuu(cmd=None):
+    """1042番：見張りが投げる空荷。届いた事実を relay.json に判子として押す。
+
+    判定の規則そのものは tools/hantei.py にしか書かない（2か所に書かない）。
+    ここは「届いた」という事実を1か所へ記録するだけ。
+    """
+    import datetime as _dt
+    p = os.path.join(REPO, "status", "relay.json")
+    now = _dt.datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z")
+    try:
+        d = json.load(io.open(p, encoding="utf-8"))
+    except Exception:
+        d = {}
+    d["verifiedAt"] = now
+    d["verifiedBy"] = (cmd or {}).get("by") or "soutuu"
+    json.dump(d, io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return "done", "通し確認：届きました（%s）" % now
+
+
 if __name__ == "__main__":
     main()
+

@@ -48,6 +48,8 @@
 
   function stand(el, opt) {
     opt = opt || {};
+    /* ★1042：比較ページ（#1042）だけが渡す。本番は渡さない＝必ず直した式で動く。 */
+    var MAE = (opt.kuchi === "mae");
 
     var stage = document.createElement("div");
     stage.className = "tmk-stage";
@@ -98,7 +100,7 @@
     var N = { koe: [1, 0], iki: 0, yure: 0, mi: 0 };
 
     var analyser = null, lv = 0, t = 0;
-    var vis = "viseme_sil", visAt = 0, vx = 1, amp = 0, mi = 0;
+    var vis = "viseme_sil", visAt = 0, vx = 1, amp = 0, mi = 0, pulse = 0;
 
     /* 笑みの線（＝上くちびる）を、よこはば倍率つきで辿る。
        口角の2点は動かさない。動くのは真ん中だけ。 */
@@ -188,17 +190,36 @@
       } else { lv *= 0.85; }
 
       /* ① 口の開き
-         ★974：音素の精度は追わない（たまごさんの指示）。「喋っている間、自然に開閉する」だけ。
-         開くのは速く、閉じるのはゆっくり（attack/release を分ける）。
-         同じ速さで往復させると、カクカクして“切り取られた”ように見える。 */
-      var want = Math.min(1, lv * 1.95);
-      amp += (want - amp) * (want > amp ? 0.40 : 0.12);
+         ★1042：たてはばも VIS の表から取る。ここが今回の直し。
+           前： var want = Math.min(1, lv * 1.95);        ← 音の大きさだけ＝「あ」も「い」も同じ開き
+           後： たてはば＝VIS[vis][1]（母音ごとの数字。表は下の VIS に前から書いてあった）
+                よこはば＝VIS[vis][0]（55%に薄めるのをやめて、そのまま使う）
+                音の大きさ lv は「鳴っているか」の栓（gate）にだけ使う。
+         ★新しい数字は1つも足していない。使われていなかった VIS[vis][1] を繋いだだけ。追加費用0円。
+         ★形はパッと切り替えない。下の1極フィルタ＝指数減衰＝ease-out（等速ではない）。
+           開くのは速く（0.40）、閉じるのはゆっくり（0.16）。 */
+      if (pulse > 0) pulse = Math.max(0.42, pulse * 0.955);        // 声が無く台本で動かすときの音量の代わり
+      var fresh = (performance.now() - visAt) < 260;
+      var v6 = (fresh && VIS[vis]) ? VIS[vis] : VIS.viseme_sil;   // 母音5＋閉じ＝6形
+      var gate = analyser ? Math.min(1, lv * 2.6) : pulse;        // 鳴っているか
+      var want, wantW;
+      if (MAE) {
+        /* ★比較用にだけ残してある「前の式」。本番はここを通らない（opt.kuchi==="mae" のときだけ）。 */
+        want = analyser ? Math.min(1, lv * 1.95) : pulse;
+        wantW = (fresh && VIS[vis]) ? (1 + (VIS[vis][0] - 1) * 0.55) : 1;
+      } else {
+      want = v6[1] * Math.max(0.35, Math.min(1, gate * 1.25));
+      if (!fresh || vis === "viseme_sil" || gate <= 0.002) want = 0;
+      wantW = v6[0];
+      }
+      /* ★1042：開きを 0.40→0.50 に上げた。理由＝tools/_1042_zure.py で測ったら
+         「音が出てから口が90%開くまで」が126.0msで、人が気づく100〜120msを超えていたため。
+         0.50 にすると 109.4ms（内訳：解析窓42.7ms＋口66.7ms）。 */
+      amp += (want - amp) * (want > amp ? (MAE ? 0.40 : 0.50) : (MAE ? 0.12 : 0.16));
       if (amp < 0.006) amp = 0;
 
-      /* よこはばだけ母音から借りる（形は追わないが、ずっと同じ幅だと機械に見える） */
-      var fresh = (performance.now() - visAt) < 260;
-      var wantW = (fresh && VIS[vis]) ? (1 + (VIS[vis][0] - 1) * 0.55) : 1;
-      vx += (wantW - vx) * 0.16;
+      /* よこはば：母音の表をそのまま（あ1.25／い1.40／う0.60／え1.35／お0.85／閉じ0.75） */
+      vx += (wantW - vx) * (MAE ? 0.16 : 0.30);
       N.koe = [vx, amp];
 
       /* ② 呼吸（止まった人形にしない。無言のときこそ動かす） */
@@ -218,7 +239,12 @@
       attach: function (a) { analyser = a; },
       speaking: function () {},
       level: function () { return lv; },
-      viseme: function (v) { if (VIS[v] && v !== "viseme_sil") { vis = v; visAt = performance.now(); } },
+      /* ★1042：viseme_sil も受け取る。閉じは「形のひとつ」なので捨てない（捨てると口が開きっぱなしになる） */
+      viseme: function (v) { if (VIS[v]) { vis = v; visAt = performance.now(); } },
+      /* ★1042：声を使わず台本で動かすとき用（かな→母音）。追加の通信は無い。 */
+      kana: function (s) { return global.Tamako431.kanaToViseme(s); },
+      pulse: function (p) { pulse = p; },
+      reset: function () { vis = "viseme_sil"; pulse = 0; },
       el: rig
     };
   }
@@ -227,7 +253,41 @@
   function avatar() { return '<span class="tmk-ava" aria-hidden="true"></span>'; }
   function you() { return '<span class="tmk-ava you" aria-hidden="true"></span>'; }
 
-  var api = { stand: stand, avatar: avatar, you: you };
+  /* ★1042：かな → 母音（viseme）。ま行・ば行・ぱ行の直前に「唇を閉じる」(viseme_PP)を挟む。
+     声が無いとき（見本・比較）に、同じ口を台本で動かすためだけのもの。通信も課金も無い。 */
+  var KANA_V = {};
+  (function () {
+    var rows = [
+      ["あかさたなはまやらわがざだばぱ", "viseme_aa"],
+      ["いきしちにひみりぎじぢびぴ", "viseme_I"],
+      ["うくすつぬふむゆるぐずづぶぷ", "viseme_U"],
+      ["えけせてねへめれげぜでべぺ", "viseme_E"],
+      ["おこそとのほもよろをごぞどぼぽ", "viseme_O"]
+    ];
+    rows.forEach(function (r) {
+      r[0].split("").forEach(function (c) { KANA_V[c] = r[1]; });
+    });
+    "んン".split("").forEach(function (c) { KANA_V[c] = "viseme_nn"; });
+  })();
+  var CLOSE_FIRST = "まみむめもばびぶべぼぱぴぷぺぽ";
+
+  function kanaToViseme(s) {
+    var out = [], i, c;
+    for (i = 0; i < s.length; i++) {
+      c = s[i];
+      if ("。、？！ 　".indexOf(c) >= 0) { out.push({ v: "viseme_sil", k: " ", w: 1.2 }); continue; }
+      if (c === "っ" || c === "ッ") { out.push({ v: "viseme_sil", k: "っ", w: 0.6 }); continue; }
+      if (c === "ー") { if (out.length) out[out.length - 1].w += 0.7; continue; }
+      if (CLOSE_FIRST.indexOf(c) >= 0) out.push({ v: "viseme_PP", k: c, w: 0.35 });
+      if (KANA_V[c]) out.push({ v: KANA_V[c], k: c, w: 1 });
+      else if ("ぁぃぅぇぉゃゅょャュョ".indexOf(c) >= 0) { /* 小文字は前の音に足す */ if (out.length) out[out.length - 1].w += 0.3; }
+      else out.push({ v: "viseme_sil", k: c, w: 0.8 });
+    }
+    out.push({ v: "viseme_sil", k: " ", w: 1.5 });
+    return out;
+  }
+
+  var api = { stand: stand, avatar: avatar, you: you, kanaToViseme: kanaToViseme, VIS: VIS };
   global.Tamako431 = api;
   global.Tamako966 = api;   // 966の呼び出し側をそのまま使う
 })(window);

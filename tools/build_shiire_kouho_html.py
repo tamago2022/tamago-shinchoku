@@ -37,17 +37,26 @@ def main():
         rows = []
         for c in cands:
             asia = "アジア" if (c.get("asia") or str(c.get("axis", "")).endswith("アジア")) else ""
+            # ★出典がURLでないものを「出典」のリンクにしない（2026-09-24・1045番）。
+            #   押しても何も無いリンクに「出典」と書いてあるのは、出典が有るように見えて
+            #   実際は無い＝一番たちの悪い形。**取れていないなら、取れていないと字で出す。**
+            #   （関所 sekisho-jijitsu-shutten「取れなければ、その語を落とす」）
+            _src = str(c.get("src") or "")
+            _srchtml = ('<a href="%s" target="_blank" rel="noopener">出典</a>' % esc(_src)
+                        if _src.startswith("http") else
+                        '<span class="nosrc">出典：%s</span>'
+                        % esc(_src or "まだ取れていない"))
             rows.append(
                 '<li class="c"><div class="hd"><span class="ax">%s</span>'
                 '%s<b>%s</b><span class="ar">%s</span></div>'
                 '<p class="why">%s</p><p class="fact">%s</p>'
-                '<p class="meta"><a href="%s" target="_blank" rel="noopener">出典</a>'
+                '<p class="meta">%s'
                 '<span class="v">動画：%s</span></p></li>' % (
                     esc(c.get("axis")),
                     ('<span class="asia">%s</span>' % asia) if asia else "",
                     esc(c.get("name")), esc(c.get("area") or ""),
                     esc(c.get("why")), esc(c.get("fact") or ""),
-                    esc(c.get("src")), esc(c.get("video") or "未確認")))
+                    _srchtml, esc(c.get("video") or "未確認")))
         rej = "".join('<li><b>%s</b>：%s <a href="%s" target="_blank" rel="noopener">出典</a></li>'
                       % (esc(r.get("name")), esc(r.get("why")), esc(r.get("src")))
                       for r in (d.get("rejected") or []))
@@ -94,6 +103,7 @@ header p{margin:6px 0 0;font-size:13px;opacity:.78}
 .red{border-color:#b4332b;background:#fdf1f0}
 .red b{color:#b4332b}
 main{padding:18px;max-width:900px;margin:0 auto}
+.nosrc{color:#a33;font-size:.82rem}
 .entry{margin:0 0 30px}
 .entry h2{font-size:17px;margin:0 0 4px;padding-bottom:8px;border-bottom:2px solid #1c1a17}
 .song{font-weight:400;opacity:.7}

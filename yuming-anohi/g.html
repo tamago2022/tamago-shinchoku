@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>あの日にかえりたい／荒井由実（1975）｜曲の読みもの</title>
+<style>
+  :root{
+    --cream:#f7f1e3;
+    --paper:#fffdf6;
+    --ink:#332f27;
+    --sub:#6f675a;
+    --accent:#c05a35;
+    --teal:#2f6f6a;
+    --gold:#b8912f;
+    --line:#e3d9c4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    line-height:1.9;
+    overflow-x:hidden;
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 16px;}
+  header.hero{
+    background:linear-gradient(160deg,#2f6f6a 0%,#224b48 100%);
+    color:#f7f1e3;
+    padding:44px 0 30px;
+  }
+  .kicker{
+    display:inline-block;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:12px;letter-spacing:.22em;
+    border:1px solid rgba(247,241,227,.5);
+    padding:4px 12px;border-radius:999px;
+    margin-bottom:18px;
+  }
+  h1{
+    margin:0 0 10px;
+    font-size:clamp(26px,7vw,40px);
+    font-weight:600;
+    letter-spacing:.06em;
+  }
+  .hero-sub{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:13px;opacity:.85;margin:0;
+  }
+  .lead{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 18px;
+    margin:26px 0;
+    font-size:15.5px;
+  }
+  h2{
+    font-size:21px;
+    font-weight:600;
+    letter-spacing:.08em;
+    margin:44px 0 6px;
+    padding-left:14px;
+    border-left:5px solid var(--accent);
+  }
+  h2 .no{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:12px;color:var(--accent);
+    display:block;letter-spacing:.2em;margin-bottom:2px;
+  }
+  p{font-size:15.5px;margin:14px 0;}
+  .src{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:11.5px;color:var(--sub);
+    display:block;margin-top:2px;
+  }
+  .src a{color:var(--teal);word-break:break-all;}
+  section{margin-bottom:8px;}
+  .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0;}
+  table{
+    width:100%;max-width:100%;
+    border-collapse:collapse;
+    background:var(--paper);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:13.5px;
+  }
+  th,td{
+    border:1px solid var(--line);
+    padding:9px 10px;
+    text-align:left;vertical-align:top;
+  }
+  th{background:#efe7d2;font-weight:600;white-space:nowrap;}
+  td .src{margin-top:4px;}
+  .note{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:12.5px;color:var(--sub);
+    background:#f2ecdc;border-radius:8px;
+    padding:10px 14px;margin:14px 0;
+  }
+  .pull{
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:14px 4px;
+    margin:26px 0;
+    font-size:17px;
+    color:var(--teal);
+    font-weight:600;
+    letter-spacing:.05em;
+  }
+  .watch{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-left:6px solid var(--gold);
+    border-radius:8px;
+    padding:16px 18px;margin:18px 0;
+  }
+  .watch a{color:var(--accent);font-weight:600;}
+  .survey{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px 18px;
+    margin:40px 0 30px;
+  }
+  .survey h2{margin-top:0;border-left-color:var(--teal);}
+  .q{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:14.5px;font-weight:600;margin:22px 0 8px;
+  }
+  .q:first-of-type{margin-top:6px;}
+  label.opt{
+    display:flex;align-items:flex-start;gap:8px;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:13.5px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin:6px 0;
+    cursor:pointer;
+    background:#fff;
+  }
+  label.opt:hover{border-color:var(--teal);}
+  label.opt input{margin-top:6px;flex:none;}
+  textarea,input[type="text"]{
+    width:100%;max-width:100%;
+    font-family:inherit;font-size:14px;
+    padding:10px;border:1px solid var(--line);
+    border-radius:8px;background:#fff;
+  }
+  .send{
+    display:block;width:100%;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:15px;letter-spacing:.1em;
+    background:var(--teal);color:#fff;
+    border:none;border-radius:999px;
+    padding:13px 0;margin-top:18px;cursor:pointer;
+  }
+  .send:hover{opacity:.9;}
+  .thanks{
+    display:none;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:14px;color:var(--teal);
+    text-align:center;margin-top:14px;
+  }
+  footer{
+    border-top:1px solid var(--line);
+    margin-top:30px;padding:24px 0 40px;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:12px;color:var(--sub);
+  }
+  footer li{margin:4px 0;word-break:break-all;}
+  @media (max-width:400px){
+    body{line-height:1.85;}
+    p,.lead{font-size:14.5px;}
+    table{font-size:12.5px;}
+    th,td{padding:7px 8px;}
+    .wrap{padding:0 12px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker">曲の読みもの・案内所</span>
+    <h1>あの日にかえりたい</h1>
+    <p class="hero-sub">荒井由実（現・松任谷由実）／1975年10月5日発売　6枚目のシングル</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="lead">
+    「戻りたい」と願う場所は、誰にでも一つはある。1975年の秋、21歳のシンガーソングライターが歌ったこの曲は、発売から三か月余りで日本中のチャートの頂点に立った。華やかなデビューではなく、じわじわと、時間をかけて昇っていった珍しいヒットだった。このページでは、その上昇曲線の内側にある三つの物語――「書き直された詞」「ドラマとCM」「世代を越えて歌い継がれてきたカバー」――を順にたどる。
+    <span class="src">年齢の出典：<a href="http://music-calendar.jp/2015122201">music-calendar.jp</a></span>
+  </div>
+
+  <section>
+    <h2><span class="no">DATA</span>基本のデータ</h2>
+    <div class="tablewrap">
+      <table>
+        <tr><th>発売日</th><td>1975年10月5日（規格品番：ETP-20174）<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia「あの日にかえりたい」</a></span></td></tr>
+        <tr><th>作詞・作曲</th><td>荒井由実<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">同上</a></span></td></tr>
+        <tr><th>編曲</th><td>松任谷正隆<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">同上</a></span></td></tr>
+        <tr><th>B面</th><td>「少しだけ片想い」（アルバム『COBALT HOUR』からのシングルカット）。なお1980年再発盤ではB面が「卒業写真」に変更されている<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">同上</a></span></td></tr>
+        <tr><th>タイアップ</th><td>TBS系ドラマ『家庭の秘密』主題歌<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">同上</a>／<a href="https://www.uta-net.com/song/335/">歌ネット（主題歌表記）</a></span></td></tr>
+        <tr><th>オリコン</th><td>週間最高1位／登場35週／累計売上61.5万枚<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">同上</a>／<a href="https://www.oricon.co.jp/prof/220292/rank/single/">オリコン（最高順位1位・登場35週）</a></span></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no"> STORY 1 </span>70位から始まった、ゆっくりな頂点</h2>
+    <p>この曲のヒットは、爆発では始まらなかった。10月5日の発売から一週間後、10月13日付のオリコンチャートに初登場した位は70位。翌週、34位まで跳ね上がった――ここまでは、新譜としてはごく平凡な動きだった。<span class="src">出典：<a href="https://ameblo.jp/chris-matsumura/entry-12767540948.html">クリス松村オフィシャルブログ「『あの日にかえりたい』の前後の記録」</a></span></p>
+    <p>それからが本番である。ドラマの放送とともに歌が耳に残り、売上が積み上がり、チャートは順位をひとつずつ上げていく。週間1位を獲得したあとも落ちることなく、チャートには実に35週間連続で名を連ねた。発売から3か月で100万枚を超えたという記述もあり、累計売上は61.5万枚（オリコン集計）に達している。<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia「あの日にかえりたい」</a></span></p>
+    <p>そして1975年12月、この1位は荒井由実にとって初のオリコン・シングルランキング1位でもあった。デビューから3年、6枚目のシングルにして、初めての頂点。「じわじわ型」のロングヒットこそ、この曲のいちばん長い物語である。<span class="src">出典：<a href="https://ameblo.jp/popfreak/entry-12897277778.html">popfreak「あの日にかえりたい／荒井由実（1975年10月5日発売）」</a></span></p>
+    <div class="pull">初登場70位――それが、35週後に1位になる。</div>
+  </section>
+
+  <section>
+    <h2><span class="no"> STORY 2 </span>書き直された詞は、別の曲になって生きた</h2>
+    <p>この曲には、最初から今の歌詞があったわけではない。ドラマ主題歌として書かれた当初の詞は、ドラマの内容にそぐわないと判断され、書き直されることになった。ここで多くの作家なら初稿を箱にしまって終わりだろう。しかし荒井由実の場合、その「外された詞」は捨てられなかった。別の旋律が当てられ、1975年のもうひとつの名曲――ハイ・ファイ・セットの「スカイレストラン」――として世に出ることになるのである。<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia「あの日にかえりたい」</a></span></p>
+    <p>さらに細かい話をひとつ。ドラマ『家庭の秘密』の主題歌として実際に使われたのは、2番の歌詞であり、しかもヴォーカルをイコライジングしていない別テイクだった。つまりシングル盤で普段聴いている音とは、主題歌として流れていた音が微妙に違う版本であったことになる。レコードを繰り返し聴いてきた人ほど、この「もうひとつのテイク」の話は耳をそそぐ。<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">同上</a></span></p>
+    <div class="pull">ひとつの詞が、二つの名曲に化けた。</div>
+  </section>
+
+  <section>
+    <h2><span class="no"> STORY 3 </span>ドラマで歌われ、CMで歌われ続けた</h2>
+    <p>タイアップの履歴を見ると、この曲がいかに「使われ続けてきた」かがわかる。発火点はTBS系ドラマ『家庭の秘密』の主題歌。ジャケットに主題歌の表記がある版とない版の2版が存在することからも、タイアップがヒットの背骨だったことがうかがえる。<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia「あの日にかえりたい」</a></span></p>
+    <p>その後も曲は消えなかった。1975年には三菱電機「ダイヤトーンステレオ」のCMソングに、1980年には旭光学「アサヒペンタックス」のCMソングに採用されている。1980年再発盤シングルのジャケット裏面の歌詞カード部分には、実際に「ペンタックスMG・CMソング」の記載があった。<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">同上</a>／CM歌唱版の楽曲情報：<a href="https://www.joysound.com/web/search/song/422662">JOYSOUND「あの日にかえりたい(CM Version)」</a></span></p>
+  </section>
+
+  <section>
+    <h2><span class="no"> LISTEN </span>聴きどころ</h2>
+    <p>イントロの落ち着いた響きから一転、サビで一気に伸び上がる構成がこの曲の骨格である。落ち着いて始まって、「戻りたい」という感情が押し上げられるように盛り上がる――懐かしさと切なさが同じフレーズの中で同居しているのは、この構成の妙だと言っていい。</p>
+    <p>編曲を手がけたのは当時の夫・松任谷正隆である。弦とリズム隊が歌の下で静かに押し進めるアンサンブルは、歌そのものを前に出すための設計になっており、21歳の声が最大限に生きる距離感でミックスされている。<span class="src">編曲者の出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia「あの日にかえりたい」</a></span>　また主題歌で使われたのが2番のテイクだったという事実（前章）と重ねて聴くと、同じ曲の中に「版本の違い」というもう一層の深みがあることがわかる。</p>
+    <div class="watch">
+      そして声の年輪を確かめたければ、後年のステージがいちばん早い。松任谷由実が「Yumi Arai The Concert with old Friends」で当時のバンドとともに歌い直したライブ映像は、YouTubeだけで1,400万回以上再生されている。発売から半世紀近く経ってなお、この曲が歌い場として選ばれ続けていることの何よりの証左だろう。
+      <span class="src">映像：<a href="https://www.youtube.com/watch?v=2qJnqZenIFY">松任谷由実 – あの日にかえりたい（Yumi Arai The Concert with old Friends）</a>／再生数の出典：<a href="https://www.youtube.com/watch?v=MU3qZVNEoB4">同チャンネルの関連動画ページ</a></span>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no"> COVERS </span>半世紀にわたる、カバーの系譜</h2>
+    <p>ひとつの曲が半世紀歌い継がれるとはどういうことか。下の表は、この曲をレコーディングで歌ってきた主な歌手たちである。演歌の大御所からボサノヴァ、ロック、アイドルまで、ジャンルの壁を越えて選ばれ続けてきたことが、並べて見るとよくわかる。<span class="src">出典：<a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia「あの日にかえりたい」（カバー一覧）</a>／桑田佳祐・稲垣潤一・大橋純子・小野リサ・當山みれいらによるカバーについては<a href="https://www.kkbox.com/jp/ja/column/showbiz-0-1691-1.html">KKBOXの特集記事</a>も参照</span></p>
+    <div class="tablewrap">
+      <table>
+        <tr><th style="width:5.5em">年</th><th>カバーした歌手</th></tr>
+        <tr><td>1976</td><td>内山田洋とクール・ファイブ</td></tr>
+        <tr><td>1978</td><td>やまがたすみこ</td></tr>
+        <tr><td>1982</td><td>斉藤慶子</td></tr>
+        <tr><td>1991</td><td>香坂みゆき</td></tr>
+        <tr><td>1999</td><td>森高千里</td></tr>
+        <tr><td>2001</td><td>なかの綾とCENTRAL、市井紗耶香</td></tr>
+        <tr><td>2002</td><td>小野リサ</td></tr>
+        <tr><td>2003</td><td>マイケル・フランクス</td></tr>
+        <tr><td>2004</td><td>高鈴</td></tr>
+        <tr><td>2006</td><td>徳永英明、和田アキ子</td></tr>
+        <tr><td>2007</td><td>サエラ</td></tr>
+        <tr><td>2008</td><td>稲垣潤一（露崎春女とのデュエット）</td></tr>
+        <tr><td>2009</td><td>桑田佳祐、大橋純子、布施明、坂本冬美</td></tr>
+        <tr><td>2012</td><td>John-Hoon</td></tr>
+        <tr><td>2013</td><td>森恵、今井美樹</td></tr>
+        <tr><td>2014</td><td>中田裕二、當山みれい、吉井和哉</td></tr>
+        <tr><td>2017</td><td>由紀さおり</td></tr>
+        <tr><td>2020</td><td>半﨑美子</td></tr>
+      </table>
+    </div>
+    <div class="note">発売翌年の1976年から、令和に入った2020年まで、途切れることなく新しいカバーが生まれ続けている。世代の入れ替わりを挟みながらも曲が選ばれ続ける――この「持続」こそが、スタンダードの定義だろう。</div>
+  </section>
+
+  <section class="survey">
+    <h2><span class="no"> VOICE </span>読み終えたあなたへ、三つの質問</h2>
+    <p style="font-family:'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;font-size:13.5px;margin-top:0;">このページの感想を、次の曲ページや読みものの充実に活かします。1分ほどでお願いします。</p>
+    <form id="sv">
+      <p class="q">1. 一番心に残った物語はどれですか</p>
+      <label class="opt"><input type="radio" name="q1" value="story1">70位から1位まで、35週かけたヒットの軌跡</label>
+      <label class="opt"><input type="radio" name="q1" value="story2">書き直された詞が「スカイレストラン」になった話</label>
+      <label class="opt"><input type="radio" name="q1" value="story3">ドラマ主題歌と、二つのCMソングの話</label>
+      <label class="opt"><input type="radio" name="q1" value="covers">1976年から2020年まで続くカバーの系譜</label>
+
+      <p class="q">2. 今日あらためて聴くなら、どの歌唱から聴きますか</p>
+      <label class="opt"><input type="radio" name="q2" value="single">1975年のシングル音源（荒井由実）</label>
+      <label class="opt"><input type="radio" name="q2" value="live">後年のライブ映像（Yumi Arai The Concert with old Friends）</label>
+      <label class="opt"><input type="radio" name="q2" value="cover">上の表にあったカバーの中から</label>
+
+      <p class="q">3. ご自由に（感想・知っていたエピソード・読みたい次の一曲など）</p>
+      <textarea name="free" rows="3" placeholder="例：スカイレストランのほうも読みたい"></textarea>
+      <button class="send" type="submit">送信する</button>
+      <p class="thanks" id="thanks">ありがとうございました。あなたの声は次のページづくりに反映されます。</p>
+    </form>
+  </section>
+
+  <footer>
+    <strong>本ページの出典一覧</strong>
+    <ul>
+      <li>Wikipedia「あの日にかえりたい」（発売日・品番・作詞作曲・編曲・B面・オリコン成績・タイアップ・カバー一覧・ジャケット）： https://ja.wikipedia.org/wiki/あの日にかえりたい</li>
+      <li>オリコン「松任谷由実のシングル売上」（最高順位1位・登場35週）： https://www.oricon.co.jp/prof/220292/rank/single/</li>
+      <li>クリス松村オフィシャルブログ（初登場70位・翌週34位）： https://ameblo.jp/chris-matsumura/entry-12767540948.html</li>
+      <li>popfreak（初のオリコンシングル1位）： https://ameblo.jp/popfreak/entry-12897277778.html</li>
+      <li>music-calendar.jp（1975年のチャート1位・21歳）： http://music-calendar.jp/2015122201</li>
+      <li>歌ネット（『家庭の秘密』主題歌表記）： https://www.uta-net.com/song/335/</li>
+      <li>JOYSOUND「あの日にかえりたい(CM Version)」： https://www.joysound.com/web/search/song/422662</li>
+      <li>KKBOX「アーティストたちがカバーするユーミンの名曲たち」： https://www.kkbox.com/jp/ja/column/showbiz-0-1691-1.html</li>
+      <li>YouTube「松任谷由実 – あの日にかえりたい（Yumi Arai The Concert with old Friends）」： https://www.youtube.com/watch?v=2qJnqZenIFY</li>
+    </ul>
+    <p style="margin-top:12px;">※歌詞の引用は行っていません。聴きどころの記述は編集部によるオリジナルの解説です。</p>
+  </footer>
+
+</main>
+
+<script>
+document.getElementById('sv').addEventListener('submit',function(e){
+  e.preventDefault();
+  document.getElementById('thanks').style.display='block';
+  var b=this.querySelector('.send');
+  b.disabled=true;b.textContent='送信しました';
+});
+</script>
+</body>
+</html>

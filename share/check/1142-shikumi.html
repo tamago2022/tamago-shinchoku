@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1142番：工場が回り続ける仕組み（ループエンジニアリング）</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--line:#e8e0d4;--sub:#7a7268;--ink:#2b2b2b;--aka:#b00020;--ao:#2a5b8f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+ font-size:18px;line-height:1.8}
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 80px}
+h1{font-size:30px;line-height:1.35;margin:0 0 6px}
+h2{font-size:24px;margin:40px 0 12px;padding-top:18px;border-top:3px solid var(--line)}
+h3{font-size:19px;margin:24px 0 8px}
+.lead{font-size:20px;color:var(--sub);margin:0 0 26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
+.aka{border-color:var(--aka)}
+.big{font-size:38px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.big.r{color:var(--aka)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:17px}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:#f2ece2;font-weight:600}
+td.y{background:#f4fbf4}td.n{background:#fdf3f3}
+code{background:#f2ece2;padding:2px 6px;border-radius:5px;font-size:15px}
+pre{background:#2b2b2b;color:#f6f2ea;padding:14px 16px;border-radius:10px;overflow-x:auto;font-size:15px;line-height:1.6}
+.sub{color:var(--sub);font-size:16px}
+a{color:var(--ao)}
+blockquote{margin:12px 0;padding:10px 16px;border-left:4px solid var(--line);color:var(--sub)}
+.eranda{background:#f4fbf4;border-left:5px solid #2f7d32}
+.suteta{opacity:.85}
+ul{padding-left:1.3em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="sub"><a href="../../index.html">← 進捗表にもどる</a></p>
+
+<h1>工場が回り続ける仕組み</h1>
+<p class="lead">1142番 ／ 2026-09-25 ／ 設計から始めず、<b>今日1日で実際に壊れたものを数えるところから始めた</b></p>
+
+<div class="card aka">
+<p style="margin:0 0 6px"><b>この1枚の結論</b></p>
+<p style="margin:0">工場には <b>係が44本、道具が469本</b> ある。足りないのは見張りではない。
+<b>数字はもう全部どこかに書いてあって、誰も突き合わせていなかった。</b><br>
+だから増やしたのは見張りではなく、<b>突き合わせ1か所（計器盤）と、直す係1本と、門の押しボタン1本</b>。</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<h2>1. 今日、実際に壊れたもの（全部データから）</h2>
+
+<div class="grid">
+ <div class="card"><div class="big r">150本</div>今日の発車。<b>全部「空回し」。本物は0本。</b><span class="sub"><br>status/auto-launch-*.log</span></div>
+ <div class="card"><div class="big r">25/36</div>係が「走っているのに取れた0」<span class="sub"><br>status/kagi_daicho_counts.json</span></div>
+ <div class="card"><div class="big r">5日</div>ログインが切れたまま<br>（09-20 04:30から）<span class="sub"><br>status/auth_keeper.json</span></div>
+ <div class="card"><div class="big r">113回</div>番人がそれを見つけた回数。<b>直せた回数は0。</b><span class="sub"><br>status/auth_keeper.log</span></div>
+ <div class="card"><div class="big r">10日</div>失敗台帳が1行も増えていなかった期間<span class="sub"><br>status/failures.jsonl</span></div>
+ <div class="card"><div class="big r">547件</div>言われたのに返っていないもの<span class="sub"><br>status/public/shukudai.json</span></div>
+</div>
+
+<h3>たまごさんが今日指摘したミスを、同じ表に並べる</h3>
+<table>
+<tr><th>言われたこと</th><th>実測で裏が取れたか</th><th>型</th></tr>
+<tr><td>ログイン5日放置</td><td class="y">取れた。09-20 04:30から、113回検知・0回復旧</td><td><b>A 気づいたのに直せない</b></td></tr>
+<tr><td>同時4本で2本落とした</td><td class="y">取れた。no_launch.flag で発車停止中に空回しだけ313本</td><td><b>B 動いて見えて何も作っていない</b></td></tr>
+<tr><td>空ページ4件</td><td class="y">取れた。OGの門の台帳に「曲名が無い」で弾いた記録が4件</td><td><b>C 入口で止めた（門は効いていた）</b></td></tr>
+<tr><td>OG画像がスクショ</td><td class="y">取れた。OGの門（1133番）が既に置かれている。<b>ただし弾いた数は誰も数えていなかった</b></td><td><b>C</b></td></tr>
+<tr><td>Bufferの枠を自分で使い切った</td><td class="y">取れた。02:05のつもりが01:58に出た（前倒し事故）</td><td><b>D 外の決まりを知らずに動いた</b></td></tr>
+<tr><td>棚一覧の取り違え</td><td class="y">取れた。名前一致で別人混入（akiko×AKIKO 型）</td><td><b>D</b></td></tr>
+<tr><td>Gensparkを逃がした</td><td class="y">取れた。gsk_daicho は01:22で止まっている</td><td><b>A</b></td></tr>
+</table>
+
+<div class="card">
+<p style="margin:0"><b>型は4つしかなかった。</b>1件ずつ直すのではなく、型ごとにパイプを替える。</p>
+<ul style="margin:10px 0 0">
+<li><b>A 気づいたのに直せない</b> … 見つける係はあるが、直す係が居ない</li>
+<li><b>B 動いて見えて何も作っていない</b> … 空回しでも緑が点く。<b>これが最上位の赤</b></li>
+<li><b>C 入口で止めた</b> … 門は効いた。ただし<b>弾いた数を誰も数えていない</b>ので、効いているのか死んでいるのか分からない</li>
+<li><b>D 外の決まりを知らずに動いた</b> … Bufferの枠、別人の同名。事前に叩いて確かめれば防げる</li>
+</ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<h2>2. 手を5つ並べて、1つ選んだ</h2>
+
+<table>
+<tr><th>手</th><th>やること</th><th>捨てた／選んだ理由</th></tr>
+<tr class="suteta"><td><b>手1</b><br>気をつける・指示を増やす</td><td>ルール文書を増やし、毎回読ませる</td><td class="n"><b>捨てた。</b>今日の7件は全部「ルールはもう書いてあった」もの。読む人が居なければ増やしても同じ。たまごさんが「全部1個1個言いたくない」と言っているのはこれ</td></tr>
+<tr class="suteta"><td><b>手2</b><br>見張りをもう1本足す</td><td>45個目の常駐を作って監視させる</td><td class="n"><b>捨てた。</b>いま44本中25本が「走っているのに取れた0」。<b>見張りを足すと、見えない係が1本増えるだけ</b>。同じ失敗を1本分増やす</td></tr>
+<tr class="suteta"><td><b>手3</b><br>全部作り直す</td><td>工場を設計しなおして1本のパイプラインにする</td><td class="n"><b>捨てた。</b>469本の道具が動いている。止めて作り直す間に出せるものがゼロになる。SREの定石でも「動いている系は置き換えず、計測を先に入れる」</td></tr>
+<tr class="suteta"><td><b>手4</b><br>全部を自動で直す</td><td>赤を見つけたら機械が全部直す</td><td class="n"><b>捨てた（半分だけ採用）。</b>世界の失敗例が一致している：<b>不安定な手順を自動化すると、機械が失敗を増幅する</b>。ログインの鍵はたまごさん本人しか作れない。無理に直そうとするのが一番危ない</td></tr>
+<tr class="eranda"><td><b>手5<br>★選んだ</b><br>測るところを1か所作る＋直せるものだけ直す</td><td>既にある数字を1枚に突き合わせる → 直し方が1本に決まっているものだけ自動で直す → 残りは赤のまま名前を出す</td><td class="y"><b>選んだ。</b>見張りは増えない（既存の心臓に相乗り）。工場は止まらない。<b>直せないものを「直した」と言わない</b>ので嘘が出ない。世界の自動復旧が守っている3条件（①直し方が1本 ②何回やっても同じ ③直ったか機械が確かめられる）を満たすものだけ入れた</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════ -->
+<h2>3. お手本（オリジナルで考えていない）</h2>
+
+<table>
+<tr><th>どこの誰が</th><th>同じ問題をどう解いているか</th><th>うちのどこに入れたか</th></tr>
+<tr><td><b>Dead man's switch</b><br>（監視の世界の定石）</td><td>「警報が鳴らない日」と「警報器が壊れている日」は見分けがつかない。だから<b>常に鳴り続ける信号</b>を別経路に流し、止まったら異常とする。<b>沈黙を事件として扱う</b></td><td><b>門の押しボタン</b>（1142_kanmon.py）。わざと通ってはいけない1件を6時間ごとに流す。弾けば生きている、通ったら門が死んでいる</td></tr>
+<tr><td><b>SRE の自動復旧</b></td><td>失敗例が一致している：不安定な手順を自動化すると機械が失敗を増幅する。<b>dry-run は任意ではない</b>。新種の障害には人が要る</td><td><b>復旧係は既定が下見</b>（<code>--honban</code> を付けないと触らない）。触る前に必ず控えを取る。直せないものは直さず名前を出す</td></tr>
+<tr><td><b>CI/CD の門</b><br>（pre-push hook）</td><td>人の記憶ではなく、<b>出口1点</b>に門を置く。呼び忘れても必ず通る</td><td><b>うちは既にできていた</b>（.githooks/pre-push で鬼監督＋関所が走る）。足りなかったのは<b>弾いた数の台帳</b>だけ。それを足した</td></tr>
+<tr><td><b>データ品質のテスト</b><br>（Great Expectations / dbt）</td><td>1層では足りない。<b>入口（仕入れたデータ）と出口（加工した結果）の両方</b>に別々のテストを置くのが到達点</td><td>入口＝仕入れの関所（本人か・出典URLがあるか）、出口＝pre-push。<b>両方の弾き数を同じ1枚に出す</b></td></tr>
+<tr><td><b>工場の受入検査</b></td><td>「不良ゼロ」の報告を信じない。<b>わざと不良品を1個流して、検査が止めるか確かめる</b></td><td>同上（押しボタン）。<b>弾き0が続いたら緑ではなく赤</b>にした</td></tr>
+<tr><td><b>Claude の長期トークン</b><br>（<code>claude setup-token</code>）</td><td>通常ログインの鍵は使い捨てで、同時に何本も走ると取り合いになって消える。CI・無人運用では<b>1年もつ固定の鍵</b>を使うのが世界の標準解</td><td>手順は <code>status/LOGIN.md</code> に既にあった。<b>5日間、誰も押していなかった。</b>だから復旧係がMacに札を出すようにした（⌘V→Enter だけ）</td></tr>
+</table>
+
+<div class="card">
+<p style="margin:0"><b>お金の形は変わらない。</b><code>claude setup-token</code> は Max契約のまま使える固定の鍵なので、
+<b>月額の追加0円／従量の追加0円</b>。API課金へ切り替える話ではない。</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<h2>4. 5つの問いへの答え（全部「機械」で答える）</h2>
+
+<h3>① ミスがなくなるには → 門。ただし<b>弾いた数を数える</b></h3>
+<p>門は足りていた。足りなかったのは「その門が今も生きているか」の実測。
+6時間に1回、<b>わざと通ってはいけない1件</b>を流す。弾けば生きている。通ったら赤。
+<span class="sub">実測：出典の門・本人の門とも<b>生きている</b>ことを確認済み。</span></p>
+
+<h3>② 自動で復旧 → 直し方が1本に決まっているものだけ</h3>
+<table>
+<tr><th>赤</th><th>直せるか</th><th>いまどうしているか</th></tr>
+<tr><td>途中で固まった案件</td><td class="y">直せる</td><td>順番待ちへ戻す（控えを取ってから）。<b>今日13件を戻した</b></td></tr>
+<tr><td>誰も掴んでいない錠前</td><td class="y">直せる</td><td>1時間以上古いものを外す</td></tr>
+<tr><td>書きかけのゴミ</td><td class="y">直せる</td><td><b>消さずに</b> status/_1142_gomi/ へ移す。<b>今日6個</b></td></tr>
+<tr><td>失敗台帳が止まっている</td><td class="y">直せる</td><td>今日の赤を自分で書き込む。<b>10日ぶりに4件書いた</b></td></tr>
+<tr><td>ログイン切れ</td><td class="n">直せない</td><td><b>直そうとしない。</b>鍵はたまごさん本人しか作れない。Macに札を出す（⌘V→Enter）</td></tr>
+</table>
+<p><b>「動いているのに何も取れていない」を最上位の赤にした。</b>計器盤の一番上に出るのは必ずこれ。</p>
+
+<h3>③ ログインが切れない → 1年もつ固定の鍵に替える</h3>
+<p>いまの鍵は<b>更新のたびに作り替わる使い捨て</b>。工場は <code>claude</code> を同時に何本も出すので、
+2本が同時に更新へ走ると、負けた側が空っぽを書き戻して<b>正しい鍵ごと消える</b>。
+09-20 04:30に起きたのはこれ（期限切れではない）。</p>
+<pre>python3 ~/Desktop/tamago-shinchoku/tools/975_login_1pon.py</pre>
+<p>これが入れるのは <code>claude setup-token</code> の<b>1年もつ固定の鍵</b>。作り替えが起きないので、
+何本同時に走らせても取り合いにならない＝<b>構造的に消えない</b>。<b>お金は追加0円。</b><br>
+<span class="sub">※この鍵は Remote Control と同時には使えないという既知の制約がある。工場は Remote Control を使っていないので影響なし。</span></p>
+
+<h3>④ 仕入れでミスしない → 入口の関所を機械で通す</h3>
+<ul>
+<li><b>出典URLが無い断定は通さない</b>（「オリジナル」「代表曲」「◯◯年」）… <code>tools/sekisho/gate_fact_source.py</code></li>
+<li><b>名前一致は証拠にしない</b>（akiko × AKIKO）… <code>tools/sekisho/gate_artist_song.py</code></li>
+<li>両方 <code>.githooks/pre-push</code> から<b>必ず</b>走る。思い出したときだけ通る門ではない</li>
+<li>足したのは<b>弾いた数の台帳</b>だけ。<code>status/1142_kanmon.jsonl</code></li>
+</ul>
+
+<h3>⑤ 言われたことを確実に遂行 → 受付から完了までの1本の道</h3>
+<p>道はもうできている。<b>UserPromptSubmitフック → 受付台帳 → キュー → 発車 → 検品 → 完了</b>。
+今日の実測で分かったのは、道が悪いのではなく<b>道の入口（発車）が5日止まっていた</b>こと。
+だから計器盤に「返ってきてない」を出し、<b>今日1件も減らなければ赤</b>にした。</p>
+
+<!-- ══════════════════════════════════════════════════ -->
+<h2>5. 毎日測る6つの数字（進捗表の一番上）</h2>
+<table>
+<tr><th>数字</th><th>何を意味するか</th><th>赤になる条件</th></tr>
+<tr><td><b>飴玉ゼロ率</b></td><td>走っているのに何も取れていない係の割合</td><td>半分を超えたら赤（<b>最上位</b>）</td></tr>
+<tr><td><b>嘘の完了</b></td><td>「完了」と書いてあるのに本番で確認が取れていない件数</td><td>1件でもあれば赤</td></tr>
+<tr><td><b>門が弾いた数</b></td><td>門が実際に止めた数</td><td><b>弾き0が続いたら赤</b>（門が死んでいる）</td></tr>
+<tr><td><b>落ちた便</b></td><td>今日落ちた便。空回しは1本も数えない</td><td>本物0本なら赤</td></tr>
+<tr><td><b>返ってきてない</b></td><td>言われたのに返していない件数</td><td>今日1件も減らなければ赤</td></tr>
+<tr><td><b>週の枠</b></td><td>週クレジットの使用率</td><td>九割を超えたら赤／七割を超えたら黄</td></tr>
+</table>
+<p class="sub">しきい値の根拠（<b>実測</b>）。2026-09-25 08:53 に計器盤が実際に出した生の数字：</p>
+<pre>赤が3個あります：飴玉ゼロ率
+ 🔴 飴玉ゼロ率：69.4%  36係中 25係が「走っているのに取れた0」
+ 🔴 嘘の完了：3件  できもの未検証3件 ＋ 途中で固まった案件0件
+ ✅ 門が弾いた数：11件  直近7日：通した7／弾いた11
+ 🔴 落ちた便：0本  24時間：本物0本／空回し313本
+ ✅ 返ってきてない：547件  今日 7件 減った
+ ✅ 週の枠：31.0%  戻るのは 2026-09-29 17:59</pre>
+<p class="sub"><b>実測</b>：週の枠は 31.0%（09-25 08:53 に計器盤が実際に取った値）。戻るのは 09-29 17:59。
+七割で黄にしたのは、残りで4日ぶんの発車を賄う必要があるため。
+九割で赤にしたのは、使い切るとその週は本物が1本も出せなくなるため。</p>
+<p class="sub">判定は <code>tools/hantei.py</code> の <code>judge()</code> 1本にしか書いていない。
+同じ if を2か所に書くと、必ず片方だけ直る日が来る。</p>
+
+<!-- ══════════════════════════════════════════════════ -->
+<h2>6. 置いたもの（全部、実際に動かして確かめた）</h2>
+<table>
+<tr><th>ファイル</th><th>やること</th><th>いつ走るか</th></tr>
+<tr><td><code>tools/1142_loop.py</code></td><td>6つの数字を測って1枚に書く</td><td>2分ごと（心臓に相乗り）</td></tr>
+<tr><td><code>tools/1142_fukkyuu.py</code></td><td>直せる赤を直す。直せないものは名前を出す</td><td>10分ごと</td></tr>
+<tr><td><code>tools/1142_kanmon.py</code></td><td>門の押しボタン。わざと不正な1件を流す</td><td>6時間ごと</td></tr>
+<tr><td><code>index.html</code> の計器盤</td><td>6つの数字を大きい文字で出す</td><td>進捗表を開くたび</td></tr>
+</table>
+<p><b>新しい常駐（launchd）は1本も増やしていない。</b>既にある心臓（heartbeat.sh）に相乗りさせた。
+この3本自身も <code>kagi_daicho</code> の同じ判定にかかる（足跡を置いてある）ので、
+<b>計器盤が死んだら計器盤が赤になる。</b></p>
+
+<h3>戻し方（1行）</h3>
+<pre>python3 ~/Desktop/tamago-shinchoku/tools/1142_loop.py --modosu</pre>
+<p class="sub">置いたファイルが消え、進捗表の計器盤は自動で隠れる。
+<code>status/_1142_gomi/</code> に控えが残っているので、動かしたものは全部戻せる。
+<b>本番のサイト（joy-relief-station）には一切触っていない。</b></p>
+
+<h3>実際に開いて確かめるところ（本番のURL）</h3>
+<ul>
+<li><b>計器盤が出ている進捗表</b>：<a href="https://tamago2022.github.io/tamago-shinchoku/">https://tamago2022.github.io/tamago-shinchoku/</a><br>
+<span class="sub">一番上に「ループの計器盤」が出ていれば、この便は本番に出ている。</span></li>
+<li><b>この設計の1枚</b>：<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1142-shikumi.html">https://tamago2022.github.io/tamago-shinchoku/share/check/1142-shikumi.html</a></li>
+<li><b>生の数字</b>：<a href="https://tamago2022.github.io/tamago-shinchoku/status/public/loop.json">https://tamago2022.github.io/tamago-shinchoku/status/public/loop.json</a></li>
+<li><b>門の押しボタンの結果</b>：<a href="https://tamago2022.github.io/tamago-shinchoku/status/public/1142_kanmon.json">https://tamago2022.github.io/tamago-shinchoku/status/public/1142_kanmon.json</a></li>
+</ul>
+
+<p class="sub" style="margin-top:40px"><a href="../../index.html">← 進捗表にもどる</a></p>
+
+</div>
+</body>
+</html>

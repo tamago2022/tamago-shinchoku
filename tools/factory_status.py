@@ -666,6 +666,25 @@ def build():
     except Exception:
         pass
     cap = min(HARD_MAX, int(calib.get("safeN") or HARD_MAX))
+    # ---- 1051番（2026-09-24）：本数を「空きメモリ・スワップ・ロードの実測」からも決める ----
+    # それまで cap は calibration.json の safeN だけで決まっていた。その規則は
+    # 「標本6件以上で合格した最大本数」だが、実測の標本数は N=2が10件・N=3が1件。
+    # **上限が2本だから3本目が走らず、走らないから標本が集まらず、永久に2本のまま**だった。
+    # tools/dojisu_jougen.py が3つの天井（メモリ／スワップ／ロード）を別々に測り、
+    # ①危ないときは自分で1本まで落とす ②余裕があるときだけ1本だけ試して標本を取りに行く。
+    # ここでは「下げる方向は必ず従う／上げる方向は試し増便のときだけ」に限って反映する。
+    try:
+        dj = json.load(open(os.path.join(REPO, "status", "dojisu_jougen.json"), encoding="utf-8"))
+        dj_n = int(dj.get("同時上限") or 0)
+        if dj_n:
+            if dj_n < cap:
+                cap = dj_n
+                reasons.append("実測の同時上限%d本（%s）" % (dj_n, "・".join(dj.get("根拠") or [])[:60]))
+            elif dj.get("試し増便") and dj_n > cap:
+                cap = min(HARD_MAX, dj_n)
+                reasons.append("試し増便%d本（%d本の標本を取りに行く）" % (dj_n, dj_n))
+    except Exception:
+        pass
     target = max(2, int(calib.get("target") or max(2, int(cap * 0.8))))
     user_active = False
     try:

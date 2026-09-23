@@ -130,14 +130,67 @@ def restart_server_if_stale():
     return False
 
 
-def main():
-    # 2026-09-05 17:02 **重いときは何もしない。**
-    #   実測：Macの5分平均ロードが238まで上がった。原因のひとつが、この見張りが呼ぶ
-    #   立て直し（npx localtunnel / cloudflared の起動）が重なって積み上がったこと。
-    #   重いときにさらにプロセスを起こすのは、火に油。ロードが高い間は黙って見送る。
+NAGE_TIMEOUT = 25
+RED = os.path.join(REPO, "status", "relay_red.json")
+
+
+def soutuu(url):
+    """★自分で1本投げる。「立ち上げ直した」だけで終わらせないための実測。
+
+    /health の200は根拠にしない。200が返っても受け口の中身が古ければ投げ込みは弾かれる
+    ＝**届かないのに緑**になる。ここは実際に /cmd へ空荷を1本通して、
+    向こうが done を返したときだけ「届いた」とする。
+    通ると受け口側(command_ingest.soutuu)が relay.json に verifiedAt を押す。
+    """
+    if not url:
+        return False, "URLが無い"
+    body = json.dumps({"commands": [{"id": "soutuu", "action": "soutuu",
+                                     "by": "relay_watch"}]}, ensure_ascii=False)
     try:
-        if os.getloadavg()[0] > 20:
-            return 0
+        r = subprocess.run(["curl", "-s", "-m", str(NAGE_TIMEOUT),
+                            "-X", "POST", url.rstrip("/") + "/cmd",
+                            "-H", "content-type: application/json",
+                            "-H", "bypass-tunnel-reminder: 1",
+                            "--data-binary", body],
+                           capture_output=True, text=True, timeout=NAGE_TIMEOUT + 10)
+        txt = (r.stdout or "").strip()
+    except Exception as e:
+        return False, "投げられませんでした（%s）" % e
+    try:
+        d = json.loads(txt)
+        res = (d.get("results") or [{}])[0]
+        if res.get("status") == "done":
+            return True, res.get("message") or "届いた"
+        return False, "受け口が断りました：%s" % (res.get("message") or txt[:120])
+    except Exception:
+        return False, "返事が読めません：%s" % (txt[:120] or "空っぽ")
+
+
+def write_red(reason, fixed=False):
+    try:
+        json.dump({"han": "\U0001F534", "why": reason, "fixedTried": fixed,
+                   "at": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
+                  io.open(RED, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+
+
+def clear_red():
+    try:
+        if os.path.exists(RED):
+            os.remove(RED)
+    except Exception:
+        pass
+
+
+def main():
+    # 2026-09-23（1042番）★重いときに黙って帰るのをやめた。
+    #   これまでは load>20 で無条件 return していた。**赤が誰にも見えないまま止まる**
+    #   （今日3回目の「黙って止まる」の一因）。重いときは立て直しだけ見送り、
+    #   赤は赤として必ず残す。
+    heavy = False
+    try:
+        heavy = os.getloadavg()[0] > 40
     except Exception:
         pass
     try:
@@ -147,49 +200,72 @@ def main():
         pass
     io.open(STAMP, "w").write(str(int(time.time())))
 
-    # ★2026-09-23（1038番）**「直したのに反映されない」を根から止める。**
-    #   relay_server.py は起動時に command_ingest を import する。走り続けている限り
-    #   コードを読み直さないので、新しい指示（例：nagekomi）を足しても
-    #   「使えない指示」で弾かれ続ける。今日までの見張りは「外から200が返るか」しか
-    #   見ていなかったので、**繋がっている限り永遠に古いまま**だった。
-    #   → 受け口のコードが起動時より新しければ、受け口だけ入れ直す。
-    #     トンネル（localtunnel）は localhost:8788 を見ているだけなので URL は変わらない。
-    #   ★入れ直した回は、そこで終わる。すぐ下の「外から200が返るか」を続けてやると、
-    #     立ち上がりの数秒を「トンネルが死んだ」と誤読してトンネルまで張り直してしまう
-    #     （13:26 に実際に1回起きた）。生死は次の回（2分後）に見れば足りる。
+    # 受け口のコードが新しくなっていたら、まず入れ直す（走っているループは読み直さない）
     if restart_server_if_stale():
         return 0
 
-    url, lan = "", ""
     try:
         d = json.load(io.open(RJSON, encoding="utf-8"))
-        url, lan = d.get("url") or "", d.get("lanUrl") or ""
+        url = d.get("url") or ""
     except Exception:
-        pass
-    # 2026-09-11 修正（753番）：以前は lan（家の中の道）が生きていれば
-    # url（外の道＝トンネル）が死んでいても「生きている」と判定していた。
-    # 家の中は進捗表が動き続けるので気づかないが、**比較ページ「これにする」
-    # ボタンはスマホ（外のネットワーク）から relay.json の url へ直接POSTする
-    # 実装のため、外の道が切れているとスマホから押しても永久に届かなくなる。
-    # → 外の道は外の道で独立して生死を見て、死んでいたら立て直す。
-    if alive(url):
+        url = ""
+
+    # ---- ① まず自分で1本投げる。これが唯一の根拠 ----
+    ok, msg = soutuu(url)
+    if ok:
+        clear_red()
+        return 0
+
+    # ---- ② 届かない。判定は tools/hantei.py にしか書かない ----
+    try:
+        sys.path.insert(0, HERE)
+        import hantei
+        han, why, _ = hantei.relay_han()
+    except Exception as e:
+        han, why = "\U0001F534", "判定が読めません（%s）" % e
+    if han != "\U0001F534":
+        # 判子はまだ新しい（さっき誰かの投げ込みが届いている）。一時的な失敗として見送る。
+        return 0
+
+    log("%s ／ 自分で投げた結果：%s" % (why, msg))
+    if heavy:
+        write_red("%s ／ Macが重いので立て直しは見送りました（load>40）" % why)
+        log("Macが重いので立て直しは見送ります（赤のまま残します）")
         return 0
 
     fixstamp = os.path.join(REPO, "status", ".relay_fix_at")
     try:
         if time.time() - os.path.getmtime(fixstamp) < FIX_INTERVAL:
-            return 0   # さっき立て直したばかり。URLを変えすぎない
+            write_red("%s ／ さきほど立て直したばかりなので次の回まで待ちます" % why, fixed=True)
+            return 0
     except Exception:
         pass
     io.open(fixstamp, "w").write(str(int(time.time())))
-    log("中継所が外から繋がりません（%s）。立て直します" % (url or "URL未設定"))
+
+    # ---- ③ 立て直す ----
     try:
         import command_ingest
-        status, msg = command_ingest.relay_fix()
-        log("立て直しの結果: %s ／ %s" % (status, msg))
+        status, fixmsg = command_ingest.relay_fix()
+        log("立て直しの結果: %s ／ %s" % (status, fixmsg))
     except Exception as e:
+        write_red("立て直しに失敗しました（%s）" % e, fixed=True)
         log("立て直しに失敗: %s" % e)
-    return 0
+        return 1
+
+    # ---- ④ ★立て直しただけで終わらせない。もう一度自分で投げて、届くまで緑にしない ----
+    try:
+        d = json.load(io.open(RJSON, encoding="utf-8"))
+        url2 = d.get("url") or ""
+    except Exception:
+        url2 = ""
+    ok2, msg2 = soutuu(url2)
+    if ok2:
+        clear_red()
+        log("立て直したあと、自分で1本投げて届きました（%s）" % url2)
+        return 0
+    write_red("立て直しましたが、自分で投げた1本が届きません：%s" % msg2, fixed=True)
+    log("\u2605立て直しましたが届きません（%s）。赤のまま残します" % msg2)
+    return 1
 
 
 if __name__ == "__main__":

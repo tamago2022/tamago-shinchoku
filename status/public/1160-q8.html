@@ -1,0 +1,282 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>曲の自動特定とSNSでの楽曲利用の仕組み</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>曲の自動特定とSNSでの楽曲利用の仕組み</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 66本 ／ 21,289字 ／ 投げた 2026-09-26 12:41:42<br><a href="https://www.genspark.ai/agents?id=9081749d-dde9-59ed-adf1-75de83191e91" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>音声認識技術とSNS音楽利用の法的実態に関する調査レポート</h2>
+<h3>はじめに：調査の範囲と限界について</h3>
+<p>本レポートは、音声から曲を特定する技術（音楽認識API）と、一般ユーザー・企業がSNSでプロの楽曲を利用する際の法的枠組みについて、2026年9月26日現在で確認できた公開情報を基にまとめたものです。</p>
+<p><strong>調査の限界（Data Limitations）：</strong></p>
+<ul>
+<li>一部の公式ヘルプページ（Instagramのヘルプページ <a href="https://help.instagram.com/126382350847838" target="_blank" rel="noopener">https://help.instagram.com/126382350847838</a> など）はアクセス時にエラーとなり、完全な内容を確認できませんでした <a href="https://help.instagram.com/126382350847838" target="_blank" rel="noopener">help.instagram.com</a>。</li>
+<li>料金プランの詳細は、APIプロバイダーの公式サイトまたはRapidAPIなどのサードパーティマーケットプレイスに掲載されている情報に依拠しており、企業向けのカスタム見積もり内容は非公開のため「[DATA NOT AVAILABLE]」としています。</li>
+<li>訴訟事件の和解金額など、非公開とされている項目については「非公開」と明記しています。</li>
+<li>本レポートは法的助言ではなく、あくまで公開情報に基づく調査結果です。実際のビジネス利用にあたっては、弁護士または各プラットフォームの公式サポートへご確認ください。</li>
+</ul>
+<hr>
+<h3>第1章：流れている曲を自動で特定する技術とサービス</h3>
+<h4>1-1. 技術の仕組み：音声フィンガープリンティング</h4>
+<p>音声から曲を特定する技術の核心は「音声フィンガープリンティング（Audio Fingerprinting）」です。これは、音声波形から特徴的なデータを抽出し、圧縮された「指紋」のようなデジタル署名を生成する技術です。</p>
+<p>代表的なアルゴリズムとして、<strong>Chromaprint</strong>があります。Chromaprintは、入力音声を11025Hzのサンプリングレートに変換し、4096のフレームサイズ（約0.371秒）で処理し、2/3のオーバーラップを持たせて指紋を生成します <a href="https://oxygene.sk/2011/01/how-does-chromaprint-work/" target="_blank" rel="noopener">oxygene.sk</a>。この指紋は、MusicBrainzなどのメタデータデータベースと紐付けられ、ノイズが混じっていても、あるいは録音環境が異なっても、同じ音源を識別できるのが特徴です <a href="https://acoustid.org/" target="_blank" rel="noopener">acoustid.org</a>。</p>
+<h4>1-2. 主要サービス・APIの比較</h4>
+<h5><strong>Shazam / ShazamKit (Apple)</strong></h5>
+<p>Appleが提供する技術で、iOS/macOSなどのネイティブアプリ開発向けに「ShazamKit」としてSDKが提供されています。</p>
+<ul>
+<li><strong>仕組み</strong>: Appleの巨大なカタログ、または開発者が自作したカスタムカタログと照合します。音声データ自体はAppleサーバーに送信されず、署名（シグネチャ）のみが処理されるため、プライバシー保護に配慮されています <a href="https://developer.apple.com/shazamkit/" target="_blank" rel="noopener">developer.apple.com</a>。</li>
+<li><strong>対応プラットフォーム</strong>: iOS, iPadOS, macOS, tvOS, visionOS, watchOS。Android向けSDKも存在します <a href="https://developer.apple.com/shazamkit/" target="_blank" rel="noopener">developer.apple.com</a>。</li>
+<li><strong>API利用（サードパーティ経由）</strong>: 公式にはShazamKit SDKが主ですが、RapidAPI等のマーケットプレイス経由でREST APIとして利用するケースが散見されます。</li>
+<li><strong>料金例（RapidAPI経由）</strong>: 無料枠（月500リクエスト）から、Proプラン（月$20で1万リクエスト）、Ultraプラン（月$50で3万リクエスト）など、プロバイダーにより価格が異なります <a href="https://rapidapi.com/apidojo/api/shazam/pricing" target="_blank" rel="noopener">rapidapi.com</a>。</li>
+<li><strong>制限</strong>: 公式SDKはAppleエコシステムに依存します。RapidAPI経由のものはApple公式のサポート対象外であり、安定性や利用規約は各プロバイダーに依存します。</li>
+</ul>
+<h5><strong>ACRCloud</strong></h5>
+<p>B2B向けの自動コンテンツ認識（ACR）プラットフォームで、放送監視や音楽認識に強みを持ちます。</p>
+<ul>
+<li><strong>データベース</strong>: 1億5000万曲以上のフィンガープリントデータベースを保有し、日々更新されています <a href="https://www.acrcloud.com/music-recognition/" target="_blank" rel="noopener">acrcloud.com</a>。</li>
+<li><strong>機能</strong>: 楽曲認識のほか、ハミング認識、音声認識、放送監視などが可能。Spotify、Apple Music、ISRCコード等との連携機能を持ちます <a href="https://www.acrcloud.com/music-recognition/" target="_blank" rel="noopener">acrcloud.com</a>。</li>
+<li><strong>料金</strong>: 公開されている比較サイト等によると、Starterプランが月額€15程度、エンタープライズ向けで月額€2,999程度まで幅があります。無料トライアル（14日間）が提供されています <a href="https://authio.io/compare/authio-vs-acrcloud" target="_blank" rel="noopener">authio.io</a>、<a href="https://trackradar.ai/compare/acrcloud-vs-audd-vs-shazam" target="_blank" rel="noopener">trackradar.ai</a>。詳細な価格表は公式サイトでの問い合わせが必要です <a href="https://www.acrcloud.com/contact/" target="_blank" rel="noopener">acrcloud.com</a>。</li>
+</ul>
+<h5><strong>AudD</strong></h5>
+<p>開発者向けに設計された、セルフサービス型の音楽認識APIです。</p>
+<ul>
+<li><strong>仕組み</strong>: ニューラルネットワークを用いた音声フィンガープリンティング技術を採用。1億6000万曲のデータベースを持ちます <a href="https://audd.io/resources/articles/best-music-recognition-apis" target="_blank" rel="noopener">audd.io</a>。</li>
+<li><strong>料金</strong>:</li>
+<li>無料枠: 登録時300リクエスト <a href="https://audd.io/resources/articles/music-recognition-api-pricing" target="_blank" rel="noopener">audd.io</a>。</li>
+<li>従量課金: $5/1,000リクエスト（大量利用で$2/1,000リクエスト程度まで低下） <a href="https://audd.io/resources/articles/music-recognition-api-pricing" target="_blank" rel="noopener">audd.io</a>。</li>
+<li>ボリュームプラン: 月$450（10万リクエスト）、$800（20万リクエスト）、$1,800（50万リクエスト） <a href="https://audd.io/" target="_blank" rel="noopener">audd.io</a>。</li>
+<li>ストリーム監視: 自社DB利用で$25/ストリーム/月、AudDのDB利用で$45/ストリーム/月 <a href="https://docs.audd.io/streams" target="_blank" rel="noopener">docs.audd.io</a>。</li>
+<li><strong>特徴</strong>: API、SDK、WebSocketによるリアルタイムストリーム認識に対応しており、ラジオ放送やライブ配信の監視に適しています <a href="https://docs.audd.io/" target="_blank" rel="noopener">docs.audd.io</a>。</li>
+</ul>
+<h5><strong>AcoustID / Chromaprint</strong></h5>
+<p>オープンソースの音声識別サービスです。</p>
+<ul>
+<li><strong>仕組み</strong>: クライアント側ライブラリ（Chromaprint）で指紋を生成し、Webサービス（AcoustID）で照合します。MusicBrainzと連携しています <a href="https://acoustid.org/" target="_blank" rel="noopener">acoustid.org</a>。</li>
+<li><strong>料金・制限</strong>:</li>
+<li>非商用利用は無料（登録が必要）。</li>
+<li>商用利用は有料プラン（Small: €50/月、Medium: €100/月など）への登録が必要 <a href="https://acoustid.org/webservice" target="_blank" rel="noopener">acoustid.org</a>、<a href="https://acoustid.biz/" target="_blank" rel="noopener">acoustid.biz</a>。</li>
+<li>無料枠のレートリミットは3リクエスト/秒 <a href="https://acoustid.org/webservice" target="_blank" rel="noopener">acoustid.org</a>。</li>
+</ul>
+<h5><strong>Musixmatch Pro API</strong></h5>
+<p>歌詞データと音楽メタデータに特化したAPIです。</p>
+<ul>
+<li><strong>機能</strong>: 歌詞、翻訳、楽曲カタログ、フィンガープリント（Sentinel）による著作権歌詞の検出など <a href="https://docs.musixmatch.com/overview" target="_blank" rel="noopener">docs.musixmatch.com</a>。</li>
+<li><strong>料金</strong>:</li>
+<li>Basic: $49/月（1日5,000コール、歌詞500件） <a href="https://www.musixmatch.com/pro/api/pricing" target="_blank" rel="noopener">musixmatch.com</a>。</li>
+<li>Grow: $199/月（1日2万コール、歌詞2,000件）。</li>
+<li>Scale: $499/月（1日10万コール、歌詞1万件）。</li>
+<li>Enterprise: カスタム（$2,000/月〜） <a href="https://www.musixmatch.com/pro/api/pricing" target="_blank" rel="noopener">musixmatch.com</a>。</li>
+</ul>
+<h5><strong>YouTube Content ID</strong></h5>
+<p>YouTubeが運営する著作権管理システムです。</p>
+<ul>
+<li><strong>仕組み</strong>: 権利者が提出した「リファレンスファイル」のデータベースと、アップロードされた動画を自動照合します <a href="https://support.google.com/youtube/answer/2797370?hl=en" target="_blank" rel="noopener">support.google.com</a>。</li>
+<li><strong>アクション</strong>: マッチした場合、権利者は「ブロック」「収益化（広告収入の獲得または共有）」「トラッキング（視聴数据统计）」のいずれかを選択できます <a href="https://support.google.com/youtube/answer/2797370?hl=en" target="_blank" rel="noopener">support.google.com</a>。</li>
+<li><strong> eligibility（適格性）</strong>: 独占的な権利を有する大量のオリジナル素材を保有していることが条件です。クリエイティブ・コモンズ、パブリックドメイン、カラオケ、リマスター音源、サウンドエフェクト、ループ音源などは原則対象外です <a href="https://support.google.com/youtube/answer/2605065?hl=en" target="_blank" rel="noopener">support.google.com</a>、<a href="https://www.foximusic.com/blog/youtube-content-id-for-music-guide-monetization/" target="_blank" rel="noopener">foximusic.com</a>。</li>
+</ul>
+<h4>1-3. 動画内の曲を特定する実務手順（合法範囲）</h4>
+<p>個人や企業が動画内のBGMを特定する場合、以下の手順が一般的かつ合法的です。</p>
+<p>1.  <strong>短尺サンプルの採取</strong>: 動画から数秒〜数十秒の音声クリップを抽出します（画質変換等は著作権法上の「私的利用の複製」の範囲内であれば問題ありませんが、再配布はNG）。</p>
+<p>2.  <strong>認識ツールの利用</strong>:</p>
+<ul>
+<li><strong>スマホアプリ</strong>: Shazam、SoundHoundなどを起動し、動画の音声をマイクで拾わせる（最も簡便）。</li>
+<li><strong>API利用</strong>: 抽出した音声ファイルをAudDやACRCloudのAPIに送信し、メタデータ（曲名、アーティスト）を取得する。</li>
+</ul>
+<p>3.  <strong>クロスチェック</strong>: 複数のサービスで結果が一致するか確認する（誤認識を防ぐため）。</p>
+<p>4.  <strong>利用許諾の確認</strong>: 特定できた楽曲について、JASRAC/NexToneのデータベースや各SNSの音楽ライブラリで利用可否を確認する。</p>
+<p><strong>注意点</strong>: 認識ツール自体は「曲名を調べる」ための道具であり、その結果得られた楽曲を無断で自身の動画に使用することは著作権侵害になります。</p>
+<hr>
+<h3>第2章：一般の人がプロの曲をSNSで使える仕組み</h3>
+<h4>2-1. 主要プラットフォームのライセンス構造</h4>
+<h5><strong>TikTok</strong></h5>
+<p>TikTokは、個人利用と商業利用で明確にライブラリを分けています。</p>
+<ul>
+<li><strong>一般ユーザー（個人アカウント）</strong>:</li>
+<li>「一般音楽ライブラリ（General Music Library）」にアクセス可能。ここには数百万曲のトレンド楽曲が含まれますが、ライセンスは「個人的な非商用利用」に限定されています <a href="https://www.foximusic.com/blog/commercial-music-licensing-tiktok-guide/" target="_blank" rel="noopener">foximusic.com</a>。</li>
+<li>2024年にはUniversal Music Group (UMG) とのライセンス契約が一時的に切れる事態がありましたが、2024年5月および2026年5月に新契約が締結され、UMGの楽曲が再び利用可能になっています <a href="https://www.universalmusic.com/universal-music-group-and-tiktok-announce-new-global-licensing-agreement/" target="_blank" rel="noopener">universalmusic.com</a>、<a href="https://pubsonline.informs.org/doi/10.1287/mksc.2024.1170" target="_blank" rel="noopener">pubsonline.informs.org</a>。</li>
+</ul>
+<ul>
+<li><strong>企業アカウント・商用利用</strong>:</li>
+<li>「Commercial Music Library (CML)」の利用が義務付けられています。CMLには約100万曲の楽曲が含まれ、これらは商用利用（広告、ブランドプロモーション等）が事前許諾（pre-cleared）されています <a href="https://ads.tiktok.com/resources/help/article/commercial-music-library?lang=en" target="_blank" rel="noopener">ads.tiktok.com</a>。</li>
+<li><strong>制限</strong>: CMLの楽曲はTikTokプラットフォーム内でのみ使用可能で、InstagramやYouTube等へのクロスポストは禁止されています。また、CMLに含まれない楽曲（一般ライブラリの楽曲）をビジネスアカウントで使用することは禁止されています <a href="https://www.tiktok.com/legal/page/global/commercial-music-library-user-terms/en" target="_blank" rel="noopener">tiktok.com</a>。</li>
+<li><strong>2025年7月25日改定</strong>: TikTokは音楽利用規約を改定し、商用利用の定義を明確化しました。これにより、ブランドが「Original Sound」として他者の copyrighted music をアップロードする行為がより厳しく監視されるようになりました <a href="https://sriplaw.com/blog/tiktoks-2025-commercial-music-library-what-brands-still-get-wrong/" target="_blank" rel="noopener">sriplaw.com</a>。</li>
+</ul>
+<h5><strong>Instagram (Meta)</strong></h5>
+<ul>
+<li><strong>個人/クリエイターアカウント</strong>: 主要レーベルと包括契約を結んだ「音楽ライブラリ」から数百万曲を選択可能です。</li>
+<li><strong>ビジネスアカウント</strong>: 原則として「Meta Sound Collection」のみの利用に制限されます。これは約14,000曲のロイヤリティフリー楽曲で構成され、流行のヒット曲などは含まれていません <a href="https://www.foximusic.com/blog/instagram-reels-music-copyright-legal-guide/" target="_blank" rel="noopener">foximusic.com</a>、<a href="https://www.epidemicsound.com/blog/brands-using-music-on-social-media/" target="_blank" rel="noopener">epidemicsound.com</a>。</li>
+<li><strong>理由</strong>: ビジネスアカウントの投稿は「商業コンテンツ」とみなされるため、包括契約（個人向け）の範囲外となります。これを回避するために、あえて「起業家」カテゴリ等にアカウント種別を変更するユーザーも存在しますが、これは規約のグレーゾーンを突く行為であり、リスクを伴います <a href="https://www.instagram.com/reel/DEvKhyruEGq/?hl=en" target="_blank" rel="noopener">instagram.com</a>。</li>
+</ul>
+<h5><strong>YouTube Shorts</strong></h5>
+<ul>
+<li><strong>60秒ルール</strong>: 2026年9月24日以降、1分を超える新しいShortsで著作権クレームがある場合、自動的にブロックされ不再生となる措置が緩和される方針が示されていますが、基本的には60秒以内のShortsであればYouTubeの音楽ライブラリ内の楽曲が自動許諾されます <a href="https://support.google.com/youtube/answer/13486873?hl=en" target="_blank" rel="noopener">support.google.com</a>。</li>
+<li><strong>60秒超</strong>: 1分を超えるShortsで著作権管理された音楽を使用した場合、動画がブロックされるか、収益化ができなくなるリスクがあります <a href="https://www.foximusic.com/blog/youtube-shorts-music-licensing-guide/" target="_blank" rel="noopener">foximusic.com</a>。</li>
+<li><strong>ビジネス利用</strong>: YouTubeの「Enhance your Shorts」機能等で提供される音楽は、原則として個人・非商用利用向けであり、広告やプロモーションに使用する場合は別途ライセンスが必要です <a href="https://www.foximusic.com/blog/youtube-shorts-music-licensing-guide/" target="_blank" rel="noopener">foximusic.com</a>。</li>
+</ul>
+<h4>2-2. 日本の著作権管理団体（JASRAC / NexTone）との関係</h4>
+<p>日本国内では、JASRACとNexToneが主要な著作権管理団体です。</p>
+<ul>
+<li><strong>JASRAC</strong>:</li>
+<li>YouTubeとは包括的なライセンス契約（Blanket License）を締結しており、YouTube上の動画でJASRAC管理楽曲が使用された場合、コンテンツIDを通じて権利処理が行われます <a href="https://www.jasrac.or.jp/en/users/" target="_blank" rel="noopener">jasrac.or.jp</a>、<a href="https://secure.okbiz.jp/faq-jasrac/faq/show/896?site_domain=en" target="_blank" rel="noopener">secure.okbiz.jp</a>。</li>
+<li>2023年12月、JASRACはフィンガープリンティング技術企業であるBMAT（スペイン）およびORFIUM（米国）と契約を結び、YouTube上での楽曲特定精度を向上させています <a href="https://www.jasrac.or.jp/ejhp/release/2023/1204.html" target="_blank" rel="noopener">jasrac.or.jp</a>、<a href="https://www.bmat.com/jasrac-partnership/" target="_blank" rel="noopener">bmat.com</a>。</li>
+<li>2025年度の著作権使用料徴収額は1,523億2,659万円、分配額は1,518億5,794万円（いずれも過去最高）でした <a href="https://www.jasrac.or.jp/en/information/release/26/260520.html" target="_blank" rel="noopener">jasrac.or.jp</a>。</li>
+</ul>
+<ul>
+<li><strong>NexTone</strong>:</li>
+<li>JASRACと同様にYouTubeと連携しており、NexTone管理楽曲が動画で使用された場合、自動メッセージ（通知）が送信されますが、これは著作権侵害の主張（ストライキ）ではなく、収益配分のための通知であることが多いと説明されています <a href="https://www.nex-tone.co.jp/YouTube_FAQ/index_en.html" target="_blank" rel="noopener">nex-tone.co.jp</a>。</li>
+<li>JASRACとNexToneは管理楽曲が重複している場合もあり、J-WID（JASRAC作品データベース）で「デジタル配信」の欄に×印がある楽曲は、NexToneが管理している可能性があります <a href="https://www.nex-tone.co.jp/YouTube_FAQ/index_en.html" target="_blank" rel="noopener">nex-tone.co.jp</a>。</li>
+</ul>
+<ul>
+<li><strong>許諾範囲の限界</strong>:</li>
+<li>これらの包括契約は「プラットフォーム上での利用」を許諾するものであり、TVCMや店舗BGMなど、プラットフォーム外での利用や、プラットフォームが許諾していない商用利用（企業アカウントでの一般楽曲使用など）はカバーしません。</li>
+<li>X（旧Twitter）については、2026年5月時点でJASRACとの包括契約が締結されていないとの報道もあります <a href="https://ip-shiori.com/en-US/2026/05/30/the-ultimate-jasrac-guide-youtube-vs-x-and-the-hidden-trust-traps-for-creators/" target="_blank" rel="noopener">ip-shiori.com</a>。</li>
+</ul>
+<hr>
+<h3>第3章：失敗・削除・アカウント停止の事例</h3>
+<p>楽曲利用におけるトラブルは、個人クリエイターから大企業まで幅広く発生しています。</p>
+<h4>3-1. 企業による大規模侵害と和解事例</h4>
+<ul>
+<li><strong>Warner Music Group vs. Crumbl Cookies (2025-2026)</strong>:</li>
+<li>クッキーチェーンのCrumblが、TikTokやInstagramのプロモーション動画でWMGの楽曲を無断使用したとして訴訟を起こされました。対象楽曲は少なくとも159曲に及び、WMGは1曲あたり最大15万ドル（法定損害賠償額）を請求していましたが、2026年5月に和解が成立しました。和解金額は非公開です <a href="https://www.musicbusinessworldwide.com/warner-music-and-crumbl-reach-settlement-in-24m-copyright-infringement-lawsuit-over-tiktok-posts/" target="_blank" rel="noopener">musicbusinessworldwide.com</a>、<a href="https://www.abc4.com/news/local-news/crumbl-warner-music-group-approaching-settlement/" target="_blank" rel="noopener">abc4.com</a>。</li>
+<li>この事例は、企業が「TikTokで流行っている曲」を自社プロモーションに無断転用することのリスクを示しています。</li>
+</ul>
+<ul>
+<li><strong>Warner Music Group / Sony Music vs. DSW (2025)</strong>:</li>
+<li>靴小売チェーンDSWは、インフルエンサーが投稿したプロモーション動画に含まれる音楽について、WMGおよびSony Musicから訴訟を起こされました。DSWは「インフルエンサーが投稿したもので、自社アカウントではない」と主張しましたが、音楽会社は「二次的責任（secondary liability）」を問う姿勢を示しています <a href="https://www.wilsonelser.com/publications/copyright-infringement-litigations-based-on-influencer-posts-how-to-protect-your-business" target="_blank" rel="noopener">wilsonelser.com</a>。</li>
+<li>DSWは反訴として、プラットフォームや音楽会社がライセンスの曖昧さを利用していると主張しましたが、これは法廷で決着がついていない段階です。</li>
+</ul>
+<ul>
+<li><strong>その他の事例</strong>:</li>
+<li>Chili&#x27;s（レストランチェーン）、Marriott International（ホテル）、Gymshark（アパレル）、AHL（アイスホッケーリーグ）、複数のNBAチームなどが、ソーシャルメディア上の音楽利用をめぐり訴訟または和解に至っています <a href="https://lawreview.law.miami.edu/legal-treble-copyright-infringement-lawsuits-leave-several-companies-facing-the-music/" target="_blank" rel="noopener">lawreview.law.miami.edu</a>。</li>
+<li>Marriottの事例では、Sony Musicとの間で931件の侵害が主張され、和解に至っています。</li>
+</ul>
+<h4>3-2. プラットフォーム側の措置（動画削除・ミュート）</h4>
+<ul>
+<li><strong>TikTokの「Music Usage Confirmation」</strong>:</li>
+<li>2020年以降、TikTokは楽曲アップロード時に「著作権を侵害していないか」の確認ポップアップを表示するようになりました。これを無視してチェックを入れる行為は、後日の訴訟で「故意の侵害（willful infringement）」の証拠として使われるリスクがあります <a href="https://sriplaw.com/blog/tiktoks-2025-commercial-music-library-what-brands-still-get-wrong/" target="_blank" rel="noopener">sriplaw.com</a>。</li>
+<li>2025年7月の規約改定以降、ビジネスアカウントが一般ライブラリの楽曲を使おうとすると、利用確認を求められるか、投稿自体が制限されるケースが増えています。</li>
+</ul>
+<ul>
+<li><strong>YouTubeの著作権ストライキ</strong>:</li>
+<li>著作権ストライキとは、権利者からの法的削除請求により動画が削除された状態を指します。ストライキは90日間有効で、3回蓄積するとチャンネルが削除（terminate）され、新規チャンネルの作成も禁止されます <a href="https://support.google.com/youtube/answer/2814000?hl=en" target="_blank" rel="noopener">support.google.com</a>。</li>
+<li>Content IDクレーム（収益化の剥奪やブロック）とは異なり、ストライキはチャンネルの存続に関わる重大なペナルティです。</li>
+</ul>
+<ul>
+<li><strong>クロスポストの罠</strong>:</li>
+<li>TikTokで合法（CML利用）だった動画を、そのままInstagram ReelsやYouTube Shortsに投稿すると、プラットフォーム間のライセンス契約が異なるため、他プラットフォーム側で著作権侵害（ブロック・ミュート）となる事例が多発しています。これは「プラットフォーム固有のライセンス（Platform-Specific License）」の理解不足が原因です <a href="https://sriplaw.com/blog/tiktoks-2025-commercial-music-library-what-brands-still-get-wrong/" target="_blank" rel="noopener">sriplaw.com</a>。</li>
+</ul>
+<h4>3-3. インフルエンサーを介したリスク</h4>
+<p>企業がインフルエンサーにコンテンツ作成を委託する場合、契約書で「音楽の権利処理はインフルエンサー側で行う」と明記していても、ブランド側が「二次的責任」を問われるケースが増えています。DSW訴訟などがその典型で、ブランドがインフルエンサーの投稿を承認・リポストした行為が、侵害への関与とみなされる可能性があります <a href="https://www.wilsonelser.com/publications/copyright-infringement-litigations-based-on-influencer-posts-how-to-protect-your-business" target="_blank" rel="noopener">wilsonelser.com</a>。</p>
+<hr>
+<h3>第4章：個人が安全に音楽を紹介するための具体的な手順（5選）</h3>
+<p>以上の調査を踏まえ、個人（または小規模事業者）が著作権侵害のリスクを最小限に抑えつつ音楽を紹介・利用するための手順を以下に示します。</p>
+<p>1.  <strong>アカウント種別の確認と使い分け</strong></p>
+<p>    InstagramやTikTokでビジネスアカウント（企業アカウント）を使用している場合、一般のヒット曲ライブラリは利用できません。商用利用をする場合は、必ず「Commercial Music Library（TikTok）」や「Meta Sound Collection（Instagram）」内の楽曲のみを使用してください。個人としての趣味の投稿であれば、アカウント種別を「個人/クリエイター」に設定し直すことで一般ライブラリが利用可能になりますが、その投稿で商品販売等の営利行為を行わないよう注意が必要です <a href="https://www.foximusic.com/blog/instagram-reels-music-copyright-legal-guide/" target="_blank" rel="noopener">foximusic.com</a>、<a href="https://ads.tiktok.com/resources/help/article/commercial-music-library?lang=en" target="_blank" rel="noopener">ads.tiktok.com</a>。</p>
+<p>2.  <strong>プラットフォーム内ツールからのみ音楽を追加する</strong></p>
+<p>    動画編集アプリ（CapCut等）で外部から音楽ファイルを読み込んで動画を作成し、それをSNSにアップロードするのは危険です。必ずTikTok、Instagram、YouTube各アプリ内の「音楽追加」機能、または公式が提供するサウンドライブラリから音楽を選択・付加してください。これにより、プラットフォームと権利者の間のライセンス契約の恩恵を受けられます <a href="https://www.foximusic.com/blog/youtube-shorts-music-licensing-guide/" target="_blank" rel="noopener">foximusic.com</a>。</p>
+<p>3.  <strong>クロスポスト（転載）を避ける、または音声を差し替える</strong></p>
+<p>    TikTokで作成した動画を、そのままInstagram ReelsやYouTube Shortsに投稿しないでください。各プラットフォームのライセンス契約は独立しています。複数プラットフォームで展開する場合は、各プラットフォームごとにそのプラットフォームのライブラリから音楽を選び直すか、ロイヤリティフリーの音楽（後述）を使用してください <a href="https://sriplaw.com/blog/tiktoks-2025-commercial-music-library-what-brands-still-get-wrong/" target="_blank" rel="noopener">sriplaw.com</a>。</p>
+<p>4.  <strong>ロイヤリティフリー音源ライブラリの活用</strong></p>
+<p>    特定の流行曲にこだわらない場合、Epidemic Sound、Artlist、YouTube Audio Libraryなどのロイヤリティフリー音楽サービスを利用するのが最も安全です。これらのサービスは月額/年額料金を支払うことで、商用利用（SNS投稿含む）が許可された楽曲を提供しています。YouTube Audio Libraryは無料で利用でき、YouTubeパートナープログラムでの収益化も可能です <a href="https://support.google.com/youtube/answer/3376882" target="_blank" rel="noopener">support.google.com</a>、<a href="https://www.foximusic.com/blog/how-to-use-youtube-content-id-claims-licensing/" target="_blank" rel="noopener">foximusic.com</a>。</p>
+<p>5.  <strong>インフルエンサー・外部委託時の契約確認</strong></p>
+<p>    自社以外のクリエイターに動画制作を依頼する場合は、契約書に「使用する音楽の著作権処理を制作側が行うこと」「著作権侵害が発生した場合の損害賠償責任は制作側が負うこと（免責条項）」を明記してください。また、公開前に使用する音楽がプラットフォームの商用利用規約に適合しているか、社内チェック体制を敷くことが推奨されます <a href="https://www.wilsonelser.com/publications/copyright-infringement-litigations-based-on-influencer-posts-how-to-protect-your-business" target="_blank" rel="noopener">wilsonelser.com</a>。</p>
+<hr>
+<h3>出典一覧</h3>
+<p>1. <a href="https://developer.apple.com/shazamkit/" target="_blank" rel="noopener">Apple Developer - ShazamKit</a></p>
+<p>2. <a href="https://www.acrcloud.com/music-recognition/" target="_blank" rel="noopener">ACRCloud - Music Recognition</a></p>
+<p>3. <a href="https://audd.io/" target="_blank" rel="noopener">AudD - Music Recognition API</a></p>
+<p>4. <a href="https://docs.audd.io/streams" target="_blank" rel="noopener">AudD Documentation - Streams</a></p>
+<p>5. <a href="https://audd.io/resources/articles/music-recognition-api-pricing" target="_blank" rel="noopener">AudD - Pricing Article</a></p>
+<p>6. <a href="https://acoustid.org/" target="_blank" rel="noopener">AcoustID</a></p>
+<p>7. <a href="https://acoustid.org/webservice" target="_blank" rel="noopener">AcoustID Webservice</a></p>
+<p>8. <a href="https://acoustid.biz/" target="_blank" rel="noopener">AcoustID.biz</a></p>
+<p>9. <a href="https://oxygene.sk/2011/01/how-does-chromaprint-work/" target="_blank" rel="noopener">Chromaprint technical details (oxygene.sk)</a></p>
+<p>10. <a href="https://www.musixmatch.com/pro/api/pricing" target="_blank" rel="noopener">Musixmatch Pro API Pricing</a></p>
+<p>11. <a href="https://docs.musixmatch.com/overview" target="_blank" rel="noopener">Musixmatch Pro API Overview</a></p>
+<p>12. <a href="https://support.google.com/youtube/answer/2797370?hl=en" target="_blank" rel="noopener">YouTube Help - Content ID basics</a></p>
+<p>13. <a href="https://support.google.com/youtube/answer/2605065?hl=en" target="_blank" rel="noopener">YouTube Help - Content eligible for Content ID</a></p>
+<p>14. <a href="https://support.google.com/youtube/answer/2814000?hl=en" target="_blank" rel="noopener">YouTube Help - Copyright strikes</a></p>
+<p>15. <a href="https://support.google.com/youtube/answer/13486873?hl=en" target="_blank" rel="noopener">YouTube Help - Music eligibility for Shorts</a></p>
+<p>16. <a href="https://support.google.com/youtube/answer/3376882" target="_blank" rel="noopener">YouTube Audio Library</a></p>
+<p>17. <a href="https://ads.tiktok.com/resources/help/article/commercial-music-library?lang=en" target="_blank" rel="noopener">TikTok - Commercial Music Library</a></p>
+<p>18. <a href="https://www.tiktok.com/legal/page/global/commercial-music-library-user-terms/en" target="_blank" rel="noopener">TikTok - Commercial Music Library User Terms</a></p>
+<p>19. <a href="https://www.tiktok.com/legal/page/global/music-terms-eea/en" target="_blank" rel="noopener">TikTok - Music Terms of Service (EEA)</a></p>
+<p>20. <a href="https://help.instagram.com/402084904469945/" target="_blank" rel="noopener">Instagram Help - Access to the licensed music library</a></p>
+<p>21. <a href="https://help.instagram.com/126382350847838" target="_blank" rel="noopener">Instagram Help - Meta Sound Collection (access failed)</a></p>
+<p>22. <a href="https://www.jasrac.or.jp/en/users/" target="_blank" rel="noopener">JASRAC - Music Users</a></p>
+<p>23. <a href="https://secure.okbiz.jp/faq-jasrac/faq/show/896?site_domain=en" target="_blank" rel="noopener">JASRAC - FAQ on YouTube blanket license</a></p>
+<p>24. <a href="https://www.jasrac.or.jp/en/information/release/26/260520.html" target="_blank" rel="noopener">JASRAC - Fiscal 2025 Business Affairs</a></p>
+<p>25. <a href="https://www.jasrac.or.jp/ejhp/release/2023/1204.html" target="_blank" rel="noopener">JASRAC - BMAT/ORFIUM partnership</a></p>
+<p>26. <a href="https://www.bmat.com/jasrac-partnership/" target="_blank" rel="noopener">BMAT - JASRAC partnership</a></p>
+<p>27. <a href="https://www.nex-tone.co.jp/YouTube_FAQ/index_en.html" target="_blank" rel="noopener">NexTone - YouTube FAQ</a></p>
+<p>28. <a href="https://www.universalmusic.com/universal-music-group-and-tiktok-announce-new-global-licensing-agreement/" target="_blank" rel="noopener">Universal Music Group - TikTok new licensing agreement</a></p>
+<p>29. <a href="https://www.musicbusinessworldwide.com/warner-music-and-crumbl-reach-settlement-in-24m-copyright-infringement-lawsuit-over-tiktok-posts/" target="_blank" rel="noopener">Music Business Worldwide - Warner Music vs Crumbl settlement</a></p>
+<p>30. <a href="https://www.abc4.com/news/local-news/crumbl-warner-music-group-approaching-settlement/" target="_blank" rel="noopener">ABC4 - Crumbl/Warner settlement</a></p>
+<p>31. <a href="https://www.wilsonelser.com/publications/copyright-infringement-litigations-based-on-influencer-posts-how-to-protect-your-business" target="_blank" rel="noopener">Wilson Elser - Copyright Infringement Litigations Based on Influencer Posts</a></p>
+<p>32. <a href="https://lawreview.law.miami.edu/legal-treble-copyright-infringement-lawsuits-leave-several-companies-facing-the-music/" target="_blank" rel="noopener">Miami Law Review - Legal Treble Copyright Infringement Lawsuits</a></p>
+<p>33. <a href="https://sriplaw.com/blog/tiktoks-2025-commercial-music-library-what-brands-still-get-wrong/" target="_blank" rel="noopener">SRIP Law - TikTok&#x27;s 2025 Commercial Music Library</a></p>
+<p>34. <a href="https://www.foximusic.com/blog/youtube-content-id-for-music-guide-monetization/" target="_blank" rel="noopener">Foximusic - YouTube Content ID for Music Guide</a></p>
+<p>35. <a href="https://www.foximusic.com/blog/commercial-music-licensing-tiktok-guide/" target="_blank" rel="noopener">Foximusic - Commercial Music Licensing TikTok Guide</a></p>
+<p>36. <a href="https://www.foximusic.com/blog/instagram-reels-music-copyright-legal-guide/" target="_blank" rel="noopener">Foximusic - Instagram Reels Music Copyright Guide</a></p>
+<p>37. <a href="https://www.foximusic.com/blog/youtube-shorts-music-licensing-guide/" target="_blank" rel="noopener">Foximusic - YouTube Shorts Music Licensing Guide</a></p>
+<p>38. <a href="https://rapidapi.com/apidojo/api/shazam/pricing" target="_blank" rel="noopener">RapidAPI - Shazam Pricing</a></p>
+<p>39. <a href="https://authio.io/compare/authio-vs-acrcloud" target="_blank" rel="noopener">Authio - ACRCloud comparison</a></p>
+<p>40. <a href="https://trackradar.ai/compare/acrcloud-vs-audd-vs-shazam" target="_blank" rel="noopener">TrackRadar - ACRCloud vs AudD vs Shazam</a></p>
+<p>41. <a href="https://www.epidemicsound.com/blog/brands-using-music-on-social-media/" target="_blank" rel="noopener">Epidemic Sound - Meta Sound Collection info</a></p>
+<p>42. <a href="https://ip-shiori.com/en-US/2026/05/30/the-ultimate-jasrac-guide-youtube-vs-x-and-the-hidden-trust-traps-for-creators/" target="_blank" rel="noopener">IP Shiori - JASRAC vs X (Twitter) licensing</a></p>
+<p>43. <a href="https://pubsonline.informs.org/doi/10.1287/mksc.2024.1170" target="_blank" rel="noopener">INFORMS - The Value of Silence: UMG/TikTok dispute</a></p>
+<p>44. <a href="https://www.hbs.edu/ris/download.aspx?name=25-014.pdf" target="_blank" rel="noopener">Harvard Business School - UMG/TikTok dispute effect</a></p>
+<p>45. <a href="https://variety.com/2024/music/news/tiktok-universal-music-group-settle-royalty-dispute-licensing-agreement-1235987271/" target="_blank" rel="noopener">Variety - TikTok and UMG settle royalty dispute</a></p>
+<p>46. <a href="https://www.rollingstone.com/music/music-news/umg-and-tiktok-end-battle-with-new-agreement-1235013809/" target="_blank" rel="noopener">Rolling Stone - UMG and TikTok Reach New Licensing Deal</a></p>
+<p>47. <a href="https://newsroom.tiktok.com/universal-music-group-and-tiktok-announce-new-global-licensing-agreement?lang=en" target="_blank" rel="noopener">TikTok Newsroom - UMG and TikTok Announce New Global Licensing Agreement</a></p>
+<p>48. <a href="https://kelleykronenberg.com/your-favorite-cookie-just-crumbld-to-the-tune-of-23-58-million/" target="_blank" rel="noopener">Kelley Kronenberg - Crumbl lawsuit analysis</a></p>
+<p>49. <a href="https://advertisinglaw.fkks.com/post/102ka8t/warner-music-group-sues-crumbl-cookies-over-use-of-music-in-social-media-posts" target="_blank" rel="noopener">Advertising Law FKKS - Warner Music Group Sues Crumbl Cookies</a></p>
+<p>50. <a href="https://www.soundstripe.com/blogs/tiktok-music-library-explained" target="_blank" rel="noopener">Soundstripe - TikTok Music Library Explained</a></p>
+<p>51. <a href="https://stackinfluence.com/blog/find-royalty-free-commercial-music-for-tiktok" target="_blank" rel="noopener">Stack Influence - Find Royalty-Free Commercial Music for TikTok</a></p>
+<p>52. <a href="https://www.trymaas.com/blog/instagram-business-account-trending-music-risks/" target="_blank" rel="noopener">TryMaas - Instagram Business Account Music Risks</a></p>
+<p>53. <a href="https://gyre.pro/blog/using-trending-audio-legally-a-guide-for-youtube-creators" target="_blank" rel="noopener">Gyre.pro - Using trending audio legally</a></p>
+<p>54. <a href="https://subscribr.ai/youtube-strategy/youtube-shorts-copyright-guide" target="_blank" rel="noopener">Subscribr.ai - YouTube Shorts Copyright Guide</a></p>
+<p>55. <a href="https://www.chartlex.com/blog/business/music-copyright-strikes-youtube-avoid-fix" target="_blank" rel="noopener">Chartlex - YouTube Copyright Strikes</a></p>
+<p>56. <a href="https://vtubernewsdrop.com/jasrac-reinforces-content-id-latest-youtube-partnership/" target="_blank" rel="noopener">VtuberNewsDrop - JASRAC Content ID partnership</a></p>
+<p>57. <a href="https://www.musicbusinessworldwide.com/japans-ugc-monetization-is-starting-late-but-growing-rapidly1/" target="_blank" rel="noopener">Music Business Worldwide - Japan&#x27;s UGC monetization</a></p>
+<p>58. <a href="https://www.orfium.com/content-agreement/" target="_blank" rel="noopener">Orfium - Content Agreement</a></p>
+<p>59. <a href="https://springsoundmusic.com/tiktok-2025-music-licensing-changes-explained/" target="_blank" rel="noopener">Spring Sound Music - TikTok&#x27;s 2025 Music Licensing Changes</a></p>
+<p>60. <a href="https://www.soundstripe.com/blogs/tiktok-music-licensing-rules" target="_blank" rel="noopener">Soundstripe - TikTok Music Licensing Rules</a></p>
+<p><strong>注</strong>: 本レポート作成時、Instagramのヘルプページ（<a href="https://help.instagram.com/126382350847838）へのアクセスに失敗しており、Meta" target="_blank" rel="noopener">https://help.instagram.com/126382350847838）へのアクセスに失敗しており、Meta</a> Sound Collectionの詳細な規約全文は確認できていません。また、いくつかの訴訟資料（UMG v Brinker等）はPDFリンクが参照元記事内に含まれていましたが、本調査ではそのPDF本文まで直接読み込みを行っていないため、訴訟の詳細な判決文内容までは網羅していません。</p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

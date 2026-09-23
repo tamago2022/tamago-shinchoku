@@ -1,0 +1,85 @@
+<!doctype html><html lang="ja"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>止まれない関所（Stopフック）</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6259;--line:#e5ded4;--bg:#faf7f2;--red:#c0392b;--amber:#b7791f;--gr:#1e7a3c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:15px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 14px 64px}
+h1{font-size:20px;margin:0 0 4px;letter-spacing:.02em}
+h2{font-size:15px;margin:28px 0 8px}
+.sub{color:var(--sub);font-size:12px;margin:0 0 18px}
+.big{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 10px}
+.big>div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 10px;text-align:center}
+.big b{display:block;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.big span{font-size:12px;color:var(--sub)}
+.big .ng b{color:var(--red)}
+.big .okk b{color:var(--gr)}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+ border-radius:10px;overflow:hidden;font-size:13px}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f3ede4;font-size:11px;color:var(--sub);font-weight:600;white-space:nowrap}
+td.d{white-space:nowrap;color:var(--sub);font-size:11.5px}
+td.g{color:var(--sub);font-size:11.5px}
+code{background:#f3ede4;border-radius:4px;padding:1px 4px;font-size:12px}
+a{color:#1c5fa8}
+.s{font-size:11px;padding:2px 7px;border-radius:99px;white-space:nowrap;display:inline-block}
+.s.ok{background:#e3f3e6;color:var(--gr)}
+.s.run{background:#e4eefb;color:#1c5fa8}
+.s.stop{background:#fbe3e0;color:#a6301f}
+.s.yet{background:#efeae3;color:#6b6259}
+pre{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;font-size:11.5px;line-height:1.6}
+.note{margin:18px 0 0;font-size:11.5px;color:var(--sub);line-height:1.9}
+@media(max-width:640px){.big b{font-size:34px}}
+</style>
+<div class="wrap">
+<h1>止まれない関所（Stopフック）</h1>
+<p class="sub">終わろうとした瞬間に機械が止める仕組み。数字は台帳 <code>status/1154_stop_kanmon.jsonl</code> から機械で数えたもの。2026-09-26 08:30 時点。手で書き足していません。</p>
+
+<div class="big">
+ <div class="ng"><b>2</b><span>実際にブロックが発火した回数</span></div>
+ <div class="okk"><b>1</b><span>完了条件を満たして通した回数</span></div>
+ <div><b>0</b><span>引き継ぎに回した回数</span></div>
+</div>
+
+<h2>入れたフック</h2>
+<table><thead><tr><th>フック</th><th>走るもの</th><th>何をするか</th></tr></thead><tbody>
+<tr><td><code>Stop</code></td><td class="g"><code>node tools/stop_kanmon/stop_hook.mjs</code></td><td>本体が終わろうとした時。走行中の案件が完了条件を満たしていなければ <b>exit 2 で終了を拒否</b></td></tr>
+<tr><td><code>SubagentStop</code></td><td class="g"><code>node tools/stop_kanmon/stop_hook.mjs</code></td><td>子セッション（サブエージェント）が終わろうとした時。同じ判定で拒否</td></tr>
+<tr><td><code>UserPromptSubmit</code></td><td class="g"><code>node tools/stop_kanmon/prompt_gate.mjs</code></td><td>「発車して」と言われたのに完了条件が1行で書けていない依頼を <b>exit 2 で弾く</b></td></tr>
+<tr><td><code>SessionEnd</code></td><td class="g"><code>node tools/stop_kanmon/session_end.mjs</code></td><td>公式いわく止める権限は無い。走行中のまま消えた案件を台帳に残すだけ</td></tr>
+</tbody></table>
+<p class="note">書き方は公式そのまま（<code>.claude/settings.json</code> の <code>hooks</code> → matcher群 → <code>type:"command"</code>）。終了の拒否は exit code 2、理由は stderr。オリジナルの書き方はしていません。</p>
+
+<h2>世界のトップランナーはどう止めているか</h2>
+<table><thead><tr><th>誰が</th><th>何を</th><th>型</th><th>出典</th></tr></thead><tbody>
+<tr><td>Anthropic Claude Code</td><td>Stop / SubagentStop フック。エージェントが終わろうとした瞬間に発火し、exit code 2 か <code>{"decision":"block"}</code> で<b>終了を拒否して続けさせる</b>。stderr の文字がそのまま「なぜ続けるか」の理由になる。暴走止めは <code>stop_hook_active</code> と「8回連続でブロックしたら本体が打ち切る」</td><td class="g">停止条件を外に置く</td><td class="d"><a href="https://code.claude.com/docs/en/hooks">出典</a></td></tr>
+<tr><td>OpenAI Agents SDK</td><td>output guardrail。エージェントの最終出力に対して別の判定を走らせ、<code>tripwire_triggered</code> が立つと <code>OutputGuardrailTripwireTriggered</code> を投げて最終出力を却下する。却下しても、済んだツール呼び出しはセッションに残す</td><td class="g">停止条件を外に置く</td><td class="d"><a href="https://openai.github.io/openai-agents-python/guardrails/">出典</a></td></tr>
+<tr><td>LangChain / LangGraph</td><td>interrupt と checkpointer。止めるには checkpointer が必須で、状態は毎スーパーステップ外に保存される。再開はノードの途中からではなく<b>ノードの頭から再実行</b>されるので、副作用は冪等でないといけない</td><td class="g">進捗をファイルに落とす</td><td class="d"><a href="https://docs.langchain.com/oss/python/langgraph/interrupts">出典</a></td></tr>
+<tr><td>Temporal</td><td>ワークフロー永続化。LLM呼び出しもツール呼び出しも Activity として追記専用のイベント履歴に載る。落ちても最後に終わった一歩から自動で再開する。履歴は無限ではないので Continue-As-New で畳む</td><td class="g">進捗をファイルに落とす</td><td class="d"><a href="https://temporal.io/solutions/ai">出典</a></td></tr>
+<tr><td>AutoGen</td><td>termination condition。ターン数か合言葉で会話を止める。＝<b>回数と文字列でしか止められない</b>（同じツール呼び出しの繰り返しは見ていない）</td><td class="g">停止条件を外に置く（ただし浅い）</td><td class="d"><a href="https://theneuralbase.com/autogen/learn/intermediate/team-termination-conditions/">出典</a></td></tr>
+<tr><td>CrewAI</td><td>max_iter。上限に当たると「精一杯の答え」を返すが、<b>打ち切られたという印が付かない</b>。受け取る側は完了と見分けられない、と本家のissueに書かれている</td><td class="g">停止条件を外に置く（ただし浅い）</td><td class="d"><a href="https://github.com/crewAIInc/crewAI/issues/6414">出典</a></td></tr>
+</tbody></table>
+<p class="note">共通していたのは2つだけ。<b>①停止条件をエージェントの外に置く（自分で「終わった」と言わせない）</b>　<b>②進捗を毎回ファイルに落とす（記憶に置かない）</b>。この2つを満たしていない止め方（回数だけ・合言葉だけ）は、下の失敗例のとおり事故になっている。</p>
+
+<h2>失敗例・やめた理由</h2>
+<table><thead><tr><th>やめたこと</th><th>なぜ</th><th>出典</th></tr></thead><tbody>
+<tr><td>チェックポイント＝永続実行だと思っていた</td><td>LangGraph・CrewAI・Google ADK のチェックポイントは「状態の保存」であって「落ちた所からの再開」ではない、と外部が指摘。InMemorySaver はプロセスが死ぬと消える</td><td class="d"><a href="https://www.diagrid.io/blog/checkpoints-are-not-durable-execution-why-langgraph-crewai-google-adk-and-others-fall-short-for-production-agent-workflows">出典</a></td></tr>
+<tr><td>止まらないループ（IAL）</td><td>論文いわく、有効な終了条件が無いままLLM呼び出し・ツール呼び出し・エージェント遷移が繰り返される失敗を Infinite Agentic Loop と呼ぶ</td><td class="d"><a href="https://arxiv.org/html/2607.01641v1">出典</a></td></tr>
+<tr><td>max_iterations の固定上限をやめた</td><td>収束したかを見ずに回数で切ると、金を焼いたうえに劣化した答えが残る。回数ではなく収束で止めて巻き戻す道具（LoopGain）が出ている</td><td class="d"><a href="https://github.com/loopgain-ai/loopgain">出典</a></td></tr>
+</tbody></table>
+
+<h2>いまの案件</h2>
+<table><thead><tr><th>番号</th><th>題名</th><th>状態</th><th>ブロック</th><th>完了条件</th></tr></thead><tbody>
+<tr><td>1154</td><td>止まれない関所（Stopフック）</td><td><span class="s ok">完了</span></td><td>2回</td><td class="g">https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html が200・3000バイト以上・差分1件以上</td></tr>
+</tbody></table>
+
+<h2>台帳の生ログ（最後の12行）</h2>
+<pre>{"at":"2026-09-26T08:09:45.888+09:00","id":"1154","event":"ukeire","title":"止まれない関所（Stopフック）","done":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","min_bytes":3000,"min_diff":1},"base_sha":"71f2c0cf7abaf8e0f34ba9f15d9db762e84054d1"}
+{"at":"2026-09-26T08:09:46.002+09:00","id":"1154","event":"hassha","base_sha":"71f2c0cf7abaf8e0f34ba9f15d9db762e84054d1","deadline_h":6}
+{"at":"2026-09-26T08:10:10.782+09:00","id":"1154","event":"block","hook":"Stop","why":"URLに触れない（fetch failed）: https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":0,"bytes":0,"diff":73}}
+{"at":"2026-09-26T08:13:26.590+09:00","id":"1154","event":"block","hook":"Stop","why":"URLに触れない（fetch failed）: https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":0,"bytes":0,"diff":75}}
+{"at":"2026-09-26T08:30:21.516+09:00","id":"1154","event":"kanryou","hook":"手","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":200,"bytes":10441,"diff":78,"via":"Chromeで本番URLを開いて実測（200・中身あり）"}}</pre>
+<p class="note">この台帳は追記だけ。状態ファイルを別に持たず、頭から再生して今の姿を作っている（Temporalのイベント履歴と同じ形）。だから落ちても、このファイルさえ残っていれば続きから走れる。</p>
+</div>

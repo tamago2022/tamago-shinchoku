@@ -32,7 +32,45 @@ REPO = os.path.dirname(HERE)
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
-import gaibu_kuchi as gkuchi  # noqa: E402
+# ---------------------------------------------------------------------
+# ★2026-09-24：待ち行列は `shigoto_queue.py`（待ち行列だけの家）から取る。
+#   以前は `gaibu_kuchi.py` から取っていたので、03:38にあの1本が丸ごと
+#   書き替えられた拍子に JOBS_DIR / write_job_result が巻き添えで消え、
+#   ここの import で落ちて**工場が黙って止まった**（03:35以降ゼロ件）。
+#   穴を塞がずパイプを替える：待ち行列の正本は1か所だけ。
+#   `gaibu_kuchi` は「鍵の状態」「回線が出るか」の**おまけ**としてだけ使い、
+#   無くても・別物に替わっても工場は止まらない。
+# ---------------------------------------------------------------------
+import shigoto_queue as gkuchi  # noqa: E402  ← 待ち行列の正本
+
+try:
+    import gaibu_kuchi as _gk  # noqa: E402  外部APIの鍵まわり（あれば使う）
+except Exception:
+    _gk = None
+
+
+def _net_ok():
+    """回線の確認。★取れないときは True 側に倒す。
+    kakunin/yomu/sumaho/daicho など**外部APIを使わない仕事のほうが多い**のに、
+    api.openai.com に出られないだけで列ごと止めていたのが以前の作り。"""
+    f = getattr(_gk, "net_ok", None)
+    if not callable(f):
+        return True
+    try:
+        return bool(f())
+    except Exception:
+        return True
+
+
+def _key_status():
+    f = getattr(_gk, "key_status", None)
+    if not callable(f):
+        return {"note": "gaibu_kuchi に key_status がありません（外部APIの仕事以外には影響しません）"}
+    try:
+        return f()
+    except Exception as e:
+        return {"error": repr(e)}
+
 
 LOCK = os.path.join(gkuchi.JOBS_DIR, ".runner.lock")
 RUNLOG = os.path.join(REPO, "status", "gaibu_runner.log")
@@ -66,9 +104,21 @@ JOB_TIMEOUT = {
     "diag": 90,
     "douga": 90,
     "horu": 240,
+    "spotify": 600,    # 1075番 何百曲でも途中で切らない（GETだけ・課金0）
+    "xtoukou": 480,   # 1075番 道を全部試すので長め（GETだけ・課金0）
+    "xgrok": 300,     # 1075番 xAIのLive Search（yosanの栓つき）
+    "gsk": 240,       # 1075番 Gensparkの口
     "jrsdata": 180,
     "jrspush": 180,
+    # 1144番（2026-09-25 実測）kansei は GitHub に 6.5MB の blob を送るので180秒では必ず切れる。
+    # 9/25 08:53 の票が 183.1秒で打ち切られ、隠す2378件が本番に出ないまま止まっていた。
+    # 実測 = 押すだけで約170秒、検査つき(kensa)なら10分以上。だから上限いっぱいの600にする。
+    # ★kensa つきは gaibu では回さない。tools/1144_hanareru.py で切り離して走らせる。
+    "kansei": 600,
     "oausage": 90,
+    "watashi": 420,    # 1048番 渡す前の門。本物のブラウザで開いて押すので長め
+    "sumaho": 330,     # 1043番 スマホの門。ブラウザを起こして4回押すので長め
+    "yomu": 200,       # 1051番 読む係。読み手を順に試すので少し長め
     "zandaka": 180,    # 1034番 財布の残高。GET7本＋CLI2本。1本15秒の上限つき
 }
 JOB_TIMEOUT_DEFAULT = 180
@@ -173,7 +223,7 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
     # ★空なら即終了。15秒おきに呼ばれるので、ここが軽いことが一番大事。
     if not os.path.isdir(gkuchi.JOBS_PENDING) or not _pending():
         return 0
-    if not gkuchi.net_ok():
+    if not _net_ok():
         _log("回線が出ないホストで起動されました。何もしません。")
         return 0
     if not _take_lock():
@@ -229,6 +279,15 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, _952_data_fetch
                     importlib.reload(_952_data_fetch)
                     out = _952_data_fetch.run_job(job.get("payload") or {})
+                elif job.get("kind") == "kansei":
+                    # 1132番【完成の関所】サンドボックスで書いた差分を、
+                    #   ごきげん補給所の main に1コミットで入れる。
+                    #   ★Macの作業ツリーには触らない（GitHubのAPIだけ）。
+                    #   ★全文上書きではなく差分。もう入っていれば何もしない。課金0。
+                    import importlib
+                    _m = importlib.import_module("1132_dasu")
+                    importlib.reload(_m)
+                    out = _m.run_job(job.get("payload") or {})
                 elif job.get("kind") == "jrspush":
                     import importlib, _957_push
                     importlib.reload(_957_push)
@@ -299,6 +358,15 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, nagekomi
                     importlib.reload(nagekomi)
                     out = nagekomi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "yomu":
+                    # 1051番【読む係】どのリンクでも、読める人を順に呼んで中身を返す。
+                    #   サンドボックスからは x.com / youtube / publish.twitter.com が
+                    #   403（Tunnel connection failed）で出られない。Macからは出られる。
+                    #   ★GETだけ・書き先は status/yomu_daicho.jsonl と status/yomu_cache/ だけ
+                    #   （yomu.py 側で保証）。0円の読み手だけを使うので**課金0**。
+                    import importlib, yomu
+                    importlib.reload(yomu)
+                    out = yomu.run_job(job.get("payload") or {})
                 elif job.get("kind") == "douga":
                     # 2026-09-22 仕入れ：候補の動画が「公式か／静止画だけでないか」を確かめる。
                     #   YouTube の oEmbed（鍵不要・**課金0**）だけを叩く。行き先は
@@ -348,12 +416,75 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, mainichi_kuchi
                     importlib.reload(mainichi_kuchi)
                     out = mainichi_kuchi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "vault":
+                    # ★1044番：Obsidian Vault のノートを**読むだけ**。
+                    #   サンドボックスは ~/Library/Mobile Documents/ をマウントして
+                    #   いない（Readもbashも届かない。実測 2026-09-24）。
+                    #   書き込み・削除なし・Vaultの外へ出ない・外へ1本も出ない・課金0
+                    #   （vault_yomu.py 側の _safe と ALLOW_EXT で保証）。
+                    import importlib, vault_yomu
+                    importlib.reload(vault_yomu)
+                    out = vault_yomu.run_job(job.get("payload") or {})
+                elif job.get("kind") == "watashi":
+                    # ★1048番の門（渡す前に実際に開いて押す）をMac側で走らせる口。
+                    #   公開(kohyou)がこの記録を要求する。記録が無いものは出せない。
+                    import importlib, watashi_gate
+                    importlib.reload(watashi_gate)
+                    out = watashi_gate.run_job(job.get("payload") or {})
+                elif job.get("kind") == "sumaho":
+                    # ★1043番：たまごさんのiPhoneのSafariと同じ条件（モバイルUA・375px・
+                    #   タッチ）でheadless Chromeから箱のボタンを実際に押す門。
+                    #   curl/pythonの投げは preflight(OPTIONS) を出さないので、
+                    #   CORSで止められていることに1038〜1042番は気づけなかった。
+                    #   ★たまごさんの普段のブラウザには触らない（使い捨てプロファイル）。
+                    import importlib, sumaho_gate
+                    importlib.reload(sumaho_gate)
+                    out = sumaho_gate.run_job(job.get("payload") or {})
                 elif job.get("kind") == "relaytest":
                     # ★1038番：スマホの代わりに中継所へ1本投げて、道が本当に通るか実測する。
                     #   「たまごさんに試させて確かめる」をやめるための口。棚には触らない。
                     import importlib, relay_nage
                     importlib.reload(relay_nage)
                     out = relay_nage.run_job(job.get("payload") or {})
+                elif job.get("kind") == "spotify":
+                    # ★1075番：たまごさんのSpotifyのプレイリストを**読むだけ**。
+                    #   サンドボックスからは accounts.spotify.com / api.spotify.com とも
+                    #   curl が 000 で出られない（実測 2026-09-24 09:06）ので工場側で。
+                    #   GETだけ・棚にもプレイリストにも1文字も書かない・課金0・
+                    #   ★鍵の値を返さない（spotify_yomu.py 側の ALLOW_PREFIX と口で保証）。
+                    import importlib, spotify_yomu
+                    importlib.reload(spotify_yomu)
+                    out = spotify_yomu.run_job(job.get("payload") or {})
+                elif job.get("kind") == "spotifyiri":
+                    # ★1075番：たまごさんが押すのを**URL1本**に削るための受け口を、
+                    #   127.0.0.1 にだけ裏で立てる。鍵の値は返さない。課金0。
+                    #   ★たまごさんの普段のブラウザ（Brave）には触らない。開くのは本人。
+                    import importlib, spotify_iriguchi
+                    importlib.reload(spotify_iriguchi)
+                    out = spotify_iriguchi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "xtoukou":
+                    # ★1075番：たまごさんのXの投稿の本文を、道を全部試して取る。
+                    #   サンドボックスからは x.com / syndication.twimg.com / publish.twitter.com
+                    #   とも curl が 000（実測 2026-09-24 09:06）ので工場側で。
+                    #   GETだけ・1件も投稿しない・鍵を使わない・課金0
+                    #   （x_toukou.py 側の ALLOW で保証）。
+                    import importlib, x_toukou
+                    importlib.reload(x_toukou)
+                    out = x_toukou.run_job(job.get("payload") or {})
+                elif job.get("kind") == "gsk":
+                    # ★1075番：Gensparkのgskを工場側で叩く。白名簿の中だけ・
+                    #   金が出る問いは通さない・契約や課金は押さない
+                    #   （gsk_kuchi.py 側の TADA で保証）。
+                    import importlib, gsk_kuchi
+                    importlib.reload(gsk_kuchi)
+                    out = gsk_kuchi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "xgrok":
+                    # ★1075番：Xの投稿をxAI公式のLive Searchで拾う。
+                    #   叩く前に必ず tools/yosan.py の栓を通す（x_grok.py 側で保証）。
+                    #   鍵の値は返さない。1件も投稿しない。
+                    import importlib, x_grok
+                    importlib.reload(x_grok)
+                    out = x_grok.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except JobTimeout:
@@ -381,9 +512,23 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
             except Exception:
                 pass
             done_n += 1
+            # ★2026-09-24（命綱）：走った回数と取れた回数を分けて記録する。
+            #   「走った>0 なのに 取れた=0」＝動いているのに何も産んでいない状態を、
+            #   tools/inochi.py が死んだ扱いで拾えるようにするため。
+            try:
+                import inochi
+                inochi.hakatta("gaibu_runner", ran=1, took=1 if out.get("ok") else 0)
+            except Exception:
+                pass
             if not quiet:
                 print("処理しました: %s (ok=%s)" % (jid, out.get("ok")))
     finally:
+        # 拾える仕事が無くても「runnerは生きていた」印だけは必ず押す
+        try:
+            import inochi
+            inochi.ikiteru("gaibu_runner")
+        except Exception:
+            pass
         _release_lock()
     return done_n
 
@@ -396,8 +541,8 @@ def main():
     a = ap.parse_args()
 
     if a.status:
-        print("回線（api.openai.com）：%s" % ("出る ✅" if gkuchi.net_ok() else "出ない ❌"))
-        print("鍵：%s" % json.dumps(gkuchi.key_status(), ensure_ascii=False))
+        print("回線（api.openai.com）：%s" % ("出る ✅" if _net_ok() else "出ない ❌"))
+        print("鍵：%s" % json.dumps(_key_status(), ensure_ascii=False))
         print("待ち：%d件 / 済み：%d件"
               % (len(_pending()),
                  len(os.listdir(gkuchi.JOBS_DONE)) if os.path.isdir(gkuchi.JOBS_DONE) else 0))

@@ -108,6 +108,28 @@ YT_URL = re.compile(
     r"([A-Za-z0-9_-]{11})")
 
 
+def gate0b_ogcard(item):
+    """門0b（1133番）：OGカードが作れない曲は棚に入れない。
+
+    たまごさん（2026-09-25）「OG画像が生成できない曲は棚に入らない。
+    弾いた数を毎回ログに出す。」
+    中身は tools/1133_og_shiire_kanmon.py。ここからは呼ぶだけ（門は1か所に置く）。
+    ★門そのものが読めないときは**通さない側に倒す**（甘い判定で通さない・工場の決まり）。
+    """
+    import importlib.util
+    here = os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(here, "1133_og_shiire_kanmon.py")
+    if not os.path.exists(p):
+        return "OGカードの門（tools/1133_og_shiire_kanmon.py）がありません"
+    try:
+        spec = importlib.util.spec_from_file_location("og_shiire_kanmon", p)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    except Exception as e:
+        return "OGカードの門が読めません（%s）" % repr(e)[:80]
+    return mod.gate(item)
+
+
 def gate0_shelf(item):
     """棚に出せるか。出せないなら理由を返す（空文字なら出せる）。
 
@@ -303,6 +325,73 @@ def gate2_not_someone_else(artist, title, kept_facts):
 
 
 # ===========================================================================
+# 門2b：本人判定をJev（TypeSafe AI）に1問だけ聞く
+# ===========================================================================
+# なぜ足したか（たまごさんの言葉 2026-09-24）：
+#   「じゃあ別人混入しない仕組みをまず作ろうよ。」「それはJev入れて。Jevは判定のAIでしょ。」
+#   ＝ 入ってから掃除するのではなく、**入る前に止める**。だから門2の隣に置く。
+#
+# 門2（上）は**文字**しか見ていない。だから
+#   ・akiko の棚に、チャンネル名 "AKIKO" の別アーティストが**文字一致で通ってしまう**
+#   ・逆に「Uptown Funk (feat. Bruno Mars)」がマーク・ロンソンの棚で**正しいのに落ちる**
+# この2つを直せるのは「演っているのは誰か」を判定できる相手だけ。それがJev。
+#
+# ★倒す向きは1つ：**判定できないものは通さない**（skill sekisho-artist-song 掟4）。
+#   鍵が無い／栓が閉まっている／APIが落ちている → 全部 hold。通す側には倒さない。
+# ★保留は捨てない。控えは jev_honnin.py が返す horyuu に残る。
+
+def gate2b_jev(item, kept_facts, quiet=False):
+    """戻り値 (tooshita: bool, riyu: str)。tooshita=False なら保留に倒す。"""
+    try:
+        sys.path.insert(0, os.path.join(REPO, "tools", "sekisho"))
+        import jev_honnin
+    except Exception as e:
+        return False, "Jevの門が読めない（%s）。判定できない＝通さない" % e
+
+    ch = item.get("channelTitle") or ""
+    if not ch:
+        for f in kept_facts:
+            if (f.get("key") or "") == "channel":
+                ch = f.get("value") or ""
+    # ★2026-09-24（1060番）門1が裏を取った公式サイトを、門2bに渡していなかった。
+    #   実測：Bialystocks「差し色」の入荷票には
+    #   facts[performer].src = https://bialystocks.com/discography/ が入っていて、
+    #   門1が**その頁に曲名が実在することまで照合済み**（matched: true・投稿型でない出典）。
+    #   これは「チャンネル名が同じ」より強い本人の証拠なのに、ここで捨てていたので
+    #   門2bは「証拠が1本も無い」と言って8枚全部を保留にしていた。
+    #   ★門を甘くしたのではない。**既に取ってある証拠を渡し忘れていたのを直した。**
+    #   照合できていない（matched が真でない）出典は渡さない。
+    official = item.get("officialUrl") or ""
+    if not official:
+        for f in kept_facts:
+            for ev in (f.get("evidence") or []):
+                if ev.get("matched") and not ev.get("submitted") and ev.get("src"):
+                    official = ev["src"]
+                    break
+            if official:
+                break
+    kouho = [{
+        "artist_id": item.get("artistId") or item.get("artist"),
+        "artist": item.get("artist") or "",
+        "about": item.get("about") or item.get("artistAbout") or "",
+        "aliases": item.get("aliases") or [],
+        "song_id": item.get("id") or item.get("songId") or "",
+        "title": item.get("title") or "",
+        "channelTitle": ch,
+        "officialUrl": official,
+        "note": item.get("note") or "",
+        "year": item.get("year") or "",
+    }]
+    out = jev_honnin.run(kouho, quiet=quiet)
+    if out["tooshita"]:
+        x = out["tooshita"][0]
+        return True, "Jev：本人 %.2f／同名別人 %.2f（%.4f円）" % (
+            x.get("honnin") or 0, x.get("douseidoumei") or 0, out["kane"]["jissaiYen"])
+    box = out["bessin"] or out["horyuu"]
+    return False, "Jev：" + (box[0].get("riyu") if box else "答えが取れない")
+
+
+# ===========================================================================
 # 門3：文脈を決める（裏の取れた事実からしか決めない）
 # ===========================================================================
 
@@ -348,7 +437,26 @@ CONTEXT_RULES = (
     ("バンド", ("編曲：特撮", "バンド", "band", "ドラム", "drums", "頭脳警察")),
     ("フォーク", ("フォーク", "folk", "シンガー・ソングライター", "singer-songwriter")),
     ("実際の出来事から", ("事件", "実話", "題材を求め")),
-    ("映画・ドラマから", ("映画", "主題歌", "劇中歌", "サントラ")),
+    # 2026-09-24：ドラマのタイアップ曲が棚ゼロで落ちていた（Bialystocks「差し色」＝
+    #   ドラマ『先生のおとりよせ』のエンディングテーマ）。「ドラマ」「エンディングテーマ」
+    #   「オープニングテーマ」が鍵に入っていなかっただけ。ジャンルを裏返す語ではないので
+    #   共起条件は付けない。
+    # 2026-09-24（1060番）★「映画」「ドラマ」の一語だけで付けていたのを直した。
+    #   実測の事故：特撮「シネマタイズ（**映画化**）」は、映画の曲ではなく
+    #   **そういう題名のバンドのオリジナル曲**なのに、題名の中の「映画」の2文字で
+    #   「映画・ドラマから」が付いた。曲の作り手を、他人の作品の付属品にしてしまう。
+    #   → 「映画」「ドラマ」は**タイアップの語が一緒に無ければ付けない**。
+    #   「主題歌」「エンディングテーマ」等は単語だけで意味が定まるのでそのまま残す。
+    ("映画・ドラマから", ("主題歌", "劇中歌", "サントラ", "エンディングテーマ",
+                       "オープニングテーマ", "edテーマ", "opテーマ", "挿入歌")),
+    ("映画・ドラマから", ("映画", "ドラマ"),
+                      ("主題歌", "劇中歌", "挿入歌", "サントラ", "テーマ",
+                       "タイアップ", "起用", "書き下ろ")),
+    # 2026-09-24（1060番）フジロックの出演者一覧で本人だと裏を取った票が、
+    #   棚の文脈が1つも決まらず門3で落ちていた（KNEECAP・MOGWAI・LOYLE CARNER・
+    #   THE LEMON TWIGS・maya ongaku・a flood of circle の6枚）。
+    #   出演者一覧に載っているのは**機械で照合済みの事実**なので、棚にしてよい。
+    ("フジロック", ("fuji rock", "フジロック", "fujirock")),
     ("競輪", ("競輪",)),
     ("絵を描く人", ("画家", "絵画", "絵描き")),
     ("オカルト・不思議", ("ムー", "オカルト", "怪", "ミステリー")),
@@ -378,7 +486,11 @@ def gate3_context(kept_facts, declared=None):
             return False
         return True
 
-    shelves = [r[0] for r in CONTEXT_RULES if _hit(r)]
+    # ★同じ棚を2本の規則が当てることがある（「映画・ドラマから」）。重複は落とす。
+    shelves = []
+    for r in CONTEXT_RULES:
+        if _hit(r) and r[0] not in shelves:
+            shelves.append(r[0])
     rejected = []
     for d in (declared or []):
         if d not in shelves:
@@ -422,6 +534,19 @@ def gate4_copy_shape(copy, kept_facts):
     for w in UNOBSERVED:
         if w in c:
             ng.append("観測していない反応：『%s』" % w)
+
+    # ★1049番（2026-09-24）：**裏の取れていない数字を書かせない。**
+    #   実測：この便で書いたコピーに「4分」「3分」「バンド4人」が混ざった。どれも
+    #   動画を見ずに書いた数字＝嘘になりうる。年号・人数・尺は事実で裏打ちされた
+    #   ものしか書かない（たまご憲法11条／関所 sekisho-jijitsu-shutten）。
+    #   単位を絞ってあるのは「1曲目」「ひと言」のような言い回しまで落とさないため。
+    hay_facts = " ".join(
+        [str(f.get("value") or "") + " " + str(f.get("claim") or "") + " " +
+         " ".join(str(x) for x in (f.get("needles") or [])) for f in kept_facts])
+    for num, unit in re.findall(r"(\d+)\s*(分|秒|人|年|歳|枚|位|回|周年|作目|人組)", c):
+        if num not in hay_facts:
+            ng.append("裏の取れていない数字：『%s%s』。"
+                      "事実として出典を取ったものしか数字は書かない" % (num, unit))
 
     # 裏取り済み事実が1つも入っていないコピーは通さない
     hit = []
@@ -481,7 +606,35 @@ def score_prompt(item, copy, kept_facts):
 
 
 def ask_external_score(item, copy, kept_facts):
-    """外部AIに0〜100点を付けさせる。戻り値 (score:int|None, detail:dict, err:str)"""
+    """外部AIに0〜100点を付けさせる。戻り値 (score:int|None, detail:dict, err:str)
+
+    ★2026-09-24（1051番）判定役を1本足した。理由は実測：
+      OpenAIの鍵はMacにも.envにも無く、予算の栓も全財布0円。
+      つまり門5は**鍵が無い**＋**栓が閉まっている**の二重で止まっていて、
+      16枚が pending に座っていた。鍵と栓は**こちらで開けてはいけない**（金が出る）。
+      代わりに、既に払い終わっている口＝Macの `codex`（ChatGPTのログインで動く。
+      1回ごとの課金は出ない）を判定役に立てる。**これは甘い自己採点ではない。**
+      別のAI（gpt-5.6-terra）に、同じ採点表で点を付けさせている。
+      誰も居なければ**通さない**（score=None → _skip → pending に残る）。
+    """
+    # ① 金の出ない判定役（Macのcodex）。サンドボックスからは届かないので、そこでは黙って次へ。
+    try:
+        import gaibu_kuchi as gkuchi
+        if gkuchi.codex_aru():
+            d, who, err = gkuchi.kiku(SCORE_SYSTEM,
+                                      score_prompt(item, copy, kept_facts))
+            if d is not None and d.get("total") is not None:
+                try:
+                    total = int(d.get("total"))
+                except Exception:
+                    total = None
+                if total is not None:
+                    d["_model"] = who
+                    d["_kane"] = "0円（ChatGPTのログインで動く口。1回ごとの課金なし）"
+                    return total, d, ""
+    except Exception:
+        pass
+
     try:
         import gaibu_kenpin as gk
     except Exception as e:
@@ -489,11 +642,12 @@ def ask_external_score(item, copy, kept_facts):
 
     ok, why = gk.check_cost_cap()
     if not ok:
-        return None, {}, "費用の上限で止めました：%s" % why
+        return None, {}, "判定役が今いない：%s（★点を甘くして通す真似はしない）" % why
 
     api_key = gk._find_env_key(("OPENAI_API_KEY",))
     if not api_key:
-        return None, {}, "OpenAIの鍵が見つかりません（このサンドボックスからは届かない）"
+        return None, {}, ("判定役が今いない：codexが叩けず、OpenAIの鍵も無い。"
+                          "★門は通さない側に倒した")
 
     body_base = {
         "messages": [
@@ -543,21 +697,31 @@ WRITE_SYSTEM = """あなたは日本語音楽サイト「ごきげん補給所�
 
 def ask_external_rewrite(item, kept_facts, prev_copy, ng, hint):
     """落ちたコピーを書き直させる。"""
+    user = score_prompt(item, prev_copy or "(まだ無し)", kept_facts) + (
+        "\n【このコピーは落ちました。直すべき点】\n%s\n【一手】\n%s\n"
+        "上の型と事実だけで、書き直してください。" %
+        ("\n".join("・" + x for x in (ng or [])), hint or ""))
+
+    # ★金の出ない口（Macのcodex）を先に使う。1051番。
+    try:
+        import gaibu_kuchi as gkuchi
+        if gkuchi.codex_aru():
+            d, who, err = gkuchi.kiku(WRITE_SYSTEM, user)
+            if d is not None and (d.get("copy") or "").strip():
+                return (d["copy"] or "").strip(), ""
+    except Exception:
+        pass
+
     try:
         import gaibu_kenpin as gk
     except Exception as e:
         return None, "gaibu_kenpin を読めませんでした（%s）" % e
     ok, why = gk.check_cost_cap()
     if not ok:
-        return None, "費用の上限で止めました：%s" % why
+        return None, "書き直す口が今いない：%s" % why
     api_key = gk._find_env_key(("OPENAI_API_KEY",))
     if not api_key:
-        return None, "OpenAIの鍵が見つかりません"
-
-    user = score_prompt(item, prev_copy or "(まだ無し)", kept_facts) + (
-        "\n【このコピーは落ちました。直すべき点】\n%s\n【一手】\n%s\n"
-        "上の型と事実だけで、書き直してください。" %
-        ("\n".join("・" + x for x in (ng or [])), hint or ""))
+        return None, "書き直す口が今いない：codexが叩けず、OpenAIの鍵も無い"
     for model in gk.OPENAI_MODEL_CANDIDATES:
         try:
             req = urllib.request.Request(
@@ -605,6 +769,16 @@ def run_gates(item, quiet=False):
         return _hold(out, "棚に出せない（門0）: %s" % block)
     say("門0 棚：出せる（動画id %s）" % item.get("youtubeId"))
 
+    # 門0b OGカードが作れるか（1133番） -------------------------------------
+    # たまごさん「OG画像が生成できない曲は棚に入らない」。
+    # ★ここで実際に1枚焼いて、空っぽ判定に掛ける。焼けない曲は札にしない。
+    b0b = gate0b_ogcard(item)
+    out["gates"]["0b_ogcard"] = ("NG: " + b0b) if b0b else "OK"
+    if b0b:
+        say("門0b OGカード：作れない … %s" % b0b)
+        return _hold(out, "OGカードが作れない（門0b）: %s" % b0b)
+    say("門0b OGカード：作れる")
+
     # 門1 ----------------------------------------------------------------
     kept, dropped = gate1_facts(item.get("facts"))
     out["facts"] = kept
@@ -622,6 +796,14 @@ def run_gates(item, quiet=False):
     say("門2 別人：%s" % ("OK" if not ng2 else " ／ ".join(ng2)))
     if ng2:
         return _hold(out, "別人混入の疑い（門2）：" + " ／ ".join(ng2))
+
+    # 門2b Jevに本人判定を聞く -------------------------------------------
+    # ★文字が一致しただけで通さない。ここを通らなければ棚に入れない。
+    ok2b, riyu2b = gate2b_jev(item, kept, quiet=quiet)
+    out["gates"]["2b_jev_honnin"] = {"tooshita": ok2b, "riyu": riyu2b}
+    say("門2b 本人（Jev）：%s … %s" % ("通す" if ok2b else "通さない", riyu2b))
+    if not ok2b:
+        return _hold(out, "本人だと確信できない（門2b・Jev）：" + riyu2b)
 
     # 門3 ----------------------------------------------------------------
     shelves, rejected = gate3_context(kept, item.get("context"))
@@ -755,7 +937,10 @@ def cmd_submit(path):
 
 def cmd_run_pending(max_jobs, quiet):
     os.makedirs(PENDING_DIR, exist_ok=True)
-    files = sorted(p for p in os.listdir(PENDING_DIR) if p.endswith(".json"))
+    # ★名前順ではなく**古いもの順**で拾う（1049番）。名前順だと、上限で止まって
+    #   残った先頭の数枚が毎回また拾われ、後ろに積んだものに一生順番が来ない。
+    files = sorted((p for p in os.listdir(PENDING_DIR) if p.endswith(".json")),
+                   key=lambda fn: os.path.getmtime(os.path.join(PENDING_DIR, fn)))
     if not files:
         if not quiet:
             print("積まれているものはありません。")
@@ -775,7 +960,16 @@ def cmd_run_pending(max_jobs, quiet):
                 os.remove(p)
             except Exception:
                 pass
-        # rc==2（鍵無し・上限）は積んだまま残す＝次の便で再挑戦する
+        else:
+            # rc==2（鍵無し・上限）は積んだまま残す＝次の便で再挑戦する。
+            # ★1049番（2026-09-24）：ただし**列の最後尾へ回す。**
+            #   実測：積んだ16枚のうち、毎回おなじ先頭3枚（名前順）だけが拾われ、
+            #   上限で止まって残り、次の便でもまた同じ3枚が拾われていた＝
+            #   **4枚目から先に一生順番が来ない。**更新時刻を今にして最後尾へ送る。
+            try:
+                os.utime(p, None)
+            except Exception:
+                pass
     return last
 
 

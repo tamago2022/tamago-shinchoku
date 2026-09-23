@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>受付一覧（投げ込み箱）</title>
+<!--
+  1042番→1177番→1152番【投げ込み箱の受付一覧】
+  たまごさん（2026-09-25・原文）:
+    「何月何日にこれとこれが入ってきて、反映結果がどうなったかも、
+      ちゃんと反映されているかどうかがその場で分かるといいよね。」
+  ★1行に全部載せる：受付番号／何月何日／何が入ったか／どの棚／反映（済・まだ・弾いた）／反映先URL
+  ★「反映」は3語だけ：済／まだ／弾いた。弾いたものは理由を1行。
+  ★機械が推測した棚は「仮」と出す（後から直せると分かる形）。
+  ★進捗表とは別ページ（重くしない）。進捗表からはリンク1本だけ。
+  ★中身は status/public/nagekomi_list.json（tools/nagekomi_list.py が吐く写し）。
+    台帳の原本(status/nagekomi.jsonl)は公開しない。出す列は写す側で名指ししてある。
+  ★読む順番：中継所（Macの生の写し・押した瞬間に出る）→ 駄目ならGitHub Pagesの公開済みコピー。
+-->
+<style>
+  :root{ --ink:#1b1a17; --sub:#6f6a60; --line:#dcd6ca; --bg:#f6f3ec; --accent:#b4542a;
+         --ok:#2c6e49; --ng:#a3321f; --wait:#8a7f6c; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+       padding:18px 14px 40px;line-height:1.65}
+  h1{font-size:19px;margin:0 0 2px;letter-spacing:.04em}
+  .lead{font-size:12.5px;color:var(--sub);margin:0 0 14px}
+  .bar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+  .bar button{flex:1 1 auto;min-height:44px;padding:6px 8px;font-size:12.5px;font-family:inherit;
+       background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:9px;white-space:nowrap}
+  .bar button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .picked{margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--accent);font-weight:700}
+  .modosu{width:100%;min-height:44px;margin:0 0 12px;font-size:14px;font-family:inherit;
+       background:#fff;color:var(--sub);border:1px dashed var(--line);border-radius:10px}
+  .row{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin:0 0 8px}
+  .top{display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+  .no{font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums;
+      border:1px solid var(--line);border-radius:6px;padding:1px 6px;white-space:nowrap}
+  .hi{font-size:12.5px;font-weight:700;white-space:nowrap;border-radius:6px;padding:2px 8px}
+  .hi.sumi{color:#fff;background:var(--ok)}
+  .hi.mada{color:#fff;background:var(--wait)}
+  .hi.hajita{color:#fff;background:var(--ng)}
+  .hiduke{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;margin:6px 0 0}
+  .ttl{font-size:14.5px;font-weight:600;margin:2px 0 3px;word-break:break-word}
+  .memo{font-size:12.5px;margin-top:4px;word-break:break-word}
+  .meta{font-size:11.5px;color:var(--sub);margin-top:4px;word-break:break-word}
+  .kari{color:var(--accent);font-weight:700}
+  .why{font-size:11.5px;color:var(--ng);margin-top:4px;word-break:break-word}
+  .mark{font-size:11.5px;color:var(--sub);margin-top:3px}
+  .saki{display:inline-block;margin-top:7px;min-height:40px;line-height:40px;padding:0 14px;
+        font-size:13.5px;font-weight:600;color:#fff;background:var(--accent);
+        border-radius:9px;text-decoration:none}
+  .saki.none{background:#fff;color:var(--sub);border:1px dashed var(--line);font-weight:400}
+  .foot{font-size:11.5px;color:var(--sub);margin-top:14px;line-height:1.7}
+  .back{display:block;margin:16px 0 0;min-height:52px;line-height:52px;text-align:center;
+       font-size:15px;font-weight:600;color:#fff;background:var(--accent);
+       border-radius:12px;text-decoration:none}
+  .back.sub{background:#fff;color:var(--accent);border:1px solid var(--line);margin-top:8px}
+  .empty{font-size:13px;color:var(--sub);padding:18px 2px}
+  /* ★書けない日は黙らない。何が止まっていて、何をすれば動くかを1枚目に出す。 */
+  .kagi{background:#fff4ef;border:1px solid #e6bfae;border-radius:11px;
+        padding:11px 12px;margin:0 0 12px;font-size:12.5px;line-height:1.7;color:#7a3a22}
+  .kagi b{color:var(--ng)}
+</style>
+</head>
+<body>
+
+<h1>受付一覧</h1>
+<p class="lead">投げ込み箱に入ったもの。新しい順。<br>
+反映のことばは3つだけ：<b>済</b>（棚に出ている）／<b>まだ</b>（これから入れる）／<b>弾いた</b>（入れられなかった・理由つき）。</p>
+
+<div id="kagi" hidden class="kagi"></div>
+
+<div class="bar" id="bar">
+  <button data-f="" aria-pressed="true">ぜんぶ <span id="c0"></span></button>
+  <button data-f="まだ" aria-pressed="false">まだ <span id="c1"></span></button>
+  <button data-f="済" aria-pressed="false">済 <span id="c2"></span></button>
+  <button data-f="弾いた" aria-pressed="false">弾いた <span id="c3"></span></button>
+</div>
+
+<p class="picked" id="nowShowing">いま見ているもの：ぜんぶ</p>
+<button class="modosu" id="modosu" type="button" hidden>ぜんぶに戻す</button>
+<div id="list"><p class="empty">読み込んでいます…</p></div>
+
+<p class="foot" id="foot"></p>
+<a class="back" href="./nagekomi-c5fd9d5791b32e88.html">投げ込み箱にもどる（貼って押すだけ）</a>
+<a class="back sub" href="../index.html">進捗表にもどる</a>
+
+<script>
+var DATA = null, FILT = "", SEEN = "", OSHITA = 0;
+
+function z(n){ return (n<10?"0":"")+n; }
+function stamp(){ var d = new Date(); return z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds()); }
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+
+function icon(k){ return k==="youtube" ? "▶" : (k==="x" ? "✕" : "・"); }
+
+/* 「2026-09-24 02:11」→「9月24日 02:11」。読めない形は、そのまま出す（想像で直さない）。 */
+function hiduke(at){
+  var m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2})/.exec(String(at||""));
+  if(!m) return String(at||"");
+  return Number(m[2]) + "月" + Number(m[3]) + "日 " + m[4];
+}
+
+/* 反映は3語だけ。台帳に無い言い方が来ても、勝手に別の言葉に置き換えない。 */
+function haneiClass(h){ return h==="済" ? "sumi" : (h==="弾いた" ? "hajita" : "mada"); }
+
+function render(){
+  var host = document.getElementById("list");
+  var now = document.getElementById("nowShowing");
+  /* ★押したのに画面が1ミリも動かない、を作らない（1050番）。
+     同じボタンを続けて押しても「何回目か」が必ず増えるので、押した手応えが必ず出る。 */
+  if(now){ now.textContent = "いま見ているもの：" + (FILT || "ぜんぶ")
+             + (SEEN ? "　／　" + SEEN + " に取り直しました" : "")
+             + (OSHITA ? "（" + OSHITA + "回目）" : ""); }
+  var md = document.getElementById("modosu");
+  if(md){ md.hidden = !FILT; }
+
+  if(!DATA){ host.innerHTML = '<p class="empty">一覧がまだ読めません。少し待ってから開き直してください。</p>'; return; }
+
+  var c = DATA.counts || {};
+  document.getElementById("c0").textContent = DATA.shown || 0;
+  document.getElementById("c1").textContent = c["まだ"] || 0;
+  document.getElementById("c2").textContent = c["済"] || 0;
+  document.getElementById("c3").textContent = c["弾いた"] || 0;
+
+  var items = (DATA.items || []).filter(function(x){ return !FILT || (x.hanei||"まだ") === FILT; });
+  if(!items.length){
+    host.innerHTML = '<p class="empty">「' + esc(FILT || "ぜんぶ") + '」に当たるものは、まだ1件もありません。</p>';
+    return;
+  }
+
+  host.innerHTML = items.map(function(x){
+    var h = x.hanei || "まだ";
+    var shelf = x.shelf ? esc(x.shelf) + (x.kari ? ' <span class="kari">（仮）</span>' : "")
+                        : '<span class="kari">まだ決まっていません</span>';
+    var saki = x.url
+      ? '<a class="saki" href="' + esc(x.url) + '" target="_blank" rel="noopener">反映先をひらく</a>'
+      : '<span class="saki none">' + (h === "済" ? "反映先のURLが取れていません" : "棚に入ったら、ここにURLが出ます") + '</span>';
+    return '<div class="row">'
+      + '<div class="top"><span class="no">受付 ' + esc(x.no || "—") + '</span>'
+      + '<span class="hi ' + haneiClass(h) + '">' + esc(h) + '</span></div>'
+      + '<div class="hiduke">' + esc(hiduke(x.at)) + ' に入りました</div>'
+      + '<div class="ttl">' + icon(x.kind) + " " + esc(x.title || "（題名が取れていません）") + '</div>'
+      + (x.memo ? '<div class="memo">「' + esc(x.memo) + '」</div>' : '')
+      + '<div class="meta">棚：' + shelf + (x.channel ? '　／　' + esc(x.channel) : '') + '</div>'
+      + (x.shelfWhy ? '<div class="mark">棚の根拠：' + esc(x.shelfWhy) + '</div>' : '')
+      + (h === "弾いた" && x.why ? '<div class="why">弾いた理由：' + esc(x.why) + '</div>'
+         : (x.mark ? '<div class="mark">' + esc(x.mark) + (x.why ? '：' + esc(x.why) : '') + '</div>' : ''))
+      + saki
+      + '</div>';
+  }).join("");
+
+  document.getElementById("foot").textContent =
+    "台帳 " + (DATA.total||0) + "件のうち新しい " + (DATA.shown||0) + "件を表示"
+    + (DATA.kikaiHidden ? "（機械の試し投げ " + DATA.kikaiHidden + "件は出していません）" : "")
+    + " ／ 作り直し " + (DATA.builtAt||"不明");
+}
+
+function setFilter(f){
+  FILT = f || "";
+  OSHITA += 1;
+  [].forEach.call(document.querySelectorAll("#bar button"), function(x){
+    x.setAttribute("aria-pressed", (x.getAttribute("data-f")||"") === FILT ? "true" : "false"); });
+  render();          /* ★押した瞬間に必ず画面が変わる（取り直しを待たせない） */
+  load();            /* そのうえで最新を取り直す */
+}
+
+document.getElementById("bar").addEventListener("click", function(e){
+  var b = e.target.closest ? e.target.closest("button") : null;
+  if(!b) return;
+  setFilter(b.getAttribute("data-f"));
+});
+
+document.getElementById("modosu").addEventListener("click", function(){ setFilter(""); });
+
+/* ★棚に書けない日は黙らない（1152番）。何が止まっていて、何をすれば動くかを出す。 */
+function drawKagi(k){
+  var el = document.getElementById("kagi");
+  if(!el) return;
+  if(!k || k.kakeru !== false){ el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  el.innerHTML = "<b>いま、棚へは書けません。</b>受け付けた分は下に残っています（反映は「まだ」）。<br>"
+    + esc(k.why || "") + "<br>直し方：" + esc(k.naoshikata || "")
+    + "<br><span style='opacity:.7'>確かめた時刻 " + esc(k.at || "") + "</span>";
+}
+
+function getJSON(u, head){
+  return fetch(u + (u.indexOf("?")<0?"?":"&") + "t=" + Date.now(),
+               head ? {cache:"no-store", headers:head} : {cache:"no-store"})
+    .then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+}
+
+/* ★本物のURL（https）から開いたときだけ中継所（Macの生の写し）を見る。
+   写し（file:// や 127.0.0.1）から見に行くとブラウザに止められ、画面に赤が残るだけ。 */
+function load(){
+  getJSON("../status/public/nagekomi_kagi.json").then(drawKagi);
+  if(location.protocol !== "https:"){
+    return getJSON("../status/public/nagekomi_list.json").then(function(pub){
+      DATA = pub; SEEN = stamp(); render(); });
+  }
+  return getJSON("../status/public/relay.json").then(function(j){
+    var u = j && j.url ? j.url.replace(/\/$/,"") : null;
+    return u ? getJSON(u + "/status/nagekomi_list.json",
+                       {"bypass-tunnel-reminder":"1"}) : null;
+  }).catch(function(){ return null; }).then(function(live){
+    if(live && live.items) { DATA = live; SEEN = stamp(); render(); return; }
+    return getJSON("../status/public/nagekomi_list.json").then(function(pub){
+      DATA = pub; SEEN = stamp(); render();
+    });
+  });
+}
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>一人＋AIで回っている事業（AIソロプレナー）の勝ち筋</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>一人＋AIで回っている事業（AIソロプレナー）の勝ち筋</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 93本 ／ 44,195字 ／ 投げた 2026-09-26 12:29:41<br><a href="https://www.genspark.ai/agents?id=bd5519db-f9bd-5473-8e0a-727fa9e5032d" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>一人（または極小人数）＋AIで回る事業の勝ち筋と落とし穴——2026年現在の実証データに基づく調査レポート</h2>
+<h3>要旨（3行）</h3>
+<ul>
+<li>2026年現在、AIツールを活用した「一人ビジネス（ソロファウンダー）」が急増しており、一部は数百万ドルの収益や高額なM&amp;Aを達成している一方、大多数は低収益で推移している。<a href="https://carta.com/data/solo-founders-report/" target="_blank" rel="noopener">Carta</a> <a href="https://www.indiehackers.com/post/i-analyzed-5-079-stripe-verified-startups-f0f6bd053f" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li>成功事例に共通するのは「既存の流通（ディストリビューション）を先に確保する」「製品完成前に課金検証する」「AIを「効率化」ではなく「収益拡大」に使う発想を持つ」という点である。<a href="https://reddit.com/r/Solopreneur/comments/1r9vbhu/talked_to_a_bunch_of_solo_founders_making_10k" target="_blank" rel="noopener">Reddit</a> <a href="https://axfr.ai/why-ai-fails-revenue" target="_blank" rel="noopener">AX for Revenue</a></li>
+<li>一方で、AI導入・自動化の失敗事例も多数確認されており、その主因は「プロセスの未定義」「コンテキスト不足」「効果測定の欠如」など組織・設計上の問題である。<a href="https://octavius.ai/business-automation/ai-automation-failures-small-business/" target="_blank" rel="noopener">Octavius AI</a> <a href="https://techstartups.com/2025/05/24/builder-ai-a-microsoft-backed-ai-startup-once-valued-at-1-2-billion-files-for-bankruptcy-is-ai-becoming-another-com-bubble/" target="_blank" rel="noopener">TechStartups</a></li>
+</ul>
+<hr>
+<h3>1. 実在する事例10件以上（数字・期間・ツール・自動化の範囲）</h3>
+<p>以下は、公開情報（プレスリリース、企業サイト、第三者の収益追跡サイト、インタビュー記事など）から確認できた事例。数字の出所が異なる場合（例：自己申告vs第三者推計）は併記する。</p>
+<h4>1.1 Base44（Maor Shlomo）——6ヶ月でWixに売却</h4>
+<ul>
+<li><strong>創業者</strong>: Maor Shlomo（ソロファウンダーとして開始、買収時には従業員8名） <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter</a> <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch</a></li>
+<li><strong>事業内容</strong>: AIを活用したノーコードアプリ構築プラットフォーム（&quot;vibe coding&quot;）</li>
+<li><strong>収益</strong>: ローンチ3週間で$1M ARR、買収直前の月間利益は$189,000（2025年5月時点） <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter</a></li>
+<li><strong>ユーザー数</strong>: 25万〜40万人以上 <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter</a> <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch</a></li>
+<li><strong>期間</strong>: ローンチから買収まで約6ヶ月 <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch</a></li>
+<li><strong>買収条件</strong>: Wixによる買収金額は$80M（現金）＋追加のearn-out（詳細は一部ソースで$38M〜$90Mと記載にばらつきあり、確定情報は<a href="https://www.wix.com/press-room/home/post/wix-further-expands-into-vibe-coding-with-acquisition-of-base44-a-hyper-growth-startup-that-simplif" target="_blank" rel="noopener">Wix公式プレスリリース</a>で確認する必要があるが、当該URLからは買収発表事実のみ確認、金額詳細は確認できず） <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch</a></li>
+<li><strong>使用AIツール</strong>: Anthropic Claude（AWS経由）、Cursor、Retool <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter</a></li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: コード生成、データベース/認証/ストレージの自動設定、インテグレーション構築</li>
+<li>人間が担う部分: 方向性の決定、パートナーシップ交渉（eToro、Similarweb等）、コスト最適化の判断（OpenAIではなくAnthropic/Claudeを選択） <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter</a></li>
+<li><strong>備考</strong>: 買収時に従業員8名全員がWixに残留し、$25Mのリテンションボーナスを受け取ると報じられている <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch</a></li>
+</ul>
+<h4>1.2 PhotoAI（Pieter Levels）——AI写真生成サービス</h4>
+<ul>
+<li><strong>創業者</strong>: Pieter Levels（従業員0名、ソロ） <a href="https://nomadicblueprint.com/case-studies/pieter-levels" target="_blank" rel="noopener">Nomadic Blueprint</a> <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a></li>
+<li><strong>事業内容</strong>: セルフィーからプロフェッショナルなヘッドショット/ポートレートを生成</li>
+<li><strong>収益</strong>: 複数の情報源で数字が異なる——</li>
+<li>Nomadic Blueprint: $132,000/月 <a href="https://nomadicblueprint.com/case-studies/pieter-levels" target="_blank" rel="noopener">Nomadic Blueprint</a></li>
+<li>Founders Reality: ローンチ60日で$40,000 MRR <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a></li>
+<li>GetLatka: 2024年年間収益$82,000（第三者推計） <a href="https://getlatka.com/companies/photoai" target="_blank" rel="noopener">GetLatka</a></li>
+<li>Tracetify: 非公開収益、$19〜$199/月の4段階価格帯、2025年6月時点で約$132,000 MRRと報じられたと記載 <a href="https://tracetify.com/r/photoai-com" target="_blank" rel="noopener">Tracetify</a></li>
+<li>Levels自身の発信（levels.io/2026）: ポートフォリオ全体の年間収益＋投資収益が$10M超、利益率94.5% <a href="https://levels.io/2026" target="_blank" rel="noopener">levels.io</a></li>
+<li><strong>ユーザー数</strong>: 60万人以上のフォロワーを持つ個人ブランドによる集客 <a href="https://www.matrixflow.net/case-study/150/" target="_blank" rel="noopener">Matrixflow</a></li>
+<li><strong>期間</strong>: ローンチから$100K MRR到達まで約18ヶ月（2023年2月ローンチ、2024年9月到達） <a href="https://tracetify.com/r/photoai-com" target="_blank" rel="noopener">Tracetify</a></li>
+<li><strong>使用AIツール</strong>: Midjourney API、Claude、Cursor、GitHub Copilot、Stripe、Vercel、Next.js、Node.js、PostgreSQL <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a></li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: 画像生成（Midjourney/Stable Diffusion）、コード生成（Cursor/Claude）、決済処理（Stripe）</li>
+<li>人間が担う部分: プロンプトエンジニアリングの改善、ユーザーフィードバックに基づく機能追加、アフィリエイトプログラムの構築、マーケティング（Twitter/Product Hunt/Hacker Newsでの告知） <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a></li>
+<li><strong>備考</strong>: PhotoAIはサブスクリプションではなく1回限りの購入モデルである可能性も指摘されている（後述のHeadshotProと同様の構造）が、PhotoAI自体の課金モデルについては明確な情報源が不足しており、[DATA NOT AVAILABLE]</li>
+</ul>
+<h4>1.3 HeadshotPro（Danny Postma）——AIヘッドショット生成</h4>
+<ul>
+<li><strong>創業者</strong>: Danny Postma <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro</a> <a href="https://getlatka.com/companies/headshotpro" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>事業内容</strong>: セルフィーからプロフェッショナルなビジネスヘッドショットを生成</li>
+<li><strong>収益</strong>:</li>
+<li>公式サイト: 「$10,000,000+ in revenue since launch」 <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro</a></li>
+<li>GetLatka: 2023年年間収益$96,000（第三者推計） <a href="https://getlatka.com/companies/headshotpro" target="_blank" rel="noopener">GetLatka</a></li>
+<li>SupaBird: $300,000 MRR（1年以内）と記載 <a href="https://supabird.io/articles/danny-postma-how-a-solo-hacker-built-an-ai-empire-from-bali" target="_blank" rel="noopener">SupaBird</a></li>
+<li>Steal What Works: この$300KはMRRではなく1回限りの購入による月間売上であり、サブスクリプションモデルではないと指摘 <a href="https://stealwhatworks.com/blogs/news/headshot-still-making-money" target="_blank" rel="noopener">Steal What Works</a></li>
+<li><strong>従業員数</strong>: 1名（2023-2024年）、その後「small team」に移行したとSupaBirdは記載 <a href="https://getlatka.com/companies/headshotpro" target="_blank" rel="noopener">GetLatka</a> <a href="https://supabird.io/articles/danny-postma-how-a-solo-hacker-built-an-ai-empire-from-bali" target="_blank" rel="noopener">SupaBird</a></li>
+<li><strong>利用者数</strong>: 1,700万枚以上のヘッドショット生成、20万以上の「shoots」 <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro</a></li>
+<li><strong>期間</strong>: 2023年ローンチ、2025年初頭に品質が実用レベルに到達 <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro</a></li>
+<li><strong>使用AIツール</strong>: 生成画像AI（具体的なAPI名は明記されていない） <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro</a></li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: 画像生成、品質向上のための反復学習</li>
+<li>人間が担う部分: 製品戦略、マーケティング、企業向け営業（Fortune 500企業との取引など） <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro</a></li>
+<li><strong>備考</strong>: 収益数字に大きなばらつきがあり、$300K MRRという数字はサブスクリプション収益ではない可能性が高い <a href="https://stealwhatworks.com/blogs/news/headshot-still-making-money" target="_blank" rel="noopener">Steal What Works</a></li>
+</ul>
+<h4>1.4 Carrd（AJ / AJ L.）——1ページサイトビルダー</h4>
+<ul>
+<li><strong>創業者</strong>: AJ (AJ L.) <a href="https://getlatka.com/companies/carrd.co" target="_blank" rel="noopener">GetLatka</a> <a href="https://www.indiehackers.com/post/hi-im-aj-maker-of-carrd-and-after-2-5m-sites-1m-arr-and-a-funding-round-probably-time-for-an-ama-1b7fcf52fe" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li><strong>事業内容</strong>: 1ページサイトの構築ツール</li>
+<li><strong>収益</strong>:</li>
+<li>2021年: $1.2M（推計） <a href="https://getlatka.com/companies/carrd.co" target="_blank" rel="noopener">GetLatka</a></li>
+<li>2023年: $600K <a href="https://getlatka.com/companies/carrd.co" target="_blank" rel="noopener">GetLatka</a></li>
+<li>2024年2月: $1.5M <a href="https://getlatka.com/companies/carrd.co" target="_blank" rel="noopener">GetLatka</a></li>
+<li>Indie Hackers AMA（本人発信）: $1M+ ARR <a href="https://www.indiehackers.com/post/hi-im-aj-maker-of-carrd-and-after-2-5m-sites-1m-arr-and-a-funding-round-probably-time-for-an-ama-1b7fcf52fe" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li><strong>ユーザー数</strong>: 250万サイト、160万ユーザー、毎日1万以上の新規サイト <a href="https://www.indiehackers.com/post/hi-im-aj-maker-of-carrd-and-after-2-5m-sites-1m-arr-and-a-funding-round-probably-time-for-an-ama-1b7fcf52fe" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li><strong>従業員数</strong>: 1名（開発/製品）、Doni（運用）の2人体制と本人が発言 <a href="https://www.indiehackers.com/post/hi-im-aj-maker-of-carrd-and-after-2-5m-sites-1m-arr-and-a-funding-round-probably-time-for-an-ama-1b7fcf52fe" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li><strong>資金調達</strong>: 2021年に$2Mのシードラウンド <a href="https://getlatka.com/companies/carrd.co" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>使用AIツール</strong>: 明記されていない（AIネイティブ製品ではない）</li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>自動化: サイトビルダー自体の機能</li>
+<li>人間が担う部分: 製品開発、運営（AJとDoniの2名） <a href="https://www.indiehackers.com/post/hi-im-aj-maker-of-carrd-and-after-2-5m-sites-1m-arr-and-a-funding-round-probably-time-for-an-ama-1b7fcf52fe" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li><strong>備考</strong>: AIネイティブ事業ではないが、ソロファウンダー成功事例として頻繁に言及される <a href="https://getlatka.com/companies/carrd.co" target="_blank" rel="noopener">GetLatka</a></li>
+</ul>
+<h4>1.5 Bannerbear（Jon Yongfook）——AI画像生成API</h4>
+<ul>
+<li><strong>創業者</strong>: Jon Yongfook <a href="https://getlatka.com/companies/bannerbear" target="_blank" rel="noopener">GetLatka</a> <a href="https://www.bannerbear.com/blog/7-reasons-i-chose-to-bootstrap-bannerbear/" target="_blank" rel="noopener">Bannerbear</a></li>
+<li><strong>事業内容</strong>: ソーシャルメディア画像、ECバナー等の自動生成API</li>
+<li><strong>収益</strong>:</li>
+<li>2024年: $991.4K（推計） <a href="https://getlatka.com/companies/bannerbear" target="_blank" rel="noopener">GetLatka</a></li>
+<li>2023年: $630K <a href="https://getlatka.com/companies/bannerbear" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>従業員数</strong>: 2024年時点で4名（2023年は7名） <a href="https://getlatka.com/companies/bannerbear" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>顧客数</strong>: 596社 <a href="https://getlatka.com/companies/bannerbear" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>使用AIツール</strong>: Cloudflare、Stripe、Google Analytics（インフラ/決済ツール） <a href="https://getlatka.com/companies/bannerbear" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: 画像生成APIの提供</li>
+<li>人間が担う部分: 製品開発、顧客サポート、営業 <a href="https://www.bannerbear.com/blog/7-reasons-i-chose-to-bootstrap-bannerbear/" target="_blank" rel="noopener">Bannerbear</a></li>
+<li><strong>備考</strong>: ブートストラップ（自己資金）を選択した理由として、資金調達のスキル不足、時間的コスト、早期の収益化、経営の自律性などを挙げる <a href="https://www.bannerbear.com/blog/7-reasons-i-chose-to-bootstrap-bannerbear/" target="_blank" rel="noopener">Bannerbear</a></li>
+</ul>
+<h4>1.6 Zigpoll（Jason Zigelbaum）——アンケート/フィードバックツール</h4>
+<ul>
+<li><strong>創業者</strong>: Jason Zigelbaum <a href="https://getlatka.com/companies/zigpoll" target="_blank" rel="noopener">GetLatka</a> <a href="https://indieboardsession.substack.com/p/how-zigpoll-scaled-solo-to-68k-mrr" target="_blank" rel="noopener">Indie Board Session</a></li>
+<li><strong>事業内容</strong>: Shopify等向けのアンケート/フィードバックウィジェット</li>
+<li><strong>収益</strong>:</li>
+<li>GetLatka: 2023年年間収益$30.4K（推計） <a href="https://getlatka.com/companies/zigpoll" target="_blank" rel="noopener">GetLatka</a></li>
+<li>Indie Board Session: $68K MRR（2024年時点のニュースレター） <a href="https://indieboardsession.substack.com/p/how-zigpoll-scaled-solo-to-68k-mrr" target="_blank" rel="noopener">Indie Board Session</a></li>
+<li>X（Jason自身の投稿）: $1.7M ARR、2,500顧客 <a href="https://x.com/jason_zig" target="_blank" rel="noopener">x.com</a></li>
+<li>Startup Founder Stories: $125K MRRと記載（URLは空ページとして返されたため内容確認できず） <a href="https://startupfounderstories.com/stories/jason-zigelbaum-zigpoll-125k-mrr-shopify-feedback-surveys" target="_blank" rel="noopener">startupfounderstories.com</a></li>
+<li><strong>従業員数</strong>: 1名 <a href="https://getlatka.com/companies/zigpoll" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>顧客数</strong>: 約1,000社（GetLatka）、2,500社（X投稿） <a href="https://getlatka.com/companies/zigpoll" target="_blank" rel="noopener">GetLatka</a> <a href="https://x.com/jason_zig" target="_blank" rel="noopener">x.com</a></li>
+<li><strong>使用AIツール</strong>: 明記されていない</li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: 不明</li>
+<li>人間が担う部分: コード作成、顧客サポート、アップデート管理、運営全体 <a href="https://indieboardsession.substack.com/p/how-zigpoll-scaled-solo-to-68k-mrr" target="_blank" rel="noopener">Indie Board Session</a></li>
+<li><strong>備考</strong>: 収益数字に大きなばらつきがあり、出典によって$30K〜$125K MRRと幅がある。本人のX投稿が最も新しい情報源だが、第三者検証は不十分 [DATA NOT AVAILABLEで一部]</li>
+</ul>
+<h4>1.7 Midjourney（David Holz）——画像生成AI</h4>
+<ul>
+<li><strong>創業者</strong>: David Holz <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>事業内容</strong>: 画像生成AIサービス</li>
+<li><strong>収益</strong>:</li>
+<li>2024年: $300M（推計） <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka</a></li>
+<li>2025年5月: $500M（推計） <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>従業員数</strong>: 2026年時点で60名（2024年は107名） <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>顧客数</strong>: 10万人 <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>資金調達</strong>: ブートストラップ（外部資金調達なし） <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>使用AIツール</strong>: 自社開発の画像生成モデル</li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: 画像生成コア機能</li>
+<li>人間が担う部分: モデル開発、事業戦略（詳細は公開情報で確認できず） [DATA NOT AVAILABLE]</li>
+<li><strong>備考</strong>: 「極小人数」というよりは小規模チームだが、ブートストラップで巨額収益を上げている点で特筆される <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka</a></li>
+</ul>
+<h4>1.8 Gumroad（Sahil Lavingia）——クリエイター向け販売プラットフォーム</h4>
+<ul>
+<li><strong>創業者</strong>: Sahil Lavingia <a href="https://getlatka.com/companies/gumroad" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>事業内容</strong>: クリエイター向けデジタル商品販売プラットフォーム</li>
+<li><strong>収益</strong>: 2024年$23.8M <a href="https://getlatka.com/companies/gumroad" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>従業員数</strong>: 2026年時点で118名 <a href="https://getlatka.com/companies/gumroad" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>顧客数</strong>: 3,800社 <a href="https://getlatka.com/companies/gumroad" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>備考</strong>: 厳密には「一人/極小人数」事例ではないが、ソロファウンダーとして開始し成長した事例として言及されることが多い <a href="https://getlatka.com/companies/gumroad" target="_blank" rel="noopener">GetLatka</a></li>
+</ul>
+<h4>1.9 Cal AI（Zach Yadegari）——AIカロリー追跡アプリ</h4>
+<ul>
+<li><strong>創業者</strong>: Zach Yadegari（高校時代から創業） <a href="https://finance.yahoo.com/news/myfitnesspal-acquires-cal-ai-expanding-140000022.html" target="_blank" rel="noopener">finance.yahoo.com</a> <a href="https://beneschlaw.com/news/benesch-advises-myfitnesspal-on-acquisition-of-cal-ai-the-viral-calorie-app/" target="_blank" rel="noopener">Benesch Law</a></li>
+<li><strong>事業内容</strong>: AIを活用したカロリー/栄養追跡アプリ</li>
+<li><strong>収益</strong>:</li>
+<li>GetLatka/Yahoo Finance: 2026年$40M <a href="https://getlatka.com/companies/calai.app" target="_blank" rel="noopener">getlatka.com</a> <a href="https://finance.yahoo.com/news/myfitnesspal-acquires-cal-ai-expanding-140000022.html" target="_blank" rel="noopener">finance.yahoo.com</a></li>
+<li>Benesch Law: 2年未満で$30M以上の年間収益 <a href="https://beneschlaw.com/news/benesch-advises-myfitnesspal-on-acquisition-of-cal-ai-the-viral-calorie-app/" target="_blank" rel="noopener">beneschlaw.com</a></li>
+<li>Cal AI創業者のX投稿: $50M ARR <a href="https://x.com/zach_yadegari/status/2028473704359874652" target="_blank" rel="noopener">x.com</a></li>
+<li>Redditでの議論: $5.9M MRR（先月）という主張もあり <a href="https://reddit.com/r/technology/comments/1riw8m7/..." target="_blank" rel="noopener">reddit.com</a></li>
+<li><strong>従業員数</strong>: 2026年時点で7名（2025年は17名） <a href="https://getlatka.com/companies/calai.app" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>顧客数</strong>: 2万人 <a href="https://getlatka.com/companies/calai.app" target="_blank" rel="noopener">GetLatka</a></li>
+<li><strong>買収</strong>: MyFitnessPalに買収（2025年12月決着、2026年3月発表） <a href="https://finance.yahoo.com/news/myfitnesspal-acquires-cal-ai-expanding-140000022.html" target="_blank" rel="noopener">finance.yahoo.com</a> <a href="https://beneschlaw.com/news/benesch-advises-myfitnesspal-on-acquisition-of-cal-ai-the-viral-calorie-app/" target="_blank" rel="noopener">Benesch Law</a></li>
+<li><strong>使用AIツール</strong>: 自社開発のAIモデル（詳細不明） [DATA NOT AVAILABLE]</li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: 画像認識によるカロリー推定</li>
+<li>人間が担う部分: 製品開発、マーケティング [DATA NOT AVAILABLE]</li>
+<li><strong>備考</strong>: 買収金額は非公開。Redditでは製品の精度や課金体系への批判的コメントもあり <a href="https://reddit.com/r/technology/comments/1riw8m7/..." target="_blank" rel="noopener">reddit.com</a></li>
+</ul>
+<h4>1.10 Polsia（Ben Broca）——AIエージェントによる自動事業運営プラットフォーム</h4>
+<ul>
+<li><strong>創業者</strong>: Ben Broca <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a> <a href="https://www.trueventures.com/blog/polsia-one-person-company-no-longer-a-metaphor" target="_blank" rel="noopener">True Ventures</a></li>
+<li><strong>事業内容</strong>: AIエージェントが事業の計画・コーディング・マーケティング・運営を自律的に行うプラットフォーム</li>
+<li><strong>収益</strong>:</li>
+<li>Henry the 9th: $6.3M+ 年間収益（run rate） <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a></li>
+<li>True Ventures: ローンチ1ヶ月で$1M ARR、さらに1ヶ月後$3M ARR <a href="https://www.trueventures.com/blog/polsia-one-person-company-no-longer-a-metaphor" target="_blank" rel="noopener">True Ventures</a></li>
+<li>Preuve AI（取得失敗のため詳細不明） <a href="https://preuve.ai/blog/polsia-review" target="_blank" rel="noopener">preuve.ai</a></li>
+<li>JBpress（取得失敗） <a href="https://jbpress.ismedia.jp/articles/-/96259" target="_blank" rel="noopener">jbpress.ismedia.jp</a></li>
+<li><strong>従業員数</strong>: 0名（創業者1名のみ） <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a></li>
+<li><strong>AI自動化率</strong>: 約80%の業務を自律的に実行 <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a></li>
+<li><strong>使用AIツール</strong>: Anthropic Claude（Agent SDK）、Anthropic Maxサブスクリプション（3つ）、Codex Maxサブスクリプション（1つ）、月額約$800 <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a></li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: 事業の計画、コーディング、マーケティング、運営の約80% <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a></li>
+<li>人間が担う部分: 戦略的判断、市場の直感など約20% <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a></li>
+<li><strong>備考</strong>: Preuve AIによるレビュー記事では、顧客満足度が低く（Trustpilot 2.9/5）、初月チャーン率約50%という指摘もあるが、当該URLは取得失敗のため詳細は確認できず [DATA NOT AVAILABLE] <a href="https://preuve.ai/blog/polsia-review" target="_blank" rel="noopener">preuve.ai</a></li>
+</ul>
+<h4>1.11 Tibo Louis-Lucas（Revid/Outrank/Tweet Hunter/Taplio）</h4>
+<ul>
+<li><strong>創業者</strong>: Thibault (Tibo) Louis-Lucas <a href="https://nocodeexits.substack.com/p/the-10-million-exit-that-became-a" target="_blank" rel="noopener">No Code Exits</a> <a href="https://www.indiehackers.com/post/tech/heres-how-tibo-sold-two-products-for-8m-and-why-he-ll-never-do-it-again-iwykhfENoZqJgRLU33zv" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li><strong>事業内容</strong>: ソーシャルメディア成長ツール（Tweet Hunter、Taplio）、AI動画ツール（Revid）等</li>
+<li><strong>収益</strong>:</li>
+<li>売却時（2022年）: Tweet HunterとTaplioの合計ARR約$1.5M <a href="https://nocodeexits.substack.com/p/the-10-million-exit-that-became-a" target="_blank" rel="noopener">No Code Exits</a></li>
+<li>売却後成長: ARRを$8Mまで成長 <a href="https://nocodeexits.substack.com/p/the-10-million-exit-that-became-a" target="_blank" rel="noopener">No Code Exits</a></li>
+<li>最新製品（Revid等）: 月間約$28K <a href="https://www.indiehackers.com/post/tech/heres-how-tibo-sold-two-products-for-8m-and-why-he-ll-never-do-it-again-iwykhfENoZqJgRLU33zv" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li>Creator Economy（取得失敗）: Revid単体で$600K+/月、ポートフォリオ全体で$1M+/月と記載 <a href="https://creatoreconomy.so/p/how-this-solo-founder-bootstrapped-to-1m-a-month-tibo-louis-lucas" target="_blank" rel="noopener">creatoreconomy.so</a></li>
+<li><strong>売却条件</strong>: Lempire社に売却、$2M upfront＋$8M earn-out、最終受取額$8M（目標$10M未達）、個人手取り約$3M <a href="https://nocodeexits.substack.com/p/the-10-million-exit-that-became-a" target="_blank" rel="noopener">No Code Exits</a></li>
+<li><strong>従業員数</strong>: 不明 [DATA NOT AVAILABLE]</li>
+<li><strong>自動化vs人間の役割</strong>:</li>
+<li>AI自動化: コンテンツ生成、SNS投稿スケジュール等（詳細不明） [DATA NOT AVAILABLE]</li>
+<li>人間が担う部分: 製品戦略、マーケティング <a href="https://www.indiehackers.com/post/tech/heres-how-tibo-sold-two-products-for-8m-and-why-he-ll-never-do-it-again-iwykhfENoZqJgRLU33zv" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li><strong>備考</strong>: earn-out契約のリスク（目標未達で報酬が減額）を実体験として語っている <a href="https://nocodeexits.substack.com/p/the-10-million-exit-that-became-a" target="_blank" rel="noopener">No Code Exits</a></li>
+</ul>
+<h4>1.12 その他の事例（簡易）</h4>
+<ul>
+<li><strong>Samuel Rondot（StoryShort）</strong>: 元眼鏡士、3つのSaaS製品で月$35,000、Claude Codeが開発の90%を担当 <a href="https://aiforautomation.io/cases/storyshort-samuel-rondot" target="_blank" rel="noopener">aiforautomation.io</a></li>
+<li><strong>Richard Wang（Leadmore AI）</strong>: 最初のAI消費者向けアプリは3ヶ月で失敗、その後Redditマーケティングツールで$1M ARR達成 <a href="https://aiforautomation.io/cases/leadmore-ai-richard-wang" target="_blank" rel="noopener">aiforautomation.io</a></li>
+<li><strong>Pascal Levy-Garboua（Noosa Labs）</strong>: 3つのSaaS製品を買収し月$120,000収益 <a href="https://aiforautomation.io/cases/noosalabs-pascal-levy-garboua" target="_blank" rel="noopener">aiforautomation.io</a></li>
+<li><strong>Eric Barone（Stardew Valley）</strong>: 推計総収益$518M超（ただしAI活用事例ではない） <a href="https://www.solobusinesshub.com/success-stories/one-person-company-examples/" target="_blank" rel="noopener">Solo Business Hub</a></li>
+<li><strong>Gary Brewer（BuiltWith）</strong>: 約$14M ARR <a href="https://www.solobusinesshub.com/success-stories/one-person-company-examples/" target="_blank" rel="noopener">Solo Business Hub</a></li>
+</ul>
+<hr>
+<h3>2. 共通する型——値付け、集客、サポート、開発、運用の無人化と固定費</h3>
+<h4>2.1 値付け（Pricing）</h4>
+<p>成功事例に共通する値付けの特徴:</p>
+<p>1. <strong>即日課金</strong>: 製品完成前から価格を提示し、需要を検証する <a href="https://reddit.com/r/Solopreneur/comments/1r9vbhu/talked_to_a_bunch_of_solo_founders_making_10k" target="_blank" rel="noopener">Reddit</a> <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founder Reality</a></p>
+<p>2. <strong>高価格帯による質の高い顧客の選別</strong>: Tibo Louis-Lucasは$50-100/月の価格帯を設定し、チャーン率の高い顧客を排除 <a href="https://creatoreconomy.so/p/how-this-solo-founder-bootstrapped-to-1m-a-month-tibo-louis-lucas" target="_blank" rel="noopener">creatoreconomy.so</a></p>
+<p>3. <strong>1回限り購入モデルの採用</strong>: HeadshotProのようにサブスクリプションではなく1回限り購入モデルを採用し、継続的な新規顧客獲得に注力するケースも <a href="https://stealwhatworks.com/blogs/news/headshot-still-making-money" target="_blank" rel="noopener">Steal What Works</a></p>
+<p><strong>AIツール自体の価格帯（2026年時点）</strong>:</p>
+<ul>
+<li>エントリープラン: ChatGPT Go 1,400円/月、Gemini AI Plus 1,200円/月、Grok X Premium 980円/月 <a href="https://www.businessinsider.jp/article/2605-how-much-did-major-generative-ai-service-fees-become-in-may-2026/" target="_blank" rel="noopener">Business Insider Japan</a></li>
+<li>ミドルプラン: ChatGPT Plus 3,000円/月、Gemini AI Pro 2,900円/月、Claude Pro $20/月、Microsoft 365 Personal 2,130円/月、Perplexity Pro $20/月 <a href="https://www.businessinsider.jp/article/2605-how-much-did-major-generative-ai-service-fees-become-in-may-2026/" target="_blank" rel="noopener">Business Insider Japan</a></li>
+<li>ヘビーユーザープラン: ChatGPT Pro 16,800円/月、Claude Max $100-200/月、Gemini AI Ultra 36,400円/月 <a href="https://www.businessinsider.jp/article/2605-how-much-did-major-generative-ai-service-fees-become-in-may-2026/" target="_blank" rel="noopener">Business Insider Japan</a></li>
+<li>エンタープライズAIツール: Microsoft 365 Copilot $30/ユーザー/月、ChatGPT Teams $25/ユーザー/月、Glean 年間契約中央値$97,500 <a href="https://coworker.ai/blog/enterprise-ai-pricing-comparison-2026" target="_blank" rel="noopener">Coworker.ai</a></li>
+<li>AIコーディングアシスタント: 開発者1人あたり月額$200-600（シート料金＋トークン利用料） <a href="https://getdx.com/blog/ai-coding-assistant-pricing/" target="_blank" rel="noopener">DX</a></li>
+</ul>
+<h4>2.2 集客（Customer Acquisition）</h4>
+<p>共通する集客パターン:</p>
+<p>1. <strong>ディストリビューションの事前確保</strong>: アイデアより先に、顧客にリーチできるチャネル（Facebookグループ、Twitter/Xフォロワー等）を確保する <a href="https://reddit.com/r/Solopreneur/comments/1r9vbhu/talked_to_a_bunch_of_solo_founders_making_10k" target="_blank" rel="noopener">Reddit</a></p>
+<p>2. <strong>既存オーディエンスの活用</strong>: Pieter Levelsは92.6万人のXフォロワーを持ち、新製品ローンチ時に即座に集客 <a href="https://tracetify.com/r/photoai-com" target="_blank" rel="noopener">Tracetify</a></p>
+<p>3. <strong>SEO/コンテンツマーケティング</strong>: Tibo Louis-Lucasは無料ツールでGoogle検索上位を獲得 <a href="https://creatoreconomy.so/p/how-this-solo-founder-bootstrapped-to-1m-a-month-tibo-louis-lucas" target="_blank" rel="noopener">creatoreconomy.so</a></p>
+<p>4. <strong>Product Hunt/Hacker Newsでのローンチ</strong>: PhotoAIはProduct Huntで#1を獲得 <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a></p>
+<p>5. <strong>アフィリエイトプログラム</strong>: PhotoAIはローンチ後60日以内にアフィリエイトプログラムを構築 <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a></p>
+<h4>2.3 サポート（Customer Support）</h4>
+<p>サポートの自動化パターン:</p>
+<p>1. <strong>AIチャットボットの活用</strong>: Intercom FinなどのAIカスタマーサービスエージェント <a href="https://storyflow.so/blog/best-ai-tools-solopreneurs-2026" target="_blank" rel="noopener">Storyflow</a></p>
+<p>2. <strong>FAQ/ナレッジベースの自動生成</strong>: 過去の対応履歴からFAQを自動生成 <a href="https://liftbaseinc.com/column/generative-ai-use-cases" target="_blank" rel="noopener">Liftbase</a></p>
+<p>3. <strong>人間によるエスカレーション</strong>: 複雑な問い合わせは人間が対応するハイブリッドモデル [DATA NOT AVAILABLE]</p>
+<h4>2.4 開発（Development）</h4>
+<p>開発の自動化パターン:</p>
+<p>1. <strong>AIコーディングアシスタントの活用</strong>: Cursor、GitHub Copilot、Claude Code <a href="https://getdx.com/blog/ai-coding-assistant-pricing/" target="_blank" rel="noopener">DX</a> <a href="https://storyflow.so/blog/best-ai-tools-solopreneurs-2026" target="_blank" rel="noopener">Storyflow</a></p>
+<p>2. <strong>ノーコード/ローコードツールの活用</strong>: Retool、Base44自体のようなvibe codingプラットフォーム <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter</a></p>
+<p>3. <strong>1人での高速開発</strong>: PhotoAIは60日でローンチ、Base44は6ヶ月で買収 <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a> <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch</a></p>
+<h4>2.5 運用（Operations）</h4>
+<p>運用の自動化パターン:</p>
+<p>1. <strong>3層構造のAIスタック</strong>: 頭脳（創業者）、オーケストレーション（タスク管理プラットフォーム）、実行（個別AIエージェント） <a href="https://corpwaters.substack.com/p/how-to-build-a-one-man-ai-team" target="_blank" rel="noopener">CorpWaters</a></p>
+<p>2. <strong>AIエージェントによる業務代行</strong>: カスタマーサポート、営業アウトリーチ、コード生成、グラフィックデザイン等 <a href="https://corpwaters.substack.com/p/how-to-build-a-one-man-ai-team" target="_blank" rel="noopener">CorpWaters</a></p>
+<p>3. <strong>n8n等のワークフロー自動化ツール</strong>: システム間の同期を自動化 <a href="https://www.cipherprojects.com/blog/posts/rise-one-person-business-solo-founders-reshaping-entrepreneurship/" target="_blank" rel="noopener">Cipher Projects</a></p>
+<h4>2.6 固定費の実額</h4>
+<p><strong>ソロファウンダーの典型的な月間固定費</strong>:</p>
+<ul>
+<li>AIツール費用: 月額$50-200程度 <a href="https://aiforautomation.io/cases" target="_blank" rel="noopener">aiforautomation.io</a></li>
+<li>Polsiaの例: 月額約$800（Anthropic Max 3サブスクリプション＋Codex Max 1サブスクリプション） <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a></li>
+<li>note「AIガチおじさん」による試算:</li>
+<li>「Lean &amp; Bootstrap」構成: 約$338.50/月</li>
+<li>「Growth &amp; Autonomous Fleet」構成: 約$1,285/月 <a href="https://note.com/ai_gachi_oji/n/n61d6b36770eb?hl=en" target="_blank" rel="noopener">note</a></li>
+<li>エンタープライズ規模のAI支出: 平均的な組織で年間$1.2M、中規模企業で$3M、大企業で$4.7M <a href="https://zylo.com/blog/ai-cost" target="_blank" rel="noopener">Zylo</a></li>
+</ul>
+<p><strong>AIツールによる人件費削減効果</strong>:</p>
+<ul>
+<li>従来の従業員: 年間¥240-480万 <a href="https://www.matrixflow.net/case-study/150/" target="_blank" rel="noopener">Matrixflow</a></li>
+<li>AIツール: 年間¥12-36万（約90%のコスト削減） <a href="https://www.matrixflow.net/case-study/150/" target="_blank" rel="noopener">Matrixflow</a></li>
+</ul>
+<hr>
+<h3>3. 失敗・撤退・やめた事例</h3>
+<h4>3.1 Humane AI Pin——ハードウェアAIスタートアップの失敗</h4>
+<ul>
+<li><strong>概要</strong>: 元Apple社員が創業、約$241Mを調達し$230Mを消費、HPに$116Mで資産売却 <a href="https://techstartups.com/2025/02/19/humane-ai-pin-startup-shuts-down-sells-to-hp-for-116m-after-burning-through-230m-in-investor-cash/" target="_blank" rel="noopener">TechStartups</a></li>
+<li><strong>製品価格</strong>: $699＋月額$24のデータサブスクリプション <a href="https://techstartups.com/2025/02/19/humane-ai-pin-startup-shuts-down-sells-to-hp-for-116m-after-burning-through-230m-in-investor-cash/" target="_blank" rel="noopener">TechStartups</a></li>
+<li><strong>失敗原因</strong>:</li>
+<li>製品レビューが酷評（Marques Brownlee/MKBHDのレビューが大きな打撃）</li>
+<li>機能が広告通りではなく、返品が販売を上回った</li>
+<li>発売から約6ヶ月遅延 <a href="https://techstartups.com/2025/02/19/humane-ai-pin-startup-shuts-down-sells-to-hp-for-116m-after-burning-through-230m-in-investor-cash/" target="_blank" rel="noopener">TechStartups</a></li>
+<li><strong>教訓</strong>: ハードウェアとAIの組み合わせは極めてリスクが高く、製品の実用性が伴わない場合、巨額の資金を消費しても失敗する</li>
+</ul>
+<h4>3.2 Builder.ai——「AI」を謳ったが実態は人力アウトソーシング</h4>
+<ul>
+<li><strong>概要</strong>: Microsoft、SoftBank等から$445Mを調達、評価額$1.2-1.5B、2025年5月に破産申請 <a href="https://techstartups.com/2025/05/24/builder-ai-a-microsoft-backed-ai-startup-once-valued-at-1-2-billion-files-for-bankruptcy-is-ai-becoming-another-com-bubble/" target="_blank" rel="noopener">TechStartups</a> <a href="https://devops.com/this-bankrupt-ai-startup-was-more-artificial-than-intelligent" target="_blank" rel="noopener">DevOps.com</a></li>
+<li><strong>失敗原因</strong>:</li>
+<li>「AIによるノーコード開発」を謳っていたが、実態はインドの約700人のエンジニアによる手作業のコーディング <a href="https://devops.com/this-bankrupt-ai-startup-was-more-artificial-than-intelligent" target="_blank" rel="noopener">DevOps.com</a></li>
+<li>売上水増しの疑い（VerSe社との相互取引） <a href="https://devops.com/this-bankrupt-ai-startup-was-more-artificial-than-intelligent" target="_blank" rel="noopener">DevOps.com</a></li>
+<li>過大な燃焼率（770人の従業員、高級オフィス） <a href="https://techstartups.com/2025/05/24/builder-ai-a-microsoft-backed-ai-startup-once-valued-at-1-2-billion-files-for-bankruptcy-is-ai-becoming-another-com-bubble/" target="_blank" rel="noopener">TechStartups</a></li>
+<li>負債: Amazonに$85M、Microsoftに$30M <a href="https://techstartups.com/2025/05/24/builder-ai-a-microsoft-backed-ai-startup-once-valued-at-1-2-billion-files-for-bankruptcy-is-ai-becoming-another-com-bubble/" target="_blank" rel="noopener">TechStartups</a></li>
+<li><strong>教訓</strong>: 「AIウォッシング」（AIを謳うが実態が伴わない）は長期的に持続せず、投資家・顧客からの信頼を失う</li>
+</ul>
+<h4>3.3 日本企業におけるAI導入失敗事例</h4>
+<ul>
+<li><strong>建設業の中小企業</strong>: KPIを設定せず、6ヶ月でプロジェクト打ち切り <a href="https://www.japan-it.jp/hub/ja-jp/blog/article-72.html" target="_blank" rel="noopener">Japan IT Week</a>（当該URLは取得失敗のため内容確認できず [DATA NOT AVAILABLE]）</li>
+<li><strong>中堅製造業</strong>: トップダウン導入で部門横断調整に6ヶ月以上、現場疲弊でプロジェクト停止 <a href="https://www.japan-it.jp/hub/ja-jp/blog/article-72.html" target="_blank" rel="noopener">Japan IT Week</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+<li><strong>小売企業</strong>: 生成AIによるLP制作自動化で、品質チェック工数増により総作業時間が1.3倍に増加 <a href="https://www.japan-it.jp/hub/ja-jp/blog/article-72.html" target="_blank" rel="noopener">Japan IT Week</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+<li><strong>PwC Japan調査</strong>: 日本企業の13%のみが「期待を上回る効果があった」と回答（米国・英国は約50%） <a href="https://0120.co.jp/blog/ai-training-39/" target="_blank" rel="noopener">0120.co.jp</a></li>
+<li><strong>Samoyed Techの10の失敗パターン</strong>: 目的の逆転、完璧主義、ツール過信、トップダウン導入、データ未整備、セキュリティ後回し、社内抵抗、ベンダー丸投げ、効果測定なし、継続改善欠如 <a href="https://samoyed-tech.com/ai-rescue-failure-patterns/" target="_blank" rel="noopener">Samoyed Tech</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+<li><strong>Anomaly Inc.の5つの落とし穴</strong>: 目的不明確、PoC疲れ、現場置き去り、ベンダー依存、効果測定ゼロ <a href="https://anomaly-inc.com/blog/ai-implementation-failure-cases-sme-5-pitfalls-202" target="_blank" rel="noopener">Anomaly Inc.</a></li>
+<li><strong>37Designの7つの失敗パターン</strong>: 目的曖昧、コスト見積もり甘、社員不使用、AI過信、データ整備不足、PoC止まり、セキュリティ不足 <a href="https://37design.co.jp/blog/sme-ai-introduction-failure-prevention-2026/" target="_blank" rel="noopener">37Design</a></li>
+<li><strong>BoostXのAIコンサルティング失敗5パターン</strong>: PoC止まり、ベンダー丸投げ、経営課題と切り離し、短期成果至上主義、契約終了後の運用断絶 <a href="https://boostx-inc.com/blog/ai-consulting-5-failure-patterns/" target="_blank" rel="noopener">BoostX</a></li>
+<li><strong>Octavius AIの5つの失敗パターン</strong>: 合意のないプロセス自動化、オーナー不在、コンテキスト欠如、指標設定なし、デモベースの導入 <a href="https://octavius.ai/business-automation/ai-automation-failures-small-business/" target="_blank" rel="noopener">Octavius AI</a></li>
+<li><strong>High Peak Softwareの8つの失敗パターン</strong>: プロセス未定義、ハッピーパスのみ設計、プロンプト最適化偏重、入力品質軽視、オーナーシップ欠如、早すぎる完全自動化、活動量指標依存、ガバナンス事後導入 <a href="https://highpeaksw.com/ai-automation-failure-patterns/" target="_blank" rel="noopener">High Peak Software</a></li>
+</ul>
+<h4>3.4 AIが収益成長に失敗する構造的reason（AX for Revenue）</h4>
+<p>1. AIは「今ある売上の構造の中」でしか最適化できない <a href="https://axfr.ai/why-ai-fails-revenue" target="_blank" rel="noopener">AX for Revenue</a></p>
+<p>2. 日本企業のAI期待値が「売上」を向いていない（総務省情報通信白書2025） <a href="https://axfr.ai/why-ai-fails-revenue" target="_blank" rel="noopener">AX for Revenue</a></p>
+<p>3. 「AI導入」をゴールにした瞬間、売上は諦められている <a href="https://axfr.ai/why-ai-fails-revenue" target="_blank" rel="noopener">AX for Revenue</a></p>
+<p>4. MVP時代の発想から抜けられていない <a href="https://axfr.ai/why-ai-fails-revenue" target="_blank" rel="noopener">AX for Revenue</a></p>
+<h4>3.5 GartnerによるAIプロジェクト失敗率</h4>
+<ul>
+<li>インフラ・運用（I&amp;O）におけるAIユースケースの成功率は28%、完全失敗は20% <a href="https://www.gartner.com/en/newsroom/press-releases/2026-04-07-gartner-says-artificial-intelligence-projects-in-infrastructure-and-operations-stall-ahead-of-meaningful-roi-returns" target="_blank" rel="noopener">Gartner</a>（当該URLは取得失敗のため内容確認できず [DATA NOT AVAILABLE]）</li>
+<li>アジェンティックAIプロジェクトの40%以上が2027年末までにキャンセルされる見込み（コスト高騰、ビジネス価値不明確、リスク管理不十分） <a href="https://www.digitalapplied.com/blog/agentic-ai-project-cancellations-gartner-40-percent-2026" target="_blank" rel="noopener">Digital Applied</a></li>
+</ul>
+<h4>3.6 Ronnie Parsonsの「AIでビジネスがほぼ潰れかけた3つのミス」</h4>
+<p>1. 「見せかけ」のワークフローを構築（週4分しか節約できない自動化）</p>
+<p>2. 整理されていないプロセスを自動化（クライアントオンボーディングの標準化前に自動化）</p>
+<p>3. 間違ったものを最適化（内部ダッシュボード構築に時間を費やすが、実際の時間節約効果は少ない） <a href="https://www.linkedin.com/posts/ronnieparsons_the-3-ai-mistakes-that-nearly-tanked-my-solo-led-activity-7359255774772019204-L166" target="_blank" rel="noopener">LinkedIn</a>（取得失敗 [DATA NOT AVAILABLE]）</p>
+<h4>3.7 2025年にシャットダウンしたAIスタートアップ10社（TechStartups）</h4>
+<p>Builder.ai、Humane、Noogata、Locale.ai、Subtl.ai、Tune AI、Wuri、CodeParrot、Astra、Yara AI <a href="https://techstartups.com/2025/12/09/top-ai-startups-that-shut-down-in-2025-what-founders-can-learn/" target="_blank" rel="noopener">TechStartups</a>（取得失敗 [DATA NOT AVAILABLE]）</p>
+<h4>3.8 IdeaProofによるAIスタートアップ失敗分析</h4>
+<ul>
+<li>分析対象: 562件の失敗事例 <a href="https://ideaproof.io/failures/ai-startups" target="_blank" rel="noopener">ideaproof.io</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+<li>中央寿命: 7年</li>
+<li>主な失敗原因: 持続不可能なユニットエコノミクス、PMF欠如、偽AI/AIウォッシング、GPU燃焼率、基盤モデルに対する堀の欠如 <a href="https://ideaproof.io/failures/ai-startups" target="_blank" rel="noopener">ideaproof.io</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+</ul>
+<hr>
+<h3>4. 数字の裏側——検証可能な公表売上 vs 自己申告</h3>
+<h4>4.1 Stripe検証済みデータ（Indie Hackers分析）</h4>
+<ul>
+<li>分析対象: 5,079件のStripe検証済みプロジェクト <a href="https://www.indiehackers.com/post/i-analyzed-5-079-stripe-verified-startups-f0f6bd053f" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li>中央値月間収益: $169（全プロジェクト）、AIプロジェクトは$156</li>
+<li>収益分布:</li>
+<li>トップ50%: $169/月超</li>
+<li>トップ25%: 約$800/月超</li>
+<li>トップ10%: $10,000/月超</li>
+<li>トップ1%: $98,500/月超</li>
+<li>AIプロジェクトは最も競争が激しく、最も収益性が低いカテゴリーの1つ（マーケットプレイス$1,170、セールスツール$711、Eコマース$599と比較） <a href="https://www.indiehackers.com/post/i-analyzed-5-079-stripe-verified-startups-f0f6bd053f" target="_blank" rel="noopener">Indie Hackers</a></li>
+<li>「ブレイクアウト」（月$10K超かつ月50%超成長）プロジェクトは48件（0.9%） <a href="https://www.indiehackers.com/post/i-analyzed-5-079-stripe-verified-startups-f0f6bd053f" target="_blank" rel="noopener">Indie Hackers</a></li>
+</ul>
+<h4>4.2 Steal What Worksによるインディーハッカー収益分布</h4>
+<ul>
+<li>$10K+/月を達成するインディーハッカーは約3%（範囲2-5%） <a href="https://stealwhatworks.com/blogs/news/indie-hackers-over-10k-per-month" target="_blank" rel="noopener">Steal What Works</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+<li>収益分布（TrustMRRデータ、成功バイアスありと注記）:</li>
+<li>$1K未満: 68.3%</li>
+<li>$1K-$10K: 16.7%</li>
+<li>$10K-$100K: 10%</li>
+<li>$100K-$1M: 4%</li>
+<li>$1M超: 1% <a href="https://stealwhatworks.com/blogs/news/indie-hackers-over-10k-per-month" target="_blank" rel="noopener">Steal What Works</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+</ul>
+<h4>4.3 自己申告vs第三者検証の不一致事例</h4>
+<ul>
+<li><strong>HeadshotPro</strong>: 公式サイトは「$10M+ revenue」、GetLatkaは2023年$96K、SupaBirdは$300K MRR、Steal What Worksは「$300KはMRRではなく1回限り購入売上」と指摘 <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro</a> <a href="https://getlatka.com/companies/headshotpro" target="_blank" rel="noopener">GetLatka</a> <a href="https://supabird.io/articles/danny-postma-how-a-solo-hacker-built-an-ai-empire-from-bali" target="_blank" rel="noopener">SupaBird</a> <a href="https://stealwhatworks.com/blogs/news/headshot-still-making-money" target="_blank" rel="noopener">Steal What Works</a></li>
+<li><strong>PhotoAI</strong>: Nomadic Blueprint $132K/月、Founders Reality $40K MRR（60日）、GetLatka 2024年$82K/年、Tracetify 非公開・$132K MRR（2025年6月） <a href="https://nomadicblueprint.com/case-studies/pieter-levels" target="_blank" rel="noopener">Nomadic Blueprint</a> <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a> <a href="https://getlatka.com/companies/photoai" target="_blank" rel="noopener">GetLatka</a> <a href="https://tracetify.com/r/photoai-com" target="_blank" rel="noopener">Tracetify</a></li>
+<li><strong>Zigpoll</strong>: GetLatka $30.4K/年（2023）、Indie Board Session $68K MRR、X投稿 $1.7M ARR、Startup Founder Stories $125K MRR（取得失敗） <a href="https://getlatka.com/companies/zigpoll" target="_blank" rel="noopener">GetLatka</a> <a href="https://indieboardsession.substack.com/p/how-zigpoll-scaled-solo-to-68k-mrr" target="_blank" rel="noopener">Indie Board Session</a> <a href="https://x.com/jason_zig" target="_blank" rel="noopener">x.com</a></li>
+<li><strong>Cal AI</strong>: GetLatka/Yahoo Finance $40M、Benesch Law $30M+、X投稿 $50M ARR、Reddit $5.9M MRR <a href="https://getlatka.com/companies/calai.app" target="_blank" rel="noopener">getlatka.com</a> <a href="https://finance.yahoo.com/news/myfitnesspal-acquires-cal-ai-expanding-140000022.html" target="_blank" rel="noopener">finance.yahoo.com</a> <a href="https://beneschlaw.com/news/benesch-advises-myfitnesspal-on-acquisition-of-cal-ai-the-viral-calorie-app/" target="_blank" rel="noopener">beneschlaw.com</a> <a href="https://x.com/zach_yadegari/status/2028473704359874652" target="_blank" rel="noopener">x.com</a> <a href="https://reddit.com/r/technology/comments/1riw8m7/..." target="_blank" rel="noopener">reddit.com</a></li>
+<li><strong>Base44</strong>: Lenny&#x27;s Newsletter $1M ARR（3週間）、TechCrunch $80M現金＋earn-out、Matrixflow $3.5M ARR、aiforautomation.io $200K MRR <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter</a> <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch</a> <a href="https://www.matrixflow.net/case-study/150/" target="_blank" rel="noopener">Matrixflow</a> <a href="https://aiforautomation.io/cases" target="_blank" rel="noopener">aiforautomation.io</a></li>
+<li><strong>Polsia</strong>: Henry the 9th $6.3M+、True Ventures $1M→$3M ARR、Preuve AI（取得失敗） <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th</a> <a href="https://www.trueventures.com/blog/polsia-one-person-company-no-longer-a-metaphor" target="_blank" rel="noopener">True Ventures</a></li>
+</ul>
+<h4>4.4 ソロファウンダーの全体傾向（Cartaレポート）</h4>
+<ul>
+<li>2019年から2025年上半期にかけて、ソロファウンダーの割合は23.7%から36.3%に上昇 <a href="https://carta.com/data/solo-founders-report/" target="_blank" rel="noopener">Carta</a></li>
+<li>ソロファウンダー企業は2024年新規設立企業の30%を占めるが、資金調達額は14.7%のみ <a href="https://carta.com/data/solo-founders-report/" target="_blank" rel="noopener">Carta</a></li>
+<li>ソロファウンダーは複数ファウンダー企業より早期に初従業員を雇用（中央値399日 vs 480日） <a href="https://carta.com/data/solo-founders-report/" target="_blank" rel="noopener">Carta</a></li>
+</ul>
+<h4>4.5 Stripeによるソロファウンダー分析</h4>
+<ul>
+<li>トップデカイルのソロファウンダー収益は、2025年時点で中央値の61倍（4年前は34倍） <a href="https://stripe.com/blog/top-solo-founder-traits" target="_blank" rel="noopener">Stripe</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+<li>AIネイティブなソロスタートアップは、2年目で他のソロファウンダー企業の約2倍の収益 <a href="https://stripe.com/blog/top-solo-founder-traits" target="_blank" rel="noopener">Stripe</a>（取得失敗 [DATA NOT AVAILABLE]）</li>
+</ul>
+<hr>
+<h3>5. 日本で一人でやっている事業主が明日やれる一手（5つ）</h3>
+<h4>5.1 アイデアより先に「顧客がいる場所」を特定し、そこで需要を検証する</h4>
+<p>既存のコミュニティ（Facebookグループ、Reddit、Xの特定ハッシュタグ等）で顧客が既に存在する場所を先に特定し、そこで製品アイデアの需要を検証する。実際に月$10K以上を稼ぐソロファウンダーは、このアプローチを共通して取っている <a href="https://reddit.com/r/Solopreneur/comments/1r9vbhu/talked_to_a_bunch_of_solo_founders_making_10k" target="_blank" rel="noopener">Reddit</a>。日本でも同様に、業界別SNSグループや専門フォーラムで潜在的な顧客の声を収集し、製品化前に需要を確認することが有効。</p>
+<h4>5.2 製品完成前に有料のランディングページで需要を検証する</h4>
+<p>製品を完成させる前に、解決策を2文で説明し価格を提示したランディングページを作成し、実際に支払いが発生するかを検証する手法 <a href="https://reddit.com/r/Solopreneur/comments/1r9vbhu/talked_to_a_bunch_of_solo_founders_making_10k" target="_blank" rel="noopener">Reddit</a>。PhotoAIの例でも、ローンチ前のTwitterでの反応確認（2,000件以上の返信）が初期需要の検証に使われた <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a>。日本でも、クラウドファンディングや予約販売の形で同様の検証が可能。</p>
+<h4>5.3 AIツールは「効率化」ではなく「収益拡大」に使う発想を持つ</h4>
+<p>日本企業の多くはAIを「業務効率化・コスト削減」ツールとして捉えているが、成功しているソロファウンダーはAIを「新規顧客獲得」「売上拡大」に活用している <a href="https://axfr.ai/why-ai-fails-revenue" target="_blank" rel="noopener">AX for Revenue</a>。具体的には、AIを使ったコンテンツ量産によるSEO対策、AIによるパーソナライズド営業メールの自動生成、AIチャットボットによる24時間対応など、直接的に収益に結びつく用途にAIリソースを配分する <a href="https://liftbaseinc.com/column/generative-ai-use-cases" target="_blank" rel="noopener">Liftbase</a>。</p>
+<h4>5.4 最初の6ヶ月は機能追加を断り、コア機能とマーケティングに集中する</h4>
+<p>月$10K以上を稼ぐソロファウンダーに共通するのは、初期の機能リクエストを断り、既存ユーザーの定着に必要なコア機能のみに注力する点 <a href="https://reddit.com/r/Solopreneur/comments/1r9vbhu/talked_to_a_bunch_of_solo_founders_making_10k" target="_blank" rel="noopener">Reddit</a>。PhotoAIも、初期バージョンではユーザーダッシュボードやチーム機能、モバイルアプリなどをスキップし、コアの画像生成機能に集中した <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality</a>。日本でも、MVPの範囲を厳格に定め、機能追加よりもマーケティングと顧客獲得にリソースを割くことが重要。</p>
+<h4>5.5 AI自動化を導入する前に、手動でプロセスを標準化し、KPIを設定する</h4>
+<p>AI自動化の失敗事例の多くは、プロセスが定義されていない、コンテキストが不足している、指標が設定されていないことが原因 <a href="https://octavius.ai/business-automation/ai-automation-failures-small-business/" target="_blank" rel="noopener">Octavius AI</a> <a href="https://highpeaksw.com/ai-automation-failure-patterns/" target="_blank" rel="noopener">High Peak Software</a>。日本企業のAI導入失敗事例でも、KPI未設定やプロセスの標準化不足が主要因として挙げられている <a href="https://anomaly-inc.com/blog/ai-implementation-failure-cases-sme-5-pitfalls-202" target="_blank" rel="noopener">Anomaly Inc.</a> <a href="https://37design.co.jp/blog/sme-ai-introduction-failure-prevention-2026/" target="_blank" rel="noopener">37Design</a>。AI導入前に、手動でプロセスを標準化し、明確なKPI（例：処理時間短縮率、エラー率低減率）を設定することが、自動化成功の前提条件となる。</p>
+<hr>
+<h3>出典一覧</h3>
+<p>1. <a href="https://www.lennysnewsletter.com/p/the-base44-bootstrapped-startup-success-story-maor-shlomo" target="_blank" rel="noopener">Lenny&#x27;s Newsletter - Base44 bootstrapped startup success story</a></p>
+<p>2. <a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/" target="_blank" rel="noopener">TechCrunch - Base44 sells to Wix for $80M cash</a></p>
+<p>3. <a href="https://levels.io/photoai-40870-line-index-php-105k-mo-revenue" target="_blank" rel="noopener">levels.io - PhotoAI revenue</a></p>
+<p>4. <a href="https://nomadicblueprint.com/case-studies/pieter-levels" target="_blank" rel="noopener">Nomadic Blueprint - Pieter Levels case study</a></p>
+<p>5. <a href="https://headshotpro.com/about" target="_blank" rel="noopener">HeadshotPro - About page</a></p>
+<p>6. <a href="https://getlatka.com/companies/headshotpro" target="_blank" rel="noopener">GetLatka - HeadshotPro</a></p>
+<p>7. <a href="https://getlatka.com/companies/carrd.co" target="_blank" rel="noopener">GetLatka - Carrd</a></p>
+<p>8. <a href="https://getlatka.com/companies/bannerbear" target="_blank" rel="noopener">GetLatka - Bannerbear</a></p>
+<p>9. <a href="https://getlatka.com/companies/zigpoll" target="_blank" rel="noopener">GetLatka - Zigpoll</a></p>
+<p>10. <a href="https://indieboardsession.substack.com/p/how-zigpoll-scaled-solo-to-68k-mrr" target="_blank" rel="noopener">Indie Board Session - Zigpoll scaled solo to $68K MRR</a></p>
+<p>11. <a href="https://getlatka.com/companies/midjourney" target="_blank" rel="noopener">GetLatka - Midjourney</a></p>
+<p>12. <a href="https://getlatka.com/companies/gumroad" target="_blank" rel="noopener">GetLatka - Gumroad</a></p>
+<p>13. <a href="https://getlatka.com/companies/calai.app" target="_blank" rel="noopener">GetLatka - Cal AI</a></p>
+<p>14. <a href="https://finance.yahoo.com/news/myfitnesspal-acquires-cal-ai-expanding-140000022.html" target="_blank" rel="noopener">Yahoo Finance - MyFitnessPal acquires Cal AI</a></p>
+<p>15. <a href="https://henrythe9th.substack.com/p/how-a-solo-founder-cloned-himself" target="_blank" rel="noopener">Henry the 9th - How a solo founder cloned himself (Polsia)</a></p>
+<p>16. <a href="https://preuve.ai/blog/polsia-review" target="_blank" rel="noopener">Preuve AI - Polsia review</a></p>
+<p>17. <a href="https://www.indiehackers.com/post/i-analyzed-5-079-stripe-verified-startups-f0f6bd053f" target="_blank" rel="noopener">Indie Hackers - Analysis of 5,079 Stripe-verified startups</a></p>
+<p>18. <a href="https://stealwhatworks.com/blogs/news/indie-hackers-over-10k-per-month" target="_blank" rel="noopener">Steal What Works - Indie hackers over $10k per month</a></p>
+<p>19. <a href="https://carta.com/data/solo-founders-report/" target="_blank" rel="noopener">Carta - Solo Founders Report 2025</a></p>
+<p>20. <a href="https://stripe.com/blog/top-solo-founder-traits" target="_blank" rel="noopener">Stripe - Top solo founder traits</a></p>
+<p>21. <a href="https://techstartups.com/2025/02/19/humane-ai-pin-startup-shuts-down-sells-to-hp-for-116m-after-burning-through-230m-in-investor-cash/" target="_blank" rel="noopener">TechStartups - Humane AI Pin shuts down</a></p>
+<p>22. <a href="https://ideaproof.io/failures/ai-startups" target="_blank" rel="noopener">IdeaProof - AI startup failures</a></p>
+<p>23. <a href="https://www.japan-it.jp/hub/ja-jp/blog/article-72.html" target="_blank" rel="noopener">Japan IT Week - AI導入失敗事例</a></p>
+<p>24. <a href="https://samoyed-tech.com/ai-rescue-failure-patterns/" target="_blank" rel="noopener">Samoyed Tech - AI導入失敗パターン10個</a></p>
+<p>25. <a href="https://axfr.ai/why-ai-fails-revenue" target="_blank" rel="noopener">AX for Revenue - Why AI fails revenue</a></p>
+<p>26. <a href="https://octavius.ai/business-automation/ai-automation-failures-small-business/" target="_blank" rel="noopener">Octavius AI - AI automation failures small business</a></p>
+<p>27. <a href="https://www.businessinsider.jp/article/2605-how-much-did-major-generative-ai-service-fees-become-in-may-2026/" target="_blank" rel="noopener">Business Insider Japan - 生成AIサービス料金2026年5月</a></p>
+<p>28. <a href="https://shift-ai.co.jp/blog/24928/" target="_blank" rel="noopener">Shift AI - 生成AIサービス12選比較</a></p>
+<p>29. <a href="https://zylo.com/blog/ai-cost" target="_blank" rel="noopener">Zylo - AI cost</a></p>
+<p>30. <a href="https://getdx.com/blog/ai-coding-assistant-pricing/" target="_blank" rel="noopener">DX - AI coding assistant pricing</a></p>
+<p>31. <a href="https://coworker.ai/blog/enterprise-ai-pricing-comparison-2026" target="_blank" rel="noopener">Coworker.ai - Enterprise AI pricing comparison 2026</a></p>
+<p>32. <a href="https://www.wix.com/press-room/home/post/wix-further-expands-into-vibe-coding-with-acquisition-of-base44-a-hyper-growth-startup-that-simplif" target="_blank" rel="noopener">Wix press release - Base44 acquisition</a></p>
+<p>33. <a href="https://supabird.io/articles/danny-postma-how-a-solo-hacker-built-an-ai-empire-from-bali" target="_blank" rel="noopener">SupaBird - Danny Postma HeadshotPro</a></p>
+<p>34. <a href="https://www.bannerbear.com/blog/7-reasons-i-chose-to-bootstrap-bannerbear/" target="_blank" rel="noopener">Bannerbear blog - 7 reasons I chose to bootstrap</a></p>
+<p>35. <a href="https://www.indiehackers.com/post/hi-im-aj-maker-of-carrd-and-after-2-5m-sites-1m-arr-and-a-funding-round-probably-time-for-an-ama-1b7fcf52fe" target="_blank" rel="noopener">Indie Hackers - Carrd AMA</a></p>
+<p>36. <a href="https://nocodeexits.substack.com/p/the-10-million-exit-that-became-a" target="_blank" rel="noopener">No Code Exits - Tibo Louis-Lucas $10M exit</a></p>
+<p>37. <a href="https://www.indiehackers.com/post/tech/heres-how-tibo-sold-two-products-for-8m-and-why-he-ll-never-do-it-again-iwykhfENoZqJgRLU33zv" target="_blank" rel="noopener">Indie Hackers - Tibo sold two products for $8M</a></p>
+<p>38. <a href="https://anomaly-inc.com/blog/ai-implementation-failure-cases-sme-5-pitfalls-202" target="_blank" rel="noopener">Anomaly Inc. - AI導入失敗5つの落とし穴</a></p>
+<p>39. <a href="https://37design.co.jp/blog/sme-ai-introduction-failure-prevention-2026/" target="_blank" rel="noopener">37Design - SME AI導入失敗防止策</a></p>
+<p>40. <a href="https://0120.co.jp/blog/ai-training-39/" target="_blank" rel="noopener">0120.co.jp - PwC Japan AI期待値調査</a></p>
+<p>41. <a href="https://www.digitalapplied.com/blog/agentic-ai-project-cancellations-gartner-40-percent-2026" target="_blank" rel="noopener">Digital Applied - Gartner agentic AI project cancellations</a></p>
+<p>42. <a href="https://beneschlaw.com/news/benesch-advises-myfitnesspal-on-acquisition-of-cal-ai-the-viral-calorie-app/" target="_blank" rel="noopener">Benesch Law - MyFitnessPal acquires Cal AI</a></p>
+<p>43. <a href="https://aiforautomation.io/cases" target="_blank" rel="noopener">aiforautomation.io - Case studies</a></p>
+<p>44. <a href="https://levels.io/2026" target="_blank" rel="noopener">levels.io - 2026 activity report</a></p>
+<p>45. <a href="https://opentherank.com/ai-pricing/" target="_blank" rel="noopener">OpenTheRank - AI pricing comparison</a></p>
+<p>46. <a href="https://x.com/jason_zig" target="_blank" rel="noopener">X (Twitter) - Jason Zigelbaum (@jason_zig)</a></p>
+<p>47. <a href="https://tracetify.com/r/photoai-com" target="_blank" rel="noopener">Tracetify - PhotoAI.com analysis</a></p>
+<p>48. <a href="https://disruptingjapan.com/how-to-start-an-ai-startup-in-late-2025" target="_blank" rel="noopener">Disrupting Japan - How to start an AI startup in late 2025</a></p>
+<p>49. <a href="https://usajapan.org/event/power-of-ai-japanese-startups" target="_blank" rel="noopener">USA Japan - Power of AI Japanese startups</a></p>
+<p>50. <a href="https://reddit.com/r/Solopreneur/comments/1r9vbhu/talked_to_a_bunch_of_solo_founders_making_10k" target="_blank" rel="noopener">Reddit - Solo founders making $10K+ discussion</a></p>
+<p>51. <a href="https://corpwaters.substack.com/p/how-to-build-a-one-man-ai-team" target="_blank" rel="noopener">CorpWaters - How to build a one man AI team</a></p>
+<p>52. <a href="https://devops.com/this-bankrupt-ai-startup-was-more-artificial-than-intelligent" target="_blank" rel="noopener">DevOps.com - Builder.ai bankruptcy</a></p>
+<p>53. <a href="https://techstartups.com/2025/05/24/builder-ai-a-microsoft-backed-ai-startup-once-valued-at-1-2-billion-files-for-bankruptcy-is-ai-becoming-another-com-bubble/" target="_blank" rel="noopener">TechStartups - Builder.ai bankruptcy details</a></p>
+<p>54. <a href="https://boostx-inc.com/blog/ai-consulting-5-failure-patterns/" target="_blank" rel="noopener">BoostX - AIコンサルティング5つの失敗パターン</a></p>
+<p>55. <a href="https://highpeaksw.com/ai-automation-failure-patterns/" target="_blank" rel="noopener">High Peak Software - AI automation failure patterns</a></p>
+<p>56. <a href="https://liftbaseinc.com/column/generative-ai-use-cases" target="_blank" rel="noopener">Liftbase - 生成AI活用事例30選</a></p>
+<p>57. <a href="https://salesforceventures.com/perspectives/ai-that-work-for-japanese-enterprises" target="_blank" rel="noopener">Salesforce Ventures - AI that work for Japanese enterprises (Sakana AI)</a></p>
+<p>58. <a href="https://storyflow.so/blog/best-ai-tools-solopreneurs-2026" target="_blank" rel="noopener">Storyflow - Best AI tools for solopreneurs 2026</a></p>
+<p>59. <a href="https://note.com/ai_gachi_oji/n/n61d6b36770eb?hl=en" target="_blank" rel="noopener">note - AIガチおじさん</a></p>
+<p>60. <a href="https://note.com/son_jon/n/nfc809ddef2ac" target="_blank" rel="noopener">note - 米国ソロAIファウンダー成功事例</a></p>
+<p>61. <a href="https://founderreality.com/blog/how-pieter-levels-built-photoai-to-40k-mrr-in-60-days-without-a-team" target="_blank" rel="noopener">Founders Reality - PhotoAI 40k MRR in 60 days</a></p>
+<p>62. <a href="https://stealwhatworks.com/blogs/news/headshot-still-making-money" target="_blank" rel="noopener">Steal What Works - Headshot still making money</a></p>
+<p>63. <a href="https://x.com/PrivatEquityGuy/status/1935405148014019002" target="_blank" rel="noopener">X (Twitter) - PrivatEquityGuy on Base44</a></p>
+<p>64. <a href="https://www.trueventures.com/blog/polsia-one-person-company-no-longer-a-metaphor" target="_blank" rel="noopener">True Ventures - Polsia one person company no longer a metaphor</a></p>
+<p>65. <a href="https://www.linkedin.com/posts/ronnieparsons_the-3-ai-mistakes-that-nearly-tanked-my-solo-led-activity-7359255774772019204-L166" target="_blank" rel="noopener">LinkedIn - Ronnie Parsons 3 AI mistakes</a></p>
+<p>66. <a href="https://news.ycombinator.com/item?id=32151541" target="_blank" rel="noopener">Hacker News - Indie hacker revenue discussion</a></p>
+<p>67. <a href="https://www.gartner.com/en/newsroom/press-releases/2026-04-07-gartner-says-artificial-intelligence-projects-in-infrastructure-and-operations-stall-ahead-of-meaningful-roi-returns" target="_blank" rel="noopener">Gartner - AI projects in I&amp;O stall</a></p>
+<p>68. <a href="https://sogyotecho.jp/generation-ai-service/" target="_blank" rel="noopener">Sogyotecho - 生成AIサービス16種比較</a></p>
+<p>69. <a href="https://thecrunch.io/ai-software-price/" target="_blank" rel="noopener">The Crunch - AI software price</a></p>
+<p>70. <a href="https://www.solobusinesshub.com/success-stories/one-person-company-examples/" target="_blank" rel="noopener">Solo Business Hub - One person company examples</a></p>
+<p>71. <a href="https://jsmaho.com/hitori-tuyoi2026/" target="_blank" rel="noopener">jsmaho.com - 2026年以降の一人起業の難しさ</a></p>
+<p>72. <a href="https://reddit.com/r/technology/comments/1riw8m7/..." target="_blank" rel="noopener">Reddit - MyFitnessPal acquires Cal AI discussion</a></p>
+<p>73. <a href="https://platelens.app/blog/myfitnesspal-acquires-cal-ai" target="_blank" rel="noopener">PlateLens - MyFitnessPal acquires Cal AI</a></p>
+<p>74. <a href="https://x.com/zach_yadegari/status/2028473704359874652" target="_blank" rel="noopener">X (Twitter) - Zach Yadegari on Cal AI acquisition</a></p>
+<p>75. <a href="https://linkedin.com/posts/joel-chue-september-2022-stable-diffusion-drops-activity-7403995359796056065" target="_blank" rel="noopener">LinkedIn - Joel Chue on Danny Postma/Stable Diffusion</a></p>
+<p>76. <a href="https://youtube.com/watch?v=yMu1uS2dMAw" target="_blank" rel="noopener">YouTube - Builder.ai bankruptcy video</a></p>
+<p>77. <a href="https://youtube.com/watch?v=cPU8ZwtnDAI" target="_blank" rel="noopener">YouTube - $30M AI companies built by solo founders</a></p>
+<p>78. <a href="https://www.cipherprojects.com/blog/posts/rise-one-person-business-solo-founders-reshaping-entrepreneurship/" target="_blank" rel="noopener">Cipher Projects - Rise of one person business</a></p>
+<hr>
+<h3>データの限界と注意点</h3>
+<p>本レポート作成にあたり、以下のURLは取得に失敗し、内容を確認できませんでした。これらの情報については出典が不確かなため、レポート本文中では「[DATA NOT AVAILABLE]」または「取得失敗」として明記しています：</p>
+<ul>
+<li><a href="https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/（一部取得成功、一部失敗）" target="_blank" rel="noopener">https://techcrunch.com/2025/06/18/6-month-old-solo-owned-vibe-coder-base44-sells-to-wix-for-80m-cash/（一部取得成功、一部失敗）</a></li>
+<li><a href="https://headshotpro.com/about（一部取得成功）" target="_blank" rel="noopener">https://headshotpro.com/about（一部取得成功）</a></li>
+<li><a href="https://creatoreconomy.so/p/how-this-solo-founder-bootstrapped-to-1m-a-month-tibo-louis-lucas" target="_blank" rel="noopener">https://creatoreconomy.so/p/how-this-solo-founder-bootstrapped-to-1m-a-month-tibo-louis-lucas</a></li>
+<li><a href="https://stealwhatworks.com/blogs/news/indie-hackers-over-10k-per-month" target="_blank" rel="noopener">https://stealwhatworks.com/blogs/news/indie-hackers-over-10k-per-month</a></li>
+<li><a href="https://stripe.com/blog/top-solo-founder-traits" target="_blank" rel="noopener">https://stripe.com/blog/top-solo-founder-traits</a></li>
+<li><a href="https://techstartups.com/2025/02/19/humane-ai-pin-startup-shuts-down-sells-to-hp-for-116m-after-burning-through-230m-in-investor-cash/" target="_blank" rel="noopener">https://techstartups.com/2025/02/19/humane-ai-pin-startup-shuts-down-sells-to-hp-for-116m-after-burning-through-230m-in-investor-cash/</a></li>
+<li><a href="https://ideaproof.io/failures/ai-startups" target="_blank" rel="noopener">https://ideaproof.io/failures/ai-startups</a></li>
+<li><a href="https://www.japan-it.jp/hub/ja-jp/blog/article-72.html" target="_blank" rel="noopener">https://www.japan-it.jp/hub/ja-jp/blog/article-72.html</a></li>
+<li><a href="https://samoyed-tech.com/ai-rescue-failure-patterns/" target="_blank" rel="noopener">https://samoyed-tech.com/ai-rescue-failure-patterns/</a></li>
+<li><a href="https://www.gartner.com/en/newsroom/press-releases/2026-04-07-gartner-says-artificial-intelligence-projects-in-infrastructure-and-operations-stall-ahead-of-meaningful-roi-returns" target="_blank" rel="noopener">https://www.gartner.com/en/newsroom/press-releases/2026-04-07-gartner-says-artificial-intelligence-projects-in-infrastructure-and-operations-stall-ahead-of-meaningful-roi-returns</a></li>
+<li><a href="https://globes.co.il/en/article-wix-pays-38m-earnout-payments-for-base44-1001542919" target="_blank" rel="noopener">https://globes.co.il/en/article-wix-pays-38m-earnout-payments-for-base44-1001542919</a></li>
+<li><a href="https://jbpress.ismedia.jp/articles/-/96259" target="_blank" rel="noopener">https://jbpress.ismedia.jp/articles/-/96259</a></li>
+<li><a href="https://www.matrixflow.net/case-study/150/" target="_blank" rel="noopener">https://www.matrixflow.net/case-study/150/</a></li>
+<li><a href="https://mindstudio.ai/blog/start-ai-automation-business-case-studies" target="_blank" rel="noopener">https://mindstudio.ai/blog/start-ai-automation-business-case-studies</a></li>
+<li><a href="https://www.forbes.com/sites/elainepofeldt/2026/01/28/as-more-founders-aim-to-build-billion-dollar-one-person-businesses-new-research-points-to-high-potential-niches/" target="_blank" rel="noopener">https://www.forbes.com/sites/elainepofeldt/2026/01/28/as-more-founders-aim-to-build-billion-dollar-one-person-businesses-new-research-points-to-high-potential-niches/</a></li>
+<li><a href="https://app.dealroom.co/news/note/pieter-levels-passes-10m-yr-in-revenue-and-investment-gains" target="_blank" rel="noopener">https://app.dealroom.co/news/note/pieter-levels-passes-10m-yr-in-revenue-and-investment-gains</a></li>
+<li>他多数のURL（詳細は各セクションの[DATA NOT AVAILABLE]記載箇所を参照）</li>
+</ul>
+<p>また、収益数字については、企業公式サイト・創業者自身の発信・第三者推計サイト（GetLatka等）の間で大きなばらつきがあるケースが多く（HeadshotPro、PhotoAI、Zigpoll、Cal AI、Base44など）、どの数字が最も信頼できるかは出典によって異なります。特に「MRR」として報告されている数字が、実際には1回限り購入の売上であるケース（HeadshotPro）も確認されており、数字を引用する際は出典の性質（自己申告か第三者検証か）に注意が必要です。</p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

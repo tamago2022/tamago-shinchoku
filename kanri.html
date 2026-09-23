@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理画面</title>
+<!--
+  1163番／管理画面（Lovableの管理画面みたいに、タブで全部切り替える1枚）
+  たまごさんの言葉（正本）：
+    「Lovableの管理画面みたいにしたい。自動投稿が今どうなってるかも全部パパッと切り替えられるように。
+      進捗表もマシンの進捗や工場の進捗があって、投げ込みの実装待ち状況が見えたり、
+      SNS投稿も『次これが投稿されるんだな』と分かったり。…進捗表はそのただの一部。」
+    「知りたいのは『今走っているもの』『クレジットの残量』『次発走予定のタスク』だけ。」
+    「今のゲージと本来の位置（棒線）にズレがなければいい。」
+    「赤い枠のやつや飴玉みたいなのは不要。Falの料金やサブスク情報も消す。」
+    「俺にとっての最優先はトーキングアバター。」
+    「省きすぎて『なんで消したんだ』も困るから、ブロックごとに『残す／いらない』のチェックを。」
+
+  ★この回で作ったのは「工場」タブだけ（たまごさんの指示：一気に全部作るな）。
+    マシン／投げ込み／SNS／声 は枠だけ置いて、中身は次の便で入れる。正直にそう書いてある。
+  ★タブ切り替えはページ遷移なし（DOMの表示切替のみ）。
+  ★出どころ（すべて実物。作り話のデータは1つも無い）
+    status/public/top_status.json … runningNow / nextUp / pace / stoppedReason
+    status/public/pace.json       … allPct・resetAt・remainWeek（クレジット）
+    status/public/queue_next.json … 次に発走（待機中のみ）
+    status/public/queue_light.json… 仕分け（開いたときだけ読む＝既定では読まない）
+    status/public/zero_bon.json   … 走行0本の理由
+    status/public/hassha_gate.json… 発車の門（なぜ0本か）
+-->
+<style>
+:root{
+  --ink:#1c1a17; --sub:#6d675f; --line:#ddd7cd; --paper:#f7f4ee; --card:#fffdf9;
+  --green:#2f7a48; --red:#a33b2a; --blue:#2f6fb0; --amber:#8a5d0f;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; padding:0 0 64px; background:var(--paper); color:var(--ink);
+  font:17px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+}
+.wrap{max-width:560px; margin:0 auto; padding:0 12px}
+
+/* ── 上の帯（相互リンク＋タブ）。スクロールしても消えない ── */
+.top{position:sticky; top:0; z-index:20; background:var(--paper);
+  border-bottom:1px solid var(--line); padding-top:6px}
+.links{display:flex; gap:6px; align-items:center; font-size:13px; margin-bottom:6px}
+.links a{color:var(--blue); text-decoration:none; border:1px solid var(--line);
+  border-radius:999px; padding:5px 11px; background:var(--card); white-space:nowrap}
+.links .now{color:var(--sub); font-variant-numeric:tabular-nums}
+.editbtn{margin-left:auto; font:inherit; font-size:13px; min-height:32px; padding:5px 11px;
+  border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--sub); cursor:pointer}
+body.editing .editbtn{background:var(--ink); color:#fff; border-color:var(--ink)}
+.tabs{display:flex; gap:6px; overflow-x:auto; padding-bottom:7px; -webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto; min-height:44px; padding:8px 15px; font:inherit; font-size:15px; font-weight:600;
+  border:1px solid var(--line); border-radius:11px; background:var(--card); color:var(--sub);
+  cursor:pointer; white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--ink); color:#fff; border-color:var(--ink)}
+
+/* ── ブロック ── */
+.blk{background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:0; margin:8px 0; overflow:hidden}
+.bh{display:flex; align-items:center; gap:8px; padding:9px 13px; cursor:pointer;
+  user-select:none; -webkit-user-select:none}
+.bh h2{font-size:13px; margin:0; color:var(--sub); font-weight:600; letter-spacing:.06em; flex:1}
+.bh .caret{color:var(--sub); font-size:13px; transition:transform .15s}
+.blk.closed .caret{transform:rotate(-90deg)}
+.blk.closed .bb{display:none}
+.bb{padding:0 13px 11px}
+/* 「残す／いらない」は普段は隠す（1画面を食うため）。上の「編集」で出す。 */
+.keep{display:none; gap:10px; align-items:center; font-size:13px; color:var(--sub);
+  padding:8px 13px 11px; border-top:1px dashed #ebe4d8}
+body.editing .keep{display:flex}
+body.editing .blk{outline:1px dashed #cfc6b6}
+.keep label{display:inline-flex; gap:5px; align-items:center; cursor:pointer; min-height:32px}
+.keep input{width:17px; height:17px}
+
+/* ── 走っているもの ── */
+.run{border-top:1px solid #eee7dc; padding:12px 0}
+.run:first-child{border-top:0}
+.rt{font-size:19px; font-weight:600; line-height:1.4}
+.rn{color:var(--sub); font-variant-numeric:tabular-nums; font-weight:400; margin-right:7px}
+.zline{display:flex; align-items:baseline; gap:10px}
+.zero{font-size:30px; font-weight:800; color:var(--red); font-variant-numeric:tabular-nums; line-height:1.1;
+  flex:0 0 auto}
+.zerowhy{font-size:13px; color:var(--red); line-height:1.4; flex:1; min-width:0;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.okrun{font-size:30px; font-weight:800; color:var(--green); font-variant-numeric:tabular-nums; line-height:1.1}
+.run{padding:8px 0}
+.rt{font-size:17px}
+
+/* ── クレジットのゲージ ── */
+.gnum{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.gbig{font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.05}
+.gsub{font-size:15px; color:var(--sub); font-variant-numeric:tabular-nums}
+.gauge{position:relative; height:20px; border-radius:6px; background:#efe9df; margin:9px 0 6px; overflow:hidden}
+.gauge i{position:absolute; left:0; top:0; bottom:0; border-radius:6px; background:var(--green)}
+.gauge b{position:absolute; top:-4px; bottom:-4px; width:3px; background:var(--ink); border-radius:2px}
+.gmark{font-size:12px; color:var(--sub); font-variant-numeric:tabular-nums; line-height:1.4}
+.zure{font-size:16px; font-weight:700}
+.zure.ok{color:var(--green)} .zure.over{color:var(--red)} .zure.under{color:var(--blue)}
+
+/* ── 次に発走 ── */
+.q{display:flex; gap:8px; align-items:flex-start; padding:8px 0; border-top:1px solid #eee7dc}
+.q:first-child{border-top:0}
+.qp{flex:0 0 auto; font-size:12px; font-weight:700; border-radius:6px; padding:3px 7px;
+  border:1px solid var(--line); color:var(--sub); margin-top:2px; font-variant-numeric:tabular-nums}
+.q.p0 .qp{background:var(--red); color:#fff; border-color:var(--red)}
+.qt{font-size:15px; line-height:1.4; flex:1;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.q.p0 .qt{font-weight:700}
+.qn{color:var(--sub); font-variant-numeric:tabular-nums; margin-right:6px; font-weight:400}
+
+/* ── 仕分け ── */
+.bkt{display:flex; gap:8px; align-items:center; padding:9px 0; border-top:1px solid #eee7dc;
+  font-size:15px}
+.bkt:first-child{border-top:0}
+.bkt b{font-size:22px; font-variant-numeric:tabular-nums; min-width:62px; text-align:right}
+.bkt span{flex:1}
+.bkt em{font-size:13px; color:var(--sub); font-style:normal}
+.btn{font:inherit; font-size:15px; min-height:44px; padding:10px 15px; border:1px solid var(--line);
+  border-radius:11px; background:var(--card); color:var(--ink); cursor:pointer}
+.btn:active{background:#efe9df}
+
+.note{font-size:12px; color:var(--sub); line-height:1.5; margin-top:7px}
+.more{font:inherit; font-size:13px; min-height:38px; width:100%; margin-top:8px; padding:9px;
+  border:1px solid var(--line); border-radius:10px; background:#faf6ef; color:var(--sub); cursor:pointer}
+.soon{padding:22px 13px; color:var(--sub); font-size:16px; line-height:1.7}
+.soon b{color:var(--ink)}
+h3.shimau{font-size:14px; color:var(--sub); font-weight:600; margin:26px 0 6px; letter-spacing:.04em;
+  border-top:1px solid var(--line); padding-top:16px}
+.err{color:var(--red); font-size:14px}
+.hide{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <div class="links">
+      <a href="index.html">進捗表へ</a>
+      <a href="share/nagekomi-c5fd9d5791b32e88.html">投げ込み箱へ</a>
+      <button class="editbtn" id="editBtn" type="button">編集</button>
+      <span class="now" id="stamp">…</span>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-t="koujou" aria-selected="true">工場</button>
+      <button class="tab" role="tab" data-t="machine" aria-selected="false">マシン</button>
+      <button class="tab" role="tab" data-t="nagekomi" aria-selected="false">投げ込み</button>
+      <button class="tab" role="tab" data-t="sns" aria-selected="false">SNS</button>
+      <button class="tab" role="tab" data-t="koe" aria-selected="false">声</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ 工場 ═══════════ -->
+<section data-p="koujou">
+
+  <div class="blk" data-k="run">
+    <div class="bh"><h2>今走っているもの</h2><span class="caret">▾</span></div>
+    <div class="bb" id="runBody">読み込み中…</div>
+    <div class="keep"><label><input type="checkbox" checked data-keep="run"> 残す</label><span>外すと下の「しまってある物」へ</span></div>
+  </div>
+
+  <div class="blk" data-k="credit">
+    <div class="bh"><h2>クレジット残量</h2><span class="caret">▾</span></div>
+    <div class="bb" id="credBody">読み込み中…</div>
+    <div class="keep"><label><input type="checkbox" checked data-keep="credit"> 残す</label><span>外すと下の「しまってある物」へ</span></div>
+  </div>
+
+  <div class="blk" data-k="next">
+    <div class="bh"><h2>次に発走するタスク</h2><span class="caret">▾</span></div>
+    <div class="bb" id="nextBody">読み込み中…</div>
+    <div class="keep"><label><input type="checkbox" checked data-keep="next"> 残す</label><span>外すと下の「しまってある物」へ</span></div>
+  </div>
+
+  <div class="blk closed" data-k="shiwake">
+    <div class="bh"><h2>仕分け（今やる／今週／1ヶ月以内／いつでも）</h2><span class="caret">▾</span></div>
+    <div class="bb" id="swBody">開くと数えます（開かないあいだは読みません）</div>
+    <div class="keep"><label><input type="checkbox" checked data-keep="shiwake"> 残す</label><span>外すと下の「しまってある物」へ</span></div>
+  </div>
+
+  <h3 class="shimau">しまってある物</h3>
+  <div id="stash"></div>
+  <div class="note" id="stashNote">「残す」を外したブロックはここへ入ります。消してはいません。選んだ結果はこの端末に保存され、次に開いたときも同じです。</div>
+</section>
+
+<!-- ═══════════ 他のタブ（枠だけ） ═══════════ -->
+<section data-p="machine" class="hide">
+  <div class="blk"><div class="bh"><h2>マシン</h2></div>
+  <div class="soon"><b>まだ中身が入っていません。</b><br>次の便で入れるもの：Macの負荷・メモリ・スワップ・心臓の生死・同時に走れる本数（出どころ status/public/taion.json ／ machine.json ／ hassha_gate.json ＝すでに動いている実測）。</div></div>
+</section>
+<section data-p="nagekomi" class="hide">
+  <div class="blk"><div class="bh"><h2>投げ込み</h2></div>
+  <div class="soon"><b>まだ中身が入っていません。</b><br>いまは <a href="share/nagekomi-c5fd9d5791b32e88.html">投げ込み箱</a> をそのまま見てください。次の便で「実装待ちの一覧と進み具合」をここに埋め込みます（出どころ status/public/nagekomi_list.json）。</div></div>
+</section>
+<section data-p="sns" class="hide">
+  <div class="blk"><div class="bh"><h2>SNS</h2></div>
+  <div class="soon"><b>まだ中身が入っていません。</b><br>次の便で「次に何がいつ出るか」とところてん式の待機列を入れます（出どころ Bufferの予約：<a href="1137-buffer-yoyaku.html">1137-buffer-yoyaku.html</a>）。</div></div>
+</section>
+<section data-p="koe" class="hide">
+  <div class="blk"><div class="bh"><h2>声（要望・フィードバック）</h2></div>
+  <div class="soon"><b>受け皿だけ作ってあります。いまは空です。</b><br>ユーザーからの要望・フィードバックが届いたら、ここに溜まります。</div></div>
+</section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+
+/* ───── タブ（ページ遷移なし） ───── */
+function showTab(name){
+  $$(".tab").forEach(function(b){ b.setAttribute("aria-selected", b.dataset.t===name?"true":"false"); });
+  $$("section[data-p]").forEach(function(s){ s.classList.toggle("hide", s.dataset.p!==name); });
+  try{ localStorage.setItem("kanri.tab", name); }catch(e){}
+  if(name==="koujou") window.scrollTo(0,0);
+}
+$$(".tab").forEach(function(b){ b.addEventListener("click",function(){ showTab(b.dataset.t); }); });
+try{ var t0=localStorage.getItem("kanri.tab"); if(t0 && $('.tab[data-t="'+t0+'"]')) showTab(t0); }catch(e){}
+
+/* ───── 畳む ───── */
+var OPEN="kanri.open.v1";
+function openState(){ try{ return JSON.parse(localStorage.getItem(OPEN)||"{}"); }catch(e){ return {}; } }
+var op=openState();
+$$(".blk[data-k]").forEach(function(b){
+  var k=b.dataset.k;
+  if(op[k]===false) b.classList.add("closed");
+  if(op[k]===true) b.classList.remove("closed");
+  $(".bh",b).addEventListener("click",function(){
+    b.classList.toggle("closed");
+    var s=openState(); s[k]=!b.classList.contains("closed");
+    try{ localStorage.setItem(OPEN, JSON.stringify(s)); }catch(e){}
+    if(k==="shiwake" && !b.classList.contains("closed")) loadShiwake();
+  });
+});
+
+/* ───── 残す／いらない ───── */
+var KEEP="kanri.keep.v1";
+function keepState(){ try{ return JSON.parse(localStorage.getItem(KEEP)||"{}"); }catch(e){ return {}; } }
+var ORDER=$$('section[data-p="koujou"] .blk[data-k]');
+function applyKeep(){
+  var s=keepState(), stash=$("#stash"), main=$('section[data-p="koujou"]'), anchor=$("h3.shimau");
+  ORDER.forEach(function(b){
+    var k=b.dataset.k, keep=(s[k]!==false);
+    $('input[data-keep="'+k+'"]').checked=keep;
+    if(keep) main.insertBefore(b, anchor);   /* 元の並び順で上へ戻す */
+    else stash.appendChild(b);
+  });
+  $("#stashNote").textContent = stash.children.length
+    ? "ここにあるブロックは消していません。「残す」に戻せば上へ帰ります。"
+    : "「残す」を外したブロックはここへ入ります。消してはいません。選んだ結果はこの端末に保存され、次に開いたときも同じです。";
+}
+$$('input[data-keep]').forEach(function(c){
+  c.addEventListener("change",function(ev){
+    ev.stopPropagation();
+    var s=keepState(); s[c.dataset.keep]=c.checked;
+    try{ localStorage.setItem(KEEP, JSON.stringify(s)); }catch(e){}
+    $("#editBtn").addEventListener("click",function(){
+  document.body.classList.toggle("editing");
+  $("#editBtn").textContent = document.body.classList.contains("editing") ? "完了" : "編集";
+});
+
+applyKeep();
+  });
+});
+$$(".keep").forEach(function(k){ k.addEventListener("click",function(e){ e.stopPropagation(); }); });
+
+/* ───── 読み込み ───── */
+function getJson(u){
+  return fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(function(r){
+    if(!r.ok) throw new Error(u+" が "+r.status); return r.json(); });
+}
+function fail(el,e){ el.innerHTML='<div class="err">'+esc(String(e.message||e))+'</div>'; }
+
+/* ★トーキングアバター＝たまごさんの最優先（P0）。番号で固定し、文字でも拾う。 */
+var P0_N = [915, 1043, 997];
+var P0_RE = /アバター|トーキング|喋る卵|しゃべる卵|声で会話|音素/;
+function isP0(it){ return P0_N.indexOf(Number(it.n))>=0 || P0_RE.test(String(it.title||"")); }
+
+var top=null;
+getJson("status/public/top_status.json").then(function(d){
+  top=d;
+  $("#stamp").textContent = (d.generatedAt||"").slice(5,16).replace("T"," ");
+  drawRun(d); drawNext(d);
+}).catch(function(e){ fail($("#runBody"),e); fail($("#nextBody"),e); });
+
+getJson("status/public/pace.json").then(drawCredit).catch(function(e){ fail($("#credBody"),e); });
+
+/* 走っているもの */
+function drawRun(d){
+  var r = d.runningNow||[], el=$("#runBody");
+  if(r.length){
+    el.innerHTML = '<div class="okrun">'+r.length+'本</div>' + r.map(function(x){
+      return '<div class="run"><div class="rt"><span class="rn">'+esc(x.n)+'</span>'
+        + esc(x.title||x.label||"")+'</div></div>'; }).join("");
+    return;
+  }
+  el.innerHTML = '<div class="zline"><div class="zero">0本</div><div class="zerowhy" id="why">理由を調べています…</div></div>';
+  var why = d.stoppedReason || "";
+  Promise.all([
+    getJson("status/public/hassha_gate.json").catch(function(){return null}),
+    getJson("status/public/zero_bon.json").catch(function(){return null})
+  ]).then(function(a){
+    var g=a[0], z=a[1], line="";
+    /* 1行だけ。効いている歯止めから順に選ぶ：鍵 → 門 → 止まっている理由 */
+    if(z){
+      var today = Object.keys(z).filter(function(k){return /^\d{4}-/.test(k)}).sort().pop();
+      var w = today && z[today] && z[today].why;
+      if(w){ var topw = Object.keys(w).sort(function(x,y){return w[y]-w[x]})[0];
+        if(topw) line = topw.replace(/（.*$/,"") + "（今日"+Math.round(w[topw])+"分）"; }
+    }
+    if(g && g.hasshaOK===false) line = "発車の門が閉じています："+(g.why||"");
+    if(!line) line = why || "理由が取れませんでした。";
+    $("#why").textContent = line;
+  });
+}
+
+/* クレジット：今のゲージ と 本来ここ（棒線）のズレだけ見る */
+function drawCredit(p){
+  var el=$("#credBody");
+  var now = Number(p.allPct);
+  if(!isFinite(now)){ el.innerHTML='<div class="err">使用率がまだ取れていません（status/public/pace.json の allPct が空）。</div>'; return; }
+  var reset = new Date(String(p.resetAt).replace(" ","T")+"+09:00");
+  var start = new Date(reset.getTime() - 7*24*3600*1000);
+  var frac = Math.min(1, Math.max(0, (Date.now()-start)/(reset-start)));
+  var ideal = frac*99;                      /* 7日で99%に着地するのが理想 */
+  var diff = now - ideal;
+  var cls = Math.abs(diff)<=5 ? "ok" : (diff>0 ? "over" : "under");
+  var word = Math.abs(diff)<=5 ? "ぴったり" : (diff>0 ? "使いすぎ" : "余っている");
+  el.innerHTML =
+    '<div class="gnum"><div class="gbig">'+now.toFixed(0)+'%</div>'
+    + '<div class="zure '+cls+'">ズレ '+(diff>=0?"+":"")+diff.toFixed(0)+'pt・'+word+'</div></div>'
+    + '<div class="gauge"><i style="width:'+Math.min(100,now)+'%"></i>'
+    + '<b style="left:calc('+Math.min(100,ideal)+'% - 1.5px)"></b></div>'
+    + '<div class="gmark">棒線＝本来ここ '+ideal.toFixed(0)+'%　／　火曜18時リセットまで あと'
+    + Number(p.daysLeft).toFixed(1)+'日'+(p.estimated?'（推計）':'')+'</div>';
+}
+
+/* 次に発走：P0のトーキングアバターを必ず一番上に */
+function drawNext(d){
+  var el=$("#nextBody");
+  getJson("status/public/queue_next.json").then(function(q){
+    var items=(q.items||[]).filter(function(x){return x.status==="waiting"});
+    var p0=items.filter(isP0), rest=items.filter(function(x){return !isP0(x)});
+    /* P0のなかでも #915（たまごさんの1番）を先頭に */
+    p0.sort(function(a,b){
+      var ia=P0_N.indexOf(Number(a.n)), ib=P0_N.indexOf(Number(b.n));
+      return (ia<0?99:ia)-(ib<0?99:ib);
+    });
+    /* P0が待機列に無くても、たまごさんの1番として必ず出す */
+    if(!p0.length) p0=[{n:915,title:"【たまごさんの1番】コンシェルジュと声で会話できるようにする（トーキングアバター）",priority:1}];
+    rest.sort(function(a,b){ return (a.priority||9)-(b.priority||9) || (a.n-b.n); });
+    var show = p0.slice(0,1).concat(rest.slice(0,6));   /* 既定は3行＝1画面に収める */
+    function row(x){
+      var p = isP0(x);
+      return '<div class="q'+(p?" p0":"")+'"><span class="qp">'+(p?"P0":"P"+(x.priority||"?"))+'</span>'
+        + '<span class="qt"><span class="qn">'+esc(x.n)+'</span>'+esc(x.title)+'</span></div>';
+    }
+    el.innerHTML = show.slice(0,3).map(row).join("")
+      + '<div id="qMore" class="hide">'+show.slice(3).map(row).join("")+'</div>'
+      + (show.length>3 ? '<button class="more" type="button" id="qMoreBtn">あと'+(show.length-3)+'本を見る</button>' : '')
+      + '<div class="note">★P0＝トーキングアバター。常に一番上に固定。</div>';
+    var mb=$("#qMoreBtn");
+    if(mb) mb.addEventListener("click",function(){
+      var m=$("#qMore"), open=!m.classList.contains("hide");
+      m.classList.toggle("hide"); mb.textContent = open ? "あと"+(show.length-3)+"本を見る" : "たたむ";
+    });
+  }).catch(function(e){
+    /* queue_next が読めなくても top_status の nextUp で出す */
+    var n=(d.nextUp||[]);
+    if(!n.length){ fail(el,e); return; }
+    el.innerHTML = n.map(function(x){
+      var p=isP0({n:x.n,title:x.label});
+      return '<div class="q'+(p?" p0":"")+'"><span class="qp">'+(p?"P0":"—")+'</span>'
+        + '<span class="qt"><span class="qn">'+esc(x.n)+'</span>'+esc(x.label)+'</span></div>';
+    }).join("");
+  });
+}
+
+/* 仕分け：開いたときだけ数える（既定では重いファイルを読まない） */
+var swLoaded=false;
+var SW="kanri.shiwake.v1";
+function swOverride(){ try{ return JSON.parse(localStorage.getItem(SW)||"{}"); }catch(e){ return {}; } }
+function bucketOf(it,ov){
+  if(ov[it.n]) return ov[it.n];
+  if(isP0(it)) return "今やる";
+  if(it.urgent || Number(it.priority)===1) return "今やる";
+  if(Number(it.priority)===2) return "今週";
+  if(Number(it.priority)===3) return "1ヶ月以内";
+  return "いつでも";
+}
+function loadShiwake(){
+  if(swLoaded) return; swLoaded=true;
+  var el=$("#swBody"); el.textContent="数えています…";
+  getJson("status/public/queue_light.json").then(function(q){
+    var ov=swOverride();
+    var w=(q.items||[]).filter(function(x){return x.status==="waiting"});
+    var B=["今やる","今週","1ヶ月以内","いつでも"], c={};
+    B.forEach(function(b){c[b]=0});
+    w.forEach(function(x){ c[bucketOf(x,ov)]++; });
+    el.innerHTML = B.map(function(b){
+      var em = b==="いつでも" ? "クレジットを使わない" : (b==="今やる" ? "ここだけ走らせる" : "");
+      return '<div class="bkt"><b>'+c[b]+'</b><span>'+b+'</span><em>'+em+'</em></div>';
+    }).join("")
+    + '<div class="note">待機中 '+w.length+'件を機械で仕分けました（P0・至急・優先1＝今やる／2＝今週／3＝1ヶ月以内／4以下＝いつでも）。'
+    + '「いつでも」の'+c["いつでも"]+'件はクレジットを使いません。手で直したい件は投げ込み箱から直せます。</div>';
+  }).catch(function(e){ swLoaded=false; fail(el,e); });
+}
+if(!$('.blk[data-k="shiwake"]').classList.contains("closed")) loadShiwake();
+
+$("#editBtn").addEventListener("click",function(){
+  document.body.classList.toggle("editing");
+  $("#editBtn").textContent = document.body.classList.contains("editing") ? "完了" : "編集";
+});
+
+applyKeep();
+setInterval(function(){ location.reload(); }, 180000);
+})();
+</script>
+</body>
+</html>

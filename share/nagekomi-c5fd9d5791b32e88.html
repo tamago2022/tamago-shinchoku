@@ -6,97 +6,256 @@
 <meta name="robots" content="noindex,nofollow">
 <title>投げ込み箱</title>
 <!--
-  1039番【投げ込み箱】2026-09-23 改（1036→1038→1039）
-  たまごさん：「投げると、指示を送るって2つがあるから、一つでいいよ。」
-              「棚一覧みたいのもボタンでつけてくれたら、そこを押して
-                『これとこれとこれ、入れる方向性はこれ』みたいな。」
-  ★送るボタンは1個。URLだけでも、喋っただけでも、片方だけで送れる。
-  ★棚は押さなくても送れる（行き先未定のまま置ける）。
-  ★Lovableの画面は一切通らない。書き先は Mac 側の status/nagekomi.jsonl だけ。
+  1164番【投げ込み箱・言われた6点を全部】2026-09-26（1039→1155→1164）
+
+  たまごさんの指摘（正本・これを全部やった）:
+    ・赤く囲まれているところはいらない            → 赤い箱を消した（理由は畳んだ中へ）
+    ・日にちごとにトグルで閉じられるように        → 日付ごと <details>
+    ・進捗が「まだ」だけ。「完了済み」も分かるように → まだ／作業中／完了 の3つ＋絞り込み
+    ・コピーのBeforeとAfterが分かるように          → 1枚ずつ Before → After を並べた
+    ・各URLに実際に飛べるように                    → 貼ったURLと入った棚、両方リンク
+    ・行き先の棚もトグルで閉じられるように、
+      棚ごとにボタンでポチポチ複数選択できるように → 棚は畳んである／何個でも押せる
+    「そもそも投げ込み箱が欲しかったのは、スマホから編集しようとすると
+      ローディングが長くて待てない／URLを入れた瞬間に落ちるから。」
+
+  ★★だからこの版の一番大事な決めは【開いた瞬間に何も読み込まない】。
+    前の版は開くだけで5本読んでいた（relay / 棚174件 / 台帳 / 鍵 / 棚入れ便）。
+    ・棚の一覧（174件）   … 棚を**開いたときだけ**読む
+    ・入った記録          … 記録を**開いたときだけ**読む
+    ・パソコンの居場所    … ［投げる］を**押したときだけ**読む
+    → 開いてすぐ貼れる。貼っても何も動かないので落ちない。
+    ★入力欄に何かする「入力ごとの再描画」も置いていない（落ちる原因を作らない）。
+
   道：このページ → 中継所(relay) → command_ingest({action:"nagekomi"}) → tools/nagekomi.py
-  届かなかった分は端末に貯めて、開くたびに勝手に再送する（黙って消えない）。
+  届かなかった分は端末に貯めて、開くたびではなく［今すぐ送る］と［投げる］で再送する。
 -->
 <style>
-  :root{ --ink:#1b1a17; --sub:#6f6a60; --line:#dcd6ca; --bg:#f6f3ec; --accent:#b4542a; }
+  :root{ --ink:#1b1a17; --sub:#6f6a60; --line:#dcd6ca; --bg:#f6f3ec; --accent:#b4542a;
+         --paper:#fff; --mada:#8a5a12; --madabg:#f6e6c4; --naka:#1f5673; --nakabg:#dfeaf1;
+         --kan:#2f6b3f; --kanbg:#dfeddf; }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--ink);
        font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
-       padding:18px 16px 40px;line-height:1.7}
-  h1{font-size:19px;margin:0 0 2px;letter-spacing:.04em}
+       padding:18px 16px 56px;line-height:1.7;-webkit-text-size-adjust:100%}
+  h1{font-size:19px;margin:0 0 2px;letter-spacing:.06em;font-weight:600}
   .lead{font-size:12.5px;color:var(--sub);margin:0 0 18px}
   label{display:block;font-size:12.5px;color:var(--sub);margin:0 0 6px}
   input,textarea{width:100%;font-size:16px;font-family:inherit;color:var(--ink);
-       background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 12px;line-height:1.6}
+       background:var(--paper);border:1px solid var(--line);border-radius:10px;
+       padding:14px 12px;line-height:1.6}
   input:focus,textarea:focus{outline:none;border-color:var(--accent)}
   textarea{resize:vertical}
   .field{margin-bottom:14px}
-  button#send{width:100%;min-height:60px;font-size:18px;font-family:inherit;font-weight:600;
+  button{font-family:inherit}
+  button#send{width:100%;min-height:60px;font-size:18px;font-weight:600;
        color:#fff;background:var(--accent);border:0;border-radius:12px;letter-spacing:.08em}
   button#send:disabled{opacity:.45}
-  /* ★棚ボタン：寝ながら片手で押せる大きさ（375pxで2列・高さ48px以上） */
-  .tana{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
-  .tana button{min-height:50px;padding:8px 10px;font-size:14px;font-family:inherit;
-       color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;
+  .paste{position:relative}
+  .paste input{padding-right:84px;min-height:58px}
+  /* ★指で押せる高さ（44px以上）。40pxだと寝ながら片手のときに外す（375pxで実測） */
+  .paste .pb{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+       min-height:46px;padding:0 15px;font-size:14px;font-weight:600;
+       color:#fff;background:var(--accent);border:0;border-radius:9px}
+
+  /* ★畳む口。押せる幅を画面いっぱいに取る（375pxで指で押せること） */
+  details{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+          margin:0 0 14px;overflow:hidden}
+  details>summary{list-style:none;cursor:pointer;min-height:52px;padding:14px 44px 14px 14px;
+          font-size:14.5px;font-weight:600;position:relative;line-height:1.4}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary::after{content:"";position:absolute;right:17px;top:50%;width:9px;height:9px;
+          margin-top:-6px;border-right:2px solid var(--sub);border-bottom:2px solid var(--sub);
+          transform:rotate(45deg);transition:transform .15s}
+  details[open]>summary::after{transform:rotate(-135deg);margin-top:-3px}
+  details>summary .n{display:block;font-size:12px;font-weight:400;color:var(--sub);margin-top:2px}
+  .inner{padding:0 14px 14px}
+
+  /* ★棚：ポチポチ押せるボタン。何個でも押せる（375pxで2列・高さ50px以上） */
+  .tana{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tana button{min-height:52px;padding:8px 10px;font-size:14px;color:var(--ink);
+       background:var(--paper);border:1px solid var(--line);border-radius:10px;
        text-align:left;line-height:1.35;overflow:hidden}
-  .tana button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .tana button[aria-pressed="true"]{background:var(--accent);color:#fff;
+       border-color:var(--accent);font-weight:600}
   .tana button .w{display:block;font-size:11px;opacity:.6;margin-top:1px}
-  .more{margin:8px 0 0;width:100%;min-height:44px;font-size:14px;font-family:inherit;
-       background:#fff;color:var(--sub);border:1px dashed var(--line);border-radius:10px}
+  .more{margin:10px 0 0;width:100%;min-height:46px;font-size:14px;
+       background:var(--paper);color:var(--sub);border:1px dashed var(--line);border-radius:10px}
+  /* ★いま何を押しているか。棚を畳んでも消えないように、外に出して置く */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+  /* ★46px。ここは「選んだ棚を外す」ボタンなので、押し外すと選び直しになる。小さくしない */
+  .chips .c{font-size:13px;background:#fff;border:1px solid var(--accent);color:var(--accent);
+       border-radius:999px;padding:8px 14px;min-height:46px;display:inline-flex;
+       align-items:center;gap:7px;font-weight:600}
+  .chips .c b{font-weight:600}
+  .chips .c span{font-size:16px;line-height:1;opacity:.7}
+  .chips .none{font-size:12.5px;color:var(--sub)}
+
   .msg{margin-top:12px;font-size:13.5px;min-height:20px}
   .ok{color:#2c6e49} .ng{color:#a3321f}
-  .queue{margin-top:18px;font-size:12.5px;color:var(--sub)}
+  .queue{margin-top:10px;font-size:12.5px;color:var(--sub)}
   .queue b{color:var(--accent)}
-  .hint{font-size:12px;color:var(--sub);margin:0 0 10px}
+  .hint{font-size:12px;color:var(--sub);margin:8px 0 0}
+  .nomu{width:100%;min-height:46px;margin-top:10px;border-radius:12px;border:1px solid var(--line);
+        background:var(--paper);color:#4a4034;font-size:14px;line-height:1.4}
+  .diag{margin-top:10px;padding:8px 10px;border-radius:10px;background:#f4f1ea;
+        border:1px solid #e2dccf;font-size:11.5px;line-height:1.6;color:#5c5346;
+        white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto}
+
+  /* ★記録。まだ／作業中／完了 の3つ */
+  .filt{display:flex;gap:6px;margin:0 0 12px}
+  .filt button{flex:1 1 0;min-height:46px;font-size:13px;border-radius:10px;
+       border:1px solid var(--line);background:var(--paper);color:var(--sub);line-height:1.3}
+  .filt button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:700;
+       background:#fffdf7}
+  .filt button b{display:block;font-size:17px;font-weight:700}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:11px;
+        padding:12px 13px;margin:0 0 9px}
+  .card .t{font-size:14.5px;font-weight:600;line-height:1.5}
+  .card .sub{font-size:12px;color:var(--sub);margin-top:4px;line-height:1.6}
+  .badge{float:right;margin:0 0 4px 8px;font-size:11.5px;font-weight:700;
+         border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .b-mada{color:var(--mada);background:var(--madabg)}
+  .b-naka{color:var(--naka);background:var(--nakabg)}
+  .b-kan{color:var(--kan);background:var(--kanbg)}
+  /* ★Before → After。ここが「動画を見て何をどう変えたか」 */
+  .ba{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
+  .ba .row{display:flex;gap:8px;font-size:13px;line-height:1.55;margin-top:5px}
+  .ba .k{flex:0 0 52px;font-size:11px;font-weight:700;color:var(--sub);padding-top:3px;
+         letter-spacing:.06em}
+  .ba .v{flex:1 1 auto;min-width:0;word-break:break-word}
+  .ba .b .v{color:#8b8477;text-decoration:line-through;text-decoration-color:#d3ccbe}
+  .ba .a .v{color:var(--ink);font-weight:600}
+  .ba .same .v{color:var(--sub);font-weight:400;text-decoration:none}
+  .ba .why{font-size:11.5px;color:var(--sub);margin-top:5px;line-height:1.55}
+  /* ★飛べるリンク。指で押せる高さを持たせる（文字リンクだけにしない） */
+  .go{display:inline-flex;align-items:center;min-height:46px;padding:0 13px;margin:8px 6px 0 0;
+      font-size:13px;font-weight:600;color:var(--accent);background:#fffaf6;
+      border:1px solid #e6cdbd;border-radius:9px;text-decoration:none}
+  .go.g2{color:var(--kan);background:#f7fbf7;border-color:#cbdfcb}
+  .naze{font-size:12px;color:#8a5a12;margin-top:7px;line-height:1.6}
+  .day{margin:0 0 9px}
+  .foot a{display:block;margin:8px 0 0;min-height:52px;line-height:52px;text-align:center;
+       font-size:15px;font-weight:600;color:var(--accent);background:var(--paper);
+       border:1px solid var(--line);border-radius:12px;text-decoration:none}
+  .foot a.sub2{font-size:14px;color:var(--sub);font-weight:400;min-height:48px;line-height:48px}
 </style>
 </head>
 <body>
 
 <h1>投げ込み箱</h1>
-<p class="lead">URLを貼る。棚を押す。喋る。──どれか1つでも送れます。<br>
-入れるのは夜中0時にまとめて。朝には棚に出ています。</p>
+<p class="lead">［貼る］→［投げる］。それだけで終わりです。棚も言葉も、書かなくて構いません。</p>
 
 <div class="field">
   <label for="u">URL（なくてもいい）</label>
-  <input id="u" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
-         spellcheck="false" placeholder="https://…" enterkeyhint="done">
+  <div class="paste">
+    <input id="u" type="text" inputmode="url" autocomplete="off" autocapitalize="off"
+           spellcheck="false" placeholder="https://…" enterkeyhint="done">
+    <button class="pb" id="pb" type="button">貼る</button>
+  </div>
 </div>
 
 <div class="field">
   <label for="m">言いたいこと（なくてもいい・マイクキーで喋れる）</label>
-  <textarea id="m" rows="4" placeholder="例：これ猫の棚。方向性はしょうもない事件にする感じで。キャッチコピーは『昼寝の天才』"></textarea>
+  <textarea id="m" rows="3" placeholder="例：夏の棚と2020年代の棚。食べ物ならチーズとご飯。しょうもない事件にする方向で。"></textarea>
 </div>
 
-<div class="field">
-  <label for="f">行き先の棚（押さなくていい。あとで決められます）</label>
-  <input id="f" type="search" inputmode="search" autocomplete="off" autocapitalize="off"
-         spellcheck="false" placeholder="棚をしぼる（例：猫／音楽／80）" style="margin-bottom:8px">
-  <div class="tana" id="tana"></div>
-  <button class="more" id="more" hidden>もっと見る</button>
-  <p class="hint" id="tanaNote" style="margin-top:8px"></p>
-</div>
+<!-- ★行き先の棚：畳んである。押した棚は下の帯に残るので、畳んでも消えない -->
+<div class="chips" id="chips"><span class="none">行き先：まだ決めていない（このままでも送れます）</span></div>
+
+<details id="tanaBox">
+  <summary>行き先の棚を選ぶ<span class="n" id="tanaSum">押さなくていい。開くと一覧が出ます（何個でも押せます）</span></summary>
+  <div class="inner">
+    <input id="f" type="search" inputmode="search" autocomplete="off" autocapitalize="off"
+           spellcheck="false" placeholder="棚をしぼる（例：猫／夏／2020）" style="margin-bottom:10px">
+    <div class="tana" id="tana"></div>
+    <button class="more" id="more" hidden></button>
+    <p class="hint" id="tanaNote">開くと棚の一覧を読みます。</p>
+  </div>
+</details>
 
 <button id="send">投 げ る</button>
 <div class="msg" id="msg"></div>
 <div class="queue" id="q"></div>
+<button id="nomu" class="nomu" type="button">この端末に残っている分を今すぐ送る</button>
+<pre id="diag" class="diag" hidden></pre>
+
+<p class="hint" style="margin:14px 0 0">
+  棚を押すのが面倒なときは、URLだけ貼って、言いたいことに
+  「夏の棚と2020年代、食べ物ならチーズとご飯」と<b>喋るだけ</b>で構いません。
+  棚の当てはめはこちらでやります。
+</p>
+
+<!-- ★入った記録：開いたときに読む（開くまで1本も読まない＝待たされない） -->
+<details id="recBox" style="margin-top:22px">
+  <summary>入った記録を見る<span class="n" id="recSum">まだ／作業中／完了。日にちごとに畳んであります</span></summary>
+  <div class="inner">
+    <div class="filt" id="filt">
+      <button type="button" data-s="ぜんぶ" aria-pressed="true"><b id="c0">–</b>ぜんぶ</button>
+      <button type="button" data-s="まだ" aria-pressed="false"><b id="c1">–</b>まだ</button>
+      <button type="button" data-s="作業中" aria-pressed="false"><b id="c2">–</b>作業中</button>
+      <button type="button" data-s="完了" aria-pressed="false"><b id="c3">–</b>完了</button>
+    </div>
+    <p class="hint" id="recNote" style="margin:0 0 10px">開くと記録を読みます。</p>
+    <div id="rows"></div>
+    <details id="wakeBox" hidden style="margin-top:12px;background:#faf7f0">
+      <summary>棚に入っていない理由を見る<span class="n">（入れる係が最後に出したもの）</span></summary>
+      <div class="inner"><div id="wake" style="font-size:12.5px;line-height:1.75;color:#5c5346"></div></div>
+    </details>
+  </div>
+</details>
+
+<div class="foot">
+  <a href="../index.html">進捗表へ</a>
+  <a class="sub2" href="./nagekomi-list-24b9dbaae07c4103.html">受付一覧（前からある1枚）へ</a>
+</div>
 
 <script>
-/* 中継所の場所（進捗表と同じ status/public/relay.json）。トンネルURLは変わるので毎回読む */
+/* ============================ 決め ============================
+   ★開いた瞬間に fetch を1本も出さない。読むのは「押したとき」だけ。
+     ・棚の一覧   … #tanaBox を開いたとき（174件あるので、ここが一番重い）
+     ・入った記録 … #recBox を開いたとき
+     ・中継所     … ［投げる］／［今すぐ送る］を押したとき
+   ★入力欄には「打つたびに描き直す」ものを付けない（落ちる原因を作らない）。
+     棚のしぼり込みだけは要るが、これは棚を開いている間しか動かない。
+   ============================================================= */
 var RELAY = null;
 var HEAD = {"Content-Type":"application/json","bypass-tunnel-reminder":"1"};
 var KEY = "nagekomi_pending_v1";
-var SHELF = null;      /* 押された棚。押さなければ null のまま */
-var SHOW = 8;          /* 最初に見せる棚の数 */
-var LIST = [];
+var IMA_KEY = "nagekomi_ima_v1";
+var SHELVES = [];      /* ★押した棚。何個でも入る（1164番） */
+var LIST = [];         /* 棚の名簿。開くまで空 */
+var SHOW = 8;
+var DATA = null;       /* 入った記録。開くまで null */
+var FILT = "ぜんぶ";
 
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[<>&"]/g, function(c){
+  return {"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]; }); }
+
+/* ---------------- 端末に残す（届かなかった分） ---------------- */
 function pending(){ try{ return JSON.parse(localStorage.getItem(KEY)||"[]"); }catch(e){ return []; } }
 function savePending(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){} drawQ(); }
 function drawQ(){
   var n = pending().length;
-  document.getElementById("q").innerHTML = n
-    ? "まだ届いていない分が <b>"+n+"件</b> あります（このページを開くたびに送り直します）"
-    : "";
+  el("q").innerHTML = n ? "まだ届いていない分が <b>"+n+"件</b> あります（［今すぐ送る］で送り直せます）" : "";
 }
+
+/* ★1043番【黙って失敗させない】スマホでは console が見えないので画面に出す */
+function diag(line){
+  var d = el("diag"); if(!d) return;
+  d.hidden = false;
+  d.textContent = (new Date().toTimeString().slice(0,8) + "  " + line + "\n" + d.textContent).slice(0,1600);
+}
+window.addEventListener("error", function(e){
+  diag("画面の中でエラー: " + (e && e.message ? e.message : e)); });
+window.addEventListener("unhandledrejection", function(e){
+  diag("受け止められなかった失敗: " + (e && e.reason ? e.reason : e)); });
+
+/* ★1050番【下見の画面から本番へ投げない】https のときだけ中継所へ出す */
+function honmono(){ return location.protocol === "https:"; }
 function relay(){
+  if(!honmono()) return Promise.resolve(null);
   return fetch("../status/public/relay.json?t="+Date.now(), {cache:"no-store"})
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(j){ RELAY = j && j.url ? j.url.replace(/\/$/,"") : null; return RELAY; })
@@ -104,123 +263,405 @@ function relay(){
 }
 function flush(){
   var a = pending();
-  if(!a.length) return Promise.resolve(true);
+  if(!a.length) return Promise.resolve({ok:true, n:0});
+  if(!honmono()){
+    return Promise.resolve({ok:false, why:"ここは下見用の画面です（"+location.protocol
+      +"）。本物のURL（https）から開くと、貯めた分がそのまま送られます"});
+  }
   return (RELAY ? Promise.resolve(RELAY) : relay()).then(function(u){
-    if(!u) return false;
+    if(!u) return {ok:false, why:"パソコンの居場所（relay.json）が読めませんでした"};
     return fetch(u+"/cmd", {method:"POST", mode:"cors", headers:HEAD,
                             body:JSON.stringify({commands:a})})
-      .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-      .then(function(){ savePending([]); return true; })
-      .catch(function(){ return false; });
+      .then(function(r){
+        if(!r.ok) return r.text().then(function(t){
+          throw new Error("中継所が HTTP "+r.status+" を返しました"+(t?"（"+t.slice(0,80)+"）":"")); });
+        return r.json();
+      })
+      .then(function(j){ savePending([]); return {ok:true, n:a.length, body:j}; })
+      .catch(function(e){
+        var why = (e && e.message) ? e.message : String(e);
+        if(/failed to fetch|load failed|networkerror/i.test(why)){
+          why += " ／ 中継所まで1バイトも出ていません（回線が落ちている、パソコンが寝ている、"
+               + "またはブラウザが止めた）";
+        }
+        diag("届きませんでした: " + why);
+        return {ok:false, why:why};
+      });
   });
 }
-function push(cmd){
-  var a = pending(); a.push(cmd); savePending(a);
-  return flush();
-}
-function say(text, ok){
-  var d = document.getElementById("msg");
-  d.textContent = text; d.className = "msg " + (ok ? "ok" : "ng");
-}
+function push(cmd){ var a = pending(); a.push(cmd); savePending(a); return flush(); }
+function say(text, ok){ var d = el("msg"); d.textContent = text; d.className = "msg " + (ok?"ok":"ng"); }
 
-/* ---- ★棚一覧：手打ちしない。Mac側が棚の正本から吐いた一覧を読む ---- */
-/* しぼり込み。棚が174件あるので、これが無いと寝ながらは押せない。
-   押した棚は、しぼり込みから外れても先頭に残す（消えたように見えないため）。 */
+/* ---------------- ★棚：何個でも押せる（1164番） ---------------- */
+function has(s){ for(var i=0;i<SHELVES.length;i++) if(SHELVES[i].title===s.title) return i; return -1; }
+function drawChips(){
+  var box = el("chips");
+  if(!SHELVES.length){
+    box.innerHTML = '<span class="none">行き先：まだ決めていない（このままでも送れます）</span>';
+  }else{
+    var h = "";
+    for(var i=0;i<SHELVES.length;i++){
+      h += '<button class="c" type="button" data-i="'+i+'"><b>'+esc(SHELVES[i].title)+'</b><span>×</span></button>';
+    }
+    box.innerHTML = h;
+  }
+  el("tanaSum").textContent = SHELVES.length
+    ? (SHELVES.length + "つ選んでいます（開くと足せます・畳んでも消えません）")
+    : "押さなくていい。開くと一覧が出ます（何個でも押せます）";
+}
+el("chips").addEventListener("click", function(e){
+  var b = e.target.closest ? e.target.closest("button.c") : null;
+  if(!b) return;
+  SHELVES.splice(Number(b.getAttribute("data-i")), 1);
+  drawChips(); if(LIST.length) drawTana();
+});
+
 function filtered(){
-  var q = (document.getElementById("f").value || "").trim().toLowerCase();
-  var a = LIST;
-  if(q) a = LIST.filter(function(s){
-    return (s.title+" "+(s.world||"")).toLowerCase().indexOf(q) >= 0; });
-  if(SHELF && !a.some(function(s){ return s.title === SHELF.title; })) a = [SHELF].concat(a);
-  return a;
+  var q = (el("f").value||"").trim().toLowerCase();
+  if(!q) return LIST;
+  return LIST.filter(function(s){ return (s.title+" "+(s.world||"")).toLowerCase().indexOf(q)>=0; });
 }
 function drawTana(){
-  var box = document.getElementById("tana");
-  var A = filtered();
-  box.innerHTML = "";
-  var n = Math.min(SHOW, A.length);
+  var box = el("tana"), A = filtered(), h = "", n = Math.min(SHOW, A.length);
   for(var i=0;i<n;i++){
-    (function(s){
-      var b = document.createElement("button");
-      b.type = "button";
-      b.setAttribute("aria-pressed", SHELF && SHELF.title === s.title ? "true" : "false");
-      b.innerHTML = "<span>"+s.title.replace(/[<>&]/g,"")+"</span>"
-                  + (s.world ? "<span class='w'>"+s.world.replace(/[<>&]/g,"")+"</span>" : "");
-      b.addEventListener("click", function(){
-        SHELF = (SHELF && SHELF.title === s.title) ? null : s;   /* もう一度押せば取り消し */
-        drawTana();
-      });
-      box.appendChild(b);
-    })(A[i]);
+    var s = A[i], on = has(s) >= 0;
+    h += '<button type="button" data-t="'+esc(s.title)+'" aria-pressed="'+(on?"true":"false")+'">'
+       + '<span>'+(on?"✓ ":"")+esc(s.title)+'</span>'
+       + (s.world ? '<span class="w">'+esc(s.world)+'</span>' : '') + '</button>';
   }
-  var more = document.getElementById("more");
+  box.innerHTML = h || '<p class="hint" style="grid-column:1/3;margin:0">その言葉の棚は見つかりません（押さずに送れます）</p>';
+  var more = el("more");
   more.hidden = A.length <= SHOW;
   more.textContent = "もっと見る（あと "+(A.length-SHOW)+"）";
-  if(!A.length) box.innerHTML = "<p class='hint' style='grid-column:1/3;margin:0'>その言葉の棚は見つかりません（押さずに送れます）</p>";
 }
-document.getElementById("more").addEventListener("click", function(){ SHOW += 12; drawTana(); });
-document.getElementById("f").addEventListener("input", function(){ SHOW = 8; drawTana(); });
+el("tana").addEventListener("click", function(e){
+  var b = e.target.closest ? e.target.closest("button[data-t]") : null;
+  if(!b) return;
+  var t = b.getAttribute("data-t"), s = null;
+  for(var i=0;i<LIST.length;i++) if(LIST[i].title===t){ s = LIST[i]; break; }
+  if(!s) return;
+  var i2 = has(s);
+  if(i2 >= 0) SHELVES.splice(i2,1); else SHELVES.push(s);
+  /* ★押したボタン1個だけ書き替える。一覧を全部描き直すと、
+     174件のときに指の下で並びが作り直されて「押せたのか分からない」になる。 */
+  var on = has(s) >= 0;
+  b.setAttribute("aria-pressed", on ? "true" : "false");
+  var sp = b.querySelector("span");
+  if(sp) sp.textContent = (on ? "✓ " : "") + s.title;
+  drawChips();
+});
+el("more").addEventListener("click", function(){ SHOW += 12; drawTana(); });
+el("f").addEventListener("input", function(){ SHOW = 8; drawTana(); });
 
-fetch("../status/public/tana_ichiran.json?t="+Date.now(), {cache:"no-store"})
-  .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(j){
-    LIST = (j && j.shelves) || [];
-    document.getElementById("tanaNote").textContent =
-      LIST.length ? ("棚 "+LIST.length+"件（"+(j.at||"")+"時点の棚の正本から）")
-                  : "棚の一覧がまだ届いていません。押さずにそのまま送れます。";
-    drawTana();
-  })
-  .catch(function(){
-    document.getElementById("tanaNote").textContent =
-      "棚の一覧が読めませんでした。押さずにそのまま送れます。";
+/* ★棚の名簿は「開いたとき」に1回だけ読む。閉じている間は読まない＝開くのが速い */
+el("tanaBox").addEventListener("toggle", function(){
+  if(!this.open || LIST.length) return;
+  el("tanaNote").textContent = "棚の一覧を読んでいます…";
+  fetch("../status/public/tana_ichiran.json?t="+Date.now(), {cache:"no-store"})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      LIST = (j && j.shelves) || [];
+      el("tanaNote").textContent = LIST.length
+        ? ("棚 "+LIST.length+"件（"+(j.at||"")+"時点の棚の正本から）。何個でも押せます")
+        : "棚の一覧がまだ届いていません。押さずにそのまま送れます。";
+      drawTana();
+    })
+    .catch(function(e){
+      el("tanaNote").textContent = "棚の一覧が読めませんでした（"+(e&&e.message)+"）。押さずに送れます。";
+    });
+});
+
+/* ---------------- 貼る ---------------- */
+el("pb").addEventListener("click", function(){
+  var u = el("u");
+  if(!navigator.clipboard || !navigator.clipboard.readText){
+    say("この端末ではボタンから貼れません。欄を長押しして「ペースト」を押してください", false);
+    u.focus(); return;
+  }
+  navigator.clipboard.readText().then(function(t){
+    t = String(t||"").trim();
+    if(!t){ say("コピーしたものが空でした。もう一度コピーしてから押してください", false); return; }
+    u.value = t;
+    if(/^https?:\/\//.test(t)) say("貼りました。あとは［投げる］を押すだけです", true);
+    else                       say("貼りましたが https で始まっていません。確かめてください", false);
+  }).catch(function(e){
+    say("貼れませんでした（"+(e&&e.name?e.name:"理由が取れません")
+        +"）。欄を長押しして「ペースト」を押してください", false);
+    u.focus();
   });
+});
 
-/* ---- ★送るボタンは1個。URLだけ／喋っただけ、どちらでも通す ---- */
-document.getElementById("send").addEventListener("click", function(){
-  var u = document.getElementById("u").value.trim();
-  var m = document.getElementById("m").value.trim();
-  if(!u && !m && !SHELF){ say("URLか、言いたいことか、棚。どれか1つは入れてください", false); return; }
+/* ---------------- 投げる ---------------- */
+el("send").addEventListener("click", function(){
+  var u = el("u").value.trim(), m = el("m").value.trim();
+  if(!u && !m && !SHELVES.length){ say("URLか、言いたいことか、棚。どれか1つは入れてください", false); return; }
   if(u && !/^https?:\/\//.test(u)){ say("URLは https で始まるものを貼ってください", false); return; }
 
   var b = this; b.disabled = true; say("送っています…", true);
   var stamp = new Date().toISOString();
   var tag = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  var KIKAI = /[?&]kikai=1/.test(location.search);
+  var names = SHELVES.map(function(s){ return s.title; });
   var cmds = [];
   if(u){
     cmds.push({ id:"nk"+tag, action:"nagekomi", target:u, memo:m, label:"投げ込み",
-                shelf: SHELF ? SHELF.title : null,
-                shelfId: SHELF ? SHELF.id : null,
-                requestedAt:stamp });
+                /* ★古い受け口でも落とさないように、1つ目は今まで通り shelf/shelfId で送る */
+                shelf: names[0] || null,
+                shelfId: SHELVES.length ? (SHELVES[0].id || null) : null,
+                shelves: SHELVES.map(function(s){ return {id:s.id||null, title:s.title, world:s.world||""}; }),
+                test: KIKAI, requestedAt:stamp });
   }
   if(m && !u){
-    /* URLが無いときは「あとでまとめて喋った指示」として1行残す（前と同じ置き場） */
     cmds.push({ id:"ns"+tag, action:"nagekomi_shiji", target:m, label:"振り分けの指示",
-                shelf: SHELF ? SHELF.title : null, requestedAt:stamp });
+                shelf: names[0] || null, shelves: names, requestedAt:stamp });
   }
-  if(!u && !m && SHELF){
+  if(!u && !m && SHELVES.length){
     cmds.push({ id:"ns"+tag, action:"nagekomi_shiji",
-                target:"行き先だけ：「"+SHELF.title+"」の棚", label:"振り分けの指示",
-                shelf: SHELF.title, requestedAt:stamp });
+                target:"行き先だけ：「"+names.join("」「")+"」の棚", label:"振り分けの指示",
+                shelf: names[0], shelves: names, requestedAt:stamp });
   }
 
-  var chain = Promise.resolve(true);
+  var chain = Promise.resolve({ok:true});
   cmds.forEach(function(c){ chain = chain.then(function(prev){
-    return push(c).then(function(ok){ return prev && ok; }); }); });
+    return push(c).then(function(r){
+      return (prev.ok && r.ok) ? {ok:true} : {ok:false, why:(prev.why || r.why)}; }); }); });
 
-  chain.then(function(ok){
+  chain.then(function(res){
     b.disabled = false;
-    document.getElementById("u").value = "";
-    document.getElementById("m").value = "";
-    var where = SHELF ? ("「"+SHELF.title+"」の棚へ。") : "棚はあとで決めていい。";
-    SHELF = null; drawTana();
-    say(ok ? ("入りました。"+where+"夜中0時にまとめて入れます。")
-           : "受け取りました（パソコンが今いないので、届き次第まとめて送ります）", true);
+    var where = names.length ? ("「"+names.join("」「")+"」の棚へ。") : "棚はあとで決めていい。";
+    if(res && res.ok){
+      el("u").value = ""; el("m").value = "";
+      imaAdd({ t:Date.now(), url:u, memo:m, shelves:names });
+      SHELVES = []; drawChips(); if(LIST.length) drawTana();
+      if(DATA) drawRows();
+      say("届きました。"+where+"夜中0時にまとめて棚へ入れます。［入った記録］に出ています。", true);
+    }else{
+      say("届きませんでした。"+((res&&res.why)||"理由が取れませんでした")
+          +" ／ 書いた中身はこの端末に "+pending().length+"件 残してあります", false);
+    }
   });
 });
 
+el("nomu").addEventListener("click", function(){
+  var n = pending().length;
+  if(!n){ say("この端末に残っている分はありません。", true); return; }
+  say("残っている "+n+"件 を送っています…", true);
+  relay().then(flush).then(function(r){
+    say(r && r.ok ? ("残っていた "+n+"件、届きました。")
+                  : ("まだ届きません。"+((r&&r.why)||"理由が取れませんでした")), !!(r&&r.ok));
+  });
+});
+
+/* ---------------- たったいま投げた分（台帳に出るまでの数分をつなぐ） ---------------- */
+function imaRead(){ try{ return JSON.parse(localStorage.getItem(IMA_KEY)||"[]"); }catch(e){ return []; } }
+function imaAdd(r){
+  try{ var a = imaRead(); a.unshift(r);
+       localStorage.setItem(IMA_KEY, JSON.stringify(a.slice(0,20))); }catch(e){}
+}
+function imaLive(){
+  var cut = Date.now() - 45*60*1000;
+  var a = imaRead().filter(function(r){ return (r.t||0) > cut; });
+  try{ localStorage.setItem(IMA_KEY, JSON.stringify(a)); }catch(e){}
+  return a;
+}
+
+/* ---------------- ★題名の掃除（見せ方だけ。台帳は1文字も書き替えない） ---------------- */
+function clean(s){
+  var t = String(s==null?"":s);
+  t = t.replace(/&mdash;/g,"—").replace(/&amp;/g,"&").replace(/&#39;/g,"'").replace(/&quot;/g,'"');
+  t = t.replace(/\s*(pic\.twi\w*|https?:\/\/)\S*[\s\S]*$/, "");
+  t = t.replace(/\s*—\s*.*\(@[^)]+\).*$/, "");
+  return t.replace(/\s+/g," ").trim();
+}
+
+/* ---------------- ★入った記録：まだ／作業中／完了 ＋ 日にちごとに畳む ---------------- */
+function badge(s){
+  if(s === "完了")   return '<span class="badge b-kan">完了</span>';
+  if(s === "作業中") return '<span class="badge b-naka">作業中</span>';
+  return '<span class="badge b-mada">まだ</span>';
+}
+/* ★Before → After。「動画を見て、こう変えた」が1枚で見える形 */
+function baHtml(it){
+  var before = clean(it.before), after = clean(it.after);
+  if(!before && !after && !it.beforeWhy) return "";
+  var h = '<div class="ba">';
+  if(before) h += '<div class="row b"><div class="k">BEFORE</div><div class="v">'+esc(before)+'</div></div>';
+  else       h += '<div class="row b same"><div class="k">BEFORE</div><div class="v">'
+                + esc(it.beforeWhy || "元の文が取れていません")+'</div></div>';
+  if(after && before && it.same){
+    h += '<div class="row a same"><div class="k">AFTER</div><div class="v">変更なし（内容とコピーが合っていたので変えていません）</div></div>';
+  }else if(after){
+    h += '<div class="row a"><div class="k">AFTER</div><div class="v">'+esc(after)+'</div></div>';
+  }else{
+    h += '<div class="row a same"><div class="k">AFTER</div><div class="v">まだ書けていません</div></div>';
+  }
+  h += '</div>';
+  return h;
+}
+function links(it){
+  var h = "";
+  if(it.src){
+    h += '<a class="go" href="'+esc(it.src)+'" target="_blank" rel="noopener">'
+      +  '投げた元を開く'+(it.srcHost?"（"+esc(it.srcHost)+"）":"")+'</a>';
+  }
+  var L = it.shelfLinks || [];
+  for(var i=0;i<L.length;i++){
+    h += '<a class="go g2" href="'+esc(L[i].url)+'" target="_blank" rel="noopener">'
+      +  esc(L[i].title)+' の棚を開く</a>';
+  }
+  return h;
+}
+function cardHtml(it){
+  var s3 = it.state3 || (it.hanei === "済" ? "完了" : "まだ");
+  var tana = (it.shelfLinks && it.shelfLinks.length)
+      ? it.shelfLinks.map(function(x){ return x.title; }).join("／")
+      : (it.shelf || "行き先まだ決まっていません");
+  var kan = "";
+  if(typeof it.kanren === "number"){
+    kan = "関連 "+it.kanren+"／"+(it.kanrenNeed||4);
+  }else if(s3 !== "まだ"){
+    kan = "関連の数はまだ取れていません";
+  }
+  var h = '<div class="card">' + badge(s3)
+    + '<div class="t">'+esc(clean(it.after) || clean(it.title) || "題名がまだ書けていません")+'</div>'
+    + '<div class="sub">'+esc(String(it.at||"").slice(11,16)||"--:--")+'　→　'+esc(tana)
+    + (it.channel ? '　／　'+esc(it.channel) : '')
+    + (kan ? '　／　'+esc(kan) : '') + '</div>';
+  if(it.state3Why) h += '<div class="naze">'+esc(it.state3Why)+'</div>';
+  else if(it.why)  h += '<div class="naze">'+esc(it.why)+'</div>';
+  if(it.artistWhy) h += '<div class="naze">アーティストの棚：'+esc(it.artistWhy)+'</div>';
+  h += baHtml(it) + links(it) + '</div>';
+  return h;
+}
+function drawRows(){
+  var box = el("rows"), d = DATA;
+  if(!d) return;
+  var items = (d.items||[]).filter(function(it){
+    var s3 = it.state3 || (it.hanei==="済"?"完了":"まだ");
+    return FILT === "ぜんぶ" || s3 === FILT;
+  });
+
+  var h = "";
+  /* たったいま投げた分（台帳に出る前） */
+  var ima = imaLive();
+  if(ima.length && FILT !== "完了"){
+    h += '<div style="font-size:12.5px;font-weight:700;color:var(--sub);margin:0 0 7px">'
+      +  'たったいま投げた分（台帳に出るまで数分かかります）</div>';
+    for(var i=0;i<ima.length;i++){
+      var r = ima[i], dt = new Date(r.t);
+      h += '<div class="card" style="background:#fffdf6;border-style:dashed">'
+        +  '<span class="badge b-mada">届いた</span>'
+        +  '<div class="t">'+esc(r.memo || r.url || "（棚だけ指定）")+'</div>'
+        +  '<div class="sub">'+("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2)
+        +  '　→　'+esc((r.shelves&&r.shelves.length)?r.shelves.join("／"):"行き先まだ決まっていません")
+        +  '</div>'
+        +  (r.url ? '<a class="go" href="'+esc(r.url)+'" target="_blank" rel="noopener">投げた元を開く</a>' : '')
+        +  '</div>';
+    }
+  }
+
+  if(!items.length){
+    h += '<p class="hint" style="margin:6px 0 0">'
+      +  (FILT==="ぜんぶ" ? "まだ1件も入っていません。上にURLを貼って［投げる］を押すと、ここに出ます。"
+                          : "「"+esc(FILT)+"」のものはありません。")+'</p>';
+    box.innerHTML = h; return;
+  }
+
+  /* ★日にちごとに畳む。いちばん新しい日だけ開けておく */
+  var day = "", first = true, open = [];
+  for(var j=0;j<items.length;j++){
+    var at = String(items[j].at||""), dd = at.slice(0,10) || "日付が取れない";
+    if(dd !== day){
+      if(day) h += flushDay(day, open, first), first = false, open = [];
+      day = dd;
+    }
+    open.push(items[j]);
+  }
+  if(day) h += flushDay(day, open, first);
+  box.innerHTML = h;
+}
+function flushDay(day, arr, isFirst){
+  var md = /^\d{4}-\d{2}-\d{2}$/.test(day)
+         ? (Number(day.slice(5,7))+"月"+Number(day.slice(8,10))+"日") : day;
+  var kan = 0, naka = 0, mada = 0;
+  for(var i=0;i<arr.length;i++){
+    var s = arr[i].state3 || (arr[i].hanei==="済"?"完了":"まだ");
+    if(s==="完了") kan++; else if(s==="作業中") naka++; else mada++;
+  }
+  var h = '<details class="day"'+(isFirst?" open":"")+'><summary>'+esc(md)
+        + '<span class="n">'+arr.length+'件　／　完了 '+kan+'・作業中 '+naka+'・まだ '+mada+'</span>'
+        + '</summary><div class="inner">';
+  for(var k=0;k<arr.length;k++) h += cardHtml(arr[k]);
+  return h + '</div></details>';
+}
+
+el("filt").addEventListener("click", function(e){
+  var b = e.target.closest ? e.target.closest("button[data-s]") : null;
+  if(!b) return;
+  FILT = b.getAttribute("data-s");
+  var all = this.querySelectorAll("button[data-s]");
+  for(var i=0;i<all.length;i++) all[i].setAttribute("aria-pressed", all[i]===b ? "true" : "false");
+  if(DATA) drawRows();
+});
+
+/* ★記録も「開いたとき」に1回だけ読む */
+el("recBox").addEventListener("toggle", function(){
+  if(!this.open || DATA) return;
+  el("recNote").textContent = "記録を読んでいます…";
+  fetch("../status/public/nagekomi_list.json?t="+Date.now(), {cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(d){
+      DATA = d;
+      var c = d.counts || {};
+      var it = d.items || [];
+      var kan = c["s_完了"], naka = c["s_作業中"], mada = c["s_まだ"];
+      if(typeof kan !== "number"){    /* 古い台帳でも数だけは出す */
+        kan = naka = mada = 0;
+        for(var i=0;i<it.length;i++){
+          var s = it[i].state3 || (it[i].hanei==="済"?"完了":"まだ");
+          if(s==="完了") kan++; else if(s==="作業中") naka++; else mada++;
+        }
+      }
+      el("c0").textContent = it.length; el("c1").textContent = mada;
+      el("c2").textContent = naka;      el("c3").textContent = kan;
+      el("recSum").textContent = "ぜんぶ"+it.length+"件　／　完了 "+kan+"・作業中 "+naka+"・まだ "+mada;
+      el("recNote").textContent = d.builtAt ? (d.builtAt+" 時点の記録です") : "";
+      drawRows();
+      /* ★赤い箱はもう出さない（たまごさん「赤く囲まれているところはいらない」）。
+         中身は捨てずに、この畳んだ口の中へ入れる。 */
+      wake();
+    })
+    .catch(function(e){
+      el("recNote").textContent = "記録が取れませんでした（"+esc(e&&e.message)+"）。"
+        + "数字が取れないので、空欄にせずこう書いています。";
+    });
+});
+
+/* 棚に入っていない理由（前は赤い箱で出していたもの） */
+function wake(){
+  Promise.all([
+    fetch("../status/public/nagekomi_kagi.json?t="+Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }),
+    fetch("../status/public/nagekomi_shelf.json?t="+Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
+  ]).then(function(a){
+    var kagi = a[0], shelf = a[1], lines = [];
+    if(kagi && kagi.kakeru === false){
+      lines.push("棚に書き込める鍵がありません（"+esc(kagi.at||"時点不明")+"）");
+      if(kagi.why) lines.push(esc(kagi.why));
+      if(kagi.naoshikata) lines.push("直しかた："+esc(kagi.naoshikata));
+    }
+    var red = (shelf && shelf.red) || [];
+    for(var i=0;i<red.length;i++) lines.push(esc(String(red[i])));
+    if(!lines.length) return;
+    el("wakeBox").hidden = false;
+    el("wake").innerHTML = lines.join("<br>");
+  });
+}
+
+/* ---------------- 開いた瞬間にやるのはこれだけ（読み込み0本） ---------------- */
+drawChips();
 drawQ();
-relay().then(flush);
-document.addEventListener("visibilitychange", function(){ if(!document.hidden) relay().then(flush); });
 </script>
 </body>
 </html>

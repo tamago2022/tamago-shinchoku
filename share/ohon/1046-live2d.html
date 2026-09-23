@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>#1046 Live2D 公式サンプルを、そのままブラウザで動かす台</title>
+<style>
+:root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+*{box-sizing:border-box;}
+body{margin:0;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 40px);
+  background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;overflow-x:hidden;}
+a{color:var(--ao);}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.25rem;letter-spacing:.04em;margin:0 0 6px;line-height:1.5;}
+h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.02rem;letter-spacing:.04em;
+  margin:34px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+.date{color:var(--sub);font-size:.8rem;margin-bottom:14px;}
+.fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;}
+.fix p{margin:0 0 9px;} .fix p:last-child{margin:0;}
+.note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:.88rem;margin:0 0 14px;}
+.stage{position:relative;width:100%;aspect-ratio:3/4;background:#efe9db;border-radius:12px;overflow:hidden;border:1px solid var(--line);}
+.stage canvas{width:100%;height:100%;display:block;}
+.ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;
+  color:var(--sub);font-size:.86rem;padding:20px;line-height:1.7;}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;}
+button.b{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
+  padding:11px 17px;font-size:.92rem;font-family:inherit;cursor:pointer;line-height:1.3;}
+button.b:active{background:#efe9db;}
+button.b[disabled]{opacity:.45;cursor:default;}
+button.b.main{border-color:var(--ao);color:var(--ao);font-weight:700;}
+.log{font-size:.8rem;color:var(--sub);margin:10px 0 0;line-height:1.6;white-space:pre-wrap;word-break:break-all;}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid var(--line);background:#fff;margin:0 0 10px;}
+table{border-collapse:separate;border-spacing:0;font-size:.84rem;min-width:420px;width:100%;}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:right;}
+th{background:#efe9db;color:var(--sub);font-weight:600;font-size:.72rem;}
+th:first-child,td:first-child{text-align:left;}
+tr:last-child td{border-bottom:none;}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap;}
+footer{color:var(--sub);font-size:.78rem;margin-top:40px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
+@media (max-width:420px){body{font-size:15px;padding-left:11px;padding-right:11px;}h1{font-size:1.08rem;}button.b{padding:10px 14px;font-size:.87rem;}}
+</style>
+</head>
+<body>
+
+<p class="date"><a href="../check/1046-dodai.html">← #1046 土台の話に戻る</a></p>
+
+<h1>Live2D を、公式のまま、このブラウザで動かす台</h1>
+<p class="date">2026-09-24 作成／オリジナルのコードは書いていません。Live2D公式の実行部品と、Live2D公式のサンプルキャラクターを、そのまま読み込んでいます。</p>
+
+<div class="fix">
+  <p><b>これは「卵を直した」台ではありません。</b>土台を替えたときに何が起きるかを、実物で見る台です。</p>
+  <p>押すまで何も読み込みません。<b>押したときだけ</b>部品が飛んできます。重さはその場で数えて下に出します。</p>
+</div>
+
+<h2>① 押して動かす</h2>
+<div class="stage" id="stage">
+  <div class="ph" id="ph">まだ何も読み込んでいません。<br>下の「読み込んで動かす」を押すと、ここに公式サンプルの子が立ちます。</div>
+  <canvas id="cv" style="display:none"></canvas>
+</div>
+<div class="btnrow">
+  <button class="b main" id="go">読み込んで動かす</button>
+  <button class="b" id="tap" disabled>体にさわる（反応する）</button>
+</div>
+<p class="log" id="log"></p>
+
+<h2>② 重さ（この端末で実際に受け取った量）</h2>
+<div class="wrap">
+  <table id="tbl">
+    <thead><tr><th>読み込んだもの</th><th>受け取った量</th><th>素の大きさ</th></tr></thead>
+    <tbody><tr><td colspan="3" style="text-align:center;color:#7a7568">まだ読み込んでいません</td></tr></tbody>
+  </table>
+</div>
+<p class="note" id="sum">押すと、ここに合計が出ます。<b>「受け取った量」が実際に通信で流れた量</b>（圧縮後）、「素の大きさ」は展開後です。</p>
+
+<h2>③ 何を読み込んでいるか（全部リンク）</h2>
+<div class="note">
+  <p style="margin:0 0 8px">① 動かす心臓（Live2D社が自分で配っているファイル）<br>
+  <a href="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js" target="_blank" rel="noopener"><code>cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js</code></a></p>
+  <p style="margin:0 0 8px">② 画面に描く土台 pixi.js（MIT）と、①と②をつなぐ pixi-live2d-display（MIT）<br>
+  <a href="https://github.com/pixijs/pixijs" target="_blank" rel="noopener">pixijs/pixijs</a> ／ <a href="https://github.com/guansss/pixi-live2d-display" target="_blank" rel="noopener">guansss/pixi-live2d-display</a></p>
+  <p style="margin:0">③ 立っている子＝<b>Live2D公式サンプル「Hiyori」</b>（Live2D社のGitHubにあるものをそのまま）<br>
+  <a href="https://github.com/Live2D/CubismWebSamples" target="_blank" rel="noopener">github.com/Live2D/CubismWebSamples</a></p>
+</div>
+
+<footer>
+  この台は判断材料です。卵はまだ Live2D になっていません。卵を Live2D にするには、卵の絵をパーツに切って Cubism Editor で組む工程が要ります（→ <a href="../check/1046-dodai.html">#1046 土台</a>）。<br>
+  <a href="../../index.html">進捗表に戻る</a>
+</footer>
+
+<script>
+(function(){
+var CORE="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js";
+var PIXI_="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js";
+var BRIDGE="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js";
+var MODEL="https://cdn.jsdelivr.net/gh/Live2D/CubismWebSamples@develop/Samples/Resources/Hiyori/Hiyori.model3.json";
+var log=document.getElementById('log'), go=document.getElementById('go'), tap=document.getElementById('tap');
+var ph=document.getElementById('ph'), cv=document.getElementById('cv'), tbl=document.getElementById('tbl'), sum=document.getElementById('sum');
+function say(s){log.textContent=s;}
+function kb(n){return (n/1024).toFixed(1)+" KB";}
+function load(src){return new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=function(){rej(new Error(src));};document.head.appendChild(s);});}
+function table(){
+  var es=performance.getEntriesByType('resource').filter(function(e){
+    return /cubism|pixi|jsdelivr/.test(e.name);
+  });
+  var rows="", t=0, r=0;
+  es.forEach(function(e){
+    var name=e.name.split('/').slice(-1)[0].split('?')[0];
+    t+=e.transferSize||0; r+=e.decodedBodySize||0;
+    rows+="<tr><td>"+name+"</td><td class='n'>"+((e.transferSize)?kb(e.transferSize):"—")+"</td><td class='n'>"+kb(e.decodedBodySize||0)+"</td></tr>";
+  });
+  tbl.querySelector('tbody').innerHTML=rows||"<tr><td colspan='3'>—</td></tr>";
+  sum.innerHTML="<b>合計：通信で受け取った "+kb(t)+" ／ 展開後 "+kb(r)+"</b>　（"+es.length+"本・この端末・"+new Date().toLocaleString('ja-JP')+"）<br>いまの卵（avatar431.js 15.9KB ＋ 絵 308.6KB ＝ 324.5KB）と見比べてください。";
+}
+go.addEventListener('click',async function(){
+  go.disabled=true; say("読み込み中…");
+  var tc=document.createElement('canvas');
+  if(!(tc.getContext('webgl')||tc.getContext('experimental-webgl'))){
+    ph.innerHTML="この端末／このブラウザは <b>WebGL が切れています</b>。<br>Live2D は WebGL でしか描けないので、ここでは立ちません。<br>（iPhoneのSafari・ふつうのChromeでは入っています）";
+    say("部品は全部届きますが、描く窓が閉じています。別の端末で開いてください。"); go.disabled=false; return;
+  }
+  try{
+    await load(CORE);  say("心臓（Cubism Core）を受け取りました。");
+    await load(PIXI_); say("描く土台（pixi.js）を受け取りました。");
+    await load(BRIDGE);say("つなぎ（pixi-live2d-display）を受け取りました。キャラクターを取りに行きます…");
+    ph.style.display='none'; cv.style.display='block';
+    var box=document.getElementById('stage').getBoundingClientRect();
+    var app=new PIXI.Application({view:cv,width:Math.round(box.width),height:Math.round(box.height),
+      backgroundAlpha:0,autoStart:true,antialias:true,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true});
+    var m=await PIXI.live2d.Live2DModel.from(MODEL);
+    app.stage.addChild(m);
+    var s=Math.min(box.width/m.width, box.height/m.height)*1.55;
+    m.scale.set(s); m.x=box.width/2; m.y=box.height*0.06;
+    m.anchor.set(0.5,0);
+    window.__m=m;
+    tap.disabled=false;
+    say("動いています。目・まばたき・呼吸・髪の揺れ・体の向きが全部自動で動いています。コードは1行も書いていません。");
+    setTimeout(table,600);
+  }catch(e){
+    ph.textContent="読み込めませんでした："+e.message;
+    say("失敗しました。上のリンクを直接押して、ファイルが返ってくるか見てください。");
+    go.disabled=false;
+  }
+});
+tap.addEventListener('click',function(){
+  if(!window.__m)return;
+  var g=["TapBody","Tap","Idle"];
+  for(var i=0;i<g.length;i++){ try{ window.__m.motion(g[i]); break; }catch(e){} }
+  say("さわりました。公式サンプルに入っているモーションが再生されます。");
+});
+})();
+</script>
+</body>
+</html>

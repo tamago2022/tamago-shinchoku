@@ -1,0 +1,899 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>一人＋AIで回っている音楽紹介・カバー曲紹介サイトの世界事例</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>一人＋AIで回っている音楽紹介・カバー曲紹介サイトの世界事例</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 72本 ／ 38,947字 ／ 投げた 2026-09-26 12:29:49<br><a href="https://www.genspark.ai/agents?id=b5180b38-45c1-5a3c-adf4-c57769fd7ece" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>一人（または極小人数）で運営する音楽紹介・カバー曲紹介サイト／チャンネルの世界事例と権利実務ガイド</h2>
+<h3>はじめに：調査の範囲と限界について</h3>
+<p>本レポートは、個人または極小人数で運営されている音楽紹介サイト・カバー曲紹介チャンネルの実態、権利処理の実務、および過去の訴訟・閉鎖事例を調査したものです。調査は以下の一次情報源（公式ドキュメント、エンジニアリングブログ、カンファレンス資料、公開されたポストモーテム）を中心に実施しました：</p>
+<ul>
+<li>YouTube公式ヘルプ（カバー曲収益化、フェアユース、マネタイズポリシー）</li>
+<li>各国著作権局・文化庁の公式資料（米国著作権局、日本文化庁）</li>
+<li>音楽データベースAPIの公式ドキュメント（MusicBrainz、Discogs、Spotify、SecondHandSongs）</li>
+<li>実際の運営事例サイトの公開情報（Shellbys、note.com記事、COVER.INFO、SecondHandSongsなど）</li>
+<li>訴訟・閉鎖事例に関するWikipedia記事および報道記事</li>
+</ul>
+<p><strong>データ上の限界</strong>：一部のサイト（Whosampled.com、RateYourMusic.com、AllMusic.com、issoh.co.jp）はクローリングに失敗し、詳細な運営情報が取得できませんでした。また、一部の検索結果はスニペットのみの情報であり、完全な記事内容が確認できていないものがあります。これらの点は各項目で「[DATA NOT AVAILABLE]」または「公開情報では確認できなかった」と明記しています。</p>
+<hr>
+<h3>第1章：実在する個人・小規模運営の音楽紹介サイト・チャンネル事例（10件以上）</h3>
+<h4>1. SecondHandSongs（セカンドハンドソングズ）</h4>
+<p><strong>概要</strong>：カバー曲に特化した世界最大級のデータベースサイト。2003年4月にベルギーで設立され、非営利のコミュニティ運営型データベースとして機能している。</p>
+<p><strong>運営者・規模</strong>：</p>
+<ul>
+<li>設立：2003年4月 <a href="https://en.wikipedia.org/wiki/SecondHandSongs" target="_blank" rel="noopener">Wikipedia</a></li>
+<li>データ規模：約100万件のカバー曲を収録（2020年時点）<a href="https://secondhandsongs.com" target="_blank" rel="noopener">secondhandsongs.com</a></li>
+<li>2025年時点で「Silent Night」のカバー曲が4,229件登録されている <a href="https://secondhandsongs.com" target="_blank" rel="noopener">secondhandsongs.com</a></li>
+<li>Facebookページによると、カバー曲718,562件、オリジナル曲89,295件、動画302,977件を収録 <a href="https://www.facebook.com/2ndhandsongs/" target="_blank" rel="noopener">Facebook</a></li>
+</ul>
+<p><strong>収益源</strong>：</p>
+<ul>
+<li>広告収入（サイト上に広告ブロッカーへの対応メッセージが表示される）<a href="https://secondhandsongs.com" target="_blank" rel="noopener">secondhandsongs.com</a></li>
+<li>プレミアムアカウント（広告非表示）のサブスクリプション <a href="https://secondhandsongs.com" target="_blank" rel="noopener">secondhandsongs.com</a></li>
+</ul>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>データ収集はコミュニティによる crowdsourcing（ crowdsourced database）<a href="https://en.wikipedia.org/wiki/SecondHandSongs" target="_blank" rel="noopener">Wikipedia</a></li>
+<li>APIを提供しており、開発者がプログラム経由でデータを取得可能 <a href="https://secondhandsongs.com/page/API" target="_blank" rel="noopener">secondhandsongs.com/page/API</a></li>
+<li>APIの機能：アーティスト・パフォーマンス・作品の検索、およびSHSオブジェクトの情報取得 <a href="https://secondhandsongs.com/page/API" target="_blank" rel="noopener">secondhandsongs.com/page/API</a></li>
+<li>APIアクセス方法：HTTPS経由で、通常のWebページではなくAPI結果を取得するための特定ヘッダーを使用 <a href="https://secondhandsongs.com/page/API/access" target="_blank" rel="noopener">secondhandsongs.com/page/API/access</a></li>
+</ul>
+<p><strong>更新頻度</strong>：コミュニティによる継続的な投稿・編集（具体的な更新頻度は公開情報では確認できなかった）</p>
+<hr>
+<h4>2. COVER.INFO</h4>
+<p><strong>概要</strong>：ドイツ発のカバー曲データベースサイト。オリジナル曲とカバー曲の関係を記録するデータベース。</p>
+<p><strong>運営者・規模</strong>：</p>
+<ul>
+<li>運営：ボランティア編集チーム <a href="https://cover.info/dis.cover" target="_blank" rel="noopener">cover.info/dis.cover</a></li>
+<li>統計（2026年9月8日時点）：</li>
+<li>オリジナル曲：84,677件</li>
+<li>カバー曲：582,019件</li>
+<li>代替バージョン：12,338件</li>
+<li>メドレー：6,370件</li>
+<li>引用（Quote）：14,677件</li>
+<li>サンプリング：2,889件</li>
+</ul>
+<p>  <a href="https://cover.info" target="_blank" rel="noopener">cover.info</a></p>
+<p><strong>収益源</strong>：公開情報では確認できなかった（非営利のボランティア運営と推測されるが、広告収入等の有無は不明）</p>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>ボランティア編集者による手動登録が中心</li>
+<li>2026年9月にサイトの大規模リニューアルを実施 <a href="https://cover.info/dis.cover/article/917254/The-new-COVER.INFO-a-tour-of-the-new-version" target="_blank" rel="noopener">cover.info/dis.cover</a></li>
+<li>デジタルのみのリリース（物理媒体がない音源）の扱いについて議論・方針変更の経過あり <a href="https://cover.info/dis.cover/article/917244/Digital-Only-Publications-Sources-And-Documentation-Issues" target="_blank" rel="noopener">cover.info/dis.cover</a></li>
+</ul>
+<p><strong>更新頻度</strong>：2026年9月、4月、2月、2024年12月・10月など、不定期だが継続的に記事・データ更新 <a href="https://cover.info/dis.cover" target="_blank" rel="noopener">cover.info/dis.cover</a></p>
+<hr>
+<h4>3. Every Noise at Once</h4>
+<p><strong>概要</strong>：Spotifyの元従業員グレン・マクドナルド（Glenn McDonald）が作成した音楽ジャンルマップサイト。数千の音楽ジャンルを視覚的にマッピング。</p>
+<p><strong>運営者</strong>：グレン・マクドナルド（元Spotify従業員）<a href="https://en.wikipedia.org/wiki/Every_Noise_at_Once" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>規模</strong>：数千の音楽ジャンルを網羅 <a href="https://everynoise.com" target="_blank" rel="noopener">everynoise.com</a></p>
+<p><strong>収益源</strong>：公開情報では確認できなかった（個人プロジェクトとして運営）</p>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>Spotifyのアルゴリズムデータを基に自動生成されたジャンル分類</li>
+<li><strong>重要な点</strong>：2023年12月、グレン・マクドナルドがSpotifyを解雇された後、更新が停止した <a href="https://en.wikipedia.org/wiki/Every_Noise_at_Once" target="_blank" rel="noopener">Wikipedia</a></li>
+<li>この事例は、個人の音楽データプロジェクトが雇用状況に依存する脆弱性を示している</li>
+</ul>
+<p><strong>更新頻度</strong>：2023年12月以降、更新停止 <a href="https://en.wikipedia.org/wiki/Every_Noise_at_Once" target="_blank" rel="noopener">Wikipedia</a></p>
+<hr>
+<h4>4. Music-Map</h4>
+<p><strong>概要</strong>：アーティストの類似性を視覚的にマップ表示するサービス。Gnoosicの協調フィルタリングアルゴリズムを採用。</p>
+<p><strong>運営者</strong>：Gnod（グローバル・ネットワーク・オブ・ディスカバリー）の一部 <a href="https://www.music-map.com" target="_blank" rel="noopener">www.music-map.com</a></p>
+<p><strong>収益源</strong>：公開情報では確認できなかった</p>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>ユーザーフィードバックに基づく協調フィルタリングアルゴリズムで動作 <a href="https://blog.sibasi.com/algorithm-behind-music-how-does-it-work" target="_blank" rel="noopener">blog.sibasi.com</a></li>
+<li>AI駆動のストリーミング推薦エンジンとは異なり、ユーザー入力に基づく類似性計算</li>
+<li>データ収集はユーザー検索行動の蓄積による自動化</li>
+</ul>
+<p><strong>更新頻度</strong>：リアルタイムでのユーザー検索に反応</p>
+<hr>
+<h4>5. Rate Your Music（RYM）</h4>
+<p><strong>概要</strong>：コミュニティ型の音楽レビュー・データベースサイト。</p>
+<p><strong>運営者・規模</strong>：</p>
+<ul>
+<li>2024年8月時点で120万人以上のユーザー、620万件以上のリリース、1億3700万件の評価 <a href="https://www.rateyourmusic.com" target="_blank" rel="noopener">rateyourmusic.com</a>（※クローリング失敗のため詳細はスニペット情報のみ）</li>
+</ul>
+<p><strong>収益源</strong>：公開情報では確認できなかった</p>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>コンテンツはコミュニティボランティアによるモデレーション <a href="https://www.rateyourmusic.com" target="_blank" rel="noopener">rateyourmusic.com</a></li>
+<li>ユーザーが手動でレビュー・評価・データを入力</li>
+</ul>
+<p><strong>更新頻度</strong>：ユーザー投稿ベースの継続的更新</p>
+<hr>
+<h4>6. Genius</h4>
+<p><strong>概要</strong>：歌詞と音楽知識のクラウドソーシングプラットフォーム。2009年8月にTom Lehman、Ilan Zechory、Mahbod Moghadamによって設立。</p>
+<p><strong>運営者</strong>：</p>
+<ul>
+<li>設立：2009年8月 <a href="https://genius.com" target="_blank" rel="noopener">genius.com</a></li>
+<li>現在の所有者：MediaLab AI（2021年9月買収）<a href="https://genius.com" target="_blank" rel="noopener">genius.com</a></li>
+</ul>
+<p><strong>規模</strong>：世界最大の歌詞・音楽知識コレクション <a href="https://genius.com" target="_blank" rel="noopener">genius.com</a></p>
+<p><strong>収益源</strong>：</p>
+<ul>
+<li>広告収入</li>
+<li>プレミアム機能（公開情報では詳細確認できず）</li>
+</ul>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>コミュニティ貢献者（Contributor、Transcriber、Moderator、Editorなど）による歌詞の投稿・検証・注釈付け <a href="https://genius.com" target="_blank" rel="noopener">genius.com</a></li>
+<li>「Verified」シリーズなど、アーティスト本人による歌詞解説コンテンツも提供 <a href="https://genius.com" target="_blank" rel="noopener">genius.com</a></li>
+<li>自動転写機能と人手による検証の組み合わせ</li>
+</ul>
+<p><strong>更新頻度</strong>：毎日更新（ニュース記事が日付付きで継続的に掲載）<a href="https://genius.com" target="_blank" rel="noopener">genius.com</a></p>
+<hr>
+<h4>7. Setlist.fm</h4>
+<p><strong>概要</strong>：コンサートのセットリストを crowdsourcing で収集するデータベース。</p>
+<p><strong>運営者・規模</strong>：</p>
+<ul>
+<li>900万件以上のセットリストを収録 <a href="https://www.setlist.fm" target="_blank" rel="noopener">setlist.fm</a></li>
+<li>所有者：Live Nation Entertainment <a href="https://www.setlist.fm" target="_blank" rel="noopener">setlist.fm</a></li>
+</ul>
+<p><strong>収益源</strong>：</p>
+<ul>
+<li>オンラインショップ（クリアバッグなどのグッズ販売）<a href="https://www.setlist.fm" target="_blank" rel="noopener">setlist.fm</a></li>
+<li>広告収入（フッターに「Ad Choices」リンクが存在）<a href="https://www.setlist.fm" target="_blank" rel="noopener">setlist.fm</a></li>
+</ul>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>データ収集は完全に crowdsourcing：ユーザーが「Add Setlist」ボタンから手動でセットリストを投稿 <a href="https://www.setlist.fm" target="_blank" rel="noopener">setlist.fm</a></li>
+<li>モデレーターや「roadies」と呼ばれるアクティブユーザーがコンテンツを管理 <a href="https://www.setlist.fm" target="_blank" rel="noopener">setlist.fm</a></li>
+</ul>
+<p><strong>更新頻度</strong>：コンサート開催に伴う随時更新</p>
+<hr>
+<h4>8. Discogs</h4>
+<p><strong>概要</strong>：音楽データベース兼マーケットプレイス。2000年11月にケヴィン・レヴァンドフスキ（Kevin Lewandowski）によって設立。</p>
+<p><strong>運営者・規模</strong>：</p>
+<ul>
+<li>設立：2000年11月 <a href="https://www.discogs.com" target="_blank" rel="noopener">discogs.com</a></li>
+<li>2015年時点で300万人のユーザー、月間2000万アクセス <a href="https://www.discogs.com" target="_blank" rel="noopener">discogs.com</a></li>
+<li>オープンソースのデータベースとして始まった <a href="https://r-p-m.jp/interview/discogs" target="_blank" rel="noopener">r-p-m.jp</a></li>
+</ul>
+<p><strong>収益源</strong>：</p>
+<ul>
+<li>マーケットプレイス手数料 <a href="https://www.discogs.com" target="_blank" rel="noopener">discogs.com</a></li>
+<li>部分的に営利 <a href="https://www.discogs.com" target="_blank" rel="noopener">discogs.com</a></li>
+</ul>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>データベースはコミュニティによる crowdsourcing <a href="https://r-p-m.jp/interview/discogs" target="_blank" rel="noopener">r-p-m.jp</a></li>
+<li>Marketplace APIを提供：在庫管理、リスティング作成・編集・削除、注文管理、手数料計算、価格提案機能など <a href="https://www.discogs.com/developers" target="_blank" rel="noopener">discogs.com/developers</a></li>
+<li>API認証要件：在庫オーナーとしての認証、リスティングオーナーとしての認証、セラーとしての認証など、エンドポイントごとに異なる <a href="https://www.discogs.com/developers" target="_blank" rel="noopener">discogs.com/developers</a></li>
+</ul>
+<p><strong>更新頻度</strong>：ユーザー投稿ベースの継続的更新</p>
+<hr>
+<h4>9. Hype Machine（Hype Machine）</h4>
+<p><strong>概要</strong>：音楽ブログアグリゲーター。2005年にアンソニー・ヴォロドキン（Anthony Volodkin）によって設立。</p>
+<p><strong>運営者</strong>：アンソニー・ヴォロドキン <a href="https://www.hypem.com" target="_blank" rel="noopener">hypem.com</a></p>
+<p><strong>収益源</strong>：</p>
+<ul>
+<li>アフィリエイトリンク <a href="https://www.hypem.com" target="_blank" rel="noopener">hypem.com</a></li>
+<li>広告収入 <a href="https://www.hypem.com" target="_blank" rel="noopener">hypem.com</a></li>
+<li>過去にはクラウドファンディングで運営を維持した時期もある <a href="https://vice.com" target="_blank" rel="noopener">vice.com</a>（※URLはスニペット情報のみで詳細確認できず）</li>
+</ul>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>世界中の音楽ブログから自動的に楽曲情報を収集・集約 <a href="https://www.hypem.com" target="_blank" rel="noopener">hypem.com</a></li>
+<li>収集した楽曲を人手で選別・ランキング化している可能性（詳細は公開情報で確認できず）</li>
+</ul>
+<p><strong>更新頻度</strong>：毎日更新（「Every day, thousands of people around the world write about music they love」）<a href="https://www.hypem.com" target="_blank" rel="noopener">hypem.com</a></p>
+<hr>
+<h4>10. AllMusic</h4>
+<p><strong>概要</strong>：音楽データベース。1991年にマイケル・アールワイン（Michael Erlewine）によって設立。</p>
+<p><strong>運営者</strong>：</p>
+<ul>
+<li>設立：1991年 <a href="https://allmusic.com" target="_blank" rel="noopener">allmusic.com</a></li>
+<li>現在の所有者：2015年以降RhythmOne <a href="https://allmusic.com" target="_blank" rel="noopener">allmusic.com</a>（※クローリング失敗のため詳細はスニペット情報のみ）</li>
+</ul>
+<p><strong>収益源</strong>：公開情報では確認できなかった</p>
+<p><strong>自動化と人手の分担</strong>：公開情報では確認できなかった</p>
+<hr>
+<h4>11. Shellbys（日本の個人音楽ブログ事例）</h4>
+<p><strong>概要</strong>：ブログ歴10年以上のプロブロガー「バン活！編集長 バン犬」が運営する音楽ブログ開始ガイドサイト。</p>
+<p><strong>運営者</strong>：バン活！編集長 バン犬 <a href="https://www.shellbys.com/column/music-blog-start" target="_blank" rel="noopener">shellbys.com</a></p>
+<p><strong>規模</strong>：月間最大30万PV（運営者の別ブログでの実績）<a href="https://www.shellbys.com/column/music-blog-start" target="_blank" rel="noopener">shellbys.com</a></p>
+<p><strong>収益源</strong>：</p>
+<ul>
+<li>Googleアドセンス <a href="https://www.shellbys.com/column/music-blog-start" target="_blank" rel="noopener">shellbys.com</a></li>
+<li>アフィリエイト（Amazon、楽天、Yahoo!ショッピング）<a href="https://www.shellbys.com/column/music-blog-start" target="_blank" rel="noopener">shellbys.com</a></li>
+</ul>
+<p><strong>自動化ツール</strong>：</p>
+<ul>
+<li>WordPressプラグイン「Rinker」：Amazon、楽天、ヤフーショッピングのリンクを一括作成・掲載 <a href="https://www.shellbys.com/column/music-blog-start" target="_blank" rel="noopener">shellbys.com</a></li>
+<li>推奨レンタルサーバー・WordPressテーマのアフィリエイトリンクも使用 <a href="https://www.shellbys.com/column/music-blog-start" target="_blank" rel="noopener">shellbys.com</a></li>
+</ul>
+<p><strong>更新頻度</strong>：継続的に記事更新（具体的な頻度は公開情報で確認できず）</p>
+<hr>
+<h4>12. ネートの備忘録（日本の個人音楽ブログ事例）</h4>
+<p><strong>概要</strong>：元レコード屋店員が3年半運営した音楽ブログの開設・収益化ガイド。</p>
+<p><strong>運営者</strong>：元レコード屋店員（匿名）<a href="https://neatnobibouroku.info/how-to-start-music-blog/" target="_blank" rel="noopener">neatnobibouroku.info</a></p>
+<p><strong>収益化方法</strong>：</p>
+<ul>
+<li>楽曲・アルバムレビュー：Google Adsense、Amazon Prime Music</li>
+<li>楽器関連アイテム：楽器のアフィリエイト</li>
+<li>教室系：ASP経由での音楽教室紹介</li>
+<li>ボイトレ系：ASP経由でのボイトレ教室紹介</li>
+<li>DTM系：ASP経由での商品販売アフィリエイト</li>
+</ul>
+<p><a href="https://neatnobibouroku.info/how-to-start-music-blog/" target="_blank" rel="noopener">neatnobibouroku.info</a></p>
+<p><strong>自動化ツール</strong>：</p>
+<ul>
+<li>「WordPressかんたんセットアップ」機能によるブログ開設の簡素化</li>
+<li>記事内では明示的な「自動化ツール」の言及なし <a href="https://neatnobibouroku.info/how-to-start-music-blog/" target="_blank" rel="noopener">neatnobibouroku.info</a></li>
+</ul>
+<p><strong>更新頻度</strong>：3年半の運営実績（現在は更新停止か継続中かは不明）</p>
+<hr>
+<h4>13. nihonichi_music（日本のAI自動化YouTubeチャンネル事例）</h4>
+<p><strong>概要</strong>：AI（Claude）を活用して音楽動画を自動生成し、YouTubeと自社サイト（nihonichi-bgm.com）を連動させる運営事例。</p>
+<p><strong>運営者</strong>：note.comユーザー「nihonichi_music」<a href="https://note.com/nihonichi_music/n/n5da141ce7465" target="_blank" rel="noopener">note.com</a></p>
+<p><strong>規模</strong>：</p>
+<ul>
+<li>現在2,200曲以上を自動化</li>
+<li>月間2,000曲を追加し、近く「4,000曲体制」へ <a href="https://note.com/nihonichi_music/n/n5da141ce7465" target="_blank" rel="noopener">note.com</a></li>
+</ul>
+<p><strong>収益源</strong>：</p>
+<ul>
+<li>YouTubeから自社サイト（nihonichi-bgm.com）への誘導</li>
+<li>サイト経由のGoogleアドセンス収益 <a href="https://note.com/nihonichi_music/n/n5da141ce7465" target="_blank" rel="noopener">note.com</a></li>
+</ul>
+<p><strong>自動化ツール・手法</strong>：</p>
+<ul>
+<li><strong>AI使用</strong>：Claudeを活用して動画生成システムを構築</li>
+<li><strong>ショート動画</strong>：4枚の静止画に「ズーム」「横移動」「パン」のカメラワークを自動適用し、楽曲と同期した歌詞テロップを自動挿入</li>
+<li><strong>フル動画</strong>：1枚の静止画をベースに、動画開始から終了まで1倍から1.1倍へなだらかにズームし続け、微細なピクセル移動を繰り返すことでYouTubeのAIによる「静止画使い回し」判定を回避</li>
+<li>冒頭にマウスポインタ連動型アニメーションを自動挿入 <a href="https://note.com/nihonichi_music/n/n5da141ce7465" target="_blank" rel="noopener">note.com</a></li>
+</ul>
+<p><strong>人手の選定部分</strong>：</p>
+<ul>
+<li>使用する楽曲の選定（どの曲を自動化対象にするか）は人手による可能性が高い（公開情報では明記されていない）</li>
+<li>自社サイトへの導線設計は人手による</li>
+</ul>
+<p><strong>更新頻度</strong>：月間2,000曲 <a href="https://note.com/nihonichi_music/n/n5da141ce7465" target="_blank" rel="noopener">note.com</a></p>
+<hr>
+<h4>14. AcousticBrainz（終了事例）</h4>
+<p><strong>概要</strong>：2015年から2022年まで運営された、音楽の音響特性（ジャンル、ムード、キー、スケールなど）を crowdsourcing で収集するプロジェクト。Music Technology Group（Universitat Pompeu Fabra）とMusicBrainzプロジェクトの共同事業。</p>
+<p><strong>運営者</strong>：MetaBrainz（終了決定はMetaBrainzによる）<a href="https://acousticbrainz.org/" target="_blank" rel="noopener">acousticbrainz.org</a></p>
+<p><strong>規模</strong>：</p>
+<ul>
+<li>ユニーク録音：7,564,215件</li>
+<li>総ファイル数：29,460,584件</li>
+</ul>
+<p><a href="https://acousticbrainz.org/" target="_blank" rel="noopener">acousticbrainz.org</a></p>
+<p><strong>収益源</strong>：非営利プロジェクト（収益源の記載なし）</p>
+<p><strong>自動化と人手の分担</strong>：</p>
+<ul>
+<li>Essentiaツールキットによる自動音響分析 <a href="https://acousticbrainz.org/" target="_blank" rel="noopener">acousticbrainz.org</a></li>
+<li>データはCC0ライセンス（パブリックドメイン）で公開 <a href="https://acousticbrainz.org/" target="_blank" rel="noopener">acousticbrainz.org</a></li>
+</ul>
+<p><strong>終了理由</strong>：</p>
+<ul>
+<li>生成された音楽的キーデータが一部の音楽スタイルでは正確だったが、全範囲の音楽に対して正確ではなかった</li>
+<li>BPMツールも多くの録音で予測値が不正確</li>
+<li>生成されたデータに信頼性（confidence level）を示す仕組みがなく、どのデータを信頼できるか判断できなかった</li>
+<li>MetaBrainz側にアルゴリズムを改善するための専門的スキルを持つ人材が不足しており、改善には研究者による数ヶ月〜数年の作業が必要と判断された</li>
+</ul>
+<p><a href="https://community.metabrainz.org/t/acousticbrainz-making-a-hard-decision-to-end-the-project/572828" target="_blank" rel="noopener">community.metabrainz.org</a></p>
+<p><strong>終了日</strong>：2022年 <a href="https://acousticbrainz.org/" target="_blank" rel="noopener">acousticbrainz.org</a></p>
+<hr>
+<h4>15. The Echo Nest（終了・買収事例）</h4>
+<p><strong>概要</strong>：MITメディアラボのスピンオフとして設立された音楽インテリジェンスプラットフォーム。</p>
+<p><strong>運営者</strong>：Spotify（2014年3月買収）<a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>買収額</strong>：4,970万ユーロ（現金およびSpotify株式）<a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>API廃止日</strong>：2016年5月31日 <a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>終了理由</strong>：Spotifyによる買収後、Spotify APIへの統合のため廃止 <a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">Wikipedia</a></p>
+<hr>
+<h3>第2章：権利まわりの実務ガイド</h3>
+<h4>2-1. YouTube埋め込み</h4>
+<p><strong>YouTubeの公式方針</strong>：</p>
+<ul>
+<li>YouTubeの埋め込み機能は、動画所有者が埋め込みを許可している場合に限り使用可能</li>
+<li>埋め込み自体は著作権侵害とはみなされないが、埋め込まれた動画が著作権侵害コンテンツである場合、埋め込みサイトも責任を問われる可能性がある（国・地域により異なる）</li>
+</ul>
+<p><a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">support.google.com</a></p>
+<p><strong>フェアユースの4要素（米国法）</strong>：</p>
+<p>1. 利用の目的と性格：非営利・教育目的はフェアユースと認められやすく、商業目的は認められにくい。元の素材に新たな表現や意味を加える（変換的利用）ことが重要。</p>
+<p>2. 著作物の性質：事実に基づく作品の引用はフェアユースと認められやすく、純粋な創作物（フィクション）は認められにくい。</p>
+<p>3. 利用された部分の量と実質性：少量の引用はフェアユースと認められやすいが、作品の「核心（heart）」を引用する場合は少量でもフェアユースと認められない可能性がある。</p>
+<p>4. 利用が著作権者の市場に与える影響：著作権者の収益機会を損なう利用はフェアユースと認められにくい。ただしパロディの場合は例外がある場合も。</p>
+<p><a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">support.google.com</a></p>
+<p><strong>重要な注意点</strong>：</p>
+<ul>
+<li>「クレジットを表示した」「『所有権はありません』と明記した」「『フェアユース』と明記した」というだけではフェアユースは成立しない <a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">support.google.com</a></li>
+<li>Content IDはフェアユースを自動的に判断できない（フェアユースは主観的・個別事案ごとの判断であり、裁判所のみが決定可能）<a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">support.google.com</a></li>
+<li>日本を含む米国以外の国・地域ではフェアユースのルールが異なる（EUでは引用、批評、レビュー、カリカチュア、パロディ、パスティシュなどの特定カテゴリーに限定）<a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">support.google.com</a></li>
+</ul>
+<hr>
+<h4>2-2. カバー曲のYouTube収益化</h4>
+<p><strong>基本ルール</strong>：</p>
+<ul>
+<li>カバー曲の動画が収益化の対象となるのは、音楽出版社がContent IDシステムを通じてその楽曲を申し立て、収益化を選択した場合のみ <a href="https://support.google.com/youtube/answer/2490020" target="_blank" rel="noopener">support.google.com/youtube/answer/2490020</a></li>
+<li>楽曲が申し立てられていない場合、権利者からの明示的な書面による許可がない限り収益化できない <a href="https://support.google.com/youtube/answer/2490020" target="_blank" rel="noopener">support.google.com/youtube/answer/2490020</a></li>
+<li>インストゥルメンタル音源、カラオケ録音、アーティストによるライブコンサートパフォーマンスなどの市販の録音物を使用したカバーは収益化の対象外 <a href="https://support.google.com/youtube/answer/2490020" target="_blank" rel="noopener">support.google.com/youtube/answer/2490020</a></li>
+</ul>
+<p><strong>収益分配の仕組み</strong>：</p>
+<ul>
+<li>YouTubeパートナープログラムに参加しているクリエイターは、音楽出版社がカバー曲動画をClaim（申し立て）した場合、収益を共有できる <a href="https://support.google.com/youtube/answer/3301938" target="_blank" rel="noopener">support.google.com/youtube/answer/3301938</a></li>
+<li>収益是按分比率（pro rata basis）で分配される <a href="https://support.google.com/youtube/answer/3301938" target="_blank" rel="noopener">support.google.com/youtube/answer/3301938</a></li>
+<li>収益化の可否は動画に表示される通知アイコン（共有収益の通知）で確認可能 <a href="https://support.google.com/youtube/answer/3301938" target="_blank" rel="noopener">support.google.com/youtube/answer/3301938</a></li>
+</ul>
+<p><strong>収益化の手順</strong>：</p>
+<p>1. アカウントの収益化をオンにする</p>
+<p>2. 対象のカバー曲動画を見つける</p>
+<p>3. 収益化ステータスを「オン」に切り替える</p>
+<p><a href="https://support.google.com/youtube/answer/3301938" target="_blank" rel="noopener">support.google.com/youtube/answer/3301938</a></p>
+<p><strong>禁止されている音楽慣行（収益化ポリシー違反）</strong>：</p>
+<ul>
+<li>異なるアーティストの楽曲を集めたコレクション（許可を得ていても不可）</li>
+<li>ピッチや速度を変更しただけで、それ以外は元の楽曲と同一である楽曲</li>
+</ul>
+<p><a href="https://support.google.com/youtube/answer/1311392" target="_blank" rel="noopener">support.google.com/youtube/answer/1311392</a></p>
+<p><strong>実際の収益事例</strong>：</p>
+<ul>
+<li>note.comのオカリナ講師ジャスティン氏の事例：5,500回再生で推定収益3.90ドル（1再生当たり約0.07円）。通常の動画の再生単価（約0.3円/再生）と比較して約4.3倍低い <a href="https://note.com/ocarina_justin/n/nea04416d0dbd" target="_blank" rel="noopener">note.com</a></li>
+<li>Dynamoiの記事によると、カバー曲の広告収益は投稿者と権利者の間で分割され、作曲の権利者が利益の大部分を受け取るため、投稿者が維持できる利益は通常少額 <a href="https://dynamoi.com/ja/learn/youtube-music-promotion/can-cover-songs-be-monetized-on-youtube/" target="_blank" rel="noopener">dynamoi.com</a></li>
+</ul>
+<p><strong>DistroKidのSNSパックに関する制限</strong>：</p>
+<ul>
+<li>DistroKidのSNSパック（Album Extraオプション）に加入しても、カバー曲はYouTube Content IDに登録できない <a href="https://support.distrokid.com/hc/ja/articles/360025496594-" target="_blank" rel="noopener">support.distrokid.com</a></li>
+</ul>
+<p><strong>Content IDの旋律レベル認識機能</strong>：</p>
+<ul>
+<li>YouTube Content IDは、従来の音源（マスター・原盤）の波形に基づくフィンガープリント技術に加え、数年前から著作権（メロディー等）にも対応</li>
+<li>これにより「歌ってみた」「弾いてみた」などのカバーバージョンの自動認識が可能になった <a href="https://ligar.shop/blog/youtube-contentid-2" target="_blank" rel="noopener">ligar.shop</a></li>
+</ul>
+<hr>
+<h4>2-3. 歌詞の引用</h4>
+<p><strong>日本の著作権法に基づく引用の要件（著作権法第32条1項）</strong>：</p>
+<p>1. 引用元が公表された著作物であること</p>
+<p>2. 引用であること（引用部分と自分の文章が明瞭に区別されていること＝明瞭区別性）</p>
+<p>3. 引用する側の著作物が「主」で、引用される側の著作物が「従」の関係にあること（主従関係）</p>
+<p>4. 公正な慣行に合致し、引用の目的上正当な範囲内であること</p>
+<p>5. 出典が明示されていること</p>
+<p>6. 引用部分を改変していないこと</p>
+<p><a href="https://www.mizogami.gr.jp/news/ne_back/jim2908K39.htm" target="_blank" rel="noopener">mizogami.gr.jp</a>、<a href="https://webtan.impress.co.jp/e/2019/03/20/31769" target="_blank" rel="noopener">webtan.impress.co.jp</a>、<a href="https://note.com/yama_eigh3/n/n56668b801ff7" target="_blank" rel="noopener">note.com</a></p>
+<p><strong>米国におけるフェアユースの4要素（歌詞引用への適用）</strong>：</p>
+<p>1. 利用の目的と性格：商業利用か、批評・評論・教育目的か。新たな付加価値を与えているか。</p>
+<p>2. 著作物の性質：事実に基づくコンテンツの再利用はフェアユースと認められやすく、芸術的な要素の再利用は認められにくい。未発表の作品はフェアユースと認められにくい。</p>
+<p>3. 利用された部分の量と実質性：利用量が多いほどフェアユースとはみなされにくく、特に作品の「核心（heart）」や「本質（essence）」を使用する場合は顕著。</p>
+<p>4. 著作物の潜在的な市場や価値に対する影響：元の作品の価値を低下させるような利用はフェアユースとはみなされない。</p>
+<p><a href="https://www.ingramspark.com/blog/quoting-song-lyrics-in-a-book-4-factors-fair-use" target="_blank" rel="noopener">ingramspark.com</a></p>
+<p><strong>Wikimediaの方針</strong>：</p>
+<ul>
+<li>歌詞の抜粋に関して「10%まで」といった画一的な（bright line）ルールを設けることは推奨されていない</li>
+<li>フェアユースの判断は、コンテンツの性質やその利用方法を含めた、より詳細で個別具体的な検討を必要とする</li>
+</ul>
+<p><a href="https://meta.wikimedia.org/wiki/Wikilegal/Fair_use_protections_for_posting_music_lyric_excerpts_and_translations" target="_blank" rel="noopener">meta.wikimedia.org</a></p>
+<p><strong>日本の実務上の注意点</strong>：</p>
+<ul>
+<li>歌手のファンブログでは、歌詞は一文でも掲載禁止（著作権侵害）、歌手の写真も掲載禁止（肖像権侵害）<a href="https://nekoyogurt.com/ready/casediscussion-singerfanblog/" target="_blank" rel="noopener">nekoyogurt.com</a></li>
+<li>アフィリエイトリンクの取得時に提供される画像であれば使用可能 <a href="https://nekoyogurt.com/ready/casediscussion-singerfanblog/" target="_blank" rel="noopener">nekoyogurt.com</a></li>
+<li>極めて短いフレーズ（キャッチフレーズ等）で創作性が認められない場合は、引用の要件を検討するまでもなく自由に利用できる可能性がある <a href="https://www.mizogami.gr.jp/news/ne_back/jim2908K39.htm" target="_blank" rel="noopener">mizogami.gr.jp</a></li>
+</ul>
+<hr>
+<h4>2-4. 音源の再ホスト</h4>
+<p><strong>基本原則</strong>：</p>
+<ul>
+<li>他人の音源を無断でサーバーに複製・再配布することは、複製権・公衆送信権の侵害にあたる</li>
+<li>米国の音楽著作権では、楽曲を録音すると「音楽著作物（musical work）」と「サウンドレコーディング（sound recording）」という2つの別々の著作物が作成され、それぞれ別々に所有・ライセンスされる <a href="https://www.copyright.gov/engage/musicians/" target="_blank" rel="noopener">copyright.gov</a></li>
+<li>他人の著作物を利用する場合、パブリックドメインの作品を利用するか、権利者から直接許可を得るか、ライセンス契約に従うか、フェアユースや第115条ライセンスなどの法的例外に依拠する必要がある <a href="https://www.copyright.gov/engage/musicians/" target="_blank" rel="noopener">copyright.gov</a></li>
+</ul>
+<p><strong>DMCAセーフハーバー（米国）</strong>：</p>
+<ul>
+<li>オンラインサービスプロバイダー（OSP）がDMCA §512のセーフハーバーを受けるためには：</li>
+</ul>
+<p>  1. 米国著作権局にDMCAエージェントを登録すること</p>
+<p>  2. 指定エージェントの連絡先情報をウェブサイト上の誰でもアクセス可能な場所に掲示すること</p>
+<p><a href="https://www.copyright.gov/512/" target="_blank" rel="noopener">copyright.gov</a></p>
+<p><strong>DMCAセーフハーバーの4カテゴリー</strong>：</p>
+<p>1. 一時的なデジタルネットワーク通信（Transitory digital network communications）</p>
+<p>2. システムキャッシュ（System caching）</p>
+<p>3. ユーザーの指示によるシステム上への情報保存（Information residing on systems or networks at users direction）</p>
+<p>4. 情報検索ツール（Information location tools）</p>
+<p><a href="https://www.justia.com/intellectual-property/copyright/copyright-safe-harbor/" target="_blank" rel="noopener">justia.com</a></p>
+<p><strong>日本の海賊版対策ハンドブック（文化庁）</strong>：</p>
+<ul>
+<li>米国のDMCAには①セーフハーバー（責任制限規定）と②ノーティスアンドテイクダウン（削除要請）の2つの仕組みがある</li>
+<li>セーフハーバーは、一定の条件を満たすサービスプロバイダーに対し、著作権侵害に対する損害賠償からの免責や、特定の差止命令の不発出を認める制度</li>
+<li>適切な通知を受けたにもかかわらずプロバイダーが削除等の対処を怠った場合、そのプロバイダーはセーフハーバーの恩恵を受けられない</li>
+</ul>
+<p><a href="https://www.bunka.go.jp/seisaku/chosakuken/kaizoku/assets/pdf/kaizokuban_handbook_usa.pdf" target="_blank" rel="noopener">bunka.go.jp</a></p>
+<p><strong>DMCAテイクダウン通知の手続き</strong>：</p>
+<p>1. 著作権所有者は、著作権で保護された作品の特定、自身の連絡先情報、無許可使用であることの誠実な声明を含む有効な通知を作成・送付</p>
+<p>2. 通知を受けたサービスプロバイダーは、セーフハーバーの法的保護を維持するため、対象コンテンツの削除またはアクセス無効化を迅速に行う</p>
+<p>3. 削除されたコンテンツの所有者は、削除が不当と判断した場合、異議申し立て通知を提出可能</p>
+<p>4. 異議申し立て後、元の申し立て人が指定期間内に訴訟を起こさない場合、コンテンツが復元される可能性</p>
+<p><a href="https://davidchapmanlaw.com/ja/practice-areas/intellectual-property/copyright-law/dmca-takedown-notices" target="_blank" rel="noopener">davidchapmanlaw.com</a></p>
+<hr>
+<h4>2-5. サムネイルの利用</h4>
+<p><strong>YouTubeのサムネイルポリシー</strong>：</p>
+<ul>
+<li>YouTubeは、視聴者を誤解させるような人物・団体・チャンネルの無許可のなりすましを禁止。AIを使って人物の声や似顔絵をコピーすることも禁止 <a href="https://support.google.com/youtube/answer/9229980" target="_blank" rel="noopener">support.google.com/youtube/answer/9229980</a></li>
+<li>商標権者の権利も執行される <a href="https://support.google.com/youtube/answer/9229980" target="_blank" rel="noopener">support.google.com/youtube/answer/9229980</a></li>
+<li>禁止されるサムネイルの内容：ポルノグラフィックな画像、性的行為、ヌード、望ましくない性的対象化、衝撃的な暴力表現、血や内臓の生々しい画像、卑猥な言葉、誤解を招くサムネイル <a href="https://support.google.com/youtube/answer/9229980" target="_blank" rel="noopener">support.google.com/youtube/answer/9229980</a></li>
+</ul>
+<p><strong>年齢制限・削除の基準</strong>：</p>
+<ul>
+<li>胸、尻、性器がサムネイルの焦点となっているか</li>
+<li>性的に興奮させる意図のあるポーズや服装か</li>
+<li>暴力的・生々しい画像が焦点か</li>
+<li>文章が卑猥・衝撃・嫌悪感を意図しているか</li>
+<li>タイトル・説明・タグなどが衝撃・嫌悪感を意図しているか</li>
+</ul>
+<p><a href="https://support.google.com/youtube/answer/9229980" target="_blank" rel="noopener">support.google.com/youtube/answer/9229980</a></p>
+<p><strong>違反時の措置</strong>：</p>
+<ul>
+<li>ポルノグラフィックなサムネイルの場合、チャンネルが終了される可能性</li>
+<li>その他のポリシー違反の場合、サムネイルが削除され、アカウントにストライクが発行される可能性</li>
+<li>90日以内に同じポリシーを再度違反した場合、警告が失効せずストライクが発行される</li>
+<li>90日以内に3回のストライク、またはチャンネルが違反コンテンツ専用である場合、チャンネルが終了される</li>
+</ul>
+<p><a href="https://support.google.com/youtube/answer/9229980" target="_blank" rel="noopener">support.google.com/youtube/answer/9229980</a></p>
+<hr>
+<h4>2-6. カバー曲の同定に使えるAPI・データベース</h4>
+<h5>MusicBrainz API</h5>
+<p><strong>機能</strong>：</p>
+<ul>
+<li>Lookup：MBIDを使用して特定のエントティの情報を取得（`/&lt;ENTITY_TYPE&gt;/&lt;MBID&gt;?inc=&lt;INC&gt;`）</li>
+<li>Browse：MBIDを使用して他のエントティに直接リンクされたすべてのエントティを取得（`/&lt;RESULT_ENTITY_TYPE&gt;?&lt;BROWSING_ENTITY_TYPE&gt;=&lt;MBID&gt;&amp;limit=&lt;LIMIT&gt;&amp;offset=&lt;OFFSET&gt;&amp;inc=&lt;INC&gt;`）</li>
+<li>Search：クエリに一致するエントティを検索（`/&lt;ENTITY_TYPE&gt;?query=&lt;QUERY&gt;&amp;limit=&lt;LIMIT&gt;&amp;offset=&lt;OFFSET&gt;`）</li>
+</ul>
+<p><a href="https://musicbrainz.org/doc/MusicBrainz_API" target="_blank" rel="noopener">musicbrainz.org</a></p>
+<p><strong>レート制限</strong>：</p>
+<ul>
+<li>1秒あたり1リクエストを超えないこと（これを超えるとIPアドレスがブロックされる可能性）</li>
+<li>適切なUser-Agent文字列をHTTPリクエストヘッダーに設定することが必須</li>
+</ul>
+<p><a href="https://musicbrainz.org/doc/MusicBrainz_API" target="_blank" rel="noopener">musicbrainz.org</a></p>
+<p><strong>スロットリングの詳細ルール</strong>：</p>
+<ul>
+<li>User-Agentチェック：特定のアプリケーション（例：headphones、python-musicbrainz）は1秒あたり平均50リクエストまで許可、匿名User-Agentも同様の制限</li>
+<li>ソースIPアドレスチェック：平均1リクエスト/秒を超えると、すべてのリクエストが拒否される（503エラー）</li>
+<li>グローバルチェック：全体で1秒あたり300リクエストまで許可、それ以上は拒否</li>
+</ul>
+<p><a href="https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting" target="_blank" rel="noopener">musicbrainz.org</a></p>
+<p><strong>User-Agentの要件</strong>：</p>
+<ul>
+<li>各リクエストには、MusicBrainzがアプリケーションのメンテナーに連絡できる十分な情報を含むUser-Agentヘッダーが必要</li>
+<li>推奨形式：`Application name/&lt;version&gt; ( contact-url )` または `Application name/&lt;version&gt; ( contact-email )`</li>
+</ul>
+<p><a href="https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting" target="_blank" rel="noopener">musicbrainz.org</a></p>
+<p><strong>避けるべき行動</strong>：</p>
+<ul>
+<li>特定の時間にまとめて大量のリクエストを送ること（例：毎日03:00に一斉にクエリを実行）</li>
+<li>メタデータの変更をポーリングすること（メタデータは頻繁に変更されないため、ポーリングは非効率）</li>
+</ul>
+<p><a href="https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting" target="_blank" rel="noopener">musicbrainz.org</a></p>
+<h5>Discogs API</h5>
+<p><strong>機能</strong>：</p>
+<ul>
+<li>在庫管理：ユーザーの在庫リスティングの一覧取得</li>
+<li>リスティング管理：リスティングの表示、作成、編集、永久削除</li>
+<li>注文管理：注文データの表示・編集、ユーザーの注文一覧、注文メッセージログの管理</li>
+<li>財務ツール：マーケットプレイス販売手数料の計算</li>
+<li>市場分析：特定Release IDの価格提案、マーケットプレイス統計の取得</li>
+</ul>
+<p><a href="https://www.discogs.com/developers" target="_blank" rel="noopener">discogs.com/developers</a></p>
+<p><strong>認証要件</strong>：</p>
+<ul>
+<li>リスティング管理（編集・削除・作成）：リスティングオーナーとしての認証が必要</li>
+<li>注文管理（表示・編集・一覧・メッセージ）：セラーとしての認証が必要</li>
+<li>価格提案：認証が必要で、ユーザーはセラー設定を完了している必要がある</li>
+<li>リリース統計：認証は任意（認証ユーザーはデフォルトで自身の購入通貨で最低価格が表示される）</li>
+<li>在庫アクセス：在庫オーナーとしての認証が必要（「For Sale」以外のステータスのアイテムや、weight、format_quantity、external_id、location、quantityなどのキーにアクセスするため）</li>
+</ul>
+<p><a href="https://www.discogs.com/developers" target="_blank" rel="noopener">discogs.com/developers</a></p>
+<h5>Spotify Web API</h5>
+<p><strong>機能</strong>：</p>
+<ul>
+<li>アーティスト、アルバム、ショーのメタデータ取得</li>
+<li>Spotifyコンテンツの検索</li>
+<li>再生の制御・操作（再生・一時停止、位置シーク、キュー取得）</li>
+<li>個人ライブラリの管理（プレイリスト作成、お気に入りトラックの追加）</li>
+</ul>
+<p><a href="https://developer.spotify.com/documentation/web-api" target="_blank" rel="noopener">developer.spotify.com</a></p>
+<p><strong>認証要件</strong>：</p>
+<ul>
+<li>Spotify Premiumアカウントが必要</li>
+<li>ダッシュボードでアプリを作成し、アクセストークンを取得してAPIリクエストに使用</li>
+</ul>
+<p><a href="https://developer.spotify.com/documentation/web-api" target="_blank" rel="noopener">developer.spotify.com</a></p>
+<p><strong>2026年2月のAPI変更点</strong>：</p>
+<p>1. アカウントとアプリ制限：開発モードのアプリ所有者にはSpotify Premiumサブスクリプションが必須</p>
+<p>2. ライブラリ管理：エンティティ固有の保存・削除・フォロー・解除エンドポイントが汎用的な「/me/library」および「/me/library/contains」に統合</p>
+<p>3. プレイリストのエンドポイント：「/tracks」関連のエンドポイントが「/items」にリネーム</p>
+<p>4. 一括取得機能の廃止：トラック、アルバム、アーティストなどの一括取得エンドポイントが廃止され、個別取得が必要に</p>
+<p>5. ブラウズおよびアーティスト関連の削除：「/browse/new-releases」「/artists/{id}/top-tracks」などのエンドポイントが利用不可に</p>
+<p>6. ユーザーデータ関連の削除：特定のユーザー情報取得（GET /users/{id}など）が制限され、自身のプロフィール取得（/me）への移行が必要</p>
+<p>7. 検索制限：「GET /search」の「limit」パラメータの最大値が50から10へ、デフォルト値が20から5へ引き下げ</p>
+<p><a href="https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide" target="_blank" rel="noopener">developer.spotify.com</a></p>
+<h5>YouTube Data API v3</h5>
+<p><strong>機能</strong>：</p>
+<ul>
+<li>YouTubeウェブサイト上で通常実行される機能を自身のウェブサイトやアプリケーションに組み込む</li>
+<li>リソースベースの設計：動画、プレイリスト、購読など、YouTube体験の一部となる様々なリソースを操作・取得可能</li>
+</ul>
+<p><a href="https://developers.google.com/youtube/v3/docs" target="_blank" rel="noopener">developers.google.com</a></p>
+<p><strong>主要なメソッド</strong>：</p>
+<ul>
+<li>LIST：リソースの一覧取得</li>
+<li>POST：リソースの挿入（作成）</li>
+<li>DELETE：リソースの削除</li>
+<li>PUT：リソースの更新</li>
+</ul>
+<p><a href="https://developers.google.com/youtube/v3/docs" target="_blank" rel="noopener">developers.google.com</a></p>
+<p><strong>認証</strong>：OAuth 2.0認証が多くのAPI操作で必須 <a href="https://developers.google.com/youtube/v3/guides/authentication" target="_blank" rel="noopener">developers.google.com</a>（※このURLはスニペット情報のみで詳細確認できず）</p>
+<h5>SecondHandSongs API</h5>
+<p><strong>機能</strong>：</p>
+<ul>
+<li>検索：アーティスト、パフォーマンス、作品の検索</li>
+<li>情報取得：SHSオブジェクト（アーティスト、パフォーマンス、作品）の情報取得</li>
+</ul>
+<p><a href="https://secondhandsongs.com/page/API" target="_blank" rel="noopener">secondhandsongs.com/page/API</a></p>
+<p><strong>アクセス方法</strong>：</p>
+<ul>
+<li>HTTPS経由でアクセス</li>
+<li>通常のWebページではなくAPI結果を取得するための特定ヘッダーを使用</li>
+</ul>
+<p><a href="https://secondhandsongs.com/page/API/access" target="_blank" rel="noopener">secondhandsongs.com/page/API/access</a></p>
+<p><strong>利用制限</strong>：</p>
+<ul>
+<li>SecondHandSongsの利用規約によると、営利目的での使用、自身のカバー曲ウェブサイトプロジェクトの開始などは、Second Hand Songsの書面による同意なしには禁止されている <a href="https://www.whosampled.com/forum/topic/2317/SecondHandSongs/" target="_blank" rel="noopener">whosampled.com</a>（※このURLはスニペット情報のみで詳細確認できず）</li>
+</ul>
+<h5>その他音楽データAPI（Soundchartsによる分類）</h5>
+<p><strong>カテゴリー別API一覧</strong>：</p>
+<ul>
+<li>オーディオ分析：Auphonic</li>
+<li>オーディオコンテンツ：MassiveMusic、AI Mastering、ccMixter、Freesound、Jamendo、Mixcloud、Napster、Songsterr、SoundCloud</li>
+<li>DSP：Amazon、Apple Music、Audiomack、Bandcamp、Deezer、KKBOX、Spotify、YouTube、Beatport</li>
+<li>イベント：Bandsintown、SeatGeek、Songkick、Ticketmaster</li>
+<li>歌詞：Genius、KSoft.Si Lyrics、Lyrics.ovh、Musixmatch、Vagalume</li>
+<li>その他：BBC、Cover Art Archive、Noteflight、Radio Browser、Reverb、Spreaker、TasteDive、This Is My Jam</li>
+<li>音楽アナリティクス：Soundcharts、Chartmetric、Songstats</li>
+<li>音楽メタデータ：Bridge.audio、Discogs、Gracenote、LastFm、Music Story、MusicBrainz、OneMusicAPI、TiVo、TheAudioDB</li>
+</ul>
+<p><a href="https://soundcharts.com/ja/blog/music-data-api" target="_blank" rel="noopener">soundcharts.com</a></p>
+<hr>
+<h3>第3章：著作権侵害で停止・削除・訴訟に至ったサイト事例</h3>
+<h4>1. Grooveshark</h4>
+<p><strong>概要</strong>：米国の音楽ストリーミングサービス。</p>
+<p><strong>閉鎖日</strong>：2015年4月30日 <a href="https://en.wikipedia.org/wiki/Grooveshark" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>閉鎖理由</strong>：ユニバーサルミュージックグループ、ソニー・ミュージックエンタテインメント、ワーナー・ミュージック・グループとの著作権侵害訴訟の和解の一環 <a href="https://en.wikipedia.org/wiki/Grooveshark" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>和解金額</strong>：具体的な和解金額は公開情報で確認できなかった。ただし、故意の著作権侵害と判断された場合、最大7億3600万ドルの損害賠償責任を負う可能性があったと報じられている <a href="https://en.wikipedia.org/wiki/Grooveshark" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>事後の設計変更</strong>：サイトは運営終了後、知的財産権をレコードレーベルへ譲渡 <a href="https://en.wikipedia.org/wiki/Grooveshark" target="_blank" rel="noopener">Wikipedia</a></p>
+<hr>
+<h4>2. Napster</h4>
+<p><strong>概要</strong>：1999年に設立されたピアツーピアファイル共有サービス。</p>
+<p><strong>閉鎖日</strong>：2001年7月11日（裁判所の命令に従いネットワークを閉鎖）<a href="https://en.wikipedia.org/wiki/Napster" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>閉鎖理由</strong>：著作権侵害訴訟による裁判所の差止命令 <a href="https://en.wikipedia.org/wiki/Napster" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>和解金額</strong>：</p>
+<ul>
+<li>過去の無断使用に対する和解金：2,600万ドル</li>
+<li>将来のライセンス料の前払い：1,000万ドル</li>
+</ul>
+<p><a href="https://en.wikipedia.org/wiki/Napster" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>事後の設計変更</strong>：ブランドはその後複数回の買収とビジネスモデルの転換を経て、現在は音楽ストリーミングサービスとして運営 <a href="https://en.wikipedia.org/wiki/Napster" target="_blank" rel="noopener">Wikipedia</a></p>
+<hr>
+<h4>3. LimeWire</h4>
+<p><strong>概要</strong>：ピアツーピアファイル共有クライアント。</p>
+<p><strong>差止め命令の日付</strong>：2010年10月26日（米国連邦裁判所判事Kimba Woodによる）<a href="https://en.wikipedia.org/wiki/LimeWire" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>和解金額</strong>：1億500万ドル（RIAAとの和解）<a href="https://en.wikipedia.org/wiki/LimeWire" target="_blank" rel="noopener">Wikipedia</a>（※当初RIAAは72兆ドルの損害賠償を主張していた）</p>
+<p><strong>事後の設計変更</strong>：P2Pサービスとしての機能は停止。後にブランドはNFTおよびAI関連のベンチャーとして再出発 <a href="https://en.wikipedia.org/wiki/LimeWire" target="_blank" rel="noopener">Wikipedia</a></p>
+<hr>
+<h4>4. MP3.com（UMG Recordings, Inc. v. MP3.com, Inc.）</h4>
+<p><strong>概要</strong>：MP3.comのMy.MP3.comサービスに関する訴訟。</p>
+<p><strong>判決内容</strong>：</p>
+<ul>
+<li>地裁は、インターネットを介した正当に購入された音楽ファイルの配布には、米国著作権法の下で許諾が必要な「複製」の作成が伴うと判断</li>
+<li>MP3.comのサービスが著作権で保護された素材を無断でコピーしたことは著作権法違反と認定</li>
+</ul>
+<p><a href="https://en.wikipedia.org/wiki/UMG_Recordings,_Inc._v._MP3.com,_Inc." target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>賠償額</strong>：最終的にレガシー・レコード会社に対して1億5000万ドル以上の賠償金を支払う義務を負った <a href="https://en.wikipedia.org/wiki/UMG_Recordings,_Inc._v._MP3.com,_Inc." target="_blank" rel="noopener">Wikipedia</a></p>
+<hr>
+<h4>5. Megaupload</h4>
+<p><strong>概要</strong>：ファイルホスティングサイト。</p>
+<p><strong>押収・閉鎖日</strong>：2012年1月19日（米国司法省による）<a href="https://en.wikipedia.org/wiki/Megaupload_legal_case" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>容疑内容</strong>：</p>
+<ul>
+<li>組織犯罪（racketeering）</li>
+<li>資金洗浄（money laundering）</li>
+<li>刑事著作権侵害</li>
+</ul>
+<p><a href="https://en.wikipedia.org/wiki/Megaupload_legal_case" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>事後</strong>：創設者Kim Dotcomらに対する引き渡し請求および資産凍結をめぐる法的闘争が継続 <a href="https://en.wikipedia.org/wiki/Megaupload_legal_case" target="_blank" rel="noopener">Wikipedia</a></p>
+<hr>
+<h4>6. YouTube-MP3（youtube-mp3.org）</h4>
+<p><strong>概要</strong>：YouTube動画をMP3に変換・ダウンロードさせるサービス。</p>
+<p><strong>訴訟・和解</strong>：</p>
+<ul>
+<li>レコードレーベルとの和解（和解金額は非公開）</li>
+<li>サイトの閉鎖およびドメインの原告への移転を命じられた</li>
+<li>後に訴訟は却下（2021年）[検索結果スニペットより、詳細URLは確認できず]</li>
+</ul>
+<hr>
+<h4>7. jpopmix.com（日本）</h4>
+<p><strong>概要</strong>：日本の海賊版音楽サイト。</p>
+<p><strong>閉鎖理由</strong>：日本レコード協会（RIAJ）による対応（CDNプロバイダーのCloudFlareへの対応要請など）<a href="https://www.riaj.or.jp/news/press/9a764095-06b6-4f93-9a34-b6578be696ef/" target="_blank" rel="noopener">riaj.or.jp</a>（※スニペット情報のみで詳細な閉鎖経緯は確認できず）</p>
+<hr>
+<h4>8. SpiralFrog</h4>
+<p><strong>概要</strong>：広告支援型の音楽配信サービス。</p>
+<p><strong>閉鎖理由</strong>：</p>
+<ul>
+<li>「マクロ経済の大嵐」：世界経済の冷え込み、資本市場の崩壊、広告市場の急速な縮小</li>
+<li>DRM（デジタル著作権管理）付きの楽曲しか提供しておらず、音楽ファンのニーズに応えられなかった</li>
+<li>他社に比べて楽曲数が大幅に劣っていた（特にSony Entertainment GroupとWarner Music Groupの楽曲を提供できなかった）</li>
+<li>巨額の負債</li>
+<li>経営陣の交代や創設者との衝突など内部的な問題</li>
+</ul>
+<p><a href="https://japan.cnet.com/article/20390292/" target="_blank" rel="noopener">japan.cnet.com</a></p>
+<hr>
+<h4>9. AcousticBrainz（技術的・運営上の失敗事例）</h4>
+<p><strong>終了理由</strong>：</p>
+<ul>
+<li>生成された音楽的キーデータやBPMツールの精度不足</li>
+<li>データの信頼性（confidence level）を示す仕組みの欠如</li>
+<li>運営元MetaBrainzにアルゴリズム改善のための専門的スキルを持つ人材が不足</li>
+</ul>
+<p><a href="https://community.metabrainz.org/t/acousticbrainz-making-a-hard-decision-to-end-the-project/572828" target="_blank" rel="noopener">community.metabrainz.org</a></p>
+<p><strong>教訓</strong>： crowdsourcing と自動化アルゴリズムの組み合わせだけでは、高品質な音楽メタデータベースを維持するのは困難。専門的なドメイン知識と継続的なアルゴリズム改善のリソースが必要。</p>
+<hr>
+<h4>10. The Echo Nest（買収によるAPI終了事例）</h4>
+<p><strong>買収</strong>：2014年3月、Spotifyが4,970万ユーロで買収 <a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>API廃止</strong>：2016年5月31日、Spotify APIへの統合のため廃止 <a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">Wikipedia</a></p>
+<p><strong>教訓</strong>：サードパーティのAPIに依存するサービスは、買収や事業方針の変更により突然利用できなくなるリスクがある。</p>
+<hr>
+<h4>11. しまじろうのわお！著作権訴訟（日本）</h4>
+<p><strong>概要</strong>：テレビ番組「しまじろうのわお！」の楽曲公募に関連した著作権侵害訴訟。</p>
+<p><strong>判決内容</strong>（知的財産高等裁判所）：</p>
+<ul>
+<li>楽曲の著作権・著作者人格権侵害の成否を判断する際、中心的要素となるのは「旋律」であると判示</li>
+<li>控訴人が主張した「テンポ（BPM）が同じであること」や「歌と伴奏を入れ替えても違和感がないこと」を根拠とした同一性の主張を退け、旋律に多くの相違があることから類似性を否定</li>
+</ul>
+<p><a href="https://innoventier.com/archives/2016/12/2464" target="_blank" rel="noopener">innoventier.com</a></p>
+<p><strong>教訓</strong>：音楽の類似性判断において、旋律が最も重要な要素であり、リズムやテンポの類似だけでは侵害が認められない。</p>
+<hr>
+<h4>12. 音楽教室対JASRAC事件（日本）</h4>
+<p><strong>概要</strong>：音楽教室がJASRACを訴えた著作権侵害訴訟。</p>
+<p><strong>最高裁判決</strong>：</p>
+<ul>
+<li>音楽教室における生徒の演奏については、音楽教室が著作物の利用主体ではなく、あくまで「生徒の演奏」であると判断</li>
+<li>一方で、生徒の演奏以外の部分（教師による伴奏や録音物の再生など）については、音楽教室による楽曲利用とみなす第一審・知財高裁の判断が維持され、全体として音楽教室側による使用料支払義務自体は認められる結果に</li>
+</ul>
+<p><a href="https://www.businesslawyers.jp/articles/1313" target="_blank" rel="noopener">businesslawyers.jp</a></p>
+<p><strong>教訓</strong>：著作権の「利用主体」の判断は複雑であり、事業形態や利用の実態によって異なる。</p>
+<hr>
+<h4>13. 店舗BGMとJASRACの訴訟（日本）</h4>
+<p><strong>事例</strong>：</p>
+<ul>
+<li>2015年6月：JASRACは音楽著作権の手続きを行わずにBGMを流していた171事業者258施設に対して民事調停を申し立て</li>
+<li>2017年7月：北海道の理髪店と香川県の飲食店経営者を提訴（JASRACが管理する音楽を無断で使用し、度重なる契約要求を無視したため）</li>
+</ul>
+<p><a href="https://otoraku.jp/column/cr12/" target="_blank" rel="noopener">otoraku.jp</a></p>
+<p><strong>教訓</strong>：業務利用（店舗BGM）における著作権処理は必須であり、無断使用は民事調停・訴訟のリスクがある。</p>
+<hr>
+<h4>14. Twitter（X）対音楽出版社訴訟（米国）</h4>
+<p><strong>概要</strong>：17の音楽出版社（ユニバーサル・ミュージック、コンコードミュージックなど）がTwitterを提訴。</p>
+<p><strong>損害賠償額</strong>：最大2億5000万ドル（約350億円）を請求 <a href="https://forbesjapan.com/articles/detail/63900" target="_blank" rel="noopener">forbesjapan.com</a></p>
+<p><strong>具体的な内容</strong>：</p>
+<ul>
+<li>約1700曲の著作権侵害の疑い</li>
+<li>侵害されたコンテンツ1つにつき最高15万ドル（約2100万円）の損害賠償を請求</li>
+<li>出版社側は、Twitterが著作権侵害を「故意に助長し、利益を得た」と主張し、特にイーロン・マスクによる買収以降、状況が悪化した点を問題視</li>
+</ul>
+<p><a href="https://forbesjapan.com/articles/detail/63900" target="_blank" rel="noopener">forbesjapan.com</a></p>
+<p><strong>その後の経過</strong>：</p>
+<ul>
+<li>X（Twitter）は「コックス判決で出版社の唯一の請求根拠が消えた」として却下を請求 <a href="https://www.musicman.co.jp/business/731258" target="_blank" rel="noopener">musicman.co.jp</a>（※スニペット情報のみで詳細な判決結果は確認できず）</li>
+</ul>
+<hr>
+<h4>15. 「One Rainy Night in Tokyo」事件（日本）</h4>
+<p><strong>概要</strong>：米国楽曲「One Rainy Night in Tokyo」との類似性が争われた事件。</p>
+<p><strong>判決内容</strong>：</p>
+<ul>
+<li>控訴審判決は、「複製」とは複製者が既存の著作物の存在・内容を知っていることを前提とするとした</li>
+<li>作曲当時に原曲が日本において有名ではなく、作曲家が原曲に接したとも推認できないため、依拠性を否定</li>
+<li>一定の類似性は認めつつも、原曲を知らなければ作曲できないほどの強度な類似性は認められないと判示</li>
+</ul>
+<p><a href="https://www.kottolaw.com/column/000051.html" target="_blank" rel="noopener">kottolaw.com</a></p>
+<p><strong>教訓</strong>：著作権侵害の成立には「依拠性」（原曲を知っていたこと）と「類似性」の両方が必要。</p>
+<hr>
+<h4>16. 「歌ってみた」動画の著作権（日本の一般論）</h4>
+<p><strong>解説</strong>（明治大学法学部特別講義）：</p>
+<ul>
+<li>動画投稿サイトへの投稿は著作権法上の「公衆送信」に該当</li>
+<li>対面での演奏等に適用される権利制限規定（第38条第1項）は公衆送信には適用されないため、無断で行うと著作権侵害となる可能性が高い</li>
+<li>権利者から許諾を得ている場合は侵害とはならない。大手の動画投稿サイトでは、著作権管理団体から許諾を得ているケースもある</li>
+</ul>
+<p><a href="https://www.meiji.net/feature/202503_02" target="_blank" rel="noopener">meiji.net</a></p>
+<hr>
+<h3>第4章：日本語のカバー曲紹介サイトを一人＋AIで安全に運営するための設計指針（5項目）</h3>
+<h4>指針1：YouTubeの公式収益化ポリシーに従い、Content IDの仕組みを理解した上で動画を公開する</h4>
+<p><strong>根拠</strong>：</p>
+<ul>
+<li>カバー曲の収益化は、音楽出版社がContent IDシステムを通じて楽曲を申し立て、収益化を選択した場合にのみ可能 <a href="https://support.google.com/youtube/answer/2490020" target="_blank" rel="noopener">support.google.com/youtube/answer/2490020</a></li>
+<li>楽曲が申し立てられていない場合、権利者からの明示的な書面による許可がない限り収益化できない <a href="https://support.google.com/youtube/answer/2490020" target="_blank" rel="noopener">support.google.com/youtube/answer/2490020</a></li>
+<li>収益分配は按分比率で行われ、作曲の権利者が利益の大部分を受け取る <a href="https://support.google.com/youtube/answer/3301938" target="_blank" rel="noopener">support.google.com/youtube/answer/3301938</a></li>
+<li>実際の事例では、1再生当たり約0.07円と、通常動画の約4分の1の収益単価になることも <a href="https://note.com/ocarina_justin/n/nea04416d0dbd" target="_blank" rel="noopener">note.com</a></li>
+</ul>
+<p><strong>実践的アドバイス</strong>：</p>
+<ul>
+<li>カバー曲動画を「集客用」と位置づけ、収益はオリジナル曲やトーク動画などカバー曲以外のコンテンツで得る戦略が現実的 <a href="https://note.com/ocarina_justin/n/nea04416d0dbd" target="_blank" rel="noopener">note.com</a></li>
+<li>DistroKidなどの配信サービスでは、カバー曲はYouTube Content IDに登録できない場合があるため、代替手段（JASRAC/NexToneへの許諾申請など）を検討する必要あり <a href="https://support.distrokid.com/hc/ja/articles/360025496594-" target="_blank" rel="noopener">support.distrokid.com</a></li>
+</ul>
+<hr>
+<h4>指針2：歌詞の引用は著作権法第32条の「引用」要件を厳格に守り、必要最小限にとどめる</h4>
+<p><strong>根拠</strong>：</p>
+<ul>
+<li>日本の著作権法第32条1項に基づく引用の要件：公表された著作物、明瞭区別性、主従関係、公正な慣行・正当な範囲、出典明示、改変禁止 <a href="https://www.mizogami.gr.jp/news/ne_back/jim2908K39.htm" target="_blank" rel="noopener">mizogami.gr.jp</a>、<a href="https://webtan.impress.co.jp/e/2019/03/20/31769" target="_blank" rel="noopener">webtan.impress.co.jp</a></li>
+<li>歌手のファンブログでは、歌詞は一文でも掲載禁止（著作権侵害）、歌手の写真も掲載禁止（肖像権侵害）<a href="https://nekoyogurt.com/ready/casediscussion-singerfanblog/" target="_blank" rel="noopener">nekoyogurt.com</a></li>
+<li>米国フェアユースの4要素も参考になるが、日本では「引用」要件がより厳格に適用される傾向 <a href="https://www.ingramspark.com/blog/quoting-song-lyrics-in-a-book-4-factors-fair-use" target="_blank" rel="noopener">ingramspark.com</a></li>
+</ul>
+<p><strong>実践的アドバイス</strong>：</p>
+<ul>
+<li>歌詞をまるごと掲載するのではなく、批評・評論のために必要最小限の一節のみを引用し、出典を明記</li>
+<li>曲の紹介自体は歌詞を載せずに行う「難易度の高い技」が必要 <a href="https://nekoyogurt.com/ready/casediscussion-singerfanblog/" target="_blank" rel="noopener">nekoyogurt.com</a></li>
+<li>アフィリエイトリンク取得時に提供される画像のみを使用するなどの代替手段を検討</li>
+</ul>
+<hr>
+<h4>指針3：API利用時のレート制限・利用規約を厳守し、単一のデータソースに依存しない設計にする</h4>
+<p><strong>根拠</strong>：</p>
+<ul>
+<li>MusicBrainz APIは1秒あたり1リクエストの制限があり、違反するとIPブロックのリスク <a href="https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting" target="_blank" rel="noopener">musicbrainz.org</a></li>
+<li>Spotify APIは2026年2月に大幅な制限が導入され、検索limitが50→10に、一括取得機能が廃止された <a href="https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide" target="_blank" rel="noopener">developer.spotify.com</a></li>
+<li>The Echo NestはSpotifyに買収され、APIが2016年に廃止された <a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">Wikipedia</a></li>
+<li>AcousticBrainzはアルゴリズムの精度不足と運営リソース不足で2022年に終了 <a href="https://community.metabrainz.org/t/acousticbrainz-making-a-hard-decision-to-end-the-project/572828" target="_blank" rel="noopener">community.metabrainz.org</a></li>
+<li>SecondHandSongsの利用規約では、営利目的での使用や独自カバー曲サイトの開始が書面による同意なしに禁止されている可能性 <a href="https://www.whosampled.com/forum/topic/2317/SecondHandSongs/" target="_blank" rel="noopener">whosampled.com</a>（※スニペット情報のみ）</li>
+</ul>
+<p><strong>実践的アドバイス</strong>：</p>
+<ul>
+<li>複数のAPI（MusicBrainz、Discogs、Spotify、SecondHandSongsなど）を組み合わせ、単一ソースに依存しない冗長化設計</li>
+<li>APIのレート制限を遵守するよう、リクエスト間隔を制御するミドルウェアを実装</li>
+<li>API仕様変更に備え、定期的なドキュメント確認とフォールバック機構の準備</li>
+</ul>
+<hr>
+<h4>指針4：AI生成コンテンツの「独自性」を確保し、プラットフォームの重複コンテンツ判定を回避する</h4>
+<p><strong>根拠</strong>：</p>
+<ul>
+<li>YouTubeの収益化ポリシーでは、「大量生産、汎用的、反復的、操作的」なコンテンツは禁止 <a href="https://support.google.com/youtube/answer/1311392" target="_blank" rel="noopener">support.google.com/youtube/answer/1311392</a></li>
+<li>実際のAI自動化事例（nihonichi_music）では、静止画に微細なズーム・パン・ピクセル移動を加えることで「静止画使い回し」判定を回避 <a href="https://note.com/nihonichi_music/n/n5da141ce7465" target="_blank" rel="noopener">note.com</a></li>
+<li>ピッチや速度を変更しただけの楽曲は収益化対象外 <a href="https://support.google.com/youtube/answer/1311392" target="_blank" rel="noopener">support.google.com/youtube/answer/1311392</a></li>
+</ul>
+<p><strong>実践的アドバイス</strong>：</p>
+<ul>
+<li>AI生成動画に独自の映像ギミック（カメラワーク、テロップ、アニメーション）を追加</li>
+<li>同一のテンプレートを使い回さず、曲ごとに異なる視覚的要素を付与</li>
+<li>楽曲の選定・解説テキストなど、AIでは代替できない「人手による選定・編集」の要素を明示的に組み込む</li>
+</ul>
+<hr>
+<h4>指針5：DMCAセーフハーバーの要件を理解し、権利者からの通知への迅速な対応体制を整える</h4>
+<p><strong>根拠</strong>：</p>
+<ul>
+<li>米国DMCA §512のセーフハーバーを受けるには、DMCAエージェントの登録と連絡先情報の掲示が必要 <a href="https://www.copyright.gov/512/" target="_blank" rel="noopener">copyright.gov</a></li>
+<li>適切な通知を受けたにもかかわらず削除等の対処を怠った場合、セーフハーバーの恩恵を受けられない <a href="https://www.bunka.go.jp/seisaku/chosakuken/kaizoku/assets/pdf/kaizokuban_handbook_usa.pdf" target="_blank" rel="noopener">bunka.go.jp</a></li>
+<li>異議申し立て（カウンターノーティス）の手続きも存在する <a href="https://davidchapmanlaw.com/ja/practice-areas/intellectual-property/copyright-law/dmca-takedown-notices" target="_blank" rel="noopener">davidchapmanlaw.com</a></li>
+<li>YouTubeのフェアユース保護イニシアチブは米国在住クリエイターに限定され、最大100万ドルの法的費用を保証するが、適用範囲は限定的 <a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">support.google.com/youtube/answer/9783148</a></li>
+</ul>
+<p><strong>実践的アドバイス</strong>：</p>
+<ul>
+<li>連絡先（DMCAエージェントに相当する窓口）をサイトに明記</li>
+<li>権利者からの通知を受け取った場合、速やかに該当コンテンツを削除または非公開にする体制を構築</li>
+<li>不当なクレームに対しては、YouTubeのContent ID dispute processやDMCAカウンターノーティスを活用する選択肢を検討（ただし法的リスクを考慮）</li>
+<li>日本国内のサイトであっても、海外の権利者からDMCA通知が届く可能性があるため、対応フローを事前に準備</li>
+</ul>
+<hr>
+<h3>出典一覧</h3>
+<p>1. <a href="https://secondhandsongs.com" target="_blank" rel="noopener">SecondHandSongs</a></p>
+<p>2. <a href="https://en.wikipedia.org/wiki/SecondHandSongs" target="_blank" rel="noopener">SecondHandSongs - Wikipedia</a></p>
+<p>3. <a href="https://secondhandsongs.com/page/API" target="_blank" rel="noopener">SecondHandSongs API</a></p>
+<p>4. <a href="https://secondhandsongs.com/page/API/access" target="_blank" rel="noopener">SecondHandSongs API Access</a></p>
+<p>5. <a href="https://cover.info" target="_blank" rel="noopener">COVER.INFO</a></p>
+<p>6. <a href="https://cover.info/dis.cover" target="_blank" rel="noopener">COVER.INFO - DIS.COVER</a></p>
+<p>7. <a href="https://everynoise.com" target="_blank" rel="noopener">Every Noise at Once</a></p>
+<p>8. <a href="https://en.wikipedia.org/wiki/Every_Noise_at_Once" target="_blank" rel="noopener">Every Noise at Once - Wikipedia</a></p>
+<p>9. <a href="https://www.music-map.com" target="_blank" rel="noopener">Music-Map</a></p>
+<p>10. <a href="https://blog.sibasi.com/algorithm-behind-music-how-does-it-work" target="_blank" rel="noopener">Music-Mapアルゴリズム解説</a></p>
+<p>11. <a href="https://www.rateyourmusic.com" target="_blank" rel="noopener">Rate Your Music</a>（※クローリング失敗）</p>
+<p>12. <a href="https://genius.com" target="_blank" rel="noopener">Genius</a></p>
+<p>13. <a href="https://www.setlist.fm" target="_blank" rel="noopener">Setlist.fm</a></p>
+<p>14. <a href="https://www.discogs.com" target="_blank" rel="noopener">Discogs</a></p>
+<p>15. <a href="https://www.discogs.com/developers" target="_blank" rel="noopener">Discogs Developers</a></p>
+<p>16. <a href="https://r-p-m.jp/interview/discogs" target="_blank" rel="noopener">Discogsインタビュー</a></p>
+<p>17. <a href="https://allmusic.com" target="_blank" rel="noopener">AllMusic</a>（※クローリング失敗）</p>
+<p>18. <a href="https://www.hypem.com" target="_blank" rel="noopener">Hype Machine</a></p>
+<p>19. <a href="https://www.shellbys.com/column/music-blog-start" target="_blank" rel="noopener">Shellbys - 音楽ブログの始め方</a></p>
+<p>20. <a href="https://neatnobibouroku.info/how-to-start-music-blog/" target="_blank" rel="noopener">ネートの備忘録 - 音楽ブログの始め方</a></p>
+<p>21. <a href="https://note.com/nihonichi_music/n/n5da141ce7465" target="_blank" rel="noopener">note.com - nihonichi_musicのAI自動化事例</a></p>
+<p>22. <a href="https://dynamoi.com/ja/learn/youtube-music-promotion/can-cover-songs-be-monetized-on-youtube/" target="_blank" rel="noopener">Dynamoi - カバー曲のYouTube収益化</a></p>
+<p>23. <a href="https://support.distrokid.com/hc/ja/articles/360025496594-" target="_blank" rel="noopener">DistroKidヘルプ - カバー曲とContent ID</a></p>
+<p>24. <a href="https://ligar.shop/blog/youtube-contentid-2" target="_blank" rel="noopener">Ligar Music Library - Content IDの旋律認識</a></p>
+<p>25. <a href="https://note.com/yama_eigh3/n/n56668b801ff7" target="_blank" rel="noopener">note.com - 歌詞引用のルール</a></p>
+<p>26. <a href="https://www.mizogami.gr.jp/news/ne_back/jim2908K39.htm" target="_blank" rel="noopener">溝上法律特許事務所 - 歌詞引用と著作権法</a></p>
+<p>27. <a href="https://webtan.impress.co.jp/e/2019/03/20/31769" target="_blank" rel="noopener">Web担当者Forum - 引用の5条件</a></p>
+<p>28. <a href="https://innoventier.com/archives/2016/12/2464" target="_blank" rel="noopener">Innoventier - しまじろうのわお!著作権訴訟</a></p>
+<p>29. <a href="https://www.businesslawyers.jp/articles/1313" target="_blank" rel="noopener">ビジネスロイヤーズ - 音楽教室対JASRAC事件</a></p>
+<p>30. <a href="https://otoraku.jp/column/cr12/" target="_blank" rel="noopener">OTORAKU - 店舗BGMとJASRAC訴訟</a></p>
+<p>31. <a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">YouTubeヘルプ - フェアユース</a></p>
+<p>32. <a href="https://support.google.com/youtube/answer/2490020" target="_blank" rel="noopener">YouTubeヘルプ - カバー曲のマネタイズ</a></p>
+<p>33. <a href="https://support.google.com/youtube/answer/3301938" target="_blank" rel="noopener">YouTubeヘルプ - カバー曲の収益共有</a></p>
+<p>34. <a href="https://support.google.com/youtube/answer/1311392" target="_blank" rel="noopener">YouTubeヘルプ - マネタイズポリシー</a></p>
+<p>35. <a href="https://support.google.com/youtube/answer/9229980" target="_blank" rel="noopener">YouTubeヘルプ - サムネイルポリシー</a></p>
+<p>36. <a href="https://www.ingramspark.com/blog/quoting-song-lyrics-in-a-book-4-factors-fair-use" target="_blank" rel="noopener">IngramSpark - 歌詞引用とフェアユース</a></p>
+<p>37. <a href="https://meta.wikimedia.org/wiki/Wikilegal/Fair_use_protections_for_posting_music_lyric_excerpts_and_translations" target="_blank" rel="noopener">Wikimedia - 歌詞抜粋のフェアユース</a></p>
+<p>38. <a href="https://musicbrainz.org/doc/MusicBrainz_API" target="_blank" rel="noopener">MusicBrainz API</a></p>
+<p>39. <a href="https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting" target="_blank" rel="noopener">MusicBrainz API Rate Limiting</a></p>
+<p>40. <a href="https://developer.spotify.com/documentation/web-api" target="_blank" rel="noopener">Spotify Web API</a></p>
+<p>41. <a href="https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide" target="_blank" rel="noopener">Spotify Web API - 2026年2月マイグレーションガイド</a></p>
+<p>42. <a href="https://developers.google.com/youtube/v3/docs" target="_blank" rel="noopener">YouTube Data API v3</a></p>
+<p>43. <a href="https://en.wikipedia.org/wiki/Grooveshark" target="_blank" rel="noopener">Grooveshark - Wikipedia</a></p>
+<p>44. <a href="https://en.wikipedia.org/wiki/Napster" target="_blank" rel="noopener">Napster - Wikipedia</a></p>
+<p>45. <a href="https://en.wikipedia.org/wiki/LimeWire" target="_blank" rel="noopener">LimeWire - Wikipedia</a></p>
+<p>46. <a href="https://en.wikipedia.org/wiki/UMG_Recordings,_Inc._v._MP3.com,_Inc." target="_blank" rel="noopener">UMG v. MP3.com - Wikipedia</a></p>
+<p>47. <a href="https://en.wikipedia.org/wiki/Megaupload_legal_case" target="_blank" rel="noopener">Megaupload legal case - Wikipedia</a></p>
+<p>48. <a href="https://en.wikipedia.org/wiki/The_Echo_Nest" target="_blank" rel="noopener">The Echo Nest - Wikipedia</a></p>
+<p>49. <a href="https://acousticbrainz.org/" target="_blank" rel="noopener">AcousticBrainz</a></p>
+<p>50. <a href="https://community.metabrainz.org/t/acousticbrainz-making-a-hard-decision-to-end-the-project/572828" target="_blank" rel="noopener">MetaBrainz Community - AcousticBrainz終了議論</a></p>
+<p>51. <a href="https://www.riaj.or.jp/news/press/9a764095-06b6-4f93-9a34-b6578be696ef/" target="_blank" rel="noopener">RIAJ - jpopmix.com対応</a></p>
+<p>52. <a href="https://japan.cnet.com/article/20390292/" target="_blank" rel="noopener">CNET Japan - SpiralFrog閉鎖</a></p>
+<p>53. <a href="https://www.copyright.gov/engage/musicians/" target="_blank" rel="noopener">米国著作権局 - 音楽家のための著作権ガイド</a></p>
+<p>54. <a href="https://www.copyright.gov/512/" target="_blank" rel="noopener">米国著作権局 - DMCA §512</a></p>
+<p>55. <a href="https://www.justia.com/intellectual-property/copyright/copyright-safe-harbor/" target="_blank" rel="noopener">Justia - DMCAセーフハーバー</a></p>
+<p>56. <a href="https://www.kottolaw.com/column/000051.html" target="_blank" rel="noopener">琴法律事務所 - One Rainy Night in Tokyo事件</a></p>
+<p>57. <a href="https://forbesjapan.com/articles/detail/63900" target="_blank" rel="noopener">Forbes JAPAN - Twitter対音楽出版社訴訟</a></p>
+<p>58. <a href="https://www.meiji.net/feature/202503_02" target="_blank" rel="noopener">明治大学 - 「歌ってみた」著作権解説</a></p>
+<p>59. <a href="https://www.bunka.go.jp/seisaku/chosakuken/kaizoku/assets/pdf/kaizokuban_handbook_usa.pdf" target="_blank" rel="noopener">文化庁 - 海賊版ハンドブック（米国）</a></p>
+<p>60. <a href="https://davidchapmanlaw.com/ja/practice-areas/intellectual-property/copyright-law/dmca-takedown-notices" target="_blank" rel="noopener">David Chapman Law - DMCAテイクダウン通知</a></p>
+<p>61. <a href="https://nekoyogurt.com/ready/casediscussion-singerfanblog/" target="_blank" rel="noopener">ねこヨーグルト - ファンブログの歌詞・写真掲載制限</a></p>
+<p>62. <a href="https://note.com/ocarina_justin/n/nea04416d0dbd" target="_blank" rel="noopener">note.com - カバー曲動画の収益実態</a></p>
+<p>63. <a href="https://soundcharts.com/ja/blog/music-data-api" target="_blank" rel="noopener">Soundcharts - 音楽データAPI一覧</a></p>
+<p>64. <a href="https://www.issoh.co.jp/column/details/4933/" target="_blank" rel="noopener">issoh.co.jp - DMCA解説</a>（※クローリング失敗）</p>
+<p>65. <a href="https://whosampled.com" target="_blank" rel="noopener">Whosampled.com</a>（※クローリング失敗）</p>
+<p>66. <a href="https://www.whosampled.com/forum/topic/2317/SecondHandSongs/" target="_blank" rel="noopener">SecondHandSongs利用規約に関する議論</a>（※スニペット情報のみ）</p>
+<p>67. <a href="https://www.musicman.co.jp/business/731258" target="_blank" rel="noopener">Musicman - X（Twitter）訴訟却下請求</a>（※スニペット情報のみ）</p>
+<p>68. <a href="https://support.google.com/youtube/answer/9783148" target="_blank" rel="noopener">YouTubeヘルプ - フェアユース保護イニシアチブ</a></p>
+<hr>
+<h3>データの限界と未確認事項</h3>
+<p>本レポート作成にあたり、以下の点について情報の取得が不完全でした：</p>
+<p>1. <strong>クローリング失敗サイト</strong>：Whosampled.com、RateYourMusic.com、AllMusic.com、issoh.co.jpの4サイトはクローリングに失敗し、詳細な運営情報・収益源・自動化ツールの有無が確認できませんでした。</p>
+<p>2. <strong>スニペットのみの情報</strong>：一部の検索結果（YouTube-MP3の訴訟詳細、Hype Machineのクラウドファンディング経緯、SecondHandSongs利用規約の詳細、Musicman.co.jpの記事内容など）はスニペット情報のみで、完全な記事内容が確認できていません。</p>
+<p>3. <strong>更新頻度の不確実性</strong>：多くのサイトの具体的な更新頻度（日次/週次/月次）は公開情報で明記されておらず、推測の域を出ません。</p>
+<p>4. <strong>収益源の詳細</strong>：SecondHandSongs、COVER.INFO、Music-Map、Rate Your Music、AllMusic、Hype Machineの収益源の詳細（広告収入額、サブスクリプション価格など）は公開情報で確認できませんでした。</p>
+<p>5. <strong>日本の判例の詳細な判決文</strong>：しまじろうのわお!事件、音楽教室事件、One Rainy Night in Tokyo事件などの判決文原文は一部リンク先が示されているものの、本調査では全文の内容を確認していません。</p>
+<p>これらの点については、より詳細な調査を行うためには各サイトの公式サイト・公式ドキュメント・裁判所の判決文原文を直接確認する必要があります。</p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

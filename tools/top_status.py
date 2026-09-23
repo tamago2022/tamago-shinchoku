@@ -176,6 +176,31 @@ def recent_done(limit=3):
     return list(picked.values())
 
 
+def login_block():
+    """ログインの生死だけを返す（2026-09-25）。
+
+    たまごさんは進捗表しか見ない。ここが切れているとき、進捗表に何も出ていなかった
+    ＝5日気づかれなかった。だから走行本数や他の事情に一切左右されない独立の1枠にする。
+    出す文言は1つだけ：「ログインが切れています」。
+    """
+    st = jread(os.path.join(ST, "auth_keeper.json"), {})
+    ng = os.path.exists(os.path.join(ST, "auth_expired.flag"))
+    if not ng:
+        try:
+            txt = io.open(NO_LAUNCH_FLAG, encoding="utf-8").read()
+            ng = ("ログイン" in txt) or ("OAuth" in txt)
+        except Exception:
+            ng = False
+    return {
+        "ng": bool(ng),
+        "midashi": "ログインが切れています" if ng else None,
+        "since": st.get("ngSince"),
+        "naoshikata": "status/LOGIN.md の1行を貼ってEnter（1年もつ形に替わります）" if ng else None,
+        "kirenaiKatachi": os.path.exists(os.path.expanduser("~/.tamago/use_token")),
+        "tokenDaysLeft": st.get("tokenDaysLeft"),
+    }
+
+
 def stopped_reason():
     """走行0本のときだけ呼ぶ。理由を1行で返す（無ければNone＝『分かりません』を機械が偽装しない）。"""
     if os.path.exists(NO_LAUNCH_FLAG):
@@ -203,11 +228,36 @@ def pace_block():
     p = jread(os.path.join(ST, "pace.json"), {})
     if not p:
         return None
+    # ★1155番：allPctAsOf／allPctAgeMin を写していなかったので、進捗表の
+    #   「この数字は ◯◯時点」が本番でずっと「時点不明」と出ていた（2026-09-26 実測）。
     keys = ("updatedAt", "allPct", "remainWeek", "usedToday", "budgetToday",
-            "daysLeft", "state", "resetAt", "dataOk")
+            "daysLeft", "state", "resetAt", "dataOk", "allPctAsOf", "allPctAgeMin",
+            "perDayEven", "lineTarget")
     out = {k: p.get(k) for k in keys if p.get(k) is not None}
     out["source"] = "status/pace.json"
     return out
+
+
+def freshness_block():
+    """1143番【成果の鮮度計】status/1143/freshness.json をそのまま写す。
+
+    ★ここが stoppedReason と決定的に違うところ：
+      stoppedReason は「いま走っているか」を見る。走っていれば黙る。
+      鮮度計は「最後に本物の成果が出てから何時間経ったか」だけを見る。
+      走行本数を一切見ないので、空回しが何本走っていても赤は消えない。
+      （4日半だれも気づかなかった事故の再発防止はこちらが本体）
+    """
+    f = jread(os.path.join(ST, "1143", "freshness.json"), {})
+    if not f:
+        return None
+    return {
+        "at": f.get("at"),
+        "akaN": f.get("akaN"),
+        "ichigyou": f.get("ichigyou"),
+        "aka": [a for a in (f.get("alerts") or []) if a.get("level") == "red"][:4],
+        "pipes": {k: {"na": v.get("na"), "ageH": v.get("ageH"), "shikiiH": v.get("shikiiH")}
+                  for k, v in (f.get("pipes") or {}).items()},
+    }
 
 
 def verify_block():
@@ -276,6 +326,11 @@ def build():
             "label": label_of(x),
             "elapsedMin": elapsed_min(x.get("startedAt"), now),
             "model": short_model(x.get("model")),
+            # 1136番（2026-09-25）進捗表が「◯分／180分」を自分で数え直せるように、
+            # 開始時刻と制限時間もそのまま渡す。書き出した瞬間の値だけだと、
+            # 画面を開いている間ずっと止まって見える（＝読み直すまで増えない）。
+            "startedAt": x.get("startedAt"),
+            "limitMin": x.get("limitMin") or 180,
         }
         for x in running_sorted
     ]
@@ -290,7 +345,16 @@ def build():
         "runningNow": running_now,
         "nextUp": next_up,
         "recentDone": recent_done(3),
-        "stoppedReason": stopped_reason() if not running_now else None,
+        # 2026-09-25 修正：**空回しが走っていると止まっていないことになっていた。**
+        # ログインが切れていても runningNow に【空回し】が1本いるだけで
+        # stoppedReason が null になり、進捗表に何も出ないまま5日が過ぎた。
+        # 本物が0本なら「止まっている」と言う。空回しは走行に数えない。
+        "stoppedReason": stopped_reason() if not [
+            x for x in running_now if "空回し" not in (x.get("label") or "")] else None,
+        # たまごさんは進捗表しか見ない。ログインだけは**いつでも一番上に赤で出す。**
+        "login": login_block(),
+        # 1143番：成果の鮮度。走行本数で消えない赤。
+        "freshness": freshness_block(),
         "pace": pace_block(),
         "verify": verify_block(),
         "lovablePublish": lovable_publish_block(),
@@ -312,5 +376,70 @@ if __name__ == "__main__":
         import subprocess as _sp, os as _os
         _r = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "oneshot_runner.py")
         _sp.Popen(["python3", _r], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+    except Exception:
+        pass
+
+    # 2026-09-25（1145番）実測・ページ実物見の見張り。黙って止まったら続きから立て直す。
+    # 実害：nohupで走らせた実測が213本で消えた（ログに痕跡なし＝殺された）。書くだけでは効かないので線を1本入れる。
+    try:
+        import subprocess as _sp2, os as _os2
+        _g = _os2.path.join(_os2.path.dirname(_os2.path.abspath(__file__)), "1145_guard.py")
+        _sp2.Popen(["python3", _g], stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
+    except Exception:
+        pass
+
+    # 2026-09-26（1155番）ずんだもん読み上げの見張り。心臓に殺されても続きから立て直す。
+    # 止めたいときは status/zunda/stop を置く。
+    try:
+        import subprocess as _sp3, os as _os3
+        _z = _os3.path.join(_os3.path.dirname(_os3.path.abspath(__file__)), "1155_keeper.py")
+        _sp3.Popen(["python3", _z], stdout=_sp3.DEVNULL, stderr=_sp3.DEVNULL)
+    except Exception:
+        pass
+
+    # 2026-09-26（1159番）ずんだもん窓口と外への穴の見張り。閉じたら開け直す。
+    try:
+        import subprocess as _sp4, os as _os4
+        _k = _os4.path.join(_os4.path.dirname(_os4.path.abspath(__file__)), "1159_keeper.py")
+        _sp4.Popen(["python3", _k], stdout=_sp4.DEVNULL, stderr=_sp4.DEVNULL)
+    except Exception:
+        pass
+
+    # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
+    # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
+    try:
+        import subprocess as _sp4, os as _os4
+        _k = _os4.path.join(_os4.path.dirname(_os4.path.abspath(__file__)), "1158_mihari.py")
+        _sp4.Popen(["python3", _k], stdout=_sp4.DEVNULL, stderr=_sp4.DEVNULL)
+    except Exception:
+        pass
+
+    # 2026-09-26（1160番）調べもの常駐ライン。Gensparkに「調べて」を1本ずつ絶やさず流す。
+    # 止めたいときは status/genspark.stop を置く。
+    try:
+        import subprocess as _sp5, os as _os5
+        _s5 = _os5.path.join(_os5.path.dirname(_os5.path.abspath(__file__)), "1160_shirabe.py")
+        _sp5.Popen(["python3", _s5], stdout=_sp5.DEVNULL, stderr=_sp5.DEVNULL)
+    except Exception:
+        pass
+
+    # 2026-09-26（1162番）LINEスタンプ「ラシコル」の審査の見張り。
+    # 3時間おきにLINE STOREの商品ページを見に行き、公開されたら表が変わる。
+    # 止めたいときは status/1162.stop を置く。
+    try:
+        import subprocess as _sp6, os as _os6
+        _s6 = _os6.path.join(_os6.path.dirname(_os6.path.abspath(__file__)), "1162_mihari.py")
+        _sp6.Popen(["python3", _s6], stdout=_sp6.DEVNULL, stderr=_sp6.DEVNULL)
+    except Exception:
+        pass
+
+    # 2026-09-26（1163番）棚に書ける鍵（~/.tamago/supabase_service_role）が置かれた
+    # **その周回で**、たまごさんがコマンドを1つも打たずに溜まっている分を全部棚へ入れる。
+    # ★heartbeat.sh は走り出したら読み直されないので、枷5番どおり「毎周回読み直される
+    #   Pythonファイル（ここ）」から呼ぶ。鍵が無い周回は exists を1回見て即戻る。
+    try:
+        import subprocess as _sp7, os as _os7
+        _s7 = _os7.path.join(_os7.path.dirname(_os7.path.abspath(__file__)), "1163_kagi_machi.py")
+        _sp7.Popen(["python3", _s7], stdout=_sp7.DEVNULL, stderr=_sp7.DEVNULL)
     except Exception:
         pass

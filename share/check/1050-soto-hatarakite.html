@@ -1,0 +1,116 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>外の働き手｜払った額と、採用できた本数</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:12px;background:#111;color:#eee;font:14px/1.6 -apple-system,"Hiragino Sans",sans-serif}
+h1{font-size:17px;margin:0 0 4px}.sub{color:#999;font-size:12px;margin:0 0 10px}
+.tally{display:flex;gap:6px;margin:0 0 10px}.tally div{flex:1;text-align:center;padding:6px 2px;border-radius:8px;background:#1c1c1c}.tally b{display:block;font-size:20px}
+.ok{color:#5fd68a}.mid{color:#e8c352}.ng{color:#f2777a}
+.card{background:#1a1a1a;border-radius:10px;padding:10px;margin:0 0 8px}
+.card h2{font-size:15px;margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline}
+.card h2 span{font-size:18px}
+.k{color:#8a8a8a;font-size:11px}.v{font-size:12px;word-break:break-all;margin:0 0 5px}
+.num{display:flex;gap:8px;margin:2px 0 6px}.num div{flex:1;background:#222;border-radius:6px;padding:4px;text-align:center}.num b{display:block;font-size:17px}
+.why{font-size:12px;color:#bbb;border-top:1px solid #2c2c2c;padding-top:5px}
+</style></head><body>
+<h1>外の働き手</h1>
+<p class="sub">払った額と、実際に採用できた本数だけ。毎日この紙が自分で書き換わる。最後に書き換えた時刻 2026-09-27 00:19:23</p>
+<div class="tally"><div class="ok"><b>2</b>◯</div><div class="mid"><b>3</b>△</div><div class="ng"><b>4</b>✕</div></div>
+<p class="v">判定の物差し：子セッション1本の実測中央値 <b>397.6円</b>（278本ぶん：`cat status/public/cost_by_task.json`、1ドル 157.16円：status/1034_yosan_jissoku.jsonl:1）</p>
+<div class="card">
+<h2>Jules（Google）<span class="ok">◯</span></h2>
+<div class="num"><div><b>11</b><span class="k">投げた</span></div><div><b>14</b><span class="k">返った</span></div><div><b>1</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">0円（払った記録が台帳に 0件：status/ai_daicho.jsonl:2）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">0円（検品でAIを呼ばない：tools/baton.py:37）</p>
+<p class="k">1本あたり</p><p class="v">0円（採用 1本：status/1028/jules_kekka.json:6）</p>
+<p class="k">何に向いているか</p><p class="v">件数とキーが決まっているJSONを149件そろえる（合格 136/149＝91.3%：status/1028/jules_kekka.json:6）</p>
+<p class="k">ほか</p><p class="v">投げ11本のうち1本は GitHubのトークンが取れず不発（status/ai_daicho.jsonl:2）。返ったPRのうち 18本は「要人手」で止まっている（status/public/uketori_machi.json:4）</p>
+<p class="k">つぎの一手</p><p class="v">同じ形の仕事を列にして流し続ける（件数とキーが決まっているJSONだけ）。★「返事を書くな。終わりの合図はPRのURLだけ」を依頼文に必ず入れる</p>
+<p class="why ok">判定 ◯ ／ 無料で採用 1本（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>Genspark<span class="ng">✕</span></h2>
+<div class="num"><div><b>4</b><span class="k">投げた</span></div><div><b>1</b><span class="k">返った</span></div><div><b>0</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">取れていない（請求メールの口が閉まっている：status/public/kaitsuu.json:25 の gmail＝ng）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">0円（前払いクレジット。残 1924.937：status/1045/me_after.json:1）</p>
+<p class="k">1本あたり</p><p class="v">割り出せていない（採用 0件：status/public/uketori_machi.json:4）</p>
+<p class="k">何に向いているか</p><p class="v">調べ物。deep_research 1本が 120秒 で出典つき3件（status/1045_hikitsugi.md:14）</p>
+<p class="k">ほか</p><p class="v">★2026-10-04 にプラン終了・繰り越し無し。残 1924.937 は消える（status/1049_hikitsugi_irai_gate.md:13）。消費は 1.000 クレジット（status/1049_hikitsugi_irai_gate.md:25）</p>
+<p class="k">つぎの一手</p><p class="v">2026-10-04 に消える。1回 1.000クレジットなので、残 1924.937 は 1924回ぶん。まず「仕入れの下調べ」を1日100回ずつ deep_research に回して、9日で使い切る（$ gsk task create deep_research --task_name … --query … --instructions …）。★課金・更新は押さない。10/05 からは口を Jules へ入れ替える（status/1049_hikitsugi_irai_gate.md:63）</p>
+<p class="why ng">判定 ✕ ／ 払っているのに採用 0本（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>Devin<span class="mid">△</span></h2>
+<div class="num"><div><b>6</b><span class="k">投げた</span></div><div><b>7</b><span class="k">返った</span></div><div><b>0</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">オンデマンド。栓の上限 20ドル/月（status/public/gaibu.json:11）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">1327円（9/18〜9/20 の15本で 8.85ドル：tools/devin_start.py:42）</p>
+<p class="k">1本あたり</p><p class="v">88円（1327円÷15本：tools/devin_start.py:43）</p>
+<p class="k">何に向いているか</p><p class="v">原因さがし。3本投げて3本とも答えが返った（status/devin_922.json:3）</p>
+<p class="k">ほか</p><p class="v">答えは返るが、機械の検品に通ったPRは 0件（status/public/uketori_machi.json:4）</p>
+<p class="k">つぎの一手</p><p class="v">PRで返る形の仕事を投げて、採用を測る（$ python3 tools/devin_start.py）。測って採用が付かなければ止める。止め方の入り口は https://app.devin.ai/settings/billing ★解約は押さない。栓を tools/yosan.py で締めれば今日から止まる</p>
+<p class="why mid">判定 △ ／ 1本 88円 ＜ 子セッション 397.6円。ただし検品を通った本数が 0 ＝採用がまだ測れていない（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>fal<span class="ok">◯</span></h2>
+<div class="num"><div><b>24</b><span class="k">投げた</span></div><div><b>24</b><span class="k">返った</span></div><div><b>20</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">従量。月額は 0円（status/public/fal_cost_ledger.json:13）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">1374.35円（24本ぶん：status/public/fal_cost_ledger.json:13）</p>
+<p class="k">1本あたり</p><p class="v">68.7円（1374.35円÷20本：status/public/fal_cost_ledger.json:13）</p>
+<p class="k">何に向いているか</p><p class="v">画像・音声・動画を作る。24本中 20本を採用（status/public/fal_cost_ledger.json:13）</p>
+<p class="why ok">判定 ◯ ／ 1本 68.7円 ＜ 子セッション 397.6円（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>ChatGPT（OpenAI API）<span class="mid">△</span></h2>
+<div class="num"><div><b>5</b><span class="k">投げた</span></div><div><b>2</b><span class="k">返った</span></div><div><b>103</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">従量。栓の上限 10ドル/月（status/public/gaibu.json:12）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">94.964円（検品 103回ぶん：status/public/gaibu_kenpin_ledger.json:13）</p>
+<p class="k">1本あたり</p><p class="v">0.922円（94.964円÷103回：status/public/gaibu_kenpin_ledger.json:13）</p>
+<p class="k">何に向いているか</p><p class="v">その場で返る検品。1回 0.013円（status/public/gaibu_kenpin_ledger.json:13）</p>
+<p class="k">ほか</p><p class="v">★残高 0。HTTP 429「credit_balance_exhausted」（status/ai_daicho.jsonl:2）。入れ直せば 1回 0.013円 で戻る</p>
+<p class="why mid">判定 △ ／ 1本 0.922円 ＜ 子セッション 397.6円。ただし今は残高0で返らない（429：status/ai_daicho.jsonl:2）（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>GitHub Copilot<span class="ng">✕</span></h2>
+<div class="num"><div><b>1</b><span class="k">投げた</span></div><div><b>0</b><span class="k">返った</span></div><div><b>0</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">0円（払った記録が台帳に 0件：status/ai_daicho.jsonl:2）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">0円（課金の記録が台帳に無い：status/ai_daicho.jsonl:34）</p>
+<p class="k">1本あたり</p><p class="v">0円（採用 0件：status/public/uketori_machi.json:4）</p>
+<p class="k">何に向いているか</p><p class="v">まだ1件も返っていない（投げ 1・返り 0：status/ai_daicho.jsonl:2）</p>
+<p class="k">ほか</p><p class="v">口の状態＝担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）（status/public/kaitsuu.json:25）</p>
+<p class="k">つぎの一手</p><p class="v">Issueに @copilot と書いても返り 0件。GitHubのトークンを1本通してから測り直す（status/public/kaitsuu.json:25 の github＝ng）</p>
+<p class="why ng">判定 ✕ ／ 無料でも採用 0本（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>Grok（xAI）<span class="ng">✕</span></h2>
+<div class="num"><div><b>2</b><span class="k">投げた</span></div><div><b>0</b><span class="k">返った</span></div><div><b>0</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">取れていない（この鍵のチームが止められている）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">0円（課金の記録が台帳に無い：status/ai_daicho.jsonl:9）</p>
+<p class="k">1本あたり</p><p class="v">割り出せていない（採用 0件：status/public/uketori_machi.json:4）</p>
+<p class="k">何に向いているか</p><p class="v">口が 403 で閉じている（status/public/kaitsuu.json:25 の xai）</p>
+<p class="k">ほか</p><p class="v">声の口だけは 200 で生きている（status/public/kaitsuu.json:25 の xai_koe）</p>
+<p class="k">つぎの一手</p><p class="v">残高のある鍵は別の財布にある（status/1034_hikitsugi_saifu.md:31）。その鍵に差し替えてから測り直す</p>
+<p class="why ng">判定 ✕ ／ 払っているのに採用 0本（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>Gemini<span class="ng">✕</span></h2>
+<div class="num"><div><b>0</b><span class="k">投げた</span></div><div><b>0</b><span class="k">返った</span></div><div><b>0</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">0円（鍵が無いので1回も叩けていない：status/public/kaitsuu.json:52）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">0円（同上：status/public/kaitsuu.json:52）</p>
+<p class="k">1本あたり</p><p class="v">0円（採用 0件：status/public/uketori_machi.json:4）</p>
+<p class="k">何に向いているか</p><p class="v">鍵が置かれていないので、まだ1回も叩けていない（status/public/kaitsuu.json:25 の gemini）</p>
+<p class="k">ほか</p><p class="v">鍵を置けばその日に測れる</p>
+<p class="k">つぎの一手</p><p class="v">鍵を ~/.tamago/keys/api_keys.env に置く。置いた日から測れる</p>
+<p class="why ng">判定 ✕ ／ 無料でも採用 0本（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<div class="card">
+<h2>Lovable<span class="mid">△</span></h2>
+<div class="num"><div><b>0</b><span class="k">投げた</span></div><div><b>0</b><span class="k">返った</span></div><div><b>0</b><span class="k">採用</span></div></div>
+<p class="k">月いくら</p><p class="v">取れていない（請求メールの口が閉まっている：status/public/kaitsuu.json:25 の gmail＝ng）</p>
+<p class="k">今月ここまでに使った分</p><p class="v">取れていない</p>
+<p class="k">1本あたり</p><p class="v">割り出せていない（投げる口をまだ作っていない：status/public/kaitsuu.json:124）</p>
+<p class="k">何に向いているか</p><p class="v">本番の公開先。トークンは通る（status/public/kaitsuu.json:25 の lovable）</p>
+<p class="k">ほか</p><p class="v">ここは仕事を投げる相手ではない。切る対象に入れない</p>
+<p class="why mid">判定 △ ／ 働き手ではなく置き場。投げる口をまだ作っていない（規則：tools/soto_hatarakite.py:152）</p>
+</div>
+<p class="v k">この紙は tools/soto_hatarakite.py が書いている。手で書き換えない。数字は全部ファイルから写したもので、出典を同じ行に付けてある。</p>
+</body></html>

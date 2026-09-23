@@ -4,189 +4,324 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>進捗表</title>
-<!-- manifest は読み終わってから足す（ホーム画面アプリは今までどおり使えるまま、
-     最初の表示の通信には混ぜない。manifest はアイコンまで引っ張って load を遅らせる） -->
+<!--
+  1136番（2026-09-25）作り直し。
+  たまごさんの言葉：
+    「進捗が読めないね。だからシンプルな感じがいいよ、その下の文字の大きさとか」
+    「今走ってるものが『あ、これとこれとこれやってるんだな』って分かるようにして、
+      3時間縛りで今何分経過してるとか、モデル（Sonnetとか）が見えるように」
+    「前回のやつは全体的にギラギラして見にくかったけど、今走ってるもの自体は見やすかったよ」
+    「週の残りとかも含めて、これを読めるようにしてほしいな」
+
+  ★持ってきたもの（前任＝index_full.html の走行カードの実物を読んで踏襲）
+    ・1枚＝「題名／モデル・経過・残り」の2段だけ（index_full.html 3157-3170行）
+    ・経過と残りを別々に出す（tickCountdowns、同3176-3193行）
+    ・3時間ルールの表記と開始時刻（同3167行）
+  ★持ってこなかったもの
+    ・濃緑のグラデーション・内側の光（.nowcard の linear-gradient / box-shadow inset）
+    ・0.55〜0.78rem の極小文字（＝「読めない」の正体）
+    ・2列グリッド（スマホで題名が2行に潰れる）
+
+  ★寸法の根拠（実測した見本）
+    ・GitHub Primer：本文 1rem/1.5、見出し small 1rem・600、caption 0.75rem、
+      操作の高さ large=40px / xlarge=48px、角丸 medium 6px・large 12px、境界線 1px
+      （primer.style/product/primitives/typography ・ /size）
+    ・Vercel Geist：label-20 / label-14（最も多用）／ label-13 は「二次の行」、
+      数字を並べるところは tabular（vercel.com/geist/typography）
+    ・前任 index_full.html の走行カード（上記の行番号で実測）
+    → ここでは「二次の行」を 13px ではなく 15px に上げた。理由はただ1つ、
+      たまごさんがベッドからスマホで読むから。見本より1〜2段大きい側に倒す。
+
+  ★動く飾りは足していない。1秒ごとに書き替わるのは経過・残りの数字だけ（＝情報）。
+-->
 <style>
 /* 余白・寸法に % を使わない（横長のとき上が詰まる事故の原因）。すべて px / rem。 */
 :root{
   --ink:#1c1a17; --sub:#6d675f; --line:#ddd7cd; --paper:#f7f4ee; --card:#fffdf9;
-  --green:#2f7a48; --amber:#9a6a12; --grey:#8a847c; --red:#a33b2a; --blue:#2f6fb0;
+  --green:#2f7a48; --amber:#8a5d0f; --grey:#8a847c; --red:#a33b2a; --blue:#2f6fb0;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{
-  margin:0; padding:16px 14px 48px;
+  margin:0; padding:14px 14px 56px;
   background:var(--paper); color:var(--ink);
-  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  font:17px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
 }
-.wrap{max-width:680px; margin-left:auto; margin-right:auto}
-header{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:14px}
-h1{font-size:19px; margin:0; letter-spacing:.02em}
-.stamp{font-size:12px; color:var(--sub)}
+.wrap{max-width:560px; margin-left:auto; margin-right:auto}
+
+header{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+h1{font-size:20px; margin:0; font-weight:600; letter-spacing:.02em}
+#stamp{font-size:15px; color:var(--sub); font-variant-numeric:tabular-nums}
+#stamp.old{color:var(--red); font-weight:700}
 button{
-  font:inherit; font-size:14px; padding:9px 14px; min-height:44px;
-  border:1px solid var(--line); border-radius:10px; background:var(--card);
-  color:var(--ink); cursor:pointer;
+  font:inherit; font-size:16px; padding:10px 16px; min-height:48px;
+  border:1px solid var(--line); border-radius:12px; background:var(--card);
+  color:var(--ink); cursor:pointer; margin-left:auto;
 }
 button:active{background:#efe9df}
-.card{
-  background:var(--card); border:1px solid var(--line); border-radius:12px;
-  padding:14px 14px 12px; margin-bottom:12px;
-}
-.card h2{font-size:13px; margin:0 0 10px; color:var(--sub); font-weight:600; letter-spacing:.06em}
-ul{list-style:none; margin:0; padding:0}
-li{padding:7px 0; border-top:1px solid #eee7dc}
-li:first-child{border-top:0}
-.n{font-variant-numeric:tabular-nums; color:var(--sub); margin-right:6px}
-.ord{display:inline-block; min-width:22px; color:var(--sub); font-variant-numeric:tabular-nums}
-.meta{font-size:12px; color:var(--sub)}
-a{color:#2a5b8f}
-.empty{color:var(--grey); font-size:14px}
-.red{color:var(--red); font-weight:600}
-/* 週の目盛り：pace.json 一本だけを見る */
-.big{font-size:30px; font-variant-numeric:tabular-nums; line-height:1.2}
-.gauge{position:relative; height:14px; border:1px solid var(--line); border-radius:6px; background:#efe9df; margin:10px 0 8px}
-/* 全幅を取るのに % を使わない（left/right:0 で伸ばす）。
-   以前は width:0 が残ったまま scaleX を掛けていたので、0×0.31=0 で棒が一度も描かれていなかった。 */
-.gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:5px; background:var(--green); transform:scaleX(0); transform-origin:left center}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:14px; margin-bottom:12px}
+.card > h2{font-size:15px; margin:0 0 10px; color:var(--sub); font-weight:600; letter-spacing:.04em}
+
+/* ───── 走っているもの（1本＝1行。ここだけは畳まない） ───── */
+.run{border-top:1px solid #eee7dc; padding:13px 0 12px}
+.run:first-child{border-top:0; padding-top:2px}
+.rt{font-size:19px; font-weight:600; line-height:1.4;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.rn{color:var(--sub); font-variant-numeric:tabular-nums; font-weight:400; margin-right:7px}
+.rmeta{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-top:7px}
+.rel{font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1}
+.rlim{font-size:15px; color:var(--sub); font-variant-numeric:tabular-nums}
+.badge{font-size:15px; border:1px solid var(--line); border-radius:8px; padding:3px 9px;
+  color:var(--sub); font-weight:600}
+.bar{position:relative; height:6px; border-radius:3px; background:#efe9df; margin-top:9px; overflow:hidden}
+.bar i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:3px;
+  background:var(--green); transform:scaleX(0); transform-origin:left center}
+.warn .rel{color:var(--amber)} .warn .bar i{background:var(--amber)}
+.over .rel{color:var(--red)}   .over .bar i{background:var(--red)}
+.karamawashi .rt{color:var(--sub); font-weight:400}
+.note{font-size:15px; color:var(--sub); margin-top:6px}
+.none{font-size:19px; font-weight:600; padding:6px 0 2px}
+.why{font-size:15px; color:var(--red); margin-top:6px; line-height:1.55}
+
+/* ───── 週の残り ───── */
+.big{font-size:40px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.15}
+/* 1153番：使用／残り／リセットまで を横3つ。スマホ(375px)でも1行に収まる寸法で組んだ。 */
+.waku3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:2px 0 4px}
+.waku3 .wl{font-size:14px; color:var(--sub); font-weight:600; letter-spacing:.03em}
+.waku3 .wv{font-size:34px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.15;
+  letter-spacing:-.01em}
+.waku3 .wv .u{font-size:17px; font-weight:600; color:var(--sub); margin-left:1px}
+.waku3 .wv.torenai{font-size:19px; color:var(--red)}
+.mezasu{font-size:16px; line-height:1.65; margin:2px 0 10px}
+.mezasu b{font-variant-numeric:tabular-nums}
+.mezasu .ok{color:var(--green); font-weight:700}
+.mezasu .osoi{color:var(--blue); font-weight:700}
+.mezasu .hayai{color:var(--red); font-weight:700}
+.gauge{position:relative; height:12px; border:1px solid var(--line); border-radius:6px;
+  background:#efe9df; margin:12px 0 10px}
+.gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:5px;
+  background:var(--green); transform:scaleX(0); transform-origin:left center}
 .gauge.over i{background:var(--red)}
-/* 「本来ここ」の青い線。位置は JS が実測した px で置く（% を使わない） */
-.gauge b{position:absolute; top:-5px; bottom:-5px; left:0; width:3px; border-radius:1px; background:var(--blue); box-shadow:0 0 0 1px var(--card); transform:translateX(0)}
-.dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:baseline}
-.d-green{background:var(--green)} .d-amber{background:var(--amber)} .d-grey{background:var(--grey)}
-.tally{display:flex; gap:16px; flex-wrap:wrap; margin-top:4px; font-size:14px}
-details{margin-top:6px; border-top:1px solid #eee7dc; padding-top:8px}
-summary{cursor:pointer; font-size:13px; color:var(--sub); min-height:32px; padding:4px 0}
-details .body{font-size:13px; color:var(--sub); padding-top:6px}
-footer{margin-top:18px; font-size:12px; color:var(--sub)}
-footer a{margin-right:14px; display:inline-block; padding:4px 0}
+.gauge b{position:absolute; top:-5px; bottom:-5px; left:0; width:3px; border-radius:1px;
+  background:var(--blue); box-shadow:0 0 0 1px var(--card); transform:translateX(0)}
+.nums{font-size:16px; line-height:1.7; font-variant-numeric:tabular-nums}
+.nums .k{color:var(--sub)}
+.red{color:var(--red); font-weight:600}
+
+/* ───── 待機列 ───── */
+ul{list-style:none; margin:0; padding:0}
+.q li{padding:9px 0; border-top:1px solid #eee7dc; font-size:17px; line-height:1.45}
+.q li:first-child{border-top:0}
+.ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
+
+/* ───── 畳んであるもの（既定は全部畳む） ───── */
+details.fold{background:var(--card); border:1px solid var(--line); border-radius:12px;
+  margin-bottom:10px}
+details.fold > summary{cursor:pointer; font-size:17px; padding:15px 14px; min-height:52px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px}
+details.fold > summary::-webkit-details-marker{display:none}
+details.fold > summary::after{content:"＋"; color:var(--sub); font-size:17px}
+details.fold[open] > summary::after{content:"−"}
+details.fold > summary .s{font-size:15px; color:var(--sub); font-weight:400}
+.fold .body{padding:0 14px 14px; font-size:16px; line-height:1.65}
+.fold .body li{padding:9px 0; border-top:1px solid #eee7dc}
+.fold .body li:first-child{border-top:0}
+.meta{font-size:15px; color:var(--sub)}
+a{color:#2a5b8f}
+footer{margin-top:16px; font-size:15px; color:var(--sub); line-height:2}
+footer a{display:block; padding:5px 0}
 </style>
 </head>
 <body>
 <div class="wrap">
 
+<div style="display:flex;gap:6px;align-items:center;font-size:13px;margin-bottom:8px">
+  <a href="kanri.html" style="color:#2f6fb0;text-decoration:none;border:1px solid #ddd7cd;border-radius:999px;padding:5px 11px;background:#fffdf9;white-space:nowrap">★管理画面へ</a>
+  <a href="share/nagekomi-c5fd9d5791b32e88.html" style="color:#2f6fb0;text-decoration:none;border:1px solid #ddd7cd;border-radius:999px;padding:5px 11px;background:#fffdf9;white-space:nowrap">投げ込み箱へ</a>
+</div>
 <header>
   <h1>進捗表</h1>
-  <span class="stamp" id="stamp">読み込み中…</span>
-  <button id="reload" type="button">押して読み直す</button>
+  <span id="stamp">読み込み中…</span>
+  <button id="reload" type="button">読み直す</button>
 </header>
 
-<!-- ★1026番（2026-09-23）：一番上は「走った◯本 → 取れた◯本」。
-     1018番でこの形にしたつもりが、出ていたのは status/genzaichi.md（Dispatchが読む紙）だけで、
-     たまごさんが実際に開くこの進捗表には1文字も出ていなかった（実測）。
-     緑の根拠は「着火したか」ではなく **本物が取れた本数だけ**（判定は tools/hantei.py の1か所）。 -->
-<div id="kasegi"
-     style="display:none;margin:0 0 14px;padding:12px 13px;border:2px solid #16130f;
-            background:#fff;line-height:1.6"></div>
-
-<!-- 969番：鍵・つながりの台帳。赤が1つでもあればここに出る（無ければ何も出ない） -->
-<a id="kagi-alert" href="969-kagi-daicho.html"
-   style="display:none;margin:0 0 14px;padding:11px 13px;border:2px solid #b3261e;
-          color:#b3261e;font-weight:700;text-decoration:none;line-height:1.5"></a>
-
-<!-- 972番：AIとの繋がり。09-21 07:14 の実測（status/public/kagi_daicho.json）。1往復できたものだけ「繋がっている」と書く -->
-<a href="972-okane-report.html"
-   style="display:block;margin:0 0 14px;padding:11px 13px;border:1px solid #d8d2c6;
-          background:#fff;color:#16130f;text-decoration:none;line-height:1.6;font-size:13px">
-  <b>AIとの繋がり（09-21 07:14 実測）</b>　こちらから投げられる：GitHub・OpenAI・Devin・fal・xAI声の窓口（いずれも200）／向こうから来られる：中継所（スマホ→Mac）だけ／通っていない：Gemini（鍵なし）・Grok文字（403）・Lovable（未同意）・Claudeの鍵（期限切れ）・Gmail。Gensparkは台帳に行が無く<b>取れない</b>。
-</a>
-
-<!-- ① いま走っているもの -->
-<section class="card">
-  <h2>いま走っているもの</h2>
-  <ul id="running"><li class="empty">…</li></ul>
-</section>
-
-<!-- ② 次に発車（上から順に出る） -->
-<section class="card">
-  <h2>次に発車（上から順に出る）</h2>
-  <ul id="next"><li class="empty">…</li></ul>
-</section>
-
-<!-- ②-2 受け取り待ち（1030番・2026-09-23）
-     たまごさん：「公開までがセットだよね。メインやPRに上げて終わりではないから。
-     『そこまで運んできてくれてありがとう。じゃあ、ここから検品して私がバトンタッチする』」
-     外のAI（Jules/Codex/Devin）がPRまで運んできたものを、tools/baton.py が機械だけで検品して
-     並べる。★出すのは合格したものだけ。不合格・要人手は下のトグルに畳む。
-     ★6区（mainに入れる）は自動にしない。main→Lovable→本番は不可逆なので、押すのはたまごさん。
-     元データ： status/public/uketori_machi.json -->
-<section class="card" id="uketoriCard" hidden>
-  <h2>受け取り待ち（検品済み・押すだけ）</h2>
-  <ul id="uketoriList"><li class="empty">…</li></ul>
-  <details id="uketoriNg" hidden>
-    <summary id="uketoriNgSum">検品を通らなかったもの</summary>
-    <div class="body"><ul id="uketoriNgList"><li class="empty">…</li></ul></div>
-  </details>
-</section>
-
-<!-- ③ 週の残り -->
-<section class="card">
-  <h2>週の残り</h2>
-  <div class="big" id="remain">…</div>
+<!-- ⓪ 週の枠（★1153番・2026-09-26。たまごさん「一番上に大きく：今週の使用◯%／残り◯%／
+     リセットまであと◯時間。目安も並べて、その線に対して足りているか遅れているかを一目で」
+     → 元は②の位置にあった「週のクレジット」を、丸ごとここへ上げて大きくした。
+     ★数字が取れないときは空欄にしない。「取れない」と文字で出す。 -->
+<section class="card" id="wakuCard">
+  <h2>今週の枠（火曜18:00にリセット）</h2>
+  <div class="waku3" id="waku3">
+    <div><div class="wl">使用</div><div class="wv" id="wUsed">…</div></div>
+    <div><div class="wl">残り</div><div class="wv" id="wRemain">…</div></div>
+    <div><div class="wl">リセットまで</div><div class="wv" id="wHours">…</div></div>
+  </div>
   <div class="gauge" id="gauge"><i id="gfill"></i><b id="gline"></b></div>
-  <div class="meta" id="paceNums"></div>
-  <div class="meta" id="paceDays"></div>
+  <div class="mezasu" id="wLine">…</div>
+  <div class="nums" id="paceNums"></div>
+  <div class="nums" id="wKazu" style="margin-top:10px;border-top:1px solid #eee7dc;padding-top:10px"></div>
 </section>
 
-<!-- ④ お金・フォルダ・サブスク -->
+<!-- ⓪-2 工場の体温（★1163番・2026-09-26 たまごさん「進捗表に『心臓：生／死』
+     『最後に発車した時刻』『今の負荷』を出す」。Macが固まって再起動した日に、
+     どれが止まっているか進捗表を見ても分からなかったので、3つだけ大きく出す。
+     出どころ：status/public/taion.json（tools/1163_taion.py が心臓の毎周で書く）。
+     ★genzaichi.json / health.json は使わない。実測でそれぞれ2時間20分・5時間44分
+       古かった（22:06時点）。古い紙で「生」と出すのは嘘になる。
+     ★取れないときは空欄にしない。「取れていません」と文字で出す（0や生と書くのは嘘）。 -->
+<section class="card" id="taionCard">
+  <h2>工場の体温</h2>
+  <div class="waku3" id="taion3">
+    <div><div class="wl">心臓</div><div class="wv" id="tHeart">…</div></div>
+    <div><div class="wl">最後の発車</div><div class="wv" id="tLaunch">…</div></div>
+    <div><div class="wl">今の負荷</div><div class="wv" id="tLoad">…</div></div>
+  </div>
+  <div class="nums" id="taionMeta" style="margin-top:10px"></div>
+</section>
+
+<!-- ⓿ ログイン（★2026-09-25 追加。ここが切れていると何も動かないので一番上に赤で出す。
+        以前は「走行0本のときだけ」出す作りで、空回しが1本いるだけで消えていた＝5日気づかれなかった） -->
+<div id="loginNg" style="display:none;background:#b00020;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
+<!-- 1143番：成果の鮮度（走行本数では消えない赤）。ログインの赤のすぐ下。 -->
+<div id="freshNg" style="display:none;background:#8a2b00;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
+<!-- 1161番：タブの閉め残し ★2026-09-26 たまごさん「使ったら閉じろ。仕組みにしろ」
+     ★ブラウザ全体の枚数は出していない。数えるにはmacOSの許可ダイアログ（TCC）が出るため禁止。
+       「数えられていない」と正直に出す。0枚と書くのは嘘。
+     出どころ：status/public/tabs.json（Stopフック tools/stop_kanmon/tab_kanmon.mjs が書く） -->
+<div id="tabsLine" style="border-radius:10px;padding:12px 16px;margin:0 0 14px;line-height:1.7;border:1px solid #eee7dc;background:#fff">タブの閉め残し　読み込み中…</div>
+
+<!-- ⓪-2 ループの計器盤（★1142番・2026-09-25追加）
+     「出す → 測る → 直す → また出す」の"測る"がここ1枚。
+     赤が1個でもあれば、それが一番上に大きく出る。loop.json が無ければ丸ごと隠れる。 -->
+<section class="card" id="loopCard" style="display:none">
+  <h2>ループの計器盤</h2>
+  <div class="big" id="loopAtama" style="font-size:26px; line-height:1.3">…</div>
+  <div class="meta" id="loopNao" style="margin-top:8px"></div>
+  <div id="loopGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px"></div>
+  <div class="meta" id="loopStamp" style="margin-top:12px"></div>
+  <p style="margin:10px 0 0"><a href="share/check/1142-shikumi.html">この数字の出どころと、仕組みの設計をひらく</a></p>
+</section>
+
+<!-- ① 走っているもの（★ここだけは最初から見えている） -->
 <section class="card">
-  <h2>お金・フォルダ・サブスク</h2>
-  <ul id="cash"><li class="empty">…</li></ul>
+  <h2 id="runHead">走っているもの</h2>
+  <div id="running"><div class="note">…</div></div>
 </section>
 
-<!-- ⑤ できたもの -->
+<!-- ③ 次に発車 -->
 <section class="card">
-  <h2>できたもの</h2>
-  <ul id="done"><li class="empty">…</li></ul>
-  <div class="tally" id="verify"></div>
-  <!-- 画面の中の唯一のトグル。既定は畳んだ状態（open を付けない）。 -->
-  <details id="rule">
-    <summary>緑の付け方</summary>
-    <div class="body">
-      記録されたURLの実物がこのリポジトリにあり、ファイル名の先頭番号がその項目の番号と
-      一致したときだけ緑。URLが無いものは「完了」と呼ばず未検証に置く。
-      置き場は <code>status/verify_log.jsonl</code>。
-    </div>
-  </details>
+  <h2>次に発車</h2>
+  <ul class="q" id="next"><li class="meta">…</li></ul>
 </section>
 
-<!-- ⑥ 公式のアップデート（939番・2026-09-18）
-     たまごさん：「アップデートとかも自分で情報を取りに行ってね。毎日1回でもいいから、
-     公式が発表しているものもあるだろうし、いいもの、効率化するものはどんどん取り入れていって。」
-     画面を埋めないよう、見えるのは1行だけ。中身はトグルの中に畳む。 -->
-<section class="card" id="koushikiCard" hidden>
-  <h2>公式のアップデート</h2>
-  <div class="meta" id="koushikiLine">…</div>
-  <details id="koushiki">
-    <summary>効率化に効きそうなもの（公式の発表だけ）</summary>
-    <div class="body"><ul id="koushikiList"><li class="empty">…</li></ul></div>
-  </details>
+<!-- 1138番（2026-09-25）宿題台帳。たまごさん「俺が言ったのに返ってきてないことがたくさんある。
+     それが自動で走ってゼロになるようにやってほしい」→ 畳まずに、次に発車のすぐ下に1行だけ出す。 -->
+<section class="card">
+  <h2>宿題（言われたのに返っていないもの）</h2>
+  <p style="margin:.2em 0 .6em"><a href="share/check/1138-shukudai.html">宿題台帳をひらく</a>
+  <span class="meta" id="shukudaiSum">…</span></p>
 </section>
+<script>
+/* 1142番：ループの計器盤。6つの数字を1枚に出すだけ。判定はPython側(hantei.py)が済ませてある。
+   ここでは一切判定しない＝同じ規則を2か所に書かない。 */
+fetch('status/public/loop.json?t='+Date.now(), {cache:'no-store'})
+ .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+ .then(function(d){
+   document.getElementById('loopCard').style.display='';
+   var a=d.atama;
+   document.getElementById('loopAtama').textContent =
+     a ? (a.label+'　'+a.value+a.unit) : '赤はありません';
+   document.getElementById('loopAtama').style.color = a ? '#b00020' : '#1d7a3c';
+   document.getElementById('loopNao').textContent = a ? (a.why+'　→　'+a.nao) : '';
+   var g=document.getElementById('loopGrid'); g.innerHTML='';
+   (d.cards||[]).forEach(function(c){
+     var box=document.createElement('div');
+     box.style.cssText='border:1px solid #eee7dc;border-radius:10px;padding:11px 12px';
+     if(c.red) box.style.borderColor='#b00020';
+     var v=document.createElement('div');
+     v.style.cssText='font-size:30px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums';
+     v.style.color = c.red ? '#b00020' : '#2b2b2b';
+     v.textContent = (c.value===null?'—':c.value)+c.unit;
+     var l=document.createElement('div');
+     l.style.cssText='font-size:15px;margin-top:4px;font-weight:600';
+     l.textContent = c.mark+' '+c.label;
+     var s=document.createElement('div');
+     s.style.cssText='font-size:13px;color:#7a7268;margin-top:3px;line-height:1.5';
+     s.textContent = c.sub||'';
+     box.appendChild(v); box.appendChild(l); box.appendChild(s); g.appendChild(box);
+   });
+   document.getElementById('loopStamp').textContent =
+     '測ったのは '+d.at+'　／　赤 '+d.akaN+'個　／　'
+     +'直せるものは復旧係が直したあとの数字です';
+ })
+ .catch(function(){ /* loop.json がまだ無い／戻したとき＝丸ごと隠れる */ });
 
-<!-- ⑦ 外部AIの検品（944番・2026-09-18）
-     たまごさん：「例のOpenAIに検品させるやつ、実際に動いてるの？ やりとり見れるの？」
-     → 動いている。ただし記録がJSONのままで読めなかった。1行だけ見せて、中身はトグルに畳む。
-     元データ： status/public/kenpin_mieru.json（tools/kenpin_mieru.py が自動生成） -->
-<section class="card" id="kenpinCard" hidden>
-  <h2>外部AIの検品</h2>
-  <div class="meta" id="kenpinLine">…</div>
-  <details id="kenpin">
-    <summary>やりとりを全部見る（出したもの／指摘／直した内容／PASSまで何回）</summary>
-    <div class="body"><ul id="kenpinList"><li class="empty">…</li></ul></div>
-  </details>
-</section>
+fetch('status/public/shukudai.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+  const t=d.tally||{}, c=d.count||{};
+  document.getElementById('shukudaiSum').textContent =
+    ' 未完了 '+t.open+'件 ／ 今日減った '+t.closedToday+'件'+(c.red?' 🔴減っていない':'');
+}).catch(()=>{});
+</script>
 
-<footer>
-  <a href="index_full.html">前の進捗表（全部入り）</a>
-  <a href="share/done/">できたもの一覧</a>
-  <a href="money.html">お金</a>
-  <a href="969-kagi-daicho.html">鍵・つながりの台帳</a>
-  <a href="971-gaibu-copy-nippou.html">外部から入れたもの・コピー日報</a>
-  <a href="972-okane-report.html">今週かかったお金（972）</a>
-  <a href="share/check/974-fal-avatar-nedan.html">卵を喋らせる値段しらべ（974）</a>
-  <a href="977-ai-renkei.html">他のAIとの連絡線・死活表（977）</a>
-  <a href="share/check/1029-shuhou.html">先週1週間の報告（1029）</a>
-</footer>
+<!-- ④ 以下はぜんぶ畳む（既定は閉じている） -->
+<details class="fold" id="fDone">
+  <summary><span>できたもの</span><span class="s" id="sDone"></span></summary>
+  <div class="body"><ul id="done"><li class="meta">…</li></ul></div>
+</details>
+
+<details class="fold" id="fCash">
+  <summary><span>お金・フォルダ・掃除</span><span class="s" id="sCash"></span></summary>
+  <div class="body"><ul id="cash"><li class="meta">開くと読み込みます</li></ul></div>
+</details>
+
+<details class="fold" id="fKagi">
+  <summary><span>鍵・つながり／走った本数</span><span class="s" id="sKagi"></span></summary>
+  <div class="body"><div id="kagi" class="meta">開くと読み込みます</div></div>
+</details>
+
+<details class="fold" id="fKenpin">
+  <summary><span>外部AIの検品</span><span class="s" id="sKenpin"></span></summary>
+  <div class="body"><ul id="kenpin"><li class="meta">開くと読み込みます</li></ul></div>
+</details>
+
+<details class="fold" id="fUketori">
+  <summary><span>受け取り待ち（押すだけ）</span><span class="s" id="sUketori"></span></summary>
+  <div class="body"><ul id="uketori"><li class="meta">開くと読み込みます</li></ul></div>
+</details>
+
+<details class="fold" id="fKoushiki">
+  <summary><span>公式のアップデート</span><span class="s" id="sKoushiki"></span></summary>
+  <div class="body"><ul id="koushiki"><li class="meta">開くと読み込みます</li></ul></div>
+</details>
+
+<details class="fold">
+  <summary><span>ほかの画面へ</span></summary>
+  <div class="body">
+    <footer>
+      <a href="share/nagekomi-c5fd9d5791b32e88.html">★投げ込み箱：URLを貼って押すだけ（受付一覧つき）</a>
+      <a href="share/daicho.html">受付台帳：言われて治っていないもの</a>
+      <a href="share/check/1052-kakunin-machi.html">たまごさんの確認待ち</a>
+      <a href="share/check/1051-okane.html">お金（1枚・毎日更新）</a>
+      <a href="969-kagi-daicho.html">鍵・つながりの台帳</a>
+      <a href="977-ai-renkei.html">他のAIとの連絡線・死活表</a>
+      <a href="1136-gaibu-ai-daicho.html">外部AIの台帳：投げて返ってきていないもの</a>
+      <a href="1136-ai-nedan.html">AIの値段表：1回いくら減るか</a>
+      <a href="share/check/1141-kanryo-taikan.html">★完了の門と、体感の実証（毎日更新）</a>
+      <a href="1140-machigai.html">全曲検査：間違いは何件あったか（全26,400曲）</a>
+      <a href="1145-heru.html">★間違いは減っているか（動画を1本ずつ実測・毎日更新）</a>
+      <a href="1146-login-zero.html">★ログインの手をゼロに近づける（今年89回→年5回・世界の実例）</a>
+      <a href="1147-hayaku.html">★曲ページは軽くなったか（3,500KB→692KB・下の帯134→112px）</a>
+      <a href="1149-yarippanashi.html">★やりっぱなしゼロ：4帳簿・壊れた型・門の死活（機械が毎日数える）</a>
+      <a href="1151-gaibu-seiseki.html">★GensparkとDevinは役に立ったか（投げ／返り／本番／円・全員の割り振り）</a>
+      <a href="yuming-anohi/index.html">あの日にかえりたい：Genspark本人の完成版と3案</a>
+      <a href="share/done/">できたもの一覧</a>
+      <a href="share/spotify-hitotsu.html">Spotify：押すのはここだけ</a>
+      <a href="index_full.html">前の進捗表（全部入り）</a>
+    </footer>
+  </div>
+</details>
 
 </div>
 <script>
@@ -194,19 +329,7 @@ var SRC = "status/public/top_status.json";
 var $ = function(id){ return document.getElementById(id); };
 function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
-
-function put(el, rows){
-  el.innerHTML = rows.length ? rows.join("") : '<li class="empty">ありません</li>';
-}
 function yen(n){ return n == null ? "未取得" : Math.round(n).toLocaleString() + "円"; }
-
-// 通信が細いときに無言で止まらないよう、必ず時間で切る（既存の方針と同じ）
-/* 948番（2026-09-19）たまごさん「以前のデータじゃなくて、新規のやつがスパンと出るように」。
-   実測した原因：ここは fetch にキャッシュ指定が無かった。GitHub Pages は配信に
-   Cache-Control: max-age=600 を付けてくる（index_full.html 1054行目に実測の記録あり）ので、
-   指定が無いと最大10分前のJSONがそのまま画面に出ていた。
-   {cache:"no-store"} にして毎回サーバーから取り直す。ここで読むのはJSONだけで、
-   画像・アイコン・CSSはこの指定の外なので、キャッシュが効いたまま＝軽さは壊れない。 */
 function getJson(url, ms){
   return new Promise(function(resolve, reject){
     var done = false;
@@ -217,26 +340,217 @@ function getJson(url, ms){
   });
 }
 
-/* ───────── 週の残り：バーは1本。青い線が「本来ここ」 ─────────
-   週は 火曜18:00 →翌火曜18:00 の168時間。日割り13%ではなく、
-   いまの時刻まで見て連続で計算する（火曜の途中・金曜の朝晩でズレるため）。 */
-var WEEK_HOURS = 168;
-var PACE = null;
+/* ───────── 工場の体温（1163番）─────────
+   出どころは status/public/taion.json ただ1枚（tools/1163_taion.py が心臓の毎周で書く）。
+   心臓      … だまり120秒以内＝生／600秒以内＝あやしい／それ超＝死
+   最後の発車 … status/.last_launch_at の時刻をそのまま
+   今の負荷   … machine_health.json の loadPct（ロード÷コア×100）
+   ★紙が古い（3分超）ときは、中身を信じずに「紙が古い」と赤で出す。
+     読めなかったときも赤で「取れていません」。黙って…のままにしない。 */
+(function(){
+  function put(id, txt, col){
+    var e = document.getElementById(id); if(!e) return;
+    e.textContent = txt; if(col) e.style.color = col;
+  }
+  getJson("status/public/taion.json").catch(function(){ return null; }).then(function(t){
+    if(!t){
+      put("tHeart","取れていません","#b00020");
+      put("tLaunch","取れていません","#b00020");
+      put("tLoad","取れていません","#b00020");
+      put("taionMeta","status/public/taion.json が読めません（心臓が一度も書いていない）");
+      return;
+    }
+    var meta = [], furui = null;
+    try {
+      var age = (Date.now() - new Date(String(t.at).replace("+0900","+09:00")).getTime())/60000;
+      if(age > 3) furui = age;
+    } catch(e){}
 
+    if(furui !== null){
+      var m0 = "紙が"+furui.toFixed(0)+"分古い";
+      put("tHeart", m0, "#b00020"); put("tLaunch", m0, "#b00020"); put("tLoad", m0, "#b00020");
+      put("taionMeta", "status/public/taion.json が "+furui.toFixed(0)
+          +"分前で止まっています＝心臓か公開のどちらかが止まっています（書いた時刻 "
+          + String(t.at).slice(11,19) + "）");
+      return;
+    }
+
+    if(t["心臓"]){
+      var c = t["心臓"] === "生" ? "#137333" : (t["心臓"] === "あやしい" ? "#8a2b00" : "#b00020");
+      put("tHeart", t["心臓"], c);
+      if(t["心臓のだまり秒"] != null) meta.push("だまり "+t["心臓のだまり秒"]+"秒");
+    } else { put("tHeart","取れていません","#b00020"); }
+
+    if(t["最後の発車"]){
+      var mm = t["最後の発車から分"];
+      put("tLaunch", String(t["最後の発車"]).slice(11,16)
+          + (mm != null ? "（"+Math.round(mm)+"分前）" : ""),
+          (mm != null && mm > 120) ? "#b00020" : "");
+    } else { put("tLaunch","取れていません","#b00020"); }
+
+    if(typeof t["負荷Pct"] === "number"){
+      var L = t["負荷Pct"];
+      put("tLoad", L+"%", L >= 200 ? "#b00020" : (L >= 100 ? "#8a2b00" : "#137333"));
+    } else { put("tLoad","取れていません","#b00020"); }
+
+    if(t["同時上限"] != null) meta.push("同時上限 "+t["同時上限"]+"本");
+    if(t["スワップ残りGB"] != null) meta.push("スワップ残り "+t["スワップ残りGB"]+"GB");
+    if(t["負荷1行"]) meta.push(t["負荷1行"]);
+    meta.push("測った時刻 "+String(t.at).slice(11,19));
+    document.getElementById("taionMeta").textContent = meta.join(" ｜ ");
+  });
+})();
+
+/* ───────── 走っているもの ─────────
+   ★経過時間は「書き出された時刻の経過」に、開いてからの実時間を足して出す。
+     （startedAt があればそちらを優先。top_status.py が書けるようになった分だけ正確になる）
+   ★180分＝3時間縛り。150分で黄、180分超で赤。 */
+var RUN = [], BASE = 0, STALE = false, AGE = 0;
+/* ★データが古いときは、経過時間を「いま」まで伸ばさない。
+   伸ばすと、とっくに終わった2分の空回しが「1時間58分走っています」と嘘をつく（実測で出た）。
+   古いときは書き出された時点の数字のまま出して、何分前の数字かを添える。 */
+function liveMin(x){
+  if(STALE) return x.elapsedMin == null ? null : x.elapsedMin;
+  if(x.startedAt){
+    var t = Date.parse(String(x.startedAt));
+    if(!isNaN(t)) return (Date.now() - t) / 60000;
+  }
+  if(x.elapsedMin == null) return null;
+  return x.elapsedMin + (BASE ? (Date.now() - BASE) / 60000 : 0);
+}
+/* ───────── ログイン（一番上の赤） ─────────
+   出す文言は1つだけ：「ログインが切れています」。直し方も1行だけ添える。 */
+function renderLogin(d){
+  var L = d.login || {};
+  var el = $("loginNg");
+  if(!el) return;
+  if(!L.ng){ el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.innerHTML = '🔑 ログインが切れています'
+    + (L.since ? '<span style="font-weight:400"> — ' + esc(L.since) + 'から</span>' : '')
+    + (L.naoshikata ? '<div style="font-weight:400;margin-top:6px;font-size:.92em">'
+                      + esc(L.naoshikata) + '</div>' : '');
+}
+/* ───────── 成果の鮮度（1143番）─────────
+   ★「走っているか」ではなく「最後に本物の成果が出てから何時間経ったか」を出す。
+   走行本数を見ないので、空回しが走っていてもこの赤は消えない。
+   （4日半だれも気づかなかった事故は、走行本数で赤を消していたのが原因） */
+function renderFresh(d){
+  var F = d.freshness, el = $("freshNg");
+  if(!el) return;
+  if(!F || !F.akaN){ el.style.display = "none"; return; }
+  el.style.display = "block";
+  var pipes = F.pipes || {};
+  var line = Object.keys(pipes).map(function(k){
+    var p = pipes[k];
+    var over = p.ageH != null && p.shikiiH != null && p.ageH > p.shikiiH;
+    return '<span style="display:inline-block;margin-right:14px;font-weight:400;'
+      + (over ? 'color:#ffd7c2' : 'opacity:.75') + '">'
+      + esc(p.na) + ' ' + (p.ageH == null ? '測れない' : p.ageH + 'h')
+      + '<span style="opacity:.6">/' + (p.shikiiH == null ? '—' : p.shikiiH + 'h') + '</span></span>';
+  }).join("");
+  el.innerHTML = '⏳ ' + esc(F.ichigyou || "成果が止まっています")
+    + '<div style="margin-top:8px;font-size:.9em">' + line + '</div>';
+}
+function renderRunning(d){
+  RUN = d.runningNow || [];
+  BASE = d.generatedAt ? Date.parse(String(d.generatedAt)) : 0;
+  var real = RUN.filter(function(x){ return String(x.label||"").indexOf("空回し") < 0; });
+  $("runHead").textContent = "走っているもの " + real.length + "本"
+    + (RUN.length > real.length ? "（ほかに空回し " + (RUN.length - real.length) + "本）" : "");
+  if(!RUN.length){
+    $("running").innerHTML = '<div class="none">いま走っているものはありません</div>'
+      + (d.stoppedReason ? '<div class="why">' + esc(d.stoppedReason) + '</div>'
+                         : '<div class="note">止まっている理由は記録されていません</div>');
+    return;
+  }
+  $("running").innerHTML = RUN.map(function(x, i){
+    var kara = String(x.label||"").indexOf("空回し") >= 0;
+    return '<div class="run' + (kara ? ' karamawashi' : '') + '" data-i="' + i + '">'
+      + '<div class="rt"><span class="rn">' + esc(x.n) + '</span>' + esc(x.label) + '</div>'
+      + '<div class="rmeta">'
+      +   '<span class="rel" data-el>—</span>'
+      +   '<span class="rlim" data-lim></span>'
+      +   (x.model ? '<span class="badge">' + esc(x.model) + '</span>' : '')
+      + '</div>'
+      + '<div class="bar"><i data-fill></i></div>'
+      + '</div>';
+  }).join("");
+  tick();
+}
+function tick(){
+  var rows = document.querySelectorAll("#running .run");
+  for(var i = 0; i < rows.length; i++){
+    var el = rows[i], x = RUN[Number(el.dataset.i)];
+    if(!x) continue;
+    var lim = Number(x.limitMin) || 180;
+    var m = liveMin(x);
+    var elBox = el.querySelector("[data-el]"), limBox = el.querySelector("[data-lim]"),
+        fill = el.querySelector("[data-fill]");
+    if(m == null){
+      elBox.textContent = "経過が取れていません";
+      elBox.style.fontSize = "17px"; limBox.textContent = ""; fill.style.transform = "scaleX(0)";
+      el.className = "run over"; continue;
+    }
+    var mm = Math.floor(m);
+    elBox.textContent = (mm >= 60 ? Math.floor(mm/60) + "時間" + (mm%60) + "分" : mm + "分");
+    limBox.textContent = "／ " + lim + "分（残り " + Math.max(0, lim - mm) + "分）";
+    fill.style.transform = "scaleX(" + Math.max(0, Math.min(1, m / lim)) + ")";
+    var kara = String(x.label||"").indexOf("空回し") >= 0 ? " karamawashi" : "";
+    el.className = "run" + kara + (m >= lim ? " over" : (m >= lim - 30 ? " warn" : ""));
+    if(m >= lim) limBox.textContent = "／ " + lim + "分（" + (mm - lim) + "分 超過）";
+    if(STALE) limBox.textContent += "・" + AGE + "分前の時点";
+  }
+}
+setInterval(tick, 5000);
+
+/* ───────── 週のクレジット ─────────
+   火曜18:00→翌火曜18:00の168時間。青い線＝いまの時刻で「本来ここ」。
+   日割りの目安13〜14%（pace.json の perDayEven）も数字で出す。 */
+var WEEK_HOURS = 168, PACE = null;
 function weekStartOf(resetAt){
   if(!resetAt) return null;
   var end = new Date(String(resetAt).replace(" ", "T"));
   if(isNaN(end)) return null;
-  return { start: new Date(end.getTime() - WEEK_HOURS * 3600000), end: end };
+  return { start:new Date(end.getTime() - WEEK_HOURS*3600000), end:end };
 }
-// 「本来ここ」＝経過時間の割合（0〜1）
-function idealFrac(){
+/* 1153番：たまごさんが言った目安の線。均等割り(1日14%)ではなく、実際に走らせる形。
+     ・土曜の終わり（日曜0:00）で 50%
+     ・火曜0:00 で 92%
+     ・リセット直前で 99%
+   この3点を通る折れ線で「いま本来ここ」を出す。★時計だけで決まる＝毎回同じ値になる。 */
+function mezasuPoints(){
   var w = PACE && weekStartOf(PACE.resetAt);
   if(!w) return null;
-  var f = (Date.now() - w.start.getTime()) / (WEEK_HOURS * 3600000);
-  return Math.max(0, Math.min(1, f));
+  var st = w.start;                                  // 火 17:59
+  function mid(addDays){                             // 週頭から addDays 日後の 0:00
+    var d = new Date(st.getFullYear(), st.getMonth(), st.getDate() + addDays, 0, 0, 0, 0);
+    return d.getTime();
+  }
+  return [
+    { t: st.getTime(), pct: 0 },
+    { t: mid(5),       pct: 50 },   // 火＋5日＝日曜の0:00（＝土曜の終わり）
+    { t: mid(7),       pct: 92 },   // 火曜0:00
+    { t: w.end.getTime(), pct: 99 }
+  ];
 }
-// 青い線は実測した px で置く（幅に % を使わない）
+function idealPct(){
+  var ps = mezasuPoints(); if(!ps) return null;
+  var now = Date.now();
+  if(now <= ps[0].t) return 0;
+  for(var i = 1; i < ps.length; i++){
+    if(now <= ps[i].t){
+      var a = ps[i-1], b = ps[i];
+      var f = (now - a.t) / Math.max(1, (b.t - a.t));
+      return a.pct + (b.pct - a.pct) * f;
+    }
+  }
+  return 99;
+}
+function idealFrac(){
+  var v = idealPct();
+  return v == null ? null : Math.max(0, Math.min(1, v/100));
+}
 function placeLine(){
   var g = $("gauge"), b = $("gline"), f = idealFrac();
   if(f == null){ b.style.display = "none"; return; }
@@ -244,331 +558,238 @@ function placeLine(){
   b.style.transform = "translateX(" + Math.round(g.clientWidth * f) + "px)";
 }
 window.addEventListener("resize", placeLine);
-
+/* 1153番：取れない数字は空欄にしない。「取れない」と文字で出す。 */
+function wv(id, val, unit){
+  var el = $(id); if(!el) return;
+  if(val == null){ el.className = "wv torenai"; el.textContent = "取れない"; return; }
+  el.className = "wv";
+  el.innerHTML = val + '<span class="u">' + unit + '</span>';
+}
 function renderPace(p){
   PACE = p || null;
   if(!p){
-    $("remain").textContent = "—";
-    $("paceNums").textContent = "pace の記録が読めませんでした";
-    $("paceDays").textContent = "";
+    wv("wUsed", null); wv("wRemain", null); wv("wHours", null);
+    $("wLine").innerHTML = '<span class="red">目安の線が出せません（週の記録が読めない）</span>';
+    $("paceNums").innerHTML = '<span class="red">週の記録が読めませんでした</span>';
     return;
   }
   var remain = p.remainWeek;
-  $("remain").textContent = (remain == null ? "—" : remain + "%") + " 残り";
+  var used = (p.allPct != null) ? p.allPct
+           : (remain != null ? Math.max(0, Math.min(100, 100 - remain)) : null);
+  wv("wUsed", used == null ? null : Math.round(used), "%");
+  wv("wRemain", remain == null ? null : Math.round(remain), "%");
 
-  var g = $("gauge");
-  g.className = "gauge" + (p.state === "over" ? " over" : "");
-  var used = Math.max(0, Math.min(100, 100 - (remain == null ? 100 : remain)));
-  $("gfill").style.transform = "scaleX(" + (used / 100) + ")";
+  /* リセットまで「あと◯時間」（日ではなく時間。たまごさんの指定） */
+  var w = weekStartOf(p.resetAt);
+  var hLeft = w ? Math.max(0, (w.end.getTime() - Date.now()) / 3600000) : null;
+  wv("wHours", hLeft == null ? null : Math.round(hLeft), "時間");
+
+  $("gauge").className = "gauge" + (p.state === "over" ? " over" : "");
+  $("gfill").style.transform = "scaleX(" + ((used||0)/100) + ")";
   placeLine();
 
-  var f = idealFrac();
-  $("paceNums").textContent = "現在 " + Math.round(used) + "% ／ 本来 " +
-    (f == null ? "—" : Math.round(f * 100) + "%");
+  /* 目安の線に対して、足りているか・遅れているか */
+  var ideal = idealPct();
+  var line = '<div>目安　<b>土曜の終わりに50%</b> ／ <b>火曜0時に92%</b> ／ <b>リセット直前に99%</b></div>';
+  if(ideal == null || used == null){
+    line += '<div><span class="red">いまの線に対する判定は出せません（数字が取れない）</span></div>';
+  }else{
+    var iv = Math.round(ideal), sa = Math.round(used - ideal);
+    var cls = Math.abs(sa) <= 5 ? "ok" : (sa > 5 ? "hayai" : "osoi");
+    var word = Math.abs(sa) <= 5 ? "線どおり"
+             : (sa > 5 ? "使いすぎ（早い）" : "まだ使えていない（遅れ）");
+    line += '<div>いま本来ここ <b>' + iv + '%</b>　→　実際 <b>' + Math.round(used) + '%</b>'
+          + '　<span class="' + cls + '">' + (sa > 0 ? "+" : "") + sa + '% ' + word + '</span></div>';
+  }
+  $("wLine").innerHTML = line;
 
-  // 残り日数は1行だけ。週末が読めることが目的。
-  var d = p.daysLeft;
-  var line = (d == null) ? "" : "あと " + (Math.round(d * 10) / 10) + "日";
-  if(d != null && d >= 2) line += "・日曜と月曜が読みどころ";
-  if(p.resetAt) line += "（" + esc(p.resetAt) + " リセット）";
-  $("paceDays").textContent = line;
+  var d = p.daysLeft == null ? null : Math.round(p.daysLeft*10)/10;
+  $("paceNums").innerHTML =
+      '<div><span class="k">今日 使った</span> <b>' + (p.usedToday == null ? "取れない" : p.usedToday + "%") + '</b>'
+    + ' <span class="k">／ 今日の予算</span> <b>' + (p.budgetToday == null ? "取れない" : p.budgetToday + "%") + '</b></div>'
+    + '<div><span class="k">リセット</span> <b>' + (p.resetAt ? esc(p.resetAt) : "取れない") + '</b>'
+    + ' <span class="k">（火曜18時' + (d == null ? "" : "・あと" + d + "日") + '）</span>'
+    + ' <span class="k">この数字は ' + (p.allPctAsOf ? esc(p.allPctAsOf) + " 時点" : "時点不明") + '</span></div>';
 }
-
-/* ───────── 走行中 ───────── */
-function dur(min){
-  if(min == null) return "";
-  var m = Math.round(min), h = Math.floor(m / 60);
-  return (h ? h + "時間" : "") + (m % 60) + "分";
-}
-function renderRunning(d){
-  var r = (d.runningNow || []).map(function(x){
-    var over = x.elapsedMin != null && x.elapsedMin >= 180;
-    var meta = [];
-    if(x.elapsedMin != null) meta.push(dur(x.elapsedMin) + (over ? " 🔴3時間超" : ""));
-    if(x.model) meta.push(x.model);
-    return '<li><span class="n">' + esc(x.n) + '番</span>' + esc(x.label) +
-      (meta.length ? '<div class="meta' + (over ? ' red' : '') + '">' + esc(meta.join(" ・ ")) + '</div>' : '') + '</li>';
+/* 1153番：走行◯本／今日さばいた◯本／0本だった時間◯分／未完了◯件 を枠の下に1行。
+   ★元データが無いところは「取れない」と書く（空欄にしない）。 */
+function renderWakuKazu(top){
+  var box = $("wKazu"); if(!box) return;
+  var hon = top && top.runningNow ? top.runningNow.length : null;
+  Promise.all([
+    getJson("status/public/genzaichi.json").catch(function(){ return null; }),
+    getJson("status/public/zero_bon.json").catch(function(){ return null; })
+  ]).then(function(a){
+    var g = a[0], z = a[1];
+    var today = new Date();
+    var key = today.getFullYear() + "-" + ("0"+(today.getMonth()+1)).slice(-2)
+            + "-" + ("0"+today.getDate()).slice(-2);
+    var zm = (z && z[key] && z[key].zeroMin != null) ? Math.round(z[key].zeroMin) : null;
+    function n(v, unit){ return (v == null ? '<b class="red">取れない</b>' : '<b>' + v + unit + '</b>'); }
+    box.innerHTML =
+        '<span class="k">走行</span> ' + n(hon, "本")
+      + '　<span class="k">今日さばいた</span> ' + n(g ? g.doneToday : null, "本")
+      + '　<span class="k">0本だった時間</span> ' + n(zm, "分")
+      + '　<span class="k">未完了</span> ' + n(g ? g.waitingCount : null, "件");
   });
-  if(!r.length) r = ['<li class="empty red">' + esc(d.stoppedReason || "1本も走っていません") + '</li>'];
-  put($("running"), r);
 }
 
-/* ───────── 次に発車（待機列）─────────
-   top_status.json の nextUp が空でも「ありません」で止めない。
-   発車待ちの正本 queue_light.json を最初の表示のあとに読んで、実際の並び順を出す。 */
+/* ───────── 次に発車 ─────────
+   948番の教訓：読めるまで古い並びを出さない。「読み込み中…」のまま待つ。 */
 function pri(x){ return x.priority == null ? 9 : x.priority; }
 function rankCmp(a, b){
-  var A = [a.urgent ? 0 : 1, pri(a), a.order == null ? 9999 : a.order, a.n];
-  var B = [b.urgent ? 0 : 1, pri(b), b.order == null ? 9999 : b.order, b.n];
-  for(var i = 0; i < A.length; i++){ if(A[i] !== B[i]) return A[i] - B[i]; }
+  var A = [a.urgent?0:1, pri(a), a.order==null?9999:a.order, a.n];
+  var B = [b.urgent?0:1, pri(b), b.order==null?9999:b.order, b.n];
+  for(var i=0;i<A.length;i++){ if(A[i]!==B[i]) return A[i]-B[i]; }
   return 0;
 }
 function renderNext(list, total){
   if(!list.length){
-    $("next").innerHTML = '<li class="empty red">待機列が0件です（このままだと次が発車しません）</li>';
+    $("next").innerHTML = '<li class="red">待機列が0件です（このままだと次が発車しません）</li>';
     return;
   }
   var rows = list.map(function(x, i){
-    return '<li><span class="ord">' + (i + 1) + '.</span><span class="n">' +
-      esc(x.n) + '番</span>' + esc(x.title || x.label) + '</li>';
+    return '<li><span class="ord">' + (i+1) + '.</span><span class="ord">' + esc(x.n) + '</span>'
+      + esc(x.title || x.label) + '</li>';
   });
   if(total > list.length) rows.push('<li class="meta">ほか ' + (total - list.length) + ' 件</li>');
   $("next").innerHTML = rows.join("");
 }
-/* 948番（2026-09-19）たまごさん「以前のやつが残ってる。追いかけで読むんじゃなくて。」
-   実測した原因：ここは queue_light.json（実測 314KB。コード内の古いコメントは117KBのまま）を
-   読んでいて、スマホでは数秒かかる。その間 top_status.json の nextUp を先に出していたので、
-   「前の並びが出る → 数秒後にパッと別の並びへ入れ替わる」が毎回起きていた。
-   直し方：トップが実際に使う7項目だけの queue_next.json（実測 18KB）を新しく作り、
-   それ1本を読んでから一発で出す。先に古い並びを出すのをやめる（読んでいる間は「読み込み中…」）。 */
-function renderQueueFrom(arr){
-  var w = arr.filter(function(x){ return x.status === "waiting"; });
-  var hasNonF = w.some(function(x){ return pri(x) !== 6; });
-  var pool = hasNonF ? w.filter(function(x){ return pri(x) !== 6; }) : w;
-  pool.sort(rankCmp);
-  renderNext(pool.slice(0, 6), pool.length);
-}
 function loadQueue(fallback){
   getJson("status/public/queue_next.json", 12000).then(function(q){
-    renderQueueFrom((q && q.items) || []);
+    var w = ((q && q.items) || []).filter(function(x){ return x.status === "waiting"; });
+    var hasNonF = w.some(function(x){ return pri(x) !== 6; });
+    var pool = hasNonF ? w.filter(function(x){ return pri(x) !== 6; }) : w;
+    pool.sort(rankCmp);
+    renderNext(pool.slice(0,5), pool.length);
   }).catch(function(){
-    // 極小版がまだ配信に乗っていない時だけ、太いほうを読む（これまでと同じ動き）。
-    return getJson("status/public/queue_light.json", 20000).then(function(q){
-      renderQueueFrom((q && q.items) || []);
-    });
-  }).catch(function(){
-    // 読めなかっただけで「0件」と言わない。赤の「0件」は本当に列が空のときだけ。
-    if((fallback || []).length){ renderNext(fallback, fallback.length); return; }
-    $("next").innerHTML = '<li class="empty">待機列を読み込めませんでした（「押して読み直す」でもう一度）</li>';
+    if((fallback||[]).length){ renderNext(fallback, fallback.length); return; }
+    $("next").innerHTML = '<li class="meta">待機列を読み込めませんでした（「読み直す」でもう一度）</li>';
   });
 }
 
-/* ───────── お金・フォルダ・サブスク ─────────
-   元データが無いものは推測せず「未取得」と出す。 */
-function loadCash(){
+/* ───────── 畳んである中身は、開いたときに初めて読む ───────── */
+function once(detailsId, fn){
+  var d = $(detailsId); if(!d) return;
+  var done = false;
+  d.addEventListener("toggle", function(){ if(d.open && !done){ done = true; fn(); } });
+}
+once("fCash", function(){
   Promise.all([
     getJson("status/public/fal_cost_ledger.json").catch(function(){ return null; }),
     getJson("status/public/gaibu.json").catch(function(){ return null; }),
     getJson("status/public/machine.json").catch(function(){ return null; }),
-    /* 840番（2026-09-21）毎週のMac掃除。定期タスク weekly-mac-maintenance は走ってはいたが
-       許可ダイアログを押す人が居ないためMacの実ファイルに届かず、毎回「何も実行できなかった」
-       と返していた。★動いているのに何も取れていない、が一番たちの悪い壊れ方。
-       だから「走った回数」ではなく「実際に片付いたバイト数」をここに出す。 */
     getJson("status/public/mac_souji.json").catch(function(){ return null; })
   ]).then(function(a){
-    var fal = a[0], gaibu = a[1], mac = a[2], souji = a[3];
-    var rows = [];
-
-    // お金：実費が記録されているのは fal と 外に出した仕事だけ
-    var recs = (fal && fal.records) || null;
-    var today = null, week = null;
-    if(recs){
-      var d = new Date(), pad = function(v){ return (v < 10 ? "0" : "") + v; };
-      var todayISO = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
-      var w = PACE && weekStartOf(PACE.resetAt);
-      var wISO = w ? (w.start.getFullYear() + "-" + pad(w.start.getMonth() + 1) + "-" + pad(w.start.getDate())) : null;
-      today = 0; week = wISO ? 0 : null;
-      recs.forEach(function(r){
-        var y = Number(r.totalCostYen) || 0;
-        if(r.date === todayISO) today += y;
-        if(wISO && r.date >= wISO) week += y;
-      });
-    }
+    var fal=a[0], gaibu=a[1], mac=a[2], souji=a[3], rows=[];
     var falMonth = fal && fal.summary ? fal.summary.thisMonthTotalYen : null;
     var soto = gaibu && gaibu.summary ? gaibu.summary.totalCostYen : null;
-    var month = (falMonth == null && soto == null) ? null : (falMonth || 0) + (soto || 0);
-    rows.push('<li>お金　今日 ' + yen(today) + ' ／ 今週 ' + yen(week) + ' ／ 今月 ' + yen(month) +
-      '<div class="meta">内訳：fal ' + yen(falMonth) + ' ＋ 外に出した仕事 ' + yen(soto) +
-      '。OpenAI・xAI・Lovableクレジットは未取得</div></li>');
-
-    // フォルダ：50GBを切ったら赤
+    var month = (falMonth==null && soto==null) ? null : (falMonth||0)+(soto||0);
+    rows.push('<li>お金　今月 <b>' + yen(month) + '</b><div class="meta">fal ' + yen(falMonth)
+      + ' ＋ 外に出した仕事 ' + yen(soto) + '。OpenAI・xAI・Lovableは未取得</div></li>');
     var free = mac ? mac.diskFreeGB : null;
-    if(free == null){
-      rows.push('<li>フォルダ　空き 未取得</li>');
-    } else {
-      var low = free < 50;
-      rows.push('<li' + (low ? ' class="red"' : '') + '>フォルダ　空き ' + Math.round(free) + 'GB' +
-        (low ? '（50GBを切っています）' : '') + '</li>');
+    rows.push('<li' + (free!=null && free<50 ? ' class="red"' : '') + '>フォルダ　空き '
+      + (free==null ? '未取得' : Math.round(free)+'GB') + '</li>');
+    if(!souji){ rows.push('<li>掃除　未取得</li>'); }
+    else{
+      var runs=Number(souji.runs||0), total=Number(souji.totalFreedBytes||0);
+      var bad = (runs>0 && total<=0) || runs===0;
+      rows.push('<li' + (bad?' class="red"':'') + '>毎週のMac掃除　'
+        + (bad ? (runs===0?'まだ1回も掃けていません':'走った'+runs+'回・片付いた0バイト')
+               : '累計 ' + esc(souji.totalFreedHuman||'') + ' 片付いた') + '</li>');
     }
-
-    /* 毎週のMac掃除：★「走った回数>0 なのに 片付いた=0」は赤。
-       走っただけで緑にしない。8日以上掃けていない（＝経路が死んだ）ときも赤。 */
-    if(!souji){
-      rows.push('<li>毎週のMac掃除　未取得<div class="meta">status/public/mac_souji.json がまだありません</div></li>');
-    } else {
-      var runs  = Number(souji.runs || 0);
-      var total = Number(souji.totalFreedBytes || 0);
-      var lastMs = souji.lastRunAt ? Date.parse(souji.lastRunAt) : NaN;
-      var ageDay = isNaN(lastMs) ? null : (Date.now() - lastMs) / 86400000;
-      var bad = (runs > 0 && total <= 0) || (ageDay != null && ageDay > 8) || runs === 0;
-      var why = (runs > 0 && total <= 0)
-        ? '走った' + runs + '回・片付いた0バイト（動いているのに何も取れていない）'
-        : (runs === 0 ? 'まだ1回も掃けていません'
-          : (ageDay != null && ageDay > 8 ? Math.floor(ageDay) + '日掃けていません' : ''));
-      rows.push('<li' + (bad ? ' class="red"' : '') + '>毎週のMac掃除　' +
-        (bad ? why : ('累計 ' + esc(souji.totalFreedHuman || '') + ' 片付いた')) +
-        '<div class="meta">走行 ' + runs + '回／直近 ' + esc(souji.lastFreedHuman || '未取得') +
-        '／最終 ' + (souji.lastRunAt ? esc(String(souji.lastRunAt).replace("T", " ").slice(0, 16)) : '未実行') +
-        '。心臓と5分便に相乗り（定期タスクは使っていない）</div></li>');
-    }
-
-    /* 2026-09-21（986番）10分ごとの軽い掃き掃除（孤児セッション・肥大ログ・自分たちの取り残し）。
-       ★赤にする条件は3つ。「走った」だけでは緑にしない。
-         1. 掃く候補があったのに0バイトしか取れなかった（＝経路が壊れている）
-         2. 30分以上呼ばれていない（＝心臓からの経路が死んだ）
-         3. まだ1回も走っていない
-       候補が0件で0バイトは**緑**。床が綺麗なだけで、壊れてはいない。
-       （最初これも赤にしていたが、掃除直後は必ず赤になり、永久に赤い＝警報として死ぬ） */
-    var rel = souji && souji.relief;
-    if(souji){
-      if(!rel){
-        rows.push('<li class="red">10分ごとの掃除　まだ動いていません' +
-          '<div class="meta">status/public/mac_souji.json に relief がありません</div></li>');
-      } else {
-        var rRuns    = Number(rel.runs || 0);
-        var rFreed   = Number(rel.totalFreedBytes || 0);
-        var rTargets = Number(rel.totalTargets || 0);
-        var rMs      = rel.lastRunAt ? Date.parse(rel.lastRunAt) : NaN;
-        var rAgeMin  = isNaN(rMs) ? null : (Date.now() - rMs) / 60000;
-        var rDead    = (rAgeMin != null && rAgeMin > 30);
-        var rStuck   = (rRuns > 0 && rFreed <= 0 && rTargets > 0);
-        var rBad     = rStuck || rDead || rRuns === 0;
-        var rWhy = rStuck
-          ? ('走った' + rRuns + '回・候補' + rTargets + '件あったのに片付いた0バイト（動いているのに何も取れていない）')
-          : (rRuns === 0 ? 'まだ1回も走っていません'
-            : (rDead ? Math.floor(rAgeMin) + '分呼ばれていません（心臓からの経路が死んでいます）' : ''));
-        rows.push('<li' + (rBad ? ' class="red"' : '') + '>10分ごとの掃除　' +
-          (rBad ? rWhy : ('累計 ' + esc(rel.totalFreedHuman || '0.0B') + ' 片付いた')) +
-          '<div class="meta">走行 ' + rRuns + '回／呼ばれた ' + Number(rel.calls || 0) + '回' +
-          '／候補 累計' + rTargets + '件／直近 ' + esc(rel.lastFreedHuman || '未取得') +
-          '／最終 ' + (rel.lastRunAt ? esc(String(rel.lastRunAt).replace("T", " ").slice(0, 16)) : '未実行') +
-          '。孤児セッション・肥大ログ・自分たちの取り残しを掃く</div></li>');
-      }
-    }
-
-    // サブスク：台帳が公開側に無い（金額・次の請求日は端末側にしかない）
-    rows.push('<li>サブスク　未取得<div class="meta">金額と次の請求日は <a href="money.html">お金の管理表</a> に入っています</div></li>');
-
     $("cash").innerHTML = rows.join("");
+    $("sCash").textContent = month==null ? "" : "今月 " + yen(month);
   });
-}
+});
+once("fKagi", function(){
+  getJson("status/public/kagi_daicho_top.json").then(function(d){
+    var k = d && d.kasegi;
+    $("kagi").innerHTML = (k ? '<b>' + (k.red ? "🔴 " : "") + esc(k.line||"") + '</b>'
+        + (k.karamawashi ? '<div class="meta">うち空回し ' + esc(k.karamawashi) + '本（数に入れていません）</div>' : '')
+        + (k.blocked ? '<div class="meta">止めているもの：' + esc(k.blocked) + '</div>' : '')
+      : '<span class="red">走った／取れたの数が読めません</span>')
+      + (d && d.redCount > 0 ? '<div class="meta"><a href="969-kagi-daicho.html">赤 ' + d.redCount
+          + '件：台帳を開く</a></div>' : '');
+  }).catch(function(){ $("kagi").innerHTML = '<span class="red">読めませんでした</span>'; });
+});
+once("fKenpin", function(){
+  getJson("status/public/kenpin_mieru.json").then(function(j){
+    var cases = (j && j.cases) || [];
+    if(!cases.length){ $("kenpin").innerHTML = '<li class="meta">記録がありません</li>'; return; }
+    $("kenpin").innerHTML = cases.slice(0,20).map(function(c){
+      return '<li><b>' + esc(c.n) + '号</b> ' + (c.passed ? "PASS" : "まだ通っていない")
+        + '<div class="meta">' + esc(c.rounds) + '往復／直させた' + esc(c.fixes) + '回'
+        + (c.title ? '<br>' + esc(c.title) : '') + '</div></li>';
+    }).join("");
+  }).catch(function(){ $("kenpin").innerHTML = '<li class="red">読めませんでした</li>'; });
+});
+once("fUketori", function(){
+  getJson("status/public/uketori_machi.json").then(function(d){
+    var ok = (d && d.goukaku) || [], ng = (d && d.sonota) || [];
+    if(!ok.length && !ng.length){ $("uketori").innerHTML = '<li class="meta">ありません</li>'; return; }
+    $("uketori").innerHTML = ok.concat(ng).map(function(x){
+      var url = String(x.url||"");
+      return '<li><b>' + esc(x.title||"") + '</b><div class="meta">' + esc(x.who||x.author||"?")
+        + ' が運んできた</div>'
+        + (/^https:\/\/github\.com\//.test(url) ? '<div><a href="' + esc(url) + '">PRを開く</a></div>' : '')
+        + '</li>';
+    }).join("");
+  }).catch(function(){ $("uketori").innerHTML = '<li class="red">読めませんでした</li>'; });
+});
+once("fKoushiki", function(){
+  getJson("status/public/koushiki_updates.json").then(function(j){
+    var items = (j && j.items) || [];
+    $("koushiki").innerHTML = items.length
+      ? items.slice(0,12).map(function(it){
+          return '<li>' + (it.url ? '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">'
+            + esc(it.title) + '</a>' : esc(it.title))
+            + '<div class="meta">' + esc(it.source||"") + ' ' + esc(it.date||"") + '</div></li>';
+        }).join("")
+      : '<li class="meta">今日は拾えたものがありません</li>';
+  }).catch(function(){ $("koushiki").innerHTML = '<li class="meta">読めませんでした</li>'; });
+});
 
 /* ───────── 描画 ───────── */
 function render(d){
-  var s = d.generatedAt ? String(d.generatedAt).replace("T", " ").slice(0, 16) : "";
-  $("stamp").textContent = s ? (s + " 時点") : "";
+  var g = d.generatedAt ? Date.parse(String(d.generatedAt)) : 0;
+  var ageMin = g ? Math.round((Date.now() - g)/60000) : null;
+  AGE = ageMin == null ? 0 : ageMin;
+  STALE = (ageMin != null && ageMin > 20);
+  var s = $("stamp");
+  if(ageMin == null){ s.textContent = ""; }
+  else if(ageMin <= 20){ s.className = ""; s.textContent = ageMin + "分前のデータ"; }
+  else { s.className = "old"; s.textContent = "⚠ " + ageMin + "分前のまま（更新が止まっています）"; }
 
+  renderLogin(d);
+  renderFresh(d);
   renderRunning(d);
-
-  /* 948番：ここで nextUp を先に出して、あとから本物の列で上書きしていた＝
-     「前の並びが出て、パッと切り替わる」の正体。上書きはやめて、読めるまでは何も主張しない。
-     たまごさん「古いものを見せるより、何も出さないほうがいい」。 */
-  $("next").innerHTML = '<li class="empty">読み込み中…</li>';
-
-  put($("done"), (d.recentDone || []).map(function(x){
-    var t = x.ts ? String(x.ts).replace("T", " ").slice(5, 16) : "";
-    var title = esc(x.title);
-    var body = x.url
-      ? '<span class="dot d-green"></span><a href="' + esc(x.url) + '">' + title + '</a>'
-      : '<span class="dot d-grey"></span>' + title;
-    return '<li><span class="n">' + esc(x.n) + '</span>' + body +
-      (t ? '<div class="meta">' + esc(t) + '</div>' : '') + '</li>';
-  }));
-
-  var v = d.verify;
-  $("verify").innerHTML = v
-    ? '<span><span class="dot d-green"></span>緑 ' + v.verified + '</span>' +
-      '<span><span class="dot d-amber"></span>要再確認 ' + v.recheck + '</span>' +
-      '<span><span class="dot d-grey"></span>未検証 ' + v.unverified + '</span>' +
-      '<span class="meta">（完了 ' + v.total + ' 件）</span>'
-    : '<span class="meta">検証の記録がまだありません</span>';
-
   renderPace(d.pace);
-
-  // 最初の表示が終わってから重いものを読む（1枚目の軽さを壊さない）
+  renderWakuKazu(d);
+  $("next").innerHTML = '<li class="meta">読み込み中…</li>';
   loadQueue(d.nextUp || []);
-  loadCash();
-  loadKoushiki();
-  loadKenpin();
+
+  var done = d.recentDone || [];
+  $("sDone").textContent = done.length ? ("直近 " + done.length + "件") : "";
+  $("done").innerHTML = done.length ? done.map(function(x){
+    var t = x.ts ? String(x.ts).replace("T"," ").slice(5,16) : "";
+    return '<li>' + (x.url ? '<a href="' + esc(x.url) + '">' + esc(x.title) + '</a>' : esc(x.title))
+      + '<div class="meta">' + esc(x.n) + '番' + (t ? '・' + esc(t) : '') + '</div></li>';
+  }).join("") : '<li class="meta">ありません</li>';
+  var v = d.verify;
+  if(v) $("sDone").textContent = "検証ずみ " + v.verified + "／完了 " + v.total;
 }
 
-/* ───────── 公式のアップデート（939番）─────────
-   status/public/koushiki_updates.json は tools/koushiki_update_watch.py が1日1回だけ
-   書き換える（公式ドメインの許可リストで縛ってある）。ここは読んで出すだけ。
-   ファイルが無い日・読めない日は、カードごと出さない（「ありません」で場所を取らない）。 */
-function loadKoushiki(){
-  getJson("status/public/koushiki_updates.json", 8000).then(function(j){
-    var items = (j && j.items) || [];
-    if(!items.length) return;
-    $("koushikiCard").hidden = false;
-    var top = items[0];
-    $("koushikiLine").textContent =
-      (top.date ? top.date + "・" : "") + (top.source || "") + " ほか " + items.length + "件";
-    put($("koushikiList"), items.slice(0, 12).map(function(it){
-      var t = esc(it.title);
-      var head = '<span class="meta">' + esc(it.source || "") + '</span> ';
-      return "<li>" + head + (it.url
-        ? '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + t + "</a>"
-        : t) + "</li>";
-    }));
-  }).catch(function(){ /* 無い日は黙って出さない */ });
-}
-
-/* ───────── 外部AIの検品（944番・2026-09-18）─────────
-   たまごさん「例のOpenAIに検品させるやつ、実際に動いてるの？ やりとり見れるの？」
-   status/public/kenpin_mieru.json は tools/kenpin_mieru.py が自動生成する。ここは読んで出すだけ。
-   見えるのは1行だけ。開くと号ごとに「何往復して、何を指摘されて、PASSまで何回か」が出る。 */
-function loadKenpin(){
-  getJson("status/public/kenpin_mieru.json", 8000).then(function(j){
-    var cases = (j && j.cases) || [];
-    if(!cases.length) return;
-    $("kenpinCard").hidden = false;
-    var rounds = 0, fixes = 0, yenSum = 0, passed = 0;
-    cases.forEach(function(c){
-      rounds += c.rounds || 0; fixes += c.fixes || 0;
-      yenSum += c.costYen || 0; if(c.passed) passed++;
-    });
-    $("kenpinLine").textContent =
-      cases.length + "件の案件で " + rounds + "往復・直させたのが " + fixes + "回・"
-      + passed + "件がPASS・合計 " + (Math.round(yenSum * 100) / 100) + "円";
-
-    put($("kenpinList"), cases.slice(0, 20).map(function(c){
-      var head = "<b>" + c.n + "号</b> " + (c.passed ? "✅PASS" : "まだ通っていない")
-        + ' <span class="meta">' + c.rounds + "往復／直させた" + c.fixes + "回／"
-        + (Math.round((c.costYen || 0) * 1000) / 1000) + "円</span>";
-      var title = c.title ? '<div class="meta">' + esc(c.title) + "</div>" : "";
-      var steps = (c.rows || []).map(function(r){
-        var mark = r.verdict === "PASS" ? "✅通した" : (r.verdict === "FIX" ? "🔴直させた" : "⚪️判定できず");
-        return '<div class="meta">第' + r.seq + "回 " + mark + "（" + esc(r.provider || "") + "）"
-          + (r.gap ? "：" + esc(r.gap) : "") + "</div>";
-      }).join("");
-      var link = c.publicTxt
-        ? '<div><a href="' + esc(c.publicTxt) + '" target="_blank" rel="noopener">やりとりの全文を読む</a></div>'
-        : "";
-      return "<li>" + head + title + steps + link + "</li>";
-    }));
-  }).catch(function(){ /* 無ければ黙って出さない */ });
-}
-
-/* ───── 948番（2026-09-19）公開したら、その場で新しい画面になるようにする ─────
-   たまごさん「以前の画面が出て、5秒後ぐらいにパッと切り替わる。あれやめてくんないかな」。
-   全部入りの画面（index_full.html）は、?v= が付いていない初回はどんな版とも一致しないため、
-   中身が最新でも必ず1回 location.replace していた＝開くたびに画面が入れ替わっていた。
-   ここでは同じ轍を踏まない。自分が最後に読み込めた版を控えておき、
-     ・控えと同じ／初めての端末 → 開き直さない（ふだんは入れ替えが一切起きない）
-     ・本当に新しい版が出たときだけ → 何も描く前に1回だけ開き直す
-   version.json は実測64バイト。読めない日に画面を止めないよう、待つのは最大900ミリ秒。 */
+/* 948番：新しい版が出たときだけ、描く前に1回だけ開き直す */
 var VKEY = "tamago_top_build";
 var PAGE_BUILD = (location.search.match(/[?&]v=([^&]+)/) || [])[1] || "";
-function seenBuild(){ try { return localStorage.getItem(VKEY) || ""; } catch(e){ return ""; } }
-function rememberBuild(v){ try { localStorage.setItem(VKEY, v); } catch(e){} }
+function seenBuild(){ try{ return localStorage.getItem(VKEY)||""; }catch(e){ return ""; } }
+function rememberBuild(v){ try{ localStorage.setItem(VKEY, v); }catch(e){} }
 if(PAGE_BUILD && /^[0-9a-f]{10}$/.test(PAGE_BUILD)) rememberBuild(PAGE_BUILD);
-
 function versionGate(){
   return new Promise(function(resolve){
     if(PAGE_BUILD){ resolve(true); return; }
-    var settled = false;
-    var go = function(){ if(!settled){ settled = true; resolve(true); } };
+    var settled = false, go = function(){ if(!settled){ settled = true; resolve(true); } };
     setTimeout(go, 900);
     fetch("status/public/version.json", {cache:"no-store"})
       .then(function(r){ return r.ok ? r.json() : null; })
@@ -578,125 +799,64 @@ function versionGate(){
         var seen = seenBuild();
         if(!seen || seen === v){ rememberBuild(v); go(); return; }
         rememberBuild(v);
-        // ここは「本当に新しい版が出ている」ときだけ通る。描く前に入れ替える。
         location.replace(location.pathname + "?v=" + encodeURIComponent(v));
-      })
-      .catch(go);
+      }).catch(go);
   });
 }
-
 function load(manual){
-  /* 948番（2026-09-19）ここが「以前のデータが出る」の直接の原因だった。
-     以前は自動の読み込みだけキャッシュ指定を外していた（軽くするため）。だが GitHub Pages は
-     Cache-Control: max-age=600 を付けて配信するので、開くたびに最大10分前の top_status.json が
-     そのまま出ていた。中身は実測 2.5KB。これを毎回取り直しても重くならない。
-     URLは変えない（?t= を毎回変えると中継のキャッシュが一切効かず、かえって遅くなる）。
-     キャッシュを読まないのは {cache:"no-store"} の指定のほうで担保する。 */
   var url = manual ? (SRC + "?r=" + Date.now()) : SRC;
   var data = fetch(url, {cache:"no-store"})
     .then(function(res){ if(!res.ok) throw new Error(res.status); return res.json(); });
-  // 版の確認とデータ取得は同時に走らせる（順番に待つと、そのぶん表示が遅れるだけ）。
-  // 版が古いと分かったときは versionGate が開き直すので、この Promise は解決しない
-  // ＝古い中身を一度も描かないまま新しい画面へ移る。
   Promise.all([data, manual ? Promise.resolve(true) : versionGate()])
     .then(function(a){ render(a[0]); })
-    .catch(function(e){ $("stamp").textContent = "読めませんでした（" + e.message + "）"; });
+    .catch(function(e){ $("stamp").className = "old";
+      $("stamp").textContent = "読めませんでした（" + e.message + "）"; });
+}
+/* ───────── 1161番：タブの閉め残し ─────────
+   ★ここは「ブラウザに今何枚あるか」ではない。**それはTCC許可なしに数えられないので数えない。**
+     （常駐からosascriptで数えようとして、たまごさんの画面に許可ダイアログを出す事故を
+       2026-09-26に2回やった。AppleScript/System Events/TCCは全面禁止になった）
+   出しているのは、Stopフック（tools/stop_kanmon/tab_kanmon.mjs）が
+   **セッションの記録から数えた「開いた数」対「閉じた数」**。OSには一切触っていない。
+   ★嘘を書かない：全体の枚数は null で来る。0ではなく「数えられていない」と出す。 */
+function loadTabs(){
+  var el = $("tabsLine"); if(!el) return;
+  var put = function(html, bad){
+    el.innerHTML = html;
+    el.style.background = bad ? "#b00020" : "#fff";
+    el.style.color = bad ? "#fff" : "";
+    el.style.fontWeight = bad ? "700" : "";
+    el.style.border = bad ? "none" : "1px solid #eee7dc";
+  };
+  fetch("status/public/tabs.json", {cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(d){
+      var nokori = (d.outstanding == null) ? null : Number(d.outstanding);
+      var bad = (nokori != null && nokori > 0);
+      var line = "タブの閉め残し　<b>"
+        + (nokori == null ? "数えられていない" : nokori + "枚")
+        + "</b>　<span style=\"font-weight:400\">（直前のセッション：開いた "
+        + (d.sessionOpened==null?"?":d.sessionOpened) + "枚 → 閉じた "
+        + (d.sessionClosed==null?"?":d.sessionClosed) + "枚）</span>";
+      var sub = "ブラウザ全体の枚数（Chrome／Brave）は<b>数えられていない</b>"
+        + "：数えるにはmacOSの許可ダイアログが出るため禁止。0枚と書くと嘘になる。"
+        + "<br>他セッションが残したタブには届かない。Braveは新しく開かないことで0に保つ。"
+        + "<br>今日 " + (d.closedToday==null ? "?" : d.closedToday) + "枚 閉じた・記録 " + (d.at || "無し");
+      if(bad) sub += "<br>★閉め残しがある。Stopフックが次の終了を拒否する。";
+      put(line + '<div style="font-size:13px;margin-top:5px;line-height:1.6;opacity:.9">' + sub
+         + ' ｜ <a href="status/public/tabs.json" style="color:inherit">出どころ</a></div>', bad);
+    })
+    .catch(function(){
+      put('タブの閉め残し　<b>数えられていない</b>'
+         + '<div style="font-size:13px;margin-top:5px;opacity:.9">status/public/tabs.json が読めません（Stopフック tools/stop_kanmon/tab_kanmon.mjs がまだ一度も記録していない）</div>', true);
+    });
 }
 
 $("reload").addEventListener("click", function(){
-  $("stamp").textContent = "読み直しています…";
-  load(true);
+  $("stamp").className = ""; $("stamp").textContent = "読み直しています…"; load(true); loadTabs();
 });
-// 自動更新はしない（ページごと読み直していたのが、見ている途中で位置がずれる原因だった）
 load(false);
-
-// 969番：鍵・つながりの台帳。赤が1つでもあるときだけ、ここに1行出す。
-// 赤が0のときは**何も出さない**（見えるところを足し算し続けない）。
-fetch("status/public/kagi_daicho_top.json?t=" + Date.now())
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    var el = $("kagi-alert");
-    if (!el) return;
-    if (d && d.notMeasuredYet) {
-      el.textContent = "鍵・つながりの台帳：まだ1回も実測していません（押すと開きます）";
-      el.style.display = "block";
-      return;
-    }
-    if (d && d.redCount > 0) {
-      el.textContent = "🔒 " + d.headline + " → 押すと台帳が開きます";
-      el.style.display = "block";
-    }
-    renderKasegi(d && d.kasegi, d && d.at);
-  })
-  .catch(function(){ renderKasegi(null, null); });
-
-/* ★1026番：一番上の「走った◯本 → 取れた◯本」。
-   読めなかったときに何も出さない＝黙って飲み込む、なので、読めなかったことを赤で出す。 */
-function renderKasegi(k, at){
-  var el = $("kasegi");
-  if(!el) return;
-  el.style.display = "block";
-  if(!k){
-    el.style.borderColor = "#b3261e"; el.style.color = "#b3261e";
-    el.innerHTML = "<b>🔴 走った／取れたの数が読めません</b>"
-      + "<div style='font-size:12px;margin-top:4px'>status/public/kagi_daicho_top.json が取れませんでした。"
-      + "数が出ないときは緑にしない決まりです。</div>";
-    return;
-  }
-  var red = !!k.red;
-  el.style.borderColor = red ? "#b3261e" : "#16130f";
-  el.style.color = red ? "#b3261e" : "#16130f";
-  var head = (red ? "🔴 " : "✅ ") + esc(k.line || "");
-  var sub = [];
-  if(k.karamawashi) sub.push("うち空回し " + esc(k.karamawashi) + "本（空回しは1本も数に入れていません）");
-  if(k.blocked) sub.push("止めているもの：" + esc(k.blocked));
-  if(at) sub.push("実測 " + esc(String(at).replace("T", " ").slice(0, 16)));
-  el.innerHTML = "<b style='font-size:15px'>" + head + "</b>"
-    + (sub.length ? "<div style='font-size:12px;margin-top:5px;line-height:1.55'>"
-        + sub.join("<br>") + "</div>" : "");
-}
-
-/* ★1030番：受け取り待ち。外のAIがPRまで運んできて、機械の検品を通ったものだけ並べる。
-   ・出すのは合格だけ。不合格・要人手はトグルに畳む（見えるところを足し算しない）。
-   ・押すボタンは GitHub のPR画面へのリンク1個。★ここで自動mergeはしない（不可逆だから）。
-   ・1件も無いときは、この枠ごと出さない。 */
-function uketoriRow(x, ng){
-  var who = esc(x.who || x.author || "?");
-  var what = esc(x.what || (x.files || []).join("／") || "");
-  var title = esc(x.title || "");
-  var url = String(x.url || "");
-  var btn = /^https:\/\/github\.com\//.test(url)
-    ? '<a href="' + esc(url) + '" style="display:inline-block;margin-top:6px;padding:7px 14px;'
-      + 'border:1px solid #16130f;border-radius:8px;text-decoration:none;font-weight:700">'
-      + (ng ? "PRを見る" : "mainに入れる（押す）") + '</a>'
-    : '<span class="meta">★URLが取れていません（押せません）</span>';
-  return "<li><b>" + esc(x.mark || "") + " " + title + "</b>"
-    + '<div class="meta">' + who + " が運んできた ／ " + what
-    + (ng ? " ／ <b>" + esc(x.verdict || "") + "</b>" : " ／ 検品◯合格")
-    + (x.rate != null ? " ／ 合格率 " + Math.round(x.rate * 1000) / 10 + "%" : "")
-    + "</div>"
-    + (ng && (x.reasons || []).length
-        ? '<div class="meta" style="margin-top:4px">' + esc((x.reasons || [])
-            .filter(function(r){ return r.indexOf("✕") >= 0 || r.indexOf("★") >= 0; })
-            .slice(0, 3).join(" ／ ")) + "</div>"
-        : "")
-    + btn + "</li>";
-}
-fetch("status/public/uketori_machi.json", {cache:"no-store"})
-  .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(d){
-    if(!d) return;
-    var ok = d.goukaku || [], ng = d.sonota || [];
-    if(!ok.length && !ng.length) return;
-    $("uketoriCard").hidden = false;
-    put($("uketoriList"), ok.map(function(x){ return uketoriRow(x, false); }));
-    if(ng.length){
-      $("uketoriNg").hidden = false;
-      $("uketoriNgSum").textContent = "検品を通らなかったもの " + ng.length + "件（押さなくてよい）";
-      put($("uketoriNgList"), ng.map(function(x){ return uketoriRow(x, true); }));
-    }
-  })
-  .catch(function(){});
+loadTabs();
 
 // ホーム画面アプリ用の manifest は、最初の表示が終わってから足す
 window.addEventListener("load", function(){

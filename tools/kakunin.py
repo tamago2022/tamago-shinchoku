@@ -185,8 +185,74 @@ def _kohyou_kanshi(payload):
     return kohyou_kanshi.run_job(payload)
 
 
+def _og(payload):
+    """1133番【OGの検品】出したページのサムネイルが「空っぽ型」でないかを機械で見る。
+
+    たまごさん（2026-09-25）:
+      「OG画像を叩いて空っぽ判定（画像の大半が単色／主要被写体が小さすぎる）を
+        機械で出せるようにして、tools/kakunin.py に組み込む。」
+
+    ★なぜここに間借りしているか（_omosa・_baton と同じ理由）
+      gaibu_runner.py は kind=kakunin のとき **毎回 importlib.reload(kakunin)** する。
+      ＝ launchd が抱えている古い runner を止めずに、今すぐ工場で動かせる。
+
+    ★安全：GETだけ。行き先は ALLOW_PREFIX の中のページと、そのページが指す og:image だけ。
+    payload: {"mode":"og", "urls":[...]}
+    返り: {"ok": 空っぽが0件か, "karappo": 件数, "total": 件数, "results":[...]}
+    """
+    import importlib.util
+    here = os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(here, "1133_og_karappo.py")
+    if not os.path.exists(p):
+        return {"ok": False, "error": "tools/1133_og_karappo.py がありません", "totalYen": 0.0}
+    spec = importlib.util.spec_from_file_location("og_karappo", p)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    urls = payload.get("urls") or ([payload["url"]] if payload.get("url") else [])
+    res = []
+    for u in urls:
+        r = {"url": u}
+        if not u.startswith(ALLOW_PREFIX):
+            r["error"] = "行き先が許してある場所の外です"
+            r["karappo"] = True
+            res.append(r)
+            continue
+        try:
+            req = urllib.request.Request(u, headers={"User-Agent": "Twitterbot/1.0"})
+            t0 = time.time()
+            with urllib.request.urlopen(req, timeout=25) as x:
+                html = x.read(400000).decode("utf-8", "ignore")
+            r["seconds"] = round(time.time() - t0, 1)
+        except Exception as e:
+            r["error"] = "ページが返らない: %s" % repr(e)[:80]
+            r["karappo"] = True
+            res.append(r)
+            continue
+        m = re.search(r'property="og:image"[^>]*content="([^"]+)"', html) or \
+            re.search(r'content="([^"]+)"[^>]*property="og:image"', html)
+        if not m:
+            r["karappo"] = True
+            r["riyuu"] = ["og:image が無い"]
+            res.append(r)
+            continue
+        img = m.group(1).replace("&amp;", "&")
+        r["image"] = img
+        try:
+            r.update(mod.judge(img))
+        except Exception as e:
+            r["karappo"] = True
+            r["riyuu"] = ["画像が取れない: %s" % repr(e)[:80]]
+        res.append(r)
+    ng = sum(1 for x in res if x.get("karappo"))
+    return {"ok": ng == 0, "karappo": ng, "total": len(res),
+            "results": res, "totalYen": 0.0}
+
+
 def run_job(payload=None):
     payload = payload or {}
+    if payload.get("mode") == "og":
+        return _og(payload)
     if payload.get("mode") == "omosa":
         return _omosa(payload)
     if payload.get("mode") == "baton":

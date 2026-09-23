@@ -1,0 +1,428 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>AIオーケストレーション・自動化の世界事例</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>AIオーケストレーション・自動化の世界事例</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 40本 ／ 37,140字 ／ 投げた 2026-09-26 11:57:53<br><a href="https://www.genspark.ai/agents?id=0f792829-cc12-5262-96f6-4314af89a88f" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>AIオーケストレーション実装調査レポート</h2>
+<h3>複数のAIを束ねて、無人に近い業務運用へ進めるための実装・導入・失敗分析</h3>
+<p>&gt; <strong>調査範囲と限界</strong></p>
+<p>&gt; 本レポートでいう「AIオーケストレーション」とは、複数のAIエージェント、ツール、業務システム、人間の承認を、一定の状態・順序・制約の下で連携させる仕組みを指します。</p>
+<p>&gt; ベンダー自身の公表値や顧客事例には、個別企業の条件・対象業務・算定方法が含まれるため、他社に同じ成果が再現されることを意味しません。</p>
+<p>&gt; 特に「何本のエージェントを使ったか」が一次資料で明示されない事例は、推測で補わず「公開情報では確認できなかった」と記載します。</p>
+<hr>
+<h3>1. AIオーケストレーションとは何か</h3>
+<h4>3行要約</h4>
+<ul>
+<li>AIオーケストレーションは、AIを増やすことではなく、<strong>誰が判断し、誰が実行し、どこで止めるか</strong>を設計する仕事です。</li>
+<li>代表的な構造は、中央の司令塔が振り分ける「司令塔型」、エージェント同士が直接連携する「分散型」、状態と遷移を明示する「グラフ型」です。</li>
+<li>実務では、複数AIの自由な会話よりも、<strong>工程を固定し、書き込みを一つに絞り、例外を人へ戻す構成</strong>のほうが管理しやすい傾向があります。</li>
+</ul>
+<p>AIオーケストレーションは、たとえば「問い合わせを受けるAI」「顧客情報を検索するAI」「回答案を作るAI」「規約違反や高額返金を検知するAI」「最終的に送信するAI」を、単に並べるのではなく、一つの業務プロセスとして管理する考え方です。司令塔は、入力の分類、担当AIの選択、必要なデータの受け渡し、再試行、人への引き継ぎ、処理終了の判定を担当します。Databricksは構成パターンを、中央集権型、分散・分権型、階層型、ハイブリッド型、連邦型、創発型に整理しています。中央集権型は可視性と監査性を得やすい一方で、司令塔が単一障害点になり得ます。分散型は耐障害性や拡張性を持ちやすい反面、競合解決や合意形成が難しくなります。<a href="https://www.databricks.com/blog/ai-agent-orchestration" target="_blank" rel="noopener">Databricks</a></p>
+<p>非エンジニア事業主が最初に理解すべきなのは、「AIが考える部分」と「業務として必ず守る部分」を分けることです。商品説明の下書き、問い合わせの分類、社内文書の検索のように、間違っても人が直せる部分はAIに任せやすい領域です。一方、返金実行、請求確定、顧客データの削除、外部への契約・発注、広告費の増額といった取り消しにくい操作は、AIが提案しても、決定的な実行はルールまたは承認工程に残すべきです。Anthropicも、エージェント設計では「単純さ」「計画の透明性」「ツールの文書化とテスト」を重視し、本番では不要な抽象化を減らすよう勧めています。<a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Anthropic</a></p>
+<h4>失敗・撤退・規約違反につながる設計</h4>
+<p>マルチエージェント化は、単一AIの精度問題を「役割を増やせば解決できる」と考えたときに失敗しやすくなります。複数AIは、入力を分割し、出力を合成し、互いの前提を理解する必要があるため、会話・状態・検証の経路が増えます。複数エージェントの失敗を扱った研究は、要件不遵守、役割不遵守、反復、文脈喪失、完了の認識失敗、誤った前提での進行、必要情報の秘匿、他エージェント入力の無視、不完全な検証などを失敗分類として示しています。<a href="https://arxiv.org/html/2503.13657v2" target="_blank" rel="noopener">arXiv</a></p>
+<p>つまり「AIを複数にすれば賢くなる」ではなく、<strong>分割によって得る専門性が、連携コストと失敗確率の増加を上回るか</strong>を検討しなければなりません。Cognitionは、複数AIが並列に成果物を書き換える構成では、意思決定が分散しすぎ、十分な文脈共有ができず、脆いシステムになりやすいと述べています。同社は、少なくとも当時の実務では、単一の直列エージェントで履歴を保つ方式を基本案として示しました。<a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank" rel="noopener">Cognition</a></p>
+<hr>
+<h2>2. 実装例：OSS・SDK・ワークフロー製品をどう使い分けるか</h2>
+<h3>2-1. LangGraph / LangChain</h3>
+<h4>3行要約</h4>
+<ul>
+<li>LangChainはAIのツール利用・エージェント構成を支える開発基盤で、LangGraphは状態を持つグラフ型ワークフローの制御に向きます。</li>
+<li>中央の司令塔から専門AIを呼ぶ「サブエージェント型」、分類して振り分ける「ルーター型」、会話の主導権を渡す「ハンドオフ型」が選べます。</li>
+<li>ただし、サブエージェントは追加のAI呼び出しを生み、遅延とトークン費用を増やすため、単純な作業への多重化は逆効果です。</li>
+</ul>
+<p>LangChainの公式整理では、マルチエージェントの主要パターンは、サブエージェント、スキル、ハンドオフ、ルーターです。サブエージェント型は、親となるAIが顧客対応、予定、メール、CRM検索などの専門AIを呼び出して、最後の回答を一つに統合する構成です。これは<strong>司令塔型</strong>に分類できます。ルーター型は、問い合わせを最初に分類し、製品、請求、配送などの専門系統に振る方式で、並列検索して集約する設計にも使えます。ハンドオフ型は、一次受付から返金担当、本人確認担当、有人窓口へと会話の主導権を渡すため、段階的な制約がある顧客対応に適します。<a href="https://www.langchain.com/blog/choosing-the-right-multi-agent-architecture" target="_blank" rel="noopener">LangChain</a></p>
+<p>LangGraphは、こうした制御を「状態」と「遷移」で表現するため、<strong>グラフ型</strong>として扱うと分かりやすい選択肢です。たとえば「問い合わせ分類→顧客検索→回答生成→安全確認→送信承認」という工程に、失敗時の再試行、人間承認後の再開、特定条件での中断を組み込めます。LangChainの説明では、サブエージェントは中央制御と文脈分離を得る代わりに、各対話で追加のモデル呼び出しを要します。スキル型は会話履歴に情報が蓄積してトークンが膨らみ得ること、ハンドオフ型は状態管理を慎重に行う必要があること、ルーター型は会話履歴を必要とする場合に振り分けのオーバーヘッドが反復することも明示されています。<a href="https://www.langchain.com/blog/choosing-the-right-multi-agent-architecture" target="_blank" rel="noopener">LangChain</a></p>
+<p><strong>実際に効く局面</strong>は、「それぞれの作業の入力と完了条件が明確」「専門AI同士が同時に同じ顧客データを更新しない」「親AIまたはルール側が最終出力を統合する」業務です。たとえば、競合調査、複数資料の検索、下書き作成、内容校正を分けることには意味があります。反対に、単純なFAQ、決まった項目の転記、固定フォーマットのメール送信であれば、単一のワークフローまたは単一AIとルールで十分な場合があります。</p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>LangGraph / LangChainからの「乗り換え」は、製品の優劣というより、必要な信頼性の層が変わったときに起きます。長時間実行、外部承認待ち、支払い・予約・チケット発行などの副作用を伴う業務では、グラフ制御だけではなく、実行履歴の永続化、再試行時の重複防止、監査証跡が必要になります。この場合は、後述するTemporalやAWS Lambda Durable Functionsのような耐久実行基盤を外側に置く構成へ移る理由があります。<a href="https://aws.amazon.com/blogs/compute/building-fault-tolerant-multi-agent-ai-workflows-with-aws-lambda-durable-functions/" target="_blank" rel="noopener">AWS Compute Blog</a></p>
+<p>また、Cognitionが例示するように、複数のAIが相互の作業を見ずに並列で成果物を作ると、前提が衝突したまま最終AIに統合責任が集まります。これは「背景は別作品風、キャラクターは別仕様」というような不整合を生みます。したがって、並列化するなら、<strong>調査・候補出し・評価などの読み取り中心作業</strong>に留め、外部システムへの書き込みは一本化するのが現実的です。<a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank" rel="noopener">Cognition</a></p>
+<hr>
+<h3>2-2. CrewAI</h3>
+<h4>3行要約</h4>
+<ul>
+<li>CrewAIは、役割を割り当てた複数AIとタスクを組み合わせ、チームのような業務フローを作るためのOSSフレームワークです。</li>
+<li>役割、目標、担当タスクを明確に書く「階層型・司令塔型」と相性があります。</li>
+<li>実装の見栄えより、失敗時の停止条件、再試行回数、出力の検証を先に決めなければ、役割分担が暴走の原因になります。</li>
+</ul>
+<p>CrewAIは、自律的な役割分担を行うマルチエージェントの構築に焦点を置くPython系のOSSフレームワークです。公開リポジトリでは、高水準の抽象化と低水準APIを提供し、本番向けのマルチエージェント・ワークフローを構築するためのフレームワークと説明されています。<a href="https://github.com/crewaiinc/crewai" target="_blank" rel="noopener">CrewAI GitHub</a> 事業者の業務に置き換えるなら、「市場調査担当」「競合比較担当」「記事構成担当」「校正担当」といった役割を設定し、それぞれに成果物を渡していくイメージです。</p>
+<p>この構成は、管理AIが作業を割り振る<strong>司令塔型</strong>、または管理者の下に専門AIを置く<strong>階層型</strong>として使うのが分かりやすいでしょう。効きやすいのは、調査、営業リストの下書き、コンテンツ制作、社内文書の要約のように、作業成果物が文章・候補・評価結果であり、最終成果物に人が目を通せる仕事です。無人運用に近づける場合も、AIごとに「入力」「出力形式」「許可されたツール」「終了条件」を狭く定義する必要があります。</p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>CrewAIの公式ブログは、最初のAIエージェントを作るとき、複雑な失敗回復を急いで入れるより、まず失敗を明確に見えるようにすることを勧めています。<a href="https://blog.crewai.com/your-first-ai-agent-should-do-one-thing-badly/" target="_blank" rel="noopener">CrewAI</a> これは、役割の多い構成ほど「どのAIが、どの根拠で、どのツールを失敗させたか」が追えなくなるからです。CrewAIコミュニティでも、タスクやツールが失敗した場合に、エージェントの再試行回数を制限する相談が公開されています。<a href="https://community.crewai.com/t/how-to-deal-with-failing-tasks/5018" target="_blank" rel="noopener">CrewAI Community</a></p>
+<p>乗り換え先は、業務が「役割分担」よりも「厳密な状態遷移・再開・監査」に支配される段階です。その場合はLangGraphのような状態グラフ、あるいはTemporal等の耐久実行基盤を採用する理由があります。逆に、初期段階ではCrewAIのような役割中心の表現は、事業主が業務を分解する練習として有用です。ただし、返金・請求・顧客データ更新を複数AIに自由に触らせる用途には、公開情報から安全性を保証する根拠は確認できません。</p>
+<hr>
+<h3>2-3. AutoGen / AG2 と Microsoft Semantic Kernel</h3>
+<h4>3行要約</h4>
+<ul>
+<li>AutoGenは複数AIの会話・協調を扱う開発フレームワークで、AG2はその系譜を引くコミュニティ主導の実装です。</li>
+<li>Semantic Kernelは、並列、順次、ハンドオフ、グループ会話などをSDKで選べる、Microsoft系のオーケストレーション基盤です。</li>
+<li>ただし両者とも、API・ランタイム・移行方針の変化を確認せずに本番依存すると、更新時の移行コストが事業リスクになります。</li>
+</ul>
+<p>AutoGenは、複数のAIを会話として合成するオープンソース・フレームワークとして公開されました。Microsoft Researchは、LLMアプリケーションを複数AIの会話として構成できることを主目的として説明しています。<a href="https://www.microsoft.com/en-us/research/publication/autogen-enabling-next-gen-llm-applications-via-multi-agent-conversation-framework/" target="_blank" rel="noopener">Microsoft Research</a> 現行リポジトリでは、長期サポートを伴う最新のマルチエージェント機能についてMicrosoft Agent Frameworkを案内し、既存AutoGen利用者へ移行ガイドを示しています。<a href="https://github.com/microsoft/autogen" target="_blank" rel="noopener">AutoGen GitHub</a></p>
+<p>AutoGen / AG2の強みは、エージェント同士のメッセージ交換そのものを設計対象にできる点です。これは、レビューAIと実装AI、計画AIと実行AI、質問AIと専門家AIのような<strong>分散型または会話型</strong>の協調に向きます。一方で、自由会話が増えるほど、誰が最終責任を持つか、いつ終わるのか、どの出力が正しいのかを別途設計しなければなりません。AutoGenの移行ガイドには、旧来の方式でツール呼び出しのルーティングが期待どおりに動作しないことや、ツール呼び出し要求と結果の扱いに問題が観測されたことが記載されています。<a href="https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/migration-guide.html" target="_blank" rel="noopener">AutoGen Migration Guide</a></p>
+<p>Microsoft Semantic Kernelは、より明示的にオーケストレーション・パターンをSDK化しています。公式ドキュメントでは、全AIに同一タスクを配って結果を集める並列型、決められた順序で渡す順次型、文脈またはルールで担当を切り替えるハンドオフ型、管理者が会話を調整するグループチャット型、MagenticOneに着想を得たMagentic型が挙げられています。<a href="https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/" target="_blank" rel="noopener">Microsoft Learn</a> これは、<strong>司令塔型、順次パイプライン型、分散対話型</strong>を同一の枠組みで試せる設計です。</p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>Semantic Kernelのエージェント・オーケストレーション機能は、公式文書で実験段階であり、プレビューや正式版まで大きく変わり得ると注意されています。<a href="https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/" target="_blank" rel="noopener">Microsoft Learn</a> これは撤退例ではありませんが、事業の中核業務を依存させる前に、バージョン固定、移行試験、代替経路を用意すべき根拠になります。</p>
+<p>AutoGenからMicrosoft Agent Frameworkへの案内は、フレームワーク選定が永続的な約束ではないことを示します。会話型マルチエージェントにこだわるよりも、業務が「順次処理」「明確な状態」「承認待ち」で構成されるなら、Semantic Kernelの順次型、LangGraph、Temporalなどへ寄せるほうが保守対象を減らせます。反対に、モデル間の議論や多様な提案を比較する探索型業務では、会話型が意味を持ちます。公開情報では、AG2単独についての大規模な企業導入の定量成果を確認できませんでした。</p>
+<hr>
+<h3>2-4. OpenAI Agents SDK と Swarm</h3>
+<h4>3行要約</h4>
+<ul>
+<li>OpenAI Agents SDKは、AIに判断させる経路と、プログラムで経路を固定する方法を明確に分けています。</li>
+<li>管理AIが専門AIを「ツール」として使う方式は司令塔型、会話を専門AIに渡す方式はハンドオフ型です。</li>
+<li>Swarmは教育目的の軽量な実験フレームワークであり、本番の耐久性・監査性をそれ自体に期待するものではありません。</li>
+</ul>
+<p>OpenAI Agents SDKの公式ドキュメントは、オーケストレーションを「どのAIが、どの順番で動き、次の工程をどう決めるか」と定義しています。そして、経路をLLMに判断させる方式と、コードで決める方式を区別しています。<a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank" rel="noopener">OpenAI Agents SDK</a> 前者は、曖昧な依頼をAIが計画し、検索、ファイル検索、コンピュータ操作、コード実行、専門AIへの委譲を組み合わせる用途に向きます。後者は、速度、費用、性能をより予測可能にするために、構造化出力で分類し、決め打ちの次工程を選ぶ方式です。<a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank" rel="noopener">OpenAI Agents SDK</a></p>
+<p>SDKの代表パターンは二つです。「Agents as tools」は、管理AIが専門AIを道具として呼び、最終回答を自ら統合する<strong>司令塔型</strong>です。「Handoffs」は、トリアージAIが専門AIへ会話の主導権を渡し、その専門AIが残りのターンを担当する<strong>引き継ぎ型</strong>です。前者は、最終回答の統一、複数専門家の結果統合、ガードレールの集中管理に向きます。後者は、専門担当が直接応答することでプロンプトを絞り、役割を明確にする用途に向きます。<a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank" rel="noopener">OpenAI Agents SDK</a></p>
+<p>OpenAI Swarmは、複数AIのハンドオフやルーティングを学ぶための教育的フレームワークとして公開されています。リポジトリ自身が、マルチエージェント・オーケストレーションの軽量で拡張可能なパターンを探索する教育用フレームワークと説明しています。<a href="https://github.com/openai/swarm" target="_blank" rel="noopener">OpenAI Swarm GitHub</a> そのため、Swarmをそのまま「無人の基幹業務システム」に使うのではなく、まずルーティングや役割分担の試作を行い、本番では状態保存、認可、監査、エラー処理を別途組み合わせるのが妥当です。</p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>SDKでも、AIに経路を決めさせる構成は、自由度と引き換えに予測可能性を落とします。公式文書は、コードによるオーケストレーションが速度、費用、性能をより決定論的・予測可能にすることを明記しています。<a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank" rel="noopener">OpenAI Agents SDK</a> したがって、返金可否、在庫確保、定期メールの送信、発注などの業務は、「AIが分類・下書きし、コードまたは業務ルールが実行条件を判定する」構成に寄せるべきです。</p>
+<p>乗り換え先は、AIの自律性を高めるほどではなく、むしろ「経路を固定したい」「障害から再開したい」「操作ログを監査したい」となった時です。この段階では、OpenAI Agents SDKをAI呼び出し層として残しながら、Temporal、AWS Durable Functions、Airflowなどを外側の業務制御層として加える構成が考えられます。公開情報では、Swarmから他基盤へ移行した企業の定量的な撤退事例は確認できませんでした。</p>
+<hr>
+<h3>2-5. Google ADK と A2Aプロトコル</h3>
+<h4>3行要約</h4>
+<ul>
+<li>Google Agent Development Kit（ADK）は、複数AIを構築するための開発キットです。</li>
+<li>Agent2Agent（A2A）は、別々のAIサービスが能力を提示し、遠隔のAIへ仕事を依頼するための連携プロトコルです。</li>
+<li>他社・他チームのAIをつなぐほど、認証、権限、データ境界、失敗時の責任分界が重要になります。</li>
+</ul>
+<p>GoogleのADKは、複数AIが協調するシステムを構築するためのキットとして提供されています。A2Aと組み合わせると、異なる言語や環境で動くAIを、A2A準拠のリモートAIとして接続できます。Google Developers Blogは、ADKでA2A準拠のリモートAIを定義する際、SDKがAgent Cardの処理を扱う例を示しています。<a href="https://developers.googleblog.com/build-cross-language-multi-agent-team-with-google-agent-development-kit-and-a2a/" target="_blank" rel="noopener">Google Developers Blog</a></p>
+<p>これは、社内に散在するAIを「一つの巨大なAI」にまとめるというより、AIごとに能力の説明を持たせ、仕事を依頼できるようにする<strong>連邦型・分散型</strong>の発想です。たとえば、営業支援AI、商品情報AI、配送追跡AI、社内規程AIが別々に運用されていても、司令塔AIが必要なAIへ依頼できる構成です。ADKのA2Aドキュメントは、複雑なマルチエージェント・システムにおいて、AI同士が協調・対話する用途を説明しています。<a href="https://adk.dev/a2a/" target="_blank" rel="noopener">ADK</a></p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>A2Aのような分散連携は、AIを増やすたびに「何ができるか」「どのデータにアクセスできるか」「誰が失敗を引き取るか」を契約として管理する必要があります。中央の司令塔型より障害の影響を分散できる可能性はありますが、プロトコルを越えた認可・監査・再試行・一貫性の問題は消えません。特に、顧客情報や決済情報を扱う場合、あるAIが別AIへ送ってよい情報範囲を、プロンプトではなく認可設計で制限すべきです。</p>
+<p>乗り換え先は、AI間の相互運用性が不要で、一つの事業・一つのチームが全工程を管理できる場合です。その場合、A2Aまで導入せず、LangGraph、OpenAI Agents SDK、n8nなどの中央集権型で構成したほうが、障害時の切り分けは簡単です。公開情報では、ADK / A2Aを採用後に同一企業が単一エージェントへ戻した一次情報の撤退事例は確認できませんでした。</p>
+<hr>
+<h3>2-6. Anthropic MCP とサブエージェント</h3>
+<h4>3行要約</h4>
+<ul>
+<li>MCPは「AI同士を会話させる仕組み」ではなく、AIが外部データやツールへ標準的に接続するためのプロトコルです。</li>
+<li>MCPサーバーを介すると、複数のAIやAIアプリが同じ業務ツール・データソースに接続しやすくなります。</li>
+<li>ただし、MCP接続は権限を持つ入口でもあるため、便利さだけで無制限の操作権限を与えると事故範囲が広がります。</li>
+</ul>
+<p>Anthropicが公開したModel Context Protocol（MCP）は、AIアシスタントと、コンテンツリポジトリ、業務ツール、開発環境などのデータが存在する場所を接続するためのオープン標準です。従来は、データソースごとに個別の接続実装が必要で、AIを業務システムへ広く接続するほど統合が複雑になる問題がありました。MCPは、この断片化した接続を単一プロトコルに置き換えることを目的にしています。<a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noopener">Anthropic</a></p>
+<p>構造としては、データや操作機能を公開するMCPサーバーと、それに接続するAIアプリケーションであるMCPクライアントに分かれます。Anthropicは、Google Drive、Slack、GitHub、Git、Postgres、Puppeteerなど向けの事前構築済みMCPサーバーにも言及しています。<a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noopener">Anthropic</a> したがって、MCPは<strong>AIオーケストレーションの「工具・データ接続層」</strong>として扱うのが適切です。サブエージェントを複数持つ構成では、それぞれが個別に独自連携を作るのではなく、共通のMCP経由で必要なデータ・ツールを利用する設計が可能になります。</p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>MCPは、業務ツールへの接続標準であって、状態管理、処理再開、費用上限、評価、最終承認までを自動的に提供するオーケストレーターではありません。MCPを導入しても、どのAIがいつツールを呼ぶか、失敗時に何を再実行するか、二重実行をどう防ぐかは別設計です。つまり、MCPだけで「無人運用」を完成させようとするのは誤りです。</p>
+<p>乗り換え先というより、MCPは追加・併用される部品です。小規模で接続先が固定されているなら、直接API連携やn8n等の既存コネクターだけで足りる場合があります。一方、AIアプリやツール接続が増え、データ接続を標準化したい段階では、MCPを採る理由が生じます。公開情報では、MCPを導入したことで規約違反となった特定企業の一次情報は確認できませんでした。ただし、接続先の権限設計を誤れば、AIの誤操作が外部システムへ及ぶという構造上のリスクは残ります。</p>
+<hr>
+<h3>2-7. Temporal / Airflow / Dagster / PrefectをAIに使う構成</h3>
+<h4>3行要約</h4>
+<ul>
+<li>これらはAIそのものではなく、AIを含む長時間・多段階の業務処理を確実に動かすためのワークフロー基盤です。</li>
+<li>AIが「考える」層なら、Temporalなどは「止まっても再開し、同じ操作を重複させず、承認待ちを保持する」層です。</li>
+<li>顧客・決済・医療・契約のように処理失敗が事業事故へ直結する業務では、AIフレームワーク単独よりも耐久実行層が重要です。</li>
+</ul>
+<p>Temporalは、エージェントの実行を個別のWorkflowとして扱い、そのライフサイクルと相互作用を中央で管理する構成を提示しています。Temporalの事例記事では、各主要コンポーネントを別Workflowとして設計し、スケジュール、シグナル、クエリー、耐障害性を使って継続稼働するAIシステムを構成しています。<a href="https://temporal.io/blog/orchestrating-ambient-agents-with-temporal" target="_blank" rel="noopener">Temporal</a> Temporal Workflowは決定論的に再生でき、AIの判断・処理の監査証跡を得やすいと説明されています。<a href="https://temporal.io/blog/orchestrating-ambient-agents-with-temporal" target="_blank" rel="noopener">Temporal</a></p>
+<p>Apache Airflowは、AIエージェントをタスクとして動かし、モデルとツール呼び出しのループをタスク内に置く「Agent orchestration」を説明しています。<a href="https://astronomer.io/docs/learn/ai-orchestration-agent" target="_blank" rel="noopener">Astronomer</a> Airflow、Dagster、Prefectは一般に、定期実行、依存関係管理、データ処理パイプライン、失敗時の通知・再試行を得意とします。ただし、本調査で確認できた一次資料はAirflowのAIオーケストレーション説明であり、DagsterとPrefectについて、同じ粒度のAIマルチエージェント導入効果の一次情報は公開情報では確認できませんでした。</p>
+<p>AWS Lambda Durable Functionsは、AI呼び出しが高価で遅く、一時的な失敗を起こし得るため、チェックポイントと再生に適していると説明します。紹介された医療の事前承認ワークフローでは、オーケストレーターが複数AI、医師の人間承認、保険者への申請を調整し、承認待ちで停止し、外部判断の確認を待ち、保険者への申請は冪等なステップとして実行します。<a href="https://aws.amazon.com/blogs/compute/building-fault-tolerant-multi-agent-ai-workflows-with-aws-lambda-durable-functions/" target="_blank" rel="noopener">AWS Compute Blog</a></p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>AIエージェントを単なるサーバープロセスとして動かすと、外部APIの呼び出しが成功した直後、内部状態保存の前にプロセスが落ちる、といった事故が起こり得ます。再試行で同じメールを二回送る、同じ申請を二回出す、同じ返金処理を二回試みるといった問題は、AIの賢さでは防げません。耐久実行は、定義済みのチェックポイントで状態を保存し、障害後にそこから再開するための設計です。<a href="https://www.inngest.com/blog/durable-execution-key-to-harnessing-ai-agents" target="_blank" rel="noopener">Inngest</a></p>
+<p>乗り換え先は、「AI開発フレームワークだけで状態・再試行・承認待ちを管理する」ことが苦しくなった段階です。特に数分から数日間の待機、担当者承認、複数の外部システムへの連携、監査が必要なら、Temporalや耐久関数のような業務実行層を採用する合理性があります。一方、日次の下書き生成や定型集計のような可逆的処理で、失敗しても人がやり直せる業務に大規模な耐久基盤を先に導入すると、運用複雑性だけが増える失敗になります。</p>
+<hr>
+<h3>2-8. n8n / Zapier / MakeのAI連携</h3>
+<h4>3行要約</h4>
+<ul>
+<li>n8n、Zapier、Makeは、ノーコードまたはローコードでAIと業務アプリをつなぎ、定型業務を自動化する層です。</li>
+<li>非エンジニア事業主が最短で成果を出しやすいのは、AIの自由会話ではなく、フォーム・メール・表計算・CRMを結ぶ固定フローです。</li>
+<li>ただし、画面上で動いて見えることと、例外時にも安全に業務が完了することは別です。</li>
+</ul>
+<p>n8nは、AI機能と業務プロセス自動化を組み合わせ、豊富な連携機能を提供するプラットフォームとして説明されています。<a href="https://n8n.io/" target="_blank" rel="noopener">n8n</a> また、監査可能なソースコードとセルフホストの選択肢を含むエンタープライズ向けの提供を掲げています。<a href="https://n8n.io/enterprise/" target="_blank" rel="noopener">n8n Enterprise</a> 事業主にとっては、問い合わせフォームの受信、AIによる内容分類、スプレッドシートやCRMへの記録、担当者通知、回答下書き生成、といった流れを、比較的短期間で可視化できることが利点です。</p>
+<p>ZapierやMakeも同様に、SaaS間のイベント連携を中心に、AIステップを業務フローへ置く用途に向きます。ただし、本調査で得られた一次情報だけでは、ZapierおよびMakeのマルチエージェント運用について、企業別の定量成果または公式の失敗・撤退事例を確認できませんでした。よって、これらを「複数AIの高度な自律協調の基盤」と断定することは避けるべきです。まずは、決められたトリガーと決められた出力先をつなぐ自動化ツールとして評価するのが妥当です。</p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>n8nコミュニティには、AI Agentノードにおいてツールが失敗しても、通常のエラーワークフローが発火しないという相談が公開されています。つまり、業務フロー全体は「成功」扱いでも、AI内部のツール失敗を見逃す可能性があります。<a href="https://community.n8n.io/t/setting-up-error-workflow-upon-ai-agent-tool-failure/252743?tl=en" target="_blank" rel="noopener">n8n Community</a> これは、無人化で最も危険な「静かな失敗」です。担当者に通知されず、顧客への返信だけが欠落する、CRM更新だけが止まる、といった事故になり得ます。</p>
+<p>乗り換え先は、ワークフローが長時間化し、承認待ちや複数回の再開、厳密な重複防止が必要になったときです。その場合はn8n等を入口・通知・簡易連携に残し、基幹処理をTemporalやクラウドの耐久実行へ分ける構成が考えられます。逆に、初期から自由度の高いマルチエージェントを組むより、n8n等で「一つの入力→一つのAI処理→一つの確認→一つの出力」という細い業務線を安定化するほうが、無人化への実用的な近道です。</p>
+<hr>
+<h3>2-9. Dify / Flowise / Haystack</h3>
+<h4>3行要約</h4>
+<ul>
+<li>DifyとFlowiseは視覚的なワークフロー構築、HaystackはPython中心のモジュール型AIオーケストレーションに強みがあります。</li>
+<li>いずれも、AI・検索・ツール・状態を一つの流れに置けますが、業務の責任境界を自動で設計してはくれません。</li>
+<li>画面上のフローが複雑になるほど、例外処理、権限、観測、テストを別途持たない限り、保守不能になるリスクがあります。</li>
+</ul>
+<p>Difyは、AIエージェント、ナレッジ処理、モデル、ツールを一つのキャンバス上で組み立て、クラウドまたはセルフホストで展開できる、プロダクション向けエージェント・ワークフロープラットフォームとして提供されています。<a href="https://dify.ai/" target="_blank" rel="noopener">Dify</a> 非エンジニアにとっては、RAG、会話AI、外部ツール呼び出し、分岐を画面で確認できる点が有用です。ただし、本調査で確認できたDifyの一次資料では、特定の複数AI導入企業について、エージェント数・処理時間・費用を伴う詳細な実績は公開情報では確認できませんでした。</p>
+<p>Flowiseは、単純な構成ワークフローから自律AIまでを、モジュール型の部品で視覚的に構築する製品です。<a href="https://flowiseai.com/" target="_blank" rel="noopener">Flowise</a> Flowiseのマルチエージェント文書は、監督AIが専門ワーカーへ作業を委譲する構成を示しています。<a href="https://docs.flowiseai.com/using-flowise/agentflowv1/multi-agents" target="_blank" rel="noopener">Flowise Docs</a> これは<strong>司令塔型</strong>です。営業メール下書きのように、リード情報を取得し、調査し、文面を生成する作業なら、工程の可視化に向きます。</p>
+<p>Haystackは、Pythonで本番向けのAIアプリケーション、モジュール型パイプライン、AIエージェントを組み立てるOSSのオーケストレーション・フレームワークです。<a href="https://github.com/deepset-ai/haystack" target="_blank" rel="noopener">Haystack GitHub</a> Haystackの新しい世代では、メモリ、ツール、スキルを備えた事前構成AI、実行前後のフック、トークン使用量・ステップ数・ツール呼び出し数の状態公開、ステップ単位のトレース、並行ツール呼び出し、モックを使った決定論的テストが示されています。<a href="https://haystack.deepset.ai/blog/haystack-3-release" target="_blank" rel="noopener">Haystack</a></p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>Flowiseの本番運用文書は、クラウドやオンプレミスに展開した場合、インスタンスがプロキシやロードバランサーの背後に置かれ、レート制限の扱いが実装構成に依存することを注意しています。<a href="https://docs.flowiseai.com/configuration/running-in-production" target="_blank" rel="noopener">Flowise Docs</a> これは、視覚的なワークフローを作るだけでは、負荷制御や障害対策が完成しない例です。</p>
+<p>Haystackはフックにより、入力検証、ガードレール、センシティブな操作前の人間確認を、AI内部を直接書き換えずに組み込めると説明します。<a href="https://haystack.deepset.ai/blog/haystack-3-release" target="_blank" rel="noopener">Haystack</a> しかし、フックを備えていても、何を承認対象にするか、どの操作を一意にするか、どのエラーで止めるかは事業側の責任です。Dify、Flowise、Haystackのいずれでも、まずは「検索」「下書き」「分類」に留め、外部への確定操作は人の承認または厳密な業務ルールを通すべきです。</p>
+<p>乗り換え先の考え方は明快です。ノーコード画面で設計を早く試したいならDifyやFlowise、コードで詳細なテスト・観測・独自部品を作るならHaystack、長期の復旧・承認待ち・監査を担保するならTemporal等を組み合わせます。どれか一つが全てを置き換えるのではなく、<strong>AI構成層、業務実行層、観測層、データ接続層を分離する</strong>のが、将来の乗り換えコストを下げます。</p>
+<hr>
+<h2>3. 企業導入事例：公表値から読む「実際に回った業務」</h2>
+<h3>3-1. Klarna：カスタマーサービスの大規模自動化と人間回帰</h3>
+<h4>3行要約</h4>
+<ul>
+<li>KlarnaはOpenAIを活用したAIアシスタントで、顧客対応の大きな比率を処理したと公表しました。</li>
+<li>ただし、効率値の発表後も、複雑・感情的な案件や品質の課題は残り、人間対応を再び重視する動きが報じられました。</li>
+<li>この事例は「AIによる一次対応」と「人間へ確実に戻す出口」を同時に設計する必要を示します。</li>
+</ul>
+<p>Klarnaは、AIアシスタントの稼働開始から最初の月に、顧客サービス会話の約三分の二に当たる<strong>二百三十万件</strong>の会話を処理し、フルタイム担当者<strong>七百人</strong>分に相当する業務を担ったと公表しました。同社発表によれば、問い合わせの解決時間は従来の<strong>十一分</strong>から<strong>二分未満</strong>になり、再問い合わせは<strong>二十五パーセント</strong>減少し、当該年の利益改善見込みは<strong>四千万米ドル</strong>とされました。<a href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/" target="_blank" rel="noopener">Klarna</a></p>
+<p>対象業務は、返金、返品、支払い、キャンセル、異議申立て、請求書誤りなどの顧客サービスに加え、未払い残高や支払予定の案内でした。つまり、単一の会話AIが全てを判断したというより、顧客の問い合わせ、社内データ、定型手続、必要に応じた人間のライブエージェント選択を組み合わせた業務システムと見るべきです。Klarnaの一次発表には、内部で動いたAIエージェント数や、どのようなマルチエージェント構成だったかは明示されていません。したがって、<strong>エージェント数は公開情報では確認できなかった</strong>とするのが正確です。<a href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/" target="_blank" rel="noopener">Klarna</a></p>
+<h4>失敗・撤退・人間へ戻した理由</h4>
+<p>Klarnaの事例は成功値だけで終わりません。Twigによる後続分析は、複雑でニュアンスの多い案件における品質の問題、一般的すぎる回答、エッジケースでの幻覚、感情的なチケットでの満足度低下、異議申立てや口座閉鎖といったセンシティブ業務のコンプライアンス懸念を指摘し、同社が人間エージェントを再び重視する方向へ動いたと整理しています。<a href="https://www.twig.so/blog/klarna-ai-customer-support-efficiency" target="_blank" rel="noopener">Twig</a> この情報はKlarna自身の一次発表ではなく二次分析であるため、数値の一次資料と同じ強さで断定すべきではありません。しかし、「効率が出た」ことと「全顧客体験で人間を不要にできた」ことは別だという重要な警告になります。</p>
+<p>事業主が学ぶべき設計は、AIが低リスクの定型問い合わせを高速化し、例外条件で有人対応へ戻すものです。返金額が一定基準を超える、契約解除の意思表示がある、怒りや法的主張が検出された、本人確認ができない、AIが同じ質問を繰り返す、といった条件を<strong>強制停止・有人引継ぎ条件</strong>にします。AIの回答品質を「平均」で見るのではなく、最も困る例外案件でどう止まるかを見る必要があります。</p>
+<hr>
+<h3>3-2. Salesforce Agentforce：業務AIの司令塔と個別業務の自動化</h3>
+<h4>3行要約</h4>
+<ul>
+<li>Salesforceの公表事例では、問い合わせ、ローン状況照会、営業提案、広告営業などにAIが使われています。</li>
+<li>数字は大きいものの、各社のAI構成、モデル、エージェント本数が同じとは限りません。</li>
+<li>「何件を自動処理したか」だけでなく、「人へ戻した案件」「誤処理の防止方法」を確認して導入判断すべきです。</li>
+</ul>
+<p>SalesforceのAgentforce顧客事例ページでは、Agibankがローン状況に関する問い合わせを月間<strong>二万二千五百件</strong>処理し、<strong>七十五パーセント</strong>のデフレクション率を記録したと紹介されています。同じページでは、Uberがオンボーディングのコンバージョンを<strong>三倍</strong>にし、RFP処理を<strong>八十三パーセント</strong>高速化し、メールのコンバージョン率を<strong>六十パーセント</strong>高めたとされています。<a href="https://www.salesforce.com/agentforce/customer-stories/" target="_blank" rel="noopener">Salesforce</a></p>
+<p>Salesforceの掲載内容では、Agibankは複数AIを接続する「superagent」を構築し、ローン状況照会を扱ったと説明されています。<a href="https://www.salesforce.com/agentforce/customer-stories/" target="_blank" rel="noopener">Salesforce</a> これは、複数の専門機能を束ねる<strong>司令塔型</strong>の導入例です。ただし、構成された専門AIの正確な本数、各AIの役割分担、再試行設計、外部操作の承認基準は、同ページの公開情報では確認できませんでした。よって「何本のAIで動いたか」を推測で埋めるべきではありません。</p>
+<p>Trustpilotについては、Salesforceが受注率を<strong>三十六パーセント</strong>高め、サポート残件を<strong>九十九パーセント</strong>削減したと掲載しています。SkySyncについては、リード取得に要する時間を<strong>三日</strong>から<strong>五分</strong>に短縮し、リード数を<strong>二十四倍</strong>に伸ばしたとされています。<a href="https://www.salesforce.com/agentforce/customer-stories/" target="_blank" rel="noopener">Salesforce</a> これらは特定顧客・特定業務のベンダー公表事例です。自社導入のROI試算には使えても、同じ数値を期待値として予算化するのは危険です。</p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>この種の事例の限界は、成功指標が公開されても、失敗率、有人エスカレーション率、AIが断った案件、権限事故の有無が同じ詳細さで開示されない点です。公開情報では、掲載されたSalesforce事例ごとのマルチエージェント撤退例や規約違反例を確認できませんでした。したがって、導入側はベンダーの成功指標だけでなく、最低限「誤送信の件数」「二重処理」「有人へ引き継いだ比率」「処理停止までの時間」「顧客苦情」を自社で記録する必要があります。</p>
+<p>乗り換えの判断は、CRM中心の業務であればAgentforceのような業務スイート内AIを優先し、CRM外の独自プロセス、社内外の複雑なシステム連携、長時間の承認待ちが中心なら、SDKや耐久実行基盤を組み合わせることです。重要なのは、AIが何本あるかではなく、<strong>どのAIにも直接の確定操作をさせず、最終的な書き込み経路を制御できるか</strong>です。</p>
+<hr>
+<h3>3-3. Uber：AIを増やす前に、評価とトレースを標準化する</h3>
+<h4>3行要約</h4>
+<ul>
+<li>Uberの公開事例で最も重要なのは、AIそのものよりも、評価・観測をプラットフォームに埋め込んだ点です。</li>
+<li>本番で起きた失敗を人が確認し、評価データに戻し、次の版で再発防止を確認する循環を作っています。</li>
+<li>無人化を目指すほど、観測なしの自律性は危険であり、先に「止まった・迷った・無駄に呼んだ」を見える化すべきです。</li>
+</ul>
+<p>Uberのエージェント評価の公開事例では、同社はモデルアクセス、AIガードレール、再利用可能なスキルとAI、コード中心SDK、管理されたデプロイ、ローコード構築ツール、評価プラットフォームを含む広いAIプラットフォームを構築したと説明されています。<a href="https://arize.com/blog/how-uber-evaluates-ai-agents-at-production-scale/" target="_blank" rel="noopener">Arize AI</a> ここで重要なのは、AIを一度リリースして終わりにせず、デプロイ時からトレースを得る設計にしたことです。</p>
+<p>公開説明では、AIの構成、実運用のトレース、想定動作に関する文脈を使い、AIごとの評価器を作って継続実行し、必要な警告をSlackなどへ出す仕組みが説明されています。AIの本番挙動で弱点が見つかると、人間がレビューし、その例を評価データセットへ加え、次の版ではその失敗を処理できることを要求します。<a href="https://arize.com/blog/how-uber-evaluates-ai-agents-at-production-scale/" target="_blank" rel="noopener">Arize AI</a> 追跡対象には、タスク完了、結果の正確性、ツール選択と結果の整合性、会話長、再試行、エスカレーション頻度、遅延、トークン利用、ユーザー修正、離脱、予期しない行動変化が含まれます。<a href="https://arize.com/blog/how-uber-evaluates-ai-agents-at-production-scale/" target="_blank" rel="noopener">Arize AI</a></p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>Uberの事例が示す失敗は、「AIが正しい最終回答を出しても、途中で無駄なツール呼び出しを繰り返したり、危険な経路を通ったりする問題」を、最終結果だけの評価では見落とすことです。評価フレームワークの説明でも、本番AIは一応タスクを終えていても、安全でない、費用が高い、信頼性が低い経路を通る可能性があり、その差は顧客からのデータ破損・再呼び出し・不整合の報告まで見えないとされています。<a href="https://www.splunk.com/en_us/blog/artificial-intelligence/agent-evaluation-framework.html" target="_blank" rel="noopener">Splunk</a></p>
+<p>小規模事業者がUber級のプラットフォームを作る必要はありません。しかし、乗り換えるべきタイミングは明確です。AIの挙動をメール履歴やチャット画面だけで追えなくなったら、トレース、費用、ツール利用、エラー、承認待ちを記録する観測基盤が必要です。そこに至る前は、一つのAI業務に対して「成功例」「失敗例」「人間に渡す例」を少数でも固定し、変更のたびに再試験するだけでも効果があります。</p>
+<hr>
+<h3>3-4. Haystack / European Commission / Bosch：ガバナンスを含めたAI基盤</h3>
+<h4>3行要約</h4>
+<ul>
+<li>Haystackの企業向け公表事例は、AIを増やすより、ガードレール、監査、権限、データ主権を整える方向を示します。</li>
+<li>欧州委員会とBoschの例では、複数部門・多数利用者へ展開するための統制が中心です。</li>
+<li>大きな組織の事例ほど、AIの回答性能だけでなく、誰が使え、何を記録し、どのデータを外へ出さないかが主題になります。</li>
+</ul>
+<p>deepsetのHaystack Platformは、欧州委員会がAI@ECプラットフォームを構築し、<strong>二十九部門</strong>の<strong>六十八人</strong>のビルダーに対して、ガードレール、監査証跡、ガバナンスのワークフローを伴う生成AIのセルフサービス展開を提供したと紹介しています。<a href="https://www.deepset.ai/haystack-platform" target="_blank" rel="noopener">deepset</a> これは「複数AIが何本」というより、「複数部門がAIを安全に使えるようにするオーケストレーション」の実例です。</p>
+<p>同じくBoschの事例では、Haystackのモジュラーなオーケストレーション層を基盤に、<strong>百二十超の拠点</strong>にいる<strong>六百人超</strong>のコンサルタントへ、SAP変革に関する知識へアクセスするAIアシスタントを提供したとされています。<a href="https://www.deepset.ai/haystack-platform" target="_blank" rel="noopener">deepset</a> プラットフォーム側は、ロールベースのアクセス制御、監査ログとフルトレース、ガードレールとポリシー強制、シングルサインオン、クラウドまたはセルフホストを掲げています。<a href="https://www.deepset.ai/haystack-platform" target="_blank" rel="noopener">deepset</a></p>
+<h4>失敗・限界・乗り換え先</h4>
+<p>この種の基盤で失敗しやすいのは、「検索AIを導入した」段階で、データ分類、権限設計、部署別の利用ルール、監査を後回しにすることです。ユーザーが増えるほど、便利な知識検索は機密情報の横断検索になり得ます。Haystackがフックによる入力検証、ガードレール、センシティブ操作前の人間確認を打ち出しているのは、この問題への対処です。<a href="https://haystack.deepset.ai/blog/haystack-3-release" target="_blank" rel="noopener">Haystack</a></p>
+<p>公開情報では、欧州委員会またはBoschがHaystack採用を撤回した例、または規約違反で中止した例は確認できませんでした。しかし、これは「事故がなかった」ことの証明ではありません。事業主の規模でも、顧客リスト、見積書、契約書、従業員情報を一つのAIナレッジに混在させるなら、少なくとも「誰が何を検索できるか」「会話ログをどこに置くか」「削除要請にどう応じるか」を決めなければなりません。</p>
+<hr>
+<h2>4. 失敗・撤退・「マルチエージェントをやめる」判断</h2>
+<h3>4-1. Cognition：並列に書かせるマルチエージェントを避ける見解</h3>
+<h4>3行要約</h4>
+<ul>
+<li>Cognitionは、複数AIの協調は当時の実務では脆く、文脈共有不足と分散した意思決定が問題だと公開しました。</li>
+<li>同社の基本提案は、履歴を連続して持つ単一の直列AIです。</li>
+<li>後の見解では、複数AIでも「書き込みは単一経路」に保ち、追加AIは知能・助言を提供する構成なら機能する余地があるとしています。</li>
+</ul>
+<p>Cognitionは「Don’t Build Multi-Agents」で、複数AIを協調させると、意思決定が過度に分散し、AI間で十分な文脈を共有できず、脆いシステムになると述べました。<a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank" rel="noopener">Cognition</a> 例として、一つのAIが別のゲーム風の背景を作り、もう一つのAIが見た目も挙動も合わない鳥を作った場合、最後のAIが矛盾した成果物を統合せざるを得ない状況を示しています。問題は個々のAIが完全に失敗したことではなく、互いの前提・進行・成果を十分に共有できないことです。<a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank" rel="noopener">Cognition</a></p>
+<p>この見解における代替は、単一の直列AIが、仕事の履歴と判断経緯を保ったまま進む方式です。長時間タスクで文脈が大きくなりすぎる場合には、行動・会話・決定の履歴を重要事項へ圧縮するAIを使う方向が説明されています。<a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank" rel="noopener">Cognition</a></p>
+<p>その後、Cognitionの公開記事は、並列に書き込みを行う「群れ」のようなマルチエージェントは有意な採用につながりにくいという従来観察を維持しつつも、複数AIが知能を持ち寄り、書き込みを単一スレッドに維持する狭いパターンでは実務上機能し始めたと述べています。<a href="https://x.com/walden_yan/article/2047054401341370639" target="_blank" rel="noopener">X</a></p>
+<h4>失敗の原因と、戻すべきケース</h4>
+<p>戻すべきなのは、複数AIを導入した結果、次の問いに答えられなくなったときです。</p>
+<ul>
+<li>最終成果物の責任者はどのAIか。</li>
+<li>同じ顧客レコード、在庫、請求情報に、同時に書き込むAIはいないか。</li>
+<li>一つのAIが誤った前提で進んだとき、次のAIは検出できるか。</li>
+<li>終了条件は何か。</li>
+<li>AI同士が「続けてください」と言い合ったとき、どこで止まるか。</li>
+<li>失敗後の再試行で、メール・請求・登録が二重にならないか。</li>
+</ul>
+<p>この問いに答えられないなら、AIの本数を減らし、単一AI＋ツール＋明示的なルールへ戻すほうが安全です。これは「AIが弱いから」ではなく、業務システムとしての境界・責任・状態設計が追いついていないからです。</p>
+<hr>
+<h3>4-2. Klarna：効率化の後に品質・複雑案件を見直す</h3>
+<h4>3行要約</h4>
+<ul>
+<li>Klarnaは非常に大きな効率値を公表しました。</li>
+<li>一方、後続の分析では複雑案件・感情的案件での品質問題と、人間対応の再強化が論じられています。</li>
+<li>自動化の成功は「人を減らした量」ではなく、「AIが苦手な案件をどれだけ早く安全に人へ渡せたか」で評価すべきです。</li>
+</ul>
+<p>Klarnaの公式発表では、AIアシスタントの処理量、解決時間、再問い合わせ、利益改善見込みが強調されています。<a href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/" target="_blank" rel="noopener">Klarna</a> しかし、Twigの分析は、その後に複雑な案件、ニュアンスが必要な案件、感情的な案件で品質課題があり、顧客が人間に到達できる形へ戻す方向が取られたと説明しています。<a href="https://www.twig.so/blog/klarna-ai-customer-support-efficiency" target="_blank" rel="noopener">Twig</a></p>
+<p>この失敗は、AIの回答が文法的に正しいかではなく、顧客が「理解された」「問題が解決した」と感じるか、法的・金銭的に重大な操作で誤解がないかにあります。AIが処理できる件数を増やすほど、残る人間案件は例外・高難度・高感情の案件に偏ります。したがって、人間窓口の人員・権限・引継ぎ情報を削りすぎると、AIが減らした量以上に重大案件の処理品質が落ちる可能性があります。</p>
+<h4>事業主が採るべき撤退基準</h4>
+<p>AI自動化を縮小または有人確認へ戻すべき条件は、少なくとも以下です。</p>
+<p>1. 同じ問い合わせが複数回発生し、AIが過去の回答を理解していない。</p>
+<p>2. AIが返金、解約、契約、本人確認に関する判断を、自信を持って断定する。</p>
+<p>3. 顧客が「人間と話したい」と明示しても、AIが引継ぎを妨げる。</p>
+<p>4. AIの処理率は高いが、苦情・再問い合わせ・チャージバックなどの後工程コストが増える。</p>
+<p>5. AIの回答根拠、ツール呼び出し、担当者への引継ぎ内容を追跡できない。</p>
+<p>これらは、AIを完全停止する条件というより、<strong>自律実行をやめて、提案・下書き・一次分類へ用途を戻す条件</strong>です。</p>
+<hr>
+<h3>4-3. マルチエージェントの典型的な事故</h3>
+<h4>3行要約</h4>
+<ul>
+<li>典型事故は、連携不全、文脈喪失、無限ループ、実行時競合、連鎖障害、役割逸脱、観測不足です。</li>
+<li>これらはモデル精度だけの問題ではなく、状態・終了条件・責任境界・監視設計の問題です。</li>
+<li>多くは「AIを賢くする」より、「処理を止める」「人へ渡す」「一度しか実行しない」ことで防げます。</li>
+</ul>
+<p>Splunkは、本番のマルチエージェントで起こりやすい失敗として、AI間の連携崩壊、引継ぎでの文脈喪失、終了条件のない無限ループ・停止、ボトルネック・競合・同期障害、単一AIの失敗が後工程に連鎖する問題、役割の混乱と境界侵犯、観測・デバッグ不足を挙げています。<a href="https://www.splunk.com/en_us/blog/artificial-intelligence/multi-agent-system-failures.html" target="_blank" rel="noopener">Splunk</a></p>
+<p>研究側の失敗分類も、これを裏づけます。要件や役割を守れない、同じ工程を繰り返す、文脈を失う、完了を認識できない、会話がリセットされる、誤った前提のまま確認せず進む、タスクから逸脱する、重要情報を渡さない、他AIの入力を無視する、推論と行動が食い違う、早期に終了する、検証しない、不完全に検証する、誤検証する、といった類型が示されています。<a href="https://arxiv.org/html/2503.13657v2" target="_blank" rel="noopener">arXiv</a></p>
+<p>この中で事業主に最も分かりやすいのは「無限ループ」と「静かな失敗」です。無限ループは、AIが「調べ直します」「もう一度確認します」を繰り返し、API費用や処理時間を使い続ける状態です。静かな失敗は、AIまたはツールが途中で失敗しているのに、業務全体が成功扱いになり、誰にも通知されない状態です。n8nのAI Agentノードとツール失敗の例は、後者を具体的に示します。<a href="https://community.n8n.io/t/setting-up-error-workflow-upon-ai-agent-tool-failure/252743?tl=en" target="_blank" rel="noopener">n8n Community</a></p>
+<hr>
+<h2>5. 束ねるときに必ず要る部品</h2>
+<h3>5-1. 状態保存と再開：checkpoint / durable execution</h3>
+<h4>3行要約</h4>
+<ul>
+<li>AIが長く動くほど、「今どこまで終わったか」を外部に保存しなければなりません。</li>
+<li>状態保存がないと、障害時に最初からやり直しになり、費用、遅延、二重実行が増えます。</li>
+<li>耐久実行は、AIの推論品質ではなく、業務処理の継続性を守る部品です。</li>
+</ul>
+<p>状態保存とは、「問い合わせの分類済み」「顧客情報を取得済み」「人間承認待ち」「メール送信済み」「CRM更新済み」といった進捗を、AIの一時的な会話履歴の外に記録することです。耐久実行基盤では、定義したチェックポイントで状態を保存し、プロセス障害や長い待機の後も、その地点から再開できます。Inngestは、耐久実行を「重要なロジックが複数の失敗や長期間にわたって実行されることを保証する」モデルと説明し、コードが定義したチェックポイントで状態を自動保存して、障害後に再開できることを中核に挙げています。<a href="https://www.inngest.com/blog/durable-execution-key-to-harnessing-ai-agents" target="_blank" rel="noopener">Inngest</a></p>
+<p>AWSの耐久関数の例では、AI呼び出しは高コストで遅く、一時的な障害を起こし得るため、チェックポイントとリプレイに適しているとされます。AIが書類を処理した後に医師承認を待つ場合、ワークフローは停止し、承認シグナルを受けて再開できます。外部の保険者の判断を待つ場合には、待機しながら確認を繰り返す方式が示されています。<a href="https://aws.amazon.com/blogs/compute/building-fault-tolerant-multi-agent-ai-workflows-with-aws-lambda-durable-functions/" target="_blank" rel="noopener">AWS Compute Blog</a></p>
+<h4>これがないと何が起きるか</h4>
+<p>状態保存がないと、サーバー再起動、タイムアウト、ネットワーク障害、人間承認待ちで、AIは「途中まで何をしたか」を失います。結果として、同じ調査を何度も行う、同じ書類を何度も処理する、顧客への連絡を再生成する、承認済みか不明な状態で止まる、といった事故が起きます。Temporalは、個々のWorkflowやActivityが失敗しても、全体を止めずに再試行または継続でき、決定論的に再生できる履歴を得られると説明しています。<a href="https://temporal.io/blog/orchestrating-ambient-agents-with-temporal" target="_blank" rel="noopener">Temporal</a></p>
+<p><strong>失敗例</strong>として、ツール実行後に状態保存前で落ちるケースを考えてください。AIは「メールを送る」操作を成功させたが、送信済みフラグを書き込む前に落ちます。再試行すれば、AIは未送信と判断して同じメールを再送するかもしれません。この事故は、AIの回答品質ではなく、次節の冪等性と状態保存がないことによるものです。</p>
+<hr>
+<h3>5-2. 二重実行の防止：idempotency（冪等性）</h3>
+<h4>3行要約</h4>
+<ul>
+<li>冪等性とは、同じ処理を再試行しても、外部への結果が一回実行した場合と同じになる性質です。</li>
+<li>メール、請求、返金、発注、CRM登録のような副作用を伴う処理では必須です。</li>
+<li>AIの再試行は普通に起こるため、「再試行しない」より「再試行しても壊れない」設計が重要です。</li>
+</ul>
+<p>AIエージェントは、外部APIの失敗、モデルのタイムアウト、承認待ち、ツール呼び出しの一時障害によって、工程を再試行します。そのため、外部へ影響する操作は冪等にしなければなりません。AWSの耐久関数の事例では、承認後の保険者への申請を冪等なステップとして実行しています。<a href="https://aws.amazon.com/blogs/compute/building-fault-tolerant-multi-agent-ai-workflows-with-aws-lambda-durable-functions/" target="_blank" rel="noopener">AWS Compute Blog</a></p>
+<p>実務では、請求書作成、メール送信、返金要求、カレンダー予約、CRMレコード作成に、一意な処理IDを付けます。同じ処理IDが来たら、外部システム側は新しい処理を作らず、既存結果を返します。これにより、AIが「前回の結果が分からないからもう一度試す」場合でも、顧客へ二重メールが届く、同じ予約が二つ作られる、同じ請求が二重発行される事故を防ぎます。</p>
+<h4>これがないと何が起きるか</h4>
+<p>耐久実行は、完了済みステップを再実行しないことを助けますが、外部副作用が完全に安全になるわけではありません。処理が外部APIで成功した瞬間と、ローカル側が成功を記録する瞬間の間には隙間があります。そのため、AIワークフローでは「再試行するかどうか」ではなく、<strong>再試行しても顧客や会計に複数回影響しないか</strong>を考える必要があります。</p>
+<p><strong>失敗例</strong>は、問い合わせフォームを受けたAIが、CRMに新規リードを作り、担当者へ通知する構成です。CRM作成は成功したが通知で障害が起き、ワークフロー全体を再試行すると、同じ見込み客が複数作成されます。これを放置すると営業担当が重複連絡し、顧客体験を損ないます。冪等キー、重複検出、処理済み状態がなければ、AIの自律性が高いほど事故は増えます。</p>
+<hr>
+<h3>5-3. 止め方：termination condition / budget cap / human escalation</h3>
+<h4>3行要約</h4>
+<ul>
+<li>AIが止まる条件は、プロンプトのお願いではなく、実行基盤の強制ルールとして持つべきです。</li>
+<li>成功、失敗、時間切れ、最大反復、最大ツール呼び出し、費用上限、人間停止を終了条件にします。</li>
+<li>終了条件がないマルチエージェントは、無限ループと費用増大を起こし得ます。</li>
+</ul>
+<p>マルチエージェントの失敗として、Splunkは終了条件のない循環的な会話による無限ループと停止したワークフローを挙げています。<a href="https://www.splunk.com/en_us/blog/artificial-intelligence/multi-agent-system-failures.html" target="_blank" rel="noopener">Splunk</a> 研究でも、タスク完了を認識できない失敗、早期終了、不完全な検証が分類されています。<a href="https://arxiv.org/html/2503.13657v2" target="_blank" rel="noopener">arXiv</a> これらは、「AIに適切に判断して止まってほしい」と指示するだけでは十分に防げません。</p>
+<p>終了条件は、少なくとも二層に分けます。第一層は業務条件です。「必要な項目が全て揃い、検証AIが合格と判定した」「顧客が有人対応を希望した」「高リスク条件に該当した」などです。第二層は資源条件です。「一定回数以上のツール呼び出しを禁止」「一定時間で中断」「一定金額相当のAPI利用で停止」「同一ステップの再試行上限を超えたら人へ通知」などです。OpenAI Agents SDKは、コードによるオーケストレーションが、速度、費用、性能をより決定論的・予測可能にすると説明しています。<a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank" rel="noopener">OpenAI Agents SDK</a></p>
+<h4>これがないと何が起きるか</h4>
+<p>終了条件がなければ、二つのAIが互いに「追加調査が必要」と判断し続ける、ツールエラーを別表現で繰り返し再試行する、評価AIが常に改善を要求して執筆AIを終わらせない、といった状態になります。結果は、顧客の待ち時間増大、API費用の増大、実行キューの滞留です。</p>
+<p><strong>失敗例</strong>として、問い合わせ回答AIと品質評価AIをループさせる場合を考えます。評価AIが「改善の余地あり」としか返さず、合格基準が数値・条件として定義されていなければ、回答AIは何度も書き直します。対策は、「修正回数の上限」「合格条件」「未解決時は下書きとして人へ送る」「リスク語が出たら即時停止」を、AIではなくワークフローに実装することです。</p>
+<hr>
+<h3>5-4. 観測：tracing / LangSmith / OpenTelemetry</h3>
+<h4>3行要約</h4>
+<ul>
+<li>観測とは、AIが何を考えたかを完全に読むことではなく、どの工程で、どのツールを、どれだけ使い、何が失敗したかを追えるようにすることです。</li>
+<li>複数AIでは、最終回答だけを保存しても原因が追えません。</li>
+<li>トレース、費用、遅延、ツール呼び出し、再試行、引継ぎを一つの実行IDで結びます。</li>
+</ul>
+<p>LangSmithは、AIエージェントのトレース、監視、洞察を提供する観測プラットフォームとして、エージェントの失敗、遅延、費用、品質の問題を追う機能を説明しています。トレース、トークン使用量、レイテンシー、エラー率、費用内訳、フィードバックスコア、ツールとAIの行動経路、Webhook・PagerDutyアラートなどを扱うとされています。<a href="https://www.langchain.com/langsmith/observability" target="_blank" rel="noopener">LangSmith</a></p>
+<p>OpenTelemetryを使う構成では、アプリケーションのSDKがスパンを生成し、OTLPでCollectorへ送り、Collectorが一つまたは複数の観測先へ送ります。LangSmithはOTLPエンドポイントでこれを受け、ダッシュボード上のトレースとして表示します。<a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry" target="_blank" rel="noopener">LangChain Docs</a> これにより、AIの管理者、専門AI、検索、CRM照会、メール送信、検証AIまでを、一つの業務実行として追えるようになります。</p>
+<h4>これがないと何が起きるか</h4>
+<p>観測がないと、顧客から「返信が来なかった」と言われたときに、AIが分類を誤ったのか、検索が失敗したのか、メール送信が失敗したのか、送信は成功したが通知が失敗したのか、判断できません。Splunkは、従来の直線的なデバッグ手法では、非決定的で並列なマルチエージェントの問題を扱いにくいことを、観測・デバッグ不足の失敗として挙げています。<a href="https://www.splunk.com/en_us/blog/artificial-intelligence/multi-agent-system-failures.html" target="_blank" rel="noopener">Splunk</a></p>
+<p><strong>失敗例</strong>は、AIがツール失敗を内部で吸収し、ワークフローが成功扱いになるケースです。n8nコミュニティで報告されているように、AI Agentのツール失敗が通常のエラー処理へ伝播しないなら、ワークフロー監視だけでは顧客対応の欠落に気づけません。<a href="https://community.n8n.io/t/setting-up-error-workflow-upon-ai-agent-tool-failure/252743?tl=en" target="_blank" rel="noopener">n8n Community</a> したがって、ツール失敗、AIの再試行、未完了、有人引継ぎを独立したイベントとして記録・通知する必要があります。</p>
+<hr>
+<h3>5-5. 評価：evalを本番前後に回す</h3>
+<h4>3行要約</h4>
+<ul>
+<li>AIの評価は、最終回答が一度よく見えたかではなく、同じ品質で、安全な経路を通り続けるかを見る作業です。</li>
+<li>最終成果だけでなく、ツール選択、順序、無駄な再試行、必要処理の漏れを評価します。</li>
+<li>本番の失敗を評価セットに戻し、次の変更時に再発を防ぐ循環が必要です。</li>
+</ul>
+<p>AIエージェントの評価では、結果評価と経路評価の両方が必要です。Splunkは、結果指標としてタスク完了、回答の正確性、遅延を挙げ、経路指標として推論ステップ、ツール選択、呼び出し順序、中間判断を見るべきだと説明しています。具体的には、承認済みツール列との完全一致、必要操作の順序、不要な再試行・検索・ツール呼び出しの抑制、必要な呼び出しの漏れ検出が挙げられています。<a href="https://www.splunk.com/en_us/blog/artificial-intelligence/agent-evaluation-framework.html" target="_blank" rel="noopener">Splunk</a></p>
+<p>Uberの事例では、本番の失敗を人が見直し、その具体例を評価セットに入れ、次のAI版で再び処理できるか確かめる循環が示されています。<a href="https://arize.com/blog/how-uber-evaluates-ai-agents-at-production-scale/" target="_blank" rel="noopener">Arize AI</a> これは小規模事業にもそのまま縮小して適用できます。たとえば、問い合わせAIなら「返金要求」「怒っている顧客」「本人確認不足」「在庫切れ」「法的要求」「一般FAQ」といった実例を少数集め、毎週の変更後に同じ入力で確認します。</p>
+<h4>これがないと何が起きるか</h4>
+<p>評価がないと、モデル変更、プロンプト修正、ツール追加、ナレッジ更新、API仕様変更のいずれかで、以前できていたことが静かに壊れます。最終回答だけを採点すると、「たまたま正しい答え」に見えても、危険なツールを先に呼んだ、無駄な外部検索を繰り返した、必要な確認を飛ばした、といった事故経路を見逃します。</p>
+<p><strong>失敗例</strong>は、AIが結果として正しい顧客メールを作ったが、途中で不要な顧客情報を複数の外部ツールに渡していた場合です。結果だけの評価は合格でも、情報取り扱い、費用、コンプライアンスの観点では不合格です。評価項目に「利用を許可したツールだけを呼んだか」「本人確認前に個人情報を出していないか」「同じ操作を繰り返していないか」を入れる必要があります。</p>
+<hr>
+<h2>6. 一人＋AIで回している事業主が明日やれる具体的な一手</h2>
+<h3>3行要約</h3>
+<ul>
+<li>最初から複数AIを自律的に会話させないことが、最短の無人化への近道です。</li>
+<li>明日やるべきことは、「一業務を細く切る」「止まる条件を決める」「記録を残す」の三つです。</li>
+<li>AIに任せる範囲を増やすのは、再現性・観測性・復旧性を確認してからにしてください。</li>
+</ul>
+<h4>1. 「一つの業務」だけを、入力から完了まで紙に書き出す</h4>
+<p>最初に自動化する業務は、売上や顧客に直結しつつ、誤っても取り消しや修正ができるものに絞ります。例は、問い合わせの一次分類、見積もり依頼の必要情報チェック、面談後のお礼メール下書き、毎朝の問い合わせ要約です。工程ごとに「入力」「AIがすること」「ツールで取得すること」「人が確認すること」「完了条件」を一行ずつ書きます。Anthropicは、複雑性を早期に増やすより、単純な構成、透明性、ツールの設計とテストを重視するよう勧めています。<a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Anthropic</a></p>
+<p><strong>やめるべき失敗例</strong>は、「営業AI」「秘書AI」「マーケAI」のような曖昧な役割名だけを与え、何を終えたら完了かを決めないことです。これではAIが無関係な調査、不要な検索、繰り返しの下書きを始めても止められません。</p>
+<h4>2. 外部への書き込みを一か所に集める</h4>
+<p>AIが複数あっても、CRM更新、メール送信、請求書発行、予約確定などの書き込み処理は、一つの「実行担当」へ集約します。調査AI、文章AI、評価AIは提案してよいですが、最終の書き込みは、明示的なルールまたは承認済みの実行関数だけが行います。Cognitionの後続見解は、実務で機能する狭いパターンとして、複数AIが知能を持ち寄る一方、書き込みは単一スレッドに留める構成を挙げています。<a href="https://x.com/walden_yan/article/2047054401341370639" target="_blank" rel="noopener">X</a></p>
+<p><strong>やめるべき失敗例</strong>は、調査AI、営業AI、顧客対応AIの全てに同じCRM更新権限を付けることです。重複登録、誤ったステータス変更、矛盾した顧客連絡が起こったとき、責任の所在を追えなくなります。</p>
+<h4>3. 「止める条件」を先に実装する</h4>
+<p>AIの性能改善より前に、停止条件を決めます。最低限、「最大処理時間」「最大AI呼び出し回数」「最大ツール呼び出し回数」「同じエラーの再試行上限」「人間に渡す条件」を用意します。マルチエージェントでは、無限ループと停止したワークフローが典型的な失敗として報告されています。<a href="https://www.splunk.com/en_us/blog/artificial-intelligence/multi-agent-system-failures.html" target="_blank" rel="noopener">Splunk</a></p>
+<p><strong>やめるべき失敗例</strong>は、「費用を使いすぎないで」「必要なら止めて」とプロンプトに書くだけの方法です。実際の停止は、AIの判断ではなく、ワークフロー側の回数・時間・費用・エラーの強制上限で行います。</p>
+<h4>4. 送信・登録・請求には処理IDを付ける</h4>
+<p>メール送信、フォーム登録、CRM作成、予約、請求、返金など、外部に結果が残る操作には、一意な処理IDを持たせます。同じIDの実行が再来したら、新規処理を作らず、すでに処理済みの結果を返すようにします。AWSの耐久ワークフローの例は、外部の保険者への申請を冪等なステップとして扱っています。<a href="https://aws.amazon.com/blogs/compute/building-fault-tolerant-multi-agent-ai-workflows-with-aws-lambda-durable-functions/" target="_blank" rel="noopener">AWS Compute Blog</a></p>
+<p><strong>やめるべき失敗例</strong>は、AIが失敗したら全体を最初から再実行するだけの構成です。途中でメール送信だけ成功していた場合、同じ顧客に複数回送られます。まずは「同じ実行を二回行っても結果は一回分」という設計を確認してください。</p>
+<h4>5. 毎週、失敗例を評価セットへ一件ずつ追加する</h4>
+<p>AIが誤った返信をした、検索漏れがあった、ツールを誤って呼んだ、顧客が人間対応を求めた、という実例を捨てずに保存します。翌週にプロンプト、ナレッジ、ツール、フローを変える前後で、その実例を必ず再試験します。Uberの公開事例は、本番で見つかった弱点を人が確認して評価データに加え、後続版がその問題を扱えることを確認する循環を示しています。<a href="https://arize.com/blog/how-uber-evaluates-ai-agents-at-production-scale/" target="_blank" rel="noopener">Arize AI</a></p>
+<p><strong>やめるべき失敗例</strong>は、うまくいったデモだけを見て本番範囲を広げることです。評価では結果だけでなく、ツールの呼び出し順序、不要な再試行、必要な確認の漏れも確認します。こうした経路評価がないと、最終文面が良く見えても、業務システムとして危険な行動を見逃します。<a href="https://www.splunk.com/en_us/blog/artificial-intelligence/agent-evaluation-framework.html" target="_blank" rel="noopener">Splunk</a></p>
+<hr>
+<h2>結論</h2>
+<p>AIオーケストレーションの本質は、AIを何本並べるかではありません。<strong>業務の状態を保存し、外部操作を一度だけ実行し、危険な条件で止め、すべての経路を追跡し、失敗を次回テストに戻すこと</strong>です。</p>
+<p>最初の実装は、単一AIと固定ワークフローで構いません。むしろ、単一AIで安定しない業務を複数AIに分解しても、失敗原因は増えます。複数AIが必要になるのは、専門領域が明確に分かれ、並列処理が本当に価値を生み、各AIの出力を統合する責任者と終了条件が設計できたときです。</p>
+<p>一人で事業を回す場合の現実的な順序は、次の通りです。</p>
+<p>1. 下書き・分類・検索のような可逆的な一工程を自動化する。</p>
+<p>2. 承認、停止、重複防止、ログを加える。</p>
+<p>3. 失敗例を毎週評価へ戻す。</p>
+<p>4. その工程が安定してから、別の専門AIまたはツールを加える。</p>
+<p>5. 外部への確定操作は最後まで一つの制御経路に残す。</p>
+<p>この順番なら、AIを「無人で暴走する仕組み」ではなく、「止められ、追跡でき、必要時に人へ戻る業務システム」として育てられます。</p>
+<hr>
+<h2>出典一覧</h2>
+<p>1. <a href="https://www.langchain.com/blog/choosing-the-right-multi-agent-architecture" target="_blank" rel="noopener">LangChain — Choosing the Right Multi-Agent Architecture</a></p>
+<p>2. <a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank" rel="noopener">Cognition — Don’t Build Multi-Agents</a></p>
+<p>3. <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Anthropic — Building Effective Agents</a></p>
+<p>4. <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank" rel="noopener">OpenAI Agents SDK — Multi-agent orchestration</a></p>
+<p>5. <a href="https://github.com/openai/swarm" target="_blank" rel="noopener">OpenAI Swarm GitHub Repository</a></p>
+<p>6. <a href="https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/" target="_blank" rel="noopener">Microsoft Learn — Semantic Kernel Agent Orchestration</a></p>
+<p>7. <a href="https://github.com/microsoft/autogen" target="_blank" rel="noopener">AutoGen GitHub Repository</a></p>
+<p>8. <a href="https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/migration-guide.html" target="_blank" rel="noopener">AutoGen — Migration Guide for v0.2 to v0.4</a></p>
+<p>9. <a href="https://developers.googleblog.com/build-cross-language-multi-agent-team-with-google-agent-development-kit-and-a2a/" target="_blank" rel="noopener">Google Developers Blog — ADK and A2A</a></p>
+<p>10. <a href="https://adk.dev/a2a/" target="_blank" rel="noopener">ADK — A2A Protocol Documentation</a></p>
+<p>11. <a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noopener">Anthropic — Introducing the Model Context Protocol</a></p>
+<p>12. <a href="https://temporal.io/blog/orchestrating-ambient-agents-with-temporal" target="_blank" rel="noopener">Temporal — Orchestrating Ambient Agents</a></p>
+<p>13. <a href="https://aws.amazon.com/blogs/compute/building-fault-tolerant-multi-agent-ai-workflows-with-aws-lambda-durable-functions/" target="_blank" rel="noopener">AWS Compute Blog — Fault-tolerant Multi-Agent AI Workflows</a></p>
+<p>14. <a href="https://www.inngest.com/blog/durable-execution-key-to-harnessing-ai-agents" target="_blank" rel="noopener">Inngest — Durable Execution for AI Agents</a></p>
+<p>15. <a href="https://n8n.io/" target="_blank" rel="noopener">n8n — Workflow Automation Platform</a></p>
+<p>16. <a href="https://community.n8n.io/t/setting-up-error-workflow-upon-ai-agent-tool-failure/252743?tl=en" target="_blank" rel="noopener">n8n Community — AI Agent Tool Failure and Error Workflow</a></p>
+<p>17. <a href="https://dify.ai/" target="_blank" rel="noopener">Dify — Production-Ready Agentic Workflows</a></p>
+<p>18. <a href="https://flowiseai.com/" target="_blank" rel="noopener">Flowise — Visual AI Agent Builder</a></p>
+<p>19. <a href="https://docs.flowiseai.com/using-flowise/agentflowv1/multi-agents" target="_blank" rel="noopener">Flowise Docs — Multi-Agents</a></p>
+<p>20. <a href="https://github.com/deepset-ai/haystack" target="_blank" rel="noopener">Haystack GitHub Repository</a></p>
+<p>21. <a href="https://haystack.deepset.ai/blog/haystack-3-release" target="_blank" rel="noopener">Haystack — Haystack 3 Release</a></p>
+<p>22. <a href="https://www.deepset.ai/haystack-platform" target="_blank" rel="noopener">deepset — Haystack Platform Case Studies</a></p>
+<p>23. <a href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/" target="_blank" rel="noopener">Klarna — AI Assistant Customer Service Results</a></p>
+<p>24. <a href="https://www.twig.so/blog/klarna-ai-customer-support-efficiency" target="_blank" rel="noopener">Twig — Klarna AI Customer Support Efficiency Analysis</a></p>
+<p>25. <a href="https://www.salesforce.com/agentforce/customer-stories/" target="_blank" rel="noopener">Salesforce — Agentforce Customer Stories</a></p>
+<p>26. <a href="https://arize.com/blog/how-uber-evaluates-ai-agents-at-production-scale/" target="_blank" rel="noopener">Arize AI — How Uber Evaluates AI Agents at Production Scale</a></p>
+<p>27. <a href="https://www.langchain.com/langsmith/observability" target="_blank" rel="noopener">LangSmith — Agent and LLM Observability</a></p>
+<p>28. <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry" target="_blank" rel="noopener">LangChain Docs — Trace with OpenTelemetry</a></p>
+<p>29. <a href="https://www.splunk.com/en_us/blog/artificial-intelligence/multi-agent-system-failures.html" target="_blank" rel="noopener">Splunk — Multi-Agent System Failures</a></p>
+<p>30. <a href="https://www.splunk.com/en_us/blog/artificial-intelligence/agent-evaluation-framework.html" target="_blank" rel="noopener">Splunk — Agent Evaluation Framework</a></p>
+<p>31. <a href="https://arxiv.org/html/2503.13657v2" target="_blank" rel="noopener">arXiv — Why Do Multi-Agent LLM Systems Fail?</a></p>
+<p>32. <a href="https://www.databricks.com/blog/ai-agent-orchestration" target="_blank" rel="noopener">Databricks — AI Agent Orchestration</a></p>
+<h4>AIオーケストレーション実装調査レポート：複数のAIを束ねて、無人に近い業務運用へ進めるための実装・導入・失敗分析</h4></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

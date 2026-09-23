@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIの値段表｜1回いくら減るか</title>
+<style>
+:root{color-scheme:light;--ink:#191714;--bg:#f6f4ef;--sub:#7a7268;--line:#e0dad0;--red:#b3402f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic",sans-serif;line-height:1.85}
+.w{max-width:1040px;margin:0 auto;padding:28px 16px 90px;overflow-x:hidden}
+h1{font-family:"Hiragino Mincho ProN",serif;font-size:clamp(22px,5.5vw,33px);margin:6px 0 10px;line-height:1.3}
+h2{font-size:17px;margin:44px 0 10px;padding-top:14px;border-top:2px solid var(--line)}
+h3{font-size:14px;color:var(--red);margin:26px 0 8px;letter-spacing:.04em}
+blockquote{margin:0 0 20px;padding:10px 14px;background:#fff;border-left:3px solid var(--red);font-size:13.5px;color:#4a443c}
+table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);margin:10px 0 18px;display:block;overflow-x:auto;white-space:nowrap}
+th,td{border-bottom:1px solid var(--line);padding:8px 8px;text-align:left;vertical-align:top;white-space:normal;min-width:90px}
+th{background:#faf8f4;font-size:11px;color:var(--sub);font-weight:400}
+a{color:#2a5d8f;word-break:break-all}
+code{background:#fff;border:1px solid var(--line);padding:1px 5px;font-size:12px}
+ul{font-size:13.5px}
+p{font-size:14px}
+hr{border:0;border-top:1px solid var(--line);margin:34px 0}
+</style></head><body><div class="w">
+<h1>AIの値段表｜1回いくら減るか</h1>
+<blockquote>
+<p>「他のAIについて、タスクごとにどれだけクレジットが減るかや、APIでどれだけかかるかなどを全部まとめておいて。」（2026-09-25 たまごさん）</p>
+</blockquote>
+<p><strong>読み方</strong>
+<strong>実測</strong> ＝ こちらで前後の残高を実際に測った数字。
+<strong>公称</strong> ＝ 公式の料金ページ／公式CLIの記述から取った数字。測ってはいない。
+<strong>取れない</strong> ＝ 出典が取れなかったもの。<strong>どの口が閉じているかまで書く。空欄にしない。</strong>
+<strong>憶測の数字は1つも書いていない。</strong></p>
+<hr />
+<h2>1. Genspark（いま契約しているもの・全部実測）</h2>
+<h3>契約の中身（実測 2026-09-25 <code>gsk account plan</code>）</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>値</th>
+<th>取り方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>プラン</td>
+<td>Plus</td>
+<td>実測 <code>gsk account plan</code></td>
+</tr>
+<tr>
+<td>月あたりのクレジット</td>
+<td><strong>10,000</strong></td>
+<td>実測 <code>personal_monthly_credits: 10000</code></td>
+</tr>
+<tr>
+<td>今の期間</td>
+<td>2026-09-04 02:40 〜 <strong>2026-10-04 02:40</strong></td>
+<td>実測 <code>current_period_start / end</code></td>
+</tr>
+<tr>
+<td>状態</td>
+<td><code>canceled_but_active</code>（解約済み・期間内は使える）</td>
+<td>実測。<strong>10/4で終わり。繰り越しなし</strong></td>
+</tr>
+<tr>
+<td>残クレジット</td>
+<td><strong>588.837</strong>（2026-09-25 04:30時点）</td>
+<td>実測 <code>gsk me</code></td>
+</tr>
+<tr>
+<td>月額</td>
+<td>$19.99（10,000クレジット）</td>
+<td>公称 … <a href="https://www.genspark.ai/pricing">https://www.genspark.ai/pricing</a></td>
+</tr>
+</tbody>
+</table>
+<p>→ <strong>1クレジット ≒ $0.001999</strong>（＝$19.99 ÷ 10,000）。円換算は §4 の為替の行を見ること。</p>
+<h3>仕事の種類ごとに、いくら減るか（全部 <code>gsk account credit usage</code> の実測履歴）</h3>
+<table>
+<thead>
+<tr>
+<th>仕事</th>
+<th>1回いくら</th>
+<th>取り方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Super Agent</strong></td>
+<td><strong>0</strong>（100% off）</td>
+<td>★実測。履歴の5件すべて <code>credits deducted: 0 / promotion: 100% off</code>。<strong>この便で曲ページ1枚を作らせて 588.837 → 588.837（減り 0.000）</strong></td>
+</tr>
+<tr>
+<td><strong>Deep Research</strong></td>
+<td><strong>0</strong>（100% off）</td>
+<td>★実測。2026-09-24 03:44 の履歴が <code>0 / 100% off</code>。この便の料金表調査でも 588.837 → 588.837</td>
+</tr>
+<tr>
+<td><strong>Claw</strong></td>
+<td><strong>663</strong></td>
+<td>★実測。2026-09-24 12:00 の履歴 1件</td>
+</tr>
+<tr>
+<td><strong>AI Developer</strong></td>
+<td><strong>366</strong> ／ <strong>297</strong></td>
+<td>★実測。2026-09-24 03:55 の履歴2件。<strong>1回で300〜660飛ぶ＝残588では1〜2回で終わる</strong></td>
+</tr>
+<tr>
+<td><code>gsk me</code>（残高照会）</td>
+<td><strong>0</strong></td>
+<td>★実測。前後で不変</td>
+</tr>
+<tr>
+<td><code>gsk search</code>（Web検索1回）</td>
+<td><strong>1.000</strong></td>
+<td>★実測（2026-09-24・1058号）</td>
+</tr>
+<tr>
+<td><code>gsk file_convert</code>（PDF→DOCX）</td>
+<td><strong>5 / 1変換</strong></td>
+<td>公称（<code>gsk convert --help</code> の記述）</td>
+</tr>
+<tr>
+<td>AIチャット／AI画像／AI議事録／リアルタイム音声</td>
+<td><strong>取れない</strong></td>
+<td><code>gsk account credit usage</code> の履歴に<strong>この4つの行が1件も出ていない</strong>（使った記録が無いため0か有料かを判定できない）。公式ヘルプの <a href="https://www.genspark.ai/helpcenter/credits-guide">https://www.genspark.ai/helpcenter/credits-guide</a> にも単価表は無い。<strong>使う前に1回だけ走らせて前後を測るのが唯一の道</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>★「うちの1回」に換算する</h3>
+<table>
+<thead>
+<tr>
+<th>うちの仕事</th>
+<th>Gensparkでやった場合</th>
+<th>残588で何回できるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>曲ページ1枚を作らせる（Super Agent）</td>
+<td><strong>0クレジット</strong>（実測）</td>
+<td><strong>無制限</strong>（10/4まで）</td>
+</tr>
+<tr>
+<td>調べもの1本（Deep Research）</td>
+<td><strong>0クレジット</strong>（実測）</td>
+<td><strong>無制限</strong>（10/4まで）</td>
+</tr>
+<tr>
+<td>Claw を1回回す</td>
+<td>663クレジット（実測）</td>
+<td><strong>0回</strong>（残588では足りない）</td>
+</tr>
+<tr>
+<td>AI Developer を1回回す</td>
+<td>297〜366（実測）</td>
+<td><strong>1回だけ</strong></td>
+</tr>
+<tr>
+<td><code>gsk search</code> で1語調べる</td>
+<td>1.000（実測）</td>
+<td>588回</td>
+</tr>
+</tbody>
+</table>
+<p><strong>結論：曲ページも調べものも、Gensparkは0で回せる。</strong>
+<strong>減らしているのは Claw と AI Developer の2つだけ</strong>（実測の履歴3件で合計 1,326クレジット＝9/24の1日で使った分）。</p>
+<hr />
+<h2>2. 他のAI（この便で公式出典が取れたもの／取れなかったもの）</h2>
+<h3>取り方（正直に）</h3>
+<p>この節の数字は<strong>こちらで測ったものではない。Genspark Deep Research に「各社の公式料金ページだけを見て集めろ／推測は書くな／確認できないものは確認できないと書け」と指示して集めさせたもの</strong>（2026-09-25・消費クレジット <strong>0.000</strong> 実測）。
+つまり全部 <strong>公称</strong>。出典URLは各行の右端にある。<strong>「公式ページで確認できなかった」ものは節の最後にそのまま載せている。</strong></p>
+<table>
+<thead>
+<tr>
+<th>サービス</th>
+<th>プランまたは単位</th>
+<th>価格（現地通貨）</th>
+<th>円換算</th>
+<th>月額／従量</th>
+<th>出典URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Devin（Cognition）</td>
+<td>Free</td>
+<td>$0/月</td>
+<td>¥0</td>
+<td>月額</td>
+<td><a href="https://devin.ai/pricing">devin.ai</a></td>
+</tr>
+<tr>
+<td>Devin（Cognition）</td>
+<td>Pro</td>
+<td>$20/月</td>
+<td>¥3,177</td>
+<td>月額</td>
+<td><a href="https://devin.ai/pricing">devin.ai</a></td>
+</tr>
+<tr>
+<td>Devin（Cognition）</td>
+<td>Max</td>
+<td>$200/月</td>
+<td>¥31,772</td>
+<td>月額</td>
+<td><a href="https://devin.ai/pricing">devin.ai</a></td>
+</tr>
+<tr>
+<td>Devin（Cognition）</td>
+<td>Teams</td>
+<td>$80/月 + $40/シート/月</td>
+<td>¥12,709 + ¥6,354/シート</td>
+<td>月額</td>
+<td><a href="https://devin.ai/pricing">devin.ai</a></td>
+</tr>
+<tr>
+<td>Devin（Cognition）</td>
+<td>Enterprise（ACU）</td>
+<td>公式ページで確認できず（注文書により設定、営業担当に要確認）</td>
+<td>公式ページで確認できず</td>
+<td>従量（ACU）</td>
+<td><a href="https://docs.devin.ai/admin/billing/enterprise">docs.devin.ai</a></td>
+</tr>
+<tr>
+<td>Devin（Cognition）</td>
+<td>ACU 1あたりの機能</td>
+<td>公式ページで確認できず（ACUは「エージェントが行う実際の作業量」を表す単位と記載のみ）</td>
+<td>公式ページで確認できず</td>
+<td>—</td>
+<td><a href="https://docs.devin.ai/admin/billing">docs.devin.ai</a></td>
+</tr>
+<tr>
+<td>Jules（Google）</td>
+<td>Free（Jules）</td>
+<td>無料、1日あたりタスク15件（ローリング24時間）、同時タスク3件</td>
+<td>¥0</td>
+<td>月額（無料枠）</td>
+<td><a href="https://jules.google/docs/usage-limits/">jules.google</a></td>
+</tr>
+<tr>
+<td>Jules（Google）</td>
+<td>Jules in Pro（Google AI Pro経由）</td>
+<td>Google AI Pro $19.99/月、1日あたりタスク100件、同時タスク15件</td>
+<td>¥3,176</td>
+<td>月額</td>
+<td><a href="https://jules.google/docs/usage-limits/">jules.google</a>、<a href="https://one.google.com/about/google-ai-plans/">one.google.com</a></td>
+</tr>
+<tr>
+<td>Jules（Google）</td>
+<td>Jules in Ultra（Google AI Ultra経由）</td>
+<td>Google AI Ultra $99.99/月〜、1日あたりタスク300件、同時タスク60件</td>
+<td>¥15,884〜</td>
+<td>月額</td>
+<td><a href="https://jules.google/docs/usage-limits/">jules.google</a>、<a href="https://one.google.com/about/google-ai-plans/">one.google.com</a></td>
+</tr>
+<tr>
+<td>ChatGPT Codex（OpenAI）</td>
+<td>Free</td>
+<td>$0/月</td>
+<td>¥0</td>
+<td>月額</td>
+<td><a href="https://developers.openai.com/codex/pricing">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>ChatGPT Codex（OpenAI）</td>
+<td>Go</td>
+<td>$8/月</td>
+<td>¥1,271</td>
+<td>月額</td>
+<td><a href="https://developers.openai.com/codex/pricing">developers.openai.com</a>、<a href="https://openai.com/index/introducing-chatgpt-go/">openai.com</a></td>
+</tr>
+<tr>
+<td>ChatGPT Codex（OpenAI）</td>
+<td>Plus</td>
+<td>$20/月</td>
+<td>¥3,177</td>
+<td>月額</td>
+<td><a href="https://developers.openai.com/codex/pricing">developers.openai.com</a>、<a href="https://openai.com/chatgpt/pricing/">openai.com</a></td>
+</tr>
+<tr>
+<td>ChatGPT Codex（OpenAI）</td>
+<td>Pro（5x/20x）</td>
+<td>公式ページで確認できず（Plusより5倍/20倍のレート制限と記載のみ、金額明記なし）</td>
+<td>公式ページで確認できず</td>
+<td>月額</td>
+<td><a href="https://developers.openai.com/codex/pricing">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>ChatGPT Codex（OpenAI）</td>
+<td>API Key（従量）</td>
+<td>API pricingに基づく（gpt-5.3-codex: 入力$1.75/1M、出力$14.00/1M）</td>
+<td>入力¥278/1M、出力¥2,224/1M</td>
+<td>従量</td>
+<td><a href="https://developers.openai.com/codex/pricing">developers.openai.com</a>、<a href="https://developers.openai.com/api/docs/pricing">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.7（短文脈）</td>
+<td>入力$2.00/1M、キャッシュ$0.50/1M、出力$6.00/1M</td>
+<td>入力¥318、キャッシュ¥79、出力¥953</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.7（長文脈）</td>
+<td>入力$4.00/1M、キャッシュ$1.00/1M、出力$12.00/1M</td>
+<td>入力¥635、キャッシュ¥159、出力¥1,906</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.6（短文脈）</td>
+<td>入力$2.00/1M、キャッシュ$0.50/1M、出力$6.00/1M</td>
+<td>入力¥318、キャッシュ¥79、出力¥953</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.6（長文脈）</td>
+<td>入力$4.00/1M、キャッシュ$1.00/1M、出力$12.00/1M</td>
+<td>入力¥635、キャッシュ¥159、出力¥1,906</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.5（短文脈）</td>
+<td>入力$2.00/1M、キャッシュ$0.30/1M、出力$6.00/1M</td>
+<td>入力¥318、キャッシュ¥48、出力¥953</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.5（長文脈）</td>
+<td>入力$4.00/1M、キャッシュ$0.60/1M、出力$12.00/1M</td>
+<td>入力¥635、キャッシュ¥95、出力¥1,906</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.3（短文脈）</td>
+<td>入力$1.25/1M、キャッシュ$0.20/1M、出力$2.50/1M</td>
+<td>入力¥199、キャッシュ¥32、出力¥397</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>xAI Grok API</td>
+<td>grok-4.3（長文脈）</td>
+<td>入力$2.50/1M、キャッシュ$0.40/1M、出力$5.00/1M</td>
+<td>入力¥397、キャッシュ¥64、出力¥794</td>
+<td>従量</td>
+<td><a href="https://docs.x.ai/developers/pricing">docs.x.ai</a></td>
+</tr>
+<tr>
+<td>Google Gemini API TTS</td>
+<td>Gemini 2.5 Flash TTS（〜2026/12/31）</td>
+<td>入力$0.50/1M、出力$9.00/1M</td>
+<td>入力¥79、出力¥1,430</td>
+<td>従量</td>
+<td><a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a></td>
+</tr>
+<tr>
+<td>Google Gemini API TTS</td>
+<td>Gemini 2.5 Flash TTS（2027/1/1〜）</td>
+<td>入力$1.00/1M、出力$18.00/1M</td>
+<td>入力¥159、出力¥2,860</td>
+<td>従量</td>
+<td><a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a></td>
+</tr>
+<tr>
+<td>Google Gemini API TTS</td>
+<td>Gemini 2.5 Flash-Lite TTS（〜2026/12/31）</td>
+<td>入力$0.50/1M、出力$6.00/1M</td>
+<td>入力¥79、出力¥953</td>
+<td>従量</td>
+<td><a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a></td>
+</tr>
+<tr>
+<td>Google Gemini API TTS</td>
+<td>Gemini 2.5 Flash-Lite TTS（2027/1/1〜）</td>
+<td>入力$1.00/1M、出力$12.00/1M</td>
+<td>入力¥159、出力¥1,906</td>
+<td>従量</td>
+<td><a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a></td>
+</tr>
+<tr>
+<td>Google Gemini API Live</td>
+<td>Live API（テキスト入力/出力）</td>
+<td>入力$0.50/1M、出力$2.00/1M</td>
+<td>入力¥79、出力¥318</td>
+<td>従量</td>
+<td><a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a></td>
+</tr>
+<tr>
+<td>Google Gemini API Live</td>
+<td>Live API（音声/ビデオ入力）</td>
+<td>入力$3.00/1M</td>
+<td>¥477</td>
+<td>従量</td>
+<td><a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a></td>
+</tr>
+<tr>
+<td>Google Gemini API Live</td>
+<td>Live API（音声出力）</td>
+<td>出力$12.00/1M</td>
+<td>¥1,906</td>
+<td>従量</td>
+<td><a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling 2.5 Turbo Pro（音声オフ）</td>
+<td>$0.07/秒</td>
+<td>¥11</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/image-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling 2.5 Turbo Pro（5秒動画、音声オフ）</td>
+<td>$0.35</td>
+<td>¥56</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/image-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling 2.6 Pro（音声オフ）</td>
+<td>$0.07/秒</td>
+<td>¥11</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling 2.6 Pro（音声オン）</td>
+<td>$0.14/秒</td>
+<td>¥22</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling 2.6 Pro（5秒、音声オン）</td>
+<td>$0.70</td>
+<td>¥111</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Standard（音声オフ）</td>
+<td>$0.084/秒</td>
+<td>¥13</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Standard（音声オン）</td>
+<td>$0.126/秒</td>
+<td>¥20</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Standard（音声オン+音声制御）</td>
+<td>$0.154/秒</td>
+<td>¥24</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Standard（5秒、音声オン+音声制御）</td>
+<td>$0.77</td>
+<td>¥122</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Pro（音声オフ）</td>
+<td>$0.112/秒</td>
+<td>¥18</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Pro（音声オン）</td>
+<td>$0.168/秒</td>
+<td>¥27</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Pro（音声オン+音声制御）</td>
+<td>$0.196/秒</td>
+<td>¥31</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>fal.ai（Kling）</td>
+<td>Kling v3 Pro（5秒、音声オン+音声制御）</td>
+<td>$0.98</td>
+<td>¥156</td>
+<td>従量</td>
+<td><a href="https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video">fal.ai</a></td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>GPT-5 Chat（gpt-5-chat-latest）</td>
+<td>入力$1.25/1M、キャッシュ$0.125/1M、出力$10.00/1M</td>
+<td>入力¥199、キャッシュ¥20、出力¥1,589</td>
+<td>従量</td>
+<td><a href="https://developers.openai.com/api/docs/models/gpt-5-chat-latest">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>GPT-5.6 Sol（短文脈）</td>
+<td>入力$4.00/1M、キャッシュ$0.40/1M、出力$20.00/1M</td>
+<td>入力¥635、キャッシュ¥64、出力¥3,177</td>
+<td>従量</td>
+<td><a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>GPT-5.6 Sol（長文脈）</td>
+<td>入力$8.00/1M、キャッシュ$0.80/1M、出力$30.00/1M</td>
+<td>入力¥1,271、キャッシュ¥127、出力¥4,766</td>
+<td>従量</td>
+<td><a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>GPT-5.6 Terra（短文脈）</td>
+<td>入力$2.00/1M、キャッシュ$0.20/1M、出力$12.00/1M</td>
+<td>入力¥318、キャッシュ¥32、出力¥1,906</td>
+<td>従量</td>
+<td><a href="https://developers.openai.com/api/docs/models/gpt-5.6-terra">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>GPT-5.6 Luna（短文脈）</td>
+<td>入力$0.20/1M、キャッシュ$0.02/1M、出力$1.20/1M</td>
+<td>入力¥32、キャッシュ¥3、出力¥191</td>
+<td>従量</td>
+<td><a href="https://developers.openai.com/api/docs/models/gpt-5.6-luna">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>GPT-5.6 Cyber（短文脈）</td>
+<td>入力$12.50/1M、キャッシュ$1.25/1M、出力$75.00/1M</td>
+<td>入力¥1,986、キャッシュ¥199、出力¥11,915</td>
+<td>従量</td>
+<td><a href="https://developers.openai.com/api/docs/pricing">developers.openai.com</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Free</td>
+<td>$0/月（1日5クレジット、月最大30、Cloud 20クレジット/月、AI 4クレジット/月）</td>
+<td>¥0</td>
+<td>月額</td>
+<td><a href="https://lovable.dev/pricing">lovable.dev</a>、<a href="https://docs.lovable.dev/introduction/plans-and-credits">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（100クレジット）</td>
+<td>$25/月</td>
+<td>¥3,972</td>
+<td>月額</td>
+<td><a href="https://lovable.dev/pricing">lovable.dev</a>、<a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（200クレジット）</td>
+<td>$50/月</td>
+<td>¥7,943</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（400クレジット）</td>
+<td>$100/月</td>
+<td>¥15,886</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（800クレジット）</td>
+<td>$200/月</td>
+<td>¥31,772</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（1,200クレジット）</td>
+<td>$294/月</td>
+<td>¥46,705</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（2,000クレジット）</td>
+<td>$480/月</td>
+<td>¥76,253</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（3,000クレジット）</td>
+<td>$705/月</td>
+<td>¥111,996</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（4,000クレジット）</td>
+<td>$920/月</td>
+<td>¥146,151</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（5,000クレジット）</td>
+<td>$1,125/月</td>
+<td>¥178,718</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（7,500クレジット）</td>
+<td>$1,688/月</td>
+<td>¥268,155</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro（10,000クレジット）</td>
+<td>$2,250/月</td>
+<td>¥357,435</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（100クレジット）</td>
+<td>$50/月</td>
+<td>¥7,943</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（200クレジット）</td>
+<td>$100/月</td>
+<td>¥15,886</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（400クレジット）</td>
+<td>$200/月</td>
+<td>¥31,772</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（800クレジット）</td>
+<td>$400/月</td>
+<td>¥63,544</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（1,200クレジット）</td>
+<td>$588/月</td>
+<td>¥93,410</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（2,000クレジット）</td>
+<td>$960/月</td>
+<td>¥152,506</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（3,000クレジット）</td>
+<td>$1,410/月</td>
+<td>¥223,993</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（4,000クレジット）</td>
+<td>$1,840/月</td>
+<td>¥292,302</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（5,000クレジット）</td>
+<td>$2,250/月</td>
+<td>¥357,435</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（7,500クレジット）</td>
+<td>$3,300/月</td>
+<td>¥524,238</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business（10,000クレジット）</td>
+<td>$4,300/月</td>
+<td>¥683,098</td>
+<td>月額</td>
+<td><a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Pro トップアップ</td>
+<td>$0.30/クレジット（$15/50クレジット）</td>
+<td>¥48/クレジット</td>
+<td>従量</td>
+<td><a href="https://docs.lovable.dev/introduction/credits-and-usage">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Lovable</td>
+<td>Business トップアップ</td>
+<td>$0.60/クレジット（$30/50クレジット）</td>
+<td>¥95/クレジット</td>
+<td>従量</td>
+<td><a href="https://docs.lovable.dev/introduction/credits-and-usage">docs.lovable.dev</a></td>
+</tr>
+<tr>
+<td>Buffer</td>
+<td>Free</td>
+<td>$0/月（最大3チャンネル）</td>
+<td>¥0</td>
+<td>月額</td>
+<td><a href="https://buffer.com/pricing">buffer.com</a></td>
+</tr>
+<tr>
+<td>Buffer</td>
+<td>Essentials</td>
+<td>$5/月（1チャンネル）、年払い$60</td>
+<td>¥794/月、¥9,532/年</td>
+<td>月額</td>
+<td><a href="https://buffer.com/pricing">buffer.com</a></td>
+</tr>
+<tr>
+<td>Buffer</td>
+<td>Team</td>
+<td>$10/月（1チャンネル）、年払い$120</td>
+<td>¥1,589/月、¥19,063/年</td>
+<td>月額</td>
+<td><a href="https://buffer.com/pricing">buffer.com</a></td>
+</tr>
+<tr>
+<td>Buffer</td>
+<td>Essentials（11-25チャンネル）</td>
+<td>$4/チャンネル/月</td>
+<td>¥635/チャンネル</td>
+<td>月額</td>
+<td><a href="https://support.buffer.com/articles/buffer-pricing-and-features-6pJrOPuzIt">support.buffer.com</a></td>
+</tr>
+<tr>
+<td>Buffer</td>
+<td>Essentials（26-50チャンネル）</td>
+<td>$3/チャンネル/月</td>
+<td>¥477/チャンネル</td>
+<td>月額</td>
+<td><a href="https://support.buffer.com/articles/buffer-pricing-and-features-6pJrOPuzIt">support.buffer.com</a></td>
+</tr>
+<tr>
+<td>Buffer</td>
+<td>Essentials（51+チャンネル）</td>
+<td>$1/チャンネル/月</td>
+<td>¥159/チャンネル</td>
+<td>月額</td>
+<td><a href="https://support.buffer.com/articles/buffer-pricing-and-features-6pJrOPuzIt">support.buffer.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>GitHub Free</td>
+<td>2,000分/月（無料）</td>
+<td>¥0</td>
+<td>月額（無料枠）</td>
+<td><a href="https://docs.github.com/billing/managing-billing-for-github-actions/about-billing-for-github-actions">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>GitHub Pro</td>
+<td>3,000分/月（無料）</td>
+<td>¥0</td>
+<td>月額（無料枠）</td>
+<td><a href="https://docs.github.com/billing/managing-billing-for-github-actions/about-billing-for-github-actions">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>GitHub Team</td>
+<td>3,000分/月（無料）</td>
+<td>¥0</td>
+<td>月額（無料枠）</td>
+<td><a href="https://docs.github.com/billing/managing-billing-for-github-actions/about-billing-for-github-actions">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>GitHub Enterprise Cloud</td>
+<td>50,000分/月（無料）</td>
+<td>¥0</td>
+<td>月額（無料枠）</td>
+<td><a href="https://docs.github.com/billing/managing-billing-for-github-actions/about-billing-for-github-actions">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>Linux 1-core（x64）超過分</td>
+<td>$0.002/分</td>
+<td>¥0.32/分</td>
+<td>従量</td>
+<td><a href="https://docs.github.com/en/billing/reference/actions-runner-pricing">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>Linux 2-core（x64）超過分</td>
+<td>$0.006/分</td>
+<td>¥0.95/分</td>
+<td>従量</td>
+<td><a href="https://docs.github.com/en/billing/reference/actions-runner-pricing">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>Linux 2-core（arm64）超過分</td>
+<td>$0.005/分</td>
+<td>¥0.79/分</td>
+<td>従量</td>
+<td><a href="https://docs.github.com/en/billing/reference/actions-runner-pricing">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>macOS 3/4-core（M1/Intel）超過分</td>
+<td>$0.062/分</td>
+<td>¥9.85/分</td>
+<td>従量</td>
+<td><a href="https://docs.github.com/en/billing/reference/actions-runner-pricing">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>macOS 12-core 超過分</td>
+<td>$0.077/分</td>
+<td>¥12.23/分</td>
+<td>従量</td>
+<td><a href="https://docs.github.com/en/billing/reference/actions-runner-pricing">docs.github.com</a></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>macOS 5-core（M2 Pro）超過分</td>
+<td>$0.102/分</td>
+<td>¥16.20/分</td>
+<td>従量</td>
+<td><a href="https://docs.github.com/en/billing/reference/actions-runner-pricing">docs.github.com</a></td>
+</tr>
+</tbody>
+</table>
+<h3>公式ページで確認できなかったもの（空欄にしない）</h3>
+<ul>
+<li><strong>Devin の ACU 単価（Enterprise）</strong>: ACU は「注文書で設定されたレート」で課金されると記載があるのみで、具体的な単価は公開されていない <a href="https://docs.devin.ai/admin/billing/enterprise">docs.devin.ai</a>。</li>
+<li><strong>Devin の「ACU 1あたり何ができるか」の具体的な定義</strong>: ACU が「エージェントが行う実際の作業量」を表すことは記載されているが、1 ACU で実行可能な具体的なタスク量（例：何行のコード生成、何回のファイル操作など）は明記されていない <a href="https://docs.devin.ai/admin/billing">docs.devin.ai</a>。</li>
+<li><strong>ChatGPT Codex の Pro プラン月額料金</strong>: Pro プランは「Plus の5倍または20倍のレート制限」と記載されているが、具体的な月額料金は記載されていない <a href="https://developers.openai.com/codex/pricing">developers.openai.com</a>。</li>
+<li><strong>Google AI Pro/Ultra の詳細な価格変動情報</strong>: 一部ページで$19.99/$99.99と記載されているが、地域やプロモーションによる変動については完全には確認できていない <a href="https://one.google.com/about/google-ai-plans/">one.google.com</a>。</li>
+<li><strong>Gemini 2.5 Flash TTS の「Gemini 2.5 Flash-Lite」という名称</strong>: 公式ページでは「3.8 Flash-Lite」という表記が見られ、2.5 Flash-Liteという名称の明確な記載は確認できていない <a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev</a>。</li>
+<li><strong>OpenAI GPT-5（無印）の明確な単価</strong>: GPT-5 Chat（gpt-5-chat-latest）の価格は確認できたが、「GPT-5」無印モデルの単独価格表は確認ページ内で完全には特定できていない <a href="https://developers.openai.com/api/docs/pricing">developers.openai.com</a>。</li>
+<li><strong>fal.ai の全Klingモデル網羅的な価格表</strong>: 複数のモデルページ（v2.5 Turbo Pro、v2.6 Pro、v3 Standard、v3 Pro）から価格を抽出したが、fal.ai全体としての統一的な価格表ページは存在せず、モデルごとに個別ページを確認する必要がある <a href="https://fal.ai/pricing">fal.ai</a>。</li>
+<li><strong>Buffer の年払い価格の詳細なチャンネル数別割引</strong>: 1チャンネル分の年払いは確認できたが、複数チャンネル時の年払い割引率の詳細は完全には確認できていない <a href="https://support.buffer.com/articles/buffer-pricing-and-features-6pJrOPuzIt">support.buffer.com</a>。</li>
+</ul>
+<hr />
+<h2>3. GitHub経由で動かしている分（Jules / Codex / Devin / Copilot）</h2>
+<table>
+<thead>
+<tr>
+<th>サービス</th>
+<th>従量の記録</th>
+<th>取り方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jules</td>
+<td><strong>取れない</strong></td>
+<td>うちからは GitHub の Issue 経由で投げている（<code>status/ai_daicho.jsonl</code>）。<strong>投げた回数は数えられるが、消費量を返す口が無い。</strong>（実測：投げた10件・返ってきた9件）</td>
+</tr>
+<tr>
+<td>ChatGPT Codex</td>
+<td><strong>取れない</strong></td>
+<td>同上。投げた6件・返ってきた6件（実測）</td>
+</tr>
+<tr>
+<td>Devin</td>
+<td><strong>取れない</strong></td>
+<td>同上。投げた6件・返ってきた5件（実測）。ACUの残量を返すAPIをこちらは叩いていない</td>
+</tr>
+<tr>
+<td>GitHub Copilot</td>
+<td><strong>取れない</strong></td>
+<td>投げた2件・返ってきた0件（実測）。そもそも起きていない</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td><strong>取れない</strong></td>
+<td>投げた5件・返ってきた0件（実測）。<strong>口が閉じている</strong>（掲示板 ai-kaigi にbotが1体も居ない）</td>
+</tr>
+<tr>
+<td>チャッピー(ChatGPT)</td>
+<td><strong>取れない</strong></td>
+<td>投げた8件・返ってきた0件（実測）</td>
+</tr>
+</tbody>
+</table>
+<p>→ 件数の出どころは <code>status/gaibu_ai/daicho.jsonl</code>。画面は <code>1136-gaibu-ai-daicho.html</code>。</p>
+<hr />
+<h2>4. 為替</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>値</th>
+<th>取り方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>為替レート</td>
+<td><strong>1 USD = 158.86 円</strong></td>
+<td>公称。Xe（<a href="https://www.xe.com/en-us/currencyconverter/convert/?Amount=1&amp;From=USD&amp;To=JPY">https://www.xe.com/en-us/currencyconverter/convert/?Amount=1&amp;From=USD&amp;To=JPY</a>）。2026-09-24時点。<strong>Xeは公的機関ではない。</strong>日本銀行・三菱UFJ等の公表レートでは取り直していない。金額の桁を見るには足りるが、精算に使う数字ではない</td>
+</tr>
+</tbody>
+</table>
+<p>上の §2 の「円換算」列は、すべてこのレートで割り戻している。</p>
+<h3>たまごさんが前に言っていた数字との食い違い（正直に書く）</h3>
+<ul>
+<li><strong>Gemini TTS の「Flash-Lite ¥1.42/分・Flash ¥2.13/分・Live ¥3.63/分」</strong> … 公式料金ページは<strong>分単位ではなくトークン単位</strong>でしか出していない（§2 参照）。<strong>この「◯円／分」は公式ページからは取れなかった。</strong>誰かが秒→トークンで換算した数字だと思われるが、換算の前提（1分＝何トークン）が取れないので、<strong>このファイルには載せていない。</strong></li>
+<li><strong>fal の「Kling ¥88/10秒」</strong> … 公式のモデルページは秒単価で出しており、10秒あたりは モデルによって ¥110〜¥310 になる（§2）。<strong>¥88 に一致するモデルページは見つからなかった。</strong></li>
+</ul>
+<hr />
+<h2>更新のしかた</h2>
+<ul>
+<li>Genspark の実測：<code>gsk account credit usage</code> と <code>gsk me</code>（どちらも0クレジット）</li>
+<li>台帳の件数：<code>python3 tools/gaibu_ai.py</code></li>
+<li>画面：<code>python3 tools/gaibu_ai.py --html</code></li>
+</ul>
+<p style="font-size:12px;color:var(--sub);margin-top:40px">元ファイル：status/AI_NEDAN.md ／ 台帳：<a href="1136-gaibu-ai-daicho.html">外部AIの台帳</a> ／ <a href="index.html">進捗表へ戻る</a></p>
+</div></body></html>

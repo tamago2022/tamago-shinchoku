@@ -69,30 +69,32 @@ if not os.path.exists(CLAUDE):
             CLAUDE = c
             break
 
+# ---- 1158番：claude は必ず関所を通す（2026-09-26）----
+# 同時起動の競合で refreshToken が空を書き戻され鍵ごと消える事故を、
+# 起動口で物理的に止める。上限は status/dojisu_jougen.json の「同時上限」。
+# 関所は引数をそのまま素通しするので、呼ぶ側のコードは1文字も変わらない。
+_KANMON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1158_kanmon.py")
+if os.path.exists(_KANMON):
+    os.environ.setdefault("KANMON_CLAUDE_BIN", CLAUDE)
+    CLAUDE = _KANMON
+
+
 
 
 # ---- 認証トークン（2026-09-05）----
 # `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
 # こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
-def claude_env():
-    """CLIに渡す環境。**環境変数のトークンは原則使わない**（2026-09-05に実測）。
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import claude_auth as _claude_auth
 
-    `CLAUDE_CODE_OAUTH_TOKEN` はキーチェーンの正しい鍵より優先されるので、
-    古い壊れたトークンが1つ残っているだけで工場全体が「期限切れ」になる。
-    キーチェーンを正本にし、環境変数を使いたいときだけ ~/.tamago/use_token を置く。
+
+def claude_env():
+    """正本は tools/claude_auth.py（2026-09-25に1か所へ集約）。
+
+    ここに実体を置くと、4か所のコピーが直すたびにずれる。呼ぶだけにする。
     """
-    env = dict(os.environ)
-    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
-    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
-        return env
-    p = os.path.expanduser("~/.tamago/claude_token")
-    try:
-        t = io.open(p, encoding="utf-8").read().strip()
-        if t:
-            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
-    except Exception:
-        pass
-    return env
+    return _claude_auth.claude_env()
 
 
 def log(msg):
@@ -1291,7 +1293,8 @@ def harvest(q):
             if not os.path.exists(flag):
                 io.open(flag, "w", encoding="utf-8").write(
                     "Claudeのログインが切れています（OAuth session expired）。"
-                    "たまごさんが claude にログインし直すまで発車を止めます。%s\n"
+                    "status/LOGIN.md の1行をターミナルに貼ってEnterを押すと、1年もつ形に入れ替わります。"
+                    "戻ったことはこちらで気づいて、発車も自動で再開します。%s\n"
                     % time.strftime("%Y-%m-%d %H:%M"))
             io.open(os.path.join(REPO, "status", "auth_expired.flag"), "w", encoding="utf-8").write(
                 time.strftime("%Y-%m-%d %H:%M"))
@@ -2087,9 +2090,13 @@ def _main_impl():
       safe_max = m.get("safeMax")
       if safe_max is None:
           # 2026-09-16：「測れないから止まる」は工場を丸ごと止める最も損な止まり方。
-          # machine.jsonが古い/壊れている間も、安全な既定値3本で発車自体は続ける。
-          safe_max = 3
-          log("safeMaxが取れないため既定値3本で発車を続けます")
+          # machine.jsonが古い/壊れている間も、既定値で発車自体は続ける。
+          # ★1163番（2026-09-26）既定値を 3本 → 1本 に下げた。
+          #   実測：19:37:57 に「safeMaxが取れないため既定値3本」が出た直後、
+          #   19:38:10 に2本目が発車している（Macは再起動直後で負荷が高い状態）。
+          #   測れていないときに3本許すのは、推測で増便しているのと同じ。
+          safe_max = 1
+          log("safeMaxが取れないため既定値1本で発車を続けます")
       # たまごさんが進捗表で決めた「同時に走る本数」。マシンの安全上限より小さい方を採る。
       cap = (load(os.path.join(REPO, "status", "launch_cap.json"), {}) or {}).get("cap")
       if isinstance(cap, int):
@@ -2380,7 +2387,27 @@ def launch_one(item, q, alive, safe_max):
     #   していた（882番・883番が実際にこれで出せなかった）。joy-relief-station は
     #   .git 320MB＋登録済みworktree 77件で、切るのに時間がかかりすぎる。
     #   触るのが tamago-shinchoku だけのタスクは item["repo"] でこちらを指す。
-    repo = item.get("repo") or q.get("repo") or "/Users/mac/Desktop/joy-relief-station"
+    #
+    # 2026-09-26（896番・9回目の誤投入で確定）：item["repo"]の設定漏れがあると
+    #   既定でjoy-relief-station側へ配車されてしまい、tamago-shinchoku自身の仕組み
+    #   （renraku.py/sekisho.py/kenpin_gate.py/auto_launcher.py本体等）を触るタスクが
+    #   801, 896×8, 926, 874, 891番と繰り返し誤投入された
+    #   （記録：shared-brain/00_INBOX/routing-fix-joy-relief-station-misroute.md）。
+    #   item["repo"]が無くても、タイトル・本文に工場自身のキーワードがあれば
+    #   自動でこちら（tamago-shinchoku自身）へ倒す。明示された item["repo"] は最優先で尊重する。
+    _repo_explicit = item.get("repo") or q.get("repo")
+    if _repo_explicit:
+        repo = _repo_explicit
+    else:
+        _blob = ((item.get("title") or "") + " " + (item.get("what") or "")
+                 + " " + (item.get("why") or ""))
+        _self_repo_markers = (
+            "tamago-shinchoku", "renraku.py", "sekisho.py", "kenpin_gate.py",
+            "auto_launcher.py", "hikitsugi_gate.py", "failures_ledger.py",
+            "heartbeat.sh", "machine_status_push.sh", "queue.json",
+            "外部連絡", "進捗表", "関所(sekisho)", "kenpin_gate", "auto_launcher",
+        )
+        repo = REPO if any(m in _blob for m in _self_repo_markers) else "/Users/mac/Desktop/joy-relief-station"
     wt_name = item.get("worktree") or ("q%02d-0904" % item.get("n"))
     # 2026-09-06：作業場をリポジトリの外へ出した。
     #   たまごさんの言葉：「ChatGPT（Codex）の一覧にこっちのタスクが出てくる。

@@ -151,6 +151,13 @@ def done_today_ns(items):
     for x in items:
         if x.get("status") != "done":
             continue
+        # ★1055番（2026-09-24）機械が自動で畳んだ票を「今日の完了」に数えない。
+        #   自動検知・憲法点検が出したチケットは、見張りの対象が元に戻れば機械が閉じる。
+        #   それは**誰も何も作っていない**ので、完了の本数に混ぜると数字が嘘になる。
+        if "自動で閉じました" in (x.get("doneNote") or ""):
+            continue
+        if x.get("test") or x.get("keepalive"):
+            continue
         d = str(x.get("finishedAt") or x.get("doneAt") or x.get("updatedAt") or "")[:10]
         if d == today:
             ns.add(x.get("n"))
@@ -251,6 +258,90 @@ LAUNCH_SILENCE_ALERT_STAMP = os.path.join(ST, ".launch_silence_alerted_at")
 # 緑の根拠を「着火があったか」から「**本物が取れたか**」に置き換える。
 # 空回しは1本も数に入れない。取れた=0 なら、何本空回ししていようが赤。
 AUTO_LAUNCH_LOG = os.path.join(ST, "auto_launch.log")
+
+
+# ────────────────────────────────────────────────────────────
+# ★2026-09-24 たまごさん
+#   「今日、工場が何分止まっていたかを数字で出す。」
+#   「★走っているのに何も取れていない、も止まっているのと同じ＝赤。」
+#
+#   数え方（推測を混ぜない・実測だけ）：
+#     ・発車の印＝status/auto-launch-*.log の更新時刻（1本＝1発車）
+#     ・10分以上あいた所を「止まっていた」と数える
+#     ・最後の発車から今までも、10分を超えていれば「まだ止まっている」
+#     ・★空回しだけの時間は「走っていた」に入れない（取れた0本＝赤）
+# ────────────────────────────────────────────────────────────
+def _kyou_no_hassha():
+    """今日の発車時刻（epoch秒）と、そのうち空回しだった本数。"""
+    kyou = time.strftime("%Y-%m-%d")
+    ts, kara = [], 0
+    try:
+        for f in os.listdir(ST):
+            if not (f.startswith("auto-launch-") and f.endswith(".log")):
+                continue
+            p = os.path.join(ST, f)
+            m = os.stat(p).st_mtime
+            if time.strftime("%Y-%m-%d", time.localtime(m)) != kyou:
+                continue
+            ts.append(m)
+            try:
+                with open(p, encoding="utf-8", errors="ignore") as fh:
+                    if "空回し" in fh.read(400):
+                        kara += 1
+            except Exception:
+                pass
+    except Exception:
+        pass
+    ts.sort()
+    return ts, kara
+
+
+def _tomatta_fun(hitokoto=False):
+    """今日の止まっていた分数。hitokoto=True なら1行だけ返す。"""
+    ts, kara = _kyou_no_hassha()
+    if not ts:
+        return "- 🔴 **今日はまだ1本も発車していません**" if hitokoto else \
+            ["- 今日はまだ1本も発車していません"]
+
+    ima = time.time()
+    ana, tot = [], 0.0
+    for a, b in zip(ts, ts[1:]):
+        if b - a > 600:
+            ana.append((a, b, (b - a) / 60.0))
+            tot += (b - a) / 60.0
+    ima_made = (ima - ts[-1]) / 60.0
+    tomatteru_ima = ima_made > 10
+    if tomatteru_ima:
+        tot += ima_made
+
+    honmono = len(ts) - kara
+
+    if hitokoto:
+        if honmono == 0:
+            return ("- 🔴 **今日 %d 本走って、本物は0本（全部 空回し）。"
+                    "止まっていたのは %.0f 分ですが、走っていた時間も全部 赤です。**"
+                    % (len(ts), tot))
+        if tot >= 10:
+            return "- 🟡 今日 止まっていた：**%.0f分**（本物 %d 本／空回し %d 本）" % (
+                tot, honmono, kara)
+        return "- ✅ 今日 止まっていた：%.0f分（本物 %d 本）" % (tot, honmono)
+
+    out = []
+    hh = lambda t: time.strftime("%H:%M", time.localtime(t))
+    out.append("- 今日の発車 **%d本**（本物 %d本／空回し %d本）・最初 %s／最後 %s"
+               % (len(ts), honmono, kara, hh(ts[0]), hh(ts[-1])))
+    out.append("- ★**止まっていた合計：%.0f分（%.1f時間）**" % (tot, tot / 60.0))
+    if ana:
+        out.append("- 10分以上あいた所：")
+        for a, b, m in ana[-8:]:
+            out.append("  - %s → %s　**%.0f分**" % (hh(a), hh(b), m))
+    if tomatteru_ima:
+        out.append("  - %s → いま　**%.0f分（まだ止まっています）**" % (hh(ts[-1]), ima_made))
+    if honmono == 0:
+        out.append("- 🔴 **走った %d 本は全部 空回しです。取れた0本＝走っていた時間も赤。**"
+                   % len(ts))
+        out.append("  - 止まってよいのは「クレジットが天井」のときだけ。それ以外は赤。")
+    return out
 
 
 def toreta_line():
@@ -534,6 +625,36 @@ def build():
     A("**Dispatchは会話の最初に、返事をする前にこの1枚を読む。ルールではなく『今の状態』がここにある。**")
     A("")
     A("## ★止まっていないか（ここが赤なら他を全部止めてでも直す）")
+    try:
+        _tf = _tomatta_fun(hitokoto=True)
+        if _tf:
+            A(_tf)
+    except Exception:
+        pass
+    # ★2026-09-24（1081番）メイン不在の門。たまごさん
+    #   「タイトルがあるのにメインのものがないだとか、そういうのはもうゼロにして。」
+    try:
+        _mk = json.load(open(os.path.join(ST, "main_kanmon.json"), encoding="utf-8"))
+        if _mk.get("yometa"):
+            if _mk.get("tanaNiDeteShimauN"):
+                A("- 🔴 **メイン不在のカードが棚に出ています：%d件（%d棚）**"
+                  % (_mk["tanaNiDeteShimauN"], _mk["karappoTanaN"]))
+            else:
+                A("- ✅ メイン不在のカードは棚に出ていません（門で止めています）")
+    except Exception:
+        pass
+    # ★2026-09-24（1082番）戻せる台帳。たまごさん
+    #   「間違えて変えてしまうものもあるかもしれないけれど、すぐ戻れるようにしといてね。」
+    try:
+        _md = json.load(open(os.path.join(ST, "modoseru.json"), encoding="utf-8"))
+        if _md.get("modosenaiN"):
+            A("- 🔴 **戻せないものが %d 件あります**（戻せる %d 件）"
+              % (_md["modosenaiN"], _md["modoseruN"]))
+        else:
+            A("- ✅ 本番に出した %d 件は全部 戻せます（戻れる点 %s）"
+              % (_md.get("zenN", 0), "／".join(_md.get("anzenTen") or []) or "—"))
+    except Exception:
+        pass
     # 1018番：一番上は「本物が取れているか」。他の行が全部緑でも、ここが赤なら工場は無産。
     A(toreta_line())
     if dep_h is None:
@@ -554,6 +675,15 @@ def build():
         # 1018番：この緑は「着火があった」しか意味しない（空回しでも点く）。
         # 工場が産んでいるかどうかは上の「稼ぎ」の行が答える。ここで誤解させない。
         A("- ✅ 着火：10分以内に動いている（空回しを含む。産んだ本数は上の「稼ぎ」を見る）")
+    # ★2026-09-24（命綱）：tools/inochi.py が「自分では絶対に直せない」と判定した1点だけ、
+    #   ここに出す。それ以外（runner・トンネル・index.lock・列の積み直し等）はあちらが
+    #   黙って直すので、ここには出さない。人に見せる＝人の手が要るとき、に意味を寄せる。
+    try:
+        import inochi as _inochi
+        for _l in _inochi.aka_lines():
+            A("- 🔴 **【人の手が要る】%s**" % _l)
+    except Exception:
+        pass
     for line in shikumi_lines:
         A("- 🔴 **%s**" % line)
     for line in stale_lines:
@@ -574,6 +704,15 @@ def build():
     else:
         A("- 今週の配分：未計測")
     A("")
+    # ★2026-09-24 たまごさん「今日、工場が何分止まっていたかを数字で出す」
+    try:
+        A("## 今日 止まっていた時間")
+        for ln in _tomatta_fun():
+            A(ln)
+        A("")
+    except Exception as _e:
+        A("- 止まっていた時間：数えられませんでした（%s）" % _e)
+        A("")
     A("## 今すぐ走っているもの")
     if running:
         for x in running:

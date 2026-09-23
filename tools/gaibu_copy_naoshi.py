@@ -65,6 +65,18 @@ GATE = os.path.join(STATUS, ".gaibu_copy_naoshi_last")
 FORCE = os.path.join(STATUS, ".gaibu_copy_naoshi_force")
 LOCK = os.path.join(STATUS, ".gaibu_copy_naoshi.lock")
 
+# ★1049番（2026-09-24）：手書きの下書き置き場。
+#   なぜ要るか（実測）：09-23 06:25 の回で「直せなかった19件」のうち3件の理由が
+#   **「題名が英語の原題のまま」**だった。この係は whisper（コピー）しか書き戻さないので、
+#   何度書き直しても判定は題名で落ち続ける＝**永久に片づかない列**になっていた。
+#   さらに「水道水・テンプレの語」で落ちた分も、機械の書き直しが2回とも同じ水たまりに
+#   落ちて座り続けていた。
+#   → 人（またはサンドボックス側のセッション）が手で書いた案をここに置けば、
+#     この係が**AIを呼ばずに**それを採る。題名も一緒に置けば題名も直す。
+#     置いた案も必ず同じ判定（nippou.judge）を通す。通らなければ書き戻さない。
+TEGAKI_DIR = os.path.join(STATUS, "copy_tegaki")
+TEGAKI_DONE = os.path.join(TEGAKI_DIR, "done")
+
 MORNING_HOUR = 6          # 朝6時以降の最初の便で走る
 LOCK_STALE_SEC = 60 * 60  # 60分以上握ったままのロックは詰まりとみなす
 DEADLINE_SEC = 20 * 60    # 1回の持ち時間。超えたら残りは次の回へ（Macを占有し続けない）
@@ -79,20 +91,28 @@ CLAUDE = os.environ.get("CLAUDE_BIN") or (
     os.path.expanduser("~/.local/bin/claude")
     if os.path.exists(os.path.expanduser("~/.local/bin/claude")) else "claude")
 
+# ---- 1158番：claude は必ず関所を通す（2026-09-26）----
+# 同時起動の競合で refreshToken が空を書き戻され鍵ごと消える事故を、
+# 起動口で物理的に止める。上限は status/dojisu_jougen.json の「同時上限」。
+# 関所は引数をそのまま素通しするので、呼ぶ側のコードは1文字も変わらない。
+_KANMON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1158_kanmon.py")
+if os.path.exists(_KANMON):
+    os.environ.setdefault("KANMON_CLAUDE_BIN", CLAUDE)
+    CLAUDE = _KANMON
+
+
+
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import claude_auth as _claude_auth
+
 
 def claude_env():
-    """キーチェーンを正本にする（command_ingest.py と同じ理由・2026-09-05の実測）。"""
-    env = dict(os.environ)
-    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
-    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
-        return env
-    try:
-        t = io.open(os.path.expanduser("~/.tamago/claude_token"), encoding="utf-8").read().strip()
-        if t:
-            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
-    except Exception:
-        pass
-    return env
+    """正本は tools/claude_auth.py（2026-09-25に1か所へ集約）。
+
+    ここに実体を置くと、4か所のコピーが直すたびにずれる。呼ぶだけにする。
+    """
+    return _claude_auth.claude_env()
 
 
 # ---------------------------------------------------------------- 書き直しの注文書
@@ -234,6 +254,13 @@ def ask_claude(title, copy, url, diag):
     """claude -p に書き直させる。通らなければ (None, 理由) を返す。嘘のログを書かない。"""
     if CLAUDE_DOWN[0]:
         return None, CLAUDE_DOWN[0]
+    # 2026-09-25：切れていると分かっているのに叩かない。
+    # 叩くと1件あたり150秒だまって返らず、そのうえ「失敗」が25件ぶん積み上がる。
+    # 工場が既に立てている札（status/no_launch.flag）を先に見て、待ちに戻す。
+    _ng = _claude_auth.login_ng()
+    if _ng:
+        CLAUDE_DOWN[0] = "claudeの認証が切れている（%s・叩かずに待ちへ戻しました）" % _ng
+        return None, CLAUDE_DOWN[0]
     prompt = PROMPT % {"title": title or "（題名なし）",
                        "copy": copy or "（まだ無い）",
                        "url": url or "（無い）"}
@@ -359,6 +386,57 @@ def patch_copy(url, key, row_id, text):
         return json.loads(r.read().decode("utf-8") or "[]"), r.status
 
 
+def patch_title(url, key, row_id, text):
+    """admin_stock の title だけを1件ずつ書き戻す。丸ごと一括更新はしない。
+    ★題名を触るのはここだけ。手書きの下書きに title が入っていたときしか呼ばない。"""
+    q = urllib.parse.urlencode({"id": "eq." + str(row_id)})
+    body = json.dumps({"title": text}, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        url + "/rest/v1/admin_stock?" + q, data=body, method="PATCH",
+        headers={"apikey": key, "Authorization": "Bearer " + key,
+                 "Content-Type": "application/json",
+                 "Prefer": "return=representation"},
+    )
+    with urllib.request.urlopen(req, timeout=45) as r:
+        return json.loads(r.read().decode("utf-8") or "[]"), r.status
+
+
+def load_tegaki():
+    """手書きの下書きを読む。{id: {"whisper":..., "title":..., "by":..., "path":...}}
+
+    ★読むだけ。ここでは消さない（書き戻しが通ってから retire_tegaki で片づける）。
+    """
+    out = {}
+    if not os.path.isdir(TEGAKI_DIR):
+        return out
+    for fn in sorted(os.listdir(TEGAKI_DIR)):
+        if not fn.endswith(".json"):
+            continue
+        p = os.path.join(TEGAKI_DIR, fn)
+        try:
+            with io.open(p, encoding="utf-8") as f:
+                d = json.load(f)
+        except Exception:
+            continue
+        rid = str(d.get("id") or "").strip()
+        if not rid:
+            continue
+        d["path"] = p
+        out[rid] = d
+    return out
+
+
+def retire_tegaki(d):
+    """使い終わった下書きを done/ へ移す。**消さない**（戻せる形で残す）。"""
+    try:
+        os.makedirs(TEGAKI_DONE, exist_ok=True)
+        src = d.get("path")
+        if src and os.path.exists(src):
+            os.replace(src, os.path.join(TEGAKI_DONE, os.path.basename(src)))
+    except Exception:
+        pass
+
+
 def find_write_key(diag):
     """**書ける鍵**を探す。数える係は「読めればいい」ので最初に見つかった鍵で止まるが、
     こちらは書き戻すので、置き場を全部見てから一番強い鍵を採る。
@@ -443,8 +521,17 @@ def run(since_days=14):
         "red": [],
         "diag": [],
         "history": (prev.get("history") or [])[:HISTORY_KEEP],
+        # ★1049番：手書きの下書きから直した分。題名を直したものは別に数える。
+        "titleFixed": 0,
+        "titleChanges": [],
+        "byHand": 0,
+        "tegakiWaiting": 0,
     }
     diag = out["diag"]
+    tegaki = load_tegaki()
+    out["tegakiWaiting"] = len(tegaki)
+    if tegaki:
+        diag.append("手書きの下書きが %d件 置いてある（AIを呼ばずにこちらを採る）" % len(tegaki))
 
     url, key, keyname, where = find_write_key(diag)
     if not url:
@@ -489,7 +576,34 @@ def run(since_days=14):
             log("持ち時間切れ。%d件目以降は次の回へ" % i)
             break
         log("  %d/%d %s" % (i, min(len(targets), MAX_PER_RUN), (t["title"] or "")[:40]))
-        text, why_ng = ask_claude(t["title"], t["copy"], t["url"], diag)
+
+        # ── 手書きの下書きがあれば、AIを呼ばずにそれを採る（1049番） ──────────
+        #    題名も入っていれば題名から先に直す。題名が英語のままだと、
+        #    コピーを何回書き直しても判定は題名で落ちる＝永久に片づかないため。
+        hand = tegaki.get(str(t["id"]))
+        judge_title = t["title"]
+        if hand:
+            new_title = str(hand.get("title") or "").strip()
+            if new_title and new_title != (t["title"] or ""):
+                try:
+                    _rep, st_t = patch_title(url, key, t["id"], new_title)
+                    out["titleFixed"] = out.get("titleFixed", 0) + 1
+                    out["titleChanges"].append(
+                        {"id": t["id"], "was": t["title"], "now": new_title,
+                         "at": now.strftime("%Y-%m-%d %H:%M"), "http": st_t,
+                         "by": hand.get("by") or "手書き"})
+                    judge_title = new_title
+                except Exception as e:
+                    out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
+                                         "was": t["copy"], "why": t["why"],
+                                         "reason": "題名を書き戻せなかった（%s）" % type(e).__name__,
+                                         "draft": new_title})
+                    continue
+            text, why_ng = str(hand.get("whisper") or "").strip(), None
+            if not text:
+                why_ng = "手書きの下書きに whisper が入っていない"
+        else:
+            text, why_ng = ask_claude(t["title"], t["copy"], t["url"], diag)
         if not text:
             # 書き手が1人だとその1人が寝た日に0件になる。控えの口へ降りる。
             text2, why2 = ask_fallback(t["title"], t["copy"], t["url"], diag)
@@ -502,7 +616,15 @@ def run(since_days=14):
                                  "was": t["copy"], "why": t["why"], "reason": why_ng})
             continue
         # 書き直したものを**同じ判定にもう一度かける。**水道水のままなら書き戻さない。
-        again = nippou.judge(t["title"], text)
+        # ★手書きの下書きも素通りさせない。同じ関所を通す。
+        again = nippou.judge(judge_title, text)
+        if again and hand:
+            # 手書きが落ちたら、AIで上書きしない。落ちた理由をそのまま残す（黙って捨てない）。
+            out["skips"].append({"id": t["id"], "date": t["date"], "title": judge_title,
+                                 "was": t["copy"], "why": t["why"],
+                                 "reason": "手書きの下書きが判定で落ちた（%s）：%s" % (again, text),
+                                 "draft": text})
+            continue
         if again:
             # 1回だけ、どこが引っかかったかを伝えて書き直させる（黙って捨てない）
             t2 = dict(t)
@@ -535,11 +657,26 @@ def run(since_days=14):
                                  "reason": "書き戻せない（%s）" % type(e).__name__,
                                  "draft": text})
             continue
-        ch = {"id": t["id"], "date": t["date"], "title": t["title"],
+        ch = {"id": t["id"], "date": t["date"], "title": judge_title,
               "was": t["copy"], "now": text, "why": t["why"],
-              "url": t["url"], "at": now.strftime("%Y-%m-%d %H:%M"), "http": st}
+              "url": t["url"], "at": now.strftime("%Y-%m-%d %H:%M"), "http": st,
+              "by": (hand.get("by") or "手書き") if hand else "機械"}
         out["changes"].append(ch)
         out["fixed"] += 1
+        if hand:
+            out["byHand"] += 1
+            retire_tegaki(hand)
+
+    # ★置いたのに一度も呼ばれなかった手書きを、黙って飲み込まない（1049番）。
+    #   直近 since_days 日から外れた行は pick_targets に出てこないので、
+    #   下書きだけが置き場で永久に待つ事故が起きる。数えて理由ごと出す。
+    picked = {str(t["id"]) for t in targets}
+    orphan = [k for k in tegaki if k not in picked]
+    if orphan:
+        out["tegakiOrphan"] = orphan
+        out["red"].append(
+            "手書きの下書きが%d件、正本の手つかず一覧に出てこない"
+            "（直近%d日から外れた／既に直っている／idが違う のどれか）" % (len(orphan), since_days))
 
     out["skipped"] = len(out["skips"])
     out["fixedTotal"] += out["fixed"]

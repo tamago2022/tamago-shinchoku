@@ -44,8 +44,395 @@ def _fetch_paths(payload):
     io.open(os.path.join(out,"_log.txt"),"w",encoding="utf-8").write("%s\n\n%s\n"%(time.strftime("%Y-%m-%d %H:%M:%S"),"\n".join(log)))
     return {"ok":bool(got),"got":got,"log":log,"totalYen":0.0}
 
+# ===========================================================================
+# ★1122番（2026-09-24）ここから下は「口を増やす」ための追記。
+#   なぜここに足すか：gaibu_runner は kind=jrsdata のとき **このファイルを
+#   importlib.reload する**。だから runner を触らずに口を増やせる（runnerを
+#   書き換えると工場が死ぬ事故が 09-24 03:38 に起きている）。
+#   足したのは3つだけ。どれも「白名簿」で外に出られる先を絞ってある。
+#     op=shirabe … 見るだけ（ファイルの有無・git・鍵の有無。★値は出さない）
+#     op=patch   … 正本リポジトリのファイルを差し替えて commit+push する
+#     op=tool    … tamago-shinchoku の中の白名簿の道具を1本だけ走らせる
+# ===========================================================================
+TOOL_WHITELIST = ("kohyou_osu.py", "kohyou_kanshi.py", "og_kanmon.py",
+                  "lovable_mcp_bootstrap.py", "kohyou_ima.py",
+                  # ★1130番：覆面客（Genspark）はMac側でしか gsk に届かない。
+                  #   サンドボックスから通すための口。クレジットの前後は
+                  #   道具の側が status/gsk_daicho.jsonl に必ず書く。
+                  "fukumen_kyaku.py", "fukumen.py")
+
+
+def _shinchoku():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _op_shirabe(payload):
+    """見るだけ。鍵は「有る/無い」と持っている項目名だけ返す（値は返さない）。"""
+    out = {"ok": True, "totalYen": 0.0}
+    tok = os.path.expanduser("~/.tamago/lovable_oauth.json")
+    if os.path.exists(tok):
+        try:
+            d = json.load(io.open(tok, encoding="utf-8"))
+            out["lovableToken"] = {"exists": True, "keys": sorted(d.keys()),
+                                   "sizes": {k: len(str(v)) for k, v in d.items()},
+                                   "mtime": time.strftime("%Y-%m-%d %H:%M:%S",
+                                                          time.localtime(os.path.getmtime(tok)))}
+        except Exception as e:
+            out["lovableToken"] = {"exists": True, "error": str(e)}
+    else:
+        out["lovableToken"] = {"exists": False}
+    rc, o, e = _git(["status", "--porcelain"])
+    out["cloneDirty"] = (o or "").strip().splitlines()[:40]
+    rc, o, e = _git(["rev-parse", "HEAD"])
+    out["cloneHead"] = (o or "").strip()[:12]
+    rc, o, e = _git(["log", "-1", "--format=%s"])
+    out["cloneHeadSubject"] = (o or "").strip()
+    out["locks"] = []
+    gd = os.path.join(CLONE, ".git")
+    for root, dirs, files in os.walk(gd):
+        for f in files:
+            if f.endswith(".lock"):
+                out["locks"].append(os.path.relpath(os.path.join(root, f), gd))
+        if len(out["locks"]) > 30:
+            break
+    # ★grep は既定で origin/main を見る。手元の作業ツリーは 2026-09-14 で
+    #   止まっていて行番号も中身もズレる（1122番で実測）。
+    rev = payload.get("rev", "origin/main")
+    for p in (payload.get("grep") or []):
+        cmd = ["grep", "-n", p] + ([rev] if rev else []) + ["--"] + list(payload.get("paths") or ["src"])
+        rc, o, e = _git(cmd)
+        out.setdefault("grep", {})[p] = (o or e or "")[:6000]
+    return out
+
+
+def _op_patch(payload):
+    """正本リポジトリのファイルを差し替えて commit+push する。
+
+    payload = {"op":"patch",
+               "edits":[{"path":"src/x.tsx","find":"...","replace":"...","count":1}, ...],
+               "message":"...", "push":true}
+    ・find が期待した回数だけ現れない edit は **1つも書かずに止める**（全部か無しか）。
+    ・.git/*.lock は 60秒より古いものだけ外す（957番と同じ理由）。
+    """
+    edits = payload.get("edits") or []
+    if not edits:
+        return {"ok": False, "error": "edits が空です", "totalYen": 0.0}
+    if not os.path.isdir(CLONE):
+        return {"ok": False, "error": "clone なし", "totalYen": 0.0}
+    log = []
+    plan = []
+    for ed in edits:
+        p = os.path.join(CLONE, ed["path"])
+        if not os.path.isfile(p):
+            return {"ok": False, "error": "ファイルが無い: %s" % ed["path"],
+                    "log": log, "totalYen": 0.0}
+        body = io.open(p, encoding="utf-8").read()
+        want = int(ed.get("count", 1))
+        got = body.count(ed["find"])
+        if got != want:
+            return {"ok": False, "error": "見つかった数が違う: %s 期待%d 実際%d"
+                    % (ed["path"], want, got), "log": log, "totalYen": 0.0}
+        plan.append((p, body.replace(ed["find"], ed["replace"]), ed["path"]))
+        log.append("下見OK %s (%d件)" % (ed["path"], got))
+    for p, newbody, rel in plan:
+        with io.open(p, "w", encoding="utf-8") as f:
+            f.write(newbody)
+        log.append("書いた %s" % rel)
+    gd = os.path.join(CLONE, ".git")
+    for root, dirs, files in os.walk(gd):
+        for f in files:
+            if not f.endswith(".lock"):
+                continue
+            fp = os.path.join(root, f)
+            try:
+                if time.time() - os.path.getmtime(fp) > 60:
+                    os.remove(fp)
+                    log.append("古いロックを外した %s" % os.path.relpath(fp, gd))
+            except Exception:
+                pass
+    if not payload.get("push", True):
+        return {"ok": True, "log": log, "pushed": False, "totalYen": 0.0}
+    for _, _, rel in plan:
+        rc, o, e = _git(["add", "--", rel])
+        log.append("add %s rc=%d %s" % (rel, rc, (e or "")[:120]))
+    msg = payload.get("message") or "1122番: コピーの出どころを1本にした"
+    rc, o, e = _git(["commit", "-m", msg])
+    log.append("commit rc=%d %s" % (rc, (o or e or "")[-300:]))
+    rc, o, e = _git(["fetch", "origin", "main"], t=300)
+    log.append("fetch rc=%d" % rc)
+    rc, o, e = _git(["merge", "--no-edit", "origin/main"])
+    log.append("merge rc=%d %s" % (rc, (o or e or "")[:200]))
+    if rc != 0:
+        _git(["merge", "--abort"])
+        return {"ok": False, "error": "合流できないので戻した", "log": log, "totalYen": 0.0}
+    rc, o, e = _git(["push", "origin", "HEAD:main"], t=300)
+    log.append("push rc=%d %s" % (rc, (o or "")[-200:] + (e or "")[-300:]))
+    rc2, sha, _ = _git(["rev-parse", "HEAD"])
+    return {"ok": rc == 0, "log": log, "pushed": rc == 0,
+            "sha": (sha or "").strip()[:12], "totalYen": 0.0}
+
+
+def _op_tool(payload):
+    """tamago-shinchoku の中の白名簿の道具を1本だけ走らせる。"""
+    name = payload.get("name") or ""
+    if name not in TOOL_WHITELIST:
+        return {"ok": False, "error": "白名簿に無い道具です: %s" % name, "totalYen": 0.0}
+    sh = _shinchoku()
+    import sys as _sys
+    cmd = [_sys.executable, os.path.join(sh, "tools", name)] + list(payload.get("args") or [])
+    r = subprocess.run(cmd, cwd=sh, capture_output=True, text=True,
+                       timeout=int(payload.get("timeout", 300)))
+    return {"ok": r.returncode == 0, "rc": r.returncode,
+            "stdout": (r.stdout or "")[-6000:], "stderr": (r.stderr or "")[-3000:],
+            "totalYen": 0.0}
+
+
+MIRU_ALLOW = ("https://joy-relief-station.lovable.app",
+              "https://tamago2022.github.io",
+              # ★1140番（2026-09-24・お金の便）公式の料金ページだけ足す。GETのみ・課金0。
+              #   サンドボックスから stripe.com / open.er-api.com へ web_fetch が
+              #   180秒で必ずタイムアウトする（実測3回）。「出典URLを必ず添える」を
+              #   守るには工場から取るしかない。読むだけ・書かない・鍵を使わない。
+              "https://stripe.com/jp/pricing",
+              "https://stripe.com/pricing",
+              "https://open.er-api.com/v6/latest/USD",
+              "https://docs.x.ai/developers/pricing")
+
+
+def _op_miru(payload):
+    """★本番のページを工場（Mac）から実際に叩いて、返ってきたHTMLを見る。
+    サンドボックスからは出られないので、目で確かめる代わりがこれしかない。
+    行き先は白名簿の2つだけ。GETのみ。"""
+    import urllib.request
+    url = payload.get("url") or ""
+    if not any(url.startswith(a) for a in MIRU_ALLOW):
+        return {"ok": False, "error": "白名簿の外です: %s" % url, "totalYen": 0.0}
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"})
+    t0 = time.time()
+    try:
+        with urllib.request.urlopen(req, timeout=int(payload.get("timeout", 40))) as r:
+            body = r.read().decode("utf-8", "ignore")
+            code, hdr = r.getcode(), dict(r.headers)
+    except Exception as e:
+        return {"ok": False, "error": "%s: %s" % (type(e).__name__, str(e)[:200]),
+                "url": url, "totalYen": 0.0}
+    out = {"ok": code == 200, "httpCode": code, "url": url, "bytes": len(body),
+           "sec": round(time.time() - t0, 1),
+           "deploymentId": hdr.get("x-deployment-id") or hdr.get("X-Deployment-Id"),
+           "totalYen": 0.0}
+    for pat in (payload.get("sagasu") or []):
+        out.setdefault("sagasu", {})[pat] = body.count(pat)
+    if payload.get("head"):
+        i = body.find("</head>")
+        out["head"] = body[:i if i > 0 else 4000][:int(payload.get("head"))]
+    if payload.get("save"):
+        sh = os.path.join(_shinchoku(), payload["save"])
+        os.makedirs(os.path.dirname(sh), exist_ok=True)
+        io.open(sh, "w", encoding="utf-8").write(body)
+        out["saved"] = payload["save"]
+    return out
+
+
+def _op_kazu(payload):
+    """★1122番：admin_stock 側に「2本目のコピー」を持っている曲を数える。
+    GETだけ。1件も書かない。鍵の値は返さない。"""
+    import urllib.parse
+    import urllib.request
+    sys_path = os.path.join(_shinchoku(), "tools")
+    import sys as _sys
+    if sys_path not in _sys.path:
+        _sys.path.insert(0, sys_path)
+    diag = []
+    import gaibu_copy_nippou as nippou
+    url, key, keyname, where = nippou.find_supabase(diag)
+    if not url:
+        return {"ok": False, "error": "Supabaseの鍵が見つかりません", "diag": diag[-3:],
+                "totalYen": 0.0}
+    q = urllib.parse.urlencode({
+        "kind": "eq.cover-guide", "whisper": "not.is.null",
+        "select": "ref,whisper", "limit": "5000"})
+    req = urllib.request.Request(url + "/rest/v1/admin_stock?" + q, headers={
+        "apikey": key, "Authorization": "Bearer " + key})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        rows = json.loads(r.read().decode("utf-8") or "[]")
+    rows = [x for x in rows if (x.get("whisper") or "").strip()]
+    out = {"ok": True, "keyName": keyname, "futatsuAru": len(rows),
+           "rei": [{"ref": x.get("ref"), "len": len((x.get("whisper") or ""))}
+                   for x in rows[:12]], "totalYen": 0.0}
+    if payload.get("save"):
+        sh = os.path.join(_shinchoku(), payload["save"])
+        os.makedirs(os.path.dirname(sh), exist_ok=True)
+        with io.open(sh, "w", encoding="utf-8") as f:
+            json.dump(rows, f, ensure_ascii=False, indent=1)
+        out["saved"] = payload["save"]
+    return out
+
+
+def _op_kazoeru(payload):
+    """★1123番：正本(origin/main)の大きいファイルを工場側で「数える」だけの口。
+    読むだけ・書くのは payload["save"] を指定したときの status/ 配下だけ。
+    payload = {"op":"kazoeru","path":"src/lib/coverGuide.ts",
+               "patterns":{"note":"note:\\s*\""},"save":"status/xxx.json",
+               "extract":"id:\\s*\"([^\"]+)\""}
+    """
+    import re
+    path = payload.get("path") or ""
+    if not path.startswith("src/"):
+        return {"ok": False, "error": "src/ の中だけです", "totalYen": 0.0}
+    if not os.path.isdir(CLONE):
+        return {"ok": False, "error": "clone なし", "totalYen": 0.0}
+    rc, body, e = _git(["show", "origin/main:%s" % path], t=300)
+    if rc != 0 or body is None:
+        return {"ok": False, "error": "読めない: %s" % (e or "")[:200], "totalYen": 0.0}
+    out = {"ok": True, "path": path, "bytes": len(body.encode("utf-8")),
+           "lines": len(body.splitlines()), "kazu": {}, "totalYen": 0.0}
+    for name, pat in (payload.get("patterns") or {}).items():
+        out["kazu"][name] = len(re.findall(pat, body))
+    ex = payload.get("extract")
+    if ex:
+        vals = re.findall(ex, body)
+        out["extractedCount"] = len(vals)
+        out["rei"] = vals[:20]
+        if payload.get("save"):
+            sh = os.path.join(_shinchoku(), payload["save"])
+            os.makedirs(os.path.dirname(sh), exist_ok=True)
+            with io.open(sh, "w", encoding="utf-8") as f:
+                json.dump(vals, f, ensure_ascii=False)
+            out["saved"] = payload["save"]
+    return out
+
+
+# ===========================================================================
+# ★1130番（2026-09-24）op=okikae — 「origin/main の中身を読んで、直して、
+#   GitHub Contents API で main に置き直す」1本。
+#
+#   なぜ _op_patch を使わないか（★事故を踏む道だから）：
+#     ・手元クローンの HEAD は 2026-09-14 で止まっていて、未コミットが数百件ある。
+#     ・_op_patch は「作業ツリーのファイル」を直して `git commit -m msg`（パス無し）
+#       するので、**索引に載っている古い中身を巻き込んで commit しうる。**
+#     ・commit + merge + push の3段があり、途中で衝突すると止まる。
+#
+#   okikae は手元クローンの HEAD にも索引にも触らない：
+#     ① `git show origin/main:<path>` で**いまの正本**を読む
+#     ② find/replace を当てる（★期待した件数と違ったら1ファイルも書かずに止める）
+#     ③ blob sha を `git rev-parse origin/main:<path>` で取り、Contents API に PUT
+#   ＝ 6.5MB の coverGuide.ts も通る（_965 側の1MBの栓は「公開用」の別の口の話）。
+# ===========================================================================
+def _op_okikae(payload):
+    import base64 as _b64
+    import sys as _sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in _sys.path:
+        _sys.path.insert(0, here)
+    import _965_keijiban as kj  # _req / API / ALLOW_REPO / github_watch
+    import github_watch
+
+    repo = payload.get("repo") or "tamago2022/joy-relief-station"
+    if repo not in kj.ALLOW_REPO:
+        return {"ok": False, "error": "白名簿の外の repo です", "totalYen": 0.0}
+    branch = payload.get("branch") or "main"
+    ref = payload.get("ref") or "origin/main"
+    files = payload.get("files") or []
+    if not files:
+        return {"ok": False, "error": "files が空です", "totalYen": 0.0}
+    if not os.path.isdir(CLONE):
+        return {"ok": False, "error": "clone なし", "totalYen": 0.0}
+    if payload.get("fetch"):
+        _git(["fetch", "origin", branch], t=150)
+
+    log = []
+    plan = []
+    # ── ①②下見：全部当たってから、はじめて1件目を送る（全部か無しか）
+    for f in files:
+        path = f["path"]
+        rc, body, e = _git(["show", "%s:%s" % (ref, path)], t=180)
+        if rc != 0 or body is None:
+            return {"ok": False, "error": "読めない: %s" % path, "log": log, "totalYen": 0.0}
+        new = body
+        for ed in (f.get("edits") or []):
+            want = int(ed.get("count", 1))
+            got = new.count(ed["find"])
+            if got != want:
+                return {"ok": False, "log": log, "totalYen": 0.0,
+                        "error": "見つかった数が違う: %s 期待%d 実際%d ／ %s"
+                                 % (path, want, got, ed["find"][:80])}
+            new = new.replace(ed["find"], ed["replace"])
+        if new == body:
+            return {"ok": False, "error": "中身が変わらない: %s" % path,
+                    "log": log, "totalYen": 0.0}
+        rc, sha, e = _git(["rev-parse", "%s:%s" % (ref, path)])
+        if rc != 0:
+            return {"ok": False, "error": "blob sha が取れない: %s" % path,
+                    "log": log, "totalYen": 0.0}
+        plan.append((path, new, (sha or "").strip()))
+        log.append("下見OK %s (%d字→%d字)" % (path, len(body), len(new)))
+
+    # ── ③送る
+    token = github_watch.gh_token()
+    last = None
+    for path, new, blobsha in plan:
+        raw = new.encode("utf-8")
+        body = {"message": payload.get("message") or "1130番: 丸投げ導線と唐突なアンケートを直した",
+                "content": _b64.b64encode(raw).decode("ascii"),
+                "branch": branch, "sha": blobsha}
+        code, d = kj._req("%s/repos/%s/contents/%s" % (kj.API, repo, path),
+                          token, "PUT", body, timeout=120)
+        ok = code in (200, 201)
+        last = ((d or {}).get("commit") or {}).get("sha") or last
+        log.append("PUT %s http=%s %d bytes" % (path, code, len(raw)))
+        if not ok:
+            return {"ok": False, "error": "PUT 失敗 %s" % path, "log": log,
+                    "sha": last, "totalYen": 0.0}
+    return {"ok": True, "log": log, "sha": (last or "")[:40], "totalYen": 0.0}
+
+
+def _op_jitsugaku(payload):
+    """★1140番（2026-09-24・お金の便）音声案内の「実額」を読むだけの口。
+
+    行き先も中身も1つに固定してある：
+      URL  = voice-session の Edge Function ただ1つ（他のURLは受け付けない）
+      本文 = {"action":"status"} ただ1つ（create も report も送れない＝1円も出ない）
+    返るのは 件数・秒数・金額だけ。個人情報も鍵も返らない。
+    """
+    import urllib.request
+    URL = "https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session"
+    anon = payload.get("anonKey") or ""
+    data = json.dumps({"action": "status"}).encode("utf-8")
+    headers = {"Content-Type": "application/json"}
+    if anon:
+        headers["apikey"] = anon
+        headers["Authorization"] = "Bearer %s" % anon
+    req = urllib.request.Request(URL, data=data, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=int(payload.get("timeout", 30))) as r:
+            return {"ok": True, "httpCode": r.getcode(),
+                    "body": r.read().decode("utf-8", "ignore")[:4000], "totalYen": 0.0}
+    except Exception as e:
+        body = ""
+        try:
+            body = e.read().decode("utf-8", "ignore")[:1000]
+        except Exception:
+            pass
+        return {"ok": False, "error": "%s: %s" % (type(e).__name__, str(e)[:200]),
+                "body": body, "totalYen": 0.0}
+
+
+OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool,
+       "miru": _op_miru, "kazu": _op_kazu,
+       "kazoeru": _op_kazoeru, "okikae": _op_okikae,
+       "jitsugaku": _op_jitsugaku}
+
+
 def run_job(payload=None):
     payload=payload or {}
+    op = payload.get("op")
+    if op in OPS:
+        try:
+            return OPS[op](payload)
+        except Exception as e:
+            return {"ok": False, "error": "%s: %s" % (type(e).__name__, e), "totalYen": 0.0}
     if payload.get("files") or payload.get("bin"):
         return _fetch_paths(payload)
     log=[];os.makedirs(OUT,exist_ok=True);got=[]

@@ -35,8 +35,11 @@
   ・**日が変わった最初の便で走る。**＝深夜0時すぎ。たまごさんの「最後12時に」。
   ・**入れた行は全部 status/nagekomi_ireta.jsonl に控える。**`--modoshi <便番号>` で
     その便で入れた分**だけ**を消す。他人の行は1文字も触らない。
-  ・**棚が指定されていないものは入れない。**「行き先未定」のまま置いて、進捗表に出す。
-  ・**関所を通らなかったものは入れない。**理由をそのまま残す。黙って飲み込まない。
+  ・★**1043番：どんな中身でも受ける。「入れられない」で止めない。**
+    箱の役目は「あとで実装できるように放り込んでおく」こと。足りないものは
+    「◯◯が未定」と印をつけて置くだけ。棚が未定でも、題名が書けなくても、捨てない。
+    **入れられないのは「URLもひとことも両方空」のときだけ。**
+  ・**関所を通らなかった文は棚へ入れない**が、投げ込み自体は「文が未定」として残す。
   ・鍵の値はこのファイルから一歩も外へ出さない（ログにも報告にも出さない）。
 
 ------------------------------------------------------------------
@@ -88,6 +91,7 @@ import gaibu_copy_naoshi as naoshi      # noqa: E402  コピーを書く口・�
 import gaibu_copy_nippou as nippou      # noqa: E402  水道水の判定（正本）
 import oni_gate                         # noqa: E402  鬼監督の判定（正本）
 import tana                             # noqa: E402  棚一覧・REST の足回り（正本）
+import tana_suiron as suiron            # noqa: E402  ★1177番 棚の推測（仮の棚を付ける・正本）
 
 JST = timezone(timedelta(hours=9))
 STATUS = os.path.join(REPO, "status")
@@ -195,6 +199,37 @@ def shelf_index():
     except Exception:
         return {}
     return {s["id"]: s for s in (d.get("shelves") or []) if s.get("id")}
+
+
+# ★1043番【名簿は1か所】棚の名簿は tana_ichiran.json だけ。2か所に持たない。
+#   実測（2026-09-24）：箱のページが送るのは `SHELF.id`＝名簿の id そのもの
+#   （share/nagekomi-c5fd9d5791b32e88.html:196）。だから箱から来た分はずれない。
+#   ずれていた `cute` は、1039番の**機械の試し投げが手打ちした world の値**だった
+#   （名簿では world="cute" に16棚。id ではない）。箱のバグではない。
+#   → それでも**弾かない。**id で引けなければ棚名で引く。それでも決まらなければ
+#     「行き先未定」として受ける（＝あとで棚を決められる）。
+def resolve_shelf(sid, name, shelves):
+    """棚を1つに決める。決まれば (棚, 経緯)。決まらなければ (None, 理由)。"""
+    sid = (sid or "").strip()
+    name = (name or "").strip()
+    if sid and sid in shelves:
+        return shelves[sid], None
+    # 棚名で引く（箱が送った表示名、または手打ちの値が棚名だった場合）
+    by_title = {}
+    for s in shelves.values():
+        by_title.setdefault((s.get("title") or "").strip(), s)
+    for cand in (name, sid):
+        if cand and cand in by_title:
+            return by_title[cand], "棚のidでは引けなかったので棚名「%s」で決めた" % cand
+    # world の値だった場合：その world に棚が1つだけなら決める。複数なら決めない
+    if sid:
+        same = [s for s in shelves.values() if (s.get("world") or "") == sid]
+        if len(same) == 1:
+            return same[0], "world「%s」の棚が1つだけだったので決めた" % sid
+        if len(same) > 1:
+            return None, ("「%s」は棚の名前ではなく世界の名前でした（%d棚ある）。"
+                          "棚のボタンから1つ選べば入ります" % (sid, len(same)))
+    return None, "行き先の棚がまだ決まっていません"
 
 
 # ---------------------------------------------------------------- 材料
@@ -305,8 +340,32 @@ def write_title(title, direction, url, diag):
     return text, (None if text else (why or "題名が書けなかった"))
 
 
-def gates(title, copy, material, diag):
-    """入れる前に必ず通す門。落ちた理由をそのまま返す。"""
+_YT_IN_TEXT = re.compile(r"(?:youtu\.be/|v=|/embed/|/shorts/)([A-Za-z0-9_-]{11})")
+
+
+def gates(title, copy, material, diag, artist=""):
+    """入れる前に必ず通す門。落ちた理由をそのまま返す。
+
+    ★1140番（2026-09-25）：ここに【完成の門】を足した。
+      全26,400曲を機械で見たら、**再生できる動画が1本も無い曲が2,383件**棚に入っていた。
+      入ってから隠すのではなく、入口で止める。判定の4つは表に出す条件と同じ
+      （再生できる動画／サムネ／曲名・アーティスト名／コピー）。動画が生きているかは
+      **oEmbedで実測**する。「IDが入っている」は証拠にならない。
+      弾いた数は status/1140_kanmon.jsonl に1件1行。
+      python3 tools/1140_kanmon.py --tally で通した数・弾いた数が出る。
+    """
+    try:
+        import importlib
+        _k = importlib.import_module("1140_kanmon")
+        m = _YT_IN_TEXT.search(material or "")
+        if m:
+            why = _k.judge(title=title, artist=artist or "（棚の主）", youtube_id=m.group(1),
+                           copy=copy, label="nagekomi_shelf")
+            if why:
+                return "完成の門で落ちた：%s" % why
+    except Exception as e:  # noqa: BLE001
+        diag.append("1140番の門が呼べなかった：%r（このぶんは門を通っていない＝赤）" % (e,))
+
     why = nippou.judge(title, copy)
     if why:
         return "水道水の判定で落ちた：%s" % why
@@ -342,6 +401,100 @@ def insert_stock(url, key, row):
     return rows[0]
 
 
+# ---------------------------------------------------------------- ★1164番【関連4つ】
+# たまごさん（原文）「関連もちゃんと4つ付けて完了にしてくれると助かる。」
+#                   「完了の条件に『関連4つ以上』を入れる。足りないものは完了にしない。」
+#
+# ■ 決め（なぜこの形か）
+#   ・**関連は数えられるものだけを数える。**同じ棚に並ぶ他のカード（＝棚のページで
+#     実際に隣に出るもの）を関連として控える。想像で「関連っぽいもの」を作らない。
+#   ・**4つ取れなかったら完了にしない。**足りない数と理由をそのまま控える
+#     （「関連が2つしか取れていません（4つ必要）」）。黙って完了にしない。
+#   ・**数が取れなかったときは null。**0件と書かない（0件と「数えられなかった」は別物）。
+KANREN_HITSUYOU = 4
+
+
+def kanren_find(url, key, shelf_ids, stock_id, want=KANREN_HITSUYOU):
+    """同じ棚に並んでいる他のカードを、関連として最大 want 件ひろう。
+    返すのは (関連のリスト, 理由1行)。数えられなければ (None, 理由)。"""
+    got, seen = [], {stock_id}
+    for sid in [s for s in shelf_ids if s]:
+        try:
+            st, rows = tana._req(
+                url, key,
+                "/rest/v1/admin_shelf_picks?select=stock_id,position,admin_stock(id,title)"
+                "&shelf_id=eq.%s&order=position.asc&limit=60"
+                % urllib.parse.quote(sid, safe=""))
+        except Exception as e:
+            return None, "関連の数が取れませんでした（%s）" % type(e).__name__
+        for row in (rows or []):
+            s = row.get("admin_stock") or {}
+            key_id = s.get("id") or row.get("stock_id")
+            if not key_id or key_id in seen:
+                continue
+            seen.add(key_id)
+            got.append({"id": key_id, "title": str(s.get("title") or "")[:80]})
+            if len(got) >= want:
+                return got, ""
+    if len(got) < want:
+        return got, ("関連が%d件しか取れていません（%d件必要）。棚の中身がまだ少ないか、"
+                     "関連にできるカードが足りません" % (len(got), want))
+    return got, ""
+
+
+# ---------------------------------------------------------------- ★1164番【本人だけ紐づける】
+# たまごさん（原文）「楽曲を入れたらアーティストページに登録されるのは当たり前として、
+#                     そこまで連携して動く仕組みに。」
+#
+# ★ここは関所 sekisho-artist-song の門0をそのまま持ってくる。
+#   「名前の字が一致しただけでは本人の証明にならない」（akiko × AKIKO の事故）。
+#   だから **証拠が1つも無いものは紐づけない。**保留にして理由を控える。
+#   証拠として認めるのは、この場で機械が持っているものだけ：
+#     ・YouTube の**チャンネルID**が、そのアーティストの棚に控えてあるチャンネルIDと一致
+#     ・棚の側に公式チャンネル／公式サイトが控えてあり、その動画がそこの持ち物
+#   ★チャンネル名と棚の名前が一致している、は証拠にしない（それが akiko の事故）。
+def artist_shoko(rec, shelf):
+    """本人の証拠を1つ以上持っているか。(証拠の文, 理由) を返す。証拠が無ければ (None, 理由)。"""
+    ch_id = str(rec.get("channelId") or "").strip()
+    shelf_ch = str((shelf or {}).get("channelId") or "").strip()
+    if ch_id and shelf_ch and ch_id == shelf_ch:
+        return ("公式チャンネルID一致（%s）" % ch_id), ""
+    ref = str(rec.get("url") or "")
+    ch_name = str(rec.get("channel") or "").strip()
+    shelf_name = str((shelf or {}).get("title") or "").strip()
+    if ch_name and shelf_name and ch_name == shelf_name:
+        # ★★ここが akiko × AKIKO。字が一致しているだけ。証拠にしない。
+        return None, ("チャンネル名と棚の名前が一致しているだけです（本人の証拠になりません）。"
+                      "公式チャンネルIDか公式サイトの案内が要ります")
+    if not ch_name:
+        return None, "チャンネル名が取れていないので、本人か判定できません"
+    return None, ("本人を指す証拠が1つもありません（チャンネル「%s」／%s）"
+                  % (ch_name[:30], ref[:40] or "URLなし"))
+
+
+def artist_link(url, key, stock_id, rec, shelf, res):
+    """曲を入れたとき、アーティストの棚にも紐づける。★証拠が無ければ紐づけずに保留。
+    返すのは (紐づけたか, 控える1行)。"""
+    shoko, why = artist_shoko(rec, shelf)
+    if not shoko:
+        res["diag"].append("アーティスト紐づけは保留：%s" % why)
+        return False, {"tsunaida": False, "why": why}
+    if not (shelf or {}).get("artistId"):
+        # ★棚の側にアーティストのidが控えられていない＝紐づけ先が無い。作らずに保留。
+        #   （関所：判定できないものは載せない側に倒す。勝手に新しい人を作らない）
+        why = "この棚にアーティストのidが控えられていません（紐づけ先が無いので保留）"
+        res["diag"].append("アーティスト紐づけは保留：%s" % why)
+        return False, {"tsunaida": False, "why": why, "shoko": shoko}
+    try:
+        tana._req(url, key, "/rest/v1/admin_stock?id=eq.%s"
+                  % urllib.parse.quote(stock_id, safe=""),
+                  method="PATCH", body={"detected_artist_id": shelf.get("artistId")})
+    except Exception as e:
+        res["diag"].append("アーティスト紐づけに失敗：%s" % type(e).__name__)
+        return False, {"tsunaida": False, "why": "紐づけに失敗（%s）" % type(e).__name__}
+    return True, {"tsunaida": True, "shoko": shoko, "artistId": shelf.get("artistId")}
+
+
 def insert_pick(url, key, shelf_id, stock_id):
     body = {"shelf_id": shelf_id, "stock_id": stock_id,
             "position": next_position(url, key, shelf_id),
@@ -361,7 +514,12 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
     t0 = time.time()
     res = {
         "ranAt": now().strftime("%Y-%m-%d %H:%M"), "bin": bin_no, "dry": bool(dry),
-        "diag": [], "red": [], "ireta": [], "mitei": [], "skip": [],
+        # ★1043番：箱の役目は「あとで実装できるように放り込んでおく」こと。だから箱の中身は
+        #   どんな形でも受ける。足りないものは「◯◯が未定」と印をつけて置くだけ。
+        #     mitei … 行き先の棚が未定（あとで棚を決めれば入る）
+        #     machi … 文が未定（題名・ひとことが書けていない。あとから埋められる）
+        #     dame  … 本当に何も無い＝URLもひとことも両方空。これだけが「入れられない」
+        "diag": [], "red": [], "ireta": [], "mitei": [], "machi": [], "dame": [], "skip": [],
         "seen": 0, "ranCount": 1, "iretaCount": 0, "totalYen": 0.0,
     }
     url, key, keyname, where = tana.keys(res["diag"])
@@ -394,23 +552,48 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
         title = (r.get("title") or "").strip()
         sid = (r.get("shelfId") or "").strip()
 
-        # ★棚が指定されていない／名簿に無いものは入れない。行き先未定のまま置く。
-        if not sid or sid not in shelves:
-            res["mitei"].append({
-                "id": nid, "url": ref, "title": title,
-                "memo": r.get("memo"), "shelf": r.get("shelf"),
-                "why": "棚が指定されていない" if not sid
-                       else "棚のidが名簿に無い（%s）。棚のボタンから選び直してください" % sid,
-            })
-            continue
-        if not ref:
-            res["skip"].append({"id": nid, "title": title, "why": "URLが無い"})
-            continue
-        if not title:
-            res["skip"].append({"id": nid, "url": ref, "why": "題名が取れていない"})
+        memo = (r.get("memo") or "").strip()
+
+        # ★★1043番：ここで弾かない。弾いていいのは「URLもひとことも両方空」のときだけ。
+        if not ref and not memo:
+            res["dame"].append({"id": nid, "url": "", "title": title, "memo": "",
+                                "why": "URLもひとことも入っていません"})
             continue
 
-        shelf = shelves[sid]
+        # ★棚は未定でよい。未定のまま置いて、あとで棚を決められるようにする（弾かない）。
+        shelf, hint = resolve_shelf(sid, r.get("shelf"), shelves)
+        kari = None
+        if not shelf:
+            # ★★1177番【棚の推測】棚が空なら、機械が中身を読んで**仮の棚**を付ける。
+            #   たまごさん「棚の指定は任意にしたい」→ 空のまま止めるのをやめる。
+            #   ★合う棚が無ければ「新しい棚が要る」と出す。**勝手に新設しない。**
+            g = suiron.guess_row(r, list(shelves.values()))
+            if g.get("ok") and g.get("shelfId") in shelves:
+                shelf = shelves[g["shelfId"]]
+                kari = g
+                hint = "%s：%s" % (nid, g["why"])
+            else:
+                res["mitei"].append({
+                    "id": nid, "url": ref, "title": title,
+                    "memo": memo, "shelf": r.get("shelf"),
+                    "why": g.get("why") or hint,
+                    "candidates": g.get("candidates") or [],
+                })
+                continue
+        sid = shelf["id"]          # ★名簿の id に寄せる（2か所に名簿を持たない）
+        if hint:
+            res["diag"].append("%s：%s" % (nid, hint))
+
+        # ★URLが無い（ひとことだけ）／題名が取れていないものは「文が未定」として置く。
+        #   あとで人が題名を書けば入る。捨てない。
+        if not ref:
+            res["machi"].append({"id": nid, "url": "", "title": title, "shelf": shelf["title"],
+                                 "why": "ひとことだけ届いています（URLが未定）"})
+            continue
+        if not title:
+            res["machi"].append({"id": nid, "url": ref, "shelf": shelf["title"],
+                                 "why": "題名が未定（URLは入っています。あとで埋められます）"})
+            continue
         genmei = title          # 原題（YouTube/Xから取れたそのまま）
         material = " / ".join(x for x in [title, r.get("channel"), r.get("memo"), ref] if x)
 
@@ -422,34 +605,41 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
             copy = (teuchi.get("whisper") or "").strip()
             why = gates(title, copy, material, res["diag"]) or fact_gate(title, material)
             if why:
-                res["skip"].append({"id": nid, "title": title, "shelf": shelf["title"],
-                                    "copy": copy, "why": "手書きが関所で落ちた：%s" % why})
+                res["machi"].append({"id": nid, "title": title, "shelf": shelf["title"],
+                                     "copy": copy, "why": "手書きが関所で落ちた：%s" % why})
                 continue
             res["diag"].append("★この1件は人（編集者）が書いた題名・ひとことを使った（関所は通した）")
         elif nippou.judge(title, "ダミー。ここでは題名だけを見ている。") in (
                 "題名が英語の原題のまま", "題名がURLのまま", "題名が空"):
             newt, why = write_title(genmei, r.get("memo"), ref, res["diag"])
             if not newt:
-                res["skip"].append({"id": nid, "title": genmei, "shelf": shelf["title"],
-                                    "why": "日本語の題名が書けなかった：%s" % why})
+                # ★1043番：書き手が止まっているだけ。中身は届いている。捨てない。
+                res["machi"].append({
+                    "id": nid, "title": genmei, "shelf": shelf["title"],
+                    "why": "題名が未定（書き手が止まっています。あとで埋められます）",
+                    "kikai": why})
                 continue
             why = fact_gate(newt, material)
             if why:
-                res["skip"].append({"id": nid, "title": genmei, "shelf": shelf["title"],
-                                    "newTitle": newt, "why": "題名が関所で落ちた：%s" % why})
+                res["machi"].append({"id": nid, "title": genmei, "shelf": shelf["title"],
+                                     "newTitle": newt,
+                                     "why": "題名が未定（関所で書き直し：%s）" % why})
                 continue
             title = newt
 
         if not te:
             copy, why = write_copy(genmei, r.get("memo"), ref, res["diag"])
             if not copy:
-                res["skip"].append({"id": nid, "title": title, "shelf": shelf["title"],
-                                    "why": "コピーが書けなかった：%s" % why})
+                res["machi"].append({
+                    "id": nid, "title": title, "shelf": shelf["title"],
+                    "why": "ひとことが未定（書き手が止まっています。あとで埋められます）",
+                    "kikai": why})
                 continue
             why = gates(title, copy, material, res["diag"])
             if why:
-                res["skip"].append({"id": nid, "title": title, "shelf": shelf["title"],
-                                    "copy": copy, "why": why})
+                res["machi"].append({"id": nid, "title": title, "shelf": shelf["title"],
+                                     "copy": copy,
+                                     "why": "ひとことが未定（関所で書き直し：%s）" % why})
                 continue
 
         if dry:
@@ -457,6 +647,7 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
                                  "shelfId": sid, "shelf": shelf["title"], "dry": True})
             continue
 
+        hoka = []          # ★2つ目以降の棚（前の回の値を持ち越さない）
         try:
             existing = find_stock_by_ref(url, key, ref)
             if existing:
@@ -473,6 +664,26 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
                 stock_id, made_stock = stock["id"], True
             try:
                 pick = insert_pick(url, key, sid, stock_id)
+                # ★1164番：たまごさんが箱でポチポチ押した棚の**全部**に結ぶ。
+                #   1つ目（sid）は上で結んだので、2つ目から。
+                #   ★1つ失敗しても残りは結ぶ（全部おじゃんにしない）。失敗は控える。
+                hoka = []
+                for extra in (r.get("shelves") or [])[1:]:
+                    esid = (extra.get("id") or "").strip() if isinstance(extra, dict) else ""
+                    ename = (extra.get("title") or "") if isinstance(extra, dict) else str(extra)
+                    esh, _h = resolve_shelf(esid, ename, shelves)
+                    if not esh or esh["id"] == sid:
+                        if not esh:
+                            res["diag"].append("%s：2つ目の棚「%s」が名簿に無い（結んでいない）"
+                                               % (nid, str(ename)[:20]))
+                        continue
+                    try:
+                        p2 = insert_pick(url, key, esh["id"], stock_id)
+                        hoka.append({"shelfId": esh["id"], "shelf": esh["title"],
+                                     "pickId": p2["id"], "world": esh.get("world") or ""})
+                    except Exception as e2:
+                        res["diag"].append("%s：棚「%s」に結べなかった（%s）"
+                                           % (nid, esh["title"], type(e2).__name__))
             except Exception:
                 # ★結び目が作れなかったら、さっき作ったカードも取り消す。
                 #   棚に繋がらないカードを倉庫に置き去りにしない（＝棚のデータを汚さない）。
@@ -493,19 +704,126 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
             res["red"].append("棚へ入れられなかった（%s）%s: %s" % (title[:30], type(e).__name__, e))
             continue
 
-        rec = {"bin": bin_no, "at": now().strftime("%Y-%m-%d %H:%M"), "nagekomiId": nid,
+        # ★1164番【関連4つ以上で完了】足りないものは完了にしない（たまごさんの指示）
+        zenbu_sid = [sid] + [h["shelfId"] for h in hoka]
+        kanren, kanren_why = kanren_find(url, key, zenbu_sid, stock_id)
+        kanren_ok = bool(kanren) and len(kanren) >= KANREN_HITSUYOU
+        if not kanren_ok:
+            res["diag"].append("%s：関連が足りないので完了にしない（%s）"
+                               % (nid, kanren_why or "数が取れません"))
+
+        # ★1164番【曲はアーティストの棚にも】ただし本人の証拠があるときだけ（関所 門0）
+        tsunaida, artist_rec = artist_link(url, key, stock_id, r, shelf, res)
+
+        # ★★1164番で見つけた取りこぼし（2026-09-26 実測）：
+        #   受付一覧（tools/nagekomi_list.py）は控えを **"id"** で引いていたのに、
+        #   ここは "nagekomiId" しか書いていなかった。＝棚に入れても一覧は永久に「まだ」。
+        #   （1152_ireru.py は気づいて両方書いていた。こちらだけ直っていなかった）
+        #   両方書く。読む側も両方見るようにした。
+        rec = {"bin": bin_no, "at": now().strftime("%Y-%m-%d %H:%M"),
+               "id": nid, "nagekomiId": nid,
                "stockId": stock_id, "madeStock": made_stock, "pickId": pick["id"],
                "shelfId": sid, "shelf": shelf["title"], "ref": ref, "title": title,
-               "genmei": genmei, "whisper": copy, "pickStatus": PICK_STATUS}
+               "genmei": genmei, "whisper": copy, "pickStatus": PICK_STATUS,
+               # ★複数の行き先（2つ目から）。受付一覧に「棚2つ」と出る
+               "hokaShelves": hoka,
+               # ★Before/After を控える（たまごさんが見比べられるように）
+               "copyBefore": str(r.get("titleRaw") or genmei or "")[:400],
+               "copyAfter": copy,
+               "titleAfter": title,
+               "copySame": bool(copy and copy.strip() == str(r.get("titleRaw") or "").strip()),
+               # ★関連。4つ未満なら完了にしない
+               "kanren": kanren,
+               "kanrenCount": (len(kanren) if kanren is not None else None),
+               "kanrenOk": kanren_ok,
+               "kanrenWhy": kanren_why,
+               # ★アーティスト紐づけ（証拠が無ければ保留のまま控える）
+               "artist": artist_rec,
+               # ★棚を機械が推測したものは「仮」と控える（受付一覧に「仮」と出る）
+               "kari": bool(kari),
+               "kariWhy": (kari or {}).get("why") or "",
+               "world": shelf.get("world") or ""}
         append_jsonl(IRETA, rec)
         res["ireta"].append(rec)
         log("入れた %s → %s（stock %s / pick %s）" % (title[:40], shelf["title"], stock_id, pick["id"]))
 
     res["iretaCount"] = len(res["ireta"])
-    # ★「走った回数>0 なのに 入った件数=0」は赤。黙って飲み込まない。
-    if res["seen"] > 0 and res["iretaCount"] == 0 and not res["mitei"]:
-        res["red"].append("走ったのに1件も入らなかった（未処理 %d件）。理由は skip を見ること"
-                          % res["seen"])
+    res["miteiCount"] = len(res["mitei"])
+    res["machiCount"] = len(res["machi"])
+    res["dameCount"] = len(res["dame"])
+    # ★1043番：「棚が未定」「文が未定」は**正常**。赤にしない（弾かない）。
+    #   赤にするのは「全部そろっているのに1件も入らなかった」ときだけ。
+    sorotta = res["seen"] - res["miteiCount"] - res["machiCount"] - res["dameCount"]
+    if sorotta > 0 and res["iretaCount"] == 0:
+        res["red"].append("そろっているのに1件も入らなかった（%d件）" % sorotta)
+    if res["dame"]:
+        res["diag"].append("URLもひとことも空＝%d件（これだけが入れられない）" % res["dameCount"])
+    res["ok"] = not res["red"]
+    return res
+
+
+# ---------------------------------------------------------------- 棚を1本新設する
+def shinsetsu(world, title, subtitle="", bin_no="1177", dry=False):
+    """★棚を1本だけ新設する。名指しで頼まれたときだけ通る口（機械の推測では新設しない）。
+
+    たまごさん（2026-09-25・原文）:
+      「食べ物の『食』の中に『スープ』っていう棚を作って、これを入れておいてください。」
+
+    ・同じ world に同じ題名の棚が既にあれば**作らない**（重複した棚を増やさない）。
+    ・作った棚は status/nagekomi_ireta.jsonl に控える。`--modoshi <便番号>` で消せる。
+    ・position は その world の最後（max+1）。既にある棚の並びを1つも動かさない。
+    """
+    res = {"ranAt": now().strftime("%Y-%m-%d %H:%M"), "bin": bin_no, "dry": bool(dry),
+           "diag": [], "red": [], "totalYen": 0.0}
+    world = (world or "").strip()
+    title = (title or "").strip()
+    if not world or not title:
+        res["red"].append("world と title は要ります")
+        return res
+    url, key, keyname, where = tana.keys(res["diag"])
+    if not url:
+        res["red"].append("Supabaseの鍵が見つからない：%s" % where)
+        return res
+    try:
+        st, same = tana._req(url, key, "/rest/v1/admin_shelves?select=*&world=eq.%s&title=eq.%s"
+                             % (urllib.parse.quote(world, safe=""),
+                                urllib.parse.quote(title, safe="")))
+        if same:
+            res["shelf"] = same[0]
+            res["already"] = True
+            res["diag"].append("同じ棚が既にありました（作っていません）")
+            res["ok"] = True
+            return res
+        st, rows = tana._req(url, key, "/rest/v1/admin_shelves?select=position&world=eq.%s"
+                                       "&order=position.desc&limit=1"
+                             % urllib.parse.quote(world, safe=""))
+        pos = int((rows[0].get("position") if rows else 0) or 0) + 1
+        if dry:
+            res["ok"] = True
+            res["shelf"] = {"world": world, "title": title, "subtitle": subtitle,
+                            "position": pos, "dry": True}
+            return res
+        st, made = tana._req(url, key, "/rest/v1/admin_shelves", method="POST",
+                             body={"world": world, "title": title,
+                                   "subtitle": (subtitle or None), "position": pos},
+                             prefer="return=representation")
+        row = made[0] if isinstance(made, list) and made else made
+        res["shelf"] = row
+        append_jsonl(IRETA, {"bin": bin_no, "at": now().strftime("%Y-%m-%d %H:%M"),
+                             "shinsetsuShelfId": row.get("id"), "shelf": title,
+                             "world": world, "subtitle": subtitle})
+        log("棚を新設 %s / %s（%s）" % (world, title, row.get("id")))
+        res["ok"] = True
+        # 名簿を作り直す（棚が増えたら推測の語彙もここで増える）
+        try:
+            res["ichiran"] = tana.shelf_list()
+        except Exception as e:
+            res["diag"].append("名簿の作り直しに失敗: %s" % type(e).__name__)
+    except urllib.error.HTTPError as e:
+        res["red"].append("棚を作れなかった HTTP %d %s"
+                          % (e.code, e.read().decode("utf-8", "replace")[:200]))
+    except Exception as e:
+        res["red"].append("棚を作れなかった %s: %s" % (type(e).__name__, e))
     res["ok"] = not res["red"]
     return res
 
@@ -527,6 +845,24 @@ def modoshi(bin_no, dry=False):
         return res
 
     for r in rows:
+        # ★新設した棚の控え（pickIdを持たない）。棚に何か載っていたら消さない。
+        if r.get("shinsetsuShelfId"):
+            ssid = r["shinsetsuShelfId"]
+            try:
+                st, used = tana._req(url, key, "/rest/v1/admin_shelf_picks?select=id&shelf_id=eq.%s"
+                                     "&limit=1" % urllib.parse.quote(ssid, safe=""))
+                if used:
+                    res["diag"].append("棚「%s」にはカードが載っているので消さない" % r.get("shelf"))
+                    continue
+                if not dry:
+                    tana._req(url, key, "/rest/v1/admin_shelves?id=eq.%s"
+                              % urllib.parse.quote(ssid, safe=""), method="DELETE")
+                    r["modoshiAt"] = now().strftime("%Y-%m-%d %H:%M")
+                    append_jsonl(IRETA, r)
+                res["keshita"].append({"shelf": r.get("shelf"), "shelfId": ssid, "kind": "棚"})
+            except Exception as e:
+                res["red"].append("棚を戻せなかった（%s）%s" % (r.get("shelf"), type(e).__name__))
+            continue
         try:
             # ★消す前に、その行が自分の入れたものと一致するか確かめる。違えば触らない。
             st, got = tana._req(url, key, "/rest/v1/admin_shelf_picks?select=*&id=eq.%s"
@@ -679,7 +1015,11 @@ def kagi_shirabe(shelf_id):
 def run_job(payload):
     """工場側（gaibu_runner kind=tanaire）から呼ばれる入口。"""
     p = payload or {}
-    if p.get("op") == "kagi":
+    if p.get("op") == "shinsetsu":
+        out = shinsetsu(p.get("world") or "", p.get("title") or "",
+                        p.get("subtitle") or "", bin_no=p.get("bin") or "1177",
+                        dry=bool(p.get("dry")))
+    elif p.get("op") == "kagi":
         out = kagi_shirabe(p.get("shelfId") or "")
     elif p.get("op") == "shirabe":
         out = shirabe(p.get("ref") or "", souji=bool(p.get("souji")))
@@ -703,7 +1043,24 @@ def main():
     ap.add_argument("--bin", default="1039")
     ap.add_argument("--modoshi")
     ap.add_argument("--show", action="store_true")
+    # ★1155番：棚の新設を口から呼べるようにした（shinsetsu() は前からあったが
+    #   CLIが無く、python -c の手打ちでしか叩けなかった＝次の人が再現できない）。
+    ap.add_argument("--shinsetsu", help="棚を1本新設する題名（例 スープ）")
+    ap.add_argument("--world", help="--shinsetsu の行き先の世界（例 food）")
+    ap.add_argument("--subtitle", default="", help="--shinsetsu の副題（任意）")
+    # ★1155番：書き手（claude -p／控えの外部の口）が両方止まっている日のための口。
+    #   run() には前から teuchi= があったが CLI が無く、python -c の手打ちしか道が無かった。
+    #   ★持ち込んでも関所は同じように通る（gates / fact_gate）。素通りはしない。
+    ap.add_argument("--teuchi-title", help="--only の1件に、人が書いた題名を持ち込む")
+    ap.add_argument("--teuchi-hitokoto", help="--only の1件に、人が書いたひとことを持ち込む")
     a = ap.parse_args()
+    if a.shinsetsu:
+        if not a.world:
+            print("--shinsetsu には --world も要ります（例 --world food --shinsetsu スープ）")
+            return 1
+        r = shinsetsu(a.world, a.shinsetsu, a.subtitle, bin_no=a.bin, dry=a.dry)
+        print(json.dumps(r, ensure_ascii=False, indent=1)[:4000])
+        return 0 if r.get("ok") else 1
     if a.show:
         try:
             print(io.open(OUT_JSON, encoding="utf-8").read())
@@ -714,7 +1071,14 @@ def main():
         print(json.dumps(modoshi(a.modoshi, dry=a.dry), ensure_ascii=False, indent=1)[:4000])
         return 0
     if a.dry or a.only:
-        print(json.dumps(run(dry=a.dry, only=a.only, bin_no=a.bin), ensure_ascii=False, indent=1)[:4000])
+        teuchi = None
+        if a.teuchi_title or a.teuchi_hitokoto:
+            if not a.only:
+                print("--teuchi-title / --teuchi-hitokoto は --only <id> と一緒にだけ使えます")
+                return 1
+            teuchi = {"title": a.teuchi_title or "", "whisper": a.teuchi_hitokoto or ""}
+        print(json.dumps(run(dry=a.dry, only=a.only, bin_no=a.bin, teuchi=teuchi),
+                         ensure_ascii=False, indent=1)[:6000])
         return 0
     print(json.dumps(daily(force=a.force), ensure_ascii=False, indent=1)[:4000])
     return 0

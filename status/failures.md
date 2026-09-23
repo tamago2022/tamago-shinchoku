@@ -429,3 +429,152 @@
 - **日付**：2026-09-19 17:18
 - 2026-09-19 962番: Chrome拡張(claude-in-chrome)が壊れた状態。tabs_context_mcpが返したtabIdを次の呼び出しで「グループに無い」と全部弾く。タブ操作が一切できない＝Lovableの「公開」ボタンをブラウザで押す道は今日は塞がっている（lovablePublishのconsecutiveFailures=4もこれが原因の可能性）。→ ブラウザで粘らず、MCPの deploy_project に移る。
 - 2026-09-19 962番: 「Macに claude CLI が無い」は誤り。実際は /Users/mac/.local/bin/claude にある。whichだけで判定するとサンドボックス側のPATHを見てしまう。Macの上で確かめるには心臓(heartbeat)経由でPythonを1回走らせる。
+
+- **Gensparkは「こちらから起こす口」が本当に無い。**（2026-09-21・977番）叩いたもの/返り：`gh api /users/genspark-ai-developer[bot]`→200（Botは実在）／`gh api repos/tamago2022/ai-kaigi/hooks`→`[]`（webhook 0本）／`POST /app/installations`→404（**App installationはAPIで作れない。ブラウザのUIだけ**）／`https://api.genspark.ai/`→000（名前解決せず）／`https://docs.genspark.ai/`→000（存在しない）／`https://www.genspark.ai/api/mcp`→403、POSTすると Cloudflare の「Just a moment...」＝Bot遮断／Issue #2に`@genspark-ai-developer`メンション＋`genspark`札→**8分待って無反応**／joy-relief-station #444・#446（2026-09-19に`genspark`札）も**2日間 genspark からの書き込み0件**。公式（github.com/apps/genspark-ai-developer・helpcenter/connectors-and-integrations）は**Genspark→GitHubの片方向しか書いていない**。
+- **ただし抜け道は1つだけ見つかった。**（2026-09-21・977番）`https://www.genspark.ai/helpcenter/workflows` に「Workflowsのトリガーは **Schedule（時刻）と Email（Gmail/Outlook）の2つ**」「連携先に **GitHub** を含む」と明記。**Workflowを1本だけ作れば、以後こちらから起こせる。**
+- **サンドボックス→Macの一発コマンド窓口を設置した。**（2026-09-21・977番）`tools/oneshot_runner.py`＋`tools/top_status.py`末尾1ブロック。`status/oneshot/pending/*.sh` を置くと15秒以内にMacで実行され、`status/oneshot/done/*.out` に返る。Macの `~/`（Obsidian Vault）もこれで読めるようになった。gh は `~/.local/bin/gh`（PATHに入れないと見つからない）。
+- **Gensparkの仕込みを自分でやろうとして、2か所で止まった。**（2026-09-21・977番／Chrome `7d965dae` 使用・Braveには触れていない）
+  1. `github.com/apps/genspark-ai-developer/installations/new` → **`/login` へリダイレクト**。「Sign in to GitHub / to continue to genspark ai developer」。ユーザー名とパスワードはChromeが自動入力済みだが、**パスワードでのサインインは押さない**（枷：パスワード入力）。→ **GitHub Appの導入はここで止まり。**
+  2. `genspark.ai` は**ログインが生きている**（日本語UI・`/workflows` が「マイワークフロー」まで描画）。しかし `/workflows/builder` は**38秒待っても「ワークフローを読み込んでいます...」のまま**、スクリーンショットは `Page.captureScreenshot timed out after 30000ms`（レンダラー凍結）。
+  3. **MCPのタブが約25秒で消える。**実測：20秒以内で終わるバッチは通る／30秒を超えるバッチは連続で「Tab is not in Claude's tab group」。`chrome_tab_sweeper` は同時刻の記録で `closed:0` なので**犯人ではない**。原因は未特定。**ビルダーの読み込み（30秒超）がタブの寿命（約25秒）を越えるので、チャット欄に1文字も打てない。**
+
+- **↑の「原因は未特定」に答えを出した。タブは消えていない。孤児になっている。**（2026-09-21・978番／Chrome `7d965dae` のみ・Braveには触れていない・画面は奪っていない）
+  - **「25秒」は寿命ではない。今日は0秒で死んだ（5回中5回）。**`tabs_context_mcp{createIfEmpty:true}` が返したtabIdが、次の1手で必ず「タブグループに無い」。`tabGroupId` も毎回別物になる。
+  - **にもかかわらずタブ本体は残っている。**同時刻の `chrome_tabs_recon.json` は 09:22 tabs **14** → 09:26 tabs **18**（増えた4枚は `chrome://newtab/`＝私が作った分）。09:33 の掃除で `seen:19 candidates:5 closed:4`。**消えているのは拡張の「タブグループ登録」だけで、タブ本体はChromeに残って孤児になる。**だから「セッションが自分で閉じる」は原理的に間に合わない（閉じる相手を見失っている）。
+  - **これは再発。**上の **#22（2026-09-09・704番）** に同じ症状・同じ原因（拡張は `chrome.tabGroups`＝Chrome拡張のUI層を通る）・回避策（生CDP `connectOverCDP` ＋ `Target.createTarget({background:true})`）が実機検証つきで既に書いてある。
+  - **背景はMacの資源枯渇。**実測（09:32〜09:41）：空きメモリ **273MB**／スワップ **20,480MB中19,450MB使用（残り1,030MB）**／ロード平均 **22.91**・今日の最大 **412.24**（8コア）／Brave **58プロセス12,596MB**／Cowork の Linux VM 1プロセスで **7,799MB**／Chrome 32プロセス3,833MB（pid 1229・連続稼働2日5時間）。**Claudeセッションは8本**（決まりは2本、`machine.json` の `calibratedSafeN` も2）。うち pid 99564 が **787分＝13時間** 無反応のまま生存。
+  - **潰した候補と判定**：掃除機＝シロ（`wouldClose:0`、閉じたのは私の孤児4枚だけ）／工場の他の常駐＝シロ（`grep -rl 'application "Google Chrome"' tools/` のヒットは `chrome_tab_sweeper.py` のみ）／Chromeのタブ破棄＝シロ（破棄ならタブは残らない。実際は18枚に増えて残る）／Chromeが落ちた＝シロ（pid 1229 が2日5時間連続稼働・クラッシュ記録なし）。
+  - **`osascript` で `System Events` を使うと240秒でタイムアウトする（rc=124）。**同じ内容からSystem Eventsだけ抜いたら5.8秒で完走。#22の「無人セッションでは -25211」が今日も生きている。**Macの実測を取るスクリプトにSystem Eventsを入れてはいけない。**
+  - **孤児が溜まらない仕組みを入れた（予約閉栓・デッドマン方式）**：`tools/chrome_reserve.py`（開く前に票を置く→心拍→終わったら票を捨てる）＋ `tools/chrome_tab_sweeper.py` に `pick_reserved()` / `gate_ok()` の相乗り。**心拍が止まった票のURLだけを閉じる**ので、セッションが途中で死んでも片付く。osascriptの口は増やしていない。安全側は掃除機の憲法をそのまま継承（前面タブ・最後の1枚・`everActive`・票の枚数・`SKIP_MOVED`）。判定は4/4で実測通過、実閉栓は09:37以降Chromeが `windows 0` を返すため今日は踏めていない。
+  - **替える案とたまごさんの手**：詳細は `docs/2026-09-21_978_ブラウザ配管_犯人特定と素材替え.md`。いちばん安くて確実なのは**案1＝本体Chromeを `--remote-debugging-port=9222` 付きで立ち上げ直し、ブラウザ工程を生CDP（`~/.tamago/browser_peek.mjs` 方式）へ移す。¥0。たまごさんの手は「Chromeを一度終了していい」の一言だけ。**素材は揃っている（playwright-core 1.62.1 が `~/.tamago/node_modules` に導入済み・`browser_peek.mjs` 7,205バイト存在）。今できない理由は、本体Chromeの起動引数に `--remote-debugging-port` が無いから（実測。9220〜9229 に listen 無し）。
+
+---
+
+## 2026-09-22 08:45 ★Cowork（サンドボックス）からは git add すら通らない ― 実測で確定
+
+**何をしたか**：`git add -- .gitignore docs status/public …` を1回だけ実行した。
+
+**何が起きたか**（そのままの出力）:
+
+- `warning: unable to unlink '.git/objects/82/tmp_obj_3DgZTX': Operation not permitted`（5件）
+- `git diff --cached --name-only` は**空**。＝**1ファイルも index に入っていない**
+- `.git/index.lock`（0バイト）が残った。`rm -f` も **Operation not permitted** で消せない
+
+**結論（次の人はここで時間を使わないこと）**：
+
+> **Coworkのマウント越しでは `git add` が index を差し替えられない。**
+> `.git/index` の unlink が許されていないため、書けたlockをrenameで被せられず、
+> **addは必ず空振りし、lockだけが残る。** commit以前の問題。
+> ＝「何回も試す」「タイミングを待つ」で通ることは**ない。**
+
+**だから、Cowork側の成果を main に入れる道は2本しかない：**
+
+1. `index.html` / `data.js` / `said.js` / `share/` / `tools/` / `NNN-*.html` に置く
+   → **Macの5分便（`tools/machine_status_push.sh`）が勝手に拾ってcommit+pushする。**
+   実際、鬼監督の関所（`tools/oni_gate.py` ほか）もフェス名簿（`share/check/99*.html`）も
+   この道で `9da69207b` / `e177974b7` に入っていた。**待てば入る。**
+2. 上の顔ぶれに入らない場所（`docs/`・`status/public/` の新規など）は、
+   **5分便のadd対象外なので永久にcommitされない。** Mac側で人が1回addするしかない。
+
+**残したlockの後始末**：`command_watch.sh`（30秒便）と `git_lock_reaper.py` が消す設計。
+消えるまで工場のgitは止まる。**だからもう二度と叩かない。**
+
+
+---
+
+## 797番自動記録：発車が12分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が12分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。いつものClaudeのアプリで1回ログインし直せば、こちらで気づ）。正当な理由か人の目で確認してください
+- **日付**：2026-09-24 07:22
+- 2026-09-24・1076番：`gsk search` は**問いが2048字までしか通らない**（serper_http_400）のに**1クレジット引かれる**。長い台本を search に投げない。`summarize <url> --question` を使う（実測2.2クレジット）。`crawl-and-answer` は**クロールするだけで問いに答えない**（0クレジット）＝判定には使えない。
+
+
+---
+
+## 797番自動記録：発車が11分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が11分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。いつものClaudeのアプリで1回ログインし直せば、こちらで気づ）。正当な理由か人の目で確認してください
+- **日付**：2026-09-24 15:19
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。いつものClaudeのアプリで1回ログインし直せば、こちらで気づ）。正当な理由か人の目で確認してください
+- **日付**：2026-09-24 20:41
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnt）。正当な理由か人の目で確認してください
+- **日付**：2026-09-25 09:35
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnt）。正当な理由か人の目で確認してください
+- **日付**：2026-09-26 00:58
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnt）。正当な理由か人の目で確認してください
+- **日付**：2026-09-26 03:28
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnt）。正当な理由か人の目で確認してください
+- **日付**：2026-09-26 05:36
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnt）。正当な理由か人の目で確認してください
+- **日付**：2026-09-26 06:59
+
+
+---
+
+## 797番自動記録：発車が11分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が11分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnt）。正当な理由か人の目で確認してください
+- **日付**：2026-09-26 08:27
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（叩けなかった(TimeoutExpired)／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnterを押すと、1年も）。正当な理由か人の目で確認してください
+- **日付**：2026-09-26 10:13
+
+
+---
+
+## 797番自動記録：発車が29分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が29分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました／no_launch.flagが残っています（内容：Claudeのログインが切れています（叩けなかった(TimeoutExpired)／もう片方も 叩けなかった(TimeoutExpired)）。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnterを押）。正当な理由か人の目で確認してください
+- **日付**：2026-09-26 10:31

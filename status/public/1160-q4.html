@@ -1,0 +1,329 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>OpenClaw を実測で調べる</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>OpenClaw を実測で調べる</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 23本 ／ 11,868字 ／ 投げた 2026-09-26 12:01:29／ 突き返し 2回<br><a href="https://www.genspark.ai/agents?id=8bed2f53-5deb-5f1e-a5ad-1f7c13b4341a" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>OpenClaw 調査レポート</h2>
+<p><strong>非エンジニア事業主向け AIエージェント運用の実態とリスク</strong></p>
+<hr>
+<h3>【1】OpenClaw とは何か（事実だけ）</h3>
+<h4>1.1 プロジェクトの概要</h4>
+<p>OpenClawは、オーストリア出身のソフトウェア開発者Peter Steinberger氏が週末プロジェクトとして開発を始めたオープンソースAIアシスタントである。<a href="https://openclaw.ai/" target="_blank" rel="noopener">OpenClaw公式サイト</a></p>
+<p>2025年11月に開発が開始され、急速に成長し、2026年9月22日時点でGitHubスター数390,259個を獲得している。<a href="https://www.gradually.ai/en/openclaw-statistics/" target="_blank" rel="noopener">Gradually.ai</a></p>
+<h4>1.2 正式なリポジトリ・作者・ライセンス</h4>
+<div class=hyo><table>
+<tr><th>項目</th><th>内容</th></tr>
+<tr><td>公式リポジトリ</td><td><a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">https://github.com/openclaw/openclaw</a></td></tr>
+<tr><td>公式サイト</td><td><a href="https://openclaw.ai/" target="_blank" rel="noopener">https://openclaw.ai/</a></td></tr>
+<tr><td>作者</td><td>Peter Steinberger（オーストリア出身の開発者）</td></tr>
+<tr><td>ライセンス</td><td>MITライセンス</td></tr>
+<tr><td>運営組織</td><td>OpenClaw Foundation（独立した501(c)(3)非営利団体）</td></tr>
+</table></div>
+<p><a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" rel="noopener">OpenClawブログ</a></p>
+<h4>1.3 名称変更の経緯</h4>
+<p>OpenClawは過去2回の改名を経ている。</p>
+<div class=hyo><table>
+<tr><th>時期</th><th>名称</th><th>変更理由</th></tr>
+<tr><td>2025年11月</td><td><strong>Clawd</strong></td><td>「Claude」との言葉遊びとして誕生</td></tr>
+<tr><td>2026年1月27日</td><td><strong>Moltbot</strong></td><td>Anthropicの法務チームから商標問題で改名要請を受け</td></tr>
+<tr><td>2026年1月29日</td><td><strong>OpenClaw</strong></td><td>「Moltbot」は発音しにくいとのコミュニティからの指摘を受け再改名</td></tr>
+</table></div>
+<p>最終的な「OpenClaw」という名前は、「Open（オープンソース・コミュニティ主導）」と「Claw（ロブスターの爪、プロジェクトの起源へのオマージュ）」を組み合わせたものである。<a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" rel="noopener">OpenClawブログ</a></p>
+<p><strong>失敗例・法的問題：</strong></p>
+<p>Anthropic社から「Clawdbot」という名称について商標侵害の指摘を受け、Steinberger氏は2026年1月27日に名称変更を行った。Anthropicの法務チームは「Clawdbot」が「Claude」の商標を侵害していると主張した。<a href="https://www.reddit.com/r/ClaudeAI/comments/1r99wg1/anthropic_did_the_absolute_right_thing_by_sending/" target="_blank" rel="noopener">Reddit</a></p>
+<h4>1.4 アーキテクチャと仕組み</h4>
+<p>OpenClawは「セルフホスト型ゲートウェイ」アーキテクチャを採用している。</p>
+<p><strong>基本構成：</strong></p>
+<ul>
+<li><strong>動作環境</strong>：ユーザー自身のマシン（Mac、Windows、Linux、Raspberry Piなど）上で動作</li>
+<li><strong>ゲートウェイ</strong>：単一のゲートウェイプロセスが、チャットアプリとAIエージェント間のセッション、ルーティング、チャネル接続を管理</li>
+<li><strong>対応チャネル</strong>：Discord、iMessage、Slack、Teams、Telegram、WhatsAppなど20以上のメッセージングプラットフォーム</li>
+<li><strong>LLM対応</strong>：特定のLLMに限定されず、任意のモデルを利用可能（OpenAI、Anthropic、GoogleなどのAPIキーが必要）</li>
+</ul>
+<p><a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">GitHub</a></p>
+<h4>1.5 GitHub統計（2026年9月22日時点）</h4>
+<div class=hyo><table>
+<tr><th>項目</th><th>数値</th></tr>
+<tr><td>GitHubスター数</td><td>390,259個</td></tr>
+<tr><td>アクティブ貢献者</td><td>2,500人</td></tr>
+<tr><td>リリース総数</td><td>220件</td></tr>
+<tr><td>最新安定版</td><td>v2026.9.5（2026年9月19日公開）</td></tr>
+</table></div>
+<p><a href="https://www.gradually.ai/en/openclaw-statistics/" target="_blank" rel="noopener">Gradually.ai</a></p>
+<hr>
+<h3>【2】セキュリティの実態</h3>
+<h4>2.1 「社内データが外部に筒抜け」指摘の技術的解説</h4>
+<p>黒山結音氏のX投稿で指摘された「導入を急いだ結果、社内データが外部に筒抜けの設定になっていた」という問題について、技術的に検証する。</p>
+<p><strong>問題の本質：</strong></p>
+<p>OpenClawはデフォルトでローカルホスト（loopback）にバインドされる設定だが、以下の設定ミスにより外部からアクセス可能になるリスクがある。</p>
+<p>1. <strong>Gatewayのポート公開</strong>：設定ファイルでGatewayが0.0.0.0（すべてのインターフェース）にバインドされると、インターネット上からアクセス可能になる</p>
+<p>2. <strong>認証トークンの平文保存</strong>：~/.clawdbotディレクトリ内にAPIキー、環境変数、認証情報が平文で保存される</p>
+<p><strong>具体的な脆弱性：</strong></p>
+<p>OX Securityの研究者による調査で、MoltBot（現OpenClaw）は以下のようにクレデンシャルを不安全に保存していることが確認された。</p>
+<ul>
+<li>すべての設定ファイルが~/.clawdbotに保存される</li>
+<li>クレデンシャル、APIキー、環境変数が平文で保存され、保存時の暗号化がない</li>
+<li>UIから削除しても、.bak.1～.bak.5のバックアップファイルに情報が残存</li>
+</ul>
+<p><a href="https://www.ox.security/blog/one-step-away-from-a-massive-data-breach-what-we-found-inside-moltbot/" target="_blank" rel="noopener">OX Security</a></p>
+<h4>2.2 確認された脆弱性（CVEリスト）</h4>
+<p>OpenCVEに登録されているOpenClawの脆弱性は以下の通り（2026年9月時点）。</p>
+<div class=hyo><table>
+<tr><th>CVE ID</th><th>CVSSスコア</th><th>内容</th></tr>
+<tr><td>CVE-2026-26327</td><td>8.8 (High)</td><td>認証バイパス脆弱性</td></tr>
+<tr><td>CVE-2026-32922</td><td>9.8 (Critical)</td><td>特権昇格とRCE（リモートコード実行）</td></tr>
+<tr><td>CVE-2026-24763</td><td>8.8 (High)</td><td>コマンドインジェクション脆弱性</td></tr>
+<tr><td>CVE-2026-25253</td><td>8.8 (High)</td><td>リモートコード実行の脆弱性</td></tr>
+</table></div>
+<p><a href="https://www.sentinelone.com/vulnerability-database/cve-2026-26327/" target="_blank" rel="noopener">SentinelOne</a></p>
+<p><a href="https://www.armosec.io/blog/cve-2026-32922-openclaw-privilege-escalation-cloud-security/" target="_blank" rel="noopener">Armosec</a></p>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-24763" target="_blank" rel="noopener">NVD</a></p>
+<h4>2.3 実際に発生したセキュリティインシデント</h4>
+<h5>インシデント1：Infostealerによる設定ファイル窃取（2026年2月）</h5>
+<p>サイバーセキュリティ研究者は、OpenClaw AIエージェントを標的とした情報窃取マルウェア（Vidar亜種）の感染を発見した。窃取されたファイルには以下が含まれる。</p>
+<ul>
+<li><strong>openclaw.json</strong>：OpenClawゲートウェイトークン、ユーザーのメールアドレス、ワークスペースパス</li>
+<li><strong>device.json</strong>：OpenClawエコシステム内での安全なペアリングと署名操作に必要な暗号鍵</li>
+<li><strong>soul.md</strong>：エージェントの中核的な運用原則、行動指針、倫理的境界の詳細</li>
+</ul>
+<p><a href="https://thehackernews.com/2026/02/infostealer-steals-openclaw-ai-agent.html" target="_blank" rel="noopener">The Hacker News</a></p>
+<h5>インシデント2：Moltbookの情報漏洩（2026年2月）</h5>
+<p>OpenClawエージェント専用のソーシャルネットワーク「Moltbook」のデータベースが保護されており、以下が露出した。</p>
+<ul>
+<li>35,000件のメールアドレス</li>
+<li>150万件のエージェントAPIトークン</li>
+</ul>
+<p><a href="https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now" target="_blank" rel="noopener">Reco.ai</a></p>
+<h5>インシデント3：ClawHubでの悪意あるスキル配布（2026年2月）</h5>
+<p>2026年1月27日から29日にかけて、攻撃者は公式マーケットプレイス「ClawHub」を通じて335件の悪意あるスキルを配布した。これらは合計で341件（全登録の約12%）に及び、キーロガーやマルウェアのインストールを目的としていた。</p>
+<p><a href="https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now" target="_blank" rel="noopener">Reco.ai</a></p>
+<h5>インシデント4：暴露されたインスタンス（2026年1-2月）</h5>
+<p>Censysの調査により、2026年1月31日時点で、インターネット上に21,639もの無防備なインスタンスが露出していることが確認された。<a href="https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now" target="_blank" rel="noopener">Reco.ai</a></p>
+<p>Bitdefenderの調査では、2026年2月時点で135,000以上のインターネット向けOpenClawインスタンスが確認された。<a href="https://www.bitdefender.com/en-us/blog/hotforsecurity/135k-openclaw-ai-agents-exposed-online" target="_blank" rel="noopener">Bitdefender</a></p>
+<h4>2.4 安全に使うための具体的な設定手順</h4>
+<p>公式ドキュメントに基づく安全な設定手順は以下の通り。</p>
+<p><strong>ステップ1：デフォルト設定を維持する</strong></p>
+<p>OpenClawはデフォルトで保守的な設定になっており、Gatewayはローカルホスト（loopback）にバインドされる。</p>
+<p><strong>ステップ2：セキュリティ監査を実行する</strong></p>
+<p>```bash</p>
+<p>openclaw security audit</p>
+<p>```</p>
+<p>このコマンドを実行し、「HIGH」または「CRITICAL」の所見がないことを確認する。</p>
+<p><strong>ステップ3：ハードニングベースラインを適用する</strong></p>
+<p>```bash</p>
+<p>openclaw security harden</p>
+<p>```</p>
+<p><a href="https://docs.openclaw.ai/gateway/security" target="_blank" rel="noopener">OpenClaw Documentation</a></p>
+<hr>
+<h3>【3】どう使われているか</h3>
+<h4>3.1 実際の運用例</h4>
+<h5>黒山結音氏による導入支援実績</h5>
+<p>NEXT INNOVAITION株式会社代表の黒山結音氏は、OpenClawの導入支援において100件以上の実績を持ち、日本一の実績を有している。<a href="https://prtimes.jp/main/html/rd/p/000000030.000175627.html" target="_blank" rel="noopener">PR TIMES</a></p>
+<p>黒山氏のYouTube動画「【実演】AI社員を雇ったらタスクが100→8に激減した件」では、1人社長がAI社員4人を雇ったことで、タスクが100件から8件に削減された実例が紹介されている。<a href="https://youtu.be/ke9QGQDCL-U" target="_blank" rel="noopener">YouTube</a></p>
+<h5>Raspberry Piでの常駐運用</h5>
+<p><strong>推奨構成：</strong></p>
+<ul>
+<li><strong>Raspberry Pi 5（8GB）</strong>：約$80（電源・SDカード込みで約$120）</li>
+<li><strong>ランニングコスト</strong>：月約$0.40～$0.60（電気代）</li>
+</ul>
+<p><a href="https://www.meta-intelligence.tech/en/insight-openclaw-raspberry-pi" target="_blank" rel="noopener">Meta Intelligence</a></p>
+<h5>具体的な自動化事例</h5>
+<p>OpenClawのShowcaseページで紹介されている実装例：</p>
+<ul>
+<li>10,000件のメール処理とクリア</li>
+<li>プレゼンテーション資料のレビュー</li>
+<li>CLIツールの構築</li>
+<li>Google Adsの最適化</li>
+</ul>
+<p><a href="https://openclaw.ai/showcase" target="_blank" rel="noopener">OpenClaw Showcase</a></p>
+<h4>3.2 失敗例・導入後に問題が発生した事例</h4>
+<h5>事例1：Google Geminiアカウント停止事案（2026年2月）</h5>
+<p><strong>発生した事象：</strong></p>
+<p>2026年2月下旬、GoogleはOpenClawを通じてGoogle Antigravityのサーバーを「非Antigravity製品のために使用したこと」を利用規約違反と見なし、アカウントを一斉に停止した。</p>
+<p><strong>影響範囲：</strong></p>
+<ul>
+<li>Antigravityサービスへのアクセス不能</li>
+<li>Gemini CLIへのアクセス不能</li>
+<li>Cloud Code Private APIを使用する他のサービスへのアクセスも遮断</li>
+</ul>
+<p><strong>ユーザーの反応：</strong></p>
+<p>多くのユーザーからは、事前の警告や説明がないままBANされたことへの不満が報告された。</p>
+<p><a href="https://gigazine.net/news/20260224-google-gemini-openclaw-accounts-banned/" target="_blank" rel="noopener">GIGAZINE</a></p>
+<h5>事例2：Anthropicによる使用制限（2026年）</h5>
+<p><strong>発生した事象：</strong></p>
+<p>Anthropicは、OpenClawを通じたClaudeモデルへのアクセスに制限を加えた。2026年4月4日（米東部時間15:00）から、OpenClawをClaudeサブスクリプションサービスのホワイトリストから除外した。</p>
+<p><strong>影響：</strong></p>
+<ul>
+<li>OpenClaw経由でのClaudeモデルへのアクセスが困難に</li>
+<li>APIキーによる従量課金での利用は継続可能</li>
+</ul>
+<p><a href="https://www.reddit.com/r/ClaudeAI/comments/1r9v27c/all_the_openclaw_bros_are_having_a_meltdown_after/" target="_blank" rel="noopener">Reddit</a></p>
+<h4>3.3 似た目的の代替品との比較表</h4>
+<div class=hyo><table>
+<tr><th>製品名</th><th>種別</th><th>特徴</th><th>向き不向き</th></tr>
+<tr><td><strong>OpenClaw</strong></td><td>OSS</td><td>機能豊富、コミュニティ大規模、20以上のチャンネル対応</td><td>豊富な機能が必要な場合。セキュリティ対策が必須</td></tr>
+<tr><td><strong>NanoClaw</strong></td><td>OSS</td><td>セキュリティ重視、OSレベルでのエージェント分離</td><td>セキュリティを最優先する場合</td></tr>
+<tr><td><strong>ZeroClaw</strong></td><td>OSS</td><td>Rust製、軽量・高速、IoT/エッジ向け</td><td>リソース制限環境での使用</td></tr>
+</table></div>
+<hr>
+<h3>【4】失敗例・やめた例・規約違反で撤退した事例</h3>
+<h4>4.1 Google Geminiアカウント停止事案（2026年2月）</h4>
+<p><strong>発生した事象：</strong></p>
+<p>2026年2月下旬、GoogleはOpenClawを通じてGoogle Antigravityのサーバーを「非Antigravity製品のために使用したこと」を利用規約違反と見なし、ゼロトレランス方針に基づきアカウントを一斉に停止した。</p>
+<p><strong>影響範囲：</strong></p>
+<ul>
+<li>Antigravityサービスへのアクセス不能</li>
+<li>Gemini CLIへのアクセス不能</li>
+<li>Cloud Code Private APIを使用する他のサービスへのアクセスも遮断</li>
+</ul>
+<p><strong>ユーザーの反応：</strong></p>
+<p>多くのユーザーからは、事前の警告や説明がないままBANされたことへの不満が報告された。</p>
+<p><a href="https://gigazine.net/news/20260224-google-gemini-openclaw-accounts-banned/" target="_blank" rel="noopener">GIGAZINE</a></p>
+<h4>4.2 Anthropicによる使用制限（2026年）</h4>
+<p><strong>発生した事象：</strong></p>
+<p>Anthropicは、OpenClawを通じたClaudeモデルへのアクセスに制限を加えた。2026年4月4日（米東部時間15:00）から、OpenClawをClaudeサブスクリプションサービスのホワイトリストから除外した。</p>
+<p><strong>影響：</strong></p>
+<ul>
+<li>OpenClaw経由でのClaudeモデルへのアクセスが困難に</li>
+<li>APIキーによる従量課金での利用は継続可能</li>
+</ul>
+<p><a href="https://www.reddit.com/r/ClaudeAI/comments/1r9v27c/all_the_openclaw_bros_are_having_a_meltdown_after/" target="_blank" rel="noopener">Reddit</a></p>
+<h4>4.3 中国での使用制限（2026年3月）</h4>
+<p><strong>発生した事象：</strong></p>
+<p>2026年3月、中国当局はOpenClawについて、国有企業や政府機関のオフィスコンピューターでの使用を制限した。</p>
+<p><strong>理由：</strong></p>
+<p>表向きの理由は「安全」であり、OpenClawがシステムの最高権限を必要とし、プライベートファイルやログイン認証情報にアクセスできることに対する懸念が背景にある。</p>
+<p><a href="https://www.bloomberg.com/news/articles/2026-03-11/china-moves-to-limit-use-of-openclaw-ai-at-banks-government-agencies" target="_blank" rel="noopener">Bloomberg</a></p>
+<h4>4.4 企業での使用禁止事例</h4>
+<p><strong>Meta社の対応：</strong></p>
+<p>MetaのAI安全ディレクターは、社員に対し、OpenClawを社内のラップトップにインストールしないよう通達した。理由も「安全リスク」である。</p>
+<p><strong>LangChain社の対応：</strong></p>
+<p>LangChain社も同様に、社員に対しOpenClawのインストールを禁止した。</p>
+<p><a href="https://finance.sina.com.cn/stock/t/2026-02-25/doc-inhnyyvu2393463.shtml" target="_blank" rel="noopener">Sina Finance</a></p>
+<hr>
+<h3>【5】非エンジニアの一人事業主が、危ない設定を踏まずに試すための手順（5つ）</h3>
+<h4>手順1：ローカルマシン（Mac/Windows）でまず動かし、インターネット公開はしない</h4>
+<p><strong>根拠：</strong></p>
+<p>OpenClawはデフォルトでローカルホスト（loopback）にバインドされる設定になっている。これを維持することで、外部からのアクセスを防げる。</p>
+<p><strong>実施手順：</strong></p>
+<p>1. 自分のMacまたはWindows PCにインストール</p>
+<p>2. 設定ファイル（`~/.clawdbot/openclaw.json`）を確認し、`&quot;host&quot;: &quot;127.0.0.1&quot;` または `&quot;localhost&quot;` になっていることを確認</p>
+<p>3. ファイアウォールで該当ポート（デフォルトは3333）の外向き接続をブロック</p>
+<p><a href="https://docs.openclaw.ai/gateway/security" target="_blank" rel="noopener">OpenClaw Documentation</a></p>
+<hr>
+<h4>手順2：セキュリティ監査コマンドを必ず実行する</h4>
+<p><strong>根拠：</strong></p>
+<p>OpenClawは`openclaw security audit`コマンドを提供しており、設定の安全性を自動的に検査できる。</p>
+<p><strong>実施手順：</strong></p>
+<p>```bash</p>
+<p>openclaw security audit</p>
+<p>```</p>
+<p>このコマンドを実行し、「HIGH」または「CRITICAL」の所見がないことを確認する。</p>
+<p><a href="https://docs.openclaw.ai/gateway/security/running-the-audit" target="_blank" rel="noopener">OpenClaw Documentation</a></p>
+<hr>
+<h4>手順3：APIキーは専用のものを作成し、最小権限の原則を適用する</h4>
+<p><strong>根拠：</strong></p>
+<p>OpenClawの設定ファイルにAPIキーを保存する際、平文で保存されるため、設定ファイルが漏洩した場合のリスクを最小化する必要がある。</p>
+<p><strong>実施手順：</strong></p>
+<p>1. <strong>専用のAPIキーを作成</strong>：普段使っているAPIキーとは別に、OpenClaw専用のAPIキーを新規作成</p>
+<p>2. <strong>最小権限の設定</strong>：APIキーに付与する権限は必要最小限に</p>
+<p><a href="https://www.ox.security/blog/one-step-away-from-a-massive-data-breach-what-we-found-inside-moltbot/" target="_blank" rel="noopener">OX Security</a></p>
+<hr>
+<h4>手順4：Raspberry Piなどで常設運用する場合は、VPNまたはTailscaleなどのメッシュVPNを併用する</h4>
+<p><strong>根拠：</strong></p>
+<p>Raspberry Piなどで24時間常設運用する場合、インターネットに直接公開せず、VPN経由でのみアクセスできるようにすることで、暴露リスクを大幅に減らせる。</p>
+<p><strong>実施手順：</strong></p>
+<p>1. <strong>Raspberry Piのセットアップ</strong>：Pi 5（8GB）を購入し、OpenClawをインストール</p>
+<p>2. <strong>Tailscaleなどの導入</strong>：TailscaleをRaspberry Piと自分のPCにインストールし、同一のTailnetに参加</p>
+<p>3. <strong>Gatewayのバインド設定</strong>：TailscaleのIPアドレス（100.x.x.x）のみにバインドするよう設定</p>
+<p><a href="https://till-freitag.com/en/blog/openclaw-self-hosting-gdpr-en" target="_blank" rel="noopener">Till Freitag Blog</a></p>
+<hr>
+<h4>手順5：定期的にバックアップファイルを削除し、設定ファイルの権限を確認する</h4>
+<p><strong>根拠：</strong></p>
+<p>OpenClawは設定ファイルのバックアップを5世代（.bak.1～.bak.5）保持しており、削除しても情報が残存するリスクがある。</p>
+<p><strong>実施手順：</strong></p>
+<p>1. <strong>バックアップファイルの削除</strong>：</p>
+<p>   ```bash</p>
+<p>   rm ~/.clawdbot/*.bak.*</p>
+<p>   ```</p>
+<p>2. <strong>設定ファイルの権限確認</strong>：</p>
+<p>   ```bash</p>
+<p>   ls -la ~/.clawdbot/</p>
+<p>   ```</p>
+<p>   権限が自分のみ（600または644）になっていることを確認</p>
+<p><a href="https://www.ox.security/blog/one-step-away-from-a-massive-data-breach-what-we-found-inside-moltbot/" target="_blank" rel="noopener">OX Security</a></p>
+<hr>
+<h3>まとめ：OpenClawを評価する上でのポイント</h3>
+<h4>メリット</h4>
+<ul>
+<li><strong>データの主導権</strong>：クラウドではなく自分のマシンで動作し、データを自分で管理できる</li>
+<li><strong>コスト効率</strong>：Raspberry Piなどで常設運用すれば、月額費用を大幅に削減可能</li>
+<li><strong>自動化の幅広さ</strong>：20以上のチャンネル対応で、メール・カレンダー・タスク管理など多方面で自動化可能</li>
+</ul>
+<h4>デメリット・リスク</h4>
+<ul>
+<li><strong>セキュリティリスク高</strong>：複数のCVE、暴露インスタンス、悪意あるスキルなど、セキュリティ問題が多発</li>
+<li><strong>設定ミスのリスク</strong>：非エンジニアが設定を誤ると、社内データが外部に筒抜けになる可能性</li>
+<li><strong>サービスとの相性問題</strong>：Google、Anthropicなど大手AI企業からの使用制限リスク</li>
+</ul>
+<h4>非エンジニア事業主としての判断基準</h4>
+<p>OpenClawを導入するかどうかの判断には、以下の基準をおすすめする。</p>
+<p>1. <strong>技術的な支援体制があるか</strong>：黒山結音氏のような導入支援サービスを利用できるか、または技術的な知見がある人に相談できるか</p>
+<p>2. <strong>扱うデータの機密性</strong>：取り扱うデータに機密性が高いものが含まれていないか</p>
+<p>3. <strong>リスク許容度</strong>：セキュリティインシデントが発生した場合の影響と、それを許容できるか</p>
+<hr>
+<h3>出典一覧（通し番号付き）</h3>
+<p>1. <a href="https://openclaw.ai/" target="_blank" rel="noopener">OpenClaw公式サイト</a></p>
+<p>2. <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">OpenClaw GitHubリポジトリ</a></p>
+<p>3. <a href="https://openclaw.ai/blog/introducing-openclaw" target="_blank" rel="noopener">OpenClawリブランディング発表ブログ</a></p>
+<p>4. <a href="https://www.gradually.ai/en/openclaw-statistics/" target="_blank" rel="noopener">Gradually.ai OpenClaw統計</a></p>
+<p>5. <a href="https://thehackernews.com/2026/02/infostealer-steals-openclaw-ai-agent.html" target="_blank" rel="noopener">The Hacker News - Infostealerによる設定ファイル窃取</a></p>
+<p>6. <a href="https://www.ox.security/blog/one-step-away-from-a-massive-data-breach-what-we-found-inside-moltbot/" target="_blank" rel="noopener">OX Security - MoltBotのセキュリティ問題</a></p>
+<p>7. <a href="https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now" target="_blank" rel="noopener">Reco.ai - OpenClawセキュリティ危機</a></p>
+<p>8. <a href="https://prtimes.jp/main/html/rd/p/000000030.000175627.html" target="_blank" rel="noopener">PR TIMES - 黒山結音氏 OpenClaw導入支援100件突破</a></p>
+<p>9. <a href="https://gigazine.net/news/20260224-google-gemini-openclaw-accounts-banned/" target="_blank" rel="noopener">GIGAZINE - Google Geminiアカウント停止</a></p>
+<p>10. <a href="https://www.bloomberg.com/news/articles/2026-03-11/china-moves-to-limit-use-of-openclaw-ai-at-banks-government-agencies" target="_blank" rel="noopener">Bloomberg - 中国でのOpenClaw使用制限</a></p>
+<p>11. <a href="https://docs.openclaw.ai/gateway/security" target="_blank" rel="noopener">OpenClawセキュリティドキュメント</a></p>
+<p>12. <a href="https://www.sentinelone.com/vulnerability-database/cve-2026-26327/" target="_blank" rel="noopener">SentinelOne - CVE-2026-26327</a></p>
+<hr>
+<p><strong>本レポートの調査日：2026年9月26日</strong></p>
+<p><strong>免責事項：本レポートは公開情報に基づく調査結果です。最新の情報や個別の環境での適用については、必ず公式ドキュメントを確認してください。</strong></p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>
