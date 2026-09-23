@@ -838,6 +838,15 @@ quick_tick() {
   #   心臓が落ちている間もGitHubの新着に気づけるようにするため。
   #   ★内部で60秒ゲートしているので、両方から呼ばれても外へ出るのは1分に1回だけ。
   ( run_with_timeout 60 python3 "$REPO/tools/github_watch.py" >> "$REPO/status/github_watch_err.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24【受付台帳】言われたことを埋もれさせないための1か所（tools/daicho.py）。
+  #   --kigen … ★1人3時間を過ぎた行を機械で選手交代させる。人が判断しない。
+  #              「どこまで進んだか」を残さずに終わった行は、台帳に★印が残って隠せない。
+  #   --hi    … 「◯日治っていないか」を数え直す（1日1回で足りるが冪等なので毎周でよい）。
+  #   --page  … 画面を書き直す。下の commit/push がそのまま本番へ運ぶ。
+  #   ★どれも数秒で終わる。台帳が空なら何もしない。
+  run_with_timeout 30 python3 "$REPO/tools/daicho.py" --kigen >/dev/null 2>&1 || true
+  run_with_timeout 30 python3 "$REPO/tools/daicho.py" --hi    >/dev/null 2>&1 || true
+  run_with_timeout 30 python3 "$REPO/tools/daicho.py" --page  >/dev/null 2>&1 || true
 }
 while :; do
   run_once

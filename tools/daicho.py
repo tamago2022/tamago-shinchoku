@@ -215,7 +215,7 @@ def susumu(rid, made, tsugi=None, url=None, jotai=None):
     return 0
 
 
-def koutai(rid, riyuu="時間切れ", made=None):
+def koutai(rid, riyuu="時間切れ", made=None, dare=None):
     """★選手交代。どこまで進んだかを必ず残す。残っていなければ赤で残す。"""
     d = yomu()
     r = sagasu(d, rid)
@@ -233,7 +233,8 @@ def koutai(rid, riyuu="時間切れ", made=None):
         "riyuu": riyuu,
     })
     mae = r.get("senshu", "claude-ko")
-    r["senshu"] = tsugi_no_senshu(mae)
+    # ★誰に渡すかを名指しできる（例：鍵やログインは飛ばさずに一気に「たまごさんの1手」へ）
+    r["senshu"] = dare if dare in SENSHU_ID else tsugi_no_senshu(mae)
     r["ninme"] = int(r.get("ninme") or 1) + 1
     r["kigen"] = (t + datetime.timedelta(hours=KIGEN_JIKAN)).isoformat()
     r["saigo"] = t.strftime("%Y-%m-%d %H:%M")
@@ -462,6 +463,7 @@ def main():
     ap.add_argument("--url")
     ap.add_argument("--koutai")
     ap.add_argument("--riyuu", default="時間切れ")
+    ap.add_argument("--dare", help="次の選手を名指しする（%s）" % "/".join(SENSHU_ID))
     ap.add_argument("--tsubushita")
     ap.add_argument("--kigen", action="store_true")
     ap.add_argument("--hi", action="store_true")
@@ -479,7 +481,7 @@ def main():
     if a.susumu:
         return susumu(a.susumu, a.made or "", tsugi=a.tsugi, url=a.url)
     if a.koutai:
-        return koutai(a.koutai, riyuu=a.riyuu, made=a.made)
+        return koutai(a.koutai, riyuu=a.riyuu, made=a.made, dare=a.dare)
     if a.tsubushita:
         return tsubushita(a.tsubushita, a.url or "")
     if a.kigen:

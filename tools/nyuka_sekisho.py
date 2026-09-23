@@ -303,6 +303,56 @@ def gate2_not_someone_else(artist, title, kept_facts):
 
 
 # ===========================================================================
+# 門2b：本人判定をJev（TypeSafe AI）に1問だけ聞く
+# ===========================================================================
+# なぜ足したか（たまごさんの言葉 2026-09-24）：
+#   「じゃあ別人混入しない仕組みをまず作ろうよ。」「それはJev入れて。Jevは判定のAIでしょ。」
+#   ＝ 入ってから掃除するのではなく、**入る前に止める**。だから門2の隣に置く。
+#
+# 門2（上）は**文字**しか見ていない。だから
+#   ・akiko の棚に、チャンネル名 "AKIKO" の別アーティストが**文字一致で通ってしまう**
+#   ・逆に「Uptown Funk (feat. Bruno Mars)」がマーク・ロンソンの棚で**正しいのに落ちる**
+# この2つを直せるのは「演っているのは誰か」を判定できる相手だけ。それがJev。
+#
+# ★倒す向きは1つ：**判定できないものは通さない**（skill sekisho-artist-song 掟4）。
+#   鍵が無い／栓が閉まっている／APIが落ちている → 全部 hold。通す側には倒さない。
+# ★保留は捨てない。控えは jev_honnin.py が返す horyuu に残る。
+
+def gate2b_jev(item, kept_facts, quiet=False):
+    """戻り値 (tooshita: bool, riyu: str)。tooshita=False なら保留に倒す。"""
+    try:
+        sys.path.insert(0, os.path.join(REPO, "tools", "sekisho"))
+        import jev_honnin
+    except Exception as e:
+        return False, "Jevの門が読めない（%s）。判定できない＝通さない" % e
+
+    ch = item.get("channelTitle") or ""
+    if not ch:
+        for f in kept_facts:
+            if (f.get("key") or "") == "channel":
+                ch = f.get("value") or ""
+    kouho = [{
+        "artist_id": item.get("artistId") or item.get("artist"),
+        "artist": item.get("artist") or "",
+        "about": item.get("about") or item.get("artistAbout") or "",
+        "aliases": item.get("aliases") or [],
+        "song_id": item.get("id") or item.get("songId") or "",
+        "title": item.get("title") or "",
+        "channelTitle": ch,
+        "officialUrl": item.get("officialUrl") or "",
+        "note": item.get("note") or "",
+        "year": item.get("year") or "",
+    }]
+    out = jev_honnin.run(kouho, quiet=quiet)
+    if out["tooshita"]:
+        x = out["tooshita"][0]
+        return True, "Jev：本人 %.2f／同名別人 %.2f（%.4f円）" % (
+            x.get("honnin") or 0, x.get("douseidoumei") or 0, out["kane"]["jissaiYen"])
+    box = out["bessin"] or out["horyuu"]
+    return False, "Jev：" + (box[0].get("riyu") if box else "答えが取れない")
+
+
+# ===========================================================================
 # 門3：文脈を決める（裏の取れた事実からしか決めない）
 # ===========================================================================
 
@@ -500,7 +550,35 @@ def score_prompt(item, copy, kept_facts):
 
 
 def ask_external_score(item, copy, kept_facts):
-    """外部AIに0〜100点を付けさせる。戻り値 (score:int|None, detail:dict, err:str)"""
+    """外部AIに0〜100点を付けさせる。戻り値 (score:int|None, detail:dict, err:str)
+
+    ★2026-09-24（1051番）判定役を1本足した。理由は実測：
+      OpenAIの鍵はMacにも.envにも無く、予算の栓も全財布0円。
+      つまり門5は**鍵が無い**＋**栓が閉まっている**の二重で止まっていて、
+      16枚が pending に座っていた。鍵と栓は**こちらで開けてはいけない**（金が出る）。
+      代わりに、既に払い終わっている口＝Macの `codex`（ChatGPTのログインで動く。
+      1回ごとの課金は出ない）を判定役に立てる。**これは甘い自己採点ではない。**
+      別のAI（gpt-5.6-terra）に、同じ採点表で点を付けさせている。
+      誰も居なければ**通さない**（score=None → _skip → pending に残る）。
+    """
+    # ① 金の出ない判定役（Macのcodex）。サンドボックスからは届かないので、そこでは黙って次へ。
+    try:
+        import gaibu_kuchi as gkuchi
+        if gkuchi.codex_aru():
+            d, who, err = gkuchi.kiku(SCORE_SYSTEM,
+                                      score_prompt(item, copy, kept_facts))
+            if d is not None and d.get("total") is not None:
+                try:
+                    total = int(d.get("total"))
+                except Exception:
+                    total = None
+                if total is not None:
+                    d["_model"] = who
+                    d["_kane"] = "0円（ChatGPTのログインで動く口。1回ごとの課金なし）"
+                    return total, d, ""
+    except Exception:
+        pass
+
     try:
         import gaibu_kenpin as gk
     except Exception as e:
@@ -508,11 +586,12 @@ def ask_external_score(item, copy, kept_facts):
 
     ok, why = gk.check_cost_cap()
     if not ok:
-        return None, {}, "費用の上限で止めました：%s" % why
+        return None, {}, "判定役が今いない：%s（★点を甘くして通す真似はしない）" % why
 
     api_key = gk._find_env_key(("OPENAI_API_KEY",))
     if not api_key:
-        return None, {}, "OpenAIの鍵が見つかりません（このサンドボックスからは届かない）"
+        return None, {}, ("判定役が今いない：codexが叩けず、OpenAIの鍵も無い。"
+                          "★門は通さない側に倒した")
 
     body_base = {
         "messages": [
@@ -562,21 +641,31 @@ WRITE_SYSTEM = """あなたは日本語音楽サイト「ごきげん補給所�
 
 def ask_external_rewrite(item, kept_facts, prev_copy, ng, hint):
     """落ちたコピーを書き直させる。"""
+    user = score_prompt(item, prev_copy or "(まだ無し)", kept_facts) + (
+        "\n【このコピーは落ちました。直すべき点】\n%s\n【一手】\n%s\n"
+        "上の型と事実だけで、書き直してください。" %
+        ("\n".join("・" + x for x in (ng or [])), hint or ""))
+
+    # ★金の出ない口（Macのcodex）を先に使う。1051番。
+    try:
+        import gaibu_kuchi as gkuchi
+        if gkuchi.codex_aru():
+            d, who, err = gkuchi.kiku(WRITE_SYSTEM, user)
+            if d is not None and (d.get("copy") or "").strip():
+                return (d["copy"] or "").strip(), ""
+    except Exception:
+        pass
+
     try:
         import gaibu_kenpin as gk
     except Exception as e:
         return None, "gaibu_kenpin を読めませんでした（%s）" % e
     ok, why = gk.check_cost_cap()
     if not ok:
-        return None, "費用の上限で止めました：%s" % why
+        return None, "書き直す口が今いない：%s" % why
     api_key = gk._find_env_key(("OPENAI_API_KEY",))
     if not api_key:
-        return None, "OpenAIの鍵が見つかりません"
-
-    user = score_prompt(item, prev_copy or "(まだ無し)", kept_facts) + (
-        "\n【このコピーは落ちました。直すべき点】\n%s\n【一手】\n%s\n"
-        "上の型と事実だけで、書き直してください。" %
-        ("\n".join("・" + x for x in (ng or [])), hint or ""))
+        return None, "書き直す口が今いない：codexが叩けず、OpenAIの鍵も無い"
     for model in gk.OPENAI_MODEL_CANDIDATES:
         try:
             req = urllib.request.Request(
@@ -641,6 +730,14 @@ def run_gates(item, quiet=False):
     say("門2 別人：%s" % ("OK" if not ng2 else " ／ ".join(ng2)))
     if ng2:
         return _hold(out, "別人混入の疑い（門2）：" + " ／ ".join(ng2))
+
+    # 門2b Jevに本人判定を聞く -------------------------------------------
+    # ★文字が一致しただけで通さない。ここを通らなければ棚に入れない。
+    ok2b, riyu2b = gate2b_jev(item, kept, quiet=quiet)
+    out["gates"]["2b_jev_honnin"] = {"tooshita": ok2b, "riyu": riyu2b}
+    say("門2b 本人（Jev）：%s … %s" % ("通す" if ok2b else "通さない", riyu2b))
+    if not ok2b:
+        return _hold(out, "本人だと確信できない（門2b・Jev）：" + riyu2b)
 
     # 門3 ----------------------------------------------------------------
     shelves, rejected = gate3_context(kept, item.get("context"))

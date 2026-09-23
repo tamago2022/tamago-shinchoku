@@ -1,0 +1,98 @@
+<!doctype html><html lang=ja><head>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Spotify：たまごさんが押すのはここだけ</title>
+<style>
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+body{margin:0;padding:14px 14px 40px;color:#1c1a17;background:#faf8f4;
+font:15px/1.65 -apple-system,"Hiragino Sans",system-ui,sans-serif}
+h1{font-size:17px;margin:0 0 3px}
+.sub{font-size:12px;color:#7a736a;margin:0 0 14px}
+.s{background:#fff;border:1px solid #e6e0d6;border-radius:12px;padding:12px 13px;margin-bottom:10px}
+.no{display:inline-block;background:#1c1a17;color:#fff;border-radius:99px;
+font-size:11px;font-weight:700;padding:1px 9px;margin-bottom:6px}
+.s h2{font-size:14px;margin:0 0 6px}
+.b{display:block;text-align:center;background:#1DB954;color:#fff;text-decoration:none;
+font-weight:700;font-size:15px;padding:13px;border-radius:10px;margin:9px 0 4px}
+.cp{display:flex;gap:6px;align-items:stretch;margin:7px 0}
+.cp code,.cp input{flex:1;min-width:0;background:#f4f1eb;border:1px solid #e0dad0;border-radius:8px;
+padding:9px 10px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+color:#1c1a17;word-break:break-all;overflow-x:auto}
+.cp button{flex:0 0 auto;background:#1c1a17;color:#fff;border:0;border-radius:8px;
+padding:0 13px;font-size:12px;font-weight:700;cursor:pointer}
+.n{font-size:12px;color:#7a736a;margin:6px 0 0}
+.n b{color:#1c1a17}
+pre{background:#f4f1eb;border:1px solid #e0dad0;border-radius:8px;padding:10px;
+font:12px/1.6 ui-monospace,Menlo,monospace;overflow-x:auto;margin:7px 0 0;white-space:pre-wrap;
+word-break:break-all}
+.ok{background:#eef6ee;border-color:#cfe3cf}
+.ashi{font-size:11px;color:#8a8278;margin-top:14px;line-height:1.7}
+a{color:#0a58ca}
+</style></head><body>
+<h1>Spotify：たまごさんが押すのはここだけ</h1>
+<p class=sub>これを1回やれば、Spotifyのログインは<b>二度と要りません</b>。<br>
+（refresh_token 方式。access_token は1時間で切れますが、こちらで自動で作り直します）</p>
+
+<div class=s>
+<span class=no>1</span>
+<h2>アプリを作る（1回だけ）</h2>
+<a class=b href="https://developer.spotify.com/dashboard/create" target="_blank" rel="noopener">
+Spotifyのアプリ作成を開く</a>
+<p class=n>画面に入れる値は、この3つだけです。</p>
+<p class=n><b>App name</b>　たまご　（何でもよい）</p>
+<p class=n><b>Redirect URI</b>　↓これをそのまま貼る（1文字も変えない）</p>
+<div class=cp>
+  <code id=ru>http://127.0.0.1:41999/callback</code>
+  <button onclick="cp('ru',this)">コピー</button>
+</div>
+<p class=n><b>Which API/SDKs are you planning to use?</b>　<b>Web API</b> にチェック</p>
+<p class=n>→ Save を押すと <b>Client ID</b> が出ます。<b>Client secret は要りません</b>（見なくていい）。</p>
+</div>
+
+<div class=s>
+<span class=no>2</span>
+<h2>出てきた Client ID をここに貼る</h2>
+<div class=cp>
+  <input id=cid placeholder="Client ID をここに貼る" oninput="mk()" autocapitalize=off
+         autocorrect=off spellcheck=false>
+</div>
+<p class=n>↓Macのターミナルに、この1行を貼って実行してください。</p>
+<pre id=cmd class=ok>（上に Client ID を貼ると、ここに出ます）</pre>
+<div class=cp><button onclick="cp('cmd',this)" style="flex:1">この1行をコピー</button></div>
+<p class=n>実行すると <b>押すURLが1本</b>出ます。それを押して「同意する」。<b>そこで終わりです。</b></p>
+</div>
+
+<div class=s>
+<span class=no>3</span>
+<h2>あとはこちらでやります</h2>
+<p class=n>同意が取れた時点で、下は全部こちらが走らせます。たまごさんの出番はありません。</p>
+<pre>python3 tools/spotify_ninshou.py --tameshi   # 通ったか確かめるだけ
+python3 tools/spotify_tsuika.py --shirabe    # 調べるだけ。1曲も足さない
+python3 tools/spotify_tsuika.py --ireru      # プレイリスト「AI　作曲」に足す
+python3 tools/spotify_tsuika.py --modoshi    # 足した分だけ1コマンドで戻す</pre>
+<p class=n>足す候補は <b>grok調べ　the motel.md</b> の10曲。<b>ダブりは入れません</b>
+（プレイリストの中身をAPIで全件取り直してから突き合わせます）。</p>
+</div>
+
+<div class=ashi>
+Client ID はブラウザから外に出ません（この画面は文字をつなげているだけで、どこにも送っていません）。<br>
+PKCE方式なので <b>Client secret はこちらに渡りません</b>。パスワードも一度も預かりません。<br>
+保管先 <code>~/.tamago/spotify.json</code>（600・git管理外）。
+</div>
+
+<script>
+function cp(id,btn){
+  var el=document.getElementById(id);
+  var t=(el.value!==undefined?el.value:el.textContent);
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent; btn.textContent='コピーした'; setTimeout(function(){btn.textContent=o},1400);
+  });
+}
+function mk(){
+  var v=document.getElementById('cid').value.trim();
+  document.getElementById('cmd').textContent = v
+    ? 'cd /Users/mac/Desktop/tamago-shinchoku && python3 tools/spotify_ninshou.py --hajime --client-id '+v
+    : '（上に Client ID を貼ると、ここに出ます）';
+}
+</script>
+</body></html>

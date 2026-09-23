@@ -28,6 +28,10 @@ YT = re.compile(r'youtubeId:\s*"([\w-]{11})"')
 def song_index(path):
     """(song_id, title) → [youtubeId...]  と、行番号つきの並び。"""
     text = open(path, encoding="utf-8").read()
+    # ★行番号は二分探索で出す。1件ごとに count("\n") すると
+    #   6.5MB×5万件でまず終わらない（実測：120秒で返ってこなかった）。
+    import bisect
+    nl = [i for i, ch in enumerate(text) if ch == "\n"]
     rows = []
     for m in SONG_OBJ.finditer(text):
         y = YT.search(m.group(3) or "")
@@ -35,7 +39,7 @@ def song_index(path):
             "song_id": m.group(1),
             "title": m.group(2),
             "youtubeId": y.group(1) if y else "",
-            "line": text.count("\n", 0, m.start()) + 1,
+            "line": bisect.bisect_right(nl, m.start()) + 1,
         })
     return rows
 
