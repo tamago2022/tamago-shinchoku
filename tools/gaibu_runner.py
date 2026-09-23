@@ -290,6 +290,15 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, zandaka
                     importlib.reload(zandaka)
                     out = zandaka.run_job(job.get("payload") or {})
+                elif job.get("kind") == "nagekomi":
+                    # 1036番【投げ込み箱】放り込まれたURLの題名・チャンネル・公開日・長さを
+                    #   **工場側で**調べて埋める。サンドボックスからは youtube/x ともに
+                    #   403（Tunnel connection failed。実測 2026-09-23 12:56）で出られない。
+                    #   GETだけ・課金0・★Lovableの棚には一切書かない
+                    #   （書き先は status/nagekomi.jsonl だけ＝nagekomi.py 側で保証）。
+                    import importlib, nagekomi
+                    importlib.reload(nagekomi)
+                    out = nagekomi.run_job(job.get("payload") or {})
                 elif job.get("kind") == "douga":
                     # 2026-09-22 仕入れ：候補の動画が「公式か／静止画だけでないか」を確かめる。
                     #   YouTube の oEmbed（鍵不要・**課金0**）だけを叩く。行き先は
@@ -297,6 +306,43 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, douga_check
                     importlib.reload(douga_check)
                     out = douga_check.run_job(job.get("payload") or {})
+                elif job.get("kind") == "relayup":
+                    # ★1038番：中継所の受け口を**その場で入れ直す**手動の梃子。
+                    #   relay_server.py は起動時に command_ingest を import するので、
+                    #   走り続けている限り新しい指示を覚えない（＝箱から投げても
+                    #   「使えない指示」で弾かれる）。ふだんは relay_watch.py が2分おきに
+                    #   自分で入れ直すが、サンドボックスからは待つしかないので、
+                    #   工場に「今すぐ入れ直せ」と言える口をここに置く。
+                    #   ★受け口（localhost:8788）だけ。トンネルもLovableの棚も触らない。
+                    import importlib, relay_watch
+                    importlib.reload(relay_watch)
+                    if (job.get("payload") or {}).get("force"):
+                        try:
+                            os.utime(relay_watch.SERVER_STAMP, (0, 0))
+                        except OSError:
+                            pass
+                    did = relay_watch.restart_server_if_stale()
+                    import subprocess as _sp
+                    _h = _sp.run(["curl", "-s", "-m", "5", "-o", "/dev/null",
+                                  "-w", "%{http_code}", "http://127.0.0.1:8788/health"],
+                                 capture_output=True, text=True, timeout=10)
+                    out = {"ok": (_h.stdout or "").strip() == "200",
+                           "restarted": bool(did),
+                           "health": (_h.stdout or "").strip(),
+                           "totalYen": 0.0}
+                elif job.get("kind") == "mainichi":
+                    # ★1038番：毎日やることの専用の口。列（queue.json）に積まない。
+                    #   admin_stock を **GETだけ**で読んで下書きを作る。棚には1文字も書かない。
+                    #   サンドボックスからは Supabase へ出られない（Tunnel 403）ので工場側で。
+                    import importlib, mainichi_kuchi
+                    importlib.reload(mainichi_kuchi)
+                    out = mainichi_kuchi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "relaytest":
+                    # ★1038番：スマホの代わりに中継所へ1本投げて、道が本当に通るか実測する。
+                    #   「たまごさんに試させて確かめる」をやめるための口。棚には触らない。
+                    import importlib, relay_nage
+                    importlib.reload(relay_nage)
+                    out = relay_nage.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except JobTimeout:

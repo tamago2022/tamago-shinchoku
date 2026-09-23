@@ -159,12 +159,40 @@ def _baton(payload):
     return baton.run_job(payload)
 
 
+def _kohyou_kanshi(payload):
+    """1038番【公開監視】「mainに入った → 本番に出た」を確かめる。
+
+    ★なぜここに間借りしているか（_omosa・_baton と同じ理由）
+      gaibu_runner.py は kind=kakunin のとき **毎回 importlib.reload(kakunin)** する。
+      ＝ launchd が抱えている古い runner を止めずに、今すぐ工場で動かせる。
+
+    ★なぜ要るか：ごきげん補給所は GitHub Pages ではなく **Lovable配信**。
+      この _one() は「200が返るか」しか見ていないので、**1週間前の中身が200で
+      返ってきても合格になる。**だから区間7（公開）の詰まりが構造的に見えなかった。
+      見るのは x-deployment-id の変化と、mainの最新SHA。GETのみ・課金0。
+    """
+    import importlib
+    import sys as _sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in _sys.path:
+        _sys.path.insert(0, here)
+    try:
+        import kohyou_kanshi
+        importlib.reload(kohyou_kanshi)
+    except Exception as e:
+        return {"ok": False, "error": "tools/kohyou_kanshi.py が読み込めません：%s" % e,
+                "totalYen": 0.0}
+    return kohyou_kanshi.run_job(payload)
+
+
 def run_job(payload=None):
     payload = payload or {}
     if payload.get("mode") == "omosa":
         return _omosa(payload)
     if payload.get("mode") == "baton":
         return _baton(payload)
+    if payload.get("mode") == "kohyou_kanshi":
+        return _kohyou_kanshi(payload)
     urls = payload.get("urls") or ([payload["url"]] if payload.get("url") else [])
     must = payload.get("must") or []
     results = [_one(u, must) for u in urls]

@@ -59,6 +59,77 @@ def alive(url):
         return False
 
 
+SERVER_STAMP = os.path.join(REPO, "status", ".relay_server_started")
+RESTART_COOLDOWN = 120   # 入れ直しは2分に1回まで（連続で書き換えても暴れない）
+
+
+def _tools_newest_mtime():
+    """受け口が読むコードのうち、いちばん新しい更新時刻。
+
+    relay_server.py は command_ingest を import し、command_ingest は
+    その場で他の tools/*.py を import する。どれが増えるか先に決められないので、
+    **tools/ の .py 全部**でいちばん新しいものを見る（数十ファイルの stat だけ・軽い）。
+    """
+    newest = 0.0
+    tools = os.path.join(REPO, "tools")
+    try:
+        for name in os.listdir(tools):
+            if not name.endswith(".py"):
+                continue
+            try:
+                m = os.path.getmtime(os.path.join(tools, name))
+            except OSError:
+                continue
+            if m > newest:
+                newest = m
+    except OSError:
+        pass
+    return newest
+
+
+def restart_server_if_stale():
+    """受け口のコードが起動時より新しければ、受け口だけ入れ直す。"""
+    try:
+        started = os.path.getmtime(SERVER_STAMP)
+    except OSError:
+        started = 0.0
+    newest = _tools_newest_mtime()
+    if newest <= started:
+        return False
+    if time.time() - started < RESTART_COOLDOWN:
+        return False   # さっき入れ直したばかり
+    log("受け口のコードが新しくなっています（コード %s ＞ 起動 %s）。受け口だけ入れ直します"
+        % (time.strftime("%H:%M:%S", time.localtime(newest)),
+           time.strftime("%H:%M:%S", time.localtime(started)) if started else "不明"))
+    try:
+        subprocess.run(["pkill", "-f", "relay_server.py"], timeout=10)
+    except Exception:
+        pass
+    time.sleep(1)
+    # ★先に判子を押す。起こすのに失敗しても、判子が古いまま毎回 pkill し続ける事故を防ぐ。
+    io.open(SERVER_STAMP, "w").write(str(int(time.time())))
+    try:
+        subprocess.Popen([sys.executable, os.path.join(REPO, "tools", "relay_server.py")],
+                         stdout=open(LOG, "a"), stderr=subprocess.STDOUT,
+                         stdin=subprocess.DEVNULL, start_new_session=True, close_fds=True)
+    except Exception as e:
+        log("受け口の入れ直しに失敗: %s" % e)
+        return False
+    for _ in range(10):
+        time.sleep(1)
+        try:
+            r = subprocess.run(["curl", "-s", "-m", "3", "-o", "/dev/null",
+                                "-w", "%{http_code}", "http://127.0.0.1:8788/health"],
+                               capture_output=True, text=True, timeout=8)
+            if (r.stdout or "").strip() == "200":
+                log("受け口を入れ直しました（ローカル200・実測）")
+                return True
+        except Exception:
+            pass
+    log("★受け口を入れ直しましたが、ローカルで200が返りません")
+    return False
+
+
 def main():
     # 2026-09-05 17:02 **重いときは何もしない。**
     #   実測：Macの5分平均ロードが238まで上がった。原因のひとつが、この見張りが呼ぶ
@@ -75,6 +146,19 @@ def main():
     except Exception:
         pass
     io.open(STAMP, "w").write(str(int(time.time())))
+
+    # ★2026-09-23（1038番）**「直したのに反映されない」を根から止める。**
+    #   relay_server.py は起動時に command_ingest を import する。走り続けている限り
+    #   コードを読み直さないので、新しい指示（例：nagekomi）を足しても
+    #   「使えない指示」で弾かれ続ける。今日までの見張りは「外から200が返るか」しか
+    #   見ていなかったので、**繋がっている限り永遠に古いまま**だった。
+    #   → 受け口のコードが起動時より新しければ、受け口だけ入れ直す。
+    #     トンネル（localtunnel）は localhost:8788 を見ているだけなので URL は変わらない。
+    #   ★入れ直した回は、そこで終わる。すぐ下の「外から200が返るか」を続けてやると、
+    #     立ち上がりの数秒を「トンネルが死んだ」と誤読してトンネルまで張り直してしまう
+    #     （13:26 に実際に1回起きた）。生死は次の回（2分後）に見れば足りる。
+    if restart_server_if_stale():
+        return 0
 
     url, lan = "", ""
     try:

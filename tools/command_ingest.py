@@ -1953,6 +1953,19 @@ def auth_token_check(_target=None):
 
 def _process_other(action, cmd):
     target = cmd.get("target")
+    # 1036番【投げ込み箱】棚に置く前の仮置き場。★Lovableの棚には一切触らない。
+    #   nagekomi        : URL1本＋一言を status/nagekomi.jsonl へ。題名等は機械が調べて埋める
+    #   nagekomi_shiji  : 後からまとめて喋った振り分け／コピーの方向を1行置く
+    if action in ("nagekomi", "nagekomi_shiji"):
+        try:
+            import nagekomi as _nk
+            if action == "nagekomi":
+                r = _nk.add(target or cmd.get("url") or "", cmd.get("memo") or cmd.get("note") or "")
+            else:
+                r = _nk.shiji(target or cmd.get("text") or cmd.get("memo") or "")
+            return ("done" if r.get("ok") else "failed"), r.get("message", "")
+        except Exception as e:
+            return "failed", "投げ込み箱が受け取れませんでした：%s" % e
     if action == "close_app":
         return close_app(target)
     if action == "resume":

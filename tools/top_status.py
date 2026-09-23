@@ -58,6 +58,16 @@ try:
     _lak.run()
 except Exception:
     pass
+
+# --- 「mainに入った → 本番に出た」を毎回確かめる係（1038番）--------------------
+# ごきげん補給所は GitHub Pages ではなく Lovable配信。mainに入れても本番は古いまま
+# になりうるのに、これまで「pushした＝出た」と数えていた（2026-09-23に3回詰まった）。
+# 5分に1回だけ本番のヘッダを叩き、x-deployment-id が動かないまま30分たったら赤。
+try:
+    import kohyou_kanshi as _kks
+    _kks.run()
+except Exception:
+    pass
 # ---------------------------------------------------------------------------
 
 import io

@@ -189,6 +189,26 @@ def collect():
         karamawari.append(dict(id="pages", label="本番への公開(GitHub Pages)",
                                runs=1, catches=0, blocked=kouhai, need="", why=kouhai))
 
+    # ---- 6. ★積んだのに一度も走っていない（1038番・2026-09-23 実害） ----
+    #   毎朝1件ずつ積む係は11日ぶん動いていたのに、発車待ちが164件あって
+    #   優先度3で最後尾に積まれるので一度も順番が来なかった。
+    #   積む側も走る側も「自分は動いている」と言えるので、どの緑にも引っかからない。
+    #   ★判定は tools/hantei.py の hassha_machi() が正本。ここでは呼ぶだけ（2か所に書かない）。
+    try:
+        sys.path.insert(0, HERE)
+        import hantei  # noqa: PLC0415
+        hm = hantei.hassha_machi()
+        if hm.get("red"):
+            karamawari.append(dict(id="queue", label="発車待ち（積んだのに走っていない）",
+                                   runs=hm.get("runs") or 0, catches=hm.get("catches") or 0,
+                                   blocked=hm.get("blocked") or hm.get("why") or "",
+                                   need="", why=hm.get("why") or ""))
+    except Exception as e:  # noqa: BLE001
+        # 読めなかったことを黙って飲み込まない。読めなかったと書く。
+        karamawari.append(dict(id="queue", label="発車待ち（積んだのに走っていない）",
+                               runs=1, catches=0,
+                               blocked="判定が読めません：%s" % e, need="", why=""))
+
     red = ([k for k in keys if k["status"] == "ng"]
            and True or bool(karamawari) or bool(missing))
     return dict(

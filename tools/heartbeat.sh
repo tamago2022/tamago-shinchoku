@@ -215,6 +215,12 @@ while :; do
   #   同じ間引きパターン。新しいlaunchd便は増やさない）。
   # 起動の間引き（2026-09-18）：中で1日1回に間引いている
   tick_every 40 && ( python3 "$REPO/tools/daily_ingest_scheduler.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-23（1036番）：税金ラインの係。Obsidianの#税金タグ・棚を1日1回拾って、
+  #   e-Gov法令API／国会会議録API（どちらもキー不要・0円）で裏を取り、
+  #   「裏取り待ち／裏が取れた／取れなかった」の3つの数字だけを status/uratori/counts.json へ。
+  #   新しいlaunchd便は増やさない。中で1日1回に間引いている（daily_ingest_schedulerと同じ型）。
+  #   ★Vaultにも外のAPIにも、サンドボックスからは届かない（実測 curl→000）。心臓はMacなので届く。
+  tick_every 40 && ( python3 "$REPO/tools/zeikin_kakari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-12（787番）：「いまの現在地」1枚(status/genzaichi.md/.json)を実質30分おきで更新する。
   #   憲法0番に「30分おき自動更新」と書いてあったのに実体（スケジューリング）が無かった穴を塞ぐ。
   #   新しいlaunchd常駐は増やさず、既存の心臓に相乗り。内部で1500秒ゲートしているので

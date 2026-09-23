@@ -158,18 +158,32 @@ def main():
     _koushiki_update_watch()
     # 1019番：牛尾さんの見回りも同じ位置に置く（早期returnより前）。
     _ushio_watch()
+    # ★1038番（2026-09-23）**ここが列に積むのをやめた場所。**
+    #   これまでは毎朝 queue_add(priority=3) で発車待ちの列に積んでいた。
+    #   積む係は11日ぶん全部動いていたのに（788〜1037）、発車待ちが164件あって
+    #   最後尾に積まれるので **1本も走らなかった**。
+    #   優先度を上げるだけだと明日また同じことが起きる（今日3回目の同じ壊れ方）ので、
+    #   **列に積まず、自前の口（tools/mainichi_kuchi.py）に毎日走らせる。**
+    #   ★棚（Lovable/admin_stock）へは書かない。拾う・調べる・下書きまで。
+    #     棚に書く最後の1歩は status/public/mainichi_oshidake.json に「押すだけ」で出る。
+    _mainichi_kuchi()
     if already_queued_today(today_str):
         return 0
-    target_date = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    label = "毎朝の入荷見回り（%s分・自動）" % target_date
-    what = build_what(target_date)
-    with command_ingest.queue_lock():
-        status, msg = command_ingest.queue_add(what, priority=3, label=label, origin="factory")
-    # 重複でスキップされた場合も「今日はもう試みた」としてマーカーは進める
-    # （同日に何度も重複エラーを出し続けないため）。
     mark_queued(today_str)
-    print("%s %s" % (status, msg))
-    return 0 if status in ("done", "skipped") else 1
+    print("done 毎朝の入荷見回りは列に積まず、tools/mainichi_kuchi.py が自分で走ります")
+    return 0
+
+
+def _mainichi_kuchi():
+    """毎日やることの専用の口を呼ぶ。中で1日1回に間引く。例外は外へ出さない。"""
+    try:
+        import subprocess
+        subprocess.Popen(
+            [sys.executable, os.path.join(HERE, "mainichi_kuchi.py")],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

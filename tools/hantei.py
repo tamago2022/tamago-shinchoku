@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import datetime
 import io
+import json
 import os
 import re
 import time
@@ -474,6 +475,97 @@ def commit_kuchi():
 
 
 # ---------------------------------------------------------------------
+#  ★1038番（2026-09-23）積んだのに一度も走っていない ― 3日を超えたら赤
+#
+#  なぜ要るか（実測）：毎朝1件ずつ積む係は11日ぶん全部動いていたのに、
+#  発車待ちが164件あって優先度3で最後尾に積まれるので、**一度も順番が来なかった。**
+#  積む側も走る側も「自分は動いている」と言えてしまうので、どの緑にも引っかからない。
+#  だから「積んだ日から3日を超えて、まだ一度も走っていない」だけを、ここで赤にする。
+# ---------------------------------------------------------------------
+NEVER_RAN_DAYS = 3          # これを超えて一度も走っていなければ赤
+_TIME_KEYS = ("createdAt", "startedAt", "finishedAt", "checkedAt", "stuckAt",
+              "cutAt", "demotedAt", "revivedAt", "recoveredAt", "heldAt",
+              "reopenedAt", "costAskedAt", "urakataBlockedAt", "kenpinUpdatedAt")
+
+
+def _ts(s):
+    """'2026-09-12T01:20:00+09:00' でも '2026-09-12 01:20' でも秒に直す。読めなければ None。"""
+    s = (s or "").strip()
+    if not s:
+        return None
+    t = s.replace("T", " ")[:19]
+    for f in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            return time.mktime(time.strptime(t[:len(time.strftime(f))], f))
+        except (ValueError, OverflowError):
+            continue
+    return None
+
+
+def _item_oldest_ts(it):
+    got = [_ts(it.get(k)) for k in _TIME_KEYS]
+    got = [g for g in got if g]
+    return min(got) if got else None
+
+
+def hassha_machi():
+    """発車待ちのうち「積んだのに一度も走っていない」を数える。3日超えが1件でもあれば赤。
+
+    ★日付の出どころ：その1件が持っているいちばん古い時刻。持っていない件は、
+      **番号が自分より大きくて時刻を持っている件**のいちばん古い時刻を上限にする
+      （番号は積んだ順に増えるので、それより前に積まれたのは確か）。
+      推測で古くしない＝上限すら取れない件は「日数不明」として数え、赤にはしない。
+    """
+    p = os.path.join(STATUS, "queue.json")
+    try:
+        items = json.load(io.open(p, encoding="utf-8")).get("items") or []
+    except Exception as e:  # noqa: BLE001
+        return judge(1, 0, label="発車待ち",
+                     blocked="status/queue.json が読めません：%s" % e)
+
+    known = sorted((it.get("n"), _item_oldest_ts(it)) for it in items
+                   if isinstance(it.get("n"), int) and _item_oldest_ts(it))
+    known = [(n, t) for n, t in known if t]
+
+    def upper_bound(n):
+        """番号 n より後に積まれた件が持つ、いちばん早い時刻（＝n はそれ以前に積まれた）。"""
+        cand = [t for m, t in known if m > n]
+        return min(cand) if cand else None
+
+    now = time.time()
+    waiting = [it for it in items if it.get("status") == "waiting"]
+    never = [it for it in waiting if not it.get("startedAt")]
+    rows, fumei = [], 0
+    for it in never:
+        t = _item_oldest_ts(it) or upper_bound(it.get("n") if isinstance(it.get("n"), int) else 10 ** 9)
+        if not t:
+            fumei += 1
+            continue
+        days = (now - t) / 86400.0
+        if days > NEVER_RAN_DAYS:
+            rows.append((round(days, 1), it.get("n"), (it.get("title") or "")[:38]))
+    rows.sort(reverse=True)
+
+    runs, catches = len(waiting), len(waiting) - len(never)
+    if not rows:
+        r = judge(max(runs, 1), max(catches, 1), label="発車待ち")
+        r["line"] = ("✅ 発車待ち … %d件、うち一度も走っていないのは%d件（%d日超えは0件"
+                     "／日数不明%d件）" % (len(waiting), len(never), NEVER_RAN_DAYS, fumei))
+        r["rows"] = []
+        return r
+
+    top = "／".join("%s番（%s日）%s" % (n, d, t) for d, n, t in rows[:5])
+    r = judge(runs, catches, label="発車待ち",
+              blocked=("★積んだのに一度も走っていない件が%d件（%d日超え）。"
+                       "古い順に %s。発車待ち全体は%d件。"
+                       "★列が長すぎて順番が来ていないだけかもしれません。"
+                       "毎日やることは列に積まず、自前の口で走らせてください"
+                       % (len(rows), NEVER_RAN_DAYS, top, len(waiting))))
+    r["rows"] = rows
+    return r
+
+
+# ---------------------------------------------------------------------
 #  1028番（2026-09-23）ごきげん補給所の「重さ」― 前より重くなったら赤
 # ---------------------------------------------------------------------
 #
@@ -715,7 +807,7 @@ def kazu_kanmon():
 
 def audit():
     """全部の緑に同じ規則を当てた結果を返す（リスト）。"""
-    out = [kojo(6), commit_kuchi(), omosa(), kazu_kanmon()]
+    out = [kojo(6), commit_kuchi(), omosa(), kazu_kanmon(), hassha_machi()]
     out.extend(suteta_henji())
     out.extend(gaibu_ai())
     out.extend(daicho_gai())
