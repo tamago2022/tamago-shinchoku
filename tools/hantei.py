@@ -1106,3 +1106,137 @@ def relay_han(now=None, stale_min=RELAY_STALE_MIN):
         return "🔴", ("中継所に%d分間1本も届いていません（%s）。立て直します"
                       % (int(age), url or "URL未設定")), d or {}
     return "✅", "中継所は生きています（%d分前に実測で1本届いた）" % int(age), d or {}
+
+
+# ---------------------------------------------------------------------
+#  1048番（2026-09-24）【渡す前の門】―「そもそも開いて動くか」の判定
+# ---------------------------------------------------------------------
+#
+# たまごさん（2026-09-24）
+#   「俺でテストするなって言ってるじゃん。動くものを出してきてよって。
+#     まだ不完全なものを俺に触らせないでよ。表示されすらしないよ。
+#     動かないんだったら突き返してほしい。」
+#
+# 事故：share/ohon/1046-live2d.html を渡した。たまごさんの画面で何も出なかった。
+#       こちらのChromeは WebGL が切れていて（canvas.getContext('webgl') → false・実測）、
+#       **動くところを一度も見ずに渡していた。**
+#
+# ★判定はここにしか書かない。実際にブラウザを開いて数字を取るのは
+#   tools/watashi_gate.py。あちらは「測る」だけ、ここは「決める」だけ。
+#   同じ if を2か所に書けば、片方だけ直る日が必ず来る（1018番で実測済み）。
+
+# 目盛り（勝手に動かさない）
+MIRU_BYTES = 120          # 10秒後に画面に出ている本文の最低バイト数
+MIRU_NODES = 8            # 同・描画された要素の最低数
+FPS_MIN = 30.0            # 動くものの最低fps
+MAX_BYTES = 1024 * 1024   # 1MB
+WIDE_W = 375              # はみ出しを見る幅
+
+# consoleに出ていたら即アウトの言葉（たまごさんの事故がこの3つ）
+_WATASHI_NG_WORDS = ("webgl", "failed to load", "404", "not found",
+                     "is not defined", "uncaught")
+
+
+def watashi_han(obs):
+    """渡す前の門の判定。obs は tools/watashi_gate.py が実測で作った観測の記録。
+
+    返り値: 止める理由の一覧（list）。空なら渡してよい。
+    ここでは一切ブラウザを触らない＝この関数だけで机の上で試験できる。
+    """
+    stop = []
+    o = obs or {}
+    name = o.get("path") or "(名前なし)"
+
+    if o.get("open_error"):
+        stop.append("①そもそも開けませんでした：%s" % str(o["open_error"])[:160])
+        return stop
+
+    # ① 開いて10秒、画面に中身が出ているか
+    tb = int(o.get("text_bytes") or 0)
+    nd = int(o.get("painted_nodes") or 0)
+    if tb < MIRU_BYTES and nd < MIRU_NODES:
+        stop.append("①開いて10秒たっても画面に中身が出ていません"
+                    "（本文%dバイト・描画された要素%d個）" % (tb, nd))
+    if o.get("canvas_blank"):
+        stop.append("①canvasが真っ白のままです（%s）＝絵が1枚も描かれていない"
+                    % o.get("canvas_blank"))
+
+    # ② 押しても何も起きないボタン
+    dead = o.get("dead_buttons") or []
+    btn = int(o.get("buttons_total") or 0)
+    if dead:
+        stop.append("②押しても何も起きないボタンが%d/%d個あります：%s"
+                    % (len(dead), btn, "／".join(str(x)[:30] for x in dead[:4])))
+
+    # ③ console のエラー
+    errs = [str(e) for e in (o.get("console_errors") or [])]
+    if errs:
+        omo = [e for e in errs if any(w in e.lower() for w in _WATASHI_NG_WORDS)]
+        stop.append("③consoleにエラーが%d件出ています：%s"
+                    % (len(errs), (omo or errs)[0][:160]))
+
+    # ④ 外から読む部品が200以外
+    bad = [r for r in (o.get("resources") or []) if int(r.get("status") or 0) != 200]
+    if bad:
+        stop.append("④外から読む部品が200以外です：%s"
+                    % "／".join("%s→%s" % (str(r.get("url"))[-48:], r.get("status"))
+                                for r in bad[:4]))
+
+    # ⑤ 375px
+    m = o.get("mobile") or {}
+    if m:
+        if m.get("scroll_w") and int(m["scroll_w"]) > WIDE_W + 2:
+            stop.append("⑤375pxで横にはみ出します（中身の幅%dpx）" % int(m["scroll_w"]))
+        if int(m.get("text_bytes") or 0) < MIRU_BYTES and int(m.get("painted_nodes") or 0) < MIRU_NODES:
+            stop.append("⑤375pxで中身が出ません"
+                        "（本文%sバイト・要素%s個）" % (m.get("text_bytes"), m.get("painted_nodes")))
+
+    # ⑥ 動くもの：fpsと重さ
+    fps = o.get("fps")
+    if o.get("is_animated") and fps is not None and float(fps) < FPS_MIN:
+        stop.append("⑥動きがfps %.1f で30を割っています（カクつきます）" % float(fps))
+    nb = int(o.get("bytes") or 0)
+    if nb > MAX_BYTES:
+        stop.append("⑥1MBを超えています（%.2fMB）" % (nb / 1024.0 / 1024.0))
+
+    if o.get("needs_webgl") and not o.get("webgl_ok"):
+        stop.append("⑥WebGLが要るページなのに、WebGLが立ち上がりませんでした"
+                    "（このページは相手の機械でも真っ白になります）")
+
+    if stop:
+        stop.append("（対象：%s）" % name)
+    return stop
+
+
+def watashi_kanmon():
+    """★門そのものが効いているかを毎回みる。見本で落ちなくなったら赤。
+
+    e_gate と同じ考え方。門は静かに素通りするようになっても誰も気づかない。
+    """
+    warui = {
+        "path": "みほん-わるい.html", "text_bytes": 0, "painted_nodes": 1,
+        "buttons_total": 2, "dead_buttons": ["はじめる"],
+        "console_errors": ["console: WebGL: context creation failed"],
+        "resources": [{"url": "https://example.com/core.js", "status": 404}],
+        "mobile": {"scroll_w": 980, "text_bytes": 0, "painted_nodes": 1},
+        "is_animated": True, "fps": 7.5, "bytes": 3 * 1024 * 1024,
+        "needs_webgl": True, "webgl_ok": False,
+    }
+    yoi = {
+        "path": "みほん-よい.html", "text_bytes": 2400, "painted_nodes": 180,
+        "buttons_total": 2, "dead_buttons": [],
+        "console_errors": [], "resources": [{"url": "x.css", "status": 200}],
+        "mobile": {"scroll_w": 375, "text_bytes": 2300, "painted_nodes": 170},
+        "is_animated": False, "fps": None, "bytes": 21000,
+        "needs_webgl": False, "webgl_ok": False,
+    }
+    a, b = watashi_han(warui), watashi_han(yoi)
+    if not a:
+        return judge(1, 0, label="渡す門の見張り",
+                     blocked="わざと壊した見本が通ってしまいました＝門が効いていません")
+    if b:
+        return judge(1, 0, label="渡す門の見張り",
+                     blocked="正しい見本を落としました＝門が厳しすぎます：%s" % b[0])
+    r = judge(1, 1, label="渡す門の見張り")
+    r["line"] = "✅ 渡す門 … 見本で%d件落とし、正しい見本は通しました" % len(a)
+    return r

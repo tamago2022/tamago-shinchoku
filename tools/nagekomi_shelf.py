@@ -35,8 +35,11 @@
   ・**日が変わった最初の便で走る。**＝深夜0時すぎ。たまごさんの「最後12時に」。
   ・**入れた行は全部 status/nagekomi_ireta.jsonl に控える。**`--modoshi <便番号>` で
     その便で入れた分**だけ**を消す。他人の行は1文字も触らない。
-  ・**棚が指定されていないものは入れない。**「行き先未定」のまま置いて、進捗表に出す。
-  ・**関所を通らなかったものは入れない。**理由をそのまま残す。黙って飲み込まない。
+  ・★**1043番：どんな中身でも受ける。「入れられない」で止めない。**
+    箱の役目は「あとで実装できるように放り込んでおく」こと。足りないものは
+    「◯◯が未定」と印をつけて置くだけ。棚が未定でも、題名が書けなくても、捨てない。
+    **入れられないのは「URLもひとことも両方空」のときだけ。**
+  ・**関所を通らなかった文は棚へ入れない**が、投げ込み自体は「文が未定」として残す。
   ・鍵の値はこのファイルから一歩も外へ出さない（ログにも報告にも出さない）。
 
 ------------------------------------------------------------------
@@ -195,6 +198,37 @@ def shelf_index():
     except Exception:
         return {}
     return {s["id"]: s for s in (d.get("shelves") or []) if s.get("id")}
+
+
+# ★1043番【名簿は1か所】棚の名簿は tana_ichiran.json だけ。2か所に持たない。
+#   実測（2026-09-24）：箱のページが送るのは `SHELF.id`＝名簿の id そのもの
+#   （share/nagekomi-c5fd9d5791b32e88.html:196）。だから箱から来た分はずれない。
+#   ずれていた `cute` は、1039番の**機械の試し投げが手打ちした world の値**だった
+#   （名簿では world="cute" に16棚。id ではない）。箱のバグではない。
+#   → それでも**弾かない。**id で引けなければ棚名で引く。それでも決まらなければ
+#     「行き先未定」として受ける（＝あとで棚を決められる）。
+def resolve_shelf(sid, name, shelves):
+    """棚を1つに決める。決まれば (棚, 経緯)。決まらなければ (None, 理由)。"""
+    sid = (sid or "").strip()
+    name = (name or "").strip()
+    if sid and sid in shelves:
+        return shelves[sid], None
+    # 棚名で引く（箱が送った表示名、または手打ちの値が棚名だった場合）
+    by_title = {}
+    for s in shelves.values():
+        by_title.setdefault((s.get("title") or "").strip(), s)
+    for cand in (name, sid):
+        if cand and cand in by_title:
+            return by_title[cand], "棚のidでは引けなかったので棚名「%s」で決めた" % cand
+    # world の値だった場合：その world に棚が1つだけなら決める。複数なら決めない
+    if sid:
+        same = [s for s in shelves.values() if (s.get("world") or "") == sid]
+        if len(same) == 1:
+            return same[0], "world「%s」の棚が1つだけだったので決めた" % sid
+        if len(same) > 1:
+            return None, ("「%s」は棚の名前ではなく世界の名前でした（%d棚ある）。"
+                          "棚のボタンから1つ選べば入ります" % (sid, len(same)))
+    return None, "行き先の棚がまだ決まっていません"
 
 
 # ---------------------------------------------------------------- 材料
@@ -361,7 +395,12 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
     t0 = time.time()
     res = {
         "ranAt": now().strftime("%Y-%m-%d %H:%M"), "bin": bin_no, "dry": bool(dry),
-        "diag": [], "red": [], "ireta": [], "mitei": [], "skip": [],
+        # ★1043番：箱の役目は「あとで実装できるように放り込んでおく」こと。だから箱の中身は
+        #   どんな形でも受ける。足りないものは「◯◯が未定」と印をつけて置くだけ。
+        #     mitei … 行き先の棚が未定（あとで棚を決めれば入る）
+        #     machi … 文が未定（題名・ひとことが書けていない。あとから埋められる）
+        #     dame  … 本当に何も無い＝URLもひとことも両方空。これだけが「入れられない」
+        "diag": [], "red": [], "ireta": [], "mitei": [], "machi": [], "dame": [], "skip": [],
         "seen": 0, "ranCount": 1, "iretaCount": 0, "totalYen": 0.0,
     }
     url, key, keyname, where = tana.keys(res["diag"])
@@ -394,23 +433,36 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
         title = (r.get("title") or "").strip()
         sid = (r.get("shelfId") or "").strip()
 
-        # ★棚が指定されていない／名簿に無いものは入れない。行き先未定のまま置く。
-        if not sid or sid not in shelves:
-            res["mitei"].append({
-                "id": nid, "url": ref, "title": title,
-                "memo": r.get("memo"), "shelf": r.get("shelf"),
-                "why": "棚が指定されていない" if not sid
-                       else "棚のidが名簿に無い（%s）。棚のボタンから選び直してください" % sid,
-            })
-            continue
-        if not ref:
-            res["skip"].append({"id": nid, "title": title, "why": "URLが無い"})
-            continue
-        if not title:
-            res["skip"].append({"id": nid, "url": ref, "why": "題名が取れていない"})
+        memo = (r.get("memo") or "").strip()
+
+        # ★★1043番：ここで弾かない。弾いていいのは「URLもひとことも両方空」のときだけ。
+        if not ref and not memo:
+            res["dame"].append({"id": nid, "url": "", "title": title, "memo": "",
+                                "why": "URLもひとことも入っていません"})
             continue
 
-        shelf = shelves[sid]
+        # ★棚は未定でよい。未定のまま置いて、あとで棚を決められるようにする（弾かない）。
+        shelf, hint = resolve_shelf(sid, r.get("shelf"), shelves)
+        if not shelf:
+            res["mitei"].append({
+                "id": nid, "url": ref, "title": title,
+                "memo": memo, "shelf": r.get("shelf"), "why": hint,
+            })
+            continue
+        sid = shelf["id"]          # ★名簿の id に寄せる（2か所に名簿を持たない）
+        if hint:
+            res["diag"].append("%s：%s" % (nid, hint))
+
+        # ★URLが無い（ひとことだけ）／題名が取れていないものは「文が未定」として置く。
+        #   あとで人が題名を書けば入る。捨てない。
+        if not ref:
+            res["machi"].append({"id": nid, "url": "", "title": title, "shelf": shelf["title"],
+                                 "why": "ひとことだけ届いています（URLが未定）"})
+            continue
+        if not title:
+            res["machi"].append({"id": nid, "url": ref, "shelf": shelf["title"],
+                                 "why": "題名が未定（URLは入っています。あとで埋められます）"})
+            continue
         genmei = title          # 原題（YouTube/Xから取れたそのまま）
         material = " / ".join(x for x in [title, r.get("channel"), r.get("memo"), ref] if x)
 
@@ -422,34 +474,41 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
             copy = (teuchi.get("whisper") or "").strip()
             why = gates(title, copy, material, res["diag"]) or fact_gate(title, material)
             if why:
-                res["skip"].append({"id": nid, "title": title, "shelf": shelf["title"],
-                                    "copy": copy, "why": "手書きが関所で落ちた：%s" % why})
+                res["machi"].append({"id": nid, "title": title, "shelf": shelf["title"],
+                                     "copy": copy, "why": "手書きが関所で落ちた：%s" % why})
                 continue
             res["diag"].append("★この1件は人（編集者）が書いた題名・ひとことを使った（関所は通した）")
         elif nippou.judge(title, "ダミー。ここでは題名だけを見ている。") in (
                 "題名が英語の原題のまま", "題名がURLのまま", "題名が空"):
             newt, why = write_title(genmei, r.get("memo"), ref, res["diag"])
             if not newt:
-                res["skip"].append({"id": nid, "title": genmei, "shelf": shelf["title"],
-                                    "why": "日本語の題名が書けなかった：%s" % why})
+                # ★1043番：書き手が止まっているだけ。中身は届いている。捨てない。
+                res["machi"].append({
+                    "id": nid, "title": genmei, "shelf": shelf["title"],
+                    "why": "題名が未定（書き手が止まっています。あとで埋められます）",
+                    "kikai": why})
                 continue
             why = fact_gate(newt, material)
             if why:
-                res["skip"].append({"id": nid, "title": genmei, "shelf": shelf["title"],
-                                    "newTitle": newt, "why": "題名が関所で落ちた：%s" % why})
+                res["machi"].append({"id": nid, "title": genmei, "shelf": shelf["title"],
+                                     "newTitle": newt,
+                                     "why": "題名が未定（関所で書き直し：%s）" % why})
                 continue
             title = newt
 
         if not te:
             copy, why = write_copy(genmei, r.get("memo"), ref, res["diag"])
             if not copy:
-                res["skip"].append({"id": nid, "title": title, "shelf": shelf["title"],
-                                    "why": "コピーが書けなかった：%s" % why})
+                res["machi"].append({
+                    "id": nid, "title": title, "shelf": shelf["title"],
+                    "why": "ひとことが未定（書き手が止まっています。あとで埋められます）",
+                    "kikai": why})
                 continue
             why = gates(title, copy, material, res["diag"])
             if why:
-                res["skip"].append({"id": nid, "title": title, "shelf": shelf["title"],
-                                    "copy": copy, "why": why})
+                res["machi"].append({"id": nid, "title": title, "shelf": shelf["title"],
+                                     "copy": copy,
+                                     "why": "ひとことが未定（関所で書き直し：%s）" % why})
                 continue
 
         if dry:
@@ -502,10 +561,16 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
         log("入れた %s → %s（stock %s / pick %s）" % (title[:40], shelf["title"], stock_id, pick["id"]))
 
     res["iretaCount"] = len(res["ireta"])
-    # ★「走った回数>0 なのに 入った件数=0」は赤。黙って飲み込まない。
-    if res["seen"] > 0 and res["iretaCount"] == 0 and not res["mitei"]:
-        res["red"].append("走ったのに1件も入らなかった（未処理 %d件）。理由は skip を見ること"
-                          % res["seen"])
+    res["miteiCount"] = len(res["mitei"])
+    res["machiCount"] = len(res["machi"])
+    res["dameCount"] = len(res["dame"])
+    # ★1043番：「棚が未定」「文が未定」は**正常**。赤にしない（弾かない）。
+    #   赤にするのは「全部そろっているのに1件も入らなかった」ときだけ。
+    sorotta = res["seen"] - res["miteiCount"] - res["machiCount"] - res["dameCount"]
+    if sorotta > 0 and res["iretaCount"] == 0:
+        res["red"].append("そろっているのに1件も入らなかった（%d件）" % sorotta)
+    if res["dame"]:
+        res["diag"].append("URLもひとことも空＝%d件（これだけが入れられない）" % res["dameCount"])
     res["ok"] = not res["red"]
     return res
 

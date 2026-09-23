@@ -2026,9 +2026,11 @@ def _process_other(action, cmd):
             import nagekomi as _nk
             if action == "nagekomi":
                 # ★1039番：箱の棚ボタンで選んだ行き先をそのまま持って上がる
+                # ★1043番：機械の試し投げには印をつける（たまごさんの一覧に混ぜない）
                 r = _nk.add(target or cmd.get("url") or "",
                             cmd.get("memo") or cmd.get("note") or "",
-                            cmd.get("shelf"), cmd.get("shelfId"))
+                            cmd.get("shelf"), cmd.get("shelfId"),
+                            test=bool(cmd.get("test")))
             else:
                 r = _nk.shiji(target or cmd.get("text") or cmd.get("memo") or "",
                               cmd.get("shelf"))

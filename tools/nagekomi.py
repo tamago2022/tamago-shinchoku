@@ -181,7 +181,10 @@ def append_jsonl(path, row):
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def add(url, memo="", shelf=None, shelf_id=None):
+def add(url, memo="", shelf=None, shelf_id=None, test=False):
+    """★1043番：test=True は**機械の試し投げ**。台帳には残すが、たまごさんの一覧には出さない。
+    たまごさん（原文）「投げ込み箱、俺ボンジョビなんか入れてないから」「こういうのを俺で試さないでよ」
+    → 試したことを台帳から消すのではなく、**印をつけて、たまごさんの視界から外す。**"""
     url = (url or "").strip()
     if not url:
         return {"ok": False, "message": "URLが空です"}
@@ -199,6 +202,8 @@ def add(url, memo="", shelf=None, shelf_id=None):
         "shelfId": (shelf_id or "").strip() or None if isinstance(shelf_id, str) else shelf_id,
         "copyDirection": None,  # 「コピーはこの方向で」も後から入る
         "status": "inbox",
+        # ★"test" は機械の試し投げ。"nushi" はたまごさん本人の投げ（箱のページから）
+        "source": "test" if test else "nushi",
     }
     row.update(meta)
     if why:

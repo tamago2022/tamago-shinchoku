@@ -47,6 +47,11 @@
   .queue{margin-top:18px;font-size:12.5px;color:var(--sub)}
   .queue b{color:var(--accent)}
   .hint{font-size:12px;color:var(--sub);margin:0 0 10px}
+  .nomu{width:100%;min-height:44px;margin-top:10px;border-radius:12px;border:1px solid #d9d2c4;
+        background:#fff;color:#4a4034;font-size:14px;line-height:1.4}
+  .diag{margin-top:10px;padding:8px 10px;border-radius:10px;background:#f4f1ea;
+        border:1px solid #e2dccf;font-size:11.5px;line-height:1.6;color:#5c5346;
+        white-space:pre-wrap;word-break:break-all;max-height:240px;overflow:auto}
 </style>
 </head>
 <body>
@@ -78,6 +83,10 @@
 <button id="send">投 げ る</button>
 <div class="msg" id="msg"></div>
 <div class="queue" id="q"></div>
+<!-- ★1043番：端末に残った分を吐き出す口。スマホではconsoleが見えないので、
+     送った結果と理由を画面に出す（黙って失敗させないため） -->
+<button id="nomu" class="nomu" type="button">この端末に残っている分を今すぐ送る</button>
+<pre id="diag" class="diag" hidden></pre>
 
 <!-- 1042番：何が入ってきたかの一覧へ1タップ（進捗表には入れない） -->
 <a href="./nagekomi-list-24b9dbaae07c4103.html" 
@@ -106,16 +115,60 @@ function relay(){
     .then(function(j){ RELAY = j && j.url ? j.url.replace(/\/$/,"") : null; return RELAY; })
     .catch(function(){ return null; });
 }
+/* ★★1043番【黙って失敗させない】
+   たまごさん（原文）「俺が入れたもの全然入ってないよ」
+   前の版は fetch が失敗しても .catch で false を返すだけで、画面には
+   「受け取りました（パソコンが今いないので…）」と**優しい嘘**を出していた。
+   ＝押しても届いていないのに、届いたように見えていた。ここを全部やめる。
+   ・失敗の**理由をそのまま画面に出す**（HTTP番号・エラー名・どこまで行ったか）
+   ・window.onerror も拾って画面に出す（スマホではconsoleが見えないため）
+   ・「貯まっている分を今すぐ送る」ボタンを置く（端末に残った分を吐き出す口） */
+function diag(line){
+  var d = document.getElementById("diag");
+  if(!d) return;
+  var t = new Date().toTimeString().slice(0,8);
+  d.hidden = false;
+  d.textContent = (t + "  " + line + "\n" + d.textContent).slice(0, 2000);
+}
+window.addEventListener("error", function(e){
+  diag("画面の中でエラー: " + (e && e.message ? e.message : e));
+});
+window.addEventListener("unhandledrejection", function(e){
+  diag("受け止められなかった失敗: " + (e && e.reason ? e.reason : e));
+});
+
+/* 送る。届けば {ok:true}。届かなければ {ok:false, why:"理由"} を返す。★falseだけ返さない */
 function flush(){
   var a = pending();
-  if(!a.length) return Promise.resolve(true);
+  if(!a.length) return Promise.resolve({ok:true, n:0});
   return (RELAY ? Promise.resolve(RELAY) : relay()).then(function(u){
-    if(!u) return false;
+    if(!u) return {ok:false, why:"パソコンの居場所（relay.json）が読めませんでした"};
+    diag("中継所へ送ります: " + u.replace(/^https?:\/\//,"").split(".")[0] + "… " + a.length + "件");
     return fetch(u+"/cmd", {method:"POST", mode:"cors", headers:HEAD,
                             body:JSON.stringify({commands:a})})
-      .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-      .then(function(){ savePending([]); return true; })
-      .catch(function(){ return false; });
+      .then(function(r){
+        if(!r.ok) return r.text().then(function(t){
+          throw new Error("中継所が HTTP " + r.status + " を返しました" +
+                          (t ? "（" + t.slice(0,80) + "）" : ""));
+        });
+        return r.json();
+      })
+      .then(function(j){
+        savePending([]);
+        diag("届きました（中継所の返事あり）");
+        return {ok:true, n:a.length, body:j};
+      })
+      .catch(function(e){
+        var why = (e && e.message) ? e.message : String(e);
+        /* ★ここに落ちる代表例：CORSのpreflightで止められた（ブラウザは理由を
+           "Failed to fetch"／"Load failed" しか教えない）。だから見当を添える。 */
+        if(/failed to fetch|load failed|networkerror/i.test(why)){
+          why = why + " ／ 中継所まで1バイトも出ていません（回線が落ちている、" +
+                "パソコンが寝ている、またはブラウザが止めた）";
+        }
+        diag("届きませんでした: " + why);
+        return {ok:false, why:why};
+      });
   });
 }
 function push(cmd){
@@ -190,11 +243,15 @@ document.getElementById("send").addEventListener("click", function(){
   var stamp = new Date().toISOString();
   var tag = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   var cmds = [];
+  /* ★1043番：URLの末尾に ?kikai=1 が付いているときは「機械の試し投げ」の印をつける。
+     こうすると**たまごさんと1文字も違わない道**を機械が通って実測できるのに、
+     たまごさんの一覧には1件も混ざらない。（印は台帳の source 列になる） */
+  var KIKAI = /[?&]kikai=1/.test(location.search);
   if(u){
     cmds.push({ id:"nk"+tag, action:"nagekomi", target:u, memo:m, label:"投げ込み",
                 shelf: SHELF ? SHELF.title : null,
                 shelfId: SHELF ? SHELF.id : null,
-                requestedAt:stamp });
+                test: KIKAI, requestedAt:stamp });
   }
   if(m && !u){
     /* URLが無いときは「あとでまとめて喋った指示」として1行残す（前と同じ置き場） */
@@ -207,18 +264,36 @@ document.getElementById("send").addEventListener("click", function(){
                 shelf: SHELF.title, requestedAt:stamp });
   }
 
-  var chain = Promise.resolve(true);
+  var chain = Promise.resolve({ok:true});
   cmds.forEach(function(c){ chain = chain.then(function(prev){
-    return push(c).then(function(ok){ return prev && ok; }); }); });
+    return push(c).then(function(r){
+      return (prev.ok && r.ok) ? {ok:true} : {ok:false, why:(prev.why || r.why)}; }); }); });
 
-  chain.then(function(ok){
+  chain.then(function(res){
     b.disabled = false;
-    document.getElementById("u").value = "";
-    document.getElementById("m").value = "";
     var where = SHELF ? ("「"+SHELF.title+"」の棚へ。") : "棚はあとで決めていい。";
-    SHELF = null; drawTana();
-    say(ok ? ("入りました。"+where+"夜中0時にまとめて入れます。")
-           : "受け取りました（パソコンが今いないので、届き次第まとめて送ります）", true);
+    if(res && res.ok){
+      /* ★届いたときだけ欄を空にする。届いていないのに消すと、書いた言葉が消える */
+      document.getElementById("u").value = "";
+      document.getElementById("m").value = "";
+      SHELF = null; drawTana();
+      say("届きました。"+where+"夜中0時にまとめて棚へ入れます。", true);
+    }else{
+      /* ★優しい嘘をやめる。届いていないと言う。中身はこの端末に残してある */
+      say("届きませんでした。" + ((res && res.why) ? res.why : "理由が取れませんでした") +
+          " ／ 書いた中身はこの端末に "+pending().length+"件 残してあります（下の［今すぐ送る］で送り直せます）",
+          false);
+    }
+  });
+});
+
+document.getElementById("nomu").addEventListener("click", function(){
+  var n = pending().length;
+  if(!n){ say("この端末に残っている分はありません。", true); return; }
+  say("残っている "+n+"件 を送っています…", true);
+  relay().then(flush).then(function(r){
+    say(r && r.ok ? ("残っていた "+n+"件、届きました。")
+                  : ("まだ届きません。" + ((r && r.why) || "理由が取れませんでした")), !!(r && r.ok));
   });
 });
 

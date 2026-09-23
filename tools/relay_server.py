@@ -102,11 +102,24 @@ def apply_priority(payload):
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
+    # ★★1043番【たまごさんの投げが1件も届かなかった本当の理由】
+    #   箱のページは `bypass-tunnel-reminder` という**独自のヘッダ**を付けて投げる
+    #   （share/nagekomi-….html:89。localtunnelの「Click to Continue」を飛ばすため）。
+    #   独自ヘッダが付くと、ブラウザは本番のPOSTの前に **preflight(OPTIONS)** を投げ、
+    #   返ってきた Access-Control-Allow-Headers に**そのヘッダ名が載っていなければ
+    #   本番のPOSTを1バイトも送らずに捨てる。**ここが `Content-Type` だけだった。
+    #   → iPhoneのSafariからの投げは、**中継所に届く前にブラウザの中で消えていた。**
+    #   → 機械の試し投げ（curl / python）は preflight を投げないので**全部通った。**
+    #     だから「Macからは通る／たまごさんからは1件も届かない」になった。経路が違った。
+    #   ★ここを直したら preflight も通る。ヘッダ名は箱のページと同じ1か所から出す。
+    ALLOW_HEADERS = "Content-Type, bypass-tunnel-reminder"
+
     def _cors(self):
         self.send_header("Access-Control-Allow-Origin", ORIGIN)
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", self.ALLOW_HEADERS)
         self.send_header("Access-Control-Max-Age", "600")
+        self.send_header("Vary", "Origin")
 
     def _json(self, code, obj):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")

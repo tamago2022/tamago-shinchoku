@@ -78,6 +78,9 @@ def run_job(payload):
         cmd["shelfId"] = p["shelfId"]
     if p.get("label"):
         cmd["label"] = p["label"]
+    # ★1043番：ここから投げるのは**機械の試し投げ**。既定で印をつける。
+    #   （payload に test:false を明示したときだけ印を外す＝スマホの経路の実測用）
+    cmd["test"] = True if p.get("test") is None else bool(p.get("test"))
     out = post([cmd])
     out["totalYen"] = 0.0
     return out
