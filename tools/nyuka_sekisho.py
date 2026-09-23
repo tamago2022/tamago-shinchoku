@@ -429,6 +429,19 @@ def gate4_copy_shape(copy, kept_facts):
         if w in c:
             ng.append("観測していない反応：『%s』" % w)
 
+    # ★1049番（2026-09-24）：**裏の取れていない数字を書かせない。**
+    #   実測：この便で書いたコピーに「4分」「3分」「バンド4人」が混ざった。どれも
+    #   動画を見ずに書いた数字＝嘘になりうる。年号・人数・尺は事実で裏打ちされた
+    #   ものしか書かない（たまご憲法11条／関所 sekisho-jijitsu-shutten）。
+    #   単位を絞ってあるのは「1曲目」「ひと言」のような言い回しまで落とさないため。
+    hay_facts = " ".join(
+        [str(f.get("value") or "") + " " + str(f.get("claim") or "") + " " +
+         " ".join(str(x) for x in (f.get("needles") or [])) for f in kept_facts])
+    for num, unit in re.findall(r"(\d+)\s*(分|秒|人|年|歳|枚|位|回|周年|作目|人組)", c):
+        if num not in hay_facts:
+            ng.append("裏の取れていない数字：『%s%s』。"
+                      "事実として出典を取ったものしか数字は書かない" % (num, unit))
+
     # 裏取り済み事実が1つも入っていないコピーは通さない
     hit = []
     for f in kept_facts:

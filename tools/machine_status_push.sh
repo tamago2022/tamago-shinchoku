@@ -501,6 +501,12 @@ run_with_timeout 20 python3 "$REPO/tools/priority_ingest.py" >/dev/null 2>&1 || 
 # measuredAtが4時間以上進まなくなる事故を実測で確認した（factory_status.pyと同じ90秒に揃える）。
 run_with_timeout 90 python3 "$REPO/tools/health_candidates.py" >/dev/null 2>&1 || true
 
+# 1051番（2026-09-24）同時上限：空きメモリ・スワップ・ロードを毎回実測して「あと何本安全か」を
+# status/dojisu_jougen.json と status/health.json の "同時上限" に落とす。
+# 危ないときは自分で1本まで落とす（自動減便）／余裕があるときだけ1本だけ試す（試し増便）。
+# health_candidates.py の後に置く＝health.json を書いた直後に相乗りで足す（順番を入れ替えない）。
+run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || true
+
 # 2026-09-03 PWAリモコン：▶️動かす／⏸止める／🔁引き継ぐ／🗑閉じる のコマンドキューを実行（launchd新規登録がブロックされたため、この5分間隔ジョブに相乗り）
 run_with_timeout 30 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
 

@@ -221,6 +221,13 @@ while :; do
   #   新しいlaunchd便は増やさない。中で1日1回に間引いている（daily_ingest_schedulerと同じ型）。
   #   ★Vaultにも外のAPIにも、サンドボックスからは届かない（実測 curl→000）。心臓はMacなので届く。
   tick_every 40 && ( python3 "$REPO/tools/zeikin_kakari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1057番）：ごきげん補給所の「重さ」の見張り。たまごさんより先に気づく係。
+  #   これまで重さは**人が思い出したときにだけ**測られていた＝「いつの間にか3MBに戻る」が
+  #   何度でも起きる。1日1回、機械が測る。★赤（前回比+5%超／1MB超／CLS0.1超）のときだけ
+  #   status/dispatch_outbox.jsonl へ1行書く。青の日は1行も出さない（黙っているのが正常の合図）。
+  #   中で20時間に間引いているので10分おきに呼んでも測るのは1日1回。投げっぱなしで心臓は待たない。
+  #   ★この係は測って判定して知らせるだけ。**直さない**（測った本人が直すと嘘を誰も見つけられない）。
+  tick_every 40 && ( python3 "$REPO/tools/omosa_mihari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-12（787番）：「いまの現在地」1枚(status/genzaichi.md/.json)を実質30分おきで更新する。
   #   憲法0番に「30分おき自動更新」と書いてあったのに実体（スケジューリング）が無かった穴を塞ぐ。
   #   新しいlaunchd常駐は増やさず、既存の心臓に相乗り。内部で1500秒ゲートしているので
@@ -319,6 +326,12 @@ while :; do
   #   status/nagekomi_list.json（中継所が配る生）と status/public/nagekomi_list.json（公開）へ。
   #   台帳を1本読んでJSONを1枚書くだけ＝1秒かからない。新しい常駐は増やさない。
   tick_every 2 && ( python3 "$REPO/tools/nagekomi_list.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1050番）外の働き手の紙。たまごさん「役に立ってるなら使うし、役に立ってないならいらない」
+  #   ★この問いは何度も出ているのに、毎回その場の報告で消えていた。だから紙を1枚だけ持たせて、
+  #     そこが毎日勝手に書き換わる形にする。新しい常駐も定期タスクも作らない（心臓に相乗り）。
+  #   中で1日1回に間引く（status/.soto_hatarakite_at）ので、ここは緩く呼べばよい。
+  #   AIを1回も呼ばない・外へ1回も出ない＝クレジット0円。投げっぱなしにして心臓は待たない。
+  tick_every 240 && ( python3 "$REPO/tools/soto_hatarakite.py" >> "$REPO/status/soto_hatarakite.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
