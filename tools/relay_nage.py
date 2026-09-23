@@ -71,6 +71,11 @@ def run_job(payload):
            "id": p.get("id") or "relaytest"}
     if p.get("memo"):
         cmd["memo"] = p["memo"]
+    # ★1039番：箱と同じ形（URL＋棚＋ひとことを1件として）投げられるようにする
+    if p.get("shelf"):
+        cmd["shelf"] = p["shelf"]
+    if p.get("shelfId"):
+        cmd["shelfId"] = p["shelfId"]
     if p.get("label"):
         cmd["label"] = p["label"]
     out = post([cmd])

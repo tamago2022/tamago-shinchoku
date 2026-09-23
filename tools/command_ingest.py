@@ -1960,9 +1960,13 @@ def _process_other(action, cmd):
         try:
             import nagekomi as _nk
             if action == "nagekomi":
-                r = _nk.add(target or cmd.get("url") or "", cmd.get("memo") or cmd.get("note") or "")
+                # ★1039番：箱の棚ボタンで選んだ行き先をそのまま持って上がる
+                r = _nk.add(target or cmd.get("url") or "",
+                            cmd.get("memo") or cmd.get("note") or "",
+                            cmd.get("shelf"), cmd.get("shelfId"))
             else:
-                r = _nk.shiji(target or cmd.get("text") or cmd.get("memo") or "")
+                r = _nk.shiji(target or cmd.get("text") or cmd.get("memo") or "",
+                              cmd.get("shelf"))
             return ("done" if r.get("ok") else "failed"), r.get("message", "")
         except Exception as e:
             return "failed", "投げ込み箱が受け取れませんでした：%s" % e

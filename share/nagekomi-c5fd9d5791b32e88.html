@@ -6,12 +6,14 @@
 <meta name="robots" content="noindex,nofollow">
 <title>投げ込み箱</title>
 <!--
-  1036番【投げ込み箱】2026-09-23
-  たまごさん：「棚に置こうとしたらジャーンって落ちる。だから放り込んでおくとこが欲しい」
-  ★Lovableの棚には一切触らない。書き先は Mac 側の status/nagekomi.jsonl だけ。
-  ★入るのは URL 1本と、任意で一言だけ。3秒で投げられること。
-  道：このページ → 中継所(relay) → command_ingest.process({action:"nagekomi"}) → tools/nagekomi.py
-      進捗表のボタンと同じ、実績のある道に相乗りする（新しい常駐を作らない）。
+  1039番【投げ込み箱】2026-09-23 改（1036→1038→1039）
+  たまごさん：「投げると、指示を送るって2つがあるから、一つでいいよ。」
+              「棚一覧みたいのもボタンでつけてくれたら、そこを押して
+                『これとこれとこれ、入れる方向性はこれ』みたいな。」
+  ★送るボタンは1個。URLだけでも、喋っただけでも、片方だけで送れる。
+  ★棚は押さなくても送れる（行き先未定のまま置ける）。
+  ★Lovableの画面は一切通らない。書き先は Mac 側の status/nagekomi.jsonl だけ。
+  道：このページ → 中継所(relay) → command_ingest({action:"nagekomi"}) → tools/nagekomi.py
   届かなかった分は端末に貯めて、開くたびに勝手に再送する（黙って消えない）。
 -->
 <style>
@@ -19,7 +21,7 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--ink);
        font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
-       padding:18px 16px 60px;line-height:1.7}
+       padding:18px 16px 40px;line-height:1.7}
   h1{font-size:19px;margin:0 0 2px;letter-spacing:.04em}
   .lead{font-size:12.5px;color:var(--sub);margin:0 0 18px}
   label{display:block;font-size:12.5px;color:var(--sub);margin:0 0 6px}
@@ -28,53 +30,63 @@
   input:focus,textarea:focus{outline:none;border-color:var(--accent)}
   textarea{resize:vertical}
   .field{margin-bottom:14px}
-  button{width:100%;min-height:56px;font-size:17px;font-family:inherit;font-weight:600;
-       color:#fff;background:var(--accent);border:0;border-radius:12px;letter-spacing:.06em}
-  button:disabled{opacity:.45}
-  button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500;min-height:50px;font-size:15px}
+  button#send{width:100%;min-height:60px;font-size:18px;font-family:inherit;font-weight:600;
+       color:#fff;background:var(--accent);border:0;border-radius:12px;letter-spacing:.08em}
+  button#send:disabled{opacity:.45}
+  /* ★棚ボタン：寝ながら片手で押せる大きさ（375pxで2列・高さ48px以上） */
+  .tana{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
+  .tana button{min-height:50px;padding:8px 10px;font-size:14px;font-family:inherit;
+       color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;
+       text-align:left;line-height:1.35;overflow:hidden}
+  .tana button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .tana button .w{display:block;font-size:11px;opacity:.6;margin-top:1px}
+  .more{margin:8px 0 0;width:100%;min-height:44px;font-size:14px;font-family:inherit;
+       background:#fff;color:var(--sub);border:1px dashed var(--line);border-radius:10px}
   .msg{margin-top:12px;font-size:13.5px;min-height:20px}
   .ok{color:#2c6e49} .ng{color:#a3321f}
-  hr{border:0;border-top:1px solid var(--line);margin:30px 0 22px}
-  h2{font-size:15px;margin:0 0 2px}
-  .hint{font-size:12px;color:var(--sub);margin:0 0 12px}
-  .queue{margin-top:22px;font-size:12.5px;color:var(--sub)}
+  .queue{margin-top:18px;font-size:12.5px;color:var(--sub)}
   .queue b{color:var(--accent)}
+  .hint{font-size:12px;color:var(--sub);margin:0 0 10px}
 </style>
 </head>
 <body>
 
 <h1>投げ込み箱</h1>
-<p class="lead">棚に置く前の仮置き場。URLを貼って送るだけ。どの棚かは、あとで決めていい。</p>
+<p class="lead">URLを貼る。棚を押す。喋る。──どれか1つでも送れます。<br>
+入れるのは夜中0時にまとめて。朝には棚に出ています。</p>
 
 <div class="field">
-  <label for="u">URL（1本）</label>
+  <label for="u">URL（なくてもいい）</label>
   <input id="u" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
-         spellcheck="false" placeholder="https://…" enterkeyhint="send">
+         spellcheck="false" placeholder="https://…" enterkeyhint="done">
 </div>
+
 <div class="field">
-  <label for="m">一言（なくていい・マイクキーで喋れる）</label>
-  <input id="m" type="text" placeholder="例：ボンジョビおじさんの棚っぽい">
+  <label for="m">言いたいこと（なくてもいい・マイクキーで喋れる）</label>
+  <textarea id="m" rows="4" placeholder="例：これ猫の棚。方向性はしょうもない事件にする感じで。キャッチコピーは『昼寝の天才』"></textarea>
 </div>
+
+<div class="field">
+  <label for="f">行き先の棚（押さなくていい。あとで決められます）</label>
+  <input id="f" type="search" inputmode="search" autocomplete="off" autocapitalize="off"
+         spellcheck="false" placeholder="棚をしぼる（例：猫／音楽／80）" style="margin-bottom:8px">
+  <div class="tana" id="tana"></div>
+  <button class="more" id="more" hidden>もっと見る</button>
+  <p class="hint" id="tanaNote" style="margin-top:8px"></p>
+</div>
+
 <button id="send">投 げ る</button>
 <div class="msg" id="msg"></div>
 <div class="queue" id="q"></div>
 
-<hr>
-
-<h2>あとでまとめて喋る</h2>
-<p class="hint">どの棚に置くか、コピーの方向。ここに喋って送ると、箱の中身に反映する用の指示として残る。<br>
-キーボードのマイクキーを押して、そのまま喋ればいい。</p>
-<div class="field">
-  <textarea id="s" rows="5" placeholder="例：さっきのYouTubeのやつはボンジョビおじさんの棚。コピーは事件にする方向で。赤ちゃんのやつは保留。"></textarea>
-</div>
-<button id="sendS" class="ghost">この指示を送る</button>
-<div class="msg" id="msgS"></div>
-
 <script>
-/* 中継所の場所（進捗表と同じ status/public/relay.json を読む）。トンネルURLは変わるので毎回読む */
+/* 中継所の場所（進捗表と同じ status/public/relay.json）。トンネルURLは変わるので毎回読む */
 var RELAY = null;
 var HEAD = {"Content-Type":"application/json","bypass-tunnel-reminder":"1"};
 var KEY = "nagekomi_pending_v1";
+var SHELF = null;      /* 押された棚。押さなければ null のまま */
+var SHOW = 8;          /* 最初に見せる棚の数 */
+var LIST = [];
 
 function pending(){ try{ return JSON.parse(localStorage.getItem(KEY)||"[]"); }catch(e){ return []; } }
 function savePending(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){} drawQ(); }
@@ -106,45 +118,104 @@ function push(cmd){
   var a = pending(); a.push(cmd); savePending(a);
   return flush();
 }
-function say(el, text, ok){
-  var d = document.getElementById(el);
+function say(text, ok){
+  var d = document.getElementById("msg");
   d.textContent = text; d.className = "msg " + (ok ? "ok" : "ng");
 }
 
+/* ---- ★棚一覧：手打ちしない。Mac側が棚の正本から吐いた一覧を読む ---- */
+/* しぼり込み。棚が174件あるので、これが無いと寝ながらは押せない。
+   押した棚は、しぼり込みから外れても先頭に残す（消えたように見えないため）。 */
+function filtered(){
+  var q = (document.getElementById("f").value || "").trim().toLowerCase();
+  var a = LIST;
+  if(q) a = LIST.filter(function(s){
+    return (s.title+" "+(s.world||"")).toLowerCase().indexOf(q) >= 0; });
+  if(SHELF && !a.some(function(s){ return s.title === SHELF.title; })) a = [SHELF].concat(a);
+  return a;
+}
+function drawTana(){
+  var box = document.getElementById("tana");
+  var A = filtered();
+  box.innerHTML = "";
+  var n = Math.min(SHOW, A.length);
+  for(var i=0;i<n;i++){
+    (function(s){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-pressed", SHELF && SHELF.title === s.title ? "true" : "false");
+      b.innerHTML = "<span>"+s.title.replace(/[<>&]/g,"")+"</span>"
+                  + (s.world ? "<span class='w'>"+s.world.replace(/[<>&]/g,"")+"</span>" : "");
+      b.addEventListener("click", function(){
+        SHELF = (SHELF && SHELF.title === s.title) ? null : s;   /* もう一度押せば取り消し */
+        drawTana();
+      });
+      box.appendChild(b);
+    })(A[i]);
+  }
+  var more = document.getElementById("more");
+  more.hidden = A.length <= SHOW;
+  more.textContent = "もっと見る（あと "+(A.length-SHOW)+"）";
+  if(!A.length) box.innerHTML = "<p class='hint' style='grid-column:1/3;margin:0'>その言葉の棚は見つかりません（押さずに送れます）</p>";
+}
+document.getElementById("more").addEventListener("click", function(){ SHOW += 12; drawTana(); });
+document.getElementById("f").addEventListener("input", function(){ SHOW = 8; drawTana(); });
+
+fetch("../status/public/tana_ichiran.json?t="+Date.now(), {cache:"no-store"})
+  .then(function(r){ return r.ok ? r.json() : null; })
+  .then(function(j){
+    LIST = (j && j.shelves) || [];
+    document.getElementById("tanaNote").textContent =
+      LIST.length ? ("棚 "+LIST.length+"件（"+(j.at||"")+"時点の棚の正本から）")
+                  : "棚の一覧がまだ届いていません。押さずにそのまま送れます。";
+    drawTana();
+  })
+  .catch(function(){
+    document.getElementById("tanaNote").textContent =
+      "棚の一覧が読めませんでした。押さずにそのまま送れます。";
+  });
+
+/* ---- ★送るボタンは1個。URLだけ／喋っただけ、どちらでも通す ---- */
 document.getElementById("send").addEventListener("click", function(){
   var u = document.getElementById("u").value.trim();
   var m = document.getElementById("m").value.trim();
-  if(!/^https?:\/\//.test(u)){ say("msg","URLを貼ってください（https で始まるもの）", false); return; }
-  var b = this; b.disabled = true; say("msg","送っています…", true);
-  push({ id:"nk"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
-         action:"nagekomi", target:u, memo:m, label:"投げ込み",
-         requestedAt:new Date().toISOString() })
-  .then(function(ok){
+  if(!u && !m && !SHELF){ say("URLか、言いたいことか、棚。どれか1つは入れてください", false); return; }
+  if(u && !/^https?:\/\//.test(u)){ say("URLは https で始まるものを貼ってください", false); return; }
+
+  var b = this; b.disabled = true; say("送っています…", true);
+  var stamp = new Date().toISOString();
+  var tag = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  var cmds = [];
+  if(u){
+    cmds.push({ id:"nk"+tag, action:"nagekomi", target:u, memo:m, label:"投げ込み",
+                shelf: SHELF ? SHELF.title : null,
+                shelfId: SHELF ? SHELF.id : null,
+                requestedAt:stamp });
+  }
+  if(m && !u){
+    /* URLが無いときは「あとでまとめて喋った指示」として1行残す（前と同じ置き場） */
+    cmds.push({ id:"ns"+tag, action:"nagekomi_shiji", target:m, label:"振り分けの指示",
+                shelf: SHELF ? SHELF.title : null, requestedAt:stamp });
+  }
+  if(!u && !m && SHELF){
+    cmds.push({ id:"ns"+tag, action:"nagekomi_shiji",
+                target:"行き先だけ：「"+SHELF.title+"」の棚", label:"振り分けの指示",
+                shelf: SHELF.title, requestedAt:stamp });
+  }
+
+  var chain = Promise.resolve(true);
+  cmds.forEach(function(c){ chain = chain.then(function(prev){
+    return push(c).then(function(ok){ return prev && ok; }); }); });
+
+  chain.then(function(ok){
     b.disabled = false;
     document.getElementById("u").value = "";
     document.getElementById("m").value = "";
-    say("msg", ok ? "入りました。棚はあとで決めていい。"
-                  : "受け取りました（パソコンが今いないので、届き次第まとめて送ります）", true);
+    var where = SHELF ? ("「"+SHELF.title+"」の棚へ。") : "棚はあとで決めていい。";
+    SHELF = null; drawTana();
+    say(ok ? ("入りました。"+where+"夜中0時にまとめて入れます。")
+           : "受け取りました（パソコンが今いないので、届き次第まとめて送ります）", true);
   });
-});
-
-document.getElementById("sendS").addEventListener("click", function(){
-  var t = document.getElementById("s").value.trim();
-  if(!t){ say("msgS","中身が空です", false); return; }
-  var b = this; b.disabled = true; say("msgS","送っています…", true);
-  push({ id:"ns"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
-         action:"nagekomi_shiji", target:t, label:"振り分けの指示",
-         requestedAt:new Date().toISOString() })
-  .then(function(ok){
-    b.disabled = false;
-    document.getElementById("s").value = "";
-    say("msgS", ok ? "受け取りました。" : "受け取りました（届き次第まとめて送ります）", true);
-  });
-});
-
-/* URL欄でEnter／改行キーを押したらそのまま送る（3秒で投げるため） */
-document.getElementById("u").addEventListener("keydown", function(e){
-  if(e.key === "Enter"){ e.preventDefault(); document.getElementById("send").click(); }
 });
 
 drawQ();

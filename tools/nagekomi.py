@@ -181,7 +181,7 @@ def append_jsonl(path, row):
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def add(url, memo=""):
+def add(url, memo="", shelf=None, shelf_id=None):
     url = (url or "").strip()
     if not url:
         return {"ok": False, "message": "URLが空です"}
@@ -193,7 +193,10 @@ def add(url, memo=""):
         "at": now(),
         "url": url,
         "memo": (memo or "").strip(),
-        "shelf": None,          # ★決まっていないものは決まっていないまま置く
+        # ★1039番：箱の棚ボタンを押していればその場で入る。押さなければ None のまま
+        #   （決まっていないものは決まっていないまま置く、を崩さない）
+        "shelf": (shelf or "").strip() or None,
+        "shelfId": (shelf_id or "").strip() or None if isinstance(shelf_id, str) else shelf_id,
         "copyDirection": None,  # 「コピーはこの方向で」も後から入る
         "status": "inbox",
     }
@@ -205,12 +208,14 @@ def add(url, memo=""):
             "message": "投げ込み受け取り：%s" % (row.get("title") or url)[:60]}
 
 
-def shiji(text):
+def shiji(text, shelf=None):
     """口で言った振り分け／コピーの方向を1行として置く。棚には触らない。"""
     text = (text or "").strip()
     if not text:
         return {"ok": False, "message": "中身が空です"}
     row = {"id": uuid.uuid4().hex[:12], "at": now(), "text": text, "status": "unapplied"}
+    if (shelf or "").strip():
+        row["shelf"] = shelf.strip()
     append_jsonl(SHIJI, row)
     return {"ok": True, "id": row["id"], "message": "振り分けの指示を受け取りました（%d文字）" % len(text)}
 

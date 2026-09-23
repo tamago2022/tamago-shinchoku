@@ -330,6 +330,11 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                            "restarted": bool(did),
                            "health": (_h.stdout or "").strip(),
                            "totalYen": 0.0}
+                elif job.get("kind") == "tana":
+                    # 1039番 棚の口（GETと、自分が足した行だけ）。Lovableの画面は通らない。
+                    import importlib, tana
+                    importlib.reload(tana)
+                    out = tana.run_job(job.get("payload") or {})
                 elif job.get("kind") == "mainichi":
                     # ★1038番：毎日やることの専用の口。列（queue.json）に積まない。
                     #   admin_stock を **GETだけ**で読んで下書きを作る。棚には1文字も書かない。
