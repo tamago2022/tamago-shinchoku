@@ -1,0 +1,400 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1060 Devin セッション棚卸し｜何をやらせたのか</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#12100e;color:#efe9e0;font-family:-apple-system,"Hiragino Sans",sans-serif;line-height:1.7;font-size:15px}
+.wrap{max-width:780px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:21px;margin:0 0 4px;letter-spacing:.02em}
+.sub{color:#9c948a;font-size:12px;margin:0 0 24px}
+h2{font-size:15px;margin:36px 0 10px;padding-left:10px;border-left:4px solid #d8a13a}
+.kotae{background:#1d1a16;border:1px solid #332d26;border-radius:12px;padding:16px}
+.kotae p{margin:0 0 10px}.kotae p:last-child{margin:0}
+.big{font-size:19px;font-weight:700;color:#f6d38a}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 6px;border-bottom:1px solid #2c2620;text-align:left;vertical-align:middle}
+thead th{color:#9c948a;font-weight:400;font-size:11px;border-bottom:1px solid #4a4038}
+tbody th{font-weight:600;position:relative;padding-right:8px}
+.bar{display:block;height:3px;width:var(--w);background:#d8a13a;border-radius:2px;margin-top:5px;opacity:.55}
+.num{text-align:right;width:15%;font-variant-numeric:tabular-nums;font-size:15px}
+.ok{color:#8fd88f}.no{color:#7a6f64}.gray{color:#9c948a}
+.row{border-bottom:1px solid #262019;padding:13px 0}
+.no{font-size:12px;color:#d8a13a;font-weight:700}
+.no .d{color:#8b8177;font-weight:400;margin-left:8px}
+.naka{font-size:15px;margin:3px 0 7px}
+.kind{display:inline-block;font-size:11px;padding:2px 9px;border-radius:99px;background:#2b241c;color:#e3c48a;margin-bottom:7px}
+.flags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.f{font-size:11px;padding:2px 8px;border-radius:5px;background:#1d1a16;border:1px solid #2f2820}
+.f.ok{color:#8fd88f;border-color:#3c5c3c}.f.no{color:#6d6259}.f.gray{color:#a99a84}
+.shi{font-size:13px;color:#c3b8aa}
+.src{font-size:10px;color:#6a6159;display:inline-block;margin-left:4px;font-weight:400}
+.warn{background:#241a12;border:1px solid #5c3d1c;border-radius:10px;padding:13px;font-size:13px}
+ul{padding-left:18px;margin:8px 0}li{margin:5px 0;font-size:13.5px}
+code{background:#241f19;padding:1px 5px;border-radius:4px;font-size:12px}
+</style></head><body><div class="wrap">
+
+<h1>Devinに何をやらせたのか</h1>
+<p class="sub">全セッションを1つずつ。2026-09-16〜09-22の実測（出典 tools/1060_devin26.py:4）。作成 2026-09-24</p>
+
+<div class="kotae">
+<p class="big">草むしりばかりではなかった。いちばん投げたのは「ガス漏れの発見」で11本（出典 tools/1060_devin26.py:4）。</p>
+<p>草むしりは4本。塗装3本、ネジ4本、新規2本、こちらの投げ事故2本。（出典 tools/1060_devin26.py:4）</p>
+<p class="big">そして、本番で開けたのは塗装の1本だけ</p><p>（#14 ひとこと目安箱。出典 status/1059_hikitsugi_devin.md:12）</p>
+<p>ガス漏れ11本のうち、原因を名指しで当てて返したのが4本（#18 #21 #22 #24。出典 tools/1060_devin26.py:4）。<b>その4本を「直せ」と投げ直していない。</b>調べさせて終わりにしていた。</p>
+</div>
+
+<h2>種類で分ける</h2>
+<table>
+<thead><tr><th>種類</th><th class="num">投げた</th><th class="num">PR</th><th class="num">main</th><th class="num">本番</th></tr></thead>
+<tbody><tr>
+ <th>草むしり（機械的な置換・不要物の除去）<span class="src">出典 tools/1060_devin26.py:4</span><span class="bar" style="--w:36%"></span></th>
+ <td class="num">4</td><td class="num no">0</td>
+ <td class="num no">0</td><td class="num no">0</td></tr>
+<tr>
+ <th>塗装（見た目・配置）<span class="src">出典 tools/1060_devin26.py:4</span><span class="bar" style="--w:27%"></span></th>
+ <td class="num">3</td><td class="num ok">2</td>
+ <td class="num ok">3</td><td class="num ok">1</td></tr>
+<tr>
+ <th>ネジの締め直し（型・設定・配線）<span class="src">出典 tools/1060_devin26.py:4</span><span class="bar" style="--w:36%"></span></th>
+ <td class="num">4</td><td class="num no">0</td>
+ <td class="num ok">2</td><td class="num no">0</td></tr>
+<tr>
+ <th>ガス漏れの発見（原因究明・間違い探し・棚卸し）<span class="src">出典 tools/1060_devin26.py:4</span><span class="bar" style="--w:100%"></span></th>
+ <td class="num">11</td><td class="num ok">2</td>
+ <td class="num no">0</td><td class="num no">0</td></tr>
+<tr>
+ <th>新しいものを作る<span class="src">出典 tools/1060_devin26.py:4</span><span class="bar" style="--w:18%"></span></th>
+ <td class="num">2</td><td class="num ok">1</td>
+ <td class="num ok">1</td><td class="num no">0</td></tr>
+<tr>
+ <th>分類外（こちらの投げ事故）<span class="src">出典 tools/1060_devin26.py:4</span><span class="bar" style="--w:9%"></span></th>
+ <td class="num">1</td><td class="num no">0</td>
+ <td class="num no">0</td><td class="num no">0</td></tr>
+<tr>
+ <th>分類外（雑談）<span class="src">出典 tools/1060_devin26.py:4</span><span class="bar" style="--w:9%"></span></th>
+ <td class="num">1</td><td class="num no">0</td>
+ <td class="num no">0</td><td class="num no">0</td></tr></tbody></table>
+
+<div class="warn" style="margin-top:14px">
+<b>「1本も投げていない種類」は無い。5種類とも投げている</b>（出典 tools/1060_devin26.py:4）。<br>
+1本も無かったのはこっち：<b>依頼文に「本番で開けたら完了」と書いた依頼が0本</b>（出典 status/devin_sessions_detail.jsonl:1）。
+（手元に依頼文が残る20本を検索。「本番で開け」0件／「返事を書くな」0件／「質問をするな」0件。出典 status/devin_sessions_detail.jsonl:1 と status/_973/session_details_raw.json:1）<br>
+＝ Devinは一度も「本番に出すところまでが仕事」と言われていない。
+</div>
+
+<h2>向き・不向き（実測から言えることだけ）</h2>
+<ul>
+<li><b>得意：原因の名指し。</b>#21 心臓が止まる理由＝ファイル名と行番号つきで特定。#24 YouTube追加の失敗＝8ID×10回＝80回叩いて「IDによって決まる。ランダムではない」と断定（出典 status/devin_922b.json:1）。#18/#22 は見立てを一切教えていないのに自力で同じ真犯人に辿り着いた。</li>
+<li><b>得意：1ファイルだけの機械仕事。</b>#5（型4か所）は迷いなく終わってmainまで入った（出典 status/devin_sessions_detail.jsonl:5）。</li>
+<li><b>不得意：答えの形を決めていない調べもの。</b>#23 は111分かけてPRなし（出典 status/devin_922.json:1）。#17/#20 の棚卸しは2回投げて2回ともPRに出ていない（出典 tools/1060_devin26.py:4）。</li>
+<li><b>不得意にされていたこと：まとめて投げる。</b>9/16に3本・9/20に3本ずつ投げた回は、6本ともPR0本（出典 tools/1060_devin26.py:4）。</li>
+<li><b>26本中4本は、能力ではなくこちらの事故で死んだ。</b>（出典 tools/1060_devin26.py:4）#8（お題なし）#10（雑談）#6・#20（push権限が無いリポジトリに投げた）</li>
+</ul>
+
+<h2>26本 ぜんぶ（出典 tools/1060_devin26.py:4）</h2>
+<article class="row">
+  <div class="no">1<span class="d">9/16 20:05</span></div>
+  <div class="naka">joy-relief-station に入れるか確認＋バッジ比率の実測<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">途中で中断。Devin『コード変更なし・コミットなし・PRなし』 <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:4</span></div>
+</article>
+<article class="row">
+  <div class="no">2<span class="d">9/16 22:16</span></div>
+  <div class="naka">トップを軽くする（coverGuide.ts 6MB を分割）<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-2">ネジ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">調べただけで止まった。Devin『PRは出していません。コミットもしていません』 <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:5</span></div>
+</article>
+<article class="row">
+  <div class="no">3<span class="d">9/16 22:16</span></div>
+  <div class="naka">画像を軽くする（badges の巨大PNG）<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-2">ネジ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">調べただけ。しかも前提が間違い＝2.65MBは本番に出ていない保管用だった <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:6</span></div>
+</article>
+<article class="row">
+  <div class="no">4<span class="d">9/16 22:16</span></div>
+  <div class="naka">使われていないコード・依存を消す<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-0">草むしり</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">一覧を出して停止。Devin『コード変更・PRは一切行っていません』 <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:7</span></div>
+</article>
+<article class="row">
+  <div class="no">5<span class="d">9/17 22:42</span></div>
+  <div class="naka">voice-session の型4か所を any に置換<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-2">ネジ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f ok">main ★PRなしでmainへ直push 32f8e310</span>
+    <span class="f gray">本番 未確認</span>
+  </div>
+  <div class="shi">死んでいない。PRを使わずmainへ直接入れた <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:8</span></div>
+</article>
+<article class="row">
+  <div class="no">6<span class="d">9/18 01:24</span></div>
+  <div class="naka">index.html を進捗表に丸ごと差し替え<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-0">草むしり</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">push が 403。tamago-shinchoku に Devin の GitHub App が入っていない <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:9</span></div>
+</article>
+<article class="row">
+  <div class="no">7<span class="d">9/18 01:50</span></div>
+  <div class="naka">カードのバッジ位置・単位を直す<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-1">塗装</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f ok">main ★PRなしでmainへ直push 350fa44e / 80a17d05</span>
+    <span class="f gray">本番 未確認</span>
+  </div>
+  <div class="shi">死んでいない。PRを使わずmainへ直接入れた <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:10</span></div>
+</article>
+<article class="row">
+  <div class="no">8<span class="d">9/18 03:10</span></div>
+  <div class="naka">（お題なし。リポジトリ名だけ投げた）<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-5">事故</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">こちらの事故。Devin『このリポジトリで何を行いましょうか？』と聞いて終了 <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:11</span></div>
+</article>
+<article class="row">
+  <div class="no">9<span class="d">9/18 03:13</span></div>
+  <div class="naka">coverGuide を動的importにしてメインJSを小さく<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-2">ネジ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f ok">main ★PRなしでmainへ直push cf2b2faa</span>
+    <span class="f gray">本番 未確認</span>
+  </div>
+  <div class="shi">死んでいない。メインJS 3,393,543→1,869,004バイトとDevinは報告 <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:12</span></div>
+</article>
+<article class="row">
+  <div class="no">10<span class="d">9/18 22:31</span></div>
+  <div class="naka">「今日何やった？」<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-6">雑談</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">こちらの事故。仕事を投げていない <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:13</span></div>
+</article>
+<article class="row">
+  <div class="no">11<span class="d">9/19 03:04</span></div>
+  <div class="naka">バッジ寸法の片側cq単位を min() に直す<span class="src">status/devin_sessions_detail.jsonl:1 と 1059_hikitsugi_devin.md:10</span></div>
+  <div class="kind k-1">塗装</div>
+  <div class="flags">
+    <span class="f ok">PR PR #424</span>
+    <span class="f ok">main 入った 9e2a58de</span>
+    <span class="f gray">本番 目視未確認</span>
+  </div>
+  <div class="shi">死んでいない。ただしCIがGitHubの支払いエラーで起動せず <span class="src">出典 status/devin_sessions_detail.jsonl:1 と 1059_hikitsugi_devin.md:10・tools/1060_devin26.py:14</span></div>
+</article>
+<article class="row">
+  <div class="no">12<span class="d">9/19 03:07</span></div>
+  <div class="naka">GPT Live ラボ（Iris版）3ファイル追加<span class="src">status/devin_sessions_detail.jsonl:1</span></div>
+  <div class="kind k-4">新規</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">前提不一致で自分から停止。指定ファイルに想定の中身が無かった <span class="src">出典 status/devin_sessions_detail.jsonl:1・tools/1060_devin26.py:15</span></div>
+</article>
+<article class="row">
+  <div class="no">13<span class="d">9/19 03:39</span></div>
+  <div class="naka">隠しラボページ /lab/gptlive を追加<span class="src">status/devin_sessions_detail.jsonl:1 と 1059_hikitsugi_devin.md:10</span></div>
+  <div class="kind k-4">新規</div>
+  <div class="flags">
+    <span class="f ok">PR PR #426</span>
+    <span class="f ok">main 入った 21d9a760</span>
+    <span class="f no">本番 出ない（404）</span>
+  </div>
+  <div class="shi">★こちらの失敗。mainに入れたのに公開を押していない <span class="src">出典 status/devin_sessions_detail.jsonl:1 と 1059_hikitsugi_devin.md:10・tools/1060_devin26.py:16</span></div>
+</article>
+<article class="row">
+  <div class="no">14<span class="d">9/19 03:41</span></div>
+  <div class="naka">ひとこと目安箱を /watch の最下部に一本化<span class="src">status/devin_sessions_detail.jsonl:1 と 1059_hikitsugi_devin.md:10</span></div>
+  <div class="kind k-1">塗装</div>
+  <div class="flags">
+    <span class="f ok">PR PR #425</span>
+    <span class="f ok">main 入った 0d7e9905</span>
+    <span class="f ok">本番 ★出た</span>
+  </div>
+  <div class="shi">26本で唯一、本番で開けた1本 <span class="src">出典 status/devin_sessions_detail.jsonl:1 と 1059_hikitsugi_devin.md:10・tools/1060_devin26.py:17</span></div>
+</article>
+<article class="row">
+  <div class="no">15<span class="d">9/20 10:33</span></div>
+  <div class="naka">トップが重い原因を実測で特定して1つ直す<span class="src">status/devin_sessions_detail.jsonl:1 と devin_990_report.md:11</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">枠切れ。Devin『再開します』と返事を書いて寝た <span class="src">出典 status/devin_sessions_detail.jsonl:1 と devin_990_report.md:11・tools/1060_devin26.py:18</span></div>
+</article>
+<article class="row">
+  <div class="no">16<span class="d">9/20 10:34</span></div>
+  <div class="naka">share/check の軸違い%を一括置換<span class="src">status/devin_sessions_detail.jsonl:1 と devin_990_report.md:11</span></div>
+  <div class="kind k-0">草むしり</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">枠切れ。『再開します』の空返事で終了 <span class="src">出典 status/devin_sessions_detail.jsonl:1 と devin_990_report.md:11・tools/1060_devin26.py:19</span></div>
+</article>
+<article class="row">
+  <div class="no">17<span class="d">9/20 10:34</span></div>
+  <div class="naka">tools/ 314本の棚卸し表を作る<span class="src">status/devin_sessions_detail.jsonl:1 と devin_990_report.md:11</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">枠切れ。『了解しました』の空返事で終了 <span class="src">出典 status/devin_sessions_detail.jsonl:1 と devin_990_report.md:11・tools/1060_devin26.py:20</span></div>
+</article>
+<article class="row">
+  <div class="no">18<span class="d">9/20 17:48</span></div>
+  <div class="naka">トップが重い真犯人（見立てを教えない版）<span class="src">status/devin_1by1.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f ok">PR PR #448</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">★こちらの失敗。PRが返ったのに受け取っていない <span class="src">出典 status/devin_1by1.json:1・tools/1060_devin26.py:21</span></div>
+</article>
+<article class="row">
+  <div class="no">19<span class="d">9/20 18:10</span></div>
+  <div class="naka">share/check の軸違い%を一括置換（2回目）<span class="src">status/devin_1by1.json:1</span></div>
+  <div class="kind k-0">草むしり</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">死んでいない。582ファイル走査して該当0件＝直すものが無かった <span class="src">出典 status/devin_1by1.json:1・tools/1060_devin26.py:22</span></div>
+</article>
+<article class="row">
+  <div class="no">20<span class="d">9/20 18:13</span></div>
+  <div class="naka">tools/ の棚卸し（2回目）<span class="src">status/devin_1by1.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">棚卸しは完成。push が 403（#6と同じ権限不足）でPRに出せず <span class="src">出典 status/devin_1by1.json:1・tools/1060_devin26.py:23</span></div>
+</article>
+<article class="row">
+  <div class="no">21<span class="d">9/22 06:45</span></div>
+  <div class="naka">心臓（heartbeat）が止まる理由を特定<span class="src">status/devin_922.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">死んでいない。原因をファイル名・行番号つきで名指しした。直す依頼にしていない <span class="src">出典 status/devin_922.json:1・tools/1060_devin26.py:24</span></div>
+</article>
+<article class="row">
+  <div class="no">22<span class="d">9/22 06:51</span></div>
+  <div class="naka">補給所に残る重さを最大1つ潰す<span class="src">status/devin_922.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f ok">PR PR #455</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">★こちらの失敗。PRが返ったのに受け取っていない <span class="src">出典 status/devin_922.json:1・tools/1060_devin26.py:25</span></div>
+</article>
+<article class="row">
+  <div class="no">23<span class="d">9/22 07:21</span></div>
+  <div class="naka">リポジトリが肥大した真犯人を特定<span class="src">status/devin_922.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">111分かけてPRなし。答えの形を決めずに投げた <span class="src">出典 status/devin_922.json:1・tools/1060_devin26.py:26</span></div>
+</article>
+<article class="row">
+  <div class="no">24<span class="d">9/22 09:13</span></div>
+  <div class="naka">外部YouTube追加が時々落ちる理由を特定<span class="src">status/devin_922b.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">死んでいない。80回叩いて原因を特定。直す依頼にしていない <span class="src">出典 status/devin_922b.json:1・tools/1060_devin26.py:27</span></div>
+</article>
+<article class="row">
+  <div class="no">25<span class="d">9/22 09:22</span></div>
+  <div class="naka">index.lock の取り合いの根本原因を特定<span class="src">status/devin_922b.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">『読みました。実測を進めます』の空返事1通で終了（5分） <span class="src">出典 status/devin_922b.json:1・tools/1060_devin26.py:28</span></div>
+</article>
+<article class="row">
+  <div class="no">26<span class="d">9/22 09:27</span></div>
+  <div class="naka">#455の後に残る重さを最大1つ潰す<span class="src">status/devin_922b.json:1</span></div>
+  <div class="kind k-3">ガス漏れ</div>
+  <div class="flags">
+    <span class="f no">PR 返らない</span>
+    <span class="f no">main 入らない</span>
+    <span class="f no">本番 出ない</span>
+  </div>
+  <div class="shi">★枠切れの空振り。Devinは一言も書いていない（1分） <span class="src">出典 status/devin_922b.json:1・tools/1060_devin26.py:29</span></div>
+</article>
+
+<h2>枠（上限）の実態</h2>
+<table>
+<tbody>
+<tr><th>Devinの上限は週間か日次か</th><td>Pro／Teamsのフル席は<b>日次と週間の両方</b>。Maxは週間のみ（日次の上限なし）。<br>出典 https://docs.devin.ai/admin/billing/self-serve.md（2026-09-24 取得）<br>※どのプランかはAPIから取れない（下記）</td></tr>
+<tr><th>使い始めた日</th><td><b>2026-09-16 20:05 JST</b>（最初のセッションの created_at 2026-09-16T11:05:22Z。出典 status/_973/sessions_raw.json:1）＝たまごさんの記憶「9月16日」と一致</td></tr>
+<tr><th>上限に当たった回数</th><td><b>記録に残るのは2回。</b>（$ grep -rn out_of_quota status/ → 403が初めて出るのは 991a_devin_watch.out の3行目、次が 0devin_07_quota.out の15行目。それ以前の行は0件）<br>1回目 2026-09-20 11:08 JST（$ sed -n 3p status/mac_jobs/done/991a_devin_watch.out → 403 out_of_quota）<br>2回目 2026-09-22 09:30 JST（$ sed -n 15p status/mac_jobs/done/0devin_07_quota.out → HTTP=403 out_of_quota）。直前の09:27にはPOSTが通っている（出典 status/devin_922b.json:1）<br>※「初めてか2回目か」→<b>2回目</b></td></tr>
+<tr><th>1回目は何時間で戻ったか</th><td>（$ sed -n 3p status/mac_jobs/done/991a_devin_watch.out → 11:08 403）のあと、（$ sed -n 55p status/mac_jobs/done/a1000_devin_acu_and_one.out → 17:47 POST /v1/sessions HTTP=200）。<b>差は6時間39分</b>、日付をまたいでいない</td></tr>
+<tr><th>2回目は戻っているか</th><td><b>戻っていない。</b>（$ grep -c out_of_quota status/devin_922b.json → 61）＝09-22 16:57〜17:59 は61回連続で403。さらに status/watashi_gate/20702e390ead30d3.json:1 に 09-24 06:47 の403。<br>＝09-22 09:30 から 09-24 06:47 まで<b>45時間17分</b>（status/watashi_gate/20702e390ead30d3.json:1）止まったまま。1回目のような「同日中の回復」では説明がつかない。</td></tr>
+<tr><th>次に使えるのはいつか</th><td><b>日付では答えられない。</b>理由：戻る日を決めるのは「週の起点」だが、その起点を返す口が全部閉じている。<br><code>/v1/enterprise/consumption</code> → 403「Contact support to enable the consumption API」／<code>/v1/usage</code> <code>/v1/billing</code> <code>/v1/consumption</code> <code>/v1/organization</code> → 404。<br>言えるのはここまで：<b>「週間ぶんの回復」なら9/29あたりという線はあるが、これは推測なので数えない。</b>叩いて確かめるしかない。</td></tr>
+<tr><th>いくら使ったか</th><td><b>取れない。</b>金額を返す口が上記のとおり全部閉じている。手元の帳簿にDevinの円は0件（status/1059_hikitsugi_devin.md:16）。</td></tr>
+</tbody></table>
+
+<div class="warn" style="margin-top:14px">
+<b>訂正が2つあります。</b><br>
+① 9/20の初403の時刻を、前の報告では「11:37」と書きました。<b>正しくは11:08</b>（991a_devin_watch.out が11:08:15の時点で既に403を記録）。<br>
+② 前の報告の「mainに入ったのは3本」（status/1059_hikitsugi_devin.md:10）はPR経由だけの数です。<b>Devinの発言ではPRを使わずmainへ直接pushしたものが別に3本あります</b>（#5 32f8e310／#7 350fa44e・80a17d05／#9 cf2b2faa。出典 status/devin_sessions_detail.jsonl:5 ほかDevinの最終発言）。ただしこちらで裏を取っていないので「未確認」にしてあります。joy-relief-station の手元クローンが無く、叩けません。
+</div>
+
+</div></body></html>
