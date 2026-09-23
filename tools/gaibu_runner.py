@@ -348,6 +348,15 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, mainichi_kuchi
                     importlib.reload(mainichi_kuchi)
                     out = mainichi_kuchi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "vault":
+                    # ★1044番：Obsidian Vault のノートを**読むだけ**。
+                    #   サンドボックスは ~/Library/Mobile Documents/ をマウントして
+                    #   いない（Readもbashも届かない。実測 2026-09-24）。
+                    #   書き込み・削除なし・Vaultの外へ出ない・外へ1本も出ない・課金0
+                    #   （vault_yomu.py 側の _safe と ALLOW_EXT で保証）。
+                    import importlib, vault_yomu
+                    importlib.reload(vault_yomu)
+                    out = vault_yomu.run_job(job.get("payload") or {})
                 elif job.get("kind") == "relaytest":
                     # ★1038番：スマホの代わりに中継所へ1本投げて、道が本当に通るか実測する。
                     #   「たまごさんに試させて確かめる」をやめるための口。棚には触らない。
