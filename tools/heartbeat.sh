@@ -335,6 +335,11 @@ while :; do
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
   tick_every 240 && ( python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1052番）たまごさんの確認待ちの紙。たまごさん「俺の確認待ちもいっぱいあるのかもしれない。
+  #   なんか今出してよ。優先順位つけるから」「多くても10行」
+  #   ★たまごさんにしか押せないもの（鍵・本人確認・金銭・取り消せない公開）だけを載せる。
+  #   こちらで進められるものを載せた時点でこの紙の負け。中で1日1回に間引く（status/.kakunin_machi_at）。
+  tick_every 240 && ( python3 "$REPO/tools/kakunin_machi.py" >> "$REPO/status/kakunin_machi.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

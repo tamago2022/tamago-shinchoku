@@ -307,6 +307,13 @@ PYEOF
 } > "$REPO/status/_plan_usage_probe.txt" 2>&1
 run_with_timeout 30 python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
 
+# 2026-09-24：落ちた記録（tools/ochita_kiroku.py）。便が黙って消えるのをやめさせる。
+#   実害：この日、便が3本同時に途中で落ちたのに status/ のどこにも「落ちた」という記録が1件も無かった。
+#   history.jsonl は「その瞬間に生きていた便」しか書かないので、居なくなったことは誰も書いていなかった。
+#   これが status/ochita.json（最新）と status/ochita.jsonl（履歴）に必ず残る。
+#   1秒で終わる読み取りだけの処理。新しい常駐は増やさず、この5分便に相乗りする。
+run_with_timeout 30 python3 "$REPO/tools/ochita_kiroku.py" >/dev/null 2>&1 || true
+
 # 795番（2026-09-14）：数字のズレをゼロに近づける常設の見張り番。5分おきの既存起動に相乗りする
 # （新しい常駐は増やさない。理由はpace.py冒頭のコメントと同じ）。
 # ①正本の食い違いを監査 ②fal1本単価の基準を直近7日実測中央値に更新 ③予測と実測のズレ率トップ5を再計算。

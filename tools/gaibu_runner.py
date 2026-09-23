@@ -32,7 +32,45 @@ REPO = os.path.dirname(HERE)
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
-import gaibu_kuchi as gkuchi  # noqa: E402
+# ---------------------------------------------------------------------
+# ★2026-09-24：待ち行列は `shigoto_queue.py`（待ち行列だけの家）から取る。
+#   以前は `gaibu_kuchi.py` から取っていたので、03:38にあの1本が丸ごと
+#   書き替えられた拍子に JOBS_DIR / write_job_result が巻き添えで消え、
+#   ここの import で落ちて**工場が黙って止まった**（03:35以降ゼロ件）。
+#   穴を塞がずパイプを替える：待ち行列の正本は1か所だけ。
+#   `gaibu_kuchi` は「鍵の状態」「回線が出るか」の**おまけ**としてだけ使い、
+#   無くても・別物に替わっても工場は止まらない。
+# ---------------------------------------------------------------------
+import shigoto_queue as gkuchi  # noqa: E402  ← 待ち行列の正本
+
+try:
+    import gaibu_kuchi as _gk  # noqa: E402  外部APIの鍵まわり（あれば使う）
+except Exception:
+    _gk = None
+
+
+def _net_ok():
+    """回線の確認。★取れないときは True 側に倒す。
+    kakunin/yomu/sumaho/daicho など**外部APIを使わない仕事のほうが多い**のに、
+    api.openai.com に出られないだけで列ごと止めていたのが以前の作り。"""
+    f = getattr(_gk, "net_ok", None)
+    if not callable(f):
+        return True
+    try:
+        return bool(f())
+    except Exception:
+        return True
+
+
+def _key_status():
+    f = getattr(_gk, "key_status", None)
+    if not callable(f):
+        return {"note": "gaibu_kuchi に key_status がありません（外部APIの仕事以外には影響しません）"}
+    try:
+        return f()
+    except Exception as e:
+        return {"error": repr(e)}
+
 
 LOCK = os.path.join(gkuchi.JOBS_DIR, ".runner.lock")
 RUNLOG = os.path.join(REPO, "status", "gaibu_runner.log")
@@ -71,6 +109,7 @@ JOB_TIMEOUT = {
     "oausage": 90,
     "watashi": 420,    # 1048番 渡す前の門。本物のブラウザで開いて押すので長め
     "sumaho": 330,     # 1043番 スマホの門。ブラウザを起こして4回押すので長め
+    "yomu": 200,       # 1051番 読む係。読み手を順に試すので少し長め
     "zandaka": 180,    # 1034番 財布の残高。GET7本＋CLI2本。1本15秒の上限つき
 }
 JOB_TIMEOUT_DEFAULT = 180
@@ -175,7 +214,7 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
     # ★空なら即終了。15秒おきに呼ばれるので、ここが軽いことが一番大事。
     if not os.path.isdir(gkuchi.JOBS_PENDING) or not _pending():
         return 0
-    if not gkuchi.net_ok():
+    if not _net_ok():
         _log("回線が出ないホストで起動されました。何もしません。")
         return 0
     if not _take_lock():
@@ -301,6 +340,15 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, nagekomi
                     importlib.reload(nagekomi)
                     out = nagekomi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "yomu":
+                    # 1051番【読む係】どのリンクでも、読める人を順に呼んで中身を返す。
+                    #   サンドボックスからは x.com / youtube / publish.twitter.com が
+                    #   403（Tunnel connection failed）で出られない。Macからは出られる。
+                    #   ★GETだけ・書き先は status/yomu_daicho.jsonl と status/yomu_cache/ だけ
+                    #   （yomu.py 側で保証）。0円の読み手だけを使うので**課金0**。
+                    import importlib, yomu
+                    importlib.reload(yomu)
+                    out = yomu.run_job(job.get("payload") or {})
                 elif job.get("kind") == "douga":
                     # 2026-09-22 仕入れ：候補の動画が「公式か／静止画だけでないか」を確かめる。
                     #   YouTube の oEmbed（鍵不要・**課金0**）だけを叩く。行き先は
@@ -422,8 +470,8 @@ def main():
     a = ap.parse_args()
 
     if a.status:
-        print("回線（api.openai.com）：%s" % ("出る ✅" if gkuchi.net_ok() else "出ない ❌"))
-        print("鍵：%s" % json.dumps(gkuchi.key_status(), ensure_ascii=False))
+        print("回線（api.openai.com）：%s" % ("出る ✅" if _net_ok() else "出ない ❌"))
+        print("鍵：%s" % json.dumps(_key_status(), ensure_ascii=False))
         print("待ち：%d件 / 済み：%d件"
               % (len(_pending()),
                  len(os.listdir(gkuchi.JOBS_DONE)) if os.path.isdir(gkuchi.JOBS_DONE) else 0))
