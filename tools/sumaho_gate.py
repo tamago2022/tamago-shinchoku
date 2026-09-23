@@ -64,58 +64,100 @@ def ledger_ids():
 
 
 def run(box=None):
-    box = box or BOX
-    res = {"ranAt": now().strftime("%Y-%m-%d %H:%M"), "box": box,
-           "diag": [], "red": [], "totalYen": 0.0}
-    mjs = os.path.join(HERE, "sumaho_gate.mjs")
-    if not os.path.exists(mjs):
-        res["red"].append("tools/sumaho_gate.mjs が無い")
-        res["ok"] = False
-        return res
+    """★Playwright で開く。理由（実測 2026-09-24 01:48）：
+    headless Chrome を `--remote-debugging-port` で起こす手（tools/sumaho_gate.mjs）は
+    「Chromeのデバッグ口が開きませんでした」で48秒使って転んだ。たまごさんのChromeが
+    既に走っている機械では取り合いになる。**tools/watashi_gate.py と同じ Playwright に寄せる**
+    （道具を2本持たない）。iPhoneのUA・375x812・タッチありはここで指定する。"""
+    from playwright.sync_api import sync_playwright
 
+    box = box or BOX
+    url = box + ("&" if "?" in box else "?") + "kikai=1&t=%d" % int(time.time())
+    res = {"ranAt": now().strftime("%Y-%m-%d %H:%M"), "box": url,
+           "ua": "iPhone Safari 17.5 / 375x812", "diag": [], "red": [],
+           "console": [], "netFail": [], "gamen": [], "totalYen": 0.0}
     before = ledger_ids()
     res["diag"].append("投げる前の台帳 %d行" % len(before))
-    t0 = time.time()
-    try:
-        r = subprocess.run(["node", mjs, box, OUT_JSON, PNG],
-                           capture_output=True, text=True, timeout=LIMIT_SEC)
-    except subprocess.TimeoutExpired:
-        res["red"].append("スマホの門が %d秒で終わらなかった" % LIMIT_SEC)
-        res["ok"] = False
-        return res
-    res["seconds"] = round(time.time() - t0, 1)
-    try:
-        gate = json.load(io.open(OUT_JSON, encoding="utf-8"))
-    except Exception:
-        gate = {"error": (r.stderr or r.stdout or "")[-600:]}
-    res["gamen"] = gate.get("oshita") or []
-    res["console"] = (gate.get("console") or [])[-12:]
-    res["netFail"] = (gate.get("netFail") or [])[-8:]
-    res["pageDiag"] = str(gate.get("diag") or "")[:800]
-    if gate.get("corsBlocked"):
-        # ★これが1043番で探していたもの。ブラウザが本番のPOSTを送らずに捨てた証拠
-        res["red"].append("★ブラウザが止めた（CORS）：%s" % str(gate["corsBlocked"])[:200])
-    if gate.get("error"):
-        res["red"].append("門が転んだ：%s" % str(gate["error"])[:300])
-    if gate.get("png"):
-        res["png"] = gate["png"]
 
-    # ★画面の言葉を信じない。台帳が増えたかで判定する
+    UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 "
+          "(KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1")
+    pats = [
+        ("①URLだけ（棚なし・ひとことなし）", "https://www.youtube.com/watch?v=J---aiyznGQ", "", False),
+        ("②URL＋棚", "https://www.youtube.com/watch?v=lDK9QqIzhwk", "", True),
+        ("③ひとことだけ", "", "1043番 スマホの門 ひとことだけ", False),
+        ("④日本語の題名のYouTube", "https://www.youtube.com/watch?v=WSeNSzJ2-Jw",
+         "1043番 日本語題名の実測", False),
+    ]
+    try:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch()
+            ctx = br.new_context(user_agent=UA, viewport={"width": 375, "height": 812},
+                                 device_scale_factor=3, is_mobile=True, has_touch=True,
+                                 locale="ja-JP", timezone_id="Asia/Tokyo")
+            pg = ctx.new_page()
+            pg.set_default_timeout(20000)
+            pg.on("console", lambda m: m.type == "error" and res["console"].append(
+                (m.text or "")[:240]))
+            pg.on("pageerror", lambda e: res["console"].append("pageerror: " + str(e)[:200]))
+            pg.on("requestfailed", lambda r: res["netFail"].append(
+                "%s %s ← %s" % (r.method, (r.url or "")[:90], (r.failure or "")[:120])))
+            pg.on("response", lambda r: r.status != 200 and "loca.lt" in (r.url or "") and
+                  res["netFail"].append("%s HTTP %d（★トンネルが止めた）"
+                                        % ((r.url or "")[:90], r.status)))
+            pg.goto(url, wait_until="load")
+            pg.wait_for_timeout(2500)
+            res["parts"] = pg.evaluate(
+                "()=>({send:!!document.getElementById('send'),nomu:!!document.getElementById('nomu'),"
+                "tana:(document.getElementById('tanaNote')||{}).textContent||''})")
+            for name, u, m, tana in pats:
+                pg.evaluate("""(a)=>{document.getElementById('u').value=a.u;
+                    document.getElementById('m').value=a.m;
+                    document.getElementById('msg').textContent='';
+                    if(a.t){var b=document.querySelector('#tana button'); if(b) b.click();}}""",
+                    {"u": u, "m": m, "t": tana})
+                pg.wait_for_timeout(200)
+                pg.click("#send")                       # ★実際に押す
+                msg, cls = "", ""
+                for _ in range(45):
+                    pg.wait_for_timeout(400)
+                    msg = pg.evaluate("()=>(document.getElementById('msg')||{}).textContent||''")
+                    cls = pg.evaluate("()=>(document.getElementById('msg')||{}).className||''")
+                    if msg and "送っています" not in msg:
+                        break
+                nokori = pg.evaluate("()=>{try{return JSON.parse(localStorage.getItem("
+                                     "'nagekomi.pending')||'[]').length}catch(e){return -1}}")
+                res["gamen"].append({"pattern": name, "ok": "ok" in cls,
+                                     "gamen": str(msg)[:260], "tanmatsuNokori": nokori})
+            res["pageDiag"] = pg.evaluate(
+                "()=>(document.getElementById('diag')||{}).textContent||''")[:900]
+            try:
+                os.makedirs(os.path.dirname(PNG), exist_ok=True)
+                pg.screenshot(path=PNG, full_page=True)
+                res["png"] = os.path.relpath(PNG, REPO)
+            except Exception:
+                pass
+            ctx.close()
+            br.close()
+    except Exception as e:
+        res["red"].append("門が転んだ：%s: %s" % (type(e).__name__, str(e)[:240]))
+
     time.sleep(3)
     after = ledger_ids()
     fueta = [i for i in after - before if i]
     res["fuetaCount"] = len(fueta)
     res["fuetaIds"] = fueta
+    res["gamenOk"] = sum(1 for x in res["gamen"] if x.get("ok"))
     res["diag"].append("投げた後の台帳 %d行（増えた %d件）" % (len(after), len(fueta)))
-    gamen_ok = sum(1 for x in res["gamen"] if x.get("ok"))
-    res["gamenOk"] = gamen_ok
-    # ④パターン：URLの分が3本＋ひとことだけの分は nagekomi_shiji（別の置き場）なので台帳は増えない
-    res["kitai"] = {"台帳に増える本数": 3, "指示として残る本数": 1}
+    # ★③ひとことだけ は nagekomi_shiji（別の置き場）なので台帳は増えない＝台帳は3件のはず
     if len(fueta) < 3:
         res["red"].append("★台帳が %d件しか増えていない（3件のはず）＝スマホの経路が通っていない"
                           % len(fueta))
-    if gamen_ok < 4:
-        res["red"].append("★画面が「届いた」と出なかったパターンがある（%d/4）" % gamen_ok)
+    if res["gamenOk"] < 4:
+        res["red"].append("★画面が「届いた」と出なかったパターンがある（%d/4）" % res["gamenOk"])
+    try:
+        json.dump(res, io.open(OUT_JSON, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    except Exception:
+        pass
     res["ok"] = not res["red"]
     return res
 

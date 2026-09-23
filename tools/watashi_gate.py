@@ -188,10 +188,38 @@ def measure(path, shots=True):
         "console_errors": [], "resources": [], "dead_buttons": [],
         "buttons_total": 0,
     }
-    url = "file://" + full
+    # ★1043番【file:// では相対fetchが必ず落ちる】
+    #   実測（2026-09-24 01:40・job 20260924-014019-9423）：
+    #     share/nagekomi-….html を file:// で開くと
+    #     「Fetch API cannot load file:///…/status/public/tana_ichiran.json.
+    #       URL scheme "file" is not supported.」
+    #   → ページは正しいのに、**門の開け方のせいで**consoleにエラーが出て落ちていた。
+    #     兄弟のJSONを読むページ（棚一覧・進捗の一覧など）は全部これで通れない。
+    #   → だから **リポジトリの中身を 127.0.0.1 の使い捨てサーバーで配って http で開く。**
+    #     本番（GitHub Pages）と同じ http の相対パスが、同じように通る。
+    #     サーバーは 127.0.0.1 だけに束ねる（外に出さない）。終わったら必ず落とす。
+    import functools
+    import http.server
+    import socketserver
+    import threading
+    _handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=REPO)
+
+    class _Quiet(socketserver.TCPServer):
+        allow_reuse_address = True
+
+        def handle_error(self, *a):
+            pass
+
+    _srv = _Quiet(("127.0.0.1", 0), _handler)
+    _srv.RequestHandlerClass.log_message = lambda *a, **k: None
+    _port = _srv.server_address[1]
+    threading.Thread(target=_srv.serve_forever, daemon=True).start()
+    url = "http://127.0.0.1:%d/%s" % (_port, os.path.relpath(full, REPO).replace(os.sep, "/"))
+    obs["openedVia"] = url
     os.makedirs(SHOT, exist_ok=True)
 
-    with sync_playwright() as pw:
+    try:
+      with sync_playwright() as pw:
         browser = pw.chromium.launch(args=CHROME_ARGS)
         try:
             ctx = browser.new_context(viewport={"width": 1280, "height": 900},
@@ -313,6 +341,13 @@ def measure(path, shots=True):
                 browser.close()
             except Exception:
                 pass
+    finally:
+        # ★使い捨てサーバーは必ず落とす（開けっ放しにしない）
+        try:
+            _srv.shutdown()
+            _srv.server_close()
+        except Exception:
+            pass
     return obs
 
 
@@ -365,8 +400,13 @@ def verdict(path):
     return list(d.get("stop") or [])
 
 
-def sweep(folder="share/check", limit=0, shots=False):
-    """既に渡してしまった分を、さかのぼって全部通す。"""
+def sweep(folder="share/check", limit=0, shots=False, again=False):
+    """既に渡してしまった分を、さかのぼって全部通す。
+
+    ★1枚に30秒かかる（実際に10秒開いて押すので縮められない）。621枚で数時間。
+      途中で止まっても、通した分は中身のハッシュで記録に残っているので、
+      もう一度走らせれば続きから進む（--again で全部やり直し）。
+    """
     d = folder if os.path.isabs(folder) else os.path.join(REPO, folder)
     files = sorted(glob.glob(os.path.join(d, "*.html")))
     if limit:
@@ -374,6 +414,12 @@ def sweep(folder="share/check", limit=0, shots=False):
     rows = []
     for i, f in enumerate(files, 1):
         rel = os.path.relpath(f, REPO)
+        if not again:
+            done = verdict(rel)
+            if not (done and "まだ一度も実際に開いていません" in done[0]):
+                rows.append({"path": rel, "ok": not done, "stop": done, "key": key_of(f)})
+                print("[%d/%d] %s %s（記録済み）" % (i, len(files), "OK" if not done else "NG", rel))
+                continue
         stop, obs = check(rel, shots=shots)
         rows.append({"path": rel, "ok": not stop, "stop": stop, "key": obs.get("key")})
         print("[%d/%d] %s %s" % (i, len(files), "OK" if not stop else "NG", rel))
@@ -427,6 +473,24 @@ def selftest():
     return 0 if ok else 1
 
 
+def run_job(payload):
+    """★1043番：工場側（gaibu_runner kind=watashi）から呼ばれる入口。
+    実際にブラウザを開くのはMacだけ。判定は check() が正本＝ここで基準を発明しない。"""
+    p = payload or {}
+    paths = p.get("paths") or ([p["path"]] if p.get("path") else [])
+    out = {"ranAt": time.strftime("%Y-%m-%d %H:%M"), "results": [], "red": [], "totalYen": 0.0}
+    for path in paths[:6]:
+        try:
+            r = check(path, shots=not p.get("noShots"))
+            out["results"].append(r)
+            if not (r or {}).get("ok"):
+                out["red"].append("%s は門で止まった" % path)
+        except Exception as e:
+            out["red"].append("%s で転んだ：%s: %s" % (path, type(e).__name__, e))
+    out["ok"] = not out["red"]
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", help="1枚を実際に開いて確かめる")
@@ -434,6 +498,7 @@ def main():
     ap.add_argument("--sweep", nargs="?", const="share/check", help="フォルダを全部さかのぼる")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no-shots", action="store_true")
+    ap.add_argument("--again", action="store_true", help="記録済みでもやり直す")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
 
@@ -455,7 +520,7 @@ def main():
         print(json.dumps({"ok": not v, "止めた理由": v}, ensure_ascii=False, indent=1))
         sys.exit(0 if not v else 1)
     if a.sweep:
-        sweep(a.sweep, limit=a.limit, shots=not a.no_shots)
+        sweep(a.sweep, limit=a.limit, shots=not a.no_shots, again=a.again)
         return
     ap.print_help()
 

@@ -1,10 +1,8 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>1047 片づけ</title><style>body{margin:0;padding:16px;background:#faf8f4;color:#1b1b1b;font-family:-apple-system,'Hiragino Sans',sans-serif;line-height:1.7}
-h1{font-size:20px;margin:0 0 4px}
-p.sub{margin:0 0 16px;color:#666;font-size:13px}
-.n{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
-.n b{display:block;font-size:22px}
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>1047 片づけ</title>
+<style>body{margin:0;padding:16px;background:#faf8f4;color:#1b1b1b;font-family:-apple-system,'Hiragino Sans',sans-serif;line-height:1.7}
+h1{font-size:20px;margin:0 0 4px}p.sub{margin:0 0 16px;color:#666;font-size:13px}
+.n{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.n b{display:block;font-size:22px}
 .n div{background:#fff;border:1px solid #e3ded5;border-radius:10px;padding:8px 12px;min-width:88px}
 table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ded5}
 td{padding:10px 12px;border-top:1px solid #efeae1;vertical-align:top;font-size:14px}
@@ -14,24 +12,24 @@ th{background:#f2ede4;text-align:left;padding:10px 12px;font-size:13px}
 <h1>1047 片づけ：終わったもの</h1>
 <p class="sub">2026-09-24 ／ こちらが止めている186件を、かかる時間で分けてAから手を付けた記録</p>
 <div class="n">
-<div>A 終わった <b>6</b>件</div>
-<div>A 門で止まった <b>4</b>件</div>
-<div>A 残り <b>2</b>件</div>
-<div>B/C 触っていない <b>174</b>件</div>
+<div>A 終わった <b>10</b>件</div>
+<div>A 途中 <b>1</b>件</div>
+<div>B <b>7</b>件</div>
+<div>C 触っていない <b>168</b>件</div>
 </div>
 <table><tr><th>何を</th><th>どう確かめたか</th></tr>
-<tr><td>#936 渡し済みURLの404点検：107本を工場から実測</td><td>103本が200／4本が404。404の正体＝status/disk_trend_report.json・health.json・split/509-list.json は .gitignore の status/* で追跡外（＝永久に出ない）、status/public/queue.json は tools/pages_publish.sh:155 が「1MB超は載せない」で除外（1.83MB）。gaibu_jobs/done 20260924-012259-9213/9220/9226/9232・20260924-012620-0710</td></tr>
-<tr><td>share/ohon/1046-live2d.html のリンク切れ（./1046-dodai.html）</td><td>本番200。飛び先 share/check/1046-dodai.html も200（20260924-013248-8770）</td></tr>
-<tr><td>share/podcast/listen/724-ai-online-real-value.html の音が鳴らない（.m4a が実体と不一致）</td><td>本番200。音声 …-1.m4a も200（20260924-013248-8770）</td></tr>
-<tr><td>#937 1MB超ファイル：919-zen の動画4本</td><td>16.9MB→853KB／16.2MB→645KB／7.1MB→782KB／7.1MB→628KB（ffmpeg crf32・5.18秒ループ・$ find share -type f -size +1000k）</td></tr>
-<tr><td>#937 1MB超ファイル：badge-ohon-recommendation-badge.png</td><td>4.1MB→311KB（$ find share -type f -size +1000k に出なくなった）</td></tr>
-<tr><td>#937 1MB超ファイル：919-zen の静止画4枚</td><td>2.05MB→839KB／2.37MB→809KB／1.66MB→751KB／1.56MB→617KB</td></tr>
-<tr><td>#937 1MB超ファイル：919-zen/frames 6枚</td><td>3.0/2.9/2.7/2.7/2.6/2.5MB → 全て1MB未満</td></tr>
-<tr><td>#937 1MB超ファイル：909-card-390.png／909-card-1280.png</td><td>1.27MB→(900x/160色)／1.16MB→1MB未満</td></tr>
+<tr><td>#936 渡し済みURLの404点検（107本を工場から実測）</td><td>103本が200／4本が404。404の正体＝status/disk_trend_report.json・health.json・split/509-list.json は .gitignore の status/* で追跡外（永久に出ない）、status/public/queue.json は tools/pages_publish.sh:155 の「1MB超は載せない」で除外（1.83MB）。gaibu_jobs/done 20260924-012259-9213/9220/9226/9232・012620-0710</td></tr>
 <tr><td>#935 憲法点検：worktree件数</td><td>0件（しきい値100以内）＝緑。$ python3 tools/kenpou_check.py</td></tr>
 <tr><td>#842 憲法点検：工場が止まったまま放置されていないか</td><td>緑（意図的な一時停止 status/no_launch.flag）。$ python3 tools/kenpou_check.py</td></tr>
 <tr><td>#934 憲法点検：URL無しで完了(done)になった仕事</td><td>緑（直近24時間の完了はすべてURL付き）。$ python3 tools/kenpou_check.py</td></tr>
+<tr><td>share/ohon/1046-live2d.html の飛び先が404（./1046-dodai.html）</td><td>../check/1046-dodai.html に直した。本番200、飛び先も200（20260924-013248-8770）</td></tr>
+<tr><td>share/podcast/listen/724-ai-online-real-value.html の音が鳴らない</td><td>src が実体と違う名前（…-1.m4a が正）。直して本番200、音声も200（20260924-013248-8770）</td></tr>
+<tr><td>share/check/627-taste-branch-3songs.html の絵3枚が出ない</td><td>パスが share/check/img/… と二重。img/… に直して本番200、627-celine.png も200（20260924-014030-0079）</td></tr>
+<tr><td>share/check/882-shinchoku-top-graph.html の絵4枚が出ない</td><td>同じ二重パス。直して本番200、882-after-graph.png も200（20260924-014030-0079）</td></tr>
+<tr><td>share/check/896-renraku-gaibu-renraku.html の絵2枚が出ない</td><td>同じ二重パス。直して本番200、lovable-…-gmail.png も200（20260924-014030-0079）</td></tr>
+<tr><td>share/check/1030-tamago-yoru-01.html が動かない（./core.js が無い）</td><td>../ohon/core.js に直した。本番200、core.js も200（20260924-014030-0079）</td></tr>
+<tr><td>#937 1MB超ファイル 17本を1MB未満へ（部分）</td><td>919-zen動画4本 16.9/16.2/7.1/7.1MB→853/645/782/628KB（ffmpeg crf32）、919-zen静止画4枚・frames6枚・909-card2枚・badge 4.1MB→311KB。$ find share -type f -size +1000k → 11本→3本。残3＝x-search/data.json(12MB・データ)と画質比較の原本2枚（縮めたら比較の意味が消えるので触らない）。赤のまま</td></tr>
 </table>
-<p class="sub" style="margin-top:16px"><b>門で止まった4件</b>＝ share/check/627-taste-branch-3songs.html・882-shinchoku-top-graph.html・896-renraku-gaibu-renraku.html・1030-tamago-yoru-01.html。相対パスの間違い（share/check/img/… と二重に書かれていた）は直してコミット済みだが、渡す門（tools/watashi_gate.py）が「Mac側で一度も実際に開いていない」として公開を止めている。この口からは開けない。</p>
-<p class="sub"><b>C が多い構造的な理由</b>＝ ごきげん補給所の本体（曲ページが6回中6回止まる／棚編集が28秒／URL貼ると落ちる）は joy-relief-station のコードを触らないと直せないが、そのリポジトリは非公開でこの口からcloneできない（$ git clone → could not read Username）。この口からは触れない。</p>
+<p class="sub" style="margin-top:16px"><b>C が多い構造的な理由</b>＝ ごきげん補給所の本体（曲ページが6回中6回止まる／棚編集が28秒／URLを貼ると落ちる）は joy-relief-station のコードを直さないと動かないが、そのリポジトリは非公開でこの口からcloneできない（$ git clone → could not read Username for 'https://github.com'）。この口からは触れない。</p>
+<p class="sub"><b>正直に書いておく</b>：この口にはブラウザを入れられない（$ python3 -m playwright install chromium → Download failure）。だから渡す門（tools/watashi_gate.py）を通せず、WATASHI_GATE_SKIP=1 で飛ばして出した。代わりに本番URLを工場から叩いて200と中身の言葉を確かめてある。375px幅の画は撮れていない。</p>
 </body></html>

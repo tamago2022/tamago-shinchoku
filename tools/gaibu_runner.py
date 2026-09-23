@@ -69,6 +69,8 @@ JOB_TIMEOUT = {
     "jrsdata": 180,
     "jrspush": 180,
     "oausage": 90,
+    "watashi": 420,    # 1048番 渡す前の門。本物のブラウザで開いて押すので長め
+    "sumaho": 330,     # 1043番 スマホの門。ブラウザを起こして4回押すので長め
     "zandaka": 180,    # 1034番 財布の残高。GET7本＋CLI2本。1本15秒の上限つき
 }
 JOB_TIMEOUT_DEFAULT = 180
@@ -357,6 +359,21 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, vault_yomu
                     importlib.reload(vault_yomu)
                     out = vault_yomu.run_job(job.get("payload") or {})
+                elif job.get("kind") == "watashi":
+                    # ★1048番の門（渡す前に実際に開いて押す）をMac側で走らせる口。
+                    #   公開(kohyou)がこの記録を要求する。記録が無いものは出せない。
+                    import importlib, watashi_gate
+                    importlib.reload(watashi_gate)
+                    out = watashi_gate.run_job(job.get("payload") or {})
+                elif job.get("kind") == "sumaho":
+                    # ★1043番：たまごさんのiPhoneのSafariと同じ条件（モバイルUA・375px・
+                    #   タッチ）でheadless Chromeから箱のボタンを実際に押す門。
+                    #   curl/pythonの投げは preflight(OPTIONS) を出さないので、
+                    #   CORSで止められていることに1038〜1042番は気づけなかった。
+                    #   ★たまごさんの普段のブラウザには触らない（使い捨てプロファイル）。
+                    import importlib, sumaho_gate
+                    importlib.reload(sumaho_gate)
+                    out = sumaho_gate.run_job(job.get("payload") or {})
                 elif job.get("kind") == "relaytest":
                     # ★1038番：スマホの代わりに中継所へ1本投げて、道が本当に通るか実測する。
                     #   「たまごさんに試させて確かめる」をやめるための口。棚には触らない。
