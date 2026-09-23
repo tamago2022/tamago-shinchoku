@@ -140,6 +140,20 @@ while :; do
   #   ここで打つと「1周が終わるまで次の鼓動が無い」＝1周90秒なら60秒の見張りに必ず殺される。
   #   鼓動＝生存、下の .heartbeat_progress＝仕事の進行。役割を混ぜない。
   CYCLE_STARTED_AT=$(date +%s)
+  # ---- 2026-09-24（命綱）：★常駐は直しただけでは反映されない。
+  #   走っているループは、書き換わった後も古いファイルを読み続ける。
+  #   これまではここで人が「起こし直す」コマンドを打つ必要があった＝たまごさんの手が要った。
+  #   → 自分のファイルが書き換わったことに自分で気づいて、自分を入れ替える。
+  #     exec なのでPIDは変わらない＝launchdから見ても交代したことにならず、churnも起きない。
+  ME_MTIME="$(stat -f %m "$0" 2>/dev/null || stat -c %Y "$0" 2>/dev/null || echo 0)"
+  if [ -z "${ME_MTIME_AT_START:-}" ]; then
+    ME_MTIME_AT_START="$ME_MTIME"
+  elif [ "$ME_MTIME" != "$ME_MTIME_AT_START" ]; then
+    echo "$(date '+%F %T') 🔁 心臓のファイルが書き換わったので、自分で新しい方に入れ替わります" >> "$LOG"
+    kill "$BEATER_PID" 2>/dev/null || true
+    trap - EXIT INT TERM
+    exec bash "$0" "$@"
+  fi
   # 自分が正規の心臓でなくなっていたら（誰かが入れ直した）静かに退く
   CUR="$(cat "$PIDF" 2>/dev/null || true)"
   if [ -n "${CUR:-}" ] && [ "$CUR" != "$$" ]; then
@@ -151,14 +165,14 @@ while :; do
   #   相互監視（心臓⇄5分便）にして、どちらか生きている方が相手を起こせる形にする。
   #   実測はmachine.json（この5分便が毎回必ず書く）の最終更新時刻で行う。15分止まっていたら
   #   launchdへ直接蹴り直しを頼む（新規ジョブ登録ではなく既存ジョブのkickstartのみ）。
-  MJ="$REPO/status/machine.json"
-  if [ -f "$MJ" ]; then
-    MJ_AGE=$(( $(date +%s) - $(stat -f %m "$MJ" 2>/dev/null || echo 0) ))
-    if [ "$MJ_AGE" -gt 900 ]; then
-      echo "$(date '+%F %T') 🚨 立て直しの便（machine_status_push.sh）が${MJ_AGE}秒（約$(( MJ_AGE / 60 ))分）更新していません。launchdへ蹴り直しを試みます" >> "$LOG"
-      launchctl kickstart -k "gui/$(id -u)/com.tamago.machine-status" >> "$LOG" 2>&1 || true
-    fi
-  fi
+  # ---- 2026-09-24（命綱）：ここは「起こすのをやめる条件」を持っていなかった。
+  #   実測：09-24 04:56〜05:20 のあいだ、17秒おきに kickstart を打ち続けていた（数百回）。
+  #   相手は起きないのに永遠に叩く＝無限に起こし続ける状態。ログもこれで埋まっていた。
+  #   → 起こす判断は tools/inochi.py に一本化した。あちらは3回続けて死んだら諦める。
+  #   ★ここでは直接 kickstart を打たない。
+  tick_every 2 && ( python3 "$REPO/tools/inochi.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 心臓自身が「生きている」印を命綱の台帳に押す（死亡判定はあちらが持つ）
+  ( python3 "$REPO/tools/inochi.py" --ikiteru heartbeat >/dev/null 2>&1 & ) >/dev/null 2>&1
   run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1

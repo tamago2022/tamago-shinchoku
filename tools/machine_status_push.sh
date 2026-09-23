@@ -253,7 +253,136 @@ if [ -f "$REPO/tools/git-hooks/pre-commit" ]; then
   fi
 fi
 
+# ---- 2026-09-24（1054番）★運ぶ仕事を、便のいちばん前に出した ----
+#   実測（09-24 05:23〜05:55）：main のコミットが32分間1本も増えなかった。
+#   原因は git の失敗ではない。**この便が run_once の測定や掃除で時間を使い切り、
+#   いちばん最後に置いてあった「運ぶ」ところまで一度も辿り着いていなかった。**
+#   （実測：便は約4分で launchd に入れ替えられる。run_once はそれより長くかかっていた）
+#   ＝「pushしたのに本番が古い」「作ったページが永久に載らない」の正体。
+#   ★穴を塞ぐのではなくパイプごと替える：**運搬を測定より先にやる。**
+#   ここに置いてある限り、便が途中で打ち切られても、運ぶところまでは必ず終わっている。
+hakobu() {
+# ★git は相対パスで add する。run_once の中ほどにあった `cd "$REPO"` に頼らない
+#   （運搬を前に出したので、ここで自分で入る。入れなければ何もしない＝別の場所を触らない）
+cd "$REPO" || return 0
+( "$REPO/tools/pages_publish.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
+# 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
+# ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
+# ---- 2026-09-22 コミットの口の1本化：サンドボックスが置いた紙をここで回収する ----
+#   Cowork（サンドボックス）側がマウント越しに自分で git add/commit を叩くと、
+#   この5分便とぶつかって .git/index.lock の取り合いになり、しかも向こうは
+#   残ったロックを消せない（Operation not permitted）＝工場のgitが丸ごと止まる。
+#   2026-09-22に何度も再発したため、**ロックを後から消すのをやめて、口そのものを1本にした。**
+#   向こうは status/commit_inbox/ に紙を置くだけ（gitを叩かない）。回収はここ1か所。
+#   commit / push はこの下の1本だけが持つ。投げっぱなしにはしない（addが済んでから下のcommitへ進む必要があるため）。
+python3 "$REPO/tools/commit_kuchi.py" --drain --quiet >/dev/null 2>&1 || true
+git add index.html data.js said.js share tools >/dev/null 2>&1
+# 2026-09-22（977番）追加：番号付きの単票ページ（969/971/972/977…）も載せる。
+#   ここに無いと、作っても永久に公開されない（977-ai-renkei.html で気づいた）。
+#   対象は「3桁の番号で始まる .html」だけ＝画面用の小さい単票に限る。
+#   万一大きいものが混ざっても、この下の1MB検査が1本だけ取り下げるので事故にならない。
+git add ./[0-9][0-9][0-9]-*.html >/dev/null 2>&1
+
+# ---- 2026-09-09 事故の再発防止：**大きいファイルを公開に載せない。**----
+# 何が起きたか：02:44、Xアプリのプロトタイプを作っていた別セッションが
+#   share/x-search/data.json（たまごさん本人の実ツイート47,011件・12MB）を置いた。
+#   **この巡回の `git add share tools` が中身を見ずに巻き込み、公開GitHub Pagesへpushした。**
+#   1分で気づいて消したが、たまごさんに「二度と起きないようにして」と言われた。
+#
+# なぜ .gitignore だけでは足りないか：
+#   .gitignore に書けるのは「今回の1ファイル」だけ。**次に誰かが別の名前で置いたら、また同じことが起きる。**
+#   ここは `share` と `tools` を**丸ごと**addしているので、置かれたものは何でも公開される構造だった。
+#
+# 対策：**これから載せようとしているファイルを1つずつ見て、1MBを超えるものがあったら
+#        その1本だけ取り下げて、載せない。**（残りは通常どおり公開する＝画面は止まらない）
+#   個人データの塊は必ず大きい。確認ページのHTMLは小さい。**この線引きで十分に効く。**
+#   取り下げたものは status/blocked_large_files.log に記録し、たまごさんが後で見られるようにする。
+_BIG=0
+while IFS= read -r _f; do
+  [ -z "$_f" ] && continue
+  [ -f "$_f" ] || continue
+  _sz=$(wc -c < "$_f" 2>/dev/null || echo 0)
+  if [ "${_sz:-0}" -gt 1048576 ] 2>/dev/null; then
+    git restore --staged "$_f" >/dev/null 2>&1 || git reset -q HEAD "$_f" >/dev/null 2>&1
+    echo "$(date '+%F %T') 🛑 公開を止めた（${_sz}バイト・1MB超）: $_f" >> "$REPO/status/blocked_large_files.log"
+    _BIG=$((_BIG+1))
+  fi
+done < <(git diff --cached --name-only --diff-filter=AM -- share tools 2>/dev/null)
+if [ "$_BIG" -gt 0 ]; then
+  echo "$(date '+%F %T') 🛑 大きいファイル${_BIG}件を公開から外しました（個人データの誤公開を防ぐため）" >> "$REPO/status/relay.log"
+fi
+# 2026-09-04 バグ修正：commitが失敗したとき return 0 で抜けていたため、push まで到達しなかった。
+#   commitが失敗する典型は「新しい変更が無いとき」。だが、その前に別経路（Cowork側）でcommitされた分が
+#   未pushで残っていることがあり、そのぶんが永久に公開されなかった（画面が更新されない実害）。
+#   → commitの成否に関わらず push まで進む。
+#
+# 2026-09-13（案件#687・queue.json等status/丸ごとの複数回ロールバック事故の真因）：
+#   ここの `git pull --rebase -q ... || true` が、**少なくとも2回**status/丸ごとの
+#   ロールバックを起こしていた（1回目 10:17:46＝777〜804番28件消失／2回目 11:14〜16:12の間＝
+#   その後の復旧分319件も含めて再度消失・264件/最大780番まで巻き戻り）。
+#   実測：`git pull --rebase`が実行中に未コミットの変更を自動でautostashへ退避 →
+#   rebase自体が完走せず失敗（`|| true`が握りつぶし誰にも気づかれなかった）→
+#   作業ツリーが古いorigin/mainの内容に取り残され、autostashは二度とpopされずに残った
+#   （実測：`.git/rebase-merge/autostash`。1回目の分はタグ`rescue-687-autostash-20260913`で保全済み）。
+#   → **rebaseそのものをやめてmergeにする。** mergeが失敗しても作業ツリーは「コンフリクト状態のまま」
+#   残るだけで、rebaseのautostashのように**サイレントに古い内容へ巻き戻ることは無い**。
+#   さらに、①次の周回開始時に壊れたrebase/merge残骸を検知したら自分で片付けてから進む、
+#   ②pull自体が失敗したら黙って続けず`git merge --abort`で必ず元へ戻し理由をログへ残す、を追加する。
+_REBASE_MARKER="$REPO/.git/rebase-merge"
+_REBASE_MARKER2="$REPO/.git/rebase-apply"
+_MERGE_MARKER="$REPO/.git/MERGE_HEAD"
+if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER" ]; then
+  echo "$(date '+%F %T') ⚠️ 前回の周回が壊れたrebase/merge状態を残していた→ 片付けてから進む" \
+    >> "$REPO/status/git_rebase_incidents.log"
+  git rebase --abort >/dev/null 2>&1 || true
+  git merge --abort >/dev/null 2>&1 || true
+  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
+fi
+git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "画面・共有資料・道具の更新 $(date +%H:%M)" >/dev/null 2>&1 || true
+
+# ---- 2026-09-20（963番）main への pull/push を「出すものがある時だけ」にした ----
+# それまで：下の pull と push は**毎周（約60秒おき）無条件で**走っていた。
+#   出すものが1つも無い回でも main を触りに行くので、他の書き手と正面衝突し続けていた。
+#   実測の詰まり232回のうち「向こうが先で合流できない」64回・pull失敗9回はここが発生源。
+# いま：最後に push できた地点(.last_main_push)から HEAD が1歩も動いていなければ、
+#   **main には一切触らない**。写しは gh-pages 側（単一書き手）へ出ているので、
+#   ここが黙っていても画面は今までどおり更新される。
+_LASTPUSH_F="$REPO/status/.last_main_push"
+_HEAD_NOW="$(git rev-parse HEAD 2>/dev/null || echo x)"
+if [ "$_HEAD_NOW" = "$(cat "$_LASTPUSH_F" 2>/dev/null || echo '')" ]; then
+  return 0
+fi
+# 2026-09-16（緊急・queue.json 239→234件・887/888/889番消失事故）：
+#   status/ は1秒おきに書き換わる「生きている台帳」なのに、この5分おきのpullが
+#   古いorigin/mainの中身でそれを丸ごと上書きしていた（#687と同型の再発）。
+#   .gitattributes の `status/** merge=ours` で「マージ時はこちら側を必ず勝たせる」よう
+#   したが、その属性を有効にするカスタムマージドライバの登録はリポジトリに同梱できない
+#   ローカルgit設定なので、ここで毎回（安価・冪等）保証しておく。
+git config merge.ours.driver true 2>/dev/null || true
+# ---- 2026-09-24（1054番）★網の向こうを待つ git に、必ず時間切れを付ける ----
+#   実測：05:12頃にこの便が pull/push のどちらかで固まり、**36分間1歩も動かなかった**
+#   （status/heartbeat.log「2162秒（約36分）更新していません」）。
+#   この便が止まると、後ろに並んでいる全部が止まる：
+#     commit_inbox の回収（＝サンドボックスが作ったページが永久に載らない）
+#     status/mac_jobs の使い走り（＝実測5本が滞留）
+#     gh-pages への公開（＝「pushしたのに本番が古い」の正体）
+#   ★穴を塞ぐのではなくパイプごと替える：**網の向こうを待つ呼び出しに時間切れの無いものを残さない。**
+#   固まっても90秒で諦めて次の周回へ進む。諦めたことは黙らずログに出す。
+if ! run_with_timeout 90 git -c credential.helper='!gh auth git-credential' pull --no-rebase -q origin main >/dev/null 2>&1; then
+  echo "$(date '+%F %T') 🛑 git pull(merge) が失敗→ merge --abort で必ず元の状態へ戻す（黙って進まない）" \
+    >> "$REPO/status/git_rebase_incidents.log"
+  git merge --abort >/dev/null 2>&1 || true
+  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
+fi
+if run_with_timeout 90 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1; then
+  # 出し切った地点を覚えておく。次の周回はここから1歩も動いていなければ main を触らない。
+  git rev-parse HEAD > "$_LASTPUSH_F" 2>/dev/null || true
+fi
+}
+
 run_once() {
+# ★まず運ぶ。測定より先（1054番）。ここが最後にあったせいで32分運ばれなかった。
+hakobu
 # 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
 # factory_status.py が失敗したら従来どおり machine_load.sh 単体で最低限のJSONを書く（止まらない）。
 if run_with_timeout 90 python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
@@ -680,111 +809,7 @@ done
 ###
 ### ★公開係は**待たない**（投げっぱなし）。この便を1秒も遅らせないため。
 ###   中で変化が無ければ即座に戻るので、毎周呼んでも重くならない。
-( "$REPO/tools/pages_publish.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
-# 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
-# ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
-# ---- 2026-09-22 コミットの口の1本化：サンドボックスが置いた紙をここで回収する ----
-#   Cowork（サンドボックス）側がマウント越しに自分で git add/commit を叩くと、
-#   この5分便とぶつかって .git/index.lock の取り合いになり、しかも向こうは
-#   残ったロックを消せない（Operation not permitted）＝工場のgitが丸ごと止まる。
-#   2026-09-22に何度も再発したため、**ロックを後から消すのをやめて、口そのものを1本にした。**
-#   向こうは status/commit_inbox/ に紙を置くだけ（gitを叩かない）。回収はここ1か所。
-#   commit / push はこの下の1本だけが持つ。投げっぱなしにはしない（addが済んでから下のcommitへ進む必要があるため）。
-python3 "$REPO/tools/commit_kuchi.py" --drain --quiet >/dev/null 2>&1 || true
-git add index.html data.js said.js share tools >/dev/null 2>&1
-# 2026-09-22（977番）追加：番号付きの単票ページ（969/971/972/977…）も載せる。
-#   ここに無いと、作っても永久に公開されない（977-ai-renkei.html で気づいた）。
-#   対象は「3桁の番号で始まる .html」だけ＝画面用の小さい単票に限る。
-#   万一大きいものが混ざっても、この下の1MB検査が1本だけ取り下げるので事故にならない。
-git add ./[0-9][0-9][0-9]-*.html >/dev/null 2>&1
 
-# ---- 2026-09-09 事故の再発防止：**大きいファイルを公開に載せない。**----
-# 何が起きたか：02:44、Xアプリのプロトタイプを作っていた別セッションが
-#   share/x-search/data.json（たまごさん本人の実ツイート47,011件・12MB）を置いた。
-#   **この巡回の `git add share tools` が中身を見ずに巻き込み、公開GitHub Pagesへpushした。**
-#   1分で気づいて消したが、たまごさんに「二度と起きないようにして」と言われた。
-#
-# なぜ .gitignore だけでは足りないか：
-#   .gitignore に書けるのは「今回の1ファイル」だけ。**次に誰かが別の名前で置いたら、また同じことが起きる。**
-#   ここは `share` と `tools` を**丸ごと**addしているので、置かれたものは何でも公開される構造だった。
-#
-# 対策：**これから載せようとしているファイルを1つずつ見て、1MBを超えるものがあったら
-#        その1本だけ取り下げて、載せない。**（残りは通常どおり公開する＝画面は止まらない）
-#   個人データの塊は必ず大きい。確認ページのHTMLは小さい。**この線引きで十分に効く。**
-#   取り下げたものは status/blocked_large_files.log に記録し、たまごさんが後で見られるようにする。
-_BIG=0
-while IFS= read -r _f; do
-  [ -z "$_f" ] && continue
-  [ -f "$_f" ] || continue
-  _sz=$(wc -c < "$_f" 2>/dev/null || echo 0)
-  if [ "${_sz:-0}" -gt 1048576 ] 2>/dev/null; then
-    git restore --staged "$_f" >/dev/null 2>&1 || git reset -q HEAD "$_f" >/dev/null 2>&1
-    echo "$(date '+%F %T') 🛑 公開を止めた（${_sz}バイト・1MB超）: $_f" >> "$REPO/status/blocked_large_files.log"
-    _BIG=$((_BIG+1))
-  fi
-done < <(git diff --cached --name-only --diff-filter=AM -- share tools 2>/dev/null)
-if [ "$_BIG" -gt 0 ]; then
-  echo "$(date '+%F %T') 🛑 大きいファイル${_BIG}件を公開から外しました（個人データの誤公開を防ぐため）" >> "$REPO/status/relay.log"
-fi
-# 2026-09-04 バグ修正：commitが失敗したとき return 0 で抜けていたため、push まで到達しなかった。
-#   commitが失敗する典型は「新しい変更が無いとき」。だが、その前に別経路（Cowork側）でcommitされた分が
-#   未pushで残っていることがあり、そのぶんが永久に公開されなかった（画面が更新されない実害）。
-#   → commitの成否に関わらず push まで進む。
-#
-# 2026-09-13（案件#687・queue.json等status/丸ごとの複数回ロールバック事故の真因）：
-#   ここの `git pull --rebase -q ... || true` が、**少なくとも2回**status/丸ごとの
-#   ロールバックを起こしていた（1回目 10:17:46＝777〜804番28件消失／2回目 11:14〜16:12の間＝
-#   その後の復旧分319件も含めて再度消失・264件/最大780番まで巻き戻り）。
-#   実測：`git pull --rebase`が実行中に未コミットの変更を自動でautostashへ退避 →
-#   rebase自体が完走せず失敗（`|| true`が握りつぶし誰にも気づかれなかった）→
-#   作業ツリーが古いorigin/mainの内容に取り残され、autostashは二度とpopされずに残った
-#   （実測：`.git/rebase-merge/autostash`。1回目の分はタグ`rescue-687-autostash-20260913`で保全済み）。
-#   → **rebaseそのものをやめてmergeにする。** mergeが失敗しても作業ツリーは「コンフリクト状態のまま」
-#   残るだけで、rebaseのautostashのように**サイレントに古い内容へ巻き戻ることは無い**。
-#   さらに、①次の周回開始時に壊れたrebase/merge残骸を検知したら自分で片付けてから進む、
-#   ②pull自体が失敗したら黙って続けず`git merge --abort`で必ず元へ戻し理由をログへ残す、を追加する。
-_REBASE_MARKER="$REPO/.git/rebase-merge"
-_REBASE_MARKER2="$REPO/.git/rebase-apply"
-_MERGE_MARKER="$REPO/.git/MERGE_HEAD"
-if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER" ]; then
-  echo "$(date '+%F %T') ⚠️ 前回の周回が壊れたrebase/merge状態を残していた→ 片付けてから進む" \
-    >> "$REPO/status/git_rebase_incidents.log"
-  git rebase --abort >/dev/null 2>&1 || true
-  git merge --abort >/dev/null 2>&1 || true
-  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
-fi
-git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "画面・共有資料・道具の更新 $(date +%H:%M)" >/dev/null 2>&1 || true
-
-# ---- 2026-09-20（963番）main への pull/push を「出すものがある時だけ」にした ----
-# それまで：下の pull と push は**毎周（約60秒おき）無条件で**走っていた。
-#   出すものが1つも無い回でも main を触りに行くので、他の書き手と正面衝突し続けていた。
-#   実測の詰まり232回のうち「向こうが先で合流できない」64回・pull失敗9回はここが発生源。
-# いま：最後に push できた地点(.last_main_push)から HEAD が1歩も動いていなければ、
-#   **main には一切触らない**。写しは gh-pages 側（単一書き手）へ出ているので、
-#   ここが黙っていても画面は今までどおり更新される。
-_LASTPUSH_F="$REPO/status/.last_main_push"
-_HEAD_NOW="$(git rev-parse HEAD 2>/dev/null || echo x)"
-if [ "$_HEAD_NOW" = "$(cat "$_LASTPUSH_F" 2>/dev/null || echo '')" ]; then
-  return 0
-fi
-# 2026-09-16（緊急・queue.json 239→234件・887/888/889番消失事故）：
-#   status/ は1秒おきに書き換わる「生きている台帳」なのに、この5分おきのpullが
-#   古いorigin/mainの中身でそれを丸ごと上書きしていた（#687と同型の再発）。
-#   .gitattributes の `status/** merge=ours` で「マージ時はこちら側を必ず勝たせる」よう
-#   したが、その属性を有効にするカスタムマージドライバの登録はリポジトリに同梱できない
-#   ローカルgit設定なので、ここで毎回（安価・冪等）保証しておく。
-git config merge.ours.driver true 2>/dev/null || true
-if ! git -c credential.helper='!gh auth git-credential' pull --no-rebase -q origin main >/dev/null 2>&1; then
-  echo "$(date '+%F %T') 🛑 git pull(merge) が失敗→ merge --abort で必ず元の状態へ戻す（黙って進まない）" \
-    >> "$REPO/status/git_rebase_incidents.log"
-  git merge --abort >/dev/null 2>&1 || true
-  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
-fi
-if git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1; then
-  # 出し切った地点を覚えておく。次の周回はここから1歩も動いていなければ main を触らない。
-  git rev-parse HEAD > "$_LASTPUSH_F" 2>/dev/null || true
-fi
-}
 
 # 2026-09-18（931番）：Claudeが作ったChromeタブの孤児を掃く。
 #   子セッションはそれぞれ自分のタブグループを作るが、**他のセッションからは見えないし閉じられない**
@@ -811,6 +836,7 @@ fi
 #     走行>0 なのに 片付き=0 は赤で出る。
 #   この便を止めないよう、バックグラウンドへ逃がして10分で打ち切る（前で待たない）。
 ( run_with_timeout 600 python3 "$REPO/tools/mac_souji.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+}
 
 # 約260秒（次の5分ティックが来る前）、間を空けずに回し続ける。走行中↔停止の切り替わりをできるだけ早くPWAへ反映するため。
 # factory_status.py自体が実測27秒かかる（ps/lsof/transcriptスキャン）ので、固定sleepは入れず作業時間そのものを間隔にする
@@ -847,6 +873,17 @@ quick_tick() {
   run_with_timeout 30 python3 "$REPO/tools/daicho.py" --kigen >/dev/null 2>&1 || true
   run_with_timeout 30 python3 "$REPO/tools/daicho.py" --hi    >/dev/null 2>&1 || true
   run_with_timeout 30 python3 "$REPO/tools/daicho.py" --page  >/dev/null 2>&1 || true
+  # 2026-09-24【未達成の総数】たまごさんが「あれどうなった？」と聞かなくて済むようにする1か所。
+  #   ★件数が前日より増えたら赤／一番古いのが7日を超えたら赤。赤のときだけ Dispatch に出す。
+  #   ★たまごさんには出さない（Dispatchが先に気づく側に置く）。内部で1時間ゲートしている。
+  run_with_timeout 30 python3 "$REPO/tools/mitassei.py" --kaku --shiraseru >/dev/null 2>&1 || true
+  # 2026-09-24【使い走りを重い便から切り離す】★穴を塞ぐのではなくパイプごと替える。
+  #   これまで status/mac_jobs/ の使い走りは run_once（5分便）の中の top_status.py から
+  #   しか呼ばれていなかった。run_once のどこか1か所が止まると、
+  #   **サンドボックスから頼んだ仕事が1本も運ばれなくなる**（05:23〜05:48 実測：5本が滞留）。
+  #   → 15秒の軽い便に載せ替えた。mac_job_runner 自身がロックを持っているので二重には走らない。
+  #   ★運ぶ口はここ1か所。重い便が止まっても運搬は止まらない。
+  ( run_with_timeout 120 python3 -c "import sys;sys.path.insert(0,'$REPO/tools');import mac_job_runner as m;m.run()" >/dev/null 2>&1 & ) >/dev/null 2>&1
 }
 while :; do
   run_once

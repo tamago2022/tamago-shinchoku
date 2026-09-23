@@ -291,6 +291,105 @@ def hi_koushin():
     return 0
 
 
+# ---------------------------------------------------------------------------
+# ★帰還の3状態（2026-09-24・たまごさん）
+#
+#   「はいやります」つってタスクを立ち上げて、やってるふりはするよ。買い物行ってるふりは
+#     するよ。だけど帰ってこないのが8割なんだよ。買い物に行って間違えたものを買ってきて
+#     「これどうですか？」「いや、それ違うよ、もう一回やり直して」って言って、
+#     まだ帰ってこないんだよ。」
+#
+#   ★この3つは別々の壊れ方。まとめて「対応中」と呼ぶのをやめる。
+#     ①出て行ったきり帰ってこない
+#     ②違うものを持って帰ってきた（門で落ちた／たまごさんが「それ違う」と言った）
+#     ③やり直しに出したまま帰ってこない（★①と②の合わせ技・★最優先の赤）
+#   ★「対応中」「走行中」という言葉は画面に出さない。
+#     上の3つか「帰ってきた」か「まだ出していない」か「たまごさんの1手」しかない。
+# ---------------------------------------------------------------------------
+KIKAN_KAETTA = "帰ってきた"
+KIKAN_MADA = "まだ出していない"
+KIKAN_1 = "出たまま帰らない"
+KIKAN_2 = "違うものを持ち帰った"
+KIKAN_3 = "やり直し中で音沙汰なし"
+KIKAN_TAMA = "たまごさんの1手"
+
+
+def kikan_jotai(r):
+    """★行から帰還の状態を機械で出す。人が決めない。「対応中」は返さない。"""
+    if r.get("jotai") == "潰した" and r.get("url"):
+        return KIKAN_KAETTA
+    if r.get("jotai") == "たまごさんの1手" or r.get("senshu") == "tamago":
+        return KIKAN_TAMA
+    chigau = len(r.get("chigau") or [])
+    # ★「出て行った」の判定。仕事票が立っている行は、もう何度も出ている（＝帰っていない）。
+    #   ここを甘く（まだ出していない側に）倒すと、帰還率が良く見えてしまう。倒さない。
+    shigotohyou = any("仕事票" in str(m) for m in (r.get("moto") or []))
+    deta = (int(r.get("ninme") or 1) > 1 or r.get("jotai") == "走行中"
+            or (shigotohyou and int(r.get("kaisu") or 1) >= 2))
+    if chigau and deta:
+        return KIKAN_3           # 違うと言われて出し直した → まだ帰っていない
+    if chigau:
+        return KIKAN_2           # 違うものを持ち帰ったまま、次が出ていない
+    if deta:
+        return KIKAN_1
+    return KIKAN_MADA
+
+
+def kikan_matome(rows):
+    """★帰還率。この工場の成績表。体感より悪くてもそのまま出す。"""
+    j = [kikan_jotai(r) for r in rows]
+    deta = sum(1 for x in j if x != KIKAN_MADA)
+    kaetta = j.count(KIKAN_KAETTA)
+    ippatsu = sum(1 for r, x in zip(rows, j)
+                  if x == KIKAN_KAETTA and not (r.get("chigau") or [])
+                  and int(r.get("ninme") or 1) == 1)
+    return {
+        "deta": deta,
+        "kaetta": kaetta,
+        "kikanritsu": round(100.0 * kaetta / (deta or 1), 1),
+        "ippatsu": ippatsu,
+        "ippatsuritsu": round(100.0 * ippatsu / (deta or 1), 1),
+        KIKAN_1: j.count(KIKAN_1),
+        KIKAN_2: j.count(KIKAN_2),
+        KIKAN_3: j.count(KIKAN_3),
+        KIKAN_TAMA: j.count(KIKAN_TAMA),
+        KIKAN_MADA: j.count(KIKAN_MADA),
+    }
+
+
+def chigau(rid, iwareta, dare=None):
+    """★たまごさんが「それ違う」と言った瞬間に、その行へ記録を入れる。記憶に頼らない。
+
+    ★新しい行は作らない。やり直しは同じ行の続き。
+    ★記録と同時に次の選手へ渡す（＝出し直す）。出し直したものは③になる。
+    """
+    d = yomu()
+    r = sagasu(d, rid)
+    if not r:
+        print("その依頼が台帳にありません: %s" % rid)
+        return 1
+    t = ima()
+    r.setdefault("chigau", []).append({
+        "at": t.strftime("%Y-%m-%d %H:%M"),
+        "iwareta": iwareta,
+        "senshu": r.get("senshu"),
+        "ninme": r.get("ninme", 1),
+    })
+    # 「潰した」ことにしていたなら取り消す（URLも外す）。違うものが本番に出ている状態。
+    if r.get("jotai") == "潰した":
+        r["url"] = ""
+    r["jotai"] = "走行中"
+    r["naze"] = "違うものを持ち帰った（%d回目）" % len(r["chigau"])
+    kaku(d)
+    koutai(rid, riyuu="たまごさんが「それ違う」と言った：%s" % iwareta[:40],
+           made="★違うと言われた：%s" % iwareta[:60], dare=dare)
+    d = yomu()
+    r = sagasu(d, rid)
+    print(json.dumps({"id": r["id"], "違うと言われた回数": len(r.get("chigau") or []),
+                      "帰還の状態": kikan_jotai(r)}, ensure_ascii=False))
+    return 0
+
+
 def tsubushita(rid, url):
     """★潰した＝本番に出てURLで開ける、まで。URLが無いものは潰したことにしない。"""
     d = yomu()
@@ -394,7 +493,7 @@ def page():
             for x in r.get("rireki", []))
         ko.append("""<details class="c %s"%s>
 <summary><span class=n>%s回</span><span class=t>%s</span>
-<span class=m>%s日　%s（%s人目）</span></summary>
+<span class=m>%s日　%s（%s人目）　%s</span></summary>
 <div class=b>
 <div class=k><b>なぜ治らない</b>　%s</div>
 <div class=k><b>今どこまで</b>　%s</div>
@@ -407,6 +506,7 @@ def page():
             iro, " open" if (r.get("jotai") == "走行中" and not sumi) else "",
             kaisu, _esc(r["irai"]),
             hi, _esc(_senshu_na(r.get("senshu"))), r.get("ninme", 1),
+            _esc(kikan_jotai(r)),
             _esc(r.get("naze") or "—"),
             _esc(r.get("koko")), _esc(r.get("tsugi")),
             _esc(r.get("hatsu")), "頃" if r.get("hatsuKind") == "推定" else "",
@@ -414,15 +514,21 @@ def page():
              % (_esc(r["url"]), _esc(r["url"]))) if r.get("url") else "",
             ("<div class=rr><b>交代の記録</b>%s</div>" % rireki) if rireki else ""))
 
+    k = kikan_matome(d["rows"])
     atama = """<h1>受付台帳</h1>
 <p class=sub>言われたことが埋もれないための1か所。回数の多い順→古い順。{updated} 現在</p>
 <div class=top>
-<div>まだ治っていない　<b>{ikiteru}件</b>　／　潰した <b>{sumi}件</b></div>
+<div>帰還率　<b>{kr}％</b>　（出て行った{deta}件のうち帰ってきた{kaetta}件）</div>
+<div>1回目で正しく帰ってきた率　<b>{ir}％</b>　（{ippatsu}件）</div>
+<div>① 出たまま帰らない <b>{k1}件</b>　② 違うものを持ち帰った <b>{k2}件</b></div>
+<div>③ <span style="color:#c0392b">やり直し中で音沙汰なし <b>{k3}件</b></span>（最優先）</div>
 <div>一番古いのは <b>{hi}日前</b>の「{furui}」</div>
-<div>3回以上言われた（最優先）　<b>{nan3}件</b></div>
-<div>たまごさんにしか押せない　<b>{tama}件</b></div>
+<div>3回以上言われた　<b>{nan3}件</b>　／　たまごさんにしか押せない　<b>{tama}件</b></div>
 </div>""".format(
-        updated=d.get("updatedAt", ""), ikiteru=len(ikiteru), sumi=len(rows) - len(ikiteru),
+        updated=d.get("updatedAt", ""),
+        kr=k["kikanritsu"], deta=k["deta"], kaetta=k["kaetta"],
+        ir=k["ippatsuritsu"], ippatsu=k["ippatsu"],
+        k1=k[KIKAN_1], k2=k[KIKAN_2], k3=k[KIKAN_3],
         hi=(furui or {}).get("naotteinai", 0), furui=_esc((furui or {}).get("irai", "")),
         nan3=len(nan3), tama=len(tama))
 
@@ -447,7 +553,7 @@ def ichiran():
     for r in _narabi(d["rows"]):
         print("%2s回 %3s日 %-9s(%s人目) %-11s %s"
               % (r.get("kaisu"), r.get("naotteinai"), r.get("senshu"),
-                 r.get("ninme"), r.get("jotai"), r["irai"][:42]))
+                 r.get("ninme"), kikan_jotai(r), r["irai"][:42]))
     return 0
 
 
@@ -465,6 +571,8 @@ def main():
     ap.add_argument("--riyuu", default="時間切れ")
     ap.add_argument("--dare", help="次の選手を名指しする（%s）" % "/".join(SENSHU_ID))
     ap.add_argument("--tsubushita")
+    ap.add_argument("--chigau", help="★たまごさんが「それ違う」と言った行に記録を入れて出し直す")
+    ap.add_argument("--iwareta", default="", help="言われた言葉（そのまま）")
     ap.add_argument("--kigen", action="store_true")
     ap.add_argument("--hi", action="store_true")
     ap.add_argument("--page", action="store_true")
@@ -482,6 +590,11 @@ def main():
         return susumu(a.susumu, a.made or "", tsugi=a.tsugi, url=a.url)
     if a.koutai:
         return koutai(a.koutai, riyuu=a.riyuu, made=a.made, dare=a.dare)
+    if a.chigau:
+        if not a.iwareta:
+            print("★--iwareta に、たまごさんが言った言葉をそのまま入れてください")
+            return 1
+        return chigau(a.chigau, a.iwareta, dare=a.dare)
     if a.tsubushita:
         return tsubushita(a.tsubushita, a.url or "")
     if a.kigen:

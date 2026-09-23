@@ -217,6 +217,69 @@ def call(req, key, timeout=60):
 # 判定
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# ★0円の判定役（codex）。2026-09-24・1060番
+#
+# なぜ足すか（実測）：
+#   TYPESAFE_API_KEY はMacにも .env にも無く、財布 typesafe の栓も0円。
+#   つまりこの門は**鍵が無い＋栓が閉まっている**の二重で止まっていて、
+#   入荷票8枚が全部ここで保留になっていた（status/_1060/mon5.log・05:23）。
+#   鍵と栓は**こちらで開けてはいけない**（金が出る）。
+#   代わりに、既に払い終わっている口＝Macの codex（ChatGPTのログインで動く。
+#   1回ごとの課金は出ない＝0円）に、**同じ2問・同じしきい値**で答えさせる。
+#   ★これは点を甘くして通すことではない。判定役を、金の出ない別のAIに替えただけ。
+#   codexが居なければ何も変わらない（今までどおり保留に倒れる）。
+# ---------------------------------------------------------------------------
+
+CODEX_SYSTEM = """You are an identity checker for a Japanese music site.
+A "shelf" belongs to ONE specific artist. Other artists may share the same or a
+very similar name. A NAME MATCH ALONE IS NOT PROOF that they are the same act.
+You will be given the shelf artist's identity, and one or more candidate songs.
+
+For each candidate index i, answer two probabilities between 0.0 and 1.0:
+  honnin_i        = probability the performer on this recording IS the shelf artist
+  douseidoumei_i  = probability this is a DIFFERENT act that merely shares the name
+
+Set honnin_i high only when the evidence (uploading channel, official site, label)
+actually identifies the performer as the shelf artist. If the evidence does not
+identify the performer, honnin_i must be low. Do not guess from the name.
+Genre, era, language, collaborators or producers that do not fit the shelf
+artist's profile are signs of a different act.
+
+Return ONLY this JSON:
+{"answers": {"honnin_0": 0.0, "douseidoumei_0": 0.0, ...}}"""
+
+
+def kiku_codex(req, timeout=180):
+    """codexに同じ2問を聞く。戻り値 (answers:dict|None, who:str, err:str)。0円。"""
+    try:
+        import gaibu_kuchi as gkuchi
+    except Exception as e:
+        return None, "", "gaibu_kuchi を読めない（%s）" % e
+    if not gkuchi.codex_aru():
+        return None, "", "codexがMacに居ない"
+    user = json.dumps({"state": req["state"], "questions": req["questions"]},
+                      ensure_ascii=False)
+    d, who, err = gkuchi.kiku_codex(CODEX_SYSTEM, user, timeout=timeout)
+    if d is None:
+        return None, who, err or "JSONが返ってこない"
+    ans = d.get("answers") if isinstance(d.get("answers"), dict) else d
+    if not isinstance(ans, dict):
+        return None, who, "answers が辞書で返ってこない"
+    return ans, who, ""
+
+
+def _prob(v):
+    """0.0〜1.0 に直せないものは None（＝判定できない＝保留に倒る）。"""
+    try:
+        f = float(v)
+    except Exception:
+        return None
+    if f != f or f < 0.0 or f > 1.0:
+        return None
+    return f
+
+
 def judge(honnin, bessin):
     """3つに割る。通す／別人／保留。★どれも消さない。"""
     if honnin is None or bessin is None:
@@ -266,9 +329,40 @@ def run(items, dry_run=False, limit=None, quiet=False):
     for it in kiku:
         tana.setdefault(it.get("artist_id") or it.get("artist") or "?", []).append(it)
 
+    # --- ★0円の判定役（codex）を先に当てる。金の出る口はそのあと ----------
+    if not dry_run and kiku:
+        nokori_tana = {}
+        for aid, group in list(tana.items()):
+            sabaketa = []
+            for i in range(0, len(group), BATCH):
+                chunk = group[i:i + BATCH]
+                req = build_request(chunk[0], chunk)
+                ans, who, err = kiku_codex(req)
+                if ans is None:
+                    say("  [0円の判定役が使えない] %s … %s" % (aid, err))
+                    continue
+                for n, it in enumerate(chunk):
+                    h = _prob(ans.get("honnin_%d" % n))
+                    b = _prob(ans.get("douseidoumei_%d" % n))
+                    where, riyu = judge(h, b)
+                    out[where].append(dict(it, honnin=h, douseidoumei=b,
+                                           riyu=riyu + "（判定役 %s・0円）" % who,
+                                           model=who, kane="0円"))
+                sabaketa.extend(chunk)
+                say("  [0円で聞いた] %s %d件 … %s（追加の金は出ていない）"
+                    % (aid, len(chunk), who))
+            nokori = [it for it in group if it not in sabaketa]
+            if nokori:
+                nokori_tana[aid] = nokori
+        tana = nokori_tana
+        if not tana:
+            out["kane"]["judge"] = "codex（ChatGPTのログイン。1回ごとの課金なし＝0円）"
+            return out
+
     key = None if dry_run else _key()
     if not dry_run and not key:
-        for it in kiku:
+        # ★codexでさばけた分は tana から抜いてある。ここで二重に保留にしない。
+        for it in [x for g in tana.values() for x in g]:
             out["horyuu"].append(dict(it, riyu=(
                 "TYPESAFE_API_KEY が無い。★判定できないので保留に倒した（掟4）。"
                 "鍵は https://console.typesafe.ai/keys で発行して .env に置く。"

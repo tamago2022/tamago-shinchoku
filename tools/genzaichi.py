@@ -554,6 +554,15 @@ def build():
         # 1018番：この緑は「着火があった」しか意味しない（空回しでも点く）。
         # 工場が産んでいるかどうかは上の「稼ぎ」の行が答える。ここで誤解させない。
         A("- ✅ 着火：10分以内に動いている（空回しを含む。産んだ本数は上の「稼ぎ」を見る）")
+    # ★2026-09-24（命綱）：tools/inochi.py が「自分では絶対に直せない」と判定した1点だけ、
+    #   ここに出す。それ以外（runner・トンネル・index.lock・列の積み直し等）はあちらが
+    #   黙って直すので、ここには出さない。人に見せる＝人の手が要るとき、に意味を寄せる。
+    try:
+        import inochi as _inochi
+        for _l in _inochi.aka_lines():
+            A("- 🔴 **【人の手が要る】%s**" % _l)
+    except Exception:
+        pass
     for line in shikumi_lines:
         A("- 🔴 **%s**" % line)
     for line in stale_lines:

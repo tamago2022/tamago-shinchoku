@@ -194,10 +194,22 @@ if ! git diff --cached --quiet 2>/dev/null || [ -z "$LOCAL_HEAD" ]; then
   fi
 fi
 
+# ---- 2026-09-24（1054番）★網の向こうを待つ push に、必ず時間切れを付ける ----
+#   実測：09-24 05:1x に 5分便が git の網待ちで36分固まり、公開も回収も全部止まった。
+#   落ちるのは構わない（3回粘る作りが既にある）。**返ってこないのが一番たちが悪い。**
+_mattenai() {   # 引数：秒数 コマンド…
+  local _s="$1"; shift
+  "$@" & local _p=$!
+  ( sleep "$_s"; kill -9 "$_p" 2>/dev/null ) & local _w=$!
+  wait "$_p" 2>/dev/null; local _rc=$?
+  kill "$_w" 2>/dev/null
+  return "$_rc"
+}
+
 # ★ 3回まで粘る。Macが重いと回線が切れることが実際にある（実測: curl 55 Recv failure）。
 OK=0
 for _try in 1 2 3; do
-  if git -c credential.helper='!gh auth git-credential' \
+  if _mattenai 120 git -c credential.helper='!gh auth git-credential' \
        push --force --quiet --no-progress origin "HEAD:refs/heads/$BRANCH" 2>>"$LOG"; then
     OK=1; break
   fi

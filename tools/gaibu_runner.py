@@ -455,9 +455,23 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
             except Exception:
                 pass
             done_n += 1
+            # ★2026-09-24（命綱）：走った回数と取れた回数を分けて記録する。
+            #   「走った>0 なのに 取れた=0」＝動いているのに何も産んでいない状態を、
+            #   tools/inochi.py が死んだ扱いで拾えるようにするため。
+            try:
+                import inochi
+                inochi.hakatta("gaibu_runner", ran=1, took=1 if out.get("ok") else 0)
+            except Exception:
+                pass
             if not quiet:
                 print("処理しました: %s (ok=%s)" % (jid, out.get("ok")))
     finally:
+        # 拾える仕事が無くても「runnerは生きていた」印だけは必ず押す
+        try:
+            import inochi
+            inochi.ikiteru("gaibu_runner")
+        except Exception:
+            pass
         _release_lock()
     return done_n
 

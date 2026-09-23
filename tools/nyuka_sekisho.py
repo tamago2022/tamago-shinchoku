@@ -331,6 +331,23 @@ def gate2b_jev(item, kept_facts, quiet=False):
         for f in kept_facts:
             if (f.get("key") or "") == "channel":
                 ch = f.get("value") or ""
+    # ★2026-09-24（1060番）門1が裏を取った公式サイトを、門2bに渡していなかった。
+    #   実測：Bialystocks「差し色」の入荷票には
+    #   facts[performer].src = https://bialystocks.com/discography/ が入っていて、
+    #   門1が**その頁に曲名が実在することまで照合済み**（matched: true・投稿型でない出典）。
+    #   これは「チャンネル名が同じ」より強い本人の証拠なのに、ここで捨てていたので
+    #   門2bは「証拠が1本も無い」と言って8枚全部を保留にしていた。
+    #   ★門を甘くしたのではない。**既に取ってある証拠を渡し忘れていたのを直した。**
+    #   照合できていない（matched が真でない）出典は渡さない。
+    official = item.get("officialUrl") or ""
+    if not official:
+        for f in kept_facts:
+            for ev in (f.get("evidence") or []):
+                if ev.get("matched") and not ev.get("submitted") and ev.get("src"):
+                    official = ev["src"]
+                    break
+            if official:
+                break
     kouho = [{
         "artist_id": item.get("artistId") or item.get("artist"),
         "artist": item.get("artist") or "",
@@ -339,7 +356,7 @@ def gate2b_jev(item, kept_facts, quiet=False):
         "song_id": item.get("id") or item.get("songId") or "",
         "title": item.get("title") or "",
         "channelTitle": ch,
-        "officialUrl": item.get("officialUrl") or "",
+        "officialUrl": official,
         "note": item.get("note") or "",
         "year": item.get("year") or "",
     }]
@@ -402,9 +419,22 @@ CONTEXT_RULES = (
     #   ドラマ『先生のおとりよせ』のエンディングテーマ）。「ドラマ」「エンディングテーマ」
     #   「オープニングテーマ」が鍵に入っていなかっただけ。ジャンルを裏返す語ではないので
     #   共起条件は付けない。
-    ("映画・ドラマから", ("映画", "主題歌", "劇中歌", "サントラ", "ドラマ",
-                       "エンディングテーマ", "オープニングテーマ", "edテーマ",
-                       "opテーマ", "挿入歌")),
+    # 2026-09-24（1060番）★「映画」「ドラマ」の一語だけで付けていたのを直した。
+    #   実測の事故：特撮「シネマタイズ（**映画化**）」は、映画の曲ではなく
+    #   **そういう題名のバンドのオリジナル曲**なのに、題名の中の「映画」の2文字で
+    #   「映画・ドラマから」が付いた。曲の作り手を、他人の作品の付属品にしてしまう。
+    #   → 「映画」「ドラマ」は**タイアップの語が一緒に無ければ付けない**。
+    #   「主題歌」「エンディングテーマ」等は単語だけで意味が定まるのでそのまま残す。
+    ("映画・ドラマから", ("主題歌", "劇中歌", "サントラ", "エンディングテーマ",
+                       "オープニングテーマ", "edテーマ", "opテーマ", "挿入歌")),
+    ("映画・ドラマから", ("映画", "ドラマ"),
+                      ("主題歌", "劇中歌", "挿入歌", "サントラ", "テーマ",
+                       "タイアップ", "起用", "書き下ろ")),
+    # 2026-09-24（1060番）フジロックの出演者一覧で本人だと裏を取った票が、
+    #   棚の文脈が1つも決まらず門3で落ちていた（KNEECAP・MOGWAI・LOYLE CARNER・
+    #   THE LEMON TWIGS・maya ongaku・a flood of circle の6枚）。
+    #   出演者一覧に載っているのは**機械で照合済みの事実**なので、棚にしてよい。
+    ("フジロック", ("fuji rock", "フジロック", "fujirock")),
     ("競輪", ("競輪",)),
     ("絵を描く人", ("画家", "絵画", "絵描き")),
     ("オカルト・不思議", ("ムー", "オカルト", "怪", "ミステリー")),
@@ -434,7 +464,11 @@ def gate3_context(kept_facts, declared=None):
             return False
         return True
 
-    shelves = [r[0] for r in CONTEXT_RULES if _hit(r)]
+    # ★同じ棚を2本の規則が当てることがある（「映画・ドラマから」）。重複は落とす。
+    shelves = []
+    for r in CONTEXT_RULES:
+        if _hit(r) and r[0] not in shelves:
+            shelves.append(r[0])
     rejected = []
     for d in (declared or []):
         if d not in shelves:
