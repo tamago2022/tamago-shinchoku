@@ -314,6 +314,11 @@ while :; do
   #   中で1日1回に間引く（status/.oni_kuchi_last）ので、ここは緩く呼べばよい。
   #   AIを1回も呼ばないので、何度呼んでもクレジットは0円。定期タスクも新しい常駐も作らない。
   tick_every 240 && ( python3 "$REPO/tools/oni_kuchi.py" >> "$REPO/status/oni_kuchi.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-23（1042番）投げ込み箱の一覧。たまごさん「何が入ってきたかわかるようにしといて」
+  #   status/nagekomi.jsonl（非公開）から**出してよい列だけ**を写して
+  #   status/nagekomi_list.json（中継所が配る生）と status/public/nagekomi_list.json（公開）へ。
+  #   台帳を1本読んでJSONを1枚書くだけ＝1秒かからない。新しい常駐は増やさない。
+  tick_every 2 && ( python3 "$REPO/tools/nagekomi_list.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

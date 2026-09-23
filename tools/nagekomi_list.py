@@ -45,6 +45,9 @@ JST = timezone(timedelta(hours=9))
 LEDGER = os.path.join(STATUS, "nagekomi.jsonl")
 IRETA = os.path.join(STATUS, "nagekomi_ireta.jsonl")
 OUT = os.path.join(STATUS, "public", "nagekomi_list.json")
+# ★中継所(relay_server)は status/ 直下しか配らない。家の中・トンネル経由で「押した瞬間」に
+#   出すために、同じ中身を status/ 直下にも置く（公開されるのは public/ の方だけ）。
+OUT_LIVE = os.path.join(STATUS, "nagekomi_list.json")
 LIMIT = 200   # 新しい順に200件まで（スマホで開けなくならない上限）
 
 # ★個人が特定できる形のものは、写す前にここで落とす。
@@ -64,6 +67,12 @@ def scrub(s):
     for pat, rep in SCRUB:
         s = pat.sub(rep, s)
     return s.strip()
+
+
+def short(s):
+    """理由は1行。長い機械の泣き言は先頭だけにする（読んで次の一手が分かる長さ）。"""
+    s = scrub(s).split(" ／ ")[0].split("：")[0].strip()
+    return s[:56] + "…" if len(s) > 56 else s
 
 
 def read_jsonl(path):
@@ -94,11 +103,12 @@ def build():
             ireta[r["id"]] = r
 
     # 棚入れ便が「入れられなかった」と言ったもの（理由つき）
-    ng = {}
+    ng, ran_at = {}, ""
     try:
         d = json.load(io.open(os.path.join(STATUS, "public", "nagekomi_shelf.json"),
                               encoding="utf-8"))
-        for r in (d.get("mitei") or []) + (d.get("skip") or []):
+        ran_at = str(d.get("ranAt") or "")
+        for r in (d.get("mitei") or []) + (d.get("skip") or []) + (d.get("red") or []):
             if isinstance(r, dict) and r.get("id"):
                 ng[r["id"]] = r.get("why") or r.get("reason") or "行き先の棚が決まっていません"
     except Exception:
@@ -109,11 +119,12 @@ def build():
         rid = r.get("id") or ""
         if rid in ireta:
             state, why = "棚に入った", ""
-        elif rid in ng:
-            state, why = "入れられない", scrub(ng[rid])[:80]
+        elif rid in ng and str(r.get("at") or "") <= ran_at:
+            # ★棚入れ便より後に入ってきたものに、古い判定を貼らない（「入れられない」の嘘を作らない）
+            state, why = "入れられない", short(ng[rid])
         elif str(r.get("status") or "") in ("failed", "error"):
             state = "入れられない"
-            why = scrub(r.get("why") or r.get("error") or "理由が残っていません")[:80]
+            why = short(r.get("why") or r.get("error") or "理由が残っていません")
         else:
             state, why = "届いた", ""
 
@@ -152,6 +163,12 @@ def main():
     tmp = OUT + ".tmp"
     json.dump(d, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(tmp, OUT)
+    try:
+        tmp2 = OUT_LIVE + ".tmp"
+        json.dump(d, io.open(tmp2, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(tmp2, OUT_LIVE)
+    except Exception:
+        pass
     if a.show:
         print(json.dumps(d, ensure_ascii=False, indent=1))
     else:

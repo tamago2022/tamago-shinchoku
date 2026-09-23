@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1042 案内人の口を直した ― 前の口と、直した口を並べて聞く</title>
+<link rel="stylesheet" href="assets/431-seihon/seihon431.css">
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--mi:#b0a894;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 40px);
+    background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:16px;line-height:1.7;max-width:860px;margin-left:auto;margin-right:auto;overflow-x:hidden;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:.04em;margin:0 0 6px;line-height:1.5;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:.04em;
+    margin:36px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+  .date{color:var(--sub);font-size:.8rem;margin-bottom:14px;word-break:break-word;}
+  .fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 18px;font-size:1rem;}
+  .fix p{margin:0 0 10px;} .fix p:last-child{margin:0;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:.88rem;margin:0 0 14px;}
+
+  .kuchi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 14px;}
+  .faces{display:flex;gap:10px;}
+  .facebox{flex:1 1 0;min-width:0;text-align:center;}
+  .facelabel{font-size:.78rem;line-height:1.35;color:var(--sub);margin:0 0 6px;min-height:3.2em;}
+  .facelabel b{display:block;font-size:.92rem;color:var(--ink);}
+  .facelabel b.after{color:var(--midori);}
+  .pen{position:relative;width:100%;aspect-ratio:444/412;background:#efe9db;border-radius:10px;overflow:hidden;}
+  .pen .tmk-stage{position:absolute;inset:0;perspective:900px;}
+  .pen .tmk-rig{width:100%;}
+  .pen .tmk-body{display:block;width:100%;height:auto;}
+  .nowkana{font-family:"Hiragino Mincho ProN",serif;font-size:1.6rem;letter-spacing:.12em;text-align:center;
+    color:var(--ao);min-height:1.6em;margin:8px 0 0;}
+  .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+  button.b{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
+    padding:10px 16px;font-size:.92rem;font-family:inherit;cursor:pointer;line-height:1.3;}
+  button.b:active{background:#efe9db;}
+  button.b[disabled]{opacity:.45;cursor:default;}
+  button.b.go{border-color:var(--aka);color:var(--aka);font-weight:700;}
+  button.b.v{min-width:52px;font-family:"Hiragino Mincho ProN",serif;font-size:1.1rem;padding:8px 12px;}
+  .tiny{font-size:.78rem;color:var(--sub);line-height:1.55;margin:8px 0 0;}
+
+  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 6px;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%;}
+  table{border-collapse:separate;border-spacing:0;font-size:.84rem;min-width:520px;}
+  th,td{padding:8px 7px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:.7rem;line-height:1.3;}
+  th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:#fff;border-right:1px solid var(--line);
+    font-size:.8rem;padding-left:10px;min-width:112px;font-weight:600;line-height:1.35;}
+  th.t{background:#efe9db;z-index:3;}
+  tr:last-child td{border-bottom:none;}
+  td.n{font-size:1rem;font-weight:700;white-space:nowrap;}
+  .c-ok{color:var(--midori);} .c-ng{color:var(--aka);}
+  ul.plain{list-style:none;margin:0 0 14px;padding:0;}
+  ul.plain li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;font-size:.88rem;line-height:1.6;}
+  ul.plain li b.h{display:block;margin-bottom:3px;font-size:.95rem;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
+  footer{color:var(--sub);font-size:.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+  @media (max-width:420px){
+    body{font-size:15px;padding-left:11px;padding-right:11px;}
+    h1{font-size:1.1rem;}
+    .faces{gap:7px;}
+    .facelabel{font-size:.72rem;min-height:4em;}
+    button.b{padding:9px 13px;font-size:.86rem;}
+    button.b.v{min-width:46px;padding:8px 10px;font-size:1rem;}
+    table{font-size:.8rem;} th.t,td.t{min-width:100px;font-size:.76rem;}
+  }
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1042 ／ 前の便：<a href="./1031-avatar-abc.html">#1031 A・B・Cを比べる台</a>・<a href="./431-seihon.html">#431 いまの案内人</a></div>
+
+<h1>案内人の口を直しました ― 前の口と、直した口</h1>
+<div class="date">2026-09-23 ／ 追加費用 <b>0円</b>（新しい道具も通信も増やしていません）</div>
+
+<div class="fix">
+  <p><b>直したのは1点だけです。</b>口の開き方を「音の大きさ」だけで決めていたのを、<b>母音ごとの数字</b>で決めるようにしました。</p>
+  <p>その数字は<b>前から同じファイルに書いてありました</b>。書いてあるのに1度も使われていませんでした。<b>新しく作ったのではなく、繋いだだけ</b>です。</p>
+  <p>下の顔を押すと、<b>左（前の口）と右（直した口）が同時に喋ります。</b>同じ声・同じ台詞・同じ拍で動かしているので、<b>違うのは口の決め方だけ</b>です。</p>
+</div>
+
+<h2>押して比べる</h2>
+
+<div class="kuchi">
+  <div class="faces">
+    <div class="facebox">
+      <div class="facelabel"><b>前の口</b>音の大きさだけで開く<br>（あ も い も 同じ開き方）</div>
+      <div class="pen" id="penA"></div>
+    </div>
+    <div class="facebox">
+      <div class="facelabel"><b class="after">直した口</b>母音ごとに形が変わる<br>（あ・い・う・え・お＋閉じ の6形）</div>
+      <div class="pen" id="penB"></div>
+    </div>
+  </div>
+
+  <div class="nowkana" id="nowkana">&nbsp;</div>
+
+  <div class="btnrow">
+    <button class="b go" id="say1">▶ 両方いっしょに喋らせる</button>
+    <button class="b" id="say2">▶ 母音だけ「あいうえお」</button>
+    <button class="b" id="stop" disabled>■ 止める</button>
+  </div>
+
+  <div class="btnrow" id="vrow"></div>
+
+  <p class="tiny">
+    ★<b>母音のボタン</b>は、その形のまま口を止めます。左右を見くらべると、<b>左はどの母音でも同じ形</b>、右は<b>あ・い・う・え・お で形が変わる</b>のが分かります。<br>
+    ★声はこのページの中で作っています（Web Audio）。<b>外に1回も通信していません。鍵もいりません。料金0円。</b><br>
+    ★絵は承認済みのPNG（<code>concierge.png</code>）を1画素も触らずにそのまま使い、口は「笑みの線の下だけを開ける」作りのままです。
+  </p>
+</div>
+
+<h2>本当に形が変わっているか（機械で数えた）</h2>
+
+<div class="wrap">
+<table>
+<tr><th class="t">母音</th><th>前の口<br>よこ×深さ</th><th>直した口<br>よこ×深さ</th></tr>
+<tr><td class="t">あ</td><td class="n">48.9 × 70.4</td><td class="n c-ok">53.7 × 72.6</td></tr>
+<tr><td class="t">い</td><td class="n">52.5 × 70.4</td><td class="n c-ok">60.2 × 39.0</td></tr>
+<tr><td class="t">う</td><td class="n">33.5 × 70.4</td><td class="n c-ok">25.8 × 53.4</td></tr>
+<tr><td class="t">え</td><td class="n">51.3 × 70.4</td><td class="n c-ok">58.0 × 51.0</td></tr>
+<tr><td class="t">お</td><td class="n">39.5 × 70.4</td><td class="n c-ok">36.6 × 67.8</td></tr>
+<tr><td class="t">閉じる</td><td class="n">37.1 × 70.4</td><td class="n c-ok">32.3 × 27.0</td></tr>
+<tr><td class="t">深さの種類</td><td class="n c-ng">1 / 6</td><td class="n c-ok">6 / 6</td></tr>
+</table>
+</div>
+<p class="tiny">
+$ <code>node tools/_1042_kuchi_test.mjs</code> → <code>status/1042_kuchi_katachi.json</code>（2026-09-23・この工場の中で実行）。<br>
+本番と同じ <code>avatar431.js</code> を読み込み、canvas に実際に描かれた点を横取りして数えた値です（444×412の絵に対するpx）。ブラウザは使っていません。<br>
+★<b>前は、どの母音でも深さが 70.4 の1種類しかありませんでした。</b>「あ」も「い」も同じ開き方だった、というのはこの数字のことです。直した後は<b>6つとも別</b>になりました。<br>
+★「ま・み・む・め・も」の直前に閉じる形が入るかも数えました。<b>5/5</b>で入っています。
+</p>
+
+<h2>ズレは何ミリ秒か（工場で測った）</h2>
+
+<div class="wrap">
+<table>
+<tr><th class="t">測ったもの</th><th>前</th><th>直した後</th></tr>
+<tr><td class="t">音が出てから口が90%開くまで</td><td class="n c-ng">126.0ms</td><td class="n c-ok">109.4ms</td></tr>
+<tr><td class="t">　うち 音を解析する窓</td><td class="n">42.7ms</td><td class="n">42.7ms</td></tr>
+<tr><td class="t">　うち 口が開くまで</td><td class="n">83.3ms</td><td class="n c-ok">66.7ms</td></tr>
+<tr><td class="t">口が閉じきるまで</td><td class="n">316.7ms</td><td class="n c-ok">233.3ms</td></tr>
+<tr><td class="t">よこはばが変わりきるまで</td><td class="n">216.7ms</td><td class="n c-ok">116.7ms</td></tr>
+</table>
+</div>
+<p class="tiny">
+$ <code>python3 tools/_1042_zure.py</code> → <code>status/1042_kuchi_jissoku.json</code>（2026-09-23・この工場の中で実行）。<br>
+中身は <code>avatar431.js</code> に実際に書いてある数字（開く0.50／閉じる0.16／よこはば0.30）を60コマ/秒で回した計算です。AIは1回も呼んでいません。<br>
+★人が「音と口がずれている」と気づく目安は100〜120ms前後とされます。<b>前は126.0msで、その外に出ていました。</b>開く速さを0.40→0.50に上げて109.4msに収めました。<br>
+★切り替えは等速ではありません。指数で減る形（ease-out）で、<b>開くのは速く、閉じるのはゆっくり</b>にしてあります。
+</p>
+
+<h2>何を直したのか（コードの実物）</h2>
+
+<ul class="plain">
+  <li><b class="h">前</b>
+    <code>var want = Math.min(1, lv * 1.95);</code><br>
+    <code>lv</code>＝音の大きさ。<b>たてはばは100%これで決まっていました。</b>だから「あ」も「い」も「う」も同じ開き方になります。
+    よこはばだけ母音を<b>55%に薄めて</b>混ぜていました。
+  </li>
+  <li><b class="h">直した後</b>
+    <code>var want = VIS[vis][1] * gate;</code> ／ <code>wantW = VIS[vis][0];</code><br>
+    <b>たてはばは母音の表から取ります。</b>音の大きさは「鳴っているかどうか」の栓にだけ使います。
+    よこはばは薄めずにそのまま使います。
+  </li>
+  <li><b class="h">表はもともと書いてあった</b>
+    <code>viseme_aa:[1.25, 1.00]</code>（あ）／<code>viseme_I:[1.40, 0.30]</code>（い）／<code>viseme_U:[0.60, 0.60]</code>（う）／
+    <code>viseme_E:[1.35, 0.55]</code>（え）／<code>viseme_O:[0.85, 0.90]</code>（お）／<code>viseme_PP:[0.75, 0.05]</code>（閉じ）。<br>
+    2つ目の数字（たてはば）が、このファイルの中で<b>1度も使われていませんでした。</b>そこを繋いだだけです。
+  </li>
+  <li><b class="h">ま行・ば行・ぱ行は、直前に唇を閉じる</b>
+    「ま」の前に閉じる形（<code>viseme_PP</code>）を挟みます。閉じずに「ま」を言うと、人の口には見えません。
+  </li>
+  <li><b class="h">触っていないもの</b>
+    絵（承認済みPNG）、口の座標（<code>MOUTH</code>）、体の揺れ・呼吸・影。<b>1画素も1行も変えていません。</b>
+  </li>
+</ul>
+
+<footer>
+作り：#1042。顔は本番と<b>同じファイル</b>（<code>assets/431-seihon/avatar431.js</code>）を読み込んで動かしています。左は比較のためだけに残した前の式（<code>{kuchi:"mae"}</code>を渡したときだけ通る道）です。<br>
+声はこのページの中の Web Audio（フォルマント2本）で作っています。外部API・鍵・課金はありません。<br>
+母音の表（<code>VIS</code>）は #958／#966 の対応表をそのまま使っています。
+</footer>
+
+<script src="assets/431-seihon/avatar431.js"></script>
+<script>
+(function(){
+  "use strict";
+  /* ── 顔を2つ立てる。右＝本番と同じ式／左＝比較用の前の式 ───────────── */
+  var faceA = Tamako431.stand(document.getElementById("penA"), {kuchi:"mae"});
+  var faceB = Tamako431.stand(document.getElementById("penB"));
+  var nowk  = document.getElementById("nowkana");
+
+  /* ── 声：このページの中で作る（外に出ない・0円）──────────────────
+     人の声は「のど（一定の音）」を「口の形（フォルマント2本）」で濾したもの。
+     母音ごとに F1/F2 を変えるだけで、あ・い・う・え・お に聞こえる。 */
+  var F = {
+    viseme_aa:[ 800,1200], viseme_I:[ 300,2300], viseme_U:[ 350, 800],
+    viseme_E :[ 500,1900], viseme_O:[ 450, 900], viseme_nn:[ 280,1100],
+    viseme_PP:[ 200, 600], viseme_sil:[200,600]
+  };
+  var ac=null, osc=null, f1=null, f2=null, g1=null, g2=null, gate=null, ana=null;
+  function koeIri(){
+    if(ac) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    ac = new AC();
+    osc = ac.createOscillator(); osc.type="sawtooth"; osc.frequency.value=138;
+    var vib = ac.createOscillator(); vib.frequency.value=4.7;
+    var vibg = ac.createGain(); vibg.gain.value=2.6;
+    vib.connect(vibg); vibg.connect(osc.frequency); vib.start();
+
+    f1=ac.createBiquadFilter(); f1.type="bandpass"; f1.Q.value=7;  f1.frequency.value=800;
+    f2=ac.createBiquadFilter(); f2.type="bandpass"; f2.Q.value=11; f2.frequency.value=1200;
+    g1=ac.createGain(); g1.gain.value=1.0;
+    g2=ac.createGain(); g2.gain.value=0.55;
+    gate=ac.createGain(); gate.gain.value=0;
+    ana=ac.createAnalyser(); ana.fftSize=2048; ana.smoothingTimeConstant=0.6;
+
+    osc.connect(f1); osc.connect(f2);
+    f1.connect(g1); f2.connect(g2);
+    g1.connect(gate); g2.connect(gate);
+    gate.connect(ana); ana.connect(ac.destination);
+    osc.start();
+    /* ★左右とも同じ解析器を見る。＝聞こえている音は完全に同じ。 */
+    faceA.attach(ana); faceB.attach(ana);
+  }
+
+  /* ── 台本を鳴らす ───────────────────────────────── */
+  var timers=[], running=false, hold=null;
+  var say1=document.getElementById("say1"), say2=document.getElementById("say2"),
+      stopb=document.getElementById("stop");
+
+  function tomeru(){
+    running=false;
+    timers.forEach(clearTimeout); timers=[];
+    clearInterval(hold); hold=null;
+    if(ac){ gate.gain.cancelScheduledValues(ac.currentTime);
+            gate.gain.setTargetAtTime(0, ac.currentTime, 0.03); }
+    faceA.viseme("viseme_sil"); faceB.viseme("viseme_sil");
+    faceA.pulse(0); faceB.pulse(0);
+    nowk.textContent=" ";
+    say1.disabled=false; say2.disabled=false; stopb.disabled=true;
+  }
+  stopb.addEventListener("click", tomeru);
+
+  function hanasu(kotoba, tan){
+    koeIri();
+    if(ac.state==="suspended") ac.resume();
+    tomeru();
+    running=true; say1.disabled=true; say2.disabled=true; stopb.disabled=false;
+
+    var seq = Tamako431.kanaToViseme(kotoba);
+    var t0 = ac.currentTime + 0.08, ms = 0, T = tan || 132;
+    seq.forEach(function(s){
+      var dur = s.w * T / 1000;
+      var at  = t0 + ms/1000;
+      var fr  = F[s.v] || F.viseme_sil;
+      var oto = (s.v!=="viseme_sil" && s.v!=="viseme_PP");
+      f1.frequency.setTargetAtTime(fr[0], at, 0.022);
+      f2.frequency.setTargetAtTime(fr[1], at, 0.022);
+      gate.gain.setTargetAtTime(oto ? 0.16 : 0.0, at, oto ? 0.012 : 0.02);
+      timers.push(setTimeout(function(){
+        if(!running) return;
+        faceA.viseme(s.v); faceB.viseme(s.v);
+        nowk.textContent = (s.k===" ") ? " " : s.k;
+      }, ms + 80));
+      ms += s.w * T;
+    });
+    timers.push(setTimeout(function(){ if(running) tomeru(); }, ms + 420));
+  }
+
+  say1.addEventListener("click", function(){
+    hanasu("こんばんは。ごきげん補給所の案内人です。まよったら、まず1まいだけ、みてみませんか。", 132);
+  });
+  say2.addEventListener("click", function(){
+    hanasu("あー　いー　うー　えー　おー", 260);
+  });
+
+  /* ── 母音ボタン：その形で止める ───────────────────────── */
+  var VB=[["あ","viseme_aa"],["い","viseme_I"],["う","viseme_U"],
+          ["え","viseme_E"],["お","viseme_O"],["閉じる","viseme_PP"]];
+  var vrow=document.getElementById("vrow");
+  VB.forEach(function(p){
+    var b=document.createElement("button");
+    b.className="b v"; b.textContent=p[0];
+    b.addEventListener("click", function(){
+      koeIri(); if(ac.state==="suspended") ac.resume();
+      tomeru();
+      var fr=F[p[1]];
+      f1.frequency.setTargetAtTime(fr[0], ac.currentTime, 0.02);
+      f2.frequency.setTargetAtTime(fr[1], ac.currentTime, 0.02);
+      var oto = (p[1]!=="viseme_PP");
+      gate.gain.setTargetAtTime(oto?0.14:0, ac.currentTime, 0.02);
+      nowk.textContent=p[0];
+      clearInterval(hold);
+      /* 形を保つ＝260msで古くなる決まりなので、押している間は入れ直す */
+      hold=setInterval(function(){ faceA.viseme(p[1]); faceB.viseme(p[1]); }, 120);
+      faceA.viseme(p[1]); faceB.viseme(p[1]);
+      timers.push(setTimeout(function(){
+        clearInterval(hold);
+        gate.gain.setTargetAtTime(0, ac.currentTime, 0.05);
+      }, 2600));
+    });
+    vrow.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>
