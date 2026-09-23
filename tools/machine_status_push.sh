@@ -884,6 +884,16 @@ quick_tick() {
   #   → 15秒の軽い便に載せ替えた。mac_job_runner 自身がロックを持っているので二重には走らない。
   #   ★運ぶ口はここ1か所。重い便が止まっても運搬は止まらない。
   ( run_with_timeout 120 python3 -c "import sys;sys.path.insert(0,'$REPO/tools');import mac_job_runner as m;m.run()" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24【重さの見張りを、止まらない経路へ載せ替える】★穴を塞ぐのではなくパイプごと替える。
+  #   1057番は tools/heartbeat.sh に1行足したが、**1日経っても1回も測っていなかった**
+  #   （実測：status/omosa_mihari.json が存在しない／06:00に手で走らせたら即座に測れた＝
+  #     道具は正しい。走っていなかっただけ）。理由は、心臓は pid 6441 の**長生きプロセス**で、
+  #   その行が足される前に起動しているから。走っている bash に後から足した行は当てにならない。
+  #   → この5分便は launchd が**毎回新しいプロセスとして起こす**ので、書いた行は必ず効く。
+  #   ★中で20時間ゲートしているので、15秒おきに呼んでも実際に測るのは1日1回だけ。
+  #   ★この係は測って判定して知らせるだけ。直さない。赤（前回比+5%超／1MB超／CLS0.1超）の
+  #     ときだけ status/dispatch_outbox.jsonl に1行出す。青の日は1行も出さない。
+  ( run_with_timeout 300 python3 "$REPO/tools/omosa_mihari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
 }
 while :; do
   run_once
