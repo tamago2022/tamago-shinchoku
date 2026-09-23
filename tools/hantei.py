@@ -1052,3 +1052,57 @@ if __name__ == "__main__":
     print("規則：%s\n" % RULE)
     for r in audit():
         print(r["line"])
+
+
+# ────────────────────────────────────────────────────────────────
+# 1042番（2026-09-23）中継所（投げ込み箱→Mac）の生死。
+#
+# たまごさん「今日これで3回目の『黙って止まる』です。2回目以降は直さずパイプごと替える。」
+#
+# それまでの穴（実測）：
+#   ・relay_watch.py は「外から200が返るか」しか見ていなかった。
+#     200が返っても、受け口の中身が古ければ投げ込みは弾かれる＝**届かないのに緑**。
+#   ・立て直したあと「立て直した」とログに書いて終わっていた。
+#     本当に届くかは一度も確かめていない＝**直っていなくても緑**。
+#   ・Macが重い(load>20)と、見張りが黙って return していた＝**赤が誰にも見えない**。
+#
+# 規則はここにしか書かない（relay_watch も進捗表もここを呼ぶ）：
+#   最後に「実際に1本届いた」時刻が STALE_MIN 分より古い → 🔴（立て直す）
+#   立て直したのに届かない                              → 🔴（緑にしない・赤のまま残す）
+#   届いた                                              → ✅
+#
+# 「生きている」の根拠にプロセスの生死・トンネルのURL・/health の200を使わない。
+# それらは全部「空回しでも点く緑」。**届いた1本だけが根拠になる。**
+RELAY_STALE_MIN = 12          # relay.json の判子がこれより古かったら赤
+RELAY_JSON = os.path.join(STATUS, "relay.json")
+
+
+def _relay_mark_age_min(now=None):
+    """relay.json の「最後に実測で届いた時刻」から何分経ったか。取れなければ None。"""
+    now = time.time() if now is None else now
+    try:
+        d = json.load(io.open(RELAY_JSON, encoding="utf-8"))
+    except Exception:
+        return None, {}
+    stamp = d.get("verifiedAt") or d.get("checkedAt") or d.get("updatedAt") or ""
+    try:
+        t = datetime.datetime.strptime(stamp[:19], "%Y-%m-%dT%H:%M:%S")
+        t = t.replace(tzinfo=JST)
+        return (now - t.timestamp()) / 60.0, d
+    except Exception:
+        return None, d
+
+
+def relay_han(now=None, stale_min=RELAY_STALE_MIN):
+    """戻り値: (印, 理由1行, 中身dict)
+
+    印は "✅"（届いている）／"🔴"（届いていない＝立て直す）／"⚪"（まだ一度も測っていない）。
+    """
+    age, d = _relay_mark_age_min(now)
+    url = (d or {}).get("url") or ""
+    if age is None:
+        return "⚪", "中継所をまだ一度も実測していません", d or {}
+    if age > stale_min:
+        return "🔴", ("中継所に%d分間1本も届いていません（%s）。立て直します"
+                      % (int(age), url or "URL未設定")), d or {}
+    return "✅", "中継所は生きています（%d分前に実測で1本届いた）" % int(age), d or {}

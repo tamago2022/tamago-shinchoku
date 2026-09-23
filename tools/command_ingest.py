@@ -2035,6 +2035,11 @@ def _process_other(action, cmd):
             return ("done" if r.get("ok") else "failed"), r.get("message", "")
         except Exception as e:
             return "failed", "投げ込み箱が受け取れませんでした：%s" % e
+    # 1042番：通し確認（空荷）。★これが通れば「トンネル→受け口→ここ(command_ingest)」が
+    #   本当に生きている。/health の200では受け口の中身が古くても緑になるので根拠にしない。
+    #   台帳(nagekomi.jsonl)には1行も書かない＝何度やってもたまごさんの一覧は汚れない。
+    if action == "soutuu":
+        return soutuu(cmd)
     # 1041番：鍵の受け口。★値は cmd["kagi"]。target には入れない（target はログに出るため）
     if action == "kagi_install":
         return kagi_install(cmd)
@@ -2152,5 +2157,25 @@ def main():
         save_json(OUT, out)
 
 
+def soutuu(cmd=None):
+    """1042番：見張りが投げる空荷。届いた事実を relay.json に判子として押す。
+
+    判定の規則そのものは tools/hantei.py にしか書かない（2か所に書かない）。
+    ここは「届いた」という事実を1か所へ記録するだけ。
+    """
+    import datetime as _dt
+    p = os.path.join(REPO, "status", "relay.json")
+    now = _dt.datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z")
+    try:
+        d = json.load(io.open(p, encoding="utf-8"))
+    except Exception:
+        d = {}
+    d["verifiedAt"] = now
+    d["verifiedBy"] = (cmd or {}).get("by") or "soutuu"
+    json.dump(d, io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return "done", "通し確認：届きました（%s）" % now
+
+
 if __name__ == "__main__":
     main()
+
