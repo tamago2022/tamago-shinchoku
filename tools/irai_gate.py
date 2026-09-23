@@ -129,8 +129,11 @@ def naka(target):
     ext = os.path.splitext(full)[1].lower()
 
     if ext in (".html", ".htm"):
-        k = hashlib.sha256(io.open(full, "rb").read()).hexdigest()[:16]
-        p = os.path.join(WATASHI, k + ".json")
+        # ★鍵の作り方を2か所に書かない。渡す門(watashi_gate)のものをそのまま借りる。
+        #   最初の版はここで sha256 を独自に書いてしまい、実測3件とも
+        #   「まだ一度も開いていません」で落ちた（記録はあったのに引けなかった）。
+        import watashi_gate as wg
+        p = os.path.join(WATASHI, wg.key_of(full) + ".json")
         if not os.path.exists(p):
             return (rel, "", "このページはまだ一度も実際に開いていません"
                              "（先に `python3 tools/watashi_gate.py --check %s`）。"
@@ -229,8 +232,10 @@ def kuchi_genspark(bun):
         return {"who": "genspark", "yes": None, "why": "",
                 "error": "残高%.3fがこの門の床%.0fを割っています＝叩きません" % (mae, CREDIT_YUKA)}
     try:
-        rc, so, se = _run([GSK, "task", "create", "super_agent", "--query", bun,
-                           "--output", "json"], timeout=600)
+        # ★--task_name は必須（実測：無いと rc=1 "Missing required option: --task_name"）
+        rc, so, se = _run([GSK, "task", "create", "super_agent",
+                           "--task_name", "依頼の門",
+                           "--query", bun, "--output", "json"], timeout=900)
     except subprocess.TimeoutExpired:
         return {"who": "genspark", "yes": None, "why": "", "error": "時間切れ（10分）"}
     ato = gsk_zandaka()
@@ -486,9 +491,11 @@ DEMO = [
     ("絵本のページを作って。開いたら動いて見えるようにして。",
      "share/ohon/1046-live2d.html",
      "『表示されすらしない』と言われた"),
-    # ③ 投げ込み箱の一覧。たまごさん「俺ボンジョビなんか入れてない」
+    # ③ 投げ込み箱の一覧。たまごさん「投げ込み箱、俺ボンジョビなんか入れてないから」
+    #    ★ここは機械の門が全部通す形（ページは開くし文字も出る）。
+    #      「頼んだものに答えているか」だけが落とせる＝この門の本番。
     ("投げ込み箱に俺が入れたものだけを一覧にして。",
-     "share/nagekomi-list-24b9dbaae07c4103.html",
+     "status/public/commands.json",
      "『俺ボンジョビなんか入れてない』と言われた"),
 ]
 
