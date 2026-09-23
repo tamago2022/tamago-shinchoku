@@ -30,6 +30,8 @@
   .bar button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
   /* ★1050番：押したものを色だけでなく文字で出す */
   .picked{margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--accent);font-weight:700}
+  .modosu{width:100%;min-height:44px;margin:0 0 12px;font-size:14px;font-family:inherit;
+       background:#fff;color:var(--sub);border:1px dashed var(--line);border-radius:10px}
   .row{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin:0 0 8px}
   .top{display:flex;gap:8px;align-items:baseline;justify-content:space-between}
   .at{font-size:11.5px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -53,13 +55,14 @@
 <p class="lead">新しい順。開き直せば最新が出ます。</p>
 
 <div class="bar" id="bar">
-  <button data-f="" aria-pressed="true">ぜんぶ <span id="c0"></span></button>
+  <button data-f="" aria-pressed="false">ぜんぶ <span id="c0"></span></button>
   <button data-f="届いた" aria-pressed="false">届いた <span id="c1"></span></button>
   <button data-f="棚に入った" aria-pressed="false">棚に入った <span id="c2"></span></button>
   <button data-f="入れられない" aria-pressed="false">入れられない <span id="c3"></span></button>
 </div>
 
 <p class="picked" id="nowShowing">いま見ているもの：ぜんぶ</p>
+<button class="modosu" id="modosu" type="button" hidden>ぜんぶに戻す</button>
 <div id="list"><p class="empty">読み込んでいます…</p></div>
 
 <p class="foot" id="foot"></p>
@@ -88,6 +91,8 @@ function render(){
   var now = document.getElementById("nowShowing");
   if(now){ now.textContent = "いま見ているもの：" + (FILT || "ぜんぶ")
              + (SEEN ? "　／　" + SEEN + " に取り直しました" : ""); }
+  var md = document.getElementById("modosu");
+  if(md){ md.hidden = !FILT; }
   if(!DATA){ host.innerHTML = '<p class="empty">一覧がまだ読めません。少し待ってから開き直してください。</p>'; return; }
   var c = DATA.counts || {};
   document.getElementById("c0").textContent = DATA.shown || 0;
@@ -130,6 +135,13 @@ document.getElementById("bar").addEventListener("click", function(e){
 /* ★1050番：中継所（localtunnel）は bypass-tunnel-reminder を付けないと
    511 Network Authentication Required を返す＝画面のconsoleに赤が出続けていた。
    投げ込み箱の側は最初から付けていた。こちらだけ付いていなかった。 */
+document.getElementById("modosu").addEventListener("click", function(){
+  FILT = "";
+  [].forEach.call(document.querySelectorAll("#bar button"), function(x){
+    x.setAttribute("aria-pressed", x.getAttribute("data-f") ? "false" : "true"); });
+  load(); render();
+});
+
 function getJSON(u, head){
   return fetch(u + (u.indexOf("?")<0?"?":"&") + "t=" + Date.now(),
                head ? {cache:"no-store", headers:head} : {cache:"no-store"})
@@ -137,7 +149,13 @@ function getJSON(u, head){
 }
 
 /* 中継所（Macの生の写し）を先に見る。駄目なら公開済みコピー。 */
+/* ★1050番：本物のURL（https）から開いたときだけ中継所（Macの生の写し）を見る。
+   写し（file:// や 127.0.0.1）から見に行くとブラウザに止められ、画面に赤が残るだけ。 */
 function load(){
+  if(location.protocol !== "https:"){
+    return getJSON("../status/public/nagekomi_list.json").then(function(pub){
+      DATA = pub; SEEN = stamp(); render(); });
+  }
   return getJSON("../status/public/relay.json").then(function(j){
     var u = j && j.url ? j.url.replace(/\/$/,"") : null;
     return u ? getJSON(u + "/status/nagekomi_list.json",

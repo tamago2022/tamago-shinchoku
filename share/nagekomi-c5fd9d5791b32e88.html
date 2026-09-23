@@ -113,7 +113,16 @@ function drawQ(){
     ? "まだ届いていない分が <b>"+n+"件</b> あります（このページを開くたびに送り直します）"
     : "";
 }
+/* ★1050番【下見の画面から本番へ投げない】
+   この箱は「本物のURL（https のごきげん補給所の場所）」から開いたときだけ中継所へ送る。
+   file:// や 127.0.0.1 で開いた写し（門の下見・手元のコピー・誰かのフォーク）からは送らない。
+   理由が2つ：
+     ① 下見で押しただけのものが、たまごさんの台帳に本物として混ざる（実際に混ざっていた）
+     ② 写しから送ると、中継所の手前でブラウザに止められて、画面に赤い失敗だけが残る
+   送らないときは**黙らない**。「ここは下見用です」と画面に出す（1043番の約束）。 */
+function honmono(){ return location.protocol === "https:"; }
 function relay(){
+  if(!honmono()) return Promise.resolve(null);
   return fetch("../status/public/relay.json?t="+Date.now(), {cache:"no-store"})
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(j){ RELAY = j && j.url ? j.url.replace(/\/$/,"") : null; return RELAY; })
@@ -145,6 +154,11 @@ window.addEventListener("unhandledrejection", function(e){
 function flush(){
   var a = pending();
   if(!a.length) return Promise.resolve({ok:true, n:0});
+  if(!honmono()){
+    diag("ここは下見用の画面です（"+location.protocol+"）。中継所へは送っていません。");
+    return Promise.resolve({ok:false, why:"ここは下見用の画面です。"
+      + "本物のURL（https）から開くと、貯めた分がそのまま送られます"});
+  }
   return (RELAY ? Promise.resolve(RELAY) : relay()).then(function(u){
     if(!u) return {ok:false, why:"パソコンの居場所（relay.json）が読めませんでした"};
     diag("中継所へ送ります: " + u.replace(/^https?:\/\//,"").split(".")[0] + "… " + a.length + "件");

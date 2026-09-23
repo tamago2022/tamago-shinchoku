@@ -332,6 +332,9 @@ while :; do
   #   中で1日1回に間引く（status/.soto_hatarakite_at）ので、ここは緩く呼べばよい。
   #   AIを1回も呼ばない・外へ1回も出ない＝クレジット0円。投げっぱなしにして心臓は待たない。
   tick_every 240 && ( python3 "$REPO/tools/soto_hatarakite.py" >> "$REPO/status/soto_hatarakite.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
+  #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
+  tick_every 240 && ( python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

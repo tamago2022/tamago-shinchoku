@@ -774,7 +774,10 @@ def cmd_submit(path):
 
 def cmd_run_pending(max_jobs, quiet):
     os.makedirs(PENDING_DIR, exist_ok=True)
-    files = sorted(p for p in os.listdir(PENDING_DIR) if p.endswith(".json"))
+    # ★名前順ではなく**古いもの順**で拾う（1049番）。名前順だと、上限で止まって
+    #   残った先頭の数枚が毎回また拾われ、後ろに積んだものに一生順番が来ない。
+    files = sorted((p for p in os.listdir(PENDING_DIR) if p.endswith(".json")),
+                   key=lambda fn: os.path.getmtime(os.path.join(PENDING_DIR, fn)))
     if not files:
         if not quiet:
             print("積まれているものはありません。")
@@ -794,7 +797,16 @@ def cmd_run_pending(max_jobs, quiet):
                 os.remove(p)
             except Exception:
                 pass
-        # rc==2（鍵無し・上限）は積んだまま残す＝次の便で再挑戦する
+        else:
+            # rc==2（鍵無し・上限）は積んだまま残す＝次の便で再挑戦する。
+            # ★1049番（2026-09-24）：ただし**列の最後尾へ回す。**
+            #   実測：積んだ16枚のうち、毎回おなじ先頭3枚（名前順）だけが拾われ、
+            #   上限で止まって残り、次の便でもまた同じ3枚が拾われていた＝
+            #   **4枚目から先に一生順番が来ない。**更新時刻を今にして最後尾へ送る。
+            try:
+                os.utime(p, None)
+            except Exception:
+                pass
     return last
 
 
