@@ -117,6 +117,27 @@ echo "$(date '+%F %T') nagekomi_shelf 呼び出し" >> "$REPO/status/nagekomi_sh
 # ★1周が数十分かかるのでバックグラウンドへ逃がす。二重起動は fukumen_daily 側のロックで防ぐ。
 ( nohup python3 "$REPO/tools/fukumen_daily.py" >>"$REPO/status/fukumen/daily.log" 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-09-24（1044番・Cowork側から設置）仕入れを止めずに回す口 ----
+# たまごさん「大量仕入れまたやりたいんだけど。ひたすら仕入れは続けてほしいな。」
+#            「★列に積まない。自前の口が毎日走る形。」
+# 何をするか：素材(status/shiire_raw/)→候補(status/shiire_kouho/)を全部通し、
+#   素材が尽きたら次の素材集めをJulesへ投げ直す（tools/shiire_loop.py）。
+# ★なぜこの形か（2026-09-24 実測）：サンドボックスから musicbrainz / last.fm /
+#   wikipedia / deezer / itunes へ1つも出られない（全部 Tunnel 403）。
+#   tools/shuhen_horu.py はこの403で落ち続けていた＝**走った96回・取れた0回**。
+#   だから回線の要る「素材集め」だけJulesへ出し、候補づくりは手元で回す。
+# ★新しいlaunchd常駐は増やさない。この5分便に相乗りし、中で1日1回だけ通す。
+# ★棚(coverGuide.ts)には一切書かない。採否はたまごさんの判断。
+# ★Macが混んでいる回は見送り、ゲートを消費しない。
+_SHIIRE_STAMP="$REPO/status/.shiire_loop.stamp"
+if [ "$(cat "$_SHIIRE_STAMP" 2>/dev/null)" != "$(date +%Y-%m-%d)" ]; then
+  _LOAD="$(uptime | sed 's/.*averages*: *//' | cut -d' ' -f1 | tr -d ',' | cut -d. -f1)"
+  if [ -z "${_LOAD:-}" ] || [ "$_LOAD" -lt 40 ] 2>/dev/null; then
+    date +%Y-%m-%d > "$_SHIIRE_STAMP"
+    ( nohup python3 "$REPO/tools/shiire_loop.py" >>"$REPO/status/shiire_loop.log" 2>&1 & ) >/dev/null 2>&1
+  fi
+fi
+
 # ---- 2026-09-22（1024番・Cowork側から設置）棚に入ったものへ「入荷日」を付ける係 ----
 # たまごさん「これから入るものには、必ず入荷日が付くようにする（仕入れの仕組み側に足す）」。
 # 入荷日は棚の正本（joy-relief-station の coverGuide.ts）のgit履歴から引く（0円・読むだけ）。
