@@ -127,6 +127,13 @@ def r_yt_transcript(url):
       手順は公式の仕組みだけを使う：watchページの ytInitialPlayerResponse に載っている
       captionTracks の baseUrl を読み、そこへ `&fmt=json3` を付けて取る。
       ★取れなければ「取れなかった＋どこで止まったか」を返す。作り話をしない。
+
+    ★2026-09-24 の実測（7本で試した・工場＝Macから）：**文字起こしは1本も返らなかった。**
+      ・4本 … captionTracks が空（その動画に字幕トラックが無い）
+      ・3本 … 字幕の住所は見つかるが、叩くと 200 で**本文が空**で返る
+        （YouTube側が timedtext に追加の合図を要求するようになっている）
+      ＝**「14,298文字が取れる」という外部AIの申告は、この経路では再現できていない。**
+      この読み手は残す（YouTube側が戻れば自動で先頭に立つ）が、★取れたことにはしない。
     """
     if not _is_yt(url):
         return None, "YouTubeではない"
@@ -347,7 +354,11 @@ def _narabi(url=""):
         return (-s.get(t[0], {}).get("ok", 0), idx[t[0]])
 
     senmon = SENMON["yt"] if _is_yt(url) else (SENMON["x"] if _is_x(url) else ())
-    saki = sorted([t for t in READERS if t[0] in senmon], key=_rank)
+    # ★専門の中は成績で並べ替えない。**多く取れる読み手が先**（SENMONに書いた順）。
+    #   成績で並べると、題名だけ返す oembed（よく通る）が文字起こしより先に立ってしまい、
+    #   文字起こしに一度も順番が回らない。実測 2026-09-24 08:20。
+    saki = sorted([t for t in READERS if t[0] in senmon],
+                  key=lambda t: senmon.index(t[0]))
     ato = sorted([t for t in READERS if t[0] not in senmon], key=_rank)
     return saki + ato
 

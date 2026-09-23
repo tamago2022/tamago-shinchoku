@@ -363,6 +363,79 @@ def svg_hyo():
     return "".join(s)
 
 
+# ─────────────────────────────────────────────────────────────────────────
+# ★たまごさんの情報の置き場に、誰が触れるか。
+#   たまごさん（2026-09-24）「誰が俺のNotionとObsidianにアクセスできるのか、
+#   そういうのも目視で確認したいね。」
+#   ◎＝書ける／◯＝読める／✕＝触れない／空欄＝未測定。★叩いて通ったものだけ ◯◎。
+#   ★線ではなく表にしてある。11人×6か所を線で描くとスマホでは必ず潰れる（codexの助言②）。
+# ─────────────────────────────────────────────────────────────────────────
+OKIBA = ["Obsidian", "Notion", "Supabase", "GitHub", "Drive", "Spotify"]
+OKIBA_COLS = ["claude", "codex", "genspark", "gemini", "devin", "jules", "jev"]
+OKIBA_HYO = {
+    #            自分 codex gensp gemini devin jules jev
+    "Obsidian":  ["◯", "",  "",  "",  "",  "",  ""],
+    "Notion":    ["✕", "",  "",  "",  "",  "",  ""],
+    "Supabase":  ["",  "",  "",  "",  "",  "",  ""],
+    "GitHub":    ["✕", "",  "",  "",  "✕", "✕", ""],
+    "Drive":     ["",  "",  "",  "",  "",  "",  ""],
+    "Spotify":   ["",  "",  "",  "",  "",  "",  ""],
+}
+OKIBA_MOTO = (
+    "Obsidian◯＝Mac上のVault(tamago_brain)の直下を0.2秒で並べられた"
+    "（status/gaibu_jobs/done/20260924-081654-4204.json・1044番／読むだけ・0円）。"
+    "★たまごさんにzipを作らせる必要は無い。 ／ "
+    "Notion✕＝こちらにNotionのコネクタが0件（実測）。"
+    "Gensparkは「Notionと繋がっている」と本人が申告しているが、"
+    "今日 gsk が未導入で1件も読ませていない＝空欄（未測定）。 ／ "
+    "GitHub✕＝トークンが取れない（status/public/kaitsuu.json の github）。"
+    "Jules/CopilotはGitHub Issueが唯一の口なので、ここが閉じている間は触れない。 ／ "
+    "★申告は「本人が言っている」として別に残す（SHINKOKU）。空欄を◯に変えるのは実測が出た日だけ。")
+
+# ★外部AIの自己申告。**図の◯には一切使わない。**言った事実だけを残す。
+SHINKOKU = [
+    ("外部AI", "YouTube動画1本の文字起こし全文14,298文字をタイムスタンプ付きで取れる",
+     "こちらでも同じ経路を作って実測した（tools/yomu.py の yt_transcript）"),
+    ("外部AI", "Obsidianはローカルなのでzipにして渡してほしい",
+     "★うちでは当てはまらない。Mac上のVaultを直接読めた（1044番・実測0.2秒）"),
+    ("Genspark", "Notionと繋がっている（たまごさん経由）", "未測定。gskが未導入で1件も読ませていない"),
+    ("Genspark", "Notion4,000ページ＋Obsidianを商品候補に変換できる", "今はやらない。選ばれたら使う"),
+]
+
+
+def svg_okiba():
+    """情報の置き場 × 誰が触れるか。"""
+    colw, rowh, x0, y0 = 40, 28, 76, 58
+    w = x0 + colw * len(OKIBA_COLS) + 6
+    h = y0 + rowh * len(OKIBA) + 16
+    name = {n["id"]: n["name"] for n in NODES}
+    s = ['<svg viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg" '
+         'font-family="-apple-system,BlinkMacSystemFont,Hiragino Sans,sans-serif">' % (w, h)]
+    s.append('<rect width="%d" height="%d" fill="#F8FAFC"/>' % (w, h))
+    s.append('<text x="8" y="22" font-size="12.5" font-weight="700" fill="%s">'
+             'この置き場に誰が触れるか</text>' % INK)
+    s.append('<text x="8" y="38" font-size="9.5" fill="#64748B">'
+             '◎書ける　◯読める　✕触れない　空欄＝未測定</text>')
+    for c, nid in enumerate(OKIBA_COLS):
+        cx = x0 + colw * c + colw // 2
+        s.append('<text x="%d" y="%d" text-anchor="middle" font-size="8.5" fill="#475569" '
+                 'transform="rotate(-38 %d %d)">%s</text>'
+                 % (cx, y0 - 6, cx, y0 - 6, esc(name.get(nid, nid)[:9])))
+    for r, k in enumerate(OKIBA):
+        y = y0 + rowh * r
+        if r % 2 == 0:
+            s.append('<rect x="0" y="%d" width="%d" height="%d" fill="#FFFFFF"/>' % (y, w, rowh))
+        s.append('<text x="8" y="%d" font-size="11" font-weight="600" fill="%s">%s</text>'
+                 % (y + 19, INK, esc(k)))
+        for c, v in enumerate(OKIBA_HYO[k]):
+            cx = x0 + colw * c + colw // 2
+            col = GREEN if v in ("◯", "◎") else (RED if v == "✕" else GREY)
+            s.append('<text x="%d" y="%d" text-anchor="middle" font-size="14" fill="%s">%s</text>'
+                     % (cx, y + 20, col, v or "・"))
+    s.append('</svg>')
+    return "".join(s)
+
+
 def sumaho_kensa(svg, w=360, h=560):
     """★スマホの門（図版）。**線が箱を貫通していないか・枠から出ていないか**を数で確かめる。
     たまごさん「スマホで見て線がつぶれたら不合格」。絵を人が見る前に、ここで落とす。
@@ -428,12 +501,21 @@ ul{margin:4px 0 0;padding-left:18px;font-size:11.5px;line-height:1.7;color:#3341
 <ul>%(osu)s</ul>
 <h2>この仕事は誰に渡すか</h2>
 %(svg2)s
+<h2>たまごさんの情報の置き場に、誰が触れるか</h2>
+%(svg3)s
+<p class="moto">%(okibamoto)s</p>
+<h2>外部AIの自己申告（★図の◯には使っていない）</h2>
+<ul>%(shinkoku)s</ul>
 <p class="moto">%(hyomoto)s<br>状態の出どころ：status/public/kaitsuu.json（実測）／
 本番に出た本数：status/public/tekizai.json／図の寸法：codex(gpt-5.6-terra)に実測で聞いた答え。
 この紙は外へ1回も出ません＝0円。</p>
 </div></body></html>""" % dict(at=esc(at), svg1=svg_haikan(J), svg2=svg_hyo(),
                                zure=zure_lines, osu=osu_lines or "<li>なし</li>",
-                               hyomoto=esc(HYO_MOTO))
+                               hyomoto=esc(HYO_MOTO), svg3=svg_okiba(),
+                               okibamoto=esc(OKIBA_MOTO),
+                               shinkoku="".join(
+                                   "<li><b>%s</b>「%s」→ %s</li>" % (esc(a), esc(b), esc(c))
+                                   for a, b, c in SHINKOKU))
 
 
 def build():
@@ -480,6 +562,9 @@ def self_test():
             ng.append("状態が取れない口: %s" % n["id"])
     if len(HYO_COLS) != len(HYO["調べもの"]):
         ng.append("表の列数と行の長さが合いません")
+    for k, v in OKIBA_HYO.items():
+        if len(v) != len(OKIBA_COLS):
+            ng.append("置き場の表の列数が合いません: %s" % k)
     ng += sumaho_kensa(s1)
     h = html(J, at)
     if "viewBox" not in h:
