@@ -60,9 +60,22 @@ def build(dest):
     alive = {}
     if os.path.exists(THUMB):
         alive = json.load(open(THUMB, encoding="utf-8"))
-    rows = [d for d in load() if (not alive or alive.get(d["_vid"]) == 200)]
+    def ok(v, kind):
+        if not alive:
+            return True
+        return (alive.get(v) or {}).get(kind) == 200
+
+    rows = [d for d in load() if ok(d["_vid"], "hq")]
     rows.sort(key=lambda d: d["name"].lower())
-    hero = rows[0]["_vid"] if rows else ""
+    # 扉の大きな画は、大判(maxres)が生きているものから選ぶ（ぼやけた画を全面に敷かない）
+    hero = ""
+    for d in rows:
+        if ok(d["_vid"], "max"):
+            hero = d["_vid"]
+            break
+    if not hero and rows:
+        hero = rows[0]["_vid"]
+    heroimg = "maxresdefault" if (not alive or ok(hero, "max")) else "hqdefault"
     cards = []
     for d in rows:
         k = d["kokishiki"]
@@ -133,7 +146,7 @@ footer a{color:var(--fg)}
 </style>
 </head>
 <body>
-<header class="hero" style="background-image:url(https://i.ytimg.com/vi/@@HERO@@/maxresdefault.jpg)">
+<header class="hero" style="background-image:url(https://i.ytimg.com/vi/@@HERO@@/@@HQ@@.jpg)">
   <div class="in">
     <p class="ch">01 / FUJI ROCK &rsquo;26</p>
     <h1>同じ名前の、<em>別人</em>を弾いた。<br>残った@@N@@組。</h1>
@@ -157,6 +170,7 @@ footer a{color:var(--fg)}
 """
     doc = (doc.replace("@@N@@", str(len(rows)))
               .replace("@@HERO@@", hero)
+              .replace("@@HQ@@", heroimg)
               .replace("@@CARDS@@", "\n".join(cards)))
     with open(dest, "w", encoding="utf-8") as f:
         f.write(doc)
