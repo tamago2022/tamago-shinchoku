@@ -7,16 +7,16 @@
 <style>
 :root{
   color-scheme: light;
-  --kinari:#EDE6D6;
-  --kinari-l:#F6F1E6;
-  --ai:#22304A;
-  --ai-soft:rgba(34,48,74,.55);
-  --shu:#C1442E;
+  --kinari:var(--t-fg);
+  --kinari-l:var(--t-fg);
+  --ai:var(--t-fg2);
+  --ai-soft:var(--t-fg2);
+  --shu:var(--t-ng);
   --line:rgba(34,48,74,.18);
 }
 *{box-sizing:border-box}
 body{
-  margin:0; background:var(--kinari); color:var(--ai);
+  margin:0; background:var(--t-panel2); color:var(--t-fg);
   font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",Georgia,serif;
   -webkit-font-smoothing:antialiased;
 }
@@ -35,40 +35,40 @@ h2{font-size:14px;font-weight:400;letter-spacing:4px;margin:0 0 6px}
 #stage canvas,#stage .layer{position:absolute;left:0;top:0;width:320px;height:400px;pointer-events:none}
 #stage .layer{display:flex;align-items:center;justify-content:center}
 #stage .layer img{max-width:100%;max-height:100%;object-fit:contain}
-.guides #stage .lyr{outline:1px dashed rgba(193,68,46,.5);outline-offset:-1px}
-.lbl{position:absolute;font-family:ui-monospace,Menlo,monospace;font-size:8.5px;letter-spacing:1px;color:var(--shu);background:rgba(246,241,230,.9);padding:1px 4px;display:none}
+.guides #stage .lyr{outline:1px dashed var(--t-ng);outline-offset:-1px}
+.lbl{position:absolute;font-family:ui-monospace,Menlo,monospace;font-size:8.5px;letter-spacing:1px;color:var(--shu);background:var(--t-panel);padding:1px 4px;display:none}
 .guides .lbl{display:block}
 
 .panel{flex:1 1 300px;min-width:280px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 button{
-  font-family:inherit;font-size:11.5px;letter-spacing:1.6px;color:var(--ai);
-  background:var(--kinari-l);border:1px solid var(--line);border-radius:2px;
+  font-family:inherit;font-size:11.5px;letter-spacing:1.6px;color:var(--t-fg);
+  background:var(--t-panel2);border:1px solid var(--line);border-radius:2px;
   padding:9px 14px;cursor:pointer;transition:.15s;
 }
 button:hover{border-color:var(--shu);color:var(--shu)}
-button.on{background:var(--shu);color:#fff;border-color:var(--shu)}
+button.on{background:var(--shu);color:var(--t-on-accent);border-color:var(--shu)}
 button:disabled{opacity:.35;cursor:default}
 input[type=text]{
   font-family:inherit;font-size:12px;padding:9px 11px;width:100%;
-  background:var(--kinari-l);border:1px solid var(--line);border-radius:2px;color:var(--ai);
+  background:var(--t-panel2);border:1px solid var(--line);border-radius:2px;color:var(--t-fg);
 }
 .hint{font-size:10.5px;line-height:1.9;color:var(--ai-soft);margin:8px 0 0}
 
 /* HUD */
-.hud{margin-top:18px;border:1px solid var(--line);background:var(--kinari-l);padding:14px 15px}
+.hud{margin-top:18px;border:1px solid var(--line);background:var(--t-panel2);padding:14px 15px;color:var(--t-fg)}
 .hud h3{font-size:8.5px;letter-spacing:3px;color:var(--shu);margin:0 0 11px;font-weight:400}
 .meter{display:grid;grid-template-columns:78px 1fr 46px;gap:7px;align-items:center;margin-bottom:6px;
   font-family:ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.3px;color:var(--ai-soft)}
 .bar{height:5px;background:rgba(34,48,74,.1);position:relative;overflow:hidden}
-.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ai);width:0}
-.bar.shu i{background:var(--shu)}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--t-panel2);width:0;color:var(--t-fg)}
+.bar.shu i{background:var(--shu);color:var(--t-on-accent)}
 .vis{display:flex;gap:4px;margin:12px 0 4px}
 .vis span{
   flex:1;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:11px;
   padding:6px 0;border:1px solid var(--line);color:rgba(34,48,74,.32);transition:.08s
 }
-.vis span.hot{background:var(--shu);color:#fff;border-color:var(--shu)}
+.vis span.hot{background:var(--shu);color:var(--t-on-accent);border-color:var(--shu)}
 .dual{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;
   font-family:ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--ai-soft)}
 .dual b{display:block;font-weight:400;font-size:8px;letter-spacing:2px;color:var(--shu);margin-bottom:3px}
@@ -77,7 +77,7 @@ input[type=text]{
 /* drop */
 .slots{display:flex;gap:7px;margin-top:14px}
 .slot{flex:1;border:1px dashed var(--line);padding:11px 4px;text-align:center;
-  font-size:9.5px;letter-spacing:1px;color:var(--ai-soft);cursor:pointer;transition:.15s;background:var(--kinari-l)}
+  font-size:9.5px;letter-spacing:1px;color:var(--t-fg);cursor:pointer;transition:.15s;background:var(--t-panel2)}
 .slot:hover,.slot.over{border-color:var(--shu);color:var(--shu)}
 .slot.filled{border-style:solid;border-color:var(--shu);color:var(--shu)}
 
@@ -187,67 +187,67 @@ svg.diagram{width:100%;height:auto;display:block;margin-top:16px}
     <svg class="diagram" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NVIDIA ACE / Tokkio の構成図">
       <defs>
         <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-          <path d="M0,0 L8,4 L0,8 z" fill="#22304A" opacity=".5"/>
+          <path d="M0,0 L8,4 L0,8 z" fill="var(--t-fg2)" opacity=".5"/>
         </marker>
         <marker id="arS" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-          <path d="M0,0 L8,4 L0,8 z" fill="#C1442E"/>
+          <path d="M0,0 L8,4 L0,8 z" fill="var(--t-ng)"/>
         </marker>
       </defs>
-      <g font-family="ui-monospace,Menlo,monospace" font-size="9.5" fill="#22304A">
+      <g font-family="ui-monospace,Menlo,monospace" font-size="9.5" fill="var(--t-fg2)">
         <!-- lanes -->
-        <text x="8" y="44" font-size="8" letter-spacing="2" fill="#C1442E">STREAMING</text>
-        <text x="8" y="134" font-size="8" letter-spacing="2" fill="#C1442E">ACE CONTROLLER</text>
-        <text x="8" y="234" font-size="8" letter-spacing="2" fill="#C1442E">ANIMATION</text>
-        <line x1="0" y1="72" x2="880" y2="72" stroke="#22304A" stroke-opacity=".12"/>
-        <line x1="0" y1="162" x2="880" y2="162" stroke="#22304A" stroke-opacity=".12"/>
+        <text x="8" y="44" font-size="8" letter-spacing="2" fill="var(--t-ng)">STREAMING</text>
+        <text x="8" y="134" font-size="8" letter-spacing="2" fill="var(--t-ng)">ACE CONTROLLER</text>
+        <text x="8" y="234" font-size="8" letter-spacing="2" fill="var(--t-ng)">ANIMATION</text>
+        <line x1="0" y1="72" x2="880" y2="72" stroke="var(--t-fg2)" stroke-opacity=".12"/>
+        <line x1="0" y1="162" x2="880" y2="162" stroke="var(--t-fg2)" stroke-opacity=".12"/>
 
         <!-- row1 -->
-        <rect x="120" y="22" width="130" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <rect x="120" y="22" width="130" height="34" fill="none" stroke="var(--t-fg2)" stroke-opacity=".3"/>
         <text x="185" y="43" text-anchor="middle">人の声（WebRTC）</text>
-        <line x1="250" y1="39" x2="316" y2="39" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
-        <rect x="320" y="22" width="120" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <line x1="250" y1="39" x2="316" y2="39" stroke="var(--t-fg2)" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <rect x="320" y="22" width="120" height="34" fill="none" stroke="var(--t-fg2)" stroke-opacity=".3"/>
         <text x="380" y="43" text-anchor="middle">Riva ASR 文字に</text>
-        <line x1="440" y1="39" x2="506" y2="39" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
-        <rect x="510" y="22" width="110" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <line x1="440" y1="39" x2="506" y2="39" stroke="var(--t-fg2)" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <rect x="510" y="22" width="110" height="34" fill="none" stroke="var(--t-fg2)" stroke-opacity=".3"/>
         <text x="565" y="43" text-anchor="middle">LLM 返事を作る</text>
-        <line x1="620" y1="39" x2="686" y2="39" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
-        <rect x="690" y="22" width="120" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <line x1="620" y1="39" x2="686" y2="39" stroke="var(--t-fg2)" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <rect x="690" y="22" width="120" height="34" fill="none" stroke="var(--t-fg2)" stroke-opacity=".3"/>
         <text x="750" y="43" text-anchor="middle">TTS 声にする</text>
 
         <!-- down -->
-        <path d="M750,56 L750,96 L440,96 L440,112" fill="none" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
-        <text x="596" y="90" text-anchor="middle" fill="#C1442E">音声データ</text>
+        <path d="M750,56 L750,96 L440,96 L440,112" fill="none" stroke="var(--t-fg2)" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <text x="596" y="90" text-anchor="middle" fill="var(--t-ng)">音声データ</text>
 
         <!-- row2 -->
-        <rect x="320" y="112" width="240" height="38" fill="#C1442E" fill-opacity=".07" stroke="#C1442E"/>
-        <text x="440" y="130" text-anchor="middle" fill="#C1442E" font-size="10">Audio2Face — 音 → 顔の数値</text>
-        <text x="440" y="144" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">口の形・目・表情を、ただの数の列にする</text>
+        <rect x="320" y="112" width="240" height="38" fill="var(--t-ng)" fill-opacity=".07" stroke="var(--t-ng)"/>
+        <text x="440" y="130" text-anchor="middle" fill="var(--t-ng)" font-size="10">Audio2Face — 音 → 顔の数値</text>
+        <text x="440" y="144" text-anchor="middle" font-size="8.5" fill="var(--t-fg2)" fill-opacity=".65">口の形・目・表情を、ただの数の列にする</text>
 
-        <rect x="600" y="112" width="210" height="38" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <rect x="600" y="112" width="210" height="38" fill="none" stroke="var(--t-fg2)" stroke-opacity=".3"/>
         <text x="705" y="130" text-anchor="middle">Audio2Emotion / Animation Graph</text>
-        <text x="705" y="144" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">感情・姿勢・体の揺れ</text>
-        <line x1="560" y1="131" x2="596" y2="131" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <text x="705" y="144" text-anchor="middle" font-size="8.5" fill="var(--t-fg2)" fill-opacity=".65">感情・姿勢・体の揺れ</text>
+        <line x1="560" y1="131" x2="596" y2="131" stroke="var(--t-fg2)" stroke-opacity=".5" marker-end="url(#ar)"/>
 
         <!-- the cut -->
-        <line x1="60" y1="176" x2="820" y2="176" stroke="#C1442E" stroke-width="1" stroke-dasharray="5 4"/>
-        <text x="62" y="190" fill="#C1442E" font-size="9">★ ここが切れている ＝ 数値だけが下に渡る。だから絵は後から差し替えられる</text>
+        <line x1="60" y1="176" x2="820" y2="176" stroke="var(--t-ng)" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="62" y="190" fill="var(--t-ng)" font-size="9">★ ここが切れている ＝ 数値だけが下に渡る。だから絵は後から差し替えられる</text>
 
         <!-- row3 -->
-        <path d="M440,150 L440,210" fill="none" stroke="#C1442E" marker-end="url(#arS)"/>
-        <rect x="200" y="210" width="150" height="40" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <path d="M440,150 L440,210" fill="none" stroke="var(--t-ng)" marker-end="url(#arS)"/>
+        <rect x="200" y="210" width="150" height="40" fill="none" stroke="var(--t-fg2)" stroke-opacity=".3"/>
         <text x="275" y="228" text-anchor="middle">A2F-2D</text>
-        <text x="275" y="242" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">写真1枚を喋らせる</text>
+        <text x="275" y="242" text-anchor="middle" font-size="8.5" fill="var(--t-fg2)" fill-opacity=".65">写真1枚を喋らせる</text>
 
-        <rect x="368" y="210" width="150" height="40" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <rect x="368" y="210" width="150" height="40" fill="none" stroke="var(--t-fg2)" stroke-opacity=".3"/>
         <text x="443" y="228" text-anchor="middle">Omniverse Renderer</text>
-        <text x="443" y="242" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">3Dで描く（要GPU）</text>
+        <text x="443" y="242" text-anchor="middle" font-size="8.5" fill="var(--t-fg2)" fill-opacity=".65">3Dで描く（要GPU）</text>
 
-        <rect x="536" y="210" width="184" height="40" fill="#C1442E" fill-opacity=".07" stroke="#C1442E"/>
-        <text x="628" y="228" text-anchor="middle" fill="#C1442E">＝ ここに「卵」を置く</text>
-        <text x="628" y="242" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">PNG層 → Live2D → 3D と差し替え可</text>
-        <path d="M440,190 L440,196 M350,230 L364,230 M518,230 L532,230" stroke="#22304A" stroke-opacity=".3"/>
+        <rect x="536" y="210" width="184" height="40" fill="var(--t-ng)" fill-opacity=".07" stroke="var(--t-ng)"/>
+        <text x="628" y="228" text-anchor="middle" fill="var(--t-ng)">＝ ここに「卵」を置く</text>
+        <text x="628" y="242" text-anchor="middle" font-size="8.5" fill="var(--t-fg2)" fill-opacity=".65">PNG層 → Live2D → 3D と差し替え可</text>
+        <path d="M440,190 L440,196 M350,230 L364,230 M518,230 L532,230" stroke="var(--t-fg2)" stroke-opacity=".3"/>
 
-        <text x="60" y="278" font-size="9" fill="#22304A" fill-opacity=".6">上2段（声を聞く・返事を作る・声にする）は、既製品でいくらでも置き換わる。勝負はいつも3段目の「絵の実体」だけ。</text>
+        <text x="60" y="278" font-size="9" fill="var(--t-fg2)" fill-opacity=".6">上2段（声を聞く・返事を作る・声にする）は、既製品でいくらでも置き換わる。勝負はいつも3段目の「絵の実体」だけ。</text>
       </g>
     </svg>
 
@@ -797,5 +797,7 @@ window.addEventListener('resize',function(){
 });
 })();
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
 </body>
 </html>

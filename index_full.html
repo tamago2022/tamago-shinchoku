@@ -9,25 +9,25 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="進捗表">
-<meta name="theme-color" content="#1a2030">
+<meta name="theme-color" content="#0d0f12">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <style>
   :root{
-    --bg:#1a2030;        /* 夜の藍 */
-    --card:#212839;
-    --line:#2f3749;
-    --ink:#e9e2d3;       /* 生成り */
-    --sub:#9aa1ad;
-    --dim:#6b7280;
-    --kinari:#d6cdba;
-    --green:#6f9c7a;     /* 作業中（くすんだ緑） */
-    --yellow:#c9a24a;    /* 承認待ち（くすんだ黄） */
-    --red:#d24d3e;       /* 異常。ここだけ強い */
-    --blue:#6f8fb0;      /* 完了（報告済み）。くすんだ青 */
-    --red-bg:#3a2320;
-    --gray:#4b5364;
+    --bg:var(--t-panel);        /* 夜の藍 */
+    --card:var(--t-panel);
+    --line:var(--t-line);
+    --ink:var(--t-fg);       /* 生成り */
+    --sub:var(--t-mute);
+    --dim:var(--t-mute);
+    --kinari:var(--t-fg);
+    --green:var(--t-ok);     /* 作業中（くすんだ緑） */
+    --yellow:var(--t-warn);    /* 承認待ち（くすんだ黄） */
+    --red:var(--t-ng);       /* 異常。ここだけ強い */
+    --blue:var(--t-info);      /* 完了（報告済み）。くすんだ青 */
+    --red-bg:var(--t-panel);
+    --gray:var(--t-mute);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html{background:var(--bg);}
@@ -63,10 +63,10 @@
   .meter.stale .fill{opacity:0.35;}
   .meter .track{position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,0.055); overflow:visible;}
   .meter .fill{height:100%; border-radius:7px 0 0 7px; min-width:2%; overflow:hidden;}
-  .meter .fill.green{background:var(--green);}
-  .meter .fill.yellow{background:var(--yellow);}
-  .meter .fill.red{background:var(--red);}
-  .meter .mk.curve{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--kinari); border-radius:1px; opacity:0.85;}
+  .meter .fill.green{background:var(--green);color:var(--t-on-accent)}
+  .meter .fill.yellow{background:var(--yellow);color:var(--t-on-accent)}
+  .meter .fill.red{background:var(--red);color:var(--t-on-accent)}
+  .meter .mk.curve{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--t-panel2); border-radius:1px; opacity:0.85;color:var(--t-fg)}
   .meter .msub{font-size:0.72rem; color:var(--dim); margin-top:4px;}
   .meter .msub.mottainai{color:var(--yellow);}
   #machineAge{color:var(--sub);}
@@ -93,7 +93,7 @@
   /* 652番: あとで見る棚（サムネイル付き・押せばそのまま開く） */
   .laterTabsGrid{grid-template-columns:1fr 1fr;}
   .ltCard{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:block; text-decoration:none; color:var(--ink);}
-  .ltCard .ltThumbWrap{width:100%; aspect-ratio:16/9; background:#10141f; overflow:hidden;}
+  .ltCard .ltThumbWrap{width:100%; aspect-ratio:16/9; background:var(--t-bg); overflow:hidden;}
   .ltCard img{width:100%; height:100%; object-fit:cover; display:block;}
   .ltCard .ltBody{padding:8px 10px 10px;}
   .ltCard .ltTitle{font-size:0.82rem; font-weight:600; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
@@ -115,16 +115,16 @@
   .c.yellow{border-left-color:var(--yellow);}
   .c.red{border-left-color:var(--red); background:var(--red-bg);}
   .c.blue{border-left-color:var(--blue);}
-  .c.blue .s i{background:var(--blue);}
+  .c.blue .s i{background:var(--blue);color:var(--t-on-accent)}
   .c.gray{opacity:0.62;}
   .c.hot{box-shadow:inset 0 0 0 1px var(--kinari);}          /* ★4以上：枠を生成りで一段強く */
   .pv{margin-left:auto; color:var(--kinari); font-weight:600; font-size:0.85rem; letter-spacing:0.02em;}
   .pk{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:2px 0 10px; color:var(--sub); font-size:0.8rem;}
   .pk button{min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--ink); font:inherit; font-size:1rem; font-weight:600;}
-  .pk button.on{background:var(--kinari); color:var(--bg); border-color:var(--kinari);}
+  .pk button.on{background:var(--t-panel2); color:var(--bg); border-color:var(--kinari);}
   .pk button.off{min-width:52px; font-size:0.8rem; font-weight:500; color:var(--sub);}
   .sendbar{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; padding:8px 12px; border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:var(--sub);}
-  .sendbar a{display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:10px; background:var(--kinari); color:var(--bg); text-decoration:none; font-weight:600; white-space:nowrap;}
+  .sendbar a{display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:10px; background:var(--t-panel2); color:var(--bg); text-decoration:none; font-weight:600; white-space:nowrap;}
   /* リモコンボタン（▶️動かす／⏸止める／🔁引き継ぐ／閉じる） */
   .cmdrow{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:6px 0;}
   .cmdbtn{min-height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--ink); font:inherit; font-size:0.82rem; font-weight:600;}
@@ -141,8 +141,8 @@
   .c .act.stale{color:var(--red);}
   .c .s{display:flex; align-items:center; flex-wrap:wrap; row-gap:4px; gap:6px; font-size:0.72rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-top:auto;}
   .c .s .lbl{white-space:nowrap;}
-  .c .s i{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--gray); flex:none;}
-  .c.green .s i{background:var(--green);} .c.yellow .s i{background:var(--yellow);} .c.red .s i{background:var(--red);}
+  .c .s i{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--t-panel2); flex:none;color:var(--t-fg)}
+  .c.green .s i{background:var(--green);color:var(--t-on-accent)} .c.yellow .s i{background:var(--yellow);color:var(--t-on-accent)} .c.red .s i{background:var(--red);color:var(--t-on-accent)}
   .c.red .s{color:var(--ink);}
   .c .s .n{margin-left:auto; padding:0 7px; border:1px solid var(--line); border-radius:999px; white-space:nowrap; color:var(--kinari);}
   .c .s .sk{font-size:0.9rem; line-height:1;}
@@ -198,9 +198,9 @@
   .wbginner{padding:0 10px 12px;}
   .capbar{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
     margin:0 0 8px; padding:9px 12px; border-radius:12px; font-size:0.9rem; font-weight:700;
-    border:2px solid var(--green); background:rgba(95,217,150,0.10); color:#dff7ea;}
-  .capbar.warn{border-color:var(--yellow); background:rgba(255,224,138,0.10); color:#ffe9b0;}
-  .capbar.stop{border-color:var(--red); background:rgba(255,120,100,0.12); color:#ffd2c9;}
+    border:2px solid var(--green); background:rgba(95,217,150,0.10); color:var(--t-fg);}
+  .capbar.warn{border-color:var(--yellow); background:rgba(255,224,138,0.10); color:var(--t-warn);}
+  .capbar.stop{border-color:var(--red); background:rgba(255,120,100,0.12); color:var(--t-ng);}
   .capbar .capsub{font-size:0.68rem; font-weight:500; opacity:0.85; width:100%;}
   .capbar button{min-height:38px; padding:0 12px; border-radius:9px; border:1px solid rgba(255,255,255,0.35);
     background:rgba(255,255,255,0.12); color:inherit; font-weight:700; font-size:0.8rem;}
@@ -210,7 +210,7 @@
   .check > summary{font-weight:700;}
   .crow{padding:12px 4px; border-bottom:1px solid var(--line);}
   .crow:last-child{border-bottom:none;}
-  .done{border-color:rgba(111,143,176,0.5);}
+  .done{border-color:var(--t-info);}
   .done > summary{font-weight:700; color:var(--blue);}
   .drow{padding:10px 4px; border-bottom:1px solid var(--line);}
   .drow:last-child{border-bottom:none;}
@@ -219,30 +219,30 @@
   .drow .cu{display:block; color:var(--blue); font-size:0.8rem; word-break:break-all; margin-top:2px;}
   /* 2026-09-07(616番) 「できたもの」棚：修正（流れて消える）とは別に、成果物（消えない）だけを並べる。
      たまごさん「ここに行けば、頼んだ成果がここにあるんだ、っていう」→ 押しても消えない・ずっと残る棚。 */
-  .dekita{border-color:rgba(201,162,74,0.55);}
+  .dekita{border-color:var(--t-warn);}
   .dekita > summary{font-weight:700; color:var(--yellow);}
   .dkfilters{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 10px;}
   .dkfilters button{min-height:34px; padding:0 12px; border-radius:999px; border:1px solid var(--line);
     background:rgba(255,255,255,0.03); color:var(--sub); font-size:0.76rem; font-weight:600;}
-  .dkfilters button.on{background:var(--yellow); border-color:var(--yellow); color:#1a2030;}
+  .dkfilters button.on{background:var(--yellow); border-color:var(--yellow); color:var(--t-on-accent);}
   .dkrow{display:flex; align-items:flex-start; gap:10px; padding:10px 4px; border-bottom:1px solid var(--line);
     text-decoration:none; color:inherit;}
   .dkrow:last-child{border-bottom:none;}
   .dkrow.stale{opacity:0.55;} /* 752番：読み込み失敗時に出す前回キャッシュは灰色扱い（新着と混ぜない） */
   .dkthumb{flex:none; width:56px; aspect-ratio:1/1; border-radius:10px; display:flex; align-items:center;
-    justify-content:center; font-size:1.5rem; background:#2a3040; overflow:hidden;}
+    justify-content:center; font-size:1.5rem; background:var(--t-panel); overflow:hidden;}
   .dkthumb img{width:100%; height:100%; object-fit:cover;}
-  .dkthumb.t-動画{background:#3a2b20;} .dkthumb.t-音{background:#20323a;}
-  .dkthumb.t-記事{background:#2b2038;} .dkthumb.t-ページ{background:#233a2a;} .dkthumb.t-資料{background:#3a3620;}
-  .dkthumb.t-修正{background:#3a2b2b;}
+  .dkthumb.t-動画{background:var(--t-panel);} .dkthumb.t-音{background:var(--t-panel);}
+  .dkthumb.t-記事{background:var(--t-panel);} .dkthumb.t-ページ{background:var(--t-panel);} .dkthumb.t-資料{background:var(--t-panel);}
+  .dkthumb.t-修正{background:var(--t-panel);}
   .dkbody{flex:1 1 auto; min-width:0;}
   .dkbody .ct{font-size:0.9rem;}
   .dkbody .cm{margin:2px 0 3px;}
   .dktag{display:inline-block; font-size:0.68rem; font-weight:700; color:var(--yellow);
-    border:1px solid rgba(201,162,74,0.5); border-radius:6px; padding:1px 6px; margin-right:6px;}
+    border:1px solid var(--t-warn); border-radius:6px; padding:1px 6px; margin-right:6px;}
   /* 759番：「新しく作った／直した」で分けて探せる棚。既存の.dkfiltersを流用しつつ、
      直したの「on」だけ色を変えて一目で区別できるようにする（新しく作った＝黄、直した＝橙）。 */
-  .dkkind button[data-dkkind="fixed"].on{background:#e0954b; border-color:#e0954b;}
+  .dkkind button[data-dkkind="fixed"].on{background:var(--t-warn-bg); border-color:var(--t-warn);}
   .dksearch{display:flex; flex-direction:column; gap:8px; margin:4px 0 10px;}
   .dksearch input[type=search]{width:100%; box-sizing:border-box; min-height:38px; padding:0 12px;
     border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--fg);
@@ -251,7 +251,7 @@
   .dkdaterow{display:flex; flex-wrap:wrap; gap:6px;}
   .dkdaterow button{min-height:30px; padding:0 10px; border-radius:999px; border:1px solid var(--line);
     background:rgba(255,255,255,0.03); color:var(--sub); font-size:0.72rem; font-weight:600;}
-  .dkdaterow button.on{background:var(--blue); border-color:var(--blue); color:#0d1420;}
+  .dkdaterow button.on{background:var(--blue); border-color:var(--blue); color:var(--t-on-accent);}
   .dkempty{grid-column:1/-1;}
   /* 802番（2026-09-14）「できたもの284件→見て嬉しいものだけ3〜5件・裏方は畳む」
      既定は🎁だけ5件。「もっと見る」でじわっと増やす・🔧は1行の折りたたみに退避。 */
@@ -269,47 +269,47 @@
     border-bottom:1px solid rgba(201,162,74,0.35);}
   .dkdayhead:first-child{margin-top:2px;}
   .dkrow2head{display:flex; align-items:center; gap:8px; margin-bottom:4px;}
-  .dkcatbadge{display:inline-block; font-size:0.68rem; font-weight:700; color:#1a2030;
+  .dkcatbadge{display:inline-block; font-size:0.68rem; font-weight:700; color:var(--t-on-accent);
     background:var(--yellow); border-radius:6px; padding:2px 8px;}
   .dkstamp{font-size:0.72rem; color:var(--sub); font-variant-numeric:tabular-nums;}
   .dkrow2title{font-size:0.9rem; font-weight:700; line-height:1.35; margin-bottom:6px;}
   .dkba{display:flex; align-items:center; gap:6px; margin:6px 0;}
   .dkbaimg{position:relative; flex:1 1 0; min-width:0; aspect-ratio:16/10; border-radius:8px; overflow:hidden;
-    background:#2a3040; display:flex; align-items:center; justify-content:center; font-size:1.6rem;}
+    background:var(--t-panel); display:flex; align-items:center; justify-content:center; font-size:1.6rem;}
   .dkbaimg img{width:100%; height:100%; object-fit:cover; display:block;}
-  .dkbalabel{position:absolute; left:4px; bottom:4px; font-size:0.62rem; font-weight:700; color:#fff;
-    background:rgba(0,0,0,0.55); border-radius:5px; padding:1px 6px;}
+  .dkbalabel{position:absolute; left:4px; bottom:4px; font-size:0.62rem; font-weight:700; color:var(--t-fg);
+    background:var(--t-bg); border-radius:5px; padding:1px 6px;}
   .dkbaarrow{flex:none; font-size:0.9rem; color:var(--sub);}
   .dkrow2 .cu{display:block; color:var(--blue); font-size:0.78rem; word-break:break-all; margin:2px 0 6px;}
   .dkmore{margin-top:2px;}
   .dkmore > summary{font-size:0.74rem; color:var(--dim); font-weight:600; cursor:pointer;}
-  .dkmorebody{margin-top:6px; padding:8px 10px; border-radius:8px; background:#161c24; border:1px solid var(--line);
+  .dkmorebody{margin-top:6px; padding:8px 10px; border-radius:8px; background:var(--t-bg); border:1px solid var(--line);
     font-size:0.76rem; color:var(--sub); line-height:1.6;}
   .dkmorebody .dktag{display:inline-block; font-size:0.68rem; font-weight:700; color:var(--yellow);
-    border:1px solid rgba(201,162,74,0.5); border-radius:6px; padding:1px 6px; margin-right:6px;}
+    border:1px solid var(--t-warn); border-radius:6px; padding:1px 6px; margin-right:6px;}
   /* 802番：判断待ち（あなたのOK待ち）を、他のどのバーよりも前に赤で出す1行バナー。 */
   #pendingDecisionBar a{display:block; margin:0 0 10px; padding:10px 14px; border-radius:10px;
-    background:#3a1212; color:#ffb4b4; border:1px solid rgba(255,80,80,0.7); font-weight:800;
+    background:var(--t-panel); color:var(--t-ng); border:1px solid var(--t-ng); font-weight:800;
     text-decoration:none; font-size:0.88rem;}
   #pendingDecisionBar a:active{filter:brightness(1.2);}
   .ct{font-size:0.92rem; font-weight:700; line-height:1.35;}
   .cm{font-size:0.72rem; color:var(--sub); margin:3px 0 6px; font-variant-numeric:tabular-nums;}
-  .cr{font-size:0.78rem; line-height:1.65; color:var(--fg); background:#161c24; border:1px solid var(--line);
+  .cr{font-size:0.78rem; line-height:1.65; color:var(--fg); background:var(--t-bg); border:1px solid var(--line);
      border-radius:10px; padding:9px 11px; margin:6px 0; white-space:pre-wrap; max-height:9em; overflow:auto;}
   .cu{display:block; font-size:0.78rem; margin:3px 0; word-break:break-all;}
   /* 2026-09-04 判定を4つに増やしたので、2列で折り返す（1行4つは指が当たらない） */
   /* 2026-09-04 たまごさん「タスクも全部ナンバリングして。進捗表にタスクナンバーがない」
      → 行の並び順（次・2・3…）とは別に、案件番号(#24 など)を出す。口頭で番号を言えるように。 */
   /* 週の配分（天井に行かないためのペース） */
-  .pacebar{margin:10px 0 6px; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:#161c24;}
+  .pacebar{margin:10px 0 6px; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:var(--t-bg);}
   .pacebar .ph{font-weight:800; font-size:1.05rem; margin-bottom:4px;}
   .pacebar .pd{font-size:0.8rem; color:var(--sub); line-height:1.6;}
-  .pacebar .track{height:10px; border-radius:999px; background:#0e1319; margin:8px 0 6px; overflow:hidden;}
+  .pacebar .track{height:10px; border-radius:999px; background:var(--t-bg); margin:8px 0 6px; overflow:hidden;}
   .pacebar .fill{height:100%; border-radius:999px;}
-  .pacebar.ok{border-color:rgba(95,217,150,0.45);} .pacebar.ok .ph{color:var(--green);} .pacebar.ok .fill{background:var(--green);}
-  .pacebar.warn{border-color:rgba(230,190,80,0.5);} .pacebar.warn .ph{color:var(--yellow);} .pacebar.warn .fill{background:var(--yellow);}
-  .pacebar.over{border-color:rgba(255,120,100,0.6); background:#241619;} .pacebar.over .ph{color:var(--red);} .pacebar.over .fill{background:var(--red);}
-  .pacebar.unsure{border-color:rgba(160,160,160,0.5); background:#1b1f24;} .pacebar.unsure .ph{color:var(--dim);}
+  .pacebar.ok{border-color:rgba(95,217,150,0.45);} .pacebar.ok .ph{color:var(--green);} .pacebar.ok .fill{background:var(--green);color:var(--t-on-accent)}
+  .pacebar.warn{border-color:var(--t-warn);} .pacebar.warn .ph{color:var(--yellow);} .pacebar.warn .fill{background:var(--yellow);color:var(--t-on-accent)}
+  .pacebar.over{border-color:var(--t-ng); background:var(--t-bg);} .pacebar.over .ph{color:var(--red);} .pacebar.over .fill{background:var(--red);color:var(--t-on-accent)}
+  .pacebar.unsure{border-color:var(--t-line); background:var(--t-panel);} .pacebar.unsure .ph{color:var(--dim);}
   /* 2026-09-09 数字がいつ時点かを添え、古い（10分超）数字は薄く灰色にする */
   .pacebar.stale{opacity:0.6;}
   .pacebar .pdas{color:var(--dim); font-size:0.72rem;}
@@ -326,7 +326,7 @@
   /* 週を7等分した棒：「本来ここ（経過時間の目安）」と「今ここ（実際の使用率）」を同じ棒の上に重ねる。
      たまごさん「視覚的に一瞬で分かるといいよね」→数字より先に棒が目に入るよう、summaryの先頭に置く。 */
   .weekbar{position:relative; margin:14px 0 26px;}
-  .weekbar .wtrack{position:relative; display:flex; height:36px; border-radius:8px; overflow:hidden; background:#0e1319; border:1px solid var(--line);}
+  .weekbar .wtrack{position:relative; display:flex; height:36px; border-radius:8px; overflow:hidden; background:var(--t-bg); border:1px solid var(--line);}
   /* 728番（2026-09-12）：見出しが「火・水・木…」だけだと、実際のマス区切りが火曜18:00始まりの
      24時間ブロックであることが伝わらず「今もう木曜の後半のはずなのに木のマスの頭に線がある」と
      誤解される。曜日の下に開始時刻「18時〜」を添えて、そのマスが何時に始まるかを見せる。 */
@@ -343,7 +343,7 @@
      ラベル付きのため、clipされない別レイヤー(.wmarks・wtrackの兄弟要素)に重ねて置く。 */
   .weekbar .wmarks{position:absolute; inset:0; pointer-events:none;}
   .weekbar .wmk{position:absolute; top:-7px; bottom:-7px; width:0; border-left:3px solid var(--kinari); z-index:2;}
-  .weekbar .wmk .wmf{position:absolute; left:0; transform:translateX(-50%); font-size:0.64rem; white-space:nowrap; padding:1px 5px; border-radius:5px; background:#0e1319; border:1px solid var(--line);}
+  .weekbar .wmk .wmf{position:absolute; left:0; transform:translateX(-50%); font-size:0.64rem; white-space:nowrap; padding:1px 5px; border-radius:5px; background:var(--t-bg); border:1px solid var(--line);}
   .weekbar .wmk.wnow .wmf{bottom:-20px; color:var(--kinari); font-weight:800; border-color:var(--kinari);}
   .weekbar .wfoot{margin-top:6px; font-size:0.66rem; color:var(--dim); opacity:.85;}
   /* 882番（2026-09-16）：「本来ここ」を日数の物差し（時間の棒）に置くのをやめ、
@@ -351,8 +351,8 @@
      時間の棒（wtrack）と使用率の棒（wuse）は物差しが違うので、二度と同じ棒の上で混ぜない。 */
   .weekbar .wuse{margin-top:10px;}
   .weekbar .wuse .track{position:relative;}
-  .weekbar .wuse .tgt{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--kinari); opacity:.9; z-index:1;}
-  .weekbar .wuse .tgt.over{background:var(--red);}
+  .weekbar .wuse .tgt{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--t-panel2); opacity:.9; z-index:1;color:var(--t-fg)}
+  .weekbar .wuse .tgt.over{background:var(--red);color:var(--t-on-accent)}
   .weekbar .wusetxt{margin-top:4px; font-size:0.72rem; color:var(--sub);}
   .weekbar .wusetxt .over{color:var(--red); font-weight:700;}
   .weekbar .wusetxt .under{color:var(--green);}
@@ -363,30 +363,30 @@
   /* 2026-09-05 たまごさん「何のモデルを使ってるか一目瞭然にしたい。モデルの色も変えといて」 */
   .mdl{display:inline-block; padding:1px 7px; border-radius:999px; font-size:0.68rem; font-weight:800; letter-spacing:.02em;
     border:1px solid transparent; vertical-align:middle;}
-  .mdl.fable{background:#3a1216; color:#ff9f92; border-color:rgba(255,120,100,0.65);}
-  .mdl.opus{background:#3a2a12; color:#ffc98a; border-color:rgba(255,190,110,0.6);}
-  .mdl.sonnet{background:#122a1f; color:#7ee3ae; border-color:rgba(95,217,150,0.5);}
-  .mdl.haiku{background:#122430; color:#8ec9ff; border-color:rgba(120,190,255,0.5);}
-  .mdl.test{background:#1a2028; color:var(--sub); border-color:var(--line);}
+  .mdl.fable{background:var(--t-panel); color:var(--t-ng); border-color:var(--t-ng);}
+  .mdl.opus{background:var(--t-panel); color:var(--t-warn); border-color:var(--t-warn);}
+  .mdl.sonnet{background:var(--t-panel); color:var(--t-ok); border-color:var(--t-ok);}
+  .mdl.haiku{background:var(--t-panel); color:var(--t-info); border-color:var(--t-info);}
+  .mdl.test{background:var(--t-panel); color:var(--sub); border-color:var(--line);}
   /* 2026-09-05 5段階の箱。上の箱が空になるまで下は出ない（発車の規則と同じ並び） */
-  .qbox{border:1px solid var(--line); border-radius:12px; margin:8px 0; overflow:hidden; background:#141a21;}
+  .qbox{border:1px solid var(--line); border-radius:12px; margin:8px 0; overflow:hidden; background:var(--t-bg);}
   .qboxh{padding:7px 12px; font-size:0.78rem; font-weight:800; color:var(--sub);
-    background:#111720; border-bottom:1px solid var(--line); letter-spacing:.02em;}
+    background:var(--t-bg); border-bottom:1px solid var(--line); letter-spacing:.02em;}
   .qno{display:inline-block; margin-left:6px; font-size:0.7rem; color:var(--sub); font-variant-numeric:tabular-nums;}
   #fuelBox .fuel{min-height:44px; padding:0 14px; border-radius:10px; font-weight:800; font-size:0.9rem;
-    border:1px solid var(--green); background:var(--green); color:#12161c;}
-  #fuelBox .fuel.off{background:#3a1f1f; color:#ffb3a7; border-color:rgba(255,120,100,0.5);}
+    border:1px solid var(--green); background:var(--green); color:var(--t-on-accent);}
+  #fuelBox .fuel.off{background:var(--t-panel); color:var(--t-ng); border-color:var(--t-ng);}
   #fuelBox .cap{min-width:44px; min-height:38px; border-radius:10px; border:1px solid var(--line);
-    background:#1a2028; color:var(--sub); font-weight:700;}
-  #fuelBox .cap.on{background:var(--accent,#5fd996); color:#12161c; border-color:var(--accent,#5fd996);}
+    background:var(--t-panel); color:var(--sub); font-weight:700;}
+  #fuelBox .cap.on{background:var(--accent,var(--t-ok-bg)); color:var(--t-fg2); border-color:var(--accent,var(--t-ok));}
   .cbtns{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;}
   .cbtns button{min-height:44px; border-radius:10px; font-weight:700; font-size:0.82rem; border:1px solid var(--line);}
-  .cok{background:var(--green); color:#12161c; border-color:var(--green)!important;}
-  .clater{background:#3a2f12; color:var(--yellow); border-color:rgba(230,190,80,0.45)!important;}
-  .cng{background:#1a2028; color:var(--red);}
-  .cdel{background:#1a2028; color:var(--sub); border-color:var(--line);}
+  .cok{background:var(--green); color:var(--t-on-accent); border-color:var(--green)!important;}
+  .clater{background:var(--t-panel); color:var(--yellow); border-color:rgba(230,190,80,0.45)!important;}
+  .cng{background:var(--t-panel); color:var(--red);}
+  .cdel{background:var(--t-panel); color:var(--sub); border-color:var(--line);}
   /* 653番（2026-09-08）確認待ちの「もう見なくていい」。完了(cok)とは別扱い＝cancelledとして記録。 */
-  .ccancel{background:#1a2028; color:var(--sub); border-color:var(--line);}
+  .ccancel{background:var(--t-panel); color:var(--sub); border-color:var(--line);}
   /* 2026-09-06(418番) 押すだけで終わる確認待ち：サムネ＋本番URL＋完了/やり直しの2ボタンだけを最初に見せ、
      長い文章・後回し/削除は<details>の中に畳む。「証拠なし」「開けない」は赤で先に分かるようにする。
      画像もボタンも高さは固定pxでなくaspect-ratio/min-heightで決め、9/05の文字縦潰れを再発させない。 */
@@ -399,15 +399,15 @@
      （タイトル1〜2行）まで縮めた。文字のfont-size/line-heightは今回も変更していない。 */
   .cthumbs{display:flex; gap:6px; margin:3px 0;}
   .cthumbs img{flex:1 1 0; min-width:0; width:100%; aspect-ratio:4.4/1; object-fit:cover; border-radius:8px;
-    border:1px solid var(--line); background:#0e1319; display:block;}
+    border:1px solid var(--line); background:var(--t-bg); display:block;}
   .cthumbs.wait{padding:6px; border:1px dashed var(--line); border-radius:8px; color:var(--dim);
     font-size:0.78rem; text-align:center;}
   .cthumbs.none{padding:6px; border:1px dashed var(--red); border-radius:8px; background:var(--red-bg);
-    color:#ffb3a7; font-size:0.82rem; font-weight:700; text-align:center; line-height:1.5;}
+    color:var(--t-ng); font-size:0.82rem; font-weight:700; text-align:center; line-height:1.5;}
   .curlbtn{display:flex; align-items:center; justify-content:center; gap:6px; min-height:40px;
     border-radius:10px; border:1px solid var(--blue); color:var(--blue); text-decoration:none;
     font-weight:700; font-size:0.86rem; margin:3px 0; padding:3px 10px; text-align:center; line-height:1.4;}
-  .curlbtn.dead{border-color:var(--red); color:#ffb3a7; background:var(--red-bg);}
+  .curlbtn.dead{border-color:var(--red); color:var(--t-ng); background:var(--red-bg);}
   .check .crow{padding:5px 4px;}
   .cbtns.cbtns2{grid-template-columns:1fr 1fr; margin-top:3px;}
   .cbtns.cbtns2 button{min-height:40px;}
@@ -432,16 +432,16 @@
   .ccheck input{width:26px; height:26px; accent-color:var(--green); cursor:pointer;}
   .ccheck input:disabled{opacity:0.3; cursor:not-allowed;}
   .cbulk{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:2px 0 10px;
-    padding:8px; border:1px solid var(--line); border-radius:10px; background:#1a2028;}
+    padding:8px; border:1px solid var(--line); border-radius:10px; background:var(--t-panel);}
   .cbulkpick{display:flex; gap:6px; flex:1 1 100%; flex-wrap:wrap;}
   .cbulkpick button{min-height:44px; padding:0 10px; border-radius:9px; font-weight:700;
-    font-size:0.78rem; border:1px solid var(--line); background:#212839; color:var(--sub);}
+    font-size:0.78rem; border:1px solid var(--line); background:var(--t-panel); color:var(--sub);}
   .cbulkok{flex:1 1 100%; min-height:48px; margin-top:2px; border-radius:10px; font-weight:700;
-    font-size:0.9rem; background:var(--green); color:#12161c; border:1px solid var(--green);}
-  .cbulkok:disabled{background:#2a303d; color:var(--dim); border-color:var(--line); opacity:0.75;}
+    font-size:0.9rem; background:var(--green); color:var(--t-on-accent); border:1px solid var(--green);}
+  .cbulkok:disabled{background:var(--t-panel); color:var(--dim); border-color:var(--line); opacity:0.75;}
   .cundo{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
     margin:2px 0 10px; padding:10px; border-radius:10px; border:1px solid var(--green);
-    background:#1c2b22; color:var(--ink); font-size:0.86rem; font-weight:700;}
+    background:var(--t-panel); color:var(--ink); font-size:0.86rem; font-weight:700;}
   .cundo button{min-height:44px; padding:0 12px; border-radius:9px; border:1px solid var(--green);
     background:transparent; color:var(--green); font-weight:700;}
   .queue{border-color:rgba(95,217,150,0.35);}
@@ -459,7 +459,7 @@
   .qrow.qdrag{opacity:.28;}
   /* 指について回る影（今どれを持っているか） */
   /* 掴んでいる札。**題名だけの小さな1行**にする（行を丸ごと複製すると画面を覆ってしまう） */
-  .qghost{position:fixed; z-index:9999; pointer-events:none; background:#1b2330;
+  .qghost{position:fixed; z-index:9999; pointer-events:none; background:var(--t-panel);
     border:1px solid var(--green); border-radius:8px; padding:6px 10px; opacity:.95;
     max-width:min(260px, 70vw); height:28px; line-height:16px;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -468,15 +468,15 @@
   /* ここに入るよ、の棒（Notionと同じ考え方） */
   .qbar{position:fixed; z-index:9998; height:3px; background:var(--green); border-radius:3px;
     display:none; pointer-events:none; box-shadow:0 0 8px rgba(111,156,122,.8);
-    transition:top .07s cubic-bezier(.2,.9,.3,1.4), left .07s ease, width .07s ease;}
+    transition:top .07s cubic-bezier(.2,.9,.3,1.4), left .07s ease, width .07s ease;color:var(--t-on-accent)}
   /* 収まった瞬間に一瞬だけ光る＝カシャッの合図 */
   @keyframes qsnapflash{0%{background:rgba(111,156,122,.35);}100%{background:transparent;}}
   .qrow.qsnap{animation:qsnapflash .32s ease-out; border-radius:8px;}
   .qbar::before{content:""; position:absolute; left:-4px; top:-3px; width:9px; height:9px;
-    border-radius:999px; background:var(--green);}
+    border-radius:999px; background:var(--green);color:var(--t-on-accent)}
   .qn{flex:none; width:26px; height:26px; border-radius:999px; display:flex; align-items:center; justify-content:center;
-    font-size:0.72rem; font-weight:800; background:#1a2028; border:1px solid var(--line); color:var(--sub); font-variant-numeric:tabular-nums;}
-  .qrow.next .qn{background:var(--green); color:#12161c; border-color:var(--green);}
+    font-size:0.72rem; font-weight:800; background:var(--t-panel); border:1px solid var(--line); color:var(--sub); font-variant-numeric:tabular-nums;}
+  .qrow.next .qn{background:var(--green); color:var(--t-on-accent); border-color:var(--green);}
   .qbody{min-width:200px; flex:1 1 200px;}
   /* 2026-09-05 スマホで題名と理由が1文字ずつ縦に並んで読めなくなっていた。
      span のまま横に置くと、幅が足りないときに文字単位でつぶれる。必ず縦に積む。 */
@@ -496,12 +496,12 @@
   /* 682番：一括仕分けバー。何十件選んでも上に固定で出て、数タップで全部へ適用する。 */
   .qbulkbar{position:sticky; top:0; z-index:50; display:flex; flex-wrap:wrap; align-items:center; gap:8px;
     margin:0 0 8px; padding:8px 10px; border-radius:10px; border:1px solid var(--green);
-    background:#16261c; color:var(--fg); font-size:0.8rem; font-weight:700;}
+    background:var(--t-panel); color:var(--fg); font-size:0.8rem; font-weight:700;}
   .qbulkcount{flex:none;}
   .qbulkbtns{display:flex; flex-wrap:wrap; gap:6px;}
   .qbulk{flex:none; min-height:38px; min-width:38px; padding:0 8px; border-radius:9px;
-    border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.86rem; font-weight:800;}
-  .qbulk:active{background:var(--green); color:#12161c; border-color:var(--green);}
+    border:1px solid var(--line); background:var(--t-panel); color:var(--fg); font:inherit; font-size:0.86rem; font-weight:800;}
+  .qbulk:active{background:var(--green); color:var(--t-on-accent); border-color:var(--green);}
   .qbulkclear{margin-left:auto; border-color:var(--sub); color:var(--sub); background:transparent;}
   .qlegend{font-size:0.7rem; color:var(--sub); margin:0 0 8px; line-height:1.6;}
   /* スマホ幅では、上段に「取っ手・順番・番号・モデル・P」、下段いっぱいに題名を置く。
@@ -522,43 +522,43 @@
   .qd > summary::-webkit-details-marker{display:none;}
   .qd > summary::after{content:" ▾"; color:var(--sub); font-size:0.7rem;}
   .qd[open] > summary::after{content:" ▴";}
-  .qwhat{margin:8px 0 4px; padding:10px 12px; border-radius:10px; background:#161c24; border:1px solid var(--line);
+  .qwhat{margin:8px 0 4px; padding:10px 12px; border-radius:10px; background:var(--t-bg); border:1px solid var(--line);
     font-size:0.8rem; line-height:1.7; color:var(--fg);}
   /* 654番（2026-09-08）お金がかかるタスクは題名を赤字にして一目で分かるようにする。
      676番（2026-09-09）発車待ちだけでなく走行中(.nt)・確認待ち(.ct)にも同じ赤字を出す。 */
-  .qt.money, .nt.money, .ct.money{color:#ff5c5c; font-weight:700;}
+  .qt.money, .nt.money, .ct.money{color:var(--t-ng); font-weight:700;}
   /* 676番：お金の確認待ち（costsMoneyが立っていてまだOKが出ていない）を発車させるボタン。 */
-  .qcostok{flex:none; min-height:36px; padding:0 10px; border-radius:9px; border:1px solid #ff5c5c;
-    background:#3a1414; color:#ffb3b3; font-size:0.72rem; font-weight:700; white-space:nowrap;}
+  .qcostok{flex:none; min-height:36px; padding:0 10px; border-radius:9px; border:1px solid var(--t-ng);
+    background:var(--t-panel); color:var(--t-ng); font-size:0.72rem; font-weight:700; white-space:nowrap;}
   /* 654番（2026-09-08）優先順位（qp）と、箱の中の順番（qtop/qmoreの数字ボタン）が
      どちらも数字で紛らわしかった→優先順位は「色帯＋Pラベル」の見た目にして見分ける。 */
   .qp{flex:none; min-height:36px; min-width:40px; padding:0 6px; border-radius:9px;
     border:1px dashed var(--line); background:transparent; color:var(--sub);
     font-size:0.66rem; font-weight:800; letter-spacing:.02em; white-space:nowrap;}
-  .qp[data-plevel="1"]{border:1px solid var(--red); background:rgba(210,77,62,.22); color:#ffcac2;}
-  .qp[data-plevel="2"]{border:1px solid #d98a3d; background:rgba(217,138,61,.22); color:#f3d3a8;}
-  .qp[data-plevel="3"]{border:1px solid var(--yellow); background:rgba(201,162,74,.22); color:#eeddab;}
-  .qp[data-plevel="4"]{border:1px solid #5fb0c9; background:rgba(95,176,201,.22); color:#bfe6ef;}
+  .qp[data-plevel="1"]{border:1px solid var(--red); background:rgba(210,77,62,.22); color:var(--t-ng);}
+  .qp[data-plevel="2"]{border:1px solid var(--t-warn); background:rgba(217,138,61,.22); color:var(--t-warn);}
+  .qp[data-plevel="3"]{border:1px solid var(--yellow); background:rgba(201,162,74,.22); color:var(--t-warn);}
+  .qp[data-plevel="4"]{border:1px solid var(--t-info); background:rgba(95,176,201,.22); color:var(--t-info);}
   .qp[data-plevel="5"]{border:1px solid var(--sub); background:rgba(154,161,173,.22); color:var(--ink);}
   .qp:active{filter:brightness(1.25);}
   /* 793番（2026-09-14）「🔥すぐ見たい」トグル。押していない時は控えめ、押した後（on）は
      赤で目立たせる（画面の一番上の別枠と同じ色合い＝そこに出ている、と一目で分かる）。 */
   .qurgent{flex:none; min-height:36px; padding:0 10px; border-radius:9px;
-    border:1px solid var(--line); background:#1a2028; color:var(--sub); font:inherit; font-size:0.72rem;
+    border:1px solid var(--line); background:var(--t-panel); color:var(--sub); font:inherit; font-size:0.72rem;
     font-weight:700; white-space:nowrap; line-height:1;}
-  .qurgent.on{border-color:#ff5c5c; background:#3a1a16; color:#ffb3a0;}
+  .qurgent.on{border-color:var(--t-ng); background:var(--t-panel); color:var(--t-ng);}
   .qurgent:active{filter:brightness(1.2);}
   /* 654番 優先度を一気に最後尾（P5）へ落とすボタン。qpの隣に置く。 */
   .qbottom{flex:none; min-height:36px; min-width:36px; padding:0; border-radius:9px;
-    border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.78rem;
+    border:1px solid var(--line); background:var(--t-panel); color:var(--fg); font:inherit; font-size:0.78rem;
     font-weight:700; white-space:nowrap; line-height:1;}
-  .qbottom:active{background:var(--sub); color:#12161c; border-color:var(--sub);}
+  .qbottom:active{background:var(--t-panel2); color:var(--t-fg); border-color:var(--sub);}
   /* 624番 長距離の並び替え用ボタン（1番へ／位置指定）。ドラッグは近い距離用に残す。
      親指で押せる大きさ・文字が縦に潰れないよう white-space:nowrap で1行に固定する。 */
   .qtop, .qsecond, .qmore{flex:none; min-height:36px; min-width:36px; padding:0 6px; border-radius:9px;
-    border:1px solid var(--line); background:#1a2028; color:var(--fg); font:inherit; font-size:0.78rem;
+    border:1px solid var(--line); background:var(--t-panel); color:var(--fg); font:inherit; font-size:0.78rem;
     font-weight:700; white-space:nowrap; line-height:1;}
-  .qtop:active, .qsecond:active, .qmore:active{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+  .qtop:active, .qsecond:active, .qmore:active{background:var(--t-panel2); color:var(--t-fg); border-color:var(--kinari);}
   /* 653番（2026-09-08）waiting行の「取り消し」／確認待ち行の「もう見なくていい」。
      親指で押せる大きさ（44px）。他のボタンと間違えないよう少し離し、色は控えめ（赤ではない＝完了ではない）。 */
   .qcancel{flex:none; min-height:44px; min-width:44px; padding:0 10px; margin-left:4px; border-radius:9px;
@@ -569,49 +569,49 @@
   .qcancel.qdone{border-color:var(--green); color:var(--green);}
   .qcancel.qdone:active{background:rgba(111,156,122,.18); color:var(--fg);}
   .qcancelUndo{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 8px;
-    padding:9px 12px; border-radius:10px; border:1px solid var(--line); background:#1a2028;
+    padding:9px 12px; border-radius:10px; border:1px solid var(--line); background:var(--t-panel);
     color:var(--ink); font-size:0.86rem; font-weight:700;}
   .qcancelUndo button{min-height:40px; padding:0 12px; border-radius:9px; border:1px solid var(--green);
     background:transparent; color:var(--green); font-weight:700;}
-  .qjump-menu{position:fixed; z-index:9999; display:none; background:#1b2330; border:1px solid var(--green);
+  .qjump-menu{position:fixed; z-index:9999; display:none; background:var(--t-panel); border:1px solid var(--green);
     border-radius:12px; padding:8px; box-shadow:0 10px 26px rgba(0,0,0,0.5); gap:6px; flex-wrap:wrap; max-width:min(280px, 92vw);}
   .qjump-menu.open{display:flex;}
   .qjump-title{flex:1 1 100%; font-size:0.72rem; color:var(--sub); margin-bottom:2px;}
   .qjump-menu button{min-height:44px; min-width:44px; border-radius:9px; border:1px solid var(--line);
-    background:#12161c; color:var(--ink); font:inherit; font-size:0.95rem; font-weight:800;}
-  .qjump-menu button:active{background:var(--green); color:#12161c; border-color:var(--green);}
+    background:var(--t-bg); color:var(--ink); font:inherit; font-size:0.95rem; font-weight:800;}
+  .qjump-menu button:active{background:var(--green); color:var(--t-on-accent); border-color:var(--green);}
   .qjump-backdrop{position:fixed; inset:0; z-index:9998; display:none; background:transparent;}
   .qjump-backdrop.open{display:block;}
   /* 624番 保存に失敗した時だけ出す「戻しました」の合図。押した直後に画面は先に動くので、
      普段は出ない。出た時だけ気づけばいい。 */
   .qtoast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:10000;
-    background:#3a1216; color:#ffb3a7; border:1px solid rgba(255,120,100,0.6); border-radius:10px;
+    background:var(--t-panel); color:var(--t-ng); border:1px solid var(--t-ng); border-radius:10px;
     padding:10px 16px; font-size:0.84rem; font-weight:700; box-shadow:0 8px 20px rgba(0,0,0,0.5);
     max-width:88vw; text-align:center;}
   /* 2026-09-04 スマホから発車待りに1行追加する入力欄 */
   .addbox{display:flex; flex-direction:column; gap:8px; padding:10px 4px 14px; border-bottom:1px solid var(--line); margin-bottom:2px;}
   .addbox input[type=text]{width:100%; box-sizing:border-box; min-height:44px; padding:0 12px; border-radius:10px;
-    border:1px solid var(--line); background:#12161c; color:var(--ink); font:inherit; font-size:0.88rem;}
+    border:1px solid var(--line); background:var(--t-bg); color:var(--ink); font:inherit; font-size:0.88rem;}
   .addbox input[type=text]::placeholder{color:var(--dim);}
   /* 625番（2026-09-07）他のAI（ChatGPT等）の言いっぱなしをそのまま貼れる入口。
      長文のまま貼れることが条件なので複数行のtextareaにする（要約・整形はさせない）。 */
   .addbox textarea{width:100%; box-sizing:border-box; min-height:90px; padding:8px 12px; border-radius:10px;
-    border:1px solid var(--line); background:#12161c; color:var(--ink); font:inherit; font-size:0.86rem;
+    border:1px solid var(--line); background:var(--t-bg); color:var(--ink); font:inherit; font-size:0.86rem;
     resize:vertical; line-height:1.4;}
   .addbox textarea::placeholder{color:var(--dim);}
   .addbox .aiInstBox{margin-top:2px;}
   .addbox .aiInstBox summary{font-size:0.72rem; color:var(--sub); cursor:pointer; padding:4px 0;}
-  .addbox .aiInstText{white-space:pre-wrap; font-size:0.74rem; line-height:1.5; background:#12161c;
+  .addbox .aiInstText{white-space:pre-wrap; font-size:0.74rem; line-height:1.5; background:var(--t-bg);
     border:1px solid var(--line); border-radius:8px; padding:8px 10px; color:var(--sub); margin:6px 0;}
   .addbox .aiInstCopy{min-height:34px; padding:0 14px; border-radius:9px; border:1px solid var(--line);
-    background:#1a2028; color:var(--fg); font-size:0.78rem; font-weight:700;}
-  .addbox .aiInstCopy.done{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+    background:var(--t-panel); color:var(--fg); font-size:0.78rem; font-weight:700;}
+  .addbox .aiInstCopy.done{background:var(--t-panel2); color:var(--t-fg); border-color:var(--kinari);}
   .addrow{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .addrow .qap{flex:none; min-height:36px; min-width:36px; padding:0 8px; border-radius:9px; border:1px solid var(--line);
-    background:#1a2028; color:var(--sub); font-size:0.72rem; font-weight:700;}
-  .addrow .qap.on{background:var(--kinari); color:#12161c; border-color:var(--kinari);}
+    background:var(--t-panel); color:var(--sub); font-size:0.72rem; font-weight:700;}
+  .addrow .qap.on{background:var(--t-panel2); color:var(--t-fg); border-color:var(--kinari);}
   .addSend{margin-left:auto; min-height:40px; padding:0 16px; border-radius:10px; border:1px solid var(--green);
-    background:var(--green); color:#12161c; font-weight:700; font-size:0.82rem;}
+    background:var(--green); color:var(--t-on-accent); font-weight:700; font-size:0.82rem;}
   .addSend:active{opacity:0.8;}
   .addMsg{font-size:0.72rem; color:var(--sub); min-height:1.2em;}
   .clock{font-weight:400; font-size:0.9rem; color:var(--sub); font-variant-numeric:tabular-nums; margin-left:8px; letter-spacing:0.02em;}
@@ -626,67 +626,67 @@
      → 正方形をやめて横長の小カードにした。2列×5行＝10本が1画面に入る。 */
   .nowcard{
     min-width:0; overflow:hidden; min-height:66px;
-    background:linear-gradient(160deg,#2b5340,#1c3a2b);
-    border:2px solid #5fd996; border-radius:11px; padding:7px 9px 6px;
+    background:linear-gradient(160deg,var(--t-panel),var(--t-panel));
+    border:2px solid var(--t-ok); border-radius:11px; padding:7px 9px 6px;
     display:flex; flex-direction:column; justify-content:space-between; gap:4px;
     box-shadow:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(95,217,150,0.18) inset;
   }
   .nowfoot{display:flex; align-items:baseline; justify-content:space-between; gap:6px; min-width:0;}
-  .nowcard.fable{border-color:#ff5d47; background:linear-gradient(160deg,#5a2a25,#3d1c19); box-shadow:0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,93,71,0.22) inset;}
-  .nowcard .nt{font-size:0.78rem; font-weight:700; line-height:1.22; color:#fff; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
-  .nowcard .nmeta{display:flex; flex-wrap:nowrap; gap:4px; align-items:center; font-size:0.58rem; color:#c8ecd8; font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-width:0;}
-  .nowcard.fable .nmeta{color:#ffd3c9;}
+  .nowcard.fable{border-color:var(--t-ng); background:linear-gradient(160deg,var(--t-ng-bg),var(--t-panel)); box-shadow:0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,93,71,0.22) inset;}
+  .nowcard .nt{font-size:0.78rem; font-weight:700; line-height:1.22; color:var(--t-fg); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .nowcard .nmeta{display:flex; flex-wrap:nowrap; gap:4px; align-items:center; font-size:0.58rem; color:var(--t-fg); font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-width:0;}
+  .nowcard.fable .nmeta{color:var(--t-ng);}
   .nowcard .nbadge{border:1px solid rgba(255,255,255,0.35); border-radius:5px; padding:1px 6px; font-weight:700; flex:none;}
   .nowcard .npause{margin-top:6px; width:100%; min-height:32px; border-radius:8px; font-size:0.66rem; font-weight:700;
-    border:1px solid rgba(255,255,255,0.28); background:rgba(0,0,0,0.28); color:#fff;}
-  .nowcard .ncdlbl{font-size:0.55rem; color:#c8ecd8; flex:none;}
-  .nowcard.fable .ncdlbl{color:#ffd3c9;}
-  .nowcard .ncd{font-variant-numeric:tabular-nums; font-size:0.92rem; font-weight:800; color:#fff; letter-spacing:0.01em; white-space:nowrap; overflow:hidden; text-overflow:clip; flex:none;}
-  .nowcard .ncd.warn{color:#ffe08a;}
-  .nowcard .ncd.over{color:#ff9a8c;}
-  .nowcard .nsay{font-size:0.64rem; color:#c8ecd8;}
-  .nowcard.fable .nsay{color:#ffd3c9;}
+    border:1px solid rgba(255,255,255,0.28); background:rgba(0,0,0,0.28); color:var(--t-fg);}
+  .nowcard .ncdlbl{font-size:0.55rem; color:var(--t-fg); flex:none;}
+  .nowcard.fable .ncdlbl{color:var(--t-ng);}
+  .nowcard .ncd{font-variant-numeric:tabular-nums; font-size:0.92rem; font-weight:800; color:var(--t-fg); letter-spacing:0.01em; white-space:nowrap; overflow:hidden; text-overflow:clip; flex:none;}
+  .nowcard .ncd.warn{color:var(--t-warn);}
+  .nowcard .ncd.over{color:var(--t-ng);}
+  .nowcard .nsay{font-size:0.64rem; color:var(--t-fg);}
+  .nowcard.fable .nsay{color:var(--t-ng);}
   .nowempty{grid-column:1/-1; padding:36px 14px; text-align:center; font-size:1.15rem; font-weight:700; color:var(--sub); border:1px dashed var(--line); border-radius:16px;}
   /* 732番：「聞かれる前に上がりましたを届ける」つけ麺屋の呼び出し札。一番上・一番目立つ位置に出す。 */
   #arrivalsBanner{margin:0 0 12px; display:flex; flex-direction:column; gap:8px;}
   #arrivalsBanner .arrival{display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px;
-    background:linear-gradient(135deg,#173a24,#0f2a1a); border:1px solid rgba(120,255,170,0.45);
+    background:linear-gradient(135deg,var(--t-panel),var(--t-panel)); border:1px solid rgba(120,255,170,0.45);
     box-shadow:0 2px 10px rgba(0,0,0,0.25);}
-  #arrivalsBanner .arrival.check{background:linear-gradient(135deg,#233247,#182333); border-color:rgba(140,190,255,0.4);}
+  #arrivalsBanner .arrival.check{background:linear-gradient(135deg,var(--t-panel),var(--t-panel)); border-color:rgba(140,190,255,0.4);}
   #arrivalsBanner .arrival .ico{font-size:1.4rem; line-height:1;}
   #arrivalsBanner .arrival .body{flex:1; min-width:0;}
-  #arrivalsBanner .arrival .tag{font-size:0.72rem; font-weight:800; color:#8dffb0; letter-spacing:0.02em;}
-  #arrivalsBanner .arrival.check .tag{color:#9cc4ff;}
-  #arrivalsBanner .arrival a.tt{display:block; color:#fff; font-weight:700; font-size:0.95rem; text-decoration:none; margin-top:2px;
+  #arrivalsBanner .arrival .tag{font-size:0.72rem; font-weight:800; color:var(--t-ok); letter-spacing:0.02em;}
+  #arrivalsBanner .arrival.check .tag{color:var(--t-info);}
+  #arrivalsBanner .arrival a.tt{display:block; color:var(--t-fg); font-weight:700; font-size:0.95rem; text-decoration:none; margin-top:2px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #arrivalsBanner .arrival a.tt:active{opacity:0.7;}
-  #arrivalsBanner .arrival .dismiss{background:none; border:none; color:rgba(255,255,255,0.55); font-size:1.1rem; padding:4px 6px; cursor:pointer;}
+  #arrivalsBanner .arrival .dismiss{background:none; border:none; color:var(--t-fg); font-size:1.1rem; padding:4px 6px; cursor:pointer;}
   /* 756番：毎朝の入荷見回り（707番の自動化）の常設サマリ行。一度見たら消える arrivalsBanner と違い、
      こちらは毎朝上書きされ続ける固定の1行（「昨日の入荷○件／直した○件 →見る」）。押すと固定URLの
      確認ページ(share/check/daily-ingest.html)へ。 */
   #dailyIngestBar{margin:0 0 12px; display:none;}
   #dailyIngestBar a{display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:14px;
-    background:linear-gradient(135deg,#2a2416,#1c1810); border:1px solid rgba(255,210,120,0.4);
-    color:#ffe3a0; text-decoration:none; font-size:0.88rem; font-weight:700;}
+    background:linear-gradient(135deg,var(--t-panel),var(--t-bg)); border:1px solid rgba(255,210,120,0.4);
+    color:var(--t-warn); text-decoration:none; font-size:0.88rem; font-weight:700;}
   #dailyIngestBar a:active{opacity:0.75;}
   #dailyIngestBar .arrow{margin-left:auto; opacity:0.8; font-weight:400;}
   /* 793番（2026-09-14）たまごさん「すぐ見たいやつ、ちょっと別枠にしてくんないかな？
      俺の中で優先順位全然違うから」。urgent:true の未完了タスクだけを進捗表の一番上に出す。
      0件のときは枠ごと消す（空の箱を見せない）。この枠だけは畳まない（既定で開いている）。
      375px幅でも1行が縦1文字にならないよう、行内はflex-wrapで折り返す（固定pxではなく可変）。 */
-  #urgentBox{margin:0 0 12px; display:none; border:1px solid rgba(255,120,100,0.55); border-radius:14px;
-    background:linear-gradient(135deg,#3a1a16,#2a1210); overflow:hidden;}
-  #urgentBox .ub-head{padding:9px 14px; font-size:0.85rem; font-weight:800; color:#ffb3a0;
+  #urgentBox{margin:0 0 12px; display:none; border:1px solid var(--t-ng); border-radius:14px;
+    background:linear-gradient(135deg,var(--t-panel),var(--t-bg)); overflow:hidden;}
+  #urgentBox .ub-head{padding:9px 14px; font-size:0.85rem; font-weight:800; color:var(--t-ng);
     border-bottom:1px solid rgba(255,120,100,0.35); letter-spacing:.02em;}
   #urgentBox .ub-row{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px;
     padding:9px 14px; border-bottom:1px solid rgba(255,120,100,0.18); font-size:0.85rem;}
   #urgentBox .ub-row:last-child{border-bottom:none;}
   #urgentBox .ub-n{color:var(--sub); font-variant-numeric:tabular-nums; flex:0 0 auto;}
-  #urgentBox .ub-t{color:#ffe3da; font-weight:700; flex:1 1 160px; min-width:0;
+  #urgentBox .ub-t{color:var(--t-fg); font-weight:700; flex:1 1 160px; min-width:0;
     overflow-wrap:anywhere;}
   #urgentBox .ub-st{flex:0 0 auto; padding:2px 8px; border-radius:8px; font-size:0.75rem;
     background:rgba(255,255,255,0.08); color:var(--kinari);}
-  #urgentBox .ub-elapsed{flex:0 0 auto; font-size:0.75rem; color:#ffc98a;}
+  #urgentBox .ub-elapsed{flex:0 0 auto; font-size:0.75rem; color:var(--t-warn);}
   #urgentBox .ub-link{flex:0 0 auto; color:var(--blue); text-decoration:none; font-weight:700;
     font-size:0.8rem; padding:3px 8px; border:1px solid var(--blue); border-radius:8px;}
   #urgentBox .ub-link:active{opacity:0.7;}
@@ -774,17 +774,17 @@
 
 <!-- 626番（2026-09-07）：Anthropicサポート返信の見張り。来ている時だけ出す静かなお知らせ。
      data.js の anthropicReply が null の間は display:none のまま（何も出さない）。 -->
-<div id="anthropicAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;"></div>
+<div id="anthropicAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:var(--t-panel);color:var(--t-ok);border:1px solid var(--t-ok);font-size:0.85rem;line-height:1.5;"></div>
 
 <!-- 801番（2026-09-13）：LINE問い合わせ返信の見張り。626番のanthropicAlertと同じパターン。
      data.js の lineReply が null の間は display:none のまま（何も出さない）。 -->
-<div id="lineReplyAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;"></div>
+<div id="lineReplyAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:var(--t-panel);color:var(--t-ok);border:1px solid var(--t-ok);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;"></div>
 
 <!-- 820番（2026-09-14）：Lovable公開便（自動でPublishを押す便）の連続失敗を赤で出す見張り。
      30分おき自動便は無効化し、セッションが仕事を終えた時に手動で1回押すon-demand方式へ変更、
      さらに1日6回上限・2回連続失敗で当日停止のガードを入れた。ここは「今その状態がどうなっているか」だけを見せる。
      data.js の lovablePublishStatus を sync-lovable-publish-dashboard.mjs が毎回書き換える。 -->
-<div id="lovablePublishAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb3b3;border:1px solid rgba(255,120,120,0.5);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;"></div>
+<div id="lovablePublishAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:var(--t-panel);color:var(--t-ng);border:1px solid var(--t-ng);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;"></div>
 
 <!-- 715番（2026-09-10）：憲法の遵守点検（毎日1回・自動）。
      たまごさん「たまごが言ったルールが引き継がれてないっていうのが、だから困るんだよね。
@@ -792,7 +792,7 @@
      status/kenpou_check.json（tools/kenpou_check.py が書く）を読んで、1つでも赤があれば
      ここに一目で分かる形で出す。赤が出た項目は自動で発車待ちへ直すタスクを積む（積んだ/
      スキップした結果も同じJSONに入っている）。 -->
-<div id="kenpouAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:#3a1212;color:#ffb4b4;border:1px solid rgba(255,120,120,0.5);font-size:0.85rem;line-height:1.5;"></div>
+<div id="kenpouAlert" style="display:none;margin:8px 0;padding:10px 14px;border-radius:10px;background:var(--t-panel);color:var(--t-ng);border:1px solid var(--t-ng);font-size:0.85rem;line-height:1.5;"></div>
 <details class="sec" id="kenpouSec"><summary>🏛️ 憲法遵守点検 <small id="kenpouMeta"></small></summary><div class="in">
 <div class="g" id="kenpouBox"><div class="card note" style="grid-column:1/-1">読み込み中…</div></div>
 </div></details>
@@ -1036,7 +1036,7 @@ function loadLastGood(name){
 function staleNoteHtml(savedAt){
   const mins = Math.max(0, Math.round((Date.now() - savedAt) / 60000));
   const when = new Date(savedAt).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"});
-  return `<span style="color:#9aa0a6">⚠ 読み込めず・${mins < 1 ? "たった今" : mins + "分前"}（${esc(when)}時点）の内容</span>`;
+  return `<span style="color:var(--t-mute)">⚠ 読み込めず・${mins < 1 ? "たった今" : mins + "分前"}（${esc(when)}時点）の内容</span>`;
 }
 /* 2026-09-04 たまごさんのホーム画面アプリが**古いindex.htmlを握ったまま**になっていた。
    （直した画面をpushしても、スマホ側は前の画面のまま＝「発車待ちはありません」が出続けた）
@@ -1151,7 +1151,7 @@ function showErr(e){
     let bar = document.getElementById("jsErr");
     if(!bar){
       bar = document.createElement("div"); bar.id = "jsErr";
-      bar.style.cssText = "margin:8px 0;padding:8px 12px;border-radius:10px;background:#3a1216;color:#ff9f92;"
+      bar.style.cssText = "margin:8px 0;padding:8px 12px;border-radius:10px;background:#23272e;color:#0d0f12;"
         + "border:1px solid rgba(255,120,100,0.6);font-size:0.74rem;word-break:break-all;";
       const h1 = document.querySelector("h1");
       if(h1 && h1.parentNode) h1.parentNode.insertBefore(bar, h1.nextSibling);
@@ -1989,9 +1989,9 @@ function renderDekita(){
   //   一度もデータを持てていない（window.__dekimonoがまだ無い）＝読み込み中 or 失敗、これは0件と別扱い。
   if(!window.__dekimono){
     if(meta) meta.innerHTML = window.__dekimonoErr
-      ? `<span style="color:#9aa0a6">⚠ 読み込めませんでした</span>` : "";
+      ? `<span style="color:var(--t-mute)">⚠ 読み込めませんでした</span>` : "";
     box.innerHTML = window.__dekimonoErr
-      ? `<div class="card note">⚠ 読み込めませんでした　<a href="#" onclick="refreshDekimono();return false;" style="color:#8ef0ae;text-decoration:underline;">タップで再読み込み</a></div>`
+      ? `<div class="card note">⚠ 読み込めませんでした　<a href="#" onclick="refreshDekimono();return false;" style="color:var(--t-ok);text-decoration:underline;">タップで再読み込み</a></div>`
       : `<div class="card note">読み込み中…</div>`;
     return;
   }
@@ -2001,7 +2001,7 @@ function renderDekita(){
   const ngCount = raw.length - all.length;
   if(meta) meta.innerHTML = (window.__dekimonoStaleAt ? staleNoteHtml(window.__dekimonoStaleAt) + "　" : "")
     + (all.length ? `${all.length}件` : "")
-    + (ngCount ? `　<span style="color:#9aa0a6">検品NG${ngCount}件は非表示</span>` : "");
+    + (ngCount ? `　<span style="color:var(--t-mute)">検品NG${ngCount}件は非表示</span>` : "");
   const catFilt = window.__dekimonoCategory || "all";
   const q = (window.__dekimonoQuery || "").trim().toLowerCase();
   const isDefaultView = (catFilt === "all" && !q);
@@ -2428,11 +2428,11 @@ function checkCanonicalLocation(){
   try{
     const bar = document.createElement("div");
     bar.id = "canonicalWarn";
-    bar.style.cssText = "margin:8px 0;padding:8px 12px;border-radius:10px;background:#3a2c12;color:#ffd27f;"
+    bar.style.cssText = "margin:8px 0;padding:8px 12px;border-radius:10px;background:#23272e;color:#15181d;"
       + "border:1px solid rgba(255,190,100,0.6);font-size:0.78rem;";
     bar.innerHTML = `⚠ 本来のアドレスと違う場所を開いています（今：${esc(location.origin + location.pathname)}）。`
       + `PWAとブラウザで中身がズレて見える時はここが原因のことがあります。`
-      + `<a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#ffd27f;text-decoration:underline;">正しいアドレスはこちら</a>`;
+      + `<a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-warn);text-decoration:underline;">正しいアドレスはこちら</a>`;
     const h1 = document.querySelector("h1");
     if(h1 && h1.parentNode) h1.parentNode.insertBefore(bar, h1.nextSibling);
   }catch(e){}
@@ -2638,7 +2638,7 @@ function renderHealth(h, errored){
   if(!h){
     if(metaEl) metaEl.textContent = "";
     box.innerHTML = errored
-      ? `<div class="card note" style="grid-column:1/-1">⚠ 読み込めませんでした　<a href="#" onclick="refreshMachineHealth();return false;" style="color:#8ef0ae;text-decoration:underline;">タップで再読み込み</a></div>`
+      ? `<div class="card note" style="grid-column:1/-1">⚠ 読み込めませんでした　<a href="#" onclick="refreshMachineHealth();return false;" style="color:var(--t-ok);text-decoration:underline;">タップで再読み込み</a></div>`
       : `<div class="card note" style="grid-column:1/-1">まだ計測が無い（5分おきに測る）</div>`;
     return;
   }
@@ -2838,14 +2838,14 @@ function sessState(s, measured){
   const started = s.startedAt ? new Date(s.startedAt).getTime() : null;
   const elapsedMin = started ? (measured - started)/60000 : null;
   const skull = elapsedMin != null && elapsedMin >= SKULL_H*60 && s.kind !== "idle_done";
-  let color = "gray", label = KIND_LABEL[s.kind] || "不明";
-  if(s.kind === "working") { color = "green"; }
-  if(s.kind === "asked" || s.kind === "stuck_tool") { color = "yellow"; }
-  if(s.kind === "unknown") { color = "red"; }
-  if(s.kind !== "idle_done" && elapsedMin != null && elapsedMin >= RED_H*60){ color = "red"; label = `${Math.floor(elapsedMin/60)}時間 報告なし`; }
+  let color = "var(--t-mute)", label = KIND_LABEL[s.kind] || "不明";
+  if(s.kind === "working") { color = "var(--t-ok)"; }
+  if(s.kind === "asked" || s.kind === "stuck_tool") { color = "var(--t-warn)"; }
+  if(s.kind === "unknown") { color = "var(--t-ng)"; }
+  if(s.kind !== "idle_done" && elapsedMin != null && elapsedMin >= RED_H*60){ color = "var(--t-ng)"; label = `${Math.floor(elapsedMin/60)}時間 報告なし`; }
   // 止まらない工場側が色と状態を出していれば、そちらを正とする（判定は1か所に）
   if(s.color && ["green","yellow","red","blue","gray"].includes(s.color)){ color = s.color; if(s.status) label = s.status; }
-  if(s.done) { color = "blue"; label = s.status || "完了"; }
+  if(s.done) { color = "var(--t-info)"; label = s.status || "完了"; }
   return {color, label, elapsedMin: s.elapsedMin ?? elapsedMin, skull, started};
 }
 // ローマ字の題名を日本語に（定期タスク名など）
@@ -4633,7 +4633,7 @@ function renderAll(){
       // ホワイトボード側で「今動いている」と判定された番号は緑にする（台帳の札より実態を優先）
       const live = (window.__wbLive || {})[String(it.no)];
       let color = m.color, label = m.short, extra = times ? `<span class="n">${esc(times)}</span>` : "";
-      if(live && live.color === "green"){ color = "green"; label = "動いている"; }
+      if(live && live.color === "green"){ color = "var(--t-ok)"; label = "動いている"; }
       else if(k === "🟠"){
         const t = live && live.h != null ? live.h : (lastDateOf(it) ? (Date.now() - lastDateOf(it))/3600000 : null);
         label = `止まっている ${t != null ? "約" + fmtH(t) : ""}`.trim();
@@ -4716,7 +4716,7 @@ function renderStaleFromCache(cached){
   const mins = Math.max(0, Math.round((Date.now() - cached.savedAt) / 60000));
   const when = new Date(cached.savedAt).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"});
   const upd = document.getElementById("updated");
-  if(upd) upd.innerHTML = `<span style="color:#9aa0a6">⚠ 最新を読み込めず、${mins}分前（${esc(when)}時点）の内容を表示中</span>`;
+  if(upd) upd.innerHTML = `<span style="color:var(--t-mute)">⚠ 最新を読み込めず、${mins}分前（${esc(when)}時点）の内容を表示中</span>`;
   try{ renderAll(); renderSaid(); renderRunning(); renderToday(); renderList(); updateSendBar(); renderAnthropicAlert(); renderMicAndDraftMail(); renderRenkeiBar(); renderPageWeightBar(); }catch(e){ showErr(e); }
 }
 let __dataReadyRetries = 0;
@@ -4750,7 +4750,7 @@ function __dataReady2(){
        ここに来た＝通信そのものが長く詰まっている合図なので、8秒待って裏で回し続ける。 */
     if(__dataReadyRetries > 10 && upd){
       upd.innerHTML = `⚠ 読み込めていません（${__dataReadyRetries}回失敗・通信が詰まっている可能性）　`
-        + `<a href="#" onclick="forceHardReload();return false;" style="color:#8ef0ae;text-decoration:underline;">押して読み直す</a>`;
+        + `<a href="#" onclick="forceHardReload();return false;" style="color:var(--t-ok);text-decoration:underline;">押して読み直す</a>`;
       setTimeout(() => { try{ __dataReady2(); }catch(e){} }, 8000);
       return;
     }
@@ -4822,7 +4822,7 @@ function renderAnthropicAlert(){
   if(!a){ el.style.display = "none"; el.innerHTML = ""; return; }
   el.style.display = "block";
   el.innerHTML = `🔔 Anthropicから返信が来ています（${esc(a.subject || "件名なし")} / ${esc(a.date || "")}）　`
-    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`
+    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:var(--t-ok);text-decoration:underline;">Gmailで開く</a>`
     + (a.summary ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.85;">${esc(a.summary)}</div>` : "");
 }
 // 801番：LINE問い合わせ返信の見張り。来ている時だけ表示、来ていなければ何も出さず静かにする。
@@ -4833,7 +4833,7 @@ function renderLineReplyAlert(){
   if(!a){ el.style.display = "none"; el.innerHTML = ""; return; }
   el.style.display = "block";
   el.innerHTML = `🔔 LINEから返信が来ています（${esc(a.subject || "件名なし")} / ${esc(a.date || "")}）　`
-    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:#8ef0ae;text-decoration:underline;">Gmailで開く</a>`
+    + `<a href="${esc(a.gmailUrl || "https://mail.google.com/")}" target="_blank" rel="noopener" style="color:var(--t-ok);text-decoration:underline;">Gmailで開く</a>`
     + (a.body ? `<div style="margin-top:6px;font-size:0.85em;opacity:0.9;">${esc(a.body)}</div>` : "");
 }
 // 820番：Lovable公開便の連続失敗・本番未反映を赤で出す。
@@ -4885,7 +4885,7 @@ function renderMicAndDraftMail(){
     else draftBox.innerHTML =
       `<div style="margin-bottom:6px;">Anthropicへの問い合わせ下書き（マイク断続不具合＋添付画像3割ロス）を用意しました。`
       + `下のボタンでGmailの作成画面が宛先・件名・本文入りで開きます。<b>あとは送信ボタンを押すだけ</b>です。</div>`
-      + `<a href="${esc(m.gmailComposeUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border-radius:20px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);text-decoration:none;">✉️ Gmailの作成画面を開く（送信は自分で）</a>`
+      + `<a href="${esc(m.gmailComposeUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border-radius:20px;background:var(--t-panel);color:var(--t-ok);border:1px solid var(--t-ok);text-decoration:none;">✉️ Gmailの作成画面を開く（送信は自分で）</a>`
       + `<a href="${esc(m.gmailSearchUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 0;padding:6px 12px;border-radius:20px;border:1px solid var(--line);color:var(--kinari);text-decoration:none;">🔍 Anthropicからのメールを検索</a>`
       + `<details style="margin-top:8px;"><summary style="cursor:pointer;">日本語の文面（確認用）</summary>`
       + `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.82rem;">${esc(m.bodyJa || "")}</pre></details>`
@@ -4898,7 +4898,7 @@ function renderMicAndDraftMail(){
     else lovBox.innerHTML =
       `<div style="margin-bottom:6px;">Lovableサポートへの問い合わせ下書き（公開が suspicious activity でブロックされている件）を用意しました。`
       + `下のボタンでGmailの作成画面が宛先・件名・本文入りで開きます。<b>あとは送信ボタンを押すだけ</b>です。</div>`
-      + `<a href="${esc(lm.gmailComposeUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border-radius:20px;background:#123a1e;color:#8ef0ae;border:1px solid rgba(120,255,160,0.5);text-decoration:none;">✉️ Gmailの作成画面を開く（送信は自分で）</a>`
+      + `<a href="${esc(lm.gmailComposeUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border-radius:20px;background:var(--t-panel);color:var(--t-ok);border:1px solid var(--t-ok);text-decoration:none;">✉️ Gmailの作成画面を開く（送信は自分で）</a>`
       + `<details style="margin-top:8px;"><summary style="cursor:pointer;">日本語の文面（確認用）</summary>`
       + `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.82rem;">${esc(lm.bodyJa || "")}</pre></details>`
       + (lm.note ? `<div style="margin-top:8px;font-size:0.78rem;color:var(--sub);">${esc(lm.note)}</div>` : "");
@@ -5130,5 +5130,7 @@ fetch("status/public/history.jsonl?t=" + Date.now(), {cache:"no-store"})
    （読み込み直後にopen属性を戻すコードを削除。HTML側にopen属性を残していないセクションは
    これで常に閉じた状態から始まる。会話中にたまごさんが開くのは今まで通り自由）。 */
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
 </body>
 </html>

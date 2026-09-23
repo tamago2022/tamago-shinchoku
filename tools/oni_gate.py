@@ -132,12 +132,35 @@ FAL_RE = re.compile(r"(?<![a-zA-Z])fal(?:\.ai|-ai)?(?![a-zA-Z])", re.I)
 MONEY_RE = re.compile(r"[0-9][0-9,\.]*\s*円|\$[0-9]|ドル|USD")
 
 
-def visible_text(raw: str) -> str:
+# ★2026-09-26（1152番）台帳を出す紙のための、ただ1つの例外。
+#
+#   宿題台帳（share/check/1138-shukudai.html）は、たまごさんや引き継ぎ紙に
+#   書いてあった文を**一字一句そのまま並べる**紙。だから題名の中に
+#   「command not found」「git add -A」のような文字がそのまま入る。
+#   これは**この紙がログを貼っている**のではなく、**台帳がそう記録している**。
+#
+#   実測（2026-09-26）：この区別が無かったため、鬼監督が1138をR1/R2で止め、
+#   直しようがなかった（直す＝たまごさんの発言を書き換える、になってしまう）。
+#
+#   そこで「引用である」と明示した箱の中だけ、規則の照合から外す。
+#     <code data-inyou="台帳">…</code>
+#   ★外すのはR1/R2（ログ・diffを貼っていないか）だけ。
+#     謝罪・水道水コピー・URLの有無（R3〜R9）は引用の中でも今までどおり見る。
+#   ★この印を自分の文章に付けて逃げないこと。付けてよいのは
+#     「別のファイルから一字一句写したもの」だけ。
+INYOU_RE = re.compile(r'(?is)<code[^>]*data-inyou=[^>]*>.*?</code>')
+
+
+def visible_text(raw: str, inyou_nuku: bool = False) -> str:
     """HTMLから、たまごさんの目に入る文字だけを取り出す。
 
     script/style の中はたまごさんには見えないので判定に使わない
     （見えないものを理由に落とすと、直しようがない指摘になる）。
+
+    inyou_nuku=True のときは、引用と明示された箱の中身も外す（上の例外）。
     """
+    if inyou_nuku:
+        raw = INYOU_RE.sub(" ", raw)
     t = re.sub(r"<script.*?</script>", " ", raw, flags=re.S | re.I)
     t = re.sub(r"<style.*?</style>", " ", t, flags=re.S | re.I)
     t = re.sub(r"<!--.*?-->", " ", t, flags=re.S)
@@ -152,11 +175,14 @@ def judge(raw: str, label: str = "") -> list:
     返すのは違反の一覧。空なら通過。
     """
     text = visible_text(raw)
+    # R1（実行ログ）R2（diff・コミット）だけは、引用と明示された箱の中を見ない
+    text_noinyou = visible_text(raw, inyou_nuku=True)
     hits = []
 
     for code, name, pat, why in RULES:
-        for m in re.finditer(pat, text, re.M):
-            snippet = text[max(0, m.start() - 30):m.end() + 30].strip()
+        haba = text_noinyou if code in ("R1", "R2") else text
+        for m in re.finditer(pat, haba, re.M):
+            snippet = haba[max(0, m.start() - 30):m.end() + 30].strip()
             hits.append({"code": code, "name": name, "why": why,
                          "hit": m.group(0)[:60], "around": snippet[:120]})
             break  # 同じ規則は1ページ1件だけ挙げる（同じ話を何度も読ませない）

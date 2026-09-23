@@ -108,12 +108,50 @@ CUR="$(git -C "$REPO" rev-parse HEAD 2>/dev/null || echo "")"
 [ -z "$CUR" ] && { log "🛑 main の HEAD が読めませんでした"; exit 1; }
 LAST="$(cat "$PAGES/.git/lastmain" 2>/dev/null || echo "")"
 
+SEKISHO_BLOCKED=0
 sync_one() {  # $1=コミット $2=パス
   local d; d="$PAGES/$(dirname "$2")"
   mkdir -p "$d" 2>/dev/null || return 0
   if ! git -C "$REPO" show "$1:$2" > "$PAGES/$2" 2>/dev/null; then
     rm -f "$PAGES/$2" 2>/dev/null || true
+    return 0
   fi
+  # ---- 関所(sekisho)：本番(gh-pages)に出る手前の最終防衛（898番・4回目の再設計 2026-09-27）----
+  # 検品指摘(898番3回目)で実測済み：.githooks/pre-push は (a) core.hooksPath未設定の
+  # 新規clone/worktreeでは無音で丸ごとスキップされ、(b) 設定済みでもmktempの
+  # テンプレート形式がmacOS(Darwin)のBSD mktempと非互換でXが展開されないまま
+  # 動き続け、(c) CI(pages.yml)側にもチェックが無い。つまり「呼び忘れたら素通り」
+  # という穴が3通り開いていた。
+  # ここ(pages_publish.sh)は963番の設計で「gh-pages(本番)へ実際に反映される
+  # 唯一の書き手」になっている。mainの誰がどうpushしたか・pre-pushが有効かに
+  # 一切関係なく、公開直前の**この1箇所だけ**を必ず通るので、ここに関所を
+  # 置けば環境差・設定漏れに関わらず「本番に出ているshare/check/*.htmlは
+  # 必ず関所を通っている」をコードで強制できる。
+  # 対象は今回の差分(増えた/変わったページ)だけ。git archiveでの初回一括展開
+  # （既存497ページ、実測不合格97件は別タスクで把握済み＝oni_gate.pyのbaseline
+  # と同じ「既存分は借金、新規だけ厳密化」の考え方）では呼ばれない。
+  case "$2" in
+    share/check/*.html)
+      case "$2" in */_template.html) return 0 ;; esac
+      if ! python3 "$REPO/tools/sekisho.py" --local-file "$PAGES/$2" --n "publish-$(basename "$2" .html)" >/tmp/sekisho-publish.out 2>&1; then
+        # 2026-09-27（1168番・続）★一度でも本番に出した紙は、落とさない。
+        #   実害：ダーク化でCSSの1行を直しただけの share/check/1029-shuhou.html が
+        #   この関所に引っかかり、本番から**消えた**（404になった）。
+        #   この関所の役目は「新しい主張を検品せずに出さない」ことであって、
+        #   「今まで読めていた紙を取り上げる」ことではない。
+        #   この関所のコメント自身が「既存分は借金、新規だけ厳密化」と書いている。
+        #   → 公開の履歴にその紙があるなら＝借金組。記録だけ残して、そのまま出す。
+        #     履歴に無い＝本当に新しい紙のときだけ、今までどおり外す。
+        if [ -n "$(git -C "$PAGES" log --oneline -1 -- "$2" 2>/dev/null)" ]; then
+          log "⚠️ 関所(sekisho)FAIL（既存分の借金・落とさずそのまま出す）: $2 / $(grep SEKISHO_RESULT /tmp/sekisho-publish.out 2>/dev/null | head -1)"
+        else
+          rm -f "$PAGES/$2" 2>/dev/null || true
+          log "🛑 関所(sekisho)FAILのため公開から外しました（本番に出したことが無い新しい紙）: $2 / $(grep SEKISHO_RESULT /tmp/sekisho-publish.out 2>/dev/null | head -1)"
+        fi
+        SEKISHO_BLOCKED=$((SEKISHO_BLOCKED+1))
+      fi
+      ;;
+  esac
 }
 
 if [ "$CUR" != "$LAST" ]; then
@@ -165,6 +203,21 @@ done < <(find ./status/public -type f \( -name '.env*' -o -name '*.pem' -o -name
 { echo "# $(date '+%F %T') 公開に載せた status/public/ の顔ぶれ"; \
   find ./status/public -type f | sed 's|^\./status/public/||' | sort; } > "$LIST" 2>/dev/null || true
 
+# ---- (3) 暗くする（1168番：たまごさん「全てのgithubダークモードにして　見やすいから」）----
+# ★ ここに置く理由：本番(gh-pages)へ実際に出る唯一の道がこの1本なので、
+#   **ここを通る物は全部暗くなる**。mainの746枚を1枚ずつ書き直す形にすると、
+#   次に機械が作るページは明るいまま生まれてくる（＝穴が開いたまま）。
+#   お手本は 1165-hassha.html。色の実体は theme/tamago-dark.css の1枚だけにある。
+#   印(tamago-dark)が入っている物は触らないので、2回目以降は変わった分だけで一瞬。
+#   落ちても公開は止めない（暗くならないより、出ない方が悪い）。
+if [ -f "$PAGES/tools/1168_kuraku.py" ]; then
+  if python3 "$PAGES/tools/1168_kuraku.py" --tree "$PAGES" > "$REPO/status/1168_kuraku.out" 2>&1; then
+    log "暗くしました: $(grep -E '今回暗くした' "$REPO/status/1168_kuraku.out" | tr '\n' ' ')"
+  else
+    log "⚠️ 暗くする所で落ちました（今回はそのまま公開します）: $(tail -3 "$REPO/status/1168_kuraku.out" | tr '\n' ' ')"
+  fi
+fi
+
 # ---- 変化が無ければ何もしない（＝押し合いにならない）----
 # ★ --force を付ける。ここに置いたものは「main が追跡しているもの」と
 #   「status/public/ の生きた中身」だけで、既に全部よそへ出ているもの。
@@ -194,10 +247,22 @@ if ! git diff --cached --quiet 2>/dev/null || [ -z "$LOCAL_HEAD" ]; then
   fi
 fi
 
+# ---- 2026-09-24（1054番）★網の向こうを待つ push に、必ず時間切れを付ける ----
+#   実測：09-24 05:1x に 5分便が git の網待ちで36分固まり、公開も回収も全部止まった。
+#   落ちるのは構わない（3回粘る作りが既にある）。**返ってこないのが一番たちが悪い。**
+_mattenai() {   # 引数：秒数 コマンド…
+  local _s="$1"; shift
+  "$@" & local _p=$!
+  ( sleep "$_s"; kill -9 "$_p" 2>/dev/null ) & local _w=$!
+  wait "$_p" 2>/dev/null; local _rc=$?
+  kill "$_w" 2>/dev/null
+  return "$_rc"
+}
+
 # ★ 3回まで粘る。Macが重いと回線が切れることが実際にある（実測: curl 55 Recv failure）。
 OK=0
 for _try in 1 2 3; do
-  if git -c credential.helper='!gh auth git-credential' \
+  if _mattenai 120 git -c credential.helper='!gh auth git-credential' \
        push --force --quiet --no-progress origin "HEAD:refs/heads/$BRANCH" 2>>"$LOG"; then
     OK=1; break
   fi
@@ -210,7 +275,7 @@ if [ "$OK" -eq 1 ]; then
   #   これが無いと git は「向こうは何も持っていない」と思い込み、
   #   毎回 600MB を上げ直そうとして回線が落ちる（今回の失敗の再発源）。
   git update-ref "refs/remotes/origin/$BRANCH" HEAD 2>/dev/null || true
-  log "公開しました（写しの関所で外したもの: ${BLOCKED}件）"
+  log "公開しました（写しの関所で外したもの: ${BLOCKED}件／sekisho(仕組み⑦)で外したもの: ${SEKISHO_BLOCKED}件）"
 else
   log "🛑 公開の push に3回とも失敗しました。次の周回でまたやり直します"
   exit 1

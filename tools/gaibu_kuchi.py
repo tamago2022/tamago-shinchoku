@@ -1,401 +1,134 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""944番【本丸】外部AIへの「口」— Grok / ChatGPT(OpenAI) / Gemini を同じ形で叩く土台。
+"""1051番【外の判定役】Macの上で生きている「別のAI」に、JSONで1問だけ答えさせる口。
 
-たまごさんの言葉（2026-09-18・原文）:
-  「あなたがセンターになるって意味だよ。俺がわざわざGrok開いてジェミニ開いていつもやってることを、
-    あなたを通してできるようになるのかっていう。」
+なぜ要るか（実測 2026-09-24 03:20-03:26、Mac上で叩いて確かめた）:
+  ・`claude` … **そもそもMacに入っていない**（PATHにも /usr/local/bin にも
+    /opt/homebrew/bin にも /Users/mac/.claude/local/ にも無い）。
+    ★「認証が切れている」ではなく「居ない」。穴を塞ぐ相手が存在しないので、
+    **パイプごと替える**しかない。
+  ・`OPENAI_API_KEY` … Macの環境にも .env にも無い。だから入荷の関所の門5
+    （外部AIに採点させる）は、鍵が無い＋予算の栓が0円で**二重に止まっていた。**
+  ・`codex`（/Users/mac/.npm-global/bin/codex, codex-cli 0.144.5）… **生きている。**
+    model=gpt-5.6-terra, provider=openai, 認証は ~/.codex/auth.json。
+    実測で「1+1」に「2」と答えた。★ChatGPTのログインで動く口なので、
+    **1回ごとの課金は出ない（0円）。** APIの鍵は使わない。
+  ・`gsk`（Genspark）… 生きている（plan=plus・残1924.937クレジット）。
+    ★2026-10-04 にプラン終了で残りは消える＝**使っても追加の金は出ない。**
+    ただし1回が数分かかる非同期なので、採点のような速い判定には向かない。控えに置く。
 
-■ このファイルの役割
-  kiku.py（聞く）と tanomu.py（頼む）の**両方が使う共通部分**だけを持つ。
-  ・鍵の探索（値は絶対に返り値以外に出さない・ログにも書かない）
-  ・各社を「メッセージ配列を投げて文字列が返る」という同じ形に揃える
-  ・使ったトークン→円の計算（単価は tools/gaibu_kenpin.py の PRICING を再利用。2箇所に書かない）
-  ・検索（リサーチ）をONにする指定。GrokはLive Search、Geminiはgoogle_search grounding。
-
-■ ★回線についての実測事実（2026-09-18）
-  Cowork/Dispatchのサンドボックスからは api.openai.com / api.x.ai /
-  generativelanguage.googleapis.com へ**出られない**（DNSで落ちる）。
-  たまごさんのMac（＝工場）からは**出られる**（tools/kenpin_gate.py が実際に5往復している）。
-  → このファイルを使うコードは「工場側で動く」前提で書く。
-     サンドボックスから使う場合は tools/gaibu_runner.py 経由で工場に代行させる
-     （kiku.py / tanomu.py が自動でそちらへ回すので、呼ぶ側は意識しなくてよい）。
+決め:
+  ・**金が出る口（OpenAI API・xAI・Gemini）はここでは一切叩かない。**
+    叩くのは、既に払い終わっているもの（codex＝ChatGPTログイン、gsk＝期限切れ前のクレジット）だけ。
+  ・判定役が1つも居なければ **None を返す。**呼んだ側は「判定役が今いない」と記録して、
+    ★**門は通さない側に倒す。**甘い点を自分で付けて通す、は禁止。
 """
-import io
 import json
 import os
-import socket
+import re
+import subprocess
 import sys
-import time
-import urllib.error
-import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(HERE)
-if HERE not in sys.path:
-    sys.path.insert(0, HERE)
+# ---------------------------------------------------------------------------
+# ★2026-09-24：待ち行列（enqueue_job / wait_job / JOBS_*）は
+#   **`tools/shigoto_queue.py` が正本。**ここはそこから再輸出しているだけ。
+#   このファイルを丸ごと作り替えても工場は死なない（それが03:38に起きた事故）。
+#   ★待ち行列の中身をここに書き戻さないこと。増やすなら shigoto_queue.py 側。
+# ---------------------------------------------------------------------------
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from shigoto_queue import (  # noqa: E402,F401
+    JOBS_DIR, JOBS_PENDING, JOBS_DONE, JOBS_RUNNING,
+    enqueue_job, wait_job, write_job_result, pending_names,
+)
 
-import gaibu_kenpin as gk  # noqa: E402  単価表・円換算・課金台帳をそのまま再利用する
-
-XAI_URL = "https://api.x.ai/v1/chat/completions"
-OPENAI_URL = "https://api.openai.com/v1/chat/completions"
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s"
-
-# 会話用に使うモデル。検品(gaibu_kenpin)より少し賢いものを先頭に置く。
-# 先頭から順に試し、その鍵で通ったものを使う（アカウントによって使えるモデルが違うため）。
-CHAT_MODELS = {
-    "grok": ["grok-4.3", "grok-4.6", "grok-4.5"],
-    "openai": ["gpt-4o-mini", "gpt-5-mini", "gpt-4o"],
-    "gemini": ["gemini-2.5-flash", "gemini-2.0-flash"],
-}
-KEY_NAMES = {
-    "grok": ("XAI_API_KEY", "GROK_API_KEY"),
-    "openai": ("OPENAI_API_KEY", "CHATGPT_API_KEY"),
-    "gemini": ("GEMINI_API_KEY", "GOOGLE_AI_API_KEY", "GOOGLE_GENAI_API_KEY"),
-}
-LABEL = {"grok": "Grok(xAI)", "openai": "ChatGPT(OpenAI)", "gemini": "Gemini(Google)"}
-VENDOR_PROVIDER = {"grok": "Grok", "openai": "OpenAI", "gemini": "Gemini"}
-OFFICIAL_URL = {
-    "grok": "https://docs.x.ai/developers/pricing",
-    "openai": "https://platform.openai.com/docs/pricing",
-    "gemini": "https://ai.google.dev/gemini-api/docs/pricing",
-}
-
-# たまごさんの鍵の置き場。gaibu_kenpin._find_env_key が見る場所に、たまごさんが言った
-# ~/Documents/AI作業/_鍵/keys.env を足す（あちらを壊さないようここで足し込む）。
-EXTRA_KEY_FILES = [
-    os.path.expanduser("~/Documents/AI作業/_鍵/keys.env"),
-    os.path.expanduser("~/Documents/AI作業/_鍵/.env"),
-    os.path.expanduser("~/.tamago/keys/api_keys.env"),
-]
+CODEX = "/Users/mac/.npm-global/bin/codex"
+GSK = "/Users/mac/.npm-global/bin/gsk"
+JSON_OBJ = re.compile(r"\{(?:[^{}]|\{[^{}]*\})*\}", re.S)
 
 
-def find_key(vendor):
-    """鍵を探す。**見つかった値は返り値としてしか外に出さない**（printもlogもしない）。"""
-    names = KEY_NAMES[vendor]
-    v = gk._find_env_key(names)
-    if v:
-        return v
-    for path in EXTRA_KEY_FILES:
-        if not os.path.exists(path):
-            continue
+def _hiroi_json(text):
+    """出力の中から**いちばん後ろの**JSONオブジェクトを拾う。
+    codex は前置き（model: / session id: など）を先に出すので、前から拾うと化ける。"""
+    best = None
+    for m in JSON_OBJ.finditer(text or ""):
         try:
-            for line in io.open(path, encoding="utf-8", errors="ignore"):
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if line.lower().startswith("export "):
-                    line = line[7:].strip()
-                for name in names:
-                    if line.startswith(name + "="):
-                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                        if val:
-                            return val
+            d = json.loads(m.group(0))
         except Exception:
             continue
-    return None
+        if isinstance(d, dict) and d:
+            best = d
+    return best
 
 
-def key_status():
-    """どの社の鍵があるか。**有無だけ**を返す（値は返さない）。"""
-    return {v: bool(find_key(v)) for v in ("grok", "openai", "gemini")}
+def codex_aru():
+    return os.path.exists(CODEX)
 
 
-def net_ok(host="api.openai.com", timeout=4):
-    """外部APIへ回線が出るか。出ないサンドボックスと出る工場を見分けるのに使う。"""
-    try:
-        socket.setdefaulttimeout(timeout)
-        socket.getaddrinfo(host, 443)
-        return True
-    except Exception:
-        return False
-
-
-def _post_json(url, body, headers, timeout):
-    req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"),
-                                 headers=headers, method="POST")
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8", "ignore"))
-
-
-def _err_text(e):
-    if isinstance(e, urllib.error.HTTPError):
+def kiku_codex(system, user, timeout=150, model=None):
+    """codex に1問だけ聞いてJSONで返させる。戻り値 (dict|None, who, err)"""
+    if not os.path.exists(CODEX):
+        return None, "", "codexがMacにありません（%s）" % CODEX
+    prompt = ("%s\n\n%s\n\n"
+              "★返すのはJSONひとつだけ。前置きも説明も、```も付けないでください。"
+              % (system, user))
+    # ★お題は標準入力から渡す（`-`）。argv に長文を積むと環境ごとに上限で切れる。
+    base = [CODEX, "exec"]
+    if model:
+        base += ["-m", model]
+    out = ""
+    for extra in (["--skip-git-repo-check"], []):
         try:
-            b = e.read().decode("utf-8", "ignore")
-        except Exception:
-            b = ""
-        return "HTTP %s %s" % (e.code, b[:300])
-    return "%s: %s" % (type(e).__name__, e)
-
-
-# ---------------------------------------------------------------------------
-# 1社に1回聞く。戻り値は必ずこの形（呼ぶ側が社ごとに分岐しないで済むように）
-#   {"vendor","label","ok","text","model","usage","costYen","seconds","error","searched"}
-# ---------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------
-# ★1034番【予算の栓】。ここだけが yosan を呼ぶ。栓が無い環境でも落ちない作りにする
-#   （栓が読めなければ「通す」にはしない＝安全側に倒して止める。お金の話なので）。
-# ---------------------------------------------------------------------------
-def _yosan_mitsumori(saifu, vendor, messages, max_tokens):
-    if not saifu:
-        return True, "財布の名前が無いので栓を通していません"
-    try:
-        import yosan
-    except Exception as e:
-        return False, "予算の栓（tools/yosan.py）が読めませんでした: %s。お金の話なので止めます。" % e
-    # 見積り。入力の文字数と、返事の上限トークンから、その社の一番高いモデルの単価で多めに見る。
-    chars = 0
-    try:
-        chars = sum(len(str(m.get("content") or "")) for m in (messages or []))
-        in_tok = max(1, int(chars / 2.0))          # 日本語は1トークン≒2文字（多めに見る側）
-        out_tok = int(max_tokens or 1500)
-        worst = 0.0
-        for model in CHAT_MODELS[vendor]:
-            y = _cost_yen(vendor, model, {"prompt_tokens": in_tok, "completion_tokens": out_tok})
-            worst = max(worst, float(y or 0))
-        mitsu = round(max(worst, 0.01), 4)
-    except Exception:
-        mitsu = 1.0
-    what = "%s に %d文字 聞く（返事の上限 %s トークン）" % (LABEL[vendor], chars, max_tokens or 1500)
-    return yosan.mitsumori(saifu, mitsu, what)
-
-
-def _yosan_tsukatta(saifu, yen, what):
-    try:
-        import yosan
-        yosan.tsukatta(saifu, yen, what, src="gaibu_kuchi.ask の costYen（実トークン×公表単価）")
-    except Exception:
-        pass
-
-
-def ask(vendor, messages, search=False, timeout=90, max_tokens=None, temperature=None,
-        models=None):
-    """models を渡すと、その社の既定リスト（安い順）ではなく指定したモデルを先頭から試す。
-    ★2026-09-19 実測：既定は gpt-4o-mini が先頭で、返ってくる答えが浅く「検索できませんでした」
-      で終わる。難しい問いのときは賢いモデルを指名できる口が要る。"""
-    t0 = time.time()
-    base = {"vendor": vendor, "label": LABEL[vendor], "ok": False, "text": "",
-            "model": "", "usage": {}, "costYen": 0.0, "seconds": 0.0,
-            "error": "", "searched": False, "officialUrl": OFFICIAL_URL[vendor]}
-
-    # ★1034番【予算の栓】叩く前に必ずここを通る。上限を超えるなら1文字も投げない。
-    #   止めたときは理由をそのまま error に入れて返す（黙って空で帰らない＝
-    #   「動いているのに何も取れていない」を作らない）。
-    _saifu = {"grok": "xai", "openai": "openai", "gemini": "gemini"}.get(vendor)
-    _mitsu = _yosan_mitsumori(_saifu, vendor, messages, max_tokens)
-    if _saifu and not _mitsu[0]:
-        base["error"] = _mitsu[1]
-        base["stoppedByYosan"] = True
-        base["seconds"] = round(time.time() - t0, 1)
-        return base
-
-    key = find_key(vendor)
-    if not key:
-        base["error"] = "%sの鍵が見つかりません（%s のいずれかが .env / ~/.tamago/keys/api_keys.env / " \
-                        "~/Documents/AI作業/_鍵/keys.env に必要）" % (LABEL[vendor], "・".join(KEY_NAMES[vendor]))
-        base["seconds"] = round(time.time() - t0, 1)
-        return base
-
-    errs = []
-    for model in (models or CHAT_MODELS[vendor]):
-        try:
-            if vendor == "gemini":
-                text, usage, searched = _call_gemini(key, model, messages, search, timeout)
-            else:
-                url = XAI_URL if vendor == "grok" else OPENAI_URL
-                text, usage, searched = _call_openai_style(
-                    key, url, model, messages, search, timeout, vendor, max_tokens, temperature)
-            base.update({"ok": True, "text": text, "model": model,
-                         "usage": usage, "searched": searched})
-            base["costYen"] = _cost_yen(vendor, model, usage)
-            base["seconds"] = round(time.time() - t0, 1)
-            # ★1034番【予算の栓】叩いた後に実額を記録する。ここを書かないと上限が効かない。
-            _yosan_tsukatta(_saifu, base["costYen"], "%s / %s" % (LABEL[vendor], model))
-            return base
+            p = subprocess.run(base + extra + ["-"], input=prompt,
+                               capture_output=True, text=True, timeout=timeout,
+                               cwd="/tmp")
+        except subprocess.TimeoutExpired:
+            return None, "codex", "時間切れ（%d秒）" % timeout
         except Exception as e:
-            errs.append("%s → %s" % (model, _err_text(e)))
-            continue
-    base["error"] = "全モデルで失敗： " + " ／ ".join(errs)
-    base["seconds"] = round(time.time() - t0, 1)
-    return base
+            return None, "codex", "走らせられない：%r" % e
+        out = (p.stdout or "") + "\n" + (p.stderr or "")
+        if p.returncode == 0 or "unexpected argument" not in out:
+            break
+    d = _hiroi_json(out)
+    if d is None:
+        return None, "codex", "JSONが返ってこない（rc=%s）%s" % (p.returncode, out[-300:])
+    return d, "codex(gpt-5.6-terra)", ""
 
 
-def _call_openai_style(key, url, model, messages, search, timeout, vendor, max_tokens, temperature):
-    body = {"model": model, "messages": messages}
-    if max_tokens:
-        # gpt-5系は max_completion_tokens しか受け付けないので両対応（片方が弾かれたら再送）
-        body["max_tokens"] = max_tokens
-    if temperature is not None:
-        body["temperature"] = temperature
-    searched = False
-    if search and vendor == "grok":
-        # xAI Live Search。使えないアカウントだと400で落ちるので、その時は検索無しで再送する。
-        body["search_parameters"] = {"mode": "auto", "return_citations": True}
-        searched = True
+def gsk_zandaka():
+    if not os.path.exists(GSK):
+        return None
     try:
-        j = _post_json(url, body, {"Content-Type": "application/json",
-                                   "Authorization": "Bearer %s" % key}, timeout)
-    except urllib.error.HTTPError as e:
-        detail = ""
-        try:
-            detail = e.read().decode("utf-8", "ignore")
-        except Exception:
-            pass
-        retried = False
-        if "search_parameters" in body and e.code in (400, 404, 422):
-            body.pop("search_parameters", None)
-            searched = False
-            retried = True
-        if "max_tokens" in detail and "max_completion_tokens" in detail:
-            body["max_completion_tokens"] = body.pop("max_tokens", None)
-            retried = True
-        if "temperature" in detail and body.get("temperature") is not None:
-            body.pop("temperature", None)
-            retried = True
-        if not retried:
-            # ★2026-09-23 実測で直した穴：ここで素の `raise` をすると、
-            #   上の e.read() で本文（＝断られた理由）を既に吸い出してしまっているため、
-            #   _err_text がもう一度 read() しても**空**になる。
-            #   結果、画面に出るのは「HTTP 429 」だけで、
-            #   「回数の出しすぎ（待てば通る）」なのか
-            #   「残高切れ insufficient_quota（お金の話＝たまごさんの判断）」なのかが分からない。
-            #   ＝直せるものを直せなくする穴なので、理由を持たせて投げ直す。
-            raise RuntimeError("HTTP %s %s" % (e.code, (detail or "")[:400]))
-        j = _post_json(url, body, {"Content-Type": "application/json",
-                                   "Authorization": "Bearer %s" % key}, timeout)
-    ch = (j.get("choices") or [{}])[0]
-    text = (ch.get("message") or {}).get("content") or ""
-    cits = j.get("citations") or []
-    if cits:
-        text += "\n\n【出典】\n" + "\n".join("・" + str(c) for c in cits[:10])
-    return text, (j.get("usage") or {}), searched
-
-
-def _call_gemini(key, model, messages, search, timeout):
-    """OpenAI形式のmessagesをGeminiのcontents形式に変換して投げる。"""
-    sys_parts = [m["content"] for m in messages if m.get("role") == "system"]
-    contents = []
-    for m in messages:
-        if m.get("role") == "system":
-            continue
-        contents.append({"role": "model" if m["role"] == "assistant" else "user",
-                         "parts": [{"text": m.get("content") or ""}]})
-    body = {"contents": contents}
-    if sys_parts:
-        body["systemInstruction"] = {"parts": [{"text": "\n\n".join(sys_parts)}]}
-    searched = False
-    if search:
-        body["tools"] = [{"google_search": {}}]
-        searched = True
-    url = GEMINI_URL % (model, key)
-    try:
-        j = _post_json(url, body, {"Content-Type": "application/json"}, timeout)
-    except urllib.error.HTTPError as e:
-        if searched and e.code in (400, 404):
-            body.pop("tools", None)
-            searched = False
-            j = _post_json(url, body, {"Content-Type": "application/json"}, timeout)
-        else:
-            raise
-    cand = (j.get("candidates") or [{}])[0]
-    parts = (cand.get("content") or {}).get("parts") or []
-    text = "".join(p.get("text", "") for p in parts)
-    gm = cand.get("groundingMetadata") or {}
-    chunks = gm.get("groundingChunks") or []
-    if chunks:
-        srcs = []
-        for c in chunks[:10]:
-            w = c.get("web") or {}
-            if w.get("uri"):
-                srcs.append("・%s %s" % (w.get("title") or "", w["uri"]))
-        if srcs:
-            text += "\n\n【出典（Google検索）】\n" + "\n".join(srcs)
-    return text, (j.get("usageMetadata") or {}), searched
-
-
-def _cost_yen(vendor, model, usage):
-    provider = VENDOR_PROVIDER[vendor]
-    tok_in, tok_out = gk._extract_tokens(usage, provider)
-    price = gk.PRICING.get((provider, model)) or gk.FALLBACK_PRICE
-    usd = (tok_in / 1_000_000.0) * price["in_per_m"] + (tok_out / 1_000_000.0) * price["out_per_m"]
-    return round(usd * gk.USD_TO_YEN, 3)
-
-
-def record(n, title, res, note=""):
-    """gaibu_kenpin の課金台帳（status/gaibu_kenpin_ledger.json）に1件足す。
-    金の記録を2箇所に散らかさないため、既存の台帳に相乗りする。"""
-    if not res.get("ok"):
-        return
-    try:
-        gk.record_cost(n, title, VENDOR_PROVIDER[res["vendor"]], res["model"],
-                       res.get("usage") or {}, "ASK", note=note)
+        p = subprocess.run([GSK, "me"], capture_output=True, text=True, timeout=60)
+        if p.returncode != 0:
+            return None
+        return float(((json.loads(p.stdout) or {}).get("data") or {}).get("credit_balance"))
     except Exception:
-        pass
+        return None
 
 
-def cost_cap_ok():
-    try:
-        return gk.check_cost_cap()
-    except Exception:
-        return True, "（台帳が読めないため上限チェックを飛ばしました）"
+def dare_ga_iru():
+    """いま判定役が誰か。報告にそのまま書ける形で返す。"""
+    out = []
+    if os.path.exists(CODEX):
+        out.append({"who": "codex(gpt-5.6-terra)", "kane": "0円（ChatGPTのログイン。1回ごとの課金なし）"})
+    z = gsk_zandaka()
+    if z is not None:
+        out.append({"who": "genspark(gsk)", "kane": "0円（前払い済みのクレジット %.3f・10/4に消える）" % z})
+    return out
 
 
-# ---------------------------------------------------------------------------
-# 「工場に代行させる」受け渡し（サンドボックス⇔Mac）
-#
-# なぜ要るか：Cowork/Dispatchのサンドボックスからは外部APIに回線が出ない。
-# 一方、たまごさんのMacでは5分おきの便（tools/machine_status_push.sh）が回っていて、
-# その中の15秒おきの軽い巡回（quick_tick）から tools/gaibu_runner.py が呼ばれる。
-# だから「やってほしいこと」をファイルで置いておけば、工場が代わりに叩いて結果を書く。
-# たまごさんが画面から画面へ文章を運ぶ必要は無い（＝伝書鳩ゼロ化・kenpin_gateと同じ思想）。
-# ---------------------------------------------------------------------------
-JOBS_DIR = os.path.join(REPO, "status", "gaibu_jobs")
-JOBS_PENDING = os.path.join(JOBS_DIR, "pending")
-JOBS_DONE = os.path.join(JOBS_DIR, "done")
-JOBS_RUNNING = os.path.join(JOBS_DIR, "running")
+def kiku(system, user, timeout=150):
+    """判定役に聞く。codex → （将来）gsk の順。誰も居なければ (None, '', 理由)。"""
+    d, who, err = kiku_codex(system, user, timeout=timeout)
+    if d is not None:
+        return d, who, ""
+    return None, "", err or "判定役が今いない"
 
 
-def _job_id():
-    return time.strftime("%Y%m%d-%H%M%S") + "-%04d" % (int(time.time() * 1000) % 10000)
-
-
-def enqueue_job(kind, payload):
-    """工場にやらせる仕事を1件置く。戻り値: job_id"""
-    for d in (JOBS_PENDING, JOBS_DONE, JOBS_RUNNING):
-        os.makedirs(d, exist_ok=True)
-    jid = _job_id()
-    job = {"jobId": jid, "kind": kind, "payload": payload,
-           "queuedAt": time.strftime("%Y-%m-%d %H:%M:%S"), "queuedFrom": socket.gethostname()}
-    path = os.path.join(JOBS_PENDING, jid + ".json")
-    tmp = path + ".tmp"
-    with io.open(tmp, "w", encoding="utf-8") as f:
-        json.dump(job, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, path)
-    return jid
-
-
-def wait_job(jid, wait_sec=420, poll=5, on_tick=None):
-    """結果が出るまで待つ。戻り値: 結果dict / None（時間切れ）"""
-    done_path = os.path.join(JOBS_DONE, jid + ".json")
-    deadline = time.time() + wait_sec
-    while time.time() < deadline:
-        if os.path.exists(done_path):
-            for _ in range(5):  # 書き込み途中を掴まないよう軽くリトライ
-                try:
-                    return json.load(io.open(done_path, encoding="utf-8"))
-                except Exception:
-                    time.sleep(0.4)
-        if on_tick:
-            on_tick(int(deadline - time.time()))
-        time.sleep(poll)
-    return None
-
-
-def write_job_result(jid, result):
-    os.makedirs(JOBS_DONE, exist_ok=True)
-    path = os.path.join(JOBS_DONE, jid + ".json")
-    tmp = path + ".tmp"
-    with io.open(tmp, "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, path)
+if __name__ == "__main__":
+    import sys
+    if "--dare" in sys.argv:
+        print(json.dumps(dare_ga_iru(), ensure_ascii=False, indent=1))
+    else:
+        d, who, err = kiku("あなたは計算係です。",
+                           '2たす3はいくつですか。{"answer": 数} の形で返してください。')
+        print("who=%s err=%s d=%s" % (who, err, d))

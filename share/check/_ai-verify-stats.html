@@ -5,25 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI検品（Verifier）・実績</title>
 <style>
-  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.7;color:#222}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.7;color:var(--t-fg2)}
   h1{font-size:20px}
   h2{font-size:16px;margin-top:24px}
   .row{display:flex;gap:10px;flex-wrap:wrap}
-  .card{background:#f6f6f6;border-radius:12px;padding:14px 16px;margin:12px 0;flex:1;min-width:130px}
+  .card{background:var(--t-panel);border-radius:12px;padding:14px 16px;margin:12px 0;flex:1;min-width:130px}
   .num{font-size:34px;font-weight:800;margin:2px 0}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  td,th{border-bottom:1px solid #ddd;padding:6px 4px;text-align:left;vertical-align:top}
-  .ok{color:#0a7a2f}
-  .ng{color:#c22}
-  .err{color:#a67c00}
-  .muted{color:#888;font-size:12px}
-  code{background:#eee;padding:1px 5px;border-radius:4px}
+  td,th{border-bottom:1px solid var(--t-line);padding:6px 4px;text-align:left;vertical-align:top}
+  .ok{color:var(--t-ok)}
+  .ng{color:var(--t-ng)}
+  .err{color:var(--t-warn)}
+  .muted{color:var(--t-mute);font-size:12px}
+  code{background:var(--t-panel);padding:1px 5px;border-radius:4px}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <h1>AI検品（Verifier）・実績</h1>
@@ -107,9 +107,11 @@ fetch("../../status/ai_verify_stats.json?_=" + Date.now())
   })
   .catch(e => { document.getElementById("err").textContent = "読み込み失敗: " + e; });
 </script>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dispatchのタイムライン 2026-09-03</title>
 <style>
-  :root{ --bg:#12161c; --fg:#e9eef4; --sub:#a9b6c4; --line:#2a323c; --green:#5fd996; --red:#ff7d6a; --yellow:#ffe08a; }
+  :root{ --bg:var(--t-bg); --fg:var(--t-fg); --sub:var(--t-fg); --line:var(--t-line); --green:var(--t-ok); --red:var(--t-ng); --yellow:var(--t-warn); }
   *{box-sizing:border-box}
   body{margin:0; padding:24px 16px 64px; background:var(--bg); color:var(--fg);
        font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.75;}
@@ -14,11 +14,11 @@
   .lead{color:var(--sub); font-size:0.9rem; margin:0 0 22px;}
   h2{font-size:1.05rem; margin:32px 0 10px; padding-top:14px; border-top:1px solid var(--line);}
   .t{font-variant-numeric:tabular-nums; color:var(--sub); font-size:0.8rem;}
-  blockquote{margin:8px 0; padding:8px 14px; border-left:3px solid var(--yellow); color:#ffe9b0; font-size:0.92rem;}
+  blockquote{margin:8px 0; padding:8px 14px; border-left:3px solid var(--yellow); color:var(--t-warn); font-size:0.92rem;}
   ul{margin:8px 0 0; padding-left:1.2em;}
   li{margin:4px 0;}
-  code{background:#1c222a; padding:1px 6px; border-radius:5px; font-size:0.85em;}
-  a{color:#8fd0ff;}
+  code{background:var(--t-panel); padding:1px 6px; border-radius:5px; font-size:0.85em;}
+  a{color:var(--t-info);}
   .ok{color:var(--green); font-weight:700;}
   .ng{color:var(--red); font-weight:700;}
   footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:0.8rem; color:var(--sub);}
@@ -26,8 +26,8 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="wrap">
@@ -110,9 +110,11 @@
 </footer>
 
 </div>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

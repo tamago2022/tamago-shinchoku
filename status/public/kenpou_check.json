@@ -1,30 +1,30 @@
 {
- "checkedAt": "2026-09-23T09:10:07+09:00",
+ "checkedAt": "2026-09-27T09:10:04+09:00",
  "overallColor": "red",
- "redCount": 1,
+ "redCount": 3,
  "items": [
   {
    "key": "ctx_1m",
    "label": "1Mコンテキストで走った子セッション",
-   "color": "green",
-   "count": 0,
-   "sample": 0,
-   "detail": "直近0本はすべて標準200kコンテキストで走っていた"
+   "color": "red",
+   "count": 25,
+   "sample": 25,
+   "detail": "直近25本の子セッション中25本が標準200kを超えるコンテキスト窓（実測1M）で走っていた（CLAUDE.md/AGENTS.mdの『1M context/extended contextは使わない』に違反）"
   },
   {
    "key": "fable_model",
    "label": "Fableモデルの混入（Sonnet固定違反）",
    "color": "green",
    "count": 0,
-   "sample": 0,
-   "detail": "直近0本はすべてSonnet固定で走っていた"
+   "sample": 25,
+   "detail": "直近25本はすべてSonnet固定で走っていた"
   },
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 1,
-   "detail": "最終記録から約3.6時間経過（2026-09-23T05:32:46+09:00）／直近24時間の完了1件中、鬼監督の記録が付いているのは0件"
+   "count": 3,
+   "detail": "最終記録から約0.4時間経過（2026-09-27T08:48:00+09:00）／直近24時間の完了10件中、鬼監督の記録が付いているのは7件"
   },
   {
    "key": "done_missing_url",
@@ -38,29 +38,29 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "意図的な一時停止中（status/no_launch.flag）なので工場停止としては扱わない"
+   "detail": "走行2本／上限2本（枠が埋まっているだけ・正常）"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回1030番 → 今回1047番（減少なし）"
+   "detail": "前回1542番 → 今回1697番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
-   "count": 30,
-   "detail": "share/check/assets/919-zen/chashitsu_loop.mp4(16.9MB)、share/check/assets/919-zen/kuroihama_loop.mp4(16.2MB)、share/check/assets/919-zen/chashitsu_loop_1920x1080.mp4(7.1MB)、share/check/assets/919-zen/kuroihama_loop_1920x1080.mp4(7.1MB)、share/check/ref/badge-ohon-recommendation-badge.png(4.1MB)"
+   "count": 16,
+   "detail": "tamashii/data/tamashii.json(5.3MB)、status/969/pickup.log(2.9MB)、share/check/img/906-image-quality/concierge-original.png(2.7MB)、status/public/queue.json(2.3MB)、wae_autopost/images/16_オレンジ系の龍2枚並び_黒背景_桜屋外.jpg(1.6MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
    "color": "green",
    "count": 0,
-   "sample": 15,
-   "detail": "直近15件の確認ページはすべて200だった"
+   "sample": 1,
+   "detail": "直近1件の確認ページはすべて200だった"
   },
   {
    "key": "orphan_sessions",
@@ -73,21 +73,30 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 4,
-   "detail": "4件（しきい値100件以内）"
+   "count": 17,
+   "detail": "17件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
-   "color": "green",
-   "count": 0,
-   "detail": "未報告の完了は無い（dispatch_outboxとdispatch_reportedが一致）"
+   "color": "red",
+   "count": 1090,
+   "detail": "未報告の完了が1090件たまっている（最古は約75.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
+   "key": "ctx_1m",
+   "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
    "key": "big_files",
-   "skipped": "既にこの点検が積んだ937番が未解決のため積み直さない"
+   "skipped": "既にこの点検が積んだ925番が未解決のため積み直さない"
+  },
+  {
+   "key": "unreported_completions",
+   "skipped": "既にこの点検が積んだ1118番が未解決のため積み直さない"
   }
- ]
+ ],
+ "autoClosedRecovered": []
 }

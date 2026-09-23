@@ -34,6 +34,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 import gaibu_kuchi as gkuchi  # noqa: E402
+import kagi  # noqa: E402  # noqa: E402
 
 BASE = "https://api.openai.com/v1/organization"
 USD_TO_YEN = 150.0  # gaibu_kenpin.USD_TO_YEN と同じ暫定レート（円は参考、USDが実額）
@@ -49,7 +50,7 @@ def _find_admin_key():
     v = gk._find_env_key(ADMIN_NAMES)
     if v:
         return v, "admin"
-    for path in gkuchi.EXTRA_KEY_FILES + [os.path.expanduser("~/.env"),
+    for path in kagi.ALL_FILES + [os.path.expanduser("~/.env"),
                                           os.path.join(REPO, ".env")]:
         if not os.path.exists(path):
             continue

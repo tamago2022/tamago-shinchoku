@@ -167,11 +167,28 @@ def main():
     #   ★棚（Lovable/admin_stock）へは書かない。拾う・調べる・下書きまで。
     #     棚に書く最後の1歩は status/public/mainichi_oshidake.json に「押すだけ」で出る。
     _mainichi_kuchi()
+    # 1074番（2026-09-24）秋の投稿・今日の1本。★早期returnより前に置く（毎周回で声をかける）。
+    #   心臓のシェル本体に足した行は、走っているループが入れ替わるまで効かない。
+    #   ここ（毎回読み直されるPython）にも置いて、今日から確実に出るようにする。
+    #   中で1便1回に間引く（status/aki_toko.json の lastKey）ので、何度呼んでも二重に出ない。
+    _aki_toko()
     if already_queued_today(today_str):
         return 0
     mark_queued(today_str)
     print("done 毎朝の入荷見回りは列に積まず、tools/mainichi_kuchi.py が自分で走ります")
     return 0
+
+
+def _aki_toko():
+    """1074番：秋の投稿の今日の1本を出す口。中で1便1回に間引く。例外は外へ出さない。"""
+    try:
+        import subprocess
+        subprocess.Popen(
+            [sys.executable, os.path.join(HERE, "aki_toko.py")],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        pass
 
 
 def _mainichi_kuchi():

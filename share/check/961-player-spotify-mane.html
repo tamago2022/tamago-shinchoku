@@ -6,8 +6,8 @@
 <title>961｜曲を止めずにページを移る（Spotifyのやり方をそのまま）</title>
 <style>
   :root{
-    --paper:#f6f3ec; --ink:#1c1a17; --sub:#6b645a; --line:#ddd6c9;
-    --accent:#b4482a; --ok:#2f6b3f; --ng:#a8321f;
+    --paper:var(--t-panel); --ink:var(--t-fg2); --sub:var(--t-mute); --line:var(--t-line);
+    --accent:var(--t-ng); --ok:var(--t-ok); --ng:var(--t-ng);
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--paper);color:var(--ink);
@@ -19,32 +19,32 @@
   h2{font-size:1.02rem;margin:2.4rem 0 .7rem;padding-bottom:.35rem;border-bottom:1px solid var(--line)}
   p{margin:.55rem 0}
   .note{font-size:.88rem;color:var(--sub)}
-  pre{background:#fff;border:1px solid var(--line);border-radius:.5rem;
+  pre{background:var(--t-panel);border:1px solid var(--line);border-radius:.5rem;
     padding:.85rem .95rem;overflow:auto;font-size:.8rem;line-height:1.6;margin:.8rem 0}
   code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   a{color:var(--accent)}
   .nav{display:flex;gap:.5rem;flex-wrap:wrap;margin:.2rem 0 1.2rem}
-  .nav button{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
+  .nav button{appearance:none;border:1px solid var(--line);background:var(--t-panel);color:var(--ink);
     border-radius:999px;padding:.45rem .95rem;font-size:.88rem;cursor:pointer}
-  .nav button[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-  #stage{border:1px solid var(--line);background:#fff;border-radius:.7rem;padding:1.1rem 1.15rem;min-height:9rem}
+  .nav button[aria-current="page"]{background:var(--t-info-bg);color:var(--t-info);border-color:var(--ink)}
+  #stage{border:1px solid var(--line);background:var(--t-panel);border-radius:.7rem;padding:1.1rem 1.15rem;min-height:9rem}
   #stage h3{margin:.1rem 0 .5rem;font-size:1.05rem}
   .meter{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:1rem 0}
-  .meter div{background:#fff;border:1px solid var(--line);border-radius:.5rem;padding:.6rem .7rem;text-align:center}
+  .meter div{background:var(--t-panel);border:1px solid var(--line);border-radius:.5rem;padding:.6rem .7rem;text-align:center}
   .meter b{display:block;font-size:1.5rem;line-height:1.2}
   .meter span{font-size:.72rem;color:var(--sub)}
   .verdict{font-weight:700}
   .verdict.ok{color:var(--ok)} .verdict.ng{color:var(--ng)}
   /* 常駐プレイヤー：ページ（#stage）の外にいる。ここが肝 */
-  #player{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+  #player{position:fixed;left:0;right:0;bottom:0;background:var(--t-panel);border-top:1px solid var(--line);
     padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom));display:flex;align-items:center;gap:.8rem;z-index:50}
   #player img{width:44px;height:44px;border-radius:.35rem;flex:0 0 auto}
   #player .t{flex:1 1 auto;min-width:0}
   #player .t b{display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #player .t span{font-size:.75rem;color:var(--sub)}
-  #player button{appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  #player button{appearance:none;border:1px solid var(--t-info);background:var(--t-info-bg);color:var(--t-info);
     border-radius:999px;width:2.6rem;height:2.6rem;font-size:1rem;cursor:pointer;flex:0 0 auto}
-  #player button.ghost{background:#fff;color:var(--ink)}
+  #player button.ghost{background:var(--t-panel);color:var(--ink)}
   ol,ul{padding-left:1.25rem} li{margin:.3rem 0}
 </style>
 </head>
@@ -391,5 +391,7 @@ $ git commit   # ページに目安箱を置いたコミット
   render();
 })();
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

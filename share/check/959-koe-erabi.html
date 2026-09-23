@@ -5,86 +5,86 @@
 <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
 <title>959 案内人の声えらび（30人ぶん・同じ台詞で聴き比べ）</title>
-<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>html,body{margin:0;background:var(--t-bg)}</style></head><body>
 <style>
   :root{
-    --bg:#12100d; --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
-    --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227;
+    --bg:var(--t-bg); --paper:var(--t-panel); --ink:var(--t-fg2); --sub:var(--t-mute);
+    --aka:var(--t-ng); --midori:var(--t-ok); --ao:var(--t-info); --kin:var(--t-warn);
   }
   *{box-sizing:border-box}
   .wrap{max-width:720px;margin:0 auto;padding:24px 14px 64px;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
   @media(max-width:430px){.wrap{padding:16px 8px 56px}}
   .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-    color:#e8dcc0;letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 4px}
-  .lead{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:#c9bfa6;
+    color:var(--t-fg);letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 4px}
+  .lead{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:var(--t-fg);
     text-align:center;font-size:.78rem;line-height:1.9;margin:0 0 16px}
-  .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid #e2dccd}
-  .panel.dark{background:#1a1712;border-color:#2f2a23;color:#ddd2ba}
+  .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid var(--t-line)}
+  .panel.dark{background:var(--t-bg);border-color:var(--t-line);color:var(--t-fg)}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
      font-size:1rem;letter-spacing:.06em;margin:0 0 4px;color:var(--ink)}
   h2 .n{color:var(--kin);font-size:.72rem;letter-spacing:.14em;display:block;margin-bottom:3px}
   .note{font-size:.78rem;color:var(--sub);line-height:1.8;margin-top:8px}
-  .panel.dark .note{color:#9d947f}
-  a{color:var(--ao)} .panel.dark a{color:#8fb6cf}
+  .panel.dark .note{color:var(--t-mute)}
+  a{color:var(--ao)} .panel.dark a{color:var(--t-info)}
 
   /* ── 値段表 ── */
   table.nedan{width:100%;border-collapse:collapse;margin-top:12px;font-size:.82rem}
-  table.nedan th,table.nedan td{padding:8px 6px;border-bottom:1px solid #e2dccd;text-align:left;vertical-align:top}
+  table.nedan th,table.nedan td{padding:8px 6px;border-bottom:1px solid var(--t-line);text-align:left;vertical-align:top}
   table.nedan th{font-weight:400;color:var(--sub);font-size:.72rem;letter-spacing:.06em}
   table.nedan td.yen{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
-  table.nedan tr.dead td{color:#b4aa9a}
-  table.nedan tr.dead td.yen{color:#b4aa9a;font-weight:400}
+  table.nedan tr.dead td{color:var(--t-mute)}
+  table.nedan tr.dead td.yen{color:var(--t-mute);font-weight:400}
   .tag{display:inline-block;font-size:.62rem;letter-spacing:.04em;padding:1px 6px;border-radius:999px;
-    background:#e7eef3;color:#22303a;margin-left:5px;vertical-align:1px}
-  .tag.x{background:#f7e9e7;color:var(--aka)}
-  .tag.o{background:#e6f0e9;color:var(--midori)}
+    background:var(--t-panel);color:var(--t-fg2);margin-left:5px;vertical-align:1px}
+  .tag.x{background:var(--t-panel);color:var(--aka)}
+  .tag.o{background:var(--t-panel);color:var(--midori)}
 
   /* ── 財布 ── */
-  .saifu{background:#fffdf8;border:1px solid #e2dccd;border-radius:12px;padding:11px 12px;margin-top:12px;
+  .saifu{background:var(--t-panel);border:1px solid var(--t-line);border-radius:12px;padding:11px 12px;margin-top:12px;
     font-size:.8rem;line-height:1.8}
   .saifu b{font-variant-numeric:tabular-nums}
-  .saifu .bar{height:5px;background:#e8e1d2;border-radius:99px;margin-top:7px;overflow:hidden}
-  .saifu .bar i{display:block;height:100%;background:var(--midori);width:0}
+  .saifu .bar{height:5px;background:var(--t-panel);border-radius:99px;margin-top:7px;overflow:hidden}
+  .saifu .bar i{display:block;height:100%;background:var(--midori);width:0;color:var(--t-on-accent)}
 
   /* ── 声の札 ── */
-  input[type=password]{width:100%;padding:11px 12px;border:1px solid #d8d1c0;
-    border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace}
-  textarea{width:100%;padding:11px 12px;border:1px solid #d8d1c0;border-radius:10px;
-    font-size:15px;background:#fff;color:var(--ink);font-family:inherit;line-height:1.7;resize:vertical}
+  input[type=password]{width:100%;padding:11px 12px;border:1px solid var(--t-line);
+    border-radius:10px;font-size:15px;background:var(--t-panel);color:var(--ink);font-family:ui-monospace,monospace}
+  textarea{width:100%;padding:11px 12px;border:1px solid var(--t-line);border-radius:10px;
+    font-size:15px;background:var(--t-panel);color:var(--ink);font-family:inherit;line-height:1.7;resize:vertical}
   .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   button,.row a{padding:12px 16px;border-radius:12px;border:none;cursor:pointer;
     font-size:15px;font-weight:700;letter-spacing:.04em;font-family:inherit}
   .row a{text-decoration:none;text-align:center;line-height:1.35}
-  .row a.btn-main{color:#fff}
+  .row a.btn-main{color:var(--t-fg)}
   .row a.btn-sub{color:var(--ink)}
-  .btn-main{flex:1 1 200px;background:var(--midori);color:#fff}
-  .btn-sub{flex:0 1 auto;background:#fff;color:var(--ink);border:1px solid #d8d1c0;font-weight:400}
-  .row a.btn-sub{border:1px solid #d8d1c0;font-weight:400}
-  button:disabled{background:#c3bdb0;color:#fff;cursor:not-allowed;border-color:#c3bdb0}
+  .btn-main{flex:1 1 200px;background:var(--midori);color:var(--t-on-accent)}
+  .btn-sub{flex:0 1 auto;background:var(--t-panel);color:var(--ink);border:1px solid var(--t-line);font-weight:400}
+  .row a.btn-sub{border:1px solid var(--t-line);font-weight:400}
+  button:disabled{background:var(--t-panel);color:var(--t-fg);cursor:not-allowed;border-color:var(--t-line)}
 
   .koelist{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
   .koe{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;
-    background:#fff;border:1px solid #e2dccd;border-radius:11px;padding:9px 10px;cursor:pointer;
+    background:var(--t-panel);border:1px solid var(--t-line);border-radius:11px;padding:9px 10px;cursor:pointer;
     font-weight:400;transition:border-color .12s,transform .12s;position:relative}
-  .koe:hover{border-color:#c9bda2}
-  .koe.play{border-color:var(--kin);background:#fffaf0}
-  .koe.done{background:#fbfaf6}
-  .koe.err{border-color:#e0c3bd;background:#fdf6f4}
+  .koe:hover{border-color:var(--t-line)}
+  .koe.play{border-color:var(--kin);background:var(--t-panel)}
+  .koe.done{background:var(--t-panel)}
+  .koe.err{border-color:var(--t-line);background:var(--t-panel)}
   .koe .nm{font-size:.92rem;font-weight:700;letter-spacing:.02em}
   .koe .ch{font-size:.7rem;color:var(--sub)}
   .koe .ms{font-size:.66rem;color:var(--midori);font-variant-numeric:tabular-nums}
   .koe .ms.err{color:var(--aka)}
-  .koe .st{position:absolute;top:7px;right:8px;font-size:.6rem;color:#c3bdb0}
+  .koe .st{position:absolute;top:7px;right:8px;font-size:.6rem;color:var(--t-fg)}
   .koe.fav{box-shadow:0 0 0 2px var(--kin) inset}
 
   .stopwatch{font-variant-numeric:tabular-nums;font-size:.8rem;color:var(--sub);margin-top:10px;line-height:1.9}
   .stopwatch b{color:var(--ink);font-size:1.05rem}
-  .err-box{background:#fdf6f4;border:1px solid #e0cfcb;border-radius:10px;padding:10px 12px;
-    font-size:.74rem;color:#7a4a43;line-height:1.7;margin-top:10px;white-space:pre-wrap;
+  .err-box{background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:10px 12px;
+    font-size:.74rem;color:var(--t-ng);line-height:1.7;margin-top:10px;white-space:pre-wrap;
     font-family:ui-monospace,monospace;max-height:180px;overflow:auto;display:none}
   .kv{font-size:.72rem;color:var(--sub);line-height:1.9;margin-top:10px}
-  .panel.dark .kv{color:#9d947f}
+  .panel.dark .kv{color:var(--t-mute)}
   ol.te{margin:10px 0 0;padding-left:1.25em;font-size:.82rem;line-height:1.95}
   ol.te li{margin-bottom:7px}
   ol.te b{font-weight:700}
@@ -107,7 +107,7 @@
   <!-- ══════════ ② 財布 ══════════ -->
   <div class="saifu">
     <div>この聴き比べで出る分：<b id="mitsumori">—</b>
-      <span style="color:#8d8578">（1本あたり <b id="ippon">—</b>）</span></div>
+      <span style="color:var(--t-mute)">（1本あたり <b id="ippon">—</b>）</span></div>
     <div style="margin-top:3px">今日ここまで <b id="kyou">—</b> ／ 1日の栓 <b id="cap">—</b></div>
     <div class="bar"><i id="bar"></i></div>
     <p class="note" style="margin-top:7px">
@@ -146,7 +146,7 @@
 
   <!-- ══════════ ④ iris の件 ══════════ -->
   <div class="panel dark">
-    <h2 style="color:#e8dcc0"><span class="n">三</span>アイリス（iris）の件</h2>
+    <h2 style="color:var(--t-fg)"><span class="n">三</span>アイリス（iris）の件</h2>
     <p class="note" id="irisNote"></p>
   </div>
 
@@ -222,8 +222,8 @@ const TE=[
               : t.ok===false ? '<span class="tag x">'+t.why+'</span>'
               : '<span class="tag">'+t.why+'</span>';
     h+=`<tr class="${t.ok===true?"":"dead"}">
-      <td style="white-space:nowrap;color:#8d8578">${t.no}</td>
-      <td>${t.na}${tag}<br><span style="font-size:.72rem;color:#8d8578">${t.memo}</span></td>
+      <td style="white-space:nowrap;color:var(--t-mute)">${t.no}</td>
+      <td>${t.na}${tag}<br><span style="font-size:.72rem;color:var(--t-mute)">${t.memo}</span></td>
       <td class="yen">${(t.usd*YEN).toFixed(2)}円</td></tr>`;
   }
   $("nedan").innerHTML=h;
@@ -285,7 +285,7 @@ function paintSaifu(){
   $("kyou").textContent=k.toFixed(1)+"円";
   $("cap").textContent=c.toFixed(0)+"円";
   $("bar").style.width=Math.min(100,k/c*100)+"%";
-  $("bar").style.background = k/c>0.85 ? "#c4483a" : "#3a7a52";
+  $("bar").style.background = k/c>0.85 ? "#0d0f12" : "#15181d";
   const n=txt.replace(/\s/g,"").length;
   $("mojisu").textContent=`${n}文字 ＝ 鳴る時間はだいたい ${yomiByou(txt).toFixed(1)}秒。`
     +`1本 ${one.toFixed(2)}円（無料枠に残りがあれば0円）。`;
@@ -307,7 +307,7 @@ function paintKoe(){
     b.className="koe"+(c&&c.url?" done":"")+(c&&c.err?" err":"")+(nowPlaying===nm?" play":"")
       +(OSUSUME.includes(nm)?" fav":"");
     b.innerHTML=`<span class="nm">${nm}</span>`
-      +`<span class="ch">${CHARA[ch]||ch}<span style="color:#c3bdb0"> / ${ch}</span></span>`
+      +`<span class="ch">${CHARA[ch]||ch}<span style="color:var(--t-fg)"> / ${ch}</span></span>`
       +(c&&c.ms?`<span class="ms">${(c.ms/1000).toFixed(1)}秒でできた</span>`:"")
       +(c&&c.err?`<span class="ms err">出ませんでした</span>`:"")
       +(c&&c.url?`<span class="st">▶</span>`:`<span class="st">…</span>`);
@@ -402,7 +402,7 @@ async function hiku(nm){
     const c=await tsukuru(nm,key);
     CACHE.set(nm,c); paintKoe();
     $("sw").innerHTML=`押してから声が出るまで：<b>${((performance.now()-t0)/1000).toFixed(2)}秒</b>`
-      +`　<span style="color:#8d8578">（${nm}・1本目。2回目からは 0.0秒＝すぐ鳴ります）</span>`;
+      +`　<span style="color:var(--t-mute)">（${nm}・1本目。2回目からは 0.0秒＝すぐ鳴ります）</span>`;
     narasu(nm);
   }catch(e){ CACHE.set(nm,{err:true}); paintKoe(); shikaru(e.message); }
 }
@@ -435,7 +435,7 @@ async function matomete(list){
   }
   const all=(performance.now()-t0)/1000;
   $("sw").innerHTML=`押してから最初の声が出るまで：<b>${(hatsu/1000).toFixed(2)}秒</b>`
-    +`　<span style="color:#8d8578">／ ${hon}本ぜんぶで ${all.toFixed(1)}秒。`
+    +`　<span style="color:var(--t-mute)">／ ${hon}本ぜんぶで ${all.toFixed(1)}秒。`
     +`このあとはどれを押しても すぐ鳴ります。</span>`;
   busy=false; $("go").disabled=$("goAll").disabled=false; $("stop").disabled=true;
 }
@@ -453,7 +453,7 @@ $("irisNote").innerHTML =
  +`お店のアプリで iris が喋るのは、そのとおりです。<br><br>`
  +`ただ、<b>こちらから機械で呼ぼうとすると、いまは出ません。</b>`
  +`鍵は入っていて、正しく届いています。返ってきた答えはこれです：<br>`
- +`<span style="color:#e0b0a8">「Your newly created team doesn't have any credits or licenses yet.」`
+ +`<span style="color:var(--t-ng)">「Your newly created team doesn't have any credits or licenses yet.」`
  +`＝ この団体にはまだ持ち分（クレジット）がありません</span>。<br>`
  +`声の一覧をもらうだけでも同じ答えで断られました。<b>鍵の問題ではなく、持ち分がゼロだという話です。</b><br><br>`
  +`買えば通ります。ただし<b>こちらでは買いません</b>（お金を動かすことはしない約束です）。`
@@ -493,8 +493,8 @@ const TEMPO=[
   "<code>maxOutputTokens</code> で頭を押さえ、台詞にも「短く」を入れる。"]
 ];
 $("tempo").innerHTML=TEMPO.map(([t,a,b])=>
-  `<li><b>${t}</b><br><span style="color:#8d8578">${a}</span>`
-  +`<br><span style="color:#3a7a52">→ ${b}</span></li>`).join("");
+  `<li><b>${t}</b><br><span style="color:var(--t-mute)">${a}</span>`
+  +`<br><span style="color:var(--t-ok)">→ ${b}</span></li>`).join("");
 $("tempoSrc").innerHTML="出どころ："+
  '<a href="https://ai.google.dev/gemini-api/docs/live-api/capabilities" target="_blank" rel="noopener">Live API capabilities</a>／'+
  '<a href="https://ai.google.dev/gemini-api/docs/live-api/tools" target="_blank" rel="noopener">Live API tools（非同期の道具）</a>／'+
@@ -505,4 +505,6 @@ $("serifu").value=SERIFU_DEF;
 try{ const k=localStorage.getItem("tamago_gemini_key"); if(k) $("gkey").value=k; }catch(_){}
 paintSaifu(); paintKoe();
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

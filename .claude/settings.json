@@ -1,0 +1,225 @@
+{
+  "$comment": "1154号：止まれない関所。公式 https://code.claude.com/docs/en/hooks の書き方をそのまま使っている（command型・${CLAUDE_PROJECT_DIR}・timeout）。Stop/SubagentStop は exit code 2 で終了を拒否する。",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "$comment": "1166号【憲法】ブラウザの入口の関所。Braveを選ぶ／Braveが選ばれた状態で操作する／どのブラウザかを名指ししないまま操作する、を exit 2 で拒否する。実測(2026-09-27)：list_connected_browsers で Brave が inUse:true ＝後から繋がった方が既定になる。名指ししないと必ずBraveに落ちる。ここ1か所で全子セッションに効く。OSには触らない(AppleScript/osascript/TCC全面禁止)。",
+        "matcher": "mcp__claude-in-chrome__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/browser_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/stop_hook.mjs",
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "$comment": "1161号：自分が開いたタブを閉じずに終わろうとしたら終了を拒否する。OSには一切触らない（AppleScript/System Events/TCC全面禁止）。セッションの記録から『タブを作る道具の回数』対『閉じる道具の回数』を数えるだけ。",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/tab_kanmon.mjs",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/stop_hook.mjs",
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/tab_kanmon.mjs",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/prompt_gate.mjs",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/session_end.mjs",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "$comment_permissions": [
+    "1167号【確認ゼロ】2026-09-27。ここ1か所で全子セッションに効く。",
+    "公式の根拠（書く前に通しで読んだ）：",
+    "  https://code.claude.com/docs/en/permissions … allow/deny/ask の書き方・Bash規則の限界",
+    "  https://code.claude.com/docs/en/permission-modes … auto mode が何を通し何を止めるか",
+    "  https://code.claude.com/docs/en/auto-mode-config … autoMode は**プロジェクトの.claude/settings.jsonからは読まれない**（だからここには書かない）",
+    "★なぜ allow を書くと auto mode でも確認が減るのか：",
+    "  『Route all shell commands through the classifier』の項に、狭いBash allow規則は auto mode でも生き、",
+    "  **分類器の前**で解決されると書いてある。allowに載っている道具は分類器に一度も渡らない。",
+    "  渡らなければ止められない。そして『3回連続で止められると auto mode が降りて確認を出し直す』（Repeated blocks）。",
+    "  ＝1回の誤爆が、そのあとの全部を確認地獄に変える。allow はその入口を塞ぐ。",
+    "★載せたもの＝取り返しがつくもの（読む・数える・組み立てる・commit/push）。",
+    "★載せないもの＝不可逆な4つ（作り直せないデータ削除／課金／パスワード入力／公開の押し切り）。",
+    "  正本は status/KAKUNIN_ZERO.md。この4つは**わざと出している確認**なので塞がない。",
+    "★deny は allow より強い（公式）。ここの deny は、たまごさんが2回やらかした",
+    "  『macOSの許可ダイアログを出す手段』を、憲法の文章ではなく仕組みで禁止するために置いている。"
+  ],
+  "permissions": {
+    "allow": [
+      "Read(//Users/mac/Desktop/tamago-shinchoku/**)",
+      "Read(//Users/mac/Desktop/joy-relief-station/**)",
+      "Grep(//Users/mac/Desktop/tamago-shinchoku/**)",
+      "Glob(//Users/mac/Desktop/tamago-shinchoku/**)",
+      "Bash(ls *)",
+      "Bash(pwd)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(find *)",
+      "Bash(file *)",
+      "Bash(stat *)",
+      "Bash(du *)",
+      "Bash(df *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(cut *)",
+      "Bash(tr *)",
+      "Bash(awk *)",
+      "Bash(sed -n *)",
+      "Bash(diff *)",
+      "Bash(cmp *)",
+      "Bash(basename *)",
+      "Bash(dirname *)",
+      "Bash(realpath *)",
+      "Bash(date *)",
+      "Bash(echo *)",
+      "Bash(printf *)",
+      "Bash(which *)",
+      "Bash(type *)",
+      "Bash(env)",
+      "Bash(jq *)",
+      "Bash(md5 *)",
+      "Bash(shasum *)",
+      "Bash(sleep *)",
+      "Bash(perl -e *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod +x *)",
+      "Bash(tee *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git rev-parse *)",
+      "Bash(git ls-files *)",
+      "Bash(git ls-remote *)",
+      "Bash(git remote -v)",
+      "Bash(git config --get *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git push)",
+      "Bash(git push origin main)",
+      "Bash(git stash list *)",
+      "Bash(git reset *)",
+      "Bash(gh repo view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(gh workflow list *)",
+      "Bash(gh api *)",
+      "Bash(gh auth status *)",
+      "Bash(python3 *)",
+      "Bash(pip3 install --break-system-packages *)",
+      "Bash(node *)",
+      "Bash(npm run *)",
+      "Bash(npm ci *)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(npx *)",
+      "Bash(bash *)",
+      "Bash(sh *)",
+      "Bash(zsh *)",
+      "Bash(curl -I *)",
+      "Bash(curl -s *)",
+      "Bash(curl -sS *)",
+      "Bash(curl -fsSL *)",
+      "Bash(launchctl list *)",
+      "Bash(ps *)",
+      "Bash(caffeinate *)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:support.claude.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:tamago2022.github.io)",
+      "WebSearch",
+      "mcp__claude-in-chrome__list_connected_browsers",
+      "mcp__claude-in-chrome__select_browser",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__tabs_create_mcp",
+      "mcp__claude-in-chrome__tabs_close_mcp",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__claude-in-chrome__read_page",
+      "mcp__claude-in-chrome__get_page_text",
+      "mcp__claude-in-chrome__find",
+      "mcp__claude-in-chrome__read_console_messages",
+      "mcp__claude-in-chrome__read_network_requests"
+    ],
+    "deny": [
+      "Bash(osascript *)",
+      "Bash(osascript)",
+      "Bash(automator *)",
+      "Bash(tccutil *)",
+      "Bash(sudo *)",
+      "Bash(brew *)",
+      "Bash(defaults write *)",
+      "Bash(systemsetup *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Read(//Users/mac/Desktop/tamago-shinchoku/.env)"
+    ]
+  }
+}

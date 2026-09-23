@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>他のAIとの連絡線 — 死活表</title>
 <style>
-  :root{ --paper:#f4f1ea; --ink:#16130f; --sub:#6b6259; --rule:#d8d2c6;
-         --red:#b3261e; --ok:#2f6b3f; --amber:#8a6d1f; --gray:#9a9186; }
+  :root{ --paper:var(--t-panel); --ink:var(--t-fg2); --sub:var(--t-mute); --rule:var(--t-line);
+         --red:var(--t-ng); --ok:var(--t-ok); --amber:var(--t-warn); --gray:var(--t-mute); }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);
        font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
@@ -22,14 +22,14 @@
   .banner.clear{border-color:var(--ok);color:var(--ok)}
   h2{font-size:12px;letter-spacing:.16em;color:var(--sub);margin:28px 0 10px;
      font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
-  .card{border:1px solid var(--rule);background:#fff;padding:12px 14px;margin:0 0 9px;
+  .card{border:1px solid var(--rule);background:var(--t-panel);padding:12px 14px;margin:0 0 9px;
         border-left:5px solid var(--gray)}
   .card.green{border-left-color:var(--ok)}
   .card.yellow{border-left-color:var(--amber)}
   .card.red{border-left-color:var(--red);background:rgba(179,38,30,.04)}
-  .card.black{border-left-color:#2b2b2b;background:rgba(0,0,0,.035)}
-  .card.black .state{color:#2b2b2b}
-  .blocked{color:#2b2b2b;font-size:12.5px;margin-top:6px;line-height:1.55}
+  .card.black{border-left-color:var(--t-line);background:rgba(0,0,0,.035)}
+  .card.black .state{color:var(--t-fg2)}
+  .blocked{color:var(--t-fg2);font-size:12.5px;margin-top:6px;line-height:1.55}
   .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
              flex-wrap:wrap}
   .name{font-weight:700;font-size:16px}
@@ -42,13 +42,13 @@
           margin-top:3px}
   .route{font-size:12px;color:var(--sub);margin-top:6px;
          border-top:1px dotted var(--rule);padding-top:6px}
-  .route code{background:#f0ece3;padding:1px 5px;font-size:11.5px}
+  .route code{background:var(--t-panel);padding:1px 5px;font-size:11.5px}
   .err{color:var(--red);font-size:12.5px;margin-top:6px}
   .wait{font-size:12.5px;margin-top:5px}
-  a{color:#1a4f8a}
+  a{color:var(--t-info)}
   .note{font-size:12px;color:var(--sub);margin-top:5px}
-  .howto{border:1px solid var(--rule);background:#fffdf8;padding:12px 14px;font-size:13px}
-  .howto code{display:block;background:#16130f;color:#f4f1ea;padding:8px 10px;
+  .howto{border:1px solid var(--rule);background:var(--t-panel);padding:12px 14px;font-size:13px}
+  .howto code{display:block;background:var(--t-bg);color:var(--t-fg);padding:8px 10px;
               margin:6px 0;font-size:12.5px;overflow-x:auto;white-space:pre}
   .census{font-size:12.5px;color:var(--sub)}
   footer{margin-top:40px;font-size:11.5px;color:var(--sub);
@@ -158,8 +158,10 @@ fetch('status/public/ai_daicho.json?t='+Date.now())
  })
  .catch(e=>{
    document.getElementById('asof').textContent='台帳が読めませんでした: '+e.message;
-   document.getElementById('asof').style.color='#b3261e';
+   document.getElementById('asof').style.color='#ff7b72';
  });
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
 </body>
 </html>

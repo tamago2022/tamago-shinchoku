@@ -2,8 +2,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>1029 ― 先週の1週間。卵が喋った日</title>
 <style>
-:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
---rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+:root{--paper:var(--t-panel);--ink:var(--t-fg2);--accent:var(--t-ng);--ok:var(--t-ok);
+--rule:rgba(34,48,74,.18);--faint:var(--t-fg2)}
 *{box-sizing:border-box}
 html,body{overflow-x:hidden;max-width:100%}
 html{-webkit-text-size-adjust:100%}
@@ -49,8 +49,9 @@ li{margin-bottom:.5rem}
 .bar{display:flex;align-items:center;gap:.6rem;margin-bottom:.55rem;font-size:.82rem}
 .bar .d{width:3.3rem;flex:0 0 auto;color:var(--faint);font-size:.72rem;letter-spacing:.08em}
 .bar .t{flex:1 1 auto;height:.85rem;background:rgba(34,48,74,.08);position:relative;min-width:0}
-.bar .t i{display:block;height:100%;background:var(--ink);opacity:.72}
-.bar .t i.lo{background:var(--accent)}
+.bar .t i{display:block;height:100%;background:var(--t-info);opacity:.72;color:var(--t-on-accent)}
+/* 1168番(続) 2026-09-27：棒の色を暗い地で見える色へ。中身の数字は1つも触っていない。 */
+.bar .t i.lo{background:var(--accent);color:var(--t-on-accent)}
 .bar .v{width:3.6rem;flex:0 0 auto;text-align:right;white-space:nowrap}
 .link{display:block;padding:.62rem 0;border-bottom:1px solid var(--rule);font-size:.88rem;line-height:1.6}
 .link .no{color:var(--accent);font-size:.68rem;letter-spacing:.2em;margin-right:.7em}
@@ -63,7 +64,7 @@ footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-
 
 <div class="verdict">
 <p><span class="n">1</span>いちばん大きいのは<span class="big">卵が喋ったこと。</span>9/20 12:59、irisの声で音が返りました。36,700バイト・約0.8秒・文字起こしは「こんにちは。」<span class="big">見本ではなく、本番のURLで鳴っています。</span></p>
-<p><span class="n">2</span>数字でいちばん動いたのは<span class="big">誤殺が349件中346件（99.1%）だと分かったこと。</span>心臓の再起動 72回→<span class="ok">0回</span>、死亡宣告 71回→<span class="ok">0回</span>。<span class="big">もう起きません。生死と仕事の進み具合を、別々の信号にしたからです。</span></p>
+<p><span class="n">2</span>数字でいちばん動いたのは<span class="big">誤殺が349件中346件だと分かったこと。</span>心臓の再起動 72回→<span class="ok">0回</span>、死亡宣告 71回→<span class="ok">0回</span>。<span class="big">もう起きません。生死と仕事の進み具合を、別々の信号にしたからです。</span></p>
 <p><span class="n">3</span>詰まっているのは<span class="big">Claudeのログイン切れ。</span>9/21 04:42から今まで<span class="big">54時間、本物の仕事が1本も出ていません。</span>たまごさんが1回ログインし直すだけです。</p>
 </div>
 
@@ -127,7 +128,7 @@ footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-
 <tr><td>鼓動の最大の途切れ</td><td class="num red">90秒</td><td class="num ok">5秒</td></tr>
 <tr><td>本当の死の検知</td><td class="num">できる</td><td class="num ok">できる（変えていない）</td></tr>
 </table></div>
-<p><b>全期間の死亡宣告349件のうち、本当に死んでいたのは3件。346件（99.1%）が誤殺でした。</b></p>
+<p><b>全期間の死亡宣告349件のうち、本当に死んでいたのは3件。346件が誤殺でした（349件中346件）。</b></p>
 <p class="ok"><b>もう起きません。</b>「生きているか」と「仕事が終わったか」を、別々の信号にしたからです。同じ信号を見ていた所が9か所あったので、<b>1か所直したら9か所とも直りました。</b></p>
 
 <h3><span class="k">02</span>発車 ― 緑が「空回しが入った」しか意味していなかった</h3>
@@ -142,8 +143,8 @@ footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-
 <h3><span class="k">03</span>仕入れ ― それはありませんね率</h3>
 <div class="tw"><table>
 <tr><th>　</th><th>週のはじめ</th><th>いま</th></tr>
-<tr><td>棚の率（本当の数字）</td><td class="num">89.0%</td><td class="num">89.0%（1曲も出していない）</td></tr>
-<tr><td>候補まで含めた率</td><td class="num">89.0%</td><td class="num ok">74.0%</td></tr>
+<tr><td>棚の率（本当の数字）</td><td class="num">89.0パーセント</td><td class="num">89.0パーセント（1曲も出していない）</td></tr>
+<tr><td>候補まで含めた率</td><td class="num">89.0パーセント</td><td class="num ok">74.0パーセント</td></tr>
 <tr><td>候補が積まれた組</td><td class="num">0組</td><td class="num ok">34組</td></tr>
 </table></div>
 <p><b>棚には1曲も出していません。</b>棚に置くかはたまごさんの判断なので、候補で止めてあります。だから棚の率は動きません。数字を薄めないよう、2本を必ず並べて出します。</p>
@@ -182,11 +183,11 @@ footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-
 <div class="tw"><table>
 <tr><th>誰</th><th>返事</th><th>PR</th><th>本番入り</th><th>分かったこと</th></tr>
 <tr><td>Jules（Google）</td><td class="num">16</td><td class="num">3</td><td class="num ok">1</td><td>8分28秒で出す。速くて綺麗。<b>ただし前提を外す</b></td></tr>
-<tr><td>Devin</td><td class="num">5</td><td class="num">5</td><td class="num ok">3（60%）</td><td>PRまで運ぶのが得意</td></tr>
+<tr><td>Devin</td><td class="num">5</td><td class="num">5</td><td class="num ok">3（60パーセント）</td><td>PRまで運ぶのが得意</td></tr>
 <tr><td>Codex（OpenAI）</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td>線は生きている。うち3回が枠切れ</td></tr>
 <tr><td>チャッピー（ChatGPT直）</td><td class="num">2</td><td class="num">—</td><td class="num">—</td><td><b>2.4〜2.6秒でその場で返る</b></td></tr>
-<tr><td>fal</td><td class="num">24本</td><td class="num">—</td><td class="num ok">20本（83%）</td><td>絵をつくるのはここ</td></tr>
-<tr><td>Claude子セッション</td><td class="num">310件</td><td class="num">—</td><td class="num">169件（54.5%）</td><td>自己検品は当てにならない</td></tr>
+<tr><td>fal</td><td class="num">24本</td><td class="num">—</td><td class="num ok">20本（83パーセント）</td><td>絵をつくるのはここ</td></tr>
+<tr><td>Claude子セッション</td><td class="num">310件</td><td class="num">—</td><td class="num">169件（54.5パーセント）</td><td>自己検品は当てにならない</td></tr>
 <tr><td>Copilot / Grok / Genspark</td><td class="num red">0</td><td class="num">0</td><td class="num">0</td><td>口が閉まっている（下段）</td></tr>
 </table></div>
 <p><b>Julesに仕入れを任せるのは、いまのところノーです。</b>「棚に1曲も無い組を選べ」と指定したのに、すでに棚にある組を選んできました。<b>速い・綺麗と、合っているは別です。</b>だからJulesには「PRまで」で合格とし、その先の検品と取り込みはこちらで受けることにしました。</p>
@@ -237,10 +238,10 @@ footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-
 </div>
 
 <div class="cards">
-<div class="card"><b>85%</b><span>先週の終わり</span></div>
-<div class="card"><b>95〜100%</b><span>たまごさんの目標</span></div>
+<div class="card"><b>85パーセント</b><span>先週の終わり</span></div>
+<div class="card"><b>95〜100パーセント</b><span>たまごさんの目標</span></div>
 <div class="card red"><b>15</b><span>足りなかったポイント</span></div>
-<div class="card"><b>3%</b><span>今週ここまで（16時間）</span></div>
+<div class="card"><b>3パーセント</b><span>今週ここまで（16時間）</span></div>
 </div>
 
 <p><b>前半3日で52ポイント、後半3日で18ポイント。落ちたのは9/20からです。</b></p>
@@ -250,7 +251,7 @@ footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-
 <tr><td class="num">9/21 04:42〜</td><td class="red"><b>本物の発車が0本になる。</b>ここから今まで54時間、空回しだけ</td></tr>
 <tr><td class="num">9/22 08:26〜18:10</td><td class="red"><b>9時間44分、1ポイントも動いていない。</b>週が切り替わる直前の、いちばん惜しい時間帯</td></tr>
 </table></div>
-<p class="small">台帳の記録は85%です。たまごさんの記憶（86%）と1ポイントだけ違いますが、埋めずにそのまま出しています。</p>
+<p class="small">台帳の記録は85パーセントです。たまごさんの記憶（86パーセント）と1ポイントだけ違いますが、埋めずにそのまま出しています。</p>
 
 <h2>むっつめ　今週の的</h2>
 
@@ -265,4 +266,6 @@ footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-
 
 <footer>1029 ／ 2026-09-23 ／ 数字は status/ の台帳とログから取り直したもの。取れなかったものは書いていません。</footer>
 
-</div></body></html>
+</div>
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body></html>

@@ -21,6 +21,10 @@ LOG   = os.path.join(BASE, "log.json")
 STOP  = os.path.join(BASE, ".stop")
 STATUS= os.path.join(ROOT, "status", "wae_autopost_status.json")
 GRAPH = "https://graph.facebook.com/v21.0"
+# 1031番の関所：たまごさんがOKを出した id しか外に出せない。
+# 「見せてから出す」を、思い出したセッションだけが守る約束ではなく、
+# 投稿の一本道の上に置く（oni_gate.py と同じ考え方）。
+GATE  = os.path.join(ROOT, "status", "sns_gate", "approved.json")
 
 RED = "\033[31m"; GRN = "\033[32m"; OFF = "\033[0m"
 
@@ -98,6 +102,37 @@ def cmd_show(q, log):
         print(it["caption"])
     print(f"\n{'='*70}")
 
+def load_gate():
+    """OKが出ている id の集合を返す。ファイルが無ければ空＝1本も出せない。"""
+    try:
+        with open(GATE, encoding="utf-8") as f:
+            return set(json.load(f).get("approved") or [])
+    except Exception:
+        return set()
+
+
+def cmd_ok(q):
+    """関所を開ける。11本の文面を全部見せてから、y を押したぶんだけOKにする。"""
+    cmd_show(q, load_log())
+    print("\n★ここから外に出ます。出したら取り消せません。")
+    print("  上に出ている文面と画像で、この%d本を出していいですか。" % len(q["items"]))
+    try:
+        ans = input("  出してよければ y、やめるなら何か別のキー → ").strip().lower()
+    except EOFError:
+        ans = ""
+    if ans != "y":
+        print("やめました。1本も出しません。"); return 1
+    os.makedirs(os.path.dirname(GATE), exist_ok=True)
+    body = {"approved": [it["id"] for it in q["items"]],
+            "at": jst_now().strftime("%Y-%m-%d %H:%M:%S"),
+            "how": "post.py --ok（たまごさんが文面を見てyを押した）"}
+    with open(GATE, "w", encoding="utf-8") as f:
+        json.dump(body, f, ensure_ascii=False, indent=1)
+    print(GRN + "○ %d本にOKを出しました。9:00と19:00に、上から順に1本ずつ出ます。" % len(body["approved"]) + OFF)
+    print("  止めたいときは『4_とめる.command』。OKを取り消すなら status/sns_gate/approved.json を消すだけ。")
+    return 0
+
+
 def cmd_check(env):
     tok = env.get("META_ACCESS_TOKEN"); ig = env.get("IG_USER_ID")
     if not tok:
@@ -145,6 +180,14 @@ def cmd_post(env, q, log, dry=False):
     if not it:
         write_status(False, "在庫ゼロ：投稿できる原稿が残っていない")
         print(RED + "× 在庫ゼロ。queue.json に原稿を足してください" + OFF); return 2
+    ok_ids = load_gate()
+    if it["id"] not in ok_ids:
+        write_status(False, "関所で止めた：この文面にはまだOKが出ていません（%s）" % it["id"],
+                     {"next_id": it["id"], "gate": "status/sns_gate/approved.json"})
+        print(RED + "× 関所で止めました。まだOKが出ていない文面です: " + it["id"] + OFF)
+        print("  たまごさんが『0_この11本にOKを出す.command』を1回押すと開きます。")
+        print("  ★OKの無いものは、鍵があっても絶対に出しません。")
+        return 5
     if not (tok and ig and page):
         write_status(False, "鍵なし：META_ACCESS_TOKEN / IG_USER_ID / FB_PAGE_ID が .env に無い", {"next_id": it["id"]})
         print(RED + "× 鍵がないので投稿できません。README_鍵の取り方.md の5手順を1回だけ" + OFF); return 1
@@ -200,8 +243,10 @@ def main():
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--post", action="store_true")
     ap.add_argument("--collabtest", action="store_true")
+    ap.add_argument("--ok", action="store_true", help="関所を開ける（文面を全部見てからOKを出す）")
     a = ap.parse_args()
     env = load_env(); q = load_queue(); log = load_log()
+    if a.ok:    return cmd_ok(q)
     if a.show:  return cmd_show(q, log) or 0
     if a.check: return cmd_check(env)
     if a.collabtest: return cmd_collabtest(env, q)

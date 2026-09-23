@@ -3,22 +3,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>お手本と並べる</title>
 <style>
-  :root{ --ink:#f2ead6; --bg:#141628; }
+  :root{ --ink:var(--t-fg); --bg:var(--t-bg); }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
        font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;padding:20px}
   h1{font-size:20px;margin:0 0 4px;letter-spacing:.04em}
-  .lead{color:#b9b096;margin:0 0 20px;font-size:13px}
+  .lead{color:var(--t-mute);margin:0 0 20px;font-size:13px}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1500px}
   @media(max-width:860px){ .row{grid-template-columns:1fr} }
-  .cell{background:#0e1020;border:1px solid #2a2f68;border-radius:4px;overflow:hidden}
-  .cap{padding:8px 12px;font-size:12px;color:#b9b096;border-bottom:1px solid #2a2f68;
+  .cell{background:var(--t-bg);border:1px solid var(--t-info);border-radius:4px;overflow:hidden}
+  .cap{padding:8px 12px;font-size:12px;color:var(--t-mute);border-bottom:1px solid var(--t-info);
        display:flex;justify-content:space-between;gap:8px}
   .cap b{color:var(--ink);font-weight:600}
-  .cell img,.cell iframe{display:block;width:100%;aspect-ratio:1/1;border:0;background:#000}
-  .note{max-width:1500px;margin:22px 0 0;font-size:13px;color:#b9b096}
+  .cell img,.cell iframe{display:block;width:100%;aspect-ratio:1/1;border:0;background:var(--t-bg)}
+  .note{max-width:1500px;margin:22px 0 0;font-size:13px;color:var(--t-mute)}
   .note b{color:var(--ink)}
-  a{color:#e0876a}
+  a{color:var(--t-warn)}
 </style>
 
 <h1>お手本と並べる</h1>
@@ -42,3 +42,5 @@
   正本の控え：<a href="./ohon.json">ohon.json</a>　／
   描き方の土台：<a href="https://github.com/alesha-pro/tools">alesha-pro/tools</a>（MIT・core.js を丸ごと使用）
 </p>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">

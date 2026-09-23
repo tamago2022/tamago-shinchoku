@@ -272,6 +272,18 @@ def classify(tab, hist=None, reserved=None):
         if rx.search(url):
             return "keep", "たまごさんの作業タブになりうるサービス"
     if url in CLOSE_EXACT:
+        # ★2026-09-26 実測で足した1行。
+        #   別のセッションが新しいタブを開いた直後（まだ chrome://newtab のまま）に
+        #   ここで閉じてしまい、**MCPのタブグループごと消えて作業が始められなかった**
+        #   （tabs_context_mcp が "No group with id" を返し続けた）。
+        #   空タブは逃げないので、90秒だけ待ってから閉じる。掃除の目的は損なわれない。
+        import time as _t
+        h = hist.get(url) or {}
+        first = h.get("firstSeen")
+        if first and (_t.time() - first) < 90:
+            return "keep", "できたばかりの空タブ（他のセッションが今から使う可能性・90秒待つ）"
+        if not first:
+            return "keep", "はじめて見た空タブ（次の回に判断する）"
         return "close", "空タブ（閉じても何も失われない）"
     if url.startswith(CLOSE_PREFIXES):
         return "close", "Claudeが検品で開いた確認ページ"

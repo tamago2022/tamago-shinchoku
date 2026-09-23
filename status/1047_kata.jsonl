@@ -1,0 +1,11 @@
+{"what": "#936 渡し済みURLの404点検（107本を工場から実測）", "when": "2026-09-24T01:44:41", "how": "103本が200／4本が404。404の正体＝status/disk_trend_report.json・health.json・split/509-list.json は .gitignore の status/* で追跡外（永久に出ない）、status/public/queue.json は tools/pages_publish.sh:155 の「1MB超は載せない」で除外（1.83MB）。gaibu_jobs/done 20260924-012259-9213/9220/9226/9232・012620-0710"}
+{"what": "#935 憲法点検：worktree件数", "when": "2026-09-24T01:44:41", "how": "0件（しきい値100以内）＝緑。$ python3 tools/kenpou_check.py"}
+{"what": "#842 憲法点検：工場が止まったまま放置されていないか", "when": "2026-09-24T01:44:41", "how": "緑（意図的な一時停止 status/no_launch.flag）。$ python3 tools/kenpou_check.py"}
+{"what": "#934 憲法点検：URL無しで完了(done)になった仕事", "when": "2026-09-24T01:44:41", "how": "緑（直近24時間の完了はすべてURL付き）。$ python3 tools/kenpou_check.py"}
+{"what": "share/ohon/1046-live2d.html の飛び先が404（./1046-dodai.html）", "when": "2026-09-24T01:44:41", "how": "../check/1046-dodai.html に直した。本番200、飛び先も200（20260924-013248-8770）"}
+{"what": "share/podcast/listen/724-ai-online-real-value.html の音が鳴らない", "when": "2026-09-24T01:44:41", "how": "src が実体と違う名前（…-1.m4a が正）。直して本番200、音声も200（20260924-013248-8770）"}
+{"what": "share/check/627-taste-branch-3songs.html の絵3枚が出ない", "when": "2026-09-24T01:44:41", "how": "パスが share/check/img/… と二重。img/… に直して本番200、627-celine.png も200（20260924-014030-0079）"}
+{"what": "share/check/882-shinchoku-top-graph.html の絵4枚が出ない", "when": "2026-09-24T01:44:41", "how": "同じ二重パス。直して本番200、882-after-graph.png も200（20260924-014030-0079）"}
+{"what": "share/check/896-renraku-gaibu-renraku.html の絵2枚が出ない", "when": "2026-09-24T01:44:41", "how": "同じ二重パス。直して本番200、lovable-…-gmail.png も200（20260924-014030-0079）"}
+{"what": "share/check/1030-tamago-yoru-01.html が動かない（./core.js が無い）", "when": "2026-09-24T01:44:41", "how": "../ohon/core.js に直した。本番200、core.js も200（20260924-014030-0079）"}
+{"what": "#937 1MB超ファイル 17本を1MB未満へ（部分）", "when": "2026-09-24T01:44:41", "how": "919-zen動画4本 16.9/16.2/7.1/7.1MB→853/645/782/628KB（ffmpeg crf32）、919-zen静止画4枚・frames6枚・909-card2枚・badge 4.1MB→311KB。$ find share -type f -size +1000k → 11本→3本。残3＝x-search/data.json(12MB・データ)と画質比較の原本2枚（縮めたら比較の意味が消えるので触らない）。赤のまま"}

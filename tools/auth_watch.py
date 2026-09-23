@@ -27,6 +27,16 @@ if not os.path.exists(CLAUDE):
         if os.path.exists(c):
             CLAUDE = c
             break
+
+# ---- 1158番：claude は必ず関所を通す（2026-09-26）----
+# 同時起動の競合で refreshToken が空を書き戻され鍵ごと消える事故を、
+# 起動口で物理的に止める。上限は status/dojisu_jougen.json の「同時上限」。
+# 関所は引数をそのまま素通しするので、呼ぶ側のコードは1文字も変わらない。
+_KANMON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1158_kanmon.py")
+if os.path.exists(_KANMON):
+    os.environ.setdefault("KANMON_CLAUDE_BIN", CLAUDE)
+    CLAUDE = _KANMON
+
 INTERVAL = 600  # 10分に1回だけ試す（無駄打ちしない）
 
 
@@ -34,25 +44,17 @@ INTERVAL = 600  # 10分に1回だけ試す（無駄打ちしない）
 # ---- 認証トークン（2026-09-05）----
 # `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
 # こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
-def claude_env():
-    """環境変数のトークンは原則使わない（2026-09-05に実測して分かったこと）。
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import claude_auth as _claude_auth
 
-    `CLAUDE_CODE_OAUTH_TOKEN` は**キーチェーンの正しい鍵より優先される。**
-    古い壊れた鍵が1つ残っているだけで、ログインが成功していても工場全体が
-    「OAuth session expired」のままになる。キーチェーンを正本にする。
+
+def claude_env():
+    """正本は tools/claude_auth.py（2026-09-25に1か所へ集約）。
+
+    ここに実体を置くと、4か所のコピーが直すたびにずれる。呼ぶだけにする。
     """
-    env = dict(os.environ)
-    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
-    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
-        return env
-    p = os.path.expanduser("~/.tamago/claude_token")
-    try:
-        t = io.open(p, encoding="utf-8").read().strip()
-        if t:
-            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
-    except Exception:
-        pass
-    return env
+    return _claude_auth.claude_env()
 
 
 def log(msg):
@@ -99,8 +101,15 @@ def main():
     # 通った。旗を外して本物の発車を再開する
     for p in (AUTH_FLAG, NO_LAUNCH):
         try:
-            if os.path.exists(p):
-                os.remove(p)
+            if not os.path.exists(p):
+                continue
+            # 2026-09-25：no_launch.flag は週次上限など別の理由でも立つ。
+            # ログイン以外の理由で止まっているときに外すと、上限中に発車を再開してしまう。
+            if p == NO_LAUNCH:
+                txt = io.open(p, encoding="utf-8").read()
+                if "ログイン" not in txt and "OAuth" not in txt:
+                    continue
+            os.remove(p)
         except Exception:
             pass
     log("🔑 ログインが戻ったので、発車を自動で再開しました")

@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="お金">
-<meta name="theme-color" content="#1a2030">
+<meta name="theme-color" content="#0d0f12">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <!--
@@ -26,9 +26,9 @@
 -->
 <style>
   :root{
-    --bg:#1a2030; --card:#212839; --line:#2f3749; --ink:#e9e2d3; --sub:#9aa1ad; --dim:#6b7280;
-    --kinari:#d6cdba; --green:#6f9c7a; --yellow:#c9a24a; --red:#d24d3e; --blue:#6f8fb0;
-    --red-bg:#3a2320; --gray:#4b5364;
+    --bg:var(--t-panel); --card:var(--t-panel); --line:var(--t-line); --ink:var(--t-fg); --sub:var(--t-mute); --dim:var(--t-mute);
+    --kinari:var(--t-fg); --green:var(--t-ok); --yellow:var(--t-warn); --red:var(--t-ng); --blue:var(--t-info);
+    --red-bg:var(--t-panel); --gray:var(--t-mute);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html{background:var(--bg);}
@@ -85,8 +85,8 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <a class="back" href="index.html">← 進捗表へ</a>
@@ -468,9 +468,11 @@ fetch("status/subscriptions.json?t=" + Date.now(), {cache:"no-store"})
     document.getElementById("subsList").innerHTML = `<div class="note">台帳の読み込みに失敗しました</div>`;
   });
 </script>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
 </body>
 </html>

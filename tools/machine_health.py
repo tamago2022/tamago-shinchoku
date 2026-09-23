@@ -136,6 +136,110 @@ def snapshot_processes():
     return procs
 
 
+# ---------------------------------------------------------------- 1173番（2026-09-27）
+# たまごさん「パソコンがどんどん重くなってくるので、何がCPUやエネルギーを食っているのか、
+#   進捗表で分かるようにしてほしい（閉じるべきものは閉じるので）」。
+# ★新しい計測は1回も増やさない。上の snapshot_processes() が既に全プロセス(約750本)を
+#   取っているので、**その同じ1回を、アプリごとに足し合わせるだけ**。
+#   （Braveは実測で子プロセス30本以上に散る＝1本ずつ見ても犯人が分からない）
+APP_RE = re.compile(r"/([^/]+)\.app/")
+
+
+def app_name(cmd):
+    """コマンド行から「たまごさんが知っているアプリ名」を1つ決める。
+
+    ★入れ物の名前（Python.app / Electron）ではなく、中で何が動いているかで名前を付ける。
+      実測：最初の版は工場以外のpythonが全部「Python」に丸まって、何なのか分からなかった。
+    """
+    c = (cmd or "").strip()
+    if not c:
+        return "?"
+    if c.startswith("("):          # ps は終わりかけのプロセスを (name) で出す
+        return "終わりかけ（%s）" % c.strip("()")[:20]
+    if "com.apple.Virtualization" in c:
+        return "Coworkの作業場（仮想マシン）"
+    if "tamago-shinchoku/tools/" in c:
+        return "工場（tamago-shinchoku の道具）"
+    toks = c.split()
+    base = os.path.basename(toks[0])
+    low = base.lower()
+    if low in ("python", "python3", "python2", "node", "bash", "sh", "zsh",
+               "ruby", "perl", "deno", "bun"):
+        nxt = ""
+        for t in toks[1:]:
+            if not t.startswith("-"):
+                nxt = os.path.basename(t)
+                break
+        kind = "python" if low.startswith("python") else low
+        return "%s（%s）" % (kind, (nxt or "?")[:24])
+    m = APP_RE.search(c)
+    if m:
+        return m.group(1)
+    return base[:30] or "?"
+
+
+# 触ってはいけないもの（名前の前方一致）。Braveは憲法どおり札だけ出して絶対に触らない。
+FUDA = [
+    ("Brave Browser", "触るな", "工場は絶対に触らない。ただしメモリはここが一番大きい"
+                               "＝たまごさんがタブを減らすと一番効く"),
+    ("Claude", "触るな", "今この作業そのもの。閉じると止まる"),
+    ("Coworkの作業場", "触るな", "Claudeが動いている場所"),
+    ("工場（", "触るな", "発車の心臓。止めると進捗が止まる"),
+    ("WindowServer", "触るな", "macOSの画面そのもの"),
+    ("kernel_task", "触るな", "macOS本体（熱くなると自分で増える）"),
+    ("launchd", "触るな", "macOS本体"),
+    ("Finder", "触るな", "macOS本体"),
+    ("Dock", "触るな", "macOS本体"),
+    ("SystemUIServer", "触るな", "macOS本体"),
+    ("loginwindow", "触るな", "macOS本体"),
+    ("Obsidian", "残す", "指示の受信箱（司令塔）が入っている"),
+    ("Typeless", "残す", "音声入力"),
+    ("node（", "待てば消える", "開発の検査。終われば自分で消える", True),
+    ("python（", "待てば消える", "短い処理。終われば自分で消える", True),
+    ("git", "待てば消える", "gitの処理中", True),
+    # ★claude（CLI）は工場が発車した仕事そのもの。長く走るのが正常で、落とすと仕事が消える。
+    #   machine_health の回収規則（RULES）にも入っていないので「片づける対象」と書いてはいけない。
+    ("claude", "触るな", "工場が発車した仕事そのもの。落とすと途中の仕事が消える", False),
+    ("終わりかけ", "待てば消える", "もう終わりかけ", False),
+    ("mds", "待てば消える", "Spotlightの索引づくり。放っておけば終わる", False),
+    ("mdworker", "待てば消える", "Spotlightの索引づくり。放っておけば終わる", False),
+    ("photoanalysisd", "待てば消える", "写真の解析。放っておけば終わる", False),
+    ("backupd", "待てば消える", "Time Machine", False),
+]
+
+
+def fuda(name, sec_max):
+    for row in FUDA:
+        pre, f, why = row[0], row[1], row[2]
+        stuck_ok = row[3] if len(row) > 3 else False
+        if name.startswith(pre):
+            if stuck_ok and sec_max >= 1800:
+                return "居座っている", "30分以上終わっていない（掃除便が片づける対象）"
+            return f, why
+    return "閉じていい", "今使っていなければ閉じるとその分だけ軽くなる"
+
+
+def by_app(procs, n=10):
+    """アプリごとに CPU% と メモリGB を足し合わせて、重い順に n 件。"""
+    agg = {}
+    for p in procs:
+        k = app_name(p.get("cmd"))
+        a = agg.setdefault(k, {"name": k, "cpu": 0.0, "rssMB": 0.0,
+                               "procs": 0, "secMax": 0})
+        a["cpu"] += p.get("cpu") or 0.0
+        a["rssMB"] += p.get("rssMB") or 0.0
+        a["procs"] += 1
+        a["secMax"] = max(a["secMax"], p.get("sec") or 0)
+    out = []
+    # 「重い」は体感（CPU）が主。メモリは同点崩しに使う。
+    for a in sorted(agg.values(), key=lambda x: -(x["cpu"] + x["rssMB"] / 500.0))[:n]:
+        f, why = fuda(a["name"], a["secMax"])
+        out.append({"name": a["name"], "cpu": round(a["cpu"], 1),
+                    "memGB": round(a["rssMB"] / 1024.0, 2),
+                    "procs": a["procs"], "fuda": f, "why": why})
+    return out
+
+
 def vitals():
     """sysctl だけ。高負荷でもミリ秒で返る。"""
     cores = int(sh(["sysctl", "-n", "hw.ncpu"], timeout=5) or 8)
@@ -169,6 +273,11 @@ def measure():
     data["procCount"] = len(procs)
     data["topCpu"] = [{k: p[k] for k in ("pid", "ppid", "cpu", "rssMB", "sec", "cmd")} for p in by_cpu]
     data["topMem"] = [{k: p[k] for k in ("pid", "ppid", "mem", "rssMB", "sec", "cmd")} for p in by_mem]
+    # 1173番：同じ1回の ps を、アプリごとに合算したものも一緒に残す（追加の計測ゼロ）
+    try:
+        data["topApps"] = by_app(procs, 10)
+    except Exception:
+        data["topApps"] = []
     return data, procs
 
 

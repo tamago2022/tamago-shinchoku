@@ -78,6 +78,25 @@ def publish(path, why="", branch="gh-pages", wait_sec=150):
             print("（絵の門が動きませんでした: %s）" % e)
     # ──────────────────────────────────────────────────────────────────
 
+    # ── 渡す前の門（1048番・2026-09-24）─────────────────────────────
+    # たまごさん「動くものを出してきてよ。表示されすらしないよ。
+    #             動かないんだったら突き返してほしい。」
+    # share/ のHTMLは「実際に開いて・押して・動いた」を機械で確かめたものしか出せない。
+    # ★判定は hantei.watashi_han にしかない。ここは呼ぶだけ。
+    # ★記録が無ければ通さない＝「測っていない＝通っていない」。
+    if (path.startswith("share/") and path.endswith(".html")
+            and os.environ.get("WATASHI_GATE_SKIP") != "1"):
+        try:
+            import watashi_gate
+            stop = watashi_gate.verdict(path)
+            if stop:
+                return {"ok": False, "error": "渡す門が止めました（開いて動かないものは出せません）",
+                        "とまった理由": stop, "path": path}
+        except Exception as e:
+            # 門が壊れたら「通す」ではなく「止める」。素通りが今回の事故の正体だった。
+            return {"ok": False, "error": "渡す門が動きませんでした: %s" % e, "path": path}
+    # ──────────────────────────────────────────────────────────────────
+
     text = open(full, encoding="utf-8").read()
     jid = g.enqueue_job("keijiban", {
         "repo": REPO, "action": "putfile", "path": path,

@@ -104,9 +104,18 @@ while read -r local_ref local_sha remote_ref remote_sha; do
       */_template.html) continue ;;
     esac
     CHECKED=$((CHECKED + 1))
-    tmpfile="$(mktemp /tmp/sekisho-prepush.XXXXXX.html)"
+    # ★898番3回目の検品で実測発見：`mktemp /tmp/xxx.XXXXXX.html` はmacOS(BSD mktemp)だと
+    #   テンプレート末尾がXXXXXXでないため**Xが1文字も置換されずリテラルなファイル名で
+    #   作られる**（エラーにはならない＝気づきにくい）。実運用環境がDarwinのため、この
+    #   1行だけで「常に同じ固定ファイル名を使い回す」状態になっていた。
+    #   mktemp -d はテンプレート末尾がXXXXXXなのでBSD/GNU両方で正しく展開される。
+    #   ディレクトリの中に固定名で置けば拡張子も気にしなくてよい（sekisho.pyは拡張子を見ない）。
+    tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/sekisho-prepush.XXXXXX")" || { FAIL=1; echo "❌ 一時領域を作れませんでした（関所を実行できません＝FAIL扱い）"; continue; }
+    tmpfile="$tmpdir/page.html"
     if ! git show "$local_sha:$f" > "$tmpfile" 2>/dev/null; then
-      rm -f "$tmpfile"
+      rm -rf "$tmpdir"
+      FAIL=1
+      echo "❌ $f の中身を取り出せませんでした（関所を実行できません＝FAIL扱い）"
       continue
     fi
     echo "🚧 関所(sekisho)チェック: $f"
@@ -115,7 +124,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
       grep "SEKISHO_RESULT" /tmp/sekisho-prepush.out || cat /tmp/sekisho-prepush.out
       FAIL=1
     fi
-    rm -f "$tmpfile"
+    rm -rf "$tmpdir"
   done <<EOF
 $files
 EOF

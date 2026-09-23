@@ -1,24 +1,24 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>406番『優先度のP表記を消す』の確認</title>
-<style>body{margin:0;background:#12161c;color:#e9eef4;font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:760px}
+<style>body{margin:0;background:var(--t-bg);color:var(--t-fg);font-family:-apple-system,"Hiragino Sans",sans-serif;padding:28px 20px;line-height:1.8;max-width:760px}
 h1{font-size:1.3rem;margin:0 0 12px}
-h2{font-size:1.05rem;margin:28px 0 8px;color:#9fd8ff}
-.b{background:#1a2028;border:1px solid #2a323c;border-radius:12px;padding:16px;margin:12px 0}
-.ok{color:#5fd996;font-weight:800}
-.warn{color:#f4c05f;font-weight:800}
+h2{font-size:1.05rem;margin:28px 0 8px;color:var(--t-info)}
+.b{background:var(--t-panel);border:1px solid var(--t-line);border-radius:12px;padding:16px;margin:12px 0}
+.ok{color:var(--t-ok);font-weight:800}
+.warn{color:var(--t-warn);font-weight:800}
 table{border-collapse:collapse;width:100%;margin:8px 0;font-size:0.9rem}
-td,th{border:1px solid #2a323c;padding:6px 10px;text-align:left;vertical-align:top}
-th{background:#20262f}
-a{color:#5fd996}
-code{background:#20262f;padding:1px 5px;border-radius:4px;font-size:0.88em;word-break:break-all}
+td,th{border:1px solid var(--t-line);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:var(--t-panel)}
+a{color:var(--t-ok)}
+code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:0.88em;word-break:break-all}
 ul{padding-left:1.2em}
-.small{color:#9aa4b2;font-size:0.85rem}
-.before{color:#f28b8b}
-.after{color:#5fd996}
+.small{color:var(--t-mute);font-size:0.85rem}
+.before{color:var(--t-ng)}
+.after{color:var(--t-ok)}
 </style></head><body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 
@@ -46,7 +46,7 @@ ul{padding-left:1.2em}
 <li><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank">進捗表 本番ページ（発車待ちの箱の見出し・各行の優先度ボタンが数字だけになっていることを確認できる）</a></li>
 </ul>
 <p class="small">実測方法：本番HTML（GitHub Pages）を直接取得し、以下2点をソースコードで確認済み（確認時刻：2026-09-05、コミット<code>0344e34</code>反映後）。</p>
-<pre style="background:#0d1117;border-radius:8px;padding:12px;overflow-x:auto;font-size:0.78rem;white-space:pre-wrap">const BOX = [[1,"1 今すぐ"],[2,"2 高い"],[3,"3 ふつう"],[4,"4 低い"],[5,"5 後回し"],[9,"未設定"]];
+<pre style="background:var(--t-bg);border-radius:8px;padding:12px;overflow-x:auto;font-size:0.78rem;white-space:pre-wrap">const BOX = [[1,"1 今すぐ"],[2,"2 高い"],[3,"3 ふつう"],[4,"4 低い"],[5,"5 後回し"],[9,"未設定"]];
 
 &lt;button class="qp${p ? " on" : ""}" data-qp="${r.n}"&gt;${p ? p : "—"}&lt;/button&gt;</pre>
 <p class="small">※ この進捗表はGitHub Pagesの静的サイトのため、Lovableの公開ボタンは無い。<code>git push origin main</code>で数十秒〜数分後に自動反映される（このページは反映を実測してから作成）。発車待ちに入っている実データが今0件〜少数の時間帯は、箱そのものが一時的に表示されないことがある（0件の箱は元々非表示の仕様・今回の変更とは無関係）。</p>
@@ -55,7 +55,7 @@ ul{padding-left:1.2em}
 <div class="b">
 <p class="ok">④ 本番の実際の見え方（スクリーンショット・2026-09-06実測）</p>
 <p class="small">GitHub Pages本番ページをヘッドレスChromeで開き、発車待ち一覧を実際にキャプチャしたもの。箱の見出し「1 今すぐ 32件」、各行右端のボタンが「1」（Pなし）になっていることが見て分かる。</p>
-<img src="img/406-priority-no-p-prod.png" alt="本番の発車待ち一覧。箱の見出しと行のボタンが数字だけになっている" style="max-width:100%;border-radius:8px;border:1px solid #2a323c">
+<img src="img/406-priority-no-p-prod.png" alt="本番の発車待ち一覧。箱の見出しと行のボタンが数字だけになっている" style="max-width:100%;border-radius:8px;border:1px solid var(--t-line)">
 </div>
 
 <div class="b">
@@ -63,9 +63,11 @@ ul{padding-left:1.2em}
 <p>①実装：完了 ②main合流：完了（<code>0344e34</code>） ③公開：完了（GitHub Pages自動反映・実測確認済み） ④実測確認：完了（本番HTMLのソースで2箇所とも数字化を確認） ⑤店主の実画面確認：未。</p>
 </div>
 
-<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#5fd996">← 進捗表にもどる</a></p>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<p><a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok)">← 進捗表にもどる</a></p>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

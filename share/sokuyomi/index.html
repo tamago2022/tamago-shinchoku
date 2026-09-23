@@ -8,79 +8,79 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1a2030">
+<meta name="theme-color" content="#0d0f12">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
   body {
     margin: 0; padding: 16px calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
-    background: #1a2030; color: #eef0f6;
+    background: var(--t-panel); color: var(--t-fg);
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
     max-width: 640px; margin-left: auto; margin-right: auto;
   }
   h1 { font-size: 20px; margin: 4px 0 2px; }
-  .sub { color: #9aa3c0; font-size: 13px; margin-bottom: 16px; }
+  .sub { color: var(--t-mute); font-size: 13px; margin-bottom: 16px; }
   textarea {
-    width: 100%; min-height: 160px; border-radius: 12px; border: 1px solid #333c5a;
-    background: #10131f; color: #eef0f6; padding: 12px; font-size: 15px; line-height: 1.6;
+    width: 100%; min-height: 160px; border-radius: 12px; border: 1px solid var(--t-line);
+    background: var(--t-bg); color: var(--t-fg); padding: 12px; font-size: 15px; line-height: 1.6;
     resize: vertical;
   }
-  .hint { font-size: 12px; color: #7c85a8; margin: 6px 0 16px; }
+  .hint { font-size: 12px; color: var(--t-info); margin: 6px 0 16px; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
   select, input[type=range] { flex: 1; min-width: 120px; }
   select {
-    background: #10131f; color: #eef0f6; border: 1px solid #333c5a; border-radius: 8px; padding: 8px;
+    background: var(--t-bg); color: var(--t-fg); border: 1px solid var(--t-line); border-radius: 8px; padding: 8px;
     font-size: 14px;
   }
-  .rate-label { font-size: 13px; color: #b9c0dd; min-width: 62px; text-align: right; }
+  .rate-label { font-size: 13px; color: var(--t-fg); min-width: 62px; text-align: right; }
   .status {
-    background: #10131f; border: 1px solid #333c5a; border-radius: 12px; padding: 12px;
-    font-size: 13px; color: #b9c0dd; margin-bottom: 12px; min-height: 20px;
+    background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 12px; padding: 12px;
+    font-size: 13px; color: var(--t-fg); margin-bottom: 12px; min-height: 20px;
   }
-  .status b { color: #eef0f6; }
+  .status b { color: var(--t-fg); }
   .controls {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;
   }
   .controls button, .playbtn {
-    background: #2a3358; color: #eef0f6; border: none; border-radius: 10px;
+    background: var(--t-info-bg); color: var(--t-fg); border: none; border-radius: 10px;
     padding: 12px 6px; font-size: 14px; font-weight: 600; cursor: pointer;
   }
-  .controls button:active, .playbtn:active { background: #3a4578; }
+  .controls button:active, .playbtn:active { background: var(--t-info-bg); }
   .playbtn {
-    width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px; background: #3a6b4a;
+    width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px; background: var(--t-ok-bg);
   }
-  .playbtn.playing { background: #6b3a3a; }
+  .playbtn.playing { background: var(--t-ng-bg); }
   .voicehelp {
-    width: 100%; background: none; border: 1px dashed #4a5580; color: #9aa3c0;
+    width: 100%; background: none; border: 1px dashed var(--t-info); color: var(--t-mute);
     border-radius: 10px; padding: 10px; font-size: 12px; cursor: pointer; margin-bottom: 16px;
   }
   .history { margin-top: 20px; }
-  .history h2 { font-size: 14px; color: #9aa3c0; margin-bottom: 8px; }
+  .history h2 { font-size: 14px; color: var(--t-mute); margin-bottom: 8px; }
   .hitem {
-    background: #10131f; border: 1px solid #262e4d; border-radius: 10px; padding: 10px 12px;
-    margin-bottom: 8px; font-size: 13px; color: #cfd4ec; cursor: pointer;
+    background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 10px; padding: 10px 12px;
+    margin-bottom: 8px; font-size: 13px; color: var(--t-fg); cursor: pointer;
   }
-  .hitem:active { background: #1a2140; }
+  .hitem:active { background: var(--t-panel); }
   .modal-bg {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 10;
+    display: none; position: fixed; inset: 0; background: var(--t-bg); z-index: 10;
     align-items: center; justify-content: center; padding: 20px;
   }
   .modal-bg.show { display: flex; }
   .modal {
-    background: #1e2440; border-radius: 14px; padding: 20px; max-width: 420px; font-size: 14px;
-    line-height: 1.8; color: #e5e8f5;
+    background: var(--t-panel); border-radius: 14px; padding: 20px; max-width: 420px; font-size: 14px;
+    line-height: 1.8; color: var(--t-fg);
   }
   .modal ol { padding-left: 20px; margin: 10px 0; }
   .modal button {
-    margin-top: 14px; width: 100%; padding: 12px; background: #2a3358; color: #fff;
+    margin-top: 14px; width: 100%; padding: 12px; background: var(--t-info-bg); color: var(--t-fg);
     border: none; border-radius: 8px; font-size: 15px;
   }
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
   <h1>🔊 即読み</h1>
@@ -287,7 +287,7 @@
     var hist = loadHistory();
     historyList.innerHTML = "";
     if (!hist.length) {
-      historyList.innerHTML = '<div style="color:#5c6488;font-size:13px;">まだありません</div>';
+      historyList.innerHTML = '<div style="color:var(--t-info);font-size:13px;">まだありません</div>';
       return;
     }
     hist.forEach(function(h){
@@ -462,9 +462,11 @@
 
 })();
 </script>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

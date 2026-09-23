@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  止まらない係を1分おきに起こす常駐便。
+  たまごさん（2026-09-26）「launchdで1分おき。『やることがない』を存在させない。」
+
+  ★このセッション（Cowork）が落ちても、Macが起きている限り動き続ける形。
+  ★中で5分に1回に間引くので、1分おきに起こしても列は暴れない。
+  ★止めたいときは status/tomaranai.stop を置くだけ（plistを触らなくてよい）。
+
+  入れ方（tools/tomaranai_install.sh が同じことをやる）:
+    cp tools/com.tamago.tomaranai.plist ~/Library/LaunchAgents/
+    launchctl unload ~/Library/LaunchAgents/com.tamago.tomaranai.plist 2>/dev/null
+    launchctl load  ~/Library/LaunchAgents/com.tamago.tomaranai.plist
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tamago.tomaranai</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/mac/Desktop/tamago-shinchoku/tools/tomaranai.py</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/mac/Desktop/tamago-shinchoku</string>
+
+  <!-- ★1分おき -->
+  <key>StartInterval</key>
+  <integer>60</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- 前の1回がまだ終わっていなければ重ねて起こさない -->
+  <key>ThrottleInterval</key>
+  <integer>60</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/mac/Desktop/tamago-shinchoku/status/tomaranai_launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/mac/Desktop/tamago-shinchoku/status/tomaranai_launchd.log</string>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>Nice</key>
+  <integer>5</integer>
+</dict>
+</plist>

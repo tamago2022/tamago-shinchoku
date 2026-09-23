@@ -6,46 +6,46 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Eagle 素材ビューア（スマホ用）</title>
 <style>
-  :root{ --bg:#12161c; --fg:#e9eef4; --sub:#a9b6c4; --line:#2a323c; --accent:#5fd996; }
+  :root{ --bg:var(--t-bg); --fg:var(--t-fg); --sub:var(--t-fg); --line:var(--t-line); --accent:var(--t-ok); }
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;}
-  header{position:sticky; top:0; z-index:5; background:rgba(18,22,28,0.96); backdrop-filter:blur(8px);
+  header{position:sticky; top:0; z-index:5; background:var(--t-bg); backdrop-filter:blur(8px);
     padding:12px 14px 10px; border-bottom:1px solid var(--line);}
   h1{margin:0 0 8px; font-size:1.05rem; letter-spacing:0.01em;}
   h1 small{font-weight:400; color:var(--sub); font-size:0.72rem; margin-left:6px;}
   .search{width:100%; min-height:44px; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
-    background:#1a2028; color:var(--fg); font-size:16px;}
+    background:var(--t-panel); color:var(--fg); font-size:16px;}
   .folderSel{width:100%; min-height:40px; margin-top:6px; padding:8px 10px; border-radius:10px; border:1px solid var(--line);
-    background:#1a2028; color:var(--fg); font-size:0.86rem;}
+    background:var(--t-panel); color:var(--fg); font-size:0.86rem;}
   .tags{display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; -webkit-overflow-scrolling:touch;}
   .tags button{flex:none; min-height:34px; padding:0 11px; border-radius:999px; border:1px solid var(--line);
-    background:#1a2028; color:var(--sub); font-size:0.76rem; white-space:nowrap;}
-  .tags button.on{background:var(--accent); color:#12161c; border-color:var(--accent); font-weight:700;}
+    background:var(--t-panel); color:var(--sub); font-size:0.76rem; white-space:nowrap;}
+  .tags button.on{background:var(--accent); color:var(--t-on-accent); border-color:var(--accent); font-weight:700;}
   .colorTags button{border-color:rgba(255,255,255,0.18);}
-  .colorTags button.on{background:#fff; color:#12161c; border-color:#fff;}
+  .colorTags button.on{background:var(--t-panel); color:var(--t-fg2); border-color:var(--t-line);}
   .meta{padding:6px 14px 0; font-size:0.74rem; color:var(--sub);}
   .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; padding:8px 3px 60px;}
-  .grid img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#1a2028; border-radius:3px;}
+  .grid img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:var(--t-panel); border-radius:3px;}
   .cell{position:relative; cursor:pointer; min-width:0; overflow:hidden;}
   .more{grid-column:1 / -1; min-height:48px; margin-top:6px; border-radius:10px; border:1px solid var(--line);
-    background:#1a2028; color:var(--fg); font-size:0.9rem;}
-  dialog{border:none; background:#0d1116; color:var(--fg); width:100%; max-width:100%; height:100%; max-height:100%; margin:0; padding:0;}
-  dialog::backdrop{background:rgba(0,0,0,0.9);}
+    background:var(--t-panel); color:var(--fg); font-size:0.9rem;}
+  dialog{border:none; background:var(--t-bg); color:var(--fg); width:100%; max-width:100%; height:100%; max-height:100%; margin:0; padding:0;}
+  dialog::backdrop{background:var(--t-bg);}
   .dw{display:flex; flex-direction:column; height:100%;}
-  .dw img{width:100%; flex:1; object-fit:contain; min-height:0; background:#000;}
+  .dw img{width:100%; flex:1; object-fit:contain; min-height:0; background:var(--t-bg);}
   .di{padding:12px 14px 20px; border-top:1px solid var(--line); font-size:0.84rem; overflow:auto; max-height:42%;}
   .di b{display:block; font-size:1rem; margin-bottom:6px;}
   .di .row{color:var(--sub); font-size:0.76rem; margin:4px 0; word-break:break-all;}
-  .di .chip{display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; border-radius:999px; background:#1a2028; border:1px solid var(--line); font-size:0.72rem;}
+  .di .chip{display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; border-radius:999px; background:var(--t-panel); border:1px solid var(--line); font-size:0.72rem;}
   .di .chip.h{color:var(--accent); border-color:rgba(95,217,150,0.4);}
   .close{position:absolute; top:10px; right:12px; z-index:3; min-height:44px; min-width:44px; border-radius:999px;
-    border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.55); color:#fff; font-size:1rem;}
+    border:1px solid rgba(255,255,255,0.3); background:var(--t-bg); color:var(--t-fg); font-size:1rem;}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 
@@ -195,9 +195,11 @@ fetch("data.json?t=" + Date.now()).then(r=>r.json()).then(d=>{
   render();
 });
 </script>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

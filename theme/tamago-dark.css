@@ -1,0 +1,109 @@
+/* ===========================================================================
+   1168番：進捗表の色を決める、ただ1枚のファイル。
+   お手本は 1165-hassha.html（たまごさんが「見やすい」と言った配色）。
+   新しい色は1つも発明していない。下の値は 1165-hassha.html から取った実物。
+
+   ■ なぜ1枚なのか
+     前は 746枚のHTMLが**それぞれ自分で色を書いていた**（#fff が 2500回、
+     #efe9db が 490回）。1枚直すたびに745枚が置いていかれる形だった。
+     ここを1枚に寄せたので、配色を変えたいときは**このファイルだけ**を直す。
+     以後に作るページも、公開の道（tools/pages_publish.sh）を通る時に
+     tools/1168_kuraku.py が自動でこの1枚に繋ぐので、何もしなくても暗くなる。
+
+   ■ ページ側はどうなっているか
+     ページの中に残っている色は、すべて var(--t-…) に置き換えられている。
+     つまり**色の実体はこのファイルにしか無い**。
+   =========================================================================== */
+
+:root{
+  color-scheme: dark;
+
+  /* 地と面（1165の body / .card / .mono） */
+  --t-bg:      #0d0f12;   /* 地。いちばん奥 */
+  --t-bg2:     #0a0c0f;   /* さらに沈める（ログ・等幅の箱） */
+  --t-panel:   #15181d;   /* カード1枚 */
+  --t-panel2:  #1b1f26;   /* カードの上にもう1枚 */
+
+  /* 線 */
+  --t-line:    #23272e;   /* 枠線 */
+  --t-line2:   #1d2126;   /* 表の行の区切り（もっと細く） */
+
+  /* 文字（濃い順） */
+  --t-fg:      #e8e6e1;   /* 見出し・主役 */
+  --t-fg2:     #c9d1d9;   /* 本文 */
+  --t-mute:    #9aa4ae;   /* 補足 */
+  --t-mute2:   #8b949e;   /* 小見出し・ラベル */
+  --t-dim:     #7d8590;   /* 日付など、いちばん引く文字 */
+
+  /* 意味のある色（1165の .ok / .ng を基準に、同じ明るさで揃えた） */
+  --t-ok:      #5ddba0;   /* 良い・生きている */
+  --t-ng:      #ff7b72;   /* 悪い・落ちた */
+  --t-warn:    #e3b341;   /* 注意・待ち */
+  --t-info:    #79c0ff;   /* 情報・数 */
+  --t-purple:  #d2a8ff;
+  --t-pink:    #ff9bce;
+
+  /* 同じ意味の「面」。暗い地の上で色が潰れないよう、地に寄せて薄く敷く */
+  --t-ok-bg:     #12241c;
+  --t-ng-bg:     #2a1416;
+  --t-warn-bg:   #261e0c;
+  --t-info-bg:   #0f1e2e;
+  --t-purple-bg: #1e1630;
+  --t-pink-bg:   #2a1524;
+
+  --t-link:    #79c0ff;
+
+  /* 2026-09-27（1168番・続）意味のある色を「地」に使ったとき、その上に乗る文字。
+     元が「濃い地＋白文字」のボタン／バッジは、地だけ明るくすると白文字と重なって消える。
+     実測：760枚中44枚・549箇所がこれで読めなくなっていた。ここに1つ置いて全部を直す。 */
+  --t-on-accent: #0b0e12;
+}
+
+/* --- 地。ここだけは必ず勝つ（ページ側が何と書いていても地は1色に揃える）--- */
+html{ background-color:var(--t-bg) !important; }
+body{ background-color:var(--t-bg) !important; color:var(--t-fg2) !important;
+      -webkit-text-size-adjust:100%; }
+
+/* --- 以下は「ページが何も言っていない所」の受け皿。
+       ページ側に指定があればページ側が勝つ（その色はもう var(--t-…) なので問題ない）--- */
+h1,h2,h3,h4,h5,h6{ color:var(--t-fg); }
+b,strong{ color:var(--t-fg); }
+small{ color:var(--t-mute); }
+a{ color:var(--t-link); }
+a:visited{ color:var(--t-purple); }
+hr{ border-color:var(--t-line); background-color:var(--t-line); }
+code,kbd,samp,pre{ background-color:var(--t-bg2); color:var(--t-mute); }
+pre{ border:1px solid var(--t-line); }
+table{ border-color:var(--t-line); }
+th{ color:var(--t-mute2); border-color:var(--t-line); }
+td{ border-color:var(--t-line2); }
+caption,figcaption{ color:var(--t-mute); }
+blockquote{ border-color:var(--t-line); color:var(--t-mute); }
+input,textarea,select,button{
+  background-color:var(--t-panel); color:var(--t-fg); border-color:var(--t-line); }
+::placeholder{ color:var(--t-dim); opacity:1; }
+summary{ color:var(--t-fg2); }
+details{ border-color:var(--t-line); }
+dt{ color:var(--t-mute2); }
+::selection{ background:#2d4a6b; color:var(--t-fg); }
+
+/* 画像の白いフチ（PNG/JPGの白地）が暗い地の上で浮く問題。
+   画像そのものは直せないので、面として置いて縁を切る。 */
+img,video,iframe,canvas{ background-color:var(--t-panel); }
+img{ border-radius:6px; }
+
+/* 細い文字が暗い地の上で潰れないよう、ほんのわずかだけ太く見せる */
+body{ -webkit-font-smoothing:antialiased; }
+
+/* スマホ（375px）で横に溢れて読めなくなるのを止める */
+@media (max-width:420px){
+  html,body{ max-width:100%; overflow-x:hidden; }
+  pre,code,.mono,table{ max-width:100%; }
+  pre,.mono{ overflow-x:auto; white-space:pre-wrap; word-break:break-word; }
+}
+
+/* スクロール棒も暗く（明るい棒が1本だけ残ると目に刺さる） */
+*{ scrollbar-color:var(--t-line) var(--t-bg); }
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-track{ background:var(--t-bg); }
+::-webkit-scrollbar-thumb{ background:var(--t-line); border-radius:5px; }

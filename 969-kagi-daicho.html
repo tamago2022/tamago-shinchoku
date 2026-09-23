@@ -6,8 +6,8 @@
 <title>鍵・つながりの台帳</title>
 <style>
   :root{
-    --paper:#f4f1ea; --ink:#16130f; --sub:#6b6259; --rule:#d8d2c6;
-    --red:#b3261e; --ok:#2f6b3f; --amber:#8a6d1f;
+    --paper:var(--t-panel); --ink:var(--t-fg2); --sub:var(--t-mute); --rule:var(--t-line);
+    --red:var(--t-ng); --ok:var(--t-ok); --amber:var(--t-warn);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);
@@ -230,5 +230,7 @@ function render(d){
   document.getElementById('meta').textContent='実測：'+esc(d.generatedAt);
 }
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
 </body>
 </html>

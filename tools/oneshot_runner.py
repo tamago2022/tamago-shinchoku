@@ -34,14 +34,66 @@ TIMEOUT_SEC = 240
 MAX_OUT = 400000
 
 
+RESCUE_AFTER_SEC = 600   # running/ に これだけ居座ったら「心臓ごと殺された」と見て拾い直す
+RESCUE_MAX = 2           # 同じ票を拾い直す回数の上限（無限に回さない）
+
+
+def rescue():
+    """1144番（2026-09-25 実測）止まったら自動で再開する。
+
+    心臓(tools/heartbeat.sh)は再起動のたびに自分のプロセスグループを kill -9 する。
+    この係は心臓の子なので、長い票は途中で殺され、running/ に .sh が残ったまま
+    二度と走らない（9/24から kansei が本番に出なかったのはこれ）。
+    → 10分以上 running/ に居る票は、pending/ に戻して次の周回で走らせる。
+      戻した回数は .try に記録し、2回で諦めて done/ に「拾い直しても終わらない」と書く。
+    """
+    if not os.path.isdir(RUN):
+        return
+    now = time.time()
+    for n in sorted(os.listdir(RUN)):
+        if not n.endswith(".sh"):
+            continue
+        p = os.path.join(RUN, n)
+        try:
+            if now - os.path.getmtime(p) < RESCUE_AFTER_SEC:
+                continue
+        except Exception:
+            continue
+        stem = n[:-3]
+        tryf = os.path.join(RUN, stem + ".try")
+        try:
+            cnt = int(io.open(tryf).read().strip() or 0)
+        except Exception:
+            cnt = 0
+        if cnt >= RESCUE_MAX:
+            try:
+                with io.open(os.path.join(DONE, stem + ".out"), "w", encoding="utf-8") as f:
+                    f.write("拾い直しを%d回しても終わりませんでした（心臓が殺している疑い）。"
+                            "長い仕事は tools/1144_hanareru.py で切り離して走らせる。\n" % cnt)
+                with io.open(os.path.join(DONE, stem + ".rc"), "w", encoding="utf-8") as f:
+                    f.write("126 rescue-gaveup\n")
+                os.remove(p)
+                os.remove(tryf)
+            except Exception:
+                pass
+            continue
+        try:
+            with io.open(tryf, "w", encoding="utf-8") as f:
+                f.write("%d\n" % (cnt + 1))
+            os.replace(p, os.path.join(PEND, n))
+        except Exception:
+            pass
+
+
 def main():
     if not os.path.isdir(PEND):
         return
+    for d in (RUN, DONE):
+        os.makedirs(d, exist_ok=True)
+    rescue()
     names = sorted(n for n in os.listdir(PEND) if n.endswith(".sh"))
     if not names:
         return
-    for d in (RUN, DONE):
-        os.makedirs(d, exist_ok=True)
     for name in names[:2]:
         src = os.path.join(PEND, name)
         dst = os.path.join(RUN, name)
@@ -71,6 +123,10 @@ def main():
             pass
         try:
             os.remove(dst)
+        except Exception:
+            pass
+        try:
+            os.remove(os.path.join(RUN, stem + ".try"))
         except Exception:
             pass
 

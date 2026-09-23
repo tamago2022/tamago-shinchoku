@@ -55,6 +55,23 @@ fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
 
+# ---- 1295番・追加対応その2（2026-09-27・実測で判明）----
+# 30分ルールの判定・配布は765行目付近にも既にあるが、そこまでeagle_inbox.py・calibrate.py・
+# health_candidates.py等の重い処理を何十個も挟む。CPU高負荷（実測load average 12台）だと、
+# 判定に辿り着く前にロックの7分タイムアウトへ先に当たり、配布が最大38分まで遅延した実測がある
+# （63行目のコメントと同じ教訓：「後ろに置くと何十分も回ってこない」）。
+# ロックを取った直後という「必ず一番早く実行される位置」に、独立した早期チェックを置く。
+# 数字の比較(PREV/CURR)はまだ計算していないので、ここでは「写しが30分より古いか」だけを見る。
+PUB_TOP_EARLY="$REPO/status/public/top_status.json"
+if [ -f "$REPO/status/top_status.json" ]; then
+  PUB_TOP_EARLY_MTIME=$(stat -f %m "$PUB_TOP_EARLY" 2>/dev/null || stat -c %Y "$PUB_TOP_EARLY" 2>/dev/null || echo 0)
+  PUB_TOP_EARLY_AGE=$(( $(date +%s) - PUB_TOP_EARLY_MTIME ))
+  if [ ! -f "$PUB_TOP_EARLY" ] || [ "$PUB_TOP_EARLY_AGE" -ge 1800 ]; then
+    mkdir -p "$REPO/status/public"
+    cp -f "$REPO/status/top_status.json" "$PUB_TOP_EARLY" 2>/dev/null || true
+  fi
+fi
+
 # ---- 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収 ----
 # 実測：07:26の machine.json が 負荷5046% / スワップ17.06GB。しかしその数字しか無く、
 #   **何がどれだけ食っているのかを持っている場所がどこにも無かった**
@@ -67,6 +84,68 @@ trap 'rm -f "$LOCK"' EXIT
 #   Eagle・生成系（動画/画像/ナレーション）には一切当たらない（NEVERで除外）。
 # 新しいlaunchd便は増やさない（既存便への相乗り＝この工場の決まり）。
 run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>&1 || true
+
+# ---- ★1165番（2026-09-27）同時上限の実測を「前」でも1回やる ----
+# 実測：この便は5分ごとに走っているのに（.machine_status_push.lock 07:35）、
+#   status/dojisu_jougen.json と status/health.json は 05:52:52 のまま＝1時間50分止まっていた。
+#   ＝この長いスクリプトが 687行目まで到達していない。
+# その結果：いちばん悲観的だった値（同時上限1本）が貼り付いたまま、
+#   factory_status.py（431行目・dojisu_jougen.json を読む側）が古い1本を読み続け、
+#   auto_launch.log の直近400巡回のうち397回が「見送り: 走行1本／上限1本（空きなし）」。
+#   発車待ちは666件あったのに、全部捨てていた。
+# 30秒で終わる計測を、ロックを取った直後（＝必ず走る位置）にも置く。
+# 687行目の呼び出しは health.json への相乗りのため残す（順番は入れ替えない）。
+run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || true
+
+# ---- ★（2026-09-27・1161番の続き）鍵を「切れる前に」自分で巻き直す ----
+# 実測：1年もつ鍵は 2026-09-26 に取り直したが、取り直しは毎回人の手だった。
+#   さらに見張り（auth_keeper）は 07:52〜14:35 の10回とも関所待ちで測れていなかった＝
+#   「切れたら気づく」も「切れる前に取る」も、実際には誰もやっていなかった。
+# この係は残り日数を status/public/kagi_kigen.json に出し、残り30日を切ったら
+#   言われる前に取り直しを裏で起こす（承認を1回押すだけの状態まで自分で進む）。
+# 中で1時間ゲートするので5分おきに呼ばれても外へ出るのは1時間に1回。鍵の中身は読まない。
+run_with_timeout 30 python3 "$REPO/tools/kagi_jidou_makinaoshi.py" >/dev/null 2>&1 || true
+
+# ---- ★（2026-09-27）鍵を渡し忘れられない口を保つ ----
+# 実測：鍵も合図も揃っているのに、子セッションの起動が
+#   「OAuth session expired」で落ちた＝**その呼び出しには鍵が渡っていなかった。**
+#   渡す正本（tools/claude_auth.py）を通さない口が1本でも残れば、その口だけが落ちる。
+#   呼ぶ側を全部直す作戦は必ず1本忘れるので、~/.local/bin/claude 自体を
+#   「鍵を入れてから本体へ渡す包み」に替えてある（tools/claude_kuchi_install.py）。
+# claudeの自動更新で包みが消えても、ここで毎回張り直す（消えても次の便で戻る）。
+# 中で「既に張ってある」なら1秒で戻る。通らなければ自分で元へ戻す（工場を止めない）。
+run_with_timeout 60 python3 "$REPO/tools/claude_kuchi_install.py" --quiet >/dev/null 2>&1 || true
+
+# ★1174番（2026-09-27）信号機：Macの余力を数値で見て、同時本数を自分で上下させる。
+# たまごさん「2本は約束じゃないよ。パソコンの空き状態を見て、4本でも6本でも10本でも
+#   走らせていい。パソコンが重くなったらダメだって話。数値で分からないの？」
+# 赤の基準は status/shingou_aka.json（「タブも切り替えられないぐらい重い」と言われた
+#   その瞬間の実測。1回だけ書いて以後上書きしない）。
+# 結果は status/shingou.json の ok_honsuu。tools/inochi.py がこれを門に書き、
+#   auto_launcher.py は今までどおり launch_cap.json を読むだけ（口は増やしていない）。
+# 測るのは5分に1回だけ（常時監視それ自体が重い）。全部ミリ秒〜1秒で返るものだけ。
+run_with_timeout 30 python3 "$REPO/tools/shingou.py" >/dev/null 2>&1 || true
+
+# ★1165番 進捗表：①直近24hの発車本数 ②今走っている本数／上限 ③次に発車するタスク名
+# たまごさん「なんで止まってるの？」に、毎回この3つで答える紙。dojisu_jougen.py の直後に置く。
+run_with_timeout 30 python3 "$REPO/tools/1165_page.py" >/dev/null 2>&1 || true
+
+# ---- 2026-09-24（Cowork側から設置）Bufferの鍵を受け取る係＋予約を出す係 ----
+# たまごさん：「またログインしてくださいとかいやだよ。一回渡したものはちゃんと保管しようよ」
+# 実害：BufferはChrome側にセッションが無く、鍵台帳にも行が無かった＝渡された記録がどこにも無い。
+#   だから毎回「ログインして」に戻っていた。
+# ① buffer_kagi_install.py … Desktop等に置かれたトークンを1回だけ拾い、
+#    ~/.tamago/keys/api_keys.env へしまって平文を消す（以後たまごさんに二度と聞かない）
+# ② buffer_yoyaku.py … status/buffer_queue/ に注文票(JSON)があれば、鍵のあるこちら側で
+#    予約を入れ、★予約一覧を取り直して照合した結果を done/ に書き戻す
+# 新しいlaunchd便は増やさない（この工場の決まり）。注文票が無ければ即 return＝無害。
+run_with_timeout 60 python3 "$REPO/tools/buffer_kagi_install.py" >/dev/null 2>&1 || true
+run_with_timeout 90 python3 "$REPO/tools/buffer_yoyaku.py" >/dev/null 2>&1 || true
+# ③ buffer_hokyuu.py … 毎朝6:00に1回だけ、予約欄が10本未満なら
+#    status/buffer_queue/machi.json（投稿待ちの行列）から10本になるまで補充する。
+#    無料Bufferの10枠は「上限」ではなく「同時に待機できる在庫数」。常に8〜10本を保つ。
+#    ★中で「今日の6時を過ぎていて、まだ今日走っていないか」を見る。違えば即return＝無害。
+run_with_timeout 120 python3 "$REPO/tools/buffer_hokyuu.py" >/dev/null 2>&1 || true
 
 # ---- 2026-09-19（961番・Cowork側から設置）本番に出ていないものを出し切る便 ----
 # joy-relief-station への反映（joy_push）の口は、スマホのボタンから来た時にしか回らない。
@@ -116,6 +195,53 @@ echo "$(date '+%F %T') nagekomi_shelf 呼び出し" >> "$REPO/status/nagekomi_sh
 #   実質一度も掃けていなかったのと同じ穴を作らないため）。
 # ★1周が数十分かかるのでバックグラウンドへ逃がす。二重起動は fukumen_daily 側のロックで防ぐ。
 ( nohup python3 "$REPO/tools/fukumen_daily.py" >>"$REPO/status/fukumen/daily.log" 2>&1 & ) >/dev/null 2>&1
+
+# ---- 2026-09-24（1044番・Cowork側から設置）仕入れを止めずに回す口 ----
+# たまごさん「大量仕入れまたやりたいんだけど。ひたすら仕入れは続けてほしいな。」
+#            「★列に積まない。自前の口が毎日走る形。」
+# 何をするか：素材(status/shiire_raw/)→候補(status/shiire_kouho/)を全部通し、
+#   素材が尽きたら次の素材集めをJulesへ投げ直す（tools/shiire_loop.py）。
+# ★なぜこの形か（2026-09-24 実測）：サンドボックスから musicbrainz / last.fm /
+#   wikipedia / deezer / itunes へ1つも出られない（全部 Tunnel 403）。
+#   tools/shuhen_horu.py はこの403で落ち続けていた＝**走った96回・取れた0回**。
+#   だから回線の要る「素材集め」だけJulesへ出し、候補づくりは手元で回す。
+# ★新しいlaunchd常駐は増やさない。この5分便に相乗りし、中で1日1回だけ通す。
+# ★棚(coverGuide.ts)には一切書かない。採否はたまごさんの判断。
+# ★Macが混んでいる回は見送り、ゲートを消費しない。
+_SHIIRE_STAMP="$REPO/status/.shiire_loop.stamp"
+if [ "$(cat "$_SHIIRE_STAMP" 2>/dev/null)" != "$(date +%Y-%m-%d)" ]; then
+  _LOAD="$(uptime | sed 's/.*averages*: *//' | cut -d' ' -f1 | tr -d ',' | cut -d. -f1)"
+  if [ -z "${_LOAD:-}" ] || [ "$_LOAD" -lt 40 ] 2>/dev/null; then
+    date +%Y-%m-%d > "$_SHIIRE_STAMP"
+    ( nohup python3 "$REPO/tools/shiire_loop.py" >>"$REPO/status/shiire_loop.log" 2>&1 & ) >/dev/null 2>&1
+  fi
+fi
+
+# ---- 2026-09-24（1081番・Cowork側から設置）定番の棚卸し＝「これないんですか」を先に潰す ----
+# たまごさん「マニアックなのは後回しでいい。でも『これないんですか』はなしだよ。
+#             日本人が来て『桑田佳祐ありますか』『ありません』、もうそのレベルはダメ。」
+#            「★俺が最近『仕入れやって』って言ってないからって、仕入れを止めていいってことじゃない。
+#              何も走ってませんって状態だったら、常に仕入れしといてよ。」
+# 何をするか：国ごとの「絶対に押さえるべき定番」を**外のAI2つ（codex / Genspark）に作らせ**、
+#   いまの棚（案内人が引くのと同じ索引）と突き合わせ、無い曲を仕入れのキューに積む。
+# ★1日1か国だけ進む（tools/teiban.py --tsugi が中でゲートする）。12か国で一巡。
+# ★どちらのAIが正しいかをこちらで決めない。食い違いはそのまま並べて公開する。
+# ★棚には1文字も書かない。棚に入れるときは入荷の関所（同名別人を止める門）を必ず通る。
+# ★新しいlaunchd常駐は増やさない。Macが混んでいる回はゲートを消費せず見送る。
+# ★1周が数分〜十数分かかるのでバックグラウンドへ逃がす。
+( nohup python3 "$REPO/tools/teiban.py" --tsugi >>"$REPO/status/teiban/tsugi.log" 2>&1 & ) >/dev/null 2>&1
+
+# ---- 2026-09-24（1080番・Cowork側から設置）50人の客＝誰が入ってきても答えられるか ----
+# たまごさん「誰が入ってきても答えられるか。その人が好きそうなものをパッと出せるのか。
+#             そもそも在庫があるのか。」「それぞれ85点、90点出せるように年内には。」
+# ★週に1回だけ。中でゲートする（tools/kyaku50.py --shukan）。走り切った時だけゲートを消費。
+( nohup python3 "$REPO/tools/kyaku50.py" --shukan --limit 10 >>"$REPO/status/kyaku50/shukan.log" 2>&1 & ) >/dev/null 2>&1
+# ★2026-09-24 追加：たまごさん「1回で終わらせない。定期で回す。どんどん走らせて、
+#   出るように変えていって、どんどん。」「とりあえず100人くらいペルソナを作って、
+#   ガンガンやってガンガン直そう。」
+#   → 1日1回、名簿の**11人目から**10人ずつ進める（先頭10人は上の週1の物差しなので触らない）。
+#   ★中で日付のゲートを持つ。走り切った時だけ番を進める。★新しい常駐は増やしていない。
+( nohup python3 "$REPO/tools/kyaku50.py" --nichiji --limit 10 >>"$REPO/status/kyaku50/nichiji.log" 2>&1 & ) >/dev/null 2>&1
 
 # ---- 2026-09-22（1024番・Cowork側から設置）棚に入ったものへ「入荷日」を付ける係 ----
 # たまごさん「これから入るものには、必ず入荷日が付くようにする（仕入れの仕組み側に足す）」。
@@ -215,7 +341,24 @@ fi
 # 進捗表が丸ごと止まる（18:25〜18:30に実際に発生）。5分以上前のものだけ消す＝実行中のgitは巻き添えにしない。
 # 2026-09-05 入力待ちで黙り込む `claude setup-token` が残ると、心臓（15秒おき）ごと固まる。
 #   実測：07:03から3分間、着火も受信箱も止まった。見つけたら落とす。
-pkill -f "claude setup-token" >/dev/null 2>&1 || true
+# ---- 2026-09-27（1161番の続き）★鍵を取り直している最中は殺さない ----
+#   この pkill は「入力待ちで黙り込んだ setup-token が心臓を固める」を止めるために置いた。
+#   ところが 1161番（鍵を取り直す係）は setup-token を pty で最大25分走らせる。
+#   ＝**鍵を取り直す作業そのものを、5分おきに後ろから撃っていた。**
+#   だから「取り直しが1回で終わらない」が起き続ける。穴に段ボールではなく口を替える：
+#   係が自分で立てている status/1161_toru.lock がある間は撃たない（係は終われば必ず外す）。
+#   30分以上古いロックは事故なので、その時は今までどおり撃つ。
+_TORU_LOCK="$REPO/status/1161_toru.lock"
+_TORU_ALIVE=0
+if [ -f "$_TORU_LOCK" ]; then
+  _TORU_AGE=$(( $(date +%s) - $(stat -f %m "$_TORU_LOCK" 2>/dev/null || echo 0) ))
+  [ "$_TORU_AGE" -lt 1800 ] && _TORU_ALIVE=1
+fi
+if [ "$_TORU_ALIVE" = "0" ]; then
+  pkill -f "claude setup-token" >/dev/null 2>&1 || true
+else
+  echo "$(date '+%F %T') 🔑 鍵の取り直し中（1161_toru.lock）なので setup-token は撃たない" >> "$REPO/status/auth_keeper.log"
+fi
 find "$REPO/.git" -maxdepth 1 -name "*.lock" -mmin +5 -delete 2>/dev/null || true
 find "$REPO/.git/objects" -maxdepth 2 -name "tmp_obj_*" -mmin +5 -delete 2>/dev/null || true
 
@@ -232,7 +375,136 @@ if [ -f "$REPO/tools/git-hooks/pre-commit" ]; then
   fi
 fi
 
+# ---- 2026-09-24（1054番）★運ぶ仕事を、便のいちばん前に出した ----
+#   実測（09-24 05:23〜05:55）：main のコミットが32分間1本も増えなかった。
+#   原因は git の失敗ではない。**この便が run_once の測定や掃除で時間を使い切り、
+#   いちばん最後に置いてあった「運ぶ」ところまで一度も辿り着いていなかった。**
+#   （実測：便は約4分で launchd に入れ替えられる。run_once はそれより長くかかっていた）
+#   ＝「pushしたのに本番が古い」「作ったページが永久に載らない」の正体。
+#   ★穴を塞ぐのではなくパイプごと替える：**運搬を測定より先にやる。**
+#   ここに置いてある限り、便が途中で打ち切られても、運ぶところまでは必ず終わっている。
+hakobu() {
+# ★git は相対パスで add する。run_once の中ほどにあった `cd "$REPO"` に頼らない
+#   （運搬を前に出したので、ここで自分で入る。入れなければ何もしない＝別の場所を触らない）
+cd "$REPO" || return 0
+( "$REPO/tools/pages_publish.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
+# 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
+# ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
+# ---- 2026-09-22 コミットの口の1本化：サンドボックスが置いた紙をここで回収する ----
+#   Cowork（サンドボックス）側がマウント越しに自分で git add/commit を叩くと、
+#   この5分便とぶつかって .git/index.lock の取り合いになり、しかも向こうは
+#   残ったロックを消せない（Operation not permitted）＝工場のgitが丸ごと止まる。
+#   2026-09-22に何度も再発したため、**ロックを後から消すのをやめて、口そのものを1本にした。**
+#   向こうは status/commit_inbox/ に紙を置くだけ（gitを叩かない）。回収はここ1か所。
+#   commit / push はこの下の1本だけが持つ。投げっぱなしにはしない（addが済んでから下のcommitへ進む必要があるため）。
+python3 "$REPO/tools/commit_kuchi.py" --drain --quiet >/dev/null 2>&1 || true
+git add index.html data.js said.js share tools >/dev/null 2>&1
+# 2026-09-22（977番）追加：番号付きの単票ページ（969/971/972/977…）も載せる。
+#   ここに無いと、作っても永久に公開されない（977-ai-renkei.html で気づいた）。
+#   対象は「3桁の番号で始まる .html」だけ＝画面用の小さい単票に限る。
+#   万一大きいものが混ざっても、この下の1MB検査が1本だけ取り下げるので事故にならない。
+git add ./[0-9][0-9][0-9]-*.html >/dev/null 2>&1
+
+# ---- 2026-09-09 事故の再発防止：**大きいファイルを公開に載せない。**----
+# 何が起きたか：02:44、Xアプリのプロトタイプを作っていた別セッションが
+#   share/x-search/data.json（たまごさん本人の実ツイート47,011件・12MB）を置いた。
+#   **この巡回の `git add share tools` が中身を見ずに巻き込み、公開GitHub Pagesへpushした。**
+#   1分で気づいて消したが、たまごさんに「二度と起きないようにして」と言われた。
+#
+# なぜ .gitignore だけでは足りないか：
+#   .gitignore に書けるのは「今回の1ファイル」だけ。**次に誰かが別の名前で置いたら、また同じことが起きる。**
+#   ここは `share` と `tools` を**丸ごと**addしているので、置かれたものは何でも公開される構造だった。
+#
+# 対策：**これから載せようとしているファイルを1つずつ見て、1MBを超えるものがあったら
+#        その1本だけ取り下げて、載せない。**（残りは通常どおり公開する＝画面は止まらない）
+#   個人データの塊は必ず大きい。確認ページのHTMLは小さい。**この線引きで十分に効く。**
+#   取り下げたものは status/blocked_large_files.log に記録し、たまごさんが後で見られるようにする。
+_BIG=0
+while IFS= read -r _f; do
+  [ -z "$_f" ] && continue
+  [ -f "$_f" ] || continue
+  _sz=$(wc -c < "$_f" 2>/dev/null || echo 0)
+  if [ "${_sz:-0}" -gt 1048576 ] 2>/dev/null; then
+    git restore --staged "$_f" >/dev/null 2>&1 || git reset -q HEAD "$_f" >/dev/null 2>&1
+    echo "$(date '+%F %T') 🛑 公開を止めた（${_sz}バイト・1MB超）: $_f" >> "$REPO/status/blocked_large_files.log"
+    _BIG=$((_BIG+1))
+  fi
+done < <(git diff --cached --name-only --diff-filter=AM -- share tools 2>/dev/null)
+if [ "$_BIG" -gt 0 ]; then
+  echo "$(date '+%F %T') 🛑 大きいファイル${_BIG}件を公開から外しました（個人データの誤公開を防ぐため）" >> "$REPO/status/relay.log"
+fi
+# 2026-09-04 バグ修正：commitが失敗したとき return 0 で抜けていたため、push まで到達しなかった。
+#   commitが失敗する典型は「新しい変更が無いとき」。だが、その前に別経路（Cowork側）でcommitされた分が
+#   未pushで残っていることがあり、そのぶんが永久に公開されなかった（画面が更新されない実害）。
+#   → commitの成否に関わらず push まで進む。
+#
+# 2026-09-13（案件#687・queue.json等status/丸ごとの複数回ロールバック事故の真因）：
+#   ここの `git pull --rebase -q ... || true` が、**少なくとも2回**status/丸ごとの
+#   ロールバックを起こしていた（1回目 10:17:46＝777〜804番28件消失／2回目 11:14〜16:12の間＝
+#   その後の復旧分319件も含めて再度消失・264件/最大780番まで巻き戻り）。
+#   実測：`git pull --rebase`が実行中に未コミットの変更を自動でautostashへ退避 →
+#   rebase自体が完走せず失敗（`|| true`が握りつぶし誰にも気づかれなかった）→
+#   作業ツリーが古いorigin/mainの内容に取り残され、autostashは二度とpopされずに残った
+#   （実測：`.git/rebase-merge/autostash`。1回目の分はタグ`rescue-687-autostash-20260913`で保全済み）。
+#   → **rebaseそのものをやめてmergeにする。** mergeが失敗しても作業ツリーは「コンフリクト状態のまま」
+#   残るだけで、rebaseのautostashのように**サイレントに古い内容へ巻き戻ることは無い**。
+#   さらに、①次の周回開始時に壊れたrebase/merge残骸を検知したら自分で片付けてから進む、
+#   ②pull自体が失敗したら黙って続けず`git merge --abort`で必ず元へ戻し理由をログへ残す、を追加する。
+_REBASE_MARKER="$REPO/.git/rebase-merge"
+_REBASE_MARKER2="$REPO/.git/rebase-apply"
+_MERGE_MARKER="$REPO/.git/MERGE_HEAD"
+if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER" ]; then
+  echo "$(date '+%F %T') ⚠️ 前回の周回が壊れたrebase/merge状態を残していた→ 片付けてから進む" \
+    >> "$REPO/status/git_rebase_incidents.log"
+  git rebase --abort >/dev/null 2>&1 || true
+  git merge --abort >/dev/null 2>&1 || true
+  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
+fi
+git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "画面・共有資料・道具の更新 $(date +%H:%M)" >/dev/null 2>&1 || true
+
+# ---- 2026-09-20（963番）main への pull/push を「出すものがある時だけ」にした ----
+# それまで：下の pull と push は**毎周（約60秒おき）無条件で**走っていた。
+#   出すものが1つも無い回でも main を触りに行くので、他の書き手と正面衝突し続けていた。
+#   実測の詰まり232回のうち「向こうが先で合流できない」64回・pull失敗9回はここが発生源。
+# いま：最後に push できた地点(.last_main_push)から HEAD が1歩も動いていなければ、
+#   **main には一切触らない**。写しは gh-pages 側（単一書き手）へ出ているので、
+#   ここが黙っていても画面は今までどおり更新される。
+_LASTPUSH_F="$REPO/status/.last_main_push"
+_HEAD_NOW="$(git rev-parse HEAD 2>/dev/null || echo x)"
+if [ "$_HEAD_NOW" = "$(cat "$_LASTPUSH_F" 2>/dev/null || echo '')" ]; then
+  return 0
+fi
+# 2026-09-16（緊急・queue.json 239→234件・887/888/889番消失事故）：
+#   status/ は1秒おきに書き換わる「生きている台帳」なのに、この5分おきのpullが
+#   古いorigin/mainの中身でそれを丸ごと上書きしていた（#687と同型の再発）。
+#   .gitattributes の `status/** merge=ours` で「マージ時はこちら側を必ず勝たせる」よう
+#   したが、その属性を有効にするカスタムマージドライバの登録はリポジトリに同梱できない
+#   ローカルgit設定なので、ここで毎回（安価・冪等）保証しておく。
+git config merge.ours.driver true 2>/dev/null || true
+# ---- 2026-09-24（1054番）★網の向こうを待つ git に、必ず時間切れを付ける ----
+#   実測：05:12頃にこの便が pull/push のどちらかで固まり、**36分間1歩も動かなかった**
+#   （status/heartbeat.log「2162秒（約36分）更新していません」）。
+#   この便が止まると、後ろに並んでいる全部が止まる：
+#     commit_inbox の回収（＝サンドボックスが作ったページが永久に載らない）
+#     status/mac_jobs の使い走り（＝実測5本が滞留）
+#     gh-pages への公開（＝「pushしたのに本番が古い」の正体）
+#   ★穴を塞ぐのではなくパイプごと替える：**網の向こうを待つ呼び出しに時間切れの無いものを残さない。**
+#   固まっても90秒で諦めて次の周回へ進む。諦めたことは黙らずログに出す。
+if ! run_with_timeout 90 git -c credential.helper='!gh auth git-credential' pull --no-rebase -q origin main >/dev/null 2>&1; then
+  echo "$(date '+%F %T') 🛑 git pull(merge) が失敗→ merge --abort で必ず元の状態へ戻す（黙って進まない）" \
+    >> "$REPO/status/git_rebase_incidents.log"
+  git merge --abort >/dev/null 2>&1 || true
+  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
+fi
+if run_with_timeout 90 git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1; then
+  # 出し切った地点を覚えておく。次の周回はここから1歩も動いていなければ main を触らない。
+  git rev-parse HEAD > "$_LASTPUSH_F" 2>/dev/null || true
+fi
+}
+
 run_once() {
+# ★まず運ぶ。測定より先（1054番）。ここが最後にあったせいで32分運ばれなかった。
+hakobu
 # 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
 # factory_status.py が失敗したら従来どおり machine_load.sh 単体で最低限のJSONを書く（止まらない）。
 if run_with_timeout 90 python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
@@ -285,6 +557,13 @@ if ss:
 PYEOF
 } > "$REPO/status/_plan_usage_probe.txt" 2>&1
 run_with_timeout 30 python3 "$REPO/tools/quota_estimate.py" --quiet >/dev/null 2>&1 || true
+
+# 2026-09-24：落ちた記録（tools/ochita_kiroku.py）。便が黙って消えるのをやめさせる。
+#   実害：この日、便が3本同時に途中で落ちたのに status/ のどこにも「落ちた」という記録が1件も無かった。
+#   history.jsonl は「その瞬間に生きていた便」しか書かないので、居なくなったことは誰も書いていなかった。
+#   これが status/ochita.json（最新）と status/ochita.jsonl（履歴）に必ず残る。
+#   1秒で終わる読み取りだけの処理。新しい常駐は増やさず、この5分便に相乗りする。
+run_with_timeout 30 python3 "$REPO/tools/ochita_kiroku.py" >/dev/null 2>&1 || true
 
 # 795番（2026-09-14）：数字のズレをゼロに近づける常設の見張り番。5分おきの既存起動に相乗りする
 # （新しい常駐は増やさない。理由はpace.py冒頭のコメントと同じ）。
@@ -480,6 +759,12 @@ run_with_timeout 20 python3 "$REPO/tools/priority_ingest.py" >/dev/null 2>&1 || 
 # measuredAtが4時間以上進まなくなる事故を実測で確認した（factory_status.pyと同じ90秒に揃える）。
 run_with_timeout 90 python3 "$REPO/tools/health_candidates.py" >/dev/null 2>&1 || true
 
+# 1051番（2026-09-24）同時上限：空きメモリ・スワップ・ロードを毎回実測して「あと何本安全か」を
+# status/dojisu_jougen.json と status/health.json の "同時上限" に落とす。
+# 危ないときは自分で1本まで落とす（自動減便）／余裕があるときだけ1本だけ試す（試し増便）。
+# health_candidates.py の後に置く＝health.json を書いた直後に相乗りで足す（順番を入れ替えない）。
+run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || true
+
 # 2026-09-03 PWAリモコン：▶️動かす／⏸止める／🔁引き継ぐ／🗑閉じる のコマンドキューを実行（launchd新規登録がブロックされたため、この5分間隔ジョブに相乗り）
 run_with_timeout 30 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1 || true
 
@@ -540,6 +825,27 @@ fi
 #   置いた紙が「変化なし」で早期returnされ、何時間も載らないことがある。
 #   status/ は.gitignore対象なので git status では見えない。ふつうのファイル有無で見る。
 if ls "$REPO"/status/commit_inbox/*.json >/dev/null 2>&1; then HIST_CHANGED=1; fi
+# 1295番（2026-09-25・1143番の鮮度計が発見）：AGEは status/machine.json 自身の最終コミット
+#   時刻から計算しているだけで、実際に配る先である status/public/ の写しそのものの古さは
+#   一度も見ていなかった。ログインが切れて何も動かない日ほどこの2つがずれ、
+#   「工場の中では10:16に生きているのに、たまごさんが見る写しは09:32のまま」＝45分遅れが
+#   実際に起きた。写し（top_status.json）自体のmtimeを直接測り、30分を超えて古ければ
+#   数字が同じ日でも必ず配る（下のcpループへ進む）。
+PUB_TOP="$REPO/status/public/top_status.json"
+PUB_TOP_MTIME=$(stat -f %m "$PUB_TOP" 2>/dev/null || stat -c %Y "$PUB_TOP" 2>/dev/null || echo 0)
+PUB_TOP_AGE=$(( $(date +%s) - PUB_TOP_MTIME ))
+if [ ! -f "$PUB_TOP" ] || [ "$PUB_TOP_AGE" -ge 1800 ]; then HIST_CHANGED=1; fi
+# 1295番・実測での追加対応（2026-09-27）：上の判定でHIST_CHANGED=1にしても、実際にコピーする
+#   場所（下のPUBLISH_LISTループ）まではまだ数百行・kagi_daicho.py/kaitsuu.py/gaibu_copy_nippou.py
+#   等の重い処理を挟む。CPU高負荷（実測load average 12台）でこの便がロックの7分タイムアウトに
+#   引っかかると、判定はHIST_CHANGED=1になったのに実際のコピーへ辿り着けない。
+#   実測：08:33の写しが判定は効いていたはずなのに09:32まで59分放置された。
+#   30分を超えて古い（＝配らなければならない）と分かった瞬間に、ここでtop_status.jsonだけ
+#   最優先で配ってしまう（重い処理群より前）。他のPUBLISH_LISTファイルは従来どおり後段で配る。
+if [ -f "$REPO/status/top_status.json" ] && { [ ! -f "$PUB_TOP" ] || [ "$PUB_TOP_AGE" -ge 1800 ]; }; then
+  mkdir -p "$REPO/status/public"
+  cp -f "$REPO/status/top_status.json" "$PUB_TOP" 2>/dev/null || true
+fi
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
 # 2026-09-04 画面の世代を書き出す。スマホのホーム画面アプリが古いindex.htmlを握ったままになる問題への対応。
@@ -588,7 +894,7 @@ PYVER
 ### 中身は一切削らずgzip圧縮のみで物理的に縮める（1.8MB→約480KB）。
 ### PUBLISH_LISTからも外し、単純cpをやめてstatus/public/queue.json.gzへ
 ### 圧縮版を書き出す（build_queue_public_gz.py）。正本status/queue.jsonは変更しない。
-PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json queue_next.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json mac_souji.json"
+PUBLISH_LIST="version.json pace.json verify_summary.json verify_log.jsonl launch_cap.json machine.json history.jsonl whiteboard.json priority.json health.json commands.json quota.json relay.json ai_verify_stats.json disk_guardian.log disk_candidates.json later_tabs.json disk_trend_report.json disk_daily_history.json gdrive_daily_usage.json genzaichi.json genzaichi.md queue_light.json queue_next.json top_status.json now.json rev.txt failures_summary.json daily_ingest_summary.json deleted.json dekimono.json kenpou_check.json new_arrivals.json number_conflicts.json cost_by_task.json estimate_vs_actual_summary.json fal_cost_ledger.json gaibu.json mac_souji.json zero_bon.json"
 mkdir -p "$REPO/status/public"
 # ---- 2026-09-20（969番）鍵・つながりの台帳 ----
 # 「走っているのに何も取れていない」を自動で赤にする係。新しい常駐は増やさず、この5分便に相乗り。
@@ -646,111 +952,7 @@ done
 ###
 ### ★公開係は**待たない**（投げっぱなし）。この便を1秒も遅らせないため。
 ###   中で変化が無ければ即座に戻るので、毎周呼んでも重くならない。
-( "$REPO/tools/pages_publish.sh" >/dev/null 2>&1 & ) >/dev/null 2>&1
-# 2026-09-03 追加：画面本体（index.html/data.js/said.js）と共有資料（share/）も一緒に載せる。
-# ここに無いとCowork側が書き換えても永久に公開されない（実際 share/ が載らず気づいた）。
-# ---- 2026-09-22 コミットの口の1本化：サンドボックスが置いた紙をここで回収する ----
-#   Cowork（サンドボックス）側がマウント越しに自分で git add/commit を叩くと、
-#   この5分便とぶつかって .git/index.lock の取り合いになり、しかも向こうは
-#   残ったロックを消せない（Operation not permitted）＝工場のgitが丸ごと止まる。
-#   2026-09-22に何度も再発したため、**ロックを後から消すのをやめて、口そのものを1本にした。**
-#   向こうは status/commit_inbox/ に紙を置くだけ（gitを叩かない）。回収はここ1か所。
-#   commit / push はこの下の1本だけが持つ。投げっぱなしにはしない（addが済んでから下のcommitへ進む必要があるため）。
-python3 "$REPO/tools/commit_kuchi.py" --drain --quiet >/dev/null 2>&1 || true
-git add index.html data.js said.js share tools >/dev/null 2>&1
-# 2026-09-22（977番）追加：番号付きの単票ページ（969/971/972/977…）も載せる。
-#   ここに無いと、作っても永久に公開されない（977-ai-renkei.html で気づいた）。
-#   対象は「3桁の番号で始まる .html」だけ＝画面用の小さい単票に限る。
-#   万一大きいものが混ざっても、この下の1MB検査が1本だけ取り下げるので事故にならない。
-git add ./[0-9][0-9][0-9]-*.html >/dev/null 2>&1
 
-# ---- 2026-09-09 事故の再発防止：**大きいファイルを公開に載せない。**----
-# 何が起きたか：02:44、Xアプリのプロトタイプを作っていた別セッションが
-#   share/x-search/data.json（たまごさん本人の実ツイート47,011件・12MB）を置いた。
-#   **この巡回の `git add share tools` が中身を見ずに巻き込み、公開GitHub Pagesへpushした。**
-#   1分で気づいて消したが、たまごさんに「二度と起きないようにして」と言われた。
-#
-# なぜ .gitignore だけでは足りないか：
-#   .gitignore に書けるのは「今回の1ファイル」だけ。**次に誰かが別の名前で置いたら、また同じことが起きる。**
-#   ここは `share` と `tools` を**丸ごと**addしているので、置かれたものは何でも公開される構造だった。
-#
-# 対策：**これから載せようとしているファイルを1つずつ見て、1MBを超えるものがあったら
-#        その1本だけ取り下げて、載せない。**（残りは通常どおり公開する＝画面は止まらない）
-#   個人データの塊は必ず大きい。確認ページのHTMLは小さい。**この線引きで十分に効く。**
-#   取り下げたものは status/blocked_large_files.log に記録し、たまごさんが後で見られるようにする。
-_BIG=0
-while IFS= read -r _f; do
-  [ -z "$_f" ] && continue
-  [ -f "$_f" ] || continue
-  _sz=$(wc -c < "$_f" 2>/dev/null || echo 0)
-  if [ "${_sz:-0}" -gt 1048576 ] 2>/dev/null; then
-    git restore --staged "$_f" >/dev/null 2>&1 || git reset -q HEAD "$_f" >/dev/null 2>&1
-    echo "$(date '+%F %T') 🛑 公開を止めた（${_sz}バイト・1MB超）: $_f" >> "$REPO/status/blocked_large_files.log"
-    _BIG=$((_BIG+1))
-  fi
-done < <(git diff --cached --name-only --diff-filter=AM -- share tools 2>/dev/null)
-if [ "$_BIG" -gt 0 ]; then
-  echo "$(date '+%F %T') 🛑 大きいファイル${_BIG}件を公開から外しました（個人データの誤公開を防ぐため）" >> "$REPO/status/relay.log"
-fi
-# 2026-09-04 バグ修正：commitが失敗したとき return 0 で抜けていたため、push まで到達しなかった。
-#   commitが失敗する典型は「新しい変更が無いとき」。だが、その前に別経路（Cowork側）でcommitされた分が
-#   未pushで残っていることがあり、そのぶんが永久に公開されなかった（画面が更新されない実害）。
-#   → commitの成否に関わらず push まで進む。
-#
-# 2026-09-13（案件#687・queue.json等status/丸ごとの複数回ロールバック事故の真因）：
-#   ここの `git pull --rebase -q ... || true` が、**少なくとも2回**status/丸ごとの
-#   ロールバックを起こしていた（1回目 10:17:46＝777〜804番28件消失／2回目 11:14〜16:12の間＝
-#   その後の復旧分319件も含めて再度消失・264件/最大780番まで巻き戻り）。
-#   実測：`git pull --rebase`が実行中に未コミットの変更を自動でautostashへ退避 →
-#   rebase自体が完走せず失敗（`|| true`が握りつぶし誰にも気づかれなかった）→
-#   作業ツリーが古いorigin/mainの内容に取り残され、autostashは二度とpopされずに残った
-#   （実測：`.git/rebase-merge/autostash`。1回目の分はタグ`rescue-687-autostash-20260913`で保全済み）。
-#   → **rebaseそのものをやめてmergeにする。** mergeが失敗しても作業ツリーは「コンフリクト状態のまま」
-#   残るだけで、rebaseのautostashのように**サイレントに古い内容へ巻き戻ることは無い**。
-#   さらに、①次の周回開始時に壊れたrebase/merge残骸を検知したら自分で片付けてから進む、
-#   ②pull自体が失敗したら黙って続けず`git merge --abort`で必ず元へ戻し理由をログへ残す、を追加する。
-_REBASE_MARKER="$REPO/.git/rebase-merge"
-_REBASE_MARKER2="$REPO/.git/rebase-apply"
-_MERGE_MARKER="$REPO/.git/MERGE_HEAD"
-if [ -d "$_REBASE_MARKER" ] || [ -d "$_REBASE_MARKER2" ] || [ -f "$_MERGE_MARKER" ]; then
-  echo "$(date '+%F %T') ⚠️ 前回の周回が壊れたrebase/merge状態を残していた→ 片付けてから進む" \
-    >> "$REPO/status/git_rebase_incidents.log"
-  git rebase --abort >/dev/null 2>&1 || true
-  git merge --abort >/dev/null 2>&1 || true
-  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
-fi
-git -c user.name="machine-status" -c user.email="machine-status@local" commit -q -m "画面・共有資料・道具の更新 $(date +%H:%M)" >/dev/null 2>&1 || true
-
-# ---- 2026-09-20（963番）main への pull/push を「出すものがある時だけ」にした ----
-# それまで：下の pull と push は**毎周（約60秒おき）無条件で**走っていた。
-#   出すものが1つも無い回でも main を触りに行くので、他の書き手と正面衝突し続けていた。
-#   実測の詰まり232回のうち「向こうが先で合流できない」64回・pull失敗9回はここが発生源。
-# いま：最後に push できた地点(.last_main_push)から HEAD が1歩も動いていなければ、
-#   **main には一切触らない**。写しは gh-pages 側（単一書き手）へ出ているので、
-#   ここが黙っていても画面は今までどおり更新される。
-_LASTPUSH_F="$REPO/status/.last_main_push"
-_HEAD_NOW="$(git rev-parse HEAD 2>/dev/null || echo x)"
-if [ "$_HEAD_NOW" = "$(cat "$_LASTPUSH_F" 2>/dev/null || echo '')" ]; then
-  return 0
-fi
-# 2026-09-16（緊急・queue.json 239→234件・887/888/889番消失事故）：
-#   status/ は1秒おきに書き換わる「生きている台帳」なのに、この5分おきのpullが
-#   古いorigin/mainの中身でそれを丸ごと上書きしていた（#687と同型の再発）。
-#   .gitattributes の `status/** merge=ours` で「マージ時はこちら側を必ず勝たせる」よう
-#   したが、その属性を有効にするカスタムマージドライバの登録はリポジトリに同梱できない
-#   ローカルgit設定なので、ここで毎回（安価・冪等）保証しておく。
-git config merge.ours.driver true 2>/dev/null || true
-if ! git -c credential.helper='!gh auth git-credential' pull --no-rebase -q origin main >/dev/null 2>&1; then
-  echo "$(date '+%F %T') 🛑 git pull(merge) が失敗→ merge --abort で必ず元の状態へ戻す（黙って進まない）" \
-    >> "$REPO/status/git_rebase_incidents.log"
-  git merge --abort >/dev/null 2>&1 || true
-  rm -rf "$_REBASE_MARKER" "$_REBASE_MARKER2" 2>/dev/null || true
-fi
-if git -c credential.helper='!gh auth git-credential' push -q origin main >/dev/null 2>&1; then
-  # 出し切った地点を覚えておく。次の周回はここから1歩も動いていなければ main を触らない。
-  git rev-parse HEAD > "$_LASTPUSH_F" 2>/dev/null || true
-fi
-}
 
 # 2026-09-18（931番）：Claudeが作ったChromeタブの孤児を掃く。
 #   子セッションはそれぞれ自分のタブグループを作るが、**他のセッションからは見えないし閉じられない**
@@ -763,6 +965,13 @@ fi
 #   ★Chromeが起動していなければ何もしない（起こさない）。activateしない。前面タブは閉じない。
 #     たまごさんの作業タブは閉じない（見分けがつかないものは残す）。
 ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+
+# 1160番【タブ掃除係】2026-09-26：**外した。ここに足してはいけない。**
+#   osascript（AppleScript）でブラウザを触る作りだったため、たまごさんの画面にmacOSの
+#   許可ダイアログを出してしまった。AppleScript / System Events / TCC許可が要る手段は全面禁止。
+#   → タブを閉じるのは Chrome MCP（tabs_close_mcp）＝自分のタブグループの中だけ。
+#     グループ外には届かない。届かない分は「届かない」と書く。
+#     代わりに Stopフックで「自分が開いたタブが0枚」を完了条件にした（tools/1161_tab_kanmon.py）。
 
 # 2026-09-21（840番）毎週のMac掃除。★新しい定期タスク・新しいlaunchd便は作っていない。
 #   理由（実測）：定期タスク weekly-mac-maintenance は毎週走ってはいたが、定期実行の
@@ -777,6 +986,7 @@ fi
 #     走行>0 なのに 片付き=0 は赤で出る。
 #   この便を止めないよう、バックグラウンドへ逃がして10分で打ち切る（前で待たない）。
 ( run_with_timeout 600 python3 "$REPO/tools/mac_souji.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+}
 
 # 約260秒（次の5分ティックが来る前）、間を空けずに回し続ける。走行中↔停止の切り替わりをできるだけ早くPWAへ反映するため。
 # factory_status.py自体が実測27秒かかる（ps/lsof/transcriptスキャン）ので、固定sleepは入れず作業時間そのものを間隔にする
@@ -804,6 +1014,36 @@ quick_tick() {
   #   心臓が落ちている間もGitHubの新着に気づけるようにするため。
   #   ★内部で60秒ゲートしているので、両方から呼ばれても外へ出るのは1分に1回だけ。
   ( run_with_timeout 60 python3 "$REPO/tools/github_watch.py" >> "$REPO/status/github_watch_err.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24【受付台帳】言われたことを埋もれさせないための1か所（tools/daicho.py）。
+  #   --kigen … ★1人3時間を過ぎた行を機械で選手交代させる。人が判断しない。
+  #              「どこまで進んだか」を残さずに終わった行は、台帳に★印が残って隠せない。
+  #   --hi    … 「◯日治っていないか」を数え直す（1日1回で足りるが冪等なので毎周でよい）。
+  #   --page  … 画面を書き直す。下の commit/push がそのまま本番へ運ぶ。
+  #   ★どれも数秒で終わる。台帳が空なら何もしない。
+  run_with_timeout 30 python3 "$REPO/tools/daicho.py" --kigen >/dev/null 2>&1 || true
+  run_with_timeout 30 python3 "$REPO/tools/daicho.py" --hi    >/dev/null 2>&1 || true
+  run_with_timeout 30 python3 "$REPO/tools/daicho.py" --page  >/dev/null 2>&1 || true
+  # 2026-09-24【未達成の総数】たまごさんが「あれどうなった？」と聞かなくて済むようにする1か所。
+  #   ★件数が前日より増えたら赤／一番古いのが7日を超えたら赤。赤のときだけ Dispatch に出す。
+  #   ★たまごさんには出さない（Dispatchが先に気づく側に置く）。内部で1時間ゲートしている。
+  run_with_timeout 30 python3 "$REPO/tools/mitassei.py" --kaku --shiraseru >/dev/null 2>&1 || true
+  # 2026-09-24【使い走りを重い便から切り離す】★穴を塞ぐのではなくパイプごと替える。
+  #   これまで status/mac_jobs/ の使い走りは run_once（5分便）の中の top_status.py から
+  #   しか呼ばれていなかった。run_once のどこか1か所が止まると、
+  #   **サンドボックスから頼んだ仕事が1本も運ばれなくなる**（05:23〜05:48 実測：5本が滞留）。
+  #   → 15秒の軽い便に載せ替えた。mac_job_runner 自身がロックを持っているので二重には走らない。
+  #   ★運ぶ口はここ1か所。重い便が止まっても運搬は止まらない。
+  ( run_with_timeout 120 python3 -c "import sys;sys.path.insert(0,'$REPO/tools');import mac_job_runner as m;m.run()" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24【重さの見張りを、止まらない経路へ載せ替える】★穴を塞ぐのではなくパイプごと替える。
+  #   1057番は tools/heartbeat.sh に1行足したが、**1日経っても1回も測っていなかった**
+  #   （実測：status/omosa_mihari.json が存在しない／06:00に手で走らせたら即座に測れた＝
+  #     道具は正しい。走っていなかっただけ）。理由は、心臓は pid 6441 の**長生きプロセス**で、
+  #   その行が足される前に起動しているから。走っている bash に後から足した行は当てにならない。
+  #   → この5分便は launchd が**毎回新しいプロセスとして起こす**ので、書いた行は必ず効く。
+  #   ★中で20時間ゲートしているので、15秒おきに呼んでも実際に測るのは1日1回だけ。
+  #   ★この係は測って判定して知らせるだけ。直さない。赤（前回比+5%超／1MB超／CLS0.1超）の
+  #     ときだけ status/dispatch_outbox.jsonl に1行出す。青の日は1行も出さない。
+  ( run_with_timeout 300 python3 "$REPO/tools/omosa_mihari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
 }
 while :; do
   run_once

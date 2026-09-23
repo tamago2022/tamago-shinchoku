@@ -7,12 +7,12 @@
 <title>ZEN ループ｜黒砂の海岸</title>
 <style>
   :root{
-    --bg:#161c26;          /* 夜の藍 */
-    --panel:#1e2632;
-    --ink:#e9e2d4;         /* 生成り */
-    --sub:#8b8878;
-    --line:#2c3644;
-    --aka:#c1442e;         /* 差し色は1点だけ */
+    --bg:var(--t-bg);          /* 夜の藍 */
+    --panel:var(--t-panel);
+    --ink:var(--t-fg);         /* 生成り */
+    --sub:var(--t-mute);
+    --line:var(--t-line);
+    --aka:var(--t-ng);         /* 差し色は1点だけ */
   }
   *{box-sizing:border-box;}
   html,body{margin:0;background:var(--bg);}
@@ -40,7 +40,7 @@
   }
   .sub{color:var(--sub);font-size:0.76rem;letter-spacing:0.12em;margin:0 0 16px;}
 
-  .stage{position:relative;background:#000;border-radius:3px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,0.45);}
+  .stage{position:relative;background:var(--t-bg);border-radius:3px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,0.45);}
   .stage video{display:block;width:100%;height:auto;}
   .cap{color:var(--sub);font-size:0.8rem;margin:12px 0 0;letter-spacing:0.04em;}
 
@@ -54,7 +54,7 @@
     border:1px solid var(--line);border-radius:2px;color:var(--ink);text-decoration:none;
     font-size:0.82rem;letter-spacing:0.12em;background:var(--panel);
   }
-  a.dl:active{background:#26303e;}
+  a.dl:active{background:var(--t-panel);}
 
   hr.sep{border:none;border-top:1px solid var(--line);margin:56px 0 0;}
 
@@ -63,13 +63,13 @@
   .why b{color:var(--ink);font-weight:600;}
   .evid{width:100%;border-radius:3px;border:1px solid var(--line);display:block;margin:16px 0 0;}
 
-  footer{color:#5f5d54;font-size:0.72rem;letter-spacing:0.06em;margin-top:54px;line-height:1.9;}
+  footer{color:var(--t-mute);font-size:0.72rem;letter-spacing:0.06em;margin-top:54px;line-height:1.9;}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#0f131a;border-bottom:1px solid #2c3644;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="wrap">
@@ -140,5 +140,7 @@ document.querySelectorAll('video').forEach(function(v){
   });
 });
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

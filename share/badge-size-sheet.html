@@ -7,14 +7,14 @@
 <title>サムネイル比率 × バッジ 見本帳（実寸・実測）</title>
 <style>
   :root{
-    --ink:#1c1a17;
-    --sub:#6b645c;
-    --line:#ddd6cc;
-    --paper:#f6f3ec;
-    --card:#fffdf8;
-    --ok:#2f6f4f;
-    --ng:#b0392c;
-    --warn:#a8741a;
+    --ink:var(--t-fg2);
+    --sub:var(--t-mute);
+    --line:var(--t-line);
+    --paper:var(--t-panel);
+    --card:var(--t-panel);
+    --ok:var(--t-ok);
+    --ng:var(--t-ng);
+    --warn:var(--t-warn);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -49,7 +49,7 @@
   h2{font-size:15px;margin:0 0 2px;letter-spacing:.05em}
   h2 .ratio{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    background:var(--ink);color:var(--paper);
+    background:var(--t-info-bg);color:var(--t-info);
     padding:1px 8px;border-radius:2px;margin-right:8px;font-size:13px;
   }
   .where{color:var(--sub);font-size:11.5px;margin:0 0 14px}
@@ -65,10 +65,10 @@
   .thumb{
     position:relative;width:100%;overflow:hidden;border-radius:6px;
     background:
-      repeating-linear-gradient(135deg,#cfc7ba 0 10px,#c4bbad 10px 20px);
+      repeating-linear-gradient(135deg,var(--t-panel) 0 10px,var(--t-panel) 10px 20px);
     box-shadow:0 1px 3px rgba(0,0,0,.18);
   }
-  .thumb.bare{outline:1px dashed #a49a8b;outline-offset:-1px}
+  .thumb.bare{outline:1px dashed var(--t-line);outline-offset:-1px}
   /* ===== 本番コードと同一のバッジCSS（CardBadges.tsx / badgeKinds.ts / designRules.ts） ===== */
   .badge-container{
     position:absolute;inset:0;
@@ -97,9 +97,9 @@
     font-size:clamp(6px,min(5.5cqw,5.5cqh),9px);  /* CHIP_STYLE */
     line-height:1.2;
     display:inline-flex;align-items:center;
-    border-radius:2px;background:rgba(0,0,0,.7);
+    border-radius:2px;background:var(--t-bg);
     padding:.25em .6em;font-weight:500;text-transform:uppercase;
-    letter-spacing:.25em;color:rgba(255,255,255,.9);
+    letter-spacing:.25em;color:var(--t-fg);
     box-shadow:0 0 0 1px rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.45);
     backdrop-filter:blur(4px);white-space:nowrap;
   }
@@ -117,16 +117,16 @@
   .pct.ok{color:var(--ok)}
   .pct.ng{color:var(--ng)}
   .flag{
-    display:inline-block;background:var(--ng);color:#fff;
+    display:inline-block;background:var(--ng);color:var(--t-on-accent);
     padding:0 5px;border-radius:2px;font-size:10px;font-weight:700;
     margin-left:4px;letter-spacing:.05em;
   }
-  .flag.warn{background:var(--warn)}
+  .flag.warn{background:var(--warn);color:var(--t-on-accent)}
   .note{
-    border-left:3px solid var(--warn);background:#fdf8ee;
+    border-left:3px solid var(--warn);background:var(--t-panel);
     padding:10px 14px;margin:16px 0;font-size:11.5px;line-height:1.7;
   }
-  .note.bad{border-left-color:var(--ng);background:#fdf0ee}
+  .note.bad{border-left-color:var(--ng);background:var(--t-panel)}
   .note b{letter-spacing:.03em}
   .viewports{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
   .vp{
@@ -137,11 +137,11 @@
   .vp .inner{overflow-x:auto}
   code{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    background:#ece7dd;padding:1px 4px;border-radius:2px;font-size:11px;
+    background:var(--t-panel);padding:1px 4px;border-radius:2px;font-size:11px;
   }
   table.spec{border-collapse:collapse;font-size:11.5px;margin:10px 0 0}
   table.spec th,table.spec td{border:1px solid var(--line);padding:5px 10px;text-align:left}
-  table.spec th{background:#ece7dd;font-weight:600}
+  table.spec th{background:var(--t-panel);font-weight:600}
   footer{padding:24px;border-top:1px solid var(--line);color:var(--sub);font-size:11px}
   /* 946番の追補セクション用 */
   .wrap{padding:0 24px 32px;max-width:1100px}
@@ -176,8 +176,8 @@ function dummyBadge(color, mark){
   const svg =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151 182">' +
     '<path d="M75.5 4 141 30v62c0 42-29 68-65.5 86C39 160 10 134 10 92V30Z" fill="'+color+'"/>' +
-    '<path d="M75.5 4 141 30v62c0 42-29 68-65.5 86C39 160 10 134 10 92V30Z" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="5"/>' +
-    '<text x="75.5" y="104" font-family="sans-serif" font-size="46" font-weight="700" fill="#fff" text-anchor="middle">'+mark+'</text>' +
+    '<path d="M75.5 4 141 30v62c0 42-29 68-65.5 86C39 160 10 134 10 92V30Z" fill="none" stroke="var(--t-fg)" stroke-opacity=".55" stroke-width="5"/>' +
+    '<text x="75.5" y="104" font-family="sans-serif" font-size="46" font-weight="700" fill="var(--t-fg)" text-anchor="middle">'+mark+'</text>' +
     '</svg>';
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
@@ -598,14 +598,14 @@ const FRAMES946 = [
       if (!r.k.url) continue;
       const w = Math.min(f.w, 340), s = w / f.w;
       html += '<figure style="margin:0"><div style="position:relative;width:'+w+'px;height:'+(f.h*s)+'px;'
-           + 'background:#2b2724;overflow:hidden;border-radius:6px">'
+           + 'background:var(--t-panel);overflow:hidden;border-radius:6px">'
            + '<span style="position:absolute;inset:0;container-type:size">'
            + '<span style="padding:min(6.5cqw,6.5cqh);height:100%;display:flex;flex-direction:column">'
            + '<span style="display:flex;align-items:flex-start;gap:min(3cqw,3cqh);width:100%">'
            + '<img src="'+r.k.url+'" alt="" style="height:min(28cqw,28cqh);width:auto;display:block;opacity:.92">'
            + '</span></span></span>'
-           + '<span style="position:absolute;left:0;top:0;width:'+(r.L*s)+'px;height:1px;background:#e8b64c"></span>'
-           + '<span style="position:absolute;left:0;top:0;width:1px;height:'+(r.T*s)+'px;background:#e8b64c"></span>'
+           + '<span style="position:absolute;left:0;top:0;width:'+(r.L*s)+'px;height:1px;background:var(--t-warn-bg)"></span>'
+           + '<span style="position:absolute;left:0;top:0;width:1px;height:'+(r.T*s)+'px;background:var(--t-warn-bg)"></span>'
            + '</div><figcaption style="font-size:11px;color:var(--sub);margin-top:4px">'+r.name+'</figcaption></figure>';
     }
     html += '</div>';
@@ -614,5 +614,7 @@ const FRAMES946 = [
 })();
 </script>
 
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../theme/tamago-dark.css">
 </body>
 </html>

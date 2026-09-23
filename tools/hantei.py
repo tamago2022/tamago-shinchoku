@@ -134,7 +134,10 @@ def judge(runs, catches, blocked="", label=""):
 # ★「pushした＝出た」と数えない。本番の x-deployment-id の**UUIDが変わるまで**は
 #   「出ていない」。ごきげん補給所は GitHub Pages ではなく Lovable配信で、
 #   mainに入れただけでは本番は古いまま（2026-09-23 に4回踏んだ）。
-KOHYOU_MATIGIRE_SEC = 1800   # mainが動いてから30分、本番が動かなければ赤
+# ★1055番（2026-09-24）30分→10分に縮めた。実測で「押す→出る」は1〜5分で終わっている
+#   （status/kohyou_osu.log の09-24の7回：平均3分06秒／最長5分14秒）。30分待つ設計は、その差のぶんだけ
+#   本番を古いままにしていた。押すのは無料なので、待つ理由が無い。
+KOHYOU_MATIGIRE_SEC = 600    # mainが動いてから10分、本番が動かなければ赤
 
 
 def kohyou_han(status=0, error="", deploy_key="", prev_deploy_key="",
@@ -171,8 +174,12 @@ def kohyou_han(status=0, error="", deploy_key="", prev_deploy_key="",
 # ★1041番：赤になったとき「公開ボタンを押してよいか」の規則。**ここだけ**に書く。
 #   押す係（tools/kohyou_osu.py）は測って、この関数に渡すだけ。
 #   見る係（tools/kohyou_kanshi.py）は押さない。押す係は判定を書かない。
-KOHYOU_OSU_AIDA_SEC = 900      # 一度押したら15分は押し直さない
-KOHYOU_OSU_HI_JOUGEN = 12      # 1日に押してよい回数の上限（押すのは無料。暴走だけ止める）
+KOHYOU_OSU_AIDA_SEC = 600      # 一度押したら10分は押し直さない
+# ★1055番（2026-09-24）12→96。実測：09-23は9回・09-24は06:33までで既に7回押している。
+#   上限12だと昼前に使い切り、そのあと本番は**その日いっぱい古いまま**になる。
+#   押すのは無料（deployは全プラン無料）なので、上限は「暴走を止める柵」であって
+#   「1日の配給」ではない。10分に1回×24時間＝96が物理的な上限なので、そこに合わせる。
+KOHYOU_OSU_HI_JOUGEN = 96      # 1日に押してよい回数の上限（押すのは無料。暴走だけ止める）
 
 
 def kohyou_osu_han(hantei="", machi_sha="", now=0.0, last_press_at=0.0,
@@ -1052,3 +1059,290 @@ if __name__ == "__main__":
     print("規則：%s\n" % RULE)
     for r in audit():
         print(r["line"])
+
+
+# ────────────────────────────────────────────────────────────────
+# 1042番（2026-09-23）中継所（投げ込み箱→Mac）の生死。
+#
+# たまごさん「今日これで3回目の『黙って止まる』です。2回目以降は直さずパイプごと替える。」
+#
+# それまでの穴（実測）：
+#   ・relay_watch.py は「外から200が返るか」しか見ていなかった。
+#     200が返っても、受け口の中身が古ければ投げ込みは弾かれる＝**届かないのに緑**。
+#   ・立て直したあと「立て直した」とログに書いて終わっていた。
+#     本当に届くかは一度も確かめていない＝**直っていなくても緑**。
+#   ・Macが重い(load>20)と、見張りが黙って return していた＝**赤が誰にも見えない**。
+#
+# 規則はここにしか書かない（relay_watch も進捗表もここを呼ぶ）：
+#   最後に「実際に1本届いた」時刻が STALE_MIN 分より古い → 🔴（立て直す）
+#   立て直したのに届かない                              → 🔴（緑にしない・赤のまま残す）
+#   届いた                                              → ✅
+#
+# 「生きている」の根拠にプロセスの生死・トンネルのURL・/health の200を使わない。
+# それらは全部「空回しでも点く緑」。**届いた1本だけが根拠になる。**
+RELAY_STALE_MIN = 12          # relay.json の判子がこれより古かったら赤
+RELAY_JSON = os.path.join(STATUS, "relay.json")
+
+
+def _relay_mark_age_min(now=None):
+    """relay.json の「最後に実測で届いた時刻」から何分経ったか。取れなければ None。"""
+    now = time.time() if now is None else now
+    try:
+        d = json.load(io.open(RELAY_JSON, encoding="utf-8"))
+    except Exception:
+        return None, {}
+    stamp = d.get("verifiedAt") or d.get("checkedAt") or d.get("updatedAt") or ""
+    try:
+        t = datetime.datetime.strptime(stamp[:19], "%Y-%m-%dT%H:%M:%S")
+        t = t.replace(tzinfo=JST)
+        return (now - t.timestamp()) / 60.0, d
+    except Exception:
+        return None, d
+
+
+def relay_han(now=None, stale_min=RELAY_STALE_MIN):
+    """戻り値: (印, 理由1行, 中身dict)
+
+    印は "✅"（届いている）／"🔴"（届いていない＝立て直す）／"⚪"（まだ一度も測っていない）。
+    """
+    age, d = _relay_mark_age_min(now)
+    url = (d or {}).get("url") or ""
+    if age is None:
+        return "⚪", "中継所をまだ一度も実測していません", d or {}
+    if age > stale_min:
+        return "🔴", ("中継所に%d分間1本も届いていません（%s）。立て直します"
+                      % (int(age), url or "URL未設定")), d or {}
+    return "✅", "中継所は生きています（%d分前に実測で1本届いた）" % int(age), d or {}
+
+
+# ---------------------------------------------------------------------
+#  1048番（2026-09-24）【渡す前の門】―「そもそも開いて動くか」の判定
+# ---------------------------------------------------------------------
+#
+# たまごさん（2026-09-24）
+#   「俺でテストするなって言ってるじゃん。動くものを出してきてよって。
+#     まだ不完全なものを俺に触らせないでよ。表示されすらしないよ。
+#     動かないんだったら突き返してほしい。」
+#
+# 事故：share/ohon/1046-live2d.html を渡した。たまごさんの画面で何も出なかった。
+#       こちらのChromeは WebGL が切れていて（canvas.getContext('webgl') → false・実測）、
+#       **動くところを一度も見ずに渡していた。**
+#
+# ★判定はここにしか書かない。実際にブラウザを開いて数字を取るのは
+#   tools/watashi_gate.py。あちらは「測る」だけ、ここは「決める」だけ。
+#   同じ if を2か所に書けば、片方だけ直る日が必ず来る（1018番で実測済み）。
+
+# 目盛り（勝手に動かさない）
+MIRU_BYTES = 120          # 10秒後に画面に出ている本文の最低バイト数
+MIRU_NODES = 8            # 同・描画された要素の最低数
+FPS_MIN = 30.0            # 動くものの最低fps
+MAX_BYTES = 1024 * 1024   # 1MB
+WIDE_W = 375              # はみ出しを見る幅
+
+# consoleに出ていたら即アウトの言葉（たまごさんの事故がこの3つ）
+_WATASHI_NG_WORDS = ("webgl", "failed to load", "404", "not found",
+                     "is not defined", "uncaught")
+
+
+def watashi_han(obs):
+    """渡す前の門の判定。obs は tools/watashi_gate.py が実測で作った観測の記録。
+
+    返り値: 止める理由の一覧（list）。空なら渡してよい。
+    ここでは一切ブラウザを触らない＝この関数だけで机の上で試験できる。
+    """
+    stop = []
+    o = obs or {}
+    name = o.get("path") or "(名前なし)"
+
+    if o.get("open_error"):
+        stop.append("①そもそも開けませんでした：%s" % str(o["open_error"])[:160])
+        return stop
+
+    # ① 開いて10秒、画面に中身が出ているか
+    tb = int(o.get("text_bytes") or 0)
+    nd = int(o.get("painted_nodes") or 0)
+    if tb < MIRU_BYTES and nd < MIRU_NODES:
+        stop.append("①開いて10秒たっても画面に中身が出ていません"
+                    "（本文%dバイト・描画された要素%d個）" % (tb, nd))
+    if o.get("canvas_blank"):
+        stop.append("①canvasが真っ白のままです（%s）＝絵が1枚も描かれていない"
+                    % o.get("canvas_blank"))
+
+    # ② 押しても何も起きないボタン
+    dead = o.get("dead_buttons") or []
+    btn = int(o.get("buttons_total") or 0)
+    if dead:
+        stop.append("②押しても何も起きないボタンが%d/%d個あります：%s"
+                    % (len(dead), btn, "／".join(str(x)[:30] for x in dead[:4])))
+
+    # ③ console のエラー
+    errs = [str(e) for e in (o.get("console_errors") or [])]
+    if errs:
+        omo = [e for e in errs if any(w in e.lower() for w in _WATASHI_NG_WORDS)]
+        stop.append("③consoleにエラーが%d件出ています：%s"
+                    % (len(errs), (omo or errs)[0][:160]))
+
+    # ④ 外から読む部品が200以外
+    bad = [r for r in (o.get("resources") or []) if int(r.get("status") or 0) != 200]
+    if bad:
+        stop.append("④外から読む部品が200以外です：%s"
+                    % "／".join("%s→%s" % (str(r.get("url"))[-48:], r.get("status"))
+                                for r in bad[:4]))
+
+    # ⑤ 375px
+    m = o.get("mobile") or {}
+    if m:
+        if m.get("scroll_w") and int(m["scroll_w"]) > WIDE_W + 2:
+            stop.append("⑤375pxで横にはみ出します（中身の幅%dpx）" % int(m["scroll_w"]))
+        if int(m.get("text_bytes") or 0) < MIRU_BYTES and int(m.get("painted_nodes") or 0) < MIRU_NODES:
+            stop.append("⑤375pxで中身が出ません"
+                        "（本文%sバイト・要素%s個）" % (m.get("text_bytes"), m.get("painted_nodes")))
+
+    # ⑥ 動くもの：fpsと重さ
+    fps = o.get("fps")
+    if o.get("is_animated") and fps is not None and float(fps) < FPS_MIN:
+        stop.append("⑥動きがfps %.1f で30を割っています（カクつきます）" % float(fps))
+    nb = int(o.get("bytes") or 0)
+    if nb > MAX_BYTES:
+        stop.append("⑥1MBを超えています（%.2fMB）" % (nb / 1024.0 / 1024.0))
+
+    if o.get("needs_webgl") and not o.get("webgl_ok"):
+        stop.append("⑥WebGLが要るページなのに、WebGLが立ち上がりませんでした"
+                    "（このページは相手の機械でも真っ白になります）")
+
+    if stop:
+        stop.append("（対象：%s）" % name)
+    return stop
+
+
+def watashi_kanmon():
+    """★門そのものが効いているかを毎回みる。見本で落ちなくなったら赤。
+
+    e_gate と同じ考え方。門は静かに素通りするようになっても誰も気づかない。
+    """
+    warui = {
+        "path": "みほん-わるい.html", "text_bytes": 0, "painted_nodes": 1,
+        "buttons_total": 2, "dead_buttons": ["はじめる"],
+        "console_errors": ["console: WebGL: context creation failed"],
+        "resources": [{"url": "https://example.com/core.js", "status": 404}],
+        "mobile": {"scroll_w": 980, "text_bytes": 0, "painted_nodes": 1},
+        "is_animated": True, "fps": 7.5, "bytes": 3 * 1024 * 1024,
+        "needs_webgl": True, "webgl_ok": False,
+    }
+    yoi = {
+        "path": "みほん-よい.html", "text_bytes": 2400, "painted_nodes": 180,
+        "buttons_total": 2, "dead_buttons": [],
+        "console_errors": [], "resources": [{"url": "x.css", "status": 200}],
+        "mobile": {"scroll_w": 375, "text_bytes": 2300, "painted_nodes": 170},
+        "is_animated": False, "fps": None, "bytes": 21000,
+        "needs_webgl": False, "webgl_ok": False,
+    }
+    a, b = watashi_han(warui), watashi_han(yoi)
+    if not a:
+        return judge(1, 0, label="渡す門の見張り",
+                     blocked="わざと壊した見本が通ってしまいました＝門が効いていません")
+    if b:
+        return judge(1, 0, label="渡す門の見張り",
+                     blocked="正しい見本を落としました＝門が厳しすぎます：%s" % b[0])
+    r = judge(1, 1, label="渡す門の見張り")
+    r["line"] = "✅ 渡す門 … 見本で%d件落とし、正しい見本は通しました" % len(a)
+    return r
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 1049番【依頼の門】― 「たまごさんが頼んだものに、これは答えているか」
+#
+# ■ たまごさんの言葉（2026-09-24・そのまま）
+#   「不完全なものが俺に上がってくるのを極力減らしたい。目標はゼロに近づけて。
+#     『違う、そうじゃないから』っていうのが、まずだるい。」
+#
+# ■ 既にある門との違い（だから1つ足りていなかった）
+#   出典の無い数字   → kazu_gate     日本語   → oni_gate
+#   絵               → e_gate        開いて動くか → watashi_gate / sumaho_gate
+#   ★頼んだものに答えているか → ここ。**機械には判定できない。**だから外のAIに見せる。
+#
+# ■ 規則（これが全部・他所に同じifを書かない）
+#   ・生きている口が0     → 🔴 止める（「誰にも見せていない＝見ていない」）
+#   ・「いいえ」が1つでも → 🔴 止める。理由をそのまま出す（言い換えない）
+#   ・はい／いいえに読めない返事 → 🔴 止める（測っていない＝通っていない）
+#   ・「はい」が2社       → 通す
+#   ・「はい」が1社だけ（もう1社が動かない）→ 通す。ただし「1社だけで見た」を必ず記録に残す
+# ══════════════════════════════════════════════════════════════════════
+
+IRAI_HITSUYOU_SHA = 2   # 本来見せたい社数
+
+
+def irai_han(answers):
+    """依頼の門の判定。answers は tools/irai_gate.py が外のAIから受け取った実測の返事。
+
+    answers: [{"who": "genspark", "yes": True/False/None, "why": "…", "error": "…"}, …]
+    戻り値: dict(ok, stop, note, kiita, ikiteru)
+      ok   … True なら たまごさんに渡してよい
+      stop … 止める理由の一覧（空なら通す）
+      note … 記録に必ず残す但し書き（「1社だけで見た」等）。無ければ空文字
+    ここではAIを1回も呼ばない＝この関数だけで机の上で試験できる。
+    """
+    rows = list(answers or [])
+    ikiteru = [r for r in rows if not (r.get("error") or "").strip()]
+    shinda = [r for r in rows if (r.get("error") or "").strip()]
+    stop, note = [], ""
+
+    if not ikiteru:
+        riyuu = "／".join("%s：%s" % (r.get("who"), str(r.get("error"))[:80]) for r in shinda) \
+            or "外のAIを1社も呼べていません"
+        stop.append("外のAIが1社も動きませんでした＝**誰もこれを見ていません**。"
+                    "見ていないものは渡しません（%s）" % riyuu)
+        return {"ok": False, "stop": stop, "note": "", "kiita": len(rows), "ikiteru": 0}
+
+    # 読めない返事は「はい」に丸めない。★ここを緩めると門が静かに素通りするようになる。
+    yomenai = [r for r in ikiteru if r.get("yes") is None]
+    for r in yomenai:
+        stop.append("%s の返事が はい／いいえ に読めませんでした：%s"
+                    % (r.get("who"), (str(r.get("why") or "")[:100] or "(空)")))
+
+    iie = [r for r in ikiteru if r.get("yes") is False]
+    for r in iie:
+        stop.append("%s が「いいえ」：%s" % (r.get("who"), str(r.get("why") or "").strip()[:200]))
+
+    hai = [r for r in ikiteru if r.get("yes") is True]
+    if not stop and len(hai) < IRAI_HITSUYOU_SHA:
+        note = ("★1社だけで見ました（%s）。%s は動きませんでした：%s"
+                % ("・".join(str(r.get("who")) for r in hai),
+                   "・".join(str(r.get("who")) for r in shinda) or "もう1社",
+                   "／".join(str(r.get("error"))[:60] for r in shinda) or "呼べていません"))
+
+    return {"ok": not stop, "stop": stop, "note": note,
+            "kiita": len(rows), "ikiteru": len(ikiteru)}
+
+
+def irai_kanmon():
+    """★門そのものが効いているかを毎回みる。見本で落ちなくなったら赤。
+
+    watashi_kanmon / e_gate と同じ考え方。門は静かに素通りするようになっても誰も気づかない。
+    """
+    miru = [
+        # わざと落ちる見本
+        ([{"who": "A", "yes": False, "why": "絵本ではなく静止画の羅列です"},
+          {"who": "B", "yes": True, "why": ""}], False, "1社でも「いいえ」"),
+        ([{"who": "A", "yes": None, "why": "うーん"},
+          {"who": "B", "yes": True, "why": ""}], False, "読めない返事"),
+        ([{"who": "A", "yes": None, "why": "", "error": "429"},
+          {"who": "B", "yes": None, "why": "", "error": "team_blocked"}], False, "口が0"),
+        # 通る見本
+        ([{"who": "A", "yes": True, "why": ""},
+          {"who": "B", "yes": True, "why": ""}], True, "2社とも「はい」"),
+    ]
+    for ans, hazu, label in miru:
+        r = irai_han(ans)
+        if r["ok"] != hazu:
+            return judge(1, 0, label="依頼の門の見張り",
+                         blocked="見本『%s』の判定がずれました（出たのは ok=%s）" % (label, r["ok"]))
+    # 1社だけのときは通すが、但し書きが消えていないこと
+    r = irai_han([{"who": "A", "yes": True, "why": ""},
+                  {"who": "B", "yes": None, "why": "", "error": "429"}])
+    if not r["ok"] or "1社だけ" not in r["note"]:
+        return judge(1, 0, label="依頼の門の見張り",
+                     blocked="1社だけで通したのに『1社だけで見た』が記録に残っていません")
+    res = judge(1, 1, label="依頼の門の見張り")
+    res["line"] = "✅ 依頼の門 … 見本%d本すべて想定どおり" % (len(miru) + 1)
+    return res

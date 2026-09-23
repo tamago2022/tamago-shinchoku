@@ -82,6 +82,28 @@ if not os.path.exists(CLAUDE):
             CLAUDE = c
             break
 
+# ---- 1158番：claude は必ず関所を通す（2026-09-26）----
+# 同時起動の競合で refreshToken が空を書き戻され鍵ごと消える事故を、
+# 起動口で物理的に止める。上限は status/dojisu_jougen.json の「同時上限」。
+# 関所は引数をそのまま素通しするので、呼ぶ側のコードは1文字も変わらない。
+_KANMON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1158_kanmon.py")
+CLAUDE_DIRECT = CLAUDE          # 関所を通さない本体（下の理由で見張りだけが使う）
+if os.path.exists(_KANMON):
+    os.environ.setdefault("KANMON_CLAUDE_BIN", CLAUDE)
+    CLAUDE = _KANMON
+
+# ---- 2026-09-27（1161番の続き）見張りの1本は関所に並ばせない ----
+# 実測：09-27 07:52〜14:35 の probe 10回が**全部**「混んでいて測れなかった(待ち)」。
+#   1158番の関所が同時上限1本なので、本物の発車が枠を持っている間、見張りは待つだけで
+#   120秒に間に合わない。＝**7時間、ログインの生死を誰も測っていなかった。**
+#   「切れたら即わかる」が、工場が動いているときだけ効かない逆立ちした作り（1161番と同じ形）。
+# なぜ並ばせなくて安全か：関所の目的は、同時起動が refreshToken を作り替えるときの
+#   取り合い（負けた側が空を書き戻して鍵ごと消す）を止めること。
+#   CLAUDE_CODE_OAUTH_TOKEN を渡す形は**作り替えが一切起きない**（読むだけ）。
+#   だからトークンで測るときは書き込み競合の余地が無く、関所に並ぶ理由が無い。
+#   キーチェーン側で測るときは今までどおり関所を通す（あちらは書き替えが起きる）。
+
+
 PROBE_INTERVAL_OK = 1800       # 通っているときは30分に1回
 PROBE_INTERVAL_NG = 600        # 切れているときは10分に1回（戻ったら即再開したい）
 TOKEN_LIFETIME_DAYS = 365      # setup-token の公称寿命
@@ -117,10 +139,10 @@ def save_state(st):
         pass
 
 
-def notify(key, message, st):
-    """dispatch_outbox.jsonl へ1行だけ。同じ用件は6時間に1回まで。"""
+def notify(key, message, st, cooldown=None):
+    """dispatch_outbox.jsonl へ1行だけ。同じ用件は既定6時間に1回まで。"""
     last = (st.get("notified") or {}).get(key, 0)
-    if time.time() - last < NOTIFY_COOLDOWN:
+    if time.time() - last < (cooldown if cooldown else NOTIFY_COOLDOWN):
         return
     try:
         with io.open(OUTBOX, "a", encoding="utf-8") as f:
@@ -155,12 +177,27 @@ def probe(use_token):
         if not t:
             return False, "トークンファイルが無い/形が違う"
         env["CLAUDE_CODE_OAUTH_TOKEN"] = t
+    # トークンで測るときだけ関所を通さない（上の理由）
+    binpath = CLAUDE_DIRECT if use_token else CLAUDE
     try:
-        r = subprocess.run([CLAUDE, "-p", "--model", "claude-sonnet-5",
+        r = subprocess.run([binpath, "-p", "--model", "claude-sonnet-5",
                             "--output-format", "json", "1+1は？数字だけ"],
-                           capture_output=True, text=True, timeout=120, env=env)
+                           capture_output=True, text=True, timeout=120, env=env,
+                           # ★2026-09-27：stdin を閉じる。心臓の子として走るとき stdin は
+                           #   開いたままのパイプで、claude -p はそれを「続きの入力」と見て
+                           #   EOFを待ち、永久に黙る。＝120秒で毎回タイムアウトしていた正体。
+                           #   「混んでいて測れなかった」は混んでいたのではなく、待たされていた。
+                           stdin=subprocess.DEVNULL)
+    except subprocess.TimeoutExpired:
+        # 2026-09-26 実測：関所（1158番・同時上限1本）が本物の発車で埋まっていると
+        # 見張りの1本は空きを待つだけで120秒に間に合わない。これは「切れた」ではなく
+        # **測れなかった**。ここを expired と書いたせいで、生きている鍵の上に
+        # no_launch.flag が立ち直り、進捗表の赤が戻っていた。
+        return None, "混んでいて測れなかった(待ち)"
     except Exception as e:
         return False, "叩けなかった(%s)" % type(e).__name__
+    if r.returncode == 75:
+        return None, "関所が空くのを待って諦めた(待ち)"
     out = (r.stdout or "") + (r.stderr or "")
     if "OAuth session expired" in out:
         return False, "OAuth session expired（更新用の鍵ごと無効）"
@@ -206,7 +243,8 @@ def raise_flags(reason):
         io.open(AUTH_FLAG, "w", encoding="utf-8").write(time.strftime("%F %H:%M"))
         io.open(NO_LAUNCH, "w", encoding="utf-8").write(
             "Claudeのログインが切れています（%s）。枠の問題ではありません。"
-            "いつものClaudeのアプリで1回ログインし直せば、こちらで気づいて自動で再開します。%s\n"
+            "status/LOGIN.md の1行をターミナルに貼ってEnterを押すと、1年もつ形に入れ替わります。"
+            "戻ったことはこちらで気づいて、発車も自動で再開します。%s\n"
             % (reason, time.strftime("%F %H:%M")))
     except Exception:
         pass
@@ -236,9 +274,20 @@ def main():
     using_token = os.path.exists(USE_TOKEN)
     ok, why = probe(using_token)
 
+    # ---- ①' 測れなかった（混んでいた）ときは、何も動かさずに次の回に送る ----
+    #   「測れなかった」を「切れた」と書かない。旗も立てない・use_tokenも外さない。
+    if ok is None:
+        log("判定を見送りました（%s）" % why)
+        save_state(st)
+        return 0
+
     # ---- ② ダメなら、もう片方も1回だけ試す（正本の付け替えは自動でやる） ----
     if not ok:
         other_ok, other_why = probe(not using_token)
+        if other_ok is None:
+            log("判定を見送りました（%s）" % other_why)
+            save_state(st)
+            return 0
         if other_ok:
             set_use_token(not using_token)
             log("正本を切り替えました（%s → %s）"
@@ -255,6 +304,7 @@ def main():
 
     if ok:
         st["lastOkAt"] = now
+        st["ngSince"] = None
         st["source"] = "setup-token(1年)" if using_token else "キーチェーンの/loginのOAuth"
         clear_flags()
         # ---- ③ 切れる前に言う ----
@@ -271,18 +321,27 @@ def main():
                                "（切れてから慌てないように、先に声をかけています）。" % d, st)
                         break
         else:
-            # キーチェーンの/loginのOAuthで動いている＝また数日で切れる形のまま。
-            # /login のOAuthで動いている＝寿命が短い形。ただし、たまごさんに
-            # 「別のやり方で入れ直して」と頼むのは新しい手間なので、ここでは黙って動かす。
-            # 切れる3日前に公式CLIが警告を出すので、その時にだけ1行お願いする（下のexpire系）。
-            pass
+            # キーチェーンの/loginのOAuthで動いている＝**競合でいつでも消える形のまま。**
+            # 2026-09-25の実測：refreshTokenは1回しか使えず、同時に十数本走るこの工場では
+            # 負けた側が「空っぽ」を書き戻して正しい鍵ごと消す。黙って動かすと必ずまた落ちる。
+            # だから3日に1回だけ「1本貼れば1年もつ形になる」と声をかける（毎回は言わない）。
+            notify("kirenai-katachi",
+                   "🔑 いまのログインは数日で切れる形（/loginのOAuth）で動いています。"
+                   "同時に何本も走らせると競合で鍵ごと消えるので、また必ず落ちます。"
+                   "status/LOGIN.md の1行を貼ってEnterすると1年もつ形に替わります（課金は変わりません）。",
+                   st, cooldown=3 * 86400)
         log("生きています（%s）" % st["source"])
     else:
         raise_flags(why)
         st["lastNgWhy"] = why
+        # いつから切れているか（進捗表の赤に「◯日から」と出すため）。
+        # 一度立てたら、通るまで上書きしない＝5日経っていることが数字で見える。
+        if not st.get("ngSince"):
+            st["ngSince"] = time.strftime("%F %H:%M")
         notify("expired",
                "🔑 Claudeのログインが切れました（%s）。枠の問題ではありません。"
-               "鍵だけはAIには作れません。いつものClaudeのアプリで1回ログインし直してください。"
+               "鍵だけはAIには作れません。status/LOGIN.md の1行を貼ってEnterを押してください"
+               "（1年もつ形に入れ替わるので、次は来年までありません）。"
                "戻ったことはこちらで気づいて、発車も自動で再開します。" % why, st)
         log("切れています（%s）" % why)
 

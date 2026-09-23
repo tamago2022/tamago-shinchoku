@@ -7,8 +7,8 @@
 <title>公開ボタンの抜け道 — 8つ並べて選ぶ（952番）</title>
 <style>
   :root{
-    --ink:#17150f; --sub:#6b6458; --line:#d9d2c4; --paper:#f6f2e9;
-    --accent:#a8321e; --ok:#1c6b45; --ng:#a8321e; --warn:#96712a;
+    --ink:var(--t-fg2); --sub:var(--t-mute); --line:var(--t-line); --paper:var(--t-panel);
+    --accent:var(--t-ng); --ok:var(--t-ok); --ng:var(--t-ng); --warn:var(--t-warn);
   }
   *{box-sizing:border-box}
   body{
@@ -23,34 +23,34 @@
   .lede{font-size:15px;color:var(--sub);margin:0}
   h2{font-size:19px;margin:44px 0 12px;padding-left:12px;border-left:5px solid var(--accent)}
   p{margin:0 0 14px}
-  .box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:0 0 18px}
-  .box.hit{border-color:var(--ok);border-left-width:6px;background:#f4fbf7}
-  .box.stop{border-color:var(--ng);border-left-width:6px;background:#fdf5f3}
+  .box{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:0 0 18px}
+  .box.hit{border-color:var(--ok);border-left-width:6px;background:var(--t-panel)}
+  .box.stop{border-color:var(--ng);border-left-width:6px;background:var(--t-panel)}
   .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 10px;
-    border:1px solid var(--line);border-radius:10px;background:#fff}
+    border:1px solid var(--line);border-radius:10px;background:var(--t-panel)}
   table{border-collapse:collapse;width:100%;min-width:820px;font-size:13.5px}
   th,td{border-bottom:1px solid var(--line);padding:11px 12px;vertical-align:top;text-align:left}
-  thead th{background:#efe9dc;font-size:12px;letter-spacing:.06em;white-space:nowrap;
+  thead th{background:var(--t-panel);font-size:12px;letter-spacing:.06em;white-space:nowrap;
     position:sticky;top:0;border-bottom:2px solid var(--ink)}
   tbody tr:last-child td{border-bottom:none}
   td.num{font-weight:700;white-space:nowrap;text-align:center;font-size:15px}
   .hands0{color:var(--ok);font-weight:700}
   .hands1{color:var(--warn);font-weight:700}
   .handsX{color:var(--ng);font-weight:700}
-  tr.win td{background:#f4fbf7}
-  tr.dead td{color:#8d867a}
+  tr.win td{background:var(--t-panel)}
+  tr.dead td{color:var(--t-mute)}
   .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;
     border:1px solid currentColor;font-weight:700;white-space:nowrap}
   .tag.ok{color:var(--ok)} .tag.ng{color:var(--ng)} .tag.warn{color:var(--warn)}
   ol,ul{margin:0 0 14px;padding-left:1.35em}
   li{margin:0 0 7px}
-  code{background:#eae3d5;padding:1px 6px;border-radius:4px;font-size:.9em}
+  code{background:var(--t-panel);padding:1px 6px;border-radius:4px;font-size:.9em}
   .src{font-size:12px;color:var(--sub);border-top:1px solid var(--line);margin-top:34px;padding-top:14px}
   .src a{color:var(--sub)}
   .steps{counter-reset:s;list-style:none;padding:0;margin:0}
   .steps li{counter-increment:s;position:relative;padding-left:40px;margin:0 0 12px}
   .steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:26px;height:26px;
-    border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:700;
+    border-radius:50%;background:var(--t-info-bg);color:var(--t-info);font-size:13px;font-weight:700;
     display:flex;align-items:center;justify-content:center}
   .foot{font-size:12px;color:var(--sub);margin-top:6px}
   @media(max-width:600px){ .wrap{padding:26px 14px 70px} }
@@ -250,5 +250,7 @@ joy-relief-station に同じ <code>pages.yml</code> を1本置けば、同じこ
 </div>
 
 </div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../theme/tamago-dark.css">
 </body>
 </html>

@@ -10,8 +10,8 @@
 <meta property="og:type" content="article">
 <style>
 :root{
-  --paper:#F1EBDD; --ink:#23303F; --aka:#C0432B;
-  --sub:#6C6A62; --line:#DCD3C0;
+  --paper:var(--t-panel); --ink:var(--t-fg2); --aka:var(--t-ng);
+  --sub:var(--t-mute); --line:var(--t-line);
   --mincho:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP","Times New Roman",serif;
   --lat:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   /* 文字は5段階だけ */
@@ -41,12 +41,12 @@ section > p{margin:0 0 1.55em;}
 .opener::after{
   content:"";position:absolute;left:0;right:0;top:0;
   height:clamp(360px,66vh,640px);pointer-events:none;
-  background:linear-gradient(to top,rgba(21,29,39,.88) 0%,rgba(21,29,39,.66) 34%,rgba(21,29,39,.10) 72%,rgba(21,29,39,0) 100%);
+  background:linear-gradient(to top,var(--t-bg) 0%,var(--t-bg) 34%,rgba(21,29,39,.10) 72%,rgba(21,29,39,0) 100%);
 }
 .full::after{
   content:"";position:absolute;left:0;right:0;top:0;
   height:clamp(320px,52vh,520px);pointer-events:none;
-  background:linear-gradient(to top,rgba(21,29,39,.88) 0%,rgba(21,29,39,.66) 34%,rgba(21,29,39,.10) 72%,rgba(21,29,39,0) 100%);
+  background:linear-gradient(to top,var(--t-bg) 0%,var(--t-bg) 34%,rgba(21,29,39,.10) 72%,rgba(21,29,39,0) 100%);
 }
 .opener-type,.full-type{z-index:2;}
 .opener .cap,.full .cap{position:relative;z-index:3;}
@@ -132,7 +132,7 @@ h2.onplate{
   font-size:15px;line-height:1.75;letter-spacing:0.03em;background:rgba(255,255,255,.34);
 }
 .linkcard a span{display:block;font-size:12.5px;color:var(--sub);margin-top:5px;}
-.linkcard a:hover{background:rgba(255,255,255,.62);}
+.linkcard a:hover{background:var(--t-panel);}
 
 /* ── 出典 ─────────────────────────── */
 .sources{margin-top:clamp(40px,8vw,90px);}
@@ -329,5 +329,7 @@ ol.src .note{display:block;color:var(--sub);font-size:12.5px;margin-top:4px;}
 
 </article>
 
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../theme/tamago-dark.css">
 </body>
 </html>

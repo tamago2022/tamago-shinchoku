@@ -24,6 +24,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 import gaibu_kuchi as gkuchi  # noqa: E402
+import kagi  # noqa: E402  # noqa: E402
 
 
 def _get(url, headers, timeout=30):
@@ -35,7 +36,7 @@ def _get(url, headers, timeout=30):
 def key_files_report():
     """鍵ファイルに **どんな名前** が書いてあるか。値は絶対に出さない。"""
     out = []
-    for path in gkuchi.EXTRA_KEY_FILES + [os.path.expanduser("~/.env"),
+    for path in kagi.ALL_FILES + [os.path.expanduser("~/.env"),
                                           os.path.join(os.path.dirname(HERE), ".env")]:
         if not os.path.exists(path):
             out.append({"path": path, "exists": False})

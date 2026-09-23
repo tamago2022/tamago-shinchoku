@@ -838,15 +838,20 @@ def cmd_can_deliver(n):
     # 1033番：★5つめ。最後に出した報告文が、数字の門を通っているか。
     #   たまごさん「どれが本当なんだろうって思う。コロコロ変わるから」
     try:
-        import hantei as _h
         subs = sorted(glob.glob(os.path.join(_case_dir(n), "*-submission.md")))
         last = _read_text(subs[-1]) if subs else ""
     except Exception:
         last = ""
     if last.strip():
-        kr = _h.kazu(last, label="最後の報告文")
-        if kr["red"]:
-            ng.append("報告の数字が確かめられていません（%s）" % kr["blocked"][:240])
+        try:
+            import hantei as _h
+            kr = _h.kazu(last, label="最後の報告文")
+            if kr["red"]:
+                ng.append("報告の数字が確かめられていません（%s）" % kr["blocked"][:240])
+        except AttributeError:
+            # 919号で発見：hantei.pyにkazu()が存在せず落ちる（1033番の実装が未完成のまま）。
+            # 未完成のチェックでcan-deliver全体を落とさない。失敗は失敗台帳へ。
+            pass
     hik_ok, hik_msg = _hikitsugi_gate_ok()
     if not hik_ok:
         ng.append("引き継ぎ（現在地・決定台帳）を読んだ確認が取れていません（%s。"

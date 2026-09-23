@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#1031 SNS ― 口は1本も開いていなかった／今日出す1本 確認ページ</title>
 <style>
-:root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;--mi:#b0a894;}
+:root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);--ki:var(--t-warn);--mi:var(--t-mute);}
 *{box-sizing:border-box;}
 body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 14px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:860px;margin-left:auto;margin-right:auto;overflow-x:hidden;}
@@ -15,44 +15,44 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-siz
 h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:.04em;margin:38px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
 h3{font-size:.95rem;margin:20px 0 6px;color:var(--ao);}
 .date{color:var(--sub);font-size:.8rem;margin-bottom:16px;word-break:break-word;}
-.fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.02rem;}
+.fix{background:var(--t-panel);border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.02rem;}
 .fix p{margin:0 0 10px;} .fix p:last-child{margin:0;}
-.note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:.9rem;margin:0 0 14px;}
-.warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:.9rem;margin:0 0 14px;}
-.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%;}
+.note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:.9rem;margin:0 0 14px;}
+.warn{background:var(--t-panel);border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:.9rem;margin:0 0 14px;}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 14px;border-radius:10px;border:1px solid var(--line);background:var(--t-panel);max-width:100%;}
 table{border-collapse:separate;border-spacing:0;font-size:.84rem;min-width:560px;}
 th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;white-space:nowrap;}
-th{background:#efe9db;color:var(--sub);font-weight:600;font-size:.7rem;line-height:1.25;}
-th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:#fff;border-right:1px solid var(--line);font-size:.8rem;padding-left:10px;min-width:96px;font-weight:600;}
-th.t{background:#efe9db;z-index:3;}
+th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:.7rem;line-height:1.25;}
+th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:var(--t-panel);border-right:1px solid var(--line);font-size:.8rem;padding-left:10px;min-width:96px;font-weight:600;}
+th.t{background:var(--t-panel);z-index:3;}
 tr:last-child td{border-bottom:none;}
 .yes{color:var(--midori);font-weight:700;} .no{color:var(--aka);font-weight:700;} .may{color:var(--ki);font-weight:700;}
-.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 0 14px;margin:0 0 18px;overflow:hidden;}
+.card{background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:0 0 14px;margin:0 0 18px;overflow:hidden;}
 .card img{display:block;width:100%;height:auto;}
 .card .in{padding:12px 15px 0;}
-.cap{white-space:pre-wrap;font-size:.88rem;line-height:1.65;background:#faf7f0;border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:8px 0 0;}
-.btn{display:inline-block;margin:10px 0 0;background:var(--ao);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;}
-.btn.g{background:var(--midori);}
+.cap{white-space:pre-wrap;font-size:.88rem;line-height:1.65;background:var(--t-panel);border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:8px 0 0;}
+.btn{display:inline-block;margin:10px 0 0;background:var(--ao);color:var(--t-on-accent);border:0;border-radius:8px;padding:9px 16px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn.g{background:var(--midori);color:var(--t-on-accent)}
 .meta{font-size:.78rem;color:var(--sub);margin:6px 0 0;word-break:break-all;}
-details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 9px;}
+details{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 9px;}
 details summary{cursor:pointer;font-size:.9rem;font-weight:700;}
 .row{display:flex;gap:12px;align-items:flex-start;margin-top:10px;}
 .row img{width:118px;height:118px;object-fit:cover;border-radius:8px;flex:0 0 auto;}
 ol.steps{margin:0 0 14px;padding-left:1.3em;}
-ol.steps li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin:0 0 8px;font-size:.9rem;}
+ol.steps li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin:0 0 8px;font-size:.9rem;}
 ol.steps li b{display:block;margin-bottom:3px;}
 ul.plain{list-style:none;margin:0 0 14px;padding:0;}
-ul.plain li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;font-size:.9rem;}
+ul.plain li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;font-size:.9rem;}
 ul.plain li b{display:block;margin-bottom:3px;}
-code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
+code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
 footer{color:var(--sub);font-size:.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
 @media (max-width:420px){body{font-size:15px;padding-left:11px;padding-right:11px;}h1{font-size:1.12rem;}.row img{width:92px;height:92px;}}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1031 ／ 元：<a href="./1030-tekizai-matrix.html">#1030 SNSが9列すべて─だった表</a></div>
@@ -483,5 +483,7 @@ function fallback(t,done){
   document.body.removeChild(a);
 }
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

@@ -70,6 +70,14 @@ SAIFU = {
     "devin":    "Devin（オンデマンド）",
     "genspark": "Genspark（クレジット）",
     "anthropic": "Anthropic API（従量・使うなら）",
+    # 1051番で足した。★財布が無いと「栓の外」になってしまう＝知らないうちに出る側に回る。
+    # ElevenAgents は新規に金が出る可能性がある口なので、0円で置いておく（＝止まっている）。
+    "eleven":   "ElevenLabs / ElevenAgents（声・エージェント）",
+    # 1052番で足した。Jev（TypeSafe AI）＝判定だけ返すモデル。仕入れの本人判定に使う。
+    # ★入力課金のみ・出力は0円。$0.042/1Mトークン＝約6.6円/1Mトークン（1ドル157.16円）。
+    # ★出典: https://docs.typesafe.ai/models（2026-09-24 実読）
+    # ★0円で置く＝止まっている。たまごさんが --set typesafe N と言った分だけ開く。
+    "typesafe": "TypeSafe AI / Jev（本人判定・検品の門）",
 }
 
 # 1ドル何円で数えるか。★実測したレートを1か所に置く（1032番の実測値）。

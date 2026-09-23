@@ -3,24 +3,24 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                                                // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                                                                                  // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-19T10:40:53.829Z",
+      "updatedAt": "2026-09-27T12:03:51.113Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
-      "dateJST": "2026-09-19",
+      "dateJST": null,
       "successCountToday": 0,
-      "consecutiveFailures": 4,
-      "stoppedForToday": true,
-      "lastResult": "fail",
-      "lastCheckedAt": "2026-09-19T10:40:52.100Z",
+      "consecutiveFailures": 0,
+      "stoppedForToday": false,
+      "lastResult": null,
+      "lastCheckedAt": null,
       "lastPublishedSha": null,
-      "lastFailureReason": "「公開」ボタンが見つからない。画面がエディタでない可能性。URL: https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1",
-      "lastFailureAt": "2026-09-19T10:40:52.100Z",
-      "mainSha": "a9ea41a8b3",
-      "mainUnpublished": true,
+      "lastFailureReason": null,
+      "lastFailureAt": null,
+      "mainSha": null,
+      "mainUnpublished": false,
       "paused": false,
       "pauseReason": null
   },
@@ -253,6 +253,7 @@ window.SHINCHOKU = {
   {status:"red", content:"Xの過去投稿を検索できるようにする", orderedAt:"2026-08-31T00:00:00+09:00", owner:"不明", evidence:"", note:"状態不明。00_現在地・棚卸しに記録なし"},
 
   // --- 作業中(担当セッション生存確認あり、または部分的に前進が確認できている) ---
+  {status:"wip", content:"ラシコル(LINEスタンプ ID47502978)：審査中／5日経過", orderedAt:"2026-09-26T13:23:00+09:00", owner:"1162番 見張り係", evidence:"https://tamago2022.github.io/tamago-shinchoku/1162-rashikoru.html", note:"3時間おきにLINE STOREの商品ページを見に行き、公開されたら表が変わる(tools/1162_mihari.py)。LINE公式は『審査完了まで1ヶ月ほど』と案内しており、問い合わせフォームも『リクエストから1か月以上』でないと送信できない仕様(2026-09-26実測)。出せるようになるのは2026-10-21以降。"},
   {status:"wip", content:"見回り係(rusuban-mimawari-30min)がbudget_guardで後継セッションを着火できない構造問題の解消", orderedAt:"2026-08-31T23:30:00+09:00", owner:"PID 48717「見回り係が次を立てられるようにする」", evidence:"", note:"生存確認済み・作業中"},
   {status:"wip", content:"Eagleとの連携(外付けライブラリの画像を検索・活用)", orderedAt:"2026-08-31T00:00:00+09:00", owner:"-", evidence:"", note:"外付け「eagle AI 画像整理.library」1129点は読める所まで確認済み。タグが無く見た目検索は要工夫、連携未完成"},
 

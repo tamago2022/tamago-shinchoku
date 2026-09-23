@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  1401番【Chromeタブ掃除便】2026-09-28・2分おき。
+  たまごさん「Chromeに使っていないタブが溜まり続けている。毎回手で消している。今回で終わらせる。」
+
+  ★AppleScript / osascript / System Events は1行も使わない（tools/1401_cdp_run.sh の中身参照）。
+  ★Brave には一切触らない。
+  ★止めたいときは status/1401_cdp.nostop を置くだけ（plistを触らなくてよい）。
+
+  入れ方（tools/1401_install.sh が同じことをやる。心臓が毎周それを呼ぶので手作業は要らない）:
+    cp tools/com.tamago.chrome-tab-cdp.plist ~/Library/LaunchAgents/
+    launchctl unload ~/Library/LaunchAgents/com.tamago.chrome-tab-cdp.plist 2>/dev/null
+    launchctl load  ~/Library/LaunchAgents/com.tamago.chrome-tab-cdp.plist
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tamago.chrome-tab-cdp</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/mac/Desktop/tamago-shinchoku/tools/1401_cdp_run.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/mac/Desktop/tamago-shinchoku</string>
+
+  <key>StartInterval</key>
+  <integer>120</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>ThrottleInterval</key>
+  <integer>120</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/mac/Desktop/tamago-shinchoku/status/1401_cdp_launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/mac/Desktop/tamago-shinchoku/status/1401_cdp_launchd.log</string>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>Nice</key>
+  <integer>5</integer>
+</dict>
+</plist>

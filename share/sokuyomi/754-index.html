@@ -10,33 +10,33 @@
   * { box-sizing: border-box; }
   body {
     margin: 0; padding: 16px calc(16px + env(safe-area-inset-right)) 40px calc(16px + env(safe-area-inset-left));
-    background: #1a2030; color: #eef0f6;
+    background: var(--t-panel); color: var(--t-fg);
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
     max-width: 640px; margin-left: auto; margin-right: auto;
   }
   h1 { font-size: 20px; margin: 16px 0 6px; }
-  h2 { font-size: 16px; margin: 28px 0 8px; color: #c9d3ff; }
-  .badge { display:inline-block; background:#262f52; color:#c9d3ff; border-radius:999px; padding:3px 12px; font-size:13px; font-weight:700; margin-left:8px; }
+  h2 { font-size: 16px; margin: 28px 0 8px; color: var(--t-info); }
+  .badge { display:inline-block; background:var(--t-info-bg); color:var(--t-info); border-radius:999px; padding:3px 12px; font-size:13px; font-weight:700; margin-left:8px; }
   .card {
-    display: block; background: #10131f; border: 1px solid #333c5a; border-radius: 14px;
-    padding: 16px; margin-bottom: 12px; text-decoration: none; color: #eef0f6;
+    display: block; background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 14px;
+    padding: 16px; margin-bottom: 12px; text-decoration: none; color: var(--t-fg);
   }
   .card .t { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .card .s { font-size: 13px; color: #9aa3c0; }
+  .card .s { font-size: 13px; color: var(--t-mute); }
   ul { list-style: none; padding: 0; margin: 0; }
-  li { background:#10131f; border:1px solid #262b45; border-radius:10px; padding:10px 12px; margin-bottom:8px; font-size:14px; }
-  li a { color:#b9c0dd; text-decoration:none; }
-  .note { font-size:12px; color:#7c86ab; margin-top:6px; }
+  li { background:var(--t-bg); border:1px solid var(--t-line); border-radius:10px; padding:10px 12px; margin-bottom:8px; font-size:14px; }
+  li a { color:var(--t-fg); text-decoration:none; }
+  .note { font-size:12px; color:var(--t-info); margin-top:6px; }
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <h1>🔊 円卓会議・#100点ノート 読み上げ一覧</h1>
-<div class="s" style="color:#9aa3c0;font-size:13px;">瞑想しながら聞くための、たまごさん専用の聞くページです。できたものから上から並びます。</div>
+<div class="s" style="color:var(--t-mute);font-size:13px;">瞑想しながら聞くための、たまごさん専用の聞くページです。できたものから上から並びます。</div>
 
 <h2>できた音声<span class="badge" id="doneBadge">1/60 done</span></h2>
 <a class="card" href="https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/notes/754-jinbunchi-ai.html">
@@ -113,9 +113,11 @@
 </ul>
 <div class="note">Vault全体で「#100点」を含む52件のうち、本タスク自身の会話ログ1件を除いた51件。まだ音声化していません。1日1〜2本ずつ進めます。</div>
 
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

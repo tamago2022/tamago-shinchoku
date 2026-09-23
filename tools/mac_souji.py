@@ -79,6 +79,15 @@ EXTRA_CACHES = [
     ("yarn-cache",   os.path.join(HOME, "Library", "Caches", "Yarn")),
     ("homebrew",     os.path.join(HOME, "Library", "Caches", "Homebrew")),
     ("bun-install",  os.path.join(HOME, ".bun", "install", "cache")),
+    # 2026-09-27（1172番）たまごさん許可済み＝作り直せるもの。
+    # 実測でここの2つだけで約30GB（ゴミ箱22GB・Caches7.7GB）溜まっていたのに、
+    # 上の6つ（npm/pip/yarn/homebrew/bun）は**その内側の一部しか掃いていなかった**。
+    # ＝「掃除係が居る」のに、一番太っている2つを誰も触っていなかった。
+    # ★入れ物は残して中身だけ空にする（sweep_extra_cachesの作り）。
+    #   ゴミ箱は「たまごさんが自分で捨てたもの」＝既に捨てる判断が済んでいるもの。
+    #   Library/Caches はアプリが次に起動したとき作り直す。原稿・素材・台帳は一切入らない。
+    ("trash",        os.path.join(HOME, ".Trash")),
+    ("library-caches", os.path.join(HOME, "Library", "Caches")),
 ]
 
 # 工場が自分で太らせたログ。消さずに「末尾だけ残して刈る」（記録は残す・肥大分だけ落とす）

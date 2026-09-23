@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#1027 誰に何を任せるか（適材適所・全員ぶん実測）確認ページ</title>
 <style>
-  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;}
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);--ki:var(--t-warn);}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 14px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
@@ -15,15 +15,15 @@
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.05em;margin:36px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
   h3{font-size:0.98rem;margin:22px 0 8px;color:var(--ao);}
   .date{color:var(--sub);font-size:0.8rem;margin-bottom:18px;}
-  .fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.04rem;}
+  .fix{background:var(--t-panel);border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.04rem;}
   .fix p{margin:0 0 10px;}
   .fix p:last-child{margin:0;}
-  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
-  .warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
-  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
+  .warn{background:var(--t-panel);border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
+  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:var(--t-panel);}
   table{width:100%;border-collapse:collapse;font-size:0.84rem;min-width:640px;}
   th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;position:sticky;top:0;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.74rem;position:sticky;top:0;}
   tr:last-child td{border-bottom:none;}
   td b{font-size:0.9rem;}
   .yes{color:var(--midori);font-weight:700;}
@@ -31,10 +31,10 @@
   .mi{color:var(--ki);font-weight:700;}
   .hint{font-size:0.78rem;color:var(--sub);margin:0 0 20px;}
   ul.links{list-style:none;margin:0;padding:0;}
-  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;}
   ul.links li b{display:block;margin-bottom:3px;}
   ul.links a{word-break:break-all;font-size:0.9rem;}
-  pre.paste{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:0.82rem;
+  pre.paste{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:0.82rem;
     white-space:pre-wrap;word-break:break-word;user-select:all;-webkit-user-select:all;line-height:1.6;margin:0 0 12px;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
   @media (max-width:420px){ body{font-size:15px;padding-left:11px;padding-right:11px;} table{font-size:0.8rem;} h1{font-size:1.15rem;} }
@@ -42,8 +42,8 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1027 ／ 姉妹編：<a href="./1030-tekizai-matrix.html">#1030 タスク別に◯△✕─で書いたほう</a></div>
@@ -350,5 +350,7 @@ GensparkのWorkflowには<b>トリガーが Schedule と Email</b>の2つあり�
 2026-09-23 #1027／数えた場所：tamago2022/joy-relief-station（PR 313本・コメント100本）・tamago2022/ai-kaigi・<code>status/ai_daicho.jsonl</code>（41行）・<code>status/public/fal_cost_ledger.json</code>（24件）・<code>status/public/ai_verify_stats.json</code>（310件）・<code>status/fes_meibo/_coverage.json</code><br>
 数える口は <code>tools/_965_keijiban.py</code> に <code>prstats</code>（誰が何本PRを立てて何本mainに入ったか）と <code>prstate</code>（名指しのPRがmainに入ったか）を足しました。同じ数字は誰でも出し直せます。
 </footer>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

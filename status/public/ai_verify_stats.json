@@ -1,9 +1,9 @@
 {
- "totalChecked": 310,
- "totalPassed": 169,
- "totalFailed": 113,
- "totalErrors": 28,
- "totalCostUsd": 95.2589,
+ "totalChecked": 347,
+ "totalPassed": 172,
+ "totalFailed": 119,
+ "totalErrors": 56,
+ "totalCostUsd": 99.0207,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -117,305 +117,15 @@
   "確認ページは「queue.json[n=431/712].urlsへ記録される」": 1,
   "#431のqueue_light.json上のtitle「仕組み：外部から入れた": 1,
   "確認ページに貼られた実測ログが全て「見送り」行のみで『🚀 自動発車』行が1件も無": 1,
-  "確認ページが「根本原因を直したコミット」として提示した843号(7865264d": 1
+  "確認ページが「根本原因を直したコミット」として提示した843号(7865264d": 1,
+  "茶室は独立検証でも白い靄の異常動作を確認・外部AI検品(条件8)が未実施・192": 1,
+  "声の往復確認が未達（本人が認めている）に加え、既知の無反応ボタン（40代/60代": 1,
+  "監査レポートの致命的(S)判定の核心証拠(coverGuide-Br22yDSr": 1,
+  "確認ページに実測の生データ（実測値のpx/%や<pre>/<code>での生デー": 1,
+  "指定検証ファイル(freshness_history.jsonl)の実測で、報告": 1,
+  "確認ページ自体が「本番DB書き込みはキー未設定でスキップ」と明記しており、元の苦": 1
  },
  "history": [
-  {
-   "ts": "2026-09-17T16:06:09+09:00",
-   "n": 926,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/924-hikitsugi-oni-daidai.html",
-   "verdict": "pass",
-   "reason": "926番はtamago-shinchoku側で実装済み・検品段階(queue.json state:verifying)まで進行中であることを実ファイルで確認、joy-relief-station側の「誤配信・対応不要」判断はqueue.json/routing-fixメモの実記録と一致し正確。924番確認ページもURL200・内容一致・機械クリック済み。",
-   "costUsd": 0.3769744
-  },
-  {
-   "ts": "2026-09-17T16:34:29+09:00",
-   "n": 892,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/892-badge-design-rules-ci.html",
-   "verdict": "fail",
-   "reason": "直前の関所が要求した実測の生データ（「実測:」記載や<pre>/<code>）が確認ページに無く、数字も8/8(ページ記載)対11/11(実測)で食い違っている",
-   "costUsd": 0.3520904
-  },
-  {
-   "ts": "2026-09-17T16:49:00+09:00",
-   "n": 930,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/930-awaiting-check-triage-batch4.html",
-   "verdict": "fail",
-   "reason": "884番のdone判定は前日09-16 20:32時点の古い証拠を流用しただけで、検証時点(09-17 16:46)の本番health.json/genzaichi.json/now.json/pace.json/top_status.jsonが軒並み3〜4時間更新停止しており、884番が直したはずの「計測パイプラインが止まる」症状が本番で再発中",
-   "costUsd": 0.8115462000000001
-  },
-  {
-   "ts": "2026-09-17T17:00:59+09:00",
-   "n": 932,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/932-hold-review-584-710.html",
-   "verdict": "pass",
-   "reason": "対象10件(584/586/587/596/598/611/613/614/643/710)の判定内容がqueue.jsonの実データと完全一致し、waiting5件/hold継続5件の振り分け理由も妥当（テスト項目・ブラウザ統合待ち・本人指示）。ディスク実測251GBも一致、main反映済み、確認ページ200応答・クリック検品3/3でエラー0件。",
-   "costUsd": 0.328313
-  },
-  {
-   "ts": "2026-09-17T17:02:27+09:00",
-   "n": 931,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/931-hold-awaiting-triage-batch5.html",
-   "verdict": "pass",
-   "reason": "対象10件（awaiting_check 919・hold 1/6/30/42/157/469/470/486/487)の判定が queue.json・公開queue_light.json・確認ページで完全一致し、919は矛盾検品でFAIL差し戻し、hold9件中7件がwaitingへ再開・2件は理由付きでhold継続、commitはoriginにpush済み、verify_click.mjsでも",
-   "costUsd": 0.3537878
-  },
-  {
-   "ts": "2026-09-17T17:06:59+09:00",
-   "n": 933,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/933-hold-711-745-stale-marker.html",
-   "verdict": "pass",
-   "reason": "hold711/745は理由付きで妥当にhold継続、10件超警告(factory_status.py)と7日stale印(stale_marker.py→genzaichi.md)がqueue.json実データ(awaiting_check8件・red17件・yellow19件)と一致して実際に稼働、本番HEADはorigin/mainと同一でpush済み、確認ページも実クリックで無反応・コンソ",
-   "costUsd": 0.5142313999999999
-  },
-  {
-   "ts": "2026-09-17T17:16:50+09:00",
-   "n": 880,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/880-genzaichi-dead-recovery.html",
-   "verdict": "pass",
-   "reason": "本番genzaichi.mdのLast-Modifiedが取得時刻の13秒前で実際に更新されており、確認ページ・証拠JSON（alive判定）と整合、触る検品も無反応/エラー0件",
-   "costUsd": 0.18205359999999998
-  },
-  {
-   "ts": "2026-09-17T17:21:13+09:00",
-   "n": 930,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/934-batch4-triage.html",
-   "verdict": "fail",
-   "reason": "884番の完了報告はhealth.jsonのみ検証しているが、now.json/pace.jsonが検証時点(17:20)でbuiltAt/updatedAt「13:37:21」のまま約3時間43分更新停止しており、前回FAILの症状（計測が止まる）が別ファイルで再現中",
-   "costUsd": 0.2596568
-  },
-  {
-   "ts": "2026-09-17T18:28:46+09:00",
-   "n": 874,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/874-oni-kantoku-alive-recovery.html",
-   "verdict": "pass",
-   "reason": "壊れていたリンクはtools/shikumi.pyへ修正され4リンク全て実測200、証拠JSONに回復の具体数字（09-13停止→09-16 19:54修正→以後39-42件連続記録）があり、touch検品も無反応・エラー0件でPASS",
-   "costUsd": 0.35638620000000004
-  },
-  {
-   "ts": "2026-09-17T19:12:00+09:00",
-   "n": 885,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/885-kenpou-unreported-completions.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番JSONとも実在しURLで開け、対象項目「未報告の完了」がgreen(0件)であることを本番データで確認、実クリック検証も無反応・エラー0件",
-   "costUsd": 0.19844659999999997
-  },
-  {
-   "ts": "2026-09-17T19:40:01+09:00",
-   "n": 891,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/885-kenpou-unreported-completions.html",
-   "verdict": "fail",
-   "reason": "891番の確認ページが提示する証拠リンク（status/dispatch_outbox.jsonl のraw URL）が404で、.gitignoreのstatus/*除外設定によりこの経路は恒久的に開けない構造的欠陥のため",
-   "costUsd": 0.39299580000000006
-  },
-  {
-   "ts": "2026-09-17T19:55:34+09:00",
-   "n": 911,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/status/911_devin_cli_first_task.md",
-   "verdict": "fail",
-   "reason": "本番URL（status/911_devin_cli_first_task.md）が404で存在せず、証拠が確認できない",
-   "costUsd": 0.24398939999999997
-  },
-  {
-   "ts": "2026-09-17T20:34:56+09:00",
-   "n": 925,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/925-queue-done-archive-cleanup.html",
-   "verdict": "fail",
-   "reason": "queue.jsonは依然として約1.75MB（1,835,231バイト）で1MB超のまま本番公開されており、実体を軽量化せず点検の除外パスに追加して検知をすり抜けさせただけで「解消」の主張と実態が一致しない",
-   "costUsd": 0.169976
-  },
-  {
-   "ts": "2026-09-17T20:47:25+09:00",
-   "n": 879,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/879-copy-naoshi-lolmame.html",
-   "verdict": "fail",
-   "reason": "本番URLを実測すると新コピーは反映されておらず旧文面「愛嬌たっぷりな犬が一生懸命に動きを見せる様子」のままで、依頼の核心（1件を直して本番で見られる）が未達成。加えて完了条件②〜⑤（毎日自動点検・仕組み化・ビフォーアフター1日1枚・全件棚卸し）は報告内で明記の通り全て未着手。",
-   "costUsd": 0.7361369999999999
-  },
-  {
-   "ts": "2026-09-17T21:08:06+09:00",
-   "n": 925,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/925-queue-gzip-real-fix.html",
-   "verdict": "fail",
-   "reason": "本番のkenpou_check.jsonでbig_files項目が依然red(count18)のまま、かつその点検実行時刻(20:28)が修正の本番反映(21:03)より前で「次回点検で緑」という依頼の合格条件を一度も満たしておらず、確認ページも本番結果でなく作業者側ローカル実行の結果で代替している",
-   "costUsd": 0.3109954
-  },
-  {
-   "ts": "2026-09-17T21:24:45+09:00",
-   "n": 934,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/934-done-missing-url-431-712.html",
-   "verdict": "fail",
-   "reason": "確認ページは「queue.json[n=431/712].urlsへ記録される」と主張するが、直近の公開データ(queue_light.json)では#431/#712のurlsが空配列のまま、#924/#929はurlsキー自体が存在せず、実際の変化の跡が無い",
-   "costUsd": 0.272418
-  },
-  {
-   "ts": "2026-09-17T21:57:45+09:00",
-   "n": 934,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/934-done-missing-url-431-712.html",
-   "verdict": "fail",
-   "reason": "#431のqueue_light.json上のtitle「仕組み：外部から入れた分を1日1回仕上げる」と、確認ページ本文が「実測確認済み」と書く内容「GitHub Actions見回りワークフロー(tamago-onboarding-sweep.yml)の沈黙バグ修理」が全く別物で、依頼内容と証拠説明が一致しない",
-   "costUsd": 0.2869816
-  },
-  {
-   "ts": "2026-09-18T00:39:46+09:00",
-   "n": 823,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/823-auto-launch-alive-recheck.html",
-   "verdict": "fail",
-   "reason": "確認ページに貼られた実測ログが全て「見送り」行のみで『🚀 自動発車』行が1件も無く、verdict=alive・countToday=3件という主張と証拠が矛盾している（裏付けリンクも無し）",
-   "costUsd": 0.1977506
-  },
-  {
-   "ts": "2026-09-18T00:50:14+09:00",
-   "n": 846,
-   "url": "https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1",
-   "verdict": "pass",
-   "reason": "main合流(コミット0defebd0)・状態ファイルの数値・KNOWN_ISSUES記載すべて実測と一致し、くろちゃんの明示的完了基準（本番非操作・main合流のみ）を満たしている",
-   "costUsd": 0.8186952000000001
-  },
-  {
-   "ts": "2026-09-18T00:55:02+09:00",
-   "n": 843,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/843-heartbeat-false-dead-fix.html",
-   "verdict": "pass",
-   "reason": "実在するコード修正(main合流済み)が依頼内容と一致し、確認ページも実クリック4/4・エラー0で報告と食い違いなし",
-   "costUsd": 0.3519716
-  },
-  {
-   "ts": "2026-09-18T01:02:23+09:00",
-   "n": 819,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/819-oni-kantoku-alive.html",
-   "verdict": "pass",
-   "reason": "前回指摘の404リンクを撤去し公開済みrawリンクへ差し替え、①一言②数字③リンク一覧が揃い全リンク200・クリック検品も無反応/エラー0件で確認できた",
-   "costUsd": 0.2307132
-  },
-  {
-   "ts": "2026-09-18T01:04:38+09:00",
-   "n": 849,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/849-heartbeat-dead-recheck.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URLとも実在し、shikumi.jsonのverdict=alive/沈黙0.1分をローカル実測で裏取り、関連リンクも生存・触る検品も5/5反応でコンソールエラー0件",
-   "costUsd": 0.21375819999999998
-  },
-  {
-   "ts": "2026-09-18T01:16:00+09:00",
-   "n": 850,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/850-lovable-publish-recheck.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URLとも実測で開け、生死表データ(genzaichi.json)のdeploy更新が51分前でalive基準を満たし、クリック検品も無反応・エラー0件で報告内容と整合した",
-   "costUsd": 0.3930487999999999
-  },
-  {
-   "ts": "2026-09-18T01:18:49+09:00",
-   "n": 851,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/851-lovable-publish-recovered.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URLとも実測で開け、x-deployment-idの一致と触る検品(4/4反応・エラー0)が独立に再現された",
-   "costUsd": 0.2222794
-  },
-  {
-   "ts": "2026-09-18T01:25:40+09:00",
-   "n": 852,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/850-lovable-publish-recheck.html",
-   "verdict": "pass",
-   "reason": "前回404だった証跡リンクが200で開き、中身(alive実測・4要素・触る検品0エラー)が依頼内容と一致",
-   "costUsd": 0.2431876
-  },
-  {
-   "ts": "2026-09-18T01:30:10+09:00",
-   "n": 854,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/854-heartbeat-dead-recheck3.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番コミットとも実在し、ローカルのheartbeatファイル実測・shikumi.json実測・git main反映確認・独立クリック検証のすべてで「心臓は既にalive・843番修正はmain反映済み」の主張と一致した",
-   "costUsd": 0.30830820000000003
-  },
-  {
-   "ts": "2026-09-18T01:39:50+09:00",
-   "n": 853,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/853-lovable-publish-recovered-recheck.html",
-   "verdict": "pass",
-   "reason": "本番x-deployment-idと工場記録(deploy_history.json/shikumi.json verdict:alive)が実測で一致し、確認ページ・本番URLとも200・クリック検証も無反応0件で報告内容と食い違いなし",
-   "costUsd": 0.2626232
-  },
-  {
-   "ts": "2026-09-18T01:39:50+09:00",
-   "n": 855,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/855-lovable-publish-alive-recheck.html",
-   "verdict": "pass",
-   "reason": "本番x-deployment-id・deploy_history.json・shikumi.json(verdict:alive)・確認ページ・実クリック検証(4/4・エラー0)を独立に実測し、報告内容と全て一致",
-   "costUsd": 0.23000879999999999
-  },
-  {
-   "ts": "2026-09-18T01:41:50+09:00",
-   "n": 856,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/850-lovable-publish-recheck.html",
-   "verdict": "pass",
-   "reason": "本番URLのx-deployment-idを独立curlで確認ページの主張と一致させ、verify_click.mjsの実クリックでも無反応・コンソールエラーとも0件だったため、ブロック解除と本番稼働の主張は実測で裏付けられている",
-   "costUsd": 0.3698536
-  },
-  {
-   "ts": "2026-09-18T01:53:29+09:00",
-   "n": 858,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/858-lovable-publish-alive-recheck.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番URLとも実測200、x-deployment-idが855番の復旧確認と完全一致、触る検品も5/5成功・エラー0、KNOWN_ISSUES.md「40件目」記録もorigin/mainの実コミット(7c860c0f)として確認済み",
-   "costUsd": 0.4764964
-  },
-  {
-   "ts": "2026-09-18T01:54:20+09:00",
-   "n": 857,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/857-auto-launch-alive-confirm.html",
-   "verdict": "fail",
-   "reason": "確認ページが「根本原因を直したコミット」として提示した843号(7865264dd)は実際にはheartbeat判定のみを修正したコミットで、auto_launchの二本立て判定を実装したのは別の無関係タイトルのコミット(809d2d64c9)であり、証拠リンクの内容が主張と食い違う",
-   "costUsd": 0.6971018
-  },
-  {
-   "ts": "2026-09-18T01:58:29+09:00",
-   "n": 859,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/853-lovable-publish-recovered-recheck.html",
-   "verdict": "pass",
-   "reason": "4本番URLとも実在・内容が依頼(799番heartbeat dead検知の再発確認)と一致・数字とコミットリンクの実在確認済み・クリック検証も無反応/エラー0件",
-   "costUsd": 0.257331
-  },
-  {
-   "ts": "2026-09-18T01:59:45+09:00",
-   "n": 860,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/860-lovable-publish-alive-recheck.html",
-   "verdict": "pass",
-   "reason": "本番URL・deploy_history.json・shikumi.json・触る検品の4系統すべてでx-deployment-id一致とalive判定を実測確認できた",
-   "costUsd": 0.2491194
-  },
-  {
-   "ts": "2026-09-18T02:09:10+09:00",
-   "n": 862,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/853-lovable-publish-recovered-recheck.html",
-   "verdict": "pass",
-   "reason": "deploy_history.json/shikumi.json/本番x-deployment-idの実測が報告内容と完全一致し、本番URLも提示・触る検品も再現できたため",
-   "costUsd": 0.5620612000000001
-  },
-  {
-   "ts": "2026-09-18T02:17:54+09:00",
-   "n": 857,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/857-auto-launch-two-part-fix-recheck.html",
-   "verdict": "pass",
-   "reason": "確認ページが示す根本原因コミット809d2d64c9の実差分を確認したところ、tools/shikumi.pyのcheck_auto_launch()に主張通りの二本立て判定が実装されており、前回指摘の証拠コミット取り違えも訂正済み。mainの祖先でpush済み、触る検品も無反応・エラー0件でPASS",
-   "costUsd": 0.2378026
-  },
-  {
-   "ts": "2026-09-18T02:18:29+09:00",
-   "n": 861,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/861-heartbeat-dead-duplicate-fix.html",
-   "verdict": "pass",
-   "reason": "確認ページ・本番コミットとも実在し内容が依頼と一致、実クリック検証も無反応/エラー0件で報告と一致",
-   "costUsd": 0.30772199999999994
-  },
-  {
-   "ts": "2026-09-18T02:18:45+09:00",
-   "n": 863,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/863-lovable-publish-alive-recheck2.html",
-   "verdict": "pass",
-   "reason": "本番URL(joy-relief-station.lovable.app)のx-deployment-idがdeploy_history.jsonの最新記録(948c39bd...、23:52更新)と完全一致し、shikumi.jsonもverdict=alive、pauseフラグ消滅、確認ページも実クリック4/4正常でコンソールエラー無しと、全証拠が整合していた",
-   "costUsd": 0.2802402
-  },
   {
    "ts": "2026-09-18T02:26:57+09:00",
    "n": 864,
@@ -519,7 +229,303 @@
    "verdict": "error",
    "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
    "costUsd": 0.0
+  },
+  {
+   "ts": "2026-09-25T08:53:31+09:00",
+   "n": 909,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/909-card-page.html",
+   "verdict": "error",
+   "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
+   "costUsd": 0.0
+  },
+  {
+   "ts": "2026-09-26T14:29:36+09:00",
+   "n": 919,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/zen",
+   "verdict": "fail",
+   "reason": "茶室は独立検証でも白い靄の異常動作を確認・外部AI検品(条件8)が未実施・1920x1080原寸mp4リンクが404で実測の裏付けが取れない",
+   "costUsd": 0.44960100000000003
+  },
+  {
+   "ts": "2026-09-26T14:32:36+09:00",
+   "n": 915,
+   "url": "https://joy-relief-station.lovable.app/cover-guide**",
+   "verdict": "fail",
+   "reason": "声の往復確認が未達（本人が認めている）に加え、既知の無反応ボタン（40代/60代+）が実測でも未修正、コンソールエラーも1件検出",
+   "costUsd": 0.2274816
+  },
+  {
+   "ts": "2026-09-26T14:52:44+09:00",
+   "n": 919,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/zen",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-26T15:18:42+09:00",
+   "n": 881,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/881-karuku-kansa.html",
+   "verdict": "fail",
+   "reason": "監査レポートの致命的(S)判定の核心証拠(coverGuide-Br22yDSr.js等の実測チャンク)が本番で404・提示リンクは別ページへリダイレクトし、主張が本番で再現・検証できない",
+   "costUsd": 0.9069301999999999
+  },
+  {
+   "ts": "2026-09-26T15:21:11+09:00",
+   "n": 892,
+   "url": "https://joy-relief-station.lovable.app/design-check",
+   "verdict": "fail",
+   "reason": "確認ページに実測の生データ（実測値のpx/%や<pre>/<code>での生データ）が無く、件数・合否の集計値のみで関所の指摘が未解消",
+   "costUsd": 0.5630506
+  },
+  {
+   "ts": "2026-09-26T16:51:38+09:00",
+   "n": 881,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/881-karuku-kansa.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-26T23:37:55+09:00",
+   "n": 915,
+   "url": "https://joy-relief-station.lovable.app/cover-guide",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T00:43:38+09:00",
+   "n": 892,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/892-badge-design-rules-ci-jissoku.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T06:08:10+09:00",
+   "n": 927,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/927-awaiting-check-triage-batch1.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番URL2本とも実測でき、主張(関連曲名・横スクロール要素・禁句0件)と実際の本番HTMLが一致、クリック検品も無反応0件で前回差し戻し理由(非公開リンク)も解消済み",
+   "costUsd": 0.3056444
+  },
+  {
+   "ts": "2026-09-27T09:32:31+09:00",
+   "n": 930,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/930-batch4-triage-recheck.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T10:42:04+09:00",
+   "n": 1295,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1295-kouhyou-shashin-tomaru.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T10:49:28+09:00",
+   "n": 1295,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1295-kouhyou-shashin-tomaru.html",
+   "verdict": "fail",
+   "reason": "指定検証ファイル(freshness_history.jsonl)の実測で、報告された修正コミット直後にも写しの年齢が最大57分まで閾値(30分)超えを記録しており、完了条件を実際には満たしていない",
+   "costUsd": 0.6616276
+  },
+  {
+   "ts": "2026-09-27T13:13:00+09:00",
+   "n": 1361,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1361-kioku-gozenkenshutsu.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T13:24:14+09:00",
+   "n": 1361,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1361-kioku-gozenkenshutsu.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T14:06:19+09:00",
+   "n": 1362,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1362-mac-souji-mameni.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T14:07:18+09:00",
+   "n": 1362,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1362-mac-souji-mameni.html",
+   "verdict": "error",
+   "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T14:20:48+09:00",
+   "n": 1362,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1362-mac-souji-mameni.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T18:01:51+09:00",
+   "n": 1366,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T18:12:56+09:00",
+   "n": 1366,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T19:03:20+09:00",
+   "n": 1365,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1365-account-permission-not-exercised.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T19:08:25+09:00",
+   "n": 1365,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1365-account-permission-not-exercised.html",
+   "verdict": "pass",
+   "reason": "確認ページ・本番とも200、前回404だったリンクは実測200の代替2本に差替済み、数字はJSON実データと一致、クリック検品も無反応・エラー0件",
+   "costUsd": 0.2230608
+  },
+  {
+   "ts": "2026-09-27T19:10:10+09:00",
+   "n": 1369,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1369-ingest-copy-local-pipeline.html",
+   "verdict": "fail",
+   "reason": "確認ページ自体が「本番DB書き込みはキー未設定でスキップ」と明記しており、元の苦情（手動修正の非効率）の核心部分が未解決のまま完了申告されている",
+   "costUsd": 0.24423040000000004
+  },
+  {
+   "ts": "2026-09-27T21:07:33+09:00",
+   "n": 1367,
+   "url": "https://joy-relief-station.lovable.app/api/admin/apply-ingest-copy-fixes",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T21:18:51+09:00",
+   "n": 1367,
+   "url": "https://joy-relief-station.lovable.app/api/admin/apply-ingest-copy-fixes",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T21:38:24+09:00",
+   "n": 1370,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1370-hantei-actionable-fix.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T21:49:39+09:00",
+   "n": 1370,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1370-hantei-actionable-fix.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T22:00:10+09:00",
+   "n": 1371,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1371-reload-button-fix.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T22:10:53+09:00",
+   "n": 1371,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1371-reload-button-fix.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T22:43:46+09:00",
+   "n": 1372,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1372-urgent-lane.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T22:47:13+09:00",
+   "n": 1372,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1372-urgent-lane.html",
+   "verdict": "pass",
+   "reason": "確認ページ200・依頼(優先度1の待機解消→自動繰り上げの仕組み)に対応するurgent_lane_safe_max実装・コミット・テスト結果・本番ログ(緊急横入り発火の実測)が中身に含まれ、リンク先(GitHubコミット・コード本体)も実在し空でない",
+   "costUsd": 0.1801678
+  },
+  {
+   "ts": "2026-09-27T23:14:40+09:00",
+   "n": 1373,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1373-tsukaisugi-alert.html",
+   "verdict": "error",
+   "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T23:21:27+09:00",
+   "n": 1376,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1373-tsukaisugi-alert.html",
+   "verdict": "error",
+   "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T23:26:03+09:00",
+   "n": 1373,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1373-tsukaisugi-alert.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T23:32:49+09:00",
+   "n": 1376,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1373-tsukaisugi-alert.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-27T23:55:13+09:00",
+   "n": 1375,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1375-tomaranai-kakunin.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-09-28T00:07:17+09:00",
+   "n": 1375,
+   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/1375-tomaranai-kakunin.html",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
   }
  ],
- "updatedAt": "2026-09-23 05:32"
+ "updatedAt": "2026-09-28 00:07"
 }

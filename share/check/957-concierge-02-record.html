@@ -13,14 +13,14 @@
    ── 正本: status/952_seihon/concierge-concept-02-08.md
    ══════════════════════════════════════════════════════════════ */
 :root{
-  --green-d:#0d1711; --green:#16261d; --green-l:#24392c;
-  --paper:#f2e9d6; --paper2:#e9dec6; --line:#d8c9a6;
-  --ink:#2a241b; --sub:#867a63; --aka:#8d4a30; --kin:#c0a05a;
+  --green-d:var(--t-fg2); --green:var(--t-fg2); --green-l:var(--t-fg2);
+  --paper:var(--t-panel); --paper2:var(--t-panel); --line:var(--t-warn);
+  --ink:var(--t-fg2); --sub:var(--t-mute); --aka:var(--t-warn); --kin:var(--t-warn);
   --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:#e7dcc4}
+html,body{margin:0;background:var(--t-panel)}
 body{font-family:var(--sans);color:var(--ink);-webkit-text-size-adjust:100%}
 .shell{max-width:1180px;margin:0 auto;background:var(--paper);min-height:100vh;
   box-shadow:0 0 60px rgba(60,44,20,.14)}
@@ -35,33 +35,33 @@ body{font-family:var(--sans);color:var(--ink);-webkit-text-size-adjust:100%}
 .head nav span{margin-left:14px}
 
 /* ── 横長の写真の帯 ───────────────────────────────── */
-.plate{position:relative;margin:0 36px;background:var(--green-d);overflow:hidden}
+.plate{position:relative;margin:0 36px;background:var(--t-panel2);overflow:hidden;color:var(--t-fg)}
 .stage{position:relative;display:block}
 .stage::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;
-  background:linear-gradient(90deg,rgba(8,15,11,.88) 0%,rgba(8,15,11,.62) 52%,rgba(8,15,11,0) 100%);
+  background:linear-gradient(90deg,var(--t-bg) 0%,var(--t-bg) 52%,rgba(8,15,11,0) 100%);
   pointer-events:none;z-index:1}
 .plate .copy,.plate .onbar,.plate .slate,.plate .ringwrap{z-index:2}
 .plate .scene{display:block;width:100%;height:auto}
 /* 写真の左に、明朝の白抜き */
-.plate .copy{position:absolute;left:5%;top:12%;width:27%;max-width:268px;color:#f4ecd9;
+.plate .copy{position:absolute;left:5%;top:12%;width:27%;max-width:268px;color:var(--t-fg);
   text-shadow:0 2px 14px rgba(0,0,0,.6)}
 .plate .copy h1{font-family:var(--serif);font-weight:400;margin:0 0 16px;
   font-size:clamp(1.15rem,2.2vw,1.85rem);line-height:1.85;letter-spacing:.12em}
 .plate .copy p{font-family:var(--serif);margin:0;font-size:clamp(.66rem,1.05vw,.8rem);
-  line-height:2.3;letter-spacing:.1em;color:#ddd3bd}
+  line-height:2.3;letter-spacing:.1em;color:var(--t-fg)}
 .plate .copy .en{display:block;margin-top:18px;font-family:var(--sans);font-size:.52rem;
-  letter-spacing:.24em;color:#a9b3a4}
+  letter-spacing:.24em;color:var(--t-mute)}
 /* カウンターの上に立つ案内人 */
 .plate .onbar{position:absolute;left:50%;bottom:7.5%;transform:translateX(-50%);
   width:15.5%;min-width:96px}
 .plate .onbar svg{display:block;width:100%;height:auto}
 /* 黒板の立て札 */
 .plate .slate{position:absolute;left:64.5%;bottom:9%;width:19%;min-width:118px;
-  background:#1a211b;border:3px solid #6b5334;border-radius:2px;padding:10px 8px;
+  background:var(--t-panel);border:3px solid var(--t-warn);border-radius:2px;padding:10px 8px;
   text-align:center;box-shadow:0 8px 20px rgba(0,0,0,.45)}
-.plate .slate b{display:block;font-family:var(--serif);font-weight:400;color:#ecdfc2;
+.plate .slate b{display:block;font-family:var(--serif);font-weight:400;color:var(--t-warn);
   font-size:.62rem;letter-spacing:.2em;margin-bottom:6px}
-.plate .slate i{display:block;font-style:normal;font-family:var(--serif);color:#b8c4b3;
+.plate .slate i{display:block;font-style:normal;font-family:var(--serif);color:var(--t-fg);
   font-size:.54rem;letter-spacing:.08em;line-height:1.8}
 /* ベル＝会話のはじまり（店の中に溶かす） */
 .plate .ringwrap{position:absolute;left:24%;bottom:6.5%;text-align:center}
@@ -70,9 +70,9 @@ button.ring svg{display:block;width:100%;height:auto}
 button.ring:hover svg{transform:translateY(-2px)}
 button.ring:focus-visible{outline:2px solid var(--kin);outline-offset:4px}
 button.ring:disabled{opacity:.45;cursor:not-allowed}
-.plate .ringwrap .cap{display:block;margin-top:7px;font-family:var(--serif);color:#d9cdb2;
+.plate .ringwrap .cap{display:block;margin-top:7px;font-family:var(--serif);color:var(--t-fg);
   font-size:.56rem;letter-spacing:.14em;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.7)}
-button.quiet{margin-top:6px;background:none;border:0;color:#b6ab92;cursor:pointer;
+button.quiet{margin-top:6px;background:none;border:0;color:var(--t-mute);cursor:pointer;
   font-size:.56rem;letter-spacing:.12em;text-decoration:underline;font-family:var(--sans)}
 body.talking button.ring,body.talking .plate .ringwrap .cap{display:none}
 body:not(.talking) button.quiet{display:none}
@@ -83,7 +83,7 @@ body:not(.talking) button.quiet{display:none}
   box-shadow:0 -6px 30px rgba(50,36,16,.1)}
 .state{font-family:var(--serif);font-size:.68rem;letter-spacing:.16em;color:var(--sub);
   text-align:center;margin:0 0 20px;min-height:1.2em}
-.meter{font-size:.62rem;color:#a2967c;text-align:center;margin:-14px 0 18px;
+.meter{font-size:.62rem;color:var(--t-mute);text-align:center;margin:-14px 0 18px;
   font-variant-numeric:tabular-nums;min-height:1em}
 
 /* ── 会話（あなた＝赤茶の小さいラベル／ごきげん店主＝墨のラベル） ── */
@@ -92,11 +92,11 @@ body:not(.talking) button.quiet{display:none}
 .line .ava{display:none}
 .line .who{display:inline-block;font-size:.56rem;letter-spacing:.18em;padding:3px 9px;
   border-radius:2px;margin-bottom:8px;font-family:var(--sans)}
-.line.her .who{background:var(--ink);color:var(--paper)}
-.line.me .who{background:var(--aka);color:#fbf3e4}
+.line.her .who{background:var(--t-info-bg);color:var(--t-info)}
+.line.me .who{background:var(--aka);color:var(--t-on-accent)}
 .line .txt{display:block;font-family:var(--serif);font-size:.93rem;line-height:2.1;
   letter-spacing:.06em}
-.line.me .txt{color:#6d5a44}
+.line.me .txt{color:var(--t-warn)}
 .line.sys{font-size:.72rem;color:var(--aka);text-align:center}
 .line.sys .txt{font-size:.72rem;line-height:1.9}
 .devlink{font-size:.62rem;color:var(--sub);margin-left:.6em}
@@ -119,7 +119,7 @@ a.card{display:block;text-decoration:none;color:inherit}
 .thumb img{display:block;width:100%;height:100%;object-fit:cover;
   transition:transform .5s cubic-bezier(.2,.7,.3,1)}
 a.card:hover .thumb img{transform:scale(1.04)}
-.thumb.noimg{background:repeating-linear-gradient(45deg,#e6dbc2 0 9px,#e0d4b8 9px 18px)}
+.thumb.noimg{background:repeating-linear-gradient(45deg,var(--t-panel) 0 9px,var(--t-panel) 9px 18px)}
 /* ★四角い写真の右端に、黒いレコード盤が半分はみ出す */
 .disc{position:absolute;right:0;top:50%;transform:translateY(-50%);
   width:26%;aspect-ratio:1/1;pointer-events:none;
@@ -129,14 +129,14 @@ a.card:hover .disc{transform:translate(4px,-50%)}
 .disc,a.card:hover .disc,.thumb img{transition:transform .35s ease}
 /* カテゴリの小さなモチーフ（店内の紙もの） */
 .motif{position:absolute;left:7px;bottom:7px;width:26px;height:26px;border-radius:50%;
-  background:rgba(242,233,214,.95);display:grid;place-items:center;
+  background:var(--t-panel);display:grid;place-items:center;
   box-shadow:0 1px 4px rgba(0,0,0,.25)}
 .motif svg{width:16px;height:16px}
-.motif .d{fill:#2a241b}.motif .r{fill:none;stroke:#f2e9d6;stroke-width:1.1}
-.motif .l{fill:#8d4a30}.motif .h{fill:#f2e9d6}
-.motif .s{fill:none;stroke:#f2e9d6;stroke-width:1.3;stroke-linecap:round}
+.motif .d{fill:var(--t-fg2)}.motif .r{fill:none;stroke:var(--t-fg);stroke-width:1.1}
+.motif .l{fill:var(--t-warn)}.motif .h{fill:var(--t-fg)}
+.motif .s{fill:none;stroke:var(--t-fg);stroke-width:1.3;stroke-linecap:round}
 .cat-travel .motif .r{fill:var(--kin);stroke:none}
-.cat-video .motif .r,.cat-laugh .motif .r{fill:#e8dcc0;stroke:none}
+.cat-video .motif .r,.cat-laugh .motif .r{fill:var(--t-fg);stroke:none}
 .cat-music .disc{display:block}
 
 .body{display:block;padding:14px 13% 0 0}
@@ -147,7 +147,7 @@ a.card:hover .disc{transform:translate(4px,-50%)}
 .s{display:-webkit-box;font-size:.7rem;color:var(--sub);line-height:1.8;margin:0 0 10px;
   -webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .tags{display:flex;flex-wrap:wrap;gap:7px}
-.tags span{font-size:.58rem;letter-spacing:.06em;color:#9b8a68}
+.tags span{font-size:.58rem;letter-spacing:.06em;color:var(--t-warn)}
 
 .empty{grid-column:1/-1;font-family:var(--serif);color:var(--sub);font-size:.84rem;
   line-height:2.2;padding:38px 10px;text-align:center;border:1px dashed var(--line)}
@@ -156,25 +156,25 @@ a.card:hover .disc{transform:translate(4px,-50%)}
   font-family:var(--serif);font-size:.82rem;letter-spacing:.12em;padding:4px 2px}
 /* ★角丸の白い横長ボタン */
 .morewrap{text-align:center;margin-top:34px}
-button#more{background:#fffdf7;border:1px solid var(--line);border-radius:999px;
+button#more{background:var(--t-panel);border:1px solid var(--line);border-radius:999px;
   cursor:pointer;padding:15px 62px;font-family:var(--serif);font-size:.88rem;
   letter-spacing:.2em;color:var(--ink);box-shadow:0 2px 0 rgba(180,160,120,.4)}
-button#more:hover:not(:disabled){background:#fff}
+button#more:hover:not(:disabled){background:var(--t-panel)}
 button#more:active{transform:translateY(1px);box-shadow:none}
 button#more:disabled{opacity:.4;cursor:not-allowed}
 
 /* ── 店の裏（開発用）。?dev=1 のときだけ出る ───────── */
 .urakuchi{margin:48px auto 0;max-width:760px;border-top:1px solid var(--line);padding-top:12px}
 .urakuchi[hidden]{display:none}
-.urakuchi summary{cursor:pointer;color:#a2967c;font-size:.68rem;letter-spacing:.16em;list-style:none}
+.urakuchi summary{cursor:pointer;color:var(--t-mute);font-size:.68rem;letter-spacing:.16em;list-style:none}
 .urakuchi summary::-webkit-details-marker{display:none}
 .urakuchi .in{padding:12px 0 0;font-size:.76rem;color:var(--sub);line-height:1.9}
 .urakuchi input{width:100%;padding:10px 12px;border:1px solid var(--line);
-  font-family:ui-monospace,monospace;font-size:14px;background:#fffdf7;color:var(--ink)}
+  font-family:ui-monospace,monospace;font-size:14px;background:var(--t-panel);color:var(--ink)}
 .voices{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.voices label{border:1px solid var(--line);padding:5px 11px;font-size:.74rem;cursor:pointer;background:#fffdf7}
+.voices label{border:1px solid var(--line);padding:5px 11px;font-size:.74rem;cursor:pointer;background:var(--t-panel)}
 .voices input{display:none}
-.voices input:checked + span{font-weight:700;color:#3e6b4a}
+.voices input:checked + span{font-weight:700;color:var(--t-ok)}
 
 /* ── 足もと ───────────────────────────────────────── */
 .foot{display:flex;align-items:center;justify-content:space-between;gap:16px;
@@ -199,7 +199,7 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
   .plate .scene{height:210px;width:100%}
   .plate{margin:0 14px}
   .plate .copy{position:static;width:auto;max-width:none;padding:18px 16px 4px;
-    text-shadow:none;background:var(--green-d)}
+    text-shadow:none;background:var(--t-panel2);color:var(--t-fg)}
   .plate .copy h1{font-size:1.2rem;margin-bottom:12px}
   .plate .copy p{font-size:.7rem}
   .plate .onbar{width:19%;min-width:66px;bottom:9%}
@@ -235,16 +235,16 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
     <svg class="scene" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
         <linearGradient id="air" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#1b3125"/><stop offset=".62" stop-color="#132219"/>
-          <stop offset="1" stop-color="#0c150f"/>
+          <stop offset="0" stop-color="var(--t-fg2)"/><stop offset=".62" stop-color="var(--t-fg2)"/>
+          <stop offset="1" stop-color="var(--t-fg2)"/>
         </linearGradient>
         <radialGradient id="glow" cx=".5" cy=".5" r=".5">
-          <stop offset="0" stop-color="#ffd58a" stop-opacity=".52"/>
-          <stop offset="1" stop-color="#ffd58a" stop-opacity="0"/>
+          <stop offset="0" stop-color="var(--t-warn)" stop-opacity=".52"/>
+          <stop offset="1" stop-color="var(--t-warn)" stop-opacity="0"/>
         </radialGradient>
         <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#8a6034"/><stop offset=".14" stop-color="#6e4826"/>
-          <stop offset="1" stop-color="#432c17"/>
+          <stop offset="0" stop-color="var(--t-warn)"/><stop offset=".14" stop-color="var(--t-warn)"/>
+          <stop offset="1" stop-color="var(--t-warn)"/>
         </linearGradient>
       </defs>
       <rect width="1200" height="520" fill="url(#air)"/>
@@ -254,38 +254,38 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
 
       <!-- 額装のポスター -->
       <g font-family="Georgia,serif" text-anchor="middle">
-        <rect x="520" y="56" width="196" height="132" fill="#101c14" stroke="#7b6136" stroke-width="5"/>
-        <text x="618" y="110" fill="#e6d9b6" font-size="21" letter-spacing="3">GOOD MUSIC</text>
-        <text x="618" y="144" fill="#c6b88f" font-size="19" letter-spacing="3">BETTER DAYS</text>
-        <rect x="905" y="46" width="228" height="104" fill="#121e15" stroke="#7b6136" stroke-width="5"/>
-        <text x="1019" y="90" fill="#e6d9b6" font-size="15" letter-spacing="1">Small Finds Make</text>
-        <text x="1019" y="118" fill="#e6d9b6" font-size="15" letter-spacing="1">Brighter Days.</text>
-        <rect x="922" y="182" width="194" height="76" fill="#101c14" stroke="#6d5630" stroke-width="4"/>
-        <text x="1019" y="228" fill="#c9bb92" font-size="15" letter-spacing="2.4">A BRIGHTER TOMORROW</text>
+        <rect x="520" y="56" width="196" height="132" fill="var(--t-fg2)" stroke="var(--t-warn)" stroke-width="5"/>
+        <text x="618" y="110" fill="var(--t-warn)" font-size="21" letter-spacing="3">GOOD MUSIC</text>
+        <text x="618" y="144" fill="var(--t-warn)" font-size="19" letter-spacing="3">BETTER DAYS</text>
+        <rect x="905" y="46" width="228" height="104" fill="var(--t-fg2)" stroke="var(--t-warn)" stroke-width="5"/>
+        <text x="1019" y="90" fill="var(--t-warn)" font-size="15" letter-spacing="1">Small Finds Make</text>
+        <text x="1019" y="118" fill="var(--t-warn)" font-size="15" letter-spacing="1">Brighter Days.</text>
+        <rect x="922" y="182" width="194" height="76" fill="var(--t-fg2)" stroke="var(--t-warn)" stroke-width="4"/>
+        <text x="1019" y="228" fill="var(--t-warn)" font-size="15" letter-spacing="2.4">A BRIGHTER TOMORROW</text>
       </g>
 
       <!-- 木のカウンター -->
       <rect x="0" y="392" width="1200" height="128" fill="url(#bar)"/>
-      <rect x="0" y="392" width="1200" height="5" fill="#a97a44"/>
-      <g stroke="#ffffff" stroke-opacity=".05">
+      <rect x="0" y="392" width="1200" height="5" fill="var(--t-warn)"/>
+      <g stroke="var(--t-fg)" stroke-opacity=".05">
         <path d="M0 418h1200M0 448h1200M0 478h1200"/>
       </g>
 
       <!-- 緑のシェードの卓上ランプ -->
       <ellipse cx="452" cy="392" rx="210" ry="120" fill="url(#glow)"/>
       <g>
-        <rect x="447" y="300" width="9" height="92" fill="#6d5c38"/>
-        <ellipse cx="451" cy="392" rx="34" ry="8" fill="#5b4a2c"/>
-        <path d="M388 300h126l-16 34H404z" fill="#24503a"/>
-        <path d="M388 300h126l-5 11H393z" fill="#2f6349"/>
-        <path d="M404 334h94l-4 7h-86z" fill="#f2d79a"/>
+        <rect x="447" y="300" width="9" height="92" fill="var(--t-warn)"/>
+        <ellipse cx="451" cy="392" rx="34" ry="8" fill="var(--t-warn)"/>
+        <path d="M388 300h126l-16 34H404z" fill="var(--t-ok)"/>
+        <path d="M388 300h126l-5 11H393z" fill="var(--t-ok)"/>
+        <path d="M404 334h94l-4 7h-86z" fill="var(--t-warn)"/>
       </g>
 
       <!-- 小さな観葉植物 -->
       <g transform="translate(1092 352)">
-        <path d="M-26 40h52l-7 40h-38z" fill="#7d5a32"/>
-        <path d="M-28 34h56v8h-56z" fill="#93693a"/>
-        <g fill="#3c6a45">
+        <path d="M-26 40h52l-7 40h-38z" fill="var(--t-warn)"/>
+        <path d="M-28 34h56v8h-56z" fill="var(--t-warn)"/>
+        <g fill="var(--t-ok)">
           <path d="M0 34C-4 8-22 0-30 -4c4 18 14 32 30 38z"/>
           <path d="M0 34C4 6 22 -2 30 -6c-4 20-14 34-30 40z"/>
           <path d="M0 36C-2 6 2 -12 4 -22c8 18 6 42-4 58z"/>
@@ -297,11 +297,11 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
     <div class="ringwrap">
       <button class="ring" id="start" aria-label="カウンターのベルを鳴らして、案内人に話しかける">
         <svg viewBox="0 0 64 64" aria-hidden="true">
-          <ellipse cx="32" cy="57" rx="24" ry="5" fill="#8a6a2e"/>
-          <path d="M32 14c-11 0-19 9-19 21v11h38V35c0-12-8-21-19-21z" fill="#d7ab53"/>
-          <path d="M32 14c-6 0-11 3-14 8 3-2 8-4 14-4s11 2 14 4c-3-5-8-8-14-8z" fill="#f0d288"/>
-          <rect x="8" y="46" width="48" height="7" rx="3.5" fill="#b98f3c"/>
-          <circle cx="32" cy="10" r="5" fill="#e6c477"/>
+          <ellipse cx="32" cy="57" rx="24" ry="5" fill="var(--t-warn)"/>
+          <path d="M32 14c-11 0-19 9-19 21v11h38V35c0-12-8-21-19-21z" fill="var(--t-warn)"/>
+          <path d="M32 14c-6 0-11 3-14 8 3-2 8-4 14-4s11 2 14 4c-3-5-8-8-14-8z" fill="var(--t-warn)"/>
+          <rect x="8" y="46" width="48" height="7" rx="3.5" fill="var(--t-warn)"/>
+          <circle cx="32" cy="10" r="5" fill="var(--t-warn)"/>
         </svg>
       </button>
       <span class="cap">ベルを鳴らす</span>
@@ -407,4 +407,6 @@ button#more:disabled{opacity:.4;cursor:not-allowed}
   });
 })();
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

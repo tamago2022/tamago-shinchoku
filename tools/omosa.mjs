@@ -210,6 +210,37 @@ const WATCHER = `(() => {
   })();
   window.addEventListener('error', e => window.__om.errs.push(String(e.message||e).slice(0,200)));
   window.addEventListener('unhandledrejection', e => window.__om.errs.push('promise:' + String(e.reason).slice(0,200)));
+  // ★2026-09-24 追加：CLS（読んでる途中で画面が飛ぶ量）。
+  //   たまごさんの「読んでる途中で画面が切り替わる」の正体。Googleと同じ数え方をする：
+  //   ユーザー操作の直後（hadRecentInput）は数えない。5秒より離れたら別の束として数え直し、一番大きい束を採る。
+  window.__om.cls = 0; window.__om.clsShifts = [];
+  try {
+    let cur = 0, first = 0, last = 0;
+    new PerformanceObserver((list) => {
+      for (const e of list.getEntries()) {
+        if (e.hadRecentInput) continue;
+        if (cur && (e.startTime - last > 1000 || e.startTime - first > 5000)) { cur = 0; first = e.startTime; }
+        if (!cur) first = e.startTime;
+        last = e.startTime; cur += e.value;
+        if (cur > window.__om.cls) window.__om.cls = cur;
+        if (window.__om.clsShifts.length < 12) {
+          let who = '';
+          try { who = (e.sources||[]).map(s => { const n=s.node; if(!n) return '';
+            return (n.tagName||'') + (n.id?('#'+n.id):'') + (n.className&&n.className.slice?('.'+String(n.className).trim().split(/\\s+/).slice(0,2).join('.')):''); }).filter(Boolean).slice(0,2).join(' , '); } catch(err) {}
+          window.__om.clsShifts.push({ v: Math.round(e.value*10000)/10000, at: Math.round(e.startTime), who: who.slice(0,90) });
+        }
+      }
+    }).observe({ type: 'layout-shift', buffered: true });
+  } catch (e) {}
+  // ★LCP（一番大きい絵/文字が出るまで）。重さの体感に直結するので一緒に採る。
+  window.__om.lcpMs = null; window.__om.lcpWho = null;
+  try {
+    new PerformanceObserver((list) => {
+      const e = list.getEntries().pop(); if (!e) return;
+      window.__om.lcpMs = Math.round(e.renderTime || e.loadTime || e.startTime);
+      window.__om.lcpWho = String(e.url || (e.element && e.element.tagName) || '').slice(0,120);
+    }).observe({ type: 'largest-contentful-paint', buffered: true });
+  } catch (e) {}
   return 1;
 })()`;
 
@@ -260,6 +291,8 @@ const READ_OM = `(() => { const o=window.__om||{};
     maxGap: Math.round(o.maxGap||0), errs:(o.errs||[]).slice(-5),
     bodyLen: (document.body?document.body.innerText.length:0),
     heapMB: (performance.memory? Math.round(performance.memory.usedJSHeapSize/1048576):null),
+    cls: (o.cls==null?null:Math.round(o.cls*10000)/10000), clsShifts: (o.clsShifts||[]).slice(0,8),
+    lcpMs: (o.lcpMs??null), lcpWho: (o.lcpWho??null),
     scrollW: document.documentElement.scrollWidth, clientW: document.documentElement.clientWidth }); })()`;
 
 async function ev(cdp, expr, timeoutMs = 30000) {
@@ -348,6 +381,11 @@ async function measureWidth(width) {
       out.yoko = { scrollW: omB.scrollW ?? null, clientW: omB.clientW ?? null,
                    hamidashi: omB.scrollW && omB.clientW ? omB.scrollW > omB.clientW + 1 : null };
       out.heapMB = omB.heapMB ?? null;
+      // ★CLS＝読んでる途中で画面が飛ぶ量。0.1以下が合格、0.25超は不合格（Googleの線）。
+      out.cls = omB.cls ?? null;
+      out.clsShifts = omB.clsShifts ?? [];
+      out.lcpMs = omB.lcpMs ?? null;
+      out.lcpWho = omB.lcpWho ?? null;
       out.consoleErrors = [...new Set(consoleErrs)].slice(0, 8);
       out.crashedDuringLoad = crashed;
       return out;
