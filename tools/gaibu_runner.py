@@ -38,6 +38,76 @@ LOCK = os.path.join(gkuchi.JOBS_DIR, ".runner.lock")
 RUNLOG = os.path.join(REPO, "status", "gaibu_runner.log")
 LOCK_STALE_SEC = 600
 
+# =====================================================================
+# ★2026-09-23：どの仕事にも「壁掛け時計」を付ける（2回目の同じ不具合なので仕組みを替える）
+# ---------------------------------------------------------------------
+# 何が起きたか（実測）：
+#   11:32:10 `kakunin`（出したページが200で見えるか叩くだけ・60秒で終わるはず）を開始 →
+#   9分以上返らない。うしろに6件が並んだまま。**公開が黙って出ない。**
+#   同じ症状が今日だけで2回。
+# なぜ起きるか（構造）：
+#   仕事の中身を **この1本のプロセスの中で import して呼んでいる**。
+#   中で socket が返らなければ、runner ごと永久に止まる。
+#   subprocess で呼んでいる種類（recon・ghwatch）には timeout が付いているのに、
+#   **import して呼ぶ種類には時間の上限が1つも無かった。**
+#   ＝「止まらない仕事」を作れてしまう作りだった。
+# だからこうする：
+#   種類ごとに上限秒を決め、**超えたら例外にして殺し、理由を残して次へ行く。**
+#   ★黙って飲み込まない（no_credential と同じ扱いで、必ず結果に書く）。
+#   ★止まった1本のせいで列が死なない。これが「黙って出ない」の再発を止める形。
+import signal  # noqa: E402
+
+JOB_TIMEOUT = {
+    "kakunin": 90,     # GETで200を見るだけ。90秒かかる理由が無い
+    "keijiban": 90,
+    "daicho": 120,
+    "ghwatch": 150,
+    "recon": 150,
+    "diag": 90,
+    "douga": 90,
+    "horu": 240,
+    "jrsdata": 180,
+    "jrspush": 180,
+    "oausage": 90,
+    "zandaka": 180,    # 1034番 財布の残高。GET7本＋CLI2本。1本15秒の上限つき
+}
+JOB_TIMEOUT_DEFAULT = 180
+
+
+class JobTimeout(Exception):
+    pass
+
+
+def _on_alarm(signum, frame):
+    raise JobTimeout()
+
+
+def _job_limit(job):
+    try:
+        v = (job.get("payload") or {}).get("timeoutSec")
+        if v:
+            return max(5, min(int(v), 600))
+    except Exception:
+        pass
+    return JOB_TIMEOUT.get(job.get("kind"), JOB_TIMEOUT_DEFAULT)
+
+
+def _arm(sec):
+    """上限秒を仕掛ける。仕掛けられない場所（メインスレッド以外）では黙って何もしない。"""
+    try:
+        signal.signal(signal.SIGALRM, _on_alarm)
+        signal.alarm(int(sec))
+        return True
+    except Exception:
+        return False
+
+
+def _disarm():
+    try:
+        signal.alarm(0)
+    except Exception:
+        pass
+
 
 def _log(msg):
     try:
@@ -135,6 +205,8 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
 
             t0 = time.time()
             _log("開始 %s kind=%s" % (jid, job.get("kind")))
+            _limit = _job_limit(job)
+            _armed = _arm(_limit)
             try:
                 if job.get("kind") == "kiku":
                     import kiku
@@ -210,6 +282,14 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, shuhen_horu
                     importlib.reload(shuhen_horu)
                     out = shuhen_horu.run_job(job.get("payload") or {})
+                elif job.get("kind") == "zandaka":
+                    # 1034番：財布の残高を工場側から読む。**GETだけ・白名簿の外に出られない・
+                    #   鍵の値を返さない・課金0**（zandaka.py 側の ALLOW と _mask で保証）。
+                    #   サンドボックスからは api.x.ai / api.openai.com / rest.alpha.fal.ai /
+                    #   api.devin.ai すべて curl が 000 で、鍵も届かないため。
+                    import importlib, zandaka
+                    importlib.reload(zandaka)
+                    out = zandaka.run_job(job.get("payload") or {})
                 elif job.get("kind") == "douga":
                     # 2026-09-22 仕入れ：候補の動画が「公式か／静止画だけでないか」を確かめる。
                     #   YouTube の oEmbed（鍵不要・**課金0**）だけを叩く。行き先は
@@ -219,8 +299,18 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     out = douga_check.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
+            except JobTimeout:
+                # ★時間切れ。黙って飲み込まない。理由を必ず結果に書いて、次の仕事へ進む。
+                out = {"ok": False, "timedOut": True, "limitSec": _limit,
+                       "error": "上限 %d秒を超えたので打ち切りました（kind=%s）。"
+                                "★1本が止まっても列は止めません。"
+                                % (_limit, job.get("kind")), "totalYen": 0.0}
+                _log("⏱ 打ち切り %s kind=%s 上限%d秒" % (jid, job.get("kind"), _limit))
             except Exception:
                 out = {"ok": False, "error": "工場側で例外が出ました:\n" + traceback.format_exc()[-1500:]}
+            finally:
+                if _armed:
+                    _disarm()
 
             out["jobId"] = jid
             out["ranOn"] = "factory"

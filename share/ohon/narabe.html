@@ -1,0 +1,44 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>お手本と並べる</title>
+<style>
+  :root{ --ink:#f2ead6; --bg:#141628; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;padding:20px}
+  h1{font-size:20px;margin:0 0 4px;letter-spacing:.04em}
+  .lead{color:#b9b096;margin:0 0 20px;font-size:13px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1500px}
+  @media(max-width:860px){ .row{grid-template-columns:1fr} }
+  .cell{background:#0e1020;border:1px solid #2a2f68;border-radius:4px;overflow:hidden}
+  .cap{padding:8px 12px;font-size:12px;color:#b9b096;border-bottom:1px solid #2a2f68;
+       display:flex;justify-content:space-between;gap:8px}
+  .cap b{color:var(--ink);font-weight:600}
+  .cell img,.cell iframe{display:block;width:100%;aspect-ratio:1/1;border:0;background:#000}
+  .note{max-width:1500px;margin:22px 0 0;font-size:13px;color:#b9b096}
+  .note b{color:var(--ink)}
+  a{color:#e0876a}
+</style>
+
+<h1>お手本と並べる</h1>
+<p class="lead">左＝お手本（正本）。右＝こちらの出力。同じ大きさで、同じ画面に並べる。文章の説明では判定しない。</p>
+
+<div class="row">
+  <div class="cell">
+    <div class="cap"><b>お手本</b><span>Kevin Ngo / Claude Opus 5.5・2026-09-23</span></div>
+    <img src="https://pbs.twimg.com/amplify_video_thumb/2102437792425070592/img/H7fyRYmlzFr2osoV.jpg?name=large"
+         alt="お手本">
+  </div>
+  <div class="cell">
+    <div class="cap"><b>こちら</b><span>手紙の降る夜・1枚目</span></div>
+    <iframe src="./tamago-yoru-01.html?frame=40&amp;bare&amp;w=760" scrolling="no" title="こちらの出力"></iframe>
+  </div>
+</div>
+
+<p class="note">
+  判定するのは<b>外の目</b>。ここで点数は付けない。聞くことは1つだけ ——
+  <b>「社長に見せられるか。0か1。理由は1行。」</b><br>
+  正本の控え：<a href="./ohon.json">ohon.json</a>　／
+  描き方の土台：<a href="https://github.com/alesha-pro/tools">alesha-pro/tools</a>（MIT・core.js を丸ごと使用）
+</p>

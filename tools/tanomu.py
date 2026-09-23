@@ -273,10 +273,32 @@ def run_job(payload):
     ok, why = gkuchi.cost_cap_ok()
     if not ok:
         return {"ok": False, "error": "コスト上限：" + why}
+    # ★1034番【予算の栓】画像は1枚が高い（xAI画像 1枚 約$0.07＝約11円／fal動画は1本30円）。
+    #   叩く前に必ず通す。止めたら理由をそのまま返す（黙って空で帰らない）。
+    try:
+        import yosan
+        _saifu = {"grok": "xai", "openai": "openai", "gemini": "gemini", "fal": "fal"}.get(vendor)
+        if _saifu:
+            _mitsu = 11.0 if kind == "image" else 3.0   # 多めに見る側。実額はあとで記録する
+            _ok, _why = yosan.mitsumori(_saifu, _mitsu, "tanomu %s（%s）" % (kind, vendor))
+            if not _ok:
+                return {"ok": False, "error": _why, "stoppedByYosan": True, "totalYen": 0.0}
+    except Exception as e:
+        return {"ok": False, "totalYen": 0.0,
+                "error": "予算の栓（tools/yosan.py）が読めませんでした: %s。お金の話なので止めます。" % e}
     if kind == "image":
         r = do_image(order, vendor, n)
     else:
         r = do_text(kind, order, vendor, n)
+    # ★1034番【予算の栓】叩いた後に実額を記録する。
+    try:
+        import yosan
+        _saifu = {"grok": "xai", "openai": "openai", "gemini": "gemini", "fal": "fal"}.get(vendor)
+        if _saifu:
+            yosan.tsukatta(_saifu, float(r.get("costYen") or 0.0),
+                           "tanomu %s（%s）" % (kind, vendor), src="tanomu.run_job の costYen")
+    except Exception:
+        pass
     return {"ok": bool(r.get("ok")), "result": r, "kind": kind, "order": order,
             "totalYen": r.get("costYen") or 0.0, "error": r.get("error")}
 

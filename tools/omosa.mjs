@@ -26,7 +26,7 @@
  *   node tools/omosa.mjs --recon              … DOMの下見だけ（押す物・貼る所を探して名前を出す）
  *   結果 → status/omosa_last.json（最新）と status/omosa_log.jsonl（履歴・前回比に使う）
  */
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync, appendFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, resolve, join } from "node:path";
@@ -40,6 +40,8 @@ const OUT_LOG = join(REPO, "status", "omosa_log.jsonl");
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// ★「サイトが落ちた」と「こちらの測定装置がコケた」を混ぜないための印。
+const MEASURE_FAIL = /デバッグ口が開きません|CDP接続失敗|ENOENT|EADDRINUSE|spawn/;
 
 // ---------- 設定を読む ----------
 const cfg = JSON.parse(readFileSync(CFG_PATH, "utf-8"));
@@ -49,6 +51,13 @@ const argVal = (name, dflt) => {
   return i >= 0 && argv[i + 1] ? argv[i + 1] : dflt;
 };
 const RECON_ONLY = argv.includes("--recon");
+// ★2026-09-23：工場の runner に **1件90秒の打ち切り** が入った（status/gaibu_runner.log の「⏱ 打ち切り」）。
+//   ＝ 全部を1回で測ろうとすると必ず殺される。**測る中身を小分けにして、1回90秒に収める。**
+//   phase=bytes …① 何バイト送ってくるか（約30秒）
+//   phase=edit  …② 棚編集が触れるようになるまで（約70秒）
+//   phase=open  …③ URLを開いて落ちるか（runs回・1回約15秒）
+//   結果は status/omosa_last.json に **上書きではなく足し込む**（前の phase の数字を消さない）。
+const PHASE = argVal("--phase", "all");
 const RUNS = Number(argVal("--runs", cfg.runs ?? 20));
 const WIDTHS = argv.includes("--width") ? [Number(argVal("--width", 1280))] : (cfg.widths ?? [1280, 375]);
 const URL_ARG = argVal("--url", cfg.url);
@@ -311,14 +320,15 @@ async function measureWidth(width) {
     cdp.on("Inspector.targetCrashed", () => { crashed = true; });
 
     // ---- ① 何バイト送ってくるか ----
-    const nav = await guard(out, "読み込み", () => gotoAndWait(cdp, URL_ARG), { ms: null, loaded: false });
-    await sleep(SETTLE);
+    const nav = await guard(out, "読み込み",
+      () => gotoAndWait(cdp, URL_ARG, PHASE === "bytes" ? 12000 : 20000), { ms: null, loaded: false });
+    await sleep(PHASE === "bytes" ? 1500 : SETTLE);
     out.loadMs = nav.ms;
     out.loaded = nav.loaded;
     out.nav = nav;
 
     // 画面に見えていない後追いの読み込みも拾うため、もうひと呼吸待つ
-    await sleep(1200);
+    await sleep(PHASE === "bytes" ? 800 : 1200);
     const rows = net.filter((r) => r.bytes > 0);
     const byKind = {};
     for (const r of rows) { const k = KIND(r); byKind[k] = (byKind[k] || 0) + r.bytes; }
@@ -330,6 +340,18 @@ async function measureWidth(width) {
         performance.getEntriesByType('resource').map(e=>({n:e.name,t:e.transferSize,d:e.decodedBodySize}))
           .filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,12)); } catch(e){ return '[]'; } })()`, 15000), "[]");
     out.bytes = { total, byKind, top, decodedTop: JSON.parse(decoded || "[]"), reqCount: rows.length };
+
+    // ★90秒の打ち切りに収めるため、phase=bytes は「荷物の量」だけ測って帰る。
+    //   （下見・棚編集のクリック・横はみ出しは別の便で測る）
+    if (PHASE === "bytes") {
+      const omB = JSON.parse(await guard(out, "横はみ出し", () => ev(cdp, READ_OM, 10000), "{}") || "{}");
+      out.yoko = { scrollW: omB.scrollW ?? null, clientW: omB.clientW ?? null,
+                   hamidashi: omB.scrollW && omB.clientW ? omB.scrollW > omB.clientW + 1 : null };
+      out.heapMB = omB.heapMB ?? null;
+      out.consoleErrors = [...new Set(consoleErrs)].slice(0, 8);
+      out.crashedDuringLoad = crashed;
+      return out;
+    }
 
     // ---- 下見（押す物・貼る所） ----
     const found = JSON.parse(await guard(out, "下見", () => ev(cdp, FINDER(cfg.editText), 20000), "{}") || "{}");
@@ -476,8 +498,15 @@ async function openOnce(width, n, pageUrl) {
       r.errs = [...new Set(errs)].slice(0, 4);
     });
   } catch (e) {
-    r.ochita = true;
-    r.why = String(e.message).startsWith("FROZEN") ? "画面が固まって返事をしない" : `例外: ${String(e.message).slice(0, 120)}`;
+    const msg = String(e.message || e);
+    // ★ここを分けないと嘘になる（2026-09-23 実測でやらかしかけた）
+    //   「Chromeのデバッグ口が開きませんでした」は**こちらの測定装置が起動に失敗した**だけで、
+    //   ごきげん補給所が落ちたのではない。これを「落ちた」に数えると、
+    //   **サイトのせいではない回数を混ぜた落ち率**という新しい嘘が出来る。
+    //   測定失敗は測定失敗として別に数え、分母からも外す。
+    if (MEASURE_FAIL.test(msg)) { r.sokuteiShippai = true; r.why = `測定装置の失敗: ${msg.slice(0, 120)}`; }
+    else if (msg.startsWith("FROZEN")) { r.ochita = true; r.why = "画面が固まって返事をしない"; }
+    else { r.ochita = true; r.why = `例外: ${msg.slice(0, 120)}`; }
   }
   r.ms = Date.now() - t0;
   return r;
@@ -562,30 +591,52 @@ async function pasteOnce(width, n, pageUrl = URL_ARG, waitReadyMs = 0) {
       r.errs = [...new Set(errs)].slice(0, 4);
     });
   } catch (e) {
-    r.ochita = true;
-    r.why = String(e.message).startsWith("FROZEN") ? "画面が固まって返事をしない" : `例外: ${String(e.message).slice(0, 120)}`;
+    const msg = String(e.message || e);
+    if (MEASURE_FAIL.test(msg)) { r.sokuteiShippai = true; r.why = `測定装置の失敗: ${msg.slice(0, 120)}`; }
+    else if (msg.startsWith("FROZEN")) { r.ochita = true; r.why = "画面が固まって返事をしない"; }
+    else { r.ochita = true; r.why = `例外: ${msg.slice(0, 120)}`; }
   }
   r.ms = Date.now() - t0;
   return r;
 }
 
 // ---------- 本体 ----------
+/**
+ * ★自分が前に起動した headless Chrome の生き残りを片付ける。
+ *   実測（2026-09-23）：打ち切られた測定が Chrome を残し、次の測定が
+ *   「Chromeのデバッグ口が開きませんでした」で全滅した。
+ *   ★殺すのは **--user-data-dir に omosa- を含むものだけ**＝この道具が作った一時プロファイル。
+ *     たまごさんが普段使っている Chrome には絶対に触らない。
+ */
+function souji() {
+  try {
+    const out = execFileSync("/usr/bin/pgrep", ["-f", "user-data-dir=.*omosa-"], { encoding: "utf-8" });
+    const pids = out.split("\n").map((x) => x.trim()).filter(Boolean);
+    for (const pid of pids) { try { process.kill(Number(pid), "SIGKILL"); } catch { /* 既に居ない */ } }
+    if (pids.length) process.stderr.write(`[omosa] 前回の生き残りChromeを${pids.length}個片付けました\n`);
+    return pids.length;
+  } catch { return 0; }
+}
+
 async function main() {
   const started = new Date();
+  souji();
   const result = {
     measuredAt: started.toISOString().replace("T", " ").slice(0, 19),
     url: URL_ARG, runs: RUNS, widths: WIDTHS, reconOnly: RECON_ONLY, byWidth: {},
   };
   for (const w of WIDTHS) {
-    process.stderr.write(`[omosa] ${w}px を測っています…\n`);
+    process.stderr.write(`[omosa] ${w}px を測っています… (phase=${PHASE})\n`);
     let m;
-    try { m = await measureWidth(w); }
+    try { m = (PHASE === "all" || PHASE === "bytes" || RECON_ONLY) ? await measureWidth(w) : { width: w }; }
     catch (e) { m = { width: w, sokutei_shippai: String(e?.message || e).slice(0, 300) }; }
-    if (!RECON_ONLY) {
+    if (!RECON_ONLY && (PHASE === "all" || PHASE === "edit")) {
       // ② 棚編集：開いてから触れるまで
       process.stderr.write(`[omosa] ${w}px 棚編集を開いています…\n`);
       try { m.tanaHenshu = await measureEdit(w); }
       catch (e) { m.tanaHenshu = { error: String(e?.message || e).slice(0, 300) }; }
+    }
+    if (!RECON_ONLY && (PHASE === "all" || PHASE === "paste")) {
 
       // ③ URLを貼って落ちる回数。まず棚編集の画面で。貼る所が出てこなければトップで。
       const runPaste = async (pageUrl, waitMs, basho) => {
@@ -596,7 +647,7 @@ async function main() {
           process.stderr.write(`[omosa] ${w}px 貼り ${i}/${RUNS} (${basho}) … ${one.skipped ? "貼る所なし" : one.ochita ? "落ちた(" + one.why + ")" : "無事"}\n`);
           if (one.skipped && i >= 2) break; // 貼る所が無いのに20回やっても意味がない
         }
-        const done = trials.filter((t) => !t.skipped);
+        const done = trials.filter((t) => !t.skipped && !t.sokuteiShippai);
         const ko = done.filter((t) => t.ochita);
         return {
           basho, url: pageUrl, tried: done.length, ochita: ko.length,
@@ -611,7 +662,8 @@ async function main() {
         };
       };
       m.paste = await runPaste(cfg.editUrl || URL_ARG, 20000, "棚編集の画面のURL入力欄");
-
+    }
+    if (!RECON_ONLY && (PHASE === "all" || PHASE === "open")) {
       // ③-b URLを開いて落ちるか。こちらは鍵なしでも runs 回まわせる。
       const opens = [];
       const list = cfg.openUrls && cfg.openUrls.length ? cfg.openUrls : [URL_ARG];
@@ -621,23 +673,40 @@ async function main() {
         opens.push(one);
         process.stderr.write(`[omosa] ${w}px 開き ${i}/${RUNS} … ${one.ochita ? "落ちた(" + one.why + ")" : "無事"}\n`);
       }
-      const ko2 = opens.filter((t) => t.ochita);
+      // ★測定装置がコケた回は分母から外す（サイトのせいではないので）
+      const valid = opens.filter((t) => !t.sokuteiShippai);
+      const ko2 = valid.filter((t) => t.ochita);
       m.open = {
-        tried: opens.length, ochita: ko2.length,
-        rate: opens.length ? Math.round((ko2.length / opens.length) * 1000) / 10 : null,
+        tried: valid.length, ochita: ko2.length, sokuteiShippai: opens.length - valid.length,
+        rate: valid.length ? Math.round((ko2.length / valid.length) * 1000) / 10 : null,
         whys: [...new Set(ko2.map((t) => t.why))],
-        errs: [...new Set(opens.flatMap((t) => t.errs))].slice(0, 6),
-        maxFreezeMs: opens.map((t) => t.maxFreezeMs).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
-        heapMB: opens.map((t) => t.heapMB).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
-        msAvg: Math.round(opens.reduce((a, t) => a + t.ms, 0) / (opens.length || 1)),
-        trials: opens.map((t) => ({ n: t.n, url: shortName(t.url), ochita: t.ochita, why: t.why, ms: t.ms })),
+        errs: [...new Set(valid.flatMap((t) => t.errs))].slice(0, 6),
+        maxFreezeMs: valid.map((t) => t.maxFreezeMs).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
+        heapMB: valid.map((t) => t.heapMB).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
+        msAvg: Math.round(valid.reduce((a, t) => a + t.ms, 0) / (valid.length || 1)),
+        trials: opens.map((t) => ({ n: t.n, url: shortName(t.url), ochita: !!t.ochita,
+          sokuteiShippai: !!t.sokuteiShippai, why: t.why, ms: t.ms })),
       };
     }
     result.byWidth[String(w)] = m;
   }
   result.elapsedSec = Math.round((Date.now() - started.getTime()) / 1000);
   mkdirSync(dirname(OUT_LAST), { recursive: true });
-  writeFileSync(OUT_LAST, JSON.stringify(result, null, 1));
+  // ★小分けにしたので、前の phase が入れた数字を消さないように足し込む。
+  let merged = result;
+  if (PHASE !== "all" && existsSync(OUT_LAST)) {
+    try {
+      const old = JSON.parse(readFileSync(OUT_LAST, "utf-8"));
+      if (old.url === result.url) {
+        merged = { ...old, ...result, byWidth: { ...(old.byWidth || {}) } };
+        for (const k of Object.keys(result.byWidth || {})) {
+          merged.byWidth[k] = { ...(old.byWidth?.[k] || {}), ...result.byWidth[k] };
+        }
+        merged.phases = [...new Set([...(old.phases || []), PHASE])];
+      }
+    } catch { /* 読めなければそのまま上書き */ }
+  } else if (PHASE !== "all") { merged.phases = [PHASE]; }
+  writeFileSync(OUT_LAST, JSON.stringify(merged, null, 1));
   // ★下見(--recon)は履歴に足さない。足すと「前回より重い／軽い」の比べる相手が
   //   別のページになって、嘘の赤・嘘の緑が出る（2026-09-23に実際そうなりかけた）。
   if (!RECON_ONLY) appendFileSync(OUT_LOG, JSON.stringify(result) + "\n");

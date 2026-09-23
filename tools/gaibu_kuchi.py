@@ -133,6 +133,42 @@ def _err_text(e):
 #   {"vendor","label","ok","text","model","usage","costYen","seconds","error","searched"}
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# ★1034番【予算の栓】。ここだけが yosan を呼ぶ。栓が無い環境でも落ちない作りにする
+#   （栓が読めなければ「通す」にはしない＝安全側に倒して止める。お金の話なので）。
+# ---------------------------------------------------------------------------
+def _yosan_mitsumori(saifu, vendor, messages, max_tokens):
+    if not saifu:
+        return True, "財布の名前が無いので栓を通していません"
+    try:
+        import yosan
+    except Exception as e:
+        return False, "予算の栓（tools/yosan.py）が読めませんでした: %s。お金の話なので止めます。" % e
+    # 見積り。入力の文字数と、返事の上限トークンから、その社の一番高いモデルの単価で多めに見る。
+    chars = 0
+    try:
+        chars = sum(len(str(m.get("content") or "")) for m in (messages or []))
+        in_tok = max(1, int(chars / 2.0))          # 日本語は1トークン≒2文字（多めに見る側）
+        out_tok = int(max_tokens or 1500)
+        worst = 0.0
+        for model in CHAT_MODELS[vendor]:
+            y = _cost_yen(vendor, model, {"prompt_tokens": in_tok, "completion_tokens": out_tok})
+            worst = max(worst, float(y or 0))
+        mitsu = round(max(worst, 0.01), 4)
+    except Exception:
+        mitsu = 1.0
+    what = "%s に %d文字 聞く（返事の上限 %s トークン）" % (LABEL[vendor], chars, max_tokens or 1500)
+    return yosan.mitsumori(saifu, mitsu, what)
+
+
+def _yosan_tsukatta(saifu, yen, what):
+    try:
+        import yosan
+        yosan.tsukatta(saifu, yen, what, src="gaibu_kuchi.ask の costYen（実トークン×公表単価）")
+    except Exception:
+        pass
+
+
 def ask(vendor, messages, search=False, timeout=90, max_tokens=None, temperature=None,
         models=None):
     """models を渡すと、その社の既定リスト（安い順）ではなく指定したモデルを先頭から試す。
@@ -142,6 +178,18 @@ def ask(vendor, messages, search=False, timeout=90, max_tokens=None, temperature
     base = {"vendor": vendor, "label": LABEL[vendor], "ok": False, "text": "",
             "model": "", "usage": {}, "costYen": 0.0, "seconds": 0.0,
             "error": "", "searched": False, "officialUrl": OFFICIAL_URL[vendor]}
+
+    # ★1034番【予算の栓】叩く前に必ずここを通る。上限を超えるなら1文字も投げない。
+    #   止めたときは理由をそのまま error に入れて返す（黙って空で帰らない＝
+    #   「動いているのに何も取れていない」を作らない）。
+    _saifu = {"grok": "xai", "openai": "openai", "gemini": "gemini"}.get(vendor)
+    _mitsu = _yosan_mitsumori(_saifu, vendor, messages, max_tokens)
+    if _saifu and not _mitsu[0]:
+        base["error"] = _mitsu[1]
+        base["stoppedByYosan"] = True
+        base["seconds"] = round(time.time() - t0, 1)
+        return base
+
     key = find_key(vendor)
     if not key:
         base["error"] = "%sの鍵が見つかりません（%s のいずれかが .env / ~/.tamago/keys/api_keys.env / " \
@@ -162,6 +210,8 @@ def ask(vendor, messages, search=False, timeout=90, max_tokens=None, temperature
                          "usage": usage, "searched": searched})
             base["costYen"] = _cost_yen(vendor, model, usage)
             base["seconds"] = round(time.time() - t0, 1)
+            # ★1034番【予算の栓】叩いた後に実額を記録する。ここを書かないと上限が効かない。
+            _yosan_tsukatta(_saifu, base["costYen"], "%s / %s" % (LABEL[vendor], model))
             return base
         except Exception as e:
             errs.append("%s → %s" % (model, _err_text(e)))

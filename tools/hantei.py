@@ -666,9 +666,56 @@ def kensa_html(text, name=""):
     return (not ng), ng
 
 
+# ---------------------------------------------------------------------
+#  1033番（2026-09-23）数字と断定の門 ― 報告がDispatchに上がる前に通す
+# ---------------------------------------------------------------------
+#
+# たまごさん：「調べてから上げてこいよって。混乱するから。
+#               コロコロコロコロ変わるから、報告がさぁ。」
+#
+# ★判定の中身はここに1行も書かない。tools/kazu_gate.py にしかない。
+#   ここは呼ぶだけ。1018番の「同じifを2か所に書いて片方だけ直った」を繰り返さない。
+def kazu(text, label="報告の数字"):
+    """報告文を数字の門に通す。judge() と同じ形で返す。"""
+    try:
+        import kazu_gate
+    except Exception as e:  # noqa: BLE001
+        return judge(1, 0, blocked="数字の門が読めません：%s" % e, label=label)
+    r = kazu_gate.judge(text or "")
+    if r["ok"]:
+        res = judge(1, 1, label=label)
+        res["line"] = "✅ %s … 数字%d件、全部に出どころがあります" % (label, r["counted"])
+        return res
+    return judge(1, 0, label=label,
+                 blocked="／".join("[%s] %s" % (h["code"], h["why"])
+                                   for h in r["hits"])[:600])
+
+
+def kazu_kanmon():
+    """★門そのものが効いているかを毎回みる。
+
+    門は、効かなくなっても静かに素通りするので、誰も気づかない。
+    見本（わざと悪い報告文）で落ちるかを毎回試して、落ちなくなったら赤。
+    """
+    try:
+        import kazu_gate
+        n, ng, _ = kazu_gate.self_test(verbose=False)
+    except Exception as e:  # noqa: BLE001
+        return judge(1, 0, blocked="数字の門の見本試験が走りません：%s" % e,
+                     label="数字の門")
+    if ng:
+        return judge(n, n - ng, label="数字の門",
+                     blocked="★見本%d件中%d件で落とせませんでした＝"
+                             "出典の無い数字がたまごさんまで素通りします" % (n, ng))
+    r = judge(n, n, label="数字の門")
+    r["line"] = ("✅ 数字の門 … わざと悪い報告文%d件を全部落としました"
+                 "（出典なし／推測語／「無い」の断定／前と食い違うのに訂正なし）" % n)
+    return r
+
+
 def audit():
     """全部の緑に同じ規則を当てた結果を返す（リスト）。"""
-    out = [kojo(6), commit_kuchi(), omosa()]
+    out = [kojo(6), commit_kuchi(), omosa(), kazu_kanmon()]
     out.extend(suteta_henji())
     out.extend(gaibu_ai())
     out.extend(daicho_gai())
@@ -682,6 +729,151 @@ def audit():
         # 読めなかったことを黙って飲み込まない。読めなかったと書く。
         out.append(judge(1, 0, blocked="鍵台帳が読めません：%s" % e, label="鍵台帳"))
     return out
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 案内人（卵コンシェルジュ）の採点 ― ★規則はここにしか書かない
+#   紙の基準：status/annai_saiten_kijun.md（v1・2026-09-23確定）
+#   問：status/annai_300.json（tools/annai_toi.py が作る）
+#   ★AIを1回も呼ばない。文字合わせだけで決める。
+# ══════════════════════════════════════════════════════════════════════
+
+# 出た札に必ず書かれている「知らない◯◯の世界だけど」から分野を読む。
+ANNAI_FIELD_RE = re.compile(r"知らない(音楽|食べ物|かわいい|笑い|旅|踊り|喜び)の世界")
+
+# 「案内人のセリフ」と「出てきたカードの題名」を分ける線。
+# 題名は短くて句読点が無い。人が読むセリフは文になっている。
+def annai_is_speech(line):
+    return len(line) >= 10 and any(c in line for c in "。、！？!?…")
+
+
+def annai_split(lines):
+    """画面に増えた行を セリフ／札 に分ける。"""
+    sp = [l for l in lines if annai_is_speech(l)]
+    ca = [l for l in lines if not annai_is_speech(l)]
+    return sp, ca
+
+
+# 「わかりません」だけを返した＝黙ったのと同じ。
+ANNAI_DAMARI = ("わかりません", "分かりません", "わからない", "見つかりません",
+                "ありません", "該当なし", "該当しません", "エラー",
+                "もう一度", "すみません、", "ごめんなさい、")
+
+# かわせている＝「それは分からない」と言えている。曲を出していないことが前提。
+ANNAI_KAWASE = ANNAI_DAMARI + ("音楽", "曲", "案内", "専門", "お答え", "ここでは",
+                               "できません", "苦手", "範囲")
+
+ANNAI_SPEECH_MAX_LINES = 2     # これを超えたら喋りすぎ
+ANNAI_SPEECH_MAX_CHARS = 120   # これを超えたら喋りすぎ
+
+
+def saiten_annai(toi, ans):
+    """1問を採点する。★1問につきラベルは必ず1個（上から順）。
+
+    toi … {"q","field","words","kawasu"}            （annai_300.json の1行）
+    ans … {"text","lines","error"}                   （どこで叩いても同じ形にして渡す）
+    返り … {"label","mark","why","field_got","hit"}
+
+    ラベルは5つだけ：
+      ✕ 無反応(落ちた) ／ ✕ 無反応(黙った) ／ ✕ トンチンカン ／ ✕ 喋りすぎ
+      △ そっけない ／ ◯ 合格
+    """
+    text = (ans.get("text") or "").strip()
+    lines = ans.get("lines")
+    if lines is None:
+        lines = [x.strip() for x in text.split("\n") if x.strip()]
+    err = (ans.get("error") or "").strip()
+    speech, cards = annai_split(lines)
+    sp = "\n".join(speech).strip()
+    got = sorted(set(ANNAI_FIELD_RE.findall(text)))
+    kawasu = bool(toi.get("kawasu"))
+
+    def out(label, mark, why, hit=None):
+        return {"label": label, "mark": mark, "why": why,
+                "field_got": got, "hit": hit, "q": toi.get("q", "")}
+
+    # ── 1. 無反応 ────────────────────────────────────────────────
+    if err:
+        return out("無反応(落ちた)", "✕", "投げられなかった：%s" % err[:80])
+    if len(text) < 4:
+        return out("無反応(黙った)", "✕", "返事が%d文字" % len(text))
+    only_damari = (not cards) and sp and all(
+        any(w in l for w in ANNAI_DAMARI) for l in speech)
+    if only_damari and not kawasu:
+        return out("無反応(黙った)", "✕", "「わかりません」だけ")
+    if not cards and not kawasu:
+        # 曲を聞かれて曲を1枚も出していない＝お客さんから見れば何も返っていない。
+        return out("無反応(黙った)", "✕", "曲・棚が1枚も出ていない")
+
+    # ── 2. トンチンカン ─────────────────────────────────────────
+    if kawasu:
+        # 答えられなくて当然の問。★正解は「曲を出さずにかわす」。
+        if cards:
+            return out("トンチンカン", "✕",
+                       "答えられない問なのに曲を%d枚出した（絶無>誤り）" % len(cards))
+        if not any(w in text for w in ANNAI_KAWASE):
+            return out("トンチンカン", "✕", "かわせていない（分からないと言っていない）")
+    else:
+        field = toi.get("field")
+        words = toi.get("words") or []
+        hit = next((w for w in words if w and w.lower() in text.lower()), None)
+        field_ok = bool(field and got and field in got)
+        # ★「1つも結びつかない」ときだけ✕。分野が合う か 言葉が当たる のどちらかで◯。
+        if not field_ok and not hit:
+            return out("トンチンカン", "✕",
+                       "聞いたのは%sだが出たのは%s／手がかりの語が1つも出ない"
+                       % (field or "?", "・".join(got) or "分野不明"))
+
+    # ── 3. 喋りすぎ ────────────────────────────────────────────
+    if len(speech) > ANNAI_SPEECH_MAX_LINES or len(sp) > ANNAI_SPEECH_MAX_CHARS:
+        return out("喋りすぎ", "✕",
+                   "セリフ%d行・%d文字（1行＋短い一言まで）" % (len(speech), len(sp)))
+
+    # ── 4. そっけない ──────────────────────────────────────────
+    if not sp:
+        return out("そっけない", "△", "セリフゼロ（曲名だけ返した）")
+
+    # ── 5. 合格 ────────────────────────────────────────────────
+    return out("合格", "◯", "")
+
+
+ANNAI_LABELS = ["無反応(落ちた)", "無反応(黙った)", "トンチンカン", "喋りすぎ",
+                "そっけない", "合格"]
+
+
+def saiten_annai_matome(rows):
+    """1周ぶんをまとめる。★トンチンカン率＝✕の数÷出した問の数。"""
+    b = {k: 0 for k in ANNAI_LABELS}
+    for r in rows:
+        b[r["label"]] = b.get(r["label"], 0) + 1
+    asked = len(rows)
+    ng = sum(b[k] for k in ANNAI_LABELS if k != "合格" and k != "そっけない")
+    warn = b["そっけない"]
+    return {
+        "asked": asked,
+        "ng": ng,
+        "ng_rate": round(ng / asked, 4) if asked else 0.0,
+        "warn": warn,
+        "warn_rate": round(warn / asked, 4) if asked else 0.0,
+        "breakdown": {k: v for k, v in b.items() if v},
+    }
+
+
+def saiten_annai_ku(rows, tois):
+    """区分ごとの不合格率。★どこが一番悪いかを見て、直す1つを選ぶための表。"""
+    byq = {t["q"]: t for t in tois}
+    ku = {}
+    for r in rows:
+        t = byq.get(r["q"]) or {}
+        k = t.get("区分", "?")
+        d = ku.setdefault(k, {"asked": 0, "ng": 0, "labels": {}})
+        d["asked"] += 1
+        if r["label"] not in ("合格", "そっけない"):
+            d["ng"] += 1
+        d["labels"][r["label"]] = d["labels"].get(r["label"], 0) + 1
+    for d in ku.values():
+        d["ng_rate"] = round(d["ng"] / d["asked"], 4) if d["asked"] else 0.0
+    return ku
 
 
 if __name__ == "__main__":

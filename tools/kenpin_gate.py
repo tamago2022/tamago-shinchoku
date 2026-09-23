@@ -60,6 +60,7 @@
   （＝AI同士で堂々巡り。6章の「判断1点だけ」を出す材料にする）だけ。
 """
 import argparse
+import glob
 import io
 import json
 import os
@@ -371,11 +372,46 @@ def _past_failures(it):
     return "\n".join(lines) if lines else "(この号番号での過去の差し戻しはまだありません)"
 
 
+def _kazu_gate_or_stop(body, label):
+    """数字と断定の門。通れば0、落ちたら1（＝Dispatchに上げさせない）。
+
+    ★判定は tools/kazu_gate.py にしかない。ここは hantei 経由で呼ぶだけ。
+      1018番「同じ規則を2か所に書いて片方だけ直った」を繰り返さないため。
+    """
+    try:
+        import hantei
+    except Exception as e:  # noqa: BLE001
+        # 門が読めないこと自体を黙って飲み込まない。ただし全号を止めはしない。
+        print("（数字の門が読めません：%s。この関所は無視します）" % e)
+        return 0
+    r = hantei.kazu(body, label=label)
+    if not r["red"]:
+        print("KAZU_GATE: OK — %s" % r["line"].split("…", 1)[-1].strip())
+        return 0
+    print("\n🛑 数字の門が止めました。これはたまごさんに上げられません。\n")
+    for part in r["blocked"].split("／["):
+        part = part.strip()
+        if not part:
+            continue
+        print("  ● %s" % (part if part.startswith("[") else "[" + part))
+    print("\n  直し方：数字の行に「叩いたURL＋HTTPコード＋時刻」か"
+          "「ファイルパス＋行番号」か「コマンドとその出力」を書く。\n"
+          "  前と数字が違うなら「★訂正：前は◯◯と言いましたが、正しくは△△です」と書く。\n")
+    return 1
+
+
 def cmd_submit(n, kind, body_path, body_text, url, cost, note):
     body = body_text or (_read_text(body_path) if body_path else "")
     if not body.strip():
         print("ERROR: 提出物が空です（--body-file か --body を指定してください）")
         return 1
+    # 1033番：★数字と断定の門を、報告がDispatchに上がる前に通す。
+    #   判定はここに1行も書かない（hantei.kazu → tools/kazu_gate.py が唯一の判定）。
+    #   たまごさん「調べてから上げてこいよって。混乱するから。コロコロ変わるから、報告がさぁ」
+    rc = _kazu_gate_or_stop(body, "%s号 第?回（%s）の提出物" % (n, kind))
+    if rc:
+        return rc
+
     if kind == "pre" and not cost:
         # 3章：お金が出るものは、生成前に費用「◯本 × ◯円 = 合計◯円」を必ず添えて出す。
         print("ERROR: --kind pre では --cost が必須です（例: --cost \"3本 × 50円 = 合計150円\"）")
@@ -799,6 +835,18 @@ def cmd_can_deliver(n):
         ng.append("Claude自己検品の記録がありません（--mark-self-check で記録する）")
     if not (it.get("functionTestPassAt")):
         ng.append("実機能テストの記録がありません（--mark-function-test で記録する）")
+    # 1033番：★5つめ。最後に出した報告文が、数字の門を通っているか。
+    #   たまごさん「どれが本当なんだろうって思う。コロコロ変わるから」
+    try:
+        import hantei as _h
+        subs = sorted(glob.glob(os.path.join(_case_dir(n), "*-submission.md")))
+        last = _read_text(subs[-1]) if subs else ""
+    except Exception:
+        last = ""
+    if last.strip():
+        kr = _h.kazu(last, label="最後の報告文")
+        if kr["red"]:
+            ng.append("報告の数字が確かめられていません（%s）" % kr["blocked"][:240])
     hik_ok, hik_msg = _hikitsugi_gate_ok()
     if not hik_ok:
         ng.append("引き継ぎ（現在地・決定台帳）を読んだ確認が取れていません（%s。"

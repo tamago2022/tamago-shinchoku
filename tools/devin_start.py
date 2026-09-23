@@ -39,6 +39,19 @@ def main():
         print("DEVIN_API_KEYが.envに見つかりません。")
         return 1
 
+    # ★1034番【予算の栓】Devinは1セッションが高い（9/18〜9/20 の15本で $8.85＝1,327円＝
+    #   1本あたり約88円・972番の公式画面差分より）。立てる前に必ず通す。
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    try:
+        import yosan
+        ok, why = yosan.mitsumori("devin", 93.0, "Devinのセッションを1本立てる")
+        if not ok:
+            print(why)
+            return 1
+    except Exception as e:
+        print("予算の栓（tools/yosan.py）が読めませんでした: %s。お金の話なので止めます。" % e)
+        return 1
+
     body = json.dumps({"prompt": prompt}).encode("utf-8")
     req = urllib.request.Request(
         "https://api.devin.ai/v1/sessions",

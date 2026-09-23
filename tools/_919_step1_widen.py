@@ -5,6 +5,21 @@
 fal-ai/nano-banana/edit / $0.0398枚。"""
 import os, sys, json, time, base64, urllib.request, urllib.error
 
+# ★1034番【予算の栓】fal は1本が高い（動画1本30円・画像1枚6円／status/fal_cost_ledger.json）。
+#   この使い捨ての口も、走り出す前に必ず栓を通す。上限0円なら1回も叩けない。
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__))))
+try:
+    import yosan as _yosan
+    _ok, _why = _yosan.mitsumori("fal", 30.0, "%s を走らせる" % _os.path.basename(__file__))
+    if not _ok:
+        print(_why)
+        raise SystemExit(1)
+except ImportError as _e:
+    print("予算の栓（tools/yosan.py）が読めませんでした: %s。お金の話なので止めます。" % _e)
+    raise SystemExit(1)
+
+
 KEY_PATH = os.path.expanduser("~/.fal_key")
 with open(KEY_PATH) as f:
     FAL_KEY = f.read().strip()

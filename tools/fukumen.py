@@ -47,7 +47,10 @@ import traceback
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = "https://joy-relief-station.lovable.app"
-SHOTDIR = os.path.join(ROOT, "share", "check", "assets", "1029-fukumen")
+# ★撮ったものは全部ここ（gitに乗らない場所）。公開するのは報告に使う数枚だけで、
+#   それは tools/fukumen_report.py が軽いJPEGにして share/check/assets/ へ移す。
+#   毎日6MBのPNGをgitへ積むと、数週間でこのリポジトリが開けなくなる。
+SHOTDIR = os.path.join(ROOT, "status", "fukumen", "shots")
 OUTDIR = os.path.join(ROOT, "status", "fukumen")
 
 # ── 測る目盛り（Web Vitals の公式しきい値。ここの数字は勝手に動かさない）──
@@ -218,6 +221,22 @@ class Shopper(object):
         except Exception:
             pass
 
+    def probe(self, selector):
+        """入力欄の今の様子を見る。
+        ★page.evaluate は使わない（時間切れの仕組みが無く、重いページで永久に戻らない。
+          2026-09-23に実測で1回はまり、20分ぶんの計測が全部消えた）。
+          locator.evaluate は timeout を持っているので、必ずこちらを使う。"""
+        try:
+            return self.page.locator(selector).first.evaluate(
+                "el => ({alive:true, focused: document.activeElement===el,"
+                " val:String(el.value||''),"
+                " rebuilt: !!(window.__fkT && window.__fkT.node && !document.contains(window.__fkT.node)),"
+                " swaps:(window.__fkT||{}).swaps||0, blurs:(window.__fkT||{}).blurs||0})",
+                timeout=8000)
+        except Exception:
+            return {"alive": False, "focused": False, "val": None,
+                    "rebuilt": True, "swaps": 0, "blurs": 0, "timeout": True}
+
     # ── 1ページを「お客さんが読むつもりで」開いて、読んでいる間の数字を取る ──
     def read_page(self, path, settle_ms=8000, label=""):
         url = path if path.startswith("http") else BASE + path
@@ -240,19 +259,29 @@ class Shopper(object):
                 pass
         # ★ここが「読んでる途中」。触らずにただ待つ。この間のズレが たまごさんの言う症状。
         try:
-            cls_at_before = float(self.page.evaluate("() => (window.__fk||{}).cls || 0"))
+            cls_at_before = float(self.page.locator("body").first.evaluate(
+                "() => (window.__fk||{}).cls || 0", timeout=10000))
         except Exception:
             cls_at_before = 0.0
         self.page.wait_for_timeout(settle_ms)
         try:
-            fk = self.page.evaluate("() => { const f = window.__fk || {};"
-                                    " return {cls:f.cls||0, shifts:(f.shifts||[]).slice(0,40),"
-                                    " lcp:f.lcp||0, longtasks:f.longtasks||[], inp:f.inp||0}; }")
+            # 読み込みが終わる前に evaluate を呼ぶと永久に戻らないことがある（実測）。先に待つ。
+            self.page.wait_for_load_state("load", timeout=20000)
+        except Exception:
+            pass
+        try:
+            fk = self.page.locator("body").first.evaluate(
+                "() => { const f = window.__fk || {};"
+                " return {cls:f.cls||0, shifts:(f.shifts||[]).slice(0,40),"
+                " lcp:f.lcp||0, longtasks:f.longtasks||[], inp:f.inp||0}; }", timeout=15000)
         except Exception as ex:
             rec["error"] = "測れませんでした: %s" % str(ex)[:160]
             return rec
         sa = os.path.join(SHOTDIR, slug(url, self.width) + "-after.png")
-        if self.shots and (fk["cls"] - cls_at_before) > 0.02:
+        # ★証拠は2枚あって初めて証拠になる。ズレが出たページは必ずもう1枚撮る
+        #   （読み込みが遅いページでは「読み始め」の1枚目がすでにズレた後になることがあるため、
+        #     差分だけを見て撮る・撮らないを決めない）。
+        if self.shots and (fk["cls"] > CLS_GOOD or (fk["cls"] - cls_at_before) > 0.02):
             try:
                 self.page.screenshot(path=sa)
                 rec["shot_after"] = os.path.relpath(sa, ROOT)
@@ -299,7 +328,7 @@ class Shopper(object):
         except Exception as ex:
             rec["error"] = "入力欄を押せません: %s" % str(ex)[:120]
             return rec
-        rebuilt = focus_lost = value_lost = 0
+        rebuilt = focus_lost = value_lost = timeouts = 0
         worst_val = None
         per_char = []
         for i, ch in enumerate(text):
@@ -308,12 +337,11 @@ class Shopper(object):
             except Exception:
                 pass
             self.page.wait_for_timeout(per_char_ms)
-            try:
-                st = self.page.evaluate("sel => window.__fkProbe(sel)", selector)
-            except Exception:
-                st = {"alive": False, "focused": False, "val": None, "rebuilt": True, "swaps": 0, "blurs": 0}
+            st = self.probe(selector)
             want = text[:i + 1]
             got = st.get("val")
+            if st.get("timeout"):
+                timeouts += 1
             if st.get("rebuilt"):
                 rebuilt += 1
             if not st.get("focused"):
@@ -325,12 +353,10 @@ class Shopper(object):
             per_char.append({"i": i + 1, "focused": bool(st.get("focused")),
                              "len": (len(got) if got is not None else -1),
                              "rebuilt": bool(st.get("rebuilt"))})
+        fin = self.probe(selector)
         try:
-            fin = self.page.evaluate("sel => window.__fkProbe(sel)", selector)
-        except Exception:
-            fin = {}
-        try:
-            fk = self.page.evaluate("() => ({cls:(window.__fk||{}).cls||0, inp:(window.__fk||{}).inp||0})")
+            fk = self.page.locator("body").first.evaluate(
+                "() => ({cls:(window.__fk||{}).cls||0, inp:(window.__fk||{}).inp||0})", timeout=8000)
         except Exception:
             fk = {"cls": 0, "inp": 0}
         rec.update({
@@ -343,6 +369,7 @@ class Shopper(object):
             "最後に残っていた文字": (fin.get("val") or ""),
             "全部残ったか": (fin.get("val") or "") == text,
             "消えた例": worst_val,
+            "返事が来なかった回数": timeouts,
             "console_errors": self.errors[e0:],
             "cls": round(float(fk.get("cls") or 0), 4),
             "inp_ms": int(fk.get("inp") or 0),
@@ -378,10 +405,38 @@ def is_speech(line):
     return len(line) >= 10 and any(c in line for c in "。、！？!?…")
 
 
-def ask_concierge(sh, questions):
+# ── 「おじさん、わかってるね」を機械で測る ────────────────────────
+# 本番の案内人は、出した札に必ず「知らない◯◯の世界だけど」と分野名を書く。
+# そこを読めば、お客さんが聞いた分野と、実際に出した分野が合っているかを数えられる。
+# 実測（2026-09-23）：「泣ける曲ある？」→ 猫の爪切り（笑い）、
+#   「シティポップってなに？」→ 氷点下71℃の村（旅）、「ドライブで聴くやつ」→ 町中華（食べ物）。
+FIELD_RE = re.compile(r"知らない(音楽|食べ物|かわいい|笑い|旅|踊り|喜び)の世界")
+ASK_FIELD = [
+    ("音楽", ("曲", "音楽", "聴く", "聴き", "歌", "バンド", "ポップ", "ロック", "ギター",
+              "カラオケ", "歌謡", "流すやつ", "流せる")),
+    ("食べ物", ("食べ", "料理", "ごはん", "レシピ", "腹")),
+    ("笑い", ("笑え", "笑い", "お笑い", "面白")),
+    ("旅", ("旅", "海が見たく", "景色")),
+    ("踊り", ("踊", "ダンス")),
+]
+
+
+def asked_field(q):
+    for name, words in ASK_FIELD:
+        for w in words:
+            if w in q:
+                return name
+    return None
+
+
+def ask_concierge(sh, questions, revive=None):
+    """revive: ブラウザが落ちた時に新しいお客さんを連れてくる関数（無ければ諦める）。
+    ★2026-09-23の実測：13問目でタブごと落ち、以後18問が一度も投げられなかった。
+      落ちたこと自体は記録し、そのうえで立て直して残りを必ず全部聞く。"""
     """1問ずつ投げて、画面に新しく出た言葉を『返事』として取る。
     ★測るのは「返ってきたか」ではなく「たまごさんが『わかってるね』と言うか」に効く4つ：
-      空 ／ 的外れ（何も出ない） ／ 使い回し（前と同じ文言） ／ 喋りすぎ（2行超）。"""
+      空 ／ 何も出てこない ／ 使い回し（前と同じセリフ） ／ 喋りすぎ（セリフが2行超）。
+    ★喋りすぎは“セリフだけ”で数える（出てきたカードの題名は数に入れない）。"""
     out = []
     seen = {}
     for q in questions:
@@ -391,39 +446,60 @@ def ask_concierge(sh, questions):
         try:
             sh.page.goto(BASE + "/cover-guide", wait_until="domcontentloaded", timeout=45000)
             sh.page.wait_for_timeout(2200)
-            sh.page.wait_for_selector(CONCIERGE_SEL, timeout=12000)
+            sh.page.wait_for_selector(CONCIERGE_SEL, timeout=15000)
             before = set(body_lines(sh.page))
-            sh.page.fill(CONCIERGE_SEL, q)
+            sh.page.fill(CONCIERGE_SEL, q, timeout=15000)
             sh.page.keyboard.press("Enter")
             sh.page.wait_for_timeout(3500)
             after = body_lines(sh.page)
         except Exception as ex:
-            rec["error"] = str(ex)[:160]
-            rec["ng"] = ["開けない・投げられない"]
+            msg = "%s: %s" % (type(ex).__name__, str(ex)[:140])
+            rec["error"] = msg
+            rec["ng"] = ["落ちて投げられない" if "crash" in msg.lower() else "開けない・投げられない"]
+            rec["seconds"] = round(time.time() - t0, 1)
             out.append(rec)
+            log("  案内人 %-18s %s" % (q[:18], msg[:50]))
+            if "crash" in msg.lower() and revive:
+                try:
+                    sh.close()
+                except Exception:
+                    pass
+                sh = revive()
+                log("  （タブが落ちたので新しいお客さんに交代）")
             continue
         new = [l for l in after if l not in before]
+        speech = [l for l in new if is_speech(l)]
+        cards = [l for l in new if not is_speech(l)]
         ans = "\n".join(new).strip()
-        rec["seconds"] = round(time.time() - t0, 1)
-        rec["answer"] = ans[:600]
-        rec["lines"] = len(new)
-        rec["chars"] = len(ans)
-        rec["console_errors"] = sh.errors[e0:]
+        sp = "\n".join(speech).strip()
+        want = asked_field(q)
+        got = sorted(set(FIELD_RE.findall(ans)))
+        rec.update({
+            "seconds": round(time.time() - t0, 1),
+            "セリフ": sp[:400], "セリフ行数": len(speech), "セリフ文字数": len(sp),
+            "出てきたもの": len(cards), "画面に増えた全文": ans[:600],
+            "聞いた分野": want, "出てきた分野": got,
+            "console_errors": sh.errors[e0:],
+        })
         ng = []
         if len(ans) < 4:
             ng.append("空（何も返っていない）")
         else:
-            key = ans[:120]
-            if key in seen:
-                ng.append("使い回し（「%s」と同じ文言）" % seen[key])
-            else:
+            if want and got and want not in got:
+                ng.append("的外れ（%sを聞いたのに%sが出た）" % (want, "・".join(got)))
+            if not cards:
+                ng.append("何も出てこない（棚が1枚も出ない）")
+            key = sp[:80]
+            if key and key in seen:
+                ng.append("使い回し（「%s」と同じセリフ）" % seen[key])
+            elif key:
                 seen[key] = q
-            if len(new) > 2 or len(ans) > 120:
-                ng.append("喋りすぎ（%d行・%d文字。1行＋短い一言まで）" % (len(new), len(ans)))
+            if len(speech) > 2 or len(sp) > 120:
+                ng.append("喋りすぎ（セリフ%d行・%d文字。1行＋短い一言まで）" % (len(speech), len(sp)))
         rec["ng"] = ng
         rec["ok"] = not ng
         out.append(rec)
-        log("  案内人 %-18s %s" % (q[:18], "OK" if not ng else "／".join(ng)[:40]))
+        log("  案内人 %-18s %s" % (q[:18], "／".join(ng)[:44] if ng else "OK"))
     return out
 
 
@@ -448,6 +524,8 @@ def main():
     ap.add_argument("--only", default="")
     ap.add_argument("--no-shots", action="store_true")
     ap.add_argument("--settle", type=int, default=8000)
+    ap.add_argument("--merge", action="store_true",
+                    help="今日の結果に上書きせず、走らせた部分だけ差し替える（--only と一緒に使う）")
     a = ap.parse_args()
     only = set(x.strip() for x in a.only.split(",") if x.strip())
 
@@ -460,12 +538,44 @@ def main():
     os.makedirs(outdir, exist_ok=True)
 
     from playwright.sync_api import sync_playwright
+    # ★このMac自体が混んでいると LCP/INP/長いタスク は簡単に倍になる。
+    #   数字を読む人が誤解しないよう、走らせた時の混み具合を必ず一緒に残す。
+    try:
+        la = [round(x, 1) for x in os.getloadavg()]
+    except Exception:
+        la = None
     result = {"日付": day, "開始": time.strftime("%F %T"), "本番": BASE,
+              "このMacの混み具合(開始時のload average)": la,
               "ものさし": {"CLS": "0.1以下が良・0.25超が悪", "LCP": "2.5秒以下が良・4秒超が悪",
                           "INP": "200ms以下が良・500ms超が悪"},
               "pages": [], "typing": [], "concierge": [], "errors": []}
     shots = not a.no_shots
     songs = []
+
+    if a.merge:
+        # ★一部だけ走らせ直した時に、走らせていない部分を消さない。
+        # どの人が走ればその欄が埋まるか、の対応表だけを見る。
+        owners = {"pages": ("first", "mobile"), "typing": ("mobile", "url"),
+                  "concierge": ("concierge",)}
+        try:
+            with open(os.path.join(outdir, "result.json")) as f:
+                old = json.load(f)
+            for k, who in owners.items():
+                if not any(want(x) for x in who):
+                    result[k] = old.get(k, [])
+        except Exception:
+            pass
+
+    def save(final=False):
+        """★1人終わるごとに必ず書く。最後にまとめて書くと、途中で1回詰まっただけで
+        その日の計測が丸ごと消える（2026-09-23に20分ぶん失って学んだ）。"""
+        try:
+            with open(os.path.join(outdir, "result.json"), "w") as f:
+                json.dump(result, f, ensure_ascii=False, indent=1)
+            with open(os.path.join(OUTDIR, "latest.json"), "w") as f:
+                json.dump(result, f, ensure_ascii=False, indent=1)
+        except Exception:
+            pass
     with sync_playwright() as pw:
         # ① 初めて来た人（1280px）
         if want("first"):
@@ -483,6 +593,7 @@ def main():
                 result["errors"].append("first: " + traceback.format_exc()[-400:])
             finally:
                 sh.close()
+                save()
 
         # ② スマホの人（375px）
         if want("mobile"):
@@ -502,6 +613,7 @@ def main():
                 result["errors"].append("mobile: " + traceback.format_exc()[-400:])
             finally:
                 sh.close()
+                save()
 
         # ③ URLを貼る人（1280px）— たまごさんが「落ちる」と言っている経路
         if want("url"):
@@ -520,6 +632,7 @@ def main():
                 result["errors"].append("url: " + traceback.format_exc()[-400:])
             finally:
                 sh.close()
+                save()
 
         # ④ 案内人に話しかける人
         if want("concierge"):
@@ -527,13 +640,19 @@ def main():
             try:
                 log("④ 案内人に30問")
                 qs = QUESTIONS[:8] if a.quick else QUESTIONS
-                result["concierge"] = ask_concierge(sh, qs)
+                result["concierge"] = ask_concierge(
+                    sh, qs, revive=lambda: Shopper(pw, 1280, 900, shots=False))
             except Exception:
                 result["errors"].append("concierge: " + traceback.format_exc()[-400:])
             finally:
                 sh.close()
+                save()
 
     result["終了"] = time.strftime("%F %T")
+    try:
+        result["このMacの混み具合(終了時のload average)"] = [round(x, 1) for x in os.getloadavg()]
+    except Exception:
+        pass
     ok_pages = [p for p in result["pages"] if "cls" in p]
     result["まとめ"] = {
         "見たページ数": len(result["pages"]),

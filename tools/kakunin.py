@@ -114,6 +114,10 @@ def _omosa(payload):
         if not str(u).startswith(ALLOW_PREFIX):
             return {"ok": False, "error": "行き先が許してある場所の外です", "totalYen": 0.0}
         cmd += ["--url", str(u)]
+    # ★工場の runner に1件90秒の打ち切りが入ったので、測る中身を小分けにできるようにする。
+    ph = payload.get("phase")
+    if ph in ("bytes", "edit", "open", "paste", "all"):
+        cmd += ["--phase", ph]
     timeout = payload.get("timeout") or 1500
     try:
         p = subprocess.run(cmd, capture_output=True, text=True,
