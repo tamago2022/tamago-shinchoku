@@ -86,17 +86,17 @@ KUSE = {
     "devin": ("詰まると「指示があるまで待ちます」と言って止まる（status/devin_990_report.md:34）",
               "依頼文に「返事を書くな。質問をするな。終わりの合図はPull RequestのURLだけ」を必ず入れる"),
     "jules": ("PRは返すが、そのあと誰も受け取らないと止まったまま残る（`cat status/public/uketori_machi.json`）",
-              "0円なので数で押す。返ったPRは tools/baton.py に必ず通す"),
+              "ただ働きなので数で押す。返ったPRは tools/baton.py に必ず通す"),
     "genspark": ("こちらが手で叩かないと動かない＝水汲みになる（status/1049_hikitsugi_irai_gate.md:63）",
                  "tools/1058_genspark_pipe を使って自動で流す。人が叩きに行かない"),
     "jev": ("文章を返さない。書き直しは1文字もできない（tools/sekisho/jev_honnin.py:22）",
             "問いを1つに絞り、0/1（はい確率）で返させる。複数問は1リクエストにまとめる"),
     "ko": ("長い作業の途中で枠が切れると、どこまで進んだか消える",
-           "1本を小さく切り、終わるたび status/ に現在地を残させる"),
+           "仕事を小さく切り、終わるたび status/ に現在地を残させる"),
     "openai": ("残高が切れると 429 で黙って返らなくなる（`cat status/ai_daicho.jsonl`）",
                "その場で返る短い検品だけに使う。長い仕事を持たせない"),
     "copilot": ("Issueに書いても担当者の候補に出ない（`cat status/public/kaitsuu.json`）",
-                "GitHubのトークンを1本通してから測り直す。通るまで仕事を当てない"),
+                "GitHubのトークンを通してから測り直す。通るまで仕事を当てない"),
     "gemini": ("鍵が置かれていないので1回も叩けていない（`cat status/public/kaitsuu.json`）",
                "鍵を置く。置いた日から測れる"),
     "grok": ("文字の口が 403（`cat status/public/kaitsuu.json`）。声の口だけ 200",
@@ -111,8 +111,11 @@ KOUTAI = {
 }
 
 # ★「ちゃんと使った」の5条件。全部 True になるまで、切る／使うを書かない。
-TSUKAIKATA = ("得意な形の仕事を当てた", "正しい依頼文で投げた", "1本ずつ投げた",
-              "返りを受け取って検品した", "3時間で交代させた")
+TSUKAIKATA = ("得意な形の仕事を当てた", "正しい依頼文で投げた", "まとめずに投げた",
+              "返りを受け取って検品した", "帰らないものを交代させた")
+# ★交代までの持ち時間。数字はここ1か所にしか書かない（紙では出典としてこの行を指す）。
+KOUTAI_JIKAN = "3時間"
+KOUTAI_SRC = "tools/tekizai.py:118"
 
 # ---------------------------------------------------------------------------
 # ★割り振り表（仕事の形 → 選手）。ここを増やすときは必ず実測の根拠を付ける。
@@ -282,7 +285,7 @@ def build():
         kane="1本 %s円（中央値・%d本ぶん：`cat status/public/cost_by_task.json`）" % (kijun, kijun_n),
         ima="この紙を含む道具づくり。★こちらのクレジットを食う唯一の選手",
         tooshita=nose, honban=nose,
-        tooshita_moto="status/commit_inbox/done に %d枚（本番リポジトリに載った紙の枚数）" % nose,
+        tooshita_moto="本番リポジトリに載った紙 %d枚（$ ls status/commit_inbox/done | wc -l → %d）" % (nose, nose),
         tsukaikata={k: True for k in TSUKAIKATA}))
 
     # ---- Jules --------------------------------------------------------------
@@ -290,15 +293,15 @@ def build():
     rows.append(dict(
         who="jules", name=NAMAE["jules"],
         tokui="件数とキーが決まっているJSON。149件で合格 136/149＝91.3%（`cat status/1028/jules_kekka.json`）",
-        nigate="答えの形が決まっていない調べもの。投げた記録が0件＝まだ測れていない",
+        nigate="答えの形が決まっていない調べもの。投げた記録が台帳に無い＝まだ測れていない（`cat status/ai_daicho.jsonl`）",
         kane="0円（払った記録が台帳に 0件：`cat status/ai_daicho.jsonl`）。別マシンで動くのでこちらの同時枠を食わない",
         ima="0本（いま持たせている仕事は無い：`cat status/ai_daicho.jsonl`）",
         tooshita=j["tooshita"], honban=j["honban"],
         tooshita_moto="検品 %d本合格／本番に出た %d本（`cat status/public/uketori_machi.json`）。検品1本 16.0秒（status/1030_hikitsugi.md:98）"
                       % (j["tooshita"], j["honban"]),
         tsukaikata={"得意な形の仕事を当てた": True, "正しい依頼文で投げた": True,
-                    "1本ずつ投げた": True, "返りを受け取って検品した": True,
-                    "3時間で交代させた": False}))
+                    "まとめずに投げた": True, "返りを受け取って検品した": True,
+                    "帰らないものを交代させた": False}))
 
     # ---- Devin --------------------------------------------------------------
     d = t("devin")
@@ -311,21 +314,21 @@ def build():
         tooshita=d["tooshita"], honban=1,
         tooshita_moto="mainに入った3本／本番で開けたのは1本（status/1059_hikitsugi_devin.md:14）",
         tsukaikata={"得意な形の仕事を当てた": False, "正しい依頼文で投げた": False,
-                    "1本ずつ投げた": False, "返りを受け取って検品した": False,
-                    "3時間で交代させた": False}))
+                    "まとめずに投げた": False, "返りを受け取って検品した": False,
+                    "帰らないものを交代させた": False}))
 
     # ---- Genspark -----------------------------------------------------------
     rows.append(dict(
         who="genspark", name=NAMAE["genspark"],
         tokui="調べもの。deep_research 1本が120秒で出典つき3件（status/1045_hikitsugi.md:14）",
-        nigate="こちらが手で叩かないと動かない。自動で流す配管がまだ1本も通っていない",
+        nigate="こちらが手で叩かないと動かない。自動で流す配管がまだ通っていない（status/1049_hikitsugi_irai_gate.md:63）",
         kane="1回 1.000クレジット（status/1049_hikitsugi_irai_gate.md:25）。残 %s（`cat status/1045/me_after.json`）" % gs_zan,
         ima="0本。★2026-10-04 にプラン終了・繰り越し無し（status/1049_hikitsugi_irai_gate.md:13）",
         tooshita=0, honban=0,
         tooshita_moto="検品を通した記録が 0件（`cat status/public/uketori_machi.json`）",
         tsukaikata={"得意な形の仕事を当てた": True, "正しい依頼文で投げた": False,
-                    "1本ずつ投げた": True, "返りを受け取って検品した": False,
-                    "3時間で交代させた": False}))
+                    "まとめずに投げた": True, "返りを受け取って検品した": False,
+                    "帰らないものを交代させた": False}))
 
     # ---- Jev ----------------------------------------------------------------
     rows.append(dict(
@@ -337,8 +340,8 @@ def build():
         tooshita=0, honban=0,
         tooshita_moto="鍵が無く、全部「保留」に倒れた＝実額0円（status/1054_jev_nanken_nanen.md:33）",
         tsukaikata={"得意な形の仕事を当てた": True, "正しい依頼文で投げた": True,
-                    "1本ずつ投げた": True, "返りを受け取って検品した": False,
-                    "3時間で交代させた": False}))
+                    "まとめずに投げた": True, "返りを受け取って検品した": False,
+                    "帰らないものを交代させた": False}))
 
     # ---- 口が閉じている面々（★叩いた結果だけを書く） -----------------------
     ks = {k["id"]: (k.get("status"), (k.get("detail") or "")[:60])
@@ -361,8 +364,8 @@ def build():
             tooshita=c["tooshita"], honban=c["honban"],
             tooshita_moto="検品を通した記録が %d件（`cat status/public/uketori_machi.json`）" % c["tooshita"],
             tsukaikata={"得意な形の仕事を当てた": False, "正しい依頼文で投げた": False,
-                        "1本ずつ投げた": False, "返りを受け取って検品した": False,
-                        "3時間で交代させた": False}))
+                        "まとめずに投げた": False, "返りを受け取って検品した": False,
+                        "帰らないものを交代させた": False}))
 
     for r in rows:
         r["hantei"], r["riyuu"] = hantei(r["tsukaikata"], r["tooshita"], r["honban"])
@@ -424,6 +427,8 @@ def html(d):
     a('<p class="v">判定の物差し：子セッション1本の実測中央値 <b>%s円</b>'
       '（%d本ぶん：`cat status/public/cost_by_task.json`）</p>'
       % (d["kijunYen"], d["kijunN"]))
+    a('<p class="v">交代の決まり：投げて %s 帰ってこなければ、次の選手へ渡す（%s）</p>'
+      % (KOUTAI_JIKAN, KOUTAI_SRC))
 
     a('<h2 class="sec">★仕事が来たら、ここで決まる（割り振り）</h2>')
     for w in d["wariate"]:
@@ -431,7 +436,7 @@ def html(d):
         a('<p class="k">そう決めた実測</p><p class="v">%s</p>' % esc(w["konkyo"]))
         if w["teate"]:
             a('<p class="k">こちら側の手当て</p><p class="v">%s</p>' % esc(w["teate"]))
-        a('<p class="k">3時間で帰らなければ</p><p class="v">%s へ渡す</p></div>' % esc(w["koutai"]))
+        a('<p class="k">帰ってこなければ</p><p class="v">%s へ渡す</p></div>' % esc(w["koutai"]))
 
     a('<h2 class="sec">選手ごと（得意・苦手・お金・今の仕事・通した本数）</h2>')
     cls = {"使う": "ok", "未判定": "mid", "切る候補": "ng"}
@@ -448,7 +453,7 @@ def html(d):
         a('<p class="k">通した本数／本番に出た本数</p><p class="v">%s</p>' % esc(r["tooshita_moto"]))
         a('<p class="k">止まる癖</p><p class="v">%s</p>' % esc(r["kuse"]))
         a('<p class="k">こちら側の手当て</p><p class="v">%s</p>' % esc(r["teate"]))
-        a('<p class="k">3時間で帰らなければ</p><p class="v">%s へ渡す</p>' % esc(r["koutai"]))
+        a('<p class="k">帰ってこなければ</p><p class="v">%s へ渡す</p>' % esc(r["koutai"]))
         if r["warui"]:
             a('<p class="warui">★こちらがまだやれていない：%s</p>' % esc("／".join(r["warui"])))
         a('<p class="why %s">%s</p>' % (cls.get(r["hantei"], "mid"), esc(r["riyuu"])))
@@ -529,7 +534,7 @@ if __name__ == "__main__":
         print("投げる先 : %s" % w["name"])
         print("実測の根拠: %s" % soto.shusshou(w["konkyo"]))
         print("止まる癖 : %s" % soto.shusshou(w["kuse"]))
-        print("3時間で帰らなければ: %s へ渡す" % w["koutai"])
+        print("帰ってこなければ %s へ渡す（持ち時間 %s・%s）" % (w["koutai"], KOUTAI_JIKAN, KOUTAI_SRC))
         print("---- そのまま使う依頼文 ----")
         print(w["irai"])
         sys.exit(0)

@@ -629,6 +629,49 @@ def _already_tagged_open(key):
     return None
 
 
+KENPOU_OPEN_STATUSES = ("waiting", "running", "awaiting_check", "verifying", "hold", "stuck")
+
+
+def auto_close_recovered(items, do_queue=True):
+    """★1055番（2026-09-24）日次点検の「緑に戻ったら畳む」半分。
+
+    実測（status/kenpou_check.json 01:33）：
+      factory_stalled と worktree_count は**緑**なのに、その2つが出した
+      #842・#935 は開いたままで、現在地の紙の赤に
+      「177時間waitingのまま放置」「150時間waitingのまま放置」として出ていた。
+
+    チケット本文が自分で条件を書いている：
+      「直したら次回の点検で緑になっていることを確認してください」
+    ＝ 緑に戻っていれば、そのチケットの用は済んでいる。
+
+    ★消さない。status を done にして doneNote に理由を書くだけ。
+    """
+    if not do_queue:
+        return []
+    midori = {it["key"]: it for it in items if it.get("color") == "green"}
+    if not midori:
+        return []
+    tojita = []
+    with ci.queue_lock():
+        q = ci._load_queue()
+        for it in q.get("items") or []:
+            key = it.get("kenpouCheckKey")
+            if not key or key not in midori:
+                continue
+            if it.get("status") not in KENPOU_OPEN_STATUSES:
+                continue
+            m = midori[key]
+            it["status"] = "done"
+            it["urgent"] = False
+            it["doneNote"] = ("【憲法点検】%s が緑に戻ったので自動で閉じました（1055番）。%s"
+                              % (m.get("label"), (m.get("detail") or "")[:200]))
+            it["doneAt"] = now_jst_str()
+            tojita.append({"n": it.get("n"), "key": key, "label": m.get("label")})
+        if tojita:
+            ci._save_queue(q)
+    return tojita
+
+
 def auto_queue_fix(item, do_queue=True):
     if item["color"] != "red":
         return None
@@ -691,6 +734,9 @@ def main():
         check_unreported_completions(),
     ]
 
+    # ★1055番：先に「緑に戻った項目のチケット」を畳んでから、赤を積む。
+    tojita = auto_close_recovered(items, do_queue=not args.no_queue)
+
     queued = []
     for it in items:
         r = auto_queue_fix(it, do_queue=not args.no_queue)
@@ -704,6 +750,7 @@ def main():
         "redCount": len(red_items),
         "items": items,
         "queuedFixes": queued,
+        "autoClosedRecovered": tojita,
     }
     ci.save_json(RESULT, result)
 

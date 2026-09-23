@@ -16,40 +16,41 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 .w b{font-size:13px}
 </style></head><body>
 <h1>適材適所</h1>
-<p class="sub">切る前に、得意な形の仕事を当てるための紙。毎日ここが自分で書き換わる。最後に書き換えた時刻 2026-09-24 06:55:37</p>
-<p class="v">判定の物差し：子セッション1本の実測中央値 <b>408.1円</b>（261本ぶん：`cat status/public/cost_by_task.json`）</p>
+<p class="sub">切る前に、得意な形の仕事を当てるための紙。毎日ここが自分で書き換わる。最後に書き換えた時刻 2026-09-24 06:56:52</p>
+<p class="v">判定の物差し：子セッション1本の実測中央値 <b>408.1円</b>（261本ぶん：status/public/cost_by_task.json:10）</p>
+<p class="v">交代の決まり：投げて 3時間 帰ってこなければ、次の選手へ渡す（tools/tekizai.py:118）</p>
 <h2 class="sec">★仕事が来たら、ここで決まる（割り振り）</h2>
 <div class="w"><b>件数とキーが決まっているJSONをそろえる</b> → <span class="ok">Jules（Google）</span>
 <p class="k">そう決めた実測</p><p class="v">149件で合格 136/149＝91.3%（status/1028/jules_kekka.json:6）・0円</p>
-<p class="k">こちら側の手当て</p><p class="v">0円なので数で押す。返ったPRは tools/baton.py に必ず通す</p>
-<p class="k">3時間で帰らなければ</p><p class="v">子セッション へ渡す</p></div>
+<p class="k">こちら側の手当て</p><p class="v">ただ働きなので数で押す。返ったPRは tools/baton.py に必ず通す</p>
+<p class="k">帰ってこなければ</p><p class="v">子セッション へ渡す</p></div>
 <div class="w"><b>コードを書いてPRまで運ぶ</b> → <span class="ok">Devin</span>
 <p class="k">そう決めた実測</p><p class="v">26本投げてPR5本・本番に出たのは1本（status/1059_hikitsugi_devin.md:12）</p>
 <p class="k">こちら側の手当て</p><p class="v">依頼文に「返事を書くな。質問をするな。終わりの合図はPull RequestのURLだけ」を必ず入れる</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jules へ渡す</p></div>
+<p class="k">帰ってこなければ</p><p class="v">Jules へ渡す</p></div>
 <div class="w"><b>調べもの（出典つきで集める）</b> → <span class="ok">Genspark（gsk）</span>
 <p class="k">そう決めた実測</p><p class="v">deep_research 1本が120秒で出典つき3件（status/1045_hikitsugi.md:14）</p>
 <p class="k">こちら側の手当て</p><p class="v">tools/1058_genspark_pipe を使って自動で流す。人が叩きに行かない</p>
-<p class="k">3時間で帰らなければ</p><p class="v">子セッション へ渡す</p></div>
+<p class="k">帰ってこなければ</p><p class="v">子セッション へ渡す</p></div>
 <div class="w"><b>はい／いいえ・点数だけ返す判定</b> → <span class="ok">Jev（TypeSafe）</span>
 <p class="k">そう決めた実測</p><p class="v">入力だけ課金 $0.042/1Mトークン＝約6.60円（status/1054_jev_nanken_nanen.md:5）・出力0円</p>
 <p class="k">こちら側の手当て</p><p class="v">問いを1つに絞り、0/1（はい確率）で返させる。複数問は1リクエストにまとめる</p>
-<p class="k">3時間で帰らなければ</p><p class="v">子セッション へ渡す</p></div>
+<p class="k">帰ってこなければ</p><p class="v">子セッション へ渡す</p></div>
 <div class="w"><b>判断・配管・原因究明（答えの形が決まっていない）</b> → <span class="ok">子セッション（Claude）</span>
 <p class="k">そう決めた実測</p><p class="v">261本の実測中央値（status/public/cost_by_task.json:10）</p>
-<p class="k">こちら側の手当て</p><p class="v">1本を小さく切り、終わるたび status/ に現在地を残させる</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jules へ渡す</p></div>
+<p class="k">こちら側の手当て</p><p class="v">仕事を小さく切り、終わるたび status/ に現在地を残させる</p>
+<p class="k">帰ってこなければ</p><p class="v">Jules へ渡す</p></div>
 <div class="w"><b>絵・音・動画を作る</b> → <span class="ok">fal</span>
 <p class="k">そう決めた実測</p><p class="v">採用の本数が台帳に付いている（status/public/fal_cost_ledger.json:13）</p>
-<p class="k">3時間で帰らなければ</p><p class="v">子セッション へ渡す</p></div>
+<p class="k">帰ってこなければ</p><p class="v">子セッション へ渡す</p></div>
 <div class="w"><b>読み上げ（声）</b> → <span class="ok">Grok（xAI）</span>
 <p class="k">そう決めた実測</p><p class="v">声の口だけ 200（status/public/kaitsuu.json:43 の xai_koe）</p>
 <p class="k">こちら側の手当て</p><p class="v">声（読み上げ）だけ当てる。文字の仕事を投げない</p>
-<p class="k">3時間で帰らなければ</p><p class="v">— へ渡す</p></div>
+<p class="k">帰ってこなければ</p><p class="v">— へ渡す</p></div>
 <div class="w"><b>その場で返る短い検品</b> → <span class="ok">ChatGPT（OpenAI API）</span>
 <p class="k">そう決めた実測</p><p class="v">1回 0.013円（status/public/gaibu_kenpin_ledger.json:13）</p>
 <p class="k">こちら側の手当て</p><p class="v">その場で返る短い検品だけに使う。長い仕事を持たせない</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jev へ渡す</p></div>
+<p class="k">帰ってこなければ</p><p class="v">Jev へ渡す</p></div>
 <h2 class="sec">選手ごと（得意・苦手・お金・今の仕事・通した本数）</h2>
 <div class="card">
 <h3>子セッション（Claude）<span class="ok">使う</span></h3>
@@ -58,25 +59,25 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 <p class="k">苦手（実測）</p><p class="v">絵と映像の質。検品は別便（鬼監督 tools/oni_gate.py）に出している＝自分では出せない</p>
 <p class="k">お金</p><p class="v">1本 408.1円（中央値・261本ぶん：status/public/cost_by_task.json:10）</p>
 <p class="k">今の仕事</p><p class="v">この紙を含む道具づくり。★こちらのクレジットを食う唯一の選手</p>
-<p class="k">通した本数／本番に出た本数</p><p class="v">status/commit_inbox/done に 128枚（本番リポジトリに載った紙の枚数）</p>
+<p class="k">通した本数／本番に出た本数</p><p class="v">本番リポジトリに載った紙 128枚（$ ls status/commit_inbox/done | wc -l → 128）</p>
 <p class="k">止まる癖</p><p class="v">長い作業の途中で枠が切れると、どこまで進んだか消える</p>
-<p class="k">こちら側の手当て</p><p class="v">1本を小さく切り、終わるたび status/ に現在地を残させる</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jules へ渡す</p>
+<p class="k">こちら側の手当て</p><p class="v">仕事を小さく切り、終わるたび status/ に現在地を残させる</p>
+<p class="k">帰ってこなければ</p><p class="v">Jules へ渡す</p>
 <p class="why ok">本番に出た 128本（status/public/uketori_machi.json:4）</p>
 </div>
 <div class="card">
 <h3>Jules（Google）<span class="mid">未判定</span></h3>
 <div class="num"><div><b>1</b><span class="k">通した</span></div><div><b>0</b><span class="k">本番に出た</span></div></div>
 <p class="k">得意（実測）</p><p class="v">件数とキーが決まっているJSON。149件で合格 136/149＝91.3%（status/1028/jules_kekka.json:6）</p>
-<p class="k">苦手（実測）</p><p class="v">答えの形が決まっていない調べもの。投げた記録が0件＝まだ測れていない</p>
+<p class="k">苦手（実測）</p><p class="v">答えの形が決まっていない調べもの。投げた記録が台帳に無い＝まだ測れていない（status/ai_daicho.jsonl:2）</p>
 <p class="k">お金</p><p class="v">0円（払った記録が台帳に 0件：status/ai_daicho.jsonl:2）。別マシンで動くのでこちらの同時枠を食わない</p>
 <p class="k">今の仕事</p><p class="v">0本（いま持たせている仕事は無い：status/ai_daicho.jsonl:2）</p>
 <p class="k">通した本数／本番に出た本数</p><p class="v">検品 1本合格／本番に出た 0本（status/public/uketori_machi.json:4）。検品1本 16.0秒（status/1030_hikitsugi.md:98）</p>
 <p class="k">止まる癖</p><p class="v">PRは返すが、そのあと誰も受け取らないと止まったまま残る（status/public/uketori_machi.json:4）</p>
-<p class="k">こちら側の手当て</p><p class="v">0円なので数で押す。返ったPRは tools/baton.py に必ず通す</p>
-<p class="k">3時間で帰らなければ</p><p class="v">子セッション へ渡す</p>
-<p class="warui">★こちらがまだやれていない：3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（3時間で交代させた）</p>
+<p class="k">こちら側の手当て</p><p class="v">ただ働きなので数で押す。返ったPRは tools/baton.py に必ず通す</p>
+<p class="k">帰ってこなければ</p><p class="v">子セッション へ渡す</p>
+<p class="warui">★こちらがまだやれていない：帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（帰らないものを交代させた）</p>
 </div>
 <div class="card">
 <h3>Devin<span class="mid">未判定</span></h3>
@@ -88,23 +89,23 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 <p class="k">通した本数／本番に出た本数</p><p class="v">mainに入った3本／本番で開けたのは1本（status/1059_hikitsugi_devin.md:14）</p>
 <p class="k">止まる癖</p><p class="v">詰まると「指示があるまで待ちます」と言って止まる（status/devin_990_report.md:34）</p>
 <p class="k">こちら側の手当て</p><p class="v">依頼文に「返事を書くな。質問をするな。終わりの合図はPull RequestのURLだけ」を必ず入れる</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jules へ渡す</p>
-<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた）</p>
+<p class="k">帰ってこなければ</p><p class="v">Jules へ渡す</p>
+<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた）</p>
 </div>
 <div class="card">
 <h3>Genspark（gsk）<span class="mid">未判定</span></h3>
 <div class="num"><div><b>0</b><span class="k">通した</span></div><div><b>0</b><span class="k">本番に出た</span></div></div>
 <p class="k">得意（実測）</p><p class="v">調べもの。deep_research 1本が120秒で出典つき3件（status/1045_hikitsugi.md:14）</p>
-<p class="k">苦手（実測）</p><p class="v">こちらが手で叩かないと動かない。自動で流す配管がまだ1本も通っていない</p>
+<p class="k">苦手（実測）</p><p class="v">こちらが手で叩かないと動かない。自動で流す配管がまだ通っていない（status/1049_hikitsugi_irai_gate.md:63）</p>
 <p class="k">お金</p><p class="v">1回 1.000クレジット（status/1049_hikitsugi_irai_gate.md:25）。残 1924.937（status/1045/me_after.json:1）</p>
 <p class="k">今の仕事</p><p class="v">0本。★2026-10-04 にプラン終了・繰り越し無し（status/1049_hikitsugi_irai_gate.md:13）</p>
 <p class="k">通した本数／本番に出た本数</p><p class="v">検品を通した記録が 0件（status/public/uketori_machi.json:4）</p>
 <p class="k">止まる癖</p><p class="v">こちらが手で叩かないと動かない＝水汲みになる（status/1049_hikitsugi_irai_gate.md:63）</p>
 <p class="k">こちら側の手当て</p><p class="v">tools/1058_genspark_pipe を使って自動で流す。人が叩きに行かない</p>
-<p class="k">3時間で帰らなければ</p><p class="v">子セッション へ渡す</p>
-<p class="warui">★こちらがまだやれていない：正しい依頼文で投げた／返りを受け取って検品した／3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（正しい依頼文で投げた／返りを受け取って検品した／3時間で交代させた）</p>
+<p class="k">帰ってこなければ</p><p class="v">子セッション へ渡す</p>
+<p class="warui">★こちらがまだやれていない：正しい依頼文で投げた／返りを受け取って検品した／帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（正しい依頼文で投げた／返りを受け取って検品した／帰らないものを交代させた）</p>
 </div>
 <div class="card">
 <h3>Jev（TypeSafe）<span class="mid">未判定</span></h3>
@@ -116,9 +117,9 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 <p class="k">通した本数／本番に出た本数</p><p class="v">鍵が無く、全部「保留」に倒れた＝実額0円（status/1054_jev_nanken_nanen.md:33）</p>
 <p class="k">止まる癖</p><p class="v">文章を返さない。書き直しは1文字もできない（tools/sekisho/jev_honnin.py:22）</p>
 <p class="k">こちら側の手当て</p><p class="v">問いを1つに絞り、0/1（はい確率）で返させる。複数問は1リクエストにまとめる</p>
-<p class="k">3時間で帰らなければ</p><p class="v">子セッション へ渡す</p>
-<p class="warui">★こちらがまだやれていない：返りを受け取って検品した／3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（返りを受け取って検品した／3時間で交代させた）</p>
+<p class="k">帰ってこなければ</p><p class="v">子セッション へ渡す</p>
+<p class="warui">★こちらがまだやれていない：返りを受け取って検品した／帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（返りを受け取って検品した／帰らないものを交代させた）</p>
 </div>
 <div class="card">
 <h3>Gemini<span class="mid">未判定</span></h3>
@@ -130,9 +131,9 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 <p class="k">通した本数／本番に出た本数</p><p class="v">検品を通した記録が 0件（status/public/uketori_machi.json:4）</p>
 <p class="k">止まる癖</p><p class="v">鍵が置かれていないので1回も叩けていない（status/public/kaitsuu.json:43）</p>
 <p class="k">こちら側の手当て</p><p class="v">鍵を置く。置いた日から測れる</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jev へ渡す</p>
-<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた）</p>
+<p class="k">帰ってこなければ</p><p class="v">Jev へ渡す</p>
+<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた）</p>
 </div>
 <div class="card">
 <h3>Grok（xAI）<span class="mid">未判定</span></h3>
@@ -144,9 +145,9 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 <p class="k">通した本数／本番に出た本数</p><p class="v">検品を通した記録が 0件（status/public/uketori_machi.json:4）</p>
 <p class="k">止まる癖</p><p class="v">文字の口が 403（status/public/kaitsuu.json:43）。声の口だけ 200</p>
 <p class="k">こちら側の手当て</p><p class="v">声（読み上げ）だけ当てる。文字の仕事を投げない</p>
-<p class="k">3時間で帰らなければ</p><p class="v">— へ渡す</p>
-<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた）</p>
+<p class="k">帰ってこなければ</p><p class="v">— へ渡す</p>
+<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた）</p>
 </div>
 <div class="card">
 <h3>ChatGPT（OpenAI API）<span class="mid">未判定</span></h3>
@@ -158,9 +159,9 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 <p class="k">通した本数／本番に出た本数</p><p class="v">検品を通した記録が 0件（status/public/uketori_machi.json:4）</p>
 <p class="k">止まる癖</p><p class="v">残高が切れると 429 で黙って返らなくなる（status/ai_daicho.jsonl:2）</p>
 <p class="k">こちら側の手当て</p><p class="v">その場で返る短い検品だけに使う。長い仕事を持たせない</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jev へ渡す</p>
-<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた）</p>
+<p class="k">帰ってこなければ</p><p class="v">Jev へ渡す</p>
+<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた）</p>
 </div>
 <div class="card">
 <h3>GitHub Copilot<span class="mid">未判定</span></h3>
@@ -171,10 +172,10 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 <p class="k">今の仕事</p><p class="v">0本（口が ng：status/public/kaitsuu.json:43）</p>
 <p class="k">通した本数／本番に出た本数</p><p class="v">検品を通した記録が 0件（status/public/uketori_machi.json:4）</p>
 <p class="k">止まる癖</p><p class="v">Issueに書いても担当者の候補に出ない（status/public/kaitsuu.json:43）</p>
-<p class="k">こちら側の手当て</p><p class="v">GitHubのトークンを1本通してから測り直す。通るまで仕事を当てない</p>
-<p class="k">3時間で帰らなければ</p><p class="v">Jules へ渡す</p>
-<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた</p>
-<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／1本ずつ投げた／返りを受け取って検品した／3時間で交代させた）</p>
+<p class="k">こちら側の手当て</p><p class="v">GitHubのトークンを通してから測り直す。通るまで仕事を当てない</p>
+<p class="k">帰ってこなければ</p><p class="v">Jules へ渡す</p>
+<p class="warui">★こちらがまだやれていない：得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた</p>
+<p class="why mid">まだ判定できない。こちらの使い方が悪かった（得意な形の仕事を当てた／正しい依頼文で投げた／まとめずに投げた／返りを受け取って検品した／帰らないものを交代させた）</p>
 </div>
 <p class="v k">この紙は tools/tekizai.py が書いている。手で書き換えない。お金は tools/soto_hatarakite.py（1050番）の結果をそのまま写していて、ここでは計算し直していない。</p>
 <p class="v k">仕事を割り振るとき： $ python3 tools/tekizai.py --shigoto "&lt;仕事の一文&gt;"</p>

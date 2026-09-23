@@ -252,32 +252,39 @@ def shiraberu(src: str):
 
 
 def kaku_html(d):
-    rows = []
+    # ★スマホ1画面（375px）で横にはみ出さないこと。表は必ずはみ出すのでカードにする（実測で427pxだった）。
+    cards = []
     for k in d["組"][:400]:
-        cand = "<br>".join(
-            "%s <span class=t>%s</span>%s" % (
+        cand = "".join(
+            "<li>%s<span class=t>%s</span>%s</li>" % (
                 html.escape(c["artistName"]), html.escape(c["title"]),
-                "" if c.get("youtubeId") else " <span class=x>動画なし</span>")
+                "" if c.get("youtubeId") else "<span class=x>動画なし</span>")
             for c in k["繋がっていない候補"])
-        more = "" if k["候補の総数"] <= MAX_PER_SONG else " <span class=x>ほか%d件</span>" % (k["候補の総数"] - MAX_PER_SONG)
-        rows.append(
-            "<tr><td>%s</td><td>%s<br><span class=t>%s</span></td><td>%s%s</td></tr>" % (
+        more = "" if k["候補の総数"] <= MAX_PER_SONG else "<div class=x>ほか%d件</div>" % (k["候補の総数"] - MAX_PER_SONG)
+        cards.append(
+            "<div class=c><div class=ttl>%s</div>"
+            "<div class=jiku>軸：%s<span class=t>%s</span></div>"
+            "<div class=lbl>繋がっていない相手（候補）</div><ul>%s</ul>%s</div>" % (
                 html.escape(k["曲名"]),
                 html.escape(k["軸"]["アーティスト"]), html.escape(k["軸"]["key"]),
                 cand, more))
     return """<!doctype html><meta charset=utf-8><title>棚の中で繋がっていない組</title>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<style>body{font:15px/1.7 -apple-system,sans-serif;margin:0;padding:20px;background:#faf8f4;color:#221}
-h1{font-size:20px;margin:0 0 4px}p{color:#665;margin:4px 0 16px;font-size:13px}
-table{border-collapse:collapse;width:100%%;background:#fff;font-size:13px}
-th,td{border-bottom:1px solid #eee;padding:8px 10px;text-align:left;vertical-align:top}
-th{background:#f3efe6;position:sticky;top:0}
-.t{color:#887;font-size:12px}.x{color:#b64;font-size:11px}</style>
+<style>*{box-sizing:border-box;min-width:0}
+body{font:15px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;margin:0;padding:16px 14px 60px;background:#faf8f4;color:#221;overflow-wrap:anywhere;word-break:break-word}
+h1{font-size:19px;margin:0 0 4px}p{color:#665;margin:4px 0 16px;font-size:12px}
+.c{background:#fff;border:1px solid #e8e2d6;border-radius:12px;padding:12px 14px;margin:0 0 10px}
+.ttl{font-size:15px;font-weight:700;line-height:1.45}
+.jiku{font-size:12.5px;color:#443;margin-top:6px}
+.lbl{font-size:11px;color:#887;margin-top:10px}
+ul{margin:4px 0 0;padding-left:18px;font-size:13px}
+li{margin-bottom:4px}
+.t{display:block;color:#887;font-size:11px}.x{display:block;color:#b64;font-size:11px}</style>
 <h1>棚の中にあるのに繋がっていない組</h1>
 <p>棚 %d組／アーティスト%d・曲%d。<b>候補であって断定ではありません。</b>同じ曲名でも別の曲のことがあります。
 1曲につき最大%d件まで（公式らしさ→棚でのpick→名前の一致の順に絞ってあります）。<b>採否はたまごさん。</b>こちらでは本番に繋いでいません。</p>
-<table><tr><th>曲名</th><th>軸（棚の代表）</th><th>繋がっていない相手（候補）</th></tr>%s</table>
-""" % (d["繋がっていない組"], d["棚のアーティスト数"], d["棚の曲数"], MAX_PER_SONG, "".join(rows))
+%s
+""" % (d["繋がっていない組"], d["棚のアーティスト数"], d["棚の曲数"], MAX_PER_SONG, "".join(cards))
 
 
 def main():
