@@ -194,29 +194,17 @@ def check_one(w, prev):
     r["machiSince"] = machi_since
     r["machiSec"] = int(now - machi_since) if machi_since else 0
 
-    # 判定（増やさない）
-    if r["error"] or (r["status"] and r["status"] >= 400):
-        r["hantei"] = "赤"
-        r["riyuu"] = "本番が叩けません：%s（%s）" % (r["error"] or r["status"], w["url"])
-    elif not dep:
-        r["hantei"] = "黄"
-        r["riyuu"] = "x-deployment-id が返ってきません。物差しが無いので出たか判定できません"
-    elif machi_since and (now - machi_since) > MATIGIRE_SEC:
-        r["hantei"] = "赤"
-        r["riyuu"] = ("mainに %s が入って %d分たつのに、本番の deploymentId が "
-                      "%s のまま変わっていません＝**出ていません**"
-                      % (machi_sha, r["machiSec"] // 60, key))
-    elif machi_since:
-        r["hantei"] = "黄"
-        r["riyuu"] = ("mainに %s が入りました。公開待ち %d分（%d分で赤）"
-                      % (machi_sha, r["machiSec"] // 60, MATIGIRE_SEC // 60))
-    elif not prev_dep:
-        r["hantei"] = "黄"
-        r["riyuu"] = ("初回。前回の deploymentId が無いので「出たか」はまだ判定できません"
-                      "（今のは %s。次の push から判定します）" % key)
-    else:
-        r["hantei"] = "青"
-        r["riyuu"] = "mainと本番が揃っています（deploymentId %s）" % key
+    # 判定は**この係では書かない**。規則は tools/hantei.py の kohyou_han() 1か所だけ。
+    # （1040番：同じifが2か所にあると、片方だけ直して食い違う。ここは測るだけにする）
+    if HERE not in sys.path:
+        sys.path.insert(0, HERE)
+    import hantei
+    han = hantei.kohyou_han(
+        status=r["status"], error=r["error"], deploy_key=key,
+        prev_deploy_key=prev_dep, machi_sha=machi_sha, machi_sec=r["machiSec"],
+        url=w["url"], matigire_sec=MATIGIRE_SEC)
+    r["hantei"] = han["hantei"]
+    r["riyuu"] = han["riyuu"]
     return r
 
 

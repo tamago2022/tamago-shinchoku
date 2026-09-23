@@ -471,7 +471,20 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
                     #   字が一致しただけで別人の棚に入る事故を、紐づけないことで防ぐ。
                 })
                 stock_id, made_stock = stock["id"], True
-            pick = insert_pick(url, key, sid, stock_id)
+            try:
+                pick = insert_pick(url, key, sid, stock_id)
+            except Exception:
+                # ★結び目が作れなかったら、さっき作ったカードも取り消す。
+                #   棚に繋がらないカードを倉庫に置き去りにしない（＝棚のデータを汚さない）。
+                if made_stock:
+                    try:
+                        tana._req(url, key, "/rest/v1/admin_stock?id=eq.%s"
+                                  % urllib.parse.quote(stock_id, safe=""), method="DELETE")
+                        res["diag"].append("結び目が作れなかったので、作ったカードを取り消した")
+                    except Exception as e2:
+                        res["red"].append("★カードが倉庫に残った（stock %s）：%s"
+                                          % (stock_id, type(e2).__name__))
+                raise
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8", "replace")[:300]
             res["red"].append("棚へ入れられなかった（%s）HTTP %d %s" % (title[:30], e.code, body))
@@ -588,10 +601,89 @@ def daily(force=False):
         lock_free()
 
 
+def shirabe(ref, souji=False):
+    """★倉庫（admin_stock）にそのURLの行が在るか見る。souji=True なら
+    **結び目が1本も無い行だけ**を消す（棚に繋がっているカードは絶対に触らない）。"""
+    res = {"ranAt": now().strftime("%Y-%m-%d %H:%M"), "diag": [], "red": [],
+           "rows": [], "keshita": [], "totalYen": 0.0}
+    url, key, keyname, where = tana.keys(res["diag"])
+    if not url:
+        res["red"].append("Supabaseの鍵が見つからない：%s" % where)
+        return res
+    st, rows = tana._req(url, key, "/rest/v1/admin_stock?select=id,ref,title,whisper,note,created_at"
+                         "&ref=eq.%s&order=created_at.desc" % urllib.parse.quote(ref, safe=""))
+    for r0 in rows:
+        st2, picks = tana._req(url, key, "/rest/v1/admin_shelf_picks?select=id,shelf_id,status"
+                               "&stock_id=eq.%s" % urllib.parse.quote(r0["id"], safe=""))
+        r0["picks"] = picks
+        res["rows"].append(r0)
+        if souji and not picks:
+            try:
+                tana._req(url, key, "/rest/v1/admin_stock?id=eq.%s"
+                          % urllib.parse.quote(r0["id"], safe=""), method="DELETE")
+                res["keshita"].append(r0["id"])
+            except Exception as e:
+                res["red"].append("消せなかった %s：%s" % (r0["id"][:8], type(e).__name__))
+    res["ok"] = not res["red"]
+    return res
+
+
+def kagi_shirabe(shelf_id):
+    """★いまの鍵で「どこまで書けるか」を実測する。当てずっぽうで INSERT しないため。
+
+    自分で作った捨て行だけを使い、通っても通らなくても**必ず消してから帰る。**
+    他人の行は1文字も触らない。ref は誰とも当たらない形にする。
+    """
+    res = {"ranAt": now().strftime("%Y-%m-%d %H:%M"), "diag": [], "red": [],
+           "dekita": {}, "nokori": [], "totalYen": 0.0}
+    url, key, keyname, where = tana.keys(res["diag"])
+    if not url:
+        res["red"].append("Supabaseの鍵が見つからない：%s" % where)
+        return res
+    res["keyName"] = keyname
+    ref = "tamago://kagi-shirabe/%s" % now().strftime("%Y%m%d-%H%M%S")
+    stock_id = pick_id = None
+    try:
+        try:
+            row = insert_stock(url, key, {"kind": "link", "ref": ref,
+                                          "title": "鍵の下見（すぐ消します）",
+                                          "whisper": None, "thumbnail_url": None, "note": None})
+            stock_id = row["id"]
+            res["dekita"]["admin_stock INSERT"] = "通った"
+        except urllib.error.HTTPError as e:
+            res["dekita"]["admin_stock INSERT"] = "HTTP %d %s" % (
+                e.code, e.read().decode("utf-8", "replace")[:120])
+        if stock_id and shelf_id:
+            try:
+                pick_id = insert_pick(url, key, shelf_id, stock_id)["id"]
+                res["dekita"]["admin_shelf_picks INSERT"] = "通った"
+            except urllib.error.HTTPError as e:
+                res["dekita"]["admin_shelf_picks INSERT"] = "HTTP %d %s" % (
+                    e.code, e.read().decode("utf-8", "replace")[:120])
+    finally:
+        for path, rid in (("admin_shelf_picks", pick_id), ("admin_stock", stock_id)):
+            if not rid:
+                continue
+            try:
+                tana._req(url, key, "/rest/v1/%s?id=eq.%s"
+                          % (path, urllib.parse.quote(rid, safe="")), method="DELETE")
+                res["dekita"]["%s DELETE" % path] = "通った"
+            except urllib.error.HTTPError as e:
+                res["dekita"]["%s DELETE" % path] = "HTTP %d" % e.code
+                res["nokori"].append("%s %s" % (path, rid))
+                res["red"].append("★下見の行が消せずに残った：%s %s" % (path, rid))
+    res["ok"] = not res["red"]
+    return res
+
+
 def run_job(payload):
     """工場側（gaibu_runner kind=tanaire）から呼ばれる入口。"""
     p = payload or {}
-    if p.get("op") == "modoshi":
+    if p.get("op") == "kagi":
+        out = kagi_shirabe(p.get("shelfId") or "")
+    elif p.get("op") == "shirabe":
+        out = shirabe(p.get("ref") or "", souji=bool(p.get("souji")))
+    elif p.get("op") == "modoshi":
         out = modoshi(p.get("bin") or "1039", dry=bool(p.get("dry")))
     elif p.get("op") == "daily":
         out = daily(force=bool(p.get("force")))

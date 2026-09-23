@@ -127,6 +127,47 @@ def judge(runs, catches, blocked="", label=""):
                 runs=runs, catches=catches, blocked=blocked)
 
 
+# ── 1040番【公開の判定】「mainに入った → 本番に出た」の規則 ───────────────
+# ★規則は**ここだけ**に書く。tools/kohyou_kanshi.py は測って、この関数に渡すだけ。
+#   （1038番では kohyou_kanshi.py の中に if が直接書いてあった＝規則が2か所になる）
+#
+# ★「pushした＝出た」と数えない。本番の x-deployment-id の**UUIDが変わるまで**は
+#   「出ていない」。ごきげん補給所は GitHub Pages ではなく Lovable配信で、
+#   mainに入れただけでは本番は古いまま（2026-09-23 に4回踏んだ）。
+KOHYOU_MATIGIRE_SEC = 1800   # mainが動いてから30分、本番が動かなければ赤
+
+
+def kohyou_han(status=0, error="", deploy_key="", prev_deploy_key="",
+               machi_sha="", machi_sec=0, url="", matigire_sec=None):
+    """公開の判定。戻り値: dict(hantei="赤/黄/青", riyuu=..., red=bool)
+
+    引数は**測った事実だけ**：
+      status/error … 本番を叩いた結果
+      deploy_key   … 今の x-deployment-id のUUID部分（公開ごとに変わる部分）
+      prev_deploy_key … 前回のUUID部分
+      machi_sha/machi_sec … 「まだ出ていない借り」のコミットと、その経過秒
+    """
+    lim = int(matigire_sec or KOHYOU_MATIGIRE_SEC)
+    status = int(status or 0)
+    if error or (status and status >= 400):
+        h, why = "赤", "本番が叩けません：%s（%s）" % (error or status, url)
+    elif not deploy_key:
+        h, why = "黄", "x-deployment-id が返ってきません。物差しが無いので出たか判定できません"
+    elif machi_sec and machi_sec > lim:
+        h, why = "赤", ("mainに %s が入って %d分たつのに、本番の deploymentId が "
+                        "%s のまま変わっていません＝**出ていません**"
+                        % (machi_sha, machi_sec // 60, deploy_key))
+    elif machi_sec or machi_sha:
+        h, why = "黄", ("mainに %s が入りました。公開待ち %d分（%d分で赤）"
+                        % (machi_sha, (machi_sec or 0) // 60, lim // 60))
+    elif not prev_deploy_key:
+        h, why = "黄", ("初回。前回の deploymentId が無いので「出たか」はまだ判定できません"
+                        "（今のは %s。次の push から判定します）" % deploy_key)
+    else:
+        h, why = "青", "mainと本番が揃っています（deploymentId %s）" % deploy_key
+    return {"hantei": h, "riyuu": why, "red": h == "赤"}
+
+
 def tally(prev, run_at, caught_at, blocked=""):
     """走った／取れたの数え方。**この1か所にしか書かない。**
 

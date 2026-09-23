@@ -94,6 +94,18 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 echo "$(date '+%F %T') naoshi 呼び出し" >> "$REPO/status/gaibu_copy_naoshi.log"
 ( nohup python3 "$REPO/tools/gaibu_copy_naoshi.py" >>"$REPO/status/gaibu_copy_naoshi.log" 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-09-23（1039番）投げ込み箱 → 棚へ入れる係 ----
+# たまごさん：「1日1回でもいいのよ。最後12時に、今日届いている分だけピックアップして入れる」
+# ★上の naoshi と**まったく同じ型**でここに置く。理由も同じ：
+#   ロックを取った直後＝launchdが起こせば必ず通る場所。心臓が死んでいても回る。
+# ★新しい常駐・新しい定期タスク・列（queue.json）は増やさない。
+# ★中で1日1回ゲートする（tools/nagekomi_shelf.py の GATE）。日付が変わった最初の便で走る
+#   ＝**深夜0時すぎ**。手で回すときは status/.nagekomi_shelf_force を置く。
+# ★コピーを claude -p に書かせるので1件あたり数十秒。この便を遅らせないため背後へ逃がす。
+#   二重起動は nagekomi_shelf 側のロック（60分で剥がれる）で防ぐ。
+echo "$(date '+%F %T') nagekomi_shelf 呼び出し" >> "$REPO/status/nagekomi_shelf.log"
+( nohup python3 "$REPO/tools/nagekomi_shelf.py" >>"$REPO/status/nagekomi_shelf.log" 2>&1 & ) >/dev/null 2>&1
+
 # ---- 2026-09-23（1029番・Cowork側から設置）覆面調査員（架空のお客さん4人）の潜伏 ----
 # たまごさん「潜伏してひたすら触ってくれる人がいれば、どこを直せば体験が良くなるか分かるんじゃないの？」
 # 本番（joy-relief-station.lovable.app）を実際にPlaywrightで触り、たまごさんが言う3症状を数字で取る。
