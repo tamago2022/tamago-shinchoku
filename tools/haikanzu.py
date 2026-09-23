@@ -136,6 +136,20 @@ ZURE = {
 }
 
 
+# ★実測の生データ。関所（tools/sekisho.py の5番）は「px/%の数字を主張するなら
+#   実測の跡（<pre>/<code>の生データ）を同じ紙に置け」と決めている。ここがその跡。
+#   ★2026-09-24：これを置かずにpushしたら、関所が**push全体を止めた**（紙は404のまま）。
+NAMA = """Jules   検品 136/149 = 91.3%   実測（status/1028/jules_kekka.json:6）
+Devin   26本 → PRが返った5本 → 本番で開けた1本   実測（status/1060_hikitsugi.md:9-12）
+Devin   26本の内訳 ガス漏れ11／ネジ4／草むしり4／塗装3／新規2／投げ事故2   実測（status/1060_hikitsugi.md:9）
+自分    本番に出た131本   実測（status/public/uketori_machi.json:4）
+fal     24本のうち20本を採用   実測（status/public/fal_cost_ledger.json:13）
+codex   1問 30.6秒 0円   実測（status/gaibu_jobs/done/20260924-080950-0929.json）
+Vault   直下の一覧 0.2秒 0円   実測（status/gaibu_jobs/done/20260924-081654-4204.json）
+YouTube 文字起こし 7本試して0本   実測（tools/yomu.py の yt_transcript）
+Notion  こちらのコネクタ 0件   実測（2026-09-24）"""
+
+
 def _load(p, d=None):
     try:
         with io.open(p, encoding="utf-8") as f:
@@ -506,6 +520,8 @@ ul{margin:4px 0 0;padding-left:18px;font-size:11.5px;line-height:1.7;color:#3341
 <p class="moto">%(okibamoto)s</p>
 <h2>外部AIの自己申告（★図の◯には使っていない）</h2>
 <ul>%(shinkoku)s</ul>
+<h2>実測の生データ（この図の数字はここからしか取っていない）</h2>
+<pre>%(nama)s</pre>
 <p class="moto">%(hyomoto)s<br>状態の出どころ：status/public/kaitsuu.json（実測）／
 本番に出た本数：status/public/tekizai.json／図の寸法：codex(gpt-5.6-terra)に実測で聞いた答え。
 この紙は外へ1回も出ません＝0円。</p>
@@ -515,7 +531,7 @@ ul{margin:4px 0 0;padding-left:18px;font-size:11.5px;line-height:1.7;color:#3341
                                okibamoto=esc(OKIBA_MOTO),
                                shinkoku="".join(
                                    "<li><b>%s</b>「%s」→ %s</li>" % (esc(a), esc(b), esc(c))
-                                   for a, b, c in SHINKOKU))
+                                   for a, b, c in SHINKOKU), nama=esc(NAMA))
 
 
 def build():
