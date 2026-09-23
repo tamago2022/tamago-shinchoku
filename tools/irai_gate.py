@@ -290,8 +290,19 @@ def _gsk_matsu(so):
         saigo = s2
         low = s2.lower()
         if any(w in low for w in ('"completed"', '"finished"', '"success"', '"done"',
-                                  '"failed"', '"error"', '"stopped"')):
+                                  '"failed"', '"error"', '"stopped"', 'finished.')):
             break
+    # ★終わっても status は「終わりました。中身は task info で見てください」しか返さない
+    #   （実測 2026-09-24：'Finished. VERIFY the deliverable with `gsk task info <uuid>`'）。
+    #   もう1段掘らないと答えの本文に届かない。ここで諦めると受領書を答えだと思い込む。
+    m = re.search(r"gsk task info ([0-9a-f-]{20,})", saigo or "")
+    if m:
+        try:
+            rc3, s3, _ = _run([GSK, "task", "info", m.group(1), "--output", "json"], timeout=180)
+            if rc3 == 0 and s3.strip():
+                saigo = s3
+        except Exception:
+            pass
     return _gsk_honbun(saigo or so)
 
 
