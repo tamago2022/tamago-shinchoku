@@ -1,0 +1,268 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1029 ― 先週の1週間。卵が喋った日</title>
+<style>
+:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
+--rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;font-size:16px}
+.wrap{max-width:60rem;margin:0 auto;padding:7vw 6vw 14vw}
+.eyebrow{font-size:.68rem;letter-spacing:.42em;color:var(--faint);margin:0 0 1.6rem}
+h1{font-weight:400;font-size:clamp(1.4rem,4.8vw,2.25rem);letter-spacing:.09em;margin:0 0 .4rem;line-height:1.5}
+.sub{color:var(--faint);font-size:.8rem;letter-spacing:.12em;margin:0 0 3.2rem}
+.verdict{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:2rem 0;margin:0 0 3.2rem}
+.verdict p{margin:0 0 1.1rem;font-size:clamp(1rem,2.7vw,1.13rem);line-height:1.95}
+.verdict p:last-child{margin-bottom:0}
+.verdict .n{color:var(--accent);letter-spacing:.3em;font-size:.7rem;margin-right:.9em;vertical-align:.18em}
+.big{color:var(--accent)}
+h2{font-weight:400;font-size:.74rem;letter-spacing:.34em;color:var(--faint);
+ margin:4.2rem 0 1.4rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+h3{font-weight:400;font-size:1.02rem;letter-spacing:.06em;margin:2.6rem 0 .6rem;line-height:1.6}
+h3 .k{color:var(--accent);font-size:.7rem;letter-spacing:.3em;margin-right:.8em;vertical-align:.18em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:1px;
+ background:var(--rule);border:1px solid var(--rule);margin:0 0 1.4rem}
+.card{background:var(--paper);padding:1.2rem .9rem}
+.card b{display:block;font-weight:400;font-size:clamp(1.4rem,5.4vw,1.9rem);letter-spacing:.02em;line-height:1.25}
+.card span{display:block;font-size:.68rem;letter-spacing:.2em;color:var(--faint);margin-top:.5rem}
+.card.red b{color:var(--accent)}
+.card.ok b{color:var(--ok)}
+p{margin:0 0 1.2rem}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 1.6rem}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th,td{text-align:left;padding:.7rem .45rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:400;color:var(--faint);font-size:.66rem;letter-spacing:.14em;white-space:nowrap}
+td.num{white-space:nowrap}
+.red{color:var(--accent)}
+.ok{color:var(--ok)}
+a{color:var(--ink)}
+.box{border:1px solid var(--rule);padding:1.3rem 1.1rem;margin:0 0 1.6rem;background:rgba(255,255,255,.28)}
+.box.hot{border-color:var(--accent);border-left-width:3px}
+.box p:last-child{margin-bottom:0}
+.small{font-size:.8rem;color:var(--faint)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.82em;background:rgba(34,48,74,.07);padding:.1em .35em;border-radius:2px;word-break:break-all}
+ul{margin:0 0 1.3rem;padding-left:1.1rem}
+li{margin-bottom:.5rem}
+.bars{margin:0 0 1.6rem}
+.bar{display:flex;align-items:center;gap:.6rem;margin-bottom:.55rem;font-size:.82rem}
+.bar .d{width:3.3rem;flex:0 0 auto;color:var(--faint);font-size:.72rem;letter-spacing:.08em}
+.bar .t{flex:1 1 auto;height:.85rem;background:rgba(34,48,74,.08);position:relative;min-width:0}
+.bar .t i{display:block;height:100%;background:var(--ink);opacity:.72}
+.bar .t i.lo{background:var(--accent)}
+.bar .v{width:3.6rem;flex:0 0 auto;text-align:right;white-space:nowrap}
+.link{display:block;padding:.62rem 0;border-bottom:1px solid var(--rule);font-size:.88rem;line-height:1.6}
+.link .no{color:var(--accent);font-size:.68rem;letter-spacing:.2em;margin-right:.7em}
+footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-size:.72rem;letter-spacing:.14em;color:var(--faint)}
+</style></head><body><div class="wrap">
+
+<p class="eyebrow">1029 ／ 先週1週間の報告</p>
+<h1>卵が、喋りました。<br>そして工場は54時間、空を回していました。</h1>
+<p class="sub">2026-09-17 → 2026-09-23 ／ 数字はすべて台帳とログから取り直したもの</p>
+
+<div class="verdict">
+<p><span class="n">1</span>いちばん大きいのは<span class="big">卵が喋ったこと。</span>9/20 12:59、irisの声で音が返りました。36,700バイト・約0.8秒・文字起こしは「こんにちは。」<span class="big">見本ではなく、本番のURLで鳴っています。</span></p>
+<p><span class="n">2</span>数字でいちばん動いたのは<span class="big">誤殺が349件中346件（99.1%）だと分かったこと。</span>心臓の再起動 72回→<span class="ok">0回</span>、死亡宣告 71回→<span class="ok">0回</span>。<span class="big">もう起きません。生死と仕事の進み具合を、別々の信号にしたからです。</span></p>
+<p><span class="n">3</span>詰まっているのは<span class="big">Claudeのログイン切れ。</span>9/21 04:42から今まで<span class="big">54時間、本物の仕事が1本も出ていません。</span>たまごさんが1回ログインし直すだけです。</p>
+</div>
+
+<h2>ひとつめ　卵が喋った</h2>
+
+<h3><span class="k">出た</span>声が、本番で鳴った</h3>
+<p>週のはじめは「PNGを1枚貼っただけでは永久に喋らない」という調べものでした。週の終わりには<b>音が返ってきていました。</b></p>
+
+<div class="cards">
+<div class="card ok"><b>36,700</b><span>返ってきた音（バイト）</span></div>
+<div class="card ok"><b>0.8秒</b><span>最初の音までの時間</span></div>
+<div class="card"><b>$0.08</b><span>会話1分あたり（公式）</span></div>
+<div class="card ok"><b>0円</b><span>新しく払った額</span></div>
+</div>
+
+<p><b>足りなかったのは残高ではなく、見る場所でした。</b>Macの中の鍵は残高ゼロで403のまま。けれど残高のあるチームの鍵が、ごきげん補給所の裏側にもう入っていました。<span class="ok">課金も、プラン変更もしていません。元から在ったものを使っただけです。</span></p>
+
+<p>同じ週に、口が音に合って動く実物も出ました。<b>絵をドラッグすると、その絵がそのまま喋ります。</b>仕組みは絵に依存していません。外部ライブラリ0KB・月額0円。<br><span class="small">卵を「あ／い／う／え／お／ん／閉」と「呼吸」と「揺れ」だけを受け取る箱として作ってあるので、中身をPNG→Live2D→3Dと入れ替えても、音まわりは1行も書き直しません。</span></p>
+
+<div class="box hot">
+<p><b>いちばん効いたのは、実は「起こしたこと」でした。</b></p>
+<p>アバターの返信拾いは<span class="red">81回走って0件</span>でした。拾う側は壊れていませんでした。<b>誰も相手を起こしていなかっただけです。</b>9/23 00:13にラベルを1枚貼ったら、<span class="ok">22秒で2体が返事をしました。</span></p>
+<p class="small">同じ事故が2回起きていたので、見張りと引き金を同じ1本にしました。<b>起こし方が書いていない先は、そもそも見張りません。</b>見張るだけの先は、走った回数だけが永久に増えるからです。今の実測：走った113回 → 取れた17回。</p>
+</div>
+
+<h2>ふたつめ　本番に出たもの</h2>
+<p class="small">「作った」ではなく「出た」だけを数えています。下の18本は、いま叩いて <b>HTTP 200・最後まで届いている</b>ことを確かめたものだけです（2026-09-23 10:39 実測）。</p>
+
+<div class="cards">
+<div class="card ok"><b>18</b><span>200を確認した本数</span></div>
+<div class="card ok"><b>18</b><span>最後まで届いた本数</span></div>
+<div class="card red"><b>0</b><span>404だった本数</span></div>
+</div>
+
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/970-iris-koe.html"><span class="no">970</span>irisの声を鳴らす台 — ★ここで実際に鳴ります</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/960-tamago-shaberu.html"><span class="no">960</span>卵は喋るのか — 動く見本と、手の比較5つ</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/961-talking-avatar-jirei.html"><span class="no">961</span>喋るアバターの事例（外のAIの返事がここに載ります）</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/947-concierge-talk.html"><span class="no">947</span>案内人と声で話す（試作）</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/959-koe-erabi.html"><span class="no">959</span>声えらび — 30人の聴き比べ・1分あたりの円つき</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/964-koe-tempo-okane.html"><span class="no">964</span>声の入れ替え口・テンポの実測・見積り</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/974-fal-avatar-nedan.html"><span class="no">974</span>卵をfalで喋らせる値段しらべ</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/431-seihon.html"><span class="no">431</span>案内人を、承認済みの姿で喋らせる（正本）</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/1018-karamawashi-midori.html"><span class="no">1018</span>空回しでも点く緑を消した</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/1019-ushio-watch.html"><span class="no">1019</span>心臓の見張り</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/1022-bottleneck.html"><span class="no">1022</span>たまごさんはボトルネックではない（23日間の実測）</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/1027-tekizai-tekisho.html"><span class="no">1027</span>誰に何を任せるか（全員ぶん実測）</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/990-shiire-kouho.html"><span class="no">990</span>仕入れ候補（34組・棚出し待ち）</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/991-fes-meibo.html"><span class="no">991</span>フェス名簿と「それはありませんね率」</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/share/check/999-oni-gate-shiken.html"><span class="no">999</span>鬼監督の関所・試験</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/969-kagi-daicho.html"><span class="no">969</span>鍵・つながりの台帳</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/977-ai-renkei.html"><span class="no">977</span>外のAIとのつながり（投げ／返り）</a>
+<a class="link" href="https://tamago2022.github.io/tamago-shinchoku/index.html"><span class="no">表</span>進捗表</a>
+
+<h2>みっつめ　数字で動いたもの</h2>
+
+<h3><span class="k">01</span>心臓 ― 生きている心臓を、見張りが殺していた</h3>
+<div class="tw"><table>
+<tr><th>　</th><th>入れ替え前</th><th>入れ替え後</th></tr>
+<tr><td>心臓の再起動</td><td class="num red">72回</td><td class="num ok">0回</td></tr>
+<tr><td>死亡宣告</td><td class="num red">71回</td><td class="num ok">0回</td></tr>
+<tr><td>鼓動の最大の途切れ</td><td class="num red">90秒</td><td class="num ok">5秒</td></tr>
+<tr><td>本当の死の検知</td><td class="num">できる</td><td class="num ok">できる（変えていない）</td></tr>
+</table></div>
+<p><b>全期間の死亡宣告349件のうち、本当に死んでいたのは3件。346件（99.1%）が誤殺でした。</b></p>
+<p class="ok"><b>もう起きません。</b>「生きているか」と「仕事が終わったか」を、別々の信号にしたからです。同じ信号を見ていた所が9か所あったので、<b>1か所直したら9か所とも直りました。</b></p>
+
+<h3><span class="k">02</span>発車 ― 緑が「空回しが入った」しか意味していなかった</h3>
+<div class="cards">
+<div class="card red"><b>0</b><span>本物の発車</span></div>
+<div class="card"><b>316</b><span>空回し（26時間ぶん）</span></div>
+<div class="card red"><b>54時間</b><span>いまも本物0本のまま</span></div>
+</div>
+<p>進捗表は「発車：10分以内に動いている」と出し続けていました。けれどその緑が見ていた印は、<b>本物でも空回しでも同じように書き換わる</b>ものでした。空回しは2分ごとに必ず入ります。</p>
+<p class="ok"><b>もう嘘をつきません。</b>判定を1つのファイルに引っ越して、規則をそこにしか書かないことにしました。<b>取れた本数だけが緑の根拠です。</b>プロセスの生死も、ログの更新も、着火の有無も使いません。</p>
+
+<h3><span class="k">03</span>仕入れ ― それはありませんね率</h3>
+<div class="tw"><table>
+<tr><th>　</th><th>週のはじめ</th><th>いま</th></tr>
+<tr><td>棚の率（本当の数字）</td><td class="num">89.0%</td><td class="num">89.0%（1曲も出していない）</td></tr>
+<tr><td>候補まで含めた率</td><td class="num">89.0%</td><td class="num ok">74.0%</td></tr>
+<tr><td>候補が積まれた組</td><td class="num">0組</td><td class="num ok">34組</td></tr>
+</table></div>
+<p><b>棚には1曲も出していません。</b>棚に置くかはたまごさんの判断なので、候補で止めてあります。だから棚の率は動きません。数字を薄めないよう、2本を必ず並べて出します。</p>
+
+<h3><span class="k">04</span>Wikipedia ― 18件の誤爆を洗い出して、18件とも落とした</h3>
+<p>TURNSTILE が<b>改札機</b>、Trueno が<b>トヨタの車</b>、IO が<b>木星の衛星</b>、GRAPEVINE が<b>ブドウの木</b>。ここは前に直しました。今週見つかったのは、もっと見つけにくい2種類です。</p>
+<ul>
+<li>本人ではなく<b>作品</b>を採る（LOYLE CARNER → アルバム名の記事）</li>
+<li>音楽の記事ではあるが<b>別人</b>を採る（KOTORI → 声優／Yo-Sea → LUNA SEA）</li>
+</ul>
+<p class="ok"><b>もう起きません。</b>点数で選ぶのをやめて、関所を2つ（人・バンドの記事か／探している本人か）にして、<b>両方通らなければ「見つからなかった」と返すようにしたからです。</b>一番近いものを当てはめません。18件は機械で洗い出して機械で落とし、いま洗い直すと0件です。</p>
+
+<h3><span class="k">05</span>案内人の読み ― King Gnu を英語で読んでいた</h3>
+<div class="cards">
+<div class="card ok"><b>1,897</b><span>読みが付いたアーティスト</span></div>
+<div class="card"><b>2,507</b><span>全アーティスト</span></div>
+<div class="card red"><b>149</b><span>要確認（赤）</span></div>
+<div class="card ok"><b>0円</b><span>かかった額</span></div>
+</div>
+<p><b>読みのデータは最初からありました。</b>足りなかったのは、案内人がそれを見る配線でした。当て字で外さないよう、ローマ字と形態素解析の両方が一致したときだけ確定にしています（米津玄師は機械だと「ヨネツゲンシ」と読むため）。</p>
+
+<h3><span class="k">06</span>鬼監督 ― 一度も呼ばれていなかった</h3>
+<p>関所はありました。<b>けれど、外に出す道のどこにも置かれていませんでした。</b>置き場所を変えて、<b>通らないと外に出られない形</b>にしました（外へ出る一本道のいちばん先）。</p>
+<div class="cards">
+<div class="card ok"><b>10/10</b><span>見本試験の合格</span></div>
+<div class="card ok"><b>0件</b><span>本番589枚での誤爆</span></div>
+<div class="card ok"><b>0円</b><span>1回あたりの費用</span></div>
+</div>
+<p class="small">AIを1回も呼びません。わざと悪いページを外へ出そうとして、実際に止まりました。工場がいま触っているページは全部通ります＝何でも赤にする門ではありません。</p>
+
+<h3><span class="k">07</span>赤 ― 21件のうち13件を消した</h3>
+<p>「動いているのに何も取れていない」を全部洗いました。<b>21件見つけて、13件を消しました。</b>残った8件は、全部たまごさんにしか外せないか、課金・権利が要るものです。</p>
+<p class="small">消した中には「78回走った」という<b>数字そのものが嘘だった</b>ものがあります。鍵が無いので1度もGmailに繋ぎに行かず、紙に書いて即戻っていただけでした。<b>叩けもしなかった回は、走ったに数えません。</b>数え方も1か所に寄せました。</p>
+
+<h3><span class="k">08</span>適材適所 ― 誰に何を任せるか、全員ぶん実測した</h3>
+<div class="tw"><table>
+<tr><th>誰</th><th>返事</th><th>PR</th><th>本番入り</th><th>分かったこと</th></tr>
+<tr><td>Jules（Google）</td><td class="num">16</td><td class="num">3</td><td class="num ok">1</td><td>8分28秒で出す。速くて綺麗。<b>ただし前提を外す</b></td></tr>
+<tr><td>Devin</td><td class="num">5</td><td class="num">5</td><td class="num ok">3（60%）</td><td>PRまで運ぶのが得意</td></tr>
+<tr><td>Codex（OpenAI）</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td>線は生きている。うち3回が枠切れ</td></tr>
+<tr><td>チャッピー（ChatGPT直）</td><td class="num">2</td><td class="num">—</td><td class="num">—</td><td><b>2.4〜2.6秒でその場で返る</b></td></tr>
+<tr><td>fal</td><td class="num">24本</td><td class="num">—</td><td class="num ok">20本（83%）</td><td>絵をつくるのはここ</td></tr>
+<tr><td>Claude子セッション</td><td class="num">310件</td><td class="num">—</td><td class="num">169件（54.5%）</td><td>自己検品は当てにならない</td></tr>
+<tr><td>Copilot / Grok / Genspark</td><td class="num red">0</td><td class="num">0</td><td class="num">0</td><td>口が閉まっている（下段）</td></tr>
+</table></div>
+<p><b>Julesに仕入れを任せるのは、いまのところノーです。</b>「棚に1曲も無い組を選べ」と指定したのに、すでに棚にある組を選んできました。<b>速い・綺麗と、合っているは別です。</b>だからJulesには「PRまで」で合格とし、その先の検品と取り込みはこちらで受けることにしました。</p>
+<p class="ok">その受け口を今週つくりました。<b>検品と取り込みは、これまで無人でした。</b>いま検品は6項目を機械だけで見ます（AIを1回も呼ばない・0円）。今日その道で、JulesのPRを1本、実際に本番の手前まで運びました。</p>
+
+<h2>よっつめ　詰まっているもの</h2>
+<p class="small">5件あります。<b>5件とも、こちらでは外せません。</b>順番は、効く順です。</p>
+
+<div class="box hot">
+<p><b>① Claudeのログインが切れている</b>　<span class="red">← これ1つで全部が動き出します</span></p>
+<p>9/21 04:42から<b>54時間、本物の仕事が1本も出ていません。</b>その間に空回しが1,002本、見送りが7,834回。<br>
+いつものClaudeのアプリで<b>1回ログインし直すだけ</b>です。こちらが気づいて自動で再開します。<b>枠の問題ではありません。</b></p>
+</div>
+
+<div class="box hot">
+<p><b>② Gmailの鍵が無くて、見張り4本が止まっている</b>　<span class="red">← 鍵1つで4本が同時に開きます</span></p>
+<p>止まっているのは、LINE審査結果／LINE問い合わせ返信／Anthropic返信／外部連絡窓口の4本。<br>
+<code>/Users/mac/.tamago/gmail_app_password</code> に置くだけです。置けば次の30分以内に自動で始まります。</p>
+</div>
+
+<div class="box">
+<p><b>③ ごきげん補給所の本番が86時間更新されていない</b></p>
+<p>最後に配信が切り替わったのは <b>9/19 20:20</b>。<b>コードを直しても画面が変わりません。</b><br>
+今日そこに見張りを付けました（本番のURLを、この工場は今日まで一度も叩けませんでした）。<b>まだ原因は分かっていません。分かっていないことを「出た」とは書きません。</b></p>
+</div>
+
+<div class="box">
+<p><b>④ 外のAI 3体が、口ごと閉まっている</b></p>
+<p><b>Grok</b>＝x.ai のチームに残高が無く403（課金の判断）。<b>Genspark</b>＝こちらから起こす手段が無い（Genspark側の画面で1回だけ仕込みが要る・<span class="red">Oct 4 キャンセル予定であと約10日</span>）。<b>Copilot</b>＝アカウントに権利が無い（有料プランの判断）。<br>
+<b>3体とも、投げるのを止めてあります。</b>催促も回数も増やしていません。理由をそのまま表に出しています。</p>
+</div>
+
+<div class="box">
+<p><b>⑤ Instagram/Facebookの自動投稿が、鍵待ちで止めてある</b></p>
+<p>押すだけのボタン5つまで出来ています（鍵を貼る／いま1本出す／毎日9時と19時に出す／とめる／ちゃんと出たか見る）。<br>止まっている理由は<b>投稿先の鍵が入っていないこと</b>だけです。</p>
+</div>
+
+<h2>いつつめ　クレジットの使い方</h2>
+<p class="small">週の枠に対して、その日に何ポイント使ったか。先週の窓は 9/16 夕方 → 9/22 18:10 に切り替わりました。</p>
+
+<div class="bars">
+<div class="bar"><span class="d">9/17</span><span class="t"><i style="width:100%"></i></span><span class="v">+23</span></div>
+<div class="bar"><span class="d">9/18</span><span class="t"><i style="width:57%"></i></span><span class="v">+13</span></div>
+<div class="bar"><span class="d">9/19</span><span class="t"><i style="width:70%"></i></span><span class="v">+16</span></div>
+<div class="bar"><span class="d">9/20</span><span class="t"><i class="lo" style="width:26%"></i></span><span class="v">+6</span></div>
+<div class="bar"><span class="d">9/21</span><span class="t"><i class="lo" style="width:30%"></i></span><span class="v">+7</span></div>
+<div class="bar"><span class="d">9/22</span><span class="t"><i class="lo" style="width:22%"></i></span><span class="v">+5</span></div>
+</div>
+
+<div class="cards">
+<div class="card"><b>85%</b><span>先週の終わり</span></div>
+<div class="card"><b>95〜100%</b><span>たまごさんの目標</span></div>
+<div class="card red"><b>15</b><span>足りなかったポイント</span></div>
+<div class="card"><b>3%</b><span>今週ここまで（16時間）</span></div>
+</div>
+
+<p><b>前半3日で52ポイント、後半3日で18ポイント。落ちたのは9/20からです。</b></p>
+<div class="tw"><table>
+<tr><th>いつ</th><th>何が起きていたか</th></tr>
+<tr><td class="num">9/17〜9/19</td><td>週の7割をここで使い切っている。いちばん回っていた3日間</td></tr>
+<tr><td class="num">9/21 04:42〜</td><td class="red"><b>本物の発車が0本になる。</b>ここから今まで54時間、空回しだけ</td></tr>
+<tr><td class="num">9/22 08:26〜18:10</td><td class="red"><b>9時間44分、1ポイントも動いていない。</b>週が切り替わる直前の、いちばん惜しい時間帯</td></tr>
+</table></div>
+<p class="small">台帳の記録は85%です。たまごさんの記憶（86%）と1ポイントだけ違いますが、埋めずにそのまま出しています。</p>
+
+<h2>むっつめ　今週の的</h2>
+
+<div class="tw"><table>
+<tr><th>的</th><th>いまどこ</th><th>次の一手</th></tr>
+<tr><td><b>① 自然なトーキングアバター</b></td><td class="ok">声は本番で鳴った。口も音に合って動く</td><td>卵の絵を「体・目・口」の3枚の透過PNGに分ける（口は7枚あると別格）</td></tr>
+<tr><td><b>② 他のAIとの連携をシームレスに</b></td><td>6体は通った（Jules・Devin・Codex・チャッピー・fal）。<span class="red">3体は口ごと閉まっている</span></td><td>Gensparkの仕込みを1回だけ（あと約10日）。それ以外はチャッピーへ流す</td></tr>
+<tr><td><b>③ 仕組みの効率化</b></td><td class="ok">判定を1か所に寄せた。検品と取り込みの無人区間を埋めた</td><td>本番に出たかを見る係を常駐にする（いまは手で叩いている）</td></tr>
+<tr><td><b>④ 自動投稿（担当を決める）</b></td><td>ボタン5つまで出来て、<span class="red">鍵待ちで止めてある</span></td><td>担当はチャッピー（その場で返る・2.4秒）。鍵が入り次第1本出す</td></tr>
+<tr><td><b>⑤ アプリのプロトタイプ（お金の流れ）</b></td><td class="red">題材がまだ決まっていない</td><td>特別会計は畳んだまま。<b>別の題材を1つ決めれば、その日から手が動きます</b></td></tr>
+</table></div>
+
+<footer>1029 ／ 2026-09-23 ／ 数字は status/ の台帳とログから取り直したもの。取れなかったものは書いていません。</footer>
+
+</div></body></html>

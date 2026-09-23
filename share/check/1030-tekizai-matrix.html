@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1030 タスク別・誰が向いているか（◯△✕─の表）確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;--mi:#b0a894;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 14px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:860px;margin-left:auto;margin-right:auto;overflow-x:hidden;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.04em;margin:0 0 6px;line-height:1.5;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.04em;margin:38px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+  h3{font-size:0.95rem;margin:20px 0 6px;color:var(--ao);}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:16px;word-break:break-word;}
+  .fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.02rem;}
+  .fix p{margin:0 0 10px;} .fix p:last-child{margin:0;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 14px;}
+  .warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:0.9rem;margin:0 0 14px;}
+  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 6px;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%;}
+  table{border-collapse:separate;border-spacing:0;font-size:0.84rem;min-width:700px;}
+  th,td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;white-space:nowrap;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.68rem;line-height:1.25;}
+  th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:#fff;border-right:1px solid var(--line);
+    font-size:0.78rem;padding-left:9px;padding-right:7px;min-width:104px;font-weight:600;white-space:normal;line-height:1.3;}
+  th.t{background:#efe9db;z-index:3;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;font-size:1.05rem;}
+  .may{color:var(--ki);font-weight:700;font-size:1.05rem;}
+  .no{color:var(--aka);font-weight:700;font-size:1.05rem;}
+  .un{color:var(--mi);font-weight:700;font-size:1.05rem;}
+  .hint{font-size:0.78rem;color:var(--sub);margin:0 0 22px;}
+  .why{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 10px;font-size:0.86rem;}
+  .why b.head{display:block;font-size:0.95rem;margin-bottom:6px;color:var(--ink);border-bottom:1px dotted var(--line);padding-bottom:5px;}
+  .why div{margin:0 0 4px;line-height:1.55;}
+  .why div:last-child{margin:0;}
+  .why .n{display:inline-block;min-width:8.6em;color:var(--sub);font-size:0.8rem;}
+  ul.plain{list-style:none;margin:0 0 14px;padding:0;}
+  ul.plain li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;font-size:0.9rem;}
+  ul.plain li b{display:block;margin-bottom:3px;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.82em;word-break:break-all;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+  @media (max-width:420px){ body{font-size:15px;padding-left:11px;padding-right:11px;} h1{font-size:1.12rem;} table{font-size:0.8rem;} th.t,td.t{min-width:92px;font-size:0.74rem;} }
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1030 ／ 姉妹編：<a href="./1027-tekizai-tekisho.html">#1027 駅伝の区間で書いたほう</a></div>
+<h1>タスクごとに、誰が向いているか ― ◯△✕と「─（未実測）」の表</h1>
+<div class="date">2026-09-23 10:50 作成／12タスク × 10人＝120マス。数字はすべて台帳とログから取り直したもの</div>
+
+<div class="fix">
+<p><b>1.</b> ★<b>AIの側に◯が1人もいないタスクが6つあります。</b>
+仕入れ／コピー書き／SNS運用・自動投稿／検品／データ整形／本番に出す。
+とくに<b>SNS運用は、10人ぶん9列すべてが「─（やらせたことがない）」か「✕」で、◯も△も1つもありません。</b>
+素材は揃っていて（画像3枚・英日のキャプション11本）、<code>wae_autopost/queue.json</code>の11本は<b>全部 queued のまま、投稿は0本</b>です。</p>
+<p><b>2.</b> ★<b>思い込みが1つ、実測でひっくり返りました。Grokは「✕」ではありません。</b>
+文字の口（掲示板・API）は今も閉じています（<code>team_blocked</code>）。
+ところが<b>声は本番で鳴っています</b>――2026-09-20 12:59、xAIの<b>iris</b>で36,700バイト・約0.8秒・文字起こし「こんにちは。」。
+Macの中の鍵は残高ゼロで403のままですが、<b>残高のある鍵がごきげん補給所の裏側（Supabaseの Secrets・<code>XAI_API_KEY2</code>）に最初から入っていました。</b>
+＝「Grokは使えない」は、<b>Macのディスクだけを見ていたときの結論</b>でした。</p>
+<p><b>3.</b> ★<b>たまごさんの持ち場は、実測でも4つに寄っていました。</b>
+鍵／外に出す同意／本人の画面でしか取れない数字／最終的な好み。
+<code>1022</code>号で23日間262件を1件ずつ仕分けた結果、<b>本当にたまごさんにしか決められなかったのは3件＝1.1%</b>。
+それ以外は機械が自分で自分を止めていた分でした。<b>この表の◯も、たまごさんの欄は全部この4つの中に入っています。</b></p>
+</div>
+
+<h2>記号の読み方（4つ・ここを外すと表が嘘になります）</h2>
+<div class="note">
+<div><span class="yes">◯</span> … <b>実測で通った。任せられる。</b></div>
+<div><span class="may">△</span> … <b>通るが条件つき。</b>条件を必ず書いています。</div>
+<div><span class="no">✕</span> … <b>実測で外した／できない。</b>理由を必ず書いています。</div>
+<div><span class="un">─</span> … ★<b>やらせたことがありません。</b>ここに◯も✕も書きません。書いたら嘘になります。</div>
+<div style="margin-top:8px;border-top:1px dotted var(--line);padding-top:8px;">
+★<b>─が120マス中66マスあります。これは恥ではなく、次に何を試すかの地図です。</b>
+実際、今日の実測で<b>Devinを「実装が下手」と思い込んでいたのに、原因究明ではJulesより上だった</b>ことが分かりました。思い込みでは埋めません。
+</div>
+</div>
+
+<h2>1. ★表（12タスク × 10人）</h2>
+<p class="hint">★横にすべります（左の列は固定されます）。<b>各マスの「なぜそう評価したか」は、この下の第2節に1マス1行で全部書いてあります。</b>
+スマホで横に読まなくて済むように、印の表と理由を分けました。</p>
+<div class="wrap">
+<table>
+<tr>
+  <th class="t">タスク</th>
+  <th>Claude<br>Dispatch</th><th>Claude<br>子セッション</th><th>Jules<br>(Google)</th><th>Devin<br>(Cognition)</th>
+  <th>チャッピー<br>・Codex</th><th>Gemini</th><th>Grok<br>(xAI)</th><th>Genspark</th><th>fal</th><th>たまご<br>さん</th>
+</tr>
+<tr><td class="t">仕入れ</td>
+  <td class="may">△</td><td class="may">△</td><td class="no">✕</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="no">✕</td><td class="yes">◯</td></tr>
+<tr><td class="t">コピー書き</td>
+  <td class="may">△</td><td class="may">△</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="no">✕</td><td class="yes">◯</td></tr>
+<tr><td class="t">SNS運用<br>自動投稿</td>
+  <td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="no">✕</td><td class="yes">◯</td></tr>
+<tr><td class="t">トーキング<br>アバター</td>
+  <td class="may">△</td><td class="may">△</td><td class="may">△</td><td class="un">─</td><td class="no">✕</td><td class="un">─</td><td class="yes">◯</td><td class="un">─</td><td class="yes">◯</td><td class="yes">◯</td></tr>
+<tr><td class="t">絵・画像</td>
+  <td class="no">✕</td><td class="no">✕</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="yes">◯</td><td class="yes">◯</td></tr>
+<tr><td class="t">動画</td>
+  <td class="no">✕</td><td class="no">✕</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="yes">◯</td><td class="yes">◯</td></tr>
+<tr><td class="t">配管の修理</td>
+  <td class="yes">◯</td><td class="may">△</td><td class="un">─</td><td class="may">△</td><td class="no">✕</td><td class="un">─</td><td class="no">✕</td><td class="no">✕</td><td class="no">✕</td><td class="may">△</td></tr>
+<tr><td class="t">原因究明</td>
+  <td class="yes">◯</td><td class="may">△</td><td class="no">✕</td><td class="yes">◯</td><td class="no">✕</td><td class="un">─</td><td class="may">△</td><td class="un">─</td><td class="no">✕</td><td class="may">△</td></tr>
+<tr><td class="t">検品</td>
+  <td class="may">△</td><td class="no">✕</td><td class="no">✕</td><td class="un">─</td><td class="no">✕</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="no">✕</td><td class="yes">◯</td></tr>
+<tr><td class="t">リサーチ</td>
+  <td class="may">△</td><td class="may">△</td><td class="no">✕</td><td class="yes">◯</td><td class="no">✕</td><td class="un">─</td><td class="may">△</td><td class="un">─</td><td class="no">✕</td><td class="yes">◯</td></tr>
+<tr><td class="t">データ整形</td>
+  <td class="may">△</td><td class="may">△</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="un">─</td><td class="no">✕</td><td class="un">─</td></tr>
+<tr><td class="t">本番に出す</td>
+  <td class="may">△</td><td class="no">✕</td><td class="no">✕</td><td class="may">△</td><td class="no">✕</td><td class="un">─</td><td class="no">✕</td><td class="no">✕</td><td class="may">△</td><td class="yes">◯</td></tr>
+</table>
+</div>
+<p class="hint">数：◯15 ／ △23 ／ ✕33 ／ ─49（＝120マス）。
+<b>Geminiの列が全部─なのは、うちではGeminiを Jules 経由でしか呼んでいないからです</b>（<code>tools/gemini_ni_tanomu.py</code>）。
+Jules の欄と二重に数えないために、単独の実測が無いものは全部─にしてあります。</p>
+
+<h2>2. ★1マスずつの理由（─の理由も書きます）</h2>
+
+<div class="why"><b class="head">仕入れ（曲を探して候補に積む）</b>
+<div><span class="n">Dispatch △</span>関所（<code>tools/sekisho/</code>）の仕組みは作った。条件＝曲そのものは選ばない。</div>
+<div><span class="n">子セッション △</span>990号で391候補を出典（MusicBrainz mbid）つきで積んだ。<b>条件＝391件とも「動画：未確認」。動画の実在確認は別の手が要る。</b></div>
+<div><span class="n">Jules ✕</span>9/23 09:39→09:47・#460。「棚に1曲も無い組を」と指定したのに<b>すでに棚にあるKHRUANGBIN</b>（<code>fes_meibo/_coverage.json</code>の already 2番目）を選んだ。出典もMusicBrainz指定→YouTube。返し方もコメント指定→PR。</div>
+<div><span class="n">Devin ─</span>仕入れを1度も投げていない。</div>
+<div><span class="n">チャピ/Codex ─</span>仕入れを投げていない。（加えて今はOpenAI側が残高ゼロ）</div>
+<div><span class="n">Gemini ─</span>Jules経由でしか呼んでいない。</div>
+<div><span class="n">Grok ─</span>投げていない。</div>
+<div><span class="n">Genspark ─</span>こちらから起こせない（実測）。</div>
+<div><span class="n">fal ✕</span>絵・動画・音の工場。曲を探す口を持たない。</div>
+<div><span class="n">たまごさん ◯</span>棚に入れる／入れないの最終判断。1022号：262件のうち「好み・お金」は3件＝1.1%で、そこだけが本人専用。</div>
+</div>
+
+<div class="why"><b class="head">コピー書き（曲ページ・カードの言葉）</b>
+<div><span class="n">Dispatch △</span>書けるが、<b>水道水コピーかどうかを自分で測れない。</b>条件＝たまごさんが1本読む。</div>
+<div><span class="n">子セッション △</span>いまの主担当。条件＝<b>自己検品の合格率が310件中169件＝54.5%</b>（<code>ai_verify_stats.json</code>）。鬼監督を必ず通す。</div>
+<div><span class="n">Jules ─</span>#460のコピー自体は読めるものだった（「車の窓を全開にして風を浴びているような」）。<b>ただし曲の選定を外していたので、コピーだけを切り出して測り直していない。</b>測るまで印は付けない。</div>
+<div><span class="n">Devin ─</span>投げていない。</div>
+<div><span class="n">チャピ/Codex ─</span>下書きを1度も作らせていない。</div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok ─</span>投げていない。</div>
+<div><span class="n">Genspark ─</span>起こせない。</div>
+<div><span class="n">fal ✕</span>文章を書く口ではない。</div>
+<div><span class="n">たまごさん ◯</span>最終的な好みの判断。「代表曲のひとつ。」を落とせるのは本人だけ。</div>
+</div>
+
+<div class="why"><b class="head">SNS運用・自動投稿　★ここが一番の穴</b>
+<div><span class="n">Dispatch ─</span>1本も出していない。</div>
+<div><span class="n">子セッション ─</span><code>wae_autopost/queue.json</code>に11本が積んである。<b>11本すべて status=queued・posted=null・url=null。投稿0本。</b>台帳が空なので◯も✕も付けられない。</div>
+<div><span class="n">Jules ─</span>投げていない。</div>
+<div><span class="n">Devin ─</span>投げていない。</div>
+<div><span class="n">チャピ/Codex ─</span>下書き案は出ているが、投稿までは1度も走っていない。</div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok ─</span>投げていない。</div>
+<div><span class="n">Genspark ─</span>画像・動画が本命だが起こせない。</div>
+<div><span class="n">fal ✕</span>投稿する口を持たない（作るだけ）。</div>
+<div><span class="n">たまごさん ◯</span>Xの鍵を貼るのと、出す同意。1022号の分類で「外部公開・送信・ログイン」は7件あり、全部ここ。</div>
+</div>
+
+<div class="why"><b class="head">トーキングアバター（案内人の見た目・声・口）</b>
+<div><span class="n">Dispatch △</span>器と配管は作れる。条件＝<b>声と見た目の良し悪しは自分で測れない。</b></div>
+<div><span class="n">子セッション △</span>960／961／970／966の台は実際に出た。条件＝検品は機械に通す。</div>
+<div><span class="n">Jules △</span>#458で<b>1,448行のアバターのデモHTML</b>をPRまで運び、機械検品6項目を全部通してmainに入った（9/23 10:13・<code>5be3951</code>）。<b>条件＝器だけ。中身（声・口の動き）は別の人。</b></div>
+<div><span class="n">Devin ─</span>投げていない。</div>
+<div><span class="n">チャピ/Codex ✕</span>961号のIssueに返ってきたのは「You have reached your Codex usage limits.」の1行だけ（9/22 15:13 UTC・原文）。</div>
+<div><span class="n">Gemini ─</span>966号に声の口（Google AI Studio＋使い捨て入場券30分）は作ってある。<b>ただし「鳴った」という実測が台帳に無い。</b>だから─。</div>
+<div><span class="n">Grok ◯</span>★<b>2026-09-20 12:59、本番のURLでirisの声が鳴った。</b>窓口HTTP 200 → WebSocket → 音声36,700バイト（約0.8秒）、文字起こし「こんにちは。」。単価 $0.08/分（docs.x.ai・9/14更新）。
+<b>★鍵はSupabaseの <code>XAI_API_KEY2</code>。Macの中の鍵（チーム goodvibes）は残高ゼロで403のまま。</b>課金もプラン変更もしていない。</div>
+<div><span class="n">Genspark ─</span>起こせない。</div>
+<div><span class="n">fal ◯</span>Kling LipSyncで口を合わせた実物が出ている。台帳24件中20件採用。974号で値段も取り直し済み。</div>
+<div><span class="n">たまごさん ◯</span>顔と声の最終決定。鍵を出せるのも本人だけ。</div>
+</div>
+
+<div class="why"><b class="head">絵・画像</b>
+<div><span class="n">Dispatch ✕</span>良し悪しを自分で測れない。良いと言っても当てにならない（1027号で自分で認めている）。</div>
+<div><span class="n">子セッション ✕</span>同じ理由。</div>
+<div><span class="n">Jules ─</span>絵を作らせていない。</div>
+<div><span class="n">Devin ─</span>作らせていない。</div>
+<div><span class="n">チャピ/Codex ─</span>作らせていない。</div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok ─</span>作らせていない。</div>
+<div><span class="n">Genspark ─</span>GPT Image 2／Nano Banana Pro が標準モードでクレジット消費なし。<b>本命だが1枚も作っていない。</b></div>
+<div><span class="n">fal ◯</span><b>画像の記録5件中3件採用・2件は捨てた</b>（nano-banana系）。動画・音より歩留まりは低い＝<b>当たりが出るまで回す前提</b>で使う。今月1,374円／上限3,000円／残り1,626円。</div>
+<div><span class="n">たまごさん ◯</span>「AI臭い」の判定。採用・不採用はここでしか決まらない。</div>
+</div>
+
+<div class="why"><b class="head">動画</b>
+<div><span class="n">Dispatch ✕</span>良し悪しを測れない。</div>
+<div><span class="n">子セッション ✕</span>同じ。</div>
+<div><span class="n">Jules ─</span>作らせていない。</div>
+<div><span class="n">Devin ─</span>作らせていない。</div>
+<div><span class="n">チャピ/Codex ─</span>作らせていない。</div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok ─</span>作らせていない。</div>
+<div><span class="n">Genspark ─</span>Veo 3.1／Seedance 2.5 が標準モードでクレジット消費なし。<b>★あと約10日（Oct 4 にキャンセル予定）。1本も作っていない。</b></div>
+<div><span class="n">fal ◯</span><b>動画の記録11件中9件採用</b>（1件は課金なしの失敗・1件は進行中）。seedance-2.0/mini が3件とも採用・949.8円。</div>
+<div><span class="n">たまごさん ◯</span>採用判定。</div>
+</div>
+
+<div class="why"><b class="head">配管の修理（止まる原因を潰す）</b>
+<div><span class="n">Dispatch ◯</span>1018号：心臓の信号を「鼓動」と「進行」に分けて、<b>心臓の再起動72回→0回・死亡宣告71回→0回</b>。同じ信号を見ていた9か所が1か所直して全部直った。今日も<code>kensa_html</code>／<code>prmerge</code>／<code>putfile</code>／<code>commit_kuchi</code>を新設。</div>
+<div><span class="n">子セッション △</span>歩留まりは良い。条件＝<b>決まりを守り続けるのが苦手で、今日も何本も落ちている。</b>監督なしで走らせない。</div>
+<div><span class="n">Jules ─</span>配管を投げたことがない。<b>投げるなら「外したかどうかを機械が後から判定できる形」でしか投げない</b>（返し方の指定を守らなかった実績があるため）。</div>
+<div><span class="n">Devin △</span>直せるが条件つき＝<b>1本ずつしか投げられない／放置すると死ぬ。</b>いまも返事待ち1件が12時間超で放置中。</div>
+<div><span class="n">チャピ/Codex ✕</span>Codexは<b>mainに直接pushできる唯一の口</b>だが枠切れ。9/23 10:22〜10:25に3回とも HTTP 429（<code>credit_balance_exhausted</code>）。チャッピーはGitHubに手が届かない。</div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok ✕</span>工場からは <code>team_blocked</code> で403。文字の口が開いていないので配管は触れない。</div>
+<div><span class="n">Genspark ✕</span>こちらから起こせない＝配管には使えない。</div>
+<div><span class="n">fal ✕</span>コードを書かない。</div>
+<div><span class="n">たまごさん △</span>条件＝<b>鍵とログインのときだけ。</b>いま実際にそこで止まっている（下）。配線そのものは持ち場ではない。</div>
+</div>
+
+<div class="why"><b class="head">原因究明（前提が正しいか実測で確かめる）</b>
+<div><span class="n">Dispatch ◯</span>1018号：死亡宣告349件のうち<b>346件（99.1%）が誤殺</b>だと特定。1022号：23日間262件を1件ずつ仕分け。今日は「コミットの口が詰まっている」という前のセッションの診断を、実測（8分41秒／10分11秒／7分17秒）で<b>誤診だと覆した。</b></div>
+<div><span class="n">子セッション △</span>掘るのは速い。条件＝<b>自分の結論を自分で検品できない（54.5%）。</b></div>
+<div><span class="n">Jules ✕</span>★<b>前提を外したまま、綺麗な体裁で返してくる。</b>原因究明は前提を疑う仕事なので、この外し方は一番あぶない。</div>
+<div><span class="n">Devin ◯</span>★<b>ここがDevinの一番強い1点。</b>「この前提は本当に正しいか、実測で確かめて」型で5本投げて5本返り、3本がmain（60%）。心臓が死ぬ理由／リポジトリ肥大の真犯人／<code>index.lock</code>の取り合い――全部この型。<b>この型で投げた2回は2回とも的中。</b></div>
+<div><span class="n">チャピ/Codex ✕</span>速さは実測2.4〜2.6秒だったが、<b>9/23 10:25 で残高ゼロ。いま1文字も返らない。</b></div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok △</span>970号でGrokが言ってきた数字を公式と突き合わせたら<b>6項目すべて一致</b>（$0.08/分・$0.004/回・TTS $15/100万文字・STT $0.10/$0.20/時・irisはビルトイン・403の理由）。<b>条件＝工場から起こせない。たまごさんが手で貼る必要がある。</b></div>
+<div><span class="n">Genspark ─</span>起こせない。</div>
+<div><span class="n">fal ✕</span>考える機械ではない。</div>
+<div><span class="n">たまごさん △</span>条件＝<b>「これおかしくないですか」と言える唯一の人</b>だが、本人が掘る必要はない。1022号：本人しか決められないのは262件中3件。</div>
+</div>
+
+<div class="why"><b class="head">検品（出す前に落とす）　★AIに検品させない</b>
+<div><span class="n">Dispatch △</span>★条件＝<b>機械の型を作る側に回るなら◯。自分の仕事を自分で検品するのは✕。</b>今日<code>hantei.py</code>に<code>kensa_html()</code>（6項目・AIを1回も呼ばない・0円）を作り、#458を実際に通した。</div>
+<div><span class="n">子セッション ✕</span>★<b>310件中169件＝54.5%。</b>113件が不合格・28件がエラー。しかも<b>この検品に $95.26 使っている。</b>自分の仕事を自分で見られていない。</div>
+<div><span class="n">Jules ✕</span>外したことに自分で気づけない（#460）。落とす仕事には向かない。</div>
+<div><span class="n">Devin ─</span>検品を投げていない。</div>
+<div><span class="n">チャピ/Codex ✕</span><code>gaibu_kenpin_ledger.json</code>（9/17）：gpt-4o-miniが<b>画像を見ずにNG判定</b>を連発していた。加えて今は枠切れ。</div>
+<div><span class="n">Gemini ─</span>呼んでいない。</div>
+<div><span class="n">Grok ─</span>呼んでいない。</div>
+<div><span class="n">Genspark ─</span>起こせない。</div>
+<div><span class="n">fal ✕</span>判定する口を持たない。</div>
+<div><span class="n">たまごさん ◯</span>最終的な好みの判断。<b>★ただし本来は、ここに来る前に機械が落とすべき。</b>1022号：確認待ち10件のうち4件は機械の自己点検票で、見ても決めようがなかった。</div>
+</div>
+
+<div class="why"><b class="head">リサーチ（世界の実例・値段を集める）</b>
+<div><span class="n">Dispatch △</span>★条件＝<b>台帳とログの中を数えるのは◯。外の世界を調べるのは✕。</b>この環境からは github.com 以外ほぼ通らず、今日も公式ページを1本も開けていない。</div>
+<div><span class="n">子セッション △</span>990号で391候補を出典つきで積んだ。条件＝<b>動画の実在確認が391件とも0。</b></div>
+<div><span class="n">Jules ✕</span>出典の指定を守らない。「MusicBrainzか公式で」と書いたのに<b>3曲ともYouTubeのURL</b>で返してきた。</div>
+<div><span class="n">Devin ◯</span>973号：$8.85の行き先を<b>公式APIが返した生データと公式画面の実測だけ</b>で8本のセッション（合計530分）まで絞った。<b>推測を1円も入れていない。</b>取れないものは「取れません」と書いてきた。</div>
+<div><span class="n">チャピ/Codex ✕</span>2.4〜2.6秒の速さは実測だが、9/23 10:25 で残高ゼロ。</div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok △</span>6項目すべて公式と一致（上）。条件＝<b>たまごさんが手で貼る。</b></div>
+<div><span class="n">Genspark ─</span>起こせない。あと約10日。</div>
+<div><span class="n">fal ✕</span>調べる口を持たない。</div>
+<div><span class="n">たまごさん ◯</span>★<b>本人の画面でしか取れない数字がある。</b>Gensparkのクレジット残1,969・無料枠残り93%、Devinの使用額――どれも本人のログイン先にしか出ない。</div>
+</div>
+
+<div class="why"><b class="head">データ整形（名簿・読み・産地の一括処理）</b>
+<div><span class="n">Dispatch △</span>できるが遅い。条件＝件数が増えたら人に渡す。</div>
+<div><span class="n">子セッション △</span>できる。条件＝54.5%。機械の関所を必ず後ろに置く。</div>
+<div><span class="n">Jules ─</span>★<b>いま試験中です。</b>10:45に採点基準を先に確定しました（<code>status/1028/jules_saiten_kijun.md</code>）。題＝アーティスト名の読み149件。門は3つ（ファイル1本だけ／JSONとして読める／キーが149件と完全一致）。<b>◯の線は「合格率82件以上＝54.5%超」。</b>結果はまだ出ていないので─のままです。</div>
+<div><span class="n">Devin ─</span>投げていない。</div>
+<div><span class="n">チャピ/Codex ─</span>投げていない。</div>
+<div><span class="n">Gemini ─</span>単独では呼んでいない。</div>
+<div><span class="n">Grok ─</span>投げていない。</div>
+<div><span class="n">Genspark ─</span>起こせない。</div>
+<div><span class="n">fal ✕</span>表を触る口を持たない。</div>
+<div><span class="n">たまごさん ─</span>★<b>ここは本人がやってはいけない欄です。</b>水汲みを減らす対象そのもの。</div>
+</div>
+
+<div class="why"><b class="head">本番に出す　★いちばん高くついている穴</b>
+<div><span class="n">Dispatch △</span>★条件＝<b>6区（mainに入れる）までは今日通した</b>（#458・10:13・<code>5be3951</code>）。<b>7区（本番に出る）は通っていない。</b>10:26時点でまだ404。</div>
+<div><span class="n">子セッション ✕</span>1022号：棚上げ30件の理由を読むと<b>12件が「完了と報告されたのに実在しなかった」分。</b></div>
+<div><span class="n">Jules ✕</span>PR3本・main 0本。手で運べば通った＝4区で終わる人。</div>
+<div><span class="n">Devin △</span>PR5本中3本main＝60%。条件＝<b>mainまで。本番（Lovable）までは運べない。</b></div>
+<div><span class="n">チャピ/Codex ✕</span>mainに直接pushできる唯一の口だが枠切れ。</div>
+<div><span class="n">Gemini ─</span>呼んでいない。</div>
+<div><span class="n">Grok ✕</span>文字の口が閉じている。</div>
+<div><span class="n">Genspark ✕</span>起こせない。</div>
+<div><span class="n">fal △</span>素材は出るが、<b>出す口を持たない。</b>誰かが運ぶ必要がある。</div>
+<div><span class="n">たまごさん ◯</span>実際に進んでいたのは本人が手で押したときだけ。<b>★ただしこれは◯であってはいけない◯です。</b>7区は機械の仕事。</div>
+</div>
+
+<h2>3. 今すぐ任せられる組み合わせ（◯だけを並べます）</h2>
+<ul class="plain">
+<li><b>原因究明 → Devin</b>「この前提は本当に正しいか、実測で確かめて」の形で投げる。5本投げて5本返り3本main。依頼文に「返事を書くな・終わりの合図はPRのURLだけ」を必ず入れる（入れないと待って死ぬ）。</li>
+<li><b>配管の修理 → Claude Dispatch（こちら）</b>自分で正解を測れる持ち場。<code>python3 tools/nageru.py</code> の線はこちらが握る。</li>
+<li><b>絵・動画・音を作る → fal</b>24件中20件採用。音8/8・動画9/11・絵3/5。<b>何を作るかはこちらが決める。</b>今月の残りは1,626円。</li>
+<li><b>案内人の声 → Grok（xAI iris）</b>本番URLで鳴っている唯一の声。<b>鍵はSupabaseの <code>XAI_API_KEY2</code>（Macの鍵ではない）。</b></li>
+<li><b>深いリサーチ → Devin ／ 台帳の数え直し → Claude Dispatch</b>外の世界はDevin、うちの中はこちら。混ぜない。</li>
+<li><b>最終判定 → たまごさん</b>鍵・同意・本人の画面・好み。<b>この4つ以外は上げない。</b></li>
+</ul>
+
+<h2>4. 次に試すべき「─」を3つ</h2>
+<ul class="plain">
+<li><b>① Gensparkで動画を1本つくる</b><br>
+★<b>先に期限が来るからです。</b>Oct 4 にキャンセル予定＝<b>あと約10日で試す窓そのものが消えます。</b>
+Veo 3.1／Seedance 2.5 が標準モードでクレジット消費なし。ここは「Gensparkにしかできない」束で、しかも動画欄はfal以外全員─。
+起こす道は1027号の第7節（Emailトリガー）。<b>たまごさんが貼るのは1回だけ。</b></li>
+<li><b>② Julesの149件（データ整形）の結果を取りに行く</b><br>
+★<b>採点基準を投げる前に確定してあるからです</b>（10:45・後から動かせない）。
+合格率が82件（54.5%）を超えれば<b>「Julesの本当の持ち場はデータ整形」が◯に変わり</b>、下回れば✕に変わる。
+どちらに転んでも<b>1回で決まる</b>数少ない試験です。</li>
+<li><b>③ SNSの11本を「たまごさんが1回で見られる形」にする（子セッション）</b><br>
+★<b>9列すべてが─の欄はここだけだからです。</b>しかも素材は揃っている――画像3枚、英日のキャプション11本、<code>queue.json</code>に11本、時間枠も09:00／19:00で決まっている。
+<b>足りないのは鍵と「見せ方」だけ。</b>投稿前に全部見せる決まりは変えないので、<b>11回見せるのではなく1回で見せる形</b>を先に作る。</li>
+</ul>
+
+<h2>5. ★誰も◯がいないタスク（穴）</h2>
+<div class="warn">
+<b>AI・機械の側に◯が1人もいないのは、12タスク中6つです。</b>
+<div style="margin-top:8px;">
+<b>① SNS運用・自動投稿</b> … ★<b>9列すべてが─か✕。◯も△も1つもない唯一の欄。</b>11本がqueuedのまま投稿0本。<br>
+<b>② 本番に出す</b> … ★<b>いちばん高くついている穴。</b>本番（Lovable）は<b>86時間更新なし</b>。#458は10:13にmainへ入ったのに10:26でまだ404。<b>コードを直しても画面が変わらない。</b><br>
+<b>③ 検品</b> … 機械（<code>kensa_html</code>）が今日できたばかり。AIの自己採点は54.5%＝当てにならない。<br>
+<b>④ コピー書き</b> … 子セッションの△が1つだけ。良し悪しを測れる人がたまごさんしかいない。<br>
+<b>⑤ 仕入れ</b> … 候補は積めるが<b>391件とも動画が未確認</b>。「本当にその曲か」を確かめる手が無人。<br>
+<b>⑥ データ整形</b> … Julesの試験の結果待ち。今日中に埋まる可能性がある唯一の穴。
+</div>
+<div style="margin-top:10px;border-top:1px dotted var(--line);padding-top:8px;">
+★<b>そしていま、工場そのものが止まっています。</b>Claudeのログインが切れていて、直近6時間で走った146本が<b>全部空回し＝取れた0本</b>。
+<b>これはたまごさんにしか外せません。</b>いつものClaudeのアプリで1回ログインし直すだけで、こちらで気づいて自動で再開します。
+</div>
+</div>
+
+<h2>6. 正直に書いておくこと</h2>
+<div class="note">
+<div>・★<b>この環境から外に出られませんでした。</b>github.com 以外はほぼ通らず、今日はJules／OpenAI／x.ai／fal／Gensparkの公式ページを1本も開けていません。<b>開けなかったページの数字は書いていません。</b></div>
+<div>・★<b>─が49マスあります。</b>うち多くは「その人にその仕事を投げるという発想が無かった」だけで、できない証拠ではありません。</div>
+<div>・★<b>Geminiの列は全部─です。</b>うちではJules経由でしか呼んでいないため、単独の実測がありません。Julesの欄と二重に数えないために空けてあります。</div>
+<div>・★<b>Dispatch（こちら）の欄に甘い点を付けていないか、自分で2回見直しました。</b>絵・動画は✕、検品は△（自分の仕事は自分で見ない）、本番に出すは△（7区は通っていない）。
+今日この環境から<b>26時間ぶんの嘘の緑</b>を出した実績があるので、「できた」と書くのは<b>叩いて200が返ったものだけ</b>にしています。</div>
+<div>・★<b>1027号は消していません。</b>あちらは「駅伝の8区間で、誰が何区を走れるか」。こちらは「タスク別に、誰が向いているか」。<b>同じ実測を2つの切り口で書いた2枚です。</b>→ <a href="./1027-tekizai-tekisho.html">#1027へ</a></div>
+</div>
+
+<footer>
+2026-09-23 #1030／数えた場所：
+<code>status/ai_daicho.json</code>（7社）・
+<code>status/fal_cost_ledger.json</code>（24件）・
+<code>status/ai_verify_stats.json</code>（310件・$95.26）・
+<code>status/devin_sessions_detail.jsonl</code>（16件）・
+<code>status/gaibu_kenpin_ledger.json</code>・
+<code>wae_autopost/queue.json</code>（11件）・
+<code>status/genzaichi.md</code>（10:41）・
+<code>status/1027b_hikitsugi.md</code>・
+<code>status/1028/jules_saiten_kijun.md</code>（10:45）・
+確認ページ 970／973／990／1018／1022／1027／1029。<br>
+同じ数字は誰でも出し直せます。出す口は <code>tools/_965_keijiban.py</code> の <code>putfile</code>。
+</footer>
+</body>
+</html>

@@ -76,8 +76,60 @@ def _one(url, must):
     return r
 
 
+def _omosa(payload):
+    """1028番【物差し】ごきげん補給所の「重さ」を工場側で実測する。
+
+    ★なぜここに間借りしているか
+      gaibu_runner.py は kind=kakunin のとき **毎回 importlib.reload(kakunin)** する。
+      ＝ runner を止めずに、この関数を足すだけで今すぐ工場で動かせる。
+      （runner 本体に kind を足すと、launchd が抱えている古い runner には届かない）
+
+    ★安全：呼べるのは tools/omosa.mjs の1本だけ＝白名簿。引数は数字と幅だけ。
+      GETのみ・鍵を使わない・課金0。保存や送信のボタンは omosa.mjs 側で押さない。
+    """
+    import os
+    import subprocess
+    import sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    script = os.path.join(here, "omosa.mjs")
+    if not os.path.exists(script):
+        return {"ok": False, "error": "tools/omosa.mjs がありません", "totalYen": 0.0}
+    cmd = ["node", script]
+    if payload.get("recon"):
+        cmd.append("--recon")
+    runs = payload.get("runs")
+    if isinstance(runs, int) and 0 < runs <= 50:
+        cmd += ["--runs", str(runs)]
+    width = payload.get("width")
+    if isinstance(width, int) and 200 <= width <= 2000:
+        cmd += ["--width", str(width)]
+    # ★行き先は ALLOW_PREFIX（この上にある白名簿）の中だけ。外は測らない。
+    u = payload.get("url")
+    if u:
+        if not str(u).startswith(ALLOW_PREFIX):
+            return {"ok": False, "error": "行き先が許してある場所の外です", "totalYen": 0.0}
+        cmd += ["--url", str(u)]
+    timeout = payload.get("timeout") or 1500
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True,
+                           timeout=min(int(timeout), 1800), cwd=os.path.dirname(here))
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "omosa.mjs が時間内に終わりませんでした", "totalYen": 0.0}
+    out = {"ok": p.returncode == 0, "totalYen": 0.0,
+           "stderr": (p.stderr or "")[-2500:]}
+    try:
+        out["omosa"] = json.loads(p.stdout or "{}")
+    except Exception:
+        out["ok"] = False
+        out["stdout"] = (p.stdout or "")[-2500:]
+    # 結果の本体は status/omosa_last.json に落ちている（票に全部入れると読めなくなる）
+    return out
+
+
 def run_job(payload=None):
     payload = payload or {}
+    if payload.get("mode") == "omosa":
+        return _omosa(payload)
     urls = payload.get("urls") or ([payload["url"]] if payload.get("url") else [])
     must = payload.get("must") or []
     results = [_one(u, must) for u in urls]

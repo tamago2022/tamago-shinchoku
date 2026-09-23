@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>夏の終わりの花火</title>
+<style>
+  html,body{margin:0;height:100%;background:#1B2A41;overflow:hidden}
+  body{-webkit-tap-highlight-color:transparent}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
+  h1{position:fixed;left:6.5%;bottom:5.2%;margin:0;z-index:2;pointer-events:none;
+     font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+     font-weight:400;font-size:13px;letter-spacing:7px;color:#EDE6D6;opacity:.82}
+  h1 span{display:block;margin-top:7px;font-size:9.5px;letter-spacing:4.2px;color:#D0703A;opacity:.95}
+  @media(min-width:760px){h1{font-size:15px;letter-spacing:8px}h1 span{font-size:10px}}
+</style>
+</head><body>
+<canvas id="c"></canvas>
+<h1>夏の終わりの花火<span>THE LAST FIREWORKS</span></h1>
+<script>
+var DURATION=4.6;
+
+/* ===== 共通エンジン：手の震え・紙の粒・ノイズ・ease-out ===== */
+var C = {
+  night:'#1B2A41',  // 紺（夜）
+  paper:'#EDE6D6',  // 生成り
+  fire :'#D0703A',  // 橙
+  moss :'#2C3F33',  // 深緑
+  ink  :'#0F1521'   // 黒
+};
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* Perlin 2D（Math.random だけだとザラザラになる。揺らぎはこれで作る） */
+function makeNoise(seed){
+  var rnd=mulberry32(seed), perm=[], i;
+  for(i=0;i<256;i++)perm[i]=i;
+  for(i=255;i>0;i--){var j=Math.floor(rnd()*(i+1)),t=perm[i];perm[i]=perm[j];perm[j]=t;}
+  var p=new Uint8Array(512);
+  for(i=0;i<512;i++)p[i]=perm[i&255];
+  function fade(t){return t*t*t*(t*(t*6-15)+10)}
+  function lerp(a,b,t){return a+(b-a)*t}
+  function grad(h,x,y){switch(h&3){case 0:return x+y;case 1:return -x+y;case 2:return x-y;default:return -x-y}}
+  return function(x,y){
+    y=y||0;
+    var X=Math.floor(x)&255, Y=Math.floor(y)&255;
+    x-=Math.floor(x); y-=Math.floor(y);
+    var u=fade(x), v=fade(y);
+    var aa=p[p[X]+Y], ab=p[p[X]+Y+1], ba=p[p[X+1]+Y], bb=p[p[X+1]+Y+1];
+    return lerp(lerp(grad(aa,x,y),grad(ba,x-1,y),u), lerp(grad(ab,x,y-1),grad(bb,x-1,y-1),u), v);
+  };
+}
+var N = makeNoise(20260923);
+
+/* ease-out だけ使う。等速で動かさない */
+function outCubic(t){return 1-Math.pow(1-t,3)}
+function outQuint(t){return 1-Math.pow(1-t,5)}
+function outBack(t){var c=1.70158,c3=c+1;return 1+c3*Math.pow(t-1,3)+c*Math.pow(t-1,2)}
+function clamp01(t){return t<0?0:t>1?1:t}
+
+/* 点列を細かく割る（長い辺の途中も揺れるように） */
+function densify(pts, step){
+  var out=[], i, j;
+  for(i=0;i<pts.length-1;i++){
+    var a=pts[i], b=pts[i+1];
+    var d=Math.hypot(b[0]-a[0], b[1]-a[1]);
+    var n=Math.max(1, Math.round(d/step));
+    for(j=0;j<n;j++){ var t=j/n; out.push([a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]); }
+  }
+  out.push(pts[pts.length-1]);
+  return out;
+}
+
+/* 各点に ±amp の乱れを足す。直線は1本も引かない */
+function jitter(pts, amp, seed){
+  var o=[], i;
+  for(i=0;i<pts.length;i++){
+    var q=i*0.63+seed;
+    o.push([ pts[i][0]+N(q, seed*0.31)*amp, pts[i][1]+N(q+37.7, seed*0.31+11.3)*amp ]);
+  }
+  return o;
+}
+
+function pathOf(ctx, pts, close){
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for(var i=1;i<pts.length-1;i++){
+    var mx=(pts[i][0]+pts[i+1][0])/2, my=(pts[i][1]+pts[i+1][1])/2;
+    ctx.quadraticCurveTo(pts[i][0], pts[i][1], mx, my);
+  }
+  var l=pts.length-1;
+  ctx.quadraticCurveTo(pts[l][0], pts[l][1], pts[l][0], pts[l][1]);
+  if(close) ctx.closePath();
+}
+
+/* 鉛筆で2〜3回なぞった線 */
+function hand(ctx, pts, o){
+  o=o||{};
+  var amp=o.amp==null?2:o.amp, w=o.w==null?1.3:o.w, passes=o.passes==null?3:o.passes,
+      col=o.color||C.paper, close=!!o.close, alpha=o.alpha==null?0.5:o.alpha,
+      seed=o.seed==null?7:o.seed, step=o.step==null?16:o.step;
+  var base=densify(pts, step);
+  ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle=col;
+  for(var k=0;k<passes;k++){
+    ctx.globalAlpha=alpha*(1-k*0.18);
+    ctx.lineWidth=w*(0.75+0.35*(k/Math.max(1,passes-1)));
+    pathOf(ctx, jitter(base, amp, seed+k*17.3), close);
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+
+/* 面を塗る。輪郭も揺れる。グラデーションは使わない */
+function handFill(ctx, pts, o){
+  o=o||{};
+  var amp=o.amp==null?2:o.amp, col=o.color||C.ink, seed=o.seed==null?3:o.seed,
+      step=o.step==null?18:o.step, alpha=o.alpha==null?1:o.alpha;
+  var base=densify(pts, step);
+  ctx.globalAlpha=alpha; ctx.fillStyle=col;
+  pathOf(ctx, jitter(base, amp, seed), true);
+  ctx.fill();
+  ctx.globalAlpha=1;
+}
+
+/* 顔は点2つと線1つ。描き込まない */
+function face(ctx, x, y, s, col, a){
+  ctx.globalAlpha=a;
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.arc(x-s*0.42, y-s*0.18, s*0.115, 0, 6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+s*0.42, y-s*0.18, s*0.115, 0, 6.2832); ctx.fill();
+  ctx.strokeStyle=col; ctx.lineWidth=Math.max(1.3, s*0.085); ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(x, y+s*0.10, s*0.36, 0.38, Math.PI-0.38); ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+/* 紙の粒。のっぺりを消す一枚 */
+function grainTile(size, seed){
+  var c=document.createElement('canvas'); c.width=c.height=size;
+  var g=c.getContext('2d'), id=g.createImageData(size,size), rnd=mulberry32(seed), i;
+  for(i=0;i<size*size;i++){
+    var v=rnd();
+    var a = v<0.55 ? 0 : Math.floor((v-0.55)*185);
+    var dark = rnd()<0.42;
+    id.data[i*4]   = dark? 10:245;
+    id.data[i*4+1] = dark? 16:238;
+    id.data[i*4+2] = dark? 26:220;
+    id.data[i*4+3] = a;
+  }
+  g.putImageData(id,0,0);
+  return c;
+}
+
+/* ===== 画面まわり ===== */
+var cv=document.getElementById('c'), ctx=cv.getContext('2d');
+var stat=document.createElement('canvas'), sx=stat.getContext('2d');
+var grain=null, W=0, H=0, DPR=1;
+
+function resize(){
+  DPR=Math.min(2, window.devicePixelRatio||1);
+  W=cv.clientWidth; H=cv.clientHeight;
+  cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  stat.width=cv.width; stat.height=cv.height;
+  sx.setTransform(DPR,0,0,DPR,0,0);
+  var t=grainTile(140, 4242);
+  grain=ctx.createPattern(t,'repeat');
+  buildStatic();
+  paint(0);
+}
+
+/* fps 計測（#fps を付けたときだけ表示） */
+var fpsOn = location.hash.indexOf('fps')>=0;
+var fpsEl=null, frames=0, fpsT0=0;
+if(fpsOn){
+  fpsEl=document.createElement('div');
+  fpsEl.style.cssText='position:fixed;left:8px;top:8px;z-index:9;color:#EDE6D6;font:12px monospace;background:rgba(0,0,0,.5);padding:2px 6px';
+  document.body.appendChild(fpsEl);
+}
+window.__fps=0;
+
+var running=false, t0=0;
+function loop(now){
+  if(!t0) t0=now;
+  var t=(now-t0)/1000;
+  paint(t);
+  if(fpsOn){ frames++; if(!fpsT0)fpsT0=now; if(now-fpsT0>500){ window.__fps=Math.round(frames*1000/(now-fpsT0)); fpsEl.textContent='fps '+window.__fps; frames=0; fpsT0=now; } }
+  if(t<DURATION){ requestAnimationFrame(loop); }
+  else { running=false; paint(DURATION); }
+}
+function fire(){ if(running) return; running=true; t0=0; frames=0; fpsT0=0; onFire(); requestAnimationFrame(loop); }
+cv.addEventListener('pointerdown', fire);
+window.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter') fire(); });
+window.addEventListener('resize', function(){ clearTimeout(window.__rt); window.__rt=setTimeout(resize,180); });
+
+
+/* 夜空・星・押す場所の印。3本で共有 */
+function drawSky(g, seed){
+  g.fillStyle=C.night; g.fillRect(0,0,W,H);
+  /* 藍のムラ（グラデーションではなく、薄い面を重ねる） */
+  var r=mulberry32(seed), i;
+  for(i=0;i<14;i++){
+    var cx=r()*W, cy=r()*H*0.8, rr=Math.min(W,H)*(0.18+r()*0.30);
+    var pts=[],k;
+    for(k=0;k<9;k++){ var a=k/9*6.2832; pts.push([cx+Math.cos(a)*rr*(0.8+N(k*0.5+i,i)*0.25), cy+Math.sin(a)*rr*(0.8+N(k*0.5+i+9,i)*0.25)]); }
+    handFill(g, pts, {color: i%2? '#16243A':'#20304C', amp:6, seed:i*5+seed%17, alpha:0.5, step:26});
+  }
+}
+
+function starField(g, seed, n){
+  var r=mulberry32(seed), out=[], i;
+  for(i=0;i<n;i++){
+    out.push({x:r()*W, y:r()*H*0.62, s:0.7+r()*1.5, p:r()*6.2832, big:r()<0.08});
+  }
+  return out;
+}
+function drawStars(g, list, t){
+  var i;
+  for(i=0;i<list.length;i++){
+    var s=list[i];
+    var tw=0.45+0.55*(0.5+0.5*Math.sin(t*1.3+s.p));
+    g.globalAlpha=tw*0.85;
+    g.fillStyle=C.paper;
+    if(s.big){
+      /* 大きい星は十字の短い線2本。丸にしない */
+      g.strokeStyle=C.paper; g.lineWidth=1.1; g.lineCap='round';
+      g.beginPath(); g.moveTo(s.x-s.s*2.6,s.y); g.lineTo(s.x+s.s*2.6,s.y);
+      g.moveTo(s.x,s.y-s.s*2.6); g.lineTo(s.x,s.y+s.s*2.6); g.stroke();
+    } else {
+      g.beginPath(); g.arc(s.x,s.y,s.s*0.72,0,6.2832); g.fill();
+    }
+  }
+  g.globalAlpha=1;
+}
+
+/* 押す場所の小さな手描きの輪。文字は載せない */
+function drawMark(g, x, y, rr, seed){
+  var pts=[],k;
+  for(k=0;k<=13;k++){ var a=k/13*6.2832; pts.push([x+Math.cos(a)*rr, y+Math.sin(a)*rr]); }
+  hand(g, pts, {color:C.paper, amp:1.3, w:1.0, passes:2, alpha:0.30, seed:seed, step:7});
+}
+
+function drawGrain(g){
+  g.save();
+  g.globalAlpha=0.055; g.fillStyle=grain; g.fillRect(0,0,W,H);
+  g.restore();
+}
+
+var stars=[], parts=[], bursts=[];
+
+function crescent(g, cx, cy, r){
+  /* 三日月：大きい円の輪郭 ＋ 内側をずらして抜く。塗りは生成り */
+  var pts=[],k;
+  for(k=0;k<=22;k++){ var a=k/22*6.2832; pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]); }
+  g.save();
+  handFill(g, pts, {color:C.paper, amp:1.6, seed:91, step:9, alpha:0.93});
+  g.globalCompositeOperation='destination-out';
+  var p2=[];
+  for(k=0;k<=22;k++){ var a2=k/22*6.2832; p2.push([cx-r*0.40+Math.cos(a2)*r*0.94, cy-r*0.22+Math.sin(a2)*r*0.94]); }
+  handFill(g, p2, {color:'#000', amp:1.6, seed:55, step:9});
+  g.restore();
+  hand(g, pts, {color:C.paper, amp:1.8, w:1.1, passes:2, alpha:0.28, seed:12, step:9, close:true});
+}
+
+function village(g){
+  var base=H*0.845, r=mulberry32(777), x=-W*0.05;
+  /* 地の黒。稜線も揺らす */
+  var ridge=[[-10,base+6]], i;
+  for(i=0;i<=16;i++){ ridge.push([ -10 + (W+20)*(i/16), base + N(i*0.42, 3)*9 + Math.sin(i*0.8)*4 ]); }
+  ridge.push([W+10, base+6],[W+10,H+20],[-10,H+20]);
+  handFill(g, ridge, {color:C.ink, amp:2.2, seed:21, step:22});
+
+  /* 家。生き物は描かない */
+  while(x < W*1.02){
+    var w=W*(0.045+r()*0.055), h=w*(0.52+r()*0.55);
+    var y=base + N(x*0.01,3)*8 - 2;
+    var body=[[x,y],[x+w,y],[x+w,y+h+22],[x,y+h+22]];
+    handFill(g, body, {color:C.ink, amp:1.8, seed:x%37, step:14});
+    /* 屋根 */
+    var eave=w*0.2;
+    var roof=[[x-eave,y+1],[x+w*0.5, y-h*0.42],[x+w+eave,y+1]];
+    handFill(g, roof, {color:C.ink, amp:1.6, seed:(x+9)%41, step:12});
+    /* 灯り：1軒に1つだけ、小さく */
+    if(r()<0.5){
+      g.globalAlpha=0.75; g.fillStyle=C.fire;
+      var lw=w*0.16, lx=x+w*(0.25+r()*0.45), ly=y+h*0.35;
+      g.fillRect(lx,ly,lw,lw*1.25);
+      g.globalAlpha=1;
+    }
+    x += w + W*(0.012+r()*0.05);
+  }
+
+  /* 木。深緑 */
+  for(i=0;i<5;i++){
+    var tx=W*(0.06+0.2*i)+N(i,9)*W*0.05, ty=base+N(i+5,2)*7;
+    var th=H*(0.055+0.03*((i*7)%3)/2);
+    var tp=[];
+    for(var k2=0;k2<=11;k2++){ var a3=k2/11*6.2832; tp.push([tx+Math.cos(a3)*th*0.52, ty-th*0.55+Math.sin(a3)*th*0.62]); }
+    handFill(g, tp, {color:C.moss, amp:3.2, seed:i*13+4, step:10, alpha:0.95});
+    hand(g, [[tx,ty+6],[tx+N(i,1)*3, ty-th*0.5]], {color:C.moss, amp:1.2, w:2.0, passes:2, alpha:0.7, seed:i*3, step:8});
+  }
+}
+
+function buildStatic(){
+  sx.clearRect(0,0,W,H);
+  drawSky(sx, 101);
+  crescent(sx, W*0.78, H*0.175, Math.min(W,H)*0.072);
+  village(sx);
+  stars = starField(sx, 31, Math.round(W*H/9000));
+  drawMark(sx, W*0.5, H*0.945, Math.min(W,H)*0.020, 5);
+}
+
+function onFire(){
+  parts.length=0; bursts.length=0;
+  var r=mulberry32(Math.floor(Math.random()*99999));
+  var n = W<520 ? 2 : 3;
+  for(var b=0;b<n;b++){
+    bursts.push({
+      x: W*(0.18+0.64*((b+0.5+r()*0.5)/n)),
+      y: H*(0.20+r()*0.20),
+      sx: W*(0.2+0.6*r()),
+      delay: b*(0.55+r()*0.35),
+      hue: b%2===0 ? C.fire : C.paper,
+      r: Math.min(W,H)*(0.16+r()*0.09),
+      seed: r()*999
+    });
+  }
+  for(var i=0;i<bursts.length;i++){
+    var bu=bursts[i], rr=mulberry32(Math.floor(bu.seed));
+    var cnt = W<520 ? 64 : 92;
+    for(var j=0;j<cnt;j++){
+      var a=(j/cnt)*6.2832 + rr()*0.09;
+      var sp=bu.r*(0.55+rr()*0.62);
+      parts.push({b:i, a:a, sp:sp, tw:rr()*0.22, len:0.5+rr()*0.5, sz:0.9+rr()*1.5});
+    }
+  }
+}
+
+function paint(t){
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(stat,0,0,W,H);
+  drawStars(ctx, stars, t);
+
+  var i,j;
+  for(i=0;i<bursts.length;i++){
+    var b=bursts[i];
+    var lt=(t-b.delay);
+    if(lt<0) continue;
+    var RISE=0.75, LIFE=2.5;
+
+    /* 打ち上げ：ease-out で上がって止まる */
+    if(lt<RISE){
+      var u=outQuint(lt/RISE);
+      var px=b.sx+(b.x-b.sx)*u, py=H*0.86+(b.y-H*0.86)*u;
+      ctx.globalAlpha=0.85*(1-u*0.35);
+      ctx.fillStyle=C.fire;
+      ctx.beginPath(); ctx.arc(px,py,1.9,0,6.2832); ctx.fill();
+      /* 尾 */
+      for(j=1;j<7;j++){
+        var u2=outQuint(Math.max(0,(lt-j*0.022))/RISE);
+        ctx.globalAlpha=0.30*(1-j/7);
+        ctx.beginPath(); ctx.arc(b.sx+(b.x-b.sx)*u2, H*0.86+(b.y-H*0.86)*u2, 1.5,0,6.2832); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      continue;
+    }
+
+    /* 開く：粒子が放射して減速して消える */
+    var bt=(lt-RISE)/LIFE;
+    if(bt>1) continue;
+    var e=outQuint(clamp01(bt));
+    ctx.fillStyle=b.hue;
+    for(j=0;j<parts.length;j++){
+      var p=parts[j];
+      if(p.b!==i) continue;
+      var pe=outQuint(clamp01((bt-p.tw)/(1-p.tw)));
+      if(pe<=0) continue;
+      var d=p.sp*pe*p.len;
+      var px2=b.x+Math.cos(p.a)*d;
+      var py2=b.y+Math.sin(p.a)*d + Math.pow(bt,2.4)*b.r*0.62; /* 垂れる */
+      var al=(1-Math.pow(bt,1.7))*0.9;
+      ctx.globalAlpha=al;
+      ctx.beginPath(); ctx.arc(px2,py2,p.sz*(1-bt*0.5),0,6.2832); ctx.fill();
+    }
+    /* 芯の輪：手描きの線を2本 */
+    if(bt<0.45){
+      var rr2=b.r*0.34*outCubic(bt/0.45);
+      var pts=[],k;
+      for(k=0;k<=13;k++){ var a4=k/13*6.2832; pts.push([b.x+Math.cos(a4)*rr2, b.y+Math.sin(a4)*rr2]); }
+      hand(ctx, pts, {color:b.hue, amp:2.0, w:1.4, passes:2, alpha:0.42*(1-bt/0.45), seed:b.seed, step:8, close:true});
+    }
+    /* 顔：点2つと線1つ。遅れて出て、一緒に消える */
+    var fa = clamp01((bt-0.14)/0.16) * (1-clamp01((bt-0.55)/0.4));
+    if(fa>0.01) face(ctx, b.x, b.y, b.r*0.30, b.hue===C.fire?C.paper:C.fire, fa*0.92);
+    ctx.globalAlpha=1;
+  }
+  drawGrain(ctx);
+}
+
+resize();
+</script></body></html>
