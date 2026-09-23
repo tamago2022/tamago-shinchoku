@@ -119,6 +119,55 @@ def r_oembed_x(url):
             "title": text[:120], "yen": 0.0}, ""
 
 
+def r_yt_transcript(url):
+    """YouTubeの**文字起こし全文（タイムスタンプ付き）**。鍵不要・0円。
+
+    ★2026-09-24：外部AIから「文字起こし14,298文字をタイムスタンプ付きで取れる」という
+      申告が来た。★申告を鵜呑みにしない。**自分の手で同じことをやる経路を持つ。**
+      手順は公式の仕組みだけを使う：watchページの ytInitialPlayerResponse に載っている
+      captionTracks の baseUrl を読み、そこへ `&fmt=json3` を付けて取る。
+      ★取れなければ「取れなかった＋どこで止まったか」を返す。作り話をしない。
+    """
+    if not _is_yt(url):
+        return None, "YouTubeではない"
+    m = re.search(r"(?:v=|youtu\.be/|shorts/|embed/)([A-Za-z0-9_-]{11})", url)
+    if not m:
+        return None, "動画のIDが取れない住所だった"
+    vid = m.group(1)
+    code, body, why = _get("https://www.youtube.com/watch?v=" + vid, timeout=25,
+                           headers={"Accept-Language": "ja,en;q=0.8"})
+    if code != 200 or not body:
+        return None, "watchページが %s（%s）" % (code, why or "本文が空")
+    tracks = re.findall(r'"baseUrl":"(https://www\.youtube\.com/api/timedtext[^"]+)"', body)
+    if not tracks:
+        return None, "この動画に字幕トラックが載っていない（captionTracksが空）"
+    # 日本語 → 英語 → 先頭 の順に選ぶ
+    def _pick(ts):
+        ja = [t for t in ts if "lang=ja" in t] or [t for t in ts if "lang=en" in t]
+        return (ja or ts)[0]
+    base = _pick(tracks).replace("\\u0026", "&").replace("\\/", "/")
+    code, body, why = _get(base + "&fmt=json3", timeout=25)
+    if code != 200 or not body:
+        return None, "字幕の住所が %s（%s）" % (code, why or "本文が空")
+    try:
+        ev = json.loads(body).get("events") or []
+    except Exception:
+        return None, "字幕の返事が読めない形だった"
+    lines = []
+    for e in ev:
+        segs = e.get("segs") or []
+        t = "".join(x.get("utf8") or "" for x in segs).replace("\n", " ").strip()
+        if not t:
+            continue
+        ms = int(e.get("tStartMs") or 0)
+        lines.append("[%d:%02d] %s" % (ms // 60000, (ms // 1000) % 60, t))
+    if not lines:
+        return None, "字幕の住所は200だが中身が空だった"
+    text = "\n".join(lines)
+    return {"text": text, "author": "", "title": lines[0][:120],
+            "moji": len(text), "gyou": len(lines), "yen": 0.0}, ""
+
+
 def r_oembed_yt(url):
     """YouTubeの題名・投稿者。oEmbed。鍵不要・0円。"""
     if not _is_yt(url):
@@ -159,7 +208,15 @@ def r_yt_data(url):
 
 
 def r_curl(url):
-    """素のGET。普通のサイト・公式ドキュメントはこれで足りる。0円。"""
+    """素のGET。普通のサイト・公式ドキュメントはこれで足りる。0円。
+
+    ★2026-09-24 実測の事故：YouTubeのwatchページを素のGETで取ると、枠の文字
+      （「概要 プレスルーム 著作権…」133〜214文字）だけが返る。それでも200・40文字以上
+      なので**この読み手が「読めた」と名乗ってしまい**、専門の読み手（文字起こし）に
+      順番が回らなかった。＝「動いているのに何も取れていない」を自分で作る形。
+      だから YouTube と X は**この読み手の担当から外す**（専門の読み手がいる）。"""
+    if _is_yt(url) or _is_x(url):
+        return None, "YouTube/Xは専門の読み手の担当（素のGETでは枠の文字しか返らない）"
     code, body, why = _get(url, timeout=25)
     if code != 200 or not body:
         return None, "GETが %s（%s）" % (code, why or "本文が空")
@@ -225,6 +282,7 @@ def r_jules(url):
 # ★並び順は「0円が先・実測で通ったものが先」。成績で自動で入れ替わる（_narabi）。
 READERS = [
     ("oembed_x", r_oembed_x, 0.0),
+    ("yt_transcript", r_yt_transcript, 0.0),
     ("oembed_yt", r_oembed_yt, 0.0),
     ("yt_data", r_yt_data, 0.0),
     ("curl", r_curl, 0.0),
@@ -274,11 +332,24 @@ def seiseki():
     return s
 
 
-def _narabi():
-    """よく通る読み手を先に。★同点なら元の順（0円が先）を崩さない。"""
+SENMON = {"yt": ("yt_transcript", "oembed_yt", "yt_data"), "x": ("oembed_x",)}
+
+
+def _narabi(url=""):
+    """よく通る読み手を先に。★ただし**住所に合った専門の読み手を必ず先頭に**置く。
+
+    ★2026-09-24 実測：成績だけで並べたら curl（他の頁でよく通る）が先頭に来て、
+      YouTubeの文字起こしに一度も順番が回らなかった。成績は**同じ担当の中の順**にしか使わない。"""
     s = seiseki()
     idx = {n: i for i, (n, _, _) in enumerate(READERS)}
-    return sorted(READERS, key=lambda t: (-s.get(t[0], {}).get("ok", 0), idx[t[0]]))
+
+    def _rank(t):
+        return (-s.get(t[0], {}).get("ok", 0), idx[t[0]])
+
+    senmon = SENMON["yt"] if _is_yt(url) else (SENMON["x"] if _is_x(url) else ())
+    saki = sorted([t for t in READERS if t[0] in senmon], key=_rank)
+    ato = sorted([t for t in READERS if t[0] not in senmon], key=_rank)
+    return saki + ato
 
 
 # ---------------------------------------------------------------------------
@@ -339,7 +410,7 @@ def yomu(url, use_cache=True, mac_daiko=True, wait_sec=180):
 
     tried = []
     t0 = time.time()
-    for name, fn, yen in _narabi():
+    for name, fn, yen in _narabi(url):
         if yen > 0:
             try:
                 import yosan
@@ -446,7 +517,7 @@ def main():
     if a.jissoku:
         s = seiseki()
         print("読み手の成績（status/yomu_daicho.jsonl より）")
-        for n, _, y in _narabi():
+        for n, _, y in _narabi(""):
             d = s.get(n, {"ok": 0, "ng": 0})
             print("  %-10s 通った%3d回 / 駄目%3d回 / 1回%.1f円" % (n, d["ok"], d["ng"], y))
         return 0
