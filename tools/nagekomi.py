@@ -202,10 +202,12 @@ def add(url, memo="", shelf=None, shelf_id=None, test=False):
         "shelfId": (shelf_id or "").strip() or None if isinstance(shelf_id, str) else shelf_id,
         "copyDirection": None,  # 「コピーはこの方向で」も後から入る
         "status": "inbox",
-        # ★"test" は機械の試し投げ。"nushi" はたまごさん本人の投げ（箱のページから）
-        "source": "test" if test else "nushi",
     }
     row.update(meta)
+    # ★★ここは row.update(meta) の**後**。meta にも "source" があり（＝題名の出どころ
+    #   「YouTube Data API v3 200」）、前に置くと上書きされて印が消える（2026-09-24 実測）。
+    #   だから列名を分ける：nageta＝**誰が投げたか**。"test"＝機械の試し投げ／"nushi"＝たまごさん。
+    row["nageta"] = "test" if test else "nushi"
     if why:
         row["metaMissing"] = why
     append_jsonl(LEDGER, row)
