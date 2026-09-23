@@ -317,6 +317,21 @@ def build():
                     "まとめずに投げた": False, "返りを受け取って検品した": False,
                     "帰らないものを交代させた": False}))
 
+    # ---- fal（★子セッションが苦手な「絵・映像」の持ち場） -------------------
+    falrec = (_load(os.path.join(PUBLIC, "fal_cost_ledger.json"), {}) or {}).get("records", [])
+    fal_ok = sum(1 for r in falrec if r.get("result") == "adopted")
+    rows.append(dict(
+        who="fal", name=NAMAE["fal"],
+        tokui="絵・音・動画を作る。%d本のうち %d本を採用（`cat status/public/fal_cost_ledger.json`）" % (len(falrec), fal_ok),
+        nigate="良し悪しを自分で測れない。検品は別便の鬼監督（tools/oni_gate.py）に出している",
+        kane="1本 %s" % money("fal", "hitotsu"),
+        ima="0本（いま流している注文は無い：`cat status/public/fal_cost_ledger.json`）",
+        tooshita=fal_ok, honban=fal_ok,
+        tooshita_moto="採用 %d本（`cat status/public/fal_cost_ledger.json`）。★絵は本番に出た時点で採用として数える" % fal_ok,
+        tsukaikata={"得意な形の仕事を当てた": True, "正しい依頼文で投げた": True,
+                    "まとめずに投げた": True, "返りを受け取って検品した": True,
+                    "帰らないものを交代させた": True}))
+
     # ---- Genspark -----------------------------------------------------------
     rows.append(dict(
         who="genspark", name=NAMAE["genspark"],
@@ -429,6 +444,9 @@ def html(d):
       % (d["kijunYen"], d["kijunN"]))
     a('<p class="v">交代の決まり：投げて %s 帰ってこなければ、次の選手へ渡す（%s）</p>'
       % (KOUTAI_JIKAN, KOUTAI_SRC))
+    a('<p class="v k">前の紙（一度きりで止まっていたもの）：'
+      '<a href="1027-tekizai-tekisho.html" style="color:#7fb6ff">#1027 誰に何を任せるか</a>。'
+      'ここはその続きで、毎日ひとりでに書き換わる側です。</p>')
 
     a('<h2 class="sec">★仕事が来たら、ここで決まる（割り振り）</h2>')
     for w in d["wariate"]:

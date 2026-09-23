@@ -151,6 +151,13 @@ def done_today_ns(items):
     for x in items:
         if x.get("status") != "done":
             continue
+        # ★1055番（2026-09-24）機械が自動で畳んだ票を「今日の完了」に数えない。
+        #   自動検知・憲法点検が出したチケットは、見張りの対象が元に戻れば機械が閉じる。
+        #   それは**誰も何も作っていない**ので、完了の本数に混ぜると数字が嘘になる。
+        if "自動で閉じました" in (x.get("doneNote") or ""):
+            continue
+        if x.get("test") or x.get("keepalive"):
+            continue
         d = str(x.get("finishedAt") or x.get("doneAt") or x.get("updatedAt") or "")[:10]
         if d == today:
             ns.add(x.get("n"))
