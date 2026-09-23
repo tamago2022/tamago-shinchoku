@@ -335,6 +335,12 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, tana
                     importlib.reload(tana)
                     out = tana.run_job(job.get("payload") or {})
+                elif job.get("kind") == "tanaire":
+                    # ★1039番：投げ込み箱→棚。コピーを書いて、関所を通して、入れる。
+                    #   入れた行は status/nagekomi_ireta.jsonl に控え、op=modoshi でその便の分だけ消す。
+                    import importlib, nagekomi_shelf
+                    importlib.reload(nagekomi_shelf)
+                    out = nagekomi_shelf.run_job(job.get("payload") or {})
                 elif job.get("kind") == "mainichi":
                     # ★1038番：毎日やることの専用の口。列（queue.json）に積まない。
                     #   admin_stock を **GETだけ**で読んで下書きを作る。棚には1文字も書かない。

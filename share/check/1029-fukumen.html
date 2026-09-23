@@ -48,94 +48,44 @@ summary{font-size:11px;letter-spacing:2px;color:var(--usu);cursor:pointer}
 <h1>覆面調査員の報告</h1>
 <p class='en'>JOY RELIEF STATION &nbsp;/&nbsp; WHAT THE CUSTOMERS FELT</p>
 <p class='lead'>架空のお客さん4人が、本番のごきげん補給所を実際に触りました。ここに出ているのは全部、ブラウザが自分で測った数字です。人の感想もAIの採点も1つも入っていません。</p>
-<p class='meta'>2026-09-23 11:41:36 に実測　／　見たページ 21枚　／　案内人に 32問　／　本番 https://joy-relief-station.lovable.app
-　／　このときのMacの混み具合（load average）[51.6, 37.6, 32.8]。待ち時間の数字（下の「出てくるまで待たされる」）はこの影響を受けます。画面のズレと入力の数字は影響を受けません。
+<p class='meta'>2026-09-23 15:38:07 に実測　／　見たページ 21枚　／　案内人に 32問　／　本番 https://joy-relief-station.lovable.app
+　／　このときのMacの混み具合（load average）[10.7, 20.9, 19.3]。待ち時間の数字（下の「出てくるまで待たされる」）はこの影響を受けます。画面のズレと入力の数字は影響を受けません。
 </p>
 <h2>ひどい順 ・ 上から5つ</h2>
 <div class='card'>
 <div class='no'>01</div>
-<div class='sym'>ページが落ちる・開けない</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>21枚見て 8枚が最後まで開けなかった（うちブラウザのタブごと落ちたのが 4枚）</div></div>
-<div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide?artist=bon-jovi&amp;song=livin-on-a-prayer／/cover-guide?artist=baka-mukashibanashi&amp;song=momotaro-no-heya／/cover-guide?artist=tatsuro&amp;song=sparkle（ほか5枚）</div></div>
-<div class='row'><div class='lbl'>直すと</div><div class='fix'>お客さんが曲ページで放り出されなくなる</div></div>
-<details><summary>測った生データ</summary><pre>[
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide?artist=bon-jovi&amp;song=livin-on-a-prayer&quot;,
-  &quot;error&quot;: &quot;測れませんでした: Locator.evaluate: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator(\&quot;body\&quot;).first\n    - locator resolved to visible &lt;body&gt;…&lt;/body&gt;\n&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide?artist=baka-mukashibanashi&amp;song=momotaro-no-heya&quot;,
-  &quot;error&quot;: &quot;測れませんでした: Locator.evaluate: Target crashed \nCall log:\n  - waiting for locator(\&quot;body\&quot;).first\n&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sparkle&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: Page crashed\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sparkle\&quot;, waiting until \&quot;domcontentl&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/covers&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: Timeout 45000ms exceeded.\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.app/shelf/music/covers\&quot;, waiting until \&quot;domcontentloaded\&quot;\n&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: Timeout 45000ms exceeded.\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta\&quot;, waiting until \&quot;domcontentl&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide?artist=bts&amp;song=spring-day&quot;,
-  &quot;error&quot;: &quot;測れませんでした: Locator.evaluate: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator(\&quot;body\&quot;).first\n&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide?artist=bon-jovi&amp;song=livin-on-a-prayer&quot;,
-  &quot;error&quot;: &quot;測れませんでした: Locator.evaluate: Target crashed \nCall log:\n  - waiting for locator(\&quot;body\&quot;).first\n&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide?artist=rascal-flatts&amp;song=my-wish&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: Page crashed\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.app/cover-guide?artist=rascal-flatts&amp;song=my-wish\&quot;, waiting until \&quot;domco&quot;
- }
-]</pre></details>
+<div class='sym'>入力している途中で入力欄が作り直される（＝たまごさんの言う「落ちる」）</div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>43文字打つ間に｜入力欄の作り直し 43回／フォーカスが外れた 0回／打った字が消えた 0回／画面の要素の差し替え 1回</div></div>
+<div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide｜案内所のURL欄にYouTubeのURLを打つ</div></div>
+<div class='row'><div class='lbl'>直すと</div><div class='fix'>打っている途中で手が止まらなくなる。打った字が消えなくなる</div></div>
+<div class='shots'>
+<figure><img src='assets/1029-fukumen/typing-cover-guide-1280px.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
+</div>
+<details><summary>測った生データ</summary><pre>{
+ &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide&quot;,
+ &quot;label&quot;: &quot;案内所のURL欄にYouTubeのURLを打つ&quot;,
+ &quot;chars&quot;: 43,
+ &quot;入力欄が作り直された回数&quot;: 43,
+ &quot;フォーカスが外れた回数&quot;: 0,
+ &quot;打った字が消えた回数&quot;: 0,
+ &quot;画面の要素が差し替わった回数&quot;: 1,
+ &quot;最後に残っていた文字&quot;: &quot;https://www.youtube.com/watch?v=dQw4w9WgXcQ&quot;,
+ &quot;全部残ったか&quot;: true,
+ &quot;消えた例&quot;: null,
+ &quot;cls&quot;: 0.0,
+ &quot;inp_ms&quot;: 288
+}</pre></details>
 </div>
 <div class='card'>
 <div class='no'>02</div>
-<div class='sym'>出てくるまで待たされる（スマホ375px）</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>一番大きい絵が出るまで 最悪 27.3秒（良い＝2.5秒以下／悪い＝4秒超）。4枚中4枚が2.5秒超</div></div>
-<div class='row'><div class='lbl'>どこで</div><div class='mono'>/（ほか3枚）</div></div>
-<div class='row'><div class='lbl'>直すと</div><div class='fix'>開いた瞬間に中身が見える。戻るボタンを押されなくなる</div></div>
-<div class='shots'>
-<figure><img src='assets/1029-fukumen/top-375px-before.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
-</div>
-<details><summary>測った生データ</summary><pre>{
- &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;,
- &quot;lcp_ms&quot;: 27312,
- &quot;longtasks_over50&quot;: 39,
- &quot;kb&quot;: 1502.1,
- &quot;requests&quot;: 34
-}</pre></details>
-</div>
-<div class='card'>
-<div class='no'>03</div>
-<div class='sym'>出てくるまで待たされる（パソコン1280px）</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>一番大きい絵が出るまで 最悪 22.5秒（良い＝2.5秒以下／悪い＝4秒超）。9枚中6枚が2.5秒超</div></div>
-<div class='row'><div class='lbl'>どこで</div><div class='mono'>/shelf/music/covers（ほか5枚）</div></div>
-<div class='row'><div class='lbl'>直すと</div><div class='fix'>開いた瞬間に中身が見える。戻るボタンを押されなくなる</div></div>
-<div class='shots'>
-<figure><img src='assets/1029-fukumen/shelf-music-covers-1280px-before.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
-</div>
-<details><summary>測った生データ</summary><pre>{
- &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/covers&quot;,
- &quot;lcp_ms&quot;: 22516,
- &quot;longtasks_over50&quot;: 27,
- &quot;kb&quot;: 1732.5,
- &quot;requests&quot;: 75
-}</pre></details>
-</div>
-<div class='card'>
-<div class='no'>04</div>
 <div class='sym'>読んでいる途中で画面が動く（スマホ375px）</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>CLS 最悪 0.367（良い＝0.1以下／悪い＝0.25超）。4枚中4枚が0.1超。一番大きなズレは開いてから 9.3秒後（＝もう読み始めている）</div></div>
-<div class='row'><div class='lbl'>どこで</div><div class='mono'>/shelf/music/night（ほか3枚）</div></div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>CLS 最悪 0.367（良い＝0.1以下／悪い＝0.25超）。9枚中2枚が0.1超。一番大きなズレは開いてから 2.9秒後（＝もう読み始めている）</div></div>
+<div class='row'><div class='lbl'>どこで</div><div class='mono'>/shelf/music/night（ほか1枚）</div></div>
 <div class='row'><div class='lbl'>直すと</div><div class='fix'>読んでいる行が飛ばなくなる。押そうとしたカードが逃げなくなる</div></div>
 <div class='row'><div class='lbl'>ずれたのは</div><div class='mono'>li.relative.min-w-0 「森恵「エイリアンズ」(名カバー) 女性の声とアコギで、夜の温」</div></div>
 <div class='shots'>
 <figure><img src='assets/1029-fukumen/shelf-music-night-375px-before.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
+<figure><img src='assets/1029-fukumen/shelf-music-night-375px-after.jpg' alt=''><figcaption>読んでいる途中（この間に画面が動いた）</figcaption></figure>
 </div>
 <details><summary>測った生データ</summary><pre>{
  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/night&quot;,
@@ -143,7 +93,7 @@ summary{font-size:11px;letter-spacing:2px;color:var(--usu);cursor:pointer}
  &quot;cls_while_reading&quot;: 0.0,
  &quot;shifts&quot;: [
   {
-   &quot;t&quot;: 9260,
+   &quot;t&quot;: 2891,
    &quot;v&quot;: 0.3672,
    &quot;srcs&quot;: [
     {
@@ -182,90 +132,122 @@ summary{font-size:11px;letter-spacing:2px;color:var(--usu);cursor:pointer}
 }</pre></details>
 </div>
 <div class='card'>
-<div class='no'>05</div>
+<div class='no'>03</div>
+<div class='sym'>出てくるまで待たされる（スマホ375px）</div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>一番大きい絵が出るまで 最悪 9.1秒（良い＝2.5秒以下／悪い＝4秒超）。9枚中1枚が2.5秒超</div></div>
+<div class='row'><div class='lbl'>どこで</div><div class='mono'>/</div></div>
+<div class='row'><div class='lbl'>直すと</div><div class='fix'>開いた瞬間に中身が見える。戻るボタンを押されなくなる</div></div>
+<div class='shots'>
+<figure><img src='assets/1029-fukumen/top-375px-before.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
+</div>
+<details><summary>測った生データ</summary><pre>{
+ &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;,
+ &quot;lcp_ms&quot;: 9120,
+ &quot;longtasks_over50&quot;: 17,
+ &quot;kb&quot;: 1502.1,
+ &quot;requests&quot;: 34
+}</pre></details>
+</div>
+<div class='card'>
+<div class='no'>04</div>
 <div class='sym'>案内人の返事が「おじさん、わかってるね」になっていない</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>32問中25問が不合格（開けない・投げられない 18問／喋りすぎ 6問／空 1問）</div></div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>32問中18問が不合格（的外れ 14問／喋りすぎ 7問／使い回し 1問）</div></div>
 <div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide（卵コンシェルジュ）</div></div>
 <div class='row'><div class='lbl'>直すと</div><div class='fix'>ひとこと返ってきて、棚が出る。読まずに済む</div></div>
 <details><summary>測った生データ</summary><pre>[
  {
+  &quot;問&quot;: &quot;泣ける曲ある？&quot;,
+  &quot;不合格&quot;: [
+   &quot;的外れ（音楽を聞いたのに旅が出た）&quot;
+  ],
+  &quot;セリフ&quot;: &quot;兵庫、淡路島。100メートルの床が、宙に浮いている。\n🧭 知らない旅の世界だけど、気分転換にひとつ&quot;,
+  &quot;出てきたもの&quot;: 6
+ },
+ {
   &quot;問&quot;: &quot;ドライブで聴くやつ&quot;,
   &quot;不合格&quot;: [
-   &quot;喋りすぎ（セリフ10行・325文字。1行＋短い一言まで）&quot;
+   &quot;的外れ（音楽を聞いたのにかわいいが出た）&quot;,
+   &quot;喋りすぎ（セリフ5行・147文字。1行＋短い一言まで）&quot;
   ],
   &quot;セリフ&quot;: &quot;ホワイトハウスでMotownを歌い直す夜。大人の余裕のカバー。\n「ドライブで聴くやつ」に近い、音楽の一本として\n静かにマイクを握った次の瞬間、客席がロック会場に変わる。ロック魂に賞味期限はない。\n「ドライブで聴くやつ」に近い、笑いの一本とし&quot;,
-  &quot;出てきたもの&quot;: 29
+  &quot;出てきたもの&quot;: 17
  },
  {
   &quot;問&quot;: &quot;知らない国の音楽が聴きたい&quot;,
   &quot;不合格&quot;: [
-   &quot;喋りすぎ（セリフ6行・206文字。1行＋短い一言まで）&quot;
+   &quot;的外れ（音楽を聞いたのに笑いが出た）&quot;
   ],
-  &quot;セリフ&quot;: &quot;インド・タミルの村。巨大な鶏卵に鶏肉を合わせ、伝統のごま油で焼き上げる。\n🧭 知らない旅の世界だけど、気分転換にひとつ\n昔好きだったものも、今気になるものも。\nあなたの“好き”に少しだけ会いに行きますか？\n昔好きだったもの、今気になるものを&quot;,
-  &quot;出てきたもの&quot;: 19
+  &quot;セリフ&quot;: &quot;静かにマイクを握った次の瞬間、客席がロック会場に変わる。ロック魂に賞味期限はない。\n🧭 知らない笑いの世界だけど、気分転換にひとつ&quot;,
+  &quot;出てきたもの&quot;: 6
+ },
+ {
+  &quot;問&quot;: &quot;シティポップってなに？&quot;,
+  &quot;不合格&quot;: [
+   &quot;的外れ（音楽を聞いたのに踊りが出た）&quot;
+  ],
+  &quot;セリフ&quot;: &quot;D SORAKIが踊ったあの曲。これが流れたら、立ち上がりたくなるのが人間。\n🧭 知らない踊りの世界だけど、気分転換にひとつ&quot;,
+  &quot;出てきたもの&quot;: 6
  },
  {
   &quot;問&quot;: &quot;King Gnu好きなんだけど&quot;,
   &quot;不合格&quot;: [
-   &quot;空（何も返っていない）&quot;
+   &quot;喋りすぎ（セリフ9行・231文字。1行＋短い一言まで）&quot;
   ],
-  &quot;セリフ&quot;: &quot;&quot;,
-  &quot;出てきたもの&quot;: 0
+  &quot;セリフ&quot;: &quot;「King Gnu好きなんだけど」に近い、音楽の一本として\nKing Gnu ／ 都会の朝の歌。\n「King Gnu好きなんだけど」に近い、音楽の一本として\nKing Gnu ／ アニメ世代の記憶。\n「King Gnu好きなんだけど」に近い&quot;,
+  &quot;出てきたもの&quot;: 27
  },
  {
-  &quot;問&quot;: &quot;最近入ったやつある？&quot;,
+  &quot;問&quot;: &quot;作業中に流すやつ&quot;,
   &quot;不合格&quot;: [
-   &quot;喋りすぎ（セリフ6行・196文字。1行＋短い一言まで）&quot;
+   &quot;的外れ（音楽を聞いたのに旅が出た）&quot;,
+   &quot;使い回し（「泣ける曲ある？」と同じセリフ）&quot;
   ],
-  &quot;セリフ&quot;: &quot;包む、蒸す、焼く。手元を追うだけで時間を忘れる。\n🧭 知らない食べ物の世界だけど、気分転換にひとつ\n昔好きだったものも、今気になるものも。\nあなたの“好き”に少しだけ会いに行きますか？\n昔好きだったもの、今気になるものを入れてください。 ア&quot;,
-  &quot;出てきたもの&quot;: 19
+  &quot;セリフ&quot;: &quot;兵庫、淡路島。100メートルの床が、宙に浮いている。\n🧭 知らない旅の世界だけど、気分転換にひとつ&quot;,
+  &quot;出てきたもの&quot;: 6
  },
  {
-  &quot;問&quot;: &quot;雨の日に合うの&quot;,
+  &quot;問&quot;: &quot;夜中にひとりで聴くやつ&quot;,
   &quot;不合格&quot;: [
-   &quot;喋りすぎ（セリフ3行・109文字。1行＋短い一言まで）&quot;
+   &quot;的外れ（音楽を聞いたのに喜びが出た）&quot;
   ],
-  &quot;セリフ&quot;: &quot;満員御礼のモンスタートラック、泥水にドボン\n限界まで人を乗せたモンスタートラックが、泥水にゆっくり沈んでいく。流れるBGMはまさかの『マイ・ハート・ウィル・ゴー・オン』。\n🧭 知らない笑いの世界だけど、気分転換にひとつ&quot;,
-  &quot;出てきたもの&quot;: 5
- },
- {
-  &quot;問&quot;: &quot;なんか笑えるやつない？&quot;,
-  &quot;不合格&quot;: [
-   &quot;喋りすぎ（セリフ3行・67文字。1行＋短い一言まで）&quot;
-  ],
-  &quot;セリフ&quot;: &quot;ウサギ、バナナをもぐもぐ\nバナナを食べるだけで、耳までかわいい。咀嚼棚の定番入口。\n🧭 知らないかわいいの世界だけど、気分転換にひとつ&quot;,
-  &quot;出てきたもの&quot;: 5
+  &quot;セリフ&quot;: &quot;到着ロビーの職員も乗客も、本人ごと「Everybody」で出迎える。空港が一瞬でライブ会場になる。\n🧭 知らない喜びの世界だけど、気分転換にひとつ&quot;,
+  &quot;出てきたもの&quot;: 6
  },
  {
   &quot;問&quot;: &quot;ユーミン&quot;,
   &quot;不合格&quot;: [
-   &quot;喋りすぎ（セリフ8行・184文字。1行＋短い一言まで）&quot;
+   &quot;喋りすぎ（セリフ8行・230文字。1行＋短い一言まで）&quot;
   ],
   &quot;セリフ&quot;: &quot;荒井由実 -翳りゆく部屋(from「日本の恋と、ユーミンと。」)\n「ユーミン」に近い、音楽の一本として\n荒井由実 - 海を見ていた午後(from「日本の恋と、ユーミンと。」)\n「ユーミン」に近い、音楽の一本として\n「ユーミン」に近い、音楽の&quot;,
   &quot;出てきたもの&quot;: 28
- },
- {
-  &quot;問&quot;: &quot;昭和の歌謡曲&quot;,
-  &quot;不合格&quot;: [
-   &quot;開けない・投げられない&quot;
-  ],
-  &quot;セリフ&quot;: &quot;&quot;,
-  &quot;出てきたもの&quot;: null
  }
 ]</pre></details>
 </div>
+<div class='card'>
+<div class='no'>05</div>
+<div class='sym'>出てくるまで待たされる（パソコン1280px）</div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>一番大きい絵が出るまで 最悪 5.4秒（良い＝2.5秒以下／悪い＝4秒超）。12枚中1枚が2.5秒超</div></div>
+<div class='row'><div class='lbl'>どこで</div><div class='mono'>/</div></div>
+<div class='row'><div class='lbl'>直すと</div><div class='fix'>開いた瞬間に中身が見える。戻るボタンを押されなくなる</div></div>
+<div class='shots'>
+<figure><img src='assets/1029-fukumen/top-1280px-before.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
+</div>
+<details><summary>測った生データ</summary><pre>{
+ &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;,
+ &quot;lcp_ms&quot;: 5376,
+ &quot;longtasks_over50&quot;: 5,
+ &quot;kb&quot;: 1502.1,
+ &quot;requests&quot;: 34
+}</pre></details>
+</div>
 <h2>そのほか</h2><table><tr><th>症状</th><th>数字</th><th>どこで</th><th>直すとどうなるか</th></tr>
-<tr><td>入力欄にたどり着けない</td><td>開けませんでした: Page.goto: Page crashed
-Call log:
-  - navigating to &quot;https://joy-relief-station.lovable.app/cover-guide&quot;, waiting until &quot;domcontentloaded&quot;
-</td><td class='mono'>/cover-guide｜案内人に話しかける欄（スマホ375px）</td><td>お客さんが言葉を打てるようになる</td></tr>
-<tr><td>打った手ごたえが返ってくるのが遅い</td><td>1文字打ってから画面が応えるまで 最悪 416ms（良い＝200ms以下／悪い＝500ms超）。測った3箇所の最悪値</td><td class='mono'>/cover-guide｜案内人に話しかける欄（1280px）</td><td>打っている最中に「固まった」と感じなくなる</td></tr>
-<tr><td>読んでいる途中で画面が動く（パソコン1280px）</td><td>CLS 最悪 0.169（良い＝0.1以下／悪い＝0.25超）。9枚中3枚が0.1超。一番大きなズレは開いてから 39.8秒後（＝もう読み始めている）</td><td class='mono'>/shelf/music/covers（ほか2枚）</td><td>読んでいる行が飛ばなくなる。押そうとしたカードが逃げなくなる</td></tr>
-<tr><td>1枚が重い</td><td>一番重いページで 3392KB・106本の通信。ブラウザが固まっていた時間 最悪 45080ms（50ms超の長い処理 36回）</td><td class='mono'>/cover-guide?artist=bilal&amp;song=soul-sista</td><td>スクロールが滑らかになる。回線が細い所でも開く</td></tr>
-<tr><td>画面の裏でエラーが出ている</td><td>13枚中3枚でエラー。種類は1通り。一番多いページで1件</td><td class='mono'>/shelf/music/night（ほか2枚）</td><td>出ないはずの空欄・止まるボタンが減る</td></tr>
+<tr><td>1枚が重い</td><td>一番重いページで 4031KB・97本の通信。ブラウザが固まっていた時間 最悪 8082ms（50ms超の長い処理 26回）</td><td class='mono'>/cover-guide?artist=baka-mukashibanashi&amp;song=momotaro-no-heya</td><td>スクロールが滑らかになる。回線が細い所でも開く</td></tr>
+<tr><td>読んでいる途中で画面が動く（パソコン1280px）</td><td>CLS 最悪 0.169（良い＝0.1以下／悪い＝0.25超）。12枚中2枚が0.1超。一番大きなズレは開いてから 2.1秒後（＝もう読み始めている）</td><td class='mono'>/shelf/music/covers（ほか1枚）</td><td>読んでいる行が飛ばなくなる。押そうとしたカードが逃げなくなる</td></tr>
+<tr><td>打った手ごたえが返ってくるのが遅い</td><td>1文字打ってから画面が応えるまで 最悪 288ms（良い＝200ms以下／悪い＝500ms超）。測った4箇所の最悪値</td><td class='mono'>/cover-guide｜案内所のURL欄にYouTubeのURLを打つ</td><td>打っている最中に「固まった」と感じなくなる</td></tr>
+<tr><td>画面の裏でエラーが出ている</td><td>21枚中5枚でエラー。種類は1通り。一番多いページで1件</td><td class='mono'>/shelf/music/night（ほか4枚）</td><td>出ないはずの空欄・止まるボタンが減る</td></tr>
 </table>
 <h2>触ったが、異常が出なかったもの</h2><table><tr><th>触った所</th><th>数字</th></tr>
-<tr><td>案内所のURL欄にYouTubeのURLを打つ</td><td>43文字を1文字ずつ打って、作り直し0回・字の消失0回・フォーカス落ち0回</td></tr>
+<tr><td>案内人に話しかける欄（スマホ375px）</td><td>8文字を1文字ずつ打って、作り直し0回・字の消失0回・フォーカス落ち0回</td></tr>
 <tr><td>案内人に話しかける欄（1280px）</td><td>9文字を1文字ずつ打って、作り直し0回・字の消失0回・フォーカス落ち0回</td></tr>
 <tr><td>トップの感想欄</td><td>13文字を1文字ずつ打って、作り直し0回・字の消失0回・フォーカス落ち0回</td></tr>
 </table>
@@ -275,12 +257,12 @@ Call log:
 <pre>実測: 見た画面の幅 375px / 1280px
 実測: {
  &quot;CLSの最悪値&quot;: 0.3672,
- &quot;CLSが悪いページ数&quot;: 2,
- &quot;LCPの最悪値(ms)&quot;: 27312,
- &quot;console errorが出たページ数&quot;: 3,
- &quot;入力欄の作り直し(最悪・1文字あたり)&quot;: 0.0,
+ &quot;CLSが悪いページ数&quot;: 1,
+ &quot;LCPの最悪値(ms)&quot;: 9120,
+ &quot;console errorが出たページ数&quot;: 5,
+ &quot;入力欄の作り直し(最悪・1文字あたり)&quot;: 1.0,
  &quot;打った字が消えた回数(合計)&quot;: 0,
- &quot;案内人の不合格率&quot;: 0.781
+ &quot;案内人の不合格率&quot;: 0.562
 }</pre>
 <p class='meta'>この数字を取った道具：tools/fukumen.py（Playwright／Chromium）。CLS・LCP・INP・長いタスクは PerformanceObserver、入力の作り直しは MutationObserver と document.contains で数えています。お金は1円もかかっていません。</p>
 </div></body></html>
