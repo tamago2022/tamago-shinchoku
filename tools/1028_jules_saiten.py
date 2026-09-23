@@ -34,19 +34,27 @@ def _targets():
     return json.load(open(p, encoding="utf-8"))
 
 
-def saiten(text, changed_files=None):
-    """(印, 合格率, [理由...]) を返す。印は '◯採用' / '△条件付き' / '✕クビ'。"""
+def saiten(text, changed_files=None, target=None):
+    """(印, 合格率, [理由...]) を返す。印は '◯採用' / '△条件付き' / '✕クビ'。
+
+    ★2026-09-23（1030番）target を足した理由：
+      同じ149件を Codex にも投げると、置き場は `yomi-answers/codex.json` になる。
+      TARGET_PATH を決め打ちのままだと、**Codexの正しい答えが門1で全部✕になる。**
+      規則（件数・キー一致・カタカナ・合格線82件）は1文字も変えていない。
+      ★採点の規則はこのファイルにしか書かない。baton.py 側には1行も写さない。
+    """
+    target = target or TARGET_PATH
     names = _targets()
     riyu, kado = [], True
 
     # --- 門1：変更が1ファイルだけか
     if changed_files is not None:
-        if list(changed_files) != [TARGET_PATH]:
+        if list(changed_files) != [target]:
             kado = False
             riyu.append("門1 ✕ 変更が %s の1本だけではない：%s"
-                        % (TARGET_PATH, ", ".join(changed_files) or "（0本）"))
+                        % (target, ", ".join(changed_files) or "（0本）"))
         else:
-            riyu.append("門1 ◯ 変更は %s の1本だけ" % TARGET_PATH)
+            riyu.append("門1 ◯ 変更は %s の1本だけ" % target)
 
     # --- 門2：JSONとして読めるか
     try:

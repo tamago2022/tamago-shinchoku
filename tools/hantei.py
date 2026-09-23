@@ -474,6 +474,151 @@ def commit_kuchi():
 
 
 # ---------------------------------------------------------------------
+#  1028番（2026-09-23）ごきげん補給所の「重さ」― 前より重くなったら赤
+# ---------------------------------------------------------------------
+#
+# たまごさん：「とにかく重いんだ。軽くしてくれるだけでもいい。」
+#
+# ★この節がやることは1つだけ：**物差しの目盛りを、進捗表の1行にする。**
+#   軽くする工事はここではやらない。ただし「軽くしました」と言った人が本当かどうかを、
+#   この行が毎回答える。今まで物差しが無かったので、誰も答えられなかった。
+#
+# 判定の型（judge() をそのまま使う。同じifを2か所に書かない）:
+#   測っていない            → ⚪ まだ測っていません
+#   前回より重い（+5%超）   → 🔴 **重くなりました**（どれが増えたかを名指しする）
+#   前回と同じか軽い        → ✅ 何バイトか・一番でかいのは何かを出す
+#
+# ★しきい値+5%の根拠：同じページを続けて測っても、広告なしの静的配信でも
+#   数%はぶれる（206の途中までしか来ない動画など）。5%以下は「ぶれ」、超えたら「変化」。
+OMOSA_LAST = os.path.join(STATUS, "omosa_last.json")
+OMOSA_LOG = os.path.join(STATUS, "omosa_log.jsonl")
+OMOSA_BURE = 0.05  # 5%までは測りのぶれとみなす
+
+
+def _mb(n):
+    try:
+        return "%.2fMB" % (float(n) / 1048576.0)
+    except Exception:
+        return "?"
+
+
+def _omosa_read(path):
+    import json as _json
+    try:
+        with io.open(path, encoding="utf-8") as f:
+            return _json.load(f)
+    except Exception:
+        return None
+
+
+def _omosa_prev(url=None, not_at=None):
+    """1つ前の測定。無ければ None。
+
+    ★比べる相手は「同じURLを・下見ではなく本測定で・測ったもの」に限る。
+      ここを緩くすると、別のページの数字と比べて嘘の赤／嘘の緑が出る。
+      （2026-09-23、実際に下見の数字と比べて「軽くなりました」と出かけた）
+    """
+    import json as _json
+    if not os.path.exists(OMOSA_LOG):
+        return None
+    try:
+        with io.open(OMOSA_LOG, encoding="utf-8") as f:
+            rows = [x for x in f.read().splitlines() if x.strip()]
+    except Exception:
+        return None
+    for line in reversed(rows):
+        try:
+            d = _json.loads(line)
+        except Exception:
+            continue
+        if d.get("reconOnly"):
+            continue
+        if url and d.get("url") != url:
+            continue
+        if not_at and d.get("measuredAt") == not_at:
+            continue
+        if _omosa_total(d) > 0:
+            return d
+    return None
+
+
+def _omosa_total(d, width="1280"):
+    try:
+        return int(((d.get("byWidth") or {}).get(width) or {}).get("bytes", {}).get("total") or 0)
+    except Exception:
+        return 0
+
+
+def omosa():
+    """ごきげん補給所の重さ。前より重くなったら赤。
+
+    数字は tools/omosa.mjs が実測して status/omosa_last.json に置いたものだけを読む。
+    ★ここでは一切測らない（測るのは工場側。ここは読むだけ＝常駐を増やさない）。
+    """
+    cur = _omosa_read(OMOSA_LAST)
+    if not cur:
+        return judge(0, 0, label="ごきげん補給所の重さ",
+                     blocked=("まだ一度も測っていません。"
+                              "工場側で `node tools/omosa.mjs` を走らせてください"
+                              "（サンドボックスからは kind=kakunin / mode=omosa で頼めます）"))
+    if cur.get("error"):
+        return judge(1, 0, label="ごきげん補給所の重さ",
+                     blocked="測ろうとして失敗しました：%s" % str(cur["error"])[:160])
+
+    w = (cur.get("byWidth") or {}).get("1280") or {}
+    b = w.get("bytes") or {}
+    total = int(b.get("total") or 0)
+    if total <= 0:
+        return judge(1, 0, label="ごきげん補給所の重さ",
+                     blocked="測ったのにバイト数が0でした（＝何も取れていません）")
+
+    top = (b.get("top") or [{}])[0]
+    hannin = "%s %s" % (top.get("name", "?"), _mb(top.get("bytes")))
+    itsu = cur.get("measuredAt", "")
+
+    # スマホ幅・棚編集・URL貼りも、取れていれば一緒に出す（別の行にしない＝見る紙を増やさない）
+    oi = []
+    m375 = (cur.get("byWidth") or {}).get("375") or {}
+    if (m375.get("bytes") or {}).get("total"):
+        oi.append("375pxは%s" % _mb(m375["bytes"]["total"]))
+    te = w.get("tanaHenshu") or {}
+    if te.get("stillLoading"):
+        oi.append("★棚編集は%d秒待っても中身が出ない" % int((te.get("gaveUpAfterMs") or 0) / 1000))
+    elif te.get("readyMs") is not None:
+        oi.append("棚編集は%.1f秒で出る" % (te["readyMs"] / 1000.0))
+    pa = w.get("paste") or w.get("pasteFallback") or {}
+    if pa.get("tried"):
+        oi.append("URL貼り%d回中%d回落ちた" % (pa["tried"], pa["ochita"]))
+    elif pa.get("skipWhy"):
+        oi.append("URL貼りは測れず（%s）" % pa["skipWhy"])
+    oi_s = ("／" + "／".join(oi)) if oi else ""
+
+    prev = _omosa_prev(url=cur.get("url"), not_at=cur.get("measuredAt"))
+    ptotal = _omosa_total(prev) if prev else 0
+    if ptotal > 0:
+        sa = total - ptotal
+        wari = sa / float(ptotal)
+        if wari > OMOSA_BURE:
+            return judge(1, 0, label="ごきげん補給所の重さ",
+                         blocked=("**前より重くなりました** %s → %s（+%s・+%.0f%%）。"
+                                  "一番でかいのは %s。測ったのは %s"
+                                  % (_mb(ptotal), _mb(total), _mb(sa), wari * 100, hannin, itsu)))
+        r = judge(1, 1, label="ごきげん補給所の重さ")
+        muki = "軽くなりました" if sa < 0 else "前回と同じ"
+        r["line"] = ("✅ ごきげん補給所の重さ … トップ%s（前回%s・%s）／一番でかいのは %s%s"
+                     % (_mb(total), _mb(ptotal), muki, hannin, oi_s))
+        r["red"] = False
+        return r
+
+    r = judge(1, 1, label="ごきげん補給所の重さ")
+    r["line"] = ("✅ ごきげん補給所の重さ … トップ%s（★これが1本目の目盛り。"
+                 "次に測ったときここより重ければ赤になります）／一番でかいのは %s%s"
+                 % (_mb(total), hannin, oi_s))
+    r["red"] = False
+    return r
+
+
+# ---------------------------------------------------------------------
 #  区間5（検品）― 出していいかを、AIに聞かずに機械だけで判定する
 # ---------------------------------------------------------------------
 #
@@ -523,7 +668,7 @@ def kensa_html(text, name=""):
 
 def audit():
     """全部の緑に同じ規則を当てた結果を返す（リスト）。"""
-    out = [kojo(6), commit_kuchi()]
+    out = [kojo(6), commit_kuchi(), omosa()]
     out.extend(suteta_henji())
     out.extend(gaibu_ai())
     out.extend(daicho_gai())

@@ -224,13 +224,19 @@ const FINDER = (texts) => `(() => {
   if (hit) hit.el.setAttribute('data-omosa-edit','1');
   const inputs = [...document.querySelectorAll('input[type=text],input[type=url],input[type=search],input:not([type]),textarea,[contenteditable=true]')]
     .map(el => ({ el, hint: norm((el.placeholder||'')+(el.getAttribute('aria-label')||'')+(el.name||'')+(el.id||'')) }));
-  const pri = inputs.find(x => /url|youtube|リンク|動画|http/i.test(x.hint)) || inputs[0];
+  // ★ここは一度間違えた所なので理由を残す（2026-09-23）
+  //   最初「URLっぽい欄が無ければ最初の入力欄」にしていたら、どのページにも居る
+  //   **足元のひとこと目安箱（感想を書く箱）**が毎回選ばれた。
+  //   ＝ たまごさんが言っている「URLを貼る所」とは**別物**を20回叩くところだった。
+  //   違うものを測って数字を出すのが一番たちが悪い。だから **URLっぽい欄が無ければ諦める。**
+  const pri = inputs.find(x => /url|youtube|リンク|動画|http/i.test(x.hint));
   if (pri) pri.el.setAttribute('data-omosa-paste','1');
   return JSON.stringify({
     editFound: !!hit, editText: hit ? hit.t : null,
     pasteFound: !!pri, pasteHint: pri ? pri.hint.slice(0,60) : null,
     clickableSample: clickable.slice(0,40).map(e => norm(e.innerText||e.value||'').slice(0,24)).filter(Boolean),
-    inputCount: inputs.length
+    inputCount: inputs.length,
+    inputHints: inputs.map(x => x.hint.slice(0,40)).slice(0,10)
   });
 })()`;
 
@@ -371,11 +377,117 @@ async function measureWidth(width) {
   });
 }
 
-// ---------- ③ URLを貼って落ちる回数（1回ぶん） ----------
-async function pasteOnce(width, n) {
+// ---------- ② 棚編集：開いてから触れるようになるまで何秒か ----------
+/**
+ * ★なぜ「ボタンを押してから」ではなく「開いてから」なのか（2026-09-23 実測でそうなった）
+ *   棚編集は /admin/shelves という1枚の画面。押すボタンではなかった。
+ *   鍵なしで開いても画面は出る（ログイン壁は無い）。ただし中身が「読み込み中…」のまま来ない。
+ *   ＝ たまごさんの「棚編集が重い」は、押した後の反応ではなく **開いた後ずっと待たされること。**
+ *   だから「読み込み中…が消えるまで何秒か」を数字にする。消えなければ「◯秒でも消えない」と書く。
+ */
+async function measureEdit(width) {
   const mobile = width < 700;
   const height = mobile ? 812 : 900;
-  const r = { n, width, ochita: false, why: null, errs: [], ms: 0, maxFreezeMs: null, heapMB: null };
+  const EDIT_URL = cfg.editUrl;
+  const LOADING = cfg.editLoadingText || "読み込み中";
+  const WAIT = cfg.editWaitMs || 90000;
+  if (!EDIT_URL) return { skipped: "設定に editUrl がありません" };
+  return await withChrome(width, height, mobile, async (cdp) => {
+    const out = { width, url: EDIT_URL };
+    const net = attachNetwork(cdp);
+    const errs = [];
+    cdp.on("Runtime.exceptionThrown", (p) => errs.push(String(p?.exceptionDetails?.text || "").slice(0, 200)));
+    cdp.on("Log.entryAdded", (p) => { if (p?.entry?.level === "error") errs.push(String(p.entry.text || "").slice(0, 200)); });
+    let crashed = false;
+    cdp.on("Inspector.targetCrashed", () => { crashed = true; });
+
+    const nav = await guard(out, "棚編集を開く", () => gotoAndWait(cdp, EDIT_URL), { ms: null });
+    out.nav = nav;
+    const t0 = Date.now();
+    let readyMs = null;
+    while (Date.now() - t0 < WAIT) {
+      const st = await guard(out, "読み込み中の見張り", () => ev(cdp,
+        `(() => { const t=document.body?document.body.innerText:''; return JSON.stringify({
+           loading: t.includes(${JSON.stringify(LOADING)}),
+           len: t.length,
+           inputs: document.querySelectorAll('input,textarea,select').length }); })()`, 12000), null);
+      if (st) {
+        const s = JSON.parse(st);
+        out.lastPeek = s;
+        if (!s.loading) { readyMs = Date.now() - t0; break; }
+      }
+      await sleep(1000);
+    }
+    out.readyMs = readyMs;
+    out.gaveUpAfterMs = readyMs === null ? WAIT : null;
+    out.stillLoading = readyMs === null;
+    const rows = net.filter((r) => r.bytes > 0);
+    out.bytes = { total: rows.reduce((a, r) => a + r.bytes, 0), reqCount: rows.length,
+      top: [...rows].sort((a, b) => b.bytes - a.bytes).slice(0, 6)
+        .map((r) => ({ name: shortName(r.url), kind: KIND(r), bytes: r.bytes, status: r.status })) };
+    const om = await guard(out, "画面の様子", () => ev(cdp, READ_OM, 12000), null);
+    if (om) { const o = JSON.parse(om); out.maxFreezeMs = o.maxGap; out.heapMB = o.heapMB;
+      out.yoko = { scrollW: o.scrollW, clientW: o.clientW, hamidashi: o.scrollW > o.clientW + 1 }; }
+    // 失敗している通信（棚編集が待っている相手）を名指しする
+    out.failedReq = net.filter((r) => r.status >= 400).slice(0, 6).map((r) => ({ name: shortName(r.url), status: r.status }));
+    out.consoleErrors = [...new Set(errs)].slice(0, 8);
+    out.crashed = crashed;
+    return out;
+  });
+}
+
+// ---------- ③-b URLを開いて落ちる回数（1回ぶん） ----------
+/**
+ * ★たまごさんの「URL貼っても落ちる」は2通りに読める。両方とも測る（決めつけない）。
+ *   (あ) 棚編集の中の入力欄にYouTubeのURLを貼る … pasteOnce()
+ *   (い) 曲ページのURLをブラウザに貼って開く   … これ。openOnce()
+ *   「毎回じゃないけど落ちる」＝回数で出さないと意味がないので、runs回まわして数える。
+ * 落ちた＝描画係が死んだ／◯秒返事をしない／中身が空のまま／画面が3秒以上止まった、のどれか。
+ */
+async function openOnce(width, n, pageUrl) {
+  const mobile = width < 700;
+  const height = mobile ? 812 : 900;
+  const r = { n, width, url: pageUrl, ochita: false, why: null, errs: [], ms: 0, maxFreezeMs: null, heapMB: null };
+  const t0 = Date.now();
+  try {
+    await withChrome(width, height, mobile, async (cdp) => {
+      const errs = [];
+      cdp.on("Runtime.exceptionThrown", (p) => errs.push(String(p?.exceptionDetails?.text || "").slice(0, 160)));
+      cdp.on("Log.entryAdded", (p) => { if (p?.entry?.level === "error") errs.push(String(p.entry.text || "").slice(0, 160)); });
+      let crashed = false;
+      cdp.on("Inspector.targetCrashed", () => { crashed = true; });
+      await gotoAndWait(cdp, pageUrl, 12000);
+      await sleep(1500);
+      let om = null;
+      try { om = JSON.parse(await ev(cdp, READ_OM, FREEZE_LIMIT) || "{}"); }
+      catch (e) {
+        r.ochita = true;
+        r.why = String(e.message).startsWith("FROZEN")
+          ? `画面が${FREEZE_LIMIT}ms返事をしない` : "描画係との線が切れた";
+      }
+      if (crashed) { r.ochita = true; r.why = "描画係が落ちた(targetCrashed)"; }
+      if (!r.ochita && om) {
+        r.maxFreezeMs = om.maxGap ?? null;
+        r.heapMB = om.heapMB ?? null;
+        r.bodyLen = om.bodyLen ?? null;
+        if ((om.bodyLen || 0) < 30) { r.ochita = true; r.why = "画面の中身が出てこない(真っ白)"; }
+        else if ((om.maxGap || 0) > 3000) { r.ochita = true; r.why = `画面が${Math.round(om.maxGap)}ms止まった`; }
+      }
+      r.errs = [...new Set(errs)].slice(0, 4);
+    });
+  } catch (e) {
+    r.ochita = true;
+    r.why = String(e.message).startsWith("FROZEN") ? "画面が固まって返事をしない" : `例外: ${String(e.message).slice(0, 120)}`;
+  }
+  r.ms = Date.now() - t0;
+  return r;
+}
+
+// ---------- ③ URLを貼って落ちる回数（1回ぶん） ----------
+async function pasteOnce(width, n, pageUrl = URL_ARG, waitReadyMs = 0) {
+  const mobile = width < 700;
+  const height = mobile ? 812 : 900;
+  const r = { n, width, url: pageUrl, ochita: false, why: null, errs: [], ms: 0, maxFreezeMs: null, heapMB: null };
   const t0 = Date.now();
   try {
     await withChrome(width, height, mobile, async (cdp) => {
@@ -385,9 +497,18 @@ async function pasteOnce(width, n) {
       let crashed = false;
       cdp.on("Inspector.targetCrashed", () => { crashed = true; });
 
-      const nav = await gotoAndWait(cdp, URL_ARG);
-      if (!nav.loaded) { r.ochita = true; r.why = "読み込みが終わらない"; return; }
+      await gotoAndWait(cdp, pageUrl);
       await sleep(SETTLE);
+      // 棚編集の画面のときは「読み込み中…」が消えるまで待ってから貼る
+      if (waitReadyMs > 0) {
+        const t1 = Date.now();
+        while (Date.now() - t1 < waitReadyMs) {
+          const t = await ev(cdp, `(document.body?document.body.innerText:'')`, 12000).catch(() => "");
+          if (t && !t.includes(cfg.editLoadingText || "読み込み中")) break;
+          await sleep(1000);
+        }
+        r.waitedMs = Date.now() - t1;
+      }
 
       const found = JSON.parse(await ev(cdp, FINDER(cfg.editText)) || "{}");
       // 棚編集があるなら開いてから貼る（貼り先はたいてい編集の中にある）
@@ -461,23 +582,55 @@ async function main() {
     try { m = await measureWidth(w); }
     catch (e) { m = { width: w, sokutei_shippai: String(e?.message || e).slice(0, 300) }; }
     if (!RECON_ONLY) {
-      const trials = [];
+      // ② 棚編集：開いてから触れるまで
+      process.stderr.write(`[omosa] ${w}px 棚編集を開いています…\n`);
+      try { m.tanaHenshu = await measureEdit(w); }
+      catch (e) { m.tanaHenshu = { error: String(e?.message || e).slice(0, 300) }; }
+
+      // ③ URLを貼って落ちる回数。まず棚編集の画面で。貼る所が出てこなければトップで。
+      const runPaste = async (pageUrl, waitMs, basho) => {
+        const trials = [];
+        for (let i = 1; i <= RUNS; i++) {
+          const one = await pasteOnce(w, i, pageUrl, waitMs);
+          trials.push(one);
+          process.stderr.write(`[omosa] ${w}px 貼り ${i}/${RUNS} (${basho}) … ${one.skipped ? "貼る所なし" : one.ochita ? "落ちた(" + one.why + ")" : "無事"}\n`);
+          if (one.skipped && i >= 2) break; // 貼る所が無いのに20回やっても意味がない
+        }
+        const done = trials.filter((t) => !t.skipped);
+        const ko = done.filter((t) => t.ochita);
+        return {
+          basho, url: pageUrl, tried: done.length, ochita: ko.length,
+          skipped: trials.length - done.length,
+          skipWhy: trials.find((t) => t.skipped)?.why || null,
+          rate: done.length ? Math.round((ko.length / done.length) * 1000) / 10 : null,
+          whys: [...new Set(ko.map((t) => t.why))],
+          errs: [...new Set(done.flatMap((t) => t.errs))].slice(0, 6),
+          maxFreezeMs: done.map((t) => t.maxFreezeMs).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
+          heapMB: done.map((t) => t.heapMB).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
+          trials: done.map((t) => ({ n: t.n, ochita: t.ochita, why: t.why, ms: t.ms })),
+        };
+      };
+      m.paste = await runPaste(cfg.editUrl || URL_ARG, 20000, "棚編集の画面のURL入力欄");
+
+      // ③-b URLを開いて落ちるか。こちらは鍵なしでも runs 回まわせる。
+      const opens = [];
+      const list = cfg.openUrls && cfg.openUrls.length ? cfg.openUrls : [URL_ARG];
       for (let i = 1; i <= RUNS; i++) {
-        const one = await pasteOnce(w, i);
-        trials.push(one);
-        process.stderr.write(`[omosa] ${w}px 貼り ${i}/${RUNS} … ${one.skipped ? "貼る所なし" : one.ochita ? "落ちた(" + one.why + ")" : "無事"}\n`);
-        if (one.skipped && i >= 3) break; // 貼る所が無いのに20回やっても意味がない
+        const u = list[(i - 1) % list.length];
+        const one = await openOnce(w, i, u);
+        opens.push(one);
+        process.stderr.write(`[omosa] ${w}px 開き ${i}/${RUNS} … ${one.ochita ? "落ちた(" + one.why + ")" : "無事"}\n`);
       }
-      const done = trials.filter((t) => !t.skipped);
-      m.paste = {
-        tried: done.length, ochita: done.filter((t) => t.ochita).length,
-        skipped: trials.length - done.length,
-        rate: done.length ? Math.round((done.filter((t) => t.ochita).length / done.length) * 1000) / 10 : null,
-        whys: [...new Set(done.filter((t) => t.ochita).map((t) => t.why))],
-        errs: [...new Set(done.flatMap((t) => t.errs))].slice(0, 6),
-        maxFreezeMs: done.map((t) => t.maxFreezeMs).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
-        heapMB: done.map((t) => t.heapMB).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
-        trials: done.map((t) => ({ n: t.n, ochita: t.ochita, why: t.why, ms: t.ms })),
+      const ko2 = opens.filter((t) => t.ochita);
+      m.open = {
+        tried: opens.length, ochita: ko2.length,
+        rate: opens.length ? Math.round((ko2.length / opens.length) * 1000) / 10 : null,
+        whys: [...new Set(ko2.map((t) => t.why))],
+        errs: [...new Set(opens.flatMap((t) => t.errs))].slice(0, 6),
+        maxFreezeMs: opens.map((t) => t.maxFreezeMs).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
+        heapMB: opens.map((t) => t.heapMB).filter((x) => x != null).sort((a, b) => b - a)[0] ?? null,
+        msAvg: Math.round(opens.reduce((a, t) => a + t.ms, 0) / (opens.length || 1)),
+        trials: opens.map((t) => ({ n: t.n, url: shortName(t.url), ochita: t.ochita, why: t.why, ms: t.ms })),
       };
     }
     result.byWidth[String(w)] = m;
@@ -485,7 +638,9 @@ async function main() {
   result.elapsedSec = Math.round((Date.now() - started.getTime()) / 1000);
   mkdirSync(dirname(OUT_LAST), { recursive: true });
   writeFileSync(OUT_LAST, JSON.stringify(result, null, 1));
-  appendFileSync(OUT_LOG, JSON.stringify(result) + "\n");
+  // ★下見(--recon)は履歴に足さない。足すと「前回より重い／軽い」の比べる相手が
+  //   別のページになって、嘘の赤・嘘の緑が出る（2026-09-23に実際そうなりかけた）。
+  if (!RECON_ONLY) appendFileSync(OUT_LOG, JSON.stringify(result) + "\n");
   process.stdout.write(JSON.stringify(result, null, 1));
 }
 

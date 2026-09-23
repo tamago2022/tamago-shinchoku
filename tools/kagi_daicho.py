@@ -245,6 +245,11 @@ def verdict(code, hint, alive_codes=(200, 201, 204), dead_codes=(401, 403)):
     if code == 404:
         return "ok", "404（鍵は通った。点検用の住所が無いだけ）"
     if code == 429:
+        # ★2026-09-23 修正。429を一律「叩きすぎ＝ok」にしていたのが嘘の出どころだった。
+        #   OpenAIの残高ぎれ(insufficient_quota / credit_balance_exhausted)も429で来る。
+        #   「鍵は通ったが金が無い」を緑にすると、工場は毎回失敗するのに台帳は緑のままになる。
+        if hint in ("残高", "支払い", "枠"):
+            return "ng", "429 通らない（%s）" % hint
         return "ok", "429（鍵は通った。叩きすぎ）"
     return "unknown", "%d 未実測" % code
 
@@ -273,6 +278,35 @@ def probe_claude():
                 at=last, expiry=expiry, note=extra)
 
 
+def _saikin_honban_shippai(ai_id, words, hours=6):
+    """★この鍵を使った『本物の仕事』が、直近で失敗していないか。
+
+    なぜ要るか（2026-09-23 実測）：
+      OpenAIの点検は /v1/models を叩いていた。**残高が0でもここは200を返す。**
+      だから台帳は「200 通った」と緑を出し続け、その裏で工場は毎回
+      `insufficient_quota` で落ちていた（10:22〜10:25 に3本）。
+      ＝「叩いて通った」を名乗りながら、通っていない口を緑にしていた。
+    だから点検の結果だけでなく、**本物の仕事が残した跡**も一緒に見る。
+    """
+    d = load(os.path.join(PUBLIC, "ai_daicho.json"), {}) or {}
+    now = time.time()
+    for row in (d.get("ai") or []):
+        if row.get("ai") != ai_id:
+            continue
+        for e in (row.get("errs") or []):
+            try:
+                at = datetime.fromisoformat(str(e.get("at"))).timestamp()
+            except Exception:
+                continue
+            if now - at > hours * 3600:
+                continue
+            low = str(e.get("err") or "").lower()
+            for w in words:
+                if w in low:
+                    return jst(at), w
+    return None, None
+
+
 def probe_openai():
     k = find_key(("OPENAI_API_KEY", "CHATGPT_API_KEY"))
     if not k:
@@ -280,6 +314,13 @@ def probe_openai():
     c, h = http_code("https://api.openai.com/v1/models",
                      {"Authorization": "Bearer " + k})
     s, d = verdict(c, h)
+    # ★点検口が緑でも、本物の仕事が落ちているなら赤。台帳が嘘をつかないための突き合わせ。
+    at, w = _saikin_honban_shippai(
+        "chappy", ("insufficient_quota", "credit_balance_exhausted", "no credits"))
+    if s == "ok" and at:
+        return dict(status="ng",
+                    detail="点検口は200だが、本物の仕事が %s に落ちています（%s）"
+                           "＝鍵は生きていて残高が0です" % (at, w))
     return dict(status=s, detail=d)
 
 
@@ -362,6 +403,72 @@ def probe_github():
                       "User-Agent": "tamago-kagi-daicho"})
     s, d = verdict(c, h)
     return dict(status=s, detail=d)
+
+
+def _gh_token():
+    k = find_key(("GITHUB_TOKEN", "GH_TOKEN"))
+    if k:
+        return k
+    for gh in ("gh", "/opt/homebrew/bin/gh", "/usr/local/bin/gh",
+               os.path.expanduser("~/.local/bin/gh")):
+        try:
+            p = subprocess.run([gh, "auth", "token"], capture_output=True,
+                               text=True, timeout=15)
+            if p.returncode == 0 and p.stdout.strip():
+                return p.stdout.strip()
+        except Exception:
+            continue
+    return None
+
+
+def probe_meta():
+    """★2026-09-23 新設。Metaの鍵は『隠れている』のではなく『存在しない』。
+
+    たまごさんの引き継ぎで何度も「Metaの鍵はどこだ」と探されていたが、
+    .env×3・wae_autopost・鍵台帳・全文検索、全部見て1つも無かった。
+    ★台帳に載っていないものは、無いことにすら気づけない。だから行を作る。
+    """
+    k = find_key(("META_ACCESS_TOKEN", "FB_ACCESS_TOKEN", "FACEBOOK_ACCESS_TOKEN",
+                  "THREADS_ACCESS_TOKEN", "INSTAGRAM_ACCESS_TOKEN"))
+    if not k:
+        return dict(status="ng",
+                    detail="鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）")
+    c, h = http_code("https://graph.facebook.com/v21.0/me?access_token=" + k)
+    s, d = verdict(c, h, dead_codes=(400, 401, 403))
+    return dict(status=s, detail=d)
+
+
+def probe_copilot():
+    """★2026-09-23 新設。Copilotは『4経路とも権限なし』のまま台帳に載っていなかった。
+
+    見るのは「Copilotをこのリポジトリの担当者にできるか」＝実際に使える形かどうか。
+    担当者候補に copilot-swe-agent[bot] / Copilot が出てこなければ、
+    Issueを立てても永遠に受け取られない（実測：REST で割り当てると403、👀も付かない）。
+    """
+    k = _gh_token()
+    if not k:
+        return dict(status="unknown",
+                    detail="GitHubのトークンが無いので確かめられません（先にGitHubの行を直す）")
+    hdr = {"Authorization": "Bearer " + k,
+           "Accept": "application/vnd.github+json",
+           "User-Agent": "tamago-kagi-daicho"}
+    url = "https://api.github.com/repos/tamago2022/tamago-shinchoku/assignees"
+    try:
+        req = urllib.request.Request(url, headers=hdr)
+        with urllib.request.urlopen(req, timeout=12,
+                                    context=ssl.create_default_context()) as r:
+            body = json.loads(r.read().decode("utf-8", "ignore"))
+        names = {str(x.get("login", "")).lower() for x in body if isinstance(x, dict)}
+        if "copilot-swe-agent[bot]" in names or "copilot" in names:
+            return dict(status="ok", detail="200 担当者にできます（Copilotが受け取れる形）")
+        return dict(status="ng",
+                    detail="担当者の候補にCopilotが居ません＝Issueを立てても受け取られません"
+                           "（有料プラン／組織の許可が要る形）")
+    except urllib.error.HTTPError as e:
+        s, d = verdict(e.code, "")
+        return dict(status="ng" if s != "ok" else "unknown", detail=d)
+    except Exception as e:
+        return dict(status="unknown", detail="叩けませんでした（%s）" % type(e).__name__)
 
 
 def probe_fal():
@@ -556,6 +663,16 @@ LEDGER = [
          stops="ごきげん補給所の「話す」と 970号の台が鳴らなくなる",
          fix="Lovable→クラウド→Secrets の XAI_API_KEY2 を見る。"
              "窓口＝supabase/functions/voice-session"),
+    dict(id="copilot", what="GitHub Copilot（実装の代行）",
+         where="gh auth token ＋ GitHub側の許可",
+         probe=probe_copilot,
+         stops="Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
+         fix="github.com/settings/copilot で有効にする。★有料。金額は実測していない"),
+    dict(id="meta", what="Metaの鍵（★まだ存在しない）",
+         where="どこにも置かれていない（.env×3・wae_autopost・鍵台帳・全文検索で0件）",
+         probe=probe_meta,
+         stops="Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
+         fix="developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ"),
     dict(id="fal", what="fal.ai（画像・動画・音声）", where="~/.tamago/keys/api_keys.env",
          probe=probe_fal, stops="絵と動画が1枚も作れない",
          fix="fal.ai で鍵を作り直して鍵ファイルへ"),

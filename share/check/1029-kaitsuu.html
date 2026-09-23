@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>1029 開通｜上から順に押すだけ</title>
+<style>
+:root{
+  --ink:#141210; --sub:#6b6259; --line:#ded6cb; --paper:#f6f2ea;
+  --card:#fffdf8; --green:#1f7a4d; --greenbg:#e8f5ee;
+  --red:#a8321f; --redbg:#fbeeeb; --gray:#8a8178; --graybg:#f0ece5;
+  --gold:#8a6a1f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  line-height:1.65;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 80px}
+
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--sub);margin:0 0 6px}
+h1{font-size:25px;line-height:1.3;margin:0 0 8px;letter-spacing:.01em}
+.lede{font-size:13.5px;color:var(--sub);margin:0}
+.stamp{font-size:11.5px;color:var(--sub);margin:10px 0 0}
+.stamp b{color:var(--ink)}
+
+.howto{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink);
+  padding:12px 14px;margin:18px 0 6px;font-size:13px}
+.howto b{display:block;margin-bottom:4px;font-size:13.5px}
+
+h2{font-size:16px;margin:30px 0 4px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+h2 .n{font-size:11px;letter-spacing:.2em;color:var(--sub);display:block;margin-bottom:3px;font-weight:400}
+.h2note{font-size:12.5px;color:var(--sub);margin:6px 0 14px}
+
+.row{background:var(--card);border:1px solid var(--line);border-radius:3px;
+  padding:14px;margin:10px 0;position:relative}
+.row.ok{background:var(--greenbg);border-color:#9fcdb4}
+.row.ng{background:var(--redbg);border-color:#e2b3a8}
+.row.unknown{background:var(--card)}
+.rhead{display:flex;align-items:flex-start;gap:10px}
+.num{flex:0 0 26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.row.ok .num{background:var(--green)}
+.row.ng .num{background:var(--red)}
+.what{font-size:15.5px;font-weight:700;line-height:1.4;flex:1}
+.secs{flex:0 0 auto;font-size:11px;color:var(--sub);border:1px solid var(--line);
+  border-radius:2px;padding:2px 6px;white-space:nowrap;background:#fff}
+
+.opens{font-size:13px;margin:9px 0 0;padding-left:36px;color:#3a352f}
+.opens b{color:var(--ink)}
+.meta{font-size:11.5px;color:var(--sub);padding-left:36px;margin:6px 0 0}
+
+.acts{display:flex;gap:8px;margin:12px 0 0;padding-left:36px;flex-wrap:wrap}
+a.go{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+  font-size:13.5px;font-weight:700;padding:10px 16px;border-radius:2px;flex:1 1 auto;text-align:center;min-width:150px}
+a.go:active{opacity:.7}
+a.go.money{background:var(--gold)}
+button.chk{background:#fff;color:var(--ink);border:1.5px solid var(--ink);
+  font-size:13px;font-weight:700;padding:10px 14px;border-radius:2px;cursor:pointer;
+  font-family:inherit;flex:0 0 auto}
+button.chk:active{background:var(--ink);color:#fff}
+.nolink{flex:1 1 auto;font-size:12.5px;color:var(--red);border:1px dashed #d8a99c;
+  padding:9px 12px;border-radius:2px;background:#fff;min-width:150px}
+
+.verdict{padding-left:36px;margin:10px 0 0;font-size:12.5px;font-weight:700;min-height:1.2em}
+.verdict .why{display:block;font-weight:400;color:var(--sub);margin-top:3px;font-size:11.5px}
+.verdict.ok{color:var(--green)}
+.verdict.ng{color:var(--red)}
+.verdict.wait{color:var(--sub);font-weight:400}
+
+.allbtn{display:block;width:100%;background:var(--ink);color:#fff;border:0;
+  font-size:14px;font-weight:700;padding:14px;border-radius:2px;cursor:pointer;
+  font-family:inherit;margin:16px 0 0}
+
+.money{border:1px solid var(--gold);background:#fdfaf2;border-radius:3px;padding:13px 14px;margin:10px 0}
+.money .what{font-size:15px}
+.money .yen{font-size:12.5px;margin:8px 0 0;padding-left:0}
+.money .yen dt{font-weight:700;font-size:11.5px;color:var(--gold);letter-spacing:.06em}
+.money .yen dd{margin:1px 0 8px;color:#3a352f}
+.money .acts{padding-left:0}
+.money .rhead{gap:8px}
+
+.foot{margin-top:34px;border-top:1px solid var(--line);padding-top:14px;
+  font-size:12px;color:var(--sub)}
+.foot b{color:var(--ink)}
+.foot ul{padding-left:18px;margin:6px 0}
+@media(max-width:400px){
+  h1{font-size:21px}
+  .opens,.meta,.acts,.verdict{padding-left:0}
+  .rhead{flex-wrap:wrap}
+  .what{flex:1 1 100%;order:2;margin-top:4px}
+  .secs{order:3}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">1029 ／ KAITSU ― ぜんぶの口を開ける</p>
+  <h1>上から順に、押すだけ。</h1>
+  <p class="lede">いま閉まっている口だけを、押す順に並べました。押したら、その行の「確かめる」を押してください。機械が実際に叩いた結果で、行が緑か赤に変わります。</p>
+  <p class="stamp">機械の実測：<b id="stamp">読み込み中…</b>　／　この数字は5分おきに自動で更新されます</p>
+</header>
+
+<div class="howto">
+  <b>この紙の読み方</b>
+  黒いボタン＝押してよい（お金はかかりません）。<br>
+  金色のボタン＝<b>お金が動きます</b>。押すかどうかはたまごさんが決めてください。こちらからは押しません。<br>
+  「確かめる」＝機械が最後に実際に叩いた結果を読みに行きます。「設定に書いてある」ではなく「叩いて通った」だけを緑にします。
+</div>
+
+<h2><span class="n">SECTION 1</span>お金はかからない。押すだけ。</h2>
+<p class="h2note">上から順に。1番を先に通すと、止まっている工場そのものが動き出します。</p>
+
+<div id="free"></div>
+<button class="allbtn" onclick="checkAll()">ぜんぶ確かめる</button>
+
+<h2><span class="n">SECTION 2</span>お金が動くもの（押さずに、まず金額を見る）</h2>
+<p class="h2note">ここは押しません。いま分かっている金額だけ書きます。<b>分からないものは「取れない」と書きます。</b>憶測の金額は1円も書きません。</p>
+<div id="money"></div>
+
+<div class="foot">
+  <b>いま実測で分かっていること（2026-09-23 昼）</b>
+  <ul>
+    <li>Chrome（自動操作用）は <b>Googleにログイン済み</b>。つまりGoogleは切れていません。</li>
+    <li>同じChromeが <b>GitHubとOpenAIはログアウト</b>。x.aiのコンソールはログイン済み。</li>
+    <li>たまごさんが普段見ているのは <b>Brave</b>。Braveで入れてもChromeには伝わりません。<b>これが「何十回もログインさせられる」の正体です。</b>（このページのリンクは、押したブラウザに入ります）</li>
+    <li>Claudeの鍵は「箱は残っているのに中身が空」。更新用の鍵まで空なので、機械は自力で作り直せません。<b>だから何度も切れます。</b></li>
+  </ul>
+  <b>次に出すもの</b>
+  <ul>
+    <li>切れない形（1年もつ鍵）への入れ替え ── Claudeだけは、リンク1つでは根本が直りません。</li>
+    <li>鍵の置き場を1か所に寄せる（いま .env ／ ~/.tamago/keys ／ Supabase の3か所に散っています）。</li>
+    <li>毎朝1回、全部の口を叩いて、赤が出たときだけ知らせる。</li>
+  </ul>
+</div>
+
+</div>
+
+<script>
+// 機械が実際に叩いた結果（5分おきに更新）
+const SRC = '../../status/public/kagi_daicho.json';
+
+// 押す順。id は機械の台帳の行と対応している。
+const FREE = [
+ {id:'claude', n:1,
+  what:'Claudeの鍵（工場の発車そのもの）',
+  secs:'30秒',
+  opens:'空回しだけで<b>1,002本</b>。9/21 04:42から<b>1本も産んでいません</b>。ここが通ると、止まっている仕事が全部動き出します。',
+  url:'https://claude.ai/login',
+  go:'Claudeにログインし直す',
+  meta:'★いつも使っているClaudeのアプリで1回ログインし直すのが確実です。番人(auth_keeper)が生死を見ていて、戻ったら自動で発車を再開します。'},
+
+ {id:'gmail', n:2,
+  what:'Gmailの鍵（アプリパスワード）',
+  secs:'60秒',
+  opens:'見張り<b>4本が同時に開きます</b>（LINE審査・LINE返信・Anthropic返信・外部連絡窓口）。いまは走っても<b>1通も読めていません</b>。',
+  url:'https://myaccount.google.com/apppasswords',
+  go:'アプリパスワードを作る',
+  meta:'★このChromeはGoogleにログイン済みなので、押せばそのまま作成画面が出ます。作った16文字をMacに置く係は、まだ居ません（次便で作ります）。'},
+
+ {id:'github', n:3,
+  what:'GitHub（ブラウザのログイン）',
+  secs:'30秒',
+  opens:'Issue・PRの見張りが目を開けます。<b>実測でログアウトしていました。</b>',
+  url:'https://github.com/login',
+  go:'GitHubにログイン',
+  meta:'★台帳が赤にしているのは別物（ターミナル側の gh のトークン）です。ここを押してもそちらは直りません。正直に分けて書いています。'},
+
+ {id:'gemini', n:4,
+  what:'Geminiの鍵（無料）',
+  secs:'60秒',
+  opens:'安い代行先が戻ります。<b>いまはClaudeの枠を食い続けています。</b>発行は無料です。',
+  url:'https://aistudio.google.com/apikey',
+  go:'Geminiの鍵を作る（無料）',
+  meta:'★Googleにログイン済みなので、押せばそのまま発行画面です。'},
+
+ {id:'lovable', n:5,
+  what:'Lovableの同意（本番へ出す口）',
+  secs:'—',
+  opens:'直したものが<b>本番の画面に出る</b>ようになります。いまは丸1日以上、コードを直しても画面が変わっていません。',
+  url:null,
+  nolink:'★この行だけリンクが出せません。認可URLはMac側の受け皿（127.0.0.1:41999）がその場で作るもので、こちらで先に用意できません。次便で「押せる形」にして出します。',
+  meta:'受け皿は lovable_auth_keeper が立て続けています。'}
+];
+
+const MONEY = [
+ {id:'openai',
+  what:'OpenAI（残高ぎれ）',
+  now:'取れません。APIからは残高が読めません。画面でしか見られません。',
+  cost:'取れません。金額はこちらからは分かりません。',
+  state:'鍵そのものは生きています。<b>残高が0です</b>（実測 10:25「You have no credits remaining」）。',
+  url:'https://platform.openai.com/settings/organization/billing/overview',
+  go:'OpenAIの請求画面を開く',
+  meta:'★このChromeはOpenAIからログアウトしていました。先にログインが要ります。'},
+
+ {id:'xai',
+  what:'Grok / xAI（チーム goodvibes の残高）',
+  now:'取れません。403が返るだけで金額は読めません。',
+  cost:'取れません。',
+  state:'鍵は有効。<b>残高か権限が無い形（403）</b>。この鍵はチーム <b>goodvibes</b> のものです。コンソールにログイン済みなのは <b>TAMAGO\'s team</b> で、別のチームです。',
+  url:'https://console.x.ai/',
+  go:'x.aiのコンソールを開く',
+  meta:'★「話す」の声は<b>別の鍵で既に鳴っています</b>（残り 約$2.54・実測）。声のためにここへ入れる必要はありません。'},
+
+ {id:'copilot',
+  what:'GitHub Copilot（4経路とも権限なし）',
+  now:'取れません。',
+  cost:'取れません。プランの値段はこちらで確かめていません。',
+  state:'Issueに担当者として入れようとすると <b>403 Forbidden</b>。👀も付かない＝そもそも受け取っていません。',
+  url:'https://github.com/settings/copilot',
+  go:'Copilotの設定を開く',
+  meta:'★先にGitHubへログイン（Section 1の3番）が要ります。'},
+
+ {id:'meta',
+  what:'Metaの鍵（★隠れているのではなく、まだ存在しません）',
+  now:'0円。発行そのものは無料です。',
+  cost:'取れません。使う量による課金があるかはこちらで確かめていません。',
+  state:'.env×3・wae_autopost・15件の鍵台帳・全文検索、<b>全部見て1つもありませんでした</b>。作られていません。',
+  url:'https://developers.facebook.com/apps/',
+  go:'Metaの開発者画面を開く',
+  meta:'★台帳にも載っていない＝誰も見ていない状態です。'}
+];
+
+let DATA = null;
+
+function el(h){const d=document.createElement('div');d.innerHTML=h.trim();return d.firstElementChild;}
+
+function renderFree(){
+  const box=document.getElementById('free');
+  FREE.forEach(r=>{
+    const act = r.url
+      ? `<a class="go" href="${r.url}" target="_blank" rel="noopener">${r.go}</a>
+         <button class="chk" onclick="checkOne('${r.id}')">確かめる</button>`
+      : `<div class="nolink">${r.nolink}</div>
+         <button class="chk" onclick="checkOne('${r.id}')">確かめる</button>`;
+    box.appendChild(el(`
+      <div class="row unknown" id="row-${r.id}">
+        <div class="rhead">
+          <div class="num">${r.n}</div>
+          <div class="what">${r.what}</div>
+          <div class="secs">${r.secs}</div>
+        </div>
+        <p class="opens">${r.opens}</p>
+        <p class="meta">${r.meta}</p>
+        <div class="acts">${act}</div>
+        <div class="verdict wait" id="v-${r.id}">まだ確かめていません</div>
+      </div>`));
+  });
+}
+
+function renderMoney(){
+  const box=document.getElementById('money');
+  MONEY.forEach(r=>{
+    box.appendChild(el(`
+      <div class="money" id="row-${r.id}">
+        <div class="rhead"><div class="what">${r.what}</div></div>
+        <p class="opens" style="padding-left:0">${r.state}</p>
+        <dl class="yen">
+          <dt>いま いくら</dt><dd>${r.now}</dd>
+          <dt>何をすると いくら</dt><dd>${r.cost}</dd>
+        </dl>
+        <div class="acts">
+          <a class="go money" href="${r.url}" target="_blank" rel="noopener">${r.go}</a>
+          <button class="chk" onclick="checkOne('${r.id}')">確かめる</button>
+        </div>
+        <p class="meta" style="padding-left:0">${r.meta}</p>
+        <div class="verdict wait" id="v-${r.id}">まだ確かめていません</div>
+      </div>`));
+  });
+}
+
+function setV(id, cls, text, why){
+  const v=document.getElementById('v-'+id); if(!v) return;
+  v.className='verdict '+cls;
+  v.innerHTML = text + (why?`<span class="why">${why}</span>`:'');
+  const row=document.getElementById('row-'+id);
+  if(row && !row.classList.contains('money')){
+    row.classList.remove('ok','ng','unknown');
+    row.classList.add(cls==='ok'?'ok':(cls==='ng'?'ng':'unknown'));
+  }
+}
+
+function ago(ep){
+  if(!ep) return '';
+  const m=Math.round((Date.now()/1000-ep)/60);
+  if(m<1) return 'たった今';
+  if(m<60) return m+'分前';
+  return Math.round(m/60)+'時間前';
+}
+
+async function load(force){
+  if(DATA && !force) return DATA;
+  const r=await fetch(SRC+'?t='+Date.now(),{cache:'no-store'});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  DATA=await r.json();
+  const s=document.getElementById('stamp');
+  s.textContent=(DATA.generatedAt||'').replace('T',' ').slice(0,16).replace(/-/g,'/');
+  return DATA;
+}
+
+async function checkOne(id){
+  setV(id,'wait','確かめています…');
+  let d;
+  try{ d=await load(true); }
+  catch(e){ setV(id,'ng','確かめられませんでした',e.message+'（台帳のファイルが読めません）'); return; }
+
+  const row=(d.rows||[]).find(x=>x.id===id);
+  if(!row){
+    setV(id,'ng','機械の台帳に この口が載っていません',
+      'つまり、開いているか閉じているかを誰も見ていません。台帳に足すのが先です。');
+    return;
+  }
+  const when='機械が叩いた時刻：'+ago(row.measuredAt);
+  if(row.status==='ok') setV(id,'ok','開いています','叩いた結果：'+(row.detail||'')+'　／　'+when);
+  else setV(id,'ng','まだ閉じています','叩いた結果：'+(row.detail||'理由が書かれていません')+'　／　'+when);
+}
+
+async function checkAll(){
+  DATA=null;
+  for(const r of FREE.concat(MONEY)) await checkOne(r.id);
+}
+
+renderFree(); renderMoney();
+load(true).then(()=>checkAll()).catch(e=>{
+  document.getElementById('stamp').textContent='読めませんでした（'+e.message+'）';
+});
+</script>
+</body>
+</html>

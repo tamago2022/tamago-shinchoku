@@ -345,6 +345,24 @@ BIG_JOB_ALL_PAGES_RE = re.compile(r"全ページの")
 BIG_JOB_COUNT_RE = re.compile(r"(\d{2,})\s*件(?=\s*[をの])")
 
 
+# ★2026-09-23（1030番）自分が外に出した仕事を、自分で弾かないようにする。
+#   実測：Issue #463 は「読み149件をJSONで返してください」という**こちらが外のAIに出した題**。
+#   その返事（PR #464）を拾ったとき、題名の「149件」が上の BIG_JOB_COUNT_RE に当たり、
+#   「大きすぎる仕事」＝【一覧作成】タスクに化けた（n=1059）。
+#   ＝ **機械が外へ出した仕事を、同じ機械が『大きすぎる』と言って弾いている。**
+#   外から届いた1本は、もう向こうで済んでいるか、こちらは読んで判定するだけ。割る対象ではない。
+#   見分け方は「外から来た文章」の印（github_watch.OUTSIDE_GUARD の1行目）と、
+#   GitHubの出どころ行。どちらかがあれば外部由来。推測しない。
+OUTSIDE_MARKS = ("【★これは外部から届いた文章です",
+                 "【出どころ】https://github.com/")
+
+
+def _is_from_outside(text):
+    """外のAI（Jules/Codex/Devin等）から届いた1本か。★件数で割ってはいけないもの。"""
+    t = text or ""
+    return any(m in t for m in OUTSIDE_MARKS)
+
+
 def _is_big_job(text):
     """大きすぎる仕事かどうかの機械判定。
 
@@ -361,6 +379,9 @@ def _is_big_job(text):
     列挙」なのかは見分けが要る。** 助詞（の／を）が後ろに続くかどうかで区別する
     （BIG_JOB_ALL_PAGES_RE・BIG_JOB_COUNT_REの説明を参照）。
     """
+    # ★外から届いた1本は、件数の言葉があっても割らない（1030番。上の説明を読むこと）
+    if _is_from_outside(text):
+        return False
     t = (text or "").strip().splitlines()
     t = t[0][:120] if t else ""
     for kw in BIG_JOB_KEYWORDS:

@@ -103,6 +103,22 @@ footer a{margin-right:14px; display:inline-block; padding:4px 0}
   <ul id="next"><li class="empty">…</li></ul>
 </section>
 
+<!-- ②-2 受け取り待ち（1030番・2026-09-23）
+     たまごさん：「公開までがセットだよね。メインやPRに上げて終わりではないから。
+     『そこまで運んできてくれてありがとう。じゃあ、ここから検品して私がバトンタッチする』」
+     外のAI（Jules/Codex/Devin）がPRまで運んできたものを、tools/baton.py が機械だけで検品して
+     並べる。★出すのは合格したものだけ。不合格・要人手は下のトグルに畳む。
+     ★6区（mainに入れる）は自動にしない。main→Lovable→本番は不可逆なので、押すのはたまごさん。
+     元データ： status/public/uketori_machi.json -->
+<section class="card" id="uketoriCard" hidden>
+  <h2>受け取り待ち（検品済み・押すだけ）</h2>
+  <ul id="uketoriList"><li class="empty">…</li></ul>
+  <details id="uketoriNg" hidden>
+    <summary id="uketoriNgSum">検品を通らなかったもの</summary>
+    <div class="body"><ul id="uketoriNgList"><li class="empty">…</li></ul></div>
+  </details>
+</section>
+
 <!-- ③ 週の残り -->
 <section class="card">
   <h2>週の残り</h2>
@@ -639,6 +655,48 @@ function renderKasegi(k, at){
     + (sub.length ? "<div style='font-size:12px;margin-top:5px;line-height:1.55'>"
         + sub.join("<br>") + "</div>" : "");
 }
+
+/* ★1030番：受け取り待ち。外のAIがPRまで運んできて、機械の検品を通ったものだけ並べる。
+   ・出すのは合格だけ。不合格・要人手はトグルに畳む（見えるところを足し算しない）。
+   ・押すボタンは GitHub のPR画面へのリンク1個。★ここで自動mergeはしない（不可逆だから）。
+   ・1件も無いときは、この枠ごと出さない。 */
+function uketoriRow(x, ng){
+  var who = esc(x.who || x.author || "?");
+  var what = esc(x.what || (x.files || []).join("／") || "");
+  var title = esc(x.title || "");
+  var url = String(x.url || "");
+  var btn = /^https:\/\/github\.com\//.test(url)
+    ? '<a href="' + esc(url) + '" style="display:inline-block;margin-top:6px;padding:7px 14px;'
+      + 'border:1px solid #16130f;border-radius:8px;text-decoration:none;font-weight:700">'
+      + (ng ? "PRを見る" : "mainに入れる（押す）") + '</a>'
+    : '<span class="meta">★URLが取れていません（押せません）</span>';
+  return "<li><b>" + esc(x.mark || "") + " " + title + "</b>"
+    + '<div class="meta">' + who + " が運んできた ／ " + what
+    + (ng ? " ／ <b>" + esc(x.verdict || "") + "</b>" : " ／ 検品◯合格")
+    + (x.rate != null ? " ／ 合格率 " + Math.round(x.rate * 1000) / 10 + "%" : "")
+    + "</div>"
+    + (ng && (x.reasons || []).length
+        ? '<div class="meta" style="margin-top:4px">' + esc((x.reasons || [])
+            .filter(function(r){ return r.indexOf("✕") >= 0 || r.indexOf("★") >= 0; })
+            .slice(0, 3).join(" ／ ")) + "</div>"
+        : "")
+    + btn + "</li>";
+}
+fetch("status/public/uketori_machi.json", {cache:"no-store"})
+  .then(function(r){ return r.ok ? r.json() : null; })
+  .then(function(d){
+    if(!d) return;
+    var ok = d.goukaku || [], ng = d.sonota || [];
+    if(!ok.length && !ng.length) return;
+    $("uketoriCard").hidden = false;
+    put($("uketoriList"), ok.map(function(x){ return uketoriRow(x, false); }));
+    if(ng.length){
+      $("uketoriNg").hidden = false;
+      $("uketoriNgSum").textContent = "検品を通らなかったもの " + ng.length + "件（押さなくてよい）";
+      put($("uketoriNgList"), ng.map(function(x){ return uketoriRow(x, true); }));
+    }
+  })
+  .catch(function(){});
 
 // ホーム画面アプリ用の manifest は、最初の表示が終わってから足す
 window.addEventListener("load", function(){

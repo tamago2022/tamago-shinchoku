@@ -426,6 +426,71 @@ def _instruction(repo, kind, number, title, url, body, author, ours=False):
     ])
 
 
+# ─────────────────────────────────────────────────────────────────────
+# ★1030番（2026-09-23）ここが「詰まりの正体」だった場所。
+#
+#   実測：外のAI（Jules）は6分07秒でPR #464 まで運んできた。github_watch はそれを
+#   ちゃんと発車待ちに積んでいた（n=1061）。**そこまでは動いていた。**
+#   ところが、積んでいたのは「中身を読んで自分で判断してから動いてください」という
+#   **人間向けの依頼文**であって、検品の口を名指しで叩く指示ではなかった。
+#   だから毎回セッションが1本起きて、人が手で `1028_jules_saiten.py` を叩いていた。
+#   grep 実測：`kensa_html` も `1028_jules_saiten` も `prmerge` も、
+#   **呼んでいるコードは1行も存在しなかった。**
+#
+#   → 直し方：拾った瞬間に、この場で検品まで済ませる（github_watch は工場で走るので
+#     api.github.com に出られる＝出られないサンドボックスに投げ直す必要が無い）。
+#     ・合格   … セッションを1本も起こさない。**「押すだけ」の列に並べて終わり。**
+#     ・不合格／要人手 … 理由を全部貼った1本を積む（読み直す手間を人に残さない）。
+#   ★6区（merge）はここでも押さない。baton.py は prmerge を import すらしていない。
+# ─────────────────────────────────────────────────────────────────────
+BATON_MAX_PER_CYCLE = 2      # 1周で検品するPRの本数（1本あたり実測3〜6秒。心臓を待たせない）
+
+
+def _baton_check(repo, number):
+    """PRをその場で検品する。返り値: 検品結果dict / None（検品できなかった）。
+    ★ここが落ちても見張り番は止めない（拾うことの方が大事）。"""
+    try:
+        sys.path.insert(0, TOOLS)
+        import importlib
+        import baton
+        importlib.reload(baton)
+        row = baton.inspect_pr(int(number), repo)
+        baton.write_out([row])
+        log("検品 #%s → %s（%s）" % (number, row.get("verdict"), row.get("what") or ""))
+        return row
+    except Exception as e:  # noqa: BLE001
+        log("⚠️ #%s の検品でつまずきました：%s: %s" % (number, type(e).__name__, e))
+        return None
+
+
+def _baton_instruction(repo, number, row, base):
+    """検品が通らなかったPRを積むときの指示文。★理由を全部貼る（人に読み直させない）。"""
+    lines = [
+        "【タスク】外のAIが出したPR %s #%s を、**機械の検品はもう通してある**。結果は「%s」。"
+        % (repo, number, row.get("verdict")),
+        "【検品した口】tools/baton.py（5区）。判定は tools/hantei.py に寄せてある。AIは1回も呼んでいない＝課金0。",
+        "【やり直すとき】`python3 tools/baton.py --pr %s`（工場側）／"
+        "サンドボックスからは gaibu_kuchi.enqueue_job(\"kakunin\", {\"mode\":\"baton\",\"prs\":[%s]})"
+        % (number, number),
+        "【出どころ】%s ／ 運んできたのは %s" % (row.get("url") or "", row.get("who") or "?"),
+        "【変更】%s" % ("／".join(row.get("files") or []) or "（取れていません）"),
+        "",
+        "【検品の中身（機械が見たもの。これ以上は読み直さなくてよい）】",
+    ]
+    lines += ["　" + r for r in (row.get("reasons") or [])[:40]]
+    lines += [
+        "",
+        "【やること】上の理由を見て、直せるものは直す（こちらで直す／向こうに投げ直す、は自分で決める）。",
+        "★**mainへのmerge（6区）は押さない。**main→Lovable→本番は不可逆。押すのはたまごさんだけ。",
+        "　検品を通ったものは status/public/uketori_machi.json に自動で並ぶ（進捗表の「受け取り待ち」）。",
+        "【終わったら】そのPRに結果を1コメント返す。先頭に必ず %s を入れる。" % FACTORY_MARK,
+        "【報告】3行＋URL。経緯・謝罪は書かない。たまごさんに質問しない。",
+        "",
+        base,
+    ]
+    return "\n".join(lines)
+
+
 def _daicho(dir_, ai, thread="", topic="", ref="", who="", ok=True, err=None):
     """977番：往復の台帳に1行書く。★ここが落ちても見張り番は止めない（台帳は補助）。"""
     try:
@@ -553,6 +618,7 @@ def check_repo(repo, token, st, budget):
     """1リポジトリ分。条件付きGET2本。拾った件数を返す。"""
     picked = 0
     seen = set(st["seen"])
+    baton_left = BATON_MAX_PER_CYCLE   # ★1030番：この周で検品してよいPRの残り本数
     just_queued = set()   # この回で号そのものを積んだ番号（同じ号のコメントは重ねて積まない）
     now = time.time()
     # 基準線。初めて動くときだけ、少し遡る（その間に置かれたものを取りこぼさないため）。
@@ -603,12 +669,28 @@ def check_repo(repo, token, st, budget):
                 _daicho("in", author_ai, thread="gh:%s#%s" % (repo, num),
                         topic=(it.get("title") or "")[:120],
                         ref=it.get("html_url") or "", who=author)
+            base = _instruction(repo, "pr" if is_pr else "issue", num,
+                                it.get("title") or "", it.get("html_url") or "",
+                                it.get("body") or "", author,
+                                ours=bool(_known_thread("gh:%s#%s" % (repo, num))))
+            # ★1030番：PRは、積む前にこの場で検品する（上の長い説明を読むこと）。
+            row = None
+            if is_pr and baton_left > 0:
+                baton_left -= 1
+                row = _baton_check(repo, num)
+            if row and row.get("verdict") == "合格":
+                # ★合格したものはセッションを1本も起こさない。
+                #   「押すだけ」の列（status/public/uketori_machi.json）に並べて終わり。
+                #   ここで積むと、人が読むだけの仕事が1本増える＝運ぶ線が人に戻る。
+                seen.add(key)
+                just_queued.add(str(num))
+                log("%s #%s「%s」→ 検品◯合格。押すだけの列へ（発車待ちには積まない）"
+                    % (repo, num, (it.get("title") or "")[:40]))
+                continue
             status, msg = queue_add(
-                _instruction(repo, "pr" if is_pr else "issue", num,
-                             it.get("title") or "", it.get("html_url") or "",
-                             it.get("body") or "", author,
-                             ours=bool(_known_thread("gh:%s#%s" % (repo, num)))),
-                label="GH%s %s" % (num, (it.get("title") or "")[:50]))
+                _baton_instruction(repo, num, row, base) if row else base,
+                label=("GH%s 検品%s %s" % (num, row.get("verdict"), (it.get("title") or "")[:40]))
+                      if row else "GH%s %s" % (num, (it.get("title") or "")[:50]))
             seen.add(key)
             just_queued.add(str(num))
             picked += 1 if status == "done" else 0

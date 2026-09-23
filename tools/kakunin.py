@@ -11,7 +11,10 @@
 
 ■ できること・できないこと
   ・GETだけ。POSTもPUTもしない。金もかからない。
-  ・**行き先は tamago2022.github.io の中だけ**（下の ALLOW_PREFIX）。
+  ・**行き先は下の ALLOW_PREFIX の中だけ**＝ tamago2022.github.io と
+    joy-relief-station.lovable.app（ごきげん補給所の本番）の2か所。
+    ★ごきげん補給所は GitHub Pages ではなく **Lovable配信**。mainに入れただけでは本番に出ない。
+      github.io だけを見ていると、区間7（公開）が詰まっていても気づけない。
     ここを狭くしてあるのは、この窓口が「なんでも取りに行ける穴」にならないようにするため。
   ・返すのは status / 長さ / 題 / 表の行数 / リンク数 / 探した言葉が有るか、だけ。
     本文そのものは返さない（長すぎて報告が読めなくなる）。
@@ -21,6 +24,7 @@
                                       "must": ["言い分", "AITuberKit"]})
 """
 import json
+import os  # ★_baton() が os.path を使うのに import が無く NameError になっていた（1028番が追加）
 import re
 import ssl
 import time
@@ -41,7 +45,8 @@ UA = "tamago-kakunin/1.0 (+961)"
 def _one(url, must):
     r = {"url": url, "ok": False, "status": 0, "bytes": 0}
     if not url.startswith(ALLOW_PREFIX):
-        r["error"] = "行き先が許してある場所の外です（tamago2022.github.io の中だけ）"
+        r["error"] = ("行き先が許してある場所の外です（tamago2022.github.io と "
+                      "joy-relief-station.lovable.app の中だけ）")
         return r
     t0 = time.time()
     try:
@@ -126,10 +131,36 @@ def _omosa(payload):
     return out
 
 
+def _baton(payload):
+    """1030番【バトン】5区＝PRの検品を工場側で走らせる。
+
+    ★なぜここに間借りしているか（_omosa と同じ理由。増やしたくて増やしていない）
+      gaibu_runner.py は kind=kakunin のとき **毎回 importlib.reload(kakunin)** する。
+      ＝ launchd が抱えている古い runner を止めずに、今すぐ工場で動かせる。
+      runner 本体に kind=baton を足しても、古い runner には届かない（実測）。
+
+    ★安全：呼ぶのは tools/baton.py の run_job だけ＝白名簿。
+      baton.py は **merge を1行も書いていない**（6区は人が押す）。GETのみ・課金0。
+    """
+    import importlib
+    import sys as _sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in _sys.path:
+        _sys.path.insert(0, here)
+    try:
+        import baton
+        importlib.reload(baton)
+    except Exception as e:
+        return {"ok": False, "error": "tools/baton.py が読み込めません：%s" % e, "totalYen": 0.0}
+    return baton.run_job(payload)
+
+
 def run_job(payload=None):
     payload = payload or {}
     if payload.get("mode") == "omosa":
         return _omosa(payload)
+    if payload.get("mode") == "baton":
+        return _baton(payload)
     urls = payload.get("urls") or ([payload["url"]] if payload.get("url") else [])
     must = payload.get("must") or []
     results = [_one(u, must) for u in urls]

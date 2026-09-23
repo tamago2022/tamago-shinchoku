@@ -249,6 +249,9 @@ def run_job(payload):
                 out.append({"number": num,
                             "title": (p or {}).get("title"),
                             "author": (((p or {}).get("user") or {}).get("login")),
+                            # ★1030番：作者が tamago2022 になってしまう相手（GitHub Appが
+                            #   持ち主の名で押す＝Jules）を、枝の名前で見分けるため。GETのみ。
+                            "head": (((p or {}).get("head") or {}).get("ref")),
                             "state": (p or {}).get("state"),
                             "merged": bool((p or {}).get("merged_at")),
                             "mergedAt": (p or {}).get("merged_at"),
