@@ -50,6 +50,18 @@ if HERE not in sys.path:
 import ai_daicho  # noqa: E402
 import gaibu_kuchi as gkuchi  # noqa: E402
 
+# ★2026-09-25 修理：09-24に gaibu_kuchi.py が別物へ丸ごと書き替えられ、
+#   net_ok / enqueue_job / wait_job が巻き添えで消えていた（shigoto_queue.py の冒頭に
+#   同じ事故の記録あり）。待ち行列の正本＝shigoto_queue、回線判定＝kiku を直接見る。
+#   gaibu_kuchi 側に残っていればそちらを優先する（将来戻された時に二重にしない）。
+import shigoto_queue as _q  # noqa: E402
+if not hasattr(gkuchi, "enqueue_job"):
+    gkuchi.enqueue_job = _q.enqueue_job
+    gkuchi.wait_job = _q.wait_job
+if not hasattr(gkuchi, "net_ok"):
+    import kiku as _kiku  # noqa: E402
+    gkuchi.net_ok = _kiku.net_ok
+
 PRIVATE_REPO = "tamago2022/joy-relief-station"   # .env が入っている。絶対に公開にしない
 PUBLIC_BOARD = "tamago2022/ai-kaigi"             # Grok / Genspark はこちらしか読めない
 
