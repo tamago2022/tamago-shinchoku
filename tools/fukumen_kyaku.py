@@ -22,7 +22,8 @@
   ① ★台本は tools/prompts/fukumen_kyaku.md。中身をこのファイルに書かない（型と配管を分ける）。
   ② ★**叩く前と後の残クレジットを必ず記録する**（status/gsk_daicho.jsonl）。1回でいくつ減ったかを毎回書く。
      ★2026-09-24 実測：`gsk search` は**問いが2048字までしか通らない**（serper_http_400）。
-       それでも**1クレジット引かれる**。だからこの道具は `crawl-and-answer` を使う。
+       それでも**1クレジット引かれる**。だからこの道具は `summarize <url> --question` を使う（ページを開いて答える口。★crawl-and-answer は
+       「クロールするだけ」で問いに答えない＝判定に使えない。2026-09-24 実測・0クレジット）。
        こちらは客が**自分でそのページを開いて**、問いごとに原文を引いて答える（引用が本物になる）。
   ③ ★Gensparkの答えは**要約せずそのまま**残す。status/fukumen_kyaku/<時刻>.txt が正本。
   ④ ★**客の言うことを事実として扱わない。**
@@ -117,11 +118,12 @@ def _daihon(url, xpost):
 
 
 def toi_wo_tsukuru(url, xpost):
-    """crawl-and-answer に渡す jobs を作る。前置きは問いごとに付ける（別々に答えられるため）。"""
+    """`gsk summarize <url> --question <これ>` に渡す、1本の長い問いを作る。"""
     yaku, toi = _daihon(url, xpost)
-    return [{"url": url,
-             "questions_to_answer": ["%s\n\n----\nこの前置きの役になりきって答えてください。\n%s"
-                                     % (yaku, q) for q in toi]}], yaku, toi
+    honbun = "\n".join("%d. %s" % (i + 1, q) for i, q in enumerate(toi))
+    toi_all = ("%s\n\n----\nこの役になりきって、下の問いに**上から順に、番号と【見出し】を付けて**"
+               "全部答えてください。1つも飛ばさないでください。\n\n%s" % (yaku, honbun))
+    return toi_all, yaku, toi
 
 
 # ───────────────────────── 点数を拾う ─────────────────────────
@@ -204,19 +206,20 @@ def _kotae_toridasu(stdout, toilist):
 def toosu(url, xpost="", koukai=True, dry=False, timeout=300):
     import genspark_nagashi as gn
 
-    jobs, yaku, toilist = toi_wo_tsukuru(url, xpost)
+    toi_all, yaku, toilist = toi_wo_tsukuru(url, xpost)
 
     if dry:
-        return {"ok": True, "dry": True, "yaku": yaku, "toi": toilist,
-                "jobsBytes": len(json.dumps(jobs, ensure_ascii=False)), "使ったクレジット": 0.0}
+        return {"ok": True, "dry": True, "toi": toi_all,
+                "toiBytes": len(toi_all), "使ったクレジット": 0.0}
 
     os.makedirs(OUT_DIR, exist_ok=True)
-    args_file = os.path.join(OUT_DIR, "_jobs.json")
-    json.dump({"jobs": jobs}, io.open(args_file, "w", encoding="utf-8"), ensure_ascii=False)
+    args_file = os.path.join(OUT_DIR, "_toi.json")
+    json.dump({"url": url, "question": toi_all},
+              io.open(args_file, "w", encoding="utf-8"), ensure_ascii=False)
 
     zen = gn.zandaka(record=False).get("zan")
     t0 = time.time()
-    r = gn.gsk_run(["crawl-and-answer", "--args-file", args_file], timeout=timeout)
+    r = gn.gsk_run(["summarize", url, "--args-file", args_file], timeout=timeout)
     byou = round(time.time() - t0, 1)
     ato = gn.zandaka(record=True).get("zan")
     tsukatta = (round(zen - ato, 3) if (zen is not None and ato is not None) else None)
@@ -234,7 +237,7 @@ def toosu(url, xpost="", koukai=True, dry=False, timeout=300):
     rec = {"at": _now(), "url": url, "xpost": xpost, "ok": ok, "gskOk": bool(r.get("ok")),
            "fugoukakuRiyuu": riyuu, "ten": ten, "秒": byou,
            "残クレジット前": zen, "残クレジット後": ato, "使ったクレジット": tsukatta,
-           "kuchi": "crawl-and-answer", "kotaeFile": raw}
+           "kuchi": "summarize", "kotaeFile": raw}
     _append(LEDGER, rec)
     _append(DAICHO, {"at": rec["at"], "nani": "覆面客", "url": url, "ok": ok,
                      "残クレジット": ato, "使ったクレジット": tsukatta, "答え": raw})
