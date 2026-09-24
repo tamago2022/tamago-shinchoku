@@ -253,6 +253,29 @@ def run_job(payload):
         u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
         return {"ok": True, "op": "shindan", "user": u,
                 "kekka": _shindan(u), "totalYen": 0.0}
+    if op == "idkara":
+        # ★こちらが見つけた id を直に渡して本文を取る（HTMLの拾い漏れを潰すため）。
+        u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
+        got, dame = [], []
+        for tid in (payload.get("ids") or []):
+            g, w = _michi2(str(tid))
+            if not g:
+                g, w = _michi3("https://x.com/%s/status/%s" % (u, tid))
+            if g:
+                g["id"] = str(tid)
+                g["itsuJst"] = _id_to_time(tid)
+                g["url"] = "https://x.com/%s/status/%s" % (u, tid)
+                got.append(g)
+            else:
+                dame.append({"id": str(tid), "why": w})
+        os.makedirs(OUT_DIR, exist_ok=True)
+        p = os.path.join(OUT_DIR, "idkara_%s.json" % u)
+        json.dump({"at": _now(), "user": u, "kensu": len(got),
+                   "toukou": got, "dame": dame},
+                  io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        return {"ok": bool(got), "op": op, "kensu": len(got), "dame": dame,
+                "toukou": got, "file": os.path.relpath(p, REPO), "totalYen": 0.0}
+
     if op == "htmlhozon":
         # ★x.com が返してきた素のHTMLをそのまま置く。こちらで中を隅まで見るため。
         u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
