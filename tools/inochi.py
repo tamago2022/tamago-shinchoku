@@ -385,8 +385,107 @@ def _r_runner():
     return ok, "gaibu_runner.py を蹴った"
 
 
+# ────────────────────────────────────────────────────────────
+# ★1175番（2026-09-24）：発車の門を1か所にする
+# ────────────────────────────────────────────────────────────
+# なぜ足したのか（実測。推測ではない）
+#   3本が同時に消えた便（status/ochita.jsonl 18件）を数えたら、
+#     同時1本=落ちた回0/1回・2本=1/3回(33%)・3本=1/2回(50%)
+#     4本=4/5回(80%)・6本=2/2回(100%)
+#   落ちた回の容疑は12回すべて「ログイン切れ」。枠(waku)のNGは0回。
+#   ＝**発車の門が2つに分かれていたのが本体。**
+#     ① auto_launcher.py は status/no_launch.flag と status/launch_cap.json を見る
+#     ② Dispatch（別の口）はどちらも見ない → 鍵が死んでいる間も便を出し続けた
+#   しかも本数の数字が3か所にあった（実測 2026-09-24 14:45 の status/machine.json）：
+#     safeMax=4 ／ cap=1・target=1（＝機械自身の実測は1本）／ calibratedSafeN=3
+#     launch_cap.json は cap=5 で 2026-09-20 から更新が止まっていた（4日古い）
+#   auto_launcher は min(safeMax, launch_cap.cap) = min(4,5) = **4本** を採った。
+#   ＝機械が「1本」と測っているのに4本出した。今日4本走っていたのはこれ。
+#
+# だからこうする（1か所）
+#   この係が status/public/hassha_gate.json を1枚だけ書く。
+#   ★発車して良いか（鍵）と、何本までか（本数）を、同じ1枚に載せる。
+#   ★launch_cap.json も同時に書き替える（auto_launcher が既に見ている口なので、
+#     ここを正本にすれば launcher 側のコードを触らずに数字が1か所になる）。
+#   ★古くならない：この係は心臓から30秒おきに呼ばれるので、毎回書き直る。
+HASSHA_GATE = os.path.join(ST, "public", "hassha_gate.json")
+LAUNCH_CAP = os.path.join(ST, "launch_cap.json")
+KAZU_TENJO = 2      # ★実測の天井。3本以上は落ちる率50%超（上の数字）
+KAZU_FURUI = 1800   # 門の紙が30分古くなったら書き直す
+
+
+def _kazu_jissoku():
+    """いま何本までが安全か。★機械が自分で測った数字だけを使う。無ければ天井。"""
+    m = _load(os.path.join(ST, "machine.json"), {}) or {}
+    moto = []
+    kouho = [KAZU_TENJO]
+    moto.append("実測の天井 %d本（status/ochita.jsonl 18件：3本で50%%・4本で80%%落ちた）" % KAZU_TENJO)
+    for k in ("cap", "target", "calibratedSafeN", "safeMax"):
+        v = m.get(k)
+        if isinstance(v, int) and v > 0:
+            kouho.append(v)
+            moto.append("status/machine.json の %s=%d" % (k, v))
+    n = max(1, min(kouho))
+    return n, moto, m
+
+
+def _p_kazu():
+    """★本数の門。紙が無い／古い／天井より大きい＝門が壊れている。"""
+    n, _, _ = _kazu_jissoku()
+    g = _load(HASSHA_GATE, None)
+    a = _age(HASSHA_GATE)
+    if not isinstance(g, dict):
+        return False, "門の紙が無い（%s）" % os.path.basename(HASSHA_GATE)
+    if a is None or a > KAZU_FURUI:
+        return False, "門の紙が %.0f分 古い" % ((a or 0) / 60.0)
+    if int(g.get("maxParallel") or 99) > n:
+        return False, "門の紙が %s本、実測は %d本（緩い方を向いている）" % (g.get("maxParallel"), n)
+    c = (_load(LAUNCH_CAP, {}) or {}).get("cap")
+    if not isinstance(c, int) or c > n:
+        return False, "launch_cap.json が %s本、実測は %d本" % (c, n)
+    return True, "門=%d本・紙は%.0f分前" % (n, (a or 0) / 60.0)
+
+
+def _r_kazu():
+    """★門を書き直す。これが「1か所」。人を待たない。"""
+    n, moto, m = _kazu_jissoku()
+    # 鍵（発車して良いか）も同じ紙に載せる。ここを見れば Dispatch も判断できる。
+    nl = os.path.join(ST, "no_launch.flag")
+    tomete = os.path.exists(nl)
+    naze = ""
+    if tomete:
+        try:
+            naze = io.open(nl, encoding="utf-8").read().strip()[:300]
+        except Exception:
+            naze = "status/no_launch.flag が置かれている（中身が読めない）"
+    _save(HASSHA_GATE, {
+        "at": ts(),
+        "hasshaOK": (not tomete),
+        "why": naze or "鍵は生きている",
+        "maxParallel": n,
+        "moto": moto,
+        "machineMeasuredAt": m.get("measuredAt"),
+        "note": ("★発車の門はこの1枚。auto_launcher も Dispatch もここだけを見る。"
+                 "hasshaOK=false のあいだは本物を1本も出さない（出しても鍵が無いので必ず落ちる）。"
+                 "maxParallel を超えて出さない。書いているのは tools/inochi.py の _r_kazu。"),
+    })
+    _save(LAUNCH_CAP, {
+        "cap": n,
+        "updatedAt": ts(),
+        "why": "tools/inochi.py が実測から書いた（正本は status/public/hassha_gate.json）",
+    })
+    return True, "門を書き直した（%d本・発車%s）" % (n, "可" if not tomete else "止")
+
+
+def hassha_gate():
+    """他の便から呼ぶ入口。(発車して良いか, 何本まで, 理由)"""
+    g = _load(HASSHA_GATE, {}) or {}
+    return bool(g.get("hasshaOK")), int(g.get("maxParallel") or 1), g.get("why") or ""
+
+
 MIHARI = [
     # name,            見出し,                      yurusu, probe,         revive,         hito
+    ("kazu",           "発車の門（鍵と本数）",       10**9, _p_kazu,        _r_kazu,        False),
     ("heartbeat",      "心臓（30秒ごとの本体）",       600,  _p_heartbeat,   _r_heartbeat,   False),
     ("machine_status", "立て直しの便（5分便）",       1800,  _p_kosession,   _r_launchd("com.tamago.machine-status"), False),
     ("gaibu_runner",   "工場のrunner（待ち行列）",     420,  _p_runner,      _r_runner,      False),
@@ -619,6 +718,26 @@ def selftest():
         st_now = _load(STATE, {})
         st_now.pop(name, None)
         _save(STATE, st_now)
+
+    # ⑤ ★発車の門をわざと緩める（本数を9本に書き換える）→ 自分で締め直すか
+    #   （2026-09-24 の実害：launch_cap.json が4日古い cap=5 のまま残り、
+    #     機械が「1本」と測っている横で4本出た。同じことが起きないかを機械で見る）
+    mae_gate = _load(HASSHA_GATE, None)
+    mae_cap = _load(LAUNCH_CAP, None)
+    try:
+        _save(LAUNCH_CAP, {"cap": 9, "updatedAt": ts(), "why": "inochi-selftest（わざと緩めた）"})
+        _save(HASSHA_GATE, {"at": ts(), "hasshaOK": True, "maxParallel": 9,
+                            "why": "inochi-selftest（わざと緩めた）"})
+        sokutei("発車の門をわざと9本に緩める", lambda: None, _p_kazu, _r_kazu, matsu=3)
+        n, _, _ = _kazu_jissoku()
+        ima = (_load(LAUNCH_CAP, {}) or {}).get("cap")
+        out.append(("門の数字が実測どおりに戻る",
+                    0.0 if ima == n else None,
+                    "launch_cap.json=%s本／実測=%d本" % (ima, n)))
+    finally:
+        # ★自分が書き換えたものは、実測どおりの正しい値で締め直して終わる（緩いまま残さない）
+        _r_kazu()
+        _ = (mae_gate, mae_cap)
 
     print("── わざと止めた実測 ──")
     for midashi, byou, shita in out:

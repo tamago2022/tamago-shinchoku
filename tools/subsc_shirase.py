@@ -71,6 +71,15 @@ def _hiduke(s):
         return None
 
 
+def _tsugi_toshi(d):
+    """1年進める（年払いのサブスク用。2026-09-24 Typeless Pro で必要になった）。
+    2月29日だけは翌年に無いので28日に寄せる。"""
+    try:
+        return date(d.year + 1, d.month, d.day)
+    except ValueError:
+        return date(d.year + 1, d.month, 28)
+
+
 def _tsugi_tsuki(d):
     """1か月進める。月末を越える日（31日など）はその月の末日に寄せる。"""
     y, m = (d.year + 1, 1) if d.month == 12 else (d.year, d.month + 1)
@@ -174,12 +183,14 @@ def sugita_wo_susumeru(today):
         d = _hiduke(it.get("tsugi"))
         if not d or (d - today).days >= 0:
             continue
-        if it.get("kurikaeshi") == "monthly" and it.get("kakunin"):
+        if it.get("kurikaeshi") in ("monthly", "yearly") and it.get("kakunin"):
+            susumu = _tsugi_tsuki if it.get("kurikaeshi") == "monthly" else _tsugi_toshi
+            tan = "1か月" if it.get("kurikaeshi") == "monthly" else "1年"
             while (d - today).days < 0:
-                d = _tsugi_tsuki(d)
+                d = susumu(d)
             it["tsugi"] = d.isoformat()
             it["tsugi_moto"] = (it.get("tsugi_moto", "") +
-                                "／%s に1か月進めた（tools/subsc_shirase.py）" % today.isoformat())
+                                "／%s に%s進めた（tools/subsc_shirase.py）" % (today.isoformat(), tan))
         else:
             it["tsugi"] = ("取れていない（前の更新日 %s を過ぎた。次の日付は確かめていない）"
                            % d.isoformat())
