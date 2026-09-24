@@ -207,7 +207,18 @@ def run_job(payload):
     """gaibu_runner から kind="spotifyiri" で呼ばれる（＝工場＝Macの上）。
     受け口を**裏で**立てて、押すURLを1本だけ返す。鍵の値は返さない。"""
     payload = payload or {}
-    if (payload.get("op") or "tateru") != "tateru":
+    op = payload.get("op") or "tateru"
+    if op == "kenpin":
+        # ★「立てました」で終わらせない。中身が本当に出るかを工場側から読む。
+        try:
+            body = urllib.request.urlopen(IRIGUCHI, timeout=6).read().decode("utf-8", "replace")
+        except Exception as e:
+            return {"ok": False, "error": "入り口が開きませんでした: %s" % str(e)[:120],
+                    "totalYen": 0.0}
+        return {"ok": ("Client ID" in body and "同意へ進む" in body),
+                "iriguchi": IRIGUCHI, "nagasa": len(body),
+                "redirect": REDIRECT, "totalYen": 0.0}
+    if op != "tateru":
         return {"ok": False, "error": "知らない op です", "totalYen": 0.0}
 
     # もう同意済みなら立てない

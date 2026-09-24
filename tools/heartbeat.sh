@@ -377,6 +377,12 @@ while :; do
   #     選ばれて初めて流れ始める。中で60秒に間引く＋1日の上限（10/4までの日割り）で止まる。
   #   投げっぱなしにして心臓は待たない。新しい常駐も定期タスクも作らない。
   tick_every 4 && ( python3 "$REPO/tools/genspark_nagashi.py" --quiet >> "$REPO/status/gsk/nagashi.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1074番）秋の投稿・今日の1本。たまごさん「たまごさんがやるのはOKかこれじゃないかだけ」
+  #   ★朝07:00と夜20:30に、ドラフトを1本だけ出す（投稿の30分前）。文面はこちらが書いてある。
+  #   ★中で1便1回に間引く（status/aki_toko.json の lastKey）ので、ここは緩く呼べばよい。
+  #   ★在庫28本を使い切っても止まらない。次の周に入って出し続ける。
+  #   AIを1回も呼ばない・外へ1回も出ない＝0円。新しい常駐も定期タスクも作らない。
+  tick_every 8 && ( python3 "$REPO/tools/aki_toko.py" >> "$REPO/status/aki_toko.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
