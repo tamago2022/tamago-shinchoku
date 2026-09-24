@@ -358,7 +358,7 @@ def _op_okikae(payload):
         log.append("下見OK %s (%d字→%d字)" % (path, len(body), len(new)))
 
     # ── ③送る
-    token = github_watch.get_token()
+    token = github_watch.gh_token()
     last = None
     for path, new, blobsha in plan:
         raw = new.encode("utf-8")
