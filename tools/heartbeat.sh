@@ -235,6 +235,13 @@ while :; do
   #   新しいlaunchd便は増やさない。中で1日1回に間引いている（daily_ingest_schedulerと同じ型）。
   #   ★Vaultにも外のAPIにも、サンドボックスからは届かない（実測 curl→000）。心臓はMacなので届く。
   tick_every 40 && ( python3 "$REPO/tools/zeikin_kakari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-25（1140番）：ごきげん補給所の全26,400曲を、毎日1回まるごと機械で流し直す。
+  #   実測（oEmbedで全動画IDを1件ずつ）→全曲検査→「再生できる動画が1本も無い」曲を
+  #   表から外す表を作り直す→変わったぶんだけ main に1コミット。
+  #   ★新しいlaunchd便は増やさない。中で1日1回に間引いている（daily_ingest_schedulerと同じ型）。
+  #   ★サンドボックスからは youtube.com に回線が出ない（実測 curl→000）。心臓はMacなので届く。
+  tick_every 40 && ( python3 "$REPO/tools/1140_mainichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  tick_every 41 && ( python3 "$REPO/tools/1141_mainichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1057番）：ごきげん補給所の「重さ」の見張り。たまごさんより先に気づく係。
   #   これまで重さは**人が思い出したときにだけ**測られていた＝「いつの間にか3MBに戻る」が
   #   何度でも起きる。1日1回、機械が測る。★赤（前回比+5%超／1MB超／CLS0.1超）のときだけ
@@ -400,6 +407,16 @@ while :; do
   #   ★戻れる点（anzen-* の印）を作り直して、全部が戻せる状態かを実測する。
   #   ★git の印を作るだけ。作業ツリーにも index にも触らない＝0円・0リスク。
   tick_every 40 && ( python3 "$REPO/tools/modoseru.py" --shiraberu >> "$REPO/status/modoseru.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-25（1138番）宿題台帳。たまごさん
+  #   「俺が言ったのに返ってきてないことがたくさんある。それが自動で走ってゼロになるようにやってほしい。」
+  #   ★発車待ち・引き継ぎ58本・工場の申し送りを1本の台帳に集め直し、まだ列に居ないものを
+  #     発車待ちへ積む。残り件数を毎日数えて、減っていなければ赤。
+  #   ★中で1日1回に間引く（status/.shukudai_at）。AIを呼ばない・外へ出ない＝0円。
+  tick_every 240 && ( python3 "$REPO/tools/shukudai.py" --hima >> "$REPO/status/shukudai.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-25（1138番）配分。「いま何本走らせてよいか」と「余らせていないか」を1か所で答える。
+  #   ★本数の計算は pace.py のまま。ここは天井までの余裕・朝の余りの赤・空き枠放置の実測だけ。
+  #   ★安いので10分おき。AIを呼ばない・外へ出ない＝0円。
+  tick_every 40 && ( python3 "$REPO/tools/haibun.py" >> "$REPO/status/haibun.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

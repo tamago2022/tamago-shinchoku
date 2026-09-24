@@ -103,6 +103,19 @@ def run_job(payload=None):
     dry = bool(payload.get("dryRun"))
     log = []
 
+    # ★1140番【全曲検査】payload に kensa:true が来たら、押す前に
+    #   ①実測（oEmbedで全動画IDを1件ずつ叩く。回線があるのは工場側だけ）
+    #   ②全曲検査（隠す表 kanseiHidden.generated.ts を作り直す）
+    #   を先にやる。これで「毎日流し直す常駐」がこの1本で足りる。
+    if payload.get("kensa"):
+        for name, args in (("1140_jissoku.py", ["--limit", str(payload.get("limit", 40000))]),
+                           ("1140_kensa.py", [])):
+            r = subprocess.run([sys.executable, os.path.join(HERE, name)] + args,
+                               capture_output=True, text=True, timeout=3600)
+            log.append("%s → rc=%d %s" % (name, r.returncode, (r.stdout or "")[-700:]))
+            if r.returncode != 0:
+                log.append((r.stderr or "")[-500:])
+
     if not os.path.exists(PATCH):
         return {"ok": False, "log": ["差分が置いてありません: %s" % PATCH], "totalYen": 0.0}
 
@@ -138,17 +151,23 @@ def run_job(payload=None):
         # ② 当ててみる（もう当たっているなら何もしない＝何度走らせても同じ）
         chk = subprocess.run(["patch", "-p1", "--dry-run", "-i", PATCH],
                              cwd=work, capture_output=True, text=True)
+        already = False
         if chk.returncode != 0:
             rev = subprocess.run(["patch", "-p1", "-R", "--dry-run", "-i", PATCH],
                                  cwd=work, capture_output=True, text=True)
             if rev.returncode == 0:
-                log.append("★もう入っています。何もしません。")
-                return {"ok": True, "log": log, "alreadyIn": True, "totalYen": 0.0}
-            log.append("差分が当たりません（mainが動いた可能性）:\n" + chk.stdout[-1200:])
-            return {"ok": False, "log": log, "totalYen": 0.0}
-        subprocess.run(["patch", "-p1", "-i", PATCH], cwd=work,
-                       capture_output=True, text=True, check=True)
-        log.append("差分を当てました")
+                # ★関所そのものは既に入っている。でも隠す表（kanseiHidden.generated.ts）は
+                #   毎日作り直すので、中身が変わっていれば**そこだけ**押す。
+                #   （1140番より前は、ここで「何もしません」と帰っていた＝表が更新されなかった）
+                already = True
+                log.append("関所の差分はもう入っています。隠す表の変化だけ見ます。")
+            else:
+                log.append("差分が当たりません（mainが動いた可能性）:\n" + chk.stdout[-1200:])
+                return {"ok": False, "log": log, "totalYen": 0.0}
+        else:
+            subprocess.run(["patch", "-p1", "-i", PATCH], cwd=work,
+                           capture_output=True, text=True, check=True)
+            log.append("差分を当てました")
 
         # ③ 新しいファイル（関所そのもの）
         files = {}
@@ -156,7 +175,20 @@ def run_job(payload=None):
             files[p] = io.open(os.path.join(work, p), encoding="utf-8").read()
         for p, body in _new_files().items():
             files[p] = body
-        log.append("送るファイル: %d本" % len(files))
+        # mainと同じ中身のものは送らない（空コミットを作らない・押し戻さない）
+        for p in list(files):
+            if p in sha_of:
+                try:
+                    cur = base64.b64decode(_req("GET", "%s/repos/%s/git/blobs/%s"
+                                                % (API, GH_REPO, sha_of[p]), token)["content"])
+                    if cur.decode("utf-8", "ignore") == files[p]:
+                        del files[p]
+                except Exception:
+                    pass
+        if not files:
+            log.append("★mainと同じでした。何もしません。")
+            return {"ok": True, "log": log, "alreadyIn": True, "totalYen": 0.0}
+        log.append("送るファイル: %d本（%s）" % (len(files), ", ".join(sorted(files))))
 
         if dry:
             log.append("--dry-run なのでGitHubには書きません")
@@ -171,8 +203,17 @@ def run_job(payload=None):
         base_commit = _req("GET", "%s/repos/%s/git/commits/%s" % (API, GH_REPO, base_sha), token)
         new_tree = _req("POST", "%s/repos/%s/git/trees" % (API, GH_REPO), token,
                         {"base_tree": base_commit["tree"]["sha"], "tree": tree})
+        msg = MESSAGE
+        if payload.get("kensa"):
+            msg = ("1140番【全曲検査】全曲を機械で1曲ずつ見て、"
+                   "再生できる動画が1本も無いものを表から外す\n\n"
+                   "検査 = tools/1140_kensa.py（全件・サンプリングなし）\n"
+                   "実測 = tools/1140_jissoku.py（oEmbedで動画IDを1件ずつ）\n"
+                   "データは1件も消していない（隠しているだけ）。"
+                   "直れば次の生成で自動的に戻る。\n"
+                   "戻し方: src/lib/kansei.ts の KANSEI_GATE = false。")
         commit = _req("POST", "%s/repos/%s/git/commits" % (API, GH_REPO), token,
-                      {"message": MESSAGE, "tree": new_tree["sha"], "parents": [base_sha]})
+                      {"message": msg, "tree": new_tree["sha"], "parents": [base_sha]})
         _req("PATCH", "%s/repos/%s/git/refs/heads/%s" % (API, GH_REPO, BRANCH), token,
              {"sha": commit["sha"], "force": False})
         log.append("★mainに入りました: %s" % commit["sha"][:8])

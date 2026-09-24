@@ -85,4 +85,7 @@ python3 tools/daicho.py --ichiran                       # 端末で一覧
 1. **`share/daicho.html` を本番で開けるようにする**（＝台帳の3番目の行を潰す）
 2. 投げ込み箱：`URL＋棚` の組み合わせだけが弾かれる（04:16 スマホの門で実測）。入力チェックの条件式
 3. Spotify：たまごさんが `share/spotify-hitotsu.html` を押したら、`--hajime` → `--shirabe` → `--ireru` を一気に
-4. 別人混入2230件：Jevで yes/no 判定（**約147円**。`tools/yosan.py` の栓を先に通すこと）
+4. ★**この行は1054番で訂正済み。**「別人混入2230件・約147円」は**両方とも間違い**だった。
+   - 2230 は混入の数ではなく**関所が保留に落とした数**。正しい内訳は status/1054_ABC_jissoku.md
+   - 147円は出どころの無い数字。実測の見積りは status/_1052/zenbu_dry.json:1 と status/_1054/jev_nedan.json:1
+   - 残っている仕事は「鍵が来たら試験台を叩いて当たり外れを見る」。手順は status/1054_jev_nanken_nanen.md

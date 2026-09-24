@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ログインを頼まない形にする（鍵への置き換え表）</title>
+<style>
+:root{--paper:#f4f1ea;--ink:#16130f;--sub:#6b6259;--rule:#d8d2c6;--red:#b3261e;--ok:#2f6b3f;--amber:#8a6d1f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.65}
+.wrap{max-width:980px;margin:0 auto;padding:28px 18px 80px}
+header{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px}
+h1{font-size:22px;margin:0 0 4px;letter-spacing:.04em}
+.lead{color:var(--sub);font-size:12.5px;margin:0}
+h2{font-size:13px;letter-spacing:.14em;color:var(--sub);margin:28px 0 8px;font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11px;letter-spacing:.1em;color:var(--sub);font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:9px 8px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.mark{font-weight:700;white-space:nowrap;font-size:14px}
+.ng{color:var(--red)}.ok{color:var(--ok)}.un{color:var(--amber)}
+.what{font-weight:700}
+.where{color:var(--sub);font-size:11.5px;display:block;margin-top:2px;word-break:break-all}
+.rule{margin:0 0 14px;padding:9px 11px;background:rgba(0,0,0,.035);font-size:12.5px;color:var(--sub)}
+.box{border:2px solid var(--red);color:var(--red);padding:10px 12px;font-weight:700;margin:0 0 18px;font-size:14px}
+ol{padding-left:1.3em}li{margin:5px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:rgba(0,0,0,.05);padding:1px 4px}
+footer{margin-top:34px;padding-top:12px;border-top:1px solid var(--rule);color:var(--sub);font-size:11.5px}
+small{color:var(--sub)}
+</style></head><body><div class="wrap">
+<header>
+<h1>ログインを頼まない形にする</h1>
+<p class="lead">セッション（ブラウザのログイン）は切れる。鍵（トークン）に置き換えたぶんだけ、頼まれる回数が減る。／2026-09-24 実測ぶん＋出典つき</p>
+</header>
+
+<div class="box">訂正：Spotify の refresh_token は「失効しない」ではありません。<br>
+公式ドキュメント（2026年時点）に「Developer Dashboard に登録したアプリの refresh_token の寿命は6か月」と明記されています。<br>
+＝ログインはゼロにはできません。<b>「毎日」を「6か月に1回」にするのが到達点</b>です。</div>
+
+<h2>1. ログインが切れると死ぬもの／鍵に置き換えられるか</h2>
+<p class="rule">◯＝切れない鍵に置き換え可能　△＝期限つき（自動更新できる）　✕＝ブラウザのログインに依存したまま。値は一切載せません。</p>
+<table>
+<thead><tr><th>置換</th><th>サービス／今どこ</th><th>鍵にすると何になるか</th><th>寿命</th></tr></thead>
+<tbody>
+<tr><td class="mark un">△</td><td class="what">Spotify Web API<span class="where">まだ鍵なし（鍵台帳に項目が無い）</span></td><td>Authorization Code フローで refresh_token を取る。以後 access_token は自動で作り直せる。<br><small>私有プレイリストを読むには <code>playlist-read-private</code> スコープが必須。</small></td><td>refresh_token は<b>6か月</b>／access_token は1時間（自動更新）</td></tr>
+<tr><td class="mark un">△</td><td class="what">Buffer<span class="where">~/.tamago/keys/api_keys.env の BUFFER_ACCESS_TOKEN（鍵台帳に項目あり）</span></td><td><code>publish.buffer.com/settings/api</code> のアクセストークン。ログイン後にこちらが読み取って鍵台帳へ。</td><td>未実測（画面で確認する）</td></tr>
+<tr><td class="mark ok">◯</td><td class="what">Gmail（見張り4本の目）<span class="where">~/.tamago/gmail_app_password ← 今ファイルが無い＝赤</span></td><td>アプリパスワード。取り消すまで有効。</td><td>取り消すまで</td></tr>
+<tr><td class="mark ok">◯</td><td class="what">GitHub<span class="where">gh auth token / GITHUB_TOKEN ← 今取れない＝赤</span></td><td>Fine-grained PAT にすれば <code>gh auth login</code> をやり直さなくて済む。</td><td>作るとき指定（無期限も可）</td></tr>
+<tr><td class="mark ok">◯</td><td class="what">OpenAI / fal.ai / xAI / Gemini<span class="where">~/.tamago/keys/api_keys.env</span></td><td>すでに鍵。ログイン不要。<small>※Gemini は鍵が未設置、xAI 文字側は残高なしの鍵</small></td><td>取り消すまで</td></tr>
+<tr><td class="mark un">△</td><td class="what">Lovable（本番へ出す口）<span class="where">~/.tamago/lovable_oauth.json</span></td><td>refresh_token あり＝自動更新できる形になっている。</td><td>更新できる限り</td></tr>
+<tr><td class="mark ng">✕</td><td class="what">Claude 本体の鍵（発車そのもの）<span class="where">キーチェーン／~/.tamago/claude_token ← 今赤。発車が止まっている</span></td><td>APIキーに寄せない限り、ここだけはログイン依存が残る。<b>一番よく「ログインして」と言われている正体はここ。</b></td><td>切れる</td></tr>
+<tr><td class="mark ok">◯</td><td class="what">Supabase Secrets（xAI 声の鍵の置き場）<span class="where">ディスク上には無い</span></td><td>すでに鍵。ただし置き場が分散している原因でもある。</td><td>取り消すまで</td></tr>
+</tbody></table>
+
+<h2>2. 鍵の置き場が散っている（毎回探し回る原因）</h2>
+<table>
+<thead><tr><th>置き場</th><th>中身</th></tr></thead>
+<tbody>
+<tr><td><code>~/.tamago/keys/api_keys.env</code></td><td>本命。OpenAI・fal・xAI・Gemini・Buffer</td></tr>
+<tr><td><code>~/Documents/AI作業/_鍵/keys.env</code>／<code>.env</code></td><td>2枚目・3枚目。同じ鍵の古い写しが混ざる</td></tr>
+<tr><td>リポジトリ直下 <code>.env</code></td><td>4枚目。公開側にあるので値は置かない</td></tr>
+<tr><td>キーチェーン</td><td>Claude の鍵</td></tr>
+<tr><td>Supabase Secrets</td><td>XAI_API_KEY2（ディスクには無い）</td></tr>
+<tr><td><code>~/.tamago/lovable_oauth.json</code></td><td>Lovable の OAuth 一式</td></tr>
+</tbody></table>
+<p class="rule">結論：<b>置き場を <code>~/.tamago/keys/api_keys.env</code> 一本に寄せ、鍵台帳（<a href="969-kagi-daicho.html">969</a>）だけを見れば済む形にする。</b>他の3枚は「ここを見ろ」と書いた道しるべだけ残して値を消す。</p>
+
+<h2>3. Spotify をこの形にする手順（たまごさんが押すのは1回だけ）</h2>
+<ol>
+<li>Spotify にログイン（今開いているタブ）。</li>
+<li>Developer Dashboard でアプリを登録し、Client ID / Client Secret と Redirect URI <code>http://127.0.0.1:8788/spotify/callback</code> を設定。<small>（中継所のポートに相乗り。新しい常駐は増やさない）</small></li>
+<li>こちらが同意画面のURLを作って開く。<b>たまごさんは「同意する」を1回押すだけ。</b></li>
+<li>返ってきた code を refresh_token に交換して <code>api_keys.env</code> に保存し、鍵台帳に行を足す。</li>
+<li>以後は自動更新。<b>次にたまごさんが触るのは6か月後の1回だけ。</b></li>
+</ol>
+<p class="rule">スコープは最低これ：<code>playlist-read-private</code> <code>playlist-read-collaborative</code> <code>user-library-read</code>。足りないと「動いているのに何も取れていない」赤になる。</p>
+
+<footer>
+出典：Spotify for Developers「Refreshing tokens」（refresh_token の寿命6か月・access_token 1時間）／同「Authorization code」フロー。<br>
+鍵の現状は <code>status/public/kagi_daicho.json</code>（2026-09-24 10:47 実測）より。値は1文字も載せていません。
+</footer>
+</div></body></html>

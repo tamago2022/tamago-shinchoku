@@ -1,52 +1,68 @@
 {
- "updatedAt": "2026-09-22T16:44:50+09:00",
+ "updatedAt": "2026-09-25T08:52:48+09:00",
  "totals": {
-  "out": 17,
-  "outFail": 3,
-  "in": 14,
-  "blocked": 2
+  "out": 36,
+  "outFail": 6,
+  "in": 45,
+  "blocked": 4
  },
  "ai": [
   {
    "ai": "codex",
    "label": "ChatGPT(Codex)",
-   "out": 2,
+   "out": 6,
    "outFail": 0,
-   "in": 2,
+   "in": 6,
    "blocked": 0,
    "blockedWhy": "",
-   "lastOutAt": "2026-09-22T16:33:28+09:00",
-   "lastInAt": "2026-09-22T16:34:38+09:00",
+   "lastOutAt": "2026-09-25T01:52:47+09:00",
+   "lastInAt": "2026-09-25T01:56:31+09:00",
    "openThreads": [],
    "errs": [],
-   "state": "双方向◯（投げ2・返り2）",
+   "state": "双方向◯（投げ6・返り6）",
    "color": "green"
   },
   {
    "ai": "chappy",
    "label": "チャッピー(ChatGPT直)",
-   "out": 2,
-   "outFail": 0,
+   "out": 8,
+   "outFail": 3,
    "in": 2,
    "blocked": 0,
    "blockedWhy": "",
-   "lastOutAt": "2026-09-22T16:42:35+09:00",
+   "lastOutAt": "2026-09-23T10:25:32+09:00",
    "lastInAt": "2026-09-22T16:42:38+09:00",
    "openThreads": [],
-   "errs": [],
-   "state": "双方向◯（投げ2・返り2）",
-   "color": "green"
+   "errs": [
+    {
+     "at": "2026-09-23T10:22:09+09:00",
+     "err": "ChatGPT(OpenAI)の鍵が見つかりません（OPENAI_API_KEY・CHATGPT_API_KEY のいずれかが .env / ~/.tamago/keys/api_keys.env / ~/Documents/AI作業/_鍵/keys.env に必要）",
+     "topic": "返事の受け取り（公開情報だけで『これおかしくないですか』と質問できる道具をつくりたい）"
+    },
+    {
+     "at": "2026-09-23T10:23:54+09:00",
+     "err": "工場は動きましたが返事が取れませんでした: 全モデルで失敗： gpt-4o → HTTP 429  ／ gpt-4o-mini → HTTP 429 ",
+     "topic": "返事の受け取り（公開情報だけで『これおかしくないですか』と質問できる道具をつくりたい）"
+    },
+    {
+     "at": "2026-09-23T10:25:32+09:00",
+     "err": "工場は動きましたが返事が取れませんでした: 全モデルで失敗： gpt-4o → RuntimeError: HTTP 429 {\n    \"error\": {\n        \"message\": \"You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"credit_balance_exhausted\"\n    }\n}\n ／ gpt-4o-mini → RuntimeError: HTTP 429 {\n    \"error\": {\n        \"message\": \"You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"credit_balance_exhausted\"\n    }\n}\n",
+     "topic": "返事の受け取り（公開情報だけで『これおかしくないですか』と質問できる道具をつくりたい）"
+    }
+   ],
+   "state": "双方向◯（ただし行きが3回失敗）",
+   "color": "yellow"
   },
   {
    "ai": "jules",
    "label": "Gemini(Jules)",
-   "out": 2,
+   "out": 10,
    "outFail": 1,
-   "in": 3,
+   "in": 30,
    "blocked": 0,
    "blockedWhy": "",
-   "lastOutAt": "2026-09-22T06:37:49+09:00",
-   "lastInAt": "2026-09-22T07:06:24+09:00",
+   "lastOutAt": "2026-09-25T01:54:01+09:00",
+   "lastInAt": "2026-09-25T02:09:54+09:00",
    "openThreads": [],
    "errs": [
     {
@@ -73,14 +89,14 @@
      "thread": "devin:devin-30896e6967b8408995b930820d0eb103",
      "topic": "F 455の後に残る重さ最大1つ",
      "ref": "https://app.devin.ai/sessions/30896e6967b8408995b930820d0eb103",
-     "hours": 7.3,
-     "overdue": false,
+     "hours": 71.4,
+     "overdue": true,
      "limitHours": 12
     }
    ],
    "errs": [],
-   "state": "双方向◯（投げ6・返り7）",
-   "color": "green"
+   "state": "返事待ち1件（12時間超）",
+   "color": "yellow"
   },
   {
    "ai": "grok",
@@ -88,7 +104,7 @@
    "out": 3,
    "outFail": 1,
    "in": 0,
-   "blocked": 1,
+   "blocked": 2,
    "blockedWhy": "投げませんでした（この口は閉まっています）: Grokは今どちらの口からも返りません。掲示板(ai-kaigi)はbotが1体も居ないので誰も読みません（GitHub API実測・コメント0）。APIは team_blocked=true / credits無しで403（x.ai実測）。使うにはx.aiのteamへの課金がいります＝たまごさんの判断。代わりに chappy（ChatGPT直）へ投げてください。",
    "lastOutAt": "2026-09-22T16:40:11+09:00",
    "lastInAt": null,
@@ -97,16 +113,16 @@
      "thread": "gh:tamago2022/ai-kaigi#4",
      "topic": "この掲示板が通っているかの確認（977号）",
      "ref": "https://github.com/tamago2022/ai-kaigi/issues/4",
-     "hours": 9.7,
-     "overdue": false,
+     "hours": 73.8,
+     "overdue": true,
      "limitHours": 24
     },
     {
      "thread": "gh:tamago2022/ai-kaigi#6",
      "topic": "1人がAIエージェント多数を運用するとき、人間の意思決定ボトルネックの外し方（失敗例とセットで）",
      "ref": "https://github.com/tamago2022/ai-kaigi/issues/6",
-     "hours": 8.1,
-     "overdue": false,
+     "hours": 72.3,
+     "overdue": true,
      "limitHours": 24
     }
    ],
@@ -135,8 +151,8 @@
      "thread": "gh:tamago2022/ai-kaigi#5",
      "topic": "この掲示板が通っているかの確認（977号）",
      "ref": "https://github.com/tamago2022/ai-kaigi/issues/5",
-     "hours": 9.6,
-     "overdue": false,
+     "hours": 73.8,
+     "overdue": true,
      "limitHours": 48
     }
    ],
@@ -153,17 +169,26 @@
   {
    "ai": "copilot",
    "label": "GitHub Copilot",
-   "out": 0,
+   "out": 1,
    "outFail": 0,
    "in": 0,
-   "blocked": 0,
-   "blockedWhy": "",
-   "lastOutAt": null,
+   "blocked": 1,
+   "blockedWhy": "投げませんでした（この口は閉まっています）: GitHub Copilotは今どの口からも返りません。Issueに@copilotと書いても反応0（👀も付かない）、担当者にcopilot-swe-agent[bot]を入れると403、割り当て候補にCopilotが居ない（両リポとも）、gh agent-task create もOAuthで403。開けるにはCopilotの有料プラン（Pro/Pro+/Business）＝たまごさんの判断。代わりに chappy（ChatGPT直）か Jules へ投げてください。",
+   "lastOutAt": "2026-09-22T23:06:17+09:00",
    "lastInAt": null,
-   "openThreads": [],
+   "openThreads": [
+    {
+     "thread": "gh:tamago2022/joy-relief-station#457",
+     "topic": "実測：この号でGitHub Copilotが起きるかを確かめます",
+     "ref": "https://github.com/tamago2022/joy-relief-station/issues/457",
+     "hours": 57.8,
+     "overdue": true,
+     "limitHours": 6
+    }
+   ],
    "errs": [],
-   "state": "未使用",
-   "color": "gray"
+   "state": "投げた1・返り0／今は閉鎖・投げていない",
+   "color": "red"
   }
  ],
  "census": {
@@ -225,16 +250,16 @@
    "note": "Julesは `jules` ラベルで起きる（公式ドキュメント＋実測）。終わるとPRを立てて知らせてくる。"
   },
   "copilot": {
-   "how": "gh-issue",
+   "how": "blocked",
    "repo": "tamago2022/joy-relief-station",
    "wake": "@copilot 上のお題をお願いします。",
-   "note": "★未実測。@copilotで起きるかは確かめていない。"
+   "note": "★2026-09-22 閉鎖。4つの口を実測して全部403／無反応。課金が入るまで投げない。"
   },
   "chappy": {
    "how": "api",
    "repo": "tamago2022/ai-kaigi",
    "wake": null,
-   "note": "APIに直接聞くので、投げたその場で返る。GitHubのbotを待たない。"
+   "note": "APIに直接聞くので、投げたその場で返る。GitHubのbotを待たない。★2026-09-23時点は残高切れ（429 credit_balance_exhausted）で返らない。残高が入るまでの代わりは jules。"
   },
   "grok": {
    "how": "blocked",

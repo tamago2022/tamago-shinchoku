@@ -340,8 +340,32 @@ def write_title(title, direction, url, diag):
     return text, (None if text else (why or "題名が書けなかった"))
 
 
-def gates(title, copy, material, diag):
-    """入れる前に必ず通す門。落ちた理由をそのまま返す。"""
+_YT_IN_TEXT = re.compile(r"(?:youtu\.be/|v=|/embed/|/shorts/)([A-Za-z0-9_-]{11})")
+
+
+def gates(title, copy, material, diag, artist=""):
+    """入れる前に必ず通す門。落ちた理由をそのまま返す。
+
+    ★1140番（2026-09-25）：ここに【完成の門】を足した。
+      全26,400曲を機械で見たら、**再生できる動画が1本も無い曲が2,383件**棚に入っていた。
+      入ってから隠すのではなく、入口で止める。判定の4つは表に出す条件と同じ
+      （再生できる動画／サムネ／曲名・アーティスト名／コピー）。動画が生きているかは
+      **oEmbedで実測**する。「IDが入っている」は証拠にならない。
+      弾いた数は status/1140_kanmon.jsonl に1件1行。
+      python3 tools/1140_kanmon.py --tally で通した数・弾いた数が出る。
+    """
+    try:
+        import importlib
+        _k = importlib.import_module("1140_kanmon")
+        m = _YT_IN_TEXT.search(material or "")
+        if m:
+            why = _k.judge(title=title, artist=artist or "（棚の主）", youtube_id=m.group(1),
+                           copy=copy, label="nagekomi_shelf")
+            if why:
+                return "完成の門で落ちた：%s" % why
+    except Exception as e:  # noqa: BLE001
+        diag.append("1140番の門が呼べなかった：%r（このぶんは門を通っていない＝赤）" % (e,))
+
     why = nippou.judge(title, copy)
     if why:
         return "水道水の判定で落ちた：%s" % why

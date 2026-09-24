@@ -135,6 +135,17 @@ footer a{display:block; padding:5px 0}
         以前は「走行0本のときだけ」出す作りで、空回しが1本いるだけで消えていた＝5日気づかれなかった） -->
 <div id="loginNg" style="display:none;background:#b00020;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
 
+<!-- ⓪-2 ループの計器盤（★1142番・2026-09-25追加）
+     「出す → 測る → 直す → また出す」の"測る"がここ1枚。
+     赤が1個でもあれば、それが一番上に大きく出る。loop.json が無ければ丸ごと隠れる。 -->
+<section class="card" id="loopCard" style="display:none">
+  <h2>ループの計器盤</h2>
+  <div class="big" id="loopAtama" style="font-size:26px; line-height:1.3">…</div>
+  <div class="meta" id="loopNao" style="margin-top:8px"></div>
+  <div id="loopGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px"></div>
+  <div class="meta" id="loopStamp" style="margin-top:12px"></div>
+</section>
+
 <!-- ① 走っているもの（★ここだけは最初から見えている） -->
 <section class="card">
   <h2 id="runHead">走っているもの</h2>
@@ -154,6 +165,55 @@ footer a{display:block; padding:5px 0}
   <h2>次に発車</h2>
   <ul class="q" id="next"><li class="meta">…</li></ul>
 </section>
+
+<!-- 1138番（2026-09-25）宿題台帳。たまごさん「俺が言ったのに返ってきてないことがたくさんある。
+     それが自動で走ってゼロになるようにやってほしい」→ 畳まずに、次に発車のすぐ下に1行だけ出す。 -->
+<section class="card">
+  <h2>宿題（言われたのに返っていないもの）</h2>
+  <p style="margin:.2em 0 .6em"><a href="share/check/1138-shukudai.html">宿題台帳をひらく</a>
+  <span class="meta" id="shukudaiSum">…</span></p>
+</section>
+<script>
+/* 1142番：ループの計器盤。6つの数字を1枚に出すだけ。判定はPython側(hantei.py)が済ませてある。
+   ここでは一切判定しない＝同じ規則を2か所に書かない。 */
+fetch('status/public/loop.json?t='+Date.now(), {cache:'no-store'})
+ .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+ .then(function(d){
+   document.getElementById('loopCard').style.display='';
+   var a=d.atama;
+   document.getElementById('loopAtama').textContent =
+     a ? (a.label+'　'+a.value+a.unit) : '赤はありません';
+   document.getElementById('loopAtama').style.color = a ? '#b00020' : '#1d7a3c';
+   document.getElementById('loopNao').textContent = a ? (a.why+'　→　'+a.nao) : '';
+   var g=document.getElementById('loopGrid'); g.innerHTML='';
+   (d.cards||[]).forEach(function(c){
+     var box=document.createElement('div');
+     box.style.cssText='border:1px solid #eee7dc;border-radius:10px;padding:11px 12px';
+     if(c.red) box.style.borderColor='#b00020';
+     var v=document.createElement('div');
+     v.style.cssText='font-size:30px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums';
+     v.style.color = c.red ? '#b00020' : '#2b2b2b';
+     v.textContent = (c.value===null?'—':c.value)+c.unit;
+     var l=document.createElement('div');
+     l.style.cssText='font-size:15px;margin-top:4px;font-weight:600';
+     l.textContent = c.mark+' '+c.label;
+     var s=document.createElement('div');
+     s.style.cssText='font-size:13px;color:#7a7268;margin-top:3px;line-height:1.5';
+     s.textContent = c.sub||'';
+     box.appendChild(v); box.appendChild(l); box.appendChild(s); g.appendChild(box);
+   });
+   document.getElementById('loopStamp').textContent =
+     '測ったのは '+d.at+'　／　赤 '+d.akaN+'個　／　'
+     +'直せるものは復旧係が直したあとの数字です';
+ })
+ .catch(function(){ /* loop.json がまだ無い／戻したとき＝丸ごと隠れる */ });
+
+fetch('status/public/shukudai.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+  const t=d.tally||{}, c=d.count||{};
+  document.getElementById('shukudaiSum').textContent =
+    ' 未完了 '+t.open+'件 ／ 今日減った '+t.closedToday+'件'+(c.red?' 🔴減っていない':'');
+}).catch(()=>{});
+</script>
 
 <!-- ④ 以下はぜんぶ畳む（既定は閉じている） -->
 <details class="fold" id="fDone">
@@ -197,6 +257,8 @@ footer a{display:block; padding:5px 0}
       <a href="977-ai-renkei.html">他のAIとの連絡線・死活表</a>
       <a href="1136-gaibu-ai-daicho.html">外部AIの台帳：投げて返ってきていないもの</a>
       <a href="1136-ai-nedan.html">AIの値段表：1回いくら減るか</a>
+      <a href="share/check/1141-kanryo-taikan.html">★完了の門と、体感の実証（毎日更新）</a>
+      <a href="1140-machigai.html">全曲検査：間違いは何件あったか（全26,400曲）</a>
       <a href="yuming-anohi/index.html">あの日にかえりたい：Genspark本人の完成版と3案</a>
       <a href="share/done/">できたもの一覧</a>
       <a href="share/spotify-hitotsu.html">Spotify：押すのはここだけ</a>
