@@ -71,7 +71,13 @@ def cards(text):
 
 
 def clean_title(t, artist_name):
-    t = re.sub(r"^\s*%s\s*[—\-–:：]\s*" % re.escape(artist_name), "", t).strip()
+    """カードの題名から、アーティスト名の飾りだけ落とす。中身は変えない。"""
+    a = re.escape(artist_name)
+    t = re.sub(r"^\s*%s\s*[—\-–:：]\s*" % a, "", t).strip()
+    t = re.sub(r"\s*[／/]\s*%s\s*$" % a, "", t).strip()
+    m = re.match(r"^\s*%s\s*[「『](.+?)[」』]\s*(.*)$" % a, t)
+    if m:
+        t = (m.group(1) + (" " + m.group(2) if m.group(2) else "")).strip()
     return t or artist_name
 
 
