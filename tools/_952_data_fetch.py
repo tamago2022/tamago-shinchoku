@@ -55,7 +55,7 @@ def _fetch_paths(payload):
 #     op=tool    … tamago-shinchoku の中の白名簿の道具を1本だけ走らせる
 # ===========================================================================
 TOOL_WHITELIST = ("kohyou_osu.py", "kohyou_kanshi.py", "og_kanmon.py",
-                  "lovable_mcp_bootstrap.py")
+                  "lovable_mcp_bootstrap.py", "kohyou_ima.py")
 
 
 def _shinchoku():
@@ -91,9 +91,13 @@ def _op_shirabe(payload):
                 out["locks"].append(os.path.relpath(os.path.join(root, f), gd))
         if len(out["locks"]) > 30:
             break
+    # ★grep は既定で origin/main を見る。手元の作業ツリーは 2026-09-14 で
+    #   止まっていて行番号も中身もズレる（1122番で実測）。
+    rev = payload.get("rev", "origin/main")
     for p in (payload.get("grep") or []):
-        rc, o, e = _git(["grep", "-n", "--", p])
-        out.setdefault("grep", {})[p] = (o or "")[:4000]
+        cmd = ["grep", "-n", p] + ([rev] if rev else []) + ["--"] + list(payload.get("paths") or ["src"])
+        rc, o, e = _git(cmd)
+        out.setdefault("grep", {})[p] = (o or e or "")[:6000]
     return out
 
 
@@ -179,7 +183,83 @@ def _op_tool(payload):
             "totalYen": 0.0}
 
 
-OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool}
+MIRU_ALLOW = ("https://joy-relief-station.lovable.app",
+              "https://tamago2022.github.io")
+
+
+def _op_miru(payload):
+    """★本番のページを工場（Mac）から実際に叩いて、返ってきたHTMLを見る。
+    サンドボックスからは出られないので、目で確かめる代わりがこれしかない。
+    行き先は白名簿の2つだけ。GETのみ。"""
+    import urllib.request
+    url = payload.get("url") or ""
+    if not any(url.startswith(a) for a in MIRU_ALLOW):
+        return {"ok": False, "error": "白名簿の外です: %s" % url, "totalYen": 0.0}
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"})
+    t0 = time.time()
+    try:
+        with urllib.request.urlopen(req, timeout=int(payload.get("timeout", 40))) as r:
+            body = r.read().decode("utf-8", "ignore")
+            code, hdr = r.getcode(), dict(r.headers)
+    except Exception as e:
+        return {"ok": False, "error": "%s: %s" % (type(e).__name__, str(e)[:200]),
+                "url": url, "totalYen": 0.0}
+    out = {"ok": code == 200, "httpCode": code, "url": url, "bytes": len(body),
+           "sec": round(time.time() - t0, 1),
+           "deploymentId": hdr.get("x-deployment-id") or hdr.get("X-Deployment-Id"),
+           "totalYen": 0.0}
+    for pat in (payload.get("sagasu") or []):
+        out.setdefault("sagasu", {})[pat] = body.count(pat)
+    if payload.get("head"):
+        i = body.find("</head>")
+        out["head"] = body[:i if i > 0 else 4000][:int(payload.get("head"))]
+    if payload.get("save"):
+        sh = os.path.join(_shinchoku(), payload["save"])
+        os.makedirs(os.path.dirname(sh), exist_ok=True)
+        io.open(sh, "w", encoding="utf-8").write(body)
+        out["saved"] = payload["save"]
+    return out
+
+
+def _op_kazu(payload):
+    """★1122番：admin_stock 側に「2本目のコピー」を持っている曲を数える。
+    GETだけ。1件も書かない。鍵の値は返さない。"""
+    import urllib.parse
+    import urllib.request
+    sys_path = os.path.join(_shinchoku(), "tools")
+    import sys as _sys
+    if sys_path not in _sys.path:
+        _sys.path.insert(0, sys_path)
+    diag = []
+    import gaibu_copy_nippou as nippou
+    url, key, keyname, where = nippou.find_supabase(diag)
+    if not url:
+        return {"ok": False, "error": "Supabaseの鍵が見つかりません", "diag": diag[-3:],
+                "totalYen": 0.0}
+    q = urllib.parse.urlencode({
+        "kind": "eq.cover-guide", "whisper": "not.is.null",
+        "select": "ref,whisper", "limit": "5000"})
+    req = urllib.request.Request(url + "/rest/v1/admin_stock?" + q, headers={
+        "apikey": key, "Authorization": "Bearer " + key})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        rows = json.loads(r.read().decode("utf-8") or "[]")
+    rows = [x for x in rows if (x.get("whisper") or "").strip()]
+    out = {"ok": True, "keyName": keyname, "futatsuAru": len(rows),
+           "rei": [{"ref": x.get("ref"), "len": len((x.get("whisper") or ""))}
+                   for x in rows[:12]], "totalYen": 0.0}
+    if payload.get("save"):
+        sh = os.path.join(_shinchoku(), payload["save"])
+        os.makedirs(os.path.dirname(sh), exist_ok=True)
+        with io.open(sh, "w", encoding="utf-8") as f:
+            json.dump(rows, f, ensure_ascii=False, indent=1)
+        out["saved"] = payload["save"]
+    return out
+
+
+OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool,
+       "miru": _op_miru, "kazu": _op_kazu}
 
 
 def run_job(payload=None):
