@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>あの日にかえりたい — 名カバー案内所</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0b14;
+      --surface: #17131f;
+      --surface2: #1f1930;
+      --accent: #c8a4ff;
+      --accent2: #f0c9ff;
+      --gold: #e8c97a;
+      --text: #ede8f5;
+      --muted: #9b90b0;
+      --border: rgba(200,164,255,0.15);
+      --glow: rgba(200,164,255,0.08);
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      line-height: 1.7;
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      overflow-x: hidden;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative;
+      padding: 56px 24px 40px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* vinyl art — pure CSS */
+    .vinyl {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      margin: 0 auto 28px;
+      position: relative;
+      animation: spin 18s linear infinite;
+      background:
+        radial-gradient(circle at 50% 50%, #2a2040 0%, #2a2040 12%, transparent 12%),
+        repeating-conic-gradient(
+          #1a1428 0deg 3deg,
+          #221a35 3deg 6deg
+        );
+      box-shadow: 0 0 40px rgba(200,164,255,0.25), 0 0 80px rgba(200,164,255,0.1);
+    }
+    .vinyl::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: repeating-radial-gradient(
+        circle at 50% 50%,
+        transparent 0px,
+        transparent 6px,
+        rgba(200,164,255,0.04) 6px,
+        rgba(200,164,255,0.04) 7px
+      );
+    }
+    .vinyl::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #e8c97a 0%, #c8a260 60%, #9a7840 100%);
+      box-shadow: 0 0 8px rgba(232,201,122,0.5);
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .hero-kana {
+      font-size: 0.72rem;
+      letter-spacing: 0.3em;
+      color: var(--accent);
+      opacity: 0.8;
+      margin-bottom: 6px;
+    }
+    .hero-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #e8d4ff 0%, var(--accent2) 50%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .hero-artist {
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .hero-year {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 14px;
+      font-size: 0.75rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-top: 8px;
+    }
+
+    /* ===== FACT STRIP ===== */
+    .fact-strip {
+      display: flex;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 36px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .fact-strip::-webkit-scrollbar { display: none; }
+    .fact-item {
+      flex: 0 0 auto;
+      padding: 14px 20px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .fact-item:last-child { border-right: none; }
+    .fact-num {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .fact-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ===== SECTION COMMON ===== */
+    section {
+      padding: 0 20px;
+      margin-bottom: 36px;
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ===== BIRTH STORY ===== */
+    .story-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .story-card::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,164,255,0.12) 0%, transparent 70%);
+    }
+    .story-item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .story-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .story-item:first-child { padding-top: 0; }
+    .story-tag {
+      display: inline-block;
+      font-size: 0.62rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 3px;
+    }
+    .story-text { color: var(--text); }
+    .src-link {
+      display: inline-block;
+      font-size: 0.6rem;
+      color: var(--muted);
+      text-decoration: none;
+      opacity: 0.6;
+      margin-left: 4px;
+    }
+    .src-link:hover { opacity: 1; }
+
+    /* ===== SECRET ===== */
+    .secret-box {
+      background: linear-gradient(135deg, #1f1930, #2a1840);
+      border: 1px solid rgba(232,201,122,0.25);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .secret-icon {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+    }
+    .secret-text {
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.75;
+    }
+    .secret-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* ===== COVER CARDS ===== */
+    .cover-intro {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+    .cover-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .cover-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 12px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .cover-card:hover { border-color: var(--accent); }
+    .cover-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .cover-card:hover::before { opacity: 1; }
+    .cover-year {
+      font-size: 0.6rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .cover-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .cover-album {
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .cover-badge {
+      display: inline-block;
+      font-size: 0.58rem;
+      background: rgba(200,164,255,0.15);
+      color: var(--accent);
+      border-radius: 6px;
+      padding: 2px 7px;
+      margin-top: 5px;
+    }
+    .cover-card-wide {
+      grid-column: 1 / -1;
+    }
+
+    /* ===== TIMELINE ===== */
+    .timeline {
+      position: relative;
+      padding-left: 20px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 6px; top: 6px; bottom: 6px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+    }
+    .tl-item {
+      position: relative;
+      padding-bottom: 20px;
+      padding-left: 16px;
+    }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -14px; top: 7px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+    }
+    .tl-year {
+      font-size: 0.65rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 2px;
+    }
+    .tl-text {
+      font-size: 0.84rem;
+      color: var(--text);
+    }
+
+    /* ===== CREDIT ===== */
+    .credit-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      font-size: 0.8rem;
+    }
+    .credit-role {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .credit-name {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center;
+      padding: 32px 20px 48px;
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+    .footer-title {
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      margin-bottom: 6px;
+    }
+    .footer-sub {
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .ornament {
+      text-align: center;
+      color: var(--border);
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      margin: 8px 0 32px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="vinyl" aria-hidden="true"></div>
+  <p class="hero-kana">あのひにかえりたい</p>
+  <h1 class="hero-title">あの日にかえりたい</h1>
+  <p class="hero-artist">荒井由実（現・松任谷由実）</p>
+  <span class="hero-year">1975</span>
+</header>
+
+<div class="fact-strip" aria-label="基本データ">
+  <div class="fact-item">
+    <span class="fact-num">1位</span>
+    <span class="fact-label">オリコン最高位<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+  </div>
+  <div class="fact-item">
+    <span class="fact-num">61.5万</span>
+    <span class="fact-label">累計売上枚数<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+  </div>
+  <div class="fact-item">
+    <span class="fact-num">35週</span>
+    <span class="fact-label">チャート連続登場<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+  </div>
+</div>
+
+<section>
+  <p class="section-label">生まれた日</p>
+  <div class="story-card">
+    <div class="story-item">
+      <span class="story-tag">ドラマ主題歌</span>
+      <p class="story-text">TBS系ドラマ『家庭の秘密』の主題歌として作られた<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a>。放送は1975年8月〜11月<a class="src-link" href="https://ja.wikipedia.org/wiki/%E5%AE%B6%E5%BA%AD%E3%81%AE%E7%A7%98%E5%AF%86" target="_blank" rel="noopener">[出典]</a>。</p>
+    </div>
+    <div class="story-item">
+      <span class="story-tag">歌詞は書き直し</span>
+      <p class="story-text">当初の歌詞はドラマに合わないと判断され書き直された<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a>。没になった歌詞はハイ・ファイ・セット「スカイレストラン」に転生した<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a>。</p>
+    </div>
+    <div class="story-item">
+      <span class="story-tag">CM起用</span>
+      <p class="story-text">三菱電機ダイヤトーン（1975）・旭光学アサヒペンタックス（1980）のCMソングにも<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a>。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="section-label">伝説の失敗</p>
+  <div class="secret-box">
+    <div class="secret-icon" aria-hidden="true">🥁</div>
+    <p class="secret-text">レコーディングで、ドラムの<strong>林立夫</strong>がスティックを落とした音が、そのままレコードに入っている<a class="src-link" href="https://www.nettam.jp/column/mobility-culture/5/" target="_blank" rel="noopener">[出典]</a>。</p>
+    <p class="secret-sub">本人は「緊張感じゃなくて失敗」と認めているが<a class="src-link" href="https://ytanaca.com/yuming_drum/" target="_blank" rel="noopener">[出典]</a>、編曲の松任谷正隆はそのグルーヴを気に入り録り直さなかった<a class="src-link" href="https://www.nettam.jp/column/mobility-culture/5/" target="_blank" rel="noopener">[出典]</a>。「あれを録りなおしたら、もっと売れたのか、駄目だったのか…今も考える」<a class="src-link" href="https://www.nettam.jp/column/mobility-culture/5/" target="_blank" rel="noopener">[出典]</a>。</p>
+  </div>
+</section>
+
+<div class="ornament">· · ·</div>
+
+<section>
+  <p class="section-label">カバーたち ― これが主役</p>
+  <p class="cover-intro">50年で何十人もが歌ってきた。ジャンルが違うと、まるで別の曲に聴こえる。</p>
+
+  <div class="cover-grid">
+    <div class="cover-card">
+      <p class="cover-year">1976</p>
+      <p class="cover-name">内山田洋と<br>クールファイブ</p>
+      <p class="cover-album">アルバム『ふれあいの時』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+      <span class="cover-badge">最速カバー</span>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">1999</p>
+      <p class="cover-name">森高千里</p>
+      <p class="cover-album">『Dear Yuming〜カバー・コレクション〜』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2002</p>
+      <p class="cover-name">小野リサ</p>
+      <p class="cover-album">『Queen's Fellows: yuming 30th anniversary cover album』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+      <span class="cover-badge">ボサノバ</span>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2003</p>
+      <p class="cover-name">マイケル・フランクス</p>
+      <p class="cover-album">英語タイトル「SOMEWHERE IN THE RAIN」<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+      <span class="cover-badge">英語カバー</span>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2006</p>
+      <p class="cover-name">徳永英明</p>
+      <p class="cover-album">アルバム『VOCALIST 2』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2009</p>
+      <p class="cover-name">坂本冬美</p>
+      <p class="cover-album">『Love Songs〜また君に恋してる〜』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2009</p>
+      <p class="cover-name">桑田佳祐</p>
+      <p class="cover-album">ライブ『昭和八十三年度！ひとり紅白歌合戦』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2008</p>
+      <p class="cover-name">稲垣潤一</p>
+      <p class="cover-album">露崎春女とデュエット<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+      <span class="cover-badge">デュエット</span>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2013</p>
+      <p class="cover-name">今井美樹</p>
+      <p class="cover-album">『Dialogue -Miki Imai Sings Yuming Classics-』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2014</p>
+      <p class="cover-name">吉井和哉</p>
+      <p class="cover-album">『ヨシー・ファンクJr. 〜此レガ原点!!〜』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2006</p>
+      <p class="cover-name">和田アキ子</p>
+      <p class="cover-album">アルバム『今日までそして明日から』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card">
+      <p class="cover-year">2020</p>
+      <p class="cover-name">半﨑美子</p>
+      <p class="cover-album">アルバム『うた弁 COVER』<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></p>
+    </div>
+    <div class="cover-card cover-card-wide">
+      <p class="cover-year">2007</p>
+      <p class="cover-name">サエラ</p>
+      <p class="cover-album">同名カバーアルバム『あの日にかえりたい』を制作<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a>。</p>
+      <span class="cover-badge">アルバム表題曲に</span>
+    </div>
+    <div class="cover-card cover-card-wide">
+      <p class="cover-year">丸山圭子</p>
+      <p class="cover-name">「どうぞこのまま」のひと</p>
+      <p class="cover-album">同じ時代を生きたシンガーソングライターによるカバー<a class="src-link" href="https://www.uta-net.com/movie/158744/" target="_blank" rel="noopener">[出典]</a>。「どうぞこのまま」とのメドレーギターアレンジも存在する<a class="src-link" href="https://www.youtube.com/watch?v=5bjTPFyDe48" target="_blank" rel="noopener">[出典]</a>。</p>
+    </div>
+  </div>
+</section>
+
+<div class="ornament">· · ·</div>
+
+<section>
+  <p class="section-label">レコーディング・クレジット</p>
+  <div class="credit-grid">
+    <span class="credit-role">作詞・作曲</span>
+    <span class="credit-name">荒井由実<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+    <span class="credit-role">編曲</span>
+    <span class="credit-name">松任谷正隆<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+    <span class="credit-role">プロデュース</span>
+    <span class="credit-name">村井邦彦<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+    <span class="credit-role">ドラム</span>
+    <span class="credit-name">林立夫<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+    <span class="credit-role">ベース・ガットG</span>
+    <span class="credit-name">細野晴臣<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+    <span class="credit-role">ギター</span>
+    <span class="credit-name">鈴木茂<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+    <span class="credit-role">コーラス(A面)</span>
+    <span class="credit-name">山本潤子<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+    <span class="credit-role">コーラス(B面)</span>
+    <span class="credit-name">吉田美奈子・シュガー・ベイブ<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a></span>
+  </div>
+</section>
+
+<section>
+  <p class="section-label">うんちくひとつ</p>
+  <div class="timeline">
+    <div class="tl-item">
+      <p class="tl-year">1975</p>
+      <p class="tl-text">「あの日にかえりたい」のメロディで「スカイレストラン」の歌詞が生まれた<a class="src-link" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84" target="_blank" rel="noopener">[出典]</a>。同じメロディを乗せると歌詞がぴったり合う<a class="src-link" href="https://note.com/takashi_ikegami/n/ne088b53e86b5" target="_blank" rel="noopener">[出典]</a>。</p>
+    </div>
+    <div class="tl-item">
+      <p class="tl-year">2014</p>
+      <p class="tl-text">「スカイレストラン」はJ. Coleの楽曲でサンプリングされた<a class="src-link" href="https://www.sonymusic.co.jp/artist/HiFiSet/info/562278" target="_blank" rel="noopener">[出典]</a>。同じメロディがヒップホップに。</p>
+    </div>
+    <div class="tl-item">
+      <p class="tl-year">2024</p>
+      <p class="tl-text">「スカイレストラン」が7インチアナログ盤で再リリース<a class="src-link" href="https://www.sonymusic.co.jp/artist/HiFiSet/info/562278" target="_blank" rel="noopener">[出典]</a>。原点のメロディは今も現役。</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p class="footer-title">名カバー案内所 / ごきげん補給所</p>
+  <p class="footer-sub">
+    このページに書いた事実はWikipedia・各公式サイトを出典とします。<br>
+    歌詞の引用はありません。
+  </p>
+</footer>
+
+</body>
+</html>
