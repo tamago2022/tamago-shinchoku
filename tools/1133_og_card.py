@@ -47,22 +47,37 @@ FONT_DIRS = [
     "/Library/Fonts",
     os.path.expanduser("~/Library/Fonts"),
 ]
-SERIF_CANDIDATES = [
+# 明朝・セリフ体を、上から順に探す。Mac（工場）とLinux（Cowork）の両方で同じ顔になるよう、
+# まず Noto Serif CJK を探し、無ければヒラギノ明朝に落ちる。
+SERIF_PATTERNS = [
     ("NotoSerifCJK-Regular.ttc", 0),
     ("NotoSerifCJK-Bold.ttc", 0),
+    ("NotoSerifJP-Regular.otf", 0),
     ("ヒラギノ明朝 ProN.ttc", 0),
+    ("ヒラギノ明朝 ProN W3.ttc", 0),
     ("HiraMinProN-W3.otf", 0),
+    ("Hiragino Mincho ProN.ttc", 0),
+    ("ToppanBunkyuMinchoPr6N-Regular.otf", 0),
+    ("YuMincho.ttc", 0),
+    ("Times New Roman.ttf", 0),
     ("Times.ttc", 0),
 ]
 
 
 def _find_font():
     for d in FONT_DIRS:
-        for name, idx in SERIF_CANDIDATES:
+        for name, idx in SERIF_PATTERNS:
             p = os.path.join(d, name)
             if os.path.exists(p):
                 return p, idx
-    raise SystemExit("明朝/セリフ体のフォントが見つかりません")
+    # 名前で見つからなければ、明朝っぽいものを拾う（工場と手元で名前が違うことがある）
+    import glob
+    for d in FONT_DIRS:
+        for pat in ("*Mincho*", "*Serif*", "*明朝*"):
+            for p in sorted(glob.glob(os.path.join(d, pat))):
+                if p.lower().endswith((".ttc", ".otf", ".ttf")):
+                    return p, 0
+    raise SystemExit("明朝/セリフ体のフォントが見つかりません（探した場所: %s）" % FONT_DIRS)
 
 
 FONT_PATH, FONT_INDEX = _find_font()

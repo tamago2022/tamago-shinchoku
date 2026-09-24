@@ -59,6 +59,20 @@ def _code(url, timeout=15):
         return getattr(e, "code", 0) or 0
 
 
+def _karappo(img_url):
+    """1133番【空っぽ判定】を呼ぶ。読めないときは止めない（門を塞がない）。"""
+    try:
+        import importlib.util
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1133_og_karappo.py")
+        spec = importlib.util.spec_from_file_location("og_karappo", p)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        r = m.judge(img_url)
+    except Exception:
+        return []
+    return ["サムネが空っぽ … " + x for x in (r.get("riyuu") or [])] if r.get("karappo") else []
+
+
 def shiraberu(url):
     riyuu = []
     try:
@@ -82,6 +96,12 @@ def shiraberu(url):
         c = _code(img)
         if c != 200:
             riyuu.append("og:image の住所が %d" % c)
+        else:
+            # ★1133番（2026-09-25）住所が200でも「空っぽの絵」なら止める。
+            #   たまごさんが実際に食らったのがこれ：200で返ってくる四つの扉の絵。
+            #   指は止まらないのに、機械は「出ている」と言っていた。
+            for x in _karappo(img):
+                riyuu.append(x)
     return {"url": url, "tsuuka": not riyuu, "byou": round(byou, 2),
             "canonical": canon, "og_image": img, "riyuu": riyuu}
 
