@@ -117,10 +117,10 @@ def save_state(st):
         pass
 
 
-def notify(key, message, st):
-    """dispatch_outbox.jsonl へ1行だけ。同じ用件は6時間に1回まで。"""
+def notify(key, message, st, cooldown=None):
+    """dispatch_outbox.jsonl へ1行だけ。同じ用件は既定6時間に1回まで。"""
     last = (st.get("notified") or {}).get(key, 0)
-    if time.time() - last < NOTIFY_COOLDOWN:
+    if time.time() - last < (cooldown if cooldown else NOTIFY_COOLDOWN):
         return
     try:
         with io.open(OUTBOX, "a", encoding="utf-8") as f:
@@ -256,6 +256,7 @@ def main():
 
     if ok:
         st["lastOkAt"] = now
+        st["ngSince"] = None
         st["source"] = "setup-token(1年)" if using_token else "キーチェーンの/loginのOAuth"
         clear_flags()
         # ---- ③ 切れる前に言う ----
@@ -272,15 +273,23 @@ def main():
                                "（切れてから慌てないように、先に声をかけています）。" % d, st)
                         break
         else:
-            # キーチェーンの/loginのOAuthで動いている＝また数日で切れる形のまま。
-            # /login のOAuthで動いている＝寿命が短い形。ただし、たまごさんに
-            # 「別のやり方で入れ直して」と頼むのは新しい手間なので、ここでは黙って動かす。
-            # 切れる3日前に公式CLIが警告を出すので、その時にだけ1行お願いする（下のexpire系）。
-            pass
+            # キーチェーンの/loginのOAuthで動いている＝**競合でいつでも消える形のまま。**
+            # 2026-09-25の実測：refreshTokenは1回しか使えず、同時に十数本走るこの工場では
+            # 負けた側が「空っぽ」を書き戻して正しい鍵ごと消す。黙って動かすと必ずまた落ちる。
+            # だから3日に1回だけ「1本貼れば1年もつ形になる」と声をかける（毎回は言わない）。
+            notify("kirenai-katachi",
+                   "🔑 いまのログインは数日で切れる形（/loginのOAuth）で動いています。"
+                   "同時に何本も走らせると競合で鍵ごと消えるので、また必ず落ちます。"
+                   "status/LOGIN.md の1行を貼ってEnterすると1年もつ形に替わります（課金は変わりません）。",
+                   st, cooldown=3 * 86400)
         log("生きています（%s）" % st["source"])
     else:
         raise_flags(why)
         st["lastNgWhy"] = why
+        # いつから切れているか（進捗表の赤に「◯日から」と出すため）。
+        # 一度立てたら、通るまで上書きしない＝5日経っていることが数字で見える。
+        if not st.get("ngSince"):
+            st["ngSince"] = time.strftime("%F %H:%M")
         notify("expired",
                "🔑 Claudeのログインが切れました（%s）。枠の問題ではありません。"
                "鍵だけはAIには作れません。status/LOGIN.md の1行を貼ってEnterを押してください"

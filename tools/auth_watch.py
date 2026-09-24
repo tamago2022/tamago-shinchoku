@@ -91,8 +91,15 @@ def main():
     # 通った。旗を外して本物の発車を再開する
     for p in (AUTH_FLAG, NO_LAUNCH):
         try:
-            if os.path.exists(p):
-                os.remove(p)
+            if not os.path.exists(p):
+                continue
+            # 2026-09-25：no_launch.flag は週次上限など別の理由でも立つ。
+            # ログイン以外の理由で止まっているときに外すと、上限中に発車を再開してしまう。
+            if p == NO_LAUNCH:
+                txt = io.open(p, encoding="utf-8").read()
+                if "ログイン" not in txt and "OAuth" not in txt:
+                    continue
+            os.remove(p)
         except Exception:
             pass
     log("🔑 ログインが戻ったので、発車を自動で再開しました")

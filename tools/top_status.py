@@ -176,6 +176,31 @@ def recent_done(limit=3):
     return list(picked.values())
 
 
+def login_block():
+    """ログインの生死だけを返す（2026-09-25）。
+
+    たまごさんは進捗表しか見ない。ここが切れているとき、進捗表に何も出ていなかった
+    ＝5日気づかれなかった。だから走行本数や他の事情に一切左右されない独立の1枠にする。
+    出す文言は1つだけ：「ログインが切れています」。
+    """
+    st = jread(os.path.join(ST, "auth_keeper.json"), {})
+    ng = os.path.exists(os.path.join(ST, "auth_expired.flag"))
+    if not ng:
+        try:
+            txt = io.open(NO_LAUNCH_FLAG, encoding="utf-8").read()
+            ng = ("ログイン" in txt) or ("OAuth" in txt)
+        except Exception:
+            ng = False
+    return {
+        "ng": bool(ng),
+        "midashi": "ログインが切れています" if ng else None,
+        "since": st.get("ngSince"),
+        "naoshikata": "status/LOGIN.md の1行を貼ってEnter（1年もつ形に替わります）" if ng else None,
+        "kirenaiKatachi": os.path.exists(os.path.expanduser("~/.tamago/use_token")),
+        "tokenDaysLeft": st.get("tokenDaysLeft"),
+    }
+
+
 def stopped_reason():
     """走行0本のときだけ呼ぶ。理由を1行で返す（無ければNone＝『分かりません』を機械が偽装しない）。"""
     if os.path.exists(NO_LAUNCH_FLAG):
@@ -295,7 +320,14 @@ def build():
         "runningNow": running_now,
         "nextUp": next_up,
         "recentDone": recent_done(3),
-        "stoppedReason": stopped_reason() if not running_now else None,
+        # 2026-09-25 修正：**空回しが走っていると止まっていないことになっていた。**
+        # ログインが切れていても runningNow に【空回し】が1本いるだけで
+        # stoppedReason が null になり、進捗表に何も出ないまま5日が過ぎた。
+        # 本物が0本なら「止まっている」と言う。空回しは走行に数えない。
+        "stoppedReason": stopped_reason() if not [
+            x for x in running_now if "空回し" not in (x.get("label") or "")] else None,
+        # たまごさんは進捗表しか見ない。ログインだけは**いつでも一番上に赤で出す。**
+        "login": login_block(),
         "pace": pace_block(),
         "verify": verify_block(),
         "lovablePublish": lovable_publish_block(),

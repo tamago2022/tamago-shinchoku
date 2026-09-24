@@ -131,6 +131,10 @@ footer a{display:block; padding:5px 0}
   <button id="reload" type="button">読み直す</button>
 </header>
 
+<!-- ⓿ ログイン（★2026-09-25 追加。ここが切れていると何も動かないので一番上に赤で出す。
+        以前は「走行0本のときだけ」出す作りで、空回しが1本いるだけで消えていた＝5日気づかれなかった） -->
+<div id="loginNg" style="display:none;background:#b00020;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
+
 <!-- ① 走っているもの（★ここだけは最初から見えている） -->
 <section class="card">
   <h2 id="runHead">走っているもの</h2>
@@ -234,6 +238,19 @@ function liveMin(x){
   }
   if(x.elapsedMin == null) return null;
   return x.elapsedMin + (BASE ? (Date.now() - BASE) / 60000 : 0);
+}
+/* ───────── ログイン（一番上の赤） ─────────
+   出す文言は1つだけ：「ログインが切れています」。直し方も1行だけ添える。 */
+function renderLogin(d){
+  var L = d.login || {};
+  var el = $("loginNg");
+  if(!el) return;
+  if(!L.ng){ el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.innerHTML = '🔑 ログインが切れています'
+    + (L.since ? '<span style="font-weight:400"> — ' + esc(L.since) + 'から</span>' : '')
+    + (L.naoshikata ? '<div style="font-weight:400;margin-top:6px;font-size:.92em">'
+                      + esc(L.naoshikata) + '</div>' : '');
 }
 function renderRunning(d){
   RUN = d.runningNow || [];
@@ -463,6 +480,7 @@ function render(d){
   else if(ageMin <= 20){ s.className = ""; s.textContent = ageMin + "分前のデータ"; }
   else { s.className = "old"; s.textContent = "⚠ " + ageMin + "分前のまま（更新が止まっています）"; }
 
+  renderLogin(d);
   renderRunning(d);
   renderPace(d.pace);
   $("next").innerHTML = '<li class="meta">読み込み中…</li>';

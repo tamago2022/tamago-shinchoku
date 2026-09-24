@@ -1283,7 +1283,8 @@ def harvest(q):
             if not os.path.exists(flag):
                 io.open(flag, "w", encoding="utf-8").write(
                     "Claudeのログインが切れています（OAuth session expired）。"
-                    "たまごさんが claude にログインし直すまで発車を止めます。%s\n"
+                    "status/LOGIN.md の1行をターミナルに貼ってEnterを押すと、1年もつ形に入れ替わります。"
+                    "戻ったことはこちらで気づいて、発車も自動で再開します。%s\n"
                     % time.strftime("%Y-%m-%d %H:%M"))
             io.open(os.path.join(REPO, "status", "auth_expired.flag"), "w", encoding="utf-8").write(
                 time.strftime("%Y-%m-%d %H:%M"))
