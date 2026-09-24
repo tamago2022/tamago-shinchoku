@@ -258,8 +258,43 @@ def _op_kazu(payload):
     return out
 
 
+def _op_kazoeru(payload):
+    """★1123番：正本(origin/main)の大きいファイルを工場側で「数える」だけの口。
+    読むだけ・書くのは payload["save"] を指定したときの status/ 配下だけ。
+    payload = {"op":"kazoeru","path":"src/lib/coverGuide.ts",
+               "patterns":{"note":"note:\\s*\""},"save":"status/xxx.json",
+               "extract":"id:\\s*\"([^\"]+)\""}
+    """
+    import re
+    path = payload.get("path") or ""
+    if not path.startswith("src/"):
+        return {"ok": False, "error": "src/ の中だけです", "totalYen": 0.0}
+    if not os.path.isdir(CLONE):
+        return {"ok": False, "error": "clone なし", "totalYen": 0.0}
+    rc, body, e = _git(["show", "origin/main:%s" % path], t=300)
+    if rc != 0 or body is None:
+        return {"ok": False, "error": "読めない: %s" % (e or "")[:200], "totalYen": 0.0}
+    out = {"ok": True, "path": path, "bytes": len(body.encode("utf-8")),
+           "lines": len(body.splitlines()), "kazu": {}, "totalYen": 0.0}
+    for name, pat in (payload.get("patterns") or {}).items():
+        out["kazu"][name] = len(re.findall(pat, body))
+    ex = payload.get("extract")
+    if ex:
+        vals = re.findall(ex, body)
+        out["extractedCount"] = len(vals)
+        out["rei"] = vals[:20]
+        if payload.get("save"):
+            sh = os.path.join(_shinchoku(), payload["save"])
+            os.makedirs(os.path.dirname(sh), exist_ok=True)
+            with io.open(sh, "w", encoding="utf-8") as f:
+                json.dump(vals, f, ensure_ascii=False)
+            out["saved"] = payload["save"]
+    return out
+
+
 OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool,
-       "miru": _op_miru, "kazu": _op_kazu}
+       "miru": _op_miru, "kazu": _op_kazu,
+       "kazoeru": _op_kazoeru}
 
 
 def run_job(payload=None):
