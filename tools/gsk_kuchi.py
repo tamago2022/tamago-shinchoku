@@ -45,6 +45,8 @@ TADA = {
     ("notion", "--help"), ("notion", "search"), ("notion", "read"),
     ("notion", "create"),   # ★--help を見るため。実際に作るときは下のKAKUの栓を通す
     ("hub", "--help"), ("hub", "list_hubs"),
+    # ★1076番：エージェントの口（gsk task）の使い方を見るだけ。--help は課金0。
+    ("task", "--help"),
 }
 
 # ★書き込む口。走らせる前に必ず tools/yosan.py の栓を通す。
@@ -153,6 +155,20 @@ def run_job(payload):
         r = _run(args, timeout=int(payload.get("timeoutSec") or 120))
         r["totalYen"] = 0.0
         return r
+
+    if op == "helpzenbu":
+        # ★1076番：`gsk --help` の**頭**が要る（_run が末尾6000字しか返さないので見えない）。
+        #   課金0。白名簿の中だけ。全文はファイルへ落として、そこから読む。
+        args = payload.get("args") or ["--help"]
+        if not _yurusu(args):
+            return {"ok": False, "error": "白名簿の外", "totalYen": 0.0}
+        exe = _gsk()
+        r = subprocess.run([exe] + list(args), capture_output=True, text=True, timeout=90)
+        os.makedirs(OUT_DIR, exist_ok=True)
+        fn = os.path.join(OUT_DIR, "gsk_help_zenbu.txt")
+        io.open(fn, "w", encoding="utf-8").write((r.stdout or "") + "\n" + (r.stderr or ""))
+        return {"ok": r.returncode == 0, "op": op, "file": fn,
+                "atama": (r.stdout or "")[:12000], "totalYen": 0.0}
 
     if op == "shirabe":
         # ★1076番（2026-09-24 追記・足すだけ／既存の op は1文字も変えていない）
