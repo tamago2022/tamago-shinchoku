@@ -105,6 +105,7 @@ JOB_TIMEOUT = {
     "douga": 90,
     "horu": 240,
     "spotify": 600,    # 1075番 何百曲でも途中で切らない（GETだけ・課金0）
+    "xtoukou": 480,   # 1075番 道を全部試すので長め（GETだけ・課金0）
     "jrsdata": 180,
     "jrspush": 180,
     "oausage": 90,

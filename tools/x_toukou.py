@@ -207,10 +207,16 @@ def _id_sagashi(user):
             "https://cdn.syndication.twimg.com/widgets/timelines/profile"
             "?screen_name=%s" % user]
     tried, ids = [], set()
+    deadline = time.time() + 150      # ★全体で150秒。runnerを道連れにしない
     # ★途中で打ち切らない。全部の組み合わせを回して**足し合わせる**。
     for na, ua in uas:
         for u in saki:
-            code, body, why = _get(u, timeout=30, headers={"User-Agent": ua})
+            if time.time() > deadline:
+                tried.append({"ua": na, "url": u.split("?")[0], "code": -1,
+                              "nagasa": 0, "mitsuketaId": 0,
+                              "why": "全体150秒の上限に達したので回さなかった"})
+                continue
+            code, body, why = _get(u, timeout=14, headers={"User-Agent": ua})
             found = set(re.findall(r"/status(?:es)?/(\d{15,25})", body))
             found |= set(re.findall(r'"(?:id_str|rest_id)"\s*:\s*"(\d{15,25})"', body))
             found |= set(re.findall(r'data-tweet-id="(\d{15,25})"', body))
