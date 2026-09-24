@@ -276,6 +276,11 @@ def build():
             "label": label_of(x),
             "elapsedMin": elapsed_min(x.get("startedAt"), now),
             "model": short_model(x.get("model")),
+            # 1136番（2026-09-25）進捗表が「◯分／180分」を自分で数え直せるように、
+            # 開始時刻と制限時間もそのまま渡す。書き出した瞬間の値だけだと、
+            # 画面を開いている間ずっと止まって見える（＝読み直すまで増えない）。
+            "startedAt": x.get("startedAt"),
+            "limitMin": x.get("limitMin") or 180,
         }
         for x in running_sorted
     ]
