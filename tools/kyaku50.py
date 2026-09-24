@@ -697,10 +697,11 @@ def saiten(y, kotae_annai, kuchi="gsk"):
 
 # ═════════════════════════ 1周回す ═════════════════════════
 
-def mawasu(limit=10, koukai=True):
+def mawasu(limit=10, koukai=True, kuchi="gsk", tobasu=0):
     from playwright.sync_api import sync_playwright
 
-    meibo = yaku_yomu()[:limit]
+    # ★tobasu＝先頭から何人飛ばすか。名簿の並びは変えないまま、11人目から回すときに使う。
+    meibo = yaku_yomu()[tobasu:tobasu + limit]
     day = time.strftime("%Y-%m-%d")
     outdir = os.path.join(OUT, day)
     os.makedirs(outdir, exist_ok=True)
@@ -746,7 +747,7 @@ def mawasu(limit=10, koukai=True):
                 except Exception:
                     pass
 
-            s = saiten(y, rec["annai"])
+            s = saiten(y, rec["annai"], kuchi=kuchi)
             rec.update(s)
             # ★在庫の切り分けは機械がやる（客の言葉を事実として扱わない）
             # ★②在庫で挙げた名前＋⑦「誰を仕入れておけばよかったか」の名前、両方を照合する。
@@ -773,6 +774,7 @@ def mawasu(limit=10, koukai=True):
         br.close()
 
     matome = matomeru(rows, rnd, outpath)
+    matome["口"] = (rows[-1].get("口") if rows else kuchi)   # ★どのAIが付けた点か
     _append(SCORE, matome)
     tsunda = shiire_tsumu(rows)
     matome["仕入れに積んだ"] = tsunda
@@ -1132,6 +1134,9 @@ def main():
     p.add_argument("--tasu", type=int, help="名簿の後ろに足す（★すでに居る人は動かさない。100人にするならこれ）")
     p.add_argument("--mawasu", action="store_true")
     p.add_argument("--limit", type=int, default=10)
+    p.add_argument("--tobasu", type=int, default=0, help="名簿の先頭から何人飛ばすか")
+    p.add_argument("--kuchi", default="gsk", choices=["gsk", "codex"],
+                   help="点を付ける口。gsk=Genspark（クレジット）／codex=ChatGPT（0円）")
     p.add_argument("--page", action="store_true")
     p.add_argument("--shukan", action="store_true")
     p.add_argument("--ichiran", action="store_true")
@@ -1165,7 +1170,7 @@ def main():
         print(page_dasu())
         return 0
     if a.mawasu:
-        m = mawasu(limit=a.limit, koukai=not a.no_koukai)
+        m = mawasu(limit=a.limit, koukai=not a.no_koukai, kuchi=a.kuchi, tobasu=a.tobasu)
         print(json.dumps(m, ensure_ascii=False, indent=1, default=str))
         return 0
     p.print_help()
