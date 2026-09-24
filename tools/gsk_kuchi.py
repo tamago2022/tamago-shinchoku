@@ -200,6 +200,88 @@ def run_job(payload):
                 "error": g.get("error"), "honbun": honbun[:400000],
                 "totalYen": 0.0}
 
+    if op in ("shigoto_dasu", "shigoto_miru"):
+        # ★1076番【Gensparkのエージェントの口】`gsk task`。
+        #   ・shigoto_dasu … `task create <type> --args-file`（★非同期。数秒で run_id が返る）
+        #   ・shigoto_miru … `task status` / `task info` / `task artifacts`（読むだけ）
+        #   ★叩く前と後の残クレジットを必ず記録する（status/gsk_daicho.jsonl）。
+        #   ★契約・課金のボタンは押さない。deploy もしない。
+        import importlib
+        import genspark_nagashi as gn
+        importlib.reload(gn)
+        exe = _gsk()
+        if not exe:
+            return {"ok": False, "error": "gsk が見つかりません", "totalYen": 0.0}
+        os.makedirs(OUT_DIR, exist_ok=True)
+
+        if op == "shigoto_miru":
+            sub = payload.get("sub") or "status"
+            if sub not in ("status", "info", "artifacts"):
+                return {"ok": False, "error": "status / info / artifacts だけです",
+                        "totalYen": 0.0}
+            pid = (payload.get("id") or "").strip()
+            if not pid:
+                return {"ok": False, "error": "id が要ります", "totalYen": 0.0}
+            r = subprocess.run([exe, "task", sub, pid], capture_output=True,
+                               text=True, timeout=int(payload.get("timeoutSec") or 150))
+            fn = os.path.join(OUT_DIR, "gsk_task_%s_%s.json" % (sub, time.strftime("%H%M%S")))
+            io.open(fn, "w", encoding="utf-8").write(r.stdout or "")
+            return {"ok": r.returncode == 0, "op": op, "sub": sub, "file": fn,
+                    "stdout": (r.stdout or "")[:600000],
+                    "stderr": (r.stderr or "")[:1500], "totalYen": 0.0}
+
+        ttype = (payload.get("taskType") or "").strip()
+        if ttype not in ("deep_research", "super_agent", "website", "docs"):
+            return {"ok": False, "error": "使える種類: deep_research / super_agent / website / docs",
+                    "totalYen": 0.0}
+        args = {"query": payload.get("query") or "",
+                "instructions": payload.get("instructions") or "",
+                "task_name": payload.get("taskName") or "1076"}
+        if not args["query"]:
+            return {"ok": False, "error": "query が要ります", "totalYen": 0.0}
+        af = os.path.join(OUT_DIR, "_task_args_%s.json" % time.strftime("%H%M%S"))
+        json.dump(args, io.open(af, "w", encoding="utf-8"), ensure_ascii=False)
+
+        zen = gn.zandaka(record=False).get("zan")
+        t0 = time.time()
+        r = subprocess.run([exe, "task", "create", ttype, "--args-file", af],
+                           capture_output=True, text=True,
+                           timeout=int(payload.get("timeoutSec") or 200))
+        ato = gn.zandaka(record=True).get("zan")
+        try:
+            os.remove(af)
+        except OSError:
+            pass
+        tsukatta = (round(zen - ato, 3) if (zen is not None and ato is not None) else None)
+
+        pid = runid = url = ""
+        try:
+            d = json.loads((r.stdout or "").strip().splitlines()[-1])
+            dd = d.get("data") or {}
+            pid = dd.get("project_id") or dd.get("projectId") or ""
+            runid = dd.get("run_id") or dd.get("runId") or ""
+            url = dd.get("task_url") or ""
+        except Exception:
+            pass
+        fn = os.path.join(OUT_DIR, "gsk_task_create_%s.json" % time.strftime("%H%M%S"))
+        io.open(fn, "w", encoding="utf-8").write(r.stdout or "")
+        try:
+            io.open(os.path.join(REPO, "status", "gsk_daicho.jsonl"), "a",
+                    encoding="utf-8").write(json.dumps(
+                        {"at": time.strftime("%F %T"), "nani": "task create/" + ttype,
+                         "taskName": args["task_name"], "ok": r.returncode == 0,
+                         "projectId": pid, "runId": runid, "url": url,
+                         "残クレジット前": zen, "残クレジット": ato,
+                         "使ったクレジット": tsukatta, "秒": round(time.time() - t0, 1)},
+                        ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        return {"ok": r.returncode == 0, "op": op, "taskType": ttype,
+                "projectId": pid, "runId": runid, "taskUrl": url, "file": fn,
+                "zanMae": zen, "zan": ato, "tsukatta": tsukatta,
+                "stdout": (r.stdout or "")[:8000], "stderr": (r.stderr or "")[:1500],
+                "totalYen": 0.0}
+
     return {"ok": False, "error": "知らない op です: %s" % op, "totalYen": 0.0}
 
 
