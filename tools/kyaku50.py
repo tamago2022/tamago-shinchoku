@@ -1195,6 +1195,8 @@ def main():
                    help="点を付ける口。gsk=Genspark（クレジット）／codex=ChatGPT（0円）")
     p.add_argument("--page", action="store_true")
     p.add_argument("--shukan", action="store_true")
+    p.add_argument("--nichiji", action="store_true",
+                   help="1日1回・名簿の続きから10人（★先頭10人は物差しなので触らない）")
     p.add_argument("--ichiran", action="store_true")
     p.add_argument("--tana", help="この名前は棚にあるか（0円で確かめる）")
     p.add_argument("--no-koukai", action="store_true")
@@ -1219,6 +1221,9 @@ def main():
         r = yaku_tsukuru(a.yaku, dry=a.dry)
         print(json.dumps(r, ensure_ascii=False, indent=1)[:4000])
         return 0 if r.get("ok") else 3
+    if a.nichiji:
+        print(json.dumps(nichiji(a.limit), ensure_ascii=False, indent=1, default=str))
+        return 0
     if a.shukan:
         print(json.dumps(shukan(a.limit), ensure_ascii=False, indent=1, default=str))
         return 0
