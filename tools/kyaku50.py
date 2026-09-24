@@ -370,7 +370,9 @@ def _setsu(kotae, maru):
       前を読むと、問いの文そのものを「客が言ったこと」として拾ってしまう
       （r03で実際に『私が本当に聴きたかったのは以下のものです』を仕入れに積んだ）。
     """
-    m = re.search(r"【%s[^】]*】(.*?)(?=###\s*Question|【[⓪-⑩]|$)" % maru, kotae or "", re.S)
+    # ★⓪(U+24EA)は①〜⑩(U+2460〜)より後ろの番号なので [⓪-⑩] と書くと範囲エラーになる。並べて書く。
+    m = re.search(r"【%s[^】]*】(.*?)(?=###\s*Question|【[⓪①②③④⑤⑥⑦⑧⑨⑩]|$)" % maru,
+                  kotae or "", re.S)
     if not m:
         return ""
     body = m.group(1)
@@ -578,6 +580,12 @@ def saiten(y, kotae_annai):
     return {"ok": ok, "fugoukakuRiyuu": riyuu, "amedama": amedama(kotae) if kotae else None,
             "ten": tensuu(kotae) if kotae else {},
             "hoshikatta": hoshikatta(kotae) if kotae else [],
+            # ★ここからが2026-09-24に足した「答えまで聞く」4つ。
+            #   たまごさん「文句で終わらせない。必ず『じゃあどうすれば』まで出させる」
+            "shiireTeian": shiire_teian(kotae) if kotae else [],
+            "narabi": narabi(kotae) if kotae else [],
+            "daiichisei": daiichisei(kotae) if kotae else "",
+            "yokatta": yokatta(kotae) if kotae else "",
             "kotae": kotae, "秒": g["byou"],
             "残クレジット前": g["zen"], "残クレジット後": g["ato"],
             "使ったクレジット": g["tsukatta"]}
@@ -637,7 +645,15 @@ def mawasu(limit=10, koukai=True):
             s = saiten(y, rec["annai"])
             rec.update(s)
             # ★在庫の切り分けは機械がやる（客の言葉を事実として扱わない）
-            rec["zaiko"] = [{"name": nm, "tana": tana_ni_aruka(nm)} for nm in s["hoshikatta"]]
+            # ★②在庫で挙げた名前＋⑦「誰を仕入れておけばよかったか」の名前、両方を照合する。
+            #   たまごさん「そこまでがセット」。⑦だけに出てきた名前も仕入れに積む。
+            nm_all, mita_nm = [], set()
+            for nm in list(s["hoshikatta"]) + list(s.get("shiireTeian") or []):
+                if _norm(nm) in mita_nm:
+                    continue
+                mita_nm.add(_norm(nm))
+                nm_all.append(nm)
+            rec["zaiko"] = [{"name": nm, "tana": tana_ni_aruka(nm)} for nm in nm_all]
             rec["kaimono"] = [z["name"] for z in rec["zaiko"] if not z["tana"]]
             rec["annainin_no_mondai"] = [z["name"] for z in rec["zaiko"]
                                          if z["tana"] and z["tana"] != FUMEI]
@@ -683,6 +699,11 @@ def matomeru(rows, rnd, outpath):
             "最低の役": saitei,
             "買い物リスト件数": sum(len(r.get("kaimono") or []) for r in rows),
             "案内人の問題件数": sum(len(r.get("annainin_no_mondai") or []) for r in rows),
+            # ★「答えまで聞く」がどれだけ返ってきたか。★返ってこなかった数も隠さない
+            "仕入れ提案あり": sum(1 for r in rows if r.get("shiireTeian")),
+            "並び提案あり": sum(1 for r in rows if r.get("narabi")),
+            "第一声あり": sum(1 for r in rows if r.get("daiichisei")),
+            "良かった点あり": sum(1 for r in rows if r.get("yokatta")),
             "使ったクレジット": round(sum(r.get("使ったクレジット") or 0 for r in rows), 3),
             "残クレジット": (rows[-1].get("残クレジット後") if rows else None),
             "file": os.path.relpath(outpath, REPO)}
@@ -821,6 +842,29 @@ def page_tsukuru():
             e(r.get("annai") or ("（案内人は何も返しませんでした）%s" % (r.get("annaiError") or ""))),
             e(r.get("kotae") or "（空）"))
 
+    # ★「答えまで聞く」の4つ（2026-09-24）。客の言葉をそのまま並べる。要約しない。
+    teian, nara, koe, yoka = [], [], [], []
+    for r in rows:
+        dare = "%s・%s歳%s" % (r["kuni"], r["toshi"], r["sei"])
+        for n in (r.get("shiireTeian") or []):
+            teian.append((n, dare, tana_ni_aruka(n)))
+        for n in (r.get("narabi") or []):
+            nara.append((n, dare))
+        if r.get("daiichisei"):
+            koe.append((r["daiichisei"], dare, r["hitokoto"]))
+        if r.get("yokatta"):
+            yoka.append((r["yokatta"], dare))
+    teian_h = "".join(
+        "<li><b>%s</b><span class=dare>%s／%s</span></li>"
+        % (e(n), e(d), e(t or "★棚に無い＝仕入れる")) for n, d, t in teian) \
+        or "<li>まだ誰も答えていません</li>"
+    narabi_h = "".join("<li><b>%s</b><span class=dare>%s</span></li>" % (e(n), e(d))
+                       for n, d in nara) or "<li>まだ誰も答えていません</li>"
+    koe_h = "".join("<li><b>%s</b><span class=dare>%s が「%s」と入ってきたとき</span></li>"
+                    % (e(n), e(d), e(h)) for n, d, h in koe) or "<li>まだ誰も答えていません</li>"
+    yoka_h = "".join("<li>%s<span class=dare>%s</span></li>" % (e(n), e(d))
+                     for n, d in yoka) or "<li>★この回は誰も「良かった点」を挙げませんでした</li>"
+
     kai = "".join("<li><b>%s</b><span class=dare>%s・%s歳が欲しがった</span></li>"
                   % (e(n), e(k), e(t)) for n, k, t in kaimono) or "<li>なし</li>"
     mon = "".join("<li><b>%s</b><span class=dare>%s・%s歳が欲しがった（★棚にはある）</span></li>"
@@ -870,6 +914,12 @@ ul.ame li{margin:9px 0}
 .ame-x{display:inline-block;background:#2a1512;border:1px solid #6a2e26;color:var(--warui);border-radius:99px;padding:1px 9px;font-size:11.5px;margin-right:6px}
 .ame-o{display:inline-block;border:1px solid #2b4a3a;color:var(--ii);border-radius:99px;padding:1px 9px;font-size:11.5px;margin-right:6px}
 .amewake{color:var(--warui);font-size:12.5px;margin:10px 0 0}
+.ori{border:1px solid var(--line);border-radius:10px;margin:9px 0;background:#181613}
+.ori>summary{cursor:pointer;padding:12px 14px;font-size:14px;list-style:none;color:var(--fg)}
+.ori>summary::-webkit-details-marker{display:none}
+.ori>summary::before{content:"＋ ";color:var(--dim)}
+.ori[open]>summary::before{content:"− "}
+.ori .naka{border-top:1px solid var(--line);padding-top:10px}
 td.akaji{color:var(--warui);font-weight:700}
 td.aoji{color:var(--ii)}
 </style>
@@ -877,42 +927,55 @@ td.aoji{color:var(--ii)}
 <h1>50人の客｜誰が入ってきても答えられるか</h1>
 <div class=date>%s ／ %d人ぶん ／ 使ったクレジット %s（残 %s）</div>
 
-<div class="hantei %s">%s</div>
-
 <div class=atama>
 <div class=card><div class=k>飴玉ゼロ率 ★目標はゼロ</div><div class=v>%s<small>%%</small></div></div>
 <div class=card><div class=k>平均点</div><div class=v>%s<small> / 100</small></div></div>
-<div class=card><div class=k>いちばん低かった役</div><div class=v style=font-size:17px>%s<small><br>%s点</small></div></div>
-<div class=card><div class=k>仕入れが必要（棚に無い）</div><div class=v>%s<small> 件</small></div></div>
-<div class=card><div class=k>あるのに出せない</div><div class=v>%s<small> 件</small></div></div>
 </div>
-<div class=mokuhyou>★一番上の判定は点数ではなく<b>飴玉</b>です。たまごさん「誰が来ても飴玉1個ぐらいはあげたいね。ごきげん補給所なわけだから。何か1つでも持って帰ってもらって。これが最低ライン。」／「『ここつまんねぇな』って言われたら、もう負けですよ。誰に対してもだよ。」<br>★<b>✕が1人でも出たら赤。平均点がいくら高くても合格にしません。平均で隠さない。</b><br>★点数の目標：年内に 85〜90点。</div>
-
-<h2>飴玉ゼロ（「つまんない」と言われた人）★ここが先頭</h2>
-<ul class=ame>%s</ul>
-
-<h2>仕入れリスト（棚に無かったもの）★工場のキューに自動で積んであります</h2>
-<ul>%s</ul>
-
-<h2>案内人の問題（棚にはあるのに出せなかったもの）★これは仕入れではありません</h2>
-<ul>%s</ul>
-
-<h2>1人ずつ（点の低い順）</h2>
-%s
+<div class=mokuhyou>★たまごさんが見るのはこの<b>2つだけ</b>で足ります。下は全部畳んであります。</div>
 
 <h2>点数の推移</h2>
 <table><tr><th>いつ</th><th>人数</th><th>飴玉ゼロ ★目標0</th><th>100点換算</th><th>最低の役</th><th>仕入れ</th></tr>%s</table>
 
+<div class="hantei %s">%s</div>
+
+<details class=ori><summary>飴玉ゼロ（「つまんない」と言われた人）★%s人</summary>
+<ul class=ame>%s</ul></details>
+
+<details class=ori><summary>★客が名指しした「これを仕入れておけばよかった」（⑦）</summary>
+<div class=naka><p class=meta>たまごさん「文句を言うんだったら、じゃあ誰を入れたらいいんだい？と聞いて、それをどんどん反映していこう」<br>★右側は手元の索引に機械で照合した結果です。「棚に無い」は仕入れのキューに積んであります。</p>
+<ul>%s</ul></div></details>
+
+<details class=ori><summary>★「誰と誰が隣にあったら嬉しい」（⑧）</summary>
+<div class=naka><ul>%s</ul></div></details>
+
+<details class=ori><summary>★案内人の第一声は、こう言えばよかった（⑨・客の言葉そのまま）</summary>
+<div class=naka><ul>%s</ul></div></details>
+
+<details class=ori><summary>★良かった点（⑩）</summary>
+<div class=naka><p class=meta>たまごさん「いいコメントもあるんだったらそれも欲しいよね。謙虚に受け入れよう」</p>
+<ul>%s</ul></div></details>
+
+<details class=ori><summary>仕入れリスト（棚に無かったもの）★工場のキューに自動で積んであります</summary>
+<div class=naka><ul>%s</ul></div></details>
+
+<details class=ori><summary>★あるのに出せない（案内人の問題。これは仕入れではありません）</summary>
+<div class=naka><ul>%s</ul></div></details>
+
+<details class=ori><summary>1人ずつ（点の低い順）★中身は全部そのまま残してあります</summary>
+<div class=naka>%s</div></details>
+
+<div class=mokuhyou>★一番上の判定は点数ではなく<b>飴玉</b>です。たまごさん「誰が来ても飴玉1個ぐらいはあげたいね。ごきげん補給所なわけだから。何か1つでも持って帰ってもらって。これが最低ライン。」／「『ここつまんねぇな』って言われたら、もう負けですよ。誰に対してもだよ。」<br>★<b>✕が1人でも出たら赤。平均点がいくら高くても合格にしません。平均で隠さない。</b><br>★点数の目標：年内に 85〜90点。</div>
+
 <div class=danmari>%s</div>
 </div>""" % (
         e(d.get("at")), len(rows), e(ima.get("使ったクレジット")), e(ima.get("残クレジット")),
-        ("aka" if batsu else "ao"), e(ima.get("判定") or ("🔴 赤（飴玉ゼロ%d人）" % len(batsu) if batsu else "✅ 全員が何か1つ持って帰れた")),
         e(zeroritsu if zeroritsu is not None else "—"),
         e(ima.get("百点換算") if ima.get("百点換算") is not None else "—"),
-        e((ima.get("最低の役") or {}).get("kuni") or "—"),
-        e((ima.get("最低の役") or {}).get("ten")),
-        e(ima.get("買い物リスト件数")), e(ima.get("案内人の問題件数")),
-        ame, kai, mon, hito, suii, DANMARI)
+        suii,
+        ("aka" if batsu else "ao"), e(ima.get("判定") or ("🔴 赤（飴玉ゼロ%d人）" % len(batsu) if batsu else "✅ 全員が何か1つ持って帰れた")),
+        len(batsu), ame,
+        teian_h, narabi_h, koe_h, yoka_h,
+        kai, mon, hito, DANMARI)
 
 
 def page_dasu():
