@@ -115,6 +115,12 @@ def main():
     if not force and (now.hour < HOUR or ran_today()):
         return 0                                   # ★1日1回。それ以外は完全に無害
 
+    # ★1137番：下の「鍵なし」「チャンネルが見つからない」で抜ける道に判子が無く、
+    #   失敗している間だけ5分おきに叩き直していた（＝Buffer 24時間枠250回の食い潰しの一因）。
+    #   叩く前に押す。通っても通らなくても、その日はもう叩かない。
+    if not force:
+        stamp()
+
     res = {"at": now.strftime("%F %T %z"), "aka": False}
     tok = token()
     if not tok:

@@ -29,6 +29,7 @@ import stat
 import sys
 import time
 import urllib.request
+import urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -96,7 +97,17 @@ def read_token(path):
 
 
 def verify(token):
-    """本物か1回だけ叩いて確かめる。通らない鍵は保管しない（嘘の台帳を作らない）。"""
+    """本物か1回だけ叩いて確かめる。通らない鍵は保管しない（嘘の台帳を作らない）。
+
+    ★1137番：叩いた回数を必ず1行残す（status/1135/buffer_call.jsonl）。
+    ★エラーを自前の文言で包まない。生のHTTPコードと本文の頭をそのまま返す。
+    """
+    sys.path.insert(0, HERE)
+    try:
+        import buffer_call_log
+    except Exception:
+        buffer_call_log = None
+
     body = json.dumps({"query": "{ account { id } }"}).encode()
     req = urllib.request.Request(
         API, data=body,
@@ -105,12 +116,32 @@ def verify(token):
                  "User-Agent": "tamago-buffer-kagi"})
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
-            d = json.loads(r.read().decode())
+            raw = r.read().decode()
+            if buffer_call_log:
+                buffer_call_log.rec("buffer_kagi_install", "verify",
+                                    r.getcode(), r.headers)
+            d = json.loads(raw)
         if d.get("errors"):
-            return False, str(d["errors"])[:200]
+            return False, "200 body=%s" % str(d["errors"])[:200]
         return True, "200 通った"
+    except urllib.error.HTTPError as e:
+        raw = ""
+        try:
+            raw = e.read().decode()[:300]
+        except Exception:
+            pass
+        if buffer_call_log:
+            buffer_call_log.rec("buffer_kagi_install", "verify",
+                                e.code, e.headers, note=raw[:200])
+        # ★生のまま返す。「たぶん」を書かない
+        return False, "HTTP %s ratelimit-remaining=%s reset=%s body=%s" % (
+            e.code, e.headers.get("x-ratelimit-remaining"),
+            e.headers.get("x-ratelimit-reset"), raw)
     except Exception as e:
-        return False, "%s" % e
+        if buffer_call_log:
+            buffer_call_log.rec("buffer_kagi_install", "verify",
+                                None, None, note=repr(e)[:200])
+        return False, "%r" % e
 
 
 def put(token):
@@ -170,6 +201,11 @@ def main():
         # ★1135番：5分便が毎周回 verify() を叩いていて、BufferのAPIが429で閉じていた
         #   （2026-09-25 03:01〜、予約が1本も入れられなくなった）。
         #   鍵があるときの確認は**1日1回だけ**にする。鍵が新しく置かれた時は上の枝で毎回確かめる。
+        # ★1137番：前の直し方は「通ったときだけ判子を押す」形だった。
+        #   429で閉じている間は判子が押されないので、5分便が回るたびに叩き続け、
+        #   **閉じているから叩く → 叩くから閉じたまま** の無限ループになっていた。
+        #   実測：2026-09-24 16時台に251回／17時台249回。24時間枠は250回。
+        #   → 通っても通らなくても判子を押す。結果に関わらず1日1回しか叩かない。
         stamp = os.path.join(TAMAGO, ".buffer_kagi_verify_stamp")
         today = time.strftime("%F")
         try:
@@ -178,14 +214,17 @@ def main():
             done = ""
         if done == today:
             return 0
-        ok, why = verify(have)
-        log("Bufferの鍵は既にあります %s：%s" % (mask(have), why))
-        if ok:
+
+        def press():
             try:
                 with io.open(stamp, "w", encoding="utf-8") as f:
                     f.write(today)
             except Exception:
                 pass
+
+        press()                      # ★叩く前に押す。途中で落ちても連打しない
+        ok, why = verify(have)
+        log("Bufferの鍵は既にあります %s：%s" % (mask(have), why))
         return 0 if ok else 2
 
     log("Bufferの鍵はまだありません。publish.buffer.com/settings/api で1回だけ作って、"

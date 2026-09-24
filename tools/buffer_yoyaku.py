@@ -28,8 +28,9 @@ import sys
 import time
 import datetime
 import urllib.request
+import urllib.error
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE =os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 TAMAGO = os.path.expanduser("~/.tamago")
 KEYS = os.path.join(TAMAGO, "keys", "api_keys.env")
@@ -66,8 +67,33 @@ def gql(tok, query, variables=None):
         headers={"Content-Type": "application/json",
                  "Authorization": "Bearer %s" % tok,
                  "User-Agent": "tamago-buffer-yoyaku"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.loads(r.read().decode())
+    # ★1137番：叩くたびに1行残す（status/1135/buffer_call.jsonl）。
+    #   エラーは自前の文言で包まない。生のHTTPコードと本文をそのまま上げる。
+    sys.path.insert(0, HERE)
+    try:
+        import buffer_call_log
+    except Exception:
+        buffer_call_log = None
+    op = (query.strip().split("{")[0] or "query")[:40]
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            raw = r.read().decode()
+            if buffer_call_log:
+                buffer_call_log.rec("buffer_yoyaku", op, r.getcode(), r.headers)
+            return json.loads(raw)
+    except urllib.error.HTTPError as e:
+        body_raw = ""
+        try:
+            body_raw = e.read().decode()[:300]
+        except Exception:
+            pass
+        if buffer_call_log:
+            buffer_call_log.rec("buffer_yoyaku", op, e.code, e.headers,
+                                note=body_raw[:200])
+        log("HTTP %s remaining=%s reset=%s body=%s"
+            % (e.code, e.headers.get("x-ratelimit-remaining"),
+               e.headers.get("x-ratelimit-reset"), body_raw))
+        raise
 
 
 # ★公式ドキュメント（developers.buffer.com）のとおりの形。推測で書かない。
