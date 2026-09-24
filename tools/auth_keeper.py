@@ -206,7 +206,8 @@ def raise_flags(reason):
         io.open(AUTH_FLAG, "w", encoding="utf-8").write(time.strftime("%F %H:%M"))
         io.open(NO_LAUNCH, "w", encoding="utf-8").write(
             "Claudeのログインが切れています（%s）。枠の問題ではありません。"
-            "いつものClaudeのアプリで1回ログインし直せば、こちらで気づいて自動で再開します。%s\n"
+            "status/LOGIN.md の1行をターミナルに貼ってEnterを押すと、1年もつ形に入れ替わります。"
+            "戻ったことはこちらで気づいて、発車も自動で再開します。%s\n"
             % (reason, time.strftime("%F %H:%M")))
     except Exception:
         pass
@@ -282,7 +283,8 @@ def main():
         st["lastNgWhy"] = why
         notify("expired",
                "🔑 Claudeのログインが切れました（%s）。枠の問題ではありません。"
-               "鍵だけはAIには作れません。いつものClaudeのアプリで1回ログインし直してください。"
+               "鍵だけはAIには作れません。status/LOGIN.md の1行を貼ってEnterを押してください"
+               "（1年もつ形に入れ替わるので、次は来年までありません）。"
                "戻ったことはこちらで気づいて、発車も自動で再開します。" % why, st)
         log("切れています（%s）" % why)
 

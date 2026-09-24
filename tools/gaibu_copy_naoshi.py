@@ -92,19 +92,17 @@ CLAUDE = os.environ.get("CLAUDE_BIN") or (
     if os.path.exists(os.path.expanduser("~/.local/bin/claude")) else "claude")
 
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import claude_auth as _claude_auth
+
+
 def claude_env():
-    """キーチェーンを正本にする（command_ingest.py と同じ理由・2026-09-05の実測）。"""
-    env = dict(os.environ)
-    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
-    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
-        return env
-    try:
-        t = io.open(os.path.expanduser("~/.tamago/claude_token"), encoding="utf-8").read().strip()
-        if t:
-            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
-    except Exception:
-        pass
-    return env
+    """正本は tools/claude_auth.py（2026-09-25に1か所へ集約）。
+
+    ここに実体を置くと、4か所のコピーが直すたびにずれる。呼ぶだけにする。
+    """
+    return _claude_auth.claude_env()
 
 
 # ---------------------------------------------------------------- 書き直しの注文書
@@ -245,6 +243,13 @@ CLAUDE_SILENT = [0]    # 黙ったまま返らなかった回数
 def ask_claude(title, copy, url, diag):
     """claude -p に書き直させる。通らなければ (None, 理由) を返す。嘘のログを書かない。"""
     if CLAUDE_DOWN[0]:
+        return None, CLAUDE_DOWN[0]
+    # 2026-09-25：切れていると分かっているのに叩かない。
+    # 叩くと1件あたり150秒だまって返らず、そのうえ「失敗」が25件ぶん積み上がる。
+    # 工場が既に立てている札（status/no_launch.flag）を先に見て、待ちに戻す。
+    _ng = _claude_auth.login_ng()
+    if _ng:
+        CLAUDE_DOWN[0] = "claudeの認証が切れている（%s・叩かずに待ちへ戻しました）" % _ng
         return None, CLAUDE_DOWN[0]
     prompt = PROMPT % {"title": title or "（題名なし）",
                        "copy": copy or "（まだ無い）",

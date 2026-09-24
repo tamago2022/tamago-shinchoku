@@ -88,26 +88,17 @@ def dokudoku_publish(target, cmd_id=None):
 # ---- 認証トークン（2026-09-05）----
 # `claude setup-token` はキーチェーンに保存せず画面に出すだけなので、
 # こちらで ~/.tamago/claude_token（600・git管理外）に置き、起動時に環境変数で渡す。
-def claude_env():
-    """CLIに渡す環境。**環境変数のトークンは原則使わない**（2026-09-05に実測）。
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import claude_auth as _claude_auth
 
-    `CLAUDE_CODE_OAUTH_TOKEN` を渡すと、キーチェーンに入っている**正しい鍵より優先される。**
-    9/05は `/login` が成功して「Logged in as eggypop2010@gmail.com」と出ているのに、
-    ここで古い壊れたトークン（79文字）を被せていたせいで「OAuth session expired」が続いた。
-    キーチェーンを正本にする。環境変数を使いたいときだけ ~/.tamago/use_token を置く。
+
+def claude_env():
+    """正本は tools/claude_auth.py（2026-09-25に1か所へ集約）。
+
+    ここに実体を置くと、4か所のコピーが直すたびにずれる。呼ぶだけにする。
     """
-    env = dict(os.environ)
-    env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
-    if not os.path.exists(os.path.expanduser("~/.tamago/use_token")):
-        return env
-    p = os.path.expanduser("~/.tamago/claude_token")
-    try:
-        t = io.open(p, encoding="utf-8").read().strip()
-        if t:
-            env["CLAUDE_CODE_OAUTH_TOKEN"] = t
-    except Exception:
-        pass
-    return env
+    return _claude_auth.claude_env()
 
 
 def run(cmd, timeout=10, env=None):
