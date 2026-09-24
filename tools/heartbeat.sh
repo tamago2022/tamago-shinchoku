@@ -383,6 +383,18 @@ while :; do
   #   ★在庫28本を使い切っても止まらない。次の周に入って出し続ける。
   #   AIを1回も呼ばない・外へ1回も出ない＝0円。新しい常駐も定期タスクも作らない。
   tick_every 8 && ( python3 "$REPO/tools/aki_toko.py" >> "$REPO/status/aki_toko.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1080番）空いたら勝手に回す。たまごさん
+  #   「こういうのがあるのに工場が止まってるなんてありえないんだよ。
+  #     仕入れるなり間違いを探すなり、何かしらやっててくださいよ。」
+  #   ★キューが空でも止まらない。順番の正本は tools/aitara_mawasu.py の JUNBAN。
+  #   ★0円の工程（間違い探し・メイン不在の門）だけをここから回す。課金する工程はキュー経由。
+  #   ★Gensparkの栓（status/genspark.stop）が在るあいだ、覆面テストは順番から外れる。
+  #   AIを呼ばない・外へ出ない＝0円。新しい常駐も定期タスクも作らない。
+  tick_every 20 && ( python3 "$REPO/tools/aitara_mawasu.py" >> "$REPO/status/aitara_mawasu.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1080番）メイン不在の門。たまごさん
+  #   「タイトルがあるのにメインのものがないだとか、そういうのはもうゼロにして。あり得ないから。」
+  #   ★本番のcoverGuide.tsを数え直して status/main_kanmon.json に書くだけ。書き換えない＝0円。
+  tick_every 60 && ( python3 "$REPO/tools/main_kanmon.py" --jissoku >> "$REPO/status/main_kanmon.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
