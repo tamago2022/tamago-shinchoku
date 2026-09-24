@@ -154,6 +154,35 @@ def run_job(payload):
         r["totalYen"] = 0.0
         return r
 
+    if op == "shirabe":
+        # ★1076番（2026-09-24 追記・足すだけ／既存の op は1文字も変えていない）
+        #   `gsk search <長い問い>` を1回だけ投げる。実測1クレジット／1回。
+        #   ★心臓の genspark_nagashi の口（tick_every 4）は 06:44 を最後に回っていない
+        #     （status/gsk/nagashi.log が06:44で止まっている＝動いている心臓に反映されていない）。
+        #     だから同じ配管を**待ち行列の側から**呼ぶ。台帳・残クレジットの記録は
+        #     genspark_nagashi.hitotsu_nageru をそのまま使う＝記録の形は1つのまま。
+        toi = (payload.get("q") or "").strip()
+        if not toi:
+            return {"ok": False, "error": "q（問い）が要ります", "totalYen": 0.0}
+        import importlib
+        import genspark_nagashi as gn
+        importlib.reload(gn)
+        s = {"bangou": payload.get("bangou") or 20,
+             "namae": payload.get("namae") or "1076番 Gensparkに作らせる",
+             "gsk": ["search", "{{q}}"]}
+        g = gn.hitotsu_nageru(s, toi, meta={"対象": payload.get("namae") or "1076番"})
+        honbun = ""
+        if g.get("答え"):
+            try:
+                honbun = io.open(os.path.join(REPO, g["答え"]), encoding="utf-8").read()
+            except Exception:
+                honbun = ""
+        return {"ok": bool(g.get("ok")), "op": op, "kotaeFile": g.get("答え"),
+                "zanMae": None, "zan": g.get("残クレジット"),
+                "tsukatta": g.get("使ったクレジット"),
+                "error": g.get("error"), "honbun": honbun[:400000],
+                "totalYen": 0.0}
+
     return {"ok": False, "error": "知らない op です: %s" % op, "totalYen": 0.0}
 
 
