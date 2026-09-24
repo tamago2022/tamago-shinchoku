@@ -484,7 +484,8 @@ def _namae_gyou(body, kazu=5, nagasa=60):
             continue
         if re.search(r"(です|ます|ください|でした|ません|。|以下のもの|以下の通り)", ln):
             continue
-        ln = re.sub(r"[「」『』\"]", "", ln).split("（")[0].split("(")[0].strip(" 　-–—:：")
+        ln = re.sub(r"[「」『』\"]", " ", ln).split("（")[0].split("(")[0]
+        ln = re.sub(r"\s+", " ", ln).strip(" 　-–—:：")
         if 2 <= len(ln) <= nagasa:
             out.append(ln)
     return out[:kazu]
@@ -621,7 +622,8 @@ def hoshikatta(kotae):
         #   以下のものです」を仕入れの名前として拾った。文末・助詞で機械的に弾く。
         if re.search(r"(です|ます|ください|でした|ません|、|。|以下のもの|以下の通り)", ln):
             continue
-        ln = re.sub(r"[「」『』\"]", "", ln).split("（")[0].split("(")[0].strip(" 　-–—:：")
+        ln = re.sub(r"[「」『』\"]", " ", ln).split("（")[0].split("(")[0]
+        ln = re.sub(r"\s+", " ", ln).strip(" 　-–—:：")
         if 2 <= len(ln) <= 60:
             out.append(ln)
     return out[:5]
