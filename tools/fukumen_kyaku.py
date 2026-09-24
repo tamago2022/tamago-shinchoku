@@ -152,37 +152,77 @@ def gouhi(kotae):
     return (len(riyuu) == 0), riyuu
 
 
+# ───────────────────────── 答えを取り出す ─────────────────────────
+
+def _kotae_toridasu(stdout, toilist):
+    """crawl-and-answer の返事から、読める形の答えを作る。
+    ★形が想像と違っても**生のまま残す**（勝手に切り捨てない）。"""
+    if not stdout:
+        return ""
+    if not stdout.lstrip().startswith("{"):
+        return stdout
+    try:
+        d = json.loads(stdout)
+    except Exception:
+        return stdout
+    if isinstance(d, dict) and d.get("status") == "error":
+        return stdout
+
+    hiroi = []
+
+    def walk(o):
+        if isinstance(o, dict):
+            q = o.get("question") or o.get("question_to_answer") or o.get("q")
+            a = o.get("answer") or o.get("result") or o.get("a")
+            if isinstance(a, str) and a.strip():
+                hiroi.append((q if isinstance(q, str) else "", a.strip()))
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+
+    walk(d)
+    if not hiroi:
+        return stdout
+    out, mita = [], set()
+    for q, a in hiroi:
+        if a in mita:
+            continue
+        mita.add(a)
+        midashi = ""
+        for t in toilist:
+            m = re.match(r"^【(.+?)】", t)
+            if m and q and m.group(1) in q:
+                midashi = "【%s】" % m.group(1)
+                break
+        out.append(((midashi + "\n") if midashi else "") + a)
+    return "\n\n".join(out).strip()
+
+
 # ───────────────────────── 1本通す ─────────────────────────
 
 def toosu(url, xpost="", koukai=True, dry=False, timeout=300):
     import genspark_nagashi as gn
 
-    honbun, yondahito = honbun_toru(url)
-    toi = toi_wo_tsukuru(url, xpost, honbun)
+    jobs, yaku, toilist = toi_wo_tsukuru(url, xpost)
 
     if dry:
-        return {"ok": True, "dry": True, "toi": toi, "honbunBytes": len(honbun),
-                "yondaHito": yondahito, "tsukattaCredit": 0.0}
+        return {"ok": True, "dry": True, "yaku": yaku, "toi": toilist,
+                "jobsBytes": len(json.dumps(jobs, ensure_ascii=False)), "使ったクレジット": 0.0}
+
+    os.makedirs(OUT_DIR, exist_ok=True)
+    args_file = os.path.join(OUT_DIR, "_jobs.json")
+    json.dump({"jobs": jobs}, io.open(args_file, "w", encoding="utf-8"), ensure_ascii=False)
 
     zen = gn.zandaka(record=False).get("zan")
     t0 = time.time()
-    r = gn.gsk_run(["search", toi], timeout=timeout)
+    r = gn.gsk_run(["crawl-and-answer", "--args-file", args_file], timeout=timeout)
     byou = round(time.time() - t0, 1)
     ato = gn.zandaka(record=True).get("zan")
     tsukatta = (round(zen - ato, 3) if (zen is not None and ato is not None) else None)
 
-    kotae = (r.get("stdout") or "").strip()
-    # gsk search は JSON で返ることがある。本文だけ取り出す（取れなければ生のまま残す）。
-    if kotae.startswith("{"):
-        try:
-            d = json.loads(kotae)
-            for k in ("answer", "content", "text", "result", "output"):
-                v = (d.get("data") or d).get(k) if isinstance(d.get("data") or d, dict) else None
-                if isinstance(v, str) and v.strip():
-                    kotae = v.strip()
-                    break
-        except Exception:
-            pass
+    kotae = _kotae_toridasu((r.get("stdout") or "").strip(), toilist)
 
     ok, riyuu = (gouhi(kotae) if r.get("ok") and kotae else (False, ["Gensparkが答えを返さなかった"]))
     ten = tensuu(kotae) if kotae else {"karusa": None, "tanoshisa": None, "utsukushisa": None}
@@ -195,7 +235,7 @@ def toosu(url, xpost="", koukai=True, dry=False, timeout=300):
     rec = {"at": _now(), "url": url, "xpost": xpost, "ok": ok, "gskOk": bool(r.get("ok")),
            "fugoukakuRiyuu": riyuu, "ten": ten, "秒": byou,
            "残クレジット前": zen, "残クレジット後": ato, "使ったクレジット": tsukatta,
-           "yondaHito": yondahito, "honbunBytes": len(honbun), "kotaeFile": raw}
+           "kuchi": "crawl-and-answer", "kotaeFile": raw}
     _append(LEDGER, rec)
     _append(DAICHO, {"at": rec["at"], "nani": "覆面客", "url": url, "ok": ok,
                      "残クレジット": ato, "使ったクレジット": tsukatta, "答え": raw})
