@@ -274,6 +274,15 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, _952_data_fetch
                     importlib.reload(_952_data_fetch)
                     out = _952_data_fetch.run_job(job.get("payload") or {})
+                elif job.get("kind") == "kansei":
+                    # 1132番【完成の関所】サンドボックスで書いた差分を、
+                    #   ごきげん補給所の main に1コミットで入れる。
+                    #   ★Macの作業ツリーには触らない（GitHubのAPIだけ）。
+                    #   ★全文上書きではなく差分。もう入っていれば何もしない。課金0。
+                    import importlib
+                    _m = importlib.import_module("1132_dasu")
+                    importlib.reload(_m)
+                    out = _m.run_job(job.get("payload") or {})
                 elif job.get("kind") == "jrspush":
                     import importlib, _957_push
                     importlib.reload(_957_push)

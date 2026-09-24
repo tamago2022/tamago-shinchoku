@@ -167,8 +167,25 @@ def main():
 
     have = already_have()
     if have:
+        # ★1135番：5分便が毎周回 verify() を叩いていて、BufferのAPIが429で閉じていた
+        #   （2026-09-25 03:01〜、予約が1本も入れられなくなった）。
+        #   鍵があるときの確認は**1日1回だけ**にする。鍵が新しく置かれた時は上の枝で毎回確かめる。
+        stamp = os.path.join(TAMAGO, ".buffer_kagi_verify_stamp")
+        today = time.strftime("%F")
+        try:
+            done = io.open(stamp, encoding="utf-8").read().strip()
+        except Exception:
+            done = ""
+        if done == today:
+            return 0
         ok, why = verify(have)
         log("Bufferの鍵は既にあります %s：%s" % (mask(have), why))
+        if ok:
+            try:
+                with io.open(stamp, "w", encoding="utf-8") as f:
+                    f.write(today)
+            except Exception:
+                pass
         return 0 if ok else 2
 
     log("Bufferの鍵はまだありません。publish.buffer.com/settings/api で1回だけ作って、"
