@@ -198,21 +198,25 @@ def _id_sagashi(user):
         ("facebookexternalhit", "facebookexternalhit/1.1"),
     ]
     saki = ["https://x.com/%s" % user,
+            "https://x.com/%s/with_replies" % user,
+            "https://x.com/%s/media" % user,
             "https://twitter.com/%s" % user,
-            "https://x.com/%s/with_replies" % user]
+            # ★cdn.syndication は工場から200で出られる（実測 09:18）。古い口が残っていないか。
+            "https://cdn.syndication.twimg.com/timeline/profile"
+            "?screen_name=%s&suppress_response_codes=true" % user,
+            "https://cdn.syndication.twimg.com/widgets/timelines/profile"
+            "?screen_name=%s" % user]
     tried, ids = [], set()
+    # ★途中で打ち切らない。全部の組み合わせを回して**足し合わせる**。
     for na, ua in uas:
         for u in saki:
             code, body, why = _get(u, timeout=30, headers={"User-Agent": ua})
             found = set(re.findall(r"/status(?:es)?/(\d{15,25})", body))
             found |= set(re.findall(r'"(?:id_str|rest_id)"\s*:\s*"(\d{15,25})"', body))
-            tried.append({"ua": na, "url": u, "code": code, "nagasa": len(body),
-                          "mitsuketaId": len(found), "why": why})
+            found |= set(re.findall(r'data-tweet-id="(\d{15,25})"', body))
+            tried.append({"ua": na, "url": u.split("?")[0], "code": code,
+                          "nagasa": len(body), "mitsuketaId": len(found), "why": why})
             ids |= found
-            if found:
-                break
-        if ids:
-            break
     return sorted(ids, reverse=True), tried
 
 
