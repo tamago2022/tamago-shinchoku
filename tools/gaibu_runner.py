@@ -106,6 +106,8 @@ JOB_TIMEOUT = {
     "horu": 240,
     "spotify": 600,    # 1075番 何百曲でも途中で切らない（GETだけ・課金0）
     "xtoukou": 480,   # 1075番 道を全部試すので長め（GETだけ・課金0）
+    "xgrok": 300,     # 1075番 xAIのLive Search（yosanの栓つき）
+    "gsk": 240,       # 1075番 Gensparkの口
     "jrsdata": 180,
     "jrspush": 180,
     "oausage": 90,
@@ -462,6 +464,13 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, gsk_kuchi
                     importlib.reload(gsk_kuchi)
                     out = gsk_kuchi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "xgrok":
+                    # ★1075番：Xの投稿をxAI公式のLive Searchで拾う。
+                    #   叩く前に必ず tools/yosan.py の栓を通す（x_grok.py 側で保証）。
+                    #   鍵の値は返さない。1件も投稿しない。
+                    import importlib, x_grok
+                    importlib.reload(x_grok)
+                    out = x_grok.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except JobTimeout:
