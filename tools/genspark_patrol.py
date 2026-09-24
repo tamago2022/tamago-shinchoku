@@ -64,6 +64,12 @@ TOI = """あなたは「ごきげん補給所」というサイトの見回り�
 """
 
 
+SHIJI = """日本語で答えてください。見たままの事実だけを書き、推測を書かないでください。
+出す形は【穴】と【案】の2つだけ。1件1行。【穴】は必ずURLを含めること。
+【案】は「何をするか」だけを短く書き、理由や説明を書かないこと。多くても10個。
+資料やスライドは作らないでください。文章だけを返してください。"""
+
+
 def _now():
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -146,21 +152,80 @@ def sudeni_nagashita(hiduke):
     return os.path.exists(os.path.join(PDIR, hiduke + ".json"))
 
 
+def _nakami(o):
+    """gsk の JSON から、答えの本文らしい文字列をかき集める。"""
+    buf = []
+
+    def walk(x, key=""):
+        if isinstance(x, dict):
+            for k, v in x.items():
+                walk(v, k)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v, key)
+        elif isinstance(x, str) and len(x) > 40 and key in (
+                "content", "text", "answer", "result", "output", "message", "summary", "markdown"):
+            buf.append(x)
+    walk(o)
+    return "\n".join(buf)
+
+
+def gsk_task(toi, timeout=1500):
+    """super_agent に1件投げて、答えの本文を返す。旗の名前が版で違うので順に試す。"""
+    import genspark_nagashi as G
+    last = None
+    for flag in ("--query", "--prompt", "--message"):
+        r = G.gsk_run(["task", "create", "super_agent",
+                       "--task_name", "ごきげん補給所パトロール " + kyou(),
+                       "--instructions", SHIJI, flag, toi], timeout=timeout)
+        last = r
+        if r.get("ok"):
+            out = r.get("stdout", "")
+            try:
+                o = json.loads(out)
+            except Exception:
+                return out, r
+            # すぐ返る版：task_url だけ返って中身は後から
+            pid = None
+            for k in ("project_id", "id", "task_id"):
+                pid = (o.get("data") or {}).get(k) or o.get(k)
+                if pid:
+                    break
+            body = _nakami(o)
+            for _ in range(30):
+                if body.strip() or not pid:
+                    break
+                time.sleep(20)
+                s = G.gsk_run(["task", "status", str(pid)], timeout=120)
+                try:
+                    body = _nakami(json.loads(s.get("stdout", "{}")))
+                except Exception:
+                    body = s.get("stdout", "")
+            return body or out, r
+    return "", last
+
+
 def hashiru(force=False):
     import genspark_nagashi as G
     hd = kyou()
     os.makedirs(PDIR, exist_ok=True)
     if sudeni_nagashita(hd) and not force:
         return {"ok": True, "skip": "今日の分はもう流しています（クレジット0）"}
-    s = {"bangou": 11, "namae": "毎日のパトロール（穴＋案）", "gsk": ["search", "{{q}}"]}
     toi = TOI.format(base=BASE)
-    gyou = G.hitotsu_nageru(s, toi, meta={"patrol": hd})
-    kotae = ""
-    if gyou.get("答え"):
-        try:
-            kotae = open(os.path.join(REPO, gyou["答え"]), encoding="utf-8").read()
-        except Exception:
-            kotae = ""
+    mae = G.zandaka(record=False).get("zan")
+    kotae, r = gsk_task(toi)
+    ato = G.zandaka().get("zan")
+    gyou = {"ok": bool(r and r.get("ok")), "残クレジット": ato,
+            "使ったクレジット": (round(mae - ato, 3) if isinstance(mae, (int, float))
+                          and isinstance(ato, (int, float)) else None),
+            "error": None if (r and r.get("ok")) else ((r or {}).get("error")
+                                                       or ((r or {}).get("stderr") or "")[:300])}
+    if kotae:
+        os.makedirs(os.path.join(REPO, "status", "gsk", "kotae"), exist_ok=True)
+        fn = os.path.join(REPO, "status", "gsk", "kotae",
+                          "patrol_%s.txt" % time.strftime("%Y%m%d-%H%M%S"))
+        open(fn, "w", encoding="utf-8").write(kotae)
+        gyou["答え"] = os.path.relpath(fn, REPO)
     ana, an = wakeru(kotae)
     rec = {"at": _now(), "hiduke": hd, "ok": gyou.get("ok"), "残": gyou.get("残クレジット"),
            "使った": gyou.get("使ったクレジット"), "穴": ana, "案": an,
