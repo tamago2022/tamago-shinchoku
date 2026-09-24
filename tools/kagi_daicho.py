@@ -488,6 +488,19 @@ def probe_fal():
     return dict(status=s, detail=d)
 
 
+def probe_buffer():
+    # 2026-09-24：Bufferは台帳に行が無かった。だから毎回「ログインして」に戻っていた。
+    #   ★台帳に無いものは「無いことにも気づけない」（metaの行と同じ形の事故）。
+    k = find_key(("BUFFER_ACCESS_TOKEN",))
+    if not k:
+        return dict(status="ng",
+                    detail="鍵が置かれていません（Chrome側にもBufferのセッション無し＝実測）")
+    c, h = http_code("https://api.buffer.com", {"Authorization": "Bearer " + k},
+                     method="POST")
+    s, d = verdict(c, h)
+    return dict(status=s, detail=d)
+
+
 def probe_devin():
     k = find_key(("DEVIN_API_KEY",))
     if not k:
@@ -676,6 +689,14 @@ LEDGER = [
     dict(id="fal", what="fal.ai（画像・動画・音声）", where="~/.tamago/keys/api_keys.env",
          probe=probe_fal, stops="絵と動画が1枚も作れない",
          fix="fal.ai で鍵を作り直して鍵ファイルへ"),
+    dict(id="buffer", what="Buffer（Xへの予約投稿の口）",
+         where="~/.tamago/keys/api_keys.env の BUFFER_ACCESS_TOKEN",
+         probe=probe_buffer,
+         stops="oasisjoyrelief への予約が1本も出せない。"
+               "★台帳に無い間は、毎回たまごさんに「ログインして」と頼み直していた",
+         fix="publish.buffer.com/settings/api で鍵を1回だけ作り、"
+             "~/Desktop/buffer_token.txt に貼って保存する。"
+             "5分便の buffer_kagi_install.py が拾って鍵ファイルへしまい、平文を消す"),
     dict(id="devin", what="Devin（実装の代行）", where="DEVIN_API_KEY",
          probe=probe_devin, stops="Devinへ仕事を出せない",
          fix="app.devin.ai で鍵を作り直す"),

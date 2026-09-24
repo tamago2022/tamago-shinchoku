@@ -56,6 +56,15 @@ ALREADY_HAVE = {
     "folder": (["フォルダ", "ファイルを見せて", "パスを教えて", "どこにある"],
                "/Users/mac/Desktop/tamago-shinchoku は既にマウント済みです。"
                "自分で ls して探すこと。たまごさんに場所を聞かない。"),
+    "buffer": (["buffer", "バッファー", "予約投稿", "xに予約", "bufferにログイン"],
+               "Bufferに「ログインして」と頼むのは**禁止**。"
+               "鍵は ~/.tamago/keys/api_keys.env の BUFFER_ACCESS_TOKEN にあります。"
+               "予約は status/buffer_queue/ に注文票(JSON)を1枚置くだけ："
+               "5分便が tools/buffer_yoyaku.py を回して予約を入れ、"
+               "予約一覧で照合した結果を status/buffer_queue/done/ に書き戻します。"
+               "鍵がまだ無いときだけ、**1回きり**『publish.buffer.com/settings/api で"
+               "鍵を作って ~/Desktop/buffer_token.txt に貼る』を頼む。"
+               "★『ログインして』の形では二度と頼まない。",),
     "mac": (["ターミナル", "コマンドを打って", "実行して"],
             "5分便(machine_status_push.sh)と心臓(heartbeat.sh)が"
             "リポジトリの中のスクリプトを勝手に拾って走らせます。"

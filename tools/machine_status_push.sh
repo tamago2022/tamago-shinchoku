@@ -68,6 +68,18 @@ trap 'rm -f "$LOCK"' EXIT
 # 新しいlaunchd便は増やさない（既存便への相乗り＝この工場の決まり）。
 run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>&1 || true
 
+# ---- 2026-09-24（Cowork側から設置）Bufferの鍵を受け取る係＋予約を出す係 ----
+# たまごさん：「またログインしてくださいとかいやだよ。一回渡したものはちゃんと保管しようよ」
+# 実害：BufferはChrome側にセッションが無く、鍵台帳にも行が無かった＝渡された記録がどこにも無い。
+#   だから毎回「ログインして」に戻っていた。
+# ① buffer_kagi_install.py … Desktop等に置かれたトークンを1回だけ拾い、
+#    ~/.tamago/keys/api_keys.env へしまって平文を消す（以後たまごさんに二度と聞かない）
+# ② buffer_yoyaku.py … status/buffer_queue/ に注文票(JSON)があれば、鍵のあるこちら側で
+#    予約を入れ、★予約一覧を取り直して照合した結果を done/ に書き戻す
+# 新しいlaunchd便は増やさない（この工場の決まり）。注文票が無ければ即 return＝無害。
+run_with_timeout 60 python3 "$REPO/tools/buffer_kagi_install.py" >/dev/null 2>&1 || true
+run_with_timeout 90 python3 "$REPO/tools/buffer_yoyaku.py" >/dev/null 2>&1 || true
+
 # ---- 2026-09-19（961番・Cowork側から設置）本番に出ていないものを出し切る便 ----
 # joy-relief-station への反映（joy_push）の口は、スマホのボタンから来た時にしか回らない。
 # 実測：今日は 11:17 を最後に7時間回っていない＝直したものが何時間も本番に出ないまま溜まる。
