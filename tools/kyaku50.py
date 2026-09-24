@@ -271,6 +271,67 @@ def yaku_tsukuru(n=44, dry=False):
             "使ったクレジット": tsukatta, "path": YAKU}
 
 
+def yaku_tasu(n=50, chunk=25):
+    """★名簿を後ろに足す。**すでに居る人は1人も動かさない。**
+
+    たまごさん（2026-09-24・原文）
+      「1周したらペルソナチェンジして、他のAIに『じゃあ次あなた、ミャンマー45歳ね』ってやらせる。
+        1ヶ月後に来たミャンマー45歳でどう変わったか検証してもいい。
+        ★とりあえず100人くらいペルソナを作って、ガンガンやってガンガン直そう。」
+      「1回目の10人はそのまま残して、★同じ役で点数の推移を追えるようにする。」
+
+    ★だから並び順を絶対に変えない（--limit 10 が毎回同じ10人を指すため）。
+    ★役を作るのは codex（0円）。こちらが考えない＝偏らない。
+    """
+    import gaibu_kuchi as g
+    cur = yaku_yomu()
+    mita = set(x["id"] for x in cur)
+    kuni_mochi = {}
+    for x in cur:
+        kuni_mochi[x["kuni"]] = kuni_mochi.get(x["kuni"], 0) + 1
+    hitsuyou = ("id", "kuni", "toshi", "sei", "suki", "riyuu", "hitokoto", "go")
+    yaku, toi = _daihon(DAIHON_YAKU, {"URL": CONCIERGE_URL, "N": chunk})
+    log = []
+    nokori = n
+    while nokori > 0:
+        ima = min(chunk, nokori)
+        sude = "、".join(sorted(kuni_mochi.keys()))
+        user = ("\n".join(toi).replace("ちょうど %d" % chunk, "ちょうど %d" % ima)
+                + "\n\n★配列の長さはちょうど %d です。" % ima
+                + "\n★すでにこの国・地域の人は名簿に居ます（同じ国を増やしすぎないでください）：\n%s" % sude
+                + "\n★すでに使った id（同じ id を返さないでください）：\n%s" % "、".join(sorted(mita))
+                + '\n\n★返すのは {"yaku":[ … ]} の形のJSONひとつだけ。')
+        d, who, err = g.kiku_codex(yaku, user, timeout=600)
+        if d is None:
+            log.append("codexが答えませんでした: %s" % err)
+            break
+        lst = d.get("yaku") or d.get("list") or (d if isinstance(d, list) else [])
+        fueta = 0
+        for y in lst:
+            if not isinstance(y, dict) or any(k not in y for k in hitsuyou):
+                continue
+            i = re.sub(r"[^a-z0-9-]", "", str(y["id"]).lower())[:40]
+            if not i or i in mita:
+                continue
+            mita.add(i)
+            cur.append({k: (i if k == "id" else y[k]) for k in hitsuyou})
+            kuni_mochi[y["kuni"]] = kuni_mochi.get(y["kuni"], 0) + 1
+            fueta += 1
+        log.append("%s が %d人 足しました（いま%d人）" % (who, fueta, len(cur)))
+        nokori -= fueta
+        if fueta == 0:
+            break
+
+    os.makedirs(OUT, exist_ok=True)
+    nihon = sum(1 for x in cur if str(x["kuni"]).startswith("日本"))
+    json.dump({"at": _now(), "n": len(cur), "kotei": len(KOTEI),
+               "日本の人": nihon, "日本の割合": round(100.0 * nihon / len(cur), 1),
+               "log": log, "yaku": cur},
+              io.open(YAKU, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return {"ok": len(cur) > 0, "n": len(cur), "日本の割合": round(100.0 * nihon / len(cur), 1),
+            "log": log, "path": YAKU}
+
+
 def yaku_yomu():
     if not os.path.exists(YAKU):
         return KOTEI[:]                        # ★まだ作っていなければ固定6人だけで回す
