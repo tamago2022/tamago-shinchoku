@@ -720,9 +720,18 @@ def mawasu(limit=10, koukai=True, kuchi="gsk", tobasu=0):
     with sync_playwright() as pw:
         br = pw.chromium.launch(args=["--disable-dev-shm-usage"])
 
-        def fresh():
+        # ★2026-09-24：本物の人が来たときと同じ条件にする。
+        #   ブラウザの言語を役の言葉に合わせる（合わせないと、日本から来た役にも
+        #   英語のあいさつが出て、【③言葉】の点が嘘になる）。
+        LOCALE = {"ja": "ja-JP", "en": "en-US", "ko": "ko-KR", "zh": "zh-CN",
+                  "es": "es-ES", "pt": "pt-BR", "fr": "fr-FR", "de": "de-DE",
+                  "id": "id-ID", "vi": "vi-VN", "th": "th-TH", "my": "my-MM",
+                  "ar": "ar-EG"}
+
+        def fresh(go="ja"):
             # ★1人ごとに客を入れ替える（前の客の会話が残っていると点が嘘になる）
             c = br.new_context(viewport={"width": 390, "height": 844},
+                               locale=LOCALE.get(go, "en-US"),
                                user_agent=("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 "
                                            "like Mac OS X) AppleWebKit/605.1.15"))
             p = c.new_page()
@@ -737,7 +746,7 @@ def mawasu(limit=10, koukai=True, kuchi="gsk", tobasu=0):
                    "hitokoto": y["hitokoto"], "go": y["go"]}
             ctx = None
             try:
-                ctx, page = fresh()
+                ctx, page = fresh(y.get("go") or "ja")
                 rec["annai"] = annai_ni_kiku(y["hitokoto"], page=page, ctx=ctx)
                 rec["annaiError"] = ""
             except Exception as ex:
