@@ -184,6 +184,38 @@ def _michi3(url_of_tweet):
 
 # ───────────────────────────────── 口 ─────────────────────────────────
 
+def _id_sagashi(user):
+    """★投稿のidを探す。①〜③はidかURLが要る口なので、ここが本当の関門。
+    x.com は中身をJSで描くので、そのままでは本文が入っていないことが多い。
+    ★UAを変えると**そのまま組み上げたHTML**を返す口があるか、1つずつ実測する。"""
+    uas = [
+        ("ふつうのChrome", UA),
+        ("Googlebot", "Mozilla/5.0 (compatible; Googlebot/2.1; "
+                      "+http://www.google.com/bot.html)"),
+        ("Twitterbot", "Twitterbot/1.0"),
+        ("Bingbot", "Mozilla/5.0 (compatible; bingbot/2.0; "
+                    "+http://www.bing.com/bingbot.htm)"),
+        ("facebookexternalhit", "facebookexternalhit/1.1"),
+    ]
+    saki = ["https://x.com/%s" % user,
+            "https://twitter.com/%s" % user,
+            "https://x.com/%s/with_replies" % user]
+    tried, ids = [], set()
+    for na, ua in uas:
+        for u in saki:
+            code, body, why = _get(u, timeout=30, headers={"User-Agent": ua})
+            found = set(re.findall(r"/status(?:es)?/(\d{15,25})", body))
+            found |= set(re.findall(r'"(?:id_str|rest_id)"\s*:\s*"(\d{15,25})"', body))
+            tried.append({"ua": na, "url": u, "code": code, "nagasa": len(body),
+                          "mitsuketaId": len(found), "why": why})
+            ids |= found
+            if found:
+                break
+        if ids:
+            break
+    return sorted(ids, reverse=True), tried
+
+
 def _shindan(user):
     """★工場（Mac）からどの口まで出られるかを1本ずつ実測する。推測を書かないため。"""
     saki = [
@@ -211,6 +243,11 @@ def run_job(payload):
         u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
         return {"ok": True, "op": "shindan", "user": u,
                 "kekka": _shindan(u), "totalYen": 0.0}
+    if op == "idsagashi":
+        u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
+        ids, tried = _id_sagashi(u)
+        return {"ok": bool(ids), "op": op, "user": u, "idSu": len(ids),
+                "ids": ids[:60], "tried": tried, "totalYen": 0.0}
     if op != "toru":
         return {"ok": False, "error": "知らない op です", "totalYen": 0.0}
     user = (payload.get("user") or "oasisjoyrelief").lstrip("@")
@@ -238,11 +275,40 @@ def run_job(payload):
             tried.append({"michi": "② cdn.syndication tweet-result", "ok": True,
                           "kensu": naoshita, "why": ""})
 
-    # ①が空なら、②③は id が無いので回せない。正直に書く。
+    # ①が空なら、x.com の組み上げたHTMLから id を探して、②③に回す。
     if not toukou:
-        tried.append({"michi": "② cdn.syndication tweet-result", "ok": False, "kensu": 0,
+        ids, sagashi = _id_sagashi(user)
+        tried.append({"michi": "①' x.com のHTMLから投稿idを探す（UAを5通り）",
+                      "ok": bool(ids), "kensu": len(ids),
+                      "why": "" if ids else "どのUAでも投稿idが1つも入っていなかった",
+                      "meisai": sagashi})
+        n2 = n3 = 0
+        why2 = why3 = ""
+        for tid in ids[:60]:
+            g, w = _michi2(tid)
+            if g:
+                g["url"] = "https://x.com/%s/status/%s" % (user, tid)
+                toukou.append(g)
+                n2 += 1
+                continue
+            why2 = why2 or w
+            g, w = _michi3("https://x.com/%s/status/%s" % (user, tid))
+            if g:
+                g["id"] = str(tid)
+                g["itsu"] = _id_to_time(tid)
+                toukou.append(g)
+                n3 += 1
+            else:
+                why3 = why3 or w
+        tried.append({"michi": "② cdn.syndication tweet-result", "ok": bool(n2),
+                      "kensu": n2,
+                      "why": why2 if not n2 else ""} if ids else
+                     {"michi": "② cdn.syndication tweet-result", "ok": False, "kensu": 0,
                       "why": "投稿のidが1つも取れていないので回せなかった（idが要る口）"})
-        tried.append({"michi": "③ publish.twitter.com oEmbed", "ok": False, "kensu": 0,
+        tried.append({"michi": "③ publish.twitter.com oEmbed", "ok": bool(n3),
+                      "kensu": n3,
+                      "why": why3 if not n3 else ""} if ids else
+                     {"michi": "③ publish.twitter.com oEmbed", "ok": False, "kensu": 0,
                       "why": "投稿のURLが1本も取れていないので回せなかった（URLが要る口）"})
     else:
         # ③は答え合わせに1本だけ使う（0円・叩きすぎない）
