@@ -146,13 +146,26 @@ def r_x_zenbun(url):
         d = json.loads(body)
     except Exception:
         return None, "cdn.syndication の返事が読めない形だった"
-    text = (d.get("text") or "").strip()
+    # ★長い投稿（280字を超えるもの）は text が切れて、全文は note_tweet の側に入る。
+    #   ここを読まないと「材料の途中で切れた文」をレシピとして扱ってしまう（2026-09-25 実測）。
+    nt = ""
+    try:
+        nt = (((d.get("note_tweet") or {}).get("note_tweet_results") or {})
+              .get("result") or {}).get("text") or ""
+    except Exception:
+        nt = ""
+    text = (nt or d.get("full_text") or d.get("text") or "").strip()
     if not text:
         return None, "200だが本文が空だった"
     u = d.get("user") or {}
     # ★動画・画像が付いているかも一緒に返す（レシピの字幕を読むかどうかの判断に使う）
     media = [x.get("type") for x in ((d.get("mediaDetails") or []))]
-    return {"text": text, "author": u.get("name") or u.get("screen_name") or "",
+    # ★どの列から取れたか・全文が何字か／返事にどんな列が在ったかを残す。
+    #   「切れているのに気づかない」を次からも防ぐため（憶測で埋める事故の入口）
+    return {"text": text, "zenbun": bool(nt), "moji": len(text),
+            "kiretaKamo": (not nt) and len(text) >= 250,
+            "resKeys": sorted(d.keys())[:24],
+            "author": u.get("name") or u.get("screen_name") or "",
             "title": text[:120], "publishedAt": (d.get("created_at") or "")[:10],
             "media": media, "yen": 0.0}, ""
 
