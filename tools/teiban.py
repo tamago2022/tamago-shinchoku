@@ -167,38 +167,57 @@ def kiku_gsk(kuni, n, timeout=420):
       定番は**ページの話ではない**ので、ここは `search`（問いだけの口・実測1クレジット）を使う。
       ★`search` は問いが2048字までしか通らない（超えると serper_http_400 で1クレジット無駄になる）。
       だから字数をここで必ず測ってから投げる。"""
+    ★2026-09-24 実測その2：`search` も**答えない。**返ってくるのは検索結果の入れ物
+      （{"data":{"organic_results":[]}}）だけで、問いへの答えが1文字も無い。
+      ★しかもJSONとしては読めるので、**素通りで「答えた」ことになっていた＝嘘の緑。**
+      だから今は「listが空なら不合格」を機械で入れてある。
+
+    ★通る形（たまごさん指定の受け渡し＝公開リポ ai-kaigi）
+      問いを ai-kaigi の1枚に置き、その**URLを summarize させる。**
+      Gensparkはページを開いて、そこに書いてある指示どおりに答える（覆面客で実証済み）。
+      非公開リポは読めないので、置き場所は必ず ai-kaigi。"""
     import genspark_nagashi as gn
     toi = _toi(kuni, n)
-    if len(toi) > 2000:
-        return {"ok": False, "ai": "genspark",
-                "error": "問いが%d字で、gsk search の上限2048字を超えます（投げていません＝0クレジット）"
-                         % len(toi)}
-    zen = gn.zandaka(record=False).get("zan")
-    t0 = time.time()
-    raw = gn.gsk_run(["search", toi], timeout=timeout)
-    byou = round(time.time() - t0, 1)
-    ato = gn.zandaka(record=True).get("zan")
-    tsukatta = (round(zen - ato, 3) if (zen is not None and ato is not None) else None)
-    _append(os.path.join(REPO, "status", "gsk_daicho.jsonl"),
-            {"at": _now(), "nani": "定番の棚卸し・%s" % kuni, "kuchi": "search",
-             "ok": bool(raw.get("ok")), "残クレジット前": zen, "残クレジット": ato,
-             "使ったクレジット": tsukatta, "秒": byou})
-    r = {"r": raw, "zen": zen, "ato": ato, "tsukatta": tsukatta}
-    kotae = kyaku50._kotae_toridasu((raw.get("stdout") or "").strip())
+
+    # ① 問いを公開リポに置く（Gensparkが読める場所）
+    q_path = "teiban/toi/%s.md" % kuni
+    q_url = "https://tamago2022.github.io/ai-kaigi/" + q_path
+    try:
+        import _965_keijiban as kj
+        put = kj.run_job({"repo": KOUKAI_REPO, "action": "putfile", "path": q_path,
+                          "branch": "main",
+                          "text": "# %s の定番（Gensparkへの問い）\n\n%s\n" % (kuni, toi),
+                          "message": "1081 問いを置く: %s" % kuni})
+        if not put.get("ok"):
+            return {"ok": False, "ai": "genspark",
+                    "error": "問いを公開リポに置けませんでした: %s" % put.get("error")}
+    except Exception as ex:
+        return {"ok": False, "ai": "genspark", "error": "問いを置けません: %s" % str(ex)[:160]}
+    time.sleep(45)      # ★GitHub Pagesが配り終わるのを待つ（待たずに読ませると古い紙を読む）
+
+    # ② その1枚を Genspark に開かせて答えさせる
+    r = kyaku50._gsk_toosu(q_url, toi, "定番の棚卸し・%s" % kuni, timeout=timeout)
+    kotae = kyaku50._kotae_toridasu((r["r"].get("stdout") or "").strip())
     if r["tsukatta"] is None or r["tsukatta"] <= 0:
-        return {"ok": False, "ai": "genspark", "kotae": kotae[:2000],
+        return {"ok": False, "ai": "genspark", "kotae": kotae[:2000], "toiUrl": q_url,
                 "error": "クレジットが1つも減っていない＝Gensparkを通っていない（前%s→後%s）"
                          % (r["zen"], r["ato"])}
     m = re.search(r"\{.*\}", kotae, re.S)
     if not m:
-        return {"ok": False, "ai": "genspark", "kotae": kotae[:3000],
+        return {"ok": False, "ai": "genspark", "kotae": kotae[:3000], "toiUrl": q_url,
                 "error": "JSONが読めませんでした", "使ったクレジット": r["tsukatta"]}
     try:
         d = json.loads(m.group(0))
     except Exception as ex:
-        return {"ok": False, "ai": "genspark", "kotae": kotae[:3000],
+        return {"ok": False, "ai": "genspark", "kotae": kotae[:3000], "toiUrl": q_url,
                 "error": "JSONが壊れています: %s" % ex, "使ったクレジット": r["tsukatta"]}
-    return {"ok": True, "ai": "genspark", "kane": "前払い済みクレジット %s" % r["tsukatta"],
+    # ★ここが嘘の緑を止める栓。JSONとして読めても、定番が1組も入っていなければ不合格。
+    if not (d.get("list") or []):
+        return {"ok": False, "ai": "genspark", "kotae": kotae[:3000], "toiUrl": q_url,
+                "error": "JSONは返ったが定番が0組＝問いに答えていない",
+                "使ったクレジット": r["tsukatta"]}
+    return {"ok": True, "ai": "genspark", "toiUrl": q_url,
+            "kane": "前払い済みクレジット %s" % r["tsukatta"],
             "data": d, "使ったクレジット": r["tsukatta"]}
 
 
@@ -491,8 +510,10 @@ def page_dasu():
     io.open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(h)
     try:
         import _965_keijiban as kj
+        # ★2026-09-24 実測：ai-kaigi に gh-pages は**無い**。Pagesは main の / から出ている
+        #   （GitHub API /pages で確認。branches も main だけ）。gh-pages に置くと404。
         r = kj.run_job({"repo": KOUKAI_REPO, "action": "putfile", "path": KOUKAI_PATH,
-                        "branch": "gh-pages", "text": h,
+                        "branch": "main", "text": h,
                         "message": "定番の棚卸し（1081番）%s" % time.strftime("%F %T")})
         return KOUKAI_URL if r.get("ok") else "（公開できませんでした：%s）" % r.get("error")
     except Exception as ex:

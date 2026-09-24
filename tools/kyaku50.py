@@ -223,7 +223,24 @@ def yaku_tsukuru(n=44, dry=False):
     if dry:
         return {"ok": True, "dry": True, "toi": toi_all}
 
-    g = _gsk_toosu(CONCIERGE_URL, toi_all, "50人の客・役づくり")
+    # ★2026-09-24 実測：`summarize <サイトのURL>` に、そのページと関係ない問いを渡すと
+    #   Gensparkは問いを無視して**ページの要約**を返す（1.1クレジットを捨てた）。
+    #   役づくりはページの話ではない。だから**問いを公開リポ ai-kaigi に1枚置いて、
+    #   その紙を読ませる。**（Gensparkは非公開リポを読めないので置き場所は ai-kaigi）
+    q_url = "https://tamago2022.github.io/ai-kaigi/kyaku50/toi.md"
+    try:
+        import _965_keijiban as kj
+        put = kj.run_job({"repo": KOUKAI_REPO, "action": "putfile",
+                          "path": "kyaku50/toi.md", "branch": "main",
+                          "text": "# 50人の客の役づくり（Gensparkへの問い）\n\n%s\n" % toi_all,
+                          "message": "1080 役づくりの問いを置く"})
+        if not put.get("ok"):
+            return {"ok": False, "error": "問いを公開リポに置けませんでした: %s" % put.get("error")}
+    except Exception as ex:
+        return {"ok": False, "error": "問いを置けません: %s" % str(ex)[:160]}
+    time.sleep(45)      # ★GitHub Pagesが配り終わるのを待つ
+
+    g = _gsk_toosu(q_url, toi_all, "50人の客・役づくり")
     kotae = _kotae_toridasu((g["r"].get("stdout") or "").strip())
 
     if g["tsukatta"] is None or g["tsukatta"] <= 0:
@@ -359,10 +376,69 @@ def tensuu(kotae):
     return out
 
 
+def amedama(kotae):
+    """★一番上の判定。0〜10点より先にこれを見る。
+
+    たまごさん（2026-09-24・原文）
+      「誰が来ても飴玉1個ぐらいはあげたいね。ごきげん補給所なわけだから。
+        何か1つでも持って帰ってもらって。★これが最低ライン。
+        笑いでもいいし、癒しでもいいし、テンション上がるでもいいし、何か1つだけでも。」
+      「『ここつまんねぇな』って言われたら、もう負けですよ。誰に対してもだよ。」
+      「『俺の好きなの何にもねぇ、つまんねぇ』って言われたら、もう我々のサイトの負けです。」
+
+    戻り値 True＝何か1つ持って帰れた／False＝1つも無かった／None＝読めない（★埋めない）。
+    """
+    m = re.search(r"飴玉\s*[:：]?\s*\**\s*([◯○〇×✕✗x])", kotae)
+    if m:
+        return m.group(1) in "◯○〇"
+    # 印が無いときだけ、⓪の本文を見る。★ここでも推測で◯にしない
+    b = re.search(r"【⓪飴玉】(.{0,300})", kotae, re.S)
+    if b:
+        t = b.group(1)
+        if re.search(r"(つまんな|つまらな|何も無|何もなか|一つも|1つも|ひとつも)", t):
+            return False
+    return None
+
+
+def amedama_riyuu(rec):
+    """★✕になった人の「何も無かった理由」を1行で。**在庫が無い／あるのに出せない**で割る。
+    ★推測で書かない。機械で照合した結果からしか書かない。"""
+    kai = rec.get("kaimono") or []
+    mon = rec.get("annainin_no_mondai") or []
+    if kai and mon:
+        return "在庫が無い（%s）と、あるのに出せていない（%s）の両方" % ("・".join(kai[:3]),
+                                                                    "・".join(mon[:3]))
+    if kai:
+        return "★在庫が無い：%s" % "・".join(kai[:5])
+    if mon:
+        return "★棚にはあるのに案内人が出せていない：%s" % "・".join(mon[:5])
+    if not (rec.get("annai") or "").strip():
+        return "★案内人が何も返さなかった（%s）" % (rec.get("annaiError") or "理由不明")
+    return "★欲しかったものの具体名が出てこなかった（在庫か案内人かをまだ割れていない）"
+
+
 def hoshikatta(kotae):
-    """【②在庫】に客が書いた「欲しかったのに出てこなかった名前」を拾う。"""
-    m = re.search(r"【②在庫】(.*?)(?=【③|$)", kotae, re.S)
-    body = m.group(1) if m else ""
+    """【②在庫】に客が書いた「欲しかったのに出てこなかった名前」を拾う。
+
+    ★2026-09-24 実測で分かった形（Gensparkの返事）:
+        ### Question: 2. 【②在庫】…（★問いの文がここに丸ごと echo される）
+        verbatim: …（★ページから引いた原文。名前ではない）
+        answer: Sai Sai Kham Leng
+                Phyu Phyu Kyaw Thein
+        在庫: 0/10
+      ★最初の実走（13:41）で、この「問いの文」と「verbatim」まで名前として拾ってしまい、
+        仕入れのキューに『### Question: 3.』『あなたが本当に聴きたかったのに…』という
+        ゴミを2件積んだ（1155番・1156番）。**answer: の後ろだけを読む。**
+    """
+    body = ""
+    m = re.search(r"【②在庫】(.*?)(?=###\s*Question|【③|$)", kotae, re.S)
+    if m:
+        body = m.group(1)
+        # ★answer: があるなら、その後ろだけが客の言葉。前は問いの echo と原文引用。
+        am = re.search(r"^\s*answer\s*[:：]\s*(.*)$", body, re.S | re.M)
+        if am:
+            body = am.group(1)
+        body = re.split(r"^\s*(?:在庫|verbatim)\s*[:：]", body, maxsplit=1, flags=re.M)[0]
     out = []
     for ln in body.splitlines():
         ln = ln.strip()
@@ -382,6 +458,8 @@ def gouhi(kotae):
     r = []
     if len(kotae.strip()) < 200:
         r.append("短すぎる（200字未満）")
+    if amedama(kotae) is None:
+        r.append("飴玉の◯✕が読めない（★一番上の判定なので、無いものは合格にしない）")
     t = tensuu(kotae)
     if t.get("sougou") is None:
         r.append("総合点が読めない")
@@ -415,7 +493,8 @@ def saiten(y, kotae_annai):
         ok, riyuu = False, riyuu + ["クレジットが1つも減っていない＝Gensparkは通っていない（前%s→後%s）"
                                     % (g["zen"], g["ato"])]
 
-    return {"ok": ok, "fugoukakuRiyuu": riyuu, "ten": tensuu(kotae) if kotae else {},
+    return {"ok": ok, "fugoukakuRiyuu": riyuu, "amedama": amedama(kotae) if kotae else None,
+            "ten": tensuu(kotae) if kotae else {},
             "hoshikatta": hoshikatta(kotae) if kotae else [],
             "kotae": kotae, "秒": g["byou"],
             "残クレジット前": g["zen"], "残クレジット後": g["ato"],
@@ -483,9 +562,10 @@ def mawasu(limit=10, koukai=True):
             rec["hantei_dekinai"] = [z["name"] for z in rec["zaiko"] if z["tana"] == FUMEI]
             rows.append(rec)
             save()
-            print("  %d/%d %s %s 総合%s／買い物%d件・案内人%d件"
-                  % (i, len(meibo), "○" if s["ok"] else "×", y["id"],
-                     s["ten"].get("sougou"), len(rec["kaimono"]),
+            print("  %d/%d %s 飴玉%s 総合%s %s／買い物%d件・案内人%d件"
+                  % (i, len(meibo), "○" if s["ok"] else "×",
+                     {True: "◯", False: "✕", None: "—"}[s.get("amedama")],
+                     s["ten"].get("sougou"), y["id"], len(rec["kaimono"]),
                      len(rec["annainin_no_mondai"])), flush=True)
 
         br.close()
@@ -508,7 +588,15 @@ def matomeru(rows, rnd, outpath):
         w = min(ok, key=lambda r: (r["ten"].get("sougou") if r["ten"].get("sougou") is not None else 99))
         saitei = {"id": w["id"], "kuni": w["kuni"], "toshi": w["toshi"],
                   "ten": w["ten"].get("sougou")}
+    # ★飴玉が一番上の判定。★✕が1人でも出たら赤。平均点がいくら高くても合格にしない。
+    batsu = [r for r in ok if r.get("amedama") is False]
     return {"at": _now(), "round": rnd, "人数": len(rows), "合格": len(ok),
+            "飴玉ゼロ人数": len(batsu),
+            "飴玉ゼロ率": (round(100.0 * len(batsu) / len(ok), 1) if ok else None),
+            "飴玉ゼロの人": [{"id": r["id"], "kuni": r["kuni"], "toshi": r["toshi"],
+                             "riyuu": amedama_riyuu(r)} for r in batsu],
+            "判定": ("🔴 赤（飴玉ゼロが%d人。平均で隠さない）" % len(batsu) if batsu
+                     else ("✅ 全員が何か1つ持って帰れた" if ok else "⚪ まだ1人も通っていない")),
             "平均点": hei, "百点換算": (round(hei * 10, 1) if hei is not None else None),
             "最低の役": saitei,
             "買い物リスト件数": sum(len(r.get("kaimono") or []) for r in rows),
@@ -597,34 +685,56 @@ def page_tsukuru():
         for n in (r.get("annainin_no_mondai") or []):
             mondai.append((n, r["kuni"], r["toshi"]))
 
-    naraби = sorted(rows, key=lambda r: (r.get("ten", {}).get("sougou")
+    # ★飴玉✕の人を必ず先頭に出す（たまごさん指定）。そのあとは点の低い順。
+    narabi = sorted(rows, key=lambda r: (0 if r.get("amedama") is False else 1,
+                                         r.get("ten", {}).get("sougou")
                                          if r.get("ten", {}).get("sougou") is not None else 99))
+    batsu = [r for r in rows if r.get("amedama") is False]
+    tsuuka = [r for r in rows if r.get("ok")]
+    zeroritsu = (round(100.0 * len(batsu) / len(tsuuka), 1) if tsuuka else None)
+    ame = "".join(
+        "<li><b>%s・%s歳%s</b>「%s」<br><span class=dare>%s</span></li>"
+        % (e(r["kuni"]), e(r["toshi"]), e(r["sei"]), e(r["hitokoto"]), e(amedama_riyuu(r)))
+        for r in batsu) or "<li>★この回は全員が何か1つ持って帰れました。</li>"
 
     suii = "".join(
-        "<tr><td>%s</td><td>%s人</td><td class=big>%s点</td><td>%s</td><td>%s件</td></tr>"
-        % (e((h.get("at") or "")[:16]), e(h.get("人数")), e(h.get("百点換算")),
+        "<tr><td>%s</td><td>%s人</td><td class=%s>%s人（%s%%）</td><td class=big>%s点</td>"
+        "<td>%s</td><td>%s件</td></tr>"
+        % (e((h.get("at") or "")[:16]), e(h.get("人数")),
+           ("akaji" if (h.get("飴玉ゼロ人数") or 0) else "aoji"),
+           e(h.get("飴玉ゼロ人数")), e(h.get("飴玉ゼロ率")), e(h.get("百点換算")),
            e((h.get("最低の役") or {}).get("id")), e(h.get("買い物リスト件数")))
         for h in hist[-12:])
 
     hito = ""
-    for r in naraби:
+    for r in narabi:
         t = r.get("ten") or {}
         sou = t.get("sougou")
         iro = "warui" if (sou is not None and sou < 6) else ("futsuu" if (sou is not None and sou < 8.5) else "ii")
+        if r.get("amedama") is False:
+            iro = "warui"
+        ameji = ("<span class=ame-x>飴玉 ✕ つまんない</span>" if r.get("amedama") is False
+                 else ("<span class=ame-o>飴玉 ◯</span>" if r.get("amedama") is True
+                       else "<span class=tag>飴玉 —（読めず）</span>"))
         hito += """
 <details class="hito %s"><summary>
-<b>%s点</b>　%s・%s歳%s　<span class=q>「%s」</span>
-<span class=tag>的中%s／在庫%s／言葉%s／もう一曲%s</span>%s</summary>
+%s <b>%s点</b>　%s・%s歳%s　<span class=q>「%s」</span>
+<span class=tag>的中%s／在庫%s／言葉%s／もう一曲%s</span>%s</summary>""" % (
+            iro, ameji,
+            e("%s" % (sou * 10 if isinstance(sou, int) else "—")),
+            e(r["kuni"]), e(r["toshi"]), e(r["sei"]), e(r["hitokoto"]),
+            e(t.get("techuu")), e(t.get("zaiko")), e(t.get("kotoba")), e(t.get("mouikkyoku")),
+            ("" if r.get("ok") else '<span class="ng">不合格：%s</span>'
+             % e("、".join(r.get("fugoukakuRiyuu") or []))))
+        hito += """
 <div class=naka>
+%s
 <p class=meta>好きな音楽: %s<br>来た理由: %s</p>
 <h4>案内人が返したもの（★そのまま）</h4><pre>%s</pre>
 <h4>お客さんの採点（★Gensparkの答え。要約していません）</h4><pre>%s</pre>
 </div></details>""" % (
-            iro, e("%s" % (sou * 10 if isinstance(sou, int) else "—")),
-            e(r["kuni"]), e(r["toshi"]), e(r["sei"]), e(r["hitokoto"]),
-            e(t.get("techuu")), e(t.get("zaiko")), e(t.get("kotoba")), e(t.get("mouikkyoku")),
-            ("" if r.get("ok") else '<span class="ng">不合格：%s</span>'
-             % e("、".join(r.get("fugoukakuRiyuu") or []))),
+            ('<p class=amewake>★何も持って帰れなかった理由：%s</p>' % e(amedama_riyuu(r))
+             if r.get("amedama") is False else ""),
             e(r["suki"]), e(r["riyuu"]),
             e(r.get("annai") or ("（案内人は何も返しませんでした）%s" % (r.get("annaiError") or ""))),
             e(r.get("kotae") or "（空）"))
@@ -670,18 +780,34 @@ table{width:100%%;border-collapse:collapse;font-size:13px}
 td,th{border-bottom:1px solid var(--line);padding:7px 4px;text-align:left}
 td.big{font-size:17px;font-weight:700}
 .danmari{color:var(--dim);font-size:12px;border-left:2px solid var(--line);padding-left:11px;margin:22px 0}
+.hantei{font-size:17px;font-weight:700;padding:13px 16px;border-radius:12px;margin:0 0 14px}
+.hantei.aka{background:#2a1512;border:1px solid #6a2e26;color:var(--warui)}
+.hantei.ao{background:#12211a;border:1px solid #2b4a3a;color:var(--ii)}
+ul.ame{padding-left:20px;margin-bottom:6px}
+ul.ame li{margin:9px 0}
+.ame-x{display:inline-block;background:#2a1512;border:1px solid #6a2e26;color:var(--warui);border-radius:99px;padding:1px 9px;font-size:11.5px;margin-right:6px}
+.ame-o{display:inline-block;border:1px solid #2b4a3a;color:var(--ii);border-radius:99px;padding:1px 9px;font-size:11.5px;margin-right:6px}
+.amewake{color:var(--warui);font-size:12.5px;margin:10px 0 0}
+td.akaji{color:var(--warui);font-weight:700}
+td.aoji{color:var(--ii)}
 </style>
 <div class=wrap>
 <h1>50人の客｜誰が入ってきても答えられるか</h1>
 <div class=date>%s ／ %d人ぶん ／ 使ったクレジット %s（残 %s）</div>
 
+<div class="hantei %s">%s</div>
+
 <div class=atama>
+<div class=card><div class=k>飴玉ゼロ率 ★目標はゼロ</div><div class=v>%s<small>%%</small></div></div>
 <div class=card><div class=k>平均点</div><div class=v>%s<small> / 100</small></div></div>
 <div class=card><div class=k>いちばん低かった役</div><div class=v style=font-size:17px>%s<small><br>%s点</small></div></div>
 <div class=card><div class=k>仕入れが必要（棚に無い）</div><div class=v>%s<small> 件</small></div></div>
 <div class=card><div class=k>あるのに出せない</div><div class=v>%s<small> 件</small></div></div>
 </div>
-<div class=mokuhyou>★目標：年内に 85〜90点。たまごさん「それぞれ85点、90点出せるように頑張ろう。すぐにとは言わない。年内にはそれ出せるようにしよう。だから仕入れもどんどんやっていく。」</div>
+<div class=mokuhyou>★一番上の判定は点数ではなく<b>飴玉</b>です。たまごさん「誰が来ても飴玉1個ぐらいはあげたいね。ごきげん補給所なわけだから。何か1つでも持って帰ってもらって。これが最低ライン。」／「『ここつまんねぇな』って言われたら、もう負けですよ。誰に対してもだよ。」<br>★<b>✕が1人でも出たら赤。平均点がいくら高くても合格にしません。平均で隠さない。</b><br>★点数の目標：年内に 85〜90点。</div>
+
+<h2>飴玉ゼロ（「つまんない」と言われた人）★ここが先頭</h2>
+<ul class=ame>%s</ul>
 
 <h2>仕入れリスト（棚に無かったもの）★工場のキューに自動で積んであります</h2>
 <ul>%s</ul>
@@ -693,16 +819,18 @@ td.big{font-size:17px;font-weight:700}
 %s
 
 <h2>点数の推移</h2>
-<table><tr><th>いつ</th><th>人数</th><th>100点換算</th><th>最低の役</th><th>仕入れ</th></tr>%s</table>
+<table><tr><th>いつ</th><th>人数</th><th>飴玉ゼロ ★目標0</th><th>100点換算</th><th>最低の役</th><th>仕入れ</th></tr>%s</table>
 
 <div class=danmari>%s</div>
 </div>""" % (
         e(d.get("at")), len(rows), e(ima.get("使ったクレジット")), e(ima.get("残クレジット")),
+        ("aka" if batsu else "ao"), e(ima.get("判定") or ("🔴 赤（飴玉ゼロ%d人）" % len(batsu) if batsu else "✅ 全員が何か1つ持って帰れた")),
+        e(zeroritsu if zeroritsu is not None else "—"),
         e(ima.get("百点換算") if ima.get("百点換算") is not None else "—"),
         e((ima.get("最低の役") or {}).get("kuni") or "—"),
         e((ima.get("最低の役") or {}).get("ten")),
         e(ima.get("買い物リスト件数")), e(ima.get("案内人の問題件数")),
-        kai, mon, hito, suii, DANMARI)
+        ame, kai, mon, hito, suii, DANMARI)
 
 
 def page_dasu():
@@ -714,8 +842,9 @@ def page_dasu():
     io.open(local, "w", encoding="utf-8").write(h)
     try:
         import _965_keijiban as kj
+        # ★2026-09-24 実測：ai-kaigi に gh-pages は無い。Pagesは main の / から出ている。
         r = kj.run_job({"repo": KOUKAI_REPO, "action": "putfile", "path": KOUKAI_PATH,
-                        "branch": "gh-pages", "text": h,
+                        "branch": "main", "text": h,
                         "message": "50人の客（1080番）%s" % time.strftime("%F %T")})
         return KOUKAI_URL if r.get("ok") else "（公開できませんでした：%s）" % r.get("error")
     except Exception as ex:
