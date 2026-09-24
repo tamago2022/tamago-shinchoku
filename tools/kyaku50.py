@@ -361,6 +361,90 @@ TEN_NAMES = (("techuu", "的中"), ("zaiko", "在庫"), ("kotoba", "言葉"),
              ("mouikkyoku", "もう一曲"), ("sougou", "総合"))
 
 
+def _setsu(kotae, maru):
+    """【⑦…】のような節の中身だけを取り出す。
+
+    ★2026-09-24（たまごさん「答えまで聞く」）で足した。
+      Gensparkは問いの文をそのまま echo し、そのあと `verbatim:`（ページからの引用）、
+      そのあと `answer:` を出す。**answer: の後ろだけが客の言葉。**
+      前を読むと、問いの文そのものを「客が言ったこと」として拾ってしまう
+      （r03で実際に『私が本当に聴きたかったのは以下のものです』を仕入れに積んだ）。
+    """
+    m = re.search(r"【%s[^】]*】(.*?)(?=###\s*Question|【[⓪-⑩]|$)" % maru, kotae or "", re.S)
+    if not m:
+        return ""
+    body = m.group(1)
+    am = re.search(r"^\s*answer\s*[:：]\s*(.*)$", body, re.S | re.M)
+    if am:
+        body = am.group(1)
+    body = re.split(r"^\s*verbatim\s*[:：]", body, maxsplit=1, flags=re.M)[0]
+    return body.strip()
+
+
+def _namae_gyou(body, kazu=5, nagasa=60):
+    """節の中身から「名前だけの行」を拾う。★文（です・ます・、。）は名前ではないので落とす。"""
+    out = []
+    for ln in (body or "").splitlines():
+        ln = re.sub(r"^[\-\*・>]\s*|^\d+[\.\)、]\s*", "", ln.strip()).strip()
+        if not ln or len(ln) > 80:
+            continue
+        if re.match(r"^(なし|特になし|ありません|該当なし|無い|ない|answer|verbatim)$", ln, re.I):
+            continue
+        if re.search(r"(です|ます|ください|でした|ません|。|以下のもの|以下の通り)", ln):
+            continue
+        ln = re.sub(r"[「」『』\"]", "", ln).split("（")[0].split("(")[0].strip(" 　-–—:：")
+        if 2 <= len(ln) <= nagasa:
+            out.append(ln)
+    return out[:kazu]
+
+
+def shiire_teian(kotae):
+    """【⑦仕入れ】★「では誰を仕入れておけばよかったですか」の答え（名前だけ・最大5）。
+    たまごさん「文句を言うんだったら、じゃあ誰を入れたらいいんだい？」"""
+    return _namae_gyou(_setsu(kotae, "⑦"), kazu=5)
+
+
+def narabi(kotae):
+    """【⑧並び】★「誰と誰が隣にあったら嬉しいか」（最大3）。
+    ★『A と B』の形だけを採る。1つしか名前が無い行は並びではないので落とす。"""
+    out = []
+    for ln in (_setsu(kotae, "⑧") or "").splitlines():
+        ln = re.sub(r"^[\-\*・>]\s*|^\d+[\.\)、]\s*", "", ln.strip()).strip()
+        ln = re.sub(r"[「」『』\"]", "", ln).strip(" 　-–—:：")
+        if not ln or len(ln) > 90:
+            continue
+        if re.match(r"^(なし|特になし|ありません|該当なし|無い|ない|answer|verbatim)$", ln, re.I):
+            continue
+        if not re.search(r"(\s+と\s+|\sと|と\s|×|✕|&|＆|・と・| and | AND )", ln):
+            continue
+        out.append(ln)
+    return out[:3]
+
+
+def daiichisei(kotae):
+    """【⑨第一声】★「案内人は最初の一言で何と言えばよかったですか」。★セリフを1行そのまま。"""
+    for ln in (_setsu(kotae, "⑨") or "").splitlines():
+        ln = re.sub(r"^[\-\*・>]\s*|^\d+[\.\)、]\s*", "", ln.strip()).strip()
+        ln = ln.strip("「」『』\"“” 　")
+        if len(ln) >= 3 and not re.match(r"^(answer|verbatim)", ln, re.I):
+            return ln[:200]
+    return ""
+
+
+def yokatta(kotae):
+    """【⑩良かった点】★たまごさん「いいコメントもあるんだったらそれも欲しいよね」。
+    ★無ければ空（無いものを有ることにしない）。"""
+    body = _setsu(kotae, "⑩")
+    for ln in (body or "").splitlines():
+        ln = re.sub(r"^[\-\*・>]\s*|^\d+[\.\)、]\s*", "", ln.strip()).strip()
+        if not ln or re.match(r"^(answer|verbatim)", ln, re.I):
+            continue
+        if re.match(r"^(無い|ない|なし|特になし|ありません|該当なし)[。\.]?$", ln):
+            return ""
+        return ln[:200]
+    return ""
+
+
 def tensuu(kotae):
     """答えから5つの点を拾う。★拾えなければ None（勝手に埋めない）。"""
     out = {}
