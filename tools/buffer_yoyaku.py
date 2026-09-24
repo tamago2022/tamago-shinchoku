@@ -50,14 +50,11 @@ def log(msg):
 
 
 def token():
-    v = os.environ.get("BUFFER_ACCESS_TOKEN")
-    if v:
-        return v.strip()
-    if os.path.exists(KEYS):
-        for ln in io.open(KEYS, encoding="utf-8"):
-            if ln.strip().startswith("BUFFER_ACCESS_TOKEN="):
-                return ln.split("=", 1)[1].strip().strip('"').strip("'")
-    return None
+    """★鍵の読み口は tools/kagi.py 1本だけ（1132番）。
+       BUFFER_TOKEN / BUFFER_ACCESS_TOKEN どちらの名前で書かれていても拾う。"""
+    sys.path.insert(0, HERE)
+    import kagi
+    return kagi.get("BUFFER_ACCESS_TOKEN")
 
 
 def gql(tok, query, variables=None):
@@ -268,8 +265,14 @@ def main():
         print("鍵の置き場(~/.tamago)が見えないので、何もせず退きました")
         return 3
     os.makedirs(DONE, exist_ok=True)
+    # ★注文票だけを拾う。machi.json（行列）や hokyuu_result.json（結果）は注文票ではない。
+    #   2026-09-24 実測：これを見ずに *.json を全部読んで、結果ファイルにまで
+    #   「鍵なし」を書き戻していた＝done/ にゴミが増えていた。名前で線を引く。
+    def is_job(fn):
+        return (re.match(r"^\d{8}-", fn) and fn.endswith(".json")
+                and not fn.startswith("."))
     jobs = sorted(f for f in os.listdir(QUEUE)
-                  if f.endswith(".json")) if os.path.isdir(QUEUE) else []
+                  if is_job(f)) if os.path.isdir(QUEUE) else []
     if not jobs:
         return 0
     for fn in jobs:

@@ -71,10 +71,10 @@ KUCHI = {
 }
 LABEL = {k: v["label"] for k, v in KUCHI.items()}
 
-KEYFILES = [os.path.expanduser("~/Documents/AI作業/_鍵/keys.env"),
-            os.path.expanduser("~/Documents/AI作業/_鍵/.env"),
-            os.path.expanduser("~/.tamago/keys/api_keys.env"),
-            os.path.join(REPO, ".env")]
+# ★鍵の置き場は tools/kagi.py が唯一の決定者（1132番）。ここにリストを書かない。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kagi  # noqa: E402
+KEYFILES = list(kagi.ALL_FILES)
 
 
 def find_key(names):

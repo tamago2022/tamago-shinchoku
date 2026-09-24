@@ -85,7 +85,8 @@ def read_token(path):
         return None
     # 行頭の BUFFER_ACCESS_TOKEN= も許す。空白・引用符は落とす。
     raw = raw.strip()
-    m = re.search(r"BUFFER_ACCESS_TOKEN\s*=\s*(\S+)", raw)
+    # ★名前の言い間違いを吸収（1132番）。BUFFER_TOKEN でも BUFFER_ACCESS_TOKEN でも拾う。
+    m = re.search(r"BUFFER(?:_ACCESS)?_TOKEN\s*=\s*(\S+)", raw)
     if m:
         raw = m.group(1)
     raw = raw.strip().strip('"').strip("'")
@@ -134,13 +135,10 @@ def put(token):
 
 
 def already_have():
-    if not os.path.exists(KEYS):
-        return None
-    for ln in io.open(KEYS, encoding="utf-8"):
-        if ln.strip().startswith("BUFFER_ACCESS_TOKEN="):
-            v = ln.split("=", 1)[1].strip()
-            return v or None
-    return None
+    """★読み口は tools/kagi.py 1本だけ（1132番）。名前の揺れもそこで吸収する。"""
+    sys.path.insert(0, HERE)
+    import kagi
+    return kagi.get("BUFFER_ACCESS_TOKEN")
 
 
 def main():

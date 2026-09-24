@@ -58,7 +58,8 @@ ALREADY_HAVE = {
                "自分で ls して探すこと。たまごさんに場所を聞かない。"),
     "buffer": (["buffer", "バッファー", "予約投稿", "xに予約", "bufferにログイン"],
                "Bufferに「ログインして」と頼むのは**禁止**。"
-               "鍵は ~/.tamago/keys/api_keys.env の BUFFER_ACCESS_TOKEN にあります。"
+               "鍵の置き場は ~/.tamago/keys/api_keys.env だけ（status/KAGI_OKIBA.md）。"
+               "名前は BUFFER_TOKEN でも BUFFER_ACCESS_TOKEN でも読める（tools/kagi.py が吸収する）。"
                "予約は status/buffer_queue/ に注文票(JSON)を1枚置くだけ："
                "5分便が tools/buffer_yoyaku.py を回して予約を入れ、"
                "予約一覧で照合した結果を status/buffer_queue/done/ に書き戻します。"

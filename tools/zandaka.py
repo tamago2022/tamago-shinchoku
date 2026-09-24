@@ -60,12 +60,10 @@ ALLOW = (
 )
 
 # ★鍵の置き場（gaibu_kuchi と同じ場所を見る）。値は外に出さない。
-KEY_FILES = [
-    os.path.join(REPO, ".env"),
-    os.path.expanduser("~/.tamago/keys/api_keys.env"),
-    os.path.expanduser("~/Documents/AI作業/_鍵/keys.env"),
-    os.path.expanduser("~/Documents/AI作業/_鍵/.env"),
-]
+# ★鍵の置き場は tools/kagi.py が唯一の決定者（1132番）。ここにリストを書かない。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kagi  # noqa: E402
+KEY_FILES = list(kagi.ALL_FILES)
 
 SECRET_RE = re.compile(r"(sk-[A-Za-z0-9_\-]{8,}|xai-[A-Za-z0-9_\-]{8,}|"
                        r"gh[pousr]_[A-Za-z0-9]{8,}|AIza[A-Za-z0-9_\-]{8,}|"

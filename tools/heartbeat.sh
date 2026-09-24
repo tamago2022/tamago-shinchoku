@@ -395,6 +395,11 @@ while :; do
   #   「タイトルがあるのにメインのものがないだとか、そういうのはもうゼロにして。あり得ないから。」
   #   ★本番のcoverGuide.tsを数え直して status/main_kanmon.json に書くだけ。書き換えない＝0円。
   tick_every 60 && ( python3 "$REPO/tools/main_kanmon.py" --jissoku >> "$REPO/status/main_kanmon.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-24（1082番）戻せる台帳。たまごさん
+  #   「間違えて変えてしまうものもあるかもしれないけれど、すぐ戻れるようにしといてね。」
+  #   ★戻れる点（anzen-* の印）を作り直して、全部が戻せる状態かを実測する。
+  #   ★git の印を作るだけ。作業ツリーにも index にも触らない＝0円・0リスク。
+  tick_every 40 && ( python3 "$REPO/tools/modoseru.py" --shiraberu >> "$REPO/status/modoseru.log" 2>&1 & ) >/dev/null 2>&1
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

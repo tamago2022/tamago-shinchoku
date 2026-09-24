@@ -85,12 +85,10 @@ TAMAGO = os.path.expanduser("~/.tamago")
 #   さらに、Macが測った結果を上書きしない。嘘を載せるくらいなら、何も言わない。
 CAN_MEASURE = os.path.isdir(TAMAGO)
 
-KEYFILES = [
-    os.path.expanduser("~/Documents/AI作業/_鍵/keys.env"),
-    os.path.expanduser("~/Documents/AI作業/_鍵/.env"),
-    os.path.join(TAMAGO, "keys/api_keys.env"),
-    os.path.join(REPO, ".env"),
-]
+# ★鍵の置き場は tools/kagi.py が唯一の決定者（1132番）。ここにリストを書かない。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kagi  # noqa: E402
+KEYFILES = list(kagi.ALL_FILES)
 
 
 def log(msg):
@@ -305,6 +303,28 @@ def _saikin_honban_shippai(ai_id, words, hours=6):
                 if w in low:
                     return jst(at), w
     return None, None
+
+
+def probe_buffer():
+    """1132番：Bufferの行が台帳に無かったので足す。
+       ★名前の揺れ（BUFFER_TOKEN / BUFFER_ACCESS_TOKEN）は kagi.py が吸収する。"""
+    k = kagi.get("BUFFER_ACCESS_TOKEN")
+    if not k:
+        return dict(status="ng", detail="鍵が置かれていません")
+    try:
+        req = urllib.request.Request(
+            "https://api.buffer.com",
+            data=json.dumps({"query": "{ account { id } }"}).encode(),
+            headers={"Content-Type": "application/json",
+                     "Authorization": "Bearer " + k,
+                     "User-Agent": "tamago-kagi-daicho"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            d = json.loads(r.read().decode())
+        if d.get("errors"):
+            return dict(status="ng", detail="200だが断られた（鍵が古い形）")
+        return dict(status="ok", detail="200 通った")
+    except Exception as e:
+        return dict(status="ng", detail=scrub("叩けません: %s" % e))
 
 
 def probe_openai():
@@ -644,6 +664,14 @@ def probe_mac_omosa():
 
 # 台帳の本体。ここに並んでいないものは「無い」ことにする。
 LEDGER = [
+    dict(id="buffer", what="Buffer（Xの予約投稿）",
+         where="~/.tamago/keys/api_keys.env の BUFFER_ACCESS_TOKEN"
+               "（★BUFFER_TOKEN と書いても読める）",
+         probe=probe_buffer,
+         stops="Xの予約が1本も入らない。毎回「ログインして」に戻る",
+         fix="publish.buffer.com/settings/api で1回だけ鍵を作り、"
+             "~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す"
+             "（~/Desktop/buffer_token.txt に貼るだけでも自動で写る）"),
     dict(id="claude", what="Claudeの鍵（発車そのもの）", where="キーチェーン／~/.tamago/claude_token",
          probe=probe_claude, stops="工場の発車が全部止まる（44時間の実害）",
          fix="いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す"),
