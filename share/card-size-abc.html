@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>カードの大きさ A〜F（本番実測・見本つき）</title>
+<style>
+  :root{
+    --ink:#1c1a17; --sub:#6b645c; --line:#ddd6cc; --paper:#f6f3ec; --card:#fffdf8;
+    --muted:#ece7dd; --ok:#2f6f4f; --ng:#b0392c; --warn:#a8741a;
+    --soft:0 1px 3px rgba(0,0,0,.08); --lift:0 8px 24px rgba(0,0,0,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    font-size:13.5px;line-height:1.75;-webkit-font-smoothing:antialiased;}
+  a{color:#3a5f7a}
+  .back{background:#1c1c1c;padding:8px 14px}
+  .back a{color:#8ef0ae;text-decoration:none;font-weight:700;font-size:.9rem}
+  header{padding:26px 18px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
+     font-size:21px;letter-spacing:.05em;margin:0 0 8px}
+  header p{margin:0 0 6px;color:var(--sub);font-size:12.5px;max-width:60em}
+  .stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .stat{border:1px solid var(--line);background:var(--paper);padding:7px 13px;border-radius:3px;font-size:11.5px;color:var(--sub)}
+  .stat b{display:block;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.3}
+  main{padding:0 18px 90px}
+  section{margin-top:32px;padding-top:18px;border-top:1px solid var(--line)}
+  h2{font-size:15px;margin:0 0 4px;letter-spacing:.04em}
+  h2 .tag{font-family:ui-monospace,Menlo,monospace;background:var(--ink);color:var(--paper);
+     padding:1px 9px;border-radius:2px;margin-right:8px;font-size:12px}
+  h2 .tag.warn{background:var(--warn)}
+  h2 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:4px}
+  .where{color:var(--sub);font-size:11.5px;margin:0 0 12px}
+  .num{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--muted);
+     padding:1px 6px;border-radius:2px;white-space:nowrap}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);
+     font-size:11.5px;display:block;overflow-x:auto;white-space:nowrap}
+  th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{background:var(--muted);color:var(--sub);font-weight:600;font-size:10.5px;letter-spacing:.04em}
+  td.wrap{white-space:normal;min-width:15em}
+  .no{color:var(--ng);font-weight:700}
+  .yes{color:var(--ok);font-weight:700}
+  .panes{margin:0 0 6px}
+  .pane{margin:0 0 16px}
+  .pane-h{font-size:10.5px;font-weight:700;color:var(--sub);letter-spacing:.08em;margin-bottom:6px}
+  .frame{background:var(--paper);border:1px dashed #bdb3a4;padding:12px;border-radius:4px;overflow-x:auto}
+  .frame > .inner{display:flex;gap:12px;align-items:flex-start}
+  .swipe{font-size:10.5px;color:var(--sub);margin:4px 0 0}
+  /* ---- 実物カード（本番のクラスをそのまま px に置き換えた見本） ---- */
+  .c{background:var(--card);border-radius:16px;box-shadow:var(--soft);overflow:hidden;flex:0 0 auto}
+  .c.big{border-radius:24px;box-shadow:var(--lift)}
+  .th{position:relative;overflow:hidden;background:var(--muted);display:block}
+  .th img{width:100%;height:100%;object-fit:cover;display:block}
+  .c .body{padding:10px 12px}
+  .c.big .body{padding:18px 20px}
+  .c .ttl{font-family:"Hiragino Mincho ProN",serif;font-size:13px;line-height:1.4;margin:0}
+  .c.big .ttl{font-size:20px}
+  .c .art{margin:3px 0 0;font-size:10.5px;color:var(--sub)}
+  .c.big .art{font-size:12.5px}
+  .size{position:absolute;right:0;bottom:0;background:rgba(28,26,23,.72);color:#fff;
+     font-family:ui-monospace,Menlo,monospace;font-size:9.5px;padding:1px 5px}
+  .door{flex:0 0 auto;border-radius:18px;overflow:hidden;position:relative;
+     background:linear-gradient(180deg,#2b3a4f,#1b2430);color:#f4efe4;display:flex;
+     align-items:flex-end;justify-content:center;padding-bottom:10px;font-size:11px;letter-spacing:.2em}
+  .mosaic{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+     width:56px;height:56px;border-radius:6px;overflow:hidden;background:var(--muted)}
+  .mosaic img{width:100%;height:100%;object-fit:cover;display:block}
+  .note{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:11px 13px;
+     font-size:12px;margin:0 0 10px}
+  .note b{color:var(--ng)}
+  ul{margin:6px 0 0;padding-left:1.2em}
+  li{margin:2px 0}
+  footer{color:var(--sub);font-size:11px;margin-top:40px;padding:0 18px 60px;line-height:1.7}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:var(--muted);padding:0 4px;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="back"><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表に戻る</a></div>
+
+<header>
+  <h1>カードの大きさ A〜F</h1>
+  <p>本番（joy-relief-station）で今じっさいに使われているカード／サムネイルの大きさを、<b>ブラウザで一枚ずつ測って</b>並べたもの。
+     文字の説明ではなく、下に同じ寸法の見本を実物の写真で置いてある。<b>「ここはB」と言えば通じる状態</b>にするための一覧。</p>
+  <p>測り方：本番のページを幅 390px と 1265px で開き、サムネイルの枠を <code>getBoundingClientRect()</code> で実測（2026-09-24）。
+     測ったページ＝曲ページ2枚／アーティストページ／トップ／世界ページ（音）／棚一覧／さがす。<b>本番のカードは一枚も貼り替えていない。</b></p>
+  <div class="stats">
+    <div class="stat"><b>6種類</b>カードの大きさ（A〜F）</div>
+    <div class="stat"><b>3つ</b>使われている比率（16:9／1:1／3:4）</div>
+    <div class="stat"><b>4件</b>揃っていないもの</div>
+    <div class="stat"><b>0件</b>バッジ余白の軸違い（上＝左で一致）</div>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <h2>早見表</h2>
+  <p class="where">スマホ＝幅390pxのとき／広い画面＝幅1265pxのときの<b>実測値</b>。px は「サムネイルの枠」の寸法。</p>
+  <table>
+    <tr><th>名前</th><th>比率</th><th>スマホ</th><th>広い画面</th><th>並び</th><th>今どこで使われているか</th><th>印</th></tr>
+    <tr><td><b>A</b> 主役</td><td>16:9</td><td class="num">325×183</td><td class="num">686×386</td><td>幅いっぱい・1枚</td><td class="wrap">曲ページの本編動画／ROOMカード／watch。アーティストページの代表曲もスマホではこの大きさ</td><td class="yes">◎</td></tr>
+    <tr><td><b>B</b> 半分</td><td>16:9</td><td class="num">156×88</td><td class="num">334×188</td><td>2列</td><td class="wrap">曲ページ「この流れで、もう一本」「グッドカバー」</td><td class="yes">◎</td></tr>
+    <tr><td><b>B′</b> 半分（別寸）</td><td>16:9</td><td class="num">139×78</td><td class="num">319×179</td><td>2列</td><td class="wrap">アーティストページ「カバー・パロディ」「名カバー」</td><td class="no">要統一</td></tr>
+    <tr><td><b>B″</b> 半分（別寸）</td><td>16:9</td><td class="num">325×183</td><td class="num">336×189</td><td>スマホ1列・広い画面2列</td><td class="wrap">アーティストページの代表曲</td><td class="no">要統一</td></tr>
+    <tr><td><b>C</b> 関連</td><td>16:9</td><td class="num">218×123</td><td class="num">218×123</td><td>横スクロール・幅固定</td><td class="wrap">曲ページの橋渡しの列（「こちらも、同じ流れで」／曲ごとの見出し）／「このアーティストが好きなら」／watch「この動画の、次の一歩」</td><td class="yes">◎</td></tr>
+    <tr><td><b>C′</b> 関連（別寸）</td><td>16:9</td><td class="num">216×121</td><td class="num">216×121</td><td>横スクロール</td><td class="wrap">曲ページ「この曲の関連動画」</td><td class="no">2px違い</td></tr>
+    <tr><td><b>D</b> 棚</td><td>1:1</td><td class="num">136×136</td><td class="num">176×176</td><td>横スクロール・幅160/180/200px</td><td class="wrap">世界ページの棚／「こちらもどうぞ。」／隠し棚</td><td class="yes">◎</td></tr>
+    <tr><td><b>E</b> 扉（大）</td><td>3:4</td><td class="num">156×207</td><td class="num">341×455</td><td>2列</td><td class="wrap">トップの7つの扉（音・食・愛・笑・旅・踊・喜）</td><td class="yes">◎</td></tr>
+    <tr><td><b>E′</b> 扉（小）</td><td>3:4</td><td class="num">80×106</td><td class="num">239×319</td><td>4列</td><td class="wrap">全ページの下に出る扉のストリップ</td><td class="no">同じ絵で2サイズ</td></tr>
+    <tr><td><b>F</b> 一覧のモザイク</td><td>1:1</td><td class="num">56×56</td><td class="num">56×56</td><td>縦リストの左端・固定56px</td><td class="wrap">棚一覧（/shelves）。1枠に4枚の写真を敷き詰めている</td><td class="yes">◎</td></tr>
+    <tr><td>参考 プレーヤー</td><td>16:9</td><td class="num">375×211</td><td class="num">1250×703</td><td>画面いっぱい</td><td class="wrap">全ページ下部のミニプレーヤー（カードではない）</td><td>—</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="tag">A</span>主役<small>16:9・幅いっぱい・1枚</small></h2>
+  <p class="where">曲ページの本編動画／ROOMカード／watch。<span class="num">スマホ 325×183</span> <span class="num">広い画面 686×386</span></p>
+  <div class="panes">
+    <div class="pane"><div class="pane-h">スマホ（390px）</div>
+      <div class="frame"><div class="inner">
+        <div class="c big" style="width:325px">
+          <span class="th" style="width:325px;height:183px"><img src="https://img.youtube.com/vi/2qJnqZenIFY/hqdefault.jpg" alt=""><span class="size">325×183</span></span>
+          <div class="body"><p class="ttl">あの日にかえりたい</p><p class="art">松任谷由実・1975</p></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="pane"><div class="pane-h">広い画面（1265px）</div>
+      <div class="frame"><div class="inner">
+        <div class="c big" style="width:686px">
+          <span class="th" style="width:686px;height:386px"><img src="https://img.youtube.com/vi/2qJnqZenIFY/hqdefault.jpg" alt=""><span class="size">686×386</span></span>
+          <div class="body"><p class="ttl">あの日にかえりたい</p><p class="art">松任谷由実・1975</p></div>
+        </div>
+      </div></div>
+      <p class="swipe">→ はみ出す分は横にスワイプ（縮小せず実寸で置いてある）</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">B</span>半分<small>16:9・2列。たまごさんが「ハーフサイズ」と呼んでいるのはこれ</small></h2>
+  <p class="where">曲ページ「この流れで、もう一本」／「グッドカバー」。<span class="num">スマホ 156×88</span> <span class="num">広い画面 334×188</span></p>
+  <div class="panes">
+    <div class="pane"><div class="pane-h">スマホ（390px）・2列</div>
+      <div class="frame"><div class="inner">
+        <div class="c" style="width:156px"><span class="th" style="width:156px;height:88px"><img src="https://img.youtube.com/vi/cLQZyreoZcs/hqdefault.jpg" alt=""><span class="size">156×88</span></span><div class="body"><p class="ttl">スカイレストラン</p><p class="art">ハイ・ファイ・セット</p></div></div>
+        <div class="c" style="width:156px"><span class="th" style="width:156px;height:88px"><img src="https://img.youtube.com/vi/qX7pFYH9O04/hqdefault.jpg" alt=""><span class="size">156×88</span></span><div class="body"><p class="ttl">春よ、来い</p><p class="art">松任谷由実</p></div></div>
+      </div></div>
+    </div>
+    <div class="pane"><div class="pane-h">広い画面（1265px）・2列</div>
+      <div class="frame"><div class="inner">
+        <div class="c" style="width:334px"><span class="th" style="width:334px;height:188px"><img src="https://img.youtube.com/vi/cLQZyreoZcs/hqdefault.jpg" alt=""><span class="size">334×188</span></span><div class="body"><p class="ttl">スカイレストラン</p><p class="art">ハイ・ファイ・セット</p></div></div>
+        <div class="c" style="width:334px"><span class="th" style="width:334px;height:188px"><img src="https://img.youtube.com/vi/qX7pFYH9O04/hqdefault.jpg" alt=""><span class="size">334×188</span></span><div class="body"><p class="ttl">春よ、来い</p><p class="art">松任谷由実</p></div></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="note"><b>B の中に3つの寸法が混ざっている。</b>同じ「2列」なのに、曲ページは 156×88、アーティストページの「カバー・パロディ」は 139×78、代表曲は 325×183（スマホ）。
+     17px・186px の差は、隣に並べると気づく差。<b>どれか1つに決める必要がある。</b></div>
+  <div class="pane"><div class="pane-h">B′（アーティストページ）とB（曲ページ）を並べた ／ スマホ</div>
+    <div class="frame"><div class="inner">
+      <div class="c" style="width:139px"><span class="th" style="width:139px;height:78px"><img src="https://img.youtube.com/vi/9uhOXX8wFL8/hqdefault.jpg" alt=""><span class="size">139×78</span></span><div class="body"><p class="ttl">素直になりたい</p><p class="art">B′ アーティストページ</p></div></div>
+      <div class="c" style="width:156px"><span class="th" style="width:156px;height:88px"><img src="https://img.youtube.com/vi/9uhOXX8wFL8/hqdefault.jpg" alt=""><span class="size">156×88</span></span><div class="body"><p class="ttl">素直になりたい</p><p class="art">B 曲ページ</p></div></div>
+    </div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">C</span>関連<small>16:9・横スクロール・幅はスマホでも広い画面でも同じ</small></h2>
+  <p class="where">曲ページの橋渡しの列／「このアーティストが好きなら」／watch「この動画の、次の一歩」。<span class="num">218×123（両方の幅で同じ）</span></p>
+  <div class="pane"><div class="pane-h">スマホ（390px）／広い画面（1265px）とも同寸</div>
+    <div class="frame"><div class="inner">
+      <div class="c" style="width:218px"><span class="th" style="width:218px;height:123px"><img src="https://img.youtube.com/vi/cLQZyreoZcs/hqdefault.jpg" alt=""><span class="size">218×123</span></span><div class="body"><p class="ttl">スカイレストラン</p><p class="art">ハイ・ファイ・セット</p></div></div>
+      <div class="c" style="width:218px"><span class="th" style="width:218px;height:123px"><img src="https://img.youtube.com/vi/2mWoa6Gvl6E/hqdefault.jpg" alt=""><span class="size">218×123</span></span><div class="body"><p class="ttl">スカイレストラン</p><p class="art">松原みき</p></div></div>
+      <div class="c" style="width:216px"><span class="th" style="width:216px;height:121px"><img src="https://img.youtube.com/vi/2qJnqZenIFY/hqdefault.jpg" alt=""><span class="size">216×121</span></span><div class="body"><p class="ttl">C′「この曲の関連動画」</p><p class="art">2px だけ小さい</p></div></div>
+    </div></div>
+  </div>
+  <div class="note"><b>C′ が 2px 小さい。</b>「この曲の関連動画」の列だけ 216×121 で、他の関連の列は 218×123。同じ列の並びで高さが2px違うと、上端が揃わない。</div>
+</section>
+
+<section>
+  <h2><span class="tag">D</span>棚<small>1:1・横スクロール・カードの幅は160/180/200pxの3段</small></h2>
+  <p class="where">世界ページの棚／「こちらもどうぞ。」／隠し棚。<span class="num">スマホ 136×136</span> <span class="num">広い画面 176×176</span></p>
+  <div class="panes">
+    <div class="pane"><div class="pane-h">スマホ（390px）</div>
+      <div class="frame"><div class="inner">
+        <div class="c" style="width:160px"><span class="th" style="width:136px;height:136px;margin:12px 12px 0"><img src="https://img.youtube.com/vi/nuU2YHtxMik/hqdefault.jpg" alt=""><span class="size">136×136</span></span><div class="body"><p class="ttl">真夜中のドア</p><p class="art">松原みき</p></div></div>
+        <div class="c" style="width:160px"><span class="th" style="width:136px;height:136px;margin:12px 12px 0"><img src="https://img.youtube.com/vi/qX7pFYH9O04/hqdefault.jpg" alt=""><span class="size">136×136</span></span><div class="body"><p class="ttl">春よ、来い</p><p class="art">松任谷由実</p></div></div>
+      </div></div>
+    </div>
+    <div class="pane"><div class="pane-h">広い画面（1265px）</div>
+      <div class="frame"><div class="inner">
+        <div class="c" style="width:200px"><span class="th" style="width:176px;height:176px;margin:12px 12px 0"><img src="https://img.youtube.com/vi/nuU2YHtxMik/hqdefault.jpg" alt=""><span class="size">176×176</span></span><div class="body"><p class="ttl">真夜中のドア</p><p class="art">松原みき</p></div></div>
+        <div class="c" style="width:200px"><span class="th" style="width:176px;height:176px;margin:12px 12px 0"><img src="https://img.youtube.com/vi/qX7pFYH9O04/hqdefault.jpg" alt=""><span class="size">176×176</span></span><div class="body"><p class="ttl">春よ、来い</p><p class="art">松任谷由実</p></div></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">E</span>扉<small>3:4（縦長）。トップは2列、各ページ下のストリップは4列</small></h2>
+  <p class="where">トップの7つの扉＝<span class="num">スマホ 156×207／広い画面 341×455</span>、下のストリップ＝<span class="num">スマホ 80×106／広い画面 239×319</span></p>
+  <div class="panes">
+    <div class="pane"><div class="pane-h">E トップの扉（スマホ・2列）</div>
+      <div class="frame"><div class="inner">
+        <div class="door" style="width:156px;height:207px">音<span class="size">156×207</span></div>
+        <div class="door" style="width:156px;height:207px">食<span class="size">156×207</span></div>
+      </div></div>
+    </div>
+    <div class="pane"><div class="pane-h">E′ 下のストリップ（スマホ・4列）</div>
+      <div class="frame"><div class="inner">
+        <div class="door" style="width:80px;height:106px;font-size:9px">音<span class="size">80×106</span></div>
+        <div class="door" style="width:80px;height:106px;font-size:9px">食<span class="size">80×106</span></div>
+        <div class="door" style="width:80px;height:106px;font-size:9px">愛<span class="size">80×106</span></div>
+        <div class="door" style="width:80px;height:106px;font-size:9px">笑<span class="size">80×106</span></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="note">比率（3:4）は揃っている。違うのは列数と大きさだけ。<b>同じ絵が2サイズで出回っている</b>ので、名前を分けるか、どちらかに寄せるかを決めたい。</div>
+</section>
+
+<section>
+  <h2><span class="tag">F</span>一覧のモザイク<small>1:1・56px固定（スマホでも広い画面でも同じ）</small></h2>
+  <p class="where">棚一覧（/shelves）。1枠に4枚の写真を2×2で敷き詰めている。<span class="num">56×56</span>　実測で156枠。</p>
+  <div class="pane"><div class="pane-h">スマホ／広い画面とも同寸</div>
+    <div class="frame"><div class="inner">
+      <div class="mosaic">
+        <img src="https://img.youtube.com/vi/nuU2YHtxMik/default.jpg" alt="">
+        <img src="https://img.youtube.com/vi/qX7pFYH9O04/default.jpg" alt="">
+        <img src="https://img.youtube.com/vi/cLQZyreoZcs/default.jpg" alt="">
+        <img src="https://img.youtube.com/vi/2mWoa6Gvl6E/default.jpg" alt="">
+      </div>
+      <div class="mosaic">
+        <img src="https://img.youtube.com/vi/2qJnqZenIFY/default.jpg" alt="">
+        <img src="https://img.youtube.com/vi/9uhOXX8wFL8/default.jpg" alt="">
+        <img src="https://img.youtube.com/vi/nuU2YHtxMik/default.jpg" alt="">
+        <img src="https://img.youtube.com/vi/qX7pFYH9O04/default.jpg" alt="">
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<section>
+  <h2>揃っていないもの 4件</h2>
+  <ul>
+    <li><b>① B が3寸法ある。</b>曲ページ 156×88／アーティストページ「カバー・パロディ」139×78／代表曲 325×183（スマホ）。同じ「2列」なのに別の大きさ。</li>
+    <li><b>② C が2px違う。</b>「この曲の関連動画」だけ 216×121、他の関連の列は 218×123。</li>
+    <li><b>③ E が2サイズ。</b>同じ扉の絵が、トップでは 156×207、下のストリップでは 80×106。</li>
+    <li><b>④ 「ハーフサイズ」という大きさが実装として存在しない。</b>今は列数を2列にして小さく見せているだけで、専用の寸法が無い。
+       数字の正本（<code>src/lib/designRules.ts</code>）に載っているのは A／B／C の3つだけで、<b>D（棚の1:1）・E（扉の3:4）・F（56px）は載っていない。</b>
+       だから新しい枠を作るたびに4種類目・5種類目が増える。</li>
+  </ul>
+  <div class="note">バッジの余白は<b>今回の実測では揃っていた。</b>曲ページの B（156×87）で、バッジの高さ 24.48px＝短辺の <b>28.0%</b>、余白は <b>上 5.68px ／ 左 5.68px で一致</b>。
+     軸違いの % は見つからなかった（<code>min(6.5cqw,6.5cqh)</code> が効いている）。</div>
+</section>
+
+<section>
+  <h2>ハイ・ファイ・セット「スカイレストラン」の件</h2>
+  <div class="note">今＝ユーミン「あの日にかえりたい」の曲ページの横スクロールの列（見出し「蹴られた詞は、どこへ行ったか」）に <b>C（216×121）</b>で入っている。
+     たまごさんの希望＝<b>B（ハーフサイズ・スマホ156×88／広い画面334×188）でユーミンの2曲目の下</b>。今の位置のCは、とりあえず使わない。
+     <b>実装はしていない。</b>置き場所を決めるのはたまごさん。</div>
+</section>
+
+</main>
+
+<footer>
+  出どころ：本番 joy-relief-station を幅390px・1265pxで開き <code>getBoundingClientRect()</code> で実測（2026-09-24）。
+  実装の読みは <code>status/1130_src/cover-guide.tsx</code>／<code>VideoCard.tsx</code>／<code>ShelfPicksSection.tsx</code>／<code>1123_cg/RelatedCardsRow.tsx</code>／<code>1131_out/NextRecommendations.tsx</code>／<code>_938/.../ShelfCardView.tsx</code>／<code>0924_tana_narabi/_peek/shelves.tsx</code>／<code>_951/recon/TOP_src_routes_index.tsx</code>／<code>_1039/lib/designRules.ts</code>。
+  先にあった資料（<a href="card-format-sheet.html">カード書式 一覧</a>／<a href="badge-size-sheet.html">サムネイル比率×バッジ 見本帳</a>）を土台にして、実測と見本を足したもの。
+  <br>見本のカードは本番と同じ寸法・同じ写真で組んだ静止の見本で、押しても動かない。<b>本番のカードは1枚も貼り替えていない。</b>
+  <br><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表に戻る</a>
+</footer>
+</body>
+</html>
