@@ -441,6 +441,10 @@ def hoshikatta(kotae):
             continue
         if re.match(r"^(なし|特になし|ありません|該当なし|answer|verbatim)", ln, re.I):
             continue
+        # ★名前ではなく「文」を落とす。2026-09-24 実測：「私が本当に聴きたかったのは
+        #   以下のものです」を仕入れの名前として拾った。文末・助詞で機械的に弾く。
+        if re.search(r"(です|ます|ください|でした|ません|、|。|以下のもの|以下の通り)", ln):
+            continue
         ln = re.sub(r"[「」『』\"]", "", ln).split("（")[0].split("(")[0].strip(" 　-–—:：")
         if 2 <= len(ln) <= 60:
             out.append(ln)
