@@ -1,0 +1,187 @@
+<!doctype html><html lang="ja"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1137｜Bufferの予約、いまこうなっています</title>
+<style>
+ body{margin:0;background:#faf7f2;color:#241f1a;
+      font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+      line-height:1.75;-webkit-text-size-adjust:100%}
+ .wrap{max-width:860px;margin:0 auto;padding:22px 16px 80px}
+ h1{font-size:21px;margin:0 0 4px;letter-spacing:.02em}
+ .when{font-size:12px;color:#7a706a;margin-bottom:18px}
+ .hd{border-left:5px solid #c62828;background:#fff;border-radius:0 10px 10px 0;
+     padding:14px 16px;margin:0 0 20px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+ .hd b{color:#c62828;font-size:17px}
+ h2{font-size:15px;margin:30px 0 8px;padding-bottom:5px;
+    border-bottom:2px solid #e6ded3}
+ table{width:100%;border-collapse:collapse;background:#fff;
+       border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+ th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #f0eae2;
+       font-size:13px;vertical-align:top}
+ th{background:#f4efe7;font-size:12px;color:#6b625b;font-weight:600}
+ .n{color:#a89d92;width:26px}
+ .t{white-space:nowrap}
+ .sub{font-size:11px;color:#8c837c}
+ a{color:#a0522d}
+ pre{background:#1f1b18;color:#e8e0d6;padding:13px;border-radius:9px;
+     overflow-x:auto;font-size:11px;line-height:1.5}
+ .note{background:#fff8e6;border:1px solid #f0dfae;border-radius:9px;
+       padding:12px 14px;font-size:13px}
+</style>
+<div class="wrap">
+<h1>Bufferの予約、いまこうなっています</h1>
+<div class="when">この画面を作った時刻：2026-09-25 05:23:38（JST）／ ここに出ているのは
+ <b>Buffer のAPIから取った実物</b>です</div>
+
+<div class="hd"><b>まだ1本も入っていません</b><br>
+<span class="sub">照合＝本文が1文字も変わっていない・時刻が指定どおり・相手が
+ oasisjoyrelief、の3つ全部が合ったものだけ「通った」と書いています。</span></div>
+
+<h2>10本の予定と、いまの状態</h2>
+<table>
+<tr><th>#</th><th>日時(JST)</th><th>曲</th><th>リンク</th><th>状態</th>
+    <th>APIが返した dueAt</th></tr>
+<tr>
+ <td class="n">1</td>
+ <td class="t">2026-09-26 09:00<br><span class="sub">朝・海外</span></td>
+ <td>Carole King<br><span class="sub">It Might As Well Rain Until September</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=carole-king&amp;song=it-might-as-well-rain-until-september" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">2</td>
+ <td class="t">2026-09-26 20:00<br><span class="sub">夜・邦楽</span></td>
+ <td>山下達郎<br><span class="sub">さよなら夏の日</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sayonara-natsu-no-hi" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">3</td>
+ <td class="t">2026-09-27 09:00<br><span class="sub">朝・海外</span></td>
+ <td>Green Day<br><span class="sub">Wake Me Up When September Ends</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=green-day&amp;song=wake-me-up-when-september-ends" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">4</td>
+ <td class="t">2026-09-27 20:00<br><span class="sub">夜・邦楽</span></td>
+ <td>山口百恵<br><span class="sub">秋桜</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=momoe&amp;song=cosmos" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">5</td>
+ <td class="t">2026-09-28 09:00<br><span class="sub">朝・海外</span></td>
+ <td>Nick Drake<br><span class="sub">Pink Moon</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nicholas-drake&amp;song=pink-moon" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">6</td>
+ <td class="t">2026-09-28 20:00<br><span class="sub">夜・邦楽</span></td>
+ <td>オフコース<br><span class="sub">秋の気配</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=off-course&amp;song=akifuchi" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">7</td>
+ <td class="t">2026-09-29 09:00<br><span class="sub">朝・海外</span></td>
+ <td>Simon &amp; Garfunkel<br><span class="sub">Scarborough Fair</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=simon-garfunkel&amp;song=scarborough-fair" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">8</td>
+ <td class="t">2026-09-29 20:00<br><span class="sub">夜・邦楽</span></td>
+ <td>EGO-WRAPPIN&#x27;<br><span class="sub">色彩のブルース</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ego-wrappin&amp;song=shikisai-no-blues" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">9</td>
+ <td class="t">2026-09-30 09:00<br><span class="sub">朝・海外</span></td>
+ <td>Norah Jones<br><span class="sub">Come Away with Me</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=norah&amp;song=come-away-with-me" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+<tr>
+ <td class="n">10</td>
+ <td class="t">2026-09-30 20:00<br><span class="sub">夜・邦楽</span></td>
+ <td>キリンジ<br><span class="sub">エイリアンズ</span></td>
+ <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=kirinji&amp;song=aliens" target="_blank" rel="noopener">曲ページ</a></td>
+ <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
+ <td class="sub"></td>
+</tr>
+</table>
+
+<h2>なぜ止まっているか（生のまま）</h2>
+<div class="note">Buffer の <b>24時間で250回</b> という枠を、
+こちら側の自動便が使い切っていました。たまごさんの投稿は関係ありません
+（今日出したのは 01:58 の1本だけ）。下は加工していない応答です。<br><br>
+<b>250回はBufferの公式の数字です。</b>
+<a href="https://developers.buffer.com/guides/api-limits.html" target="_blank"
+ rel="noopener">developers.buffer.com/guides/api-limits.html</a> の表で、
+Free プランは「15-min 100／24-hr 250／30-day 3,000」。
+応答ヘッダの <code>ratelimit-policy: "250-in-1day"; q=250; w=86400</code> と一致します。</div>
+<pre>HTTP/2 429 
+date: Thu, 24 Sep 2026 20:16:46 GMT
+content-type: application/json; charset=utf-8
+content-length: 145
+cf-cache-status: DYNAMIC
+retry-after: 71017
+server: cloudflare
+strict-transport-security: max-age=15552000
+vary: Origin, accept-encoding
+access-control-allow-credentials: true
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+origin-agent-cluster: ?1
+ratelimit: &quot;100-in-15min&quot;; r=98; t=496
+ratelimit: &quot;250-in-1day&quot;; r=0; t=71017
+ratelimit-policy: &quot;100-in-15min&quot;; q=100; w=900; pk=:YjUyYzA5NDhiZGIx:
+ratelimit-policy: &quot;250-in-1day&quot;; q=250; w=86400; pk=:YjUyYzA5NDhiZGIx:
+referrer-policy: no-referrer
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-frame-options: DENY
+x-permitted-cross-domain-policies: none
+x-ratelimit-limit: 250
+x-ratelimit-remaining: 0
+x-ratelimit-reset: 1790352023
+x-xss-protection: 0
+alt-svc: h3=&quot;:443&quot;; ma=86400
+
+{&quot;errors&quot;:[{&quot;message&quot;:&quot;Too many requests from this client. Please try again later.&quot;,&quot;extensions&quot;:{&quot;code&quot;:&quot;RATE_LIMIT_EXCEEDED&quot;,&quot;window&quot;:&quot;24h&quot;}}]}</pre>
+
+<h2>犯人（数字で）</h2>
+<div class="note"><b>tools/buffer_kagi_install.py</b> が、5分便に呼ばれるたびに
+「鍵がまだ生きているか」を Buffer に1回ずつ聞いていました。
+<code>status/kagi_daicho.log</code> を時間帯で数えると──<br><br>
+9/24 16時台 <b>251回</b>／17時台 <b>249回</b>／18時台 209回／20時台 147回／
+9/25 00時台 108回／01時台 60回。<b>24時間枠は250回。</b><br><br>
+しかも直し方が「<b>通ったときだけ</b>判子を押す」形だったので、
+429で閉じている間は判子が押されず、
+<b>閉じているから叩く → 叩くから閉じたまま</b>の輪から出られませんでした。
+→ 叩く前に判子を押す形に変えました（通っても通らなくても、その日はもう叩かない）。</div>
+
+<h2>Buffer APIを叩いた回数（今日 1 回）</h2>
+<table>
+<tr><th>時刻</th><th>誰が</th><th>何を</th><th>HTTP</th><th>枠</th></tr>
+<tr><td class='sub'>2026-09-25 05:20:00</td><td class='sub'>buffer_kagi_install</td><td class='sub'>verify</td><td class='sub'>429</td><td class='sub'>残り0 / 枠250</td></tr>
+</table>
+<div class="sub" style="margin-top:8px">正本：status/1135/buffer_call.jsonl
+ ／ 最後に叩いたのは 2026-09-25 05:20:00</div>
+
+<h2>Buffer の予約画面（ログインが要ります）</h2>
+<p><a href="https://publish.buffer.com/all-channels/queue" target="_blank"
+ rel="noopener">publish.buffer.com/all-channels/queue</a></p>
+</div></html>
