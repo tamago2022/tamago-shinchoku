@@ -108,6 +108,28 @@ YT_URL = re.compile(
     r"([A-Za-z0-9_-]{11})")
 
 
+def gate0b_ogcard(item):
+    """門0b（1133番）：OGカードが作れない曲は棚に入れない。
+
+    たまごさん（2026-09-25）「OG画像が生成できない曲は棚に入らない。
+    弾いた数を毎回ログに出す。」
+    中身は tools/1133_og_shiire_kanmon.py。ここからは呼ぶだけ（門は1か所に置く）。
+    ★門そのものが読めないときは**通さない側に倒す**（甘い判定で通さない・工場の決まり）。
+    """
+    import importlib.util
+    here = os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(here, "1133_og_shiire_kanmon.py")
+    if not os.path.exists(p):
+        return "OGカードの門（tools/1133_og_shiire_kanmon.py）がありません"
+    try:
+        spec = importlib.util.spec_from_file_location("og_shiire_kanmon", p)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    except Exception as e:
+        return "OGカードの門が読めません（%s）" % repr(e)[:80]
+    return mod.gate(item)
+
+
 def gate0_shelf(item):
     """棚に出せるか。出せないなら理由を返す（空文字なら出せる）。
 
@@ -746,6 +768,16 @@ def run_gates(item, quiet=False):
         say("門0 棚：出せない … %s" % block)
         return _hold(out, "棚に出せない（門0）: %s" % block)
     say("門0 棚：出せる（動画id %s）" % item.get("youtubeId"))
+
+    # 門0b OGカードが作れるか（1133番） -------------------------------------
+    # たまごさん「OG画像が生成できない曲は棚に入らない」。
+    # ★ここで実際に1枚焼いて、空っぽ判定に掛ける。焼けない曲は札にしない。
+    b0b = gate0b_ogcard(item)
+    out["gates"]["0b_ogcard"] = ("NG: " + b0b) if b0b else "OK"
+    if b0b:
+        say("門0b OGカード：作れない … %s" % b0b)
+        return _hold(out, "OGカードが作れない（門0b）: %s" % b0b)
+    say("門0b OGカード：作れる")
 
     # 門1 ----------------------------------------------------------------
     kept, dropped = gate1_facts(item.get("facts"))
