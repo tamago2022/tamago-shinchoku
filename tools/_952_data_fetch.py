@@ -55,7 +55,11 @@ def _fetch_paths(payload):
 #     op=tool    … tamago-shinchoku の中の白名簿の道具を1本だけ走らせる
 # ===========================================================================
 TOOL_WHITELIST = ("kohyou_osu.py", "kohyou_kanshi.py", "og_kanmon.py",
-                  "lovable_mcp_bootstrap.py", "kohyou_ima.py")
+                  "lovable_mcp_bootstrap.py", "kohyou_ima.py",
+                  # ★1130番：覆面客（Genspark）はMac側でしか gsk に届かない。
+                  #   サンドボックスから通すための口。クレジットの前後は
+                  #   道具の側が status/gsk_daicho.jsonl に必ず書く。
+                  "fukumen_kyaku.py", "fukumen.py")
 
 
 def _shinchoku():
