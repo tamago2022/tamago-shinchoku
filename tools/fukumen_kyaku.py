@@ -13,6 +13,11 @@
 
 ★なぜClaudeにやらせないか：作った本人が客のふりをしても客にならない。**別の口**に言わせる。
 
+★★**覆面客は必ずGensparkが演じる。こちらが代わりに書いたら失点**（2026-09-24・たまごさん指示）。
+  通らなかったら「通らなかった」と書く。**自分で書いた感想をGensparkの名前で出さない。**
+  そのための栓＝**クレジットが1つも減っていない結果は、機械が自動で不合格にする**（toosu() の中）。
+  残高の差は `gsk me` で前後2回測る。感想ではなく**数字**で判定する。
+
 ━━ 既にある tools/fukumen.py との線引き（二重管理を作らない）━━
   tools/fukumen.py      … **機械の目**。CLS・LCP・console error を数える。AIを1回も呼ばない。0円。
   このファイル           … **客の目**。コピーが刺さるか、次を押したくなるか。Gensparkに1回 **2.2クレジット**（2026-09-24 実測）。
@@ -227,6 +232,19 @@ def toosu(url, xpost="", koukai=True, dry=False, timeout=300):
     kotae = _kotae_toridasu((r.get("stdout") or "").strip(), toilist)
 
     ok, riyuu = (gouhi(kotae) if r.get("ok") and kotae else (False, ["Gensparkが答えを返さなかった"]))
+
+    # ★2026-09-24 たまごさん指示：
+    #   「覆面客は必ずGensparkが演じる。こちらが代わりに書いたら失点。」
+    #   ★**クレジットが1つも減っていない結果は、Gensparkを通っていない**とみなして機械が弾く。
+    #   （crawl-and-answer は0クレジットで「クロールしただけの文字列」を返した。ああいうものを
+    #     感想として通さないための栓。憶測ではなく、残高の差という数字で弾く。）
+    if tsukatta is None:
+        ok = False
+        riyuu = (riyuu or []) + ["残クレジットが読めない＝Gensparkを通ったか確かめられない"]
+    elif tsukatta <= 0:
+        ok = False
+        riyuu = (riyuu or []) + ["クレジットが1つも減っていない＝Gensparkは通っていない（前%s→後%s）"
+                                 % (zen, ato)]
     ten = tensuu(kotae) if kotae else {"karusa": None, "tanoshisa": None, "utsukushisa": None}
 
     stamp = time.strftime("%Y%m%d-%H%M%S")
