@@ -146,8 +146,8 @@ def gouhi(kotae):
     t = tensuu(kotae)
     if all(v is None for v in t.values()):
         riyuu.append("3つの点数が1つも読めない")
-    m = re.search(r"スベっている\s*[:：]?\s*(.{0,200})", kotae)
-    if not m or re.match(r"^\s*(なし|特になし|ありません)", m.group(1)):
+    m = re.search(r"スベっている[^\n]{0,20}\n+(.{0,120})", kotae, re.S)
+    if m and re.match(r"^\s*(なし|特になし|ありません|該当なし)", m.group(1)):
         riyuu.append("スベっている一文が『なし』（辛口が出ていない）")
     return (len(riyuu) == 0), riyuu
 
