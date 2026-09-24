@@ -79,6 +79,11 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 # 新しいlaunchd便は増やさない（この工場の決まり）。注文票が無ければ即 return＝無害。
 run_with_timeout 60 python3 "$REPO/tools/buffer_kagi_install.py" >/dev/null 2>&1 || true
 run_with_timeout 90 python3 "$REPO/tools/buffer_yoyaku.py" >/dev/null 2>&1 || true
+# ③ buffer_hokyuu.py … 毎朝6:00に1回だけ、予約欄が10本未満なら
+#    status/buffer_queue/machi.json（投稿待ちの行列）から10本になるまで補充する。
+#    無料Bufferの10枠は「上限」ではなく「同時に待機できる在庫数」。常に8〜10本を保つ。
+#    ★中で「今日の6時を過ぎていて、まだ今日走っていないか」を見る。違えば即return＝無害。
+run_with_timeout 120 python3 "$REPO/tools/buffer_hokyuu.py" >/dev/null 2>&1 || true
 
 # ---- 2026-09-19（961番・Cowork側から設置）本番に出ていないものを出し切る便 ----
 # joy-relief-station への反映（joy_push）の口は、スマホのボタンから来た時にしか回らない。
