@@ -215,6 +215,26 @@ def _kotae_toridasu(stdout):
 
 # ═════════════════════════ ① 役を作る ═════════════════════════
 
+def yaku_tsukuru_codex(n=44):
+    """★2026-09-24 実測：Gensparkの `summarize` は**新しいものを作れない。**
+      「この紙を読んで44人作って」と頼むと、44人を作らずに**紙の要約**を返す
+      （27.5クレジットを捨てた。答えの中に『実際の44件のデータは含まれておらず、設計指示のみ』
+        とはっきり書いてある＝要約の口であって、生成の口ではない）。
+      ★役づくりは別の口＝codex（ChatGPTのログイン・1回ごとの課金なし＝0円）に頼む。
+      たまごさん「覆面テストはGensparkじゃなくて各AIにやってもらっていい。仲間だから、
+      いろんな意見があっていい」。**こちらが50人考えない**という肝は守れている。"""
+    import gaibu_kuchi as g
+    yaku, toi = _daihon(DAIHON_YAKU, {"URL": CONCIERGE_URL, "N": n})
+    d, who, err = g.kiku_codex(
+        yaku, "\n".join(toi) + '\n\n★返すのは {"yaku":[ … ]} の形のJSONひとつだけ。',
+        timeout=420)
+    if d is None:
+        return {"ok": False, "error": err or "codexが答えませんでした"}
+    lst = d.get("yaku") or d.get("list") or (d if isinstance(d, list) else [])
+    return {"ok": bool(lst), "ai": who, "kane": "0円", "list": lst,
+            "error": "" if lst else "codexは答えたが役が0人"}
+
+
 def yaku_tsukuru(n=44, dry=False):
     """Gensparkに役を作らせ、固定の6人と合わせて名簿にする。
     ★たまごさん「こちらが50人考えるより、外に聞く方が偏らない」。"""
@@ -223,39 +243,12 @@ def yaku_tsukuru(n=44, dry=False):
     if dry:
         return {"ok": True, "dry": True, "toi": toi_all}
 
-    # ★2026-09-24 実測：`summarize <サイトのURL>` に、そのページと関係ない問いを渡すと
-    #   Gensparkは問いを無視して**ページの要約**を返す（1.1クレジットを捨てた）。
-    #   役づくりはページの話ではない。だから**問いを公開リポ ai-kaigi に1枚置いて、
-    #   その紙を読ませる。**（Gensparkは非公開リポを読めないので置き場所は ai-kaigi）
-    q_url = "https://tamago2022.github.io/ai-kaigi/kyaku50/toi.md"
-    try:
-        import _965_keijiban as kj
-        put = kj.run_job({"repo": KOUKAI_REPO, "action": "putfile",
-                          "path": "kyaku50/toi.md", "branch": "main",
-                          "text": "# 50人の客の役づくり（Gensparkへの問い）\n\n%s\n" % toi_all,
-                          "message": "1080 役づくりの問いを置く"})
-        if not put.get("ok"):
-            return {"ok": False, "error": "問いを公開リポに置けませんでした: %s" % put.get("error")}
-    except Exception as ex:
-        return {"ok": False, "error": "問いを置けません: %s" % str(ex)[:160]}
-    time.sleep(45)      # ★GitHub Pagesが配り終わるのを待つ
-
-    g = _gsk_toosu(q_url, toi_all, "50人の客・役づくり")
-    kotae = _kotae_toridasu((g["r"].get("stdout") or "").strip())
-
-    if g["tsukatta"] is None or g["tsukatta"] <= 0:
-        return {"ok": False, "error": "クレジットが減っていない＝Gensparkを通っていない（前%s→後%s）"
-                                      % (g["zen"], g["ato"]), "kotae": kotae[:2000]}
-
-    m = re.search(r"\[\s*\{.*\}\s*\]", kotae, re.S)
-    if not m:
-        return {"ok": False, "error": "役のJSONが読めませんでした（生の答えは残してあります）",
-                "kotae": kotae[:4000], "使ったクレジット": g["tsukatta"]}
-    try:
-        atarashii = json.loads(m.group(0))
-    except Exception as e:
-        return {"ok": False, "error": "役のJSONが壊れています: %s" % e,
-                "kotae": kotae[:4000], "使ったクレジット": g["tsukatta"]}
+    # ★役づくりは codex に頼む（Gensparkの summarize は生成できない。上の関数の注を読むこと）。
+    c = yaku_tsukuru_codex(n)
+    if not c.get("ok"):
+        return {"ok": False, "error": c.get("error")}
+    atarashii = c["list"]
+    tsukatta = 0.0
 
     hitsuyou = ("id", "kuni", "toshi", "sei", "suki", "riyuu", "hitokoto", "go")
     kirei, mita = [], set(x["id"] for x in KOTEI)
@@ -270,11 +263,12 @@ def yaku_tsukuru(n=44, dry=False):
 
     meibo = KOTEI + kirei                     # ★固定6人が必ず先頭
     os.makedirs(OUT, exist_ok=True)
-    json.dump({"at": _now(), "n": len(meibo), "kotei": len(KOTEI), "genspark": len(kirei),
-               "使ったクレジット": g["tsukatta"], "yaku": meibo},
+    json.dump({"at": _now(), "n": len(meibo), "kotei": len(KOTEI),
+               "外のAIが作った": len(kirei), "dare": c.get("ai"),
+               "使ったクレジット": tsukatta, "yaku": meibo},
               io.open(YAKU, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    return {"ok": True, "n": len(meibo), "genspark": len(kirei),
-            "使ったクレジット": g["tsukatta"], "path": YAKU}
+    return {"ok": True, "n": len(meibo), "外のAIが作った": len(kirei), "dare": c.get("ai"),
+            "使ったクレジット": tsukatta, "path": YAKU}
 
 
 def yaku_yomu():
