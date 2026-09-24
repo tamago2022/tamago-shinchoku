@@ -20,7 +20,10 @@
 
 ━━ 決まり ━━
   ① ★台本は tools/prompts/fukumen_kyaku.md。中身をこのファイルに書かない（型と配管を分ける）。
-  ② ★1回＝1クレジット。**叩く前と後の残クレジットを必ず記録する**（status/gsk_daicho.jsonl）。
+  ② ★**叩く前と後の残クレジットを必ず記録する**（status/gsk_daicho.jsonl）。1回でいくつ減ったかを毎回書く。
+     ★2026-09-24 実測：`gsk search` は**問いが2048字までしか通らない**（serper_http_400）。
+       それでも**1クレジット引かれる**。だからこの道具は `crawl-and-answer` を使う。
+       こちらは客が**自分でそのページを開いて**、問いごとに原文を引いて答える（引用が本物になる）。
   ③ ★Gensparkの答えは**要約せずそのまま**残す。status/fukumen_kyaku/<時刻>.txt が正本。
   ④ ★**客の言うことを事実として扱わない。**
      2026-09-24、前に「秋の棚0枚」を鵜呑みにして間違えた。**感想は感想。事実の主張は別に裏を取る。**
@@ -98,31 +101,28 @@ def _rows(path):
 
 # ───────────────────────── 台本を組む ─────────────────────────
 
-def _daihon():
+def _daihon(url, xpost):
+    """台本を『役（すべての問いの頭に付ける前置き）』と『問い（1行1問）』に切る。"""
     t = io.open(DAIHON, encoding="utf-8").read()
-    # 「---」で切って、上の運用メモを落とし、客に渡す本体だけにする
-    i = t.find("\n---\n")
-    return t[i + 5:].strip() if i > 0 else t.strip()
+    t = (t.replace("{{URL}}", url)
+          .replace("{{XPOST}}", (xpost or "（投稿文は渡されていません。URLだけを見て答えてください）").strip()))
+    m = re.search(r"\n##\s*役\s*\n(.*?)\n##\s*問い\s*\n(.*)$", t, re.S)
+    if not m:
+        raise RuntimeError("台本に `## 役` と `## 問い` が見つかりません: %s" % DAIHON)
+    yaku = m.group(1).strip()
+    toi = [re.sub(r"^-\s*", "", ln).strip()
+           for ln in m.group(2).splitlines() if ln.strip().startswith("- ")]
+    if not toi:
+        raise RuntimeError("台本の `## 問い` に1問もありません")
+    return yaku, toi
 
 
-def honbun_toru(url):
-    """ページの本文を取る。取れなかったら取れなかったと書く（測ったふりをしない）。"""
-    try:
-        import yomu
-        r = yomu.yomu(url, use_cache=True, mac_daiko=False)
-        if r.get("ok") and (r.get("text") or "").strip():
-            t = re.sub(r"\n{3,}", "\n\n", r["text"]).strip()
-            return t[:HONBUN_MAX], r.get("yondaHito") or ""
-    except Exception as e:
-        return "（本文を取れませんでした：%s）" % str(e)[:120], ""
-    return "（本文を取れませんでした。URLを開いて自分で見てください）", ""
-
-
-def toi_wo_tsukuru(url, xpost, honbun):
-    return (_daihon()
-            .replace("{{URL}}", url)
-            .replace("{{XPOST}}", (xpost or "（投稿文は渡されていません。URLだけを見て答えてください）").strip())
-            .replace("{{HONBUN}}", honbun))
+def toi_wo_tsukuru(url, xpost):
+    """crawl-and-answer に渡す jobs を作る。前置きは問いごとに付ける（別々に答えられるため）。"""
+    yaku, toi = _daihon(url, xpost)
+    return [{"url": url,
+             "questions_to_answer": ["%s\n\n----\nこの前置きの役になりきって答えてください。\n%s"
+                                     % (yaku, q) for q in toi]}], yaku, toi
 
 
 # ───────────────────────── 点数を拾う ─────────────────────────
