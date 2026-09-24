@@ -455,6 +455,13 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, x_toukou
                     importlib.reload(x_toukou)
                     out = x_toukou.run_job(job.get("payload") or {})
+                elif job.get("kind") == "gsk":
+                    # ★1075番：Gensparkのgskを工場側で叩く。白名簿の中だけ・
+                    #   金が出る問いは通さない・契約や課金は押さない
+                    #   （gsk_kuchi.py 側の TADA で保証）。
+                    import importlib, gsk_kuchi
+                    importlib.reload(gsk_kuchi)
+                    out = gsk_kuchi.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except JobTimeout:
