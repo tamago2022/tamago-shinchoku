@@ -1107,6 +1107,10 @@ def main():
                      (h.get("最低の役") or {}).get("id"),
                      h.get("買い物リスト件数"), h.get("案内人の問題件数")))
         return 0
+    if a.tasu:
+        r = yaku_tasu(a.tasu)
+        print(json.dumps(r, ensure_ascii=False, indent=1)[:4000])
+        return 0 if r.get("ok") else 3
     if a.yaku:
         r = yaku_tsukuru(a.yaku, dry=a.dry)
         print(json.dumps(r, ensure_ascii=False, indent=1)[:4000])
