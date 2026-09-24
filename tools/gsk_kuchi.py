@@ -99,6 +99,52 @@ def run_job(payload):
                           encoding="utf-8"), ensure_ascii=False, indent=1)
         return {"ok": True, "op": op, "kekka": out, "totalYen": 0.0}
 
+    if op == "notionkaku":
+        # ★Notionに1枚書く。Gensparkの口から書くので、そのままGensparkが読める。
+        #   ★書く前と後の残クレジットを必ず測る（憶測で「無料」と書かない）。
+        title = (payload.get("title") or "").strip()
+        content = payload.get("content") or ""
+        parent = (payload.get("parentId") or "").strip()
+        if not title or not content or not parent:
+            return {"ok": False, "error": "title / content / parentId が要ります",
+                    "totalYen": 0.0}
+
+        zen = _run(["me"], timeout=60)
+        args_file = os.path.join(OUT_DIR, "_notion_args.json")
+        os.makedirs(OUT_DIR, exist_ok=True)
+        json.dump({"title": title, "content": content,
+                   "parent_id": parent, "parent_type": "page_id"},
+                  io.open(args_file, "w", encoding="utf-8"), ensure_ascii=False)
+        r = _run(["notion", "create", "--args-file", args_file],
+                 timeout=int(payload.get("timeoutSec") or 180))
+        ato = _run(["me"], timeout=60)
+        try:
+            os.remove(args_file)
+        except OSError:
+            pass
+
+        url = ""
+        try:
+            d = json.loads((r.get("stdout") or "").strip().splitlines()[-1])
+            dd = d.get("data") or {}
+            url = (dd.get("url") if isinstance(dd, dict) else "") or ""
+        except Exception:
+            pass
+        try:
+            io.open(os.path.join(REPO, "status", "gsk_daicho.jsonl"), "a",
+                    encoding="utf-8").write(json.dumps(
+                        {"at": time.strftime("%F %T"), "nani": "notion create",
+                         "title": title, "ok": r.get("ok"), "url": url},
+                        ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        return {"ok": bool(r.get("ok")), "op": op, "url": url,
+                "stdout": (r.get("stdout") or "")[:1200],
+                "stderr": (r.get("stderr") or "")[:500],
+                "zanMae": (zen.get("stdout") or "")[-300:],
+                "zanAto": (ato.get("stdout") or "")[-300:],
+                "totalYen": 0.0}
+
     if op == "tataku":
         args = payload.get("args") or []
         if not _yurusu(args):
