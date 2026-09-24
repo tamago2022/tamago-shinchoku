@@ -85,8 +85,13 @@ query GetChannels($orgId: OrganizationId!) {
 """
 
 M_CREATE = """
-mutation CreatePost($input: PostCreateInput!) {
+# ★1132番：Bufferのスキーマに聞いて直した（推測で書かない）。
+#   ・型の名前は PostCreateInput ではなく CreatePostInput
+#   ・assets と needsApproval は必須（省略すると通らない）
+#   ・mode は ShareMode の customScheduled ／ schedulingType は SchedulingType の automatic
+mutation CreatePost($input: CreatePostInput!) {
   createPost(input: $input) {
+    __typename
     ... on PostActionSuccess { post { id text dueAt channelId status } }
     ... on MutationError { message }
   }
@@ -226,6 +231,8 @@ def run_one(job_path):
     res = gql(tok, M_CREATE, {"input": {
         "text": job["text"],
         "channelId": ch["id"],
+        "assets": [],                    # ★必須。文字だけの投稿なので空でよい
+        "needsApproval": False,          # ★必須
         "schedulingType": "automatic",
         "mode": "customScheduled",       # ★即時投稿にしない
         "dueAt": due_iso,
