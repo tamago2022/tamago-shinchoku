@@ -1086,6 +1086,7 @@ def shukan(limit=10):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--yaku", type=int, help="Gensparkに役を作らせる（この人数ぶん。固定6人は別に足す）")
+    p.add_argument("--tasu", type=int, help="名簿の後ろに足す（★すでに居る人は動かさない。100人にするならこれ）")
     p.add_argument("--mawasu", action="store_true")
     p.add_argument("--limit", type=int, default=10)
     p.add_argument("--page", action="store_true")
