@@ -46,7 +46,8 @@ TADA = {
     ("notion", "create"),   # ★--help を見るため。実際に作るときは下のKAKUの栓を通す
     ("hub", "--help"), ("hub", "list_hubs"),
     # ★1076番：エージェントの口（gsk task）の使い方を見るだけ。--help は課金0。
-    ("task", "--help"),
+    ("task", "--help"), ("task", "help"), ("task", "status"), ("task", "info"),
+    ("task", "artifacts"), ("task", "artifact"),
 }
 
 # ★書き込む口。走らせる前に必ず tools/yosan.py の栓を通す。
