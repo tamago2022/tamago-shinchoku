@@ -160,7 +160,7 @@ def main():
         if w:
             r2 = dict(r); r2["根拠"] = w; b.append(r2)
     for r in rows + a + b:
-        r["url"] = "%s/song/%s/%s" % (SITE, r["artistId"], r["songId"])
+        r["url"] = "%s/cover-guide?artist=%s&song=%s" % (SITE, r["artistId"], r["songId"])
     json.dump({"棚の総曲数": len(rows), "A_秋そのもの": a, "B_秋に合う": b,
                "読んだ場所": CG},
               io.open(os.path.join(OUT, "aki_kouho.json"), "w", encoding="utf-8"),
