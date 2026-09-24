@@ -15,7 +15,7 @@
 
 ━━ 既にある tools/fukumen.py との線引き（二重管理を作らない）━━
   tools/fukumen.py      … **機械の目**。CLS・LCP・console error を数える。AIを1回も呼ばない。0円。
-  このファイル           … **客の目**。コピーが刺さるか、次を押したくなるか。Gensparkに1回1クレジット。
+  このファイル           … **客の目**。コピーが刺さるか、次を押したくなるか。Gensparkに1回 **2.2クレジット**（2026-09-24 実測）。
   数字は fukumen.py、感想はこちら。**混ぜない。**
 
 ━━ 決まり ━━
@@ -34,7 +34,7 @@
 
 ━━ 使い方（Mac側）━━
 
-    # ① 1本通す（★1クレジット使う）
+    # ① 1本通す（★実測2.2クレジット使う）
     python3 tools/fukumen_kyaku.py --url "https://joy-relief-station.lovable.app/cover-guide?artist=..&song=.." \\
         --x "Xに出す投稿文（そのまま貼る）"
 

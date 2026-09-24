@@ -147,9 +147,50 @@ def pick_channel(channels, handle, forbid):
     return hit
 
 
+def fukumen_kanmon(text):
+    """1076番【覆面客の関所】投稿文に入っている うちのURL が、覆面客を通っているか。
+
+    たまごさん（2026-09-24）:「Xに投稿する曲が決まったら、その曲ページを必ず覆面客に通す。
+    通す前に本番へ出さない。」
+    ★通っていなければ予約しない。★判定に金は1円もかからない（台帳を読むだけ）。
+    ★環境変数 FUKUMEN_SKIP=1 のときだけ素通りさせる（緊急用。使ったら報告する）。
+    """
+    if os.environ.get("FUKUMEN_SKIP") == "1":
+        return True, "関所を素通り（FUKUMEN_SKIP=1）"
+    urls = re.findall(r"https://joy-relief-station\.lovable\.app/\S+", text or "")
+    if not urls:
+        return True, "うちのURLが入っていないので関所の対象外"
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import fukumen_kyaku
+    except Exception as e:
+        return False, "覆面客の道具が読めません：%s" % str(e)[:120]
+    for u in urls:
+        u = u.rstrip("）)、。,.")
+        r = fukumen_kyaku.kanmon(u)
+        if not r:
+            return False, ("覆面客に通していません: %s\n"
+                           "  python3 tools/fukumen_kyaku.py --url \"%s\" --x \"<投稿文>\"" % (u, u))
+        t = r.get("ten") or {}
+        if not r.get("ok"):
+            return False, "覆面客が不合格: %s（%s）" % (u, "、".join(r.get("fugoukakuRiyuu") or []))
+        return True, "覆面客を通過（軽さ%s／楽しさ%s／美しさ%s・%s）" % (
+            t.get("karusa"), t.get("tanoshisa"), t.get("utsukushisa"), r.get("at"))
+    return True, ""
+
+
 def run_one(job_path):
     job = json.load(io.open(job_path, encoding="utf-8"))
     out = {"job": os.path.basename(job_path), "at": time.strftime("%F %T %z")}
+
+    # ★1076番：本番に出す前に覆面客の関所を通す（鍵を見に行くより前に止める）
+    ok, why = fukumen_kanmon(job.get("text") or "")
+    out["fukumen"] = why
+    if not ok:
+        out["result"] = "覆面客の関所で止めた"
+        out["fix"] = why
+        return out
+
     tok = token()
     if not tok:
         out["result"] = "鍵なし"
