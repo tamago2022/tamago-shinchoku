@@ -23,8 +23,8 @@ SITE = "https://joy-relief-station.lovable.app"
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "status", "1124_aki")
 
-AKI = ["秋", "枯葉", "枯れ葉", "落ち葉", "紅葉", "木枯らし", "金木犀", "коスモス", "コスモス",
-       "十五夜", "月見", "夜長", "稲", "収穫", "ハロウィン", "autumn", "Autumn", "AUTUMN",
+AKI = ["秋", "枯葉", "枯れ葉", "落ち葉", "紅葉", "木枯らし", "金木犀", "コスモス",
+       "十五夜", "月見", "夜長", "ハロウィン", "autumn", "Autumn", "AUTUMN",
        "September", "september", "October", "october", "November", "november",
        "Harvest", "harvest", "Leaves", "leaves"]
 SHITTORI = ["しっとり", "切ない", "せつない", "黄昏", "たそがれ", "夕暮れ", "夕焼け", "暮れ",

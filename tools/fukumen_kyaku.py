@@ -68,7 +68,6 @@ DAICHO = os.path.join(STATUS, "gsk_daicho.jsonl")
 LEDGER = os.path.join(OUT_DIR, "daicho.jsonl")     # URLごとの「通した」記録＝関所の正本
 DAIHON = os.path.join(HERE, "prompts", "fukumen_kyaku.md")
 KOUKAI_REPO = "tamago2022/ai-kaigi"
-HONBUN_MAX = 6000                                   # 台本に差し込む本文の上限（問いが長すぎると通らない）
 
 DANMARI = ("★これはお客さんの**感想**です。事実の主張（枚数・年号・有無）は裏を取っていません。"
            "鵜呑みにしないでください。")
