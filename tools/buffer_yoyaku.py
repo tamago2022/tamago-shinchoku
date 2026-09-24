@@ -76,7 +76,8 @@ query GetOrganizations { account { organizations { id name ownerEmail } } }
 """
 
 Q_CHANNELS = """
-query GetChannels($orgId: String!) {
+# ★1132番：Buffer側の型が String! → OrganizationId! に変わっていた（channels が0件に見えていた正体）
+query GetChannels($orgId: OrganizationId!) {
   channels(input: { organizationId: $orgId }) {
     id name displayName service isQueuePaused
   }
@@ -93,7 +94,7 @@ mutation CreatePost($input: PostCreateInput!) {
 """
 
 Q_POSTS = """
-query GetScheduledPosts($orgId: String!, $channelIds: [String!]) {
+query GetScheduledPosts($orgId: OrganizationId!, $channelIds: [ChannelId!]) {
   posts(input: {
     organizationId: $orgId,
     sort: [{ field: dueAt, direction: asc }],
