@@ -185,7 +185,7 @@ class H(BaseHTTPRequestHandler):
         self._send(_page("<h1>…</h1><p><a href='/'>入り口へ</a></p>"), 404)
 
 
-def tateru(wait_sec=1800):
+def tateru(wait_sec=43200):   # ★12時間。たまごさんが押すまで閉めない（同意が済めば自分で閉じる）
     srv = HTTPServer(("127.0.0.1", PORT), H)
     t = threading.Thread(target=srv.serve_forever, daemon=True)
     t.start()
@@ -218,6 +218,25 @@ def run_job(payload):
         return {"ok": ("Client ID" in body and "同意へ進む" in body),
                 "iriguchi": IRIGUCHI, "nagasa": len(body),
                 "redirect": REDIRECT, "totalYen": 0.0}
+    if op == "tatenaosu":
+        # ★古い受け口を閉じて、長い時間待つものに入れ替える。
+        #   たまごさんが押すまで閉まっていないようにするため。
+        import signal as _sg
+        killed = []
+        try:
+            r = subprocess.run(["lsof", "-ti", "tcp:%d" % PORT],
+                               capture_output=True, text=True, timeout=15)
+            for pid in (r.stdout or "").split():
+                try:
+                    os.kill(int(pid), _sg.SIGTERM)
+                    killed.append(int(pid))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        time.sleep(1.5)
+        payload = {"op": "tateru"}
+        op = "tateru"
     if op != "tateru":
         return {"ok": False, "error": "知らない op です", "totalYen": 0.0}
 
