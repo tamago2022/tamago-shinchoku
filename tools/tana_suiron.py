@@ -50,7 +50,16 @@ LEDGER = os.path.join(REPO, "status", "nagekomi.jsonl")
 KAZARI = ["の棚", "棚", "横丁", "路地", "広場", "実験室", "食堂", "案内所", "部屋", "コーナー"]
 # 語彙にしても当たらない（どこにでも出る）ので数えない語
 TOMARI = {"の", "と", "は", "が", "に", "を", "もの", "こと", "世界", "ごきげん", "その他",
-          "いろいろ", "おすすめ", "特集", "新着", "まとめ", "映像", "動画", "音", "良い"}
+          "いろいろ", "おすすめ", "特集", "新着", "まとめ", "映像", "動画", "音", "良い",
+          # ★英語の「どこにでも出る語」。ここを数えると事故る（実測：フレンチブルドッグが
+          #   "are"/"the" で「We Are The World 1985 参加アーティストの棚」に入った）
+          "we", "are", "the", "you", "your", "and", "for", "with", "this", "that", "his",
+          "her", "our", "all", "one", "two", "who", "how", "why", "what", "when", "was",
+          "not", "but", "out", "off", "own", "can", "get", "got", "too", "its", "she",
+          "him", "they", "them", "from", "have", "has", "had", "into", "just", "like",
+          "more", "most", "some", "than", "then", "will", "would", "about", "after",
+          "again", "best", "good", "great", "little", "much", "very", "world", "people",
+          "part", "time", "day", "night", "new", "old", "big", "small"}
 
 # ★日本語↔英語・言い換え。**棚名は書かない。**「この語が出たらこの語と同じ」だけを書く。
 #   （棚名を書くと名簿が2か所になる。増えた棚に追従しなくなる）
@@ -91,8 +100,10 @@ SYN = {
            "カピバラ", "capybara", "鳥", "bird", "うさぎ", "rabbit", "bunny", "ハムスター",
            "hamster", "キツネ", "fox", "アルパカ", "alpaca", "ペンギン", "penguin"],
     "赤ちゃん": ["赤ちゃん", "baby", "babies", "幼児", "toddler", "子ども", "kids", "child"],
-    "音楽": ["音楽", "music", "song", "曲", "バンド", "band", "ライブ", "live", "concert",
-           "コンサート", "cover", "歌", "sing", "singer", "official music video", "mv"],
+    "音楽": ["音楽", "music", "song", "バンド", "band", "ライブ", "concert",
+           "コンサート", "歌", "singer", "official music video", "official audio",
+           "official video", "vevo", "lyrics", "feat.", "ft.", "remix", "acoustic",
+           "アルバム", "album"],
     "ダンス": ["ダンス", "dance", "dancing", "踊", "choreography", "振付", "ballet", "バレエ"],
     "ピアノ": ["ピアノ", "piano", "keyboard", "鍵盤"],
     "ギター": ["ギター", "guitar", "riff", "リフ"],
@@ -124,7 +135,9 @@ def _tokens_of_title(title):
     out = []
     for p in parts:
         p = p.strip()
-        if len(p) >= 2 and p not in TOMARI:
+        if re.fullmatch(r"[0-9０-９年〜\-–—]+", p or "x"):
+            continue                    # 数字だけの語（1985 等）は当てに使わない
+        if len(p) >= 2 and p.lower() not in TOMARI and p not in TOMARI:
             out.append(p)
         elif len(p) == 1 and p in ("麺", "肉", "卵", "芋", "酒", "旅", "米"):
             out.append(p)           # 1文字でも中身のある語
