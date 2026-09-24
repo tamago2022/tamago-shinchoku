@@ -139,8 +139,10 @@ def _tokens_of_title(title):
             continue                    # 数字だけの語（1985 等）は当てに使わない
         if len(p) >= 2 and p.lower() not in TOMARI and p not in TOMARI:
             out.append(p)
-        elif len(p) == 1 and p in ("麺", "肉", "卵", "芋", "酒", "旅", "米"):
-            out.append(p)           # 1文字でも中身のある語
+        elif len(p) == 1 and p not in TOMARI and re.match(r"[ぁ-んァ-ヶ一-龥]", p):
+            # ★1文字の漢字・かなは中身のある語（猫／犬／麺／肉／卵／芋／酒／旅）。
+            #   ここを落としていたので「Cat is Amazing」が猫の棚に当たらなかった（実測）。
+            out.append(p)
     return out
 
 
@@ -193,15 +195,14 @@ def guess(text, shelves=None, min_score=2.0):
             hit.sort(key=len, reverse=True)
             pt = sum(min(len(w), 6) / 2.0 for w in hit[:3])
             scored.append({"id": s["id"], "title": s["title"], "world": s.get("world") or "",
-                           "score": round(pt, 1), "hit": hit[:6]})
-    scored.sort(key=lambda x: (-x["score"], x["title"]))
+                           "score": round(pt, 1), "hit": hit[:6], "n": len(hit)})
+    # ★同点の決め方（決めつけないのではなく、決め方を先に決めておく）：
+    #   点 → 当たった語の数 → **題名が短い棚**（一般的な棚。「家電と動物たち」より「癒される動物」）
+    #   → 題名の順。ここを毎回同じにしておけば、同じものを投げれば同じ棚に入る（再現する）。
+    scored.sort(key=lambda x: (-x["score"], -x["n"], len(x["title"]), x["title"]))
     if not scored or scored[0]["score"] < min_score:
-        return None, 0.0, [], scored[:3]
-    top = scored[0]
-    # 1位と2位が同点なら決めつけない（「迷った」として返す）
-    if len(scored) > 1 and scored[1]["score"] >= top["score"]:
-        return None, top["score"], top["hit"], scored[:3]
-    return top, top["score"], top["hit"], scored[:3]
+        return None, (scored[0]["score"] if scored else 0.0), [], scored[:3]
+    return scored[0], scored[0]["score"], scored[0]["hit"], scored[:3]
 
 
 def guess_row(row, shelves=None):

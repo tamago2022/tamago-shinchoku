@@ -91,6 +91,7 @@ import gaibu_copy_naoshi as naoshi      # noqa: E402  コピーを書く口・�
 import gaibu_copy_nippou as nippou      # noqa: E402  水道水の判定（正本）
 import oni_gate                         # noqa: E402  鬼監督の判定（正本）
 import tana                             # noqa: E402  棚一覧・REST の足回り（正本）
+import tana_suiron as suiron            # noqa: E402  ★1177番 棚の推測（仮の棚を付ける・正本）
 
 JST = timezone(timedelta(hours=9))
 STATUS = os.path.join(REPO, "status")
@@ -443,12 +444,24 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
 
         # ★棚は未定でよい。未定のまま置いて、あとで棚を決められるようにする（弾かない）。
         shelf, hint = resolve_shelf(sid, r.get("shelf"), shelves)
+        kari = None
         if not shelf:
-            res["mitei"].append({
-                "id": nid, "url": ref, "title": title,
-                "memo": memo, "shelf": r.get("shelf"), "why": hint,
-            })
-            continue
+            # ★★1177番【棚の推測】棚が空なら、機械が中身を読んで**仮の棚**を付ける。
+            #   たまごさん「棚の指定は任意にしたい」→ 空のまま止めるのをやめる。
+            #   ★合う棚が無ければ「新しい棚が要る」と出す。**勝手に新設しない。**
+            g = suiron.guess_row(r, list(shelves.values()))
+            if g.get("ok") and g.get("shelfId") in shelves:
+                shelf = shelves[g["shelfId"]]
+                kari = g
+                hint = "%s：%s" % (nid, g["why"])
+            else:
+                res["mitei"].append({
+                    "id": nid, "url": ref, "title": title,
+                    "memo": memo, "shelf": r.get("shelf"),
+                    "why": g.get("why") or hint,
+                    "candidates": g.get("candidates") or [],
+                })
+                continue
         sid = shelf["id"]          # ★名簿の id に寄せる（2か所に名簿を持たない）
         if hint:
             res["diag"].append("%s：%s" % (nid, hint))
@@ -555,7 +568,11 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
         rec = {"bin": bin_no, "at": now().strftime("%Y-%m-%d %H:%M"), "nagekomiId": nid,
                "stockId": stock_id, "madeStock": made_stock, "pickId": pick["id"],
                "shelfId": sid, "shelf": shelf["title"], "ref": ref, "title": title,
-               "genmei": genmei, "whisper": copy, "pickStatus": PICK_STATUS}
+               "genmei": genmei, "whisper": copy, "pickStatus": PICK_STATUS,
+               # ★棚を機械が推測したものは「仮」と控える（受付一覧に「仮」と出る）
+               "kari": bool(kari),
+               "kariWhy": (kari or {}).get("why") or "",
+               "world": shelf.get("world") or ""}
         append_jsonl(IRETA, rec)
         res["ireta"].append(rec)
         log("入れた %s → %s（stock %s / pick %s）" % (title[:40], shelf["title"], stock_id, pick["id"]))
@@ -571,6 +588,72 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
         res["red"].append("そろっているのに1件も入らなかった（%d件）" % sorotta)
     if res["dame"]:
         res["diag"].append("URLもひとことも空＝%d件（これだけが入れられない）" % res["dameCount"])
+    res["ok"] = not res["red"]
+    return res
+
+
+# ---------------------------------------------------------------- 棚を1本新設する
+def shinsetsu(world, title, subtitle="", bin_no="1177", dry=False):
+    """★棚を1本だけ新設する。名指しで頼まれたときだけ通る口（機械の推測では新設しない）。
+
+    たまごさん（2026-09-25・原文）:
+      「食べ物の『食』の中に『スープ』っていう棚を作って、これを入れておいてください。」
+
+    ・同じ world に同じ題名の棚が既にあれば**作らない**（重複した棚を増やさない）。
+    ・作った棚は status/nagekomi_ireta.jsonl に控える。`--modoshi <便番号>` で消せる。
+    ・position は その world の最後（max+1）。既にある棚の並びを1つも動かさない。
+    """
+    res = {"ranAt": now().strftime("%Y-%m-%d %H:%M"), "bin": bin_no, "dry": bool(dry),
+           "diag": [], "red": [], "totalYen": 0.0}
+    world = (world or "").strip()
+    title = (title or "").strip()
+    if not world or not title:
+        res["red"].append("world と title は要ります")
+        return res
+    url, key, keyname, where = tana.keys(res["diag"])
+    if not url:
+        res["red"].append("Supabaseの鍵が見つからない：%s" % where)
+        return res
+    try:
+        st, same = tana._req(url, key, "/rest/v1/admin_shelves?select=*&world=eq.%s&title=eq.%s"
+                             % (urllib.parse.quote(world, safe=""),
+                                urllib.parse.quote(title, safe="")))
+        if same:
+            res["shelf"] = same[0]
+            res["already"] = True
+            res["diag"].append("同じ棚が既にありました（作っていません）")
+            res["ok"] = True
+            return res
+        st, rows = tana._req(url, key, "/rest/v1/admin_shelves?select=position&world=eq.%s"
+                                       "&order=position.desc&limit=1"
+                             % urllib.parse.quote(world, safe=""))
+        pos = int((rows[0].get("position") if rows else 0) or 0) + 1
+        if dry:
+            res["ok"] = True
+            res["shelf"] = {"world": world, "title": title, "subtitle": subtitle,
+                            "position": pos, "dry": True}
+            return res
+        st, made = tana._req(url, key, "/rest/v1/admin_shelves", method="POST",
+                             body={"world": world, "title": title,
+                                   "subtitle": (subtitle or None), "position": pos},
+                             prefer="return=representation")
+        row = made[0] if isinstance(made, list) and made else made
+        res["shelf"] = row
+        append_jsonl(IRETA, {"bin": bin_no, "at": now().strftime("%Y-%m-%d %H:%M"),
+                             "shinsetsuShelfId": row.get("id"), "shelf": title,
+                             "world": world, "subtitle": subtitle})
+        log("棚を新設 %s / %s（%s）" % (world, title, row.get("id")))
+        res["ok"] = True
+        # 名簿を作り直す（棚が増えたら推測の語彙もここで増える）
+        try:
+            res["ichiran"] = tana.shelf_list()
+        except Exception as e:
+            res["diag"].append("名簿の作り直しに失敗: %s" % type(e).__name__)
+    except urllib.error.HTTPError as e:
+        res["red"].append("棚を作れなかった HTTP %d %s"
+                          % (e.code, e.read().decode("utf-8", "replace")[:200]))
+    except Exception as e:
+        res["red"].append("棚を作れなかった %s: %s" % (type(e).__name__, e))
     res["ok"] = not res["red"]
     return res
 
@@ -592,6 +675,24 @@ def modoshi(bin_no, dry=False):
         return res
 
     for r in rows:
+        # ★新設した棚の控え（pickIdを持たない）。棚に何か載っていたら消さない。
+        if r.get("shinsetsuShelfId"):
+            ssid = r["shinsetsuShelfId"]
+            try:
+                st, used = tana._req(url, key, "/rest/v1/admin_shelf_picks?select=id&shelf_id=eq.%s"
+                                     "&limit=1" % urllib.parse.quote(ssid, safe=""))
+                if used:
+                    res["diag"].append("棚「%s」にはカードが載っているので消さない" % r.get("shelf"))
+                    continue
+                if not dry:
+                    tana._req(url, key, "/rest/v1/admin_shelves?id=eq.%s"
+                              % urllib.parse.quote(ssid, safe=""), method="DELETE")
+                    r["modoshiAt"] = now().strftime("%Y-%m-%d %H:%M")
+                    append_jsonl(IRETA, r)
+                res["keshita"].append({"shelf": r.get("shelf"), "shelfId": ssid, "kind": "棚"})
+            except Exception as e:
+                res["red"].append("棚を戻せなかった（%s）%s" % (r.get("shelf"), type(e).__name__))
+            continue
         try:
             # ★消す前に、その行が自分の入れたものと一致するか確かめる。違えば触らない。
             st, got = tana._req(url, key, "/rest/v1/admin_shelf_picks?select=*&id=eq.%s"
@@ -744,7 +845,11 @@ def kagi_shirabe(shelf_id):
 def run_job(payload):
     """工場側（gaibu_runner kind=tanaire）から呼ばれる入口。"""
     p = payload or {}
-    if p.get("op") == "kagi":
+    if p.get("op") == "shinsetsu":
+        out = shinsetsu(p.get("world") or "", p.get("title") or "",
+                        p.get("subtitle") or "", bin_no=p.get("bin") or "1177",
+                        dry=bool(p.get("dry")))
+    elif p.get("op") == "kagi":
         out = kagi_shirabe(p.get("shelfId") or "")
     elif p.get("op") == "shirabe":
         out = shirabe(p.get("ref") or "", souji=bool(p.get("souji")))

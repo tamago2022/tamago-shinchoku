@@ -119,6 +119,44 @@ def r_oembed_x(url):
             "title": text[:120], "yen": 0.0}, ""
 
 
+RE_XID = re.compile(r"/status(?:es)?/(\d{5,25})")
+
+
+def r_x_zenbun(url):
+    """★Xの投稿の**全文**。Xの埋め込みウィジェット自身が使っている公開の口
+    （cdn.syndication.twimg.com/tweet-result）。鍵不要・0円。
+
+    ■ なぜ足したか（2026-09-25 実測）
+      oEmbed（publish.twitter.com）は**長い投稿を途中で切る。**
+      レシピの投稿で「牛乳　200ml…」で切れた。★材料の途中で切れると
+      「読み取れなかった分量を憶測で埋める」事故になる。だから全文が取れる口を先に置く。
+      ここが取れなければ、これまでどおり oEmbed（要約）に落ちる。**作り話はしない。**
+    """
+    if not _is_x(url):
+        return None, "Xの投稿ではない"
+    m = RE_XID.search(url or "")
+    if not m:
+        return None, "投稿の番号が読み取れないURL"
+    code, body, why = _get(
+        "https://cdn.syndication.twimg.com/tweet-result?id=%s&lang=ja&token=a" % m.group(1),
+        headers={"Accept": "application/json"})
+    if code != 200 or not body:
+        return None, "cdn.syndication が %s（%s）" % (code, why or "本文が空")
+    try:
+        d = json.loads(body)
+    except Exception:
+        return None, "cdn.syndication の返事が読めない形だった"
+    text = (d.get("text") or "").strip()
+    if not text:
+        return None, "200だが本文が空だった"
+    u = d.get("user") or {}
+    # ★動画・画像が付いているかも一緒に返す（レシピの字幕を読むかどうかの判断に使う）
+    media = [x.get("type") for x in ((d.get("mediaDetails") or []))]
+    return {"text": text, "author": u.get("name") or u.get("screen_name") or "",
+            "title": text[:120], "publishedAt": (d.get("created_at") or "")[:10],
+            "media": media, "yen": 0.0}, ""
+
+
 def r_yt_transcript(url):
     """YouTubeの**文字起こし全文（タイムスタンプ付き）**。鍵不要・0円。
 
@@ -288,6 +326,7 @@ def r_jules(url):
 
 # ★並び順は「0円が先・実測で通ったものが先」。成績で自動で入れ替わる（_narabi）。
 READERS = [
+    ("x_zenbun", r_x_zenbun, 0.0),
     ("oembed_x", r_oembed_x, 0.0),
     ("yt_transcript", r_yt_transcript, 0.0),
     ("oembed_yt", r_oembed_yt, 0.0),
@@ -339,7 +378,9 @@ def seiseki():
     return s
 
 
-SENMON = {"yt": ("yt_transcript", "oembed_yt", "yt_data"), "x": ("oembed_x",)}
+SENMON = {"yt": ("yt_transcript", "oembed_yt", "yt_data"),
+          # ★全文が取れる口を先に。oEmbedは長い投稿を切るので後ろ（2026-09-25 実測）
+          "x": ("x_zenbun", "oembed_x")}
 
 
 def _narabi(url=""):

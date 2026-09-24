@@ -24,13 +24,24 @@
     棚へ書きに行って本当に失敗した1本だけ。★弾いた数を成績にしない。
   ・**新しい常駐を増やさない。**心臓(heartbeat.sh)に相乗りする。1秒かからない。
 
+■ ★1177番で足したもの（たまごさん 2026-09-25・原文）
+    「何月何日にこれとこれが入ってきて、反映結果がどうなったかも、
+      ちゃんと反映されているかどうかがその場で分かるといいよね。」
+  → 1行に **受付番号／日付／何が入ったか／どの棚／本番に反映されたか／反映先URL** を全部載せる。
+    ★「反映」は3語だけ：**済／まだ／弾いた**。それ以外の言い方をしない。
+    ★棚を機械が推測したものは「仮」と出す（後から直せる、と分かる形にする）。
+
 ■ 出す列（これ以外は1つも出さない）
+    no     受付番号（台帳のidの頭6桁。投げた直後に箱が出す番号と同じもの）
     at     時刻
     title  題名
     channel チャンネル名
     shelf  棚
     memo   ひとこと（たまごさんが喋った言葉）
     state  届いた / 棚に入った / 入れられない
+    hanei  済 / まだ / 弾いた（★本番に反映されたか。これがたまごさんの見る1語）
+    url    反映先のURL（棚に入ったものだけ。本番の棚のページ）
+    kari   true なら棚は機械の推測（「仮」と出す）
     mark   行き先未定 / 文が未定（届いたうちの、足りないものの印）
     why    足りないもの・失敗の理由1行
     kind   youtube / x / web（絵文字の出し分けだけに使う）
@@ -108,6 +119,33 @@ def is_test(r):
     return str(r.get("nageta") or "") == "test"
 
 
+# ★本番の棚のページ。ここだけが「反映先URL」の作り方（他の場所に書かない）。
+#   実測：joy-relief-station の道は src/routes/shelf.$worldId.$shelfId.tsx
+HONBAN = "https://joy-relief-station.lovable.app"
+
+
+def shelf_world(shelf_id):
+    """棚のidから world を引く（反映先URLを作るのに要る）。名簿は tana_ichiran.json だけ。"""
+    try:
+        d = json.load(io.open(os.path.join(STATUS, "public", "tana_ichiran.json"),
+                              encoding="utf-8"))
+    except Exception:
+        return ""
+    for s in (d.get("shelves") or []):
+        if s.get("id") == shelf_id:
+            return s.get("world") or ""
+    return ""
+
+
+def shelf_url(rec):
+    """棚に入ったものの反映先URL。worldが分からなければ棚の一覧ページへ逃がす（空にしない）。"""
+    sid = rec.get("shelfId") or ""
+    world = rec.get("world") or shelf_world(sid)
+    if sid and world:
+        return "%s/shelf/%s/%s" % (HONBAN, world, sid)
+    return HONBAN
+
+
 def build(show_test=False):
     rows = read_jsonl(LEDGER)
     kikai = sum(1 for r in rows if is_test(r))
@@ -166,11 +204,20 @@ def build(show_test=False):
             elif not (r.get("title") or "").strip():
                 mark, why = "文が未定", "題名はあとで埋められます"
 
+        # ★反映は3語だけ。ここが「その場で分かる」の本体
+        hanei = "済" if state == "棚に入った" else ("弾いた" if state == "入れられない" else "まだ")
+        rec = ireta.get(rid) or {}
         out.append({
+            "no": rid[:6],
+            "hanei": hanei,
+            "url": shelf_url(rec) if state == "棚に入った" else "",
+            "kari": bool(rec.get("kari")),
+            "shelfWhy": scrub(rec.get("kariWhy"))[:80],
             "at": scrub(r.get("at"))[:16],
             "title": scrub(r.get("title"))[:120] or "（題名が取れませんでした）",
             "channel": scrub(r.get("channel"))[:60],
-            "shelf": scrub(r.get("shelf"))[:40],
+            # ★棚に入ったものは、実際に入った棚（控えの方）を出す。台帳の希望ではなく結果を出す。
+            "shelf": scrub(rec.get("shelf") or r.get("shelf"))[:40],
             "memo": scrub(r.get("memo"))[:200],
             "state": state,
             "mark": mark,
@@ -193,6 +240,10 @@ def build(show_test=False):
             # ★届いたうちの内訳（印）。これは「入れられない」ではない
             "行き先未定": sum(1 for x in out if x.get("mark") == "行き先未定"),
             "文が未定": sum(1 for x in out if x.get("mark") == "文が未定"),
+            # ★本番に反映されたか（たまごさんが見る3語）
+            "済": sum(1 for x in out if x.get("hanei") == "済"),
+            "まだ": sum(1 for x in out if x.get("hanei") == "まだ"),
+            "弾いた": sum(1 for x in out if x.get("hanei") == "弾いた"),
         },
         "items": out,
     }
