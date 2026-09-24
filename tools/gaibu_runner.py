@@ -104,6 +104,7 @@ JOB_TIMEOUT = {
     "diag": 90,
     "douga": 90,
     "horu": 240,
+    "spotify": 600,    # 1075番 何百曲でも途中で切らない（GETだけ・課金0）
     "jrsdata": 180,
     "jrspush": 180,
     "oausage": 90,
@@ -428,6 +429,31 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
                     import importlib, relay_nage
                     importlib.reload(relay_nage)
                     out = relay_nage.run_job(job.get("payload") or {})
+                elif job.get("kind") == "spotify":
+                    # ★1075番：たまごさんのSpotifyのプレイリストを**読むだけ**。
+                    #   サンドボックスからは accounts.spotify.com / api.spotify.com とも
+                    #   curl が 000 で出られない（実測 2026-09-24 09:06）ので工場側で。
+                    #   GETだけ・棚にもプレイリストにも1文字も書かない・課金0・
+                    #   ★鍵の値を返さない（spotify_yomu.py 側の ALLOW_PREFIX と口で保証）。
+                    import importlib, spotify_yomu
+                    importlib.reload(spotify_yomu)
+                    out = spotify_yomu.run_job(job.get("payload") or {})
+                elif job.get("kind") == "spotifyiri":
+                    # ★1075番：たまごさんが押すのを**URL1本**に削るための受け口を、
+                    #   127.0.0.1 にだけ裏で立てる。鍵の値は返さない。課金0。
+                    #   ★たまごさんの普段のブラウザ（Brave）には触らない。開くのは本人。
+                    import importlib, spotify_iriguchi
+                    importlib.reload(spotify_iriguchi)
+                    out = spotify_iriguchi.run_job(job.get("payload") or {})
+                elif job.get("kind") == "xtoukou":
+                    # ★1075番：たまごさんのXの投稿の本文を、道を全部試して取る。
+                    #   サンドボックスからは x.com / syndication.twimg.com / publish.twitter.com
+                    #   とも curl が 000（実測 2026-09-24 09:06）ので工場側で。
+                    #   GETだけ・1件も投稿しない・鍵を使わない・課金0
+                    #   （x_toukou.py 側の ALLOW で保証）。
+                    import importlib, x_toukou
+                    importlib.reload(x_toukou)
+                    out = x_toukou.run_job(job.get("payload") or {})
                 else:
                     out = {"ok": False, "error": "知らない仕事の種類です: %s" % job.get("kind")}
             except JobTimeout:
