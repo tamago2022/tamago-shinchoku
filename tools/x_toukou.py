@@ -253,6 +253,24 @@ def run_job(payload):
         u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
         return {"ok": True, "op": "shindan", "user": u,
                 "kekka": _shindan(u), "totalYen": 0.0}
+    if op == "htmlhozon":
+        # ★x.com が返してきた素のHTMLをそのまま置く。こちらで中を隅まで見るため。
+        u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
+        os.makedirs(OUT_DIR, exist_ok=True)
+        saved = []
+        for na, url in (("profile", "https://x.com/%s" % u),
+                        ("twitter", "https://twitter.com/%s" % u),
+                        ("with_replies", "https://x.com/%s/with_replies" % u)):
+            code, body, why = _get(url, timeout=30)
+            if code == 200 and body:
+                p = os.path.join(OUT_DIR, "nama_%s_%s.html" % (u, na))
+                io.open(p, "w", encoding="utf-8").write(body)
+                saved.append({"na": na, "nagasa": len(body),
+                              "file": os.path.relpath(p, REPO)})
+            else:
+                saved.append({"na": na, "code": code, "why": why})
+        return {"ok": True, "op": op, "saved": saved, "totalYen": 0.0}
+
     if op == "idsagashi":
         u = (payload.get("user") or "oasisjoyrelief").lstrip("@")
         ids, tried = _id_sagashi(u)

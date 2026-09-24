@@ -40,7 +40,14 @@ TADA = {
     ("sb-brain", "ls"), ("sb-brain", "grep"), ("sb-brain", "read"),
     ("sb-brain", "add", "--help"), ("sb-brain", "write", "--help"),
     ("sb-brain", "upload", "--help"), ("sb-brain", "mount", "--help"),
+    # ★2026-09-24 実測：gsk に **notion の口がある**（search / read / create）。
+    #   「Gensparkは Notion につながっていない」は sb-brain の話で、こちらは別の口。
+    ("notion", "--help"), ("notion", "search"), ("notion", "read"),
+    ("hub", "--help"), ("hub", "list_hubs"),
 }
+
+# ★書き込む口。走らせる前に必ず tools/yosan.py の栓を通す。
+KAKU = {("notion", "create")}
 
 
 def _gsk():
