@@ -43,6 +43,7 @@ TADA = {
     # ★2026-09-24 実測：gsk に **notion の口がある**（search / read / create）。
     #   「Gensparkは Notion につながっていない」は sb-brain の話で、こちらは別の口。
     ("notion", "--help"), ("notion", "search"), ("notion", "read"),
+    ("notion", "create"),   # ★--help を見るため。実際に作るときは下のKAKUの栓を通す
     ("hub", "--help"), ("hub", "list_hubs"),
 }
 
