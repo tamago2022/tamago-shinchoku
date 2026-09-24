@@ -188,7 +188,15 @@ def _op_tool(payload):
 
 
 MIRU_ALLOW = ("https://joy-relief-station.lovable.app",
-              "https://tamago2022.github.io")
+              "https://tamago2022.github.io",
+              # ★1140番（2026-09-24・お金の便）公式の料金ページだけ足す。GETのみ・課金0。
+              #   サンドボックスから stripe.com / open.er-api.com へ web_fetch が
+              #   180秒で必ずタイムアウトする（実測3回）。「出典URLを必ず添える」を
+              #   守るには工場から取るしかない。読むだけ・書かない・鍵を使わない。
+              "https://stripe.com/jp/pricing",
+              "https://stripe.com/pricing",
+              "https://open.er-api.com/v6/latest/USD",
+              "https://docs.x.ai/developers/pricing")
 
 
 def _op_miru(payload):
@@ -380,9 +388,41 @@ def _op_okikae(payload):
     return {"ok": True, "log": log, "sha": (last or "")[:40], "totalYen": 0.0}
 
 
+def _op_jitsugaku(payload):
+    """★1140番（2026-09-24・お金の便）音声案内の「実額」を読むだけの口。
+
+    行き先も中身も1つに固定してある：
+      URL  = voice-session の Edge Function ただ1つ（他のURLは受け付けない）
+      本文 = {"action":"status"} ただ1つ（create も report も送れない＝1円も出ない）
+    返るのは 件数・秒数・金額だけ。個人情報も鍵も返らない。
+    """
+    import urllib.request
+    URL = "https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session"
+    anon = payload.get("anonKey") or ""
+    data = json.dumps({"action": "status"}).encode("utf-8")
+    headers = {"Content-Type": "application/json"}
+    if anon:
+        headers["apikey"] = anon
+        headers["Authorization"] = "Bearer %s" % anon
+    req = urllib.request.Request(URL, data=data, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=int(payload.get("timeout", 30))) as r:
+            return {"ok": True, "httpCode": r.getcode(),
+                    "body": r.read().decode("utf-8", "ignore")[:4000], "totalYen": 0.0}
+    except Exception as e:
+        body = ""
+        try:
+            body = e.read().decode("utf-8", "ignore")[:1000]
+        except Exception:
+            pass
+        return {"ok": False, "error": "%s: %s" % (type(e).__name__, str(e)[:200]),
+                "body": body, "totalYen": 0.0}
+
+
 OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool,
        "miru": _op_miru, "kazu": _op_kazu,
-       "kazoeru": _op_kazoeru, "okikae": _op_okikae}
+       "kazoeru": _op_kazoeru, "okikae": _op_okikae,
+       "jitsugaku": _op_jitsugaku}
 
 
 def run_job(payload=None):
