@@ -177,6 +177,35 @@ def _gsk_toosu(url, toi_all, nani, timeout=420):
     return {"r": r, "zen": zen, "ato": ato, "tsukatta": tsukatta, "byou": byou}
 
 
+def _codex_toosu(toi_all, nani):
+    """★もう1つの口＝codex（ChatGPTのログイン・1回ごとの課金なし＝0円）。
+
+    たまごさん（2026-09-24・原文）
+      「Gensparkだけにしない。★どんどん色んなのにテストさせようよ。
+        1周したらペルソナチェンジして、他のAIに『じゃあ次あなた、ミャンマー45歳ね』ってやらせる。」
+      「同じ役を違うAIにやらせて、答えが割れたらそれも記録。どれが正解かをこちらが決めない。」
+
+    ★Gensparkは「残クレジットが減ったか」で通ったことを確かめられるが、codexは0円なので
+      減る残高が無い。代わりに **秒数と返ってきた本文の長さ** を台帳に残す。
+      ★『通ったふり』をしないために、返事が空なら不合格にする（下の gouhi が見る）。
+    """
+    import gaibu_kuchi as g
+    t0 = time.time()
+    d, who, err = g.kiku_codex(
+        "あなたはこれからお客さんの役を演じて、店の案内人に点を付けます。",
+        toi_all + '\n\n★返すのは {"kotae": "上の問いに全部答えた文章そのまま"} '
+                  "の形のJSONひとつだけ。文章の中の改行はそのまま入れてよい。",
+        timeout=600)
+    byou = round(time.time() - t0, 1)
+    kotae = ""
+    if isinstance(d, dict):
+        kotae = str(d.get("kotae") or d.get("answer") or "")
+    _append(DAICHO, {"at": _now(), "nani": nani, "口": who or "codex", "ok": bool(kotae),
+                     "使ったクレジット": 0, "円": 0, "秒": byou, "字数": len(kotae),
+                     "error": err or ""})
+    return {"kotae": kotae, "who": who or "codex", "err": err, "byou": byou}
+
+
 def _kotae_toridasu(stdout):
     """gsk の返事から読める答えを作る。★形が想像と違っても生のまま残す（切り捨てない）。"""
     if not stdout:
@@ -616,8 +645,13 @@ def gouhi(kotae):
     return (len(r) == 0), r
 
 
-def saiten(y, kotae_annai):
-    """客の役のまま、案内人の答えに点を付けさせる。"""
+def saiten(y, kotae_annai, kuchi="gsk"):
+    """客の役のまま、案内人の答えに点を付けさせる。
+
+    kuchi="gsk"   … Genspark（前払いクレジット。10/4で消えるので使い切る方が得）
+    kuchi="codex" … ChatGPTのcodex（0円）。★同じ役を別のAIにやらせて割れたら記録するため。
+    ★1周＝1つの口。混ぜない（混ぜると平均点が何の平均か分からなくなる）。
+    """
     yaku, toi = _daihon(DAIHON_SAITEN, {
         "URL": CONCIERGE_URL, "KUNI": y["kuni"], "TOSHI": y["toshi"], "SEI": y["sei"],
         "SUKI": y["suki"], "RIYUU": y["riyuu"], "HITOKOTO": y["hitokoto"],
