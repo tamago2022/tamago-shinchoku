@@ -233,18 +233,62 @@ def tsugi():
     return None, s
 
 
+def honmono_ga_deteru():
+    """★直近6時間、本物が1本でも出ているか。
+
+    2026-09-24 の事故：キューに204本の発車待ちがあったのに、
+    ログイン切れで1本も本物が出ず、2分おきの「空回し」だけが323本走っていた。
+    ★キューが満杯でも、本物が0本なら工場は止まっているのと同じ。
+      そのときこそ0円の工程を回す。「何も走っていない」を作らない。
+    """
+    kyou = time.strftime("%Y-%m-%d")
+    honmono = 0
+    try:
+        for f in os.listdir(ST):
+            if not (f.startswith("auto-launch-") and f.endswith(".log")):
+                continue
+            p = os.path.join(ST, f)
+            m = os.stat(p).st_mtime
+            if time.time() - m > 6 * 3600:
+                continue
+            try:
+                with open(p, encoding="utf-8", errors="ignore") as fh:
+                    if "空回し" not in fh.read(400):
+                        honmono += 1
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return honmono
+
+
 def mawasu():
-    """1回まわす。キューが空いていて、0円の工程が在るならそれを回す。"""
+    """1回まわす。
+
+    ★0円の工程を回す条件（どちらかが当てはまれば回す）：
+      ① キューが空
+      ② キューは在るのに、直近6時間 本物が1本も出ていない（＝実質止まっている）
+    ★止まってよいのは「クレジットが天井」のときだけ。
+    """
     karappo, machiN = queue_aiteru()
     s = shirabe()
-    _write(JUNBAN_JSON, dict(s, queueMachiN=machiN, queueKarappo=karappo))
+    honmono = honmono_ga_deteru()
+    karamawari_dake = (not karappo) and honmono == 0
 
-    if not karappo:
+    _write(JUNBAN_JSON, dict(s, queueMachiN=machiN, queueKarappo=karappo,
+                             honmono6h=honmono,
+                             karamawariDake=karamawari_dake))
+
+    if not karappo and not karamawari_dake:
         _append(LOG, {"at": now(), "shita": "何もしない",
-                      "naze": "キューに発車待ちが %d 本ある" % machiN})
+                      "naze": "キューに発車待ちが %d 本あり、本物も %d 本出ている"
+                              % (machiN, honmono)})
         return 0
 
-    # ★キューが空。止まらない。0円の工程から拾う。
+    naze = ("キューが空" if karappo else
+            "★キューに %d 本あるのに、直近6時間 本物が0本（空回しだけ）" % machiN)
+
+    # ★止まらない。0円の工程から拾う。
     yatta = []
     for k in JUNBAN:
         if not any(m["n"] == k["n"] for m in s["mawaseru"]):
@@ -265,7 +309,8 @@ def mawasu():
             yatta.append({"n": k["n"], "name": k["name"], "rc": None,
                           "de": "%s: %s" % (type(e).__name__, e)})
 
-    _append(LOG, {"at": now(), "shita": "0円の工程を回した", "yatta": yatta,
+    _append(LOG, {"at": now(), "shita": "0円の工程を回した", "naze": naze,
+                  "honmono6h": honmono, "yatta": yatta,
                   "gensparkTomatteru": s["gensparkTomatteru"],
                   "aka": s["aka"], "akaNaze": s["akaNaze"]})
     return len(yatta)
