@@ -44,8 +44,152 @@ def _fetch_paths(payload):
     io.open(os.path.join(out,"_log.txt"),"w",encoding="utf-8").write("%s\n\n%s\n"%(time.strftime("%Y-%m-%d %H:%M:%S"),"\n".join(log)))
     return {"ok":bool(got),"got":got,"log":log,"totalYen":0.0}
 
+# ===========================================================================
+# ★1122番（2026-09-24）ここから下は「口を増やす」ための追記。
+#   なぜここに足すか：gaibu_runner は kind=jrsdata のとき **このファイルを
+#   importlib.reload する**。だから runner を触らずに口を増やせる（runnerを
+#   書き換えると工場が死ぬ事故が 09-24 03:38 に起きている）。
+#   足したのは3つだけ。どれも「白名簿」で外に出られる先を絞ってある。
+#     op=shirabe … 見るだけ（ファイルの有無・git・鍵の有無。★値は出さない）
+#     op=patch   … 正本リポジトリのファイルを差し替えて commit+push する
+#     op=tool    … tamago-shinchoku の中の白名簿の道具を1本だけ走らせる
+# ===========================================================================
+TOOL_WHITELIST = ("kohyou_osu.py", "kohyou_kanshi.py", "og_kanmon.py",
+                  "lovable_mcp_bootstrap.py")
+
+
+def _shinchoku():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _op_shirabe(payload):
+    """見るだけ。鍵は「有る/無い」と持っている項目名だけ返す（値は返さない）。"""
+    out = {"ok": True, "totalYen": 0.0}
+    tok = os.path.expanduser("~/.tamago/lovable_oauth.json")
+    if os.path.exists(tok):
+        try:
+            d = json.load(io.open(tok, encoding="utf-8"))
+            out["lovableToken"] = {"exists": True, "keys": sorted(d.keys()),
+                                   "sizes": {k: len(str(v)) for k, v in d.items()},
+                                   "mtime": time.strftime("%Y-%m-%d %H:%M:%S",
+                                                          time.localtime(os.path.getmtime(tok)))}
+        except Exception as e:
+            out["lovableToken"] = {"exists": True, "error": str(e)}
+    else:
+        out["lovableToken"] = {"exists": False}
+    rc, o, e = _git(["status", "--porcelain"])
+    out["cloneDirty"] = (o or "").strip().splitlines()[:40]
+    rc, o, e = _git(["rev-parse", "HEAD"])
+    out["cloneHead"] = (o or "").strip()[:12]
+    rc, o, e = _git(["log", "-1", "--format=%s"])
+    out["cloneHeadSubject"] = (o or "").strip()
+    out["locks"] = []
+    gd = os.path.join(CLONE, ".git")
+    for root, dirs, files in os.walk(gd):
+        for f in files:
+            if f.endswith(".lock"):
+                out["locks"].append(os.path.relpath(os.path.join(root, f), gd))
+        if len(out["locks"]) > 30:
+            break
+    for p in (payload.get("grep") or []):
+        rc, o, e = _git(["grep", "-n", "--", p])
+        out.setdefault("grep", {})[p] = (o or "")[:4000]
+    return out
+
+
+def _op_patch(payload):
+    """正本リポジトリのファイルを差し替えて commit+push する。
+
+    payload = {"op":"patch",
+               "edits":[{"path":"src/x.tsx","find":"...","replace":"...","count":1}, ...],
+               "message":"...", "push":true}
+    ・find が期待した回数だけ現れない edit は **1つも書かずに止める**（全部か無しか）。
+    ・.git/*.lock は 60秒より古いものだけ外す（957番と同じ理由）。
+    """
+    edits = payload.get("edits") or []
+    if not edits:
+        return {"ok": False, "error": "edits が空です", "totalYen": 0.0}
+    if not os.path.isdir(CLONE):
+        return {"ok": False, "error": "clone なし", "totalYen": 0.0}
+    log = []
+    plan = []
+    for ed in edits:
+        p = os.path.join(CLONE, ed["path"])
+        if not os.path.isfile(p):
+            return {"ok": False, "error": "ファイルが無い: %s" % ed["path"],
+                    "log": log, "totalYen": 0.0}
+        body = io.open(p, encoding="utf-8").read()
+        want = int(ed.get("count", 1))
+        got = body.count(ed["find"])
+        if got != want:
+            return {"ok": False, "error": "見つかった数が違う: %s 期待%d 実際%d"
+                    % (ed["path"], want, got), "log": log, "totalYen": 0.0}
+        plan.append((p, body.replace(ed["find"], ed["replace"]), ed["path"]))
+        log.append("下見OK %s (%d件)" % (ed["path"], got))
+    for p, newbody, rel in plan:
+        with io.open(p, "w", encoding="utf-8") as f:
+            f.write(newbody)
+        log.append("書いた %s" % rel)
+    gd = os.path.join(CLONE, ".git")
+    for root, dirs, files in os.walk(gd):
+        for f in files:
+            if not f.endswith(".lock"):
+                continue
+            fp = os.path.join(root, f)
+            try:
+                if time.time() - os.path.getmtime(fp) > 60:
+                    os.remove(fp)
+                    log.append("古いロックを外した %s" % os.path.relpath(fp, gd))
+            except Exception:
+                pass
+    if not payload.get("push", True):
+        return {"ok": True, "log": log, "pushed": False, "totalYen": 0.0}
+    for _, _, rel in plan:
+        rc, o, e = _git(["add", "--", rel])
+        log.append("add %s rc=%d %s" % (rel, rc, (e or "")[:120]))
+    msg = payload.get("message") or "1122番: コピーの出どころを1本にした"
+    rc, o, e = _git(["commit", "-m", msg])
+    log.append("commit rc=%d %s" % (rc, (o or e or "")[-300:]))
+    rc, o, e = _git(["fetch", "origin", "main"], t=300)
+    log.append("fetch rc=%d" % rc)
+    rc, o, e = _git(["merge", "--no-edit", "origin/main"])
+    log.append("merge rc=%d %s" % (rc, (o or e or "")[:200]))
+    if rc != 0:
+        _git(["merge", "--abort"])
+        return {"ok": False, "error": "合流できないので戻した", "log": log, "totalYen": 0.0}
+    rc, o, e = _git(["push", "origin", "HEAD:main"], t=300)
+    log.append("push rc=%d %s" % (rc, (o or "")[-200:] + (e or "")[-300:]))
+    rc2, sha, _ = _git(["rev-parse", "HEAD"])
+    return {"ok": rc == 0, "log": log, "pushed": rc == 0,
+            "sha": (sha or "").strip()[:12], "totalYen": 0.0}
+
+
+def _op_tool(payload):
+    """tamago-shinchoku の中の白名簿の道具を1本だけ走らせる。"""
+    name = payload.get("name") or ""
+    if name not in TOOL_WHITELIST:
+        return {"ok": False, "error": "白名簿に無い道具です: %s" % name, "totalYen": 0.0}
+    sh = _shinchoku()
+    import sys as _sys
+    cmd = [_sys.executable, os.path.join(sh, "tools", name)] + list(payload.get("args") or [])
+    r = subprocess.run(cmd, cwd=sh, capture_output=True, text=True,
+                       timeout=int(payload.get("timeout", 300)))
+    return {"ok": r.returncode == 0, "rc": r.returncode,
+            "stdout": (r.stdout or "")[-6000:], "stderr": (r.stderr or "")[-3000:],
+            "totalYen": 0.0}
+
+
+OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool}
+
+
 def run_job(payload=None):
     payload=payload or {}
+    op = payload.get("op")
+    if op in OPS:
+        try:
+            return OPS[op](payload)
+        except Exception as e:
+            return {"ok": False, "error": "%s: %s" % (type(e).__name__, e), "totalYen": 0.0}
     if payload.get("files") or payload.get("bin"):
         return _fetch_paths(payload)
     log=[];os.makedirs(OUT,exist_ok=True);got=[]
