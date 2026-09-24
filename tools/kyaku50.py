@@ -1043,7 +1043,7 @@ td.aoji{color:var(--ii)}
 </style>
 <div class=wrap>
 <h1>50人の客｜誰が入ってきても答えられるか</h1>
-<div class=date>%s ／ %d人ぶん ／ 使ったクレジット %s（残 %s）</div>
+<div class=date>%s ／ %d人ぶん ／ 使ったクレジット %s（残 %s）<br>★この2つの数字は<b>いちばん新しい1周</b>のものです。点を付けたAI＝<b>%s</b>。★同じ店・同じ役でもAIによって点が割れます（下の推移の右端に、どのAIが付けたか出ています）。</div>
 
 <div class=atama>
 <div class=card><div class=k>飴玉ゼロ率 ★目標はゼロ</div><div class=v>%s<small>%%</small></div></div>
@@ -1087,6 +1087,7 @@ td.aoji{color:var(--ii)}
 <div class=danmari>%s</div>
 </div>""" % (
         e(d.get("at")), len(rows), e(ima.get("使ったクレジット")), e(ima.get("残クレジット")),
+        e(ima.get("口") or "genspark(gsk)"),
         e(zeroritsu if zeroritsu is not None else "—"),
         e(ima.get("百点換算") if ima.get("百点換算") is not None else "—"),
         suii,
