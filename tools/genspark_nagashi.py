@@ -109,7 +109,41 @@ def _shirase(honbun: str):
         pass
 
 
+# ────────────────────────────────────────────────────────────
+# ★Gensparkの栓（1か所）── 2026-09-24 たまごさん
+#   「Genspark、ストップさせようか。急にガーッと減り出したから、
+#     何をやるとパワーを使うのかちょっと調べる。だから一回ストップで。」
+#
+#   止める：status/genspark.stop を置く（中身＝理由の1行）
+#   戻す　：status/genspark.stop を消す　← これだけで全部戻る
+#
+#   gsk を叩く道は gsk_path() の1本しかない（gsk_kuchi.py も
+#   genspark_nagashi.gsk_run() も、どちらもここを通る）。
+#   だからここで None を返せば、Genspark を使う工程は全部その場で止まる。
+# ────────────────────────────────────────────────────────────
+GSK_STOP = os.path.join(REPO, "status", "genspark.stop") \
+    if "REPO" in dir() else os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "status", "genspark.stop")
+
+
+def gsk_tomatteru():
+    """Gensparkが止められているか。止まっているなら理由の文字列を返す。"""
+    try:
+        if os.path.exists(GSK_STOP):
+            with open(GSK_STOP, encoding="utf-8") as f:
+                return (f.read().strip() or "止めています（理由は書かれていません）")
+    except Exception:
+        pass
+    return None
+
+
 def gsk_path():
+    wake = gsk_tomatteru()
+    if wake:
+        _shirase("Gensparkは止めています（%s）。叩きませんでした。"
+                 "戻すときは status/genspark.stop を消す。" % wake)
+        return None
     for p in GSK_CANDIDATES:
         if os.path.exists(p):
             return p
@@ -122,6 +156,10 @@ def gsk_path():
 
 def gsk_run(args, timeout=180):
     """gsk を1本だけ走らせる。白名簿の外は走らせない。"""
+    wake = gsk_tomatteru()
+    if wake:
+        return {"ok": False, "tomatteru": True,
+                "error": "Gensparkは止めています（%s）／戻すときは status/genspark.stop を消す" % wake}
     g = gsk_path()
     if not g:
         return {"ok": False, "error": "gsk が見つかりません（このMacに入っていない）"}

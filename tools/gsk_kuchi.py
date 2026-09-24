@@ -59,7 +59,20 @@ def _gsk():
     return gn.gsk_path()
 
 
+def _tomatteru():
+    """★Gensparkの栓（本体は tools/genspark_nagashi.py の1か所）。"""
+    try:
+        import genspark_nagashi as gn
+        return gn.gsk_tomatteru()
+    except Exception:
+        return None
+
+
 def _run(args, timeout=120):
+    wake = _tomatteru()
+    if wake:
+        return {"ok": False, "tomatteru": True,
+                "error": "Gensparkは止めています（%s）／戻すときは status/genspark.stop を消す" % wake}
     exe = _gsk()
     if not exe:
         return {"ok": False, "error": "gsk が見つかりませんでした"}
@@ -84,6 +97,13 @@ def _yurusu(args):
 def run_job(payload):
     payload = payload or {}
     op = (payload.get("op") or "tameshi")
+
+    # ★栓：Gensparkが止められていたら、どのopでもここで返す（1か所）
+    wake = _tomatteru()
+    if wake:
+        return {"ok": False, "tomatteru": True, "op": op,
+                "error": "Gensparkは止めています（%s）" % wake,
+                "modosikata": "status/genspark.stop を消す。それだけで全部戻ります。"}
 
     if op == "tameshi":
         # ★白名簿の中だけを順に叩いて、「何ができる口があるか」を実測で並べる。課金0。
