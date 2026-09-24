@@ -919,11 +919,12 @@ def page_tsukuru():
 
     suii = "".join(
         "<tr><td>%s</td><td>%s人</td><td class=%s>%s人（%s%%）</td><td class=big>%s点</td>"
-        "<td>%s</td><td>%s件</td></tr>"
+        "<td>%s</td><td>%s件</td><td>%s</td></tr>"
         % (e((h.get("at") or "")[:16]), e(h.get("人数")),
            ("akaji" if (h.get("飴玉ゼロ人数") or 0) else "aoji"),
            e(h.get("飴玉ゼロ人数")), e(h.get("飴玉ゼロ率")), e(h.get("百点換算")),
-           e((h.get("最低の役") or {}).get("id")), e(h.get("買い物リスト件数")))
+           e((h.get("最低の役") or {}).get("id")), e(h.get("買い物リスト件数")),
+           e(h.get("口") or "genspark(gsk)"))
         for h in hist[-12:])
 
     hito = ""
@@ -1051,7 +1052,7 @@ td.aoji{color:var(--ii)}
 <div class=mokuhyou>★たまごさんが見るのはこの<b>2つだけ</b>で足ります。下は全部畳んであります。</div>
 
 <h2>点数の推移</h2>
-<table><tr><th>いつ</th><th>人数</th><th>飴玉ゼロ ★目標0</th><th>100点換算</th><th>最低の役</th><th>仕入れ</th></tr>%s</table>
+<table><tr><th>いつ</th><th>人数</th><th>飴玉ゼロ ★目標0</th><th>100点換算</th><th>最低の役</th><th>仕入れ</th><th>点を付けたAI</th></tr>%s</table>
 
 <div class="hantei %s">%s</div>
 
