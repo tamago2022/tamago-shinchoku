@@ -1104,6 +1104,62 @@ def page_dasu():
 
 # ═════════════════════════ ⑥ 毎週回す ═════════════════════════
 
+STAMP_N = os.path.join(REPO, "status", ".kyaku50_last_nichiji")
+
+
+def nichiji(limit=10):
+    """★1日1回、名簿の**続きから**10人ぶん回す。
+
+    たまごさん（2026-09-24・原文）
+      「1回で終わらせない。定期で回す。」「もう開始でいいよ。どんどん走らせて、
+        出るように変えていって、どんどん。」「とりあえず100人くらいペルソナを作って、
+        ガンガンやってガンガン直そう。」
+
+    ★先頭10人は触らない（--shukan の物差し。同じ役で点の推移を追うため）。
+      11人目から10人ずつ進めて、端まで行ったら11人目に戻る。
+    ★口は残クレジットで決める：残っていれば Genspark（10/4で消えるので使い切る方が得）、
+      尽きたら codex（0円）に自動で移る。★新しい常駐は増やさない（既存の定期便から呼ばれる）。
+    """
+    day = time.strftime("%Y-%m-%d")
+    last_day, offset = "", 10
+    try:
+        t = io.open(STAMP_N).read().split()
+        last_day = t[0]
+        offset = int(t[1])
+    except Exception:
+        pass
+    if last_day == day:
+        return {"ok": True, "skip": "今日はもう回しました（%s・次は%d人目から）" % (last_day, offset + 1)}
+    try:
+        load = os.getloadavg()[0]
+    except Exception:
+        load = 0
+    if load > 40.0:
+        return {"ok": True, "skip": "Macが混んでいます（load %.1f）。次に回す番は消費しません" % load}
+
+    n = len(yaku_yomu())
+    if offset >= n:
+        offset = 10 if n > 10 else 0
+
+    kuchi = "gsk"
+    try:
+        import gaibu_kuchi as g
+        z = g.gsk_zandaka()
+        if z is not None and z < 60:
+            kuchi = "codex"   # ★クレジットが尽きたら0円の口へ自動で移る（止めない）
+    except Exception:
+        pass
+
+    m = mawasu(limit=limit, kuchi=kuchi, tobasu=offset)
+    m["何人目から"] = offset + 1
+    m["口の選び方"] = "残クレジットで決めた（%s）" % kuchi
+    nxt = offset + limit
+    if nxt >= n:
+        nxt = 10 if n > 10 else 0
+    io.open(STAMP_N, "w").write("%s %d\n" % (day, nxt))   # ★走り切った時だけ書く
+    return m
+
+
 def shukan(limit=10):
     """★新しい常駐は増やさない。既存の定期便から呼ばれて、週に1回だけ外に出る。
     ★ゲートを使い切るのは『最後まで走り切った時だけ』（931番の穴を繰り返さない）。"""
