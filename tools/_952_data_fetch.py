@@ -292,9 +292,93 @@ def _op_kazoeru(payload):
     return out
 
 
+# ===========================================================================
+# ★1130番（2026-09-24）op=okikae — 「origin/main の中身を読んで、直して、
+#   GitHub Contents API で main に置き直す」1本。
+#
+#   なぜ _op_patch を使わないか（★事故を踏む道だから）：
+#     ・手元クローンの HEAD は 2026-09-14 で止まっていて、未コミットが数百件ある。
+#     ・_op_patch は「作業ツリーのファイル」を直して `git commit -m msg`（パス無し）
+#       するので、**索引に載っている古い中身を巻き込んで commit しうる。**
+#     ・commit + merge + push の3段があり、途中で衝突すると止まる。
+#
+#   okikae は手元クローンの HEAD にも索引にも触らない：
+#     ① `git show origin/main:<path>` で**いまの正本**を読む
+#     ② find/replace を当てる（★期待した件数と違ったら1ファイルも書かずに止める）
+#     ③ blob sha を `git rev-parse origin/main:<path>` で取り、Contents API に PUT
+#   ＝ 6.5MB の coverGuide.ts も通る（_965 側の1MBの栓は「公開用」の別の口の話）。
+# ===========================================================================
+def _op_okikae(payload):
+    import base64 as _b64
+    import sys as _sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in _sys.path:
+        _sys.path.insert(0, here)
+    import _965_keijiban as kj  # _req / API / ALLOW_REPO / github_watch
+    import github_watch
+
+    repo = payload.get("repo") or "tamago2022/joy-relief-station"
+    if repo not in kj.ALLOW_REPO:
+        return {"ok": False, "error": "白名簿の外の repo です", "totalYen": 0.0}
+    branch = payload.get("branch") or "main"
+    ref = payload.get("ref") or "origin/main"
+    files = payload.get("files") or []
+    if not files:
+        return {"ok": False, "error": "files が空です", "totalYen": 0.0}
+    if not os.path.isdir(CLONE):
+        return {"ok": False, "error": "clone なし", "totalYen": 0.0}
+    if payload.get("fetch"):
+        _git(["fetch", "origin", branch], t=150)
+
+    log = []
+    plan = []
+    # ── ①②下見：全部当たってから、はじめて1件目を送る（全部か無しか）
+    for f in files:
+        path = f["path"]
+        rc, body, e = _git(["show", "%s:%s" % (ref, path)], t=180)
+        if rc != 0 or body is None:
+            return {"ok": False, "error": "読めない: %s" % path, "log": log, "totalYen": 0.0}
+        new = body
+        for ed in (f.get("edits") or []):
+            want = int(ed.get("count", 1))
+            got = new.count(ed["find"])
+            if got != want:
+                return {"ok": False, "log": log, "totalYen": 0.0,
+                        "error": "見つかった数が違う: %s 期待%d 実際%d ／ %s"
+                                 % (path, want, got, ed["find"][:80])}
+            new = new.replace(ed["find"], ed["replace"])
+        if new == body:
+            return {"ok": False, "error": "中身が変わらない: %s" % path,
+                    "log": log, "totalYen": 0.0}
+        rc, sha, e = _git(["rev-parse", "%s:%s" % (ref, path)])
+        if rc != 0:
+            return {"ok": False, "error": "blob sha が取れない: %s" % path,
+                    "log": log, "totalYen": 0.0}
+        plan.append((path, new, (sha or "").strip()))
+        log.append("下見OK %s (%d字→%d字)" % (path, len(body), len(new)))
+
+    # ── ③送る
+    token = github_watch.get_token()
+    last = None
+    for path, new, blobsha in plan:
+        raw = new.encode("utf-8")
+        body = {"message": payload.get("message") or "1130番: 丸投げ導線と唐突なアンケートを直した",
+                "content": _b64.b64encode(raw).decode("ascii"),
+                "branch": branch, "sha": blobsha}
+        code, d = kj._req("%s/repos/%s/contents/%s" % (kj.API, repo, path),
+                          token, "PUT", body, timeout=120)
+        ok = code in (200, 201)
+        last = ((d or {}).get("commit") or {}).get("sha") or last
+        log.append("PUT %s http=%s %d bytes" % (path, code, len(raw)))
+        if not ok:
+            return {"ok": False, "error": "PUT 失敗 %s" % path, "log": log,
+                    "sha": last, "totalYen": 0.0}
+    return {"ok": True, "log": log, "sha": (last or "")[:40], "totalYen": 0.0}
+
+
 OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool,
        "miru": _op_miru, "kazu": _op_kazu,
-       "kazoeru": _op_kazoeru}
+       "kazoeru": _op_kazoeru, "okikae": _op_okikae}
 
 
 def run_job(payload=None):
