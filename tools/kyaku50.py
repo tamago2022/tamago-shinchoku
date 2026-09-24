@@ -660,19 +660,28 @@ def saiten(y, kotae_annai, kuchi="gsk"):
     toi_all = ("%s\n\n----\nこの役になりきって、下の問いに**上から順に、番号と【見出し】を付けて**"
                "全部答えてください。1つも飛ばさないでください。\n\n%s" % (yaku, honbun))
 
-    g = _gsk_toosu(CONCIERGE_URL, toi_all, "50人の客・採点（%s）" % y["id"])
-    kotae = _kotae_toridasu((g["r"].get("stdout") or "").strip())
+    if kuchi == "codex":
+        c = _codex_toosu(toi_all, "50人の客・採点（%s）" % y["id"])
+        kotae = c["kotae"]
+        ok, riyuu = (gouhi(kotae) if kotae
+                     else (False, ["codexが答えを返さなかった：%s" % (c["err"] or "理由不明")]))
+        g = {"byou": c["byou"], "zen": None, "ato": None, "tsukatta": 0}
+        dare = c["who"]
+    else:
+        g = _gsk_toosu(CONCIERGE_URL, toi_all, "50人の客・採点（%s）" % y["id"])
+        kotae = _kotae_toridasu((g["r"].get("stdout") or "").strip())
+        dare = "genspark(gsk)"
 
-    ok, riyuu = (gouhi(kotae) if g["r"].get("ok") and kotae
-                 else (False, ["Gensparkが答えを返さなかった"]))
-    # ★1076番と同じ栓：クレジットが減っていない結果は機械が弾く（感想ではなく残高の差で判定）
-    if g["tsukatta"] is None:
-        ok, riyuu = False, riyuu + ["残クレジットが読めない＝Gensparkを通ったか確かめられない"]
-    elif g["tsukatta"] <= 0:
-        ok, riyuu = False, riyuu + ["クレジットが1つも減っていない＝Gensparkは通っていない（前%s→後%s）"
-                                    % (g["zen"], g["ato"])]
+        ok, riyuu = (gouhi(kotae) if g["r"].get("ok") and kotae
+                     else (False, ["Gensparkが答えを返さなかった"]))
+        # ★1076番と同じ栓：クレジットが減っていない結果は機械が弾く（感想ではなく残高の差で判定）
+        if g["tsukatta"] is None:
+            ok, riyuu = False, riyuu + ["残クレジットが読めない＝Gensparkを通ったか確かめられない"]
+        elif g["tsukatta"] <= 0:
+            ok, riyuu = False, riyuu + ["クレジットが1つも減っていない＝Gensparkは通っていない（前%s→後%s）"
+                                        % (g["zen"], g["ato"])]
 
-    return {"ok": ok, "fugoukakuRiyuu": riyuu, "amedama": amedama(kotae) if kotae else None,
+    return {"ok": ok, "口": dare, "fugoukakuRiyuu": riyuu, "amedama": amedama(kotae) if kotae else None,
             "ten": tensuu(kotae) if kotae else {},
             "hoshikatta": hoshikatta(kotae) if kotae else [],
             # ★ここからが2026-09-24に足した「答えまで聞く」4つ。
