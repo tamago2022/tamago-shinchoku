@@ -22,6 +22,43 @@ SUII = os.path.join(OUT, "suii.json")
 PAGE_HTML = os.path.join(ROOT, "1145-heru.html")
 
 
+
+KYOUTSUU = "og-four-doors"
+
+
+def score(p, songs_by_url, oe, dead):
+    """ページ1件の赤を、保存した中身から付け直す（取り直さない）。
+    ★生きているものを赤にしない。分からないものは赤にしない。"""
+    aka = []
+    if p.get("err") == "UnicodeEncodeError":
+        return ["※古い取り方の失敗（数えない）"]
+    if p.get("code") != 200:
+        return ["200が返らない"]
+    img = p.get("ogImage", "")
+    if not img:
+        aka.append("OG画像が無い")
+    elif KYOUTSUU in img:
+        aka.append("OG画像が共通画像（四つの扉）")
+    elif p.get("ogImageCode") not in (None, 200):
+        aka.append("OG画像が出ない")
+    if not p.get("ogTitle"):
+        aka.append("titleが空")
+    if not p.get("ogDesc"):
+        aka.append("コピーが空")
+    elif not p.get("copyCore"):
+        aka.append("コピーが空（曲名だけ）")
+    r = songs_by_url.get(p["url"])
+    if r is not None:
+        raw = r.get("videos", {}).get("raw", []) or []
+        if not raw:
+            aka.append("動画が1本も無い")
+        else:
+            m = [v for v in raw if v in oe]
+            if m and len([v for v in m if v in dead]) == len(raw):
+                aka.append("動画が全部再生できない（実測）")
+    return aka
+
+
 def jsonl(p):
     if not os.path.exists(p):
         return []
@@ -66,7 +103,16 @@ def tally():
         elif ng:
             sub["一部"] += 1
 
-    pg = jsonl(os.path.join(OUT, "page.jsonl"))
+    pg_raw = jsonl(os.path.join(OUT, "page.jsonl"))
+    pg = {}
+    for p in pg_raw:                      # 同じURLは新しいほうを採る
+        u = p.get("url")
+        if u and (u not in pg or p.get("t", 0) >= pg[u].get("t", 0)):
+            pg[u] = p
+    by_url = {r["url"]: r for r in rows}
+    for p in pg.values():
+        p["赤"] = score(p, by_url, oe, dead)
+    pg = [p for p in pg.values() if "※古い取り方の失敗（数えない）" not in p["赤"]]
     pg_aka = [p for p in pg if p.get("赤")]
     md5 = {}
     for p in pg:

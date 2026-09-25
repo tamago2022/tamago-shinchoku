@@ -113,17 +113,8 @@ def one(url):
     rec["videoId"] = m.group(1) if m else ""
     rec["bodyLen"] = len(t)
 
-    if not rec["videoId"]:
-        rec["赤"].append("OG画像に動画IDが無い（動画が入っていない疑い）")
     d = rec["ogDesc"]
-    core = d.split("—", 1)[1].strip() if "—" in d else ""
-    if not d:
-        rec["赤"].append("コピーが空")
-    elif not core:
-        rec["赤"].append("コピーが空（曲名だけ）")
-    rec["copyCore"] = core
-    if not rec["ogTitle"]:
-        rec["赤"].append("titleが空")
+    rec["copyCore"] = d.split("\u2014", 1)[1].strip() if "\u2014" in d else ""
 
     # OG画像を実際に取って md5（共通画像かどうかは後で束ねて判る）
     if rec["ogImage"] and not NOIMG:
