@@ -18,7 +18,7 @@
 """
 from __future__ import annotations
 import hashlib, io, json, os, random, re, sys, threading, time
-import urllib.error, urllib.request
+import urllib.error, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,7 +39,22 @@ RE_OG = re.compile(r'<meta\s+property="og:(image|description|title)"\s+content="
 RE_SHARE = re.compile(r'/api/public/share-image/([A-Za-z0-9_-]{6,})')
 
 
+def enc(url):
+    """日本語を含むURLをそのままurllibに渡すと落ちる。先に%エンコードする。"""
+    try:
+        url.encode("ascii")
+        return url
+    except UnicodeEncodeError:
+        pr = urllib.parse.urlsplit(url)
+        return urllib.parse.urlunsplit((
+            pr.scheme, pr.netloc,
+            urllib.parse.quote(pr.path, safe="/%"),
+            urllib.parse.quote(pr.query, safe="=&%"),
+            pr.fragment))
+
+
 def _get(url, timeout=30, head_only=False):
+    url = enc(url)
     req = urllib.request.Request(url, headers={"User-Agent": UA,
                                               "Accept-Language": "ja"})
     if head_only:
