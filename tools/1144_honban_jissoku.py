@@ -34,9 +34,26 @@ def main():
     print("隠すはずの曲 = %d件" % len(keys))
 
     st, sm = get(SITE + "/sitemap.xml")
+    # ★サイトマップの & は XML で &amp; に化けている（2026-09-25 実測）。
+    #   ここを戻さないと1件も一致せず「全部消えている」という嘘の合格が出る。
+    sm = sm.replace("&amp;", "&")
     print("sitemap.xml = HTTP %d / %d byte" % (st, len(sm)))
     urls = set(re.findall(r"<loc>([^<]+)</loc>", sm))
     print("サイトマップのURL = %d本" % len(urls))
+
+    # 物差しが生きているかの対照（隠さないはずの曲が居ることを先に確かめる）
+    taisho_ok = 0
+    try:
+        rows = json.load(io.open(os.path.join(ROOT, "status", "1140", "kensa.json"),
+                                 encoding="utf-8"))
+        rows = rows["rows"] if isinstance(rows, dict) else rows
+        nokosu = [r["key"] for r in rows
+                  if not ({"noVideo", "deadVideo"} & set(r.get("faults", [])))][:30]
+        taisho_ok = sum(1 for k in nokosu
+                        if "artist=%s&song=%s" % tuple(k.split("/", 1)) in sm)
+        print("対照: 隠さないはずの曲 30件のうち %d件がサイトマップに居る" % taisho_ok)
+    except Exception as e:
+        print("対照が測れませんでした: %r" % (e,))
 
     nokotteru = []
     for k in keys:
@@ -54,7 +71,10 @@ def main():
         "sitemapUrls": len(urls),
         "sitemapNiNokotteru": len(nokotteru),
         "rei": nokotteru[:20],
-        "kekka": "★消えている" if not nokotteru else "★まだ出ている（%d件）" % len(nokotteru),
+        "taishoNokosuGaIru": taisho_ok,
+        "kekka": ("★物差しが壊れている（対照が0件）" if taisho_ok == 0 else
+                  "★消えている" if not nokotteru else
+                  "★まだ出ている（%d件）" % len(nokotteru)),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     io.open(OUT, "w", encoding="utf-8").write(json.dumps(res, ensure_ascii=False, indent=1))
