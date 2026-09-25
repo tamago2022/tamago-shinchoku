@@ -1,12 +1,12 @@
 {
- "generatedAt": "2026-09-26T08:09:31.918616+09:00",
+ "generatedAt": "2026-09-26T08:46:39.359421+09:00",
  "runningNow": [
   {
-   "n": 1356,
+   "n": 1529,
    "label": "【空回し】工場を止めないための2分の空タスク",
-   "elapsedMin": 0.8,
+   "elapsedMin": 0.4,
    "model": "Sonnet 5",
-   "startedAt": "2026-09-26T08:08:41+09:00",
+   "startedAt": "2026-09-26T08:46:17+09:00",
    "limitMin": 10
   }
  ],
@@ -44,7 +44,7 @@
    "ts": "2026-09-17T15:23:39+09:00"
   }
  ],
- "stoppedReason": "発車を止めています（Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トー）",
+ "stoppedReason": "発車を止めています（Claudeのログインが切れています（叩けなかった(TimeoutExpired)／もう片方も 叩けなかった(Timeo）",
  "login": {
   "ng": true,
   "midashi": "ログインが切れています",
@@ -54,27 +54,34 @@
   "tokenDaysLeft": null
  },
  "freshness": {
-  "at": "2026-09-26T08:07:48+09:00",
-  "akaN": 1,
-  "ichigyou": "「本物の発車が終わった」が77.6時間出ていません（閾値12.0時間 の3倍超）",
+  "at": "2026-09-26T08:45:59+09:00",
+  "akaN": 2,
+  "ichigyou": "「本物の発車が終わった」が78.2時間出ていません（閾値12.0時間 の3倍超）",
   "aka": [
    {
     "rule": "DataPipelineStalled",
     "pipe": "hassha",
     "level": "red",
-    "midashi": "「本物の発車が終わった」が77.6時間出ていません（閾値12.0時間 の3倍超）",
+    "midashi": "「本物の発車が終わった」が78.2時間出ていません（閾値12.0時間 の3倍超）",
     "naze": "evidenceCheckedAt #928"
+   },
+   {
+    "rule": "DataFreshnessViolation",
+    "pipe": "kouhyou",
+    "level": "red",
+    "midashi": "「進捗表へ配られた」が36分出ていません（閾値30分）",
+    "naze": "2026-09-26T08:09:31.918616+09:00"
    }
   ],
   "pipes": {
    "hassha": {
     "na": "本物の発車が終わった",
-    "ageH": 77.6,
+    "ageH": 78.2,
     "shikiiH": 12.0
    },
    "kouhyou": {
     "na": "進捗表へ配られた",
-    "ageH": 0.3,
+    "ageH": 0.6,
     "shikiiH": 0.5
    },
    "commit": {
@@ -84,35 +91,35 @@
    },
    "kanmon": {
     "na": "門が弾いた",
-    "ageH": 23.2,
+    "ageH": 0.3,
     "shikiiH": 24.0
    },
    "gaibu": {
     "na": "外のAIから返ってきた",
-    "ageH": 22.0,
+    "ageH": 22.6,
     "shikiiH": 24.0
    },
    "shukudai": {
     "na": "宿題が減った",
-    "ageH": 0.6,
+    "ageH": 0.2,
     "shikiiH": 48.0
    }
   }
  },
  "pace": {
-  "updatedAt": "2026-09-26 08:06",
-  "allPct": 36.0,
-  "remainWeek": 63.0,
-  "usedToday": 1.0,
-  "budgetToday": 18.5,
-  "daysLeft": 3.41,
+  "updatedAt": "2026-09-26 08:44",
+  "allPct": 37.0,
+  "remainWeek": 62.0,
+  "usedToday": 2.0,
+  "budgetToday": 18.3,
+  "daysLeft": 3.39,
   "state": "ok",
   "resetAt": "2026-09-29 17:59",
   "dataOk": true,
   "source": "status/pace.json"
  },
  "verify": {
-  "updatedAt": "2026-09-26T08:06:43+09:00",
+  "updatedAt": "2026-09-26T08:44:36+09:00",
   "total": 383,
   "verified": 216,
   "recheck": 37,

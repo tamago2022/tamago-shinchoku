@@ -258,6 +258,75 @@ def nageru(saki, odai, honbun):
         return {"saki": saki, "rc": None, "de": "%s: %s" % (type(e).__name__, e)}
 
 
+SETUP_MD = os.path.join(DIR, "genspark_setup.md")
+
+
+def tori_ni_kite_morau():
+    """Gensparkには「取りに来てもらう」。こちらから起こす口が無いため。
+
+    2026-09-22 実測（tools/nageru.py に記録あり）：
+      api.genspark.ai / docs.genspark.ai は名前解決せず、www.genspark.ai/api/mcp は403。
+      掲示板(ai-kaigi)に @genspark-ai-developer と書いても無反応、16時間コメント0。
+    → 押しても開かない扉を押し続けない。**向こうのWorkflow（Schedule）に取りに来させる。**
+      公式が持っているトリガーは Schedule と Email の2つ。Schedule なら毎日勝手に走る。
+      ★たまごさんの操作は最初の1回だけ。以後はこちらが毎日 kansa.json を置き換えるだけで回る。
+    """
+    body = "\n".join([
+        "# Genspark 監査役：最初の1回だけの仕込み",
+        "",
+        "こちらからGensparkを起こす手段はありません（実測：APIは名前解決せず／MCPは403／",
+        "掲示板に書いても無反応）。なので**向こうのWorkflowに取りに来てもらいます。**",
+        "",
+        "## たまごさんがやること（1回だけ・3分）",
+        "",
+        "1. Genspark の Workflows で新規作成。トリガーは **Schedule（毎日1回）**。",
+        "2. 最初のステップを **Deep Research**（＝消費0）にして、プロンプトに下をそのまま貼る。",
+        "3. 保存。以後は毎日勝手に走ります。こちらは毎日この2つのURLを書き換えるだけです。",
+        "",
+        "## 貼るプロンプト",
+        "",
+        "```",
+        "次の2つのURLを読んでください。",
+        "  " + URL_JSON,
+        "  " + URL_PAGE,
+        "",
+        "あなたは検品官です。見張りではありません。",
+        "物差しは Alive ではなく Progress。「動いている」「Issueを作った」「コメントした」",
+        "「企画書を書いた」は成果に数えません。数えるのは、公開物が増えた／売上が増えた／",
+        "流入が増えた／手作業が減った／店主の自由時間が増えた／停止時間が減った、のどれかです。",
+        "",
+        "台帳と実測を突き合わせて、次を指摘してください。",
+        "  ・終わっていないのに終わったことになっているもの",
+        "  ・状態が完了なのに証拠URLが無い／200でない／中身が空のもの",
+        "  ・判定日（hantei1w / hantei1m）を過ぎているのに状態が変わっていないもの",
+        "",
+        "返す形は1行1件でこれだけ：",
+        "  NG|<内容の先頭30字>|<なぜ>",
+        "  OK|<内容の先頭30字>|確認した",
+        "",
+        "最後に、その結果を tamago2022/ai-kaigi に Issue として投稿してください",
+        "（GensparkのWorkflowはGitHub連携を持っています）。",
+        "```",
+        "",
+        "## なぜこの形か",
+        "",
+        "たまごさんのノート「genspark 鬼監督」にこうあります：",
+        "「検品・差し戻し＝◎得意。進捗の常時監視・催促＝✕原理的に無理（常在がない）。",
+        "  あなたが成果物やログを持ってきてくれて初めて、俺は検品官として動けます。」",
+        "→ だから見張りは頼まず、**毎日こちらから材料を置いて、検品だけしてもらう**形にしています。",
+        "",
+        "## 返事の取り込み",
+        "",
+        "ai-kaigi に返ってきた Issue／コメントは tools/github_watch.py が拾い、",
+        "`python3 tools/gaibu_shinsa.py --hirou` が `NG|…` `OK|…` を読んで",
+        "status/gaibu/soto_hantei.json（★完了の鍵）に書き込みます。",
+        "**この鍵はこちら側からは開けられません。**",
+        "",
+    ])
+    write_text(SETUP_MD, body)
+    return SETUP_MD
+
+
 # ────────────────────────────────────────── ③ 指摘を持ち帰る
 
 # 外のAIに返させる形は `NG|<内容>|<なぜ>` の1行1件だけ。
@@ -333,8 +402,15 @@ def hashiru(dasu=True, dry=False):
         st = load_json(STATE, {}) or {}
         if st.get("lastDashiHi") != today():        # 1日1回でよい（0円だが騒がしくしない）
             odai = "【監査のお願い】台帳と実測の突き合わせ（%s）" % today()
-            for saki in ("genspark", "grok", "codex"):
+            # ★宛先は tools/nageru.py が実際に開いている口だけにする。
+            #   genspark / grok は nageru 側で "blocked"（2026-09-22 実測：こちらから
+            #   起こす手段が無い／掲示板に書いても16時間コメント0）。投げると
+            #   「投げた回数」だけが増えて、監査は1件も返らない＝嘘の稼働になる。
+            #   Genspark には**取りに来てもらう**。下の tori_ni_kite_morau() が
+            #   公開URLと、向こうの画面で1回だけ要る仕込みを書き出す。
+            for saki in ("codex", "chappy"):
                 dashita.append(nageru(saki, odai, md))
+            tori_ni_kite_morau()
             st["lastDashiHi"] = today()
             write_text(STATE, json.dumps(st, ensure_ascii=False, indent=1))
     h = hirou() if not dry else {"ng": 0, "ok": 0, "kagi": 0}

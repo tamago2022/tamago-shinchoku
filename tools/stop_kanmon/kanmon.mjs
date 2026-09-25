@@ -123,6 +123,39 @@ function diffCount(baseSha) {
   return n.size;
 }
 
+// 1152号を相乗りさせる：★外の判定が入るまで完了にしない。
+//
+// たまごさん（2026-09-26）「Claudeだけだと裏切られっぱなしで信用できない。
+//   判定する側をClaudeの外に出す。★こちら側が自分で『完了』と書けない。
+//   外の判定が入って初めて完了になる。」
+//
+// 鍵は status/gaibu/soto_hantei.json（tools/gaibu_shinsa.py が外から持ち帰って書く）。
+// ★ここは読むだけ。関所の側から鍵を書く口は作らない（作った瞬間に自己申告に戻る）。
+// 鍵が1個も無いあいだは効かせない（誰も完了できず工場が全停止するため）。
+// 1個でも入った時点から、この検査は有効になる。
+function sotoNoHantei(c) {
+  const f = path.join(REPO, "status", "gaibu", "soto_hantei.json");
+  if (!existsSync(f)) return { kiiteru: false };
+  let m;
+  try {
+    m = JSON.parse(readFileSync(f, "utf8"));
+  } catch {
+    return { kiiteru: false };
+  }
+  const keys = Object.keys(m || {});
+  if (keys.length === 0) return { kiiteru: false };
+  const norm = (x) =>
+    String(x || "")
+      .replace(/[★☆*#`>【】\[\]「」『』（）()・:：,、。.\-—–_/\\!！?？\s]/g, "")
+      .toLowerCase()
+      .slice(0, 24);
+  const k = norm(c.title);
+  const r = m[k];
+  if (!r) return { kiiteru: true, ok: false, why: "外の判定がまだ無い（未審査）" };
+  if (!r.ok) return { kiiteru: true, ok: false, why: `外が不合格と言っている：${r.naze || ""}` };
+  return { kiiteru: true, ok: true, kara: r.kara, naze: r.naze };
+}
+
 // 1件を検査する。返り値 {ok, why, proof}
 export async function kensa(c) {
   const bad = joukenOK(c.done);
@@ -133,7 +166,12 @@ export async function kensa(c) {
   if (!u.ok) return { ok: false, why: u.why, proof };
   if (d < c.done.min_diff)
     return { ok: false, why: `差分が${d}件（${c.done.min_diff}件以上要る）`, proof };
-  return { ok: true, proof };
+  // ★機械の検査はここまで通った。だが完了ではない。外の判定を見る。
+  const soto = sotoNoHantei(c);
+  if (soto.kiiteru && !soto.ok)
+    return { ok: false, why: `★${soto.why}（完了はこちら側では書けません）`,
+             proof: { ...proof, soto: false } };
+  return { ok: true, proof: { ...proof, soto: soto.kiiteru ? (soto.kara || true) : "鍵まだ0件" } };
 }
 
 export const keikaJikan = (c) =>

@@ -1,5 +1,5 @@
 {
- "at": "2026-09-26T08:09:42.719982+09:00",
+ "at": "2026-09-26T08:46:30.349740+09:00",
  "ok": true,
  "generatedAt": "2026-09-26T07:34:19.936533+09:00",
  "keys": [
@@ -10,7 +10,7 @@
    "detail": "400 未実測",
    "fix": "publish.buffer.com/settings/api で1回だけ鍵を作り、~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す（~/Desktop/buffer_token.txt に貼るだけでも自動で写る）",
    "stops": "Xの予約が1本も入らない。毎回「ログインして」に戻る",
-   "measuredMinAgo": 36.0
+   "measuredMinAgo": 72.8
   },
   {
    "id": "claude",
@@ -19,7 +19,7 @@
    "detail": "通らない（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））",
    "fix": "いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す",
    "stops": "工場の発車が全部止まる（44時間の実害）",
-   "measuredMinAgo": 1384.8
+   "measuredMinAgo": 1421.6
   },
   {
    "id": "gmail",
@@ -28,7 +28,7 @@
    "detail": "アプリパスワードのファイルが置かれていません",
    "fix": "Googleアカウントでアプリパスワードを作り、そのファイルに置く",
    "stops": "LINE審査・Anthropic・外部窓口の返信に**誰も気づかない**",
-   "measuredMinAgo": 36.0
+   "measuredMinAgo": 72.8
   },
   {
    "id": "github",
@@ -37,7 +37,7 @@
    "detail": "トークンが取れません（gh auth login が要る）",
    "fix": "gh auth login",
    "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "openai",
@@ -46,7 +46,7 @@
    "detail": "200 通った",
    "fix": "platform.openai.com で鍵を作り直して鍵ファイルへ",
    "stops": "鬼監督の外部検品と、詰まった仕事の逃がし先が消える",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "gemini",
@@ -55,7 +55,7 @@
    "detail": "鍵が置かれていません",
    "fix": "Google AI Studio で無料発行して鍵ファイルへ",
    "stops": "安い代行先が消えてClaudeの枠を食う（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。それは 969_kagi_kanmon.py が見ている）",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "xai",
@@ -64,7 +64,7 @@
    "detail": "403 通らない（鍵は有効でも残高/権限が無い形。この鍵はチーム goodvibes のもの。★残高のある鍵は別に在る → 下の xai_koe の行）",
    "fix": "この鍵のチーム(goodvibes)に残高が要る。console.x.ai で入れる。★声は別の鍵で既に通っている（下の行）ので、声のために入れる必要は無い",
    "stops": "Grokへの相談ができない",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "xai_koe",
@@ -73,7 +73,7 @@
    "detail": "窓口は生きているが断られた（budget_exceeded）",
    "fix": "Lovable→クラウド→Secrets の XAI_API_KEY2 を見る。窓口＝supabase/functions/voice-session",
    "stops": "ごきげん補給所の「話す」と 970号の台が鳴らなくなる",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "copilot",
@@ -82,7 +82,7 @@
    "detail": "担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）",
    "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
    "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
-   "measuredMinAgo": 35.6
+   "measuredMinAgo": 72.4
   },
   {
    "id": "meta",
@@ -91,7 +91,7 @@
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "fix": "developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ",
    "stops": "Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
-   "measuredMinAgo": 35.6
+   "measuredMinAgo": 72.4
   },
   {
    "id": "fal",
@@ -100,7 +100,7 @@
    "detail": "404（鍵は通った。点検用の住所が無いだけ）",
    "fix": "fal.ai で鍵を作り直して鍵ファイルへ",
    "stops": "絵と動画が1枚も作れない",
-   "measuredMinAgo": 35.6
+   "measuredMinAgo": 72.4
   },
   {
    "id": "buffer",
@@ -109,7 +109,7 @@
    "detail": "400 未実測",
    "fix": "publish.buffer.com/settings/api で鍵を1回だけ作り、~/Desktop/buffer_token.txt に貼って保存する。5分便の buffer_kagi_install.py が拾って鍵ファイルへしまい、平文を消す",
    "stops": "oasisjoyrelief への予約が1本も出せない。★台帳に無い間は、毎回たまごさんに「ログインして」と頼み直していた",
-   "measuredMinAgo": 35.6
+   "measuredMinAgo": 72.4
   },
   {
    "id": "devin",
@@ -118,7 +118,7 @@
    "detail": "200 通った",
    "fix": "app.devin.ai で鍵を作り直す",
    "stops": "Devinへ仕事を出せない",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   },
   {
    "id": "lovable",
@@ -127,7 +127,7 @@
    "detail": "トークンがあります（更新用あり）",
    "fix": "Chromeで同意ボタンを1回押す（受け皿は lovable_auth_keeper が立てている）",
    "stops": "直したものが**本番に出ない**（丸1日の実害）",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   },
   {
    "id": "heart",
@@ -136,7 +136,7 @@
    "detail": "動いています（3秒前）",
    "fix": "5分便が自分で立て直す。立て直らなければ launchctl kickstart",
    "stops": "着火と受信箱が止まる＝ボタンが効かない",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   },
   {
    "id": "gobun",
@@ -145,7 +145,7 @@
    "detail": "動いています（9分前）",
    "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
    "stops": "心臓が落ちても誰も立て直さない",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   },
   {
    "id": "hassha",
@@ -154,7 +154,7 @@
    "detail": "発車が止められています（Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をター）",
    "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
    "stops": "仕事が1本も進まない",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   },
   {
    "id": "relay",
@@ -163,7 +163,7 @@
    "detail": "200 返事があります",
    "fix": "relay_watch が自分で立て直す",
    "stops": "たまごさんがボタンを押しても何も起きない",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   },
   {
    "id": "mac_omosa",
@@ -172,7 +172,7 @@
    "detail": "swap 21.6GB・負荷 20.5（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（3.8GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   }
  ],
  "karamawari": [
@@ -534,7 +534,7 @@
    "detail": "通らない（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））",
    "fix": "いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す",
    "stops": "工場の発車が全部止まる（44時間の実害）",
-   "measuredMinAgo": 1384.8
+   "measuredMinAgo": 1421.6
   },
   {
    "id": "gmail",
@@ -543,7 +543,7 @@
    "detail": "アプリパスワードのファイルが置かれていません",
    "fix": "Googleアカウントでアプリパスワードを作り、そのファイルに置く",
    "stops": "LINE審査・Anthropic・外部窓口の返信に**誰も気づかない**",
-   "measuredMinAgo": 36.0
+   "measuredMinAgo": 72.8
   },
   {
    "id": "github",
@@ -552,7 +552,7 @@
    "detail": "トークンが取れません（gh auth login が要る）",
    "fix": "gh auth login",
    "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "gemini",
@@ -561,7 +561,7 @@
    "detail": "鍵が置かれていません",
    "fix": "Google AI Studio で無料発行して鍵ファイルへ",
    "stops": "安い代行先が消えてClaudeの枠を食う（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。それは 969_kagi_kanmon.py が見ている）",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "xai",
@@ -570,7 +570,7 @@
    "detail": "403 通らない（鍵は有効でも残高/権限が無い形。この鍵はチーム goodvibes のもの。★残高のある鍵は別に在る → 下の xai_koe の行）",
    "fix": "この鍵のチーム(goodvibes)に残高が要る。console.x.ai で入れる。★声は別の鍵で既に通っている（下の行）ので、声のために入れる必要は無い",
    "stops": "Grokへの相談ができない",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "xai_koe",
@@ -579,7 +579,7 @@
    "detail": "窓口は生きているが断られた（budget_exceeded）",
    "fix": "Lovable→クラウド→Secrets の XAI_API_KEY2 を見る。窓口＝supabase/functions/voice-session",
    "stops": "ごきげん補給所の「話す」と 970号の台が鳴らなくなる",
-   "measuredMinAgo": 35.7
+   "measuredMinAgo": 72.5
   },
   {
    "id": "copilot",
@@ -588,7 +588,7 @@
    "detail": "担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）",
    "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
    "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
-   "measuredMinAgo": 35.6
+   "measuredMinAgo": 72.4
   },
   {
    "id": "meta",
@@ -597,7 +597,7 @@
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "fix": "developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ",
    "stops": "Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
-   "measuredMinAgo": 35.6
+   "measuredMinAgo": 72.4
   },
   {
    "id": "hassha",
@@ -606,7 +606,7 @@
    "detail": "発車が止められています（Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をター）",
    "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
    "stops": "仕事が1本も進まない",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   },
   {
    "id": "mac_omosa",
@@ -615,7 +615,7 @@
    "detail": "swap 21.6GB・負荷 20.5（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（3.8GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
-   "measuredMinAgo": 35.5
+   "measuredMinAgo": 72.3
   }
  ],
  "unknownKeys": [
@@ -626,7 +626,7 @@
    "detail": "400 未実測",
    "fix": "publish.buffer.com/settings/api で1回だけ鍵を作り、~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す（~/Desktop/buffer_token.txt に貼るだけでも自動で写る）",
    "stops": "Xの予約が1本も入らない。毎回「ログインして」に戻る",
-   "measuredMinAgo": 36.0
+   "measuredMinAgo": 72.8
   },
   {
    "id": "buffer",
@@ -635,7 +635,7 @@
    "detail": "400 未実測",
    "fix": "publish.buffer.com/settings/api で鍵を1回だけ作り、~/Desktop/buffer_token.txt に貼って保存する。5分便の buffer_kagi_install.py が拾って鍵ファイルへしまい、平文を消す",
    "stops": "oasisjoyrelief への予約が1本も出せない。★台帳に無い間は、毎回たまごさんに「ログインして」と頼み直していた",
-   "measuredMinAgo": 35.6
+   "measuredMinAgo": 72.4
   }
  ],
  "redCount": 40,

@@ -32,7 +32,13 @@
     python3 tools/kanryo_mon.py --show            # 弾いた数
     python3 tools/kanryo_mon.py --self-test
 
-入れ方（.claude/settings.json）
+★2026-09-26 追記：**Stopフックは1154号（tools/stop_kanmon/）が既に入れている。**
+  二重に作らない。.claude/settings.json のフックは1154のものが正本で、
+  ここは相乗りしている：1152が持ち込んだ「★外の判定が入るまで完了にしない」だけを
+  tools/stop_kanmon/kanmon.mjs の kensa() に足した（sotoNoHantei）。
+  この kanryo_mon.py は、手で1件だけ試す道具として残してある（フックには刺さない）。
+
+もとの入れ方（※いまは使わない。1154が入っているため）
     "hooks": {
       "Stop":          [{"hooks":[{"type":"command",
                           "command":"python3 tools/kanryo_mon.py --hook"}]}],
