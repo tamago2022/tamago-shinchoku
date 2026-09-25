@@ -332,8 +332,63 @@ def waku():
 
 
 # ════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════
+# ⑦ 常駐が古い
+#    ★2026-09-25 に実測で見つけた型：**心臓が3日前の自分を走らせていた。**
+#      heartbeat.sh には「自分のファイルが書き換わったら自分で入れ替わる」が
+#      2026-09-24 に入っていた。ところが走っているプロセスは 09-22 07:04 起動＝
+#      **その入れ替わりの仕組みが入る前の自分**。だから永久に入れ替わらない。
+#      ＝「直したのに反映されていない」の正体。人には絶対に見えない。
+# ════════════════════════════════════════════════════════════════
+def jouchuu_furui():
+    import subprocess as _sp
+    hb = os.path.join(REPO, "tools", "heartbeat.sh")
+    try:
+        fm = os.path.getmtime(hb)
+    except OSError:
+        return dict(key="jouchuu", label="常駐が古い", value=None, unit="",
+                    sub="心臓のファイルが見つからない", mark="🔴", red=True,
+                    why="心臓が無い", names=[], nao="heartbeat.sh を置き直す")
+    # 起動時刻を取る（Macでのみ取れる。取れないときは赤にせず「測れない」と出す）
+    started = None
+    try:
+        pid = _sp.run(["pgrep", "-f", "tools/heartbeat.sh"],
+                      capture_output=True, text=True, timeout=10).stdout.split()
+        if pid:
+            o = _sp.run(["ps", "-o", "lstart=", "-p", pid[0]],
+                        capture_output=True, text=True, timeout=10).stdout.strip()
+            if o:
+                started = o
+                # ps の lstart は**そのMacの地方時**。UTC扱いすると9時間ずれて
+                # 「-0.4日前」のような嘘が出る。素直に地方時として読む。
+                started_ts = datetime.datetime.strptime(
+                    " ".join(o.split()), "%a %b %d %H:%M:%S %Y").timestamp()
+                furui = started_ts < fm
+                hi = round((_now().timestamp() - started_ts) / 86400.0, 1)
+                return dict(key="jouchuu", label="常駐が古い",
+                            value=(1 if furui else 0), unit="本",
+                            sub=("心臓は%s起動（%s日前）。ファイルは%s更新"
+                                 % (o, hi,
+                                    datetime.datetime.fromtimestamp(fm, JST)
+                                    .strftime("%m-%d %H:%M"))),
+                            mark="🔴" if furui else "✅", red=furui,
+                            why=("★直したのに反映されていません。"
+                                 "走っている心臓は書き換え前の自分です"
+                                 if furui else "心臓は最新のファイルで走っています"),
+                            names=[], nao="launchctl kickstart -k "
+                                          "gui/$(id -u)/com.tamago.tamago-shinchoku.heartbeat")
+    except Exception:
+        pass
+    return dict(key="jouchuu", label="常駐が古い", value=None, unit="",
+                sub="起動時刻が測れない場所から見ています（Macから見ると測れます）",
+                mark="⚪", red=False,
+                why="測れないので判定しない（測れたふりをしない）",
+                names=[str(started or "")], nao="")
+
+
 def measure():
-    cards = [ame_zero(), uso_kanryou(), hajiita(), ochita_bin(), kaettekonai(), waku()]
+    cards = [ame_zero(), uso_kanryou(), hajiita(), ochita_bin(), kaettekonai(),
+             waku(), jouchuu_furui()]
     # ★印と赤を必ず一致させる。「赤なのに✅」は、たまごさんが一番嫌う嘘の形
     for c in cards:
         if c["red"] and c["mark"] not in ("🔴",):
