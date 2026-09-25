@@ -72,9 +72,9 @@ NAOSU = {
             entries.push({
               path: `/cover-guide?artist=${encodeURIComponent(a.id)}&song=${encodeURIComponent(s.id)}`,'''),
         (
-        '''        // 名簿はここで初めて開く（サーバ側だけ・ブラウザへは送らない）。
+        '''        // 名簿はここで初めて開く（サーバ側だけ・ブラウザには送らない）。
         const { artists } = await import("../lib/coverGuide");''',
-        '''        // 名簿はここで初めて開く（サーバ側だけ・ブラウザへは送らない）。
+        '''        // 名簿はここで初めて開く（サーバ側だけ・ブラウザには送らない）。
         const { artists } = await import("../lib/coverGuide");
         // ★1144番 隠す表（軽い・106KB）。名簿と違って常に読んでよい重さ。
         const { KANSEI_GATE } = await import("../lib/kansei");
@@ -114,8 +114,8 @@ NAOSU = {
 # 読み込み（import）を足す場所。ファイルごとに「1個だけ在る行」の直後に入れる。
 IMPORTS = {
     "src/lib/searchCards.ts": (
-        'import { WAREHOUSED_SONG_KEYS } from "./warehousedSongs";',
-        'import { WAREHOUSED_SONG_KEYS } from "./warehousedSongs";\n'
+        'import { artistKindDisplay } from "./artistKind";',
+        'import { artistKindDisplay } from "./artistKind";\n'
         '// ★1144番 実測で死んでいる曲の表（1140番の全曲検査が作る）。判定の栓は KANSEI_GATE。\n'
         + IMPORT_KANSEI_LIB.rstrip("\n")),
     "src/lib/worlds.ts": (
@@ -178,7 +178,7 @@ def run(dry=False):
         if path in IMPORTS:
             moto, ato = IMPORTS[path]
             if path == "src/routes/cover-guide.tsx":
-                anchor = 'import { Helmet } from "react-helmet-async";'
+                anchor = 'import { SiteHeader } from "@/components/SiteHeader";'
                 if body.count(anchor) == 1:
                     body = body.replace(anchor, anchor + "\n" + COVER_GUIDE_IMPORT.rstrip("\n"))
                 else:
