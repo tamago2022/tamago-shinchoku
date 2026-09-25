@@ -81,6 +81,14 @@ def tally():
     oe = {r["id"]: r for r in jsonl(os.path.join(OUT, "oembed.jsonl")) if r.get("id")}
     dead = {k for k, v in oe.items() if v.get("v") not in ("alive", "unknown")}
 
+    hidden = set()
+    hp = os.path.join(S, "1140", "kakusu.txt")
+    if os.path.exists(hp):
+        for line in io.open(hp, encoding="utf-8"):
+            line = line.strip()
+            if line and not line.startswith("#"):
+                hidden.add(line.split("\t")[0].strip())
+
     kata = {}
     for r in rows:
         for f in r["faults"]:
@@ -124,12 +132,15 @@ def tally():
     kata2 = dict(kata)
     kata2["saiseiDekinai(実測)"] = sub["完全"]
     machigai = sum(1 for r in rows if r["faults"])
+    omote = sum(1 for r in rows if r["faults"] and r["key"] not in hidden)
 
     return {
         "日": time.strftime("%Y-%m-%d"),
         "時刻": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "全曲数": len(rows),
         "間違いがあった曲数": machigai,
+        "表に出ている曲の間違い": omote,
+        "隠してある曲": len(hidden),
         "型ごと": kata2,
         "動画IDの実数": len(ids),
         "実測した動画": len([v for v in ids if v in oe]),
@@ -240,6 +251,7 @@ font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}
 最終更新 %s</div>
 
 <div class="card"><p class="msg">%s</p>
+<div class="k">うち、いま表に出ている曲の間違い <b>%s</b> 件（隠してある %s 曲は除いた）</div>
 <svg viewBox="0 0 %d %d" width="100%%"><rect x="0" y="0" width="%d" height="%d" fill="none"/>
 <polyline points="%s" fill="none" stroke="%s" stroke-width="2.5"/>%s%s%s</svg></div>
 
@@ -260,7 +272,9 @@ font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}
 <div class="card"><h2>間違いの型ごと（全%s曲）</h2><table>%s</table></div>
 <div class="sub">※ここに出る数字は、叩いた・取った分だけ。未実測は「未実測」と書く。</div>
 </div></body></html>""" % (
-        col, t["時刻"], msg, W, H, W, H, poly, col, dots, labs, vals,
+        col, t["時刻"], msg,
+        f'{t.get("表に出ている曲の間違い",0):,}', f'{t.get("隠してある曲",0):,}',
+        W, H, W, H, poly, col, dots, labs, vals,
         f'{t["実測した動画"]:,}', f'{t["動画IDの実数"]:,}', f'{t["未実測の動画"]:,}',
         naiyaku, f'{t["動画が全部だめな曲(実測)"]:,}', f'{t["動画が一部だめな曲(実測)"]:,}',
         f'{t["ページを実物で見た"]:,}', f'{t["ページが赤だった"]:,}',
