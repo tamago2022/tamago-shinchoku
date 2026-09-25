@@ -124,6 +124,19 @@ mutation CreatePost($input: CreatePostInput!) {
 }
 """
 
+M_EDIT = """
+# ★1153番：予約の本文だけを書き替える口。消して作り直さない＝dueAt も相手も動かない。
+#   引数の形はスキーマに聞いて確定（推測で書かない）:
+#     editPost(input: EditPostInput!) ／ EditPostInput は id: PostId! と text: String ほか
+mutation EditPost($input: EditPostInput!) {
+  editPost(input: $input) {
+    __typename
+    ... on PostActionSuccess { post { id text dueAt channelId status } }
+    ... on MutationError { message }
+  }
+}
+"""
+
 Q_POSTS = """
 query GetScheduledPosts($orgId: OrganizationId!, $channelIds: [ChannelId!]) {
   posts(input: {

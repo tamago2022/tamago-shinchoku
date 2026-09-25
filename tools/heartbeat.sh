@@ -129,6 +129,24 @@ run_with_timeout() {
 TICK=0
 tick_every() { [ "$(( TICK % $1 ))" -eq 0 ]; }
 
+# ---- 2026-09-26（1153番）Macが寝ないように、心臓が自分で押さえる ----
+# たまごさん「Claudeがオフラインになる。リモートも切れる。切れない方法はないのか。」
+# 実測（status/1153/kireru_gen-in.md）：
+#   ・`pmset -g custom` の AC Power が **sleep 1**＝電源につないでいても**1分放っておくと寝る**。
+#   ・いま寝ないでいられるのは `caffeinate -dims` が居るときだけ。しかもそれは
+#     `claude remote-control` が自分のために連れてきたもの。
+#     → **claude が落ちると caffeinate も消え、1分後にMacが寝る**＝リモートも切れる。
+#   ・`sudo pmset -c sleep 0` が本筋だが、sudoのパスワードはAIが打たない（憲法）。
+# → そこで **claudeが居ても居なくても寝かせない番人**を、心臓の寿命に紐づけて1本だけ立てる。
+#   ・`-w $$` なので **心臓が死ねば番人も一緒に消える**（居残りゴミにならない）
+#   ・exec で自分を入れ替えてもPIDは変わらないので、番人は生き続ける（二重に立てない）
+#   ・0円。新しいlaunchd便も増やしていない。
+#   ★戻し方：この4行を消す、または `pkill -f "caffeinate -dims -w $$"`（次の起動で戻る）
+if ! pgrep -f "caffeinate -dims -w $$" >/dev/null 2>&1; then
+  caffeinate -dims -w $$ >/dev/null 2>&1 &
+  echo "$(date '+%F %T') 🛡 寝かせない番人を立てました（caffeinate -dims -w $$）" >> "$LOG"
+fi
+
 echo "$(date '+%F %T') 心臓を起動しました（pid $$）" >> "$LOG"
 while :; do
   TICK=$(( (TICK + 1) % 40 ))   # 15秒 × 40 = 10分で一周

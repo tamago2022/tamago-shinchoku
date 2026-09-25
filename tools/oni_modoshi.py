@@ -20,6 +20,23 @@
   ③ たまごさんが過去に言ったこと（記憶の feedback_*.md ＋ status/kioku）に
      引っかからない。★引っかかったら出さずに差し戻す。
 
+━━ たまごさんのノート「genspark 鬼監督」（tamago_brain）が正本 ━━
+  ノートにこう書いてある：
+
+    「検品・差し戻し＝◎得意。**進捗の常時監視・催促＝✕原理的に無理**（常在が無い）」
+    「強制力は外に置かないと効かない。**プロンプトの遵守ではなく、
+      実際に走るコマンドの exit code をゲートにするのが肝心**」
+    「タスクを渡すときは必ず3点セット：完了の定義（exit 0 になる確認コマンド）／
+      状態を書くファイル（台帳）／1スライスごとの報告」
+    「**ファイルに落ちていない進捗は消えます。**」
+    「判定基準は Alive ではなく **Progress**。企画書を書いた・Issueを作った・
+      コメントした・Aliveだった、は成果に数えない」
+    「止まったら店主に戻さない。retry → context refresh → handoff → route change」
+
+  ★だからこの係は「見張り」ではなく**門**として作ってある。
+    見張りは常在が要るので外のAIには務まらない。門は exit code だけで効く。
+  ★完了を止めるのは、この係の**終了コード2**。文章でのお願いでは止まらない。
+
 ━━ 落ちたらどうするか ━━
   ★自動で同じ案件を再発車する。**回数制限なし。上限は時間だけ**
   （既定14日。それを超えたものは「時間切れ」として赤で残る。消えない）。
@@ -336,8 +353,27 @@ def jiko_shinkoku_wo_hirou(limit=IKKAI_NI):
     return out
 
 
+# ★ノート「止まったら店主に戻さない」。落ちた回数で渡し方を変える4段の梯子。
+#   同じ渡し方で同じ相手に投げ直しても同じ所で落ちる（2026-09-24 実測：同じ案件が4回同じ理由で戻った）。
+HASHIGO = [
+    ("retry", "同じ相手にもう一度。落ちた理由だけを足す"),
+    ("context refresh", "前の文脈を捨てて、完了条件と現物URLだけ渡して作り直させる"),
+    ("handoff", "別のセッションへ渡す（前の担当の書きかけを引き継がせない）"),
+    ("route change", "別のAIへ回す（Codex／Genspark）。Claudeで2回落ちたものはClaudeに戻さない"),
+]
+
+
+def saihashi_dan(kai):
+    """何段目か。★店主（たまごさん）には戻さない。梯子を上りきったら最上段のまま回す。"""
+    return HASHIGO[min(max(kai, 1) - 1, len(HASHIGO) - 1)]
+
+
 def saihassha(case, naze):
-    """★落ちたら自動で同じ案件を再発車する。回数制限なし。上限は時間だけ。"""
+    """★落ちたら自動で同じ案件を再発車する。回数制限なし。上限は時間だけ。
+
+    渡し方は4段の梯子を上る（ノート：retry → context refresh → handoff → route change）。
+    ★どの段でも「たまごさんに聞く」は選択肢に無い。
+    """
     st = load_json(STATE, {}) or {}
     rec = (st.get("modoshi") or {}).get(case["key"]) or {}
     hajime = rec.get("hajime") or stamp()
@@ -357,9 +393,11 @@ def saihassha(case, naze):
         except Exception:
             import contextlib
             lock = contextlib.nullcontext
+        dan, dan_naze = saihashi_dan(int(rec.get("kai") or 0) + 1)
         body = "\n".join([
             "【差し戻し】%s" % case["title"],
             "【落ちた理由】%s" % naze,
+            "【%d回目・渡し方】%s … %s" % (int(rec.get("kai") or 0) + 1, dan, dan_naze),
             "【完了条件】本番URLが200で返り、中身が空でなく、過去の指摘に引っかからないこと。",
             "★自己申告では完了になりません。tools/oni_modoshi.py の検品を通るまで戻されます。",
             "たまごさんに質問しない。直して、直したURLを報告に必ず貼る。",
@@ -371,7 +409,7 @@ def saihassha(case, naze):
     except Exception as e:
         s, m = "failed", str(e)
 
-    rec = {"hajime": hajime, "kai": int(rec.get("kai") or 0) + 1,
+    rec = {"hajime": hajime, "kai": int(rec.get("kai") or 0) + 1, "dan": dan,
            "saigo": stamp(), "naze": naze, "queue": "%s:%s" % (s, m)}
     st.setdefault("modoshi", {})[case["key"]] = rec
     save_state(st)

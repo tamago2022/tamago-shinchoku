@@ -35,8 +35,9 @@ REPO = os.path.dirname(HERE)
 
 from buffer_yoyaku import (  # noqa: E402  同じ鍵・同じ照合を使い回す（2つ目の実装を作らない）
     JST, TAMAGO, QUEUE, API, token, gql, norm, due_utc_iso, pick_channel,
-    Q_ORGS, Q_CHANNELS, M_CREATE, Q_POSTS, log,
+    Q_ORGS, Q_CHANNELS, M_CREATE, M_EDIT, Q_POSTS, log,
 )
+import x_kata  # noqa: E402  ★1153番【Xの投稿の型】URLを必ず一番最後に置く係
 
 MACHI = os.path.join(QUEUE, "machi.json")
 RESULT = os.path.join(QUEUE, "hokyuu_result.json")
@@ -160,6 +161,28 @@ def main():
     before = scheduled()
     res["before"] = len(before)
 
+    # ★1153番【Xの投稿の型】すでに予約に入っているものも直す。
+    #   たまごさんがBufferの画面から入れた投稿は、この道具を通っていないので型が崩れる。
+    #   「入るときに直す」だけでは漏れるので、**毎回、入っているものも測って直す**。
+    #   使う口は editPost（スキーマに聞いて確定：editPost(input: EditPostInput{ id, text, ... })）。
+    #   ★消さない・作り直さない＝dueAtも相手も動かない。書き替えるのは text だけ。
+    naoshita = []
+    for p in before:
+        old = p.get("text") or ""
+        if x_kata.check(old):
+            continue
+        new = x_kata.normalize(old)
+        r = gql(tok, M_EDIT, {"input": {"id": p["id"], "text": new}})
+        ok = bool(((r.get("data") or {}).get("editPost") or {}).get("post"))
+        naoshita.append({"id": p["id"], "due": p.get("dueAt"),
+                         "naotta": ok,
+                         "why": None if ok else json.dumps(r, ensure_ascii=False)[:200]})
+    if naoshita:
+        res["kata_naoshita"] = naoshita
+        before = scheduled()          # ★直したら取り直して照合する
+        res["kata_kenpin"] = ("全部 型OK" if all(x_kata.check(p.get("text") or "") for p in before)
+                              else "★まだ型に合っていないものが残っている")
+
     if len(before) >= FLOOR and len(before) >= TARGET:
         res.update(result="満タン（補充なし）", after=len(before), kenpin="一致")
         write_result(res); stamp()
@@ -181,12 +204,7 @@ def main():
         # ★1153番【Xの投稿の型】URLを必ず一番最後に置く（status/X_TOUKOU_KATA.md）。
         #   URLが末尾でないと、Xはカードを出した上に本文のURLの文字列も残す＝「リンクが2回」。
         #   言葉は1文字も書き替えない。動かすのはURLの行の位置だけ。
-        try:
-            sys.path.insert(0, HERE)
-            import x_kata
-            text = x_kata.normalize(text)
-        except Exception:
-            pass
+        text = x_kata.normalize(text)
         r = gql(tok, M_CREATE, {"input": {
             "text": text, "channelId": ch["id"],
             "schedulingType": "automatic",

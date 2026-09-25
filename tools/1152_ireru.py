@@ -186,9 +186,82 @@ def append_jsonl(path, obj):
         f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
-def ledger_id(key, shelf_id):
+def ledger_id(key, shelf_name):
+    """★受付番号は「何を・どの棚へ」で決める（棚のidが後から分かっても番号が変わらない）。"""
     import hashlib
-    return hashlib.sha1(("1152/" + key + "/" + shelf_id).encode("utf-8")).hexdigest()[:12]
+    return hashlib.sha1(("1152/" + key + "/" + shelf_name).encode("utf-8")).hexdigest()[:12]
+
+
+KAGI_JSON = os.path.join(STATUS, "public", "nagekomi_kagi.json")
+
+
+def kakeru(url, key, res):
+    """★棚に**本当に書けるか**を、押す前に1回だけ実測する。
+
+    実測（2026-09-26）：いま在る鍵は SUPABASE_PUBLISHABLE_KEY だけで、
+    admin_stock / admin_shelves への INSERT は RLS が 401(42501) で弾く。
+    さらに UPDATE は **200を返すのに0行**（RLSが黙って弾く）＝ログだけ成功に見える。
+    だから「200が返った」を成功の証拠にしない。**返った行数で判定する。**
+    """
+    why = ""
+    try:
+        st, rows = tana._req(url, key, "/rest/v1/admin_stock?select=id,whisper&limit=1")
+        if not rows:
+            why = "admin_stock が1行も読めない"
+        else:
+            tid, w = rows[0]["id"], rows[0]["whisper"]
+            st2, back = tana._req(
+                url, key, "/rest/v1/admin_stock?id=eq.%s" % urllib.parse.quote(tid, safe=""),
+                method="PATCH", body={"whisper": w}, prefer="return=representation")
+            if not back:
+                why = ("いまの鍵（読み取り用）では棚に書けません。"
+                       "RLSが黙って弾いています（HTTP200・書けた行は0）")
+    except Exception as e:
+        why = "書けるか確かめられなかった：%r" % (e,)
+    ok = not why
+    naoshi = ("Supabaseの画面 → Project Settings → API → service_role の鍵をコピーして、"
+              "Macの ~/.tamago/supabase_service_role に貼って保存する（権限600・gitの外）。"
+              "そのあと `python3 tools/1152_ireru.py` を1回走らせれば、"
+              "この4本はそのまま棚に入ります。")
+    try:
+        os.makedirs(os.path.dirname(KAGI_JSON), exist_ok=True)
+        io.open(KAGI_JSON, "w", encoding="utf-8").write(json.dumps(
+            {"at": now(), "kakeru": ok, "why": why, "naoshikata": "" if ok else naoshi,
+             "tsukau": "tools/1152_ireru.py"}, ensure_ascii=False, indent=1))
+    except Exception:
+        pass
+    if not ok:
+        res["red"].append(why)
+        res["naoshikata"] = naoshi
+    return ok
+
+
+def uketsuke():
+    """★先に受付だけ済ませる。棚に書けない日でも「何が入ったか」は受付一覧に出す。
+    idは固定（key＋棚id）なので、何回走らせても同じ行が増えない。"""
+    have = set()
+    try:
+        for ln in io.open(LEDGER, encoding="utf-8"):
+            try:
+                have.add(json.loads(ln).get("id"))
+            except Exception:
+                pass
+    except OSError:
+        pass
+    added = []
+    for t in TAMA:
+        for world, sid, name in t["shelves"]:
+            nid = ledger_id(t["key"], name)
+            if nid in have:
+                continue
+            append_jsonl(LEDGER, {
+                "id": nid, "at": now(), "url": t["url"], "memo": t["memo"],
+                "shelf": name, "shelfId": sid,
+                "copyDirection": None, "status": "inbox", "kind": ns.kind_of(t["url"]),
+                "title": t["title"], "channel": t["channel"],
+                "source": "1152（たまごさんの口頭指示・貼られたURL）"})
+            added.append({"no": nid[:6], "shelf": name, "title": t["title"]})
+    return added
 
 
 def run(dry=False):
@@ -198,6 +271,13 @@ def run(dry=False):
     if not url:
         res["red"].append("Supabaseの鍵が見つからない：%s" % where)
         return res
+
+    if not dry:
+        res["uketsuke"] = uketsuke()
+        if not kakeru(url, key, res):
+            res["ok"] = False
+            res["diag"].append("★受付だけ済ませました。鍵が入れば同じコマンドで続きから入ります。")
+            return res
 
     soup = ensure_soup_shelf(res) if not dry else "（dry）"
     try:
@@ -265,13 +345,7 @@ def run(dry=False):
                 res["red"].append("%s：%s に入れられなかった %r" % (t["key"], name, e))
                 continue
 
-            nid = ledger_id(t["key"], sid)
-            append_jsonl(LEDGER, {
-                "id": nid, "at": now(), "url": t["url"], "memo": t["memo"],
-                "shelf": name, "shelfId": sid, "copyDirection": None,
-                "status": "inbox", "kind": ns.kind_of(t["url"]),
-                "title": t["title"], "channel": t["channel"],
-                "source": "1152（たまごさんの口頭指示・貼られたURL）"})
+            nid = ledger_id(t["key"], name)   # ★受付は uketsuke() が済ませている
             append_jsonl(IRETA, {
                 "bin": BIN, "at": now(),
                 # ★受付一覧(tools/nagekomi_list.py)は "id" で引く。nagekomiId だけだと
