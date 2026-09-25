@@ -321,8 +321,43 @@ def look_jules(cur):
 
 
 # ---------------------------------------------------------------- 本体
+LOCK = os.path.join(OUT_DIR, ".nagashi.lock")
+LOCK_STALE = 900   # 15分。0円の口は返事を待つのに最大240秒かかるので短くしない。
+
+
+def _lock():
+    """★二重起動しない。1分おきに呼ばれるので、投げるのに240秒かかる間に
+    次の便が入って**同じ仕事を2回投げる**のを止める（心臓が2本になった時と同じ事故）。"""
+    os.makedirs(OUT_DIR, exist_ok=True)
+    try:
+        if os.path.exists(LOCK) and (time.time() - os.path.getmtime(LOCK)) < LOCK_STALE:
+            return False
+        with io.open(LOCK, "w", encoding="utf-8") as f:
+            f.write("%d %s\n" % (os.getpid(), _iso()))
+        return True
+    except Exception:
+        return True
+
+
+def _unlock():
+    try:
+        os.remove(LOCK)
+    except Exception:
+        pass
+
+
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
+    if not _lock():
+        print("前の便がまだ走っているので、今回は何もしません（二重投げの防止）")
+        return 0
+    try:
+        return _main()
+    finally:
+        _unlock()
+
+
+def _main():
     import gaibu_ai
 
     js = jissoku()
