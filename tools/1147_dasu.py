@@ -25,6 +25,7 @@ FILES = [
     "src/components/MiniPlayer.tsx",
     "src/components/BottomTabNav.tsx",
     "vite.config.ts",
+    "scripts/check-perf-guards.mjs",
 ]
 
 MESSAGE = (
@@ -48,7 +49,13 @@ MESSAGE = (
     "     下に使う高さ 約134px（隙間あり）→ 112px（隙間ゼロ）。\n"
     "\n"
     "戻し方：このコミットを revert する。本体は components/CoverGuidePageBody.tsx に\n"
-    "丸ごと入っているだけなので、戻しても中身は1行も失われない。"
+    "丸ごと入っているだけなので、戻しても中身は1行も失われない。\n"
+    "\n"
+    "■ 見張り番も直した\n"
+    "  scripts/check-perf-guards.mjs は cover-guide.tsx の中だけを見ていたので、\n"
+    "  本体を移した時点で6件が「消えた」と誤検知した（実際は1行も消えていない）。\n"
+    "  file に \"A|B\" と書けたら両方をつなげて探す形にして、\n"
+    "  将来また1本に戻しても同じまま効くようにした。"
 )
 
 
