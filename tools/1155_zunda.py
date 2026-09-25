@@ -39,7 +39,8 @@ PROGRESS = os.path.join(STATE_DIR, "progress.json")
 LOG = os.path.join(STATE_DIR, "worker.log")
 ENGINE = "http://127.0.0.1:50021"
 SPEAKER = 3          # ずんだもん ノーマル
-CHUNK = 140          # 1リクエストの文字数上限
+CHUNK = 60           # 1リクエストの文字数上限（このMacのエンジンは遅いので小さく）
+TIMEOUT = 600        # 1リクエストの上限。140文字で96秒かかる実測なので長く取る
 TAG = "#円卓会議"
 
 
@@ -88,11 +89,11 @@ def synth(text):
     q = urllib.parse.quote(text)
     req = urllib.request.Request(
         "%s/audio_query?text=%s&speaker=%d" % (ENGINE, q, SPEAKER), method="POST")
-    query = urllib.request.urlopen(req, timeout=60).read()
+    query = urllib.request.urlopen(req, timeout=TIMEOUT).read()
     req2 = urllib.request.Request(
         "%s/synthesis?speaker=%d" % (ENGINE, SPEAKER), data=query,
         headers={"Content-Type": "application/json"}, method="POST")
-    return urllib.request.urlopen(req2, timeout=180).read()
+    return urllib.request.urlopen(req2, timeout=TIMEOUT).read()
 
 
 # ---------- 本文の掃除 ----------

@@ -902,6 +902,11 @@ def main():
     ap.add_argument("--shinsetsu", help="棚を1本新設する題名（例 スープ）")
     ap.add_argument("--world", help="--shinsetsu の行き先の世界（例 food）")
     ap.add_argument("--subtitle", default="", help="--shinsetsu の副題（任意）")
+    # ★1155番：書き手（claude -p／控えの外部の口）が両方止まっている日のための口。
+    #   run() には前から teuchi= があったが CLI が無く、python -c の手打ちしか道が無かった。
+    #   ★持ち込んでも関所は同じように通る（gates / fact_gate）。素通りはしない。
+    ap.add_argument("--teuchi-title", help="--only の1件に、人が書いた題名を持ち込む")
+    ap.add_argument("--teuchi-hitokoto", help="--only の1件に、人が書いたひとことを持ち込む")
     a = ap.parse_args()
     if a.shinsetsu:
         if not a.world:
@@ -920,7 +925,14 @@ def main():
         print(json.dumps(modoshi(a.modoshi, dry=a.dry), ensure_ascii=False, indent=1)[:4000])
         return 0
     if a.dry or a.only:
-        print(json.dumps(run(dry=a.dry, only=a.only, bin_no=a.bin), ensure_ascii=False, indent=1)[:4000])
+        teuchi = None
+        if a.teuchi_title or a.teuchi_hitokoto:
+            if not a.only:
+                print("--teuchi-title / --teuchi-hitokoto は --only <id> と一緒にだけ使えます")
+                return 1
+            teuchi = {"title": a.teuchi_title or "", "whisper": a.teuchi_hitokoto or ""}
+        print(json.dumps(run(dry=a.dry, only=a.only, bin_no=a.bin, teuchi=teuchi),
+                         ensure_ascii=False, indent=1)[:6000])
         return 0
     print(json.dumps(daily(force=a.force), ensure_ascii=False, indent=1)[:4000])
     return 0
