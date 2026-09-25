@@ -302,7 +302,7 @@ def look_jules(cur):
         jid = gk.enqueue_job("keijiban", {"action": "read",
                                           "repo": "tamago2022/joy-relief-station",
                                           "number": cur.get("issue")})
-        r = gk.wait_job(jid, wait_sec=120, poll=5) or {}
+        r = gk.wait_job(jid, wait_sec=60, poll=5) or {}
     except Exception as e:
         return False, None, repr(e)[:160]
     if not r.get("ok"):
@@ -322,7 +322,8 @@ def look_jules(cur):
 
 # ---------------------------------------------------------------- 本体
 LOCK = os.path.join(OUT_DIR, ".nagashi.lock")
-LOCK_STALE = 900   # 15分。0円の口は返事を待つのに最大240秒かかるので短くしない。
+LOCK_STALE = 300   # 5分。★実測（09:40の便）で、この係が外から強制終了されて鍵だけ残る事が
+#   あったので短くする。鍵が残っても5分で次の便が必ず引き継ぐ。
 
 
 def _lock():
@@ -348,6 +349,18 @@ def _unlock():
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
+    # ★どんな理由で固まっても自分で抜ける（心臓の run_with_timeout と同じ考え方。
+    #   ここは投げっぱなし(&)で呼ばれるので、上限を自分で持っていないと永久に居座る）。
+    try:
+        import signal
+
+        def _jikangire(*_a):
+            _unlock()
+            raise SystemExit("240秒を超えたので自分で終わります（鍵は外しました）")
+        signal.signal(signal.SIGALRM, _jikangire)
+        signal.alarm(240)
+    except Exception:
+        pass
     if not _lock():
         print("前の便がまだ走っているので、今回は何もしません（二重投げの防止）")
         return 0
