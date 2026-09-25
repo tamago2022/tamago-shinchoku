@@ -235,6 +235,28 @@ def pace_block():
     return out
 
 
+def freshness_block():
+    """1143番【成果の鮮度計】status/1143/freshness.json をそのまま写す。
+
+    ★ここが stoppedReason と決定的に違うところ：
+      stoppedReason は「いま走っているか」を見る。走っていれば黙る。
+      鮮度計は「最後に本物の成果が出てから何時間経ったか」だけを見る。
+      走行本数を一切見ないので、空回しが何本走っていても赤は消えない。
+      （4日半だれも気づかなかった事故の再発防止はこちらが本体）
+    """
+    f = jread(os.path.join(ST, "1143", "freshness.json"), {})
+    if not f:
+        return None
+    return {
+        "at": f.get("at"),
+        "akaN": f.get("akaN"),
+        "ichigyou": f.get("ichigyou"),
+        "aka": [a for a in (f.get("alerts") or []) if a.get("level") == "red"][:4],
+        "pipes": {k: {"na": v.get("na"), "ageH": v.get("ageH"), "shikiiH": v.get("shikiiH")}
+                  for k, v in (f.get("pipes") or {}).items()},
+    }
+
+
 def verify_block():
     """完了の検証（tools/verify_done.py が書く要約）。無ければ null＝機械が偽装しない。"""
     v = jread(os.path.join(ST, "verify_summary.json"), {})
@@ -328,6 +350,8 @@ def build():
             x for x in running_now if "空回し" not in (x.get("label") or "")] else None,
         # たまごさんは進捗表しか見ない。ログインだけは**いつでも一番上に赤で出す。**
         "login": login_block(),
+        # 1143番：成果の鮮度。走行本数で消えない赤。
+        "freshness": freshness_block(),
         "pace": pace_block(),
         "verify": verify_block(),
         "lovablePublish": lovable_publish_block(),

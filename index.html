@@ -134,6 +134,8 @@ footer a{display:block; padding:5px 0}
 <!-- ⓿ ログイン（★2026-09-25 追加。ここが切れていると何も動かないので一番上に赤で出す。
         以前は「走行0本のときだけ」出す作りで、空回しが1本いるだけで消えていた＝5日気づかれなかった） -->
 <div id="loginNg" style="display:none;background:#b00020;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
+<!-- 1143番：成果の鮮度（走行本数では消えない赤）。ログインの赤のすぐ下。 -->
+<div id="freshNg" style="display:none;background:#8a2b00;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
 
 <!-- ⓪-2 ループの計器盤（★1142番・2026-09-25追加）
      「出す → 測る → 直す → また出す」の"測る"がここ1枚。
@@ -314,6 +316,27 @@ function renderLogin(d){
     + (L.since ? '<span style="font-weight:400"> — ' + esc(L.since) + 'から</span>' : '')
     + (L.naoshikata ? '<div style="font-weight:400;margin-top:6px;font-size:.92em">'
                       + esc(L.naoshikata) + '</div>' : '');
+}
+/* ───────── 成果の鮮度（1143番）─────────
+   ★「走っているか」ではなく「最後に本物の成果が出てから何時間経ったか」を出す。
+   走行本数を見ないので、空回しが走っていてもこの赤は消えない。
+   （4日半だれも気づかなかった事故は、走行本数で赤を消していたのが原因） */
+function renderFresh(d){
+  var F = d.freshness, el = $("freshNg");
+  if(!el) return;
+  if(!F || !F.akaN){ el.style.display = "none"; return; }
+  el.style.display = "block";
+  var pipes = F.pipes || {};
+  var line = Object.keys(pipes).map(function(k){
+    var p = pipes[k];
+    var over = p.ageH != null && p.shikiiH != null && p.ageH > p.shikiiH;
+    return '<span style="display:inline-block;margin-right:14px;font-weight:400;'
+      + (over ? 'color:#ffd7c2' : 'opacity:.75') + '">'
+      + esc(p.na) + ' ' + (p.ageH == null ? '測れない' : p.ageH + 'h')
+      + '<span style="opacity:.6">/' + (p.shikiiH == null ? '—' : p.shikiiH + 'h') + '</span></span>';
+  }).join("");
+  el.innerHTML = '⏳ ' + esc(F.ichigyou || "成果が止まっています")
+    + '<div style="margin-top:8px;font-size:.9em">' + line + '</div>';
 }
 function renderRunning(d){
   RUN = d.runningNow || [];
@@ -544,6 +567,7 @@ function render(d){
   else { s.className = "old"; s.textContent = "⚠ " + ageMin + "分前のまま（更新が止まっています）"; }
 
   renderLogin(d);
+  renderFresh(d);
   renderRunning(d);
   renderPace(d.pace);
   $("next").innerHTML = '<li class="meta">読み込み中…</li>';

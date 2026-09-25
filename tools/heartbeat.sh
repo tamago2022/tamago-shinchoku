@@ -267,6 +267,11 @@ while :; do
   #   直す係が先に走ると「何を直すのか」が分からないので、必ずこの順で書く。
   tick_every 8  && ( python3 "$REPO/tools/1142_loop.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
   tick_every 40 && ( python3 "$REPO/tools/1142_fukkyuu.py" --honban >> "$REPO/status/1142_fukkyuu.log" 2>&1 & ) >/dev/null 2>&1
+  # 1143番【成果の鮮度計（Freshness SLO）】2026-09-25
+  #   「動いているのに成果が出ていない」を、走行本数ではなく**成果の年齢**で捕まえる。
+  #   OneUptime の Freshness SLO ＋ Prefactor の presence チェックの移植。0円。
+  #   ★ tick_every 8（約2分）＝ 1142_loop と同じ間隔。measure→alert なので loop の前に置く。
+  tick_every 8  && ( python3 "$REPO/tools/1143_freshness.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 門の押しボタン（わざと不正な1件を流して、門が生きているか実測する）。中で6時間に間引く。
   tick_every 40 && ( python3 "$REPO/tools/1142_kanmon.py" >> "$REPO/status/1142_kanmon.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（894番）：発車0本の検知＋自己修復（tools/genzaichi.pyのcheck_launch_silence・
