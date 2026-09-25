@@ -51,6 +51,33 @@ def count_lines(p):
     return n
 
 
+
+def _mk_jissoku():
+    """実測(oembed.jsonl)を 1140_kensa.py が読む形(status/1140/jissoku.json)に直す。"""
+    import json as _j
+    rows = {}
+    p = os.path.join(OUT, "oembed.jsonl")
+    for line in io.open(p, encoding="utf-8"):
+        line = line.strip()
+        if line:
+            try:
+                r = _j.loads(line)
+            except Exception:
+                continue
+            if r.get("id"):
+                rows[r["id"]] = r
+    dead = sorted(k for k, v in rows.items() if v.get("v") not in ("alive", "unknown"))
+    unknown = sorted(k for k, v in rows.items() if v.get("v") == "unknown")
+    alive = {k: {"title": v.get("title", ""), "author": v.get("author", "")}
+             for k, v in rows.items() if v.get("v") == "alive"}
+    out = {"生成": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+           "_出どころ": "1145番 status/1145/oembed.jsonl（oEmbedで1本ずつ実測・0円）",
+           "checked": sorted(rows), "dead": dead, "unknown": unknown,
+           "alive_n": len(alive), "alive": alive}
+    _j.dump(out, io.open(os.path.join(REPO, "status", "1140", "jissoku.json"),
+                         "w", encoding="utf-8"), ensure_ascii=False)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     ids = os.path.join(REPO, "status", "1140", "all_video_ids.txt")
@@ -79,6 +106,41 @@ def main():
                            capture_output=True, timeout=180)
         except Exception as e:
             note("suii失敗 %s" % e)
+
+    # ④ 1日1回、全部を最初からやり直す（★たまごさん「日ごとにどんどん少なくなってくればいい」）
+    #    済んだ分は捨てずに arch/ に退避。次の回は0本から積み直すので、増減が正しく出る。
+    dstamp = os.path.join(OUT, ".day_at")
+    dlast = os.path.getmtime(dstamp) if os.path.exists(dstamp) else 0
+    if done >= total > 0 and time.time() - dlast > 20 * 3600:
+        io.open(dstamp, "w").write(str(int(time.time())))
+        arch = os.path.join(OUT, "arch")
+        os.makedirs(arch, exist_ok=True)
+        tag = time.strftime("%Y%m%d")
+        for name in ("oembed.jsonl", "page.jsonl"):
+            src = os.path.join(OUT, name)
+            if os.path.exists(src):
+                os.replace(src, os.path.join(arch, "%s.%s" % (name, tag)))
+        note("1日1回の流し直し：%s へ退避して0本から積み直す" % tag)
+
+    # ⑤ 実測が全部終わったら、隠す表を作り直して本番に押す（聞かずに押す・0円）
+    #    ★推測ではなく実測でしか隠さない。生きている動画を隠すのが一番の恥。
+    flag = os.path.join(OUT, ".kensa_done_at")
+    kdone = os.path.getmtime(flag) if os.path.exists(flag) else 0
+    if done >= total > 0 and time.time() - kdone > 3 * 3600:
+        io.open(flag, "w").write(str(int(time.time())))
+        try:
+            mk = os.path.join(REPO, "status", "1145", "jissoku_to_1140.py")
+            _mk_jissoku()
+            r1 = subprocess.run([PY, "tools/1140_kensa.py"], cwd=REPO,
+                                capture_output=True, timeout=1800)
+            note("1140_kensa rc=%d" % r1.returncode)
+            r2 = subprocess.run([PY, "tools/1145_push_hidden.py"], cwd=REPO,
+                                capture_output=True, timeout=600)
+            note("押した rc=%d %s" % (r2.returncode,
+                                     (r2.stdout or b"").decode("utf-8", "ignore")[-300:]))
+        except Exception as e:
+            note("検査・押しで失敗 %s" % e)
+
 
 
 if __name__ == "__main__":
