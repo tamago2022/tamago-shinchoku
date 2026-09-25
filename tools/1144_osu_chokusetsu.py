@@ -37,6 +37,20 @@ def honban_uuid(url):
     return parts[1] if len(parts) > 1 else v
 
 
+def motteru_kanmon(sha):
+    """そのコミットに関所（src/lib/kansei.ts）が入っているか。
+    ★mainは15分ごとに動くのでSHA一致では永久に合わない。
+      「関所が入っている版か」で見るのが正しい（これが出したい中身の条件そのもの）。"""
+    url = ("https://raw.githubusercontent.com/tamago2022/joy-relief-station/%s/src/lib/kansei.ts"
+           % sha)
+    try:
+        r = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(r, timeout=20) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
 def main():
     want = (sys.argv[1] if len(sys.argv) > 1 else "").strip()[:8]
     mato = MATO[NAME]
@@ -53,9 +67,10 @@ def main():
             print("[%d] get_project が読めません: %s" % (i, err)); time.sleep(30); continue
         sha = (o.get("latest_commit_sha") or "")[:8]
         print("[%d] %s Lovableが持つコミット = %s" % (i, time.strftime("%H:%M:%S"), sha or "-"))
-        if want and sha != want:
-            print("    → まだ取り込んでいないので押しません（待つ）")
+        if not sha or not motteru_kanmon(sha):
+            print("    → その版に関所がまだ入っていないので押しません（待つ）")
             time.sleep(30); continue
+        print("    → その版に関所が入っています。押します")
         r, err = lv.call("deploy_project", {"project_id": mato["project_id"]})
         if r is None:
             print("    deploy_project が読めません: %s" % err); time.sleep(30); continue
