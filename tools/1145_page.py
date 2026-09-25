@@ -33,6 +33,7 @@ WORKERS = 5
 _lock = threading.Lock()
 _n = {"done": 0, "ng": 0}
 _started = time.time()
+NOIMG = "--noimg" in sys.argv
 
 RE_OG = re.compile(r'<meta\s+property="og:(image|description|title)"\s+content="(.*?)"', re.S)
 RE_SHARE = re.compile(r'/api/public/share-image/([A-Za-z0-9_-]{6,})')
@@ -110,7 +111,7 @@ def one(url):
         rec["赤"].append("titleが空")
 
     # OG画像を実際に取って md5（共通画像かどうかは後で束ねて判る）
-    if rec["ogImage"]:
+    if rec["ogImage"] and not NOIMG:
         try:
             c, b, h = _get(rec["ogImage"], timeout=40)
             rec["ogImageCode"] = c
