@@ -372,6 +372,16 @@ def _main():
     st["devin_hashiru"] = js.get("hashiru")
     st["devin_saifu"] = js.get("saifu")
 
+    # ★Devinが0本になっている時間を毎日測る（目標0分）。1分おきに呼ばれる前提で数える。
+    if st.get("zero_hi") != today:
+        st["zero_hi"] = today
+        st["devin_zero_fun_kyou"] = 0
+        st["mita_fun_kyou"] = 0
+    if js.get("hashiru") is not None:
+        st["mita_fun_kyou"] = st.get("mita_fun_kyou", 0) + 1
+        if js.get("hashiru") == 0:
+            st["devin_zero_fun_kyou"] = st.get("devin_zero_fun_kyou", 0) + 1
+
     # ① 今の1本を見る
     cur = st.get("inflight")
     if cur:
