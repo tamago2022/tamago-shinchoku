@@ -375,3 +375,12 @@ if __name__ == "__main__":
         _sp.Popen(["python3", _r], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-25（1145番）実測・ページ実物見の見張り。黙って止まったら続きから立て直す。
+    # 実害：nohupで走らせた実測が213本で消えた（ログに痕跡なし＝殺された）。書くだけでは効かないので線を1本入れる。
+    try:
+        import subprocess as _sp2, os as _os2
+        _g = _os2.path.join(_os2.path.dirname(_os2.path.abspath(__file__)), "1145_guard.py")
+        _sp2.Popen(["python3", _g], stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
+    except Exception:
+        pass
