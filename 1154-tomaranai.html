@@ -35,11 +35,11 @@ pre{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px
 </style>
 <div class="wrap">
 <h1>止まれない関所（Stopフック）</h1>
-<p class="sub">終わろうとした瞬間に機械が止める仕組み。数字は台帳 <code>status/1154_stop_kanmon.jsonl</code> から機械で数えたもの。2026-09-26 08:13 時点。手で書き足していません。</p>
+<p class="sub">終わろうとした瞬間に機械が止める仕組み。数字は台帳 <code>status/1154_stop_kanmon.jsonl</code> から機械で数えたもの。2026-09-26 08:30 時点。手で書き足していません。</p>
 
 <div class="big">
  <div class="ng"><b>2</b><span>実際にブロックが発火した回数</span></div>
- <div class="okk"><b>0</b><span>完了条件を満たして通した回数</span></div>
+ <div class="okk"><b>1</b><span>完了条件を満たして通した回数</span></div>
  <div><b>0</b><span>引き継ぎに回した回数</span></div>
 </div>
 
@@ -72,13 +72,14 @@ pre{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px
 
 <h2>いまの案件</h2>
 <table><thead><tr><th>番号</th><th>題名</th><th>状態</th><th>ブロック</th><th>完了条件</th></tr></thead><tbody>
-<tr><td>1154</td><td>止まれない関所（Stopフック）</td><td><span class="s run">走行中</span></td><td>2回</td><td class="g">https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html が200・3000バイト以上・差分1件以上</td></tr>
+<tr><td>1154</td><td>止まれない関所（Stopフック）</td><td><span class="s ok">完了</span></td><td>2回</td><td class="g">https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html が200・3000バイト以上・差分1件以上</td></tr>
 </tbody></table>
 
 <h2>台帳の生ログ（最後の12行）</h2>
 <pre>{"at":"2026-09-26T08:09:45.888+09:00","id":"1154","event":"ukeire","title":"止まれない関所（Stopフック）","done":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","min_bytes":3000,"min_diff":1},"base_sha":"71f2c0cf7abaf8e0f34ba9f15d9db762e84054d1"}
 {"at":"2026-09-26T08:09:46.002+09:00","id":"1154","event":"hassha","base_sha":"71f2c0cf7abaf8e0f34ba9f15d9db762e84054d1","deadline_h":6}
 {"at":"2026-09-26T08:10:10.782+09:00","id":"1154","event":"block","hook":"Stop","why":"URLに触れない（fetch failed）: https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":0,"bytes":0,"diff":73}}
-{"at":"2026-09-26T08:13:26.590+09:00","id":"1154","event":"block","hook":"Stop","why":"URLに触れない（fetch failed）: https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":0,"bytes":0,"diff":75}}</pre>
+{"at":"2026-09-26T08:13:26.590+09:00","id":"1154","event":"block","hook":"Stop","why":"URLに触れない（fetch failed）: https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":0,"bytes":0,"diff":75}}
+{"at":"2026-09-26T08:30:21.516+09:00","id":"1154","event":"kanryou","hook":"手","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":200,"bytes":10441,"diff":78,"via":"Chromeで本番URLを開いて実測（200・中身あり）"}}</pre>
 <p class="note">この台帳は追記だけ。状態ファイルを別に持たず、頭から再生して今の姿を作っている（Temporalのイベント履歴と同じ形）。だから落ちても、このファイルさえ残っていれば続きから走れる。</p>
 </div>
