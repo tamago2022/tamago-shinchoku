@@ -71,6 +71,16 @@ def now():
     return datetime.datetime.now(JST)
 
 
+def jikan(sec):
+    """秒を人が読む形に。1時間未満は分で出す（『閾値0時間』と書かないため）。"""
+    if sec is None:
+        return "測れない"
+    sec = float(sec)
+    if sec < 3600:
+        return "%d分" % round(sec / 60.0)
+    return "%.1f時間" % (sec / 3600.0)
+
+
 def jread(p, default=None):
     try:
         with io.open(p, encoding="utf-8") as f:
@@ -236,8 +246,30 @@ def p_shukudai():
     return best, presence, schema, who, cur
 
 
+def p_kouhyou():
+    """進捗表に**実際に配られた**写しの新しさ。
+
+    2026-09-25 実測：status/top_status.json は10:16で生きているのに、
+    たまごさんが見る status/public/top_status.json は09:32のまま止まっていた。
+    ＝工場の中では赤が出ているのに、画面には45分前の緑が出たままだった。
+    鮮度計そのものが届かなくなる形なので、配達路も出口として測る。
+    """
+    p = os.path.join(ST, "public", "top_status.json")
+    try:
+        t = os.path.getmtime(p)
+    except Exception:
+        return None, (False, "公開用の写しが無い"), (False, "status/public/top_status.json が無い"), None
+    d = jread(p, {}) or {}
+    has_fresh = d.get("freshness") is not None
+    presence = (bool(d.get("generatedAt")), "写しの中の時刻 %s" % (d.get("generatedAt") or "無し"))
+    schema = (has_fresh, "写しに鮮度が載っている" if has_fresh else
+              "★写しに鮮度が載っていない（配達が古いか、公開係が止まっている）")
+    return t, presence, schema, d.get("generatedAt")
+
+
 PIPES = [
     {"id": "hassha", "na": "本物の発車が終わった", "shikii": 12 * H, "fn": p_hassha},
+    {"id": "kouhyou", "na": "進捗表へ配られた", "shikii": 1800, "fn": p_kouhyou},
     {"id": "commit", "na": "中身のあるコミット", "shikii": 6 * H, "fn": p_commit},
     {"id": "kanmon", "na": "門が弾いた", "shikii": 24 * H, "fn": p_kanmon},
     {"id": "gaibu", "na": "外のAIから返ってきた", "shikii": 24 * H, "fn": p_gaibu},
@@ -315,13 +347,13 @@ def hakaru(write=True):
         st = streak(p["id"], shikii) + (1 if age > shikii else 0)
         if age > shikii * STALLED_MULT:
             alerts.append({"rule": "DataPipelineStalled", "pipe": p["id"], "level": "red",
-                           "midashi": "「%s」が%.1f時間出ていません（閾値%.0f時間の%d倍超）"
-                                      % (p["na"], age / 3600.0, shikii / 3600.0, STALLED_MULT),
+                           "midashi": "「%s」が%s出ていません（閾値%s の%d倍超）"
+                                      % (p["na"], jikan(age), jikan(shikii), STALLED_MULT),
                            "naze": d["nani"]})
         elif age > shikii and st >= VIOLATION_STREAK:
             alerts.append({"rule": "DataFreshnessViolation", "pipe": p["id"], "level": "red",
-                           "midashi": "「%s」が%.1f時間出ていません（閾値%.0f時間）"
-                                      % (p["na"], age / 3600.0, shikii / 3600.0),
+                           "midashi": "「%s」が%s出ていません（閾値%s）"
+                                      % (p["na"], jikan(age), jikan(shikii)),
                            "naze": d["nani"]})
         if d["sli7d"] is not None and d["sliNow"] is not None and \
                 d["sliNowN"] >= 3 and d["sliNow"] < d["sli7d"] - 20:
@@ -369,8 +401,8 @@ def show(p):
         age = "測れない" if v["ageH"] is None else "%.1fh" % v["ageH"]
         sli7 = "—" if v["sli7d"] is None else "%.0f%%(%d)" % (v["sli7d"], v["sli7dN"])
         mark = "赤" if (v["ageSec"] is not None and v["ageSec"] > v["shikiiH"] * 3600) else "　"
-        print("  %s %-10s %-16s 年齢%-9s 閾値%.0fh  SLI7d=%s  %s"
-              % (mark, k, v["na"], age, v["shikiiH"], sli7, v["nani"] or ""))
+        print("  %s %-10s %-16s 年齢%-9s 閾値%-7s SLI7d=%s  %s"
+              % (mark, k, v["na"], age, jikan(v["shikiiH"] * 3600), sli7, v["nani"] or ""))
     print("  ---")
     if not p["alerts"]:
         print("  鳴っていません")
