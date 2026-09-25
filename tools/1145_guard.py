@@ -42,6 +42,29 @@ def launch(args, log):
     note("立て直した: " + " ".join(args))
 
 
+def kill(pat):
+    try:
+        subprocess.run(["/usr/bin/pkill", "-f", pat], capture_output=True, timeout=10)
+        time.sleep(1)
+    except Exception:
+        pass
+
+
+def stalled(name, n, minutes=10):
+    """行数が increase しないまま何分も経っていたら「詰まっている」と見る。
+    ★『プロセスが居るか』だけでは足りなかった（実測：19:19に立て直したのに1行も増えず22分）。"""
+    f = os.path.join(OUT, ".stall_" + name)
+    now = time.time()
+    try:
+        old = json.load(io.open(f, encoding="utf-8"))
+    except Exception:
+        old = None
+    if old is None or old.get("n") != n:
+        json.dump({"n": n, "t": now}, io.open(f, "w", encoding="utf-8"))
+        return False
+    return now - old.get("t", now) > minutes * 60
+
+
 def count_lines(p):
     if not os.path.exists(p):
         return 0
@@ -85,16 +108,28 @@ def main():
 
     # ① 動画の実測
     done = count_lines(os.path.join(OUT, "oembed.jsonl"))
-    if done < total and not running("1145_jissoku.py"):
-        launch(["tools/1145_jissoku.py"], "jissoku_run.log")
+    if done < total:
+        if stalled("jissoku", done):
+            note("実測が%d本で詰まっていた。殺して立て直す" % done)
+            kill("1145_jissoku.py")
+            json.dump({"n": -1, "t": time.time()},
+                      io.open(os.path.join(OUT, ".stall_jissoku"), "w", encoding="utf-8"))
+        if not running("1145_jissoku.py"):
+            launch(["tools/1145_jissoku.py"], "jissoku_run.log")
 
     # ② ページを実物で見る
     todo = os.path.join(OUT, "page_todo.txt")
     ptotal = count_lines(todo)
     pdone = count_lines(os.path.join(OUT, "page.jsonl"))
-    if pdone < ptotal and not running("1145_page.py"):
-        launch(["tools/1145_page.py", "--list", "status/1145/page_todo.txt",
-                "--limit", "2000"], "page_run.log")
+    if pdone < ptotal:
+        if stalled("page", pdone):
+            note("ページ実物見が%d件で詰まっていた。殺して立て直す" % pdone)
+            kill("1145_page.py")
+            json.dump({"n": -1, "t": time.time()},
+                      io.open(os.path.join(OUT, ".stall_page"), "w", encoding="utf-8"))
+        if not running("1145_page.py"):
+            launch(["tools/1145_page.py", "--list", "status/1145/page_todo.txt",
+                    "--limit", "3000"], "page_run.log")
 
     # ③ 推移は10分に1回だけ書き直す（毎周回はやらない）
     stamp = os.path.join(OUT, ".suii_at")
