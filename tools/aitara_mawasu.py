@@ -67,7 +67,11 @@ JUNBAN = [
     {
         "n": 1, "name": "間違い探し", "kind": "machine", "yen": 0,
         "what": "全曲総当たり。URL切れ・空の紹介文・年の矛盾・同名別人・繋ぎのズレ",
-        "cmd": ["python3", os.path.join(HERE, "kenpin_gate.py"), "--zenbu"],
+        # 2026-09-26（復元便）：ここは長らく `kenpin_gate.py --zenbu` を指していたが、
+        #   kenpin_gate.py に --zenbu という引数は存在しない（実行すると argparse が
+        #   「unrecognized arguments: --zenbu」で即エラー＝この工程は一度も成功していない）。
+        #   間違い探しの本体は tools/machigai_sagashi.py（0円・全曲総当たり）。そちらへ繋ぎ直す。
+        "cmd": ["python3", os.path.join(HERE, "machigai_sagashi.py")],
         "needs": [],
     },
     {

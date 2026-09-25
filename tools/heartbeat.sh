@@ -282,6 +282,14 @@ while :; do
   #   二重実装はしない）。
   # 起動の間引き（2026-09-18）：発車0本の検知。30秒おきで十分（元は15秒）
   tick_every 2 && ( python3 "$REPO/tools/launch_watchdog.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-26（復元便）復活係。1分おき（tick_every 4 ＝ 15秒×4）。
+  #   ★足しているのは2つだけ：①本物が0本だった時間を分で積算して日別に残す
+  #   （status/fukkatsu.jsonl・status/zero_bon.json。空回しは走行に数えない）
+  #   ②Claudeが使えない間、空回しの代わりに0円の本物工程を回す。
+  #   目標本数(inochi.py)・0本検知(launch_watchdog.py)・固まった便の戻し(1142_fukkyuu.py)・
+  #   順番(aitara_mawasu.py)は既にあるものを呼ぶだけ。二重実装しない。
+  #   ★この係が落ちても心臓は次のtickでまた呼ぶ＝どのセッションにも依存しない。
+  tick_every 4 && ( python3 "$REPO/tools/fukkatsu.py" >> "$REPO/status/fukkatsu.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-17（926番）：外部検品ゲート。status/kenpin/pending/ に積まれた依頼票を
   #   ChatGPT(OpenAI API)へ投げて判定を号番号(queue.json)へ戻す。5分便(machine_status_push.sh)にも
   #   同じ行があるが、その便はMacが重いと何十分も回ってこないことが実測されており（このログの
