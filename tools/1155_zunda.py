@@ -262,6 +262,24 @@ def collect():
     return sorted(hits, key=lambda r: (rank(r), r))
 
 
+NOTES_CACHE = os.path.join(STATE_DIR, "notes.json")
+
+
+def cached_notes():
+    """Vault全走査は5分かかる（iCloud）。6時間はキャッシュを使う。"""
+    try:
+        if time.time() - os.path.getmtime(NOTES_CACHE) < 6 * 3600:
+            with io.open(NOTES_CACHE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    notes = collect()
+    os.makedirs(STATE_DIR, exist_ok=True)
+    with io.open(NOTES_CACHE, "w", encoding="utf-8") as f:
+        json.dump(notes, f, ensure_ascii=False, indent=1)
+    return notes
+
+
 def do_note(rel, prog):
     src = os.path.join(VAULT, rel)
     with io.open(src, "r", encoding="utf-8", errors="ignore") as f:
@@ -305,11 +323,18 @@ def main():
     limit = None
     if "--limit" in sys.argv:
         limit = int(sys.argv[sys.argv.index("--limit") + 1])
-    log("=== 1155 開始 encoder=%s limit=%s ===" % (ENC[0], limit))
+    only = None
+    if "--only" in sys.argv:
+        only = sys.argv[sys.argv.index("--only") + 1]
+    log("=== 1155 開始 encoder=%s limit=%s only=%s ===" % (ENC[0], limit, only))
     if not engine_boot():
         return 1
     prog = load_progress()
-    notes = collect()
+    if only:
+        notes = [only]
+        prog["done"].pop(only, None)
+    else:
+        notes = cached_notes()
     prog["total"] = len(notes)
     save_progress(prog)
     log("対象 %d 本 / 済 %d 本" % (len(notes), len(prog["done"])))

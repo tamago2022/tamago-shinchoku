@@ -897,7 +897,19 @@ def main():
     ap.add_argument("--bin", default="1039")
     ap.add_argument("--modoshi")
     ap.add_argument("--show", action="store_true")
+    # ★1155番：棚の新設を口から呼べるようにした（shinsetsu() は前からあったが
+    #   CLIが無く、python -c の手打ちでしか叩けなかった＝次の人が再現できない）。
+    ap.add_argument("--shinsetsu", help="棚を1本新設する題名（例 スープ）")
+    ap.add_argument("--world", help="--shinsetsu の行き先の世界（例 food）")
+    ap.add_argument("--subtitle", default="", help="--shinsetsu の副題（任意）")
     a = ap.parse_args()
+    if a.shinsetsu:
+        if not a.world:
+            print("--shinsetsu には --world も要ります（例 --world food --shinsetsu スープ）")
+            return 1
+        r = shinsetsu(a.world, a.shinsetsu, a.subtitle, bin_no=a.bin, dry=a.dry)
+        print(json.dumps(r, ensure_ascii=False, indent=1)[:4000])
+        return 0 if r.get("ok") else 1
     if a.show:
         try:
             print(io.open(OUT_JSON, encoding="utf-8").read())

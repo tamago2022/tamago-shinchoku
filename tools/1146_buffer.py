@@ -20,6 +20,9 @@ import os
 import sys
 import urllib.request
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import x_kata  # noqa: E402  ★1153番【Xの投稿の型】URLを必ず一番最後に置く係
+
 API = "https://api.buffer.com"
 ENVFILE = os.path.expanduser("~/.tamago/keys/api_keys.env")
 
@@ -82,8 +85,17 @@ def main():
         org = a.org or gql(Q_ACCOUNT)["account"]["organizations"][0]["id"]
         print(json.dumps(gql(Q_CHANNELS, {"org": org}), ensure_ascii=False, indent=2))
     else:
+        # ★1153番【Xの投稿の型】ここがBufferへ渡る最後の扉。
+        #   URLが末尾でないと、Xはカードを出した上に本文のURLの文字列も残す＝「リンクが2回」。
+        #   だから言葉は1文字も変えず、URLの行だけ一番最後へ動かしてから渡す。
+        #   出典: status/X_TOUKOU_KATA.md
+        text = x_kata.normalize(a.text)
+        if text != a.text:
+            print("★型で直した（URLを一番最後へ動かした・1153番）", file=sys.stderr)
+        if not x_kata.check(text):
+            sys.exit("★型に合わない本文を止めた（末尾がURLでない）。status/X_TOUKOU_KATA.md を見る")
         inp = {"channelId": a.channel, "schedulingType": "automatic",
-               "text": a.text,
+               "text": text,
                "mode": "customScheduled" if a.at else "addToQueue"}
         if a.at:
             inp["dueAt"] = a.at

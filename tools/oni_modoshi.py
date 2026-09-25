@@ -77,7 +77,7 @@ DAICHO = os.path.join(ST, "shukudai", "daicho.jsonl")
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 JIKAN_GIRE_NICHI = 14      # ★上限は時間だけ。回数では打ち切らない
-IKKAI_NI = 6               # 1回の実行で検品する本数
+IKKAI_NI = 3               # 1回の実行で検品する本数
 NAKAMI_SAITEI = 400        # 本文がこれ未満の文字数なら「中身が空」
 
 # たまごさんの過去の指摘の置き場所。記憶（feedback_*.md）と、拾った発言。
@@ -158,7 +158,7 @@ def urls_in(text):
     return out[:4]
 
 
-def tataku(url, timeout=12):
+def tataku(url, timeout=8):
     """URLを1本叩く。★ブラウザは使わない。返すのは (状態コード, 本文)。"""
     req = urllib.request.Request(url, headers={"User-Agent": "oni-modoshi/1.0"})
     try:
