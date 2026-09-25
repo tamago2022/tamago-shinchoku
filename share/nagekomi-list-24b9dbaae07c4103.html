@@ -59,6 +59,10 @@
        border-radius:12px;text-decoration:none}
   .back.sub{background:#fff;color:var(--accent);border:1px solid var(--line);margin-top:8px}
   .empty{font-size:13px;color:var(--sub);padding:18px 2px}
+  /* ★書けない日は黙らない。何が止まっていて、何をすれば動くかを1枚目に出す。 */
+  .kagi{background:#fff4ef;border:1px solid #e6bfae;border-radius:11px;
+        padding:11px 12px;margin:0 0 12px;font-size:12.5px;line-height:1.7;color:#7a3a22}
+  .kagi b{color:var(--ng)}
 </style>
 </head>
 <body>
@@ -66,6 +70,8 @@
 <h1>受付一覧</h1>
 <p class="lead">投げ込み箱に入ったもの。新しい順。<br>
 反映のことばは3つだけ：<b>済</b>（棚に出ている）／<b>まだ</b>（これから入れる）／<b>弾いた</b>（入れられなかった・理由つき）。</p>
+
+<div id="kagi" hidden class="kagi"></div>
 
 <div class="bar" id="bar">
   <button data-f="" aria-pressed="true">ぜんぶ <span id="c0"></span></button>
@@ -83,7 +89,7 @@
 <a class="back sub" href="../index.html">進捗表にもどる</a>
 
 <script>
-var DATA = null, FILT = "", SEEN = "";
+var DATA = null, FILT = "", SEEN = "", OSHITA = 0;
 
 function z(n){ return (n<10?"0":"")+n; }
 function stamp(){ var d = new Date(); return z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds()); }
@@ -106,8 +112,11 @@ function haneiClass(h){ return h==="済" ? "sumi" : (h==="弾いた" ? "hajita" 
 function render(){
   var host = document.getElementById("list");
   var now = document.getElementById("nowShowing");
+  /* ★押したのに画面が1ミリも動かない、を作らない（1050番）。
+     同じボタンを続けて押しても「何回目か」が必ず増えるので、押した手応えが必ず出る。 */
   if(now){ now.textContent = "いま見ているもの：" + (FILT || "ぜんぶ")
-             + (SEEN ? "　／　" + SEEN + " に取り直しました" : ""); }
+             + (SEEN ? "　／　" + SEEN + " に取り直しました" : "")
+             + (OSHITA ? "（" + OSHITA + "回目）" : ""); }
   var md = document.getElementById("modosu");
   if(md){ md.hidden = !FILT; }
 
@@ -154,6 +163,7 @@ function render(){
 
 function setFilter(f){
   FILT = f || "";
+  OSHITA += 1;
   [].forEach.call(document.querySelectorAll("#bar button"), function(x){
     x.setAttribute("aria-pressed", (x.getAttribute("data-f")||"") === FILT ? "true" : "false"); });
   render();          /* ★押した瞬間に必ず画面が変わる（取り直しを待たせない） */
@@ -168,6 +178,17 @@ document.getElementById("bar").addEventListener("click", function(e){
 
 document.getElementById("modosu").addEventListener("click", function(){ setFilter(""); });
 
+/* ★棚に書けない日は黙らない（1152番）。何が止まっていて、何をすれば動くかを出す。 */
+function drawKagi(k){
+  var el = document.getElementById("kagi");
+  if(!el) return;
+  if(!k || k.kakeru !== false){ el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  el.innerHTML = "<b>いま、棚へは書けません。</b>受け付けた分は下に残っています（反映は「まだ」）。<br>"
+    + esc(k.why || "") + "<br>直し方：" + esc(k.naoshikata || "")
+    + "<br><span style='opacity:.7'>確かめた時刻 " + esc(k.at || "") + "</span>";
+}
+
 function getJSON(u, head){
   return fetch(u + (u.indexOf("?")<0?"?":"&") + "t=" + Date.now(),
                head ? {cache:"no-store", headers:head} : {cache:"no-store"})
@@ -177,6 +198,7 @@ function getJSON(u, head){
 /* ★本物のURL（https）から開いたときだけ中継所（Macの生の写し）を見る。
    写し（file:// や 127.0.0.1）から見に行くとブラウザに止められ、画面に赤が残るだけ。 */
 function load(){
+  getJSON("../status/public/nagekomi_kagi.json").then(drawKagi);
   if(location.protocol !== "https:"){
     return getJSON("../status/public/nagekomi_list.json").then(function(pub){
       DATA = pub; SEEN = stamp(); render(); });
