@@ -1,14 +1,14 @@
 {
- "measuredAt": "2026-09-25T08:48:40+0900",
- "diskFreeGB": 62.0,
+ "measuredAt": "2026-09-25T09:20:12+0900",
+ "diskFreeGB": 61.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 657,
+ "load": 198,
  "memPressure": "green",
- "memAvailGB": 7.4,
- "sessions": 6,
+ "memAvailGB": 6.6,
+ "sessions": 2,
  "safeMax": 4,
- "moreOK": 0,
+ "moreOK": 2,
  "target": 1,
  "cap": 1,
  "calibratedSafeN": 4,
@@ -17,28 +17,37 @@
  "items": [
   {
    "label": "ゴミ箱を空にする",
-   "effect": "空き 16.24GB",
-   "gb": 16.24,
+   "effect": "空き 16.33GB",
+   "gb": 16.33,
    "kind": "disk",
    "safe": false,
    "how": "捨てたつもりのもの。中身を一度見てから"
   },
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 14.11GB",
-   "gb": 14.11,
+   "effect": "メモリ 15.09GB",
+   "gb": 15.09,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
-   "how": "54プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "53プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 9.06GB",
-   "gb": 9.06,
+   "effect": "空き 9.0GB",
+   "gb": 9.0,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
+  },
+  {
+   "label": "Chromeを閉じる",
+   "effect": "メモリ 2.7GB",
+   "gb": 2.7,
+   "kind": "mem",
+   "safe": true,
+   "app": "Google Chrome",
+   "how": "23プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "Googleドライブのローカルキャッシュ",
@@ -49,44 +58,19 @@
    "how": "アップロード待ちが残っていると消せない"
   },
   {
-   "label": "Chromeを閉じる",
-   "effect": "メモリ 2.26GB",
-   "gb": 2.26,
-   "kind": "mem",
-   "safe": true,
-   "app": "Google Chrome",
-   "how": "23プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
-  },
-  {
    "label": "node_modules を消す（1箇所）",
    "effect": "空き 0.41GB",
    "gb": 0.41,
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
-  },
-  {
-   "label": "終わって待機中のセッション 2本を畳む",
-   "effect": "メモリ 0.37GB・負荷↓",
-   "gb": 0.37,
-   "kind": "mem",
-   "safe": true,
-   "how": "Rusuban mimawa、（不明）"
-  },
-  {
-   "label": "セッションを2本減らす（上限4本）",
-   "effect": "負荷 657%→上限内",
-   "gb": 0,
-   "kind": "load",
-   "safe": false,
-   "how": "どれを止めるかは作業内容次第。止めるなら引き継ぎメモを書かせてから"
   }
  ],
- "_duAt": 1790292091.928285,
+ "_duAt": 1790294348.572839,
  "_du": {
-  "caches": 9.06,
+  "caches": 9.0,
   "npx": 0.05,
-  "trash": 16.24,
+  "trash": 16.33,
   "driveCache": 2.32,
   "nodeModules": 0.41,
   "nodeModulesList": [
@@ -99,16 +83,16 @@
  "同時上限": {
   "本数": 1,
   "根拠": [
-   "首は「ロード」（メモリ30本／スワップ3本／ロード0本）",
-   "自動減便：5分ロード比6.5（2.5超）＝詰まっている。1本まで落とす"
+   "首は「ロード」（メモリ26本／スワップ1本／ロード0本）",
+   "自動減便：スワップの残りが0.87GB（1.0GB未満）＝Mac全体が落ちる手前。1本まで落とす"
   ],
   "天井": {
-   "メモリ": 30,
-   "スワップ": 3,
+   "メモリ": 26,
+   "スワップ": 1,
    "ロード": 0
   },
-  "測った時刻": "2026-09-25T08:48:41+0900",
-  "自動減便": "5分ロード比6.5（2.5超）＝詰まっている。1本まで落とす",
+  "測った時刻": "2026-09-25T09:31:42+0900",
+  "自動減便": "スワップの残りが0.87GB（1.0GB未満）＝Mac全体が落ちる手前。1本まで落とす",
   "試し増便": null
  }
 }

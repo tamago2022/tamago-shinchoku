@@ -1,41 +1,41 @@
 {
- "at": "2026-09-25 08:55:15",
- "akaN": 3,
+ "at": "2026-09-25 17:50:43",
+ "akaN": 4,
  "atama": {
   "label": "飴玉ゼロ率",
-  "value": 69.4,
+  "value": 70.0,
   "unit": "%",
-  "why": "走った36回 → 取れた11回",
+  "why": "走った40回 → 取れた12回",
   "nao": "1142_fukkyuu.py が直せるものは直す。残りは名前を出す"
  },
- "hitokoto": "赤が3個あります：飴玉ゼロ率",
+ "hitokoto": "赤が4個あります：飴玉ゼロ率",
  "cards": [
   {
    "key": "ame",
    "label": "飴玉ゼロ率",
-   "value": 69.4,
+   "value": 70.0,
    "unit": "%",
-   "sub": "36係中 25係が「走っているのに取れた0」",
+   "sub": "40係中 28係が「走っているのに取れた0」",
    "mark": "🔴",
    "red": true,
-   "why": "走った36回 → 取れた11回",
+   "why": "走った40回 → 取れた12回",
    "names": [
     "line_shinsa(78回)",
     "line_reply(4回)",
     "anthropic_reply(4回)",
     "renraku(6回)",
-    "auto:kaitsuu(50回)",
+    "auto:kaitsuu(52回)",
     "auto:kazu_gate(17回)",
     "auto:nagekomi_shelf(3回)",
-    "auto:nagekomi_list(4回)",
+    "auto:nagekomi_list(5回)",
     "auto:shiire_loop(2回)",
-    "auto:dojisu_jougen(27回)",
+    "auto:dojisu_jougen(29回)",
     "auto:okane_ichimai(3回)",
     "auto:omosa_mihari(3回)",
     "auto:soto_hatarakite(1回)",
     "auto:kakunin_machi(1回)",
     "auto:daicho(6回)",
-    "auto:inochi(2回)",
+    "auto:inochi(3回)",
     "auto:mitassei(3回)",
     "auto:tekizai(1回)",
     "auto:subsc_shirase(1回)",
@@ -44,7 +44,10 @@
     "auto:buffer_yoyaku(2回)",
     "auto:aitara_mawasu(1回)",
     "auto:main_kanmon(3回)",
-    "auto:modoseru(1回)"
+    "auto:modoseru(1回)",
+    "auto:1142_kanmon(1回)",
+    "auto:haibun(1回)",
+    "auto:shukudai(1回)"
    ],
    "nao": "1142_fukkyuu.py が直せるものは直す。残りは名前を出す"
   },
@@ -84,14 +87,15 @@
   {
    "key": "ochita",
    "label": "落ちた便",
-   "value": 0,
+   "value": 2,
    "unit": "本",
-   "sub": "24時間：本物0本／空回し313本",
+   "sub": "24時間：本物0本／空回し190本",
    "mark": "🔴",
    "red": true,
-   "why": "止められています：Claudeのログインが切れています（叩けなかった(TimeoutExpired)／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnterを押すと、1年もつ形に入れ替わります。戻ったことはこちらで気づいて、発車も自動で再開します。20",
+   "why": "止められています：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））。枠の問題ではありません。status/LOGIN.md の1行をターミナルに貼ってEnterを押すと、1年もつ形に入れ替わります。戻ったことはこちらで気づいて、発車も自",
    "names": [
-    "ログイン切れ：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））／2026-09-20 04:30から"
+    "ログイン切れ：Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も トークンが無効（作り直しが要る））／2026-09-20 04:30から",
+    "工場が空回しだけ：直近120行で 本物の発車0／見送り120／空回し0"
    ],
    "nao": "止め札の中身が「ログイン」なら 1142_fukkyuu.py が鍵の手順を出す"
   },
@@ -151,14 +155,26 @@
   {
    "key": "waku",
    "label": "週の枠",
-   "value": 31.0,
+   "value": null,
    "unit": "%",
-   "sub": "戻るのは 2026-09-29 17:59",
+   "sub": "測れていません",
+   "mark": "🔴",
+   "red": true,
+   "why": "枠が測れていない＝使い切っても気づけない",
+   "names": [],
+   "nao": "ochita.py の枠取得を直す"
+  },
+  {
+   "key": "jouchuu",
+   "label": "常駐が古い",
+   "value": 0,
+   "unit": "本",
+   "sub": "心臓はFri Sep 25 17:47:56 2026起動（0.0日前）。ファイルは09-25 09:52更新",
    "mark": "✅",
    "red": false,
-   "why": "使い切ると、その週は本物が1本も出せない",
+   "why": "心臓は最新のファイルで走っています",
    "names": [],
-   "nao": "70%を超えたら Opus を止めて Sonnet だけにする"
+   "nao": "launchctl kickstart -k gui/$(id -u)/com.tamago.tamago-shinchoku.heartbeat"
   }
  ]
 }
