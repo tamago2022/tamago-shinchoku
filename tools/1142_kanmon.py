@@ -182,7 +182,31 @@ def kazoeru(days=7):
     return t, h
 
 
+GATE_SEC = 6 * 3600          # 押しボタンは6時間に1回でいい（毎回叩くと無駄打ち）
+GATE_AT = os.path.join(STATUS, ".1142_kanmon_at")
+
+
+def mabiku():
+    """6時間に1回だけ通す。★通さなかったことも黙らない（ログに1行残す）。"""
+    if "--ima" in sys.argv:
+        return True
+    try:
+        import time as _t
+        if _t.time() - os.path.getmtime(GATE_AT) < GATE_SEC:
+            return False
+    except OSError:
+        pass
+    try:
+        io.open(GATE_AT, "w").write("")
+    except Exception:
+        pass
+    return True
+
+
 def main():
+    if not mabiku():
+        print("押しボタンは6時間に1回。今回は見送り（--ima で今すぐ叩ける）")
+        return
     k = oshibotan()
     t, h = kazoeru()
     shinda = [x["gate"] for x in k if x["ikiteru"] is not True]

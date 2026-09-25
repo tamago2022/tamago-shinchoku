@@ -259,6 +259,16 @@ while :; do
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
   #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。
   ( python3 "$REPO/tools/top_status.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # ───────────────────────────────────────────────────────────────
+  # 1142番（2026-09-25）ループを閉じる3本。**出す → 測る → 直す → また出す** の後ろ3つ。
+  #   たまごさん「測るところが無いと全部ただの作業」「基本的に止まらないで回し続けて」
+  #   ★新しい常駐(launchd)は1本も増やさない。既にある心臓に相乗りさせる（憲法：見張りを増やさない）
+  #   順番が大事：測る(loop) → 直す(fukkyuu) → 次の周でまた測る。
+  #   直す係が先に走ると「何を直すのか」が分からないので、必ずこの順で書く。
+  tick_every 8  && ( python3 "$REPO/tools/1142_loop.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  tick_every 40 && ( python3 "$REPO/tools/1142_fukkyuu.py" --honban >> "$REPO/status/1142_fukkyuu.log" 2>&1 & ) >/dev/null 2>&1
+  # 門の押しボタン（わざと不正な1件を流して、門が生きているか実測する）。中で6時間に間引く。
+  tick_every 40 && ( python3 "$REPO/tools/1142_kanmon.py" >> "$REPO/status/1142_kanmon.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（894番）：発車0本の検知＋自己修復（tools/genzaichi.pyのcheck_launch_silence・
   #   797/798番実装）は、genzaichi.py本体が「実質30分おき」に間引かれているせいで、
   #   発車が10分止まっても最大約30分検知が遅れる穴があった。判定自体は軽量（ファイルの
