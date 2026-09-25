@@ -1,5 +1,5 @@
 {
- "checkedAt": "2026-09-24T09:15:33+09:00",
+ "checkedAt": "2026-09-25T09:10:26+09:00",
  "overallColor": "red",
  "redCount": 2,
  "items": [
@@ -22,9 +22,9 @@
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
-   "color": "red",
-   "count": 1,
-   "detail": "最終記録から約27.7時間経過（2026-09-23T05:32:46+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）（24時間ルールに抵触）"
+   "color": "green",
+   "count": 0,
+   "detail": "最終記録から約0.3時間経過（2026-09-25T08:53:31+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）"
   },
   {
    "key": "done_missing_url",
@@ -45,22 +45,22 @@
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回1117番 → 今回1118番（減少なし）"
+   "detail": "前回1118番 → 今回1280番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
-   "color": "gray",
-   "count": 0,
-   "detail": "計測に失敗した: Command '['git', '-c', 'core.quotepath=false', 'ls-tree', '-r', '-l', 'HEAD']' timed out after 180 seconds"
+   "color": "red",
+   "count": 15,
+   "detail": "tamashii/data/tamashii.json(5.3MB)、share/check/img/906-image-quality/concierge-original.png(2.7MB)、status/public/queue.json(2.1MB)、wae_autopost/images/16_オレンジ系の龍2枚並び_黒背景_桜屋外.jpg(1.6MB)、wae_autopost/images/03_緑の丸球体.jpg(1.5MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
    "color": "green",
    "count": 0,
-   "sample": 15,
-   "detail": "直近15件の確認ページはすべて200だった"
+   "sample": 0,
+   "detail": "確認できるURLが無かった"
   },
   {
    "key": "orphan_sessions",
@@ -80,20 +80,18 @@
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 37,
-   "detail": "未報告の完了が37件たまっている（最古は約3.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 49,
+   "detail": "未報告の完了が49件たまっている（最古は約27.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
-   "key": "oni_kantoku_alive",
-   "skipped": "既存の684番と同じ内容のためスキップ"
+   "key": "big_files",
+   "skipped": "既にこの点検が積んだ925番が未解決のため積み直さない"
   },
   {
    "key": "unreported_completions",
-   "status": "done",
-   "message": "1118番として発車待ちに追加しました（P2）",
-   "n": 1118
+   "skipped": "既にこの点検が積んだ1118番が未解決のため積み直さない"
   }
  ],
  "autoClosedRecovered": []
