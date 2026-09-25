@@ -107,6 +107,24 @@ def main():
         except Exception as e:
             note("suii失敗 %s" % e)
 
+    # ⑤ 実測が全部終わったら、隠す表を作り直して本番に押す（聞かずに押す・0円）
+    #    ★推測ではなく実測でしか隠さない。生きている動画を隠すのが一番の恥。
+    flag = os.path.join(OUT, ".kensa_done_at")
+    kdone = os.path.getmtime(flag) if os.path.exists(flag) else 0
+    if done >= total > 0 and time.time() - kdone > 3 * 3600:
+        io.open(flag, "w").write(str(int(time.time())))
+        try:
+            _mk_jissoku()
+            r1 = subprocess.run([PY, "tools/1140_kensa.py"], cwd=REPO,
+                                capture_output=True, timeout=1800)
+            note("1140_kensa rc=%d" % r1.returncode)
+            r2 = subprocess.run([PY, "tools/1145_push_hidden.py"], cwd=REPO,
+                                capture_output=True, timeout=600)
+            note("押した rc=%d %s" % (r2.returncode,
+                                     (r2.stdout or b"").decode("utf-8", "ignore")[-300:]))
+        except Exception as e:
+            note("検査・押しで失敗 %s" % e)
+
     # ④ 1日1回、全部を最初からやり直す（★たまごさん「日ごとにどんどん少なくなってくればいい」）
     #    済んだ分は捨てずに arch/ に退避。次の回は0本から積み直すので、増減が正しく出る。
     dstamp = os.path.join(OUT, ".day_at")
@@ -121,25 +139,6 @@ def main():
             if os.path.exists(src):
                 os.replace(src, os.path.join(arch, "%s.%s" % (name, tag)))
         note("1日1回の流し直し：%s へ退避して0本から積み直す" % tag)
-
-    # ⑤ 実測が全部終わったら、隠す表を作り直して本番に押す（聞かずに押す・0円）
-    #    ★推測ではなく実測でしか隠さない。生きている動画を隠すのが一番の恥。
-    flag = os.path.join(OUT, ".kensa_done_at")
-    kdone = os.path.getmtime(flag) if os.path.exists(flag) else 0
-    if done >= total > 0 and time.time() - kdone > 3 * 3600:
-        io.open(flag, "w").write(str(int(time.time())))
-        try:
-            mk = os.path.join(REPO, "status", "1145", "jissoku_to_1140.py")
-            _mk_jissoku()
-            r1 = subprocess.run([PY, "tools/1140_kensa.py"], cwd=REPO,
-                                capture_output=True, timeout=1800)
-            note("1140_kensa rc=%d" % r1.returncode)
-            r2 = subprocess.run([PY, "tools/1145_push_hidden.py"], cwd=REPO,
-                                capture_output=True, timeout=600)
-            note("押した rc=%d %s" % (r2.returncode,
-                                     (r2.stdout or b"").decode("utf-8", "ignore")[-300:]))
-        except Exception as e:
-            note("検査・押しで失敗 %s" % e)
 
 
 
