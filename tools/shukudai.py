@@ -270,8 +270,58 @@ def actionable(r):
     return bool(_TASKISH.search(t))
 
 
+KIOKU = os.path.join(STATUS, "kioku", "hatsugen.jsonl")
+
+
+def harvest_kioku():
+    """④ status/kioku/hatsugen.jsonl ― **たまごさんが口で言ったこと。**
+
+    2026-09-26 たまごさん：
+      「あなたたちすぐ忘れたりするからさ、忘れられない、もう逃げられない仕組みにしてよ。」
+
+    ①②③はどれも「AIが書いた紙」。たまごさんの発言は、誰かが手で写さないと
+    台帳に入らなかった＝写し忘れた瞬間に消えていた。ここが4つ目の出どころ。
+    中身は tools/kioku.py が会話ログから機械で拾う（0円）。
+
+    ★言われた回数で優先度を決める。**3回以上言わせたものは最優先(1)に繰り上げる。**
+      2回で2、1回で3。たまごさんに二度言わせること自体が事故なので、
+      2回目が付いた時点で列の前に出る。
+    """
+    out = []
+    if not os.path.exists(KIOKU):
+        return out
+    for line in io.open(KIOKU, encoding="utf-8"):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            r = json.loads(line)
+        except Exception:
+            continue
+        title = (r.get("title") or "").strip()
+        if len(norm(title)) < 8:
+            continue
+        n = int(r.get("count") or 1)
+        out.append({
+            "id": make_id("kioku", title),
+            "source": "kioku",
+            "queueN": None,
+            "saidAt": r.get("firstSaid"),
+            "title": title[:120],
+            "doneWhen": done_when(title),
+            "state": "未着手",
+            "origin": "user",
+            "priority": 1 if n >= 3 else (2 if n >= 2 else 3),
+            "saidCount": n,
+            "lastSaid": r.get("lastSaid"),
+            "evidence": None,
+            "note": ("★%d回言わせている" % n) if n >= 2 else None,
+        })
+    return out
+
+
 def harvest():
-    rows = harvest_queue() + harvest_hikitsugi() + harvest_outbox()
+    rows = harvest_queue() + harvest_hikitsugi() + harvest_outbox() + harvest_kioku()
     # queue に同じ題名で載っているものは queue 側を正として1本にまとめる
     queue_keys = {norm(r["title"]) for r in rows if r["source"] == "queue"}
     queue_heads = {norm(r["title"])[:18] for r in rows if r["source"] == "queue"}
@@ -421,7 +471,7 @@ def ingest(rows, limit=40, dry=False):
         lock = contextlib.nullcontext
     added = []
     targets = [r for r in rows.values()
-               if r.get("source") in ("hikitsugi", "outbox")
+               if r.get("source") in ("hikitsugi", "outbox", "kioku")
                and r.get("state") in OPEN_STATES
                and r.get("actionable")
                and not r.get("queuedAt")]
@@ -430,6 +480,12 @@ def ingest(rows, limit=40, dry=False):
         # 引き継ぎの積み残し＝普通(3)。工場発の申し送り＝後回し(4)。
         # たまごさんが進捗表で付けたPは常にこれより強いので、割り込みにはならない。
         pri = 3 if r.get("origin") == "user" else 4
+        # ★たまごさんの口から出たもの（kioku）は、言われた回数で列の前に出す。
+        #   3回以上言わせた＝最優先(1)。2回＝2。二度言わせること自体が事故なので、
+        #   2回目が付いた瞬間に割り込んでよい。
+        if r.get("source") == "kioku":
+            n = int(r.get("saidCount") or 1)
+            pri = 1 if n >= 3 else (2 if n >= 2 else 3)
         body = "\n".join([
             "【タスク】%s" % r["title"],
             "【完了条件】%s" % r["doneWhen"],

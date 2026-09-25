@@ -1,42 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""判定は、ここにしか書かない。
+"""tools/hantei.py ── 判定日が来たら機械が見に行く係。うやむやを構造的に不可能にする。
 
-1018番（2026-09-22）たまごさん
-  「走った回数と実際に取れた回数を両方数える。走った>0 なのに 取れた=0 は赤」
-  「3層が同じ嘘を見ていた、を繰り返さない」
+たまごさん（2026-09-26）:
+  「1行＝1依頼。列：言われた日時／内容／言われた回数／状態／1週間後の判定日／
+    1ヶ月後の判定日／実際どうなったか。判定日が来たら機械が自動で状態を見に行って、
+    変わっていなければ★自動で赤＋P1に繰り上げ。うやむやを構造的に不可能にする。」
 
-━━ なぜ新しいファイルを1つ増やしたか（増やさない主義に対する例外の理由）━━
+★人が「まだやってます」と言えない。判定日は言われた瞬間に台帳へ焼かれ、
+  その日が来たら機械が勝手に見に行って、勝手に赤にする。誰の許可も要らない。
 
-実測で分かったのは「3層が同じ嘘を見ていた」ではなく、**もっと悪い形**だった。
-2026-09-22 07:00 時点、同じ工場について3つの紙が3つの違うことを言っていた：
+━━ 何を見るか ━━
+  status/shukudai/daicho.jsonl の状態（＝宿題台帳が正本）。
+  さらに tools/oni_modoshi.py の検品結果があれば、そちらを優先する
+  （自己申告の「完了」ではなく、機械が200を確認した「完了」だけを完了と読む）。
 
-  ・status/genzaichi.md   … 「✅ 発車：10分以内に動いている」        ← 緑
-  ・鍵台帳 probe_hassha() … 「発車が止められています（ログイン切れ）」← 赤（正しい）
-  ・auto_launch.log       … 本物0本／空回し316本／見送り2453回        ← 赤（正しい）
+━━ 判定 ━━
+  完了になっている          → 「返した」。実際どうなったかに証拠URLを書いて閉じる
+  状態が言われた時から不変  → ★赤。P1に繰り上げて、その場で再発車する
+  途中（走行中・確認待ち）  → 「動いてはいる」。赤にはしないが、1ヶ月判定では赤
 
-＝ 正しい答えは既に工場の中にあった。**それを持っていない紙が、緑を出していた。**
-たまごさんが最初に読む1枚（genzaichi.md）だけが嘘だったので、26時間気づけなかった。
+★1ヶ月の判定日を過ぎてまだ返っていないものは、理由を問わず赤。例外を作らない。
 
-さらに、判定そのものも2か所に別々に書かれていた：
-  ・kagi_daicho.py watcher_rows() 696行目
-      red = (bool(run_at) and not caught_at) or ...   ← 正しい型が既にあった
-  ・genzaichi.py                                       ← 同じ型が無かった
-同じ規則を2回書けば、片方だけ直る日が必ず来る。実際そうなっていた。
-
-→ だから規則を**この1ファイルに引っ越す**。kagi_daicho も genzaichi も、
-  これから足すどの見張りも、判定は必ずここを呼ぶ。ここを直せば全部が直る。
-  新しい常駐は1つも増えない（このファイルは呼ばれるだけで、自分では走らない）。
-
-━━ 規則（これが全部）━━
-
-  走った = 0            → ⚪ まだ何も走っていない（異常ではない）
-  走った > 0・取れた > 0 → ✅ 働いている
-  走った > 0・取れた = 0 → 🔴 **動いているのに何も産んでいない**
-  止めている理由がある   → 🔴 理由をそのまま出す（推測で埋めない・黙って飲み込まない）
-
-「動いている」の根拠に、プロセスの生死・ログの更新・着火の有無を使わない。
-それらは全部「空回しでも点く緑」になる。**取れた本数だけが根拠になる。**
+使い方
+    python3 tools/hantei.py              # 判定日が来たものを見に行く（心臓から1日1回）
+    python3 tools/hantei.py --show
+    python3 tools/hantei.py --self-test
 """
 from __future__ import annotations
 
@@ -45,1304 +34,226 @@ import io
 import json
 import os
 import re
-import time
+import sys
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATUS = os.path.join(REPO, "status")
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HERE)
+ST = os.path.join(REPO, "status")
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+
+HATSUGEN = os.path.join(ST, "kioku", "hatsugen.jsonl")
+DAICHO = os.path.join(ST, "shukudai", "daicho.jsonl")
+KENPIN = os.path.join(ST, "oni_modoshi", "kenpin.jsonl")
+LOG = os.path.join(ST, "kioku", "hantei.jsonl")
+
 JST = datetime.timezone(datetime.timedelta(hours=9))
-
-RULE = "走った>0 かつ 取れた=0 は赤"
-
-# 黙って飲み込まれがちな言葉。見つけたら理由として必ず表に出す（0にしない・伏せない）。
-SWALLOW_WORDS = ("no_credential", "empty_credential", "401", "403",
-                 "skip", "skipped", "unauthorized", "forbidden",
-                 "expired", "invalid_token", "ログイン", "認証")
+_YOUBI = "月火水木金土日"
 
 
-# 機械の言葉 → たまごさんが読んで次の一手が分かる言葉。
-# ★「blocked=no_credential」は嘘ではないが、**読んでも何をすればいいか分からない**。
-#   分からない表示は、結局あとで人が読み直して原因を掘ることになる＝飲み込んでいるのと同じ。
-#   翻訳もここ1か所に置く（各見張りに書かない）。
-YAKU = (
-    ("no_credential",
-     "Gmailを読む鍵（アプリパスワード）が置かれていません"
-     "（置き場 /Users/mac/.tamago/gmail_app_password）。"
-     "★これはたまごさんにしか置けません。置けば次の30分以内に自動で見張りが始まります"),
-    ("empty_credential",
-     "Gmailを読む鍵のファイルはありますが、中身が空です"
-     "（置き場 /Users/mac/.tamago/gmail_app_password）。★たまごさんにしか直せません"),
-    ("credentialMissingNotified",
-     "鍵が無いことを1回知らせたあと、そのまま止まっています"
-     "（上と同じ Gmail の鍵）。★たまごさんにしか直せません"),
-    ("401", "断られました（401＝鍵が違う・切れている）"),
-    ("403", "断られました（403＝その鍵に権利が無い。課金か権限の追加が要ることが多い）"),
-    ("unauthorized", "断られました（鍵が通っていません）"),
-    ("forbidden", "断られました（権利がありません）"),
-)
+def now():
+    return datetime.datetime.now(JST)
 
 
-def yakusu(blocked):
-    """止まっている理由を、読んで次の一手が分かる言葉にする。
-    元の機械の言葉は**消さずに括弧で残す**（嘘にしないため）。"""
-    s = (blocked or "").strip()
-    if not s:
-        return s
-    # ★既に日本語で理由が書いてあるものは、絶対に置き換えない。
-    #   最初の版は「403」という3文字が文中にあるだけで文全体を決まり文句にすり替え、
-    #   Genspark（403とは別の理由で閉まっている）の説明を消してしまった＝新しい嘘。
-    #   翻訳が要るのは「no_credential」のような、そのままでは読めない短い機械語だけ。
-    if len(s) > 60 or re.search(r"[ぁ-んァ-ヶ一-龥]", s):
-        return s
-    low = s.lower()
-    for key, jp in YAKU:
-        if key.lower() in low:
-            return "%s（機械の言葉：%s）" % (jp, s)
-    return s
+def today():
+    return now().strftime("%Y-%m-%d")
 
 
-def judge(runs, catches, blocked="", label=""):
-    """唯一の判定。**これ以外の場所に同じifを書かない。**
-
-    戻り値: dict(red, mark, line, runs, catches, blocked)
-    """
-    runs = int(runs or 0)
-    catches = int(catches or 0)
-    blocked = (blocked or "").strip()
-
-    if blocked:
-        red, mark = True, "🔴"
-        why = "止められています：%s" % yakusu(blocked)
-    elif runs == 0:
-        red, mark = False, "⚪"
-        why = "まだ走っていません"
-    elif catches == 0:
-        red, mark = True, "🔴"
-        why = "**走った%d回 → 取れた0回。動いているのに何も産んでいません**" % runs
-    else:
-        red, mark = False, "✅"
-        why = "走った%d回 → 取れた%d回" % (runs, catches)
-
-    line = "%s %s%s" % (mark, (label + "：") if label else "", why)
-    return dict(red=red, mark=mark, line=line, why=why,
-                runs=runs, catches=catches, blocked=blocked)
+def stamp():
+    return now().strftime("%Y-%m-%d %H:%M")
 
 
-# ── 1040番【公開の判定】「mainに入った → 本番に出た」の規則 ───────────────
-# ★規則は**ここだけ**に書く。tools/kohyou_kanshi.py は測って、この関数に渡すだけ。
-#   （1038番では kohyou_kanshi.py の中に if が直接書いてあった＝規則が2か所になる）
-#
-# ★「pushした＝出た」と数えない。本番の x-deployment-id の**UUIDが変わるまで**は
-#   「出ていない」。ごきげん補給所は GitHub Pages ではなく Lovable配信で、
-#   mainに入れただけでは本番は古いまま（2026-09-23 に4回踏んだ）。
-# ★1055番（2026-09-24）30分→10分に縮めた。実測で「押す→出る」は1〜5分で終わっている
-#   （status/kohyou_osu.log の09-24の7回：平均3分06秒／最長5分14秒）。30分待つ設計は、その差のぶんだけ
-#   本番を古いままにしていた。押すのは無料なので、待つ理由が無い。
-KOHYOU_MATIGIRE_SEC = 600    # mainが動いてから10分、本番が動かなければ赤
+def norm(s):
+    return re.sub(r"[★☆*#`>【】\[\]「」『』（）()・:：,、。\.\-—–_/\\!！?？\s]", "", s or "").lower()
 
 
-def kohyou_han(status=0, error="", deploy_key="", prev_deploy_key="",
-               machi_sha="", machi_sec=0, url="", matigire_sec=None):
-    """公開の判定。戻り値: dict(hantei="赤/黄/青", riyuu=..., red=bool)
-
-    引数は**測った事実だけ**：
-      status/error … 本番を叩いた結果
-      deploy_key   … 今の x-deployment-id のUUID部分（公開ごとに変わる部分）
-      prev_deploy_key … 前回のUUID部分
-      machi_sha/machi_sec … 「まだ出ていない借り」のコミットと、その経過秒
-    """
-    lim = int(matigire_sec or KOHYOU_MATIGIRE_SEC)
-    status = int(status or 0)
-    if error or (status and status >= 400):
-        h, why = "赤", "本番が叩けません：%s（%s）" % (error or status, url)
-    elif not deploy_key:
-        h, why = "黄", "x-deployment-id が返ってきません。物差しが無いので出たか判定できません"
-    elif machi_sec and machi_sec > lim:
-        h, why = "赤", ("mainに %s が入って %d分たつのに、本番の deploymentId が "
-                        "%s のまま変わっていません＝**出ていません**"
-                        % (machi_sha, machi_sec // 60, deploy_key))
-    elif machi_sec or machi_sha:
-        h, why = "黄", ("mainに %s が入りました。公開待ち %d分（%d分で赤）"
-                        % (machi_sha, (machi_sec or 0) // 60, lim // 60))
-    elif not prev_deploy_key:
-        h, why = "黄", ("初回。前回の deploymentId が無いので「出たか」はまだ判定できません"
-                        "（今のは %s。次の push から判定します）" % deploy_key)
-    else:
-        h, why = "青", "mainと本番が揃っています（deploymentId %s）" % deploy_key
-    return {"hantei": h, "riyuu": why, "red": h == "赤"}
-
-
-# ★1041番：赤になったとき「公開ボタンを押してよいか」の規則。**ここだけ**に書く。
-#   押す係（tools/kohyou_osu.py）は測って、この関数に渡すだけ。
-#   見る係（tools/kohyou_kanshi.py）は押さない。押す係は判定を書かない。
-KOHYOU_OSU_AIDA_SEC = 600      # 一度押したら10分は押し直さない
-# ★1055番（2026-09-24）12→96。実測：09-23は9回・09-24は06:33までで既に7回押している。
-#   上限12だと昼前に使い切り、そのあと本番は**その日いっぱい古いまま**になる。
-#   押すのは無料（deployは全プラン無料）なので、上限は「暴走を止める柵」であって
-#   「1日の配給」ではない。10分に1回×24時間＝96が物理的な上限なので、そこに合わせる。
-KOHYOU_OSU_HI_JOUGEN = 96      # 1日に押してよい回数の上限（押すのは無料。暴走だけ止める）
-
-
-def kohyou_osu_han(hantei="", machi_sha="", now=0.0, last_press_at=0.0,
-                   last_press_sha="", press_count_today=0, akirameta_sha="",
-                   phase="", aida_sec=None, hi_jougen=None):
-    """公開ボタンを押すか。戻り値: dict(osu=bool, riyuu=str)
-
-    引数は**測った事実だけ**：
-      hantei            … 見る係の判定（赤/黄/青）
-      machi_sha         … まだ本番に出ていないコミット
-      phase             … 押した直後の確かめ待ちなら "verifying"
-      akirameta_sha     … 押しても出なかったコミット（同じ相手に何度も押さない）
-    """
-    aida = int(aida_sec or KOHYOU_OSU_AIDA_SEC)
-    jougen = int(hi_jougen or KOHYOU_OSU_HI_JOUGEN)
-    if phase == "verifying":
-        return {"osu": False, "riyuu": "さっき押したところ。出たかを確かめている最中です"}
-    if hantei != "赤":
-        return {"osu": False, "riyuu": "赤ではないので押しません（今は%s）" % (hantei or "不明")}
-    if not machi_sha:
-        return {"osu": False, "riyuu": "本番が叩けない種類の赤です。公開を押しても直りません"}
-    if akirameta_sha and akirameta_sha == machi_sha:
-        return {"osu": False,
-                "riyuu": "%s では既に押したのに出ませんでした。もう押さず、赤のまま人を呼びます"
-                         % machi_sha}
-    if press_count_today >= jougen:
-        return {"osu": False, "riyuu": "今日はもう%d回押しました（上限）。赤のまま残します" % jougen}
-    machi = int(now - last_press_at) if last_press_at else aida + 1
-    if machi < aida:
-        return {"osu": False, "riyuu": "%d分前に押したばかり（あと%d分待つ）"
-                                       % (machi // 60, (aida - machi) // 60 + 1)}
-    return {"osu": True, "riyuu": "赤で、%s がまだ出ていないので公開を押します" % machi_sha}
-
-
-def tally(prev, run_at, caught_at, blocked=""):
-    """走った／取れたの数え方。**この1か所にしか書かない。**
-
-    1026番（2026-09-23）たまごさん：
-      「直せないもの（鍵が無い・権利が無い・課金が要る）は、赤のまま理由つきで出す。
-        隠さない。**投げるのをやめる**（催促も回数も増やさない）。」
-
-    実測（2026-09-22 23:40）：
-      LINE審査結果の見張り … 走った78回・取れた0回
-      だがこの78回は**1度もGmailに繋ぎに行っていない**。鍵が無いので、
-      state に "blocked": "no_credential" と書いて即 return しているだけ。
-      それを「走った」と数えていたので、直しようのない赤が毎分ふくらんでいた。
-
-    → **叩けもしなかった回は、走ったに数えない。**
-      止まっている事実は blocked が持っていて、judge() が必ず理由ごと赤で出す。
-      数が増えないだけで、赤は1件も消えない（隠していない）。
-
-    prev: {"runs":int,"catches":int,"seenRun":float,"seenCatch":float}
-    戻り値: 更新後の同じ形（prev は書き換えない）
-    """
-    c = dict(runs=int((prev or {}).get("runs") or 0),
-             catches=int((prev or {}).get("catches") or 0),
-             seenRun=(prev or {}).get("seenRun") or 0,
-             seenCatch=(prev or {}).get("seenCatch") or 0)
-    blocked_now = bool((blocked or "").strip())
-    if run_at and run_at > (c["seenRun"] or 0):
-        if not blocked_now:
-            c["runs"] += 1
-        # 見た跡は blocked でも進める（同じ回を何度も数えないため）
-        c["seenRun"] = run_at
-    if caught_at and caught_at > (c["seenCatch"] or 0):
-        c["catches"] += 1
-        c["seenCatch"] = caught_at
-    return c
-
-
-def surface_swallowed(text):
-    """no_credential / 401 / 403 / skip を黙って飲み込ませない。
-    見つけた語をそのまま返す（無ければ空文字）。推測で言い換えない。"""
-    if not text:
-        return ""
-    low = str(text).lower()
-    found = [w for w in SWALLOW_WORDS if w.lower() in low]
-    return "・".join(dict.fromkeys(found))
-
-
-# ---------------------------------------------------------------------
-# 工場そのものの「走った／取れた」
-#   走った = 着火した本数（空回し🧪 も本物🚀 も含む）
-#   取れた = 本物🚀 だけ。**空回しは1本も数に入れない。**
-# ---------------------------------------------------------------------
-AUTO_LAUNCH_LOG = os.path.join(STATUS, "auto_launch.log")
-NO_LAUNCH_FLAG = os.path.join(STATUS, "no_launch.flag")
-_TS = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
-
-
-def kojo(hours=6):
-    """直近hours時間の工場の実績。戻り値は judge() と同じ形。"""
-    since = datetime.datetime.now(JST) - datetime.timedelta(hours=hours)
-    karamawashi = honmono = 0
-    reasons = {}
-    try:
-        with io.open(AUTO_LAUNCH_LOG, "r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                m = _TS.match(line)
-                if not m:
-                    continue
-                try:
-                    ts = datetime.datetime.strptime(
-                        m.group(1), "%Y-%m-%d %H:%M:%S").replace(tzinfo=JST)
-                except ValueError:
-                    continue
-                if ts < since:
-                    continue
-                if "🚀" in line:
-                    honmono += 1
-                elif "🧪" in line:
-                    karamawashi += 1
-                elif "見送り:" in line:
-                    r = line.split("見送り:", 1)[1].split("（")[0].strip()
-                    reasons[r] = reasons.get(r, 0) + 1
-    except FileNotFoundError:
-        return judge(0, 0, blocked="auto_launch.log がありません", label="稼ぎ")
-
-    blocked = ""
-    # 止め札があるなら、それが一番強い理由。中身をそのまま出す（要約しない）。
-    if os.path.exists(NO_LAUNCH_FLAG):
-        try:
-            blocked = io.open(NO_LAUNCH_FLAG, encoding="utf-8").read().strip()[:160]
-        except Exception:
-            blocked = "no_launch.flag があります（中身が読めません）"
-    elif reasons:
-        r, c = sorted(reasons.items(), key=lambda kv: -kv[1])[0]
-        blocked = "%s（直近%d時間で%d回）" % (r, hours, c)
-
-    res = judge(karamawashi + honmono, honmono, blocked=blocked, label="稼ぎ")
-    res["karamawashi"] = karamawashi
-    res["honmono"] = honmono
-    res["hours"] = hours
-    return res
-
-
-def kojo_line(hours=6):
-    """genzaichi.md などにそのまま貼る1行（複数行になることがある）。"""
-    r = kojo(hours)
-    head = "- %s 稼ぎ：直近%d時間 走った%d本（うち空回し%d本）→ **取れた%d本**" % (
-        r["mark"], hours, r["runs"], r.get("karamawashi", 0), r["catches"])
-    if not r["red"]:
-        return head
-    out = [head]
-    if r["blocked"]:
-        out.append("  - 止めているもの：%s" % r["blocked"])
-        sw = surface_swallowed(r["blocked"])
-        if sw:
-            out.append("  - 飲み込まれがちな印：**%s**（0件にせず必ず表に出す）" % sw)
-        if "ログイン" in r["blocked"] or "認証" in r["blocked"]:
-            out.append("  - **これはたまごさんにしか外せません。"
-                       "いつものClaudeのアプリで1回ログインし直すだけで、自動で再開します。**")
-    return "\n".join(out)
-
-
-# ---------------------------------------------------------------------
-# 自己点検：「動いている」と言っている紙を全部集めて、同じ規則を当てる
-#   ここに載っていない緑があったら、それが次に嘘をつく場所。
-# ---------------------------------------------------------------------
-GH_STATE = os.path.join(STATUS, "github_watch_state.json")
-
-
-def suteta_henji():
-    """捨てた返信を理由ごとに出す（github_watch の drops）。
-
-    1018番：この見張りは「走った65回→取れた64回」で緑だった。
-    だがその緑は「1件でも積めたか」でしかなく、**同じ回に何通捨てたかを誰も数えていなかった。**
-    2026-09-19「重複と判定して4通」も 2026-09-22「Botだからと15通」も、ここで無言に消えていた。
-    捨てること自体はやめない（捨てるべきものもある）。**数と理由を必ず表に出す。**
-    """
-    import json
-    try:
-        with io.open(GH_STATE, encoding="utf-8") as f:
-            drops = (json.load(f) or {}).get("drops") or {}
-    except Exception:
-        return []
-    rows = []
-    for reason, n in sorted(drops.items(), key=lambda kv: -kv[1]):
-        # 捨てて当然のものは緑。人間が知るべきものだけ赤にする。
-        harmless = reason in ("工場自身の音", "今さっき号ごと積んだ", "基準線より前")
-        rows.append(judge(n, n if harmless else 0,
-                          blocked="" if harmless else reason,
-                          label="捨てた返信 %d通" % n))
-    return rows
-
-
-AI_DAICHO = os.path.join(STATUS, "ai_daicho.json")
-
-
-def gaibu_ai():
-    """977番：他社AIとの往復に、同じ規則を当てる。
-
-    走った = 投げた回数 ／ 取れた = 返ってきた回数。
-    **「投げました」だけで緑にしない。**返りの実数が0なら赤。
-
-    2026-09-22の実測で分かったこと（この行を作った理由）：
-      ai-kaigi（公開掲示板）の #4/#5/#6 は、GitHub APIを直接叩いてコメント数0だった。
-      こちらが捨てていたのでも、届いていなかったのでもない。**返事が存在しなかった。**
-      理由＝ai-kaigi に入っている人は tamago2022 ただ1人で、botが1体も居ない。
-      grok / genspark ラベルは貼れるが、それを読みに来るアプリが無い＝ラベルは飾り。
-      → 「投げた回数」だけを見ていると、この穴は永遠に緑のままになる。だからここで数える。
-
-    閉鎖中の口（投げても返らないと実測済みで、投げるのをやめた口）は
-    赤にしない。赤は「直すべき穴」の色で、閉鎖は判断済みの状態だから。
-    ただし黙らせない——理由をそのまま1行で出す。
-    """
-    import json
-    try:
-        with io.open(AI_DAICHO, encoding="utf-8") as f:
-            d = json.load(f) or {}
-    except Exception as e:  # noqa: BLE001
-        return [judge(1, 0, blocked="外部AI台帳が読めません：%s" % e, label="外部AIとの往復")]
-    rows = []
-    for a in (d.get("ai") or []):
-        label = "外部AI %s" % a.get("label", a.get("ai"))
-        runs, catches = int(a.get("out") or 0), int(a.get("in") or 0)
-        if a.get("blocked") and runs == 0:
-            r = judge(0, 0, label=label)
-            r["line"] = "⚫ %s：閉鎖中・投げていません（%s）" % (
-                label, (a.get("blockedWhy") or "理由なし")[:120])
-            rows.append(r)
-            continue
-        # 飲み込まれがちな失敗理由（401/403/no_credential/skip）は拾って表に出す
-        swallowed = ""
-        for e in (a.get("errs") or []):
-            swallowed = surface_swallowed(e.get("err")) or swallowed
-        # ★2026-09-23（1026番）実測で見つけた嘘：
-        #   Grok・Genspark・Copilot は台帳に blocked=1 と理由まで書いてあるのに、
-        #   過去に投げた跡（out>0）があるせいで上の if を通り抜け、
-        #   「**走った3回 → 取れた0回。動いているのに何も産んでいません**」とだけ出ていた。
-        #   ＝ **壊れているように見えて、本当は「課金・権利が無くて口が閉まっている」**。
-        #   理由を持っているのに出さないのは、黙って飲み込むのと同じ。
-        #   judge() は blocked を渡せば必ず理由を出す。渡していなかっただけ。
-        r = judge(runs, catches, blocked=(a.get("blockedWhy") or "")
-                  if a.get("blocked") else "", label=label)
-        if swallowed and not r["red"]:
-            r["line"] += "（飲み込まれかけた語：%s）" % swallowed
-        rows.append(r)
-    return rows
-
-
-# ---------------------------------------------------------------------
-# 台帳に載っていない定期便（＝誰も走った／取れたを見ていないもの）
-#   ★1026番（2026-09-23）実測：8本あった。
-#     kagi_daicho.unlisted_scan() は前から見つけていたが、その結果は
-#     台帳のJSONの奥にしか出ず、hantei の一覧（＝赤の正本）には1行も出ていなかった。
-#     見つけているのに出していない＝これも「黙って飲み込んでいる」。ここで表に出す。
-# ---------------------------------------------------------------------
-def daicho_gai():
-    try:
-        import kagi_daicho
-        rows = kagi_daicho.unlisted_scan()
-    except Exception as e:  # noqa: BLE001
-        return [judge(1, 0, blocked="台帳外の点検が走りません：%s" % e, label="台帳外")]
+def jsonl(p):
     out = []
-    for r in rows:
-        out.append(judge(1, 0, blocked="台帳に載っていません（走ったか・取れたかを誰も見ていない）",
-                         label="台帳外 %s" % r.get("script", "?")))
+    try:
+        for line in io.open(p, encoding="utf-8"):
+            line = line.strip()
+            if line:
+                try:
+                    out.append(json.loads(line))
+                except Exception:
+                    pass
+    except Exception:
+        pass
     return out
 
 
-# ---------------------------------------------------------------------
-# 見張り先の関所：**起こす引き金が無い先を、見張りに登録させない**
-#   ★969番（アバターの返信拾い・81回走って0件）と977番（外部AI）で
-#     まったく同じ事故が2回起きた＝個人の落ち度ではなく仕組みの不在。
-#     どちらも「投げたつもりで、誰も起こしていなかった」。
-#     穴を塞ぐ（今回の的だけ直す）のではなく、**登録の材料を替える**：
-#     これから先、引き金の書いていない見張り先は通らない。
-# ---------------------------------------------------------------------
-# 実測で確かめた「起こし方」。ここに無いものは、起こせると名乗れない。
-#   jules  … `jules` ラベルを貼る（公式ドキュメント＋実測）
-#   codex  … `@codex` とコメントする（本文に書いても起きない・実測 #450）
-#   devin  … API（別経路）
-#   human  … 人間が読む板。相手が居るので引き金は要らない
-WAKE_KINDS = ("jules", "codex", "devin", "human")
+def write_text(path, text):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    tmp = path + ".tmp"
+    with io.open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+    os.replace(tmp, path)
 
 
-def wake_gate(targets):
-    """見張り先の一覧を受け取り、(通った先, 止めた理由の行) を返す。
-
-    targets: [{"repo": "...", "number": 1, "wake": "jules"}, ...]
-    wake が無い／知らない値／起こした跡が無い先は **通さない**。
-    通さなかったことは必ず行として返す（黙って捨てない）。
-    """
-    ok, stopped = [], []
-    for t in (targets or []):
-        key = "%s#%s" % (t.get("repo"), t.get("number"))
-        wake = (t.get("wake") or "").strip().lower()
-        if not wake:
-            stopped.append(judge(1, 0, label="見張り先 %s" % key,
-                                 blocked="起こす引き金が書いてありません"
-                                         "（jules/codex/devin/human のどれかを wake に書く）"))
-            continue
-        if wake not in WAKE_KINDS:
-            stopped.append(judge(1, 0, label="見張り先 %s" % key,
-                                 blocked="知らない起こし方です：%s（実測で確かめたのは %s）"
-                                         % (wake, "・".join(WAKE_KINDS))))
-            continue
-        if wake != "human" and not t.get("wokeAt"):
-            stopped.append(judge(1, 0, label="見張り先 %s" % key,
-                                 blocked="まだ1度も起こしていません（wake=%s の引き金を打つまで、"
-                                         "ここは永久に0件のまま走り続けます）" % wake))
-            continue
-        ok.append(t)
-    return ok, stopped
+def append(p, obj):
+    os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
+    with io.open(p, "a", encoding="utf-8") as f:
+        f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
-# ---------------------------------------------------------------------
-#  コミットの口 ― 「積んだ枚数」と「回収された枚数」を数える（1027番・2026-09-23）
-# ---------------------------------------------------------------------
-#
-# なぜ足したか（実測）:
-#   2026-09-22に「コミットする口を1本にした」。ところが翌日 09:53 に置いた3枚が
-#   10:01 まで回収されず、前のセッションは「口が詰まっている」と判断して止まった。
-#   ★実測すると詰まっていなかった。回収は 10:01:53 に成功している（commit_kuchi.log）。
-#   詰まりではなく**遅さ**だった。今日1日の実測：
-#       受付 09:53:12 → 回収 10:01:53   （8分41秒）
-#       受付 00:30:34 → 回収 00:40:45   （10分11秒）
-#       受付 22:10:30 → 回収 23:17:47   （7分17秒）
-#     さらに main のコミット間隔は 9〜28分（「5分便」という名前だが5分ではない）。
-#
-#   ＝ 「5分で出る」と思って待った人が、8分で「壊れている」と誤診する。
-#     直すべきは口ではなく、**待ち時間が誰にも見えないこと**だった。
-#     穴（回収されない）を塞ぐのではなく、**素材（何分待っているか）を出す。**
-#
-# 規則（上の RULE と同じ型で書く）:
-#   積んだ = 0                       → ⚪ まだ何も置いていない
-#   積んだ > 0・回収 = 積んだ          → ✅ 全部出ている
-#   積んだ > 0・回収 < 積んだ          → 待っている紙がある。
-#       最古の紙が LATE_SEC 以内     → ✅（正常な待ち。慌てて触らない）
-#       最古の紙が LATE_SEC を超えた → 🔴 **回収が止まっている**
-#
-# ★LATE_SEC を 15分にした理由：実測の最悪が 10分11秒。5分便は1回の起動が約260秒
-#   走り、launchd は5分おき＝最悪で約9分ずれる。15分を超えたら実測の外＝本物の異常。
-LATE_SEC = 15 * 60
+def ja_nichiji(dt):
+    return "%s(%s) %s" % (dt.strftime("%Y-%m-%d"), _YOUBI[dt.weekday()], dt.strftime("%H:%M"))
 
 
-def commit_kuchi():
-    """コミットの口：積んだ枚数と回収された枚数を数えて、差が出たら赤にする。"""
-    inbox = os.path.join(STATUS, "commit_inbox")
-    if not os.path.isdir(inbox):
-        return judge(1, 0, label="コミットの口",
-                     blocked="status/commit_inbox/ がありません（口そのものが無い）")
-
-    def _papers(d):
-        p = os.path.join(inbox, d) if d else inbox
-        if not os.path.isdir(p):
-            return []
-        return [os.path.join(p, f) for f in os.listdir(p) if f.endswith(".json")]
-
-    machi = _papers("")            # まだ回収されていない紙
-    sumi = _papers("done")         # 回収された紙
-    dame = _papers("rejected")     # 関所で断られた紙
-    tsunda = len(machi) + len(sumi) + len(dame)
-    kaishu = len(sumi) + len(dame)
-
-    if tsunda == 0:
-        return judge(0, 0, label="コミットの口")
-
-    if not machi:
-        r = judge(tsunda, kaishu, label="コミットの口")
-        r["line"] = "✅ コミットの口 … 積んだ%d枚／回収%d枚（差0）" % (tsunda, kaishu)
-        return r
-
-    now = time.time()
-    matsu = int(now - min(os.path.getmtime(p) for p in machi))
-    fun = matsu // 60
-    if matsu <= LATE_SEC:
-        r = judge(tsunda, kaishu, label="コミットの口")
-        r["line"] = ("✅ コミットの口 … 積んだ%d枚／回収%d枚／★待ち%d枚（最古%d分・"
-                     "%d分までは正常な待ちです。触らないでください）"
-                     % (tsunda, kaishu, len(machi), fun, LATE_SEC // 60))
-        return r
-
-    return judge(tsunda, kaishu, label="コミットの口",
-                 blocked=("★待ち%d枚が%d分たっても回収されていません（正常は%d分以内）。"
-                          "Mac側の5分便（tools/machine_status_push.sh）が動いているか、"
-                          "status/commit_kuchi.log の最後の『✅ 回収』の時刻を見てください"
-                          % (len(machi), fun, LATE_SEC // 60)))
-
-
-# ---------------------------------------------------------------------
-#  ★1038番（2026-09-23）積んだのに一度も走っていない ― 3日を超えたら赤
-#
-#  なぜ要るか（実測）：毎朝1件ずつ積む係は11日ぶん全部動いていたのに、
-#  発車待ちが164件あって優先度3で最後尾に積まれるので、**一度も順番が来なかった。**
-#  積む側も走る側も「自分は動いている」と言えてしまうので、どの緑にも引っかからない。
-#  だから「積んだ日から3日を超えて、まだ一度も走っていない」だけを、ここで赤にする。
-# ---------------------------------------------------------------------
-NEVER_RAN_DAYS = 3          # これを超えて一度も走っていなければ赤
-_TIME_KEYS = ("createdAt", "startedAt", "finishedAt", "checkedAt", "stuckAt",
-              "cutAt", "demotedAt", "revivedAt", "recoveredAt", "heldAt",
-              "reopenedAt", "costAskedAt", "urakataBlockedAt", "kenpinUpdatedAt")
-
-
-def _ts(s):
-    """'2026-09-12T01:20:00+09:00' でも '2026-09-12 01:20' でも秒に直す。読めなければ None。"""
-    s = (s or "").strip()
-    if not s:
-        return None
-    t = s.replace("T", " ")[:19]
-    for f in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+def parse_hi(s):
+    for f in ("%Y-%m-%d %H:%M", "%Y-%m-%d"):
         try:
-            return time.mktime(time.strptime(t[:len(time.strftime(f))], f))
-        except (ValueError, OverflowError):
-            continue
-    return None
-
-
-def _item_oldest_ts(it):
-    got = [_ts(it.get(k)) for k in _TIME_KEYS]
-    got = [g for g in got if g]
-    return min(got) if got else None
-
-
-def hassha_machi():
-    """発車待ちのうち「積んだのに一度も走っていない」を数える。3日超えが1件でもあれば赤。
-
-    ★日付の出どころ：その1件が持っているいちばん古い時刻。持っていない件は、
-      **番号が自分より大きくて時刻を持っている件**のいちばん古い時刻を上限にする
-      （番号は積んだ順に増えるので、それより前に積まれたのは確か）。
-      推測で古くしない＝上限すら取れない件は「日数不明」として数え、赤にはしない。
-    """
-    p = os.path.join(STATUS, "queue.json")
-    try:
-        items = json.load(io.open(p, encoding="utf-8")).get("items") or []
-    except Exception as e:  # noqa: BLE001
-        return judge(1, 0, label="発車待ち",
-                     blocked="status/queue.json が読めません：%s" % e)
-
-    known = sorted((it.get("n"), _item_oldest_ts(it)) for it in items
-                   if isinstance(it.get("n"), int) and _item_oldest_ts(it))
-    known = [(n, t) for n, t in known if t]
-
-    def upper_bound(n):
-        """番号 n より後に積まれた件が持つ、いちばん早い時刻（＝n はそれ以前に積まれた）。"""
-        cand = [t for m, t in known if m > n]
-        return min(cand) if cand else None
-
-    now = time.time()
-    waiting = [it for it in items if it.get("status") == "waiting"]
-    never = [it for it in waiting if not it.get("startedAt")]
-    rows, fumei = [], 0
-    for it in never:
-        t = _item_oldest_ts(it) or upper_bound(it.get("n") if isinstance(it.get("n"), int) else 10 ** 9)
-        if not t:
-            fumei += 1
-            continue
-        days = (now - t) / 86400.0
-        if days > NEVER_RAN_DAYS:
-            rows.append((round(days, 1), it.get("n"), (it.get("title") or "")[:38]))
-    rows.sort(reverse=True)
-
-    runs, catches = len(waiting), len(waiting) - len(never)
-    if not rows:
-        r = judge(max(runs, 1), max(catches, 1), label="発車待ち")
-        r["line"] = ("✅ 発車待ち … %d件、うち一度も走っていないのは%d件（%d日超えは0件"
-                     "／日数不明%d件）" % (len(waiting), len(never), NEVER_RAN_DAYS, fumei))
-        r["rows"] = []
-        return r
-
-    top = "／".join("%s番（%s日）%s" % (n, d, t) for d, n, t in rows[:5])
-    r = judge(runs, catches, label="発車待ち",
-              blocked=("★積んだのに一度も走っていない件が%d件（%d日超え）。"
-                       "古い順に %s。発車待ち全体は%d件。"
-                       "★列が長すぎて順番が来ていないだけかもしれません。"
-                       "毎日やることは列に積まず、自前の口で走らせてください"
-                       % (len(rows), NEVER_RAN_DAYS, top, len(waiting))))
-    r["rows"] = rows
-    return r
-
-
-# ---------------------------------------------------------------------
-#  1028番（2026-09-23）ごきげん補給所の「重さ」― 前より重くなったら赤
-# ---------------------------------------------------------------------
-#
-# たまごさん：「とにかく重いんだ。軽くしてくれるだけでもいい。」
-#
-# ★この節がやることは1つだけ：**物差しの目盛りを、進捗表の1行にする。**
-#   軽くする工事はここではやらない。ただし「軽くしました」と言った人が本当かどうかを、
-#   この行が毎回答える。今まで物差しが無かったので、誰も答えられなかった。
-#
-# 判定の型（judge() をそのまま使う。同じifを2か所に書かない）:
-#   測っていない            → ⚪ まだ測っていません
-#   前回より重い（+5%超）   → 🔴 **重くなりました**（どれが増えたかを名指しする）
-#   前回と同じか軽い        → ✅ 何バイトか・一番でかいのは何かを出す
-#
-# ★しきい値+5%の根拠：同じページを続けて測っても、広告なしの静的配信でも
-#   数%はぶれる（206の途中までしか来ない動画など）。5%以下は「ぶれ」、超えたら「変化」。
-OMOSA_LAST = os.path.join(STATUS, "omosa_last.json")
-OMOSA_LOG = os.path.join(STATUS, "omosa_log.jsonl")
-OMOSA_BURE = 0.05  # 5%までは測りのぶれとみなす
-
-
-def _mb(n):
-    try:
-        return "%.2fMB" % (float(n) / 1048576.0)
-    except Exception:
-        return "?"
-
-
-def _omosa_read(path):
-    import json as _json
-    try:
-        with io.open(path, encoding="utf-8") as f:
-            return _json.load(f)
-    except Exception:
-        return None
-
-
-def _omosa_prev(url=None, not_at=None):
-    """1つ前の測定。無ければ None。
-
-    ★比べる相手は「同じURLを・下見ではなく本測定で・測ったもの」に限る。
-      ここを緩くすると、別のページの数字と比べて嘘の赤／嘘の緑が出る。
-      （2026-09-23、実際に下見の数字と比べて「軽くなりました」と出かけた）
-    """
-    import json as _json
-    if not os.path.exists(OMOSA_LOG):
-        return None
-    try:
-        with io.open(OMOSA_LOG, encoding="utf-8") as f:
-            rows = [x for x in f.read().splitlines() if x.strip()]
-    except Exception:
-        return None
-    for line in reversed(rows):
-        try:
-            d = _json.loads(line)
+            return datetime.datetime.strptime(str(s)[:16], f).replace(tzinfo=JST)
         except Exception:
             continue
-        if d.get("reconOnly"):
-            continue
-        if url and d.get("url") != url:
-            continue
-        if not_at and d.get("measuredAt") == not_at:
-            continue
-        if _omosa_total(d) > 0:
-            return d
     return None
 
 
-def _omosa_total(d, width="1280"):
-    try:
-        return int(((d.get("byWidth") or {}).get(width) or {}).get("bytes", {}).get("total") or 0)
-    except Exception:
-        return 0
+# ────────────────────────────────────────── いまの状態を見に行く
 
 
-def omosa():
-    """ごきげん補給所の重さ。前より重くなったら赤。
-
-    数字は tools/omosa.mjs が実測して status/omosa_last.json に置いたものだけを読む。
-    ★ここでは一切測らない（測るのは工場側。ここは読むだけ＝常駐を増やさない）。
-    """
-    cur = _omosa_read(OMOSA_LAST)
-    if not cur:
-        return judge(0, 0, label="ごきげん補給所の重さ",
-                     blocked=("まだ一度も測っていません。"
-                              "工場側で `node tools/omosa.mjs` を走らせてください"
-                              "（サンドボックスからは kind=kakunin / mode=omosa で頼めます）"))
-    if cur.get("error"):
-        return judge(1, 0, label="ごきげん補給所の重さ",
-                     blocked="測ろうとして失敗しました：%s" % str(cur["error"])[:160])
-
-    w = (cur.get("byWidth") or {}).get("1280") or {}
-    b = w.get("bytes") or {}
-    total = int(b.get("total") or 0)
-    if total <= 0:
-        return judge(1, 0, label="ごきげん補給所の重さ",
-                     blocked="測ったのにバイト数が0でした（＝何も取れていません）")
-
-    top = (b.get("top") or [{}])[0]
-    hannin = "%s %s" % (top.get("name", "?"), _mb(top.get("bytes")))
-    itsu = cur.get("measuredAt", "")
-
-    # スマホ幅・棚編集・URL貼りも、取れていれば一緒に出す（別の行にしない＝見る紙を増やさない）
-    oi = []
-    m375 = (cur.get("byWidth") or {}).get("375") or {}
-    if (m375.get("bytes") or {}).get("total"):
-        oi.append("375pxは%s" % _mb(m375["bytes"]["total"]))
-    te = w.get("tanaHenshu") or {}
-    if te.get("stillLoading"):
-        oi.append("★棚編集は%d秒待っても中身が出ない" % int((te.get("gaveUpAfterMs") or 0) / 1000))
-    elif te.get("readyMs") is not None:
-        oi.append("棚編集は%.1f秒で出る" % (te["readyMs"] / 1000.0))
-    pa = w.get("paste") or w.get("pasteFallback") or {}
-    if pa.get("tried"):
-        oi.append("URL貼り%d回中%d回落ちた" % (pa["tried"], pa["ochita"]))
-    elif pa.get("skipWhy"):
-        oi.append("URL貼りは測れず（%s）" % pa["skipWhy"])
-    oi_s = ("／" + "／".join(oi)) if oi else ""
-
-    prev = _omosa_prev(url=cur.get("url"), not_at=cur.get("measuredAt"))
-    ptotal = _omosa_total(prev) if prev else 0
-    if ptotal > 0:
-        sa = total - ptotal
-        wari = sa / float(ptotal)
-        if wari > OMOSA_BURE:
-            return judge(1, 0, label="ごきげん補給所の重さ",
-                         blocked=("**前より重くなりました** %s → %s（+%s・+%.0f%%）。"
-                                  "一番でかいのは %s。測ったのは %s"
-                                  % (_mb(ptotal), _mb(total), _mb(sa), wari * 100, hannin, itsu)))
-        r = judge(1, 1, label="ごきげん補給所の重さ")
-        muki = "軽くなりました" if sa < 0 else "前回と同じ"
-        r["line"] = ("✅ ごきげん補給所の重さ … トップ%s（前回%s・%s）／一番でかいのは %s%s"
-                     % (_mb(total), _mb(ptotal), muki, hannin, oi_s))
-        r["red"] = False
-        return r
-
-    r = judge(1, 1, label="ごきげん補給所の重さ")
-    r["line"] = ("✅ ごきげん補給所の重さ … トップ%s（★これが1本目の目盛り。"
-                 "次に測ったときここより重ければ赤になります）／一番でかいのは %s%s"
-                 % (_mb(total), hannin, oi_s))
-    r["red"] = False
-    return r
-
-
-# ---------------------------------------------------------------------
-#  区間5（検品）― 出していいかを、AIに聞かずに機械だけで判定する
-# ---------------------------------------------------------------------
-#
-# なぜ機械だけでやるか（実測）:
-#   Claude子セッションの自己検品は310件中169件合格＝54.5%。
-#   ＝**自分の仕事を自分では見られていない。**（oni_gate.py の冒頭と同じ理由）
-#   だからここではAIを1回も呼ばない。全部ただの文字列判定。課金0。毎回同じ答えが出る。
-#
-# 使い道：外から来たPRを **mainに入れる前に** 通す受け口。
-#   「そこまで運んできてくれてありがとう。ここから先はこちらが運ぶ」の“ここ”。
-# 375px（iPhone SE / mini の幅）で横スクロールが出る書き方を、静的に見つける。
-#   ★ただし「表だけを箱の中で横スクロールさせる」のは、たまごさんのページで
-#     ずっと使ってきた**正しい型**（.wrap{overflow-x:auto} で囲んだ table）。
-#     これを赤にすると、直っているページまで赤くなって誰も見なくなる。
-#     だから **箱（overflow-x:auto）がある表は通す。それ以外の固定幅だけ止める。**
-_CSS_RULE = re.compile(r"([^{}]+)\{([^{}]*)\}")
-_CSS_WIDTH = re.compile(r"(?:^|[;\s])(?:min-)?width\s*:\s*(\d{3,5})px", re.I)
-
-
-def kensa_html(text, name=""):
-    """HTMLの中身を機械だけで検品する。返り値: (通ったか, [理由...])"""
-    ng = []
-    t = text or ""
-    if len(t.strip()) < 200:
-        ng.append("中身が空か短すぎます（%dバイト）" % len(t.encode("utf-8")))
-    if "</html>" not in t.lower():
-        ng.append("</html> まで届いていません（途中で切れた可能性）")
-    if "<title" not in t.lower():
-        ng.append("<title> がありません")
-    if "name=\"viewport\"" not in t.lower().replace("'", '"'):
-        ng.append("viewport の指定がありません（スマホで縮小表示になります）")
-    hako = "overflow-x:auto" in t.replace(" ", "").lower()
-    for sel, decl in _CSS_RULE.findall(t):
-        m = _CSS_WIDTH.search(";" + decl)
-        if not m or int(m.group(1)) <= 375:
+def ima_no_jotai():
+    """題名 → いまの状態。★機械が確認した完了を、自己申告より上に置く。"""
+    by = {}
+    for r in jsonl(DAICHO):
+        by.setdefault(norm(r.get("title"))[:24],
+                      {"state": r.get("state") or "未着手", "evidence": r.get("evidence")})
+    # 検品を通った（＝URLが200で中身が入っていた）ものだけ、完了に上書きしてよい
+    for k in jsonl(KENPIN):
+        if not k.get("ok"):
             continue
-        s = sel.strip().lower()
-        if hako and ("table" in s or s.startswith("th") or s.startswith("td")):
-            continue  # 箱で横スクロールさせる表＝正しい型なので通す
-        ng.append("375pxより広い固定幅があります（%s に %spx）＝画面ごと横に流れます"
-                  % (sel.strip()[:40], m.group(1)))
-        break
-    if len(t.encode("utf-8")) > 1024 * 1024:
-        ng.append("1MBを超えています（公開に載せない決まり）")
-    return (not ng), ng
+        key = norm(k.get("title"))[:24]
+        if key:
+            by[key] = {"state": "完了", "evidence": k.get("url")}
+    return by
 
 
-# ---------------------------------------------------------------------
-#  1033番（2026-09-23）数字と断定の門 ― 報告がDispatchに上がる前に通す
-# ---------------------------------------------------------------------
-#
-# たまごさん：「調べてから上げてこいよって。混乱するから。
-#               コロコロコロコロ変わるから、報告がさぁ。」
-#
-# ★判定の中身はここに1行も書かない。tools/kazu_gate.py にしかない。
-#   ここは呼ぶだけ。1018番の「同じifを2か所に書いて片方だけ直った」を繰り返さない。
-def kazu(text, label="報告の数字"):
-    """報告文を数字の門に通す。judge() と同じ形で返す。"""
+def hantei_1ken(r, ima):
+    """1件を判定する。返すのは（赤か、実際どうなったか、いまの状態）。"""
+    cur = ima.get(norm(r.get("title"))[:24]) or {"state": "未着手", "evidence": None}
+    st = cur["state"]
+    t = today()
+    w = r.get("hantei1w") or ""
+    m = r.get("hantei1m") or ""
+    kita = [x for x in (("1週間", w), ("1ヶ月", m))
+            if x[1] and x[1] <= t and x[0] not in (r.get("hanteiSumi") or [])]
+    if not kita:
+        return None
+    which = kita[-1][0]
+
+    if st == "完了":
+        return {"which": which, "aka": False, "state": st,
+                "sonogo": "返した（%s／%s）" % (cur.get("evidence") or "証拠URLなし", t)}
+    if st in ("走行中", "確認待ち"):
+        aka = (which == "1ヶ月")     # ★1ヶ月の判定日を過ぎて返っていなければ、途中でも赤
+        return {"which": which, "aka": aka, "state": st,
+                "sonogo": ("★%s経っても返っていない（%s のまま）" % (which, st)) if aka
+                          else "%s後：まだ %s。返っていない" % (which, st)}
+    # 未着手・止まっている・引き継ぎ ＝ 言われた時から1ミリも動いていない
+    return {"which": which, "aka": True, "state": st,
+            "sonogo": "★%s経っても %s のまま。1ミリも動いていない" % (which, st)}
+
+
+def kuriageru(r, naze):
+    """★自動でP1に繰り上げて、その場で再発車する。たまごさんに聞かない。"""
     try:
-        import kazu_gate
-    except Exception as e:  # noqa: BLE001
-        return judge(1, 0, blocked="数字の門が読めません：%s" % e, label=label)
-    r = kazu_gate.judge(text or "")
-    if r["ok"]:
-        res = judge(1, 1, label=label)
-        res["line"] = "✅ %s … 数字%d件、全部に出どころがあります" % (label, r["counted"])
-        return res
-    return judge(1, 0, label=label,
-                 blocked="／".join("[%s] %s" % (h["code"], h["why"])
-                                   for h in r["hits"])[:600])
+        import command_ingest
+        try:
+            import queue_store
+            lock = queue_store.queue_lock
+        except Exception:
+            import contextlib
+            lock = contextlib.nullcontext
+        body = "\n".join([
+            "【判定日で赤になった案件】%s" % r.get("title"),
+            "【言われた日時】%s（%d回言われている）" % (r.get("firstSaidJa") or r.get("firstSaid"),
+                                                    int(r.get("count") or 1)),
+            "【なぜ赤か】%s" % naze,
+            "【完了条件】本番URLが200で返り、中身が空でないこと。",
+            "★自己申告では完了になりません（tools/oni_modoshi.py の検品を通ること）。",
+            "たまごさんに質問しない。直して、URLを報告に貼る。",
+        ])
+        with lock():
+            s, msg = command_ingest.queue_add(body, priority=1,
+                                              label=("判定日赤｜" + (r.get("title") or ""))[:60],
+                                              origin="user")
+        return "%s:%s" % (s, msg)
+    except Exception as e:
+        return "failed:%s" % e
 
 
-def kazu_kanmon():
-    """★門そのものが効いているかを毎回みる。
-
-    門は、効かなくなっても静かに素通りするので、誰も気づかない。
-    見本（わざと悪い報告文）で落ちるかを毎回試して、落ちなくなったら赤。
-    """
-    try:
-        import kazu_gate
-        n, ng, _ = kazu_gate.self_test(verbose=False)
-    except Exception as e:  # noqa: BLE001
-        return judge(1, 0, blocked="数字の門の見本試験が走りません：%s" % e,
-                     label="数字の門")
-    if ng:
-        return judge(n, n - ng, label="数字の門",
-                     blocked="★見本%d件中%d件で落とせませんでした＝"
-                             "出典の無い数字がたまごさんまで素通りします" % (n, ng))
-    r = judge(n, n, label="数字の門")
-    r["line"] = ("✅ 数字の門 … わざと悪い報告文%d件を全部落としました"
-                 "（出典なし／推測語／「無い」の断定／前と食い違うのに訂正なし）" % n)
-    return r
-
-
-def audit():
-    """全部の緑に同じ規則を当てた結果を返す（リスト）。"""
-    out = [kojo(6), commit_kuchi(), omosa(), kazu_kanmon(), hassha_machi()]
-    out.extend(suteta_henji())
-    out.extend(gaibu_ai())
-    out.extend(daicho_gai())
-    try:
-        import kagi_daicho  # 同じtools/にある。判定はこちらへ寄せる。
-        for row in kagi_daicho.watcher_rows():
-            out.append(judge(row.get("runs"), row.get("catches"),
-                             blocked=row.get("blocked", ""),
-                             label=row.get("label") or row.get("id")))
-    except Exception as e:  # noqa: BLE001
-        # 読めなかったことを黙って飲み込まない。読めなかったと書く。
-        out.append(judge(1, 0, blocked="鍵台帳が読めません：%s" % e, label="鍵台帳"))
-    return out
+def hashiru(dry=False):
+    rows = {r["id"]: r for r in jsonl(HATSUGEN) if r.get("id")}
+    ima = ima_no_jotai()
+    mita, aka, tojita = 0, 0, 0
+    for r in rows.values():
+        h = hantei_1ken(r, ima)
+        if not h:
+            continue
+        mita += 1
+        r["state"] = h["state"]
+        r["sonogo"] = h["sonogo"]
+        r["hanteiAt"] = stamp()
+        r["hanteiSumi"] = sorted(set((r.get("hanteiSumi") or []) + [h["which"]]))
+        if h["aka"]:
+            aka += 1
+            r["aka"] = True
+            r["p"] = 1                      # ★自動でP1に繰り上げ
+            if not dry:
+                r["saihassha"] = kuriageru(r, h["sonogo"])
+        else:
+            r["aka"] = False
+            if h["state"] == "完了":
+                tojita += 1
+        if not dry:
+            append(LOG, {"at": stamp(), "id": r["id"], "title": (r.get("title") or "")[:80],
+                         "which": h["which"], "aka": h["aka"], "state": h["state"],
+                         "sonogo": h["sonogo"]})
+    if not dry and rows:
+        body = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n"
+                       for r in sorted(rows.values(),
+                                       key=lambda x: (-int(x.get("count") or 1),
+                                                      str(x.get("firstSaid") or ""))))
+        write_text(HATSUGEN, body)
+    return {"mita": mita, "aka": aka, "tojita": tojita, "zen": len(rows)}
 
 
-# ══════════════════════════════════════════════════════════════════════
-# 案内人（卵コンシェルジュ）の採点 ― ★規則はここにしか書かない
-#   紙の基準：status/annai_saiten_kijun.md（v1・2026-09-23確定）
-#   問：status/annai_300.json（tools/annai_toi.py が作る）
-#   ★AIを1回も呼ばない。文字合わせだけで決める。
-# ══════════════════════════════════════════════════════════════════════
-
-# 出た札に必ず書かれている「知らない◯◯の世界だけど」から分野を読む。
-ANNAI_FIELD_RE = re.compile(r"知らない(音楽|食べ物|かわいい|笑い|旅|踊り|喜び)の世界")
-
-# 「案内人のセリフ」と「出てきたカードの題名」を分ける線。
-# 題名は短くて句読点が無い。人が読むセリフは文になっている。
-def annai_is_speech(line):
-    return len(line) >= 10 and any(c in line for c in "。、！？!?…")
-
-
-def annai_split(lines):
-    """画面に増えた行を セリフ／札 に分ける。"""
-    sp = [l for l in lines if annai_is_speech(l)]
-    ca = [l for l in lines if not annai_is_speech(l)]
-    return sp, ca
-
-
-# 「わかりません」だけを返した＝黙ったのと同じ。
-ANNAI_DAMARI = ("わかりません", "分かりません", "わからない", "見つかりません",
-                "ありません", "該当なし", "該当しません", "エラー",
-                "もう一度", "すみません、", "ごめんなさい、")
-
-# かわせている＝「それは分からない」と言えている。曲を出していないことが前提。
-ANNAI_KAWASE = ANNAI_DAMARI + ("音楽", "曲", "案内", "専門", "お答え", "ここでは",
-                               "できません", "苦手", "範囲")
-
-ANNAI_SPEECH_MAX_LINES = 2     # これを超えたら喋りすぎ
-ANNAI_SPEECH_MAX_CHARS = 120   # これを超えたら喋りすぎ
-
-
-def saiten_annai(toi, ans):
-    """1問を採点する。★1問につきラベルは必ず1個（上から順）。
-
-    toi … {"q","field","words","kawasu"}            （annai_300.json の1行）
-    ans … {"text","lines","error"}                   （どこで叩いても同じ形にして渡す）
-    返り … {"label","mark","why","field_got","hit"}
-
-    ラベルは5つだけ：
-      ✕ 無反応(落ちた) ／ ✕ 無反応(黙った) ／ ✕ トンチンカン ／ ✕ 喋りすぎ
-      △ そっけない ／ ◯ 合格
-    """
-    text = (ans.get("text") or "").strip()
-    lines = ans.get("lines")
-    if lines is None:
-        lines = [x.strip() for x in text.split("\n") if x.strip()]
-    err = (ans.get("error") or "").strip()
-    speech, cards = annai_split(lines)
-    sp = "\n".join(speech).strip()
-    got = sorted(set(ANNAI_FIELD_RE.findall(text)))
-    kawasu = bool(toi.get("kawasu"))
-
-    def out(label, mark, why, hit=None):
-        return {"label": label, "mark": mark, "why": why,
-                "field_got": got, "hit": hit, "q": toi.get("q", "")}
-
-    # ── 1. 無反応 ────────────────────────────────────────────────
-    if err:
-        return out("無反応(落ちた)", "✕", "投げられなかった：%s" % err[:80])
-    if len(text) < 4:
-        return out("無反応(黙った)", "✕", "返事が%d文字" % len(text))
-    only_damari = (not cards) and sp and all(
-        any(w in l for w in ANNAI_DAMARI) for l in speech)
-    if only_damari and not kawasu:
-        return out("無反応(黙った)", "✕", "「わかりません」だけ")
-    if not cards and not kawasu:
-        # 曲を聞かれて曲を1枚も出していない＝お客さんから見れば何も返っていない。
-        return out("無反応(黙った)", "✕", "曲・棚が1枚も出ていない")
-
-    # ── 2. トンチンカン ─────────────────────────────────────────
-    if kawasu:
-        # 答えられなくて当然の問。★正解は「曲を出さずにかわす」。
-        if cards:
-            return out("トンチンカン", "✕",
-                       "答えられない問なのに曲を%d枚出した（絶無>誤り）" % len(cards))
-        if not any(w in text for w in ANNAI_KAWASE):
-            return out("トンチンカン", "✕", "かわせていない（分からないと言っていない）")
-    else:
-        field = toi.get("field")
-        words = toi.get("words") or []
-        hit = next((w for w in words if w and w.lower() in text.lower()), None)
-        field_ok = bool(field and got and field in got)
-        # ★「1つも結びつかない」ときだけ✕。分野が合う か 言葉が当たる のどちらかで◯。
-        if not field_ok and not hit:
-            return out("トンチンカン", "✕",
-                       "聞いたのは%sだが出たのは%s／手がかりの語が1つも出ない"
-                       % (field or "?", "・".join(got) or "分野不明"))
-
-    # ── 3. 喋りすぎ ────────────────────────────────────────────
-    if len(speech) > ANNAI_SPEECH_MAX_LINES or len(sp) > ANNAI_SPEECH_MAX_CHARS:
-        return out("喋りすぎ", "✕",
-                   "セリフ%d行・%d文字（1行＋短い一言まで）" % (len(speech), len(sp)))
-
-    # ── 4. そっけない ──────────────────────────────────────────
-    if not sp:
-        return out("そっけない", "△", "セリフゼロ（曲名だけ返した）")
-
-    # ── 5. 合格 ────────────────────────────────────────────────
-    return out("合格", "◯", "")
-
-
-ANNAI_LABELS = ["無反応(落ちた)", "無反応(黙った)", "トンチンカン", "喋りすぎ",
-                "そっけない", "合格"]
-
-
-def saiten_annai_matome(rows):
-    """1周ぶんをまとめる。★トンチンカン率＝✕の数÷出した問の数。"""
-    b = {k: 0 for k in ANNAI_LABELS}
-    for r in rows:
-        b[r["label"]] = b.get(r["label"], 0) + 1
-    asked = len(rows)
-    ng = sum(b[k] for k in ANNAI_LABELS if k != "合格" and k != "そっけない")
-    warn = b["そっけない"]
-    return {
-        "asked": asked,
-        "ng": ng,
-        "ng_rate": round(ng / asked, 4) if asked else 0.0,
-        "warn": warn,
-        "warn_rate": round(warn / asked, 4) if asked else 0.0,
-        "breakdown": {k: v for k, v in b.items() if v},
-    }
-
-
-def saiten_annai_ku(rows, tois):
-    """区分ごとの不合格率。★どこが一番悪いかを見て、直す1つを選ぶための表。"""
-    byq = {t["q"]: t for t in tois}
-    ku = {}
-    for r in rows:
-        t = byq.get(r["q"]) or {}
-        k = t.get("区分", "?")
-        d = ku.setdefault(k, {"asked": 0, "ng": 0, "labels": {}})
-        d["asked"] += 1
-        if r["label"] not in ("合格", "そっけない"):
-            d["ng"] += 1
-        d["labels"][r["label"]] = d["labels"].get(r["label"], 0) + 1
-    for d in ku.values():
-        d["ng_rate"] = round(d["ng"] / d["asked"], 4) if d["asked"] else 0.0
-    return ku
+def main():
+    a = sys.argv[1:]
+    if "--self-test" in a:
+        ng = []
+        ima = {}
+        r = {"id": "x", "title": "テストの一手を直してほしい", "count": 1,
+             "firstSaid": "2020-01-01 00:00", "hantei1w": "2020-01-08",
+             "hantei1m": "2020-01-31", "hanteiSumi": []}
+        h = hantei_1ken(r, ima)
+        if not h or not h["aka"]:
+            ng.append("判定日を過ぎた未着手が赤にならない")
+        r2 = dict(r, hanteiSumi=["1週間", "1ヶ月"])
+        if hantei_1ken(r2, ima) is not None:
+            ng.append("判定済みをもう一度判定している")
+        r3 = dict(r, hantei1w="2999-01-01", hantei1m="2999-01-01")
+        if hantei_1ken(r3, ima) is not None:
+            ng.append("判定日が来ていないのに判定している")
+        s = hashiru(dry=True)
+        print("自己試験：%s／台帳 %d件・判定日が来ている %d件（うち赤 %d）"
+              % ("OK" if not ng else "NG", s["zen"], s["mita"], s["aka"]))
+        for x in ng:
+            print("  ★NG %s" % x)
+        return 1 if ng else 0
+    if "--show" in a:
+        rows = jsonl(LOG)
+        print("【判定日の係】これまでに判定した %d件／うち赤 %d件"
+              % (len(rows), len([r for r in rows if r.get("aka")])))
+        for r in rows[-10:]:
+            print("  %s %s … %s" % ("🔴" if r.get("aka") else "✅",
+                                    (r.get("title") or "")[:40], r.get("sonogo")))
+        return 0
+    s = hashiru()
+    print("判定日が来た %d件を見に行った → ★赤 %d件／返っていた %d件（台帳 %d件）"
+          % (s["mita"], s["aka"], s["tojita"], s["zen"]))
+    return 0
 
 
 if __name__ == "__main__":
-    print("規則：%s\n" % RULE)
-    for r in audit():
-        print(r["line"])
-
-
-# ────────────────────────────────────────────────────────────────
-# 1042番（2026-09-23）中継所（投げ込み箱→Mac）の生死。
-#
-# たまごさん「今日これで3回目の『黙って止まる』です。2回目以降は直さずパイプごと替える。」
-#
-# それまでの穴（実測）：
-#   ・relay_watch.py は「外から200が返るか」しか見ていなかった。
-#     200が返っても、受け口の中身が古ければ投げ込みは弾かれる＝**届かないのに緑**。
-#   ・立て直したあと「立て直した」とログに書いて終わっていた。
-#     本当に届くかは一度も確かめていない＝**直っていなくても緑**。
-#   ・Macが重い(load>20)と、見張りが黙って return していた＝**赤が誰にも見えない**。
-#
-# 規則はここにしか書かない（relay_watch も進捗表もここを呼ぶ）：
-#   最後に「実際に1本届いた」時刻が STALE_MIN 分より古い → 🔴（立て直す）
-#   立て直したのに届かない                              → 🔴（緑にしない・赤のまま残す）
-#   届いた                                              → ✅
-#
-# 「生きている」の根拠にプロセスの生死・トンネルのURL・/health の200を使わない。
-# それらは全部「空回しでも点く緑」。**届いた1本だけが根拠になる。**
-RELAY_STALE_MIN = 12          # relay.json の判子がこれより古かったら赤
-RELAY_JSON = os.path.join(STATUS, "relay.json")
-
-
-def _relay_mark_age_min(now=None):
-    """relay.json の「最後に実測で届いた時刻」から何分経ったか。取れなければ None。"""
-    now = time.time() if now is None else now
-    try:
-        d = json.load(io.open(RELAY_JSON, encoding="utf-8"))
-    except Exception:
-        return None, {}
-    stamp = d.get("verifiedAt") or d.get("checkedAt") or d.get("updatedAt") or ""
-    try:
-        t = datetime.datetime.strptime(stamp[:19], "%Y-%m-%dT%H:%M:%S")
-        t = t.replace(tzinfo=JST)
-        return (now - t.timestamp()) / 60.0, d
-    except Exception:
-        return None, d
-
-
-def relay_han(now=None, stale_min=RELAY_STALE_MIN):
-    """戻り値: (印, 理由1行, 中身dict)
-
-    印は "✅"（届いている）／"🔴"（届いていない＝立て直す）／"⚪"（まだ一度も測っていない）。
-    """
-    age, d = _relay_mark_age_min(now)
-    url = (d or {}).get("url") or ""
-    if age is None:
-        return "⚪", "中継所をまだ一度も実測していません", d or {}
-    if age > stale_min:
-        return "🔴", ("中継所に%d分間1本も届いていません（%s）。立て直します"
-                      % (int(age), url or "URL未設定")), d or {}
-    return "✅", "中継所は生きています（%d分前に実測で1本届いた）" % int(age), d or {}
-
-
-# ---------------------------------------------------------------------
-#  1048番（2026-09-24）【渡す前の門】―「そもそも開いて動くか」の判定
-# ---------------------------------------------------------------------
-#
-# たまごさん（2026-09-24）
-#   「俺でテストするなって言ってるじゃん。動くものを出してきてよって。
-#     まだ不完全なものを俺に触らせないでよ。表示されすらしないよ。
-#     動かないんだったら突き返してほしい。」
-#
-# 事故：share/ohon/1046-live2d.html を渡した。たまごさんの画面で何も出なかった。
-#       こちらのChromeは WebGL が切れていて（canvas.getContext('webgl') → false・実測）、
-#       **動くところを一度も見ずに渡していた。**
-#
-# ★判定はここにしか書かない。実際にブラウザを開いて数字を取るのは
-#   tools/watashi_gate.py。あちらは「測る」だけ、ここは「決める」だけ。
-#   同じ if を2か所に書けば、片方だけ直る日が必ず来る（1018番で実測済み）。
-
-# 目盛り（勝手に動かさない）
-MIRU_BYTES = 120          # 10秒後に画面に出ている本文の最低バイト数
-MIRU_NODES = 8            # 同・描画された要素の最低数
-FPS_MIN = 30.0            # 動くものの最低fps
-MAX_BYTES = 1024 * 1024   # 1MB
-WIDE_W = 375              # はみ出しを見る幅
-
-# consoleに出ていたら即アウトの言葉（たまごさんの事故がこの3つ）
-_WATASHI_NG_WORDS = ("webgl", "failed to load", "404", "not found",
-                     "is not defined", "uncaught")
-
-
-def watashi_han(obs):
-    """渡す前の門の判定。obs は tools/watashi_gate.py が実測で作った観測の記録。
-
-    返り値: 止める理由の一覧（list）。空なら渡してよい。
-    ここでは一切ブラウザを触らない＝この関数だけで机の上で試験できる。
-    """
-    stop = []
-    o = obs or {}
-    name = o.get("path") or "(名前なし)"
-
-    if o.get("open_error"):
-        stop.append("①そもそも開けませんでした：%s" % str(o["open_error"])[:160])
-        return stop
-
-    # ① 開いて10秒、画面に中身が出ているか
-    tb = int(o.get("text_bytes") or 0)
-    nd = int(o.get("painted_nodes") or 0)
-    if tb < MIRU_BYTES and nd < MIRU_NODES:
-        stop.append("①開いて10秒たっても画面に中身が出ていません"
-                    "（本文%dバイト・描画された要素%d個）" % (tb, nd))
-    if o.get("canvas_blank"):
-        stop.append("①canvasが真っ白のままです（%s）＝絵が1枚も描かれていない"
-                    % o.get("canvas_blank"))
-
-    # ② 押しても何も起きないボタン
-    dead = o.get("dead_buttons") or []
-    btn = int(o.get("buttons_total") or 0)
-    if dead:
-        stop.append("②押しても何も起きないボタンが%d/%d個あります：%s"
-                    % (len(dead), btn, "／".join(str(x)[:30] for x in dead[:4])))
-
-    # ③ console のエラー
-    errs = [str(e) for e in (o.get("console_errors") or [])]
-    if errs:
-        omo = [e for e in errs if any(w in e.lower() for w in _WATASHI_NG_WORDS)]
-        stop.append("③consoleにエラーが%d件出ています：%s"
-                    % (len(errs), (omo or errs)[0][:160]))
-
-    # ④ 外から読む部品が200以外
-    bad = [r for r in (o.get("resources") or []) if int(r.get("status") or 0) != 200]
-    if bad:
-        stop.append("④外から読む部品が200以外です：%s"
-                    % "／".join("%s→%s" % (str(r.get("url"))[-48:], r.get("status"))
-                                for r in bad[:4]))
-
-    # ⑤ 375px
-    m = o.get("mobile") or {}
-    if m:
-        if m.get("scroll_w") and int(m["scroll_w"]) > WIDE_W + 2:
-            stop.append("⑤375pxで横にはみ出します（中身の幅%dpx）" % int(m["scroll_w"]))
-        if int(m.get("text_bytes") or 0) < MIRU_BYTES and int(m.get("painted_nodes") or 0) < MIRU_NODES:
-            stop.append("⑤375pxで中身が出ません"
-                        "（本文%sバイト・要素%s個）" % (m.get("text_bytes"), m.get("painted_nodes")))
-
-    # ⑥ 動くもの：fpsと重さ
-    fps = o.get("fps")
-    if o.get("is_animated") and fps is not None and float(fps) < FPS_MIN:
-        stop.append("⑥動きがfps %.1f で30を割っています（カクつきます）" % float(fps))
-    nb = int(o.get("bytes") or 0)
-    if nb > MAX_BYTES:
-        stop.append("⑥1MBを超えています（%.2fMB）" % (nb / 1024.0 / 1024.0))
-
-    if o.get("needs_webgl") and not o.get("webgl_ok"):
-        stop.append("⑥WebGLが要るページなのに、WebGLが立ち上がりませんでした"
-                    "（このページは相手の機械でも真っ白になります）")
-
-    if stop:
-        stop.append("（対象：%s）" % name)
-    return stop
-
-
-def watashi_kanmon():
-    """★門そのものが効いているかを毎回みる。見本で落ちなくなったら赤。
-
-    e_gate と同じ考え方。門は静かに素通りするようになっても誰も気づかない。
-    """
-    warui = {
-        "path": "みほん-わるい.html", "text_bytes": 0, "painted_nodes": 1,
-        "buttons_total": 2, "dead_buttons": ["はじめる"],
-        "console_errors": ["console: WebGL: context creation failed"],
-        "resources": [{"url": "https://example.com/core.js", "status": 404}],
-        "mobile": {"scroll_w": 980, "text_bytes": 0, "painted_nodes": 1},
-        "is_animated": True, "fps": 7.5, "bytes": 3 * 1024 * 1024,
-        "needs_webgl": True, "webgl_ok": False,
-    }
-    yoi = {
-        "path": "みほん-よい.html", "text_bytes": 2400, "painted_nodes": 180,
-        "buttons_total": 2, "dead_buttons": [],
-        "console_errors": [], "resources": [{"url": "x.css", "status": 200}],
-        "mobile": {"scroll_w": 375, "text_bytes": 2300, "painted_nodes": 170},
-        "is_animated": False, "fps": None, "bytes": 21000,
-        "needs_webgl": False, "webgl_ok": False,
-    }
-    a, b = watashi_han(warui), watashi_han(yoi)
-    if not a:
-        return judge(1, 0, label="渡す門の見張り",
-                     blocked="わざと壊した見本が通ってしまいました＝門が効いていません")
-    if b:
-        return judge(1, 0, label="渡す門の見張り",
-                     blocked="正しい見本を落としました＝門が厳しすぎます：%s" % b[0])
-    r = judge(1, 1, label="渡す門の見張り")
-    r["line"] = "✅ 渡す門 … 見本で%d件落とし、正しい見本は通しました" % len(a)
-    return r
-
-
-# ══════════════════════════════════════════════════════════════════════
-# 1049番【依頼の門】― 「たまごさんが頼んだものに、これは答えているか」
-#
-# ■ たまごさんの言葉（2026-09-24・そのまま）
-#   「不完全なものが俺に上がってくるのを極力減らしたい。目標はゼロに近づけて。
-#     『違う、そうじゃないから』っていうのが、まずだるい。」
-#
-# ■ 既にある門との違い（だから1つ足りていなかった）
-#   出典の無い数字   → kazu_gate     日本語   → oni_gate
-#   絵               → e_gate        開いて動くか → watashi_gate / sumaho_gate
-#   ★頼んだものに答えているか → ここ。**機械には判定できない。**だから外のAIに見せる。
-#
-# ■ 規則（これが全部・他所に同じifを書かない）
-#   ・生きている口が0     → 🔴 止める（「誰にも見せていない＝見ていない」）
-#   ・「いいえ」が1つでも → 🔴 止める。理由をそのまま出す（言い換えない）
-#   ・はい／いいえに読めない返事 → 🔴 止める（測っていない＝通っていない）
-#   ・「はい」が2社       → 通す
-#   ・「はい」が1社だけ（もう1社が動かない）→ 通す。ただし「1社だけで見た」を必ず記録に残す
-# ══════════════════════════════════════════════════════════════════════
-
-IRAI_HITSUYOU_SHA = 2   # 本来見せたい社数
-
-
-def irai_han(answers):
-    """依頼の門の判定。answers は tools/irai_gate.py が外のAIから受け取った実測の返事。
-
-    answers: [{"who": "genspark", "yes": True/False/None, "why": "…", "error": "…"}, …]
-    戻り値: dict(ok, stop, note, kiita, ikiteru)
-      ok   … True なら たまごさんに渡してよい
-      stop … 止める理由の一覧（空なら通す）
-      note … 記録に必ず残す但し書き（「1社だけで見た」等）。無ければ空文字
-    ここではAIを1回も呼ばない＝この関数だけで机の上で試験できる。
-    """
-    rows = list(answers or [])
-    ikiteru = [r for r in rows if not (r.get("error") or "").strip()]
-    shinda = [r for r in rows if (r.get("error") or "").strip()]
-    stop, note = [], ""
-
-    if not ikiteru:
-        riyuu = "／".join("%s：%s" % (r.get("who"), str(r.get("error"))[:80]) for r in shinda) \
-            or "外のAIを1社も呼べていません"
-        stop.append("外のAIが1社も動きませんでした＝**誰もこれを見ていません**。"
-                    "見ていないものは渡しません（%s）" % riyuu)
-        return {"ok": False, "stop": stop, "note": "", "kiita": len(rows), "ikiteru": 0}
-
-    # 読めない返事は「はい」に丸めない。★ここを緩めると門が静かに素通りするようになる。
-    yomenai = [r for r in ikiteru if r.get("yes") is None]
-    for r in yomenai:
-        stop.append("%s の返事が はい／いいえ に読めませんでした：%s"
-                    % (r.get("who"), (str(r.get("why") or "")[:100] or "(空)")))
-
-    iie = [r for r in ikiteru if r.get("yes") is False]
-    for r in iie:
-        stop.append("%s が「いいえ」：%s" % (r.get("who"), str(r.get("why") or "").strip()[:200]))
-
-    hai = [r for r in ikiteru if r.get("yes") is True]
-    if not stop and len(hai) < IRAI_HITSUYOU_SHA:
-        note = ("★1社だけで見ました（%s）。%s は動きませんでした：%s"
-                % ("・".join(str(r.get("who")) for r in hai),
-                   "・".join(str(r.get("who")) for r in shinda) or "もう1社",
-                   "／".join(str(r.get("error"))[:60] for r in shinda) or "呼べていません"))
-
-    return {"ok": not stop, "stop": stop, "note": note,
-            "kiita": len(rows), "ikiteru": len(ikiteru)}
-
-
-def irai_kanmon():
-    """★門そのものが効いているかを毎回みる。見本で落ちなくなったら赤。
-
-    watashi_kanmon / e_gate と同じ考え方。門は静かに素通りするようになっても誰も気づかない。
-    """
-    miru = [
-        # わざと落ちる見本
-        ([{"who": "A", "yes": False, "why": "絵本ではなく静止画の羅列です"},
-          {"who": "B", "yes": True, "why": ""}], False, "1社でも「いいえ」"),
-        ([{"who": "A", "yes": None, "why": "うーん"},
-          {"who": "B", "yes": True, "why": ""}], False, "読めない返事"),
-        ([{"who": "A", "yes": None, "why": "", "error": "429"},
-          {"who": "B", "yes": None, "why": "", "error": "team_blocked"}], False, "口が0"),
-        # 通る見本
-        ([{"who": "A", "yes": True, "why": ""},
-          {"who": "B", "yes": True, "why": ""}], True, "2社とも「はい」"),
-    ]
-    for ans, hazu, label in miru:
-        r = irai_han(ans)
-        if r["ok"] != hazu:
-            return judge(1, 0, label="依頼の門の見張り",
-                         blocked="見本『%s』の判定がずれました（出たのは ok=%s）" % (label, r["ok"]))
-    # 1社だけのときは通すが、但し書きが消えていないこと
-    r = irai_han([{"who": "A", "yes": True, "why": ""},
-                  {"who": "B", "yes": None, "why": "", "error": "429"}])
-    if not r["ok"] or "1社だけ" not in r["note"]:
-        return judge(1, 0, label="依頼の門の見張り",
-                     blocked="1社だけで通したのに『1社だけで見た』が記録に残っていません")
-    res = judge(1, 1, label="依頼の門の見張り")
-    res["line"] = "✅ 依頼の門 … 見本%d本すべて想定どおり" % (len(miru) + 1)
-    return res
+    sys.exit(main())

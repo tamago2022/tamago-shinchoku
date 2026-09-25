@@ -446,6 +446,39 @@ while :; do
   #   ★本数の計算は pace.py のまま。ここは天井までの余裕・朝の余りの赤・空き枠放置の実測だけ。
   #   ★安いので10分おき。AIを呼ばない・外へ出ない＝0円。
   tick_every 40 && ( python3 "$REPO/tools/haibun.py" >> "$REPO/status/haibun.log" 2>&1 & ) >/dev/null 2>&1
+  # ══ 2026-09-26（1152番）「言われなくても動く」を機械にする5点セット ══
+  #   たまごさん「俺に言われて動き出すのはもうダメだよ、30点。仕組みは作ってるの？」
+  #             「何回も同じこと言うのってエネルギー使う。早く仕組みにしてくれ。」
+  #             「忘れられない、もう逃げられない仕組みにしてよ。」
+  #   ★5つとも0円（AIを呼ばない・外へ出ない）。新しい常駐は tomaranai の launchd 1本だけ。
+  #
+  # ① 拾う：たまごさんの発言を会話ログから自動で抜いて、言われた回数を数える。
+  #    ★手で写さない。写し忘れた瞬間に消えていたのが「言ったのにやってない」の正体。
+  #    読んだ位置を status/kioku/.seen.json に残すので、落ちても続きから。
+  tick_every 8  && ( python3 "$REPO/tools/kioku.py" >> "$REPO/status/kioku/kioku.log" 2>&1 & ) >/dev/null 2>&1
+  # ② 判定日：1週間後・1ヶ月後が来たら機械が状態を見に行く。
+  #    ★変わっていなければ自動で赤＋P1に繰り上げて、その場で再発車する。
+  #      うやむやを構造的に不可能にするのがここ。人の許可を要らなくしてある。
+  tick_every 40 && ( python3 "$REPO/tools/hantei.py" >> "$REPO/status/kioku/hantei.log" 2>&1 & ) >/dev/null 2>&1
+  # ③ 鬼監督（差し戻し係）：自己申告の完了を受け付けない。
+  #    URLを叩いて200・中身が空でない・過去の指摘に引っかからない、を機械が確かめる。
+  #    ★落ちたら自動で同じ案件を再発車（回数制限なし・上限は14日だけ）。
+  tick_every 20 && ( python3 "$REPO/tools/oni_modoshi.py" >> "$REPO/status/oni_modoshi/run.log" 2>&1 & ) >/dev/null 2>&1
+  # ④ 外の審査：台帳と実測を Genspark／Codex／公開リポ ai-kaigi に出して監査させ、
+  #    返ってきた指摘を台帳へ戻す。★完了の鍵（status/gaibu/soto_hantei.json）は外しか開けない。
+  #    中で1日1回に間引く。出すのは tools/nageru.py の口1本だけ＝新しい通信を作らない。
+  tick_every 240 && ( python3 "$REPO/tools/gaibu_shinsa.py" >> "$REPO/status/gaibu/shinsa.log" 2>&1 & ) >/dev/null 2>&1
+  # ⑤ 紙を1枚だけ書き直す（リポ直下 1152-nankai.html／スマホで開ける）。
+  #    ★一番上に出すのは 今週言われた件数／実際に変わった件数／達成率。走らせた本数は出さない。
+  tick_every 8  && ( python3 "$REPO/tools/kioku_page.py" >> "$REPO/status/kioku/page.log" 2>&1 & ) >/dev/null 2>&1
+  # ⑥ 止まらない係：走行0本を検知したら聞かずに台帳の上から自分で発車する。
+  #    launchd（1分おき）が正本。心臓からも呼んでおくのは、launchd が落ちても死なせないため。
+  #    中で5分に1回に間引くので、二重に呼んでも二重に積まない。
+  tick_every 4  && ( python3 "$REPO/tools/tomaranai.py" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
+  #    launchd への登録は冪等。既に入っていれば何もしないので、毎周呼んで構わない。
+  #    ★たまごさんに手で流させない。登録そのものを機械にやらせる。
+  tick_every 40 && ( bash "$REPO/tools/tomaranai_install.sh" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
+
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true

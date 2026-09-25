@@ -178,6 +178,15 @@ def main():
     added, failed = [], []
     for (iso, local), item in zip(slots, machi[:len(slots)]):
         text = item["text"] if isinstance(item, dict) else str(item)
+        # ★1153番【Xの投稿の型】URLを必ず一番最後に置く（status/X_TOUKOU_KATA.md）。
+        #   URLが末尾でないと、Xはカードを出した上に本文のURLの文字列も残す＝「リンクが2回」。
+        #   言葉は1文字も書き替えない。動かすのはURLの行の位置だけ。
+        try:
+            sys.path.insert(0, HERE)
+            import x_kata
+            text = x_kata.normalize(text)
+        except Exception:
+            pass
         r = gql(tok, M_CREATE, {"input": {
             "text": text, "channelId": ch["id"],
             "schedulingType": "automatic",

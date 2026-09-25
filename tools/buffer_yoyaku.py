@@ -212,6 +212,20 @@ def run_one(job_path):
     job = json.load(io.open(job_path, encoding="utf-8"))
     out = {"job": os.path.basename(job_path), "at": time.strftime("%F %T %z")}
 
+    # ★1153番【Xの投稿の型】URLを必ず一番最後に置く（status/X_TOUKOU_KATA.md）。
+    #   URLが末尾でないと、Xはカードを出した上に本文のURLの文字列も残す＝「リンクが2回」。
+    #   ★言葉は1文字も書き替えない。動かすのはURLの行の位置だけ。
+    #   ★照合もこの直した本文で行う（ここで先に直すので「1文字も変えない」の約束は保たれる）。
+    try:
+        sys.path.insert(0, HERE)
+        import x_kata
+        fixed = x_kata.normalize(job.get("text") or "")
+        if fixed != (job.get("text") or ""):
+            out["kata_naoshita"] = "URLを一番最後に動かした（1153番の型）"
+        job["text"] = fixed
+    except Exception as e:
+        out["kata_naoshita"] = "型の係が読めなかった：%s" % str(e)[:80]
+
     # ★1076番：本番に出す前に覆面客の関所を通す（鍵を見に行くより前に止める）
     ok, why = fukumen_kanmon(job.get("text") or "")
     out["fukumen"] = why

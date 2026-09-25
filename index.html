@@ -87,6 +87,18 @@ button:active{background:#efe9df}
 
 /* ───── 週の残り ───── */
 .big{font-size:40px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.15}
+/* 1153番：使用／残り／リセットまで を横3つ。スマホ(375px)でも1行に収まる寸法で組んだ。 */
+.waku3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:2px 0 4px}
+.waku3 .wl{font-size:14px; color:var(--sub); font-weight:600; letter-spacing:.03em}
+.waku3 .wv{font-size:34px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.15;
+  letter-spacing:-.01em}
+.waku3 .wv .u{font-size:17px; font-weight:600; color:var(--sub); margin-left:1px}
+.waku3 .wv.torenai{font-size:19px; color:var(--red)}
+.mezasu{font-size:16px; line-height:1.65; margin:2px 0 10px}
+.mezasu b{font-variant-numeric:tabular-nums}
+.mezasu .ok{color:var(--green); font-weight:700}
+.mezasu .osoi{color:var(--blue); font-weight:700}
+.mezasu .hayai{color:var(--red); font-weight:700}
 .gauge{position:relative; height:12px; border:1px solid var(--line); border-radius:6px;
   background:#efe9df; margin:12px 0 10px}
 .gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:5px;
@@ -131,6 +143,23 @@ footer a{display:block; padding:5px 0}
   <button id="reload" type="button">読み直す</button>
 </header>
 
+<!-- ⓪ 週の枠（★1153番・2026-09-26。たまごさん「一番上に大きく：今週の使用◯%／残り◯%／
+     リセットまであと◯時間。目安も並べて、その線に対して足りているか遅れているかを一目で」
+     → 元は②の位置にあった「週のクレジット」を、丸ごとここへ上げて大きくした。
+     ★数字が取れないときは空欄にしない。「取れない」と文字で出す。 -->
+<section class="card" id="wakuCard">
+  <h2>今週の枠（火曜18:00にリセット）</h2>
+  <div class="waku3" id="waku3">
+    <div><div class="wl">使用</div><div class="wv" id="wUsed">…</div></div>
+    <div><div class="wl">残り</div><div class="wv" id="wRemain">…</div></div>
+    <div><div class="wl">リセットまで</div><div class="wv" id="wHours">…</div></div>
+  </div>
+  <div class="gauge" id="gauge"><i id="gfill"></i><b id="gline"></b></div>
+  <div class="mezasu" id="wLine">…</div>
+  <div class="nums" id="paceNums"></div>
+  <div class="nums" id="wKazu" style="margin-top:10px;border-top:1px solid #eee7dc;padding-top:10px"></div>
+</section>
+
 <!-- ⓿ ログイン（★2026-09-25 追加。ここが切れていると何も動かないので一番上に赤で出す。
         以前は「走行0本のときだけ」出す作りで、空回しが1本いるだけで消えていた＝5日気づかれなかった） -->
 <div id="loginNg" style="display:none;background:#b00020;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
@@ -153,14 +182,6 @@ footer a{display:block; padding:5px 0}
 <section class="card">
   <h2 id="runHead">走っているもの</h2>
   <div id="running"><div class="note">…</div></div>
-</section>
-
-<!-- ② 週のクレジット残り -->
-<section class="card">
-  <h2>週のクレジット</h2>
-  <div class="big" id="remain">…</div>
-  <div class="gauge" id="gauge"><i id="gfill"></i><b id="gline"></b></div>
-  <div class="nums" id="paceNums"></div>
 </section>
 
 <!-- ③ 次に発車 -->
@@ -253,6 +274,7 @@ fetch('status/public/shukudai.json?t='+Date.now()).then(r=>r.json()).then(d=>{
   <summary><span>ほかの画面へ</span></summary>
   <div class="body">
     <footer>
+      <a href="share/nagekomi-c5fd9d5791b32e88.html">★投げ込み箱：URLを貼って押すだけ（受付一覧つき）</a>
       <a href="share/daicho.html">受付台帳：言われて治っていないもの</a>
       <a href="share/check/1052-kakunin-machi.html">たまごさんの確認待ち</a>
       <a href="share/check/1051-okane.html">お金（1枚・毎日更新）</a>
@@ -405,10 +427,42 @@ function weekStartOf(resetAt){
   if(isNaN(end)) return null;
   return { start:new Date(end.getTime() - WEEK_HOURS*3600000), end:end };
 }
-function idealFrac(){
+/* 1153番：たまごさんが言った目安の線。均等割り(1日14%)ではなく、実際に走らせる形。
+     ・土曜の終わり（日曜0:00）で 50%
+     ・火曜0:00 で 92%
+     ・リセット直前で 99%
+   この3点を通る折れ線で「いま本来ここ」を出す。★時計だけで決まる＝毎回同じ値になる。 */
+function mezasuPoints(){
   var w = PACE && weekStartOf(PACE.resetAt);
   if(!w) return null;
-  return Math.max(0, Math.min(1, (Date.now() - w.start.getTime()) / (WEEK_HOURS*3600000)));
+  var st = w.start;                                  // 火 17:59
+  function mid(addDays){                             // 週頭から addDays 日後の 0:00
+    var d = new Date(st.getFullYear(), st.getMonth(), st.getDate() + addDays, 0, 0, 0, 0);
+    return d.getTime();
+  }
+  return [
+    { t: st.getTime(), pct: 0 },
+    { t: mid(5),       pct: 50 },   // 火＋5日＝日曜の0:00（＝土曜の終わり）
+    { t: mid(7),       pct: 92 },   // 火曜0:00
+    { t: w.end.getTime(), pct: 99 }
+  ];
+}
+function idealPct(){
+  var ps = mezasuPoints(); if(!ps) return null;
+  var now = Date.now();
+  if(now <= ps[0].t) return 0;
+  for(var i = 1; i < ps.length; i++){
+    if(now <= ps[i].t){
+      var a = ps[i-1], b = ps[i];
+      var f = (now - a.t) / Math.max(1, (b.t - a.t));
+      return a.pct + (b.pct - a.pct) * f;
+    }
+  }
+  return 99;
+}
+function idealFrac(){
+  var v = idealPct();
+  return v == null ? null : Math.max(0, Math.min(1, v/100));
 }
 function placeLine(){
   var g = $("gauge"), b = $("gline"), f = idealFrac();
@@ -417,31 +471,80 @@ function placeLine(){
   b.style.transform = "translateX(" + Math.round(g.clientWidth * f) + "px)";
 }
 window.addEventListener("resize", placeLine);
+/* 1153番：取れない数字は空欄にしない。「取れない」と文字で出す。 */
+function wv(id, val, unit){
+  var el = $(id); if(!el) return;
+  if(val == null){ el.className = "wv torenai"; el.textContent = "取れない"; return; }
+  el.className = "wv";
+  el.innerHTML = val + '<span class="u">' + unit + '</span>';
+}
 function renderPace(p){
   PACE = p || null;
   if(!p){
-    $("remain").textContent = "—";
+    wv("wUsed", null); wv("wRemain", null); wv("wHours", null);
+    $("wLine").innerHTML = '<span class="red">目安の線が出せません（週の記録が読めない）</span>';
     $("paceNums").innerHTML = '<span class="red">週の記録が読めませんでした</span>';
     return;
   }
   var remain = p.remainWeek;
-  $("remain").innerHTML = (remain == null ? "—" : remain + "%") +
-    ' <span style="font-size:19px;font-weight:600">残り</span>';
-  var used = Math.max(0, Math.min(100, 100 - (remain == null ? 100 : remain)));
+  var used = (p.allPct != null) ? p.allPct
+           : (remain != null ? Math.max(0, Math.min(100, 100 - remain)) : null);
+  wv("wUsed", used == null ? null : Math.round(used), "%");
+  wv("wRemain", remain == null ? null : Math.round(remain), "%");
+
+  /* リセットまで「あと◯時間」（日ではなく時間。たまごさんの指定） */
+  var w = weekStartOf(p.resetAt);
+  var hLeft = w ? Math.max(0, (w.end.getTime() - Date.now()) / 3600000) : null;
+  wv("wHours", hLeft == null ? null : Math.round(hLeft), "時間");
+
   $("gauge").className = "gauge" + (p.state === "over" ? " over" : "");
-  $("gfill").style.transform = "scaleX(" + (used/100) + ")";
+  $("gfill").style.transform = "scaleX(" + ((used||0)/100) + ")";
   placeLine();
-  var f = idealFrac(), ideal = f == null ? null : Math.round(f*100);
-  var over = (ideal != null) && (used > ideal + 5);
+
+  /* 目安の線に対して、足りているか・遅れているか */
+  var ideal = idealPct();
+  var line = '<div>目安　<b>土曜の終わりに50%</b> ／ <b>火曜0時に92%</b> ／ <b>リセット直前に99%</b></div>';
+  if(ideal == null || used == null){
+    line += '<div><span class="red">いまの線に対する判定は出せません（数字が取れない）</span></div>';
+  }else{
+    var iv = Math.round(ideal), sa = Math.round(used - ideal);
+    var cls = Math.abs(sa) <= 5 ? "ok" : (sa > 5 ? "hayai" : "osoi");
+    var word = Math.abs(sa) <= 5 ? "線どおり"
+             : (sa > 5 ? "使いすぎ（早い）" : "まだ使えていない（遅れ）");
+    line += '<div>いま本来ここ <b>' + iv + '%</b>　→　実際 <b>' + Math.round(used) + '%</b>'
+          + '　<span class="' + cls + '">' + (sa > 0 ? "+" : "") + sa + '% ' + word + '</span></div>';
+  }
+  $("wLine").innerHTML = line;
+
   var d = p.daysLeft == null ? null : Math.round(p.daysLeft*10)/10;
   $("paceNums").innerHTML =
-      '<div><span class="k">使った</span> <b' + (over ? ' class="red"' : '') + '>' + Math.round(used) + '%</b>'
-    + ' <span class="k">／ 本来ここ</span> <b>' + (ideal == null ? "—" : ideal + "%") + '</b></div>'
-    + '<div><span class="k">今日 使った</span> <b>' + (p.usedToday == null ? "—" : p.usedToday + "%") + '</b>'
-    + ' <span class="k">／ 今日の予算</span> <b>' + (p.budgetToday == null ? "—" : p.budgetToday + "%") + '</b>'
-    + ' <span class="k">（日割りの目安 13〜14%）</span></div>'
-    + '<div><span class="k">リセットまで</span> <b>' + (d == null ? "—" : d + "日") + '</b>'
-    + ' <span class="k">' + (p.resetAt ? "（" + esc(p.resetAt) + "・火曜18時）" : "") + '</span></div>';
+      '<div><span class="k">今日 使った</span> <b>' + (p.usedToday == null ? "取れない" : p.usedToday + "%") + '</b>'
+    + ' <span class="k">／ 今日の予算</span> <b>' + (p.budgetToday == null ? "取れない" : p.budgetToday + "%") + '</b></div>'
+    + '<div><span class="k">リセット</span> <b>' + (p.resetAt ? esc(p.resetAt) : "取れない") + '</b>'
+    + ' <span class="k">（火曜18時' + (d == null ? "" : "・あと" + d + "日") + '）</span>'
+    + ' <span class="k">この数字は ' + (p.allPctAsOf ? esc(p.allPctAsOf) + " 時点" : "時点不明") + '</span></div>';
+}
+/* 1153番：走行◯本／今日さばいた◯本／0本だった時間◯分／未完了◯件 を枠の下に1行。
+   ★元データが無いところは「取れない」と書く（空欄にしない）。 */
+function renderWakuKazu(top){
+  var box = $("wKazu"); if(!box) return;
+  var hon = top && top.runningNow ? top.runningNow.length : null;
+  Promise.all([
+    getJson("status/public/genzaichi.json").catch(function(){ return null; }),
+    getJson("status/public/zero_bon.json").catch(function(){ return null; })
+  ]).then(function(a){
+    var g = a[0], z = a[1];
+    var today = new Date();
+    var key = today.getFullYear() + "-" + ("0"+(today.getMonth()+1)).slice(-2)
+            + "-" + ("0"+today.getDate()).slice(-2);
+    var zm = (z && z[key] && z[key].zeroMin != null) ? Math.round(z[key].zeroMin) : null;
+    function n(v, unit){ return (v == null ? '<b class="red">取れない</b>' : '<b>' + v + unit + '</b>'); }
+    box.innerHTML =
+        '<span class="k">走行</span> ' + n(hon, "本")
+      + '　<span class="k">今日さばいた</span> ' + n(g ? g.doneToday : null, "本")
+      + '　<span class="k">0本だった時間</span> ' + n(zm, "分")
+      + '　<span class="k">未完了</span> ' + n(g ? g.waitingCount : null, "件");
+  });
 }
 
 /* ───────── 次に発車 ─────────
@@ -575,6 +678,7 @@ function render(d){
   renderFresh(d);
   renderRunning(d);
   renderPace(d.pace);
+  renderWakuKazu(d);
   $("next").innerHTML = '<li class="meta">読み込み中…</li>';
   loadQueue(d.nextUp || []);
 
