@@ -39,16 +39,30 @@ def honban_uuid(url):
 
 def motteru_kanmon(sha):
     """そのコミットに関所（src/lib/kansei.ts）が入っているか。
+
     ★mainは15分ごとに動くのでSHA一致では永久に合わない。
-      「関所が入っている版か」で見るのが正しい（これが出したい中身の条件そのもの）。"""
-    url = ("https://raw.githubusercontent.com/tamago2022/joy-relief-station/%s/src/lib/kansei.ts"
+      「関所が入っている版か」で見るのが正しい（これが出したい中身の条件そのもの）。
+    ★raw.githubusercontent.com で見てはいけない（2026-09-25 実測）:
+      押す前の404がCDNに5分ほど残り、入った後も404を返し続ける＝永久に押せない。
+      → GitHubのAPIで木（tree）を引いて、パスがあるかで見る。
+    """
+    import json as _json, urllib.request as _u
+    sys.path.insert(0, HERE)
+    import github_watch
+    tok = github_watch.gh_token()
+    url = ("https://api.github.com/repos/tamago2022/joy-relief-station/git/trees/%s?recursive=1"
            % sha)
+    r = _u.Request(url)
+    r.add_header("Authorization", "Bearer %s" % tok)
+    r.add_header("Accept", "application/vnd.github+json")
+    r.add_header("User-Agent", "tamago-1144")
     try:
-        r = urllib.request.Request(url, headers={"User-Agent": UA})
-        with urllib.request.urlopen(r, timeout=20) as resp:
-            return resp.status == 200
-    except Exception:
-        return False
+        with _u.urlopen(r, timeout=90) as resp:
+            tree = _json.loads(resp.read())
+    except Exception as e:
+        print("    木が読めません: %r" % (e,)); return False
+    paths = {e.get("path") for e in tree.get("tree", [])}
+    return "src/lib/kansei.ts" in paths and "src/lib/kanseiHidden.generated.ts" in paths
 
 
 def main():
