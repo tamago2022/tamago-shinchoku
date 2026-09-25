@@ -188,6 +188,8 @@ def main():
 
 def render(hist, t):
     pts = [(h["日"], h["間違いがあった曲数"]) for h in hist]
+    omo = [(h["日"], h["表に出ている曲の間違い"]) for h in hist
+           if h.get("表に出ている曲の間違い")]
     W, H, P = 900, 320, 56
     if len(pts) == 1:
         pts = pts + pts
@@ -208,6 +210,22 @@ def render(hist, t):
         ("昨日 %s件 → 今日 %s件。★減っていない" % (
             f"{hist[-2]['間違いがあった曲数']:,}", f"{hist[-1]['間違いがあった曲数']:,}")
          if len(hist) >= 2 else "今日が1日目。明日から増減が出る"))
+    omo_poly = omo_dots = omo_vals = ""
+    if omo:
+        idx = {d: i for i, (d, _) in enumerate(pts)}
+        oxy = [(P + idx[d] * (W - 2 * P) / n, H - P - (v - lo) / span * (H - 2 * P))
+               for d, v in omo if d in idx]
+        if len(oxy) == 1:
+            oxy = oxy * 2
+        omo_poly = ('<polyline points="%s" fill="none" stroke="#8a7a5c" '
+                    'stroke-width="2" stroke-dasharray="5 4"/>'
+                    % " ".join("%.1f,%.1f" % q for q in oxy))
+        omo_dots = "".join('<circle cx="%.1f" cy="%.1f" r="3.5" fill="#8a7a5c"/>' % q
+                           for q in oxy)
+        omo_vals = "".join('<text x="%.1f" y="%.1f" text-anchor="middle" font-size="11" '
+                           'fill="#8a7a5c">%s</text>'
+                           % (oxy[i][0], oxy[i][1] + 16, f"{omo[i][1]:,}")
+                           for i in range(len(omo)))
     dots = "".join('<circle cx="%.1f" cy="%.1f" r="4.5" fill="%s"/>' % (x, y, col)
                    for x, y in xy)
     labs = "".join('<text x="%.1f" y="%d" text-anchor="middle" font-size="11" fill="#7a6a55">%s</text>'
@@ -252,8 +270,12 @@ font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}
 
 <div class="card"><p class="msg">%s</p>
 <div class="k">うち、いま表に出ている曲の間違い <b>%s</b> 件（隠してある %s 曲は除いた）</div>
+<div class="k" style="margin-top:6px">※実線が増えることもある。推測でなく<b>実際に叩いて調べた</b>ので、
+今まで見えていなかった間違いが表に出てくるため（動画の死亡：推測57本 → 実測143本）。
+見つかったぶんは表から外してあるので、破線（お客さんに見えている恥）は下がる。</div>
 <svg viewBox="0 0 %d %d" width="100%%"><rect x="0" y="0" width="%d" height="%d" fill="none"/>
-<polyline points="%s" fill="none" stroke="%s" stroke-width="2.5"/>%s%s%s</svg></div>
+<polyline points="%s" fill="none" stroke="%s" stroke-width="2.5"/>%s%s%s%s%s%s</svg>
+<div class="k">実線＝全26,400曲の間違い　／　破線＝いま表に出ている曲の間違い（隠してあるぶんを除いた、お客さんに見えている恥）</div></div>
 
 <div class="g">
 <div class="card"><h2>動画を1本ずつ叩いた（oEmbed・0円）</h2>
@@ -274,7 +296,7 @@ font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}
 </div></body></html>""" % (
         col, t["時刻"], msg,
         f'{t.get("表に出ている曲の間違い",0):,}', f'{t.get("隠してある曲",0):,}',
-        W, H, W, H, poly, col, dots, labs, vals,
+        W, H, W, H, poly, col, dots, labs, vals, omo_poly, omo_dots, omo_vals,
         f'{t["実測した動画"]:,}', f'{t["動画IDの実数"]:,}', f'{t["未実測の動画"]:,}',
         naiyaku, f'{t["動画が全部だめな曲(実測)"]:,}', f'{t["動画が一部だめな曲(実測)"]:,}',
         f'{t["ページを実物で見た"]:,}', f'{t["ページが赤だった"]:,}',
