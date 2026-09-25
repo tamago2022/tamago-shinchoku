@@ -74,6 +74,25 @@ def count_lines(p):
     return n
 
 
+def count_uniq(p, key):
+    """★行数で数えると「もう終わった」と勘違いする（実測：戻した分の重複で26,830行 > 26,171件。
+    見張りが『済み』と判断して1,673件を置き去りにしていた）。必ず中身の重複なしで数える。"""
+    if not os.path.exists(p):
+        return 0
+    seen = set()
+    for line in io.open(p, encoding="utf-8", errors="replace"):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            v = json.loads(line).get(key)
+        except Exception:
+            continue
+        if v:
+            seen.add(v)
+    return len(seen)
+
+
 
 def _mk_jissoku():
     """実測(oembed.jsonl)を 1140_kensa.py が読む形(status/1140/jissoku.json)に直す。"""
@@ -107,7 +126,7 @@ def main():
     total = count_lines(ids)
 
     # ① 動画の実測
-    done = count_lines(os.path.join(OUT, "oembed.jsonl"))
+    done = count_uniq(os.path.join(OUT, "oembed.jsonl"), "id")
     if done < total:
         if stalled("jissoku", done):
             note("実測が%d本で詰まっていた。殺して立て直す" % done)
@@ -120,7 +139,7 @@ def main():
     # ② ページを実物で見る
     todo = os.path.join(OUT, "page_todo.txt")
     ptotal = count_lines(todo)
-    pdone = count_lines(os.path.join(OUT, "page.jsonl"))
+    pdone = count_uniq(os.path.join(OUT, "page.jsonl"), "url")
     if pdone < ptotal:
         if stalled("page", pdone):
             note("ページ実物見が%d件で詰まっていた。殺して立て直す" % pdone)
