@@ -397,6 +397,14 @@ if __name__ == "__main__":
     except Exception:
         pass
 
+    # 2026-09-26（1159番）ずんだもん窓口と外への穴の見張り。閉じたら開け直す。
+    try:
+        import subprocess as _sp4, os as _os4
+        _k = _os4.path.join(_os4.path.dirname(_os4.path.abspath(__file__)), "1159_keeper.py")
+        _sp4.Popen(["python3", _k], stdout=_sp4.DEVNULL, stderr=_sp4.DEVNULL)
+    except Exception:
+        pass
+
     # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
     # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
     try:

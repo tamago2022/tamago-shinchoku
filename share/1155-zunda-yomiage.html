@@ -3,260 +3,261 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ずんだもん読み上げ機｜URLを貼るだけ</title>
+<title>ずんだもん読み上げ機</title>
 <style>
-  :root{
-    --bg:#11100e; --ink:#f4efe6; --dim:#a39c8f;
-    --zunda:#8fd14f; --line:#2b2924; --card:#1a1815;
-  }
+  :root{--bg:#11100e;--ink:#f4efe6;--dim:#a39c8f;--zunda:#8fd14f;--warn:#e0774a;
+        --line:#2b2924;--card:#1a1815}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
        font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
-       line-height:1.7;padding:20px 16px 80px;}
+       line-height:1.7;padding:22px 16px 110px}
   .wrap{max-width:720px;margin:0 auto}
-  h1{font-size:22px;margin:0 0 4px;letter-spacing:.02em}
+  h1{font-size:22px;margin:0 0 4px}
   h1 .leaf{color:var(--zunda)}
-  .sub{color:var(--dim);font-size:13px;margin:0 0 22px}
-  .card{background:var(--card);border:1px solid var(--line);
-        border-radius:14px;padding:16px;margin-bottom:14px}
+  .sub{color:var(--dim);font-size:13px;margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+        padding:16px;margin-bottom:12px}
   label{display:block;font-size:12px;color:var(--dim);margin-bottom:6px}
-  input[type=url],input[type=text],textarea{
-    width:100%;background:#0c0b09;border:1px solid var(--line);border-radius:10px;
-    color:var(--ink);padding:12px;font-size:16px;font-family:inherit}
-  textarea{min-height:110px;resize:vertical}
+  input[type=url],textarea,input[type=text]{width:100%;background:#0c0b09;
+    border:1px solid var(--line);border-radius:10px;color:var(--ink);
+    padding:12px;font-size:16px;font-family:inherit}
+  textarea{min-height:100px;resize:vertical}
   .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   button{background:var(--zunda);color:#10240a;border:0;border-radius:999px;
-         padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer}
+         padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer}
   button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
-  button:disabled{opacity:.4}
-  .status{font-size:13px;color:var(--dim);margin-top:12px;min-height:20px}
-  .status b{color:var(--zunda);font-weight:600}
-  .body{font-size:14px;max-height:280px;overflow:auto;white-space:pre-wrap;
+  button:disabled{opacity:.35}
+  .status{font-size:13px;color:var(--dim);margin-top:12px;min-height:22px}
+  .status b{color:var(--zunda)}
+  .status .ng{color:var(--warn)}
+  .bar{height:4px;background:#0c0b09;border-radius:99px;margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--zunda);width:0;transition:width .3s}
+  .body{font-size:14px;max-height:230px;overflow:auto;white-space:pre-wrap;
         border-top:1px solid var(--line);margin-top:14px;padding-top:12px;color:#ded7c9}
-  .body .now{background:rgba(143,209,79,.18);border-radius:3px}
+  .body .now{background:rgba(143,209,79,.2);border-radius:3px}
   .pill{display:inline-block;font-size:11px;border:1px solid var(--line);
-        border-radius:999px;padding:3px 10px;color:var(--dim);margin-right:6px}
-  .foot{color:#6f695e;font-size:12px;margin-top:24px}
-  .ctl{position:fixed;left:0;right:0;bottom:0;background:rgba(17,16,14,.94);
-       border-top:1px solid var(--line);padding:10px 16px;
-       display:flex;gap:8px;justify-content:center;backdrop-filter:blur(8px)}
-  .slider{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
-  input[type=range]{width:120px}
+        border-radius:999px;padding:3px 10px;color:var(--dim)}
+  .pill.on{border-color:var(--zunda);color:var(--zunda)}
+  .pill.off{border-color:var(--warn);color:var(--warn)}
+  .notes{max-height:230px;overflow:auto;margin-top:10px}
+  .notes button{display:block;width:100%;text-align:left;background:transparent;
+    border:0;border-bottom:1px solid var(--line);color:var(--ink);
+    font-size:13px;font-weight:400;padding:10px 4px;border-radius:0}
+  .notes button .mk{color:var(--zunda);font-size:11px;margin-right:6px}
+  .ctl{position:fixed;left:0;right:0;bottom:0;background:rgba(17,16,14,.95);
+       border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;
+       justify-content:center;align-items:center;backdrop-filter:blur(8px)}
+  .foot{color:#6f695e;font-size:12px;margin-top:22px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1><span class="leaf">🌱</span> ずんだもん読み上げ機</h1>
-  <p class="sub">URLを貼ると、勝手に読み上げが始まります。</p>
+  <p class="sub">声はぜんぶ、Macの中のVOICEVOX（ずんだもん）。0円。</p>
 
   <div class="card">
-    <label>URL（記事・note・obsidian:// のノートも可）</label>
-    <input type="url" id="url" placeholder="https://… か obsidian://open?vault=…&file=…"
+    <span class="pill" id="pill">窓口をさがしています…</span>
+  </div>
+
+  <div class="card">
+    <label>URL を貼る（貼った瞬間に始まります）</label>
+    <input type="url" id="url" placeholder="https://… ／ obsidian://open?vault=…&file=…"
            autocomplete="off" inputmode="url">
     <div class="row">
-      <button id="go">読み上げる</button>
-      <button class="ghost" id="paste">貼り付けて読む</button>
+      <button id="go">ずんだもんで読む</button>
     </div>
-    <div class="status" id="st">待機中</div>
-  </div>
-
-  <div class="card" id="textCard" style="display:none">
-    <label>読んでいる本文</label>
-    <div class="body" id="body"></div>
   </div>
 
   <div class="card">
-    <label>直接テキストを貼る</label>
-    <textarea id="raw" placeholder="ここに文章を貼って「これを読む」でも動きます"></textarea>
-    <div class="row"><button class="ghost" id="goRaw">これを読む</button></div>
+    <label>文章を貼る</label>
+    <textarea id="raw" placeholder="ここに文章を貼る"></textarea>
+    <div class="row"><button id="goRaw">ずんだもんで読む</button></div>
   </div>
 
   <div class="card">
-    <span class="pill" id="engPill">声：判定中</span>
-    <span class="pill" id="voicePill">ずんだもん</span>
-    <div class="slider" style="margin-top:12px">
-      <span>速さ</span><input type="range" id="rate" min="0.7" max="1.8" step="0.05" value="1.1">
-      <span id="rateV">1.10</span>
-    </div>
+    <label>#円卓会議 のノートから選ぶ</label>
+    <input type="text" id="q" placeholder="ノート名で絞る（例：馬車）" autocomplete="off">
+    <div class="notes" id="notes"></div>
+  </div>
+
+  <div class="card">
+    <div class="status" id="st">まだ何も読んでいません</div>
+    <div class="bar"><i id="barI"></i></div>
+    <div class="body" id="body" style="display:none"></div>
   </div>
 
   <p class="foot">
-    声はMacの中のVOICEVOX（ずんだもん）を使うので0円。<br>
-    Macで開くとずんだもんの声、スマホで開くと端末の日本語の声に自動で切り替わります。<br>
-    本文の抜き出しは r.jina.ai（無料のリーダー）経由。
+    ブラウザの合成音声は使いません。窓口が閉じているときは、声を出さずに「閉じている」と出します。<br>
+    Macで作ったmp3をそのまま配っているので、スマホでもずんだもんの声です。
   </p>
 </div>
 
 <div class="ctl">
   <button class="ghost" id="pause">一時停止</button>
   <button class="ghost" id="stop">止める</button>
+  <span class="pill" id="cnt">0 / 0</span>
 </div>
 
 <script>
-const VV = "http://127.0.0.1:50021";      // Mac の中の VOICEVOX
-const BRIDGE = "http://127.0.0.1:50022";  // Mac の中の Vault 橋（obsidian:// 用）
-const SPEAKER = 3;                         // ずんだもん ノーマル
-const CHUNK = 120;
-
 const $ = id => document.getElementById(id);
-let queue = [], idx = 0, playing = false, stopped = false, audio = null;
-let engine = "checking";
+const SILENT = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA"
+             + "gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgP/7kMQAAAAA"
+             + "AAAAAAAAAAAAAAAAAFhpbmcAAAAPAAAAAgAAAnEAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
 
-function say(msg, hi){ $("st").innerHTML = hi ? "<b>"+msg+"</b>" : msg; }
+let EP = null;            // {base, t}
+let job = null, cur = 0, stopped = false, poll = null;
+const au = new Audio();
+au.preload = "auto";
 
-// ---- 声の判定 ----
-async function detectEngine(){
-  try{
-    const r = await fetch(VV + "/version", {mode:"cors"});
-    if(r.ok){ engine = "voicevox"; $("engPill").textContent = "声：ずんだもん（VOICEVOX）"; return; }
-  }catch(e){}
-  engine = "web";
-  $("engPill").textContent = "声：この端末の日本語の声";
-  $("voicePill").textContent = "ずんだもんはMacで開いた時だけ";
-}
+function say(msg, cls){ $("st").innerHTML = cls ? '<span class="'+cls+'">'+msg+'</span>' : msg; }
+function api(path){ return EP.base + path + (path.includes("?") ? "&" : "?") + "t=" + EP.t; }
 
-// ---- 本文を取る ----
-async function fetchText(u){
-  u = u.trim();
-  if(u.startsWith("obsidian://")){
-    const q = new URL(u.replace("obsidian://","https://x/")).searchParams;
-    const file = q.get("file") || "";
-    const r = await fetch(BRIDGE + "/note?file=" + encodeURIComponent(file));
-    if(!r.ok) throw new Error("Vaultの橋につながらない（Macで開いてください）");
-    return await r.text();
-  }
-  const r = await fetch("https://r.jina.ai/" + u);
-  if(!r.ok) throw new Error("本文が取れませんでした（" + r.status + "）");
-  return await r.text();
-}
-
-function clean(t){
-  return t
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/!?\[\[([^\]|]*\|)?([^\]]*)\]\]/g, "$2")
-    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/https?:\/\/\S+/g, "")
-    .replace(/^[\s|:\-=]{3,}$/gm, "")
-    .replace(/[*_`>#]+/g, "")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{2,}/g, "\n")
-    .trim();
-}
-
-function toChunks(t){
-  const out = []; let buf = "";
-  for(const p of t.split(/(?<=[。！？\n])/)){
-    const s = p.trim(); if(!s) continue;
-    if((buf + s).length > CHUNK){ if(buf) out.push(buf); buf = s; }
-    else buf += s;
-  }
-  if(buf) out.push(buf);
-  return out.filter(c => /[ぁ-んァ-ヶ一-龠a-zA-Z0-9]/.test(c));
-}
-
-function render(){
-  $("textCard").style.display = "block";
-  $("body").innerHTML = queue.map((c,i) =>
-    '<span class="'+(i===idx?'now':'')+'" id="c'+i+'">'+
-    c.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</span>').join("");
-  const el = $("c"+idx); if(el) el.scrollIntoView({block:"center", behavior:"smooth"});
-}
-
-// ---- しゃべる ----
-async function speakVV(text){
-  const rate = parseFloat($("rate").value);
-  const q = await (await fetch(VV+"/audio_query?text="+encodeURIComponent(text)+"&speaker="+SPEAKER,
-                              {method:"POST"})).json();
-  q.speedScale = rate;
-  const wav = await (await fetch(VV+"/synthesis?speaker="+SPEAKER, {method:"POST",
-      headers:{"Content-Type":"application/json"}, body:JSON.stringify(q)})).blob();
-  return new Promise((res,rej)=>{
-    audio = new Audio(URL.createObjectURL(wav));
-    audio.onended = res; audio.onerror = rej;
-    audio.play().catch(rej);
-  });
-}
-
-function speakWeb(text){
-  return new Promise(res=>{
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "ja-JP"; u.rate = parseFloat($("rate").value);
-    u.onend = res; u.onerror = res;
-    speechSynthesis.speak(u);
-  });
-}
-
-async function runQueue(){
-  playing = true;
-  while(idx < queue.length && !stopped){
-    render();
-    say("読み上げ中 " + (idx+1) + " / " + queue.length, true);
+// ---------- 窓口さがし ----------
+async function findEndpoint(){
+  let j = null;
+  for(const p of ["../status/public/zunda_endpoint.json",
+                  "/tamago-shinchoku/status/public/zunda_endpoint.json"]){
     try{
-      if(engine === "voicevox") await speakVV(queue[idx]);
-      else await speakWeb(queue[idx]);
-    }catch(e){
-      if(engine === "voicevox"){ engine = "web"; await detectEngine(); continue; }
-      break;
-    }
-    idx++;
+      const r = await fetch(p + "?_=" + Date.now(), {cache:"no-store"});
+      if(r.ok){ j = await r.json(); break; }
+    }catch(e){}
   }
-  playing = false;
-  if(!stopped && idx >= queue.length) say("読み終わりました");
+  // Macで直に開いている場合はローカルを優先（速い）
+  const cands = [];
+  if(j) cands.push(j);
+  if(j) cands.push({base:"http://127.0.0.1:50023", t:j.t});
+  for(const c of cands){
+    try{
+      const r = await fetch(c.base + "/health", {cache:"no-store"});
+      if(r.ok){
+        const h = await r.json();
+        EP = c;
+        $("pill").className = "pill on";
+        $("pill").textContent = "窓口あり／声：ずんだもん" + (h.engine ? "" : "（エンジン起動中）");
+        return true;
+      }
+    }catch(e){}
+  }
+  $("pill").className = "pill off";
+  $("pill").textContent = "Macの窓口が閉じています";
+  say("Macの窓口が閉じています。ずんだもんの声が出せないので、読み上げません。", "ng");
+  return false;
 }
 
-async function start(text){
-  stopAll();
-  stopped = false;
-  queue = toChunks(clean(text)); idx = 0;
-  if(!queue.length){ say("読む文が見つかりませんでした"); return; }
-  render();
-  runQueue();
+// ---------- 注文 ----------
+async function order(path, payload){
+  if(!EP && !(await findEndpoint())) return;
+  stopAll(); stopped = false; cur = 0;
+  say("ずんだもんが読む準備をしています…");
+  try{
+    const r = await fetch(api(path), {method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+    const j = await r.json();
+    if(j.error){ say(j.error, "ng"); return; }
+    job = j;
+    unlockAudio();
+    watch();
+  }catch(e){
+    EP = null;
+    say("窓口につながりませんでした（" + e.message + "）", "ng");
+    findEndpoint();
+  }
+}
+
+function unlockAudio(){          // 最初の一押しで音を出せる状態にしておく
+  try{ au.src = SILENT; au.play().catch(()=>{}); }catch(e){}
+}
+
+function watch(){
+  clearInterval(poll);
+  poll = setInterval(async () => {
+    if(stopped || !job) return;
+    try{
+      const s = await (await fetch(api("/job/" + job.id), {cache:"no-store"})).json();
+      job.ready = s.ready; job.chunks = s.chunks; job.done = s.done; job.error = s.error;
+      $("cnt").textContent = cur + " / " + job.chunks;
+      $("barI").style.width = (job.chunks ? (job.ready / job.chunks * 100) : 0) + "%";
+      if(s.error){ say("つくる途中で止まりました：" + s.error, "ng"); clearInterval(poll); return; }
+      if(au.paused && cur < job.ready) playChunk(cur);
+      else if(cur >= job.ready && !job.done)
+        say("ずんだもんが作っています… " + job.ready + " / " + job.chunks + " 切れ");
+      if(job.done && cur >= job.chunks){ say("読み終わりました"); clearInterval(poll); }
+    }catch(e){}
+  }, 1500);
+}
+
+function playChunk(n){
+  if(stopped) return;
+  au.src = api("/audio/" + job.id + "/" + n + ".mp3");
+  au.onended = () => { cur = n + 1; if(cur < job.ready) playChunk(cur); };
+  au.onerror = () => { setTimeout(()=>{ if(!stopped) playChunk(n); }, 1200); };
+  au.play().then(() => {
+    say("<b>ずんだもんが読んでいます</b> " + (n+1) + " / " + job.chunks +
+        (job.done ? "" : "（続きを作りながら）"));
+  }).catch(() => say("画面をひとつ押すと鳴りはじめます（ブラウザの決まり）", "ng"));
 }
 
 function stopAll(){
-  stopped = true;
-  if(audio){ audio.pause(); audio = null; }
-  try{ speechSynthesis.cancel(); }catch(e){}
+  stopped = true; clearInterval(poll);
+  try{ au.pause(); }catch(e){}
 }
 
-// ---- 入口 ----
-async function fromUrl(u){
-  if(!u){ say("URLを入れてください"); return; }
-  say("本文を取っています…");
-  try{ await start(await fetchText(u)); }
-  catch(e){ say(e.message); }
-}
-
-$("go").onclick = () => fromUrl($("url").value);
-$("goRaw").onclick = () => start($("raw").value);
-$("stop").onclick = () => { stopAll(); say("止めました"); };
-$("pause").onclick = () => {
-  if(audio){ audio.paused ? audio.play() : audio.pause(); }
-  else { speechSynthesis.speaking && !speechSynthesis.paused
-         ? speechSynthesis.pause() : speechSynthesis.resume(); }
-};
-$("paste").onclick = async () => {
+// ---------- ノート ----------
+let NOTES = [];
+async function loadNotes(){
+  if(!EP) return;
   try{
-    const t = await navigator.clipboard.readText();
-    if(/^(https?|obsidian):/.test(t.trim())){ $("url").value = t.trim(); fromUrl(t); }
-    else { $("raw").value = t; start(t); }
-  }catch(e){ say("クリップボードが読めませんでした。手で貼ってください"); }
-};
-$("rate").oninput = () => $("rateV").textContent = parseFloat($("rate").value).toFixed(2);
+    const j = await (await fetch(api("/notes"))).json();
+    NOTES = j.notes || [];
+    drawNotes();
+  }catch(e){}
+}
+function drawNotes(){
+  const q = $("q").value.trim();
+  const list = NOTES.filter(n => !q || n.title.includes(q)).slice(0, 60);
+  $("notes").innerHTML = list.map((n,i) =>
+    '<button data-t="'+encodeURIComponent(n.title)+'">'+
+    '<span class="mk">'+(n.ready ? "♪できてる" : "○これから")+'</span>'+
+    n.title.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</button>').join("")
+    || '<p class="foot">見つかりません</p>';
+  [...$("notes").querySelectorAll("button")].forEach(b => b.onclick =
+    () => order("/note", {q: decodeURIComponent(b.dataset.t)}));
+}
 
-// URLを貼った瞬間に勝手に始まる
+// ---------- 入口 ----------
+$("go").onclick = () => { const u = $("url").value.trim();
+  u ? order("/url", {url:u}) : say("URLを入れてください"); };
+$("goRaw").onclick = () => { const t = $("raw").value.trim();
+  t ? order("/say", {text:t}) : say("文章を貼ってください"); };
+$("stop").onclick = () => { stopAll(); say("止めました"); };
+$("pause").onclick = () => { au.paused ? au.play() : au.pause(); };
+$("q").oninput = drawNotes;
 $("url").addEventListener("paste", e => {
   const t = (e.clipboardData||window.clipboardData).getData("text");
   if(t && /^(https?|obsidian):/.test(t.trim())){
-    setTimeout(()=>fromUrl(t.trim()), 60);
+    $("url").value = t.trim();
+    unlockAudio();
+    setTimeout(()=>order("/url", {url:t.trim()}), 50);
+  }
+});
+$("raw").addEventListener("paste", e => {
+  const t = (e.clipboardData||window.clipboardData).getData("text");
+  if(t && t.trim().length > 10){
+    $("raw").value = t;
+    unlockAudio();
+    setTimeout(()=>order("/say", {text:t}), 50);
   }
 });
 
-// ?u=… で開いたら即読み上げ（共有シートから飛ばせる）
-detectEngine().then(()=>{
-  const u = new URLSearchParams(location.search).get("u");
-  if(u){ $("url").value = u; fromUrl(u); } else say("URLを貼ると勝手に始まります");
+findEndpoint().then(ok => {
+  if(ok){
+    loadNotes();
+    const u = new URLSearchParams(location.search).get("u");
+    if(u){ $("url").value = u; order("/url", {url:u}); }
+    else say("URLか文章を貼ると、ずんだもんが読みはじめます");
+  }
 });
+setInterval(() => { if(!EP) findEndpoint().then(ok => ok && loadNotes()); }, 20000);
 </script>
 </body>
 </html>
