@@ -302,6 +302,11 @@ def do_note(rel, prog):
     src = os.path.join(VAULT, rel)
     with io.open(src, "r", encoding="utf-8", errors="ignore") as f:
         text = clean(f.read())
+    # ★読み上げは題名から始める（URL・メタ情報・ファイル名は読まない）
+    head = re.sub(r"[#＃]\S+", "", os.path.basename(rel)[:-3])
+    head = re.sub(r"^円卓会議[_\s]*", "", head).replace("_", " ").strip()
+    if head and not text.startswith(head):
+        text = head + "。\n" + text
     cs = chunks(text)
     if not cs:
         prog["failed"][rel] = "読む文が無い"

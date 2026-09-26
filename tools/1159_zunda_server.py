@@ -100,6 +100,50 @@ def wav_to_mp3(wav_bytes, dest):
 
 # ---------- 文の掃除 ----------
 
+META_LINE = re.compile(
+    r"^\s*(Title|URL Source|Markdown Content|Published Time|Warning|Image|Source)\s*:", re.I)
+
+
+def strip_meta(t):
+    """★たまごさん指示：URL・メタ情報・ファイル名は読まない。本文だけ読む。
+    r.jina.ai は先頭に Title: / URL Source: などを付けてくるので、そこを落とす。"""
+    out = []
+    for ln in t.split("\n"):
+        s = ln.strip()
+        if META_LINE.match(s):
+            continue
+        if re.match(r"^https?://\S*$", s):          # URLだけの行
+            continue
+        if re.match(r"^[#＃][^\s#]+(\s+[#＃][^\s#]+)*$", s):   # タグだけの行
+            continue
+        out.append(ln)
+    return "\n".join(out)
+
+
+def title_of(t, fallback=""):
+    """r.jina.ai の Title: 行から題名を取る。無ければ最初の見出し。"""
+    for ln in t.split("\n")[:12]:
+        m = re.match(r"^\s*Title\s*:\s*(.+)$", ln.strip(), re.I)
+        if m:
+            return m.group(1).strip()
+    for ln in t.split("\n")[:40]:
+        s = ln.strip()
+        if s.startswith("#"):
+            return s.lstrip("# ").strip()
+    return fallback
+
+
+def read_title(title):
+    """ファイル名っぽい飾りを落として、題名として読める形にする。"""
+    t = title or ""
+    t = re.sub(r"\.md$", "", t)
+    t = re.sub(r"^円卓会議[_\s]*", "", t)
+    t = re.sub(r"^[0-9]{4}-?[0-9]{2}-?[0-9]{2}[_\s]*", "", t)
+    t = re.sub(r"[#＃]\S+", "", t)
+    t = re.sub(r"[_]+", " ", t)
+    return t.strip()
+
+
 def clean(t):
     t = re.sub(r"^---\n.*?\n---\n", "", t, flags=re.S)
     t = re.sub(r"```.*?```", "", t, flags=re.S)
@@ -135,8 +179,13 @@ def chunks(text):
 
 # ---------- 仕事 ----------
 
-def make_job(text, title=""):
-    cs = chunks(clean(text))
+def make_job(text, title="", spoken_title=None):
+    """★読み上げは題名から始める。URL・メタ情報・ファイル名は読まない。"""
+    body = clean(strip_meta(text))
+    head = read_title(spoken_title if spoken_title is not None else title)
+    if head and not body.startswith(head):
+        body = head + "。\n" + body
+    cs = chunks(body)
     jid = uuid.uuid4().hex[:12]
     d = os.path.join(JOBS_DIR, jid)
     os.makedirs(d, exist_ok=True)
@@ -355,7 +404,9 @@ class H(BaseHTTPRequestHandler):
                     return self._json({"error": "URLが空"}, 400)
                 if url.startswith("obsidian://"):
                     return self._note(url)
-                j = make_job(fetch_url_text(url), url)
+                raw = fetch_url_text(url)
+                # 題名は中身から取る。URLそのものは読まない。
+                j = make_job(raw, title_of(raw, ""), spoken_title=title_of(raw, ""))
             elif u.path == "/note":
                 return self._note(body.get("q") or "")
             else:
@@ -374,7 +425,8 @@ class H(BaseHTTPRequestHandler):
             j = serve_ready_mp3(mp3, n["title"])
         else:
             src = os.path.join(VAULT, n["rel"])
-            j = make_job(io.open(src, encoding="utf-8", errors="ignore").read(), n["title"])
+            j = make_job(io.open(src, encoding="utf-8", errors="ignore").read(),
+                         n["title"], spoken_title=n["title"])
         return self._json({k: v for k, v in j.items() if k != "texts"})
 
 

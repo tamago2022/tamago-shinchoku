@@ -94,6 +94,7 @@
 
 <div class="ctl">
   <button id="kick" style="display:none">▶ 鳴らす</button>
+  <span class="pill" style="border-color:#2b2924">押すまで音は出ません</span>
   <button class="ghost" id="pause">一時停止</button>
   <button class="ghost" id="stop">止める</button>
   <span class="pill" id="cnt">0 / 0</span>
@@ -107,6 +108,7 @@ const SILENT = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AA
 
 let EP = null;            // {base, t}
 let job = null, cur = 0, stopped = false, poll = null, busy = false;
+let started = false;      // ★「▶ 鳴らす」を押すまで true にならない＝勝手に音が出ない
 
 // 音は WebAudio で鳴らす。<audio> は「一度押さないと鳴らせない」制限の外し方が
 // ブラウザごとに違って、実測で鳴らなかった（ずんだもんが出ない＝0点）。
@@ -157,11 +159,11 @@ async function findEndpoint(){
 
 // ---------- 注文 ----------
 async function order(path, payload){
-  unlockAudio();            // ★押した瞬間に音を出す許可を取る（awaitの後だと失効する）
   if(!EP && !(await findEndpoint())) return;
-  stopAll(); stopped = false; cur = 0;
+  stopAll(); stopped = false; cur = 0; started = false;
+  $("kick").style.display = "none";
   for(const k in cache) delete cache[k];
-  say("ずんだもんが読む準備をしています…");
+  say("ずんだもんが読む準備をしています…（音はまだ出しません）");
   try{
     const r = await fetch(api(path), {method:"POST",
       headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
@@ -188,6 +190,16 @@ function watch(){
       $("cnt").textContent = cur + " / " + job.chunks;
       $("barI").style.width = (job.chunks ? (job.ready / job.chunks * 100) : 0) + "%";
       if(s.error){ say("つくる途中で止まりました：" + s.error, "ng"); clearInterval(poll); return; }
+      // ★押されるまでは鳴らさない。押されて初めて started が立つ。
+      if(!started){
+        if(job.ready > 0){
+          $("kick").style.display = "inline-block";
+          say("用意できました（" + job.ready + " / " + job.chunks + " 切れ）。<b>「▶ 鳴らす」</b>を押すと読みはじめます");
+        }else{
+          say("ずんだもんが作っています… " + job.ready + " / " + job.chunks + " 切れ");
+        }
+        return;
+      }
       if(!busy && cur < job.ready) playChunk(cur);
       else if(cur >= job.ready && !job.done)
         say("ずんだもんが作っています… " + job.ready + " / " + job.chunks + " 切れ");
@@ -277,34 +289,18 @@ $("go").onclick = () => { const u = $("url").value.trim();
 $("goRaw").onclick = () => { const t = $("raw").value.trim();
   t ? order("/say", {text:t}) : say("文章を貼ってください"); };
 $("kick").onclick = () => { $("kick").style.display = "none";
-  ensureAc(); stopped = false; busy = false; if(job) playChunk(cur); };
+  ensureAc(); started = true; stopped = false; busy = false; if(job) playChunk(cur); };
 $("stop").onclick = () => { stopAll(); say("止めました"); };
 $("pause").onclick = () => { if(!ac) return;
   ac.state === "running" ? ac.suspend() : ac.resume(); };
 $("q").oninput = drawNotes;
-$("url").addEventListener("paste", e => {
-  const t = (e.clipboardData||window.clipboardData).getData("text");
-  if(t && /^(https?|obsidian):/.test(t.trim())){
-    $("url").value = t.trim();
-    unlockAudio();
-    setTimeout(()=>order("/url", {url:t.trim()}), 50);
-  }
-});
-$("raw").addEventListener("paste", e => {
-  const t = (e.clipboardData||window.clipboardData).getData("text");
-  if(t && t.trim().length > 10){
-    $("raw").value = t;
-    unlockAudio();
-    setTimeout(()=>order("/say", {text:t}), 50);
-  }
-});
-
+// ★勝手に喋らない。貼っただけでは音は出ない。鳴るのは「▶ 鳴らす」を押した時だけ。
 findEndpoint().then(ok => {
   if(ok){
     loadNotes();
     const u = new URLSearchParams(location.search).get("u");
-    if(u){ $("url").value = u; order("/url", {url:u}); }
-    else say("URLか文章を貼ると、ずんだもんが読みはじめます");
+    if(u) $("url").value = u;
+    say("読むものを選ぶと用意します。音が出るのは「▶ 鳴らす」を押した時だけです");
   }
 });
 setInterval(() => { if(!EP) findEndpoint().then(ok => ok && loadNotes()); }, 20000);
