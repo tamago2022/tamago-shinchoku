@@ -612,6 +612,8 @@ a{color:#36c}
 @media (prefers-color-scheme:dark){body{background:#141312;color:#eee}.c{background:#1e1d1b;border-color:#333}.c.red{background:#2a1716}td{border-color:#2a2a2a}}
 </style></head><body>
 <h1>宿題台帳</h1>
+<p class="honban">この紙の本番：<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1138-shukudai.html">https://tamago2022.github.io/tamago-shinchoku/share/check/1138-shukudai.html</a>
+　／　言われた回数の台帳：<a href="https://tamago2022.github.io/tamago-shinchoku/1152-nankai.html">1152-nankai.html</a></p>
 <p class="sub">言われたのに返っていないもの。%(at)s 時点。この紙は機械が書き換えている（人が手で✅を付けない）。</p>
 %(banner)s
 <div class="cards">

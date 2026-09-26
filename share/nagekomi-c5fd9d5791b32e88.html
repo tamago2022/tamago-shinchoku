@@ -407,16 +407,25 @@ function drawIma(){
    入れる係（tools/nagekomi_shelf.py）が最後に出した赤をそのまま見せる。 */
 function drawAka(){
   var box = document.getElementById("daichoAka"); if(!box) return;
-  fetch("../status/public/nagekomi_shelf.json?t="+Date.now(), {cache:"no-store"})
-   .then(function(r){ return r.ok ? r.json() : null; })
-   .then(function(d){
-     var red = (d && d.red) || [];
-     if(!red.length){ box.style.display = "none"; return; }
-     box.style.display = "block";
-     box.innerHTML = "★棚に入れられていません（" + esc2(d.ranAt || "時点不明") + " の入れる係）<br>"
-                   + red.map(function(x){ return esc2(String(x)); }).join("<br>");
-   })
-   .catch(function(){ box.style.display = "none"; });
+  Promise.all([
+    fetch("../status/public/nagekomi_kagi.json?t="+Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+    fetch("../status/public/nagekomi_shelf.json?t="+Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+  ]).then(function(a){
+    var kagi = a[0], shelf = a[1];
+    var lines = [];
+    if(kagi && kagi.kakeru === false){
+      lines.push("★棚に書き込める鍵がありません（" + esc2(kagi.at || "時点不明") + "）");
+      if(kagi.why) lines.push(esc2(kagi.why));
+      if(kagi.naoshikata) lines.push("直しかた：" + esc2(kagi.naoshikata));
+    }
+    var red = (shelf && shelf.red) || [];
+    for(var i=0;i<red.length;i++) lines.push(esc2(String(red[i])));
+    if(!lines.length){ box.style.display = "none"; return; }
+    box.style.display = "block";
+    box.innerHTML = lines.join("<br>");
+  });
 }
 
 function drawDaicho(){

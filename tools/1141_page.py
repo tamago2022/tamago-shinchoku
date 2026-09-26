@@ -60,6 +60,8 @@ ul{{padding-left:20px;font-size:13px}} li{{margin:3px 0}}
 </style>
 <div class="w">
 <h1>完了の門と、体感の実証</h1>
+<p>この紙の本番：<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1141-kanryo-taikan.html">https://tamago2022.github.io/tamago-shinchoku/share/check/1141-kanryo-taikan.html</a>
+　／　言われた回数の台帳：<a href="https://tamago2022.github.io/tamago-shinchoku/1152-nankai.html">1152-nankai.html</a></p>
 <p class="lead">1141番 ／ {E(mon.get("at",""))} 自動更新 ／ AIを1回も呼んでいません（0円）</p>
 
 <h2>① 「完了」と名乗っていたが、実際は完了していなかった</h2>

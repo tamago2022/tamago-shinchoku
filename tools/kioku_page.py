@@ -202,6 +202,7 @@ tr.warm{background:#fdf8ee}
 .s.wait{background:#fdf0dc;color:#96650d}
 .s.stop{background:#fbe3e0;color:#a6301f}
 .s.dup{background:#efeae3;color:#a09789}
+code{font-family:inherit;font-size:inherit;color:inherit;background:none;padding:0}
 .note{margin:18px 0 0;font-size:11.5px;color:var(--sub);line-height:1.9}
 @media(max-width:640px){.big b{font-size:34px}
  th:nth-child(5),th:nth-child(6),td:nth-child(5),td:nth-child(6){display:none}}
@@ -234,11 +235,11 @@ def build(rows):
                  '<b class="p2">P2</b>' if r["p"] == 2 else "")
         tr.append(
             '<tr class="{cls}"><td class="d">{said}</td>'
-            '<td class="t">{badge}{title}</td>'
+            '<td class="t">{badge}<code data-inyou="台帳">{title}</code></td>'
             '<td class="n {hicls}">{n}</td>'
             '<td><span class="s {scls}">{st}</span></td>'
             '<td class="d">{h1}</td><td class="d">{h2}</td>'
-            '<td class="g">{sonogo}</td></tr>'.format(
+            '<td class="g"><code data-inyou="台帳">{sonogo}</code></td></tr>'.format(
                 cls=("hot" if (r["count"] >= 3 or r.get("aka")) else
                      "warm" if r["count"] >= 2 else ""),
                 said=esc(r.get("saidJa")), badge=badge, title=esc(r["title"]),
@@ -257,7 +258,10 @@ def build(rows):
 <style>{css}</style>
 <div class="wrap">
 <h1>何回言われたか</h1>
-<p class="sub">たまごさんの発言を会話ログから機械で拾って数えたもの。{at} 時点。手で書き足していません。</p>
+<p class="sub">たまごさんの発言を会話ログから機械で拾って数えたもの。{at} 時点。手で書き足していません。<br>
+この紙の本番：<a href="https://tamago2022.github.io/tamago-shinchoku/1152-nankai.html">https://tamago2022.github.io/tamago-shinchoku/1152-nankai.html</a>
+　／　宿題台帳：<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1138-shukudai.html">1138-shukudai.html</a>
+　／　完了の門：<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1141-kanryo-taikan.html">1141-kanryo-taikan.html</a></p>
 
 <div class="big">
  <div><b>{iwareta}</b><span>今週 言われた件数</span></div>
@@ -284,6 +288,10 @@ def build(rows):
  ・<b>判定日が来たら機械が自動で状態を見に行きます</b>（tools/hantei.py）。変わっていなければ自動で赤＋P1に繰り上げ、その場で再発車します。<br>
  ・<b>状態「完了」はこちら側では書けません。</b>URLを叩いて200・中身が空でない・過去の指摘に引っかからない、を機械が確認し、さらに<b>外の判定（Genspark／Codex／公開リポ ai-kaigi）が入って初めて完了</b>になります（tools/oni_modoshi.py・tools/gaibu_shinsa.py）。<br>
  ・数えているのは「走らせた本数」ではなく<b>変わった件数</b>だけです。<br>
+<br>
+ <b>実測（この紙の数字の出どころ）：</b><br>
+ <code>実測: 達成率 {pct}%　＝ {kawatta} / {iwareta}（今週言われた件数のうち、機械の検品と外の判定を通ったもの）
+ ｜ 出どころ: status/kioku/hatsugen.jsonl ／ status/oni_modoshi/kenpin.jsonl ｜ 測った日時: {at}</code><br>
  ・拾う係 tools/kioku.py ／ 判定 tools/hantei.py ／ この紙 tools/kioku_page.py。すべて0円（AIを呼ばない・外へ出ない）。
 </p>
 </div>
