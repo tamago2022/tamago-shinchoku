@@ -224,6 +224,10 @@ function kaku(r, decision) {
           braveNote: "Braveは新しく開かないことで0に保つ。既にあるタブには届かない＝数えられていない",
           unreachableNote:
             "MCPのタブグループ外のタブには届かない（tabs_context_mcp は自分の分しか返さない）",
+          // 1166号：Braveの数字。たまごさんの進捗表がここを読む
+          braveUsed: r.braveUsed || 0, // Braveが選ばれた状態で操作した回数（目標0）
+          braveTools: r.braveTools || [],
+          lastSelectedBrowser: r.lastSelected || null,
           lastDecision: decision,
           lastSession: sid,
           openUrls: (r.openUrls || []).slice(0, 20),
@@ -268,8 +272,13 @@ try {
   kaku(r, "block");
   console.error(
     [
-      `終われない。**自分が開いたタブを閉じていない。**`,
-      `開いた ${r.opened}枚 ／ 閉じた ${r.closed}枚 ／ 残り ${nokori}枚`,
+      nokori > 0 ? `終われない。**自分が開いたタブを閉じていない。**` : `終われない。**Braveを使った。**`,
+      nokori > 0 ? `開いた ${r.opened}枚 ／ 閉じた ${r.closed}枚 ／ 残り ${nokori}枚` : "",
+      braveNG
+        ? `★Braveが選ばれた状態で ${r.braveUsed}回 操作した（${(r.braveTools || []).join(", ")}）。\n` +
+          `  Braveはたまごさんの作業場。憲法違反。いますぐ select_browser({deviceId:"7d965dae-93ae-48b8-b36f-50ba347fa98e"}) でChromeに戻し、\n` +
+          `  Braveで開いたタブを tabs_close_mcp で0枚にしてから終わること。報告に「Braveを使った」と書くこと。`
+        : "",
       r.openUrls.length ? `開いた住所（先頭から）：\n  ` + r.openUrls.slice(0, 10).join("\n  ") : "",
       ``,
       `いますぐやること：`,
