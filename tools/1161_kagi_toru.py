@@ -144,7 +144,11 @@ def main():
     buf = ""
     token = ""
     url_written = False
+    url_kouho = ""
+    url_at = 0.0
     code_sent = False
+    code_at = 0.0
+    enter_after = 0
     enter_sent = 0
     t0 = time.time()
     last_dump = 0
@@ -171,11 +175,15 @@ def main():
 
         if not url_written:
             u = hirou_url(flat)
-            if u:
+            # 折り返しの途中で拾うと尻切れになる。2回続けて同じ長さになるまで待つ。
+            if u and u == url_kouho and now - url_at > 2.5:
                 with io.open(URLF, "w", encoding="utf-8") as f:
                     f.write(u + "\n")
                 url_written = True
                 log("OAuth URL を出した（len=%d）" % len(u))
+            elif u != url_kouho:
+                url_kouho = u
+                url_at = now
         # 「Enterでブラウザを開く」で止まっているときは Enter を送る
         if not url_written and enter_sent < 3 and ("Press Enter" in flat or "press enter" in flat.lower()):
             try:
@@ -190,11 +198,25 @@ def main():
             code = io.open(CODEF, encoding="utf-8").read().strip()
             if code:
                 try:
-                    os.write(mfd, (code + "\r").encode())
+                    for ch in code:
+                        os.write(mfd, ch.encode())
+                        time.sleep(0.004)
+                    time.sleep(1.5)
+                    os.write(mfd, b"\r")
                     code_sent = True
+                    code_at = time.time()
                     log("コードを流し込んだ（len=%d）" % len(code))
                 except Exception as e:
                     log("コード流し込み失敗 %r" % (e,))
+
+        # 送ったのに動かないときは Enter をもう一度（実測：1回だと進まないことがある）
+        if code_sent and enter_after < 4 and time.time() - code_at > 20 * (enter_after + 1):
+            try:
+                os.write(mfd, b"\r")
+                enter_after += 1
+                log("追いEnter(%d)" % enter_after)
+            except Exception:
+                pass
 
         m = TOKEN_RE.search(flat)
         if m:
