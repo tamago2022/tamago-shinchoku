@@ -207,6 +207,12 @@ def check_number_claims(html_text, report_text=""):
     実測は9.6pxだった）を機械で再現・検出できるかで合格条件を確かめてある。"""
     combined_html = (html_text or "") + "\n" + (report_text or "")
     plain = _strip_html(combined_html)
+    # 896番で発見（2026-09-26）：<a href="...">に生のURLをリンク文字列としてそのまま
+    # 表示するページ（renraku.pyのGmail compose_url等）では、URLエンコードされた
+    # %E3%83%9C…のようなバイト列が「83%」「9C%」のように数字+%の形へ偶然一致し、
+    # 大量の誤検知（例：3, 83, 3, 82, 3…）を生む。%[16進数2桁]のパーセントエンコード
+    # 断片は実際のpx/%主張ではないため、判定対象から除外する。
+    plain = re.sub(r"%[0-9A-Fa-f]{2}", "", plain)
     if not NUM_RE.search(plain):
         return True, "px/%の数字の主張なし・対象外"
 
