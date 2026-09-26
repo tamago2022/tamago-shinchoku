@@ -68,8 +68,14 @@ def main():
                     except Exception as e:
                         r["text"][i] = "★取れない（%s）" % type(e).__name__
                         res["red"].append("%s：#%s が取れない" % (name, i))
+                # ★進捗表は縦6700pxある。全画面撮りは30秒で落ちるので、
+                #   落ちたら見えている分だけ撮る（撮れないことを赤にしない。測りは済んでいる）
                 shot = os.path.join(SHOT, name + "-375.png")
-                p.screenshot(path=shot, full_page=True)
+                try:
+                    p.screenshot(path=shot, full_page=True, timeout=25000)
+                except Exception:
+                    p.screenshot(path=shot, full_page=False, timeout=15000)
+                    r["shotNote"] = "縦が長すぎて全画面は撮れなかったので、見えている分だけ撮った"
                 r["shot"] = os.path.relpath(shot, REPO)
             except Exception as e:
                 r["error"] = "%s: %s" % (type(e).__name__, e)

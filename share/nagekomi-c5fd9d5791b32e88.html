@@ -372,7 +372,8 @@ function esc2(s){ return String(s==null?"":s).replace(/[<>&"]/g, function(c){
 function cleanTitle(s){
   var t = String(s==null?"":s);
   t = t.replace(/&mdash;/g,"—").replace(/&amp;/g,"&").replace(/&#39;/g,"'").replace(/&quot;/g,'"');
-  t = t.replace(/\s*(pic\.twitter\.com|https?:\/\/)\S*[\s\S]*$/, "");   /* 画像リンク以降を落とす */
+  /* 画像リンク以降を落とす。★一覧側で途中まで切られた「pic.twitt」も拾う */
+  t = t.replace(/\s*(pic\.twi\w*|https?:\/\/)\S*[\s\S]*$/, "");
   t = t.replace(/\s*—\s*.*\(@[^)]+\).*$/, "");                          /* 「— 名前 (@id) 日付」を落とす */
   t = t.replace(/\s+/g," ").trim();
   return t;
