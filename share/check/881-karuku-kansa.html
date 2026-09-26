@@ -43,7 +43,7 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #881 ごきげん補給所 重さ監査（第1段・コード変更なし・本番main実測版）</div>
 <h1>#881 ごきげん補給所 重さ監査（第1段・コード変更なし）</h1>
-<div class="date">2026-09-26 やり直し版：前回の判定を本番(origin/main)の実測で訂正</div>
+<div class="date">2026-09-26 やり直し版：前回の判定を本番(main)の実測で訂正</div>
 
 <div class="warn">
 <b>■ 前回版の訂正（一番重要）</b><br>
@@ -128,21 +128,21 @@
 トップページ /
   JS計11本 raw=2,094.8KB gzip=648.4KB
 
-実測: [git show origin/main:scripts/check-perf-guards.mjs をmainの中身に対して実行]
-OK: 速さと挙動の見張り 14項目すべて問題なし（origin/main）
+実測: [本番(main)にある「速さの見張りスクリプト」を本番の中身に対して実行]
+OK: 速さと挙動の見張り 14項目すべて問題なし(本番mainで確認)
 
-実測: [git show origin/main:scripts/perf-budget.json]
+実測: [本番(main)の「重さの上限を決めたファイル」より]
 曲ページ(song)予算: gzip 5,512バイト／棚一覧(shelfList)予算: gzip 5,150バイト／トップ(top)予算: gzip 917,528バイト
 
-実測: [git show origin/main:public/badges/concierge-pick.png のバイト数]
-330,248 bytes（前回資料の2,650,238 bytesは古い作業コピーの数字）
+実測: [本番(main)の一押しバッジ画像のファイルサイズ]
+330,248 bytes(前回資料の2,650,238 bytesは古い作業コピーの数字)
 
 実測: [tools/verify_click.mjs で本番を自動クリック検査した生ログ]
-/shelf/food/kattemi-yokatta → consoleErrorCount:0（19/19クリック成功・PASS）
-/room/card/ado-kawaikute-gomen → consoleErrorCount:1 [uncaught] Minified React error #418（FAIL）
+/shelf/food/kattemi-yokatta → consoleErrorCount:0(19/19クリック成功・PASS)
+/room/card/ado-kawaikute-gomen → consoleErrorCount:1 [uncaught] Minified React error #418(FAIL)
 
-実測: [worktreeの分岐点確認]
-git merge-base HEAD origin/main → 分岐点コミット。そこからmainは3,106コミット先行、作業コピー側は47コミット先行（別作業の積み残し）
+実測: [監査に使った作業コピーが、本番からどれだけ古かったかの確認]
+作業コピーと本番(main)が分かれた地点を調べたところ、そこから本番は3,106個ぶん先に進んでおり、作業コピー側は別件の作業47個ぶんが積まれたまま取り残されていた
 </pre>
 
 <h2>押せるリンク（クリック検査で正常動作を確認済みのものだけ）</h2>
