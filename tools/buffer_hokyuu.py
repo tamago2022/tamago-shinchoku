@@ -38,6 +38,7 @@ from buffer_yoyaku import (  # noqa: E402  同じ鍵・同じ照合を使い回�
     Q_ORGS, Q_CHANNELS, M_CREATE, M_EDIT, Q_POSTS, log,
 )
 import x_kata  # noqa: E402  ★1153番【Xの投稿の型】URLを必ず一番最後に置く係
+import buffer_sekisho  # noqa: E402  ★1164番【二重投稿の関所】同じ本文・同じ曲は二度と入れない
 
 MACHI = os.path.join(QUEUE, "machi.json")
 RESULT = os.path.join(QUEUE, "hokyuu_result.json")
@@ -198,13 +199,32 @@ def main():
         return 0
 
     slots = next_slots([p.get("dueAt") for p in before], min(need, len(machi)))
+
+    # ★★1164番【二重投稿の関所】2026-09-26、同じ投稿が2本出た（松任谷由実）。
+    #   原因は、ここが「いま予約に並んでいるもの(scheduled)」しか見ていなかったこと。
+    #   1本目が出て予約欄が空になった瞬間、行列に残っていた同じ本文が2本目として入った。
+    #   → 入れる前に **予約中・出した分(sent)・失敗分・台帳** を全部突き合わせる。
+    mon = buffer_sekisho.Mon(lambda q, v=None: gql(tok, q, v))
+    mon.load(org_id, ch["id"])
+    res["sekisho_mita"] = mon.mita
+
     added, failed = [], []
-    for (iso, local), item in zip(slots, machi[:len(slots)]):
+    tsukatta = 0          # 行列の先頭から何本ぶん処理したか（弾いた分も含めて引っ込める）
+    si = 0                # 次に使う枠
+    for item in machi:
+        if si >= len(slots):
+            break
         text = item["text"] if isinstance(item, dict) else str(item)
         # ★1153番【Xの投稿の型】URLを必ず一番最後に置く（status/X_TOUKOU_KATA.md）。
         #   URLが末尾でないと、Xはカードを出した上に本文のURLの文字列も残す＝「リンクが2回」。
         #   言葉は1文字も書き替えない。動かすのはURLの行の位置だけ。
         text = x_kata.normalize(text)
+        iso, local = slots[si]
+        ok, why = mon.tsukaeru(text, iso)
+        if not ok:
+            mon.hajiku(text, why, iso)
+            tsukatta += 1                     # ★弾いたものは行列から捨てる（次も弾かれるだけ）
+            continue                           # ★枠は使わない（次の曲に回す）
         r = gql(tok, M_CREATE, {"input": {
             "text": text, "channelId": ch["id"],
             "schedulingType": "automatic",
@@ -215,12 +235,18 @@ def main():
         if cp.get("message") or r.get("errors") or not post.get("id"):
             failed.append({"due_jst": local.strftime("%F %H:%M"),
                            "error": cp.get("message") or str(r.get("errors"))[:200]})
-            continue
+            break                              # ★失敗したらそこで止める（行列は減らさない）
+        mon.kiroku(text, iso, post["id"], "hokyuu")
         added.append({"id": post["id"], "due_jst": local.strftime("%F %H:%M"),
                       "due_utc": iso, "text": text})
+        tsukatta += 1
+        si += 1
 
-    # ★行列から出した分だけ引っ込める（失敗した分は行列に残す）
-    d["machi"] = machi[len(added):]
+    res["hajiita"] = mon.hajiita
+    res["hajiita_kazu"] = mon.hajiita_kazu
+
+    # ★行列から使った分（入れた分＋弾いた分）だけ引っ込める。失敗した分は行列に残す
+    d["machi"] = machi[tsukatta:]
     d.setdefault("sumi", [])
     d["sumi"] = (d["sumi"] + [a["text"] for a in added])[-200:]
     save_machi(d)

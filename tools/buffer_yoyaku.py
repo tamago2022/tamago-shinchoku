@@ -281,6 +281,20 @@ def run_one(job_path):
     out["due_jst"] = local.strftime("%F %H:%M %Z")
     out["due_utc"] = due_iso
 
+    # ★★1164番【二重投稿の関所】2026-09-26、同じ投稿が2本出た（松任谷由実）。
+    #   予約中(scheduled)だけでなく、**出した分(sent)・失敗分・台帳**まで突き合わせる。
+    #   同じ本文、または同じ曲（本文のcover-guide URL）なら、ここで止める。
+    import buffer_sekisho
+    mon = buffer_sekisho.Mon(lambda q, v=None: gql(tok, q, v))
+    mon.load(org_id, ch["id"])
+    ok2, why2 = mon.tsukaeru(job["text"], due_iso)
+    if not ok2:
+        mon.hajiku(job["text"], why2, due_iso)
+        out["result"] = "二重投稿の関所で止めた"
+        out["hajiita"] = mon.hajiita
+        out["fix"] = why2
+        return out
+
     res = gql(tok, M_CREATE, {"input": {
         "text": job["text"],
         "channelId": ch["id"],
@@ -298,6 +312,7 @@ def run_one(job_path):
     post = cp.get("post") or {}
     out["post_id"] = post.get("id")
     out["result"] = "登録済み"
+    mon.kiroku(job["text"], due_iso, post.get("id"), "yoyaku")   # ★台帳に残す（次から弾かれる）
 
     # ---- ★ここからが本番：一覧を取り直して照合する ----
     time.sleep(2)

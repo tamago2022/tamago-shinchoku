@@ -115,6 +115,9 @@ const COUNT_EXPR = `JSON.stringify((() => {
     h1: (document.querySelector('h1')?.innerText || '').trim().slice(0, 120),
     textLen: txt.length,
     text_head: txt.slice(0, 900),
+    lines: txt.split('\\n').map(s => s.trim()),
+    kanren_midashi: /この曲の関連動画/.test(txt),
+    kanren_honsuu: (txt.match(/この曲の関連動画\\s*(\\d+)\\s*本/) || [null, null])[1],
     videos: uniq,
     videos_all: items.length,
     headings: Array.from(document.querySelectorAll('h2,h3')).map(e => (e.innerText||'').trim().slice(0,60)).filter(Boolean).slice(0, 25),
@@ -136,9 +139,19 @@ async function main() {
   try {
     page = await findPage(port);
     const statuses = new Map();
+    let errs = [];
     cdp = connect(page.webSocketDebuggerUrl, (method, params) => {
       if (method === "Network.responseReceived" && params?.type === "Document") {
         statuses.set(params.response.url, params.response.status);
+      }
+      if (method === "Network.loadingFailed") {
+        errs.push("loadingFailed: " + (params?.errorText || "") + " " + (params?.type || ""));
+      }
+      if (method === "Runtime.exceptionThrown") {
+        errs.push("JS例外: " + String(params?.exceptionDetails?.text || "").slice(0, 200));
+      }
+      if (method === "Runtime.consoleAPICalled" && params?.type === "error") {
+        errs.push("console.error: " + (params.args || []).map((a) => String(a.value || a.description || "")).join(" ").slice(0, 200));
       }
     });
     await cdp.ready;
@@ -148,6 +161,7 @@ async function main() {
 
     for (const url of urls) {
       const row = { url };
+      errs = [];
       try {
         await cdp.send("Page.navigate", { url });
         const t0 = Date.now();
@@ -156,16 +170,27 @@ async function main() {
           const r = await cdp.send("Runtime.evaluate", { expression: "document.readyState", returnByValue: true });
           if (r.result?.value === "complete") break;
         }
-        await sleep(SETTLE_MS);
-        // 遅れて描かれる関連を取りこぼさないよう、一番下まで一度落とす
-        await cdp.send("Runtime.evaluate", { expression: "window.scrollTo(0, document.body.scrollHeight)" });
-        await sleep(2500);
-        const r = await cdp.send("Runtime.evaluate", { expression: COUNT_EXPR, returnByValue: true });
-        row.data = JSON.parse(r.result.value);
+        // ★実測(2026-09-26)：6秒では本文が描かれず textLen=52（footerだけ）だった。
+        //   このサイトは coverGuide を遅延読み込みするので、**中身が出るまで待つ**。
+        //   出ないままなら「出なかった」と書く（推定しない）。
+        let data = null;
+        const tEnd = Date.now() + 75000;
+        while (Date.now() < tEnd) {
+          await cdp.send("Runtime.evaluate", { expression: "window.scrollTo(0, document.body.scrollHeight)" });
+          await sleep(1500);
+          await cdp.send("Runtime.evaluate", { expression: "window.scrollTo(0, 0)" });
+          const r = await cdp.send("Runtime.evaluate", { expression: COUNT_EXPR, returnByValue: true });
+          data = JSON.parse(r.result.value);
+          if (data.textLen > 400 && data.videos.length > 0) break;
+          await sleep(1500);
+        }
+        row.data = data;
+        row.waited_ms = 75000 - Math.max(0, tEnd - Date.now());
         row.http = statuses.get(url) || statuses.get(url + "/") || null;
       } catch (e) {
         row.error = String(e).slice(0, 300);
       }
+      row.errors = errs.slice(0, 12);
       out.rows.push(row);
       console.log(`${url} → http=${row.http} 動画=${row.data?.videos?.length ?? "?"} 文字数=${row.data?.textLen ?? "?"}`);
     }

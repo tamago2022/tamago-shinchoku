@@ -432,3 +432,14 @@ if __name__ == "__main__":
         _sp6.Popen(["python3", _s6], stdout=_sp6.DEVNULL, stderr=_sp6.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-26（1163番）棚に書ける鍵（~/.tamago/supabase_service_role）が置かれた
+    # **その周回で**、たまごさんがコマンドを1つも打たずに溜まっている分を全部棚へ入れる。
+    # ★heartbeat.sh は走り出したら読み直されないので、枷5番どおり「毎周回読み直される
+    #   Pythonファイル（ここ）」から呼ぶ。鍵が無い周回は exists を1回見て即戻る。
+    try:
+        import subprocess as _sp7, os as _os7
+        _s7 = _os7.path.join(_os7.path.dirname(_os7.path.abspath(__file__)), "1163_kagi_machi.py")
+        _sp7.Popen(["python3", _s7], stdout=_sp7.DEVNULL, stderr=_sp7.DEVNULL)
+    except Exception:
+        pass
