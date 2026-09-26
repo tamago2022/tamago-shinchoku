@@ -130,6 +130,47 @@ def yomu():
     return rows
 
 
+TSUIKA = os.path.join(DIR, "tsuika.jsonl")
+
+
+def torikomu():
+    """★お題の追加口。status/1160/tsuika.jsonl に1行足すだけで列に入る。
+
+    列（queue.jsonl）はこの係が毎周回で書き直すので、外から直に足すと消える。
+    足す側と書く側を分けてあるので、誰が・いつ足しても取りこぼさない。
+    """
+    rows = yomu()
+    if not os.path.exists(TSUIKA):
+        return rows
+    mochi = set(r.get("id") for r in rows)
+    tsuita = []
+    for line in io.open(TSUIKA, encoding="utf-8"):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            r = json.loads(line)
+        except Exception:
+            continue
+        if not r.get("id") or r["id"] in mochi:
+            continue
+        r.setdefault("state", "順番待ち")
+        r.setdefault("task_type", "deep_research")
+        r.setdefault("sashimodoshi", 0)
+        rows.append(r)
+        mochi.add(r["id"])
+        tsuita.append(r["id"])
+    if tsuita:
+        kaku(rows)
+        try:
+            os.replace(TSUIKA, TSUIKA + ".torikomi_zumi")
+        except Exception:
+            pass
+        log("お題を取り込んだ: %s" % ",".join(tsuita))
+        daicho({"nani": "お題を取り込んだ", "id一覧": tsuita})
+    return rows
+
+
 def kaku(rows):
     os.makedirs(DIR, exist_ok=True)
     tmp = QUEUE + ".tmp"
@@ -197,10 +238,22 @@ def kekka_toru(pid):
 
 
 # ───────── 検品（薄いかどうか） ─────────
+KOUSEKI = ("Analyzed URLs:", "Query:", "### summary:", "verbatim:")
+KOUSEKI_NAKA = ("Search round", "SYSTEM: You have made", "reaching the session maximum")
+
+
 def usui(body):
     """薄ければ理由の文字列、良ければ None。"""
     if not body:
         return "中身が空"
+    t = body.lstrip()
+    # ★航跡（検索ログ）をレポートと間違えない。2026-09-26 に1回やらかした形。
+    if t.startswith(KOUSEKI):
+        return "レポート本文ではなく検索の航跡"
+    if any(g in body for g in KOUSEKI_NAKA):
+        return "検索の航跡が混ざっている（レポート本文ではない）"
+    if not t.startswith("#"):
+        return "見出しから始まっていない（レポート本文ではない）"
     # 使い回しの読み物部分だけを見る（アーカイブ部分を含んでも長さは足りる）
     urls = set(re.findall(r"https?://[^\s\)\]\"'>]+", body))
     if len(body) < MIN_CHARS:
@@ -229,15 +282,27 @@ def main():
     os.makedirs(DIR, exist_ok=True)
     os.makedirs(KOTAE, exist_ok=True)
 
-    if os.path.exists(STOP) or os.path.exists(os.path.join(DIR, "stop")):
+    if os.path.exists(STOP):
         return 0
+    # 自分の線だけの栓。★置いたまま殺されて線が永久に止まる事故を防ぐため、
+    #   15分より古い栓は自分で外す（2026-09-26 実測：手入れの票が心臓に殺され栓が残った）。
+    mystop = os.path.join(DIR, "stop")
+    if os.path.exists(mystop):
+        try:
+            if time.time() - os.path.getmtime(mystop) > 900:
+                os.remove(mystop)
+                log("15分より古い栓を自分で外した")
+            else:
+                return 0
+        except Exception:
+            return 0
     if not os.path.exists(GSK):
         log("gsk が無い")
         return 1
     if not kagi_toru():
         return 0
     try:
-        rows = yomu()
+        rows = torikomu()
         if not rows:
             return 0
         z = zan()
@@ -359,12 +424,32 @@ def main():
                 "取れない": sum(1 for r in rows if r.get("state") == "取れない"),
                 "全部": len(rows),
             }, f, ensure_ascii=False, indent=2)
+        # ④ 棚のページを作り直す（取れた答えが増えたら本番に出る形にしておく）
+        try:
+            subprocess.run(["python3", os.path.join(HERE, "1160_page.py")],
+                           capture_output=True, timeout=120)
+        except Exception:
+            pass
     finally:
         kagi_hanasu()
     return 0
 
 
 if __name__ == "__main__":
+    if "--torinaosu" in sys.argv:
+        # 取れたことにした答えを、もう一度検品し直す（航跡を掴んでいたものを取り直す）
+        rows = yomu()
+        for r in rows:
+            f = os.path.join(KOTAE, "%s.md" % r["id"])
+            ok = False
+            if os.path.exists(f):
+                body = io.open(f, encoding="utf-8").read().split("\n---\n", 1)[-1]
+                ok = usui(body) is None
+            if not ok and r.get("project_id"):
+                r["state"] = "走っている"
+                print("取り直す", r["id"])
+        kaku(rows)
+        sys.exit(main())
     if "--joukyou" in sys.argv:
         p = os.path.join(DIR, "joukyou.json")
         print(io.open(p, encoding="utf-8").read() if os.path.exists(p) else "{}")

@@ -110,6 +110,21 @@ footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(
 """
 
 
+def wrap(title, inner, modoru=True):
+    h = ["<!doctype html><html lang=ja><meta charset=utf-8>",
+         '<meta name=viewport content="width=device-width,initial-scale=1">',
+         "<title>%s</title>" % html.escape(title),
+         "<style>%s</style>" % CSS, "<body><div class=wrap>"]
+    if modoru:
+        h.append('<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>')
+    h.append(inner)
+    h.append('<footer>調べたのは Genspark（Deep Research）。出典URLつき。'
+             '1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは'
+             '突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>')
+    h.append("</div></body></html>")
+    return "\n".join(h)
+
+
 def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     rows = []
@@ -145,28 +160,38 @@ def main():
         arts.append((r, md2html(body), urls, len(body)))
 
     now = datetime.now(JST).strftime("%Y-%m-%d %H:%M")
-    h = ["<!doctype html><html lang=ja><meta charset=utf-8>",
-         '<meta name=viewport content="width=device-width,initial-scale=1">',
-         "<title>調べもの棚｜ループエンジニアリングと無人運用</title>",
-         "<style>%s</style>" % CSS, "<body><div class=wrap>",
-         "<header><h1>人を挟まずに回す仕組み<br>世界の実装と、失敗の記録</h1>",
-         "<p class=lead>Genspark（Deep Research）が調べて書いたもの。出典URLつき。</p>",
-         "<p class=meta>更新 %s ／ 取れた %d本・走っている %d本・順番待ち %d本</p></header>"
-         % (now, j.get("取れた", 0), j.get("走っている", 0), j.get("順番待ち", 0))]
+    outdir = os.path.dirname(OUT)
 
-    if arts:
-        h.append("<div class=toc><h2>目次</h2><ol>")
-        for r, _, _, _ in arts:
-            h.append('<li><a href="#%s">%s</a></li>' % (r["id"], html.escape(r.get("title", r["id"]))))
-        h.append("</ol></div>")
-
+    # ── 1本ずつの読み物ページ（重いので分ける） ──
     for r, body, urls, n in arts:
-        h.append('<article id="%s"><div class=head><h2>%s</h2>' % (r["id"], html.escape(r.get("title", r["id"]))))
-        h.append('<p class=sub>Genspark Deep Research ／ 投げた %s ／ 出典URL %d本 ／ %s字'
-                 '%s</p></div>' % (html.escape(str(r.get("submitted_at", ""))), urls, format(n, ","),
-                                   "（突き返し %d回）" % r.get("sashimodoshi", 0) if r.get("sashimodoshi") else ""))
-        h.append(body)
-        h.append("</article>")
+        t = r.get("title", r["id"])
+        inner = ('<header><h1>%s</h1>'
+                 '<p class=lead>Genspark（Deep Research）が調べて書いたもの</p>'
+                 '<p class=meta>出典URL %d本 ／ %s字 ／ 投げた %s%s<br>'
+                 '<a href="%s" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header>'
+                 % (html.escape(t), urls, format(n, ","), html.escape(str(r.get("submitted_at", ""))),
+                    "／ 突き返し %d回" % r.get("sashimodoshi", 0) if r.get("sashimodoshi") else "",
+                    html.escape(str(r.get("task_url", "")))))
+        inner += "<article>%s</article>" % body
+        p = os.path.join(outdir, "1160-%s.html" % r["id"])
+        with io.open(p, "w", encoding="utf-8") as f:
+            f.write(wrap(t, inner))
+        print("書いた %s（%dバイト）" % (p, os.path.getsize(p)))
+
+    # ── 目次（これが本番URL1枚） ──
+    h = ["<header><h1>人を挟まずに回す仕組み<br>世界の実装と、失敗の記録</h1>",
+         "<p class=lead>Genspark（Deep Research）が調べて書いたもの。全文に出典URLつき。</p>",
+         "<p class=meta>更新 %s ／ 取れた %d本・走っている %d本・順番待ち %d本 ／ 残クレジット %s（Deep Research は消費0で実測）</p></header>"
+         % (now, j.get("取れた", 0), j.get("走っている", 0), j.get("順番待ち", 0), html.escape(str(j.get("zan", "?"))))]
+    for r, body, urls, n in arts:
+        midashi = re.findall(r"<h3>(.*?)</h3>", body)[:4]
+        h.append('<article><div class=head><h2><a href="1160-%s.html" style="color:inherit;text-decoration:none">%s</a></h2>'
+                 '<p class=sub>出典URL %d本 ／ %s字%s</p></div>'
+                 % (r["id"], html.escape(r.get("title", r["id"])), urls, format(n, ","),
+                    "／ 突き返し %d回" % r.get("sashimodoshi", 0) if r.get("sashimodoshi") else ""))
+        if midashi:
+            h.append("<p>" + " ／ ".join(re.sub(r"<[^>]+>", "", m)[:40] for m in midashi) + "</p>")
+        h.append('<p><a href="1160-%s.html">→ 全文を読む</a></p></article>' % r["id"])
 
     machi = [r for r in rows if r.get("state") in ("走っている", "順番待ち")]
     if machi:
@@ -174,16 +199,10 @@ def main():
         for r in machi:
             h.append("%s <span class=badge>%s</span><br>" %
                      (html.escape(r.get("title", r["id"])), html.escape(r.get("state", ""))))
-        h.append("答えが取れた順にこのページへ積まれます。</div>")
-
-    h.append("<footer>調べたのは Genspark（Deep Research）。"
-             "1本ずつ自動で流し、出典URLが少ない・失敗例が無い答えは突き返して書き直させています。<br>"
-             "残クレジット %s ／ このページは自動更新（tools/1160_shirabe.py・tools/1160_page.py）</footer>"
-             % html.escape(str(j.get("zan", "?"))))
-    h.append("</div></body></html>")
+        h.append("取れた順にこの棚へ積まれます。</div>")
 
     with io.open(OUT, "w", encoding="utf-8") as f:
-        f.write("\n".join(h))
+        f.write(wrap("調べもの棚｜人を挟まずに回す仕組み", "\n".join(h), modoru=False))
     print("書いた %s（%d本・%dバイト）" % (OUT, len(arts), os.path.getsize(OUT)))
     return 0
 

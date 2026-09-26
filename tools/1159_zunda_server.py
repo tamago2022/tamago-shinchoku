@@ -440,6 +440,11 @@ def engine_ok():
 
 def main():
     os.makedirs(JOBS_DIR, exist_ok=True)
+    # 途中で殺されると「譲れの札」が残り、まとめ生成が黙って待ち続ける。開けるたびに捨てる。
+    try:
+        os.remove(BUSY_FLAG)
+    except Exception:
+        pass
     log("窓口を開けます :%d 合言葉=%s" % (PORT, TOKEN))
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 
