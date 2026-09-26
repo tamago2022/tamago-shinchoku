@@ -413,3 +413,12 @@ if __name__ == "__main__":
         _sp4.Popen(["python3", _k], stdout=_sp4.DEVNULL, stderr=_sp4.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-26（1160番）調べもの常駐ライン。Gensparkに「調べて」を1本ずつ絶やさず流す。
+    # 止めたいときは status/genspark.stop を置く。
+    try:
+        import subprocess as _sp5, os as _os5
+        _s5 = _os5.path.join(_os5.path.dirname(_os5.path.abspath(__file__)), "1160_shirabe.py")
+        _sp5.Popen(["python3", _s5], stdout=_sp5.DEVNULL, stderr=_sp5.DEVNULL)
+    except Exception:
+        pass
