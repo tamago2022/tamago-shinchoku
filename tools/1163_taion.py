@@ -56,6 +56,45 @@ def _age(p):
         return None
 
 
+KENPIN = os.path.join(ST, "1163_kenpin.json")
+KENPIN_KANKAKU = 600   # 10分に1回だけ。毎周叩くと外へ毎15秒アクセスすることになる
+LIVE = "https://tamago2022.github.io/tamago-shinchoku/"
+
+
+def kenpin():
+    """公開されている進捗表を**自分で叩いて**、200かどうかと体温カードの有無を見る。
+
+    なぜ要るか：ここまでの事故は全部「手元は直っているのに、外に出ていない」形だった。
+    手元のファイルを見ても、たまごさんが開く画面が直っている証拠にはならない。
+    10分に1回、実際のURLを叩いた結果をそのまま残す。
+    """
+    old = _load(KENPIN, {}) or {}
+    try:
+        if time.time() - float(old.get("epoch") or 0) < KENPIN_KANKAKU:
+            return old
+    except Exception:
+        pass
+    import subprocess
+    out = {"epoch": time.time(), "at": time.strftime("%Y-%m-%dT%H:%M:%S+0900"), "url": LIVE}
+    try:
+        r = subprocess.run(["curl", "-s", "-S", "--max-time", "25", "-w", "\n%{http_code}", LIVE],
+                           capture_output=True, text=True, timeout=40)
+        body, _, code = r.stdout.rpartition("\n")
+        out["http"] = int(code.strip() or 0)
+        out["体温カードが載っている"] = ('id="taionCard"' in body)
+        out["taion.jsonを読んでいる"] = ("status/public/taion.json" in body)
+        out["バイト数"] = len(body)
+    except Exception as e:
+        out["http"] = 0
+        out["なぜ"] = str(e)[:200]
+    try:
+        with io.open(KENPIN, "w", encoding="utf-8") as f:
+            json.dump(out, f, ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+    return out
+
+
 def build():
     now = time.time()
 
@@ -96,6 +135,7 @@ def build():
         "スワップ残りGB": ((jougen.get("実測") or {}).get("swapFreeGB")),
         "出どころ": ("status/.heartbeat_alive ／ status/.last_launch_at ／ "
                      "status/machine_health.json ／ status/launch_cap.json"),
+        "公開の自己検品": kenpin(),
     }
 
 

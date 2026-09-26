@@ -1,187 +1,105 @@
 <!doctype html><html lang="ja"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>1137｜Bufferの予約、いまこうなっています</title>
+<title>1137｜自動投稿、いまこうなっています</title>
 <style>
  body{margin:0;background:#faf7f2;color:#241f1a;
       font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
       line-height:1.75;-webkit-text-size-adjust:100%}
- .wrap{max-width:860px;margin:0 auto;padding:22px 16px 80px}
+ .wrap{max-width:900px;margin:0 auto;padding:22px 16px 80px}
  h1{font-size:21px;margin:0 0 4px;letter-spacing:.02em}
  .when{font-size:12px;color:#7a706a;margin-bottom:18px}
  .hd{border-left:5px solid #c62828;background:#fff;border-radius:0 10px 10px 0;
      padding:14px 16px;margin:0 0 20px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
  .hd b{color:#c62828;font-size:17px}
- h2{font-size:15px;margin:30px 0 8px;padding-bottom:5px;
-    border-bottom:2px solid #e6ded3}
- table{width:100%;border-collapse:collapse;background:#fff;
-       border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+ .ok{border-left-color:#2e7d32}.ok b{color:#2e7d32}
+ h2{font-size:15px;margin:30px 0 8px;padding-bottom:5px;border-bottom:2px solid #e6ded3}
+ table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;
+       overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
  th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #f0eae2;
        font-size:13px;vertical-align:top}
  th{background:#f4efe7;font-size:12px;color:#6b625b;font-weight:600}
- .n{color:#a89d92;width:26px}
- .t{white-space:nowrap}
+ .n{color:#a89d92;width:26px}.t{white-space:nowrap}
  .sub{font-size:11px;color:#8c837c}
  a{color:#a0522d}
- pre{background:#1f1b18;color:#e8e0d6;padding:13px;border-radius:9px;
-     overflow-x:auto;font-size:11px;line-height:1.5}
  .note{background:#fff8e6;border:1px solid #f0dfae;border-radius:9px;
-       padding:12px 14px;font-size:13px}
+       padding:12px 14px;font-size:13px;margin:10px 0}
+ .g{color:#2e7d32;font-weight:700}.r{color:#c62828;font-weight:700}
+ .w{color:#9e9e9e;font-weight:700}
+ .box{background:#fff;border:1px solid #eee3d5;border-radius:10px;padding:12px 14px;
+      margin:10px 0;font-size:13px}
+ .bar{display:flex;gap:3px;margin:8px 0}
+ .cell{flex:1;height:30px;border-radius:5px;background:#e8e0d6;
+       display:flex;align-items:center;justify-content:center;font-size:11px;color:#8c837c}
+ .cell.on{background:#2e7d32;color:#fff}
 </style>
 <div class="wrap">
-<h1>Bufferの予約、いまこうなっています</h1>
-<div class="when">この画面を作った時刻：2026-09-25 05:23:38（JST）／ ここに出ているのは
- <b>Buffer のAPIから取った実物</b>です</div>
-
-<div class="hd"><b>まだ1本も入っていません</b><br>
-<span class="sub">照合＝本文が1文字も変わっていない・時刻が指定どおり・相手が
- oasisjoyrelief、の3つ全部が合ったものだけ「通った」と書いています。</span></div>
-
-<h2>10本の予定と、いまの状態</h2>
-<table>
-<tr><th>#</th><th>日時(JST)</th><th>曲</th><th>リンク</th><th>状態</th>
-    <th>APIが返した dueAt</th></tr>
-<tr>
- <td class="n">1</td>
- <td class="t">2026-09-26 09:00<br><span class="sub">朝・海外</span></td>
- <td>Carole King<br><span class="sub">It Might As Well Rain Until September</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=carole-king&amp;song=it-might-as-well-rain-until-september" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">2</td>
- <td class="t">2026-09-26 20:00<br><span class="sub">夜・邦楽</span></td>
- <td>山下達郎<br><span class="sub">さよなら夏の日</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sayonara-natsu-no-hi" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">3</td>
- <td class="t">2026-09-27 09:00<br><span class="sub">朝・海外</span></td>
- <td>Green Day<br><span class="sub">Wake Me Up When September Ends</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=green-day&amp;song=wake-me-up-when-september-ends" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">4</td>
- <td class="t">2026-09-27 20:00<br><span class="sub">夜・邦楽</span></td>
- <td>山口百恵<br><span class="sub">秋桜</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=momoe&amp;song=cosmos" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">5</td>
- <td class="t">2026-09-28 09:00<br><span class="sub">朝・海外</span></td>
- <td>Nick Drake<br><span class="sub">Pink Moon</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nicholas-drake&amp;song=pink-moon" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">6</td>
- <td class="t">2026-09-28 20:00<br><span class="sub">夜・邦楽</span></td>
- <td>オフコース<br><span class="sub">秋の気配</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=off-course&amp;song=akifuchi" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">7</td>
- <td class="t">2026-09-29 09:00<br><span class="sub">朝・海外</span></td>
- <td>Simon &amp; Garfunkel<br><span class="sub">Scarborough Fair</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=simon-garfunkel&amp;song=scarborough-fair" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">8</td>
- <td class="t">2026-09-29 20:00<br><span class="sub">夜・邦楽</span></td>
- <td>EGO-WRAPPIN&#x27;<br><span class="sub">色彩のブルース</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ego-wrappin&amp;song=shikisai-no-blues" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">9</td>
- <td class="t">2026-09-30 09:00<br><span class="sub">朝・海外</span></td>
- <td>Norah Jones<br><span class="sub">Come Away with Me</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=norah&amp;song=come-away-with-me" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
-<tr>
- <td class="n">10</td>
- <td class="t">2026-09-30 20:00<br><span class="sub">夜・邦楽</span></td>
- <td>キリンジ<br><span class="sub">エイリアンズ</span></td>
- <td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=kirinji&amp;song=aliens" target="_blank" rel="noopener">曲ページ</a></td>
- <td style="color:#9e9e9e;font-weight:700">⬜ まだ</td>
- <td class="sub"></td>
-</tr>
+<h1>自動投稿、いまこうなっています</h1>
+<div class="when">この画面を作った時刻：2026-09-26 22:29:44（JST）／出ているのは <b>Buffer のAPIから取った実物</b>です</div>
+<div class="hd"><b>いま予約に入っているのは 1 本です。</b><br><span class="sub">秋の10本のうち 9 本は、下の「ページの関所」で止めています（関連動画が足りない／コピーが空）。★止めた理由は、たまごさんの基準「関連は最低4つ」を機械で数えた結果です。</span></div>
+<h2>★同じ投稿が2本出た件（原因と、二度と起こさないための鍵）</h2>
+<div class="box"><b>実物（Buffer APIが返した出した分）</b><br>
+</div>
+<div class="note"><b>なぜ起きたか（実測）</b><br>
+補充便は「<b>いま予約に並んでいるもの（scheduled）だけ</b>」を見て重複を判定していました。
+1本目は 9/25 01:58 に<b>もう出てしまっていた（sent）</b>ので、予約欄からは消えていて、
+補充便からは「そんな投稿は無い」ように見えました。待機列には同じ本文が残っていたので、
+9/26 06:00 の補充便が同じ本文をもう一度入れ、07:30 に2本目が出ました。<br>
+<b>直したこと</b>：入れる前に <code>tools/buffer_sekisho.py</code>（二重投稿の関所）を必ず通す形にしました。
+見るのは4つ全部 ── 予約中・<b>出した分(sent)</b>・失敗分・台帳(<code>status/buffer_queue/dashita.jsonl</code>)。
+突き合わせる鍵は2つ ── <b>本文の全文</b>と<b>曲</b>（本文のcover-guide URLの artist/song）。
+コピーを書き替えても、同じ曲は二度と入りません。弾いた数は毎回記録します。</div>
+<h2>これから出る順（日時／曲／ページ／状態）</h2>
+<table><tr><th>#</th><th>日時(JST)</th><th>曲</th><th>曲ページ</th><th>状態</th><th>APIが返した dueAt</th></tr>
+<tr><td class="n">2</td><td class="t">2026-10-01 20:00<br><span class="sub">夜・邦楽</span><br><span class="sub">元は 2026-09-26 20:00（過ぎたのでずらした）</span></td><td>山下達郎<br><span class="sub">さよなら夏の日</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sayonara-natsu-no-hi" target="_blank" rel="noopener">曲ページ</a></td><td><span class="g">✅ 入った</span></td><td class="sub">2026-10-01T11:00:00.000Z</td></tr>
+<tr><td class="n">3</td><td class="t">2026-09-27 09:00<br><span class="sub">朝・海外</span></td><td>Green Day<br><span class="sub">Wake Me Up When September Ends</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=green-day&amp;song=wake-me-up-when-september-ends" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">4</td><td class="t">2026-09-27 20:00<br><span class="sub">夜・邦楽</span></td><td>山口百恵<br><span class="sub">秋桜</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=momoe&amp;song=cosmos" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">5</td><td class="t">2026-09-28 09:00<br><span class="sub">朝・海外</span></td><td>Nick Drake<br><span class="sub">Pink Moon</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nicholas-drake&amp;song=pink-moon" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">6</td><td class="t">2026-09-28 20:00<br><span class="sub">夜・邦楽</span></td><td>オフコース<br><span class="sub">秋の気配</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=off-course&amp;song=akifuchi" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">7</td><td class="t">2026-09-29 09:00<br><span class="sub">朝・海外</span></td><td>Simon &amp; Garfunkel<br><span class="sub">Scarborough Fair</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=simon-garfunkel&amp;song=scarborough-fair" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">8</td><td class="t">2026-09-29 20:00<br><span class="sub">夜・邦楽</span></td><td>EGO-WRAPPIN&#x27;<br><span class="sub">色彩のブルース</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ego-wrappin&amp;song=shikisai-no-blues" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">9</td><td class="t">2026-09-30 09:00<br><span class="sub">朝・海外</span></td><td>Norah Jones<br><span class="sub">Come Away with Me</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=norah&amp;song=come-away-with-me" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">10</td><td class="t">2026-09-30 20:00<br><span class="sub">夜・邦楽</span></td><td>キリンジ<br><span class="sub">エイリアンズ</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=kirinji&amp;song=aliens" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）</span></td><td class="sub"></td></tr>
+<tr><td class="n">1</td><td class="t">2026-10-01 09:00<br><span class="sub">朝・海外</span><br><span class="sub">元は 2026-09-26 09:00（過ぎたのでずらした）</span></td><td>Carole King<br><span class="sub">It Might As Well Rain Until September</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=carole-king&amp;song=it-might-as-well-rain-until-september" target="_blank" rel="noopener">曲ページ</a></td><td><span class="r">❌ 止めた</span><br><span class="sub">関連動画が0本（最低4本）／コピーが空</span></td><td class="sub"></td></tr>
 </table>
-
-<h2>なぜ止まっているか（生のまま）</h2>
-<div class="note">Buffer の <b>24時間で250回</b> という枠を、
-こちら側の自動便が使い切っていました。たまごさんの投稿は関係ありません
-（今日出したのは 01:58 の1本だけ）。下は加工していない応答です。<br><br>
-<b>250回はBufferの公式の数字です。</b>
-<a href="https://developers.buffer.com/guides/api-limits.html" target="_blank"
- rel="noopener">developers.buffer.com/guides/api-limits.html</a> の表で、
-Free プランは「15-min 100／24-hr 250／30-day 3,000」。
-応答ヘッダの <code>ratelimit-policy: "250-in-1day"; q=250; w=86400</code> と一致します。</div>
-<pre>HTTP/2 429 
-date: Thu, 24 Sep 2026 20:16:46 GMT
-content-type: application/json; charset=utf-8
-content-length: 145
-cf-cache-status: DYNAMIC
-retry-after: 71017
-server: cloudflare
-strict-transport-security: max-age=15552000
-vary: Origin, accept-encoding
-access-control-allow-credentials: true
-cross-origin-opener-policy: same-origin
-cross-origin-resource-policy: same-origin
-origin-agent-cluster: ?1
-ratelimit: &quot;100-in-15min&quot;; r=98; t=496
-ratelimit: &quot;250-in-1day&quot;; r=0; t=71017
-ratelimit-policy: &quot;100-in-15min&quot;; q=100; w=900; pk=:YjUyYzA5NDhiZGIx:
-ratelimit-policy: &quot;250-in-1day&quot;; q=250; w=86400; pk=:YjUyYzA5NDhiZGIx:
-referrer-policy: no-referrer
-x-content-type-options: nosniff
-x-dns-prefetch-control: off
-x-download-options: noopen
-x-frame-options: DENY
-x-permitted-cross-domain-policies: none
-x-ratelimit-limit: 250
-x-ratelimit-remaining: 0
-x-ratelimit-reset: 1790352023
-x-xss-protection: 0
-alt-svc: h3=&quot;:443&quot;; ma=86400
-
-{&quot;errors&quot;:[{&quot;message&quot;:&quot;Too many requests from this client. Please try again later.&quot;,&quot;extensions&quot;:{&quot;code&quot;:&quot;RATE_LIMIT_EXCEEDED&quot;,&quot;window&quot;:&quot;24h&quot;}}]}</pre>
-
-<h2>犯人（数字で）</h2>
-<div class="note"><b>tools/buffer_kagi_install.py</b> が、5分便に呼ばれるたびに
-「鍵がまだ生きているか」を Buffer に1回ずつ聞いていました。
-<code>status/kagi_daicho.log</code> を時間帯で数えると──<br><br>
-9/24 16時台 <b>251回</b>／17時台 <b>249回</b>／18時台 209回／20時台 147回／
-9/25 00時台 108回／01時台 60回。<b>24時間枠は250回。</b><br><br>
-しかも直し方が「<b>通ったときだけ</b>判子を押す」形だったので、
-429で閉じている間は判子が押されず、
-<b>閉じているから叩く → 叩くから閉じたまま</b>の輪から出られませんでした。
-→ 叩く前に判子を押す形に変えました（通っても通らなくても、その日はもう叩かない）。</div>
-
-<h2>Buffer APIを叩いた回数（今日 1 回）</h2>
-<table>
-<tr><th>時刻</th><th>誰が</th><th>何を</th><th>HTTP</th><th>枠</th></tr>
-<tr><td class='sub'>2026-09-25 05:20:00</td><td class='sub'>buffer_kagi_install</td><td class='sub'>verify</td><td class='sub'>429</td><td class='sub'>残り0 / 枠250</td></tr>
+<div class="sub">※9/26 09:00 と 20:00 は、この便が動く前に過ぎていました。過ぎた枠には入れず、末尾の新しい日へずらしています（出せなかったものは出せなかったと書きます）。</div>
+<h2>ところてん式（50本近くのリストが、10枠にどう繰り上がるか）</h2>
+<div class="box"><b>Bufferの無料枠＝同時に待機できるのは10本まで</b><div class="bar">
+<div class="cell on">予約</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+<div class="cell">空</div>
+</div>
+<span class="sub">いま 1／10。1本出ると1枠空き、毎朝6:00の補充便が待機列の先頭から10本になるまで繰り上げます（朝07:30／夜21:00の空き枠へ）。</span></div>
+<table><tr><th>段</th><th>置き場</th><th>いま何本</th><th>次に繰り上がるもの</th></tr>
+<tr><td>1</td><td>Bufferの予約欄（ここから実際に出る）</td><td><b>1</b> / 10</td><td class="sub">さよなら夏の日</td></tr>
+<tr><td>2</td><td>待機列 <code>status/buffer_queue/machi.json</code>（補充便が毎朝ここから取る）</td><td><b>0</b> 本</td><td class="sub">—（空）</td></tr>
+<tr><td>3</td><td>秋のドラフト <code>status/aki_drafts.json</code>（待機列へ積む在庫）</td><td><b>28</b> 本</td><td class="sub">Ayaka / Mikazuki</td></tr>
+<tr><td>4</td><td>秋の10本 <code>status/1135/posts.json</code></td><td><b>10</b> 本（うち関所で止まり 9 本）</td><td class="sub">ページを直せばそのまま入る</td></tr>
 </table>
-<div class="sub" style="margin-top:8px">正本：status/1135/buffer_call.jsonl
- ／ 最後に叩いたのは 2026-09-25 05:20:00</div>
-
-<h2>Buffer の予約画面（ログインが要ります）</h2>
-<p><a href="https://publish.buffer.com/all-channels/queue" target="_blank"
- rel="noopener">publish.buffer.com/all-channels/queue</a></p>
-</div></html>
+<div class="note">★<b>待機列が0本です。</b>このままだと、上の予約が出きった後は自動投稿が止まります。止めないためには、関所を通った曲を待機列に積む必要があります。</div>
+<h2>ページの関所（投稿する前に、本番URLを1本ずつ開いて数えた実測）</h2>
+<div class="sub">基準（4つ全部そろって合格）：①URLが200 ②本人の動画（一番大きい動画）がある ③この曲の関連動画が4本以上 ④コピーが空でない</div>
+<table><tr><th>#</th><th>曲</th><th>HTTP</th><th>一番大きい動画</th><th>関連</th><th>コピー</th><th>判定</th></tr>
+<tr><td class="n">2</td><td>山下達郎<br><span class="sub">さよなら夏の日</span></td><td>200</td><td class="sub">686x386</td><td class="g">4本</td><td class="sub">夏の終わりの透明な歌。</td><td><span class="g">✅合格</span></td></tr>
+<tr><td class="n">3</td><td>Green Day<br><span class="sub">Wake Me Up When September Ends</span></td><td>200</td><td class="sub">882x496</td><td class="r">0本</td><td class="sub">9月の終わりに、まだ癒えていないものが静かに顔を出す。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">4</td><td>山口百恵<br><span class="sub">秋桜</span></td><td>200</td><td class="sub">914x514</td><td class="r">0本</td><td class="sub">母への手紙。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">5</td><td>Nick Drake<br><span class="sub">Pink Moon</span></td><td>200</td><td class="sub">686x386</td><td class="r">0本</td><td class="sub">究極の孤独と美学。ギター一本で描く、静かなる宇宙。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">6</td><td>オフコース<br><span class="sub">秋の気配</span></td><td>200</td><td class="sub">813x457</td><td class="r">0本</td><td class="sub">横浜の港を舞台に、移ろいゆく季節と恋の終わりを淡々と綴った初期の傑作。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">7</td><td>Simon &amp; Garfunkel<br><span class="sub">Scarborough Fair</span></td><td>200</td><td class="sub">686x386</td><td class="r">0本</td><td class="sub">『卒業』挿入歌。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">8</td><td>EGO-WRAPPIN&#x27;<br><span class="sub">色彩のブルース</span></td><td>200</td><td class="sub">1029x579</td><td class="r">0本</td><td class="sub">昭和歌謡とジャズ、レゲエが融合。中納良恵の歌声が夜を染め上げる名曲。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">9</td><td>Norah Jones<br><span class="sub">Come Away with Me</span></td><td>200</td><td class="sub">686x386</td><td class="r">0本</td><td class="sub">静かな誘い。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">10</td><td>キリンジ<br><span class="sub">エイリアンズ</span></td><td>200</td><td class="sub">934x526</td><td class="r">0本</td><td class="sub">真夜中の静寂に溶け込む、洗練されたコード進行と唯一無二の詩世界。</td><td><span class="r">❌不合格</span></td></tr>
+<tr><td class="n">1</td><td>Carole King<br><span class="sub">It Might As Well Rain Until September</span></td><td>200</td><td class="sub">1155x650</td><td class="r">0本</td><td class="sub">（空）</td><td><span class="r">❌不合格</span></td></tr>
+</table>
+<div class="note"><b>次に直すもの（関連を4本以上にする）</b><br>Green Day「Wake Me Up When September Ends」(関連0本)／山口百恵「秋桜」(関連0本)／Nick Drake「Pink Moon」(関連0本)／オフコース「秋の気配」(関連0本)／Simon &amp; Garfunkel「Scarborough Fair」(関連0本)／EGO-WRAPPIN&#x27;「色彩のブルース」(関連0本)／Norah Jones「Come Away with Me」(関連0本)／キリンジ「エイリアンズ」(関連0本)／Carole King「It Might As Well Rain Until September」(関連0本)</div>
+<h2>Buffer APIの枠（食い潰しが止まっているかの実測）</h2>
+<div class="box">x-ratelimit-limit = <b>3000</b>／x-ratelimit-remaining = <b>2597</b><br>直近24時間に叩いた回数 = <b>30回</b>（{&quot;buffer_kagi_install&quot;: 1, &quot;buffer_yoyaku&quot;: 17, &quot;1163_shiraberu&quot;: 5, &quot;1164_ireru&quot;: 7}）<br><span class="sub">9/25は5分おきに鍵確認をしていて250回の枠を使い切り、429で1本も入れられなかった。いまは叩く前に判子を押す形にしたので、24時間で30回に収まっている。</span></div>
+<h2>この画面のもと（実物）</h2>
+<div class="box sub">status/1135/1164_ima.json（入れる前のBufferの実物）／1164_hantei.json（ページの関所の判定）／1164_kenpin.json（入れた結果と照合）／1164_raw.jsonl（生のレスポンス）／status/buffer_queue/dashita.jsonl（二重投稿の台帳）</div>
+</div>
