@@ -46,10 +46,26 @@ def write_endpoint(url):
         log("公開でこけた %s" % e)
 
 
+KEY = os.path.join(HOME, ".ssh", "zunda_lhr")
+
+
+def ensure_key():
+    """鍵を1本作っておく。localhost.run は鍵ごとに住所を固定してくれるので、
+    穴が閉じて開き直しても URL が変わらない（変わると毎回公開し直しになる）。"""
+    if not os.path.exists(KEY):
+        os.makedirs(os.path.dirname(KEY), exist_ok=True)
+        subprocess.run(["ssh-keygen", "-t", "ed25519", "-f", KEY, "-N", "", "-q"],
+                       check=True)
+        log("鍵を作りました %s" % KEY)
+    return KEY
+
+
 def main():
-    cmd = ["ssh", "-o", "StrictHostKeyChecking=accept-new",
+    ensure_key()
+    cmd = ["ssh", "-i", KEY, "-o", "IdentitiesOnly=yes",
+           "-o", "StrictHostKeyChecking=accept-new",
            "-o", "ServerAliveInterval=30", "-o", "ExitOnForwardFailure=yes",
-           "-R", "80:127.0.0.1:%d" % PORT, "nokey@localhost.run"]
+           "-R", "80:127.0.0.1:%d" % PORT, "localhost.run"]
     log("穴を開けます: %s" % " ".join(cmd))
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                          text=True, bufsize=1)
@@ -65,9 +81,11 @@ def main():
         line = line.strip()
         if line:
             log("| " + line[:200])
-        m = re.search(r"https://[a-z0-9\-]+\.lhr\.life", line)
-        if m and m.group(0) != url:
-            url = m.group(0)
+        # 住所は「… tunneled with tls termination, https://…」の行にだけ出る。
+        # 案内文の https://admin.localhost.run を拾わないよう、この行だけを見る。
+        m = re.search(r"tunneled with tls termination,\s*(https://[a-z0-9\-.]+)", line)
+        if m and m.group(1) != url:
+            url = m.group(1)
             write_endpoint(url)
         if url is None and time.time() - t0 > 120:
             log("2分で住所が出ませんでした")
