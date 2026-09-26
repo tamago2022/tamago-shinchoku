@@ -572,7 +572,7 @@ def build_html(rows, t, countrow, hist, pace, quota, health):
     for r in open_rows[:400]:
         trs.append(
             '<tr class="s-%s"><td class="st">%s</td>'
-            '<td><code>%s</code><div class="dw"><code>%s</code></div></td>'
+            '<td><code data-inyou="台帳">%s</code><div class="dw"><code data-inyou="台帳">%s</code></div></td>'
             '<td class="d">%s</td><td class="src">%s</td></tr>' % (
                 order.get(r.get("state"), 9), esc(r.get("state")), esc(r.get("title")),
                 esc(r.get("doneWhen")), esc(r.get("saidAt") or "—"),
