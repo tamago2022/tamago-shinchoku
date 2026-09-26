@@ -49,10 +49,11 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定</div>
 <h1>#927 確認待ち棚卸し(1/7)：対象10件を鬼監督判定</h1>
-<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認／2026-09-27 差し戻し対応(非公開リンク削除)＋10日後の再実測で状態不変を確認</div>
 
 <div class="fix">
 queue.json awaiting_check棚卸しミッション(1/7)。対象一覧10件(400,410,428,431,439,441,458,463,465,502)を1件ずつ開いて現状を精査。3件(431,439,465)は本番URLの実測でPASSを確認しdone化。1件(502)は過去にAI検品で落ちた③タイタニック関連表示がSSR HTMLでは検証不可能(クライアント側stateのため)と判明し、誤ってdone化しそうになったのを踏みとどまりholdのまま正確な情報へ更新。3件(410,428,463)は既にdone、2件(441,458)は機能自体が別件のindex.html軽量化で撤去済みのためhold維持、1件(400)はブランチが10日分陳腐化し評価不能のためwaitingのまま記録のみ。
+【2026-09-27追記】機械検品の差し戻し理由（たまごさんが開けない非公開リポジトリへのリンク）を修正し公開リンクへ差し替え。10日後の本番再実測でも439/465/502の判定は変化なしを確認。
 </div>
 
 <h2>② 数字</h2>
@@ -69,8 +70,10 @@ queue.json awaiting_check棚卸しミッション(1/7)。対象一覧10件(400,4
   <li><b>439 さよなら夏の日 関連4本(本番実測)</b><a href="https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/feature/sayonara-natsu-no-hi</a></li>
   <li><b>465 こちらもどうぞ 横スクロール1行(本番実測)</b><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc</a></li>
   <li><b>502 モンスタートラック日本語化(本番実測・③は要ブラウザ実機確認のためhold継続)</b><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc</a></li>
-  <li><b>431 修理した見回りスクリプト(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-onboarding-gaps.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-onboarding-gaps.mjs</a></li>
+  <li><b>進捗表(本番・queue.jsonの現在の内訳が見える)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
+
+<div class="note">※前回(2026-09-17 16:43)は、たまごさんが開けない非公開リポジトリ(joy-relief-station)へのGitHubリンクが貼られていたため機械検品で差し戻された。そのリンクは削除し、公開リポジトリ(tamago-shinchoku)のリンクと本番URLだけに差し替えた。</div>
 
 
 
@@ -101,6 +104,14 @@ queue.json awaiting_check棚卸しミッション(1/7)。対象一覧10件(400,4
 queue.json status内訳（実行後）: hold=31 waiting=111 done=82 awaiting_check=24 merged=6 stuck=7 running=3（total 264）
 awaiting_check件数: 実行前33件 → 実行後24件（このバッチの担当10件中、awaiting_check状態だったのは431番の1件のみ。
 残り9件はhold/done/running/waitingで、対象一覧生成ロジックが古いスナップショットを拾ったとみられる）
+
+--- 2026-09-27 再実測（10日後・現在のqueue.json 758件・awaiting_check 16件） ---
+python3で本番2URLを直接fetchし直した結果、09-17時点の判定から変化なしを確認：
+[439] sayonara-natsu-no-hi → プラスティック・ラブ/竹内まりや/少年時代/夜に駆ける、全てTrue（変化なし）
+[465/502] watch?v=w1gCW_66zzc → 満員御礼/泥水/shelf-scroll/snap-mandatory、全てTrue。タイタニック/celine-dion は今日もFalse
+  → 502の③(タイタニック関連)は10日経った今もSSR/クライアント差の壁でhold継続が正しい判定と再確認
+現queue.json内の対象4件の状態：400=waiting(ブランチ陳腐化のまま・据え置き)／441=hold／458=hold／502=hold（いずれもholdNoteに927番の判定根拠が残存）
+残り6件(410/428/431/439/463/465)は現queue.jsonにもdeleted.jsonにも存在せず＝完了後にアーカイブ済みとみて矛盾なし
 </pre>
 
 <footer>
