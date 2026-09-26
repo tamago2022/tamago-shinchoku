@@ -260,17 +260,15 @@ def collect():
             except Exception:
                 pass
 
-    def rank(r):
-        if r.startswith("円卓会議/完成/"):
-            return 0
-        if r.startswith("円卓会議/"):
-            return 1
-        if "円卓会議🔥" in r:
-            return 2
-        if r.startswith("00 inbox/"):
-            return 4
-        return 3
-    return sorted(hits, key=lambda r: (rank(r), r))
+    # ★短いものから作る（2026-09-26）。
+    #   長い順だと1本に1時間かかり、一覧が「準備中」ばかりのまま何日も経つ。
+    #   短い順なら「押したら鳴る」本数が早く増える＝たまごさんが使える状態に早く届く。
+    def size_of(r):
+        try:
+            return os.path.getsize(os.path.join(VAULT, r))
+        except Exception:
+            return 10 ** 9
+    return sorted(hits, key=size_of)
 
 
 NOTES_CACHE = os.path.join(STATE_DIR, "notes.json")

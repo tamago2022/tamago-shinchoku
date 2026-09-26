@@ -34,10 +34,12 @@
 </style>
 <div class="wrap">
 <h1>自動投稿、いまこうなっています</h1>
-<div class="when">この画面を作った時刻：2026-09-26 22:29:44（JST）／出ているのは <b>Buffer のAPIから取った実物</b>です</div>
+<div class="when">この画面を作った時刻：2026-09-26 22:46:38（JST）／出ているのは <b>Buffer のAPIから取った実物</b>です</div>
 <div class="hd"><b>いま予約に入っているのは 1 本です。</b><br><span class="sub">秋の10本のうち 9 本は、下の「ページの関所」で止めています（関連動画が足りない／コピーが空）。★止めた理由は、たまごさんの基準「関連は最低4つ」を機械で数えた結果です。</span></div>
 <h2>★同じ投稿が2本出た件（原因と、二度と起こさないための鍵）</h2>
 <div class="box"><b>実物（Buffer APIが返した出した分）</b><br>
+<div class="sub">2026-09-24T16:58:00.000Z ／ Japanese pop before “City Pop” became a global label.  Yumi Matsutoya </div>
+<div class="sub">2026-09-25T22:30:00.000Z ／ Japanese pop before “City Pop” became a global label.  Yumi Matsutoya </div>
 </div>
 <div class="note"><b>なぜ起きたか（実測）</b><br>
 補充便は「<b>いま予約に並んでいるもの（scheduled）だけ</b>」を見て重複を判定していました。
@@ -48,6 +50,23 @@
 見るのは4つ全部 ── 予約中・<b>出した分(sent)</b>・失敗分・台帳(<code>status/buffer_queue/dashita.jsonl</code>)。
 突き合わせる鍵は2つ ── <b>本文の全文</b>と<b>曲</b>（本文のcover-guide URLの artist/song）。
 コピーを書き替えても、同じ曲は二度と入りません。弾いた数は毎回記録します。</div>
+<div class="box"><b>鍵が本当に効くか、その場で試した実物</b><pre style="background:#1f1b18;color:#e8e0d6;padding:12px;border-radius:8px;overflow-x:auto;font-size:11px;line-height:1.6">===== ① 関所の自己試験：ダブった本文（松任谷由実）をもう一度入れようとする =====
+同じ本文 → 弾いた：同じ本文が既にある（台帳:2026-09-26 22:27:41）
+コピーだけ変えた同じ曲 → 弾いた：同じ曲が既にある（yuming/ano-hi-ni-kaeritai / 台帳:2026-09-26 22:27:41）
+入れたことのない曲 → 通った（正しい）
+===== ② 秋の10本をもう一度流してみる（--dry：1本も入れない） =====
+関所が見た数: {&quot;scheduled&quot;: 1, &quot;sent&quot;: 2, &quot;error&quot;: 0, &quot;daicho&quot;: 2, &quot;daicho_ni_utsushita&quot;: 0}
+03 ページの関所で止めた: 関連動画が0本（最低4本）
+04 ページの関所で止めた: 関連動画が0本（最低4本）
+05 ページの関所で止めた: 関連動画が0本（最低4本）
+06 ページの関所で止めた: 関連動画が0本（最低4本）
+07 ページの関所で止めた: 関連動画が0本（最低4本）
+08 ページの関所で止めた: 関連動画が0本（最低4本）
+09 ページの関所で止めた: 関連動画が0本（最低4本）
+10 ページの関所で止めた: 関連動画が0本（最低4本）
+01 ページの関所で止めた: 関連動画が0本（最低4本）／コピーが空
+02 弾いた: 同じ本文が既にある（台帳:2026-09-26 22:27:42）
+終わり before=1 after=0 入った=0 弾いた=1 ページで止めた=[3, 4, 5, 6, 7, 8, 9, 10, 1]</pre></div>
 <h2>これから出る順（日時／曲／ページ／状態）</h2>
 <table><tr><th>#</th><th>日時(JST)</th><th>曲</th><th>曲ページ</th><th>状態</th><th>APIが返した dueAt</th></tr>
 <tr><td class="n">2</td><td class="t">2026-10-01 20:00<br><span class="sub">夜・邦楽</span><br><span class="sub">元は 2026-09-26 20:00（過ぎたのでずらした）</span></td><td>山下達郎<br><span class="sub">さよなら夏の日</span></td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sayonara-natsu-no-hi" target="_blank" rel="noopener">曲ページ</a></td><td><span class="g">✅ 入った</span></td><td class="sub">2026-10-01T11:00:00.000Z</td></tr>
@@ -99,7 +118,7 @@
 </table>
 <div class="note"><b>次に直すもの（関連を4本以上にする）</b><br>Green Day「Wake Me Up When September Ends」(関連0本)／山口百恵「秋桜」(関連0本)／Nick Drake「Pink Moon」(関連0本)／オフコース「秋の気配」(関連0本)／Simon &amp; Garfunkel「Scarborough Fair」(関連0本)／EGO-WRAPPIN&#x27;「色彩のブルース」(関連0本)／Norah Jones「Come Away with Me」(関連0本)／キリンジ「エイリアンズ」(関連0本)／Carole King「It Might As Well Rain Until September」(関連0本)</div>
 <h2>Buffer APIの枠（食い潰しが止まっているかの実測）</h2>
-<div class="box">x-ratelimit-limit = <b>3000</b>／x-ratelimit-remaining = <b>2597</b><br>直近24時間に叩いた回数 = <b>30回</b>（{&quot;buffer_kagi_install&quot;: 1, &quot;buffer_yoyaku&quot;: 17, &quot;1163_shiraberu&quot;: 5, &quot;1164_ireru&quot;: 7}）<br><span class="sub">9/25は5分おきに鍵確認をしていて250回の枠を使い切り、429で1本も入れられなかった。いまは叩く前に判子を押す形にしたので、24時間で30回に収まっている。</span></div>
+<div class="box">x-ratelimit-limit = <b>3000</b>／x-ratelimit-remaining = <b>2590</b><br>直近24時間に叩いた回数 = <b>40回</b>（{&quot;buffer_kagi_install&quot;: 1, &quot;buffer_yoyaku&quot;: 17, &quot;1163_shiraberu&quot;: 5, &quot;1164_ireru&quot;: 12, &quot;1164_shiraberu&quot;: 5}）<br><span class="sub">9/25は5分おきに鍵確認をしていて250回の枠を使い切り、429で1本も入れられなかった。いまは叩く前に判子を押す形にしたので、24時間で40回に収まっている。</span></div>
 <h2>この画面のもと（実物）</h2>
 <div class="box sub">status/1135/1164_ima.json（入れる前のBufferの実物）／1164_hantei.json（ページの関所の判定）／1164_kenpin.json（入れた結果と照合）／1164_raw.jsonl（生のレスポンス）／status/buffer_queue/dashita.jsonl（二重投稿の台帳）</div>
 </div>
