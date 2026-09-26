@@ -68,3 +68,52 @@
 ### 4. 報告は必ずこの1行から
 
 > 閉じる前◯枚 → 後◯枚 ／ 届かなかった分◯枚（＋閉じたURL）
+
+---
+
+## ★★★ 2026-09-27（1166番）**Braveは憲法で禁止。入口が機械で閉じた。**
+
+たまごさんの言葉（そのまま）：
+> 「**Braveに Supabase、Claude。あなたが開いたものがいくつもある。Braveは使うのをやめてほしい。使い終わっても閉じないでしょ？**」
+> 「**Chromeも開いてるじゃん。Chromeでやってくれればいいのに未だにBraveでやる。ここは作業場じゃないんだよね、Claudeの。Chromeを用意してあるんだから、そこでやってほしい。**」
+> 「**会議室を使ったら椅子を整えて退出する、っていうのは基本だよね。何十回も言ってるよ。**」
+> 「**言い訳はいらないのでChrome使って**」「**使ってないタブは閉じて　憲法にして**」
+
+### なぜBraveに行っていたのか（実測。憶測ではない）
+
+`list_connected_browsers` の生の返り（2026-09-27 07:2x）：
+
+```
+[{deviceId:"88704cda…"(Brave),  connectedAt:1790446469336, inUse:true},
+ {deviceId:"7d965dae…"(Chrome), connectedAt:1790437734550}]
+添え書き：「"Browser 1"(88704cda…) is the one picked last and will be used.」
+```
+
+→ **後から繋がった／最後に選ばれた方が既定になる。**Braveの方が新しく繋がっていた。
+子セッションが `select_browser` を呼ばずに `navigate` などを始めると、**何も宣言していないのにBraveに落ちる。**
+「気をつける」では直らない理由がこれ。既定が向こうを向いている。
+
+### いまは機械が止める（文章ではない）
+
+| 関所 | 実物 | 何を拒否するか |
+|---|---|---|
+| **入口**（PreToolUse） | `tools/stop_kanmon/browser_kanmon.mjs` | ①Braveを選ぶ ②Braveが選ばれた状態でブラウザ操作 ③どのブラウザかを名指ししないまま操作 ④`switch_browser`の名指し無し呼び ＝ **exit 2 で道具ごと拒否** |
+| **出口**（Stop） | `tools/stop_kanmon/tab_kanmon.mjs` | ⑤自分が開いたタブが残っている ⑥Braveで操作した ＝ **exit 2 で終了を拒否** |
+
+置き場所は `.claude/settings.json` の1か所だけ＝**全子セッションに自動で効く。**
+OSには一切触っていない（AppleScript / osascript / System Events / TCC 全面禁止）。読むのはそのセッションの記録だけ。
+
+### ブラウザが要るときの決まり（Braveは選択肢から消えた）
+
+1. **まず `curl` / WebFetch。**ブラウザが要らないなら開かない。
+2. ブラウザが要るなら、**最初の1手は必ず `select_browser({deviceId:"7d965dae-93ae-48b8-b36f-50ba347fa98e"})`**（Chrome）。名指ししないと関所に弾かれる。
+3. たまごさんのログインが要らない見た目の確認は**内蔵ブラウザ**でよい（たまごさんのブラウザにタブが増えない）。
+4. **Braveは読むだけでも入らない。**たまごさんの作業場。
+5. 開いたタブは**そのセッションが自分で閉じる。**Braveで開くと、セッションが終わった後だれも閉じられない
+   （`tabs_close_mcp` の公式説明：*Only tabs in this session's group are closable*）。だから**開かせない**方に替えた。
+
+### 数字はここに出る
+
+- `status/public/browser.json` … `braveBlocked`（Brave行きを弾いた回数）／`braveUsed`（Braveで操作した回数＝目標0）／`chromeSelected`
+- `status/public/tabs.json` … `outstanding`（閉じ忘れ＝目標0）／`braveUsed`
+- 台帳：`status/1166_browser_kanmon.jsonl`、`status/1154_stop_kanmon.jsonl`（event:"tab"）
