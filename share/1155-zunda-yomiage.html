@@ -122,13 +122,15 @@ async function findEndpoint(){
       if(r.ok){ j = await r.json(); break; }
     }catch(e){}
   }
-  // Macで直に開いている場合はローカルを優先（速い）
+  // Macで開いているときは中の窓口を先に試す（速いし、外の穴が閉じていても効く）
   const cands = [];
-  if(j) cands.push(j);
   if(j) cands.push({base:"http://127.0.0.1:50023", t:j.t});
+  if(j) cands.push(j);
   for(const c of cands){
     try{
-      const r = await fetch(c.base + "/health", {cache:"no-store"});
+      const ctl = new AbortController();
+      setTimeout(()=>ctl.abort(), 4000);
+      const r = await fetch(c.base + "/health", {cache:"no-store", signal:ctl.signal});
       if(r.ok){
         const h = await r.json();
         EP = c;

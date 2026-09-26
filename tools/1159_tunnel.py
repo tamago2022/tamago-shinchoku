@@ -49,23 +49,13 @@ def write_endpoint(url):
 KEY = os.path.join(HOME, ".ssh", "zunda_lhr")
 
 
-def ensure_key():
-    """鍵を1本作っておく。localhost.run は鍵ごとに住所を固定してくれるので、
-    穴が閉じて開き直しても URL が変わらない（変わると毎回公開し直しになる）。"""
-    if not os.path.exists(KEY):
-        os.makedirs(os.path.dirname(KEY), exist_ok=True)
-        subprocess.run(["ssh-keygen", "-t", "ed25519", "-f", KEY, "-N", "", "-q"],
-                       check=True)
-        log("鍵を作りました %s" % KEY)
-    return KEY
-
-
 def main():
-    ensure_key()
-    cmd = ["ssh", "-i", KEY, "-o", "IdentitiesOnly=yes",
-           "-o", "StrictHostKeyChecking=accept-new",
-           "-o", "ServerAliveInterval=30", "-o", "ExitOnForwardFailure=yes",
-           "-R", "80:127.0.0.1:%d" % PORT, "localhost.run"]
+    # 鍵つきは localhost.run 側の登録が要る（Permission denied (publickey) 実測）。
+    # 登録なしで使える nokey@ を使う。住所は毎回変わるので、変わるたびに公開し直す。
+    cmd = ["ssh", "-o", "StrictHostKeyChecking=accept-new",
+           "-o", "ServerAliveInterval=20", "-o", "ServerAliveCountMax=3",
+           "-o", "ExitOnForwardFailure=yes",
+           "-R", "80:127.0.0.1:%d" % PORT, "nokey@localhost.run"]
     log("穴を開けます: %s" % " ".join(cmd))
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                          text=True, bufsize=1)
