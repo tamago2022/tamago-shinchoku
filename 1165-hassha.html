@@ -1,0 +1,62 @@
+<!doctype html><html lang="ja"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>発車しているか｜1165</title><style>
+*{box-sizing:border-box}
+body{margin:0;background:#0d0f12;color:#e8e6e1;
+ font-family:"Hiragino Sans","Yu Gothic",system-ui,sans-serif;line-height:1.7}
+.wrap{max-width:820px;margin:0 auto;padding:36px 20px 80px}
+h1{font-size:22px;margin:0 0 4px;letter-spacing:.04em}
+.at{color:#7d8590;font-size:13px;margin:0 0 28px}
+.cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{background:#15181d;border:1px solid #23272e;border-radius:14px;padding:18px 20px}
+.lab{font-size:12px;color:#8b949e;letter-spacing:.08em;margin:0 0 6px}
+.big{font-size:46px;font-weight:700;line-height:1.05;margin:0;
+ font-variant-numeric:tabular-nums}
+.big small{font-size:17px;font-weight:400;color:#8b949e;margin-left:4px}
+.sub{font-size:13px;color:#9aa4ae;margin:8px 0 0}
+.name{font-size:16px;font-weight:600;margin:6px 0 0}
+h2{font-size:14px;color:#8b949e;letter-spacing:.08em;margin:36px 0 10px;
+ border-top:1px solid #23272e;padding-top:18px}
+ul{margin:0;padding-left:1.1em}
+li{margin:0 0 6px;font-size:14px;color:#c9d1d9}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#9aa4ae;
+ background:#0a0c0f;border:1px solid #23272e;border-radius:10px;padding:12px 14px;
+ overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.ok{color:#5ddba0}.ng{color:#ff7b72}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td{padding:6px 8px;border-bottom:1px solid #1d2126;vertical-align:top}
+td:first-child{color:#7d8590;white-space:nowrap;width:1%}
+.bar{display:inline-block;height:9px;background:#5ddba0;border-radius:5px;
+ vertical-align:middle;margin-right:7px}
+</style>
+<div class="wrap">
+<h1>工場は発車しているか</h1>
+<p class="at">2026-09-27 07:53:27 時点で機械が数えた実測。人が書いた数字は1つも無い。</p>
+
+<div class="cards">
+  <div class="card"><p class="lab">① 直近24時間の発車</p>
+    <p class="big">28<small>本</small></p>
+    <p class="sub">いちばん新しい発車：09/27 07:51:35　898番</p></div>
+  <div class="card"><p class="lab">② 今走っている／上限</p>
+    <p class="big">2<small>／1本</small></p>
+    <p class="sub">発車の鍵：<span class="ok">鍵は生きている</span></p></div>
+  <div class="card"><p class="lab">③ 次に発車する</p>
+    <p class="name">(4/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける</p>
+    <p class="sub">発車待ち 670件（この1本が空き枠に入る）</p></div>
+</div>
+
+<h2>上限がこの本数になった理由</h2>
+<ul><li>実測の天井 2本（status/ochita.jsonl 18件：3本で50%・4本で80%落ちた）</li><li>歯止め（tools/omoi_habadome.py）が1本に落とした：重いので止めました：5分ロード比6.77（1.5超）／スワップ残り1.30GB（4.0GB未満）／スワップ使用88%（70%超）</li><li>首は「ロード」（メモリ35本／スワップ2本／ロード0本）</li><li>自動減便：5分ロード比7.25（1.5超）＝詰まっている。1本まで落とす</li><li>試し増便は見送り：スワップ使用89%／5分ロード比7.25＝静かでない</li></ul>
+
+<h2>Macの実測（2026-09-27T07:51:27+0900）</h2>
+<div class="mono">空きメモリ 14.59 GB ／ メモリ空き 83% ／ 5分ロード比 7.25 ／ スワップ 残り1.37GB・使用11.63GB／全13.0GB</div>
+
+<h2>次に並んでいる5本</h2>
+<table><tr><td>930番</td><td>(4/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける</td></tr><tr><td>944番</td><td>【本丸】どこに話に行っても話が通じる：外部AI(Grok/ChatGPT/Gemini)への共通の窓口</td></tr><tr><td>950番</td><td>検索に出るのに棚に無い曲をゼロにする（関所を1か所に寄せる）</td></tr><tr><td>1285番</td><td>鍵のリフレッシュを1本に絞る（Single-flightガード）</td></tr><tr><td>1295番</td><td>進捗表へ配る写しが止まる（45分古い写しが出ていた）</td></tr></table>
+
+<h2>時間ごとの発車本数</h2>
+<table><tr><td>09/27 07時</td><td><span class="bar" style="width:78px"></span>3本</td></tr><tr><td>09/27 05時</td><td><span class="bar" style="width:130px"></span>5本</td></tr><tr><td>09/27 00時</td><td><span class="bar" style="width:26px"></span>1本</td></tr><tr><td>09/26 23時</td><td><span class="bar" style="width:52px"></span>2本</td></tr><tr><td>09/26 20時</td><td><span class="bar" style="width:26px"></span>1本</td></tr><tr><td>09/26 19時</td><td><span class="bar" style="width:78px"></span>3本</td></tr><tr><td>09/26 16時</td><td><span class="bar" style="width:52px"></span>2本</td></tr><tr><td>09/26 15時</td><td><span class="bar" style="width:78px"></span>3本</td></tr><tr><td>09/26 14時</td><td><span class="bar" style="width:156px"></span>6本</td></tr><tr><td>09/26 13時</td><td><span class="bar" style="width:52px"></span>2本</td></tr></table>
+
+<h2>いちばん新しい発車のログ1行（そのまま）</h2>
+<div class="mono">2026-09-27 07:51:35 🚀 自動発車 898番「【仕組み⑦】★間違ったものが報告に上がってこない関所（鬼監督を機械にする）」→ pid 66169 / session 5dbdbf60（走行1本→2本・上限2本）</div>
+</div></html>

@@ -80,6 +80,10 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 # 687行目の呼び出しは health.json への相乗りのため残す（順番は入れ替えない）。
 run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || true
 
+# ★1165番 進捗表：①直近24hの発車本数 ②今走っている本数／上限 ③次に発車するタスク名
+# たまごさん「なんで止まってるの？」に、毎回この3つで答える紙。dojisu_jougen.py の直後に置く。
+run_with_timeout 30 python3 "$REPO/tools/1165_page.py" >/dev/null 2>&1 || true
+
 # ---- 2026-09-24（Cowork側から設置）Bufferの鍵を受け取る係＋予約を出す係 ----
 # たまごさん：「またログインしてくださいとかいやだよ。一回渡したものはちゃんと保管しようよ」
 # 実害：BufferはChrome側にセッションが無く、鍵台帳にも行が無かった＝渡された記録がどこにも無い。
