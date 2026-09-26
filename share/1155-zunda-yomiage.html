@@ -207,13 +207,13 @@ async function grab(n){
 async function playChunk(n){
   if(stopped) return;
   busy = true;
-  try{
-    au.src = await grab(n);
-  }catch(e){
-    busy = false;
-    setTimeout(()=>{ if(!stopped && cur === n) playChunk(n); }, 1500);
-    return;
-  }
+  const url = api("/audio/" + job.id + "/" + n + ".mp3");
+  au.src = url;                       // まずは直に流す（届いた先から鳴る）
+  // 8秒たっても始まらなければ、丸ごと取ってから鳴らすやり方に切り替える
+  setTimeout(async () => {
+    if(stopped || cur !== n || au.readyState >= 2 || !au.src.startsWith("http")) return;
+    try{ au.src = await grab(n); au.play().catch(()=>{}); }catch(e){}
+  }, 8000);
   if(job.ready > n + 1) grab(n + 1).catch(()=>{});   // 次を先に取っておく
   au.onended = () => {
     busy = false; cur = n + 1;

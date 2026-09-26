@@ -89,7 +89,8 @@ def wav_to_mp3(wav_bytes, dest):
         pcm = r.readframes(r.getnframes())
         sr, ch = r.getframerate(), r.getnchannels()
     e = lameenc.Encoder()
-    e.set_bit_rate(96)
+    # 48kbps。24kHzモノラルの喋りには十分で、細い穴（トンネル）でも待たされない。
+    e.set_bit_rate(48)
     e.set_in_sample_rate(sr)
     e.set_channels(ch)
     e.set_quality(5)
@@ -283,8 +284,26 @@ class H(BaseHTTPRequestHandler):
             if not os.path.exists(p):
                 return self._json({"error": "まだ出来ていない"}, 404)
             b = open(p, "rb").read()
+            # Chrome の <audio> は Range で少しずつ取りに来る。
+            # 206 を返さないと読み込みが止まる（トンネル越しで実測）。
+            rng = self.headers.get("Range")
+            if rng:
+                m2 = re.match(r"bytes=(\d*)-(\d*)", rng)
+                s = int(m2.group(1) or 0)
+                e = int(m2.group(2)) if m2.group(2) else len(b) - 1
+                e = min(e, len(b) - 1)
+                part = b[s:e + 1]
+                self.send_response(206)
+                self.send_header("Content-Type", "audio/mpeg")
+                self.send_header("Accept-Ranges", "bytes")
+                self.send_header("Content-Range", "bytes %d-%d/%d" % (s, e, len(b)))
+                self.send_header("Content-Length", str(len(part)))
+                self._cors()
+                self.end_headers()
+                return self.wfile.write(part)
             self.send_response(200)
             self.send_header("Content-Type", "audio/mpeg")
+            self.send_header("Accept-Ranges", "bytes")
             self.send_header("Content-Length", str(len(b)))
             self._cors()
             self.end_headers()
