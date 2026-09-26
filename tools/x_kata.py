@@ -74,8 +74,55 @@ def normalize(text):
     return (body + "\n" + tail) if body else tail
 
 
+LIMIT = 280
+YOHAKU = 278          # ここまでで止める（ぴったり280は事故りやすいので2文字ぶん残す）
+
+
+def omosa(text):
+    """★1166番：Xの数え方で何文字ぶんか（Bufferがこの数で弾く）。
+
+    実測でわかったこと（2026-09-27・Bufferの返事）:
+      「Invalid post: Twitter / X posts cannot exceed 280 characters.」
+    Xは素の文字数で数えない。
+      ・URLは何文字あっても **23** として数える
+      ・日本語・中国語・韓国語・絵文字は **1文字が2** として数える
+    出典: https://developer.x.com/en/docs/counting-characters
+    """
+    t = URL_RE.sub("U" * 23, text or "")
+    n = 0
+    for ch in t:
+        o = ord(ch)
+        if (0x1100 <= o <= 0x11FF or 0x2E80 <= o <= 0xA4CF or 0xA960 <= o <= 0xA97F
+                or 0xAC00 <= o <= 0xD7FF or 0xF900 <= o <= 0xFAFF
+                or 0xFE30 <= o <= 0xFE4F or 0xFF00 <= o <= 0xFF60
+                or 0xFFE0 <= o <= 0xFFE6 or 0x1F300 <= o <= 0x1FAFF
+                or 0x20000 <= o <= 0x3FFFD):
+            n += 2
+        else:
+            n += 1
+    return n
+
+
+def nagasa_ok(text):
+    """長さが通るか。通らないなら (False, 理由) を返す。"""
+    n = omosa(text)
+    if n > YOHAKU:
+        return False, "Xの数え方で%d文字（上限%d）" % (n, LIMIT)
+    return True, ""
+
+
 def _self_test():
     ok = True
+    # ★長さの数え方（1166番・実測で弾かれた2本をそのまま形にした）
+    if omosa("https://joy-relief-station.lovable.app/cover-guide?artist=a&song=b") != 23:
+        ok = False
+        print("NG（URLは23で数える）")
+    if omosa("あいう") != 6:
+        ok = False
+        print("NG（日本語は1文字2で数える）")
+    if nagasa_ok("あ" * 200)[0]:
+        ok = False
+        print("NG（長すぎるのに通した）")
     cases = [
         # (入力, 期待)
         ("あ\n\nhttps://x.test/a\n\n#tag",

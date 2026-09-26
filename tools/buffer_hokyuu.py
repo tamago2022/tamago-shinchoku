@@ -46,7 +46,7 @@ STAMP = os.path.join(QUEUE, ".hokyuu_stamp")
 
 TARGET = 10          # ★満タン＝10本（無料枠の在庫数）
 FLOOR = 8            # ★8本を切ったら必ず足す（8〜10で回す）
-SLOTS = [(7, 30), (21, 0)]   # 朝・夜のJST
+SLOTS = [(9, 0), (20, 0)]   # 朝・夜のJST（★1166番：既に入っている予約と同じ刻みに合わせた）
 HOUR = 6             # 毎朝6:00
 
 
@@ -220,6 +220,14 @@ def main():
         #   言葉は1文字も書き替えない。動かすのはURLの行の位置だけ。
         text = x_kata.normalize(text)
         iso, local = slots[si]
+        # ★1166番：長さの関所。Xの数え方で280を超えるものはBufferが弾く（実測）。
+        #   叩く前に止めて、行列からも捨てる（次も同じ理由で弾かれるだけ）。
+        nok, nwhy = x_kata.nagasa_ok(text)
+        if not nok:
+            failed.append({"due": local.strftime("%F %H:%M"), "why": nwhy,
+                           "head": text[:40]})
+            tsukatta += 1
+            continue
         ok, why = mon.tsukaeru(text, iso)
         if not ok:
             mon.hajiku(text, why, iso)
