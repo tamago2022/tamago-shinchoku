@@ -68,7 +68,8 @@ def osa(script, timeout=45):
 def running(app):
     # System Events 経由は重い時に30秒でも返らなかった（実測）。pgrep で見る。
     try:
-        r = subprocess.run(["pgrep", "-x", app], capture_output=True, text=True, timeout=10)
+        r = subprocess.run(["pgrep", "-f", "/%s.app/Contents/MacOS/" % app],
+                           capture_output=True, text=True, timeout=10)
         return bool(r.stdout.strip())
     except Exception:
         return False

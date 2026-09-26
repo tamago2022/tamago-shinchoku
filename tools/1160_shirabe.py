@@ -163,7 +163,15 @@ def zan():
 
 
 def kekka_toru(pid):
-    """(state, mtime, 本文) を返す。"""
+    """(state, mtime, 本文) を返す。
+
+    ★2026-09-26 実測で分かった落とし穴（1回やらかした）：
+      走っている途中の `task status` も result_content を返す。中身は「検索の航跡」で、
+      レポート本文ではない。長さも出典URLの数も足りてしまうので、検品を通り抜ける。
+      → **state が finished になるまで受け取らない。**
+      終わったときの result_content.content は list で、**いちばん長い要素が本文**
+      （実測：item[0] が24,931字の完成レポート、item[1] は65字の見出しだけ）。
+    """
     rc, out = gsk(["task", "status", pid], timeout=240)
     try:
         j = json.loads(out[out.index("{"):])
@@ -171,11 +179,13 @@ def kekka_toru(pid):
         return ("fetch_ng", None, "")
     d = (j or {}).get("data") or {}
     state = d.get("state") or "?"
+    if d.get("stop_reason") == "finished":
+        state = "finished"
     mtime = d.get("mtime")
     rcont = d.get("result_content") or {}
     body = rcont.get("content")
     if isinstance(body, list):
-        body = "\n\n".join([str(x) for x in body])
+        body = max([str(x) for x in body] or [""], key=len)
     body = body or ""
     try:
         os.makedirs(RAW, exist_ok=True)
@@ -219,7 +229,7 @@ def main():
     os.makedirs(DIR, exist_ok=True)
     os.makedirs(KOTAE, exist_ok=True)
 
-    if os.path.exists(STOP):
+    if os.path.exists(STOP) or os.path.exists(os.path.join(DIR, "stop")):
         return 0
     if not os.path.exists(GSK):
         log("gsk が無い")
@@ -244,7 +254,8 @@ def main():
             state, mtime, body = kekka_toru(pid)
             r["last_poll"] = now()
             r["gsk_state"] = state
-            owatta = not ("running" in str(state) and "stale" not in str(state))
+            owatta = str(state) in ("finished", "completed", "succeeded", "done")
+            shinda = str(state) in ("failed", "error", "stopped", "cancelled")
             # running_or_stale は mtime で見分ける
             furui = False
             if mtime:
@@ -253,8 +264,13 @@ def main():
                     furui = (datetime.now(timezone.utc) - t) > timedelta(minutes=STALE_MIN)
                 except Exception:
                     pass
+            # ★終わっていないものは、中身がどれだけ長くても受け取らない（航跡なので）
+            if not owatta and not shinda and not furui:
+                inflight += 1
+                continue
+
             riyuu = usui(body)
-            if riyuu is None:
+            if riyuu is None and owatta:
                 # 取れた
                 p = os.path.join(KOTAE, "%s.md" % r["id"])
                 with io.open(p, "w", encoding="utf-8") as f:
@@ -273,11 +289,9 @@ def main():
                 log("取れた %s（%d文字）" % (r["id"], len(body)))
                 continue
 
-            if "running" in str(state) and not furui:
-                inflight += 1
-                continue
-
             # 終わっているのに薄い／死んでいる → 突き返す
+            if riyuu is None:
+                riyuu = "終わったのに本文が取れない（state=%s）" % state
             if r.get("sashimodoshi", 0) < MAX_SASHIMODOSHI:
                 r["sashimodoshi"] = r.get("sashimodoshi", 0) + 1
                 msg = SASHIMODOSHI_BUN.format(riyuu=riyuu)
