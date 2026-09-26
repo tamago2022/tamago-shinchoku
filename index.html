@@ -163,8 +163,9 @@ footer a{display:block; padding:5px 0}
 <!-- ⓪-2 工場の体温（★1163番・2026-09-26 たまごさん「進捗表に『心臓：生／死』
      『最後に発車した時刻』『今の負荷』を出す」。Macが固まって再起動した日に、
      どれが止まっているか進捗表を見ても分からなかったので、3つだけ大きく出す。
-     出どころ：status/public/genzaichi.json（heartbeatSilentMin／launchSilentMin）と
-               status/public/health.json（load／同時上限）。
+     出どころ：status/public/taion.json（tools/1163_taion.py が心臓の毎周で書く）。
+     ★genzaichi.json / health.json は使わない。実測でそれぞれ2時間20分・5時間44分
+       古かった（22:06時点）。古い紙で「生」と出すのは嘘になる。
      ★取れないときは空欄にしない。「取れていません」と文字で出す（0や生と書くのは嘘）。 -->
 <section class="card" id="taionCard">
   <h2>工場の体温</h2>
@@ -336,47 +337,62 @@ function getJson(url, ms){
 }
 
 /* ───────── 工場の体温（1163番）─────────
-   心臓：genzaichi.json の heartbeatSilentMin（何分だまっているか）。2分以内＝生。
-         2〜10分＝あやしい。10分超＝死んでいる扱い（watchdogのしきい値は60秒）。
-   最後の発車：launchSilentMin から時刻を逆算して出す。
-   今の負荷：health.json の load（％）と 同時上限。
-   ★どれも「読めなかった」ときは赤で「取れていません」と出す。黙って…のままにしない。 */
+   出どころは status/public/taion.json ただ1枚（tools/1163_taion.py が心臓の毎周で書く）。
+   心臓      … だまり120秒以内＝生／600秒以内＝あやしい／それ超＝死
+   最後の発車 … status/.last_launch_at の時刻をそのまま
+   今の負荷   … machine_health.json の loadPct（ロード÷コア×100）
+   ★紙が古い（3分超）ときは、中身を信じずに「紙が古い」と赤で出す。
+     読めなかったときも赤で「取れていません」。黙って…のままにしない。 */
 (function(){
   function put(id, txt, col){
     var e = document.getElementById(id); if(!e) return;
     e.textContent = txt; if(col) e.style.color = col;
   }
-  function hhmm(minAgo){
-    var d = new Date(Date.now() - minAgo*60000);
-    return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
-  }
-  Promise.all([
-    getJson("status/public/genzaichi.json").catch(function(){ return null; }),
-    getJson("status/public/health.json").catch(function(){ return null; })
-  ]).then(function(r){
-    var g = r[0], h = r[1], meta = [];
-    if(g && typeof g.heartbeatSilentMin === "number"){
-      var m = g.heartbeatSilentMin;
-      if(m <= 2)       put("tHeart", "生", "#137333");
-      else if(m <= 10) put("tHeart", "あやしい（"+m.toFixed(0)+"分だまり）", "#8a2b00");
-      else             put("tHeart", "死（"+m.toFixed(0)+"分だまり）", "#b00020");
-      meta.push("心臓のだまり "+m.toFixed(1)+"分");
-    } else { put("tHeart", "取れていません", "#b00020"); }
+  getJson("status/public/taion.json").catch(function(){ return null; }).then(function(t){
+    if(!t){
+      put("tHeart","取れていません","#b00020");
+      put("tLaunch","取れていません","#b00020");
+      put("tLoad","取れていません","#b00020");
+      put("taionMeta","status/public/taion.json が読めません（心臓が一度も書いていない）");
+      return;
+    }
+    var meta = [], furui = null;
+    try {
+      var age = (Date.now() - new Date(String(t.at).replace("+0900","+09:00")).getTime())/60000;
+      if(age > 3) furui = age;
+    } catch(e){}
 
-    if(g && typeof g.launchSilentMin === "number"){
-      var L = g.launchSilentMin;
-      put("tLaunch", hhmm(L)+"（"+L.toFixed(0)+"分前）", L > 120 ? "#b00020" : "");
-      meta.push("発車のだまり "+L.toFixed(0)+"分");
-    } else { put("tLaunch", "取れていません", "#b00020"); }
+    if(furui !== null){
+      var m0 = "紙が"+furui.toFixed(0)+"分古い";
+      put("tHeart", m0, "#b00020"); put("tLaunch", m0, "#b00020"); put("tLoad", m0, "#b00020");
+      put("taionMeta", "status/public/taion.json が "+furui.toFixed(0)
+          +"分前で止まっています＝心臓か公開のどちらかが止まっています（書いた時刻 "
+          + String(t.at).slice(11,19) + "）");
+      return;
+    }
 
-    if(h && typeof h.load === "number"){
-      put("tLoad", h.load+"%", h.load >= 200 ? "#b00020" : (h.load >= 100 ? "#8a2b00" : "#137333"));
-      if(h.cap != null) meta.push("同時上限 "+h.cap+"本");
-      if(h.sessions != null) meta.push("走行 "+h.sessions+"本");
-      if(h.memPressure) meta.push("メモリ "+h.memPressure);
-    } else { put("tLoad", "取れていません", "#b00020"); }
+    if(t["心臓"]){
+      var c = t["心臓"] === "生" ? "#137333" : (t["心臓"] === "あやしい" ? "#8a2b00" : "#b00020");
+      put("tHeart", t["心臓"], c);
+      if(t["心臓のだまり秒"] != null) meta.push("だまり "+t["心臓のだまり秒"]+"秒");
+    } else { put("tHeart","取れていません","#b00020"); }
 
-    if(g && g.generatedAt) meta.push("測った時刻 "+String(g.generatedAt).slice(11,16));
+    if(t["最後の発車"]){
+      var mm = t["最後の発車から分"];
+      put("tLaunch", String(t["最後の発車"]).slice(11,16)
+          + (mm != null ? "（"+Math.round(mm)+"分前）" : ""),
+          (mm != null && mm > 120) ? "#b00020" : "");
+    } else { put("tLaunch","取れていません","#b00020"); }
+
+    if(typeof t["負荷Pct"] === "number"){
+      var L = t["負荷Pct"];
+      put("tLoad", L+"%", L >= 200 ? "#b00020" : (L >= 100 ? "#8a2b00" : "#137333"));
+    } else { put("tLoad","取れていません","#b00020"); }
+
+    if(t["同時上限"] != null) meta.push("同時上限 "+t["同時上限"]+"本");
+    if(t["スワップ残りGB"] != null) meta.push("スワップ残り "+t["スワップ残りGB"]+"GB");
+    if(t["負荷1行"]) meta.push(t["負荷1行"]);
+    meta.push("測った時刻 "+String(t.at).slice(11,19));
     document.getElementById("taionMeta").textContent = meta.join(" ｜ ");
   });
 })();

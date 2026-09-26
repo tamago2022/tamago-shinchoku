@@ -191,6 +191,10 @@ while :; do
   tick_every 2 && ( python3 "$REPO/tools/inochi.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 心臓自身が「生きている」印を命綱の台帳に押す（死亡判定はあちらが持つ）
   ( python3 "$REPO/tools/inochi.py" --ikiteru heartbeat >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # ★1163番（2026-09-26）進捗表の「工場の体温」（心臓・最後の発車・今の負荷）。
+  #   既存の genzaichi.json / health.json は2〜5時間古く、体温には使えなかった。
+  #   ここは毎周なので常に数十秒以内の数字だけが載る。書くだけ・0.05秒。
+  ( python3 "$REPO/tools/1163_taion.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1
