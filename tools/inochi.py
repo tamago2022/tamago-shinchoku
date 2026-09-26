@@ -222,10 +222,19 @@ def _p_karamawari():
 
 
 def _p_gitlock():
+    # ★1165番（2026-09-27）120秒未満のロックは「まだ死んでいない」と見る。
+    #   旧：置かれた瞬間から「死んだ」と数えていたが、外す側（_r_gitlock）は
+    #   120秒経つまで触らない設計。見張りは約35秒おき＝**4回とも「まだ新しい」で失敗**し、
+    #   ちょうど外せる頃（2分後）に「4回続けて死んだので起こすのをやめた」に落ちていた。
+    #   実測 2026-09-27 07:56:49→07:59:08 でこの通りに諦め、ロックが残り続けた。
+    #   ＝外す道は正しかったのに、そこへ行き着く前に見張りが降りていた。
     lock = os.path.join(REPO, ".git", "index.lock")
     if not os.path.exists(lock):
         return True, "ロック無し"
-    return False, "index.lock が %.0f秒 残っている" % (_age(lock) or 0)
+    age = _age(lock) or 0
+    if age < 120:
+        return True, "index.lock %.0f秒（走っている最中。120秒までは待つ）" % age
+    return False, "index.lock が %.0f秒 残っている" % age
 
 
 def _r_gitlock():
@@ -520,6 +529,13 @@ MIHARI = [
 ]
 
 AKIRAMERU = 3   # ★同じものが3回続けて死んだら、起こすのをやめる
+# ★1165番（2026-09-27）ここだけは絶対に諦めない。
+#   gitlock（.git/index.lock の取り残し）を諦めると、この置き場のgit操作が全部止まる
+#   ＝進捗表も共有ページも公開が止まり、工場が黙って死ぬ。
+#   しかも直し方（tools/git_lock_reaper.py）は「古い・gitのプロセスが居ない」を
+#   確かめてから外す安全な処理で、何度呼んでも壊れない。諦める理由が無い。
+#   実測 2026-09-27 07:59:08：4回で諦めたあと、ロックは誰にも外されず残り続けた。
+AKIRAMENAI = {"gitlock"}
 
 
 # ────────────────────────────────────────────────────────────
@@ -568,7 +584,7 @@ def mawasu(quiet=True):
             kekka.append((name, midashi, "死(起こす手が無い)", mieta, s))
             continue
 
-        if s["renzoku"] > AKIRAMERU:
+        if s["renzoku"] > AKIRAMERU and name not in AKIRAMENAI:
             # ★無限に起こし続けない。素材を替える判定に落とす。
             if not s.get("sizumeta"):
                 log("%s: %d回続けて死んだので起こすのをやめた（素材を替える）" % (name, s["renzoku"]))
