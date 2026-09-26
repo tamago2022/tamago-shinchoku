@@ -93,6 +93,7 @@
 </div>
 
 <div class="ctl">
+  <button id="kick" style="display:none">▶ 鳴らす</button>
   <button class="ghost" id="pause">一時停止</button>
   <button class="ghost" id="stop">止める</button>
   <span class="pill" id="cnt">0 / 0</span>
@@ -148,6 +149,7 @@ async function findEndpoint(){
 
 // ---------- 注文 ----------
 async function order(path, payload){
+  unlockAudio();            // ★押した瞬間に音を出す許可を取る（awaitの後だと失効する）
   if(!EP && !(await findEndpoint())) return;
   stopAll(); stopped = false; cur = 0;
   for(const k in cache) delete cache[k];
@@ -158,7 +160,6 @@ async function order(path, payload){
     const j = await r.json();
     if(j.error){ say(j.error, "ng"); return; }
     job = j;
-    unlockAudio();
     watch();
   }catch(e){
     EP = null;
@@ -227,7 +228,8 @@ async function playChunk(n){
     say("<b>ずんだもんが読んでいます</b> " + (n+1) + " / " + job.chunks +
         (job.done ? "" : "（続きを作りながら）"));
   }).catch(() => { busy = false;
-    say("画面をひとつ押すと鳴りはじめます（ブラウザの決まり）", "ng"); });
+    $("kick").style.display = "inline-block";
+    say("下の「▶ 鳴らす」を押してください（ブラウザの決まりで、一度押さないと音が出せません）", "ng"); });
 }
 
 function stopAll(){
@@ -262,6 +264,8 @@ $("go").onclick = () => { const u = $("url").value.trim();
   u ? order("/url", {url:u}) : say("URLを入れてください"); };
 $("goRaw").onclick = () => { const t = $("raw").value.trim();
   t ? order("/say", {text:t}) : say("文章を貼ってください"); };
+$("kick").onclick = () => { $("kick").style.display = "none";
+  stopped = false; busy = false; if(job) playChunk(cur); };
 $("stop").onclick = () => { stopAll(); say("止めました"); };
 $("pause").onclick = () => { au.paused ? au.play() : au.pause(); };
 $("q").oninput = drawNotes;
