@@ -96,6 +96,33 @@ def append(p, obj):
         f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
+def kazu(text, label=""):
+    """数字と断定の門への薄い橋渡し（919号で発見・修正）。
+
+    kenpin_gate.py が `import hantei as _h; _h.kazu(text, label=...)` の形で呼ぶが、
+    実体（KZ1〜KZ3の判定）は tools/kazu_gate.py にしかない（1018番「同じ規則を
+    2か所に書いて片方だけ直った」を繰り返さないため、ここでは呼ぶだけにする）。
+    このラッパー自体が長らく存在せず、呼び出し側が毎回 AttributeError で落ちていた。
+
+    戻り値: dict(red=bool, blocked=str, line=str) ── kenpin_gate.py 側の期待形に合わせる。
+    """
+    try:
+        import kazu_gate
+    except Exception as e:  # noqa: BLE001
+        return {"red": False, "blocked": "", "line": "（数字の門が読めません：%s）" % e}
+    res = kazu_gate.judge(text or "")
+    if res.get("ok"):
+        return {"red": False, "blocked": "",
+                "line": "%s: 数字%d件、全部に出どころがあります" % (label or "kazu", res.get("counted", 0))}
+    parts = []
+    for h in res.get("hits", []):
+        one = "[%s] %s" % (h.get("code", ""), h.get("why", ""))
+        if h.get("line"):
+            one += "／その行: %s" % h["line"][:110]
+        parts.append(one)
+    return {"red": True, "blocked": "／[".join(parts), "line": label or "kazu"}
+
+
 def ja_nichiji(dt):
     return "%s(%s) %s" % (dt.strftime("%Y-%m-%d"), _YOUBI[dt.weekday()], dt.strftime("%H:%M"))
 
