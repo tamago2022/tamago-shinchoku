@@ -1,0 +1,485 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>人間を動かさずに進める仕組み（本丸）</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>人間を動かさずに進める仕組み（本丸）</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 49本 ／ 24,931字 ／ 投げた 2026-09-26 11:51:44<br><a href="https://www.genspark.ai/agents?id=34c4b377-791f-5ed0-9186-41bd3e0af55b" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>人間を動かさずに進める仕組み — AIエージェントによる完全自動化の実例、限界、事故、そして「確認不要な設計」の実践ガイド</h2>
+<h3>はじめに：なぜ「人間ゼロ」の自動化が今、最重要課題なのか</h3>
+<p>2026年現在、企業のAI導入は「PoC（概念実証）の成功」から「本番運用でのコスト・リスク管理」へと焦点が移っています。Gartnerの2026年AIハイプサイクルレポートによれば、<strong>AIエージェントプロジェクトの40%が2027年までにコスト超過のみを理由に中止される</strong>と予測されています <a href="https://www.cockroachlabs.com/blog/agentic-ai-costs-at-scale/" target="_blank" rel="noopener">Cockroach Labs</a>。これは技術的な失敗ではなく、経済的な失敗です。</p>
+<p>一方で、GitHubのDependabot自動マージからStripeの不正検知、CloudflareのDDoS防御まで、すでに「人間の確認を一切挟まず」に動作し続けているシステムも世界中に存在します。本レポートは、それらの成功事例と、Knight Capitalの4億6000万ドル損失、Air Canadaのチャットボット判決、47,000ドルのAIエージェント暴走課金事故といった失敗事例を対比させながら、「どこまで自動化できて、どこは原理的に自動化できないのか」を、法律・規約・技術制約の観点から整理します。最後に、読者が明日から実践できる具体的な5つの施策を提示します。</p>
+<hr>
+<h3>第1章：人の確認・承認・入力を一切挟まずに完了する実例</h3>
+<h4>1.1 GitHub Dependabotの自動マージ</h4>
+<p>GitHubのDependabotは、依存関係のアップデートを自動的にプルリクエスト（PR）として作成しますが、さらにこれを自動的にマージする仕組みも提供されています。</p>
+<p><strong>仕組み</strong>:</p>
+<p>1. GitHub ActionsワークフローがDependabotのPRを検知</p>
+<p>2. `dependabot/fetch-metadata`アクションでアップデートの種類（パッチ、マイナー、メジャー）を判定</p>
+<p>3. 条件（例：パッチアップデートのみ）を満たす場合、`gh pr merge --auto --merge`コマンドを実行</p>
+<p>4. ブランチ保護ルールで設定されたステータスチェック（CIテスト等）がすべて成功すると自動マージ</p>
+<p><strong>必要な権限</strong>: `contents: write` および `pull-requests: write` <a href="https://docs.github.com/en/code-security/tutorials/secure-your-dependencies/automate-dependabot-with-actions" target="_blank" rel="noopener">GitHub Docs</a></p>
+<p>この仕組みにより、セキュリティパッチの適用からマージまで、開発者の介入なしで完了します。ただし、これは「テストがすべて成功した場合」に限られ、テストが失敗した場合は人間の介入が必要になる設計です。</p>
+<h4>1.2 Stripe Radarの自動不正検知</h4>
+<p>Stripeは、機械学習を用いた不正検知システム「Radar」を完全に自動化しています。このシステムは、取引ごとにリスクスコアを計算し、閾値を超えた取引を自動的にブロックまたはフラグ付けします <a href="https://stripe.dev/blog/how-we-built-it-stripe-radar" target="_blank" rel="noopener">stripe.dev</a>。</p>
+<p><strong>特徴</strong>:</p>
+<ul>
+<li>ルールベースのフィルタと機械学習モデルを組み合わせ</li>
+<li>誤検知（false positive）を最小化するための継続的な学習</li>
+<li>完全に自動化された意思決定フロー</li>
+</ul>
+<p>ただし、高額取引や不審なパターンが検出された場合、人間によるレビューにエスカレートされる仕組みも併存しています。これは「完全な無人化」ではなく、「通常時は無人、例外時は有人」というハイブリッドモデルです。</p>
+<h4>1.3 Cloudflareの自動DDoS防御</h4>
+<p>Cloudflareは、すべてのプランで自動DDoS防御を提供しています。このシステムは、レイヤー3/4（ネットワーク層）およびレイヤー7（アプリケーション層）の攻撃を自動的に検知・緩和します <a href="https://developers.cloudflare.com/ddos-protection/" target="_blank" rel="noopener">developers.cloudflare.com</a>。</p>
+<p><strong>自動化の仕組み</strong>:</p>
+<ul>
+<li>動的な緩和ルール（Managed Rulesets）</li>
+<li>高度なTCP保護（SYN flood等への対応）</li>
+<li>高度なDNS保護</li>
+<li>プログラム可能なフロー保護（eBPFベース）</li>
+</ul>
+<p>Enterpriseプランでは、適応型DDoS保護がすべてのルールで利用可能で、トラフィックプロファイリング信号（エラーレート、履歴トレンド、クライアント国、ユーザーエージェント、クエリ文字列、MLスコア）に基づいて自動的に防御戦略を調整します。</p>
+<h4>1.4 AWS EC2の自動インスタンス回復</h4>
+<p>AWS EC2は、システムステータスチェックの失敗を自動的に検知し、インスタンスを別のハードウェアへ移行する「自動インスタンス回復」機能を提供しています <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-recover.html" target="_blank" rel="noopener">Amazon Web Services Documentation</a>。</p>
+<p><strong>トリガー条件</strong>: システムステータスチェックの失敗（ホストのハードウェアまたはソフトウェアの問題）</p>
+<p><strong>設定方法</strong>:</p>
+<p>1. 簡易自動回復：サポートされているインスタンスではデフォルトで有効</p>
+<p>2. CloudWatchアクションベースの回復：手動設定が必要</p>
+<p>この仕組みにより、ハードウェア障害からの復旧が人間の介入なしで完了します。</p>
+<h4>1.5 Google SREの「toil」削減と自動化</h4>
+<p>GoogleのSRE（Site Reliability Engineering）プラクティスでは、「toil（苦役）」の定義を明確にし、自動化の基準を設定しています <a href="https://sre.google/sre-book/eliminating-toil/" target="_blank" rel="noopener">Google SRE</a>。</p>
+<p><strong>Toilの定義</strong>: 「本番サービスの運用に関連する作業のうち、手作業で、反復的であり、自動化可能で、戦術的（受動的）であり、永続的な価値がなく、サービスの成長とともに線形に増加するもの」</p>
+<p><strong>自動化の基準</strong>:</p>
+<ul>
+<li>機械が人間と同等にタスクをこなせる場合</li>
+<li>タスクの必要性を設計によって排除できる場合</li>
+</ul>
+<p>逆に、「人間の判断が不可欠なタスク」はtoilではないと定義されており、これは自動化の限界を示す重要な指針です。</p>
+<h4>1.6 TemporalのDurable Execution</h4>
+<p>Temporalは、「クラッシュ耐性のある実行（crash-proof execution）」を実現するDurable Executionを提供しています <a href="https://temporal.io/blog/what-is-durable-execution" target="_blank" rel="noopener">Temporal.io</a>。</p>
+<p><strong>仕組み</strong>:</p>
+<ul>
+<li>実行を仮想化し、複数のプロセスにまたがって実行</li>
+<li>プロセスがクラッシュしても、新しいプロセスで状態を復元して透過的に再開</li>
+<li>失敗がなかったかのように実行が継続</li>
+</ul>
+<p>これにより、長時間実行されるワークフロー（例：AIエージェントの連鎖的なタスク実行）を、人間の介入なしで確実に完了させることができます。</p>
+<h4>1.7 Apache AirflowのDAGレベルリトライ</h4>
+<p>Apache Airflowでは、タスクレベルのリトライではなく、DAG全体を再実行する「DAGレベルのリトライ」を、`on_failure_callback`とREST APIを組み合わせて実現しています <a href="https://airflow.apache.org/docs/apache-airflow/stable/howto/dag-level-retry-via-callback.html" target="_blank" rel="noopener">Apache Airflow</a>。</p>
+<p><strong>仕組み</strong>:</p>
+<p>1. タスクがタスクレベルのリトライをすべて使い切った後に失敗</p>
+<p>2. `on_failure_callback`が実行され、Airflow REST APIのClearエンドポイントを呼び出し</p>
+<p>3. スケジューラがクリアされたタスクインスタンスを検知し、再実行</p>
+<p>これはネイティブ機能ではなく「レシピ」として実装される点に注意が必要です。</p>
+<h4>1.8 Netflix Chaos Monkey</h4>
+<p>NetflixのChaos Monkeyは、本番環境のインスタンスをランダムに終了させることで、エンジニアに耐障害性のあるサービス設計を強制するツールです <a href="https://netflix.github.io/chaosmonkey/" target="_blank" rel="noopener">netflix.github.io</a>。</p>
+<p><strong>目的</strong>: インスタンス障害に対するサービスの回復力をテストし、自動化された回復メカニズムの存在を確認すること。</p>
+<p>これは「自動化されたテスト」の一種であり、人間の介入なしで継続的に実行されます。</p>
+<h4>1.9 Devinの自動PRレビュー</h4>
+<p>Cognition社のDevinは、GitHub Actionsと連携して自動PRレビューを実行できます <a href="https://cognition.com/blog/devin-101-automatic-pr-reviews-with-the-devin-api/" target="_blank" rel="noopener">Cognition</a>。</p>
+<p><strong>仕組み</strong>:</p>
+<p>1. PRがオープン、更新、または再オープンされたときにGitHub Actionsワークフローがトリガー</p>
+<p>2. 変更されたファイルのリストを取得し、DevinのAPIに送信</p>
+<p>3. Devinがリポジトリをローカルにクローンし、差分を確認してフィードバックを投稿</p>
+<p><strong>制限</strong>:</p>
+<ul>
+<li>Devinはすべてのバグを検出できるとは限らない</li>
+<li>マージ前には必ず人間がPRを確認することが推奨される</li>
+<li>プロンプトで「NEVER make any commits or pushes to the repository」と指示し、プレプッシュフックを設定して安全性を確保</li>
+</ul>
+<p>これは「完全な自動化」ではなく、「人間による最終確認を前提とした補助的自動化」です。</p>
+<h4>1.10 OpenHandsの自動化機能</h4>
+<p>OpenHandsは、ソフトウェア開発ライフサイクルの反復作業を自動化するAIエージェントプラットフォームです <a href="https://www.openhands.dev/" target="_blank" rel="noopener">OpenHands</a>。</p>
+<p><strong>自動化機能</strong>:</p>
+<ul>
+<li>プルリクエストのレビューとCI失敗の修正</li>
+<li>課題（Issue）のトリアージとドラフトPRの作成</li>
+<li>リリースサイクル全体でのQA自動化</li>
+<li>インシデントの調査と修正提案</li>
+<li>ドキュメントとコードベースマップの更新</li>
+<li>依存関係の更新とリリースノート作成</li>
+</ul>
+<p><strong>制限</strong>: エンジニアによるレビュー、承認、マージの制御を維持する設計となっており、判断が必要な意思決定（judgment calls）は人間が行うようになっています。</p>
+<h4>1.11 SWE-agentのGitHub Issue自動修正</h4>
+<p>SWE-agentは、言語モデル（GPT-4oやClaude Sonnet 4など）を使用して、GitHubリポジトリ内の課題を自律的に修正するツールです <a href="https://github.com/SWE-agent/swe-agent" target="_blank" rel="noopener">GitHub</a>。</p>
+<p><strong>機能</strong>:</p>
+<ul>
+<li>GitHubリポジトリ内の課題（Issue）の修正</li>
+<li>サイバーセキュリティの脆弱性の発見（EnIGMAモード）</li>
+<li>任意のカスタムタスクの実行</li>
+</ul>
+<p>現在、開発の焦点はより簡素化された「mini-swe-agent」に移っています。</p>
+<hr>
+<h3>第2章：人を外せない領域 — 法律・規約・技術制約による線引き</h3>
+<h4>2.1 EU AI Act第14条：人間監督義務</h4>
+<p>EU AI Actは、ハイリスクAIシステムに対して人間監督（human oversight）を義務付けています <a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">Artificial Intelligence Act</a>。</p>
+<p><strong>主な要件</strong>:</p>
+<p>1. <strong>設計と開発</strong>: ハイリスクAIシステムは、使用期間中に自然人が効果的に監督できるよう、適切なヒューマン・マシン・インターフェースツールを含めて設計・開発されなければならない。</p>
+<p>2. <strong>目的</strong>: 人間監督は、AIシステムの意図された使用や予見可能な誤用によって生じる健康、安全、基本的人権へのリスクを防止または最小化することを目的とする。</p>
+<p>3. <strong>監督者の権限と能力</strong>:</p>
+<ul>
+<li>システムの能力と限界を理解し、運用を監視し、異常を検出する</li>
+<li>自動化バイアス（AIの出力を過度に信頼する傾向）を認識する</li>
+<li>システム出力を正しく解釈する</li>
+<li>システムの使用を中止する、あるいは出力を無視・上書き・反転させる決定を下す</li>
+<li>停止ボタンや同様の手順を通じてシステムの運用に介入したり、安全な状態で停止させたりする</li>
+</ul>
+<p>4. <strong>特殊要件</strong>: Annex IIIの1(a)に該当するハイリスクAIシステム（生体認証など）の場合、システムが識別した結果に基づいてデプロイヤーがアクションや決定を下す際、十分な能力、訓練、権限を持つ<strong>少なくとも2名の自然人による個別の検証と確認</strong>が必要とされます（法執行、移民、国境管理、亡命の分野で不釣り合いとみなされる場合は例外）<a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">Artificial Intelligence Act</a>。</p>
+<p>この規定は、特定の分野（生体認証、法執行など）では「完全な自動化」が原理的に不可能であることを意味します。</p>
+<h4>2.2 GDPR第22条：自動意思決定に対する権利</h4>
+<p>GDPR第22条は、データ主体に「完全に自動化された処理（プロファイリングを含む）に基づく決定の対象とならない権利」を付与しています <a href="https://gdpr-info.eu/art-22-gdpr/" target="_blank" rel="noopener">gdpr-info.eu</a>。</p>
+<p><strong>適用範囲</strong>: 法的効果、または同様に重大な影響を及ぼす決定</p>
+<p><strong>例外（自動化が許可される条件）</strong>:</p>
+<p>1. データ主体とデータ管理者間の契約の締結または履行に必要な場合</p>
+<p>2. 連合または加盟国の法律により許可され、データ主体の権利と自由および正当な利益を保護するための適切な措置が講じられている場合</p>
+<p>3. データ主体の明示的な同意に基づく場合</p>
+<p><strong>追加の safeguards</strong>: 例外(1)および(3)の場合、データ管理者は、データ主体の権利と自由および正当な利益を保護するための適切な措置（少なくとも、管理者による人間の介入を得る権利、意見を表明する権利、決定に異議を唱える権利）を実施しなければなりません。</p>
+<p><strong>特殊なカテゴリーの個人データ</strong>: 第9条(1)に規定される特殊なカテゴリーの個人データに基づく決定は、第9条(2)(a)または(g)が適用され、かつ適切な保護措置が講じられている場合を除き、禁止されます。</p>
+<p>英国ICOのガイドラインでは、「法的効果」の例としてオンライン融資申請の自動拒否や、人間の介在のないeリクルーティングを挙げています <a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/individual-rights/rights-related-to-automated-decision-making-including-profiling/" target="_blank" rel="noopener">ico.org.uk</a>。</p>
+<h4>2.3 医療規制：FDAのAI医療機器ガイドライン</h4>
+<p>FDAは、AI/MLを備えた医療機器（Software as a Medical Device, SaMD）に対するガイドラインを発行しています <a href="https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-software-medical-device" target="_blank" rel="noopener">U.S. Food and Drug Administration</a>。</p>
+<p><strong>定義</strong>: AIは「人間が定義した目標のために、予測、推奨、または決定を行う機械ベースのシステム」であり、「機械および人間ベースの入力」を使用して環境を認識します。</p>
+<p>2025年1月6日に発行されたドラフトガイダンス「Artificial Intelligence-Enabled Device Software Functions: Lifecycle Management and Marketing」では、ライフサイクル管理に関する要件が定められています <a href="https://www.fda.gov/regulatory-information/search-fda-guidance-documents/artificial-intelligence-enabled-device-software-functions-lifecycle-management-and-marketing" target="_blank" rel="noopener">FDA</a>。ただし、 crawlしたページ自体には「人間監督」を明示的に要求する条項は記載されておらず、より詳細なガイドライン（Good Machine Learning Practiceなど）を参照する必要があると注記されています。</p>
+<p>2026年9月時点で、FDAは1,600以上のAI対応医療機器を承認しており、その約95%〜97%が510(k)ルートを通じて承認されています <a href="https://censinet.com/perspectives/ai-medical-devices-fda-approval-process" target="_blank" rel="noopener">censinet.com</a>。2025年8月の最終ガイダンスでは、PCCP（Predetermined Change Control Plan）が正式化され、事前承認されたアルゴリズムの変更を新たな申請なしで可能にする仕組みが導入されています <a href="https://intuitionlabs.ai/articles/fda-ai-ml-samd-guidance-compliance" target="_blank" rel="noopener">intuitionlabs.ai</a>。</p>
+<p><strong>注意点</strong>: crawlした情報源では、FDAガイドラインにおける「人間監督」の具体的な条項を直接確認できませんでした。これはデータギャップとして明記します。</p>
+<h4>2.4 金融規制：FATF勧告とKYC自動化</h4>
+<p>FATF（金融活動作業部会）は、マネーロンダリング対策（AML）およびテロ資金供与対策（CFT）に関する勧告を発行しています <a href="https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html" target="_blank" rel="noopener">FATF-GAFI</a>。</p>
+<p>2026年6月に改正されたFATF勧告では、仮想資産、拡散融資、受益者所有権に関する変更が含まれています。ただし、crawlしたページ自体には「KYC自動化」に関する具体的な規定は記載されておらず、より詳細なガイダンスを参照する必要があると注記されています。</p>
+<p>2025年末までに、EBA（欧州銀行当局）はAML/CFTの権限をAMLA（欧州AML当局）に移管しました <a href="https://timvero.com/blog/kyc-and-aml-compliance-in-digital-lending" target="_blank" rel="noopener">timvero.com</a>。FATFは2026年に向けて、規制対象団体がKYCを「実証可能（demonstrable）」にすることを求めています <a href="https://facephi.com/observatory/en/fatf-expectations-for-2026-why-kyc-must-bedemonstrable/" target="_blank" rel="noopener">facephi.com</a>。</p>
+<p><strong>注意点</strong>: FATF勧告におけるKYC自動化の具体的な条項は、crawlした情報源からは確認できませんでした。これはデータギャップとして明記します。</p>
+<h4>2.5 サービス利用規約：OpenAIの自動化制限</h4>
+<p>OpenAIの利用規約では、以下の自動化行為が禁止されています <a href="https://openai.com/policies/row-terms-of-use/" target="_blank" rel="noopener">OpenAI</a>。</p>
+<ul>
+<li>サービスまたは生成されたデータ（Output）を自動的またはプログラム的に抽出する行為</li>
+</ul>
+<p>これは、APIのレート制限を回避するボットや、大規模なデータスクレイピングを目的とした自動化を禁止するものです。違反した場合、アカウントの停止または終了の対象となります。</p>
+<h4>2.6 OS・プラットフォーム制約：Apple App Store審査ガイドライン</h4>
+<p>Apple App Store審査ガイドラインでは、以下の自動化に関する制限が定められています <a href="https://developer.apple.com/app-store/review/guidelines/" target="_blank" rel="noopener">Apple Developer</a>。</p>
+<ul>
+<li>位置情報ベースのAPIを使用して、車両、航空機、その他のデバイスの自律制御を行うことは禁止（軽量ドローンや玩具、リモートコントロールカーの警報システムなどの小型デバイスを除く）</li>
+</ul>
+<p>これは、安全性を確保するための制限であり、自動運転やドローンの自律飛行などの分野では、人間の監督が不可欠であることを示しています。</p>
+<h4>2.7 カリフォルニア州のボット開示法</h4>
+<p>カリフォルニア州には、ボットの使用に関する開示を義務付ける2つの法律があります。</p>
+<p><strong>SB 1001（2018年制定、2019年7月1日施行）</strong>: ボットを使用して、その人工的な正体を誤認させる意図で、商業取引における購入・販売を誘引したり、選挙における投票に影響を与えたりする目的で、カリフォルニア州のオンライン上で他者と通信・対話することは違法です。ただし、ボットであることを開示した場合は責任を免れます <a href="https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=201720180SB1001" target="_blank" rel="noopener">leginfo.legislature.ca.gov</a>。</p>
+<p><strong>SB 243（Companion Chatbot Law、2025年制定）</strong>: コンパニオンチャットボットプラットフォームに対する追加の要件を定めています <a href="https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB243" target="_blank" rel="noopener">California Legislative Information</a>。</p>
+<p><strong>主な要件</strong>:</p>
+<p>1. 人間との対話と誤認される可能性がある場合、AIであることを明示する通知を表示</p>
+<p>2. 自殺念慮、自殺、自傷行為に関するコンテンツの生成を防止するプロトコルの維持と、危機管理サービスへの誘導</p>
+<p>3. 未成年ユーザーに対して：</p>
+<ul>
+<li>AIとの対話であることを開示</li>
+<li>継続的な対話中、少なくとも3時間ごとに休憩を促す通知を表示</li>
+<li>性的なコンテンツの生成を防止</li>
+</ul>
+<p>4. 2027年7月1日より、自殺予防局への年間報告書の提出</p>
+<p>5. チャットボットが一部の未成年者に適さない可能性があることの開示</p>
+<p>この法律は、特に未成年者との対話におけるAIの役割に制限を設けており、完全な自動化を制限するものです。</p>
+<hr>
+<h3>第3章：人を外して事故った実例 — ポストモーテムから学ぶ教訓</h3>
+<h4>3.1 Knight Capitalの自動発注事故（2012年）</h4>
+<p><strong>概要</strong>: 2012年8月1日、Knight Capitalの自動取引システムが暴走し、45分間で4億6000万ドル以上の損失を被りました <a href="https://www.sec.gov/newsroom/press-releases/2013-222" target="_blank" rel="noopener">www.sec.gov</a>。</p>
+<p><strong>原因</strong>:</p>
+<p>1. <strong>デプロイメントの失敗</strong>: 8台あるサーバーのうち1台が古いコードで稼働したままだった</p>
+<p>2. <strong>レガシーコードの再利用</strong>: 新しいソフトウェアが、廃止されたもののコードベースから削除されていなかった「Power Peg」というレガシー機能のフラグを再利用した</p>
+<p>3. <strong>監視の欠如</strong>: システムの出力を監視する適切なコントロール機能が不足していた</p>
+<p>4. <strong>セーフガードの欠如</strong>: 誤った注文の入力を防ぐための十分な保護措置が欠如していた</p>
+<p>5. <strong>停止手順の欠如</strong>: システムの異常な活動を検知した際に取引を停止する手順が整備されていなかった</p>
+<p>6. <strong>アラートの無視</strong>: 市場が開く前にシステム関連の問題を示す自動アラート（97通）を受け取っていたが、対応しなかった</p>
+<p><strong>結果</strong>:</p>
+<ul>
+<li>45分間で154銘柄に対して400万件以上の約定を生成</li>
+<li>約3億9700万株を取引</li>
+<li>4億6000万ドル以上の損失</li>
+<li>SECによる1200万ドルの民事罰金 <a href="https://www.sec.gov/files/litigation/admin/2013/34-70694.pdf" target="_blank" rel="noopener">www.sec.gov</a></li>
+<li>独立したコンサルタントによる包括的なレビューの実施を命じられた</li>
+</ul>
+<p><strong>教訓</strong>: 自動化システムには、多重のセーフガード、リアルタイムの監視、異常時の自動停止機能、そしてデプロイメントプロセスの厳格な管理が不可欠です。</p>
+<h4>3.2 Air Canadaのチャットボット判決（2024年）</h4>
+<p><strong>概要</strong>: Air Canadaのチャットボットが、存在しない「悲嘆割引（bereavement fare）」ポリシーについて誤った情報を提供し、顧客が損害を被った事例です <a href="https://arstechnica.com/tech-policy/2024/02/air-canada-must-honor-refund-policy-invented-by-airlines-chatbot/" target="_blank" rel="noopener">arstechnica.com</a>。</p>
+<p><strong>経緯</strong>:</p>
+<ul>
+<li>顧客Moffatt氏が、家族の死去に伴う航空券の割引についてチャットボットに問い合わせ</li>
+<li>チャットボットは、割引が適用されると誤って回答</li>
+<li>顧客はその回答を信じて航空券を購入したが、実際には割引は適用されなかった</li>
+<li>顧客はブリティッシュコロンビア州のCivil Resolution Tribunalに申し立て</li>
+</ul>
+<p><strong>判決</strong>:</p>
+<ul>
+<li>Tribunalは、Air Canadaがチャットボットの情報の正確性を確保するための合理的な注意を払わなかったと認定</li>
+<li>「Air Canadaは、そのウェブサイト上のすべての情報について責任を負う。情報が静的なページから来たのか、チャットボットから来たのかは関係ない」と判示</li>
+<li>Air Canadaに対し、812.02カナダドル（約642.64ポンド）の支払いを命じた <a href="https://decisions.civilresolutionbc.ca/crt/crtd/en/item/525448/index.do" target="_blank" rel="noopener">decisions.civilresolutionbc.ca</a></li>
+</ul>
+<p><strong>教訓</strong>: チャットボットが提供する情報について、企業は責任を負います。チャットボットが「別個の法的実体」であるという主張は認められませんでした。また、チャットボットの情報が不正確である可能性があることを顧客に警告していなかったことも、責任を問われる要因となりました。</p>
+<h4>3.3 Amazonの採用AI廃止（2018年）</h4>
+<p><strong>概要</strong>: Amazonは、女性に対してバイアスを示すAI採用ツールを廃止しました <a href="https://incidentdatabase.ai/reports/615/" target="_blank" rel="noopener">incidentdatabase.ai</a>。</p>
+<p><strong>経緯</strong>:</p>
+<ul>
+<li>2014年、Amazonは過去10年間に提出された履歴書のパターンを学習させたAI採用ツールを開発</li>
+<li>技術業界が歴史的に男性中心であったため、AIは男性候補者を好むように学習</li>
+<li>「women&#x27;s basketball team」や「women&#x27;s chess club」といった単語を含む履歴書を低く評価</li>
+<li>女子大学の卒業生を低く評価する傾向もあった</li>
+<li>2015年、このバイアスを修正しようとしたが、完全に排除できないと判断され、プロジェクトは廃止</li>
+</ul>
+<p><strong>教訓</strong>: AIモデルは学習データに含まれるバイアスを増幅する可能性があります。採用のような重要な意思決定において、完全に自動化されたAIシステムを使用することは、差別的結果を生むリスクがあります。</p>
+<p>（注：Reutersの元記事はBright Dataによりブロックされており、詳細な内容は確認できませんでした <a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener">www.reuters.com</a>。）</p>
+<h4>3.4 Zillow Offersの撤退（2021年）</h4>
+<p><strong>概要</strong>: Zillowは、アルゴリズムによる住宅購入事業「Zillow Offers」から撤退し、8億8100万ドルの損失を計上しました <a href="https://www.gsb.stanford.edu/insights/flip-flop-why-zillows-algorithmic-home-buying-venture-imploded" target="_blank" rel="noopener">Stanford Graduate School of Business</a>。</p>
+<p><strong>経緯</strong>:</p>
+<ul>
+<li>Zillowは「Zestimate」アルゴリズムを使用して住宅価格を予測し、即時購入する事業を展開</li>
+<li>しかし、住宅価格の予測不可能性が想定を大幅に上回った</li>
+<li>購入した住宅の65%で過払いが発生</li>
+<li>38億ドル相当の在庫を抱えることになった</li>
+<li>2021年第3四半期に8億8100万ドルの損失を計上し、事業を shutdown</li>
+<li>約2000人の従業員が解雇された <a href="https://ideaproof.io/failure/zillow-offers" target="_blank" rel="noopener">ideaproof.io</a></li>
+</ul>
+<p><strong>原因</strong>:</p>
+<ul>
+<li>アルゴリズムが住宅の質的要素（立地、状態、市場の微妙な変動など）を正確に評価できなかった</li>
+<li>「レモン問題（情報非対称性）」により、アルゴリズムが過大評価した住宅ほど売主が売りたがる傾向があった</li>
+<li>収益モデルがコスト構造を支えられず、規模を拡大してもユニットエコノミクスが改善しなかった</li>
+</ul>
+<p><strong>教訓</strong>: 複雑で予測不可能な市場（不動産など）において、アルゴリズムのみに依存した意思決定は重大なリスクを伴います。人間の専門知識と組み合わせたハイブリッドアプローチが必要です。</p>
+<h4>3.5 47,000ドルのAIエージェント暴走課金事故（2026年）</h4>
+<p><strong>概要</strong>: 4つのLangChainスタイルエージェントが、解決不能なエッジケースに遭遇し、11日間にわたり無限ループ状態でAPIコールを繰り返し、47,200ドルの損害を出した事例です <a href="https://clyro.dev/blog/the-47k-loop-a-complete-forensic-analysis/" target="_blank" rel="noopener">Clyro</a>。</p>
+<p><strong>経緯</strong>:</p>
+<ul>
+<li>システムは「スキーマドリフトの解決中」というステータスを維持しつつ、無限ループに陥った</li>
+<li>各アプローチのリトライカウンターがリセットされる仕組みになっており、リトライ制限が機能しなかった</li>
+<li>最終的にシニアエンジニアが45分で手動修正</li>
+</ul>
+<p><strong>原因</strong>:</p>
+<p>1. <strong>ループ検出機能の欠如</strong>: 同一の解決不能な問題に対し、異なるアプローチを試行するループを検知できなかった</p>
+<p>2. <strong>コスト上限の欠如</strong>: 実行ごと、または1日あたりのコスト上限が設定されていなかった</p>
+<p>3. <strong>ステップ制限の欠如</strong>: 1つのタスクにおける試行回数に制限がなかった</p>
+<p>4. <strong>サーキットブレーカーや時間制限の欠如</strong>: 基準となる処理時間を超えた場合の停止措置がなかった</p>
+<p><strong>教訓</strong>:</p>
+<ul>
+<li>制限のない自律性は負債となる</li>
+<li>請求アラートは監視ではない（アカウントレベルの予算監視ではなく、エージェントレベルのガバナンスが必要）</li>
+<li>「設計通り」は最も危険なステータス（ヘルスチェックがすべて正常でも、破壊的な動作をしている可能性がある）</li>
+<li>エッジケースのテストが必要</li>
+<li>インフラによる解決（プロンプトエンジニアリングではなく、ループ検出、コスト制限、ステップ制限、サーキットブレーカーの実装）</li>
+</ul>
+<h4>3.6 その他のAIエージェントコスト超過リスク</h4>
+<p>Forcepointのレポートによると、AIエージェントによる「無制限消費（unbounded consumption）」には5つの形態があります <a href="https://www.darkreading.com/application-security/how-ai-agents-can-trigger-runaway-costs" target="_blank" rel="noopener">www.darkreading.com</a>：</p>
+<p>1. <strong>Denial of Wallet</strong>: 盗まれたAPIキーを使用して大量のリクエストを送り、請求額を膨らませる</p>
+<p>2. <strong>Agent Tool Fan Out</strong>: AIエージェントが正常な動作として多数のリンクを辿り、連鎖的にコストを増大させる</p>
+<p>3. <strong>Reasoning Loop Exhaustion</strong>: モデルに自身の推論を繰り返し検証させるプロンプトにより、推論トークンを大量消費させる</p>
+<p>4. <strong>Context Accumulation</strong>: 長時間のセッションで会話履歴が蓄積し、1メッセージあたりのコストが増大する（例：150回の交換でコストが約100倍に）</p>
+<p>5. <strong>Model Extraction</strong>: 多数のクエリを送ってモデルの挙動を再現する</p>
+<p>これらのリスクに対処するためには、ハードな支出制限、ステップ数の上限、ループ検出、サンドボックス化、最小権限の原則の適用などが推奨されています。</p>
+<hr>
+<h3>第4章：「確認が要らない設計」のアプローチ</h3>
+<h4>4.1 可逆化（ロールバック可能にする）</h4>
+<p><strong>Feature Flag（機能フラグ）</strong>:</p>
+<p>Feature Flagは、実行時にどのコードパスを実行するかを決定する条件付きif-elseステートメントです <a href="https://launchdarkly.com/blog/what-are-feature-flags/" target="_blank" rel="noopener">LaunchDarkly</a>。</p>
+<ul>
+<li>本番環境で問題が発生した場合、フラグを無効にすることで即座に実行を停止できる（ロールバック、再デプロイ不要）</li>
+<li>LaunchDarklyは、フラグの変更を200ミリ秒以内に伝播させる <a href="https://launchdarkly.com/blog/what-are-feature-flags/" target="_blank" rel="noopener">LaunchDarkly</a></li>
+<li>Kill Switchフラグは、問題のある機能を即座に無効化する緊急時の手段として使用される <a href="https://launchdarkly.com/blog/how-to-instantly-roll-back-buggy-features-with-launchdarkly-kill-switch/" target="_blank" rel="noopener">LaunchDarkly</a></li>
+</ul>
+<p><strong>カナリアリリース</strong>:</p>
+<p>Googleのカナリアリリースでは、新しいバージョンのデプロイを一部トラフィックに限定し、メトリクス（HTTPエラー率など）を監視します <a href="https://sre.google/workbook/canarying-releases/" target="_blank" rel="noopener">sre.google</a>。</p>
+<ul>
+<li>カナリアメトリクスがコントロール（既存の安定版）と比較して大きく乖離した場合、デプロイメントを一時停止してロールバック</li>
+<li>または、人間がトラブルシューティングを行うために通知</li>
+</ul>
+<p><strong>ドライラン・プレビュー環境</strong>:</p>
+<p>変更を適用する前に、実際のデータを使わずにシミュレーション実行する仕組みです。これにより、破壊的な変更を事前に検知できます。</p>
+<h4>4.2 上限で囲う（バウンドを設ける）</h4>
+<p><strong>予算上限</strong>:</p>
+<ul>
+<li>AIエージェントのAPI使用量にハードな上限を設定</li>
+<li>例：1日あたりのトークン使用量上限、1リクエストあたりの最大コスト</li>
+<li>Gartnerの予測によれば、コスト超過がAIエージェントプロジェクト失敗の主要因となる <a href="https://www.cockroachlabs.com/blog/agentic-ai-costs-at-scale/" target="_blank" rel="noopener">Cockroach Labs</a></li>
+</ul>
+<p><strong>レート制限</strong>:</p>
+<p>APIレート制限には以下のアルゴリズムがあります <a href="https://konghq.com/blog/learning-center/what-is-api-rate-limiting" target="_blank" rel="noopener">Kong HQ</a>：</p>
+<p>1. <strong>トークンバケットアルゴリズム</strong>: バケットにトークンを溜め、リクエストごとにトークンを消費。固定レートでトークンが補充されるため、一時的なバーストトラフィックに対応可能</p>
+<p>2. <strong>リーキーバケットアルゴリズム</strong>: 入力レートに関わらず、バケットから一定のレートでリクエストを処理。トラフィックを平滑化</p>
+<p>3. <strong>固定ウィンドウアルゴリズム</strong>: 時間を固定のウィンドウに分割し、その期間内のリクエスト数を制限</p>
+<p>4. <strong>スライディングウィンドウアルゴリズム</strong>: 移動ウィンドウを使用してリクエスト数をカウントし、現在時刻に基づいて継続的に更新</p>
+<p><strong>権限最小化（Least Privilege）</strong>:</p>
+<ul>
+<li>エージェントに必要最小限の権限のみを付与</li>
+<li>例：読み取り専用権限、特定のリソースへのアクセスのみ許可</li>
+</ul>
+<p><strong>サンドボックス</strong>:</p>
+<ul>
+<li>エージェントの動作を隔離された環境に制限</li>
+<li>例：コンテナ化、仮想マシン、制限されたファイルシステムアクセス</li>
+</ul>
+<p><strong>時間制限</strong>:</p>
+<ul>
+<li>1つのタスクまたはセッションの最大実行時間を設定</li>
+<li>例：10分以上実行されたタスクは自動的に終了</li>
+</ul>
+<h4>4.3 自動で検証する</h4>
+<p><strong>テスト自動化</strong>:</p>
+<ul>
+<li>ユニットテスト、統合テスト、エンドツーエンドテストの自動化</li>
+<li>CI/CDパイプラインに組み込み、変更がマージされる前に自動的に実行</li>
+</ul>
+<p><strong>型・スキーマ・契約テスト</strong>:</p>
+<p>契約テスト（Contract Testing）は、2つの独立したシステム（マイクロサービスなど）が互換性を持ち、通信可能であることを保証する手法です <a href="https://pactflow.io/blog/what-is-contract-testing/" target="_blank" rel="noopener">Pactflow</a>。</p>
+<ul>
+<li>サービス間でやり取りされる相互作用をキャプチャし、「契約（Contract）」として保存</li>
+<li>この契約を使用して、双方の当事者がそれに準拠しているかを検証</li>
+<li>各システムは互いに独立してテスト可能で、契約はコード自体から生成されるため、常に最新の状態が保たれる</li>
+<li>エンドツーエンド（E2E）統合テストの代替として、CIパイプラインの高速化とチームの生産性向上に貢献</li>
+</ul>
+<p><strong>自動ロールバック</strong>:</p>
+<ul>
+<li>監視システムが異常を検知した場合、自動的に以前の状態にロールバック</li>
+<li>例：KubernetesのRollingUpdate戦略、ヘルスチェック失敗時の自動ロールバック</li>
+</ul>
+<p><strong>SLO違反時の自動停止</strong>:</p>
+<ul>
+<li>サービスレベル目標（SLO）を定義し、違反した場合に自動的にアラートまたは停止</li>
+<li>例：エラーバジェット（Error Budget）を使い切った場合、新しいデプロイをブロック</li>
+</ul>
+<h4>4.4 事後に監査する</h4>
+<p><strong>監査ログ</strong>:</p>
+<ul>
+<li>すべての自動化されたアクションのログを記録</li>
+<li>例：誰が（どのエージェントが）、いつ、何を変更したか</li>
+</ul>
+<p><strong>差分レビュー</strong>:</p>
+<ul>
+<li>変更前後の状態を比較し、予期せぬ変更を検出</li>
+<li>例：Gitのdiff、データベースのスナップショット比較</li>
+</ul>
+<p><strong>サンプリング検査</strong>:</p>
+<ul>
+<li>自動化された決定のサンプルを人間がレビュー</li>
+<li>例：AIによる採用スクリーニングの10%を人間が再確認</li>
+</ul>
+<p><strong>AuditBoardなどの監査自動化ツール</strong>:</p>
+<p>監査自動化ツールは、データ収集、証拠管理、テスト、レポート作成、ワークフローのルーティングを自動化します <a href="https://www.auditboard.com/blog/audit-automation" target="_blank" rel="noopener">AuditBoard</a>。ただし、人間の判断が必要な領域も依然として存在すると指摘されています。</p>
+<p>DataSnipperは、予測分析、RPA、レポート生成、監査管理、クラウドベースのツール、ドキュメント管理、PBCポータルといった7つのタイプの監査自動化をリストしています <a href="https://www.datasnipper.com/resources/audit-automation-types-benefits-and-challenges" target="_blank" rel="noopener">DataSnipper</a>。</p>
+<hr>
+<h3>第5章：読者が明日実行できる具体的施策5選</h3>
+<h4>1. Feature Flagを導入し、Kill Switchを全機能に実装する</h4>
+<p><strong>根拠</strong>: LaunchDarklyの事例によれば、Feature Flagは本番環境での問題発生時に、再デプロイなしで即座に機能を無効化できます <a href="https://launchdarkly.com/blog/how-to-instantly-roll-back-buggy-features-with-launchdarkly-kill-switch/" target="_blank" rel="noopener">LaunchDarkly</a>。</p>
+<p><strong>具体的手順</strong>:</p>
+<p>1. 新規機能はすべてFeature Flagの背後に隠す</p>
+<p>2. 緊急時に即座に無効化できるKill Switchフラグを各機能に設定</p>
+<p>3. フラグの状態変更を監視するダッシュボードを構築</p>
+<h4>2. AIエージェントに「コスト上限」と「ステップ制限」を設ける</h4>
+<p><strong>根拠</strong>: 47,000ドルのAIエージェント暴走事故は、コスト上限とステップ制限の欠如が原因でした <a href="https://clyro.dev/blog/the-47k-loop-a-complete-forensic-analysis/" target="_blank" rel="noopener">Clyro</a>。</p>
+<p><strong>具体的手順</strong>:</p>
+<p>1. エージェントごとの1日あたりの予算上限を設定（例：10ドル/日）</p>
+<p>2. 1タスクあたりの最大ステップ数を制限（例：100ステップ）</p>
+<p>3. 同一の失敗を3回繰り返した場合、自動的にタスクを中止するロジックを実装</p>
+<p>4. 予算の80%に達した時点でアラートを発報</p>
+<h4>3. カナリアリリースと自動ロールバックをCI/CDパイプラインに組み込む</h4>
+<p><strong>根拠</strong>: Google SREのカナリアリリースプラクティスは、エラー率の乖離を自動的に検知し、ロールバックする仕組みを提供しています <a href="https://sre.google/workbook/canarying-releases/" target="_blank" rel="noopener">sre.google</a>。</p>
+<p><strong>具体的手順</strong>:</p>
+<p>1. 新規デプロイを5%のトラフィックに限定</p>
+<p>2. エラー率、レイテンシー、スループットを監視</p>
+<p>3. 閾値を超えた場合、自動的にロールバック</p>
+<p>4. 人間への通知も併せて設定（完全自動化ではなく、人間へのエスカレーションも用意）</p>
+<h4>4. 契約テスト（Contract Testing）を導入し、マイクロサービス間の整合性を自動検証</h4>
+<p><strong>根拠</strong>: Pactによる契約テストは、マイクロサービス間の互換性を自動的に検証し、CIパイプラインの高速化に貢献します <a href="https://pactflow.io/blog/what-is-contract-testing/" target="_blank" rel="noopener">Pactflow</a>。</p>
+<p><strong>具体的手順</strong>:</p>
+<p>1. 消費者（Consumer）側で契約を定義</p>
+<p>2. 提供者（Provider）側で契約に対するテストを実行</p>
+<p>3. CIパイプラインに契約テストを組み込み、マージ前に自動的に実行</p>
+<p>4. 契約違反が検出された場合、ビルドを失敗させる</p>
+<h4>5. 自動化された決定のサンプリング検査プロセスを確立する</h4>
+<p><strong>根拠</strong>: GDPR第22条およびEU AI Act第14条は、自動化された決定に対する人間の監督を求めています <a href="https://gdpr-info.eu/art-22-gdpr/" target="_blank" rel="noopener">gdpr-info.eu</a>、<a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">Artificial Intelligence Act</a>。</p>
+<p><strong>具体的手順</strong>:</p>
+<p>1. 自動化された決定（例：与信判断、採用スクリーニング）の10%をランダムにサンプリング</p>
+<p>2. 人間がサンプルをレビューし、バイアスや誤りを検出</p>
+<p>3. 誤りが一定割合を超えた場合、自動化プロセスを一時停止し、全件人間レビューに移行</p>
+<p>4. レビュー結果をフィードバックループとしてAIモデルの改善に活用</p>
+<hr>
+<h3>データの限界と未確認事項</h3>
+<p>本レポートの作成にあたり、以下の情報源については完全な内容の確認ができませんでした：</p>
+<p>1. <strong>ReutersのAmazon AI採用ツール記事</strong>: Bright Dataによるブロックのため、元記事の全文を確認できませんでした <a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener">www.reuters.com</a>。</p>
+<p>2. <strong>FDAガイドラインの人間監督条項</strong>: crawlしたFDAページには「人間監督」を明示的に要求する条項は記載されておらず、より詳細なガイドラインを参照する必要があると注記されています <a href="https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-software-medical-device" target="_blank" rel="noopener">U.S. Food and Drug Administration</a>。</p>
+<p>3. <strong>FATF勧告のKYC自動化規定</strong>: crawlしたFATFページにはKYC自動化に関する具体的な規定は記載されておらず、より詳細なガイダンスを参照する必要があると注記されています <a href="https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html" target="_blank" rel="noopener">FATF-GAFI</a>。</p>
+<p>4. <strong>Air Canada判決の正式な裁判記録</strong>: crawlしたページは空のフレームであり、判決文の詳細な内容は確認できませんでした <a href="https://decisions.civilresolutionbc.ca/crt/crtd/en/item/525448/index.do" target="_blank" rel="noopener">decisions.civilresolutionbc.ca</a>。</p>
+<p>5. <strong>Stripe Radarの詳細な仕組み</strong>: crawlしたページは技術的な詳細よりも概要中心であり、完全な自動化の仕組みの詳細は限定的でした <a href="https://stripe.dev/blog/how-we-built-it-stripe-radar" target="_blank" rel="noopener">stripe.dev</a>。</p>
+<p>これらの点については、より詳細な情報源を調査することで補完が必要です。</p>
+<hr>
+<h3>出典一覧</h3>
+<p>1. <a href="https://docs.github.com/en/code-security/tutorials/secure-your-dependencies/automate-dependabot-with-actions" target="_blank" rel="noopener">GitHub Docs - Automate Dependabot with Actions</a></p>
+<p>2. <a href="https://stripe.dev/blog/how-we-built-it-stripe-radar" target="_blank" rel="noopener">stripe.dev - How We Built It: Stripe Radar</a></p>
+<p>3. <a href="https://developers.cloudflare.com/ddos-protection/" target="_blank" rel="noopener">Cloudflare Developers - DDoS Protection</a></p>
+<p>4. <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-recover.html" target="_blank" rel="noopener">Amazon Web Services Documentation - EC2 Instance Recovery</a></p>
+<p>5. <a href="https://sre.google/sre-book/eliminating-toil/" target="_blank" rel="noopener">Google SRE - Eliminating Toil</a></p>
+<p>6. <a href="https://temporal.io/blog/what-is-durable-execution" target="_blank" rel="noopener">Temporal.io - What is Durable Execution</a></p>
+<p>7. <a href="https://airflow.apache.org/docs/apache-airflow/stable/howto/dag-level-retry-via-callback.html" target="_blank" rel="noopener">Apache Airflow - DAG-level Retry via Callback</a></p>
+<p>8. <a href="https://netflix.github.io/chaosmonkey/" target="_blank" rel="noopener">Netflix Chaos Monkey</a></p>
+<p>9. <a href="https://gdpr-info.eu/art-22-gdpr/" target="_blank" rel="noopener">GDPR Article 22</a></p>
+<p>10. <a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">EU AI Act Article 14</a></p>
+<p>11. <a href="https://openai.com/policies/row-terms-of-use/" target="_blank" rel="noopener">OpenAI Terms of Use</a></p>
+<p>12. <a href="https://developer.apple.com/app-store/review/guidelines/" target="_blank" rel="noopener">Apple App Store Review Guidelines</a></p>
+<p>13. <a href="https://www.sec.gov/newsroom/press-releases/2013-222" target="_blank" rel="noopener">SEC Press Release - Knight Capital</a></p>
+<p>14. <a href="https://arstechnica.com/tech-policy/2024/02/air-canada-must-honor-refund-policy-invented-by-airlines-chatbot/" target="_blank" rel="noopener">Ars Technica - Air Canada Chatbot Case</a></p>
+<p>15. <a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener">Reuters - Amazon AI Recruiting Tool</a></p>
+<p>16. <a href="https://www.gsb.stanford.edu/insights/flip-flop-why-zillows-algorithmic-home-buying-venture-imploded" target="_blank" rel="noopener">Stanford GSB - Zillow Offers Failure</a></p>
+<p>17. <a href="https://launchdarkly.com/blog/what-are-feature-flags/" target="_blank" rel="noopener">LaunchDarkly - What are Feature Flags</a></p>
+<p>18. <a href="https://sre.google/workbook/canarying-releases/" target="_blank" rel="noopener">Google SRE - Canarying Releases</a></p>
+<p>19. <a href="https://konghq.com/blog/learning-center/what-is-api-rate-limiting" target="_blank" rel="noopener">Kong HQ - API Rate Limiting</a></p>
+<p>20. <a href="https://pactflow.io/blog/what-is-contract-testing/" target="_blank" rel="noopener">Pactflow - Contract Testing</a></p>
+<p>21. <a href="https://clyro.dev/blog/the-47k-loop-a-complete-forensic-analysis/" target="_blank" rel="noopener">Clyro - The $47k Loop Forensic Analysis</a></p>
+<p>22. <a href="https://cognition.com/blog/devin-101-automatic-pr-reviews-with-the-devin-api/" target="_blank" rel="noopener">Cognition - Devin Automatic PR Reviews</a></p>
+<p>23. <a href="https://www.openhands.dev/" target="_blank" rel="noopener">OpenHands</a></p>
+<p>24. <a href="https://www.darkreading.com/application-security/how-ai-agents-can-trigger-runaway-costs" target="_blank" rel="noopener">Dark Reading - AI Agent Runaway Costs</a></p>
+<p>25. <a href="https://www.cockroachlabs.com/blog/agentic-ai-costs-at-scale/" target="_blank" rel="noopener">Cockroach Labs - Agentic AI Costs at Scale</a></p>
+<p>26. <a href="https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB243" target="_blank" rel="noopener">California SB 243</a></p>
+<p>27. <a href="https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=201720180SB1001" target="_blank" rel="noopener">California SB 1001</a></p>
+<p>28. <a href="https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-software-medical-device" target="_blank" rel="noopener">FDA AI-Enabled Medical Devices</a></p>
+<p>29. <a href="https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html" target="_blank" rel="noopener">FATF Recommendations</a></p>
+<p>30. <a href="https://github.com/SWE-agent/swe-agent" target="_blank" rel="noopener">GitHub SWE-agent</a></p>
+<p>31. <a href="https://www.henricodolfing.ch/en/case-study-4-the-440-million-software-error-at-knight-capital/" target="_blank" rel="noopener">Henric Dolfing - Knight Capital Case Study</a></p>
+<p>32. <a href="https://ideaproof.io/failure/zillow-offers" target="_blank" rel="noopener">IdeaProof - Zillow Offers Failure</a></p>
+<p>33. <a href="https://incidentdatabase.ai/reports/615/" target="_blank" rel="noopener">Incident Database - Amazon AI Recruiting Tool</a></p>
+<p>34. <a href="https://www.euaiact.com/key-issue/4" target="_blank" rel="noopener">EU AI Act Service Desk - Article 14</a></p>
+<p>35. <a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/individual-rights/rights-related-to-automated-decision-making-including-profiling/" target="_blank" rel="noopener">ICO UK - Automated Decision Making</a></p>
+<p>36. <a href="https://temporal.io/blog/of-course-you-can-build-dynamic-ai-agents-with-temporal" target="_blank" rel="noopener">Temporal.io - Dynamic AI Agents</a></p>
+<p>37. <a href="https://docs.devin.ai/work-with-devin/devin-review" target="_blank" rel="noopener">Devin Documentation - Review</a></p>
+<p>38. <a href="https://launchdarkly.com/blog/how-to-instantly-roll-back-buggy-features-with-launchdarkly-kill-switch/" target="_blank" rel="noopener">LaunchDarkly - Kill Switch</a></p>
+<p>39. <a href="https://www.harness.io/blog/are-feature-flags-a-part-of-your-rollback-plan" target="_blank" rel="noopener">Harness - Feature Flags Best Practices</a></p>
+<p>40. <a href="https://docs.pact.io/" target="_blank" rel="noopener">Pact Documentation</a></p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

@@ -146,7 +146,35 @@ def build():
     except Exception:
         pass
 
+    # ★ページ工事待ち（2026-09-27 実測で分かったこと）
+    # 待機列が伸びない理由はBufferではなく**曲ページ側**。候補24本は関連動画が
+    # 0本で、関所④（関連4本）を通らない。tools/1166_machi_tsumu.py が15分に1本
+    # ずつ関連を入れて直し、通ったものだけ上の待機列へ自動で移る。
+    # ここは kouho_list.json から「まだ待機列にも予約にも居ないもの」を引いて出す。
+    kouji = []
+    try:
+        kouho = json.load(io.open(os.path.join(REPO, "status", "1166",
+                                               "kouho_list.json"), encoding="utf-8"))
+        sumi = set()
+        for m in machi:
+            k = m.get("song_key") if isinstance(m, dict) else None
+            if k:
+                sumi.add(k)
+        for p in yoyaku + dashita:
+            for ln in (p.get("text") or "").split("\n"):
+                if "cover-guide?" in ln:
+                    sumi.add(ln.strip())
+        for x in kouho:
+            if ("%s/%s" % (x.get("artistId"), x.get("songId")) in sumi
+                    or (x.get("url") or "") in sumi):
+                continue
+            kouji.append({"nani": "%s — %s" % (x.get("artist"), x.get("song")),
+                          "riyuu": "関連動画が足りない（ページ工事待ち）"})
+    except Exception:
+        pass
+
     data = {
+        "kouji": kouji,
         "at": datetime.datetime.now(JST).strftime("%F %H:%M"),
         "channel": "@" + WANT,
         "cap": CAP,
@@ -177,11 +205,14 @@ def build():
         out.append("</ol>")
         return "".join(out)
 
-    if data["hazureta"]:
-        haz = "".join('<li><b>%s</b><span>%s</span></li>'
-                      % (e(x["nani"]), e(x["riyuu"])) for x in data["hazureta"])
-    else:
-        haz = '<p class="none">なし</p>'
+    def riyuu_li(items):
+        if not items:
+            return '<li class="none">なし</li>'
+        return "".join('<li><b>%s</b><span>%s</span></li>'
+                       % (e(x["nani"]), e(x["riyuu"])) for x in items)
+
+    haz = riyuu_li(data["hazureta"])
+    kouji_html = riyuu_li(data["kouji"])
 
     doc = """<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -199,7 +230,10 @@ ol.list li{display:flex;gap:10px;padding:9px 0;border-bottom:1px dotted #e2dcd0;
 ol.list li b{flex:0 0 118px;font-variant-numeric:tabular-nums;font-size:13px;color:#4a4338}
 ol.list li span{flex:1}
 .none{color:#9a9287}
+ol.list li.none{display:block;color:#9a9287;border:0}
 .machi ol.list li b{color:#8a7a52}
+h2.kouji{color:#8a5a3a}
+h2.kouji + p + ol.list li b{flex:0 0 200px;color:#8a5a3a}
 footer{margin-top:34px;color:#7a7367;font-size:13px}
 a{color:#3a6ea5}
 </style></head><body>
@@ -212,6 +246,12 @@ a{color:#3a6ea5}
 <h2 class="machi">その後ろで待っている <span class="n">%(nmachi)d 本</span></h2>
 <p class="at">上の予約が1本出るたびに、毎朝6時の補充便が上から順に繰り上げます。</p>
 <div class="machi">%(machi)s</div>
+
+<h2 class="kouji">ページ工事待ち <span class="n">%(nkouji)d 本</span></h2>
+<p class="at">★待機列が伸びない原因はBufferではなくページ側です。この曲たちは
+「関連動画が0本」で関所を通れません。15分に1本ずつ自動で関連を入れて直し、
+通ったものが上の「待っている」へ自動で並びます。</p>
+<ol class="list">%(kouji)s</ol>
 
 <h2>関所で外したもの</h2>
 <ol class="list">%(hazureta)s</ol>
@@ -231,6 +271,8 @@ Bufferの予約欄：<a href="https://publish.buffer.com/all-channels/queue">pub
         "machi": li(data["machi"], "yotei"),
         "dashita": li(data["dashita"], "due"),
         "hazureta": haz,
+        "nkouji": len(data["kouji"]),
+        "kouji": kouji_html,
     })
     return 0
 

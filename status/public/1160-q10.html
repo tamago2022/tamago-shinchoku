@@ -1,0 +1,394 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>リンク切れを自動で直す仕組み（消えたら差し替える）</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>リンク切れを自動で直す仕組み（消えたら差し替える）</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 71本 ／ 28,510字 ／ 投げた 2026-09-26 12:49:51<br><a href="https://www.genspark.ai/agents?id=733e9dc8-428f-50ca-a9ec-1b666e462a34" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>外部の動画・画像・ページが消えたことを自動で検知・差し替え・引っ込める仕組み — 実装調査レポート</h2>
+<p>&gt; <strong>注意（スコープと限界）</strong></p>
+<p>&gt; 本レポートは、収集できた公開情報（公式ドキュメント、技術ブログ、研究論文、ニュース記事、GitHubリポジトリなど）に基づいて作成しています。ただし、いくつかのURLはクローリング時にエラー（HTTPエラー、ネットワークエラー、コンテンツ未取得）となり、詳細が確認できませんでした。該当箇所は「[DATA NOT AVAILABLE]」または「確認できなかった」と明記しています。また、数値・統計は必ず出典URL付きで記載していますが、調査時点（2026年9月）以降に更新された可能性のあるデータについては、最新情報を別途確認することを推奨します。</p>
+<hr>
+<h3>第1章：検知のやり方 — HTTPステータスだけでは不十分、APIと複合判定が必要</h3>
+<h4>要約（3行）</h4>
+<ul>
+<li>YouTube動画の死活判定には、HTTPステータスだけでなくYouTube Data APIの`privacyStatus`、`embeddable`、`regionRestriction`を組み合わせる必要がある。</li>
+<li>HTTP 200でも実際には「ページがない」というソフト404や、リダイレクト・CDNキャッシュによる誤判定が頻発する。</li>
+<li>APIのクォータ制限（1日1万単位）を考慮した設計が必須で、大量処理には拡張申請または代替サービスの検討が必要。</li>
+</ul>
+<hr>
+<h4>1-1. YouTube Data APIによる動画死活判定</h4>
+<p>YouTube Data API v3の`videos.list`エンドポイントを使うと、動画のメタデータから「実質的に視聴・埋め込み可能か」を判定できる。</p>
+<p><strong>確認すべき主要フィールド：</strong></p>
+<div class=hyo><table>
+<tr><th>フィールド</th><th>意味・取りうる値</th><th>判定ロジック</th></tr>
+<tr><td>`status.privacyStatus`</td><td>`public` / `unlisted` / `private`</td><td>`private`なら一般閲覧不可、実質的に「消えた」とみなせる <a href="https://developers.google.com/youtube/v3/docs/videos" target="_blank" rel="noopener">developers.google.com</a></td></tr>
+<tr><td>`status.embeddable`</td><td>`true` / `false`</td><td>`false`なら埋め込み禁止。ただしこのフラグが`true`でも実際には埋め込めないケースがある（後述）</td></tr>
+<tr><td>`contentDetails.regionRestriction`</td><td>`allowed`リストまたは`blocked`リスト</td><td>特定国でのみ視聴制限されている場合、日本からは「見えない」状態になる <a href="https://developers.google.com/youtube/v3/docs/videos" target="_blank" rel="noopener">developers.google.com</a></td></tr>
+</table></div>
+<p><strong>APIエラーコードの意味：</strong></p>
+<ul>
+<li>`404 notFound` / `videoNotFound`：動画IDが存在しない、または削除された <a href="https://developers.google.com/youtube/v3/docs/errors" target="_blank" rel="noopener">developers.google.com</a></li>
+<li>`403 forbidden`：権限不足、または地域制限・著作権制限によりアクセス拒否 <a href="https://developers.google.com/youtube/v3/docs/errors" target="_blank" rel="noopener">developers.google.com</a></li>
+</ul>
+<p><strong>重要な落とし穴：`embeddable`フラグの信頼性</strong></p>
+<p>公式APIでは`embeddable: true`と返ってきても、実際には埋め込みができないケースがある。StackOverflowの報告によると、著作権音楽が含まれる動画などは`previewPlayabilityStatus`で`UNPLAYABLE`と判定されることがあり、`<a href="https://www.youtube.com/get_video_info?video_id=...`エンドポイント（現在は非推奨・廃止されつつある）ではHTTP" target="_blank" rel="noopener">https://www.youtube.com/get_video_info?video_id=...`エンドポイント（現在は非推奨・廃止されつつある）ではHTTP</a> 410が返される事例が確認されている <a href="https://stackoverflow.com/questions/71970621/how-to-identify-the-youtube-videos-that-cant-embed-on-file" target="_blank" rel="noopener">stackoverflow.com</a>。</p>
+<p>また、IFrame Player APIではエラーコード`101`（オーナーが埋め込みを禁止）と`150`（実質的に101と同じ）が返される場合があり、これらはAPIのメタデータと実際の再生可否が一致しない典型例だ <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank" rel="noopener">developers.google.com</a>。</p>
+<p><strong>地域制限の判定ツール例：</strong></p>
+<ul>
+<li><a href="https://polsy.org.uk/stuff/ytrestrict.cgi" target="_blank" rel="noopener">polsy.org.uk</a> — YouTube動画の地域ブロック状況をチェックする簡易ツール</li>
+<li><a href="https://www.toolsoverflow.com/youtube/youtube-region-restriction-checker" target="_blank" rel="noopener">toolsoverflow.com</a> — YouTube Data API v3を使ってブロック国を一覧表示</li>
+<li><a href="https://watannetwork.com/tools/blocked/" target="_blank" rel="noopener">watannetwork.com</a> — 同様の地域制限チェックツール</li>
+</ul>
+<p>これらはAPIを直接叩くか、あるいは非公式な手法で地域ごとの再生可否を判定している。</p>
+<hr>
+<h4>1-2. HTTPステータスだけでは判定できないケース</h4>
+<p><strong>（1）ソフト404（Soft 404）</strong></p>
+<p>サーバーがHTTP 200 OKを返しながら、実態としては「ページが見つからない」という内容を表示する現象。検索エンジンもこの問題を認識しており、Googleは2008年からソフト404の検知・処理を強化している <a href="https://developers.google.com/search/blog/2008/08/farewell-to-soft-404s" target="_blank" rel="noopener">developers.google.com</a>。</p>
+<p>ソフト404の検知シグナル（<a href="https://bulkurlchecker.com/blog/soft-404-detection-when-200-means-broken" target="_blank" rel="noopener">bulkurlchecker.com</a> より）：</p>
+<p>1. タイトルや本文に「not found」「404」などのエラー文言が含まれる</p>
+<p>2. ページコンテンツが異常に短い（thin content）</p>
+<p>3. ホームページや検索結果ページへリダイレクトされる</p>
+<p>4. キャノニカルURLが不一致</p>
+<p>5. 内部検索の結果がゼロ件</p>
+<p><strong>（2）リダイレクトの罠</strong></p>
+<p>301/302リダイレクトが「ページが見つからない」専用のエラーページや、サイトのトップページへ誘導するケースがある。この場合、HTTPステータスは200または3xxだが、実質的に元のコンテンツは失われている。</p>
+<p><strong>（3）CDNキャッシュの問題</strong></p>
+<p>CDN（Cloudflareなど）が古いキャッシュを返し続ける場合、オリジンサーバーではページが削除されていても、エンドユーザーには「生きている」ように見える。逆に、CDN側でキャッシュがパージされると突然404になることもある。</p>
+<p><strong>（4）Netlifyのバグ事例</strong></p>
+<p>Netlifyでは、`/404`や`/404.html`への直接リクエストがHTTP 200を返すバグが報告されており、回避策としてリダイレクトルールで明示的に404ステータスを返すよう設定する必要がある <a href="https://answers.netlify.com/t/bug-and-workaround-404-page-returns-http-200/21154" target="_blank" rel="noopener">answers.netlify.com</a>。</p>
+<p><strong>（5）Google Search Consoleの最新動向</strong></p>
+<p>2023〜2024年頃、Googleはデスクトップとモバイルでソフト404を別々に評価するよう変更し、Search Consoleではモバイルのソフト404のみが報告されるようになった <a href="https://www.seroundtable.com/google-soft-404-31727.html" target="_blank" rel="noopener">seroundtable.com</a>。</p>
+<hr>
+<h4>1-3. APIのクォータ制限と大量処理の設計</h4>
+<p><strong>YouTube Data APIのクォータ体系：</strong></p>
+<ul>
+<li>デフォルト割当：1日10,000ユニット <a href="https://developers.google.com/youtube/v3/determine_quota_cost" target="_blank" rel="noopener">developers.google.com</a></li>
+<li>`videos.list`：1ユニット/リクエスト</li>
+<li>`search.list`：100ユニット/リクエスト</li>
+<li>`videos.insert`：100ユニット/リクエスト（1日100回まで）</li>
+<li>その他メソッドは1〜1600ユニット <a href="https://developers.google.com/youtube/v3/determine_quota_cost" target="_blank" rel="noopener">developers.google.com</a></li>
+</ul>
+<p><strong>設計上の注意点：</strong></p>
+<p>1日10,000ユニットでは、`videos.list`を単純に1万回呼べるが、`search.list`なら100回しか呼べない。大量の動画URLを毎日チェックする必要がある場合、以下の設計が考えられる：</p>
+<p>1. <strong>キャッシュ戦略</strong>：一度取得したメタデータは一定期間（例：24時間〜1週間）キャッシュし、重複リクエストを減らす</p>
+<p>2. <strong>バッチ処理</strong>：複数の動画IDを1リクエストで取得（`videos.list`の`id`パラメータにカンマ区切りで最大50個まで指定可能）</p>
+<p>3. <strong>クォータ拡張申請</strong>：<a href="https://support.google.com/youtube/contact/yt_api_form" target="_blank" rel="noopener">YouTube API Services - Audit and Quota Extension Form</a>から申請可能。ただしコンプライアンス監査が必要で、承認まで数ヶ月かかる事例も報告されている <a href="https://developers.google.com/youtube/v3/guides/quota_and_compliance_audits" target="_blank" rel="noopener">developers.google.com</a>、<a href="https://support.google.com/youtube/thread/381391908/youtube-api-quota-increase-delay-of-5-months" target="_blank" rel="noopener">support.google.com</a></p>
+<p>4. <strong>代替サービス</strong>：<a href="https://channelcrawler.com/insights/youtube-api-daily-limit-quotas-costs-and-how-to-scale-beyond-10000-units-channelcrawler" target="_blank" rel="noopener">ChannelCrawler</a>など、クレジット制の代替APIサービスを利用する選択肢もある</p>
+<p><strong>Wayback Machineのレート制限：</strong></p>
+<ul>
+<li>Save Page Now：1分間に15リクエストまで。超過すると1日間IPブロックされる <a href="https://archive.org/post/1103865/ip-blocked-for-one-day-if-and-gt15-requests-per-minute-is-that-possible-in-the-first-place" target="_blank" rel="noopener">archive.org</a></li>
+<li>CDX API：1分間に約60リクエストまで。超過するとHTTP 429が返される <a href="https://archivarix.com/en/blog/webarchive-2026/" target="_blank" rel="noopener">archivarix.com</a>、<a href="https://stackoverflow.com/questions/77986991/errno-111-connection-refused-from-web-archive-org" target="_blank" rel="noopener">stackoverflow.com</a></li>
+<li>Tasks API：1リクエストあたり最大500タスク <a href="https://archive.org/developers/tasks.html" target="_blank" rel="noopener">archive.org</a></li>
+</ul>
+<p>2026年9月15日、Internet Archiveは「高頻度の自動トラフィック」への対策としてHTTP 429エラーによるブロックを強化し、誤って通常ユーザーをブロックするケース（false positive）も発生していると公式に認めている <a href="https://blog.archive.org/2026/09/15/an-update-on-wayback-machine-access/" target="_blank" rel="noopener">blog.archive.org</a>。</p>
+<hr>
+<h3>第2章：自動で直す実例 — Wikipedia、WordPressプラグイン、学術界の取り組み</h3>
+<h4>要約（3行）</h4>
+<ul>
+<li>WikipediaのInternetArchiveBotは900万件以上の壊れたリンクを修復し、誤検知率は0.1%とされる。</li>
+<li>WordPress向け「Wayback Machine Link Fixer」プラグインが2026年に登場し、自動アーカイブ・自動リダイレクトを実現。</li>
+<li>学術論文では「Reference Rot」が深刻な問題で、類似度0.9を閾値にした自動置換システムが41%のリンクを回復できることが研究で示されている。</li>
+</ul>
+<hr>
+<h4>2-1. WikipediaのInternetArchiveBot（IABot）</h4>
+<p><strong>概要：</strong></p>
+<p>InternetArchiveBotは、Internet Archiveが運用するPHPベースのボットで、Wikipediaの外部リンクを監視し、壊れたリンクをWayback Machineのアーカイブに置き換える <a href="https://meta.wikimedia.org/wiki/InternetArchiveBot" target="_blank" rel="noopener">meta.wikimedia.org</a>。</p>
+<p><strong>実績：</strong></p>
+<ul>
+<li>22言語版Wikipediaで運用され、これまでに約600万件の外部参照URLを編集・修正 <a href="https://blog.archive.org/2018/10/01/more-than-9-million-broken-links-on-wikipedia-are-now-rescued/" target="_blank" rel="noopener">blog.archive.org</a></li>
+<li>コミュニティメンバーによる手動修正と合わせ、合計900万件以上のリンクが修復された</li>
+<li>英語版WikipediaからWayback Machineへのクリックは1日平均25,000件以上 <a href="https://blog.archive.org/2018/10/01/more-than-9-million-broken-links-on-wikipedia-are-now-rescued/" target="_blank" rel="noopener">blog.archive.org</a></li>
+<li>未タグ付けのリンクの死活判定における誤検知率（false positive rate）は0.1% <a href="https://github.com/internetarchive/internetarchivebot" target="_blank" rel="noopener">github.com</a></li>
+</ul>
+<p><strong>動作原理：</strong></p>
+<p>1. ページ上のURLを直接スキャンし、引用テンプレート内での使用状況を把握</p>
+<p>2. 既存のアーカイブを確認し、存在しない場合はWayback Machineへのアーカイブをリクエスト</p>
+<p>3. リンクが切れている場合、Wayback Machine内で最も近いアーカイブを検索して置換</p>
+<p>4. 情報をデータベースに保存し、学習・改善に活用</p>
+<p>5. テンプレートの誤用やURLフォーマットの誤りを自動修正 <a href="https://github.com/internetarchive/internetarchivebot" target="_blank" rel="noopener">github.com</a></p>
+<p><strong>コミュニティによる制御：</strong></p>
+<ul>
+<li>特定ページでのボット動作を停止させるには`{{bots|deny=InternetArchiveBot}}`テンプレートを使用可能</li>
+<li>個々の参照を無視させるには`{{cbignore}}`テンプレートを使用</li>
+<li>誤検知は「False positive reporting tool」で報告・修正可能 <a href="https://meta.wikimedia.org/wiki/InternetArchiveBot/FAQ" target="_blank" rel="noopener">meta.wikimedia.org</a></li>
+</ul>
+<p><strong>問題事例：</strong></p>
+<p>ボットが誤ってリンクを「死亡」と判定するケースがあり、特に一時的なサーバーダウンや、ボット自体がサイトからブラックリスト化されている場合に発生する。また、アーカイブURLを誤ったパラメータに配置するなどのバグも報告されている <a href="https://meta.wikimedia.org/wiki/InternetArchiveBot/Problem" target="_blank" rel="noopener">meta.wikimedia.org</a>。</p>
+<hr>
+<h4>2-2. Wayback MachineのAPI活用</h4>
+<p><strong>Availability API：</strong></p>
+<p>`/wayback/available?url=`で、指定URLに最も近いアーカイブスナップショットを取得できる。戻り値には`status`（200ならアーカイブ存在）、`timestamp`、`url`が含まれる <a href="https://archive.org/help/wayback_api.php" target="_blank" rel="noopener">archive.org</a>。</p>
+<p><strong>CDX Server API：</strong></p>
+<p>`/cdx/search/cdx?url=`で、指定URLの全アーカイブ履歴を取得可能。主なパラメータ：</p>
+<ul>
+<li>`matchType`：`exact`（デフォルト）、`prefix`、`host`、`domain`</li>
+<li>`from`/`to`：タイムスタンプ範囲指定（yyyyMMddhhmmss形式）</li>
+<li>`output=json`：JSON形式で出力</li>
+<li>`limit`：結果数の制限（正数で先頭N件、負数で末尾N件）</li>
+<li>`filter`：正規表現によるフィルタリング</li>
+<li>`collapse`：重複スナップショットの圧縮</li>
+<li>`fastLatest`：最新スナップショットの高速取得 <a href="https://github.com/internetarchive/wayback/blob/master/wayback-cdx-server/README.md" target="_blank" rel="noopener">github.com</a></li>
+</ul>
+<p><strong>Save Page Now（SPN2）：</strong></p>
+<p>現在のライブURLを即時アーカイブするAPI。レート制限は1分間15リクエストまで <a href="https://help.archive.org/help/save-pages-in-the-wayback-machine/" target="_blank" rel="noopener">help.archive.org</a>。</p>
+<hr>
+<h4>2-3. WordPress向け「Wayback Machine Link Fixer」プラグイン（2026年）</h4>
+<p>Automattic（WordPress.com運営）とInternet Archiveが共同開発した無料プラグインで、2026年2月に公開された <a href="https://automattic.com/2026/02/04/wayback-machine-wordpress-link-fixer/" target="_blank" rel="noopener">automattic.com</a>、<a href="https://blog.archive.org/2026/02/04/inside-the-new-wayback-machine-plugin-for-wordpress/" target="_blank" rel="noopener">blog.archive.org</a>。</p>
+<p><strong>機能：</strong></p>
+<p>1. 投稿内の外部リンクを自動スキャン</p>
+<p>2. Wayback Machineでアーカイブ版が存在するか確認</p>
+<p>3. アーカイブが存在しない場合は新規スナップショットを作成</p>
+<p>4. 元のリンクが切れた場合、自動的にアーカイブ版へリダイレクト</p>
+<p>5. 元のリンクが復活した場合は、自動的に通常リンクに戻す</p>
+<p>6. 投稿更新時にその投稿自体もアーカイブ保存</p>
+<p><strong>技術的特徴：</strong></p>
+<ul>
+<li>HTTPステータスだけでなく、パークドドメイン、ソフト404、ホームページへのリダイレクトも検知 <a href="https://www.reddit.com/r/WordpressPlugins/comments/1rsmdy4/free_wordpress_plugin_that_replaces_broken_links/" target="_blank" rel="noopener">reddit.com</a></li>
+<li>APIキーを登録すると1日のスナップショット作成制限が緩和される（具体的な数値は[DATA NOT AVAILABLE]）</li>
+<li>初回アクティベーション時に一括アーカイブを実行し、その後は30日ごとに定期実行（設定変更可能）</li>
+</ul>
+<hr>
+<h4>2-4. リンク腐敗（Link Rot）の実測値</h4>
+<p>複数の研究でリンク腐敗の割合が測定されている：</p>
+<div class=hyo><table>
+<tr><th>研究・ソース</th><th>対象・期間</th><th>腐敗率・消失率</th></tr>
+<tr><td>Pew Research Center (2024)</td><td>2013年と2023年のWebページ比較</td><td>2013年のページの38%が2024年時点で利用不能。ニュースサイトの23%、政府サイトの21%に壊れたリンクが含まれる <a href="https://www.pewresearch.org/data-labs/2024/05/17/when-online-content-disappears/" target="_blank" rel="noopener">pewresearch.org</a></td></tr>
+<tr><td>Ahrefs (2024更新)</td><td>200万以上のドメイン、2013年以降のリンク</td><td>66.5%のリンクが「rotted」（死亡）、全体では74.5%が「lost」と判定 <a href="https://ahrefs.com/blog/link-rot-study/" target="_blank" rel="noopener">ahrefs.com</a></td></tr>
+<tr><td>Broken Links Checker (2026)</td><td>図書館情報学誌608記事、2,886件の引用（2005-2025年）</td><td>0-5年の引用は87%がアクセス可能、10年以上は38%。永久的なリンク腐敗は2012年の5%から2025年の15%へ増加。.eduドメインは93%、.comは42%がアクセス可能 <a href="https://broken-links-checker.com/blog/link-rot-2026-research" target="_blank" rel="noopener">broken-links-checker.com</a></td></tr>
+<tr><td>Briney et al. (2024, PMC)</td><td>カリフォルニア工科大学リポジトリの2,166件のデータリンク</td><td>論文出版後、毎年2.6%の確率でデータが利用不能になる <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11152257/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov</a></td></tr>
+<tr><td>Harvard Perma.ccブログ (2019)</td><td>法学誌99-2011年の研究</td><td>引用URLの70%以上が元の情報と一致せず、米国最高裁判決の50%がリンク切れ <a href="https://archive.blogs.harvard.edu/perma/2019/02/14/so-how-bad-a-problem-is-link-rot/" target="_blank" rel="noopener">archive.blogs.harvard.edu</a></td></tr>
+<tr><td>The Atlantic (2013)</td><td>米国最高裁判決の引用リンク</td><td>49%がリンク切れ <a href="https://www.theatlantic.com/technology/archive/2013/09/49-of-the-links-cited-in-supreme-court-decisions-are-broken/279901/" target="_blank" rel="noopener">theatlantic.com</a></td></tr>
+<tr><td>Nature (2015)</td><td>Hiberlinkプロジェクト、350万件の論文（1997-2012）</td><td>2012年発行のElsevier論文の22%のリンクが腐敗。全リンクの75%が論文公開後2週間以内にアーカイブされておらず、コンテンツドリフトのリスクがある <a href="https://www.nature.com/news/the-trouble-with-reference-rot-1.17465" target="_blank" rel="noopener">nature.com</a></td></tr>
+<tr><td>LSE Impact Blog (2017)</td><td>学術論文の参照コンテンツ</td><td>最近出版された論文のURI参照のうち、コンテンツがドリフトしていないものは4分の1のみ。2012年発行論文の75%が2015年時点で内容が変化していた <a href="https://blogs.lse.ac.uk/impactofsocialsciences/2017/02/23/content-referenced-in-scholarly-articles-is-drifting-with-negative-effects-on-the-integrity-of-the-scholarly-record/" target="_blank" rel="noopener">blogs.lse.ac.uk</a></td></tr>
+<tr><td>PLOS ONE (2014)</td><td>350万件以上のSTM論文</td><td>全STM論文の20%（5分の1）が「Reference Rot」の影響を受け、Webリソースを参照する論文に限定すると70%（10分の7）が影響を受ける <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0115253" target="_blank" rel="noopener">journals.plos.org</a></td></tr>
+<tr><td>CASRAIガイド</td><td>学術引用全般</td><td>学術論文の参照の約5分の1が「Reference Rot」の影響を受ける <a href="https://casrai.org/guides/link-rot-in-citations-and-how-to-prevent-it" target="_blank" rel="noopener">casrai.org</a></td></tr>
+<tr><td>コロラド法科大学院研究（Perma.cc）</td><td>法学誌の引用</td><td>1年後に20%、5年後に50%のリンクが腐敗するとの統計が引用されている（出典元のスラブ.caブログ）<a href="https://www.slaw.ca/2017/02/01/84741/" target="_blank" rel="noopener">slaw.ca</a> — ただしこの数値は二次情報からの引用であり、一次ソースは確認できていない [DATA NOT AVAILABLE]</td></tr>
+</table></div>
+<p><strong>用語の整理：</strong></p>
+<ul>
+<li><strong>Link Rot（リンク腐敗）</strong>：URLが完全に機能しなくなる現象 <a href="https://dictionary.archivists.org/entry/link-rot.html" target="_blank" rel="noopener">dictionary.archivists.org</a></li>
+<li><strong>Content Drift（コンテンツドリフト）</strong>：URLは機能するが、内容が引用時と異なるものに変化している現象 <a href="https://casrai.org/guides/link-rot-in-citations-and-how-to-prevent-it" target="_blank" rel="noopener">casrai.org</a></li>
+<li><strong>Reference Rot</strong>：Link RotとContent Driftを合わせた概念 <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0115253" target="_blank" rel="noopener">journals.plos.org</a></li>
+</ul>
+<p><strong>ニューヨーク・タイムズの事例：</strong></p>
+<p>2008年の記事で、当時のニューヨーク市議会議員のページへのリンクが、現在はその地区の現議員のページにリダイレクトされるという「コンテンツドリフト」の具体例がCJR（Columbia Journalism Review）で報じられている <a href="https://www.cjr.org/analysis/linkrot-content-drift-new-york-times.php" target="_blank" rel="noopener">cjr.org</a>。</p>
+<hr>
+<h4>2-5. 自動置換アルゴリズム — 「同じもの」とどう判定するか</h4>
+<p><strong>Martinez-Romo &amp; Araujoの研究（2012）：</strong></p>
+<p>壊れたリンクの代替候補を自動推薦するシステムを提案。元のページのアンカーテキスト、周辺テキスト、キャッシュ情報などを組み合わせて類似度を計算し、類似度閾値0.9以上を「回復成功」と判定すると、検索結果のトップ10 içindeで41%のリンクを回復できた <a href="https://www.sciencedirect.com/science/article/abs/pii/S0306457311000392" target="_blank" rel="noopener">sciencedirect.com</a>、<a href="https://nlp.uned.es/~lurdes/araujo/ecir10.pdf" target="_blank" rel="noopener">nlp.uned.es</a>。</p>
+<p>閾値を0.8に下げると、回復数はほとんど増えず、誤った結果（wrong results）が増加することが確認されている <a href="https://nlp.uned.es/~lurdes/araujo/ecir10.pdf" target="_blank" rel="noopener">nlp.uned.es</a>。</p>
+<p><strong>ブロークンリンクビルディング（SEO手法）における判定基準：</strong></p>
+<p>SEO業界の「ブロークンリンクビルディング」手法でも、代替コンテンツの選定基準として以下が挙げられている <a href="https://www.buzzstream.com/blog/broken-link-building" target="_blank" rel="noopener">buzzstream.com</a>、<a href="https://outreachdesk.com/broken-link-building/" target="_blank" rel="noopener">outreachdesk.com</a>、<a href="https://www.stackmatix.com/blog/broken-link-building-technique" target="_blank" rel="noopener">stackmatix.com</a>：</p>
+<p>1. <strong>トピックの一致</strong>：元のリンクと同じ、または非常に近いトピックを扱っていること</p>
+<p>2. <strong>コンテンツの質</strong>：元のリンクが意図していた問いに対する「最良の回答」であること</p>
+<p>3. <strong>アンカーテキストの整合性</strong>：元のアンカーテキストと意味的に整合する内容であること</p>
+<p>ただし、これらはSEOマーケティングの文脈での「ベストプラクティス」であり、厳密なアルゴリズムとしての検証は[DATA NOT AVAILABLE]。</p>
+<hr>
+<h3>第3章：失敗例 — 自動差し替え・自動削除が引き起こした事故</h3>
+<h4>要約（3行）</h4>
+<ul>
+<li>Joy Reid事件では、Wayback Machineのアーカイブが「改ざんされた」と主張されたが、Internet Archiveは改ざんの証拠なしと結論付け、アーカイブを削除しなかった。</li>
+<li>InternetArchiveBotは0.1%の誤検知率を持つが、地域制限動画を「死亡」と誤判定するケースなどが報告されている。</li>
+<li>大手ニュースサイトがAIスクレイピング対策でWayback Machineをブロックする動きが2026年に広がっており、これが新しい形の「アクセス不能」を生んでいる。</li>
+</ul>
+<hr>
+<h4>3-1. Joy Reid事件 — Wayback Machineの改ざん主張</h4>
+<p><strong>経緯：</strong></p>
+<p>MSNBCのジャーナリストJoy Reidが、自身の旧ブログ（Reid Report）に投稿された反LGBT的な投稿について、「外部の第三者によって改ざんされた」と主張し、Internet Archiveに対しアーカイブの削除を求めた <a href="https://www.buzzfeednews.com/article/josephbernstein/internet-archive-reid" target="_blank" rel="noopener">buzzfeednews.com</a>。</p>
+<p><strong>Internet Archiveの調査結果：</strong></p>
+<ul>
+<li>アーカイブを検証した結果、Wayback Machine自体への改ざんやハッキングの証拠は見つからなかった</li>
+<li>問題とされた投稿のいくつかは、異なる日付・異なる実体によってアーカイブされていた</li>
+<li>Reid側が提供した情報では改ざんの主張を裏付けるには不十分だったため、アーカイブの削除を拒否した <a href="https://blog.archive.org/2018/04/24/addressing-recent-claims-of-manipulated-blog-posts-in-the-wayback-machine/" target="_blank" rel="noopener">blog.archive.org</a></li>
+</ul>
+<p><strong>その後の展開：</strong></p>
+<ul>
+<li>Reidは後に、ブログがハッキングされたという証拠はないと認めた <a href="https://www.nbcnews.com/news/us-news/msnbc-s-joy-reid-says-no-proof-blog-hacking-found-n869771" target="_blank" rel="noopener">nbcnews.com</a> — ただしこのURLの内容は直接確認できていない [DATA NOT AVAILABLE]</li>
+<li>事件後、ReidのブログにはWayback Machine向けの`robots.txt`排除リクエストが設置され、自動的にアーカイブが排除された <a href="https://blog.archive.org/2018/04/24/addressing-recent-claims-of-manipulated-blog-posts-in-the-wayback-machine/" target="_blank" rel="noopener">blog.archive.org</a></li>
+</ul>
+<p>この事件は、Webアーカイブが「証拠」として機能することへの信頼性、およびアーカイブ削除要請への対応方針をめぐる重要な先例となった。</p>
+<hr>
+<h4>3-2. InternetArchiveBotの誤検知・誤編集</h4>
+<p><strong>誤検知率：</strong></p>
+<p>公式GitHubリポジトリによると、未タグ付けのリンクの死活判定における誤検知率は0.1% <a href="https://github.com/internetarchive/internetarchivebot" target="_blank" rel="noopener">github.com</a>。</p>
+<p><strong>具体的な問題事例：</strong></p>
+<ul>
+<li>一時的なサーバーダウンを「永久的な死亡」と誤判定するケース（3回連続で死活確認に失敗した場合に「死亡」とみなすロジック）</li>
+<li>ボット自体がサイトからブラックリスト化され、死活確認ができないケース</li>
+<li>アーカイブURLを誤ったテンプレートパラメータに配置するバグ</li>
+<li>外部リンク内にWebarchiveテンプレートを挿入し、Linterエラー（Wikilink in external link）を引き起こす既知のバグ（タスクT344219）<a href="https://meta.wikimedia.org/wiki/InternetArchiveBot/Problem" target="_blank" rel="noopener">meta.wikimedia.org</a></li>
+<li>地域制限（geo-restricted）の動画を「死亡」と誤判定する可能性 — これについてはMeta-Wikiの議論ページで言及されているが、詳細な事例は[DATA NOT AVAILABLE] <a href="https://meta.wikimedia.org/wiki/User_talk:InternetArchiveBot/Archives/2024" target="_blank" rel="noopener">meta.wikimedia.org</a> — このURLの内容は直接確認できていない</li>
+</ul>
+<p><strong>コミュニティによる修正：</strong></p>
+<p>誤検知は「False positive reporting tool」で報告でき、多くの場合ボットが自動的に修正する。修正できない場合はインターフェースの管理者に報告される <a href="https://meta.wikimedia.org/wiki/InternetArchiveBot/FAQ" target="_blank" rel="noopener">meta.wikimedia.org</a>。</p>
+<hr>
+<h4>3-3. 大手ニュースサイトによるWayback Machineブロック（2026年）</h4>
+<p>2026年、ニューヨーク・タイムズ、Redditなどの大手メディア・プラットフォームが、AI企業によるコンテンツの無断スクレイピングを防ぐため、Internet Archiveのボットアクセスを制限・ブロックする動きが出ている <a href="https://www.forbes.com/sites/anishasircar/2026/04/14/why-major-news-sites-are-blocking-the-internet-archives-wayback-machine/" target="_blank" rel="noopener">forbes.com</a>。</p>
+<p><strong>理由：</strong></p>
+<ul>
+<li>ニューヨーク・タイムズの広報担当者によると、「インターネットアーカイブ上のTimesコンテンツが、著作権法に違反する形でAI企業に利用され、当社と直接競合している」</li>
+<li>Redditは、Wayback Machineが同社がライセンス提供しているコンテンツへの「バックドア」としてAI企業に利用されることを懸念</li>
+</ul>
+<p><strong>影響：</strong></p>
+<p>この動きは、著作権保護という正当な目的を持つ一方で、デジタル歴史の保存やジャーナリズムの記録というInternet Archiveの本来の使命と衝突しており、「付随的損害（collateral damage）」を生んでいると批判されている <a href="https://www.forbes.com/sites/anishasircar/2026/04/14/why-major-news-sites-are-blocking-the-internet-archives-wayback-machine/" target="_blank" rel="noopener">forbes.com</a>。</p>
+<hr>
+<h4>3-4. その他の失敗・限界事例</h4>
+<p><strong>YouTube埋め込み判定の不一致：</strong></p>
+<ul>
+<li>APIでは`embeddable: true`と返っても、実際のIFrame Playerではエラー101/150が返されるケース <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank" rel="noopener">developers.google.com</a></li>
+<li>`get_video_info`エンドポイントが突然404を返すようになった事例（2021年頃のStackOverflow報告）<a href="https://stackoverflow.com/questions/67615278/get-video-info-youtube-endpoint-suddenly-returning-404-not-found" target="_blank" rel="noopener">stackoverflow.com</a></li>
+</ul>
+<p><strong>Wayback Machineのレート制限による誤ブロック：</strong></p>
+<p>2026年9月、Internet Archiveは「高頻度の自動トラフィック」への対策としてHTTP 429エラーによるブロックを強化したが、これにより通常のユーザーが誤ってブロックされるケース（false positive）が発生していると公式に認めている <a href="https://blog.archive.org/2026/09/15/an-update-on-wayback-machine-access/" target="_blank" rel="noopener">blog.archive.org</a>、<a href="https://www.kunalganglani.com/blog/wayback-machine-rate-limiting-mini-wayback" target="_blank" rel="noopener">kunalganglani.com</a>。</p>
+<p><strong>学術研究における自動リンク修復の限界：</strong></p>
+<p>Martinez-Romoの研究では、類似度閾値0.9でも41%しか回復できず、残りの59%は回復不能または誤った候補が返されることを意味する <a href="https://www.sciencedirect.com/science/article/abs/pii/S0306457311000392" target="_blank" rel="noopener">sciencedirect.com</a>。これは、自動置換システムが万能ではないことを示している。</p>
+<hr>
+<h3>結論：個人サイトが動画リンク切れを自動処理するための5ステップ手順</h3>
+<p>以下は、YouTube動画を埋め込んでいる個人サイト（WordPress等）が、消えたリンクを自動で処理するための実践的手順である。</p>
+<h4>ステップ1：リンクの死活を定期的に監視する</h4>
+<ul>
+<li>埋め込んでいるYouTube動画のIDをリスト化し、YouTube Data APIの`videos.list`エンドポイントで`status.privacyStatus`、`status.embeddable`、`contentDetails.regionRestriction`を定期的にチェックする <a href="https://developers.google.com/youtube/v3/docs/videos" target="_blank" rel="noopener">developers.google.com</a></li>
+<li>併せてHTTPステータスだけでなく、ソフト404のシグナル（エラー文言、thin content、リダイレクト先）もチェックする <a href="https://bulkurlchecker.com/blog/soft-404-detection-when-200-means-broken" target="_blank" rel="noopener">bulkurlchecker.com</a></li>
+<li><strong>注意点</strong>：APIクォータ（1日10,000ユニット）を超過しないよう、バッチ処理とキャッシュを活用する <a href="https://developers.google.com/youtube/v3/determine_quota_cost" target="_blank" rel="noopener">developers.google.com</a></li>
+</ul>
+<h4>ステップ2：Wayback Machineにアーカイブが存在するか確認する</h4>
+<ul>
+<li>動画ページ（または関連する説明ページ）のURLをWayback MachineのAvailability API（`/wayback/available?url=`）またはCDX API（`/cdx/search/cdx?url=`）で検索 <a href="https://archive.org/help/wayback_api.php" target="_blank" rel="noopener">archive.org</a></li>
+<li>アーカイブが存在すれば、そのURLを控える。存在しなければ、Save Page Now APIで即時アーカイブを作成する（レート制限：1分15リクエスト）<a href="https://help.archive.org/help/save-pages-in-the-wayback-machine/" target="_blank" rel="noopener">help.archive.org</a></li>
+</ul>
+<h4>ステップ3：代替動画・代替コンテンツを探す</h4>
+<ul>
+<li>元の動画と同じトピック・同じ内容を扱う別のYouTube動画、または他のプラットフォーム（Vimeo等）の動画を、キーワード検索や類似度アルゴリズムで探す</li>
+<li>類似度判定の参考として、アンカーテキスト、ページタイトル、メタディスクリプションを比較する。研究では類似度0.9を閾値に41%の回復率が得られている <a href="https://www.sciencedirect.com/science/article/abs/pii/S0306457311000392" target="_blank" rel="noopener">sciencedirect.com</a></li>
+<li><strong>注意点</strong>：自動置換は完全ではなく、誤ったコンテンツに置き換わるリスクがあるため、可能であれば人間による確認を挟む</li>
+</ul>
+<h4>ステップ4：自動的に差し替えまたはアーカイブリンクへリダイレクト</h4>
+<ul>
+<li>WordPressサイトの場合、「Internet Archive Wayback Machine Link Fixer」プラグインを導入すると、このプロセスの多くを自動化できる <a href="https://automattic.com/2026/02/04/wayback-machine-wordpress-link-fixer/" target="_blank" rel="noopener">automattic.com</a></li>
+<li>カスタム実装の場合、死活判定で「死亡」と判定されたリンクを、Wayback MachineのアーカイブURL、または見つかった代替動画のURLに置き換えるロジックを実装</li>
+<li>元のリンクが復活した場合は、自動的に元に戻すロジックも実装する（WordPressプラグインはこの機能を持つ）</li>
+</ul>
+<h4>ステップ5：ログ記録と人間による確認</h4>
+<ul>
+<li>自動差し替え・削除の履歴をログに残し、定期的に人間が確認する</li>
+<li>InternetArchiveBotの事例のように、誤検知率は低くても0.1%は発生するため、重要なリンクは手動で再確認する <a href="https://github.com/internetarchive/internetarchivebot" target="_blank" rel="noopener">github.com</a></li>
+<li>特に著作権・地域制限に関わる動画は、APIのメタデータと実際の再生可否が一致しないケースがあるため、IFrame Playerでの実際の再生テストも併せて行う <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank" rel="noopener">developers.google.com</a></li>
+</ul>
+<hr>
+<h3>出典一覧</h3>
+<p>1. <a href="https://developers.google.com/youtube/v3/docs/videos" target="_blank" rel="noopener">YouTube Data API - Videos Resource</a></p>
+<p>2. <a href="https://developers.google.com/youtube/v3/determine_quota_cost" target="_blank" rel="noopener">YouTube Data API - Determine Quota Cost</a></p>
+<p>3. <a href="https://developers.google.com/youtube/v3/guides/quota_and_compliance_audits" target="_blank" rel="noopener">YouTube Data API - Quota and Compliance Audits</a></p>
+<p>4. <a href="https://developers.google.com/youtube/v3/docs/errors" target="_blank" rel="noopener">YouTube Data API - Errors</a></p>
+<p>5. <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank" rel="noopener">YouTube IFrame Player API Reference</a></p>
+<p>6. <a href="https://developers.google.com/youtube/v3/guides/implementation/videos" target="_blank" rel="noopener">YouTube Data API - Implementation Guide (Videos)</a></p>
+<p>7. <a href="https://channelcrawler.com/insights/youtube-api-daily-limit-quotas-costs-and-how-to-scale-beyond-10000-units-channelcrawler" target="_blank" rel="noopener">ChannelCrawler - YouTube API Daily Limit</a></p>
+<p>8. <a href="https://stackoverflow.com/questions/71970621/how-to-identify-the-youtube-videos-that-cant-embed-on-file" target="_blank" rel="noopener">StackOverflow - How to identify YouTube videos that can&#x27;t embed</a></p>
+<p>9. <a href="https://stackoverflow.com/questions/67615278/get-video-info-youtube-endpoint-suddenly-returning-404-not-found" target="_blank" rel="noopener">StackOverflow - get_video_info endpoint returning 404</a></p>
+<p>10. <a href="https://stackoverflow.com/questions/39066378/why-am-i-getting-error-404-video-not-found-from-the-youtube-api" target="_blank" rel="noopener">StackOverflow - Why am I getting error 404 &quot;Video not found&quot;</a></p>
+<p>11. <a href="https://polsy.org.uk/stuff/ytrestrict.cgi" target="_blank" rel="noopener">polsy.org.uk - YouTube region restriction checker</a></p>
+<p>12. <a href="https://www.toolsoverflow.com/youtube/youtube-region-restriction-checker" target="_blank" rel="noopener">toolsoverflow.com - YouTube Region Restriction Checker</a></p>
+<p>13. <a href="https://watannetwork.com/tools/blocked/" target="_blank" rel="noopener">watannetwork.com - Blocked Video Checker</a></p>
+<p>14. <a href="https://http.dev/soft404" target="_blank" rel="noopener">http.dev - Soft 404s explained</a></p>
+<p>15. <a href="https://developers.google.com/search/blog/2008/08/farewell-to-soft-404s" target="_blank" rel="noopener">Google Search Blog - Farewell to Soft 404s</a></p>
+<p>16. <a href="https://www.drlinkcheck.com/blog/find-soft-404-errors" target="_blank" rel="noopener">drlinkcheck.com - How to Find Soft 404 Errors</a></p>
+<p>17. <a href="https://bulkurlchecker.com/blog/soft-404-detection-when-200-means-broken" target="_blank" rel="noopener">bulkurlchecker.com - Soft 404 Detection</a></p>
+<p>18. <a href="https://answers.netlify.com/t/bug-and-workaround-404-page-returns-http-200/21154" target="_blank" rel="noopener">Netlify Answers - 404 page returns HTTP 200</a></p>
+<p>19. <a href="https://www.seroundtable.com/google-soft-404-31727.html" target="_blank" rel="noopener">Search Engine Roundtable - Google Soft 404 mobile/desktop</a></p>
+<p>20. <a href="https://en.wikipedia.org/wiki/Link_rot" target="_blank" rel="noopener">Wikipedia - Link rot</a></p>
+<p>21. <a href="https://en.wikipedia.org/wiki/Wikipedia:Link_rot" target="_blank" rel="noopener">Wikipedia:Link rot (how-to guide)</a></p>
+<p>22. <a href="https://github.com/internetarchive/internetarchivebot" target="_blank" rel="noopener">GitHub - InternetArchiveBot</a></p>
+<p>23. <a href="https://meta.wikimedia.org/wiki/InternetArchiveBot" target="_blank" rel="noopener">Meta-Wiki - InternetArchiveBot</a></p>
+<p>24. <a href="https://meta.wikimedia.org/wiki/InternetArchiveBot/FAQ" target="_blank" rel="noopener">Meta-Wiki - InternetArchiveBot FAQ</a></p>
+<p>25. <a href="https://meta.wikimedia.org/wiki/InternetArchiveBot/Problem" target="_blank" rel="noopener">Meta-Wiki - InternetArchiveBot Problem</a></p>
+<p>26. <a href="https://blog.archive.org/2018/10/01/more-than-9-million-broken-links-on-wikipedia-are-now-rescued/" target="_blank" rel="noopener">blog.archive.org - 9 million broken links rescued</a></p>
+<p>27. <a href="https://vice.com/en/article/internet-archive-fixed-9-million-wikipedia-broken-links/" target="_blank" rel="noopener">VICE - Internet Archive fixed 9 million Wikipedia broken links</a></p>
+<p>28. <a href="https://archive.org/help/wayback_api.php" target="_blank" rel="noopener">archive.org - Wayback Machine API Help</a></p>
+<p>29. <a href="https://github.com/internetarchive/wayback/blob/master/wayback-cdx-server/README.md" target="_blank" rel="noopener">GitHub - Wayback CDX Server README</a></p>
+<p>30. <a href="https://archive.org/developers/tasks.html" target="_blank" rel="noopener">archive.org - Tasks API</a></p>
+<p>31. <a href="https://archive.org/developers/index-apis.html" target="_blank" rel="noopener">archive.org - Developers Index APIs</a></p>
+<p>32. <a href="https://www.bigiron.cc/guides/wayback-machine-apis-cdx-save-page-now-and-availability" target="_blank" rel="noopener">bigiron.cc - Wayback Machine APIs Guide</a></p>
+<p>33. <a href="https://stackoverflow.com/questions/77986991/errno-111-connection-refused-from-web-archive-org" target="_blank" rel="noopener">StackOverflow - Errno 111 Connection refused from web.archive.org</a></p>
+<p>34. <a href="https://archive.org/post/1103865/ip-blocked-for-one-day-if-and-gt15-requests-per-minute-is-that-possible-in-the-first-place" target="_blank" rel="noopener">archive.org forum - IP blocked for one day if &gt;15 requests per minute</a></p>
+<p>35. <a href="https://archivarix.com/en/blog/webarchive-2026/" target="_blank" rel="noopener">archivarix.com - Web Archive in 2026</a></p>
+<p>36. <a href="https://blog.archive.org/2026/09/15/an-update-on-wayback-machine-access/" target="_blank" rel="noopener">blog.archive.org - An update on Wayback Machine access (2026-09-15)</a></p>
+<p>37. <a href="https://help.archive.org/help/save-pages-in-the-wayback-machine/" target="_blank" rel="noopener">help.archive.org - Save Pages in the Wayback Machine</a></p>
+<p>38. <a href="https://www.kunalganglani.com/blog/wayback-machine-rate-limiting-mini-wayback" target="_blank" rel="noopener">kunalganglani.com - Wayback Machine Rate Limiting</a></p>
+<p>39. <a href="https://www.forbes.com/sites/anishasircar/2026/04/14/why-major-news-sites-are-blocking-the-internet-archives-wayback-machine/" target="_blank" rel="noopener">Forbes - Why major news sites are blocking the Wayback Machine</a></p>
+<p>40. <a href="https://automattic.com/2026/02/04/wayback-machine-wordpress-link-fixer/" target="_blank" rel="noopener">automattic.com - Wayback Machine WordPress Link Fixer</a></p>
+<p>41. <a href="https://blog.archive.org/2026/02/04/inside-the-new-wayback-machine-plugin-for-wordpress/" target="_blank" rel="noopener">blog.archive.org - Inside the new Wayback Machine plugin for WordPress</a></p>
+<p>42. <a href="https://wordpress.org/plugins/internet-archive-wayback-machine-link-fixer/" target="_blank" rel="noopener">WordPress.org - Internet Archive Wayback Machine Link Fixer plugin</a></p>
+<p>43. <a href="https://www.pewresearch.org/data-labs/2024/05/17/when-online-content-disappears/" target="_blank" rel="noopener">Pew Research Center - When Online Content Disappears</a></p>
+<p>44. <a href="https://ahrefs.com/blog/link-rot-study/" target="_blank" rel="noopener">Ahrefs - Link Rot Study</a></p>
+<p>45. <a href="https://broken-links-checker.com/blog/link-rot-2026-research" target="_blank" rel="noopener">broken-links-checker.com - Link Rot in 2026</a></p>
+<p>46. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11152257/" target="_blank" rel="noopener">PMC (NCBI) - Measuring data rot</a></p>
+<p>47. <a href="https://archive.blogs.harvard.edu/perma/2019/02/14/so-how-bad-a-problem-is-link-rot/" target="_blank" rel="noopener">archive.blogs.harvard.edu - So how bad a problem is link-rot?</a></p>
+<p>48. <a href="https://www.theatlantic.com/technology/archive/2013/09/49-of-the-links-cited-in-supreme-court-decisions-are-broken/279901/" target="_blank" rel="noopener">The Atlantic - 49% of links cited in Supreme Court decisions are broken</a></p>
+<p>49. <a href="https://www.nature.com/news/the-trouble-with-reference-rot-1.17465" target="_blank" rel="noopener">Nature - The trouble with reference rot</a></p>
+<p>50. <a href="https://casrai.org/guides/link-rot-in-citations-and-how-to-prevent-it" target="_blank" rel="noopener">CASRAI - Link rot in citations and how to prevent it</a></p>
+<p>51. <a href="https://blogs.lse.ac.uk/impactofsocialsciences/2017/02/23/content-referenced-in-scholarly-articles-is-drifting-with-negative-effects-on-the-integrity-of-the-scholarly-record/" target="_blank" rel="noopener">LSE Impact Blog - Content referenced in scholarly articles is drifting</a></p>
+<p>52. <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0115253" target="_blank" rel="noopener">PLOS ONE - One in Five Articles Suffers from Reference Rot</a></p>
+<p>53. <a href="https://www.sciencedirect.com/science/article/abs/pii/S0306457311000392" target="_blank" rel="noopener">ScienceDirect - Updating broken web links: An automatic recommendation</a></p>
+<p>54. <a href="https://nlp.uned.es/~lurdes/araujo/ecir10.pdf" target="_blank" rel="noopener">nlp.uned.es - ECIR 2010 paper (Martinez-Romo)</a></p>
+<p>55. <a href="https://www.cjr.org/analysis/linkrot-content-drift-new-york-times.php" target="_blank" rel="noopener">CJR - Linkrot and content drift in New York Times</a></p>
+<p>56. <a href="https://dictionary.archivists.org/entry/link-rot.html" target="_blank" rel="noopener">dictionary.archivists.org - link rot definition</a></p>
+<p>57. <a href="https://www.buzzfeednews.com/article/josephbernstein/internet-archive-reid" target="_blank" rel="noopener">BuzzFeed News - Internet Archive challenged Joy Reid&#x27;s claim</a></p>
+<p>58. <a href="https://blog.archive.org/2018/04/24/addressing-recent-claims-of-manipulated-blog-posts-in-the-wayback-machine/" target="_blank" rel="noopener">blog.archive.org - Addressing claims of manipulated blog posts</a></p>
+<p>59. <a href="https://amastyleinsider.com/blog/2012/08/17/urls-gone-bad-fixing-broken-links/" target="_blank" rel="noopener">AMA Style Insider - URLs gone bad: fixing broken links</a></p>
+<p>60. <a href="https://outreachdesk.com/broken-link-building/" target="_blank" rel="noopener">outreachdesk.com - Broken Link Building</a></p>
+<p>61. <a href="https://www.buzzstream.com/blog/broken-link-building" target="_blank" rel="noopener">buzzstream.com - Broken Link Building</a></p>
+<p>62. <a href="https://www.stackmatix.com/blog/broken-link-building-technique" target="_blank" rel="noopener">stackmatix.com - Broken Link Building Technique</a></p>
+<p>63. <a href="https://www.slaw.ca/2017/02/01/84741/" target="_blank" rel="noopener">slaw.ca - Perma.cc statistics</a></p>
+<p>64. <a href="https://support.google.com/youtube/answer/2797454?hl=en" target="_blank" rel="noopener">support.google.com/youtube - Disputing copyright claims</a></p>
+<p>65. <a href="https://support.google.com/youtube/thread/381391908/youtube-api-quota-increase-delay-of-5-months" target="_blank" rel="noopener">support.google.com/youtube - YouTube API quota increase delay</a></p>
+<p>66. <a href="https://issuetracker.google.com/issues/523495759" target="_blank" rel="noopener">Issue Tracker Google - YouTube API Compliance Review pending</a></p>
+<hr>
+<h3>確認できなかった情報・データギャップ</h3>
+<p>以下の点については、出典URLを特定できず、またはクローリングに失敗したため、詳細な数値・事例を確認できませんでした：</p>
+<p>1. <strong>Joy Reid事件のNBC News報道</strong>：Reidがハッキングの証拠がないと認めたという報道（nbcnews.com）の内容は直接確認できていません。</p>
+<p>2. <strong>InternetArchiveBotの地域制限誤判定の具体例</strong>：Meta-Wikiの議論ページ（User_talk:InternetArchiveBot/Archives/2024）の内容は直接確認できていません。</p>
+<p>3. <strong>Perma.ccの「1年で20%、5年で50%」という統計の一次ソース</strong>：slaw.caブログからの二次引用であり、元の研究論文・データは確認できていません。</p>
+<p>4. <strong>WordPress Wayback Machine Link FixerプラグインのAPIキーによる具体的なクォータ緩和数値</strong>：出典に記載がありませんでした。</p>
+<p>5. <strong>YouTube `get_video_info`エンドポイントの現在のステータス</strong>：非推奨・廃止されつつあることは複数のソースで言及されていますが、Googleの公式な廃止アナウンス文書は確認できていません。</p>
+<p>6. <strong>ブロークンリンクビルディングにおける「同じトピック」判定の定量的アルゴリズム</strong>：SEO業界のベストプラクティスとして言及されているのみで、学術的に検証されたアルゴリズムの詳細は確認できていません。</p>
+<p>7. <strong>YouTube Data APIのクォータ拡張申請の具体的な審査基準・通過率</strong>：申請フォームの存在は確認できましたが、審査の具体的な基準や通過率に関するデータは確認できていません。</p>
+<p>8. <strong>2026年時点での大手ニュースサイトによるWayback Machineブロックの具体的なサイト一覧とブロック率</strong>：Forbes記事で一般論として言及されているのみで、網羅的なリストは確認できていません。</p>
+<p>これらの点は、レポートの信頼性を高めるために、追加の調査（特に公式ドキュメントや一次情報の直接確認）が推奨されます。</p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

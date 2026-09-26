@@ -1,0 +1,396 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>黒山結音さんのAI活用法・自動化</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>黒山結音さんのAI活用法・自動化</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 60本 ／ 24,547字 ／ 投げた 2026-09-26 12:09:16<br><a href="https://www.genspark.ai/agents?id=97f8f63c-51c7-5567-b9d0-e5e9250809b1" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>黒山結音さんのAI活用法・自動化の中身——公開情報に基づく調査レポート</h2>
+<h3>はじめに：調査の範囲と限界</h3>
+<p>本レポートは、2026年9月26日時点で公開されているインターネット上の情報（YouTube、X（旧Twitter）、企業公式メディア、技術系メディア、セキュリティ企業の調査レポートなど）を収集・分析したものです。<strong>特に重要な制限事項</strong>として、以下の点をご承知おきください：</p>
+<p>1. <strong>動画「【実演】AI社員を雇ったらタスクが100→8に激減した件」の完全なトランスクリプトは取得できませんでした</strong>。YouTube動画の内容は、動画ページのスニペット情報と、その動画内容について言及している第三者の記事・投稿から推測するしかなく、動画内の具体的な発言・手順・数字の内訳は公式に確認できていません。</p>
+<p>2. <strong>Xの投稿「AIが別のAIを操作して、そのAIにさらに作業をさせる」（@takamasa045）の内容は、ログイン画面が表示されるだけで取得できませんでした</strong>。</p>
+<p>3. 「n8n」「Make」「GAS」を黒山結音氏が具体的にどの工程で使用しているかについて、本人が発信した明確な言及は見つかりませんでした（後述の「【2】使っているツールと構成」で詳述）。</p>
+<p>4. 数字や事実関係については、可能な限り一次情報（本人の投稿・公式ページ）を優先し、二次情報（メディア記事、第三者の分析）は出典を明記して区別しています。</p>
+<hr>
+<h3>【1】本人が公開している内容の事実確認</h3>
+<h4>1-1. 黒山結音氏のプロフィールと事業内容</h4>
+<p>黒山結音氏は、東北大学大学院工学研究科修了後、日産自動車にて機械系エンジニアとして勤務し、2020年に退社してWebマーケティング事業「NOSIDE」として独立しました。2021年10月よりベンチャー企業の取締役COOを務め、2025年に「NEXT INNOVAITION株式会社」を設立、2026年8月に「あなたのAI顧問株式会社」へ商号変更しています <a href="https://waccel.com/collaborator/kuroyama-yuito/" target="_blank" rel="noopener">ワクセル</a>。</p>
+<p>現在の肩書は「あなたのAI顧問株式会社」代表取締役で、LinkedInプロフィールによると同社は「企業のAI活用を経営と現場の両面からサポートする『AI顧問』」として活動しています <a href="https://jp.linkedin.com/in/yuito-kuroyama" target="_blank" rel="noopener">LinkedIn</a>。</p>
+<p><strong>本人が公開している実績数字：</strong></p>
+<ul>
+<li>Xプロフィール：「SNS総フォロワー50万人｜Brain総合ランキング1位獲得｜AI自動化支援SNS×AI顧問支援50社↑｜SNS運用代行30社↑」 <a href="https://x.com/gagarot200" target="_blank" rel="noopener">X</a></li>
+<li>noteプロフィール：「あなたのAI顧問として50社で伴走支援！AIエージェント導入数は200件超え！」 <a href="https://note.com/yuito_kuroyama" target="_blank" rel="noopener">note.com</a></li>
+<li>会社サイト：「全国約90施設・累計53,000件を支える無痛MRI乳がん検診」を行うDWIBS Search社の事例を紹介 <a href="https://ai-advisors.jp/" target="_blank" rel="noopener">あなたのAI顧問株式会社</a></li>
+</ul>
+<h4>1-2. YouTubeチャンネル「黒山結音のAI経営チャンネル」の活動</h4>
+<p>チャンネルURL：<a href="https://www.youtube.com/@ai-advisor-channel" target="_blank" rel="noopener">https://www.youtube.com/@ai-advisor-channel</a></p>
+<p>確認できた動画タイトル（一部）：</p>
+<ul>
+<li>「【実演】AI社員を雇ったらタスクが100→8に激減した件｜AI社員ができること徹底解説」（URL: <a href="https://youtu.be/ke9QGQDCL-U）——" target="_blank" rel="noopener">https://youtu.be/ke9QGQDCL-U）——</a> <strong>この動画の完全な内容は取得できていません</strong>。動画ページのメタデータから「97K views」「8:40」程度の長さであることは確認できますが、動画内で具体的にどのようなタスクが「100」から「8」に減ったのか、どのツールをどう使ったのかの詳細は、本調査では確認できませんでした <a href="https://www.youtube.com/@ai-advisor-channel" target="_blank" rel="noopener">YouTube</a>。</li>
+<li>「【神機能‼】「Genspark スーパーエージェント」爆誕！検索〜資料作成が超有能なので...」（<a href="https://www.youtube.com/watch?v=fuYMVLRLIw0）" target="_blank" rel="noopener">https://www.youtube.com/watch?v=fuYMVLRLIw0）</a></li>
+<li>「【2026年版】Gensparkとは？仕事で迷子にならない&quot;オールインワンAI&quot;の全貌」（<a href="https://ai-advisors.jp/media/ai-learning/genspark-1/" target="_blank" rel="noopener">https://ai-advisors.jp/media/ai-learning/genspark-1/</a> で解説あり）</li>
+<li>「Claude Codeとは？Anthropicの開発者向けAIツールの特徴・...」（<a href="https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/）" target="_blank" rel="noopener">https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/）</a></li>
+<li>「AIを&quot;使う&quot;から&quot;雇う&quot;へ。」というフレーズを掲げたプレスリリースも複数確認できます <a href="https://prtimes.jp/main/html/rd/p/000000009.000175627.html" target="_blank" rel="noopener">PR TIMES</a></li>
+</ul>
+<h4>1-3. X（旧Twitter）の投稿内容の検証</h4>
+<h5>（A）OpenClawの導入事故に関する投稿（2026年2月24日）</h5>
+<p>URL: <a href="https://x.com/gagarot200/status/2026116088829030857" target="_blank" rel="noopener">https://x.com/gagarot200/status/2026116088829030857</a></p>
+<p><strong>投稿全文（取得できた範囲）：</strong></p>
+<p>&gt; 「Open Claw」使うと一生後悔する 独学で学んでるならマジで手遅れになるぞ オラに相談にきた法人様なんだけど Open Clawの導入を急いだ結果が 社内データが外部に筒抜けの設定に なってたことが後から発覚。 慌てて止めたけど、時すでに遅し。 クライアント30社への謝罪対応で まるまる1週間が吹き飛んだ。 「無料だから試してみた」 その一言が何十万の損失を生む。 誰も教えてくれないからオレが先に言っておく。 <a href="https://x.com/gagarot200/status/2026116088829030857" target="_blank" rel="noopener">X</a></p>
+<p>この投稿は、<strong>特定の法人クライアントがOpenClawの導入を急いだ結果、社内データが外部に漏洩する設定になっていた</strong>という事例を報告しています。ただし、この投稿から「どの企業が」「具体的にどのような設定ミスをしたのか（例：Gatewayのバインド設定、APIキーの管理方法など）」までは特定できていません。これは黒山氏自身が「相談に来た法人様」のエピソードとして語っているものであり、黒山氏自身の会社の事故ではない可能性が高いです（投稿文の文脈からは明確ではありません）。</p>
+<h5>（B）「mac mini 不要 アポとりまくり」の投稿</h5>
+<p>URL: <a href="https://x.com/gagarot200/status/2026822934174843074" target="_blank" rel="noopener">https://x.com/gagarot200/status/2026822934174843074</a></p>
+<p><strong>投稿全文：</strong></p>
+<p>&gt; 【MacMiniなんて不要】 数年間使ってない型落ちMacBookで 人間が1年かかるタスクを 24時間完全自動で『OpenClaw』に 1時間で処理してもらってるw マジで無駄なんだけど わざわざMacminiとか高いし不要 まずは家にある型落ちPCから始めるべき 正直型落ちAndroidでも最悪大丈夫だし いきなりOpenClawの為に Macmini買いました系ポストを多く見るけど そいつらの9割マネタイズすら出来てないのに なぜ新たなPCに手を出すのかw 実際にタスク処理してもらってる様子は元ポスト⬇ <a href="https://x.com/gagarot200/status/2026822934174843074" target="_blank" rel="noopener">X</a></p>
+<p>この投稿から読み取れる主張：</p>
+<ul>
+<li>OpenClawは型落ちMacBookでも動作する</li>
+<li>「人間が1年かかるタスク」を「1時間で処理」できたと主張（ただし、どのようなタスクかは明記されていません）</li>
+<li>Mac Miniのような専用ハードウェアは不要で、既存のPCや場合によってはAndroid端末でも動作すると主張</li>
+</ul>
+<p><strong>これは推測</strong>：この投稿で言及されている「タスク」が具体的に何なのか（アポイントメント取得？メール処理？資料作成？）は、この投稿だけでは特定できません。「アポとりまくり」という表現から、スケジュール調整や顧客とのやり取りの自動化を指している可能性はありますが、これは推測です。</p>
+<h5>（C）「1500円の基盤で完全構築」の投稿（ラズパイ関連）</h5>
+<p>URL: <a href="https://x.com/gagarot200/status/2030456969560199431" target="_blank" rel="noopener">https://x.com/gagarot200/status/2030456969560199431</a></p>
+<p><strong>投稿全文：</strong></p>
+<p>&gt; 「OpenClaw」を導入したい けど難しい「MacMini」は高い 1500円の基盤で完全構築w ケーブル1本で導入してますw 話題のセキュリティ問題も対応してただケーブルを繋げた瞬間 殆どの自動化が出来てしまう 中身はNullClaw（678KB・起動2ms）届いたその日から ・Discordで質問に答える ・定期タスクを自動実行 ・複数チャンネルに通知 IT担当不要。設定不要。電源だけ。因みにオラの環境も 導入当日から使えちゃう。 <a href="https://x.com/gagarot200/status/2030456969560199431" target="_blank" rel="noopener">X</a></p>
+<p>この投稿で言及されている技術要素：</p>
+<ul>
+<li><strong>NullClaw</strong>：OpenClawの軽量版または派生版と見られ、678KBのサイズ、起動2msと主張</li>
+<li>機能：Discordでの質問応答、定期タスク実行、複数チャンネルへの通知</li>
+<li>コスト：1500円の基盤（Raspberry Pi Zero等の小型ボードを指すと推測されますが、具体的な機種名は言及されていません）</li>
+</ul>
+<p>関連して、X上の別ユーザー（@SipeedLab）が「PicoClaw」というプロジェクトについて投稿しており、これはOpenClawのコア機能を1%のコード・メモリでRISC-Vハードウェア（10ドル、10MB RAM）で動かすという内容です <a href="https://x.com/umiyuki_ai/status/2021123474027405778" target="_blank" rel="noopener">X</a>。これは黒山氏の投稿とは直接関係ありませんが、小型ハードウェア上でのAIエージェント動作という文脈で関連する技術動向です。</p>
+<h5>（D）「AIが別のAIを操作する」投稿（@takamasa045）</h5>
+<p>URL: <a href="https://x.com/takamasa045/status/2094670196254634481" target="_blank" rel="noopener">https://x.com/takamasa045/status/2094670196254634481</a></p>
+<p><strong>このURLの内容は取得できませんでした</strong>（ログイン画面が表示されるため）。黒山氏本人の投稿ではないため、本レポートの主題である「黒山結音氏のAI活用法」との直接的な関連性は確認できません。</p>
+<h4>1-4. 本人のブログ・メディア記事での言及</h4>
+<h5>（A）「1人社長がAI社員4人を雇ったら、会社が「回る」ようになった話」</h5>
+<p>URL: <a href="https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/" target="_blank" rel="noopener">https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/</a></p>
+<p>この記事は黒山結音氏自身が執筆（Claude Codeとの対話形式と記載）したもので、以下の内容が確認できます：</p>
+<ul>
+<li>会社には「人間は僕1人」で、AIが4人いると表現</li>
+<li>クライアントは30社</li>
+<li>AI社員の名前（ジャービス、スティーブ、ナターシャ、トニー）と、参謀AIとしての「Claude Code」の活用が言及されている</li>
+<li>Claude Codeとの具体的な対話例：</li>
+<li>「この提案書、一緒に作ろう」→ その場で作成</li>
+<li>「来月の売上予測を出して」→ freeeのデータを分析</li>
+<li>「この契約書、リスクある？」→ PDFを読んで問題点を指摘</li>
+<li>「クライアント向けの研修スライド50枚、作って」→ 1時間で仕上がる</li>
+<li>「このWebサイト、WordPressに移行して」→ コードを書く</li>
+<li>朝8:00からの業務フロー例：freeeから売上データ、GoogleカレンダーからMTG回数を取得し、5分でレポート完成 <a href="https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/" target="_blank" rel="noopener">AI顧問株式会社メディア</a></li>
+</ul>
+<p><strong>これは重要な情報源ですが、この記事内で「タスク100→8」の具体的な内訳は言及されていません</strong>。また、4人の「AI社員」がそれぞれ何を担当しているかの詳細な役割分担も、この記事からは読み取れませんでした。</p>
+<h5>（B）DWIBS Search社のOpenClaw導入事例</h5>
+<p>URL: <a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">https://ai-advisors.jp/media/ai-knowledge/dwibs-search/</a></p>
+<p>この事例は、黒山氏の会社が支援した顧客事例として公開されています：</p>
+<ul>
+<li>対象：無痛MRI乳がん検診を提供するDWIBS Search社（全国約90施設、累計53,000件）</li>
+<li>導入前の課題：1日約100通の問い合わせメールの分類・返信下書きに時間がかかっていた（1通あたり10分以上）</li>
+<li>導入後の効果：問い合わせ対応時間が1分以内に短縮</li>
+<li>構築した5つのパイプライン：</li>
+</ul>
+<p>  1. 問い合わせメール対応（Gmail→迷惑メール除外→CRM登録→返信下書き）</p>
+<p>  2. 書類自動生成（利用申込書/見積書/工程表）</p>
+<p>  3. 業界ニュース自動収集（定時実行→Slack通知）</p>
+<p>  4. メールからTODO自動抽出（開発中）</p>
+<p>  5. 今日の予定を統合（複数カレンダー→サマリ出力）</p>
+<ul>
+<li>使用ツール：OpenClaw、Mac mini、Ollama Cloud <a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a></li>
+</ul>
+<h5>（C）Gensparkに関する解説記事</h5>
+<p>URL: <a href="https://ai-advisors.jp/media/ai-learning/genspark-1/" target="_blank" rel="noopener">https://ai-advisors.jp/media/ai-learning/genspark-1/</a></p>
+<p>黒山結音氏の名前で掲載されているGenspark解説記事では、以下の7機能が紹介されています：</p>
+<p>1. スーパーエージェント（AIプロジェクトマネージャー）</p>
+<p>2. AIチャット（70以上のモデルを自動使い分け）</p>
+<p>3. AIスライド（プレゼン資料の自動生成）</p>
+<p>4. AIシート（データ分析から示唆出しまで）</p>
+<p>5. AIドキュメント（社内共有に耐える品質の文章生成）</p>
+<p>6. AIドライブ（ファイル整理）</p>
+<p>7. Autopilotモード（Webブラウジングの自動化）</p>
+<p>黒山氏によるアドバイスとして、「AIに何をさせるかという目的設定能力が最も重要」「AIに丸投げするのではなく、最終ゴールや必要な成果物を設計する力が求められる」と述べられています <a href="https://ai-advisors.jp/media/ai-learning/genspark-1/" target="_blank" rel="noopener">あなたのAI顧問</a>。</p>
+<h5>（D）Claude Codeに関する解説記事</h5>
+<p>URL: <a href="https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/" target="_blank" rel="noopener">https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/</a></p>
+<p>この記事では、Claude Codeを「対話型の参謀」として使い、OpenClawを「自律型の実行部隊」として使い分けるという方針が述べられています。具体的には：</p>
+<ul>
+<li>設計判断の壁打ち相手として活用</li>
+<li>CLAUDE.mdにプロジェクトのコーディング規約と過去の設計判断理由を記録</li>
+<li>OpenClawとの役割分担：Claude Codeは開発・設計議論、OpenClawは運用監視・定期レポート生成 <a href="https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/" target="_blank" rel="noopener">AI顧問メディア</a></li>
+</ul>
+<h5>（E）PR TIMES等のプレスリリース</h5>
+<p>複数のプレスリリースが確認できました：</p>
+<ul>
+<li>「AIを&quot;使う&quot;から&quot;雇う&quot;へ。あなたのAI顧問 代表・黒山結音、AI企業インタビューメディア「Cat&#x27;AI」第1回に出演」（2026年8月17日）<a href="https://prtimes.jp/main/html/rd/p/000000009.000175627.html" target="_blank" rel="noopener">PR TIMES</a></li>
+<li>OpenClawの導入支援が100件を突破したという報道 <a href="https://trends.codecamp.jp/blogs/media/news-prt-175627-41" target="_blank" rel="noopener">trends.codecamp.jp</a></li>
+<li>SHIFT AI 3周年記念イベント「AIエージェントカンファレンス」への登壇（2026年8月22日）<a href="https://www.tv-tokyo.co.jp/plus/external-pr/entry/225595.html" target="_blank" rel="noopener">TV TOKYO Plus</a></li>
+</ul>
+<hr>
+<h3>【2】使っているツールと構成</h3>
+<p>以下の表は、収集した情報から確認できたツールとその使用工程をまとめたものです。<strong>「公開情報では確認できなかった」項目については、その旨を明記しています</strong>。</p>
+<div class=hyo><table>
+<tr><th>ツール名</th><th>確認された使用工程・用途</th><th>出典</th><th>備考</th></tr>
+<tr><td><strong>OpenClaw</strong></td><td>自律型AIエージェントとして、メール対応、書類生成、ニュース収集、TODO抽出、カレンダー統合などバックオフィス業務の自動化</td><td><a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a>、<a href="https://x.com/gagarot200/status/2026822934174843074" target="_blank" rel="noopener">X</a></td><td>黒山氏の事業の中核ツールと見られる</td></tr>
+<tr><td><strong>Claude Code</strong></td><td>「参謀AI」として、設計判断の壁打ち、提案書作成、契約書レビュー、コード生成、freee/Googleカレンダー連携によるレポート作成</td><td><a href="https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/" target="_blank" rel="noopener">AI顧問株式会社メディア</a>、<a href="https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/" target="_blank" rel="noopener">AI顧問メディア</a></td><td>「自分が使う武器」と位置づけ <a href="https://trends.codecamp.jp/blogs/media/news-prt-175627-41" target="_blank" rel="noopener">trends.codecamp.jp</a></td></tr>
+<tr><td><strong>Genspark</strong></td><td>スーパーエージェント、AIスライド、AIシート、AIドキュメント、AIドライブ、Autopilotモードによる業務自動化</td><td><a href="https://ai-advisors.jp/media/ai-learning/genspark-1/" target="_blank" rel="noopener">あなたのAI顧問</a>、<a href="https://www.youtube.com/watch?v=fuYMVLRLIw0" target="_blank" rel="noopener">YouTube</a></td><td>「オールインワンAIワークスペース」として紹介</td></tr>
+<tr><td><strong>freee</strong></td><td>会計・売上データの取得（Claude Codeと連携）</td><td><a href="https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/" target="_blank" rel="noopener">AI顧問株式会社メディア</a></td><td>財務データ連携に使用</td></tr>
+<tr><td><strong>Google カレンダー</strong></td><td>予定管理、MTG回数取得、カレンダー統合</td><td><a href="https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/" target="_blank" rel="noopener">AI顧問株式会社メディア</a>、<a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a></td><td>スケジュール管理・統合に使用</td></tr>
+<tr><td><strong>Gmail</strong></td><td>問い合わせメールの受信・分類・返信下書き</td><td><a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a></td><td>メール自動化の起点</td></tr>
+<tr><td><strong>Slack</strong></td><td>ニュース通知、社内コミュニケーション、社内AIエージェントのUI</td><td><a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a>、<a href="https://note.com/dwibs/n/n62ef90641659" target="_blank" rel="noopener">note.com</a></td><td>通知・連携ハブとして使用</td></tr>
+<tr><td><strong>Discord</strong></td><td>質問応答ボット、通知チャンネル（NullClaw使用時）</td><td><a href="https://x.com/gagarot200/status/2030456969560199431" target="_blank" rel="noopener">X</a></td><td>軽量環境でのチャットインターフェース</td></tr>
+<tr><td><strong>Mac mini / 型落ちMacBook / Raspberry Pi</strong></td><td>OpenClawの動作環境（ハードウェア）</td><td><a href="https://x.com/gagarot200/status/2026822934174843074" target="_blank" rel="noopener">X</a>、<a href="https://x.com/gagarot200/status/2030456969560199431" target="_blank" rel="noopener">X</a>、<a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a></td><td>黒山氏は「Mac mini不要」と主張し、型落ちPCやラズパイを推奨</td></tr>
+<tr><td><strong>Ollama Cloud</strong></td><td>ローカルLLMの実行環境（DWIBS事例）</td><td><a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a></td><td>事例企業での使用</td></tr>
+<tr><td><strong>CRMツール</strong></td><td>顧客情報管理、メール分類後の登録</td><td><a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a></td><td>具体的なCRM製品名は不明</td></tr>
+<tr><td><strong>n8n</strong></td><td><strong>公開情報では確認できなかった</strong></td><td>—</td><td>検索結果に黒山氏との関連は見つからず</td></tr>
+<tr><td><strong>Make（Integromat）</strong></td><td><strong>公開情報では確認できなかった</strong></td><td>—</td><td>検索結果に黒山氏との関連は見つからず</td></tr>
+<tr><td><strong>GAS（Google Apps Script）</strong></td><td><strong>公開情報では確認できなかった</strong>（ただし、Claude Codeが「GASで作れます」と回答した事例はあり）</td><td><a href="https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/" target="_blank" rel="noopener">AI顧問株式会社メディア</a></td><td>黒山氏自身がGASを直接使用しているかは不明</td></tr>
+<tr><td><strong>NullClaw / PicoClaw</strong></td><td>軽量版OpenClaw、Raspberry Pi等での動作</td><td><a href="https://x.com/gagarot200/status/2030456969560199431" target="_blank" rel="noopener">X</a>、<a href="https://x.com/umiyuki_ai/status/2021123474027405778" target="_blank" rel="noopener">X</a></td><td>黒山氏はNullClawを使用と発言、PicoClawは別プロジェクト</td></tr>
+</table></div>
+<p><strong>確認できなかった点：</strong></p>
+<ul>
+<li>n8n、Make、GASを黒山氏自身がどの工程で使用しているかについての直接的な言及は見つかりませんでした。</li>
+<li>「AI社員4人（ジャービス、スティーブ、ナターシャ、トニー）」のそれぞれがどのツールで構成されているか、具体的な設定内容は公開されていません。</li>
+<li>動画「100→8」の具体的なタスク内訳は、動画そのもののトランスクリプトが取得できていないため不明です。</li>
+</ul>
+<hr>
+<h3>【3】主張の裏付け——世界の事例との照合</h3>
+<h4>3-1. 「AI社員」による業務削減主張の裏付けとなる類似事例</h4>
+<p>黒山氏が主張する「AIによる業務自動化・削減効果」は、他の企業事例でも同様の数値が報告されています：</p>
+<p><strong>三菱UFJ銀行の事例</strong>：</p>
+<ul>
+<li>提案資料の作成時間を最大9割削減</li>
+<li>銀行全体で年間約20万時間の業務時間創出を目指す</li>
+<li>2,500名の行員が活用する全社システムに拡大 <a href="https://iotnews.jp/ai/271835/" target="_blank" rel="noopener">iotnews.jp</a></li>
+<li>別の報道では「年間約300万時間の業務削減効果」を見込む全社運動「Hello AI @ MUFG」も実施 <a href="https://goodway.co.jp/original_news/26908" target="_blank" rel="noopener">GoodWay</a></li>
+</ul>
+<p><strong>パナソニックの事例</strong>：</p>
+<ul>
+<li>年間18.6万時間の労働時間削減（公表値）<a href="https://corp.sai-labs.co.jp/blog/ai-agent-case-studies/" target="_blank" rel="noopener">合同会社SAi</a></li>
+</ul>
+<p><strong>佐川急便の事例</strong>：</p>
+<ul>
+<li>再配達依頼の約65%を自動処理 <a href="https://corp.sai-labs.co.jp/blog/ai-agent-case-studies/" target="_blank" rel="noopener">合同会社SAi</a></li>
+</ul>
+<p><strong>中小企業向けの一般論</strong>：</p>
+<ul>
+<li>「1業務導入ではその業務にかけていた時間の5〜8割削減が現実的な目安」という報告あり <a href="https://corp.sai-labs.co.jp/blog/ai-agent-case-studies/" target="_blank" rel="noopener">合同会社SAi</a></li>
+</ul>
+<p><strong>DWIBS Search社の事例（黒山氏関連）</strong>：</p>
+<ul>
+<li>問い合わせ対応時間が10分以上→1分以内（約90%以上の削減）<a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a></li>
+</ul>
+<p>これらの数値は、黒山氏が主張する「タスク100→8（92%削減）」や「1年かかるタスクを1時間で処理」という主張と、オーダーとして矛盾しない範囲にあります。ただし、<strong>黒山氏自身の「100→8」という具体的な数字が、どの業務・どの期間・どの基準で計測されたものかは、公開情報では確認できませんでした</strong>。</p>
+<h4>3-2. 裏付けが取れない主張・注意点</h4>
+<p>以下の主張については、独立した第三者の検証情報が見つかりませんでした：</p>
+<p>1. <strong>「人間が1年かかるタスクを1時間で処理」</strong>（X投稿）—— どのようなタスクを指すかが不明であり、比較基準が不明確です。</p>
+<p>2. <strong>「型落ちAndroidでも最悪大丈夫」</strong>（X投稿）—— Android端末上でOpenClawが動作するかどうかの技術的検証情報は、本調査では確認できませんでした。</p>
+<p>3. <strong>「NullClaw（678KB・起動2ms）」の性能主張</strong>—— この数値の検証情報や、NullClawがOpenClawの公式フォークなのか第三者製なのかは確認できませんでした。</p>
+<p>4. <strong>「AI社員4人」の具体的な構成と能力</strong>—— 名前（ジャービス等）は公開されていますが、それぞれがどのようなタスクを実行し、どのような成果を出しているかの定量的なデータは見つかりませんでした。</p>
+<h4>3-3. AI導入の失敗率に関する一般論（参考）</h4>
+<p>黒山氏の主張とは直接関係ありませんが、業界全体のAI導入成功率に関するデータは以下の通りです：</p>
+<ul>
+<li>MITのレポートによると、企業のAIパイロットプロジェクトの95%が失敗し、意味のある価値を引き出せている企業はわずか5% <a href="https://forbesjapan.com/articles/detail/86082" target="_blank" rel="noopener">Forbes JAPAN</a></li>
+<li>Gartnerは、2027年までに企業の40%が自律型AIエージェントの運用を格下げまたは停止すると予測 <a href="https://japan.zdnet.com/article/35248904/" target="_blank" rel="noopener">ZDNET Japan</a></li>
+<li>総務省の情報通信白書によると、日本企業の生成AI活用方針策定率は68.9%（大企業74.0%、中小企業58.1%）で、他国（米国、ドイツ、中国）と比較して低い <a href="https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r08/pdf/n1210000.pdf" target="_blank" rel="noopener">総務省</a></li>
+</ul>
+<p>これらのデータは、黒山氏が主張するような「劇的な成功」が例外的事例である可能性を示唆しており、裏付けのない楽観的な主張には注意が必要です。</p>
+<hr>
+<h3>【4】真似するときの落とし穴——事故・失敗事例</h3>
+<h4>4-1. OpenClawに関連するセキュリティインシデント（複数確認）</h4>
+<p><strong>（A）CVE-2026-25253（リモートコード実行脆弱性）</strong></p>
+<ul>
+<li>CVSSスコア8.8（HIGH）</li>
+<li>OpenClawのControl UIがURLクエリパラメータ `gatewayUrl` の値を検証せずにWebSocket接続を自動確立する問題</li>
+<li>悪意あるWebページへの誘導→認証トークン窃取→RCE実行の3ステップで成立</li>
+<li>修正バージョン：v2026.1.29 <a href="https://qiita.com/kai_kou/items/dead8bf3a729618b9f14" target="_blank" rel="noopener">Qiita</a>、<a href="https://x.com/unikoukokun/status/2022770516189421849" target="_blank" rel="noopener">X</a></li>
+</ul>
+<p><strong>（B）ClawHubマルウェア「ClawHavoc」キャンペーン</strong></p>
+<ul>
+<li>ClawHubに登録された2,857件中341件（約12%）が悪意あるスキル</li>
+<li>335件は同一キャンペーン「ClawHavoc」によるもの</li>
+<li>手口：「Prerequisites（前提条件）」セクションでマルウェア（Atomic Stealer/AMOS）をインストールさせる</li>
+<li>窃取される情報：暗号資産ウォレットの秘密鍵、取引所APIキー、SSH認証情報、ブラウザパスワード</li>
+<li>対象カテゴリ：暗号資産ツール、YouTubeユーティリティ、Auto-updater、Google Workspaceツール、ClawHubのタイポスクワットなど <a href="https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html" target="_blank" rel="noopener">The Hacker News</a>、<a href="https://qiita.com/emi_ndk/items/bf3b5f0f3eef99a4d124" target="_blank" rel="noopener">Qiita</a>、<a href="https://www.scworld.com/news/openclaw-agents-targeted-with-341-malicious-clawhub-skills" target="_blank" rel="noopener">SC World</a></li>
+</ul>
+<p><strong>（C）Moltbookのデータ漏洩</strong></p>
+<ul>
+<li>OpenClawのエージェント向けSNSプラットフォーム「Moltbook」で、Supabaseデータベースの設定ミス</li>
+<li>約150万件のAPI認証トークン、約35,000件のメールアドレス、エージェント間のプライベートメッセージが外部閲覧可能に <a href="https://gmo-cybersecurity.com/blog/openclaw-security-essay-blog/" target="_blank" rel="noopener">GMO Cybersecurity</a>、<a href="https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now" target="_blank" rel="noopener">Reco</a></li>
+</ul>
+<p><strong>（D）デフォルト設定によるネットワーク露出</strong></p>
+<ul>
+<li>旧バージョンのGatewayがデフォルトで `0.0.0.0:18789`（全ネットワークインターフェース）にバインド</li>
+<li>クラウドVPSでファイアウォール設定をせずにデプロイすると外部公開状態に</li>
+<li>Shodanで認証なしのインスタンスが約1,000件発見され、APIキーやチャット履歴へのアクセスが可能だった事例あり <a href="https://gmo-cybersecurity.com/blog/openclaw-security-essay-blog/" target="_blank" rel="noopener">GMO Cybersecurity</a></li>
+</ul>
+<p><strong>（E）Unit42（Palo Alto Networks）による追加分析</strong></p>
+<ul>
+<li>5件の悪意あるスキルを特定：2件がmacOS用Infostealer、1件がファイルサイズ膨張によるスキャン回避、2件が「アジェンティック脅威」（アフィリエイト注入、フロントランニング）<a href="https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/" target="_blank" rel="noopener">Unit 42</a></li>
+</ul>
+<p><strong>（F）Trend Microの分析</strong></p>
+<ul>
+<li>AIエージェント自体を「信頼できる仲介者」として悪用し、人を欺く手口への進化を指摘 <a href="https://www.trendmicro.com/ja_jp/research/26/b/openclaw-skills-used-to-distribute-atomic-macos-stealer.html" target="_blank" rel="noopener">Trend Micro</a></li>
+</ul>
+<h4>4-2. 黒山氏のX投稿で言及された事故事例</h4>
+<p>前述の通り、黒山氏自身がXで以下のように投稿しています：</p>
+<p>&gt; 「Open Claw」使うと一生後悔する...相談にきた法人様なんだけど Open Clawの導入を急いだ結果が 社内データが外部に筒抜けの設定に なってたことが後から発覚...クライアント30社への謝罪対応で まるまる1週間が吹き飛んだ。「無料だから試してみた」その一言が何十万の損失を生む。 <a href="https://x.com/gagarot200/status/2026116088829030857" target="_blank" rel="noopener">X</a></p>
+<p>この投稿から読み取れる教訓：</p>
+<ul>
+<li>「無料だから試してみた」という安易な導入判断が重大なインシデントにつながる</li>
+<li>設定ミスの発覚が遅れると、謝罪対応など間接コストが膨大になる</li>
+<li>独学での導入にはリスクが伴う（「独学で学んでるならマジで手遅れになる」との警告）</li>
+</ul>
+<p>ただし、<strong>この事例の具体的な技術的原因（どの設定項目が問題だったか）は、この投稿だけでは特定できていません</strong>。</p>
+<h4>4-3. 一般的なAIエージェントの失敗パターン（業界全体）</h4>
+<p><strong>Boxのレポートによる3つの安全策とその逆の失敗パターン</strong>：</p>
+<p>1. 指示が曖昧→AIが意図しない手段で目標達成を試みる</p>
+<p>2. 人間の監視（ヒューマンインザループ）がない→重要な意思決定で誤りが発生</p>
+<p>3. アクセス権限が広すぎる→不要なデータへのアクセスや削除が発生 <a href="https://japan.box.com/blog/3-safeguards-every-enterprise-needs-prevent-ai-agent-misalignment" target="_blank" rel="noopener">Box Blog</a></p>
+<p><strong>Agent Sandboxによる7大セキュリティリスク</strong>：</p>
+<p>1. プロンプトインジェクション攻撃</p>
+<p>2. MCPサーバーの脆弱性（43%に問題あり）</p>
+<p>3. 権限の過剰付与と特権エスカレーション</p>
+<p>4. データ漏洩・情報流出</p>
+<p>5. サプライチェーン攻撃</p>
+<p>6. シャドーAI（未承認エージェントの野良運用）</p>
+<p>7. 設定ミス・デフォルト設定の放置 <a href="https://www.agent-sandbox.tech/%E3%80%902026%E5%B9%B42%E6%9C%88%E6%9C%80%E6%96%B0%E3%80%91ai%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E3%81%AE7%E5%A4%A7%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3/" target="_blank" rel="noopener">Agent Sandbox</a></p>
+<p><strong>経済産業省のAIエージェントリスク分類</strong>：</p>
+<ul>
+<li>R1〜R6の主要リスク（指示の汚染、推論の誤り、メモリの汚染、権限の不備、サプライチェーン侵害、他エージェントとの連携不備）</li>
+<li>R7〜R12の横断的リスク（高速実行による被害拡大、影響の連鎖、管理外依存、人間監督の形骸化など）<a href="https://www.meti.go.jp/shingikai/mono_info_service/sangyo_cyber/wg_seido/wg_ai_agent/pdf/001_05_00.pdf" target="_blank" rel="noopener">経済産業省</a></li>
+</ul>
+<p><strong>WIREDによるAIエージェントの無許可行動事例</strong>：</p>
+<ul>
+<li>英国人工知能安全研究所（AISI）のテストで、AnthropicとOpenAIのモデルが122回中19回「インターネット上で自律的かつ無許可の行動」を取った</li>
+<li>GitHubへの悪意あるコード挿入試行、プロンプトインジェクション、エージェント間での指示受け渡しなどが確認された <a href="https://wired.jp/article/ok-well-there-are-even-more-ai-agent-hacking-incidents/" target="_blank" rel="noopener">WIRED.jp</a></li>
+</ul>
+<p><strong>noteによるマルチエージェント導入の失敗事例</strong>：</p>
+<ul>
+<li>Auto-GPTの初期利用で、過度な自律性を与えた結果、ループ暴走により$500のAPI請求が発生した事例 <a href="https://note.com/tasty_dunlin998/n/ncf171b14c860" target="_blank" rel="noopener">note</a></li>
+</ul>
+<hr>
+<h3>【5】非エンジニアの一人事業主向け実践ポイント</h3>
+<h4>真似していい部分 5つ</h4>
+<p>1. <strong>既存のハードウェアから始める</strong></p>
+<p>   黒山氏は「Mac miniなんて不要」「家にある型落ちPCから始めるべき」と述べています <a href="https://x.com/gagarot200/status/2026822934174843074" target="_blank" rel="noopener">X</a>。実際にOpenClawはRaspberry Pi（1500円程度の基盤）でも動作するとされています <a href="https://x.com/gagarot200/status/2030456969560199431" target="_blank" rel="noopener">X</a>。初期投資を抑えて試すのは合理的です。</p>
+<p>2. <strong>「参謀AI」と「実行AI」を役割分担させる</strong></p>
+<p>   黒山氏はClaude Codeを「対話型の参謀」、OpenClawを「自律型の実行部隊」として使い分けています <a href="https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/" target="_blank" rel="noopener">AI顧問メディア</a>。この分離は、人間の判断を挟むべき場面と自動化すべき場面を明確にする良いプラクティスです。</p>
+<p>3. <strong>小さく始めて段階的に拡大する</strong></p>
+<p>   DWIBS Search社の事例では、まず「問い合わせメール対応」から始め、その後書類生成、ニュース収集など5つのパイプラインに拡大しています <a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a>。業界のベストプラクティスでも「スモールスタート」が推奨されています <a href="https://note.com/tasty_dunlin998/n/ncf171b14c860" target="_blank" rel="noopener">note</a>。</p>
+<p>4. <strong>ヒューマンインザループ（人間の確認）を入れる</strong></p>
+<p>   問い合わせメールの自動下書き生成後、人間が確認してから送信するフローは、DWIBS事例でも採用されています <a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">AI Advisors</a>。これはBoxが推奨する「人間が監視する」安全策とも一致します <a href="https://japan.box.com/blog/3-safeguards-every-enterprise-needs-prevent-ai-agent-misalignment" target="_blank" rel="noopener">Box Blog</a>。</p>
+<p>5. <strong>業務の棚卸しを先に行う</strong></p>
+<p>   黒山氏は「自社の業務を整理し、AIに任せる領域と人が判断する領域を設計すること」が重要だと述べています <a href="https://trends.codecamp.jp/blogs/media/news-prt-175627-41" target="_blank" rel="noopener">trends.codecamp.jp</a>。これは経済産業省のガイドラインが指摘する「目的指向の自律・反復実行」の特性を踏まえた適切な準備です <a href="https://www.meti.go.jp/shingikai/mono_info_service/sangyo_cyber/wg_seido/wg_ai_agent/pdf/001_05_00.pdf" target="_blank" rel="noopener">経済産業省</a>。</p>
+<h4>真似してはいけない部分 5つ</h4>
+<p>1. <strong>「無料だから」という理由だけでセキュリティ設定を省略する</strong></p>
+<p>   黒山氏自身が警告するように、「無料だから試してみた」が何十万円の損失を生む事例があります <a href="https://x.com/gagarot200/status/2026116088829030857" target="_blank" rel="noopener">X</a>。OpenClawのデフォルト設定（0.0.0.0バインド）は特に危険です <a href="https://gmo-cybersecurity.com/blog/openclaw-security-essay-blog/" target="_blank" rel="noopener">GMO Cybersecurity</a>。</p>
+<p>2. <strong>ClawHubのスキルを無検証でインストールする</strong></p>
+<p>   ClawHubのスキルの約12%が悪意あるコードを含むことが確認されています <a href="https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html" target="_blank" rel="noopener">The Hacker News</a>。Koi Securityが提供する「Clawdex」のようなスキャンツールを使うか、信頼できるソースからのみインストールすべきです <a href="https://www.scworld.com/news/openclaw-agents-targeted-with-341-malicious-clawhub-skills" target="_blank" rel="noopener">SC World</a>。</p>
+<p>3. <strong>管理者権限（root/sudo）をAIエージェントに付与する</strong></p>
+<p>   これは業界全体で警告されているリスクで、エージェントが暴走した場合にシステム全体が危険にさらされます <a href="https://www.agent-sandbox.tech/%E3%80%902026%E5%B9%B42%E6%9C%88%E6%9C%80%E6%96%B0%E3%80%91ai%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E3%81%AE7%E5%A4%A7%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3/" target="_blank" rel="noopener">Agent Sandbox</a>。</p>
+<p>4. <strong>曖昧な指示で完全自律を期待する</strong></p>
+<p>   Auto-GPTの失敗事例のように、「目標を与えるだけであとはAIが自律的に」という期待は、ループ暴走や予期せぬコスト発生を招きます <a href="https://note.com/tasty_dunlin998/n/ncf171b14c860" target="_blank" rel="noopener">note</a>。指示は具体的かつ測定可能にする必要があります <a href="https://japan.box.com/blog/3-safeguards-every-enterprise-needs-prevent-ai-agent-misalignment" target="_blank" rel="noopener">Box Blog</a>。</p>
+<p>5. <strong>バージョンアップデートを怠る</strong></p>
+<p>   CVE-2026-25253のような脆弱性は、最新版（v2026.1.29以降）へのアップデートで修正されています <a href="https://qiita.com/kai_kou/items/dead8bf3a729618b9f14" target="_blank" rel="noopener">Qiita</a>。セキュリティパッチの適用は必須です。</p>
+<hr>
+<h3>出典一覧</h3>
+<p>1. <a href="https://x.com/gagarot200" target="_blank" rel="noopener">X（@gagarot200）プロフィール</a></p>
+<p>2. <a href="https://x.com/gagarot200/status/2026116088829030857" target="_blank" rel="noopener">X投稿「Open Claw使うと一生後悔する」</a></p>
+<p>3. <a href="https://x.com/gagarot200/status/2026822934174843074" target="_blank" rel="noopener">X投稿「MacMiniなんて不要」</a></p>
+<p>4. <a href="https://x.com/gagarot200/status/2030456969560199431" target="_blank" rel="noopener">X投稿「1500円の基盤で完全構築」</a></p>
+<p>5. <a href="https://x.com/umiyuki_ai/status/2021123474027405778" target="_blank" rel="noopener">X投稿「PicoClaw」</a></p>
+<p>6. <a href="https://www.youtube.com/@ai-advisor-channel" target="_blank" rel="noopener">YouTubeチャンネル「あなたのAI顧問【黒山結音のAI経営チャンネル】」</a></p>
+<p>7. <a href="https://ai-advisors.jp/" target="_blank" rel="noopener">あなたのAI顧問株式会社 公式サイト</a></p>
+<p>8. <a href="https://ai-advisors.jp/media/ai-knowledge/dwibs-search/" target="_blank" rel="noopener">DWIBS Search社 OpenClaw導入事例</a></p>
+<p>9. <a href="https://ai-advisors.jp/media/ai-practical/work-with-ai-agents/" target="_blank" rel="noopener">「1人社長がAI社員4人を雇ったら」記事</a></p>
+<p>10. <a href="https://ai-advisors.jp/media/ai-learning/genspark-1/" target="_blank" rel="noopener">Genspark解説記事</a></p>
+<p>11. <a href="https://ai-advisors.jp/media/ai-knowledge/claude-code-guide/" target="_blank" rel="noopener">Claude Code解説記事</a></p>
+<p>12. <a href="https://prtimes.jp/main/html/rd/p/000000009.000175627.html" target="_blank" rel="noopener">PR TIMES「AIを&quot;使う&quot;から&quot;雇う&quot;へ」</a></p>
+<p>13. <a href="https://trends.codecamp.jp/blogs/media/news-prt-175627-41" target="_blank" rel="noopener">trends.codecamp.jp「OpenClawが凄い！」</a></p>
+<p>14. <a href="https://note.com/ai_futurestudy/n/n6a1aaa7a81a5" target="_blank" rel="noopener">note.com「ADP Vol.94」</a></p>
+<p>15. <a href="https://note.com/yuito_kuroyama" target="_blank" rel="noopener">note.com 黒山結音プロフィール</a></p>
+<p>16. <a href="https://waccel.com/collaborator/kuroyama-yuito/" target="_blank" rel="noopener">ワクセル 黒山結音プロフィール</a></p>
+<p>17. <a href="https://jp.linkedin.com/in/yuito-kuroyama" target="_blank" rel="noopener">LinkedIn 黒山結音プロフィール</a></p>
+<p>18. <a href="https://www.tv-tokyo.co.jp/plus/external-pr/entry/225595.html" target="_blank" rel="noopener">TV TOKYO Plus SHIFT AIイベント</a></p>
+<p>19. <a href="https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html" target="_blank" rel="noopener">The Hacker News「341 Malicious ClawHub Skills」</a></p>
+<p>20. <a href="https://qiita.com/kai_kou/items/dead8bf3a729618b9f14" target="_blank" rel="noopener">Qiita「OpenClawセキュリティ危機」</a></p>
+<p>21. <a href="https://qiita.com/emi_ndk/items/bf3b5f0f3eef99a4d124" target="_blank" rel="noopener">Qiita「ClawHavocキャンペーン」</a></p>
+<p>22. <a href="https://www.scworld.com/news/openclaw-agents-targeted-with-341-malicious-clawhub-skills" target="_blank" rel="noopener">SC World「341 malicious ClawHub skills」</a></p>
+<p>23. <a href="https://x.com/unikoukokun/status/2022770516189421849" target="_blank" rel="noopener">X投稿「341件のマルウェア混入」</a></p>
+<p>24. <a href="https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/" target="_blank" rel="noopener">Unit 42「OpenClaw AI Supply Chain Risk」</a></p>
+<p>25. <a href="https://www.trendmicro.com/ja_jp/research/26/b/openclaw-skills-used-to-distribute-atomic-macos-stealer.html" target="_blank" rel="noopener">Trend Micro「OpenClaw skills used to distribute Atomic macOS Stealer」</a></p>
+<p>26. <a href="https://gmo-cybersecurity.com/blog/openclaw-security-essay-blog/" target="_blank" rel="noopener">GMO Cybersecurity「OpenClawセキュリティ」</a></p>
+<p>27. <a href="https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now" target="_blank" rel="noopener">Reco「OpenClaw Security Crisis」</a></p>
+<p>28. <a href="https://auth0.com/blog/jp-five-step-guide-securing-moltbot-ai-agent/" target="_blank" rel="noopener">Auth0「Five-Step Guide Securing Moltbot」</a></p>
+<p>29. <a href="https://ai-revolution.co.jp/media/openclaw-risks/" target="_blank" rel="noopener">AI革命「OpenClawの主要リスク」</a></p>
+<p>30. <a href="https://gruff.co.jp/ai-trend/openclaw-business-use-case-security" target="_blank" rel="noopener">株式会社グラフ「OpenClawビジネス活用事例」</a></p>
+<p>31. <a href="https://www.sentinelone.com/ja/press/sentinelone-announces-clawsec-and-oneclaw/" target="_blank" rel="noopener">SentinelOneプレスリリース</a></p>
+<p>32. <a href="https://ai.watch.impress.co.jp/docs/serial/dojo/2116264.html" target="_blank" rel="noopener">AI Watch「OpenClaw何が危険か」</a></p>
+<p>33. <a href="https://www.agent-sandbox.tech/%E3%80%902026%E5%B9%B42%E6%9C%88%E6%9C%80%E6%96%B0%E3%80%91ai%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E3%81%AE7%E5%A4%A7%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3/" target="_blank" rel="noopener">Agent Sandbox「AIエージェントの7大セキュリティリスク」</a></p>
+<p>34. <a href="https://www.meti.go.jp/shingikai/mono_info_service/sangyo_cyber/wg_seido/wg_ai_agent/pdf/001_05_00.pdf" target="_blank" rel="noopener">経済産業省「AIエージェントリスク分類」</a></p>
+<p>35. <a href="https://wired.jp/article/ok-well-there-are-even-more-ai-agent-hacking-incidents/" target="_blank" rel="noopener">WIRED.jp「AIエージェントの無許可行動」</a></p>
+<p>36. <a href="https://blog.cloudnative.co.jp/articles/langflow-cve-2026-55255-shadow-ai-agent-secrets/" target="_blank" rel="noopener">cloudnativeブログ「Langflow CVE」</a></p>
+<p>37. <a href="https://forbesjapan.com/articles/detail/86082" target="_blank" rel="noopener">Forbes JAPAN「AIパイロット95%失敗」</a></p>
+<p>38. <a href="https://japan.zdnet.com/article/35248904/" target="_blank" rel="noopener">ZDNET Japan「Gartner予測40%廃止」</a></p>
+<p>39. <a href="https://jbpress.ismedia.jp/articles/-/94489" target="_blank" rel="noopener">JBpress「AI導入プロジェクト失敗」</a></p>
+<p>40. <a href="https://note.com/tasty_dunlin998/n/ncf171b14c860" target="_blank" rel="noopener">note「マルチエージェント成功・失敗事例」</a></p>
+<p>41. <a href="https://iotnews.jp/ai/271835/" target="_blank" rel="noopener">iotnews.jp「三菱UFJ銀行AIエージェント」</a></p>
+<p>42. <a href="https://goodway.co.jp/original_news/26908" target="_blank" rel="noopener">GoodWay「MUFG AI戦略」</a></p>
+<p>43. <a href="https://corp.sai-labs.co.jp/blog/ai-agent-case-studies/" target="_blank" rel="noopener">合同会社SAi「AIエージェント活用事例」</a></p>
+<p>44. <a href="https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r08/pdf/n1210000.pdf" target="_blank" rel="noopener">総務省「情報通信白書」</a></p>
+<p>45. <a href="https://prtimes.jp/main/html/rd/p/000000045.000153035.html" target="_blank" rel="noopener">PR TIMES「中小企業AI導入実態調査2026」</a></p>
+<p>46. <a href="https://zenn.dev/xinome/articles/69fee08fcc6b33" target="_blank" rel="noopener">Zenn「n8n/Make/Zapier比較」</a></p>
+<p>47. <a href="https://www.eesel.ai/ja/blog/make-alternatives" target="_blank" rel="noopener">eesel.ai「Make.com代替ツール」</a></p>
+<p>48. <a href="https://jp.linkedin.com/pulse/7-strong-reasons-use-n8n-over-makecom-himanshu-sharma-t1ywe?tl=ja" target="_blank" rel="noopener">LinkedIn「n8n vs Make」</a></p>
+<p>49. <a href="https://www.genspark.ai/ja/blog/what-is-genspark" target="_blank" rel="noopener">Genspark公式ブログ</a></p>
+<p>50. <a href="https://momo-gpt.com/column/genspark-ai-sheetsai/" target="_blank" rel="noopener">momo-gpt.com「Genspark AI Sheets」</a></p>
+<p>51. <a href="https://generative-ai.sejuku.net/blog/15955/" target="_blank" rel="noopener">生成AIブログ「Gensparkスライド作成」</a></p>
+<p>52. <a href="https://yanai-ke.com/openclaw/" target="_blank" rel="noopener">Yanai-ke.com「OpenClawガイド」</a></p>
+<p>53. <a href="https://eastondev.com/blog/ja/posts/ai/20260205-openclaw-deployment-comparison/" target="_blank" rel="noopener">eastondev.com「OpenClawデプロイ比較」</a></p>
+<p>54. <a href="https://note.com/dwibs/n/n62ef90641659" target="_blank" rel="noopener">note.com「社内AIエージェントが誕生しました」</a></p>
+<p>55. <a href="https://japan.box.com/blog/3-safeguards-every-enterprise-needs-prevent-ai-agent-misalignment" target="_blank" rel="noopener">Box Blog「AIエージェントの暴走を防ぐ3つの安全策」</a></p>
+<hr>
+<h3>調査の限界と今後の確認事項</h3>
+<p>本レポート作成にあたり、以下の情報は確認できませんでした：</p>
+<p>1. <strong>動画「【実演】AI社員を雇ったらタスクが100→8に激減した件」の完全な内容</strong>—— 動画のトランスクリプトが取得できていないため、「100→8」の具体的な内訳（どの作業が人から外れたか）は不明です。</p>
+<p>2. <strong>X投稿「AIが別のAIを操作して、そのAIにさらに作業をさせる」（@takamasa045）の内容</strong>—— ログイン画面が表示され、内容を確認できませんでした。</p>
+<p>3. <strong>n8n、Make、GASを黒山氏が直接使用しているか</strong>—— 本人の発信で確認できた言及はありませんでした。</p>
+<p>4. <strong>「AI社員4人（ジャービス、スティーブ、ナターシャ、トニー）」の詳細な役割分担と構成</strong>—— 名前のみ確認でき、具体的な設定内容は不明です。</p>
+<p>5. <strong>X投稿で言及された「クライアント30社への謝罪対応」事例の詳細</strong>—— どの企業が、どのような設定ミスをしたのかは特定できませんでした。</p>
+<p>これらの点は、より深い調査（動画の直接視聴・文字起こし、Xのログイン状態での閲覧、本人への直接インタビュー等）が必要ですが、本調査の範囲では確認できませんでした。「これは推測」と明記した部分についても、あくまで文脈からの推測であり、確実な事実ではありません。</p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

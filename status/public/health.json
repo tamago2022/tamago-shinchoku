@@ -1,53 +1,44 @@
 {
- "measuredAt": "2026-09-26T10:40:33+0900",
- "diskFreeGB": 48,
+ "measuredAt": "2026-09-27T05:52:52+0900",
+ "diskFreeGB": 95.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 481,
- "memPressure": null,
- "memAvailGB": null,
- "sessions": 0,
- "safeMax": null,
- "moreOK": null,
- "target": null,
- "cap": null,
- "calibratedSafeN": null,
- "below": null,
- "shedCandidates": null,
+ "load": 69,
+ "memPressure": "green",
+ "memAvailGB": 9.0,
+ "sessions": 2,
+ "safeMax": 4,
+ "moreOK": 2,
+ "target": 1,
+ "cap": 1,
+ "calibratedSafeN": 4,
+ "below": 0,
+ "shedCandidates": [],
  "items": [
   {
    "label": "ゴミ箱を空にする",
-   "effect": "空き 16.77GB",
-   "gb": 16.77,
+   "effect": "空き 20.52GB",
+   "gb": 20.52,
    "kind": "disk",
    "safe": false,
    "how": "捨てたつもりのもの。中身を一度見てから"
   },
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 15.29GB",
-   "gb": 15.29,
+   "effect": "メモリ 9.38GB",
+   "gb": 9.38,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
-   "how": "75プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "33プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 9.08GB",
-   "gb": 9.08,
+   "effect": "空き 7.44GB",
+   "gb": 7.44,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
-  },
-  {
-   "label": "Chromeを閉じる",
-   "effect": "メモリ 2.62GB",
-   "gb": 2.62,
-   "kind": "mem",
-   "safe": true,
-   "app": "Google Chrome",
-   "how": "28プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "Googleドライブのローカルキャッシュ",
@@ -58,9 +49,27 @@
    "how": "アップロード待ちが残っていると消せない"
   },
   {
+   "label": "Notionを閉じる",
+   "effect": "メモリ 1.93GB",
+   "gb": 1.93,
+   "kind": "mem",
+   "safe": true,
+   "app": "Notion",
+   "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "Chromeを閉じる",
+   "effect": "メモリ 1.31GB",
+   "gb": 1.31,
+   "kind": "mem",
+   "safe": true,
+   "app": "Google Chrome",
+   "how": "13プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
    "label": "Spotifyを閉じる",
-   "effect": "メモリ 0.75GB",
-   "gb": 0.75,
+   "effect": "メモリ 1.0GB",
+   "gb": 1.0,
    "kind": "mem",
    "safe": true,
    "app": "Spotify",
@@ -68,40 +77,50 @@
   },
   {
    "label": "node_modules を消す（1箇所）",
-   "effect": "空き 0.41GB",
-   "gb": 0.41,
+   "effect": "空き 0.56GB",
+   "gb": 0.56,
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
+  },
+  {
+   "label": "LINEを閉じる",
+   "effect": "メモリ 0.39GB",
+   "gb": 0.39,
+   "kind": "mem",
+   "safe": true,
+   "app": "LINE",
+   "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   }
  ],
- "_duAt": 1790385742.5582778,
+ "_duAt": 1790454822.940408,
  "_du": {
-  "caches": 9.08,
+  "caches": 7.44,
   "npx": 0.05,
-  "trash": 16.77,
+  "trash": 20.52,
   "driveCache": 2.32,
-  "nodeModules": 0.41,
+  "nodeModules": 0.56,
   "nodeModulesList": [
    [
     "~/Desktop/joy-relief-station/node_modules",
-    0.41
+    0.56
    ]
   ]
  },
  "同時上限": {
   "本数": 1,
   "根拠": [
-   "首は「ロード」（メモリ22本／スワップ1本／ロード0本）",
-   "自動減便：スワップの残りが0.84GB（1.0GB未満）＝Mac全体が落ちる手前。1本まで落とす"
+   "首は「ロード」（メモリ30本／スワップ3本／ロード0本）",
+   "自動減便：5分ロード比2.39（1.5超）＝詰まっている。1本まで落とす",
+   "試し増便は見送り：スワップ使用87%／5分ロード比2.39＝静かでない"
   ],
   "天井": {
-   "メモリ": 22,
-   "スワップ": 1,
+   "メモリ": 30,
+   "スワップ": 3,
    "ロード": 0
   },
-  "測った時刻": "2026-09-26T10:40:34+0900",
-  "自動減便": "スワップの残りが0.84GB（1.0GB未満）＝Mac全体が落ちる手前。1本まで落とす",
+  "測った時刻": "2026-09-27T08:33:18+0900",
+  "自動減便": "5分ロード比2.39（1.5超）＝詰まっている。1本まで落とす",
   "試し増便": null
  }
 }
