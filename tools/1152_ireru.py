@@ -235,10 +235,11 @@ def kakeru(url, key, res):
     except Exception as e:
         why = "書けるか確かめられなかった：%r" % (e,)
     ok = not why
-    naoshi = ("Supabaseの画面 → Project Settings → API → service_role の鍵をコピーして、"
-              "Macの ~/.tamago/supabase_service_role に貼って保存する（権限600・gitの外）。"
-              "そのあと `python3 tools/1152_ireru.py` を1回走らせれば、"
-              "この4本はそのまま棚に入ります。")
+    naoshi = ("Macのデスクトップ → tamago-shinchoku の中にある "
+              "「鍵を貼る_これで棚に入る.command」をダブルクリックするだけです。"
+              "鍵のページが開くので、service_role の鍵をコピーして貼ると、"
+              "そのまま溜まっている分が全部棚に入って公開まで済みます。"
+              "（コマンドは1つも打ちません。鍵はMacの中だけに残り、画面にもGitHubにも出ません）")
     try:
         os.makedirs(os.path.dirname(KAGI_JSON), exist_ok=True)
         io.open(KAGI_JSON, "w", encoding="utf-8").write(json.dumps(

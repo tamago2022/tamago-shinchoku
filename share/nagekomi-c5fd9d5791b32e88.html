@@ -52,6 +52,12 @@
   .hint{font-size:12px;color:var(--sub);margin:0 0 10px}
   .nomu{width:100%;min-height:44px;margin-top:10px;border-radius:12px;border:1px solid #d9d2c4;
         background:#fff;color:#4a4034;font-size:14px;line-height:1.4}
+  /* ★1163番：貼るのを1押しで済ませる。入力欄の右に「貼る」を重ねる */
+  .paste{position:relative}
+  .paste input{padding-right:78px}
+  .paste .pb{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+       min-height:38px;padding:0 14px;font-size:14px;font-family:inherit;font-weight:600;
+       color:#fff;background:var(--accent);border:0;border-radius:9px}
   .diag{margin-top:10px;padding:8px 10px;border-radius:10px;background:#f4f1ea;
         border:1px solid #e2dccf;font-size:11.5px;line-height:1.6;color:#5c5346;
         white-space:pre-wrap;word-break:break-all;max-height:240px;overflow:auto}
@@ -60,13 +66,17 @@
 <body>
 
 <h1>投げ込み箱</h1>
-<p class="lead">URLを貼る。棚を押す。喋る。──どれか1つでも送れます。<br>
+<p class="lead">［貼る］を押して、［投げる］を押す。それだけで終わりです。<br>
+棚も、言いたいことも、書かなくて構いません（書けば効きます）。<br>
 入れるのは夜中0時にまとめて。朝には棚に出ています。</p>
 
 <div class="field">
   <label for="u">URL（なくてもいい）</label>
-  <input id="u" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
-         spellcheck="false" placeholder="https://…" enterkeyhint="done">
+  <div class="paste">
+    <input id="u" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
+           spellcheck="false" placeholder="https://…" enterkeyhint="done">
+    <button class="pb" id="pb" type="button">貼る</button>
+  </div>
 </div>
 
 <div class="field">
@@ -290,6 +300,29 @@ fetch("../status/public/tana_ichiran.json?t="+Date.now(), {cache:"no-store"})
     document.getElementById("tanaNote").textContent =
       "棚の一覧が読めませんでした。押さずにそのまま送れます。";
   });
+
+/* ---- ★1163番【貼って押すだけ】コピーしたURLを1押しで入れる ----
+   スマホでは「長押し→ペースト」が指1本で済まないことがある。ここを1押しにする。
+   ★読めなかったときに黙らない。許可を断られた／対応していない端末では、
+     その理由を出して「長押しで貼ってください」と言う（優しい嘘をつかない）。 */
+document.getElementById("pb").addEventListener("click", function(){
+  var u = document.getElementById("u");
+  if(!navigator.clipboard || !navigator.clipboard.readText){
+    say("この端末ではボタンから貼れません。欄を長押しして「ペースト」を押してください", false);
+    u.focus(); return;
+  }
+  navigator.clipboard.readText().then(function(t){
+    t = String(t || "").trim();
+    if(!t){ say("コピーしたものが空でした。もう一度コピーしてから押してください", false); return; }
+    u.value = t;
+    if(/^https?:\/\//.test(t)) say("貼りました。あとは［投げる］を押すだけです", true);
+    else                       say("貼りましたが https で始まっていません。確かめてください", false);
+  }).catch(function(e){
+    say("貼れませんでした（" + (e && e.name ? e.name : "理由が取れません") +
+        "）。欄を長押しして「ペースト」を押してください", false);
+    u.focus();
+  });
+});
 
 /* ---- ★送るボタンは1個。URLだけ／喋っただけ、どちらでも通す ---- */
 document.getElementById("send").addEventListener("click", function(){

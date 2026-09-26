@@ -401,6 +401,11 @@ while :; do
   #   status/nagekomi_list.json（中継所が配る生）と status/public/nagekomi_list.json（公開）へ。
   #   台帳を1本読んでJSONを1枚書くだけ＝1秒かからない。新しい常駐は増やさない。
   tick_every 2 && ( python3 "$REPO/tools/nagekomi_list.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-26（1163番）棚に書ける鍵（~/.tamago/supabase_service_role）が置かれた**その周回で**、
+  #   たまごさんがコマンドを1つも打たずに、溜まっている分を全部棚へ入れる。
+  #   鍵が無い周回は os.path.exists を1回見て即座に戻るだけ＝心臓は重くならない。
+  #   鍵の値はログにもJSONにも1バイトも書かない。AIを呼ばないのでクレジットは0円。
+  tick_every 2 && ( python3 "$REPO/tools/1163_kagi_machi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1050番）外の働き手の紙。たまごさん「役に立ってるなら使うし、役に立ってないならいらない」
   #   ★この問いは何度も出ているのに、毎回その場の報告で消えていた。だから紙を1枚だけ持たせて、
   #     そこが毎日勝手に書き換わる形にする。新しい常駐も定期タスクも作らない（心臓に相乗り）。
