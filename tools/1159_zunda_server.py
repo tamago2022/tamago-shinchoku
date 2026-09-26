@@ -182,7 +182,19 @@ def serve_ready_mp3(path, title):
 
 # ---------- ノート ----------
 
+_NL = {"at": 0, "v": []}
+
+
 def note_list():
+    # iCloud上で106回 exists を見ると何十秒もかかる（実測でページが固まった）。60秒だけ覚える。
+    if time.time() - _NL["at"] < 60 and _NL["v"]:
+        return _NL["v"]
+    v = _note_list_slow()
+    _NL["at"], _NL["v"] = time.time(), v
+    return v
+
+
+def _note_list_slow():
     try:
         notes = json.load(io.open(NOTES_CACHE, encoding="utf-8"))
     except Exception:
