@@ -79,7 +79,26 @@ def kakeru():
     return True, ""
 
 
+def mita():
+    """★「この係が本当に呼ばれているか」を後から目で見られるようにする印。
+    10分に1回だけ触る（心臓は15秒おきなので、毎回書かない）。"""
+    p = os.path.join(OUT_DIR, ".mita")
+    try:
+        if time.time() - os.path.getmtime(p) < 600:
+            return
+    except OSError:
+        pass
+    try:
+        os.makedirs(OUT_DIR, exist_ok=True)
+        io.open(p, "w", encoding="utf-8").write(
+            "%s 鍵待ち係はここまで来ている（鍵は%s）\n"
+            % (time.strftime("%F %T"), "在る" if os.path.exists(KEY_PATH) else "まだ無い"))
+    except Exception:
+        pass
+
+
 def main():
+    mita()
     if not os.path.exists(KEY_PATH):
         return
     try:
