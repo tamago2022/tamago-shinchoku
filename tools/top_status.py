@@ -387,3 +387,12 @@ if __name__ == "__main__":
         _sp2.Popen(["python3", _g], stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-26（1155番）ずんだもん読み上げの見張り。心臓に殺されても続きから立て直す。
+    # 止めたいときは status/zunda/stop を置く。
+    try:
+        import subprocess as _sp3, os as _os3
+        _z = _os3.path.join(_os3.path.dirname(_os3.path.abspath(__file__)), "1155_keeper.py")
+        _sp3.Popen(["python3", _z], stdout=_sp3.DEVNULL, stderr=_sp3.DEVNULL)
+    except Exception:
+        pass
