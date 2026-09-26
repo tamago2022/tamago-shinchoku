@@ -422,3 +422,13 @@ if __name__ == "__main__":
         _sp5.Popen(["python3", _s5], stdout=_sp5.DEVNULL, stderr=_sp5.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-26（1162番）LINEスタンプ「ラシコル」の審査の見張り。
+    # 3時間おきにLINE STOREの商品ページを見に行き、公開されたら表が変わる。
+    # 止めたいときは status/1162.stop を置く。
+    try:
+        import subprocess as _sp6, os as _os6
+        _s6 = _os6.path.join(_os6.path.dirname(_os6.path.abspath(__file__)), "1162_mihari.py")
+        _sp6.Popen(["python3", _s6], stdout=_sp6.DEVNULL, stderr=_sp6.DEVNULL)
+    except Exception:
+        pass

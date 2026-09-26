@@ -10,7 +10,7 @@ OAuthのURLは status/1161_url.txt に出す。
 use_token を立て、auth_expired.flag / no_launch.flag / .hassha_stop を外す。
 鍵の中身はログにも画面にも出さない（長さだけ）。
 """
-import io, os, pty, re, select, signal, subprocess, sys, time
+import fcntl, io, os, pty, re, select, signal, struct, subprocess, sys, termios, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -26,7 +26,7 @@ MINTED = os.path.join(TAMAGO, "claude_token.minted")
 USE = os.path.join(TAMAGO, "use_token")
 CLAUDE = os.path.expanduser("~/.local/bin/claude")
 TOKEN_RE = re.compile(r"sk-ant-oat01-[A-Za-z0-9_\-]{20,}")
-URL_RE = re.compile(r"https://claude\.ai/oauth/authorize\?[^\s\"'\x1b]+")
+URL_RE = re.compile(r"https://claude\.(?:ai|com)/[A-Za-z0-9_/\-]*oauth/authorize\?[^\s\"'\x1b]+")
 WAIT_CODE = 1500  # 25分
 
 
@@ -46,6 +46,42 @@ def strip_ansi(s):
 
 def redact(s):
     return TOKEN_RE.sub("sk-ant-oat01-<KAKUSHITA>", s)
+
+
+URL_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%"
+
+
+def hirou_url(flat):
+    """端末で折り返されたOAuthのURLを繋ぎ直して取り出す。
+
+    80桁で改行が入るので、URLに使える字だけを拾って空白・改行を跨いで繋ぐ。
+    code_challenge まで揃っていなければ「まだ途中」とみなして捨てる（半端な
+    URLを開くと承認できない）。
+    """
+    flat = flat.replace("\r", "")
+    for key in ("https://claude.com/", "https://claude.ai/"):
+        i = flat.find(key)
+        while i >= 0:
+            out = []
+            j = i
+            gap = 0
+            while j < len(flat):
+                c = flat[j]
+                if c in URL_CHARS:
+                    out.append(c)
+                    gap = 0
+                elif c in " \r\n\t":
+                    gap += 1
+                    if gap > 1:
+                        break
+                else:
+                    break
+                j += 1
+            u = "".join(out).rstrip(".,)")
+            if "oauth/authorize?" in u and "code_challenge=" in u and "redirect_uri=" in u:
+                return u
+            i = flat.find(key, i + 1)
+    return ""
 
 
 def dump(buf):
@@ -101,10 +137,7 @@ def main():
         env.pop("CLAUDE_CODE_OAUTH_TOKEN", None)
         env.pop("ANTHROPIC_API_KEY", None)
         env.pop("ANTHROPIC_AUTH_TOKEN", None)
-        env["BROWSER"] = "echo"
-        env["PATH"] = shim + ":" + env.get("PATH", "/usr/bin:/bin")
         env["TERM"] = "xterm-256color"
-        env["CI"] = ""
         os.execve(CLAUDE, [CLAUDE, "setup-token"], env)
         os._exit(127)
 
@@ -137,9 +170,8 @@ def main():
         flat = strip_ansi(buf)
 
         if not url_written:
-            m = URL_RE.search(flat)
-            if m:
-                u = m.group(0).rstrip(".,)")
+            u = hirou_url(flat)
+            if u:
                 with io.open(URLF, "w", encoding="utf-8") as f:
                     f.write(u + "\n")
                 url_written = True
