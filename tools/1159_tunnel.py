@@ -49,7 +49,27 @@ def write_endpoint(url):
 KEY = os.path.join(HOME, ".ssh", "zunda_lhr")
 
 
+LOCK = os.path.join(STATE, "tunnel.lock")
+
+
+def take_lock():
+    """2本以上走らせない。走るたびに住所が変わって、公開し直しが延々続くため。"""
+    os.makedirs(STATE, exist_ok=True)
+    if os.path.exists(LOCK):
+        try:
+            pid = int(io.open(LOCK).read().strip())
+            os.kill(pid, 0)
+            log("すでに %d が開けているので何もしません" % pid)
+            return False
+        except Exception:
+            pass
+    io.open(LOCK, "w").write(str(os.getpid()))
+    return True
+
+
 def main():
+    if not take_lock():
+        return 0
     # 鍵つきは localhost.run 側の登録が要る（Permission denied (publickey) 実測）。
     # 登録なしで使える nokey@ を使う。住所は毎回変わるので、変わるたびに公開し直す。
     cmd = ["ssh", "-o", "StrictHostKeyChecking=accept-new",
