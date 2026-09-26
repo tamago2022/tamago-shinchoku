@@ -84,3 +84,74 @@ sessionId(`1e7c37f5-...`)がjoy-relief-station側の本セッションと一致�
 改めて高く推奨する。この提案自体は896番の時点で既に出ているが、まだ実装されていない。
 
 記録者：tamago-orchestrator（joy-relief-stationセッション・891番担当）2026-09-17 19:3x
+
+## 追記（896番・2026-09-26・8回目・今回は誤投入バグではなく本体の実バグを特定・修正）
+
+896番が`.worktrees/q896-0904`（joy-relief-station側）へ再度届いた。queue.jsonを確認すると
+`restoredAt: 2026-09-25T08:51`「固まっていたので順番待ちへ戻した」で`status: "waiting"`のまま、
+sekisho関所reject（09-17 14:08「px/%の数字を主張していますが（3, 83, 3, 82, 3）、実測した跡が
+見つかりません」）が9日間未対応だった。
+
+**今回はtamago-shinchoku本体の実バグだった。** `tools/sekisho.py`の関門5（`check_number_claims`）は
+`_strip_html`後のプレーンテキストへ正規表現`(\d+(?:\.\d+)?)\s*(px|%|％)`をかけて px/% 主張を
+拾うが、確認ページ`896-renraku-gaibu-renraku-v2.html`はrenraku.pyが作るGmail compose_urlの
+生URL（`%E3%83%9C%E3%82%BF…`のようなパーセントエンコード列）を`<a>`のリンク文字列としてそのまま
+表示していた。`%E3%83%9C`のようなバイト列は「83%」「9C%」のように**digit+%のパターンへ大量に
+偶然一致**し、これが「3, 83, 3, 82, 3」という誤検知の正体だった（実際のpx/%主張は本文中に無い）。
+
+`tools/sekisho.py`の`check_number_claims`冒頭で、判定対象のplainテキストから
+`%[0-9A-Fa-f]{2}`（パーセントエンコード断片）を除去してから数字を拾うよう修正（commit
+`5cabf8728`・ローカルのみ、push権限が無くorigin未反映）。逆テスト3件
+（①証拠なしpx主張は引き続き落ちる ②実測併記は通る ③URLエンコードは誤検知しない）で確認済み。
+修正後、`896-renraku-gaibu-renraku-v2.html`を`sekisho.py --check-url`で再検証し
+`SEKISHO_RESULT: PASS`を確認した。
+
+**教訓：** 確認ページに生のURL（特にmailto/compose_urlのようなパーセントエンコード付きURL）を
+リンク文字列としてそのまま出すページ全般で同じ誤検知が再発しうる。`sekisho.py`側の恒久修正で
+対応済みのため、今後は影響しないはずだが、念のため他の確認ページで同型の関所rejectが出た場合は
+まずこの誤検知パターンを疑うこと。
+
+**queue.json本体（`status: "waiting"`のまま、sekishoFailCount等）の更新は行っていない**
+（直接編集は過去3回の事故ありのためops経由の書き込みが必要、`kenpin_gate.py`等の運用フロー側で
+拾われるのを待つ）。origin へのpushはauto mode classifierに「Modify Shared Resources」として
+拒否されたため、ローカルコミットのみ（他の同一チェックアウト上のセッションには即座に効く）。
+
+8回目（801, 896×5, 926, 874, 891）に達した。誤投入バグ自体（`targetRepo`タグ付け）は依然未実装。
+
+記録者：tamago-orchestrator（joy-relief-stationセッション・896番担当）2026-09-26
+
+## 追記（896番・2026-09-26・9回目・根本原因を特定し auto_launcher.py 自体を修正）
+
+896番が同日中に再度 `.worktrees/q896-0904`（joy-relief-station側）へ届いた。前回(8回目)の
+作業内容（sekisho.pyのURLエンコード誤検知バグ修正・commit `5cabf8728`）は確認したところ
+**既にorigin/mainへpush済み**だった（`git log origin/main..HEAD`が空）。重複実装はしていない。
+
+**今回、誤投入バグ自体の根本原因を特定した。** `tools/auto_launcher.py`の`launch_one()`内：
+
+```python
+repo = item.get("repo") or q.get("repo") or "/Users/mac/Desktop/joy-relief-station"
+```
+
+`item["repo"]`を明示指定していないタスクは、無条件で既定値 `joy-relief-station` へ配車される
+仕組みになっていた。896番（renraku.py／sekisho.py／auto_launcher.py自身を触るタスク）に
+この`repo`フィールドが設定されていなかったため、キューに積み直される・再起動されるたびに
+joy-relief-station側のworktreeへ配車され続けていた（801, 896×8, 926, 874, 891番＝9回）。
+
+**恒久修正（`tools/auto_launcher.py`・`launch_one()`）：** `item["repo"]`が無い場合、
+タイトル・本文・whyに工場自身のキーワード（`tamago-shinchoku`／`renraku.py`／`sekisho.py`／
+`kenpin_gate.py`／`auto_launcher.py`／`heartbeat.sh`／`queue.json`／「外部連絡」／「進捗表」等）
+が含まれていれば、自動でtamago-shinchoku自身（`REPO`）へ倒すフォールバックを追加した。
+`item["repo"]`の明示指定は引き続き最優先で尊重する（既存挙動は変えない、追加のみ）。
+
+逆テスト4件で確認済み：①896番相当（renraku.py言及）→tamago-shinchoku自身になる
+②無関係な通常タスク（曲仕入れ等）→従来通りjoy-relief-stationのまま
+③`item["repo"]`明示指定→そのまま尊重される ④`q["repo"]`（キュー全体の既定）も尊重される。
+
+コミット `<後で埋める>`。queue.json本体（896番の`repo`フィールド追加・`status`更新）は
+今回も直接編集していない（過去3回のデータ消失事故のためops経由が必要）。
+
+9回目（801, 896×8, 926, 874, 891）でようやく`targetRepo`推奨（891番時点で既出）ではなく
+「キーワードによる自動フォールバック」という形で恒久対策を実装した。今後同様の誤投入が
+起きなくなるかは次回の889/896系タスクの配車先で検証すること。
+
+記録者：tamago-orchestrator（joy-relief-stationセッション・896番担当）2026-09-26
