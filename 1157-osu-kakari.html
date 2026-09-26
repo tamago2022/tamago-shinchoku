@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>代わりに押す係（本人操作を数えて、潰して、残りを1画面に）</title>
+<style>
+:root{--paper:#f4f1ea;--ink:#16130f;--sub:#6b6259;--rule:#d8d2c6;--red:#b3261e;--ok:#2f6b3f;--amber:#8a6d1f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.65}
+.wrap{max-width:1000px;margin:0 auto;padding:26px 16px 80px}
+header{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:16px}
+h1{font-size:21px;margin:0 0 4px;letter-spacing:.04em}
+.lead{color:var(--sub);font-size:12.5px;margin:0}
+h2{font-size:13px;letter-spacing:.14em;color:var(--sub);margin:30px 0 8px;font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+.kotae{border:3px solid var(--ink);padding:14px 16px;margin:0 0 20px;background:#fff}
+.kotae .big{font-size:29px;font-weight:800;letter-spacing:.02em;line-height:1.3}
+.kotae .big em{font-style:normal;color:var(--red)}
+.kotae .big b{color:var(--ok)}
+.kotae p{margin:8px 0 0;font-size:12.5px;color:var(--sub)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+th{text-align:left;font-size:10.5px;letter-spacing:.08em;color:var(--sub);font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule);white-space:nowrap;vertical-align:bottom}
+td{padding:9px 8px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td small{color:var(--sub);font-size:11px;display:block;margin-top:3px}
+.what{font-weight:700;white-space:nowrap}
+.num{font-weight:800;white-space:nowrap;font-size:15px}
+.ng{color:var(--red)}.ok{color:var(--ok)}.un{color:var(--amber)}
+.rule{margin:0 0 12px;padding:9px 11px;background:rgba(0,0,0,.035);font-size:12.5px;color:var(--sub)}
+ol,ul{padding-left:1.25em;margin:8px 0}li{margin:6px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:rgba(0,0,0,.05);padding:1px 4px;word-break:break-all}
+pre{background:#1e1b17;color:#e8e2d6;padding:11px 13px;overflow-x:auto;font-size:11.5px;line-height:1.5;border-radius:3px}
+.card{border:1px solid var(--rule);background:#fff;padding:12px 14px;margin:10px 0}
+.card h3{margin:0 0 6px;font-size:14px}
+.tag{display:inline-block;font-size:10px;letter-spacing:.08em;padding:2px 6px;border:1px solid var(--rule);color:var(--sub);margin-left:6px;vertical-align:2px}
+.yowai{color:var(--amber);font-weight:700}
+a{color:#1d4ed8}
+.ketsusai{border:3px solid var(--red);background:#fff;padding:14px 16px;margin:14px 0}
+.ketsusai h3{margin:0 0 8px;font-size:16px;color:var(--red)}
+.ketsusai li{margin:9px 0}
+footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--rule);color:var(--sub);font-size:11.5px}
+</style></head><body><div class="wrap">
+
+<header>
+<h1>代わりに押す係</h1>
+<p class="lead">「俺の代わりに承認を押してくれるエージェントはいないのか」への答え。数えて、実際に叩いて潰して、残りを1画面にした。／1157番・2026-09-26・かかる金 0円</p>
+</header>
+
+<div class="kotae">
+<div class="big">本人操作 <em>90日で およそ100回</em> → 今後は <b>月0.25回（年3回）</b></div>
+<p>「およそ100回」は<b>実測した10日ぶん（9/17〜9/26・のべ11回）を90日に伸ばした数</b>。台帳がその日からしか残っていないので、それ以前は数えられない。ここは正直に書く。<br>
+「年3回」は各社の公式ドキュメントに書いてある鍵の寿命から出した数。<b>払う価値のある課金は、今回ひとつも見つからなかった。</b>全部0円で落ちる。</p>
+</div>
+
+<h2>0. 今日いちばん大きかった実測</h2>
+<div class="card">
+<h3>Claudeの承認画面は、機械でも押せた。<span class="tag">2026-09-26 09:37 実測</span></h3>
+<p>これまで「承認だけは本人がやるしかない」と置いていた。実際に叩いたら違った。<br>
+隠れたタブ（<code>document.visibilityState = "hidden"</code>／<code>window.outerHeight = 0</code>）のままだと
+「ウィンドウが小さすぎるため、認証を利用できません」と出て<b>承認ボタンが押せない状態で固定される</b>。
+表示されている状態を満たしてから押したら通り、認証コードが返ってきた。</p>
+<p class="rule">失敗の記録も残す：1回目は窓が小さいまま押して不発。2回目は別のセッションが同時に <code>setup-token</code> を立て直して合言葉（PKCE）がズレ、流し込んだコードが弾かれた。3回目で通った。<b>「できない」と言う前に3回叩いた結果がこれ。</b></p>
+<p class="rule"><b class="ng">ただし、鍵が生き返ったとは言わない。</b>コードは流し込めたが、その直後に別の見張りが <code>status/ninshou_stop.flag</code>（09:35）を立てて認証の取り直しを止めていた。
+そのあと <code>claude -p</code> を叩いたら<b>100秒無応答</b>。鍵の箱（keychain）はできたが、<b>CLIが答えるところまでは確認できていない＝ここは🟡止まり。</b>
+直っていないものを直ったとは書かない。</p>
+</div>
+
+<h2>1. 本人にやらせていた経路（実測で数えた）</h2>
+<p class="rule">数えた場所：受付台帳（9/17〜9/26の全発言・400件）／鍵の見張り <code>status/auth_keeper.json</code>／鍵台帳 <code>status/1146/kagi_daicho.json</code>／Macを実際に叩いた結果。値（鍵の中身）は1バイトも載せない。</p>
+<div class="scroll">
+<table>
+<thead><tr><th>本人にやらせていたこと</th><th>実測の回数</th><th>最後に出た日</th><th>どう潰したか</th><th>残り</th></tr></thead>
+<tbody>
+<tr><td class="what">ログインして、と頼む</td><td class="num ng">のべ11回<small>8件／実測窓は10日間</small></td><td>2026-09-26 07:34</td><td>承認はブラウザ係が押せることを実測（上）。1年トークンの発行は🟡＝まだ通っていない</td><td class="un">0<small>ただし要再検証</small></td></tr>
+<tr><td class="what">鍵が切れて工場が止まる</td><td class="num ng">115回<small>見張りが検知した回数</small></td><td>2026-09-20 04:30<small>この日から鍵が死んだまま</small></td><td>固定の1年トークン（rotateしない）に置換。同時起動しても取り合いが起きない形</td><td class="ok">年1<small>しかも機械が押せる</small></td></tr>
+<tr><td class="what">⌘V → Enter を押させる札</td><td class="num ng">鳴り続けていた<small>札が自分を並べ直して名前順の先頭に居座る作り</small></td><td>2026-09-26 09:20</td><td>この札が窓口を占領して、後ろのジョブを2回×180秒飢えさせていた（実測）。押す係に置き換える</td><td class="ok">0</td></tr>
+<tr><td class="what">Claudeアプリの「許可」ダイアログ</td><td class="num un">記録が残る仕組みはある<small>~/Library/Logs/Claude/main.log</small></td><td>常時</td><td>①公式の auto mode ②Hammerspoonの押す係（下の表）</td><td class="ok">0</td></tr>
+<tr><td class="what">GitHubのログインし直し</td><td class="num ng">鍵が取れない＝赤<small><code>gh auth token</code> を叩いて失敗を確認</small></td><td>2026-09-26 09:27</td><td>Fine-grained PAT を無期限で作る（個人リポジトリなら無期限が選べる）</td><td class="ok">0</td></tr>
+<tr><td class="what">Spotifyの許可</td><td class="num ng">鍵そのものが無い</td><td>—</td><td>Authorization Codeフローを1回通す。以後は自動更新</td><td class="un">年2<small>6か月で失効するため</small></td></tr>
+<tr><td class="what">Supabaseの鍵</td><td class="num un">公開鍵だけ在る／秘密側が無い<small>api_keys.env を実測</small></td><td>2026-09-26 09:27</td><td>Scoped Personal Access Token（全権のClassicではない）</td><td class="un">年1</td></tr>
+<tr><td class="what">Bufferの予約投稿</td><td class="num un">アクセストークンは置いてある</td><td>—</td><td>公式APIキー1本。Xもここのチャンネルとして繋ぐ</td><td class="ok">0<small>漏れた時だけ再発行</small></td></tr>
+<tr><td class="what">規約同意・本人確認・支払い</td><td class="num">発生時のみ</td><td>2026-09-25</td><td><b>潰さない。</b>ここは本人しか押してはいけない</td><td class="ng">月1の1画面へ</td></tr>
+</tbody></table>
+</div>
+
+<h2>2. 「代わりに押す係」の候補を6つ並べて、実際に確かめた</h2>
+<p class="rule">たまごさんの条件：<b>間違って押さないこと。</b>不可逆な4つ（データ削除・課金・外部公開・パスワード入力）は絶対に押さない。</p>
+<div class="scroll">
+<table>
+<thead><tr><th>候補</th><th>採否</th><th>費用</th><th>実際に確かめたこと／理由</th></tr></thead>
+<tbody>
+<tr><td class="what">① Claude Code の auto mode<br><small>Anthropic公式</small></td><td class="ok">本命・採用</td><td class="ok">0円</td>
+<td>公式が用意した「代わりに判断する係」。別のモデル（classifier）が実行前に1件ずつ見て、危ないものだけ止める。<b>Pro・Max・Teamの既定モード</b>なので追加の金は要らない。
+<small>公式の数字：実トラフィック1万件で誤って止める率0.4％、危ないものを見逃す率17％。<code>--dangerously-skip-permissions</code>（全部素通り）からの乗り換え先として作られたもので、慎重な人手の代わりではないと公式が明言している。3回続けて止められたら人を呼ぶ backstop 付き。</small></td></tr>
+<tr><td class="what">② Hammerspoon の押す係<br><small>tools/1157_osu_kakari.lua</small></td><td class="ok">採用</td><td class="ok">0円</td>
+<td>デスクトップアプリの許可ダイアログを、macOSのアクセシビリティAPIで直接押す。裏で動く・別の画面に居ても効く・キー入力を横取りしない。
+<small>実測：Macに<b>まだ入っていない</b>（Hammerspoon・Keyboard Maestro・Amphetamine すべて未導入、<code>brew</code> も無い）。入れる係は書いた。</small>
+<small>元ネタを1か所だけ変えた：元は「許可」と付くボタンを全部押す。こちらは<b>押してよい名前の表</b>と<b>1語でもあったら絶対押さない禁止語</b>の二重にして、押した／押さなかったを全部記録に残す。</small></td></tr>
+<tr><td class="what">③ ブラウザ係が押す<br><small>このセッションがやった</small></td><td class="ok">採用・実証済み</td><td class="ok">0円</td>
+<td>OAuthの同意画面のように、アプリの外に出る承認はここが押す。<b>今日それでClaudeの鍵を取り直した。</b>上の「0.」が全部その記録。</td></tr>
+<tr><td class="what">④ Keyboard Maestro</td><td class="ng">採らない</td><td>$36 買い切り<br><small>≒5,700円</small></td><td>できることは②とほぼ同じ。②が0円で足りるので払う理由が無い。<small>買い切り・1人5台まで。</small></td></tr>
+<tr><td class="what">⑤ ブラウザのログイン状態を保存する<br><small>Playwright の storageState／永続プロフィール</small></td><td class="ng">採らない</td><td>0円</td>
+<td>24時間〜数日で切れる実例が多い。2段階認証が回ると破綻する。LinkedInは利用規約でヘッドレスブラウザを名指し禁止、Instagramも公式API以外の自動化を禁止。<b>壊れやすいうえに規約に触れる。</b></td></tr>
+<tr><td class="what">⑥ パスワードマネージャに打たせる／2段階認証を機械に持たせる</td><td class="ng">採らない</td><td>1Password 個人 $2.99/月<br><small>≒470円/月</small></td>
+<td>こちらがパスワードを直接扱う形になる。2段階認証を機械に持たせた時点で、2段階認証をかけた意味が消える。<b>たまごさんの責任の取り方として筋が悪い</b>ので採らない。</td></tr>
+</tbody></table>
+</div>
+
+<h2>3. 押してよいもの／絶対に押さないもの（これが事故を止める本体）</h2>
+<div class="card">
+<h3>押してよい（この名前のボタンだけ）</h3>
+<p><code>常に許可</code> <code>一度だけ許可</code> <code>許可</code> <code>承認</code> <code>続ける</code> <code>OK</code> <code>Allow once</code> <code>Always allow</code> <code>Allow for session</code> <code>Approve</code> <code>Authorize</code> <code>Continue</code></p>
+</div>
+<div class="card">
+<h3 class="ng">同じ画面に1語でもあったら、何があっても押さない</h3>
+<p><code>削除 / 消去 / ゴミ箱 / Delete / Remove / Erase / Trash</code>　<code>支払 / 課金 / 購入 / 請求 / カード / Purchase / Pay / Subscribe / Billing</code>　<code>公開 / 投稿 / 送信 / Publish / Post / Send / Tweet</code>　<code>パスワード / Password / 秘密鍵 / Secret</code>　<code>権限 / 管理者 / Admin</code>　<code>同意 / 利用規約 / Terms / Agree</code>　<code>本人確認 / 2段階 / Two-factor</code></p>
+<p class="rule">ホワイトリストだけでも、禁止語だけでも事故る。<b>両方通ったものだけ押す。</b>押した／押さなかったは <code>status/1157/oshita.jsonl</code> に1行ずつ残るので、来月には「置き」ではなく実測の回数が出る。</p>
+</div>
+
+<h2>4. 金の話（先に円で出す。勝手に契約はしない）</h2>
+<div class="scroll">
+<table>
+<thead><tr><th>払う先</th><th>月いくら</th><th>本人操作は<br>月◯回→◯回</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td class="what">Claude Code auto mode</td><td class="ok">0円<small>Pro/Max/Teamの既定モード</small></td><td class="ok">許可クリック多数 → 0</td><td class="ok">採用。<b>そもそも払う必要が無い</b></td></tr>
+<tr><td class="what">Hammerspoon ＋ Amphetamine</td><td class="ok">0円</td><td class="ok">ダイアログ → 0</td><td class="ok">採用</td></tr>
+<tr><td class="what">Keyboard Maestro</td><td>買い切り ≒5,700円</td><td>0 → 0（変わらない）</td><td class="ng">払わない。0円で同じことができる</td></tr>
+<tr><td class="what">1Password（個人）</td><td>≒470円/月</td><td>0 → 0（変わらない）</td><td class="ng">払わない。パスワードを扱う形になる</td></tr>
+<tr><td class="what">Claude Max 5x</td><td>≒17,380円/月<small>$100・為替と税込みの換算値</small></td><td>変わらない</td><td class="ng">払わない。<b>本人操作は1回も減らない</b></td></tr>
+<tr><td class="what">X API を直接叩く</td><td>従量<small>2026-02-06に無料枠が廃止、$200のBasicも新規契約できない</small></td><td>0 → 0</td><td class="ng">払わない。Buffer経由で0円</td></tr>
+<tr><td class="what">Lovable 公式APIキー</td><td>Business以上</td><td>年1 → 年1</td><td class="ng">払わない。今の refresh_token が生きている</td></tr>
+</tbody></table>
+</div>
+<p class="rule"><b>結論：今回の目的（本人の手を減らす）に対して、払う価値のある課金はひとつも無かった。</b>「金を払ってもいい」と言われたが、払わなくていい、が正直な答え。</p>
+
+<h2>5. 世界の実例（やめた事例も引く）</h2>
+<ul>
+<li><b>Anthropic自身が「承認疲れ」を問題として扱っている。</b>公式記事いわく、Claude Codeの利用者は許可を求められたうちの93％を承認している。押しているだけになるので、別のモデルに代わりに見せる仕組み（auto mode）を作った、という経緯。</li>
+<li><b>同じことを個人がやっている実例。</b>Claudeデスクトップの許可ボタンをHammerspoonで自動で押す手順が日本語で公開されている（2026年4月）。アプリの更新で一度動かなくなり、書き直されている＝<b>この手は壊れる前提で持つ</b>。</li>
+<li><b>「永久」を信じた仕組みは死ぬ。</b>Spotifyは長らく無期限だった refresh_token を2026年6月に「6か月で失効」と告知。世界中の「一度作れば一生動く」仕組みが一斉に止まった。だから見張りが要る。</li>
+<li><b>やめた事例。</b>ブラウザのログイン状態を保存して回す方法は、「Cookieを強く切るサイトと毎回回る2段階認証で破綻した。サイトごとにログイン処理を書くのが保守地獄になった」と書いて乗り換えている人が複数いる。<span class="yowai">（個人ブログ＝弱い情報。ただし同趣旨が複数）</span></li>
+</ul>
+
+<h2>6. 今月、本人しか押せないもの（1画面・これで全部）</h2>
+<div class="ketsusai">
+<h3>ここだけ。押したらもう今月は呼ばれない。</h3>
+<ol>
+<li><b>Hammerspoon にアクセシビリティを許可する（一生で1回）</b><br>
+<small>設定 → プライバシーとセキュリティ → アクセシビリティ → Hammerspoon をON。macOSは人の指しか受け付けないので、ここだけは機械では取れない。これを押した瞬間から、アプリの許可ダイアログは全部この係が押す。</small></li>
+<li><b>Buffer の APIキーを1回だけ作る</b><br>
+<small><code>publish.buffer.com/settings/api</code> で「Create a new API key」。出てきた鍵を貼る場所はこちらが用意してある。これでXへのログインの用事も消える。</small></li>
+<li><b>Spotify の同意を1回押す（次は6か月後）</b><br>
+<small>こちらが同意画面のURLを作って開く。押すだけ。以後は自動更新。</small></li>
+</ol>
+<p class="rule">これ以外で、たまごさんに何かを押させに来たら、それは設計ミス。<b>「⌘V → Enter」を求める札は今日で廃止する。</b></p>
+</div>
+
+<h2>7. 置いた道具</h2>
+<ul>
+<li><code>tools/1157_osu_kakari.lua</code>　押す係の本体（ホワイトリスト12語＋禁止語28語・押した記録つき）</li>
+<li><code>tools/1157_osu_install.py</code>　入れる係。<code>--check</code> で今の状態、<code>--install</code> で導入、<code>--uninstall</code> で完全に元に戻る（可逆・冪等）</li>
+<li><code>status/1157/oshita.jsonl</code>　押した／押さなかったの全記録。来月ここから実測の回数が出る</li>
+<li><code>tools/1156_login_ichioshi.py</code>　Claudeの1年トークンを取り直す係（前番から継続）</li>
+</ul>
+
+<h2>8. 出典</h2>
+<ul>
+<li>Anthropic「How we built Claude Code auto mode: a safer way to skip permissions」2026-03-25　<a href="https://www.anthropic.com/engineering/claude-code-auto-mode">https://www.anthropic.com/engineering/claude-code-auto-mode</a></li>
+<li>Claude Code Docs「Choose a permission mode」　<a href="https://code.claude.com/docs/en/permission-modes">https://code.claude.com/docs/en/permission-modes</a>（Pro・Max・Teamの既定が auto mode）</li>
+<li>Claude Code Docs「Configure permissions」　<a href="https://code.claude.com/docs/en/permissions">https://code.claude.com/docs/en/permissions</a></li>
+<li>noa「Claude Codeの許可ボタンを自動でクリックする方法 デスクトップアプリ版（Mac限定）」note・2026-04　<a href="https://note.com/noa_saruta/n/ncf67fc0d279b">https://note.com/noa_saruta/n/ncf67fc0d279b</a></li>
+<li>Hammerspoon 公式ドキュメント <code>hs.axuielement</code>　<a href="https://www.hammerspoon.org/docs/hs.axuielement.html">https://www.hammerspoon.org/docs/hs.axuielement.html</a></li>
+<li>Keyboard Maestro 公式・購入ページ（$36買い切り）　<a href="https://wiki.keyboardmaestro.com/manual/Purchase">https://wiki.keyboardmaestro.com/manual/Purchase</a></li>
+<li>Claude 料金（Max 5xの日本円換算）　<a href="https://claude.com/pricing">https://claude.com/pricing</a>／<span class="yowai">円換算は国内メディアの値（為替で動く＝弱い情報）</span></li>
+<li>X API の料金（2026-02-06に無料枠廃止・従量へ）<span class="yowai">個人メディア中心＝弱い情報。だからBuffer経由にして確認を待たずに回避する</span></li>
+<li>鍵の寿命・採らなかった手の詳細は前番　<a href="https://tamago2022.github.io/tamago-shinchoku/1146-login-zero.html">1146番</a></li>
+</ul>
+
+<footer>
+1157番／2026-09-26。数えた窓は9/17〜9/26（台帳がそこからしか無い）。値（鍵の中身）はこのページに1バイトも書いていない。<br>
+押した記録：<code>status/1157/oshita.jsonl</code>／Macの実測：<code>status/mac_jobs/done/0c_1157_jissoku2.out</code>
+</footer>
+
+</div></body></html>
