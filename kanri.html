@@ -59,14 +59,14 @@ body.editing .editbtn{background:var(--ink); color:#fff; border-color:var(--ink)
 
 /* ── ブロック ── */
 .blk{background:var(--card); border:1px solid var(--line); border-radius:12px;
-  padding:0; margin:9px 0; overflow:hidden}
+  padding:0; margin:8px 0; overflow:hidden}
 .bh{display:flex; align-items:center; gap:8px; padding:9px 13px; cursor:pointer;
   user-select:none; -webkit-user-select:none}
 .bh h2{font-size:13px; margin:0; color:var(--sub); font-weight:600; letter-spacing:.06em; flex:1}
 .bh .caret{color:var(--sub); font-size:13px; transition:transform .15s}
 .blk.closed .caret{transform:rotate(-90deg)}
 .blk.closed .bb{display:none}
-.bb{padding:0 13px 12px}
+.bb{padding:0 13px 11px}
 /* 「残す／いらない」は普段は隠す（1画面を食うため）。上の「編集」で出す。 */
 .keep{display:none; gap:10px; align-items:center; font-size:13px; color:var(--sub);
   padding:8px 13px 11px; border-top:1px dashed #ebe4d8}
@@ -80,22 +80,24 @@ body.editing .blk{outline:1px dashed #cfc6b6}
 .run:first-child{border-top:0}
 .rt{font-size:19px; font-weight:600; line-height:1.4}
 .rn{color:var(--sub); font-variant-numeric:tabular-nums; font-weight:400; margin-right:7px}
-.zero{font-size:30px; font-weight:800; color:var(--red); font-variant-numeric:tabular-nums; line-height:1.1}
-.zerowhy{font-size:14px; color:var(--red); margin-top:4px; line-height:1.45;
+.zline{display:flex; align-items:baseline; gap:10px}
+.zero{font-size:30px; font-weight:800; color:var(--red); font-variant-numeric:tabular-nums; line-height:1.1;
+  flex:0 0 auto}
+.zerowhy{font-size:13px; color:var(--red); line-height:1.4; flex:1; min-width:0;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 .okrun{font-size:30px; font-weight:800; color:var(--green); font-variant-numeric:tabular-nums; line-height:1.1}
 .run{padding:8px 0}
 .rt{font-size:17px}
 
 /* ── クレジットのゲージ ── */
-.gnum{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.gnum{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
 .gbig{font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.05}
 .gsub{font-size:15px; color:var(--sub); font-variant-numeric:tabular-nums}
 .gauge{position:relative; height:20px; border-radius:6px; background:#efe9df; margin:9px 0 6px; overflow:hidden}
 .gauge i{position:absolute; left:0; top:0; bottom:0; border-radius:6px; background:var(--green)}
 .gauge b{position:absolute; top:-4px; bottom:-4px; width:3px; background:var(--ink); border-radius:2px}
-.gmark{font-size:13px; color:var(--sub); font-variant-numeric:tabular-nums}
-.zure{font-size:16px; font-weight:700; margin-top:2px}
+.gmark{font-size:12px; color:var(--sub); font-variant-numeric:tabular-nums; line-height:1.4}
+.zure{font-size:16px; font-weight:700}
 .zure.ok{color:var(--green)} .zure.over{color:var(--red)} .zure.under{color:var(--blue)}
 
 /* ── 次に発走 ── */
@@ -121,7 +123,7 @@ body.editing .blk{outline:1px dashed #cfc6b6}
 .btn:active{background:#efe9df}
 
 .note{font-size:12px; color:var(--sub); line-height:1.5; margin-top:7px}
-.more{font:inherit; font-size:14px; min-height:40px; width:100%; margin-top:8px; padding:9px;
+.more{font:inherit; font-size:13px; min-height:38px; width:100%; margin-top:8px; padding:9px;
   border:1px solid var(--line); border-radius:10px; background:#faf6ef; color:var(--sub); cursor:pointer}
 .soon{padding:22px 13px; color:var(--sub); font-size:16px; line-height:1.7}
 .soon b{color:var(--ink)}
@@ -300,23 +302,23 @@ function drawRun(d){
         + esc(x.title||x.label||"")+'</div></div>'; }).join("");
     return;
   }
-  el.innerHTML = '<div class="zero">0本</div><div class="zerowhy" id="why">理由を調べています…</div>';
+  el.innerHTML = '<div class="zline"><div class="zero">0本</div><div class="zerowhy" id="why">理由を調べています…</div></div>';
   var why = d.stoppedReason || "";
   Promise.all([
     getJson("status/public/hassha_gate.json").catch(function(){return null}),
     getJson("status/public/zero_bon.json").catch(function(){return null})
   ]).then(function(a){
-    var g=a[0], z=a[1], lines=[];
-    if(why) lines.push(why);
-    if(g && g.hasshaOK===false) lines.push("発車の門が閉じています："+(g.why||""));
-    else if(g) lines.push("発車の門は開いています（同時に出せるのは"+(g.maxParallel||"?")+"本まで）。");
+    var g=a[0], z=a[1], line="";
+    /* 1行だけ。効いている歯止めから順に選ぶ：鍵 → 門 → 止まっている理由 */
     if(z){
       var today = Object.keys(z).filter(function(k){return /^\d{4}-/.test(k)}).sort().pop();
       var w = today && z[today] && z[today].why;
       if(w){ var topw = Object.keys(w).sort(function(x,y){return w[y]-w[x]})[0];
-        if(topw) lines.push("今日いちばん長く止めていた理由："+topw+"（"+Math.round(w[topw])+"分）"); }
+        if(topw) line = topw.replace(/（.*$/,"") + "（今日"+Math.round(w[topw])+"分）"; }
     }
-    $("#why").innerHTML = lines.length ? lines.map(esc).join("<br>") : "理由が取れませんでした。";
+    if(g && g.hasshaOK===false) line = "発車の門が閉じています："+(g.why||"");
+    if(!line) line = why || "理由が取れませんでした。";
+    $("#why").textContent = line;
   });
 }
 
@@ -334,13 +336,11 @@ function drawCredit(p){
   var word = Math.abs(diff)<=5 ? "ぴったり" : (diff>0 ? "使いすぎ" : "余っている");
   el.innerHTML =
     '<div class="gnum"><div class="gbig">'+now.toFixed(0)+'%</div>'
-    + '<div class="gsub">使った ／ 残り '+(99-now).toFixed(0)+'%</div></div>'
+    + '<div class="zure '+cls+'">ズレ '+(diff>=0?"+":"")+diff.toFixed(0)+'pt・'+word+'</div></div>'
     + '<div class="gauge"><i style="width:'+Math.min(100,now)+'%"></i>'
     + '<b style="left:calc('+Math.min(100,ideal)+'% - 1.5px)"></b></div>'
-    + '<div class="gmark">棒線＝本来ここ '+ideal.toFixed(0)+'%</div>'
-    + '<div class="zure '+cls+'">ズレ '+(diff>=0?"+":"")+diff.toFixed(0)+'pt（'+word+'）</div>'
-    + '<div class="note">火曜18時リセット。次は '+esc(p.resetAt)+'（あと'+esc(p.daysLeft)+'日）。'
-    + (p.estimated?'この数字は推計です。':'')+'</div>';
+    + '<div class="gmark">棒線＝本来ここ '+ideal.toFixed(0)+'%　／　火曜18時リセットまで あと'
+    + Number(p.daysLeft).toFixed(1)+'日'+(p.estimated?'（推計）':'')+'</div>';
 }
 
 /* 次に発走：P0のトーキングアバターを必ず一番上に */
@@ -349,6 +349,11 @@ function drawNext(d){
   getJson("status/public/queue_next.json").then(function(q){
     var items=(q.items||[]).filter(function(x){return x.status==="waiting"});
     var p0=items.filter(isP0), rest=items.filter(function(x){return !isP0(x)});
+    /* P0のなかでも #915（たまごさんの1番）を先頭に */
+    p0.sort(function(a,b){
+      var ia=P0_N.indexOf(Number(a.n)), ib=P0_N.indexOf(Number(b.n));
+      return (ia<0?99:ia)-(ib<0?99:ib);
+    });
     /* P0が待機列に無くても、たまごさんの1番として必ず出す */
     if(!p0.length) p0=[{n:915,title:"【たまごさんの1番】コンシェルジュと声で会話できるようにする（トーキングアバター）",priority:1}];
     rest.sort(function(a,b){ return (a.priority||9)-(b.priority||9) || (a.n-b.n); });
@@ -361,7 +366,7 @@ function drawNext(d){
     el.innerHTML = show.slice(0,3).map(row).join("")
       + '<div id="qMore" class="hide">'+show.slice(3).map(row).join("")+'</div>'
       + (show.length>3 ? '<button class="more" type="button" id="qMoreBtn">あと'+(show.length-3)+'本を見る</button>' : '')
-      + '<div class="note">★トーキングアバターは最優先（P0）として、常に一番上に固定しています。</div>';
+      + '<div class="note">★P0＝トーキングアバター。常に一番上に固定。</div>';
     var mb=$("#qMoreBtn");
     if(mb) mb.addEventListener("click",function(){
       var m=$("#qMore"), open=!m.classList.contains("hide");

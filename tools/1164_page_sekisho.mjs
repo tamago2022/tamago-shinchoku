@@ -26,7 +26,10 @@ import { dirname, resolve } from "node:path";
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const LIST_FILE = process.argv[2];
 const OUT_JSON = process.argv[3] ? resolve(process.argv[3]) : null;
-const SETTLE_MS = 6000;
+// 重いページ（曲数の多いアーティスト）は6秒では見出しすら出ず、
+// 「関連が0本」と誤判定していた（2026-09-26 実測：Scarborough Fair）。
+// 環境変数 SEKISHO_SETTLE_MS で伸ばせるようにし、既定も伸ばす。
+const SETTLE_MS = Number(process.env.SEKISHO_SETTLE_MS || 14000);
 const LOAD_TIMEOUT_MS = 30000;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
