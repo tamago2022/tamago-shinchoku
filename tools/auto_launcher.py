@@ -2387,7 +2387,27 @@ def launch_one(item, q, alive, safe_max):
     #   していた（882番・883番が実際にこれで出せなかった）。joy-relief-station は
     #   .git 320MB＋登録済みworktree 77件で、切るのに時間がかかりすぎる。
     #   触るのが tamago-shinchoku だけのタスクは item["repo"] でこちらを指す。
-    repo = item.get("repo") or q.get("repo") or "/Users/mac/Desktop/joy-relief-station"
+    #
+    # 2026-09-26（896番・9回目の誤投入で確定）：item["repo"]の設定漏れがあると
+    #   既定でjoy-relief-station側へ配車されてしまい、tamago-shinchoku自身の仕組み
+    #   （renraku.py/sekisho.py/kenpin_gate.py/auto_launcher.py本体等）を触るタスクが
+    #   801, 896×8, 926, 874, 891番と繰り返し誤投入された
+    #   （記録：shared-brain/00_INBOX/routing-fix-joy-relief-station-misroute.md）。
+    #   item["repo"]が無くても、タイトル・本文に工場自身のキーワードがあれば
+    #   自動でこちら（tamago-shinchoku自身）へ倒す。明示された item["repo"] は最優先で尊重する。
+    _repo_explicit = item.get("repo") or q.get("repo")
+    if _repo_explicit:
+        repo = _repo_explicit
+    else:
+        _blob = ((item.get("title") or "") + " " + (item.get("what") or "")
+                 + " " + (item.get("why") or ""))
+        _self_repo_markers = (
+            "tamago-shinchoku", "renraku.py", "sekisho.py", "kenpin_gate.py",
+            "auto_launcher.py", "hikitsugi_gate.py", "failures_ledger.py",
+            "heartbeat.sh", "machine_status_push.sh", "queue.json",
+            "外部連絡", "進捗表", "関所(sekisho)", "kenpin_gate", "auto_launcher",
+        )
+        repo = REPO if any(m in _blob for m in _self_repo_markers) else "/Users/mac/Desktop/joy-relief-station"
     wt_name = item.get("worktree") or ("q%02d-0904" % item.get("n"))
     # 2026-09-06：作業場をリポジトリの外へ出した。
     #   たまごさんの言葉：「ChatGPT（Codex）の一覧にこっちのタスクが出てくる。
