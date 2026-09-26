@@ -163,9 +163,15 @@ def chunks(text):
         s = p.strip()
         if not s:
             continue
-        while len(s) > CHUNK * 2:            # 句点が無い長文も切る
-            out.append(s[:CHUNK])
-            s = s[CHUNK:]
+        if len(s) > CHUNK * 2:               # 句点が無い長文も切る
+            # ★先に溜まっているもの(buf)を出してから切る。
+            #   これを忘れると長い段落が先に並び、題名が2番目に飛ばされる（実測）。
+            if buf:
+                out.append(buf)
+                buf = ""
+            while len(s) > CHUNK * 2:
+                out.append(s[:CHUNK])
+                s = s[CHUNK:]
         if len(buf) + len(s) > CHUNK:
             if buf:
                 out.append(buf)

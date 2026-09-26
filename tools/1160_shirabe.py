@@ -284,6 +284,10 @@ def main():
 
     if os.path.exists(STOP):
         return 0
+    # ★お金の栓。たまごさんの判断待ちのあいだ、新しい問いを投げない。
+    #   （2026-09-26 実測：deep_research は消費0ではなかった。574.837 → 271.737）
+    #   走っている本の回収と検品は続ける。消すのはたまごさんの一言だけ。
+    tomeru = os.path.exists(os.path.join(DIR, "tomeru"))
     # 自分の線だけの栓。★置いたまま殺されて線が永久に止まる事故を防ぐため、
     #   15分より古い栓は自分で外す（2026-09-26 実測：手入れの票が心臓に殺され栓が残った）。
     mystop = os.path.join(DIR, "stop")
@@ -374,7 +378,9 @@ def main():
                 log("諦めた %s（%s）" % (r["id"], riyuu))
 
         # ② 空きがあれば次を着火
-        if z is not None and z < CREDIT_FLOOR:
+        if tomeru:
+            log("お金の栓が掛かっているので新しい問いは投げない（回収と検品だけ続ける）")
+        elif z is not None and z < CREDIT_FLOOR:
             log("残 %.3f < %.1f なので投げずに待つ" % (z, CREDIT_FLOOR))
         else:
             for r in rows:

@@ -38,8 +38,40 @@ def souji(t):
 def md2html(t):
     out = []
     in_ul = False
-    for line in t.split("\n"):
+    lines = t.split("\n")
+    i = -1
+    while True:
+        i += 1
+        if i >= len(lines):
+            break
+        line = lines[i]
         s = line.rstrip()
+        # ── 表（| a | b | の形）はそのまま出すと読めないので表にする ──
+        if s.strip().startswith("|") and s.strip().endswith("|") and s.count("|") >= 3:
+            blk = []
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                blk.append(lines[i].strip())
+                i += 1
+            i -= 1
+            if in_ul:
+                out.append("</ul>"); in_ul = False
+            cells = [[c.strip() for c in row.strip("|").split("|")] for row in blk]
+            cells = [c for c in cells if not all(re.fullmatch(r":?-{2,}:?", x or "") for x in c)]
+            if cells:
+                def ic(x):
+                    x = html.escape(x)
+                    x = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", x)
+                    x = re.sub(r"\[([^\]]+)\]\((https?://[^\s\)]+)\)",
+                               r'<a href="\2" target="_blank" rel="noopener">\1</a>', x)
+                    x = re.sub(r"(?<!\")(?<!=)(https?://[^\s<\)\]\"']+)",
+                               r'<a href="\1" target="_blank" rel="noopener">\1</a>', x)
+                    return x
+                out.append("<div class=hyo><table>")
+                out.append("<tr>" + "".join("<th>%s</th>" % ic(c) for c in cells[0]) + "</tr>")
+                for row in cells[1:]:
+                    out.append("<tr>" + "".join("<td>%s</td>" % ic(c) for c in row) + "</tr>")
+                out.append("</table></div>")
+            continue
         # 先にリンクと強調
         def inline(x):
             x = html.escape(x)
@@ -106,8 +138,40 @@ a{color:var(--accent);word-break:break-all}
 hr{border:0;border-top:1px solid var(--line);margin:22px 0}
 .machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
 footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
 @media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
 """
+
+
+OKANE = ('<div class=machi style="margin-top:14px">'
+         '<strong>お金の実測（憶測なし）</strong><br>'
+         'Genspark の Deep Research は<strong>消費0ではありませんでした</strong>。'
+         '投げた直後は残高が動かず、終わってから引かれます。'
+         '10本で 574.837 → 271.737（303.1クレジット、1本あたり約30）。'
+         '2026-09-26 11:51〜12:53 の実測。<br>'
+         'この数字が出た時点で、新しい問いを投げるのは止めてあります'
+         '（走っている分の回収と検品だけ続きます）。</div>')
+
+
+def zan_hyouji(j):
+    """残クレジット。取れていなければ台帳から最後に取れた値を出す（Noneと出さない）。"""
+    z = j.get("zan")
+    if z:
+        return str(z)
+    p = os.path.join(DIR, "daicho.jsonl")
+    if os.path.exists(p):
+        for line in reversed(io.open(p, encoding="utf-8").readlines()):
+            try:
+                d = json.loads(line)
+            except Exception:
+                continue
+            for k in ("zan", "zan_before"):
+                if d.get(k):
+                    return "%s（%s時点）" % (d[k], d.get("at", "")[:16])
+    return "取得できず"
 
 
 def wrap(title, inner, modoru=True):
@@ -181,8 +245,8 @@ def main():
     # ── 目次（これが本番URL1枚） ──
     h = ["<header><h1>人を挟まずに回す仕組み<br>世界の実装と、失敗の記録</h1>",
          "<p class=lead>Genspark（Deep Research）が調べて書いたもの。全文に出典URLつき。</p>",
-         "<p class=meta>更新 %s ／ 取れた %d本・走っている %d本・順番待ち %d本 ／ 残クレジット %s（Deep Research は消費0で実測）</p></header>"
-         % (now, j.get("取れた", 0), j.get("走っている", 0), j.get("順番待ち", 0), html.escape(str(j.get("zan", "?"))))]
+         "<p class=meta>更新 %s ／ 取れた %d本・走っている %d本・順番待ち %d本 ／ 残クレジット %s</p>%s</header>"
+         % (now, j.get("取れた", 0), j.get("走っている", 0), j.get("順番待ち", 0), html.escape(zan_hyouji(j)), OKANE)]
     for r, body, urls, n in arts:
         midashi = re.findall(r"<h3>(.*?)</h3>", body)[:4]
         h.append('<article><div class=head><h2><a href="1160-%s.html" style="color:inherit;text-decoration:none">%s</a></h2>'
