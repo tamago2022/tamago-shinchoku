@@ -228,8 +228,11 @@ def pace_block():
     p = jread(os.path.join(ST, "pace.json"), {})
     if not p:
         return None
+    # ★1155番：allPctAsOf／allPctAgeMin を写していなかったので、進捗表の
+    #   「この数字は ◯◯時点」が本番でずっと「時点不明」と出ていた（2026-09-26 実測）。
     keys = ("updatedAt", "allPct", "remainWeek", "usedToday", "budgetToday",
-            "daysLeft", "state", "resetAt", "dataOk")
+            "daysLeft", "state", "resetAt", "dataOk", "allPctAsOf", "allPctAgeMin",
+            "perDayEven", "lineTarget")
     out = {k: p.get(k) for k in keys if p.get(k) is not None}
     out["source"] = "status/pace.json"
     return out

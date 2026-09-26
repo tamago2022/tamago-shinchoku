@@ -121,6 +121,19 @@ ul{{padding-left:20px;font-size:13px}} li{{margin:3px 0}}
 
 <h2>⑦ 未完了へ戻したもの（{len(modoshita)}件・先頭80件）</h2>\n<table><tr><th>番</th><th>件名</th></tr>{rows}</table>
 <p class="dim">全部は status/1141/mon.json にあります。</p>
+
+<h2>⑧ この紙に出ている数字の実測（生データ）</h2>
+<p class="dim">★関所（tools/sekisho.py）の決まり：%の数字を出すなら、どこから出た数字かを
+生データで併記する。「測ったことにする」を機械で不可能にするための欄です。</p>
+<pre>実測: 嘘の完了 {round(uso*100/max(1,len(kensa)),1)}%   ＝ {uso} / {len(kensa)}（URLを1本ずつ実体で叩いた結果）
+実測: 弾いて未完了へ戻した {sho.get("弾いた率",0)}%   ＝ {sho.get("弾いた",0)} / {sho.get("見た",0)}（初回に過去の完了を全部かけ直した分）
+実測: 棚に何か1つはある人 {round((len(zrows)-len(zz))*100/max(1,len(zrows)),1)}%   ＝ {len(zrows)-len(zz)} / {len(zrows)}
+実測: 毎日の門 通した {mon.get("通した",0)} ／ 弾いた {mon.get("弾いた",0)} ／ 見た {mon.get("見た",0)}
+実測: 在庫ゼロ率 {round(len(zz)*100/max(1,len(zrows)),1)}%   ＝ {len(zz)} / {len(zrows)}（100人を棚の索引に1件ずつ照合）
+実測: 飴玉ゼロ率 {last.get("飴玉ゼロ率","—")}%   （前回 {prev.get("飴玉ゼロ率","—")}%）実機で案内人に話しかけた直近1周
+実測: 平均点 {last.get("百点換算","—")} 点 / 100（前回 {prev.get("百点換算","—")} 点）
+出どころ: status/1141/mon.json ／ status/1141/zaiko.json ／ status/kyaku50/*.json
+測った日時: {E(mon.get("at",""))}</pre>
 </div></html>"""
 os.makedirs(os.path.join(REPO,"share","check"),exist_ok=True)
 io.open(os.path.join(REPO,"share","check","1141-kanryo-taikan.html"),"w",encoding="utf-8").write(H)

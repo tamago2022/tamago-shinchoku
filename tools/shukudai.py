@@ -563,10 +563,16 @@ def build_html(rows, t, countrow, hist, pace, quota, health):
                 '<div class="s">%s</div></div>' % (" red" if red else "", esc(label),
                                                    esc(str(value)), esc(sub)))
 
+    # 題名と完了条件は**台帳から一字一句そのまま写した引用**であって、この紙自身の主張ではない。
+    # <code> で括るのはそのため（見た目は変えていない。CSSで地の文と同じにしてある）。
+    # 2026-09-26 実測：括らずに出していたら、宿題の題名に混ざっていた「375px」を
+    #   関所(tools/sekisho.py)が「この紙がpxを主張している」と読んで push を止めた。
+    #   引用と主張を機械が区別できる形にしていなかったこちらの落ち度。関所は正しい。
     trs = []
     for r in open_rows[:400]:
         trs.append(
-            '<tr class="s-%s"><td class="st">%s</td><td>%s<div class="dw">%s</div></td>'
+            '<tr class="s-%s"><td class="st">%s</td>'
+            '<td><code>%s</code><div class="dw"><code>%s</code></div></td>'
             '<td class="d">%s</td><td class="src">%s</td></tr>' % (
                 order.get(r.get("state"), 9), esc(r.get("state")), esc(r.get("title")),
                 esc(r.get("doneWhen")), esc(r.get("saidAt") or "—"),
@@ -595,6 +601,8 @@ td{border-bottom:1px solid #eee;padding:9px 6px;vertical-align:top}
 .s-0 .st{background:#c2352b}.s-1 .st{background:#c98a00}.s-2 .st{background:#2c7}.s-3 .st{background:#68c}.s-4 .st{background:#999}
 .st{border-radius:6px;padding:2px 7px;display:inline-block}
 .dw{color:#8a8578;font-size:12px;margin-top:2px}
+/* 題名と完了条件は台帳からの引用。見た目は地の文と同じにして、意味づけだけ分ける */
+code{font-family:inherit;font-size:inherit;color:inherit;background:none;padding:0}
 .d,.src{color:#999;font-size:12px;white-space:nowrap}
 .banner{background:#b3261e;color:#fff;border-radius:12px;padding:14px 16px;margin:0 0 16px;font-size:15px;line-height:1.6}
 .banner b{font-size:16px}

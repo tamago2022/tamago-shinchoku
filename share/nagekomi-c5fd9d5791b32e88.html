@@ -92,8 +92,23 @@
 <button id="nomu" class="nomu" type="button">この端末に残っている分を今すぐ送る</button>
 <pre id="diag" class="diag" hidden></pre>
 
+<!-- ★1155番【その場で分かる】2026-09-26
+     たまごさん：「投げ込み箱は貼って押すだけ。何月何日に何が入って、
+                   反映されたかがその場で分かること。」
+     → 別ページ（受付一覧）へ飛ばないと分からなかったので、箱の中に台帳を出した。
+     元データ：status/public/nagekomi_list.json（tools/nagekomi_list.py が書く）
+     ★数字が取れないときは空欄にしない。「取れない」と文字で出す。 -->
+<section id="daicho" style="margin:22px 0 0;border-top:1px solid #dcd6ca;padding-top:16px">
+  <h2 style="font-size:15px;margin:0 0 4px;letter-spacing:.04em">入った記録</h2>
+  <p id="daichoSum" style="font-size:12.5px;color:#6f6a60;margin:0 0 10px">読み込み中…</p>
+  <div id="daichoAka" style="display:none;background:#b00020;color:#fff;border-radius:10px;
+       padding:12px 14px;margin:0 0 12px;font-size:13px;font-weight:700;line-height:1.7"></div>
+  <div id="daichoIma"></div>
+  <div id="daichoRows"></div>
+</section>
+
 <!-- 1042番：何が入ってきたかの一覧へ1タップ（進捗表には入れない） -->
-<a href="./nagekomi-list-24b9dbaae07c4103.html" 
+<a href="./nagekomi-list-24b9dbaae07c4103.html"
    style="display:block;margin:18px 0 0;min-height:52px;line-height:52px;text-align:center;font-size:15px;font-weight:600;color:#b4542a;background:#fff;border:1px solid #dcd6ca;border-radius:12px;text-decoration:none">入ってきたものを見る（受付一覧）</a>
 <a href="../index.html"
    style="display:block;margin:8px 0 0;min-height:48px;line-height:48px;text-align:center;font-size:14px;color:#6f6a60;background:#fff;border:1px solid #dcd6ca;border-radius:12px;text-decoration:none">進捗表にもどる</a>
@@ -320,8 +335,10 @@ document.getElementById("send").addEventListener("click", function(){
       /* ★届いたときだけ欄を空にする。届いていないのに消すと、書いた言葉が消える */
       document.getElementById("u").value = "";
       document.getElementById("m").value = "";
-      SHELF = null; drawTana();
-      say("届きました。"+where+"夜中0時にまとめて棚へ入れます。", true);
+      /* ★1155番：投げたものを下の「入った記録」にその場で出す（消す前に控える） */
+      imaAdd({ t: Date.now(), url: u, memo: m, shelf: SHELF ? SHELF.title : "" });
+      SHELF = null; drawTana(); drawIma();
+      say("届きました。"+where+"夜中0時にまとめて棚へ入れます。下の「入った記録」に出ています。", true);
     }else{
       /* ★優しい嘘をやめる。届いていないと言う。中身はこの端末に残してある */
       say("届きませんでした。" + ((res && res.why) ? res.why : "理由が取れませんでした") +
@@ -341,9 +358,131 @@ document.getElementById("nomu").addEventListener("click", function(){
   });
 });
 
+/* ★1155番【入った記録】箱の中で「何月何日に何が入って、棚に入ったか」を出す。
+   ・棚に入ったかは nagekomi_list.json の hanei（「済」＝入った／「まだ」＝入っていない）。
+   ・機械の試し投げは tools/nagekomi_list.py 側で既に除いてある（kikaiHidden）。
+   ・読めなかったら空欄にしない。「取れない」と書く。 */
+function esc2(s){ return String(s==null?"":s).replace(/[<>&"]/g, function(c){
+  return {"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]; }); }
+
+/* ★1155番：台帳（GitHub Pagesのjson）が新しくなるのは5分便のあと。
+   だから「たったいま投げた分」はこの端末に控えて、その場で出す。
+   ★「もう入った」とは書かない。反映待ちだと書く（優しい嘘をやめる）。 */
+var IMA_KEY = "nagekomi_ima_v1";
+function imaRead(){
+  try{ return JSON.parse(localStorage.getItem(IMA_KEY) || "[]"); }catch(e){ return []; }
+}
+function imaAdd(rec){
+  try{
+    var a = imaRead(); a.unshift(rec);
+    localStorage.setItem(IMA_KEY, JSON.stringify(a.slice(0,20)));
+  }catch(e){}
+}
+function drawIma(){
+  var box = document.getElementById("daichoIma"); if(!box) return;
+  var cut = Date.now() - 45*60*1000;               /* 45分たったら消す（台帳側に出る頃） */
+  var a = imaRead().filter(function(r){ return (r.t || 0) > cut; });
+  try{ localStorage.setItem(IMA_KEY, JSON.stringify(a)); }catch(e){}
+  if(!a.length){ box.innerHTML = ""; return; }
+  var html = '<div style="font-size:12.5px;font-weight:700;color:#6f6a60;margin:0 0 6px;'
+           + 'letter-spacing:.04em">たったいま投げた分（台帳に出るまで数分かかります）</div>';
+  for(var i=0;i<a.length;i++){
+    var r = a[i], d = new Date(r.t);
+    var hhmm = ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
+    html += '<div style="background:#fffdf6;border:1px dashed #c8bfa8;border-radius:10px;'
+         +  'padding:10px 12px;margin:0 0 8px;display:flex;gap:8px;align-items:flex-start">'
+         +  '<div style="flex:1 1 auto;min-width:0">'
+         +  '<div style="font-size:13.5px;line-height:1.5;word-break:break-all">'
+         +  esc2(r.memo || r.url || "（棚だけ指定）")+"</div>"
+         +  '<div style="font-size:12px;color:#6f6a60;margin-top:3px">'
+         +  esc2(hhmm)+"　→　"+esc2(r.shelf || "行き先まだ決まっていません")+"</div></div>"
+         +  '<span style="flex:0 0 auto;font-size:11.5px;font-weight:700;color:#6f6a60;'
+         +  'background:#eee8db;border-radius:999px;padding:3px 9px">届いた</span></div>';
+  }
+  box.innerHTML = html;
+}
+
+/* ★1155番：棚に入らなかった理由を、箱の中で赤で出す。
+   「まだ」が並んでいるだけだと、待っていれば入ると読めてしまう。
+   入れる係（tools/nagekomi_shelf.py）が最後に出した赤をそのまま見せる。 */
+function drawAka(){
+  var box = document.getElementById("daichoAka"); if(!box) return;
+  fetch("../status/public/nagekomi_shelf.json?t="+Date.now(), {cache:"no-store"})
+   .then(function(r){ return r.ok ? r.json() : null; })
+   .then(function(d){
+     var red = (d && d.red) || [];
+     if(!red.length){ box.style.display = "none"; return; }
+     box.style.display = "block";
+     box.innerHTML = "★棚に入れられていません（" + esc2(d.ranAt || "時点不明") + " の入れる係）<br>"
+                   + red.map(function(x){ return esc2(String(x)); }).join("<br>");
+   })
+   .catch(function(){ box.style.display = "none"; });
+}
+
+function drawDaicho(){
+  var sum = document.getElementById("daichoSum");
+  var box = document.getElementById("daichoRows");
+  if(!sum || !box) return;
+  fetch("../status/public/nagekomi_list.json?t="+Date.now(), {cache:"no-store"})
+   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+   .then(function(d){
+     var items = (d && d.items) || [];
+     var c = (d && d.counts) || {};
+     var sumi = 0, mada = 0;
+     for(var i=0;i<items.length;i++){ (items[i].hanei === "済") ? sumi++ : mada++; }
+     sum.innerHTML = "ぜんぶで <b>"+items.length+"件</b>　／　棚に入った <b>"+sumi+"件</b>"
+                   + "　／　まだ <b>"+mada+"件</b>"
+                   + (d.builtAt ? '　<span style="color:#9a9488">（'+esc2(d.builtAt)+" 時点）</span>" : "")
+                   + (c["弾いた"] ? "　／　弾いた "+c["弾いた"]+"件" : "");
+     if(!items.length){ box.innerHTML = '<p style="font-size:13px;color:#6f6a60;margin:0">'
+       + "まだ1件も入っていません。上のURLを貼って［投げる］を押すと、ここに出ます。</p>"; return; }
+     var html = "", lastDay = "";
+     for(var j=0;j<items.length;j++){
+       var it = items[j];
+       var at = String(it.at || "");
+       var day = at.slice(0,10) || "日付が取れない";
+       var hhmm = at.slice(11,16) || "--:--";
+       if(day !== lastDay){
+         var md = /^\d{4}-\d{2}-\d{2}$/.test(day)
+                ? (Number(day.slice(5,7))+"月"+Number(day.slice(8,10))+"日") : day;
+         html += '<div style="font-size:12.5px;font-weight:700;color:#6f6a60;'
+              +  'margin:14px 0 6px;letter-spacing:.04em">'+esc2(md)+"</div>";
+         lastDay = day;
+       }
+       var done = (it.hanei === "済");
+       var badge = done
+         ? '<span style="flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:#2f6b3f;'
+           + 'border-radius:999px;padding:3px 9px">棚に入った</span>'
+         : '<span style="flex:0 0 auto;font-size:11.5px;font-weight:700;color:#8a5a12;background:#f6e6c4;'
+           + 'border-radius:999px;padding:3px 9px">まだ</span>';
+       html += '<div style="background:#fff;border:1px solid #dcd6ca;border-radius:10px;'
+            +  'padding:10px 12px;margin:0 0 8px">'
+            +  '<div style="display:flex;gap:8px;align-items:flex-start">'
+            +  '<div style="flex:1 1 auto;min-width:0">'
+            +  '<div style="font-size:14px;font-weight:600;line-height:1.5">'
+            +  esc2(it.title || "題名がまだ書けていません")+"</div>"
+            +  '<div style="font-size:12px;color:#6f6a60;margin-top:3px">'
+            +  esc2(hhmm)+"　→　"+esc2(it.shelf || "行き先まだ決まっていません")
+            +  (it.channel ? "　／　"+esc2(it.channel) : "")+"</div>"
+            +  (it.why ? '<div style="font-size:12px;color:#b4542a;margin-top:3px">'+esc2(it.why)+"</div>" : "")
+            +  "</div>"+badge+"</div></div>";
+     }
+     box.innerHTML = html;
+   })
+   .catch(function(e){
+     sum.innerHTML = '<span style="color:#b00020;font-weight:700">入った記録が取れませんでした（'
+                   + esc2(e && e.message)+"）</span>";
+     box.innerHTML = "";
+   });
+}
+
 drawQ();
+drawIma();
+drawAka();
+drawDaicho();
 relay().then(flush);
-document.addEventListener("visibilitychange", function(){ if(!document.hidden) relay().then(flush); });
+document.addEventListener("visibilitychange", function(){
+  if(!document.hidden){ relay().then(flush); drawIma(); drawAka(); drawDaicho(); } });
 </script>
 </body>
 </html>
