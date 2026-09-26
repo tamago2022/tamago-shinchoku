@@ -76,6 +76,7 @@
 
   <div class="card">
     <label>#円卓会議 のノートから選ぶ</label>
+    <p class="meta" id="notesHead" style="color:var(--dim);font-size:12px;margin:0 0 8px">読み込み中…</p>
     <input type="text" id="q" placeholder="ノート名で絞る（例：馬車）" autocomplete="off">
     <div class="notes" id="notes"></div>
   </div>
@@ -213,7 +214,8 @@ const cache = {};
 async function grab(n){
   const k = job.id + ":" + n;          // 注文ごとに分ける（前の注文の音を鳴らさない）
   if(cache[k]) return cache[k];
-  const r = await fetch(api("/audio/" + job.id + "/" + n + ".mp3"), {cache:"no-store"});
+  const url = job.url ? job.url : api("/audio/" + job.id + "/" + n + ".mp3");
+  const r = await fetch(url, {cache:"no-store"});
   if(!r.ok) throw new Error("mp3 " + r.status);
   const ab = await r.arrayBuffer();
   cache[k] = await ensureAc().decodeAudioData(ab);
@@ -262,25 +264,66 @@ function stopAll(){
 }
 
 // ---------- ノート ----------
+// 一覧は本番(gh-pages)の静かな一覧を見る。窓口が落ちていても一覧は出るし、
+// 出来ている声は本番から直接鳴る（窓口ぬきで鳴る）。
 let NOTES = [];
 async function loadNotes(){
-  if(!EP) return;
-  try{
-    const j = await (await fetch(api("/notes"))).json();
-    NOTES = j.notes || [];
-    drawNotes();
-  }catch(e){}
+  for(const p of ["../status/public/zunda_notes.json",
+                  "/tamago-shinchoku/status/public/zunda_notes.json"]){
+    try{
+      const r = await fetch(p + "?_=" + Date.now(), {cache:"no-store"});
+      if(r.ok){
+        const j = await r.json();
+        NOTES = j.notes || [];
+        $("notesHead").textContent =
+          "いま鳴らせるのは " + (j.ready||0) + " / " + (j.total||NOTES.length) + " 本（残りは順番に作っています）";
+        drawNotes();
+        return;
+      }
+    }catch(e){}
+  }
+  if(EP){                                  // 静かな一覧がまだ無いときだけ窓口に聞く
+    try{
+      const j = await (await fetch(api("/notes"))).json();
+      NOTES = (j.notes||[]).map(n => ({title:n.title, file:null}));
+      drawNotes();
+    }catch(e){}
+  }
 }
 function drawNotes(){
   const q = $("q").value.trim();
-  const list = NOTES.filter(n => !q || n.title.includes(q)).slice(0, 60);
-  $("notes").innerHTML = list.map((n,i) =>
-    '<button data-t="'+encodeURIComponent(n.title)+'">'+
-    '<span class="mk">'+(n.ready ? "♪できてる" : "○これから")+'</span>'+
+  const list = NOTES.filter(n => !q || n.title.includes(q)).slice(0, 80);
+  $("notes").innerHTML = list.map(n =>
+    '<button data-t="'+encodeURIComponent(n.title)+'" data-f="'+(n.file||"")+'">'+
+    '<span class="mk">'+(n.file ? "♪ 鳴らせる" : "・準備中")+'</span>'+
     n.title.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</button>').join("")
     || '<p class="foot">見つかりません</p>';
-  [...$("notes").querySelectorAll("button")].forEach(b => b.onclick =
-    () => order("/note", {q: decodeURIComponent(b.dataset.t)}));
+  [...$("notes").querySelectorAll("button")].forEach(b => b.onclick = () => {
+    const title = decodeURIComponent(b.dataset.t);
+    if(b.dataset.f) playFile(b.dataset.f, title);      // 本番の声をそのまま鳴らす
+    else makeNow(title);                                // まだ無いので作りにいく
+  });
+}
+
+// 本番に置いてある声（窓口が落ちていても鳴る）
+async function playFile(file, title){
+  stopAll(); stopped = false; cur = 0; started = false;
+  for(const k in cache) delete cache[k];
+  job = {id:"file", chunks:1, ready:1, done:true, error:null, url:file, title:title};
+  $("cnt").textContent = "0 / 1";
+  $("barI").style.width = "100%";
+  $("kick").style.display = "inline-block";
+  say("「" + title + "」の用意ができています。<b>「▶ 鳴らす」</b>を押すと読みはじめます");
+}
+
+// まだ声が無いものは、正直にそう出してから作りにいく
+async function makeNow(title){
+  if(!EP && !(await findEndpoint())){
+    say("「" + title + "」はまだ声にしていません。いまMacの窓口が閉じているので、作ることもできません。順番に作っています。", "ng");
+    return;
+  }
+  say("「" + title + "」はまだ声にしていません。いまから作ります（長い記事は数分かかります）");
+  order("/note", {q: title});
 }
 
 // ---------- 入口 ----------
@@ -295,13 +338,14 @@ $("pause").onclick = () => { if(!ac) return;
   ac.state === "running" ? ac.suspend() : ac.resume(); };
 $("q").oninput = drawNotes;
 // ★勝手に喋らない。貼っただけでは音は出ない。鳴るのは「▶ 鳴らす」を押した時だけ。
+// 一覧は窓口に関係なく出す（本番に置いた声は窓口が落ちていても鳴るため）
+loadNotes();
 findEndpoint().then(ok => {
-  if(ok){
-    loadNotes();
-    const u = new URLSearchParams(location.search).get("u");
-    if(u) $("url").value = u;
-    say("読むものを選ぶと用意します。音が出るのは「▶ 鳴らす」を押した時だけです");
-  }
+  const u = new URLSearchParams(location.search).get("u");
+  if(u) $("url").value = u;
+  if(ok) say("読むものを選ぶと用意します。音が出るのは「▶ 鳴らす」を押した時だけです");
+  else say("Macの窓口は閉じていますが、<b>♪鳴らせる</b>と付いているノートはこのまま鳴らせます");
+  loadNotes();
 });
 setInterval(() => { if(!EP) findEndpoint().then(ok => ok && loadNotes()); }, 20000);
 </script>

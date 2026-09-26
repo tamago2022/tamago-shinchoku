@@ -294,6 +294,27 @@ def cached_notes():
 BUSY_FLAG = "/tmp/zunda_interactive"
 
 
+def omoi_ok(wait=True):
+    """1163番【重い処理の歯止め】を必ず通す。
+    たまごさんのMacは2026-09-26にスワップ枯れで固まって再起動になった。
+    重いときは走らない・静かになるまで待つ。待っても駄目なら進捗を残して抜ける。"""
+    try:
+        sys.path.insert(0, os.path.join(REPO, "tools"))
+        import omoi_habadome as h
+    except Exception:
+        return True
+    ok, why = h.hashiru_te_ii()
+    if ok:
+        return True
+    log("歯止め: %s" % why)
+    if not wait:
+        return False
+    try:
+        return bool(h.matsu(max_sec=900))
+    except Exception:
+        return False
+
+
 def yuzuru():
     """たまごさんがページで「読んで」と言っている間は、まとめ生成は手を止める。
     エンジンは1本しかないので、譲らないとページ側が何分も待たされる（実測78秒でまだ出ない）。"""
@@ -329,6 +350,8 @@ def do_note(rel, prog):
     wavs = []
     for i, c in enumerate(cs):
         yuzuru()          # ページからの注文が来ていたら、そっちを先に通す
+        if not omoi_ok():  # Macが重いときは待つ。待っても駄目なら中断して続きから
+            raise RuntimeError("Macが重いので中断しました（次に軽くなったら続きから）")
         # ★1163番：10チャンクごとにMacの重さを見る。重ければ静かになるまで待ち、
         #   15分待ってもだめなら **このノートを途中で捨てて抜ける**（次回やり直し）。
         #   毎チャンク測るとsysctlが増えるので10回に1回。
@@ -408,6 +431,13 @@ def main():
             prog["failed"][rel] = str(e)[:200]
             log("  失敗: %s" % e)
         save_progress(prog)
+        # 出来た声はすぐ本番へ置く（窓口が落ちていても鳴るように）
+        try:
+            subprocess.run(["/usr/bin/python3",
+                            os.path.join(REPO, "tools", "1164_zunda_kohyou.py")],
+                           timeout=180, capture_output=True)
+        except Exception:
+            pass
     log("=== 終わり 済%d 失敗%d ===" % (len(prog["done"]), len(prog["failed"])))
     return 0
 
