@@ -105,7 +105,7 @@ const SILENT = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AA
              + "AAAAAAAAAAAAAAAAAFhpbmcAAAAPAAAAAgAAAnEAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
 
 let EP = null;            // {base, t}
-let job = null, cur = 0, stopped = false, poll = null;
+let job = null, cur = 0, stopped = false, poll = null, busy = false;
 const au = new Audio();
 au.preload = "auto";
 
@@ -165,7 +165,11 @@ async function order(path, payload){
 }
 
 function unlockAudio(){          // 最初の一押しで音を出せる状態にしておく
-  try{ au.src = SILENT; au.play().catch(()=>{}); }catch(e){}
+  try{
+    au.src = SILENT;
+    const p = au.play();
+    if(p) p.then(()=>{ try{ au.pause(); }catch(e){} }).catch(()=>{});
+  }catch(e){}
 }
 
 function watch(){
@@ -178,7 +182,7 @@ function watch(){
       $("cnt").textContent = cur + " / " + job.chunks;
       $("barI").style.width = (job.chunks ? (job.ready / job.chunks * 100) : 0) + "%";
       if(s.error){ say("つくる途中で止まりました：" + s.error, "ng"); clearInterval(poll); return; }
-      if(au.paused && cur < job.ready) playChunk(cur);
+      if(!busy && cur < job.ready) playChunk(cur);
       else if(cur >= job.ready && !job.done)
         say("ずんだもんが作っています… " + job.ready + " / " + job.chunks + " 切れ");
       if(job.done && cur >= job.chunks){ say("読み終わりました"); clearInterval(poll); }
@@ -188,17 +192,25 @@ function watch(){
 
 function playChunk(n){
   if(stopped) return;
+  busy = true;
   au.src = api("/audio/" + job.id + "/" + n + ".mp3");
-  au.onended = () => { cur = n + 1; if(cur < job.ready) playChunk(cur); };
-  au.onerror = () => { setTimeout(()=>{ if(!stopped) playChunk(n); }, 1200); };
+  au.onended = () => {
+    busy = false; cur = n + 1;
+    $("cnt").textContent = cur + " / " + job.chunks;
+    if(cur < job.ready) playChunk(cur);
+    else if(job.done) say("読み終わりました");
+  };
+  au.onerror = () => { busy = false;
+    setTimeout(()=>{ if(!stopped && cur === n) playChunk(n); }, 1200); };
   au.play().then(() => {
     say("<b>ずんだもんが読んでいます</b> " + (n+1) + " / " + job.chunks +
         (job.done ? "" : "（続きを作りながら）"));
-  }).catch(() => say("画面をひとつ押すと鳴りはじめます（ブラウザの決まり）", "ng"));
+  }).catch(() => { busy = false;
+    say("画面をひとつ押すと鳴りはじめます（ブラウザの決まり）", "ng"); });
 }
 
 function stopAll(){
-  stopped = true; clearInterval(poll);
+  stopped = true; busy = false; clearInterval(poll);
   try{ au.pause(); }catch(e){}
 }
 
