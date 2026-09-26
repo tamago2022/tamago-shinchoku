@@ -209,7 +209,11 @@ def run():
                 if not url_seen:
                     m = URL_RE.search(buf.replace("\n", ""))
                     if m:
-                        url_seen = m.group(0)
+                        # 端末の装飾(OSC 8 ハイパーリンク)で同じURLが2回くっついて出る。
+                        # \x07 で切り、さらに「http が2回」出ていたら前半だけ採る。
+                        u = m.group(0).split("\x07")[0]
+                        i = u.find("https://", 8)
+                        url_seen = u[:i] if i > 0 else u
                         put(phase="waiting_press", url=url_seen,
                             note="ブラウザで『承認(Authorize)』を1回押してください")
                         log("承認URLを出しました（押し待ち）")
