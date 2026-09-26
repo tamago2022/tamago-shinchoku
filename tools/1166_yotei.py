@@ -176,21 +176,11 @@ def build():
         out.append("</ol>")
         return "".join(out)
 
-    haz = "".join('<li><b>%s</b><span>%s</span></li>' % (e(x["nani"]), e(x["riyuu"]))
-                  for x in data["hazereta"]) if False else "".join(
-        '<li><b>%s</b><span>%s</span></li>' % (e(x["nani"]), e(x["riyuu"]))
-        for x in data["hazereta"]) if False else "".join(
-        '<li><b>%s</b><span>%s</span></li>' % (e(x["nani"]), e(x["riyuu"]))
-        for x in [])
-    haz = "".join('<li><b>%s</b><span>%s</span></li>' % (e(x["nani"]), e(x["riyuu"]))
-                  for x in data["hazereta"]) if "hazereta" in data else "".join(
-        '<li><b>%s</b><span>%s</span></li>' % (e(x["nani"]), e(x["riyuu"]))
-        for x in data["hazereta"]) if "hazereta" in data else "".join(
-        '<li><b>%s</b><span>%s</span></li>' % (e(x["nani"]), e(x["riyuu"]))
-        for x in data["hazereta"]) if "hazereta" in data else ""
-    haz = "".join('<li><b>%s</b><span>%s</span></li>'
-                  % (e(x["nani"]), e(x["riyuu"])) for x in data["hazereta"]) \
-        if data.get("hazereta") else '<p class="none">なし</p>'
+    if data["hazureta"]:
+        haz = "".join('<li><b>%s</b><span>%s</span></li>'
+                      % (e(x["nani"]), e(x["riyuu"])) for x in data["hazureta"])
+    else:
+        haz = '<p class="none">なし</p>'
 
     doc = """<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -223,7 +213,7 @@ a{color:#3a6ea5}
 <div class="machi">%(machi)s</div>
 
 <h2>関所で外したもの</h2>
-<ol class="list">%(hazereta)s</ol>
+<ol class="list">%(hazureta)s</ol>
 
 <h2>もう出たもの</h2>
 %(dashita)s
@@ -239,7 +229,7 @@ Bufferの予約欄：<a href="https://publish.buffer.com/all-channels/queue">pub
         "yoyaku": li(data["yoyaku"], "due"),
         "machi": li(data["machi"], "yotei"),
         "dashita": li(data["dashita"], "due"),
-        "hazereta": haz,
+        "hazureta": haz,
     })
     return 0
 
