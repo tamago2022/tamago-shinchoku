@@ -184,18 +184,47 @@ def build():
     if m.get("swapTotalGB") and m.get("swapUsedGB") is not None and m["swapTotalGB"] > 0:
         sw_pct = int(round(m["swapUsedGB"] / m["swapTotalGB"] * 100))
         m["swapUsedPct"] = sw_pct
-    if m.get("swapFreeGB") is not None and m["swapFreeGB"] < SHED_SWAP_FREE_GB:
-        n = HARD_MIN
-        shed = ("スワップの残りが%.2fGB（%.1fGB未満）＝固まる手前。1本まで落とす"
-                % (m["swapFreeGB"], SHED_SWAP_FREE_GB))
-    elif sw_pct is not None and sw_pct > SHED_SWAP_USED_PCT:
-        n = HARD_MIN
-        shed = ("スワップ使用%d%%（%d%%超）＝スワップに逃げ始めている。1本まで落とす"
-                % (sw_pct, SHED_SWAP_USED_PCT))
-    elif m.get("load5") and m.get("cores") and (m["load5"] / m["cores"]) > SHED_LOAD_RATIO:
-        n = HARD_MIN
-        shed = ("5分ロード比%.1f（%.1f超）＝詰まっている。1本まで落とす"
-                % (m["load5"] / m["cores"], SHED_LOAD_RATIO))
+    # ★1165番（2026-09-27）減便を「崖」から「段」に変えた。**ここが工場が止まっていた真因。**
+    #   旧：しきい値を1つ跨いだ瞬間に HARD_MIN（1本）へ直落ち＝実測のふりをした固定値。
+    #   実測 2026-09-27 05:52:52：空きメモリ15.41GB／メモリ空き83%／5分ロード比0.67
+    #   ＝どこも苦しくない。なのに swapFree 1.52GB だけで1本に落ち、
+    #   auto_launch.log の直近400巡回のうち397回が「見送り: 走行1本／上限1本（空きなし）」。
+    #   macOSはスワップファイルを必要に応じて伸ばすので swapFree は
+    #   「いま割り当て済みのファイルの余り」でしかなく、健康なMacでも1〜2GBに張り付く。
+    #   つまりしきい値4.0GBは**永久に満たせない**＝ブレーキが溶接されていた。
+    #   固まった日（2026-09-26）は swapFree 0.59GB と同時に空きメモリもロードも苦しかった。
+    #   新：①スワップの数字だけでは落とさない（空きメモリかロードの裏付けを要求）
+    #       ②落とすときも半分ずつ（床まで）。余力が戻れば天井まで自然に戻る＝余力連動。
+    ma = m.get("memAvailGB")
+    lr = (m["load5"] / m["cores"]) if (m.get("load5") and m.get("cores")) else None
+    mem_kurushii = ma is not None and (ma - MEM_RESERVE_GB) < PER_SESSION_GB * 2
+    load_kurushii = lr is not None and lr > SHED_LOAD_RATIO
+    swap_free_low = m.get("swapFreeGB") is not None and m["swapFreeGB"] < SHED_SWAP_FREE_GB
+    swap_used_high = sw_pct is not None and sw_pct > SHED_SWAP_USED_PCT
+    # 実体（空きメモリ・ロード）が苦しくないなら床は2本。
+    # 2本は実測標本1063件があり、ochita.jsonl でも落ちた率33%で運用してきた本数。
+    floor = HARD_MIN if (mem_kurushii or load_kurushii) else min(2, HARD_MAX)
+    shita = max(floor, n // 2)
+
+    if load_kurushii:
+        n = shita
+        shed = ("5分ロード比%.2f（%.1f超）＝詰まっている。%d本まで落とす"
+                % (lr, SHED_LOAD_RATIO, n))
+    elif mem_kurushii:
+        n = shita
+        shed = ("空きメモリ%.2fGB（たまごさん用の%.1fGBを引くと2本ぶんも残らない）。%d本まで落とす"
+                % (ma, MEM_RESERVE_GB, n))
+    elif swap_free_low or swap_used_high:
+        mizu = []
+        if swap_free_low:
+            mizu.append("残り%.2fGB（%.1fGB未満）" % (m["swapFreeGB"], SHED_SWAP_FREE_GB))
+        if swap_used_high:
+            mizu.append("使用%d%%（%d%%超）" % (sw_pct, SHED_SWAP_USED_PCT))
+        reasons.append(
+            "減便せず：スワップは低い（%s）が、空きメモリ%sGB・5分ロード比%s＝実体は苦しくない。"
+            "macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、"
+            "この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）"
+            % ("／".join(mizu), ma, round(lr, 2) if lr is not None else "?"))
     if shed:
         reasons.append("自動減便：" + shed)
 

@@ -114,18 +114,34 @@ def hashiru_te_ii(m=None):
         return True, "実測できないので素通し（Macの上に居ない）"
 
     ng = []
+    swap_ng = []
     sf = m.get("swapFreeGB")
     if sf is not None and sf < SWAP_FREE_MIN_GB:
-        ng.append("スワップ残り%.2fGB（%.1fGB未満）" % (sf, SWAP_FREE_MIN_GB))
+        swap_ng.append("スワップ残り%.2fGB（%.1fGB未満）" % (sf, SWAP_FREE_MIN_GB))
     sp = m.get("swapUsedPct")
     if sp is not None and sp > SWAP_USED_PCT_MAX:
-        ng.append("スワップ使用%d%%（%d%%超）" % (sp, SWAP_USED_PCT_MAX))
+        swap_ng.append("スワップ使用%d%%（%d%%超）" % (sp, SWAP_USED_PCT_MAX))
     lr = m.get("loadRatio")
     if lr is not None and lr > LOAD_RATIO_MAX:
         ng.append("5分ロード比%.2f（%.1f超）" % (lr, LOAD_RATIO_MAX))
     ma = m.get("memAvailGB")
     if ma is not None and ma < MEM_AVAIL_MIN_GB:
         ng.append("空きメモリ%.2fGB（%.1fGB未満）" % (ma, MEM_AVAIL_MIN_GB))
+
+    # ★1165番（2026-09-27）スワップの数字**だけ**では止めない。
+    #   実測 2026-09-27 07:20:26：空きメモリ15.41GB／メモリ空き83%／5分ロード比0.67
+    #   ＝どこも苦しくない。なのに swapFree 1.52GB だけで歯止めが掛かり、
+    #   同時上限が1本に張り付き、auto_launch.log の直近400巡回のうち397回が
+    #   「見送り: 走行1本／上限1本（空きなし）」だった。＝発車がほぼ全部捨てられていた。
+    #   macOSはスワップファイルを必要に応じて伸ばすので swapFree は
+    #   「いま割り当て済みのファイルの余り」でしかなく、健康なMacでも1〜2GBに張り付く。
+    #   つまりしきい値4.0GBは**永久に満たせない**＝ブレーキが溶接されていた。
+    #   固まった日（2026-09-26）は swapFree 0.59GB と同時に空きメモリもロードも苦しかった。
+    #   よってスワップは「空きメモリかロードのどちらかが実際に苦しいとき」だけ効かせる。
+    if swap_ng and not ng:
+        return True, ("走ってよい（スワップは低いが実体は余裕：%s／空きメモリ%sGB・5分ロード比%s）"
+                      % ("・".join(swap_ng), ma, lr))
+    ng = ng + swap_ng
 
     if ng:
         return False, "重いので止めました：" + "／".join(ng)

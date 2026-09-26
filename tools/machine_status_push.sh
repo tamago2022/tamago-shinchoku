@@ -68,6 +68,18 @@ trap 'rm -f "$LOCK"' EXIT
 # 新しいlaunchd便は増やさない（既存便への相乗り＝この工場の決まり）。
 run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>&1 || true
 
+# ---- ★1165番（2026-09-27）同時上限の実測を「前」でも1回やる ----
+# 実測：この便は5分ごとに走っているのに（.machine_status_push.lock 07:35）、
+#   status/dojisu_jougen.json と status/health.json は 05:52:52 のまま＝1時間50分止まっていた。
+#   ＝この長いスクリプトが 687行目まで到達していない。
+# その結果：いちばん悲観的だった値（同時上限1本）が貼り付いたまま、
+#   factory_status.py（431行目・dojisu_jougen.json を読む側）が古い1本を読み続け、
+#   auto_launch.log の直近400巡回のうち397回が「見送り: 走行1本／上限1本（空きなし）」。
+#   発車待ちは666件あったのに、全部捨てていた。
+# 30秒で終わる計測を、ロックを取った直後（＝必ず走る位置）にも置く。
+# 687行目の呼び出しは health.json への相乗りのため残す（順番は入れ替えない）。
+run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || true
+
 # ---- 2026-09-24（Cowork側から設置）Bufferの鍵を受け取る係＋予約を出す係 ----
 # たまごさん：「またログインしてくださいとかいやだよ。一回渡したものはちゃんと保管しようよ」
 # 実害：BufferはChrome側にセッションが無く、鍵台帳にも行が無かった＝渡された記録がどこにも無い。

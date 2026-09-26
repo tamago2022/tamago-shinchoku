@@ -450,10 +450,18 @@ def _p_kazu():
         return False, "門の紙が無い（%s）" % os.path.basename(HASSHA_GATE)
     if a is None or a > KAZU_FURUI:
         return False, "門の紙が %.0f分 古い" % ((a or 0) / 60.0)
-    if int(g.get("maxParallel") or 99) > n:
-        return False, "門の紙が %s本、実測は %d本（緩い方を向いている）" % (g.get("maxParallel"), n)
+    # ★1165番（2026-09-27）「緩いときだけ直す」を「実測とズレていたら直す」に変えた。
+    #   旧：`> n` だけを壊れていると見ていたので、**一度1本に落ちた門は二度と戻らなかった。**
+    #   実測：2026-09-26 16時ごろに1本へ落ちたあと、Macが回復（空きメモリ15.41GB・
+    #   5分ロード比0.67）しても門は1本のまま。auto_launch.log の直近400巡回のうち397回が
+    #   「見送り: 走行1本／上限1本（空きなし）」。発車待ちは666件あったのに全部捨てていた。
+    #   締まりすぎも「壊れている」。両方向に直す＝これが余力連動の本体。
+    if int(g.get("maxParallel") or 99) != n:
+        return False, ("門の紙が %s本、実測は %d本（%s方を向いている）"
+                       % (g.get("maxParallel"), n,
+                          "緩い" if int(g.get("maxParallel") or 99) > n else "締まりすぎた"))
     c = (_load(LAUNCH_CAP, {}) or {}).get("cap")
-    if not isinstance(c, int) or c > n:
+    if not isinstance(c, int) or c != n:
         return False, "launch_cap.json が %s本、実測は %d本" % (c, n)
     return True, "門=%d本・紙は%.0f分前" % (n, (a or 0) / 60.0)
 
