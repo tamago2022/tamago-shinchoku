@@ -48,6 +48,20 @@ import subprocess
 import sys
 import time
 
+# ---- 2026-09-26：承認画面をこれ以上出さないための止め札 ----
+# たまごさんの画面にログイン/承認画面が出続けた実害があったため、
+# status/ninshou_stop.flag があるあいだは認証を取りに行かない。
+# 解除はこのファイルを消すだけ。
+import os as _os_stop, sys as _sys_stop
+_STOPF = _os_stop.path.join(_os_stop.path.dirname(_os_stop.path.dirname(
+    _os_stop.path.abspath(__file__))), "status", "ninshou_stop.flag")
+if _os_stop.path.exists(_STOPF):
+    _sys_stop.stderr.write(
+        "認証の取り直しは止まっています（status/ninshou_stop.flag）。"
+        "解除するにはこのファイルを消してください。\n")
+    _sys_stop.exit(0)
+
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 STATUS = os.path.join(REPO, "status")
