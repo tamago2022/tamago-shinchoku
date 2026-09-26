@@ -148,6 +148,7 @@ async function findEndpoint(){
 async function order(path, payload){
   if(!EP && !(await findEndpoint())) return;
   stopAll(); stopped = false; cur = 0;
+  for(const k in cache) delete cache[k];
   say("ずんだもんが読む準備をしています…");
   try{
     const r = await fetch(api(path), {method:"POST",
@@ -190,10 +191,28 @@ function watch(){
   }, 1500);
 }
 
-function playChunk(n){
+// mp3は fetch で丸ごと取ってから鳴らす。
+// <audio> に直接URLを渡すと、トンネル越しでは読み込みが止まる（stalled）ため。
+const cache = {};
+async function grab(n){
+  if(cache[n]) return cache[n];
+  const r = await fetch(api("/audio/" + job.id + "/" + n + ".mp3"), {cache:"no-store"});
+  if(!r.ok) throw new Error("mp3 " + r.status);
+  cache[n] = URL.createObjectURL(await r.blob());
+  return cache[n];
+}
+
+async function playChunk(n){
   if(stopped) return;
   busy = true;
-  au.src = api("/audio/" + job.id + "/" + n + ".mp3");
+  try{
+    au.src = await grab(n);
+  }catch(e){
+    busy = false;
+    setTimeout(()=>{ if(!stopped && cur === n) playChunk(n); }, 1500);
+    return;
+  }
+  if(job.ready > n + 1) grab(n + 1).catch(()=>{});   // 次を先に取っておく
   au.onended = () => {
     busy = false; cur = n + 1;
     $("cnt").textContent = cur + " / " + job.chunks;
