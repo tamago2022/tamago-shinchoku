@@ -140,7 +140,7 @@ async function findEndpoint(){
   for(const c of cands){
     try{
       const ctl = new AbortController();
-      setTimeout(()=>ctl.abort(), 4000);
+      setTimeout(()=>ctl.abort(), 15000);   // Macが重い日は返事に10秒かかる（実測）
       const r = await fetch(c.base + "/health", {cache:"no-store", signal:ctl.signal});
       if(r.ok){
         const h = await r.json();
