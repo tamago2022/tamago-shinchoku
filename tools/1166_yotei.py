@@ -16,6 +16,7 @@ import io
 import json
 import os
 import sys
+import time
 import datetime
 import urllib.request
 import urllib.error
@@ -234,10 +235,48 @@ Bufferの予約欄：<a href="https://publish.buffer.com/all-channels/queue">pub
     return 0
 
 
-def main():
+STAMP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                     "status", "1166", ".yotei_stamp")
+KANKAKU = 600   # ★10分に1回だけ。毎周回だとBufferが429を返す（2026-09-27 実測）
+
+
+def mabiku():
+    """前回から KANKAKU 秒たっていなければ True（=今回はやらない）。
+
+    心臓は数秒ごとに回る。ここを素通りさせると1周回ごとにBuffer APIを4回叩き、
+    15分100回の枠をすぐ使い切って 429 Too Many Requests になる。
+    --now を付けたときは間引かない（手で叩くとき用）。
+    """
+    if "--now" in sys.argv:
+        return False
     try:
-        return build()
+        if time.time() - os.path.getmtime(STAMP) < KANKAKU:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def main():
+    if mabiku():
+        return 0
+    try:
+        r = build()
+        try:
+            os.makedirs(os.path.dirname(STAMP), exist_ok=True)
+            io.open(STAMP, "w", encoding="utf-8").write(
+                datetime.datetime.now(JST).strftime("%F %T"))
+        except Exception:
+            pass
+        return r
     except Exception as ex:
+        # ★失敗したときも判子を押す。押さないと次の周回でまた叩いて429が続く。
+        try:
+            os.makedirs(os.path.dirname(STAMP), exist_ok=True)
+            io.open(STAMP, "w", encoding="utf-8").write(
+                datetime.datetime.now(JST).strftime("%F %T"))
+        except Exception:
+            pass
         try:
             io.open(os.path.join(REPO, "status", "1166", "yotei.log"),
                     "a", encoding="utf-8").write(

@@ -453,3 +453,12 @@ if __name__ == "__main__":
         _sp8.Popen(["python3", _s8], stdout=_sp8.DEVNULL, stderr=_sp8.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-27（1166番）待機列を自分で積む係。候補1本を15分に1つだけ進める。
+    # YouTubeの検索枠が尽きた日はその場で退き、翌日また続きから。止めたいときは status/1166.stop。
+    try:
+        import subprocess as _sp9, os as _os9
+        _s9 = _os9.path.join(_os9.path.dirname(_os9.path.abspath(__file__)), "1166_machi_tsumu.py")
+        _sp9.Popen(["python3", _s9], stdout=_sp9.DEVNULL, stderr=_sp9.DEVNULL)
+    except Exception:
+        pass
