@@ -191,6 +191,21 @@ done < <(find ./status/public -type f \( -name '.env*' -o -name '*.pem' -o -name
 { echo "# $(date '+%F %T') 公開に載せた status/public/ の顔ぶれ"; \
   find ./status/public -type f | sed 's|^\./status/public/||' | sort; } > "$LIST" 2>/dev/null || true
 
+# ---- (3) 暗くする（1168番：たまごさん「全てのgithubダークモードにして　見やすいから」）----
+# ★ ここに置く理由：本番(gh-pages)へ実際に出る唯一の道がこの1本なので、
+#   **ここを通る物は全部暗くなる**。mainの746枚を1枚ずつ書き直す形にすると、
+#   次に機械が作るページは明るいまま生まれてくる（＝穴が開いたまま）。
+#   お手本は 1165-hassha.html。色の実体は theme/tamago-dark.css の1枚だけにある。
+#   印(tamago-dark)が入っている物は触らないので、2回目以降は変わった分だけで一瞬。
+#   落ちても公開は止めない（暗くならないより、出ない方が悪い）。
+if [ -f "$PAGES/tools/1168_kuraku.py" ]; then
+  if python3 "$PAGES/tools/1168_kuraku.py" --tree "$PAGES" > "$REPO/status/1168_kuraku.out" 2>&1; then
+    log "暗くしました: $(grep -E '今回暗くした' "$REPO/status/1168_kuraku.out" | tr '\n' ' ')"
+  else
+    log "⚠️ 暗くする所で落ちました（今回はそのまま公開します）: $(tail -3 "$REPO/status/1168_kuraku.out" | tr '\n' ' ')"
+  fi
+fi
+
 # ---- 変化が無ければ何もしない（＝押し合いにならない）----
 # ★ --force を付ける。ここに置いたものは「main が追跡しているもの」と
 #   「status/public/ の生きた中身」だけで、既に全部よそへ出ているもの。
