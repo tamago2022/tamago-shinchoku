@@ -426,6 +426,18 @@ def _kazu_jissoku():
             kouho.append(v)
             moto.append("status/machine.json の %s=%d" % (k, v))
     n = max(1, min(kouho))
+    # ★1163番（2026-09-26・Macが固まって再起動したあと）
+    #   machine.json が古い／キーが無いと、この係は天井（2本）をそのまま門に書いていた。
+    #   実測：19:37:51 に cap=2 が書かれ、19:38:10 に2本目が発車している。
+    #   「測れなかった」は「余裕がある」ではない。重いときは1本に落とす。
+    try:
+        import omoi_habadome
+        ok, why = omoi_habadome.hashiru_te_ii()
+        if not ok:
+            n = 1
+            moto.append("歯止め（tools/omoi_habadome.py）が1本に落とした：%s" % why)
+    except Exception as e:
+        moto.append("歯止めを読めませんでした（%s）。本数は変えていません" % e)
     return n, moto, m
 
 

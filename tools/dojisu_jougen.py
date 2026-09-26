@@ -66,8 +66,18 @@ MEM_RESERVE_GB = 4.0    # たまごさんがPCを使う分。ここを食いつ�
 SWAP_RESERVE_GB = 0.5   # スワップが完全に枯れるとMac全体が死ぬ。最後の0.5GBは触らない
 LOAD_PER_SESSION = 1.5  # セッション1本が押し上げるロードの実測見込み
 LOAD_CEIL_RATIO = 2.0   # ロード÷コア数の天井
-HARD_MAX = 8
+# ★1163番（2026-09-26・Macが固まって再起動したあと）たまごさん：「同時本数の上限を下げる」
+#   絶対上限を 8 → 2 に下げた。8本は一度も安全だと実測されていない数字だった
+#   （status/dojisu_jougen.json の calibration標本数: 5本=1件・6本=1件・7本=1件・8本=1件）。
+#   実測で標本が積まれているのは 1本(918件)・2本(539件) までなので、そこが天井。
+HARD_MAX = 2
 HARD_MIN = 1
+# ★1163番 減便のしきい値。固まった日の実測 swapFree 0.59GB に対して、
+#   旧しきい値は「1.0GB未満で1本に落とす」だった＝**落とす前に固まる。**
+#   手前で効くように 4.0GB／使用率70%／5分ロード比1.5 へ繰り上げた。
+SHED_SWAP_FREE_GB = 4.0
+SHED_SWAP_USED_PCT = 70
+SHED_LOAD_RATIO = 1.5
 
 
 def run(cmd):
@@ -170,12 +180,22 @@ def build():
 
     # ---- 自動減便（人が見張らない）----
     shed = None
-    if m.get("swapFreeGB") is not None and m["swapFreeGB"] < 1.0:
+    sw_pct = None
+    if m.get("swapTotalGB") and m.get("swapUsedGB") is not None and m["swapTotalGB"] > 0:
+        sw_pct = int(round(m["swapUsedGB"] / m["swapTotalGB"] * 100))
+        m["swapUsedPct"] = sw_pct
+    if m.get("swapFreeGB") is not None and m["swapFreeGB"] < SHED_SWAP_FREE_GB:
         n = HARD_MIN
-        shed = "スワップの残りが%.2fGB（1.0GB未満）＝Mac全体が落ちる手前。1本まで落とす" % m["swapFreeGB"]
-    elif m.get("load5") and m.get("cores") and (m["load5"] / m["cores"]) > 2.5:
+        shed = ("スワップの残りが%.2fGB（%.1fGB未満）＝固まる手前。1本まで落とす"
+                % (m["swapFreeGB"], SHED_SWAP_FREE_GB))
+    elif sw_pct is not None and sw_pct > SHED_SWAP_USED_PCT:
         n = HARD_MIN
-        shed = "5分ロード比%.1f（2.5超）＝詰まっている。1本まで落とす" % (m["load5"] / m["cores"])
+        shed = ("スワップ使用%d%%（%d%%超）＝スワップに逃げ始めている。1本まで落とす"
+                % (sw_pct, SHED_SWAP_USED_PCT))
+    elif m.get("load5") and m.get("cores") and (m["load5"] / m["cores"]) > SHED_LOAD_RATIO:
+        n = HARD_MIN
+        shed = ("5分ロード比%.1f（%.1f超）＝詰まっている。1本まで落とす"
+                % (m["load5"] / m["cores"], SHED_LOAD_RATIO))
     if shed:
         reasons.append("自動減便：" + shed)
 
@@ -184,9 +204,19 @@ def build():
     # 上限が2本だと3本目が一度も走らず標本が永久に集まらない。
     # 3つの天井すべてに2本ぶんの余裕があり・減便条件にも当たっていないときだけ、
     # 1本だけ多く走らせて**標本を取りに行く**。
+    # ★1163番：ただし **すでにスワップに逃げているMacの上で標本を取りに行ってはいけない。**
+    #   2026-09-26の実測：swapUsed 28.41GB（使用98%）の上で試し増便が働き、
+    #   status/kanmon.jsonl に 上限2本・3本 が並び、そのあとMacが固まった。
+    #   「静かなときだけ増やす」を条件に足す（判定は omoi_habadome と同じ思想）。
     probe = None
     nxt = str(calib_n + 1)
-    if (not shed and calib_n and n >= calib_n
+    shizuka = (sw_pct is None or sw_pct <= 10) and (
+        not (m.get("load5") and m.get("cores")) or (m["load5"] / m["cores"]) <= 1.0)
+    if not shizuka:
+        reasons.append("試し増便は見送り：スワップ使用%s%%／5分ロード比%s＝静かでない"
+                       % (sw_pct, round(m["load5"] / m["cores"], 2)
+                          if (m.get("load5") and m.get("cores")) else "?"))
+    if (shizuka and not shed and calib_n and n >= calib_n
             and not (byN.get(nxt) or {}).get("enough")
             and all(v >= calib_n + 2 for v in known.values())):
         probe = calib_n + 1

@@ -160,6 +160,22 @@ footer a{display:block; padding:5px 0}
   <div class="nums" id="wKazu" style="margin-top:10px;border-top:1px solid #eee7dc;padding-top:10px"></div>
 </section>
 
+<!-- ⓪-2 工場の体温（★1163番・2026-09-26 たまごさん「進捗表に『心臓：生／死』
+     『最後に発車した時刻』『今の負荷』を出す」。Macが固まって再起動した日に、
+     どれが止まっているか進捗表を見ても分からなかったので、3つだけ大きく出す。
+     出どころ：status/public/genzaichi.json（heartbeatSilentMin／launchSilentMin）と
+               status/public/health.json（load／同時上限）。
+     ★取れないときは空欄にしない。「取れていません」と文字で出す（0や生と書くのは嘘）。 -->
+<section class="card" id="taionCard">
+  <h2>工場の体温</h2>
+  <div class="waku3" id="taion3">
+    <div><div class="wl">心臓</div><div class="wv" id="tHeart">…</div></div>
+    <div><div class="wl">最後の発車</div><div class="wv" id="tLaunch">…</div></div>
+    <div><div class="wl">今の負荷</div><div class="wv" id="tLoad">…</div></div>
+  </div>
+  <div class="nums" id="taionMeta" style="margin-top:10px"></div>
+</section>
+
 <!-- ⓿ ログイン（★2026-09-25 追加。ここが切れていると何も動かないので一番上に赤で出す。
         以前は「走行0本のときだけ」出す作りで、空回しが1本いるだけで消えていた＝5日気づかれなかった） -->
 <div id="loginNg" style="display:none;background:#b00020;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
@@ -318,6 +334,52 @@ function getJson(url, ms){
       .catch(function(e){ if(!done){ done = true; clearTimeout(t); reject(e); } });
   });
 }
+
+/* ───────── 工場の体温（1163番）─────────
+   心臓：genzaichi.json の heartbeatSilentMin（何分だまっているか）。2分以内＝生。
+         2〜10分＝あやしい。10分超＝死んでいる扱い（watchdogのしきい値は60秒）。
+   最後の発車：launchSilentMin から時刻を逆算して出す。
+   今の負荷：health.json の load（％）と 同時上限。
+   ★どれも「読めなかった」ときは赤で「取れていません」と出す。黙って…のままにしない。 */
+(function(){
+  function put(id, txt, col){
+    var e = document.getElementById(id); if(!e) return;
+    e.textContent = txt; if(col) e.style.color = col;
+  }
+  function hhmm(minAgo){
+    var d = new Date(Date.now() - minAgo*60000);
+    return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
+  }
+  Promise.all([
+    getJson("status/public/genzaichi.json").catch(function(){ return null; }),
+    getJson("status/public/health.json").catch(function(){ return null; })
+  ]).then(function(r){
+    var g = r[0], h = r[1], meta = [];
+    if(g && typeof g.heartbeatSilentMin === "number"){
+      var m = g.heartbeatSilentMin;
+      if(m <= 2)       put("tHeart", "生", "#137333");
+      else if(m <= 10) put("tHeart", "あやしい（"+m.toFixed(0)+"分だまり）", "#8a2b00");
+      else             put("tHeart", "死（"+m.toFixed(0)+"分だまり）", "#b00020");
+      meta.push("心臓のだまり "+m.toFixed(1)+"分");
+    } else { put("tHeart", "取れていません", "#b00020"); }
+
+    if(g && typeof g.launchSilentMin === "number"){
+      var L = g.launchSilentMin;
+      put("tLaunch", hhmm(L)+"（"+L.toFixed(0)+"分前）", L > 120 ? "#b00020" : "");
+      meta.push("発車のだまり "+L.toFixed(0)+"分");
+    } else { put("tLaunch", "取れていません", "#b00020"); }
+
+    if(h && typeof h.load === "number"){
+      put("tLoad", h.load+"%", h.load >= 200 ? "#b00020" : (h.load >= 100 ? "#8a2b00" : "#137333"));
+      if(h.cap != null) meta.push("同時上限 "+h.cap+"本");
+      if(h.sessions != null) meta.push("走行 "+h.sessions+"本");
+      if(h.memPressure) meta.push("メモリ "+h.memPressure);
+    } else { put("tLoad", "取れていません", "#b00020"); }
+
+    if(g && g.generatedAt) meta.push("測った時刻 "+String(g.generatedAt).slice(11,16));
+    document.getElementById("taionMeta").textContent = meta.join(" ｜ ");
+  });
+})();
 
 /* ───────── 走っているもの ─────────
    ★経過時間は「書き出された時刻の経過」に、開いてからの実時間を足して出す。

@@ -29,6 +29,16 @@ import urllib.parse
 import urllib.request
 import wave
 
+# ★1163番【重い処理の歯止め】一括生成はこのMacで最も重い処理のひとつ（1ノート数百チャンク×
+#   ffmpeg）。2026-09-26にMacがスワップ枯れで固まったので、負荷が高いときは
+#   自動で手を止める。判定は tools/omoi_habadome.py の1か所だけに置く。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import omoi_habadome
+except Exception as _e:          # 歯止めが読めないだけで生成を止めはしない（0円の処理なので）
+    omoi_habadome = None
+    print("歯止め（tools/omoi_habadome.py）が読めませんでした: %s" % _e)
+
 HOME = os.path.expanduser("~")
 REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
 VAULT = os.path.join(HOME, "Library", "Mobile Documents",
@@ -319,6 +329,12 @@ def do_note(rel, prog):
     wavs = []
     for i, c in enumerate(cs):
         yuzuru()          # ページからの注文が来ていたら、そっちを先に通す
+        # ★1163番：10チャンクごとにMacの重さを見る。重ければ静かになるまで待ち、
+        #   15分待ってもだめなら **このノートを途中で捨てて抜ける**（次回やり直し）。
+        #   毎チャンク測るとsysctlが増えるので10回に1回。
+        if omoi_habadome is not None and i % 10 == 0:
+            if not omoi_habadome.matsu(max_sec=900, who="1155_zunda"):
+                raise RuntimeError("Macが重いので中断しました（次に走ったときやり直します）")
         for attempt in range(3):
             try:
                 wavs.append(synth(c))
@@ -368,6 +384,18 @@ def main():
             continue
         if limit is not None and n >= limit:
             break
+        # ★1163番：1ノート始める前に歯止めを通す。ここで止めれば1ノート分を
+        #   丸ごと無駄にしない。進捗は save_progress で残っているので続きから。
+        if omoi_habadome is not None:
+            _ok, _why = omoi_habadome.hashiru_te_ii()
+            if not _ok:
+                omoi_habadome.kiroku("1155_zunda", False, _why)
+                log("⏸ %s" % _why)
+                if not omoi_habadome.matsu(max_sec=900, who="1155_zunda"):
+                    log("=== 重いので今回はここで終わります。済%d 失敗%d（次に続きから）==="
+                        % (len(prog["done"]), len(prog["failed"])))
+                    save_progress(prog)
+                    return 0
         n += 1
         log("[%d] %s" % (n, rel))
         t0 = time.time()
