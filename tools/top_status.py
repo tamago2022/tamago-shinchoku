@@ -396,3 +396,12 @@ if __name__ == "__main__":
         _sp3.Popen(["python3", _z], stdout=_sp3.DEVNULL, stderr=_sp3.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
+    # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
+    try:
+        import subprocess as _sp4, os as _os4
+        _k = _os4.path.join(_os4.path.dirname(_os4.path.abspath(__file__)), "1158_mihari.py")
+        _sp4.Popen(["python3", _k], stdout=_sp4.DEVNULL, stderr=_sp4.DEVNULL)
+    except Exception:
+        pass

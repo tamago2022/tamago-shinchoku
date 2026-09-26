@@ -82,6 +82,16 @@ if not os.path.exists(CLAUDE):
             CLAUDE = c
             break
 
+# ---- 1158番：claude は必ず関所を通す（2026-09-26）----
+# 同時起動の競合で refreshToken が空を書き戻され鍵ごと消える事故を、
+# 起動口で物理的に止める。上限は status/dojisu_jougen.json の「同時上限」。
+# 関所は引数をそのまま素通しするので、呼ぶ側のコードは1文字も変わらない。
+_KANMON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1158_kanmon.py")
+if os.path.exists(_KANMON):
+    os.environ.setdefault("KANMON_CLAUDE_BIN", CLAUDE)
+    CLAUDE = _KANMON
+
+
 PROBE_INTERVAL_OK = 1800       # 通っているときは30分に1回
 PROBE_INTERVAL_NG = 600        # 切れているときは10分に1回（戻ったら即再開したい）
 TOKEN_LIFETIME_DAYS = 365      # setup-token の公称寿命
