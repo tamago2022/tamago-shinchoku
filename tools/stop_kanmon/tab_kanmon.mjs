@@ -136,6 +136,48 @@ function kazoeru(file) {
   return { opened: opened + navNoTab, closed, navNoTab, openUrls };
 }
 
+/** 1166号：Braveを選んだ状態でブラウザ操作をした回数を数える（出口の関所の第2条件）
+ *  たまごさん：「Braveは使うのをやめてほしい」「Chrome使って」
+ *  select しただけは数えない（害が無い）。**Braveが選ばれている状態で操作した**ものだけ数える。 */
+const P = "mcp__claude-in-chrome__";
+const BRAVE_IDS = ["88704cda-a4dc-46d1-a19d-4b41696cc20c"];
+const FREE_TOOLS = new Set([
+  P + "list_connected_browsers",
+  P + "select_browser",
+  P + "switch_browser",
+]);
+function braveTsukatta(file) {
+  const raw = readFileSync(file, "utf8");
+  let cur = null;
+  let used = 0;
+  const usedTools = [];
+  for (const ln of raw.split("\n")) {
+    if (!ln.trim()) continue;
+    let o;
+    try {
+      o = JSON.parse(ln);
+    } catch {
+      continue;
+    }
+    const content = o?.message?.content;
+    if (!Array.isArray(content)) continue;
+    for (const c of content) {
+      if (c?.type !== "tool_use") continue;
+      const nm = String(c.name || "");
+      if (nm === P + "select_browser" || nm === P + "switch_browser") {
+        if (c.input?.deviceId) cur = String(c.input.deviceId);
+        continue;
+      }
+      if (!nm.startsWith(P) || FREE_TOOLS.has(nm)) continue;
+      if (cur && BRAVE_IDS.includes(cur)) {
+        used += 1;
+        if (usedTools.length < 10) usedTools.push(nm.replace(P, ""));
+      }
+    }
+  }
+  return { braveUsed: used, braveTools: usedTools, lastSelected: cur };
+}
+
 /** 同じセッションで tab ブロックを何回出したか */
 function blocksFor(sessionId) {
   try {
@@ -195,10 +237,11 @@ function kaku(r, decision) {
 
 try {
   if (!tp || !existsSync(tp)) process.exit(0); // 読めないなら人質にしない
-  const r = kazoeru(tp);
+  const r = { ...kazoeru(tp), ...braveTsukatta(tp) };
   const nokori = r.opened - r.closed;
+  const braveNG = (r.braveUsed || 0) > 0;
 
-  if (nokori <= 0) {
+  if (nokori <= 0 && !braveNG) {
     if (r.opened > 0) write({ event: "tab", decision: "ok", hook, session: sid, proof: r });
     kaku(r, "ok");
     process.exit(0);
