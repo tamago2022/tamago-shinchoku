@@ -25,6 +25,7 @@ TOKEN = os.path.join(TAMAGO, "claude_token")
 MINTED = os.path.join(TAMAGO, "claude_token.minted")
 USE = os.path.join(TAMAGO, "use_token")
 CLAUDE = os.path.expanduser("~/.local/bin/claude")
+TOKEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 TOKEN_RE = re.compile(r"sk-ant-oat01-[A-Za-z0-9_\-]{20,}")
 URL_RE = re.compile(r"https://claude\.(?:ai|com)/[A-Za-z0-9_/\-]*oauth/authorize\?[^\s\"'\x1b]+")
 WAIT_CODE = 1500  # 25分
@@ -82,6 +83,37 @@ def hirou_url(flat):
                 return u
             i = flat.find(key, i + 1)
     return ""
+
+
+def hirou_token(flat):
+    """端末で折り返された鍵を繋ぎ直す（2026-09-26 実測の事故）。
+
+    80桁で改行が入るため素直に正規表現で取ると 79文字で尻切れになり、
+    保存はできるのに叩くと 401 OAuth access token is invalid になる。
+    """
+    flat = flat.replace("\r", "")
+    i = flat.find("sk-ant-oat01-")
+    if i < 0:
+        return ""
+    out = []
+    gap = 0
+    j = i
+    while j < len(flat):
+        c = flat[j]
+        if c in TOKEN_CHARS:
+            out.append(c)
+            gap = 0
+        elif c == "\n":
+            gap += 1
+            if gap > 1:
+                break
+        elif c in " \t":
+            break
+        else:
+            break
+        j += 1
+    t = "".join(out)
+    return t if len(t) > 90 else ""
 
 
 def dump(buf):
@@ -143,6 +175,8 @@ def main():
 
     buf = ""
     token = ""
+    token_kouho = ""
+    token_at = 0.0
     url_written = False
     url_kouho = ""
     url_at = 0.0
@@ -218,11 +252,14 @@ def main():
             except Exception:
                 pass
 
-        m = TOKEN_RE.search(flat)
-        if m:
-            token = m.group(0)
+        t = hirou_token(flat)
+        if t and t == token_kouho and now - token_at > 2.5:
+            token = t
             log("鍵を拾った（len=%d）" % len(token))
             break
+        elif t != token_kouho:
+            token_kouho = t
+            token_at = now
         try:
             done, _ = os.waitpid(pid, os.WNOHANG)
             if done:
@@ -239,9 +276,7 @@ def main():
                     except OSError:
                         break
                 flat = strip_ansi(buf)
-                m = TOKEN_RE.search(flat)
-                if m:
-                    token = m.group(0)
+                token = hirou_token(flat)
                 log("setup-token が終了した token=%s" % ("あり" if token else "なし"))
                 break
         except ChildProcessError:

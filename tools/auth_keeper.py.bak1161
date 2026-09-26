@@ -169,16 +169,8 @@ def probe(use_token):
         r = subprocess.run([CLAUDE, "-p", "--model", "claude-sonnet-5",
                             "--output-format", "json", "1+1は？数字だけ"],
                            capture_output=True, text=True, timeout=120, env=env)
-    except subprocess.TimeoutExpired:
-        # 2026-09-26 実測：関所（1158番・同時上限1本）が本物の発車で埋まっていると
-        # 見張りの1本は空きを待つだけで120秒に間に合わない。これは「切れた」ではなく
-        # **測れなかった**。ここを expired と書いたせいで、生きている鍵の上に
-        # no_launch.flag が立ち直り、進捗表の赤が戻っていた。
-        return None, "混んでいて測れなかった(待ち)"
     except Exception as e:
         return False, "叩けなかった(%s)" % type(e).__name__
-    if r.returncode == 75:
-        return None, "関所が空くのを待って諦めた(待ち)"
     out = (r.stdout or "") + (r.stderr or "")
     if "OAuth session expired" in out:
         return False, "OAuth session expired（更新用の鍵ごと無効）"
@@ -255,20 +247,9 @@ def main():
     using_token = os.path.exists(USE_TOKEN)
     ok, why = probe(using_token)
 
-    # ---- ①' 測れなかった（混んでいた）ときは、何も動かさずに次の回に送る ----
-    #   「測れなかった」を「切れた」と書かない。旗も立てない・use_tokenも外さない。
-    if ok is None:
-        log("判定を見送りました（%s）" % why)
-        save_state(st)
-        return 0
-
     # ---- ② ダメなら、もう片方も1回だけ試す（正本の付け替えは自動でやる） ----
     if not ok:
         other_ok, other_why = probe(not using_token)
-        if other_ok is None:
-            log("判定を見送りました（%s）" % other_why)
-            save_state(st)
-            return 0
         if other_ok:
             set_use_token(not using_token)
             log("正本を切り替えました（%s → %s）"
