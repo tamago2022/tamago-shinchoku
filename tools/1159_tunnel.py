@@ -70,12 +70,16 @@ def take_lock():
 def main():
     if not take_lock():
         return 0
-    # 鍵つきは localhost.run 側の登録が要る（Permission denied (publickey) 実測）。
-    # 登録なしで使える nokey@ を使う。住所は毎回変わるので、変わるたびに公開し直す。
-    cmd = ["ssh", "-o", "StrictHostKeyChecking=accept-new",
-           "-o", "ServerAliveInterval=20", "-o", "ServerAliveCountMax=3",
-           "-o", "ExitOnForwardFailure=yes",
-           "-R", "80:127.0.0.1:%d" % PORT, "nokey@localhost.run"]
+    # cloudflared があればそれを使う。localhost.run の無料穴は数分で切れて
+    # 住所が変わり続け、公開が追いつかなかった（実測。ページが「閉じています」のままになる）。
+    cf = os.path.join(HOME, ".local", "bin", "cloudflared")
+    if os.path.exists(cf):
+        cmd = [cf, "tunnel", "--no-autoupdate", "--url", "http://127.0.0.1:%d" % PORT]
+    else:
+        cmd = ["ssh", "-o", "StrictHostKeyChecking=accept-new",
+               "-o", "ServerAliveInterval=20", "-o", "ServerAliveCountMax=3",
+               "-o", "ExitOnForwardFailure=yes",
+               "-R", "80:127.0.0.1:%d" % PORT, "nokey@localhost.run"]
     log("穴を開けます: %s" % " ".join(cmd))
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                          text=True, bufsize=1)
@@ -93,7 +97,8 @@ def main():
             log("| " + line[:200])
         # 住所は「… tunneled with tls termination, https://…」の行にだけ出る。
         # 案内文の https://admin.localhost.run を拾わないよう、この行だけを見る。
-        m = re.search(r"tunneled with tls termination,\s*(https://[a-z0-9\-.]+)", line)
+        m = (re.search(r"(https://[a-z0-9\-]+\.trycloudflare\.com)", line) or
+             re.search(r"tunneled with tls termination,\s*(https://[a-z0-9\-.]+)", line))
         if m and m.group(1) != url:
             url = m.group(1)
             write_endpoint(url)
