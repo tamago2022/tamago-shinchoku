@@ -401,6 +401,100 @@ def insert_stock(url, key, row):
     return rows[0]
 
 
+# ---------------------------------------------------------------- ★1164番【関連4つ】
+# たまごさん（原文）「関連もちゃんと4つ付けて完了にしてくれると助かる。」
+#                   「完了の条件に『関連4つ以上』を入れる。足りないものは完了にしない。」
+#
+# ■ 決め（なぜこの形か）
+#   ・**関連は数えられるものだけを数える。**同じ棚に並ぶ他のカード（＝棚のページで
+#     実際に隣に出るもの）を関連として控える。想像で「関連っぽいもの」を作らない。
+#   ・**4つ取れなかったら完了にしない。**足りない数と理由をそのまま控える
+#     （「関連が2つしか取れていません（4つ必要）」）。黙って完了にしない。
+#   ・**数が取れなかったときは null。**0件と書かない（0件と「数えられなかった」は別物）。
+KANREN_HITSUYOU = 4
+
+
+def kanren_find(url, key, shelf_ids, stock_id, want=KANREN_HITSUYOU):
+    """同じ棚に並んでいる他のカードを、関連として最大 want 件ひろう。
+    返すのは (関連のリスト, 理由1行)。数えられなければ (None, 理由)。"""
+    got, seen = [], {stock_id}
+    for sid in [s for s in shelf_ids if s]:
+        try:
+            st, rows = tana._req(
+                url, key,
+                "/rest/v1/admin_shelf_picks?select=stock_id,position,admin_stock(id,title)"
+                "&shelf_id=eq.%s&order=position.asc&limit=60"
+                % urllib.parse.quote(sid, safe=""))
+        except Exception as e:
+            return None, "関連の数が取れませんでした（%s）" % type(e).__name__
+        for row in (rows or []):
+            s = row.get("admin_stock") or {}
+            key_id = s.get("id") or row.get("stock_id")
+            if not key_id or key_id in seen:
+                continue
+            seen.add(key_id)
+            got.append({"id": key_id, "title": str(s.get("title") or "")[:80]})
+            if len(got) >= want:
+                return got, ""
+    if len(got) < want:
+        return got, ("関連が%d件しか取れていません（%d件必要）。棚の中身がまだ少ないか、"
+                     "関連にできるカードが足りません" % (len(got), want))
+    return got, ""
+
+
+# ---------------------------------------------------------------- ★1164番【本人だけ紐づける】
+# たまごさん（原文）「楽曲を入れたらアーティストページに登録されるのは当たり前として、
+#                     そこまで連携して動く仕組みに。」
+#
+# ★ここは関所 sekisho-artist-song の門0をそのまま持ってくる。
+#   「名前の字が一致しただけでは本人の証明にならない」（akiko × AKIKO の事故）。
+#   だから **証拠が1つも無いものは紐づけない。**保留にして理由を控える。
+#   証拠として認めるのは、この場で機械が持っているものだけ：
+#     ・YouTube の**チャンネルID**が、そのアーティストの棚に控えてあるチャンネルIDと一致
+#     ・棚の側に公式チャンネル／公式サイトが控えてあり、その動画がそこの持ち物
+#   ★チャンネル名と棚の名前が一致している、は証拠にしない（それが akiko の事故）。
+def artist_shoko(rec, shelf):
+    """本人の証拠を1つ以上持っているか。(証拠の文, 理由) を返す。証拠が無ければ (None, 理由)。"""
+    ch_id = str(rec.get("channelId") or "").strip()
+    shelf_ch = str((shelf or {}).get("channelId") or "").strip()
+    if ch_id and shelf_ch and ch_id == shelf_ch:
+        return ("公式チャンネルID一致（%s）" % ch_id), ""
+    ref = str(rec.get("url") or "")
+    ch_name = str(rec.get("channel") or "").strip()
+    shelf_name = str((shelf or {}).get("title") or "").strip()
+    if ch_name and shelf_name and ch_name == shelf_name:
+        # ★★ここが akiko × AKIKO。字が一致しているだけ。証拠にしない。
+        return None, ("チャンネル名と棚の名前が一致しているだけです（本人の証拠になりません）。"
+                      "公式チャンネルIDか公式サイトの案内が要ります")
+    if not ch_name:
+        return None, "チャンネル名が取れていないので、本人か判定できません"
+    return None, ("本人を指す証拠が1つもありません（チャンネル「%s」／%s）"
+                  % (ch_name[:30], ref[:40] or "URLなし"))
+
+
+def artist_link(url, key, stock_id, rec, shelf, res):
+    """曲を入れたとき、アーティストの棚にも紐づける。★証拠が無ければ紐づけずに保留。
+    返すのは (紐づけたか, 控える1行)。"""
+    shoko, why = artist_shoko(rec, shelf)
+    if not shoko:
+        res["diag"].append("アーティスト紐づけは保留：%s" % why)
+        return False, {"tsunaida": False, "why": why}
+    if not (shelf or {}).get("artistId"):
+        # ★棚の側にアーティストのidが控えられていない＝紐づけ先が無い。作らずに保留。
+        #   （関所：判定できないものは載せない側に倒す。勝手に新しい人を作らない）
+        why = "この棚にアーティストのidが控えられていません（紐づけ先が無いので保留）"
+        res["diag"].append("アーティスト紐づけは保留：%s" % why)
+        return False, {"tsunaida": False, "why": why, "shoko": shoko}
+    try:
+        tana._req(url, key, "/rest/v1/admin_stock?id=eq.%s"
+                  % urllib.parse.quote(stock_id, safe=""),
+                  method="PATCH", body={"detected_artist_id": shelf.get("artistId")})
+    except Exception as e:
+        res["diag"].append("アーティスト紐づけに失敗：%s" % type(e).__name__)
+        return False, {"tsunaida": False, "why": "紐づけに失敗（%s）" % type(e).__name__}
+    return True, {"tsunaida": True, "shoko": shoko, "artistId": shelf.get("artistId")}
+
+
 def insert_pick(url, key, shelf_id, stock_id):
     body = {"shelf_id": shelf_id, "stock_id": stock_id,
             "position": next_position(url, key, shelf_id),
@@ -553,6 +647,7 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
                                  "shelfId": sid, "shelf": shelf["title"], "dry": True})
             continue
 
+        hoka = []          # ★2つ目以降の棚（前の回の値を持ち越さない）
         try:
             existing = find_stock_by_ref(url, key, ref)
             if existing:
@@ -569,6 +664,26 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
                 stock_id, made_stock = stock["id"], True
             try:
                 pick = insert_pick(url, key, sid, stock_id)
+                # ★1164番：たまごさんが箱でポチポチ押した棚の**全部**に結ぶ。
+                #   1つ目（sid）は上で結んだので、2つ目から。
+                #   ★1つ失敗しても残りは結ぶ（全部おじゃんにしない）。失敗は控える。
+                hoka = []
+                for extra in (r.get("shelves") or [])[1:]:
+                    esid = (extra.get("id") or "").strip() if isinstance(extra, dict) else ""
+                    ename = (extra.get("title") or "") if isinstance(extra, dict) else str(extra)
+                    esh, _h = resolve_shelf(esid, ename, shelves)
+                    if not esh or esh["id"] == sid:
+                        if not esh:
+                            res["diag"].append("%s：2つ目の棚「%s」が名簿に無い（結んでいない）"
+                                               % (nid, str(ename)[:20]))
+                        continue
+                    try:
+                        p2 = insert_pick(url, key, esh["id"], stock_id)
+                        hoka.append({"shelfId": esh["id"], "shelf": esh["title"],
+                                     "pickId": p2["id"], "world": esh.get("world") or ""})
+                    except Exception as e2:
+                        res["diag"].append("%s：棚「%s」に結べなかった（%s）"
+                                           % (nid, esh["title"], type(e2).__name__))
             except Exception:
                 # ★結び目が作れなかったら、さっき作ったカードも取り消す。
                 #   棚に繋がらないカードを倉庫に置き去りにしない（＝棚のデータを汚さない）。
@@ -589,10 +704,41 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
             res["red"].append("棚へ入れられなかった（%s）%s: %s" % (title[:30], type(e).__name__, e))
             continue
 
-        rec = {"bin": bin_no, "at": now().strftime("%Y-%m-%d %H:%M"), "nagekomiId": nid,
+        # ★1164番【関連4つ以上で完了】足りないものは完了にしない（たまごさんの指示）
+        zenbu_sid = [sid] + [h["shelfId"] for h in hoka]
+        kanren, kanren_why = kanren_find(url, key, zenbu_sid, stock_id)
+        kanren_ok = bool(kanren) and len(kanren) >= KANREN_HITSUYOU
+        if not kanren_ok:
+            res["diag"].append("%s：関連が足りないので完了にしない（%s）"
+                               % (nid, kanren_why or "数が取れません"))
+
+        # ★1164番【曲はアーティストの棚にも】ただし本人の証拠があるときだけ（関所 門0）
+        tsunaida, artist_rec = artist_link(url, key, stock_id, r, shelf, res)
+
+        # ★★1164番で見つけた取りこぼし（2026-09-26 実測）：
+        #   受付一覧（tools/nagekomi_list.py）は控えを **"id"** で引いていたのに、
+        #   ここは "nagekomiId" しか書いていなかった。＝棚に入れても一覧は永久に「まだ」。
+        #   （1152_ireru.py は気づいて両方書いていた。こちらだけ直っていなかった）
+        #   両方書く。読む側も両方見るようにした。
+        rec = {"bin": bin_no, "at": now().strftime("%Y-%m-%d %H:%M"),
+               "id": nid, "nagekomiId": nid,
                "stockId": stock_id, "madeStock": made_stock, "pickId": pick["id"],
                "shelfId": sid, "shelf": shelf["title"], "ref": ref, "title": title,
                "genmei": genmei, "whisper": copy, "pickStatus": PICK_STATUS,
+               # ★複数の行き先（2つ目から）。受付一覧に「棚2つ」と出る
+               "hokaShelves": hoka,
+               # ★Before/After を控える（たまごさんが見比べられるように）
+               "copyBefore": str(r.get("titleRaw") or genmei or "")[:400],
+               "copyAfter": copy,
+               "titleAfter": title,
+               "copySame": bool(copy and copy.strip() == str(r.get("titleRaw") or "").strip()),
+               # ★関連。4つ未満なら完了にしない
+               "kanren": kanren,
+               "kanrenCount": (len(kanren) if kanren is not None else None),
+               "kanrenOk": kanren_ok,
+               "kanrenWhy": kanren_why,
+               # ★アーティスト紐づけ（証拠が無ければ保留のまま控える）
+               "artist": artist_rec,
                # ★棚を機械が推測したものは「仮」と控える（受付一覧に「仮」と出る）
                "kari": bool(kari),
                "kariWhy": (kari or {}).get("why") or "",

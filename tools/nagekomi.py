@@ -181,16 +181,61 @@ def append_jsonl(path, row):
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def add(url, memo="", shelf=None, shelf_id=None, test=False):
+def norm_shelves(shelves):
+    """★1164番【棚は1つじゃない】たまごさん（原文）
+       「棚ごとにボタンでポチポチ複数選択できるように」
+       「感覚的に『この動画はこれとこれ、はい完了』と選べるように。」
+    箱から上がってくる形を1つに揃える。受ける形は3つ全部：
+      ["夏の棚","2020年代"] / [{"id":..,"title":..,"world":..}] / "夏の棚"
+    返すのは必ず [{"id":str|None,"title":str,"world":str}]（重複は落とす・順は崩さない）。
+    ★空は空で返す。決まっていないものは決まっていないまま置く（1036番の決めを崩さない）。
+    """
+    if not shelves:
+        return []
+    if isinstance(shelves, (str, bytes)):
+        shelves = [shelves]
+    out, seen = [], set()
+    for s in shelves:
+        if isinstance(s, dict):
+            title = str(s.get("title") or s.get("name") or "").strip()
+            sid = str(s.get("id") or "").strip() or None
+            world = str(s.get("world") or "").strip()
+        else:
+            title = str(s or "").strip()
+            sid, world = None, ""
+        if not title and not sid:
+            continue
+        k = (sid or "") + "/" + title
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append({"id": sid, "title": title, "world": world})
+    return out
+
+
+def add(url, memo="", shelf=None, shelf_id=None, test=False, shelves=None):
     """★1043番：test=True は**機械の試し投げ**。台帳には残すが、たまごさんの一覧には出さない。
     たまごさん（原文）「投げ込み箱、俺ボンジョビなんか入れてないから」「こういうのを俺で試さないでよ」
-    → 試したことを台帳から消すのではなく、**印をつけて、たまごさんの視界から外す。**"""
+    → 試したことを台帳から消すのではなく、**印をつけて、たまごさんの視界から外す。**
+
+    ★1164番で足した2つ：
+      shelves … 棚を**複数**受ける（箱でポチポチ押した分だけ全部）。
+                shelf / shelfId は今まで通り効く（古い箱からの投げも落とさない）。
+      titleRaw … 機械が拾ってきた**元の文**を、書き替えられない場所に必ず控える。
+                 たまごさん（原文）「Beforeがどうで、動画を精査した結果こういうコピーに
+                 変えた、という流れが見えると楽。」
+                 → 後でコピーを書き替えると title が上書きされるので、Before が消えていた。
+                   だから**Before 専用の列**を作って、ここから先は消えないようにする。
+    """
     url = (url or "").strip()
     if not url:
         return {"ok": False, "message": "URLが空です"}
     if not re.match(r"^https?://", url):
         return {"ok": False, "message": "http(s)で始まるURLだけ受け付けます"}
     meta, why = enrich(url)
+    tana_list = norm_shelves(shelves)
+    if not tana_list and ((shelf or "").strip() or (shelf_id or "")):
+        tana_list = norm_shelves([{"id": shelf_id, "title": shelf or ""}])
     row = {
         "id": uuid.uuid4().hex[:12],
         "at": now(),
@@ -198,12 +243,18 @@ def add(url, memo="", shelf=None, shelf_id=None, test=False):
         "memo": (memo or "").strip(),
         # ★1039番：箱の棚ボタンを押していればその場で入る。押さなければ None のまま
         #   （決まっていないものは決まっていないまま置く、を崩さない）
-        "shelf": (shelf or "").strip() or None,
+        "shelf": (shelf or "").strip() or (tana_list[0]["title"] if tana_list else None) or None,
         "shelfId": (shelf_id or "").strip() or None if isinstance(shelf_id, str) else shelf_id,
+        # ★複数の行き先。1つだけ押したときも1件の配列で入る（読む側の分岐を減らす）
+        "shelves": tana_list,
         "copyDirection": None,  # 「コピーはこの方向で」も後から入る
         "status": "inbox",
     }
+    if not row["shelfId"] and tana_list and tana_list[0]["id"]:
+        row["shelfId"] = tana_list[0]["id"]
     row.update(meta)
+    # ★Before 専用の控え。title は後で書き替わるが、ここは1文字も書き替えない
+    row["titleRaw"] = str(meta.get("title") or "")[:400]
     # ★★ここは row.update(meta) の**後**。meta にも "source" があり（＝題名の出どころ
     #   「YouTube Data API v3 200」）、前に置くと上書きされて印が消える（2026-09-24 実測）。
     #   だから列名を分ける：nageta＝**誰が投げたか**。"test"＝機械の試し投げ／"nushi"＝たまごさん。

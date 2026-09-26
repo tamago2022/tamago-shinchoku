@@ -2028,10 +2028,13 @@ def _process_other(action, cmd):
             if action == "nagekomi":
                 # ★1039番：箱の棚ボタンで選んだ行き先をそのまま持って上がる
                 # ★1043番：機械の試し投げには印をつける（たまごさんの一覧に混ぜない）
+                # ★1164番：棚は複数来る（箱でポチポチ押した分だけ）。
+                #   古い箱からは shelf/shelfId しか来ないので、両方受ける。
                 r = _nk.add(target or cmd.get("url") or "",
                             cmd.get("memo") or cmd.get("note") or "",
                             cmd.get("shelf"), cmd.get("shelfId"),
-                            test=bool(cmd.get("test")))
+                            test=bool(cmd.get("test")),
+                            shelves=cmd.get("shelves"))
             else:
                 r = _nk.shiji(target or cmd.get("text") or cmd.get("memo") or "",
                               cmd.get("shelf"))

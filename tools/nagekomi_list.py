@@ -146,6 +146,82 @@ def shelf_url(rec):
     return HONBAN
 
 
+# ★1164番【行き先は複数】たまごさん「棚ごとにボタンでポチポチ複数選択できるように」
+def shelf_links(rec, r):
+    """入った棚を全部、飛べる形（題名＋URL）で返す。入っていなければ空。"""
+    out = []
+    if rec.get("shelfId"):
+        out.append({"title": scrub(rec.get("shelf"))[:40] or "棚", "url": shelf_url(rec)})
+    for h in (rec.get("hokaShelves") or []):
+        if not isinstance(h, dict) or not h.get("shelfId"):
+            continue
+        out.append({"title": scrub(h.get("shelf"))[:40] or "棚", "url": shelf_url(h)})
+    return out
+
+
+# ★1164番【各URLに実際に飛べるように】たまごさんの指摘そのまま。
+#   ただし**外に出してよいURLだけ**を出す（公開リポなので、家の中の道・中継所・鍵は出さない）。
+#   scrub() を通したあと「伏せ」が混ざったもの・http以外は1本も出さない。
+#   ★★URLに scrub() を通してはいけない（2026-09-26 実測）。
+#     電話番号のふりをした数字（`0\d{1,4}-?…`）が **Xの投稿IDの中で当たって**、
+#     https://x.com/…/status/21（電話伏せ）0725 になり、飛べないURLになっていた。
+#     → URLは**別の目で見る。**出さないものを名指しで落とす（家の中・中継所・鍵・認証情報）。
+NG_HOST = re.compile(r"""(?ix)
+    ^(?: localhost | 127\.0\.0\.1 | \[?::1\]? | 0\.0\.0\.0
+       | \d{1,3}(?:\.\d{1,3}){3}                  # 生のIP＝家の中の道
+       | [a-z0-9-]+\.(?: loca\.lt | trycloudflare\.com | ngrok(?:-free)?\.app | local | test )
+     )$""")
+NG_IN_URL = re.compile(r"(?i)(sk-|ghp_|github_pat_|AIza)[A-Za-z0-9_\-]{10,}"
+                       r"|[?&](?:token|key|secret|password|access_token)=")
+
+
+def safe_url(u):
+    s = ("" if u is None else str(u)).strip()
+    if not re.match(r"^https?://[^\s\"'<>]+$", s):
+        return ""
+    host = host_of(s)
+    bare = re.sub(r":\d+$", "", host)          # ★:8000 を外してから見る（127.0.0.1:8000 が抜けていた）
+    if not host or "@" in host or NG_HOST.match(bare):
+        return ""                      # ★家の中・中継所・認証情報つきは1本も出さない
+    if NG_IN_URL.search(s):
+        return ""                      # ★鍵が混ざったURLは出さない
+    if "/Users/" in s:
+        return ""                      # ★手元の場所が入ったものは出さない
+    return s[:300]
+
+
+def host_of(u):
+    m = re.match(r"https?://([^/]+)", u or "")
+    if not m:
+        return ""
+    return m.group(1).replace("www.", "")[:40]
+
+
+# ★1164番【まだ／作業中／完了 の3つだけ】たまごさん（原文）
+#   「進捗が1個ずつ『まだ』になっているのを、『完了済み』も分かるように」
+#   「完了の条件に『関連4つ以上』を入れる。足りないものは完了にしない。」
+#
+#   完了   … 棚に入った ＋ 関連が4つ以上ついた
+#   作業中 … 棚に入ったが関連が足りない／コピーは書けたが棚に入っていない／書き手が動いている
+#   まだ   … それ以外（届いただけ・行き先未定・文が未定・入れられなかった）
+#   ★「入れられない」は消さない。まだ の側に置いて、理由を赤い文字で1行出す。
+KANREN_HITSUYOU = 4
+
+
+def state3_of(state, rec, has_copy):
+    kc = rec.get("kanrenCount")
+    if state == "棚に入った":
+        if isinstance(kc, int) and kc >= KANREN_HITSUYOU:
+            return "完了", ""
+        if isinstance(kc, int):
+            return "作業中", "棚に入りました。関連が%d件（完了には%d件）" % (kc, KANREN_HITSUYOU)
+        return "作業中", (short(rec.get("kanrenWhy"))
+                          or "棚に入りました。関連の数が取れていません")
+    if has_copy:
+        return "作業中", "コピーは書けています。棚へ入れるところで止まっています"
+    return "まだ", ""
+
+
 def build(show_test=False):
     rows = read_jsonl(LEDGER)
     kikai = sum(1 for r in rows if is_test(r))
@@ -157,11 +233,17 @@ def build(show_test=False):
     for r in read_jsonl(IRETA):
         if r.get("modoshiAt"):
             continue
-        if r.get("id"):
-            ireta[r["id"]] = r
+        # ★1164番：控えの側は "nagekomiId" で書いている便もある（nagekomi_shelf.py）。
+        #   "id" だけ見ていたので、棚に入れても一覧が永久に「まだ」だった。両方見る。
+        k = r.get("id") or r.get("nagekomiId")
+        if k:
+            ireta[k] = r
 
     # 棚入れ便が何と言ったか。★「未定」と「入れられない」を混ぜない（1043番）。
     mitei, machi, dame, ran_at = {}, {}, {}, ""
+    # ★1164番：関所で書き直しになったコピーも「書きかけのAfter」として見せる。
+    #   消さない。たまごさんが「とんちんかんなのを直したい」と言っているのはここ。
+    machi_copy = {}
     try:
         d = json.load(io.open(os.path.join(STATUS, "public", "nagekomi_shelf.json"),
                               encoding="utf-8"))
@@ -176,6 +258,8 @@ def build(show_test=False):
             for r in (d.get(bucket) or []):
                 if isinstance(r, dict) and r.get("id"):
                     box.setdefault(r["id"], r.get("why") or r.get("reason") or default)
+                    if r.get("copy") or r.get("newTitle"):
+                        machi_copy.setdefault(r["id"], r.get("copy") or r.get("newTitle"))
     except Exception:
         pass
 
@@ -207,9 +291,54 @@ def build(show_test=False):
         # ★反映は3語だけ。ここが「その場で分かる」の本体
         hanei = "済" if state == "棚に入った" else ("弾いた" if state == "入れられない" else "まだ")
         rec = ireta.get(rid) or {}
+
+        # ★1164番【Before → After】たまごさん（原文）
+        #   「Beforeがどうで、動画を精査した結果こういうコピーに変えた、という流れが見えると楽。
+        #     内容とコピーが合っていれば無理に変えなくていい。たまにとんちんかんなのがあるから直したい。」
+        #   Before … 機械が拾ってきた元の文（titleRaw）。無い古い行は原題（genmei）で代わる。
+        #   After  … 書き手が書いたひとこと（whisper）。書けていなければ空。
+        #   ★書けていないものを「変更なし」と書かない。「まだ書けていません」と書く。
+        before = scrub(r.get("titleRaw") or rec.get("copyBefore") or rec.get("genmei") or "")[:300]
+        after = scrub(rec.get("copyAfter") or rec.get("whisper") or "")[:300]
+        if not after and rid in machi_copy:
+            after = scrub(machi_copy[rid])[:300]
+        # ★手で書いて入れた分（1152番の口頭指示便）は、元の文の控えが残っていない。
+        #   ここで「変更なし」と書いたら嘘になる。**控えが無いと書く。**
+        teuchi_row = "口頭指示" in str(r.get("source") or "")
+        before_why = ""
+        if not before:
+            if teuchi_row:
+                after = after or scrub(r.get("title"))[:300]
+                before_why = "元の文の控えが残っていません（手で書いて入れた分）"
+            elif not after:
+                # ★まだ誰も書いていない＝台帳の題名がそのまま「元の文」
+                before = scrub(r.get("title"))[:300]
+        kanren_c = rec.get("kanrenCount")
+        state3, state3_why = state3_of(state, rec, bool(after))
+        if state == "入れられない":
+            state3, state3_why = "まだ", why or "入れられませんでした"
+        src = safe_url(r.get("url"))
+
         out.append({
             "no": rid[:6],
             "hanei": hanei,
+            # ★3つだけ：まだ／作業中／完了
+            "state3": state3,
+            "state3Why": state3_why,
+            # ★元のURL（貼ったもの）。ここを飛べるようにする
+            "src": src,
+            "srcHost": host_of(src),
+            # ★入った棚。複数あれば複数、全部飛べる形で
+            "shelfLinks": shelf_links(rec, r),
+            # ★コピーの Before / After
+            "before": before,
+            "beforeWhy": before_why,
+            "after": after,
+            "same": bool(before and after and before.strip() == after.strip()),
+            "kanren": kanren_c if isinstance(kanren_c, int) else None,
+            "kanrenNeed": KANREN_HITSUYOU,
+            "artistWhy": short((rec.get("artist") or {}).get("why") or ""),
+            "artistOk": bool((rec.get("artist") or {}).get("tsunaida")),
             "url": shelf_url(rec) if state == "棚に入った" else "",
             "kari": bool(rec.get("kari")),
             "shelfWhy": scrub(rec.get("kariWhy"))[:80],
@@ -244,6 +373,10 @@ def build(show_test=False):
             "済": sum(1 for x in out if x.get("hanei") == "済"),
             "まだ": sum(1 for x in out if x.get("hanei") == "まだ"),
             "弾いた": sum(1 for x in out if x.get("hanei") == "弾いた"),
+            # ★1164番：たまごさんが見るのはこの3つ
+            "s_まだ": sum(1 for x in out if x.get("state3") == "まだ"),
+            "s_作業中": sum(1 for x in out if x.get("state3") == "作業中"),
+            "s_完了": sum(1 for x in out if x.get("state3") == "完了"),
         },
         "items": out,
     }
