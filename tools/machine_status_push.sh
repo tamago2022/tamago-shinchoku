@@ -866,6 +866,13 @@ done
 #     たまごさんの作業タブは閉じない（見分けがつかないものは残す）。
 ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
 
+# 1160番【タブ掃除係】2026-09-26：**外した。ここに足してはいけない。**
+#   osascript（AppleScript）でブラウザを触る作りだったため、たまごさんの画面にmacOSの
+#   許可ダイアログを出してしまった。AppleScript / System Events / TCC許可が要る手段は全面禁止。
+#   → タブを閉じるのは Chrome MCP（tabs_close_mcp）＝自分のタブグループの中だけ。
+#     グループ外には届かない。届かない分は「届かない」と書く。
+#     代わりに Stopフックで「自分が開いたタブが0枚」を完了条件にした（tools/1161_tab_kanmon.py）。
+
 # 2026-09-21（840番）毎週のMac掃除。★新しい定期タスク・新しいlaunchd便は作っていない。
 #   理由（実測）：定期タスク weekly-mac-maintenance は毎週走ってはいたが、定期実行の
 #   スコープでは許可ダイアログを押す人が居ないためMacの実ファイルに一度も届かず、

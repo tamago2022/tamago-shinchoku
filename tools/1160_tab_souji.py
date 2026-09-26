@@ -1,189 +1,40 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""1160番【タブ掃除係】AIが開いたタブを、AIが閉じる。
+"""1160番【タブ掃除係】＝**廃止**。走らせてはいけない。
 
-■ なぜ要るか（たまごさん・2026-09-26。同じ指摘は10回目）
-  「タブを使ったら閉じろ」と何度も言われている。毎回『今回は気をつけます』で
-  終わっていたので、また増えた（Braveに4枚、Chromeに大量）。
-  憲法第20条：仕組みにするまでが対応。だから常駐させる。
+2026-09-26 たまごさん：
+  「止めろ。AppleScript / System Events を使うな。たまごさんの画面にまたmacOSの
+   許可ダイアログ（"python3" が "System Events" を制御…）が出た。**これをやった時点で失格。**
+   この方針は今日2回目の同じ事故。TCC許可・画面操作が要る手段は全面禁止。」
 
-■ 何を閉じて、何を閉じないか（ここが事故の分かれ目）
-  閉じる：
-    ・Brave のタブは全部（たまごさん指示「Braveは常に0枚に戻す」。触って良いのは閉じる時だけ）
-    ・Chrome のうち「作業用の住所」に当たるタブで、一定時間さわられていないもの
-  閉じない：
-    ・Chrome で今まさに見ているタブ（各ウィンドウの active）
-    ・作業用の住所に当たらないタブ＝たまごさんが自分で開いたもの
-  見分け方を住所で決めているのは、AppleScriptからは「誰が開いたか」が見えないため。
-  迷うものは閉じない側に倒す。
+■ 何をやらかしたか（事実）
+  ・このファイルの中身は osascript（AppleScript）で Chrome / Brave / System Events を
+    直接叩いてタブを閉じる作りだった。
+  ・実測ログ status/tabs_souji.log：
+      12:06:17 こけた: osascript 'System Events' timed out after 30 seconds
+      12:06:24 同じ
+    そして**たまごさんの画面に許可ダイアログが出た。**画面を奪う行為そのもの。
+  ・heartbeat.sh と machine_status_push.sh に呼び出しを足してしまった。**両方とも外した。**
 
-■ 記録
-  status/public/tabs.json … 今の枚数（進捗表がこれを出す）
-  status/tabs_souji.log   … 閉じた住所を全部残す（後から目で見られる）
+■ どうしてこの道は使えないのか（言い換えれば、なぜ戻してはいけないのか）
+  Macの外側からブラウザのタブに触る手は、どれもTCC（オートメーション許可）を要求する。
+  許可を出す人が座っていない常駐からそれを叩くと、たまごさんの作業中に
+  ダイアログが飛び出す。**速さや便利さでは埋まらない禁止事項。**
+
+■ 代わりに何をしたか
+  ・閉じるのは Chrome MCP（tabs_close_mcp）＝自分のタブグループの中だけ。確実に閉じられる。
+  ・タブグループ外のタブには**届かない。**届かないものは「届かない」と正直に書く。
+  ・「開いたら必ず閉じる」を全セッションの決まりにした：
+      tools/1161_tab_kanmon.py            … Stopフックの関所。閉じずに終わろうとしたら終了を拒否
+      status/KUROMACHI_NO_YARIKATA.md     … やり方に明記
+      start_task のプロンプト雛形          … 開く前に読む場所に明記
+  ・Braveは**新しく開かないこと**で0に保つ（既にあるものには届かない）。
+
+★このファイルは記録として残している。復活させないこと。
 """
-import io
-import json
-import os
-import re
-import subprocess
-import time
+import sys
 
-HOME = os.path.expanduser("~")
-REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
-ST = os.path.join(REPO, "status")
-SEEN = os.path.join(ST, ".tabs_seen.json")
-OUT = os.path.join(ST, "public", "tabs.json")
-LOG = os.path.join(ST, "tabs_souji.log")
-IDLE_SEC = 300          # 5分さわられていない作業タブは閉じる
-
-# 作業用＝AIが開く住所。ここに当たるものだけ閉じる。
-WORK = [
-    r"tamago2022\.github\.io",
-    r"github\.com/tamago2022",
-    r"supabase\.(com|co)",
-    r"trycloudflare\.com",
-    r"\.lhr\.life",
-    r"localhost:\d+", r"127\.0\.0\.1:\d+",
-    r"r\.jina\.ai",
-    r"lovable\.(app|dev)",
-    r"^about:blank$", r"^chrome://newtab",
-]
-WORK_RE = re.compile("|".join(WORK))
-
-
-def log(m):
-    with io.open(LOG, "a", encoding="utf-8") as f:
-        f.write("%s %s\n" % (time.strftime("%F %T"), m))
-
-
-def osa(script, timeout=45):
-    try:
-        p = subprocess.run(["osascript", "-e", script], capture_output=True,
-                           text=True, timeout=timeout)
-        return p.stdout.strip(), p.stderr.strip()
-    except Exception as e:
-        return "", str(e)
-
-
-def running(app):
-    # System Events 経由は重い時に30秒でも返らなかった（実測）。pgrep で見る。
-    try:
-        r = subprocess.run(["pgrep", "-f", "/%s.app/Contents/MacOS/" % app],
-                           capture_output=True, text=True, timeout=10)
-        return bool(r.stdout.strip())
-    except Exception:
-        return False
-
-
-def list_tabs(app):
-    """[(window_index, tab_index, url, is_active)] を返す"""
-    s = '''
-    tell application "%s"
-      set outp to ""
-      set wi to 0
-      repeat with w in windows
-        set wi to wi + 1
-        set ai to active tab index of w
-        set ti to 0
-        repeat with t in tabs of w
-          set ti to ti + 1
-          set outp to outp & wi & "\t" & ti & "\t" & (ai as string) & "\t" & (URL of t) & "\n"
-        end repeat
-      end repeat
-      return outp
-    end tell''' % app
-    out, err = osa(s)
-    rows = []
-    for ln in out.split("\n"):
-        parts = ln.split("\t")
-        if len(parts) < 4:
-            continue
-        try:
-            rows.append((int(parts[0]), int(parts[1]), parts[3], int(parts[2]) == int(parts[1])))
-        except Exception:
-            pass
-    return rows, err
-
-
-def close_tab(app, wi, ti):
-    osa('tell application "%s" to close tab %d of window %d' % (app, ti, wi))
-
-
-def load_seen():
-    try:
-        return json.load(io.open(SEEN, encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def main():
-    now = time.time()
-    seen = load_seen()
-    closed = []
-
-    # --- Brave は 0 枚に戻す（たまごさん指示） ---
-    brave_left = 0
-    if running("Brave Browser"):
-        rows, _ = list_tabs("Brave Browser")
-        for wi, ti, url, _a in sorted(rows, key=lambda r: (-r[0], -r[1])):
-            closed.append(("Brave", url))
-            close_tab("Brave Browser", wi, ti)
-        rows2, _ = list_tabs("Brave Browser")
-        brave_left = len(rows2)
-
-    # --- Chrome は「作業用の住所 × さわられていない」だけ閉じる ---
-    chrome_left = 0
-    if running("Google Chrome"):
-        rows, _ = list_tabs("Google Chrome")
-        keep = {}
-        for wi, ti, url, active in sorted(rows, key=lambda r: (-r[0], -r[1])):
-            key = url
-            if active:
-                seen[key] = now                      # 見ている間は時計を戻す
-                continue
-            if not WORK_RE.search(url or ""):
-                continue                              # たまごさんのタブは触らない
-            first = seen.get(key)
-            if first is None:
-                seen[key] = now
-                continue
-            if now - first >= IDLE_SEC:
-                closed.append(("Chrome", url))
-                close_tab("Google Chrome", wi, ti)
-                seen.pop(key, None)
-        rows2, _ = list_tabs("Google Chrome")
-        chrome_left = len(rows2)
-        for _wi, _ti, url, active in rows2:
-            if active:
-                seen[url] = now
-        keep = keep  # noqa
-
-    # 覚え書きは1日で捨てる
-    seen = {k: v for k, v in seen.items() if now - v < 86400}
-    os.makedirs(os.path.dirname(SEEN), exist_ok=True)
-    json.dump(seen, io.open(SEEN, "w", encoding="utf-8"), ensure_ascii=False)
-
-    today = time.strftime("%F")
-    prev = {}
-    try:
-        prev = json.load(io.open(OUT, encoding="utf-8"))
-    except Exception:
-        pass
-    total_today = (prev.get("closedToday", 0) if prev.get("day") == today else 0) + len(closed)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    json.dump({"day": today, "chrome": chrome_left, "brave": brave_left,
-               "closedToday": total_today, "closedNow": len(closed),
-               "at": time.strftime("%F %T")},
-              io.open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
-    if closed:
-        for app, url in closed:
-            log("閉じた %s %s" % (app, (url or "")[:120]))
-        log("残り Chrome=%d Brave=%d（今日 %d枚閉じた）" % (chrome_left, brave_left, total_today))
-    return 0
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        log("こけた: %s" % e)
+print("1160_tab_souji.py は廃止されました（AppleScript/TCC禁止）。"
+      "tools/1161_tab_kanmon.py と status/KUROMACHI_NO_YARIKATA.md を見てください。",
+      file=sys.stderr)
+sys.exit(1)

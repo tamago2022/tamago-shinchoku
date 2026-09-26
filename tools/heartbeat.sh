@@ -326,6 +326,15 @@ while :; do
   #   一番タブが溜まっている時間帯を素通りしていた（実測で証拠あり）。15分＋「掃いたときだけ
   #   ゲートを進める」に直した。
   tick_every 40 && ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # ---- 1160番【タブ掃除係】2026-09-26：**外した。ここに足してはいけない。** ----
+  #   一度ここに `python3 tools/1160_tab_souji.py` を足したが、中身が osascript（AppleScript）で
+  #   Chrome/Brave/System Events を触る作りだったため、**たまごさんの画面にmacOSの許可ダイアログ
+  #   （"python3" が "System Events" を制御…）を出してしまった。**同じ事故を1日に2回やった。
+  #   → たまごさん指示：**AppleScript / System Events / TCC許可が要る手段は全面禁止。**
+  #   タブを閉じるのは Chrome MCP（tabs_close_mcp）＝自分のタブグループの中だけ。
+  #   グループ外には届かない。届かないものは「届かない」と書く（無理やりOSを触らない）。
+  #   代わりの仕組み：status/1154_stop_kanmon.jsonl の完了条件に「自分が開いたタブが0枚」を足し、
+  #   閉じずに終わろうとしたセッションの終了を拒否する（tools/1161_tab_kanmon.py）。
   # 2026-09-18（931番）：取り残された .git のロックが工場のgitを丸ごと止める事故への自己修復。
   #   Cowork（サンドボックス）側のセッションがgitの途中で打ち切られると index.lock が残り、
   #   以後 add/commit が全てrc=128で失敗する。しかもマウント越しにはunlinkできず本人が片付けられない。

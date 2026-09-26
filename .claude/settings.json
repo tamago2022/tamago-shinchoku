@@ -2,10 +2,12 @@
   "$comment": "1154号：止まれない関所。公式 https://code.claude.com/docs/en/hooks の書き方をそのまま使っている（command型・${CLAUDE_PROJECT_DIR}・timeout）。Stop/SubagentStop は exit code 2 で終了を拒否する。",
   "hooks": {
     "Stop": [
-      { "hooks": [ { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/stop_hook.mjs", "timeout": 60 } ] }
+      { "hooks": [ { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/stop_hook.mjs", "timeout": 60 } ] },
+      { "$comment": "1161号：自分が開いたタブを閉じずに終わろうとしたら終了を拒否する。OSには一切触らない（AppleScript/System Events/TCC全面禁止）。セッションの記録から『タブを作る道具の回数』対『閉じる道具の回数』を数えるだけ。", "hooks": [ { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/tab_kanmon.mjs", "timeout": 30 } ] }
     ],
     "SubagentStop": [
-      { "matcher": "*", "hooks": [ { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/stop_hook.mjs", "timeout": 60 } ] }
+      { "matcher": "*", "hooks": [ { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/stop_hook.mjs", "timeout": 60 } ] },
+      { "matcher": "*", "hooks": [ { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/tab_kanmon.mjs", "timeout": 30 } ] }
     ],
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/prompt_gate.mjs", "timeout": 15 } ] }
