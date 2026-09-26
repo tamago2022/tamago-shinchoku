@@ -89,6 +89,7 @@ footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--rule);color:v
 <tbody>
 <tr><td class="what">① Claude Code の auto mode<br><small>Anthropic公式</small></td><td class="ok">本命・採用</td><td class="ok">0円</td>
 <td>公式が用意した「代わりに判断する係」。別のモデル（classifier）が実行前に1件ずつ見て、危ないものだけ止める。<b>Pro・Max・Teamの既定モード</b>なので追加の金は要らない。
+<small><b>実測：このMacはもう <code>permissions.defaultMode = "auto"</code> になっていた（2026-09-26 10:07）。＝公式の押す係はすでにONで動いている。</b>足りないのは、この係が「絶対に通さない4つ」を明文で持っていないことだけ。それを書き足す係を用意した。</small>
 <small>公式の数字：実トラフィック1万件で誤って止める率0.4％、危ないものを見逃す率17％。<code>--dangerously-skip-permissions</code>（全部素通り）からの乗り換え先として作られたもので、慎重な人手の代わりではないと公式が明言している。3回続けて止められたら人を呼ぶ backstop 付き。</small></td></tr>
 <tr><td class="what">② Hammerspoon の押す係<br><small>tools/1157_osu_kakari.lua</small></td><td class="ok">採用</td><td class="ok">0円</td>
 <td>デスクトップアプリの許可ダイアログを、macOSのアクセシビリティAPIで直接押す。裏で動く・別の画面に居ても効く・キー入力を横取りしない。
