@@ -443,3 +443,13 @@ if __name__ == "__main__":
         _sp7.Popen(["python3", _s7], stdout=_sp7.DEVNULL, stderr=_sp7.DEVNULL)
     except Exception:
         pass
+
+    # 2026-09-27（1166番）「次に何がいつ出るか」の1枚を毎周回つくり直す。
+    # Bufferから取り直した実測だけを載せる（自己申告を載せない）。鍵が無い周回は即戻る。
+    #   https://tamago2022.github.io/tamago-shinchoku/status/public/1166_yotei.html
+    try:
+        import subprocess as _sp8, os as _os8
+        _s8 = _os8.path.join(_os8.path.dirname(_os8.path.abspath(__file__)), "1166_yotei.py")
+        _sp8.Popen(["python3", _s8], stdout=_sp8.DEVNULL, stderr=_sp8.DEVNULL)
+    except Exception:
+        pass

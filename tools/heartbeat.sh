@@ -495,7 +495,11 @@ while :; do
   # ② 判定日：1週間後・1ヶ月後が来たら機械が状態を見に行く。
   #    ★変わっていなければ自動で赤＋P1に繰り上げて、その場で再発車する。
   #      うやむやを構造的に不可能にするのがここ。人の許可を要らなくしてある。
-  tick_every 40 && ( python3 "$REPO/tools/hantei.py" >> "$REPO/status/kioku/hantei.log" 2>&1 & ) >/dev/null 2>&1
+  # 1167号（2026-09-27）hantei.py → hantei_hiduke.py に改名。
+  #   理由：09-26 07:47 に「判定日の係」が tools/hantei.py を名前ごと上書きし、
+  #   旧 hantei.py（36個の判定規則）が消えた。import hantei している15本が
+  #   AttributeError で全滅した（kohyou_osu だけで1,169回）。名前を分けて両方生かす。
+  tick_every 40 && ( python3 "$REPO/tools/hantei_hiduke.py" >> "$REPO/status/kioku/hantei.log" 2>&1 & ) >/dev/null 2>&1
   # ③ 鬼監督（差し戻し係）：自己申告の完了を受け付けない。
   #    URLを叩いて200・中身が空でない・過去の指摘に引っかからない、を機械が確かめる。
   #    ★落ちたら自動で同じ案件を再発車（回数制限なし・上限は14日だけ）。
