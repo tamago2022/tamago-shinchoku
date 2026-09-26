@@ -149,10 +149,17 @@ def make_job(text, title=""):
     return JOBS[jid]
 
 
+BUSY_FLAG = "/tmp/zunda_interactive"   # これがあると、まとめ生成(1155)は待つ
+
+
 def worker(jid):
     j = JOBS[jid]
     d = os.path.join(JOBS_DIR, jid)
     for i, c in enumerate(j["texts"]):
+        try:
+            io.open(BUSY_FLAG, "w").write(str(time.time()))
+        except Exception:
+            pass
         try:
             wav_to_mp3(wav_of(c), os.path.join(d, "%d.mp3" % i))
             with LOCK:
@@ -164,6 +171,10 @@ def worker(jid):
             break
     with LOCK:
         j["done"] = True
+    try:
+        os.remove(BUSY_FLAG)
+    except Exception:
+        pass
     log("できた %s %d/%d" % (jid, j["ready"], j["chunks"]))
 
 

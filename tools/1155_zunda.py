@@ -281,6 +281,23 @@ def cached_notes():
     return notes
 
 
+BUSY_FLAG = "/tmp/zunda_interactive"
+
+
+def yuzuru():
+    """たまごさんがページで「読んで」と言っている間は、まとめ生成は手を止める。
+    エンジンは1本しかないので、譲らないとページ側が何分も待たされる（実測78秒でまだ出ない）。"""
+    waited = 0
+    while waited < 600:
+        try:
+            if time.time() - os.path.getmtime(BUSY_FLAG) > 90:
+                return
+        except Exception:
+            return
+        time.sleep(2)
+        waited += 2
+
+
 def do_note(rel, prog):
     src = os.path.join(VAULT, rel)
     with io.open(src, "r", encoding="utf-8", errors="ignore") as f:
@@ -296,6 +313,7 @@ def do_note(rel, prog):
     log("  %d チャンク / %d 文字" % (len(cs), len(text)))
     wavs = []
     for i, c in enumerate(cs):
+        yuzuru()          # ページからの注文が来ていたら、そっちを先に通す
         for attempt in range(3):
             try:
                 wavs.append(synth(c))
