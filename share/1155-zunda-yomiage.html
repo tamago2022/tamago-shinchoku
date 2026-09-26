@@ -107,8 +107,16 @@ const SILENT = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AA
 
 let EP = null;            // {base, t}
 let job = null, cur = 0, stopped = false, poll = null, busy = false;
-const au = new Audio();
-au.preload = "auto";
+
+// 音は WebAudio で鳴らす。<audio> は「一度押さないと鳴らせない」制限の外し方が
+// ブラウザごとに違って、実測で鳴らなかった（ずんだもんが出ない＝0点）。
+// WebAudio なら、押した瞬間に ac.resume() しておけば以後ずっと鳴らせる。
+let ac = null, src = null;
+function ensureAc(){
+  if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if(ac.state === "suspended") ac.resume();
+  return ac;
+}
 
 function say(msg, cls){ $("st").innerHTML = cls ? '<span class="'+cls+'">'+msg+'</span>' : msg; }
 function api(path){ return EP.base + path + (path.includes("?") ? "&" : "?") + "t=" + EP.t; }
@@ -168,13 +176,7 @@ async function order(path, payload){
   }
 }
 
-function unlockAudio(){          // 最初の一押しで音を出せる状態にしておく
-  try{
-    au.src = SILENT;
-    const p = au.play();
-    if(p) p.then(()=>{ try{ au.pause(); }catch(e){} }).catch(()=>{});
-  }catch(e){}
-}
+function unlockAudio(){ try{ ensureAc(); }catch(e){} }
 
 function watch(){
   clearInterval(poll);
@@ -194,47 +196,56 @@ function watch(){
   }, 1500);
 }
 
-// mp3は fetch で丸ごと取ってから鳴らす。
-// <audio> に直接URLを渡すと、トンネル越しでは読み込みが止まる（stalled）ため。
+// mp3は丸ごと取ってから鳴らす（トンネル越しだと <audio> の読み込みが止まるため）
 const cache = {};
 async function grab(n){
   if(cache[n]) return cache[n];
   const r = await fetch(api("/audio/" + job.id + "/" + n + ".mp3"), {cache:"no-store"});
   if(!r.ok) throw new Error("mp3 " + r.status);
-  cache[n] = URL.createObjectURL(await r.blob());
+  const ab = await r.arrayBuffer();
+  cache[n] = await ensureAc().decodeAudioData(ab);
   return cache[n];
 }
 
 async function playChunk(n){
   if(stopped) return;
   busy = true;
-  const url = api("/audio/" + job.id + "/" + n + ".mp3");
-  au.src = url;                       // まずは直に流す（届いた先から鳴る）
-  // 8秒たっても始まらなければ、丸ごと取ってから鳴らすやり方に切り替える
-  setTimeout(async () => {
-    if(stopped || cur !== n || au.readyState >= 2 || !au.src.startsWith("http")) return;
-    try{ au.src = await grab(n); au.play().catch(()=>{}); }catch(e){}
-  }, 8000);
+  let buf;
+  try{
+    buf = await grab(n);
+  }catch(e){
+    busy = false;
+    setTimeout(()=>{ if(!stopped && cur === n) playChunk(n); }, 1500);
+    return;
+  }
+  if(stopped) { busy = false; return; }
   if(job.ready > n + 1) grab(n + 1).catch(()=>{});   // 次を先に取っておく
-  au.onended = () => {
+  try{ ensureAc(); }catch(e){}
+  if(ac.state === "suspended"){
+    busy = false;
+    $("kick").style.display = "inline-block";
+    say("下の「▶ 鳴らす」を押すと、ずんだもんが読みはじめます", "ng");
+    return;
+  }
+  src = ac.createBufferSource();
+  src.buffer = buf;
+  src.connect(ac.destination);
+  src.onended = () => {
+    if(stopped) return;
     busy = false; cur = n + 1;
     $("cnt").textContent = cur + " / " + job.chunks;
     if(cur < job.ready) playChunk(cur);
     else if(job.done) say("読み終わりました");
   };
-  au.onerror = () => { busy = false;
-    setTimeout(()=>{ if(!stopped && cur === n) playChunk(n); }, 1200); };
-  au.play().then(() => {
-    say("<b>ずんだもんが読んでいます</b> " + (n+1) + " / " + job.chunks +
-        (job.done ? "" : "（続きを作りながら）"));
-  }).catch(() => { busy = false;
-    $("kick").style.display = "inline-block";
-    say("下の「▶ 鳴らす」を押してください（ブラウザの決まりで、一度押さないと音が出せません）", "ng"); });
+  src.start();
+  $("kick").style.display = "none";
+  say("<b>ずんだもんが読んでいます</b> " + (n+1) + " / " + job.chunks +
+      (job.done ? "" : "（続きを作りながら）"));
 }
 
 function stopAll(){
   stopped = true; busy = false; clearInterval(poll);
-  try{ au.pause(); }catch(e){}
+  try{ if(src){ src.onended = null; src.stop(); src = null; } }catch(e){}
 }
 
 // ---------- ノート ----------
@@ -265,9 +276,10 @@ $("go").onclick = () => { const u = $("url").value.trim();
 $("goRaw").onclick = () => { const t = $("raw").value.trim();
   t ? order("/say", {text:t}) : say("文章を貼ってください"); };
 $("kick").onclick = () => { $("kick").style.display = "none";
-  stopped = false; busy = false; if(job) playChunk(cur); };
+  ensureAc(); stopped = false; busy = false; if(job) playChunk(cur); };
 $("stop").onclick = () => { stopAll(); say("止めました"); };
-$("pause").onclick = () => { au.paused ? au.play() : au.pause(); };
+$("pause").onclick = () => { if(!ac) return;
+  ac.state === "running" ? ac.suspend() : ac.resume(); };
 $("q").oninput = drawNotes;
 $("url").addEventListener("paste", e => {
   const t = (e.clipboardData||window.clipboardData).getData("text");
