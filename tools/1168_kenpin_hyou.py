@@ -287,7 +287,12 @@ def kenpin(yoyaku, sent, itsu, tok, snap):
     json.dump(data, io.open(OUT_JSON, "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
 
-    if "--hazusu" in sys.argv and not buffer_waku.ake():
+    # ★1178番（2026-09-28）止め札。ChatGPTが入れた10本を機械が勝手に消さない。
+    import buffer_tomeru
+    _tomeru = buffer_tomeru.tomete()
+    if "--hazusu" in sys.argv and _tomeru:
+        print("★止め札があるので1本も外さない。%s" % _tomeru)
+    elif "--hazusu" in sys.argv and not buffer_waku.ake():
         print("★枠切れなので外せない。", buffer_waku.riyuu())
     elif "--hazusu" in sys.argv:
         for x in out:

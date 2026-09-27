@@ -75,6 +75,7 @@ if HERE not in sys.path:
 
 import queue_store  # noqa: E402  （鍵つき差分マージ書き込み・案件#687の実装をそのまま使う）
 import gaibu_kenpin as gk  # noqa: E402  （鍵探索・料金表・コスト上限・課金記録を再利用）
+import yosan  # noqa: E402  （1483番：予算の栓。叩く前にmitsumori、叩いた後にtsukatta）
 
 KENPIN_DIR = os.path.join(REPO, "status", "kenpin")
 PENDING_DIR = os.path.join(KENPIN_DIR, "pending")
@@ -97,6 +98,20 @@ VENDOR_ORDER = ("OpenAI", "Grok", "Gemini")
 #   ここは「通す/直させる」を決める門なので、賢い方（gpt-5-mini）を第一候補にする。
 #   単価は $0.25/$2.00 per 1M（gaibu_kenpin.PRICING に登録済み）で、1回あたり1円未満のまま。
 OPENAI_MODEL_CANDIDATES = ["gpt-5-mini", "gpt-4o-mini"]
+
+# ★1483番（2026-09-18・たまごさん原文の要旨。音声認識で断片化していたため
+# status/kioku/hatsugen.jsonl の from: 27e9b0e1-...jsonl から発言全文を復元して確認）：
+# 「外部検品ゲート…上限は100円でしょう。これ3000になるわけだ（＝100円/日×30日の皮算用）。
+#   1回あたりの内訳を出してほしい。直し方は0円設計に。お金がかかるならもちろんそれでもやろうね」
+#
+# 既存の gk.check_cost_cap()（日次100円・120回の内蔵上限）は、たまごさんが後日（9/23・1034番）
+# 作った「予算の栓」(tools/yosan.py・全財布が既定0円＝止まっている設計)には接続されていなかった
+# （yosan.py の KUCHI一覧＝栓を通した口の台帳にも kenpin_gate.py は未掲載だった＝穴）。
+# ここで接続する：叩く前に yosan.mitsumori() を通し、財布の上限を超えたら呼ばない。
+# 叩いた後は実額を yosan.tsukatta() で記録する（`python3 tools/yosan.py --show` で見える）。
+_SAIFU_BY_PROVIDER = {"OpenAI": "openai", "Grok": "xai", "Gemini": "gemini"}
+# 実測平均0.92円/回（2026-09-17〜22・103回・94.96円）に安全マージンを見た事前見積り。
+YOSAN_MITSUMORI_YEN = 3.0
 
 # 3回続けて FIX が出たら、AI同士で堂々巡りしているとみなしてたまごさんに1点だけ聞く（6章）。
 FIX_STREAK_ESCALATE = 3
@@ -400,6 +415,58 @@ def _kazu_gate_or_stop(body, label):
     return 1
 
 
+def _daburu_gate_or_stop(body):
+    """1472番：『確認できないものをよこすな』の門。通れば0、落ちたら1。
+
+    ★判定は tools/1472_daburu_kanmon.py にしかない（同じ理由で二重管理しない）。
+      たまごさん（2026-09-19 20:23）「ダブルクリックで開きますって開かれないよ
+      …確認できないものをよこすな」への対応。ローカルパスを『確認して』の
+      文脈でそのまま渡すのを、AIを呼ばずに文字列判定で止める。
+    """
+    try:
+        import importlib
+        m = importlib.import_module("1472_daburu_kanmon")
+    except Exception:
+        # モジュール名が数字始まりで import 文では読めないため、パス指定で読む。
+        try:
+            import importlib.util
+            path = os.path.join(HERE, "1472_daburu_kanmon.py")
+            spec = importlib.util.spec_from_file_location("daburu_kanmon_1472", path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+        except Exception as e:  # noqa: BLE001
+            print("（1472番の門が読めません：%s。この関所は無視します）" % e)
+            return 0
+    rc = m.run(body)
+    return 1 if rc else 0
+
+
+def _houkoku_gate_or_stop(body):
+    """1481番：『簡潔にして完結は価値高いよ』の門。通れば0、落ちたら1。
+
+    ★判定は tools/1481_houkoku_kanmon.py にしかない（同じ理由で二重管理しない）。
+      たまごさん（2026-09-19 20:23）「何が言いたいのかわからない…3行45枚で足りるのに
+      さぁダラダラ…治ったかしか興味ないから…簡潔にして完結は価値高いよ」への対応。
+      完了報告（kind=post）に限って、地の文・経緯語・実行ログの生貼りを止める
+      （pre提出は計画書なので経緯説明が要ることがあり対象外）。
+    """
+    try:
+        import importlib
+        m = importlib.import_module("1481_houkoku_kanmon")
+    except Exception:
+        try:
+            import importlib.util
+            path = os.path.join(HERE, "1481_houkoku_kanmon.py")
+            spec = importlib.util.spec_from_file_location("houkoku_kanmon_1481", path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+        except Exception as e:  # noqa: BLE001
+            print("（1481番の門が読めません：%s。この関所は無視します）" % e)
+            return 0
+    rc = m.run(body)
+    return 1 if rc else 0
+
+
 def cmd_submit(n, kind, body_path, body_text, url, cost, note):
     body = body_text or (_read_text(body_path) if body_path else "")
     if not body.strip():
@@ -411,6 +478,18 @@ def cmd_submit(n, kind, body_path, body_text, url, cost, note):
     rc = _kazu_gate_or_stop(body, "%s号 第?回（%s）の提出物" % (n, kind))
     if rc:
         return rc
+
+    # 1472番：確認できないもの（ローカルパスのダブルクリック指示）を止める
+    rc = _daburu_gate_or_stop(body)
+    if rc:
+        return rc
+
+    # 1481番：完了報告（post）に限って、ダラダラした地の文・経緯語・ログ生貼りを止める
+    #   たまごさん「何が言いたいのかわからない…簡潔にして完結は価値高いよ」
+    if kind == "post":
+        rc = _houkoku_gate_or_stop(body)
+        if rc:
+            return rc
 
     if kind == "pre" and not cost:
         # 3章：お金が出るものは、生成前に費用「◯本 × ◯円 = 合計◯円」を必ず添えて出す。
@@ -698,6 +777,15 @@ def run_one(ticket_path, quiet=False):
     prompt = build_prompt(ticket)
     skips = []
     for provider in VENDOR_ORDER:
+        saifu = _SAIFU_BY_PROVIDER.get(provider, "openai")
+        what = "外部検品ゲート %s号 第%s回(%s・%s)" % (n, ticket.get("seq"), ticket.get("kind"), provider)
+        try:
+            okv, whyv = yosan.mitsumori(saifu, YOSAN_MITSUMORI_YEN, what=what)
+        except Exception as e:
+            okv, whyv = True, "予算の栓を読めず素通し(%s)" % e
+        if not okv:
+            skips.append("%s: 予算の栓 %s" % (provider, whyv))
+            continue
         v, gaps, blindspot, one_line, model, usage, err = _call_vendor(provider, prompt)
         if v is None:
             skips.append("%s" % err)
@@ -706,6 +794,11 @@ def run_one(ticket_path, quiet=False):
         try:
             cost_row = gk.record_cost(n, ticket.get("title"), provider, model, usage, v,
                                       note="kenpin_gate 第%s回(%s)" % (ticket.get("seq"), ticket.get("kind")))
+        except Exception:
+            pass
+        try:
+            yosan.tsukatta(saifu, (cost_row or {}).get("costYen") or YOSAN_MITSUMORI_YEN,
+                           what=what, src="tools/kenpin_gate.py")
         except Exception:
             pass
         ok, err2 = _apply_result(ticket, v, gaps, blindspot, one_line, provider, model, cost_row)

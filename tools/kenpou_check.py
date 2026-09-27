@@ -811,11 +811,21 @@ def _push(paths=("status/kenpou_check.json", "status/kenpou_check_state.json",
         pub_paths.append("status/public/queue.json.gz")
     except Exception as e:
         print("queue.json.gz再構築に失敗（続行）: %s" % e)
+    # 1873番：done_archive.jsonもitems増加(7653件)で軽量版自体が再び1MB超になったため
+    #   queue.jsonと同じくgzip版のみを公開する（build_done_archive_light.py参照）。
+    try:
+        import build_done_archive_light
+        build_done_archive_light.build()
+        pub_paths.append("status/public/done_archive.json.gz")
+    except Exception as e:
+        print("done_archive.json.gz再構築に失敗（続行）: %s" % e)
     # 旧・生コピーが追跡に残っていれば外す（.gzへ一本化。rm --cachedがそのまま
     #   ステージするので、この後のgit addの対象パスには含めない＝存在しないパスを
     #   addしてエラーになるのを避ける）。
     if _run(["git", "ls-files", "--error-unmatch", "status/public/queue.json"])[0] == 0:
         _run(["git", "rm", "--cached", "-q", "status/public/queue.json"])
+    if _run(["git", "ls-files", "--error-unmatch", "status/public/done_archive.json"])[0] == 0:
+        _run(["git", "rm", "--cached", "-q", "status/public/done_archive.json"])
     for attempt in range(1, retries + 1):
         rc, out, err = _run(["git", "add"] + pub_paths)
         if rc != 0:

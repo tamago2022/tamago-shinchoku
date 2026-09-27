@@ -171,7 +171,9 @@ SPECS = [
     dict(id="github", label="GitHub（見張り番の目）",
          names=["GITHUB_TOKEN", "GH_TOKEN"], dest=("env", "GITHUB_TOKEN"),
          sniff=re.compile(r"^(?:ghp_|github_pat_|gho_)[A-Za-z0-9_]{20,}$"), verify=v_github,
-         fix="github.com/settings/personal-access-tokens で有効期限「無期限」で作る"),
+         fix="github.com/settings/personal-access-tokens で有効期限「無期限」で作る",
+         # ★gh が既に持っているなら「無い」と言わない（鍵台帳は gh auth token を見ている）
+         extra=lambda: _gh_token_exists()),
     dict(id="openai", label="OpenAI（外部検品・代行）",
          names=["OPENAI_API_KEY"], dest=("env", "OPENAI_API_KEY"),
          sniff=re.compile(r"^sk-[A-Za-z0-9_\-]{20,}$"), verify=v_openai,
@@ -207,11 +209,17 @@ SPECS = [
          names=["DEVIN_API_KEY"], dest=("env", "DEVIN_API_KEY"),
          sniff=None, verify=None, fix="app.devin.ai"),
     dict(id="fal", label="fal.ai（画像・動画・音声）",
-         names=["FAL_KEY", "FAL_API_KEY"], dest=("env", "FAL_KEY"),
-         sniff=None, verify=None, fix="fal.ai/dashboard/keys"),
+         names=["FAL_KEY", "FAL_API_KEY", "FAL_AI_KEY", "FAL_KEY_ID"],
+         dest=("env", "FAL_KEY"),
+         sniff=None, verify=None, fix="fal.ai/dashboard/keys",
+         # ★置き場が枝分かれしている（実測・kagi_daicho.py と同じ場所を見る）
+         extra=lambda: any(os.path.exists(os.path.expanduser(p))
+                           for p in ("~/.fal_key", "~/.tamago/fal_key"))),
     dict(id="lovable", label="Lovable（本番へ出す口・公式APIキー）",
          names=["LOVABLE_API_KEY"], dest=("env", "LOVABLE_API_KEY"),
-         sniff=None, verify=None, fix="Lovable のワークスペース設定 → API keys"),
+         sniff=None, verify=None, fix="Lovable のワークスペース設定 → API keys",
+         # ★既にOAuthで通っているなら「無い」と言わない（嘘の赤を出さない）
+         extra=lambda: os.path.exists(os.path.join(TAMAGO, "lovable_oauth.json"))),
 ]
 
 
@@ -292,8 +300,29 @@ def put_file(path, value):
     os.replace(tmp, path)
 
 
+def _gh_token_exists():
+    """gh が既にトークンを持っているか（鍵台帳と同じ見方）。値は受け取らない。"""
+    # ★launchd から走ると PATH が細いので、gh の在りかを決め打ちでも探す
+    for exe in ("gh", "/opt/homebrew/bin/gh", "/usr/local/bin/gh",
+                os.path.expanduser("~/.local/bin/gh"),
+                os.path.expanduser("~/.npm-global/bin/gh")):
+        try:
+            import subprocess
+            p = subprocess.run([exe, "auth", "token"], capture_output=True, timeout=15)
+            if p.returncode == 0 and p.stdout.strip():
+                return True
+        except Exception:
+            continue
+    return False
+
+
 def have(sp):
     """もう持っているか。読み口は既存の tools/kagi.py に合わせる。"""
+    try:
+        if sp.get("extra") and sp["extra"]():
+            return True
+    except Exception:
+        pass
     kind, target = sp["dest"]
     if kind == "file":
         try:
@@ -314,7 +343,12 @@ def have(sp):
         txt = io.open(KEYS, encoding="utf-8").read()
     except Exception:
         return False
-    return any(re.search(r"(?m)^%s=\S" % re.escape(nm), txt) for nm in sp["names"])
+    if any(re.search(r"(?m)^%s=\S" % re.escape(nm), txt) for nm in sp["names"]):
+        return True
+    # ★名前の言い回しが違うだけで「無い」と言わない（嘘の赤を出さない）。
+    #   鍵の名前の芯（FAL / GITHUB など）で緩く1回見る。
+    core = sp["names"][0].split("_")[0]
+    return bool(re.search(r"(?m)^[A-Z0-9]*%s[A-Z0-9_]*=\S" % re.escape(core), txt))
 
 
 # ---------------------------------------------------------------------------

@@ -449,6 +449,73 @@ def _warn_if_engineer_title(title):
         pass
 
 
+_RULE_DOC_GLOBS = [
+    os.path.join(REPO, "tools", "prompt_rules", "*.md"),
+    os.path.join(REPO, "tools", "session_preamble.md"),
+]
+_RULE_DOC_CACHE = {"mtime": 0.0, "text": ""}
+
+
+def _load_rule_texts():
+    """1785番事故（2026-09-30）：`tools/prompt_rules/always-15-cache-expires-in-an-hour.md`
+    8〜9行目の一文「モデルを変えてもキャッシュは作り直しになる。安いモデルに変えても、／
+    長い会話を読み直す分で損をすることがある。」が改行位置で分断され、1775〜1792番の
+    18件が『たまごさんの新規依頼』として連続でqueue_addされ、毎回『本番URLを出せ』と
+    要求されては失敗を繰り返していた（実体の無いゴーストタスク）。同じ被害の再発を
+    防ぐため、ルール文書（prompt_rules/session_preamble）の中身をキャッシュして
+    照合できるようにする。"""
+    paths = []
+    for pat in _RULE_DOC_GLOBS:
+        paths.extend(glob.glob(pat))
+    mtime = 0.0
+    for p in paths:
+        try:
+            mtime = max(mtime, os.path.getmtime(p))
+        except Exception:
+            pass
+    if _RULE_DOC_CACHE["text"] and _RULE_DOC_CACHE["mtime"] == mtime:
+        return _RULE_DOC_CACHE["text"]
+    chunks = []
+    for p in paths:
+        try:
+            with io.open(p, encoding="utf-8") as f:
+                chunks.append(f.read())
+        except Exception:
+            pass
+    text = "\n".join(chunks)
+    # 太字（**）とコード用バッククォート（`）を剥がした正規化版も同時にキャッシュする
+    # （たまごさんの依頼文・queue_addへ渡る生テキストにも同じ記号が混ざるため、
+    # 比較する双方から同じ記号を落として揃えないと一致しない）
+    normalized = text.replace("**", "").replace("`", "")
+    _RULE_DOC_CACHE["mtime"] = mtime
+    _RULE_DOC_CACHE["text"] = text
+    _RULE_DOC_CACHE["normalized"] = normalized
+    return text
+
+
+def _is_rule_document_fragment(text):
+    """本文（の先頭部分）がルール文書(prompt_rules/session_preamble)の一節とほぼ
+    そのまま一致するなら、たまごさんの新規依頼ではなくルール文の誤登録とみなす。
+    短い文字列は偶然の一致が起きやすいので8文字未満は対象外にする。"""
+    t = (text or "").strip()
+    if len(t) < 8:
+        return False
+    # ルール文はMarkdown装飾（太字・見出し記号・コード用バッククォート）が多いので、
+    # 剥がしてから照合する
+    stripped = re.sub(r"^[\*\-\s#>`]+", "", t)
+    stripped = stripped.replace("**", "").replace("`", "").strip()
+    if len(stripped) < 8:
+        return False
+    _load_rule_texts()  # キャッシュ（"normalized"含む）を最新化する
+    rule_text = _RULE_DOC_CACHE.get("normalized") or ""
+    if not rule_text:
+        return False
+    # 依頼文の途中にルール文の引用が混ざるケースを誤検知しないよう、
+    # 「本文の先頭120文字」がルール文書のどこかにそのまま現れるかだけを見る
+    probe = stripped[:120]
+    return probe in rule_text
+
+
 def queue_add(text, priority=None, label=None, origin=None):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
@@ -464,6 +531,15 @@ def queue_add(text, priority=None, label=None, origin=None):
     text = (text or "").strip()
     if not text:
         return "failed", "本文が空です"
+    # 2026-09-30 1785番事故の再発防止：ルール文書(prompt_rules/session_preamble)の
+    # 一節そのままなら積まない。label に「重複OK」がある時だけ通す（正当な依頼が
+    # たまたまルール文と同じ言い回しになった場合の逃げ道、421番と同じ設計）。
+    if "重複OK" not in (label or "") and _is_rule_document_fragment(text):
+        return "skipped", (
+            "ルール文書（tools/prompt_rules または tools/session_preamble.md）の一節と"
+            "同じ内容のため積みませんでした（1785番の再発防止ガード）。"
+            "実際の依頼なら label に『重複OK』と書いて送り直してください"
+        )
     # ---- 653番（2026-09-08）タイトル命名基準 ----
     # たまごさんが進捗表を開いて一目で中身が分かることが目的。ここに積まれた title は
     # そのまま進捗表（index.html）の「発車待ち」「確認待ち」に出る＝たまごさんが直接読む文字列。

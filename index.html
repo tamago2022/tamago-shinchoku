@@ -119,6 +119,10 @@ ul{list-style:none; margin:0; padding:0}
 .q li:first-child{border-top:0}
 .ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
 
+/* ───── 空き容量の赤帯（閾値割れのときだけ出す） ───── */
+#diskAka:not(:empty){background:var(--t-ng-bg); color:var(--t-fg); border-radius:10px;
+  padding:12px 14px; margin:0 0 10px; font-size:17px; line-height:1.5; font-weight:700}
+
 /* ───── 残り容量の1行（色を付けない・小さく1行） ───── */
 #diskLine{font-size:14px; color:var(--sub); font-variant-numeric:tabular-nums;
   margin:0 0 12px; padding:0 2px}
@@ -150,6 +154,10 @@ footer a{display:block; padding:5px 0}
   <span id="stamp">読み込み中…</span>
   <button id="reload" type="button">読み直す</button>
 </header>
+
+<!-- 1200番（2026-09-30）：空きが閾値を切ったら、たまごさんが気づく前に赤帯。
+     出どころは下の #diskLine と同じ status/public/machine.json の diskFreeGB。 -->
+<div id="diskAka"></div>
 
 <!-- ここだけは赤で出す。切れていると何も動かないので。 -->
 <div id="loginNg"></div>
@@ -199,6 +207,10 @@ footer a{display:block; padding:5px 0}
   <summary><span>ほかの画面へ</span></summary>
   <div class="body">
     <footer>
+      <a href="share/1180-hikitsugi-ima.html">★引き継ぎ（いま）：25分おきに作り直している1枚・新担当はここから</a>
+      <a href="share/1190-tanaoroshi.html">★棚卸し：未完了を全部（本番に出た／やりかけ／未着手／止まっている）</a>
+      <!-- 1178番：9/28の引き継ぎ。本文は非公開リポ（公開リポには置かない） -->
+      <a href="https://github.com/tamago2022/tamago-dispatch-log/blob/main/%E5%BC%95%E3%81%8D%E7%B6%99%E3%81%8E_2026-09-28.md">★引き継ぎ 2026-09-28（合言葉「4.3MB」・0章の7問つき／非公開）</a>
       <a href="share/nagekomi-c5fd9d5791b32e88.html">★投げ込み箱：URLを貼って押すだけ（受付一覧つき）</a>
       <a href="share/daicho.html">受付台帳：言われて治っていないもの</a>
       <a href="share/check/1052-kakunin-machi.html">たまごさんの確認待ち</a>
@@ -212,9 +224,11 @@ footer a{display:block; padding:5px 0}
       <a href="1140-machigai.html">全曲検査：間違いは何件あったか（全26,400曲）</a>
       <a href="1145-heru.html">★間違いは減っているか（動画を1本ずつ実測・毎日更新）</a>
       <a href="1146-login-zero.html">★ログインの手をゼロに近づける</a>
+      <a href="1177-ninshou.html">★認証・鍵が要る先 全部の棚卸し（22件・○14／×6／?3・Mac実測）</a>
       <a href="1147-hayaku.html">★曲ページは軽くなったか</a>
       <a href="1149-yarippanashi.html">★やりっぱなしゼロ：4つの台帳と、壊れたままのもの</a>
       <a href="1151-gaibu-seiseki.html">★GensparkとDevinは役に立ったか</a>
+      <a href="share/check/1500-devin-seiseki.html">★Devin成績表：10/16に更新するかしないかの判定（1本ごと・自動）</a>
       <a href="yuming-anohi/index.html">あの日にかえりたい：Genspark本人の完成版と3案</a>
       <a href="1165-hassha.html">★何がMacを重くしているか／今走っている・次に控えている（5分ごと実測）</a>
       <a href="share/done/">できたもの一覧</a>
@@ -302,11 +316,17 @@ function getJson(url, ms){
 /* ───────── 残り容量（1行だけ・色は付けない） ─────────
    出どころ：status/public/machine.json の diskFreeGB（心臓が自動で更新している）。
    取れなければ空欄にせず「取れていません」と書く。 */
+/* 1200番：赤帯の閾値。tools/disk_guardian.py の AKAOBI_GB と同じ数字にしておく。 */
+var DISK_AKA_GB = 50;
 (function(){
-  var el = $("diskLine"); if(!el) return;
+  var el = $("diskLine"), aka = $("diskAka"); if(!el) return;
   getJson("status/public/machine.json").then(function(mac){
     var free = (mac && typeof mac.diskFreeGB === "number") ? mac.diskFreeGB : null;
     el.textContent = "残り容量　" + (free == null ? "取れていません" : Math.round(free) + "GB");
+    if(aka && free != null && free < DISK_AKA_GB){
+      aka.textContent = "空き容量 " + Math.round(free) + "GB（" + DISK_AKA_GB +
+        "GBを切りました）。自動の片付けが走っています。";
+    }
   }).catch(function(){ el.textContent = "残り容量　取れていません"; });
 })();
 

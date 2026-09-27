@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1380 『手探りで始めたばかりです』の二重表示、解消を実測確認(店主が開けるリンクへ差し替え) 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1380 『手探りで始めたばかりです』の二重表示、解消を実測確認(店主が開けるリンクへ差し替え)</div>
+<h1>#1380 『手探りで始めたばかりです』の二重表示、解消を実測確認(店主が開けるリンクへ差し替え)</h1>
+<div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+曲ページ下の『まだ手探りで始めたばかりです』目安箱の二重表示（09-18指摘・案件#936で統合、#1130でCoverGuidePageBody.tsx内の重複ブロックを完全撤去）が、本番で実際に1つだけになっているかを実測した。前回の確認ページは店主が開けない非公開リポジトリへのリンクを貼っていたため、今回は本番の実ページだけで証拠を揃え直した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1回</b><span>曲ページ本体でのトリガー文言『間違いを見つけた方は、ひとことだけ教えてください』出現回数(実測。2回以上なら重複が残っている証拠)</span></div>
+  <div class="num"><b>1回</b><span>トップページでの同文言出現回数(比較用・実測)</span></div>
+  <div class="num"><b>1箇所</b><span>リポジトリ内で&lt;FeedbackDoor /&gt;を呼び出している箇所数(src/routes/__root.tsx のみ・grep実測)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番・曲ページ本体(サンリオキャラクターズ「ポムポム☆PARADISE」)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sanrio-characters&amp;song=pompompurin-paradise" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=sanrio-characters&amp;song=pompompurin-paradise</a></li>
+  <li><b>本番トップページ(比較用)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+
+
+<footer>
+このページは #1380 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

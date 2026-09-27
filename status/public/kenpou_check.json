@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-09-27T09:10:04+09:00",
+ "checkedAt": "2026-09-30T18:15:08+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 5,
  "items": [
   {
    "key": "ctx_1m",
@@ -22,9 +22,9 @@
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
-   "color": "green",
-   "count": 3,
-   "detail": "最終記録から約0.4時間経過（2026-09-27T08:48:00+09:00）／直近24時間の完了10件中、鬼監督の記録が付いているのは7件"
+   "color": "red",
+   "count": 43,
+   "detail": "最終記録から約0.3時間経過（2026-09-30T17:55:02+09:00）／直近24時間の完了55件中、鬼監督の記録が付いているのは12件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
   },
   {
    "key": "done_missing_url",
@@ -38,29 +38,29 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "走行2本／上限2本（枠が埋まっているだけ・正常）"
+   "detail": "最終発車から0.2時間・発車待ち1915件・空き1枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回1542番 → 今回1697番（減少なし）"
+   "detail": "前回2221番 → 今回10411番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
-   "count": 16,
-   "detail": "tamashii/data/tamashii.json(5.3MB)、status/969/pickup.log(2.9MB)、share/check/img/906-image-quality/concierge-original.png(2.7MB)、status/public/queue.json(2.3MB)、wae_autopost/images/16_オレンジ系の龍2枚並び_黒背景_桜屋外.jpg(1.6MB)"
+   "count": 48,
+   "detail": "share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/7a63394c.mp3(11.0MB)、share/zunda/b4bb92e7.mp3(10.8MB)、share/zunda/bacc8398.mp3(10.7MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
    "color": "green",
    "count": 0,
-   "sample": 1,
-   "detail": "直近1件の確認ページはすべて200だった"
+   "sample": 15,
+   "detail": "直近15件の確認ページはすべて200だった"
   },
   {
    "key": "orphan_sessions",
@@ -72,30 +72,38 @@
   {
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
-   "color": "green",
-   "count": 17,
-   "detail": "17件（しきい値100件以内）"
+   "color": "red",
+   "count": 136,
+   "detail": "136件（しきい値100件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。worktree_reaper.pyが動いているか確認し、片づけを進めること）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 1090,
-   "detail": "未報告の完了が1090件たまっている（最古は約75.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 13114,
+   "detail": "未報告の完了が13114件たまっている（最古は約156.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
-   "skipped": "既存の714番と同じ内容のためスキップ"
+   "skipped": "--no-queue指定のため積んでいない"
+  },
+  {
+   "key": "oni_kantoku_alive",
+   "skipped": "--no-queue指定のため積んでいない"
   },
   {
    "key": "big_files",
-   "skipped": "既にこの点検が積んだ925番が未解決のため積み直さない"
+   "skipped": "--no-queue指定のため積んでいない"
+  },
+  {
+   "key": "worktree_count",
+   "skipped": "--no-queue指定のため積んでいない"
   },
   {
    "key": "unreported_completions",
-   "skipped": "既にこの点検が積んだ1118番が未解決のため積み直さない"
+   "skipped": "--no-queue指定のため積んでいない"
   }
  ],
  "autoClosedRecovered": []

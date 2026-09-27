@@ -255,15 +255,47 @@ def harvest_outbox():
 # 発車待ちに積む対象から外すが、**台帳からは消さない**（消すと二度と見つからないため）。
 _NOT_TASK = re.compile(
     r"(たまごさんが|たまごさんに見てもらう|注意：|ここが全部の親|わざと|参考|経緯|所感|——|だけ。$)")
-_TASKISH = re.compile(r"(する|やる|直す|作る|足す|消す|測る|出す|見る|確かめる|試す|入れる|"
-                      r"戻す|繋ぐ|つなぐ|閉じる|置く|投げる|通す|回す|書く|埋める|止める|"
-                      r"продолж|続ける|takes|\[ \])")
+
+# 1494番実例（2026-09-29）：39件の判定日赤queue項目をactionable()にかけたところ、
+# 終止形（「直す」「繋ぐ」等）でしか動詞を拾えず、「直しといて」「つながれる」のような
+# 活用形（て形・受身形等）を含む**実在する作業指示**が誤ってactionable=Falseに落ち、
+# hantei_hiduke.pyの「actionable=falseは二度と赤にしない・再発車しない」により
+# 埋もれるリスクが見つかった（例：1711番「全部とつながれるようにしておいて…両方
+# 一方通行にしないで」＝双方向リンクの店主最重要原則そのものだった）。
+# 語幹（活用しない部分）でマッチさせ、活用形を拾い漏らさないようにする。
+# 非対称なコスト：actionable=Trueの誤判定は実行してredoCount>=2で安全にキャンセルされる
+# だけだが、actionable=Falseの誤判定は指示そのものが消える。誤検知は前者に倒す。
+_TASKISH = re.compile(r"(する|やる|直す|直し|作る|作っ|足す|足し|消す|消し|測る|測っ|"
+                      r"出す|出し|見る|見て|確かめる|確かめ|試す|試し|入れる|入れ|"
+                      r"戻す|戻し|繋ぐ|繋が|繋い|つなぐ|つなが|つない|閉じる|閉じ|"
+                      r"置く|置い|投げる|投げ|通す|通し|回す|回し|書く|書い|埋める|埋め|"
+                      r"止める|止め|продолж|続ける|続け|takes|\[ \])")
+
+
+_HANTEI_AKA_PREFIX = "判定日赤｜"
 
 
 def actionable(r):
-    """発車待ちに積んでよいか。台帳への記録可否ではない。"""
+    """発車待ちに積んでよいか。台帳への記録可否ではない。
+
+    1377番実例（2026-09-28）：たまごさんの相槌「あ、ダブルできてるんじゃなくて
+    直してくれたんだね。」が tools/hantei_hiduke.py の判定日仕組みで
+    「判定日赤｜」付きの queue エントリへ自動繰り上げされ、source=="queue" は
+    無条件 actionable=True だったため、具体的な作業指示が無いまま
+    stuck→waiting→running を何度も繰り返し、複数セッションが空振りし続けた
+    （1370番で kioku 側には既に用意されていた「actionable=False なら
+    再発車しない」の防波堤が、queue 側の無条件Trueで素通りしていた）。
+    「判定日赤｜」で始まる自動繰り上げ項目だけは、元の発言に同じ判定基準
+    （_NOT_TASK / _TASKISH）を通す。それ以外の queue 項目（人が直接積んだ
+    もの）は従来通り無条件 actionable=True のまま変えない。
+    """
     t = r.get("title") or ""
     if r.get("source") == "queue":
+        if t.startswith(_HANTEI_AKA_PREFIX):
+            bare = t[len(_HANTEI_AKA_PREFIX):]
+            if _NOT_TASK.search(bare):
+                return False
+            return bool(_TASKISH.search(bare))
         return True
     if _NOT_TASK.search(t):
         return False
@@ -631,7 +663,8 @@ a{color:#36c}
             card("今日減った", t["closedToday"], "前日 %s件" % (countrow.get("prevOpen") if countrow.get("prevOpen") is not None else "—"),
                  red=(t["closedToday"] == 0)),
             card("走行中", running, "同時上限 %s本" % (cap if cap is not None else "—")),
-            card("週の残り", "%.0f%%" % remain, "リセット %s" % (quota.get("resetAt") or "—"),
+            card("週の残り", "%.0f%%" % remain,
+                 "リセット %s（実測: %.0f%%）" % (quota.get("resetAt") or "—", remain),
                  red=(remain > 75)),
             card("いま出してよい本数", haibun.get("cap", "—"), (haibun.get("why") or "")[:40]),
         ]),
@@ -654,6 +687,13 @@ def self_test():
     check("done_when が明記の完了条件を拾う",
           done_when("x", "【完了条件】ページが本番で開ける") == "ページが本番で開ける")
     check("id が固定値", make_id("queue", "あ い") == make_id("queue", "あい"))
+    check("1377番再発防止：判定日赤の相槌はactionable=False",
+          actionable({"source": "queue",
+                      "title": "判定日赤｜あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is False)
+    check("判定日赤でも作業動詞があればactionable=True",
+          actionable({"source": "queue", "title": "判定日赤｜バナー画像を直す"}) is True)
+    check("通常のqueue項目は従来通りactionable=True",
+          actionable({"source": "queue", "title": "あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is True)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))

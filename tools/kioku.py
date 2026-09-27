@@ -168,6 +168,26 @@ _HOUKOKU = re.compile(
     r"分かれ目でした|そこが分かれ目|"
     r"にしてあります|にしてある|にしておきました|にしておいた|にしてありました)")
 
+# ★1516番実例（2026-09-30）：どこかのセッションが「たまごさんの過去の指摘」を
+#   まとめたAI製の文書（メモリファイル・引き継ぎ書の抜粋等）を、丸ごとプロンプト内へ
+#   貼り付けて子セッションへ渡していた。その文書は「実例（1360号）」のような番号引用や
+#   Markdown太字（**）、英語まじりの注記（"— rejected twice" "User:" "→ only
+#   verified-200 URLs" 等）を含む一文単位の箇条書きで、bunkatsu() の文分割・_IRAI
+#   （依頼動詞）判定を素通りしてしまい、たまごさんが一度も言っていない断片が
+#   「たまごさんの発言」として台帳に量産された（同一タイムスタンプに数十件、
+#   例：1495〜1520番台・2000番台の「判定日赤」チケットが同じ1メッセージから発生）。
+#   これらは文脈（元の「あれ」「それ」が指すもの）がこの時点で既に失われており、
+#   1週間後に★赤＋P1へ自動繰り上げされ続けても、受け取ったセッションには解決しようが
+#   ない（同じ穴を毎回別のセッションが調査してから「解決不能」と気づく＝時間の無駄）。
+#   ★生の会話（たとえ雑でも）にはまず出てこない「ドキュメント特有の記号」で弾く。
+#   本物の依頼文（「あれと同じものをまず出してください」等）はこれらの記号を
+#   含まないため、拾い漏らさない。
+_BUNSHO_DANPEN = re.compile(
+    r"(\*\*|→\s*only|→\s*verified|instead of|User:|"
+    r"実例（\d+(?:号|番)）|"  # 番号引用（メモ・引き継ぎ書の常套句）
+    r"」\s*and\s*「|"  # 英語のandで日本語の引用を2つ繋ぐ＝ドキュメントの列挙
+    r"rejected twice)")
+
 
 def norm(s):
     """突き合わせ用。記号・空白・装飾・強調の★を落とす。"""
@@ -205,6 +225,8 @@ def bunkatsu(text):
                 continue
             if _HOUKOKU.search(s):
                 continue
+            if _BUNSHO_DANPEN.search(s):
+                continue
             out.append(s[:160])
     return out
 
@@ -212,11 +234,67 @@ def bunkatsu(text):
 # ────────────────────────────────────────────── ログを読む
 
 
+# ★1816番実例（2026-09-30）：Claude Codeのスキル読み込み機構が、Skill本文
+#   （page-kenpinスキルのチェックリスト等）を role=user のメッセージとして
+#   会話ログへ丸ごと注入する。この本文は「Base directory for this skill:」
+#   で必ず始まる（システムが機械的に付与する決まり文句・たまごさんは書かない）。
+#   1516番の_BUNSHO_DANPENは記号（**・英語混じり等）で弾く方式だったため、
+#   このスキル文書のように装飾の無い自然な日本語の指示文（「1ページだけ直して
+#   終わりにしない。」等）はすり抜け、5回カウントされて偽タスク（1816号）が
+#   自動発車した。記号に頼らず、メッセージの出どころそのもの（冒頭の決まり文句）
+#   で弾く方が確実なので、ここで先に丸ごと除外する。
+_SKILL_LOAD_MARKER = "Base directory for this skill:"
+
+# ★1853号実例（2026-09-30）：tomaranai.py / shukudai.py / github_watch.py /
+#   oni_modoshi.py / hantei_hiduke.py は、子セッションへ渡すタスク本文を
+#   必ず「【タスク】…」「【完了条件】…」の2行セットで組み立てる（このリポジトリで
+#   この組み合わせを使うのは機械生成タスクだけ・たまごさんが直接この書式で
+#   打つことはない）。この本文がまるごと子セッションの会話ログへ role=user の
+#   最初のメッセージとして記録されるため、bunkatsu()の依頼動詞判定（「直して」
+#   「にして」等）に引っかかって「たまごさんの発言」として拾われてしまう。
+#   さらに悪いことに、この偽エントリが3回以上カウントされると
+#   tomaranai.tsugi_no_tama()が「3回以上言わせたもの」として同じ文言を
+#   もう一度タスク化して再発車し、その新しい子セッションの会話ログにまた同じ
+#   本文が現れて回数が増える──**自己増殖する無限ループ**になっていた
+#   （実例：1853号自身がこの構造で「curlで読めても、押して動くかを…」を
+#   4回言わせた扱いになり、対象URLも無いまま自動発車され続けた）。
+#   1816号と同じ考え方（記号ではなく出どころの決まり文句で弾く）を適用する。
+_AUTO_TASK_MARKER = "【タスク】"
+_AUTO_TASK_DONE_MARKER = "【完了条件】"
+
+# ★1853号・調査で判明した本当の主犯：tools/auto_launcher.py の build_prompt() は
+#   子セッションを着火するたび、必ず「【自動発車】発車待ちの{n}番です。」から始まる
+#   ヘッダーの前に session_preamble.md（数百行の恒久ルール文書。「してほしい」
+#   「〜しない」「禁止」等、_IRAI に引っかかる文が山ほど入っている）を丸ごと
+#   差し込んで、それを子セッションの**最初のuserメッセージ**にする。1日47本前後
+#   発車される全セッションの最初のメッセージに毎回同じ巨大な文書が現れるため、
+#   その中の一文一文が「同じ日に何度も言われた」と誤カウントされ続けていた
+#   （8fb974b96deb「curlで読めても…」・dff5787a0dc7「curlで足りる」・
+#   599724ed12f3「自分でcurlして200を確かめてから渡す」は全部この1本の
+#   transcriptから拾われており、"from"が同一ファイルで揃うのがその証拠）。
+#   「【自動発車】発車待ちの」はbuild_prompt()のヘッダーに必ず1回だけ出る固定文言
+#   なので、これを含むメッセージは丸ごと機械の自動発車テンプレートと判定して除外する。
+_AUTO_LAUNCH_MARKER = "【自動発車】発車待ちの"
+
+# ★1853号・zenbu全走査で判明した第3の経路：AI検品(Verifier=鬼監督3段目)は
+#   build_prompt()を経由せず、build_verify_prompt()が組み立てた別テンプレートを
+#   `claude -p <prompt>` へ直接渡す（tempfile.mkdtemp(prefix="tamago-verify-")の
+#   一時cwdで動く別プロセス）。このテンプレートは`it["touchCheckNote"]`
+#   （＝auto_launcher.pyの触る検品NG時の定型文、まさに「curlで読めても、押して
+#   動くかを…」そのもの）をそのまま埋め込むため、_AUTO_LAUNCH_MARKERの外側で
+#   同じ汚染が起きていた（実測：--zenbu全走査で8fb974b96debがcount8で再検出、
+#   "from"がtamago-verify-*の一時ディレクトリのtranscriptだった）。
+#   build_verify_prompt()の先頭は必ず「【AI検品・鬼監督（Verifier）】あなたは
+#   検品専門です。」で始まる固定文言なので、これも丸ごと除外する。
+_VERIFY_PROMPT_MARKER = "【AI検品・鬼監督（Verifier）】あなたは検品専門です。"
+
+
 def user_text(rec):
     """会話ログ1行から、たまごさんが打った文だけを取り出す。
 
     道具の返り値（tool_result）はたまごさんの発言ではない。混ぜると
     台帳がゴミで埋まって誰も見なくなる＝仕組みが死ぬ。**必ず外す。**
+    ★Skill本文の自動注入（_SKILL_LOAD_MARKER）も同様に外す（1816番）。
     """
     if not isinstance(rec, dict):
         return None
@@ -227,6 +305,14 @@ def user_text(rec):
         return None
     c = msg.get("content")
     if isinstance(c, str):
+        if c.lstrip().startswith(_SKILL_LOAD_MARKER):
+            return None
+        if _AUTO_LAUNCH_MARKER in c:
+            return None        # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
+        if _AUTO_TASK_MARKER in c and _AUTO_TASK_DONE_MARKER in c:
+            return None        # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
+        if c.lstrip().startswith(_VERIFY_PROMPT_MARKER):
+            return None        # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
         return c
     if not isinstance(c, list):
         return None
@@ -237,7 +323,16 @@ def user_text(rec):
         if b.get("type") == "tool_result":
             continue          # ★道具の出力。たまごさんの声ではない
         if b.get("type") == "text":
-            parts.append(b.get("text") or "")
+            t = b.get("text") or ""
+            if t.lstrip().startswith(_SKILL_LOAD_MARKER):
+                continue       # ★Skill本文の自動注入。たまごさんの声ではない（1816号）
+            if _AUTO_LAUNCH_MARKER in t:
+                continue       # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
+            if _AUTO_TASK_MARKER in t and _AUTO_TASK_DONE_MARKER in t:
+                continue       # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
+            if t.lstrip().startswith(_VERIFY_PROMPT_MARKER):
+                continue       # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
+            parts.append(t)
     return "\n".join(parts) if parts else None
 
 
@@ -405,9 +500,57 @@ def main():
             ng.append("報告文（〜にしてあります）を依頼として拾ってしまう（1361号の再発）")
         if not bunkatsu("台帳を作ってください。"):
             ng.append("本物の依頼まで弾いてしまっている（過剰フィルタ）")
+        # ★1516番実例：AI製ドキュメントの断片（Markdown太字・英語まじり・
+        #   番号引用・"and"連結）を、たまごさんの発言として拾わない
+        if bunkatsu('Design "似せた" instead of "そのまま"** — rejected twice. '
+                    'User: 「寄せただけじゃダメだからね。」'):
+            ng.append("AI製ドキュメントの断片（**・rejected twice・User:）を拾ってしまう（1516号の再発）")
+        if bunkatsu("実例（1360号）：前任AIの引き継ぎメッセージ内の一文を作ってください。"):
+            ng.append("番号引用（実例（NNNN号））を含む文書の断片を拾ってしまう（1516号の再発）")
+        if bunkatsu("ゼロにしてよ」 → only verified-200 URLs を出してください。"):
+            ng.append("矢印+英語の注記を拾ってしまう（1516号の再発）")
+        if bunkatsu("」and 「寄せただけじゃダメだからね。出してください。"):
+            ng.append("英語のandで日本語引用を繋ぐ断片を拾ってしまう（1516号の再発）")
+        # ★本物の依頼（あれ・これ等の指示語だけの短文でも）は引き続き拾う
+        if not bunkatsu("あれと同じものをまず出してください。"):
+            ng.append("指示語を含む本物の依頼まで弾いてしまっている（過剰フィルタ）")
         if user_text({"type": "user", "message": {"role": "user", "content":
                       [{"type": "tool_result", "content": "直してほしい"}]}}):
             ng.append("tool_result を発言として拾っている")
+        # ★1816番実例：Skill読み込み本文（"Base directory for this skill:"で
+        #   始まるuser roleメッセージ）を、たまごさんの発言として拾わない
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "Base directory for this skill: /tmp/x\n\n# 曲ページ検品\n"
+                      "1ページだけ直して終わりにしない。作ってください。"}}):
+            ng.append("Skill本文の自動注入を発言として拾ってしまう（1816号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "Base directory for this skill: /tmp/x\n1ページだけ直して終わりにしない。"}]}}):
+            ng.append("Skill本文の自動注入（contentがlist）を発言として拾ってしまう（1816号の再発）")
+        # ★1853号実例：tomaranai.py等が組み立てる「【タスク】…【完了条件】…」の
+        #   機械生成タスク本文が、そのまま子セッションの最初のuserメッセージとして
+        #   会話ログに現れる。これをたまごさんの発言として拾うと、その本文自体が
+        #   また新しいタスクとして再発車され続ける無限ループになる。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "【タスク】curlで読めても、押して動くかを`node tools/verify_click.mjs <URL>` "
+                      "で自分でも確認してから直してください。\n【完了条件】本番に出て200で返る。"}}):
+            ng.append("機械生成タスク本文（【タスク】…【完了条件】…）を発言として拾ってしまう（1853号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "【タスク】台帳を直してください。\n【完了条件】本番で確認できる。"}]}}):
+            ng.append("機械生成タスク本文（contentがlist）を発言として拾ってしまう（1853号の再発）")
+        # ★1853号・本当の主犯：build_prompt()の自動発車ヘッダー＋preambleの丸ごと注入
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "【自動発車】発車待ちの999番です。\n\n# やること\n**台帳を直す**\n\n"
+                      "数字・HTTPコードだけならcurlで足りるので確認してから直してください。"}}):
+            ng.append("自動発車テンプレート（preamble+ヘッダー）を発言として拾ってしまう（1853号の再発）")
+        # ★1853号・zenbu全走査で判明した第3の経路：AI検品(Verifier)への指示文
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "【AI検品・鬼監督（Verifier）】あなたは検品専門です。この作業を行った本人ではありません。\n\n"
+                      "# 元の依頼\nテスト\n\n# 2段目「触る検品」の結果\n"
+                      "実際に押しても反応しない要素があります。curlで読めても、押して動くかを"
+                      "`node tools/verify_click.mjs <URL>` で自分でも確認してから直してください。"}}):
+            ng.append("AI検品(Verifier)への指示文を発言として拾ってしまう（1853号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)

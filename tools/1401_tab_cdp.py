@@ -322,6 +322,9 @@ def log(rec):
 
 
 def main():
+    # ★1186号（2026-09-29）恒久停止。status/1401_cdp.nostop があるあいだ何もしない。
+    if os.path.exists(os.path.join(STATUS, "1401_cdp.nostop")):
+        return 0
     ap = argparse.ArgumentParser()
     ap.add_argument("--recon", action="store_true")
     ap.add_argument("--sweep", action="store_true")

@@ -209,6 +209,12 @@ def main():
     machi = d.get("machi") or []
     if not machi:
         return 0
+    # ★1178番（2026-09-28）止め札。取り消しも「消す」＝札があるあいだは待たせる。
+    import buffer_tomeru
+    _t = buffer_tomeru.tomete()
+    if _t:
+        print("%s → 取り消し待ちはそのまま待たせる" % _t)
+        return 0
     if not buffer_waku.ake():
         print("枠が閉まっている。待つ。", buffer_waku.riyuu())
         return 10

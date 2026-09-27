@@ -80,6 +80,16 @@ def idle_seconds():
 
 
 def main():
+    # ★1186号（2026-09-29）恒久停止。**この係が犯人だった。**
+    #   実測：Chrome 153 は既定プロファイルでの --remote-debugging-port を無効化しているので
+    #   port_open() は永久に False。ところが下の「開き直したがポートが確認できませんでした」の枝で
+    #   ONCE（status/.1401_armed_once）を**消していた**ため、「1回だけ」の歯止めが外れ、
+    #   2分おきに pkill → open -a "Google Chrome" を繰り返していた。
+    #   ＝プロファイル選択ウィンドウ「Chrome はどなたが使用しますか？」が画面中央に出続けた正体。
+    #   たまごさんの作業を止めるくらいなら、CDPは永久に開かないままでよい。
+    #   ★戻すときは status/1401_cdp.nostop を消す。
+    say("stop: 1186号により恒久停止（Chromeを起動し直しません）")
+    return 0
     if port_open():
         if not os.path.exists(ONCE):
             open(ONCE, "w").write(time.strftime("%F %T") + " already-armed\n")

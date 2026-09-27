@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1433 優先度・候補を1回20件まとめてリストで出す 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1433 優先度・候補を1回20件まとめてリストで出す</div>
+<h1>#1433 優先度・候補を1回20件まとめてリストで出す</h1>
+<div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+「優先度、こういうのは全然次でもないんだよ…1回10個でも20個でもいいから…リストで出してみて」（2026-09-18 08:48）への対応。「次はこれ」を1件ずつ出す代わりに、優先度がまだ未定（普通のまま）の案件を古い順に<b>20件まとめてリストで出す</b>。このリストは <code>tools/1433_yusen_kouho.py</code> を再実行するたび最新の20件に入れ替わる（何回でも使い回せる仕組み）。各行の番号(#n)は進捗表「🚏 次に発車」の同じ番号の行と一致するので、そこのPボタンでA〜Fの優先度をまとめて付けられる（このタップ機構自体は2026-09-04/05から本番稼働中）。<h3 style="margin-top:18px;font-size:0.95rem;color:var(--t-mute)">今回の20件（番号は進捗表と共通。件数は status/queue.json を直接数えた実測値）</h3><ol style="padding-left:20px;font-size:0.92rem"><li>#6　外部から入れた曲の「曲名とアーティスト」を自動で埋める</li><li>#400　原曲へ繋ぐ向きをボタン1つで選べるようにする</li><li>#470　素材写真をGoogleドライブへ自動で送る仕組みを作る</li><li>#486　重複タイトルの統合</li><li>#487　原曲へ繋ぐ向きのボタン</li><li>#596　曲が増えても壊れない形にする（常設）</li><li>#613　動画が消えたら自動で倉庫へ引っ込めて、代わりを探して繋ぎ直す</li><li>#675　わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕組みを作る</li><li>#676　お金がかかるタスクを赤文字にして、走る前に必ず金額の確認を出す</li><li>#678　たまごさんへの確認ポップアップをゼロに戻す（今日3〜4回出た）</li><li>#684　鬼監督を復活させて、完了したタスクを毎回チェックさせる</li><li>#688　falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を時間表示に</li><li>#697　棚では出てるのに一覧では出ない、みたいなサムネの食い違いを無くす</li><li>#706　週の燃料を配る配車係を作る（火曜18時に<code>99%</code>着地・緊急用の余力を確保・自動で入れ替え）</li><li>#708　本番に出ている「深刻なバグ」というラベルの正体を突き止めて消す</li><li>#713　【モグラくん】TikTok等で一般人がプロ曲を使える仕組みと、流れている曲を自動で特定する方法を調べる</li><li>#714　1Mコンテキストで走っているのを止める（消費が激しい原因・憲法違反）</li><li>#721　サブスクの一覧と請求日リマインダーをお金の管理表に作る（1件目=Suno 10/13 2万円）</li><li>#722　Claudeの請求が8月30日に2回落ちている件を調べる（$112.22と$110）</li><li>#729　進捗表の1画面目を「あと何本・今何本・何が動いてるか」だけにする（点検や不具合ログは畳む）</li></ol>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>20</b><span>今回まとめて出した候補数</span></div>
+  <div class="num"><b>390</b><span>優先度が未定のまま止まっている案件（全体）</span></div>
+  <div class="num"><b>788</b><span>発車待ち全体の件数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>候補リストJSON（このAPIを叩けば毎回最新の20件が取れる）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/1433_yusen_kouho.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/1433_yusen_kouho.json</a></li>
+  <li><b>進捗表『🚏 次に発車』（ここのPボタンでA〜Fの優先度を付ける）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>候補リストJSONが本番で200・中身が空でない</td><td class="yes">20件のitemsを確認</td></tr>
+</table>
+
+<footer>
+このページは #1433 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

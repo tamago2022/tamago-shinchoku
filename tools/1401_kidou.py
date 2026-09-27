@@ -99,6 +99,20 @@ def fix_oneshot():
                 pass
     if killed or moved:
         say("oneshot: 固まったrunnerを%d本落とし、居残りの票を%d本 pending へ戻しました" % (killed, moved))
+
+    # ★待ちが溜まっているのに runner が1本も居なければ、ここから直接起こす。
+    #   top_status.py の _okosu は ps の見え方次第で「もう走っている」と誤判断しうる。
+    #   窓口が死ぬと他の全部の調べ物が止まるので、経路を二重にする。
+    try:
+        if os.path.isdir(pend) and any(n.endswith(".sh") for n in os.listdir(pend)):
+            r = subprocess.run(["ps", "-axo", "command="], capture_output=True,
+                               text=True, timeout=15, encoding="utf-8", errors="replace")
+            if "tools/oneshot_runner.py" not in r.stdout:
+                subprocess.Popen(["python3", os.path.join(HERE, "oneshot_runner.py")],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                say("oneshot: 待ちがあるのに runner が居なかったので直接起こしました")
+    except Exception:
+        pass
     return killed, moved
 
 
@@ -146,7 +160,59 @@ def install_hooks():
         say("hooks: 失敗 %s" % e)
 
 
+NOW_DIR = os.path.join(STATUS, "1401_now")
+
+
+def run_now():
+    """status/1401_now/*.sh を見つけ次第その場で走らせ、同名の .out を書く。
+    oneshot の列が重い票で塞がっていても、急ぎの1本だけは必ず通る抜け道。
+    走らせたら .sh は done へ退避して二度と走らない。"""
+    if not os.path.isdir(NOW_DIR):
+        return
+    done = os.path.join(NOW_DIR, "done")
+    os.makedirs(done, exist_ok=True)
+    for n in sorted(os.listdir(NOW_DIR)):
+        if not n.endswith(".sh"):
+            continue
+        p = os.path.join(NOW_DIR, n)
+        # ★パイプで受け取らない。**ファイルへ直接書かせる。**
+        #   capture_output（PIPE）だと、孫プロセスがパイプを握ったままのときに
+        #   timeout で子を殺しても communicate() が返らず、ここが永久に固まる。
+        #   それが今日 oneshot_runner.py を殺していた原因そのもの（同じ罠を踏まない）。
+        #   さらに start_new_session=True にして、timeout のときは**プロセスグループごと**殺す。
+        outp = os.path.join(NOW_DIR, n[:-3] + ".out")
+        rc = 125
+        try:
+            with open(outp, "w", encoding="utf-8") as fo:
+                proc = subprocess.Popen(["/bin/bash", p], stdout=fo,
+                                        stderr=subprocess.STDOUT, cwd=REPO,
+                                        start_new_session=True)
+                try:
+                    rc = proc.wait(timeout=180)
+                except subprocess.TimeoutExpired:
+                    try:
+                        os.killpg(os.getpgid(proc.pid), 9)
+                    except Exception:
+                        proc.kill()
+                    rc = 124
+                    fo.write("\nTIMEOUT 180s（プロセスグループごと終了させました）\n")
+        except Exception as e:
+            try:
+                with open(outp, "a", encoding="utf-8") as fo:
+                    fo.write("\nERROR %s\n" % e)
+            except Exception:
+                pass
+        with open(os.path.join(NOW_DIR, n[:-3] + ".rc"), "w", encoding="utf-8") as f:
+            f.write("%d\n" % rc)
+        try:
+            os.replace(p, os.path.join(done, n))
+        except Exception:
+            pass
+        say("now: %s を走らせました（rc=%d）" % (n, rc))
+
+
 if __name__ == "__main__":
+    run_now()
     fix_oneshot()
     install_launchd()
     install_hooks()

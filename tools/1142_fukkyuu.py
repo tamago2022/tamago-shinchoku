@@ -68,6 +68,19 @@ def rec(kind, naoshita, what, detail=""):
     return row
 
 
+def _yuurei_kanda(title):
+    """1377番（2026-09-28）：たまごさんの相槌が「判定日赤｜」付きqueue項目として
+    無限に stuck→waiting→running を繰り返し、複数セッションが空振りし続けた事故の
+    再発防止。tools/shukudai.py の actionable() と同じ判定基準を、ここでも
+    （規則を2か所に書かず）そのまま呼ぶ。True＝実行可能な作業指示が無い幽霊項目。
+    """
+    try:
+        import shukudai
+    except Exception:
+        return False
+    return shukudai.actionable({"source": "queue", "title": title or ""}) is False
+
+
 # ── ① 途中で固まった案件を順番待ちへ戻す ───────────────────────────
 def naosu_stuck():
     p = os.path.join(STATUS, "queue.json")
@@ -76,12 +89,18 @@ def naosu_stuck():
     except Exception as e:
         return rec("stuck", False, "キューが読めません", str(e)[:80])
     items = q.get("items") or []
-    target = [i for i in items if str(i.get("status")) == "stuck"]
-    if not target:
+    all_stuck = [i for i in items if str(i.get("status")) == "stuck"]
+    # ★redoCount>=2 かつ 具体的な作業指示が読み取れない項目は、戻さず取り消す。
+    #   （1142の3条件のうち②「やり直して安全」を満たさない＝毎回同じ徒労になる）
+    yuurei = [i for i in all_stuck
+              if int(i.get("redoCount") or 0) >= 2 and _yuurei_kanda(i.get("title"))]
+    target = [i for i in all_stuck if i not in yuurei]
+    if not target and not yuurei:
         return rec("stuck", True, "固まった案件は0件", "")
     if DRY:
-        return rec("stuck", False, "固まった案件 %d件（下見だけ）" % len(target),
-                   "／".join(str(i.get("n")) for i in target[:10]))
+        return rec("stuck", False, "固まった案件 %d件・うち幽霊項目%d件（下見だけ）"
+                   % (len(target), len(yuurei)),
+                   "／".join(str(i.get("n")) for i in (target + yuurei)[:10]))
     # ★触る前に必ず控えを取る（1コマンドで戻せる形）
     try:
         bak = os.path.join(STATUS, "_1142_gomi")
@@ -95,11 +114,67 @@ def naosu_stuck():
         i["status"] = "waiting"
         i["restoredAt"] = now().isoformat()
         i["restoreWhy"] = "1142_fukkyuu：固まっていたので順番待ちへ戻した"
+    for i in yuurei:
+        i["_preCancelStatus"] = i.get("status")
+        i["status"] = "cancelled"
+        i["cancelledAt"] = now().isoformat()
+        i["restoreWhy"] = ("1142_fukkyuu：%d回やり直しても具体的な作業指示が無い"
+                            "（たまごさんの相槌・感想の類）ため取り消し（1377番の再発防止）"
+                            % int(i.get("redoCount") or 0))
     tmp = p + ".tmp1142"
     json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(tmp, p)
-    return rec("stuck", True, "固まった案件 %d件を順番待ちへ戻した" % len(target),
-               "／".join(str(i.get("n")) for i in target[:10]))
+    detail = "／".join(str(i.get("n")) for i in target[:10])
+    if yuurei:
+        detail += "（うち取り消し：%s）" % "／".join(str(i.get("n")) for i in yuurei)
+    return rec("stuck", True, "固まった案件 %d件を順番待ちへ戻した（幽霊項目%d件は取り消し）"
+               % (len(target), len(yuurei)), detail)
+
+
+# ── ①' 順番待ち(waiting)のまま列を占有し続ける幽霊項目を取り消す ──────────
+# 1494番（2026-09-29）：「今から寝るけど起きたらできてるようにして」のような
+# たまごさんの相槌・激励は、一度もrunningにならず waiting のまま優先度1(urgent)の
+# 列に残り続け、1377/1446/1480番と同じ「redoCount>=2に達するまで待つ」設計の
+# ①（naosu_stuck）では stuck化するまで検知できなかった。ここで waiting も対象に含め、
+# 実行して確かめるまでもなく（タイトルの構造だけで）判定できる幽霊項目は初回から取り消す。
+def naosu_ghost_waiting():
+    try:
+        import shukudai
+    except Exception as e:
+        return rec("ghost_waiting", False, "shukudaiが読めません", str(e)[:80])
+    p = os.path.join(STATUS, "queue.json")
+    try:
+        q = json.load(io.open(p, encoding="utf-8"))
+    except Exception as e:
+        return rec("ghost_waiting", False, "キューが読めません", str(e)[:80])
+    items = q.get("items") or []
+    all_waiting = [i for i in items if str(i.get("status")) == "waiting"]
+    yuurei = [i for i in all_waiting
+              if shukudai.actionable({"source": "queue", "title": i.get("title") or ""}) is False]
+    if not yuurei:
+        return rec("ghost_waiting", True, "順番待ちの幽霊項目は0件", "")
+    if DRY:
+        return rec("ghost_waiting", False, "順番待ちの幽霊項目 %d件（下見だけ）" % len(yuurei),
+                   "／".join(str(i.get("n")) for i in yuurei[:10]))
+    try:
+        bak = os.path.join(STATUS, "_1142_gomi")
+        os.makedirs(bak, exist_ok=True)
+        import shutil
+        shutil.copy2(p, os.path.join(
+            bak, "queue.json.bak-" + now().strftime("%Y%m%d-%H%M%S")))
+    except Exception:
+        pass
+    for i in yuurei:
+        i["_preCancelStatus"] = i.get("status")
+        i["status"] = "cancelled"
+        i["cancelledAt"] = now().isoformat()
+        i["restoreWhy"] = ("1142_fukkyuu：順番待ちのまま具体的な作業指示が無い"
+                            "（たまごさんの相槌・感想の類）ため取り消し（1377/1494番の再発防止）")
+    tmp = p + ".tmp1142b"
+    json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, p)
+    detail = "／".join(str(i.get("n")) for i in yuurei[:10])
+    return rec("ghost_waiting", True, "順番待ちの幽霊項目 %d件を取り消した" % len(yuurei), detail)
 
 
 # ── ② 誰も掴んでいない古い錠前を外す ────────────────────────────
@@ -222,7 +297,7 @@ def naosu_login():
 def main():
     print("1142 復旧係 %s（%s）" % (now().strftime("%H:%M:%S"),
                                    "下見" if DRY else "本番"))
-    rows = [naosu_stuck(), naosu_lock(), naosu_gomi(), naosu_failures(), naosu_login()]
+    rows = [naosu_stuck(), naosu_ghost_waiting(), naosu_lock(), naosu_gomi(), naosu_failures(), naosu_login()]
     naoshita = sum(1 for r in rows if r["naoshita"])
     nokori = [r["what"] for r in rows if not r["naoshita"]]
     print("→ 直した %d／%d。残った赤：%s" % (naoshita, len(rows),

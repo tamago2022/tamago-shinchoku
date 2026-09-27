@@ -82,7 +82,9 @@ except Exception:
 import io
 import json
 import os
+import shutil
 import sys
+import time
 import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -94,6 +96,12 @@ NO_LAUNCH_FLAG = os.path.join(ST, "no_launch.flag")
 LAUNCH_CAP = os.path.join(ST, "launch_cap.json")
 LAST_LAUNCH = os.path.join(ST, ".last_launch_at")
 OUT = os.path.join(ST, "top_status.json")
+PUB_OUT = os.path.join(ST, "public", "top_status.json")
+# 1698番（2026-09-30）：配る写し(PUB_OUT)の許容鮮度。machine_status_push.shの
+# 15分おき判定だけに頼ると、「30分ルール」をぎりぎり逃した回が次の15分後まで
+# 放置され最大45分古くなる実測不具合が起きた。ここ(top_status.py本体・心臓が
+# 15秒おきに直接呼ぶ)で毎回チェックすることで、実質的な最大遅延を数十秒に縮める。
+PUB_MAX_AGE_SEC = 300
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
@@ -432,6 +440,31 @@ def build():
     with io.open(tmp, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
     os.replace(tmp, OUT)
+
+    # 1698番（2026-09-30・根本原因対応）：
+    # 進捗表が実際に読む「配る写し」PUB_OUT は、これまでmachine_status_push.sh
+    # (launchd・15分＝900秒おき)の「30分（1800秒）以上古ければコピー」判定だけに
+    # 頼っていた。判定が15分おきにしか走らないため、age が29分59秒のときに
+    # 判定を1回スキップすると、次に判定が走るのは15分後＝その時点でageは
+    # 実質45分（30分+15分）に達してから初めてコピーされる、という設計上の
+    # 穴があり、実測で「45分古い写しが出ていた」事故になった。
+    # ここ(top_status.py本体・心臓heartbeat.shが15秒おきに直接起動)で
+    # 毎周チェックし、5分(300秒)を超えて古ければ即座に配り直すことで、
+    # 判定間隔を15分→15秒に縮め、45分放置を構造的に起こせなくする。
+    # machine_status_push.sh側の既存ロジックは二重の安全網として残す（削除しない）。
+    try:
+        need_copy = True
+        if os.path.exists(PUB_OUT):
+            age = time.time() - os.path.getmtime(PUB_OUT)
+            need_copy = age >= PUB_MAX_AGE_SEC
+        if need_copy:
+            os.makedirs(os.path.dirname(PUB_OUT), exist_ok=True)
+            tmp_pub = "%s.tmp.%d" % (PUB_OUT, os.getpid())
+            shutil.copyfile(OUT, tmp_pub)
+            os.replace(tmp_pub, PUB_OUT)
+    except Exception:
+        pass
+
     return payload
 
 
@@ -503,6 +536,12 @@ if __name__ == "__main__":
     # 2026-09-26（1159番）ずんだもん窓口と外への穴の見張り。閉じたら開け直す。
     _okosu("1159_keeper.py")
 
+    # 2026-09-28（1403番）残量の数字が止まっていないかの見張り＋取り直し。
+    #   実測：pace.json が 05:17→07:35 の2時間18分ぶん止まっていた（取得元は新しかった）。
+    #   pace.py は machine_status_push.sh の747行目に相乗りしており、重い日はそこまで到達しない。
+    #   → 5分以上古ければここで取り直し、60分以上古ければ status/zanryo_mihari.json を red にする。
+    _okosu("1403_zanryo_mihari.py")
+
     # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
     # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
     _okosu("1158_mihari.py")
@@ -521,6 +560,16 @@ if __name__ == "__main__":
     # ★heartbeat.sh は走り出したら読み直されないので、枷5番どおり「毎周回読み直される
     #   Pythonファイル（ここ）」から呼ぶ。鍵が無い周回は exists を1回見て即戻る。
     _okosu("1163_kagi_machi.py")
+
+    # 2026-09-28（1500番）枠番＝含まれてる枠が空いた瞬間に勝手にDevinへ発車する係。
+    #   リセット時刻を狙わない。**空振り（403 out_of_quota・0円）を繰り返して、通った瞬間に乗る。**
+    #   同時1本・従量は1円も使わせない。待ち時間中の周回は何も叩かずに即戻る。
+    _okosu("1500_wakuban.py")
+
+    # 2026-09-28（1501番）Devin成績表を機械で付ける係。10/16の更新判定の材料。
+    #   1本ごとに「たまごさんの何が変わるか／PR／merge／本番の重さ」を自動で並べる。手書き0。
+    #   中で30分に1回に間引く。→ share/check/1500-devin-seiseki.html
+    _okosu("1501_devin_seiseki.py")
 
     # 2026-09-27（1166番）「次に何がいつ出るか」の1枚を毎周回つくり直す。
     # Bufferから取り直した実測だけを載せる（自己申告を載せない）。鍵が無い周回は即戻る。
@@ -542,8 +591,13 @@ if __name__ == "__main__":
     # ★2026-09-28（1176番）投げ込み箱の入口。たまごさんが ~/Desktop/nagekomi/ に
     #   コピーを貼った .txt を1枚置くだけで、チャッピー待ちの列→関所→自動投稿の箱と
     #   ひとりでに流れる。Bufferは0叩き。たまごさんが押すボタンは無い。
-    for _n in ("1176_uketsuke.py",          # ★入口（0叩き）
-               "1173_kumi_naoshi.py",       # ★先に組み直す（1回だけ）
+    # ★2026-09-28（1178番）Bufferの実データを1回だけ取る係（読むだけ・最大3叩き）。
+    #   たまごさん「補充する前に必ずBufferの実データを見る。ローカルの数え札を信じない」。
+    #   枠が閉まっている間は0叩きで退き、一度取れたら status/1178/.stamp で以後0叩き。
+    #   ★ここは補充より先。実データを見る前に足す・消すを走らせない。
+    for _n in ("1178_ichiran.py",           # ★まず実データを見る（読むだけ）
+               "1176_uketsuke.py",          # ★入口（0叩き）
+               "1173_kumi_naoshi.py",       # ★止め札で0叩き（2026-09-28〜）
                "1171_seiretsu.py",          # 組み直し済みなら .stamp で0叩き
                "1170_hako.py",              # 出たぶんを1本補充する
                "1170_nagekomi_nagasu.py",   # 投げ込み箱→チャッピー→箱へ運ぶ

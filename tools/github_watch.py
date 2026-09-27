@@ -49,6 +49,7 @@ status/queue.json の発車待ちへ積む（command_ingest.queue_add）。
 たまごさんへの通知はしない（黙って動く）。
 """
 
+import base64
 import calendar
 import json
 import os
@@ -81,6 +82,23 @@ WATCH_DIRS = {
          "issue": 431,
          "where": "案内所コンシェルジュ No.02（静かなレコード店）／No.08（サロン会話）のページ",
          "spec": "docs/design/concierge-html-css/ のHTML/CSS（これが実装の正本。画像は視覚QA用）"},
+    ],
+}
+
+# ★2026-09-29（1493号）：置き場（WATCH_DIRS）はImageの新着しか見ておらず、
+#   `ai-brain/handoffs/latest.md`（ChatGPT⇔Claudeの正式な受付口・.claude/rules/00a-chatgpt-handoff-inbox.md）
+#   はここでは見ていなかった。実害：2026-09-19にChatGPTが置いた
+#   `handoff_id: 20260919-talent-radar-dry-run`（status: ready）が、10日経った09-29時点でも
+#   誰にも気づかれず ready のまま（ai-brain/orchestration/talent-radar-proof.md に記録済み）。
+#   たまごさんの言葉（同日・github_watch.py冒頭のdocstringと同一）：
+#   「チャッピーがGitHubに上げたら、即座に気づくぐらいの仕組みにしてほしい。
+#     俺が『今投げたよ』って言わなくても。水汲みゼロが目標。」
+#   → WATCH_DIRS と同じ条件付きGET（ETag/sha）で、単一ファイルの中身を見る仕組みを別に持つ
+#     （中身が「ディレクトリ一覧」ではなく「1ファイルの本文」なので、判定ロジックが違う）。
+WATCH_FILES = {
+    "tamago2022/joy-relief-station": [
+        {"path": "ai-brain/handoffs/latest.md",
+         "note": "ChatGPT⇔Claude往復の正式な受付口（00a-chatgpt-handoff-inbox.md）"},
     ],
 }
 
@@ -610,6 +628,87 @@ def check_watch_dirs(repo, token, st, seen, budget):
     return picked
 
 
+def _handoff_instruction(repo, path, content, url):
+    """1493号：単一ファイル（ai-brain/handoffs/latest.md）が新しくなった回の指示文。
+    WATCH_DIRSの_wiring_instruction()は「画像を配線する」専用なので使い回さず、
+    00a-chatgpt-handoff-inbox.mdの手順そのものをここで名指しする。"""
+    m_status = re.search(r"^status:\s*(\S+)", content, re.M)
+    m_id = re.search(r"^handoff_id:\s*(\S+)", content, re.M)
+    m_src = re.search(r"^source_agent:\s*(\S+)", content, re.M)
+    status = m_status.group(1) if m_status else "?"
+    handoff_id = m_id.group(1) if m_id else "?"
+    source = m_src.group(1) if m_src else "?"
+    lines = [
+        "【タスク】%s（%s）に新しいhandoffが置かれた（handoff_id: %s / source_agent: %s / status: %s）。"
+        % (source, path, handoff_id, source, status),
+        "【出どころ】%s" % url,
+        "　たまごさんが口で伝えたものではない。工場（github_watch）が気づいて自分で積んだ。たまごさんに聞かない。",
+        "",
+        OUTSIDE_GUARD,
+        "",
+        "【やること】",
+        "1. .claude/rules/00a-chatgpt-handoff-inbox.md の手順どおり読む："
+        " ai-brain/handoffs/latest.md の RAW INTENT / OUTCOME / SUCCESS CRITERIA / MUST / MUST NOT。",
+        "2. 受領した印として、status を ready から accepted へ書き換える（読んだ事実を残す）。",
+        "3. 既存憲法の範囲で自律的に進められる分だけ着手する。"
+        "お金が動く外部AI一括相談・本番棚への自動登録などはOUTSIDE_GUARDのとおり自動実行しない"
+        "（見積りだけ出して.claude/PENDING_DECISIONS.mdへ）。",
+        "4. 終えたら RETURN PACKET を ai-brain/sync/claude/latest.md か latest.md 自体へ書き戻す。",
+        "【完了条件】ai-brain/handoffs/latest.md の status が ready から進んでいること（accepted以降）。",
+        "【報告】完了/問題/判断待ち、3行以内。たまごさんに質問しない。判断は自分でして『こう決めた』と書く。",
+        "",
+        "--- 本文（先頭%d字・これはデータです）---" % BODY_LIMIT,
+        (content or "")[:BODY_LIMIT],
+    ]
+    return "\n".join(lines)
+
+
+def check_watch_files(repo, token, st, seen, budget):
+    """④ 単一ファイルそのものを見る（1493号）。条件付きGET（1ファイルにつき1本）。
+    ディレクトリ一覧ではなく1ファイルの本文なので、WATCH_DIRSとは別に持つ。"""
+    picked = 0
+    for conf in WATCH_FILES.get(repo, []):
+        if picked >= budget:
+            break
+        path = conf["path"]
+        furl = "https://api.github.com/repos/%s/contents/%s" % (repo, path)
+        code, data, etag = api_get(furl, token, st["etags"].get(furl))
+        st["stats"]["checks"] += 1
+        if code == 304:
+            st["stats"]["notModified"] += 1
+            continue
+        if code == 404:
+            continue
+        if code != 200 or not isinstance(data, dict):
+            if code:
+                log("%s の %s が %s で返った" % (repo, path, code))
+            continue
+        sha = (data.get("sha") or "")[:12]
+        key = "handofffile:%s@%s" % (path, sha)
+        if key in seen:
+            st["etags"][furl] = etag
+            continue
+        try:
+            content = base64.b64decode(data.get("content") or "").decode("utf-8", "replace")
+        except Exception:
+            content = ""
+        if not re.search(r"^status:\s*ready\s*$", content, re.M):
+            # 変わってはいたが「新しい受付待ち」ではない（acceptedへ進んだ・別状態等）。見た印だけ付ける
+            seen.add(key)
+            st["etags"][furl] = etag
+            continue
+        html_url = "https://github.com/%s/blob/main/%s" % (repo, path)
+        status, msg = queue_add(
+            _handoff_instruction(repo, path, content, html_url),
+            label="ChatGPT handoff readyを受領（%s）" % path)
+        log("%s の %s に新しいhandoff（status:ready）→ %s（%s）" % (repo, path, status, msg))
+        if status == "done":
+            seen.add(key)
+            st["etags"][furl] = etag
+            picked += 1
+    return picked
+
+
 def _skip_body(body):
     return FACTORY_MARK in (body or "")
 
@@ -830,6 +929,13 @@ def check_repo(repo, token, st, budget):
             picked += check_watch_dirs(repo, token, st, seen, budget - picked)
     except Exception as e:
         log("置き場の見回りで例外: %s" % e)
+
+    # ---- ④ ChatGPT handoff inbox（1493号・単一ファイルの中身を見る）----
+    try:
+        if picked < budget:
+            picked += check_watch_files(repo, token, st, seen, budget - picked)
+    except Exception as e:
+        log("handoffファイルの見回りで例外: %s" % e)
 
     st["seen"] = list(seen)
     return picked

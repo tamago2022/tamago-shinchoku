@@ -525,7 +525,13 @@ def run_stale_marker_and_get_red_flags():
         lines.append("確認待ちが%d件（10件超）たまっています。鬼監督で仕分けてください" % n_check)
     red = s.get("red") or []
     if red:
-        top = "・".join("%s番(%s日)" % (r.get("n"), r.get("ageDays")) for r in red[:5])
+        # 1458番：番号だけでは「何をやってんだっけ」に答えられない。
+        # stale_marker.py側は既にtitleを持っているのに、ここで捨てて番号だけ表示していたのが原因
+        # （1454/1455番で直した「今すぐ走っているもの」欄と同じ欠陥が別の欄にも残っていた）。
+        top = "・".join(
+            "%s番「%s」(%s日)" % (r.get("n"), (r.get("title") or "").replace("判定日赤｜", "")[:16], r.get("ageDays"))
+            for r in red[:5]
+        )
         more = "、他%d件" % (len(red) - 5) if len(red) > 5 else ""
         lines.append("7日以上動いていない案件が%d件：%s%s" % (len(red), top, more))
     return lines
@@ -722,13 +728,13 @@ def build():
                 secs = (now - datetime.datetime.fromisoformat(st)).total_seconds()
                 el = "（%.1fh%s）" % (secs / 3600, " ★3時間超" if secs > 10800 else "")
             except Exception: pass
-            A("- %s %s%s" % (x.get("n"), (x.get("label") or "")[:44], el))
+            A("- %s %s%s" % (x.get("n"), (x.get("label") or x.get("title") or "")[:44], el))
     else:
         A("- **0本**（クレジットが残っているなら、これは異常）")
     A("")
     A("## 次に出る（P1の先頭5件）")
     for x in sorted(p1, key=lambda y: -(y.get("n") or 0))[:5]:
-        A("- %s %s" % (x.get("n"), (x.get("label") or "")[:48]))
+        A("- %s %s" % (x.get("n"), (x.get("label") or x.get("title") or "")[:48]))
     A("")
     A("## 待っているもの（返事待ち・本人しかできないこと）")
     if pending_decision_items:
@@ -794,10 +800,10 @@ def build():
         "creditToday": {"used": p.get("usedToday"), "budget": p.get("budgetToday")},
         "creditWeekPct": p.get("allPct"),
         "runningNow": [
-            {"n": x.get("n"), "label": (x.get("label") or "")[:44]} for x in running
+            {"n": x.get("n"), "label": (x.get("label") or x.get("title") or "")[:44]} for x in running
         ],
         "nextP1": [
-            {"n": x.get("n"), "label": (x.get("label") or "")[:48]}
+            {"n": x.get("n"), "label": (x.get("label") or x.get("title") or "")[:48]}
             for x in sorted(p1, key=lambda y: -(y.get("n") or 0))[:5]
         ],
         "unreportedDone": [
@@ -818,6 +824,19 @@ def main():
         return  # heartbeat.shの15秒ループに相乗り。25分未満なら何もしない。
     touch_gate()
     build()
+    # 1180号（2026-09-28）引き継ぎの1枚を、この直後に作り直す。
+    #   heartbeat.sh は書き換えても動いている心臓に反映されないので、
+    #   心臓が毎周回「読み直す」Python側（ここ）に1行足すのが正しい入れ方。
+    #   ここで落ちても現在地の生成は成功済みなので、例外は飲む。
+    try:
+        import importlib.util
+        _p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1180_hikitsugi_ima.py")
+        _s = importlib.util.spec_from_file_location("_h1180", _p)
+        _m = importlib.util.module_from_spec(_s)
+        _s.loader.exec_module(_m)
+        _m.build()
+    except Exception as e:
+        print("1180_hikitsugi_ima: skipped (%s)" % e)
 
 
 if __name__ == "__main__":

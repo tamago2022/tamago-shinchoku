@@ -610,11 +610,14 @@ def main(argv=None):
 
 
 def _push(paths=("status/maintenance_check.json", "status/maintenance_check_log.jsonl",
-                  "status/dispatch_outbox.jsonl", "status/queue.json",
-                  "status/done_archive.json", "share/done/index.html",
+                  "status/dispatch_outbox.jsonl",
+                  "share/done/index.html",
                   "status/later_tabs.json"), retries=5, wait_sec=8):
     # 2026-09-16: status/配下は公開先を status/public/ へ移した（status/直下は.gitignore対象外パス）。
     # status/以外(share/done/index.html等)はそのまま。
+    # 1873番：queue.json / done_archive.json は生コピーしない（925番のkenpou_check.py側の
+    #   gz化・軽量化を、この関数の生コピーが毎回上書きして復活させていた真犯人だった）。
+    #   代わりにkenpou_check.pyと同じ縮小ロジック（gz化・what/result除去）を呼ぶ。
     import shutil as _shutil
     os.makedirs(os.path.join(REPO, "status", "public"), exist_ok=True)
     real_paths = []
@@ -628,6 +631,23 @@ def _push(paths=("status/maintenance_check.json", "status/maintenance_check_log.
                 real_paths.append("status/public/%s" % _name)
         else:
             real_paths.append(_p)
+    try:
+        import build_queue_public_gz
+        build_queue_public_gz.build()
+        real_paths.append("status/public/queue.json.gz")
+    except Exception as e:
+        print("queue.json.gz再構築に失敗（続行）: %s" % e)
+    try:
+        import build_done_archive_light
+        build_done_archive_light.build()
+        real_paths.append("status/public/done_archive.json.gz")
+    except Exception as e:
+        print("done_archive.json軽量版の再構築に失敗（続行）: %s" % e)
+    # 旧・生コピーが追跡に残っていれば外す（.gzへ一本化）。
+    if _run(["git", "ls-files", "--error-unmatch", "status/public/queue.json"])[0] == 0:
+        _run(["git", "rm", "--cached", "-q", "status/public/queue.json"])
+    if _run(["git", "ls-files", "--error-unmatch", "status/public/done_archive.json"])[0] == 0:
+        _run(["git", "rm", "--cached", "-q", "status/public/done_archive.json"])
     for attempt in range(1, retries + 1):
         rc, out, err = _run(["git", "add"] + real_paths)
         if rc != 0:

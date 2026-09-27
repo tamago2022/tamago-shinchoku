@@ -332,24 +332,42 @@ def kenpin(title, text, go=None, tatakanai=False):
 # ────────────────────────────────────────── 台帳を押し戻す
 
 
+ATAMA_DAKI_SHIKII = 20  # ★1469番実例：同じ場所で20回以上落ち続けているものが列の先頭を塞ぎ、
+                        #   limit件しか見ない拾い方だと後続(新しい正常な"done")に一生届かなかった
+                        #   （実測：584/598/635番が540回落ち続け、1454〜1459番が86件待ちの奥に埋もれていた）。
+                        #   完全に無視はしない＝枠が余れば拾う。追い越すだけで捨てない。
+
+
 def jiko_shinkoku_wo_hirou(limit=IKKAI_NI):
     """「完了」「確認待ち」と自己申告された案件を拾う。★ここが受付。"""
     q = load_json(QUEUE, {}) or {}
     out = []
     st = load_json(STATE, {}) or {}
     tsuka = set((st.get("goukaku") or []))
+    modoshi = st.get("modoshi") or {}
+    atama_daki = []
     for i in (q.get("items") or []):
         if (i.get("status") or "") not in ("done", "awaiting_check", "merged"):
             continue
         key = str(i.get("n") or i.get("id") or i.get("title"))
         if key in tsuka:
             continue                      # もう合格している。二度叩かない
-        txt = " ".join(str(i.get(k) or "") for k in
-                       ("result", "report", "note", "what", "title", "evidence"))
-        out.append({"key": key, "n": i.get("n"), "title": (i.get("title") or "")[:100],
-                    "text": txt, "raw": i})
+        entry = {"key": key, "n": i.get("n"), "title": (i.get("title") or "")[:100],
+                 "text": " ".join(str(i.get(k) or "") for k in
+                                   ("result", "report", "note", "what", "title", "evidence")),
+                 "raw": i}
+        kai = int((modoshi.get(key) or {}).get("kai") or 0)
+        if kai >= ATAMA_DAKI_SHIKII:
+            atama_daki.append(entry)      # ★列の先頭を塞いでいる常連。後回し(捨てない)
+            continue
+        out.append(entry)
         if len(out) >= limit:
             break
+    if len(out) < limit:
+        for a in atama_daki:
+            out.append(a)
+            if len(out) >= limit:
+                break
     return out
 
 

@@ -8,6 +8,19 @@ SRC="$REPO/tools/$LABEL.plist"
 DST="$HOME/Library/LaunchAgents/$LABEL.plist"
 MARK="$REPO/status/.1401_launchd_ok"
 
+# ★1186号（2026-09-29）恒久停止。
+#   この便（2分おき）が 1401_cdp_arm.py を呼び、Chromeを殺して開き直していた。
+#   心臓（tools/1401_kidou.py → install_launchd）が10分おきにここを呼ぶので、
+#   launchctl unload だけでは必ず復活する。**入れ直す側をここで止める。**
+if [ -f "$REPO/status/1401_cdp.nostop" ]; then
+  launchctl unload "$DST" >/dev/null 2>&1 || true
+  launchctl bootout "gui/$(id -u)/$LABEL" >/dev/null 2>&1 || true
+  mkdir -p "$HOME/Library/LaunchAgents/_retired" 2>/dev/null || true
+  [ -f "$DST" ] && mv -f "$DST" "$HOME/Library/LaunchAgents/_retired/${LABEL}.plist" 2>/dev/null
+  echo "STOPPED: $LABEL（1186号・status/1401_cdp.nostop があるので載せません）"
+  exit 0
+fi
+
 [ -f "$SRC" ] || { echo "plist が無い: $SRC"; exit 1; }
 chmod +x "$REPO/tools/1401_cdp_run.sh" 2>/dev/null || true
 

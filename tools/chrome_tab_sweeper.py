@@ -54,11 +54,30 @@ GATE_PATH = os.path.join(STATUS, ".chrome_sweep_last")
 #   実際のログ（status/chrome_sweep.json）：02:28「Chrome起動してない」→ 1枚も閉じずに1時間分を消費、
 #   03:29 も同じ。そして 04:07 にChromeが起動して孤児タブが2枚あるのに、04:29 まで掃けない状態だった。
 #   → gate は「実際に掃いたときだけ」進める。間隔も15分に詰める（osascriptで読むだけなので軽い）。
-GATE_SECONDS = 900  # 15分に1回
+GATE_SECONDS = 120  # ★1401番（2026-09-28）2分に1回。たまごさん「溜まり続けている。今回で終わらせる」
 
 # 「一度も前面に来ていない」を孤児の証拠として採用するまでの条件（両方満たすこと）
-ORPHAN_MIN_SAMPLES = 120      # 心臓（15秒おき）で約30分ぶんの観測回数
-ORPHAN_MIN_AGE_SEC = 7200     # 最初に見てから2時間以上経っている
+# ★2026-09-28（1401番）実測で直した2か所。
+#   ①120回は「心臓が15秒おきに呼ぶ」前提の数字だった。2026-09-18に心臓側が tick_every 40
+#     （＝10分おき）へ間引かれたため、**実質120回＝20時間**必要になっていた。
+#     コメントには「約30分ぶん」と書いてあるが、それは事実ではなくなっていた。
+#     ＝孤児判定はほぼ一度も成立していない。呼ぶ間隔（2分）に合わせて数え直す。
+ORPHAN_MIN_SAMPLES = 10       # 2分おきに呼ばれる前提で約20分ぶん
+ORPHAN_MIN_AGE_SEC = 1200     # 最初に見てから20分以上経っている
+
+# ★②「うちの成果物ページ」だけは NEVER_CLOSE より先に判定する（1401番）。
+#   実測（2026-09-28 00:17 status/chrome_tabs_recon.json）：タブ8枚・閉じる候補0枚。
+#   中身は7枚が joy-relief-station.lovable.app＝**Claudeが検品で開いたページそのもの。**
+#   ところが NEVER_CLOSE_PATTERNS の `lovable\.(app|dev)` が孤児判定より先に効くので、
+#   何時間経っても・一度も前面に来ていなくても、**未来永劫 keep** されていた。
+#   ＝掃除機は毎回きちんと走っていたのに、構造的に1枚も閉じられなかった。
+#   たまごさんが毎回手で消していたのはこれが理由。
+#   安全側：**たまごさんが一度でも前面に出したURLは、ここでも絶対に閉じない**（everActive）。
+#   lovable.dev（たまごさんの編集画面）はここに入れない。入れるのは成果物の**表側**だけ。
+OWN_HOSTS = (
+    "joy-relief-station.lovable.app",
+    "tamago2022.github.io",
+)
 
 # 区切り（タブのURL・タイトルに出ない文字を選ぶ）
 SEP = "\x1f"
@@ -268,6 +287,14 @@ def classify(tab, hist=None, reserved=None):
         return "keep", "ウィンドウの前面タブ（たまごさんが見ている可能性）"
     if reserved and (tab.get("win"), tab.get("idx")) in reserved:
         return "close", reserved[(tab.get("win"), tab.get("idx"))]
+    # ★1401番：うちの成果物ページは NEVER_CLOSE より先に見る（上のコメント参照）
+    if any(h in url for h in OWN_HOSTS):
+        h = hist.get(url) or {}
+        if h.get("everActive"):
+            return "keep", "たまごさんが一度でも前面に出した（本人のもの）"
+        if int(h.get("samples", 0)) >= 3:
+            return "close", "うちの成果物ページで、一度も前面に来ていない＝Claudeが開いた孤児"
+        return "keep", "うちの成果物ページだが観測がまだ足りない（次の回に判断する）"
     for rx in _never:
         if rx.search(url):
             return "keep", "たまごさんの作業タブになりうるサービス"
@@ -482,6 +509,13 @@ def touch_gate():
 
 # ---------------------------------------------------------------------------
 def main():
+    # ★1186号（2026-09-29）恒久停止。
+    #   たまごさん「Chromeを起動・再起動する処理を全部止める。タブ掃除も含めて止める。
+    #              たまごさんの邪魔をするくらいならタブが残る方がまし。」
+    #   この係は osascript で Chrome を触るため、たまごさんの画面に許可ダイアログを出しうる。
+    #   ★戻すときは status/1401_cdp.nostop を消す（消さない限り何もしない）。
+    if os.path.exists(os.path.join(STATUS, "1401_cdp.nostop")):
+        return 0
     ap = argparse.ArgumentParser()
     ap.add_argument("--recon", action="store_true", help="数えて記録するだけ。1枚も閉じない")
     ap.add_argument("--sweep", action="store_true", help="孤児タブを閉じる")

@@ -109,6 +109,14 @@ def main():
         return miru()
     if os.path.exists(STAMP) and "--now" not in sys.argv:
         return 0
+    # ★1178番（2026-09-28）止め札。ChatGPTが先に入れた10本を消さないため。
+    #   --now でも通れない＝手で叩いても止まる。剥がすのは札を消すときだけ。
+    import buffer_tomeru
+    _t = buffer_tomeru.tomete()
+    if _t:
+        print(_t)
+        kiroku({"result": "止め札で退いた", "riyuu": _t})
+        return 0
     if not buffer_waku.ake():
         # ★枠が閉まっている間は1叩きもしない。心臓から毎周回呼ばれてもここで退く。
         return 10

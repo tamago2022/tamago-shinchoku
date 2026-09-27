@@ -176,6 +176,26 @@ def main():
     tsugi = retsu[0]
     text = (tsugi.get("text") or "").strip()
 
+    # ★1482番の関所：machiの説明文（_誰が入れてよいか）はコードで強制していなかった穴。
+    #   from が nagekomi / nushi 以外（＝機械が勝手に選んだもの・fromが無いもの）は
+    #   絶対にBufferへ入れない。たまごさん「機械が勝手に選んで入れるのは禁止」（2026-09-27）。
+    #   列からは外し、機械選定の保管庫（kikai_ga_eranda_horyu）へ退避して理由を残す。
+    KYOKA_FROM = ("nagekomi", "nushi")
+    if tsugi.get("from") not in KYOKA_FROM:
+        print("★from='%s' は許可されていない（機械の自動選曲）。Bufferへ入れず退避:"
+              % tsugi.get("from"), tsugi.get("song_key"))
+        m["machi"] = retsu[1:]
+        horyu = m.setdefault("kikai_ga_eranda_horyu",
+                              {"_これは何": "1167_ireru1の関所で弾いたもの（from不許可）",
+                               "retsu": []})
+        if isinstance(horyu, dict):
+            horyu.setdefault("retsu", []).append(tsugi)
+        json.dump(m, io.open(MACHI, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        kiroku({"at": datetime.datetime.now(JST).strftime("%F %T"),
+                "result": "1482関所で退避", "song_key": tsugi.get("song_key"),
+                "from": tsugi.get("from")})
+        return 11
+
     # ★二重投稿の関所：同じ本文が既に予約に居たら入れない
     if text in honbun:
         print("同じ本文が既に予約に居る。列から外す:", tsugi.get("song_key"))

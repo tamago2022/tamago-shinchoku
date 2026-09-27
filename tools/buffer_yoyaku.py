@@ -359,6 +359,12 @@ def main():
     #   注文票はそのまま残るので、枠が戻った最初の5分便が自分で入れる。
     #   たまごさんに「ログインして」と頼まない・押させない。
     sys.path.insert(0, HERE)
+    # ★1178番（2026-09-28）止め札。注文票は開けない＝そのまま待たせる。0叩き。
+    import buffer_tomeru
+    _t = buffer_tomeru.tomete()
+    if _t:
+        print("%s → 注文票はそのまま待たせます" % _t)
+        return 0
     import buffer_waku
     if not buffer_waku.ake():
         print("枠が閉まっているので注文票はそのまま待たせます：%s" % buffer_waku.riyuu())

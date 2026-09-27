@@ -141,14 +141,31 @@ def parse_hi(s):
 
 def ima_no_jotai():
     """題名 → いまの状態。★機械が確認した完了を、自己申告より上に置く。"""
+    # 1451番実例（2026-09-28）：DAICHO に一度書き込まれた actionable は、
+    # tools/shukudai.py sync() が再実行されるまで更新されない。ところが
+    # shukudai.actionable() 側は1377番の教訓で「調べてみて、ちゃんと。」のような
+    # 動詞抜きの相槌を actionable=False に直したのに、DAICHO 側の古い行は
+    # actionable=True のまま残り、この係（hantei）が sync を待たずに独立して
+    # DAICHO を読むせいで、直したはずのロジックが素通りして★赤＋再発車を
+    # 繰り返していた（1385/1451/1849番で実測確認）。
+    # ★sync() の実行タイミングに依存しないよう、ここで毎回 actionable() を
+    # 呼び直して最新判定で上書きする。DAICHO の値はフォールバックにしか使わない。
+    try:
+        sys.path.insert(0, HERE)
+        import shukudai as _shukudai
+    except Exception:
+        _shukudai = None
     by = {}
     for r in jsonl(DAICHO):
-        # 1370番実例：actionable（shukudai.pyが「具体的な作業指示が読み取れない」と
-        # 判定した印）はDAICHO側にしか付いていない。HATSUGEN側のrにはこのフィールドが
-        # 無いため、ここで拾って hantei_1ken に渡す。
+        act = r.get("actionable")
+        if _shukudai is not None:
+            try:
+                act = _shukudai.actionable(r)
+            except Exception:
+                pass
         by.setdefault(norm(r.get("title"))[:24],
                       {"state": r.get("state") or "未着手", "evidence": r.get("evidence"),
-                       "actionable": r.get("actionable")})
+                       "actionable": act})
     # 検品を通った（＝URLが200で中身が入っていた）ものだけ、完了に上書きしてよい
     for k in jsonl(KENPIN):
         if not k.get("ok"):
@@ -179,6 +196,14 @@ def hantei_1ken(r, ima):
     # 既存の tomaranai.py（3回言わせた案件の繰り上げ）は actionable を見ているのに、
     # ここ（判定日の係）だけ見ておらず、実行不能なタスクを判定日のたびに★赤＋P1で
     # re発車させ続け、AIセッションが空回りする事故が起きていた。
+    #
+    # 1462番で「shukudai.actionable()を未確定(None)時のフォールバックに使う」案を
+    # 試したが、self-test「テストの一手を直してほしい」がその判定器の粗い動詞リスト
+    # （直す/作る/足す…）に一致せず誤って非タスク扱いになり自己試験がNGになったため
+    # 撤回した。誤って赤を隠す方が、赤が多すぎることより悪い
+    # （★1ヶ月の判定日を過ぎてまだ返っていないものは理由を問わず赤。例外を作らない、
+    # という本ファイルの大原則に反するため）。actionable の判定は、明示的に
+    # False と書き込まれた行にだけ適用する（＝ここでは変更しない）。
     if r.get("actionable") is False or cur.get("actionable") is False:
         return {"which": which, "aka": False, "state": st,
                 "sonogo": "実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）"}

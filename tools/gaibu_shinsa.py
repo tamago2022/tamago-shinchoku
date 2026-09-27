@@ -348,10 +348,15 @@ def hirou():
     for r in jsonl(AI_DAICHO):
         if (r.get("dir") or r.get("direction")) not in ("in", "back", None):
             continue
-        rid = str(r.get("id") or r.get("ts") or "")
+        rid = str(r.get("id") or r.get("ts") or r.get("at") or "")
         if not rid or rid in mita:
             continue
-        body = " ".join(str(r.get(k) or "") for k in ("body", "text", "message", "comment"))
+        # 1469番実例（2026-09-28）：実際の status/ai_daicho.jsonl は
+        # {"at":..., "topic": "NG|...|..." } の形で書かれているのに、ここは
+        # "body"/"text"/"message"/"comment" しか見ておらず（"id"/"ts"も無い）、
+        # 2026-09-27にCodexが返した実在のNG判定（200件検品して0件合格）を
+        # 一度も拾えていなかった（rid=""で毎回スキップ、かつbodyが常に空）。
+        body = " ".join(str(r.get(k) or "") for k in ("topic", "body", "text", "message", "comment"))
         hits = _SHITEKI.findall(body)
         if not hits:
             continue

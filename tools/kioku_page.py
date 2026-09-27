@@ -138,6 +138,14 @@ def atsumeru():
             "sonogo": r.get("sonogo"), "aka": bool(r.get("aka")),
             # ★3回以上は自動でP1。判定日で赤になったものもP1（tools/hantei.py が付ける）。
             "p": 1 if (n >= 3 or r.get("aka")) else (2 if n >= 2 else 3),
+            # ★1693番診断：hatsugen.jsonl側で actionable:false（実行対象でないと
+            #   人手/過去のセッションが既に判定済み）でも、ここで引き継がなければ
+            #   このフラグは nankai.json より先には伝わらない。1516番診断
+            #   （tools/kioku.py の_BUNSHO_DANPEN）で「たまごさんの発言ではない」と
+            #   分かった行が、フラグを失ったまま tools/tomaranai.py に何度も
+            #   自動発車される事故が起きていた（実例：1672/1673/1692/1693番）。
+            "actionable": r.get("actionable"),
+            "actionableNote": r.get("actionableNote"),
         })
     # 回数の多い順。同数なら古い順（古い方が先に返すべき）。
     rows.sort(key=lambda r: (-r["count"], r["firstSaid"]))

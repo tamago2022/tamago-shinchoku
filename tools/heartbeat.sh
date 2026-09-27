@@ -356,8 +356,14 @@ while :; do
   #     OSには触らない。触るのは 127.0.0.1 のポートだけ。Braveには触らない（lsofで相手を実測する）。
   #     正本は launchd（com.tamago.chrome-tab-cdp・2分おき）。ここからも呼ぶのは launchd が
   #     落ちても死なせないため（tomaranai と同じ二重化）。中で軽いので30秒おきで十分。
-  tick_every 8 && ( python3 "$REPO/tools/1401_tab_cdp.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
-  tick_every 8 && ( python3 "$REPO/tools/1401_cdp_arm.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # ---- 1186番（2026-09-29）★この2行を外した。ここに足し直してはいけない。 ----
+  #   たまごさん「Chromeを起動・再起動する処理を全部止める。例外なし。タブ掃除も含めて止める。
+  #              たまごさんの邪魔をするくらいなら、タブが残る方がまし。」
+  #   実測：1401_cdp_arm.py が pkill → open -a "Google Chrome" を2分おきに繰り返し、
+  #   プロファイル選択ウィンドウが画面中央に出続けた（一晩で5回）。
+  #   スクリプト側も status/1401_cdp.nostop で止めてあるが、呼ぶ側も外して二重に止める。
+  # tick_every 8 && ( python3 "$REPO/tools/1401_tab_cdp.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # tick_every 8 && ( python3 "$REPO/tools/1401_cdp_arm.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ---- 1160番【タブ掃除係】2026-09-26：**外した。ここに足してはいけない。** ----
   #   一度ここに `python3 tools/1160_tab_souji.py` を足したが、中身が osascript（AppleScript）で
   #   Chrome/Brave/System Events を触る作りだったため、**たまごさんの画面にmacOSの許可ダイアログ
@@ -434,6 +440,13 @@ while :; do
   #   鍵が無い周回は os.path.exists を1回見て即座に戻るだけ＝心臓は重くならない。
   #   鍵の値はログにもJSONにも1バイトも書かない。AIを呼ばないのでクレジットは0円。
   tick_every 2 && ( python3 "$REPO/tools/1163_kagi_machi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-09-28（1175番）鍵の受け取り口。たまごさん「1回ログインしたら人間はもう二度とやらなくていい」
+  #   ★~/Desktop/kagi.txt に貼られた鍵を、形（ghp_ / sk- / xai- / AIza / eyJ / 16文字）から
+  #     自分で当てて、正しい置き場へ chmod 600 でしまい、平文を消す。値はログにもJSONにも書かない。
+  #   ★1163_kagi_machi.py はSupabase専用・buffer_kagi_install.py はBuffer専用だった。
+  #     口が無い鍵は毎回ブラウザのログインに落ちていた＝そこが「毎回ログインして」の正体。
+  #   ★何も貼られていない周回は、ファイルを1枚 stat して即戻るだけ。AIを呼ばない＝0円。
+  tick_every 4 && ( python3 "$REPO/tools/1175_kagi_uketori.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1050番）外の働き手の紙。たまごさん「役に立ってるなら使うし、役に立ってないならいらない」
   #   ★この問いは何度も出ているのに、毎回その場の報告で消えていた。だから紙を1枚だけ持たせて、
   #     そこが毎日勝手に書き換わる形にする。新しい常駐も定期タスクも作らない（心臓に相乗り）。
