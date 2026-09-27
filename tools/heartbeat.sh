@@ -341,7 +341,23 @@ while :; do
   #   1時間だと、Chromeが起動していない回でもゲートを消費してしまい、Chromeが起きた直後の
   #   一番タブが溜まっている時間帯を素通りしていた（実測で証拠あり）。15分＋「掃いたときだけ
   #   ゲートを進める」に直した。
-  tick_every 40 && ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # ---- 1401番（2026-09-28）★osascript版の掃除機をここから外した。 ----
+  #   たまごさん「AppleScript / osascript / System Events は絶対に使うな。」
+  #   外しても実害はゼロ。実測（status/chrome_sweep.json）：
+  #     2026-09-28 00:21:23 seen=8 / candidates=0 / closed=0。
+  #     Chromeに残っていた8枚のうち7枚は joy-relief-station.lovable.app＝**Claudeが検品で開いたページ**。
+  #     ところが chrome_tab_sweeper.py の NEVER_CLOSE_PATTERNS に lovable\.(app|dev) が入っていて、
+  #     しかもその判定が孤児判定(looks_orphan)より**先**に効くので、何時間経っても keep される。
+  #     さらに ORPHAN_MIN_SAMPLES=120 は「心臓が15秒おきに観測する」前提の数字だが、
+  #     2026-09-18にここが tick_every 40（=10分おき）へ間引かれたため実質120回=20時間必要になっていた。
+  #     ＝**掃除機は毎回走っていたが、構造的に1枚も閉じられない状態だった。**
+  #     たまごさんが毎回手で消していたのはこれが理由。「動いているのに何も取れていない」壊れ方。
+  #   代わりに入れたもの：CDP（Chrome DevTools Protocol）で外からタブを見て閉じる係。
+  #     OSには触らない。触るのは 127.0.0.1 のポートだけ。Braveには触らない（lsofで相手を実測する）。
+  #     正本は launchd（com.tamago.chrome-tab-cdp・2分おき）。ここからも呼ぶのは launchd が
+  #     落ちても死なせないため（tomaranai と同じ二重化）。中で軽いので30秒おきで十分。
+  tick_every 8 && ( python3 "$REPO/tools/1401_tab_cdp.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  tick_every 8 && ( python3 "$REPO/tools/1401_cdp_arm.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ---- 1160番【タブ掃除係】2026-09-26：**外した。ここに足してはいけない。** ----
   #   一度ここに `python3 tools/1160_tab_souji.py` を足したが、中身が osascript（AppleScript）で
   #   Chrome/Brave/System Events を触る作りだったため、**たまごさんの画面にmacOSの許可ダイアログ

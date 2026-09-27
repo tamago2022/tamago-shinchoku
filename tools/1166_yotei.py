@@ -40,6 +40,10 @@ CAP = 10          # ★Bufferの予約は10本が上限（2026-09-27 実測：11
 
 
 def gql(tok, q, v=None):
+    # ★1174番（2026-09-28）ここが1日の叩きを一番食っていた。buffer_kura（1日の天井）を通す。
+    import buffer_kura
+    if not buffer_kura.tsukau("1166_yotei"):
+        raise RuntimeError(buffer_kura.riyuu())
     b = {"query": q}
     if v:
         b["variables"] = v
@@ -104,37 +108,22 @@ def midashi(t):
 
 
 def build():
-    import kagi
-    import buffer_waku
-    if not buffer_waku.ake():      # ★枠切れの間は1回も叩かない（429を増やさない）
-        return 11
-    tok = kagi.get("BUFFER_ACCESS_TOKEN")
-    if not tok:
-        return 3
-    orgs = ((gql(tok, "query{account{organizations{id name}}}").get("data") or {})
-            .get("account") or {}).get("organizations") or []
-    ch = org = None
-    for o in orgs:
-        cs = (gql(tok, "query($o:OrganizationId!){channels(input:{organizationId:$o})"
-                  "{id name displayName}}", {"o": o["id"]})
-              .get("data") or {}).get("channels") or []
-        for c in cs:
-            ns = [(c.get(k) or "").strip().lstrip("@").lower()
-                  for k in ("name", "displayName") if (c.get(k) or "").strip()]
-            if any(n in FORBID for n in ns):
-                continue
-            if WANT in ns:
-                ch, org = c, o["id"]
-    if not ch:
-        return 4
+    # ★★1176番（2026-09-28）この係は **Bufferを1回も叩かない**。
+    #   理由（実測）：10分間引き × 1回4叩き ＝ 1日576叩き。Bufferの枠は24時間250回。
+    #   画面を描くためだけに枠を食い潰して、投稿そのものが止まった（9/27の丸1日）。
+    #   予約の中身は buffer_kura の蔵（Bufferを触った係が毎回書き戻している控え）を読む。
+    #   ＝「投稿以外でBufferを叩かない」。叩くのは 1170_hako / 1173 / buffer_hokyuu だけ。
+    import buffer_kura
+    kura = buffer_kura.yoyaku_yomu()
+    yoyaku = [{"id": e.get("id"), "text": e.get("text") or "",
+               "dueAt": e.get("dueAt")} for e in (kura.get("yoyaku") or [])]
+    dashita = [{"text": e.get("text") or "", "dueAt": e.get("dueAt")}
+               for e in (kura.get("dashita") or [])][-5:]
+    kura_at = kura.get("at") or "-"
+    return build2(yoyaku, dashita, kura_at)
 
-    def rows(statuses):
-        e = ((gql(tok, Q_POSTS, {"o": org, "c": [ch["id"]], "s": statuses})
-              .get("data") or {}).get("posts") or {}).get("edges") or []
-        return [x["node"] for x in e]
 
-    yoyaku = rows(["scheduled"])
-    dashita = rows(["sent"])[-5:]
+def build2(yoyaku, dashita, kura_at):
 
     taken = set()
     for p in yoyaku:
@@ -184,7 +173,8 @@ def build():
 
     data = {
         "kouji": kouji,
-        "at": datetime.datetime.now(JST).strftime("%F %H:%M"),
+        "at": "%s（Bufferの控え %s 時点・この画面はBufferを0回叩いて描いている）"
+              % (datetime.datetime.now(JST).strftime("%F %H:%M"), kura_at),
         "channel": "@" + WANT,
         "cap": CAP,
         "yoyaku": [{"due": (jst(p["dueAt"]).strftime("%F %H:%M") if jst(p.get("dueAt") or "") else "?"),
@@ -288,7 +278,8 @@ Bufferの予約欄：<a href="https://publish.buffer.com/all-channels/queue">pub
 
 STAMP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                      "status", "1166", ".yotei_stamp")
-KANKAKU = 600   # ★10分に1回だけ。毎周回だとBufferが429を返す（2026-09-27 実測）
+KANKAKU = 300   # ★5分に1回。**Bufferを0回叩く**係になったので、間引きは軽さのためだけ。
+                #   （9/27の丸1日を止めた原因は、この係が画面のために1日576回叩いていたこと）
 
 
 def mabiku():

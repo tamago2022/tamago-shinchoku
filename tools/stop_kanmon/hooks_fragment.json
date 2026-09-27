@@ -11,6 +11,18 @@
           "timeout": 20
         }
       ]
+    },
+    {
+      "$kanmon": "iruka",
+      "$comment": "1401号（2026-09-28）上流の関所。タブを新しく開く道具だけを止め、(1)web_fetch/APIで取れる先は無条件で拒否 (2)それ以外は『なぜブラウザが要るのか』の宣言を要求する。宣言すると同時に978番の予約閉栓の票が置かれる＝開く前に閉じる約束をさせる。既存タブの読み書きは止めない。",
+      "matcher": "mcp__(claude-in-chrome|Claude_Browser)__(tabs_create_mcp|tabs_create|preview_start|navigate)",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/1401_iru_ka.mjs",
+          "timeout": 20
+        }
+      ]
     }
   ],
   "$comment2": "1200号（2026-09-27）畳む関所。セッションが終わるたびに、そのセッションが撒いた居残り（素の vite build・重なったスクリプト・工場の一発物）を機械が畳む。★終了を拒否しない（exit 0 固定）＝セッションを人質にしない。Brave と Claude のセッションには触らない（tools/1200_tatamu.py の KEEP）。これまでの孤児回収は『60分以上』『ppid==1』にしか反応せず、一番残る素の vite build が網に一度も掛かっていなかった。",

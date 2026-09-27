@@ -59,6 +59,17 @@ def token():
 
 
 def gql(tok, query, variables=None):
+    # ★1174番（2026-09-28 実測）ここには門が1つも無かった。
+    #   5分便がこの係を回すので、注文票が1枚でも通らないと **5分おきに4叩き＝1日1152叩き**。
+    #   Bufferの枠は24時間250回。9/27に枠を使い切った実行犯のひとつはここ。
+    #   → 叩く前に必ず buffer_waku（429で閉まる門）と buffer_kura（1日の天井）を通る。
+    sys.path.insert(0, HERE)
+    import buffer_waku
+    import buffer_kura
+    if not buffer_waku.ake():
+        raise RuntimeError(buffer_waku.riyuu())
+    if not buffer_kura.tsukau("buffer_yoyaku"):
+        raise RuntimeError(buffer_kura.riyuu())
     body = {"query": query}
     if variables:
         body["variables"] = variables
@@ -90,6 +101,9 @@ def gql(tok, query, variables=None):
         if buffer_call_log:
             buffer_call_log.rec("buffer_yoyaku", op, e.code, e.headers,
                                 note=body_raw[:200])
+        if e.code == 429:                    # ★1174番：429を受けたらここで門を閉める
+            import buffer_waku
+            buffer_waku.tometa(e.headers, "buffer_yoyaku")
         log("HTTP %s remaining=%s reset=%s body=%s"
             % (e.code, e.headers.get("x-ratelimit-remaining"),
                e.headers.get("x-ratelimit-reset"), body_raw))
@@ -341,6 +355,14 @@ def main():
         print("鍵の置き場(~/.tamago)が見えないので、何もせず退きました")
         return 3
     os.makedirs(DONE, exist_ok=True)
+    # ★1174番：枠が閉まっている間は注文票を開けもしない（＝Bufferを1回も叩かない）。
+    #   注文票はそのまま残るので、枠が戻った最初の5分便が自分で入れる。
+    #   たまごさんに「ログインして」と頼まない・押させない。
+    sys.path.insert(0, HERE)
+    import buffer_waku
+    if not buffer_waku.ake():
+        print("枠が閉まっているので注文票はそのまま待たせます：%s" % buffer_waku.riyuu())
+        return 0
     # ★注文票だけを拾う。machi.json（行列）や hokyuu_result.json（結果）は注文票ではない。
     #   2026-09-24 実測：これを見ずに *.json を全部読んで、結果ファイルにまで
     #   「鍵なし」を書き戻していた＝done/ にゴミが増えていた。名前で線を引く。
