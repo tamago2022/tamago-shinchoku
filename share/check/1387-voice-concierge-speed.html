@@ -52,35 +52,71 @@
 <div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-09-18に「とっとと声が出るようにして」「遅すぎるよ」と言われた件。原因は①「つないでいます…」が固まって声が出ないまま止まる不具合（案件#908）と②xAIが使えない時に黙って終わる不具合（案件#1191）の2つで、どちらも今回調べたら<b>既に本番へ直して出してあった</b>。今回はそれが今も本番で効いているかを実測で確認した。
+2026-09-18に『とっとと声が出るようにして』『遅すぎるよ』と言われた件。原因は①つながらない時に無限に固まる不具合（案件#908・3秒タイムアウトを実装済み）②xAIが使えない時に黙って終わる不具合（案件#1191・0円のブラウザ内蔵音声へ自動切替を実装済み）の2つ。今回は本番のxAI音声トークン発行APIを直接2回叩いて実際に1秒未満で返ることを実測し、実ブラウザで話すボタンを押す通しテストで接続画面まで進むことを確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0.60〜1.09秒</b><span>声の発行(トークン発行API)にかかる時間・実測2回</span></div>
-  <div class="num"><b>3秒</b><span>つながらない時に諦めて切り替えるまでの上限(#908で実装)</span></div>
-  <div class="num"><b>0円</b><span>xAIが使えない時にブラウザ内蔵の声へ自動で切り替わる(#1191・課金なし)</span></div>
-  <div class="num"><b>200</b><span>本番トップページのHTTPステータス</span></div>
+  <div class="num"><b>468ms/903ms</b><span>xAI音声トークン発行(本番Edge Function)を2回直接実測</span></div>
+  <div class="num"><b>3秒</b><span>つながらない時に諦めてフォールバックへ切替る上限(#908)</span></div>
+  <div class="num"><b>0円</b><span>xAI不通時にブラウザ内蔵の声へ自動切替(#1191)</span></div>
+  <div class="num"><b>200</b><span>本番案内所ページのHTTPステータス</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>押す前(案内所ページ)</b><img src="img/1387-before.png" alt="前"></div>
+  <div class="shot after"><b>話すボタンを押した直後(接続中・赤丸)</b><img src="img/1387-after.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
+  <li><b>本番の案内所ページ(声のボタンあり)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
   <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>直した箇所①(3秒タイムアウト)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/b0415119c" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/b0415119c</a></li>
-  <li><b>直した箇所②(黙って終わらない)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/a5b7e57d9" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/a5b7e57d9</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番URLが200で返るか</td><td class="yes">OK</td></tr>
-<tr><td>ページの中身が空でないか(コンシェルジュの文言あり)</td><td class="yes">OK</td></tr>
-<tr><td>声のトークン発行が数秒以内に返るか(実測0.6〜1.1秒)</td><td class="yes">OK</td></tr>
-<tr><td>つながらない時に無限に固まらないか(3秒で見切りをつける)</td><td class="yes">OK</td></tr>
-<tr><td>xAIが使えない時に黙って終わらないか(ブラウザの声で必ず喋る)</td><td class="yes">OK</td></tr>
+<tr><td>本番ページが200で返るか</td><td class="yes">OK</td></tr>
+<tr><td>声のトークン発行が数秒以内に返るか(直接2回実測903ms→468ms)</td><td class="yes">OK</td></tr>
+<tr><td>話すボタンを押すと接続画面(マイク赤丸)まで進むか(実ブラウザ通しテスト)</td><td class="yes">OK</td></tr>
+<tr><td>つながらない時に無限に固まらないか(3秒で見切り・コード確認)</td><td class="yes">OK</td></tr>
+<tr><td>xAIが使えない時に黙って終わらないか(ブラウザ内蔵音声へ自動切替・コード確認)</td><td class="yes">OK</td></tr>
 </table>
+
+<h2>⑥ 直した箇所（コード。GitHubは非公開のため中身をここに直接載せる）</h2>
+<div class="note">
+<b>① 案件#908（2026-09-17）：「つないでいます…」が固まる → 3秒で見切りをつける</b><br>
+<pre style="white-space:pre-wrap;font-size:0.78rem;background:#f4efe4;padding:10px;border-radius:8px;overflow-x:auto;">src/lib/voiceConcierge.ts に追加：
+const VOICE_CONNECT_TIMEOUT_MS = 3000;
+function withConnectTimeout(promise, ms = 3000) {
+  // 3秒以内にpromiseが解決/拒否しなければタイムアウトエラーで拒否
+}
+
+src/components/VoiceConcierge.tsx に追加：
+connectTimeoutRef.current = setTimeout(() => {
+  if (connectSettledRef.current) return;
+  handleFallback({
+    reason: "connection_failed",
+    message: "つながるのに時間がかかりすぎちゃった。かわりにおすすめを置いておくね。",
+  });
+}, 3000);</pre>
+</div>
+<div class="note">
+<b>② 案件#1191（2026-09-27）：xAIが使えない時に黙って終わる → ブラウザ内蔵の声で必ず喋る(0円)</b><br>
+<pre style="white-space:pre-wrap;font-size:0.78rem;background:#f4efe4;padding:10px;border-radius:8px;overflow-x:auto;">新規: src/lib/localVoiceConcierge.ts
+  → ブラウザ標準のspeechSynthesis(声)/SpeechRecognition(耳)だけで
+    卵が喋り聞く。追加の鍵もサーバーも課金も不要。
+
+src/components/VoiceConcierge.tsx の onFallback を変更：
+  xAIが使えない(budget_exceeded等)時、「またあとで話しかけてね」で
+  黙って閉じるのをやめ、LocalVoiceConcierge へ自動で切り替える。
+  xAIが戻れば通常どおりxAIが主役に戻る。</pre>
+</div>
+<div class="note">
+<b>今回さらに実測して分かったこと：</b>①②のコードは既に本番へ反映済みで、今回xAIの音声トークン発行API（本番）を直接2回叩いたところ903ms→468msで200が返り、xAI自体も生きていることを確認した（前回、本番のEdge Functionが古い版のまま予算上限に達し止まっていた問題も解消済み）。
+</div>
 
 <footer>
 このページは #1387 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
