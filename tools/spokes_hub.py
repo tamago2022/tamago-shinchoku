@@ -326,9 +326,35 @@ def atsumeru(artist, honnin, limit_works=400, limit_recs=600):
         st["dirA"] = dirA
         save(os.path.join(d, "mb.json"), st)
 
-    print("集まりました： 方向A %d件 ／ 方向B %d件"
-          % (len(st.get("dirA", [])), len(st.get("dirB", []))))
+    st["dirB_clean"] = dirB_shiboru(st)
+    save(os.path.join(d, "mb.json"), st)
+    print("集まりました： 方向A %d件 ／ 方向B %d件（生 %d件）"
+          % (len(st.get("dirA", [])), len(st["dirB_clean"]), len(st.get("dirB", []))))
     return st
+
+
+NG_TITLE = ("remix", "instrumental", "karaoke", "extended", "edit)", "mashup",
+            "acapella", "a cappella", "medley", "demo", "live", "version)")
+
+
+def dirB_shiboru(st):
+    """★ここが肝。本人が作者というだけでは「本人の曲」ではない。
+
+    Ed Sheeran は Cold Water（Major Lazer）や Little Things（One Direction）のように
+    **他人のために書いた曲**が大量にある。それを他人が歌っているのは「カバー」ではなく
+    元の持ち主が歌っているだけ。曲名の一致で繋がないのと同じ理屈で、ここも落とす。
+    → 本人自身がその work を録音している物だけを「本人の曲」として残す。
+    """
+    mine = {w for r in st.get("recs", []) for w in r["works"]}
+    out = []
+    for x in st.get("dirB", []):
+        if x["workMbid"] not in mine:
+            continue
+        t = x["kyoku"].lower()
+        if any(g in t for g in NG_TITLE):
+            continue
+        out.append(x)
+    return out
 
 
 # ───────────────────────── ③ Spotifyに実在する物だけ残す ─────────────────────────
@@ -346,7 +372,7 @@ def awaseru(artist, honnin, tok, kagiri=0):
            set(tuple(x) for x in ok.get("sumi", []))
     afoll = {}
 
-    kouho = st.get("dirA", []) + st.get("dirB", [])
+    kouho = st.get("dirA", []) + (st.get("dirB_clean") or dirB_shiboru(st))
     for n, k in enumerate(kouho):
         key = (k["houkou"], k["kyoku"], k["enja"])
         if key in sumi:
