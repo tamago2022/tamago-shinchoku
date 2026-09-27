@@ -772,6 +772,17 @@ PUB_TOP="$REPO/status/public/top_status.json"
 PUB_TOP_MTIME=$(stat -f %m "$PUB_TOP" 2>/dev/null || stat -c %Y "$PUB_TOP" 2>/dev/null || echo 0)
 PUB_TOP_AGE=$(( $(date +%s) - PUB_TOP_MTIME ))
 if [ ! -f "$PUB_TOP" ] || [ "$PUB_TOP_AGE" -ge 1800 ]; then HIST_CHANGED=1; fi
+# 1295番・実測での追加対応（2026-09-27）：上の判定でHIST_CHANGED=1にしても、実際にコピーする
+#   場所（下のPUBLISH_LISTループ）まではまだ数百行・kagi_daicho.py/kaitsuu.py/gaibu_copy_nippou.py
+#   等の重い処理を挟む。CPU高負荷（実測load average 12台）でこの便がロックの7分タイムアウトに
+#   引っかかると、判定はHIST_CHANGED=1になったのに実際のコピーへ辿り着けない。
+#   実測：08:33の写しが判定は効いていたはずなのに09:32まで59分放置された。
+#   30分を超えて古い（＝配らなければならない）と分かった瞬間に、ここでtop_status.jsonだけ
+#   最優先で配ってしまう（重い処理群より前）。他のPUBLISH_LISTファイルは従来どおり後段で配る。
+if [ -f "$REPO/status/top_status.json" ] && { [ ! -f "$PUB_TOP" ] || [ "$PUB_TOP_AGE" -ge 1800 ]; }; then
+  mkdir -p "$REPO/status/public"
+  cp -f "$REPO/status/top_status.json" "$PUB_TOP" 2>/dev/null || true
+fi
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
 # 2026-09-04 画面の世代を書き出す。スマホのホーム画面アプリが古いindex.htmlを握ったままになる問題への対応。
