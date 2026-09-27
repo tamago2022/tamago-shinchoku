@@ -464,6 +464,15 @@ if __name__ == "__main__":
     except Exception:
         pass
 
+    # 2026-09-27（1168番）予約済みで✕だったもののページを直す係。15分に1回まで。
+    # 直らないまま出る24時間前を切ったら、その1本を予約から外す。
+    try:
+        import subprocess as _spB, os as _osB
+        _sB = _osB.path.join(_osB.path.dirname(_osB.path.abspath(__file__)), "1168_naosu.py")
+        _spB.Popen(["python3", _sB], stdout=_spB.DEVNULL, stderr=_spB.DEVNULL)
+    except Exception:
+        pass
+
     # 2026-09-27（1166番）待機列を自分で積む係。候補1本を15分に1つだけ進める。
     # YouTubeの検索枠が尽きた日はその場で退き、翌日また続きから。止めたいときは status/1166.stop。
     try:

@@ -322,7 +322,7 @@ def html(d):
             % (e(v["url"]), e(v["title"] or v["url"])) for v in x["kanren_list"]) \
             or "<li class=ng>関連が無い</li>"
         cards.append("""
-<article class="card %(cls)s" id="p%(n)d">
+<article class="card k-%(cls)s" id="p%(n)d">
  <header><span class="no">%(n)02d</span>
   <span class="due">%(due)s (%(youbi)s)</span>
   <span class="han %(cls)s">%(han)s</span></header>
@@ -338,6 +338,7 @@ def html(d):
   <tr><td>本人の動画</td><td><span class="%(mcls)s">%(mtxt)s</span>%(mlink)s</td></tr>
   <tr><td>関連</td><td><span class="%(kcls)s">%(kanren)d 本</span>
       <span class="dim">（最低4本／ページ内の動画は全部で %(zen)s 本）</span>
+      <div class="lab">ページに載っている2番目以降の動画</div>
       <ul class="kan">%(kan)s</ul></td></tr>
   <tr><td>重複</td><td><span class="%(dcls)s">%(dtxt)s</span></td></tr>
  </table>
@@ -380,7 +381,10 @@ h1{font-size:21px;margin:0 0 4px;letter-spacing:.03em}
 .sum b{font-size:22px;font-variant-numeric:tabular-nums}
 .card{background:#15181d;border:1px solid #23272e;border-radius:14px;
  padding:16px 16px 18px;margin:0 0 16px}
-.card.ng{border-color:#5c2b28;background:#1a1415}
+.card.k-ng{border-color:#8c3b33;background:#1a1415}
+.card.k-ok{border-color:#23272e}
+/* ★判定の色はカードの中身に流さない。本文は必ず読みやすい白で出す。 */
+.card{color:#e8e6e1}
 .card header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
  padding-bottom:10px;border-bottom:1px solid #23272e;margin-bottom:12px}
 .no{font-variant-numeric:tabular-nums;font-size:13px;color:#7d8590;
@@ -388,7 +392,7 @@ h1{font-size:21px;margin:0 0 4px;letter-spacing:.03em}
 .due{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
 .han{margin-left:auto;font-size:19px;font-weight:700}
 .lab{font-size:11.5px;color:#8b949e;letter-spacing:.06em;margin:14px 0 6px}
-pre.honbun{margin:0;font-family:"Hiragino Sans",system-ui,sans-serif;
+pre.honbun{margin:0;color:#e8e6e1;font-family:"Hiragino Sans",system-ui,sans-serif;
  font-size:14.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;
  background:#0a0c0f;border:1px solid #23272e;border-radius:10px;padding:13px 14px}
 table{width:100%%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
@@ -398,6 +402,7 @@ ul{margin:6px 0 0;padding-left:1.1em}
 li{margin:0 0 4px;font-size:13px;color:#c9d1d9}
 ul.kan li{font-size:12.5px}
 ul.ng li{color:#ff9d96}
+ul.ng li.ok{color:#5ddba0}
 a{color:#79b8ff;word-break:break-all}
 .ok{color:#5ddba0}.ng{color:#ff7b72}.dim{color:#7d8590}
 h2{font-size:14px;color:#8b949e;letter-spacing:.06em;margin:34px 0 10px;

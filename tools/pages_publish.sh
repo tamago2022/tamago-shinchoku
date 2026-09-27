@@ -134,8 +134,20 @@ sync_one() {  # $1=コミット $2=パス
     share/check/*.html)
       case "$2" in */_template.html) return 0 ;; esac
       if ! python3 "$REPO/tools/sekisho.py" --local-file "$PAGES/$2" --n "publish-$(basename "$2" .html)" >/tmp/sekisho-publish.out 2>&1; then
-        rm -f "$PAGES/$2" 2>/dev/null || true
-        log "🛑 関所(sekisho)FAILのため公開から外しました: $2 / $(grep SEKISHO_RESULT /tmp/sekisho-publish.out 2>/dev/null | head -1)"
+        # 2026-09-27（1168番・続）★一度でも本番に出した紙は、落とさない。
+        #   実害：ダーク化でCSSの1行を直しただけの share/check/1029-shuhou.html が
+        #   この関所に引っかかり、本番から**消えた**（404になった）。
+        #   この関所の役目は「新しい主張を検品せずに出さない」ことであって、
+        #   「今まで読めていた紙を取り上げる」ことではない。
+        #   この関所のコメント自身が「既存分は借金、新規だけ厳密化」と書いている。
+        #   → 公開の履歴にその紙があるなら＝借金組。記録だけ残して、そのまま出す。
+        #     履歴に無い＝本当に新しい紙のときだけ、今までどおり外す。
+        if [ -n "$(git -C "$PAGES" log --oneline -1 -- "$2" 2>/dev/null)" ]; then
+          log "⚠️ 関所(sekisho)FAIL（既存分の借金・落とさずそのまま出す）: $2 / $(grep SEKISHO_RESULT /tmp/sekisho-publish.out 2>/dev/null | head -1)"
+        else
+          rm -f "$PAGES/$2" 2>/dev/null || true
+          log "🛑 関所(sekisho)FAILのため公開から外しました（本番に出したことが無い新しい紙）: $2 / $(grep SEKISHO_RESULT /tmp/sekisho-publish.out 2>/dev/null | head -1)"
+        fi
         SEKISHO_BLOCKED=$((SEKISHO_BLOCKED+1))
       fi
       ;;
