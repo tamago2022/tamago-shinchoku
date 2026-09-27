@@ -134,6 +134,19 @@ def page_sekisho(urls):
     lst = os.path.join(D, "urls.txt")
     out = os.path.join(D, "pages.json")
     io.open(lst, "w", encoding="utf-8").write("\n".join(urls) + "\n")
+    # ★同じURLを30分以内に数えてあるなら開き直さない（HTMLの直しで何度も回すため）
+    if "--hakarinaosu" not in sys.argv:
+        try:
+            import time as _t
+            if _t.time() - os.path.getmtime(out) < 1800:
+                old = json.load(io.open(out, encoding="utf-8"))
+                orows = old["rows"] if isinstance(old, dict) else old
+                got = {r["url"]: (r.get("data") or {}) for r in orows}
+                if all(u in got for u in urls):
+                    print("  （%d本ぶんは数え済みを使う）" % len(urls))
+                    return got
+        except Exception:
+            pass
     env = dict(os.environ, SEKISHO_SETTLE_MS="14000")
     subprocess.run(["node", os.path.join(HERE, "1164_page_sekisho.mjs"), lst, out],
                    cwd=REPO, env=env, timeout=60 * 12,
@@ -378,9 +391,9 @@ h1{font-size:21px;margin:0 0 4px;letter-spacing:.03em}
 pre.honbun{margin:0;font-family:"Hiragino Sans",system-ui,sans-serif;
  font-size:14.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;
  background:#0a0c0f;border:1px solid #23272e;border-radius:10px;padding:13px 14px}
-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
+table{width:100%%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
 td{padding:7px 6px;border-bottom:1px solid #1d2126;vertical-align:top}
-td:first-child{color:#7d8590;white-space:nowrap;width:1%;padding-right:12px}
+td:first-child{color:#7d8590;white-space:nowrap;width:1%%;padding-right:12px}
 ul{margin:6px 0 0;padding-left:1.1em}
 li{margin:0 0 4px;font-size:13px;color:#c9d1d9}
 ul.kan li{font-size:12.5px}
