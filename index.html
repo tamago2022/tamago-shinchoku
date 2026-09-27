@@ -223,6 +223,13 @@ var SRC = "status/public/top_status.json";
 var $ = function(id){ return document.getElementById(id); };
 function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+/* 1371番：「読み直す」を押しても見た目が変わらなかった（分の桁が動くまで文字が同じままだった）ので、
+   秒まで出して押すたびに必ず文字が変わるようにする。ついでに「いつ確認できたか」が分かって親切。 */
+function hhmmss(d){
+  d = d || new Date();
+  function p2(n){ return (n < 10 ? "0" : "") + n; }
+  return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds());
+}
 /* ───────── 題名の掃除（1174番） ─────────
    裏方の言葉・番号・こちらの会話がそのまま題名になっているものを、
    たまごさんが読んで意味の分かる日本語1行に直す。元データは直さず、出す前にここで直す。 */
@@ -551,15 +558,27 @@ function loadQueue(fallback){
 }
 
 /* ───────── 描画 ───────── */
+/* 1371番：GitHub Pagesの応答が速いと「読み直しています…」が一瞬で消え、
+   押した本人にも機械の検品にも「何も起きなかった」ように見えていた。
+   押してから最低900msは「読み直しています…」を残してから結果へ切り替える。 */
+var manualReloadUntil = 0;
+function applyStamp(ageMin){
+  var s = $("stamp");
+  if(ageMin == null){ s.textContent = ""; }
+  else if(ageMin <= 20){ s.className = ""; s.textContent = ageMin + "分前のデータ（" + hhmmss() + " 確認）"; }
+  else { s.className = "old"; s.textContent = ageMin + "分前のまま（更新が止まっています・" + hhmmss() + " 確認）"; }
+}
+function renderStamp(ageMin){
+  var wait = manualReloadUntil ? Math.max(0, manualReloadUntil - Date.now()) : 0;
+  if(wait > 0){ setTimeout(function(){ manualReloadUntil = 0; applyStamp(ageMin); }, wait); }
+  else { manualReloadUntil = 0; applyStamp(ageMin); }
+}
 function render(d){
   var g = d.generatedAt ? Date.parse(String(d.generatedAt)) : 0;
   var ageMin = g ? Math.round((Date.now() - g)/60000) : null;
   AGE = ageMin == null ? 0 : ageMin;
   STALE = (ageMin != null && ageMin > 20);
-  var s = $("stamp");
-  if(ageMin == null){ s.textContent = ""; }
-  else if(ageMin <= 20){ s.className = ""; s.textContent = ageMin + "分前のデータ"; }
-  else { s.className = "old"; s.textContent = ageMin + "分前のまま（更新が止まっています）"; }
+  renderStamp(ageMin);
 
   renderLogin(d);
   renderRunning(d);
@@ -627,6 +646,7 @@ function load(manual){
       $("stamp").textContent = yomenaiRiyuu(e); });
 }
 $("reload").addEventListener("click", function(){
+  manualReloadUntil = Date.now() + 900;
   $("stamp").className = ""; $("stamp").textContent = "読み直しています…"; load(true);
 });
 load(false);
