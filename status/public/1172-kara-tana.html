@@ -1,0 +1,100 @@
+<!doctype html><html lang="ja"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d0f12">
+<meta name="robots" content="noindex,nofollow">
+<title>カードが0件の棚</title>
+<link rel="stylesheet" href="../../theme/tamago-dark.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--t-bg,#0d0f12);color:var(--t-fg,#e8e6e1);font-family:-apple-system,"Hiragino Sans",system-ui,sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+.w{max-width:820px;margin:0 auto;padding:18px 14px 64px}
+h1{font-size:20px;margin:0 0 2px;letter-spacing:.04em}
+.at{color:var(--t-dim,#7d8590);font-size:12px;margin:0 0 16px}
+h2{font-size:12.5px;color:var(--t-mute2,#8b949e);letter-spacing:.1em;margin:30px 0 8px;border-top:1px solid var(--t-line,#23272e);padding-top:14px}
+.big{background:var(--t-panel,#15181d);border:1px solid var(--t-line,#23272e);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+.big b{font-size:30px;font-variant-numeric:tabular-nums;color:var(--t-fg,#e8e6e1)}
+.big .u{font-size:13px;color:var(--t-mute,#9aa4ae);margin-left:4px}
+.n{color:var(--t-mute,#9aa4ae);font-size:13.5px;margin:0 0 12px}
+.n b{color:var(--t-fg,#e8e6e1);font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;color:var(--t-mute2,#8b949e);font-weight:600;font-size:11.5px;letter-spacing:.06em;border-bottom:1px solid var(--t-line,#23272e);padding:6px 8px 6px 0}
+td{border-bottom:1px solid var(--t-line2,#1d2126);padding:8px 8px 8px 0;vertical-align:top}
+td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.zero{color:var(--t-ng,#ff7b72);font-weight:700}
+.ok{color:var(--t-ok,#5ddba0)}
+.id{color:var(--t-dim,#7d8590);font-size:11.5px;word-break:break-all}
+.note{color:var(--t-mute,#9aa4ae);font-size:12.5px;background:var(--t-panel,#15181d);border-left:2px solid var(--t-line,#23272e);padding:10px 12px;margin:12px 0}
+a{color:var(--t-ok,#5ddba0)}
+</style>
+<div class="w">
+
+<h1>カードが0件の棚</h1>
+<p class="at">2026-09-27 時点。機械が数えた実測。1本も消していない。</p>
+
+<div class="big">
+  棚は全部で <b>186</b><span class="u">本</span>　そのうちカードが0件は <b class="zero">4</b><span class="u">本</span>
+  <div class="n" style="margin:8px 0 0">
+    内訳：作り付けの棚（worlds.ts）<b>109</b>本 ／ 店主が作った棚（DBの admin_shelves）<b>77</b>本
+  </div>
+</div>
+
+<div class="note">
+★前の便は「13本」と出していた。数え直したら <b>4本</b>だった。<br>
+理由：前の便は <code>worlds.ts</code> だけを見ていた。worlds.ts の中で <code>cards</code> が素で0本の棚はたしかに13本ある。
+けれどそのうち<b>12本はDB側（admin_shelf_picks）からカードが入っていて、実際のページには50枚前後並んでいる</b>。
+本当に0件なのは、そのうちの1本（面白アイテムの棚）と、DBだけにある棚3本。合わせて4本。
+</div>
+
+<h2>本当にカードが0件の棚（4本）</h2>
+<table>
+<tr><th>部屋</th><th>棚の名前</th><th>種類</th><th>ID</th></tr>
+<tr><td>笑い</td><td>面白アイテムの棚</td><td>作り付け（worlds.ts）</td><td class="id">funny-items</td></tr>
+<tr><td>笑い</td><td>ギャグ</td><td>店主が作った棚（DB）</td><td class="id">db-916dc034-8b42-4f25-93a0-53f2de044a4e</td></tr>
+<tr><td>笑い</td><td>失敗</td><td>店主が作った棚（DB）</td><td class="id">db-526cef68-a82d-4df2-9b7a-a7ad35361df9</td></tr>
+<tr><td>食べ物</td><td>メキシカン</td><td>店主が作った棚（DB）</td><td class="id">db-8d75a315-eaed-4924-84be-96616ed29a35</td></tr>
+</table>
+<p class="n" style="margin-top:10px">
+「失敗」はコードの中に<b>4つに割れた同じ棚のかたまり</b>（ドジ失敗／人間だもの／失敗／失敗）として記録されていて、
+この行はその中の「空の重複行」だと publicShelves.functions.ts に書いてある。統合SQLがまだ走っていない。
+</p>
+
+<h2>worlds.ts では素で0本だが、DBから入っていて実際は並んでいる棚（12本）</h2>
+<p class="n">＝前の便が「0件」と数えてしまったもの。<b>消してはいけない。</b></p>
+<table>
+<tr><th>部屋</th><th>棚の名前</th><th class="num">worlds.ts</th><th class="num">DBから</th><th class="num">実際</th></tr>
+<tr><td>音楽</td><td>太陽の棚</td><td class="num">0</td><td class="num">51</td><td class="num ok">51</td></tr>
+<tr><td>音楽</td><td>春の棚</td><td class="num">0</td><td class="num">51</td><td class="num ok">51</td></tr>
+<tr><td>音楽</td><td>秋の棚</td><td class="num">0</td><td class="num">54</td><td class="num ok">54</td></tr>
+<tr><td>音楽</td><td>冬の棚</td><td class="num">0</td><td class="num">53</td><td class="num ok">53</td></tr>
+<tr><td>音楽</td><td>60年代の棚</td><td class="num">0</td><td class="num">52</td><td class="num ok">52</td></tr>
+<tr><td>音楽</td><td>70年代の棚</td><td class="num">0</td><td class="num">50</td><td class="num ok">50</td></tr>
+<tr><td>音楽</td><td>2000年代の棚</td><td class="num">0</td><td class="num">50</td><td class="num ok">50</td></tr>
+<tr><td>音楽</td><td>結婚式・お祝い・誕生日の棚</td><td class="num">0</td><td class="num">54</td><td class="num ok">54</td></tr>
+<tr><td>音楽</td><td>バラードの棚</td><td class="num">0</td><td class="num">31</td><td class="num ok">31</td></tr>
+<tr><td>音楽</td><td>グラミーの名パフォーマンス</td><td class="num">0</td><td class="num">25</td><td class="num ok">25</td></tr>
+<tr><td>音楽</td><td>MTV Unplugged の棚</td><td class="num">0</td><td class="num">22</td><td class="num ok">22</td></tr>
+<tr><td>音楽</td><td>親世代に聴かせたい棚</td><td class="num">0</td><td class="num">11</td><td class="num ok">11</td></tr>
+</table>
+
+<h2>「japanese contents」に日本語名を付けた</h2>
+<table>
+<tr><th>部屋</th><th>前</th><th>後</th><th class="num">カード</th></tr>
+<tr><td>旅</td><td>japanese contents</td><td class="ok">日本のコンテンツ</td><td class="num">1</td></tr>
+</table>
+<p class="n" style="margin-top:10px">
+棚の名前の正本はDB（<code>admin_shelves</code>）なので、そこを書き換えた。
+並び順の正本 <code>src/lib/shelfOrder.ts</code> は「題名」で棚を引く作りなので、改名すると並び順の指定（場所で選ぶ・67番目）が外れる。
+外れないように日本語名の行を足した。旧名の行も残してある（旧名で登録された行が他に残っていても崩れないため）。
+</p>
+
+<h2>どう数えたか（出どころ）</h2>
+<p class="n">
+・作り付けの棚：<code>joy-relief-station/src/lib/worlds.ts</code> を bun で読み込んで <code>shelf.cards.length</code> を数えた。<br>
+・DBの棚：Supabase の <code>admin_shelves</code>（161件）。<br>
+・棚に入っているカード：<code>admin_shelf_picks</code>（2,177件）。<code>admin_stock</code>（2,561件・生きている 2,542件）で消えている倉庫カードは除いた。<br>
+・<code>extends_shelf_id</code> が入っているDB棚は、作り付けの棚に合流させて数えた（公開ページと同じ合流の仕方）。<br>
+・<code>status</code>（fixed 553／candidate 1,504／excluded 35／unmarked 85）で絞っても<b>0件の棚は同じ4本</b>だった。
+</p>
+
+</div>
+</html>
