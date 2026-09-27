@@ -532,6 +532,10 @@ def queue_add(text, priority=None, label=None, origin=None):
         "limitMin": 180,
         "model": "claude-sonnet-5",
         "origin": origin if origin in ("user", "factory") else "user",
+        # 1372番（2026-09-27）：積んだ時刻が無いと「優先度1なのに何日待たされているか」が
+        # 誰にも測れない。auto_launcher.pyの緊急横入り枠（URGENT_WAIT_MIN超過判定）が
+        # ここを見る。既存項目には付いていないため、後方互換のため無くても動くようにしてある。
+        "queuedAt": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
     }
     if big_job:
         item["bigJob"] = True

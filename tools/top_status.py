@@ -292,6 +292,22 @@ def omosa_block():
     }
 
 
+def alert_block():
+    """1373番【使いすぎアラート】status/public/1373_alert.json をそのまま写す。
+    level が green のときは何も出さない（機械が『問題あり』を偽装しない）。
+    ファイルが無い・壊れている場合も null（まだ1回も測れていない＝黙る）。"""
+    a = jread(os.path.join(ST, "public", "1373_alert.json"), None)
+    if not a or a.get("level") not in ("red", "yellow"):
+        return None
+    return {
+        "at": a.get("at"),
+        "level": a.get("level"),
+        "midashi": a.get("midashi"),
+        "reasons": a.get("reasons"),
+        "suggestions": a.get("suggestions"),
+    }
+
+
 def verify_block():
     """完了の検証（tools/verify_done.py が書く要約）。無ければ null＝機械が偽装しない。"""
     v = jread(os.path.join(ST, "verify_summary.json"), {})
@@ -405,6 +421,8 @@ def build():
         "pace": pace_block(),
         # 1200番：こちらが掴んでいるメモリ合計とBraveの本数（小さい1行。黄色にしない）
         "omosa": omosa_block(),
+        # 1373番：「今使いすぎです、もうすぐ固まります」。green のときは null。
+        "alert1373": alert_block(),
         "verify": verify_block(),
         "lovablePublish": lovable_publish_block(),
         # 1371番：後回し／手を止めた仕事（hold）。09-17の軽量化で表示が消えていた分。
@@ -463,6 +481,10 @@ if __name__ == "__main__":
     #   ★Braveには触らない。Claudeのセッションにも触らない（tools/1200_tatamu.py の KEEP）。
     #   中で1分に1回に間引く（status/.1200_tatamu_at）。閾値未満の周は測って書くだけ。
     _okosu("1200_tatamu.py", "--shikii")
+
+    # 2026-09-27（1373番）使いすぎアラート。スワップ/ロードが閾値を超えた周だけ、
+    #   「今使いすぎです、もうすぐ固まります」＋名指しの終了提案を書き直す（読み取り専用・何も殺さない）。
+    _okosu("1373_alert.py", "--shikii")
 
     # 2026-09-25（1145番）実測・ページ実物見の見張り。黙って止まったら続きから立て直す。
     # 実害：nohupで走らせた実測が213本で消えた（ログに痕跡なし＝殺された）。書くだけでは効かないので線を1本入れる。
