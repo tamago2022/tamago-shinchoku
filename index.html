@@ -246,7 +246,11 @@ function yomeru(s){
   for(var k = 0; k < 3; k++){
     for(var i = 0; i < UCHIWA.length; i++) t = t.replace(UCHIWA[i], "");
   }
-  t = t.replace(/^[「｢”"']+/, "").trim();
+  t = t.replace(/^[「｢”"'『]+/, "").trim();
+  /* 頭の鉤括弧だけ落として、閉じだけ残さない */
+  var hira = (t.match(/[「『]/g)||[]).length, toji = (t.match(/[」』]/g)||[]).length;
+  while(toji > hira){ t = t.replace(/[」』](?=[^」』]*$)/, ""); toji--; }
+  t = t.trim();
   /* こちらの会話がそのまま入っているときは、先頭の1文だけにする。 */
   var m = t.match(/^[^。！？\n]{6,}?[。！？]/);
   if(m && t.length > 34) t = m[0];
