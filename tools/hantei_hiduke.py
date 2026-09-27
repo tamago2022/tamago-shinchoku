@@ -273,6 +273,12 @@ def main():
         r3 = dict(r, hantei1w="2999-01-01", hantei1m="2999-01-01")
         if hantei_1ken(r3, ima) is not None:
             ng.append("判定日が来ていないのに判定している")
+        # 1370番実例：actionable=falseは判定日が来ても赤にしない・再発車しない
+        r4 = dict(r, id="y", title="急ぎではないけど、この1週間以内にやってほしい。",
+                  actionable=False)
+        h4 = hantei_1ken(r4, ima)
+        if not h4 or h4["aka"]:
+            ng.append("actionable=falseなのに赤／再発車の対象にしている（1370番の再発）")
         s = hashiru(dry=True)
         print("自己試験：%s／台帳 %d件・判定日が来ている %d件（うち赤 %d）"
               % ("OK" if not ng else "NG", s["zen"], s["mita"], s["aka"]))
