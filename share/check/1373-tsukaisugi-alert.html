@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1373 使いすぎアラート（今使いすぎです、もうすぐ固まります） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1373 使いすぎアラート（今使いすぎです、もうすぐ固まります）</div>
+<h1>#1373 使いすぎアラート（今使いすぎです、もうすぐ固まります）</h1>
+<div class="date">2026-09-27 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+進捗表(index.html)に、Macのスワップ/ロードが閾値を超えたとき『今使いすぎです、もうすぐ固まります』＋名指しの終了提案（例：Google Chromeを終了してください・約1.7GB空きます）を赤/黄で表示する枠を追加した。判定は tools/1373_alert.py が心臓(15秒サイクル)に相乗りし1分に1回、実際のps/スワップ/ロードから作る（自己申告ではなく実測）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>93.2%</b><span>実測スワップ使用率（16.8/18.0GB。今このMacで実際に赤判定が出た）</span></div>
+  <div class="num"><b>3件</b><span>実測で検出された終了提案（Google Chrome約1.7GB／Obsidian約1.2GB／VOICEVOX約0.9GB）</span></div>
+</div>
+
+
+
+<h2>③ 実測（status/public/1373_alert.json の生データをそのまま貼る）</h2>
+<div class="note">
+下は <code>python3 tools/1373_alert.py --dry-run</code> を2026-09-27 22:07 JST に実際のこのMacで走らせて得た生JSON（数字は書き写しではなく実測そのもの）。
+</div>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:0.8rem;overflow-x:auto;white-space:pre-wrap;">{
+ "at": "2026-09-27T22:07:28+0900",
+ "level": "red",
+ "midashi": "今使いすぎです、もうすぐ固まります",
+ "reasons": ["スワップ 16.8/18.0GB（93%）", "5分ロード比 1.27"],
+ "swapUsedGB": 16.77,
+ "swapTotalGB": 18.0,
+ "swapPct": 93.2,
+ "loadRatio": 1.27,
+ "suggestions": [
+  {"app": "Google Chrome", "rssGB": 1.73, "message": "Google Chrome を終了してください（約1.7GB空きます）"},
+  {"app": "Obsidian", "rssGB": 1.19, "message": "Obsidian を終了してください（約1.2GB空きます）"},
+  {"app": "VOICEVOX", "rssGB": 0.91, "message": "VOICEVOX を終了してください（約0.9GB空きます）"}
+ ]
+}</pre>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番トップページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>実測データ(status/public/1373_alert.json)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/1373_alert.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/1373_alert.json</a></li>
+  <li><b>実装コード(1373_alert.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1373_alert.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1373_alert.py</a></li>
+  <li><b>進捗表への組み込み(index.html差分)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/e428b7765" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/e428b7765</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>スワップ93.2%・ロード比1.27の実データでlevel=redが出るか</td><td class="yes">yes</td></tr>
+<tr><td>本番トップページのHTTP応答</td><td class="yes">yes</td></tr>
+<tr><td>進捗表(index.html)にalert1373の描画コードが反映されているか</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #1373 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
