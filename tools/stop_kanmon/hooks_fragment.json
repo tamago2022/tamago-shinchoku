@@ -1,0 +1,41 @@
+{
+  "$comment": "1168号【配布用の正本】2026-09-27。タブの関所＋ブラウザ(Brave遮断)の関所を、どのリポジトリにも同じ形で入れるための断片。install_hooks.mjs がこれを読んで各リポジトリの .claude/settings.json に混ぜる。パスは**絶対パス固定**。理由：${CLAUDE_PROJECT_DIR} だと joy-relief-station 側には tools/stop_kanmon が無いので効かない。実体は tamago-shinchoku に1つだけ置き、全部そこを指す（台帳も1本になる）。",
+  "PreToolUse": [
+    {
+      "$kanmon": "browser",
+      "matcher": "mcp__claude-in-chrome__.*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/browser_kanmon.mjs",
+          "timeout": 20
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "$kanmon": "tab",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/tab_kanmon.mjs",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "SubagentStop": [
+    {
+      "$kanmon": "tab",
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/tab_kanmon.mjs",
+          "timeout": 30
+        }
+      ]
+    }
+  ]
+}
