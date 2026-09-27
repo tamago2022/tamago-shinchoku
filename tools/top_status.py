@@ -454,15 +454,20 @@ if __name__ == "__main__":
     except Exception:
         pass
 
-    # 2026-09-27（1167番）★本体：予約が1本出て空いたら、待機列の先頭を1本入れる係。
-    # Bufferの予約は10本が上限なので、満杯のあいだは何もせず退く。
-    # 1本入れたら必ず machi.json を保存してから終わる＝途中で死んでも二度入れしない。
-    try:
-        import subprocess as _spA, os as _osA
-        _sA = _osA.path.join(_osA.path.dirname(_osA.path.abspath(__file__)), "1167_ireru1.py")
-        _spA.Popen(["python3", _sA], stdout=_spA.DEVNULL, stderr=_spA.DEVNULL)
-    except Exception:
-        pass
+    # 2026-09-27（1170番）★本体：自動投稿の箱。
+    #   1本出たら1本繰り上がる（ところてん）。朝09:00＝邦楽／夜21:00＝洋楽で振り分ける。
+    #   1本入れたら必ず machi.json を保存してから終わる＝途中で死んでも二度入れしない。
+    #   ★1167_ireru1 はこれに置き換わった（同時に走らせると二度入れになるので呼ばない）。
+    for _n in ("1170_hako.py",              # 出たぶんを1本補充する
+               "1170_nagekomi_nagasu.py",   # 投げ込み箱→チャッピー→箱へ運ぶ
+               "1170_torikeshi.py",         # 取り消し待ちを枠が戻った瞬間に実行
+               "1170_page.py"):             # いつでも見える1枚を描き直す（0叩き）
+        try:
+            import subprocess as _spA, os as _osA
+            _sA = _osA.path.join(_osA.path.dirname(_osA.path.abspath(__file__)), _n)
+            _spA.Popen(["python3", _sA], stdout=_spA.DEVNULL, stderr=_spA.DEVNULL)
+        except Exception:
+            pass
 
     # 2026-09-27（1168番）予約済みで✕だったもののページを直す係。15分に1回まで。
     # 直らないまま出る24時間前を切ったら、その1本を予約から外す。

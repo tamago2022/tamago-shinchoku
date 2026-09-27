@@ -259,6 +259,14 @@ def han():
 
 
 if __name__ == "__main__":
+    # ★2026-09-27 この係は tools/1170_hako.py に置き換わった。
+    #   1170は「朝09:00＝邦楽／夜21:00＝洋楽」の振り分けと、チャッピーの関所を持つ。
+    #   両方走ると同じ本文を二度入れる事故になるので、ここは何もしないで退く。
+    #   （中の関数は 1170 から読まれるので消していない。手で使うときは --dashite）
+    if "--dashite" not in sys.argv:
+        print("この係は tools/1170_hako.py に置き換わりました。"
+              "python3 tools/1170_hako.py --miru")
+        sys.exit(0)
     if mabiku():
         sys.exit(0)
     try:
