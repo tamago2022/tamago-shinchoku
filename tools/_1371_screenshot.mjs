@@ -111,6 +111,9 @@ async function main() {
       deviceScaleFactor: 2,
       mobile: true,
     });
+    await send("Emulation.setEmulatedMedia", {
+      features: [{ name: "prefers-color-scheme", value: "light" }],
+    });
     await send("Target.activateTarget", { targetId: target.id });
     await send("Page.navigate", { url: URL_ARG });
     await waitComplete(send);
