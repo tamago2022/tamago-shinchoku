@@ -270,6 +270,28 @@ def freshness_block():
     }
 
 
+def omosa_block():
+    """1200番（2026-09-27）進捗表の「走っているもの」に添える小さい1行。
+
+    ★黄色にしない・箱も作らない。こちら側が掴んでいる合計と、Braveの本数だけ。
+      Braveはこちらから閉じられないので、文章で毎回お願いしない。数字だけ出して
+      たまごさんが見て判断できるようにする（お願いは 1200_tatamu.py が1回だけ出す）。
+    無ければ null。機械が「問題なし」を偽装しない。
+    """
+    t = jread(os.path.join(ST, "1200_tatamu.json"), {})
+    if not t:
+        return None
+    return {
+        "at": t.get("at"),
+        "ours": t.get("ours"),
+        "brave": t.get("brave"),
+        "swapUsedGB": t.get("swapUsedGB"),
+        "swapTotalGB": t.get("swapTotalGB"),
+        "loadRatio": t.get("loadRatio"),
+        "tatandaKei": t.get("killedTotal"),
+    }
+
+
 def verify_block():
     """完了の検証（tools/verify_done.py が書く要約）。無ければ null＝機械が偽装しない。"""
     v = jread(os.path.join(ST, "verify_summary.json"), {})
@@ -366,6 +388,8 @@ def build():
         # 1143番：成果の鮮度。走行本数で消えない赤。
         "freshness": freshness_block(),
         "pace": pace_block(),
+        # 1200番：こちらが掴んでいるメモリ合計とBraveの本数（小さい1行。黄色にしない）
+        "omosa": omosa_block(),
         "verify": verify_block(),
         "lovablePublish": lovable_publish_block(),
     }
@@ -380,89 +404,83 @@ if __name__ == "__main__":
     result = build()
     print("top_status.json を書きました（走行%d本）" % len(result["runningNow"]))
 
+    # ════════════════════════════════════════════════════════════════════
+    # 1200番（2026-09-27）★元栓：**前の周のが生きていたら起こさない。**
+    #
+    # たまごさん「スワップ20.7GB／load 36〜107／claudeの起動に91秒」
+    # 実測（2026-09-27 15:29）：ppid=1 の Python が15本、うち13本が同じ親の子で
+    #   どれも数秒前に生まれていた。ここは15秒ごとに十数本を Popen していて、
+    #   Macが重いと前の周の1本が終わる前に次の周が来る＝**同じものが何本も重なる。**
+    #   重なるほど重くなり、重いほど重なる（正のフィードバック）。
+    #   これまでの対策は全部「溜まったものを後で刈る」側だったので、元栓が開いたまま。
+    # → 起こす前に1回だけ ps を読んで、同じスクリプトが居たら**起こさない。**
+    #   ps は1周で1回だけ（python3 を15回起動するより軽い）。
+    #   間引きの設定も、各スクリプトの中身も、一切変えていない。
+    # ★足すときはここの並びに1行足すだけ（枷5番「Pythonファイルへ1行足す」の形を保つ）。
+    # ════════════════════════════════════════════════════════════════════
+    import subprocess as _sp, os as _os
+
+    try:
+        _ps = _sp.run(["ps", "-Ao", "command="], capture_output=True, text=True,
+                      timeout=15).stdout or ""
+    except Exception:
+        _ps = ""
+
+    def _okosu(name, *extra):
+        """同じスクリプトが既に走っていたら起こさない。投げっぱなしで心臓は待たない。"""
+        try:
+            if ("/tools/" + name) in _ps:
+                return False
+            p = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), name)
+            _sp.Popen(["python3", p] + list(extra), stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+            return True
+        except Exception:
+            return False
+
     # 2026-09-21（977番・Cowork側から設置）サンドボックス→Macの一発コマンド窓口。
     # 待ちが空なら即戻るだけ。投げっぱなしにして心臓は待たない（他の相乗りと同じ形）。
-    try:
-        import subprocess as _sp, os as _os
-        _r = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "oneshot_runner.py")
-        _sp.Popen(["python3", _r], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
-    except Exception:
-        pass
+    _okosu("oneshot_runner.py")
+
+    # 1200番（2026-09-27）畳む係。スワップ／ロードが閾値を超えた周だけ、
+    #   こちら側の居残り（素のvite build・重なったスクリプト・工場の一発物）を畳む。
+    #   ★Braveには触らない。Claudeのセッションにも触らない（tools/1200_tatamu.py の KEEP）。
+    #   中で1分に1回に間引く（status/.1200_tatamu_at）。閾値未満の周は測って書くだけ。
+    _okosu("1200_tatamu.py", "--shikii")
 
     # 2026-09-25（1145番）実測・ページ実物見の見張り。黙って止まったら続きから立て直す。
     # 実害：nohupで走らせた実測が213本で消えた（ログに痕跡なし＝殺された）。書くだけでは効かないので線を1本入れる。
-    try:
-        import subprocess as _sp2, os as _os2
-        _g = _os2.path.join(_os2.path.dirname(_os2.path.abspath(__file__)), "1145_guard.py")
-        _sp2.Popen(["python3", _g], stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1145_guard.py")
 
     # 2026-09-26（1155番）ずんだもん読み上げの見張り。心臓に殺されても続きから立て直す。
     # 止めたいときは status/zunda/stop を置く。
-    try:
-        import subprocess as _sp3, os as _os3
-        _z = _os3.path.join(_os3.path.dirname(_os3.path.abspath(__file__)), "1155_keeper.py")
-        _sp3.Popen(["python3", _z], stdout=_sp3.DEVNULL, stderr=_sp3.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1155_keeper.py")
 
     # 2026-09-26（1159番）ずんだもん窓口と外への穴の見張り。閉じたら開け直す。
-    try:
-        import subprocess as _sp4, os as _os4
-        _k = _os4.path.join(_os4.path.dirname(_os4.path.abspath(__file__)), "1159_keeper.py")
-        _sp4.Popen(["python3", _k], stdout=_sp4.DEVNULL, stderr=_sp4.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1159_keeper.py")
 
     # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
     # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
-    try:
-        import subprocess as _sp4, os as _os4
-        _k = _os4.path.join(_os4.path.dirname(_os4.path.abspath(__file__)), "1158_mihari.py")
-        _sp4.Popen(["python3", _k], stdout=_sp4.DEVNULL, stderr=_sp4.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1158_mihari.py")
 
     # 2026-09-26（1160番）調べもの常駐ライン。Gensparkに「調べて」を1本ずつ絶やさず流す。
     # 止めたいときは status/genspark.stop を置く。
-    try:
-        import subprocess as _sp5, os as _os5
-        _s5 = _os5.path.join(_os5.path.dirname(_os5.path.abspath(__file__)), "1160_shirabe.py")
-        _sp5.Popen(["python3", _s5], stdout=_sp5.DEVNULL, stderr=_sp5.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1160_shirabe.py")
 
     # 2026-09-26（1162番）LINEスタンプ「ラシコル」の審査の見張り。
     # 3時間おきにLINE STOREの商品ページを見に行き、公開されたら表が変わる。
     # 止めたいときは status/1162.stop を置く。
-    try:
-        import subprocess as _sp6, os as _os6
-        _s6 = _os6.path.join(_os6.path.dirname(_os6.path.abspath(__file__)), "1162_mihari.py")
-        _sp6.Popen(["python3", _s6], stdout=_sp6.DEVNULL, stderr=_sp6.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1162_mihari.py")
 
     # 2026-09-26（1163番）棚に書ける鍵（~/.tamago/supabase_service_role）が置かれた
     # **その周回で**、たまごさんがコマンドを1つも打たずに溜まっている分を全部棚へ入れる。
     # ★heartbeat.sh は走り出したら読み直されないので、枷5番どおり「毎周回読み直される
     #   Pythonファイル（ここ）」から呼ぶ。鍵が無い周回は exists を1回見て即戻る。
-    try:
-        import subprocess as _sp7, os as _os7
-        _s7 = _os7.path.join(_os7.path.dirname(_os7.path.abspath(__file__)), "1163_kagi_machi.py")
-        _sp7.Popen(["python3", _s7], stdout=_sp7.DEVNULL, stderr=_sp7.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1163_kagi_machi.py")
 
     # 2026-09-27（1166番）「次に何がいつ出るか」の1枚を毎周回つくり直す。
     # Bufferから取り直した実測だけを載せる（自己申告を載せない）。鍵が無い周回は即戻る。
     #   https://tamago2022.github.io/tamago-shinchoku/status/public/1166_yotei.html
-    try:
-        import subprocess as _sp8, os as _os8
-        _s8 = _os8.path.join(_os8.path.dirname(_os8.path.abspath(__file__)), "1166_yotei.py")
-        _sp8.Popen(["python3", _s8], stdout=_sp8.DEVNULL, stderr=_sp8.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1166_yotei.py")
 
     # 2026-09-27（1170番）★本体：自動投稿の箱。
     #   1本出たら1本繰り上がる（ところてん）。朝09:00＝邦楽／夜21:00＝洋楽で振り分ける。
@@ -477,27 +495,12 @@ if __name__ == "__main__":
                "1170_nagekomi_nagasu.py",   # 投げ込み箱→チャッピー→箱へ運ぶ
                "1170_torikeshi.py",         # 取り消し待ちを枠が戻った瞬間に実行
                "1170_page.py"):             # いつでも見える1枚を描き直す（0叩き）
-        try:
-            import subprocess as _spA, os as _osA
-            _sA = _osA.path.join(_osA.path.dirname(_osA.path.abspath(__file__)), _n)
-            _spA.Popen(["python3", _sA], stdout=_spA.DEVNULL, stderr=_spA.DEVNULL)
-        except Exception:
-            pass
+        _okosu(_n)
 
     # 2026-09-27（1168番）予約済みで✕だったもののページを直す係。15分に1回まで。
     # 直らないまま出る24時間前を切ったら、その1本を予約から外す。
-    try:
-        import subprocess as _spB, os as _osB
-        _sB = _osB.path.join(_osB.path.dirname(_osB.path.abspath(__file__)), "1168_naosu.py")
-        _spB.Popen(["python3", _sB], stdout=_spB.DEVNULL, stderr=_spB.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1168_naosu.py")
 
     # 2026-09-27（1166番）待機列を自分で積む係。候補1本を15分に1つだけ進める。
     # YouTubeの検索枠が尽きた日はその場で退き、翌日また続きから。止めたいときは status/1166.stop。
-    try:
-        import subprocess as _sp9, os as _os9
-        _s9 = _os9.path.join(_os9.path.dirname(_os9.path.abspath(__file__)), "1166_machi_tsumu.py")
-        _sp9.Popen(["python3", _s9], stdout=_sp9.DEVNULL, stderr=_sp9.DEVNULL)
-    except Exception:
-        pass
+    _okosu("1166_machi_tsumu.py")

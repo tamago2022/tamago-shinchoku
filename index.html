@@ -161,6 +161,8 @@ footer a{display:block; padding:5px 0}
 <section class="card">
   <h2 id="runHead">走っているもの</h2>
   <div id="running"><div class="note">…</div></div>
+  <!-- 1200番：こちらが掴んでいるメモリ合計とBraveの本数。小さい1行だけ・黄色にしない -->
+  <div id="omosa" class="note" style="display:none"></div>
 </section>
 
 <!-- ③ 次に発車 -->
@@ -265,6 +267,23 @@ function renderLoginKigen(L){
     + (L.tokenExpiresAt ? "（" + L.tokenExpiresAt + "まで）" : "")
     + (L.machiUrl ? "　巻き直しのURLが出ています（承認を1回押すだけ）"
                   : (L.renewNeeded ? "　巻き直し中" : ""));
+}
+/* 1200番（2026-09-27）重さの1行。
+   こちら側が掴んでいる合計と、Braveの本数だけを小さく出す。
+   ★Braveはこちらから閉じられない。だから文章で毎回お願いせず、数字だけ置いておく。
+   数字が取れないときは行ごと出さない（「0GB」を偽装しない）。 */
+function renderOmosa(d){
+  var o = d.omosa, el = $("omosa");
+  if(!el) return;
+  if(!o || !o.ours){ el.style.display = "none"; return; }
+  var p = [];
+  p.push("こちら " + o.ours.rssGB + "GB・" + o.ours.procs + "本");
+  if(o.brave) p.push("Brave タブ" + o.brave.tabs + "枚・" + o.brave.rssGB + "GB");
+  if(o.swapUsedGB != null && o.swapTotalGB != null)
+    p.push("スワップ " + o.swapUsedGB + "／" + o.swapTotalGB + "GB");
+  if(o.tatandaKei) p.push("畳んだ合計 " + o.tatandaKei + "本");
+  el.style.display = "block";
+  el.textContent = p.join("　");
 }
 function renderRunning(d){
   RUN = d.runningNow || [];
@@ -441,6 +460,7 @@ function render(d){
 
   renderLogin(d);
   renderRunning(d);
+  renderOmosa(d);
   renderPace(d.pace);
   $("next").innerHTML = '<li class="note">読み込み中…</li>';
   loadQueue(d.nextUp || []);

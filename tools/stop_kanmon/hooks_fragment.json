@@ -13,6 +13,7 @@
       ]
     }
   ],
+  "$comment2": "1200号（2026-09-27）畳む関所。セッションが終わるたびに、そのセッションが撒いた居残り（素の vite build・重なったスクリプト・工場の一発物）を機械が畳む。★終了を拒否しない（exit 0 固定）＝セッションを人質にしない。Brave と Claude のセッションには触らない（tools/1200_tatamu.py の KEEP）。これまでの孤児回収は『60分以上』『ppid==1』にしか反応せず、一番残る素の vite build が網に一度も掛かっていなかった。",
   "Stop": [
     {
       "$kanmon": "tab",
@@ -21,6 +22,16 @@
           "type": "command",
           "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/tab_kanmon.mjs",
           "timeout": 30
+        }
+      ]
+    },
+    {
+      "$kanmon": "tatamu",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 /Users/mac/Desktop/tamago-shinchoku/tools/1200_tatamu.py --stop-hook",
+          "timeout": 40
         }
       ]
     }
@@ -34,6 +45,17 @@
           "type": "command",
           "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/tab_kanmon.mjs",
           "timeout": 30
+        }
+      ]
+    },
+    {
+      "$kanmon": "tatamu",
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 /Users/mac/Desktop/tamago-shinchoku/tools/1200_tatamu.py --stop-hook",
+          "timeout": 40
         }
       ]
     }
