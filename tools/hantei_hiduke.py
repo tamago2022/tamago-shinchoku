@@ -168,6 +168,17 @@ def hantei_1ken(r, ima):
         return None
     which = kita[-1][0]
 
+    # 1370番実例（2026-09-27発見）：actionable=false（＝shukudai.pyが「具体的な
+    # 作業指示が読み取れない発言」と既に判定済みの行）は、赤にしない・再発車しない。
+    # 例：店主の発言「急ぎではないけど、この1週間以内にやってほしい。」は前置きだけで
+    # 本体の要望が別の発言に含まれていたため、この行単体には実行対象が無い。
+    # 既存の tomaranai.py（3回言わせた案件の繰り上げ）は actionable を見ているのに、
+    # ここ（判定日の係）だけ見ておらず、実行不能なタスクを判定日のたびに★赤＋P1で
+    # re発車させ続け、AIセッションが空回りする事故が起きていた。
+    if r.get("actionable") is False:
+        return {"which": which, "aka": False, "state": st,
+                "sonogo": "実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）"}
+
     if st == "完了":
         return {"which": which, "aka": False, "state": st,
                 "sonogo": "返した（%s／%s）" % (cur.get("evidence") or "証拠URLなし", t)}
