@@ -762,6 +762,16 @@ fi
 #   置いた紙が「変化なし」で早期returnされ、何時間も載らないことがある。
 #   status/ は.gitignore対象なので git status では見えない。ふつうのファイル有無で見る。
 if ls "$REPO"/status/commit_inbox/*.json >/dev/null 2>&1; then HIST_CHANGED=1; fi
+# 1295番（2026-09-25・1143番の鮮度計が発見）：AGEは status/machine.json 自身の最終コミット
+#   時刻から計算しているだけで、実際に配る先である status/public/ の写しそのものの古さは
+#   一度も見ていなかった。ログインが切れて何も動かない日ほどこの2つがずれ、
+#   「工場の中では10:16に生きているのに、たまごさんが見る写しは09:32のまま」＝45分遅れが
+#   実際に起きた。写し（top_status.json）自体のmtimeを直接測り、30分を超えて古ければ
+#   数字が同じ日でも必ず配る（下のcpループへ進む）。
+PUB_TOP="$REPO/status/public/top_status.json"
+PUB_TOP_MTIME=$(stat -f %m "$PUB_TOP" 2>/dev/null || stat -c %Y "$PUB_TOP" 2>/dev/null || echo 0)
+PUB_TOP_AGE=$(( $(date +%s) - PUB_TOP_MTIME ))
+if [ ! -f "$PUB_TOP" ] || [ "$PUB_TOP_AGE" -ge 1800 ]; then HIST_CHANGED=1; fi
 if [ "$PREV" = "$CURR" ] && [ "$AGE" -lt 1200 ] && [ "$HIST_CHANGED" -eq 0 ]; then return 0; fi
 
 # 2026-09-04 画面の世代を書き出す。スマホのホーム画面アプリが古いindex.htmlを握ったままになる問題への対応。
