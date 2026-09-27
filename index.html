@@ -99,8 +99,9 @@ button:active{background:#efe9df}
 .gauge{position:relative; height:16px; border-radius:8px; background:#e8e1d5; margin:14px 0 0}
 .gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:8px;
   background:#2b3d5c; transform:scaleX(0); transform-origin:left center}
-.gauge b{position:absolute; top:-7px; bottom:-7px; left:0; width:2px;
-  background:#8d857a; transform:translateX(0)}
+/* 目安の線は、帯に飲まれても見えるように紙色のふちを付ける */
+.gauge b{position:absolute; top:-7px; bottom:-7px; left:0; width:3px; border-radius:2px;
+  background:#6d675f; box-shadow:0 0 0 1.5px var(--card); transform:translateX(0)}
 .mezasu{position:relative; height:15px; margin:3px 0 8px; font-size:11px; color:var(--sub)}
 .mezasu span{position:absolute; top:0; transform:translateX(-50%); white-space:nowrap}
 .nums{font-size:15px; line-height:1.7; color:var(--sub); font-variant-numeric:tabular-nums}
