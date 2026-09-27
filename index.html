@@ -256,8 +256,11 @@ function yomeru(s){
        .replace(/憲法点検/g, "決まりごとの点検")
        .replace(/門の弾かれ率/g, "入口ではじいた割合")
        .replace(/ppid\s*\d*/gi, "");
-  t = t.replace(/[。、\s]+$/, "");
-  if(t.length > 40) t = t.slice(0, 39) + "…";
+  t = t.replace(/\s*[｜|]\s*/g, "　").replace(/[。、\s]+$/, "");
+  /* 切るときは、開いたままの括弧を残さない */
+  if(t.length > 40){
+    t = t.slice(0, 39).replace(/[（(【「［\[]\s*[^）)】」］\]]{0,6}$/, "").replace(/[。、\s]+$/, "") + "…";
+  }
   return t || "題名が取れていません";
 }
 function getJson(url, ms){
