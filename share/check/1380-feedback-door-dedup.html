@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#1380 『手探りで始めたばかりです』の二重表示、解消を実測確認 確認ページ</title>
+<title>#1380 『手探りで始めたばかりです』の二重表示、解消を実測確認(店主が開けるリンクへ差し替え) 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,27 +47,27 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1380 『手探りで始めたばかりです』の二重表示、解消を実測確認</div>
-<h1>#1380 『手探りで始めたばかりです』の二重表示、解消を実測確認</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1380 『手探りで始めたばかりです』の二重表示、解消を実測確認(店主が開けるリンクへ差し替え)</div>
+<h1>#1380 『手探りで始めたばかりです』の二重表示、解消を実測確認(店主が開けるリンクへ差し替え)</h1>
 <div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-09-18に指摘した『まだ手探りで始めたばかりです』の二重表示（曲ページ下のFRIEND TESTと全ページ共通FeedbackDoorが両方出ていた不具合）は、案件#936（同日）で統合、案件#1130（09-24）でCoverGuidePageBody.tsx内の重複ブロックを完全撤去済み。今回は本番に正しく反映されているかを実測した。
+曲ページ下の『まだ手探りで始めたばかりです』目安箱の二重表示（09-18指摘・案件#936で統合、#1130でCoverGuidePageBody.tsx内の重複ブロックを完全撤去）が、本番で実際に1つだけになっているかを実測した。前回の確認ページは店主が開けない非公開リポジトリへのリンクを貼っていたため、今回は本番の実ページだけで証拠を揃え直した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1回</b><span>本番JSバンドル(index-5HM_vqk5.js)内の文言出現回数（実測。2回以上なら重複構造が残っている証拠になるはずが1回のみ）</span></div>
-  <div class="num"><b>0件</b><span>FriendTestコンポーネントへの呼び出し(&lt;FriendTest)、リポジトリ全文検索件数</span></div>
+  <div class="num"><b>1回</b><span>曲ページ本体でのトリガー文言『間違いを見つけた方は、ひとことだけ教えてください』出現回数(実測。2回以上なら重複が残っている証拠)</span></div>
+  <div class="num"><b>1回</b><span>トップページでの同文言出現回数(比較用・実測)</span></div>
+  <div class="num"><b>1箇所</b><span>リポジトリ内で&lt;FeedbackDoor /&gt;を呼び出している箇所数(src/routes/__root.tsx のみ・grep実測)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>GitHub: FriendTest.tsx（統合済みの経緯コメント）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/FriendTest.tsx" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/src/components/FriendTest.tsx</a></li>
-  <li><b>GitHub: CoverGuidePageBody.tsx（重複撤去コメント）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/CoverGuidePageBody.tsx" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/src/components/CoverGuidePageBody.tsx</a></li>
+  <li><b>本番・曲ページ本体(サンリオキャラクターズ「ポムポム☆PARADISE」)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sanrio-characters&amp;song=pompompurin-paradise" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=sanrio-characters&amp;song=pompompurin-paradise</a></li>
+  <li><b>本番トップページ(比較用)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
 
