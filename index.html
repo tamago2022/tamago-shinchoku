@@ -183,9 +183,9 @@ footer a{display:block; padding:5px 0}
 
 <!-- ⓿ ログイン（★2026-09-25 追加。ここが切れていると何も動かないので一番上に赤で出す。
         以前は「走行0本のときだけ」出す作りで、空回しが1本いるだけで消えていた＝5日気づかれなかった） -->
-<div id="loginNg" style="display:none;background:#b00020;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
+<div id="loginNg" style="display:none;background:var(--t-ng-bg);color:var(--t-ng);border:1px solid var(--t-ng);border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
 <!-- 1143番：成果の鮮度（走行本数では消えない赤）。ログインの赤のすぐ下。 -->
-<div id="freshNg" style="display:none;background:#8a2b00;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
+<div id="freshNg" style="display:none;background:var(--t-warn-bg);color:var(--t-warn);border:1px solid var(--t-warn);border-radius:10px;padding:14px 16px;margin:0 0 14px;font-weight:700;line-height:1.7"></div>
 <!-- 1161番：タブの閉め残し ★2026-09-26 たまごさん「使ったら閉じろ。仕組みにしろ」
      ★ブラウザ全体の枚数は出していない。数えるにはmacOSの許可ダイアログ（TCC）が出るため禁止。
        「数えられていない」と正直に出す。0枚と書くのは嘘。
@@ -238,16 +238,16 @@ fetch('status/public/loop.json?t='+Date.now(), {cache:'no-store'})
    var a=d.atama;
    document.getElementById('loopAtama').textContent =
      a ? (a.label+'　'+a.value+a.unit) : '赤はありません';
-   document.getElementById('loopAtama').style.color = a ? '#b00020' : '#1d7a3c';
+   document.getElementById('loopAtama').style.color = a ? 'var(--t-ng)' : 'var(--t-ok)';
    document.getElementById('loopNao').textContent = a ? (a.why+'　→　'+a.nao) : '';
    var g=document.getElementById('loopGrid'); g.innerHTML='';
    (d.cards||[]).forEach(function(c){
      var box=document.createElement('div');
      box.style.cssText='border:1px solid #eee7dc;border-radius:10px;padding:11px 12px';
-     if(c.red) box.style.borderColor='#b00020';
+     if(c.red) box.style.borderColor='var(--t-ng)';
      var v=document.createElement('div');
      v.style.cssText='font-size:30px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums';
-     v.style.color = c.red ? '#b00020' : '#2b2b2b';
+     v.style.color = c.red ? 'var(--t-ng)' : 'var(--t-fg)';
      v.textContent = (c.value===null?'—':c.value)+c.unit;
      var l=document.createElement('div');
      l.style.cssText='font-size:15px;margin-top:4px;font-weight:600';
@@ -359,9 +359,9 @@ function getJson(url, ms){
   }
   getJson("status/public/taion.json").catch(function(){ return null; }).then(function(t){
     if(!t){
-      put("tHeart","取れていません","#b00020");
-      put("tLaunch","取れていません","#b00020");
-      put("tLoad","取れていません","#b00020");
+      put("tHeart","取れていません","var(--t-ng)");
+      put("tLaunch","取れていません","var(--t-ng)");
+      put("tLoad","取れていません","var(--t-ng)");
       put("taionMeta","status/public/taion.json が読めません（心臓が一度も書いていない）");
       return;
     }
@@ -373,7 +373,7 @@ function getJson(url, ms){
 
     if(furui !== null){
       var m0 = "紙が"+furui.toFixed(0)+"分古い";
-      put("tHeart", m0, "#b00020"); put("tLaunch", m0, "#b00020"); put("tLoad", m0, "#b00020");
+      put("tHeart", m0, "var(--t-ng)"); put("tLaunch", m0, "var(--t-ng)"); put("tLoad", m0, "var(--t-ng)");
       put("taionMeta", "status/public/taion.json が "+furui.toFixed(0)
           +"分前で止まっています＝心臓か公開のどちらかが止まっています（書いた時刻 "
           + String(t.at).slice(11,19) + "）");
@@ -381,22 +381,22 @@ function getJson(url, ms){
     }
 
     if(t["心臓"]){
-      var c = t["心臓"] === "生" ? "#137333" : (t["心臓"] === "あやしい" ? "#8a2b00" : "#b00020");
+      var c = t["心臓"] === "生" ? "var(--t-ok)" : (t["心臓"] === "あやしい" ? "var(--t-warn)" : "var(--t-ng)");
       put("tHeart", t["心臓"], c);
       if(t["心臓のだまり秒"] != null) meta.push("だまり "+t["心臓のだまり秒"]+"秒");
-    } else { put("tHeart","取れていません","#b00020"); }
+    } else { put("tHeart","取れていません","var(--t-ng)"); }
 
     if(t["最後の発車"]){
       var mm = t["最後の発車から分"];
       put("tLaunch", String(t["最後の発車"]).slice(11,16)
           + (mm != null ? "（"+Math.round(mm)+"分前）" : ""),
-          (mm != null && mm > 120) ? "#b00020" : "");
-    } else { put("tLaunch","取れていません","#b00020"); }
+          (mm != null && mm > 120) ? "var(--t-ng)" : "");
+    } else { put("tLaunch","取れていません","var(--t-ng)"); }
 
     if(typeof t["負荷Pct"] === "number"){
       var L = t["負荷Pct"];
-      put("tLoad", L+"%", L >= 200 ? "#b00020" : (L >= 100 ? "#8a2b00" : "#137333"));
-    } else { put("tLoad","取れていません","#b00020"); }
+      put("tLoad", L+"%", L >= 200 ? "var(--t-ng)" : (L >= 100 ? "var(--t-warn)" : "var(--t-ok)"));
+    } else { put("tLoad","取れていません","var(--t-ng)"); }
 
     if(t["同時上限"] != null) meta.push("同時上限 "+t["同時上限"]+"本");
     if(t["スワップ残りGB"] != null) meta.push("スワップ残り "+t["スワップ残りGB"]+"GB");
@@ -828,7 +828,7 @@ function loadTabs(){
   var el = $("tabsLine"); if(!el) return;
   var put = function(html, bad){
     el.innerHTML = html;
-    el.style.background = bad ? "#b00020" : "#fff";
+    el.style.background = bad ? "var(--t-ng)" : "#fff";
     el.style.color = bad ? "#fff" : "";
     el.style.fontWeight = bad ? "700" : "";
     el.style.border = bad ? "none" : "1px solid #eee7dc";
@@ -866,7 +866,7 @@ function loadBrave(){
   var el = $("braveLine"); if(!el) return;
   var put = function(html, bad){
     el.innerHTML = html;
-    el.style.background = bad ? "#b00020" : "#fff";
+    el.style.background = bad ? "var(--t-ng)" : "#fff";
     el.style.color = bad ? "#fff" : "";
     el.style.fontWeight = bad ? "700" : "";
     el.style.border = bad ? "none" : "1px solid #eee7dc";
