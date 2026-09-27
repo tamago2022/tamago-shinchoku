@@ -78,6 +78,36 @@
 <tr><td>心臓(pid 4087)が新コードへ自動で入れ替わったか</td><td class="yes">23:02:42ログで確認</td></tr>
 </table>
 
+<h2>⑥ 実測（status/heartbeat.log・timeコマンドの生データをそのまま貼る）</h2>
+<div class="note">
+下は実際にこのMacで得た生ログ・生出力（数字は書き写しではなく実測そのもの）。
+</div>
+<pre style="white-space:pre-wrap;background:#161616;color:#ddd;padding:14px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">【① git worktree add 単体の実測（joy-relief-station本体、/tmpへ、混雑なしの単発実行）】
+$ time git worktree add /tmp/_wt_speed_test_1376 -b test/speed-check-1376
+Preparing worktree (new branch 'test/speed-check-1376')
+Updating files: 100% (3822/3822), done.
+real 24.34
+user 0.63
+sys 1.62
+（.git 414MB・登録worktree 36件の状態での実測。テスト後は git worktree remove / branch -D で削除済み）
+
+【② 修正前・2026-09-27のheartbeat.log抜粋（直近分。この日だけで計35回発生）】
+18:36:25 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+18:55:51 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+19:54:51 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+21:45:40 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+21:48:37 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+
+【③ 修正反映の確認（心臓が新しいheartbeat.shへ自分で入れ替わったログ）】
+23:02:42 🔁 心臓のファイルが書き換わったので、自分で新しい方に入れ替わります
+23:02:42 心臓を起動しました（pid 4087）
+
+【④ 反映後の観察・23:02:42〜23:08:04（約5分22秒）】
+新規の「強制終了しました」ログ：0件
+★正直な申し送り：5分間の観察では十分なサンプルとは言えない（修正前も数十分〜1時間に
+1回程度のペースで、間が空くこと自体は珍しくなかった）。数時間〜1日単位の継続観察で
+1日あたりの発生回数が明確に減っているかを次に見る担当が確認すること。</pre>
+
 <footer>
 このページは #1376 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
