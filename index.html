@@ -362,7 +362,7 @@ function getJson(url, ms){
       put("tHeart","取れていません","var(--t-ng)");
       put("tLaunch","取れていません","var(--t-ng)");
       put("tLoad","取れていません","var(--t-ng)");
-      put("taionMeta","status/public/taion.json が読めません（心臓が一度も書いていない）");
+      put("taionMeta","工場の体温（taion.json）が取れません。5分おきに体温を書く心臓が止まっています。");
       return;
     }
     var meta = [], furui = null;
@@ -574,8 +574,8 @@ function renderPace(p){
   PACE = p || null;
   if(!p){
     wv("wUsed", null); wv("wRemain", null); wv("wHours", null);
-    $("wLine").innerHTML = '<span class="red">目安の線が出せません（週の記録が読めない）</span>';
-    $("paceNums").innerHTML = '<span class="red">週の記録が読めませんでした</span>';
+    $("wLine").innerHTML = '<span class="red">今週の枠の記録（pace）がまだ書かれていないので、目安の線が引けません。</span>';
+    $("paceNums").innerHTML = '<span class="red">今週どれだけ使ったかを数える係が、まだ一度も回っていません。</span>';
     return;
   }
   var remain = p.remainWeek;
@@ -713,10 +713,10 @@ once("fKagi", function(){
     $("kagi").innerHTML = (k ? '<b>' + (k.red ? "🔴 " : "") + esc(k.line||"") + '</b>'
         + (k.karamawashi ? '<div class="meta">うち空回し ' + esc(k.karamawashi) + '本（数に入れていません）</div>' : '')
         + (k.blocked ? '<div class="meta">止めているもの：' + esc(k.blocked) + '</div>' : '')
-      : '<span class="red">走った／取れたの数が読めません</span>')
+      : '<span class="red">走った／取れたの数を数える係が、まだ一度も回っていません。</span>')
       + (d && d.redCount > 0 ? '<div class="meta"><a href="969-kagi-daicho.html">赤 ' + d.redCount
           + '件：台帳を開く</a></div>' : '');
-  }).catch(function(){ $("kagi").innerHTML = '<span class="red">読めませんでした</span>'; });
+  }).catch(function(){ $("kagi").innerHTML = '<span class="red">稼ぎの台帳（kagi_daicho_top.json）がまだ書かれていません。台帳を作る係が次に回ると出ます。</span>'; });
 });
 once("fKenpin", function(){
   getJson("status/public/kenpin_mieru.json").then(function(j){
@@ -727,7 +727,7 @@ once("fKenpin", function(){
         + '<div class="meta">' + esc(c.rounds) + '往復／直させた' + esc(c.fixes) + '回'
         + (c.title ? '<br>' + esc(c.title) : '') + '</div></li>';
     }).join("");
-  }).catch(function(){ $("kenpin").innerHTML = '<li class="red">読めませんでした</li>'; });
+  }).catch(function(){ $("kenpin").innerHTML = '<li class="red">検品の記録（kenpin_mieru.json）がまだ書かれていません。検品が1件も走っていない状態です。</li>'; });
 });
 once("fUketori", function(){
   getJson("status/public/uketori_machi.json").then(function(d){
@@ -740,7 +740,7 @@ once("fUketori", function(){
         + (/^https:\/\/github\.com\//.test(url) ? '<div><a href="' + esc(url) + '">PRを開く</a></div>' : '')
         + '</li>';
     }).join("");
-  }).catch(function(){ $("uketori").innerHTML = '<li class="red">読めませんでした</li>'; });
+  }).catch(function(){ $("uketori").innerHTML = '<li class="red">受け取り待ちの記録（uketori_machi.json）がまだ書かれていません。外から運ばれてきたものが0件の状態です。</li>'; });
 });
 once("fKoushiki", function(){
   getJson("status/public/koushiki_updates.json").then(function(j){
@@ -752,7 +752,7 @@ once("fKoushiki", function(){
             + '<div class="meta">' + esc(it.source||"") + ' ' + esc(it.date||"") + '</div></li>';
         }).join("")
       : '<li class="meta">今日は拾えたものがありません</li>';
-  }).catch(function(){ $("koushiki").innerHTML = '<li class="meta">読めませんでした</li>'; });
+  }).catch(function(){ $("koushiki").innerHTML = '<li class="meta">公式の更新（koushiki_updates.json）を拾う係がまだ一度も回っていません。</li>'; });
 });
 
 /* ───────── 描画 ───────── */
@@ -808,14 +808,43 @@ function versionGate(){
       }).catch(go);
   });
 }
+/* 1168番(続) たまごさん指摘①：見出しの横に「読めませんでした（404）」と英語の数字だけが出ていた。
+   ★直した2点
+     1) 1回の失敗で赤を出さない。3秒あけて2回まで取り直す。
+        実害の正体は「公開の5分便が書き換えている最中の一瞬」で、次の瞬間には200で取れる。
+        その一瞬をたまごさんの画面に赤字で見せていた。
+     2) それでも駄目なときは **なぜ取れないかを日本語1行で** 出す。ファイル名と数字だけ並べない。 */
+function yomenaiRiyuu(e){
+  var m = String(e && e.message || e);
+  if(m === "404") return "進捗の元データ（status/public/top_status.json）がまだ公開されていません。"
+    + "5分おきの公開便が次に回ったとき出ます。";
+  if(m === "403" || m === "429") return "GitHubが一時的に断っています（" + m + "）。少し待つと戻ります。";
+  if(/^5\d\d$/.test(m)) return "GitHub側が落ちています（" + m + "）。こちらでは直せません。復旧待ちです。";
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m)) return "回線が切れています。Wi-Fiを確かめてください。";
+  if(/JSON|Unexpected/i.test(m)) return "元データの中身が壊れています（書き込みの途中で読んだ可能性）。次の公開便で直ります。";
+  return "元データが取れません（" + m + "）。";
+}
 function load(manual){
-  var url = manual ? (SRC + "?r=" + Date.now()) : SRC;
-  var data = fetch(url, {cache:"no-store"})
-    .then(function(res){ if(!res.ok) throw new Error(res.status); return res.json(); });
-  Promise.all([data, manual ? Promise.resolve(true) : versionGate()])
+  var nokori = 2;
+  var hiku = function(){
+    var url = (manual || nokori < 2) ? (SRC + "?r=" + Date.now()) : SRC;
+    return fetch(url, {cache:"no-store"})
+      .then(function(res){ if(!res.ok) throw new Error(res.status); return res.json(); });
+  };
+  var susumu = function(){
+    return hiku().catch(function(e){
+      if(nokori-- > 0){
+        $("stamp").className = "old";
+        $("stamp").textContent = "取り直しています…";
+        return new Promise(function(r){ setTimeout(r, 3000); }).then(susumu);
+      }
+      throw e;
+    });
+  };
+  Promise.all([susumu(), manual ? Promise.resolve(true) : versionGate()])
     .then(function(a){ render(a[0]); })
     .catch(function(e){ $("stamp").className = "old";
-      $("stamp").textContent = "読めませんでした（" + e.message + "）"; });
+      $("stamp").textContent = yomenaiRiyuu(e); });
 }
 /* ───────── 1161番：タブの閉め残し ─────────
    ★ここは「ブラウザに今何枚あるか」ではない。**それはTCC許可なしに数えられないので数えない。**
@@ -828,10 +857,10 @@ function loadTabs(){
   var el = $("tabsLine"); if(!el) return;
   var put = function(html, bad){
     el.innerHTML = html;
-    el.style.background = bad ? "var(--t-ng)" : "#fff";
-    el.style.color = bad ? "#fff" : "";
+    el.style.background = bad ? "var(--t-ng-bg)" : "var(--t-panel)";
+    el.style.color = bad ? "var(--t-ng)" : "var(--t-fg2)";
     el.style.fontWeight = bad ? "700" : "";
-    el.style.border = bad ? "none" : "1px solid #eee7dc";
+    el.style.border = "1px solid " + (bad ? "var(--t-ng)" : "var(--t-line)");
   };
   fetch("status/public/tabs.json", {cache:"no-store"})
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
@@ -853,7 +882,7 @@ function loadTabs(){
     })
     .catch(function(){
       put('タブの閉め残し　<b>数えられていない</b>'
-         + '<div style="font-size:13px;margin-top:5px;opacity:.9">status/public/tabs.json が読めません（Stopフック tools/stop_kanmon/tab_kanmon.mjs がまだ一度も記録していない）</div>', true);
+         + '<div style="font-size:13px;margin-top:5px;opacity:.9">タブの記録（tabs.json）がまだ1度も書かれていません。セッションの終わりに数える係（Stopフック）が動いていない状態です。</div>', true);
     });
 }
 
@@ -866,10 +895,10 @@ function loadBrave(){
   var el = $("braveLine"); if(!el) return;
   var put = function(html, bad){
     el.innerHTML = html;
-    el.style.background = bad ? "var(--t-ng)" : "#fff";
-    el.style.color = bad ? "#fff" : "";
+    el.style.background = bad ? "var(--t-ng-bg)" : "var(--t-panel)";
+    el.style.color = bad ? "var(--t-ng)" : "var(--t-fg2)";
     el.style.fontWeight = bad ? "700" : "";
-    el.style.border = bad ? "none" : "1px solid #eee7dc";
+    el.style.border = "1px solid " + (bad ? "var(--t-ng)" : "var(--t-line)");
   };
   fetch("status/public/browser.json", {cache:"no-store"})
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
