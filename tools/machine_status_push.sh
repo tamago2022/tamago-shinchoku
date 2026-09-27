@@ -55,6 +55,23 @@ fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
 
+# ---- 1295番・追加対応その2（2026-09-27・実測で判明）----
+# 30分ルールの判定・配布は765行目付近にも既にあるが、そこまでeagle_inbox.py・calibrate.py・
+# health_candidates.py等の重い処理を何十個も挟む。CPU高負荷（実測load average 12台）だと、
+# 判定に辿り着く前にロックの7分タイムアウトへ先に当たり、配布が最大38分まで遅延した実測がある
+# （63行目のコメントと同じ教訓：「後ろに置くと何十分も回ってこない」）。
+# ロックを取った直後という「必ず一番早く実行される位置」に、独立した早期チェックを置く。
+# 数字の比較(PREV/CURR)はまだ計算していないので、ここでは「写しが30分より古いか」だけを見る。
+PUB_TOP_EARLY="$REPO/status/public/top_status.json"
+if [ -f "$REPO/status/top_status.json" ]; then
+  PUB_TOP_EARLY_MTIME=$(stat -f %m "$PUB_TOP_EARLY" 2>/dev/null || stat -c %Y "$PUB_TOP_EARLY" 2>/dev/null || echo 0)
+  PUB_TOP_EARLY_AGE=$(( $(date +%s) - PUB_TOP_EARLY_MTIME ))
+  if [ ! -f "$PUB_TOP_EARLY" ] || [ "$PUB_TOP_EARLY_AGE" -ge 1800 ]; then
+    mkdir -p "$REPO/status/public"
+    cp -f "$REPO/status/top_status.json" "$PUB_TOP_EARLY" 2>/dev/null || true
+  fi
+fi
+
 # ---- 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収 ----
 # 実測：07:26の machine.json が 負荷5046% / スワップ17.06GB。しかしその数字しか無く、
 #   **何がどれだけ食っているのかを持っている場所がどこにも無かった**
