@@ -94,13 +94,17 @@ button:active{background:#efe9df}
   letter-spacing:-.01em}
 .waku3 .wv .u{font-size:17px; font-weight:600; color:var(--sub); margin-left:1px}
 .waku3 .wv.torenai{font-size:19px; color:var(--sub)}
-.gauge{position:relative; height:12px; border:1px solid var(--line); border-radius:6px;
-  background:#efe9df; margin:12px 0 10px}
-.gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:5px;
-  background:var(--ink); transform:scaleX(0); transform-origin:left center}
-.gauge b{position:absolute; top:-5px; bottom:-5px; left:0; width:3px; border-radius:1px;
-  background:var(--sub); box-shadow:0 0 0 1px var(--card); transform:translateX(0)}
+/* 目盛りは2つ。灰の細い線＝「今日この時間なら本来ここ」。藍の帯＝「実際に使ったのはここ」。
+   文字を読まなくても、帯が線を越えているかどうかで分かる形にする。 */
+.gauge{position:relative; height:16px; border-radius:8px; background:#e8e1d5; margin:14px 0 0}
+.gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:8px;
+  background:#2b3d5c; transform:scaleX(0); transform-origin:left center}
+.gauge b{position:absolute; top:-7px; bottom:-7px; left:0; width:2px;
+  background:#8d857a; transform:translateX(0)}
+.mezasu{position:relative; height:15px; margin:3px 0 8px; font-size:11px; color:var(--sub)}
+.mezasu span{position:absolute; top:0; transform:translateX(-50%); white-space:nowrap}
 .nums{font-size:15px; line-height:1.7; color:var(--sub); font-variant-numeric:tabular-nums}
+.kijun{font-size:12px; color:var(--sub); line-height:1.6; margin-top:9px}
 
 /* ───── 次に発車 ───── */
 ul{list-style:none; margin:0; padding:0}
@@ -154,6 +158,7 @@ footer a{display:block; padding:5px 0}
     <div><div class="wl">リセットまで</div><div class="wv" id="wHours">…</div></div>
   </div>
   <div class="gauge" id="gauge"><i id="gfill"></i><b id="gline"></b></div>
+  <div class="mezasu" id="mezasu"><span id="mezasuLabel" style="display:none">目安</span></div>
   <div class="nums" id="wLine">…</div>
 </section>
 
@@ -169,6 +174,7 @@ footer a{display:block; padding:5px 0}
 <section class="card">
   <h2>次に発車</h2>
   <ul class="q" id="next"><li class="note">…</li></ul>
+  <div class="kijun">並び順は、①差し戻し・急ぎ　②見える画面が変わるもの　③裏の仕組み。</div>
 </section>
 
 <!-- 残り容量の1行（1172番。小さく1行・色は付けない） -->
@@ -184,15 +190,15 @@ footer a{display:block; padding:5px 0}
       <a href="share/check/1138-shukudai.html">宿題台帳：言われたのに返っていないもの</a>
       <a href="share/check/1051-okane.html">お金（1枚・毎日更新）</a>
       <a href="969-kagi-daicho.html">鍵・つながりの台帳</a>
-      <a href="977-ai-renkei.html">他のAIとの連絡線・死活表</a>
+      <a href="977-ai-renkei.html">他のAIとつながっているか一覧</a>
       <a href="1136-gaibu-ai-daicho.html">外部AIの台帳：投げて返ってきていないもの</a>
       <a href="1136-ai-nedan.html">AIの値段表：1回いくら減るか</a>
-      <a href="share/check/1141-kanryo-taikan.html">★完了の門と、体感の実証（毎日更新）</a>
+      <a href="share/check/1141-kanryo-taikan.html">★完了の判定と、体感の実証（毎日更新）</a>
       <a href="1140-machigai.html">全曲検査：間違いは何件あったか（全26,400曲）</a>
       <a href="1145-heru.html">★間違いは減っているか（動画を1本ずつ実測・毎日更新）</a>
       <a href="1146-login-zero.html">★ログインの手をゼロに近づける</a>
       <a href="1147-hayaku.html">★曲ページは軽くなったか</a>
-      <a href="1149-yarippanashi.html">★やりっぱなしゼロ：4帳簿・壊れた型・門の死活</a>
+      <a href="1149-yarippanashi.html">★やりっぱなしゼロ：4つの台帳と、壊れたままのもの</a>
       <a href="1151-gaibu-seiseki.html">★GensparkとDevinは役に立ったか</a>
       <a href="yuming-anohi/index.html">あの日にかえりたい：Genspark本人の完成版と3案</a>
       <a href="1165-hassha.html">★何がMacを重くしているか／今走っている・次に控えている（5分ごと実測）</a>
@@ -210,6 +216,43 @@ var SRC = "status/public/top_status.json";
 var $ = function(id){ return document.getElementById(id); };
 function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+/* ───────── 題名の掃除（1174番） ─────────
+   裏方の言葉・番号・こちらの会話がそのまま題名になっているものを、
+   たまごさんが読んで意味の分かる日本語1行に直す。元データは直さず、出す前にここで直す。 */
+var UCHIWA = [
+  /^\s*判定日赤\s*[｜|:：]\s*/,
+  /^\s*検品(要人手|不合格|待ち)\s*[｜|:：]?\s*/,
+  /^\s*GH\s*\d+\s*[｜|:：]?\s*/,
+  /^\s*\[\s*[xX ]?\s*\]\s*/,
+  /^\s*\(\d\/\d\)\s*/,
+  /^\s*ppid\s*\d*\s*[｜|:：]?\s*/i,
+  /^\s*\d{2,5}\s*[｜|]\s*/
+];
+/* 機械が吐いた行・会話の切れ端。並びの一番下に落とす。 */
+function kiredashi(t){
+  if(/read_transcript|completed\.\s*Use|^Task\s+"/i.test(t)) return true;
+  if(/って言われ/.test(t)) return true;
+  if(/(だね|だよ|ていいよ|でいいよ|ていい？|ほしい|かな|くれたんだね|くれたけど|ありがとう|つっても|じゃあ|やって)[。.！!？?]?$/.test(t)
+     && t.length < 42) return true;
+  return t.replace(/[。、！？…\s「」]/g, "").length < 13;
+}
+/* 見える画面が変わるもの＝たまごさんが待っているもの。 */
+function omote(t){
+  return /ページ|画面|棚|一覧|サムネ|コピー|案内所|進捗表|公開|本番|リンク|表示|曲|アーティスト|カード|検索|動画|読み上げ|ドメイン/.test(t);
+}
+function yomeru(s){
+  var t = String(s == null ? "" : s).trim();
+  for(var k = 0; k < 3; k++){
+    for(var i = 0; i < UCHIWA.length; i++) t = t.replace(UCHIWA[i], "");
+  }
+  t = t.replace(/^[「｢”"']+/, "").trim();
+  /* こちらの会話がそのまま入っているときは、先頭の1文だけにする。 */
+  var m = t.match(/^[^。！？\n]{6,}?[。！？]/);
+  if(m && t.length > 34) t = m[0];
+  t = t.replace(/[。、\s]+$/, "");
+  if(t.length > 40) t = t.slice(0, 39) + "…";
+  return t || "題名が取れていません";
+}
 function getJson(url, ms){
   return new Promise(function(resolve, reject){
     var done = false;
@@ -280,8 +323,8 @@ function renderOmosa(d){
   p.push("こちら " + o.ours.rssGB + "GB・" + o.ours.procs + "本");
   if(o.brave) p.push("Brave タブ" + o.brave.tabs + "枚・" + o.brave.rssGB + "GB");
   if(o.swapUsedGB != null && o.swapTotalGB != null)
-    p.push("スワップ " + o.swapUsedGB + "／" + o.swapTotalGB + "GB");
-  if(o.tatandaKei) p.push("畳んだ合計 " + o.tatandaKei + "本");
+    p.push("メモリの逃がし " + o.swapUsedGB + "／" + o.swapTotalGB + "GB");
+  if(o.tatandaKei) p.push("閉じた合計 " + o.tatandaKei + "本");
   el.style.display = "block";
   el.textContent = p.join("　");
 }
@@ -298,7 +341,7 @@ function renderRunning(d){
   $("running").innerHTML = RUN.map(function(x, i){
     var kara = String(x.label||"").indexOf("空回し") >= 0;
     return '<div class="run' + (kara ? ' karamawashi' : '') + '" data-i="' + i + '">'
-      + '<div class="rt"><span class="rn">' + esc(x.n) + '</span>' + esc(x.label) + '</div>'
+      + '<div class="rt">' + esc(kara ? "仕事待ち（何もしていません）" : yomeru(x.label)) + '</div>'
       + '<div class="rmeta">'
       +   '<span class="rel" data-el>—</span>'
       +   '<span class="rlim" data-lim></span>'
@@ -373,10 +416,15 @@ function idealPct(){
   return 99;
 }
 function placeLine(){
-  var g = $("gauge"), b = $("gline"), v = idealPct();
-  if(v == null){ b.style.display = "none"; return; }
+  var g = $("gauge"), b = $("gline"), lab = $("mezasuLabel"), v = idealPct();
+  if(v == null){ b.style.display = "none"; if(lab) lab.style.display = "none"; return; }
   b.style.display = "block";
-  b.style.transform = "translateX(" + Math.round(g.clientWidth * Math.max(0, Math.min(1, v/100))) + "px)";
+  var x = Math.round(g.clientWidth * Math.max(0, Math.min(1, v/100)));
+  b.style.transform = "translateX(" + x + "px)";
+  if(lab){
+    lab.style.display = "block";
+    lab.style.left = Math.max(12, Math.min(g.clientWidth - 12, x)) + "px";
+  }
 }
 window.addEventListener("resize", placeLine);
 /* 取れない数字は空欄にしない。「取れない」と文字で出す。 */
@@ -406,19 +454,37 @@ function renderPace(p){
   $("gfill").style.transform = "scaleX(" + ((used||0)/100) + ")";
   placeLine();
 
+  /* 数字の羅列はやめる。帯と線のどちらが前に出ているかを、そのまま日本語で1行だけ書く。 */
   var ideal = idealPct();
-  $("wLine").textContent = (ideal == null || used == null)
-    ? ("リセット " + (p.resetAt ? p.resetAt : "取れない"))
-    : ("いま本来ここ " + Math.round(ideal) + "%　／　実際 " + Math.round(used) + "%"
-       + "　／　リセット " + (p.resetAt ? p.resetAt : "取れない"));
+  var reset = "リセット " + (p.resetAt ? p.resetAt : "取れない");
+  if(ideal == null || used == null){ $("wLine").textContent = reset; return; }
+  var sa = Math.round(used - Math.round(ideal));
+  var bun = (sa >= 3) ? ("目安より " + sa + "% 先に使っています")
+          : (sa <= -3) ? ("目安より " + (-sa) + "% 少なめです")
+          : "目安どおりのペースです";
+  $("wLine").textContent = bun + "　／　" + reset;
 }
 
 /* ───────── 次に発車 ─────────
    948番の教訓：読めるまで古い並びを出さない。「読み込み中…」のまま待つ。 */
-function pri(x){ return x.priority == null ? 9 : x.priority; }
+function pri(x){ var v = Number(x.priority); return isNaN(v) ? 9 : v; }
+function isUrgent(x){ return x.urgent === true || x.urgent === "True" || x.urgent === "true"; }
+/* 1174番：優先の付け方が壊れていて、会話の切れ端が priority 1 で上に来ていた。
+   だから番号だけを信じず、中身で3段に分けてから並べる。
+     ① 差し戻し・急ぎ（たまごさんが待っている）
+     ② 見える画面が変わるもの
+     ③ 裏の仕組み
+   会話の切れ端・機械の吐き出しは、どの段にも入れず一番下。 */
+function dan(x){
+  var raw = String(x.title || x.label || "");
+  var t = yomeru(raw);
+  if(kiredashi(t)) return 3;
+  if(/差し戻し/.test(raw) || isUrgent(x)) return 0;
+  return omote(t) ? 1 : 2;
+}
 function rankCmp(a, b){
-  var A = [a.urgent?0:1, pri(a), a.order==null?9999:a.order, a.n];
-  var B = [b.urgent?0:1, pri(b), b.order==null?9999:b.order, b.n];
+  var A = [dan(a), pri(a), a.order==null?9999:Number(a.order), Number(a.n)];
+  var B = [dan(b), pri(b), b.order==null?9999:Number(b.order), Number(b.n)];
   for(var i=0;i<A.length;i++){ if(A[i]!==B[i]) return A[i]-B[i]; }
   return 0;
 }
@@ -428,8 +494,8 @@ function renderNext(list, total){
     return;
   }
   var rows = list.map(function(x, i){
-    return '<li><span class="ord">' + (i+1) + '.</span><span class="ord">' + esc(x.n) + '</span>'
-      + esc(x.title || x.label) + '</li>';
+    return '<li><span class="ord">' + (i+1) + '.</span>'
+      + esc(yomeru(x.title || x.label)) + '</li>';
   });
   if(total > list.length) rows.push('<li class="note">ほか ' + (total - list.length) + ' 件</li>');
   $("next").innerHTML = rows.join("");
@@ -439,6 +505,9 @@ function loadQueue(fallback){
     var w = ((q && q.items) || []).filter(function(x){ return x.status === "waiting"; });
     var hasNonF = w.some(function(x){ return pri(x) !== 6; });
     var pool = hasNonF ? w.filter(function(x){ return pri(x) !== 6; }) : w;
+    /* 会話の切れ端しか無いときだけ、それを出す（空欄にしない） */
+    var honban = pool.filter(function(x){ return dan(x) < 3; });
+    if(honban.length) pool = honban;
     pool.sort(rankCmp);
     renderNext(pool.slice(0,5), pool.length);
   }).catch(function(){
@@ -493,11 +562,11 @@ function versionGate(){
    それでも駄目なときは、なぜ取れないかを日本語1行で出す。 */
 function yomenaiRiyuu(e){
   var m = String(e && e.message || e);
-  if(m === "404") return "元データがまだ公開されていません。5分おきの公開便が次に回ったとき出ます。";
+  if(m === "404") return "元データがまだ出ていません。5分おきの自動更新が次に回ったとき出ます。";
   if(m === "403" || m === "429") return "GitHubが一時的に断っています。少し待つと戻ります。";
   if(/^5\d\d$/.test(m)) return "GitHub側が落ちています。復旧待ちです。";
   if(/Failed to fetch|NetworkError|Load failed/i.test(m)) return "回線が切れています。Wi-Fiを確かめてください。";
-  if(/JSON|Unexpected/i.test(m)) return "元データの中身が壊れています。次の公開便で直ります。";
+  if(/JSON|Unexpected/i.test(m)) return "元データの中身が壊れています。次の自動更新で直ります。";
   return "元データが取れません";
 }
 function load(manual){
