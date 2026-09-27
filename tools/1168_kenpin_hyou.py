@@ -331,6 +331,7 @@ def html(d):
  <pre class="honbun">%(text)s</pre>
 
  <table>
+  <tr><td>出どころ</td><td><span class="%(mocls)s">%(mofuda)s</span></td></tr>
   <tr><td>リンク先</td><td><a href="%(url)s" target="_blank" rel="noopener">%(url)s</a><br>
       <span class="%(hcls)s">HTTP %(http)s</span>
       ・URLは本文の最後：<span class="%(ocls)s">%(owari)s</span></td></tr>
