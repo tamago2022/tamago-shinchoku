@@ -53,6 +53,38 @@ def _pid_alive(pid):
         return False
 
 
+def omosa():
+    """1173番：何がMacを重くしているかを、アプリごとに合算して重い順に返す。
+
+    たまごさん（2026-09-27）:
+      「パソコンがどんどん重くなってくるので、何がCPUやエネルギーを食っているのか、
+        進捗表で分かるようにしてほしい（閉じるべきものは閉じるので）」
+      「あんまり盛り盛りにやると進捗表自体も重くなるから、取り急ぎ進捗用を」
+
+    ★新しい計測は1回も増やさない。5分便が既に走らせている
+      tools/machine_health.py（ps -A 1回）の結果を読むだけ。
+    ★常時監視しない（監視それ自体が重い）。5分に1回の実測を出す。
+    """
+    h = _load(os.path.join(ST, "machine_health.json"), {}) or {}
+    apps = h.get("topApps") or []
+    if not apps:
+        # まだ machine_health.py 側が新しい欄を書く前でも、ここで同じ集計をして出す。
+        try:
+            import machine_health
+            procs, seen = [], set()
+            for p in (h.get("topCpu") or []) + (h.get("topMem") or []):
+                if p.get("pid") in seen:
+                    continue
+                seen.add(p.get("pid"))
+                procs.append(p)
+            apps = machine_health.by_app(procs, 10)
+        except Exception:
+            apps = []
+    return {"at": h.get("measuredAt"), "apps": apps,
+            "loadPct": h.get("loadPct"), "swapGB": h.get("swapGB"),
+            "procCount": h.get("procCount")}
+
+
 def shuukei():
     now = datetime.datetime.now()
     kyou = now - datetime.timedelta(hours=24)
@@ -97,7 +129,8 @@ def shuukei():
         "saishin": saishin,
         "hashiru": hashiru,
         "jougen": jougen,
-        "tsugi": machi[:5],
+        "tsugi": machi[:10],
+        "omosa": omosa(),
         "machiKazu": len(machi),
         "konkyo": (gate.get("moto") or []) + (dj.get("根拠") or []),
         "hasshaOK": gate.get("hasshaOK"),
@@ -135,6 +168,18 @@ td{padding:6px 8px;border-bottom:1px solid #1d2126;vertical-align:top}
 td:first-child{color:#7d8590;white-space:nowrap;width:1%}
 .bar{display:inline-block;height:9px;background:#5ddba0;border-radius:5px;
  vertical-align:middle;margin-right:7px}
+.bar2{background:#ffb454}
+.fu{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;
+ white-space:nowrap}
+.fu-close{color:#0d0f12;background:#ffd166}
+.fu-no{color:#ff7b72;background:#2a1618}
+.fu-keep{color:#8fd3ff;background:#11212b}
+.fu-wait{color:#9aa4ae;background:#1a1d22}
+.why{font-size:11.5px;color:#7d8590;display:block;margin-top:2px}
+.nm{font-size:14px;color:#e8e6e1}
+a{color:#8fd3ff}
+.num{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums;
+ font-size:12.5px;color:#9aa4ae}
 """
 
 
@@ -149,6 +194,22 @@ def html(d):
         v = d["jikanbetsu"][k]
         rows += ('<tr><td>%s</td><td><span class="bar" style="width:%dpx"></span>%d本</td></tr>'
                  % (k, min(360, v * 26), v))
+
+    # ---- 1173番：重さの犯人トップ10（アプリごとに合算） ----
+    o = d["omosa"]
+    cls = {"閉じていい": "fu-close", "触るな": "fu-no",
+           "残す": "fu-keep", "待てば消える": "fu-wait", "居座っている": "fu-close"}
+    orows = ""
+    for i, a in enumerate(o["apps"], 1):
+        orows += ('<tr><td>%d</td>'
+                  '<td><span class="nm">%s</span> '
+                  '<span class="fu %s">%s</span>'
+                  '<span class="why">%s%s</span></td>'
+                  '<td class="num">CPU %s%%<br>メモリ %s GB</td></tr>'
+                  % (i, a["name"], cls.get(a["fuda"], "fu-wait"), a["fuda"],
+                     ("%d本・" % a["procs"]) if a.get("procs") else "",
+                     a.get("why") or "", a["cpu"], a["memGB"]))
+
     return """<!doctype html><html lang="ja"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>発車しているか｜1165</title><style>%s</style>
@@ -168,14 +229,25 @@ def html(d):
     <p class="sub">発車待ち %d件（この1本が空き枠に入る）</p></div>
 </div>
 
+<h2>重さの犯人トップ10（%s 時点・5分に1回だけ測る）</h2>
+<table>%s</table>
+<p class="sub">アプリごとに合算（子プロセスも全部足した）。CPU%%は8コア合計で最大800%%。
+負荷 %s%% ／ スワップ %s GB ／ プロセス %s 本。
+<b>閉じていい</b>＝今使っていなければ閉じるとその分軽くなる。
+<b>触るな</b>＝Brave・Claude・macOS本体・工場の心臓（工場は一切手を出さない）。</p>
+
 <h2>上限がこの本数になった理由</h2>
 <ul>%s</ul>
 
 <h2>Macの実測（%s）</h2>
 <div class="mono">空きメモリ %s GB ／ メモリ空き %s%% ／ 5分ロード比 %s ／ スワップ 残り%sGB・使用%sGB／全%sGB</div>
 
-<h2>次に並んでいる5本</h2>
+<h2>次に並んでいる10本（上から発車する）</h2>
 <table>%s</table>
+<p class="sub">並び替えは<a href="index_full.html">全部入りの進捗表</a>の各行のボタンでできる：
+<b>P</b>＝優先度を付ける（1がいちばん先）、<b>🔥</b>＝すぐ見たい（Pより強い）。
+押すと queue.json の並びが実際に変わる（スマホから押せる）。
+この紙は「今どう並んでいるか」を見るところ。</p>
 
 <h2>時間ごとの発車本数</h2>
 <table>%s</table>
@@ -189,6 +261,8 @@ def html(d):
         "ok" if d["hasshaOK"] else "ng", d["kagi"] or "不明",
         (t1.get("title") or "?")[:60] if t1 else "発車待ちが空",
         d["machiKazu"],
+        o["at"] or "?", orows or '<tr><td colspan="3">まだ測っていません</td></tr>',
+        o["loadPct"], o["swapGB"], o["procCount"],
         "".join("<li>%s</li>" % r for r in d["konkyo"]) or "<li>記録なし</li>",
         d["jitsuAt"] or "?",
         j.get("memAvailGB"), j.get("memFreePct"),
