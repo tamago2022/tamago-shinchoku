@@ -182,7 +182,12 @@ def probe(use_token):
     try:
         r = subprocess.run([binpath, "-p", "--model", "claude-sonnet-5",
                             "--output-format", "json", "1+1は？数字だけ"],
-                           capture_output=True, text=True, timeout=120, env=env)
+                           capture_output=True, text=True, timeout=120, env=env,
+                           # ★2026-09-27：stdin を閉じる。心臓の子として走るとき stdin は
+                           #   開いたままのパイプで、claude -p はそれを「続きの入力」と見て
+                           #   EOFを待ち、永久に黙る。＝120秒で毎回タイムアウトしていた正体。
+                           #   「混んでいて測れなかった」は混んでいたのではなく、待たされていた。
+                           stdin=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         # 2026-09-26 実測：関所（1158番・同時上限1本）が本物の発車で埋まっていると
         # 見張りの1本は空きを待つだけで120秒に間に合わない。これは「切れた」ではなく

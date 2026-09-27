@@ -106,6 +106,16 @@ run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || tr
 # 中で1時間ゲートするので5分おきに呼ばれても外へ出るのは1時間に1回。鍵の中身は読まない。
 run_with_timeout 30 python3 "$REPO/tools/kagi_jidou_makinaoshi.py" >/dev/null 2>&1 || true
 
+# ---- ★（2026-09-27）鍵を渡し忘れられない口を保つ ----
+# 実測：鍵も合図も揃っているのに、子セッションの起動が
+#   「OAuth session expired」で落ちた＝**その呼び出しには鍵が渡っていなかった。**
+#   渡す正本（tools/claude_auth.py）を通さない口が1本でも残れば、その口だけが落ちる。
+#   呼ぶ側を全部直す作戦は必ず1本忘れるので、~/.local/bin/claude 自体を
+#   「鍵を入れてから本体へ渡す包み」に替えてある（tools/claude_kuchi_install.py）。
+# claudeの自動更新で包みが消えても、ここで毎回張り直す（消えても次の便で戻る）。
+# 中で「既に張ってある」なら1秒で戻る。通らなければ自分で元へ戻す（工場を止めない）。
+run_with_timeout 60 python3 "$REPO/tools/claude_kuchi_install.py" --quiet >/dev/null 2>&1 || true
+
 # ★1174番（2026-09-27）信号機：Macの余力を数値で見て、同時本数を自分で上下させる。
 # たまごさん「2本は約束じゃないよ。パソコンの空き状態を見て、4本でも6本でも10本でも
 #   走らせていい。パソコンが重くなったらダメだって話。数値で分からないの？」
