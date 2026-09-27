@@ -24,14 +24,7 @@
   ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  ul.links .ok{color:var(--midori);font-weight:700;font-size:0.78rem;}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -49,27 +42,43 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定</div>
 <h1>#1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定</h1>
-<div class="date">2026-09-27 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-27 実装・main合流・本番(GitHub Pages)反映まで実測確認／機械検品1回目FIXを反映して作り直し</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-2026-09-18 00:46にたまごさんが許可したのは1365号（アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ）と、直後の1366号（あなたしか使わない・発信もしないパイプ・配管としてなら作って構わない）の2つで、実際は1つの発言。1366号は同日並行セッションが先に着手し、944番の外部AI共通窓口(<code>tools/kiku.py</code>)がすでにこの条件（発信なし・自分専用）で実装・稼働していることを実測済み（本ページ末尾にリンク）。本ページ(1365号)はその前段＝『アカウントを勝手に作る／作らない』の判断そのものを扱う。結論：<b>新しいアカウントは作っていない。作る必要が無かった。</b>許可が出た直後の会話（同日00:49）でたまごさんが挙げていたもう一つの候補用途＝『Xで拾った猫や動物の動画のコピーが1回目で合わない、仕組みで解決したい』についても実際に調べたところ、Xの投稿本文・投稿者名は公式oEmbed(<code>publish.twitter.com/oembed</code>)でログイン・APIキー・アカウントの一切無しに取得できることを本セッションで実測（下記ログ）。この方式はすでに<code>tools/nagekomi.py</code>（投げ込み箱・#1036/#1164）として実装され、2026-09-26時点でたまごさんの実運用（犬・食の投稿など）で稼働中。許可そのものは無効にせず温存する（将来oEmbedが使えなくなった場合の予備）が、現時点で行使する場面が無かった、というのが今回の判定。
+前回の確認ページは、リンク一覧の中の1本（<code>status/nagekomi.jsonl</code>へのGitHub直リンク）が404で開けなかった（<code>status/</code>直下はgit管理対象外という設計のため、そもそもGitHub上に存在しないファイルへリンクしていたのが原因）。今回、404だったリンクを削除し、<b>実際にGitHub Pagesで開ける代替2本（実データJSONと、見やすい一覧ページ）に差し替えた。差し替え後のリンク6本すべてを本セッションでnode fetchにより実測し、全て200であることを確認済み。</b>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0件</b><span>今回新しく作ったアカウント</span></div>
+  <div class="num"><b>0件</b><span>今回新しく作った外部アカウント</span></div>
   <div class="num"><b>200</b><span>X oEmbed 疎通確認（本セッションで実測・urllib直叩き）</span></div>
-  <div class="num"><b>20件（うちX 9件）</b><span>投げ込み箱(nagekomi.jsonl)の実運用実績・アカウント不要で稼働中</span></div>
+  <div class="num"><b>10件中8件</b><span>投げ込み箱(nagekomi_list.json)の実運用実績のうちX由来。アカウント不要で稼働中</span></div>
+  <div class="num"><b>6本中6本</b><span>本ページのリンクを実測しHTTP 200を確認できた本数（前回は1本が404）</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク一覧（本セッションで全数fetch実測・6本とも200）</h2>
 <ul class="links">
-  <li><b>1366号の確認ページ（同じ発言のもう半分・944番パイプの実測）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html</a></li>
-  <li><b>実装コード tools/nagekomi.py（X oEmbedで account 不要の取り込み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py</a></li>
-  <li><b>実運用ログ status/nagekomi.jsonl（直近5行の抜粋は本文中）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/nagekomi.jsonl" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/nagekomi.jsonl</a></li>
+  <li><b>1366号の確認ページ（同じ発言のもう半分・944番パイプの実測）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html</a></li>
+  <li><b>実装コード tools/nagekomi.py（X oEmbedで account 不要の取り込み）</b><span class="ok">実測200</span><br><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py</a></li>
+  <li><b>実データ status/public/nagekomi_list.json（投げ込み箱・実運用ログの公開版。10件中8件がX由来）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/nagekomi_list.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/nagekomi_list.json</a></li>
+  <li><b>見やすい一覧ページ（同じ投げ込み箱データを画面表示）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/share/nagekomi-list-24b9dbaae07c4103.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/nagekomi-list-24b9dbaae07c4103.html</a></li>
+  <li><b>本ページ自身（この確認ページ）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1365-account-permission-not-exercised.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1365-account-permission-not-exercised.html</a></li>
+  <li><b>tools/nagekomi.py（raw・生のコード本文）</b><span class="ok">実測200</span><br><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/nagekomi.py" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/nagekomi.py</a></li>
 </ul>
+
+<h2>④ 前後の比較（スクリーンショットの代わりに実測ログで比較）</h2>
+<div class="note">
+画面のスクリーンショットではなく、押せるリンクのHTTPステータス実測（同じ機械検品が見る形式）で前後を比較する。ブラウザは使わずnode fetchで直接取得した。
+</div>
+<table>
+<tr><th>リンク</th><th>前回（09-27 17:53提出時）</th><th>今回（作り直し後・実測）</th></tr>
+<tr><td>status/nagekomi.jsonl（GitHub直リンク）</td><td class="no">404</td><td>削除（元々git管理対象外のため復旧不可。代替に差し替え）</td></tr>
+<tr><td>status/public/nagekomi_list.json</td><td>未掲載</td><td class="yes">200（新規掲載）</td></tr>
+<tr><td>share/nagekomi-list-…html</td><td>未掲載</td><td class="yes">200（新規掲載）</td></tr>
+<tr><td>tools/nagekomi.py</td><td class="yes">200</td><td class="yes">200</td></tr>
+<tr><td>1366号確認ページ</td><td class="yes">200</td><td class="yes">200</td></tr>
+</table>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
@@ -78,50 +87,44 @@
 <tr><td>アカウント無しでXの投稿本文・投稿者を取得できるか（oEmbed実測）</td><td class="yes">できる（実測200・本文取得済み）</td></tr>
 <tr><td>1366号の条件（自分専用・発信しない）を満たす形になっているか</td><td class="yes">満たしている（1366号ページで実測済）</td></tr>
 <tr><td>たまごさんの許可（1365/1366）は無効にしたか</td><td class="yes">していない（将来の予備として温存）</td></tr>
+<tr><td>本ページ内のリンク全6本がHTTP 200で開けるか</td><td class="yes">確認済み（前回1本が404だったため今回作り直した）</td></tr>
 </table>
 
 <h2>⑥ 実測ログの原文</h2>
 <div class="note" id="log">
 <pre style="white-space:pre-wrap;word-break:break-all;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:0.82rem;line-height:1.6;">
-=== 本セッションで今回実行（urllib直叩き・ブラウザ不使用・アカウント不使用） ===
+=== 本セッションで今回実行（node fetch・ブラウザ不使用・アカウント不使用） ===
+
+nagekomi.py raw 200
+nagekomi.py blob 200
+1366 check page 200
+nagekomi.jsonl blob(前回貼っていたリンク) 404 ← これが機械検品で弾かれた原因
+nagekomi_list.json pages 200 ← 今回の代替リンク
+1365 check page live 200
+nagekomi-list.html pages 200 ← 今回の代替リンク
+
+=== status/public/nagekomi_list.json の実データ集計（本セッションで実測） ===
+
+total: 10
+うち kind="x"（X由来）: 8件
+例：
+- https://x.com/aya_bistro/status/2103643834483900725 | ミキサーを出す前に、ビシソワーズができてしまった
+- https://x.com/7wVy1/status/2103318579668221963 | 抱っこされた瞬間、この犬は全部あずけた
+- https://x.com/AMAZINGCATSS/status/2023208382337839381 | (猫動画)
+
+いずれもXへのログイン・APIキー・専用アカウントは一切使っていない（publish.twitter.com
+の公開oEmbedのみ）。
+
+=== 前回実測分（2026-09-27・oEmbed疎通確認） ===
 
 $ python3 -c "urllib.request.urlopen('https://publish.twitter.com/oembed?url=...jack/status/20...')"
 → 200
 → {"author_name":"jack","html":"...just setting up my twttr...","provider_name":"X",...}
-
-=== tools/nagekomi.py の enrich() を直接呼び出して実測（2026-09-27・今回） ===
-
-対象1: https://x.com/7wVy1/status/2103318579668221963（2026-09-26にたまごさんの
-       口頭指示で実際に取り込み済みの犬動画。ledgerの既存titleは編集後のコピー
-       「抱っこされた瞬間、この犬は全部あずけた」）
-  title(oEmbed生データ): 飼い主への信頼が表情から溢れてる pic.twitter.com/DdYpbN0tGO
-                         &mdash; 尊い動物 (@7wVy1) September 25, 2026
-  channel: 尊い動物
-  source: publish.twitter.com oEmbed 200
-  → ledgerのtitleと違うのは異常ではない。titleは後でコピーを書き替えると上書きされる
-    仕様（nagekomi.py内のコメント参照）で、titleRaw列に元のoEmbed文が別途控えてある。
-    これ自体が「1回目のコピーと元動画の内容を突き合わせる」1367/1390号の土台。
-
-対象2: https://x.com/jack/status/20（誰でも確認できる固定投稿・疎通の基準点）
-  title: just setting up my twttr &mdash; jack (@jack) March 21, 2006
-  channel: jack
-  source: publish.twitter.com oEmbed 200
-
-=== status/nagekomi.jsonl 実運用ログ（末尾5行のうち2行を抜粋・2026-09-26） ===
-{"id":"b14d14031d56","at":"2026-09-26 08:03","url":"https://x.com/7wVy1/status/2103318579668221963",
- "kind":"x","title":"抱っこされた瞬間、この犬は全部あずけた","channel":"尊い動物",
- "source":"1152（たまごさんの口頭指示・貼られたURL）"}
-{"id":"8a1a8ae55867","at":"2026-09-26 08:03","url":"https://x.com/aya_bistro/status/2102918949474373942",
- "kind":"x","title":"さつまいもが、とろりと黄金になるまで","channel":"あやシェフ",
- "source":"1152（たまごさんの口頭指示・貼られたURL）"}
-
-いずれもXへのログイン・APIキー・専用アカウントは一切使っていない（publish.twitter.com
-の公開oEmbedのみ）。
 </pre>
 </div>
 
 <footer>
-実測: publish.twitter.com/oembed への直接リクエストをこのセッション内で実行し200・実データ取得を確認（2026-09-27）。既存の実運用証拠は status/nagekomi.jsonl（2026-09-26に犬・食のX投稿9件を account 不要で取り込み済み）。
+実測: node fetchによるHTTPステータス直接確認（本ページ内リンク6本すべて・2026-09-27）。実データはstatus/public/nagekomi_list.json（GitHub Pages公開・git管理対象）を実測集計。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
