@@ -30,7 +30,8 @@ import urllib.error
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-import kagi  # noqa: E402
+import kagi          # noqa: E402
+import buffer_waku   # noqa: E402
 
 API = "https://api.buffer.com"
 JST = datetime.timezone(datetime.timedelta(hours=9))
@@ -69,8 +70,14 @@ def gql(tok, q, v=None):
                                headers={"Content-Type": "application/json",
                                         "Authorization": "Bearer %s" % tok,
                                         "User-Agent": "tamago-1167-ireru1"})
-    with urllib.request.urlopen(r, timeout=40) as resp:
-        return json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(r, timeout=40) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            # ★枠切れ。門を閉めて、以降この係も他の係も叩かない
+            buffer_waku.tometa(e.headers, "1167_ireru1")
+        raise
 
 
 def jst(iso_s):
@@ -105,6 +112,9 @@ def kiroku(rec):
 
 
 def main():
+    if not buffer_waku.ake():          # ★枠切れの間は1回も叩かない
+        print(buffer_waku.riyuu())
+        return 10
     tok = kagi.get("BUFFER_ACCESS_TOKEN")
     if not tok:
         print("鍵が無い")

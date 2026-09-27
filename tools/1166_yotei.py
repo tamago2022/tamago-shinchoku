@@ -47,8 +47,14 @@ def gql(tok, q, v=None):
                                headers={"Content-Type": "application/json",
                                         "Authorization": "Bearer %s" % tok,
                                         "User-Agent": "tamago-1166-yotei"})
-    with urllib.request.urlopen(r, timeout=30) as resp:
-        return json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(r, timeout=30) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as ex:
+        if ex.code == 429:
+            import buffer_waku
+            buffer_waku.tometa(ex.headers, "1166_yotei")
+        raise
 
 
 Q_POSTS = """
@@ -99,6 +105,9 @@ def midashi(t):
 
 def build():
     import kagi
+    import buffer_waku
+    if not buffer_waku.ake():      # ★枠切れの間は1回も叩かない（429を増やさない）
+        return 11
     tok = kagi.get("BUFFER_ACCESS_TOKEN")
     if not tok:
         return 3

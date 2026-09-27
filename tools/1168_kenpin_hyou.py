@@ -38,7 +38,10 @@ import html as H
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-import kagi  # noqa: E402
+import kagi          # noqa: E402
+import buffer_waku   # noqa: E402
+
+SNAP = os.path.join(REPO, "status", "1168", "snapshot.json")
 
 API = "https://api.buffer.com"
 JST = datetime.timezone(datetime.timedelta(hours=9))
@@ -140,11 +143,12 @@ def page_sekisho(urls):
     return {r["url"]: (r.get("data") or {}) for r in rows}
 
 
-def main():
-    tok = kagi.get("BUFFER_ACCESS_TOKEN")
-    if not tok:
-        print("鍵が無い")
-        return 2
+def torinaosu(tok):
+    """Bufferから取り直す。枠切れのときは前に取り直した控えを使う。
+
+    ★控えを使ったときは deta に「いつ取り直したものか」を必ず書き、
+      画面にもそう出す。取り直したフリをしない。
+    """
     orgs = ((gql(tok, "query{account{organizations{id name}}}").get("data") or {})
             .get("account") or {}).get("organizations") or []
     ch = org = None
@@ -160,17 +164,44 @@ def main():
             if WANT in ns:
                 ch, org = c, o["id"]
     if not ch:
-        print("チャンネルが無い")
-        return 4
+        raise RuntimeError("チャンネル %s が無い" % WANT)
 
     def rows(st):
         e = ((gql(tok, Q_POSTS, {"o": org, "c": [ch["id"]], "s": st})
               .get("data") or {}).get("posts") or {}).get("edges") or []
         return [x["node"] for x in e]
 
-    yoyaku = rows(["scheduled"])
-    sent = rows(["sent"])
-    print("予約 %d 本／もう出た %d 本" % (len(yoyaku), len(sent)))
+    d = {"at": datetime.datetime.now(JST).strftime("%F %H:%M"),
+         "org": org, "ch": ch["id"],
+         "yoyaku": rows(["scheduled"]), "sent": rows(["sent"])}
+    os.makedirs(os.path.dirname(SNAP), exist_ok=True)
+    json.dump(d, io.open(SNAP, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return d, "いま取り直した"
+
+
+def main():
+    tok = kagi.get("BUFFER_ACCESS_TOKEN")
+    if not tok:
+        print("鍵が無い")
+        return 2
+
+    if buffer_waku.ake():
+        snap, itsu = torinaosu(tok)
+    else:
+        # ★枠切れ。叩かずに前の控えで作る。いつのものかを画面に出す。
+        print(buffer_waku.riyuu())
+        try:
+            snap = json.load(io.open(SNAP, encoding="utf-8"))
+        except Exception:
+            print("控えも無い。出せない。")
+            return 12
+        itsu = "%s にBufferから取り直したもの（いまは枠切れで取り直せない）" % snap.get("at")
+    yoyaku, sent = snap.get("yoyaku") or [], snap.get("sent") or []
+    return kenpin(yoyaku, sent, itsu, tok, snap)
+
+
+def kenpin(yoyaku, sent, itsu, tok, snap):
+    print("予約 %d 本／もう出た %d 本（%s）" % (len(yoyaku), len(sent), itsu))
 
     urls = []
     for p in yoyaku:
@@ -235,6 +266,7 @@ def main():
         })
 
     data = {"at": datetime.datetime.now(JST).strftime("%F %H:%M"),
+            "itsu": itsu, "waku": buffer_waku.riyuu(),
             "channel": "@" + WANT, "n": len(out),
             "ng": len([x for x in out if x["hantei"] == "✕"]),
             "rows": out}
@@ -242,7 +274,9 @@ def main():
     json.dump(data, io.open(OUT_JSON, "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
 
-    if "--hazusu" in sys.argv:
+    if "--hazusu" in sys.argv and not buffer_waku.ake():
+        print("★枠切れなので外せない。", buffer_waku.riyuu())
+    elif "--hazusu" in sys.argv:
         for x in out:
             if x["hantei"] != "✕":
                 continue
@@ -326,6 +360,8 @@ body{margin:0;background:#0d0f12;color:#e8e6e1;
 .wrap{max-width:760px;margin:0 auto;padding:30px 16px 80px}
 h1{font-size:21px;margin:0 0 4px;letter-spacing:.03em}
 .at{color:#7d8590;font-size:13px;margin:0 0 6px}
+.waku{font-size:12.5px;color:#e3b341;background:#1c1a12;border:1px solid #3d3417;
+ border-radius:10px;padding:9px 12px;margin:10px 0 0}
 .sum{background:#15181d;border:1px solid #23272e;border-radius:12px;
  padding:14px 16px;margin:16px 0 26px;font-size:14px}
 .sum b{font-size:22px;font-variant-numeric:tabular-nums}
@@ -361,8 +397,10 @@ h2{font-size:14px;color:#8b949e;letter-spacing:.06em;margin:34px 0 10px;
 }
 </style></head><body><div class="wrap">
 <h1>予約済みの中身（1本ずつ検品）</h1>
-<p class="at">%(at)s 時点・%(channel)s・すべてBufferから取り直した実データ／
-ページは1本ずつ実際に開いて数えた数字です。</p>
+<p class="at">%(at)s 作成・%(channel)s<br>
+予約の中身：<b>%(itsu)s</b><br>
+ページの数字（動画・関連・見出し）：この表を作ったときに1本ずつ実際に開いて数えたものです。</p>
+<p class="waku">%(waku)s</p>
 <div class="sum">
  予約 <b>%(n)d</b> 本　／　◯ <b class="ok">%(nok)d</b> 本　／　✕ <b class="ng">%(nng)d</b> 本<br>
  <span class="dim">✕は「本人の動画なし」「関連4本未満」「リンクが200でない」
@@ -379,6 +417,7 @@ h2{font-size:14px;color:#8b949e;letter-spacing:.06em;margin:34px 0 10px;
 </ul>
 </div></body></html>""" % {
         "at": e(d["at"]), "channel": e(d["channel"]), "n": d["n"],
+        "itsu": e(d.get("itsu") or ""), "waku": e(d.get("waku") or ""),
         "nok": d["n"] - d["ng"], "nng": d["ng"], "cards": "".join(cards)}
 
 
