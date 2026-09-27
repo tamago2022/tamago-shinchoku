@@ -2475,11 +2475,18 @@ def launch_one(item, q, alive, safe_max):
     else:
         _blob = ((item.get("title") or "") + " " + (item.get("what") or "")
                  + " " + (item.get("why") or ""))
+        # 2026-09-27（1376番）：この案件自身が誤配車パターンの新しい実例だった。
+        #   「判定日で赤になった案件、何も走っていないアイドル状態をやめてほしい」は
+        #   工場（発車システム）自身の運用改善依頼なのに、上のマーカーに1語も一致せず
+        #   joy-relief-station側へ配車されていた（queue.jsonのn=1376にrepo未設定で実測確認）。
+        #   進捗表(genzaichi.md)・判定・発車まわりでよく出る語をここへ追加する。
         _self_repo_markers = (
             "tamago-shinchoku", "renraku.py", "sekisho.py", "kenpin_gate.py",
             "auto_launcher.py", "hikitsugi_gate.py", "failures_ledger.py",
             "heartbeat.sh", "machine_status_push.sh", "queue.json",
             "外部連絡", "進捗表", "関所(sekisho)", "kenpin_gate", "auto_launcher",
+            "判定日", "アイドル状態", "oni_modoshi", "発車待ち", "何も走っていない",
+            "工場が止まっ", "空回し",
         )
         repo = REPO if any(m in _blob for m in _self_repo_markers) else "/Users/mac/Desktop/joy-relief-station"
     wt_name = item.get("worktree") or ("q%02d-0904" % item.get("n"))

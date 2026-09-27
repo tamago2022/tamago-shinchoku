@@ -195,8 +195,20 @@ while :; do
   #   既存の genzaichi.json / health.json は2〜5時間古く、体温には使えなかった。
   #   ここは毎周なので常に数十秒以内の数字だけが載る。書くだけ・0.05秒。
   ( python3 "$REPO/tools/1163_taion.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
-  run_with_timeout 45 python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1
-  [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
+  # ---- 2026-09-27（1376番）：45秒killが「発車できていた処理」を道連れに殺していた ----
+  # たまごさん「クレジット切れなどの例外を除いて、何も走っていないアイドル状態はやめてほしい」。
+  # 実測：auto_launcher.pyが joy-relief-station 側へ `git worktree add` する処理は、
+  #   何も混んでいない単発実行でも real 24.3秒かかる（/tmp直下で実測、.git 414MB・登録
+  #   worktree 36件）。ところが外側のこの45秒killは、内部の WT_ADD_TIMEOUT=90秒より
+  #   ずっと短く、混雑時に45秒を超えると**チェックアウトの途中で問答無用に kill -9**していた。
+  #   heartbeat.log実測：2026-09-27だけで「auto_launcher.pyが45秒以内に終わらず強制終了」が
+  #   35回（今日の全強制終了の約7割）。「クレジットは余っているのに1本も出せない」時間帯
+  #   （19:53〜22:45の間だけで10分以上の空白が8回）の直接原因になっていた。
+  # 直し方：外側のタイムアウトを、内部の worktree add 上限(90秒)より長い120秒へ引き上げる。
+  #   only_one_launcher()（flock）が二重発車を防いでいるので、killを遅らせても安全。
+  #   心臓の1周が最大120秒に伸びる可能性はあるが、「毎回殺されて0本のまま」より遥かにマシ。
+  run_with_timeout 120 python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1
+  [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが120秒以内に終わらず強制終了しました" >> "$LOG"
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ command_ingest.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
   # ---- ここから下は「投げっぱなしの相乗り」。tick_every で起動の頻度を落としてある ----
