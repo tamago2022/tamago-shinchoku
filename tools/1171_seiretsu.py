@@ -184,6 +184,12 @@ def main():
     # ★一度並べ直したら二度とやらない（心臓から毎周回呼ばれても0叩きで退く）
     if os.path.exists(STAMP) and "--now" not in sys.argv:
         return 0
+    # ★1178番（2026-09-28）止め札。並べ直しは消して入れ直す＝ChatGPTの10本を壊す。
+    import buffer_tomeru
+    _t = buffer_tomeru.tomete()
+    if _t:
+        print(_t)
+        return 0
     if not buffer_waku.ake():
         print(buffer_waku.riyuu())
         print("★1叩きもしていません。枠が戻ってからもう一度呼んでください。")

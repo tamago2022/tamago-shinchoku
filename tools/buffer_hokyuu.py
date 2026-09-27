@@ -117,6 +117,16 @@ def main():
     if not force and (now.hour < HOUR or ran_today()):
         return 0                                   # ★1日1回。それ以外は完全に無害
 
+    # ★1178番（2026-09-28）止め札。ChatGPTが先に10本入れた＝こちらが足すと二重投稿。
+    #   判子は押さない（札を剥がした日にちゃんと走らせるため）。0叩き。
+    import buffer_tomeru
+    _t = buffer_tomeru.tomete()
+    if _t:
+        print(_t)
+        write_result({"at": now.strftime("%F %T %z"), "result": "止め札で退いた",
+                      "riyuu": _t, "aka": False})
+        return 0
+
     # ★1174番：枠が閉まっている間は判子を押さずに退く。押して退くと「その日はもう走らない」
     #   になり、枠が戻ってからも補充されない（＝1日まるごと空振り）。
     import buffer_waku

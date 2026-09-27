@@ -313,6 +313,13 @@ def main():
         return miru()
 
     m = jload(MACHI, {})
+    # ★1178番（2026-09-28）止め札。ChatGPTが先に10本入れた＝こちらが1本足すと二重投稿。
+    import buffer_tomeru
+    _t = buffer_tomeru.tomete()
+    if _t:
+        print(_t)
+        kiroku({"result": "止め札で退いた", "riyuu": _t})
+        return 0
     if not buffer_waku.ake():
         print(buffer_waku.riyuu())
         kiroku({"result": "枠切れで何もしない", "riyuu": buffer_waku.riyuu()})

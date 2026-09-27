@@ -121,6 +121,14 @@ def kiroku(rec):
 
 
 def gql(tok, q, v=None):
+    # ★1178番（2026-09-28）止め札。ここは1170/1171/1173が共通で使うBufferの戸口。
+    #   個々の係に門を置くだけでは、新しい係が生えたときに素通りする。
+    #   **書く口（mutation）だけ**をここで止める。読む口（query）は通す＝実データは見られる。
+    if "mutation" in (q or ""):
+        import buffer_tomeru
+        _t = buffer_tomeru.tomete()
+        if _t:
+            raise RuntimeError(_t)
     if not buffer_waku.ake():
         raise RuntimeError(buffer_waku.riyuu())
     if not buffer_kura.tsukau("1170_irekae"):

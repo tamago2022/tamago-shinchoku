@@ -165,6 +165,12 @@ def main():
 
 def hazusu(r, naze):
     """諦めて予約から外す。Bufferの枠が空いているときだけ。"""
+    # ★1178番（2026-09-28）止め札。ChatGPTが入れた10本を機械が勝手に外さない。
+    import buffer_tomeru
+    _t = buffer_tomeru.tomete()
+    if _t:
+        log("外したいが止め札あり。%s" % _t)
+        return 0
     import buffer_waku
     if not buffer_waku.ake():
         log("外したいが枠切れ。%s" % buffer_waku.riyuu())
