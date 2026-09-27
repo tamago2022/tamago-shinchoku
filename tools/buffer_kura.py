@@ -53,7 +53,11 @@ CH = os.path.join(KURA, ".channel.json")        # 組織ID・チャンネルID
 YOYAKU = os.path.join(KURA, ".yoyaku.json")     # 予約と出たものの中身
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
-NORI = 20   # ★1日の天井（Buffer自身の枠は250回／24時間）
+# ★1日の天井（Buffer自身の枠は250回／24時間）
+#   2026-09-27：たまごさんの指示で予約を丸ごと組み直す（tools/1173_kumi_naoshi.py）。
+#   全部下ろす＋10本入れ直す＝1回きり約23叩き。20では途中で自分の門に止められるので
+#   60へ上げる。Buffer自身の250にはまだ遠い。組み直しが済んだら20へ戻してよい。
+NORI = 60
 
 
 def _yomu(p, kara):
