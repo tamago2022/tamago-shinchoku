@@ -87,9 +87,21 @@ if not os.path.exists(CLAUDE):
 # 起動口で物理的に止める。上限は status/dojisu_jougen.json の「同時上限」。
 # 関所は引数をそのまま素通しするので、呼ぶ側のコードは1文字も変わらない。
 _KANMON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1158_kanmon.py")
+CLAUDE_DIRECT = CLAUDE          # 関所を通さない本体（下の理由で見張りだけが使う）
 if os.path.exists(_KANMON):
     os.environ.setdefault("KANMON_CLAUDE_BIN", CLAUDE)
     CLAUDE = _KANMON
+
+# ---- 2026-09-27（1161番の続き）見張りの1本は関所に並ばせない ----
+# 実測：09-27 07:52〜14:35 の probe 10回が**全部**「混んでいて測れなかった(待ち)」。
+#   1158番の関所が同時上限1本なので、本物の発車が枠を持っている間、見張りは待つだけで
+#   120秒に間に合わない。＝**7時間、ログインの生死を誰も測っていなかった。**
+#   「切れたら即わかる」が、工場が動いているときだけ効かない逆立ちした作り（1161番と同じ形）。
+# なぜ並ばせなくて安全か：関所の目的は、同時起動が refreshToken を作り替えるときの
+#   取り合い（負けた側が空を書き戻して鍵ごと消す）を止めること。
+#   CLAUDE_CODE_OAUTH_TOKEN を渡す形は**作り替えが一切起きない**（読むだけ）。
+#   だからトークンで測るときは書き込み競合の余地が無く、関所に並ぶ理由が無い。
+#   キーチェーン側で測るときは今までどおり関所を通す（あちらは書き替えが起きる）。
 
 
 PROBE_INTERVAL_OK = 1800       # 通っているときは30分に1回
@@ -165,8 +177,10 @@ def probe(use_token):
         if not t:
             return False, "トークンファイルが無い/形が違う"
         env["CLAUDE_CODE_OAUTH_TOKEN"] = t
+    # トークンで測るときだけ関所を通さない（上の理由）
+    binpath = CLAUDE_DIRECT if use_token else CLAUDE
     try:
-        r = subprocess.run([CLAUDE, "-p", "--model", "claude-sonnet-5",
+        r = subprocess.run([binpath, "-p", "--model", "claude-sonnet-5",
                             "--output-format", "json", "1+1は？数字だけ"],
                            capture_output=True, text=True, timeout=120, env=env)
     except subprocess.TimeoutExpired:

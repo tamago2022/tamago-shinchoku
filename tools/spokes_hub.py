@@ -523,27 +523,122 @@ def modoshi(artist, name, tok):
     print("戻しました: %d曲 ／ いま %d曲" % (len(rec["ireta"]), len(nakami(tok, pl["id"]))))
 
 
+# ──────────── ④' 鍵ゼロで取り直す（公開プレイリスト・embedページ） ────────────
+
+BROWSER_UA = {"User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                             "AppleWebKit/537.36 (KHTML, like Gecko) "
+                             "Chrome/126 Safari/537.36")}
+
+
+def _embed(kind, sid):
+    url = "https://open.spotify.com/embed/%s/%s" % (kind, sid)
+    html = urllib.request.urlopen(
+        urllib.request.Request(url, headers=BROWSER_UA), timeout=30).read().decode(
+            "utf-8", "replace")
+    m = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+                  html, re.S)
+    return json.loads(m.group(1))["props"]["pageProps"]["state"]["data"]["entity"]
+
+
+def _moto(t):
+    """Spotifyの曲名から『- Live at ...』『(2018 Version)』などの尻尾を落とす。"""
+    s = re.split(r"\s-\s", t)[0]
+    return norm(s)
+
+
+def kensho(artist, playlist_id):
+    """★Spotifyから取り直す。鍵を使わない＝たまごさんのログインに一切触らない。
+    1曲ずつ artist id まで取って、どちら向きかを機械で決める。"""
+    d = base(artist)
+    honnin = load(os.path.join(d, "honnin.json")) or {}
+    st = load(os.path.join(d, "mb.json"), {}) or {}
+    sh = load(os.path.join(d, "shutten2.json"), {}) or {}
+    me = honnin.get("spotifyId", "")
+
+    ent = _embed("playlist", playlist_id)
+    rows = []
+    for i, t in enumerate(ent.get("trackList", []), 1):
+        tid = (t.get("uri") or "").split(":")[-1]
+        te = _embed("track", tid)
+        arts = [{"name": a.get("name"),
+                 "id": (a.get("uri") or "").split(":")[-1]}
+                for a in (te.get("artists") or [])]
+        honnin_iru = any(a["id"] == me for a in arts)
+        title = t.get("title") or ""
+        key = _moto(title)
+
+        hit, houkou = None, None
+        for x in st.get("dirA", []):
+            if honnin_iru and (_moto(x["kyoku"]) == key or key in norm(x["kyoku"])
+                               or norm(x["kyoku"]) in key):
+                hit, houkou = x, "A"
+                break
+        if not hit:
+            for x in st.get("dirB_clean", []):
+                if honnin_iru:
+                    break
+                if _moto(x["kyoku"]) != key:
+                    continue
+                if any(norm(a["name"]) in norm(x["enja"])
+                       or norm(x["enja"]) in norm(a["name"]) for a in arts):
+                    hit, houkou = x, "B"
+                    break
+        if not houkou:
+            houkou = "本人のオリジナル（元から入っていた）" if honnin_iru else "？"
+
+        shn = {norm(k): v for k, v in sh.items() if not k.startswith("_")}
+        src = sh.get(title) or shn.get(norm(title)) or shn.get(key) or {}
+        rows.append({"no": i, "title": title,
+                     "artists": arts, "houkou": houkou,
+                     "spotifyUrl": "https://open.spotify.com/track/" + tid,
+                     "moto": src.get("moto") or (hit or {}).get("moto", ""),
+                     "shutten2": src.get("url", ""), "shutten2iu": src.get("iu", ""),
+                     "workUrl": ("https://musicbrainz.org/work/" + hit["workMbid"]) if hit else "",
+                     "recUrl": ("https://musicbrainz.org/recording/" + hit["recMbid"]) if hit else ""})
+    out = {"at": time.strftime("%F %T"), "playlist": ent.get("name"),
+           "playlistId": playlist_id,
+           "playlistUrl": "https://open.spotify.com/playlist/" + playlist_id,
+           "total": len(rows), "tracks": rows}
+    save(os.path.join(d, "kensho.json"), out)
+    print("%s ／ Spotifyから取り直した曲数 %d" % (ent.get("name"), len(rows)))
+    for r in rows:
+        print(" %2d %-6s %-46s | %-30s | 出典2 %s"
+              % (r["no"], r["houkou"][:6], r["title"][:46],
+                 "・".join(a["name"] for a in r["artists"])[:30],
+                 "有" if r["shutten2"] else "★無"))
+    return out
+
+
 # ───────────────────────── ⑤ 1枚のHTML ─────────────────────────
 
-def hyou(artist):
+def hyou(artist, mae=None):
     d = base(artist)
-    rec = load(os.path.join(d, "ireta.json")) or {}
-    rows = rec.get("ireta", [])
+    rec = load(os.path.join(d, "kensho.json")) or {}
+    rows = rec.get("tracks", [])
     if not rows:
-        raise SystemExit("まだ入れていません")
+        raise SystemExit("まだ --kensho を走らせていません")
     tr = []
-    for i, x in enumerate(rows, 1):
-        muki = ("%s が他人の曲をカバー" % artist) if x["houkou"] == "A" \
-               else ("%s の曲を他人がカバー" % artist)
-        shu = [("MusicBrainz 楽曲", x["workUrl"]), ("MusicBrainz 録音", x["recUrl"])]
+    for x in rows:
+        h = x["houkou"]
+        cls = h if h in ("A", "B") else "O"
+        muki = {"A": "%s が他人の曲をカバー" % artist,
+                "B": "%s の曲を他人がカバー" % artist}.get(h, h)
+        shu = []
         if x.get("shutten2"):
-            shu.insert(0, ("2本目の出典", x["shutten2"]))
+            shu.append(("2本目の出典", x["shutten2"]))
+        if x.get("workUrl"):
+            shu.append(("MusicBrainz 楽曲", x["workUrl"]))
+        if x.get("recUrl"):
+            shu.append(("MusicBrainz 録音", x["recUrl"]))
         tr.append(
             "<tr><td class=n>%d</td><td class=k><a href='%s' target=_blank>%s</a></td>"
             "<td>%s</td><td class='h %s'>%s</td><td>%s</td><td class=s>%s</td></tr>"
-            % (i, x["spotifyUrl"], x["spotifyName"], "・".join(x["spotifyArtists"]),
-               x["houkou"], muki, x["moto"],
-               " ".join("<a href='%s' target=_blank>%s</a>" % (u, t) for t, u in shu)))
+            % (x["no"], x["spotifyUrl"], x["title"],
+               "・".join(a["name"] for a in x["artists"]),
+               cls, muki, x.get("moto") or "—",
+               " ".join("<a href='%s' target=_blank>%s</a>" % (u, t) for t, u in shu)
+               or "<span class=nashi>取れなかった</span>"))
+    maeN = mae if mae is not None else 0
     html = """<!doctype html><html lang=ja><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>スポークスハブ 1本目：%(artist)s</title>
@@ -566,7 +661,8 @@ th{font-size:11px;letter-spacing:.16em;color:var(--sub);background:#f4efe8;font-
 td.n{color:var(--sub);font-variant-numeric:tabular-nums;width:34px}
 td.k a{color:var(--ink);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
 td.h{font-size:12.5px;white-space:nowrap}
-td.h.A{color:var(--a)}td.h.B{color:var(--b)}
+td.h.A{color:var(--a)}td.h.B{color:var(--b)}td.h.O{color:var(--sub)}
+.nashi{color:#a33}
 td.s{font-size:11.5px}td.s a{color:var(--sub);margin-right:8px}
 tr:last-child td{border-bottom:0}
 .note{margin-top:26px;font-size:12.5px;color:var(--sub);border-top:1px solid var(--line);
@@ -587,12 +683,14 @@ padding-top:14px}
 作者に本人が入っていなければ「本人が他人の曲をカバー」、本人が作者で別人の録音があれば「他人が本人の曲をカバー」。
 出典のリンクに、作者と全録音がそのまま載っている。<br>
 <a href="%(plurl)s" target=_blank>プレイリストを開く</a></p>
-</div>""" % {"artist": artist, "pl": rec.get("playlistName", ""),
-             "mae": rec.get("maeTotal", 0), "ato": rec.get("atoTotal", 0),
+</div>""" % {"artist": artist, "pl": rec.get("playlist", ""),
+             "mae": maeN, "ato": rec.get("total", 0),
              "at": rec.get("at", ""), "rows": "\n".join(tr),
              "na": len([x for x in rows if x["houkou"] == "A"]),
              "nb": len([x for x in rows if x["houkou"] == "B"]),
+             "_": 0,
              "plurl": rec.get("playlistUrl", "#")}
+
     out = os.path.join(REPO, "share", "check",
                        "spokes-hub-%s.html" % re.sub(r"[^a-z0-9]+", "-", artist.lower()))
     with io.open(out, "w", encoding="utf-8") as f:
@@ -615,10 +713,15 @@ def main():
     ap.add_argument("--ireru", action="store_true")
     ap.add_argument("--modoshi", action="store_true")
     ap.add_argument("--hyou", action="store_true")
+    ap.add_argument("--kensho", help="公開プレイリストのIDを渡すと、鍵ゼロで取り直す")
+    ap.add_argument("--mae", type=int, help="入れる前の曲数（表に出す）")
     a = ap.parse_args()
 
+    if a.kensho:
+        kensho(a.artist, a.kensho)
+        return hyou(a.artist, a.mae) if a.hyou else 0
     if a.hyou:
-        return hyou(a.artist)
+        return hyou(a.artist, a.mae)
 
     # ★鍵が要るのは「Spotifyに触るとき」だけ。MusicBrainzで集めるだけなら鍵ゼロで回る。
     kagi_iru = a.awaseru or a.shirabe or a.ireru or a.modoshi or a.tameshi

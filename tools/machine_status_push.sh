@@ -97,6 +97,15 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 # 687行目の呼び出しは health.json への相乗りのため残す（順番は入れ替えない）。
 run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || true
 
+# ---- ★（2026-09-27・1161番の続き）鍵を「切れる前に」自分で巻き直す ----
+# 実測：1年もつ鍵は 2026-09-26 に取り直したが、取り直しは毎回人の手だった。
+#   さらに見張り（auth_keeper）は 07:52〜14:35 の10回とも関所待ちで測れていなかった＝
+#   「切れたら気づく」も「切れる前に取る」も、実際には誰もやっていなかった。
+# この係は残り日数を status/public/kagi_kigen.json に出し、残り30日を切ったら
+#   言われる前に取り直しを裏で起こす（承認を1回押すだけの状態まで自分で進む）。
+# 中で1時間ゲートするので5分おきに呼ばれても外へ出るのは1時間に1回。鍵の中身は読まない。
+run_with_timeout 30 python3 "$REPO/tools/kagi_jidou_makinaoshi.py" >/dev/null 2>&1 || true
+
 # ★1174番（2026-09-27）信号機：Macの余力を数値で見て、同時本数を自分で上下させる。
 # たまごさん「2本は約束じゃないよ。パソコンの空き状態を見て、4本でも6本でも10本でも
 #   走らせていい。パソコンが重くなったらダメだって話。数値で分からないの？」
@@ -322,7 +331,24 @@ fi
 # 進捗表が丸ごと止まる（18:25〜18:30に実際に発生）。5分以上前のものだけ消す＝実行中のgitは巻き添えにしない。
 # 2026-09-05 入力待ちで黙り込む `claude setup-token` が残ると、心臓（15秒おき）ごと固まる。
 #   実測：07:03から3分間、着火も受信箱も止まった。見つけたら落とす。
-pkill -f "claude setup-token" >/dev/null 2>&1 || true
+# ---- 2026-09-27（1161番の続き）★鍵を取り直している最中は殺さない ----
+#   この pkill は「入力待ちで黙り込んだ setup-token が心臓を固める」を止めるために置いた。
+#   ところが 1161番（鍵を取り直す係）は setup-token を pty で最大25分走らせる。
+#   ＝**鍵を取り直す作業そのものを、5分おきに後ろから撃っていた。**
+#   だから「取り直しが1回で終わらない」が起き続ける。穴に段ボールではなく口を替える：
+#   係が自分で立てている status/1161_toru.lock がある間は撃たない（係は終われば必ず外す）。
+#   30分以上古いロックは事故なので、その時は今までどおり撃つ。
+_TORU_LOCK="$REPO/status/1161_toru.lock"
+_TORU_ALIVE=0
+if [ -f "$_TORU_LOCK" ]; then
+  _TORU_AGE=$(( $(date +%s) - $(stat -f %m "$_TORU_LOCK" 2>/dev/null || echo 0) ))
+  [ "$_TORU_AGE" -lt 1800 ] && _TORU_ALIVE=1
+fi
+if [ "$_TORU_ALIVE" = "0" ]; then
+  pkill -f "claude setup-token" >/dev/null 2>&1 || true
+else
+  echo "$(date '+%F %T') 🔑 鍵の取り直し中（1161_toru.lock）なので setup-token は撃たない" >> "$REPO/status/auth_keeper.log"
+fi
 find "$REPO/.git" -maxdepth 1 -name "*.lock" -mmin +5 -delete 2>/dev/null || true
 find "$REPO/.git/objects" -maxdepth 2 -name "tmp_obj_*" -mmin +5 -delete 2>/dev/null || true
 

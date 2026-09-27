@@ -65,6 +65,8 @@ button:active{background:#efe9df}
 
 /* ───── ログインが切れている（手を打たないと何も進まないので、ここだけ赤） ───── */
 #loginNg{display:none; color:var(--red); font-size:16px; line-height:1.7; margin:0 0 12px}
+/* ───── ログインの残り期限。切れていないときの1行。小さく・黄色くしない ───── */
+#loginKigen{display:none; color:var(--sub); font-size:12px; line-height:1.6; margin:0 0 10px}
 
 /* ───── 走っているもの ───── */
 .run{border-top:1px solid #eee7dc; padding:13px 0 12px}
@@ -140,6 +142,8 @@ footer a{display:block; padding:5px 0}
 
 <!-- ここだけは赤で出す。切れていると何も動かないので。 -->
 <div id="loginNg"></div>
+<!-- ログインの残り期限。1行だけ・小さく -->
+<div id="loginKigen"></div>
 
 <!-- ① 今週の枠（％） -->
 <section class="card" id="wakuCard">
@@ -172,15 +176,26 @@ footer a{display:block; padding:5px 0}
   <summary><span>ほかの画面へ</span></summary>
   <div class="body">
     <footer>
-      <a href="share/nagekomi-c5fd9d5791b32e88.html">投げ込み箱：URLを貼って押すだけ</a>
+      <a href="share/nagekomi-c5fd9d5791b32e88.html">★投げ込み箱：URLを貼って押すだけ（受付一覧つき）</a>
       <a href="share/daicho.html">受付台帳：言われて治っていないもの</a>
       <a href="share/check/1052-kakunin-machi.html">たまごさんの確認待ち</a>
       <a href="share/check/1138-shukudai.html">宿題台帳：言われたのに返っていないもの</a>
       <a href="share/check/1051-okane.html">お金（1枚・毎日更新）</a>
-      <a href="share/done/">できたもの一覧</a>
       <a href="969-kagi-daicho.html">鍵・つながりの台帳</a>
+      <a href="977-ai-renkei.html">他のAIとの連絡線・死活表</a>
       <a href="1136-gaibu-ai-daicho.html">外部AIの台帳：投げて返ってきていないもの</a>
-      <a href="1165-hassha.html">何がMacを重くしているか（5分ごと実測）</a>
+      <a href="1136-ai-nedan.html">AIの値段表：1回いくら減るか</a>
+      <a href="share/check/1141-kanryo-taikan.html">★完了の門と、体感の実証（毎日更新）</a>
+      <a href="1140-machigai.html">全曲検査：間違いは何件あったか（全26,400曲）</a>
+      <a href="1145-heru.html">★間違いは減っているか（動画を1本ずつ実測・毎日更新）</a>
+      <a href="1146-login-zero.html">★ログインの手をゼロに近づける</a>
+      <a href="1147-hayaku.html">★曲ページは軽くなったか</a>
+      <a href="1149-yarippanashi.html">★やりっぱなしゼロ：4帳簿・壊れた型・門の死活</a>
+      <a href="1151-gaibu-seiseki.html">★GensparkとDevinは役に立ったか</a>
+      <a href="yuming-anohi/index.html">あの日にかえりたい：Genspark本人の完成版と3案</a>
+      <a href="1165-hassha.html">★何がMacを重くしているか／今走っている・次に控えている（5分ごと実測）</a>
+      <a href="share/done/">できたもの一覧</a>
+      <a href="status/public/1172-kara-tana.html">カードが0件の棚（186本中4本・数え直し）</a>
       <a href="share/spotify-hitotsu.html">Spotify：押すのはここだけ</a>
       <a href="index_full.html">前の進捗表（全部入り）</a>
     </footer>
@@ -231,12 +246,25 @@ function liveMin(x){
 /* ログインが切れているときだけ、1行だけ赤で出す（箱も黄色も作らない） */
 function renderLogin(d){
   var L = d.login || {}, el = $("loginNg");
+  renderLoginKigen(L);
   if(!el) return;
   if(!L.ng){ el.style.display = "none"; return; }
   el.style.display = "block";
   el.textContent = "ログインが切れています"
     + (L.since ? "（" + L.since + "から）" : "")
     + (L.naoshikata ? "　" + L.naoshikata : "");
+}
+/* ログインの残り期限。切れる前に気づくための1行。数字が無いときは出さない。 */
+function renderLoginKigen(L){
+  var el = $("loginKigen");
+  if(!el) return;
+  var d = L.tokenDaysLeft;
+  if(d === null || d === undefined){ el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.textContent = "ログインの鍵　あと" + d + "日"
+    + (L.tokenExpiresAt ? "（" + L.tokenExpiresAt + "まで）" : "")
+    + (L.machiUrl ? "　巻き直しのURLが出ています（承認を1回押すだけ）"
+                  : (L.renewNeeded ? "　巻き直し中" : ""));
 }
 function renderRunning(d){
   RUN = d.runningNow || [];

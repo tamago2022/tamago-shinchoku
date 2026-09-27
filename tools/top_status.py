@@ -184,6 +184,8 @@ def login_block():
     出す文言は1つだけ：「ログインが切れています」。
     """
     st = jread(os.path.join(ST, "auth_keeper.json"), {})
+    # 残り期限の元（kagi_jidou_makinaoshi.py が書く）。無ければ空（推測で埋めない）
+    kigen = jread(os.path.join(ST, "public", "kagi_kigen.json"), {}) or {}
     ng = os.path.exists(os.path.join(ST, "auth_expired.flag"))
     if not ng:
         try:
@@ -197,7 +199,15 @@ def login_block():
         "since": st.get("ngSince"),
         "naoshikata": "status/LOGIN.md の1行を貼ってEnter（1年もつ形に替わります）" if ng else None,
         "kirenaiKatachi": os.path.exists(os.path.expanduser("~/.tamago/use_token")),
-        "tokenDaysLeft": st.get("tokenDaysLeft"),
+        # ★2026-09-27 残り期限は auth_keeper が書いた写しに頼らない。
+        #   あちらは「通った回」にしか書かないので、混んで測れない日が続くと古い数字が
+        #   貼り付く（実測：07:52〜14:35 は1回も測れていない）。ここで毎回作り直す。
+        "tokenDaysLeft": (kigen.get("daysLeft")
+                          if kigen.get("daysLeft") is not None else st.get("tokenDaysLeft")),
+        "tokenExpiresAt": kigen.get("expiresAt"),
+        "tokenKatachi": kigen.get("katachi"),
+        "renewNeeded": kigen.get("renewNeeded"),
+        "machiUrl": kigen.get("machiUrl"),
     }
 
 
