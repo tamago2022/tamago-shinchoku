@@ -3,12 +3,35 @@
   "hooks": {
     "PreToolUse": [
       {
+        "$kanmon": "hikitsugi",
+        "$comment": "1180号（2026-09-28）読まずに始められない関所。matcherを書かない＝全部の道具に効く（公式：matcher省略は全ツール一致）。最初のツール使用の前に status/hikitsugi_ima.md を読ませ、今日の合言葉が置かれていなければ exit 2 で拒否する。Read/Grep/Glob/Task系・status/1180_yonda配下へのWrite・1180を含むBashは通すので、読む手段と通る手段は塞がらない。合言葉が未生成・記録が壊れている・設定で切ってある場合は黙って通す（人質にしない）。逆テスト：python3 tools/1180_hikitsugi_kanmon.py --shiken",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/1180_hikitsugi_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
         "$comment": "1166号【憲法】ブラウザの入口の関所。Braveを選ぶ／Braveが選ばれた状態で操作する／どのブラウザかを名指ししないまま操作する、を exit 2 で拒否する。実測(2026-09-27)：list_connected_browsers で Brave が inUse:true ＝後から繋がった方が既定になる。名指ししないと必ずBraveに落ちる。ここ1か所で全子セッションに効く。OSには触らない(AppleScript/osascript/TCC全面禁止)。",
         "matcher": "mcp__claude-in-chrome__.*",
         "hooks": [
           {
             "type": "command",
             "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/browser_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "$kanmon": "iruka",
+        "$comment": "1401号（2026-09-28）上流の関所。タブを新しく開く道具だけを止め、(1)web_fetch/APIで取れる先は無条件で拒否 (2)それ以外は『なぜブラウザが要るのか』の宣言を要求する。宣言すると同時に978番の予約閉栓の票が置かれる＝開く前に閉じる約束をさせる。既存タブの読み書きは止めない。",
+        "matcher": "mcp__(claude-in-chrome|Claude_Browser)__(tabs_create_mcp|tabs_create|preview_start|navigate)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/1401_iru_ka.mjs",
             "timeout": 20
           }
         ]
@@ -33,6 +56,16 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "$kanmon": "tatamu",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/mac/Desktop/tamago-shinchoku/tools/1200_tatamu.py --stop-hook",
+            "timeout": 40
+          }
+        ]
       }
     ],
     "SubagentStop": [
@@ -53,6 +86,17 @@
             "type": "command",
             "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/tab_kanmon.mjs",
             "timeout": 30
+          }
+        ]
+      },
+      {
+        "$kanmon": "tatamu",
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/mac/Desktop/tamago-shinchoku/tools/1200_tatamu.py --stop-hook",
+            "timeout": 40
           }
         ]
       }

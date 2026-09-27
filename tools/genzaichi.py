@@ -818,6 +818,19 @@ def main():
         return  # heartbeat.shの15秒ループに相乗り。25分未満なら何もしない。
     touch_gate()
     build()
+    # 1180号（2026-09-28）引き継ぎの1枚を、この直後に作り直す。
+    #   heartbeat.sh は書き換えても動いている心臓に反映されないので、
+    #   心臓が毎周回「読み直す」Python側（ここ）に1行足すのが正しい入れ方。
+    #   ここで落ちても現在地の生成は成功済みなので、例外は飲む。
+    try:
+        import importlib.util
+        _p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "1180_hikitsugi_ima.py")
+        _s = importlib.util.spec_from_file_location("_h1180", _p)
+        _m = importlib.util.module_from_spec(_s)
+        _s.loader.exec_module(_m)
+        _m.build()
+    except Exception as e:
+        print("1180_hikitsugi_ima: skipped (%s)" % e)
 
 
 if __name__ == "__main__":
