@@ -515,6 +515,13 @@ while :; do
   #    launchd（1分おき）が正本。心臓からも呼んでおくのは、launchd が落ちても死なせないため。
   #    中で5分に1回に間引くので、二重に呼んでも二重に積まない。
   tick_every 4  && ( python3 "$REPO/tools/tomaranai.py" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
+  # 1170番（2026-09-27）出荷便（push-queue）の見張り。5分おき（15秒×20）。
+  #   09-27 17:07〜18:11 の3周、出荷便が連続で落ちていたのに**どこにも出ていなかった**。
+  #   この係は押し出さない（押す係は role-sweep にある＝二重実装しない）。
+  #   棚に receipt の無い依頼が45分／便が75分沈黙、のどちらかで
+  #   ①進捗表へ1行（dispatch_outbox.jsonl）②role-sweep を kickstart で起こす。
+  #   蹴るのは同じ赤につき3回まで（起きないものを永遠に叩かない）。青の周は1バイトも書かない。
+  tick_every 20 && ( python3 "$REPO/tools/1170_shukka_mihari.py" >> "$REPO/status/1170_shukka.log" 2>&1 & ) >/dev/null 2>&1
   #    launchd への登録は冪等。既に入っていれば何もしないので、毎周呼んで構わない。
   #    ★たまごさんに手で流させない。登録そのものを機械にやらせる。
   tick_every 40 && ( bash "$REPO/tools/tomaranai_install.sh" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
