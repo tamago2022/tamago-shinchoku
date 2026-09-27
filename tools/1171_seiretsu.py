@@ -153,13 +153,15 @@ def kaku(plan):
     for i, e in enumerate(plan, 1):
         mark = {"そのまま": "  ", "時刻を直す": "→ ", "外す": "✕ ",
                 "見送り（もう間に合わない）": "… "}.get(e["dou"], "? ")
+        saki = e["saki"] or ("（外す）" if e["dou"] == "外す" else "（%s）" % e["dou"])
         print("  %2d %s%s %s → %s  %s"
               % (i, mark, "邦楽" if e["lang"] == "ja" else "洋楽",
-                 e["ima"], e["saki"] or "（外す）", e["midashi"]))
+                 e["ima"], saki, e["midashi"]))
     n = sum(1 for e in plan if e["dou"] == "時刻を直す")
     x = sum(1 for e in plan if e["dou"] == "外す")
-    print("直すもの %d 本／外すもの %d 本／そのまま %d 本"
-          % (n, x, len(plan) - n - x))
+    m = sum(1 for e in plan if e["dou"].startswith("見送り"))
+    print("直すもの %d 本／外すもの %d 本／見送り %d 本／そのまま %d 本"
+          % (n, x, m, len(plan) - n - x - m))
     return n + x
 
 

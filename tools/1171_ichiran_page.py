@@ -125,15 +125,18 @@ def shiraberu(p, kp):
         lines = [x for x in text.split("\n") if x.strip()]
         if not lines or "http" not in lines[-1]:
             aka.append("リンクが本文のいちばん最後に無い")
+    # ★枠と言語のずれは 1171_seiretsu.py が枠の戻った瞬間に自動で直す。
+    #   人が手を入れないと直らない「動画なし・リンク切れ」とは分けて出す。
+    zure = []
     hhmm = due[-5:] if len(due) >= 5 else ""
     if hhmm == "09:00" and lang != "ja":
-        aka.append("朝の枠なのに洋楽")
+        zure.append("朝の枠なのに洋楽")
     elif hhmm == "21:00" and lang != "en":
-        aka.append("夜の枠なのに邦楽")
+        zure.append("夜の枠なのに邦楽")
     elif hhmm and hhmm not in ("09:00", "21:00"):
-        aka.append("枠の時刻が 09:00／21:00 でない（%s）" % hhmm)
+        zure.append("夜が %s になっている（21:00のはず）" % hhmm)
     return {"due": due, "lang": lang, "text": text, "url": url,
-            "midashi": midashi(text), "kenpin": k, "aka": aka}
+            "midashi": midashi(text), "kenpin": k, "aka": aka, "zure": zure}
 
 
 def main():
@@ -155,13 +158,17 @@ def main():
                   % ("ok" if k.get("kanren", 0) >= KANREN_SAITEI else "ng",
                      k.get("kanren", 0))) if k else ''
         riyuu = ('<p class="aka">▲ %s</p>' % e("／".join(r["aka"]))) if r["aka"] else ''
+        if r["zure"]:
+            riyuu += ('<p class="zure">◆ %s → 枠が戻る 9/28 05:34 に 1171_seiretsu が'
+                      '自動で直します</p>' % e("／".join(r["zure"])))
         li.append(
             '<li class="%s"><div class="hd"><span class="no">%02d</span>'
             '<span class="due">%s</span><span class="lang %s">%s</span>'
             '%s%s</div><p class="mi">%s</p>%s'
             '<pre>%s</pre>'
             '<p class="u">%s</p></li>'
-            % ("bad" if r["aka"] else "good", i, e(r["due"]),
+            % ("bad" if r["aka"] else ("warn" if r["zure"] else "good"),
+               i, e(r["due"]),
                r["lang"], "邦楽" if r["lang"] == "ja" else "洋楽",
                douga, kanren, e(r["midashi"]), riyuu, e(r["text"]),
                ('<a href="%s">%s</a>' % (e(r["url"]), e(r["url"]))
@@ -176,10 +183,13 @@ h1{font-size:19px;margin:0 0 2px}
 .at{color:#8e857a;font-size:12.5px;margin:0 0 6px}
 .sum{border:1px solid #3a342c;border-radius:8px;padding:10px 12px;margin:0 0 18px;font-size:13.5px}
 .sum b.ng{color:#ff7a5c}
+.sum b.zu{color:#e0a94a}
 ol{list-style:none;margin:0;padding:0}
 li{border:1px solid #2e2a24;border-left:4px solid #3f7d4f;border-radius:8px;
  padding:10px 12px;margin:0 0 12px;background:#1b1813}
 li.bad{border-left-color:#d8452c;background:#221613}
+li.warn{border-left-color:#c98a2e}
+.zure{margin:5px 0 0;color:#e0a94a;font-size:13px}
 .hd{display:flex;flex-wrap:wrap;gap:6px 9px;align-items:center;font-size:12.5px}
 .no{color:#8e857a;font-variant-numeric:tabular-nums}
 .due{font-variant-numeric:tabular-nums;color:#e8dcc4;font-weight:600}
@@ -197,12 +207,16 @@ a{color:#7fb0e0}
 </style></head><body>
 <h1>秋の箱・予約の中身</h1>
 <p class="at">%(at)s 時点。★Bufferは1回も叩いていません。手元の控えを読んで描いた1枚です。</p>
-<div class="sum">予約 %(n)d 本／そのうち <b class="ng">直すところがあるもの %(ng)d 本</b><br>
+<div class="sum">予約 %(n)d 本。
+<b class="ng">赤 %(ng)d 本</b>＝人が直さないと直らない（動画なし・リンク切れ・関連不足）。
+<b class="zu">黄 %(zu)d 本</b>＝枠と言語のずれ。9/28 05:34 に自動で直ります。<br>
 決まり：朝 09:00 ＝ 邦楽／夜 21:00 ＝ 洋楽。関連は最低4本。本人の動画は必須。<br>
 Bufferの枠：%(waku)s</div>
 <ol>%(body)s</ol></body></html>""" % {
         "at": e(datetime.datetime.now(JST).strftime("%F %H:%M")),
-        "n": len(rows), "ng": ng, "body": "".join(li) or "<li>控えが空です</li>",
+        "n": len(rows), "ng": ng,
+        "zu": sum(1 for r in rows if r["zure"] and not r["aka"]),
+        "body": "".join(li) or "<li>控えが空です</li>",
         "waku": e("使い切り。%s に戻る（remaining=%s）"
                   % (w.get("modoru") or "?", w.get("remaining"))
                   if w.get("modoru") else "不明")}
