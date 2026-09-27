@@ -260,10 +260,30 @@ _TASKISH = re.compile(r"(する|やる|直す|作る|足す|消す|測る|出す
                       r"продолж|続ける|takes|\[ \])")
 
 
+_HANTEI_AKA_PREFIX = "判定日赤｜"
+
+
 def actionable(r):
-    """発車待ちに積んでよいか。台帳への記録可否ではない。"""
+    """発車待ちに積んでよいか。台帳への記録可否ではない。
+
+    1377番実例（2026-09-28）：たまごさんの相槌「あ、ダブルできてるんじゃなくて
+    直してくれたんだね。」が tools/hantei_hiduke.py の判定日仕組みで
+    「判定日赤｜」付きの queue エントリへ自動繰り上げされ、source=="queue" は
+    無条件 actionable=True だったため、具体的な作業指示が無いまま
+    stuck→waiting→running を何度も繰り返し、複数セッションが空振りし続けた
+    （1370番で kioku 側には既に用意されていた「actionable=False なら
+    再発車しない」の防波堤が、queue 側の無条件Trueで素通りしていた）。
+    「判定日赤｜」で始まる自動繰り上げ項目だけは、元の発言に同じ判定基準
+    （_NOT_TASK / _TASKISH）を通す。それ以外の queue 項目（人が直接積んだ
+    もの）は従来通り無条件 actionable=True のまま変えない。
+    """
     t = r.get("title") or ""
     if r.get("source") == "queue":
+        if t.startswith(_HANTEI_AKA_PREFIX):
+            bare = t[len(_HANTEI_AKA_PREFIX):]
+            if _NOT_TASK.search(bare):
+                return False
+            return bool(_TASKISH.search(bare))
         return True
     if _NOT_TASK.search(t):
         return False
@@ -654,6 +674,13 @@ def self_test():
     check("done_when が明記の完了条件を拾う",
           done_when("x", "【完了条件】ページが本番で開ける") == "ページが本番で開ける")
     check("id が固定値", make_id("queue", "あ い") == make_id("queue", "あい"))
+    check("1377番再発防止：判定日赤の相槌はactionable=False",
+          actionable({"source": "queue",
+                      "title": "判定日赤｜あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is False)
+    check("判定日赤でも作業動詞があればactionable=True",
+          actionable({"source": "queue", "title": "判定日赤｜バナー画像を直す"}) is True)
+    check("通常のqueue項目は従来通りactionable=True",
+          actionable({"source": "queue", "title": "あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is True)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
