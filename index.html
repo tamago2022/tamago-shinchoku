@@ -140,6 +140,8 @@ footer a{display:block; padding:5px 0}
 <div style="display:flex;gap:6px;align-items:center;font-size:13px;margin-bottom:8px">
   <a href="kanri.html" style="color:#2f6fb0;text-decoration:none;border:1px solid #ddd7cd;border-radius:999px;padding:5px 11px;background:#fffdf9;white-space:nowrap">★管理画面へ</a>
   <a href="share/nagekomi-c5fd9d5791b32e88.html" style="color:#2f6fb0;text-decoration:none;border:1px solid #ddd7cd;border-radius:999px;padding:5px 11px;background:#fffdf9;white-space:nowrap">投げ込み箱へ</a>
+  <!-- 1172番・2026-09-27：たまごさん「できたものを見るボタンを入れて」→ status/public/dekita.html へ -->
+  <a href="status/public/dekita.html" style="color:#7a4b00;text-decoration:none;border:1px solid #e6c98a;border-radius:999px;padding:5px 11px;background:#fff7e6;white-space:nowrap;font-weight:700">✨できたもの を見る</a>
 </div>
 <header>
   <h1>進捗表</h1>
@@ -179,6 +181,10 @@ footer a{display:block; padding:5px 0}
     <div><div class="wl">今の負荷</div><div class="wv" id="tLoad">…</div></div>
   </div>
   <div class="nums" id="taionMeta" style="margin-top:10px"></div>
+  <!-- 1172番・2026-09-27：たまごさん「進捗表に残り容量を1行出す」。
+       折りたたみ（お金・フォルダ・掃除）の中では開かないと見えないので、ここに常時1行で出す。
+       数字が取れないときは空欄にせず「取れていません」と文字で出す。 -->
+  <div class="nums" id="diskLine" style="margin-top:8px">残り容量　読み込み中…</div>
 </section>
 
 <!-- ⓿ ログイン（★2026-09-25 追加。ここが切れていると何も動かないので一番上に赤で出す。
@@ -414,6 +420,33 @@ function getJson(url, ms){
     if(t["負荷1行"]) meta.push(t["負荷1行"]);
     meta.push("測った時刻 "+String(t.at).slice(11,19));
     document.getElementById("taionMeta").textContent = meta.join(" ｜ ");
+  });
+})();
+
+/* 1172番・2026-09-27：残り容量の1行（常時表示）。
+   machine.json の diskFreeGB＝Macの空き、mac_souji.json＝自動で掃いている係の直近の結果。
+   両方とも心臓が自動で更新している。取れなければ「取れていません」と書く（空欄にしない）。 */
+(function(){
+  var el = document.getElementById("diskLine");
+  if(!el) return;
+  Promise.all([
+    getJson("status/public/machine.json").catch(function(){ return null; }),
+    getJson("status/public/mac_souji.json").catch(function(){ return null; })
+  ]).then(function(a){
+    var mac = a[0], souji = a[1];
+    var free = (mac && typeof mac.diskFreeGB === "number") ? mac.diskFreeGB : null;
+    var s = "残り容量　" + (free == null ? "取れていません" : Math.round(free) + "GB");
+    if(souji){
+      if(souji.lastFreedHuman) s += " ｜ 前回の掃除で " + souji.lastFreedHuman;
+      if(souji.totalFreedHuman) s += "（累計 " + souji.totalFreedHuman + "）";
+      if(souji.lastRunAt) s += " ｜ 最後に掃いた " + String(souji.lastRunAt).slice(5,16).replace("T"," ");
+    } else {
+      s += " ｜ 掃除の記録が取れていません";
+    }
+    el.textContent = s;
+    el.style.color = (free != null && free < 50) ? "var(--t-ng)" : "";
+  }).catch(function(){
+    el.textContent = "残り容量　取れていません";
   });
 })();
 
