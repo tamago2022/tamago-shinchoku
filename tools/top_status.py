@@ -300,6 +300,21 @@ def verify_block():
     return {k: v.get(k) for k in ("updatedAt", "total", "verified", "recheck", "unverified")}
 
 
+def hold_block(items, limit=8):
+    """1371番：軽量版へ差し替えた際（1e8257513・09-17）に旧版の
+    「🛑 手を止めた仕事（やり直し2回で自動停止）」「🕗 後回し（時間があるとき）」が
+    まるごと消えていた。status/queue_light.json には status:"hold" が67件そのまま
+    残っていた＝データは無事、表示側だけが消えていた。ここで拾い直して復活させる。
+    無ければ空リスト（機械が『0件』を偽装しない）。"""
+    holds = [x for x in items if x.get("status") == "hold"]
+    rows = [
+        {"n": x.get("n"), "title": (x.get("title") or x.get("label") or "")[:60],
+         "why": (x.get("why") or "")[:40]}
+        for x in holds[:limit]
+    ]
+    return {"total": len(holds), "items": rows}
+
+
 # joy-relief-station 側の状態ファイル（案件820：Lovable公開便）。
 # クロスリポジトリ参照だが、sync-lovable-publish-dashboard.mjs も同じ os.homedir()+Desktop 前提で
 # data.js を直接書いているのと同じやり方（このマシン内で完結する運用なので固定パスで問題ない）。
@@ -392,6 +407,8 @@ def build():
         "omosa": omosa_block(),
         "verify": verify_block(),
         "lovablePublish": lovable_publish_block(),
+        # 1371番：後回し／手を止めた仕事（hold）。09-17の軽量化で表示が消えていた分。
+        "hold": hold_block(items),
     }
     tmp = "%s.tmp.%d" % (OUT, os.getpid())
     with io.open(tmp, "w", encoding="utf-8") as f:
