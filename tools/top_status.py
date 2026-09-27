@@ -454,6 +454,16 @@ if __name__ == "__main__":
     except Exception:
         pass
 
+    # 2026-09-27（1167番）★本体：予約が1本出て空いたら、待機列の先頭を1本入れる係。
+    # Bufferの予約は10本が上限なので、満杯のあいだは何もせず退く。
+    # 1本入れたら必ず machi.json を保存してから終わる＝途中で死んでも二度入れしない。
+    try:
+        import subprocess as _spA, os as _osA
+        _sA = _osA.path.join(_osA.path.dirname(_osA.path.abspath(__file__)), "1167_ireru1.py")
+        _spA.Popen(["python3", _sA], stdout=_spA.DEVNULL, stderr=_spA.DEVNULL)
+    except Exception:
+        pass
+
     # 2026-09-27（1166番）待機列を自分で積む係。候補1本を15分に1つだけ進める。
     # YouTubeの検索枠が尽きた日はその場で退き、翌日また続きから。止めたいときは status/1166.stop。
     try:
