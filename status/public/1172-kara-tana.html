@@ -82,9 +82,14 @@ a{color:var(--t-ok,#5ddba0)}
 <tr><td>旅</td><td>japanese contents</td><td class="ok">日本のコンテンツ</td><td class="num">1</td></tr>
 </table>
 <p class="n" style="margin-top:10px">
-棚の名前の正本はDB（<code>admin_shelves</code>）なので、そこを書き換えた。
+★DBは書き換えていない。<b>書き換えられなかった</b>。実測：<code>.env.local</code> の <code>SUPABASE_SERVICE_ROLE_KEY</code> は<b>長さ0（空）</b>、
+<code>app_secrets</code> テーブルも存在しない（PGRST205）、publishable(anon)鍵でPATCHすると<b>200が返るのに0行しか変わらない</b>（RLSで弾かれている）。
+「200が返ったから直った」で済ませないよう、ここに残す。<br>
+だから同じリポジトリに元からある <code>STOCK_CARD_OVERRIDES</code> と同じ考え方で、<b>読み出し側で上書き</b>した
+（<code>src/lib/publicShelves.functions.ts</code> の <code>DB_SHELF_TITLE_OVERRIDES</code>）。<br>
 並び順の正本 <code>src/lib/shelfOrder.ts</code> は「題名」で棚を引く作りなので、改名すると並び順の指定（場所で選ぶ・67番目）が外れる。
-外れないように日本語名の行を足した。旧名の行も残してある（旧名で登録された行が他に残っていても崩れないため）。
+外れないように日本語名の行を足した。旧名の行も残してある。<br>
+DBへ書ける鍵ができたらDB側の題名を直して、この上書き表は消してよい（コードのコメントにもそう書いた）。
 </p>
 
 <h2>どう数えたか（出どころ）</h2>
