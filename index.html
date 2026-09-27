@@ -67,6 +67,12 @@ button:active{background:#efe9df}
 #loginNg{display:none; color:var(--red); font-size:16px; line-height:1.7; margin:0 0 12px}
 /* ───── ログインの残り期限。切れていないときの1行。小さく・黄色くしない ───── */
 #loginKigen{display:none; color:var(--sub); font-size:12px; line-height:1.6; margin:0 0 10px}
+/* ───── 1373番：使いすぎアラート。「今使いすぎです、もうすぐ固まります」＋名指しの終了提案 ───── */
+#alert1373{display:none; font-size:15px; line-height:1.7; margin:0 0 12px; padding:10px 12px; border-radius:10px}
+#alert1373.red{background:#f6e4df; color:var(--red); border:1px solid #e2b6a8}
+#alert1373.yellow{background:#faf1d9; color:#7a5b12; border:1px solid #e8d190}
+#alert1373 .midashi{font-weight:600}
+#alert1373 .sug{display:block; font-size:13px; margin-top:4px; opacity:.9}
 
 /* ───── 走っているもの ───── */
 .run{border-top:1px solid #eee7dc; padding:13px 0 12px}
@@ -149,6 +155,8 @@ footer a{display:block; padding:5px 0}
 <div id="loginNg"></div>
 <!-- ログインの残り期限。1行だけ・小さく -->
 <div id="loginKigen"></div>
+<!-- 1373番：使いすぎアラート。「今使いすぎです、もうすぐ固まります」＋名指しの終了提案。green のときは出さない -->
+<div id="alert1373"></div>
 
 <!-- ① 今週の枠（％） -->
 <section class="card" id="wakuCard">
@@ -355,6 +363,21 @@ function renderOmosa(d){
   if(o.tatandaKei) p.push("閉じた合計 " + o.tatandaKei + "本");
   el.style.display = "block";
   el.textContent = p.join("　");
+}
+/* 1373番：「今使いすぎです、もうすぐ固まります」。level が red/yellow のときだけ出す。
+   数字が取れていない（null）ときは黙る（machine_status_push.sh が止まっている＝機械が偽装しない）。 */
+function renderAlert1373(d){
+  var el = $("alert1373");
+  if(!el) return;
+  var a = d.alert1373;
+  if(!a || !a.level || a.level === "green"){ el.style.display = "none"; return; }
+  el.className = a.level;
+  var html = '<span class="midashi">' + esc(a.midashi || "") + '</span>';
+  (a.suggestions || []).forEach(function(s){
+    html += '<span class="sug">' + esc(s.message || "") + '</span>';
+  });
+  el.innerHTML = html;
+  el.style.display = "block";
 }
 function renderRunning(d){
   RUN = d.runningNow || [];
@@ -581,6 +604,7 @@ function render(d){
   renderStamp(ageMin);
 
   renderLogin(d);
+  renderAlert1373(d);
   renderRunning(d);
   renderOmosa(d);
   renderPace(d.pace);
