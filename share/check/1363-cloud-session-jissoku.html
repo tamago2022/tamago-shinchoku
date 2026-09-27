@@ -255,6 +255,54 @@
 権限変更なので勝手にやっていません。入れるなら <a href="https://claude.ai/connect-github" target="_blank" rel="noopener">https://claude.ai/connect-github</a> から tamago-shinchoku を追加してください。<b>入れる／入れない、どちらでも作業は止まりません。</b>
 </div>
 
+<h2>⑪ 実測の生データ（機械が出したものをそのまま）</h2>
+<div class="note"><span class="kome">上の表の数字は、全部この出力から取っています。加工していません。</span></div>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;font-size:0.72rem;line-height:1.5;">
+=== BEFORE 2026-09-27T13:49:17+0900 ===
+hw.ncpu: 8
+vm.loadavg: { 46.20 43.79 38.88 }
+System-wide memory free percentage: 82%
+Pages occupied by compressor: 486594   （= 圧縮メモリ 1.99GB）
+vm.swapusage: total = 20480.00M  used = 18596.25M  free = 1883.75M
+
+=== 軽い作業の実測（/usr/bin/time -l） ===
+MEASURE|ファイル検索(grep share/check のhtml約1400枚)|経過11.65s|CPU0.40s|CPU3%|最大メモリ0.003GB
+MEASURE|ファイル書き込み(160KBのHTML1枚生成)|経過2.15s|CPU0.12s|CPU6%|最大メモリ0.006GB
+MEASURE|git status(進捗表リポ)|経過14.58s|CPU0.36s|CPU2%|最大メモリ0.005GB
+MEASURE|調べもの相当(HTTPS1本取得)|経過8.73s|CPU0.13s|CPU1%|最大メモリ0.004GB
+MEASURE|JSON読み込み(status配下50件)|経過17.42s|CPU0.31s|CPU2%|最大メモリ0.027GB
+MEASURE|進捗表HTML生成(既存1枚読んで書き出し)|経過8.54s|CPU0.20s|CPU2%|最大メモリ0.006GB
+
+=== 重い作業の実測 ===
+MEASURE|git fetch --all(2.1GBのリポ)|経過61.7s|CPU0.6s|CPU1%|最大メモリ0.007GB
+MEASURE|git count-objects -vH(2.1GBのリポ)|経過29.1s|CPU0.4s|CPU1%|最大メモリ0.003GB
+MEASURE|画像変換(sips PNG→JPEG 1枚 200KB)|経過6.9s|CPU0.2s|CPU3%|最大メモリ0.023GB
+MEASURE|画像変換(sips リサイズ13枚)|経過16.8s|CPU2.2s|CPU13%|最大メモリ0.028GB
+MEASURE|動画エンコード(ffmpeg 720p 5秒 h264 medium)|経過96.6s|CPU10.1s|CPU10%|最大メモリ0.392GB
+MEASURE|lint(npm run lint)|TIMEOUT 240s   ← 240秒では終わらなかった
+
+=== リポジトリの大きさ ===
+2.1G  /Users/mac/Desktop/tamago-shinchoku/.git
+388M  /Users/mac/Desktop/joy-relief-station/.git
+425M  /Users/mac/Desktop/joy-relief-station/node_modules
+
+=== AFTER 2026-09-27T14:40:59+0900 ===
+hw.ncpu: 8
+vm.loadavg: { 11.96 25.09 35.35 }
+System-wide memory free percentage: 84%
+圧縮メモリ 1.12GB
+vm.swapusage: total = 23552.00M  used = 22778.50M  free = 773.50M
+Chrome CPU14% メモリ4.26GB (30プロセス)
+Brave CPU28% メモリ13.43GB (56プロセス)
+Claudeアプリ CPU64% メモリ4.18GB (34プロセス)
+心臓の判定 → shingou: 赤 / loadRatio: 5.6 / at: 2026-09-27T14:31:51+0900
+
+=== PRの実物（gh pr view 510） ===
+{"additions":49,"deletions":0,"number":510,"state":"OPEN",
+ "title":"docs: Add npm scripts reference documentation",
+ "url":"https://github.com/tamago2022/joy-relief-station/pull/510"}
+</pre>
+
 <footer>
 測定した環境：MacBook（8コア）、2026-09-27 13:49〜14:41。クラウドセッションのモデルはSonnet 5。為替は1ドル157.23円（2026-09-25 Trading Economics）で換算。<br>
 このページの数字はすべて実測値または公式ページからの転記で、推測値は含んでいません。取れなかった項目は「記載なし」「終わらず」と書いてあります。
