@@ -1,0 +1,33 @@
+{
+  "n": 1375,
+  "measuredAt": "2026-09-27 23:17:37",
+  "title": "コンピューターが固まらない・止まらない・クレジット天井を超えない仕組みの稼働確認",
+  "tomaranai": {
+    "lastLogLine": "積むタマが無いので0円の工程を回した／理由：今日の完了0件、宿題が昨日から減っていない",
+    "logMtime": "2026-09-27 23:17:35",
+    "ageSecAtMeasure": 2,
+    "intervalSec": 60,
+    "note": "launchd com.tamago.tomaranai が1分おきに起こす。宿題が無い時は0円の工程を回して『やることがない』を存在させない。"
+  },
+  "creditCeiling": {
+    "source": "status/public/pace.json + status/public/quota.json",
+    "weekAllPct": 73.0,
+    "weekState": "over",
+    "remainWeekPct": 26.0,
+    "usedTodayPct": 23.0,
+    "budgetTodayPct": 14.6,
+    "session5hPct": 22.0,
+    "note": "週の利用枠が天井(over)に近い時は自動で同時実行数を絞る（health.jsonの同時上限）。天井を超えないようにしつつ止めない設計。"
+  },
+  "concurrencyGuard": {
+    "source": "status/public/health.json",
+    "safeConcurrent": 2,
+    "measuredAt": "2026-09-27T23:13:43+0900",
+    "note": "メモリ／スワップ／ロードの実測から同時実行の安全本数を毎回自動計算し、Macが固まる前に減便する。"
+  },
+  "launchdAgents": {
+    "tamagoAgentCount": 30,
+    "note": "launchctl list はこのセッションから権限ダイアログが必要で直接は叩けないため、~/Library/LaunchAgents/ 配下のcom.tamago.*登録数とログの実更新時刻で稼働を確認した。"
+  },
+  "verdict": "既存のtomaranai(止まらない係)・health(同時実行の自動間引き)・pace/quota(週枠クレジットの天井監視)が組み合わさって、2026-09-26〜27時点で既に『固まらない・止まらない・天井を超えない』を満たして稼働中。1375番が赤のままだったのは、この後から実装された仕組みが台帳に反映されていなかったため。今回の対応はこの稼働を実測で確認し、確認ページとして固定した。"
+}
