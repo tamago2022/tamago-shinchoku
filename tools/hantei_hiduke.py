@@ -143,21 +143,25 @@ def ima_no_jotai():
     """題名 → いまの状態。★機械が確認した完了を、自己申告より上に置く。"""
     by = {}
     for r in jsonl(DAICHO):
+        # 1370番実例：actionable（shukudai.pyが「具体的な作業指示が読み取れない」と
+        # 判定した印）はDAICHO側にしか付いていない。HATSUGEN側のrにはこのフィールドが
+        # 無いため、ここで拾って hantei_1ken に渡す。
         by.setdefault(norm(r.get("title"))[:24],
-                      {"state": r.get("state") or "未着手", "evidence": r.get("evidence")})
+                      {"state": r.get("state") or "未着手", "evidence": r.get("evidence"),
+                       "actionable": r.get("actionable")})
     # 検品を通った（＝URLが200で中身が入っていた）ものだけ、完了に上書きしてよい
     for k in jsonl(KENPIN):
         if not k.get("ok"):
             continue
         key = norm(k.get("title"))[:24]
         if key:
-            by[key] = {"state": "完了", "evidence": k.get("url")}
+            by[key] = {"state": "完了", "evidence": k.get("url"), "actionable": None}
     return by
 
 
 def hantei_1ken(r, ima):
     """1件を判定する。返すのは（赤か、実際どうなったか、いまの状態）。"""
-    cur = ima.get(norm(r.get("title"))[:24]) or {"state": "未着手", "evidence": None}
+    cur = ima.get(norm(r.get("title"))[:24]) or {"state": "未着手", "evidence": None, "actionable": None}
     st = cur["state"]
     t = today()
     w = r.get("hantei1w") or ""
@@ -175,7 +179,7 @@ def hantei_1ken(r, ima):
     # 既存の tomaranai.py（3回言わせた案件の繰り上げ）は actionable を見ているのに、
     # ここ（判定日の係）だけ見ておらず、実行不能なタスクを判定日のたびに★赤＋P1で
     # re発車させ続け、AIセッションが空回りする事故が起きていた。
-    if r.get("actionable") is False:
+    if r.get("actionable") is False or cur.get("actionable") is False:
         return {"which": which, "aka": False, "state": st,
                 "sonogo": "実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）"}
 
