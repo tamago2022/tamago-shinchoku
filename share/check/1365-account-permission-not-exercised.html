@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定</div>
+<h1>#1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定</h1>
+<div class="date">2026-09-27 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+2026-09-18 00:46にたまごさんが許可したのは1365号（アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ）と、直後の1366号（あなたしか使わない・発信もしないパイプ・配管としてなら作って構わない）の2つで、実際は1つの発言。1366号は同日並行セッションが先に着手し、944番の外部AI共通窓口(<code>tools/kiku.py</code>)がすでにこの条件（発信なし・自分専用）で実装・稼働していることを実測済み（本ページ末尾にリンク）。本ページ(1365号)はその前段＝『アカウントを勝手に作る／作らない』の判断そのものを扱う。結論：<b>新しいアカウントは作っていない。作る必要が無かった。</b>許可が出た直後の会話（同日00:49）でたまごさんが挙げていたもう一つの候補用途＝『Xで拾った猫や動物の動画のコピーが1回目で合わない、仕組みで解決したい』についても実際に調べたところ、Xの投稿本文・投稿者名は公式oEmbed(<code>publish.twitter.com/oembed</code>)でログイン・APIキー・アカウントの一切無しに取得できることを本セッションで実測（下記ログ）。この方式はすでに<code>tools/nagekomi.py</code>（投げ込み箱・#1036/#1164）として実装され、2026-09-26時点でたまごさんの実運用（犬・食の投稿など）で稼働中。許可そのものは無効にせず温存する（将来oEmbedが使えなくなった場合の予備）が、現時点で行使する場面が無かった、というのが今回の判定。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>今回新しく作ったアカウント</span></div>
+  <div class="num"><b>200</b><span>X oEmbed 疎通確認（本セッションで実測・urllib直叩き）</span></div>
+  <div class="num"><b>20件（うちX 9件）</b><span>投げ込み箱(nagekomi.jsonl)の実運用実績・アカウント不要で稼働中</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>1366号の確認ページ（同じ発言のもう半分・944番パイプの実測）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html</a></li>
+  <li><b>実装コード tools/nagekomi.py（X oEmbedで account 不要の取り込み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py</a></li>
+  <li><b>実運用ログ status/nagekomi.jsonl（直近5行の抜粋は本文中）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/nagekomi.jsonl" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/nagekomi.jsonl</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>新しい外部アカウント（X等）を作ったか</td><td class="yes">no</td></tr>
+<tr><td>アカウント無しでXの投稿本文・投稿者を取得できるか（oEmbed実測）</td><td class="yes">yes</td></tr>
+<tr><td>1366号の条件（自分専用・発信しない）を満たす形になっているか</td><td class="yes">yes</td></tr>
+<tr><td>たまごさんの許可（1365/1366）は無効にしたか</td><td class="yes">no（将来の予備として温存）</td></tr>
+</table>
+
+<footer>
+実測: publish.twitter.com/oembed への直接リクエストをこのセッション内で実行し200・実データ取得を確認（2026-09-27）。既存の実運用証拠は status/nagekomi.jsonl（2026-09-26に犬・食のX投稿9件を account 不要で取り込み済み）。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
