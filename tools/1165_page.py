@@ -18,10 +18,12 @@ import io
 import json
 import os
 import re
+import sys
 import time
 import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 REPO = os.path.dirname(HERE)
 ST = os.path.join(REPO, "status")
 OUT = os.path.join(REPO, "1165-hassha.html")

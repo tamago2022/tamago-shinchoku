@@ -136,6 +136,88 @@ def snapshot_processes():
     return procs
 
 
+# ---------------------------------------------------------------- 1173番（2026-09-27）
+# たまごさん「パソコンがどんどん重くなってくるので、何がCPUやエネルギーを食っているのか、
+#   進捗表で分かるようにしてほしい（閉じるべきものは閉じるので）」。
+# ★新しい計測は1回も増やさない。上の snapshot_processes() が既に全プロセス(約750本)を
+#   取っているので、**その同じ1回を、アプリごとに足し合わせるだけ**。
+#   （Braveは実測で子プロセス30本以上に散る＝1本ずつ見ても犯人が分からない）
+APP_RE = re.compile(r"/([^/]+)\.app/")
+
+
+def app_name(cmd):
+    """コマンド行から「たまごさんが知っているアプリ名」を1つ決める。"""
+    c = cmd or ""
+    if "com.apple.Virtualization" in c:
+        return "Coworkの作業場（仮想マシン）"
+    if "tamago-shinchoku/tools/" in c:
+        return "工場（tamago-shinchoku の道具）"
+    m = APP_RE.search(c)
+    if m:
+        return m.group(1)
+    toks = c.split()
+    base = os.path.basename(toks[0]) if toks else "?"
+    if base in ("node", "python", "python3", "Python", "bash", "sh", "zsh"):
+        nxt = ""
+        for t in toks[1:]:
+            if not t.startswith("-"):
+                nxt = os.path.basename(t)
+                break
+        return "%s（%s）" % ("node" if base == "node" else "python", (nxt or "?")[:24])
+    return base[:30]
+
+
+# 触ってはいけないもの（名前の前方一致）。Braveは憲法どおり札だけ出して絶対に触らない。
+FUDA = [
+    ("Brave Browser", "触るな", "たまごさんの手。工場は絶対に触らない（タブを減らすのは本人だけ）"),
+    ("Claude", "触るな", "今この作業そのもの。閉じると止まる"),
+    ("Coworkの作業場", "触るな", "Claudeが動いている場所"),
+    ("工場（", "触るな", "発車の心臓。止めると進捗が止まる"),
+    ("WindowServer", "触るな", "macOSの画面そのもの"),
+    ("kernel_task", "触るな", "macOS本体（熱くなると自分で増える）"),
+    ("launchd", "触るな", "macOS本体"),
+    ("Finder", "触るな", "macOS本体"),
+    ("Dock", "触るな", "macOS本体"),
+    ("SystemUIServer", "触るな", "macOS本体"),
+    ("loginwindow", "触るな", "macOS本体"),
+    ("Obsidian", "残す", "指示の受信箱（司令塔）が入っている"),
+    ("Typeless", "残す", "音声入力"),
+    ("node（", "待てば消える", "開発の検査。終われば自分で消える"),
+    ("python（", "待てば消える", "短い処理。終われば自分で消える"),
+    ("git", "待てば消える", "gitの処理中"),
+]
+
+
+def fuda(name, sec_max):
+    for pre, f, why in FUDA:
+        if name.startswith(pre):
+            if f == "待てば消える" and sec_max >= 1800:
+                return "居座っている", "30分以上終わっていない。次の掃除便が片づける"
+            return f, why
+    return "閉じていい", "今使っていなければ閉じるとその分だけ軽くなる"
+
+
+def by_app(procs, n=10):
+    """アプリごとに CPU% と メモリGB を足し合わせて、重い順に n 件。"""
+    agg = {}
+    for p in procs:
+        k = app_name(p.get("cmd"))
+        a = agg.setdefault(k, {"name": k, "cpu": 0.0, "rssMB": 0.0,
+                               "procs": 0, "secMax": 0})
+        a["cpu"] += p.get("cpu") or 0.0
+        a["rssMB"] += p.get("rssMB") or 0.0
+        a["procs"] += 1
+        a["secMax"] = max(a["secMax"], p.get("sec") or 0)
+    out = []
+    # 「重い」は体感（CPU）が主。メモリは同点崩しに使う。
+    for a in sorted(agg.values(), key=lambda x: -(x["cpu"] + x["rssMB"] / 500.0))[:n]:
+        f, why = fuda(a["name"], a["secMax"])
+        out.append({"name": a["name"], "cpu": round(a["cpu"], 1),
+                    "memGB": round(a["rssMB"] / 1024.0, 2),
+                    "procs": a["procs"], "fuda": f, "why": why})
+    return out
+
+
 def vitals():
     """sysctl だけ。高負荷でもミリ秒で返る。"""
     cores = int(sh(["sysctl", "-n", "hw.ncpu"], timeout=5) or 8)
@@ -169,6 +251,11 @@ def measure():
     data["procCount"] = len(procs)
     data["topCpu"] = [{k: p[k] for k in ("pid", "ppid", "cpu", "rssMB", "sec", "cmd")} for p in by_cpu]
     data["topMem"] = [{k: p[k] for k in ("pid", "ppid", "mem", "rssMB", "sec", "cmd")} for p in by_mem]
+    # 1173番：同じ1回の ps を、アプリごとに合算したものも一緒に残す（追加の計測ゼロ）
+    try:
+        data["topApps"] = by_app(procs, 10)
+    except Exception:
+        data["topApps"] = []
     return data, procs
 
 
