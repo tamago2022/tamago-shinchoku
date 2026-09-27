@@ -423,10 +423,38 @@ KAZU_TENJO = 2      # ★実測の天井。3本以上は落ちる率50%超（上
 KAZU_FURUI = 1800   # 門の紙が30分古くなったら書き直す
 
 
+SHINGOU = os.path.join(ST, "shingou.json")
+SHINGOU_FURUI = 1200   # 20分。これより古い信号は信じない（測れていないのに増便しない）
+
+
 def _kazu_jissoku():
-    """いま何本までが安全か。★機械が自分で測った数字だけを使う。無ければ天井。"""
+    """いま何本までが安全か。★機械が自分で測った数字だけを使う。無ければ天井。
+
+    ★1174番（2026-09-27）たまごさん「2本は約束じゃないよ。パソコンの空き状態を見て、
+      4本でも6本でも10本でも走らせていい。パソコンが重くなったらダメだって話。
+      バランス取れないの、それ？数値で分からないの？」
+      → 固定の天井（2本）と歯止めの崖（1本）で決めるのをやめ、
+        信号機（tools/shingou.py＝余力の実測）の ok_honsuu を正本にする。
+        信号が新しいときは、その数字をそのまま門に書く（上下どちらにも動く）。
+        信号が古い／無いときだけ、これまでどおりの保守的な決め方に落ちる。
+    """
     m = _load(os.path.join(ST, "machine.json"), {}) or {}
     moto = []
+    sg = _load(SHINGOU, {}) or {}
+    a = _age(SHINGOU)
+    ok = sg.get("ok_honsuu")
+    if isinstance(ok, int) and ok > 0 and a is not None and a <= SHINGOU_FURUI:
+        moto.append("信号機（tools/shingou.py）：%s" % (sg.get("riyuu") or "?"))
+        moto.append("赤の基準＝たまごさんが「タブも切り替えられないぐらい重い」と言った時の実測"
+                    "（空きメモリ%s%% ／ 5分ロード比%s ／ スワップ%sGB）"
+                    % ((sg.get("aka") or {}).get("memFreePct"),
+                       (sg.get("aka") or {}).get("loadRatio"),
+                       (sg.get("aka") or {}).get("swapUsedGB")))
+        return max(1, int(ok)), moto, m
+    if a is not None:
+        moto.append("信号機の紙が%.0f分古いので使わなかった（測れていない時に増便しない）" % (a / 60.0))
+    else:
+        moto.append("信号機の紙がまだ無いので、これまでの決め方で出す")
     kouho = [KAZU_TENJO]
     moto.append("実測の天井 %d本（status/ochita.jsonl 18件：3本で50%%・4本で80%%落ちた）" % KAZU_TENJO)
     for k in ("cap", "target", "calibratedSafeN", "safeMax"):

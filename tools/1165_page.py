@@ -116,6 +116,7 @@ def shuukei():
     machi.sort(key=lambda it: (int(it.get("p") or it.get("priority") or 9),
                               int(it.get("n") or 10 ** 9)))
 
+    sg = _load(os.path.join(ST, "shingou.json"), {}) or {}
     gate = _load(os.path.join(ST, "public", "hassha_gate.json"), {}) or {}
     cap = _load(os.path.join(ST, "launch_cap.json"), {}) or {}
     dj = _load(os.path.join(ST, "dojisu_jougen.json"), {}) or {}
@@ -131,6 +132,7 @@ def shuukei():
         "jougen": jougen,
         "tsugi": machi[:10],
         "omosa": omosa(),
+        "shingou": sg,
         "machiKazu": len(machi),
         "konkyo": (gate.get("moto") or []) + (dj.get("根拠") or []),
         "hasshaOK": gate.get("hasshaOK"),
@@ -195,6 +197,16 @@ def html(d):
         rows += ('<tr><td>%s</td><td><span class="bar" style="width:%dpx"></span>%d本</td></tr>'
                  % (k, min(360, v * 26), v))
 
+    # ---- 1174番：信号（緑/黄/赤）と、走ってよい本数を1行で ----
+    sg = d["shingou"] or {}
+    sg_iro = {"緑": "#5ddba0", "黄": "#ffd166", "赤": "#ff7b72"}.get(
+        sg.get("shingou"), "#8b949e")
+    sgline = ('<p class="sub" style="font-size:15px;color:#c9d1d9">'
+              '<b style="color:%s">信号 %s</b>　走ってよい %s本／いま走っている %d本'
+              '<span class="why">%s</span></p>'
+              % (sg_iro, sg.get("shingou") or "？", sg.get("ok_honsuu") or "？",
+                 len(hashiru), sg.get("riyuu") or "信号機がまだ測っていない"))
+
     # ---- 1173番：重さの犯人トップ10（アプリごとに合算） ----
     o = d["omosa"]
     cls = {"閉じていい": "fu-close", "触るな": "fu-no",
@@ -229,6 +241,7 @@ def html(d):
     <p class="sub">発車待ち %d件（この1本が空き枠に入る）</p></div>
 </div>
 
+%s
 <h2>重さの犯人トップ10（%s 時点・5分に1回だけ測る）</h2>
 <table>%s</table>
 <p class="sub">アプリごとに合算（子プロセスも全部足した）。CPU%%は8コア合計で最大800%%。
@@ -261,6 +274,7 @@ def html(d):
         "ok" if d["hasshaOK"] else "ng", d["kagi"] or "不明",
         (t1.get("title") or "?")[:60] if t1 else "発車待ちが空",
         d["machiKazu"],
+        sgline,
         o["at"] or "?", orows or '<tr><td colspan="3">まだ測っていません</td></tr>',
         o["loadPct"], o["swapGB"], o["procCount"],
         "".join("<li>%s</li>" % r for r in d["konkyo"]) or "<li>記録なし</li>",

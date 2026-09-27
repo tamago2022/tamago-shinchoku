@@ -146,30 +146,42 @@ APP_RE = re.compile(r"/([^/]+)\.app/")
 
 
 def app_name(cmd):
-    """コマンド行から「たまごさんが知っているアプリ名」を1つ決める。"""
-    c = cmd or ""
+    """コマンド行から「たまごさんが知っているアプリ名」を1つ決める。
+
+    ★入れ物の名前（Python.app / Electron）ではなく、中で何が動いているかで名前を付ける。
+      実測：最初の版は工場以外のpythonが全部「Python」に丸まって、何なのか分からなかった。
+    """
+    c = (cmd or "").strip()
+    if not c:
+        return "?"
+    if c.startswith("("):          # ps は終わりかけのプロセスを (name) で出す
+        return "終わりかけ（%s）" % c.strip("()")[:20]
     if "com.apple.Virtualization" in c:
         return "Coworkの作業場（仮想マシン）"
     if "tamago-shinchoku/tools/" in c:
         return "工場（tamago-shinchoku の道具）"
-    m = APP_RE.search(c)
-    if m:
-        return m.group(1)
     toks = c.split()
-    base = os.path.basename(toks[0]) if toks else "?"
-    if base in ("node", "python", "python3", "Python", "bash", "sh", "zsh"):
+    base = os.path.basename(toks[0])
+    low = base.lower()
+    if low in ("python", "python3", "python2", "node", "bash", "sh", "zsh",
+               "ruby", "perl", "deno", "bun"):
         nxt = ""
         for t in toks[1:]:
             if not t.startswith("-"):
                 nxt = os.path.basename(t)
                 break
-        return "%s（%s）" % ("node" if base == "node" else "python", (nxt or "?")[:24])
-    return base[:30]
+        kind = "python" if low.startswith("python") else low
+        return "%s（%s）" % (kind, (nxt or "?")[:24])
+    m = APP_RE.search(c)
+    if m:
+        return m.group(1)
+    return base[:30] or "?"
 
 
 # 触ってはいけないもの（名前の前方一致）。Braveは憲法どおり札だけ出して絶対に触らない。
 FUDA = [
-    ("Brave Browser", "触るな", "たまごさんの手。工場は絶対に触らない（タブを減らすのは本人だけ）"),
+    ("Brave Browser", "触るな", "工場は絶対に触らない。ただしメモリはここが一番大きい"
+                               "＝たまごさんがタブを減らすと一番効く"),
     ("Claude", "触るな", "今この作業そのもの。閉じると止まる"),
     ("Coworkの作業場", "触るな", "Claudeが動いている場所"),
     ("工場（", "触るな", "発車の心臓。止めると進捗が止まる"),
@@ -182,17 +194,27 @@ FUDA = [
     ("loginwindow", "触るな", "macOS本体"),
     ("Obsidian", "残す", "指示の受信箱（司令塔）が入っている"),
     ("Typeless", "残す", "音声入力"),
-    ("node（", "待てば消える", "開発の検査。終われば自分で消える"),
-    ("python（", "待てば消える", "短い処理。終われば自分で消える"),
-    ("git", "待てば消える", "gitの処理中"),
+    ("node（", "待てば消える", "開発の検査。終われば自分で消える", True),
+    ("python（", "待てば消える", "短い処理。終われば自分で消える", True),
+    ("git", "待てば消える", "gitの処理中", True),
+    # ★claude（CLI）は工場が発車した仕事そのもの。長く走るのが正常で、落とすと仕事が消える。
+    #   machine_health の回収規則（RULES）にも入っていないので「片づける対象」と書いてはいけない。
+    ("claude", "触るな", "工場が発車した仕事そのもの。落とすと途中の仕事が消える", False),
+    ("終わりかけ", "待てば消える", "もう終わりかけ", False),
+    ("mds", "待てば消える", "Spotlightの索引づくり。放っておけば終わる", False),
+    ("mdworker", "待てば消える", "Spotlightの索引づくり。放っておけば終わる", False),
+    ("photoanalysisd", "待てば消える", "写真の解析。放っておけば終わる", False),
+    ("backupd", "待てば消える", "Time Machine", False),
 ]
 
 
 def fuda(name, sec_max):
-    for pre, f, why in FUDA:
+    for row in FUDA:
+        pre, f, why = row[0], row[1], row[2]
+        stuck_ok = row[3] if len(row) > 3 else False
         if name.startswith(pre):
-            if f == "待てば消える" and sec_max >= 1800:
-                return "居座っている", "30分以上終わっていない。次の掃除便が片づける"
+            if stuck_ok and sec_max >= 1800:
+                return "居座っている", "30分以上終わっていない（掃除便が片づける対象）"
             return f, why
     return "閉じていい", "今使っていなければ閉じるとその分だけ軽くなる"
 

@@ -97,6 +97,16 @@ run_with_timeout 90 python3 "$REPO/tools/machine_health.py" --reap >/dev/null 2>
 # 687行目の呼び出しは health.json への相乗りのため残す（順番は入れ替えない）。
 run_with_timeout 30 python3 "$REPO/tools/dojisu_jougen.py" >/dev/null 2>&1 || true
 
+# ★1174番（2026-09-27）信号機：Macの余力を数値で見て、同時本数を自分で上下させる。
+# たまごさん「2本は約束じゃないよ。パソコンの空き状態を見て、4本でも6本でも10本でも
+#   走らせていい。パソコンが重くなったらダメだって話。数値で分からないの？」
+# 赤の基準は status/shingou_aka.json（「タブも切り替えられないぐらい重い」と言われた
+#   その瞬間の実測。1回だけ書いて以後上書きしない）。
+# 結果は status/shingou.json の ok_honsuu。tools/inochi.py がこれを門に書き、
+#   auto_launcher.py は今までどおり launch_cap.json を読むだけ（口は増やしていない）。
+# 測るのは5分に1回だけ（常時監視それ自体が重い）。全部ミリ秒〜1秒で返るものだけ。
+run_with_timeout 30 python3 "$REPO/tools/shingou.py" >/dev/null 2>&1 || true
+
 # ★1165番 進捗表：①直近24hの発車本数 ②今走っている本数／上限 ③次に発車するタスク名
 # たまごさん「なんで止まってるの？」に、毎回この3つで答える紙。dojisu_jougen.py の直後に置く。
 run_with_timeout 30 python3 "$REPO/tools/1165_page.py" >/dev/null 2>&1 || true
