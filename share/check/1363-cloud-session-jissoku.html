@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1363 クラウドセッション実測（PR・実額・Mac負荷・重い軽い・他社比較） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:150px;flex:1 1 150px;}
+  .num b{display:block;font-size:1.5rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .wrap{overflow-x:auto;margin:0 0 10px;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);font-weight:700;}
+  .kome{color:var(--sub);font-size:0.78rem;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  .kimeta{background:#fff;border:2px solid var(--midori);border-radius:12px;padding:16px 18px;margin:0 0 16px;font-size:1rem;}
+  .kimeta b{color:var(--midori);}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1363</div>
+<h1>#1363 クラウドセッション実測 ─ PRは出た・1本157円・Macは軽くなった</h1>
+<div class="date">2026-09-27 実測。クラウドセッション2本を実際に走らせ、残高・Mac負荷・作業ごとの重さを測った。</div>
+
+<div class="fix">
+<b>クラウドセッションは通りました。</b>PRが1本出て、$250のうち$2が減りました（1本$1＝約157円）。走らせている間、<b>Macの負荷は上がるどころか下がりました</b>（5分ロード 43.79 → 25.09）。ただし<b>Mac上のファイル（Obsidian Vault・心臓・launchd）には届きません</b>。GitHubリポジトリの中で完結する仕事だけが向こうでできます。
+</div>
+
+<h2>① 数字（全部この日の実測値）</h2>
+<div class="nums">
+  <div class="num"><b>#510</b><span>クラウドセッションが出したPR</span></div>
+  <div class="num"><b>約157円</b><span>1本あたりの実額（$1）</span></div>
+  <div class="num"><b>250本</b><span>$250枠で回せる本数</span></div>
+  <div class="num"><b>43.79→25.09</b><span>Macの5分ロード（前→後）</span></div>
+</div>
+
+<h2>② クラウドセッションで出したPR</h2>
+<ul class="links">
+  <li><b>出たPR（joy-relief-station #510）</b><a href="https://github.com/tamago2022/joy-relief-station/pull/510" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/pull/510</a><br><span class="kome">docs/check-page-format.md を新規追加（49行追加・0削除）。既存ファイルは1件も変更なし。マージはしていない。</span></li>
+  <li><b>クラウドセッション（joy-relief-station／成功）</b><a href="https://claude.ai/code/session_01RPiX9VdjcBedT5FD54grZZ" target="_blank" rel="noopener">session_01RPiX9VdjcBedT5FD54grZZ</a><br><span class="kome">Sonnet 5・所要2分43秒。</span></li>
+  <li><b>クラウドセッション（tamago-shinchoku／pushが403で失敗）</b><a href="https://claude.ai/code/session_01FPimFqRLRHsSpyh69WrjkH" target="_blank" rel="noopener">session_01FPimFqRLRHsSpyh69WrjkH</a><br><span class="kome">Sonnet 5・所要1分50秒。READMEの作成とコミット(ab860e2)までは成功、pushで403。</span></li>
+</ul>
+
+<h2>③ お金（画面の実測）</h2>
+<div class="wrap">
+<table>
+<tr><th>時点</th><th>クラウドセッションクレジット残</th><th>証拠の場所</th></tr>
+<tr><td>1本目を走らせる前</td><td>$250中 <b>$250</b> 残</td><td>claude.ai → 設定 → 使用量 → クラウドセッションクレジット</td></tr>
+<tr><td>1本目（1分50秒）の後</td><td>$250中 <b>$249</b> 残</td><td>同上</td></tr>
+<tr><td>2本目（2分43秒）の後</td><td>$250中 <b>$248</b> 残</td><td>同上</td></tr>
+</table>
+</div>
+<div class="note">
+<b>1本 = $1</b>。画面の表示が$1刻みなので、実額は$0.5〜$1.5の間。<br>
+円換算：1ドル157.23円（2026-09-25 / Trading Economics）で計算して <b>1本 約157円</b>。<br>
+<b>$250 ≒ 39,300円 ＝ この枠で約250本</b>。期限は11月5日16:59 JST。<br>
+<span class="kome">※このクレジットはクラウドセッションに自動で使われる。使い切るか期限が切れた後は、通常のプランの使用量が減る（画面の説明文より）。</span>
+</div>
+
+<h2>④ Macの負荷（前 → 後）</h2>
+<div class="wrap">
+<table>
+<tr><th>指標</th><th>前 13:49</th><th>後 14:41</th><th>判定</th></tr>
+<tr><td>5分ロード（8コア）</td><td>43.79</td><td>25.09</td><td class="yes">下がった</td></tr>
+<tr><td>1分ロード</td><td>46.20</td><td>11.96</td><td class="yes">下がった</td></tr>
+<tr><td>圧縮メモリ</td><td>1.99GB</td><td>1.12GB</td><td class="yes">下がった</td></tr>
+<tr><td>空きメモリ</td><td>82%</td><td>84%</td><td class="yes">ほぼ同じ</td></tr>
+<tr><td>スワップ使用</td><td>18.60GB</td><td>22.78GB</td><td class="no">増えた（スワップは一度増えると減らない）</td></tr>
+<tr><td>Chrome（管理画面を開いた分）</td><td>3.37GB</td><td>4.26GB</td><td class="no">+0.89GB</td></tr>
+</table>
+</div>
+<div class="note">
+<b>答え：クラウドでやればPCには来ない。</b>2本走らせている間、Mac側でCPUを使ったのは「ブラウザで管理画面を見ていた分」だけ。クローンもビルドも向こうのVMで起きているので、Macには届かない。<br>
+<span class="kome">※ただし心臓の信号は測定後も「赤」（loadRatio 5.6）のまま。これはクラウドのせいではなく、下の⑤にある常駐アプリのせい。</span>
+</div>
+
+<h2>⑤ 重い作業／軽い作業（実測で仕分け）</h2>
+<div class="note">
+測り方：各作業を <code>/usr/bin/time -l</code> で包んで、経過秒・CPU秒・最大メモリを取った。CPU%は「経過時間に対してCPUを何%掴んだか」。<b>推測は1つも入っていない。</b>
+</div>
+
+<h3 style="font-size:0.95rem;color:var(--midori);margin:20px 0 8px;">軽い＝Macでよい</h3>
+<div class="wrap">
+<table>
+<tr><th>作業</th><th>経過</th><th>CPU秒</th><th>CPU%</th><th>最大メモリ</th></tr>
+<tr><td>ファイル検索（share/check のHTML約1400枚をgrep）</td><td>11.7s</td><td>0.40s</td><td class="yes">3%</td><td>0.003GB</td></tr>
+<tr><td>ファイル書き込み（160KBのHTML1枚）</td><td>2.2s</td><td>0.12s</td><td class="yes">6%</td><td>0.006GB</td></tr>
+<tr><td>進捗表のHTML生成（既存1枚読んで書き出し）</td><td>8.5s</td><td>0.20s</td><td class="yes">2%</td><td>0.006GB</td></tr>
+<tr><td>git status</td><td>14.6s</td><td>0.36s</td><td class="yes">2%</td><td>0.005GB</td></tr>
+<tr><td>調べもの（HTTPS 1本取得）</td><td>8.7s</td><td>0.13s</td><td class="yes">1%</td><td>0.004GB</td></tr>
+<tr><td>JSON読み込み（50件）</td><td>17.4s</td><td>0.31s</td><td class="yes">2%</td><td>0.027GB</td></tr>
+<tr><td>画像変換（sips PNG→JPEG 1枚 200KB）</td><td>6.9s</td><td>0.2s</td><td class="yes">3%</td><td>0.023GB</td></tr>
+</table>
+</div>
+
+<h3 style="font-size:0.95rem;color:var(--aka);margin:20px 0 8px;">重い＝クラウドに出すべき</h3>
+<div class="wrap">
+<table>
+<tr><th>作業</th><th>経過</th><th>CPU秒</th><th>CPU%</th><th>最大メモリ</th></tr>
+<tr><td>lint（joy-relief-station の npm run lint）</td><td class="no">240秒で終わらず</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>動画エンコード（ffmpeg 720p 5秒 h264 medium）</td><td class="no">96.6s</td><td>10.1s</td><td>10%</td><td class="no">0.392GB</td></tr>
+<tr><td>git fetch --all（.gitが2.1GBのリポ）</td><td class="no">61.7s</td><td>0.6s</td><td>1%</td><td>0.007GB</td></tr>
+<tr><td>git count-objects（同上）</td><td class="no">29.1s</td><td>0.4s</td><td>1%</td><td>0.003GB</td></tr>
+<tr><td>画像変換（sips リサイズ13枚）</td><td>16.8s</td><td>2.2s</td><td>13%</td><td>0.028GB</td></tr>
+</table>
+</div>
+
+<h3 style="font-size:0.95rem;color:var(--aka);margin:20px 0 8px;">実は一番重いのは作業じゃなく常駐アプリ（観察値）</h3>
+<div class="wrap">
+<table>
+<tr><th>アプリ</th><th>CPU</th><th>メモリ</th><th>プロセス数</th></tr>
+<tr><td>Brave Browser</td><td class="no">28%</td><td class="no">13.43GB</td><td class="no">56</td></tr>
+<tr><td>Claudeアプリ</td><td class="no">64%</td><td>4.18GB</td><td>34</td></tr>
+<tr><td>Google Chrome</td><td>14%</td><td>4.26GB</td><td>30</td></tr>
+</table>
+</div>
+<div class="note">
+<b>これが今日いちばん大きい発見。</b>測った作業はどれもCPU 1〜13%しか使っていない。Macが重いのは仕事のせいではなく、<b>Braveが13.43GBを56プロセスで掴んでいる</b>から。スワップ22.78GBの出どころはここ。<br>
+つまり「重い作業をクラウドに出す」よりも、<b>Braveのタブを閉じる方が効く</b>。クラウドに出すのは、その上でなお残る lint・ビルド・動画エンコード・巨大リポのgit。
+</div>
+
+<h2>⑥ できる仕事／できない仕事（実際に試した◯✕）</h2>
+<div class="wrap">
+<table>
+<tr><th>やらせたいこと</th><th>クラウドから届くか</th><th>何で分かったか</th></tr>
+<tr><td>GitHubリポジトリのファイルを読む</td><td class="yes">◯</td><td>3ファイル読み込み成功（両セッション）</td></tr>
+<tr><td>ファイルを新規作成してコミット</td><td class="yes">◯</td><td>ab860e2 / 383934b の2コミット</td></tr>
+<tr><td>ブランチをpushしてPRを出す</td><td class="yes">◯</td><td>joy-relief-station #510</td></tr>
+<tr><td>Claude GitHub Appが入っていないリポにpush</td><td class="no">✕</td><td>tamago-shinchoku で403。コミットまでは出来てpushで止まる</td></tr>
+<tr><td>Mac上の Obsidian Vault（tamago_brain）を読む</td><td class="no">✕</td><td>クラウドVMはGitHubのリポジトリを clone するだけ。Macのディスクは見えない</td></tr>
+<tr><td>Mac上の心臓（status/oneshot）・launchd を触る</td><td class="no">✕</td><td>同上。status/ は .gitignore 済みでリポにも入っていない</td></tr>
+<tr><td>ブラウザ操作（Chrome MCP）</td><td class="no">✕</td><td>クラウドVMにたまごさんのChromeは無い</td></tr>
+<tr><td>Lovableの公開ボタンを押す</td><td class="no">✕</td><td>ブラウザ操作が要るので上と同じ理由で届かない</td></tr>
+<tr><td>ローカルの未コミット変更を見る</td><td class="no">✕</td><td>公式ドキュメント：clone するのは GitHub のリモートであって手元のチェックアウトではない</td></tr>
+</table>
+</div>
+<div class="note">
+<b>線はここ：GitHubのリポジトリの中で完結する仕事＝◯。Macのディスク・Macのブラウザが要る仕事＝✕。</b>
+</div>
+
+<h2>⑦ 他社と並べる（公式ページに書いてある金額だけ）</h2>
+<div class="wrap">
+<table>
+<tr><th>サービス</th><th>GitHubに書けるか</th><th>月いくら（公式表記）</th><th>日本語</th><th>向いている仕事</th></tr>
+<tr>
+  <td><b>Claude クラウドセッション</b><br><span class="kome">Anthropic</span></td>
+  <td class="yes">◯ push・PR作成まで確認済み<br><span class="kome">（今日 #510 で実証）</span></td>
+  <td>Pro／Max／Teamプランに同梱。<b>クラウドVM自体への別課金は無し</b>（公式：no separate compute charge）。今回は$250のクレジット枠から$1／本</td>
+  <td class="yes">◯ 日本語の指示で動いた<br><span class="kome">（今日の実測）</span></td>
+  <td>リポジトリ内で完結する実装・修正・ドキュメント</td>
+</tr>
+<tr>
+  <td><b>Grok Bot</b><br><span class="kome">xAI・x.ai/bot</span></td>
+  <td class="no">✕ 公式にGitHub書き込み機能の記載なし<br><span class="kome">クラウド上で動くのは◯（persistent cloud computer）だが、汎用のブラウザ操作エージェント</span></td>
+  <td>$20/月（Cursor Pro/Pro+/Ultra）、$30/月（SuperGrok系）、$40/席/月（Cursor Teams）<br><span class="kome">x.ai/bot の価格表より</span></td>
+  <td>公式に明記なし</td>
+  <td>ブラウザを触る雑用。<b>リポジトリに書く用途ではない</b></td>
+</tr>
+<tr>
+  <td><b>Grok Build</b><br><span class="kome">xAI・x.ai/build</span></td>
+  <td>△ 汎用CLIなので手元のgit認証があれば技術的には可。<b>公式に「GitHubに書ける」とは書いていない</b></td>
+  <td>SuperGrok / X Premium+ に同梱。<b>単体の金額は公式ページに記載なし</b></td>
+  <td>公式に明記なし</td>
+  <td>ローカルCLI。<b>クラウドではないのでMacの負荷は減らない</b></td>
+</tr>
+<tr>
+  <td><b>OpenAI Codex（cloud）</b></td>
+  <td class="yes">◯ GitHubアカウント接続が前提</td>
+  <td>ChatGPT Free $0／Go $8／Plus $20／Pro $100〜／Business $20/人/月（年払い）・$25/人/月（月払い）</td>
+  <td>公式に明記なし</td>
+  <td>リポジトリ内のタスクをバックグラウンドで</td>
+</tr>
+<tr>
+  <td><b>Google Jules</b></td>
+  <td class="yes">◯ GitHub連携が必須</td>
+  <td>無料枠 $0（1日15タスク）。Pro/Ultraは Google AI Pro $19.99/月・Ultra $99.99〜$199.99/月 に同梱<br><span class="kome">Jules公式ページ自体には金額記載なし</span></td>
+  <td>公式に明記なし</td>
+  <td><b>無料枠がある</b>ので、お金を使わず試す用</td>
+</tr>
+<tr>
+  <td><b>Devin</b><br><span class="kome">Cognition</span></td>
+  <td class="yes">◯ GitHub／GitLab／Bitbucket対応</td>
+  <td>Free $0／Pro $20/月／Max $200/月／Teams $80/月＋$40/人/月</td>
+  <td>公式に明記なし</td>
+  <td>長めの実装タスク</td>
+</tr>
+<tr>
+  <td><b>GitHub Copilot cloud agent</b></td>
+  <td class="yes">◯ Issue/PR上で動きPRを開く</td>
+  <td>個人：Free $0（cloud agentは不可）／Pro $10/月／Pro+ $39/月／Max $100/月</td>
+  <td>公式に明記なし</td>
+  <td>Issueを投げるとPRが返る運用</td>
+</tr>
+</table>
+</div>
+<div class="note">
+<span class="kome">※金額は各社の公式価格ページに書いてある表記をそのまま転記。<b>公式ページから取れなかったものは「記載なし」と書いてあり、推測の金額は1円も入れていない。</b>「日本語」欄が「公式に明記なし」なのは、日本語が使えないという意味ではなく、公式ページに書いていないという意味。</span>
+</div>
+
+<h2>⑧ Anthropicはこれを正式に出しているのか</h2>
+<div class="wrap">
+<table>
+<tr><th>項目</th><th>事実</th><th>公式の文言</th></tr>
+<tr><td>クラウドセッション</td><td class="yes">正式提供（GA）</td><td>「Cloud sessions (previously known as Claude Code on the web) are now generally available for Pro, Max, and Team users…」（claude.com/blog、2026-09-23の更新注記）</td></tr>
+<tr><td>Projects</td><td>公式機能として存在</td><td>複数のクラウドセッションを1つの仕事としてまとめて追跡する機能（code.claude.com/docs/en/claude-projects）</td></tr>
+<tr><td>Routines</td><td class="no">リサーチプレビュー（試験提供）</td><td>「Today, we're introducing routines in Claude Code in research preview.」（claude.com/blog）</td></tr>
+<tr><td>課金</td><td>クラウドVMへの別課金は無し</td><td>「There is no separate compute charge for the cloud VM.」（code.claude.com/docs/en/claude-code-on-the-web）</td></tr>
+<tr><td>GitHub</td><td>PR作成にはGitHubが必要</td><td>「repository cloning and pull request creation require GitHub.」（同上）</td></tr>
+<tr><td>ネットワーク</td><td>既定で制限あり</td><td>「in Anthropic-hosted environments, network access is limited by default and can be disabled.」（同上）</td></tr>
+</table>
+</div>
+<div class="note">
+<span class="kome">※たまごさんの「ProjectsとRoutinesは対象外」という条件と、公式の「Routinesはリサーチプレビュー」は矛盾しない。クレジットの対象がクラウドセッションだけ、という話。</span>
+</div>
+
+<h2>⑨ 決めたこと（使い分け・1つだけ）</h2>
+<div class="kimeta">
+<b>① リポジトリの中だけで終わる仕事（実装・修正・ドキュメント・lint・ビルド）→ Claudeクラウドセッション。</b>1本157円で、Macに一切来ない。<br>
+<b>② Macのファイル・Obsidian Vault・ブラウザ操作・Lovableの公開 → これまで通りMac（心臓）。</b>クラウドからは物理的に届かない。<br>
+<b>③ Grokbot には振らない。</b>公式にGitHubへ書けるとは書いていない。無料で試したいときだけ Google Jules（1日15タスク無料）。
+</div>
+<div class="note">
+<b>その前にやることが1つ。</b>Braveが13.43GB・56プロセスを掴んでいる。クラウドに何を出すより、ここを減らす方が体感は変わる。
+</div>
+
+<h2>⑩ 判断待ち（1タップで決められるもの）</h2>
+<div class="note">
+<b>tamago-shinchoku（進捗表のリポ）に、Claude GitHub App の書き込み権限を入れますか？</b><br>
+いま入っているのは joy-relief-station と ai-kaigi の2つだけ。進捗表のリポにはpush権限が無いので、クラウドセッションは「読んでコミットまで」で止まります（今日403で止まった）。<br>
+権限変更なので勝手にやっていません。入れるなら <a href="https://claude.ai/connect-github" target="_blank" rel="noopener">https://claude.ai/connect-github</a> から tamago-shinchoku を追加してください。<b>入れる／入れない、どちらでも作業は止まりません。</b>
+</div>
+
+<footer>
+測定した環境：MacBook（8コア）、2026-09-27 13:49〜14:41。クラウドセッションのモデルはSonnet 5。為替は1ドル157.23円（2026-09-25 Trading Economics）で換算。<br>
+このページの数字はすべて実測値または公式ページからの転記で、推測値は含んでいません。取れなかった項目は「記載なし」「終わらず」と書いてあります。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
