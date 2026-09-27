@@ -3,22 +3,22 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                                                                                            // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                                                                                              // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-27T19:34:27.854Z",
+      "updatedAt": "2026-09-27T19:34:52.670Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
       "dateJST": "2026-09-28",
       "successCountToday": 0,
-      "consecutiveFailures": 1,
-      "stoppedForToday": false,
+      "consecutiveFailures": 2,
+      "stoppedForToday": true,
       "lastResult": "fail",
-      "lastCheckedAt": "2026-09-27T19:34:27.526Z",
+      "lastCheckedAt": "2026-09-27T19:34:51.763Z",
       "lastPublishedSha": null,
       "lastFailureReason": "CDP 未開通: http://127.0.0.1:9223 に応答なし。Chrome を --remote-debugging-port=9223 付きで起動してください。",
-      "lastFailureAt": "2026-09-27T16:19:47.781Z",
+      "lastFailureAt": "2026-09-27T19:34:51.763Z",
       "mainSha": "f1c9096fba",
       "mainUnpublished": true,
       "paused": false,
