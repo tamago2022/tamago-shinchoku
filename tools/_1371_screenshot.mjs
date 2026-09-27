@@ -141,9 +141,25 @@ async function main() {
     if (!info.hasSec) throw new Error("holdSecが見つからない: " + check.result?.value);
     if (info.displayNone) throw new Error("holdSecがdisplay:noneのまま（データが空）: " + check.result?.value);
 
+    // ビューポート(高さ1400)より下は描画されていない＝真っ黒になる。
+    // 撮りたい範囲がビューポート内に収まるよう、ページ高さぶんに再設定してから撮る。
+    const fullHeight = await send("Runtime.evaluate", {
+      expression: "document.documentElement.scrollHeight",
+      returnByValue: true,
+    });
+    const docH = Math.min(Math.ceil(fullHeight.result?.value || 2200), 6000);
+    await send("Emulation.setDeviceMetricsOverride", {
+      width: 430,
+      height: docH,
+      deviceScaleFactor: 2,
+      mobile: true,
+    });
+    await sleep(300);
+
     const top = Math.max(0, Math.floor((info.rect?.top || 0) - 20));
-    const clip = { x: 0, y: top, width: 430, height: 1300, scale: 1 };
-    const shot = await send("Page.captureScreenshot", { format: "png", clip });
+    const bottom = Math.min(docH, Math.ceil((info.rect?.bottom || top + 800) + 20));
+    const clip = { x: 0, y: top, width: 430, height: bottom - top, scale: 1 };
+    const shot = await send("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport: true });
     writeFileSync(OUT_FILE, Buffer.from(shot.data, "base64"));
     console.log("保存:", OUT_FILE);
     close();
