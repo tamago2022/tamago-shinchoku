@@ -178,6 +178,12 @@ footer a{display:block; padding:5px 0}
   <div class="kijun">並び順は、①差し戻し・急ぎ　②見える画面が変わるもの　③裏の仕組み。</div>
 </section>
 
+<!-- ④ 後回し・止めた仕事（1371番：09-17の軽量化で消えていたので復活） -->
+<details class="fold" id="holdSec" style="display:none">
+  <summary><span id="holdSummary">後回し・止めた仕事</span></summary>
+  <div class="body"><ul id="holdList" style="list-style:none;margin:0;padding:0"></ul></div>
+</details>
+
 <!-- 残り容量の1行（1172番。小さく1行・色は付けない） -->
 <div id="diskLine">残り容量　読み込み中…</div>
 
@@ -515,6 +521,19 @@ function renderNext(list, total){
   if(total > list.length) rows.push('<li class="note">ほか ' + (total - list.length) + ' 件</li>');
   $("next").innerHTML = rows.join("");
 }
+function renderHold(h){
+  var sec = $("holdSec");
+  if(!h || !h.total){ sec.style.display = "none"; return; }
+  sec.style.display = "";
+  $("holdSummary").textContent = "後回し・止めた仕事（" + h.total + "件）";
+  var rows = (h.items || []).map(function(x){
+    var why = x.why ? '<span class="note">' + esc(x.why) + '</span>' : "";
+    return '<li style="padding:9px 0;border-top:1px solid #eee7dc">'
+      + esc(yomeru(x.title)) + (why ? '<br>' + why : '') + '</li>';
+  });
+  if(h.total > rows.length) rows.push('<li class="note" style="padding:9px 0">ほか ' + (h.total - rows.length) + ' 件</li>');
+  $("holdList").innerHTML = rows.join("");
+}
 function loadQueue(fallback){
   getJson("status/public/queue_next.json", 12000).then(function(q){
     var w = ((q && q.items) || []).filter(function(x){ return x.status === "waiting"; });
@@ -546,6 +565,7 @@ function render(d){
   renderRunning(d);
   renderOmosa(d);
   renderPace(d.pace);
+  renderHold(d.hold);
   $("next").innerHTML = '<li class="note">読み込み中…</li>';
   loadQueue(d.nextUp || []);
 }
