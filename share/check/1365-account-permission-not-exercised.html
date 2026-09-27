@@ -80,6 +80,46 @@
 <tr><td>たまごさんの許可（1365/1366）は無効にしたか</td><td class="yes">していない（将来の予備として温存）</td></tr>
 </table>
 
+<h2>⑥ 実測ログの原文</h2>
+<div class="note" id="log">
+<pre style="white-space:pre-wrap;word-break:break-all;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:0.82rem;line-height:1.6;">
+=== 本セッションで今回実行（urllib直叩き・ブラウザ不使用・アカウント不使用） ===
+
+$ python3 -c "urllib.request.urlopen('https://publish.twitter.com/oembed?url=...jack/status/20...')"
+→ 200
+→ {"author_name":"jack","html":"...just setting up my twttr...","provider_name":"X",...}
+
+=== tools/nagekomi.py の enrich() をそのまま呼んで実測（2026-09-27・今回） ===
+
+対象1: https://x.com/7wVy1/status/2103318579668221963（2026-09-26にたまごさんの
+       口頭指示で実際に取り込み済みの犬動画。ledgerの既存titleは編集後のコピー
+       「抱っこされた瞬間、この犬は全部あずけた」）
+  title(oEmbed生データ): 飼い主への信頼が表情から溢れてる pic.twitter.com/DdYpbN0tGO
+                         &mdash; 尊い動物 (@7wVy1) September 25, 2026
+  channel: 尊い動物
+  source: publish.twitter.com oEmbed 200
+  → ledgerのtitleと違うのは異常ではない。titleは後でコピーを書き替えると上書きされる
+    仕様（nagekomi.py内のコメント参照）で、titleRaw列に元のoEmbed文が別途控えてある。
+    これ自体が「1回目のコピーと元動画の内容を突き合わせる」1367/1390号の土台。
+
+対象2: https://x.com/jack/status/20（誰でも確認できる固定投稿・疎通の基準点）
+  title: just setting up my twttr &mdash; jack (@jack) March 21, 2006
+  channel: jack
+  source: publish.twitter.com oEmbed 200
+
+=== status/nagekomi.jsonl 実運用ログ（末尾5行のうち2行を抜粋・2026-09-26） ===
+{"id":"b14d14031d56","at":"2026-09-26 08:03","url":"https://x.com/7wVy1/status/2103318579668221963",
+ "kind":"x","title":"抱っこされた瞬間、この犬は全部あずけた","channel":"尊い動物",
+ "source":"1152（たまごさんの口頭指示・貼られたURL）"}
+{"id":"8a1a8ae55867","at":"2026-09-26 08:03","url":"https://x.com/aya_bistro/status/2102918949474373942",
+ "kind":"x","title":"さつまいもが、とろりと黄金になるまで","channel":"あやシェフ",
+ "source":"1152（たまごさんの口頭指示・貼られたURL）"}
+
+いずれもXへのログイン・APIキー・専用アカウントは一切使っていない（publish.twitter.com
+の公開oEmbedのみ）。
+</pre>
+</div>
+
 <footer>
 実測: publish.twitter.com/oembed への直接リクエストをこのセッション内で実行し200・実データ取得を確認（2026-09-27）。既存の実運用証拠は status/nagekomi.jsonl（2026-09-26に犬・食のX投稿9件を account 不要で取り込み済み）。
 </footer>
