@@ -37,6 +37,7 @@ import datetime
 import html
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -47,6 +48,24 @@ PAGES_BASE = "https://tamago2022.github.io/tamago-shinchoku/share/check/"
 
 sys.path.insert(0, HERE)
 import sekisho  # noqa: E402  案件#898・再設計：確認ページが生まれる瞬間に関所(sekisho)を通す
+
+# 案件#911・#1365：status/直下(status/public/を除く)は.gitignoreでgit管理対象外のため、
+# GitHub blob/rawへのリンクを貼っても必ず404になる。同種の事故が既に2回起きているので、
+# ページの発生源(このスクリプト)そのものでリンク段階から弾く。
+_DEAD_STATUS_LINK_RE = re.compile(
+    r"(?:github\.com/tamago2022/tamago-shinchoku/(?:blob|raw)/[^/]+|"
+    r"raw\.githubusercontent\.com/tamago2022/tamago-shinchoku/[^/]+)/status/(?!public/)"
+)
+
+
+def find_dead_status_links(links):
+    """リンク一覧の中から、404が確定しているstatus/直下へのGitHubリンクを探す。"""
+    hits = []
+    for item in links:
+        url = item.get("url") or ""
+        if _DEAD_STATUS_LINK_RE.search(url):
+            hits.append((item.get("label"), url))
+    return hits
 
 
 def esc(s):
@@ -229,6 +248,15 @@ def main():
             "（案件#898：2026-09-16に「上17px」と書いたが実測は9.6pxだった事故の再発防止）。"
         ),
     )
+    ap.add_argument(
+        "--allow-dead-status-link",
+        help=(
+            "status/直下（status/public/を除く）へのGitHub blob/rawリンクを、理由付きで"
+            "明示的に許可する。指定しない限り、そういうリンクを検出した時点で書き出しを拒否する"
+            "（.gitignoreでstatus/*はgit管理対象外＝GitHub上に存在せず必ず404になる。"
+            "911番・1365番で同種の事故が既に2回起きており、これが3回目の再発防止策）。"
+        ),
+    )
     args = ap.parse_args()
 
     cfg = {}
@@ -283,6 +311,24 @@ def main():
             label, url = parse_pair(raw)
             links.append({"label": label, "url": url})
         cfg["links"] = links
+
+    dead_hits = find_dead_status_links(cfg.get("links") or [])
+    if dead_hits:
+        allow_reason = args.allow_dead_status_link
+        if not allow_reason:
+            detail = " ／ ".join("%s: %s" % (label, url) for label, url in dead_hits)
+            print(
+                "エラー: status/直下(status/public/を除く)へのGitHub直リンクを検出しました：%s\n"
+                ".gitignoreでstatus/*はgit管理対象外のため、このリンクは必ず404になります"
+                "（911番・1365番で同種の事故が起きています）。"
+                "status/public/配下の公開JSON、または share/ 配下の共有ページに差し替えるか、"
+                "本当に例外事情がある時だけ --allow-dead-status-link \"理由\" を付けてください。"
+                "（このページは書き出されていません）" % detail,
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        print("⚠️ status/直下リンクを理由付きで許可して書き出します：%s（理由：%s）"
+              % (" ／ ".join(u for _, u in dead_hits), allow_reason))
 
     if args.table:
         rows = cfg.get("table") or []
