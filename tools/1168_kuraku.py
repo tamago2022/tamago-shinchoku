@@ -35,7 +35,11 @@ import os
 import re
 import sys
 
-MARK = "tamago-dark 1"
+# 2026-09-27（1168番・続）印を 2 に上げる。
+# 既に「1」の印が付いた760枚は触られないため、明るい地＋明るい文字の直し（fix_on_accent）が
+# 届かない。印を上げて1度だけ全部を通し直す。以後はまた印で素通りする（＝重くならない）。
+MARK = "tamago-dark 2"
+MARK_OLD = ("tamago-dark 1",)
 THEME_REL = "theme/tamago-dark.css"
 
 # ---------------------------------------------------------------- 色の道具
@@ -229,6 +233,107 @@ def _parse_rgb_func(tok):
     return tuple(max(0, min(255, v)) for v in vals), a
 
 
+# ------------------------------------------------- 明るい色の上に明るい文字が乗る事故
+# 2026-09-27（1168番・続）たまごさんのスクショで発覚した実害。
+#   元が「濃い地＋白文字」のボタン／バッジ（例：background:#2e7d32; color:#fff）は、
+#   上の置き換えだけだと **地が明るい accent に、文字も明るい fg に** なり、
+#   明るい上に明るいが乗って読めなくなる。実測：760枚中44枚・549箇所。
+#   ここは1箇所で直す。宣言ブロックを見て、地が明るいときだけ文字を暗い墨に倒す。
+INK_BG = {"--t-fg", "--t-fg2", "--t-mute", "--t-mute2", "--t-dim"}      # 元は「濃い地」だったもの
+ACCENT_BG = {"--t-ok", "--t-ng", "--t-warn", "--t-info",
+             "--t-purple", "--t-pink", "--t-link"}                      # 意味を持つ色。地のまま残す
+LIGHT_FG = INK_BG | ACCENT_BG
+_DECL_BG = re.compile(r"(background(?:-color)?)\s*:\s*([^;{}]*?)var\(\s*(--[a-z0-9-]+)\s*\)([^;{}]*)", re.I)
+_DECL_FG = re.compile(r"(^|[;{\s])(color)\s*:\s*var\(\s*(--[a-z0-9-]+)\s*\)", re.I)
+# ページが自分で付けた別名（--ink: var(--t-fg2) のような）を辿るための対応表を作る。
+# これが無いと background:var(--zunda) のような書き方を見逃す（実測：1155-zunda.html）。
+_ALIAS = re.compile(r"(--[a-z0-9-]+)\s*:\s*var\(\s*(--t-[a-z0-9-]+)\s*\)", re.I)
+
+
+def _alias_map(css_text):
+    amap = {}
+    for _ in range(3):                      # 別名の別名（2段まで）も辿る
+        changed = False
+        for m in _ALIAS.finditer(css_text):
+            src, dst = m.group(1).lower(), m.group(2).lower()
+            if amap.get(src) != dst:
+                amap[src] = dst
+                changed = True
+        for k, v in list(amap.items()):
+            if v in amap and amap[v] != v:
+                amap[k] = amap[v]
+                changed = True
+        if not changed:
+            break
+    return amap
+
+
+def _resolve(name, amap):
+    seen = set()
+    while name in amap and name not in seen:
+        seen.add(name)
+        name = amap[name]
+    return name
+
+
+def _fix_block(decls, amap=None):
+    """1つの宣言のかたまり（{…} の中身／style="" の中身）を見て、地と文字の明るさを直す。"""
+    mbg = _DECL_BG.search(decls)
+    if not mbg:
+        return decls, 0
+    amap = amap or {}
+    bgvar = _resolve(mbg.group(3).lower(), amap)
+    if bgvar not in (INK_BG | ACCENT_BG):
+        return decls, 0
+    n = 0
+    if bgvar in INK_BG:
+        # 元は「濃い地」＝面。明るい文字色を地に使うのは事故なので、面の色へ戻す。
+        decls = decls[:mbg.start()] + mbg.group(1) + ":" + mbg.group(2) + "var(--t-panel2)" \
+                + mbg.group(4) + decls[mbg.end():]
+        n += 1
+        newfg = "var(--t-fg)"
+    else:
+        # 意味のある色の地は残す。その上に乗る文字だけを暗い墨にする。
+        newfg = "var(--t-on-accent)"
+    mfg = _DECL_FG.search(decls)
+    if mfg:
+        if _resolve(mfg.group(3).lower(), amap) in LIGHT_FG:
+            decls = decls[:mfg.start(2)] + "color:" + newfg + decls[mfg.end():]
+            n += 1
+    else:
+        decls = decls.rstrip()
+        if decls and not decls.endswith(";"):
+            decls += ";"
+        decls += "color:" + newfg
+        n += 1
+    return decls, n
+
+
+_RULE = re.compile(r"\{([^{}]*)\}")
+
+
+def fix_on_accent(css_text):
+    """CSS全文（または style="" の中身）に対して、明るい地＋明るい文字を潰す。"""
+    total = 0
+    amap = _alias_map(css_text)
+    if "{" not in css_text:
+        new, n = _fix_block(css_text, amap)
+        return new, n
+    out = []
+    last = 0
+    for m in _RULE.finditer(css_text):
+        new, n = _fix_block(m.group(1), amap)
+        if n:
+            out.append(css_text[last:m.start(1)])
+            out.append(new)
+            last = m.end(1)
+            total += n
+    if not out:
+        return css_text, 0
+    out.append(css_text[last:])
+    return "".join(out), total
+
+
 def recolor_css(css_text):
     """CSSの本文（<style>の中身／style=""の中身／.cssの全文）の色を変数に置き換える。"""
     out = []
@@ -261,9 +366,10 @@ def recolor_css(css_text):
         out.append(rep)
         last = m.end()
     if not out:
-        return css_text, 0
+        return fix_on_accent(css_text)
     out.append(css_text[last:])
-    return "".join(out), len(out) // 2
+    joined, extra = fix_on_accent("".join(out))
+    return joined, len(out) // 2 + extra
 
 
 # ------------------------------------------------------- <script> の中の色
@@ -374,6 +480,15 @@ def transform_html(text, depth):
     text = THEME_META.sub(lambda m: m.group(1) + m.group(2) + "#0d0f12" + m.group(2), text)
 
     href = ("../" * depth) + THEME_REL
+    # ★印を上げたときに link を二重に挿さないための見張り（実測の事故防止）
+    if re.search(r'<link[^>]+href=["\'][^"\']*' + re.escape(THEME_REL) + r'["\']', text, re.I):
+        # ★印だけ書き換える。先頭に付け足すと <!DOCTYPE> より前にコメントが来て
+        #   ブラウザが互換モードに落ちる（＝レイアウトが崩れる）。必ず「置き換え」にする。
+        for old_mark in MARK_OLD:
+            if "<!--%s-->" % old_mark in text:
+                return text.replace("<!--%s-->" % old_mark, "<!--%s-->" % MARK, 1), n
+        i = text.lower().find("<link")
+        return text[:i] + ("<!--%s-->" % MARK) + text[i:], n
     link = ('\n<!--%s--><link rel="stylesheet" href="%s">\n' % (MARK, href))
 
     # 一番最後に読み込ませる＝ページ側と同じ強さの指定なら、こちらが後に来て勝つ

@@ -372,11 +372,21 @@ function getJson(url, ms){
     } catch(e){}
 
     if(furui !== null){
-      var m0 = "紙が"+furui.toFixed(0)+"分古い";
-      put("tHeart", m0, "var(--t-ng)"); put("tLaunch", m0, "var(--t-ng)"); put("tLoad", m0, "var(--t-ng)");
-      put("taionMeta", "status/public/taion.json が "+furui.toFixed(0)
-          +"分前で止まっています＝心臓か公開のどちらかが止まっています（書いた時刻 "
-          + String(t.at).slice(11,19) + "）");
+      /* 1168番(続) たまごさん指摘②：ここが「取れていません／紙が◯分古い」のまま放置されていた。
+         ★どちらが止まったのかは、この紙自身から判る。
+           紙が古い＝この紙を運ぶ「公開便」が止まっている、という意味。
+           紙の中身が「心臓＝生」と言っているなら、書いた時点で心臓は動いていた。
+           つまり **止まっているのは公開便の方** と断定してよい。両方のせいにしない。 */
+      var wa = furui.toFixed(0) + "分";
+      var ikiteta = (t["心臓"] === "生");
+      var m0 = ikiteta ? ("公開が" + wa + "止まっている") : ("紙が" + wa + "古い");
+      put("tHeart", m0, "var(--t-warn)"); put("tLaunch", m0, "var(--t-warn)"); put("tLoad", m0, "var(--t-warn)");
+      put("taionMeta", ikiteta
+        ? ("工場の体温を運ぶ公開便（5分おきにGitHubへ上げる係）が " + wa + " 止まっています。"
+           + "心臓そのものは " + String(t.at).slice(11,16) + " の時点で動いていました（この紙にそう書いてある）。"
+           + "　※よくある原因：別のセッションが .git のロックを置いたまま終わった。5分で自動的に片付きます。")
+        : ("工場の体温が " + wa + " 前から更新されていません。"
+           + String(t.at).slice(11,16) + " の時点で心臓が止まっていました。"));
       return;
     }
 
