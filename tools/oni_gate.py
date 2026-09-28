@@ -130,6 +130,13 @@ DONE_RE = re.compile(r"完了|できました|できています|反映しまし
 # \b は日本語文字との境目では効かないので、英字が続かないことで見る。
 FAL_RE = re.compile(r"(?<![a-zA-Z])fal(?:\.ai|-ai)?(?![a-zA-Z])", re.I)
 MONEY_RE = re.compile(r"[0-9][0-9,\.]*\s*円|\$[0-9]|ドル|USD")
+# ★1463番（2026-09-28）：確認ページの索引（share/check/index.html）に
+#   "974-fal-avatar-nedan.html" のようなファイル名がそのままリンクテキストで
+#   並ぶと、"fal"の前後がハイフン＝英字ではないためFAL_REにマッチし、
+#   「falを使ったのに金額が無い」という誤検知でpushが止まった。
+#   ファイル名（数字-slug.html 形式のトークン）はそもそも「falを使った報告文」
+#   ではないので、R9の判定対象からは先に取り除く。
+FILENAME_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*\.(?:html?|md|json|py|mjs|js|png|jpe?g|gif|pdf|csv|txt)\b", re.I)
 
 
 # ★2026-09-26（1152番）台帳を出す紙のための、ただ1つの例外。
@@ -201,8 +208,9 @@ def judge(raw: str, label: str = "") -> list:
         hits.append({"code": "R8", "name": name, "why": why,
                      "hit": "／".join(dup[:5]), "around": ""})
 
-    # R9 falを使ったのに金額が無い
-    if FAL_RE.search(text) and not MONEY_RE.search(text):
+    # R9 falを使ったのに金額が無い（ファイル名トークンの中の"fal"は誤検知なので除く）
+    text_for_fal = FILENAME_TOKEN_RE.sub(" ", text)
+    if FAL_RE.search(text_for_fal) and not MONEY_RE.search(text):
         name, why = SHAPE_RULES["R9"]
         hits.append({"code": "R9", "name": name, "why": why,
                      "hit": "falの記述あり／金額の記述が0件", "around": ""})
@@ -275,6 +283,7 @@ def _self_test() -> int:
                '<a href="https://youtu.be/AAAAAAAAAAA">2</a>', True),
         ("R9", '<p>falで12枚つくりました</p><a href="http://x">見る</a>', True),
         ("--", '<p>できました</p><a href="https://example.com/x">見る</a>', False),
+        ("--", '<li><a href="./974-fal-avatar-nedan.html">974-fal-avatar-nedan.html</a></li>', False),
     ]
     bad = 0
     for code, sample, should_hit in cases:
