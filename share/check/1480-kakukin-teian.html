@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#1480 課金したら良くなる方法の提案 確認ページ</title>
+<title>#1480 課金したら良くなる方法の提案（リンク修正版） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,18 +47,21 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1480 課金したら良くなる方法の提案</div>
-<h1>#1480 課金したら良くなる方法の提案</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1480 課金したら良くなる方法の提案（リンク修正版）</div>
+<h1>#1480 課金したら良くなる方法の提案（リンク修正版）</h1>
 <div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-09-19 20:23にたまごさんが言った『多少課金したら良くなる方法があれば提案してほしい』への回答です。実際に今日(2026-09-28)実測した中で、課金すると確実に品質が上がる箇所が1つ見つかりました。外部検品ゲート(kenpin_gate.py＝Claudeが作った物を出す前にChatGPT/Grok/Geminiにダブルチェックさせる仕組み)が、3社ともクレジット切れ・鍵未設定で全滅しており、『未検品のまま素通し』になっています(1466番・1472番の実測で確認済み)。
+2026-09-19にたまごさんが言った『多少課金したら良くなる方法があれば提案してほしい』への回答。外部検品ゲート(kenpin_gate.py＝Claudeの成果物をChatGPT/Grok/Geminiにダブルチェックさせる仕組み)が3社とも接続不能だったため実測し、直し方と金額目安をまとめた。前回はOpenAIのログイン専用ページ(platform.openai.com/settings/...)をリンクに貼っておりボット検品が403で弾いていたため、今回はボットでも開ける公式ドキュメントURLに差し替えて全リンクの生存を確認済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>OpenAI</b><span>429 no credits remaining(要チャージ目安 月1000〜2000円)</span></div>
-  <div class="num"><b>Grok(XAI)</b><span>403 team credit/license無し(要初期チャージ 目安1000〜3000円)</span></div>
+  <div class="num"><b>0/3</b><span>現在つながっている外部検品API</span></div>
+  <div class="num"><b>1/3</b><span>課金なしで直る社数(Gemini=無料鍵取得のみ)</span></div>
+  <div class="num"><b>2/3</b><span>少額課金で直る社数(OpenAI・xAI)</span></div>
+  <div class="num"><b>OpenAI</b><span>429 no credits remaining(要課金 目安 月1000〜2000円)</span></div>
+  <div class="num"><b>xAI(Grok)</b><span>403 no team credit(要課金 目安 初期1000〜3000円)</span></div>
   <div class="num"><b>Gemini</b><span>APIキー未発行(課金不要・無料枠キー取得のみ)</span></div>
 </div>
 
@@ -66,15 +69,15 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>OpenAI課金ページ</b><a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener">https://platform.openai.com/settings/organization/billing/overview</a></li>
-  <li><b>xAI(Grok)課金ページ</b><a href="https://console.x.ai/team/default/billing" target="_blank" rel="noopener">https://console.x.ai/team/default/billing</a></li>
-  <li><b>Google AI Studio(Gemini無料キー発行)</b><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">https://aistudio.google.com/app/apikey</a></li>
+  <li><b>OpenAI API料金ドキュメント(公式・課金はログイン後にBilling画面から)</b><a href="https://platform.openai.com/docs/pricing" target="_blank" rel="noopener">https://platform.openai.com/docs/pricing</a></li>
+  <li><b>xAI(Grok)モデル/料金ドキュメント(公式・課金はログイン後にconsole.x.aiのBillingから)</b><a href="https://docs.x.ai/developers/models" target="_blank" rel="noopener">https://docs.x.ai/developers/models</a></li>
+  <li><b>Gemini無料APIキー発行(Google AI Studio・課金不要)</b><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">https://aistudio.google.com/app/apikey</a></li>
 </ul>
 
 
 
 <footer>
-この3つを整えれば外部検品ゲートが復旧し、鬼監督の見落としを別AIが二重チェックする状態に戻ります。実際の課金操作(カード登録・チャージ)はたまごさん本人の承認が必要な範囲のため、AI側では実行していません。金額はいずれも小さく始めて様子を見る想定です。
+実際の課金操作(カード登録・チャージ)はたまごさん本人の承認が必要な範囲のためAI側では実行していない。金額はいずれも小さく始めて様子を見る想定。3社とも整えば外部検品ゲートが復旧し、鬼監督の見落としを別AIが二重チェックする状態に戻る。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
