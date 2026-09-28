@@ -968,7 +968,9 @@ done
 #       実質ほとんど掃けていなかった（closedTotal=0だった）。15分＋掃いた時だけゲート更新に修正。
 #   ★Chromeが起動していなければ何もしない（起こさない）。activateしない。前面タブは閉じない。
 #     たまごさんの作業タブは閉じない（見分けがつかないものは残す）。
-( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+# ★1186番（2026-09-29）外した。ここに足し直してはいけない。
+#   たまごさん「タブ掃除も含めて止める。邪魔をするくらいならタブが残る方がまし。」
+# ( python3 "$REPO/tools/chrome_tab_sweeper.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
 
 # 1160番【タブ掃除係】2026-09-26：**外した。ここに足してはいけない。**
 #   osascript（AppleScript）でブラウザを触る作りだったため、たまごさんの画面にmacOSの

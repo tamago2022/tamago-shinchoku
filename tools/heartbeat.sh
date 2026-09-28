@@ -356,8 +356,14 @@ while :; do
   #     OSには触らない。触るのは 127.0.0.1 のポートだけ。Braveには触らない（lsofで相手を実測する）。
   #     正本は launchd（com.tamago.chrome-tab-cdp・2分おき）。ここからも呼ぶのは launchd が
   #     落ちても死なせないため（tomaranai と同じ二重化）。中で軽いので30秒おきで十分。
-  tick_every 8 && ( python3 "$REPO/tools/1401_tab_cdp.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
-  tick_every 8 && ( python3 "$REPO/tools/1401_cdp_arm.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # ---- 1186番（2026-09-29）★この2行を外した。ここに足し直してはいけない。 ----
+  #   たまごさん「Chromeを起動・再起動する処理を全部止める。例外なし。タブ掃除も含めて止める。
+  #              たまごさんの邪魔をするくらいなら、タブが残る方がまし。」
+  #   実測：1401_cdp_arm.py が pkill → open -a "Google Chrome" を2分おきに繰り返し、
+  #   プロファイル選択ウィンドウが画面中央に出続けた（一晩で5回）。
+  #   スクリプト側も status/1401_cdp.nostop で止めてあるが、呼ぶ側も外して二重に止める。
+  # tick_every 8 && ( python3 "$REPO/tools/1401_tab_cdp.py" --recon --sweep --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # tick_every 8 && ( python3 "$REPO/tools/1401_cdp_arm.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # ---- 1160番【タブ掃除係】2026-09-26：**外した。ここに足してはいけない。** ----
   #   一度ここに `python3 tools/1160_tab_souji.py` を足したが、中身が osascript（AppleScript）で
   #   Chrome/Brave/System Events を触る作りだったため、**たまごさんの画面にmacOSの許可ダイアログ

@@ -57,14 +57,16 @@ def main():
     #   新しい行を実行せず、5分便はlaunchdごと止まっていることがある（実測：298分停止）。
     #   掃除機は内部で1時間ゲートしているので、毎サイクル呼んでも実際に閉じるのは1時間に1回。
     #   Chromeが起動していなければ pgrep 1回で即座に戻る。
-    try:
-        import subprocess
-        subprocess.run(
-            [sys.executable, os.path.join(HERE, "chrome_tab_sweeper.py"),
-             "--recon", "--sweep", "--quiet"],
-            capture_output=True, timeout=40)
-    except Exception:
-        pass
+    # ★1186番（2026-09-29）外した。ここに足し直してはいけない。
+    #   たまごさん「タブ掃除も含めて止める。邪魔をするくらいならタブが残る方がまし。」
+    # try:
+    #     import subprocess
+    #     subprocess.run(
+    #         [sys.executable, os.path.join(HERE, "chrome_tab_sweeper.py"),
+    #          "--recon", "--sweep", "--quiet"],
+    #         capture_output=True, timeout=40)
+    # except Exception:
+    #     pass
 
     # 2026-09-19（962番）：サンドボックスから工場側のコマンドを走らせる口。
     #   status/_962/PHASE が idle（既定）なら bash が1回起動して即 exit 0 するだけ。

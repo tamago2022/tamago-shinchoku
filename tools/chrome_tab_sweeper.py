@@ -509,6 +509,13 @@ def touch_gate():
 
 # ---------------------------------------------------------------------------
 def main():
+    # ★1186号（2026-09-29）恒久停止。
+    #   たまごさん「Chromeを起動・再起動する処理を全部止める。タブ掃除も含めて止める。
+    #              たまごさんの邪魔をするくらいならタブが残る方がまし。」
+    #   この係は osascript で Chrome を触るため、たまごさんの画面に許可ダイアログを出しうる。
+    #   ★戻すときは status/1401_cdp.nostop を消す（消さない限り何もしない）。
+    if os.path.exists(os.path.join(STATUS, "1401_cdp.nostop")):
+        return 0
     ap = argparse.ArgumentParser()
     ap.add_argument("--recon", action="store_true", help="数えて記録するだけ。1枚も閉じない")
     ap.add_argument("--sweep", action="store_true", help="孤児タブを閉じる")
