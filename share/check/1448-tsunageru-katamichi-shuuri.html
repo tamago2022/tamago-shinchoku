@@ -55,6 +55,12 @@
 「原曲ページ→カバーへ戻れない片道リンク」を検出・修理しました。原因は既存データのofSongId欠落で、副作用として無関係な曲ページにまでカバーが誤表示されるバグも同時に解消しました。壊れた接続は18件→10件に減少（直せる8件はゼロに）。残り10件は接続先の動画が現在dead判定で自動非表示中のため、動画復活を待つ別トラックです。カタログ全体では「重要なのに関連導線が3本未満」の曲が2828件あり、これは今回のバグ修理とは別の、継続的な編集作業が必要な規模です。
 </div>
 
+<div class="note">
+<b>本番反映を実測で確認済み（2026-09-28 14:47）</b><br>
+main合流 → Lovable「公開」を押す → x-deployment-id が <code>psr2.7d00e7e</code> → <code>psr2.b68c322</code> に変化 → 修正後のページを実際に開いて確認、まで完走しています。<br>
+「Mrs. Robinson」のページを実際に開くと、修正前は無関係な「Bridge Over Troubled Water — Aretha Franklin」というカバーバッジが誤って表示されていましたが（下のリンクで再現できます）、本番反映後はこのバッジが消え、正しく「Bridge Over Troubled Water」自身のページにだけ表示されるようになりました（実測: 修正後のレンダリング済みHTMLに <code>&lt;span&gt;Bridge Over Troubled Water — Aretha Franklin...&lt;/span&gt;</code> は存在しない）。
+</div>
+
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>18→10件</b><span>壊れた接続(検出→修理後)</span></div>
@@ -71,8 +77,7 @@
   <li><b>修正1: Bob Dylan『Knockin on Heaven&#x27;s Door』(Guns N&#x27; Rosesへの戻り道)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bob-dylan&amp;song=knockin-on-heavens-door" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bob-dylan&amp;song=knockin-on-heavens-door</a></li>
   <li><b>修正2: Simon &amp; Garfunkel『Bridge Over Troubled Water』(Arethaへの戻り道)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=bridge-over-troubled-water" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=bridge-over-troubled-water</a></li>
   <li><b>修正3: Simon &amp; Garfunkel『Scarborough Fair』(Sergio Mendesへの戻り道)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=scarborough-fair" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=scarborough-fair</a></li>
-  <li><b>バグ実例(修正前): Simon &amp; Garfunkel『Mrs. Robinson』に無関係なArethaが誤表示</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=mrs-robinson" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=mrs-robinson</a></li>
-  <li><b>GitHubの修正コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/4464c903a" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/4464c903a</a></li>
+  <li><b>修正済み確認: Simon &amp; Garfunkel『Mrs. Robinson』(以前は無関係なArethaのバッジが誤表示されていたページ。今は消えています)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=mrs-robinson" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=simon-and-garfunkel&amp;song=mrs-robinson</a></li>
 </ul>
 
 
