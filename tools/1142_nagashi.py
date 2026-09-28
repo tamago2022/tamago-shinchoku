@@ -413,6 +413,34 @@ def _main():
             cur = None
         else:
             st["ima"] = memo
+            # ★1443番（2026-09-28）：期限(kigen)を過ぎても終わらない1本に、永久に居座られていた
+            #   実測事故＝issue #485（2026-09-25 09:38投げ・期限12:38）が3日間ブロックし続け、
+            #   その間ステップ②（次を投げる）が1回も実行されなかった＝
+            #   「デビンずっと走らせられるだけ走らしといて」の実体が3日間ゼロだった直接原因。
+            #   KIGEN_HOURS（期限）はもともと定義されていたのに、期限切れを「次に進む」判断へ
+            #   繋いでいなかった穴。期限超過は時間切れとして打ち切り、次へ進む（回数無制限で流し続ける）。
+            timed_out = False
+            try:
+                kg = datetime.fromisoformat(str(cur.get("kigen")))
+                if kg.tzinfo is None:
+                    kg = kg.replace(tzinfo=JST)
+                timed_out = _now() > kg
+            except Exception:
+                timed_out = False
+            if timed_out:
+                try:
+                    gaibu_ai.kaeri(cur.get("daicho_id"), url=cur.get("url"), state="timeout",
+                                   memo="期限(%s)超過のため打ち切り：%s" % (cur.get("kigen"), memo))
+                except Exception as e:
+                    say("台帳に時間切れを書けませんでした: %r" % e)
+                st["taimuauto_gokei"] = st.get("taimuauto_gokei", 0) + 1
+                st["rireki"] = (st.get("rireki") or [])[-30:] + [
+                    {"name": cur.get("name"), "kuchi": cur.get("kuchi"),
+                     "url": cur.get("url"), "owattaAt": _iso(), "jotai": "timeout"}]
+                say("1本、時間切れで打ち切り：%s（%s）期限%s → 次へ進みます"
+                    % (cur.get("name"), cur.get("kuchi"), cur.get("kigen")))
+                st["inflight"] = None
+                cur = None
 
     # ② 空いていたら次を投げる（★止めない）
     if not cur and (st.get("kyou_nageta", 0) < MAX_PER_DAY):
