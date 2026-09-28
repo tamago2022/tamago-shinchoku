@@ -83,6 +83,13 @@
 
 - **同じ直し方で30分詰まったら、外部AI（OpenAI／Gemini／Grok）に聞く。**
 - 3回同じFIXが返ってきたら、**直し方そのものを変える。**手数を増やすのではない。
+- **「できません」「この方法しかない」と書く前に、必ず `tools/1464_dakai_kanmon.py` を通す。**
+  （1464番・たまごさん2026-09-19「直し方が一つしかなくて、っていうのは俺は信用してないよ」への対応。
+   文章のお願いだけでは同じ苦言が繰り返されたため、exit codeで強制する門にした）
+  - まず過去の同種の詰まりを探す：`python3 tools/1464_dakai_kanmon.py --search "<詰まりのキーワード>"`
+  - 経路の異なる打開策（browser/cli/api/agent/doc/config、最低2種類）を実際に試してから申請する：
+    `python3 tools/1464_dakai_kanmon.py --shinsei '{"komatta":"...","ketsuron":"できない","kokoromi":[{"shudan":"cli","naiyou":"...","kekka":"..."},{"shudan":"api","naiyou":"...","kekka":"..."}]}'`
+  - `DAKAI_KANMON_RESULT: PASS` が出るまでは「できません」を報告に書かない。FAILのまま報告に出さない。
 
 ### 10. 時間で切る
 
