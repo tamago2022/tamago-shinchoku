@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1447 週5日100時間ずっと動いているか（Devin実測） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1447 週5日100時間ずっと動いているか（Devin実測）</div>
+<h1>#1447 週5日100時間ずっと動いているか（Devin実測）</h1>
+<div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p><b>店主の発言（2026-09-18原文）</b>：「週5日だったら100時間くらいずっとやってくれるっていうんだったら3,500円払う価値はあると思う」を、Devin API（/v1/sessions）の実データだけで検証した。</p><p><b>結論：条件はまだ満たしていない。</b>週あたりの実働は22.9時間で、条件の100時間には遠く届かない。平日9日のうち4日（9/21・9/23・9/24・9/25）は投入ゼロ、最大で平日3日連続の空白があった。一方で土日(9/19・9/20)には計10本・603分動いており、曜日を選ばず不規則に動いている実態。</p><pre>実測: 2026-09-16〜2026-09-28（13日間・Devin API /v1/sessions の created_at/updated_at から機械集計）
+日付        曜日 平日/休日  本数    稼働分
+2026-09-16  水  平日    4本   229.1分
+2026-09-17  木  平日    1本    48.7分
+2026-09-18  金  平日    5本   250.1分
+2026-09-19  土  休日    4本   429.3分
+2026-09-20  日  休日    6本   174.0分
+2026-09-21  月  平日    0本     0.0分
+2026-09-22  火  平日    6本   139.6分
+2026-09-23  水  平日    0本     0.0分
+2026-09-24  木  平日    0本     0.0分
+2026-09-25  金  平日    0本     0.0分
+2026-09-26  土  休日    0本     0.0分
+2026-09-27  日  休日    0本     0.0分
+2026-09-28  月  平日    2本   102.1分</pre><p><b>止まっていた理由</b>：継続投入の仕組み（1142番「流し続ける係」）は既に実装済みで、心臓(heartbeat)から1分おきに監視・自動投入している。財布(yosan devin)は現在上限2232円・使用0円で開いている。9/23〜9/25の3日連続空白の実際の原因は「期限切れセッションの打ち切り漏れバグ」で、これは本日9/28に1443号の対応で修正・実機確認済み。</p><p><b>参考</b>：Devin公式プランは月20ドル（1ドル157.16円換算で約3,143円）＝店主の言う3,500円に近い金額。10/16に「更新する/しない」を決める判定（1500番）は既存で稼働中、今回の実測はその判断材料として引き続き自動更新される。</p>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>22.9時間</b><span>週あたり実働（条件100時間）</span></div>
+  <div class="num"><b>4/9日</b><span>平日で投入ゼロだった日</span></div>
+  <div class="num"><b>3日</b><span>最大連続の平日空白</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>1500番 Devin成績表（10/16更新判定）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1500-devin-seiseki.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1500-devin-seiseki.html</a></li>
+  <li><b>1443番 継続稼働バグ修正の確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1443-devin-zutto.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1443-devin-zutto.html</a></li>
+  <li><b>Devin公式 料金プラン</b><a href="https://devin.ai/pricing" target="_blank" rel="noopener">https://devin.ai/pricing</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>週5日（平日5日とも投入あり）</td><td class="no">平日9日中5日のみ投入</td></tr>
+<tr><td>週あたり100時間相当の稼働</td><td class="no">実働22.9時間</td></tr>
+<tr><td>継続投入の仕組み(1142番)は実装済みか</td><td class="yes">心臓から1分おきに監視・実装済み</td></tr>
+<tr><td>Devinの財布は開いているか</td><td class="yes">上限2232円・使用0円</td></tr>
+</table>
+
+<footer>
+このページは #1447 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
