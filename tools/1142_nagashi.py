@@ -457,6 +457,17 @@ def _main():
             if ok:
                 res, err = throw_devin(job)
                 kuchi = "devin"
+                if res is None:
+                    # ★1443番（2026-09-28）：財布は開いているのに throw_devin 自体が
+                    #   失敗した時、理由がどこにも残らず「財布が0.0円」という古い
+                    #   devin_tomete_iru_riyuu がそのまま居座り続けていた（実測で発覚：
+                    #   財布2232円・aiteru=trueなのに理由欄だけ「0.0円」と矛盾していた）。
+                    #   Devinが呼べなかった生の理由をここで必ず書き直す。
+                    st["devin_tomete_iru_riyuu"] = (
+                        "財布は開いています（残り%.0f円）が、Devinの呼び出し自体が"
+                        "失敗しました：%s" % (saifu.get("nokori_yen") or 0, err or "理由不明"))
+                else:
+                    st["devin_tomete_iru_riyuu"] = None
             else:
                 st["devin_tomete_iru_riyuu"] = why
         else:
