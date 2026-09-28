@@ -3,24 +3,24 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                                                                                                                  // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                                                                                                                    // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-27T21:11:06.909Z",
+      "updatedAt": "2026-09-28T00:27:38.507Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
-      "dateJST": null,
-      "successCountToday": 0,
+      "dateJST": "2026-09-28",
+      "successCountToday": 1,
       "consecutiveFailures": 0,
       "stoppedForToday": false,
-      "lastResult": null,
-      "lastCheckedAt": null,
-      "lastPublishedSha": null,
-      "lastFailureReason": null,
-      "lastFailureAt": null,
-      "mainSha": null,
-      "mainUnpublished": false,
+      "lastResult": "success",
+      "lastCheckedAt": "2026-09-28T00:27:38.348Z",
+      "lastPublishedSha": "6910d719be",
+      "lastFailureReason": "ERR locator.count: Target page, context or browser has been closed",
+      "lastFailureAt": "2026-09-27T20:25:49.620Z",
+      "mainSha": "03c44ee692",
+      "mainUnpublished": true,
       "paused": false,
       "pauseReason": null
   },
