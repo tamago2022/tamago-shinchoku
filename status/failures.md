@@ -821,3 +821,29 @@
 - **対応**：`tools/1464_dakai_kanmon.py`（打開関所）を新設。「できません」と報告する前に、経路の異なる打開策（browser/cli/api/agent/doc/config）を最低2種類、内容と結果つきで実際に試した記録が無いと exit code 2 で弾く。台帳は`status/1464_dakai_daicho.jsonl`に蓄積し`--search`で過去の打開策を再利用できる（「あなたが知らないやり方」を毎回ゼロから探させない）。`tools/session_preamble.md`「### 9. 詰まったら自分で粘らない」に組み込み、全子セッションが自動で読む状態にした。
 - **preventedBy**：`tools/1464_dakai_kanmon.py --self-test`（6ケースPASS済み）。運用開始後の`--show`で「弾き0が続く」ことがあれば門が効いていない兆候として再点検する。
 - **日付**：2026-09-28
+
+
+---
+
+## 797番自動記録：発車が10分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が10分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-09-28 17:53
+
+
+## 1466番：停滞検知(stale_marker.py)の時計が backfill 項目でリセットされていたバグ
+
+- **症状**：たまごさんが2026-09-19 20:23に言った苦言（進行の遅さ・仕組みづくり・「ミスをしない仕組みにしてくれ」）が
+  queue.jsonへ実登録されたのは2026-09-26（backfill）。stale_marker.pyの`_best_seed_ts`は
+  finishedAt/checkedAt/startedAt/holdReviewedAtしか見ておらず、waiting状態の新規項目にはどれも
+  無いため「初めて観測した時刻＝今」をsinceにしていた。結果、9日前の苦言が「2.2日前から待機中」に
+  若返り、3日しきい値のyellowにすら届かず、1466番自身が「1週間経っても未着手」のまま赤化を
+  見逃されるという自己言及的な事故が起きた。
+- **対応**：`tools/stale_marker.py`のTS_FIELDS_PRIORITY末尾に`queuedAt`を追加（他の状態別
+  フィールドが無い時の最終フォールバック）。既存台帳(item_status_since.json)も、状態が変わって
+  いなくてもqueuedAtが記録済みsinceより古ければ自己修復するよう追加。本番データで再実行した結果、
+  赤(7日以上停滞)が151件→213件（見逃されていた62件を検出）、queueItemsTouched=63。
+- **preventedBy**：`python3 tools/stale_marker.py --self-test`（3ケースPASS済み）。運用は
+  既存の定期実行にそのまま乗る（新しいcron等は不要）。
+- **日付**：2026-09-28

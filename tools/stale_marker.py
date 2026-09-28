@@ -33,6 +33,18 @@
   python3 tools/stale_marker.py             # 判定して status/stale_summary.json を書く。
                                              # staleLevelが変わった項目だけqueue.jsonへ反映。
   python3 tools/stale_marker.py --no-write  # queue.jsonは書かず、判定結果を表示するだけ。
+
+■ 1466番の修正（2026-09-28）：backfill項目の時計がリセットされていたバグ
+  たまごさんが2026-09-19 20:23に言った苦言（進行の遅さ・仕組みづくり・ミスをしない仕組み）が
+  queue.jsonへ実際に登録されたのは2026-09-26（"queuedAtSource":"1372backfill:言われた日時"）。
+  旧コードは _best_seed_ts が finishedAt/checkedAt/startedAt/holdReviewedAt しか見ておらず、
+  「waiting」状態の新規項目にはどれも無いため、初めて観測した時刻＝"now"を since にしていた。
+  結果、9日前に言われたはずの苦言が「2.2日前から待機中」と誤って若返り、
+  3日しきい値のyellowにすら届かず、赤化の見逃し（今回の1466番自身）が起きた。
+  修正：①TS_FIELDS_PRIORITYの末尾に queuedAt を追加（他の状態別フィールドが無い時の最終フォールバック）。
+       ②既存台帳(item_status_since.json)についても、状態が変わっていなくても
+         queuedAt が記録済みのsinceより古ければ、そちらへ補正する自己修復を追加。
+  検品: python3 tools/stale_marker.py --self-test
 """
 import datetime
 import io
@@ -57,7 +69,7 @@ ACTIVE_STATUSES = {"waiting", "hold", "awaiting_check", "running", "verifying", 
 YELLOW_DAYS = 3.0
 RED_DAYS = 7.0
 
-TS_FIELDS_PRIORITY = ("finishedAt", "checkedAt", "startedAt", "holdReviewedAt")
+TS_FIELDS_PRIORITY = ("finishedAt", "checkedAt", "startedAt", "holdReviewedAt", "queuedAt")
 
 
 def now_jst():
@@ -129,6 +141,15 @@ def update_since_ledger(items):
             since = seed.isoformat() if seed else now_iso
             ledger[key] = {"status": status, "since": since}
             changed = True
+        else:
+            # 1466番の自己修復：状態が変わっていなくても、backfillされたqueuedAt等が
+            # 記録済みのsinceより古ければ、より正確な古い方へ補正する（誤った若返りを直す）。
+            seed = _best_seed_ts(it)
+            if seed:
+                current_since = _parse_ts(entry.get("since"))
+                if current_since is None or seed < current_since:
+                    ledger[key] = {"status": status, "since": seed.isoformat()}
+                    changed = True
     for key in list(ledger.keys()):
         if key not in current_keys:
             del ledger[key]
@@ -185,7 +206,50 @@ def apply_to_queue(rows):
     return touched
 
 
+def self_test():
+    """1466番の修正が効いているかを、実データを汚さずその場だけで確認する（3ケース）。"""
+    ok = True
+
+    def check(name, cond):
+        nonlocal ok
+        mark = "PASS" if cond else "FAIL"
+        if not cond:
+            ok = False
+        print("[%s] %s" % (mark, name))
+
+    t0 = now_jst()
+    old9 = (t0 - datetime.timedelta(days=9)).isoformat()
+    old1 = (t0 - datetime.timedelta(days=1)).isoformat()
+
+    # ケース1: waitingのみ・他の状態別フィールドが無い・queuedAtだけが9日前 → queuedAtが拾われること
+    it1 = {"n": 90001, "status": "waiting", "queuedAt": old9}
+    seed1 = _best_seed_ts(it1)
+    check("queuedAtしか無いwaiting項目はqueuedAtを拾う", seed1 is not None and abs((seed1 - t0).total_seconds()) > 8 * 86400)
+
+    # ケース2: startedAtがある場合はqueuedAtより優先されること（既存挙動を壊していない）
+    it2 = {"n": 90002, "status": "running", "startedAt": old1, "queuedAt": old9}
+    seed2 = _best_seed_ts(it2)
+    check("startedAtがあればqueuedAtより優先される", seed2 is not None and abs((seed2 - t0).total_seconds()) < 2 * 86400)
+
+    # ケース3: 既存台帳が誤って"now"寄りに若返っていても、queuedAtが古ければ補正される
+    ledger = {"90003": {"status": "waiting", "since": now_jst().isoformat()}}
+    it3 = {"n": 90003, "status": "waiting", "queuedAt": old9}
+    ledger_copy = json.loads(json.dumps(ledger))
+    now_iso = now_jst().isoformat()
+    entry = ledger_copy.get("90003")
+    status = "waiting"
+    seed = _best_seed_ts(it3)
+    current_since = _parse_ts(entry.get("since"))
+    corrected = seed is not None and (current_since is None or seed < current_since)
+    check("誤って若返った既存台帳がqueuedAtへ補正される", corrected)
+
+    print("SELF_TEST_RESULT:", "PASS" if ok else "FAIL")
+    return 0 if ok else 1
+
+
 def main():
+    if "--self-test" in sys.argv:
+        return self_test()
     no_write = "--no-write" in sys.argv
     q = qs.load_queue()
     items = q.get("items") or []
