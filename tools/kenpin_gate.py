@@ -426,6 +426,32 @@ def _daburu_gate_or_stop(body):
     return 1 if rc else 0
 
 
+def _houkoku_gate_or_stop(body):
+    """1481番：『簡潔にして完結は価値高いよ』の門。通れば0、落ちたら1。
+
+    ★判定は tools/1481_houkoku_kanmon.py にしかない（同じ理由で二重管理しない）。
+      たまごさん（2026-09-19 20:23）「何が言いたいのかわからない…3行45枚で足りるのに
+      さぁダラダラ…治ったかしか興味ないから…簡潔にして完結は価値高いよ」への対応。
+      完了報告（kind=post）に限って、地の文・経緯語・実行ログの生貼りを止める
+      （pre提出は計画書なので経緯説明が要ることがあり対象外）。
+    """
+    try:
+        import importlib
+        m = importlib.import_module("1481_houkoku_kanmon")
+    except Exception:
+        try:
+            import importlib.util
+            path = os.path.join(HERE, "1481_houkoku_kanmon.py")
+            spec = importlib.util.spec_from_file_location("houkoku_kanmon_1481", path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+        except Exception as e:  # noqa: BLE001
+            print("（1481番の門が読めません：%s。この関所は無視します）" % e)
+            return 0
+    rc = m.run(body)
+    return 1 if rc else 0
+
+
 def cmd_submit(n, kind, body_path, body_text, url, cost, note):
     body = body_text or (_read_text(body_path) if body_path else "")
     if not body.strip():
@@ -442,6 +468,13 @@ def cmd_submit(n, kind, body_path, body_text, url, cost, note):
     rc = _daburu_gate_or_stop(body)
     if rc:
         return rc
+
+    # 1481番：完了報告（post）に限って、ダラダラした地の文・経緯語・ログ生貼りを止める
+    #   たまごさん「何が言いたいのかわからない…簡潔にして完結は価値高いよ」
+    if kind == "post":
+        rc = _houkoku_gate_or_stop(body)
+        if rc:
+            return rc
 
     if kind == "pre" and not cost:
         # 3章：お金が出るものは、生成前に費用「◯本 × ◯円 = 合計◯円」を必ず添えて出す。
