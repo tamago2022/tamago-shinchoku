@@ -131,8 +131,27 @@ def clear():
 
 
 # ── 逆テスト ──────────────────────────────────────────────────────
+def _node():
+    """nodeの場所。心臓経由（launchd）だとPATHが痩せていて `node` が引けない。"""
+    import shutil
+    p = shutil.which("node")
+    if p:
+        return p
+    for c in ("/opt/homebrew/bin/node", "/usr/local/bin/node", "/usr/bin/node",
+              os.path.expanduser("~/.volta/bin/node")):
+        if os.path.exists(c):
+            return c
+    for base in (os.path.expanduser("~/.nvm/versions/node"),):
+        if os.path.isdir(base):
+            for v in sorted(os.listdir(base), reverse=True):
+                c = os.path.join(base, v, "bin", "node")
+                if os.path.exists(c):
+                    return c
+    return "node"
+
+
 def _hook(payload):
-    p = subprocess.run(["node", HOOK], input=json.dumps(payload).encode("utf-8"),
+    p = subprocess.run([_node(), HOOK], input=json.dumps(payload).encode("utf-8"),
                        capture_output=True, timeout=30)
     return p.returncode, (p.stderr or b"").decode("utf-8", "replace")
 
@@ -163,8 +182,8 @@ FULL = {"koushiki": "目次を通読した", "mcp": "MCPを探したが無かっ
 
 def shiken():
     _rm_hyo()
-    tmp_new = os.path.join(REPO, "status", "_shiken_1184_new.py")
-    tmp_old = os.path.join(REPO, "status", "_shiken_1184_old.py")
+    tmp_new = os.path.join(REPO, "status", "_shikenA_new.py")
+    tmp_old = os.path.join(REPO, "status", "_shikenA_old.py")
     for p in (tmp_new, tmp_old):
         if os.path.exists(p):
             os.remove(p)
@@ -187,9 +206,9 @@ def shiken():
 
     t("票なしで新しい .py を Write する", W(tmp_new), 2)
     t("票なしで新しい .mjs を Write する",
-      W(os.path.join(REPO, "status", "_shiken_1184_new.mjs")), 2)
+      W(os.path.join(REPO, "status", "_shikenA_new.mjs")), 2)
     t("票なしで .md を Write する（止めない）",
-      W(os.path.join(REPO, "status", "_shiken_1184.md")), 0)
+      W(os.path.join(REPO, "status", "_shikenA.md")), 0)
     t("既にあるファイルを Write（作り直しは新方式ではない）", W(tmp_old), 0)
     t("Edit は止めない",
       {"tool_name": "Edit", "tool_input": {"file_path": tmp_new}, "session_id": "shiken"}, 0)
@@ -229,7 +248,7 @@ def shiken():
         ng += 1
 
     _rm_hyo()
-    for p in (tmp_new, tmp_old, os.path.join(REPO, "status", "_shiken_1184.md")):
+    for p in (tmp_new, tmp_old, os.path.join(REPO, "status", "_shikenA.md")):
         if os.path.exists(p):
             os.remove(p)
 

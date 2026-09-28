@@ -94,7 +94,8 @@ if (tool !== "Write") process.exit(0);
 if (!JISSOU.test(fp)) process.exit(0);
 if (existsSync(fp)) process.exit(0); // 既存の作り直しは「新しいやり方」ではない
 // 関所自身と、関所を通るための道具は塞がない（自分で自分を閉じ込めない）
-if (/1184_/.test(path.basename(fp))) process.exit(0);
+if (/^1184_(kanmon|arai)\.py$|^1184_original_kinshi\.mjs$/.test(path.basename(fp)))
+  process.exit(0);
 if (/\/status\/oneshot\//.test(fp)) process.exit(0); // 心臓へ渡す一発物
 
 // ── 票があるか（5段階が埋まっているか） ───────────────────────────
