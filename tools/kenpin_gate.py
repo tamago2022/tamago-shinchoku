@@ -400,6 +400,32 @@ def _kazu_gate_or_stop(body, label):
     return 1
 
 
+def _daburu_gate_or_stop(body):
+    """1472番：『確認できないものをよこすな』の門。通れば0、落ちたら1。
+
+    ★判定は tools/1472_daburu_kanmon.py にしかない（同じ理由で二重管理しない）。
+      たまごさん（2026-09-19 20:23）「ダブルクリックで開きますって開かれないよ
+      …確認できないものをよこすな」への対応。ローカルパスを『確認して』の
+      文脈でそのまま渡すのを、AIを呼ばずに文字列判定で止める。
+    """
+    try:
+        import importlib
+        m = importlib.import_module("1472_daburu_kanmon")
+    except Exception:
+        # モジュール名が数字始まりで import 文では読めないため、パス指定で読む。
+        try:
+            import importlib.util
+            path = os.path.join(HERE, "1472_daburu_kanmon.py")
+            spec = importlib.util.spec_from_file_location("daburu_kanmon_1472", path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+        except Exception as e:  # noqa: BLE001
+            print("（1472番の門が読めません：%s。この関所は無視します）" % e)
+            return 0
+    rc = m.run(body)
+    return 1 if rc else 0
+
+
 def cmd_submit(n, kind, body_path, body_text, url, cost, note):
     body = body_text or (_read_text(body_path) if body_path else "")
     if not body.strip():
@@ -409,6 +435,11 @@ def cmd_submit(n, kind, body_path, body_text, url, cost, note):
     #   判定はここに1行も書かない（hantei.kazu → tools/kazu_gate.py が唯一の判定）。
     #   たまごさん「調べてから上げてこいよって。混乱するから。コロコロ変わるから、報告がさぁ」
     rc = _kazu_gate_or_stop(body, "%s号 第?回（%s）の提出物" % (n, kind))
+    if rc:
+        return rc
+
+    # 1472番：確認できないもの（ローカルパスのダブルクリック指示）を止める
+    rc = _daburu_gate_or_stop(body)
     if rc:
         return rc
 
