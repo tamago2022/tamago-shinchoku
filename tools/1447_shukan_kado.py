@@ -122,8 +122,8 @@ def build():
     try:
         import yosan
         st = yosan.settei()
-        used, _ = yosan.tsukatta_gokei("devin") or (0, 0)
-        limit = float((st.get("devin") or {}).get("jougen_yen", 0) if isinstance(st.get("devin"), dict) else 0)
+        used, _ = yosan.tsukatta_gokei("devin")
+        limit = float((st.get("limits") or {}).get("devin", 0.0))
         yosan_devin = {"jougen_yen": limit, "tsukatta_yen": float(used or 0)}
     except Exception as e:
         yosan_devin = {"error": repr(e)[:200]}
@@ -152,7 +152,7 @@ def build():
         "hantei": {
             "joken": "週5日（平日5日とも投入あり）／100時間（週あたり）",
             "jittai": "平日%d日のうち%d日は投入ゼロ。実働合計は%.1f時間（100時間には遠く届かない）" % (
-                weekday_total - weekday_active, weekday_total, total_min / 60.0),
+                weekday_total, weekday_total - weekday_active, total_min / 60.0),
             "mitasu": False,
         },
         "yosan_devin": yosan_devin,
