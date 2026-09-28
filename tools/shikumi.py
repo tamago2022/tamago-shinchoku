@@ -417,10 +417,18 @@ def check_deploy():
 # ───────────────────────── ⑥完了報告の押し出し ─────────────────────────
 
 def check_dispatch_outbox():
-    reported = set((jread("dispatch_reported.json", {}) or {}).get("ns") or [])
+    reported_raw = set((jread("dispatch_reported.json", {}) or {}).get("ns") or [])
+    reported = set(str(x) for x in reported_raw)  # 1126番修正：nsはint中心だが
+    # outbox側のnは"1060"のような文字列で来ることもある（1060便）。型が違うだけで
+    # 一致しないと誤ってdead判定され続けるため、比較は文字列化してから行う。
     rows = read_jsonl(os.path.join(ST, "dispatch_outbox.jsonl"))
     rows = [d for d in rows if not d.get("type")]  # stuck_escalation等は報告対象外(kenpou_checkと同じ)
-    unreported = [d for d in rows if d.get("n") not in reported]
+    rows = [d for d in rows if d.get("n") is not None]  # 1126番修正：号番号(n)を持たない行は
+    # そもそも「完了報告」ではない（yosan予算通知・genspark_nagashi流し状況等）。
+    # これをカウントに含めると、号を持たない通知が積まれ続けるだけで
+    # 「未報告」が無限に増え、dispatch_reported.jsonへnsを1つ足しても絶対に0件にならず
+    # 常にdead判定になる恒久バグだった（実測：2026-09-29時点で該当行1930件・本物の未報告は1件）。
+    unreported = [d for d in rows if str(d.get("n")) not in reported]
     hs = [hours_since(d.get("ts")) for d in unreported]
     hs = [h for h in hs if h is not None]
     oldest_hours = max(hs) if hs else None
