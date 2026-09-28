@@ -902,3 +902,11 @@
 - **対応**：`tools/1472_daburu_kanmon.py`を新設。提出物の中に「確認して/見て/ダブルクリック」の文脈でローカルパス（`/Users/…・~/…・file://…`）がそのまま書かれていたら文字列判定だけでexit 2で止める。ただし「鍵を貼る.command」のような実行系（貼る/承認/Enter等）は正当な運用として通す。`kenpin_gate.py`の`cmd_submit`（提出の入口）へ組み込み、全提出が自動で通る。`tools/session_preamble.md`8章にも追記し全子セッションが読む状態にした。
 - **preventedBy**：`python3 tools/1472_daburu_kanmon.py --self-test`（6ケースPASS済み）。
 - **日付**：2026-09-28
+
+---
+
+## 1472番・付記：外部検品ゲート(kenpin_gate.py)の外部AI3社が2026-09-28時点で全滅
+
+- **症状**：1472号を`kenpin_gate.py --submit`で正式提出し`--run-pending`を試みたが、その前の`sekisho.py --skip-click`実行時点で3社とも失敗していることを実測済み：Grok(XAI)＝HTTP 403「newly created teamにcredit/licenseが無い」、OpenAI＝HTTP 429「no credits remaining」、Gemini＝`GEMINI_API_KEY`が`~/.tamago/keys/api_keys.env`に見つからない。これは1472号固有の不具合ではなく`kenpin_gate.py`の外部検品ゲート全体が現在機能していない状態を示す。
+- **対応**：課金・鍵補充が必要な領域のためこのセッションでは解決不可（金銭に関わる確認義務②）。1472号自体は自己検品(self-test/sekisho)PASS・本番URL 200・中身確認済みの状態で提出済み（`status/kenpin/1472/`）。鍵/クレジットが補充され次第、次の`--run-pending`で自動的に外部検品が回る。
+- **日付**：2026-09-28
