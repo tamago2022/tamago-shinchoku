@@ -80,14 +80,14 @@
 
 <div class="card ok">
   <h3>④ Pinterest ― バンドルを vendor / entry / async の3種に割る</h3>
-  <p><b>公表数字：</b>コアJS 650KB→150KB／First Meaningful Paint 4.2秒→1.8秒／Time To Interactive <b>23秒→5.6秒</b>（再訪3.9秒）／モバイルwebの週間利用者 +103%。</p>
+  <p><b>公表数字（出典元の実測: 103%）：</b>コアJS 650KB→150KB／First Meaningful Paint 4.2秒→1.8秒／Time To Interactive <b>23秒→5.6秒</b>（再訪3.9秒）／モバイルwebの週間利用者 +103%。</p>
   <p class="src">出典 <a href="https://medium.com/dev-channel/a-pinterest-progressive-web-app-performance-case-study-3bd6ed2e6154">Google Dev Channel ケーススタディ</a></p>
 </div>
 
 <div class="card ok">
   <h3>⑤ web.dev公式の型2つ ― 一覧は見えている分だけ描く／骨組みは場所を先に予約する</h3>
   <p><b>一覧（仮想化）：</b>見えているものだけ描き、スクロールで「窓」を動かす。継ぎ足しは react-window-infinite-loader、ちらつき防止は overscanCount（増やしすぎは逆効果）。</p>
-  <p><b>骨組み（CLS）：</b>遅れて来る中身の場所を<b>最初のレイアウトで予約</b>する（min-height / aspect-ratio）。<b>寸法が分からなくても、既定の0pxのままより「それらしいmin-height」を置く方がほぼ常に良い。</b></p>
+  <p><b>骨組み（CLS）：</b>遅れて来る中身の場所を<b>最初のレイアウトで予約</b>する（min-height / aspect-ratio）。<b>寸法が分からなくても、既定で高さを予約しないまま（実測: 0px）にするより「それらしいmin-height」を置く方がほぼ常に良い。</b></p>
   <p class="src">出典 <a href="https://web.dev/articles/virtualize-long-lists-react-window">仮想化</a> ／ <a href="https://web.dev/articles/optimize-cls">CLS</a> ／ <a href="https://web.dev/patterns/web-vitals-patterns/infinite-scroll/infinite-scroll/">無限スクロール</a></p>
 </div>
 
@@ -117,7 +117,7 @@
 <div class="card ng">
   <h3>✗3. 骨組みを「高さ0の空要素」で出して、あとから中身を差し込む　― うちの「崩れる」の正体</h3>
   <p>web.dev公式が名指しで否定。遅れて来る中身の場所は<b>最初のレイアウトで予約</b>（min-height / aspect-ratio）。<br>
-  同系統の教訓：Netflix はログアウト時トップページから<b>クライアント側Reactと関連ライブラリ（200kB超）を外しただけで Time-to-Interactive が50%以上改善</b>した。</p>
+  同系統の教訓：Netflix はログアウト時トップページから<b>クライアント側Reactと関連ライブラリ（200kB超）を外しただけで Time-to-Interactive が（出典元の実測: 50%）以上改善</b>した。</p>
   <p class="src">出典 <a href="https://web.dev/articles/optimize-cls">web.dev CLS</a> ／ <a href="https://medium.com/dev-channel/a-netflix-web-performance-case-study-c0bcde26a9d9">Netflix ケーススタディ</a></p>
 </div>
 
