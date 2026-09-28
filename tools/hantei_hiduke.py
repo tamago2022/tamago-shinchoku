@@ -141,14 +141,31 @@ def parse_hi(s):
 
 def ima_no_jotai():
     """題名 → いまの状態。★機械が確認した完了を、自己申告より上に置く。"""
+    # 1451番実例（2026-09-28）：DAICHO に一度書き込まれた actionable は、
+    # tools/shukudai.py sync() が再実行されるまで更新されない。ところが
+    # shukudai.actionable() 側は1377番の教訓で「調べてみて、ちゃんと。」のような
+    # 動詞抜きの相槌を actionable=False に直したのに、DAICHO 側の古い行は
+    # actionable=True のまま残り、この係（hantei）が sync を待たずに独立して
+    # DAICHO を読むせいで、直したはずのロジックが素通りして★赤＋再発車を
+    # 繰り返していた（1385/1451/1849番で実測確認）。
+    # ★sync() の実行タイミングに依存しないよう、ここで毎回 actionable() を
+    # 呼び直して最新判定で上書きする。DAICHO の値はフォールバックにしか使わない。
+    try:
+        sys.path.insert(0, HERE)
+        import shukudai as _shukudai
+    except Exception:
+        _shukudai = None
     by = {}
     for r in jsonl(DAICHO):
-        # 1370番実例：actionable（shukudai.pyが「具体的な作業指示が読み取れない」と
-        # 判定した印）はDAICHO側にしか付いていない。HATSUGEN側のrにはこのフィールドが
-        # 無いため、ここで拾って hantei_1ken に渡す。
+        act = r.get("actionable")
+        if _shukudai is not None:
+            try:
+                act = _shukudai.actionable(r)
+            except Exception:
+                pass
         by.setdefault(norm(r.get("title"))[:24],
                       {"state": r.get("state") or "未着手", "evidence": r.get("evidence"),
-                       "actionable": r.get("actionable")})
+                       "actionable": act})
     # 検品を通った（＝URLが200で中身が入っていた）ものだけ、完了に上書きしてよい
     for k in jsonl(KENPIN):
         if not k.get("ok"):
