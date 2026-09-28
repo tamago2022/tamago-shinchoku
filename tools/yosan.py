@@ -245,6 +245,8 @@ KUCHI = [
     # (ファイル, 何の財布, 栓を通しているか, 備考)
     ("tools/gaibu_kuchi.py", "openai/xai/gemini", True,
      "ask() の頭で mitsumori、返ったあと tsukatta。kiku・nageru chappy・gaibu_kenpin の元"),
+    ("tools/kenpin_gate.py", "openai/xai/gemini", True,
+     "外部検品ゲート（鬼監督）。run_one() の頭で mitsumori、返ったあと tsukatta（1483番で接続）"),
     ("tools/tanomu.py", "xai(画像)/fal", True, "run_job の頭で mitsumori"),
     ("tools/devin_start.py", "devin", True, "セッションを立てる前に mitsumori"),
     ("tools/fal_cost_ledger.py", "fal", False, "台帳だけ。叩かない（栓は不要）"),
