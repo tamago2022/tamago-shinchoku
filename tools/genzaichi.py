@@ -525,7 +525,13 @@ def run_stale_marker_and_get_red_flags():
         lines.append("確認待ちが%d件（10件超）たまっています。鬼監督で仕分けてください" % n_check)
     red = s.get("red") or []
     if red:
-        top = "・".join("%s番(%s日)" % (r.get("n"), r.get("ageDays")) for r in red[:5])
+        # 1458番：番号だけでは「何をやってんだっけ」に答えられない。
+        # stale_marker.py側は既にtitleを持っているのに、ここで捨てて番号だけ表示していたのが原因
+        # （1454/1455番で直した「今すぐ走っているもの」欄と同じ欠陥が別の欄にも残っていた）。
+        top = "・".join(
+            "%s番「%s」(%s日)" % (r.get("n"), (r.get("title") or "").replace("判定日赤｜", "")[:16], r.get("ageDays"))
+            for r in red[:5]
+        )
         more = "、他%d件" % (len(red) - 5) if len(red) > 5 else ""
         lines.append("7日以上動いていない案件が%d件：%s%s" % (len(red), top, more))
     return lines
