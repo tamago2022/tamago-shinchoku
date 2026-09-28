@@ -722,13 +722,13 @@ def build():
                 secs = (now - datetime.datetime.fromisoformat(st)).total_seconds()
                 el = "（%.1fh%s）" % (secs / 3600, " ★3時間超" if secs > 10800 else "")
             except Exception: pass
-            A("- %s %s%s" % (x.get("n"), (x.get("label") or "")[:44], el))
+            A("- %s %s%s" % (x.get("n"), (x.get("label") or x.get("title") or "")[:44], el))
     else:
         A("- **0本**（クレジットが残っているなら、これは異常）")
     A("")
     A("## 次に出る（P1の先頭5件）")
     for x in sorted(p1, key=lambda y: -(y.get("n") or 0))[:5]:
-        A("- %s %s" % (x.get("n"), (x.get("label") or "")[:48]))
+        A("- %s %s" % (x.get("n"), (x.get("label") or x.get("title") or "")[:48]))
     A("")
     A("## 待っているもの（返事待ち・本人しかできないこと）")
     if pending_decision_items:
@@ -794,10 +794,10 @@ def build():
         "creditToday": {"used": p.get("usedToday"), "budget": p.get("budgetToday")},
         "creditWeekPct": p.get("allPct"),
         "runningNow": [
-            {"n": x.get("n"), "label": (x.get("label") or "")[:44]} for x in running
+            {"n": x.get("n"), "label": (x.get("label") or x.get("title") or "")[:44]} for x in running
         ],
         "nextP1": [
-            {"n": x.get("n"), "label": (x.get("label") or "")[:48]}
+            {"n": x.get("n"), "label": (x.get("label") or x.get("title") or "")[:48]}
             for x in sorted(p1, key=lambda y: -(y.get("n") or 0))[:5]
         ],
         "unreportedDone": [
