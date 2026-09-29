@@ -233,6 +233,34 @@ def build():
     mg_n = len([r for r in rows if r["merged"] is True])
     torenai = len([r for r in rows if r["merged"] is None and r["pr"] != "出ていない"])
 
+    # ★投げ方を変えた前と後で分けて数える（更新判定はこれで見る）
+    # 変えた点：Knowledge/Playbookを入れた・依頼文の先頭に「返事を書くな」・1本ずつ・
+    #           成功条件を機械判定にした・触るなファイルを明記した。
+    # 境目：2026-09-27 15:00 UTC（＝日本時間 9/28 00:00）
+    # ★日付で切ると、枠番を通していない別セッションの分まで「後」に混ざる（2026-09-30 実測）。
+    #   だから **枠番(1500_wakuban)を通ったかどうか** で分ける。これは台帳に残っているので間違えない。
+    SAKAI = "2026-09-27 15:00"
+    wk = set()
+    for r0 in (st.get("done") or []) + ([st.get("current")] if st.get("current") else []):
+        if r0 and r0.get("sid"):
+            wk.add(str(r0["sid"]))
+            wk.add(str(r0["sid"]).replace("devin-", ""))
+    for r in rows:
+        if str(r["sid"]) in wk:
+            r["katachi"] = "新しい投げ方（枠番）"
+        elif r["nagetaAt"] < SAKAI:
+            r["katachi"] = "前"
+        else:
+            r["katachi"] = "他所から（枠番を通していない）"
+    def cnt(sel):
+        g = [r for r in rows if sel(r)]
+        p = [r for r in g if r["pr"] != "出ていない"]
+        return {"nageta": len(g), "pr": len(p), "merged": len([r for r in g if r["merged"] is True]),
+                "ritsu": ("%d%%" % round(100.0 * len(p) / len(g))) if g else "—"}
+    mae = cnt(lambda r: r["katachi"] == "前")
+    ato = cnt(lambda r: r["katachi"] == "新しい投げ方（枠番）")
+    yoso = cnt(lambda r: r["katachi"] == "他所から（枠番を通していない）")
+
     old = {}
     try:
         old = json.load(io.open(OUT, encoding="utf-8"))
@@ -252,6 +280,15 @@ def build():
         "updatedAt": time.strftime("%F %T"),
         "tsukurikata": "Devin API（/v1/sessions）とGitHubから機械で取っている。手で書いた数字は1つも入っていない。",
         "hantei": HANTEI,
+        "nagekata": {
+            "sakai": SAKAI + " UTC（日本時間 9/28 00:00）",
+            "kaeta": ["Knowledgeを6本入れた", "Playbookを2本入れた",
+                      "依頼文の先頭に『返事を書くな。終わりの合図はPRのURLだけ』",
+                      "1本ずつ投げる", "成功条件を機械で判定できる形にした",
+                      "触ってはいけないファイルを明記した"],
+            "wakekata": "枠番(status/1500_wakuban.json)を通ったかどうかで分ける。日付で切ると他所からの分が混ざる",
+            "mae": mae, "ato": ato, "yoso": yoso,
+        },
         "goukei": {
             "nageta": len(rows),
             "pr": pr_n,
@@ -273,6 +310,7 @@ def build():
 def page(d):
     g = d["goukei"]
     h = d["hantei"]
+    n = d["nagekata"]
     w = d.get("honban_omosa") or []
     def esc(s):
         return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
@@ -280,8 +318,8 @@ def page(d):
     for r in d["rows"]:
         mg = {True: "✅ merged", False: "入っていない", None: "取れない"}[r["merged"]]
         tr.append(
-            "<tr><td>%s</td><td>%s</td><td class=k>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>"
-            % (esc(r["nagetaAt"]), esc(r["title"]), esc(r["kawaru"]), esc(r["status"]),
+            "<tr><td>%s</td><td>%s</td><td>%s</td><td class=k>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>"
+            % (esc(r["nagetaAt"]), esc(r.get("katachi", "")), esc(r["title"]), esc(r["kawaru"]), esc(r["status"]),
                esc(r["pr"]), mg, esc(r["honban"]), esc(r["waku"].split("（")[0] + "・0円"))
         )
     wl = "".join("<li>%s … <b>%s KB</b></li>" % (esc(x.get("at", "")[:16]), esc(x.get("kb"))) for x in w[::-1])
@@ -323,13 +361,21 @@ ul{padding-left:1.2em;margin:.3em 0}
 </div>
 
 <div class=box>
+<div>投げ方を変えた「前」と「後」</div>
+<div class=big>前 %(m_n)d本→PR %(m_p)d（%(m_r)s） ／ 新しい投げ方 %(a_n)d本→PR %(a_p)d（%(a_r)s）</div>
+<div><small>参考・枠番を通していない他所からの分：%(y_n)d本→PR %(y_p)d（%(y_r)s）</small></div>
+<div><small>分け方：%(wakekata)s</small></div>
+<div><small>変えたこと：%(kaeta)s</small></div>
+</div>
+
+<div class=box>
 <div>本番の重さ（同じ測り方で毎日）</div>
 <ul>%(wl)s</ul>
 <div><small>減った日と、上の表のmergeの日が一致したら、それが「画面が変わった」の証拠。</small></div>
 </div>
 
 <div class="box wrap">
-<table><thead><tr><th>投げた</th><th>依頼</th><th>たまごさんの何が変わるか</th><th>状態</th><th>PR</th><th>merge</th><th>本番</th><th>枠</th></tr></thead>
+<table><thead><tr><th>投げた</th><th>形</th><th>依頼</th><th>たまごさんの何が変わるか</th><th>状態</th><th>PR</th><th>merge</th><th>本番</th><th>枠</th></tr></thead>
 <tbody>%(tr)s</tbody></table>
 </div>
 <p><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表に戻る</a></p>
@@ -340,7 +386,11 @@ ul{padding-left:1.2em;margin:.3em 0}
         "nageta": g["nageta"], "pr": g["pr"],
         "merged": g["merged"] if not g["merged_torenai"] else "%d（+取れない%d）" % (g["merged"], g["merged_torenai"]),
         "merged_torenai": g["merged_torenai"], "honban_note": g["honban_note"],
-        "wl": wl or "<li>まだ測っていない</li>", "tr": "".join(tr) or "<tr><td colspan=8>まだ1本もない</td></tr>",
+        "wl": wl or "<li>まだ測っていない</li>", "tr": "".join(tr) or "<tr><td colspan=9>まだ1本もない</td></tr>",
+        "m_n": n["mae"]["nageta"], "m_p": n["mae"]["pr"], "m_r": n["mae"]["ritsu"],
+        "a_n": n["ato"]["nageta"], "a_p": n["ato"]["pr"], "a_r": n["ato"]["ritsu"],
+        "y_n": n["yoso"]["nageta"], "y_p": n["yoso"]["pr"], "y_r": n["yoso"]["ritsu"],
+        "wakekata": esc(n["wakekata"]), "kaeta": esc(" / ".join(n["kaeta"])),
     }
     os.makedirs(os.path.dirname(PAGE), exist_ok=True)
     with io.open(PAGE, "w", encoding="utf-8") as f:

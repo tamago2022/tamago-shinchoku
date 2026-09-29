@@ -40,12 +40,30 @@ RETRY_MIN = 10           # 枠切れで空振りしたあと、次に投げて�
 STALL_MIN = 150          # これ以上「働いてる」と言ったまま動かない1本は見捨てて次へ
 
 
-def say(msg):
+_last = [""]
+
+
+def say(msg, once=False):
+    """once=True の行は、同じ文言が続くあいだ1回しか書かない。
+    ★2026-09-30 実測：待ち行列が空のあいだ毎周回書いていてログが896KBに膨らんだ。"""
     line = time.strftime("%F %T") + " " + msg
     print(line)
+    if once:
+        try:
+            with io.open(LOG, encoding="utf-8") as f:
+                tail = f.readlines()[-1:]
+            if tail and tail[0].strip().endswith(msg):
+                return
+        except Exception:
+            pass
     try:
         with io.open(LOG, "a", encoding="utf-8") as f:
             f.write(line + "\n")
+        if os.path.getsize(LOG) > 400000:          # ログは太らせない
+            with io.open(LOG, encoding="utf-8") as f:
+                keep = f.readlines()[-2000:]
+            with io.open(LOG, "w", encoding="utf-8") as f:
+                f.writelines(keep)
     except Exception:
         pass
 
@@ -112,10 +130,22 @@ def launch(st, q):
         idx += 1
     if idx >= len(jobs):
         st["next"] = idx
-        say(u"待ち行列が空。投げるものが無いので待機（0円）。")
+        say(u"待ち行列が空。投げるものが無いので待機（0円）。", once=True)
         return
     job = jobs[idx]
-    code, res = call("/sessions", {"prompt": RULE + job["prompt"], "idempotent": False})
+    body = {"prompt": RULE + job["prompt"], "idempotent": False}
+    # 1502番で入れた Playbook を付ける（毎回ゼロから始めさせない）
+    want = job.get("playbook_title")
+    if want:
+        try:
+            sk = json.load(io.open(os.path.join(REPO, "status", "1502_shikomi.json"), encoding="utf-8"))
+            for p in (sk.get("playbooks") or []):
+                if p.get("title") == want and p.get("playbook_id"):
+                    body["playbook_id"] = p["playbook_id"]
+                    break
+        except Exception:
+            pass
+    code, res = call("/sessions", body)
     if code == 200:
         st["next"] = idx + 1
         st["current"] = {
@@ -131,7 +161,7 @@ def launch(st, q):
     if code == 403 and "quota" in detail.lower():
         st["retryAt"] = int(time.time()) + RETRY_MIN * 60
         st["emptySwings"] = st.get("emptySwings", 0) + 1
-        say(u"枠が無い（空振り・0円）。%d分後にもう一度投げてみる。%s" % (RETRY_MIN, detail))
+        say(u"枠が無い（空振り・0円）。%d分後にもう一度投げてみる。%s" % (RETRY_MIN, detail), once=True)
     else:
         st["retryAt"] = int(time.time()) + RETRY_MIN * 60
         say(u"投げられなかった HTTP=%s %s" % (code, detail))
