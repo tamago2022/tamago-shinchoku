@@ -31,6 +31,7 @@ import glob
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -85,7 +86,10 @@ QUEUE_HISTORY_KEEP = 20  # queue_history/は直近この世代数だけ残す（
 #   たまごさんの最上位の決まりは「止まるのが最悪。何も進んでいないのが最悪」。
 #   実際、コードを直す仕事なら17GBあれば何の問題もなく走る。足りなくなるのは
 #   動画を作るときだけ。**容量を守るために工場を止めるのは、目的と手段が逆。**
-WARN_GB = 40   # これを切ったら安全な片付けを実行
+WARN_GB = 50   # これを切ったら安全な片付けを実行
+# 2026-09-30（1194番）：たまごさん「容量は50GBでいいんじゃないかな」→ 赤帯と同じ線に揃える。
+#   赤帯だけ50にして片付けの線が40のままだと「赤いのに何も掃除していない10GB分」が
+#   生まれる（＝今日と同じ状態）。線は1本にする。
 STOP_GB = 8    # 本当に危ないときだけ止める（macOSが不安定になる手前）
 
 # 2026-09-30（1200番・「100GBあったのに57GBまで減った」）：
@@ -96,14 +100,19 @@ STOP_GB = 8    # 本当に危ないときだけ止める（macOSが不安定に�
 #   → ① WARN_GB を 40 に上げる
 #     ② それとは別に「ほこりと落ち葉」だけは空き容量に関係なく毎回掃く（TIDY_KINDS）
 #     ③ 閾値を切ったら進捗表の先頭に赤帯を出す（AKAOBI_GB。index.html の DISK_AKA_GB と同値）
-AKAOBI_GB = 40
+# 2026-09-30（1194番・たまごさん名指し）：「容量は50GBでいいんじゃないかな」→ 50GB。
+AKAOBI_GB = 50
 # 毎回黙って掃いてよいもの＝作り直せる一時データだけ。
 # 壺と金庫（写真・Vault・Drive・Eagle・ゴミ箱の中身）はここに入れない。
 # claude_session_attachments は2026-09-07から「候補に見せるだけ」で止めていたが、
 # 2026-09-30にたまごさんが「Claudeのセッションログを自動で間引く」と名指しで指示。
 # 14日さわられていないフォルダだけが対象で、transcript(.jsonl)には触れない。
+# 2026-09-30（1194番）：trash_auto（自動処理が自分でゴミ箱に置いた落とし物）と
+# claude_vm_old（Coworkの使い終わったVM作業領域）を追加。どちらも「人が捨てたもの」
+# ではなく「機械の落とし物」なので、空き容量に関係なく期限で片づける。
 TIDY_KINDS = ("app_cache", "__pycache__", "old_log", "queue_history_old",
-              "claude_session_old", "claude_session_attachments")
+              "claude_session_old", "claude_session_attachments",
+              "trash_auto", "claude_vm_old")
 
 # ④ 壺と金庫：迷ったら触らない。パスにこれらの文字列を含んでいたら問答無用でスキップする。
 FORBIDDEN_KEYWORDS = (
@@ -218,6 +227,33 @@ TRASH_DIR = os.path.join(HOME, ".Trash")
 # トップレベル項目だけを対象にする（直近のworktree_reaper_ghosts等は対象外）。
 TRASH_MIN_AGE_SEC = 7 * 86400
 
+# 2026-09-30（1194番・実測事故）：ゴミ箱の中で **自動処理が自分で作った置き土産** が
+#   946件・11GB まで育っていた（~/.Trash/worktree_reaper_backups）。
+#   これは店主が捨てたものではなく機械の落とし物なので、7日の救済期間も
+#   「空きが減ったときだけ」の条件も要らない。名前で見分けて3日で必ず片づける。
+#   ★ここに載せるのは「機械が作った」と名前だけで断定できるものだけ。
+#     店主が捨てたもの（写真・dmg・書類）は絶対にここに入れない。
+TRASH_AUTO_NAMES = ("worktree_reaper_backups", "worktree_reaper_ghosts")
+TRASH_AUTO_KEEP_SEC = 3 * 86400
+
+# 2026-09-30（1194番）：Cowork(Claudeデスクトップ)がセッションごとに展開するVM作業領域。
+#   876番では「アプリ動作に必須」として丸ごと対象外にしていたが、実測9.2GBあり、
+#   中身はセッション単位のフォルダで、使い終わったものは次の仕事に一切使われない
+#   （必要になればアプリが自分で作り直す）。たまごさんの名指し指示に従い、
+#   **14日さわられておらず、かつ新しい方から2本を残した残り**だけを間引く。
+#   ルート自体は消さない（消すとアプリが困る）。
+CLAUDE_VM_BUNDLES = os.path.join(
+    HOME, "Library", "Application Support", "Claude", "vm_bundles")
+CLAUDE_VM_MIN_AGE_SEC = 14 * 86400
+#   実測（2026-09-30）：vm_bundles は14GBで中身は2本だけ。新しい方2本を残す設定だと
+#   1本も間引けない（＝設定した意味が無い）。**いま使っている1本だけ残す**に直した。
+CLAUDE_VM_KEEP = 1
+#   2026-09-30 追記（同日の実機で踏んだ）：ここには "warm"（次のセッションを速く始める
+#   ための温め済みの1本）のような**セッションではない固定の名前**も混ざっている。
+#   これを間引くと次の立ち上がりが遅くなるだけで1MBも空かない。
+#   → 名前がセッションの識別子の形（16進とハイフンだけ・8文字以上）のものだけを対象にする。
+CLAUDE_VM_SESSION_RE = re.compile(r"^[0-9a-fA-F][0-9a-fA-F-]{7,}$")
+
 def allowed_roots():
     """片付けを許す範囲（この外には一切降りない）。app cacheはglob展開があるため
     毎回動的に解決する（起動時に存在しなかったプロファイルも後から拾えるように）。"""
@@ -236,6 +272,8 @@ def allowed_roots():
         # 2026-09-30（1200番）：Claudeのセッション置き土産。間引きの名指し指示あり。
         CLAUDE_AGENT_SESSIONS,
         CLAUDE_PROJECTS,
+        # 2026-09-30（1194番）：使い終わったVM作業領域。ルートは消さず中身だけ。
+        CLAUDE_VM_BUNDLES,
     )
 
 
@@ -508,12 +546,56 @@ def candidates():
             fp = os.path.join(TRASH_DIR, fn)
             if is_forbidden(fp) or not is_allowed(fp):
                 continue
+            # 2026-09-30（1194番）：機械の落とし物は、中の1件ずつを3日で片づける
+            # （フォルダ本体は残す＝worktree_reaperが次も書ける）。
+            if fn in TRASH_AUTO_NAMES and os.path.isdir(fp):
+                try:
+                    inner = os.listdir(fp)
+                except Exception:
+                    inner = []
+                for name in inner:
+                    ip = os.path.join(fp, name)
+                    if is_forbidden(ip) or not is_allowed(ip):
+                        continue
+                    try:
+                        age_ok = (time.time() - os.path.getmtime(ip)) >= TRASH_AUTO_KEEP_SEC
+                    except Exception:
+                        age_ok = False
+                    out.append({"path": ip, "kind": "trash_auto", "worktree": "-",
+                                "protected": False, "age_ok": age_ok,
+                                "size_mb": _measure(ip)})
+                continue
             try:
                 age_ok = (time.time() - os.path.getmtime(fp)) >= TRASH_MIN_AGE_SEC
             except Exception:
                 age_ok = False
             out.append({"path": fp, "kind": "trash_old", "worktree": "-",
                         "protected": False, "age_ok": age_ok, "size_mb": _measure(fp)})
+
+    # 2026-09-30（1194番）：Coworkの使い終わったVM作業領域。
+    # 新しい方からCLAUDE_VM_KEEP本は必ず残し、残りのうち14日さわられていないものだけ。
+    if os.path.isdir(CLAUDE_VM_BUNDLES):
+        try:
+            vms = []
+            for name in os.listdir(CLAUDE_VM_BUNDLES):
+                p = os.path.join(CLAUDE_VM_BUNDLES, name)
+                if name.startswith(".") or not os.path.exists(p):
+                    continue
+                if not CLAUDE_VM_SESSION_RE.match(name):
+                    continue  # "warm" 等の固定の名前は触らない
+                vms.append((os.path.getmtime(p), p))
+            vms.sort(reverse=True)  # 新しい順
+            for mt, p in vms[CLAUDE_VM_KEEP:]:
+                if not is_allowed(p):
+                    continue
+                out.append({
+                    "path": p, "kind": "claude_vm_old", "worktree": "-",
+                    "protected": False,
+                    "age_ok": (time.time() - mt) >= CLAUDE_VM_MIN_AGE_SEC,
+                    "size_mb": _measure(p),
+                })
+        except Exception as e:
+            log("VM作業領域の候補列挙で失敗: %s" % e)
     return out
 
 

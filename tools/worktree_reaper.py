@@ -85,6 +85,44 @@ GHOST_MIN_AGE_SEC = 3 * 86400  # 3日以上さわられていない幽霊だけ�
 STALE_BACKUP_MIN_AGE_SEC = 3 * 86400
 BACKUP_TRASH = os.path.join(os.path.expanduser("~"), ".Trash", "worktree_reaper_backups")
 
+# 2026-09-30（1194番・たまごさん「常にファイルが増えないようにして」）：
+#   この退避先に**期限が無かった**。実測 2026-09-30：946件・11GB が1件も消えずに
+#   ゴミ箱の中で積み上がっていた（1件あたり約11MB。untracked を2MB未満まで丸ごと
+#   コピーするため、作業場1つあたり数百ファイルになる）。
+#   退避は「消す直前の未保存差分を数日だけ持っておく」ためのもので、
+#   1か月前のパッチを誰も当てない。→ 3日で自分の落とし物を自分で片づける。
+BACKUP_KEEP_SEC = 3 * 86400
+
+
+def purge_old_backups():
+    """自分がゴミ箱に置いた退避を3日で片づける（自分の落とし物だけ。他は触らない）。"""
+    if not os.path.isdir(BACKUP_TRASH):
+        return 0
+    import shutil
+    now = time.time()
+    gone = 0
+    try:
+        names = os.listdir(BACKUP_TRASH)
+    except Exception:
+        return 0
+    for name in names:
+        p = os.path.join(BACKUP_TRASH, name)
+        # 自分が作った形（<作業場名>_<epoch>）以外には触らない
+        if not os.path.isdir(p) or "_" not in name:
+            continue
+        try:
+            if now - os.path.getmtime(p) < BACKUP_KEEP_SEC:
+                continue
+            shutil.rmtree(p, ignore_errors=True)
+            if not os.path.exists(p):
+                gone += 1
+        except Exception:
+            continue
+    if gone:
+        log("🧹 退避の期限切れを片づけた: %d件（%d日で自動削除）"
+            % (gone, BACKUP_KEEP_SEC // 86400))
+    return gone
+
 
 def backup_uncommitted_changes(path, name):
     """未コミット差分をパッチ＋軽い未追跡ファイルとして退避する。成功したらTrue。"""
@@ -517,6 +555,10 @@ def main():
     heavy_ok = load1 <= 15
 
     guard = running_paths()
+
+    # 2026-09-30（1194番）：自分がゴミ箱に置いた退避の期限切れを、毎回まず片づける。
+    #   「置いたら置きっぱなし」を二度とやらない。軽い処理なのでload gateの外。
+    purge_old_backups()
 
     if os.path.isdir(WT_DIR):
         if heavy_ok:
