@@ -201,6 +201,7 @@ async function main() {
     totalClickable: 0,
     tested: 0,
     autoOkLinkCount: 0,
+    selfLinkCount: 0,
     noResponse: [],
     skippedDisappeared: [],
     consoleErrors: [],
@@ -251,8 +252,26 @@ async function main() {
     // 本当に検証したい「JSで動くはずのボタン」（話す・気分・棚・扉等）まで到達できなかった。
     // href付き<a>はブラウザの標準動作として押せば必ず遷移する＝無反応になりようがないので、
     // 代表数件だけ実クリックし、残りは「自明に反応する」ものとして検証対象から外す。
+    // 案件#1353実測：ナビゲーションの「今いるページ」を指す自己参照リンク（例：案内所トップの
+    // 「案内所」リンクがhref="/cover-guide"で、検品対象URL自体も/cover-guide）は、クリックしても
+    // URL・DOM・スクロール・表示テキストのどれも変化しないのが正しい挙動（既にそのページにいるため）。
+    // これをサンプル5件に紛れ込ませると「押しても無反応」という偽陽性を機械的に生み続ける
+    // （実例：1353番差し戻しの原因がこれだった）。href先が検品対象URLと同一（origin+pathname+search
+    // が一致）なリンクは、無反応判定の対象から外し自動OK扱いにする。
+    const startUrl = new URL(URL_ARG);
+    const isSelfLink = (href) => {
+      if (!href) return false;
+      try {
+        const abs = new URL(href, URL_ARG);
+        return abs.origin === startUrl.origin && abs.pathname === startUrl.pathname && abs.search === startUrl.search;
+      } catch {
+        return false;
+      }
+    };
     const buttonLike = elements.filter((e) => !(e.tag === "A" && e.href));
-    const linksWithHref = elements.filter((e) => e.tag === "A" && e.href);
+    const selfLinks = elements.filter((e) => e.tag === "A" && e.href && isSelfLink(e.href));
+    const linksWithHref = elements.filter((e) => e.tag === "A" && e.href && !isSelfLink(e.href));
+    result.selfLinkCount = selfLinks.length;
     const LINK_SAMPLE = 5;
     const linkSample = linksWithHref.slice(0, LINK_SAMPLE);
     result.autoOkLinkCount = Math.max(0, linksWithHref.length - linkSample.length);
@@ -474,6 +493,7 @@ async function main() {
     totalClickable: result.totalClickable,
     tested: result.tested,
     autoOkLinkCount: result.autoOkLinkCount || 0,
+    selfLinkCount: result.selfLinkCount || 0,
     truncated: result.truncated,
     noResponseCount: result.noResponse.length,
     skippedDisappearedCount: result.skippedDisappeared.length,
