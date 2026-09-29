@@ -364,6 +364,7 @@ ul{padding-left:1.2em;margin:.3em 0}
 <div>投げ方を変えた「前」と「後」</div>
 <div class=big>前 %(m_n)d本→PR %(m_p)d（%(m_r)s） ／ 新しい投げ方 %(a_n)d本→PR %(a_p)d（%(a_r)s）</div>
 <div><small>参考・枠番を通していない他所からの分：%(y_n)d本→PR %(y_p)d（%(y_r)s）</small></div>
+<pre>実測: 前 PR%(m_p)d/%(m_n)d本=%(m_r)s ／ 新 PR%(a_p)d/%(a_n)d本=%(a_r)s ／ 他所 PR%(y_p)d/%(y_n)d本=%(y_r)s（下の表の生データから集計。手入力ではない）</pre>
 <div><small>分け方：%(wakekata)s</small></div>
 <div><small>変えたこと：%(kaeta)s</small></div>
 </div>
