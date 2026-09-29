@@ -99,8 +99,11 @@ STOP_GB = 8    # 本当に危ないときだけ止める（macOSが不安定に�
 AKAOBI_GB = 40
 # 毎回黙って掃いてよいもの＝作り直せる一時データだけ。
 # 壺と金庫（写真・Vault・Drive・Eagle・ゴミ箱の中身）はここに入れない。
+# claude_session_attachments は2026-09-07から「候補に見せるだけ」で止めていたが、
+# 2026-09-30にたまごさんが「Claudeのセッションログを自動で間引く」と名指しで指示。
+# 14日さわられていないフォルダだけが対象で、transcript(.jsonl)には触れない。
 TIDY_KINDS = ("app_cache", "__pycache__", "old_log", "queue_history_old",
-              "claude_session_old")
+              "claude_session_old", "claude_session_attachments")
 
 # ④ 壺と金庫：迷ったら触らない。パスにこれらの文字列を含んでいたら問答無用でスキップする。
 FORBIDDEN_KEYWORDS = (
@@ -273,9 +276,19 @@ def disk_free_gb():
 
 
 def dir_size_mb(path):
+    """2026-09-30（1200番）：ここが見張り全体を止めていた。
+
+    旧: du 1本につき timeout=30秒。候補は数百件あるので、
+        ゴミ箱(11.7GB)や ~/.claude/projects のような重い相手が並ぶと
+        candidates() が何十分も帰ってこない。実測、2026-09-30の見張りは
+        07:40の回から先へ進めず、以後ログが1行も出ていなかった
+        （＝「disk_guardianが効いていない」の正体のひとつ）。
+    新: 1本8秒で諦めて0を返す。測れなかったものは「大きさ不明」として
+        一覧に0MBで出るだけで、削除の判定（age_ok・許可範囲）は変わらない。
+    """
     try:
         if os.path.isdir(path):
-            r = subprocess.run(["du", "-sm", path], capture_output=True, text=True, timeout=30)
+            r = subprocess.run(["du", "-sm", path], capture_output=True, text=True, timeout=8)
             return int(r.stdout.split()[0])
         return round(os.path.getsize(path) / 1024 / 1024, 2)
     except Exception:
@@ -301,9 +314,23 @@ def running_worktree_names():
     return out
 
 
+# 2026-09-30（1200番）：候補列挙そのものに持ち時間を設ける。
+# 超えたら「測るのをやめる（0MBで積む）」だけで、列挙は最後まで続ける。
+# 見張りが帰ってこない＝掃除も判定も止まる、が今回の事故だったため。
+CANDIDATES_BUDGET_SEC = 90
+_budget_until = [0.0]
+
+
+def _measure(path):
+    if time.time() > _budget_until[0]:
+        return 0
+    return dir_size_mb(path)
+
+
 def candidates():
     """安全に消せる候補を列挙するだけ（消さない）。確認ページ・事前チェックで使う。"""
     out = []
+    _budget_until[0] = time.time() + CANDIDATES_BUDGET_SEC
     guard = running_worktree_names()
 
     for wt_dir in WT_DIRS:
@@ -324,7 +351,7 @@ def candidates():
                     out.append({
                         "path": sp, "kind": sub, "worktree": name,
                         "protected": protected, "age_ok": age_ok,
-                        "size_mb": dir_size_mb(sp),
+                        "size_mb": _measure(sp),
                     })
 
     # 2026-09-08（640番）：joy-relief-station 本体(Desktop直下・worktreeではない)の
@@ -343,7 +370,7 @@ def candidates():
                 out.append({
                     "path": sp, "kind": sub, "worktree": "joy-relief-station(本体)",
                     "protected": False, "age_ok": age_ok,
-                    "size_mb": dir_size_mb(sp),
+                    "size_mb": _measure(sp),
                 })
 
     # __pycache__（tools/scripts配下・浅い探索のみ。壺金庫には降りない）
@@ -359,7 +386,7 @@ def candidates():
                 p = os.path.join(dirpath, "__pycache__")
                 if is_allowed(p):
                     out.append({"path": p, "kind": "__pycache__", "worktree": "-",
-                                "protected": False, "age_ok": True, "size_mb": dir_size_mb(p)})
+                                "protected": False, "age_ok": True, "size_mb": _measure(p)})
 
     # 2026-09-07追加：OS/アプリの一時キャッシュ（中身だけ消す。ルート自体は残す＝
     # 次回そのアプリが自分で作り直せるようにする）。
@@ -379,7 +406,7 @@ def candidates():
             except Exception:
                 age_ok = False
             out.append({"path": fp, "kind": "app_cache", "worktree": "-",
-                        "protected": False, "age_ok": age_ok, "size_mb": dir_size_mb(fp)})
+                        "protected": False, "age_ok": age_ok, "size_mb": _measure(fp)})
 
     # 2026-09-07（620番タスクC）：~/.claude/projects配下の古いセッションの添付出力
     # （tool-results等）をサイズ測定して候補一覧にだけ出す。transcript本体(.jsonl)は
@@ -409,7 +436,7 @@ def candidates():
                 out.append({
                     "path": sub, "kind": "claude_session_attachments", "worktree": "-",
                     "protected": False, "age_ok": age >= CLAUDE_SESSION_MIN_AGE_SEC,
-                    "size_mb": dir_size_mb(sub),
+                    "size_mb": _measure(sub),
                 })
 
     # 2026-09-30（1200番）：Coworkのセッション作業フォルダ。新しい方から
@@ -431,7 +458,7 @@ def candidates():
                     "path": p, "kind": "claude_session_old", "worktree": "-",
                     "protected": False,
                     "age_ok": (time.time() - mt) >= CLAUDE_AGENT_SESSION_MIN_AGE_SEC,
-                    "size_mb": dir_size_mb(p),
+                    "size_mb": _measure(p),
                 })
         except Exception as e:
             log("Claudeセッション間引きの候補列挙で失敗: %s" % e)
@@ -446,7 +473,7 @@ def candidates():
                     if (time.time() - os.path.getmtime(fp)) >= OLD_LOG_SEC and is_allowed(fp):
                         out.append({"path": fp, "kind": "old_log", "worktree": "-",
                                     "protected": False, "age_ok": True,
-                                    "size_mb": dir_size_mb(fp)})
+                                    "size_mb": _measure(fp)})
                 except Exception:
                     pass
 
@@ -464,7 +491,7 @@ def candidates():
             fp = os.path.join(qh_root, fn)
             if is_allowed(fp):
                 out.append({"path": fp, "kind": "queue_history_old", "worktree": "-",
-                            "protected": False, "age_ok": True, "size_mb": dir_size_mb(fp)})
+                            "protected": False, "age_ok": True, "size_mb": _measure(fp)})
 
     # 2026-09-09（685番）：ゴミ箱（~/.Trash）直下のトップレベル項目。店主が既に
     # Finderで「削除」を選んだ後の最終置き場であり、中身は既にis_forbidden()
@@ -486,7 +513,7 @@ def candidates():
             except Exception:
                 age_ok = False
             out.append({"path": fp, "kind": "trash_old", "worktree": "-",
-                        "protected": False, "age_ok": age_ok, "size_mb": dir_size_mb(fp)})
+                        "protected": False, "age_ok": age_ok, "size_mb": _measure(fp)})
     return out
 
 
