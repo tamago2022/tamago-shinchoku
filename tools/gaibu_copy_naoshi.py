@@ -37,6 +37,7 @@
   Cowork/Dispatchのサンドボックスからは Supabase へ出られない（Tunnel 403）。
   たまごさんのMacからは出る。だからここ（5分便＝Mac側）で叩く。
 """
+import fcntl
 import io
 import json
 import os
@@ -197,40 +198,53 @@ def save(path, obj):
     os.replace(tmp, path)
 
 
+_LOCK_FH = [None]
+
+
 def take_lock():
-    """二重起動を防ぐ。詰まったロックは時間で剥がす（門前払いを続けない）。"""
-    if os.path.exists(LOCK):
-        try:
-            pid = int(io.open(LOCK).read().strip() or 0)
-        except Exception:
-            pid = 0
-        age = time.time() - os.path.getmtime(LOCK)
-        alive = False
-        if pid:
-            try:
-                os.kill(pid, 0)
-                alive = True
-            except Exception:
-                alive = False
-        if alive and age < LOCK_STALE_SEC:
-            return False
-        try:
-            os.remove(LOCK)
-        except Exception:
-            pass
+    """二重起動を防ぐ。
+
+    ★1704番（2026-09-30）で書き換え：旧実装はPIDの生存確認（os.kill(pid,0)）と
+    ファイルの更新時刻で「詰まっていないか」を自前判定していたが、実測でこれが壊れていた。
+    machine_status_push.sh が想定（15分間隔）より高頻度・多重に起動され（実測：同時に2本）、
+    その都度 naoshi.py が新規プロセスとして立つ。前のプロセスがまだ claude -p の応答待ちで
+    生きているのに、何らかの理由で次のプロセスが「前のロックは死んでいる」と誤判定して
+    奪い取り続け、9/28は95件対象で9回以上多重起動・0件しか直らなかった
+    （1件目「Nick Drake - Pink Moon」の処理が毎回最初からやり直しになっていた）。
+    自前のPID判定はやめ、OSのアドバイザリロック（flock）に委ねる。
+    flockはロックを持つプロセスが死ねば（クラッシュ・SIGKILL含め）OSが自動的に解放するため、
+    「stale判定を自分で書く」こと自体が要らなくなる。生きているプロセスは確実にブロックされる。
+    """
+    fh = io.open(LOCK, "a+")
     try:
-        with io.open(LOCK, "w", encoding="utf-8") as f:
-            f.write(str(os.getpid()))
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (IOError, OSError):
+        fh.close()
+        return False
+    try:
+        fh.seek(0)
+        fh.truncate()
+        fh.write(str(os.getpid()))
+        fh.flush()
     except Exception:
         pass
+    _LOCK_FH[0] = fh
     return True
 
 
 def drop_lock():
+    fh = _LOCK_FH[0]
+    if fh is None:
+        return
     try:
-        os.remove(LOCK)
+        fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
     except Exception:
         pass
+    try:
+        fh.close()
+    except Exception:
+        pass
+    _LOCK_FH[0] = None
 
 
 def clean(s):
