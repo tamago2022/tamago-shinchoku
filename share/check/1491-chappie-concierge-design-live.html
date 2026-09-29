@@ -49,10 +49,10 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1491 1491号｜「チャッピーが作ってくれたよ」→ 案内所の案内人デザインは本番で稼働中</div>
 <h1>#1491 1491号｜「チャッピーが作ってくれたよ」→ 案内所の案内人デザインは本番で稼働中</h1>
-<div class="date">2026-09-29 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-09-29 本番URLを実測して確認</div>
 
 <div class="fix">
-たまごさんの発言（2026-09-19 20:23・元の発言全文を復元）：「チャッピーが作ってくれたよ。…本当はチャッピーがもうミートアップにあげたら、もう即座に気づくぐらいの仕組みにしてほしいんだよね。…俺、今から寝るけれど、起きたらもうできてるようにしてほしい。」ChatGPT（チャッピー）が作った案内所コンシェルジュのデザイン No.08「SALON CONVERSATION」を、Claude作のデザインを不採用にして正式採用し、本番の<code>/cover-guide</code>ページへ配線した。実測：本番SSR HTMLに <code>class="concierge-salon" data-concept="08"</code>・<code>data-slot="concierge-avatar"</code>・<code>data-slot="assistant-message"</code>・<code>data-action="talk"</code> が全て出現（docs/design/concierge-html-css/README.mdの配線仕様と一致）。関連コミット：710fd0b1d（承認済みNo.08を当てる）／208a40824（言葉を写真・一言・入力欄の3つに削る）／99408d152（本番ビルド停止の修正）／5d7f18c79（案内人が声で喋るよう修正）— 全てorigin/mainに合流済み。※音声応答（GPT Live/仕組み化）は別番号1492で追跡中の別依頼であり本票の対象外。
+たまごさんの発言（2026-09-19 20:23・元の発言全文を復元）：「チャッピーが作ってくれたよ。…本当はチャッピーがもうミートアップにあげたら、もう即座に気づくぐらいの仕組みにしてほしいんだよね。…俺、今から寝るけれど、起きたらもうできてるようにしてほしい。」ChatGPT（チャッピー）が作った案内所コンシェルジュのデザイン No.08「SALON CONVERSATION」を、Claude作のデザインを不採用にして正式採用し、本番の<code>/cover-guide</code>ページへ配線済みであることを本番URLの実測で確認した。実測：本番SSR HTMLに <code>class="concierge-salon" data-concept="08"</code>・<code>data-slot="concierge-avatar"</code>・<code>data-slot="assistant-message"</code>・<code>data-action="talk"</code> が全て出現（docs/design/concierge-html-css/README.mdの配線仕様と一致）。写真・一言・入力欄の3要素のみのシンプル構成へ整えた修正、ビルド停止からの復旧、声で応答する修正も含め、すでに本番へ反映済み。※音声応答（GPT Live/仕組み化）は別番号1492で追跡中の別依頼であり本票の対象外。
 </div>
 
 <h2>② 数字</h2>
@@ -67,7 +67,6 @@
 <ul class="links">
   <li><b>本番: 案内所ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
   <li><b>設計の正本（GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/design/concierge-html-css/README.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/design/concierge-html-css/README.md</a></li>
-  <li><b>実装コミット（採用）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/710fd0b1d" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/710fd0b1d</a></li>
 </ul>
 
 
