@@ -118,6 +118,36 @@ def gaibu_no_koma():
     return out, (d.get("updatedAt") or "")
 
 
+def tanaoroshi_setsu():
+    """1190号（2026-09-29）未完了を全部出す。件数と、止まっているもの全件をここに出す。
+
+    一覧そのものは長いので別の1枚（share/1190-tanaoroshi.html）に出し、
+    ここには『件数』と『止まっているもの』だけを本文で書く（リンクは読まれない）。
+    """
+    try:
+        import importlib.util
+        p = os.path.join(HERE, "1190_tanaoroshi.py")
+        s = importlib.util.spec_from_file_location("_t1190", p)
+        m = importlib.util.module_from_spec(s)
+        s.loader.exec_module(m)
+        box, _md = m.build()
+    except Exception as e:
+        return "（棚卸しが作れませんでした：%s）" % e
+
+    L = []
+    L.append("**" + m.hitokoto(box) + "**（取り消し済みは数に入れない）")
+    L.append("")
+    L.append("全件：%s" % m.URL_HTML)
+    L.append("")
+    tom = box[m.TOMATTE]
+    L.append("### 止まっているもの %d件（理由つき・ここだけは全部出す）" % len(tom))
+    L.append("")
+    for r in tom:
+        riyu = (r["riyu"] or "（理由が書かれていない＝これ自体が問題）")[:110]
+        L.append("- #%s %s ── %s" % (r["n"], r["title"][:50], riyu))
+    return "\n".join(L)
+
+
 def build():
     now = datetime.datetime.now(JST)
     g, gpath = genzaichi_text()
@@ -219,6 +249,16 @@ def build():
           "他は残枠を返すAPIが無い。正直に言うとここは『通っているか』までしか分からない。）*" % koma_at[:16])
     else:
         A("（status/public/ai_daicho.json から取れませんでした）")
+    A("")
+
+    A("## 8. 棚卸し（未完了を全部・隠さない）")
+    A("")
+    A(tanaoroshi_setsu())
+    A("")
+
+    A("## 9. 実測で分かった真因（調べ直さない）")
+    A("")
+    A(_read(os.path.join(ST, "1190_shinin.md")) or "（status/1190_shinin.md が読めませんでした）")
     A("")
 
     A("---")
