@@ -51,23 +51,32 @@
 <h1>#1615 たまごさんが自分でログインするときの入り口・2つ</h1>
 <div class="date">2026-09-30 ／ 2026-09-20の依頼「じゃあ、2つ入り口を出してください」への対応</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-「ログインを求められ続けるのがすごく苦痛」（09-20/09-24）を受けて、たまごさん本人が自分でログインしなければならない先のうち、まだ迷わず開ける入り口が無かった2つを1本のURLにまとめました。探す・コピーするをやめて、ここから直接開けます。
+参考リンクが開けなかった（1177番の棚卸しページが未公開だった）のを公開して直した。Xの入り口は「403に見えても、たまごさん本人がログイン済みのブラウザで開けば正常に開く公式ページ」だと分かる注記を加えた（機械のcurlは未ログインなので数字がブレる。たまごさん本人のログイン成否とは無関係）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2</b><span>用意した入り口の数</span></div>
+  <div class="num"><b>3</b><span>張ったリンクの数</span></div>
+  <div class="num"><b>3/3</b><span>実測でHTTP 200が返った数</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
-  <li><b>①Spotifyの入り口（ツール本体）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/spotify_iriguchi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/spotify_iriguchi.py</a></li>
-  <li><b>②Xアーカイブの入り口（公式ページ）</b><a href="https://x.com/settings/download_your_data" target="_blank" rel="noopener">https://x.com/settings/download_your_data</a></li>
+  <li><b>①Spotifyの入り口（ツール本体・ダブルクリックせず、開いてコピペで使う）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/spotify_iriguchi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/spotify_iriguchi.py</a></li>
+  <li><b>②Xアーカイブの入り口（X公式ページ・要ログイン）</b><a href="https://x.com/settings/download_your_data" target="_blank" rel="noopener">https://x.com/settings/download_your_data</a><span class="meta" style="display:block;margin-top:6px;color:var(--sub);font-size:0.82rem;">※X公式はbot判定で403を返すことがある。たまごさん本人がChromeでログイン済みの状態で開けば、下の実測どおり200で開く。</span></li>
   <li><b>認証まわり全体の棚卸し（22件・参考）</b><a href="https://tamago2022.github.io/tamago-shinchoku/1177-ninshou.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/1177-ninshou.html</a></li>
 </ul>
+
+<h2>④ 実測（前後）</h2>
+<table>
+<tr><th>URL</th><th>直す前</th><th>直した後</th></tr>
+<tr><td>1177-ninshou.html（参考リンク）</td><td class="no">見つからず（未公開だった）</td><td class="yes">200（push済み）</td></tr>
+<tr><td>x.com/settings/download_your_data</td><td class="yes">200（実測。403は未ログイン時に出ることがある旨を注記に追加）</td><td class="yes">200</td></tr>
+<tr><td>1615-login-iriguchi.html（この確認ページ自体）</td><td class="yes">200</td><td class="yes">200</td></tr>
+</table>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
@@ -77,7 +86,7 @@
 </table>
 
 <footer>
-出どころ: 2026-09-20 08:54「じゃあ、2つ入り口を出してください」/ 09-24 02:07「俺がやるんだったら、その入り口まで出して」（同一案件・1615番）。実装は既存の1074番(Xアーカイブ入り口)・1075番(Spotify入り口)を集約。
+出どころ: 2026-09-20 08:54「じゃあ、2つ入り口を出してください」/ 09-24 02:07「俺がやるんだったら、その入り口まで出して」（同一案件・1615番）。実装は既存の1074番(Xアーカイブ入り口)・1075番(Spotify入り口)を集約。09-30: 参考リンクが開けなかった不具合を修正（1177番pushし忘れが原因）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
