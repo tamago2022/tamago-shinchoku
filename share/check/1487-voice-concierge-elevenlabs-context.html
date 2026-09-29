@@ -52,32 +52,29 @@
 <div class="date">2026-09-29 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の発話「イレブンラブスは電話だけど…未来のハンバーガー屋さん…AIロボットが対応してくれる」は、直前の1486号と同じ2026-09-19 20:23の一連の発話の断片で、卵コンシェルジュと声で会話したい、という要望への言及（ElevenLabs＝電話AI／未来のハンバーガー屋のAIロボット＝声で対応するAIの実例として引用）と判断した。1486号でコア機能（本番の会話開始API）が実際に動くことは確認済みのため、今回は2026-09-29時点であらためて実測し直し、①コア機能が今日も生きているか、②別件(#1386)で追跡中の『本番Edge Functionが古いバージョンのまま』という不具合が今日も続いているかを切り分けた。
+前回2回、たまごさんが開けない非公開GitHubリンクを貼ってはねられたため、開けるリンクだけに作り直した。店主発話「イレブンラブスは電話だけど…未来のハンバーガー屋さん…AIロボットが対応してくれる」は、声で会話できるAI(案件#915)への言及と判断。本日2026-09-29、本番の会話開始APIへ実際にリクエストを送り直し、コア機能は生きている一方、1日の上限額が古い値($4.5)のまま直っていない別件(#1386)が継続していることも実測した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>action:create のHTTPステータス(本日実測)</span></div>
-  <div class="num"><b>ok:true</b><span>xAIの本物の音声トークンが発行された</span></div>
-  <div class="num"><b>$4.5</b><span>本番が返す上限額(古い値。正しくは$1.00/日・#1386で追跡中)</span></div>
+  <div class="num"><b>ok:true</b><span>本物の音声トークンが発行された</span></div>
+  <div class="num"><b>$4.5</b><span>本番が返す上限額(古い値・正しくは$1.00・#1386で追跡中)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番/cover-guide</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
-  <li><b>1486号の確認ページ(同じ発話断片・コア機能検証)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1486-voice-concierge-kaiwa-kakunin.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1486-voice-concierge-kaiwa-kakunin.html</a></li>
-  <li><b>1487号のPENDING_DECISIONS記録(Chrome起動禁止との矛盾)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/PENDING_DECISIONS.md</a></li>
-  <li><b>1487号のKNOWN_ISSUES追記(#1386)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md</a></li>
+  <li><b>会話ボタンがあるページ（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>1486号の確認ページ（同じ発話の直前・コア機能検証）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1486-voice-concierge-kaiwa-kakunin.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1486-voice-concierge-kaiwa-kakunin.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>action:create が200でトークンを返す</td><td class="yes">PASS</td></tr>
-<tr><td>action:status が実装されている(1140番の予算リセット版)</td><td class="yes">FAIL(古いバージョンのまま・#1386で追跡中)</td></tr>
-<tr><td>budgetLimitUsd が正しい$1.00になっている</td><td class="yes">FAIL($4.5のまま・#1386で追跡中)</td></tr>
+<tr><td>budgetLimitUsd が正しい$1.00になっている</td><td class="no">FAIL($4.5のまま・#1386で追跡中)</td></tr>
 </table>
 
 <footer>
