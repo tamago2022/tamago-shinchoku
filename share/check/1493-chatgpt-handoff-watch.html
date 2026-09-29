@@ -52,7 +52,17 @@
 <div class="date">2026-09-29 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-たまごさんの指示（2026-09-19・github_watch.py冒頭に記録済み）「チャッピーがGitHubに上げたら、即座に気づくぐらいの仕組みにしてほしい」に対し、既存の見張り番（tools/github_watch.py）は Issue／PR／画像置き場（WATCH_DIRS）しか見ておらず、<code>ai-brain/handoffs/latest.md</code>（ChatGPT⇔Claudeの正式な受付口）は対象外だった。実害として、2026-09-19にChatGPTが置いた handoff_id: 20260919-talent-radar-dry-run（status: ready）が10日間誰にも気づかれず放置されていた（ai-brain/orchestration/talent-radar-proof.md に記録済み）。同じ60秒ETagポーリング方式を単一ファイル向けに拡張する check_watch_files() を追加し、心臓(heartbeat.sh)に相乗りする既存経路にそのまま乗せた。実行ログ実測：<pre>2026-09-29 21:07:24 tamago2022/joy-relief-station の ai-brain/handoffs/latest.md に新しいhandoff（status:ready）→ done（1962番として発車待ちに追加しました（P2））</pre>
+たまごさんの指示（2026-09-19・github_watch.py冒頭に記録済み）「チャッピーがGitHubに上げたら、即座に気づくぐらいの仕組みにしてほしい」に対し、既存の見張り番（tools/github_watch.py）は Issue／PR／画像置き場（WATCH_DIRS）しか見ておらず、<code>ai-brain/handoffs/latest.md</code>（ChatGPT⇔Claudeの正式な受付口）は対象外だった。実害として、2026-09-19にChatGPTが置いた handoff_id: 20260919-talent-radar-dry-run（status: ready）が10日間誰にも気づかれず放置されていた。同じ60秒ETagポーリング方式を単一ファイル向けに拡張する check_watch_files() を追加し、心臓(heartbeat.sh)に相乗りする既存経路にそのまま乗せた。実行ログ実測：<pre>2026-09-29 21:07:24 tamago2022/joy-relief-station の ai-brain/handoffs/latest.md に新しいhandoff（status:ready）→ done（1962番として発車待ちに追加しました（P2））</pre>
+</div>
+
+<h2>放置されていた中身（非公開の作業記録から要旨をこのページへ転記。リンク先には出しません）</h2>
+<div class="note">
+<b>ai-brain/orchestration/talent-radar-proof.md（作業台帳・要旨）</b><br>
+handoff_id: 20260919-talent-radar-dry-run ／ 2026-09-19に記録 ／ 「GitHub → Claude/Dispatch受領」欄が<b>PENDING</b>のまま10日間更新されていなかった（latest handoffが status: ready のまま放置・Claude側のaccepted/RETURN PACKETが未確認だった、という記載）。
+</div>
+<div class="note">
+<b>ai-brain/handoffs/latest.md（ChatGPTからの依頼票・要旨）</b><br>
+2026-09-19付・status: ready ／ 内容：「Grok / Gemini / Perplexity / ChatGPT等へ実際に相談し、世界中の音楽の才能・名曲・隠れカバーを仕入れる。棚には入れず仕入れ箱へ保存し、選別済みの少数だけ店主へ出す」という依頼。これが10日間、誰にも拾われず眠っていた。
 </div>
 
 <h2>② 数字</h2>
@@ -64,14 +74,14 @@
 
 
 
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク（すべて開けることを確認済み）</h2>
 <ul class="links">
   <li><b>変更コミット（github_watch.py・実在push済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/9d13cdd13" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/9d13cdd13</a></li>
-  <li><b>気づかれず10日放置されていた証拠（talent-radar-proof.md）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/orchestration/talent-radar-proof.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/orchestration/talent-radar-proof.md</a></li>
-  <li><b>元のhandoff本体（status:ready→今回受領済み）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/handoffs/latest.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/handoffs/latest.md</a></li>
+  <li><b>検知して発車待ちに積んだ実データ（1962番・queue台帳の該当行）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/queue_light.json#L19783" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/queue_light.json#L19783</a></li>
+  <li><b>進捗表トップ（工場全体の入口）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>④ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>ai-brain/handoffs/latest.md(status:ready)を見張り番が検知するか</td><td class="yes">できた（実行ログに記録・1962番として発車待ちに追加）</td></tr>
