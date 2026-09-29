@@ -1,0 +1,30 @@
+{
+  "n": 1708,
+  "title": "「一人で考えてできた、えらい」を評価しない関所（1184番オリジナル禁止）の実測",
+  "quote": "どんなことにもさぁ最初にまず失敗してくれてる人がいて…無駄に失敗することないよ…『俺が1人で考えてできた、えらい』っていうのは俺は別にあんま評価してないよ…お金がない人たちに習おうよ。",
+  "saidAt": "2026-09-21 09:01",
+  "generatedAt": "2026-09-30T08:20:00+09:00",
+  "sourceLog": "status/1184_kanmon.jsonl（21行・非公開だがこのファイルへ集計値を書き出し）",
+  "totals": {
+    "total": 21,
+    "pass": 17,
+    "block": 4
+  },
+  "meaning": "pass=既存の同じ仕組み・公式サンプル・先人の実装をそのまま移植したと申告して通過した回数。block=自己試験(sid:shiken)で「新規に自分で考えて作ろうとした」形を検出し、関所が exit 2 で止めた回数。",
+  "realExample": {
+    "id": "hyo-1790618846",
+    "what": "1186号 Chrome起動禁止の関所（PreToolUse）",
+    "koushiki": "Claude Code の Hooks 公式ドキュメント（PreToolUse・exit code 2で拒否・stderrがモデルに返る）の目次を通しで読んだ",
+    "sample": "公式サンプルの『PreToolUse で exit 2 を返して拒否する』形を、リポジトリ内で既に動いている tools/stop_kanmon/1401_iru_ka.mjs の実装ごとそのまま移植（stdinをJSONで読む・deny()でstderrへ書いてexit 2・台帳へ1行append・壊れていたら黙って通す、まで同じ）",
+    "jitsurei": "同じリポジトリ内の 1401_iru_ka.mjs / 1184_original_kinshi.mjs / browser_kanmon.mjs が、0円で同じことを既にやっている。配布も tools/stop_kanmon/hooks_fragment.json + install_hooks.mjs をそのまま使う",
+    "ketsuron": "sonomama（そのまま＝自分で新しく考えない）"
+  },
+  "usedInFiles": [
+    "tools/stop_kanmon/1401_iru_ka.mjs",
+    "tools/stop_kanmon/1184_original_kinshi.mjs",
+    "tools/stop_kanmon/browser_kanmon.mjs",
+    "tools/stop_kanmon/hooks_fragment.json",
+    "tools/stop_kanmon/install_hooks.mjs"
+  ],
+  "note": "このJSON自体、1708号の完了条件（本番URLが200で返り中身が空でないこと）を満たすためにstatus/public/へ新規に書いた集計値。1184番の関所そのものは2026-09-29に実装済みで、今回はその実測ログを教訓の本番証拠として可視化しただけ（新しい仕組みは作っていない＝この教訓自体の実践）。"
+}
