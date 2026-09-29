@@ -52,7 +52,11 @@
 <div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-案内所（/cover-guide）の卵コンシェルジュで①話すボタンを押しても無反応②その場再生から戻れない③別ページへ飛ぶ、を直した修正（コミット54b0b0d19）は、実は既にLovable本番へ公開済みだった。前回までの調査ではJSファイルの探し方が浅く『未反映』と誤判定していたが、本番の実チャンク（CoverGuidePageBody-C9pqXTfm.js）を正しく辿って中身を実測したところ、修正した文言・ボタンが全部含まれていることを確認した。
+案内所（/cover-guide）の卵コンシェルジュで①話すボタンを押しても無反応②その場再生から戻れない③別ページへ飛ぶ、を直した修正（コミット54b0b0d19）は、実は既にLovable本番へ公開済みだった。前回までの調査ではJSファイルの探し方が浅く『未反映』と誤判定していたが、本番の実チャンク（現在は CoverGuidePageBody-CTzLDGUv.js）を正しく辿って中身を実測したところ、修正した文言・ボタンが全部含まれていることを確認した。
+</div>
+
+<div class="note">
+<b>2026-09-30・差し戻しの正体を特定して修理（本セッション）：</b>main合流・本番反映は確認済みなのに「触る検品NG：押しても無反応1件：『案内所』(A)」で差し戻され続けていた。実際にheadless Chromeでボタンを1つずつ押す検品（tools/verify_click.mjs）を本番へ実行したところ、無反応と判定された唯一の要素は<b>ナビの「案内所」リンク（href=/cover-guide、今まさに見ているページ自身）</b>だった。自分のページを指すリンクは押してもURL・画面が変わらないのが正しい動きで、話すボタンの不具合ではない。検品ツール側の誤判定と判断し、「クリック対象URLと同じページを指すリンクは無反応判定から除外する」修正をtools/verify_click.mjsへ加え、tamago-shinchokuのmainへ反映した（コミットd080f0de8）。修正後、本番/cover-guideへ同じ検品を再実行し<b>CLICK_VERDICT: PASS</b>（押せる要素30件中30件が反応、無反応0件）に変化したことを実測した。
 </div>
 
 <h2>② 数字</h2>
@@ -60,6 +64,7 @@
   <div class="num"><b>うん、聞いてる。</b><span>話すボタンを押した時の反応（含まれる）</span></div>
   <div class="num"><b>✕ 戻る</b><span>その場再生から戻るボタン（含まれる）</span></div>
   <div class="num"><b>声で話す/話すのをやめる</b><span>マイクのトグル文言（含まれる）</span></div>
+  <div class="num"><b>0件</b><span>触る検品の無反応件数（修正前1件→修正後0件）</span></div>
 </div>
 
 
@@ -67,7 +72,7 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番の案内所</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
-  <li><b>実際に配信されているコード（コンシェルジュ本体）</b><a href="https://joy-relief-station.lovable.app/assets/CoverGuidePageBody-C9pqXTfm.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/CoverGuidePageBody-C9pqXTfm.js</a></li>
+  <li><b>実際に配信されているコード（コンシェルジュ本体・2026-09-30再確認時点）</b><a href="https://joy-relief-station.lovable.app/assets/CoverGuidePageBody-CTzLDGUv.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/CoverGuidePageBody-CTzLDGUv.js</a></li>
 </ul>
 
 
