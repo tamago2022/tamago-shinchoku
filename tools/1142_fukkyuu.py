@@ -131,6 +131,52 @@ def naosu_stuck():
                % (len(target), len(yuurei)), detail)
 
 
+# ── ①' 順番待ち(waiting)のまま列を占有し続ける幽霊項目を取り消す ──────────
+# 1494番（2026-09-29）：「今から寝るけど起きたらできてるようにして」のような
+# たまごさんの相槌・激励は、一度もrunningにならず waiting のまま優先度1(urgent)の
+# 列に残り続け、1377/1446/1480番と同じ「redoCount>=2に達するまで待つ」設計の
+# ①（naosu_stuck）では stuck化するまで検知できなかった。ここで waiting も対象に含め、
+# 実行して確かめるまでもなく（タイトルの構造だけで）判定できる幽霊項目は初回から取り消す。
+def naosu_ghost_waiting():
+    try:
+        import shukudai
+    except Exception as e:
+        return rec("ghost_waiting", False, "shukudaiが読めません", str(e)[:80])
+    p = os.path.join(STATUS, "queue.json")
+    try:
+        q = json.load(io.open(p, encoding="utf-8"))
+    except Exception as e:
+        return rec("ghost_waiting", False, "キューが読めません", str(e)[:80])
+    items = q.get("items") or []
+    all_waiting = [i for i in items if str(i.get("status")) == "waiting"]
+    yuurei = [i for i in all_waiting
+              if shukudai.actionable({"source": "queue", "title": i.get("title") or ""}) is False]
+    if not yuurei:
+        return rec("ghost_waiting", True, "順番待ちの幽霊項目は0件", "")
+    if DRY:
+        return rec("ghost_waiting", False, "順番待ちの幽霊項目 %d件（下見だけ）" % len(yuurei),
+                   "／".join(str(i.get("n")) for i in yuurei[:10]))
+    try:
+        bak = os.path.join(STATUS, "_1142_gomi")
+        os.makedirs(bak, exist_ok=True)
+        import shutil
+        shutil.copy2(p, os.path.join(
+            bak, "queue.json.bak-" + now().strftime("%Y%m%d-%H%M%S")))
+    except Exception:
+        pass
+    for i in yuurei:
+        i["_preCancelStatus"] = i.get("status")
+        i["status"] = "cancelled"
+        i["cancelledAt"] = now().isoformat()
+        i["restoreWhy"] = ("1142_fukkyuu：順番待ちのまま具体的な作業指示が無い"
+                            "（たまごさんの相槌・感想の類）ため取り消し（1377/1494番の再発防止）")
+    tmp = p + ".tmp1142b"
+    json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, p)
+    detail = "／".join(str(i.get("n")) for i in yuurei[:10])
+    return rec("ghost_waiting", True, "順番待ちの幽霊項目 %d件を取り消した" % len(yuurei), detail)
+
+
 # ── ② 誰も掴んでいない古い錠前を外す ────────────────────────────
 def naosu_lock(furui_min=60):
     n = 0
@@ -251,7 +297,7 @@ def naosu_login():
 def main():
     print("1142 復旧係 %s（%s）" % (now().strftime("%H:%M:%S"),
                                    "下見" if DRY else "本番"))
-    rows = [naosu_stuck(), naosu_lock(), naosu_gomi(), naosu_failures(), naosu_login()]
+    rows = [naosu_stuck(), naosu_ghost_waiting(), naosu_lock(), naosu_gomi(), naosu_failures(), naosu_login()]
     naoshita = sum(1 for r in rows if r["naoshita"])
     nokori = [r["what"] for r in rows if not r["naoshita"]]
     print("→ 直した %d／%d。残った赤：%s" % (naoshita, len(rows),
