@@ -194,6 +194,15 @@ def tsugi_no_tama(n=IKKAI_NI):
             break
         if int(r.get("count") or 1) < 3 or r.get("state") == "完了":
             continue
+        # ★1693番診断：nankai.json の元（hatsugen.jsonl）に actionable:false
+        #   （1516番診断＝ルール文書の断片・たまごさんの発言ではないと機械/人が
+        #   既に判定済み）が付いていたら、ここで必ず弾く。宿題台帳ルート
+        #   （下のDAICHOループ）には元から actionable チェックがあるのに、
+        #   このnankai.jsonルートだけ抜けていたため、実行不能な文言（例：
+        #   「正しい動き：空欄のまま前に進めて〜」1693番／「【禁止事項〜】」
+        #   1673番）が「3回以上言わせた」判定だけで無限に自動発車されていた。
+        if r.get("actionable") is False:
+            continue
         if r.get("id") in sunde or _k(r.get("title")) in narande:
             continue
         tama.append({"id": r["id"], "title": r["title"], "pri": 1,
@@ -322,6 +331,19 @@ def main():
             ng.append("dry run が結果を返さない")
         if os.path.exists(LOG) and r.get("hassha"):
             pass
+        # ★1693番診断：nankai.json 側で actionable:false と分かっている行を
+        #   tsugi_no_tama() が絶対に選ばないことを、実データで確認する。
+        #   偽のnankai.jsonを作って試すと「直したつもり」で終わるので、
+        #   本物の status/public/nankai.json をそのまま読む。
+        pub = load_json(NANKAI, {}) or {}
+        false_ids = {r2.get("id") for r2 in (pub.get("rows") or [])
+                     if r2.get("actionable") is False}
+        if false_ids:
+            tama = tsugi_no_tama(n=len(pub.get("rows") or []) + 10)
+            hikkakatta = [t for t in tama if t.get("id") in false_ids]
+            if hikkakatta:
+                ng.append("actionable:false のはずの%d件が発車候補に混じった（例：%s）"
+                          % (len(hikkakatta), hikkakatta[0].get("title", "")[:40]))
         print("自己試験：%s／走行%s本・本物6h%s本・今日の完了%s件 → %s"
               % ("OK" if not ng else "NG", m["running"], m["honmono6h"],
                  m["closedToday"], "手が空いている" if m["aiteru"] else "動いている"))
