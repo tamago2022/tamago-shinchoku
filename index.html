@@ -119,6 +119,10 @@ ul{list-style:none; margin:0; padding:0}
 .q li:first-child{border-top:0}
 .ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
 
+/* ───── 空き容量の赤帯（閾値割れのときだけ出す） ───── */
+#diskAka:not(:empty){background:#b3261e; color:#fff; border-radius:10px;
+  padding:12px 14px; margin:0 0 10px; font-size:17px; line-height:1.5; font-weight:700}
+
 /* ───── 残り容量の1行（色を付けない・小さく1行） ───── */
 #diskLine{font-size:14px; color:var(--sub); font-variant-numeric:tabular-nums;
   margin:0 0 12px; padding:0 2px}
@@ -150,6 +154,10 @@ footer a{display:block; padding:5px 0}
   <span id="stamp">読み込み中…</span>
   <button id="reload" type="button">読み直す</button>
 </header>
+
+<!-- 1200番（2026-09-30）：空きが閾値を切ったら、たまごさんが気づく前に赤帯。
+     出どころは下の #diskLine と同じ status/public/machine.json の diskFreeGB。 -->
+<div id="diskAka"></div>
 
 <!-- ここだけは赤で出す。切れていると何も動かないので。 -->
 <div id="loginNg"></div>
@@ -308,11 +316,17 @@ function getJson(url, ms){
 /* ───────── 残り容量（1行だけ・色は付けない） ─────────
    出どころ：status/public/machine.json の diskFreeGB（心臓が自動で更新している）。
    取れなければ空欄にせず「取れていません」と書く。 */
+/* 1200番：赤帯の閾値。tools/disk_guardian.py の AKAOBI_GB と同じ数字にしておく。 */
+var DISK_AKA_GB = 40;
 (function(){
-  var el = $("diskLine"); if(!el) return;
+  var el = $("diskLine"), aka = $("diskAka"); if(!el) return;
   getJson("status/public/machine.json").then(function(mac){
     var free = (mac && typeof mac.diskFreeGB === "number") ? mac.diskFreeGB : null;
     el.textContent = "残り容量　" + (free == null ? "取れていません" : Math.round(free) + "GB");
+    if(aka && free != null && free < DISK_AKA_GB){
+      aka.textContent = "空き容量 " + Math.round(free) + "GB（" + DISK_AKA_GB +
+        "GBを切りました）。自動の片付けが走っています。";
+    }
   }).catch(function(){ el.textContent = "残り容量　取れていません"; });
 })();
 

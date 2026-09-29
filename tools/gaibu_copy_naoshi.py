@@ -322,47 +322,47 @@ def ask_claude(title, copy, url, diag):
 #   「OAuth session expired」で12件とも落ちた。＝**書き手が1人だと、その1人が寝た日は
 #   仕組み全体が0件になる。**たまごさんに「ログインし直して」と頼む間も止めないために、
 #   工場が既に持っている外部の口（tools/gaibu_kuchi.py）へ降りる。
-# お金：1件あたり 入力約500トークン＋出力約80トークン。25件で gpt-4o-mini なら
-#   合計 約0.005ドル＝**1円未満**。使った実額は gaibu_kuchi 側の台帳に毎回載る。
-FALLBACK_VENDORS = ("openai", "gemini", "grok")
-# 実測（2026-09-22 07:00・1回目）：既定の先頭 gpt-4o-mini に書かせたら12件中ほぼ全部が
-#   「〜しよう！」の呼びかけになり、1件は材料に無い匂いまで足した（嘘）。**安い方から
-#   順に試す既定のままでは、この棚の文は書けない。**賢い方を先頭に指名する。
-#   値段差：1件あたり0.013円→約0.06円。25件で1.5円。ここは値段より文の質を採る。
-FALLBACK_MODELS = {"openai": ["gpt-5-mini", "gpt-4o", "gpt-4o-mini"]}
+#
+# ★1704番（2026-09-30）で書き換え：ここは以前 `kuchi.find_key(v)` / `kuchi.ask(v, ...)`
+#   （openai/gemini/grok の複数ベンダーAPI）を呼んでいたが、gaibu_kuchi.py は
+#   1051番（2026-09-24）で「外の判定役」専用に作り替えられ、find_key/ask は
+#   **もう存在しない。** 実測（09-26〜09-29のnaoshi.json）：控えの口は毎回
+#   「openai=AttributeError／gemini=AttributeError／grok=AttributeError」で
+#   3ベンダーとも即死し、この1週間 fixed=0 が続いていた（本題の根本原因）。
+#   いま生きている口は gaibu_kuchi.kiku()（codex 経由・ChatGPTログインなので
+#   1回ごとの課金は無い＝0円。実測：dare_ga_iru() で codex/genspark 生存確認済み）。
+#   このAPIに合わせて書き直す。
 
 
 def ask_fallback(title, copy, url, diag):
-    """claude -p が使えない日の控えの書き手。通らなければ (None, 理由) を返す。"""
+    """claude -p が使えない日の控えの書き手。通らなければ (None, 理由) を返す。
+
+    gaibu_kuchi.kiku() はJSON1個で答えさせる口なので、copyをJSONで包んで頼む。
+    """
     try:
         import gaibu_kuchi as kuchi
     except Exception as e:
         return None, "控えの口が読み込めない（%s）" % type(e).__name__
-    prompt = PROMPT % {"title": title or "（題名なし）",
-                       "copy": copy or "（まだ無い）",
-                       "url": url or "（無い）"}
-    tried = []
-    for v in FALLBACK_VENDORS:
-        try:
-            if not kuchi.find_key(v):
-                tried.append("%s=鍵なし" % v)
-                continue
-            r = kuchi.ask(v, [{"role": "user", "content": prompt}], timeout=60,
-                          models=FALLBACK_MODELS.get(v))
-        except Exception as e:
-            tried.append("%s=%s" % (v, type(e).__name__))
-            continue
-        if r.get("ok") and r.get("text"):
-            diag.append("控えの口 %s／%s／%s円" % (v, r.get("model"), r.get("costYen")))
-            t = clean(r["text"])
-            if t and "NO_MATERIAL" not in t:
-                return t, None
-            if "NO_MATERIAL" in (t or ""):
-                return None, "材料が題名だけで、足さずには書けない（動画を見ないと書けない）"
-            tried.append("%s=空" % v)
-        else:
-            tried.append("%s=%s" % (v, (r.get("error") or "不明")[:60]))
-    return None, "控えの口も通らなかった（%s）" % "／".join(tried)
+    system = "あなたは「ごきげん補給所」のコピーを書く編集者です。"
+    user = PROMPT % {"title": title or "（題名なし）",
+                     "copy": copy or "（まだ無い）",
+                     "url": url or "（無い）"}
+    user += ('\n\n★出力は必ずJSONオブジェクト1つだけで返してください：'
+             '{"copy": "書き直した一言"}\n'
+             '材料が薄すぎて書けない場合は {"copy": "NO_MATERIAL"} としてください。')
+    try:
+        d, who, err = kuchi.kiku(system, user, timeout=60)
+    except Exception as e:
+        return None, "控えの口が呼べない（%s）" % type(e).__name__
+    if d is None:
+        return None, "控えの口も通らなかった（%s）" % (err or "判定役が今いない")
+    text = clean(str((d or {}).get("copy") or ""))
+    if not text:
+        return None, "控えの口（%s）が空を返した" % (who or "不明")
+    diag.append("控えの口 %s" % who)
+    if "NO_MATERIAL" in text:
+        return None, "材料が題名だけで、足さずには書けない（動画を見ないと書けない）"
+    return text, None
 
 
 def write_probe(url, key, row_id, current, diag):

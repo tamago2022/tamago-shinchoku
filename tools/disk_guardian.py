@@ -85,8 +85,22 @@ QUEUE_HISTORY_KEEP = 20  # queue_history/は直近この世代数だけ残す（
 #   たまごさんの最上位の決まりは「止まるのが最悪。何も進んでいないのが最悪」。
 #   実際、コードを直す仕事なら17GBあれば何の問題もなく走る。足りなくなるのは
 #   動画を作るときだけ。**容量を守るために工場を止めるのは、目的と手段が逆。**
-WARN_GB = 25   # これを切ったら安全な片付けを実行
+WARN_GB = 40   # これを切ったら安全な片付けを実行
 STOP_GB = 8    # 本当に危ないときだけ止める（macOSが不安定になる手前）
+
+# 2026-09-30（1200番・「100GBあったのに57GBまで減った」）：
+#   たまごさんの指示は「常にクリーンアップされて勝手に減らない状態にして」。
+#   旧実装は WARN_GB=25 を切るまで cleanup() を1度も呼ばなかったため、
+#   57GB→53GB と1日20GBずつ減っていく間、この見張りは**一度も掃除していない**。
+#   実測：9/24 87.7GB → 9/26 54.6GB → 9/27 100.3GB（人手で解放）→ 9/30 53.4GB。
+#   → ① WARN_GB を 40 に上げる
+#     ② それとは別に「ほこりと落ち葉」だけは空き容量に関係なく毎回掃く（TIDY_KINDS）
+#     ③ 閾値を切ったら進捗表の先頭に赤帯を出す（AKAOBI_GB。index.html の DISK_AKA_GB と同値）
+AKAOBI_GB = 40
+# 毎回黙って掃いてよいもの＝作り直せる一時データだけ。
+# 壺と金庫（写真・Vault・Drive・Eagle・ゴミ箱の中身）はここに入れない。
+TIDY_KINDS = ("app_cache", "__pycache__", "old_log", "queue_history_old",
+              "claude_session_old")
 
 # ④ 壺と金庫：迷ったら触らない。パスにこれらの文字列を含んでいたら問答無用でスキップする。
 FORBIDDEN_KEYWORDS = (
@@ -180,6 +194,18 @@ def _glob_app_cache_roots():
 CLAUDE_PROJECTS = os.path.join(HOME, ".claude", "projects")
 CLAUDE_SESSION_MIN_AGE_SEC = 14 * 86400  # 14日以上更新の無いセッションだけ候補に出す
 
+# 2026-09-30（1200番・「Claudeのセッションログを自動で間引く」＝たまごさんの名指し指示）：
+# Cowork(Claudeデスクトップ)は1セッションごとに作業フォルダを作り、そのまま残す。
+# 実測（2026-09-30）：
+#   ~/Library/Application Support/Claude/local-agent-mode-sessions  3.3GB
+#   ~/.claude/projects                                              6.4GB
+# どちらも「終わったセッションの置き土産」で、次の仕事には要らない。
+# ただし transcript(.jsonl) は復旧の頼りなので触らない＝フォルダだけを対象にする。
+CLAUDE_AGENT_SESSIONS = os.path.join(
+    HOME, "Library", "Application Support", "Claude", "local-agent-mode-sessions")
+CLAUDE_AGENT_SESSION_MIN_AGE_SEC = 7 * 86400   # 7日さわられていないセッションだけ
+CLAUDE_AGENT_SESSION_KEEP = 3                  # 新しい方からこの本数は必ず残す
+
 
 TRASH_DIR = os.path.join(HOME, ".Trash")
 # 2026-09-09（685番・「1日20GB減る」原因追及）：ゴミ箱は店主が既に「消す」と
@@ -204,6 +230,9 @@ def allowed_roots():
         os.path.join(MAIN_REPO_DIR, ".output"),
         # 2026-09-09（685番）：ゴミ箱トップレベル項目（7日以上経過分のみ候補化）。
         TRASH_DIR,
+        # 2026-09-30（1200番）：Claudeのセッション置き土産。間引きの名指し指示あり。
+        CLAUDE_AGENT_SESSIONS,
+        CLAUDE_PROJECTS,
     )
 
 
@@ -383,6 +412,30 @@ def candidates():
                     "size_mb": dir_size_mb(sub),
                 })
 
+    # 2026-09-30（1200番）：Coworkのセッション作業フォルダ。新しい方から
+    # CLAUDE_AGENT_SESSION_KEEP本は必ず残し、それ以外で7日さわられていないものだけ。
+    # 「いま走っているセッション」を消さないための二重の守り（本数＋日数）。
+    if os.path.isdir(CLAUDE_AGENT_SESSIONS):
+        try:
+            sess = []
+            for name in os.listdir(CLAUDE_AGENT_SESSIONS):
+                p = os.path.join(CLAUDE_AGENT_SESSIONS, name)
+                if not os.path.isdir(p) or name.startswith("."):
+                    continue
+                sess.append((os.path.getmtime(p), p))
+            sess.sort(reverse=True)  # 新しい順
+            for mt, p in sess[CLAUDE_AGENT_SESSION_KEEP:]:
+                if not is_allowed(p):
+                    continue
+                out.append({
+                    "path": p, "kind": "claude_session_old", "worktree": "-",
+                    "protected": False,
+                    "age_ok": (time.time() - mt) >= CLAUDE_AGENT_SESSION_MIN_AGE_SEC,
+                    "size_mb": dir_size_mb(p),
+                })
+        except Exception as e:
+            log("Claudeセッション間引きの候補列挙で失敗: %s" % e)
+
     # 7日超のログ（tamago-shinchoku/status配下のみ）
     root = os.path.join(REPO, "status")
     if os.path.isdir(root) and is_allowed(root):
@@ -455,6 +508,25 @@ def safe_remove(path, kind):
         log("🧹 消しました [%s] %s (約%sMB)" % (kind, path, before))
         return before
     return 0
+
+
+def tidy_always():
+    """2026-09-30（1200番）ほこりと落ち葉だけを、空き容量に関係なく毎回掃く。
+
+    ここで掃くのは TIDY_KINDS だけ＝作り直せる一時データ・古いログ・
+    終わったセッションの置き土産。node_modules や dist のような
+    「次の仕事がすぐ使うもの」は入れない（閾値割れのときだけ消す）。
+    """
+    freed = 0.0
+    for c in candidates():
+        if c["kind"] not in TIDY_KINDS:
+            continue
+        if c["protected"] or not c["age_ok"]:
+            continue
+        freed += safe_remove(c["path"], c["kind"])
+    if freed:
+        log("🧹常時清掃：約%.0fMB解放" % freed)
+    return freed
 
 
 def cleanup():
@@ -818,6 +890,13 @@ def main():
         return 0
     log("空き %.1fGB" % free_gb)
     dump_candidates(free_gb)
+
+    # 2026-09-30（1200番）：閾値に関係なく毎回、ほこりと落ち葉だけ掃く。
+    # 「常にクリーンアップされて勝手に減らない状態にして」への対応。
+    tidy_always()
+    if free_gb < AKAOBI_GB:
+        log("🟥 空き%.1fGB<%dGB → 進捗表の先頭に赤帯（index.html の DISK_AKA_GB）"
+            % (free_gb, AKAOBI_GB))
     maybe_record_daily(free_gb)
     maybe_adjust_launch_cap(free_gb)
 
