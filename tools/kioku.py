@@ -288,6 +288,19 @@ _AUTO_LAUNCH_MARKER = "【自動発車】発車待ちの"
 #   検品専門です。」で始まる固定文言なので、これも丸ごと除外する。
 _VERIFY_PROMPT_MARKER = "【AI検品・鬼監督（Verifier）】あなたは検品専門です。"
 
+# ★1916号実例（2026-09-30）：tools/gaibu_copy_naoshi.py が「外部追加分のコピーを
+#   毎朝ひとりでに直す係」として、日次5分便から `claude -p` へ書き直し注文書
+#   （PROMPT定数）を直接コマンドライン引数で渡している。この注文書の禁止事項の
+#   1行「・題名をそのまま置き直していない。」が、たまたま「直し」+「て」の並びを
+#   含むため _IRAI（直して）にマッチし、_BUNSHO_DANPEN（記号・英語まじり判定）も
+#   すり抜けて、毎日の実行のたびに新しいtranscriptへ同じ一文が現れ「今日もまた
+#   言われた」と誤カウントされ続けていた（実測：2026-09-22〜09-30の8日間で
+#   count8に到達し、1916号として自動発車された）。1816号・1853号と同じ考え方
+#   （記号ではなく出どころの決まり文句で弾く）を適用する。注文書の先頭は必ず
+#   「あなたは「ごきげん補給所」のコピーを書く編集者です。」で始まる固定文言
+#   （PROMPT定数・ask_fallback()のsystem文言も同一）なので、これも丸ごと除外する。
+_COPY_NAOSHI_PROMPT_MARKER = "あなたは「ごきげん補給所」のコピーを書く編集者です。"
+
 
 def user_text(rec):
     """会話ログ1行から、たまごさんが打った文だけを取り出す。
@@ -313,6 +326,8 @@ def user_text(rec):
             return None        # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
         if c.lstrip().startswith(_VERIFY_PROMPT_MARKER):
             return None        # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
+        if c.lstrip().startswith(_COPY_NAOSHI_PROMPT_MARKER):
+            return None        # ★コピー書き直し注文書の丸ごと注入。たまごさんの声ではない（1916号）
         return c
     if not isinstance(c, list):
         return None
@@ -332,6 +347,8 @@ def user_text(rec):
                 continue       # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
             if t.lstrip().startswith(_VERIFY_PROMPT_MARKER):
                 continue       # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
+            if t.lstrip().startswith(_COPY_NAOSHI_PROMPT_MARKER):
+                continue       # ★コピー書き直し注文書の丸ごと注入。たまごさんの声ではない（1916号）
             parts.append(t)
     return "\n".join(parts) if parts else None
 
@@ -551,6 +568,18 @@ def main():
                       "実際に押しても反応しない要素があります。curlで読めても、押して動くかを"
                       "`node tools/verify_click.mjs <URL>` で自分でも確認してから直してください。"}}):
             ng.append("AI検品(Verifier)への指示文を発言として拾ってしまう（1853号の再発）")
+        # ★1916号：コピー書き直し注文書（gaibu_copy_naoshi.py PROMPT）の丸ごと注入。
+        #   「・題名をそのまま置き直していない。」が「直して」を含み誤検出されていた。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "あなたは「ごきげん補給所」のコピーを書く編集者です。\n"
+                      "下の1件について、カードに載せる一言（whisper）を書き直してください。\n"
+                      "・題名をそのまま置き直していない。"}}):
+            ng.append("コピー書き直し注文書を発言として拾ってしまう（1916号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "あなたは「ごきげん補給所」のコピーを書く編集者です。\n"
+                        "・題名をそのまま置き直していない。"}]}}):
+            ng.append("コピー書き直し注文書（contentがlist）を発言として拾ってしまう（1916号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
