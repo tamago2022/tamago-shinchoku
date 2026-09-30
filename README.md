@@ -147,6 +147,21 @@ Dispatch（たまごさんとの会話）は、`type: "cost_confirm"` の行を�
 （押すと `queue_cost_ok` コマンドが飛び、`costApproved` が立って次の周回で発車する）。
 たまごさんの「やってみて」という会話上の一言だけでは発車しない——**必ずこのボタンを押す操作が要る。**
 
+### ボタン操作の代行を機械で禁止（2026-10-01新設・1851番）
+
+上の「必ずこのボタンを押す操作が要る」は、3回言わせても実際には破られていた（AIが会話の
+「やってみて」を見て、`costApproved`やqueue_cost_okをこちら側で成立させてしまう経路）。
+`tools/stop_kanmon/1851_okane_botan_kanmon.mjs`（PreToolUse・`.claude/settings.json`に登録済み）が、
+Bash／Write／Edit／MultiEditを見て次の3パターンをexit 2で拒否する：
+
+1. `queue_cost_ok(...)` をBashで直接呼び出す
+2. `costApproved` を直接 `true`/`True` にする（Bash・`status/queue.json`への書き込み）
+3. `status/inbox/` へ `{"action": "queue_cost_ok", ...}` を自分で作って処理させる
+
+コード自体の読み書き（`.py`/`.mjs`等）は対象外（開発は止めない）。止めるのは実行・実データ側だけ。
+逆テスト・対照群は`status/1851_okane_botan.jsonl`（記録は拒否時のみ追記）。外す道は用意しておらず、
+外すならたまごさん自身が `status/1851_okane_botan.json` に `{"enabled": false}` を書いたときだけ。
+
 ## 優先度A〜E＋F・一括仕分け（2026-09-09新設・682番）
 
 発車待ちの優先度は画面上A〜Eの文字で表示するが、`status/queue.json`の`priority`は昔からの
