@@ -3,23 +3,23 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-30T14:04:31.270Z",
+      "updatedAt": "2026-09-30T15:08:48.308Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
       "consecutiveFailureStopAt": 2,
-      "dateJST": "2026-09-30",
-      "successCountToday": 1,
-      "consecutiveFailures": 1,
+      "dateJST": "2026-10-01",
+      "successCountToday": 0,
+      "consecutiveFailures": 0,
       "stoppedForToday": false,
       "lastResult": "fail",
-      "lastCheckedAt": "2026-09-30T14:04:29.960Z",
+      "lastCheckedAt": "2026-09-30T15:08:48.108Z",
       "lastPublishedSha": "91c3f90ca1",
       "lastFailureReason": "「公開」ボタンが見つからない。画面がエディタでない可能性。URL: https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1",
       "lastFailureAt": "2026-09-30T14:00:38.370Z",
-      "mainSha": "420326b69c",
+      "mainSha": "9655361520",
       "mainUnpublished": true,
       "paused": false,
       "pauseReason": null
