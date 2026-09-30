@@ -276,6 +276,18 @@ _AUTO_TASK_DONE_MARKER = "【完了条件】"
 #   なので、これを含むメッセージは丸ごと機械の自動発車テンプレートと判定して除外する。
 _AUTO_LAUNCH_MARKER = "【自動発車】発車待ちの"
 
+# ★1853号・zenbu全走査で判明した第3の経路：AI検品(Verifier=鬼監督3段目)は
+#   build_prompt()を経由せず、build_verify_prompt()が組み立てた別テンプレートを
+#   `claude -p <prompt>` へ直接渡す（tempfile.mkdtemp(prefix="tamago-verify-")の
+#   一時cwdで動く別プロセス）。このテンプレートは`it["touchCheckNote"]`
+#   （＝auto_launcher.pyの触る検品NG時の定型文、まさに「curlで読めても、押して
+#   動くかを…」そのもの）をそのまま埋め込むため、_AUTO_LAUNCH_MARKERの外側で
+#   同じ汚染が起きていた（実測：--zenbu全走査で8fb974b96debがcount8で再検出、
+#   "from"がtamago-verify-*の一時ディレクトリのtranscriptだった）。
+#   build_verify_prompt()の先頭は必ず「【AI検品・鬼監督（Verifier）】あなたは
+#   検品専門です。」で始まる固定文言なので、これも丸ごと除外する。
+_VERIFY_PROMPT_MARKER = "【AI検品・鬼監督（Verifier）】あなたは検品専門です。"
+
 
 def user_text(rec):
     """会話ログ1行から、たまごさんが打った文だけを取り出す。
@@ -299,6 +311,8 @@ def user_text(rec):
             return None        # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
         if _AUTO_TASK_MARKER in c and _AUTO_TASK_DONE_MARKER in c:
             return None        # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
+        if c.lstrip().startswith(_VERIFY_PROMPT_MARKER):
+            return None        # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
         return c
     if not isinstance(c, list):
         return None
@@ -316,6 +330,8 @@ def user_text(rec):
                 continue       # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
             if _AUTO_TASK_MARKER in t and _AUTO_TASK_DONE_MARKER in t:
                 continue       # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
+            if t.lstrip().startswith(_VERIFY_PROMPT_MARKER):
+                continue       # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
             parts.append(t)
     return "\n".join(parts) if parts else None
 
@@ -528,6 +544,13 @@ def main():
                       "【自動発車】発車待ちの999番です。\n\n# やること\n**台帳を直す**\n\n"
                       "数字・HTTPコードだけならcurlで足りるので確認してから直してください。"}}):
             ng.append("自動発車テンプレート（preamble+ヘッダー）を発言として拾ってしまう（1853号の再発）")
+        # ★1853号・zenbu全走査で判明した第3の経路：AI検品(Verifier)への指示文
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "【AI検品・鬼監督（Verifier）】あなたは検品専門です。この作業を行った本人ではありません。\n\n"
+                      "# 元の依頼\nテスト\n\n# 2段目「触る検品」の結果\n"
+                      "実際に押しても反応しない要素があります。curlで読めても、押して動くかを"
+                      "`node tools/verify_click.mjs <URL>` で自分でも確認してから直してください。"}}):
+            ng.append("AI検品(Verifier)への指示文を発言として拾ってしまう（1853号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
