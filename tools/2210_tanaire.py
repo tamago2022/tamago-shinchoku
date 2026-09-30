@@ -299,7 +299,9 @@ def run(dry=False, only=None):
                 continue
 
             def page(s):
-                return {"shelfId": s.get("extends_shelf_id") or s["id"], "shelf": s["title"],
+                # 本番の棚ページのid：既存棚の受け皿なら元の棚id、店主が作った棚なら "db-<uuid>"
+                #   （publicShelves.functions.ts:507 と同じ決め）
+                return {"shelfId": s.get("extends_shelf_id") or ("db-" + s["id"]), "shelf": s["title"],
                         "world": s.get("world") or "", "pickId": s.get("pickId"), "dbShelfId": s["id"]}
             p0 = page(musunda[0])
             rec = {"bin": "2210", "at": now(), "id": r["id"], "nagekomiId": r["id"],
