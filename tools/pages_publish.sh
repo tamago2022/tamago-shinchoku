@@ -72,15 +72,37 @@ log() { echo "$(date '+%F %T') $*" >> "$LOG"; }
 #   後：時間ではなく**錠を持っている者が本当に生きているか**で見る。
 #       生きていれば譲る（何時間かかっても2本にならない）。
 #       死んでいれば即座に奪う（止まった錠で何時間も待たされることも無くなる）。
-if [ -f "$LOCK" ]; then
+#
+# ★2026-09-30（1873番）さらに直した。上の仕組みには「見てから書く」の隙間があった。
+#   `[ -f "$LOCK" ]` で確認 → `echo ... > "$LOCK"` で書く、の**2手の間に**
+#   別プロセスが同じ2手を割り込ませられる（TOCTOU）。実測：5〜6本の
+#   pages_publish.sh が同時に `git push --force ... gh-pages` を叩いていた。
+#   GitHub側が「remote: error: unable to write file ... pack: No such file
+#   or directory」で壊れたように見えていたのは、実は**こちら側が同じ枝へ
+#   同時に書き込もうとしていたことによる競合**だった（GitHub全体は
+#   githubstatus.com で終始 Operational）。
+#   直し方：`mkdir` は OS がアトミックに保証する「作れたのは1プロセスだけ」。
+#   これを錠そのものにする（見てから書く、の隙間が原理的に無くなる）。
+LOCKDIR="$LOCK.d"
+GOT_LOCK=0
+for _lt in 1 2 3 4 5; do
+  if mkdir "$LOCKDIR" 2>/dev/null; then
+    echo "$$ $(date '+%F %T')" > "$LOCK"
+    GOT_LOCK=1
+    break
+  fi
   LPID="$(awk 'NR==1{print $1}' "$LOCK" 2>/dev/null || echo "")"
   if [ -n "$LPID" ] && kill -0 "$LPID" 2>/dev/null; then
     exit 0                      # 本物が走っている。黙って譲る
   fi
-  log "前の錠(pid=${LPID:-?})はもう生きていないので奪います"
+  # 錠（ディレクトリ）は残っているが、中のpidはもう死んでいる→奪って良い
+  rmdir "$LOCKDIR" 2>/dev/null || true
+  sleep 0.3
+done
+if [ "$GOT_LOCK" -ne 1 ]; then
+  exit 0                        # 取り合いに負け続けた。今回は黙って譲る
 fi
-echo "$$ $(date '+%F %T')" > "$LOCK"
-trap 'rm -f "$LOCK" 2>/dev/null || true' EXIT INT TERM
+trap 'rm -f "$LOCK" 2>/dev/null || true; rmdir "$LOCKDIR" 2>/dev/null || true' EXIT INT TERM
 
 # ---- 初回だけ：公開用の作業場を作る ----
 # ★ --shared を使う。main の中身(681MB)を**コピーせずに**参照するので一瞬で終わり、
