@@ -301,6 +301,24 @@ _VERIFY_PROMPT_MARKER = "【AI検品・鬼監督（Verifier）】あなたは検
 #   （PROMPT定数・ask_fallback()のsystem文言も同一）なので、これも丸ごと除外する。
 _COPY_NAOSHI_PROMPT_MARKER = "あなたは「ごきげん補給所」のコピーを書く編集者です。"
 
+# ★1917号実例（2026-09-30）：tools/hantei_hiduke.py の kuriageru()（判定日で
+#   赤になった案件を自動でP1へ繰り上げて再発車する係）が組み立てる本文の最終行は
+#   固定文言「たまごさんに質問しない。直して、URLを報告に貼る。」。この本文が
+#   queue_add()経由で積まれ、着火時にどこかの経路（Cowork/Dispatch系など
+#   build_prompt()のヘッダーを経由しない launch 経路）で会話ログへ role=user の
+#   メッセージとして現れると、_IRAI（直して）にマッチし「たまごさんの発言」として
+#   拾われる。3回言わせた扱いになると、この文言そのものが新しい案件（1917号）として
+#   再発車され続ける自己増殖ループになっていた（1853号と同じ構造）。
+#   本文の先頭は必ず「【判定日で赤になった案件】」で始まる固定文言（kuriageru()の
+#   body[0]）なので、1816号・1853号・1916号と同じ考え方（出どころの決まり文句で
+#   丸ごと弾く）を適用する。
+_HANTEI_HIDUKE_MARKER = "【判定日で赤になった案件】"
+
+# ★同じ穴：tools/oni_modoshi.py の saihassha()（自動で差し戻す係）が組み立てる
+#   本文も同じ構造で、本文先頭は必ず「【差し戻し】」で始まる固定文言。念のため
+#   同時に塞ぐ（1917号調査時点で確認）。
+_ONI_MODOSHI_PROMPT_MARKER = "【差し戻し】"
+
 
 def user_text(rec):
     """会話ログ1行から、たまごさんが打った文だけを取り出す。
@@ -328,6 +346,10 @@ def user_text(rec):
             return None        # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
         if c.lstrip().startswith(_COPY_NAOSHI_PROMPT_MARKER):
             return None        # ★コピー書き直し注文書の丸ごと注入。たまごさんの声ではない（1916号）
+        if c.lstrip().startswith(_HANTEI_HIDUKE_MARKER):
+            return None        # ★判定日赤の自動繰り上げ本文の丸ごと注入。たまごさんの声ではない（1917号）
+        if c.lstrip().startswith(_ONI_MODOSHI_PROMPT_MARKER):
+            return None        # ★自動差し戻し本文の丸ごと注入。たまごさんの声ではない（1917号）
         return c
     if not isinstance(c, list):
         return None
@@ -349,6 +371,10 @@ def user_text(rec):
                 continue       # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
             if t.lstrip().startswith(_COPY_NAOSHI_PROMPT_MARKER):
                 continue       # ★コピー書き直し注文書の丸ごと注入。たまごさんの声ではない（1916号）
+            if t.lstrip().startswith(_HANTEI_HIDUKE_MARKER):
+                continue       # ★判定日赤の自動繰り上げ本文の丸ごと注入。たまごさんの声ではない（1917号）
+            if t.lstrip().startswith(_ONI_MODOSHI_PROMPT_MARKER):
+                continue       # ★自動差し戻し本文の丸ごと注入。たまごさんの声ではない（1917号）
             parts.append(t)
     return "\n".join(parts) if parts else None
 
