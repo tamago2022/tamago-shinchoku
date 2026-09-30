@@ -84,25 +84,40 @@ log() { echo "$(date '+%F %T') $*" >> "$LOG"; }
 #   直し方：`mkdir` は OS がアトミックに保証する「作れたのは1プロセスだけ」。
 #   これを錠そのものにする（見てから書く、の隙間が原理的に無くなる）。
 LOCKDIR="$LOCK.d"
+LOCKPID="$LOCKDIR/pid"       # ★pidは錠(ディレクトリ)の"中"に置く。
+                             #   mkdir成功とpid書き込みの間に別プロセスが
+                             #   割り込む隙間(TOCTOU)を無くすため。
 GOT_LOCK=0
-for _lt in 1 2 3 4 5; do
+for _lt in 1 2 3 4 5 6 7 8; do
   if mkdir "$LOCKDIR" 2>/dev/null; then
-    echo "$$ $(date '+%F %T')" > "$LOCK"
+    echo "$$ $(date '+%F %T')" > "$LOCKPID"
     GOT_LOCK=1
     break
   fi
-  LPID="$(awk 'NR==1{print $1}' "$LOCK" 2>/dev/null || echo "")"
+  LPID="$(awk 'NR==1{print $1}' "$LOCKPID" 2>/dev/null || echo "")"
   if [ -n "$LPID" ] && kill -0 "$LPID" 2>/dev/null; then
     exit 0                      # 本物が走っている。黙って譲る
   fi
-  # 錠（ディレクトリ）は残っているが、中のpidはもう死んでいる→奪って良い
+  if [ -z "$LPID" ]; then
+    # ★pidがまだ読めない＝直前にmkdirした側がechoを書く前かもしれない。
+    #   ここで即rmdirすると先着プロセスの錠を奪ってしまう。一呼吸待って
+    #   もう一度だけ確かめてから判断する。
+    sleep 0.5
+    LPID="$(awk 'NR==1{print $1}' "$LOCKPID" 2>/dev/null || echo "")"
+    if [ -n "$LPID" ] && kill -0 "$LPID" 2>/dev/null; then
+      exit 0
+    fi
+  fi
+  # 錠（ディレクトリ）は残っているが、中のpidはもう死んでいる（か、
+  # 2回待っても書かれない＝作った側が既に死んでいる）→ 奪って良い
+  rm -f "$LOCKPID" 2>/dev/null || true
   rmdir "$LOCKDIR" 2>/dev/null || true
   sleep 0.3
 done
 if [ "$GOT_LOCK" -ne 1 ]; then
   exit 0                        # 取り合いに負け続けた。今回は黙って譲る
 fi
-trap 'rm -f "$LOCK" 2>/dev/null || true; rmdir "$LOCKDIR" 2>/dev/null || true' EXIT INT TERM
+trap 'rm -f "$LOCKPID" 2>/dev/null || true; rmdir "$LOCKDIR" 2>/dev/null || true' EXIT INT TERM
 
 # ---- 初回だけ：公開用の作業場を作る ----
 # ★ --shared を使う。main の中身(681MB)を**コピーせずに**参照するので一瞬で終わり、
