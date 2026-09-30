@@ -258,7 +258,8 @@ def add(url, memo="", shelf=None, shelf_id=None, test=False, shelves=None):
     # ★★ここは row.update(meta) の**後**。meta にも "source" があり（＝題名の出どころ
     #   「YouTube Data API v3 200」）、前に置くと上書きされて印が消える（2026-09-24 実測）。
     #   だから列名を分ける：nageta＝**誰が投げたか**。"test"＝機械の試し投げ／"nushi"＝たまごさん。
-    row["nageta"] = "test" if test else "nushi"
+    # ★2210番："kakunin"＝工場の確認投げ（中身はたまごさんが前に指示したものと同じ。棚まで通して見届ける用）
+    row["nageta"] = "kakunin" if test == "kakunin" else ("test" if test else "nushi")
     if why:
         row["metaMissing"] = why
     append_jsonl(LEDGER, row)

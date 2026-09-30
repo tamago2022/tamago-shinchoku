@@ -186,8 +186,10 @@ echo "$(date '+%F %T') naoshi 呼び出し" >> "$REPO/status/gaibu_copy_naoshi.l
 #   ＝**深夜0時すぎ**。手で回すときは status/.nagekomi_shelf_force を置く。
 # ★コピーを claude -p に書かせるので1件あたり数十秒。この便を遅らせないため背後へ逃がす。
 #   二重起動は nagekomi_shelf 側のロック（60分で剥がれる）で防ぐ。
-echo "$(date '+%F %T') nagekomi_shelf 呼び出し" >> "$REPO/status/nagekomi_shelf.log"
-( nohup python3 "$REPO/tools/nagekomi_shelf.py" >>"$REPO/status/nagekomi_shelf.log" 2>&1 & ) >/dev/null 2>&1
+# ★2210番（2026-10-01）：入れる係を差し替えた。nagekomi_shelf.py は service_role 鍵が要り
+#   Macに無い（=人に鍵を貼らせる形で止まっていた）。tools/2210_tanaire.py は Lovable 公式MCPの
+#   query_database で入れるので鍵が要らない。中で30分に1回だけ動く。
+( nohup python3 "$REPO/tools/2210_tanaire.py" --daily >>"$REPO/status/nagekomi_shelf.log" 2>&1 & ) >/dev/null 2>&1
 
 # ---- 2026-09-23（1029番・Cowork側から設置）覆面調査員（架空のお客さん4人）の潜伏 ----
 # たまごさん「潜伏してひたすら触ってくれる人がいれば、どこを直せば体験が良くなるか分かるんじゃないの？」
