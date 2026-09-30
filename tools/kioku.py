@@ -319,6 +319,46 @@ _HANTEI_HIDUKE_MARKER = "【判定日で赤になった案件】"
 #   同時に塞ぐ（1917号調査時点で確認）。
 _ONI_MODOSHI_PROMPT_MARKER = "【差し戻し】"
 
+# ★1846号実例（2026-09-30）：上5つのマーカー（_SKILL_LOAD_MARKER / _VERIFY_PROMPT_MARKER /
+#   _COPY_NAOSHI_PROMPT_MARKER / _HANTEI_HIDUKE_MARKER / _ONI_MODOSHI_PROMPT_MARKER）は
+#   「メッセージの先頭が固定文言で始まるか」（.lstrip().startswith(...)）で判定していた。
+#   ところが `claude -p` 経由の子セッション（AI検品=build_verify_prompt()等がまさにこの
+#   経路）は、Claude Code自身がCLAUDE.md/AGENTS.md/.claude/rules/*の内容を**同じ最初の
+#   userメッセージの中で、本来のプロンプト文字列より前に**自動で差し込む
+#   （このファイルを直しているセッション自身の最初のメッセージが実例）。結果、
+#   本来「【AI検品・鬼監督（Verifier）】あなたは検品専門です。」で始まるはずの
+#   メッセージが実際には「Codebase and user instructions are shown below...」で
+#   始まってしまい、startswith判定をすり抜けていた。すり抜けた中身（Verifierへの
+#   指示文に埋め込まれた ONI_KANTOKU_GATES のチェックリスト文言）が「たまごさんが
+#   何度も言った依頼」として誤カウントされ続け、tools/tomaranai.py の「3回以上
+#   言わせたもの」判定経由でチェックリストの一文そのものが偽タスクとして
+#   自動発車された（1846号自身がその実例）。
+#   1853号で確立済みの対策（_AUTO_LAUNCH_MARKER・_AUTO_TASK_MARKERは「本文中に
+#   含まれるか」= `in` 判定で、先頭以外への混入にも強い）と同じ考え方へ、この5つの
+#   マーカーも揃える。startswithではなくin判定にすれば、CLAUDE.md等がどれだけ前に
+#   差し込まれても、本文中に固定文言が現れた時点で機械生成メッセージだと分かる。
+_MACHINE_MARKERS_ANYWHERE = (
+    _SKILL_LOAD_MARKER,
+    _VERIFY_PROMPT_MARKER,
+    _COPY_NAOSHI_PROMPT_MARKER,
+    _HANTEI_HIDUKE_MARKER,
+    _ONI_MODOSHI_PROMPT_MARKER,
+)
+
+
+def _has_machine_marker(text):
+    """機械生成メッセージ（Skill本文／AI検品指示／コピー書き直し注文書／
+    判定日赤の自動繰り上げ／自動差し戻し）の丸ごと注入かどうかを、本文中の
+    どこにマーカーが現れても判定する（1846号：先頭一致だけだとCLAUDE.md等の
+    前置き注入で判定漏れが起きるため、_AUTO_LAUNCH_MARKERと同じ`in`判定に揃えた）。
+    """
+    t = text or ""
+    if _AUTO_LAUNCH_MARKER in t:
+        return True            # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
+    if _AUTO_TASK_MARKER in t and _AUTO_TASK_DONE_MARKER in t:
+        return True            # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
+    return any(marker in t for marker in _MACHINE_MARKERS_ANYWHERE)
+
 
 def user_text(rec):
     """会話ログ1行から、たまごさんが打った文だけを取り出す。
@@ -336,20 +376,8 @@ def user_text(rec):
         return None
     c = msg.get("content")
     if isinstance(c, str):
-        if c.lstrip().startswith(_SKILL_LOAD_MARKER):
+        if _has_machine_marker(c):
             return None
-        if _AUTO_LAUNCH_MARKER in c:
-            return None        # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
-        if _AUTO_TASK_MARKER in c and _AUTO_TASK_DONE_MARKER in c:
-            return None        # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
-        if c.lstrip().startswith(_VERIFY_PROMPT_MARKER):
-            return None        # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
-        if c.lstrip().startswith(_COPY_NAOSHI_PROMPT_MARKER):
-            return None        # ★コピー書き直し注文書の丸ごと注入。たまごさんの声ではない（1916号）
-        if c.lstrip().startswith(_HANTEI_HIDUKE_MARKER):
-            return None        # ★判定日赤の自動繰り上げ本文の丸ごと注入。たまごさんの声ではない（1917号）
-        if c.lstrip().startswith(_ONI_MODOSHI_PROMPT_MARKER):
-            return None        # ★自動差し戻し本文の丸ごと注入。たまごさんの声ではない（1917号）
         return c
     if not isinstance(c, list):
         return None
@@ -361,20 +389,8 @@ def user_text(rec):
             continue          # ★道具の出力。たまごさんの声ではない
         if b.get("type") == "text":
             t = b.get("text") or ""
-            if t.lstrip().startswith(_SKILL_LOAD_MARKER):
-                continue       # ★Skill本文の自動注入。たまごさんの声ではない（1816号）
-            if _AUTO_LAUNCH_MARKER in t:
-                continue       # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
-            if _AUTO_TASK_MARKER in t and _AUTO_TASK_DONE_MARKER in t:
-                continue       # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
-            if t.lstrip().startswith(_VERIFY_PROMPT_MARKER):
-                continue       # ★AI検品(Verifier)への指示文の丸ごと注入（1853号）
-            if t.lstrip().startswith(_COPY_NAOSHI_PROMPT_MARKER):
-                continue       # ★コピー書き直し注文書の丸ごと注入。たまごさんの声ではない（1916号）
-            if t.lstrip().startswith(_HANTEI_HIDUKE_MARKER):
-                continue       # ★判定日赤の自動繰り上げ本文の丸ごと注入。たまごさんの声ではない（1917号）
-            if t.lstrip().startswith(_ONI_MODOSHI_PROMPT_MARKER):
-                continue       # ★自動差し戻し本文の丸ごと注入。たまごさんの声ではない（1917号）
+            if _has_machine_marker(t):
+                continue
             parts.append(t)
     return "\n".join(parts) if parts else None
 
@@ -606,6 +622,22 @@ def main():
                         "あなたは「ごきげん補給所」のコピーを書く編集者です。\n"
                         "・題名をそのまま置き直していない。"}]}}):
             ng.append("コピー書き直し注文書（contentがlist）を発言として拾ってしまう（1916号の再発）")
+        # ★1846号実例そのもの：`claude -p` 経由の子セッションはCLAUDE.md等の内容を
+        #   本来のプロンプトより前に同じメッセージへ差し込む。マーカーが先頭に無くても
+        #   本文中のどこかに現れたら機械生成メッセージだと判定できなければならない。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "Contents of /repo/CLAUDE.md (project instructions):\n"
+                      "# ダミーの長い憲法本文\n（ここに数万字のルールが入る想定）\n\n"
+                      "【AI検品・鬼監督（Verifier）】あなたは検品専門です。この作業を行った本人ではありません。\n\n"
+                      "# 元の依頼\nテスト\n\n"
+                      "- 頼まれた範囲を超えて余計なものを足している、または頼まれた範囲を満たしていない"}}):
+            ng.append("CLAUDE.md等が前に差し込まれたAI検品指示文を、たまごさんの発言として拾ってしまう（1846号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "Contents of /repo/CLAUDE.md (project instructions):\n# ダミー憲法\n\n"
+                        "あなたは「ごきげん補給所」のコピーを書く編集者です。\n"
+                        "・題名をそのまま置き直していない。"}]}}):
+            ng.append("CLAUDE.md等が前に差し込まれたコピー書き直し注文書を拾ってしまう（1846号の再発、contentがlist）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
