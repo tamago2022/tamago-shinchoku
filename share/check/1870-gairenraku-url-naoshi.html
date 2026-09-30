@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1870 差し戻し｜仕組み⑤ 外部連絡いっぱつ：落ちていた正体はURL破損、直して再確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1870 差し戻し｜仕組み⑤ 外部連絡いっぱつ：落ちていた正体はURL破損、直して再確認</div>
+<h1>#1870 差し戻し｜仕組み⑤ 外部連絡いっぱつ：落ちていた正体はURL破損、直して再確認</h1>
+<div class="date">2026-10-01 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+差し戻し理由「URLが200で返らない（None）」の正体を特定した。<b>仕組み⑤(tools/renraku.py)自体は2026-09-17から壊れていない</b>（今日2026-10-01もdry-runで英日セットの件名・本文生成とGmail下書きURL生成を再確認済み、下の②参照）。正体は、896番の記録(result欄)に別の作業(配車ロジック修正)をしたセッションが書き残した2本のcommit URLの末尾に、スペース無しで全角カッコの日本語コメントが直接連結されていたこと。<code>https://github.com/.../commit/9743407d3（配車ロジック修正）／</code>のような壊れた文字列になり、検品(tools/oni_modoshi.py)がそのURLをそのまま叩いて毎回失敗していた（renraku.py本体にもGmail送信にも無関係）。今回、①queue.json内の896番result欄から壊れたURLを除去 ②renraku.pyの本日時点の動作をdry-run実行で再確認 ③この確認ページを新規発行、の3点を実施した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2本</b><span>壊れていたURL(896番result欄・全角カッコ連結)</span></div>
+  <div class="num"><b>4件</b><span>窓口台帳(status/renraku_madoguchi.json)に登録済みの相手</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>実データ: Lovable宛メール下書き(compose_url)がログイン済みGmailに件名・本文入りで開いた実物</b><img src="renraku/lovable-20260917-034511-gmail.png" alt="実データ: Lovable宛メール下書き(compose_url)がログイン済みGmailに件名・本文入りで開いた実物"><span class="meta">2026-09-17実測</span></div>
+  <div class="shot plain"><b>実データ: LINEフォームの本文欄に自動入力した直後</b><img src="renraku/line_creators_market-20260917-032138-form-filled.png" alt="実データ: LINEフォームの本文欄に自動入力した直後"><span class="meta">2026-09-17実測</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>①既存の実装確認ページ(2026-09-17・LINE/Lovableの実スクショ・200確認済み)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/896-renraku-gaibu-renraku-v2.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/896-renraku-gaibu-renraku-v2.html</a></li>
+  <li><b>②LINE Creators Marketのお問い合わせフォーム(実窓口)</b><a href="https://contact-cc.line.me/serviceId/10569" target="_blank" rel="noopener">https://contact-cc.line.me/serviceId/10569</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>renraku.py が今日(2026-10-01)も動くか(dry-run実行)</td><td class="yes">yes</td></tr>
+<tr><td>英語+日本語セットの件名・本文が自動生成されるか</td><td class="yes">yes</td></tr>
+<tr><td>Gmail下書きが「押すだけ」で開くcompose_urlが生成されるか</td><td class="yes">yes</td></tr>
+<tr><td>896番result欄の壊れたURL2本を修正したか</td><td class="yes">yes</td></tr>
+<tr><td>壊れたURLの原因は renraku.py 本体のバグか</td><td class="yes">no（無関係の別作業セッションが記録を汚しただけ）</td></tr>
+</table>
+
+<footer>
+実装: tools/renraku.py／窓口台帳: status/renraku_madoguchi.json／送信記録: status/renraku.json／今回の修正対象: status/queue.json の n=896 result欄。送信ボタンは一切自動で押さない。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
