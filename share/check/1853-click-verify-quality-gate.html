@@ -64,11 +64,12 @@
 
 
 
-<h2>④ 押せるリンク</h2>
+<h2>④ 押せるリンク（たまごさんが開けるものだけ）</h2>
+<div class="note"><b>非公開の場所へのリンクは削除しました。</b>joy-relief-stationは非公開の場所のため、そこへのリンクを貼ってもたまごさんの手元では開けません（2回目の差し戻し理由）。追記した文章そのものを下の「⑥ 追記した内容」にそのまま貼りました。読むだけで中身が分かります。</div>
 <ul class="links">
-  <li><b>変更コミット(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/842992fdc" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/842992fdc</a></li>
   <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
   <li><b>本番/cover-guide</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>この確認ページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1853-click-verify-quality-gate.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1853-click-verify-quality-gate.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -76,13 +77,23 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>docs/ai/AI_QUALITY_GATE.mdに実クリック検証節を追加</td><td class="yes">反映済み</td></tr>
 <tr><td>.claude/rules/00-quality-gate.mdにverify_click.mjs必須化を追記</td><td class="yes">反映済み</td></tr>
+<tr><td>joy-relief-station側の本番用の原本に、この変更が合わさっているか</td><td class="yes">YES・合わさっている（本セッションで確認済み）</td></tr>
 <tr><td>本番トップページをverify_click.mjsで実測(28件中16件クリック)</td><td class="yes">無反応0件・PASS</td></tr>
 <tr><td>本番/cover-guideをverify_click.mjsで実測(52件中14件クリック)</td><td class="yes">無反応0件・PASS</td></tr>
 </table>
 
+<h2>⑥ 追記した内容（そのまま貼り付け・非公開リポジトリなのでここで全文読める）</h2>
+<div class="note"><b>.claude/rules/00-quality-gate.md に足した1行：</b><br>
+「curlで読めても、押して動くか」は別物（店主が8回繰り返した指摘・2026-09-30）。本番反映を主張する前に <code>node /Users/mac/Desktop/tamago-shinchoku/tools/verify_click.mjs &lt;本番URL&gt;</code> で実際にクリックして反応を確認し、末尾の<code>CLICK_VERDICT: PASS/FAIL</code>を証拠に含める。Chrome本体を新規に直接起動するスクリプトは自作しない（既存ツールをそのまま呼ぶ）。
+</div>
+<div class="note"><b>docs/ai/AI_QUALITY_GATE.md に足した節：</b><br>
+「curlで読めても、押して動くか」は別物。curlやHTMLの存在確認だけでPASSにしてはならない。過去、Verifierが「読むだけ（DOM存在確認）」しか行わず、押しても無反応なボタンをそのままPASSさせた事故があった（例：コンシェルジュの「話す」ボタンが押しても無反応でもHTMLにコードはあるためPASSしていた）。本番反映を主張する自己検品・鬼監督検品には、実際にクリックして反応を確認した証拠（<code>verify_click.mjs</code> または <code>sekisho.py</code>）を必須項目として含める。
+</div>
+
 <footer>
-実測の生データ：トップページ totalClickable=28/tested=16/noResponseCount=0、/cover-guide totalClickable=52/tested=14/noResponseCount=0/skippedDisappeared=3(自動更新の巻き込まれ・無反応扱いではない)。<pre>{&quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;, &quot;checkedAt&quot;: &quot;2026-09-30T09:21:49.137Z&quot;, &quot;totalClickable&quot;: 28, &quot;tested&quot;: 16, &quot;autoOkLinkCount&quot;: 11, &quot;selfLinkCount&quot;: 1, &quot;noResponse&quot;: [], &quot;skippedDisappeared&quot;: [], &quot;consoleErrors&quot;: [], &quot;truncated&quot;: true, &quot;error&quot;: null}</pre><pre>{&quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide&quot;, &quot;checkedAt&quot;: &quot;2026-09-30T09:24:37.388Z&quot;, &quot;totalClickable&quot;: 52, &quot;tested&quot;: 14, &quot;autoOkLinkCount&quot;: 17, &quot;selfLinkCount&quot;: 1, &quot;noResponse&quot;: [], &quot;skippedDisappeared&quot;: [{&quot;index&quot;: 20, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;懐かしい&quot;, &quot;href&quot;: null}, {&quot;index&quot;: 21, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;知らないものを見たい&quot;, &quot;href&quot;: null}, {&quot;index&quot;: 22, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;ぼーっとしたい&quot;, &quot;href&quot;: null}], &quot;consoleErrors&quot;: [], &quot;truncated&quot;: true, &quot;error&quot;: null}</pre>このドキュメント変更自体は非公開リポジトリのため一般公開URLは無いが、コミットは上記URLでたまごさん本人がログイン後に確認できる。<br>
+実測の生データ：トップページ totalClickable=28/tested=16/noResponseCount=0、/cover-guide totalClickable=52/tested=14/noResponseCount=0/skippedDisappeared=3(自動更新の巻き込まれ・無反応扱いではない)。<pre>{&quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;, &quot;checkedAt&quot;: &quot;2026-09-30T09:21:49.137Z&quot;, &quot;totalClickable&quot;: 28, &quot;tested&quot;: 16, &quot;autoOkLinkCount&quot;: 11, &quot;selfLinkCount&quot;: 1, &quot;noResponse&quot;: [], &quot;skippedDisappeared&quot;: [], &quot;consoleErrors&quot;: [], &quot;truncated&quot;: true, &quot;error&quot;: null}</pre><pre>{&quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide&quot;, &quot;checkedAt&quot;: &quot;2026-09-30T09:24:37.388Z&quot;, &quot;totalClickable&quot;: 52, &quot;tested&quot;: 14, &quot;autoOkLinkCount&quot;: 17, &quot;selfLinkCount&quot;: 1, &quot;noResponse&quot;: [], &quot;skippedDisappeared&quot;: [{&quot;index&quot;: 20, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;懐かしい&quot;, &quot;href&quot;: null}, {&quot;index&quot;: 21, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;知らないものを見たい&quot;, &quot;href&quot;: null}, {&quot;index&quot;: 22, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;ぼーっとしたい&quot;, &quot;href&quot;: null}], &quot;consoleErrors&quot;: [], &quot;truncated&quot;: true, &quot;error&quot;: null}</pre>この文書の追記自体は非公開の場所にあるため一般公開のURLは出せないが、追記した文章の全文は下の「⑥ 追記した内容」にそのまま貼ってある。<br>
 【再実測・2026-09-30 20:16 JST（別セッションで再度実行）】確認ページ自体（本ページ）はcurlではなくGitHub Pagesで再取得しHTTP 200・本文7357文字を確認。加えて本番トップページを<code>verify_click.mjs</code>でもう一度実測：<code>CLICK_VERDICT: PASS - 押せる要素は全て反応しました（11件中11件・全28件）</code>。生データ：<pre>{&quot;url&quot;:&quot;https://joy-relief-station.lovable.app/&quot;,&quot;totalClickable&quot;:28,&quot;tested&quot;:11,&quot;autoOkLinkCount&quot;:11,&quot;selfLinkCount&quot;:1,&quot;truncated&quot;:true,&quot;noResponseCount&quot;:0,&quot;skippedDisappearedCount&quot;:0,&quot;consoleErrorCount&quot;:0}</pre>
+【3回目の再実測・2026-10-01（本セッション。3回目の差し戻し=非公開GitHubリンクを除去した上で自分でもnode tools/verify_click.mjsを実行）】本番トップページを再度実測：<code>CLICK_VERDICT: PASS - 押せる要素は全て反応しました（14件中14件・全28件）</code>。生データ：<pre>{&quot;url&quot;:&quot;https://joy-relief-station.lovable.app/&quot;,&quot;totalClickable&quot;:28,&quot;tested&quot;:14,&quot;autoOkLinkCount&quot;:11,&quot;selfLinkCount&quot;:1,&quot;truncated&quot;:true,&quot;noResponseCount&quot;:0,&quot;skippedDisappearedCount&quot;:0,&quot;consoleErrorCount&quot;:0}</pre>あわせて本ページ自身・本番トップ・本番/cover-guideの3URLをnode fetchでHTTP実測し全て200を確認（非公開GitHubのコミットURLのみ404だったため、④のリンク一覧から削除し⑥に文章として埋め込んだ）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
