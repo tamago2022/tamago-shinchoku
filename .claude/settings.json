@@ -35,6 +35,18 @@
             "timeout": 20
           }
         ]
+      },
+      {
+        "$kanmon": "okane_botan",
+        "$comment": "1851号（2026-10-01）お金の確認ボタンは代行禁止の関所。たまごさん『会話中のやってみてだけでは発車しない——ボタン操作が必須』（3回言わせている）。costsMoney確認は進捗表の[money]ボタンをたまごさん本人が押すのが唯一の正規経路（案件#676）。AIがBashでqueue_cost_ok()を直接呼ぶ／costApprovedを直接true化する／status/inbox/やstatus/queue.jsonへ承認アクションを自分で書き込む、の3パターンをexit 2で拒否する。コード自体の読み書き(.py/.mjs等)は見ない。逆テスト：status/1851_okane_botan.jsonlの記録を参照。",
+        "matcher": "Bash|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/1851_okane_botan_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
       }
     ],
     "Stop": [
