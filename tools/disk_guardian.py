@@ -1047,6 +1047,16 @@ def main():
     # 診断用途には使えるため）が、safe_remove を呼ぶ実行部分だけを止める。
     pass
 
+    # 2026-09-30（1719番・判定日赤の解消）：「ゴミ箱に何日分溜まっているか」を
+    # 読むだけの診断用途を、実際に人が見られる形(status/public/1719_sakujo_ichiran.json)
+    # へ毎回書き出す。ここでも何も消さない（dump_candidates()と同じく一覧化のみ）。
+    try:
+        import importlib
+        sakujo_ichiran = importlib.import_module("1719_sakujo_ichiran")
+        sakujo_ichiran.main()
+    except Exception as e:
+        log("1719_sakujo_ichiran呼び出し失敗: %s" % e)
+
     if free_gb < STOP_GB:
         notify_stop(free_gb)
     else:
