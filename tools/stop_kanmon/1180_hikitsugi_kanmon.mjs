@@ -96,9 +96,14 @@ function alreadyRead(sessionId, want) {
       if (!body.includes(want)) continue;
       // セッションid入りの札が本命。名前が合わなくても当日の合言葉が書けている札は通す
       // （ここを厳しくすると、読んだのに進めない＝一番たちの悪い詰まり方になる）。
+      // 2026-09-30（1713番）★ここが緩くて関所が死んでいた。
+      // 逆テストで①④⑤が全部「通ってしまった」＝誰か1人が今日の札を置くと、
+      // 以後その日は**全員**が読まずに通れていた（= 新担当が読まずに始められる）。
+      // 直し方：札はその担当（session_id）のものだけ有効にする。
+      // 「読んだのに進めない」を作らないための逃げ道は、止めたときのメッセージに
+      //  書いてある `status/1180_yonda/<session_id>.txt` の1手だけ（Writeは通してある）。
       const stem = n.slice(0, -4);
-      if (stem === sessionId || stem === "kyou" || stem === today()) return true;
-      if (body.includes(today())) return true;
+      if (stem === sessionId) return true;
     }
   } catch {}
   return false;
