@@ -32,7 +32,7 @@
   2) python3 tools/spotify_ninshou.py --hajime --client-id <Client ID>
        → 受け口が立ち上がり、**押すURLが1本**表示される
   3) たまごさんがそのURLを1回だけ押して「同意する」
-       → refresh_token が保存される。**以後ブラウザは二度と要らない。**
+       → refresh_token が保存される。**通常は自動更新。Spotifyの仕様により6か月ごとに再同意が必要。**
   4) python3 tools/spotify_ninshou.py --tameshi   # 通るか確かめるだけ
 """
 import argparse
@@ -49,6 +49,10 @@ import threading
 import time
 import urllib.parse
 import urllib.request
+import urllib.error
+import datetime
+import calendar
+from kagi import get as get_key
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 PORT = 41999
@@ -105,6 +109,9 @@ class Handler(BaseHTTPRequestHandler):
         if code:
             try:
                 p = _load(PKCE) or {}
+                received_state = (q.get("state") or [""])[0]
+                if not p.get("state") or not secrets.compare_digest(received_state, p["state"]):
+                    raise ValueError("OAuth state mismatch; please restart authorization")
                 tok = _post_token({
                     "grant_type": "authorization_code", "code": code,
                     "redirect_uri": REDIRECT, "client_id": p.get("clientId"),
@@ -113,12 +120,13 @@ class Handler(BaseHTTPRequestHandler):
                     _save600(STORE, {"clientId": p.get("clientId"),
                                      "refreshToken": tok["refresh_token"],
                                      "scope": tok.get("scope", ""),
+                                     "authorizedAt": time.time(),
                                      "savedAt": time.strftime("%F %T")})
                     try:
                         os.remove(PKCE)
                     except OSError:
                         pass
-                    msg = "終わりました。もうSpotifyのログインは要りません。この画面は閉じて大丈夫です。"
+                    msg = "保存しました。通常は自動更新します。6か月ごとに再同意が必要です。この画面は閉じて大丈夫です。"
                     Handler.result = {"ok": True}
                 else:
                     msg = "refresh_token が返りませんでした"
@@ -148,7 +156,7 @@ def hajime(client_id, wait_sec=600):
         "code_challenge_method": "S256", "code_challenge": challenge,
         "state": state})
 
-    print("★たまごさんが押すのは、この1本だけです（今回1回きり）：")
+    print("★たまごさんが押すのは、この1本だけです（初回・期限切れ時）：")
     print(url)
     print("\n受け口 %s で待っています（最大%d秒）…" % (REDIRECT, wait_sec))
     srv = HTTPServer(("127.0.0.1", PORT), Handler)
@@ -171,9 +179,36 @@ def access_token():
     if not d or not d.get("refreshToken"):
         raise SystemExit("まだ同意が終わっていません。"
                          "先に --hajime を1回だけ走らせてください。")
-    tok = _post_token({"grant_type": "refresh_token",
-                       "refresh_token": d["refreshToken"],
-                       "client_id": d["clientId"]})
+    # Official lifetime: six calendar months from authorization, never from refresh.
+    # https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens
+    authorized = d.get("authorizedAt")
+    if isinstance(authorized, (int, float)):
+        started = datetime.datetime.fromtimestamp(authorized, datetime.timezone.utc)
+        month_index = started.year * 12 + started.month - 1 + 6
+        year, month0 = divmod(month_index, 12)
+        month = month0 + 1
+        expiry = started.replace(year=year, month=month,
+                                 day=min(started.day, calendar.monthrange(year, month)[1]))
+        if datetime.datetime.now(datetime.timezone.utc) >= expiry:
+            d.pop("refreshToken", None)
+            d["reauthorizationRequired"] = True
+            _save600(STORE, d)
+            raise SystemExit("Spotifyの認証が6か月の期限を迎えました。--hajime で再同意が必要です。")
+    try:
+        tok = _post_token({"grant_type": "refresh_token",
+                           "refresh_token": d["refreshToken"],
+                           "client_id": d["clientId"]})
+    except urllib.error.HTTPError as error:
+        try:
+            reason = json.loads(error.read()).get("error")
+        except Exception:
+            reason = None
+        if error.code == 400 and reason == "invalid_grant":
+            d.pop("refreshToken", None)
+            d["reauthorizationRequired"] = True
+            _save600(STORE, d)
+            raise SystemExit("Spotifyの認証が失効しました。--hajime で再同意が必要です。") from None
+        raise SystemExit("Spotify認証の更新に失敗しました（HTTP %s）。" % error.code) from None
     # ★PKCEでは refresh_token が入れ替わって返ることがある。来たら必ず上書きする。
     if tok.get("refresh_token") and tok["refresh_token"] != d["refreshToken"]:
         d["refreshToken"] = tok["refresh_token"]
@@ -196,7 +231,7 @@ def tameshi():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--hajime", action="store_true", help="同意を1回だけ取る")
-    ap.add_argument("--client-id", default=os.environ.get("SPOTIFY_CLIENT_ID"))
+    ap.add_argument("--client-id", default=get_key("SPOTIFY_CLIENT_ID"))
     ap.add_argument("--matsu", type=int, default=600, help="待つ秒数")
     ap.add_argument("--tameshi", action="store_true", help="鍵が通るか確かめるだけ")
     a = ap.parse_args()

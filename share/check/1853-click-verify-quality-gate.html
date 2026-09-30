@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1853 1853号：くるるで読めても押して動くか＝品質ゲートに実クリック検証を必須化 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1853 1853号：くるるで読めても押して動くか＝品質ゲートに実クリック検証を必須化</div>
+<h1>#1853 1853号：くるるで読めても押して動くか＝品質ゲートに実クリック検証を必須化</h1>
+<div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+『curlで読めても押して動くとは限らない』をたまごさんが8回繰り返し指摘していた（<code>nankai.json</code> id=8fb974b96deb・count=8）。対象URLが欠落した壊れたタスク文ではなく、既存の運用原則がjoy-relief-station側の品質ゲート正本に明記されていなかったことが根因と判断。<code>docs/ai/AI_QUALITY_GATE.md</code>・<code>.claude/rules/00-quality-gate.md</code>に、本番反映の自己検品では<code>tools/verify_click.mjs</code>（実際にヘッドレスChromeでクリックして反応を確認する既存ツール）を必須証拠として明記した。あわせて本番トップページと<code>/cover-guide</code>を実際にこのツールで検証し、無反応0件を確認した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>トップページ：無反応(16件クリック中)</span></div>
+  <div class="num"><b>0件</b><span>/cover-guide：無反応(14件クリック中)</span></div>
+  <div class="num"><b>8回</b><span>たまごさんがこの指摘を繰り返した回数(nankai.json実測)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>変更コミット(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/842992fdc" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/842992fdc</a></li>
+  <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番/cover-guide</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>docs/ai/AI_QUALITY_GATE.mdに実クリック検証節を追加</td><td class="yes">反映済み</td></tr>
+<tr><td>.claude/rules/00-quality-gate.mdにverify_click.mjs必須化を追記</td><td class="yes">反映済み</td></tr>
+<tr><td>本番トップページをverify_click.mjsで実測(28件中16件クリック)</td><td class="yes">無反応0件・PASS</td></tr>
+<tr><td>本番/cover-guideをverify_click.mjsで実測(52件中14件クリック)</td><td class="yes">無反応0件・PASS</td></tr>
+</table>
+
+<footer>
+実測の生データ：トップページ totalClickable=28/tested=16/noResponseCount=0、/cover-guide totalClickable=52/tested=14/noResponseCount=0/skippedDisappeared=3(自動更新の巻き込まれ・無反応扱いではない)。<pre>{&quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;, &quot;checkedAt&quot;: &quot;2026-09-30T09:21:49.137Z&quot;, &quot;totalClickable&quot;: 28, &quot;tested&quot;: 16, &quot;autoOkLinkCount&quot;: 11, &quot;selfLinkCount&quot;: 1, &quot;noResponse&quot;: [], &quot;skippedDisappeared&quot;: [], &quot;consoleErrors&quot;: [], &quot;truncated&quot;: true, &quot;error&quot;: null}</pre><pre>{&quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide&quot;, &quot;checkedAt&quot;: &quot;2026-09-30T09:24:37.388Z&quot;, &quot;totalClickable&quot;: 52, &quot;tested&quot;: 14, &quot;autoOkLinkCount&quot;: 17, &quot;selfLinkCount&quot;: 1, &quot;noResponse&quot;: [], &quot;skippedDisappeared&quot;: [{&quot;index&quot;: 20, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;懐かしい&quot;, &quot;href&quot;: null}, {&quot;index&quot;: 21, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;知らないものを見たい&quot;, &quot;href&quot;: null}, {&quot;index&quot;: 22, &quot;tag&quot;: &quot;BUTTON&quot;, &quot;text&quot;: &quot;ぼーっとしたい&quot;, &quot;href&quot;: null}], &quot;consoleErrors&quot;: [], &quot;truncated&quot;: true, &quot;error&quot;: null}</pre>このドキュメント変更自体は非公開リポジトリのため一般公開URLは無いが、コミットは上記URLでたまごさん本人がログイン後に確認できる。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

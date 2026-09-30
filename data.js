@@ -3,9 +3,9 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-30T04:07:55.836Z",
+      "updatedAt": "2026-09-30T10:43:05.274Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
@@ -15,11 +15,11 @@ window.SHINCHOKU = {
       "consecutiveFailures": 2,
       "stoppedForToday": true,
       "lastResult": "fail",
-      "lastCheckedAt": "2026-09-30T04:07:55.580Z",
+      "lastCheckedAt": "2026-09-30T10:43:04.979Z",
       "lastPublishedSha": "b38277ad64",
       "lastFailureReason": "CDP 未開通: http://127.0.0.1:9223 に応答なし。Chrome を --remote-debugging-port=9223 付きで起動してください。",
       "lastFailureAt": "2026-09-30T04:07:55.580Z",
-      "mainSha": "0dd9db89ac",
+      "mainSha": "1a49036816",
       "mainUnpublished": true,
       "paused": false,
       "pauseReason": null
