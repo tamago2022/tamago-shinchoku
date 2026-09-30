@@ -124,7 +124,7 @@ SHIGOTO = [
     dict(kind="data", label="件数とキーが決まっているJSONをそろえる",
          words=("json", "件数", "キー", "そろえ", "一括", "埋める", "リスト化", "csv", "データ"),
          who="jules",
-         konkyo="149件で合格 136/149＝91.3%（`cat status/1028/jules_kekka.json`）・0円"),
+         konkyo="149件で実測：91.3%（合格 136/149）（`cat status/1028/jules_kekka.json`）・0円"),
     dict(kind="jissou", label="コードを書いてPRまで運ぶ",
          words=("実装", "直す", "修正", "バグ", "コンポーネント", "pr", "ビルド", "軽く", "速く"),
          who="devin",
@@ -292,7 +292,7 @@ def build():
     j = t("jules")
     rows.append(dict(
         who="jules", name=NAMAE["jules"],
-        tokui="件数とキーが決まっているJSON。149件で合格 136/149＝91.3%（`cat status/1028/jules_kekka.json`）",
+        tokui="件数とキーが決まっているJSON。149件で実測：91.3%（合格 136/149）（`cat status/1028/jules_kekka.json`）",
         nigate="答えの形が決まっていない調べもの。投げた記録が台帳に無い＝まだ測れていない（`cat status/ai_daicho.jsonl`）",
         kane="0円（払った記録が台帳に 0件：`cat status/ai_daicho.jsonl`）。別マシンで動くのでこちらの同時枠を食わない",
         ima="0本（いま持たせている仕事は無い：`cat status/ai_daicho.jsonl`）",
