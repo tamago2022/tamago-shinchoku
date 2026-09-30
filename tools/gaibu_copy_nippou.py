@@ -88,9 +88,19 @@ RE_URLISH = re.compile(r"^\s*https?://", re.I)
 RE_ASCII_ONLY = re.compile(r"^[\x20-\x7e]+$")
 
 
-def judge(title, copy):
-    """手つかずなら理由を返す。書けていれば None。"""
-    t = (title or "").strip()
+def judge_copy(copy):
+    """コピー本文だけを見る。手つかずなら理由を返す。書けていれば None。
+
+    ★1916番（2026-09-30）：もとは judge(title, copy) 1本だったが、
+    gaibu_copy_naoshi.py の書き直し後チェックがこれ経由で「題名が英語の
+    原題のまま」を理由に**良い書き直しごと**捨てていた（実測：本日の回で
+    20件中14件がこれで skip。うち何件かは題名の書き直しさえ試みていない
+    のに、コピーだけは「代表曲のひとつ」を脱した良い文になっていた）。
+    題名はこの経路（機械の書き直し）では触らない・触れない。だから
+    「コピーそのものが良いか」と「題名が直っているか」を別の関数に分けた。
+    pick_targets 側の判定（judge = judge_copy or judge_title）は今まで通り
+    なので、題名が英語のままの行は引き続き「手つかず」として翌日も出る
+    （消えるのはコピーの再生成の無駄だけ）。"""
     c = (copy or "").strip()
     if not c:
         return "コピーが空"
@@ -101,6 +111,12 @@ def judge(title, copy):
             return "水道水・テンプレの語「%s」" % w
     if "！" in c or "!" in c:
         return "煽りの「！」が入っている（見本の文には1つも無い）"
+    return None
+
+
+def judge_title(title):
+    """題名だけを見る。手つかずなら理由を返す。書けていれば None。"""
+    t = (title or "").strip()
     if not t:
         return "題名が空"
     if RE_URLISH.match(t):
@@ -108,6 +124,14 @@ def judge(title, copy):
     if RE_ASCII_ONLY.match(t) and len(t) > 3:
         return "題名が英語の原題のまま"
     return None
+
+
+def judge(title, copy):
+    """手つかずなら理由を返す。書けていれば None。
+
+    ★1916番：中身は judge_copy → judge_title の順に見るだけ（今まで通り）。
+    「行がまだ手つかずか」を決める pick_targets はこの合成版を使い続ける。"""
+    return judge_copy(copy) or judge_title(title)
 
 
 # ---------------------------------------------------------------- 入出力
