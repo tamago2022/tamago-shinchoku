@@ -234,11 +234,24 @@ def bunkatsu(text):
 # ────────────────────────────────────────────── ログを読む
 
 
+# ★1816番実例（2026-09-30）：Claude Codeのスキル読み込み機構が、Skill本文
+#   （page-kenpinスキルのチェックリスト等）を role=user のメッセージとして
+#   会話ログへ丸ごと注入する。この本文は「Base directory for this skill:」
+#   で必ず始まる（システムが機械的に付与する決まり文句・たまごさんは書かない）。
+#   1516番の_BUNSHO_DANPENは記号（**・英語混じり等）で弾く方式だったため、
+#   このスキル文書のように装飾の無い自然な日本語の指示文（「1ページだけ直して
+#   終わりにしない。」等）はすり抜け、5回カウントされて偽タスク（1816番）が
+#   自動発車した。記号に頼らず、メッセージの出どころそのもの（冒頭の決まり文句）
+#   で弾く方が確実なので、ここで先に丸ごと除外する。
+_SKILL_LOAD_MARKER = "Base directory for this skill:"
+
+
 def user_text(rec):
     """会話ログ1行から、たまごさんが打った文だけを取り出す。
 
     道具の返り値（tool_result）はたまごさんの発言ではない。混ぜると
     台帳がゴミで埋まって誰も見なくなる＝仕組みが死ぬ。**必ず外す。**
+    ★Skill本文の自動注入（_SKILL_LOAD_MARKER）も同様に外す（1816番）。
     """
     if not isinstance(rec, dict):
         return None
@@ -249,6 +262,8 @@ def user_text(rec):
         return None
     c = msg.get("content")
     if isinstance(c, str):
+        if c.lstrip().startswith(_SKILL_LOAD_MARKER):
+            return None
         return c
     if not isinstance(c, list):
         return None
@@ -259,7 +274,10 @@ def user_text(rec):
         if b.get("type") == "tool_result":
             continue          # ★道具の出力。たまごさんの声ではない
         if b.get("type") == "text":
-            parts.append(b.get("text") or "")
+            t = b.get("text") or ""
+            if t.lstrip().startswith(_SKILL_LOAD_MARKER):
+                continue       # ★Skill本文の自動注入。たまごさんの声ではない（1816番）
+            parts.append(t)
     return "\n".join(parts) if parts else None
 
 
@@ -444,6 +462,16 @@ def main():
         if user_text({"type": "user", "message": {"role": "user", "content":
                       [{"type": "tool_result", "content": "直してほしい"}]}}):
             ng.append("tool_result を発言として拾っている")
+        # ★1816番実例：Skill読み込み本文（"Base directory for this skill:"で
+        #   始まるuser roleメッセージ）を、たまごさんの発言として拾わない
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "Base directory for this skill: /tmp/x\n\n# 曲ページ検品\n"
+                      "1ページだけ直して終わりにしない。作ってください。"}}):
+            ng.append("Skill本文の自動注入を発言として拾ってしまう（1816号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "Base directory for this skill: /tmp/x\n1ページだけ直して終わりにしない。"}]}}):
+            ng.append("Skill本文の自動注入（contentがlist）を発言として拾ってしまう（1816号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
