@@ -61,6 +61,8 @@ try {
   for (let i = 0; i < 40; i++) {           // 最大40秒、探す言葉が出るまで待つ（DBの棚は後から描かれる）
     await sleep(1000);
     try {
+      // 棚は下へ送ると続きが描かれる（遅延描画）ので、毎秒いちばん下まで送ってから読む
+      await send("Runtime.evaluate", { expression: "window.scrollTo(0, document.body ? document.body.scrollHeight : 0)" });
       const r = await send("Runtime.evaluate", { expression: "document.body ? document.body.innerText : ''", returnByValue: true });
       text = r.result?.value || "";
       if (MUST && text.includes(MUST)) break;
