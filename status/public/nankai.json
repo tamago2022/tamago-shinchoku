@@ -1,5 +1,5 @@
 {
- "at": "2026-09-30 23:46",
+ "at": "2026-09-30 23:49",
  "total": 9761,
  "iwareta3": 61,
  "iwareta2": 397,
@@ -124,8 +124,8 @@
    "sonogo": null,
    "aka": false,
    "p": 1,
-   "actionable": null,
-   "actionableNote": null
+   "actionable": false,
+   "actionableNote": "1846号診断（2026-09-30）：この文言は tools/auto_launcher.py の ONI_KANTOKU_GATES（AI検品=鬼監督への指示テンプレート内チェックリスト）の一文そのもの。build_verify_prompt()が組み立てるVerifier向け指示文に毎回埋め込まれており、`claude -p`実行時にClaude Code自身がCLAUDE.md等をメッセージ本文より前に自動注入する結果、kioku.pyのマーカー判定（startswith）をすり抜けて『たまごさんが34回言った』と誤カウントされていた。たまごさん本人の発言ではなく、AIチェックリストの定型文。根本原因は tools/kioku.py の _has_machine_marker() をstartswith→in判定へ修正して解消済み。"
   },
   {
    "id": "1ce7cfdef93b",
