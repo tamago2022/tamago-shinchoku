@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1197 仮想客／作って売る／AIに選ばれる</title>
+<style>
+:root{color-scheme:light}
+body{margin:0;background:#F8FAFC;color:#0F172A;
+ font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+.wrap{max-width:420px;margin:0 auto;padding:12px 10px 40px}
+h1{font-size:17px;margin:6px 0 2px;line-height:1.4}
+.at{font-size:11px;color:#64748B;margin:0 0 12px;line-height:1.6}
+h2{font-size:13.5px;margin:24px 0 6px;padding-top:10px;border-top:1px solid #E2E8F0}
+h3{font-size:12px;margin:14px 0 4px;color:#334155}
+.kt{background:#FFF;border:2px solid #0F172A;border-radius:12px;padding:12px 12px 10px;margin:0 0 6px}
+.kt ol{margin:0;padding-left:20px;font-size:12.5px;line-height:1.75}
+.kt li{margin-bottom:8px}
+p,li{font-size:11.5px;line-height:1.75;color:#334155}
+ul{margin:4px 0 0;padding-left:18px}
+table{width:100%;border-collapse:collapse;margin:6px 0 0;font-size:10.5px}
+th,td{border:1px solid #E2E8F0;padding:5px 5px;text-align:left;vertical-align:top;line-height:1.55}
+th{background:#F1F5F9;font-weight:700;font-size:10px;color:#0F172A}
+td.n{text-align:center;white-space:nowrap}
+.ok{color:#16A34A;font-weight:700}
+.ng{color:#DC2626;font-weight:700}
+.sankaku{color:#D97706;font-weight:700}
+.q{background:#FFF;border-left:3px solid #0F172A;padding:7px 9px;margin:6px 0;font-size:11px;line-height:1.6}
+.q b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600}
+.src{font-size:9.5px;color:#94A3B8;word-break:break-all}
+.moto{font-size:10px;color:#94A3B8;margin-top:10px;line-height:1.7;word-break:break-all}
+.hit{background:#FEF9C3;border:2px solid #D97706;border-radius:10px;padding:10px;margin:8px 0}
+.hit p{margin:0 0 4px;font-size:12px}
+a{color:#2563EB}
+</style></head><body><div class="wrap">
+
+<h1>1197 仮想客／作って売る／AIに選ばれる</h1>
+<p class="at">2026-09-30。たまごさんが「うまく言語化できないけど大事」と言った3つを、こちらが言葉にした。実測は main の写し（status/1147/src_main）を1行ずつ開いて確認。<b>本番へのHTTP実測は取れていない（このセッションは心臓＝bashもブラウザも遮断された）。だから推定で終わらせず、毎回同じ数字が出る機械検査を1本作って置いた。</b></p>
+
+<div class="kt"><ol>
+<li><b>仮想客と覆面調査員は別物。向きが逆。</b>覆面＝<b>出した後</b>のページを採点する検品員。仮想客＝<b>出す前</b>に商品名・値段・一言だけ見せて「買うか／いくらなら」を答えさせる買い手。道具は同じ（外部AIに人格）。<b>新しい仕組みは要らない。覆面の型を前に倒すだけ。</b></li>
+<li><b>作って売るの1本目は「もう出来ている紙もの」。</b>ひとこと帖のPDFと誌面27枚は実在している。値段と置き場だけが無い。<b>#605（URL診断→メール）から始めると、作りが終わるまで一円も動かない。</b></li>
+<li><b>AIに選ばれる＝順位ではなく引用。</b>客はもうサイトに来ない、AIが代わりに名前を挙げる。<b>llms.txtは保険で、効き目の証明は無い。</b>効くのは「客の質問文を見出しにしたページ」。案内所の中身はもう答えになっている──<b>形を変えるだけ。</b></li>
+</ol></div>
+
+<h2>1. 仮想客（小山さん）と うちの覆面調査員</h2>
+<table>
+<tr><th></th><th>覆面調査員（うち）</th><th>仮想客（小山さん）</th></tr>
+<tr><td class="n">見るもの</td><td>本番に出ているページ</td><td>まだ無い商品の名前・値段・一言</td></tr>
+<tr><td class="n">時</td><td><b>作った後</b></td><td><b>作る前</b></td></tr>
+<tr><td class="n">問い</td><td>85〜90点を全員から取れるか</td><td>買うか／いくらなら出すか／どこで引っかかるか</td></tr>
+<tr><td class="n">赤の基準</td><td>✕が1人でも出たら赤</td><td>同じものを流用できる</td></tr>
+<tr><td class="n">道具</td><td colspan="2">同じ（Genspark等の外部AIに人格を与えて聞く）</td></tr>
+</table>
+<p>うちに在るのは「作った後」だけ。<b>売る側では「作る前」のほうが先に要る。</b>作ってから聞くと、もう直せない。入力＝商品名＋値段＋一言＋誰向け／出力＝買う・買わない・いくらなら・引っかかった一点。</p>
+
+<h2>2. 「作って売る」— 今ある芽を近い順に</h2>
+<table>
+<tr><th>芽</th><th>いま在るもの</th><th>距離</th></tr>
+<tr><td>ひとこと帖／20 Little Phrases</td><td>PDF 1本＋誌面27枚が <b>share/20-little-phrases/ に実在</b></td><td class="ok">一番近い</td></tr>
+<tr><td>Gumroad</td><td>置き場として使える</td><td class="ok">近い</td></tr>
+<tr><td>#605 URL診断→星→メール（商売の芯）</td><td>止まっている</td><td class="sankaku">遠い（作りが残っている）</td></tr>
+<tr><td>あめちゃん（#609）</td><td>止まっている</td><td class="sankaku">商品ではなく<b>流通</b></td></tr>
+<tr><td>コンシェルジュ課金／たまボット</td><td>声の往復は通った（#888）</td><td class="ng">遠い（継続費が乗る）</td></tr>
+</table>
+<p><b>物 → 値段 → 仮想客5人 → 置く。</b>これが最短。サービスから始めると一円も動かない期間が長い。</p>
+
+<h2>3. パーソナライズ ＆ AIに選ばれる仕組み</h2>
+<h3>パーソナライズ＝商品側に広げる、で合っている</h3>
+<p>今あるのは回遊の配合（<b>棚3／その人向け5／冒険2</b>、趣味の違う2人を満足させて返す）。これは並べ方の規則なので、<b>中身が商品に変わっても同じ配合が効く。</b>贈り物・診断・選曲は全部この形をしている。止まっている <b>#792（亮太さん＋甥っ子に「好きそうで知らないもの」）は、実は売り物の第1号の原型。</b></p>
+<h3>AIに選ばれる＝入口が人の検索からAIの推薦に移った</h3>
+<div class="q">AIボットの訪問62,100回のうち、llms.txt を直接取りに来たのは<b>84回（0.1%）</b>。90日間の実測。<br><span class="src">OtterlyAI クローラー実測（2026）</span></div>
+<div class="q">Googleの2026-05-15付の公式ガイド：<b>AI Overviews や生成AI検索機能に llms.txt は不要</b>（AI Overviewsは通常のGoogle検索インデックスから引く）。<br><span class="src">https://www.getpassionfruit.com/blog/should-i-create-an-llms.txt-file-google-s-2026-guidance-explained</span></div>
+<p>効いているのは、<b>質問の形の見出し＋その直下の短い答え</b>／出典／実体名の一貫性／鮮度／構造化データ。整った索引がある側は、AIの要約の正確さが30〜70%高いと報告されている。</p>
+<div class="hit"><p><b>うちの勝ち筋は llms.txt を磨くことではない。</b></p><p>「◯◯のいいカバーある？」という<b>客の質問文そのものを見出しにしたページ</b>を、棚から自動で生やす。案内所の中身はもう答えになっているので、<b>作り直しではなく形を変えるだけ。</b></p></div>
+
+<h2>4. 実測（うちは今どうなっているか）</h2>
+<table>
+<tr><th>見るもの</th><th>実測</th><th>判定</th></tr>
+<tr><td>public/llms.txt</td><td><b>ある。</b>部屋4つ・案内所・代表アーティスト8人</td><td class="sankaku">△ 手書きの静止物。実在は数百人。更新の仕掛けが無い</td></tr>
+<tr><td>public/robots.txt</td><td>User-agent: * / Allow: / ／ Disallowは /admin・/admin_・/lovable/ のみ ／ Sitemap行あり</td><td class="ok">○ AIクローラーを弾いていない</td></tr>
+<tr><td>構造化データ（全ページ）</td><td>__root.tsx に Organization ＋ WebSite(SearchAction)</td><td class="ok">○</td></tr>
+<tr><td>構造化データ（曲・人）</td><td>cover-guide.tsx に MusicRecording／MusicGroup／BreadcrumbList／VideoObject</td><td class="ok">○</td></tr>
+<tr><td>JSなしで本文が出るか</td><td>TanStack Start ＋ Nitro の SSR 出力あり（.output/server/）</td><td class="ok">○</td></tr>
+<tr><td>llms-full.txt</td><td>無い</td><td class="sankaku">△（上記の通り優先度は低い）</td></tr>
+<tr><td>本番のHTTP実測</td><td><b>取れていない。</b>web_fetch もブラウザも遮断された</td><td class="ng">← 機械検査を作った理由</td></tr>
+</table>
+
+<h2>5. 次の一手（1つだけ・実装して置いた）</h2>
+<p><b>tools/ai_erabareru_kenpin.py</b> — 本番に対して6項目を毎回同じ手順で測り、<b>status/public/ai_erabareru.json</b> と赤/緑の1行を出す。</p>
+<ul>
+<li>/llms.txt が 200 か</li>
+<li>/robots.txt が GPTBot・ClaudeBot・PerplexityBot・Google-Extended 等を弾いていないか</li>
+<li>/sitemap.xml が 200 か</li>
+<li>代表ページのHTMLに application/ld+json が入っているか（＝機械に見えているか）</li>
+<li>JSを実行しない取得で本文が何文字出るか（1000字未満なら赤）</li>
+<li>title と description が空でないか</li>
+</ul>
+<p><b>このセッションでは走らせていない（bash禁止・ブラウザ遮断）。</b>次に心臓が動く回で1回走らせれば、上の△○が推定ではなく実測の数字になる。</p>
+
+<p class="moto">元: status/1197_ai_ni_erabareru.md ／ 実測元: status/1147/src_main/public/{llms.txt,robots.txt}・src/routes/{__root.tsx,cover-guide.tsx}・.output/server/ ／ 決まり1行: tools/session_preamble.md ＋ .claude/agent-memory/tamago-orchestrator/MEMORY.md</p>
+
+</div></body></html>
