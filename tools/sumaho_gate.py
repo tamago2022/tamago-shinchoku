@@ -106,6 +106,13 @@ def run(box=None):
                                         % ((r.url or "")[:90], r.status)))
             pg.goto(url, wait_until="load")
             pg.wait_for_timeout(2500)
+            # ★2026-10-01 棚の一覧は［棚］を開いたときにだけ読む作りになった。開かないと
+            #   '#tana button' が1個も無く、②は「URLだけ」を2回試していたのと同じになる。
+            pg.evaluate("()=>{var d=document.getElementById('tanaBox'); if(d&&!d.open){d.open=true;}}")
+            try:
+                pg.wait_for_selector("#tana button[data-t]", timeout=15000)
+            except Exception:
+                res["red"].append("★棚の一覧が15秒で出なかった（②で棚を押せない）")
             res["parts"] = pg.evaluate(
                 "()=>({send:!!document.getElementById('send'),nomu:!!document.getElementById('nomu'),"
                 "tana:(document.getElementById('tanaNote')||{}).textContent||''})")
@@ -118,15 +125,19 @@ def run(box=None):
                 pg.wait_for_timeout(200)
                 pg.click("#send")                       # ★実際に押す
                 msg, cls = "", ""
-                for _ in range(45):
+                # ★2026-10-01 中継所が60秒かかる回がある。18秒で見切ると「送っています」を
+                #   ok と数え、次のパターンが前の分の完了と重なって空で弾かれていた。
+                #   ボタンが戻る（＝送り終わる）まで最大120秒待つ。
+                for _ in range(300):
                     pg.wait_for_timeout(400)
                     msg = pg.evaluate("()=>(document.getElementById('msg')||{}).textContent||''")
                     cls = pg.evaluate("()=>(document.getElementById('msg')||{}).className||''")
-                    if msg and "送っています" not in msg:
+                    busy = pg.evaluate("()=>document.getElementById('send').disabled")
+                    if msg and "送っています" not in msg and not busy:
                         break
                 nokori = pg.evaluate("()=>{try{return JSON.parse(localStorage.getItem("
                                      "'nagekomi.pending')||'[]').length}catch(e){return -1}}")
-                res["gamen"].append({"pattern": name, "ok": "ok" in cls,
+                res["gamen"].append({"pattern": name, "ok": ("ok" in cls) and ("届きました" in msg),
                                      "gamen": str(msg)[:260], "tanmatsuNokori": nokori})
             res["pageDiag"] = pg.evaluate(
                 "()=>(document.getElementById('diag')||{}).textContent||''")[:900]

@@ -148,11 +148,14 @@ async function main() {
       // ★実際にボタンを押す（クリックのイベントをそのまま起こす）
       await evalIn(send, `document.getElementById("send").click(), 1`);
       let msg = "", cls = "";
-      for (let i = 0; i < 50; i++) {
+      // ★2026-10-01 中継所が60秒かかる回がある。前の分が送り終わる前に次を押すと
+      //   押したことにならない（ボタンが止まっている）。終わるまで最大120秒待つ。
+      for (let i = 0; i < 300; i++) {
         await sleep(400);
         msg = await evalIn(send, `(document.getElementById("msg")||{}).textContent || ""`);
         cls = await evalIn(send, `(document.getElementById("msg")||{}).className || ""`);
-        if (msg && !/送っています/.test(msg)) break;
+        const busy = await evalIn(send, `document.getElementById("send").disabled`);
+        if (msg && !/送っています/.test(msg) && !busy) break;
       }
       const nokori = await evalIn(send, `(function(){try{return JSON.parse(localStorage.getItem("nagekomi.pending")||"[]").length}catch(e){return -1}})()`);
       res.oshita.push({ pattern: pt.name, gamen: String(msg).slice(0, 300), ok: /ok/.test(cls),
