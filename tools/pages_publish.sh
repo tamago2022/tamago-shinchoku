@@ -262,6 +262,16 @@ fi
 #   （実測：status/fact_source_baseline.json が最初の1回で落ちていた）。
 git add -A --force >/dev/null 2>&1
 
+# ★2026-09-30（1873番）向こうの本当の値を取りに行く。
+#   ここが古いまま（前回pushが失敗続きで update-ref が一度も走っていない等）だと、
+#   下のコミット作成で「親のつもりの値」が実際のリモートと食い違い、差分計算が
+#   また大きく膨らむ。10秒で切って、取れなければ手元の記録のまま進む（今までどおり）。
+git fetch --quiet --no-tags --depth=1 origin "$BRANCH" >/dev/null 2>&1 &
+_FETCH_PID=$!
+( sleep 10; kill -9 "$_FETCH_PID" 2>/dev/null ) & _FETCH_WATCH=$!
+wait "$_FETCH_PID" 2>/dev/null
+kill "$_FETCH_WATCH" 2>/dev/null
+
 # 向こう（GitHub）が今どこまで持っているか。これと手元が同じなら本当に出すものが無い。
 REMOTE_HAVE="$(git rev-parse --verify --quiet "refs/remotes/origin/$BRANCH" 2>/dev/null || echo "")"
 LOCAL_HEAD="$(git rev-parse --verify --quiet HEAD 2>/dev/null || echo "")"
@@ -275,11 +285,30 @@ fi
 #    画面は真っ白にはならないが、**古いまま生き続ける**＝一番たちが悪い壊れ方。）
 
 MSG="公開（進捗表）$(date '+%F %T') / main=$(echo "$CUR" | cut -c1-9)"
-# ★ 履歴は常に1コミット。親を持たせない＝ **非fast-forwardが起きようがない**
+# ★2026-09-30（1873番）★ここが本当の犯人だった。
+#   前：`commit --amend`で「親を持たない孤立コミット」を毎回作り直していた。
+#     親が無いコミット同士には共通祖先が無いので、git は差分を計算できず、
+#     push のたびに **到達可能な全オブジェクトをゼロから送り直す**。
+#     実測：Writing objects 6456個・494MB送信中に通信が持たずに失敗
+#     （remote側の「unable to write file ... pack」もHTTP 408も、
+#      実はこの巨大転送が原因でGitHub側が壊れていたのではなかった）。
+#   後：リモートが実際に持っているコミット(REMOTE_HAVE)を**親にして**
+#     1コミットだけ積む。共通祖先ができるので、次からは本当に変わった
+#     分（数十〜数百KB）だけが転送される。書き手はこの1本だけ（錠で
+#     保証）なので fast-forward は常に成立するが、用心のため push 側の
+#     --force はそのまま残す（何かの拍子に崩れても配信は止めない）。
 if ! git diff --cached --quiet 2>/dev/null || [ -z "$LOCAL_HEAD" ]; then
-  if [ -n "$LOCAL_HEAD" ]; then
-    git commit --amend -q --no-edit -m "$MSG" >/dev/null 2>&1 || true
+  NEWCOMMIT=""
+  if [ -n "$REMOTE_HAVE" ] && git cat-file -e "${REMOTE_HAVE}^{commit}" 2>/dev/null; then
+    TREE="$(git write-tree 2>/dev/null || echo "")"
+    if [ -n "$TREE" ]; then
+      NEWCOMMIT="$(git commit-tree "$TREE" -p "$REMOTE_HAVE" -m "$MSG" 2>/dev/null || echo "")"
+    fi
+  fi
+  if [ -n "$NEWCOMMIT" ]; then
+    git update-ref HEAD "$NEWCOMMIT"
   else
+    # 初回・リモート未確認・失敗時は今までどおり単発コミットで進める
     git commit -q -m "$MSG" >/dev/null 2>&1 || true
   fi
 fi
