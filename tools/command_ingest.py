@@ -524,6 +524,15 @@ def queue_add(text, priority=None, label=None, origin=None):
     text = (text or "").strip()
     if not text:
         return "failed", "本文が空です"
+    # 2026-09-30 1785番事故の再発防止：ルール文書(prompt_rules/session_preamble)の
+    # 一節そのままなら積まない。label に「重複OK」がある時だけ通す（正当な依頼が
+    # たまたまルール文と同じ言い回しになった場合の逃げ道、421番と同じ設計）。
+    if "重複OK" not in (label or "") and _is_rule_document_fragment(text):
+        return "skipped", (
+            "ルール文書（tools/prompt_rules または tools/session_preamble.md）の一節と"
+            "同じ内容のため積みませんでした（1785番の再発防止ガード）。"
+            "実際の依頼なら label に『重複OK』と書いて送り直してください"
+        )
     # ---- 653番（2026-09-08）タイトル命名基準 ----
     # たまごさんが進捗表を開いて一目で中身が分かることが目的。ここに積まれた title は
     # そのまま進捗表（index.html）の「発車待ち」「確認待ち」に出る＝たまごさんが直接読む文字列。
