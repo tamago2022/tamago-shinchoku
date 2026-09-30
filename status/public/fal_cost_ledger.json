@@ -263,13 +263,13 @@
       "model": "lightricks/ltx-2.5/image-to-video/fast",
       "what": "751番と同一元絵(16x9_widened_v2.png)、もや一方向プロンプトで5.48秒動画1本",
       "count": 1,
-      "unitCostUsd": 0.0548,
-      "unitCostYen": 8.22,
-      "totalCostUsd": 0.0548,
-      "totalCostYen": 8.22,
+      "unitCostUsd": 0.7124,
+      "unitCostYen": 106.86,
+      "totalCostUsd": 0.7124,
+      "totalCostYen": 106.86,
       "elapsedMin": 1.0,
-      "result": "in_progress",
-      "note": "公称$0.01/秒×5.48秒=$0.0548(8.2円/150円レート)の計算値。ダッシュボード実測(Subtotal前後差)は今回も取得不能(2026-09-12・複数セッション独立で確認済み・経路を使い切ったため以後この経路を繰り返さない): (1)ブラウザ操作ツール非搭載でfal.aiログイン画面しか返らない (2)公式Billing API(GET https://api.fal.ai/v1/account/billing)を正しく特定し実行したが403 authorization_error(admin API keyが必要、現行キーは動画生成専用スコープ) (3)レスポンスヘッダーx-fal-billable-units=71.24を発見したがUSD換算係数(unit_price)もbilling API経由でしか取れず403で不明、根拠のない換算はしない。今回の追加作業：カメラのズレを特徴点マッチングで数値測定(横23px=1.8%・ズーム1.4%、単調増加で往復ではない)し、ffmpeg(imageio_ffmpeg同梱バイナリ、vidstab tripodモード)で後処理スタビライズ→横7px(0.5%)・ズーム1.0%まで圧縮。falへの新規リクエストは無く追加課金ゼロ(既存の1本のみ使用)。実費確定にはたまごさんにしかできない1点(admin scope APIキー発行、または生成前後で一度だけダッシュボードを見る)が必要。",
+      "result": "adopted",
+      "note": "★1352番で訂正: 旧note記載の\"$0.01/秒×5.48秒=8.22円\"は誤り。fal.ai公式モデルページ(https://fal.ai/models/lightricks/ltx-2.5/image-to-video/fast)を2026-09-29に再確認したところ課金は解像度別(720p=$0.09/秒,1080p=$0.13/秒,1440p=$0.19/秒,4K=$0.30/秒)。生成解像度は1920x1080(1080p)につき$0.13×5.48秒=$0.7124。生成時のレスポンスヘッダーx-fal-billable-units=71.24を100で割った値(0.7124)と完全一致。2つの独立経路(公式単価計算/実レスポンスの課金ユニット)が一致したため、admin Billing APIが無くても実費を1円単位(106.86円、150円/ドル換算)まで確定できると判断。以後のfal生成もbillable_units÷100=USD実費で確定可能(汎用の換算式として使える)。新規fal課金は今回ゼロ(既存生成分の再計算のみ)。",
       "recordedAt": "2026-09-12T05:38:04+09:00"
     },
     {
@@ -386,14 +386,14 @@
     }
   ],
   "monthlyCapYen": 3000,
-  "updatedAt": "2026-09-29T20:14:15+09:00",
+  "updatedAt": "2026-10-01T03:55:18+09:00",
   "summary": {
-    "thisMonth": "2026-09",
-    "thisMonthTotalYen": 1374.35,
-    "thisMonthTotalUsd": 6.1197,
-    "allTimeTotalYen": 1374.35,
+    "thisMonth": "2026-10",
+    "thisMonthTotalYen": 0,
+    "thisMonthTotalUsd": 0,
+    "allTimeTotalYen": 1472.99,
     "capYen": 3000,
-    "remainingYen": 1625.65,
+    "remainingYen": 3000,
     "overCap": false,
     "byModel": [
       {
@@ -401,6 +401,15 @@
         "totalYen": 949.8,
         "totalUsd": 4.8,
         "count": 16,
+        "adoptedCount": 3,
+        "discardedCount": 0,
+        "failedCount": 0
+      },
+      {
+        "model": "lightricks/ltx-2.5/image-to-video/fast",
+        "totalYen": 121.86,
+        "totalUsd": 0.7124,
+        "count": 3,
         "adoptedCount": 3,
         "discardedCount": 0,
         "failedCount": 0
@@ -457,15 +466,6 @@
         "count": 4,
         "adoptedCount": 2,
         "discardedCount": 1,
-        "failedCount": 0
-      },
-      {
-        "model": "lightricks/ltx-2.5/image-to-video/fast",
-        "totalYen": 23.22,
-        "totalUsd": 0.0548,
-        "count": 3,
-        "adoptedCount": 2,
-        "discardedCount": 0,
         "failedCount": 0
       },
       {
