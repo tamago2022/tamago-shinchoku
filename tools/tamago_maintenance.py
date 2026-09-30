@@ -640,12 +640,14 @@ def _push(paths=("status/maintenance_check.json", "status/maintenance_check_log.
     try:
         import build_done_archive_light
         build_done_archive_light.build()
-        real_paths.append("status/public/done_archive.json")
+        real_paths.append("status/public/done_archive.json.gz")
     except Exception as e:
         print("done_archive.json軽量版の再構築に失敗（続行）: %s" % e)
     # 旧・生コピーが追跡に残っていれば外す（.gzへ一本化）。
     if _run(["git", "ls-files", "--error-unmatch", "status/public/queue.json"])[0] == 0:
         _run(["git", "rm", "--cached", "-q", "status/public/queue.json"])
+    if _run(["git", "ls-files", "--error-unmatch", "status/public/done_archive.json"])[0] == 0:
+        _run(["git", "rm", "--cached", "-q", "status/public/done_archive.json"])
     for attempt in range(1, retries + 1):
         rc, out, err = _run(["git", "add"] + real_paths)
         if rc != 0:

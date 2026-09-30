@@ -11,8 +11,15 @@ tools/build_queue_light.py と同じブラックリスト方式（what/resultだ
 
 正本 status/done_archive.json はフルのまま一切変更しない（各ツールが
 n/title/what等で照合する処理はこれまで通り正本を読む）。
-この軽量版は status/public/done_archive.json（公開専用コピー）にのみ使う。
+この軽量版は status/public/done_archive.json.gz（公開専用コピー）にのみ使う。
+
+【1873番・追記】925番当時（items ~1000件・軽量版1MB未満）はwhat/resultを抜くだけで
+1MB未満に収まっていたが、items数が7653件まで増えた結果、軽量版自体が4.9MBまで
+成長し再び1MB超でpages_publish.shに弾かれていた（done_archive.jsonは公開画面の
+どこからもfetchされていないことを再確認済み＝index_full.html等に読み込み箇所なし）。
+queue.jsonと同じ方式で、軽量化に加えてgzip圧縮した.gzのみを公開する。
 """
+import gzip
 import io
 import json
 import os
@@ -20,7 +27,7 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 ARCHIVE = os.path.join(REPO, "status", "done_archive.json")
-ARCHIVE_LIGHT_OUT = os.path.join(REPO, "status", "public", "done_archive.json")
+ARCHIVE_LIGHT_OUT = os.path.join(REPO, "status", "public", "done_archive.json.gz")
 
 STRIP_FIELDS = ("what", "result")
 
@@ -39,10 +46,14 @@ def build(archive_path=ARCHIVE, out_path=ARCHIVE_LIGHT_OUT):
         "items": [_light_item(it) for it in items],
     }
 
+    raw = json.dumps(light, ensure_ascii=False, indent=1).encode("utf-8")
     tmp = "%s.tmp.%d" % (out_path, os.getpid())
-    with io.open(tmp, "w", encoding="utf-8") as f:
-        json.dump(light, f, ensure_ascii=False, indent=1)
+    with io.open(tmp, "wb") as f:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=f, mtime=0, compresslevel=9) as gz:
+            gz.write(raw)
     os.replace(tmp, out_path)
+    light["_gzBytes"] = os.path.getsize(out_path)
+    light["_rawBytes"] = len(raw)
     return light
 
 
