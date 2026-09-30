@@ -240,10 +240,41 @@ def bunkatsu(text):
 #   で必ず始まる（システムが機械的に付与する決まり文句・たまごさんは書かない）。
 #   1516番の_BUNSHO_DANPENは記号（**・英語混じり等）で弾く方式だったため、
 #   このスキル文書のように装飾の無い自然な日本語の指示文（「1ページだけ直して
-#   終わりにしない。」等）はすり抜け、5回カウントされて偽タスク（1816番）が
+#   終わりにしない。」等）はすり抜け、5回カウントされて偽タスク（1816号）が
 #   自動発車した。記号に頼らず、メッセージの出どころそのもの（冒頭の決まり文句）
 #   で弾く方が確実なので、ここで先に丸ごと除外する。
 _SKILL_LOAD_MARKER = "Base directory for this skill:"
+
+# ★1853号実例（2026-09-30）：tomaranai.py / shukudai.py / github_watch.py /
+#   oni_modoshi.py / hantei_hiduke.py は、子セッションへ渡すタスク本文を
+#   必ず「【タスク】…」「【完了条件】…」の2行セットで組み立てる（このリポジトリで
+#   この組み合わせを使うのは機械生成タスクだけ・たまごさんが直接この書式で
+#   打つことはない）。この本文がまるごと子セッションの会話ログへ role=user の
+#   最初のメッセージとして記録されるため、bunkatsu()の依頼動詞判定（「直して」
+#   「にして」等）に引っかかって「たまごさんの発言」として拾われてしまう。
+#   さらに悪いことに、この偽エントリが3回以上カウントされると
+#   tomaranai.tsugi_no_tama()が「3回以上言わせたもの」として同じ文言を
+#   もう一度タスク化して再発車し、その新しい子セッションの会話ログにまた同じ
+#   本文が現れて回数が増える──**自己増殖する無限ループ**になっていた
+#   （実例：1853号自身がこの構造で「curlで読めても、押して動くかを…」を
+#   4回言わせた扱いになり、対象URLも無いまま自動発車され続けた）。
+#   1816号と同じ考え方（記号ではなく出どころの決まり文句で弾く）を適用する。
+_AUTO_TASK_MARKER = "【タスク】"
+_AUTO_TASK_DONE_MARKER = "【完了条件】"
+
+# ★1853号・調査で判明した本当の主犯：tools/auto_launcher.py の build_prompt() は
+#   子セッションを着火するたび、必ず「【自動発車】発車待ちの{n}番です。」から始まる
+#   ヘッダーの前に session_preamble.md（数百行の恒久ルール文書。「してほしい」
+#   「〜しない」「禁止」等、_IRAI に引っかかる文が山ほど入っている）を丸ごと
+#   差し込んで、それを子セッションの**最初のuserメッセージ**にする。1日47本前後
+#   発車される全セッションの最初のメッセージに毎回同じ巨大な文書が現れるため、
+#   その中の一文一文が「同じ日に何度も言われた」と誤カウントされ続けていた
+#   （8fb974b96deb「curlで読めても…」・dff5787a0dc7「curlで足りる」・
+#   599724ed12f3「自分でcurlして200を確かめてから渡す」は全部この1本の
+#   transcriptから拾われており、"from"が同一ファイルで揃うのがその証拠）。
+#   「【自動発車】発車待ちの」はbuild_prompt()のヘッダーに必ず1回だけ出る固定文言
+#   なので、これを含むメッセージは丸ごと機械の自動発車テンプレートと判定して除外する。
+_AUTO_LAUNCH_MARKER = "【自動発車】発車待ちの"
 
 
 def user_text(rec):
@@ -264,6 +295,10 @@ def user_text(rec):
     if isinstance(c, str):
         if c.lstrip().startswith(_SKILL_LOAD_MARKER):
             return None
+        if _AUTO_LAUNCH_MARKER in c:
+            return None        # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
+        if _AUTO_TASK_MARKER in c and _AUTO_TASK_DONE_MARKER in c:
+            return None        # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
         return c
     if not isinstance(c, list):
         return None
@@ -276,7 +311,11 @@ def user_text(rec):
         if b.get("type") == "text":
             t = b.get("text") or ""
             if t.lstrip().startswith(_SKILL_LOAD_MARKER):
-                continue       # ★Skill本文の自動注入。たまごさんの声ではない（1816番）
+                continue       # ★Skill本文の自動注入。たまごさんの声ではない（1816号）
+            if _AUTO_LAUNCH_MARKER in t:
+                continue       # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
+            if _AUTO_TASK_MARKER in t and _AUTO_TASK_DONE_MARKER in t:
+                continue       # ★機械生成タスク本文の丸ごと注入。たまごさんの声ではない（1853号）
             parts.append(t)
     return "\n".join(parts) if parts else None
 
@@ -472,6 +511,23 @@ def main():
                       [{"type": "text", "text":
                         "Base directory for this skill: /tmp/x\n1ページだけ直して終わりにしない。"}]}}):
             ng.append("Skill本文の自動注入（contentがlist）を発言として拾ってしまう（1816号の再発）")
+        # ★1853号実例：tomaranai.py等が組み立てる「【タスク】…【完了条件】…」の
+        #   機械生成タスク本文が、そのまま子セッションの最初のuserメッセージとして
+        #   会話ログに現れる。これをたまごさんの発言として拾うと、その本文自体が
+        #   また新しいタスクとして再発車され続ける無限ループになる。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "【タスク】curlで読めても、押して動くかを`node tools/verify_click.mjs <URL>` "
+                      "で自分でも確認してから直してください。\n【完了条件】本番に出て200で返る。"}}):
+            ng.append("機械生成タスク本文（【タスク】…【完了条件】…）を発言として拾ってしまう（1853号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "【タスク】台帳を直してください。\n【完了条件】本番で確認できる。"}]}}):
+            ng.append("機械生成タスク本文（contentがlist）を発言として拾ってしまう（1853号の再発）")
+        # ★1853号・本当の主犯：build_prompt()の自動発車ヘッダー＋preambleの丸ごと注入
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "【自動発車】発車待ちの999番です。\n\n# やること\n**台帳を直す**\n\n"
+                      "数字・HTTPコードだけならcurlで足りるので確認してから直してください。"}}):
+            ng.append("自動発車テンプレート（preamble+ヘッダー）を発言として拾ってしまう（1853号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
