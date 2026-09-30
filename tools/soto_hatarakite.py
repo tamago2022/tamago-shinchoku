@@ -231,7 +231,7 @@ def build():
         tsukatta="0円（検品でAIを呼ばない：tools/baton.py:37）",
         nage=j["out"], kaeri=j["prCount"], sai=n_sai,
         hitotsu="0円（採用 %d本：`cat status/1028/jules_kekka.json`）" % n_sai,
-        muki="件数とキーが決まっているJSONを149件そろえる（合格 136/149＝91.3%：`cat status/1028/jules_kekka.json`）",
+        muki="件数とキーが決まっているJSONを149件そろえる（実測：91.3%（合格 136/149）：`cat status/1028/jules_kekka.json`）",
         mark=mark, why=why,
         bikou="投げ%d本のうち1本は GitHubのトークンが取れず不発（`cat status/ai_daicho.jsonl`）。返ったPRのうち %d本は「要人手」で止まっている（`cat status/public/uketori_machi.json`）" % (j["out"], youjinte)))
 
