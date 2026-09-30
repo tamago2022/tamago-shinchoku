@@ -352,9 +352,16 @@ def jiko_shinkoku_wo_hirou(limit=IKKAI_NI):
         key = str(i.get("n") or i.get("id") or i.get("title"))
         if key in tsuka:
             continue                      # もう合格している。二度叩かない
+        # ★2026-10-01（892/1869番）："what" は元依頼・経緯ログ（過去の差し戻し理由の
+        #   引用文もここに溜まる）であり、成果の証拠ではない。ここにURLを含めると、
+        #   「たまごさんが開けないリンクが貼ってあります（https://...551f9503 は
+        #   非公開リポジトリで404になります）」のような★過去の警告文中のURLまで
+        #   urls_in() が拾ってしまい、report/result 側が正しいのに何十回も
+        #   「URLが200で返らない」で差し戻され続けるループを生んでいた（実測：892番が
+        #   kai=20 まで同じ404で回り続けた）。証拠フィールドだけを検品対象にする。
         entry = {"key": key, "n": i.get("n"), "title": (i.get("title") or "")[:100],
                  "text": " ".join(str(i.get(k) or "") for k in
-                                   ("result", "report", "note", "what", "title", "evidence")),
+                                   ("result", "report", "note", "evidence")),
                  "raw": i}
         kai = int((modoshi.get(key) or {}).get("kai") or 0)
         if kai >= ATAMA_DAKI_SHIKII:
