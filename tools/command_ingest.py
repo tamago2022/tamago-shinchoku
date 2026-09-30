@@ -2113,7 +2113,8 @@ def _process_other(action, cmd):
                 r = _nk.add(target or cmd.get("url") or "",
                             cmd.get("memo") or cmd.get("note") or "",
                             cmd.get("shelf"), cmd.get("shelfId"),
-                            test=bool(cmd.get("test")),
+                            # ★2210番：test="kakunin"＝工場の確認投げ（中身はたまごさんの指示どおり・棚まで通す）
+                            test=("kakunin" if cmd.get("test") == "kakunin" else bool(cmd.get("test"))),
                             shelves=cmd.get("shelves"))
             else:
                 r = _nk.shiji(target or cmd.get("text") or cmd.get("memo") or "",

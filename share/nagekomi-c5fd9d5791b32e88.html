@@ -143,6 +143,8 @@
 </head>
 <body>
 
+<!-- ★2201番「進捗表と投げ込み箱を隣り合わせて、リンクですぐ切り替えられるように」：頭と足の両方に置く -->
+<a href="../index.html" style="float:right;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;font-size:14px;font-weight:600;color:var(--accent);background:var(--t-panel);border:1px solid var(--line);border-radius:999px;text-decoration:none">進捗表へ ⇄</a>
 <h1>投げ込み箱</h1>
 <p class="lead">［貼る］→［投げる］。それだけで終わりです。棚も言葉も、書かなくて構いません。</p>
 
@@ -440,7 +442,7 @@ el("send").addEventListener("click", function(){
       SHELVES = SHELVES.filter(function(s){ return sent.indexOf(s) < 0; });
       drawChips(); if(LIST.length) drawTana();
       if(DATA) drawRows();
-      say("届きました。"+where+"夜中0時にまとめて棚へ入れます。［入った記録］に出ています。", true);
+      say("届きました。"+where+"30分以内に棚へ入ります。［入った記録］に出ています。", true);
     }else{
       say("届きませんでした。"+((res&&res.why)||"理由が取れませんでした")
           +" ／ 書いた中身はこの端末に "+pending().length+"件 残してあります", false);
@@ -652,6 +654,9 @@ function wake(){
       .then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
   ]).then(function(a){
     var kagi = a[0], shelf = a[1], lines = [];
+    /* ★2210番：棚へは鍵の要らない道（tools/2210_tanaire.py）で入れるようにした。
+       「鍵を貼って」は二度と出さない（たまごさんを動かさない）。古い鍵の札は読まない。 */
+    kagi = null;
     if(kagi && kagi.kakeru === false){
       lines.push("棚に書き込める鍵がありません（"+esc(kagi.at||"時点不明")+"）");
       if(kagi.why) lines.push(esc(kagi.why));
