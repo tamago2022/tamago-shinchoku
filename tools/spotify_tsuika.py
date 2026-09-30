@@ -15,7 +15,7 @@
 
 ■ 鍵（★ブラウザを開かない）
   tools/spotify_ninshou.py が ~/.tamago/spotify.json に置いた refresh_token から
-  access_token を作る。**たまごさんのログインは今回1回だけ。以後ゼロ。**
+  access_token を作る。**通常は自動更新。Spotifyの仕様により6か月ごとに再同意が必要。**
   まだ同意が済んでいなければ「先に --hajime を」と言って何もしない。
 
   ★プレイリストに書き込むのに要る scope（公式で確認・推測ではない）：
