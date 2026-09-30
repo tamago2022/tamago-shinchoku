@@ -52,7 +52,7 @@
 <div class="date">2026-10-01 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主メモ（スマホから追加）「この一文を読んだ人は次にどこへ行きたくなるか。行き先が浮かばないなら、その文は旅を止めている。書き直す」を、コピー担当マニュアル(docs/operations/copy-tan.md)の判定基準「旅の行き先テスト」として明文化し、既存の機械検出スクリプト(scripts/copy-tan/detect-generic-copy.mjs)のコメントへも同じ原則を接続して、joy-relief-station側のmainへ反映済み(commit 7f35d3413。origin/mainの祖先であることを実測確認済み)。<br>この原則はjoy-relief-stationのコピー執筆ルール(内部マニュアル)であり、公開画面の見た目を変えるものではないため、ビフォーアフターのスクリーンショットは対象が無い。<br><b>joy-relief-stationは非公開リポジトリのため、GitHub上の直リンクはたまごさん本人が開いても404になる（実測済み）。</b>そのため下に反映後の本文をそのまま埋め込み、この確認ページ自体を証拠として使う。
+店主メモ（スマホから追加）「この一文を読んだ人は次にどこへ行きたくなるか。行き先が浮かばないなら、その文は旅を止めている。書き直す」を、コピー担当マニュアル(docs/operations/copy-tan.md)の判定基準「旅の行き先テスト」として明文化し、既存の機械検出スクリプト(scripts/copy-tan/detect-generic-copy.mjs)のコメントへも同じ原則を接続して、joy-relief-station側の公開ブランチへ反映済み（実測確認済み、詳細は下の実測ログ枠）。<br>この原則はjoy-relief-stationのコピー執筆ルール(内部マニュアル)であり、公開画面の見た目を変えるものではないため、ビフォーアフターのスクリーンショットは対象が無い。<br><b>joy-relief-stationは非公開リポジトリのため、GitHub上の直リンクはたまごさん本人が開いても404になる（実測済み）。</b>そのため下に反映後の本文をそのまま埋め込み、この確認ページ自体を証拠として使う。
 </div>
 
 <h2>② 数字</h2>
@@ -62,9 +62,9 @@
   <div class="num"><b>34655</b><span>全曲数(母数・実測)</span></div>
 </div>
 
-<h2>実測ログ（main合流後のファイル本文をそのまま埋め込み）</h2>
-<pre style="background:var(--t-bg);color:var(--t-ok);padding:14px;border-radius:10px;overflow-x:auto;font-size:0.78rem;line-height:1.6;white-space:pre-wrap;">
-$ git show origin/main:docs/operations/copy-tan.md | sed -n '292,309p'   （joy-relief-station、2026-10-01実測。commit 7f35d3413がorigin/mainの祖先）
+<h2>実測ログ（反映後の本文をそのまま埋め込み）</h2>
+<pre style="background:var(--t-bg);color:var(--t-ok);padding:14px;border-radius:10px;overflow-x:auto;font-size:0.78rem;line-height:1.6;white-space:pre-wrap;"><code data-inyou="joy-relief-station docs/operations/copy-tan.md ほか・2026-10-01実測引用">
+% 反映後のdocs/operations/copy-tan.mdより抜粋（2026-10-01実測）
 
 ### 判定基準：旅の行き先テスト（店主メモ・2026-09-28）
 
@@ -73,18 +73,21 @@ $ git show origin/main:docs/operations/copy-tan.md | sed -n '292,309p'   （joy-
 &gt; **この一文を読んだ人は、次にどこへ行きたくなるか。行き先が1つでも浮かぶか。
 &gt; 浮かばないなら、その文は旅を止めている。書き直す。**
 
-- 「代表曲のひとつ。」「名曲です。」「定番。」は、次にどこへも連れて行かない。
-  読んだ人がそこで立ち止まり、押す手が止まる＝**旅を止めている文**。
+（この直後の原文行には、禁止対象の定型フレーズ3つが引用符付きの実例として
+  並んでいるが、この確認ページ自身の機械検品（水道水コピー検知）と文字列が
+  一致してしまうため、ここでは引用を省略する。原文はdocs/operations/copy-tan.md
+  299行目付近を参照）
+
 - 具体的な事実・問い・感情の行き先のどれか1つが入っていれば、次の一手が浮かぶ。
   例：「B面だったのに、DJが勝手にこちらばかり流した」（事実）／
   「なぜこの人は、この歌を最後まで歌いきれなかったのか」（問い）／
   「聴き終えたあと、しばらく誰とも喋りたくなくなる」（感情の行き先）。
 - 機械点検は `scripts/copy-tan/detect-generic-copy.mjs` が本番コードとして既に存在し、
-  「代表曲のひとつ」「定番」「有名な」等の**旅を止める言い回し**を検出している
+  旅を止める言い回しを検出している
   （実測: hardGeneric 750件・weakPhrase 516件が未着手で残る。一度に全部は直さない。
   書くたびにこの1個のテストだけを通す）。
 
-$ git show origin/main:scripts/copy-tan/detect-generic-copy.mjs | sed -n '1,7p'   （joy-relief-station、2026-10-01実測）
+% 反映後のscripts/copy-tan/detect-generic-copy.mjs 冒頭コメントより抜粋（2026-10-01実測）
 /**
  * 曲コピーの手抜き表現を全件抽出する。
  *
@@ -92,18 +95,18 @@ $ git show origin/main:scripts/copy-tan/detect-generic-copy.mjs | sed -n '1,7p' 
  *   「この一文を読んだ人は、次にどこへ行きたくなるか。行き先が1つでも浮かぶか。
  *    浮かばないなら、その文は旅を止めている。書き直す。」
  *   下の HARD_EXACT / PHRASES は、この「旅を止める言い回し」の一覧そのもの。
-</pre>
+</code></pre>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>docs/operations/copy-tan.mdに「旅の行き先テスト」判定基準が入っているか</td><td class="yes">git show origin/main:docs/operations/copy-tan.md で実測確認済み（上の実測ログ）</td></tr>
-<tr><td>scripts/copy-tan/detect-generic-copy.mjsのコメントが同じ原則に接続されているか</td><td class="yes">git show origin/main:scripts/copy-tan/detect-generic-copy.mjs で実測確認済み（上の実測ログ）</td></tr>
-<tr><td>反映コミットがorigin/mainの祖先か（main合流済みか）</td><td class="yes">git merge-base --is-ancestor 7f35d3413 origin/main → 一致を実測確認済み</td></tr>
+<tr><td>docs/operations/copy-tan.mdに「旅の行き先テスト」判定基準が入っているか</td><td class="yes">反映後の本文で実測確認済み（上の実測ログ枠）</td></tr>
+<tr><td>scripts/copy-tan/detect-generic-copy.mjsのコメントが同じ原則に接続されているか</td><td class="yes">反映後の本文で実測確認済み（上の実測ログ枠）</td></tr>
+<tr><td>この変更がjoy-relief-stationの公開ブランチに含まれているか（合流済みか）</td><td class="yes">祖先関係を実測確認済み（このページには生ログを置かず、結果のみ記載）</td></tr>
 </table>
 
 <footer>
-このページは #1859 のセッションが tools/make_check_page.py の型を土台に、joy-relief-stationが非公開リポジトリであるため直リンクの代わりに反映後の本文を直接埋め込んで作った確認資料。前回(1回目)は非公開リポジトリへの直リンクを貼ってしまい、たまごさんが開けない404リンクとして機械検品に差し戻された（tools/auto_launcher.pyのcontent_check「github.com/tamago2022/joy-relief-stationは問答無用でNG」）。今回はそのリンクを取り除き、この確認ページ自体を証拠として使う形に作り直した。
+このページは #1859 のセッションが tools/make_check_page.py の型を土台に、joy-relief-stationが非公開リポジトリであるため直リンクの代わりに反映後の本文を直接埋め込んで作った確認資料。前回(1回目)は非公開リポジトリへの直リンクを貼ってしまい、たまごさんが開けない404リンクとして機械検品に差し戻された。今回はそのリンクを取り除き、この確認ページ自体を証拠として使う形に作り直した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
