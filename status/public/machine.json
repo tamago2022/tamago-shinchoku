@@ -1,13 +1,13 @@
 {
- "raw": "負荷 94% ｜ CPU 34% / メモリ圧迫 15% / スワップ 26.45GB / ディスク空き 48GB ｜ 稼働 4本 ｜ あと0本OK",
- "load": 94,
- "cpu": 34,
- "mem": 15,
- "swapGB": 27082.75,
+ "raw": "負荷 78% ｜ CPU 41% / メモリ圧迫 14% / スワップ 26.57GB / ディスク空き 48GB ｜ 稼働 4本 ｜ あと0本OK",
+ "load": 78,
+ "cpu": 41,
+ "mem": 14,
+ "swapGB": 27189.25,
  "diskFreeGB": 48.0,
  "sessions": 2,
- "note": "上限4本・あと2本OK（CPU34%・メモリ空き7.0GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測の同時上限1本（首は「スワップ」（メモリ32本／スワップ0本／ロード5本）・減便せず：スワップは低い（残り0.27GB（4.0GB未満））、実測上限1本）",
- "measuredAt": "2026-09-30T21:06:44+09:00",
+ "note": "上限4本・あと2本OK（5分平均ロード7.2（コア8×0.8超）、スワップ増加中、実測の同時上限1本（首は「スワップ」（メモリ33本／スワップ0本／ロード5本）・減便せず：スワップは低い（残り0.32GB（4.0GB未満））、予兆（スワップ増加）→1本減らす）",
+ "measuredAt": "2026-09-30T21:12:43+09:00",
  "working": 0,
  "stalled": 1,
  "waiting": 1,
@@ -19,22 +19,24 @@
  "calibratedSafeN": 3,
  "calibrationBasis": "実測（3本まで合格）",
  "userActive": false,
- "predict": [],
+ "predict": [
+  "スワップ増加"
+ ],
  "shedCandidates": [],
  "below": 0,
- "blockReason": "CPU34%・メモリ空き7.0GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測の同時上限1本（首は「スワップ」（メモリ32本／スワップ0本／ロード5本）・減便せず：スワップは低い（残り0.27GB（4.0GB未満））、実測上限1本",
- "load1": 7.41,
- "load5": 7.58,
- "load15": 7.83,
+ "blockReason": "5分平均ロード7.2（コア8×0.8超）、スワップ増加中、実測の同時上限1本（首は「スワップ」（メモリ33本／スワップ0本／ロード5本）・減便せず：スワップは低い（残り0.32GB（4.0GB未満））、予兆（スワップ増加）→1本減らす",
+ "load1": 6.29,
+ "load5": 7.24,
+ "load15": 7.62,
  "cores": 8,
- "loadRatio": 0.93,
+ "loadRatio": 0.79,
  "memPressure": "green",
- "memAvailGB": 7.0,
- "swapIncreasing": false,
- "ioMBs": 17.88,
+ "memAvailGB": 7.1,
+ "swapIncreasing": true,
+ "ioMBs": 68.42,
  "network": {
-  "pingMedianMs": 106.7,
-  "pingMaxMs": 797.5,
+  "pingMedianMs": 166.3,
+  "pingMaxMs": 355.1,
   "pingSamples": 20
  },
  "stalledList": [
@@ -42,7 +44,7 @@
    "pid": 15202,
    "title": "Rusuban mimawari 30min",
    "kind": "asked",
-   "idleMin": 47.0,
+   "idleMin": 52.9,
    "dispatch": false
   }
  ],
@@ -51,7 +53,7 @@
    "cli": "b5f23936-59f4-4c9c-9553-8ae8f0ffc787",
    "localId": "local_10f1f8bc-5ec6-4617-bb29-c3b2a03a77c9",
    "startedAt": "2026-09-30T20:18:21+0900",
-   "elapsedMin": 48,
+   "elapsedMin": 54,
    "lastReportAt": "2026-09-30T11:19:38.652Z",
    "lastReport": "問題：** 20時台のメール見回りはできていません。Chromeがつながっておらず、Gmailを開けませんでした。見回りのルールどおり再試行はせず、ログに1行残しました。  **判断待ち：** なし。",
    "status": "止まっている",
@@ -68,7 +70,7 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 347,
-   "idleMin": 47.0,
+   "idleMin": 52.9,
    "kind": "asked",
    "model": "claude-opus-5-5",
    "turns": 19,
@@ -78,7 +80,7 @@
    "cli": "a351972c-02ba-47a4-8ce3-5a75c247696a",
    "localId": "local_e902a7ee-5d0d-4dcf-ba0c-b59354a7fb9b",
    "startedAt": "2026-09-30T20:48:21+0900",
-   "elapsedMin": 18,
+   "elapsedMin": 24,
    "lastReportAt": "2026-09-30T11:49:23.770Z",
    "lastReport": "ます。止まっているように見えた2本はどちらも見回り係の過去分だったので、声かけはしていません。 - 判断待ち：なし（メール見回りは20時台の0〜19分だけ動く決まりで、今は49分のため対象外でした）。",
    "status": "止まっている",
@@ -95,14 +97,14 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 389,
-   "idleMin": 17.2,
+   "idleMin": 23.2,
    "kind": "idle_done",
    "model": "claude-opus-5-5",
    "turns": 10,
    "lastActivityAt": "2026-09-30T11:49:23.770Z"
   }
  ],
- "line": "負荷 94% ｜ セッション2本（作業中0・止まり1） ｜ 上限4本・あと2本OK ｜ 空き48.0GB",
+ "line": "負荷 78% ｜ セッション2本（作業中0・止まり1） ｜ 上限4本・あと2本OK ｜ 空き48.0GB",
  "modelCounts": {
   "claude-opus-5-5": 2
  },
@@ -121,13 +123,13 @@
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 1469,
+  "waiting": 1653,
   "room": 2,
   "alive": 2,
   "safeMax": 4,
-  "stalledMin": 6.747611427307129,
-  "stalled": false,
-  "note": "発車は正常です"
+  "stalledMin": 12.7319886803627,
+  "stalled": true,
+  "note": "🚦 発車待ちが1653件あるのに12.7319886803627分発車していません（走行2本／上限4本）"
  },
  "awaitingCheck": {
   "count": 143,
@@ -5661,12 +5663,12 @@
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-09-30 21:07",
+  "lastRun": "2026-09-30 21:13",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "目標1本を満たしている（生存2本）",
+  "ignite": "Mac危険（スワップ増加中）",
   "shed": null,
   "keep": {
    "target": 1,
@@ -5694,7 +5696,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-09-30 21:06",
+  "updatedAt": "2026-09-30 21:12",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -5703,7 +5705,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-10-06 17:59",
   "daysLeft": 5.9,
-  "hoursLeft": 140.9,
+  "hoursLeft": 140.8,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -5718,10 +5720,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 0,
-  "allWeightedTokensSinceReset": 249562660,
+  "allWeightedTokensSinceReset": 250729490,
   "last6h": {
    "fable": 0,
-   "all": 54670531
+   "all": 55837361
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
