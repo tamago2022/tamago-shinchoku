@@ -105,8 +105,41 @@ CLICK_VERDICT: FAIL - 押しても反応しない要素が2件あります（11�
 
 
 
+<h2>⑥ 追記：1877番（差し戻し「URLが200で返らない」への対応・2026-10-01）</h2>
+<div class="note">
+1877番の差し戻し時点でこの確認ページ自体は200で正常に返っていた（差し戻し検品時の一時的な通信失敗と見られる）。再検証のついでに、897番当時「未反映」だったLovable本番と、CI(design-rules-check.mjs)自体の未検出の不具合を洗い出し、実際に2件のバグを見つけて直した。
+</div>
+<div class="nums">
+  <div class="num"><b>200</b><span>本番 /design-check の実測ステータス（node fetch）</span></div>
+  <div class="num"><b>14/14</b><span>design-rules-check.mjs 再実行後の全件PASS</span></div>
+  <div class="num"><b>0件</b><span>本番トップページのクリック無反応（node tools/verify_click.mjs）</span></div>
+</div>
+<div class="note">
+<b>直したバグ①（CI自体の偽陽性）：</b> <code>scripts/design-rules-check.mjs</code>の<code>waitForReady()</code>が要素のDOM存在だけを待っており、Tailwind viteのJITによる<code>aspect-video</code>等のCSS生成完了を待っていなかった。CSS未適用のタイミングで実測すると枠が16:9でなくなり、A/B/C縦横比検査が3回連続で偽陽性FAILした（実測：<code>getComputedStyle().aspectRatio</code>が<code>"auto"</code>のまま）。<code>abcCssReady</code>チェックを追加して解消。
+</div>
+<div class="note">
+<b>直したバグ②（実装側の実バグ）：</b> <code>src/components/NextUpCard.tsx</code>のタイトルに<code>line-clamp</code>指定が無く、長いタイトルで折り返るとCSS Gridのstretchで同じ行のカードだけ高さが伸び、行をまたぐカードとの差が最大22pxになっていた（897番の合格条件「横並びのカードは高さを必ず揃える」に抵触）。<code>line-clamp-2 min-h-[44px]</code>を追加して解消。
+</div>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:0.82rem;overflow-x:auto;">修正後 design-rules-check.mjs 実行結果（2026-10-01）:
+✅ カード横並び高さ: 差 0.0px（許容2px以内）
+✅ 主役(A)：縦横比: 実測比 1.778（基準 1.778 ±3%）
+✅ 棚(B)：縦横比: 実測比 1.000（基準 1.000 ±3%）
+✅ 関連(C)：縦横比: 実測比 1.778（基準 1.778 ±3%）
+✅ B(棚)グループ：横並び高さ: 差 0.0px（許容2px以内）
+✅ C(関連)グループ：横並び高さ: 差 0.0px（許容2px以内）
+14/14 件PASS
+
+修正前（1〜2回目再現時）: カード横並び高さ 差21.0px超過／A・B・C縦横比3件が偽陽性FAIL
+
+本番トップページ クリック検品（2026-10-01）:
+実測: {"totalClickable":28,"tested":10,"noResponseCount":0,"consoleErrorCount":0}
+CLICK_VERDICT: PASS - 押せる要素は全て反応しました（10件中10件・全28件）</pre>
+<div class="note">
+897番当時「Publishing was blocked due to suspicious activity」で止まっていたLovable本番公開は、その後解消され、本番 <code>/design-check</code> に897番のA/B/C実装（「主役」「棚」「関連」の見本・使用コンポーネント名）が既に反映されていることを実測確認した。
+</div>
+
 <footer>
-このページは #897 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #897 のセッションが tools/make_check_page.py で自動生成した確認資料。⑥は1877番の差し戻し対応として手動追記（書式は共通の型に揃えている）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
