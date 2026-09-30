@@ -482,9 +482,13 @@ def _load_rule_texts():
                 chunks.append(f.read())
         except Exception:
             pass
-    text = "\n".join(chunks)
+    # 太字（**）とコード用バッククォート（`）を剥がした正規化版も同時にキャッシュする
+    # （たまごさんの依頼文・queue_addへ渡る生テキストにも同じ記号が混ざるため、
+    # 比較する双方から同じ記号を落として揃えないと一致しない）
+    normalized = text.replace("**", "").replace("`", "")
     _RULE_DOC_CACHE["mtime"] = mtime
     _RULE_DOC_CACHE["text"] = text
+    _RULE_DOC_CACHE["normalized"] = normalized
     return text
 
 
@@ -495,12 +499,14 @@ def _is_rule_document_fragment(text):
     t = (text or "").strip()
     if len(t) < 8:
         return False
-    # ルール文はMarkdown装飾（太字・見出し記号）が多いので、剥がしてから照合する
-    stripped = re.sub(r"^[\*\-\s#>]+", "", t)
-    stripped = stripped.replace("**", "").strip()
+    # ルール文はMarkdown装飾（太字・見出し記号・コード用バッククォート）が多いので、
+    # 剥がしてから照合する
+    stripped = re.sub(r"^[\*\-\s#>`]+", "", t)
+    stripped = stripped.replace("**", "").replace("`", "").strip()
     if len(stripped) < 8:
         return False
-    rule_text = _load_rule_texts()
+    _load_rule_texts()  # キャッシュ（"normalized"含む）を最新化する
+    rule_text = _RULE_DOC_CACHE.get("normalized") or ""
     if not rule_text:
         return False
     # 依頼文の途中にルール文の引用が混ざるケースを誤検知しないよう、
