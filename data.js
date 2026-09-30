@@ -3,9 +3,9 @@
 // リンクは links:[{label:"…", url:"obsidian://open?vault=tamago_brain&file=AI出力/…"}] の形で足す。
 
 window.SHINCHOKU = {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // LOVABLE_PUBLISH_STATUS:START（sync-lovable-publish-dashboard.mjs が自動で書き換える。手で編集しない）
   lovablePublishStatus: {
-      "updatedAt": "2026-09-30T15:10:49.398Z",
+      "updatedAt": "2026-09-30T15:12:43.641Z",
       "autoTimerDisabled": true,
       "autoTimerNote": "30分おき自動便(com.tamago.joy-relief-station.lovable-publish)は2026-09-14に無効化（案件820）。今はセッションが仕事を終えた時に手動で1回呼ぶon-demand方式。",
       "dailyCap": 6,
@@ -15,12 +15,12 @@ window.SHINCHOKU = {
       "consecutiveFailures": 0,
       "stoppedForToday": false,
       "lastResult": "success",
-      "lastCheckedAt": "2026-09-30T15:10:48.264Z",
+      "lastCheckedAt": "2026-09-30T15:12:43.358Z",
       "lastPublishedSha": "9655361520",
       "lastFailureReason": "「公開」ボタンが見つからない。画面がエディタでない可能性。URL: https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1",
       "lastFailureAt": "2026-09-30T14:00:38.370Z",
-      "mainSha": "9655361520",
-      "mainUnpublished": false,
+      "mainSha": "1c616a37f4",
+      "mainUnpublished": true,
       "paused": false,
       "pauseReason": null
   },
