@@ -540,6 +540,14 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
     if only:
         rows = [r for r in rows if r.get("id") == only]
     todo = [r for r in rows if r.get("id") and r["id"] not in done]
+    # ★2026-10-01（#2066「俺ボンジョビなんか入れてないから」）：機械の試し投げ
+    #   （nageta=test。スマホの門が投げる Bon Jovi / Keyboard Cat / Skrillex）まで棚へ
+    #   入れに行っていた。しかも台帳の先頭に並ぶので、たまごさんの分が後回しになる（#2059）。
+    #   一覧（nagekomi_list.is_test）と同じ印で、棚へ入れる側からも外す。
+    kikai = [r for r in todo if str(r.get("nageta") or "") == "test"]
+    if kikai and not only:
+        todo = [r for r in todo if str(r.get("nageta") or "") != "test"]
+        res["diag"].append("機械の試し投げ %d件は棚へ入れない" % len(kikai))
     res["seen"] = len(todo)
     res["diag"].append("台帳 %d行 / うち未処理 %d件" % (len(rows), len(todo)))
 

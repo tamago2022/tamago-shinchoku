@@ -401,6 +401,7 @@ el("send").addEventListener("click", function(){
   var stamp = new Date().toISOString();
   var tag = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   var KIKAI = /[?&]kikai=1/.test(location.search);
+  var sent = SHELVES.slice();
   var names = SHELVES.map(function(s){ return s.title; });
   var cmds = [];
   if(u){
@@ -430,9 +431,14 @@ el("send").addEventListener("click", function(){
     b.disabled = false;
     var where = names.length ? ("「"+names.join("」「")+"」の棚へ。") : "棚はあとで決めていい。";
     if(res && res.ok){
-      el("u").value = ""; el("m").value = "";
+      /* ★2026-10-01【URL＋棚が弾かれる】送っている間に次の分を入れると、前の分の
+         「届きました」がここで欄と棚を丸ごと空にしていた→次の［投げる］が空で弾かれる。
+         送った中身と同じときだけ消す（あとから入れた分には触らない）。 */
+      if(el("u").value.trim() === u) el("u").value = "";
+      if(el("m").value.trim() === m) el("m").value = "";
       imaAdd({ t:Date.now(), url:u, memo:m, shelves:names });
-      SHELVES = []; drawChips(); if(LIST.length) drawTana();
+      SHELVES = SHELVES.filter(function(s){ return sent.indexOf(s) < 0; });
+      drawChips(); if(LIST.length) drawTana();
       if(DATA) drawRows();
       say("届きました。"+where+"夜中0時にまとめて棚へ入れます。［入った記録］に出ています。", true);
     }else{
