@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#1873 止まっているものを全部出して回す：925番のgz化を毎回上書きしていた真犯人を修正 確認ページ</title>
+<title>#1873 止まっているものを全部出して回す：gh-pages配信が構造的に壊れていた真因を修正 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,36 +47,37 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1873 止まっているものを全部出して回す：925番のgz化を毎回上書きしていた真犯人を修正</div>
-<h1>#1873 止まっているものを全部出して回す：925番のgz化を毎回上書きしていた真犯人を修正</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1873 止まっているものを全部出して回す：gh-pages配信が構造的に壊れていた真因を修正</div>
+<h1>#1873 止まっているものを全部出して回す：gh-pages配信が構造的に壊れていた真因を修正</h1>
 <div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-queue.json/done_archive.jsonが公開リポジトリで1MB超のまま憲法点検が赤になり続けていた（925番）。真因は tools/tamago_maintenance.py の _push() が正本を毎回そのまま status/public/ へ生コピーしていたことで、kenpou_check.py側のgz圧縮・軽量化を5分おきに上書き復活させていた。生コピーを止め、queue.json.gz(840KB)・done_archive.json.gz(447KB)のみを配布するよう2ファイルで統一した。
+本番配信(GitHub Pages)が丸1日以上更新されていなかった真因は2つ重なっていた。①pages_publish.shの二重起動防止の錠が「見てから書く」方式でTOCTOU競合を起こし、複数の自動便が同時に同じgh-pages枝へforce pushして相手を弾き合っていた（実測：一時5〜6本が同時実行）。②錠を直した後も単独実行で失敗が続いたため深掘りすると、pushのたびに親を持たない孤立コミットを作り直しており、gitが差分を計算できず毎回500MB近い全量データを送り直していた（実測：Writing objects 6456個・494MBで通信が持たずに失敗）。錠をmkdirベースのアトミック方式へ、コミットをリモートの実コミットを親にする方式へ変更し、公開が復旧した。925番（queue.json/done_archive.jsonのgz化）の修正自体は9/30 18:41時点で既にmain反映済みだったが、この配信障害のせいで本番に出られずにいた。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>5.8MB→404</b><span>queue.json（生・公開から削除）</span></div>
-  <div class="num"><b>840KB</b><span>queue.json.gz（本番200で確認）</span></div>
-  <div class="num"><b>4.9MB→447KB</b><span>done_archive.json軽量版をさらにgz化</span></div>
-  <div class="num"><b>0件</b><span>kenpou_check.py big_files判定からqueue.json/done_archive.jsonが消えた（実測: python3 tools/kenpou_check.py --no-queue 再実行）</span></div>
+  <div class="num"><b>494MB→数十KB</b><span>1回のpush送信量（修正前→後）</span></div>
+  <div class="num"><b>5〜6本→1本</b><span>同時に走っていたpages_publish.sh</span></div>
+  <div class="num"><b>2件</b><span>公開成功ログ（20:09:09/20:10:54、修正後に実測）</span></div>
+  <div class="num"><b>200</b><span>本番確認ページの実測HTTPコード</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番: queue.json.gz(200確認済み)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/queue.json.gz" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/queue.json.gz</a></li>
-  <li><b>本番: done_archive.json.gz(main反映済み・raw)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/done_archive.json.gz" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/done_archive.json.gz</a></li>
-  <li><b>修正コミット1（真犯人の特定・停止）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/157b88830" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/157b88830</a></li>
-  <li><b>修正コミット2（done_archive.jsonのgz化）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/b53df4f35" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/b53df4f35</a></li>
+  <li><b>本番: この確認ページ自体(200で開けている証拠)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1873-kenpou-big-files-root-cause.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1873-kenpou-big-files-root-cause.html</a></li>
+  <li><b>修正コミット1（錠をmkdirアトミック方式へ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/618baa54d" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/618baa54d</a></li>
+  <li><b>修正コミット2（錠をさらに堅牢化）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/e573b867f" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/e573b867f</a></li>
+  <li><b>修正コミット3（pushを差分方式へ・本丸）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/26bbead51" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/26bbead51</a></li>
+  <li><b>925番の元修正（queue.json/done_archive.jsonのgz化）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/157b88830" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/157b88830</a></li>
 </ul>
 
 
 
 <footer>
-GitHub Pagesの公開自体は、この修正とは別原因（Mac側のネットワーク不調・DNS解決失敗）で17:49以降50分以上止まっており、done_archive.json.gzはmain反映済みだがPages側はまだ404。queue.json.gzは既にPagesで200。ネットワーク復旧後に自動で公開される見込み（pages_publish.shが5分おきに自動リトライ中）。
+1407番は本件と全く同じ内容（同じセッションID宛て）の重複エントリ。1873番の完了をもって統合済みとして扱ってよい。今回の配信障害は1週間ではなく直近（925番修正時点＝9/30 18:41以降）から起きていたと見られるが、原因は構造的なものなので今後も再発し得た。mkdir錠＋差分push化により恒久対策済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
