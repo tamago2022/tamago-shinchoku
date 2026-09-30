@@ -82,7 +82,9 @@ except Exception:
 import io
 import json
 import os
+import shutil
 import sys
+import time
 import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -94,6 +96,12 @@ NO_LAUNCH_FLAG = os.path.join(ST, "no_launch.flag")
 LAUNCH_CAP = os.path.join(ST, "launch_cap.json")
 LAST_LAUNCH = os.path.join(ST, ".last_launch_at")
 OUT = os.path.join(ST, "top_status.json")
+PUB_OUT = os.path.join(ST, "public", "top_status.json")
+# 1698番（2026-09-30）：配る写し(PUB_OUT)の許容鮮度。machine_status_push.shの
+# 15分おき判定だけに頼ると、「30分ルール」をぎりぎり逃した回が次の15分後まで
+# 放置され最大45分古くなる実測不具合が起きた。ここ(top_status.py本体・心臓が
+# 15秒おきに直接呼ぶ)で毎回チェックすることで、実質的な最大遅延を数十秒に縮める。
+PUB_MAX_AGE_SEC = 300
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
@@ -432,6 +440,31 @@ def build():
     with io.open(tmp, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
     os.replace(tmp, OUT)
+
+    # 1698番（2026-09-30・根本原因対応）：
+    # 進捗表が実際に読む「配る写し」PUB_OUT は、これまでmachine_status_push.sh
+    # (launchd・15分＝900秒おき)の「30分（1800秒）以上古ければコピー」判定だけに
+    # 頼っていた。判定が15分おきにしか走らないため、age が29分59秒のときに
+    # 判定を1回スキップすると、次に判定が走るのは15分後＝その時点でageは
+    # 実質45分（30分+15分）に達してから初めてコピーされる、という設計上の
+    # 穴があり、実測で「45分古い写しが出ていた」事故になった。
+    # ここ(top_status.py本体・心臓heartbeat.shが15秒おきに直接起動)で
+    # 毎周チェックし、5分(300秒)を超えて古ければ即座に配り直すことで、
+    # 判定間隔を15分→15秒に縮め、45分放置を構造的に起こせなくする。
+    # machine_status_push.sh側の既存ロジックは二重の安全網として残す（削除しない）。
+    try:
+        need_copy = True
+        if os.path.exists(PUB_OUT):
+            age = time.time() - os.path.getmtime(PUB_OUT)
+            need_copy = age >= PUB_MAX_AGE_SEC
+        if need_copy:
+            os.makedirs(os.path.dirname(PUB_OUT), exist_ok=True)
+            tmp_pub = "%s.tmp.%d" % (PUB_OUT, os.getpid())
+            shutil.copyfile(OUT, tmp_pub)
+            os.replace(tmp_pub, PUB_OUT)
+    except Exception:
+        pass
+
     return payload
 
 
