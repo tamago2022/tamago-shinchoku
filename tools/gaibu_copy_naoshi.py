@@ -629,9 +629,20 @@ def run(since_days=14):
             out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
                                  "was": t["copy"], "why": t["why"], "reason": why_ng})
             continue
-        # 書き直したものを**同じ判定にもう一度かける。**水道水のままなら書き戻さない。
+        # 書き直したものを**もう一度判定にかける。**水道水のままなら書き戻さない。
         # ★手書きの下書きも素通りさせない。同じ関所を通す。
-        again = nippou.judge(judge_title, text)
+        # ★1916番（2026-09-30）：ここは nippou.judge(title, copy)＝題名＋コピーの
+        #   合成判定を使っていたが、この経路は**題名を直さない**（直せるのは上の
+        #   tegaki 分岐だけ）。合成判定のままだと、題名が英語のままの行は
+        #   コピーがどれだけ良くなっても「題名が英語の原題のまま」で毎回 not-yet
+        #   扱いになり、良い書き直しごと捨てられていた（実測：本日の回で
+        #   20件中14件がこの理由で skip。書けていたコピー自体は「代表曲の
+        #   ひとつ」のような水道水ではなく、ちゃんとした書き直しだった）。
+        #   ここで見るべきは「コピーが良くなったか」だけなので judge_copy に絞る。
+        #   行が「まだ手つかずか」を決める pick_targets 側は引き続き
+        #   judge()（合成判定）のままなので、題名の問題は消えずに翌日も残る＝
+        #   題名の直し（tegaki 経路）が要ることは変わらず見え続ける。
+        again = nippou.judge_copy(text)
         if again and hand:
             # 手書きが落ちたら、AIで上書きしない。落ちた理由をそのまま残す（黙って捨てない）。
             out["skips"].append({"id": t["id"], "date": t["date"], "title": judge_title,
@@ -645,7 +656,7 @@ def run(since_days=14):
             t2["copy"] = (t["copy"] or "") + "\n（直前に書いた案「%s」は %s で不合格でした。" \
                                              "同じ手は使わないでください）" % (text, again)
             text2, _ = ask_fallback(t["title"], t2["copy"], t["url"], diag)
-            if text2 and not nippou.judge(t["title"], text2):
+            if text2 and not nippou.judge_copy(text2):
                 text, again = text2, None
         if again:
             out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],

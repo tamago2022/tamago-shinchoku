@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#1845 本番URLの主張と確認ページの中身を突き合わせた 確認ページ</title>
+<title>#1845 本番URLの主張と確認ページの中身を突き合わせた（訂正版） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,46 +47,43 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1845 本番URLの主張と確認ページの中身を突き合わせた</div>
-<h1>#1845 本番URLの主張と確認ページの中身を突き合わせた</h1>
-<div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
-
-<div class="note" style="border:2px solid var(--t-ng);">
-このページは機械検品で差し戻されました（店主が開けないGitHub非公開リポジトリへの直リンクが含まれていたため）。訂正版はこちら → <a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1845-honban-kuichigai-kakunin-v2.html">1845-honban-kuichigai-kakunin-v2.html</a>
-</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1845 本番URLの主張と確認ページの中身を突き合わせた（訂正版）</div>
+<h1>#1845 本番URLの主張と確認ページの中身を突き合わせた（訂正版）</h1>
+<div class="date">2026-09-30 origin/mainのクリーンな一時作業場所を新規作成し、実行し直して再検証</div>
 
 <div class="fix">
-直近の完成報告（#1814・水道水コピーの機械ゲート化）の確認ページが書いた数字を、ごきげん補給所の本番コード(origin/main)を取得して自分で実行し直し、一致するか確かめた。
+前回提出は店主が開けないGitHub非公開リポジトリへの直リンクを貼っていたため差し戻された。今回はそのリンクを全部外し、代わりに実測の生ログをこのページの中に直接貼った。あわせて前回『3件差（誤差）』としていた曲数を、joy-relief-stationのorigin/mainから作った新しいクリーンな一時作業場所で測り直したところ、実は差ではなく古い作業コピーで測っていたのが原因と判明し、4項目とも完全一致した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>750</b><span>水道水コピー(強)の実測件数（確認ページの主張と一致）</span></div>
-  <div class="num"><b>516</b><span>水道水コピー(弱)の実測件数（確認ページの主張と一致）</span></div>
-  <div class="num"><b>34654</b><span>対象曲数（確認ページの主張34,657とは3件差＝誤差範囲）</span></div>
-  <div class="num"><b>1</b><span>--fail-hard実行時の終了コード（非ゼロ＝止める側として実働）</span></div>
+  <div class="num"><b>750</b><span>hardGeneric(手抜き文・強)実測件数</span></div>
+  <div class="num"><b>516</b><span>weakPhrase(手抜き文・弱)実測件数</span></div>
+  <div class="num"><b>34657</b><span>songs対象曲数実測（前回『3件差』から完全一致へ訂正）</span></div>
+  <div class="num"><b>1</b><span>--fail-hard実行時の終了コード（非ゼロ＝ゲートが実働）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>検証対象の確認ページ(#1814)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1814-kiite-tashikamete.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1814-kiite-tashikamete.html</a></li>
-  <li><b>本番コードの該当ファイル(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/copy-tan/detect-generic-copy.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/copy-tan/detect-generic-copy.mjs</a></li>
-  <li><b>本番コードの手順書(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/copy-tan.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/copy-tan.md</a></li>
+  <li><b>検証対象の確認ページ(#1814・店主が開ける)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1814-kiite-tashikamete.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1814-kiite-tashikamete.html</a></li>
+  <li><b>この確認ページ自体</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1845-honban-kuichigai-kakunin-v2.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1845-honban-kuichigai-kakunin-v2.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>「聴いて確かめていないなら書けない」の一文がdocs/operations/copy-tan.mdにあるか</td><td class="yes">origin/mainで実在確認</td></tr>
-<tr><td>detect-generic-copy.mjs --fail-hardが納品前ゲートとして手順書に載っているか</td><td class="yes">載っている（手動ゲート・CI自動化ではない）</td></tr>
-<tr><td>hardGeneric実測750件・weakPhrase実測516件が確認ページの主張と一致するか</td><td class="yes">一致</td></tr>
-<tr><td>songs実測34,654件が確認ページの主張34,657件と一致するか</td><td class="no">3件差（測定タイミングのデータ差と推定・誤差範囲）</td></tr>
+<tr><td>「聴いて確かめていないなら書けない」の一文がcopy-tan.mdに実在するか</td><td class="yes">origin/mainの一番大事な約束の直下(29行目)に実在</td></tr>
+<tr><td>detect-generic-copy.mjs --fail-hardが納品前ゲートとして手順書に載っているか</td><td class="yes">145行目に記載・実行も確認</td></tr>
+<tr><td>hardGeneric実測750件が確認ページ(#1814)の主張と一致するか</td><td class="yes">完全一致</td></tr>
+<tr><td>weakPhrase実測516件が確認ページ(#1814)の主張と一致するか</td><td class="yes">完全一致</td></tr>
+<tr><td>songs実測34,657件が確認ページ(#1814)の主張と一致するか</td><td class="yes">完全一致（前回は作業コピーが古く3件差に見えていただけ）</td></tr>
+<tr><td>--fail-hard実行時にexit codeが非ゼロ(ゲートとして機能)か</td><td class="yes">exit code=1で実働</td></tr>
 </table>
 
 <footer>
-実測メモ：/Users/mac/Documents/AI作業/.worktrees/q1845-0904（joy-relief-stationのworktree）でorigin/mainの scripts/copy-tan/detect-generic-copy.mjs 等を取得し、node（node_modulesはDesktop/joy-relief-stationのものをsrc/lib生成ファイルごとsymlink）で実行。出力: {"artists":2648,"songs":34654,"flagged":26073,"empty":24731,"hardGeneric":750,"weakPhrase":516,"editorialReview":76}。--fail-hard実行時exit code=1（非ゼロ＝ゲートが実働）。結論：確認ページ(#1814)の主張と実物に食い違いは無い（曲数のみ3件の軽微な差、誤差範囲と判断）。
+実測手順：git worktree add --detach /tmp/1845_verify_mainsnap origin/main でjoy-relief-station(非公開の開発リポジトリ)のorigin/mainだけを取り出したクリーンな一時作業場所を新規作成し、node_modulesだけsymlinkして node scripts/copy-tan/detect-generic-copy.mjs / --fail-hard を実行。出力: {"artists":2649,"songs":34657,"flagged":26071,"empty":24729,"hardGeneric":750,"weakPhrase":516,"editorialReview":76}（fail-hard実行時も同じ数字でexit code=1）。docs/operations/copy-tan.mdの29行目に『（2026-09-30追記・店主指摘3回目で確定）聴いて確かめていないなら書けない。』が実在することも同じ一時作業場所で直接grepして確認した。joy-relief-stationは店主のスマホ・PCから直接見える公開サイトではなく非公開の開発リポジトリのため、GitHubの直リンクは貼らず、この確認ページ自体を店主が開ける証拠として置く（前回差し戻しの理由への対応）。使い終えた一時作業場所は git worktree remove で片付け済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
