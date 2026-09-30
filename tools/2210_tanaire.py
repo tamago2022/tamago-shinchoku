@@ -124,6 +124,29 @@ def oembed_youtube(ref):
         return None
 
 
+def _media(url):
+    """1152番 media() が正本（YouTube=サムネ実測＋oEmbed／X=cdn.syndication でサムネ＋公式埋め込み）。"""
+    import importlib
+    return importlib.import_module("1152_ireru").media(url)
+
+
+def hosei(db, res):
+    """★前に入れた分で、サムネが空のまま（＝本番の棚で隠れている）カードを埋め直す。"""
+    for r in read_jsonl(IRETA):
+        if r.get("via") != "query_database" or not r.get("stockId"):
+            continue
+        got = db.q("select thumbnail_url, note from admin_stock where id = %s" % lit(r["stockId"]))
+        if not got or got[0].get("thumbnail_url"):
+            continue
+        thumb, note, why = _media(r.get("ref") or "")
+        if not thumb:
+            res["machi"].append({"id": r.get("id"), "why": "サムネが取れない：%s" % why})
+            continue
+        db.q("update admin_stock set thumbnail_url = %s, note = coalesce(note, %s) where id = %s"
+             % (lit(thumb), lit(note or None), lit(r["stockId"])))
+        res["diag"].append("%s：サムネを埋めた" % r.get("id"))
+
+
 def resolve_shelf(db, want):
     sid = str((want or {}).get("id") or "").strip()
     title = str((want or {}).get("title") or "").strip()
@@ -146,7 +169,7 @@ def resolve_shelf(db, want):
 def run(dry=False, only=None):
     res = {"ranAt": now(), "bin": "2210", "dry": dry,
            "via": "Lovable公式MCP query_database（service_role不要・人の手不要）",
-           "diag": [], "red": [], "ireta": [], "mitei": [], "manpai": [], "totalYen": 0.0}
+           "diag": [], "red": [], "ireta": [], "mitei": [], "machi": [], "manpai": [], "totalYen": 0.0}
     done = set()
     for r in read_jsonl(IRETA):
         if not r.get("modoshiAt") and not r.get("dry"):
@@ -157,10 +180,15 @@ def run(dry=False, only=None):
     kikai = [r for r in rows if str(r.get("nageta") or "") == "test"]
     todo = [r for r in rows if r.get("id") and r["id"] not in done and str(r.get("nageta") or "") != "test"]
     res["diag"].append("台帳 %d行／機械の試し投げ %d件は入れない／未処理 %d件" % (len(rows), len(kikai), len(todo)))
-    if not todo:
-        res["ok"] = True
-        return res
     db = DB()
+    if not dry:
+        try:
+            hosei(db, res)
+        except Exception as e:  # noqa: BLE001
+            res["red"].append("サムネの埋め直しでつまずいた：%s" % str(e)[:200])
+    if not todo:
+        res["ok"] = not res["red"]
+        return res
     for r in todo[:MAX]:
         url = str(r.get("url") or "").strip()
         if not url.startswith("https://"):
@@ -210,7 +238,7 @@ def run(dry=False, only=None):
         title = re.sub(r"\s*(pic\.twi\w*|https?://)\S*[\s\S]*$", "", title)
         title = re.sub(r"\s*—\s*.*\(@[^)]+\).*$", "", title)
         title = re.sub(r"\s+", " ", title).strip()
-        thumb = None
+        thumb, note = None, None
         if m:
             o = oembed_youtube(ref)
             if not o:
@@ -218,7 +246,16 @@ def run(dry=False, only=None):
                 continue
             if not title:
                 title = " / ".join(x for x in [o.get("title"), o.get("author_name")] if x)
-            thumb = "https://img.youtube.com/vi/%s/hqdefault.jpg" % m.group(1)
+        # ★サムネと埋め込みは 1152番の media()（正本）で実測して取る。
+        #   本番の棚は「サムネが解決できないカード」を隠す（worlds.ts filterPlayableCards）。
+        #   サムネ無しで入れても棚に出ない＝入れたことにならないので、取れなければ入れずに理由を残す。
+        try:
+            thumb, note, why_m = _media(url)
+        except Exception as e:  # noqa: BLE001
+            thumb, note, why_m = None, None, "サムネを調べる係が転んだ（%s）" % type(e).__name__
+        if not thumb:
+            res["machi"].append({"id": r["id"], "url": url, "why": "サムネが取れないので棚に出せない：%s" % why_m})
+            continue
         if not title and mx:
             title = "@%s のポスト" % mx.group(1)
         title = title or ref
@@ -227,13 +264,17 @@ def run(dry=False, only=None):
                                  "shelves": [s["title"] for s in shelves], "dry": True})
             continue
         try:
-            ex = db.q("select id from admin_stock where kind = %s and ref = %s limit 1" % (lit(kind), lit(ref)))
+            ex = db.q("select id, thumbnail_url, note from admin_stock where kind = %s and ref = %s limit 1" % (lit(kind), lit(ref)))
             made = not ex
             if ex:
                 stock_id = ex[0]["id"]
+                # 前に入った分でサムネ／埋め込みが空のものだけ埋める（入っている値は触らない）
+                if not ex[0].get("thumbnail_url") or (note and not ex[0].get("note")):
+                    db.q("update admin_stock set thumbnail_url = coalesce(thumbnail_url, %s), note = coalesce(note, %s) where id = %s"
+                         % (lit(thumb), lit(note or None), lit(stock_id)))
             else:
-                got = db.q("insert into admin_stock (kind, ref, title, thumbnail_url) values (%s, %s, %s, %s) returning id"
-                           % (lit(kind), lit(ref), lit(title[:300]), lit(thumb)))
+                got = db.q("insert into admin_stock (kind, ref, title, thumbnail_url, note) values (%s, %s, %s, %s, %s) returning id"
+                           % (lit(kind), lit(ref), lit(title[:300]), lit(thumb), lit(note or None)))
                 stock_id = got[0]["id"]
             musunda = []
             for s in shelves:
