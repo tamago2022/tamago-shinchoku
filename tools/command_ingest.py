@@ -482,6 +482,7 @@ def _load_rule_texts():
                 chunks.append(f.read())
         except Exception:
             pass
+    text = "\n".join(chunks)
     # 太字（**）とコード用バッククォート（`）を剥がした正規化版も同時にキャッシュする
     # （たまごさんの依頼文・queue_addへ渡る生テキストにも同じ記号が混ざるため、
     # 比較する双方から同じ記号を落として揃えないと一致しない）
