@@ -319,6 +319,24 @@ _HANTEI_HIDUKE_MARKER = "【判定日で赤になった案件】"
 #   同時に塞ぐ（1917号調査時点で確認）。
 _ONI_MODOSHI_PROMPT_MARKER = "【差し戻し】"
 
+# ★2012号実例（2026-10-01）：Claude Desktop（Cowork）自身が、定期タスク
+#   （scheduled task）の実行完了・失敗を検知すると、Dispatchセッションへ
+#   「Task "<タスク名>" completed/failed. Use read_transcript with session_id
+#   "<id>" to see the outcome, then report to the user via send_message.」という
+#   固定テンプレートの内部通知を投げる。これはたまごさんの発言ではなく
+#   **Claude Desktop自身が書いた文**だが、会話ログのrole=userとして記録されるため
+#   bunkatsu()の依頼動詞判定（例：「本番が出たか確かめて出す」というタスク名の
+#   「出す」「出して」等）に引っかかり、「たまごさんが言った依頼」として
+#   status/kioku/hatsugen.jsonl・status/shukudai/daicho.jsonlに量産されていた。
+#   実測：daicho.jsonlに同じ"Use read_transcript with session_id"を含む偽エントリが
+#   既に10件以上（1412号・2012号はそのうち1組）。1412号は中身の無い偽タスクのため
+#   誰も処理できずwaitingのまま判定日を迎え、自動で赤＋P1繰り上げ→2012号として
+#   再発車される無限ループになっていた。固定部分
+#   「Use read_transcript with session_id "」は人間の発言には出てこないため、
+#   1816号・1853号・1916号・1917号と同じ考え方（出どころの決まり文句で丸ごと弾く）
+#   をここにも適用する。
+_COWORK_TASK_NOTIFY_MARKER = 'Use read_transcript with session_id "'
+
 # ★1846号実例（2026-09-30）：上5つのマーカー（_SKILL_LOAD_MARKER / _VERIFY_PROMPT_MARKER /
 #   _COPY_NAOSHI_PROMPT_MARKER / _HANTEI_HIDUKE_MARKER / _ONI_MODOSHI_PROMPT_MARKER）は
 #   「メッセージの先頭が固定文言で始まるか」（.lstrip().startswith(...)）で判定していた。
@@ -343,6 +361,7 @@ _MACHINE_MARKERS_ANYWHERE = (
     _COPY_NAOSHI_PROMPT_MARKER,
     _HANTEI_HIDUKE_MARKER,
     _ONI_MODOSHI_PROMPT_MARKER,
+    _COWORK_TASK_NOTIFY_MARKER,
 )
 
 
@@ -638,6 +657,22 @@ def main():
                         "あなたは「ごきげん補給所」のコピーを書く編集者です。\n"
                         "・題名をそのまま置き直していない。"}]}}):
             ng.append("CLAUDE.md等が前に差し込まれたコピー書き直し注文書を拾ってしまう（1846号の再発、contentがlist）")
+        # ★2012号実例：Claude Desktop自身が投げるCowork定期タスクの完了/失敗通知
+        #   （「Task "..." failed/completed. Use read_transcript with session_id
+        #   "..." to see the outcome, then report to the user via send_message.」）を、
+        #   たまごさんの発言として拾わない。タスク名の「出す」「確かめて」等が
+        #   _IRAI にマッチしても、固定テンプレート部分で丸ごと除外する。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "Task \"本番が出たか確かめて出す\" failed. Use read_transcript "
+                      "with session_id \"local_b7418eef-2401-4300-b75e-1781ca8f0f44\" "
+                      "to see the outcome, then report to the user via send_message."}}):
+            ng.append("Cowork定期タスクの完了/失敗通知を発言として拾ってしまう（2012号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "Task \"秋の棚を作って本番に出す\" completed. Use read_transcript "
+                        "with session_id \"local_6b16877d-a621-42a0-ae8a-2d5bf4169fd7\" "
+                        "to see the outcome, then report to the user via send_message."}]}}):
+            ng.append("Cowork定期タスクの完了/失敗通知（contentがlist）を拾ってしまう（2012号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
