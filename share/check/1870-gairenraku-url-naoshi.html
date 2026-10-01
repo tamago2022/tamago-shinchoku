@@ -55,6 +55,14 @@
 差し戻し理由「URLが200で返らない（None）」の正体を特定した。<b>仕組み⑤(tools/renraku.py)自体は2026-09-17から壊れていない</b>（今日2026-10-01もdry-runで英日セットの件名・本文生成とGmail下書きURL生成を再確認済み、下の②参照）。正体は、896番の記録(result欄)に別の作業(配車ロジック修正)をしたセッションが書き残した2本のcommit URLの末尾に、スペース無しで全角カッコの日本語コメントが直接連結されていたこと。<code>https://github.com/.../commit/9743407d3（配車ロジック修正）／</code>のような壊れた文字列になり、検品(tools/oni_modoshi.py)がそのURLをそのまま叩いて毎回失敗していた（renraku.py本体にもGmail送信にも無関係）。今回、①queue.json内の896番result欄から壊れたURLを除去 ②renraku.pyの本日時点の動作をdry-run実行で再確認 ③この確認ページを新規発行、の3点を実施した。
 </div>
 
+<div class="note">
+<b>【再確認・2026-10-01 16:22】</b>上記の修正は保っているか、今日あらためて機械で測り直した。
+896番の記録（result欄）から実際にURLを取り出して叩いた結果：<code>https://tamago2022.github.io/tamago-shinchoku/share/check/1870-gairenraku-url-naoshi.html</code> → <b>200</b>（本文6,583文字、空ではない、禁止語にも引っかからない）。
+これで896番は「URLが200で返らない」の弾き（kai=20で止まっていた）から抜けて、残りは<b>鬼監督の機械検品ではなく外部AI(ChatGPT/Grok等)の審査待ち</b>（＝sotomachi。機械検品はPASS）の状態になった。
+renraku.py自体も今日dry-runで再実行し、国内窓口(LINE Creators Market)・海外窓口(lovable、英日セット強制)の両方が壊れていないことを確認済み。
+関所(tools/sekisho.py)もこのページに対して実行し <code>SEKISHO_RESULT: PASS</code> を確認した。
+</div>
+
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2本</b><span>壊れていたURL(896番result欄・全角カッコ連結)</span></div>
