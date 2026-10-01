@@ -1,18 +1,18 @@
 {
- "raw": "負荷 124% ｜ CPU 25% / メモリ圧迫 25% / スワップ 28.83GB / ディスク空き 55GB ｜ 稼働 4本 ｜ あと0本OK",
- "load": 124,
- "cpu": 25,
- "mem": 25,
- "swapGB": 29509.5,
- "diskFreeGB": 55.0,
- "sessions": 4,
- "note": "上限4本・あと4本OK（CPU25%・メモリ空き6.2GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測の同時上限2本（首は「スワップ」（メモリ28本／スワップ3本／ロード4本）・減便せず：スワップは低い（残り1.40GB（4.0GB未満））、実測上限2本）",
- "measuredAt": "2026-10-01T09:16:07+09:00",
- "working": 0,
+ "raw": "負荷 166% ｜ CPU 34% / メモリ圧迫 21% / スワップ 30.84GB / ディスク空き 54GB ｜ 稼働 5本 ｜ 1本超過（畳め）",
+ "load": 166,
+ "cpu": 34,
+ "mem": 21,
+ "swapGB": 31227.25,
+ "diskFreeGB": 54.0,
+ "sessions": 1,
+ "note": "上限4本・あと3本OK（CPU34%・メモリ空き6.5GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測の同時上限2本（首は「スワップ」（メモリ28本／スワップ2本／ロード5本）・減便せず：スワップは低い（残り1.10GB（4.0GB未満））、実測上限2本）",
+ "measuredAt": "2026-10-01T09:19:04+09:00",
+ "working": 1,
  "stalled": 0,
  "waiting": 0,
  "safeMax": 4,
- "moreOK": 4,
+ "moreOK": 3,
  "hardMax": 8,
  "cap": 2,
  "target": 2,
@@ -21,28 +21,58 @@
  "userActive": false,
  "predict": [],
  "shedCandidates": [],
- "below": 2,
- "blockReason": "CPU25%・メモリ空き6.2GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測の同時上限2本（首は「スワップ」（メモリ28本／スワップ3本／ロード4本）・減便せず：スワップは低い（残り1.40GB（4.0GB未満））、実測上限2本",
- "load1": 9.99,
- "load5": 8.49,
- "load15": 8.18,
+ "below": 1,
+ "blockReason": "CPU34%・メモリ空き6.5GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測の同時上限2本（首は「スワップ」（メモリ28本／スワップ2本／ロード5本）・減便せず：スワップは低い（残り1.10GB（4.0GB未満））、実測上限2本",
+ "load1": 13.31,
+ "load5": 9.54,
+ "load15": 8.59,
  "cores": 8,
- "loadRatio": 1.25,
+ "loadRatio": 1.66,
  "memPressure": "green",
- "memAvailGB": 6.2,
+ "memAvailGB": 6.5,
  "swapIncreasing": false,
- "ioMBs": 715.31,
+ "ioMBs": 493.45,
  "network": {
-  "pingMedianMs": 48.8,
-  "pingMaxMs": 365.0,
-  "pingSamples": 19
+  "pingMedianMs": 54.7,
+  "pingMaxMs": 451.0,
+  "pingSamples": 20
  },
  "stalledList": [],
- "sessionList": [],
- "line": "負荷 124% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き55.0GB",
- "modelCounts": {},
+ "sessionList": [
+  {
+   "cli": "c45832f0-7b31-4d6b-a89f-438c367d949d",
+   "localId": "local_31dcbf91-e81b-405d-8fad-1c1cdaa33fc8",
+   "startedAt": "2026-10-01T09:18:21+0900",
+   "elapsedMin": 0,
+   "lastReportAt": null,
+   "lastReport": "",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "unreportedDeploy": false,
+   "deployUrls": [],
+   "humanPushes": 0,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 37293,
+   "title": "Rusuban mimawari 30min",
+   "dispatch": false,
+   "isDispatchSelf": false,
+   "mb": 277,
+   "idleMin": 0.4,
+   "kind": "working",
+   "model": "claude-sonnet-5",
+   "turns": 6,
+   "lastActivityAt": "2026-10-01T00:18:36.547Z"
+  }
+ ],
+ "line": "負荷 166% ｜ セッション1本（作業中1・止まり0） ｜ 上限4本・あと3本OK ｜ 空き54.0GB",
+ "modelCounts": {
+  "claude-sonnet-5": 1
+ },
  "autonomy": {
-  "alive": 0,
+  "alive": 1,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
@@ -51,18 +81,18 @@
  "heartbeat": {
   "pid": 4087,
   "processAlive": true,
-  "stalledMin": 0.0,
+  "stalledMin": 0.1,
   "stalled": false,
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 1547,
-  "room": 4,
-  "alive": 0,
+  "waiting": 1548,
+  "room": 3,
+  "alive": 1,
   "safeMax": 4,
-  "stalledMin": 25.42627683877945,
-  "stalled": true,
-  "note": "🚦 発車待ちが1547件あるのに25.42627683877945分発車していません（走行0本／上限4本）"
+  "stalledMin": 0.3422058860460917,
+  "stalled": false,
+  "note": "発車は正常です"
  },
  "awaitingCheck": {
   "count": 161,
@@ -6540,18 +6570,24 @@
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-10-01 09:17",
+  "lastRun": "2026-10-01 09:20",
   "resumed": [],
   "handedOff": [],
-  "ignited": [],
+  "ignited": [
+   {
+    "newSession": "3e86d90f-ac5e-4d8c-98a0-dc7aed0867f9",
+    "pid": 39027,
+    "row": "🟢 T023 P1 [23] 確認が多すぎる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_3e86d90f ｜ 59回 ｜ 2026-10-01 09:20"
+   }
+  ],
   "unrecoverable": [],
-  "ignite": "目標2本を満たしている（生存4本）",
+  "ignite": "着火した（1本）",
   "shed": null,
   "keep": {
    "target": 2,
-   "alive": 4,
+   "alive": 2,
    "below": 0,
-   "line": "現在4本／上限4本／目標2本／あと4本いける"
+   "line": "現在2本／上限4本／目標2本／あと3本いける"
   },
   "stalledSkipped": []
  },
@@ -6560,11 +6596,11 @@
   "autoResumes": 79,
   "handoffs": 14,
   "hardCuts": 1,
-  "ignitions": 21,
+  "ignitions": 22,
   "gated": 0,
   "autoResumesThisRun": 0,
   "handoffsThisRun": 0,
-  "ignitionsThisRun": 0,
+  "ignitionsThisRun": 1,
   "humanPushes": 0,
   "doneAlive": 0,
   "doneWithoutHumanPush": 0,
@@ -6573,7 +6609,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-10-01 09:16",
+  "updatedAt": "2026-10-01 09:19",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -6597,10 +6633,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 0,
-  "allWeightedTokensSinceReset": 385713217,
+  "allWeightedTokensSinceReset": 386750761,
   "last6h": {
    "fable": 0,
-   "all": 63286605
+   "all": 64324149
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
@@ -6654,14 +6690,6 @@
   "benchmark": null,
   "line": "Fable週枠 ?%（今日の目標45.0%・?） ／ 全モデル ?%（推定時点・曲線目標22.9%・?） ／ リセットまで 5.4日 ／ 5時間枠 1.0%・残0.0h",
   "switches": [
-   {
-    "t": "2026-09-27 22:49",
-    "task": "🟢 T023 P1 [23] 確認が多すぎる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_e143a951 ｜ 59回 ｜ 2026-09-27 22:49 誤",
-    "from": null,
-    "to": "claude-sonnet-5",
-    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
-    "fablePct": 0.0
-   },
    {
     "t": "2026-09-27 23:49",
     "task": "🟢 T023 P1 [23] 確認が多すぎる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_61ab9222 ｜ 59回 ｜ 2026-09-27 23:49 誤",
@@ -6729,6 +6757,14 @@
    {
     "t": "2026-09-29 22:26",
     "task": "🟢 T024 P1 [24] 指示待ちで止まる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_e7caad14 ｜ 13回 ｜ 2026-09-29 22:26 ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-10-01 09:20",
+    "task": "🟢 T023 P1 [23] 確認が多すぎる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_3e86d90f ｜ 59回 ｜ 2026-10-01 09:20 検",
     "from": null,
     "to": "claude-sonnet-5",
     "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
