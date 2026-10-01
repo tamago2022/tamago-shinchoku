@@ -2411,9 +2411,42 @@ def _main_impl():
           log("見送り: 発車待ちは全部週の配分ゲート待ち")
           return 0
 
+      # ---- 済み照合の関所（2026-10-01 たまごさん）----
+      #   「同じ作業を2回も3回も繰り返してクレジットを溶かすのは論外。終わっている作業を
+      #    再度やらないこと。判断がつかなければ都度確認」
+      #   発車させる直前に、同じ題名・同じ目的の済み票（done／deleted.jsonのdone）を照合する。
+      #   当たったら発車させず hold（票は消さない）。重くしないため先頭から最大30枚だけ見る。
+      #   照合自体が壊れたときは発車を止めない（工場を止めない）が、ログに必ず残す。
+      room = safe_max - alive
+      try:
+          import zumi_sekisho
+          _dones = zumi_sekisho.done_items(q)
+          _clean, _zumi_hit = [], False
+          for it in waiting[:30]:
+              if len(_clean) >= room:
+                  break
+              _twin = zumi_sekisho.find_done_twin(it, _dones)
+              if _twin is None:
+                  _clean.append(it)
+                  continue
+              it["status"] = "hold"
+              it["holdNote"] = zumi_sekisho.hold_note(_twin)
+              it["zumiTwin"] = _twin.get("n")
+              _zumi_hit = True
+              log("🛑 済み照合の関所：%s番は%s番で済み。発車させず保留にしました" % (it.get("n"), _twin.get("n")))
+          if _zumi_hit:
+              q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+              save_queue(q, snapshot=_snap)
+              _snap = queue_store.snapshot_items(q)
+          waiting = _clean
+      except Exception as _e:
+          log("済み照合の関所でエラー（発車は止めない）: %s" % _e)
+      if not waiting:
+          log("見送り: 発車待ちは全部済み照合の関所で保留")
+          return 0
+
       # 2026-09-04 たまごさん「今イパネマしかしてないから、そこを4本にして」
       #   1回の実行で1本だけだと、5分×3回で3本になるまで15分かかる。空いているぶんを一度に埋める。
-      room = safe_max - alive
       to_launch = waiting[:room]
 
   # ---- ここから先は鍵を離す（案件#687・要件④：鍵を持ったまま重い処理をしない）----

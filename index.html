@@ -610,7 +610,7 @@ function renderNext(list, total){
       + midashiHtml(x) + '</div></li>';
   });
   /* 「ほか 1980 件」は何の数か分からない、と言われた（2026-10-01）。言葉を付ける。 */
-  if(total > list.length) rows.push('<li class="note">待っている仕事は全部で ' + Number(total).toLocaleString("ja-JP") + '</li>');
+  if(total > list.length) rows.push('<li class="note">残っている仕事 ' + Number(total).toLocaleString("ja-JP") + '</li>');
   $("next").innerHTML = rows.join("");
 }
 function renderHold(h){
