@@ -1964,7 +1964,12 @@ def queue_rank_key(it, prio):
     （command_ingest.queue_urgent／自動では立たない）。理由は urgentReason に入れる。"""
     p = effective_priority(it, prio)
     o = it.get("order")
-    u = 0 if it.get("urgent") else 1
+    # 鬼監督の差し戻しは、未完了案件を閉じるための再作業。
+    # 通常のurgent/new taskより先に戻さないと、P1 backlogに埋もれてQAループが切れる。
+    title = str(it.get("title") or "")
+    what = str(it.get("what") or "")
+    qa_retry = title.startswith("差し戻し（鬼監督）") or "【差し戻し（鬼監督＝Codex）】" in what
+    u = -1 if qa_retry else (0 if it.get("urgent") else 1)
     return (u, p, int(o) if isinstance(o, int) else 10 ** 6, it.get("n") or 99)
 
 
@@ -2145,6 +2150,19 @@ def _main_impl():
                          if it.get("status") == "running" and it.get("pid") and _pid_alive(it.get("pid"))])
       alive = max(alive, queue_alive)
       safe_max = m.get("safeMax")
+      if safe_max is None:
+          # 2026-10-01: machine.json の新形式は safeMax ではなく
+          # sessions + note「あとN本OK」を返す。旧読取のままだと空きがあっても2本で満席扱いになる。
+          # 互換処理として「あとN本OK」が取れた場合は、急に増やしすぎないよう1本だけ追加許可する。
+          try:
+              _sess = int(m.get("sessions") or alive)
+              _note = str(m.get("note") or "")
+              _mm = re.search(r"あと\s*(\d+)\s*本OK", _note)
+              if _mm and int(_mm.group(1)) > 0:
+                  safe_max = max(alive + 1, _sess + 1)
+                  log("machine新形式から安全枠を復元：走行%d本→上限%d本（%s）" % (alive, safe_max, _note))
+          except Exception:
+              safe_max = None
       if safe_max is None:
           # 2026-09-16：「測れないから止まる」は工場を丸ごと止める最も損な止まり方。
           # machine.jsonが古い/壊れている間も、既定値で発車自体は続ける。
@@ -2364,7 +2382,12 @@ def _main_impl():
       _haibun_gated = False
       _haibun_gate_waiting = []
       for it in waiting:
-          if blocked and shukan_kubun.classify_item(it) == "urakata":
+          # 鬼監督の差し戻しは「新規の裏方仕事」ではなく、未完了案件を閉じるための修正。
+          # ここを週30%の裏方枠で止めると、QA→差し戻し→再実装のループ自体が切れる。
+          # したがって差し戻し再作業は配分ゲートを通過させる。
+          _title = str(it.get("title") or "")
+          _qa_retry = _title.startswith("差し戻し（鬼監督）") or "【差し戻し（鬼監督＝Codex）】" in str(it.get("what") or "")
+          if blocked and shukan_kubun.classify_item(it) == "urakata" and not _qa_retry:
               if not it.get("urakataBlockedAt"):
                   log("🚧 裏方の枠が上限のため発車を止めました %s番「%s」" % (it.get("n"), it.get("title")))
                   it["urakataBlockedAt"] = time.strftime("%Y-%m-%d %H:%M:%S+09:00")
