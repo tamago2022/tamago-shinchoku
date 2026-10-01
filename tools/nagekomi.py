@@ -157,6 +157,7 @@ def enrich(url):
             meta["title"] = text[:200]
             meta["channel"] = d.get("author_name", "")
             meta["source"] = "publish.twitter.com oEmbed %s" % code
+            meta["_embed"] = html   # ★2210番：棚のカードの埋め込みに使う（台帳には書かない）
         except Exception as e:
             why.append("X oEmbed失敗：%s（鍵の要る投稿・削除・非公開だと取れない）" % e)
 
@@ -233,6 +234,7 @@ def add(url, memo="", shelf=None, shelf_id=None, test=False, shelves=None):
     if not re.match(r"^https?://", url):
         return {"ok": False, "message": "http(s)で始まるURLだけ受け付けます"}
     meta, why = enrich(url)
+    embed = meta.pop("_embed", None)
     tana_list = norm_shelves(shelves)
     if not tana_list and ((shelf or "").strip() or (shelf_id or "")):
         tana_list = norm_shelves([{"id": shelf_id, "title": shelf or ""}])
@@ -269,7 +271,7 @@ def add(url, memo="", shelf=None, shelf_id=None, test=False, shelves=None):
     if row["nageta"] != "test":
         try:
             import importlib
-            k = importlib.import_module("2210_tanaire").ima(row["id"])
+            k = importlib.import_module("2210_tanaire").ima(row["id"], row=dict(row, _embed=embed))
         except Exception as e:  # noqa: BLE001
             k = {"ok": False, "why1": "失敗", "why": str(e)[:120]}
         if k.get("ok"):

@@ -136,6 +136,53 @@ def _media(url):
     return importlib.import_module("1152_ireru").media(url)
 
 
+def media_hayai(url, r):
+    """★その場で入れるための速い版（1152番 media() と同じ判定を、待ち時間の長い所だけ省く）。
+      YouTube … 箱が受け取った時点で YouTube Data API で生きているのを確かめ済み（metaMissing が無い）なら、
+                サムネは決まった場所（img.youtube.com/vi/<id>/hqdefault.jpg）なので取りに行かない。
+      X       … cdn.syndication 1本だけ（動画が入っているか・サムネ）。埋め込みHTMLは後ろで埋める。
+      それ以外・判定できないときは正本の media() に任せる。"""
+    m = RE_YT.search(url)
+    if m and r.get("videoId") and not r.get("metaMissing"):
+        return "https://img.youtube.com/vi/%s/hqdefault.jpg" % m.group(1), None, ""
+    mx = RE_X.match(url)
+    if mx:
+        try:
+            import importlib
+            ir = importlib.import_module("1152_ireru")
+            code, body = ir._get("https://cdn.syndication.twimg.com/tweet-result?id=%s&lang=ja&token=a" % mx.group(2), timeout=8)
+            if code == 200 and body:
+                d = json.loads(body)
+                md = d.get("mediaDetails") or []
+                kinds = [x.get("type") for x in md]
+                if "video" not in kinds and "animated_gif" not in kinds:
+                    return None, None, "この投稿に動画が入っていない（%s）" % (kinds or "メディア無し")
+                thumb = (d.get("video") or {}).get("poster") or (md[0].get("media_url_https") if md else None)
+                if thumb:
+                    return thumb, (r.get("_embed") or None), ""
+        except Exception:
+            pass
+    return _media(url)
+
+
+def note_ato(ref, url):
+    """Xの公式埋め込みHTMLを後ろで埋める（たまごさんを待たせない）。"""
+    def go():
+        try:
+            import importlib
+            ir = importlib.import_module("1152_ireru")
+            code, body = ir._get("https://publish.twitter.com/oembed?url=%s&omit_script=1&dnt=true"
+                                 % urllib.parse.quote(url, safe=""))
+            html = json.loads(body).get("html") if code == 200 and body else ""
+            if html:
+                DB().q("update admin_stock set note = %s where kind = 'x' and ref = %s and note is null"
+                       % (lit(html), lit(ref)))
+        except Exception:
+            pass
+    import threading
+    threading.Thread(target=go, daemon=True).start()
+
+
 def clean_title(t):
     t = str(t or "").replace("&mdash;", "—").replace("&amp;", "&").replace("&#39;", "'").replace("&quot;", '"')
     t = re.sub(r"\s*(pic\.twi\w*|https?://)\S*[\s\S]*$", "", t)
@@ -218,10 +265,12 @@ def ireru(db, r):
     kind = "youtube" if m else ("x" if mx else "link")
     ref = ("https://www.youtube.com/watch?v=%s" % m.group(1)) if m else \
           (("https://x.com/%s/status/%s" % (mx.group(1), mx.group(2))) if mx else url)
+    tm = time.time()
     try:
-        thumb, note, why_m = _media(url)
+        thumb, note, why_m = media_hayai(url, r)
     except Exception as e:  # noqa: BLE001
         thumb, note, why_m = None, None, "サムネを調べる係が転んだ（%s）" % type(e).__name__
+    t_media = round(time.time() - tm, 1)
     if not thumb:
         w1 = "動画切れ" if (m and "oEmbed" in str(why_m)) else "サムネ無し"
         return {"ok": False, "why1": w1, "why": why_m}
@@ -253,6 +302,8 @@ def ireru(db, r):
                     "stockId": row.get("stock_id")})
     if not got:
         return {"ok": False, "why1": why1 or "失敗", "why": why}
+    if mx and not note:
+        note_ato(ref, url)
     rec = {"bin": "2210", "at": now(), "id": rid, "nagekomiId": rid, "stockId": got[0]["stockId"],
            "pickId": got[0]["pickId"], "shelfId": got[0]["shelfId"], "dbShelfId": got[0]["dbShelfId"],
            "shelf": got[0]["title"], "world": got[0]["world"],
@@ -260,7 +311,7 @@ def ireru(db, r):
            "ref": ref, "title": title, "titleAfter": title, "pickStatus": "candidate",
            "copyBefore": str(r.get("titleRaw") or r.get("title") or "")[:400], "via": "query_database"}
     return {"ok": True, "why1": "", "why": "", "links": [{"title": g["title"], "url": g["url"]} for g in got],
-            "rec": rec, "partial": why1}
+            "rec": rec, "partial": why1, "t_media": t_media}
 
 
 def kekka_write(rid, k):
@@ -269,7 +320,7 @@ def kekka_write(rid, k):
     except Exception:
         d = {}
     d[rid] = {"at": now(), "ok": k.get("ok"), "why1": k.get("why1") or "", "why": k.get("why") or "",
-              "links": k.get("links") or []}
+              "links": k.get("links") or [], "byou": k.get("byou"), "t_media": k.get("t_media")}
     os.makedirs(os.path.dirname(KEKKA), exist_ok=True)
     tmp = KEKKA + ".tmp"
     io.open(tmp, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=1))
@@ -293,18 +344,37 @@ def kiroku(rid, k):
         pass
 
 
-def ima(rid, db=None):
+_DB = {"db": None, "at": 0.0}
+
+
+def db_kept():
+    """★中継所の中では Lovable との接続を使い回す（毎回の挨拶で数秒かかっていたため）。30分で張り直す。
+    切れていたら ima() が1回だけ張り直してやり直す。"""
+    if _DB["db"] is None or time.time() - _DB["at"] > 1800:
+        _DB["db"], _DB["at"] = DB(), time.time()
+    return _DB["db"]
+
+
+def ima(rid, db=None, row=None):
     """★投げた瞬間に呼ぶ口（nagekomi.add から）。その場で棚へ入れて結果を返す。"""
-    rows = [r for r in read_jsonl(LEDGER) if r.get("id") == rid]
-    if not rows:
-        return {"ok": False, "why1": "失敗", "why": "台帳に見当たらない"}
-    r = rows[-1]
+    t0 = time.time()
+    r = row
+    if r is None:
+        rows = [x for x in read_jsonl(LEDGER) if x.get("id") == rid]
+        if not rows:
+            return {"ok": False, "why1": "失敗", "why": "台帳に見当たらない"}
+        r = rows[-1]
     if str(r.get("nageta") or "") == "test":
         return {"ok": False, "why1": "試し", "why": "機械の試し投げは棚に入れない"}
     try:
-        k = ireru(db or DB(), r)
+        try:
+            k = ireru(db or db_kept(), r)
+        except RuntimeError:
+            _DB["db"] = None            # 接続が切れていたら1回だけ張り直す
+            k = ireru(db or db_kept(), r)
     except Exception as e:  # noqa: BLE001
         k = {"ok": False, "why1": "失敗", "why": str(e)[:200]}
+    k["byou"] = round(time.time() - t0, 1)
     kiroku(rid, k)
     return k
 

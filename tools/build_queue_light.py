@@ -35,7 +35,7 @@ QUEUE_LIGHT = os.path.join(REPO, "status", "queue_light.json")
 #   トップが実際に使う7つの項目だけを持つファイルを別に作り、上書きではなく一発で出す。
 QUEUE_NEXT = os.path.join(REPO, "status", "queue_next.json")
 # 「次に発車」が読むフィールドだけ（index.html の pri/rankCmp/renderNext が使うものが全部）。
-NEXT_FIELDS = ("n", "title", "label", "status", "priority", "order", "urgent")
+NEXT_FIELDS = ("n", "hyoudai", "title", "label", "status", "priority", "order", "urgent")
 
 # 軽量版から取り除くフィールド（ブラックリスト）。
 STRIP_FIELDS = ("what", "result")

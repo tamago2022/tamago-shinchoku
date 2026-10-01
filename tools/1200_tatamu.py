@@ -168,6 +168,18 @@ def hakaru(rows):
         "rssGB": round(sum(r["rss"] for r in bp) / 1048576.0, 2),
         "tabs": len([r for r in bp if "(Renderer)" in r["cmd"]]),
     }
+    # 2026-10-01：Claudeが開いたBraveタブ（セッションファイルを読むだけ。Braveには触らない）。
+    # 1枚でもあれば 1373_alert.py が赤を出す。読めなければ None（0と偽装しない）。
+    try:
+        sys.path.insert(0, HERE)
+        import brave_claude_tabs
+        s = brave_claude_tabs.summary()
+        d["brave"]["claudeTabs"] = s.get("claudeTabs")
+        d["brave"]["claudeUrls"] = s.get("claudeUrls") or []
+        d["brave"]["sessionTabs"] = s.get("tabsTotal")
+    except Exception as e:
+        d["brave"]["claudeTabs"] = None
+        d["brave"]["claudeTabsErr"] = str(e)[:120]
     op = [r for r in rows if "Brave Browser" not in r["cmd"] and OURS.search(r["cmd"])]
     d["ours"] = {"procs": len(op), "rssGB": round(sum(r["rss"] for r in op) / 1048576.0, 2)}
     return d
@@ -316,8 +328,10 @@ def main():
         "killedTotal": total,
         "yobareta": "stop-hook" if stop_hook else ("shikii" if shikii else "te"),
         "shikiiKoeta": koeta,
-        "ichigyou": "こちら %.1fGB・%d本／Brave タブ%d枚・%.1fGB／スワップ %.1f/%.1fGB" % (
-            (m["ours"]["rssGB"]), m["ours"]["procs"], m["brave"]["tabs"], m["brave"]["rssGB"],
+        "ichigyou": "こちら %.1fGB・%d本／Brave タブ%d枚（Claude分 %s）・%.1fGB／スワップ %.1f/%.1fGB" % (
+            (m["ours"]["rssGB"]), m["ours"]["procs"], m["brave"]["tabs"],
+            ("?" if m["brave"].get("claudeTabs") is None else "%d枚" % m["brave"]["claudeTabs"]),
+            m["brave"]["rssGB"],
             m.get("swapUsedGB") or 0, m.get("swapTotalGB") or 0),
     })
     jsave(OUT, m)

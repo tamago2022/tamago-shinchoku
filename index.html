@@ -77,8 +77,15 @@ button:active{background:#efe9df}
 /* ───── 走っているもの ───── */
 .run{border-top:1px solid #eee7dc; padding:13px 0 12px}
 .run:first-child{border-top:0; padding-top:2px}
-.rt{font-size:19px; font-weight:600; line-height:1.4;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.rt{font-size:19px; font-weight:600; line-height:1.4}
+/* 題名を押すと「元の言葉」が開く（2026-10-01） */
+details.gen > summary{list-style:none; cursor:pointer}
+details.gen > summary::-webkit-details-marker{display:none}
+.genbun{font-size:13px; font-weight:400; color:var(--sub); line-height:1.6; margin-top:5px;
+  padding:7px 9px; background:#f3eee6; border-radius:8px}
+.tag{display:inline-block; font-size:12px; font-weight:600; color:var(--red); border:1px solid #e2b6a8;
+  border-radius:6px; padding:0 6px; margin-right:6px; vertical-align:2px}
+.q li{display:flex; gap:4px} .qt{flex:1; min-width:0}
 .rn{color:var(--sub); font-variant-numeric:tabular-nums; font-weight:400; margin-right:7px}
 .rmeta{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-top:7px}
 .rel{font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1}
@@ -303,6 +310,42 @@ function yomeru(s){
   }
   return t || "題名が取れていません";
 }
+/* ───────── 何をする仕事か、の1行（2026-10-01） ─────────
+   たまごさん「俺の会話を引っこ抜いただけでしょう。何をやっているのかが1行でわかるように」
+   → 生成元（tools/hyoudai.py・queue_add）が item.hyoudai を持たせる。ここではそれを出すだけ。
+   まだ hyoudai が付いていない古い項目だけ、会話の語尾を落とす最低限の掃除をする。
+   原文（title）は、題名を押すと開く畳みの中に残す。 */
+function gobi(t){
+  var r = [
+    [/(しておいて|しといて|してほしい|して欲しい|してください|して下さい|してくれ|してね|して)$/, "する"],
+    [/(作っておいて|作ってほしい|作ってください|作って)$/, "作る"],
+    [/(直しておいて|直してほしい|直してください|直して)$/, "直す"],
+    [/(入れておいて|入れてほしい|入れてください|入れて)$/, "入れる"],
+    [/(おくとかさ|とかさ|とか|かな|よね|だよね|だよ|だね|でしょう?|じゃん|ね|よ|さ)$/, ""]
+  ];
+  for(var k = 0; k < 2; k++){
+    for(var i = 0; i < r.length; i++){
+      var t2 = t.replace(r[i][0], r[i][1]);
+      if(t2 !== t){ t = t2.replace(/[。、\s…]+$/, ""); break; }
+    }
+  }
+  return t;
+}
+function midashi(x){
+  var h = String(x.hyoudai || "").trim();
+  if(h) return h;
+  var t = yomeru(x.title || x.label);
+  return gobi(t.replace(/…$/, "")) + (/…$/.test(t) ? "…" : "");
+}
+/* 題名＋（押すと開く）原文 */
+function midashiHtml(x){
+  var h = midashi(x);
+  var raw = String(x.title || x.label || "").replace(/^\s*判定日赤\s*[｜|]\s*/, "").trim();
+  var tag = /差し戻し/.test(String(x.title || x.label || "")) ? '<span class="tag">差し戻し</span>' : "";
+  if(!raw || raw === h) return tag + esc(h);
+  return '<details class="gen"><summary>' + tag + esc(h) + '</summary>'
+    + '<div class="genbun">元の言葉：' + esc(raw) + '</div></details>';
+}
 function getJson(url, ms){
   return new Promise(function(resolve, reject){
     var done = false;
@@ -376,11 +419,9 @@ function renderOmosa(d){
   if(!el) return;
   if(!o || !o.ours){ el.style.display = "none"; return; }
   var p = [];
-  p.push("こちら " + o.ours.rssGB + "GB・" + o.ours.procs + "本");
-  if(o.brave) p.push("Brave タブ" + o.brave.tabs + "枚・" + o.brave.rssGB + "GB");
-  if(o.swapUsedGB != null && o.swapTotalGB != null)
-    p.push("メモリの逃がし " + o.swapUsedGB + "／" + o.swapTotalGB + "GB");
-  if(o.tatandaKei) p.push("閉じた合計 " + o.tatandaKei + "本");
+  /* 2026-10-01「分からない数字は消す」：本数・逃がし・閉じた合計は外し、メモリの量だけ言葉付きで */
+  p.push("工場が使っているメモリ " + Math.round(Number(o.ours.rssGB) * 10) / 10 + "GB");
+  if(o.brave) p.push("Braveのタブ" + o.brave.tabs + "枚で " + Math.round(Number(o.brave.rssGB) * 10) / 10 + "GB");
   el.style.display = "block";
   el.textContent = p.join("　");
 }
@@ -412,7 +453,7 @@ function renderRunning(d){
   $("running").innerHTML = RUN.map(function(x, i){
     var kara = String(x.label||"").indexOf("空回し") >= 0;
     return '<div class="run' + (kara ? ' karamawashi' : '') + '" data-i="' + i + '">'
-      + '<div class="rt">' + esc(kara ? "仕事待ち（何もしていません）" : yomeru(x.label)) + '</div>'
+      + '<div class="rt">' + (kara ? esc("仕事待ち（何もしていません）") : midashiHtml(x)) + '</div>'
       + '<div class="rmeta">'
       +   '<span class="rel" data-el>—</span>'
       +   '<span class="rlim" data-lim></span>'
@@ -565,10 +606,11 @@ function renderNext(list, total){
     return;
   }
   var rows = list.map(function(x, i){
-    return '<li><span class="ord">' + (i+1) + '.</span>'
-      + esc(yomeru(x.title || x.label)) + '</li>';
+    return '<li><span class="ord">' + (i+1) + '.</span><div class="qt">'
+      + midashiHtml(x) + '</div></li>';
   });
-  if(total > list.length) rows.push('<li class="note">ほか ' + (total - list.length) + ' 件</li>');
+  /* 「ほか 1980 件」は何の数か分からない、と言われた（2026-10-01）。言葉を付ける。 */
+  if(total > list.length) rows.push('<li class="note">待っている仕事は全部で ' + Number(total).toLocaleString("ja-JP") + '</li>');
   $("next").innerHTML = rows.join("");
 }
 function renderHold(h){
@@ -579,9 +621,9 @@ function renderHold(h){
   var rows = (h.items || []).map(function(x){
     var why = x.why ? '<span class="note">' + esc(x.why) + '</span>' : "";
     return '<li style="padding:9px 0;border-top:1px solid #eee7dc">'
-      + esc(yomeru(x.title)) + (why ? '<br>' + why : '') + '</li>';
+      + midashiHtml(x) + (why ? '<br>' + why : '') + '</li>';
   });
-  if(h.total > rows.length) rows.push('<li class="note" style="padding:9px 0">ほか ' + (h.total - rows.length) + ' 件</li>');
+  if(h.total > rows.length) rows.push('<li class="note" style="padding:9px 0">残り ' + (h.total - rows.length) + ' 件はここでは省略</li>');
   $("holdList").innerHTML = rows.join("");
 }
 function loadQueue(fallback){
@@ -593,7 +635,7 @@ function loadQueue(fallback){
     var honban = pool.filter(function(x){ return dan(x) < 3; });
     if(honban.length) pool = honban;
     pool.sort(rankCmp);
-    renderNext(pool.slice(0,5), pool.length);
+    renderNext(pool.slice(0,5), w.length);
   }).catch(function(){
     if((fallback||[]).length){ renderNext(fallback, fallback.length); return; }
     $("next").innerHTML = '<li class="note">待機列を読み込めませんでした（「読み直す」でもう一度）</li>';
