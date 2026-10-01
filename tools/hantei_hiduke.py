@@ -208,6 +208,23 @@ def hantei_1ken(r, ima):
         return {"which": which, "aka": False, "state": st,
                 "sonogo": "実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）"}
 
+    # 1996番実例（2026-10-01）：db49d38d7864（「あ、ダブルできてるんじゃなくて
+    # 直してくれたんだね。」）のように、DAICHO（宿題台帳）に一度も登録されない
+    # まま判定日を迎える hatsugen.jsonl 直の行には、上のチェック（r/curの
+    # actionable）が一切届かない（DAICHOにこのidが無いため cur.actionable は
+    # 常にNone）。1462番で shukudai.actionable() まるごと（_TASKISH込み）を
+    # フォールバックに使うのは誤検知が広すぎて撤回されているので、ここでは
+    # 粗い動詞判定を伴わない _NOT_TASK（明確な非タスク文言）への一致だけを、
+    # 限定的に先に弾く。
+    try:
+        sys.path.insert(0, HERE)
+        import shukudai as _shukudai_notask
+        if _shukudai_notask._NOT_TASK.search(r.get("title") or ""):
+            return {"which": which, "aka": False, "state": st,
+                    "sonogo": "実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）"}
+    except Exception:
+        pass
+
     if st == "完了":
         return {"which": which, "aka": False, "state": st,
                 "sonogo": "返した（%s／%s）" % (cur.get("evidence") or "証拠URLなし", t)}
