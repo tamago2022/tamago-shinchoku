@@ -1,41 +1,41 @@
 {
- "measuredAt": "2026-10-01T21:28:47+0900",
- "diskFreeGB": 45.0,
+ "measuredAt": "2026-10-01T22:10:13+0900",
+ "diskFreeGB": 46.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 90,
+ "load": 185,
  "memPressure": "green",
  "memAvailGB": 7.0,
  "sessions": 0,
  "safeMax": 4,
  "moreOK": 4,
- "target": 2,
- "cap": 2,
+ "target": 1,
+ "cap": 1,
  "calibratedSafeN": 4,
- "below": 2,
+ "below": 1,
  "shedCandidates": [],
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 16.49GB",
-   "gb": 16.49,
+   "effect": "メモリ 16.79GB",
+   "gb": 16.79,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
-   "how": "53プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "54プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "ゴミ箱を空にする",
-   "effect": "空き 8.53GB",
-   "gb": 8.53,
+   "effect": "空き 8.69GB",
+   "gb": 8.69,
    "kind": "disk",
    "safe": false,
    "how": "捨てたつもりのもの。中身を一度見てから"
   },
   {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 2.55GB",
-   "gb": 2.55,
+   "effect": "空き 2.56GB",
+   "gb": 2.56,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
@@ -50,8 +50,8 @@
   },
   {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 0.47GB",
-   "gb": 0.47,
+   "effect": "メモリ 0.51GB",
+   "gb": 0.51,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
@@ -64,14 +64,6 @@
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
-  },
-  {
-   "label": "終わって待機中のセッション 1本を畳む",
-   "effect": "メモリ 0.41GB・負荷↓",
-   "gb": 0.41,
-   "kind": "mem",
-   "safe": true,
-   "how": "Rusuban mimawa"
   },
   {
    "label": "LINEを閉じる",
@@ -89,13 +81,21 @@
    "kind": "disk",
    "safe": true,
    "how": "npx の一時置き場。作り直される"
+  },
+  {
+   "label": "終わって待機中のセッション 1本を畳む",
+   "effect": "メモリ 0.21GB・負荷↓",
+   "gb": 0.21,
+   "kind": "mem",
+   "safe": true,
+   "how": "Rusuban mimawa"
   }
  ],
- "_duAt": 1790857083.167845,
+ "_duAt": 1790859261.325114,
  "_du": {
-  "caches": 2.55,
+  "caches": 2.56,
   "npx": 0.32,
-  "trash": 8.53,
+  "trash": 8.69,
   "driveCache": 1.36,
   "nodeModules": 0.42,
   "nodeModulesList": [
@@ -106,18 +106,18 @@
   ]
  },
  "同時上限": {
-  "本数": 2,
+  "本数": 1,
   "根拠": [
-   "首は「スワップ」（メモリ32本／スワップ2本／ロード5本）",
-   "減便せず：スワップは低い（残り1.13GB（4.0GB未満）／使用96%（70%超））が、空きメモリ13.85GB・5分ロード比0.94＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
-   "試し増便は見送り：スワップ使用96%／5分ロード比0.94＝静かでない"
+   "首は「スワップ」（メモリ32本／スワップ0本／ロード3本）",
+   "減便せず：スワップは低い（残り0.75GB（4.0GB未満）／使用98%（70%超））が、空きメモリ13.84GB・5分ロード比1.42＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
+   "試し増便は見送り：スワップ使用98%／5分ロード比1.42＝静かでない"
   ],
   "天井": {
    "メモリ": 32,
-   "スワップ": 2,
-   "ロード": 5
+   "スワップ": 0,
+   "ロード": 3
   },
-  "測った時刻": "2026-10-01T21:28:48+0900",
+  "測った時刻": "2026-10-01T22:10:13+0900",
   "自動減便": null,
   "試し増便": null
  }
