@@ -66,14 +66,34 @@
 
 
 
-<h2>④ 押せるリンク</h2>
+<h2>④ 押せるリンク（本番だけ・ここで実際に試せます）</h2>
 <ul class="links">
-  <li><b>直した場所</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/FeedbackDoor.tsx" target="_blank" rel="noopener">FeedbackDoor.tsx を見る</a></li>
-  <li><b>事例調査メモ</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/live/2026-10-01-email-capture-once-per-person.md" target="_blank" rel="noopener">調査メモを見る</a></li>
-  <li><b>本番（反映済み）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">joy-relief-station.lovable.app</a></li>
+  <li><b>本番サイト（反映済み）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">joy-relief-station.lovable.app</a></li>
 </ul>
+<div class="note">
+<b>試し方（シークレットウィンドウで）</b>：上のリンクを開く → ページ下にある「間違いを見つけた方は、ひとことだけ教えてください」を押す → 開いた中の「メール（任意）」の下にある「今は結構です」を押す → もう一度どこかのページで同じ箱を開くと、メールの話が一切出てこなくなる。これが「ひとり1回」。
+</div>
 
+<h2>③ 直した場所（コードの抜粋）</h2>
+<div class="note" style="font-family:monospace;font-size:0.8rem;white-space:pre-wrap;">
+src/components/FeedbackDoor.tsx（店主のGitHubは非公開のためリンクではなく抜粋で表示）
 
+const MAIL_STATUS_KEY = "jrs-mail-status-v1";
+// 「登録した」か「今は結構です」を1回選んだら、以後そのブラウザでは
+// どのページでメール欄を開いても二度と出さない。
+function readMailStatus() { return localStorage.getItem(MAIL_STATUS_KEY); }
+function writeMailStatus(v) { localStorage.setItem(MAIL_STATUS_KEY, v); }
+</div>
+
+<h2>調べた事例（「登録したら得だな」と思わせる定石）</h2>
+<div class="note">
+特定企業の実績数値は未確認のため確認が取れる一般原則だけを記載：<br>
+1. 良い体験の直後に聞く（感想を送った直後＝今の設計と一致）<br>
+2. 一度の返答を尊重し、断ったら二度と聞かない（今回追加したガードの核）<br>
+3. 聞く項目はメール1つだけにする（既存どおり）<br>
+4. 「お得情報」ではなく相手の行動に紐づく言葉にする（「あなた好みのものを届ける」＝既存の文言を維持）<br>
+5. 強制しない・いつでも閉じられる（既存どおり）
+</div>
 
 <footer>
 このページは #1990 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
