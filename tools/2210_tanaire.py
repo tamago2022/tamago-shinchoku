@@ -1,31 +1,37 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""2210番【投げ込み箱 → 本番の棚】鍵をMacに置かず、たまごさんの手も使わずに入れる係。
+"""2210番【投げ込み箱 → 本番の棚】投げた瞬間に棚へ書き込む係。鍵もたまごさんの手も要らない。
 
-■ 道の選び方（2026-10-01・4つ並べて実測で決めた）
-  ① Supabase Edge Function を新設（実行環境に SUPABASE_SERVICE_ROLE_KEY が既定で入る＝公式）
-     → GitHubにpushしても Edge Function は本番に出ない（#1386 で4日届かなかった実測）。
-       CLIデプロイ用の鍵も無い。Lovableエージェントは禁止。→ 不採用
-  ② 既存の管理用サーバー関数（adminAddStockFromUrl／adminAddPick）を合言葉で叩く
-     → 実測で Unauthorized（合言葉が変わっている）。合言葉を探して使うことはしない。→ 不採用
-  ③ 本番に「公開台帳を読んで棚へ入れる」サーバー関数を1本足す → コード変更＋公開が要る。控え
-  ④ ★Lovable 公式MCP の query_database（Lovable Cloud のDBに直接SQL）
-     → 鍵は既にMacにある Lovable のOAuth（lovable_12h.py が12時間ごとに巻き直している）。
-       service_role 不要・コード変更不要・公開不要・エージェント不使用（0円）。★採用
+■ たまごさん（2026-10-01・原文）
+  「スマホで入れたら1秒で入るのに、全部まだ『作業中』になってる。こんなのすぐに終わらせてほしい。
+    そもそも『作業中』って言うほどの手間でもないよね。」
+  → **段階は2つだけ：「済（棚のリンク）」か「入らない（理由1語）」。**後回しの周回はやめた。
+    箱 → 中継所 → command_ingest → nagekomi.add() → ここの ima() を**その場で**呼ぶ。
 
-■ 入れ方（画面の［URLから追加］［棚に入れる］と同じ行を作る）
-  admin_stock  : kind / ref / title / thumbnail_url（同じ kind+ref があれば作らない）
-  admin_shelf_picks : shelf_id / stock_id / position=末尾 / status='candidate' / pinned=false
-  ★棚が50枚以上なら入れない（本番は50枚を超えると古いカードを押し出して消す）。
-  ★機械の試し投げ（nageta=test：Bon Jovi / Keyboard Cat / Skrillex）は入れない。
-  ★YouTubeは oEmbed で動画が生きているかを確かめてから入れる。
-  入れた分は status/nagekomi_ireta.jsonl に控える（受付一覧がそのまま拾う形）。
+■ 道（2026-10-01・4つ並べて実測で決めた）
+  ① Edge Function 新設 → pushでは本番に出ない（#1386実測）。不採用
+  ② 管理用サーバー関数を合言葉で叩く → Unauthorized。合言葉は探さない。不採用
+  ③ 公開台帳を読むサーバー関数を足す → コード変更＋公開が要る。控え
+  ④ ★Lovable 公式MCP の query_database（Lovable Cloud のDBに直接SQL）。service_role不要・0円
+  ★速さのため、棚1つにつき**SQL1本**で「棚を引く→カードを作る（無ければ）→結ぶ」まで済ませる。
+
+■ 守ること
+  ・画面の［URLから追加］［棚に入れる］と同じ行（admin_stock / admin_shelf_picks status=candidate）。
+  ・同じカード（kind+ref）は作り直さない。同じ棚に同じカードは結ばない。
+  ・本番の棚は**サムネの無いカードを隠す**（worlds.ts filterPlayableCards）。サムネは 1152番 media() で実測。
+  ・棚が50枚以上なら入れない（本番の管理画面は50枚を超えると古いカードを消しにいくため）＝理由「満杯」。
+  ・機械の試し投げ（nageta=test）は入れない。
+
+■ 理由の1語（たまごさんに見せるのはこれだけ）
+  棚未定 … 行き先の棚が決まっていない      棚なし … 指定の棚が本番に無い
+  満杯   … 棚が50枚                        サムネ無し … 画像が取れない（棚に出せない）
+  動画切れ … YouTubeが見られない            URL無し … ひとことだけ
+  失敗   … 書き込みで転んだ（次の周回でもう一度）
 
 使い方:
-  python3 tools/2210_tanaire.py            … 未処理を全部（上限20）
-  python3 tools/2210_tanaire.py --dry      … 何を入れるかだけ
+  python3 tools/2210_tanaire.py            … 「済」でないものを全部やり直す
   python3 tools/2210_tanaire.py --only <id>
-  python3 tools/2210_tanaire.py --daily    … 5分便から。30分に1回だけ動く
+  python3 tools/2210_tanaire.py --daily    … 5分便から（取りこぼしの拾い直しだけ。30分に1回）
 """
 import io
 import json
@@ -39,23 +45,24 @@ from datetime import datetime, timedelta, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-sys.path.insert(0, HERE)
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
 import kohyou_osu as kohyou  # noqa: E402  Lovable MCP の口（鍵の巻き直しつき）
 
 JST = timezone(timedelta(hours=9))
 ST = os.path.join(REPO, "status")
 LEDGER = os.path.join(ST, "nagekomi.jsonl")
 IRETA = os.path.join(ST, "nagekomi_ireta.jsonl")
+KEKKA = os.path.join(ST, "public", "nagekomi_kekka.json")
 OUT = os.path.join(ST, "public", "nagekomi_shelf.json")
 GATE = os.path.join(ST, ".2210_tanaire_last")
 PID = kohyou.MATO["ごきげん補給所"]["project_id"]
+HONBAN = "https://joy-relief-station.lovable.app"
 CAP = 50
-MAX = 20
-UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 RE_YT = re.compile(r"(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})")
 RE_X = re.compile(r"^https?://(?:www\.|mobile\.)?(?:x|twitter)\.com/([^/?#]+)/status/(\d+)", re.I)
-# ★MCPで呼んでよい道具（これ以外は呼ばない。send_message＝エージェントは絶対に呼ばない）
-YURUSU = ("query_database", "get_database_status")
+WORLD = {"食": "food", "食べ物": "food", "音楽": "music", "かわいい": "cute",
+         "笑い": "laugh", "旅": "travel", "ダンス": "dance"}
 
 
 def now():
@@ -63,6 +70,8 @@ def now():
 
 
 class DB(object):
+    """Lovable 公式MCP の query_database だけを呼ぶ（エージェント・ビルドは呼ばない）。"""
+
     def __init__(self):
         self.lv = kohyou.Lovable()
         if not self.lv.ok():
@@ -70,30 +79,37 @@ class DB(object):
         self.lv.hello()
         self.lv._rpc("notifications/initialized", {})
 
-    def q(self, sql):
-        raw = self.lv._rpc("tools/call", {"name": "query_database",
-                                          "arguments": {"project_id": PID, "sql": sql}})
-        try:
-            line = [x for x in raw.splitlines() if x.startswith("data: ")][-1][6:]
-            res = json.loads(line)["result"]
-        except Exception:
-            raise RuntimeError("query_database の返事が読めない：%s" % (raw or "")[:300])
-        txt = "".join(c.get("text", "") for c in (res.get("content") or []))
-        if res.get("isError"):
-            raise RuntimeError("SQLが通らない：%s" % txt[:300])
-        try:
-            d = json.loads(txt)
-        except Exception:
-            return txt
-        if isinstance(d, dict):
-            for k in ("rows", "result", "data"):
-                if isinstance(d.get(k), list):
-                    return d[k]
-        return d
+    def q(self, sql, tries=2):
+        for i in range(tries):
+            raw = self.lv._rpc("tools/call", {"name": "query_database",
+                                              "arguments": {"project_id": PID, "sql": sql}})
+            try:
+                line = [x for x in raw.splitlines() if x.startswith("data: ")][-1][6:]
+                res = json.loads(line)["result"]
+            except Exception:
+                if i + 1 < tries:
+                    time.sleep(1)
+                    continue
+                raise RuntimeError("query_database の返事が読めない：%s" % (raw or "")[:200])
+            txt = "".join(c.get("text", "") for c in (res.get("content") or []))
+            if res.get("isError"):
+                # 499（向こうが途中で切った）は1回だけやり直す。SQLは冪等に書いてある
+                if "499" in txt and i + 1 < tries:
+                    time.sleep(1)
+                    continue
+                raise RuntimeError("SQLが通らない：%s" % txt[:200])
+            try:
+                d = json.loads(txt)
+            except Exception:
+                return txt
+            if isinstance(d, dict):
+                for k in ("rows", "result", "data"):
+                    if isinstance(d.get(k), list):
+                        return d[k]
+            return d
 
 
 def lit(s):
-    """SQLの文字列リテラル（' を二重に）。None は NULL。"""
     if s is None:
         return "NULL"
     return "'" + str(s).replace("\x00", "").replace("'", "''") + "'"
@@ -114,219 +130,214 @@ def read_jsonl(p):
     return out
 
 
-def oembed_youtube(ref):
-    try:
-        u = "https://www.youtube.com/oembed?format=json&url=" + urllib.parse.quote(ref, safe="")
-        with urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "tamago-2210"}),
-                                    timeout=20) as r:
-            return json.loads(r.read().decode("utf-8", "replace"))
-    except Exception:
-        return None
-
-
 def _media(url):
     """1152番 media() が正本（YouTube=サムネ実測＋oEmbed／X=cdn.syndication でサムネ＋公式埋め込み）。"""
     import importlib
     return importlib.import_module("1152_ireru").media(url)
 
 
-def hosei(db, res):
-    """★前に入れた分で、サムネが空のまま（＝本番の棚で隠れている）カードを埋め直す。"""
-    for r in read_jsonl(IRETA):
-        if r.get("via") != "query_database" or not r.get("stockId"):
+def clean_title(t):
+    t = str(t or "").replace("&mdash;", "—").replace("&amp;", "&").replace("&#39;", "'").replace("&quot;", '"')
+    t = re.sub(r"\s*(pic\.twi\w*|https?://)\S*[\s\S]*$", "", t)
+    t = re.sub(r"\s*—\s*.*\(@[^)]+\).*$", "", t)
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def page_url(row):
+    """本番の棚ページ。既存棚の受け皿なら元の棚id、店主が作った棚なら db-<uuid>（publicShelves:507）。"""
+    sid = row.get("extends_shelf_id") or ("db-" + row["shelf_db"])
+    return "%s/shelf/%s/%s" % (HONBAN, row.get("world") or "", sid), sid
+
+
+# ★棚1つにつき SQL 1本。棚を引く→カードが無ければ作る→（満杯でなく、まだ結んでいなければ）結ぶ。
+#   データを変えるCTEは必ず走るので、カードを作るのは「棚が見つかったとき」だけに絞ってある。
+SQL_IRERU = """
+with sh as (
+  select id, world, title, extends_shelf_id from admin_shelves
+  where (%(sid)s <> '' and (id::text = %(sid)s or extends_shelf_id = %(sid)s))
+     or (%(sid)s = '' and %(stitle)s <> '' and title = %(stitle)s)
+  order by (id::text = %(sid)s) desc, (extends_shelf_id = %(sid)s) desc, position nulls last
+  limit 1),
+ex as (select id from admin_stock where kind = %(kind)s and ref = %(ref)s limit 1),
+fix as (update admin_stock set thumbnail_url = coalesce(thumbnail_url, %(thumb)s), note = coalesce(note, %(note)s)
+        where id in (select id from ex) and (thumbnail_url is null or note is null) returning id),
+ins as (insert into admin_stock (kind, ref, title, thumbnail_url, note)
+        select %(kind)s, %(ref)s, %(title)s, %(thumb)s, %(note)s
+        where not exists (select 1 from ex) and exists (select 1 from sh) returning id),
+st as (select id from ex union all select id from ins),
+have as (select p.id from admin_shelf_picks p join sh on p.shelf_id = sh.id join st on p.stock_id = st.id),
+cnt as (select count(*)::int n from admin_shelf_picks p join sh on p.shelf_id = sh.id
+        where p.status in ('candidate','fixed')),
+pk as (insert into admin_shelf_picks (shelf_id, stock_id, position, status, pinned)
+       select sh.id, st.id,
+              coalesce((select max(position) from admin_shelf_picks where shelf_id = sh.id), -1) + 1,
+              'candidate', false
+       from sh, st
+       where not exists (select 1 from have) and (select n from cnt) < %(cap)s
+       returning id)
+select sh.id::text as shelf_db, sh.world, sh.title, sh.extends_shelf_id,
+       (select id::text from st limit 1) as stock_id,
+       (select id::text from have limit 1) as have_id,
+       (select id::text from pk limit 1) as pick_id,
+       (select n from cnt) as n
+from sh
+"""
+
+
+def wants_of(r):
+    if isinstance(r.get("shelves"), list) and r.get("shelves"):
+        return [w if isinstance(w, dict) else {"title": w} for w in r["shelves"]]
+    if r.get("shelfId") or r.get("shelf"):
+        return [{"id": r.get("shelfId"), "title": r.get("shelf")}]
+    return []
+
+
+def ensure_named_shelf(db, r, want_title):
+    """★たまごさんが「食＞スープ」と世界と棚を名指ししたときだけ棚を作る（機械の推測では作らない）。"""
+    mm = re.match(r"^\s*(食|食べ物|音楽|かわいい|笑い|旅|ダンス)\s*[＞>]\s*(.+?)\s*$", str(r.get("memo") or ""))
+    if not (mm and want_title and mm.group(2) == str(want_title).strip()):
+        return False
+    wid = WORLD[mm.group(1)]
+    db.q("insert into admin_shelves (world, title, position) select %s, %s, coalesce(max(position), 0) + 1 "
+         "from admin_shelves where world = %s and not exists (select 1 from admin_shelves where world = %s and title = %s)"
+         % (lit(wid), lit(want_title), lit(wid), lit(wid), lit(want_title)))
+    return True
+
+
+def ireru(db, r):
+    """1件を棚へ。返り値 {ok, why1, why, links:[{title,url}], rec}。"""
+    rid = r.get("id")
+    url = str(r.get("url") or "").strip()
+    if not url.startswith("https://"):
+        return {"ok": False, "why1": "URL無し", "why": "ひとことだけ届いています"}
+    wants = wants_of(r)
+    if not wants:
+        return {"ok": False, "why1": "棚未定", "why": "行き先の棚がまだ決まっていません"}
+    m = RE_YT.search(url)
+    mx = RE_X.match(url)
+    kind = "youtube" if m else ("x" if mx else "link")
+    ref = ("https://www.youtube.com/watch?v=%s" % m.group(1)) if m else \
+          (("https://x.com/%s/status/%s" % (mx.group(1), mx.group(2))) if mx else url)
+    try:
+        thumb, note, why_m = _media(url)
+    except Exception as e:  # noqa: BLE001
+        thumb, note, why_m = None, None, "サムネを調べる係が転んだ（%s）" % type(e).__name__
+    if not thumb:
+        w1 = "動画切れ" if (m and "oEmbed" in str(why_m)) else "サムネ無し"
+        return {"ok": False, "why1": w1, "why": why_m}
+    title = clean_title(r.get("title"))
+    if not title and mx:
+        title = "@%s のポスト" % mx.group(1)
+    title = (title or ref)[:300]
+
+    got, why1, why = [], "", ""
+    for w in wants:
+        sid = str(w.get("id") or "").strip()
+        stitle = str(w.get("title") or "").strip()
+        args = {"sid": lit(sid), "stitle": lit(stitle), "kind": lit(kind), "ref": lit(ref),
+                "title": lit(title), "thumb": lit(thumb), "note": lit(note or None), "cap": CAP}
+        rows = db.q(SQL_IRERU % args)
+        if not rows and ensure_named_shelf(db, r, stitle):
+            args["sid"] = lit("")
+            rows = db.q(SQL_IRERU % args)
+        if not rows:
+            why1, why = "棚なし", "棚「%s」が本番に無い" % (stitle or sid)
             continue
-        got = db.q("select thumbnail_url, note from admin_stock where id = %s" % lit(r["stockId"]))
-        if not got or got[0].get("thumbnail_url"):
+        row = rows[0]
+        if not (row.get("pick_id") or row.get("have_id")):
+            why1, why = "満杯", "棚「%s」が%s枚で満杯" % (row.get("title"), row.get("n"))
             continue
-        thumb, note, why = _media(r.get("ref") or "")
-        if not thumb:
-            res["machi"].append({"id": r.get("id"), "why": "サムネが取れない：%s" % why})
-            continue
-        db.q("update admin_stock set thumbnail_url = %s, note = coalesce(note, %s) where id = %s"
-             % (lit(thumb), lit(note or None), lit(r["stockId"])))
-        res["diag"].append("%s：サムネを埋めた" % r.get("id"))
+        link, page_id = page_url(row)
+        got.append({"title": row.get("title"), "url": link, "shelfId": page_id, "world": row.get("world"),
+                    "dbShelfId": row.get("shelf_db"), "pickId": row.get("pick_id") or row.get("have_id"),
+                    "stockId": row.get("stock_id")})
+    if not got:
+        return {"ok": False, "why1": why1 or "失敗", "why": why}
+    rec = {"bin": "2210", "at": now(), "id": rid, "nagekomiId": rid, "stockId": got[0]["stockId"],
+           "pickId": got[0]["pickId"], "shelfId": got[0]["shelfId"], "dbShelfId": got[0]["dbShelfId"],
+           "shelf": got[0]["title"], "world": got[0]["world"],
+           "hokaShelves": [{"shelfId": g["shelfId"], "shelf": g["title"], "world": g["world"]} for g in got[1:]],
+           "ref": ref, "title": title, "titleAfter": title, "pickStatus": "candidate",
+           "copyBefore": str(r.get("titleRaw") or r.get("title") or "")[:400], "via": "query_database"}
+    return {"ok": True, "why1": "", "why": "", "links": [{"title": g["title"], "url": g["url"]} for g in got],
+            "rec": rec, "partial": why1}
 
 
-def resolve_shelf(db, want):
-    sid = str((want or {}).get("id") or "").strip()
-    title = str((want or {}).get("title") or "").strip()
-    cols = "id, world, title, extends_shelf_id"
-    if sid and UUID.match(sid):
-        r = db.q("select %s from admin_shelves where id = %s" % (cols, lit(sid)))
-        if r:
-            return r[0]
-    if sid:
-        r = db.q("select %s from admin_shelves where extends_shelf_id = %s" % (cols, lit(sid)))
-        if len(r) == 1:
-            return r[0]
-    if title:
-        r = db.q("select %s from admin_shelves where title = %s" % (cols, lit(title)))
-        if len(r) == 1:
-            return r[0]
-    return None
+def kekka_write(rid, k):
+    try:
+        d = json.load(io.open(KEKKA, encoding="utf-8"))
+    except Exception:
+        d = {}
+    d[rid] = {"at": now(), "ok": k.get("ok"), "why1": k.get("why1") or "", "why": k.get("why") or "",
+              "links": k.get("links") or []}
+    os.makedirs(os.path.dirname(KEKKA), exist_ok=True)
+    tmp = KEKKA + ".tmp"
+    io.open(tmp, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=1))
+    os.replace(tmp, KEKKA)
 
 
-def run(dry=False, only=None):
-    res = {"ranAt": now(), "bin": "2210", "dry": dry,
-           "via": "Lovable公式MCP query_database（service_role不要・人の手不要）",
-           "diag": [], "red": [], "ireta": [], "mitei": [], "machi": [], "manpai": [], "totalYen": 0.0}
-    done = set()
-    for r in read_jsonl(IRETA):
-        if not r.get("modoshiAt") and not r.get("dry"):
-            done.add(r.get("nagekomiId") or r.get("id"))
+def sumi_ids():
+    return {(r.get("nagekomiId") or r.get("id")) for r in read_jsonl(IRETA) if not r.get("modoshiAt")}
+
+
+def kiroku(rid, k):
+    """結果を控える：済なら ireta に1行。どちらでも kekka に1行。受付一覧も作り直す。"""
+    if k.get("ok") and rid not in sumi_ids():
+        with io.open(IRETA, "a", encoding="utf-8") as f:
+            f.write(json.dumps(k["rec"], ensure_ascii=False) + "\n")
+    kekka_write(rid, k)
+    try:
+        import nagekomi_list
+        nagekomi_list.write() if hasattr(nagekomi_list, "write") else None
+    except Exception:
+        pass
+
+
+def ima(rid, db=None):
+    """★投げた瞬間に呼ぶ口（nagekomi.add から）。その場で棚へ入れて結果を返す。"""
+    rows = [r for r in read_jsonl(LEDGER) if r.get("id") == rid]
+    if not rows:
+        return {"ok": False, "why1": "失敗", "why": "台帳に見当たらない"}
+    r = rows[-1]
+    if str(r.get("nageta") or "") == "test":
+        return {"ok": False, "why1": "試し", "why": "機械の試し投げは棚に入れない"}
+    try:
+        k = ireru(db or DB(), r)
+    except Exception as e:  # noqa: BLE001
+        k = {"ok": False, "why1": "失敗", "why": str(e)[:200]}
+    kiroku(rid, k)
+    return k
+
+
+def run(only=None):
+    """取りこぼし・前の分の拾い直し。「済」でないものを全部やる。"""
+    res = {"ranAt": now(), "bin": "2210", "via": "Lovable公式MCP query_database",
+           "sumi": [], "hairanai": [], "red": [], "totalYen": 0.0}
+    done = sumi_ids()
     rows = read_jsonl(LEDGER)
     if only:
         rows = [r for r in rows if r.get("id") == only]
-    kikai = [r for r in rows if str(r.get("nageta") or "") == "test"]
     todo = [r for r in rows if r.get("id") and r["id"] not in done and str(r.get("nageta") or "") != "test"]
-    res["diag"].append("台帳 %d行／機械の試し投げ %d件は入れない／未処理 %d件" % (len(rows), len(kikai), len(todo)))
-    db = DB()
-    if not dry:
-        try:
-            hosei(db, res)
-        except Exception as e:  # noqa: BLE001
-            res["red"].append("サムネの埋め直しでつまずいた：%s" % str(e)[:200])
     if not todo:
-        res["ok"] = not res["red"]
+        res["ok"] = True
         return res
-    for r in todo[:MAX]:
-        url = str(r.get("url") or "").strip()
-        if not url.startswith("https://"):
-            res["mitei"].append({"id": r["id"], "why": "URLが未定（ひとことだけ）"})
-            continue
-        wants = r.get("shelves") if isinstance(r.get("shelves"), list) and r.get("shelves") else \
-            ([{"id": r.get("shelfId"), "title": r.get("shelf")}] if (r.get("shelfId") or r.get("shelf")) else [])
-        shelves = []
-        for w in wants:
-            s = resolve_shelf(db, w if isinstance(w, dict) else {"title": w})
-            if s and s["id"] not in [x["id"] for x in shelves]:
-                shelves.append(s)
-            elif not s and not dry:
-                # ★たまごさんが「食＞スープ」のように**世界と棚の名前を名指し**したときだけ棚を作る
-                #   （2026-09-25「食べ物の『食』の中に『スープ』っていう棚を作って、これを入れておいて」）。
-                #   機械の推測では作らない。同じ世界に同じ名前があれば作らない。
-                want_t = (w or {}).get("title") if isinstance(w, dict) else w
-                mm = re.match(r"^\s*(食|食べ物|音楽|かわいい|笑い|旅|ダンス)\s*[＞>]\s*(.+?)\s*$", str(r.get("memo") or ""))
-                WORLD = {"食": "food", "食べ物": "food", "音楽": "music", "かわいい": "cute",
-                         "笑い": "laugh", "旅": "travel", "ダンス": "dance"}
-                if mm and want_t and mm.group(2) == str(want_t).strip():
-                    wid = WORLD[mm.group(1)]
-                    same = db.q("select id, world, title, extends_shelf_id from admin_shelves where world = %s and title = %s"
-                                % (lit(wid), lit(want_t)))
-                    if not same:
-                        same = db.q("insert into admin_shelves (world, title, position) select %s, %s, "
-                                    "coalesce(max(position), 0) + 1 from admin_shelves where world = %s "
-                                    "returning id, world, title, extends_shelf_id" % (lit(wid), lit(want_t), lit(wid)))
-                        res["diag"].append("棚を新設：%s ＞ %s（たまごさんの名指し）" % (mm.group(1), want_t))
-                    if same and same[0]["id"] not in [x["id"] for x in shelves]:
-                        shelves.append(same[0])
-                        continue
-                res["diag"].append("%s：棚「%s」が本番に見つからない" % (r["id"], (w or {}).get("title") if isinstance(w, dict) else w))
-        if not shelves:
-            res["mitei"].append({"id": r["id"], "url": url, "shelf": r.get("shelf"),
-                                 "why": "行き先の棚がまだ決まっていません" if not wants else "棚が本番の名簿に無い"})
-            continue
-        m = RE_YT.search(url)
-        mx = RE_X.match(url)
-        kind = "youtube" if m else ("x" if mx else "link")
-        ref = ("https://www.youtube.com/watch?v=%s" % m.group(1)) if m else \
-              (("https://x.com/%s/status/%s" % (mx.group(1), mx.group(2))) if mx else url)
-        # 題名の掃除（箱の画面の clean() と同じ切り方）：Xの oEmbed に付く「pic.twitter.com/…」
-        # 「&mdash; 名前 (@id) 日付」を落とす。残りが空ならあとで決める
-        title = str(r.get("title") or "")
-        title = title.replace("&mdash;", "—").replace("&amp;", "&").replace("&#39;", "'").replace("&quot;", '"')
-        title = re.sub(r"\s*(pic\.twi\w*|https?://)\S*[\s\S]*$", "", title)
-        title = re.sub(r"\s*—\s*.*\(@[^)]+\).*$", "", title)
-        title = re.sub(r"\s+", " ", title).strip()
-        thumb, note = None, None
-        if m:
-            o = oembed_youtube(ref)
-            if not o:
-                res["red"].append("%s：動画が生きていない（oEmbedが返らない）" % r["id"])
-                continue
-            if not title:
-                title = " / ".join(x for x in [o.get("title"), o.get("author_name")] if x)
-        # ★サムネと埋め込みは 1152番の media()（正本）で実測して取る。
-        #   本番の棚は「サムネが解決できないカード」を隠す（worlds.ts filterPlayableCards）。
-        #   サムネ無しで入れても棚に出ない＝入れたことにならないので、取れなければ入れずに理由を残す。
+    db = DB()
+    for r in todo:
         try:
-            thumb, note, why_m = _media(url)
+            k = ireru(db, r)
         except Exception as e:  # noqa: BLE001
-            thumb, note, why_m = None, None, "サムネを調べる係が転んだ（%s）" % type(e).__name__
-        if not thumb:
-            res["machi"].append({"id": r["id"], "url": url, "why": "サムネが取れないので棚に出せない：%s" % why_m})
-            continue
-        if not title and mx:
-            title = "@%s のポスト" % mx.group(1)
-        title = title or ref
-        if dry:
-            res["ireta"].append({"id": r["id"], "ref": ref, "title": title,
-                                 "shelves": [s["title"] for s in shelves], "dry": True})
-            continue
-        try:
-            ex = db.q("select id, thumbnail_url, note from admin_stock where kind = %s and ref = %s limit 1" % (lit(kind), lit(ref)))
-            made = not ex
-            if ex:
-                stock_id = ex[0]["id"]
-                # 前に入った分でサムネ／埋め込みが空のものだけ埋める（入っている値は触らない）
-                if not ex[0].get("thumbnail_url") or (note and not ex[0].get("note")):
-                    db.q("update admin_stock set thumbnail_url = coalesce(thumbnail_url, %s), note = coalesce(note, %s) where id = %s"
-                         % (lit(thumb), lit(note or None), lit(stock_id)))
-            else:
-                got = db.q("insert into admin_stock (kind, ref, title, thumbnail_url, note) values (%s, %s, %s, %s, %s) returning id"
-                           % (lit(kind), lit(ref), lit(title[:300]), lit(thumb), lit(note or None)))
-                stock_id = got[0]["id"]
-            musunda = []
-            for s in shelves:
-                have = db.q("select id, status from admin_shelf_picks where shelf_id = %s and stock_id = %s"
-                            % (lit(s["id"]), lit(stock_id)))
-                if have:
-                    musunda.append(dict(s, pickId=have[0]["id"], already=True))
-                    continue
-                n = db.q("select count(*)::int as n from admin_shelf_picks where shelf_id = %s and status in ('candidate','fixed')"
-                         % lit(s["id"]))
-                cnt = int((n[0] or {}).get("n") or 0) if n else 0
-                if cnt >= CAP:
-                    res["manpai"].append({"id": r["id"], "shelf": s["title"], "count": cnt,
-                                          "why": "棚が%d枚で満杯（入れると他のカードが押し出されて消えるので入れていない）" % cnt})
-                    continue
-                pk = db.q("insert into admin_shelf_picks (shelf_id, stock_id, position, status, pinned) "
-                          "select %s, %s, coalesce(max(position), -1) + 1, 'candidate', false "
-                          "from admin_shelf_picks where shelf_id = %s returning id"
-                          % (lit(s["id"]), lit(stock_id), lit(s["id"])))
-                musunda.append(dict(s, pickId=pk[0]["id"], already=False))
-            if not musunda:
-                continue
-
-            def page(s):
-                # 本番の棚ページのid：既存棚の受け皿なら元の棚id、店主が作った棚なら "db-<uuid>"
-                #   （publicShelves.functions.ts:507 と同じ決め）
-                return {"shelfId": s.get("extends_shelf_id") or ("db-" + s["id"]), "shelf": s["title"],
-                        "world": s.get("world") or "", "pickId": s.get("pickId"), "dbShelfId": s["id"]}
-            p0 = page(musunda[0])
-            rec = {"bin": "2210", "at": now(), "id": r["id"], "nagekomiId": r["id"],
-                   "stockId": stock_id, "madeStock": made, "pickId": p0["pickId"],
-                   "shelfId": p0["shelfId"], "dbShelfId": p0["dbShelfId"], "shelf": p0["shelf"],
-                   "world": p0["world"], "hokaShelves": [page(s) for s in musunda[1:]],
-                   "ref": ref, "title": title, "titleAfter": title, "pickStatus": "candidate",
-                   "copyBefore": str(r.get("titleRaw") or r.get("title") or "")[:400],
-                   "via": "query_database"}
-            with io.open(IRETA, "a", encoding="utf-8") as f:
-                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            res["ireta"].append(rec)
-        except Exception as e:
-            res["red"].append("%s：%s" % (r["id"], str(e)[:300]))
-    res["iretaCount"] = len(res["ireta"])
-    res["ok"] = not res["red"]
+            k = {"ok": False, "why1": "失敗", "why": str(e)[:200]}
+        kiroku(r["id"], k)
+        (res["sumi"] if k.get("ok") else res["hairanai"]).append(
+            {"id": r["id"], "why1": k.get("why1"), "why": k.get("why"), "links": k.get("links") or []})
+    res["ok"] = True
     return res
 
 
 def main():
     a = sys.argv[1:]
-    dry = "--dry" in a
     only = a[a.index("--only") + 1] if "--only" in a else None
     if "--daily" in a:
-        # ★5分便から毎回呼ばれる。実際に動くのは30分に1回（投げてから30分以内に棚へ出る）
         try:
             if time.time() - os.path.getmtime(GATE) < 30 * 60:
                 return 0
@@ -336,12 +347,11 @@ def main():
             io.open(GATE, "w", encoding="utf-8").write(now())
         except OSError:
             pass
-    res = run(dry=dry, only=only)
-    if not dry:
-        with io.open(OUT, "w", encoding="utf-8") as f:
-            f.write(json.dumps(res, ensure_ascii=False, indent=1))
-    print(json.dumps(res, ensure_ascii=False, indent=1)[:8000])
-    return 0 if res.get("ok") else 1
+    res = run(only=only)
+    with io.open(OUT, "w", encoding="utf-8") as f:
+        f.write(json.dumps(res, ensure_ascii=False, indent=1))
+    print(json.dumps(res, ensure_ascii=False, indent=1)[:6000])
+    return 0
 
 
 if __name__ == "__main__":

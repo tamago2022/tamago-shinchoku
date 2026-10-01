@@ -190,13 +190,12 @@
 
 <!-- ★入った記録：開いたときに読む（開くまで1本も読まない＝待たされない） -->
 <details id="recBox" style="margin-top:22px">
-  <summary>入った記録を見る<span class="n" id="recSum">まだ／作業中／完了。日にちごとに畳んであります</span></summary>
+  <summary>入った記録を見る<span class="n" id="recSum">済／入らない。日にちごとに畳んであります</span></summary>
   <div class="inner">
     <div class="filt" id="filt">
       <button type="button" data-s="ぜんぶ" aria-pressed="true"><b id="c0">–</b>ぜんぶ</button>
-      <button type="button" data-s="まだ" aria-pressed="false"><b id="c1">–</b>まだ</button>
-      <button type="button" data-s="作業中" aria-pressed="false"><b id="c2">–</b>作業中</button>
-      <button type="button" data-s="完了" aria-pressed="false"><b id="c3">–</b>完了</button>
+      <button type="button" data-s="済" aria-pressed="false"><b id="c1">–</b>済</button>
+      <button type="button" data-s="入らない" aria-pressed="false"><b id="c2">–</b>入らない</button>
     </div>
     <p class="hint" id="recNote" style="margin:0 0 10px">開くと記録を読みます。</p>
     <div id="rows"></div>
@@ -399,10 +398,12 @@ el("send").addEventListener("click", function(){
   if(!u && !m && !SHELVES.length){ say("URLか、言いたいことか、棚。どれか1つは入れてください", false); return; }
   if(u && !/^https?:\/\//.test(u)){ say("URLは https で始まるものを貼ってください", false); return; }
 
-  var b = this; b.disabled = true; say("送っています…", true);
+  var b = this; b.disabled = true; say("棚へ入れています…", true);
   var stamp = new Date().toISOString();
   var tag = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  var KIKAI = /[?&]kikai=1/.test(location.search);
+  /* kikai=1＝機械の試し投げ（棚に入れない）／kakunin=1＝工場の確認投げ（棚まで通して見届ける） */
+  var KIKAI = /[?&]kikai=1/.test(location.search) ? true
+            : (/[?&]kakunin=1/.test(location.search) ? "kakunin" : false);
   var sent = SHELVES.slice();
   var names = SHELVES.map(function(s){ return s.title; });
   var cmds = [];
@@ -424,25 +425,48 @@ el("send").addEventListener("click", function(){
                 shelf: names[0], shelves: names, requestedAt:stamp });
   }
 
-  var chain = Promise.resolve({ok:true});
+  var chain = Promise.resolve({ok:true, bodies:[]});
   cmds.forEach(function(c){ chain = chain.then(function(prev){
     return push(c).then(function(r){
-      return (prev.ok && r.ok) ? {ok:true} : {ok:false, why:(prev.why || r.why)}; }); }); });
+      return {ok:(prev.ok && r.ok), why:(prev.why || r.why),
+              bodies:(prev.bodies||[]).concat(r && r.body ? [r.body] : [])}; }); }); });
 
   chain.then(function(res){
     b.disabled = false;
     var where = names.length ? ("「"+names.join("」「")+"」の棚へ。") : "棚はあとで決めていい。";
+    /* ★2210番：受け口はその場で棚へ入れて「入りました｜棚名｜URL」か「入らない｜理由｜…」を返す */
+    var kk = null, myId = cmds.length ? cmds[0].id : "";
+    (res && res.bodies || []).forEach(function(bd){
+      ((bd && bd.results) || []).forEach(function(x){
+        if(x && x.id === myId) kk = String(x.message || "").split("｜");
+      });
+    });
     if(res && res.ok){
       /* ★2026-10-01【URL＋棚が弾かれる】送っている間に次の分を入れると、前の分の
          「届きました」がここで欄と棚を丸ごと空にしていた→次の［投げる］が空で弾かれる。
          送った中身と同じときだけ消す（あとから入れた分には触らない）。 */
       if(el("u").value.trim() === u) el("u").value = "";
       if(el("m").value.trim() === m) el("m").value = "";
-      imaAdd({ t:Date.now(), url:u, memo:m, shelves:names });
+      var sumi = kk && kk[0] === "入りました";
+      var hai = kk && kk[0] === "入らない";
+      imaAdd({ t:Date.now(), url:u, memo:m, shelves:names,
+               kekka: sumi ? "済" : (hai ? "入らない" : ""), why1: hai ? (kk[1]||"") : "",
+               link: sumi ? (kk[2]||"") : "", linkTitle: sumi ? (kk[1]||"") : "" });
       SHELVES = SHELVES.filter(function(s){ return sent.indexOf(s) < 0; });
       drawChips(); if(LIST.length) drawTana();
       if(DATA) drawRows();
-      say("届きました。"+where+"30分以内に棚へ入ります。［入った記録］に出ています。", true);
+      if(sumi){
+        var d0 = el("msg"); d0.className = "msg ok";
+        d0.innerHTML = "<b>入りました</b> → "
+          + (kk[2] ? '<a class="go g2" href="'+esc(kk[2])+'" target="_blank" rel="noopener">'
+                     + esc(kk[1]||"棚")+' の棚を開く</a>' : esc(kk[1]||""));
+      }else if(hai){
+        say("入りませんでした：" + (kk[1]||"失敗") + (kk[2] ? "（"+kk[2]+"）" : ""), false);
+      }else if(u){
+        say("届きました。"+where, true);
+      }else{
+        say("届きました（ひとことだけ）。", true);
+      }
     }else{
       say("届きませんでした。"+((res&&res.why)||"理由が取れませんでした")
           +" ／ 書いた中身はこの端末に "+pending().length+"件 残してあります", false);
@@ -483,10 +507,11 @@ function clean(s){
 }
 
 /* ---------------- ★入った記録：まだ／作業中／完了 ＋ 日にちごとに畳む ---------------- */
+/* ★2210番：段階は2つだけ（済／入らない）。「作業中」は無くした */
+function s3of(it){ return (it.state3 === "済" || it.hanei === "済") ? "済" : "入らない"; }
 function badge(s){
-  if(s === "完了")   return '<span class="badge b-kan">完了</span>';
-  if(s === "作業中") return '<span class="badge b-naka">作業中</span>';
-  return '<span class="badge b-mada">まだ</span>';
+  if(s === "済") return '<span class="badge b-kan">済</span>';
+  return '<span class="badge b-mada">入らない</span>';
 }
 /* ★Before → After。「動画を見て、こう変えた」が1枚で見える形 */
 function baHtml(it){
@@ -520,49 +545,43 @@ function links(it){
   return h;
 }
 function cardHtml(it){
-  var s3 = it.state3 || (it.hanei === "済" ? "完了" : "まだ");
+  var s3 = s3of(it);
   var tana = (it.shelfLinks && it.shelfLinks.length)
       ? it.shelfLinks.map(function(x){ return x.title; }).join("／")
-      : (it.shelf || "行き先まだ決まっていません");
+      : (it.shelf || "棚未定");
   var kan = "";
-  if(typeof it.kanren === "number"){
-    kan = "関連 "+it.kanren+"／"+(it.kanrenNeed||4);
-  }else if(s3 !== "まだ"){
-    kan = "関連の数はまだ取れていません";
-  }
   var h = '<div class="card">' + badge(s3)
     + '<div class="t">'+esc(clean(it.after) || clean(it.title) || "題名がまだ書けていません")+'</div>'
     + '<div class="sub">'+esc(String(it.at||"").slice(11,16)||"--:--")+'　→　'+esc(tana)
     + (it.channel ? '　／　'+esc(it.channel) : '')
     + (kan ? '　／　'+esc(kan) : '') + '</div>';
-  if(it.state3Why) h += '<div class="naze">'+esc(it.state3Why)+'</div>';
-  else if(it.why)  h += '<div class="naze">'+esc(it.why)+'</div>';
-  if(it.artistWhy) h += '<div class="naze">アーティストの棚：'+esc(it.artistWhy)+'</div>';
-  h += baHtml(it) + links(it) + '</div>';
+  if(s3 !== "済") h += '<div class="naze">理由：'+esc(it.state3Why || "未処理")+'</div>';
+  h += links(it) + '</div>';
   return h;
 }
 function drawRows(){
   var box = el("rows"), d = DATA;
   if(!d) return;
   var items = (d.items||[]).filter(function(it){
-    var s3 = it.state3 || (it.hanei==="済"?"完了":"まだ");
-    return FILT === "ぜんぶ" || s3 === FILT;
+    return FILT === "ぜんぶ" || s3of(it) === FILT;
   });
 
   var h = "";
-  /* たったいま投げた分（台帳に出る前） */
+  /* たったいま投げた分（この端末で投げた分。投げた瞬間の結果をそのまま出す） */
   var ima = imaLive();
-  if(ima.length && FILT !== "完了"){
+  if(ima.length && FILT === "ぜんぶ"){
     h += '<div style="font-size:12.5px;font-weight:700;color:var(--sub);margin:0 0 7px">'
-      +  'たったいま投げた分（台帳に出るまで数分かかります）</div>';
+      +  'いま投げた分</div>';
     for(var i=0;i<ima.length;i++){
-      var r = ima[i], dt = new Date(r.t);
+      var r = ima[i], dt = new Date(r.t), ok = r.kekka === "済";
       h += '<div class="card" style="background:var(--t-panel);border-style:dashed">'
-        +  '<span class="badge b-mada">届いた</span>'
+        +  badge(ok ? "済" : "入らない")
         +  '<div class="t">'+esc(r.memo || r.url || "（棚だけ指定）")+'</div>'
         +  '<div class="sub">'+("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2)
-        +  '　→　'+esc((r.shelves&&r.shelves.length)?r.shelves.join("／"):"行き先まだ決まっていません")
+        +  '　→　'+esc(ok ? (r.linkTitle||"") : ((r.shelves&&r.shelves.length)?r.shelves.join("／"):"棚未定"))
         +  '</div>'
+        +  (ok ? '' : '<div class="naze">理由：'+esc(r.why1 || "未処理")+'</div>')
+        +  (ok && r.link ? '<a class="go g2" href="'+esc(r.link)+'" target="_blank" rel="noopener">'+esc(r.linkTitle||"棚")+' の棚を開く</a>' : '')
         +  (r.url ? '<a class="go" href="'+esc(r.url)+'" target="_blank" rel="noopener">投げた元を開く</a>' : '')
         +  '</div>';
     }
@@ -591,13 +610,10 @@ function drawRows(){
 function flushDay(day, arr, isFirst){
   var md = /^\d{4}-\d{2}-\d{2}$/.test(day)
          ? (Number(day.slice(5,7))+"月"+Number(day.slice(8,10))+"日") : day;
-  var kan = 0, naka = 0, mada = 0;
-  for(var i=0;i<arr.length;i++){
-    var s = arr[i].state3 || (arr[i].hanei==="済"?"完了":"まだ");
-    if(s==="完了") kan++; else if(s==="作業中") naka++; else mada++;
-  }
+  var kan = 0, mada = 0;
+  for(var i=0;i<arr.length;i++){ if(s3of(arr[i])==="済") kan++; else mada++; }
   var h = '<details class="day"'+(isFirst?" open":"")+'><summary>'+esc(md)
-        + '<span class="n">'+arr.length+'件　／　完了 '+kan+'・作業中 '+naka+'・まだ '+mada+'</span>'
+        + '<span class="n">'+arr.length+'件　／　済 '+kan+'・入らない '+mada+'</span>'
         + '</summary><div class="inner">';
   for(var k=0;k<arr.length;k++) h += cardHtml(arr[k]);
   return h + '</div></details>';
@@ -622,17 +638,10 @@ el("recBox").addEventListener("toggle", function(){
       DATA = d;
       var c = d.counts || {};
       var it = d.items || [];
-      var kan = c["s_完了"], naka = c["s_作業中"], mada = c["s_まだ"];
-      if(typeof kan !== "number"){    /* 古い台帳でも数だけは出す */
-        kan = naka = mada = 0;
-        for(var i=0;i<it.length;i++){
-          var s = it[i].state3 || (it[i].hanei==="済"?"完了":"まだ");
-          if(s==="完了") kan++; else if(s==="作業中") naka++; else mada++;
-        }
-      }
-      el("c0").textContent = it.length; el("c1").textContent = mada;
-      el("c2").textContent = naka;      el("c3").textContent = kan;
-      el("recSum").textContent = "ぜんぶ"+it.length+"件　／　完了 "+kan+"・作業中 "+naka+"・まだ "+mada;
+      var kan = 0, mada = 0;
+      for(var i=0;i<it.length;i++){ if(s3of(it[i])==="済") kan++; else mada++; }
+      el("c0").textContent = it.length; el("c1").textContent = kan; el("c2").textContent = mada;
+      el("recSum").textContent = "ぜんぶ"+it.length+"件　／　済 "+kan+"・入らない "+mada;
       el("recNote").textContent = d.builtAt ? (d.builtAt+" 時点の記録です") : "";
       drawRows();
       /* ★赤い箱はもう出さない（たまごさん「赤く囲まれているところはいらない」）。

@@ -263,6 +263,21 @@ def add(url, memo="", shelf=None, shelf_id=None, test=False, shelves=None):
     if why:
         row["metaMissing"] = why
     append_jsonl(LEDGER, row)
+    # ★2210番（たまごさん 2026-10-01「スマホで入れたら1秒で入るのに、全部まだ『作業中』」）：
+    #   後回しの周回をやめて、**受け取ったその場で棚へ書き込む。**結果を箱の画面へそのまま返す。
+    #   返す形：「入りました｜棚名｜URL」または「入らない｜理由1語｜詳しく」（箱の画面が読む）
+    if row["nageta"] != "test":
+        try:
+            import importlib
+            k = importlib.import_module("2210_tanaire").ima(row["id"])
+        except Exception as e:  # noqa: BLE001
+            k = {"ok": False, "why1": "失敗", "why": str(e)[:120]}
+        if k.get("ok"):
+            ln = (k.get("links") or [{}])[0]
+            return {"ok": True, "id": row["id"], "links": k.get("links"),
+                    "message": "入りました｜%s｜%s" % (ln.get("title") or "", ln.get("url") or "")}
+        return {"ok": True, "id": row["id"],
+                "message": "入らない｜%s｜%s" % (k.get("why1") or "失敗", (k.get("why") or "")[:80])}
     return {"ok": True, "id": row["id"],
             "message": "投げ込み受け取り：%s" % (row.get("title") or url)[:60]}
 
