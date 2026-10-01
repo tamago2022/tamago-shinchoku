@@ -30,7 +30,9 @@ have_cloudflared() { [ -n "${CLOUDFLARED:-}" ]; }
 STAMP="$REPO/status/.relay_server_started"
 # relay_server.py は command_ingest.py を読み込んでいるので、そちらの更新でも入れ直す
 if pgrep -f "relay_server.py" >/dev/null 2>&1 && [ -f "$STAMP" ] \
-   && { [ "$REPO/tools/relay_server.py" -nt "$STAMP" ] || [ "$REPO/tools/command_ingest.py" -nt "$STAMP" ]; }; then
+   && { [ "$REPO/tools/relay_server.py" -nt "$STAMP" ] || [ "$REPO/tools/command_ingest.py" -nt "$STAMP" ] \
+        || [ "$REPO/tools/nagekomi.py" -nt "$STAMP" ] || [ "$REPO/tools/2210_tanaire.py" -nt "$STAMP" ]; }; then
+  # ★2210番：箱は受け取ったその場で棚へ入れる（nagekomi.py → 2210_tanaire.py）。どちらを直しても入れ直す
   pkill -f "relay_server.py" >/dev/null 2>&1 || true
   sleep 1
   echo "$(date '+%F %T') 受け口を入れ直します（コードが新しくなったため）" >>"$LOG"

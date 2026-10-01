@@ -263,6 +263,12 @@ def build(show_test=False):
     except Exception:
         pass
 
+    # ★2210番：入れる係がその場で書いた結果（済／理由1語）
+    try:
+        kekka = json.load(io.open(os.path.join(STATUS, "public", "nagekomi_kekka.json"), encoding="utf-8"))
+    except Exception:
+        kekka = {}
+
     out = []
     for r in rows:
         rid = r.get("id") or ""
@@ -314,9 +320,15 @@ def build(show_test=False):
                 # ★まだ誰も書いていない＝台帳の題名がそのまま「元の文」
                 before = scrub(r.get("title"))[:300]
         kanren_c = rec.get("kanrenCount")
-        state3, state3_why = state3_of(state, rec, bool(after))
-        if state == "入れられない":
-            state3, state3_why = "まだ", why or "入れられませんでした"
+        # ★2210番（たまごさん 2026-10-01「『作業中』って言うほどの手間でもないよね」）：
+        #   段階は2つだけ。棚に入った＝「済」／入っていない＝「入らない」＋理由1語。
+        #   （1164番の「関連4つで完了」は、この指示で上書きした）
+        kk = kekka.get(rid) or {}
+        if state == "棚に入った":
+            state3, state3_why = "済", ""
+        else:
+            state3 = "入らない"
+            state3_why = kk.get("why1") or ("棚未定" if mark == "行き先未定" else ("URL無し" if not r.get("url") else "未処理"))
         src = safe_url(r.get("url"))
 
         out.append({
@@ -374,12 +386,27 @@ def build(show_test=False):
             "まだ": sum(1 for x in out if x.get("hanei") == "まだ"),
             "弾いた": sum(1 for x in out if x.get("hanei") == "弾いた"),
             # ★1164番：たまごさんが見るのはこの3つ
-            "s_まだ": sum(1 for x in out if x.get("state3") == "まだ"),
-            "s_作業中": sum(1 for x in out if x.get("state3") == "作業中"),
-            "s_完了": sum(1 for x in out if x.get("state3") == "完了"),
+            "s_済": sum(1 for x in out if x.get("state3") == "済"),
+            "s_入らない": sum(1 for x in out if x.get("state3") == "入らない"),
         },
         "items": out,
     }
+
+
+def write(show_test=False):
+    """★2210番：投げた瞬間に棚へ入れたら、その場で一覧も作り直す（2210_tanaire.kiroku から呼ぶ）。"""
+    d = build(show_test=show_test)
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    tmp = OUT + ".tmp"
+    json.dump(d, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, OUT)
+    try:
+        tmp2 = OUT_LIVE + ".tmp"
+        json.dump(d, io.open(tmp2, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(tmp2, OUT_LIVE)
+    except Exception:
+        pass
+    return d
 
 
 def main():
