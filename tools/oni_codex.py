@@ -271,6 +271,44 @@ def sashimodosu(rec, naze, ref):
         return "failed", "%s: %s" % (type(e).__name__, e)
 
 
+
+def goukaku_katazuke(rec):
+    """合格済み案件に対応する鬼監督の差し戻し票を自動キャンセルし、走行中なら止める。"""
+    try:
+        import command_ingest
+        import signal
+        qpath = os.path.join(REPO, "status", "queue.json")
+        q = load(qpath, {"items": []})
+        base_title = str(rec.get("title") or "").strip()
+        base_title = base_title.replace("・再判定", "").replace(" 再判定", "")
+        base_title = re.sub(r"（再判定[^）]*）$", "", base_title).strip()
+        target_url = str(rec.get("url") or "").strip()
+        hit = []
+        for it in q.get("items") or []:
+            if it.get("status") in ("done", "cancelled"):
+                continue
+            title = str(it.get("title") or "")
+            what = str(it.get("what") or "")
+            if not title.startswith("差し戻し（鬼監督）"):
+                continue
+            if target_url and target_url not in what:
+                continue
+            if base_title and norm(base_title)[:28] not in norm(title + " " + what):
+                continue
+            n = int(it.get("n") or 0)
+            pid = int(it.get("pid") or 0)
+            st, _msg = command_ingest.queue_cancel(str(n))
+            if st == "done":
+                hit.append(n)
+                if pid > 1:
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                    except OSError:
+                        pass
+        return hit
+    except Exception:
+        return []
+
 def hirou():
     # ★心臓の周回と手動の呼び出しが重なっても、同じ返事を二重に作業票へ積まない
     import fcntl
@@ -309,6 +347,10 @@ def hirou():
                    "naze": naze, "ichigyoume": l1, "ref": ref}
             if not ok:
                 row["queue"] = "%s:%s" % sashimodosu(rec, naze, ref)
+            else:
+                closed = goukaku_katazuke(rec)
+                if closed:
+                    row["queueClosed"] = closed
             append(HANTEI, row)
             kimatta.append(row)
             m.pop(jid, None)
