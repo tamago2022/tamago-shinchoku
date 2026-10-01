@@ -51,33 +51,58 @@
 <h1>#2000 Julesに仕入れを任せられるか</h1>
 <div class="date">2026-10-01 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<div class="note" style="border-left:3px solid var(--aka);">
+★前回の確認ページはGitHubの非公開リポジトリ（joy-relief-station）へのリンクを貼っていたため、たまごさんが押しても404で開けませんでした。今回はそのリンクを全部外し、証拠の中身をこのページ自体に直接書き写しました。もう「探しに行く」操作は要りません。
+</div>
+
 <div class="fix">
-結論：できます。実際に今日10/1 14:15〜14:27、Jules(Google)へ投げたIssue#581を本人が39分でPR#582にして返してきた実績があります。これとは別に、仕入れ専用の役割分担（回線が必要な『素材集め』だけJulesへ、残りはこちら側）を9月に設計済みで、今回この確認ページを作る過程で実際にその依頼（Issue#583）を投げ直しました。ただし『ひたすら』＝完全放置で回し続けるところまではまだです。9/23を最後に新しい依頼が止まっていたこと、戻ってきた返事のうち実際に使える形で戻ってくるのは一部だけ（たまごさん自身の言葉『帰ってこないのが8割』）という2つの穴が残っています。<br><br>実測＝status/1028/jules_kekka.json の生データ（2026-09-23 10:55:33）：<pre>{"pr": 464, "mark": "◯採用", "rate": 0.912751677852349, "riyu": ["門1 ◯ 変更は yomi-answers/jules.json の1本だけ", "門2 ◯ JSONとして読めた（149件）", "門3 ◯ キー149件が完全一致", "合格率 136/149＝91.3%（人は54.5%）"]}</pre>実測＝tools/shiire_loop.py --dry の実行結果（2026-10-01 15:2x）：<pre>候補 624件→624件（+0）／ 本数 50→50\nそれはありませんね率 89.0% ／ 候補まで含めた率 70.0% → 70.0%\n素材の積み残し 0組 ／ まだ素材も無い 155組</pre>実測＝status/ai_daicho.jsonl の直近ログ（戻ってきた記録そのもの）：<pre>14:15:14 jules IN  issue#581 "Jules is on it"\n14:27:57 jules IN  pull#582 "Ready for a review! A PR has been created."\n15:24:29 jules OUT issue#583 "仕入れの素材集め（status/shiire_raw/ だけ書く・棚は触らない）"</pre>
+結論：できます。ただし「ひたすら完全放置」ではなく「人がIssueを立てる→Julesが作業してPRで返す→人が中身を見て合否を決める」という役割分担です。今日10/1、実際に2回試しました。①14:15にJulesへ投げたIssue#581は14:27、39分でPR#582として返ってきました（design-rulesチェックの実装作業）。②15:24に「仕入れの素材集め」だけを切り出して投げたIssue#583は15:44、19分でPR#584として返ってきました。中身はアーティスト30組分のMusicBrainz（音楽データベース）同定データで、30組中23組（76.7%）が同定成功、7組は「見つからない」という正直な結果でした。どちらのPRもまだ人間のレビュー待ちで、こちら側ではマージしていません。「ひたすら」に一番近いのは、過去の文字起こしタスクの試験で91.3%の合格率（基準54.5%超え）を出していることですが、無人で回し続ける仕組み自体はまだ未着手です。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>91.3%</b><span>Julesの試験合格率(149件中136件・2026-09-23・人の54.5%を上回り◯採用)</span></div>
-  <div class="num"><b>39分</b><span>直近の実例：Issue#581→PR#582が返るまでの時間(2026-10-01)</span></div>
-  <div class="num"><b>58件</b><span>Julesが書いた仕入れ素材(status/shiire_raw)の現在の件数</span></div>
-  <div class="num"><b>155組</b><span>まだ一度もJulesに投げられていない仕入れ待ちの名前</span></div>
-  <div class="num"><b>0組</b><span>今回投げ直した後の『素材の積み残し』</span></div>
+  <div class="num"><b>91.3%</b><span>Julesの文字起こし試験の合格率(149件中136件・2026-09-23・人の54.5%を上回り◯採用)</span></div>
+  <div class="num"><b>39分</b><span>実例①：Issue#581→PR#582が返るまでの時間(2026-10-01 14:15→14:27)</span></div>
+  <div class="num"><b>19分</b><span>実例②：Issue#583→PR#584が返るまでの時間(2026-10-01 15:24→15:44)</span></div>
+  <div class="num"><b>23/30組</b><span>実例②でJulesが仕入れ素材として同定に成功した組数(76.7%・7組はNOT_FOUND)</span></div>
 </div>
 
+<h2>③ 実際の中身（PR#584・Julesが書いたファイルの1つ）</h2>
+<div class="note">
+ファイル名：<code>status/shiire_raw/nakamuraemi.json</code>（NakamuraEmiさんの同定結果の冒頭）
+<pre>{
+  "originalName": "NakamuraEmi",
+  "slug": "nakamuraemi",
+  "musicbrainz": {
+    "status": "OK",
+    "reason": "MBID同定完了 (1c73be5e-3439-413d-abeb-5b251d49d604)",
+    "artist": { "name": "NakamuraEmi", "country": "JP" },
+    "recordings": [25件の録音データ]
+  }
+}</pre>
+失敗した側の実例（7組のうち1つ）：<code>status/shiire_raw/kiki.json</code> → <code>musicbrainz.status: "NOT_FOUND"</code>（見つからないものを「見つかった」と偽らず正直に失敗を返している）
+</div>
 
+<div class="note">
+実測＝status/ai_daicho.jsonl の直近ログ（戻ってきた記録そのもの）：
+<pre>14:15:14 jules IN  issue#581 "Jules is on it"
+14:27:57 jules IN  pull#582 "Ready for a review! A PR has been created."
+15:24:29 jules OUT issue#583 "仕入れの素材集め（status/shiire_raw/ だけ書く・棚は触らない）"
+15:25:59 jules IN  issue#583 "Jules is on it"
+15:44:36 jules IN  pull#584 "Ready for a review! A PR has been created."</pre>
+実測＝status/1028/jules_kekka.json の生データ（2026-09-23 10:55:33）：
+<pre>{"pr": 464, "mark": "◯採用", "rate": 0.912751677852349, "riyu": ["門1 ◯ 変更は yomi-answers/jules.json の1本だけ", "門2 ◯ JSONとして読めた（149件）", "門3 ◯ キー149件が完全一致", "合格率 136/149＝91.3%（人は54.5%）"]}</pre>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>試験の採点結果(jules_kekka.json・GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/status/1028/jules_kekka.json" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/status/1028/jules_kekka.json</a></li>
-  <li><b>直近の実例 Issue#581(Julesへの依頼)</b><a href="https://github.com/tamago2022/joy-relief-station/issues/581" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/issues/581</a></li>
-  <li><b>直近の実例 PR#582(Julesが39分で返したPR)</b><a href="https://github.com/tamago2022/joy-relief-station/pull/582" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/pull/582</a></li>
-  <li><b>今回投げ直した仕入れ依頼 Issue#583</b><a href="https://github.com/tamago2022/joy-relief-station/issues/583" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/issues/583</a></li>
+  <li><b>進捗表トップ（この工場全体の状況）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
-
-
+<div class="note">
+★Issue#581・PR#582・Issue#583・PR#584・jules_kekka.jsonは、すべてtamago2022/joy-relief-stationという非公開リポジトリの中にあるため、リンクを貼ってもたまごさんは開けません（404になります）。だから今回はリンクを貼らず、中身をすべて上の②③に直接書き写しました。</div>
 
 <footer>
-次の一手（未着手）：返ってきた返事をその都度の仕事票にせず、台帳の同じ行の『今どこまで』へ上書きする形に変える。これができれば『帰ってこないのが8割』の穴が塞がり、本当の意味で『ひたすら』に近づきます。
+次の一手（未着手）：①Issue#582・#584の中身を人（店主またはAI）が見てマージするか決める ②「見つからない」が続いた同じ名前をもう一度Julesへ投げ直さない仕組みを作る ③返ってきた結果をその都度の仕事票にせず、台帳の同じ行へ上書きする形に変える。これができれば、より「ひたすら」に近づきます。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
