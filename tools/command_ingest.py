@@ -1153,7 +1153,8 @@ def process(cmd):
     action = cmd.get("action")
     if action in ("queue_ok", "queue_undo_ok", "queue_redo", "queue_add", "queue_prio", "queue_later",
                   "queue_pause", "queue_delete", "queue_order", "queue_dedupe",
-                  "queue_cancel", "queue_undo_cancel", "queue_cost_ok", "queue_unstick", "queue_urgent"):
+                  "queue_cancel", "queue_undo_cancel", "queue_cost_ok", "queue_unstick", "queue_urgent",
+                  "queue_yusen"):
         with queue_lock():
             return _process_queue(action, cmd)
 
@@ -1203,7 +1204,25 @@ def _process_queue(action, cmd):
         return queue_unstick(target, cmd.get("note"))
     if action == "queue_urgent":
         return queue_urgent(target)
+    if action == "queue_yusen":
+        return queue_yusen(target)
     return "failed", "不明なアクション: %s" % action
+
+
+def queue_yusen(_target=None):
+    """2026-10-01 たまごさんの優先順位（status/yusen_2026-10-01.md が正本）を票に反映する。
+    票は消さない。priority とラベル(yusen)を変え、D・E・不要・保留は hold にするだけ。
+    中身の規則は tools/yusen_apply.py。process() 側で queue_lock の中から呼ばれる。"""
+    import yusen_apply
+    q = _load_queue()
+    line, counts, rows = yusen_apply.apply(q)
+    q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
+    _save_queue(q)
+    try:
+        yusen_apply.write_result(line, counts, rows)
+    except Exception:
+        pass
+    return "done", line
 
 
 def joy_push(_target=None):
