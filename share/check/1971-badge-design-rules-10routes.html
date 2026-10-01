@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1971 1971号：10ルートのバッジ比率がdesignRules.ts通りか 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1971 1971号：10ルートのバッジ比率がdesignRules.ts通りか</div>
+<h1>#1971 1971号：10ルートのバッジ比率がdesignRules.ts通りか</h1>
+<div class="date">2026-10-01 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+正本 src/lib/designRules.ts:42/:59 の28%・6.5%が、badgeKinds.ts:243/:334経由でCardBadges.tsxにそのまま反映されており、対象10ルート全てがCardBadges.tsx経由。本番配信JSにも同じ値が焼き込まれていることを実測確認した。<pre>実測: targetShortSideRatioPct 28%, cornerInsetPercent 6.5% (本番JS assets/index-ix8Sj0Rl.js より抽出)</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>10/10</b><span>CardBadges.tsx経由を確認したルート数</span></div>
+  <div class="num"><b>10/10</b><span>HTTP200で中身ありを確認した本番URL数</span></div>
+  <div class="num"><b>28%</b><span>designRules.ts:42の短辺比正本値</span></div>
+  <div class="num"><b>6.5%</b><span>designRules.ts:59の余白正本値</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>cover-guide puffy</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=puffy" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=puffy</a></li>
+  <li><b>watch mj</b><a href="https://joy-relief-station.lovable.app/watch?v=5X-Mrc2l1d0&amp;artist=mj&amp;ref=rock-with-you" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=5X-Mrc2l1d0&amp;artist=mj&amp;ref=rock-with-you</a></li>
+  <li><b>shelf music/dance</b><a href="https://joy-relief-station.lovable.app/shelf/music/dance" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/dance</a></li>
+  <li><b>hub dance</b><a href="https://joy-relief-station.lovable.app/hub/dance" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/hub/dance</a></li>
+  <li><b>room card</b><a href="https://joy-relief-station.lovable.app/room/card/ghost-1990-trailer" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/ghost-1990-trailer</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>cover-guide.tsx(3例)</td><td class="yes">CardBadges直接使用</td></tr>
+<tr><td>watch.tsx</td><td class="yes">VideoCard/RelatedCardsRow/WatchLikeYouMight経由</td></tr>
+<tr><td>shelf.$worldId.$shelfId.tsx</td><td class="yes">CardBadges直接使用</td></tr>
+<tr><td>world.$worldId.tsx</td><td class="yes">NextRecommendations経由</td></tr>
+<tr><td>hub.$hubId.tsx</td><td class="yes">CardBadges直接使用</td></tr>
+<tr><td>animal.$slug.tsx</td><td class="yes">VideoCard経由</td></tr>
+<tr><td>room.card.$slug.tsx</td><td class="yes">VideoCard/NextUpCard/RelatedCardsRow経由</td></tr>
+<tr><td>room.dance.$slug.tsx</td><td class="yes">VideoCard/ShelfPicksSection経由</td></tr>
+<tr><td>本番JSバンドルの数値焼き込み</td><td class="yes">28/6.5をそのまま検出</td></tr>
+<tr><td>独立検品(tamago-verifier)</td><td class="yes">問題なし10/10確認済み</td></tr>
+</table>
+
+<footer>
+CI上でのピクセル実測(design-rules-check-production.mjs)は1186号の関所とネットワーク輻輳で2026-10-01時点は未反映。push-queueへ登録済みで自動巡回待ち。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
