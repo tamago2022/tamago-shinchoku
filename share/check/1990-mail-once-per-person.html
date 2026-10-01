@@ -52,12 +52,14 @@
 <div class="date">2026-10-01 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-全ページ下部『ひとこと目安箱』(FeedbackDoor.tsx)のメール登録を、localStorageで一人一回ガードした。登録済み、または新設の『今は結構です』を一度選んだ人には、以後どのページでも二度とメールを聞かない。便益の文言(『登録すると、あなた好みのものを不定期でお届けします』)は2026-09-18にたまごさんが指定した言い回しのまま変更していない。<br><br><b>★現状（正直に書く）：GitHub mainへは合流済みだが、Lovableの『公開』ボタンはこのセッションに実行手段が無く未反映。</b>理由：①本番公開にはログイン済みChromeのCDP接続が必要だが、このセッション内にはそのChromeが存在しない（127.0.0.1:9223等へ接続試行→fetch failed）。②Chromeを新規に起動することは1186号の仕組み（PreToolUse hook）で明示的に拒否される（『Chromeを起動・再起動する処理は憲法で禁止』）。③gh CLIは未インストール。④自動公開便(launchd )は~/Library/LaunchAgents/に存在せず、ログ(publish.log)も2026-09-18を最後に更新が止まっている。以上4経路を実際に試した上での結論。
+メールの登録を聞くのは、ひとり1回だけにしました。登録した人・「今は結構です」を選んだ人には、もう二度と聞きません。<br><br>
+<b>★今の状態：サイトの裏側（コード）は直りましたが、お客さんが見る本番画面にはまだ出ていません。</b><br>
+公開ボタンを押すには、たまごさんがログインしているブラウザが要りますが、このセッションからはそのブラウザが開けませんでした（起動しようとすると安全装置に止められました）。自動で公開するはずの仕組みも、しばらく前から止まっています。公開は、たまごさんのブラウザが使えるセッションか、たまごさん自身の操作が必要です。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>main合流</b><span>完了（commit 75bb7c921）</span></div>
+  <div class="num"><b>main合流</b><span>完了</span></div>
   <div class="num"><b>tsc(プロジェクト全体・skipLibCheck)</b><span>エラー0</span></div>
   <div class="num"><b>eslint(変更ファイル)</b><span>新規エラー0</span></div>
   <div class="num"><b>Lovable公開</b><span>未反映（手段なし）</span></div>
@@ -67,10 +69,9 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/75bb7c921" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/75bb7c921</a></li>
-  <li><b>変更ファイル本体</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/FeedbackDoor.tsx" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/src/components/FeedbackDoor.tsx</a></li>
-  <li><b>事例調査メモ</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/live/2026-10-01-email-capture-once-per-person.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/live/2026-10-01-email-capture-once-per-person.md</a></li>
-  <li><b>本番（現時点ではまだ旧版）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>直した場所</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/components/FeedbackDoor.tsx" target="_blank" rel="noopener">FeedbackDoor.tsx を見る</a></li>
+  <li><b>事例調査メモ</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/live/2026-10-01-email-capture-once-per-person.md" target="_blank" rel="noopener">調査メモを見る</a></li>
+  <li><b>本番（現時点ではまだ旧版）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">joy-relief-station.lovable.app</a></li>
 </ul>
 
 
