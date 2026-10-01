@@ -253,8 +253,14 @@ def harvest_outbox():
 
 # 引き継ぎの箇条書きには「やること」ではない行も混ざる（感想・注意書き・経緯）。
 # 発車待ちに積む対象から外すが、**台帳からは消さない**（消すと二度と見つからないため）。
+# 1996番実例（2026-10-01）：「あ、ダブルできてるんじゃなくて直してくれたんだね。」
+# （過去の修正への気づき・感謝の相槌）が、_TASKISH の「直し」（＝「直してくれた」の
+# 活用形の一部）に誤マッチしてactionable=Trueのまま queue へ直接積まれ、1377番と
+# 同一の相槌が再発した。「てくれた」は依頼形「てくれ／てください」と違い完了の
+# 「た」を伴う＝過去に起きたことへの気づき・感想でしかないため、ここで先に弾く。
 _NOT_TASK = re.compile(
-    r"(たまごさんが|たまごさんに見てもらう|注意：|ここが全部の親|わざと|参考|経緯|所感|——|だけ。$)")
+    r"(たまごさんが|たまごさんに見てもらう|注意：|ここが全部の親|わざと|参考|経緯|所感|——|だけ。$|"
+    r"てくれたんだね|てくれたね|てくれた[。！]|くれたんだ[。！]?$)")
 
 # 1494番実例（2026-09-29）：39件の判定日赤queue項目をactionable()にかけたところ、
 # 終止形（「直す」「繋ぐ」等）でしか動詞を拾えず、「直しといて」「つながれる」のような
@@ -285,9 +291,17 @@ def actionable(r):
     stuck→waiting→running を何度も繰り返し、複数セッションが空振りし続けた
     （1370番で kioku 側には既に用意されていた「actionable=False なら
     再発車しない」の防波堤が、queue 側の無条件Trueで素通りしていた）。
-    「判定日赤｜」で始まる自動繰り上げ項目だけは、元の発言に同じ判定基準
-    （_NOT_TASK / _TASKISH）を通す。それ以外の queue 項目（人が直接積んだ
-    もの）は従来通り無条件 actionable=True のまま変えない。
+    「判定日赤｜」で始まる自動繰り上げ項目は、元の発言に同じ判定基準
+    （_NOT_TASK / _TASKISH）を通す。
+
+    1996番実例（2026-10-01）：「判定日赤｜」プレフィックスの付かない、
+    queue_add() 等で直接積まれた相槌（上と同一の発言）が、プレフィックス無し
+    ルートでは _NOT_TASK すら見ずに無条件 True だったため、1377番と同じ相槌が
+    別経路で再度 queue に乗った。プレフィックスの有無に関わらず、明確に
+    非タスクと分かる _NOT_TASK パターンだけは先に弾く（_TASKISH を要求すると
+    動詞を含まない正当な依頼まで落としてしまうため、_NOT_TASK 一致時のみ False
+    にする＝非対称なコストの原則は維持する）。それ以外（人が直接積んだ通常の
+    queue 項目）は従来通り無条件 actionable=True のまま変えない。
     """
     t = r.get("title") or ""
     if r.get("source") == "queue":
@@ -296,6 +310,8 @@ def actionable(r):
             if _NOT_TASK.search(bare):
                 return False
             return bool(_TASKISH.search(bare))
+        if _NOT_TASK.search(t):
+            return False
         return True
     if _NOT_TASK.search(t):
         return False
@@ -692,8 +708,10 @@ def self_test():
                       "title": "判定日赤｜あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is False)
     check("判定日赤でも作業動詞があればactionable=True",
           actionable({"source": "queue", "title": "判定日赤｜バナー画像を直す"}) is True)
-    check("通常のqueue項目は従来通りactionable=True",
-          actionable({"source": "queue", "title": "あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is True)
+    check("通常のqueue項目（作業指示あり）は従来通りactionable=True",
+          actionable({"source": "queue", "title": "バナー画像を直す"}) is True)
+    check("1996番再発防止：プレフィックス無しで直接積まれた相槌もactionable=False",
+          actionable({"source": "queue", "title": "あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is False)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
