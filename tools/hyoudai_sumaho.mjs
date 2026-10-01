@@ -1,19 +1,16 @@
 #!/usr/bin/env node
 /**
- * 2210番【スマホで1件投げて、何秒で「済」になるか測る】
- * iPhone Safari と同じ幅・UA の headless Chrome（使い捨てプロファイル・使ったら殺す）で
- * 本物の箱（https）を ?kakunin=1 で開き、URLを貼って棚を選び［投げる］を押す。
- * 画面に「入りました → ◯◯の棚を開く」が出るまでの秒数と、そのリンク先を返す。
- * たまごさんのブラウザには触らない。
- *
- * 使い方: node tools/2210_sumaho_nageru.mjs <箱URL> <投げるURL> <棚id> <棚名> <world> <PNG>
+ * 2026-10-01 進捗表の題名（hyoudai）をスマホ幅 375×812 で確かめる。
+ * 使い捨てプロファイルの headless Chrome で開き、走っているもの／次に発車の文字と
+ * 画面写真を残す。たまごさんのブラウザには触らない。
+ * 使い方: node tools/hyoudai_sumaho.mjs <URL> <PNG>
  */
 import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-const [BOX, URL_IN, SID, STITLE, WORLD, PNG] = process.argv.slice(2);
+const [URL_IN, PNG] = process.argv.slice(2);
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
 const W = 375, H = 812;
@@ -48,11 +45,11 @@ function connect(u) {
 }
 const ev = async (send, expr) => (await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true })).result?.value;
 
-const port = 9500 + Math.floor(Math.random() * 200);
-const prof = mkdtempSync(resolve(tmpdir(), "2210-nageru-"));
+const port = 9700 + Math.floor(Math.random() * 200);
+const prof = mkdtempSync(resolve(tmpdir(), "hyoudai-sumaho-"));
 const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`,
   "--no-first-run", "--mute-audio", `--window-size=${W},${H}`, "about:blank"], { stdio: "ignore" });
-const out = { box: BOX, url: URL_IN, shelf: STITLE };
+const out = { url: URL_IN };
 try {
   const t = await findPage(port);
   const { ready, send, close } = connect(t.webSocketDebuggerUrl);
@@ -60,30 +57,21 @@ try {
   await send("Page.enable");
   await send("Runtime.enable");
   await send("Network.enable");
+  await send("Network.setCacheDisabled", { cacheDisabled: true });
   await send("Network.setUserAgentOverride", { userAgent: UA });
   await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 2, mobile: true });
-  await send("Page.navigate", { url: BOX + (BOX.includes("?") ? "&" : "?") + "kakunin=1&t=" + Date.now() });
+  await send("Page.navigate", { url: URL_IN + (URL_IN.includes("?") ? "&" : "?") + "t=" + Date.now() });
   for (let i = 0; i < 40; i++) { await sleep(500); if ((await ev(send, "document.readyState")) === "complete") break; }
-  out.hakoNew = await ev(send, "document.documentElement.outerHTML.includes('kakunin=1')");
-  // 貼る＋棚を選ぶ（人が［貼る］と棚ボタンを押したのと同じ中身を入れる）
-  await ev(send, `(() => { document.getElementById('u').value = ${JSON.stringify(URL_IN)};
-     SHELVES.push({id:${JSON.stringify(SID)}, title:${JSON.stringify(STITLE)}, world:${JSON.stringify(WORLD)}}); drawChips(); return true })()`);
-  const t0 = Date.now();
-  await ev(send, "document.getElementById('send').click(), true");
-  let msg = "";
-  for (let i = 0; i < 120; i++) {
-    await sleep(250);
-    msg = (await ev(send, "document.getElementById('msg').innerText")) || "";
-    if (/入りました|入りませんでした|届きませんでした/.test(msg)) break;
-  }
-  out.seconds = Math.round((Date.now() - t0) / 100) / 10;
-  out.msg = msg;
-  out.link = await ev(send, "(document.querySelector('#msg a')||{}).href || ''");
-  out.sumi = /入りました/.test(msg);
-  // どこで時間を食ったか（relay.json の読み込み／中継所への送信）
-  out.uchiwake = await ev(send, `performance.getEntriesByType('resource')
-     .filter(e => /relay\\.json|\\/cmd/.test(e.name))
-     .map(e => ({ name: e.name.replace(/^https?:\\/\\/[^/]+/, '').slice(0, 40), byou: Math.round(e.duration / 100) / 10 }))`);
+  await sleep(6000);
+  out.hasMidashi = await ev(send, "typeof midashi === 'function'");
+  out.run = await ev(send, "[...document.querySelectorAll('#running .rt')].map(e => (e.querySelector('summary')||e).innerText)");
+  out.runLines = await ev(send, "[...document.querySelectorAll('#running .rt')].map(e => Math.round((e.querySelector('summary')||e).getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)))");
+  out.next = await ev(send, "[...document.querySelectorAll('#next li')].map(e => (e.querySelector('summary')||e).innerText)");
+  out.omosa = await ev(send, "(document.getElementById('omosa')||{}).innerText||''");
+  out.stamp = await ev(send, "(document.getElementById('stamp')||{}).innerText||''");
+  // 走っているものが画面に入る位置までスクロールして撮る
+  await ev(send, "(document.getElementById('runHead')||document.body).scrollIntoView(), window.scrollBy(0,-20), true");
+  await sleep(500);
   if (PNG) {
     const s = await send("Page.captureScreenshot", { format: "png" });
     writeFileSync(PNG, Buffer.from(s.data, "base64"));
@@ -97,4 +85,3 @@ try {
   try { rmSync(prof, { recursive: true, force: true }); } catch { /* 無視 */ }
 }
 console.log(JSON.stringify(out, null, 1));
-process.exit(out.sumi ? 0 : 1);

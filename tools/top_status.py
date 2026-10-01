@@ -129,6 +129,11 @@ def label_of(it):
     return (it.get("label") or it.get("title") or "")[:48]
 
 
+def hyoudai_of(it):
+    # 2026-10-01：進捗表に出す「何をする仕事か」の1行（tools/hyoudai.py）。無ければ空。
+    return (it.get("hyoudai") or "")[:40]
+
+
 def short_model(m):
     if not m:
         return ""
@@ -333,6 +338,7 @@ def hold_block(items, limit=8):
     holds = [x for x in items if x.get("status") == "hold"]
     rows = [
         {"n": x.get("n"), "title": (x.get("title") or x.get("label") or "")[:60],
+         "hyoudai": hyoudai_of(x),
          "why": (x.get("why") or "")[:40]}
         for x in holds[:limit]
     ]
@@ -395,6 +401,7 @@ def build():
         {
             "n": x.get("n"),
             "label": label_of(x),
+            "hyoudai": hyoudai_of(x),
             "elapsedMin": elapsed_min(x.get("startedAt"), now),
             "model": short_model(x.get("model")),
             # 1136番（2026-09-25）進捗表が「◯分／180分」を自分で数え直せるように、
@@ -409,7 +416,7 @@ def build():
     waiting = [x for x in items if x.get("status") == "waiting"]
     p1 = [x for x in waiting if (x.get("priority") or (prio.get("Q%d" % x.get("n")) if x.get("n") else None)) == 1]
     p1_sorted = sorted(p1, key=lambda it: queue_rank_key(it, prio))
-    next_up = [{"n": x.get("n"), "label": label_of(x)} for x in p1_sorted[:3]]
+    next_up = [{"n": x.get("n"), "label": label_of(x), "hyoudai": hyoudai_of(x)} for x in p1_sorted[:3]]
 
     payload = {
         "generatedAt": now.isoformat(),
@@ -508,6 +515,11 @@ if __name__ == "__main__":
     # 2026-09-21（977番・Cowork側から設置）サンドボックス→Macの一発コマンド窓口。
     # 待ちが空なら即戻るだけ。投げっぱなしにして心臓は待たない（他の相乗りと同じ形）。
     _okosu("oneshot_runner.py")
+
+    # 2026-10-01 鬼監督（Codex）の返事を拾う係。返事待ちが0なら gh も叩かず即戻る。
+    #   合格/差し戻しを status/gaibu/soto_hantei.json と status/oni_codex/hantei.jsonl に戻し、
+    #   差し戻しは作業票へ自動で積む（tools/oni_codex.py の冒頭に経緯）。
+    _okosu("oni_codex.py", "hirou")
 
     # 1401番（2026-09-28）起動係。①固まった oneshot_runner を外から落として窓口を生き返らせる
     #   ②Chromeタブ掃除便(launchd)を冪等に載せる。★_okosu より前に置く意味は無いが、

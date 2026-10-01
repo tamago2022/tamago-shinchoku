@@ -613,6 +613,16 @@ def queue_add(text, priority=None, label=None, origin=None):
         # ここを見る。既存項目には付いていないため、後方互換のため無くても動くようにしてある。
         "queuedAt": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
     }
+    # 2026-10-01 たまごさん「俺の会話を引っこ抜いただけ。何をやっているのか1行で分かるように」
+    # → 表示用の1行（hyoudai）を別に持たせる。title は重複照合等が見るので触らない。
+    #   ここでは機械的な掃除だけ即座に入れ、心臓の定期便（tools/hyoudai.py --fill）が
+    #   AIで「何をする仕事か」に書き直す（hyoudaiSrc: rule → ai）。
+    try:
+        import hyoudai as _hy
+        item["hyoudai"] = _hy.rule_hyoudai(title)
+        item["hyoudaiSrc"] = "rule"
+    except Exception:
+        pass
     if big_job:
         item["bigJob"] = True
         item["phase"] = "list"

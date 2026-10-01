@@ -71,6 +71,8 @@ try {
   out.found = MUST ? text.includes(MUST) : null;
   out.foundNot = MUSTNOT.filter((w) => text.includes(w));
   out.textLen = text.length;
+  // 鬼監督（tools/oni_codex.py）用：表示し終えた本文をそのまま渡す。既存の呼び方には出ない
+  if (process.env.ONI_ZENBUN) out.text = text.slice(0, 8000);
   const at = MUST ? text.indexOf(MUST) : -1;
   out.around = at >= 0 ? text.slice(Math.max(0, at - 80), at + 120) : text.slice(0, 300);
   if (PNG && out.found) {

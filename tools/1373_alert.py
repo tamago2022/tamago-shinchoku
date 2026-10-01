@@ -151,6 +151,12 @@ def build(dry=False):
             level = "yellow"
             reasons.append("5分ロード比 %.2f" % load_ratio)
 
+    # 2026-10-01：Claudeが開いたBraveタブが1枚でも残っていたら赤（たまごさんの場所に置きっぱなし）。
+    ct = (m.get("brave") or {}).get("claudeTabs")
+    if not stale and ct:
+        level = "red"
+        reasons.append("ClaudeがBraveに開いたタブが%d枚残っている" % ct)
+
     suggestions = []
     if level in ("red", "yellow"):
         cands = app_candidates()[:3]
@@ -163,7 +169,9 @@ def build(dry=False):
                 "message": "%s を終了してください（約%.1fGB空きます）" % (c["app"], c["rssGB"]),
             })
 
-    if level == "red":
+    if level == "red" and ct and len(reasons) == 1:
+        midashi = "ClaudeのタブがBraveに%d枚残っています" % ct
+    elif level == "red":
         midashi = "今使いすぎです、もうすぐ固まります"
     elif level == "yellow":
         midashi = "そろそろ重くなってきています"
