@@ -38,7 +38,7 @@ HOME = os.path.expanduser("~")
 REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
 VAULT = os.path.join(HOME, "Library", "Mobile Documents",
                      "iCloud~md~obsidian", "Documents", "tamago_brain")
-VAULT_AUDIO = os.path.join(VAULT, "AI出力", "40_プロジェクト", "円卓会議🔥", "音声")
+VAULT_AUDIO = os.path.join(os.path.expanduser("~"), "Library", "Mobile Documents", "com~apple~CloudDocs", "円卓ずんだ音声")  # 2026-10-02 Vault外へ移動
 STATE = os.path.join(REPO, "status", "zunda")
 NOTES_CACHE = os.path.join(STATE, "notes.json")
 JOBS_DIR = "/tmp/zunda_jobs"
@@ -268,7 +268,7 @@ def _note_list_slow():
     out = []
     for rel in notes:
         st = re.sub(r"[\\/:*?\"<>|#\[\]]", "", os.path.basename(rel)[:-3])[:60].strip()
-        mp3 = os.path.join(VAULT_AUDIO, "円卓音声_" + st + ".mp3")
+        mp3 = os.path.join(VAULT_AUDIO, "entaku_" + __import__("hashlib").sha1(os.path.basename(rel)[:-3].encode("utf-8")).hexdigest()[:8] + ".mp3")
         out.append({"rel": rel, "title": os.path.basename(rel)[:-3],
                     "ready": os.path.exists(mp3)})
     return out
@@ -426,7 +426,7 @@ class H(BaseHTTPRequestHandler):
         if not n:
             return self._json({"error": "#円卓会議 のノートに見つからない"}, 404)
         st = re.sub(r"[\\/:*?\"<>|#\[\]]", "", os.path.basename(n["rel"])[:-3])[:60].strip()
-        mp3 = os.path.join(VAULT_AUDIO, "円卓音声_" + st + ".mp3")
+        mp3 = os.path.join(VAULT_AUDIO, "entaku_" + __import__("hashlib").sha1(os.path.basename(n["rel"])[:-3].encode("utf-8")).hexdigest()[:8] + ".mp3")
         if os.path.exists(mp3):
             j = serve_ready_mp3(mp3, n["title"])
         else:

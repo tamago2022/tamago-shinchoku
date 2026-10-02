@@ -261,6 +261,18 @@ def run_one(job_path):
         out["fix"] = why
         return out
 
+    # ★ページ関所：曲の存在・動画の生死・コピー品質（tools/buffer_page_kanmon.py）
+    try:
+        import buffer_page_kanmon
+        ok, why = buffer_page_kanmon.kanmon(job.get("text") or "")
+    except Exception as e:
+        ok, why = False, "ページ関所が動かない：%s" % str(e)[:120]
+    out["page_kanmon"] = why
+    if not ok:
+        out["result"] = "ページ関所で止めた"
+        out["fix"] = why
+        return out
+
     tok = token()
     if not tok:
         out["result"] = "鍵なし"

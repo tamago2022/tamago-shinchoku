@@ -239,9 +239,20 @@ def hantei_1ken(r, ima):
 
 
 def kuriageru(r, naze):
-    """★自動でP1に繰り上げて、その場で再発車する。たまごさんに聞かない。"""
+    """古いだけではP1にしない。Jevで「記録」と「実行」を分けてから再発車する。"""
     try:
         import command_ingest
+        import jev_priority_gate
+        route = jev_priority_gate.classify(r.get("title") or "", naze, source="hantei_hiduke")
+        choice = route.get("choice")
+        conf = float(route.get("confidence") or 0.0)
+        r["executionRoute"] = choice
+        r["executionRouteConfidence"] = conf
+        if choice == "記録だけ":
+            return "captured_only:Jevが今は走らせないと判定（confidence=%.2f）" % conf
+        if choice == "Founder判断":
+            return "founder_gate:JevがFounder判断と判定（confidence=%.2f）" % conf
+        pri = 1 if choice == "今走らせる" and conf >= 0.70 else 3
         try:
             import queue_store
             lock = queue_store.queue_lock
@@ -258,7 +269,7 @@ def kuriageru(r, naze):
             "たまごさんに質問しない。直して、URLを報告に貼る。",
         ])
         with lock():
-            s, msg = command_ingest.queue_add(body, priority=1,
+            s, msg = command_ingest.queue_add(body, priority=pri,
                                               label=("判定日赤｜" + (r.get("title") or ""))[:60],
                                               origin="user")
         return "%s:%s" % (s, msg)
@@ -282,9 +293,15 @@ def hashiru(dry=False):
         if h["aka"]:
             aka += 1
             r["aka"] = True
-            r["p"] = 1                      # ★自動でP1に繰り上げ
+            # 2026-10-03: 古い/未着手というだけでP1へ上げない。
+            # Jevが「今走らせる」と高信頼で判定した時だけP1。それ以外は記録/通常列。
             if not dry:
                 r["saihassha"] = kuriageru(r, h["sonogo"])
+                _choice = r.get("executionRoute")
+                _conf = float(r.get("executionRouteConfidence") or 0.0)
+                r["p"] = 1 if (_choice == "今走らせる" and _conf >= 0.70) else 3
+            else:
+                r["p"] = 3
         else:
             r["aka"] = False
             if h["state"] == "完了":
