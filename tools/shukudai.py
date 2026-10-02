@@ -522,18 +522,39 @@ def ingest(rows, limit=40, dry=False):
                if r.get("source") in ("hikitsugi", "outbox", "kioku")
                and r.get("state") in OPEN_STATES
                and r.get("actionable")
-               and not r.get("queuedAt")]
+               and not r.get("queuedAt")
+               and r.get("executionState") not in ("capture_only", "founder_gate")]
     targets.sort(key=lambda r: (r.get("saidAt") or ""))  # 古いものから先に発車させる
     for r in targets[:limit]:
         # 引き継ぎの積み残し＝普通(3)。工場発の申し送り＝後回し(4)。
         # たまごさんが進捗表で付けたPは常にこれより強いので、割り込みにはならない。
         pri = 3 if r.get("origin") == "user" else 4
-        # ★たまごさんの口から出たもの（kioku）は、言われた回数で列の前に出す。
-        #   3回以上言わせた＝最優先(1)。2回＝2。二度言わせること自体が事故なので、
-        #   2回目が付いた瞬間に割り込んでよい。
+        # 2026-10-03: 「覚える」と「今走らせる」を分離。
+        # 発言回数だけでP1/P2へ上げない。忘れないための会話・将来案が緊急タスク化する事故を止める。
         if r.get("source") == "kioku":
-            n = int(r.get("saidCount") or 1)
-            pri = 1 if n >= 3 else (2 if n >= 2 else 3)
+            try:
+                import jev_priority_gate
+                _route = jev_priority_gate.classify(
+                    r.get("title") or "",
+                    r.get("doneWhen") or "",
+                    source="kioku"
+                )
+                _choice = _route.get("choice")
+                _conf = float(_route.get("confidence") or 0.0)
+                r["executionRoute"] = _choice
+                r["executionRouteConfidence"] = _conf
+                if _choice == "記録だけ":
+                    r["executionState"] = "capture_only"
+                    added.append((r["id"], "captured", r["title"]))
+                    continue
+                if _choice == "Founder判断":
+                    r["executionState"] = "founder_gate"
+                    added.append((r["id"], "founder_gate", r["title"]))
+                    continue
+                pri = 1 if (_choice == "今走らせる" and _conf >= 0.70) else 3
+            except Exception:
+                # 判定器が壊れた時は緊急扱いにしない。記録を失わずCへ倒す。
+                pri = 3
         body = "\n".join([
             "【タスク】%s" % r["title"],
             "【完了条件】%s" % r["doneWhen"],

@@ -2278,6 +2278,31 @@ def _main_impl():
           _snap = queue_store.snapshot_items(q)
 
       waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
+      _focus_active_ns = set()
+
+      # 2026-10-03: Jev + Chief of Staff の集中レーン。
+      # backlog汚染中は、status/focus_now.json に明示した案件だけ自動発車する。
+      # たまごさんに何千件の優先順位を付けさせず、重要案件だけを1本ずつ進めるための安全弁。
+      _focus_path = os.path.join(REPO, "status", "focus_now.json")
+      try:
+          _focus = load(_focus_path, {}) or {}
+          if _focus.get("enabled"):
+              _focus_ns = [int(x.get("n")) for x in (_focus.get("tasks") or []) if x.get("n") is not None]
+              _focus_rank = {n: i for i, n in enumerate(_focus_ns)}
+              _focus_active_ns = set(_focus_ns)
+              _focused = [it for it in waiting if int(it.get("n") or -1) in _focus_rank]
+              _focused.sort(key=lambda it: _focus_rank.get(int(it.get("n") or -1), 10**6))
+              if _focused:
+                  waiting = _focused
+                  # 集中レーン中はMac負荷を抑えるため最大2本。速さと軽さの両立。
+                  safe_max = min(safe_max, 2)
+                  log("🎯 集中レーン: %d件だけ発車対象（先頭=%s番・同時上限%d本）" % (len(waiting), waiting[0].get("n"), safe_max))
+              else:
+                  log("🎯 集中レーン: 対象待ち案件なし。通常backlogへは降りない")
+                  return 0
+      except Exception as _e:
+          log("⚠️ 集中レーン読込失敗。安全のため発車停止: %s" % str(_e)[:160])
+          return 0
 
       # ---- 759番3回目の重複発車を機に追加した恒久ガード（案件#759・2026-09-13）----
       #   status/failures.md #15：759番は実装・本番push・Dispatch完了報告まで全部終わっていたのに
@@ -2428,7 +2453,8 @@ def _main_impl():
           # したがって差し戻し再作業は配分ゲートを通過させる。
           _title = str(it.get("title") or "")
           _qa_retry = _title.startswith("差し戻し（鬼監督）") or "【差し戻し（鬼監督＝Codex）】" in str(it.get("what") or "")
-          if blocked and shukan_kubun.classify_item(it) == "urakata" and not _qa_retry:
+          _focus_selected = int(it.get("n") or -1) in _focus_active_ns
+          if blocked and shukan_kubun.classify_item(it) == "urakata" and not _qa_retry and not _focus_selected:
               if not it.get("urakataBlockedAt"):
                   log("🚧 裏方の枠が上限のため発車を止めました %s番「%s」" % (it.get("n"), it.get("title")))
                   it["urakataBlockedAt"] = time.strftime("%Y-%m-%d %H:%M:%S+09:00")
