@@ -277,6 +277,11 @@ def collect():
         rel_root = os.path.relpath(root, VAULT)
         if rel_root == "AI出力/_ルール" or rel_root.startswith("AI出力/_ルール" + os.sep):
             continue
+        # 2026-10-02: 旧フォーマット保管棚は本番ノートと同じファイル名のため、
+        # short_name()がbasenameだけでハッシュを作る都合上、処理すると本番の
+        # 音声を無駄な再合成で上書きしてしまう。アーカイブは読み上げ対象から外す。
+        if "_旧フォーマット（保管）" in rel_root.split(os.sep):
+            continue
         for n in files:
             if not n.endswith(".md"):
                 continue
