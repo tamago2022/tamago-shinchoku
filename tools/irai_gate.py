@@ -388,59 +388,6 @@ def kuchi_jules(bun, matsu=0):
             "error": "Issue #%s は立てましたが、%d秒では返事が来ていません" % (num, matsu)}
 
 
-def kuchi_jev(bun):
-    """Jevで『元依頼に答えているか』を高速一次判定する。高信頼だけ自動採用、曖昧なら止める。"""
-    import urllib.request
-    try:
-        import yosan
-    except Exception as e:
-        return {"who":"jev","yes":None,"why":"","error":"予算の栓が読めません：%s" % e}
-    key_path = os.path.expanduser("~/.config/typesafe/api_key")
-    try:
-        key = io.open(key_path, encoding="utf-8").read().strip()
-    except Exception:
-        key = ""
-    if not key:
-        return {"who":"jev","yes":None,"why":"","error":"Jevの鍵がありません"}
-    # 日本語1文字=1token側に倒した保守的見積り。6.6円/1M token。
-    est = max(0.01, len(bun) * 6.6 / 1000000.0)
-    ok, why = yosan.mitsumori("typesafe", est, "依頼の門 Jev一次判定")
-    if not ok:
-        return {"who":"jev","yes":None,"why":"","error":"予算の栓：%s" % why}
-    req_obj = {
-        "state": bun,
-        "model": "jev-1.13.0",
-        "questions": {
-            "match": {
-                "type": "noul",
-                "instructions": "Does the delivered item actually satisfy the founder's original request? Judge strictly. Missing requested elements, wrong scope, unverified claims, or a deliverable that does not produce the requested real-world result count as NO."
-            }
-        }
-    }
-    data = json.dumps(req_obj, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request("https://api.typesafe.ai/v1/systemone", data=data, method="POST", headers={
-        "Authorization": "Bearer " + key, "Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            res = json.loads(resp.read().decode("utf-8", "ignore"))
-    except Exception as e:
-        return {"who":"jev","yes":None,"why":"","error":"Jev API失敗：%s" % str(e)[:160]}
-    p = ((res.get("answers") or {}).get("match") or {}).get("noul")
-    if p is None:
-        return {"who":"jev","yes":None,"why":"","error":"Jevの確率が読めません"}
-    p = float(p)
-    tokens = int((res.get("usage") or {}).get("input_tokens") or 0)
-    yen = tokens * 6.6 / 1000000.0
-    yosan.tsukatta("typesafe", yen, "依頼の門 Jev一次判定", src="usage.input_tokens=%d" % tokens)
-    if p >= 0.90:
-        yes = True
-    elif p <= 0.20:
-        yes = False
-    else:
-        yes = None
-    return {"who":"jev","yes":yes,"why":"Jev match probability=%.3f" % p,"error":"","yen":round(yen,6),"probability":p}
-
-
 def kuchi_api(vendor, bun):
     """円がかかる口（openai / gemini / grok）。★必ず tools/yosan.py を通す。"""
     try:
@@ -468,13 +415,11 @@ def kuchi_api(vendor, bun):
             "yen": r.get("yen"), "nama": (r.get("text") or "")[:1200]}
 
 
-KUCHI = {"jev": kuchi_jev, "genspark": kuchi_genspark, "jules": kuchi_jules,
+KUCHI = {"genspark": kuchi_genspark, "jules": kuchi_jules,
          "gemini": lambda b: kuchi_api("gemini", b),
          "openai": lambda b: kuchi_api("openai", b),
          "grok": lambda b: kuchi_api("grok", b)}
-# 2026-10-03: Jevを高速一次門に採用。高信頼だけ通し、曖昧は止める。
-# ここで落とせないものだけ、鬼監督/外部AIの深い検品へ上げる。
-KIHON = ["jev"]
+KIHON = ["genspark", "gemini"]   # ★10/5からは ["jules", "gemini"] に入れ替える
 
 
 # ── 門そのもの ────────────────────────────────────────────────────────
