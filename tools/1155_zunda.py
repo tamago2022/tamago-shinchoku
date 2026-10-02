@@ -272,6 +272,11 @@ def collect():
     hits = []
     for root, dirs, files in os.walk(VAULT):
         dirs[:] = [d for d in dirs if not d.startswith(".")]
+        # 2026-10-02: 運用メモ・ルール文書を誤って読み上げ対象にしない
+        # (本文中の「#円卓会議」という文字表記だけで誤collectされた実例あり)
+        rel_root = os.path.relpath(root, VAULT)
+        if rel_root == "AI出力/_ルール" or rel_root.startswith("AI出力/_ルール" + os.sep):
+            continue
         for n in files:
             if not n.endswith(".md"):
                 continue
