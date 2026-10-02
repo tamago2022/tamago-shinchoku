@@ -217,8 +217,11 @@ def embed(note_path, fname):
     """ノートのタグ行の下に「▶ 読み上げを聴く」リンク1行（埋め込みはしない＝Vaultを重くしない）。
     既にリンクがあれば何もしない。旧 ![[円卓音声_…]] 埋め込みが残っていれば消してリンクに差し替える。"""
     import urllib.parse
+    # ★2026-10-02 1201番：調査済みの形。file://はMacで確認済み、shareddocumentsはiPhone未確認につき「試す」扱い
+    mac = "file://" + urllib.parse.quote(os.path.join(AUDIO_DIR, fname), safe="/")
     ios = "/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/円卓ずんだ音声/" + fname
-    link = "[▶ 読み上げを聴く](shareddocuments://%s)" % urllib.parse.quote(ios, safe="/~")
+    link = "[▶ 聴く（Mac・確認済み）](%s) ／ [iPhoneで試す（未確認）](shareddocuments://%s)" % (
+        mac, urllib.parse.quote(ios, safe="/~"))
     with io.open(note_path, "r", encoding="utf-8") as f:
         body = f.read()
     if link in body:

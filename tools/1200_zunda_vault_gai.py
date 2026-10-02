@@ -43,7 +43,9 @@ def short_name(note_path):
 
 
 def link_line(fname):
-    return "[▶ 読み上げを聴く](shareddocuments://%s)" % urllib.parse.quote(IOS_ROOT + fname, safe="/~")
+    mac = "file://" + urllib.parse.quote(os.path.join(DEST, fname), safe="/")
+    return "[▶ 聴く（Mac・確認済み）](%s) ／ [iPhoneで試す（未確認）](shareddocuments://%s)" % (
+        mac, urllib.parse.quote(IOS_ROOT + fname, safe="/~"))
 
 
 def move_audio(fname, newname=None):
