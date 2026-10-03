@@ -60,6 +60,12 @@ def dir_size(p):
 
 
 def main():
+    # ★2026-10-02 無効化：他人の動画の要約音声を公開リポ(share/)に置かない。音声はiCloud Driveの非公開フォルダへ（1200番）。
+    print("1164は無効化されています（公開リポに音声を置かない）")
+    return 0
+
+
+def _old_main():
     os.makedirs(PUB_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     try:

@@ -43,6 +43,7 @@ import queue_store  # noqa: E402  案件#687：queue.jsonの安全な読み書�
 import shukan_kubun  # noqa: E402  週の作業配分：見たいもの／裏方／予備の分類
 import shukan_haibun  # noqa: E402  週の作業配分：実績集計とゲート判定（裏方30%上限）
 import sekisho  # noqa: E402  案件#898：関所＝報告の手前に置く機械の門（数字の主張と実測の食い違い等）
+import irai_gate  # noqa: E402  Founder原文と成果物が一致するかをJevで高速一次判定
 CLAUDE_PROJECTS_DIR = os.path.expanduser("~/.claude/projects")
 QUEUE = os.path.join(REPO, "status", "queue.json")
 MACHINE = os.path.join(REPO, "status", "machine.json")
@@ -1558,6 +1559,46 @@ def harvest(q):
                         continue
                 else:
                     log("✅ 関所(sekisho)OK %d番「%s」" % (it.get("n"), it.get("title")))
+
+            # 2026-10-03：Founder価値観の一次門（Jev）。
+            # 元依頼と成果報告が食い違うものを、鬼監督やFounderへ上げる前に安く・速く差し戻す。
+            try:
+                _irai = ((it.get("title") or "") + "\n" + (it.get("what") or ""))[:7000]
+                _mono = (it.get("result") or "")[:7000]
+                _bun = irai_gate.toi_bun(_irai, "作業したAIの完了報告", _mono)
+                _jev = irai_gate.kuchi_jev(_bun)
+                it["jevPrecheck"] = {
+                    "yes": _jev.get("yes"), "probability": _jev.get("probability"),
+                    "why": _jev.get("why"), "error": _jev.get("error")
+                }
+                if _jev.get("yes") is False:
+                    _p = float(_jev.get("probability") or 0.0)
+                    _why = "Jev依頼一致NG（match=%.3f）" % _p
+                    redo_guard.note_fail_reason(it, _why)
+                    if redo_guard.should_stuck(it):
+                        redo_guard.mark_stuck(it, log)
+                    else:
+                        it["status"] = "hold" if it.get("holdNote") else "waiting"
+                        it["priority"] = it.get("priority") or 1
+                        it["what"] = (it.get("what") or "") + (
+                            "\n\n【Jev一次検品で差し戻し・%s】元依頼と完了報告の一致確率が %.3f。"
+                            "Founderへ上げず、元依頼を読み直して不足を埋め、実物証拠付きでやり直すこと。"
+                            % (time.strftime("%m-%d %H:%M"), _p))
+                        for _k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                            it.pop(_k, None)
+                    changed = True
+                    log("🧠 Jev一次検品NG %d番「%s」→ 自動差し戻し（match=%.3f）"
+                        % (it.get("n"), it.get("title"), _p))
+                    continue
+                elif _jev.get("yes") is True:
+                    log("🧠 Jev一次検品OK %d番「%s」（match=%.3f）"
+                        % (it.get("n"), it.get("title"), float(_jev.get("probability") or 0.0)))
+                else:
+                    log("🧠 Jev一次検品は保留 %d番「%s」→ 鬼監督へ（%s）"
+                        % (it.get("n"), it.get("title"), _jev.get("why") or _jev.get("error") or "曖昧"))
+            except Exception as _e:
+                log("⚠️ Jev一次検品が技術的に失敗 %d番→ 鬼監督へ：%s" % (it.get("n"), str(_e)[:160]))
+
             # 案件#800：3段検品の2段目「触る検品」。確認ページの中身が正しくても、
             # 実際にボタンを押すと無反応、という事故を機械が先に見つける。
             # ここもharvest()の45秒watchdogを超えないよう、別プロセスで着火するだけで同期待ちしない。
@@ -2237,6 +2278,31 @@ def _main_impl():
           _snap = queue_store.snapshot_items(q)
 
       waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
+      _focus_active_ns = set()
+
+      # 2026-10-03: Jev + Chief of Staff の集中レーン。
+      # backlog汚染中は、status/focus_now.json に明示した案件だけ自動発車する。
+      # たまごさんに何千件の優先順位を付けさせず、重要案件だけを1本ずつ進めるための安全弁。
+      _focus_path = os.path.join(REPO, "status", "focus_now.json")
+      try:
+          _focus = load(_focus_path, {}) or {}
+          if _focus.get("enabled"):
+              _focus_ns = [int(x.get("n")) for x in (_focus.get("tasks") or []) if x.get("n") is not None]
+              _focus_rank = {n: i for i, n in enumerate(_focus_ns)}
+              _focus_active_ns = set(_focus_ns)
+              _focused = [it for it in waiting if int(it.get("n") or -1) in _focus_rank]
+              _focused.sort(key=lambda it: _focus_rank.get(int(it.get("n") or -1), 10**6))
+              if _focused:
+                  waiting = _focused
+                  # 集中レーン中はMac負荷を抑えるため最大2本。速さと軽さの両立。
+                  safe_max = min(safe_max, 2)
+                  log("🎯 集中レーン: %d件だけ発車対象（先頭=%s番・同時上限%d本）" % (len(waiting), waiting[0].get("n"), safe_max))
+              else:
+                  log("🎯 集中レーン: 対象待ち案件なし。通常backlogへは降りない")
+                  return 0
+      except Exception as _e:
+          log("⚠️ 集中レーン読込失敗。安全のため発車停止: %s" % str(_e)[:160])
+          return 0
 
       # ---- 759番3回目の重複発車を機に追加した恒久ガード（案件#759・2026-09-13）----
       #   status/failures.md #15：759番は実装・本番push・Dispatch完了報告まで全部終わっていたのに
@@ -2387,7 +2453,8 @@ def _main_impl():
           # したがって差し戻し再作業は配分ゲートを通過させる。
           _title = str(it.get("title") or "")
           _qa_retry = _title.startswith("差し戻し（鬼監督）") or "【差し戻し（鬼監督＝Codex）】" in str(it.get("what") or "")
-          if blocked and shukan_kubun.classify_item(it) == "urakata" and not _qa_retry:
+          _focus_selected = int(it.get("n") or -1) in _focus_active_ns
+          if blocked and shukan_kubun.classify_item(it) == "urakata" and not _qa_retry and not _focus_selected:
               if not it.get("urakataBlockedAt"):
                   log("🚧 裏方の枠が上限のため発車を止めました %s番「%s」" % (it.get("n"), it.get("title")))
                   it["urakataBlockedAt"] = time.strftime("%Y-%m-%d %H:%M:%S+09:00")
