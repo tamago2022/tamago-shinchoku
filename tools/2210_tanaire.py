@@ -374,6 +374,10 @@ def ima(rid, db=None, row=None):
             k = ireru(db or db_kept(), r)
     except Exception as e:  # noqa: BLE001
         k = {"ok": False, "why1": "失敗", "why": str(e)[:200]}
+        # ★2026-10-04：鍵切れは専門用語を見せず、「消えていない・直れば自動で入る」を言う
+        if "鍵" in str(e):
+            k = {"ok": False, "why1": "鍵切れ",
+                 "why": "棚へ書く鍵が切れています。投げた分は台帳に残っていて、鍵が戻ると自動で棚に入ります"}
     k["byou"] = round(time.time() - t0, 1)
     kiroku(rid, k)
     return k
