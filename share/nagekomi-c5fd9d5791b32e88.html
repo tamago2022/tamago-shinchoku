@@ -257,10 +257,24 @@ window.addEventListener("unhandledrejection", function(e){
 function honmono(){ return location.protocol === "https:"; }
 function relay(){
   if(!honmono()) return Promise.resolve(null);
-  return fetch("../status/public/relay.json?t="+Date.now(), {cache:"no-store"})
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(j){ RELAY = j && j.url ? j.url.replace(/\/$/,"") : null; return RELAY; })
-    .catch(function(){ return null; });
+  /* ★2026-10-04【黙って届かない】トンネルのURLは立て直すたびに変わり、公開側の relay.json は
+     数分遅れる。古いURLを覚えたまま送り続けないよう、公開元を2か所とも読んで新しい方を採る。 */
+  var srcs = ["../status/public/relay.json", "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/gh-pages/status/public/relay.json"];
+  return Promise.all(srcs.map(function(u){
+    return fetch(u+"?t="+Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+  })).then(function(a){
+    var best = null;
+    a.forEach(function(j){ if(j && j.url && (!best || String(j.updatedAt||"") > String(best.updatedAt||""))) best = j; });
+    RELAY = best ? best.url.replace(/\/$/,"") : null; return RELAY;
+  });
+}
+function toFetch(url, opt, ms){
+  var ac = (typeof AbortController!=="undefined") ? new AbortController() : null;
+  var t = ac ? setTimeout(function(){ ac.abort(); }, ms) : null;
+  if(ac) opt.signal = ac.signal;
+  return fetch(url, opt).then(function(r){ if(t) clearTimeout(t); return r; },
+                              function(e){ if(t) clearTimeout(t); throw e; });
 }
 function flush(){
   var a = pending();
@@ -269,25 +283,36 @@ function flush(){
     return Promise.resolve({ok:false, why:"ここは下見用の画面です（"+location.protocol
       +"）。本物のURL（https）から開くと、貯めた分がそのまま送られます"});
   }
-  return (RELAY ? Promise.resolve(RELAY) : relay()).then(function(u){
-    if(!u) return {ok:false, why:"パソコンの居場所（relay.json）が読めませんでした"};
-    return fetch(u+"/cmd", {method:"POST", mode:"cors", headers:HEAD,
-                            body:JSON.stringify({commands:a})})
+  function send(u){
+    return toFetch(u+"/cmd", {method:"POST", mode:"cors", headers:HEAD,
+                            body:JSON.stringify({commands:a})}, 20000)
       .then(function(r){
         if(!r.ok) return r.text().then(function(t){
           throw new Error("中継所が HTTP "+r.status+" を返しました"+(t?"（"+t.slice(0,80)+"）":"")); });
         return r.json();
       })
-      .then(function(j){ savePending([]); return {ok:true, n:a.length, body:j}; })
-      .catch(function(e){
-        var why = (e && e.message) ? e.message : String(e);
-        if(/failed to fetch|load failed|networkerror/i.test(why)){
-          why += " ／ 中継所まで1バイトも出ていません（回線が落ちている、パソコンが寝ている、"
-               + "またはブラウザが止めた）";
-        }
-        diag("届きませんでした: " + why);
-        return {ok:false, why:why};
+      .then(function(j){ savePending([]); return {ok:true, n:a.length, body:j}; });
+  }
+  /* 失敗したら、中継所の場所を読み直して1回だけ送り直す（古いURLを握り続けない） */
+  function fail(e){
+    var why = (e && e.name === "AbortError") ? "中継所が20秒返事をしませんでした"
+            : ((e && e.message) ? e.message : String(e));
+    if(/failed to fetch|load failed|networkerror/i.test(why)){
+      why += " ／ 中継所まで1バイトも出ていません（回線が落ちている、パソコンが寝ている、"
+           + "またはブラウザが止めた）";
+    }
+    diag("届きませんでした: " + why);
+    return {ok:false, why:why};
+  }
+  return (RELAY ? Promise.resolve(RELAY) : relay()).then(function(u){
+    if(!u) return {ok:false, why:"パソコンの居場所（relay.json）が読めませんでした"};
+    return send(u).catch(function(e1){
+      var old = RELAY;
+      return relay().then(function(u2){
+        if(u2 && u2 !== old) return send(u2).catch(fail);
+        return fail(e1);
       });
+    });
   });
 }
 function push(cmd){ var a = pending(); a.push(cmd); savePending(a); return flush(); }
@@ -473,6 +498,17 @@ el("send").addEventListener("click", function(){
     }
   });
 });
+
+/* ★貯まっている分は、画面を開いている間 30秒おき／戻ってきたとき／開いた直後に自動で送る */
+function autoFlush(){
+  if(!honmono() || !pending().length) return;
+  flush().then(function(r){
+    if(r && r.ok && r.n){ say("貯まっていた "+r.n+"件、届きました。", true); drawQ(); }
+  });
+}
+setTimeout(autoFlush, 1500);
+setInterval(autoFlush, 30000);
+document.addEventListener("visibilitychange", function(){ if(!document.hidden) autoFlush(); });
 
 el("nomu").addEventListener("click", function(){
   var n = pending().length;

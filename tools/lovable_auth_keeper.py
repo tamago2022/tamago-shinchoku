@@ -21,8 +21,19 @@ LISTENER = os.path.expanduser("~/.tamago/lovable_listener.py")
 GATE = os.path.expanduser("~/.tamago/.keeper_gate")
 
 
+def _token_ok():
+    try:
+        import json
+        d = json.load(open(TOKEN, encoding="utf-8"))
+        return bool(d.get("access_token") or d.get("refresh_token"))
+    except Exception:
+        return False
+
+
 def run():
-    if os.path.exists(TOKEN) or not os.path.exists(LISTENER):
+    # ★2026-10-04：「ファイルがある」だけでは足りない。0バイト／壊れた中身も「鍵が無い」と見なして
+    #   受け皿を立て続ける（0バイトのまま放置され、鍵が24時間以上戻らなかった）。
+    if _token_ok() or not os.path.exists(LISTENER):
         return
     # 30秒に1回だけ見る（心臓は15秒おき）
     try:

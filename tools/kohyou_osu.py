@@ -157,9 +157,21 @@ class Lovable(object):
             return False
         self.tok.update(d)
         self.sid = ""
+        # ★2026-10-04【鍵が0バイトになった】直接 "w" で開くと、書いている途中で止まった瞬間に
+        #   中身が空になり、巻き直した新しい refresh_token ごと失われる（10/03 06:24 の実害）。
+        #   一時ファイルに書いてから置き換える（置き換えは途中の状態が見えない）。直前の1世代も残す。
         try:
-            with io.open(TOKEN_PATH, "w", encoding="utf-8") as f:
+            tmp = TOKEN_PATH + ".tmp%d" % os.getpid()
+            with io.open(tmp, "w", encoding="utf-8") as f:
                 json.dump(self.tok, f)
+                f.flush()
+                os.fsync(f.fileno())
+            os.chmod(tmp, 0o600)
+            if os.path.exists(TOKEN_PATH) and os.path.getsize(TOKEN_PATH) > 2:
+                import shutil
+                shutil.copyfile(TOKEN_PATH, TOKEN_PATH + ".prev")
+                os.chmod(TOKEN_PATH + ".prev", 0o600)
+            os.replace(tmp, TOKEN_PATH)
         except Exception:
             pass
         _log("鍵を取り直しました（refresh_token）")

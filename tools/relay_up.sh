@@ -100,6 +100,9 @@ if old != url:
               io.open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("relay.json を更新:", url)
 PY
+  # ★2026-10-04：URLが変わったら公開側へも即写して即公開（15分便まかせだと箱が古いURLへ送り続ける）
+  cp -f "$REPO/status/relay.json" "$REPO/status/public/relay.json" 2>/dev/null
+  nohup bash "$REPO/tools/pages_publish.sh" >/dev/null 2>&1 &
   echo "$(date '+%F %T') 中継所URL: $URL" >>"$LOG"
 else
   echo "$(date '+%F %T') トンネルのURLがまだ取れません" >>"$LOG"
