@@ -261,6 +261,19 @@ def run_one(job_path):
         out["fix"] = why
         return out
 
+    # ★ところてん#642【ページの関所】og:imageが曲固有で200／動画が再生できる／関連4枚。
+    #   通らない投稿はBufferに入れない（補填もこの入口を通る）。
+    try:
+        import buffer_page_kanmon
+        ok, why = buffer_page_kanmon.kanmon(job.get("text") or "")
+    except Exception as e:  # 道具が壊れても投稿は止めない…ではなく、安全側＝止める
+        ok, why = False, "ページの関所の道具が読めません：%s" % str(e)[:120]
+    out["page_kanmon"] = why
+    if not ok:
+        out["result"] = "ページの関所で止めた（HOLD）"
+        out["fix"] = why
+        return out
+
     tok = token()
     if not tok:
         out["result"] = "鍵なし"
