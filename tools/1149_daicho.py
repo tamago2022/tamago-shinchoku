@@ -303,6 +303,17 @@ def yarippanashi(now):
         notes = it.get("kenpinNotes") or it.get("failReasons") or []
         if notes and not it.get("mergedAt"):
             bad = True
+        # 2026-10-04 数え過ぎの是正：終わった・取り消した票、指摘より後に完了の跡がある票は
+        #   「直した」側。（実測：191件のうち done/cancelled 22件・完了済み awaiting_check 133件が
+        #   過去の failReasons だけで「直してない」に数えられていた）
+        if bad and it.get("status") != "fix_required" and it.get("state") != "fix_required":
+            if it.get("status") in ("done", "cancelled", "merged"):
+                bad = False
+            else:
+                fin = parse_ts(it.get("finishedAt"))
+                kp = parse_ts(it.get("kenpinUpdatedAt"))
+                if fin and (not kp or fin >= kp):
+                    bad = False
         if not bad:
             continue
         mitsuketa = parse_ts(it.get("kenpinUpdatedAt")) or parse_ts(it.get("checkedAt")) or parse_ts(it.get("addedAt"))
