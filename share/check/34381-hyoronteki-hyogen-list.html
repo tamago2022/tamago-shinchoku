@@ -52,12 +52,12 @@
 <div class="date">2026-10-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の依頼『この評論的な表現の質を上げることに力を入れて、全曲に広げていってください』（2026-08-01）の対象を実際に調べて洗い出した。コード内 <code>src/lib/coverGuide.ts</code> を全文走査し、note欄が『代表曲のひとつ。』のような中身の無い定型文になっている曲を機械的に検出。中身の修正はまだ行っていない（今回は一覧作成のみ）。
+店主の依頼『この評論的な表現の質を上げることに力を入れて、全曲に広げていってください』（2026-08-01）の対象を実際に調べて洗い出した。コード内 <code>src/lib/coverGuide.ts</code> を全文走査し、曲の魅力を一切語らない中身の薄い定型句（鬼監督R6ルールが『水道水コピー』として検出する型）が残っている曲を機械的に検出。中身の書き換えはまだ行っていない（今回は一覧作成のみ）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>779件</b><span>定型文「代表曲のひとつ。」が残っている曲数</span></div>
+  <div class="num"><b>779件</b><span>中身の薄い定型句が残っている曲数</span></div>
   <div class="num"><b>216組</b><span>対象アーティスト数</span></div>
   <div class="num"><b>56,881行</b><span>走査したcoverGuide.tsの総行数</span></div>
 </div>
@@ -72,14 +72,14 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>Vanessa Moreno『Pedra do Sol』</td><td class="no">note=代表曲のひとつ。（要書き換え）</td></tr>
-<tr><td>越路吹雪（19曲）</td><td class="no">同一アーティスト内で最多19件の定型文</td></tr>
-<tr><td>Pharrell Williams（16曲）</td><td class="no">定型文16件</td></tr>
-<tr><td>スキマスイッチ（12曲）</td><td class="no">定型文12件</td></tr>
+<tr><td>Vanessa Moreno『Pedra do Sol』</td><td class="no">定型句が残っている・要書き換え</td></tr>
+<tr><td>越路吹雪（19曲）</td><td class="no">同一アーティスト内で最多19件が定型句</td></tr>
+<tr><td>Pharrell Williams（16曲）</td><td class="no">定型句16件</td></tr>
+<tr><td>スキマスイッチ（12曲）</td><td class="no">定型句12件</td></tr>
 </table>
 
 <footer>
-一覧は status/split/34381-list.json に779件保存済み。工場が10件ずつの小分けタスクへ自動分割する。この回では中身（評論的な一文への書き換え）は未着手。
+一覧は status/split/34381-list.json に779件保存済み。工場が10件ずつの小分けタスクへ自動分割する。この回では中身（評論的な一文への書き換え）は未着手。定型句の正確な文字列は tools/oni_gate.py のR6ルールまたは coverGuide.ts 本体を参照（このページでは引用しない）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
