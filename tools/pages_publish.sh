@@ -147,7 +147,13 @@ cd "$PAGES" || { log "🛑 $PAGES へ入れませんでした"; exit 1; }
 #   直し方：push成功後の最小間隔を空け、デプロイが完走する時間を確保する。
 #   FORCE（--force呼び出し）はクールダウンを無視する（切り替え時の確認用のため）。
 COOLDOWN_FILE="$REPO/status/.pages_publish_last_push"
-COOLDOWN_SEC=150
+# ★2026-10-03 さらに実測：150秒でもデプロイが一度も完走しなかった。
+#   GitHub API上 /deployments の最新成立分が前日14:45Z止まり＝ここ1日、
+#   成立したデプロイが0件（pending→cancelledの繰り返しのみ）。
+#   原因は git 側の競合ではなく（ロックは機能している）、Actions側の
+#   詰まり（頻度制限 or 利用枠の可能性、このセッションからは認証が無く特定不能）。
+#   間隔をさらに広げて様子を見る。
+COOLDOWN_SEC=600
 if [ "$FORCE" -eq 0 ] && [ -f "$COOLDOWN_FILE" ]; then
   _LAST="$(cat "$COOLDOWN_FILE" 2>/dev/null || echo 0)"
   _NOW="$(date +%s)"
