@@ -52,24 +52,53 @@
 <div class="date">2026-10-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-08-01に指摘した「Xのリポストbot経由の動画はbot垢が消えるとリンク切れする」問題は、同日中に仕入れ運用ルールとして既に実装済みでした。<code>docs/operations/ingest-playbook.md</code> §2.2.4に手順と優先順位（公式チャンネル＞最初期の投稿者本人＞転載だが長く残っている大手＞リポストbot）を明文化し、元ネタ候補を探す道具 <code>scripts/patrol/trace-x-original.mjs</code>（逆画像検索リンク＋YouTube候補提示、最終判断は人）も実装済みでmainへ反映されています。完全自動化はせず、人が最後に確認する運用にしています。
+前回、このページにGitHubの非公開リポジトリのリンクだけを貼ってしまい、たまごさんが押すと404になる状態で出してしまいました（お詫びします）。今回は中身をこのページの中に直接書きます。クリックして探す必要はありません。
+</div>
+
+<div class="fix">
+店主が2026-08-01に指摘した「Xのリポストbot経由の動画はbot垢が消えるとリンク切れする」問題は、同日中に仕入れ運用ルールとして実装済みでした（今回あらためて中身をこのページに書き起こしました）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2026-08-01</b><span>実装日（店主指摘の同日）</span></div>
-  <div class="num"><b>9fc288b7c</b><span>実装コミット</span></div>
+  <div class="num"><b>9fc288b7c</b><span>実装コミット（ごきげん補給所リポジトリ）</span></div>
 </div>
 
+<h2>③ ルールの中身（docs/operations/ingest-playbook.md §2.2.4 全文）</h2>
+<div class="note">
+<b>2.2.4 Xのリポストbot経由で見つけた動画は、元ネタを探してから使う</b><br><br>
+「なんだか元気が出る動画bot」のようなリポスト系アカウントは、いつアカウントごと消えるか分からない。そのURLをそのまま棚に貼ると、ある日まとめてリンクが死ぬ。<br><br>
+<b>手順（完全自動化はしない。人が最後に判断する）</b><br>
+<code>bun scripts/patrol/trace-x-original.mjs https://x.com/&lt;user&gt;/status/&lt;id&gt;</code><br><br>
+この道具が、投稿の本文・動画・サムネイルを取り出し、次を出す。<br>
+1. 逆画像検索のリンク（Yandex / Google Lens）— サムネイルから元ネタを探す<br>
+2. YouTube候補（再生数と投稿時期つき）— 古くて再生数が多いものほど元ネタの可能性が高い<br><br>
+<b>判断</b><br>
+・元ネタ（公式または最初期の投稿者）が見つかった → そちらのリンクを使う。bot垢のリンクは使わない。<br>
+・似ているだけの別動画を掴まない。中身が同じか必ず目で見て確認する。<br>
+・見つからなかった → 棚に入れてよい。ただし消える前提で扱い、出典がXであることを残す。見回りが後で死にリンクとして拾えるようにしておく。<br><br>
+<b>優先順位</b>：公式チャンネル ＞ 最初期の投稿者本人 ＞ 転載だが長く残っている大手 ＞ リポストbot
+</div>
 
+<h2>③-2 道具の説明（scripts/patrol/trace-x-original.mjs の冒頭コメント全文）</h2>
+<div class="note">
+Xのリポストbot経由で見つけた動画から、元ネタ（長く残りそうな投稿）を辿るための道具。<br><br>
+<b>なぜ必要か（店主指示 2026-07-31）</b>：「なんだか元気が出る動画bot」のようなリポスト系アカウントは、いつアカウントごと消えるか分からない。棚に貼ったリンクが死ぬ。使う前にYouTube/Instagramの元ネタを探し、あればそちらを優先する。<br><br>
+<b>この道具がやること</b><br>
+1. X投稿URLから、本文・動画・サムネイル画像を取り出す（fxtwitter経由。ログイン不要）<br>
+2. サムネイルを使った逆画像検索のURLを組み立てて出す（Yandex / Google Lens）<br>
+3. 本文から作った検索語でYouTubeを探し、候補を再生回数・投稿時期つきで並べる（古くて再生数が多いものほど元ネタの可能性が高い）<br><br>
+最後の「これが元ネタだ」という判断は人がやる。機械が勝手に決めない。<br><br>
+<b>使い方</b>：<code>bun scripts/patrol/trace-x-original.mjs https://x.com/&lt;user&gt;/status/&lt;id&gt;</code>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>ingest-playbook.md §2.2.4（GitHub・ごきげん補給所リポジトリ）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md#224-xのリポストbot経由で見つけた動画は元ネタを探してから使う" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md#224-xのリポストbot経由で見つけた動画は元ネタを探してから使う</a></li>
-  <li><b>道具 trace-x-original.mjs</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/trace-x-original.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/trace-x-original.mjs</a></li>
+  <li><b>ingest-playbook.md §2.2.4（GitHub・非公開リポジトリのため開けません／参考情報）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md#224-xのリポストbot経由で見つけた動画は元ネタを探してから使う" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md#224-xのリポストbot経由で見つけた動画は元ネタを探してから使う</a></li>
+  <li><b>道具 trace-x-original.mjs（GitHub・非公開リポジトリのため開けません／参考情報）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/trace-x-original.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/trace-x-original.mjs</a></li>
 </ul>
-
-
+<div class="note">※上の2本のリンクはごきげん補給所の非公開リポジトリのため、たまごさんが押すと404になります（確認用に残していますが、中身は③・③-2にすべて書き起こしてあります）。</div>
 
 <footer>
 このページは #34392 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
