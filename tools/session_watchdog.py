@@ -894,34 +894,5 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception as e:
         append(LOG_MD, "- %s ❌ 見張り番エラー: %s" % (now(), e))
-        # ---- T031（2026-10-03）----
-        # main()が途中で例外を出すと、末尾の machine["metrics"]=...; save_json(...) まで
-        # 辿り着けず、machine.json の metrics(gated/humanPushes/autonomyRatio) が
-        # このサイクルだけ無言で消える（ログには残るが machine.json 側は無言）。
-        # 累計(_totals)は state.json 側にあるので、それだけ使って最低限書き戻す
-        # （直近サイクル分の*ThisRunは0扱い＝取りこぼしは認めるが、ゼロにはしない）。
-        try:
-            _state = load_json(STATE_JSON, {})
-            _totals = _state.get("_totals") or {}
-            _machine = load_json(MACHINE_JSON, {})
-            if _machine:
-                _sl = _machine.get("sessionList") or []
-                _done = [x for x in _sl if x.get("done")]
-                _auto = [x for x in _done if (x.get("humanPushes", 0) + x.get("dispatchPushes", 0)) == 0]
-                _machine["metrics"] = {
-                    "stalls": _totals.get("stalls", 0), "autoResumes": _totals.get("autoResumes", 0),
-                    "handoffs": _totals.get("handoffs", 0), "hardCuts": _totals.get("hardCuts", 0),
-                    "ignitions": _totals.get("ignitions", 0), "gated": _totals.get("gated", 0),
-                    "autoResumesThisRun": 0, "handoffsThisRun": 0, "ignitionsThisRun": 0,
-                    "humanPushes": sum(x.get("humanPushes", 0) + x.get("dispatchPushes", 0) for x in _sl),
-                    "doneAlive": len(_done), "doneWithoutHumanPush": len(_auto),
-                    "autonomyRatio": round(len(_auto) / len(_done), 2) if _done else None,
-                    "note": "⚠️見張り番がこのサイクルで例外停止したため累計のみ復元（直近サイクル分は欠落）: %s" % e,
-                    "errorAt": now(),
-                }
-                save_json(MACHINE_JSON, _machine)
-                append(LOG_MD, "- %s 🩹 例外停止後もmetricsだけ最低限復元して書き戻した" % now())
-        except Exception as e2:
-            append(LOG_MD, "- %s ❌ metrics復元も失敗: %s" % (now(), e2))
         print(json.dumps({"error": str(e)}))
         sys.exit(0)

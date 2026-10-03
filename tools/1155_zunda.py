@@ -43,10 +43,7 @@ HOME = os.path.expanduser("~")
 REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
 VAULT = os.path.join(HOME, "Library", "Mobile Documents",
                      "iCloud~md~obsidian", "Documents", "tamago_brain")
-# ★2026-10-02 1200番：音声はVaultの外（iCloud Driveの別フォルダ）に置く。Vault内だとObsidianが
-#   2GB超を抱えてiPhoneの索引が30秒かかる。ノートには「▶ 読み上げを聴く」リンク1行だけ。
-AUDIO_DIR = os.path.join(HOME, "Library", "Mobile Documents", "com~apple~CloudDocs", "円卓ずんだ音声")
-START_VER = "v2"     # v2 = 「タイトル候補」見出しから読み始める版。無印の済みは作り直し対象
+AUDIO_DIR = os.path.join(VAULT, "AI出力", "40_プロジェクト", "円卓会議🔥", "音声")
 STATE_DIR = os.path.join(REPO, "status", "zunda")
 PROGRESS = os.path.join(STATE_DIR, "progress.json")
 LOG = os.path.join(STATE_DIR, "worker.log")
@@ -201,12 +198,6 @@ def to_compressed(wav_path, stem):
     return dest
 
 
-def short_name(rel):
-    """1200番と同じ規則（ノート名のsha1先頭8桁）。リンクを短く保つ"""
-    import hashlib
-    return "entaku_" + hashlib.sha1(os.path.basename(rel)[:-3].encode("utf-8")).hexdigest()[:8]
-
-
 def slug(rel):
     s = os.path.basename(rel)[:-3]
     s = re.sub(r"[\\/:*?\"<>|#\[\]]", "", s)
@@ -214,32 +205,18 @@ def slug(rel):
 
 
 def embed(note_path, fname):
-    """ノートのタグ行の下に「▶ 読み上げを聴く」リンク1行（埋め込みはしない＝Vaultを重くしない）。
-    既にリンクがあれば何もしない。旧 ![[円卓音声_…]] 埋め込みが残っていれば消してリンクに差し替える。"""
-    import urllib.parse
-    # ★2026-10-02 1201番：調査済みの形。file://はMacで確認済み、shareddocumentsはiPhone未確認につき「試す」扱い
-    mac = "file://" + urllib.parse.quote(os.path.join(AUDIO_DIR, fname), safe="/")
-    ios = "/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/円卓ずんだ音声/" + fname
-    link = "[▶ 聴く（Mac・確認済み）](%s) ／ [iPhoneで試す（未確認）](shareddocuments://%s)" % (
-        mac, urllib.parse.quote(ios, safe="/~"))
     with io.open(note_path, "r", encoding="utf-8") as f:
         body = f.read()
-    if link in body:
+    mark = "![[%s]]" % fname
+    if mark in body:
         return False
-    if "[▶ 読み上げを聴く](" in body:
-        return False
-    body = re.sub(r"^!\[\[円卓音声_[^\]]+\.(?:mp3|m4a)\]\]\s*$", link, body, count=1, flags=re.M)
-    if link in body:
-        with io.open(note_path, "w", encoding="utf-8") as f:
-            f.write(body)
-        return True
     lines = body.split("\n")
     idx = None
     for i, ln in enumerate(lines):
         if TAG in ln:
             idx = i
             break
-    block = ["", "🔊 ずんだもんの読み上げ", link, ""]
+    block = ["", "🔊 ずんだもんの読み上げ", mark, ""]
     if idx is None:
         lines = block + lines
     else:
@@ -272,16 +249,6 @@ def collect():
     hits = []
     for root, dirs, files in os.walk(VAULT):
         dirs[:] = [d for d in dirs if not d.startswith(".")]
-        # 2026-10-02: 運用メモ・ルール文書を誤って読み上げ対象にしない
-        # (本文中の「#円卓会議」という文字表記だけで誤collectされた実例あり)
-        rel_root = os.path.relpath(root, VAULT)
-        if rel_root == "AI出力/_ルール" or rel_root.startswith("AI出力/_ルール" + os.sep):
-            continue
-        # 2026-10-02: 旧フォーマット保管棚は本番ノートと同じファイル名のため、
-        # short_name()がbasenameだけでハッシュを作る都合上、処理すると本番の
-        # 音声を無駄な再合成で上書きしてしまう。アーカイブは読み上げ対象から外す。
-        if "_旧フォーマット（保管）" in rel_root.split(os.sep):
-            continue
         for n in files:
             if not n.endswith(".md"):
                 continue
@@ -365,23 +332,17 @@ def do_note(rel, prog):
     with io.open(src, "r", encoding="utf-8", errors="ignore") as f:
         text = clean(f.read())
     # ★読み上げは題名から始める（URL・メタ情報・ファイル名は読まない）
-    # ★2026-10-02：たまごさん指定。ハッシュタグの下の最初の「タイトル候補」見出しから読み始める
-    with io.open(src, "r", encoding="utf-8", errors="ignore") as f2:
-        raw = f2.read()
-    m = re.search(r"^#{1,6}\s*タイトル候補.*$", raw, flags=re.M)
-    if m:
-        text = clean(raw[m.start():])
-    else:
-        head = re.sub(r"[#＃]\S+", "", os.path.basename(rel)[:-3])
-        head = re.sub(r"^円卓会議[_\s]*", "", head).replace("_", " ").strip()
-        if head and not text.startswith(head):
-            text = head + "。\n" + text
+    head = re.sub(r"[#＃]\S+", "", os.path.basename(rel)[:-3])
+    head = re.sub(r"^円卓会議[_\s]*", "", head).replace("_", " ").strip()
+    if head and not text.startswith(head):
+        text = head + "。\n" + text
     cs = chunks(text)
     if not cs:
         prog["failed"][rel] = "読む文が無い"
         return None
+    st = slug(rel)
     os.makedirs(AUDIO_DIR, exist_ok=True)
-    stem = os.path.join(AUDIO_DIR, short_name(rel))
+    stem = os.path.join(AUDIO_DIR, "円卓音声_" + st)
     wavpath = "/tmp/zunda_%d.wav" % os.getpid()
     log("  %d チャンク / %d 文字" % (len(cs), len(text)))
     wavs = []
@@ -411,7 +372,7 @@ def do_note(rel, prog):
     os.remove(wavpath)
     fname = os.path.basename(out)
     added = embed(src, fname)
-    prog["done"][rel] = {"v": START_VER, "file": fname,
+    prog["done"][rel] = {"file": fname,
                          "bytes": os.path.getsize(out),
                          "chunks": len(cs),
                          "embed": bool(added)}
@@ -440,7 +401,7 @@ def main():
     log("対象 %d 本 / 済 %d 本" % (len(notes), len(prog["done"])))
     n = 0
     for rel in notes:
-        if prog["done"].get(rel, {}).get("v") == START_VER:
+        if rel in prog["done"]:
             continue
         if limit is not None and n >= limit:
             break
@@ -468,7 +429,13 @@ def main():
             prog["failed"][rel] = str(e)[:200]
             log("  失敗: %s" % e)
         save_progress(prog)
-        # ★2026-10-02：公開リポ（share/）へは置かない（他人の動画の要約音声のため）。1164の呼び出しは廃止。
+        # 出来た声はすぐ本番へ置く（窓口が落ちていても鳴るように）
+        try:
+            subprocess.run(["/usr/bin/python3",
+                            os.path.join(REPO, "tools", "1164_zunda_kohyou.py")],
+                           timeout=180, capture_output=True)
+        except Exception:
+            pass
     log("=== 終わり 済%d 失敗%d ===" % (len(prog["done"]), len(prog["failed"])))
     return 0
 
