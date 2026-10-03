@@ -516,15 +516,6 @@ hakobu
 if run_with_timeout 90 python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
   :
 else
-# ---- T031（2026-10-03・高負荷実測で発覚）----
-# 上のfactory_status.pyが90秒タイムアウト/失敗したときのフォールバック。
-# 旧実装はここで machine.json を「負荷/CPU/メモリだけの最小JSON」で**丸ごと上書き**していた。
-# その結果、session_watchdog.py が付けるはずの metrics(gated/humanPushes/autonomyRatio)・
-# watchdog・quota・sessionList等が、高負荷が収まって次に正常サイクルが回るまで**無言で消えていた**
-# （手動でfactory_status.py→session_watchdog.pyを直列実行すれば復旧することは確認済み＝
-#  データの作り方自体は正しい。ここでの「上書き」だけが問題）。
-# 対策：①直近の正常な machine.json を土台にして、新しい実測値だけを上書き（古いmetrics等は保持）
-#       ②フォールバックが起きた事実そのものを factory_fallback.log / .json に必ず残す（アラート用）。
 LINE=$(bash "$LOADSH" 2>/dev/null || echo "")
 # 例：負荷 12% ｜ CPU 9% / メモリ圧迫 58% / スワップ 0.20GB / ディスク空き 61GB ｜ 稼働 14本 ｜ あと3本OK
 num() { echo "$1" | sed -nE "s/.*$2 ([0-9.]+)$3.*/\1/p" | head -1; }
@@ -537,67 +528,10 @@ SESS=$(num "$LINE" "稼働" "本")
 NOTE=$(echo "$LINE" | awk -F'｜' '{gsub(/^ +| +$/,"",$NF); print $NF}')
 NOW=$(date +"%Y-%m-%dT%H:%M:%S%z" | sed -E 's/([0-9]{2})([0-9]{2})$/\1:\2/')
 
-FALLBACK_LOG="$REPO/status/factory_fallback.log"
-FALLBACK_JSON="$REPO/status/factory_fallback.json"
-echo "$(date '+%F %T') ⚠️ factory_status.py --write がタイムアウト/失敗→最小stubへフォールバック（負荷=${LOAD:-?}%）" >> "$FALLBACK_LOG" 2>/dev/null || true
-
-# ---- T031追記（2026-10-03・自己検証で発覚）----
-# 直前までは `run_with_timeout 15 python3 - ... <<'PYEOF'` でheredocをstdin経由で渡していたが、
-# run_with_timeout()は対象コマンドを "$@" & でバックグラウンド実行する。非対話シェル(launchd経由の
-# このスクリプト本体がまさにそれ)ではジョブコントロールが無効なため、明示的なリダイレクトを持たない
-# バックグラウンドジョブは**標準入力が/dev/nullに差し替わる**（bash仕様）。つまりheredocの中身は
-# バックグラウンドのpython3に届かず、python3は空スクリプトとして何もせず終了（rc=0・ログだけ残る）。
-# 実機で再現確認済み（同じパターンのcatも標準入力を受け取れなかった）。
-# 対策：heredocはファイルへ書き出す（これは同期実行なので届く）→ そのファイルパスをpython3に渡す
-# （標準入力に依存しない形にする）。
-FALLBACK_PY="$REPO/status/.factory_fallback_merge.py"
-cat > "$FALLBACK_PY" <<'PYEOF'
-import json, os, sys, time
-
-out_path, fb_json, now_s, load, cpu, mem, swap, disk, sess, note, line = sys.argv[1:12]
-
-def num(v):
-    try:
-        return float(v) if v != "" else None
-    except Exception:
-        return None
-
-# ①古い machine.json を土台にする（無ければ空dict）。factory_status.pyの出し忘れ分
-#   （metrics/watchdog/quota/sessionList/safeMax等）はここで保持されたまま残る。
-try:
-    base = json.load(open(out_path, encoding="utf-8"))
-    if not isinstance(base, dict):
-        base = {}
-except Exception:
-    base = {}
-
-base.update({
-    "measuredAt": now_s,
-    "load": num(load), "cpu": num(cpu), "mem": num(mem),
-    "swapGB": num(swap), "diskFreeGB": num(disk), "sessions": num(sess),
-    "note": note, "raw": line,
-    "fallback": {"at": now_s, "reason": "factory_status.py --write timeout/failure",
-                 "note": "machine_load.sh単体の最小実測に差し替え。古いmetrics/watchdog/quota等は保持"},
-})
-tmp = out_path + ".tmp"
-with open(tmp, "w", encoding="utf-8") as f:
-    json.dump(base, f, ensure_ascii=False)
-os.replace(tmp, out_path)
-
-# ②フォールバック発生そのものをカウンタ付きで記録（PWA/見張り番が読むアラート用）。
-try:
-    fb = json.load(open(fb_json, encoding="utf-8"))
-    if not isinstance(fb, dict):
-        fb = {}
-except Exception:
-    fb = {}
-fb["lastAt"] = now_s
-fb["count"] = int(fb.get("count") or 0) + 1
-fb["lastLoad"] = num(load)
-with open(fb_json, "w", encoding="utf-8") as f:
-    json.dump(fb, f, ensure_ascii=False)
-PYEOF
-run_with_timeout 15 python3 "$FALLBACK_PY" "$OUT" "$FALLBACK_JSON" "$NOW" "${LOAD:-}" "${CPU:-}" "${MEM:-}" "${SWAP:-}" "${DISK:-}" "${SESS:-}" "$NOTE" "$LINE" || true
+j() { [ -n "${1:-}" ] && echo "$1" || echo "null"; }
+cat > "$OUT" <<EOF2
+{"measuredAt":"$NOW","load":$(j "$LOAD"),"cpu":$(j "$CPU"),"mem":$(j "$MEM"),"swapGB":$(j "$SWAP"),"diskFreeGB":$(j "$DISK"),"sessions":$(j "$SESS"),"note":"$(echo "$NOTE" | sed 's/"/\\"/g')","raw":"$(echo "$LINE" | sed 's/"/\\"/g')"}
+EOF2
 fi
 
 # 2026-09-03 利用枠の推定（会話ログのトークン量×スマホ実測アンカー）→ status/quota.json。見張り番がモデル選択と machine.json の quota 節に使う
@@ -742,14 +676,7 @@ PYEOF
 #   止めていた本当の理由＝再開がFableのままだったこと。それは session_watchdog.py 側で潰した：
 #   ①resume時に必ず --model claude-sonnet-5 を明示 ②status/no_fable.flag がある間はFable完全禁止。
 #   また止めたいときは status/no_fable.flag ではなくこの行をコメントに戻す（再開そのものが止まる）。
-# ---- T031（2026-10-03）----
-# ここが60秒タイムアウトで落ちる（高負荷下でkill -9）と、machine.json へのmetrics
-# (gated/humanPushes/autonomyRatio)等の書き戻しが今回のサイクルだけ無言で飛ぶ
-# （最後にまとめて書く設計のため、途中で殺されると丸ごと未反映になる）。
-# 直せないタイムアウトキルそのものは諦め、発生した事実だけ必ずログに残す。
-if ! run_with_timeout 60 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1; then
-  echo "$(date '+%F %T') ⚠️ session_watchdog.py がタイムアウト/失敗→このサイクルのmetrics反映が飛んでいる可能性" >> "$REPO/status/factory_fallback.log" 2>/dev/null || true
-fi
+run_with_timeout 60 python3 "$REPO/tools/session_watchdog.py" >/dev/null 2>&1 || true
 # 2026-09-03 孤児プロセス回収：セッション終了後もppid=1で残り続けるlint/build/test系の暴走プロセスを止める（ロード100%固定化の実害を確認して追加）
 run_with_timeout 30 python3 "$REPO/tools/orphan_reaper.py" >/dev/null 2>&1 || true
 # 2026-09-06(415番) 容量の見張り：/System/Volumes/Data の空きを測り、30GB未満なら

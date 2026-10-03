@@ -245,13 +245,6 @@ def main():
                            "head": text[:40]})
             tsukatta += 1
             continue
-        # ★ページ関所：曲の存在・動画の生死・コピー品質（落ちたら予約しない）
-        import buffer_page_kanmon
-        pok, pwhy = buffer_page_kanmon.kanmon(text)
-        if not pok:
-            failed.append({"due": local.strftime("%F %H:%M"), "why": pwhy, "head": text[:40]})
-            tsukatta += 1
-            continue
         ok, why = mon.tsukaeru(text, iso)
         if not ok:
             mon.hajiku(text, why, iso)
