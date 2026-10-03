@@ -23,12 +23,15 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: pages
-  # 769番6回目で発見：このリポジトリは自動ジョブが1〜2分おきにcommitし続ける。
-  # cancel-in-progress:true だと新しいpushのたびに直前のデプロイが即キャンセルされ、
-  # 確認ページの更新が本番に反映されないまま「直っていない」扱いになる事故が起きていた。
-  # false にすると実行はキューイングされ、1つずつ最後まで完了する（最新コミットの
-  # 内容は少し遅れても必ず反映される）。
+  # 2026-10-04（34381番の作業中に発見）：グループ名 "pages" のまま25時間以上、
+  # 本番(Pages)が1件も更新されていなかった。原因はrun id 37022041921が
+  # 2026-10-02T14:45:01Zから"queued"のまま止まり（in_progressにもcompletedにもならない
+  # ゾンビ実行）、cancel-in-progress:falseの直列キューの先頭を永久に塞いでいたこと
+  # （実測：Actions API — in_progress 0件・queued 1件がこのidのみ）。
+  # 直し方：グループ名を日付で変え、新しい待ち行列を作る。古いゾンビは "pages" グループに
+  # 置いたまま無害に残し、以後のpushは新グループで走らせる（GitHub側にキャンセル権限が無い
+  # ため、キャンセルではなく隔離で塞ぎを外した）。再発したら日付をまた進める。
+  group: pages-2026-10-04
   cancel-in-progress: false
 jobs:
   deploy:
