@@ -373,6 +373,17 @@ var DISK_AKA_GB = 50;
   }).catch(function(){ el.textContent = "残り容量　取れていません"; });
 })();
 
+/* 今日止まっていた分数（心臓・中継所・計測のどれかが止まっていた合計・機械が数える）。取れなければ出さない */
+(function(){
+  var el = $("diskLine"); if(!el) return;
+  getJson("status/public/downtime.json").then(function(d){
+    if(!d || typeof d.minToday !== "number") return;
+    var s = document.createElement("div");
+    s.textContent = "今日止まっていた分数　" + d.minToday + "分";
+    el.parentNode.insertBefore(s, el.nextSibling);
+  }).catch(function(){});
+})();
+
 /* ───────── 走っているもの ─────────
    ★経過時間は startedAt があればそちらを優先。180分＝3時間縛り。超えたときだけ赤。 */
 var RUN = [], BASE = 0, STALE = false, AGE = 0;

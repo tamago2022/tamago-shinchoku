@@ -228,7 +228,9 @@ def main():
         return 0
 
     log("%s ／ 自分で投げた結果：%s" % (why, msg))
-    if heavy:
+    # 2026-10-04：URLが空＝道が1本も無い。重いからと見送ると重い日は永久に直らない
+    #   （実測：load30〜50が続き76分間届かず）。トンネル起動は軽いので、URLが空なら重くても立て直す。
+    if heavy and url:
         write_red("%s ／ Macが重いので立て直しは見送りました（load>40）" % why)
         log("Macが重いので立て直しは見送ります（赤のまま残します）")
         return 0

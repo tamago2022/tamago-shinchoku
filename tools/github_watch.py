@@ -768,6 +768,20 @@ def check_repo(repo, token, st, budget):
                 _daicho("in", author_ai, thread="gh:%s#%s" % (repo, num),
                         topic=(it.get("title") or "")[:120],
                         ref=it.get("html_url") or "", who=author)
+            if (not is_pr and author == "tamago2022"
+                    and re.search(r"に頼む】", it.get("title") or "")):
+                # 自分で投げた依頼の反響。号ごとに票を作らず受信箱の1枚に足す。
+                try:
+                    if TOOLS not in sys.path:
+                        sys.path.insert(0, TOOLS)
+                    import gaibu_henji_matome as _m2
+                    if _m2.fold_inbox(repo, num, "依頼を投げた：%s" % (it.get("title") or "")[:60],
+                                      it.get("body") or "", it.get("html_url") or "", who=author):
+                        seen.add(key)
+                        just_queued.add(str(num))
+                        continue
+                except Exception as _e:
+                    log("受信箱に足せず従来どおり積みます: %r" % (_e,))
             base = _instruction(repo, "pr" if is_pr else "issue", num,
                                 it.get("title") or "", it.get("html_url") or "",
                                 it.get("body") or "", author,
@@ -895,6 +909,11 @@ def check_repo(repo, token, st, budget):
             except Exception as _e:
                 _saki = None
                 log("まとめに失敗（新しい票を作ります）: %r" % (_e,))
+            if not _saki and (known_ai or (login == "tamago2022" and _known_thread("gh:%s#%s" % (repo, num)))):
+                # 号ごとに票が無い＝毎回新しい票が増えていた真因。外部返事は受信箱の1枚に足す。
+                _saki = _matome.fold_inbox(
+                    repo, num, "%sさんの返信（%s）" % (login, _jst_hm(c.get("created_at") or "")),
+                    c.get("body") or "", c.get("html_url") or "", who=login)
             if _saki:
                 log("%s #%s へのコメント → %s番の票に足した（新しい票は作らない）"
                     % (repo, num, _saki))

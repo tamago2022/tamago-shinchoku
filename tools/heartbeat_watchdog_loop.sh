@@ -15,5 +15,6 @@ set -u
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 while :; do
   python3 "$REPO/tools/heartbeat_watchdog.py" >/dev/null 2>&1 || true
+  python3 "$REPO/tools/ugoki_log.py" >/dev/null 2>&1 || true   # 止まっていた分数を記録（2026-10-04）
   sleep 10
 done
