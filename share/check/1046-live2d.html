@@ -98,7 +98,26 @@ var log=document.getElementById('log'), go=document.getElementById('go'), tap=do
 var ph=document.getElementById('ph'), cv=document.getElementById('cv'), tbl=document.getElementById('tbl'), sum=document.getElementById('sum');
 function say(s){log.textContent=s;}
 function kb(n){return (n/1024).toFixed(1)+" KB";}
-function load(src){return new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=function(){rej(new Error(src));};document.head.appendChild(s);});}
+// 2026-10-03修正（#1264）：「落ちたまま＝何も起きていないように見える」をやめるため、
+// 各ステップにタイムアウトを付け、固まったままにしない（必ずPASS/FAILのどちらかに決着させる）。
+function load(src,timeoutMs){
+  return new Promise(function(res,rej){
+    var s=document.createElement('script'); s.src=src;
+    var done=false;
+    var t=setTimeout(function(){ if(done)return; done=true; rej(new Error("タイムアウト（"+Math.round((timeoutMs||15000)/1000)+"秒）: "+src)); },timeoutMs||15000);
+    s.onload=function(){ if(done)return; done=true; clearTimeout(t); res(); };
+    s.onerror=function(){ if(done)return; done=true; clearTimeout(t); rej(new Error("読み込み失敗: "+src)); };
+    document.head.appendChild(s);
+  });
+}
+function withTimeout(promise,ms,label){
+  return new Promise(function(res,rej){
+    var done=false;
+    var t=setTimeout(function(){ if(done)return; done=true; rej(new Error(label+"が"+Math.round(ms/1000)+"秒たっても終わりません（回線が遅いか、CDNに届いていません）")); },ms);
+    promise.then(function(v){ if(done)return; done=true; clearTimeout(t); res(v); },
+                 function(e){ if(done)return; done=true; clearTimeout(t); rej(e); });
+  });
+}
 function table(){
   var es=performance.getEntriesByType('resource').filter(function(e){
     return /cubism|pixi|jsdelivr/.test(e.name);
@@ -113,33 +132,46 @@ function table(){
   sum.innerHTML="<b>合計：通信で受け取った "+kb(t)+" ／ 展開後 "+kb(r)+"</b>　（"+es.length+"本・この端末・"+new Date().toLocaleString('ja-JP')+"）<br>いまの卵（avatar431.js 15.9KB ＋ 絵 308.6KB ＝ 324.5KB）と見比べてください。";
 }
 go.addEventListener('click',async function(){
-  go.disabled=true; say("読み込み中…");
+  go.disabled=true;
+  var startedAt=Date.now(), stepMsg="読み込み中…";
+  function tick(){ say(stepMsg+"（"+Math.floor((Date.now()-startedAt)/1000)+"秒経過）"); }
+  say(stepMsg);
+  var ticker=setInterval(tick,1000);
   var tc=document.createElement('canvas');
   if(!(tc.getContext('webgl')||tc.getContext('experimental-webgl'))){
+    clearInterval(ticker);
     ph.innerHTML="この端末／このブラウザは <b>WebGL が切れています</b>。<br>Live2D は WebGL でしか描けないので、ここでは立ちません。<br>（iPhoneのSafari・ふつうのChromeでは入っています）";
     say("部品は全部届きますが、描く窓が閉じています。別の端末で開いてください。"); go.disabled=false; return;
   }
   try{
-    await load(CORE);  say("心臓（Cubism Core）を受け取りました。");
-    await load(PIXI_); say("描く土台（pixi.js）を受け取りました。");
-    await load(BRIDGE);say("つなぎ（pixi-live2d-display）を受け取りました。キャラクターを取りに行きます…");
+    stepMsg="心臓（Cubism Core）を受け取っています…"; await load(CORE,15000);
+    stepMsg="描く土台（pixi.js）を受け取っています…"; await load(PIXI_,15000);
+    stepMsg="つなぎ（pixi-live2d-display）を受け取っています…"; await load(BRIDGE,15000);
+    stepMsg="キャラクターを取りに行っています…（絵と骨格のデータ・数百KB〜2MB）";
     ph.style.display='none'; cv.style.display='block';
     var box=document.getElementById('stage').getBoundingClientRect();
+    // 背景は透明ではなくステージと同じベージュで確実に塗る
+    // （透明合成に環境差があり、環境によって背景が黒く出ることがある＝2026-10-03実機なし・
+    //  headless実測で確認。「何も描けていない」と見えた一因の可能性があるため潰しておく）。
     var app=new PIXI.Application({view:cv,width:Math.round(box.width),height:Math.round(box.height),
-      backgroundAlpha:0,autoStart:true,antialias:true,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true});
-    var m=await PIXI.live2d.Live2DModel.from(MODEL);
+      backgroundColor:0xefe9db,backgroundAlpha:1,autoStart:true,antialias:true,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true});
+    var m=await withTimeout(PIXI.live2d.Live2DModel.from(MODEL),20000,"キャラクターの読み込み");
     app.stage.addChild(m);
     var s=Math.min(box.width/m.width, box.height/m.height)*1.55;
     m.scale.set(s); m.x=box.width/2; m.y=box.height*0.06;
     m.anchor.set(0.5,0);
     window.__m=m;
+    window.__app=app;
     tap.disabled=false;
-    say("動いています。目・まばたき・呼吸・髪の揺れ・体の向きが全部自動で動いています。コードは1行も書いていません。");
+    clearInterval(ticker);
+    say("動いています。目・まばたき・呼吸・髪の揺れ・体の向きが全部自動で動いています。コードは1行も書いていません。（"+Math.floor((Date.now()-startedAt)/1000)+"秒かかりました）");
     setTimeout(table,600);
   }catch(e){
-    ph.textContent="読み込めませんでした："+e.message;
-    say("失敗しました。上のリンクを直接押して、ファイルが返ってくるか見てください。");
-    go.disabled=false;
+    clearInterval(ticker);
+    ph.style.display='flex'; cv.style.display='none';
+    ph.innerHTML="読み込めませんでした（"+Math.floor((Date.now()-startedAt)/1000)+"秒で打ち切り）：<br>"+(e&&e.message?e.message:String(e))+"<br>下の「もう一度試す」を押すか、別の回線（Wi-Fi等）で試してください。";
+    say("失敗しました。固まったままにはしません。");
+    go.disabled=false; go.textContent="もう一度試す";
   }
 });
 tap.addEventListener('click',function(){
