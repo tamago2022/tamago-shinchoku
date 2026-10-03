@@ -137,6 +137,27 @@ fi
 
 cd "$PAGES" || { log "🛑 $PAGES へ入れませんでした"; exit 1; }
 
+# ---- 2169番：Actions(Pages)デプロイが完走する猶予を作るクールダウン ----
+# ★実測（2026-10-03）：この便が30秒おきに呼ばれ続けると、force pushのたびに
+#   GitHub Pagesの新しいデプロイが作られ、**前のデプロイが完走する前に次が来て
+#   キャンセルされ続ける**（status: pending → completed/cancelled が8回以上連続）。
+#   gh-pages側の変化が無いわけではない＝push自体は成功しているのに、
+#   Actions側のデプロイだけが一度も完走せず、本番の中身が何十分も更新されない。
+#   git競合はロック（上のmkdir）で既に解決済みなので、これは別の詰まり。
+#   直し方：push成功後の最小間隔を空け、デプロイが完走する時間を確保する。
+#   FORCE（--force呼び出し）はクールダウンを無視する（切り替え時の確認用のため）。
+COOLDOWN_FILE="$REPO/status/.pages_publish_last_push"
+COOLDOWN_SEC=150
+if [ "$FORCE" -eq 0 ] && [ -f "$COOLDOWN_FILE" ]; then
+  _LAST="$(cat "$COOLDOWN_FILE" 2>/dev/null || echo 0)"
+  _NOW="$(date +%s)"
+  case "$_LAST" in ''|*[!0-9]*) _LAST=0 ;; esac
+  _ELAPSED=$(( _NOW - _LAST ))
+  if [ "$_ELAPSED" -lt "$COOLDOWN_SEC" ]; then
+    exit 0
+  fi
+fi
+
 # ---- (1) main の追跡ファイルを反映 ----
 # ★ 毎回まるごと展開し直さない。681MBを展開すると3分以上かかり、5分おきの巡回が詰まる。
 #   前回どこまで映したかを .git/lastmain に覚えておき、**その差分だけ**を映す。
@@ -341,6 +362,7 @@ if [ "$OK" -eq 1 ]; then
   #   これが無いと git は「向こうは何も持っていない」と思い込み、
   #   毎回 600MB を上げ直そうとして回線が落ちる（今回の失敗の再発源）。
   git update-ref "refs/remotes/origin/$BRANCH" HEAD 2>/dev/null || true
+  date +%s > "$COOLDOWN_FILE" 2>/dev/null || true
   log "公開しました（写しの関所で外したもの: ${BLOCKED}件／sekisho(仕組み⑦)で外したもの: ${SEKISHO_BLOCKED}件）"
 else
   log "🛑 公開の push に3回とも失敗しました。次の周回でまたやり直します"
