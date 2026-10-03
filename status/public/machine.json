@@ -1,16 +1,16 @@
 {
- "raw": "負荷 95% ｜ CPU 36% / メモリ圧迫 17% / スワップ 38.23GB / ディスク空き 50GB ｜ 稼働 4本 ｜ あと0本OK",
- "load": 95,
- "cpu": 36,
- "mem": 17,
- "swapGB": 39132.25,
+ "raw": "負荷 136% ｜ CPU 38% / メモリ圧迫 18% / スワップ 38.16GB / ディスク空き 50GB ｜ 稼働 4本 ｜ あと0本OK",
+ "load": 136,
+ "cpu": 38,
+ "mem": 18,
+ "swapGB": 39216.5,
  "diskFreeGB": 50.0,
  "sessions": 0,
- "note": "上限4本・あと4本OK（CPU36%・メモリ空き6.8GBで余裕あり→ロードの天井を緩めた、実測の同時上限1本（首は「スワップ」（メモリ31本／スワップ0本／ロード3本）・減便せず：スワップは低い（残り0.66GB（4.0GB未満））、実測上限1本）",
- "measuredAt": "2026-10-03T11:00:49+09:00",
+ "note": "上限4本・あと4本OK（5分平均ロード9.4（コア8×0.8超）、スワップ増加中、実測の同時上限1本（首は「スワップ」（メモリ30本／スワップ0本／ロード4本）・減便せず：スワップは低い（残り0.73GB（4.0GB未満））、実測上限1本）",
+ "measuredAt": "2026-10-03T11:17:49+09:00",
  "working": 0,
  "stalled": 0,
- "waiting": 1,
+ "waiting": 2,
  "safeMax": 4,
  "moreOK": 4,
  "hardMax": 8,
@@ -19,22 +19,24 @@
  "calibratedSafeN": 4,
  "calibrationBasis": "標本不足→既定4本",
  "userActive": false,
- "predict": [],
+ "predict": [
+  "スワップ増加"
+ ],
  "shedCandidates": [],
  "below": 1,
- "blockReason": "CPU36%・メモリ空き6.8GBで余裕あり→ロードの天井を緩めた、実測の同時上限1本（首は「スワップ」（メモリ31本／スワップ0本／ロード3本）・減便せず：スワップは低い（残り0.66GB（4.0GB未満））、実測上限1本",
- "load1": 7.63,
- "load5": 9.45,
- "load15": 9.64,
+ "blockReason": "5分平均ロード9.4（コア8×0.8超）、スワップ増加中、実測の同時上限1本（首は「スワップ」（メモリ30本／スワップ0本／ロード4本）・減便せず：スワップは低い（残り0.73GB（4.0GB未満））、実測上限1本",
+ "load1": 10.92,
+ "load5": 9.4,
+ "load15": 9.16,
  "cores": 8,
- "loadRatio": 0.95,
+ "loadRatio": 1.36,
  "memPressure": "green",
  "memAvailGB": 6.8,
- "swapIncreasing": false,
- "ioMBs": 165.83,
+ "swapIncreasing": true,
+ "ioMBs": 206.49,
  "network": {
   "pingMedianMs": 71.9,
-  "pingMaxMs": 203.6,
+  "pingMaxMs": 230.6,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -43,7 +45,7 @@
    "cli": "8746701a-ee87-45a7-ab53-ed9e79494493",
    "localId": "local_e9aa01db-1f9c-478c-ad66-d5e0f78c4cce",
    "startedAt": "2026-10-03T10:18:43+0900",
-   "elapsedMin": 42,
+   "elapsedMin": 59,
    "lastReportAt": "2026-10-03T01:21:58.222Z",
    "lastReport": "完了：着火済みエージェントが下調べのみで止まっていたため、実作業（カバー探索・CM探索・候補ファイル追記）の続行を指示して再開した。 問題：なし。 判断待ち：なし。",
    "status": "完了",
@@ -59,8 +61,8 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 222,
-   "idleMin": 38.7,
+   "mb": 214,
+   "idleMin": 55.8,
    "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 35,
@@ -70,7 +72,7 @@
    "cli": "ae44ddd0-73a4-4ca1-b67a-ec600049e53d",
    "localId": "local_c8958f8f-7b5a-4674-9ff6-fbbeced2958d",
    "startedAt": "2026-10-03T10:48:41+0900",
-   "elapsedMin": 12,
+   "elapsedMin": 29,
    "lastReportAt": "2026-10-03T01:51:07.887Z",
    "lastReport": "完了：PID 69710を畳み(211MB解放)、司令塔キューr074「仕入れの継続」をAgent着火(queue-done・active化済み)。 問題：なし。 判断待ち：なし。",
    "status": "完了",
@@ -86,15 +88,15 @@
    "title": "Rusuban mimawari 30min",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 388,
-   "idleMin": 9.5,
-   "kind": "working",
+   "mb": 221,
+   "idleMin": 26.5,
+   "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 40,
    "lastActivityAt": "2026-10-03T01:51:07.887Z"
   }
  ],
- "line": "負荷 95% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き50.0GB",
+ "line": "負荷 136% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き50.0GB",
  "modelCounts": {
   "claude-sonnet-5": 2
  },
@@ -113,11 +115,11 @@
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 2464,
+  "waiting": 2161,
   "room": 4,
   "alive": 0,
   "safeMax": 4,
-  "stalledMin": 2.7595452427864076,
+  "stalledMin": 9.333124796549479,
   "stalled": false,
   "note": "発車は正常です"
  },
@@ -128,67 +130,11 @@
   "note": "⚠️ 確認待ちが192件（10件超）たまっています。鬼監督で仕分けてください"
  },
  "stale": {
-  "measuredAt": "2026-10-03T10:36:38+09:00",
-  "totalActive": 3068,
-  "yellowCount": 615,
-  "redCount": 517,
+  "measuredAt": "2026-10-03T11:05:31+09:00",
+  "totalActive": 3502,
+  "yellowCount": 738,
+  "redCount": 524,
   "yellow": [
-   {
-    "n": 1573,
-    "title": "この工場（自動でAIを回し続ける仕組み）の現状を棚卸ししてください。",
-    "status": "waiting",
-    "since": "2026-09-26T10:41:54.886846+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1574,
-    "title": "runnerが9/24から止まっている原因を突き止めて直す。",
-    "status": "waiting",
-    "since": "2026-09-26T10:41:54.886846+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1575,
-    "title": "0円で出来ないと実測で分かった時だけ、金額（円）を出して止める。",
-    "status": "waiting",
-    "since": "2026-09-26T10:41:54.886846+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1576,
-    "title": "ログインが生きていれば本文を入れて投稿する。",
-    "status": "waiting",
-    "since": "2026-09-26T10:41:54.886846+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1577,
-    "title": "0円で出来ないと分かった時だけ金額（円）を出して止める。",
-    "status": "waiting",
-    "since": "2026-09-26T10:41:54.886846+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1579,
-    "title": "残すものを決めて、残りは開いた時に出す。",
-    "status": "waiting",
-    "since": "2026-09-26T10:41:54.886846+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1580,
-    "title": "復帰する仕組みも作ってよ。",
-    "status": "waiting",
-    "since": "2026-09-26T10:41:54.886846+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "yellow"
-   },
    {
     "n": 1581,
     "title": "同じ便を3回落ちたら別の切り口に変えて投げ直す（同じ失敗を無限に繰り返さない）。",
@@ -406,6 +352,46 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1634,
+    "title": "「最後にまとめて」は禁止、1枚使い終わるたびに閉じる。",
+    "status": "waiting",
+    "since": "2026-09-26T11:59:00+09:00",
+    "ageDays": 7.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1635,
+    "title": "Macに常駐する「タブ掃除係」を作って launchd に載せる。",
+    "status": "waiting",
+    "since": "2026-09-26T11:59:00+09:00",
+    "ageDays": 7.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 919,
+    "title": "【GO済み・72円】ZEN 2本：16:9拡張→1080pループ動画→Grok/OpenAI/Geminiで検品",
+    "status": "awaiting_check",
+    "since": "2026-09-26T14:41:13+09:00",
+    "ageDays": 6.9,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 922,
+    "title": "【非公開】8日分の記録をGitHubの非公開リポジトリへ＋毎日自動更新",
+    "status": "awaiting_check",
+    "since": "2026-09-26T14:28:29+09:00",
+    "ageDays": 6.9,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 939,
+    "title": "進捗表の index.html を公開してください（1ファイルだけ・他は触らない）。",
+    "status": "awaiting_check",
+    "since": "2026-09-26T14:38:04+09:00",
+    "ageDays": 6.9,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1610,
     "title": "GH498 検品要人手 feat: Spotify exact playlist writer",
     "status": "waiting",
@@ -418,22 +404,6 @@
     "title": "GH499 【仕様】City Pop強化: プラスティック・ラブ改修+山下達郎の扱い(Gensparkからの手紙",
     "status": "waiting",
     "since": "2026-09-26T12:55:55.971848+09:00",
-    "ageDays": 6.9,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1634,
-    "title": "「最後にまとめて」は禁止、1枚使い終わるたびに閉じる。",
-    "status": "waiting",
-    "since": "2026-09-26T11:59:00+09:00",
-    "ageDays": 6.9,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1635,
-    "title": "Macに常駐する「タブ掃除係」を作って launchd に載せる。",
-    "status": "waiting",
-    "since": "2026-09-26T11:59:00+09:00",
     "ageDays": 6.9,
     "staleLevel": "yellow"
    },
@@ -638,35 +608,11 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 919,
-    "title": "【GO済み・72円】ZEN 2本：16:9拡張→1080pループ動画→Grok/OpenAI/Geminiで検品",
-    "status": "awaiting_check",
-    "since": "2026-09-26T14:41:13+09:00",
-    "ageDays": 6.8,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 922,
-    "title": "【非公開】8日分の記録をGitHubの非公開リポジトリへ＋毎日自動更新",
-    "status": "awaiting_check",
-    "since": "2026-09-26T14:28:29+09:00",
-    "ageDays": 6.8,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 939,
-    "title": "進捗表の index.html を公開してください（1ファイルだけ・他は触らない）。",
-    "status": "awaiting_check",
-    "since": "2026-09-26T14:38:04+09:00",
-    "ageDays": 6.8,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 881,
     "title": "【特命・第1段】重さの監査だけ（コードは1行も変えない）→S/A/B/Cでランキング",
     "status": "awaiting_check",
     "since": "2026-09-26T16:40:19+09:00",
-    "ageDays": 6.7,
+    "ageDays": 6.8,
     "staleLevel": "yellow"
    },
    {
@@ -686,18 +632,18 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 892,
-    "title": "【仕組み①】何回も言わせない：数字の正本を1か所に＋CIで機械検査",
-    "status": "awaiting_check",
-    "since": "2026-09-27T00:31:10+09:00",
-    "ageDays": 6.4,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1612,
     "title": "GH500 google-labs-jules[bot]さんの返信（09-27 00:01）",
     "status": "waiting",
     "since": "2026-09-27T00:13:07.611965+09:00",
+    "ageDays": 6.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 892,
+    "title": "【仕組み①】何回も言わせない：数字の正本を1か所に＋CIで機械検査",
+    "status": "awaiting_check",
+    "since": "2026-09-27T00:31:10+09:00",
     "ageDays": 6.4,
     "staleLevel": "yellow"
    },
@@ -942,6 +888,38 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1712,
+    "title": "Chrome を使ってくれてるみたいで、まあ2つタブが開いてるけれども、そこでやってくれればいいのに未だに Brave",
+    "status": "waiting",
+    "since": "2026-09-27T07:20:00+09:00",
+    "ageDays": 6.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1713,
+    "title": "「気をつける」「プロンプトに書く」は禁止。",
+    "status": "waiting",
+    "since": "2026-09-27T07:21:00+09:00",
+    "ageDays": 6.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1714,
+    "title": "Braveに今開いている「こちらが開いたと思われるタブ」を数えて一覧にする（Supabase・Claude 等）",
+    "status": "waiting",
+    "since": "2026-09-27T07:21:00+09:00",
+    "ageDays": 6.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1717,
+    "title": "Chrome・Brave両方の今開いているタブを数えて一覧にし、こちらが開いたもの／使っていないものを閉じる。",
+    "status": "waiting",
+    "since": "2026-09-27T07:22:00+09:00",
+    "ageDays": 6.2,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 898,
     "title": "【仕組み⑦】★間違ったものが報告に上がってこない関所（鬼監督を機械にする）",
     "status": "awaiting_check",
@@ -986,38 +964,6 @@
     "title": "GH504 検品要人手 【赤鬼QAゲート】Claude完了を店主へ直通させない",
     "status": "waiting",
     "since": "2026-09-27T08:51:43.710133+09:00",
-    "ageDays": 6.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1712,
-    "title": "Chrome を使ってくれてるみたいで、まあ2つタブが開いてるけれども、そこでやってくれればいいのに未だに Brave",
-    "status": "waiting",
-    "since": "2026-09-27T07:20:00+09:00",
-    "ageDays": 6.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1713,
-    "title": "「気をつける」「プロンプトに書く」は禁止。",
-    "status": "waiting",
-    "since": "2026-09-27T07:21:00+09:00",
-    "ageDays": 6.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1714,
-    "title": "Braveに今開いている「こちらが開いたと思われるタブ」を数えて一覧にする（Supabase・Claude 等）",
-    "status": "waiting",
-    "since": "2026-09-27T07:21:00+09:00",
-    "ageDays": 6.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1717,
-    "title": "Chrome・Brave両方の今開いているタブを数えて一覧にし、こちらが開いたもの／使っていないものを閉じる。",
-    "status": "waiting",
-    "since": "2026-09-27T07:22:00+09:00",
     "ageDays": 6.1,
     "staleLevel": "yellow"
    },
@@ -1094,19 +1040,11 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1874,
-    "title": "「押してください」「音声で聞く」「説明を聞く」みたいな文字は全部消す。",
-    "status": "waiting",
-    "since": "2026-09-27T08:01:00+09:00",
-    "ageDays": 6.1,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1732,
     "title": "同じ形が二度と起きないように、上限に対する残り回数を進捗表に出す（今◯回／250回、復帰まで◯時間）。",
     "status": "waiting",
     "since": "2026-09-27T09:46:00+09:00",
-    "ageDays": 6.0,
+    "ageDays": 6.1,
     "staleLevel": "yellow"
    },
    {
@@ -1114,7 +1052,7 @@
     "title": "「9月の終わりにまだ言えてないものが静かに顔を出す」って、それっぽいんだけど調べてないよねって感じだし、あってもなくても",
     "status": "waiting",
     "since": "2026-09-27T09:52:00+09:00",
-    "ageDays": 6.0,
+    "ageDays": 6.1,
     "staleLevel": "yellow"
    },
    {
@@ -1122,7 +1060,7 @@
     "title": "一覧を出してから消す（本人が「全部削除していい」と明言しているので許可は取らなくてよいが、何を消したかは必ず数字",
     "status": "waiting",
     "since": "2026-09-27T09:53:00+09:00",
-    "ageDays": 6.0,
+    "ageDays": 6.1,
     "staleLevel": "yellow"
    },
    {
@@ -1130,7 +1068,15 @@
     "title": "原因を特定して、同じ形が他のページにも無いか数えて全部直す（[[feedback_replace_the_pip",
     "status": "waiting",
     "since": "2026-09-27T09:53:00+09:00",
-    "ageDays": 6.0,
+    "ageDays": 6.1,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1874,
+    "title": "「押してください」「音声で聞く」「説明を聞く」みたいな文字は全部消す。",
+    "status": "waiting",
+    "since": "2026-09-27T08:01:00+09:00",
+    "ageDays": 6.1,
     "staleLevel": "yellow"
    },
    {
@@ -1298,7 +1244,7 @@
     "title": "GH508 【現在案件】Claude Code → 赤鬼 共有窓口",
     "status": "waiting",
     "since": "2026-09-27T14:25:11.586463+09:00",
-    "ageDays": 5.8,
+    "ageDays": 5.9,
     "staleLevel": "yellow"
    },
    {
@@ -1350,6 +1296,14 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1364,
+    "title": "判定日赤｜複雑になってる、普通に素直に繋いでよ。",
+    "status": "awaiting_check",
+    "since": "2026-09-27T21:28:04+09:00",
+    "ageDays": 5.6,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1367,
     "title": "判定日赤｜自分は猫や動物の動画を X で拾ってポンと入れることが多いんだけど、1回目でコピーが合わないのは仕方ないにして",
     "status": "awaiting_check",
@@ -1358,11 +1312,19 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1364,
-    "title": "判定日赤｜複雑になってる、普通に素直に繋いでよ。",
+    "n": 1370,
+    "title": "判定日赤｜急ぎではないけど、この1週間以内にやってほしい。",
     "status": "awaiting_check",
-    "since": "2026-09-27T21:28:04+09:00",
-    "ageDays": 5.5,
+    "since": "2026-09-27T21:27:12+09:00",
+    "ageDays": 5.6,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1371,
+    "title": "判定日赤｜今シンプルにしてもらって助かってるんだけど、前に良くてなくなっちゃったものがある。",
+    "status": "awaiting_check",
+    "since": "2026-09-27T21:48:59+09:00",
+    "ageDays": 5.6,
     "staleLevel": "yellow"
    },
    {
@@ -1374,26 +1336,18 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1370,
-    "title": "判定日赤｜急ぎではないけど、この1週間以内にやってほしい。",
-    "status": "awaiting_check",
-    "since": "2026-09-27T21:27:12+09:00",
-    "ageDays": 5.5,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1371,
-    "title": "判定日赤｜今シンプルにしてもらって助かってるんだけど、前に良くてなくなっちゃったものがある。",
-    "status": "awaiting_check",
-    "since": "2026-09-27T21:48:59+09:00",
-    "ageDays": 5.5,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1373,
     "title": "判定日赤｜• 「今使いすぎです、もうすぐ固まります」というアラートがほしい（例：「Notion を終了してください」「S",
     "status": "awaiting_check",
     "since": "2026-09-27T23:09:22+09:00",
+    "ageDays": 5.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1374,
+    "title": "判定日赤｜• 今 iMac の外付け HDD にデータが溜まる設定になっているかも確認してほしい",
+    "status": "awaiting_check",
+    "since": "2026-09-27T23:57:35+09:00",
     "ageDays": 5.5,
     "staleLevel": "yellow"
    },
@@ -1414,6 +1368,22 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1703,
+    "title": "GH13 覆面客｜a-song-for-you｜軽さ9／楽しさ2／美しさ4",
+    "status": "waiting",
+    "since": "2026-09-28T00:12:27+09:00",
+    "ageDays": 5.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1706,
+    "title": "本番を自分で開いて目で見る（タブ1枚だけ・Chrome専用プロフィール・終わったら閉じる）：",
+    "status": "waiting",
+    "since": "2026-09-28T00:17:20+09:00",
+    "ageDays": 5.5,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1369,
     "title": "判定日赤｜気づいたときに手動で直してるけど、アナログでやってるとめちゃくちゃ効率が悪い。",
     "status": "awaiting_check",
@@ -1422,34 +1392,10 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1374,
-    "title": "判定日赤｜• 今 iMac の外付け HDD にデータが溜まる設定になっているかも確認してほしい",
-    "status": "awaiting_check",
-    "since": "2026-09-27T23:57:35+09:00",
-    "ageDays": 5.4,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1378,
     "title": "判定日赤｜直してくれたけど、上の方が消えてないよ。",
     "status": "awaiting_check",
     "since": "2026-09-28T02:05:26+09:00",
-    "ageDays": 5.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1703,
-    "title": "GH13 覆面客｜a-song-for-you｜軽さ9／楽しさ2／美しさ4",
-    "status": "waiting",
-    "since": "2026-09-28T00:12:27+09:00",
-    "ageDays": 5.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1706,
-    "title": "本番を自分で開いて目で見る（タブ1枚だけ・Chrome専用プロフィール・終わったら閉じる）：",
-    "status": "waiting",
-    "since": "2026-09-28T00:17:20+09:00",
     "ageDays": 5.4,
     "staleLevel": "yellow"
    },
@@ -1546,6 +1492,54 @@
     "title": "GH512 検品要人手 曲ページ（スマホ）で結果の変わらない youtube-id-map.full.j",
     "status": "waiting",
     "since": "2026-09-28T01:22:47+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1794,
+    "title": "GH514 devin-ai-integration[bot]さんの返信（09-28 02:29）",
+    "status": "waiting",
+    "since": "2026-09-28T02:29:05+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1795,
+    "title": "GH514 検品要人手 perf(img): src/ 以下の img に width/height と",
+    "status": "waiting",
+    "since": "2026-09-28T02:31:02+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1796,
+    "title": "何が食っているか数えて、作り直せるもの（キャッシュ・ビルド生成物・古いログ・node_modules・ゴミ）だけ",
+    "status": "waiting",
+    "since": "2026-09-28T02:32:28+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1797,
+    "title": "同じことが二度と起きないようにする。",
+    "status": "waiting",
+    "since": "2026-09-28T02:32:30+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1798,
+    "title": "残り容量を測って、減ったら自動で掃く係を心臓（5分便）に入れる。",
+    "status": "waiting",
+    "since": "2026-09-28T02:37:57+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1799,
+    "title": "」真因（後から繋がった方が既定）、list_connected_browsers→select_browser",
+    "status": "waiting",
+    "since": "2026-09-28T02:37:59+09:00",
     "ageDays": 5.4,
     "staleLevel": "yellow"
    },
@@ -1686,50 +1680,34 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1794,
-    "title": "GH514 devin-ai-integration[bot]さんの返信（09-28 02:29）",
+    "n": 1898,
+    "title": "本人の公式チャンネル・公式アカウントを1件ずつ確かめてから入れる（anthropic-skills:sekisho-a",
     "status": "waiting",
-    "since": "2026-09-28T02:29:05+09:00",
+    "since": "2026-09-28T02:15:00+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1899,
+    "title": "止める前に、軽い作業だけやって終われ：",
+    "status": "waiting",
+    "since": "2026-09-28T02:16:00+09:00",
+    "ageDays": 5.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 927,
+    "title": "(1/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
+    "status": "awaiting_check",
+    "since": "2026-09-28T04:55:19+09:00",
     "ageDays": 5.3,
     "staleLevel": "yellow"
    },
    {
-    "n": 1795,
-    "title": "GH514 検品要人手 perf(img): src/ 以下の img に width/height と",
-    "status": "waiting",
-    "since": "2026-09-28T02:31:02+09:00",
-    "ageDays": 5.3,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1796,
-    "title": "何が食っているか数えて、作り直せるもの（キャッシュ・ビルド生成物・古いログ・node_modules・ゴミ）だけ",
-    "status": "waiting",
-    "since": "2026-09-28T02:32:28+09:00",
-    "ageDays": 5.3,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1797,
-    "title": "同じことが二度と起きないようにする。",
-    "status": "waiting",
-    "since": "2026-09-28T02:32:30+09:00",
-    "ageDays": 5.3,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1798,
-    "title": "残り容量を測って、減ったら自動で掃く係を心臓（5分便）に入れる。",
-    "status": "waiting",
-    "since": "2026-09-28T02:37:57+09:00",
-    "ageDays": 5.3,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1799,
-    "title": "」真因（後から繋がった方が既定）、list_connected_browsers→select_browser",
-    "status": "waiting",
-    "since": "2026-09-28T02:37:59+09:00",
+    "n": 1381,
+    "title": "判定日赤｜あとはやってもらっていい？",
+    "status": "awaiting_check",
+    "since": "2026-09-28T04:41:12+09:00",
     "ageDays": 5.3,
     "staleLevel": "yellow"
    },
@@ -2038,18 +2016,10 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1898,
-    "title": "本人の公式チャンネル・公式アカウントを1件ずつ確かめてから入れる（anthropic-skills:sekisho-a",
+    "n": 1844,
+    "title": "カウンタがバグなら、推測でカウントするのをやめて「Bufferが429を返したときだけ閉じる」方式に直す。",
     "status": "waiting",
-    "since": "2026-09-28T02:15:00+09:00",
-    "ageDays": 5.3,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1899,
-    "title": "止める前に、軽い作業だけやって終われ：",
-    "status": "waiting",
-    "since": "2026-09-28T02:16:00+09:00",
+    "since": "2026-09-28T04:38:57+09:00",
     "ageDays": 5.3,
     "staleLevel": "yellow"
    },
@@ -2070,14 +2040,6 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 927,
-    "title": "(1/7) 【確認待ち40件】鬼監督に判定させて10件以下へ＋停滞に印を付ける",
-    "status": "awaiting_check",
-    "since": "2026-09-28T04:55:19+09:00",
-    "ageDays": 5.2,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1379,
     "title": "判定日赤｜下のこの位置は合ってるから、ストップモーションと統合してくれたんだね。",
     "status": "awaiting_check",
@@ -2090,14 +2052,6 @@
     "title": "判定日赤｜こういうのも報告してくれていいよ。",
     "status": "awaiting_check",
     "since": "2026-09-28T05:50:05+09:00",
-    "ageDays": 5.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1381,
-    "title": "判定日赤｜あとはやってもらっていい？",
-    "status": "awaiting_check",
-    "since": "2026-09-28T04:41:12+09:00",
     "ageDays": 5.2,
     "staleLevel": "yellow"
    },
@@ -2118,6 +2072,14 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1385,
+    "title": "判定日赤｜怪しいので、あなた、ちょっとさぁ、ブロックボイスとかちゃんと調べてみて。",
+    "status": "awaiting_check",
+    "since": "2026-09-28T07:05:54+09:00",
+    "ageDays": 5.2,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1430,
     "title": "判定日赤｜「とりあえず読んでもらって、感想というか、前回の課題と失敗、そしてこれからどうやっていくかについて、ちょっと教",
     "status": "awaiting_check",
@@ -2126,10 +2088,10 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1844,
-    "title": "カウンタがバグなら、推測でカウントするのをやめて「Bufferが429を返したときだけ閉じる」方式に直す。",
-    "status": "waiting",
-    "since": "2026-09-28T04:38:57+09:00",
+    "n": 1432,
+    "title": "判定日赤｜「MD MDはもう出さないで今回はいいけど、俺が確認できないから、テキストにして」",
+    "status": "awaiting_check",
+    "since": "2026-09-28T07:16:42+09:00",
     "ageDays": 5.2,
     "staleLevel": "yellow"
    },
@@ -2154,22 +2116,6 @@
     "title": "判定日赤｜じゃあさぁつなげられるものは全部つなげてさぁどう変化するか見たいよあといくらかだねそれではかるよやる意味がある",
     "status": "awaiting_check",
     "since": "2026-09-28T08:57:20+09:00",
-    "ageDays": 5.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1385,
-    "title": "判定日赤｜怪しいので、あなた、ちょっとさぁ、ブロックボイスとかちゃんと調べてみて。",
-    "status": "awaiting_check",
-    "since": "2026-09-28T07:05:54+09:00",
-    "ageDays": 5.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1432,
-    "title": "判定日赤｜「MD MDはもう出さないで今回はいいけど、俺が確認できないから、テキストにして」",
-    "status": "awaiting_check",
-    "since": "2026-09-28T07:16:42+09:00",
     "ageDays": 5.1,
     "staleLevel": "yellow"
    },
@@ -2254,6 +2200,14 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1437,
+    "title": "判定日赤｜「もう50回言っても直らないバッジ問題をちょっと片付けたい…左上に「コンシェルジュ推し」だとか「棚編集」…これ",
+    "status": "awaiting_check",
+    "since": "2026-09-28T11:57:46+09:00",
+    "ageDays": 5.0,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1857,
     "title": "GH517 【Julesに頼む】前提の実測検証：棚の動画は本当に再生できるか",
     "status": "waiting",
@@ -2274,14 +2228,6 @@
     "title": "判定日赤｜…「手探りで始めたばかりです」っていうのがダブルできてる…こういうのも報告してくれていいよ…グッドジョブだね」",
     "status": "awaiting_check",
     "since": "2026-09-28T13:04:47+09:00",
-    "ageDays": 4.9,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1437,
-    "title": "判定日赤｜「もう50回言っても直らないバッジ問題をちょっと片付けたい…左上に「コンシェルジュ推し」だとか「棚編集」…これ",
-    "status": "awaiting_check",
-    "since": "2026-09-28T11:57:46+09:00",
     "ageDays": 4.9,
     "staleLevel": "yellow"
    },
@@ -2326,6 +2272,22 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1860,
+    "title": "GH519 【Julesに頼む】仕入れの仕上げ：angine-de-poitrine",
+    "status": "waiting",
+    "since": "2026-09-28T14:22:30+09:00",
+    "ageDays": 4.9,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1861,
+    "title": "GH520 検品要人手 feat: finish shiire for Angine de Poitri",
+    "status": "waiting",
+    "since": "2026-09-28T14:28:43+09:00",
+    "ageDays": 4.9,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1448,
     "title": "判定日赤｜「じゃあさぁつなげられるものは全部つなげてさぁどう変化するか見たいよあといくらかだね…やる意味があるのかないの",
     "status": "awaiting_check",
@@ -2358,18 +2320,10 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1860,
-    "title": "GH519 【Julesに頼む】仕入れの仕上げ：angine-de-poitrine",
-    "status": "waiting",
-    "since": "2026-09-28T14:22:30+09:00",
-    "ageDays": 4.8,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1861,
-    "title": "GH520 検品要人手 feat: finish shiire for Angine de Poitri",
-    "status": "waiting",
-    "since": "2026-09-28T14:28:43+09:00",
+    "n": 1462,
+    "title": "判定日赤｜ゼロにしてよ」 → only verified-200 URLs.",
+    "status": "awaiting_check",
+    "since": "2026-09-28T17:02:16+09:00",
     "ageDays": 4.8,
     "staleLevel": "yellow"
    },
@@ -2378,14 +2332,6 @@
     "title": "判定日赤｜検品があると、どうやってるのか全然わかんない。",
     "status": "awaiting_check",
     "since": "2026-09-28T18:34:01+09:00",
-    "ageDays": 4.7,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1462,
-    "title": "判定日赤｜ゼロにしてよ」 → only verified-200 URLs.",
-    "status": "awaiting_check",
-    "since": "2026-09-28T17:02:16+09:00",
     "ageDays": 4.7,
     "staleLevel": "yellow"
    },
@@ -2406,6 +2352,22 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1466,
+    "title": "判定日赤｜…作業の進行の遅さそういうのも全部整えるのも仕組みづくりね…あなたの負担が大きすぎるんじゃないかと…わえちゃん",
+    "status": "awaiting_check",
+    "since": "2026-09-28T19:05:10+09:00",
+    "ageDays": 4.7,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1469,
+    "title": "判定日赤｜「これはもう一括で直して」/「わかるよね」",
+    "status": "awaiting_check",
+    "since": "2026-09-28T19:01:27+09:00",
+    "ageDays": 4.7,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1862,
     "title": "GH521 検品要人手 shiire: Geordie Greep 棚出し3曲（本人照合済み）＋弾き12",
     "status": "waiting",
@@ -2422,18 +2384,26 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1864,
+    "title": "GH523 検品要人手 shiire: kneecap.done.json (本人照合済み・3曲選定/弾",
+    "status": "waiting",
+    "since": "2026-09-28T19:04:07+09:00",
+    "ageDays": 4.7,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1911,
+    "title": "この核を欠いたまま「既存カタログ内の曲紹介の寄せ集め」を作ると、依頼で明示的に禁止された「言ったことをそのまま詰め込むだ",
+    "status": "waiting",
+    "since": "2026-09-28T19:12:00+09:00",
+    "ageDays": 4.7,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1465,
     "title": "判定日赤｜…最適解をさ、常に調べてくれないかな。",
     "status": "awaiting_check",
     "since": "2026-09-28T19:48:41+09:00",
-    "ageDays": 4.6,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1466,
-    "title": "判定日赤｜…作業の進行の遅さそういうのも全部整えるのも仕組みづくりね…あなたの負担が大きすぎるんじゃないかと…わえちゃん",
-    "status": "awaiting_check",
-    "since": "2026-09-28T19:05:10+09:00",
     "ageDays": 4.6,
     "staleLevel": "yellow"
    },
@@ -2450,14 +2420,6 @@
     "title": "判定日赤｜「受付係、巡回係、これ具体的に何やってんだっけ？",
     "status": "awaiting_check",
     "since": "2026-09-28T21:06:34+09:00",
-    "ageDays": 4.6,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1469,
-    "title": "判定日赤｜「これはもう一括で直して」/「わかるよね」",
-    "status": "awaiting_check",
-    "since": "2026-09-28T19:01:27+09:00",
     "ageDays": 4.6,
     "staleLevel": "yellow"
    },
@@ -2494,27 +2456,11 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1864,
-    "title": "GH523 検品要人手 shiire: kneecap.done.json (本人照合済み・3曲選定/弾",
-    "status": "waiting",
-    "since": "2026-09-28T19:04:07+09:00",
-    "ageDays": 4.6,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1911,
-    "title": "この核を欠いたまま「既存カタログ内の曲紹介の寄せ集め」を作ると、依頼で明示的に禁止された「言ったことをそのまま詰め込むだ",
-    "status": "waiting",
-    "since": "2026-09-28T19:12:00+09:00",
-    "ageDays": 4.6,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1475,
     "title": "判定日赤｜前のヘッダーのところの編集、直してよ。",
     "status": "awaiting_check",
     "since": "2026-09-28T21:25:37+09:00",
-    "ageDays": 4.5,
+    "ageDays": 4.6,
     "staleLevel": "yellow"
    },
    {
@@ -2530,6 +2476,14 @@
     "title": "判定日赤｜「今ねデビューのガールトークアルバムガールトークのタイトル曲入れてみたらさぁ。",
     "status": "awaiting_check",
     "since": "2026-09-28T22:48:55+09:00",
+    "ageDays": 4.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1478,
+    "title": "判定日赤｜…見た目見た目の情報だけで書いてるっていうのがバレバレ…1発目でそこの情報調べて入れて欲しいんだよ…60点とか",
+    "status": "awaiting_check",
+    "since": "2026-09-29T00:14:02+09:00",
     "ageDays": 4.5,
     "staleLevel": "yellow"
    },
@@ -2574,27 +2528,11 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1478,
-    "title": "判定日赤｜…見た目見た目の情報だけで書いてるっていうのがバレバレ…1発目でそこの情報調べて入れて欲しいんだよ…60点とか",
-    "status": "awaiting_check",
-    "since": "2026-09-29T00:14:02+09:00",
-    "ageDays": 4.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1484,
-    "title": "判定日赤｜「今ね、生活のせい生きるって言う扉を作って下さいね。",
-    "status": "awaiting_check",
-    "since": "2026-09-29T01:34:20+09:00",
-    "ageDays": 4.4,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1872,
     "title": "GH526 google-labs-jules[bot]さんの返信（09-29 00:02）",
     "status": "waiting",
     "since": "2026-09-29T00:03:12+09:00",
-    "ageDays": 4.4,
+    "ageDays": 4.5,
     "staleLevel": "yellow"
    },
    {
@@ -2602,7 +2540,7 @@
     "title": "サイトの重さを直す。曲ページ4.3MBを1曲分だけに割る。これより先に他を積まない",
     "status": "waiting",
     "since": "2026-09-29T00:13:29+09:00",
-    "ageDays": 4.4,
+    "ageDays": 4.5,
     "staleLevel": "yellow"
    },
    {
@@ -2610,7 +2548,7 @@
     "title": "動画が無い曲の総点検を1周させる。壊れている数を出す（直すのは後）",
     "status": "waiting",
     "since": "2026-09-29T00:13:36+09:00",
-    "ageDays": 4.4,
+    "ageDays": 4.5,
     "staleLevel": "yellow"
    },
    {
@@ -2618,6 +2556,14 @@
     "title": "Devinの成績表を出して、10/16の更新を続けるか切るか決められる形にする",
     "status": "waiting",
     "since": "2026-09-29T00:13:42+09:00",
+    "ageDays": 4.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1484,
+    "title": "判定日赤｜「今ね、生活のせい生きるって言う扉を作って下さいね。",
+    "status": "awaiting_check",
+    "since": "2026-09-29T01:34:20+09:00",
     "ageDays": 4.4,
     "staleLevel": "yellow"
    },
@@ -2806,19 +2752,11 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1345,
-    "title": "差し戻し｜触っていて楽しいをリサーチして1つ作って出す（常設）",
-    "status": "awaiting_check",
-    "since": "2026-09-29T08:15:28+09:00",
-    "ageDays": 4.1,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1939,
     "title": "GH532 google-labs-jules[bot]さんの返信（09-29 07:05）",
     "status": "waiting",
     "since": "2026-09-29T07:06:28+09:00",
-    "ageDays": 4.1,
+    "ageDays": 4.2,
     "staleLevel": "yellow"
    },
    {
@@ -2826,6 +2764,14 @@
     "title": "GH533 google-labs-jules[bot]さんの返信（09-29 07:12）",
     "status": "waiting",
     "since": "2026-09-29T07:14:46+09:00",
+    "ageDays": 4.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1345,
+    "title": "差し戻し｜触っていて楽しいをリサーチして1つ作って出す（常設）",
+    "status": "awaiting_check",
+    "since": "2026-09-29T08:15:28+09:00",
     "ageDays": 4.1,
     "staleLevel": "yellow"
    },
@@ -2942,6 +2888,22 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 1960,
+    "title": "GH540 【Julesに頼む】仕入れの仕上げ：mogwai",
+    "status": "waiting",
+    "since": "2026-09-29T19:10:34+09:00",
+    "ageDays": 3.7,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1961,
+    "title": "GH541 検品要人手 feat: 【1411号：Mogwai仕入れの仕上げ】",
+    "status": "waiting",
+    "since": "2026-09-29T19:17:17+09:00",
+    "ageDays": 3.7,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1452,
     "title": "判定日赤｜「とにかく先行事例先人に習って」「それを真似してください」「その方が無駄少ない オリジナルでやろうとしない」「",
     "status": "awaiting_check",
@@ -2962,22 +2924,6 @@
     "title": "判定日赤｜何をやっているの、デミン。",
     "status": "awaiting_check",
     "since": "2026-09-29T20:38:23+09:00",
-    "ageDays": 3.6,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1960,
-    "title": "GH540 【Julesに頼む】仕入れの仕上げ：mogwai",
-    "status": "waiting",
-    "since": "2026-09-29T19:10:34+09:00",
-    "ageDays": 3.6,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1961,
-    "title": "GH541 検品要人手 feat: 【1411号：Mogwai仕入れの仕上げ】",
-    "status": "waiting",
-    "since": "2026-09-29T19:17:17+09:00",
     "ageDays": 3.6,
     "staleLevel": "yellow"
    },
@@ -3062,6 +3008,70 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 2000,
+    "title": "判定日赤｜ひたすらJulesに仕入れをやってもらうとか、そういうこともできるの？",
+    "status": "waiting",
+    "since": "2026-09-30T00:01:48+09:00",
+    "ageDays": 3.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2013,
+    "title": "GH545 tamago2022さんの返信（09-30 00:00）",
+    "status": "waiting",
+    "since": "2026-09-30T00:02:23+09:00",
+    "ageDays": 3.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2021,
+    "title": "GH544 google-labs-jules[bot]さんの返信（09-30 00:01）",
+    "status": "waiting",
+    "since": "2026-09-30T00:03:06+09:00",
+    "ageDays": 3.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2022,
+    "title": "ログインを出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T00:11:03+09:00",
+    "ageDays": 3.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2023,
+    "title": "で、Gensparkが作って、それを後で、ここで見れるっていう認識でいいかな。",
+    "status": "waiting",
+    "since": "2026-09-30T00:11:08+09:00",
+    "ageDays": 3.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2024,
+    "title": "とりあえず100人くらいペルソナを作って、ガンガンやってガンガン直そうよ。",
+    "status": "waiting",
+    "since": "2026-09-30T00:16:30+09:00",
+    "ageDays": 3.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2025,
+    "title": "何件間違えてましたとか、全然事後報告でいいから、とりあえず直してよ。",
+    "status": "waiting",
+    "since": "2026-09-30T00:16:31+09:00",
+    "ageDays": 3.5,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1505,
+    "title": "判定日赤｜…入口が必ずセット出してください。",
+    "status": "awaiting_check",
+    "since": "2026-09-30T02:24:49+09:00",
+    "ageDays": 3.4,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1513,
     "title": "判定日赤｜…画面消してるけど流れる状態よね。",
     "status": "awaiting_check",
@@ -3082,62 +3092,6 @@
     "title": "判定日赤｜で、こので四つ出してきて、その四つに質問したらちょっと答えられるような調子な。",
     "status": "awaiting_check",
     "since": "2026-09-30T02:01:08+09:00",
-    "ageDays": 3.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2000,
-    "title": "判定日赤｜ひたすらJulesに仕入れをやってもらうとか、そういうこともできるの？",
-    "status": "waiting",
-    "since": "2026-09-30T00:01:48+09:00",
-    "ageDays": 3.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2013,
-    "title": "GH545 tamago2022さんの返信（09-30 00:00）",
-    "status": "waiting",
-    "since": "2026-09-30T00:02:23+09:00",
-    "ageDays": 3.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2021,
-    "title": "GH544 google-labs-jules[bot]さんの返信（09-30 00:01）",
-    "status": "waiting",
-    "since": "2026-09-30T00:03:06+09:00",
-    "ageDays": 3.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2022,
-    "title": "ログインを出してください。",
-    "status": "waiting",
-    "since": "2026-09-30T00:11:03+09:00",
-    "ageDays": 3.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2023,
-    "title": "で、Gensparkが作って、それを後で、ここで見れるっていう認識でいいかな。",
-    "status": "waiting",
-    "since": "2026-09-30T00:11:08+09:00",
-    "ageDays": 3.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2024,
-    "title": "とりあえず100人くらいペルソナを作って、ガンガンやってガンガン直そうよ。",
-    "status": "waiting",
-    "since": "2026-09-30T00:16:30+09:00",
-    "ageDays": 3.4,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2025,
-    "title": "何件間違えてましたとか、全然事後報告でいいから、とりあえず直してよ。",
-    "status": "waiting",
-    "since": "2026-09-30T00:16:31+09:00",
     "ageDays": 3.4,
     "staleLevel": "yellow"
    },
@@ -3478,27 +3432,11 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1353,
-    "title": "差し戻し｜【作り直し】案内所コンシェルジュ：話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない",
-    "status": "awaiting_check",
-    "since": "2026-09-30T04:28:23+09:00",
-    "ageDays": 3.3,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 1505,
-    "title": "判定日赤｜…入口が必ずセット出してください。",
-    "status": "awaiting_check",
-    "since": "2026-09-30T02:24:49+09:00",
-    "ageDays": 3.3,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 2068,
     "title": "だからこういうの平気で出してくんだよ。",
     "status": "waiting",
     "since": "2026-09-30T02:16:37+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3506,7 +3444,7 @@
     "title": "付き合うからリンク出して。",
     "status": "waiting",
     "since": "2026-09-30T02:16:38+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3514,7 +3452,7 @@
     "title": "最新：「ジェミニやグロックなどのChatGPTに検品してもらって、そういうシステムを作って、テストしてもらって、もうさ、",
     "status": "waiting",
     "since": "2026-09-30T02:21:44+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3522,7 +3460,7 @@
     "title": "とりあえず今も一個入れたから、何が入ってきたかわかるようにしといてね。",
     "status": "waiting",
     "since": "2026-09-30T02:21:46+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3530,7 +3468,7 @@
     "title": "「前週1週間でもいいから、自分がやってくださいねって言って、未完のやつとか全部リストで出してみ。",
     "status": "waiting",
     "since": "2026-09-30T02:26:59+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3538,7 +3476,7 @@
     "title": "チャットGPTに出してんの。",
     "status": "waiting",
     "since": "2026-09-30T02:27:02+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3546,7 +3484,7 @@
     "title": "ユーザー：「10分の1くらいしかない」「よくそれを今平気で出してくるねって半分呆れてる」",
     "status": "waiting",
     "since": "2026-09-30T02:32:10+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3554,7 +3492,7 @@
     "title": "xAIも現在、GrokのリアルタイムVoice APIを出していて、音声対音声、ツール利用、日本語に対応しています。",
     "status": "waiting",
     "since": "2026-09-30T02:32:14+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3562,7 +3500,7 @@
     "title": "基礎AIを自前で作ってはいけない。",
     "status": "waiting",
     "since": "2026-09-30T02:37:32+09:00",
-    "ageDays": 3.3,
+    "ageDays": 3.4,
     "staleLevel": "yellow"
    },
    {
@@ -3570,6 +3508,14 @@
     "title": "s=20 https://x.com/karoukun_ai/status/2101497267815686284 実際",
     "status": "waiting",
     "since": "2026-09-30T02:37:34+09:00",
+    "ageDays": 3.4,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 1353,
+    "title": "差し戻し｜【作り直し】案内所コンシェルジュ：話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない",
+    "status": "awaiting_check",
+    "since": "2026-09-30T04:28:23+09:00",
     "ageDays": 3.3,
     "staleLevel": "yellow"
    },
@@ -3918,6 +3864,78 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 2123,
+    "title": "判定日赤｜じゃあ、2つ入り口を出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T04:38:52+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2124,
+    "title": "「もう出してくれる画面あるじゃん。",
+    "status": "waiting",
+    "since": "2026-09-30T04:38:58+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2125,
+    "title": "…俺が最近仕入れやってって言ってないからつって仕入れを止めていいってことじゃないからね…これないんですか？",
+    "status": "waiting",
+    "since": "2026-09-30T04:45:03+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2126,
+    "title": "いっぱい入れたいけど入り口は狭くしてよ」",
+    "status": "waiting",
+    "since": "2026-09-30T04:47:56+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2127,
+    "title": "それ、それで出してよ。",
+    "status": "waiting",
+    "since": "2026-09-30T04:48:50+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2128,
+    "title": "computer-use 禁止。",
+    "status": "waiting",
+    "since": "2026-09-30T04:54:10+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2129,
+    "title": "（アースの「セプテンバー」はもう投稿してるから大丈夫）あと、出してもらったリストをパッと見ただけでも、曲のカードがあ",
+    "status": "hold",
+    "since": "2026-09-30T04:54:15+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2130,
+    "title": "「出してもらったリストをパッと見ただけでも、曲のカードがあるのに曲が貼られていないのがいくつもあったよ。",
+    "status": "waiting",
+    "since": "2026-09-30T05:00:20+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2131,
+    "title": "「もうこういうさ、動かせないものを出している時点で失格です」「ちゃんとテストまでして出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T05:00:28+09:00",
+    "ageDays": 3.3,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1621,
     "title": "判定日赤｜何仕入れたらわかんないんだったらSpotify自分のSpotifyのプレイリスト中心にいっぱい入ってるからそれ",
     "status": "awaiting_check",
@@ -3942,74 +3960,10 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 2123,
-    "title": "判定日赤｜じゃあ、2つ入り口を出してください。",
-    "status": "waiting",
-    "since": "2026-09-30T04:38:52+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2124,
-    "title": "「もう出してくれる画面あるじゃん。",
-    "status": "waiting",
-    "since": "2026-09-30T04:38:58+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2125,
-    "title": "…俺が最近仕入れやってって言ってないからつって仕入れを止めていいってことじゃないからね…これないんですか？",
-    "status": "waiting",
-    "since": "2026-09-30T04:45:03+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2126,
-    "title": "いっぱい入れたいけど入り口は狭くしてよ」",
-    "status": "waiting",
-    "since": "2026-09-30T04:47:56+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2127,
-    "title": "それ、それで出してよ。",
-    "status": "waiting",
-    "since": "2026-09-30T04:48:50+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2128,
-    "title": "computer-use 禁止。",
-    "status": "waiting",
-    "since": "2026-09-30T04:54:10+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2129,
-    "title": "（アースの「セプテンバー」はもう投稿してるから大丈夫）あと、出してもらったリストをパッと見ただけでも、曲のカードがあ",
-    "status": "hold",
-    "since": "2026-09-30T04:54:15+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2130,
-    "title": "「出してもらったリストをパッと見ただけでも、曲のカードがあるのに曲が貼られていないのがいくつもあったよ。",
-    "status": "waiting",
-    "since": "2026-09-30T05:00:20+09:00",
-    "ageDays": 3.2,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2131,
-    "title": "「もうこういうさ、動かせないものを出している時点で失格です」「ちゃんとテストまでして出してください。",
-    "status": "waiting",
-    "since": "2026-09-30T05:00:28+09:00",
+    "n": 1693,
+    "title": "正しい動き：空欄のまま前に進めて、分からなかったものを一覧にして必ず上げる。",
+    "status": "awaiting_check",
+    "since": "2026-09-30T07:13:09+09:00",
     "ageDays": 3.2,
     "staleLevel": "yellow"
    },
@@ -4342,6 +4296,86 @@
     "staleLevel": "yellow"
    },
    {
+    "n": 2175,
+    "title": "【一覧作成】635件の台帳ページを本番に出してURLを叩いて200を確認（日時・回数・判定日・実際どうなったか の列つき、回",
+    "status": "waiting",
+    "since": "2026-09-30T07:04:31+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2176,
+    "title": "お金の話はここで出してよい。",
+    "status": "waiting",
+    "since": "2026-09-30T07:04:32+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2177,
+    "title": "見つけた穴（正しい）：dojisu_jougen.json は上限1と出しているのに起動口で強制していない。",
+    "status": "waiting",
+    "since": "2026-09-30T07:09:37+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2178,
+    "title": "待ち時間が出るなら「生成中…」を出して、できたら自動で鳴らす。",
+    "status": "waiting",
+    "since": "2026-09-30T07:09:40+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2179,
+    "title": "GH551 【Julesに頼む】仕入れの仕上げ：riddim-saunter",
+    "status": "waiting",
+    "since": "2026-09-30T07:16:35+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2180,
+    "title": "帰ってきた答えは自動で台帳に戻して、1本ずつ本番ページに積む。",
+    "status": "waiting",
+    "since": "2026-09-30T07:16:40+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2181,
+    "title": "先に器（言語切替・ルーティング）を作っておく。",
+    "status": "waiting",
+    "since": "2026-09-30T07:16:42+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2182,
+    "title": "→ そのあと Genspark に自動で検品を投げ、❌があれば自動で直して再検品。",
+    "status": "waiting",
+    "since": "2026-09-30T07:22:12+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2183,
+    "title": "（tools/ に係を作って心臓に載せる）",
+    "status": "waiting",
+    "since": "2026-09-30T07:22:25+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2185,
+    "title": "本番で押して「つないでいます」が3秒以内に次へ進む",
+    "status": "waiting",
+    "since": "2026-09-30T07:28:52+09:00",
+    "ageDays": 3.2,
+    "staleLevel": "yellow"
+   },
+   {
     "n": 1673,
     "title": "【禁止事項(絶対・違反しない)】",
     "status": "hold",
@@ -4350,98 +4384,10 @@
     "staleLevel": "yellow"
    },
    {
-    "n": 1693,
-    "title": "正しい動き：空欄のまま前に進めて、分からなかったものを一覧にして必ず上げる。",
-    "status": "awaiting_check",
-    "since": "2026-09-30T07:13:09+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
     "n": 1704,
     "title": "判定日赤｜Task \"外部から入れた分のコピーを毎日直して報告する\" failed. Use read_transcri",
     "status": "awaiting_check",
     "since": "2026-09-30T08:17:16+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2175,
-    "title": "【一覧作成】635件の台帳ページを本番に出してURLを叩いて200を確認（日時・回数・判定日・実際どうなったか の列つき、回",
-    "status": "waiting",
-    "since": "2026-09-30T07:04:31+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2176,
-    "title": "お金の話はここで出してよい。",
-    "status": "waiting",
-    "since": "2026-09-30T07:04:32+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2177,
-    "title": "見つけた穴（正しい）：dojisu_jougen.json は上限1と出しているのに起動口で強制していない。",
-    "status": "waiting",
-    "since": "2026-09-30T07:09:37+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2178,
-    "title": "待ち時間が出るなら「生成中…」を出して、できたら自動で鳴らす。",
-    "status": "waiting",
-    "since": "2026-09-30T07:09:40+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2179,
-    "title": "GH551 【Julesに頼む】仕入れの仕上げ：riddim-saunter",
-    "status": "waiting",
-    "since": "2026-09-30T07:16:35+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2180,
-    "title": "帰ってきた答えは自動で台帳に戻して、1本ずつ本番ページに積む。",
-    "status": "waiting",
-    "since": "2026-09-30T07:16:40+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2181,
-    "title": "先に器（言語切替・ルーティング）を作っておく。",
-    "status": "waiting",
-    "since": "2026-09-30T07:16:42+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2182,
-    "title": "→ そのあと Genspark に自動で検品を投げ、❌があれば自動で直して再検品。",
-    "status": "waiting",
-    "since": "2026-09-30T07:22:12+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2183,
-    "title": "（tools/ に係を作って心臓に載せる）",
-    "status": "waiting",
-    "since": "2026-09-30T07:22:25+09:00",
-    "ageDays": 3.1,
-    "staleLevel": "yellow"
-   },
-   {
-    "n": 2185,
-    "title": "本番で押して「つないでいます」が3秒以内に次へ進む",
-    "status": "waiting",
-    "since": "2026-09-30T07:28:52+09:00",
     "ageDays": 3.1,
     "staleLevel": "yellow"
    },
@@ -4770,7 +4716,7 @@
     "title": "1168の検品表に「出どころ」の列を足して更新。",
     "status": "waiting",
     "since": "2026-09-30T09:25:37+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4778,7 +4724,7 @@
     "title": "心臓の5分便から外のサービスを毎回叩いているものを全部洗い出して、同じく「変わった時だけ」に替える。",
     "status": "waiting",
     "since": "2026-09-30T09:25:44+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4786,7 +4732,7 @@
     "title": "1コミットにまとめる（「戻して」で戻せる）。",
     "status": "waiting",
     "since": "2026-09-30T09:31:36+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4794,7 +4740,7 @@
     "title": "本当に無いなら、上の全部を当たった証拠（どこを何件検索して0件だったか）を出してから「無い」と言う。",
     "status": "waiting",
     "since": "2026-09-30T09:31:39+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4802,7 +4748,7 @@
     "title": "自動投稿の箱を作って、朝と夜の振り分けをお願いします。",
     "status": "waiting",
     "since": "2026-09-30T09:37:18+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4810,7 +4756,7 @@
     "title": "今「色彩のブルース」を即時パブリッシュしたので、グリーンでは手動で1回取り消してください。",
     "status": "waiting",
     "since": "2026-09-30T09:38:04+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4818,7 +4764,7 @@
     "title": "曲は俺が適当に入れていくので、仕組みだけ作っておいてください。",
     "status": "waiting",
     "since": "2026-09-30T09:38:19+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4826,7 +4772,7 @@
     "title": "表示だけ消してコードを残す、をしない。",
     "status": "waiting",
     "since": "2026-09-30T09:43:55+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4834,7 +4780,7 @@
     "title": "まずは1回、LINEの方に「どうなってますか」って確認を入れて。",
     "status": "waiting",
     "since": "2026-09-30T09:44:18+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4842,7 +4788,7 @@
     "title": "全部作ってから見せない。",
     "status": "waiting",
     "since": "2026-09-30T09:49:47+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -4850,7 +4796,7 @@
     "title": "まず10件だけ作って止め、たまごさんに見せる。",
     "status": "waiting",
     "since": "2026-09-30T09:50:02+09:00",
-    "ageDays": 3.0,
+    "ageDays": 3.1,
     "staleLevel": "yellow"
    },
    {
@@ -5052,6 +4998,1046 @@
     "since": "2026-09-30T10:30:55+09:00",
     "ageDays": 3.0,
     "staleLevel": "yellow"
+   },
+   {
+    "n": 2294,
+    "title": "判定日赤｜漢字検索の結果だけで「未反映」「ヒットなし」と報告することは絶対禁止。",
+    "status": "waiting",
+    "since": "2026-09-30T10:42:41+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2295,
+    "title": "判定日赤｜冒頭に最終同期時刻が書いてあるので、あまりに古い(数時間以上前)場合はその旨を報告に明記してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:42:43+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2297,
+    "title": "判定日赤｜プロ／素人の線引き＝その名義でSpotify等の主要ストリーミングに音源を出しているか。",
+    "status": "waiting",
+    "since": "2026-09-30T10:42:50+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2298,
+    "title": "判定日赤｜件数を数えて報告する。",
+    "status": "waiting",
+    "since": "2026-09-30T10:42:55+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2302,
+    "title": "判定日赤｜同じ作業で2回失敗したら止めて記録する。",
+    "status": "waiting",
+    "since": "2026-09-30T10:43:09+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2303,
+    "title": "判定日赤｜子が孫セッションを生成するのはKernel原則で禁止（クレジット大量消費事故の再発防止）。",
+    "status": "waiting",
+    "since": "2026-09-30T10:43:11+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2314,
+    "title": "判定日赤｜できないと分かったら ❌できない にして理由1行を書く。",
+    "status": "waiting",
+    "since": "2026-09-30T10:43:42+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2315,
+    "title": "判定日赤｜たまごさんの判断が要るものは ⏸判断待ち にして「聞くこと」1行を書く。",
+    "status": "waiting",
+    "since": "2026-09-30T10:43:45+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2318,
+    "title": "判定日赤｜スクロールすると右に行ったり左に行ったりするのを固定してほしい。",
+    "status": "waiting",
+    "since": "2026-09-30T10:43:55+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2319,
+    "title": "判定日赤｜はみ出している要素そのものを見つけて直す。",
+    "status": "waiting",
+    "since": "2026-09-30T10:43:57+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2320,
+    "title": "判定日赤｜二度と起こらないようにする。",
+    "status": "waiting",
+    "since": "2026-09-30T10:43:59+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2321,
+    "title": "判定日赤｜ログインが切れていたら、そこで止めてDispatchに1行で上げる。",
+    "status": "waiting",
+    "since": "2026-09-30T10:44:05+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2323,
+    "title": "判定日赤｜直したら次回の点検（status/kenpou_check.json）で緑になっていることを確認してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:44:10+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2324,
+    "title": "判定日赤｜直したら次回の点検でalive/slowになっていることを確認してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:44:12+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2327,
+    "title": "判定日赤｜だけど家にある壺や金庫を許可なく消しておきましたはありえない」",
+    "status": "waiting",
+    "since": "2026-09-30T10:44:36+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2328,
+    "title": "判定日赤｜ファイルを消しても空きが増えないことがある。",
+    "status": "waiting",
+    "since": "2026-09-30T10:44:47+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2332,
+    "title": "【一覧作成】判定日赤｜振られてないんだったらこれを振って全部のリストを一回 ChatGPT に投げたいから その一発のノートでやるの",
+    "status": "waiting",
+    "since": "2026-09-30T10:45:00+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2337,
+    "title": "判定日赤｜今回作ってほしいファイル：",
+    "status": "waiting",
+    "since": "2026-09-30T10:45:38+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2340,
+    "title": "判定日赤｜既存在庫と重複しない、新規または不足補充の音楽カードを最大400曲仕入れ、GitHubの正本データへ安全に保存",
+    "status": "waiting",
+    "since": "2026-09-30T10:45:48+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2346,
+    "title": "判定日赤｜PRを作ってよいか",
+    "status": "waiting",
+    "since": "2026-09-30T10:46:12+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2348,
+    "title": "判定日赤｜でも完全に破棄と たまに出していいってやつと、 優先順位的には 固定というのは、固定というのは常にあってほしい",
+    "status": "waiting",
+    "since": "2026-09-30T10:46:19+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2352,
+    "title": "判定日赤｜まぁ10個出して思いっきりシャッフルしていいよ。",
+    "status": "waiting",
+    "since": "2026-09-30T10:46:30+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2354,
+    "title": "判定日赤｜既に他の設定が書いてあれば、それは残したまま追記してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:46:34+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2367,
+    "title": "判定日赤｜Claudeを作った本人がやってる『AIに全部任せる』働き方 「AIは補助ツール」で止まってる人、完全に宝の持",
+    "status": "waiting",
+    "since": "2026-09-30T10:47:25+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2368,
+    "title": "判定日赤｜ここから、AnthropicのClaude Codeを作った本人が何をやっているか、Google・OpenAI",
+    "status": "waiting",
+    "since": "2026-09-30T10:47:29+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2369,
+    "title": "判定日赤｜2. 「100%AIに任せる」を実装している具体的な仕組み 「100%AIが書いている」と言われても、実際にど",
+    "status": "waiting",
+    "since": "2026-09-30T10:47:35+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2371,
+    "title": "判定日赤｜4. なぜ「AIを作ってる側」がAIに全部任せるのか ここで一度、立ち止まって考えたいことがあります。",
+    "status": "waiting",
+    "since": "2026-09-30T10:47:46+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2372,
+    "title": "判定日赤｜代わりに、24時間以内に動くprototypeを作って、user feedbackを見ながら回す。",
+    "status": "waiting",
+    "since": "2026-09-30T10:47:57+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2373,
+    "title": "判定日赤｜人間が1日かけて設計するより、AIが15分で動くものを作って、それを見ながら次の修正を考えたほうが早い。",
+    "status": "waiting",
+    "since": "2026-09-30T10:48:00+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2374,
+    "title": "判定日赤｜これは、AIを作っている会社が、自社の未来を読んだ結果として動いている、ということ。",
+    "status": "waiting",
+    "since": "2026-09-30T10:48:04+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2378,
+    "title": "判定日赤｜そして、賭けた側が、現時点で結果を出している。",
+    "status": "waiting",
+    "since": "2026-09-30T10:48:19+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2380,
+    "title": "判定日赤｜Slash Commandを1つも作っていない人。",
+    "status": "waiting",
+    "since": "2026-09-30T10:48:43+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2381,
+    "title": "判定日赤｜メタ側のAPI連携をきちんと必要なら仕入れセッションに投げて技術検証仕入れは今楽曲をやってるから、別のセッショ",
+    "status": "waiting",
+    "since": "2026-09-30T10:48:48+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2383,
+    "title": "判定日赤｜このセッションは完全に別件として、Instagram の投稿URLからも同様にカードを自動生成できるようにする",
+    "status": "waiting",
+    "since": "2026-09-30T10:48:53+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2384,
+    "title": "判定日赤｜最終的に「やるべきか/やらないべきか」の結論と、費用、ユーザーが自分でやる必要がある最小限の手順をまとめて報告",
+    "status": "waiting",
+    "since": "2026-09-30T10:48:56+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2386,
+    "title": "判定日赤｜完全に消してほしいわけではなく「もったいない」という表現なので、ボタン自体は残しつつレイアウトを工夫して(小さ",
+    "status": "waiting",
+    "since": "2026-09-30T10:49:03+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2390,
+    "title": "判定日赤｜店主に手動ログインを依頼してください」とだけ報告して終了する。",
+    "status": "waiting",
+    "since": "2026-09-30T10:49:31+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2394,
+    "title": "判定日赤｜ファイルを消す/戻す操作の前は、いまの状態を見せてユーザー(たまごさん)の確認を取る",
+    "status": "waiting",
+    "since": "2026-09-30T10:49:50+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2396,
+    "title": "判定日赤｜店主に手動ログインを依頼してください」とだけ報告して終了する(この場合もステップ7のタブ閉じは必ず実施する)。",
+    "status": "waiting",
+    "since": "2026-09-30T10:49:58+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2397,
+    "title": "判定日赤｜禁止：確認していない数字・統計・日付を【確からしい】として書くこと。",
+    "status": "waiting",
+    "since": "2026-09-30T10:50:00+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2398,
+    "title": "判定日赤｜その業界を実際に動かしている人・作っている人を外さない。",
+    "status": "waiting",
+    "since": "2026-09-30T10:50:03+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2399,
+    "title": "判定日赤｜（存在しないURLを作ってしまう危険があるため。",
+    "status": "waiting",
+    "since": "2026-09-30T10:50:04+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2400,
+    "title": "判定日赤｜中学生が声に出して読めるくらいの日本語で書く。",
+    "status": "waiting",
+    "since": "2026-09-30T10:50:07+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2405,
+    "title": "判定日赤｜あといくつか出してくれたじゃん。",
+    "status": "waiting",
+    "since": "2026-09-30T10:50:30+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2406,
+    "title": "判定日赤｜それを書き直してみてください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:50:32+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2407,
+    "title": "判定日赤｜それだけちょっと分かりやすく教えてこっちでやること。",
+    "status": "waiting",
+    "since": "2026-09-30T10:50:34+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2410,
+    "title": "判定日赤｜不可逆な操作(公開設定変更・削除・APIキー操作)だけ止めて報告してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:51:27+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2411,
+    "title": "判定日赤｜未来の街を仮想空間でカトラッシュをしながら爆走しているイメージを作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:51:39+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2415,
+    "title": "判定日赤｜で、いい感じではもっとスピード感出してもいいよ いろんなやっぱ人類の記憶の中を飛び回ってるみたいな。",
+    "status": "waiting",
+    "since": "2026-09-30T10:52:04+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2416,
+    "title": "判定日赤｜設定できないんだけど、どうやって再生するのだっけ?",
+    "status": "waiting",
+    "since": "2026-09-30T10:52:14+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2422,
+    "title": "判定日赤｜一人消しても議論が変わらない席は作らない。",
+    "status": "waiting",
+    "since": "2026-09-30T10:52:36+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2424,
+    "title": "判定日赤｜日本語で、正確で、読み物として面白く、読み終わると社会・人間・歴史の見え方が一段上がる円卓を作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:52:42+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2426,
+    "title": "判定日赤｜ユーザーは『また同じこと言ってる』『薄い』『テンプレ臭い』『一方向からしか見ていない』を強く嫌います。",
+    "status": "waiting",
+    "since": "2026-09-30T10:52:54+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2433,
+    "title": "判定日赤｜リポジトリを調査し、「気分診断モーダル」「パーソナライズ」「担当」「プレイブック」に関連する既存コード・ドキュ",
+    "status": "waiting",
+    "since": "2026-09-30T10:53:17+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2437,
+    "title": "判定日赤｜原因を調査して直してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:53:26+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2444,
+    "title": "判定日赤｜手順、手順を出してくれるのはありがたいけど、俺全部また分からないとかからさ、一からやってるからさ、ビジネスフェ",
+    "status": "waiting",
+    "since": "2026-09-30T10:54:16+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2446,
+    "title": "判定日赤｜商人だとか、そういうアカウントスクールだとかやるから あなたができないところだけあるから、あなたができることは",
+    "status": "waiting",
+    "since": "2026-09-30T10:54:23+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2452,
+    "title": "判定日赤｜見つけたセッションに mcp__dispatch__send_message で依頼する: 「在庫ダッシュボー",
+    "status": "waiting",
+    "since": "2026-09-30T10:54:44+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2453,
+    "title": "判定日赤｜追記後、今日の数値と前回ログとの増分、および『次の仕入れ候補』があれば、それも含めて簡潔に返信してください」。",
+    "status": "waiting",
+    "since": "2026-09-30T10:54:47+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2462,
+    "title": "判定日赤｜これを作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:55:28+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2465,
+    "title": "判定日赤｜60点でもいいから出して見せてよ。",
+    "status": "waiting",
+    "since": "2026-09-30T10:56:00+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2467,
+    "title": "判定日赤｜入れ終わったら予約一覧のスクショを返してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:56:14+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2475,
+    "title": "判定日赤｜今すぐ手を止めてください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:56:57+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2480,
+    "title": "判定日赤｜ツール呼び出し禁止の制約が解除され次第、直前の作業の続きとして以下を行う：",
+    "status": "waiting",
+    "since": "2026-09-30T10:57:19+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2482,
+    "title": "判定日赤｜1ページだけ直して終わりにしない。",
+    "status": "waiting",
+    "since": "2026-09-30T10:57:28+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2485,
+    "title": "判定日赤｜origin/mainで読み直して確認できたか（はい／いいえ）",
+    "status": "waiting",
+    "since": "2026-09-30T10:57:39+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2486,
+    "title": "判定日赤｜原因が分かった時点で、直す前に一度報告してください。",
+    "status": "waiting",
+    "since": "2026-09-30T10:57:47+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2488,
+    "title": "判定日赤｜たまごさんから:「前回作ったタスク管理のHTML、それをスマホでアイコンから開けるやつにして。",
+    "status": "waiting",
+    "since": "2026-09-30T10:57:59+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2489,
+    "title": "判定日赤｜スマホでも管理したいから、それも作って」",
+    "status": "waiting",
+    "since": "2026-09-30T10:58:03+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2491,
+    "title": "判定日赤｜たまごさんの言葉:「バッジの29回、全部直してくれよ。",
+    "status": "waiting",
+    "since": "2026-09-30T10:58:20+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2498,
+    "title": "判定日赤｜ライブラリをまだ繋いでいない。",
+    "status": "waiting",
+    "since": "2026-09-30T10:59:04+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2502,
+    "title": "判定日赤｜それをハーフサイズのサムネイルにして、今3曲あるじゃん、3曲の下に置いて欲しいんだよね。",
+    "status": "waiting",
+    "since": "2026-09-30T10:59:20+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2503,
+    "title": "判定日赤｜この2ページで形を作って見せる。",
+    "status": "waiting",
+    "since": "2026-09-30T10:59:24+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2504,
+    "title": "判定日赤｜EagleのライブラリとGoogleドライブの中身を自動で同じにできないか調べて、できる方法を1つ実装する。",
+    "status": "waiting",
+    "since": "2026-09-30T10:59:29+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2506,
+    "title": "判定日赤｜俺は分かりやすくデスクトップに出してって言う時があるけど、それ以外は全部 iMac HDD に。",
+    "status": "waiting",
+    "since": "2026-09-30T10:59:39+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2507,
+    "title": "【一覧作成】判定日赤｜（2026-09-08に確認ページ256件を外付けへ出して全部404にした前例がある。",
+    "status": "waiting",
+    "since": "2026-09-30T10:59:42+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2511,
+    "title": "判定日赤｜■ 二度と起こらないようにする（本体）",
+    "status": "waiting",
+    "since": "2026-09-30T10:59:56+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2512,
+    "title": "判定日赤｜それを鬼監督が見て『おかしいだろ』って。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:05+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2513,
+    "title": "判定日赤｜「俺、1日に何個か入れてるのよ。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:10+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2514,
+    "title": "判定日赤｜今日入れたものを、夜中の0時とかでもいいから見回って直してほしい。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:15+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2515,
+    "title": "判定日赤｜はみ出している要素そのものを特定して直す。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:19+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2516,
+    "title": "判定日赤｜これは早急に直してほしいなぁ。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:22+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2519,
+    "title": "判定日赤｜まず重さを測ってから落ちる件を見る。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:33+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2521,
+    "title": "判定日赤｜＝ うちが今日やっている「絶対に守ることを索引の本文にベタ書きする」「工場の入口を1枚に書く」は方向として正し",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:41+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2524,
+    "title": "判定日赤｜数字を出してから直す。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:50+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2525,
+    "title": "判定日赤｜直したら、同じ測り方でもう一度測って前後を並べる。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:53+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2526,
+    "title": "判定日赤｜共通の部品にして、どこから呼んでも同じものが出るようにする。",
+    "status": "waiting",
+    "since": "2026-09-30T11:00:58+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2527,
+    "title": "上の依頼の対象になる項目（ページ・アーティスト・曲など、1件＝あとで1本の小さい仕事に分割できる単位）を実際に調べて洗い",
+    "status": "waiting",
+    "since": "2026-09-30T11:01:05+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2530,
+    "title": "判定日赤｜（不可逆）仕組みを作って、送るのは許可が出てから。",
+    "status": "waiting",
+    "since": "2026-09-30T11:01:17+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2531,
+    "title": "判定日赤｜ズレを秒単位にして通信をほぼゼロにする（now.json＋rev.txt＋家はリアルタイム）",
+    "status": "waiting",
+    "since": "2026-09-30T11:01:25+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2533,
+    "title": "判定日赤｜こちらが合言葉を1つ決めて ai-brain/company-os/aikotoba.md に置く",
+    "status": "waiting",
+    "since": "2026-09-30T11:01:33+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2535,
+    "title": "判定日赤｜減りが異常に速い原因を突き止めて止める＋捨てていいゴミを捨てる＋iMacへ逃がす",
+    "status": "waiting",
+    "since": "2026-09-30T11:01:41+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2538,
+    "title": "判定日赤｜「外に出している仕事：◯件（Devin◯／ChatGPT◯）」",
+    "status": "waiting",
+    "since": "2026-09-30T11:01:58+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2539,
+    "title": "判定日赤｜外に出す基準を決めて書く。",
+    "status": "waiting",
+    "since": "2026-09-30T11:02:04+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2540,
+    "title": "判定日赤｜進捗表を見れば「今どのAIに何を出していて、いくら使ったか」が分かる",
+    "status": "waiting",
+    "since": "2026-09-30T11:02:08+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2543,
+    "title": "判定日赤｜30分便を止めて「出すものがある時だけ押す」＋2回失敗で停止",
+    "status": "waiting",
+    "since": "2026-09-30T11:02:23+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2544,
+    "title": "判定日赤｜Lovable公開ブロック対策】30分おきの自動公開をやめて「出すものがある時だけ押す」に変える",
+    "status": "waiting",
+    "since": "2026-09-30T11:02:30+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2546,
+    "title": "判定日赤｜30分便が無効化されている（消していない）",
+    "status": "waiting",
+    "since": "2026-09-30T11:02:42+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2547,
+    "title": "判定日赤｜1ファイルだけ直してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:02:54+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2550,
+    "title": "判定日赤｜塞がっていることを実測で確かめてから言う。",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:00+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2561,
+    "title": "判定日赤｜2行目＝Wikipedia誤爆を何件洗い出して何件直したか",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:17+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2562,
+    "title": "判定日赤｜最優先で直してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:19+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2564,
+    "title": "判定日赤｜出してほしい形式：",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:26+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2565,
+    "title": "判定日赤｜存在する場合は、まず現在の内容を表示してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:33+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2569,
+    "title": "判定日赤｜ファイル移動、削除、上書き、大量変更、API実行、外部送信、課金が絡む作業は、必ず事前に計画を出して承認を待つ",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:44+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2571,
+    "title": "判定日赤｜もしこの画面や設定内に Accept Edits / Auto / Permission mode に相当する",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:46+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2575,
+    "title": "判定日赤｜変更前にバックアップを作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:54+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2576,
+    "title": "判定日赤｜「確認を減らすが、危険作業は止める」設定案を出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:03:56+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2580,
+    "title": "判定日赤｜削除・外部送信・課金・大量破壊につながる操作は、明示的に確認制または禁止にしてください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:05+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2586,
+    "title": "判定日赤｜まず移動予定リストだけ出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:13+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2588,
+    "title": "判定日赤｜もし未反映なら、バックアップを作ってから反映してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:17+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2591,
+    "title": "判定日赤｜各カードについて以下を出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:22+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2592,
+    "title": "判定日赤｜各曲について以下を出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:23+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2594,
+    "title": "判定日赤｜統合時に消してよい要素",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:26+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2596,
+    "title": "判定日赤｜「なぜ雨の日にこれか」の説明は、雨の日棚から来た場合の文脈として残すか、折りたたみ表示にするか、どちらがよいか",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:29+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2599,
+    "title": "判定日赤｜もし書き込めない場合は、プロジェクトフォルダ内に以下を作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:37+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2601,
+    "title": "判定日赤｜今、今さお知り合いに出してくれたんだよね。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:40+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2602,
+    "title": "判定日赤｜もう一回出し直して。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:41+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2603,
+    "title": "判定日赤｜統合設計っていう作ってくれたファイルに一発で飛びたいんだけど。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:42+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2604,
+    "title": "判定日赤｜基本的にバラで出してもらっても構わないんだけれども、出力したものを ChatGPT に投げて、えー、相談するケ",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:43+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2605,
+    "title": "判定日赤｜ということで出して、あのー、 この loco copyとして投げるの大変だから。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:44+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2607,
+    "title": "判定日赤｜新しい 棚-音-012：勝手に体が動く棚（踊る阿呆に見る阿呆） としてください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:48+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2608,
+    "title": "判定日赤｜Lovableへ実装依頼する前に確認すべき項目を整理してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:51+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2609,
+    "title": "判定日赤｜既存ページで消してよい要素",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:53+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2612,
+    "title": "【一覧作成】判定日赤｜User said: \"振られてないんだったらこれを振って全部のリストを一回 ChatGPT に投げたいから",
+    "status": "waiting",
+    "since": "2026-09-30T11:04:58+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2614,
+    "title": "判定日赤｜以下の表を作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:05:02+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2621,
+    "title": "判定日赤｜これを 棚-音-001〜026 まで作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:05:11+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2623,
+    "title": "判定日赤｜ファイル末尾に、Lovableへそのまま渡せる短いまとめを作ってください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:05:14+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2627,
+    "title": "判定日赤｜それぞれについて、以下を出してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:05:18+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
+   },
+   {
+    "n": 2631,
+    "title": "判定日赤｜曲名は存在するが、動画IDがない曲を一覧化してください。",
+    "status": "waiting",
+    "since": "2026-09-30T11:05:30+09:00",
+    "ageDays": 3.0,
+    "staleLevel": "yellow"
    }
   ],
   "red": [
@@ -5092,7 +6078,7 @@
     "title": "【一覧作成】振られてないんだったらこれを振って全部のリストを一回 ChatGPT に投げたいから その一発のノートでやるのか、 十個",
     "status": "waiting",
     "since": "2026-06-15T04:40:00+09:00",
-    "ageDays": 110.2,
+    "ageDays": 110.3,
     "staleLevel": "red"
    },
    {
@@ -5100,7 +6086,7 @@
     "title": "【一覧作成】User said: \"振られてないんだったらこれを振って全部のリストを一回 ChatGPT に投げたいから その一発の",
     "status": "waiting",
     "since": "2026-06-15T04:53:00+09:00",
-    "ageDays": 110.2,
+    "ageDays": 110.3,
     "staleLevel": "red"
    },
    {
@@ -5132,7 +6118,7 @@
     "title": "たまごさんが頼んでいないタスクを確認列に出さない（4/4）",
     "status": "hold",
     "since": "2026-09-06T16:57:10+09:00",
-    "ageDays": 26.7,
+    "ageDays": 26.8,
     "staleLevel": "red"
    },
    {
@@ -5156,7 +6142,7 @@
     "title": "Googleドライブを本当に使える倉庫にする（根本原因）",
     "status": "hold",
     "since": "2026-09-06T23:55:37+09:00",
-    "ageDays": 26.4,
+    "ageDays": 26.5,
     "staleLevel": "red"
    },
    {
@@ -5192,19 +6178,19 @@
     "staleLevel": "red"
    },
    {
+    "n": 605,
+    "title": "好きなURLを入れる→診断→星→メールで作り直して送る（商売の芯）",
+    "status": "hold",
+    "since": "2026-09-07T19:17:48+09:00",
+    "ageDays": 25.7,
+    "staleLevel": "red"
+   },
+   {
     "n": 609,
     "title": "マイクロギフト「あめちゃん」（好きな曲を軽く贈れる）",
     "status": "hold",
     "since": "2026-09-07T17:32:33+09:00",
     "ageDays": 25.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 605,
-    "title": "好きなURLを入れる→診断→星→メールで作り直して送る（商売の芯）",
-    "status": "hold",
-    "since": "2026-09-07T19:17:48+09:00",
-    "ageDays": 25.6,
     "staleLevel": "red"
    },
    {
@@ -5264,6 +6250,14 @@
     "staleLevel": "red"
    },
    {
+    "n": 684,
+    "title": "鬼監督を復活させて、完了したタスクを毎回チェックさせる",
+    "status": "waiting",
+    "since": "2026-09-11T07:00:55+09:00",
+    "ageDays": 22.2,
+    "staleLevel": "red"
+   },
+   {
     "n": 745,
     "title": "【まず0円】静止画に無料で動きをつけてポップアップ規格(300KB以下)に収まるか試す",
     "status": "hold",
@@ -5272,19 +6266,11 @@
     "staleLevel": "red"
    },
    {
-    "n": 684,
-    "title": "鬼監督を復活させて、完了したタスクを毎回チェックさせる",
-    "status": "waiting",
-    "since": "2026-09-11T07:00:55+09:00",
-    "ageDays": 22.1,
-    "staleLevel": "red"
-   },
-   {
     "n": 749,
     "title": "カードの上端を揃える（高さは合っていても上の余白でズレて見える）",
     "status": "waiting",
     "since": "2026-09-11T19:21:31+09:00",
-    "ageDays": 21.6,
+    "ageDays": 21.7,
     "staleLevel": "red"
    },
    {
@@ -5316,7 +6302,7 @@
     "title": "【最重要・要確認】パーソナライズ実地テスト：亮太さん＋甥っ子に「好きそうで知らないもの」を出す",
     "status": "hold",
     "since": "2026-09-13T05:02:15+09:00",
-    "ageDays": 20.2,
+    "ageDays": 20.3,
     "staleLevel": "red"
    },
    {
@@ -5364,7 +6350,7 @@
     "title": "【最優先】「すぐ見たい」の別枠を作る＋優先順位の自動入れ替え",
     "status": "waiting",
     "since": "2026-09-14T02:15:25+09:00",
-    "ageDays": 19.3,
+    "ageDays": 19.4,
     "staleLevel": "red"
    },
    {
@@ -5384,10 +6370,522 @@
     "staleLevel": "red"
    },
    {
+    "n": 157,
+    "title": "「飼い主大好き」が2つあるので1つに統合する",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 469,
+    "title": "Björk Crystalline",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 487,
+    "title": "原曲へ繋ぐ向きのボタン",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 596,
+    "title": "曲が増えても壊れない形にする（常設）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 610,
+    "title": "「聴き比べする」ボタンをテスト実装（愛燦燦とSomebody to Love）",
+    "status": "hold",
+    "since": "2026-09-17T16:40:47+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 611,
+    "title": "【実験】Xの1本から、曲の特定→棚→原曲→映画までを自動で通す",
+    "status": "hold",
+    "since": "2026-09-17T16:53:01+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 614,
+    "title": "プレイリスト「亮太」22曲（35歳の男性）を読み取ってパーソナライズの材料にする",
+    "status": "hold",
+    "since": "2026-09-17T16:53:01+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 618,
+    "title": "【最優先】AI社員を作る（SNS担当・デザイン担当・マーケ担当）",
+    "status": "hold",
+    "since": "2026-09-17T16:40:47+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 621,
+    "title": "【緊急】ブラウザを1個に決めて、画面に出ない形で動かす",
+    "status": "hold",
+    "since": "2026-09-17T16:40:47+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 671,
+    "title": "Shared Brainをスマホでも読めるようにする（symlinkはiCloudで同期されない）",
+    "status": "hold",
+    "since": "2026-09-17T16:40:47+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 675,
+    "title": "わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕組みを作る",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 676,
+    "title": "お金がかかるタスクを赤文字にして、走る前に必ず金額の確認を出す",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 678,
+    "title": "たまごさんへの確認ポップアップをゼロに戻す（今日3〜4回出た）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 685,
+    "title": "ディスクが1日20GB以上減る原因を徹底追及して止める＋外付けを既定の置き場にする",
+    "status": "hold",
+    "since": "2026-09-17T16:40:47+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 688,
+    "title": "falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を時間表示に",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 691,
+    "title": "ベッドから音量・再生・仕入れを1秒でできるようにする（ショートカット＋ホットキー）",
+    "status": "hold",
+    "since": "2026-09-17T16:40:47+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 698,
+    "title": "「深夜の飯テロ」の一覧でサムネ欠け・高さバラバラ・右端切れを直す（697の実例）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 699,
+    "title": "一覧だけサムネが引けていない（棚では出ている）＝実装が2か所に分かれている",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 706,
+    "title": "週の燃料を配る配車係を作る（火曜18時に99%着地・緊急用の余力を確保・自動で入れ替え）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 709,
+    "title": "ページのヘッダーを整理して、その場でタイトルとコピーを直せるようにする（候補5案）",
+    "status": "hold",
+    "since": "2026-09-17T16:40:47+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 710,
+    "title": "Måneskin「I WANNA BE YOUR SLAVE」THE FIRST TAKE を仕入れる",
+    "status": "hold",
+    "since": "2026-09-17T16:53:01+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 711,
+    "title": "THE FIRST TAKE 30曲を仕入れて、原曲と往復できるようにする（710のOK後）",
+    "status": "hold",
+    "since": "2026-09-17T16:51:37+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 713,
+    "title": "【モグラくん】TikTok等で一般人がプロ曲を使える仕組みと、流れている曲を自動で特定する方法を調べる",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 721,
+    "title": "サブスクの一覧と請求日リマインダーをお金の管理表に作る（1件目=Suno 10/13 2万円）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 722,
+    "title": "Claudeの請求が8月30日に2回落ちている件を調べる（$112.22と$110）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 729,
+    "title": "進捗表の1画面目を「あと何本・今何本・何が動いてるか」だけにする（点検や不具合ログは畳む）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 730,
+    "title": "読み上げ：生成音声を既定にして声を選べるようにする＋一時停止と履歴とリピートを直す",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 743,
+    "title": "守りの点検：何が公開されているか・鍵の漏れ・バックアップと復旧・2段階認証（保守運用）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 746,
+    "title": "卵スタンプのセリフを「型」として資産化し、鬼嫁ちゃん（関西弁）に置き換える",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 748,
+    "title": "Driveのフォルダに画像を入れるだけでGIF/APNGが自動でできる仕組み（0円）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 766,
+    "title": "読み上げ第2弾：声をフラットに＋止められる・戻れる＋ノートから1クリック",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 772,
+    "title": "【商品】ZENうんこをポモドーロ＋瞑想＋壁紙にする（771が通ってから）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 774,
+    "title": "PWAとブラウザで数字がズレる（どっちが本当か分からない状態をなくす）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 775,
+    "title": "【共通脳01号】URL一発で全AIの記憶にする（梶谷式・水汲みを終わらせる）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 780,
+    "title": "(4/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 784,
+    "title": "【毎週の数字】たまごさんを止めた回数を数えて毎週減らす（今週8回）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 788,
+    "title": "毎朝の入荷見回り（2026-09-12分・自動）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 804,
+    "title": "【探しもの】「相手の砂漠を探せ」の原典をMacとネットから見つける＋商売への当てはめ",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 810,
+    "title": "【フードレーダー】1料理4〜5本＋カテゴリを畳む＋その場で再生（急ぎでない）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 815,
+    "title": "【毎日の点検】新しく入った曲がアーティストページ・棚に繋がっているか（Yenlikの抜け）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 817,
+    "title": "【AI連携】ChatGPT鬼監督レポートと突き合わせ＋shared-brainを実際に動かす",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 818,
+    "title": "毎朝の入荷見回り（2026-09-13分・自動）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 821,
+    "title": "【扉とメール】欄を3つに整理＋自動お礼メール＋解除＋月1のお届け",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 822,
+    "title": "【作り直し】フッターのストップモーションが全体ガタガタ＋重さを実測",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 824,
+    "title": "【週の運用】枠を先に配る：見たいもの60%／裏方30%／予備10%＋今週見たいもの3つ",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 828,
+    "title": "【同じ脳みそ】世界の事例を調べて3チームが「話しかけたら知ってる」状態を作る",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 830,
+    "title": "【入荷の全自動化】URL1本で判定→ページ作成→アーティスト紐付け→重複統合→コピーまで",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 831,
+    "title": "【リンク死活】開けないリンクを二度と渡さない・渡したURLを殺さない",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 833,
+    "title": "【バッジ50回目】機械が測って落とす・違反があると本番に出せない",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 834,
+    "title": "【全AI共通の基本】世界の事例を必ず調べる／修正完了まで遂行してから報告する",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 835,
+    "title": "【毎週の定期】世界のトップランナーを回って毎週1つ以上を実際に取り入れる",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 836,
+    "title": "【サムネ切れ】壊れたサムネを機械で見つけて直すか隠す（全ページ）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 838,
+    "title": "【今週の方針】見つけて直すをやめて、そもそも間違えられない型にする",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 840,
+    "title": "【仕組み】Macメンテを許可不要のシェル版に寄せる（定期実行で毎回動かない）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 844,
+    "title": "毎朝の入荷見回り（2026-09-14分・自動）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 877,
+    "title": "毎朝の入荷見回り（2026-09-15分・自動）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 887,
+    "title": "【LINE】ログインの窓をこちらで開けて、あとは本人がログインするだけにする",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
     "n": 897,
     "title": "【仕組み⑥】サムネの大きさにA/B/Cの名前をつける＋高さ揃えをCIで守る",
     "status": "awaiting_check",
     "since": "2026-09-17T15:34:27+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 899,
+    "title": "【仕組み⑧】歯抜けは自分で降りる／戻ったら自動で復帰／入口で弾く",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 901,
+    "title": "【仕組み⑩】天井に届かない／クレジット節約／進捗と実態がずれない",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 903,
+    "title": "毎朝の入荷見回り（2026-09-16分・自動）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 910,
+    "title": "【調べて試す】Lovableから引っ越せるか、コピーで実証（本番は触らない・見た目を並べて比べる）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 913,
+    "title": "【読む】「顧客体験に効かない施策は行わない」＋「3秒で逃げる」を数字の目標にする",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 918,
+    "title": "【計算】fal H3 Maxでループ動画1本いくら（1920/4Kまで）＋ポモドーロ自動化＋未着手素材の一覧",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
+    "ageDays": 15.8,
+    "staleLevel": "red"
+   },
+   {
+    "n": 921,
+    "title": "記憶の索引が200行を超えて末尾が毎回捨てられている（140行以下へ圧縮）",
+    "status": "waiting",
+    "since": "2026-09-17T16:54:24.914524+09:00",
     "ageDays": 15.8,
     "staleLevel": "red"
    },
@@ -5405,518 +6903,6 @@
     "status": "awaiting_check",
     "since": "2026-09-17T16:22:21+09:00",
     "ageDays": 15.8,
-    "staleLevel": "red"
-   },
-   {
-    "n": 157,
-    "title": "「飼い主大好き」が2つあるので1つに統合する",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 469,
-    "title": "Björk Crystalline",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 487,
-    "title": "原曲へ繋ぐ向きのボタン",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 596,
-    "title": "曲が増えても壊れない形にする（常設）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 610,
-    "title": "「聴き比べする」ボタンをテスト実装（愛燦燦とSomebody to Love）",
-    "status": "hold",
-    "since": "2026-09-17T16:40:47+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 611,
-    "title": "【実験】Xの1本から、曲の特定→棚→原曲→映画までを自動で通す",
-    "status": "hold",
-    "since": "2026-09-17T16:53:01+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 614,
-    "title": "プレイリスト「亮太」22曲（35歳の男性）を読み取ってパーソナライズの材料にする",
-    "status": "hold",
-    "since": "2026-09-17T16:53:01+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 618,
-    "title": "【最優先】AI社員を作る（SNS担当・デザイン担当・マーケ担当）",
-    "status": "hold",
-    "since": "2026-09-17T16:40:47+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 621,
-    "title": "【緊急】ブラウザを1個に決めて、画面に出ない形で動かす",
-    "status": "hold",
-    "since": "2026-09-17T16:40:47+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 671,
-    "title": "Shared Brainをスマホでも読めるようにする（symlinkはiCloudで同期されない）",
-    "status": "hold",
-    "since": "2026-09-17T16:40:47+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 675,
-    "title": "わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕組みを作る",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 676,
-    "title": "お金がかかるタスクを赤文字にして、走る前に必ず金額の確認を出す",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 678,
-    "title": "たまごさんへの確認ポップアップをゼロに戻す（今日3〜4回出た）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 685,
-    "title": "ディスクが1日20GB以上減る原因を徹底追及して止める＋外付けを既定の置き場にする",
-    "status": "hold",
-    "since": "2026-09-17T16:40:47+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 688,
-    "title": "falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を時間表示に",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 691,
-    "title": "ベッドから音量・再生・仕入れを1秒でできるようにする（ショートカット＋ホットキー）",
-    "status": "hold",
-    "since": "2026-09-17T16:40:47+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 698,
-    "title": "「深夜の飯テロ」の一覧でサムネ欠け・高さバラバラ・右端切れを直す（697の実例）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 699,
-    "title": "一覧だけサムネが引けていない（棚では出ている）＝実装が2か所に分かれている",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 706,
-    "title": "週の燃料を配る配車係を作る（火曜18時に99%着地・緊急用の余力を確保・自動で入れ替え）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 709,
-    "title": "ページのヘッダーを整理して、その場でタイトルとコピーを直せるようにする（候補5案）",
-    "status": "hold",
-    "since": "2026-09-17T16:40:47+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 710,
-    "title": "Måneskin「I WANNA BE YOUR SLAVE」THE FIRST TAKE を仕入れる",
-    "status": "hold",
-    "since": "2026-09-17T16:53:01+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 711,
-    "title": "THE FIRST TAKE 30曲を仕入れて、原曲と往復できるようにする（710のOK後）",
-    "status": "hold",
-    "since": "2026-09-17T16:51:37+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 713,
-    "title": "【モグラくん】TikTok等で一般人がプロ曲を使える仕組みと、流れている曲を自動で特定する方法を調べる",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 721,
-    "title": "サブスクの一覧と請求日リマインダーをお金の管理表に作る（1件目=Suno 10/13 2万円）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 722,
-    "title": "Claudeの請求が8月30日に2回落ちている件を調べる（$112.22と$110）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 729,
-    "title": "進捗表の1画面目を「あと何本・今何本・何が動いてるか」だけにする（点検や不具合ログは畳む）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 730,
-    "title": "読み上げ：生成音声を既定にして声を選べるようにする＋一時停止と履歴とリピートを直す",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 743,
-    "title": "守りの点検：何が公開されているか・鍵の漏れ・バックアップと復旧・2段階認証（保守運用）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 746,
-    "title": "卵スタンプのセリフを「型」として資産化し、鬼嫁ちゃん（関西弁）に置き換える",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 748,
-    "title": "Driveのフォルダに画像を入れるだけでGIF/APNGが自動でできる仕組み（0円）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 766,
-    "title": "読み上げ第2弾：声をフラットに＋止められる・戻れる＋ノートから1クリック",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 772,
-    "title": "【商品】ZENうんこをポモドーロ＋瞑想＋壁紙にする（771が通ってから）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 774,
-    "title": "PWAとブラウザで数字がズレる（どっちが本当か分からない状態をなくす）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 775,
-    "title": "【共通脳01号】URL一発で全AIの記憶にする（梶谷式・水汲みを終わらせる）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 780,
-    "title": "(4/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 784,
-    "title": "【毎週の数字】たまごさんを止めた回数を数えて毎週減らす（今週8回）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 788,
-    "title": "毎朝の入荷見回り（2026-09-12分・自動）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 804,
-    "title": "【探しもの】「相手の砂漠を探せ」の原典をMacとネットから見つける＋商売への当てはめ",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 810,
-    "title": "【フードレーダー】1料理4〜5本＋カテゴリを畳む＋その場で再生（急ぎでない）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 815,
-    "title": "【毎日の点検】新しく入った曲がアーティストページ・棚に繋がっているか（Yenlikの抜け）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 817,
-    "title": "【AI連携】ChatGPT鬼監督レポートと突き合わせ＋shared-brainを実際に動かす",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 818,
-    "title": "毎朝の入荷見回り（2026-09-13分・自動）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 821,
-    "title": "【扉とメール】欄を3つに整理＋自動お礼メール＋解除＋月1のお届け",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 822,
-    "title": "【作り直し】フッターのストップモーションが全体ガタガタ＋重さを実測",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 824,
-    "title": "【週の運用】枠を先に配る：見たいもの60%／裏方30%／予備10%＋今週見たいもの3つ",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 828,
-    "title": "【同じ脳みそ】世界の事例を調べて3チームが「話しかけたら知ってる」状態を作る",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 830,
-    "title": "【入荷の全自動化】URL1本で判定→ページ作成→アーティスト紐付け→重複統合→コピーまで",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 831,
-    "title": "【リンク死活】開けないリンクを二度と渡さない・渡したURLを殺さない",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 833,
-    "title": "【バッジ50回目】機械が測って落とす・違反があると本番に出せない",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 834,
-    "title": "【全AI共通の基本】世界の事例を必ず調べる／修正完了まで遂行してから報告する",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 835,
-    "title": "【毎週の定期】世界のトップランナーを回って毎週1つ以上を実際に取り入れる",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 836,
-    "title": "【サムネ切れ】壊れたサムネを機械で見つけて直すか隠す（全ページ）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 838,
-    "title": "【今週の方針】見つけて直すをやめて、そもそも間違えられない型にする",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 840,
-    "title": "【仕組み】Macメンテを許可不要のシェル版に寄せる（定期実行で毎回動かない）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 844,
-    "title": "毎朝の入荷見回り（2026-09-14分・自動）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 877,
-    "title": "毎朝の入荷見回り（2026-09-15分・自動）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 887,
-    "title": "【LINE】ログインの窓をこちらで開けて、あとは本人がログインするだけにする",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 899,
-    "title": "【仕組み⑧】歯抜けは自分で降りる／戻ったら自動で復帰／入口で弾く",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 901,
-    "title": "【仕組み⑩】天井に届かない／クレジット節約／進捗と実態がずれない",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 903,
-    "title": "毎朝の入荷見回り（2026-09-16分・自動）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 910,
-    "title": "【調べて試す】Lovableから引っ越せるか、コピーで実証（本番は触らない・見た目を並べて比べる）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 913,
-    "title": "【読む】「顧客体験に効かない施策は行わない」＋「3秒で逃げる」を数字の目標にする",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 918,
-    "title": "【計算】fal H3 Maxでループ動画1本いくら（1920/4Kまで）＋ポモドーロ自動化＋未着手素材の一覧",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
-    "staleLevel": "red"
-   },
-   {
-    "n": 921,
-    "title": "記憶の索引が200行を超えて末尾が毎回捨てられている（140行以下へ圧縮）",
-    "status": "waiting",
-    "since": "2026-09-17T16:54:24.914524+09:00",
-    "ageDays": 15.7,
     "staleLevel": "red"
    },
    {
@@ -5968,6 +6954,22 @@
     "staleLevel": "red"
    },
    {
+    "n": 1984,
+    "title": "「わかりました、API を入れてください」って言われて、API を入れた瞬間にもう繋がったよ。",
+    "status": "waiting",
+    "since": "2026-09-17T23:56:00+09:00",
+    "ageDays": 15.5,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1985,
+    "title": "複雑になってる、普通に素直に繋いでよ。",
+    "status": "waiting",
+    "since": "2026-09-17T23:57:00+09:00",
+    "ageDays": 15.5,
+    "staleLevel": "red"
+   },
+   {
     "n": 938,
     "title": "毎朝の入荷見回り（2026-09-17分・自動）",
     "status": "waiting",
@@ -5988,22 +6990,6 @@
     "title": "1日の終わりに外部から何が入ってきたかを確認して、コピーと動画の内容が合っているかをチェックし、違っていれば書き直す仕組",
     "status": "waiting",
     "since": "2026-09-18T00:49:00+09:00",
-    "ageDays": 15.4,
-    "staleLevel": "red"
-   },
-   {
-    "n": 1984,
-    "title": "「わかりました、API を入れてください」って言われて、API を入れた瞬間にもう繋がったよ。",
-    "status": "waiting",
-    "since": "2026-09-17T23:56:00+09:00",
-    "ageDays": 15.4,
-    "staleLevel": "red"
-   },
-   {
-    "n": 1985,
-    "title": "複雑になってる、普通に素直に繋いでよ。",
-    "status": "waiting",
-    "since": "2026-09-17T23:57:00+09:00",
     "ageDays": 15.4,
     "staleLevel": "red"
    },
@@ -6124,7 +7110,7 @@
     "title": "つながってるからやって",
     "status": "waiting",
     "since": "2026-09-18T05:05:00+09:00",
-    "ageDays": 15.2,
+    "ageDays": 15.3,
     "staleLevel": "red"
    },
    {
@@ -6132,7 +7118,7 @@
     "title": "Task \"キーの優先順を逆にして声を出す\" completed. Use read_transcript with s",
     "status": "waiting",
     "since": "2026-09-18T07:09:00+09:00",
-    "ageDays": 15.1,
+    "ageDays": 15.2,
     "staleLevel": "red"
    },
    {
@@ -6196,7 +7182,7 @@
     "title": "で、その「ごめんね、えっと三つ削れば」っていうのを、ちょっと具体的に出してくれないかな。",
     "status": "waiting",
     "since": "2026-09-19T04:55:00+09:00",
-    "ageDays": 14.2,
+    "ageDays": 14.3,
     "staleLevel": "red"
    },
    {
@@ -6261,6 +7247,14 @@
     "status": "waiting",
     "since": "2026-09-19T11:32:37.525414+09:00",
     "ageDays": 14.0,
+    "staleLevel": "red"
+   },
+   {
+    "n": 972,
+    "title": "GH435 Astra最適化: Skills / AGENTS / task prompts を軽量化",
+    "status": "waiting",
+    "since": "2026-09-19T21:39:57.461564+09:00",
+    "ageDays": 13.6,
     "staleLevel": "red"
    },
    {
@@ -6368,14 +7362,6 @@
     "staleLevel": "red"
    },
    {
-    "n": 972,
-    "title": "GH435 Astra最適化: Skills / AGENTS / task prompts を軽量化",
-    "status": "waiting",
-    "since": "2026-09-19T21:39:57.461564+09:00",
-    "ageDays": 13.5,
-    "staleLevel": "red"
-   },
-   {
     "n": 974,
     "title": "チャッピーの画像2枚を配線して本番に出す（02_静かなレコード店.png）",
     "status": "waiting",
@@ -6452,7 +7438,7 @@
     "title": "GH443 【Grokに頼む】Xの生の投稿を10件（965・AI掲示板）",
     "status": "waiting",
     "since": "2026-09-20T02:36:10.650018+09:00",
-    "ageDays": 13.3,
+    "ageDays": 13.4,
     "staleLevel": "red"
    },
    {
@@ -6460,7 +7446,7 @@
     "title": "GH444 【Gensparkに頼む】一人＋AIで食べている個人メディア10件（965・AI掲示板）",
     "status": "waiting",
     "since": "2026-09-20T02:36:10.650018+09:00",
-    "ageDays": 13.3,
+    "ageDays": 13.4,
     "staleLevel": "red"
    },
    {
@@ -6468,7 +7454,7 @@
     "title": "GH445 【ChatGPTに頼む】この掲示板であなたを呼ぶ正しい形（965）",
     "status": "waiting",
     "since": "2026-09-20T02:36:10.650018+09:00",
-    "ageDays": 13.3,
+    "ageDays": 13.4,
     "staleLevel": "red"
    },
    {
@@ -6492,7 +7478,31 @@
     "title": "毎朝の入荷見回り（2026-09-20分・自動）",
     "status": "waiting",
     "since": "2026-09-21T00:09:43.706481+09:00",
-    "ageDays": 12.4,
+    "ageDays": 12.5,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1010,
+    "title": "GH449 【Gemini(Jules)に頼む】AIソロプレナーの勝ち筋を世界の最先端で徹底的に調べる",
+    "status": "waiting",
+    "since": "2026-09-21T09:35:11.330758+09:00",
+    "ageDays": 12.1,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1012,
+    "title": "GH450 tamago2022さんの返信（09-21 08:57）",
+    "status": "waiting",
+    "since": "2026-09-21T09:35:11.330758+09:00",
+    "ageDays": 12.1,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1014,
+    "title": "GH451 【973号：AIソロプレナー勝ち筋調査レポート作成】",
+    "status": "waiting",
+    "since": "2026-09-21T09:35:11.330758+09:00",
+    "ageDays": 12.1,
     "staleLevel": "red"
    },
    {
@@ -6568,30 +7578,6 @@
     "staleLevel": "red"
    },
    {
-    "n": 1010,
-    "title": "GH449 【Gemini(Jules)に頼む】AIソロプレナーの勝ち筋を世界の最先端で徹底的に調べる",
-    "status": "waiting",
-    "since": "2026-09-21T09:35:11.330758+09:00",
-    "ageDays": 12.0,
-    "staleLevel": "red"
-   },
-   {
-    "n": 1012,
-    "title": "GH450 tamago2022さんの返信（09-21 08:57）",
-    "status": "waiting",
-    "since": "2026-09-21T09:35:11.330758+09:00",
-    "ageDays": 12.0,
-    "staleLevel": "red"
-   },
-   {
-    "n": 1014,
-    "title": "GH451 【973号：AIソロプレナー勝ち筋調査レポート作成】",
-    "status": "waiting",
-    "since": "2026-09-21T09:35:11.330758+09:00",
-    "ageDays": 12.0,
-    "staleLevel": "red"
-   },
-   {
     "n": 1016,
     "title": "毎朝の入荷見回り（2026-09-21分・自動）",
     "status": "waiting",
@@ -6604,7 +7590,7 @@
     "title": "GH452 chatgpt-codex-connector[bot]さんの返信（09-22 06:48）",
     "status": "waiting",
     "since": "2026-09-22T07:22:26.089830+09:00",
-    "ageDays": 11.1,
+    "ageDays": 11.2,
     "staleLevel": "red"
    },
    {
@@ -6612,7 +7598,7 @@
     "title": "GH454 chore: 977号連絡線確認の調査と回答",
     "status": "waiting",
     "since": "2026-09-22T07:22:26.089830+09:00",
-    "ageDays": 11.1,
+    "ageDays": 11.2,
     "staleLevel": "red"
    },
    {
@@ -6620,7 +7606,7 @@
     "title": "GH453 google-labs-jules[bot]さんの返信（09-22 07:05）",
     "status": "waiting",
     "since": "2026-09-22T07:22:26.089830+09:00",
-    "ageDays": 11.1,
+    "ageDays": 11.2,
     "staleLevel": "red"
    },
    {
@@ -6628,7 +7614,7 @@
     "title": "GH455 速さ: トップ初回ロードから youtube-id-map（転送839KB）を外す",
     "status": "waiting",
     "since": "2026-09-22T07:22:26.089830+09:00",
-    "ageDays": 11.1,
+    "ageDays": 11.2,
     "staleLevel": "red"
    },
    {
@@ -6636,7 +7622,7 @@
     "title": "【今すぐ】カードページ：動画が出ていない／案内所ブロックの誤配置／ナビ崩れ（管理ボタンは不具合ではない）",
     "status": "awaiting_check",
     "since": "2026-09-22T16:41:30.536562+09:00",
-    "ageDays": 10.7,
+    "ageDays": 10.8,
     "staleLevel": "red"
    },
    {
@@ -6644,7 +7630,7 @@
     "title": "GH456 chatgpt-codex-connector[bot]さんの返信（09-22 16:33）",
     "status": "waiting",
     "since": "2026-09-22T16:51:44.627948+09:00",
-    "ageDays": 10.7,
+    "ageDays": 10.8,
     "staleLevel": "red"
    },
    {
@@ -6660,7 +7646,7 @@
     "title": "毎朝の入荷見回り（2026-09-22分・自動）",
     "status": "waiting",
     "since": "2026-09-23T00:13:40.479958+09:00",
-    "ageDays": 10.4,
+    "ageDays": 10.5,
     "staleLevel": "red"
    },
    {
@@ -6668,7 +7654,7 @@
     "title": "GH460 【1027号】仕入れ実地テスト：Khruangbinの選定と報告",
     "status": "waiting",
     "since": "2026-09-23T09:49:25.232355+09:00",
-    "ageDays": 10.0,
+    "ageDays": 10.1,
     "staleLevel": "red"
    },
    {
@@ -6676,7 +7662,7 @@
     "title": "GH459 tamago2022さんの返信（09-23 09:48）",
     "status": "waiting",
     "since": "2026-09-23T09:49:25.232355+09:00",
-    "ageDays": 10.0,
+    "ageDays": 10.1,
     "staleLevel": "red"
    },
    {
@@ -7396,7 +8382,7 @@
     "title": "GH11 覆面客｜ano-hi-ni-kaeritai｜軽さ9／楽しさ3／美しさ4",
     "status": "waiting",
     "since": "2026-09-24T12:04:37.139723+09:00",
-    "ageDays": 8.9,
+    "ageDays": 9.0,
     "staleLevel": "red"
    },
    {
@@ -7628,7 +8614,7 @@
     "title": "仕入れ｜45歳・ミャンマー・ヤンゴン が欲しがった 1件",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7636,7 +8622,7 @@
     "title": "仕入れ｜19歳・日本・渋谷 が欲しがった 1件",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7644,7 +8630,7 @@
     "title": "仕入れ｜17歳・日本・東京 が欲しがった 1件",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7652,7 +8638,7 @@
     "title": "仕入れ｜76歳・日本・福岡 が欲しがった 2件",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7660,7 +8646,7 @@
     "title": "門の弾かれ率を毎日数える",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7668,7 +8654,7 @@
     "title": "覆面をGrokとJulesにもやらせる",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7676,7 +8662,7 @@
     "title": "案内人が『棚にあるのに出せない』を直す",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7684,7 +8670,7 @@
     "title": "Spotifyのプレイリストを外のAIに読ませる",
     "status": "waiting",
     "since": "2026-09-24T14:17:27.693575+09:00",
-    "ageDays": 8.8,
+    "ageDays": 8.9,
     "staleLevel": "red"
    },
    {
@@ -7724,7 +8710,7 @@
     "title": "仕入れ｜24歳・日本・川崎 が欲しがった 2件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7732,7 +8718,7 @@
     "title": "仕入れ｜33歳・日本・秋葉原 が欲しがった 4件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7740,7 +8726,7 @@
     "title": "仕入れ｜75歳・日本・世田谷 が欲しがった 3件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7748,7 +8734,7 @@
     "title": "仕入れ｜76歳・日本・福岡 が欲しがった 1件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7756,7 +8742,7 @@
     "title": "仕入れ｜45歳・ミャンマー・ヤンゴン が欲しがった 3件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7764,7 +8750,7 @@
     "title": "仕入れ｜33歳・日本・秋葉原 が欲しがった 3件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7772,7 +8758,7 @@
     "title": "仕入れ｜19歳・日本・渋谷 が欲しがった 2件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7780,7 +8766,7 @@
     "title": "仕入れ｜17歳・日本・東京 が欲しがった 2件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7788,7 +8774,7 @@
     "title": "仕入れ｜32歳・日本・札幌 が欲しがった 2件",
     "status": "waiting",
     "since": "2026-09-24T16:54:13.664993+09:00",
-    "ageDays": 8.7,
+    "ageDays": 8.8,
     "staleLevel": "red"
    },
    {
@@ -7812,7 +8798,7 @@
     "title": "GH483 検品要人手 英語投稿のネイティブ判定（松任谷由実）",
     "status": "waiting",
     "since": "2026-09-25T02:31:34.992772+09:00",
-    "ageDays": 8.3,
+    "ageDays": 8.4,
     "staleLevel": "red"
    },
    {
@@ -7884,7 +8870,7 @@
     "title": "GH484 tamago2022さんの返信（09-25 06:54）",
     "status": "waiting",
     "since": "2026-09-25T07:03:15.805414+09:00",
-    "ageDays": 8.1,
+    "ageDays": 8.2,
     "staleLevel": "red"
    },
    {
@@ -8444,7 +9430,7 @@
     "title": "GH465 tamago2022さんの返信（09-25 09:31）",
     "status": "waiting",
     "since": "2026-09-25T09:43:33.896016+09:00",
-    "ageDays": 8.0,
+    "ageDays": 8.1,
     "staleLevel": "red"
    },
    {
@@ -8452,7 +9438,7 @@
     "title": "GH485 【Julesに頼む】前提の実測検証：入荷の関所は本当に効いているか",
     "status": "waiting",
     "since": "2026-09-25T09:43:33.896016+09:00",
-    "ageDays": 8.0,
+    "ageDays": 8.1,
     "staleLevel": "red"
    },
    {
@@ -8460,7 +9446,7 @@
     "title": "GH486 【Geminiに頼む】エージェント（AIの自動実行）を止めずに回し続けるための最先端の設計を、202",
     "status": "waiting",
     "since": "2026-09-25T09:43:33.896016+09:00",
-    "ageDays": 8.0,
+    "ageDays": 8.1,
     "staleLevel": "red"
    },
    {
@@ -8844,7 +9830,7 @@
     "title": "GH493 tamago2022さんの返信（09-26 01:51）",
     "status": "waiting",
     "since": "2026-09-26T02:12:59.257078+09:00",
-    "ageDays": 7.3,
+    "ageDays": 7.4,
     "staleLevel": "red"
    },
    {
@@ -9048,6 +10034,46 @@
     "staleLevel": "red"
    },
    {
+    "n": 1548,
+    "title": "やる時は、なるべく同じフォーマットにしてほしい。",
+    "status": "waiting",
+    "since": "2026-09-26T09:51:02.337156+09:00",
+    "ageDays": 7.1,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1551,
+    "title": "関連の繋ぎ間違いを全ページ数えて直す＋根拠なしの繋ぎを外す＋間違い総ざらい（機械で全26,421曲総当たり）",
+    "status": "waiting",
+    "since": "2026-09-26T09:51:02.337156+09:00",
+    "ageDays": 7.1,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1552,
+    "title": "【一覧作成】同時に「曲のカードはあるのに曲が貼られていない」件数を全曲で数えて、門で止める仕組みに載せる。",
+    "status": "waiting",
+    "since": "2026-09-26T09:51:02.337156+09:00",
+    "ageDays": 7.1,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1554,
+    "title": "っていうのはなしだよ…5万曲10万曲まで行こうよ…大量に仕入れをするんだったら検品で間違えたものは絶対に入れない",
+    "status": "waiting",
+    "since": "2026-09-26T09:51:02.337156+09:00",
+    "ageDays": 7.1,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1557,
+    "title": "これを俺でテストしない、俺をテストにするのはダメ」",
+    "status": "waiting",
+    "since": "2026-09-26T09:51:02.337156+09:00",
+    "ageDays": 7.1,
+    "staleLevel": "red"
+   },
+   {
     "n": 1624,
     "title": "バラバラに何度も頼む形をやめて、1回で全部終わる1画面にする。",
     "status": "waiting",
@@ -9056,43 +10082,27 @@
     "staleLevel": "red"
    },
    {
-    "n": 1548,
-    "title": "やる時は、なるべく同じフォーマットにしてほしい。",
+    "n": 1625,
+    "title": "たまごの負担は最後に「送信」ボタンを押すことだけにする(できれば0クリック化を目指すが、送信ボタンを押す行為自体はたまご",
     "status": "waiting",
-    "since": "2026-09-26T09:51:02.337156+09:00",
-    "ageDays": 7.0,
+    "since": "2026-09-26T09:25:00+09:00",
+    "ageDays": 7.1,
     "staleLevel": "red"
    },
    {
-    "n": 1551,
-    "title": "関連の繋ぎ間違いを全ページ数えて直す＋根拠なしの繋ぎを外す＋間違い総ざらい（機械で全26,421曲総当たり）",
+    "n": 1626,
+    "title": "真因は「期限切れ」ではなく複数のclaudeプロセスがrefreshTokenを取り合い、負けた側が空を書き戻して鍵",
     "status": "waiting",
-    "since": "2026-09-26T09:51:02.337156+09:00",
-    "ageDays": 7.0,
+    "since": "2026-09-26T09:25:00+09:00",
+    "ageDays": 7.1,
     "staleLevel": "red"
    },
    {
-    "n": 1552,
-    "title": "【一覧作成】同時に「曲のカードはあるのに曲が貼られていない」件数を全曲で数えて、門で止める仕組みに載せる。",
+    "n": 1627,
+    "title": "→ 起動口に関所を作って強制する。",
     "status": "waiting",
-    "since": "2026-09-26T09:51:02.337156+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "red"
-   },
-   {
-    "n": 1554,
-    "title": "っていうのはなしだよ…5万曲10万曲まで行こうよ…大量に仕入れをするんだったら検品で間違えたものは絶対に入れない",
-    "status": "waiting",
-    "since": "2026-09-26T09:51:02.337156+09:00",
-    "ageDays": 7.0,
-    "staleLevel": "red"
-   },
-   {
-    "n": 1557,
-    "title": "これを俺でテストしない、俺をテストにするのはダメ」",
-    "status": "waiting",
-    "since": "2026-09-26T09:51:02.337156+09:00",
-    "ageDays": 7.0,
+    "since": "2026-09-26T09:34:00+09:00",
+    "ageDays": 7.1,
     "staleLevel": "red"
    },
    {
@@ -9160,26 +10170,58 @@
     "staleLevel": "red"
    },
    {
-    "n": 1625,
-    "title": "たまごの負担は最後に「送信」ボタンを押すことだけにする(できれば0クリック化を目指すが、送信ボタンを押す行為自体はたまご",
+    "n": 1573,
+    "title": "この工場（自動でAIを回し続ける仕組み）の現状を棚卸ししてください。",
     "status": "waiting",
-    "since": "2026-09-26T09:25:00+09:00",
+    "since": "2026-09-26T10:41:54.886846+09:00",
     "ageDays": 7.0,
     "staleLevel": "red"
    },
    {
-    "n": 1626,
-    "title": "真因は「期限切れ」ではなく複数のclaudeプロセスがrefreshTokenを取り合い、負けた側が空を書き戻して鍵",
+    "n": 1574,
+    "title": "runnerが9/24から止まっている原因を突き止めて直す。",
     "status": "waiting",
-    "since": "2026-09-26T09:25:00+09:00",
+    "since": "2026-09-26T10:41:54.886846+09:00",
     "ageDays": 7.0,
     "staleLevel": "red"
    },
    {
-    "n": 1627,
-    "title": "→ 起動口に関所を作って強制する。",
+    "n": 1575,
+    "title": "0円で出来ないと実測で分かった時だけ、金額（円）を出して止める。",
     "status": "waiting",
-    "since": "2026-09-26T09:34:00+09:00",
+    "since": "2026-09-26T10:41:54.886846+09:00",
+    "ageDays": 7.0,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1576,
+    "title": "ログインが生きていれば本文を入れて投稿する。",
+    "status": "waiting",
+    "since": "2026-09-26T10:41:54.886846+09:00",
+    "ageDays": 7.0,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1577,
+    "title": "0円で出来ないと分かった時だけ金額（円）を出して止める。",
+    "status": "waiting",
+    "since": "2026-09-26T10:41:54.886846+09:00",
+    "ageDays": 7.0,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1579,
+    "title": "残すものを決めて、残りは開いた時に出す。",
+    "status": "waiting",
+    "since": "2026-09-26T10:41:54.886846+09:00",
+    "ageDays": 7.0,
+    "staleLevel": "red"
+   },
+   {
+    "n": 1580,
+    "title": "復帰する仕組みも作ってよ。",
+    "status": "waiting",
+    "since": "2026-09-26T10:41:54.886846+09:00",
     "ageDays": 7.0,
     "staleLevel": "red"
    },
@@ -9192,17 +10234,17 @@
     "staleLevel": "red"
    }
   ],
-  "awaitingCheckCount": 191,
+  "awaitingCheckCount": 192,
   "awaitingCheckOverLimit": true,
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-10-03 11:01",
+  "lastRun": "2026-10-03 11:18",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "目標1本を満たしている（生存2本）",
+  "ignite": "Mac危険（スワップ増加中）",
   "shed": null,
   "keep": {
    "target": 1,
@@ -9230,7 +10272,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-10-03 11:00",
+  "updatedAt": "2026-10-03 11:17",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -9239,7 +10281,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-10-06 17:59",
   "daysLeft": 3.3,
-  "hoursLeft": 79.0,
+  "hoursLeft": 78.7,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -9254,10 +10296,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 0,
-  "allWeightedTokensSinceReset": 683972285,
+  "allWeightedTokensSinceReset": 686611252,
   "last6h": {
    "fable": 0,
-   "all": 74190022
+   "all": 73400728
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
