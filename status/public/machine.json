@@ -1,1 +1,220 @@
-{"measuredAt":"2026-10-03T08:27:48+09:00","load":119,"cpu":25,"mem":20,"swapGB":38.06,"diskFreeGB":54,"sessions":4,"note":"あと0本OK","raw":"負荷 119% ｜ CPU 25% / メモリ圧迫 20% / スワップ 38.06GB / ディスク空き 54GB ｜ 稼働 4本 ｜ あと0本OK"}
+{
+ "measuredAt": "2026-10-03T08:48:57+09:00",
+ "load": 121.0,
+ "cpu": 36.0,
+ "mem": 23.0,
+ "swapGB": 37.49,
+ "diskFreeGB": 53.0,
+ "sessions": 3.0,
+ "note": "あと1本OK",
+ "raw": "負荷 121% ｜ CPU 36% / メモリ圧迫 23% / スワップ 37.49GB / ディスク空き 53GB ｜ 稼働 3本 ｜ あと1本OK",
+ "fallback": {
+  "at": "2026-10-03T08:48:57+09:00",
+  "reason": "factory_status.py --write timeout/failure",
+  "note": "machine_load.sh単体の最小実測に差し替え。古いmetrics/watchdog/quota等は保持"
+ },
+ "watchdog": {
+  "lastRun": "2026-10-03 08:50",
+  "resumed": [
+   {
+    "cli": "dcb3e9c0-c04b-4dcf-8cb2-231df175ba4d",
+    "title": "シティポップ相互リンクと不具合4つ",
+    "try": 2,
+    "resumePid": 27406
+   }
+  ],
+  "handedOff": [],
+  "ignited": [],
+  "unrecoverable": [],
+  "ignite": "空きなし（上限None本・目標2本・生存3.0本）",
+  "shed": null,
+  "keep": {
+   "target": 2,
+   "alive": 3.0,
+   "below": 0,
+   "line": "現在3本／上限None本／目標2本／あと0本いける"
+  },
+  "stalledSkipped": []
+ },
+ "metrics": {
+  "stalls": 143,
+  "autoResumes": 87,
+  "handoffs": 16,
+  "hardCuts": 1,
+  "ignitions": 22,
+  "gated": 0,
+  "autoResumesThisRun": 1,
+  "handoffsThisRun": 0,
+  "ignitionsThisRun": 0,
+  "humanPushes": 0,
+  "doneAlive": 0,
+  "doneWithoutHumanPush": 0,
+  "autonomyRatio": null,
+  "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
+ },
+ "deployAlerts": [],
+ "quota": {
+  "updatedAt": "2026-10-03 08:49",
+  "estimated": true,
+  "stalePrevWeekSample": false,
+  "fablePct": null,
+  "allPct": null,
+  "allPctAsOf": null,
+  "allPctAgeMin": null,
+  "resetAt": "2026-10-06 17:59",
+  "daysLeft": 3.4,
+  "hoursLeft": 81.2,
+  "fableLevel": "ok",
+  "allLevel": "ok",
+  "warnPct": 75,
+  "stopPct": 85,
+  "daily": {},
+  "boost": {
+   "active": false,
+   "factor": 1.5,
+   "until": "2026-09-13",
+   "note": "通常期間（引き上げなし）"
+  },
+  "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
+  "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
+  "fableWeightedTokensSinceReset": 0,
+  "allWeightedTokensSinceReset": 661066920,
+  "last6h": {
+   "fable": 0,
+   "all": 62776158
+  },
+  "projection": {},
+  "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
+  "anchor": {
+   "t": "2026-09-03T01:28:00",
+   "fablePct": 63,
+   "allPct": 44,
+   "setAt": "2026-09-03 01:50",
+   "source": "たまごさんのスマホ・使用状況（2026-09-03 01:28）"
+  },
+  "weekdayTarget": 70.0,
+  "weekdayTargetBase": 70,
+  "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
+  "overPct": null,
+  "daysElapsedSinceReset": 3.6,
+  "ceilingDaysAtRecentPace": null,
+  "fableCurve": {
+   "target": 70.0,
+   "overPct": null,
+   "state": "unknown",
+   "headroomPct": 0.0,
+   "band": 10,
+   "note": "state=over→Fableゼロで絞る／under→Fable投入・本数増加の余地あり／on_track→曲線どおり"
+  },
+  "allCurve": {
+   "target": 51.4,
+   "overPct": null,
+   "state": "unknown",
+   "band": 10,
+   "note": "Fableとは別計算（経過日数÷7日の直線）。under→本数を増やす余地あり（factory_status.pyが判定）"
+  },
+  "session5h": {
+   "pct": 1.0,
+   "resetAt": "2026-09-05 06:40",
+   "hoursLeft": 0.0,
+   "recentPacePctPerHour": 0.0,
+   "projectedPctAtReset": 1.0,
+   "wasteRiskPct": 0.0,
+   "mottainai": false,
+   "source": "推定(フォールバック)",
+   "anchor": {
+    "t": "2026-09-05T01:51:00",
+    "pct": 1.0,
+    "remainMin": 289.0,
+    "resetAt": "2026-09-05 06:40",
+    "setAt": "2026-09-05 01:51",
+    "source": "たまごさんのアプリ実測（2026-09-05 01:51 のスクショ）"
+   },
+   "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
+  },
+  "benchmark": null,
+  "line": "Fable週枠 ?%（今日の目標70.0%・?） ／ 全モデル ?%（推定時点・曲線目標51.4%・?） ／ リセットまで 3.4日 ／ 5時間枠 1.0%・残0.0h",
+  "switches": [
+   {
+    "t": "2026-09-28 10:52",
+    "task": "🟢 T029 P3 [29] その場で再生できない ｜ 作業中 ｜ 担当:wd_9e8b7e99 ｜ 6回 ｜ 2026-09-28 10:52 完了条件: 動",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-09-28 18:37",
+    "task": "🟢 T025 P1 [25] 水汲みをさせない仕組み（作法/仕組み） ｜ 作業中 ｜ 担当:wd_4b2516c7 ｜ 21回 ｜ 2026-09-28 18:",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-09-28 19:06",
+    "task": "🟢 T029 P3 [29] その場で再生できない ｜ 作業中 ｜ 担当:wd_fedf1ade ｜ 6回 ｜ 2026-09-28 19:06 完了条件: 動",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-09-29 02:54",
+    "task": "🟢 T006 P3 [6] 素人カバーの混入 ｜ 作業中 ｜ 担当:wd_6b7501e6 ｜ 7回 ｜ 2026-09-29 02:54 完了条件: 本人以外",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": 0.0
+   },
+   {
+    "t": "2026-09-29 09:17",
+    "task": "🟢 T024 P1 [24] 指示待ちで止まる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_549fe901 ｜ 13回 ｜ 2026-09-29 09:16 ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-09-29 15:48",
+    "task": "🟢 T024 P1 [24] 指示待ちで止まる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_af0eadc0 ｜ 13回 ｜ 2026-09-29 15:48 ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-09-29 22:26",
+    "task": "🟢 T024 P1 [24] 指示待ちで止まる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_e7caad14 ｜ 13回 ｜ 2026-09-29 22:26 ",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-10-01 09:20",
+    "task": "🟢 T023 P1 [23] 確認が多すぎる（作法/仕組み） ｜ 作業中 ｜ 担当:wd_3e86d90f ｜ 59回 ｜ 2026-10-01 09:20 検",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-10-02 10:15",
+    "task": "Obsidian重さと読み上げ音声  たまごさんの言葉（原文）：「このずんだもんの読み上げって、Obsidian の書き込みが遅くなることと関係してますか？ペー",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   },
+   {
+    "t": "2026-10-03 05:08",
+    "task": "コンシェルジュ 話せる＋口パク  たまごさんの言葉（原文）：「顔をつけるというか、もうついてるけど口が動くようにしてほしい。『繋いでいます』の状態で、前は話せた",
+    "from": null,
+    "to": "claude-sonnet-5",
+    "why": "Fable禁止フラグ（status/no_fable.flag）→Sonnet",
+    "fablePct": null
+   }
+  ]
+ }
+}

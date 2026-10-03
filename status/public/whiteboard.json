@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-03 08:31",
+ "updatedAt": "2026-10-03 08:51",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -381,11 +381,11 @@
    "priority": 3,
    "rank": 31,
    "task": "machine_status_push.shが高負荷時にfactory_status.py --writeタイムアウトでmetrics(gated/humanPushes/autonomyRatio)無しの最小stubへ静かにフォールバックする問題を直す",
-   "state": "作業中",
-   "owner": "claude-T031-20261003",
+   "state": "検証待ち",
+   "owner": null,
    "count": "1",
-   "updatedAt": "2026-10-03 08:21",
-   "note": "T024検証中(2026-10-01)に発見：load1084%実測時、本番5分おきの機械監視が段階(1)factory_status.py --write失敗→(2)最小stub(load/cpu/mem等のみ)へ無言フォールバック→session_watchdog.pyが追加するmetrics(gated/humanPushes/autonomyRatio)が本番status/machine.jsonから消える。手動でfactory_status.py→session_watchdog.pyを直列実行すれば復旧することは確認済み。次の一手：フォールバック発生を検知してログ/アラートに出す、またはfactory_status.pyのタイムアウト予算を見直す。",
+   "updatedAt": "2026-10-03 08:40",
+   "note": "修正2件をcommit: (1)a74d58f8d フォールバック時にmachine.jsonを丸ごと上書きせず旧metrics(gated/humanPushes/autonomyRatio)等を保持するmerge方式に変更+factory_fallback.log/.jsonに発生記録+session_watchdog.py側の例外時metrics復元ガード追加。(2)9c30c4b5c 自己検証で(1)の実装バグを発見し追修正：run_with_timeout()は対象を\"$@\"&でバックグラウンド実行するため非対話シェル(本番のlaunchd実行)ではジョブコントロール無効=バックグラウンドジョブの標準入力が/dev/nullに差し替わる(bash仕様)。heredocでpython3にstdin経由渡ししていた(1)はこの経路で空振り(rc=0・ログだけ残り実体は更新されない)ことを実機再現で確認、heredocを一度ファイルに書き出しパス渡しする方式に修正し再テストでmachine.jsonのmetrics保持・fallback記録を確認。監査(正確性/利用者目線/反論の3視点を自己実施、孫セッション生成がKernel規則でブロックされたため別AI起動は不可だった旨を明記): 正確性は問題なし、利用者目線/反論で共通の中Medium1件: status/factory_fallback.log・.jsonはstatus/public/配下になく.gitignoreでも非追跡のため、現状どこからも参照されない「ログはあるがアラートとして配線されていない」状態（完了条件はORなのでmetrics保持単体で成立、配線は任意の追加改善として別件化推奨）。別の目の検証求む。 [実装:claude-T031-20261003]",
    "stale": false
   }
  ]
