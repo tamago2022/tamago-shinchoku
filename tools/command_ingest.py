@@ -1771,6 +1771,15 @@ def relay_fix(_target=None):
     code = (c.stdout or "").strip() if c is not None else ""
     json.dump({"url": url, "lanUrl": lan, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
               io.open(rjson, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    # ★2026-10-04【投げ込み箱が黙って届かない】URLが変わったのに公開は15分便まかせで、
+    #   スマホの箱が死んだ古いURLへ送り続けていた。変わった瞬間に公開側へも写して即公開する。
+    try:
+        _sh.copyfile(rjson, os.path.join(REPO, "status", "public", "relay.json"))
+        subprocess.Popen(["/bin/bash", os.path.join(REPO, "tools", "pages_publish.sh")],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         stdin=subprocess.DEVNULL, start_new_session=True, close_fds=True)
+    except Exception:
+        pass
     if code == "200":
         return "done", "中継所が復活しました（%s・実測200）／ %s" % (url, " ／ ".join(steps))
     return "failed", "URLは出ましたが外から繋がりません（%s → HTTP %s）／ %s" % (url, code or "不明", " ／ ".join(steps))

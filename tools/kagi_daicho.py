@@ -560,6 +560,9 @@ def probe_lovable():
     if not os.path.exists(path):
         return dict(status="ng", detail="認証がまだ取れていません（同意ボタンが押されていない）")
     tok = load(path, {}) or {}
+    # ★2026-10-04：0バイト／壊れたファイルを「ok」と嘘をついていた（鍵が24時間以上空のまま青）。
+    if not (tok.get("access_token") or tok.get("refresh_token")):
+        return dict(status="ng", detail="ファイルはあるが中身が空です（投げ込み箱の棚入れも本番公開も止まっています）")
     exp = tok.get("expires_at") or tok.get("expiresAt")
     expiry = None
     if isinstance(exp, (int, float)):
@@ -570,6 +573,56 @@ def probe_lovable():
         return dict(status="ng", detail="期限切れ（更新用の鍵も無い）", expiry=expiry)
     return dict(status="ok", detail="トークンがあります（更新用%s）"
                 % ("あり" if has_refresh else "**なし**"), expiry=expiry)
+
+
+def probe_nagekomi():
+    """★2026-10-04 投げ込み箱が黙って死なない見張り。スマホの箱と**同じ道**を1時間に1回、空荷で通す。
+    ①公開されている relay.json（箱が読むもの）を読む ②そのURLへ空の試し投げ(soutuu)を送り200を確かめる
+    ③棚へ書く鍵（Lovable）が生きているか。どれか欠ければ赤。クレジットは使わない（curlだけ）。"""
+    gate = os.path.join(STATUS, ".nagekomi_probe")
+    cache = os.path.join(STATUS, ".nagekomi_probe.json")
+    try:
+        if time.time() - os.path.getmtime(gate) < 3300:
+            c = load(cache, None)
+            if c:
+                return c
+    except Exception:
+        pass
+    why = []
+    try:
+        req = urllib.request.Request(
+            "https://tamago2022.github.io/tamago-shinchoku/status/public/relay.json?t=%d" % int(time.time()),
+            headers={"User-Agent": "Mozilla/5.0", "Cache-Control": "no-cache"})
+        j = json.loads(urllib.request.urlopen(req, timeout=20).read().decode("utf-8", "ignore"))
+        url = (j.get("url") or "").rstrip("/")
+    except Exception as e:
+        url = ""
+        why.append("公開されている中継所の場所が読めない（%s）" % type(e).__name__)
+    if url:
+        try:
+            body = json.dumps({"commands": [{"id": "mihari%d" % int(time.time()), "action": "soutuu",
+                                             "target": "nagekomi-mihari", "requestedAt": ""}]}).encode()
+            req = urllib.request.Request(url + "/cmd", data=body, method="POST", headers={
+                "Content-Type": "application/json", "bypass-tunnel-reminder": "1", "User-Agent": "Mozilla/5.0"})
+            r = urllib.request.urlopen(req, timeout=25)
+            if r.status != 200:
+                why.append("中継所が HTTP %s" % r.status)
+        except urllib.error.HTTPError as e:
+            why.append("箱の道が HTTP %s（公開されているURLが古い／トンネル切れ）" % e.code)
+        except Exception as e:
+            why.append("箱の道が通らない（%s）" % type(e).__name__)
+    lv = probe_lovable()
+    if lv.get("status") != "ok":
+        why.append("棚へ書く鍵が使えない：" + str(lv.get("detail")))
+    res = dict(status="ng", detail=" ／ ".join(why)) if why else \
+        dict(status="ok", detail="スマホの箱と同じ道で空荷が通りました。棚へ書く鍵もあります")
+    try:
+        open(gate, "w").write(str(time.time()))
+        with io.open(cache, "w", encoding="utf-8") as f:
+            json.dump(res, f, ensure_ascii=False)
+    except Exception:
+        pass
+    return res
 
 
 def probe_heart():
@@ -731,6 +784,9 @@ LEDGER = [
     dict(id="lovable", what="Lovable（本番へ出す口）", where="~/.tamago/lovable_oauth.json",
          probe=probe_lovable, stops="直したものが**本番に出ない**（丸1日の実害）",
          fix="Chromeで同意ボタンを1回押す（受け皿は lovable_auth_keeper が立てている）"),
+    dict(id="nagekomi", what="投げ込み箱（スマホ→棚）", where="share/nagekomi-*.html → 中継所 → 棚",
+         probe=probe_nagekomi, stops="たまごさんが投げても棚に入らない（黙って失敗していた）",
+         fix="relay_watch がトンネルを張り直す／鍵は lovable_auth_keeper の受け皿で同意を1回"),
     dict(id="heart", what="心臓（15秒おきの本体）", where="tools/heartbeat.sh",
          probe=probe_heart, stops="着火と受信箱が止まる＝ボタンが効かない",
          fix="5分便が自分で立て直す。立て直らなければ launchctl kickstart"),
