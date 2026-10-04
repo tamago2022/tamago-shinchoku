@@ -242,12 +242,8 @@ def kuriageru(r, naze):
     """★自動でP1に繰り上げて、その場で再発車する。たまごさんに聞かない。"""
     try:
         import command_ingest
-        try:
-            import queue_store
-            lock = queue_store.queue_lock
-        except Exception:
-            import contextlib
-            lock = contextlib.nullcontext
+        # command_ingest.queue_add() が内部で queue_lock を取得する。
+        # ここで同じ lock を外側から取ると自己デッドロックするため、二重取得しない。
         body = "\n".join([
             "【判定日で赤になった案件】%s" % r.get("title"),
             "【言われた日時】%s（%d回言われている）" % (r.get("firstSaidJa") or r.get("firstSaid"),
@@ -257,10 +253,9 @@ def kuriageru(r, naze):
             "★自己申告では完了になりません（tools/oni_modoshi.py の検品を通ること）。",
             "たまごさんに質問しない。直して、URLを報告に貼る。",
         ])
-        with lock():
-            s, msg = command_ingest.queue_add(body, priority=1,
-                                              label=("判定日赤｜" + (r.get("title") or ""))[:60],
-                                              origin="user")
+        s, msg = command_ingest.queue_add(body, priority=1,
+                                          label=("判定日赤｜" + (r.get("title") or ""))[:60],
+                                          origin="user")
         return "%s:%s" % (s, msg)
     except Exception as e:
         return "failed:%s" % e
