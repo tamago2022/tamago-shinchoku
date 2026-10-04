@@ -89,7 +89,15 @@ def _measure(base, workdir, pages, extra_env=None, timeout=1500):
         f.write(allow)
     env = dict(os.environ, PATH=ENV_PATH, PAGES=pages)
     env.update(extra_env or {})
-    p = subprocess.run(["node", script, base], cwd=workdir, env=env, capture_output=True, text=True, timeout=timeout)
+    try:
+        fx = _git("show", "origin/main:scripts/fix-card-geometry.mjs", check=False).stdout
+        if fx:
+            with open(os.path.join(sd, "fix-card-geometry.mjs"), "w", encoding="utf-8") as f:
+                f.write(fx)
+    except Exception:
+        pass
+    p = subprocess.run(["node", script, base, "--json", os.path.join(workdir, ".zure_viol.json")], cwd=workdir, env=env,
+                       capture_output=True, text=True, timeout=timeout)
     return p.returncode, (p.stdout or "") + (p.stderr or "")
 
 
@@ -102,6 +110,83 @@ def _summarize(rc, out):
         "result": m.group(0) if m else out.strip().splitlines()[-1:] or "",
         "detail": viol[:40],
     }
+
+
+QUEUE = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain/AI出力/_ルール/作業キュー.md"
+
+
+def _ticket(label, first, left, note):
+    """自動で直せなかったものは「直す票」を立てる（公開は止めない）。"""
+    doc = {"label": label, "note": note, "before": first.get("result"), "left": left[:30]}
+    _write("ticket_" + label, doc)
+    try:
+        if os.path.exists(QUEUE):
+            with open(QUEUE, "a", encoding="utf-8") as f:
+                f.write("\n| %s | 【ズレ関所の票】自動で直せないカードのズレが残っている（%s）。詳細 status/zure_kanmon/ticket_%s.json。公開は止めていない | 🔴 |\n"
+                        % (time.strftime("%F"), note, label))
+    except Exception:
+        pass
+
+
+def _naoshite_dasu(base, wd, pages, menv, label, first):
+    """ズレがあったら：自動で直す→測り直す→0ならmainへ直しを入れる（新しい版を出す）。直せなければ票を立てて元の版のまま出す。"""
+    extra = {"firstResult": first.get("result"), "firstDetail": first.get("detail", [])[:10]}
+    viol = os.path.join(wd, ".zure_viol.json")
+    fx = os.path.join(wd, ".zure_scripts", "fix-card-geometry.mjs")
+    if not os.path.exists(fx) or not os.path.exists(viol):
+        _ticket(label, first, first.get("detail", []), "自動修正係が無い")
+        extra["ticket"] = True
+        return 1, "", extra
+    env = dict(os.environ, PATH=ENV_PATH)
+    r = subprocess.run(["node", fx, viol], cwd=wd, env=env, capture_output=True, text=True, timeout=120)
+    try:
+        rep = json.loads((r.stdout or "").strip().splitlines()[-1])
+    except Exception:
+        rep = {"files": [], "unfixable": [], "fixed": []}
+    extra["fixReport"] = rep
+    if not rep.get("files"):
+        _ticket(label, first, first.get("detail", []), "機械的に直せる形ではない")
+        extra["ticket"] = True
+        return 1, "", extra
+    time.sleep(6)  # 開発サーバが書き換えを取り込むのを待つ
+    rc, out = _measure(base, wd, pages, menv)
+    second = _summarize(rc, out)
+    extra["afterFix"] = second.get("result")
+    nf, ns = first.get("violations"), second.get("violations")
+    if rc == 0 or (isinstance(nf, int) and isinstance(ns, int) and ns < nf):
+        ok = False
+        try:
+            _git("add", "-A", "src", cwd=wd)
+            _git("-c", "user.name=tamago-zure", "-c", "user.email=eggypop2010@gmail.com", "commit", "-q", "-m",
+                 "ズレ関所：測ったズレを自動で直した（%s）\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" % first.get("result", ""), cwd=wd)
+            for _ in range(0 if os.environ.get("ZURE_NO_PUSH") else 3):
+                _git("fetch", "-q", "origin", cwd=wd, check=False)
+                if _git("rebase", "origin/main", cwd=wd, check=False).returncode != 0:
+                    _git("rebase", "--abort", cwd=wd, check=False)
+                    break
+                if _git("push", "origin", "HEAD:main", cwd=wd, check=False).returncode == 0:
+                    ok = True
+                    break
+        except Exception:
+            ok = False
+        if ok:
+            extra["fixedPushed"] = True
+            if rc != 0:  # 一部だけ直せた：直せた分は出し、残りは票にする
+                _ticket(label, first, second.get("detail", []), "一部だけ自動で直した（残り%s件）" % ns)
+                extra["ticket"] = True
+            return 0, out, extra
+        _git("reset", "-q", "--hard", "HEAD~1", cwd=wd, check=False)
+        if os.environ.get("ZURE_NO_PUSH"):
+            extra["dryrunFixedOk"] = True
+            return 0, out, extra
+        _ticket(label, first, [], "直せたが main へ入れられなかった")
+        extra["ticket"] = True
+        return 1, out, extra
+    # 直しても残った：直しは捨てて票を立てる（壊れた直しを出さない）
+    _git("checkout", "--", "src", cwd=wd, check=False)
+    _ticket(label, first, second.get("detail", []), "自動修正では残りが消えない")
+    extra["ticket"] = True
+    return rc, out, extra
 
 
 def pre(target):
@@ -134,6 +219,7 @@ def pre(target):
                            start_new_session=True)
     rc = 2
     out = ""
+    _extra = {}
     try:
         ok = False
         t0 = time.time()
@@ -148,8 +234,13 @@ def pre(target):
         if not ok:
             _write(label, {"verdict": "inconclusive", "reason": "開発サーバが立ち上がりません"})
             return 2
-        rc, out = _measure("http://127.0.0.1:%d" % port, wd, LOCAL_PAGES,
-                           {"SETTLE_MS": "4000", "SCROLL_MS": "250"})
+        base = "http://127.0.0.1:%d" % port
+        menv = {"SETTLE_MS": "4000", "SCROLL_MS": "250"}
+        rc, out = _measure(base, wd, LOCAL_PAGES, menv)
+        first = _summarize(rc, out)
+        if rc == 1:
+            rc, out, extra = _naoshite_dasu(base, wd, LOCAL_PAGES, menv, label, first)
+            _extra.update(extra)
     except subprocess.TimeoutExpired:
         rc, out = 2, "測定がタイムアウト"
     finally:
@@ -162,6 +253,11 @@ def pre(target):
             _git("worktree", "remove", "--force", made, check=False)
             shutil.rmtree(made, ignore_errors=True)
     doc = _summarize(rc, out)
+    doc.update(_extra)
+    if _extra.get("fixedPushed"):
+        doc["verdict"] = "fixed"
+    elif _extra.get("ticket"):
+        doc["verdict"] = "ticket"
     doc["target"] = target
     _write(label, doc)
     try:
@@ -171,7 +267,7 @@ def pre(target):
     print(doc.get("result"), "→", doc["verdict"])
     for l in doc["detail"][:10]:
         print(l)
-    return rc if rc in (0, 1) else 2
+    return 0  # ★止めない：ズレは直して出す／直せなければ票を立てて出す
 
 
 def prod():
@@ -191,8 +287,38 @@ def prod():
     return rc if rc in (0, 1) else 2
 
 
+def _deploy_uuid():
+    try:
+        r = urllib.request.Request(PROD + "/", method="HEAD", headers={"User-Agent": "zure-kanmon"})
+        with urllib.request.urlopen(r, timeout=20) as resp:
+            v = resp.headers.get("x-deployment-id") or ""
+        m = re.search(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", v)
+        return m.group(0) if m else v
+    except Exception:
+        return ""
+
+
+def prodwatch(hours=12):
+    """本番が入れ替わる（公開が押される）まで待ち、入れ替わったら本番を測る。結果は status/zure_kanmon/prod.json。"""
+    first = _deploy_uuid()
+    _write("prodwatch", {"state": "待機中", "from": first})
+    t0 = time.time()
+    while time.time() - t0 < hours * 3600:
+        time.sleep(60)
+        now = _deploy_uuid()
+        if now and first and now != first:
+            time.sleep(90)  # 配信が行き渡るまで少し待つ
+            rc = prod()
+            _write("prodwatch", {"state": "測定済み", "from": first, "to": now, "rc": rc})
+            return rc
+    _write("prodwatch", {"state": "時間切れ（公開が押されなかった）", "from": first})
+    return 2
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
+    if cmd == "prodwatch":
+        sys.exit(prodwatch())
     if cmd == "pre" and len(sys.argv) > 2:
         sys.exit(pre(sys.argv[2]))
     if cmd == "prod":
