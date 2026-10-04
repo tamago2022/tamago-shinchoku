@@ -38,7 +38,7 @@ HOME = os.path.expanduser("~")
 REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
 VAULT = os.path.join(HOME, "Library", "Mobile Documents",
                      "iCloud~md~obsidian", "Documents", "tamago_brain")
-VAULT_AUDIO = os.path.join(VAULT, "AI出力", "40_プロジェクト", "円卓会議🔥", "音声")
+VAULT_AUDIO = "/Users/mac/Library/Application Support/tamago_audio_outside_vault/音声"  # 2026-10-04 Vaultの外へ（Obsidian索引を重くしないため）
 STATE = os.path.join(REPO, "status", "zunda")
 NOTES_CACHE = os.path.join(STATE, "notes.json")
 JOBS_DIR = "/tmp/zunda_jobs"

@@ -43,7 +43,8 @@ HOME = os.path.expanduser("~")
 REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
 VAULT = os.path.join(HOME, "Library", "Mobile Documents",
                      "iCloud~md~obsidian", "Documents", "tamago_brain")
-AUDIO_DIR = os.path.join(VAULT, "AI出力", "40_プロジェクト", "円卓会議🔥", "音声")
+VAULT_WRITE_STOPPED = True
+AUDIO_DIR = "/Users/mac/Library/Application Support/tamago_audio_outside_vault/音声"  # 2026-10-04 Vaultの外へ（Obsidian索引を重くしないため）
 STATE_DIR = os.path.join(REPO, "status", "zunda")
 PROGRESS = os.path.join(STATE_DIR, "progress.json")
 LOG = os.path.join(STATE_DIR, "worker.log")
@@ -205,6 +206,7 @@ def slug(rel):
 
 
 def embed(note_path, fname):
+    return False  # 2026-10-04 Vaultのノートを書き換えない（Obsidian索引対策）
     with io.open(note_path, "r", encoding="utf-8") as f:
         body = f.read()
     mark = "![[%s]]" % fname
