@@ -215,11 +215,11 @@ async function main() {
     const { ready, send, close } = connect(target.webSocketDebuggerUrl, (method, params) => {
       if (method === "Runtime.consoleAPICalled" && params?.type === "error") {
         const msg = (params.args || []).map((a) => a.value ?? a.description ?? "").join(" ");
-        consoleErrors.push(msg.slice(0, 200));
+        consoleErrors.push(msg.slice(0, process.env.VC_DEBUG_FULL ? 4000 : 200));
       }
       if (method === "Runtime.exceptionThrown") {
         const desc = params?.exceptionDetails?.exception?.description || params?.exceptionDetails?.text || "";
-        consoleErrors.push(("[uncaught] " + desc).slice(0, 200));
+        consoleErrors.push(("[uncaught] " + desc).slice(0, process.env.VC_DEBUG_FULL ? 4000 : 200));
       }
       if (method === "Page.windowOpen") {
         lastWindowOpenAt = Date.now();
