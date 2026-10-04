@@ -8,7 +8,7 @@
   「ここに曲名とコピーを書けば勝手に並ぶ、が成立していること。」
 
 ■ 入口（たまごさんに伝えるのはこの1行だけ）
-    ~/Desktop/nagekomi/ に、コピーをそのまま貼った .txt を1曲1枚置く。
+    ~/tamago/nagekomi/ に、コピーをそのまま貼った .txt を1曲1枚置く。
 
   中身はXに出す本文そのまま（曲ページのURLの行を必ず入れる）。例：
       Some songs feel less like performances and more like letters.
@@ -53,7 +53,7 @@ sys.path.insert(0, HERE)
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 HOME = os.path.expanduser("~")
-HAKO_DIRS = [os.path.join(HOME, "Desktop", "nagekomi"),
+HAKO_DIRS = [os.path.join(HOME, "tamago", "nagekomi"),
              os.path.join(REPO, "status", "nagekomi_box")]
 SUNDA = "sunda"
 CH_MACHI = os.path.join(REPO, "status", "1170", "chappie_machi.json")
@@ -206,7 +206,7 @@ def main():
     if kekka or not os.path.exists(OUT):
         jsave(OUT, {
             "_これは何": "1176番【投げ込み箱の入口】たまごさんが置いた .txt を受け付けた記録。★Bufferは0叩き。",
-            "_入口": "~/Desktop/nagekomi/ に、コピーをそのまま貼った .txt を1曲1枚置くだけ",
+            "_入口": "~/tamago/nagekomi/ に、コピーをそのまま貼った .txt を1曲1枚置くだけ",
             "at": now().strftime("%F %T"),
             "mita": mita,
             "uketsuketa": sum(1 for x in kekka if x.get("ok")),

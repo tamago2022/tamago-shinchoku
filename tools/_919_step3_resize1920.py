@@ -5,7 +5,7 @@
 引き伸ばし率は横方向のみ1920/1890=1.0159倍(見た目にはほぼ気づかないレベル)。"""
 import cv2, sys, os
 
-SRC_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/919-zen"
+SRC_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/919-zen"
 FILES = ["chashitsu_loop.mp4", "kuroihama_loop.mp4"]
 
 for fn in FILES:

@@ -145,7 +145,7 @@ def main():
     if not tok:
         res.update(result="鍵なし", aka=True,
                    fix="publish.buffer.com/settings/api の鍵を "
-                       "~/Desktop/buffer_token.txt へ（あとは自動）")
+                       "/Users/mac/tamago/kagi/buffer_token.txt へ（あとは自動）")
         write_result(res)
         return 2
 

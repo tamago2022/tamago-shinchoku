@@ -14,7 +14,7 @@ import sys
 import time
 
 HOME = os.path.expanduser("~")
-REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
+REPO = os.path.join(HOME, "tamago", "tamago-shinchoku")
 STATE = os.path.join(REPO, "status", "zunda")
 PROGRESS = os.path.join(STATE, "progress.json")
 STOP = os.path.join(STATE, "stop")          # このファイルを置けば止まる

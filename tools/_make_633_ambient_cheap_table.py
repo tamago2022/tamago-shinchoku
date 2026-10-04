@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 FONT_PATH = "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"
 FONT_PATH_BOLD = "/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc"
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/img"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/img"
 OUT_PATH = os.path.join(OUT_DIR, "633-ambient-cheap-table.png")
 os.makedirs(OUT_DIR, exist_ok=True)
 

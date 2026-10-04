@@ -5,7 +5,7 @@ Shared Brain 双方向同期（671番・「スマホでもshared-brainを読め�
 
 背景：
   666番でGitHub↔Obsidianの配管をsymlinkで通した
-  （Vault内 shared-brain → ~/Desktop/tamago-shinchoku/shared-brain）。
+  （Vault内 shared-brain → ~/tamago/tamago-shinchoku/shared-brain）。
   しかしVaultはiCloud Driveの中にあり、iCloudはsymlinkの「先の実体」を
   同期しない（このMac以外の場所からは空か存在しないように見える）。
   スマホのObsidianはiCloudの中身しか見えないため、symlinkのままでは

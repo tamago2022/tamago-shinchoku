@@ -2,7 +2,7 @@
 # 1401番：Chromeタブ掃除便を launchd に載せる（2分おき）。冪等：何回流しても同じ。
 # ★心臓（tools/heartbeat.sh）が定期的にこれを呼ぶので、たまごさんが手で流さなくても入る。
 set -u
-REPO="/Users/mac/Desktop/tamago-shinchoku"
+REPO="/Users/mac/tamago/tamago-shinchoku"
 LABEL="com.tamago.chrome-tab-cdp"
 SRC="$REPO/tools/$LABEL.plist"
 DST="$HOME/Library/LaunchAgents/$LABEL.plist"

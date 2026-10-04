@@ -17,7 +17,7 @@ import subprocess
 import time
 import urllib.request
 
-REPO = os.path.expanduser("~/Desktop/tamago-shinchoku")
+REPO = os.path.expanduser("~/tamago/tamago-shinchoku")
 DST = os.path.join(REPO, "status", "public", "1024_devin_kotae.md")
 LOG = os.path.join(REPO, "status", "devin_kotae_saver.log")
 STOP = os.path.join(REPO, "status", ".devin_922b_stop")

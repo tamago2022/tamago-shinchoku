@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import queue_store as qs
 
 TARGET = {726, 796, 802}
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 ARCHIVE = os.path.join(REPO, "status", "done_archive.json")
 
 # 1) アーカイブから対象を取り出す

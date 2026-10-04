@@ -4,7 +4,7 @@
 """
 import subprocess
 
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 
 
 def run(args):

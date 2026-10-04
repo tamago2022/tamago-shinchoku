@@ -7,7 +7,7 @@
 set -uo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-REPO="/Users/mac/Desktop/tamago-shinchoku"
+REPO="/Users/mac/tamago/tamago-shinchoku"
 OUT="$REPO/status/machine.json"
 LOADSH="$REPO/tools/machine_load.sh"
 mkdir -p "$REPO/status"
@@ -141,7 +141,7 @@ run_with_timeout 30 python3 "$REPO/tools/1165_page.py" >/dev/null 2>&1 || true
 # 新しいlaunchd便は増やさない（この工場の決まり）。注文票が無ければ即 return＝無害。
 run_with_timeout 60 python3 "$REPO/tools/buffer_kagi_install.py" >/dev/null 2>&1 || true
 # ---- 2026-09-28（1175番）鍵の受け取り口。Buffer専用だった上の①を、全部の鍵に広げたもの ----
-# ~/Desktop/kagi.txt に貼られた鍵を、形から何の鍵か自分で当てて正しい置き場へしまい、平文を消す。
+# /Users/mac/tamago/kagi/kagi.txt に貼られた鍵を、形から何の鍵か自分で当てて正しい置き場へしまい、平文を消す。
 # 心臓にも同じ行がある（経路の二重化）。何も貼られていない回は即戻る＝無害・0円。
 run_with_timeout 60 python3 "$REPO/tools/1175_kagi_uketori.py" >/dev/null 2>&1 || true
 run_with_timeout 90 python3 "$REPO/tools/buffer_yoyaku.py" >/dev/null 2>&1 || true
@@ -632,7 +632,7 @@ import json, os, sys, time
 # 2026-09-04 バグ修正：ここは REPO を環境変数として読もうとしていたが export されておらず、
 #   フォールバックの __file__ もヒアドキュメント実行では存在しないため例外→握りつぶし で
 #   手入力(quota_manual.json)が一度も適用されていなかった。引数で渡す形に直した。
-repo = sys.argv[1] if len(sys.argv) > 1 else "/Users/mac/Desktop/tamago-shinchoku"
+repo = sys.argv[1] if len(sys.argv) > 1 else "/Users/mac/tamago/tamago-shinchoku"
 q = os.path.join(repo, "status", "quota.json")
 m = os.path.join(repo, "status", "quota_manual.json")
 MANUAL_MAX_AGE_H = 6

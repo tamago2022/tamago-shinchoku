@@ -1,6 +1,6 @@
 import json, html
 
-with open('/Users/mac/Desktop/tamago-shinchoku/share/x-archive/candidates.json', encoding='utf-8') as f:
+with open('/Users/mac/tamago/tamago-shinchoku/share/x-archive/candidates.json', encoding='utf-8') as f:
     cands = json.load(f)
 
 def esc(s):
@@ -38,6 +38,6 @@ p.sub {{ color:#8a7355; font-size:13px; margin:0 0 16px; }}
 {''.join(rows)}
 </body></html>'''
 
-with open('/Users/mac/Desktop/tamago-shinchoku/share/x-archive/candidates.html', 'w', encoding='utf-8') as f:
+with open('/Users/mac/tamago/tamago-shinchoku/share/x-archive/candidates.html', 'w', encoding='utf-8') as f:
     f.write(html_out)
 print('候補ページ生成完了:', len(cands), '件')

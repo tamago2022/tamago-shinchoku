@@ -11,7 +11,7 @@ import urllib.error
 import urllib.parse
 import time
 
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 QUEUE = REPO + "/status/queue.json"
 OUT = REPO + "/status/_668_link_audit_result.json"
 

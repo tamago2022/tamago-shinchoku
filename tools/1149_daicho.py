@@ -59,7 +59,7 @@ status/shinda.jsonl は今日だけで 2,804 行あった。だが中身は
   python3 tools/1149_daicho.py --json     … 結果のJSONだけ標準出力へ
 
 戻し方（1行）:
-  rm -rf ~/Desktop/tamago-shinchoku/status/1149   # 数えるだけなので消せば元通り
+  rm -rf ~/tamago/tamago-shinchoku/status/1149   # 数えるだけなので消せば元通り
 """
 from __future__ import annotations
 import json, os, re, sys, glob

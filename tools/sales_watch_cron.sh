@@ -3,7 +3,7 @@
 # 30分おき起動。Gumroadは毎回、YouTubeは8時台の実行時だけ（1日1回相当）。
 # python標準ライブラリのみ・claude CLIは叩かない＝API消費ゼロ。
 # 定期実行台帳: AI出力/_ルール/定期実行台帳.md に登録済み（com.tamago.tamago-shinchoku.sales-watch）。
-cd "/Users/mac/Desktop/tamago-shinchoku" || exit 1
+cd "/Users/mac/tamago/tamago-shinchoku" || exit 1
 
 # 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収。
 #   5分便(com.tamago.machine-status)と心臓(heartbeat.sh)が両方とも止まると、

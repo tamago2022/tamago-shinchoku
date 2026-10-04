@@ -92,7 +92,7 @@
 
 <h2>⑥ 追記した内容（そのまま貼り付け・非公開リポジトリなのでここで全文読める）</h2>
 <div class="note"><b>.claude/rules/00-quality-gate.md に足した1行：</b><br>
-「curlで読めても、押して動くか」は別物（店主が8回繰り返した指摘・2026-09-30）。本番反映を主張する前に <code>node /Users/mac/Desktop/tamago-shinchoku/tools/verify_click.mjs &lt;本番URL&gt;</code> で実際にクリックして反応を確認し、末尾の<code>CLICK_VERDICT: PASS/FAIL</code>を証拠に含める。Chrome本体を新規に直接起動するスクリプトは自作しない（既存ツールをそのまま呼ぶ）。
+「curlで読めても、押して動くか」は別物（店主が8回繰り返した指摘・2026-09-30）。本番反映を主張する前に <code>node /Users/mac/tamago/tamago-shinchoku/tools/verify_click.mjs &lt;本番URL&gt;</code> で実際にクリックして反応を確認し、末尾の<code>CLICK_VERDICT: PASS/FAIL</code>を証拠に含める。Chrome本体を新規に直接起動するスクリプトは自作しない（既存ツールをそのまま呼ぶ）。
 </div>
 <div class="note"><b>docs/ai/AI_QUALITY_GATE.md に足した節：</b><br>
 「curlで読めても、押して動くか」は別物。curlやHTMLの存在確認だけでPASSにしてはならない。過去、Verifierが「読むだけ（DOM存在確認）」しか行わず、押しても無反応なボタンをそのままPASSさせた事故があった（例：コンシェルジュの「話す」ボタンが押しても無反応でもHTMLにコードはあるためPASSしていた）。本番反映を主張する自己検品・鬼監督検品には、実際にクリックして反応を確認した証拠（<code>verify_click.mjs</code> または <code>sekisho.py</code>）を必須項目として含める。

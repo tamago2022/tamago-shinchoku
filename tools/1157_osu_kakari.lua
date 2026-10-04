@@ -16,7 +16,7 @@
 -- 変えた点：元ネタは「許可」なら何でも押す。こちらはホワイトリスト＋禁止語で絞り、
 --           押した記録を必ず残す。
 
-local REPO   = os.getenv("HOME") .. "/Desktop/tamago-shinchoku"
+local REPO   = os.getenv("HOME") .. "/tamago/tamago-shinchoku"
 local LOGJSON = REPO .. "/status/1157/oshita.jsonl"
 local CLAUDE_LOG = os.getenv("HOME") .. "/Library/Logs/Claude/main.log"
 

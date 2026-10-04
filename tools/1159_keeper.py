@@ -14,7 +14,7 @@ import time
 import urllib.request
 
 HOME = os.path.expanduser("~")
-REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
+REPO = os.path.join(HOME, "tamago", "tamago-shinchoku")
 STATE = os.path.join(REPO, "status", "zunda")
 STOP = os.path.join(STATE, "stop")
 HANARERU = os.path.join(REPO, "tools", "1144_hanareru.py")

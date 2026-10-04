@@ -342,6 +342,8 @@ def kuchi_jules(bun, matsu=0):
     matsu 秒だけ返事を待つ（0なら立てるだけ）。返事が来ていなければ error で返す
     ＝ hantei.irai_han が「動かなかった口」として扱う（黙って「はい」にしない）。
     """
+    # ★2026-10-04 Julesはチームから外した（たまごさん判断）。Issueを立てない。
+    return {"who": "jules", "yes": None, "why": "", "error": "Julesは外した（2026-10-04）"}
     tok = None
     try:
         if os.path.exists(GH_TOKEN_FILE):
@@ -419,7 +421,7 @@ KUCHI = {"genspark": kuchi_genspark, "jules": kuchi_jules,
          "gemini": lambda b: kuchi_api("gemini", b),
          "openai": lambda b: kuchi_api("openai", b),
          "grok": lambda b: kuchi_api("grok", b)}
-KIHON = ["genspark", "gemini"]   # ★10/5からは ["jules", "gemini"] に入れ替える
+KIHON = ["genspark", "gemini"]   # ★2026-10-04 Julesは外した（たまごさん判断）。入れ替え先から削除
 
 
 # ── 門そのもの ────────────────────────────────────────────────────────

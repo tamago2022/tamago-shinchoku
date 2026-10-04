@@ -278,7 +278,7 @@ def run_one(job_path):
     if not tok:
         out["result"] = "鍵なし"
         out["fix"] = ("publish.buffer.com/settings/api で1回だけ鍵を作り、"
-                      "~/Desktop/buffer_token.txt に貼って保存（あとは自動）")
+                      "/Users/mac/tamago/kagi/buffer_token.txt に貼って保存（あとは自動）")
         return out
 
     orgs = (((gql(tok, Q_ORGS).get("data") or {}).get("account") or {})

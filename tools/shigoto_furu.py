@@ -51,9 +51,10 @@ REPO_NAME = "tamago2022/joy-relief-station"
 
 # 社ごとの「呼び方」。全部、向こうが公式に決めている形。こちらの発明は1つも無い。
 AITE = {
-    "gemini":   {"label": "jules",    "mention": None,
-                 "name": "Gemini(Jules)", "yen": 0, "auto": True,
-                 "doc": "https://jules.google/docs/running-tasks/"},
+    # ★2026-10-04 たまごさん判断：Julesはチームから外した。gemini窓口はCodexへ付け替え（記録は消さない）。
+    "gemini":   {"label": "codex",    "mention": "@codex",
+                 "name": "ChatGPT(Codex)", "yen": 0, "auto": True,
+                 "doc": "https://developers.openai.com/codex/integrations/github"},
     "codex":    {"label": "codex",    "mention": "@codex",
                  "name": "ChatGPT(Codex)", "yen": 0, "auto": True,
                  "doc": "https://developers.openai.com/codex/integrations/github"},

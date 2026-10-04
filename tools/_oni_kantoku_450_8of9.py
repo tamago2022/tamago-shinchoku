@@ -1,6 +1,6 @@
 import json, datetime, os
 
-os.chdir("/Users/mac/Desktop/tamago-shinchoku")
+os.chdir("/Users/mac/tamago/tamago-shinchoku")
 now_iso = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0900")
 
 # 450番バッチ（8/9・対象10件）の鬼監督判定。

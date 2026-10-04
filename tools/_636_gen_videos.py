@@ -23,8 +23,8 @@ KEY_PATH = os.path.expanduser("~/.fal_key")
 with open(KEY_PATH) as f:
     FAL_KEY = f.read().strip()
 
-IMG_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/636-japan-60sec/img"
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/636-japan-60sec/video"
+IMG_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/636-japan-60sec/img"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/636-japan-60sec/video"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 MODEL = "bytedance/seedance-2.0/mini/image-to-video"

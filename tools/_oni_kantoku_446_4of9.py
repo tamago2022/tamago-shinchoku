@@ -1,7 +1,7 @@
 import json, datetime
 
 import os
-os.chdir("/Users/mac/Desktop/tamago-shinchoku")
+os.chdir("/Users/mac/tamago/tamago-shinchoku")
 path = "status/queue.json"
 with open(path, encoding="utf-8") as f:
     d = json.load(f)

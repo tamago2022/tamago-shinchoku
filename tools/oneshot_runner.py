@@ -4,7 +4,7 @@
 
 ■ なぜ要るか（2026-09-21 実測）
   Cowork(サンドボックス)からは Mac の ~/ が見えない（マウントは
-  Desktop/tamago-shinchoku だけ）。また api.github.com / raw.githubusercontent.com へは
+  tamago/tamago-shinchoku だけ）。また api.github.com / raw.githubusercontent.com へは
   回線が出ない（proxyが blocked-by-allowlist で403を返す。github.com は200）。
   → Obsidian Vault を読む・gh を叩く、はどちらも Mac 側でしか出来ない。
 

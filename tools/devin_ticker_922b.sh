@@ -6,7 +6,7 @@
 #   ・保険：18:00を過ぎたら自分で終わる。二重起動しない。
 #   ・触らないもの：オンデマンド購入・自動チャージ・請求（このスクリプトは一切触らない）。
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-cd "$HOME/Desktop/tamago-shinchoku" || exit 1
+cd "$HOME/tamago/tamago-shinchoku" || exit 1
 LOG="status/devin_922b_ticker.log"
 LOCK="status/.devin_922b_ticker.lock"
 

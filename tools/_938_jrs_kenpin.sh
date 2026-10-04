@@ -15,7 +15,7 @@
 set -uo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-REPO="/Users/mac/Desktop/tamago-shinchoku"
+REPO="/Users/mac/tamago/tamago-shinchoku"
 WORK="${REPO}/status/_938"
 LOG="${WORK}/run.log"
 mkdir -p "${WORK}"

@@ -39,7 +39,7 @@ LOG = os.path.join(REPO, "status", "kagi_daicho.log")
 
 # 受け取り口。★どれもリポジトリの外。拾ったら消す。
 DROPS = [
-    os.path.expanduser("~/Desktop/buffer_token.txt"),
+    os.path.expanduser("/Users/mac/tamago/kagi/buffer_token.txt"),
     os.path.expanduser("~/Downloads/buffer_token.txt"),
     os.path.join(TAMAGO, "_drop", "buffer.txt"),
     # Cowork/Dispatch が書ける場所（たまごさんがチャットに貼ったときの経路）
@@ -228,7 +228,7 @@ def main():
         return 0 if ok else 2
 
     log("Bufferの鍵はまだありません。publish.buffer.com/settings/api で1回だけ作って、"
-        "~/Desktop/buffer_token.txt に貼って保存してください（あとは自動）")
+        "/Users/mac/tamago/kagi/buffer_token.txt に貼って保存してください（あとは自動）")
     return 2
 
 

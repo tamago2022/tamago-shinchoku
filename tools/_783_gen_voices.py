@@ -27,7 +27,7 @@ KEY_PATH = os.path.expanduser("~/.fal_key")
 with open(KEY_PATH) as f:
     FAL_KEY = f.read().strip()
 
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/783-ehon-voice-compare"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/783-ehon-voice-compare"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 TEXT = (

@@ -45,8 +45,8 @@ def W(fp, content):
 
 
 def main():
-    py = "/Users/mac/Desktop/tamago-shinchoku/status/_shiken1186.py"
-    md = "/Users/mac/Desktop/tamago-shinchoku/status/_shiken1186.md"
+    py = "/Users/mac/tamago/tamago-shinchoku/status/_shiken1186.py"
+    md = "/Users/mac/tamago/tamago-shinchoku/status/_shiken1186.md"
     port = "--remote-debugging" + "-port=9222"
     cases = [
         ("openでChromeを開く", B('open -a "%s"' % CH), 2),

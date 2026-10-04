@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 
 from PIL import Image, ImageDraw, ImageFont
 
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 LOG = os.path.join(REPO, "status", "auto_launch.log")
 OUT = os.path.join(REPO, "share", "check", "img", "20-auto-launch-trend.png")
 

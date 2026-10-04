@@ -46,7 +46,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from email.header import decode_header
 
-ROOT = "/Users/mac/Desktop/tamago-shinchoku"
+ROOT = "/Users/mac/tamago/tamago-shinchoku"
 MADOGUCHI_PATH = os.path.join(ROOT, "status", "renraku_madoguchi.json")
 RECORD_PATH = os.path.join(ROOT, "status", "renraku.json")
 SHOT_DIR = os.path.join(ROOT, "share", "check", "renraku")

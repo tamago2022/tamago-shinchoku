@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 FONT_REGULAR = "/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc"
 FONT_BOLD = "/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc"
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/img"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/img"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 W = 1000

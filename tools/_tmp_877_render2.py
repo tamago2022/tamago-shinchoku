@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-sys.path.insert(0, "/Users/mac/Desktop/tamago-shinchoku/tools")
+sys.path.insert(0, "/Users/mac/tamago/tamago-shinchoku/tools")
 from _tmp_877_render import render, YEL, GRN, WHT, RED
 
 lines3 = [
@@ -17,4 +17,4 @@ lines3 = [
     ("一度手動で音量を上げ直すと、その状態が新しく上書き保存される", 18, WHT, False),
     ("→ 以降は毎回音付きで始まるようになる、というのが今回の見立て", 18, RED, True),
 ]
-render(lines3, "/Users/mac/Desktop/tamago-shinchoku/share/check/img/877-owner-30sec-fix.png")
+render(lines3, "/Users/mac/tamago/tamago-shinchoku/share/check/img/877-owner-30sec-fix.png")

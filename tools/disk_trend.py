@@ -32,7 +32,7 @@ import time
 import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(HERE)  # /Users/mac/Desktop/tamago-shinchoku
+REPO = os.path.dirname(HERE)  # /Users/mac/tamago/tamago-shinchoku
 
 LOG_PATH = os.path.join(REPO, "status", "disk_guardian.log")
 HISTORY_JSONL = os.path.join(REPO, "status", "history.jsonl")

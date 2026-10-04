@@ -35,7 +35,7 @@ import wave
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HOME = os.path.expanduser("~")
-REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
+REPO = os.path.join(HOME, "tamago", "tamago-shinchoku")
 VAULT = os.path.join(HOME, "Library", "Mobile Documents",
                      "iCloud~md~obsidian", "Documents", "tamago_brain")
 VAULT_AUDIO = "/Users/mac/Library/Application Support/tamago_audio_outside_vault/音声"  # 2026-10-04 Vaultの外へ（Obsidian索引を重くしないため）

@@ -17,7 +17,7 @@ import fs from "node:fs";
 
 const SEROVAL = [
   "/Users/mac/Desktop/joy-relief-station/node_modules/seroval/dist/index.js",
-  "/Users/mac/Desktop/tamago-shinchoku/status/1147/src_main/node_modules/seroval/dist/index.js",
+  "/Users/mac/tamago/tamago-shinchoku/status/1147/src_main/node_modules/seroval/dist/index.js",
 ];
 let seroval = null;
 for (const p of SEROVAL) {

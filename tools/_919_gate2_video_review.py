@@ -144,7 +144,7 @@ def main():
     name = sys.argv[1]  # chashitsu / kuroihama
     what_text = open(sys.argv[2], encoding="utf-8").read()
     metrics_text = sys.argv[3]
-    frame_dir = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/919-zen/frames"
+    frame_dir = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/919-zen/frames"
     images = [f"{frame_dir}/{name}_first.png", f"{frame_dir}/{name}_mid.png", f"{frame_dir}/{name}_last.png"]
 
     chain = [("Grok", call_grok_multi), ("OpenAI", call_openai_multi)]

@@ -4,7 +4,7 @@
 import json, io, os, re, subprocess
 from urllib.parse import urlparse, unquote
 
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 
 
 def sh(a):

@@ -1,7 +1,7 @@
 import json, re, os
 
 DIR = "/Volumes/iMac HDD/Desktop退避_2026-09-02/twitter-2026-08-05-91a26492ba94a0210d480103a2548fdcd793c19cfb6c29beaf60a324301326c6"
-OUT = "/Users/mac/Desktop/tamago-shinchoku/share/x-archive"
+OUT = "/Users/mac/tamago/tamago-shinchoku/share/x-archive"
 
 def load_js(path, prefix_re):
     with open(path, encoding='utf-8') as f:
