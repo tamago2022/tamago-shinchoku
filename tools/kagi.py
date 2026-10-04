@@ -104,8 +104,13 @@ def _parse(path):
     return out
 
 
+PREFER = {"XAI_API_KEY": ["XAI_API_KEY2", "XAI_API_KEY", "GROK_API_KEY"]}  # 2026-10-05 xAIは残高のある鍵(KEY2系)を最優先
+
+
 def _names(name):
     """探す名前の順番。正式名 → 別名 → 逆引き（別名で呼ばれたら正式名も見る）。"""
+    if name in PREFER:
+        return list(PREFER[name])
     seen, order = set(), []
     for n in [name] + ALIAS.get(name, []):
         if n not in seen:
@@ -188,7 +193,7 @@ def need(name):
 def put(name, value):
     """ポスト(キーチェーン)に入れる。入らない時だけ正本ファイルに書く。★.tmp は固定名にしない（既知の地雷）。"""
     po = _post()
-    if po is not None:
+    if po is not None and po.names():   # ポストが有効(移行済み)の時だけキーチェーンへ。まだなら下の正本ファイル
         try:
             po.put(name, value)
             return
