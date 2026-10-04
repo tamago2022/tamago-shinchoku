@@ -19,7 +19,7 @@
 
 やること（心臓から1分おきに呼ばれる。たまごさんはターミナルを開かない）：
   1. /Users/mac/tamago/kagi/kagi.txt（無ければ作って、書き方を中に書いておく）と
-     ~/Desktop/*_token.txt / ~/.tamago/_drop/*.txt を見る
+     /Users/mac/tamago/kagi/*_token.txt / ~/.tamago/_drop/*.txt を見る
   2. `NAME=値` でも、**値だけ貼ってあっても**、形（ghp_ / sk- / xai- / AIza / eyJ / 16文字）で
      どの鍵かを自分で当てる
   3. 叩いて確かめられる鍵は1回だけ叩いて、本物だと分かったものだけしまう
