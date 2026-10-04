@@ -144,6 +144,9 @@ run_with_timeout 60 python3 "$REPO/tools/buffer_kagi_install.py" >/dev/null 2>&1
 # /Users/mac/tamago/kagi/kagi.txt に貼られた鍵を、形から何の鍵か自分で当てて正しい置き場へしまい、平文を消す。
 # 心臓にも同じ行がある（経路の二重化）。何も貼られていない回は即戻る＝無害・0円。
 run_with_timeout 60 python3 "$REPO/tools/1175_kagi_uketori.py" >/dev/null 2>&1 || true
+# ---- 2026-10-04 鍵の生死確認（毎朝1回。中で「今日の6時以降で未実施か」を見る＝5分おきに呼んでも1日1回）----
+# 全部の鍵を1回ずつ叩き、結果を status/kagi_seimei.{json,md} に残す（鍵の値は書かない）。承認URLは status/kagi_shounin_url.json。
+run_with_timeout 120 python3 "$REPO/tools/kagi_seimei.py" >/dev/null 2>&1 || true
 run_with_timeout 90 python3 "$REPO/tools/buffer_yoyaku.py" >/dev/null 2>&1 || true
 # ③ buffer_hokyuu.py … 毎朝6:00に1回だけ、予約欄が10本未満なら
 #    status/buffer_queue/machi.json（投稿待ちの行列）から10本になるまで補充する。

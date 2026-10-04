@@ -120,6 +120,11 @@ def _names(name):
 
 def where(name):
     """どこにあるかだけを返す（値は返さない）。無ければ None。"""
+    po = _post()
+    if po is not None:
+        for n in _names(name):
+            if po.has(n):
+                return "キーチェーン(tamago-post)", n
     for path in [SEIHON] + YOBI:
         d = _parse(path)
         for n in _names(name):
@@ -128,8 +133,31 @@ def where(name):
     return None
 
 
+def _post():
+    """ポスト(tools/post.py＝macOSキーチェーン＋玄関＋取り出し記録)。入っていなければ None。"""
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import post
+        return post
+    except Exception:
+        return None
+
+
 def get(name, default=None):
-    """鍵の値。正本 → 予備 → 環境変数 の順に探す。無ければ default。"""
+    """鍵の値。ポスト(キーチェーン) → 正本 → 予備 → 環境変数 の順に探す。無ければ default。
+    ポストの玄関が『許可されていない相手』と判断したら PostDenied で止まる（ファイルへ逃がさない）。"""
+    po = _post()
+    if po is not None:
+        for n in _names(name):
+            try:
+                if po.has(n):
+                    v = po.get(n)
+                    if v:
+                        return v
+            except po.PostDenied:
+                raise
+            except Exception:
+                break  # キーチェーンが読めない時だけ、下のファイルへ
     for path in [SEIHON] + YOBI:
         d = _parse(path)
         for n in _names(name):
@@ -158,7 +186,16 @@ def need(name):
 
 
 def put(name, value):
-    """正本に書く。既にあれば差し替え。★.tmp は固定名にしない（既知の地雷）。"""
+    """ポスト(キーチェーン)に入れる。入らない時だけ正本ファイルに書く。★.tmp は固定名にしない（既知の地雷）。"""
+    po = _post()
+    if po is not None:
+        try:
+            po.put(name, value)
+            return
+        except po.PostDenied:
+            raise
+        except Exception:
+            pass
     os.makedirs(os.path.dirname(SEIHON), exist_ok=True)
     lines = []
     if os.path.exists(SEIHON):
@@ -183,6 +220,14 @@ def _list():
     if not os.path.isdir(os.path.dirname(SEIHON)):
         print("鍵の置き場(~/.tamago/keys)が見えません＝ここはサンドボックスです。判定を書きません。")
         return 3
+    try:
+        po = _post()
+        if po is not None and po.names():
+            print("■ ポスト(キーチェーン tamago-post)（%d本）" % len(po.names()))
+            for k in po.names():
+                print("    - %s" % k)
+    except Exception:
+        pass
     honban = sorted(_parse(SEIHON).keys())
     print("■ 正本 %s（%d本）" % (SEIHON.replace(HOME, "~"), len(honban)))
     for k in honban:

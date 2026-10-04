@@ -134,6 +134,15 @@ def _find_env_key(names):
         v = os.environ.get(name)
         if v:
             return v
+    try:  # ポスト(キーチェーン)が先
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import kagi
+        for name in names:
+            v = kagi.get(name)
+            if v:
+                return v
+    except Exception:
+        pass
     candidates = [
         CENTRAL_KEY_FILE,
         os.path.join(REPO, ".env"),
