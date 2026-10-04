@@ -247,6 +247,12 @@ def _verify(st, it):
         st["phase"] = ""
         st["lastResult"] = "出た"
         st["lastAfterKey"] = now_key
+        try:  # ★ズレ関所：出た本番を測る（別プロセス）。結果は status/zure_kanmon/prod.json
+            import subprocess
+            subprocess.Popen([sys.executable, os.path.join(HERE, "zure_kanmon.py"), "prod"],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        except Exception:
+            pass
         return st
     machi = time.time() - (st.get("pressedAtTs") or 0)
     if machi > VERIFY_LIMIT_SEC:
@@ -259,6 +265,30 @@ def _verify(st, it):
         return st
     st["lastResult"] = "確かめ中（%d秒）" % int(machi)
     return st
+
+
+def _zure_gate(sha8):
+    """★ズレ関所（2026-10-04・たまごさん指示）：押す前に、その版を手元で動かしてカードのズレを実測する。
+    ズレが1つでもあれば押さない。戻り値: "ok"（押してよい）/ "wait"（測定中・今回は押さない）/ "ng"（ズレあり・押さない）。
+    測定は別プロセスで走らせ（数分かかる＝心臓を止めない）、結果は status/zure_kanmon/pre_<sha8>.json に残る。
+    関所そのものの故障（測れなかった）は止めずに通す（記録は残る）。"""
+    out = os.path.join(ST, "zure_kanmon")
+    res = os.path.join(out, "pre_%s.json" % sha8)
+    run = os.path.join(out, "pre_%s.running" % sha8)
+    doc = _load(res, None)
+    if doc:
+        return "ng" if doc.get("verdict") == "ng" else "ok"
+    if os.path.exists(run) and time.time() - os.path.getmtime(run) < 1500:
+        return "wait"
+    os.makedirs(out, exist_ok=True)
+    with open(run, "w") as f:
+        f.write(_now())
+    import subprocess
+    lg = open(os.path.join(out, "pre_%s.log" % sha8), "w")
+    subprocess.Popen([sys.executable, os.path.join(HERE, "zure_kanmon.py"), "pre", sha8],
+                     stdout=lg, stderr=subprocess.STDOUT, start_new_session=True)
+    _log("ズレ関所：%s の実測を始めました（数分）。終わるまで押しません" % sha8)
+    return "wait"
 
 
 def _press(st, it):
@@ -282,6 +312,20 @@ def _press(st, it):
         _log("★押しません：Lovableが持つコミット %s が main(%s)／待ち(%s) と合いません"
              % (sha or "-", main_sha or "-", machi_sha or "-"))
         st["lastResult"] = "Lovableがmainをまだ取り込んでいない"
+        return st
+
+    # ★ズレ関所：ズレが1つでもあれば公開しない（測れなかった時だけは止めずに通す）
+    try:
+        zk = _zure_gate(sha)
+    except Exception as e:  # 関所の故障で公開を止めない
+        _log("ズレ関所が動きません（通します）：%r" % (e,))
+        zk = "ok"
+    if zk == "wait":
+        st["lastResult"] = "ズレ関所：測定中"
+        return st
+    if zk == "ng":
+        _log("★ズレ関所：%s にカードのズレがあります。**公開しません**（詳細 status/zure_kanmon/pre_%s.json）" % (sha, sha))
+        st["lastResult"] = "ズレ関所で停止（ズレあり）"
         return st
 
     before = _honban_key(mato["url"]) or it.get("deployKey") or ""
