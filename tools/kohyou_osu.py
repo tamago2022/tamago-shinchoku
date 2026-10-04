@@ -277,9 +277,12 @@ def _zure_gate(sha8):
     run = os.path.join(out, "pre_%s.running" % sha8)
     doc = _load(res, None)
     if doc:
-        return "ng" if doc.get("verdict") == "ng" else "ok"
-    if os.path.exists(run) and time.time() - os.path.getmtime(run) < 1500:
-        return "wait"
+        # 直して main に入れた版は、いま握っているこの版（直す前）を押さず、直した新しい版を待つ（ただし30分で諦めて出す）
+        if doc.get("verdict") == "fixed" and time.time() - os.path.getmtime(res) < 1800:
+            return "wait"
+        return "ok"   # ★ズレがあっても止めない：直せたものは直した版が出る／直せないものは票を立てて出す
+    if os.path.exists(run):
+        return "wait" if time.time() - os.path.getmtime(run) < 1500 else "ok"
     os.makedirs(out, exist_ok=True)
     with open(run, "w") as f:
         f.write(_now())
