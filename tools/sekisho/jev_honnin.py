@@ -193,6 +193,14 @@ def _key():
     k = os.environ.get("TYPESAFE_API_KEY")
     if k:
         return k.strip()
+    try:  # ポスト(キーチェーン)が先
+        sys.path.insert(0, os.path.join(REPO, "tools"))
+        import kagi
+        v = kagi.get("TYPESAFE_API_KEY")
+        if v:
+            return v.strip()
+    except Exception:
+        pass
     for p in (os.path.join(REPO, ".env"),
               os.path.expanduser("~/.tamago/keys/api_keys.env")):
         if os.path.exists(p):

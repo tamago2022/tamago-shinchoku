@@ -31,6 +31,16 @@ def get_key() -> str:
     k = os.environ.get("BUFFER_API_KEY")
     if k:
         return k.strip()
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import kagi
+        v = kagi.get("BUFFER_API_KEY") or kagi.get("BUFFER_ACCESS_TOKEN")
+        if v:
+            return v.strip()
+    except SystemExit:
+        raise
+    except Exception:
+        pass
     if os.path.exists(ENVFILE):
         with open(ENVFILE, encoding="utf-8", errors="ignore") as f:
             for line in f:

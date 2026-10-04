@@ -271,24 +271,10 @@ def spec(sid):
 
 
 def put_env(name, value):
-    os.makedirs(os.path.dirname(KEYS), exist_ok=True)
-    lines = []
-    if os.path.exists(KEYS):
-        lines = io.open(KEYS, encoding="utf-8").read().splitlines()
-    out, done = [], False
-    for ln in lines:
-        if ln.strip().startswith(name + "="):
-            out.append("%s=%s" % (name, value))
-            done = True
-        else:
-            out.append(ln)
-    if not done:
-        out.append("%s=%s" % (name, value))
-    tmp = "%s.%d.tmp" % (KEYS, os.getpid())
-    with io.open(tmp, "w", encoding="utf-8") as f:
-        f.write("\n".join(out).rstrip() + "\n")
-    os.chmod(tmp, stat.S_IRUSR | stat.S_IWUSR)
-    os.replace(tmp, KEYS)
+    """ポスト(キーチェーン)に入れる。入らない時だけ api_keys.env（kagi.put が判断）。"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import kagi
+    kagi.put(name, value)
 
 
 def put_file(path, value):
@@ -339,6 +325,13 @@ def have(sp):
     for nm in sp["names"]:
         if os.environ.get(nm):
             return True
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import kagi
+        if any(kagi.where(nm) for nm in sp["names"]):
+            return True
+    except Exception:
+        pass
     try:
         txt = io.open(KEYS, encoding="utf-8").read()
     except Exception:

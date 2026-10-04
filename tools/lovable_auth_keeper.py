@@ -31,6 +31,12 @@ def _token_ok():
 
 
 def run():
+    # 鍵があるなら、期限の5分前に自動で更新（失敗しても鍵は消さない）。
+    try:
+        import lovable_token_keeper
+        lovable_token_keeper.ensure_fresh()
+    except Exception:
+        pass
     # ★2026-10-04：「ファイルがある」だけでは足りない。0バイト／壊れた中身も「鍵が無い」と見なして
     #   受け皿を立て続ける（0バイトのまま放置され、鍵が24時間以上戻らなかった）。
     if _token_ok() or not os.path.exists(LISTENER):

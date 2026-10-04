@@ -145,24 +145,10 @@ def verify(token):
 
 
 def put(token):
-    os.makedirs(os.path.dirname(KEYS), exist_ok=True)
-    lines = []
-    if os.path.exists(KEYS):
-        lines = io.open(KEYS, encoding="utf-8").read().splitlines()
-    out, done = [], False
-    for ln in lines:
-        if ln.strip().startswith("BUFFER_ACCESS_TOKEN="):
-            out.append("BUFFER_ACCESS_TOKEN=%s" % token)
-            done = True
-        else:
-            out.append(ln)
-    if not done:
-        out.append("BUFFER_ACCESS_TOKEN=%s" % token)
-    tmp = "%s.%d.tmp" % (KEYS, os.getpid())   # ★固定名の .tmp は使わない（既知の地雷）
-    with io.open(tmp, "w", encoding="utf-8") as f:
-        f.write("\n".join(out).rstrip() + "\n")
-    os.chmod(tmp, stat.S_IRUSR | stat.S_IWUSR)
-    os.replace(tmp, KEYS)
+    """ポスト(キーチェーン)に入れる。入らない時だけ api_keys.env（kagi.put が判断）。"""
+    sys.path.insert(0, HERE)
+    import kagi
+    kagi.put("BUFFER_ACCESS_TOKEN", token)
 
 
 def already_have():
