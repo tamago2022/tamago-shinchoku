@@ -151,6 +151,26 @@ def main():
               "DESCRIPTION:" + esc(("更新しない。" if owari else "") + "円は目安・実際のカード請求額とは異なる"),
               ] + alarms("サブスク") + ["END:VEVENT"]
     L.append("END:VCALENDAR")
+    # Googleカレンダーに入れる必要のある予定（正本は台帳・Milestone。Dispatchはこれを見て【AI】付きで入れる）
+    cal = []
+    for e in events:
+        if e["state"] == "open":
+            cal.append(dict(uid=f"milestone-{e['id']}", title="【AI】締切 " + e["title"], start=e["start"],
+                            date=f"{e['due']:%Y-%m-%d}", note=f"残り{e['o']}件／{e['url']}", alarmDays=[5, 3, 1]))
+    for it in led.get("items", []):
+        try:
+            d0 = dt.date.fromisoformat((it.get("tsugi") or "")[:10])
+        except ValueError:
+            continue
+        ow = it.get("kurikaeshi") == "owari"
+        cal.append(dict(uid=f"subsc-{it['id']}-{d0}", title=("【AI】サブスク終了 " if ow else "【AI】サブスク更新 ") + it["name"].split("（")[0],
+                        date=str(d0), note=(f"${it['usd']}" if it.get("usd") else "") + ("（円は目安）" if it.get("yen") else "") + ("" if it.get("kakunin") else "／日付未確認"),
+                        alarmDays=[5, 3, 1]))
+    cal.sort(key=lambda x: x["date"])
+    if not DRY:
+        outp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "status", "calendar_todo.json")
+        json.dump(dict(generatedAt=dt.datetime.now(JST).isoformat(), calendar="eggypop2010@gmail.com", items=cal),
+                  open(outp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     ics = "\r\n".join(fold(x) for x in L) + "\r\n"
 
     # 公開：tools/pages_publish.sh が status/public/ をそのまま配信枝へ写す（書き手1本の原則を守る）
