@@ -546,9 +546,8 @@ def ingest(rows, limit=40, dry=False):
             added.append((r["id"], "dry", r["title"]))
             continue
         try:
-            with lock():
-                st, msg = command_ingest.queue_add(body, priority=pri, label=r["title"][:60],
-                                                   origin=r.get("origin") or "user")
+            st, msg = command_ingest.queue_add(body, priority=pri, label=r["title"][:60],
+                                               origin=r.get("origin") or "user")
         except Exception as e:
             st, msg = "failed", str(e)
         r["queuedAt"] = now().strftime("%Y-%m-%d %H:%M")

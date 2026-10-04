@@ -14,6 +14,8 @@
   ③ 画像のURLが 200 でない・空っぽ判定（og_kanmon に委譲）
   ④ 動画が再生できない（og:image の動画IDを oEmbed と playableInEmbed で見る）
   ⑤ 「この流れで、もう一本」が 4 枚に満たない
+  ⑥ 本文が薄い（基準ページ＝亜蘭知子 Midnight Pretenders の密度に届かない）:
+     本文40文字未満／発売年などの数字が無い（事実が書かれていない）
 
   ※ アーティストページ（song= 無し）は ① ④ ⑤ の対象外。② ③ だけ見る。
   ※ 外のAIを呼ばない。0円。ブラウザを使わない。
@@ -40,6 +42,7 @@ SHARE_IMG = re.compile(r"/api/public/share-image/([A-Za-z0-9_-]{11})")
 OGIMG = re.compile(r'property="og:image" content="([^"]+)"')
 TWIMG = re.compile(r'name="twitter:image" content="([^"]+)"')
 CANON = re.compile(r'rel="canonical" href="([^"]+)"')
+DESC = re.compile(r'name="description" content="([^"]*)"')
 EMBED = re.compile(r"youtube\.com/embed/([A-Za-z0-9_-]{11})")
 
 
@@ -122,6 +125,13 @@ def shiraberu(url):
             ok, why = _embeddable(vid)
             if not ok:
                 riyuu.append("動画が再生できない（%s・%s）" % (vid, why))
+        d = (DESC.search(html) or [None, ""])[1]
+        body = d.split(" — ", 1)[1] if " — " in d else d
+        body = body.replace("&#x27;", "'").replace("&quot;", '"')
+        if len(body) < 40:
+            riyuu.append("本文が薄い（%d文字。基準は40文字以上）" % len(body))
+        elif not re.search(r"(19|20)\d\d", body):
+            riyuu.append("本文に年・作品名などの事実が無い（基準ページと同じ密度にする）")
         n = _related_count(html)
         if n < MIN_RELATED:
             riyuu.append("「この流れで」が %d 枚（%d 枚必要）" % (n, MIN_RELATED))
