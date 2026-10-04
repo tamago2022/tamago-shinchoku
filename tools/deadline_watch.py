@@ -96,6 +96,13 @@ def main():
                 print("URL", r["html_url"])
                 outbox(f"【締め切り{label}】{ms['title']}：完了{c}/{c+o}、残り{o}件（{due_jst:%m/%d}）。#{issue}に@codex・Gensparkへ確認コメント済み {r['html_url']}")
 
+    # ---- xAI(Grok Voice)の使用量を台帳へ（Lovable voice_usage_log をSELECTのみ。失敗しても続ける）----
+    if not DRY and not test:
+        try:
+            subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "xai_voice_tally.py")], timeout=120)
+        except Exception as ex:
+            print("xai集計 失敗:", ex)
+
     # ---- サブスク予告（5日前・3日前・前日→進捗表＋dispatch_outbox）----
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

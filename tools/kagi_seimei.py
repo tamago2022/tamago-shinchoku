@@ -111,6 +111,8 @@ def p_openai():
 
 
 def p_xai():
+    if not kagi.get("XAI_API_KEY"):
+        return MISSING, "残高ありの鍵(XAI_API_KEY2)がMacに無い。goodvibes(残高0)は停止済み。status/kagi_xai_ichibon.md 参照"
     return bearer("https://api.x.ai/v1/models", "XAI_API_KEY")
 
 
