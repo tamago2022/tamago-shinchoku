@@ -1,7 +1,7 @@
 {
- "at": "2026-10-04T18:39:44.460026+09:00",
+ "at": "2026-10-04T19:13:28.300830+09:00",
  "ok": true,
- "generatedAt": "2026-10-04T18:39:18.824390+09:00",
+ "generatedAt": "2026-10-04T19:13:06.070617+09:00",
  "keys": [
   {
    "id": "buffer",
@@ -19,7 +19,7 @@
    "detail": "通った（auth_keeperが実測）",
    "fix": "いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す",
    "stops": "工場の発車が全部止まる（44時間の実害）",
-   "measuredMinAgo": 38.1
+   "measuredMinAgo": 28.5
   },
   {
    "id": "gmail",
@@ -37,7 +37,7 @@
    "detail": "トークンが取れません（gh auth login が要る）",
    "fix": "gh auth login",
    "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
-   "measuredMinAgo": 1.3
+   "measuredMinAgo": 1.2
   },
   {
    "id": "openai",
@@ -78,11 +78,11 @@
   {
    "id": "copilot",
    "what": "GitHub Copilot（実装の代行）",
-   "status": "unknown",
-   "detail": "GitHubのトークンが無いので確かめられません（先にGitHubの行を直す）",
+   "status": "ng",
+   "detail": "担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）",
    "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
    "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 1.0
   },
   {
    "id": "meta",
@@ -91,7 +91,7 @@
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "fix": "developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ",
    "stops": "Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 1.0
   },
   {
    "id": "fal",
@@ -136,34 +136,34 @@
    "detail": "棚へ書く鍵が使えない：ファイルはあるが中身が空です（投げ込み箱の棚入れも本番公開も止まっています）",
    "fix": "relay_watch がトンネルを張り直す／鍵は lovable_auth_keeper の受け皿で同意を1回",
    "stops": "たまごさんが投げても棚に入らない（黙って失敗していた）",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 0.8
   },
   {
    "id": "heart",
    "what": "心臓（15秒おきの本体）",
    "status": "ok",
-   "detail": "動いています（0秒前）",
+   "detail": "動いています（4秒前）",
    "fix": "5分便が自分で立て直す。立て直らなければ launchctl kickstart",
    "stops": "着火と受信箱が止まる＝ボタンが効かない",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 0.8
   },
   {
    "id": "gobun",
    "what": "5分便（立て直す側）",
    "status": "ok",
-   "detail": "動いています（8分前）",
+   "detail": "動いています（9分前）",
    "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
    "stops": "心臓が落ちても誰も立て直さない",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 0.8
   },
   {
    "id": "hassha",
    "what": "発車（仕事が前に進むか）",
    "status": "ok",
-   "detail": "止め札はありません（最後の発車記録 39秒前）",
+   "detail": "止め札はありません（最後の発車記録 26秒前）",
    "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
    "stops": "仕事が1本も進まない",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 0.8
   },
   {
    "id": "relay",
@@ -178,7 +178,7 @@
    "id": "mac_omosa",
    "what": "Macの重さ（swapと負荷）",
    "status": "ng",
-   "detail": "swap 37.7GB・負荷 23.1（しきい値 swap10GB／負荷12を超えています）／一番食っているのは Brave Browser Helper (Renderer)（0.9GB）",
+   "detail": "swap 37.6GB・負荷 66.7（しきい値 swap10GB／負荷12を超えています）／一番食っているのは Brave Browser Helper (Renderer)（0.9GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
    "measuredMinAgo": 0.8
@@ -224,7 +224,7 @@
   {
    "id": "auto:1142_kanmon",
    "label": "1142_kanmon（名簿に無いので自動で台帳入り）",
-   "runs": 53,
+   "runs": 54,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -233,7 +233,7 @@
   {
    "id": "auto:1175_kagi_uketori",
    "label": "1175_kagi_uketori（名簿に無いので自動で台帳入り）",
-   "runs": 196,
+   "runs": 197,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -242,7 +242,7 @@
   {
    "id": "auto:aitara_mawasu",
    "label": "aitara_mawasu（名簿に無いので自動で台帳入り）",
-   "runs": 218,
+   "runs": 219,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -278,7 +278,7 @@
   {
    "id": "auto:dojisu_jougen",
    "label": "dojisu_jougen（名簿に無いので自動で台帳入り）",
-   "runs": 256,
+   "runs": 257,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -296,7 +296,7 @@
   {
    "id": "auto:haibun",
    "label": "haibun（名簿に無いので自動で台帳入り）",
-   "runs": 211,
+   "runs": 212,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -314,7 +314,7 @@
   {
    "id": "auto:hyoudai",
    "label": "hyoudai（名簿に無いので自動で台帳入り）",
-   "runs": 67,
+   "runs": 68,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -341,7 +341,7 @@
   {
    "id": "auto:kaitsuu",
    "label": "kaitsuu（名簿に無いので自動で台帳入り）",
-   "runs": 274,
+   "runs": 275,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -368,7 +368,7 @@
   {
    "id": "auto:main_kanmon",
    "label": "main_kanmon（名簿に無いので自動で台帳入り）",
-   "runs": 223,
+   "runs": 224,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -386,7 +386,7 @@
   {
    "id": "auto:modoseru",
    "label": "modoseru（名簿に無いので自動で台帳入り）",
-   "runs": 210,
+   "runs": 211,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -395,7 +395,7 @@
   {
    "id": "auto:nagekomi_list",
    "label": "nagekomi_list（名簿に無いので自動で台帳入り）",
-   "runs": 232,
+   "runs": 233,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -431,7 +431,7 @@
   {
    "id": "auto:shingou",
    "label": "shingou（名簿に無いので自動で台帳入り）",
-   "runs": 215,
+   "runs": 216,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -476,7 +476,7 @@
   {
    "id": "auto:tomaranai",
    "label": "tomaranai（名簿に無いので自動で台帳入り）",
-   "runs": 217,
+   "runs": 218,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -485,11 +485,11 @@
   {
    "id": "queue",
    "label": "発車待ち（積んだのに走っていない）",
-   "runs": 2815,
+   "runs": 2776,
    "catches": 13,
-   "blocked": "★積んだのに一度も走っていない件が1431件（3日超え）。古い順に 42番（28.4日）アーティストページの無い曲に、アーティストページを作る／587番（27.9日）テストB／586番（27.9日）テストA／684番（25.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（25.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は2815件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
+   "blocked": "★積んだのに一度も走っていない件が1433件（3日超え）。古い順に 42番（28.4日）アーティストページの無い曲に、アーティストページを作る／587番（27.9日）テストB／586番（27.9日）テストA／684番（25.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（25.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は2776件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
    "need": "",
-   "why": "止められています：★積んだのに一度も走っていない件が1431件（3日超え）。古い順に 42番（28.4日）アーティストページの無い曲に、アーティストページを作る／587番（27.9日）テストB／586番（27.9日）テストA／684番（25.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（25.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は2815件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
+   "why": "止められています：★積んだのに一度も走っていない件が1433件（3日超え）。古い順に 42番（28.4日）アーティストページの無い曲に、アーティストページを作る／587番（27.9日）テストB／586番（27.9日）テストA／684番（25.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（25.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は2776件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
   }
  ],
  "nomikomi": [
@@ -535,12 +535,12 @@
   },
   {
    "who": "1142_fukkyuu（名簿に無いので自動で台帳入り）",
-   "mark": "blocked=順番待ちの幽霊項目 52件（下見だけ）",
+   "mark": "blocked=順番待ちの幽霊項目 7件（下見だけ）",
    "words": [
     "blocked"
    ],
    "runs": 93,
-   "catches": 227
+   "catches": 228
   },
   {
    "who": "Grok / xAI（文字での外部代行）",
@@ -570,7 +570,7 @@
    "detail": "トークンが取れません（gh auth login が要る）",
    "fix": "gh auth login",
    "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
-   "measuredMinAgo": 1.3
+   "measuredMinAgo": 1.2
   },
   {
    "id": "xai",
@@ -582,13 +582,22 @@
    "measuredMinAgo": 1.2
   },
   {
+   "id": "copilot",
+   "what": "GitHub Copilot（実装の代行）",
+   "status": "ng",
+   "detail": "担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）",
+   "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
+   "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
+   "measuredMinAgo": 1.0
+  },
+  {
    "id": "meta",
    "what": "Metaの鍵（★まだ存在しない）",
    "status": "ng",
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "fix": "developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ",
    "stops": "Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 1.0
   },
   {
    "id": "lovable",
@@ -606,13 +615,13 @@
    "detail": "棚へ書く鍵が使えない：ファイルはあるが中身が空です（投げ込み箱の棚入れも本番公開も止まっています）",
    "fix": "relay_watch がトンネルを張り直す／鍵は lovable_auth_keeper の受け皿で同意を1回",
    "stops": "たまごさんが投げても棚に入らない（黙って失敗していた）",
-   "measuredMinAgo": 0.9
+   "measuredMinAgo": 0.8
   },
   {
    "id": "mac_omosa",
    "what": "Macの重さ（swapと負荷）",
    "status": "ng",
-   "detail": "swap 37.7GB・負荷 23.1（しきい値 swap10GB／負荷12を超えています）／一番食っているのは Brave Browser Helper (Renderer)（0.9GB）",
+   "detail": "swap 37.6GB・負荷 66.7（しきい値 swap10GB／負荷12を超えています）／一番食っているのは Brave Browser Helper (Renderer)（0.9GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
    "measuredMinAgo": 0.8
@@ -629,15 +638,6 @@
    "measuredMinAgo": 1.5
   },
   {
-   "id": "copilot",
-   "what": "GitHub Copilot（実装の代行）",
-   "status": "unknown",
-   "detail": "GitHubのトークンが無いので確かめられません（先にGitHubの行を直す）",
-   "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
-   "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
-   "measuredMinAgo": 0.9
-  },
-  {
    "id": "buffer",
    "what": "Buffer（Xへの予約投稿の口）",
    "status": "unknown",
@@ -647,6 +647,6 @@
    "measuredMinAgo": 0.9
   }
  ],
- "redCount": 41,
+ "redCount": 42,
  "red": true
 }
