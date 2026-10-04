@@ -17,7 +17,7 @@
 
 ## 実行方法（たまごさん本人、または対話的に許可を押せるセッションで）
 ```
-python3 "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py"
+python3 "/Users/mac/tamago/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py"
 ```
 最初のfal API呼び出しのタイミングでBashの許可ダイアログが出るはずなので、「許可」を押してください。
 あとは自動で進み、`output/`フォルダに`ume_15s.mp4`（梅）`take_15s.mp4`（竹、実測1本）`matsu_15s.mp4`（松、実測1本）と

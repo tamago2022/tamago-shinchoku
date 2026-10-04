@@ -123,8 +123,8 @@ KOUTAI_SRC = "tools/tekizai.py:118"
 SHIGOTO = [
     dict(kind="data", label="件数とキーが決まっているJSONをそろえる",
          words=("json", "件数", "キー", "そろえ", "一括", "埋める", "リスト化", "csv", "データ"),
-         who="jules",
-         konkyo="149件で実測：91.3%（合格 136/149）（`cat status/1028/jules_kekka.json`）・0円"),
+         who="ko",   # ★2026-10-04 Julesを外した（たまごさん判断）→子セッション（Claude）へ付け替え
+         konkyo="（旧Jules枠）149件で実測：91.3%（合格 136/149）（`cat status/1028/jules_kekka.json`）・0円"),
     dict(kind="jissou", label="コードを書いてPRまで運ぶ",
          words=("実装", "直す", "修正", "バグ", "コンポーネント", "pr", "ビルド", "軽く", "速く"),
          who="devin",
@@ -508,8 +508,8 @@ def run(force=False):
 def self_test():
     ng = []
     # ★割り振りが実測どおりに効くか
-    if wariate("yomi-answersのJSONを149件そろえて")["who"] != "jules":
-        ng.append("JSONそろえがJulesに行かない")
+    if wariate("yomi-answersのJSONを149件そろえて")["who"] == "jules":
+        ng.append("JSONそろえがJules（外した）に行ってしまう")
     if wariate("トップページを軽くする実装をしてPRを出して")["who"] != "devin":
         ng.append("実装がDevinに行かない")
     if wariate("この曲の出典を調べて")["who"] != "genspark":

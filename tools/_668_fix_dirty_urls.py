@@ -16,7 +16,7 @@ import time
 import datetime
 from contextlib import contextmanager
 
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 QUEUE = REPO + "/status/queue.json"
 QUEUE_LOCK = REPO + "/status/.queue.lock"
 

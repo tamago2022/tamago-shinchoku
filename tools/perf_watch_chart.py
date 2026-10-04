@@ -12,7 +12,7 @@ from collections import defaultdict
 
 from PIL import Image, ImageDraw, ImageFont
 
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 HISTORY = os.path.join(REPO, "status", "perf_history.jsonl")
 OUT = os.path.join(REPO, "share", "check", "img", "429-lcp-trend.png")
 

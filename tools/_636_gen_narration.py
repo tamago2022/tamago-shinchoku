@@ -7,7 +7,7 @@ KEY_PATH = os.path.expanduser("~/.fal_key")
 with open(KEY_PATH) as f:
     FAL_KEY = f.read().strip()
 
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/636-japan-60sec/audio"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/636-japan-60sec/audio"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 MODEL = "fal-ai/elevenlabs/tts/eleven-v3"

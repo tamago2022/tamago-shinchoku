@@ -24,7 +24,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from email.header import decode_header
 
-ROOT = "/Users/mac/Desktop/tamago-shinchoku"
+ROOT = "/Users/mac/tamago/tamago-shinchoku"
 STATE_PATH = os.path.join(ROOT, "status", ".anthropic_watch_state.json")
 DONE_FLAG = os.path.join(ROOT, "status", ".anthropic_watch_done")
 DATA_JS = os.path.join(ROOT, "data.js")

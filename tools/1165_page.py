@@ -11,7 +11,7 @@
   ② 今走っている本数／上限（＋上限がその数になった理由）
   ③ 次に発車するタスク名
 
-出力: /Users/mac/Desktop/tamago-shinchoku/1165-hassha.html
+出力: /Users/mac/tamago/tamago-shinchoku/1165-hassha.html
 使い方: python3 tools/1165_page.py
 """
 import io

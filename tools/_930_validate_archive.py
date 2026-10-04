@@ -1,6 +1,6 @@
 import json
 
-with open('/Users/mac/Desktop/tamago-shinchoku/status/done_archive.json', encoding='utf-8') as f:
+with open('/Users/mac/tamago/tamago-shinchoku/status/done_archive.json', encoding='utf-8') as f:
     d = json.load(f)
 print('OK, items:', len(d.get('items', [])))
 for it in d['items']:

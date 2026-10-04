@@ -5,7 +5,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/img"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/img"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 FONT_CANDIDATES = [

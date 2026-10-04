@@ -47,7 +47,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
-ROOT = "/Users/mac/Desktop/tamago-shinchoku"
+ROOT = "/Users/mac/tamago/tamago-shinchoku"
 STATE = os.path.join(ROOT, "status", "line_store_watch.json")
 FOUND_FLAG = os.path.join(ROOT, "status", ".line_store_found")
 OUTBOX = os.path.join(ROOT, "status", "dispatch_outbox.jsonl")

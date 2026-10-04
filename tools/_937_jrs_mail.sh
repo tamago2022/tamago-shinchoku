@@ -17,7 +17,7 @@ set -uo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
 JOY="/Users/mac/Desktop/joy-relief-station"
-REPO="/Users/mac/Desktop/tamago-shinchoku"
+REPO="/Users/mac/tamago/tamago-shinchoku"
 WORK="${REPO}/status/_937"
 LOG="${WORK}/run.log"
 TMP_WT="/tmp/jrs-937-mail"

@@ -5,7 +5,7 @@
 # ★AppleScript / osascript / System Events を1行も呼ばない。
 # ★止めたいとき： touch status/1401_cdp.nostop
 set -u
-REPO="/Users/mac/Desktop/tamago-shinchoku"
+REPO="/Users/mac/tamago/tamago-shinchoku"
 [ -f "$REPO/status/1401_cdp.nostop" ] && exit 0
 cd "$REPO" || exit 0
 echo "--- $(date '+%F %T') ---"

@@ -35,27 +35,27 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 #   ★この行を消さないこと。用が済んだら status/_954/PHASE を idle にして示す。
 # 【2026-09-19・961番】本番に出ていないものを出し切る便。**exec で奪わない**（938/951/954と同じ形）。
 #   status/_961/PHASE が idle なら即 exit 0＝無害。★この行を消さないこと。
-_ME961="/Users/mac/Desktop/tamago-shinchoku/tools/_961_jrs_deliver.sh"
+_ME961="/Users/mac/tamago/tamago-shinchoku/tools/_961_jrs_deliver.sh"
 if [ -f "${_ME961}" ]; then bash "${_ME961}" || true; fi
 
-_ME954="/Users/mac/Desktop/tamago-shinchoku/tools/_954_jrs_xcard.sh"
+_ME954="/Users/mac/tamago/tamago-shinchoku/tools/_954_jrs_xcard.sh"
 if [ -f "${_ME954}" ]; then bash "${_ME954}" || true; fi
 
-_ME951="/Users/mac/Desktop/tamago-shinchoku/tools/_951_jrs_top_light.sh"
+_ME951="/Users/mac/tamago/tamago-shinchoku/tools/_951_jrs_top_light.sh"
 if [ -f "${_ME951}" ]; then bash "${_ME951}" || true; fi
 
-_ME="/Users/mac/Desktop/tamago-shinchoku/tools/_938_jrs_kenpin.sh"
+_ME="/Users/mac/tamago/tamago-shinchoku/tools/_938_jrs_kenpin.sh"
 if [ -f "${_ME}" ]; then bash "${_ME}" || true; fi
 
-_NEXT="/Users/mac/Desktop/tamago-shinchoku/tools/_937_jrs_mail.sh"
+_NEXT="/Users/mac/tamago/tamago-shinchoku/tools/_937_jrs_mail.sh"
 if [ -f "${_NEXT}" ]; then exec bash "${_NEXT}"; fi
-_NEXT="/Users/mac/Desktop/tamago-shinchoku/tools/_936_jrs_bottom_merge.sh"
+_NEXT="/Users/mac/tamago/tamago-shinchoku/tools/_936_jrs_bottom_merge.sh"
 if [ -f "${_NEXT}" ]; then exec bash "${_NEXT}"; fi
 
 JOY="/Users/mac/Desktop/joy-relief-station"
 SRC_WT="${JOY}/.claude/worktrees/footer-flash-0917"
 TMP_WT="/tmp/jrs-930-footer-flash"
-LOG="/Users/mac/Desktop/tamago-shinchoku/status/_930_push_joy.log"
+LOG="/Users/mac/tamago/tamago-shinchoku/status/_930_push_joy.log"
 FILES=("src/router.tsx" "src/routes/__root.tsx")
 
 {

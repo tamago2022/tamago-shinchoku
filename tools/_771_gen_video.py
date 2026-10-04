@@ -24,8 +24,8 @@ KEY_PATH = os.path.expanduser("~/.fal_key")
 with open(KEY_PATH) as f:
     FAL_KEY = f.read().strip()
 
-SRC = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/751-zen-beach/16x9_widened_v2.png"
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/771-zen-beach-loop"
+SRC = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/751-zen-beach/16x9_widened_v2.png"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/771-zen-beach-loop"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 MODEL = "lightricks/ltx-2.5/image-to-video/fast"

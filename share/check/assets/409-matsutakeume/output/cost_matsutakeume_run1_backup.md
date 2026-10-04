@@ -14,8 +14,8 @@
 ## 累計: 約123.3円（上限300円）
 
 ## 結果
-- 梅（Kling LipSync）: 完成 /Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/output/ume_15s.mp4
-- 竹（Seedance 2.0 mini, 実測1本）: 完成 /Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/output/sh09_take.mp4
+- 梅（Kling LipSync）: 完成 /Users/mac/tamago/tamago-shinchoku/share/check/assets/409-matsutakeume/output/ume_15s.mp4
+- 竹（Seedance 2.0 mini, 実測1本）: 完成 /Users/mac/tamago/tamago-shinchoku/share/check/assets/409-matsutakeume/output/sh09_take.mp4
 - 松（Seedance 2.5 reference-to-video, 実測1本）: 未完成/失敗 または予算超過で未実行
 
 ※実際の請求額はfal.aiダッシュボードでのみ確定します。上記は早見表の単価からの概算です。

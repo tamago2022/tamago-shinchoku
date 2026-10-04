@@ -41,7 +41,7 @@
 ------------------------------------------------------------------
 戻し方（1行）
 ------------------------------------------------------------------
-  python3 ~/Desktop/tamago-shinchoku/tools/1142_loop.py --modosu
+  python3 ~/tamago/tamago-shinchoku/tools/1142_loop.py --modosu
 """
 import io
 import json

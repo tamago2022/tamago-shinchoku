@@ -1,7 +1,7 @@
 #!/bin/bash
 # 1144番【出るまで押す】main に入れたものが本番に出るまで、見る係→押す係を回す。
 # 心臓とは縁を切って走る（tools/1144_hanareru.py 経由で起こす）。
-cd /Users/mac/Desktop/tamago-shinchoku || exit 1
+cd /Users/mac/tamago/tamago-shinchoku || exit 1
 mkdir -p status/1144
 URL="https://joy-relief-station.lovable.app/"
 key() { curl -s -o /dev/null -D- "$URL" | awk 'tolower($1)=="x-deployment-id:"{print $2}'; }

@@ -2,7 +2,7 @@
 # PWAリモコンのコマンドキューを実行し、結果があればpushする（30秒おきにlaunchdから呼ばれる）。
 set -uo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-REPO="/Users/mac/Desktop/tamago-shinchoku"
+REPO="/Users/mac/tamago/tamago-shinchoku"
 cd "$REPO" || exit 0
 
 # 2026-09-19（配達係の工事中に実機で踏んだ）：.git/index.lock が置き去りになると、

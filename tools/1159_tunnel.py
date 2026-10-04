@@ -19,7 +19,7 @@ import sys
 import time
 
 HOME = os.path.expanduser("~")
-REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
+REPO = os.path.join(HOME, "tamago", "tamago-shinchoku")
 STATE = os.path.join(REPO, "status", "zunda")
 PUB = os.path.join(REPO, "status", "public", "zunda_endpoint.json")
 PORT = 50023

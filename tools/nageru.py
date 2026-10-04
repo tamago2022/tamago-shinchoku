@@ -546,6 +546,10 @@ def main():
     if not a.ai or not a.topic:
         ap.print_help()
         return 2
+    if a.ai == "jules":
+        # ★2026-10-04 Julesはチームから外した（たまごさん判断）。Codexへ付け替え。
+        print("【お知らせ】Julesは外した（2026-10-04）。Codexへ付け替えて送ります。", file=sys.stderr)
+        a.ai = "codex"
 
     body = a.body
     if a.body_file:

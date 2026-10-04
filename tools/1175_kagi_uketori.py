@@ -18,8 +18,8 @@
   → だから「鍵を1か所に貼れば、機械が正しい場所へしまう」口を1本だけ作る。
 
 やること（心臓から1分おきに呼ばれる。たまごさんはターミナルを開かない）：
-  1. ~/Desktop/kagi.txt（無ければ作って、書き方を中に書いておく）と
-     ~/Desktop/*_token.txt / ~/.tamago/_drop/*.txt を見る
+  1. /Users/mac/tamago/kagi/kagi.txt（無ければ作って、書き方を中に書いておく）と
+     /Users/mac/tamago/kagi/*_token.txt / ~/.tamago/_drop/*.txt を見る
   2. `NAME=値` でも、**値だけ貼ってあっても**、形（ghp_ / sk- / xai- / AIza / eyJ / 16文字）で
      どの鍵かを自分で当てる
   3. 叩いて確かめられる鍵は1回だけ叩いて、本物だと分かったものだけしまう
@@ -28,7 +28,7 @@
   6. 値は1バイトもログ・JSON・リポジトリに書かない（先頭4文字＋末尾2文字だけ）
 
 置き場所:
-  受け取り口  ~/Desktop/kagi.txt
+  受け取り口  /Users/mac/tamago/kagi/kagi.txt
   しまう先    ~/.tamago/keys/api_keys.env ／ ~/.tamago/gmail_app_password 等
   紙          status/1175_kagi_uketori.json（伏せ字あり・非公開）
               status/public/1175_kagi_uketori.json（伏せ字も無い・公開）
@@ -63,7 +63,7 @@ OUT_PUB = os.path.join(PUBLIC, "1175_kagi_uketori.json")
 OUTBOX = os.path.join(STATUS, "dispatch_outbox.jsonl")
 STAMP = os.path.join(STATUS, ".1175_shirase_at")
 
-TRAY = os.path.expanduser("~/Desktop/kagi.txt")
+TRAY = os.path.expanduser("/Users/mac/tamago/kagi/kagi.txt")
 TRAY_HEAD = """# ここに鍵を貼るだけ。1回貼れば、もう二度とログインを頼みません。
 # 貼り方はどちらでもいい：
 #   GMAIL_APP_PASSWORD=abcdefghijklmnop
@@ -353,7 +353,7 @@ def have(sp):
 
 # ---------------------------------------------------------------------------
 def trays():
-    d = os.path.expanduser("~/Desktop")
+    d = "/Users/mac/tamago/kagi"
     out = [TRAY]
     for base in (d, os.path.join(TAMAGO, "_drop")):
         if not os.path.isdir(base):

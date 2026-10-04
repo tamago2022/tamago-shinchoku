@@ -22,7 +22,7 @@ import shutil
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(HERE)  # /Users/mac/Desktop/tamago-shinchoku
+REPO = os.path.dirname(HERE)  # /Users/mac/tamago/tamago-shinchoku
 CHECK_DIR = os.path.join(REPO, "share", "check")
 LOG = os.path.join(REPO, "status", "check_page_pruner.log")
 STAMP = os.path.join(REPO, "status", ".check_page_pruner_at")

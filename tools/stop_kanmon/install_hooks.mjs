@@ -13,8 +13,8 @@
 //   permissions や他のフックは一切消さない。上書きしない。追記だけ。
 //
 // 使い方（bashが生きているとき）：
-//   node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/install_hooks.mjs \
-//     /Users/mac/Desktop/tamago-shinchoku \
+//   node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/install_hooks.mjs \
+//     /Users/mac/tamago/tamago-shinchoku \
 //     /Users/mac/Desktop/joy-relief-station \
 //     ~/.claude            ← ★ここに入れると全リポジトリに効く（真の根治）
 //   --dry を付けると書かずに差分だけ出す。
@@ -35,7 +35,7 @@ let targets = args.filter((a) => !a.startsWith("--"));
 // 既定の配り先。ここを増やせば配り先が増える。
 if (targets.length === 0) {
   targets = [
-    "/Users/mac/Desktop/tamago-shinchoku",
+    "/Users/mac/tamago/tamago-shinchoku",
     "/Users/mac/Desktop/joy-relief-station",
     path.join(os.homedir(), ".claude"), // ユーザー全体（全リポジトリに効く）
   ];

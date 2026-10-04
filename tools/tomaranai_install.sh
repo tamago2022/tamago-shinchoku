@@ -8,7 +8,7 @@
 #   既に入っていれば何もしない＝毎周呼んでも安い。
 
 set -u
-REPO="/Users/mac/Desktop/tamago-shinchoku"
+REPO="/Users/mac/tamago/tamago-shinchoku"
 LABEL="com.tamago.tomaranai"
 SRC="$REPO/tools/$LABEL.plist"
 DST="$HOME/Library/LaunchAgents/$LABEL.plist"

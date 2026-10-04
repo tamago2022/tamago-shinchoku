@@ -724,7 +724,7 @@ LEDGER = [
          stops="Xの予約が1本も入らない。毎回「ログインして」に戻る",
          fix="publish.buffer.com/settings/api で1回だけ鍵を作り、"
              "~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す"
-             "（~/Desktop/buffer_token.txt に貼るだけでも自動で写る）"),
+             "（/Users/mac/tamago/kagi/buffer_token.txt に貼るだけでも自動で写る）"),
     dict(id="claude", what="Claudeの鍵（発車そのもの）", where="キーチェーン／~/.tamago/claude_token",
          probe=probe_claude, stops="工場の発車が全部止まる（44時間の実害）",
          fix="いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す"),
@@ -776,7 +776,7 @@ LEDGER = [
          stops="oasisjoyrelief への予約が1本も出せない。"
                "★台帳に無い間は、毎回たまごさんに「ログインして」と頼み直していた",
          fix="publish.buffer.com/settings/api で鍵を1回だけ作り、"
-             "~/Desktop/buffer_token.txt に貼って保存する。"
+             "/Users/mac/tamago/kagi/buffer_token.txt に貼って保存する。"
              "5分便の buffer_kagi_install.py が拾って鍵ファイルへしまい、平文を消す"),
     dict(id="devin", what="Devin（実装の代行）", where="DEVIN_API_KEY",
          probe=probe_devin, stops="Devinへ仕事を出せない",

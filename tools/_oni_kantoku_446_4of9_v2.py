@@ -1,6 +1,6 @@
 import json, datetime
 
-path = "/Users/mac/Desktop/tamago-shinchoku/status/queue.json"
+path = "/Users/mac/tamago/tamago-shinchoku/status/queue.json"
 with open(path, encoding="utf-8") as f:
     d = json.load(f)
 
@@ -41,7 +41,7 @@ with open(path, "w", encoding="utf-8") as f:
     json.dump(d, f, ensure_ascii=False, indent=1)
     f.write("\n")
 
-with open("/Users/mac/Desktop/tamago-shinchoku/status/oni_kantoku_log.jsonl", "a", encoding="utf-8") as f:
+with open("/Users/mac/tamago/tamago-shinchoku/status/oni_kantoku_log.jsonl", "a", encoding="utf-8") as f:
     for line in audit_lines:
         f.write(json.dumps(line, ensure_ascii=False) + "\n")
 

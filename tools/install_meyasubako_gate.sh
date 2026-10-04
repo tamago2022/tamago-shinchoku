@@ -9,7 +9,7 @@
 #
 set -uo pipefail
 
-SRC_REPO="${SRC_REPO:-$HOME/Desktop/tamago-shinchoku}"
+SRC_REPO="${SRC_REPO:-$HOME/tamago/tamago-shinchoku}"
 DST_REPO="${DST_REPO:-$HOME/Desktop/joy-relief-station}"
 
 if [ ! -d "$DST_REPO/.git" ]; then

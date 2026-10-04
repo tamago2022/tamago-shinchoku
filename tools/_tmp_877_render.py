@@ -59,7 +59,7 @@ lines1 = [
     ("結論: Brave側に「YouTubeをミュートする」設定は見つからなかった", 22, RED, True),
     ("(むしろ全部「許可」になっている。過去のAI操作の跡ではない)", 16, WHT, False),
 ]
-render(lines1, "/Users/mac/Desktop/tamago-shinchoku/share/check/img/877-brave-settings-raw.png")
+render(lines1, "/Users/mac/tamago/tamago-shinchoku/share/check/img/877-brave-settings-raw.png")
 
 lines2 = [
     ("拡張機能・Brave Shields(広告/追跡ブロック)の個別設定も確認", 24, YEL, True),
@@ -74,4 +74,4 @@ lines2 = [
     ("→ ミュートの原因はBrave側の設定ではなく、", 22, RED, True),
     ("   YouTube自身が「前回のミュート状態」を記憶する仕様と見られる", 22, RED, True),
 ]
-render(lines2, "/Users/mac/Desktop/tamago-shinchoku/share/check/img/877-brave-shields-ext.png")
+render(lines2, "/Users/mac/tamago/tamago-shinchoku/share/check/img/877-brave-shields-ext.png")

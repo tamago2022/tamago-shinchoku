@@ -9,7 +9,7 @@
 tamago-orchestrator（409番セッション）自身はこのスクリプトを実行できませんでした。
 
 ★実行方法（たまごさん本人 or 対話的に許可できるセッションで）：
-    python3 "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py"
+    python3 "/Users/mac/tamago/tamago-shinchoku/share/check/assets/409-matsutakeume/run_matsutakeume.py"
 
 実行すると、Bashの許可ダイアログが1回（最初のfal API呼び出し時）出るはずなので「許可」を押してください。
 以降は自動で進み、梅→竹(実測1本)→竹(残り)→松(実測1本)→松(残り) の順で、

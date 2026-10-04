@@ -24,7 +24,7 @@ import os
 import time
 from contextlib import contextmanager
 
-REPO = "/Users/mac/Desktop/tamago-shinchoku"
+REPO = "/Users/mac/tamago/tamago-shinchoku"
 ARCHIVE = os.path.join(REPO, "status", "done_archive.json")
 LOCK = os.path.join(REPO, "status", ".queue.lock")
 TARGET = {726, 796, 802}

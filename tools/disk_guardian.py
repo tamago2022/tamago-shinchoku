@@ -48,7 +48,7 @@ except Exception:
     disk_trend = None
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(HERE)  # /Users/mac/Desktop/tamago-shinchoku
+REPO = os.path.dirname(HERE)  # /Users/mac/tamago/tamago-shinchoku
 JOY = "/Users/mac/Desktop/joy-relief-station"
 WT_DIR = os.path.join(JOY, ".worktrees")
 # 2026-09-06（430番）：作業場は `.worktrees` だけでなく `.claude/worktrees` にも

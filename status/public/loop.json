@@ -1,6 +1,6 @@
 {
- "at": "2026-10-04 19:49:34",
- "akaN": 3,
+ "at": "2026-10-04 20:53:03",
+ "akaN": 4,
  "atama": {
   "label": "飴玉ゼロ率",
   "value": 72.9,
@@ -8,7 +8,7 @@
   "why": "走った48回 → 取れた13回",
   "nao": "1142_fukkyuu.py が直せるものは直す。残りは名前を出す"
  },
- "hitokoto": "赤が3個あります：飴玉ゼロ率",
+ "hitokoto": "赤が4個あります：飴玉ゼロ率",
  "cards": [
   {
    "key": "ame",
@@ -24,36 +24,36 @@
     "line_reply(4回)",
     "anthropic_reply(4回)",
     "renraku(6回)",
-    "auto:kaitsuu(275回)",
+    "auto:kaitsuu(276回)",
     "auto:kazu_gate(21回)",
     "auto:nagekomi_shelf(17回)",
-    "auto:nagekomi_list(233回)",
+    "auto:nagekomi_list(234回)",
     "auto:shiire_loop(10回)",
-    "auto:dojisu_jougen(257回)",
+    "auto:dojisu_jougen(258回)",
     "auto:okane_ichimai(19回)",
     "auto:omosa_mihari(14回)",
     "auto:soto_hatarakite(17回)",
     "auto:kakunin_machi(17回)",
     "auto:daicho(138回)",
-    "auto:inochi(43回)",
+    "auto:inochi(44回)",
     "auto:mitassei(90回)",
     "auto:tekizai(17回)",
     "auto:subsc_shirase(17回)",
     "auto:haikanzu(17回)",
     "auto:aki_toko(39回)",
     "auto:buffer_yoyaku(2回)",
-    "auto:aitara_mawasu(219回)",
+    "auto:aitara_mawasu(220回)",
     "auto:main_kanmon(224回)",
     "auto:modoseru(211回)",
     "auto:1142_kanmon(54回)",
     "auto:haibun(212回)",
     "auto:shukudai(12回)",
     "auto:fukkatsu(2回)",
-    "auto:tomaranai(218回)",
-    "auto:shingou(216回)",
+    "auto:tomaranai(219回)",
+    "auto:shingou(217回)",
     "auto:1172_kagi_jidou(1回)",
-    "auto:kagi_jidou_makinaoshi(128回)",
-    "auto:1175_kagi_uketori(197回)",
+    "auto:kagi_jidou_makinaoshi(129回)",
+    "auto:1175_kagi_uketori(198回)",
     "auto:hyoudai(68回)"
    ],
    "nao": "1142_fukkyuu.py が直せるものは直す。残りは名前を出す"
@@ -61,17 +61,16 @@
   {
    "key": "uso",
    "label": "嘘の完了",
-   "value": 4,
+   "value": 3,
    "unit": "件",
-   "sub": "できもの未検証3件 ＋ 途中で固まった案件1件",
+   "sub": "できもの未検証3件 ＋ 途中で固まった案件0件",
    "mark": "🔴",
    "red": true,
    "why": "本番で確認が取れていないものを「完了」と呼んでいる数",
    "names": [
     "牛尾さんの係を常設にした（今こうやってますから、うちもこうやります）",
     "サムネの食い違い解消＋一覧の棚編集（最終仕上げ）",
-    "750番：未報告の完了が消えていた不具合を修正",
-    "判定日赤｜「ちゃんと調べて書いてるのがわかる、素晴らしい」とのことで、具体例:"
+    "750番：未報告の完了が消えていた不具合を修正"
    ],
    "nao": "検品を通すまで「完了」と書かせない（1142_kanmon.py）"
   },
@@ -97,12 +96,12 @@
    "label": "落ちた便",
    "value": 1,
    "unit": "本",
-   "sub": "24時間：本物210本／空回し0本",
+   "sub": "24時間：本物206本／空回し0本",
    "mark": "🔴",
    "red": true,
-   "why": "走った210回 → 取れた210回",
+   "why": "走った206回 → 取れた206回",
    "names": [
-    "Macの体力：メモリ=green 空き=6.7GB スワップ=38.22GB ディスク=49.0GB"
+    "どの容疑者にも印が立っていません。分かりません（取り繕わない）"
    ],
    "nao": "止め札の中身が「ログイン」なら 1142_fukkyuu.py が鍵の手順を出す"
   },
@@ -162,26 +161,28 @@
   {
    "key": "waku",
    "label": "週の枠",
-   "value": 67.0,
+   "value": null,
    "unit": "%",
-   "sub": "戻るのは 2026-10-06 17:59",
-   "mark": "✅",
-   "red": false,
-   "why": "使い切ると、その週は本物が1本も出せない",
+   "sub": "測れていません",
+   "mark": "🔴",
+   "red": true,
+   "why": "枠が測れていない＝使い切っても気づけない",
    "names": [],
-   "nao": "70%を超えたら Opus を止めて Sonnet だけにする"
+   "nao": "ochita.py の枠取得を直す"
   },
   {
    "key": "jouchuu",
    "label": "常駐が古い",
-   "value": 0,
-   "unit": "本",
-   "sub": "心臓はSun Oct  4 19:43:08 2026起動（0.0日前）。ファイルは10-04 07:37更新",
-   "mark": "✅",
+   "value": null,
+   "unit": "",
+   "sub": "起動時刻が測れない場所から見ています（Macから見ると測れます）",
+   "mark": "⚪",
    "red": false,
-   "why": "心臓は最新のファイルで走っています",
-   "names": [],
-   "nao": "launchctl kickstart -k gui/$(id -u)/com.tamago.tamago-shinchoku.heartbeat"
+   "why": "測れないので判定しない（測れたふりをしない）",
+   "names": [
+    ""
+   ],
+   "nao": ""
   }
  ]
 }

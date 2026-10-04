@@ -4,7 +4,7 @@
 # 開いたウィンドウでLINEにログインしてもらうためのもの（ログインは本人にしかできない）。
 #
 # 使い方：
-#   1. ターミナルで  bash /Users/mac/Desktop/tamago-shinchoku/tools/start_chrome_line_login.sh  を実行
+#   1. ターミナルで  bash /Users/mac/tamago/tamago-shinchoku/tools/start_chrome_line_login.sh  を実行
 #   2. 開いたChromeウィンドウで https://creator.line.me/ja/ を開き、いつものLINEアカウントでログイン
 #   3. ログインできたことを確認したら、そのウィンドウは閉じてよい（ログイン情報は保存される）
 #

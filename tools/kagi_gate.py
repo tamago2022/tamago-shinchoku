@@ -54,7 +54,7 @@ ALREADY_HAVE = {
                "claude-in-chrome のツールで**自分で見に行けます**。"
                "『用意してください』は禁止。まず tabs_context で今あるタブを見ること。"),
     "folder": (["フォルダ", "ファイルを見せて", "パスを教えて", "どこにある"],
-               "/Users/mac/Desktop/tamago-shinchoku は既にマウント済みです。"
+               "/Users/mac/tamago/tamago-shinchoku は既にマウント済みです。"
                "自分で ls して探すこと。たまごさんに場所を聞かない。"),
     "buffer": (["buffer", "バッファー", "予約投稿", "xに予約", "bufferにログイン"],
                "Bufferに「ログインして」と頼むのは**禁止**。"
@@ -64,7 +64,7 @@ ALREADY_HAVE = {
                "5分便が tools/buffer_yoyaku.py を回して予約を入れ、"
                "予約一覧で照合した結果を status/buffer_queue/done/ に書き戻します。"
                "鍵がまだ無いときだけ、**1回きり**『publish.buffer.com/settings/api で"
-               "鍵を作って ~/Desktop/buffer_token.txt に貼る』を頼む。"
+               "鍵を作って /Users/mac/tamago/kagi/buffer_token.txt に貼る』を頼む。"
                "★『ログインして』の形では二度と頼まない。",),
     "mac": (["ターミナル", "コマンドを打って", "実行して"],
             "5分便(machine_status_push.sh)と心臓(heartbeat.sh)が"

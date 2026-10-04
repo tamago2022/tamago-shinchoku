@@ -24,7 +24,7 @@ KEY_PATH = os.path.expanduser("~/.fal_key")
 with open(KEY_PATH) as f:
     FAL_KEY = f.read().strip()
 
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/919-zen"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/919-zen"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 MODEL = "minimax/h3-max-turbo/image-to-video"

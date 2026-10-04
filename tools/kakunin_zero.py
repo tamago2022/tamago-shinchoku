@@ -32,7 +32,7 @@ REPO = os.path.dirname(HERE)
 #   指示文の中に書いてあったら、その便は必ず止まる。
 DAME = {
     "request_access": "コンピュータ操作の許可ダイアログが出る。→ 代わりに gsk / curl / gh / 心臓(oneshot) を使う",
-    "request_cowork_directory": "フォルダ選択のダイアログが出る。→ 既に繋がっている /Users/mac/Desktop/tamago-shinchoku を使う",
+    "request_cowork_directory": "フォルダ選択のダイアログが出る。→ 既に繋がっている /Users/mac/tamago/tamago-shinchoku を使う",
     "request_teach_access": "画面操作の許可ダイアログが出る。→ 文章で手順を書く",
     "AskUserQuestion": "選択肢のポップアップが出る。→ 自分で決めて、決めた理由を報告に1行書く",
     "start_code_task": "別の許可を要求する。→ 使わない",

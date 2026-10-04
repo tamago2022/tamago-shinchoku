@@ -25,7 +25,7 @@ with open(KEY_PATH) as f:
     FAL_KEY = f.read().strip()
 
 SRC_DIR = "/Users/mac/Documents/AI作業/素材/ZEN_2026-09-17"
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/assets/919-zen"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/assets/919-zen"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 MODEL = "fal-ai/nano-banana/edit"

@@ -9,7 +9,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 FONT_PATH = "/System/Library/Fonts/PingFang.ttc"
-OUT_DIR = "/Users/mac/Desktop/tamago-shinchoku/share/check/img"
+OUT_DIR = "/Users/mac/tamago/tamago-shinchoku/share/check/img"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 W = 1000
@@ -96,7 +96,7 @@ render(
 
 # --- after: 実データ（52行が実際に自動追記されている） ---
 lines = open(
-    "/Users/mac/Desktop/tamago-shinchoku/status/dispatch_outbox.jsonl", encoding="utf-8"
+    "/Users/mac/tamago/tamago-shinchoku/status/dispatch_outbox.jsonl", encoding="utf-8"
 ).read().strip().split("\n")
 total = len(lines)
 recent = lines[-5:]

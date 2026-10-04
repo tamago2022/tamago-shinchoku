@@ -136,7 +136,7 @@ def self_test() -> int:
     cases = [
         ("確認ページ: https://tamago2022.github.io/tamago-shinchoku/share/check/1472-x.html",
          True, "HTTP URLだけ→通す"),
-        ("確認してください: /Users/mac/Desktop/tamago-shinchoku/share/check/x.html をダブルクリックで開きます",
+        ("確認してください: /Users/mac/tamago/tamago-shinchoku/share/check/x.html をダブルクリックで開きます",
          False, "ローカルパス＋確認→止める"),
         ("このファイルをダブルクリックで開くと見れます: ~/Desktop/report.html",
          False, "ローカルパス＋見て→止める"),

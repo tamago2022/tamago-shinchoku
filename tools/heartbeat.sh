@@ -446,7 +446,7 @@ while :; do
   #   鍵の値はログにもJSONにも1バイトも書かない。AIを呼ばないのでクレジットは0円。
   tick_every 2 && ( python3 "$REPO/tools/1163_kagi_machi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-28（1175番）鍵の受け取り口。たまごさん「1回ログインしたら人間はもう二度とやらなくていい」
-  #   ★~/Desktop/kagi.txt に貼られた鍵を、形（ghp_ / sk- / xai- / AIza / eyJ / 16文字）から
+  #   ★/Users/mac/tamago/kagi/kagi.txt に貼られた鍵を、形（ghp_ / sk- / xai- / AIza / eyJ / 16文字）から
   #     自分で当てて、正しい置き場へ chmod 600 でしまい、平文を消す。値はログにもJSONにも書かない。
   #   ★1163_kagi_machi.py はSupabase専用・buffer_kagi_install.py はBuffer専用だった。
   #     口が無い鍵は毎回ブラウザのログインに落ちていた＝そこが「毎回ログインして」の正体。

@@ -48,7 +48,7 @@ EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic", ".avif", ".svg"}
 #   対処＝①iPhone便のEXTSにも .avif を追加 ②デスクトップ直下を定期的に見回り、
 #         avif/webp/heic を先回りでJPEGへ変換してEagleへ入れてしまう（DESKTOP_SWEEP）。
 DESKTOP = os.path.expanduser("~/Desktop")
-DESKTOP_DONE = os.path.join(DESKTOP, "Eagle取り込み済み_変換画像")
+DESKTOP_DONE = "/Users/mac/tamago/_eagle_done/Eagle取り込み済み_変換画像"  # 2026-10-04 デスクトップに作らない
 DESKTOP_SWEEP_EXTS = {".avif", ".webp", ".heic"}
 NEEDS_CONVERT_EXTS = {".heic", ".avif"}
 

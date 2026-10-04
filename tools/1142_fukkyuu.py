@@ -32,7 +32,7 @@
 ------------------------------------------------------------------
 戻し方（1行）
 ------------------------------------------------------------------
-  python3 ~/Desktop/tamago-shinchoku/tools/1142_loop.py --modosu
+  python3 ~/tamago/tamago-shinchoku/tools/1142_loop.py --modosu
 """
 import io
 import json
@@ -286,7 +286,7 @@ def naosu_login():
             "# 1142番：ログインの1年鍵を作る手順を、たまごさんのMacのクリップボードに入れて\n"
             "# ターミナルを開くだけ。鍵そのものはAI側で一切扱わない。\n"
             "printf '%s' "
-            "'python3 ~/Desktop/tamago-shinchoku/tools/975_login_1pon.py' | pbcopy\n"
+            "'python3 ~/tamago/tamago-shinchoku/tools/975_login_1pon.py' | pbcopy\n"
             "open -a Terminal\n"
             "echo 'クリップボードに入れました。⌘V → Enter'\n")
     os.chmod(pend, 0o755)

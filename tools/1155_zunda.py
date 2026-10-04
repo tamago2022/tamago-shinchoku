@@ -40,7 +40,7 @@ except Exception as _e:          # 歯止めが読めないだけで生成を止
     print("歯止め（tools/omoi_habadome.py）が読めませんでした: %s" % _e)
 
 HOME = os.path.expanduser("~")
-REPO = os.path.join(HOME, "Desktop", "tamago-shinchoku")
+REPO = os.path.join(HOME, "tamago", "tamago-shinchoku")
 VAULT = os.path.join(HOME, "Library", "Mobile Documents",
                      "iCloud~md~obsidian", "Documents", "tamago_brain")
 VAULT_WRITE_STOPPED = True

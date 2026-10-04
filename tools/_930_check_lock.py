@@ -1,6 +1,6 @@
 import subprocess, os, time
 
-p = '/Users/mac/Desktop/tamago-shinchoku/status/.machine_status_push.lock'
+p = '/Users/mac/tamago/tamago-shinchoku/status/.machine_status_push.lock'
 if os.path.exists(p):
     with open(p) as f:
         pid = f.read().strip()
