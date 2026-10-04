@@ -47,6 +47,14 @@ def outbox(text):
         f.write(json.dumps({"at": dt.datetime.now(JST).isoformat(), "from": "deadline_watch", "text": text}, ensure_ascii=False) + "\n")
 
 
+def alarms(what):
+    """5日前・3日前・前日の通知"""
+    out = []
+    for d in (5, 3, 1):
+        out += ["BEGIN:VALARM", "ACTION:DISPLAY", f"TRIGGER:-P{d}D", f"DESCRIPTION:{what}あと{d}日", "END:VALARM"]
+    return out
+
+
 def main():
     now = dt.datetime.now(JST)
     today = now.date()
@@ -66,7 +74,7 @@ def main():
             o, c = ms["open_issues"], ms["closed_issues"]
             m = re.search(r"代表Issue:\s*#(\d+)", ms.get("description") or "")
             events.append(dict(repo=repo, id=ms["id"], num=ms["number"], title=ms["title"],
-                               due=due_jst, o=o, c=c, url=ms["html_url"], state=ms["state"]))
+                               due=due_jst, o=o, c=c, start=ms["created_at"][:10], url=ms["html_url"], state=ms["state"]))
             if ms["state"] != "open" or not m or o == 0:
                 continue
             days = (due_jst.date() - today).days
@@ -88,10 +96,19 @@ def main():
                 print("URL", r["html_url"])
                 outbox(f"【締め切り{label}】{ms['title']}：完了{c}/{c+o}、残り{o}件（{due_jst:%m/%d}）。#{issue}に@codex・Gensparkへ確認コメント済み {r['html_url']}")
 
+    # ---- サブスク予告（5日前・3日前・前日→進捗表＋dispatch_outbox）----
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import subsc_shirase
+        if not DRY and not test:
+            subsc_shirase.run()
+    except Exception as ex:
+        print("subsc_shirase 失敗:", ex)
+
     # ---- ics ----
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//tamago//deadline-watch//JA",
-         "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:たまご締め切り",
+         "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:たまごAI専用カレンダー",
          "X-WR-TIMEZONE:Asia/Tokyo", "REFRESH-INTERVAL;VALUE=DURATION:PT6H", "X-PUBLISHED-TTL:PT6H"]
     for e in sorted(events, key=lambda e: e["due"]):
         total = e["o"] + e["c"]
@@ -104,10 +121,35 @@ def main():
               f"DTSTART;TZID=Asia/Tokyo:{start:%Y%m%dT%H%M%S}",
               f"DTEND;TZID=Asia/Tokyo:{e['due']:%Y%m%dT%H%M%S}",
               "SUMMARY:" + esc(done + "締切 " + e["title"] + " 残り" + str(o_) + "件"),
-              f"DESCRIPTION:{esc(f'完了{c_}/{total}、残り{o_}件')}",
+              "DESCRIPTION:" + esc("着手 " + e["start"] + "／期日 " + f"{e['due']:%Y-%m-%d}" + f"／完了{c_}/{total}、残り{o_}件"),
               f"URL:{e['url']}",
-              "BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:-P1D", "DESCRIPTION:締め切りあと1日", "END:VALARM",
+              ] + alarms("締め切り") + [
               "END:VEVENT"]
+        sd = e["start"].replace("-", "")
+        sd2 = (dt.date.fromisoformat(e["start"]) + dt.timedelta(days=1)).strftime("%Y%m%d")
+        L += ["BEGIN:VEVENT", f"UID:milestone-start-{e['id']}@tamago2022.github.io", f"DTSTAMP:{stamp}",
+              f"DTSTART;VALUE=DATE:{sd}", f"DTEND;VALUE=DATE:{sd2}",
+              "SUMMARY:" + esc("着手 " + e["title"]), "URL:" + e["url"], "END:VEVENT"]
+    # サブスクの更新日（status/subsc.json・日付が確かなものだけ）
+    try:
+        led = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "status", "subsc.json"), encoding="utf-8"))
+    except Exception:
+        led = {"items": []}
+    for it in led.get("items", []):
+        try:
+            d0 = dt.date.fromisoformat((it.get("tsugi") or "")[:10])
+        except ValueError:
+            continue
+        owari = it.get("kurikaeshi") == "owari"
+        kane = f"${it['usd']}" if it.get("usd") else ""
+        if it.get("yen"):
+            kane += f"（約{it['yen']:,}円・目安）"
+        name = it["name"].split("（")[0] + ("" if it.get("kakunin") else "（日付は未確認）")
+        L += ["BEGIN:VEVENT", f"UID:subsc-{it['id']}-{d0}@tamago2022.github.io", f"DTSTAMP:{stamp}",
+              f"DTSTART;VALUE=DATE:{d0:%Y%m%d}", f"DTEND;VALUE=DATE:{d0 + dt.timedelta(days=1):%Y%m%d}",
+              "SUMMARY:" + esc(("サブスク終了 " if owari else "サブスク更新 ") + name + (" " + kane if kane else "")),
+              "DESCRIPTION:" + esc(("更新しない。" if owari else "") + "円は目安・実際のカード請求額とは異なる"),
+              ] + alarms("サブスク") + ["END:VEVENT"]
     L.append("END:VCALENDAR")
     ics = "\r\n".join(fold(x) for x in L) + "\r\n"
 

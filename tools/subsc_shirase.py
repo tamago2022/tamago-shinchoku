@@ -6,7 +6,7 @@
   「全てのサブスク、3日ぐらい前からアナウンスして。もう更新が迫ってるって。
     3日連続お知らせしてくださいね。」
 
-★1回で終わらせない。**3日連続**（3日前・2日前・前日）。
+★1回で終わらせない。**5日前・3日前・前日**（2026-10-05 たまごさん指示で変更。元は3日連続）。
 ★更新日が過ぎたら止める（同じ月のあいだに4回目を出さない）。
 ★知らせる文は**1行だけ**：「◯◯があと◯日で更新されます（◯月◯日・約◯円）」
 ★憶測の金額を1円も書かない。取れないものは「取れていない＋どの口が閉じているか」。
@@ -46,7 +46,8 @@ RATE_LOG = os.path.join(STATUS, "subsc_rate.jsonl")
 STAMP = os.path.join(STATUS, ".subsc_shirase_at")
 
 JST = timezone(timedelta(hours=9))
-SHIRASERU_HI = (3, 2, 1)          # ★3日前・2日前・前日。増やさない・減らさない
+MEYASU_RATE = 157.83
+SHIRASERU_HI = (5, 3, 1)          # ★5日前・3日前・前日（2026-10-05 たまごさん指示で 3,2,1 から変更）。増やさない・減らさない
 RATE_URL = "https://api.frankfurter.app/latest?from=USD&to=JPY"   # 鍵不要・0円
 
 
@@ -111,7 +112,9 @@ def rate(today):
         return v, moto
     except Exception as e:
         _ = e
-        return None, "取れていない（その日のレートの口が開かなかった：%s）" % RATE_URL
+        # 2026-10-05 たまごさん指示：取れない日は 1ドル=157.83円（2026-10-02終値）の目安を使う。
+        return MEYASU_RATE, ("目安レート%s円（2026-10-02終値・tradingeconomics.com/japan/currency）。"
+                             "その日のレートの口が開かなかった：%s" % (MEYASU_RATE, RATE_URL))
 
 
 def en(usd, v):
@@ -122,12 +125,14 @@ def en(usd, v):
 
 
 # ---------------------------------------------------------------------------
-def ichigyou(name, nokori, d, yen, rate_moto):
+def ichigyou(name, nokori, d, yen, rate_moto, owari=False):
     """★知らせる文は1行だけ。"""
     if yen is not None:
         kane = "約%s円" % format(yen, ",")
     else:
         kane = "金額は取れていない"
+    if owari:
+        return "%sがあと%d日で終了します（%d月%d日・更新しない予定・%s）" % (name, nokori, d.month, d.day, kane)
     return "%sがあと%d日で更新されます（%d月%d日・%s）" % (name, nokori, d.month, d.day, kane)
 
 
@@ -225,7 +230,7 @@ def run(force=False, today=None):
             if sent.get(kagi):
                 continue                      # 同じ日に2回言わない
             d = _hiduke(r["tsugi"])
-            gyou.append(ichigyou(r["name"], r["nokori"], d, r["yen"], rate_moto))
+            gyou.append(ichigyou(r["name"], r["nokori"], d, r["yen"], rate_moto, r["kurikaeshi"] == "owari"))
             ids.append(r["id"])
             sent[kagi] = today.isoformat()
     # 古い印は90日で捨てる（台帳が太り続けない）
@@ -236,9 +241,21 @@ def run(force=False, today=None):
     if okutta:
         _save(SENT, sent)
 
+    # 進捗表の目立つ所：5日以内に迫っているものは毎日出す（通知の「1日1回」とは別）
+    semaru = [ichigyou(r["name"], r["nokori"], _hiduke(r["tsugi"]), r["yen"], rate_moto,
+                       r["kurikaeshi"] == "owari")
+              for r in rows if r["nokori"] is not None and 0 <= r["nokori"] <= max(SHIRASERU_HI)]
+    # 月合計（円の目安）：月額＋年額/12。終了予定(owari)・金額不明は入れない
+    gokei = 0
+    for r in rows:
+        if r["kurikaeshi"] in ("monthly", "yearly") and (r["yen"] or r["usd"]):
+            yy = r["yen"] if r["yen"] is not None else en(r["usd"], v)
+            if yy is not None:
+                gokei += yy if r["kurikaeshi"] == "monthly" else int(round(yy / 12.0))
     d = dict(generatedAt=now.strftime("%Y-%m-%d %H:%M:%S"),
              today=today.isoformat(), usdYen=v, rateMoto=rate_moto,
-             rows=rows, shirase=gyou, susumeta=susumeta)
+             rows=rows, shirase=semaru, shiraseHoukoku=gyou, tsukiGokeiYen=gokei,
+             susumeta=susumeta)
     _save(OUT_JSON, d)
     io.open(STAMP, "w", encoding="utf-8").write(today.isoformat())
     return d
@@ -259,9 +276,9 @@ def self_test(verbose=True):
     def nokori(today):
         d = _hiduke("2026-09-30")
         return (d - today).days
-    deta = [nokori(date(2026, 9, x)) in SHIRASERU_HI for x in (26, 27, 28, 29, 30)]
-    if deta != [False, True, True, True, False]:
-        ng.append("3日連続になっていない（%s）" % deta)
+    deta = [nokori(date(2026, 9, x)) in SHIRASERU_HI for x in (24, 25, 26, 27, 28, 29, 30)]  # 5日前・3日前・前日（2026-10-05変更）
+    if deta != [False, True, False, True, False, True, False]:
+        ng.append("5日前・3日前・前日になっていない（%s）" % deta)
 
     # ② 更新日を過ぎたら止まる
     if nokori(date(2026, 10, 1)) in SHIRASERU_HI:
