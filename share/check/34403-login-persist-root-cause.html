@@ -51,6 +51,7 @@
 <h1>#34403 ログイン保持の根本原因見直し（調査結果）</h1>
 <div class="date">2026-10-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<div class="note" style="border:2px solid #c4483a;">⚠️ このページは非公開リポジトリへの3リンクを含み、たまごさんが開くと404になるため不合格になりました。差し替え版は <a href="34403-login-persist-root-cause-v2.html">34403-login-persist-root-cause-v2.html</a> です。こちらを見てください。</div>
 <div class="fix">
 店主指摘(2026-08-01)『ログイン保持が機能していない可能性、根本原因から見直せ』は、実は指摘5日後の2026-08-06に8コミットで既に根本対応済み、かつ本番へ反映済みだった。対応内容：①Cookie保持期間を400日＋触るたび焼き直し（ローリング更新）②direct/embedの二重Cookie（iframeプレビューのPartitioned対応含む）③Safari ITP(7日で消える制約)対策のhint cookie④パスワードの表記ゆれ吸収⑤ブラウザにパスワード保存を促すautoComplete="current-password"設定。本番の配信JSに該当コード(gokigen-admin-hint/cookie-session/gokigen-admin-pw)が実在することを実測確認した。今回あらためてコード・本番の両方を読み直し、追加で直すべき欠陥は見つからなかった。
 </div>
