@@ -1,41 +1,41 @@
 {
- "measuredAt": "2026-10-04T23:21:32+0900",
- "diskFreeGB": 91.0,
+ "measuredAt": "2026-10-05T03:03:51+0900",
+ "diskFreeGB": 89.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 162,
+ "load": 77,
  "memPressure": "green",
  "memAvailGB": 7.2,
- "sessions": 1,
+ "sessions": 4,
  "safeMax": 4,
- "moreOK": 3,
- "target": 1,
- "cap": 1,
+ "moreOK": 4,
+ "target": 2,
+ "cap": 2,
  "calibratedSafeN": 4,
- "below": 0,
+ "below": 2,
  "shedCandidates": [],
  "items": [
   {
    "label": "ゴミ箱を空にする",
-   "effect": "空き 19.61GB",
-   "gb": 19.61,
+   "effect": "空き 19.05GB",
+   "gb": 19.05,
    "kind": "disk",
    "safe": false,
    "how": "捨てたつもりのもの。中身を一度見てから"
   },
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 16.87GB",
-   "gb": 16.87,
+   "effect": "メモリ 14.12GB",
+   "gb": 14.12,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
-   "how": "64プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "57プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 3.96GB",
-   "gb": 3.96,
+   "effect": "空き 3.97GB",
+   "gb": 3.97,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
@@ -50,8 +50,8 @@
   },
   {
    "label": "Spotifyを閉じる",
-   "effect": "メモリ 1.11GB",
-   "gb": 1.11,
+   "effect": "メモリ 1.13GB",
+   "gb": 1.13,
    "kind": "mem",
    "safe": true,
    "app": "Spotify",
@@ -59,8 +59,8 @@
   },
   {
    "label": "Notionを閉じる",
-   "effect": "メモリ 0.47GB",
-   "gb": 0.47,
+   "effect": "メモリ 0.48GB",
+   "gb": 0.48,
    "kind": "mem",
    "safe": true,
    "app": "Notion",
@@ -73,6 +73,15 @@
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
+  },
+  {
+   "label": "LINEを閉じる",
+   "effect": "メモリ 0.35GB",
+   "gb": 0.35,
+   "kind": "mem",
+   "safe": true,
+   "app": "LINE",
+   "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "~/.npm/_npx を空にする",
@@ -90,22 +99,13 @@
    "safe": true,
    "app": "Google Chrome",
    "how": "5プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
-  },
-  {
-   "label": "LINEを閉じる",
-   "effect": "メモリ 0.33GB",
-   "gb": 0.33,
-   "kind": "mem",
-   "safe": true,
-   "app": "LINE",
-   "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   }
  ],
- "_duAt": 1791123679.069373,
+ "_duAt": 1791135590.877476,
  "_du": {
-  "caches": 3.96,
+  "caches": 3.97,
   "npx": 0.34,
-  "trash": 19.61,
+  "trash": 19.05,
   "driveCache": 1.83,
   "nodeModules": 0.47,
   "nodeModulesList": [
@@ -116,19 +116,19 @@
   ]
  },
  "同時上限": {
-  "本数": 1,
+  "本数": 2,
   "根拠": [
-   "首は「スワップ」（メモリ32本／スワップ0本／ロード1本）",
-   "自動減便：5分ロード比1.64（1.5超）＝詰まっている。1本まで落とす",
-   "試し増便は見送り：スワップ使用95%／5分ロード比1.64＝静かでない"
+   "首は「スワップ」（メモリ35本／スワップ3本／ロード4本）",
+   "減便せず：スワップは低い（残り1.52GB（4.0GB未満）／使用85%（70%超））が、空きメモリ14.74GB・5分ロード比1.07＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
+   "試し増便は見送り：スワップ使用85%／5分ロード比1.07＝静かでない"
   ],
   "天井": {
-   "メモリ": 32,
-   "スワップ": 0,
-   "ロード": 1
+   "メモリ": 35,
+   "スワップ": 3,
+   "ロード": 4
   },
-  "測った時刻": "2026-10-04T23:21:33+0900",
-  "自動減便": "5分ロード比1.64（1.5超）＝詰まっている。1本まで落とす",
+  "測った時刻": "2026-10-05T03:03:51+0900",
+  "自動減便": null,
   "試し増便": null
  }
 }
