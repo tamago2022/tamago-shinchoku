@@ -257,9 +257,8 @@ def tsumu(tama, dry=False):
             done.append({"id": t["id"], "st": "dry", "title": t["title"]})
             continue
         try:
-            with lock():
-                st, msg = command_ingest.queue_add(body, priority=t["pri"],
-                                                   label=t["title"][:60], origin="user")
+            st, msg = command_ingest.queue_add(body, priority=t["pri"],
+                                               label=t["title"][:60], origin="user")
         except Exception as e:
             st, msg = "failed", str(e)
         done.append({"id": t["id"], "st": st, "msg": str(msg)[:120], "title": t["title"][:80]})
