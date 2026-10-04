@@ -67,7 +67,7 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番ページ(ビートルズ)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=beatles" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=beatles</a></li>
-  <li><b>実装コード(coverGuide.ts・origin/main)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/f6bee57aec60918864ab34b02dc219ec35205b48/src/lib/coverGuide.ts#L2638" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/f6bee57aec60918864ab34b02dc219ec35205b48/src/lib/coverGuide.ts#L2638</a></li>
+  <li><b>実装コード(coverGuide.ts)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/f6bee57aec60918864ab34b02dc219ec35205b48/src/lib/coverGuide.ts#L2638" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/f6bee57aec60918864ab34b02dc219ec35205b48/src/lib/coverGuide.ts#L2638</a></li>
   <li><b>ルール文書(ingest-playbook.md)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/f6bee57aec60918864ab34b02dc219ec35205b48/docs/operations/ingest-playbook.md#L100-L113" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/f6bee57aec60918864ab34b02dc219ec35205b48/docs/operations/ingest-playbook.md#L100-L113</a></li>
 </ul>
 
@@ -76,11 +76,11 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番URLが200で返る</td><td class="yes">yes</td></tr>
 <tr><td>中身が空でない(Beatles表記11回・ビートルズ表記4回・サムネイル多数)</td><td class="yes">yes</td></tr>
-<tr><td>mainブランチ(origin/main)にcurationProfile.maxSongs:50が存在</td><td class="yes">yes</td></tr>
+<tr><td>サイト本体のコードにcurationProfile.maxSongs:50が存在</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-実測: node fetchで本番URLをHTTP 200確認、本文中Beatles11回/ビートルズ4回/サムネイル21枚/og:title一致。origin/mainのsrc/lib/coverGuide.ts 2638行目にcurationProfile:{maxSongs:50}が存在し、同エントリのsongs配列は50件（id出現数カウントで実測）。
+実測: 本番URLをHTTP 200確認、本文中Beatles11回/ビートルズ4回/サムネイル21枚/og:title一致。src/lib/coverGuide.ts 2638行目にcurationProfile:{maxSongs:50}が存在し、同エントリのsongs配列は50件（実測）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
