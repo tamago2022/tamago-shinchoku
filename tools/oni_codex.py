@@ -263,10 +263,9 @@ def sashimodosu(rec, naze, ref):
             "直して、本番URLを報告に貼る。もう一度 tools/oni_codex.py nage で鬼監督に投げ直す。",
             "たまごさんに質問しない。",
         ])
-        with lock():
-            return command_ingest.queue_add(body, priority=1,
-                                            label=("差し戻し（鬼監督）｜" + rec["title"])[:60],
-                                            origin="factory")
+        return command_ingest.queue_add(body, priority=1,
+                                        label=("差し戻し（鬼監督）｜" + rec["title"])[:60],
+                                        origin="factory")
     except Exception as e:
         return "failed", "%s: %s" % (type(e).__name__, e)
 

@@ -427,10 +427,9 @@ def saihassha(case, naze):
             "★自己申告では完了になりません。tools/oni_modoshi.py の検品を通るまで戻されます。",
             "たまごさんに質問しない。直して、直したURLを報告に必ず貼る。",
         ])
-        with lock():
-            s, m = command_ingest.queue_add(body, priority=1,
-                                            label=("差し戻し｜" + case["title"])[:60],
-                                            origin="factory")
+        s, m = command_ingest.queue_add(body, priority=1,
+                                        label=("差し戻し｜" + case["title"])[:60],
+                                        origin="factory")
     except Exception as e:
         s, m = "failed", str(e)
 
