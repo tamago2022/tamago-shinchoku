@@ -2137,6 +2137,20 @@ def auth_token_check(_target=None):
 
 def _process_other(action, cmd):
     target = cmd.get("target")
+    # 34481番【キーワードからX投稿を集めてノートに格納】
+    #   target or keyword にキーワードが入る。自分の過去投稿アーカイブ(share/x-archive)を
+    #   ローカルでキーワード検索し、Obsidian Vaultへ1件のMarkdownノートを新規作成する。
+    #   外部APIは叩かない＝0円。既存ファイルは一切書き換えない（新規作成のみ）。
+    if action == "x_kiwa":
+        try:
+            import x_kiwa as _xk
+            r = _xk.run_job({"op": "toru", "keyword": target or cmd.get("keyword") or "",
+                              "max": cmd.get("max")})
+            if r.get("ok"):
+                return "done", "%d件→ノート作成：%s" % (r.get("kensu", 0), r.get("notePath", ""))
+            return "failed", r.get("error", "分かりません")
+        except Exception as e:
+            return "failed", "x_kiwaが受け取れませんでした：%s" % e
     # 1036番【投げ込み箱】棚に置く前の仮置き場。★Lovableの棚には一切触らない。
     #   nagekomi        : URL1本＋一言を status/nagekomi.jsonl へ。題名等は機械が調べて埋める
     #   nagekomi_shiji  : 後からまとめて喋った振り分け／コピーの方向を1行置く
