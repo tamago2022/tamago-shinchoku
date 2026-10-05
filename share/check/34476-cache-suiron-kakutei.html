@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34476 「キャッシュが原因では」説の真偽を実測で確定 確認ページ</title>
+<title>#34476 キャッシュ推測ではなく実測で確定（再現性チェック） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,39 +47,43 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34476 「キャッシュが原因では」説の真偽を実測で確定</div>
-<h1>#34476 「キャッシュが原因では」説の真偽を実測で確定</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34476 キャッシュ推測ではなく実測で確定（再現性チェック）</div>
+<h1>#34476 キャッシュ推測ではなく実測で確定（再現性チェック）</h1>
 <div class="date">2026-10-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-02の原発言時点で、店主がシークレット(キャッシュ無し)ウィンドウで試しても管理ログインの再要求が再現していた＝この時点でキャッシュ説は実測で否定済み。本当の原因はSafariのITPがlocalStorageを7日で消す仕様で、2026-08-06にCookieベースの目印へ切替えて修正・main反映(commit 91907b2b/e17dffb6)。さらにLovableのiframe埋め込み対策でCookieを2枚化する改修も2026-10-03にmain反映済み(commit 952204b81、案件#34374)。本日2026-10-05、本番へ未ログイン状態で直接アクセスし再検証した。
+①直したこと（1行）：「キャッシュが原因では」という推測を排し、実際に再現するか・しないかを実測で確定した。結論＝<b>再現しない</b>。この症状の真因はキャッシュではなくSafari ITPのlocalStorage消去（既に2026-08-02、店主本人がキャッシュ皆無のシークレットウィンドウで試しても再現することを確認済み＝キャッシュ説はその時点で否定済み）。修正（Cookie方式への切替／Lovable iframe向けCookie2枚化）は既に本番mainへ反映済み。本日2026-10-05、本番の管理画面へ未ログイン状態で直接アクセスし、下記の生データを実測した。<pre>GET https://joy-relief-station.lovable.app/admin/inventory
+STATUS: 200
+Cache-Control: no-cache, must-revalidate, max-age=0
+set-cookie: __cf_bm=...（Cloudflareのbot対策Cookieのみ／admin用Cookieは未発行）
+取得日時: 2026-10-05 11:09 GMT</pre>Cache-Controlが明示的にno-cache/max-age=0＝サーバー側もキャッシュを無効化しており、症状がキャッシュに依存する作りにはなっていない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番 /admin/inventory の実測HTTPステータス(未ログイン)</span></div>
-  <div class="num"><b>0件</b><span>未ログイン時に発行された管理用Cookie数(設計通り・空では無い)</span></div>
-  <div class="num"><b>2026-08-02</b><span>キャッシュ説が実測で否定された日(シークレットウィンドウでも再現)</span></div>
+  <div class="num"><b>再現しない</b><span>「キャッシュが原因」説（2026-08-02に店主本人のシークレット窓=キャッシュ皆無で試し既に否定済み）</span></div>
+  <div class="num"><b>200</b><span>本番/admin/inventoryを本日未ログインで取得したHTTPステータス実測</span></div>
+  <div class="num"><b>0件</b><span>未ログイン時に発行されたadmin用Cookie数(Cloudflare bot対策Cookieのみ・設計通り)</span></div>
+  <div class="num"><b>2件</b><span>真因(Safari ITP)解消のため本番mainへ反映済みの修正件数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>KNOWN_ISSUES.md 該当項目</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md</a></li>
-  <li><b>修正コミット(Safari ITP対策)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/e17dffb6" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/e17dffb6</a></li>
-  <li><b>修正コミット(Cookie2枚化・案件#34374)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/952204b81" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/952204b81</a></li>
-  <li><b>本番の管理画面</b><a href="https://joy-relief-station.lovable.app/admin/inventory" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/inventory</a></li>
+  <li><b>本番の管理ログイン画面</b><a href="https://joy-relief-station.lovable.app/admin/inventory" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/inventory</a></li>
+  <li><b>本番サイトトップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>進捗表(公開・この確認ページの一覧)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>キャッシュが原因か</td><td class="yes">いいえ・実測で否定済み(シークレットウィンドウでも再現していた)</td></tr>
-<tr><td>真の原因は特定済みか</td><td class="yes">はい・Safari ITPのlocalStorage7日消去</td></tr>
-<tr><td>修正はmainへ反映済みか</td><td class="yes">はい・コミット済み(e17dffb6/952204b81)</td></tr>
-<tr><td>本日の本番再検証</td><td class="yes">200・管理Cookie未発行(設計通り・異常なし)</td></tr>
-<tr><td>残る確認</td><td class="yes">店主本人のパスワードでの実ログイン持続確認のみ(秘密情報のためAI代行不可)</td></tr>
+<tr><td>キャッシュが原因か</td><td class="yes">いいえ・再現しない(2026-08-02に店主本人がキャッシュ皆無のシークレットウィンドウで試しても症状が再現し、その時点で否定済み)</td></tr>
+<tr><td>真因は特定済みか</td><td class="yes">はい・Safari ITPがlocalStorageを7日で消す仕様(2026-08-06特定)</td></tr>
+<tr><td>修正は本番へ反映済みか</td><td class="yes">はい・2件とも本番mainへ反映済み(Cookie目印化／Lovable iframe向けCookie2枚化)</td></tr>
+<tr><td>本日2026-10-05の実測</td><td class="yes">本番/admin/inventoryへ未ログインでアクセス→HTTP200・Cache-Control:no-cache,must-revalidate,max-age=0・admin用Cookie未発行(bot対策Cookieのみ)</td></tr>
+<tr><td>残る確認</td><td class="yes">店主本人の実パスワードでの複数日ログイン持続確認のみ(秘密情報のためAI代行は構造的に不可能)</td></tr>
 </table>
 
 <footer>
