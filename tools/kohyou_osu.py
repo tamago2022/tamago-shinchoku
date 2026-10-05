@@ -253,13 +253,6 @@ def _verify(st, it):
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         except Exception:
             pass
-        try:  # ★大事な機能の関所：出た本番を実際に押す（差し替え→戻す まで）。落ちたら原因コミットを外して新しい版を出す。
-            import subprocess
-            subprocess.Popen([sys.executable, os.path.join(HERE, "taisetsu_kanmon.py"), "prod"],
-                             stdout=open(os.path.join(ST, "taisetsu_kanmon", "prod.log"), "a") if os.path.isdir(os.path.join(ST, "taisetsu_kanmon")) else subprocess.DEVNULL,
-                             stderr=subprocess.STDOUT, start_new_session=True)
-        except Exception:
-            pass
         return st
     machi = time.time() - (st.get("pressedAtTs") or 0)
     if machi > VERIFY_LIMIT_SEC:
@@ -301,30 +294,6 @@ def _zure_gate(sha8):
     return "wait"
 
 
-def _taisetsu_gate(sha8):
-    """★大事な機能の関所：押す前にその版を手元で動かして11機能を確かめる。別プロセス（数分）。
-    戻り値: "ok"（押してよい）/ "wait"（測定中）/ "reverted"（落ちたので原因コミットを外した版を main に入れた＝今回は押さない）。"""
-    out = os.path.join(ST, "taisetsu_kanmon")
-    res = os.path.join(out, "pre_%s.json" % sha8)
-    run = os.path.join(out, "pre_%s.running" % sha8)
-    doc = _load(res, None)
-    if doc:
-        if doc.get("verdict") == "reverted" and time.time() - os.path.getmtime(res) < 3600:
-            return "reverted"
-        return "ok"   # ok / inconclusive / ng(外せなかった→票だけ立てて出す。止めて古いままにはしない)
-    if os.path.exists(run):
-        return "wait" if time.time() - os.path.getmtime(run) < 1800 else "ok"
-    os.makedirs(out, exist_ok=True)
-    with open(run, "w") as f:
-        f.write(_now())
-    import subprocess
-    lg = open(os.path.join(out, "pre_%s.log" % sha8), "w")
-    subprocess.Popen([sys.executable, os.path.join(HERE, "taisetsu_kanmon.py"), "pre", sha8],
-                     stdout=lg, stderr=subprocess.STDOUT, start_new_session=True)
-    _log("大事な機能の関所：%s の実測を始めました（数分）。終わるまで押しません" % sha8)
-    return "wait"
-
-
 def _press(st, it):
     """押す。★押す前にもう一度「同じ企画か」を確かめる。"""
     mato = MATO[it["name"]]
@@ -360,22 +329,6 @@ def _press(st, it):
     if zk == "ng":
         _log("★ズレ関所：%s にカードのズレがあります。**公開しません**（詳細 status/zure_kanmon/pre_%s.json）" % (sha, sha))
         st["lastResult"] = "ズレ関所で停止（ズレあり）"
-        return st
-    # ★大事な機能の関所（2026-10-06・たまごさん「後ろに後退しないで」）：押す前に、その版を手元で動かして
-    #   店主が一度OKを出した11機能（@ログイン・YouTube差し替え・棚から外す…）を契約テスト＋ヘッドレスで確かめる。
-    #   落ちていたら「止めて古いまま」にせず、原因コミットを自動で外して main に入れる（＝新しい版が来るので今回は押さない）。
-    #   関所そのものの故障（測れなかった）は止めずに通す（記録は残る）。
-    try:
-        tk = _taisetsu_gate(sha)
-    except Exception as e:
-        _log("大事な機能の関所が動きません（通します）：%r" % (e,))
-        tk = "ok"
-    if tk == "wait":
-        st["lastResult"] = "大事な機能の関所：測定中"
-        return st
-    if tk == "reverted":
-        _log("★大事な機能の関所：%s で大事な機能が落ちたので、原因コミットを外した版を main に入れました。そちらを待ちます（詳細 status/taisetsu_kanmon/pre_%s.json）" % (sha, sha))
-        st["lastResult"] = "大事な機能の関所：原因コミットを外した版を待つ"
         return st
 
     before = _honban_key(mato["url"]) or it.get("deployKey") or ""
