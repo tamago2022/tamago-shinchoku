@@ -554,6 +554,12 @@ while :; do
   #    返ってきた指摘を台帳へ戻す。★完了の鍵（status/gaibu/soto_hantei.json）は外しか開けない。
   #    中で1日1回に間引く。出すのは tools/nageru.py の口1本だけ＝新しい通信を作らない。
   tick_every 240 && ( python3 "$REPO/tools/gaibu_shinsa.py" >> "$REPO/status/gaibu/shinsa.log" 2>&1 & ) >/dev/null 2>&1
+  # ④b 鬼監督(Codex)個別審査：1件ずつ投げた分(oni_codex.py nage)の返事を拾う。
+  #    ★2171番（2026-10-06）実測で発覚：この hirou は「心臓から毎周回」と設計書
+  #    （oni_codex.py 冒頭コメント）に書かれていたのに、心臓に一度も登録されていなかった。
+  #    作った道具が実際には回っていない「やりっぱなし」の実例そのもの。拾うだけで
+  #    GitHub APIを叩くので軽い。ロック済み（二重実行は自分で弾く）。
+  tick_every 8  && ( python3 "$REPO/tools/oni_codex.py" hirou >> "$REPO/status/oni_codex/hirou.log" 2>&1 & ) >/dev/null 2>&1
   # ⑤ 紙を1枚だけ書き直す（リポ直下 1152-nankai.html／スマホで開ける）。
   #    ★一番上に出すのは 今週言われた件数／実際に変わった件数／達成率。走らせた本数は出さない。
   tick_every 8  && ( python3 "$REPO/tools/kioku_page.py" >> "$REPO/status/kioku/page.log" 2>&1 & ) >/dev/null 2>&1
