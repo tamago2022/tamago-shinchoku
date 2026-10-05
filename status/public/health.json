@@ -1,11 +1,11 @@
 {
- "measuredAt": "2026-10-05T11:12:37+0900",
- "diskFreeGB": 83.0,
+ "measuredAt": "2026-10-05T11:37:32+0900",
+ "diskFreeGB": 104.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 161,
+ "load": 120,
  "memPressure": "green",
- "memAvailGB": 7.5,
+ "memAvailGB": 8.0,
  "sessions": 4,
  "safeMax": 4,
  "moreOK": 4,
@@ -17,16 +17,16 @@
  "items": [
   {
    "label": "ゴミ箱を空にする",
-   "effect": "空き 17.31GB",
-   "gb": 17.31,
+   "effect": "空き 17.02GB",
+   "gb": 17.02,
    "kind": "disk",
    "safe": false,
    "how": "捨てたつもりのもの。中身を一度見てから"
   },
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 13.78GB",
-   "gb": 13.78,
+   "effect": "メモリ 13.81GB",
+   "gb": 13.81,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
@@ -34,8 +34,8 @@
   },
   {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 4.23GB",
-   "gb": 4.23,
+   "effect": "空き 4.25GB",
+   "gb": 4.25,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
@@ -49,6 +49,14 @@
    "how": "アップロード待ちが残っていると消せない"
   },
   {
+   "label": "node_modules を消す（1箇所）",
+   "effect": "空き 0.49GB",
+   "gb": 0.49,
+   "kind": "disk",
+   "safe": true,
+   "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
+  },
+  {
    "label": "Notionを閉じる",
    "effect": "メモリ 0.48GB",
    "gb": 0.48,
@@ -56,14 +64,6 @@
    "safe": true,
    "app": "Notion",
    "how": "6プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
-  },
-  {
-   "label": "node_modules を消す（1箇所）",
-   "effect": "空き 0.47GB",
-   "gb": 0.47,
-   "kind": "disk",
-   "safe": true,
-   "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
   },
   {
    "label": "~/.npm/_npx を空にする",
@@ -92,34 +92,34 @@
    "how": "5プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   }
  ],
- "_duAt": 1791165438.853719,
+ "_duAt": 1791167392.48258,
  "_du": {
-  "caches": 4.23,
+  "caches": 4.25,
   "npx": 0.34,
-  "trash": 17.31,
+  "trash": 17.02,
   "driveCache": 1.84,
-  "nodeModules": 0.47,
+  "nodeModules": 0.49,
   "nodeModulesList": [
    [
     "~/Desktop/joy-relief-station/node_modules",
-    0.47
+    0.49
    ]
   ]
  },
  "同時上限": {
   "本数": 1,
   "根拠": [
-   "首は「ロード」（メモリ34本／スワップ2本／ロード1本）",
-   "自動減便：5分ロード比1.65（1.5超）＝詰まっている。1本まで落とす",
-   "試し増便は見送り：スワップ使用90%／5分ロード比1.65＝静かでない"
+   "首は「スワップ」（メモリ42本／スワップ1本／ロード3本）",
+   "減便せず：スワップは低い（残り0.96GB（4.0GB未満）／使用93%（70%超））が、空きメモリ16.75GB・5分ロード比1.41＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
+   "試し増便は見送り：スワップ使用93%／5分ロード比1.41＝静かでない"
   ],
   "天井": {
-   "メモリ": 34,
-   "スワップ": 2,
-   "ロード": 1
+   "メモリ": 42,
+   "スワップ": 1,
+   "ロード": 3
   },
-  "測った時刻": "2026-10-05T11:12:37+0900",
-  "自動減便": "5分ロード比1.65（1.5超）＝詰まっている。1本まで落とす",
+  "測った時刻": "2026-10-05T11:37:32+0900",
+  "自動減便": null,
   "試し増便": null
  }
 }
