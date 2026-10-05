@@ -134,9 +134,18 @@ const SNAPSHOT_EXPR = `JSON.stringify({
 
 // 案件#800実測：querySelectorAllの通し番号(i)でクリック対象を再取得すると、直前のクリックで
 // DOM順序が変わった（ドロップダウンが開く等）場合に別の要素を押してしまい、本来無反応だった
-// 要素（実例：「話す」ボタン）を見逃す事故があった。要素へ一時マーカー属性を直接付けて、
+// 要素（実例：「話す」ボタン）を見逃す事故があった。要素への直接参照をページ内に保持して、
 // DOM順序が変わってもクリック時に正しく同じ要素を再取得できるようにする。
-const MARK_ATTR = "data-vc-mark";
+//
+// 案件#34450実測（2026-10-05）：当初は`setAttribute('data-vc-mark', ...)`でDOM属性に
+// マーキングしていたが、これがReactのhydration/reconciliationと衝突し、
+// 「Minified React error #418」（hydration mismatch）を誤って発生させていた
+// （joy-relief-stationの/room/card/gaijin-roman等、クリック可能な要素が多いページでのみ
+// 再現。setAttributeをコメントアウトしたテスト版ではconsoleErrorCount:0になることを
+// ローカル・本番の両方で実測確認済み）。Reactが一切関与しないwindow直下の配列に要素への
+// 参照を保持する方式へ変更し、DOM属性を汚染しないようにした（マーキングの目的・効果は
+// 従来と同一）。
+const VC_ELS_VAR = "__vcEls";
 // 案件#795実測：閉じた<details>（このサイトの「できたもの」「次に発車」等の折りたたみセクション）の
 // 中身は、モダンなブラウザでは display:none ではなく content-visibility:hidden で隠される。
 // この方式だとoffsetWidth/offsetHeight/getClientRects()は非ゼロを返し続けるため、旧来のvisible判定では
@@ -144,9 +153,11 @@ const MARK_ATTR = "data-vc-mark";
 // （実例：「すべて」「記事」フィルターボタン・「工場に積む」ボタンが軒並み無反応FAILになった。
 //  実際にJSで直接.click()すると正しくclassList等は変化しており、実装側は壊れていなかった）。
 // 開閉トリガーであるsummary自身（またはその中の要素）は常に押せるので除外しない。
-const LIST_EXPR = `JSON.stringify(Array.from(document.querySelectorAll('button, a, [role="button"], [onclick]'))
+const LIST_EXPR = `JSON.stringify((() => {
+  window.${VC_ELS_VAR} = [];
+  return Array.from(document.querySelectorAll('button, a, [role="button"], [onclick]'))
   .map((el, i) => {
-    el.setAttribute('${MARK_ATTR}', String(i));
+    window.${VC_ELS_VAR}[i] = el;
     const hasBox = !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
     const closedDetails = el.closest('details:not([open])');
     const insideSummary = !!el.closest('summary');
@@ -161,7 +172,8 @@ const LIST_EXPR = `JSON.stringify(Array.from(document.querySelectorAll('button, 
       visible: hasBox && !hiddenByClosedDetails,
     };
   })
-  .filter(x => x.visible && !x.disabled))`;
+  .filter(x => x.visible && !x.disabled);
+})())`;
 
 // 案件#718実測：target="_blank"のリンク（確認ページの外部参照リンク等・全340枚の確認ページで
 // 使用中）は、押しても元のタブのlocation.hrefは変わらない。しかも本物のヘッドレスChromeでは
@@ -299,11 +311,12 @@ async function main() {
         continue;
       }
       try {
-        // querySelectorAllの通し番号ではなく、要素本体に付けたマーカー属性で再取得する
-        // （直前のクリックでDOM順序が変わっても、同じ物理要素を確実に狙い撃つ）。
+        // querySelectorAllの通し番号ではなく、要素本体への直接参照（window.${VC_ELS_VAR}）で
+        // 再取得する（直前のクリックでDOM順序が変わっても、同じ物理要素を確実に狙い撃つ。
+        // DOM属性へのマーキングはReactのhydrationと衝突するため使わない＝案件#34450）。
         const clickExpr = `(() => {
-          const target = document.querySelector('[${MARK_ATTR}="${idx}"]');
-          if (!target) return false;
+          const target = window.${VC_ELS_VAR} && window.${VC_ELS_VAR}[${idx}];
+          if (!target || !target.isConnected) return false;
           target.scrollIntoView({ block: 'center' });
           target.click();
           return true;
