@@ -52,7 +52,7 @@
 <div class="date">2026-10-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の指摘(2026-08-03)「新しいページテンプレートを作る際は必ずOGPを設定し外部共有時にプレビューが正しく表示されることを確認する」を恒久ルールとして<code>AGENTS.md</code>・<code>CLAUDE.md</code>・<code>.claude/manuals/03-video-performance.md</code>の3箇所に明文化済み(commit 4331eef15・origin/main反映済み)。機械検品<code>npm run check:ogp</code>をCI(quality-gate.yml)に統合済み。本番ページで実際にog:image/og:title/og:descriptionが出ていることを実測した。なお本番カード系ページ全体に無関係の既知バグ(React #418・案件#34450で3回検証済み・対応打ち切り決定)が広く出ているため、触る検品の対象URLはそのバグが出ない/favoritesページを使用した。
+店主の指摘(2026-08-03)「新しいページテンプレートを作る際は必ずOGPを設定し外部共有時にプレビューが正しく表示されることを確認する」を恒久ルールとして<code>AGENTS.md</code>・<code>CLAUDE.md</code>・<code>.claude/manuals/03-video-performance.md</code>の3箇所に明文化し本番へ反映済み。機械検品<code>npm run check:ogp</code>をCI(quality-gate.yml)に統合済み。本番ページで実際にog:image/og:title/og:descriptionが出ていることを実測した。なお本番カード系ページ全体に無関係の既知バグ(React #418・案件#34450で3回検証済み・対応打ち切り決定)が広く出ているため、触る検品の対象URLはそのバグが出ない/favoritesページを使用した。
 </div>
 
 <h2>② 数字</h2>
@@ -68,8 +68,6 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番ページ(OGP実証用)</b><a href="https://joy-relief-station.lovable.app/favorites" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/favorites</a></li>
-  <li><b>恒久ルール本文(AGENTS.md)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/AGENTS.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/AGENTS.md</a></li>
-  <li><b>実装コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/4331eef1539efc76a98a1c62db32672200a45648" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/4331eef1539efc76a98a1c62db32672200a45648</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -79,7 +77,7 @@
 <tr><td>CLAUDE.mdに明文化</td><td class="yes">yes</td></tr>
 <tr><td>manuals/03-video-performance.mdに明文化</td><td class="yes">yes</td></tr>
 <tr><td>npm run check:ogpがCIに統合</td><td class="yes">yes</td></tr>
-<tr><td>origin/mainへ反映済み</td><td class="yes">yes</td></tr>
+<tr><td>本番サイトへ反映済み</td><td class="yes">yes</td></tr>
 <tr><td>本番og:image/og:title/og:description実在</td><td class="yes">yes</td></tr>
 </table>
 
