@@ -1,18 +1,18 @@
 {
- "raw": "負荷 109% ｜ CPU 42% / メモリ圧迫 13% / スワップ 14.30GB / ディスク空き 79GB ｜ 稼働 4本 ｜ あと0本OK",
- "load": 109,
- "cpu": 42,
+ "raw": "負荷 160% ｜ CPU 30% / メモリ圧迫 13% / スワップ 14.40GB / ディスク空き 79GB ｜ 稼働 4本 ｜ あと0本OK",
+ "load": 160,
+ "cpu": 30,
  "mem": 13,
- "swapGB": 14645.0,
+ "swapGB": 14743.0,
  "diskFreeGB": 79.0,
- "sessions": 4,
- "note": "上限4本・あと4本OK（5分平均ロード9.7（コア8×0.8超）、実測上限1本）",
- "measuredAt": "2026-10-06T04:42:23+09:00",
- "working": 0,
+ "sessions": 1,
+ "note": "上限4本・あと3本OK（CPU30%・メモリ空き7.7GBで余裕あり→ロードの天井を緩めた、実測上限1本）",
+ "measuredAt": "2026-10-06T05:00:09+09:00",
+ "working": 1,
  "stalled": 0,
  "waiting": 0,
  "safeMax": 4,
- "moreOK": 4,
+ "moreOK": 3,
  "hardMax": 8,
  "cap": 1,
  "target": 1,
@@ -21,28 +21,58 @@
  "userActive": false,
  "predict": [],
  "shedCandidates": [],
- "below": 1,
- "blockReason": "5分平均ロード9.7（コア8×0.8超）、実測上限1本",
- "load1": 8.79,
- "load5": 9.73,
- "load15": 10.28,
+ "below": 0,
+ "blockReason": "CPU30%・メモリ空き7.7GBで余裕あり→ロードの天井を緩めた、実測上限1本",
+ "load1": 12.87,
+ "load5": 11.07,
+ "load15": 10.57,
  "cores": 8,
- "loadRatio": 1.1,
+ "loadRatio": 1.61,
  "memPressure": "green",
- "memAvailGB": 7.6,
+ "memAvailGB": 7.7,
  "swapIncreasing": false,
- "ioMBs": 1.41,
+ "ioMBs": 16.96,
  "network": {
-  "pingMedianMs": 32.8,
-  "pingMaxMs": 472.2,
+  "pingMedianMs": 32.2,
+  "pingMaxMs": 409.9,
   "pingSamples": 20
  },
  "stalledList": [],
- "sessionList": [],
- "line": "負荷 109% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き79.0GB",
- "modelCounts": {},
+ "sessionList": [
+  {
+   "cli": "942c2583-10c5-4fb9-8401-e4b9bbe653cb",
+   "localId": "local_8b419e92-7d76-4abd-a1f6-0acb807af985",
+   "startedAt": "2026-10-06T04:48:17+0900",
+   "elapsedMin": 11,
+   "lastReportAt": "2026-10-05T19:51:07.403Z",
+   "lastReport": "**：なし。push・公開・送信・課金はしていません。  司令塔の r079 は「仕入れの継続」なので、現在は `active` のままにしてあります。完了扱いにするかどうかは、次の着火で判断します。",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "unreportedDeploy": true,
+   "deployUrls": [],
+   "humanPushes": 1,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 70588,
+   "title": "Rusuban mimawari 30min",
+   "dispatch": false,
+   "isDispatchSelf": false,
+   "mb": 371,
+   "idleMin": 9.0,
+   "kind": "working",
+   "model": "claude-sonnet-5",
+   "turns": 27,
+   "lastActivityAt": "2026-10-05T19:51:07.403Z"
+  }
+ ],
+ "line": "負荷 160% ｜ セッション1本（作業中1・止まり0） ｜ 上限4本・あと3本OK ｜ 空き79.0GB",
+ "modelCounts": {
+  "claude-sonnet-5": 1
+ },
  "autonomy": {
-  "alive": 0,
+  "alive": 1,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
@@ -51,24 +81,24 @@
  "heartbeat": {
   "pid": 16569,
   "processAlive": true,
-  "stalledMin": 0.0,
+  "stalledMin": 0.1,
   "stalled": false,
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 2242,
-  "room": 4,
-  "alive": 0,
+  "waiting": 2327,
+  "room": 3,
+  "alive": 1,
   "safeMax": 4,
-  "stalledMin": 14.158931084473927,
+  "stalledMin": 1.6799959739049275,
   "stalled": false,
   "note": "発車は正常です"
  },
  "awaitingCheck": {
-  "count": 308,
+  "count": 309,
   "limit": 10,
   "over": true,
-  "note": "⚠️ 確認待ちが308件（10件超）たまっています。鬼監督で仕分けてください"
+  "note": "⚠️ 確認待ちが309件（10件超）たまっています。鬼監督で仕分けてください"
  },
  "stale": {
   "measuredAt": "2026-10-06T04:34:06+09:00",
@@ -23156,18 +23186,18 @@
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-10-06 04:42",
+  "lastRun": "2026-10-06 05:00",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "目標1本を満たしている（生存4本）",
+  "ignite": "目標1本を満たしている（生存1本）",
   "shed": null,
   "keep": {
    "target": 1,
-   "alive": 4,
+   "alive": 1,
    "below": 0,
-   "line": "現在4本／上限4本／目標1本／あと4本いける"
+   "line": "現在1本／上限4本／目標1本／あと3本いける"
   },
   "stalledSkipped": []
  },
@@ -23181,7 +23211,7 @@
   "autoResumesThisRun": 0,
   "handoffsThisRun": 0,
   "ignitionsThisRun": 0,
-  "humanPushes": 0,
+  "humanPushes": 1,
   "doneAlive": 0,
   "doneWithoutHumanPush": 0,
   "autonomyRatio": null,
@@ -23189,7 +23219,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-10-06 04:42",
+  "updatedAt": "2026-10-06 05:00",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -23197,8 +23227,8 @@
   "allPctAsOf": null,
   "allPctAgeMin": null,
   "resetAt": "2026-10-06 17:59",
-  "daysLeft": 0.6,
-  "hoursLeft": 13.3,
+  "daysLeft": 0.5,
+  "hoursLeft": 13.0,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -23213,10 +23243,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 15130835,
-  "allWeightedTokensSinceReset": 1396626300,
+  "allWeightedTokensSinceReset": 1398530718,
   "last6h": {
    "fable": 15130835,
-   "all": 88307800
+   "all": 81910512
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
@@ -23231,7 +23261,7 @@
   "weekdayTargetBase": 100,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
   "overPct": null,
-  "daysElapsedSinceReset": 6.4,
+  "daysElapsedSinceReset": 6.5,
   "ceilingDaysAtRecentPace": null,
   "fableCurve": {
    "target": 99.0,
@@ -23242,7 +23272,7 @@
    "note": "state=over→Fableゼロで絞る／under→Fable投入・本数増加の余地あり／on_track→曲線どおり"
   },
   "allCurve": {
-   "target": 91.4,
+   "target": 92.9,
    "overPct": null,
    "state": "unknown",
    "band": 10,
@@ -23268,7 +23298,7 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": null,
-  "line": "Fable週枠 ?%（今日の目標99.0%・?） ／ 全モデル ?%（推定時点・曲線目標91.4%・?） ／ リセットまで 0.6日 ／ 5時間枠 1.0%・残0.0h",
+  "line": "Fable週枠 ?%（今日の目標99.0%・?） ／ 全モデル ?%（推定時点・曲線目標92.9%・?） ／ リセットまで 0.5日 ／ 5時間枠 1.0%・残0.0h",
   "switches": [
    {
     "t": "2026-09-29 15:48",
