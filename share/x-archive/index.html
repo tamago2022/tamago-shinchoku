@@ -17,6 +17,10 @@
   .badge { background:#fdeecb; color:#b3821b; padding:1px 6px; border-radius:4px; font-size:11px; }
   mark { background:#ffe08a; }
   #loading { padding:40px; text-align:center; color:#a08856; }
+  #kiwaBox { margin:14px 0; padding:12px; background:#fff; border:1px solid #e6d5b0; border-radius:10px; }
+  #kiwaBtn { padding:10px 14px; font-size:14px; border:none; border-radius:8px; background:#b3821b; color:#fff; }
+  #kiwaBtn:disabled { opacity:.5; }
+  #kiwaMsg { font-size:12px; color:#6b5637; margin-top:8px; }
 </style>
 </head>
 <body>
@@ -38,6 +42,11 @@
       <option value="new">新しい順</option>
       <option value="old">古い順</option>
     </select>
+  </div>
+  <!-- 34481番：いまの検索語を、Obsidianの1本のノート（キーワード＋ヒットした投稿）として集める -->
+  <div id="kiwaBox">
+    <button type="button" id="kiwaBtn">📥 いまの検索語でObsidianにノートを集める</button>
+    <div id="kiwaMsg"></div>
   </div>
   <div id="results"></div>
 </div>
@@ -95,6 +104,92 @@ function render() {
 }
 document.getElementById('q').addEventListener('input', render);
 document.getElementById('sort').addEventListener('change', render);
+
+/* ───── 34481番：「Obsidianに集める」ボタン ─────
+   道：このページ → 中継所(relay) → command_ingest({action:"x_kiwa"}) → tools/x_kiwa.py → Vault
+   投げ込み箱(share/nagekomi-*.html)と同じ中継所の仕組みをそのまま流用（独自の送り方は作らない）。
+   パソコンが寝ている・中継所が繋がっていない時は端末に貯めて、次に開いた時にまとめて送る。 */
+var RELAY = null;
+var HEAD = {"Content-Type":"application/json","bypass-tunnel-reminder":"1"};
+var KIWA_KEY = "x_kiwa_pending_v1";
+function kiwaPending(){ try{ return JSON.parse(localStorage.getItem(KIWA_KEY)||"[]"); }catch(e){ return []; } }
+function kiwaSavePending(a){ try{ localStorage.setItem(KIWA_KEY, JSON.stringify(a)); }catch(e){} }
+function kiwaHonmono(){ return location.protocol === "https:"; }
+function kiwaRelay(){
+  if(!kiwaHonmono()) return Promise.resolve(null);
+  var srcs = ["../../status/public/relay.json", "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/gh-pages/status/public/relay.json"];
+  return Promise.all(srcs.map(function(u){
+    return fetch(u+"?t="+Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+  })).then(function(a){
+    var best = null;
+    a.forEach(function(j){ if(j && j.url && (!best || String(j.updatedAt||"") > String(best.updatedAt||""))) best = j; });
+    RELAY = best ? best.url.replace(/\/$/,"") : null; return RELAY;
+  });
+}
+function kiwaToFetch(url, opt, ms){
+  var ac = (typeof AbortController!=="undefined") ? new AbortController() : null;
+  var t = ac ? setTimeout(function(){ ac.abort(); }, ms) : null;
+  if(ac) opt.signal = ac.signal;
+  return fetch(url, opt).then(function(r){ if(t) clearTimeout(t); return r; },
+                              function(e){ if(t) clearTimeout(t); throw e; });
+}
+function kiwaFlush(){
+  var a = kiwaPending();
+  if(!a.length) return Promise.resolve({ok:true, n:0});
+  if(!kiwaHonmono()){
+    return Promise.resolve({ok:false, why:"ここは下見用の画面です（"+location.protocol+"）。本物のURL（https）から開くと送られます"});
+  }
+  function send(u){
+    return kiwaToFetch(u+"/cmd", {method:"POST", mode:"cors", headers:HEAD,
+                            body:JSON.stringify({commands:a})}, 20000)
+      .then(function(r){
+        if(!r.ok) return r.text().then(function(t){
+          throw new Error("中継所が HTTP "+r.status+" を返しました"+(t?"（"+t.slice(0,80)+"）":"")); });
+        return r.json();
+      })
+      .then(function(j){ kiwaSavePending([]); return {ok:true, n:a.length, body:j}; });
+  }
+  function fail(e){
+    var why = (e && e.name === "AbortError") ? "中継所が20秒返事をしませんでした"
+            : ((e && e.message) ? e.message : String(e));
+    if(/failed to fetch|load failed|networkerror/i.test(why)){
+      why += "／パソコンが寝ている可能性があります。起きてから、もう一度このボタンを押してください";
+    }
+    return {ok:false, why:why};
+  }
+  return (RELAY ? Promise.resolve(RELAY) : kiwaRelay()).then(function(u){
+    if(!u) return {ok:false, why:"パソコンの居場所（relay.json）が読めませんでした"};
+    return send(u).catch(function(e1){
+      var old = RELAY;
+      return kiwaRelay().then(function(u2){
+        if(u2 && u2 !== old) return send(u2).catch(fail);
+        return fail(e1);
+      });
+    });
+  });
+}
+function kiwaPush(cmd){ var a = kiwaPending(); a.push(cmd); kiwaSavePending(a); return kiwaFlush(); }
+
+document.getElementById('kiwaBtn').addEventListener('click', function(){
+  var q = document.getElementById('q').value.trim();
+  var msg = document.getElementById('kiwaMsg');
+  if(!q){ msg.textContent = "まず検索する言葉を入れてください"; return; }
+  var btn = this; btn.disabled = true; msg.textContent = "送っています…";
+  var tag = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  var id = "xk"+tag;
+  kiwaPush({ id:id, action:"x_kiwa", target:q, max:50, requestedAt:new Date().toISOString() })
+    .then(function(res){
+      btn.disabled = false;
+      if(res && res.ok && res.body && res.body.results){
+        var hit = res.body.results.filter(function(x){ return x.id === id; })[0];
+        if(hit){ msg.textContent = (hit.status === "done" ? "✅ " : "⚠️ ") + hit.message; return; }
+      }
+      if(res && res.ok && res.n === 0){ msg.textContent = "送信待ちが無くなりました（前回分はもう届いています）"; return; }
+      if(res && res.ok){ msg.textContent = "送りました。パソコン側で数十秒以内にノートができます"; return; }
+      msg.textContent = "まだ届いていません（"+(res && res.why || "不明な理由")+"）。貯めておくので次に開いた時に自動で送ります";
+    });
+});
 </script>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
