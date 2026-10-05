@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34492 GitHub連携は生きている（スマホ再ログイン案内は不要になった） 確認ページ</title>
+<title>#34492 GitHub連携は生きている（判定日赤 34491/34492/34493の確認） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,40 +47,39 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34492 GitHub連携は生きている（スマホ再ログイン案内は不要になった）</div>
-<h1>#34492 GitHub連携は生きている（スマホ再ログイン案内は不要になった）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34492 GitHub連携は生きている（判定日赤 34491/34492/34493の確認）</div>
+<h1>#34492 GitHub連携は生きている（判定日赤 34491/34492/34493の確認）</h1>
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主への『スマホでGitHubに再ログインして開き直して』案内は不要になった。本当の原因（pushを守る関所の誤検知バグ）は34491号で直し、修正はPRとしてmainへ合流済み（PR #6・公開リポジトリなのでログイン無しで中身を見られる）。
+2026-08-05に「GitHub上のブランチは問題ないはずなので、スマホでGitHubにログインした状態で開き直してみて」と伝える想定だった案件。1ヶ月以上『未着手』のまま残っていたが、2026-10-06に実測した結果、GitHub連携（トークン）は現在生きており、PR作成・mainマージに必要な権限は両リポジトリとも揃っている。<br><br>実測コマンド：<code>GET https://api.github.com/repos/{owner}/{repo}</code>にトークン付きで実行し、返ってきた<code>permissions</code>フィールドをそのまま記載（加工なし）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2/2</b><span>GitHubリポジトリのpush/admin権限が生きている（実測）</span></div>
-  <div class="num"><b>3/3</b><span>店主が直接開けるリンクが全て200で開けた</span></div>
+  <div class="num"><b>200</b><span>joy-relief-station APIレスポンス</span></div>
+  <div class="num"><b>200</b><span>tamago-shinchoku APIレスポンス</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>joy-relief-station 本番サイト（ログイン不要・毎日使う場所）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>原因を直したPR（公開リポジトリ・ログイン不要で読める）</b><a href="https://github.com/tamago2022/tamago-shinchoku/pull/6" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/pull/6</a></li>
-  <li><b>34491号の確認ページ（原因と直し方の詳細）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34491-github-app-renkei-fukkatsu.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34491-github-app-renkei-fukkatsu.html</a></li>
+  <li><b>joy-relief-station（GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station</a></li>
+  <li><b>tamago-shinchoku（GitHub）</b><a href="https://github.com/tamago2022/tamago-shinchoku" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>joy-relief-station push権限</td><td class="yes">push:true, admin:true, maintain:true（実測）</td></tr>
-<tr><td>tamago-shinchoku push権限</td><td class="yes">push:true, admin:true, maintain:true（実測）</td></tr>
-<tr><td>joy-relief-station 本番サイトの応答</td><td class="yes">200・本文28,882バイト（実測）</td></tr>
-<tr><td>原因を直したPRの到達性</td><td class="yes">200・公開リポジトリなのでログイン不要（実測）</td></tr>
+<tr><td>joy-relief-station push権限</td><td class="yes">push:true, admin:true, maintain:true</td></tr>
+<tr><td>joy-relief-station private設定</td><td class="yes">true（非公開なので未ログインのブラウザ・curlからは404になるのは仕様通り）</td></tr>
+<tr><td>tamago-shinchoku push権限</td><td class="yes">push:true, admin:true, maintain:true</td></tr>
+<tr><td>tamago-shinchoku private設定</td><td class="yes">false（公開）</td></tr>
 </table>
 
 <footer>
-結論：GitHub App連携（トークン）は無効になっていなかった。ブロックしていた本当の原因はpushを守る関所の誤検知バグで、34491号で特定・修正し、PR #6としてmainへ合流済み。店主にスマホでの再ログインをお願いする必要は無くなった。
+結論：GitHub App連携（トークン）は無効になっていない。2026-08-05時点で見えていた不具合は、その後の修正（2026-09-19〜09-22、tools/github_watch.pyのトークン取得経路改善）で解消済み。joy-relief-stationは非公開リポジトリのため、GitHubブラウザ上で中身を見るには店主自身のログインが必要——これは不具合ではなく元々の設計（非公開設定）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

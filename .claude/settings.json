@@ -25,6 +25,18 @@
         ]
       },
       {
+        "$kanmon": "ninshou_daiko",
+        "$comment": "34483号【憲法】認証情報(ID/パスワード)の代理入力禁止の関所。たまごさん『認証情報(ID/パスワード)を代わりに入力することは禁止』（2026-08-05・1ヶ月以上未着手で判定日赤）。ブラウザ・画面操作系の道具呼び出しで、selector/label/値にpassword・パスワード・暗証番号・ID/パスワード・秘密鍵・api_key等が含まれる＝『代わりに入力しようとしている』と判定しexit 2で拒否する。読み取り系(get_page_text等)・navigateは通す。逆テスト：node tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs --self-test",
+        "matcher": "mcp__(claude-in-chrome|computer-use|Claude_Browser)__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
         "$kanmon": "iruka",
         "$comment": "1401号（2026-09-28）上流の関所。タブを新しく開く道具だけを止め、(1)web_fetch/APIで取れる先は無条件で拒否 (2)それ以外は『なぜブラウザが要るのか』の宣言を要求する。宣言すると同時に978番の予約閉栓の票が置かれる＝開く前に閉じる約束をさせる。既存タブの読み書きは止めない。",
         "matcher": "mcp__(claude-in-chrome|Claude_Browser)__(tabs_create_mcp|tabs_create|preview_start|navigate)",
@@ -44,6 +56,30 @@
           {
             "type": "command",
             "command": "node /Users/mac/Desktop/tamago-shinchoku/tools/stop_kanmon/1851_okane_botan_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "$kanmon": "original",
+        "$comment": "1184号（2026-09-29）オリジナル禁止の関所。新しい実行物をWriteで新規に作る瞬間だけを止め、①公式ドキュメントの目次（★特にMCPの有無）②公式サンプルのそのまま移植③金をかけずに同じことをやっている実例④外部AIに白紙で聞く⑤①〜④が全部✕の証拠、の5段階の票を要求する。『似せる』は不合格、『そのまま』が合格。逆テスト：python3 tools/1184_kanmon.py --shiken",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/1184_original_kinshi.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "$kanmon": "chrome_kidou",
+        "$comment": "1186号（2026-09-29）Chrome起動禁止の関所。open -a \"Google Chrome\" / Chrome本体バイナリの直接起動 / --remote-debugging-port / pkill・killall で Google Chrome を落とす / 止めた com.tamago.chrome-tab-cdp を launchd に載せ直す / osascript で Chrome を触る、の6つを拒否する。Bashのコマンドと、Write/Edit/MultiEditで**新しく書く中身**だけを見る。.md/.txt/.json と、止める側のファイル自身は見に行かない。逆テスト：python3 tools/1186_kanmon_shiken.py",
+        "matcher": "Bash|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/1186_chrome_kidou_kinshi.mjs",
             "timeout": 20
           }
         ]
