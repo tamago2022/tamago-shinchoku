@@ -25,6 +25,18 @@
         ]
       },
       {
+        "$kanmon": "ninshou_daiko",
+        "$comment": "34483号【憲法】認証情報(ID/パスワード)の代理入力禁止の関所。たまごさん『認証情報(ID/パスワード)を代わりに入力することは禁止』（2026-08-05・1ヶ月以上未着手で判定日赤）。ブラウザ・画面操作系の道具呼び出しで、selector/label/値にpassword・パスワード・暗証番号・ID/パスワード・秘密鍵・api_key等が含まれる＝『代わりに入力しようとしている』と判定しexit 2で拒否する。読み取り系(get_page_text等)・navigateは通す。逆テスト：node tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs --self-test",
+        "matcher": "mcp__(claude-in-chrome|computer-use|Claude_Browser)__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
         "$kanmon": "iruka",
         "$comment": "1401号（2026-09-28）上流の関所。タブを新しく開く道具だけを止め、(1)web_fetch/APIで取れる先は無条件で拒否 (2)それ以外は『なぜブラウザが要るのか』の宣言を要求する。宣言すると同時に978番の予約閉栓の票が置かれる＝開く前に閉じる約束をさせる。既存タブの読み書きは止めない。",
         "matcher": "mcp__(claude-in-chrome|Claude_Browser)__(tabs_create_mcp|tabs_create|preview_start|navigate)",
