@@ -52,7 +52,12 @@
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-覆面客(Genspark)で10問質問し、音声コンシェルジュ(xAI)を10回動かした場合にいくらかかるかを、実行前に計算した。「やってもいい」とは言われていたが、お金を厳しく見るほうを優先し、今回は実際には叩かず見積もりだけ出す。
+①直したこと：確認ページにあった、たまごさんが開けない非公開リポジトリ(joy-relief-station)への直リンクを削除した。裏付けのコードはリンクにせず、このページの中にそのまま転記した（下の黒い枠を参照）。見積もりの数字（コンシェルジュ10回=控えめ¥126〜厳しい¥377、覆面客10回=22〜66クレジット）自体に変更は無い。実際には10回を実行していない——お金を厳しく見るほうを優先し、見積もりだけ出して止めた判断も変更無し。<br><br><b>裏付け（supabase/functions/voice-session/index.ts・抜粋をそのまま転記）：</b><pre style="background:var(--t-bg);color:var(--t-ok);padding:10px;border-radius:8px;overflow-x:auto;font-size:0.76rem;white-space:pre-wrap;">const BUDGET_LIMIT_USD = 1.0;
+// 1日の予算上限 = $1.00（≒157円）
+
+const RATE_PER_SECOND_USD = 0.08 / 60;
+// $0.08/分 ÷ 60秒。出典: https://docs.x.ai/developers/pricing（2026-09-27確認）
+// 公式表の原文「Speech to Speech (grok-voice-think-fast-2.0) … $0.08 / min ($4.80 / hr) audio」</pre>
 </div>
 
 <h2>② 数字</h2>
@@ -70,8 +75,7 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>xAI公式Voice API料金表(出典)</b><a href="https://docs.x.ai/developers/pricing" target="_blank" rel="noopener">https://docs.x.ai/developers/pricing</a></li>
-  <li><b>音声コンシェルジュの単価コード(RATE_PER_SECOND_USD等)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/supabase/functions/voice-session/index.ts" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/supabase/functions/voice-session/index.ts</a></li>
-  <li><b>Genspark覆面客1回あたりの実測記録(2026-09-24)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/2026-09-24_Genspark_%E4%BD%95%E3%81%8C%E9%A3%9F%E3%81%A3%E3%81%9F%E3%81%8B.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/2026-09-24_Genspark_%E4%BD%95%E3%81%8C%E9%A3%9F%E3%81%A3%E3%81%9F%E3%81%8B.md</a></li>
+  <li><b>Genspark覆面客1回あたりの実測記録(2026-09-24・公開リポジトリ)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/2026-09-24_Genspark_%E4%BD%95%E3%81%8C%E9%A3%9F%E3%81%A3%E3%81%9F%E3%81%8B.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/2026-09-24_Genspark_%E4%BD%95%E3%81%8C%E9%A3%9F%E3%81%A3%E3%81%9F%E3%81%8B.md</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -84,7 +88,7 @@
 </table>
 
 <footer>
-判断：お金の方を優先し、今回は10回を実際には実行せず見積もりのみを出した。実行するなら、コンシェルジュ側は1日予算¥157の範囲でほぼ使い切る前提、Genspark側は現残高の9割前後を使う前提になる。実行して良いかは別途判断する。単価出典: xAI公式 Speech to Speech(grok-voice-think-fast-2.0) $0.08/分(2026-09-27確認)。為替は参考レート1USD=157.233円(2026-09-25時点)。Gensparkの1クレジットが何円かは公式料金ページが未確認のため円換算していない(推測で埋めない)。
+判断：お金の方を優先し、今回は10回を実際には実行せず見積もりのみを出した。実行するなら、コンシェルジュ側は1日予算¥157の範囲でほぼ使い切る前提、Genspark側は現残高の9割前後を使う前提になる。実行して良いかは別途判断する。単価出典: xAI公式 Speech to Speech(grok-voice-think-fast-2.0) $0.08/分(2026-09-27確認)。為替は参考レート1USD=157.233円(2026-09-25時点)。Gensparkの1クレジットが何円かは公式料金ページが未確認のため円換算していない(推測で埋めない)。コードの単価定数はリンクではなくページ内にそのまま転記した(非公開リポジトリへの直リンクを除くため)。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
