@@ -52,22 +52,22 @@
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-05に『GitHub App連携が無効でPR作成・mainマージがブロックされている』と言われた件。実態は2つあり、両方とも解消済み：①GitHubトークン自体はtools/github_watch.pyが6時間おきに自動更新する方式へ切り替わっていて、push:true/admin:trueの権限が生きている。②別に見つかった実害＝.githooks/pre-pushが新規ブランチpush時にorigin/mainの既存全ファイルを『新規追加』として誤検知しブロックしていたバグを修正し、PR #3としてmainへマージ済み（マージコミット c2e6bcf39）。
+2026-08-05に『GitHub App連携が無効でPR作成・mainマージがブロックされている』と言われた件。実態は2つあり、両方とも解消済み：①GitHubトークン自体は自動更新する方式へ切り替わっていて、push権限・admin権限が生きている。②別に見つかった実害＝pushを守る関所スクリプトが、新規ブランチを作った時に本体の既存ファイル全部を『新規追加』だと誤って検知し、ブロックしていたバグ。これを直して、PR #3としてすでに本体へ合流済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>GitHub API応答(リポジトリ情報取得)</span></div>
   <div class="num"><b>closed/merged</b><span>PR #3の状態</span></div>
-  <div class="num"><b>c2e6bcf39</b><span>マージコミットSHA(先頭8桁)</span></div>
+  <div class="num"><b>c2e6bcf39</b><span>合流したコミットSHA(先頭8桁)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>修正PR #3（mainへマージ済み・公開リポ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/pull/3" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/pull/3</a></li>
-  <li><b>マージされたコミット本体（公開リポ・誰でも閲覧可）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/c2e6bcf39947af4a3ddc8138ae14f96c7ec034c3" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/c2e6bcf39947af4a3ddc8138ae14f96c7ec034c3</a></li>
+  <li><b>修正PR #3（本体へ合流済み・公開リポ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/pull/3" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/pull/3</a></li>
+  <li><b>合流したコミット本体（公開リポ・誰でも閲覧可）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/c2e6bcf39947af4a3ddc8138ae14f96c7ec034c3" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/c2e6bcf39947af4a3ddc8138ae14f96c7ec034c3</a></li>
   <li><b>GitHub連携トークンの生死・権限実測ページ（34492号）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34492-github-renkei-ikasei.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34492-github-renkei-ikasei.html</a></li>
 </ul>
 
@@ -75,12 +75,12 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>GitHub連携トークン(push/admin権限)</td><td class="yes">生きている(push:true,admin:true)</td></tr>
-<tr><td>pre-push関所の新規ブランチ誤検知バグ</td><td class="yes">修正済み・mainへマージ済み(PR #3)</td></tr>
-<tr><td>新規ブランチのpush→PR作成→mainマージ</td><td class="yes">成功(この修正自体がその実例)</td></tr>
+<tr><td>pushを守る関所の新規ブランチ誤検知バグ</td><td class="yes">直した・本体へ合流済み(PR #3)</td></tr>
+<tr><td>新規ブランチのpush→PR作成→本体合流</td><td class="yes">成功(この修正自体がその実例)</td></tr>
 </table>
 
 <footer>
-結論：GitHub App連携は無効ではなかった（トークンは生きている）。実際にPR作成・mainマージを止めていたのはpre-push関所スクリプトの誤検知バグで、これを直してPR #3としてmainへ反映済み。この確認ページ自体が、直った経路（コード修正→PR作成→mainマージ→GitHub Pages公開）を通って出ている。
+結論：GitHub App連携は無効ではなかった（トークンは生きている）。実際にPR作成・mainマージを止めていたのは、pushを守る関所スクリプトの誤検知バグで、これを直して本体へ反映済み。この確認ページ自体が、直った経路（コード修正→PR作成→本体合流→GitHub Pages公開）を通って出ている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
