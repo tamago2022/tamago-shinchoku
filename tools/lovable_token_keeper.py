@@ -152,5 +152,94 @@ def _ensure_fresh_locked(force=False):
     return "refreshed"
 
 
+def _self_test():
+    """★31756番：本物のLovable鍵・本物のネットワークには一切触れず、単独飛行ガードだけを
+    実測で確かめる。TOKEN/STATE/LOCKを一時ファイルへ付け替え、urlopenを「0.4秒かかる」
+    偽物に置き換えた上で、10本のスレッドから同時に _ensure_fresh_locked 相当（ensure_fresh）
+    を呼ぶ。鍔が効いていれば、実際にネットへ投げた回数は1回だけになる。
+    """
+    import sys
+    import tempfile
+    import threading
+    import unittest.mock as mock
+
+    global TOKEN, STATE, LOCK
+    orig = (TOKEN, STATE, LOCK)
+    tmpdir = tempfile.mkdtemp(prefix="lovable_keeper_selftest_")
+    TOKEN = os.path.join(tmpdir, "lovable_oauth.json")
+    STATE = os.path.join(tmpdir, "lovable_keeper_state.json")
+    LOCK = os.path.join(tmpdir, ".lovable_token_keeper.lock")
+
+    # 期限切れ寸前の偽トークンを置く（更新が必要な状態を作る）。
+    with io.open(TOKEN, "w", encoding="utf-8") as f:
+        json.dump({"refresh_token": "fake-rt", "access_token": "old",
+                   "expires_in": 3600, "_saved_at": time.time() - 3600 + 60}, f)
+
+    call_count = {"n": 0}
+    lock_for_count = threading.Lock()
+
+    class _FakeResp:
+        def __init__(self, body):
+            self._body = body
+
+        def read(self):
+            return self._body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def _fake_urlopen(req, timeout=20):
+        with lock_for_count:
+            call_count["n"] += 1
+        time.sleep(0.4)  # ★この0.4秒の間に他スレッドが鍔へ押し寄せる想定
+        body = json.dumps({"access_token": "new-at", "refresh_token": "new-rt",
+                           "expires_in": 3600}).encode()
+        return _FakeResp(body)
+
+    results = []
+    results_lock = threading.Lock()
+
+    def _worker():
+        r = ensure_fresh(force=True)
+        with results_lock:
+            results.append(r)
+
+    ng = []
+    with mock.patch("urllib.request.urlopen", side_effect=_fake_urlopen):
+        threads = [threading.Thread(target=_worker) for _ in range(10)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(timeout=10)
+
+    if call_count["n"] != 1:
+        ng.append("ネットへ実際に投げた回数が %d 回（1回のはず＝単独飛行になっていない）"
+                  % call_count["n"])
+    if results.count("refreshed") != 1:
+        ng.append("'refreshed' を返したのが %d本（1本のはず）: %r" % (results.count("refreshed"), results))
+    if results.count("skipped") != 9:
+        ng.append("'skipped' を返したのが %d本（9本のはず＝残りは鍔に弾かれて即終わるはず）: %r"
+                  % (results.count("skipped"), results))
+    tok_after = _read(TOKEN)
+    if tok_after.get("access_token") != "new-at":
+        ng.append("トークンファイルが更新後の値になっていない: %r" % tok_after)
+
+    TOKEN, STATE, LOCK = orig
+    shutil.rmtree(tmpdir, ignore_errors=True)
+
+    print("自己試験（単独飛行ガード）：%s／同時10本中 ネット到達=%d回・refreshed=%d本・skipped=%d本"
+          % ("OK" if not ng else "NG", call_count["n"],
+             results.count("refreshed"), results.count("skipped")))
+    for x in ng:
+        print("  ★NG %s" % x)
+    return 1 if ng else 0
+
+
 if __name__ == "__main__":
+    import sys
+    if "--self-test" in sys.argv[1:]:
+        sys.exit(_self_test())
     print(ensure_fresh(force=True))
