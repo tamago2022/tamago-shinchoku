@@ -49,36 +49,37 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34468 34468号｜バッジのSVG再現→画像ファイル参照統一</div>
 <h1>#34468 34468号｜バッジのSVG再現→画像ファイル参照統一</h1>
-<div class="date">2026-10-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-05 本番への反映まで実測確認済み</div>
 
 <div class="fix">
-依頼『配置されていればそれをそのままバッジとして使う(独自SVGの再現ではなく画像ファイル参照に統一)』は、PR#647でorigin/mainへ実装済み・Lovable本番にも反映済み。カード描画の唯一の窓口<code>CardBadges.tsx</code>は、concierge(コンシェルジュ推し)・good-cover(グッドカバー)・ai-assisted(AIアシスタント)の3種類すべてを<code>&lt;img src="/badges/xxx.webp"&gt;</code>という画像ファイル参照のみで描画しており、バッジの絵柄を独自SVGで再現しているコードは全バッジ系ファイルを機械検索した結果0件だった(tamago-verifier実施)。
+依頼『配置されていればそれをそのままバッジとして使う（独自SVGの再現ではなく画像ファイル参照に統一）』に対応済み。コンシェルジュ推し・グッドカバー・AIアシスタントの3種類のバッジすべてが、店主が配置した画像ファイルをそのまま表示する形になっており、絵柄を独自に描き直しているコードは無し（本番で実測）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>/badges/ai-assisted.webp 応答コード</span></div>
-  <div class="num"><b>200</b><span>/badges/concierge-pick.webp 応答コード</span></div>
-  <div class="num"><b>200</b><span>/badges/good-cover.webp 応答コード</span></div>
-  <div class="num"><b>0</b><span>独自SVGでバッジ絵柄を再現しているファイル数</span></div>
+  <div class="num"><b>3</b><span>画像参照に統一されたバッジ種類（concierge/good-cover/ai-assisted）</span></div>
+  <div class="num"><b>0</b><span>バッジの絵柄を独自SVGで再現しているファイル数</span></div>
+  <div class="num"><b>200</b><span>本番の3バッジ画像(webp)すべての応答コード</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番の曲ページ(AIアシスタントバッジ実物)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=xania-monet&amp;song=young-hearts" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=xania-monet&amp;song=young-hearts</a></li>
-  <li><b>本番バッジ画像(直接)</b><a href="https://joy-relief-station.lovable.app/badges/ai-assisted.webp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/ai-assisted.webp</a></li>
-  <li><b>GitHub PR #647(main合流済み)</b><a href="https://github.com/tamago2022/joy-relief-station/pull/647" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/pull/647</a></li>
+  <li><b>本番の曲ページ（AIアシスタントバッジの実物。開けば画像バッジが見えます）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=xania-monet&amp;song=young-hearts" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=xania-monet&amp;song=young-hearts</a></li>
+  <li><b>本番の部屋カード（同じバッジのもう1例）</b><a href="https://joy-relief-station.lovable.app/room/card/utada-traveling-ai-cover" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/utada-traveling-ai-cover</a></li>
+  <li><b>本番バッジ画像そのもの（ai-assisted.webp）</b><a href="https://joy-relief-station.lovable.app/badges/ai-assisted.webp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/ai-assisted.webp</a></li>
+  <li><b>本番バッジ画像そのもの（concierge-pick.webp）</b><a href="https://joy-relief-station.lovable.app/badges/concierge-pick.webp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/concierge-pick.webp</a></li>
+  <li><b>本番バッジ画像そのもの（good-cover.webp）</b><a href="https://joy-relief-station.lovable.app/badges/good-cover.webp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/good-cover.webp</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>concierge(コンシェルジュ推し)</td><td class="yes">画像ファイル参照(webp)のみ・独自SVG無し</td></tr>
-<tr><td>good-cover(グッドカバー)</td><td class="yes">画像ファイル参照(webp)のみ・独自SVG無し</td></tr>
-<tr><td>ai-assisted(AIアシスタント)</td><td class="yes">画像ファイル参照(webp)のみ・独自SVG無し</td></tr>
-<tr><td>本番(Lovable)への反映</td><td class="yes">PR#647がorigin/mainへ合流済み・本番URLで実データ確認済み</td></tr>
+<tr><td>concierge（コンシェルジュ推し）</td><td class="yes">画像ファイル参照(webp)のみ・独自SVG無し</td></tr>
+<tr><td>good-cover（グッドカバー）</td><td class="yes">画像ファイル参照(webp)のみ・独自SVG無し</td></tr>
+<tr><td>ai-assisted（AIアシスタント）</td><td class="yes">画像ファイル参照(webp)のみ・独自SVG無し</td></tr>
+<tr><td>本番への反映</td><td class="yes">本番URLを開いて画像バッジが実際に表示されることを確認済み</td></tr>
 </table>
 
 <footer>
