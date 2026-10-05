@@ -62,6 +62,35 @@ COST_LEDGER = os.path.join(REPO, "status", "cost_by_task.json")
 FALLBACK_PRICE_IN_PER_1M = 10.0
 FALLBACK_PRICE_OUT_PER_1M = 50.0
 SONNET = "claude-sonnet-5"
+# ---- 34489番：店主「どのモデルを使ってるかも分からない、トークン消費の節約もして欲しい、
+#   消費を抑えつつガンガン回せるようにして欲しい」への対応（2026-10-06）----
+# グローバルCLAUDE.md「トークン消費最適化ルール」の「モデルの使い分け（単純作業は軽量、
+# 複雑判断は上位）」を、ここで実際にコード化する。Opus/Fableへは広げない
+# （既存の「Sonnet固定・Fableは使わない」方針＝週枠の天井対策はそのまま維持し、
+# Sonnetより安いHaikuへの切り替えだけを新しく追加する）。
+# モデルIDは実機で起動確認済み（claude -p --model haiku →
+# canonicalModel: claude-haiku-4-5, 実モデル claude-haiku-4-5-20251001）。
+HAIKU = "claude-haiku-4-5"
+# 判断がほぼ要らない機械的な単純作業（パトロール・重複チェック・一覧作成・棚卸し・
+# 仕分け・集計・定型フォーマット変換）だけをHaiku対象にする。実装・設計・判断・交渉等の
+# 語が混ざっていたら安全側（Sonnet）に倒す——誤判定でHaikuに落として実装や判断を求めると、
+# やり直しの方が高くつくため。
+_HAIKU_OK_KEYWORDS = ("一覧作成", "パトロール", "見回り", "棚卸し", "仕分け", "集計",
+                      "重複チェック", "フォーマット変換")
+_HAIKU_NG_KEYWORDS = ("実装", "設計", "戦略", "判断", "修正", "直し", "リサーチ",
+                      "企画", "交渉", "判定", "分析")
+
+
+def pick_model(item):
+    """34489番：単純作業だけHaikuへ落として消費を抑える。迷ったらSonnet。"""
+    text = (item.get("title") or "") + (item.get("hyoudai") or "")
+    if any(k in text for k in _HAIKU_NG_KEYWORDS):
+        return SONNET
+    if any(k in text for k in _HAIKU_OK_KEYWORDS):
+        return HAIKU
+    return SONNET
+
+
 CLAUDE = os.path.expanduser("~/.local/bin/claude")
 if not os.path.exists(CLAUDE):
     for c in ("/opt/homebrew/bin/claude", "/usr/local/bin/claude"):
@@ -2652,7 +2681,14 @@ def launch_one(item, q, alive, safe_max):
         item.pop("resumeFrom", None)
     else:
         logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
-        cmd = [CLAUDE, "-p", "--session-id", new_id, "--model", SONNET,
+        # 34489番：新規起動（resumeではない）だけ、単純作業ならHaikuへ落とす。
+        # resume側はキャッシュが効いているので触らない（モデルを変えるとキャッシュが
+        # 作り直しになり逆に高くつく＝2026-09-08の既存知見）。
+        chosen_model = pick_model(item)
+        item["model"] = chosen_model
+        if chosen_model != SONNET:
+            log("💡 %d番は単純作業と判定、%sで起動（節約・34489番）" % (item.get("n"), chosen_model))
+        cmd = [CLAUDE, "-p", "--session-id", new_id, "--model", chosen_model,
                "--permission-mode", "auto", "--output-format", "json", prompt]
     try:
         with open(logf, "ab") as f:
