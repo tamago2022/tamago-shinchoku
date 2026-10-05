@@ -440,7 +440,27 @@ def saihassha(case, naze):
     return {"st": s, "kai": rec["kai"], "hi": d}
 
 
+def _oni_codex_hirou_mo_yatte_oku():
+    """★2171番：外の個別審査(oni_codex.py)の『返事を拾う』を、心臓が毎周回呼ぶ
+    この oni_modoshi.py に相乗りさせる。
+
+    oni_codex.py 冒頭の設計書には「hirou … 心臓から毎周回」と書いてあったのに、
+    実際には heartbeat.sh に1本も登録されていなかった（2026-10-01に作って以来、
+    1件(#580)投げて拾った後は誰も拾いに行っていない＝作った道具が繋がっていない
+    「やりっぱなし」の実例）。heartbeat.sh にも行は足したが、たまごさんのノート
+    どおり★動いている心臓の本体は再起動しないと読み直されない。心臓が毎周回
+    読み直す側（＝この oni_modoshi.py）に足せば、次の周回から即効く。
+    """
+    try:
+        import oni_codex
+        return oni_codex.hirou()
+    except Exception as e:
+        return {"skip": "%s: %s" % (type(e).__name__, e)}
+
+
 def hashiru(dry=False):
+    if not dry:
+        _oni_codex_hirou_mo_yatte_oku()
     if not dry and not soto_ni_derareru():
         # ★回線が無い。ここで検品すると偽の差し戻しになるので、見送って記録だけ残す。
         append(KEKKA, {"at": stamp(), "ok": None, "naze": "回線が無いので検品を見送った"})

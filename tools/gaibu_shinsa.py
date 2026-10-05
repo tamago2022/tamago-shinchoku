@@ -334,6 +334,31 @@ def tori_ni_kite_morau():
 # 下限を4文字にしていて短い指摘を丸ごと落としていた（2026-09-26 自己試験で発覚）。
 _SHITEKI = re.compile(r"^[ \t]*(NG|OK)[ \t]*\|[ \t]*([^|\n]{2,80}?)[ \t]*\|[ \t]*([^\n]{3,200}?)[ \t]*$", re.M)
 
+# ★2026-10-06（2171番）実測で発覚：Codexは9/27には指定形式(`NG|...|...`)で返したが、
+#   9/28〜10/6は毎回「### Summary」の自由文Markdownで返す（実例：issue#839
+#   「台帳736件・実測200件をProgress基準で監査し、公開成果0件、達成率0.0%、有効な
+#   証拠URLなし として差し戻し判定を記録しました」）。_SHITEKI が1件もマッチせず、
+#   hirou() が毎日 continue で読み捨てていた＝★外部審査が毎日来ているのに台帳に
+#   一度も反映されない「やりっぱなし」の実物。指定形式を守らない返信でも、
+#   自由文から全体判定だけは拾えるようにする（個別1件ずつの判定は要求しない）。
+ZENTAI_KEY = "__ZENTAI__"
+_ZENTAI_NG = re.compile(r"(差し戻し|不合格|未完了|証拠URLなし|公開成果0件|達成率0(\.0)?%)")
+_ZENTAI_OK = re.compile(r"(全件(承認|合格)|全部(合格|OK)|差し戻しはありません|指摘はありません)")
+
+
+def _zentai_jiyuubun(body):
+    """構造化1行(NG|..|..)が1件も取れない時だけ呼ぶ、自由文からの全体判定フォールバック。
+
+    ★個別案件には紐付けない（自由文は『どの案件か』を特定できないため）。
+      全体が「差し戻し」と言っているか「問題なし」と言っているかだけを見る。
+    """
+    t = (body or "")[:4000]
+    if _ZENTAI_NG.search(t):
+        return "NG", (_ZENTAI_NG.search(t).group(0))
+    if _ZENTAI_OK.search(t):
+        return "OK", (_ZENTAI_OK.search(t).group(0))
+    return None, None
+
 
 def hirou():
     """外から返ってきた指摘を拾って台帳に戻す。
@@ -359,6 +384,22 @@ def hirou():
         body = " ".join(str(r.get(k) or "") for k in ("topic", "body", "text", "message", "comment"))
         hits = _SHITEKI.findall(body)
         if not hits:
+            # ★指定の1行形式を守らない自由文の返信でも、「全体として差し戻しか
+            #   問題なしか」だけは拾う（2171番・実測：Codexが9/28〜10/6はずっと
+            #   「### Summary」の自由文で返していて、素通りで台帳に一度も載っていなかった）。
+            zk, zwhy = _zentai_jiyuubun(body)
+            if zk is None:
+                continue
+            mita.add(rid)
+            rec = {"at": stamp(), "kara": r.get("saki") or r.get("from") or r.get("ai") or "外",
+                   "kekka": zk, "naiyou": "全体（自由文判定）", "naze": zwhy}
+            append(SHITEKI, rec)
+            soto[ZENTAI_KEY] = {"ok": zk == "OK", "at": stamp(), "kara": rec["kara"],
+                                "naze": ("自由文判定：%s" % zwhy)[:160]}
+            if zk == "OK":
+                n_ok += 1
+            else:
+                n_ng += 1
             continue
         mita.add(rid)
         for kekka, naiyou, naze in hits:
@@ -375,6 +416,10 @@ def hirou():
                 soto[key] = {"ok": False, "at": stamp(), "kara": rec["kara"],
                              "naze": naze.strip()[:120]}
                 n_ng += 1
+            # ★「監査対象N件全体」のような全体名で来た個別一致も、全体キーへ正規化
+            #   （旧データ形式＝2026-09-27の「監査対象200件全体」等もここで橋渡しする）。
+            if re.search(r"(全体|全件|全案件|監査対象\d*件|\d+件中)", naiyou):
+                soto[ZENTAI_KEY] = dict(soto[key])
     st["mitaId"] = list(mita)[-3000:]
     st["lastHirouAt"] = stamp()
     write_text(STATE, json.dumps(st, ensure_ascii=False, indent=1))
@@ -390,10 +435,41 @@ def soto_ga_mitometa(title):
 
     他の係（tools/oni_modoshi.py・tools/hantei.py）はこの関数を通してしか
     完了を付けられない。**こちら側に完了を書く口を一切作らない。**
+
+    ★2171番で追加：個別タイトルの判定が無い場合、全体判定（__ZENTAI__）に
+      フォールバックする。外部審査は毎回1件1件を名指しせず「台帳全体をまとめて
+      差し戻し」で返すことが多いため（実測：9/27〜10/6、個別一致は1件のみ）、
+      個別一致が無いことを「未審査（いつまでも待ち）」にせず、直近の全体判定を
+      そのまま適用する。これにより sotomachi のまま永久に止まっていた案件が、
+      外部の「全体NG」を受けて正しく再発車（oni_modoshi.saihassha）される。
     """
     soto = load_json(SOTO, {}) or {}
     r = soto.get(norm(title)[:24])
-    return bool(r and r.get("ok")), (r or {}).get("naze")
+    if r:
+        return bool(r.get("ok")), r.get("naze")
+    z = soto.get(ZENTAI_KEY)
+    if z:
+        return bool(z.get("ok")), z.get("naze")
+    return False, "未審査"
+
+
+_PATH_MASK = re.compile(r"/Users/[A-Za-z0-9._\-]+(?:/[A-Za-z0-9._\-]+)*")
+
+
+def _kakusu_path(text):
+    """★2171番：chappy（公開掲示板 ai-kaigi）へ送る前に、たまごさんのMacの絶対パスを隠す。
+
+    実測（2026-09-27〜10-06・毎日）：台帳(hatsugen.jsonl)の中の依頼文に
+    `/Users/mac/Desktop/tamago-shinchoku/tools/...` という絶対パスがそのまま入っており、
+    nageru.py の秘密検査（たまごさんのMac内パスの漏出防止）に毎日弾かれ続けていた。
+    検査自体は正しい安全装置なので弱めず、★送る本文側でパスを隠してから渡す。
+    中身（ファイル名）は残す（`.../verify_xxx.py` の形）。codex（GitHub Issue）は
+    秘密検査の対象外なので、こちらは呼ばない＝元の情報量のまま送る。
+    """
+    def _sub(m):
+        name = m.group(0).rsplit("/", 1)[-1]
+        return (".../" + name) if name else "…(path)"
+    return _PATH_MASK.sub(_sub, text or "")
 
 
 def hashiru(dasu=True, dry=False):
@@ -414,7 +490,8 @@ def hashiru(dasu=True, dry=False):
             #   Genspark には**取りに来てもらう**。下の tori_ni_kite_morau() が
             #   公開URLと、向こうの画面で1回だけ要る仕込みを書き出す。
             for saki in ("codex", "chappy"):
-                dashita.append(nageru(saki, odai, md))
+                honbun = _kakusu_path(md) if saki == "chappy" else md
+                dashita.append(nageru(saki, odai, honbun))
             tori_ni_kite_morau()
             st["lastDashiHi"] = today()
             write_text(STATE, json.dumps(st, ensure_ascii=False, indent=1))
