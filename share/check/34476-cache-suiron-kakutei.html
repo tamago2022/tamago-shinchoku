@@ -52,7 +52,7 @@
 <div class="date">2026-10-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-02の原発言時点で、店主がシークレット(キャッシュ無し)ウィンドウで試しても管理ログインの再要求が再現していた＝この時点でキャッシュ説は実測で否定済み。本当の原因はSafariのITPがlocalStorageを7日で消す仕様で、2026-08-06にCookieベースの目印へ切替えて修正し本番へ反映した。さらにLovableのiframe埋め込み対策でCookieを2枚化する改修も案件#34374で本番へ反映済み。本日2026-10-05、本番へ未ログイン状態で直接アクセスし再検証した。
+2026-08-02の原発言時点で、店主がシークレット(キャッシュ無し)ウィンドウで試しても管理ログインの再要求が再現していた＝この時点でキャッシュ説は実測で否定済み。本当の原因はSafariのITPがlocalStorageを7日で消す仕様で、2026-08-06にCookieベースの目印へ切替えて修正・main反映(commit 91907b2b/e17dffb6)。さらにLovableのiframe埋め込み対策でCookieを2枚化する改修も2026-10-03にmain反映済み(commit 952204b81、案件#34374)。本日2026-10-05、本番へ未ログイン状態で直接アクセスし再検証した。
 </div>
 
 <h2>② 数字</h2>
@@ -67,6 +67,8 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>KNOWN_ISSUES.md 該当項目</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md</a></li>
+  <li><b>修正コミット(Safari ITP対策)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/e17dffb6" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/e17dffb6</a></li>
+  <li><b>修正コミット(Cookie2枚化・案件#34374)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/952204b81" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/952204b81</a></li>
   <li><b>本番の管理画面</b><a href="https://joy-relief-station.lovable.app/admin/inventory" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/inventory</a></li>
 </ul>
 
@@ -75,7 +77,7 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>キャッシュが原因か</td><td class="yes">いいえ・実測で否定済み(シークレットウィンドウでも再現していた)</td></tr>
 <tr><td>真の原因は特定済みか</td><td class="yes">はい・Safari ITPのlocalStorage7日消去</td></tr>
-<tr><td>修正は本番へ反映済みか</td><td class="yes">はい・反映済み</td></tr>
+<tr><td>修正はmainへ反映済みか</td><td class="yes">はい・コミット済み(e17dffb6/952204b81)</td></tr>
 <tr><td>本日の本番再検証</td><td class="yes">200・管理Cookie未発行(設計通り・異常なし)</td></tr>
 <tr><td>残る確認</td><td class="yes">店主本人のパスワードでの実ログイン持続確認のみ(秘密情報のためAI代行不可)</td></tr>
 </table>
