@@ -251,6 +251,35 @@ def ensure_named_shelf(db, r, want_title):
     return True
 
 
+def tana_machi(db, r, url):
+    """棚が未定の投げ込みを、在庫（admin_stock）に「🟡保留：棚待ち」で置く。棚(pick)は作らない。"""
+    m = RE_YT.search(url)
+    mx = RE_X.match(url)
+    kind = "youtube" if m else ("x" if mx else "link")
+    ref = ("https://www.youtube.com/watch?v=%s" % m.group(1)) if m else \
+          (("https://x.com/%s/status/%s" % (mx.group(1), mx.group(2))) if mx else url)
+    try:
+        thumb, note, why_m = media_hayai(url, r)
+    except Exception as e:  # noqa: BLE001
+        thumb, note, why_m = None, None, "サムネを調べる係が転んだ（%s）" % type(e).__name__
+    title = clean_title(r.get("title"))
+    if not title and mx:
+        title = "@%s のポスト" % mx.group(1)
+    title = (title or ref)[:300]
+    mark = "🟡保留：棚待ち（行き先の棚が未定。棚が決まれば入ります）"
+    full_note = ((note + "\n") if note else "") + mark
+    sql = ("with ex as (select id from admin_stock where kind = %s and ref = %s limit 1), "
+           "ins as (insert into admin_stock (kind, ref, title, thumbnail_url, note) "
+           "select %s, %s, %s, %s, %s where not exists (select 1 from ex) returning id) "
+           "select (select id::text from ex union all select id::text from ins limit 1) as stock_id"
+           % (lit(kind), lit(ref), lit(kind), lit(ref), lit(title), lit(thumb), lit(full_note)))
+    rows = db.q(sql)
+    sid = rows[0].get("stock_id") if isinstance(rows, list) and rows else None
+    return {"ok": False, "why1": "棚待ち",
+            "why": "入荷は済みました（在庫に保留：棚待ちで記録）。棚が決まれば入ります" if sid else "入荷の記録に失敗",
+            "stockId": sid}
+
+
 def ireru(db, r):
     """1件を棚へ。返り値 {ok, why1, why, links:[{title,url}], rec}。"""
     rid = r.get("id")
@@ -259,7 +288,9 @@ def ireru(db, r):
         return {"ok": False, "why1": "URL無し", "why": "ひとことだけ届いています"}
     wants = wants_of(r)
     if not wants:
-        return {"ok": False, "why1": "棚未定", "why": "行き先の棚がまだ決まっていません"}
+        # ★2026-10-06（たまごさん指示）：棚が未定でも**入荷だけは済ませる**。入れようとした物を落とさない。
+        #   在庫に「🟡保留：棚待ち」の印つきで置く（棚には出ない）。棚が決まれば次の回／手動で結ばれる。
+        return tana_machi(db, r, url)
     m = RE_YT.search(url)
     mx = RE_X.match(url)
     kind = "youtube" if m else ("x" if mx else "link")
