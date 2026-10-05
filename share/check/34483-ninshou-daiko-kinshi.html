@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34472 サムネイル完成待ち曲の店主専用一覧タブ 確認ページ</title>
+<title>#34483 34483号：認証情報(ID/パスワード)の代理入力を機械で拒否する関所 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,32 +47,41 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34472 サムネイル完成待ち曲の店主専用一覧タブ</div>
-<h1>#34472 サムネイル完成待ち曲の店主専用一覧タブ</h1>
-<div class="date">2026-10-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34483 34483号：認証情報(ID/パスワード)の代理入力を機械で拒否する関所</div>
+<h1>#34483 34483号：認証情報(ID/パスワード)の代理入力を機械で拒否する関所</h1>
+<div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-サムネイル・動画が無くて公開棚から隠れている曲を、店主/スタッフだけが見られる管理画面に一覧表示する仕組みを追加しました。隠す仕組みと自動復活（仕入れ担当が動画を直すと次の自動チェックで元の場所へ戻る）は既に動いていて、今回は欠けていた『一覧を見る画面』だけを足しました。
+店主の指示(2026-08-05)「認証情報(ID/パスワード)を代わりに入力することは禁止」が、文章の注意書き(tools/session_watchdog.py)のまま1ヶ月以上効かず判定日赤になっていた。<code>tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs</code>を新設し<code>.claude/settings.json</code>のPreToolUseへ登録。ブラウザ・画面操作系の道具呼び出しにpassword/パスワード/暗証番号/ID・パスワード/秘密鍵等の語が含まれると<b>exit 2で道具ごと拒否</b>する。読み取り系(ログイン済み画面を読む)は止めない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2da189921</b><span>mainへ反映したコミット</span></div>
-  <div class="num"><b>未実施</b><span>Lovable公開の状態</span></div>
+  <div class="num"><b>7/7</b><span>逆テスト合格件数（--self-test）</span></div>
+  <div class="num"><b>2</b><span>exit 2|違反時の拒否コード(実測)</span></div>
+  <div class="num"><b>0</b><span>exit 0|正常操作の通過コード(実測)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>GitHubの変更内容</b><a href="https://github.com/tamago2022/joy-relief-station/commit/2da189921" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/2da189921</a></li>
-  <li><b>本番サイト（公開待ち）</b><a href="https://joy-relief-station.lovable.app/admin/video-health" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/video-health</a></li>
+  <li><b>GitHub: 関所スクリプト本体</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/fix/queue-self-deadlock-20261004/tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/fix/queue-self-deadlock-20261004/tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs</a></li>
+  <li><b>GitHub: フック登録(.claude/settings.json)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/fix/queue-self-deadlock-20261004/.claude/settings.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/fix/queue-self-deadlock-20261004/.claude/settings.json</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>password入力(selector #password)</td><td class="no">拒否(exit 2)</td></tr>
+<tr><td>日本語「パスワード」ラベルへの入力</td><td class="no">拒否(exit 2)</td></tr>
+<tr><td>ID/パスワード同時入力</td><td class="no">拒否(exit 2)</td></tr>
+<tr><td>無関係な検索語の入力</td><td class="yes">通過(exit 0)</td></tr>
+<tr><td>読み取り専用(get_page_text)</td><td class="yes">通過(exit 0)</td></tr>
+</table>
 
 <footer>
-正直な状態：コードはmainに入りました。ただし本番（Lovable）への『公開』ボタンは、AI側がChromeを新しく起動することを禁止するルール（2026-09-29・1186号）のため、このセッションからは押せませんでした。店主がLovable画面で「公開」を押すと、この一覧タブが本番に出ます。
+このページは #34483 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
