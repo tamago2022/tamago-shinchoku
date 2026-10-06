@@ -1,13 +1,13 @@
 {
- "raw": "負荷 268% ｜ CPU 35% / メモリ圧迫 14% / スワップ 13.80GB / ディスク空き 65GB ｜ 稼働 4本 ｜ あと0本OK",
- "load": 268,
- "cpu": 35,
+ "raw": "負荷 143% ｜ CPU 44% / メモリ圧迫 14% / スワップ 13.65GB / ディスク空き 65GB ｜ 稼働 4本 ｜ あと0本OK",
+ "load": 143,
+ "cpu": 44,
  "mem": 14,
- "swapGB": 14135.5,
+ "swapGB": 13975.5,
  "diskFreeGB": 65.0,
  "sessions": 1,
- "note": "上限4本・あと3本OK（CPU35%・メモリ空き8.0GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.9）→1本減らす）",
- "measuredAt": "2026-10-06T12:41:45+09:00",
+ "note": "上限4本・あと3本OK（5分平均ロード14.2（コア8×0.8超）、予兆（5分ロード比1.8）→1本減らす）",
+ "measuredAt": "2026-10-06T12:44:16+09:00",
  "working": 0,
  "stalled": 0,
  "waiting": 1,
@@ -20,23 +20,23 @@
  "calibrationBasis": "実測（1本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比1.9"
+  "5分ロード比1.8"
  ],
  "shedCandidates": [],
  "below": 0,
- "blockReason": "CPU35%・メモリ空き8.0GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.9）→1本減らす",
- "load1": 21.48,
- "load5": 15.6,
- "load15": 14.84,
+ "blockReason": "5分平均ロード14.2（コア8×0.8超）、予兆（5分ロード比1.8）→1本減らす",
+ "load1": 11.48,
+ "load5": 14.18,
+ "load15": 14.41,
  "cores": 8,
- "loadRatio": 2.69,
+ "loadRatio": 1.44,
  "memPressure": "green",
- "memAvailGB": 8.0,
+ "memAvailGB": 7.9,
  "swapIncreasing": false,
- "ioMBs": 7.89,
+ "ioMBs": 31.32,
  "network": {
-  "pingMedianMs": 68.0,
-  "pingMaxMs": 535.2,
+  "pingMedianMs": 53.4,
+  "pingMaxMs": 429.0,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -45,7 +45,7 @@
    "cli": "ea93adc5-6eb4-4f6d-9495-50b6d4d91856",
    "localId": "local_0178952d-9356-485e-b760-67f6a424bb19",
    "startedAt": "2026-10-06T11:49:08+0900",
-   "elapsedMin": 52,
+   "elapsedMin": 55,
    "lastReportAt": "2026-10-06T02:50:56.249Z",
    "lastReport": "め、見回り係では進められず見送りました。  作業キューのレーン2・3が🟢走行中のまま（最終更新は9月11日・13日）ですが、実際に生きているのは1本だけです。古い表示なので、整理が必要かもしれません。",
    "status": "反映済み・報告なし",
@@ -62,14 +62,14 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 349,
-   "idleMin": 50.7,
+   "idleMin": 53.2,
    "kind": "idle_done",
    "model": "claude-sonnet-5",
    "turns": 28,
    "lastActivityAt": "2026-10-06T02:50:56.249Z"
   }
  ],
- "line": "負荷 268% ｜ セッション1本（作業中0・止まり0） ｜ 上限4本・あと3本OK ｜ 空き65.0GB",
+ "line": "負荷 143% ｜ セッション1本（作業中0・止まり0） ｜ 上限4本・あと3本OK ｜ 空き65.0GB",
  "modelCounts": {
   "claude-sonnet-5": 1
  },
@@ -83,18 +83,18 @@
  "heartbeat": {
   "pid": 16569,
   "processAlive": true,
-  "stalledMin": 0.1,
+  "stalledMin": 0.0,
   "stalled": false,
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 2249,
+  "waiting": 2252,
   "room": 3,
   "alive": 1,
   "safeMax": 4,
-  "stalledMin": 11.825753545761108,
-  "stalled": true,
-  "note": "🚦 発車待ちが2249件あるのに11.825753545761108分発車していません（走行1本／上限4本）"
+  "stalledMin": 2.432233424981435,
+  "stalled": false,
+  "note": "発車は正常です"
  },
  "awaitingCheck": {
   "count": 324,
@@ -23204,7 +23204,7 @@
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-10-06 12:42",
+  "lastRun": "2026-10-06 12:44",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -23237,7 +23237,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-10-06 12:41",
+  "updatedAt": "2026-10-06 12:44",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -23246,7 +23246,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-10-06 17:59",
   "daysLeft": 0.2,
-  "hoursLeft": 5.3,
+  "hoursLeft": 5.2,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -23261,10 +23261,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 18500028,
-  "allWeightedTokensSinceReset": 1494508974,
+  "allWeightedTokensSinceReset": 1494697962,
   "last6h": {
    "fable": 3369192,
-   "all": 76620439
+   "all": 76809427
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
