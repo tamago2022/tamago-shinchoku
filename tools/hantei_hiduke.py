@@ -67,6 +67,26 @@ def norm(s):
     return re.sub(r"[★☆*#`>【】\[\]「」『』（）()・:：,、。\.\-—–_/\\!！?？\s]", "", s or "").lower()
 
 
+# 34536番で実測した事故：この係(kuriageru)がP1に繰り上げて再発車するとき、
+# queueのタイトルに「判定日赤｜」というプレフィックスを付ける
+# （oni_modoshi.py側の差し戻しも「差し戻し｜」を付ける）。
+# ★その再発車されたqueue案件がoni_modoshi.pyの検品を通って kenpin.jsonl に
+# ok:true で記録されても、ima_no_jotai() はタイトルをそのまま norm() して
+# キーにするため、プレフィックスが付いた分だけ元の発言(kioku由来)のキーと
+# 食い違い、★二度とマッチしない。結果、仕組み自体（hantei_hiduke.py /
+# oni_modoshi.py）が実装・動作していても、元の発言は「1ヶ月経っても未着手」
+# のまま永久に赤判定→再発車を繰り返す（同一要望「1件ずつの個別対応ではなく
+# 仕組み自体を作ってほしい」が34403/34480/34503/34533/34536/35588番として
+# 積み上がっていたのが実例）。★1件ずつ直すのではなく、プレフィックスを剥がして
+# 比較する側を直すのが「仕組み自体」の修正。
+_SAIHASSHA_PREFIX = re.compile(r"^(判定日赤｜|差し戻し｜|【差し戻し】)+")
+
+
+def kihon_title(t):
+    """再発車のときに付くラベルのプレフィックスを剥がし、元の発言のキーに揃える。"""
+    return _SAIHASSHA_PREFIX.sub("", t or "")
+
+
 def jsonl(p):
     out = []
     try:
@@ -170,7 +190,7 @@ def ima_no_jotai():
     for k in jsonl(KENPIN):
         if not k.get("ok"):
             continue
-        key = norm(k.get("title"))[:24]
+        key = norm(kihon_title(k.get("title")))[:24]
         if key:
             by[key] = {"state": "完了", "evidence": k.get("url"), "actionable": None}
     return by
@@ -320,6 +340,33 @@ def main():
         h4 = hantei_1ken(r4, ima)
         if not h4 or h4["aka"]:
             ng.append("actionable=falseなのに赤／再発車の対象にしている（1370番の再発）")
+        # 34536番の再発防止：「判定日赤｜」「差し戻し｜」プレフィックスを剥がせるか
+        if kihon_title("判定日赤｜1件ずつの個別対応ではなく、仕組み自体を作ってほしい") \
+                != "1件ずつの個別対応ではなく、仕組み自体を作ってほしい":
+            ng.append("「判定日赤｜」プレフィックスを剥がせない（34536番の再発）")
+        if kihon_title("差し戻し｜テスト") != "テスト":
+            ng.append("「差し戻し｜」プレフィックスを剥がせない（34536番の再発）")
+        # 34536番の再発防止：再発車タイトル（プレフィックス付き）で検品合格した記録が
+        # プレフィックス無しの元の発言キーに「完了」として反映されるか（実ファイルは汚さない）
+        import tempfile
+        fd, tmp_kenpin = tempfile.mkstemp()
+        os.close(fd)
+        _orig_kenpin = globals()["KENPIN"]
+        try:
+            append(tmp_kenpin, {"ok": True,
+                                 "title": "判定日赤｜テスト専用の仕組み確認タイトルです",
+                                 "url": "https://example.test/ok"})
+            globals()["KENPIN"] = tmp_kenpin
+            by = ima_no_jotai()
+            key = norm("テスト専用の仕組み確認タイトルです")[:24]
+            if (by.get(key) or {}).get("state") != "完了":
+                ng.append("再発車タイトルの検品合格が元の発言キーに反映されない（34536番の再発）")
+        finally:
+            globals()["KENPIN"] = _orig_kenpin
+            try:
+                os.remove(tmp_kenpin)
+            except Exception:
+                pass
         s = hashiru(dry=True)
         print("自己試験：%s／台帳 %d件・判定日が来ている %d件（うち赤 %d）"
               % ("OK" if not ng else "NG", s["zen"], s["mita"], s["aka"]))
