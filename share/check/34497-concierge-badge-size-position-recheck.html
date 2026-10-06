@@ -52,7 +52,7 @@
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-05の指摘「小さくするのが普通、位置もおかしい、気持ち良いサイズと場所に置き換えて」は、サイズ・余白の値を<code>src/lib/designRules.ts</code>の1箇所(<code>targetShortSideRatioPct:28</code>・<code>cornerInsetPercent:6.5</code>)へ一元化し、実測検査の仕組みを導入して解決済み。2026-09-29に本番スクリーンショットで「顔に被っていない・左上に収まっている」ことを確認済み(証拠: #1488再確認ページ)。今回(2026-10-06)、再度赤信号が立ったため、該当コードと本番デプロイ状況を再確認した。この比率の値は変更されておらず、追加のコード変更は不要と判断した。
+2026-08-05の指摘「小さくするのが普通、位置もおかしい、気持ち良いサイズと場所に置き換えて」は、サイズ・余白の値を<code>src/lib/designRules.ts</code>の1箇所へ一元化し、実測検査の仕組みを導入して解決済み。2026-09-29に本番スクリーンショットで「顔に被っていない・左上に収まっている」ことを確認済み(証拠: #1488再確認ページ)。今回(2026-10-06)、再度赤信号が立ったため、該当コードと本番デプロイ状況を再確認した。この比率の値は変更されておらず、追加のコード変更は不要と判断した。
 </div>
 
 <h2>② 数字</h2>
@@ -80,7 +80,7 @@
 </table>
 
 <footer>
-このページは #34497 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実測: src/lib/designRules.ts の生データをそのまま引用。<pre>targetShortSideRatioPct: 28, cornerInsetPercent: 6.5</pre>この値は2026-09-17〜19(案件#890/#892/#897)で確定し、2026-09-29に本番スクリーンショットで実測確認済み(証拠ページ参照)。2026-10-06時点でこのファイルへの変更は無く、直近の更新はAI ASSISTEDバッジ追加など別件のみ。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
