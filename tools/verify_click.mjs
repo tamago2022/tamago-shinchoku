@@ -240,6 +240,13 @@ async function main() {
     await ready;
     await send("Page.enable");
     await send("Runtime.enable");
+    // 34516番デバッグ用（店主報告のhydration不一致を特定するための一時プローブ）：
+    // VC_HYDRO_PROBE=1の時だけ、ページ読み込み前にMutationObserverを仕込み、
+    // hydration中にどのDOMがいつ書き換わったかをwindow.__hydroLogへ記録する。
+    // 既定では何もしない（通常の検品動作は変えない）。
+    if (process.env.VC_HYDRO_PROBE) {
+      await send("Page.addScriptToEvaluateOnNewDocument", { source: HYDRO_PROBE_SCRIPT });
+    }
     await send("Emulation.setDeviceMetricsOverride", {
       width: 375,
       height: 900,
@@ -250,6 +257,17 @@ async function main() {
     await send("Page.navigate", { url: URL_ARG });
     await waitComplete(send);
     await sleep(SETTLE_MS);
+    if (process.env.VC_HYDRO_PROBE) {
+      const hydroRes = await send("Runtime.evaluate", {
+        expression: "JSON.stringify(window.__hydroLog || [])",
+        returnByValue: true,
+      });
+      try {
+        result.hydroLog = JSON.parse(hydroRes.result.value || "[]");
+      } catch {
+        result.hydroLog = [];
+      }
+    }
 
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
     if (OUT_JSON) {
