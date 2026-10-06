@@ -54,9 +54,15 @@ STATE = os.path.join(ST, "kohyou_osu.json")
 LOG = os.path.join(ST, "kohyou_osu.log")
 GATE = os.path.join(ST, ".kohyou_osu_gate")
 TOKEN_PATH = os.path.expanduser("~/.tamago/lovable_oauth.json")
+OUTBOX = os.path.join(ST, "dispatch_outbox.jsonl")
+QUEUE = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain/AI出力/_ルール/作業キュー.md"
 
 INTERVAL_SEC = 60        # 心臓は15秒おきに呼ぶ。実際に動くのは1分に1回
 VERIFY_LIMIT_SEC = 600   # 押してから10分変わらなければ諦めて赤のまま残す
+STUCK_ALERT_STREAK = 3   # ★2026-10-06：連続でこの回数「押しても出なかった」になったら、
+                         #   個々のコミットの問題ではなくLovable側の公開パイプライン自体が
+                         #   詰まっている可能性が高いとみなし、1回だけDispatchへ知らせる
+                         #   （以後は直って連続記録がリセットされるまで黙る＝スパムにしない）。
 
 MCP_URL = "https://mcp.lovable.dev"
 TOKEN_URL = "https://lovable.dev/oauth/token"
@@ -235,6 +241,34 @@ def _kanshi_item():
     return None
 
 
+def _alert_stuck(name, deploy_key, streak):
+    """★2026-10-06（店主報告の裏で発見・恒久対策）：押しても本番のx-deployment-idが
+    何回も連続で変わらない＝1つのコミットの不具合ではなく、Lovableの公開パイプライン
+    自体が詰まっている可能性が高い。これまではログに残るだけで誰も気づかず、
+    実際に2026-10-06は01:24〜09:32の8時間・15回連続で詰まったまま誰も知らなかった。
+    直接 deploy_project を呼び直しても毎回新しいdeployment_idが返るだけで本番は
+    変わらないことを確認済み（＝再試行では直らない。Lovable側の復旧を待つしかない）。
+    気づいた時点でDispatchへ1回だけ知らせる（直るまで毎回ログを読みに行かせない）。"""
+    text = ("Lovable公開が詰まっています：%s を%d回連続で押しましたが本番のx-deployment-idが"
+            "変わりません（直前= %s）。deploy_project自体は毎回新しいdeployment_idを返すので"
+            "コミット側の問題ではなく、Lovable側の公開パイプラインが詰まっている可能性が高いです。"
+            "再試行では直らないため、Lovable側の復旧を待つか、本人がLovableの画面から直接確認・"
+            "公開してください。" % (name, streak, (deploy_key or "-")[:8]))
+    try:
+        with io.open(OUTBOX, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
+                                 "from": "kohyou_osu", "text": text}, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+    try:
+        if os.path.exists(QUEUE):
+            with io.open(QUEUE, "a", encoding="utf-8") as f:
+                f.write("\n| %s | 【公開詰まり】%s | 🔴 |\n" % (time.strftime("%F"), text))
+    except Exception:
+        pass
+    _log("★Dispatchへ知らせました：%d回連続で押しても本番が変わりません" % streak)
+
+
 def _verify(st, it):
     """押したあと、出たかを確かめる。★出たと決めるのはここではなく見る係。"""
     mato = MATO[it["name"]]
@@ -247,6 +281,7 @@ def _verify(st, it):
         st["phase"] = ""
         st["lastResult"] = "出た"
         st["lastAfterKey"] = now_key
+        st["stuckStreak"] = 0  # 直ったので連続詰まり記録をリセット（次回また静かに数え直す）
         try:  # ★ズレ関所：出た本番を測る（別プロセス）。結果は status/zure_kanmon/prod.json
             import subprocess
             subprocess.Popen([sys.executable, os.path.join(HERE, "zure_kanmon.py"), "prod"],
@@ -269,6 +304,9 @@ def _verify(st, it):
         st["phase"] = ""
         st["lastResult"] = "押しても出なかった"
         st["akirametaSha"] = st.get("pressedSha", "")
+        st["stuckStreak"] = int(st.get("stuckStreak") or 0) + 1
+        if st["stuckStreak"] == STUCK_ALERT_STREAK:
+            _alert_stuck(it["name"], before, st["stuckStreak"])
         return st
     st["lastResult"] = "確かめ中（%d秒）" % int(machi)
     return st
