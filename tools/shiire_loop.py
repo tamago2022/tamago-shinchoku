@@ -209,7 +209,25 @@ def main():
         d["history"] = d["history"][-50:]
         io.open(RUN, "w", encoding="utf-8").write(
             json.dumps(d, ensure_ascii=False, indent=1))
+    _shiire_shinchoku_update()
     return 0
+
+
+def _shiire_shinchoku_update():
+    """34547番の相乗り（2026-10-07）：この口が毎日回るたびに、
+    店主向けの「仕入れ進捗」（status/public/shiire_shinchoku.json）も書き直す。
+
+    入れ方の理由は既存の _koushiki_update_watch 等と同じ：新しい定期タスク・
+    新しいlaunchd便は作らず、既にここで毎日回っている処理に相乗りする。
+    例外は外へ出さない（進捗の書き直しに失敗しても仕入れ本体は巻き込まない）。
+    """
+    try:
+        subprocess.run(
+            [sys.executable, os.path.join(HERE, "shiire_shinchoku.py")],
+            timeout=60, capture_output=True,
+        )
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

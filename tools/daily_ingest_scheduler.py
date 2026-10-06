@@ -172,6 +172,10 @@ def main():
     #   ここ（毎回読み直されるPython）にも置いて、今日から確実に出るようにする。
     #   中で1便1回に間引く（status/aki_toko.json の lastKey）ので、何度呼んでも二重に出ない。
     _aki_toko()
+    # 34547番（2026-10-07）仕入れ進捗（status/public/shiire_shinchoku.json）を
+    # 1日1回だけ書き直す。tools/shiire_loop.py が自分で回った時にも書くが、
+    # その呼び出し元（launchd/cron）が止まっていても、ここが確実に毎日更新する保険。
+    _shiire_shinchoku_watch(today_str)
     if already_queued_today(today_str):
         return 0
     mark_queued(today_str)
@@ -187,6 +191,33 @@ def _aki_toko():
             [sys.executable, os.path.join(HERE, "aki_toko.py")],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
+    except Exception:
+        pass
+
+
+_SHIIRE_SHINCHOKU_MARKER = os.path.join(ROOT, "status", ".shiire_shinchoku_last")
+
+
+def _shiire_shinchoku_watch(today_str):
+    """34547番：仕入れ進捗（status/public/shiire_shinchoku.json）を1日1回書き直す。
+
+    入れ方は既存の _koushiki_update_watch 等と同じ理由（939番のコメント参照）：
+    心臓のシェル本体は触らず、毎周回で読み直されるこのPythonファイルに相乗りする。
+    間引きはここで直接やる（呼ぶ先の shiire_shinchoku.py は毎回フル実行でよい軽さだが、
+    15秒おきに毎回 git fetch するのは無駄なので、ここで1日1回に絞る）。
+    """
+    try:
+        if os.path.exists(_SHIIRE_SHINCHOKU_MARKER):
+            with open(_SHIIRE_SHINCHOKU_MARKER, encoding="utf-8") as f:
+                if f.read().strip() == today_str:
+                    return
+        import subprocess
+        subprocess.Popen(
+            [sys.executable, os.path.join(HERE, "shiire_shinchoku.py")],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        with open(_SHIIRE_SHINCHOKU_MARKER, "w", encoding="utf-8") as f:
+            f.write(today_str)
     except Exception:
         pass
 
