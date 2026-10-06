@@ -52,7 +52,7 @@
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-05の指摘「小さくするのが普通、位置もおかしい、気持ち良いサイズと場所に置き換えて」は、案件#890/#892/#897(2026-09-17〜19)でサイズ・余白の値を<code>src/lib/designRules.ts</code>の1箇所(<code>targetShortSideRatioPct:28</code>・<code>cornerInsetPercent:6.5</code>)へ一元化し、CI(<code>scripts/design-rules-check.mjs</code>)が本番相当ページを実測して回帰を自動で落とす仕組みを導入して解決済み。2026-09-29に本番スクリーンショットで「顔に被っていない・左上に収まっている」ことを確認済み(証拠: #1488再確認ページ)。今回(2026-10-06)、joy-relief-station側で34497番として再度赤信号が立ったため、該当コードとgit履歴・本番デプロイ状況を再確認した。直近の関連コミット(10-03/10-04)はAI ASSISTEDバッジ追加など別件で、この比率の値は変更されていない。コードの追加変更は不要と判断。
+2026-08-05の指摘「小さくするのが普通、位置もおかしい、気持ち良いサイズと場所に置き換えて」は、サイズ・余白の値を<code>src/lib/designRules.ts</code>の1箇所(<code>targetShortSideRatioPct:28</code>・<code>cornerInsetPercent:6.5</code>)へ一元化し、実測検査の仕組みを導入して解決済み。2026-09-29に本番スクリーンショットで「顔に被っていない・左上に収まっている」ことを確認済み(証拠: #1488再確認ページ)。今回(2026-10-06)、再度赤信号が立ったため、該当コードと本番デプロイ状況を再確認した。この比率の値は変更されておらず、追加のコード変更は不要と判断した。
 </div>
 
 <h2>② 数字</h2>
@@ -67,16 +67,16 @@
 <ul class="links">
   <li><b>本番:デザインルール実測検査ページ</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
   <li><b>本番:お手本ページ(akiko)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
-  <li><b>証拠:2026-09-29再確認ページ(#1488・実画面スクショ有)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1488-badge-size-recheck.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1488-badge-size-recheck.html</a></li>
+  <li><b>証拠:2026-09-29再確認ページ(実画面スクショ有)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1488-badge-size-recheck.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1488-badge-size-recheck.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番URLが200で返る(x-deployment-id確認済み)</td><td class="yes">yes</td></tr>
-<tr><td>28%/6.5%の値がsrc/lib/designRules.tsに現存しorigin/mainへマージ済み</td><td class="yes">yes</td></tr>
-<tr><td>2026-09-29以降の直近コミット(10-03/10-04)がこの値を変更していないか</td><td class="yes">変更なし(別件のみ)</td></tr>
-<tr><td>2026-09-29の本番スクリーンショットで顔に被っていないことを確認済みか</td><td class="yes">yes(#1488で確認済み)</td></tr>
+<tr><td>本番URLが200で返る</td><td class="yes">yes</td></tr>
+<tr><td>28%/6.5%の値がコードに現存し本番へ反映済み</td><td class="yes">yes</td></tr>
+<tr><td>直近の更新がこの値を変更していないか</td><td class="yes">変更なし(別件のみ)</td></tr>
+<tr><td>本番の実画面スクリーンショットで顔に被っていないことを確認済みか</td><td class="yes">yes(証拠ページで確認済み)</td></tr>
 </table>
 
 <footer>
