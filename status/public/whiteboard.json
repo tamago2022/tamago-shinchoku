@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-07 02:33",
+ "updatedAt": "2026-10-07 03:07",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -192,8 +192,8 @@
    "state": "検証待ち",
    "owner": null,
    "count": "27",
-   "updatedAt": "2026-09-03 10:19",
-   "note": "T009と同型：既に恒久対策済み・whiteboardが古い状態のまま未更新だった。根拠：①KNOWN_ISSUES.md『✅2026-09-02恒久対策』に測定済みエビデンス記載(棚ページ表示反映約40ms・削除反映約180ms、Vault compare-1〜8.png)②origin/mainでsrc/lib/badgeIdentityStore.tsが実装され、BadgeQuickPicker/ShelfCardPriorityMenu(押す側)→ShelfCardView/NextRecommendations/shelf.$worldId.$shelfId(描く側)全経路に配線済みをgit grepで確認③この修正コミット898d4c59(09-02 15:11)は現在の本番反映済みHEAD 1f09d328の祖先であり、T011作業で自分が直接publish実行(10:12→10:16、x-deployment-id psr2.8febd62)して本番に載っていることを確認済み。残り：本セッションはブラウザ操作ツールを持たないため実クリックでの目視確認はできていない(T009と同じ制約)。次の目は実機で🏷️バッジ付け外し→即座に画面が変わるかだけ見れば完了にできる。 [実装:wd_c018ac2a]",
+   "updatedAt": "2026-10-07 03:02",
+   "note": "別の目(wd_97c15f38)がコード配線を再確認：押す側(BadgeQuickPicker.tsx:21/ShelfCardPriorityMenu.tsx:16)のpublishResolvedStockId→描く側(ShelfCardView.tsx:326-327/NextRecommendations.tsx:102,597)のuseResolvedBadgeIdentityまでorigin/mainで実在確認、配線に欠落なし。残るのはブラウザでの実クリック確認のみ(本セッションはブラウザ操作ツール非搭載のため不可、T009/T012両方で繰り返されている既知の制約)。コード側はこれ以上検証の余地なし。",
    "stale": false
   },
   {
@@ -360,8 +360,8 @@
    "state": "検証待ち",
    "owner": null,
    "count": "6",
-   "updatedAt": "2026-09-29 03:39",
-   "note": "過去3セッション(wd_9e8b7e99/wd_fedf1ade/wd_6b7501e6)は実質調査なしで引き継ぎのみだったため原因調査から着手。2026-09-08(PR#319)で追加済みの「ここで聴くボタン」は右下44pxの小パーツに過ぎず、カード本体(サムネ中央〜全体の絶対配置Link)のタップは従来通り曲ページへの遷移のままで、憲法「その場で再生」は実質機能していなかったと判明。ShelfCardView.tsxのカード本体onClickでplayYt解決時はplayHere()を呼ぶよう修正、ctrl/cmd/shift/alt/中クリックは従来通りページ遷移として素通り。曲ページへの導線はMiniPlayer側の既存「元のページへ」機能(current.to、340/357行目)に委ねるため行き止まりなし。tsc型エラー0件確認。branch agent/task-029-inplace-play-card-tap(commit 42904b38e)へpush済み、CI検品→PR→自動マージ待ち。残課題(未着手・引き継ぎ)：VideoCard.tsxのdetectEmbedがVimeoに完全未対応(grep 0件)でVimeoカードは今も強制外部遷移になる。admin_stockのhref群を一括棚卸しして実際にnone判定になる件数・URL形状を実測すべき [実装:wd_6b7501e6]",
+   "updatedAt": "2026-10-07 02:51",
+   "note": "コード確認：修正(42904b38e)は remote branch agent/task-029-inplace-play-card-tap のみにあり main に未合流・PR未作成のため本番未反映。main の ShelfCardView.tsx はカード本体タップが従来どおり曲ページ遷移（再現の原因は未修正のまま）。ブランチ側の実装は意図どおり（playYt時はplayHere・新規タブ系は素通り）。ブラウザ実機確認は未実施。 [実装:verify-T029-20261007]",
    "stale": false
   },
   {
