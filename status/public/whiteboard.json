@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-06 22:12",
+ "updatedAt": "2026-10-06 22:46",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -381,11 +381,11 @@
    "priority": 3,
    "rank": 31,
    "task": "machine_status_push.shが高負荷時にfactory_status.py --writeタイムアウトでmetrics(gated/humanPushes/autonomyRatio)無しの最小stubへ静かにフォールバックする問題を直す",
-   "state": "検証待ち",
+   "state": "完了",
    "owner": null,
    "count": "1",
-   "updatedAt": "2026-10-06 17:52",
-   "note": "push.sh: factory_status timeout 90→150秒・失敗時は前回metrics有りmachine.jsonを保持、stub時もログ1行。factory_status.py: --writeでmetrics引き継ぎ。.bak=変更前(T031.bak) [実装:1868e239-3311-4836-a05c-0cf318824e6a]",
+   "updatedAt": "2026-10-06 22:21",
+   "note": "✅2026-10-06 22:21 証拠:/Users/mac/tamago/tamago-shinchoku/tools/machine_status_push.sh:521-532 と tools/factory_status.py:993-999 を読み、bash -n・py_compile OK、status/machine.json に metrics(gated/humanPushes/autonomyRatio)実在を確認 別の目(rusuban)検証: (a)timeout150秒OK (b)失敗時は前回metrics有りのmachine.jsonを残すelif追加＋factory_status側でもmetrics引継ぎOK (c)bash -n/py_compile OK。実機もmetrics実在。編集・commit・push無し",
    "stale": false
   }
  ]
