@@ -518,18 +518,9 @@ run_once() {
 hakobu
 # 2026-09-02 止まらない工場：計測＋止まり判定＋安全上限は factory_status.py に集約（土台は machine_load.sh のまま）。
 # factory_status.py が失敗したら従来どおり machine_load.sh 単体で最低限のJSONを書く（止まらない）。
-# 2026-10-06 T031：高負荷で factory_status.py がタイムアウト（実測：負荷12.8で30秒・上限を超える日もある）すると、
-# 下の stub が metrics（gated/humanPushes/autonomyRatio）込みの完全な machine.json を最小stubで上書きしていた。
-# ① タイムアウトを 90→150秒に延ばす。② 失敗時、前回の完全な値（metrics あり）が残っていればそれを残し、
-# stubで潰さない。③ どちらの場合も status/machine_status_fallback.log に理由を1行残す（静かに落ちない）。
-if run_with_timeout 150 python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
+if run_with_timeout 90 python3 "$REPO/tools/factory_status.py" --write >/dev/null 2>&1 && grep -q '"safeMax"' "$OUT" 2>/dev/null; then
   :
-elif [ -f "$OUT" ] && grep -q '"metrics"' "$OUT" 2>/dev/null && grep -q '"gated"' "$OUT" 2>/dev/null; then
-  echo "$(date '+%F %T') factory_status.py 失敗（timeout150秒/エラー）→ 前回の完全な machine.json(metrics有り)を保持。stubで上書きしない" \
-    >> "$REPO/status/machine_status_fallback.log"
 else
-  echo "$(date '+%F %T') factory_status.py 失敗・前回の完全値なし → machine_load.sh の最小stubで書く（metrics無し）" \
-    >> "$REPO/status/machine_status_fallback.log"
 LINE=$(bash "$LOADSH" 2>/dev/null || echo "")
 # 例：負荷 12% ｜ CPU 9% / メモリ圧迫 58% / スワップ 0.20GB / ディスク空き 61GB ｜ 稼働 14本 ｜ あと3本OK
 num() { echo "$1" | sed -nE "s/.*$2 ([0-9.]+)$3.*/\1/p" | head -1; }

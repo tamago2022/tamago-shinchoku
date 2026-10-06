@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-06 17:16",
+ "updatedAt": "2026-10-06 17:36",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -384,8 +384,8 @@
    "state": "検証待ち",
    "owner": null,
    "count": "1",
-   "updatedAt": "2026-10-03 08:40",
-   "note": "修正2件をcommit: (1)a74d58f8d フォールバック時にmachine.jsonを丸ごと上書きせず旧metrics(gated/humanPushes/autonomyRatio)等を保持するmerge方式に変更+factory_fallback.log/.jsonに発生記録+session_watchdog.py側の例外時metrics復元ガード追加。(2)9c30c4b5c 自己検証で(1)の実装バグを発見し追修正：run_with_timeout()は対象を\"$@\"&でバックグラウンド実行するため非対話シェル(本番のlaunchd実行)ではジョブコントロール無効=バックグラウンドジョブの標準入力が/dev/nullに差し替わる(bash仕様)。heredocでpython3にstdin経由渡ししていた(1)はこの経路で空振り(rc=0・ログだけ残り実体は更新されない)ことを実機再現で確認、heredocを一度ファイルに書き出しパス渡しする方式に修正し再テストでmachine.jsonのmetrics保持・fallback記録を確認。監査(正確性/利用者目線/反論の3視点を自己実施、孫セッション生成がKernel規則でブロックされたため別AI起動は不可だった旨を明記): 正確性は問題なし、利用者目線/反論で共通の中Medium1件: status/factory_fallback.log・.jsonはstatus/public/配下になく.gitignoreでも非追跡のため、現状どこからも参照されない「ログはあるがアラートとして配線されていない」状態（完了条件はORなのでmetrics保持単体で成立、配線は任意の追加改善として別件化推奨）。別の目の検証求む。 [実装:claude-T031-20261003]",
+   "updatedAt": "2026-10-06 17:24",
+   "note": "修正: push.shのfactory_status timeout 90→150秒・失敗時は前回の完全値(metrics有)を保持しstubで潰さず status/machine_status_fallback.log に記録／factory_status.py --write で前回のmetricsを引き継ぎ（丸上書きで消えていた）。確認: 構文OK・退避コピーでmetrics引き継ぎ成功（gated=1）。実機のmachine.jsonは直接実行で一時的にmetrics欠けだが次の見張り番(5分周期)で復帰見込み。バックアップ: *.bak 3点・git/push/公開なし [実装:rusuban-T031]",
    "stale": false
   }
  ]
