@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-07 05:50",
+ "updatedAt": "2026-10-07 06:08",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -357,11 +357,11 @@
    "priority": 3,
    "rank": 29,
    "task": "その場で再生できない",
-   "state": "検証待ち",
+   "state": "判断待ち",
    "owner": null,
    "count": "6",
-   "updatedAt": "2026-10-07 02:51",
-   "note": "コード確認：修正(42904b38e)は remote branch agent/task-029-inplace-play-card-tap のみにあり main に未合流・PR未作成のため本番未反映。main の ShelfCardView.tsx はカード本体タップが従来どおり曲ページ遷移（再現の原因は未修正のまま）。ブランチ側の実装は意図どおり（playYt時はplayHere・新規タブ系は素通り）。ブラウザ実機確認は未実施。 [実装:verify-T029-20261007]",
+   "updatedAt": "2026-10-07 05:51",
+   "note": "再現条件: 棚カードの中央をタップすると曲ページへ遷移し再生されない（右下の▶ここで聴くだけが再生）。原因: main の ShelfCardView.tsx 521行付近のカード本体Linkが onClick={onRecord} のまま。修正 42904b38e は origin/agent/task-029-inplace-play-card-tap にのみ存在し main 未合流。追加の候補: YouTube IDを解決できないカードはplayYtがnullで▶も出ず、その場再生は不可（仕様上の穴）。試した経路: git show/diff（コード読解のみ）、ブラウザ実機は未実施。判断待ち: 上記ブランチを main へ合流しPRを作るか（git push＝外部送信のため相談）。コードは未変更。",
    "stale": false
   },
   {
