@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34516 判定日赤｜hydration不一致(React error #418)の再現・修正・main反映 確認ページ</title>
+<title>#34516 判定日赤｜hydration不一致(React error #418)の再現・修正 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,17 +47,17 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34516 判定日赤｜hydration不一致(React error #418)の再現・修正・main反映</div>
-<h1>#34516 判定日赤｜hydration不一致(React error #418)の再現・修正・main反映</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34516 判定日赤｜hydration不一致(React error #418)の再現・修正</div>
+<h1>#34516 判定日赤｜hydration不一致(React error #418)の再現・修正</h1>
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-本番の /watch（X投稿・YouTube問わず）・/world/music 等で毎回コンソールエラー2件(React error #418・hydration不一致)が出て、触る検品(verify_click.mjs)が落ちていた件。headless ChromeへMutationObserverを仕込んでhydration中のDOM書き換えを直接観測し、NextRecommendationsのSuspense境界が丸ごと破棄・再構築されていることを確認。根本原因はuseSongOverrides/useDiscardedCards/useDbArtistsのuseQuery()がSSR側(useServerFnのプロセス内直接呼び出しで実質即時解決)とCSR初回描画(実ネットワーク往復で未解決)で解決状態が食い違っていたこと。3フックへ enabled: ...&amp;&amp; typeof window !== 'undefined' を追加し、SSR側は常に未取得のまま返すよう修正。origin/mainへpush済み(commit e66d675b3)。<b>ただしLovable公開は本日すでに3回失敗していた既知の障害(34517号と同根)により4回目も失敗し、本番はまだ旧版のまま。</b>
+本番の /watch（X投稿・YouTube問わず）・/world/music 等で毎回コンソールエラー2件(React error #418・hydration不一致)が出て、触る検品(verify_click.mjs)が落ちていた件。headless ChromeへMutationObserverを仕込んでhydration中のDOM書き換えを直接観測し、おすすめ表示部分が丸ごと破棄・再構築されていることを確認。根本原因は3つの共有データ取得フックが、サーバー側では即時に解決し、ブラウザ側の初回描画では未解決のまま、という解決状態の食い違いだった。3フックへ修正を入れ、サーバー側は常に『未取得』のまま返すよう直した。コードの修正は反映済み。<b>ただしLovable公開は本日すでに3回失敗していた既知の障害(34517号と同根)により4回目も失敗し、本番はまだ旧版のまま。</b>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2件→0件</b><span>想定される本番コンソールエラー数(main反映後・ローカル検証値)</span></div>
+  <div class="num"><b>2件→0件</b><span>想定される本番コンソールエラー数(修正後・ローカル検証値)</span></div>
   <div class="num"><b>4回</b><span>本日のLovable公開失敗回数(今回の試行含む・34517号と同一症状)</span></div>
 </div>
 
@@ -65,16 +65,15 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>main上のfixコミット(useSongOverrides.ts)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/e66d675b31523bab80925b19b47e37296069b826" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/e66d675b31523bab80925b19b47e37296069b826</a></li>
   <li><b>本番(まだ旧版・publish未反映)</b><a href="https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fsorealfoods%2Fstatus%2F2094374611983196394" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?tweet=https%3A%2F%2Fx.com%2Fsorealfoods%2Fstatus%2F2094374611983196394</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>main(origin)へのpush</td><td class="yes">yes</td></tr>
+<tr><td>コードの修正・反映</td><td class="yes">yes</td></tr>
 <tr><td>Lovable「変更を公開」クリック</td><td class="yes">yes(押せたが反映待ちで15分タイムアウト)</td></tr>
-<tr><td>本番のx-deployment-idが変化</td><td class="yes">no</td></tr>
+<tr><td>本番の見た目が切り替わったか</td><td class="yes">no</td></tr>
 <tr><td>本番コンソールエラーが0件になった(未反映のため未確認)</td><td class="yes">no</td></tr>
 </table>
 
