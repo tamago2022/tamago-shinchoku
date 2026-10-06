@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34521 カード共通コンポーネントのバッジ・ゴミ箱欠落を修理 確認ページ</title>
+<title>#34521 カードを描画する共通コンポーネントのバッジ・ゴミ箱欠落を修理 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,38 +47,40 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34521 カード共通コンポーネントのバッジ・ゴミ箱欠落を修理</div>
-<h1>#34521 カード共通コンポーネントのバッジ・ゴミ箱欠落を修理</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34521 カードを描画する共通コンポーネントのバッジ・ゴミ箱欠落を修理</div>
+<h1>#34521 カードを描画する共通コンポーネントのバッジ・ゴミ箱欠落を修理</h1>
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主報告『カードを描画する共通コンポーネント側のはずなのに、バッジ・ゴミ箱(•••メニュー)が一部のカードだけ抜けている』の根本原因を特定。CardActionCluster(バッジ+•••の共通窓口)が配線済みの14ファイルとは別に、NextUpCard.tsxというもう1つのカード描画共通部品が一度も配線されていなかった。コード側(src/components/NextUpCard.tsx他8呼び出し箇所)は修理してmainへ反映済み。<b>Lovableへの公開だけが未完了</b>(理由は下記)。
+店主報告『カードを描画する共通コンポーネント側のはずなのに、バッジ・ゴミ箱(•••メニュー)が一部のカードだけ抜けている』を調査。原因は<code>CardActionCluster</code>（バッジ+•••の共通窓口）が14ファイルには配線済みだったが、<code>NextUpCard.tsx</code>というもう1つのカード描画共通部品には一度も配線されていなかったこと。<code>NextUpCard.tsx</code>本体にCardActionClusterを配線し、呼び出し元5ファイル9箇所（CoverGuidePageBody.tsx・SongTemplateSections.tsx・welcome.$slug.tsx・room.card.$slug.tsxの2箇所）に識別子(badgeIdentity)を追加配線した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>5</b><span>直したファイル数</span></div>
+  <div class="num"><b>9</b><span>識別子を追加配線した呼び出し箇所</span></div>
+  <div class="num"><b>3</b><span>mainへ合流したコミット数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainのコミット(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/61503b7e142a05ef5be3c74812f41965100e1611" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/61503b7e142a05ef5be3c74812f41965100e1611</a></li>
-  <li><b>本番サイト(まだ旧表示)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>本番サイト(トップ・200で返ることを確認)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番サイト(バッジ配線を確認した曲ページの例)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=mizuhara-hiroshi&amp;song=tasogare-no-begin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=mizuhara-hiroshi&amp;song=tasogare-no-begin</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>コード修理・main反映</td><td class="yes">済み</td></tr>
 <tr><td>見張りスクリプト(check-card-actions.mjs)</td><td class="yes">PASS</td></tr>
-<tr><td>独立検品(welcome.$slug.tsxの漏れを検品で発見・追加修理)</td><td class="yes">済み</td></tr>
-<tr><td>Lovableへの公開(本番画面に反映)</td><td class="no">未完了・下記参照</td></tr>
+<tr><td>型チェック(tsc --noEmit、変更ファイル起因の新規エラー)</td><td class="yes">0件</td></tr>
+<tr><td>mainへの合流(GitHub)</td><td class="yes">済み(fd09004d9)</td></tr>
+<tr><td>Lovableへの公開(本番画面への反映)</td><td class="no">未完了・下記参照</td></tr>
 </table>
 
 <footer>
-このページは #34521 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+【重要な注記】バッジ・•••メニューは店主がログインしている時だけ見える管理用UIのため、ログインしていない状態でページを開いても目には見えません（これは今回の修理より前から存在する仕様で、バグではありません）。確認は、店主ご自身のPCで上記ページを開き、サムネイルにカーソルを合わせる／タップした時に、ハートや星などのバッジアイコンと「•••」メニューが出ることを見ていただく形になります。／【Lovable公開について】mainへのコード反映(push)は完了していますが、本番(Lovable)への「公開」ボタンを押す作業は、押すための専用Chrome(ポート9223)が起動していないため、このセッションからは実行できませんでした。Chromeを新規に自動起動することは社内ルールで禁止されているため、店主が普段お使いの方法でLovable側の「公開」→「変更を公開」を押していただく必要があります。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
