@@ -73,7 +73,13 @@ const mo = new MutationObserver((muts) => {
     }
   }
 });
-mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true, characterDataOldValue: true, attributeOldValue: true });
+(function startObserve() {
+  if (document.documentElement) {
+    mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true, characterDataOldValue: true, attributeOldValue: true });
+  } else {
+    setTimeout(startObserve, 0);
+  }
+})();
 window.__hydroObserver = mo;
 `;
 const SETTLE_MS = 4000;
