@@ -65,6 +65,24 @@ try {
   }
 } catch {}
 
+// ---------------------------------------------------------------------------
+// 34514号（2026-10-06）第16条【憲法更新】。
+//   「これを憲法にして」等が本文に出たら、その場のセッションの編集だけで
+//   終わらせず、tools/kenpou_tsuiki.py へそのまま渡して追記候補を1件残す。
+//   止めない（exit 0 のまま。検出できなくても会話は通す）。
+// ---------------------------------------------------------------------------
+try {
+  if (/(憲法|恒久(の)?ルール|ルール)に(して|しよう|してくれ|してください|しておいて|しちゃって|しといて)/.test(p)) {
+    const { spawnSync } = await import("node:child_process");
+    const path = (await import("node:path")).default;
+    const REPO = path.resolve(new URL("../..", import.meta.url).pathname);
+    spawnSync("python3", [path.join(REPO, "tools", "kenpou_tsuiki.py"), "--kenshutsu", p], {
+      timeout: 4000,
+      stdio: "ignore",
+    });
+  }
+} catch {}
+
 const hasshaGo = /(発車|着手|始めて|やって走らせ)/.test(p);
 const url = /https?:\/\/\S+/.test(p);
 const jouken = /(完了条件|終わったと言える|done|200で|検収)/.test(p);
