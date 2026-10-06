@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-07 01:35",
+ "updatedAt": "2026-10-07 02:07",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -177,11 +177,11 @@
    "priority": 3,
    "rank": 11,
    "task": "本番反映が自動で回らない",
-   "state": "検証待ち",
+   "state": "判断待ち",
    "owner": null,
    "count": "12",
-   "updatedAt": "2026-09-03 10:16",
-   "note": "根本原因判明・修正済み+自分の手で本番反映を実測確認。①検索インデックス事前計算がLovable/Cloudflare Nitroビルドをメモリ不足でクラッシュさせていた原因を特定→revert(160c179e)+Node heap上限引き上げ(846e7fc7)で解消。②launchd公開便が誤ブランチの古いスクリプトを実行していた別バグも発見・修正(8ccd1015)。③自分でnode scripts/patrol/lovable-publish.mjsを実行し10:12→10:16の3.5分でx-deployment-id psr2.deae4a1→psr2.8febd62へ変化を確認(以前のOOM時は8〜15分待っても変わらず失敗していた)。本番URL: https://joy-relief-station.lovable.app/ 。launchd30分便も09:49・10:12と連続成功中。残り: 次の自動サイクル(10:4x頃)がノータッチで成功するかもう1回別の目で見てもらえば完全クローズ。 [実装:wd_c018ac2a]",
+   "updatedAt": "2026-10-07 01:51",
+   "note": "見回り検証：30分launchd公開便は_retired/に退避済み（2026-09-14 on-demand化）で稼働していない（launchctl未登録・publish.log最終 2026-09-18）。『09:49・10:12連続成功』は手動実行の記録で、自動の証拠なし。判断: 公開便を定期に戻すか（定期実行台帳への登録が要る）。",
    "stale": false
   },
   {
