@@ -1,18 +1,18 @@
 {
- "raw": "負荷 338% ｜ CPU 41% / メモリ圧迫 14% / スワップ 14.14GB / ディスク空き 61GB ｜ 稼働 4本 ｜ あと0本OK",
- "load": 338,
- "cpu": 41,
- "mem": 14,
- "swapGB": 14482.75,
- "diskFreeGB": 61.0,
- "sessions": 4,
- "note": "上限4本・あと4本OK（5分平均ロード19.5（コア8×0.8超）、実測上限1本）",
- "measuredAt": "2026-10-06T15:12:17+09:00",
+ "raw": "負荷 260% ｜ CPU 33% / メモリ圧迫 13% / スワップ 14.11GB / ディスク空き 60GB ｜ 稼働 4本 ｜ あと0本OK",
+ "load": 260,
+ "cpu": 33,
+ "mem": 13,
+ "swapGB": 14444.5,
+ "diskFreeGB": 60.0,
+ "sessions": 1,
+ "note": "上限4本・あと3本OK（CPU33%・メモリ空き8.3GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.9）→1本減らす）",
+ "measuredAt": "2026-10-06T15:32:52+09:00",
  "working": 0,
  "stalled": 0,
- "waiting": 0,
+ "waiting": 1,
  "safeMax": 4,
- "moreOK": 4,
+ "moreOK": 3,
  "hardMax": 8,
  "cap": 1,
  "target": 1,
@@ -20,31 +20,61 @@
  "calibrationBasis": "実測（1本まで合格）",
  "userActive": false,
  "predict": [
-  "5分ロード比2.4"
+  "5分ロード比1.9"
  ],
  "shedCandidates": [],
- "below": 1,
- "blockReason": "5分平均ロード19.5（コア8×0.8超）、実測上限1本",
- "load1": 27.09,
- "load5": 19.52,
- "load15": 16.69,
+ "below": 0,
+ "blockReason": "CPU33%・メモリ空き8.3GBで余裕あり→ロードの天井を緩めた、予兆（5分ロード比1.9）→1本減らす",
+ "load1": 20.86,
+ "load5": 15.07,
+ "load15": 14.06,
  "cores": 8,
- "loadRatio": 3.39,
+ "loadRatio": 2.61,
  "memPressure": "green",
- "memAvailGB": 7.6,
+ "memAvailGB": 8.3,
  "swapIncreasing": false,
- "ioMBs": 1.67,
+ "ioMBs": 4.94,
  "network": {
-  "pingMedianMs": 66.2,
-  "pingMaxMs": 300.0,
+  "pingMedianMs": 58.8,
+  "pingMaxMs": 511.3,
   "pingSamples": 20
  },
  "stalledList": [],
- "sessionList": [],
- "line": "負荷 338% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き61.0GB",
- "modelCounts": {},
+ "sessionList": [
+  {
+   "cli": "eb9a3403-461a-4dc5-b5e4-60dc7f15ace0",
+   "localId": "local_62023404-7d53-4808-8f70-41187428c5c7",
+   "startedAt": "2026-10-06T15:19:07+0900",
+   "elapsedMin": 13,
+   "lastReportAt": "2026-10-06T06:20:33.968Z",
+   "lastReport": "4つのスクリプトを復元するか、この見回りの手順から外すかを決めてください。  記録は `AI出力/_ルール/留守中の作業ログ.md` の末尾（2026-10-06 15:20 見回り）に追記しました。",
+   "status": "止まっている",
+   "color": "red",
+   "urls": [],
+   "unreportedDeploy": false,
+   "deployUrls": [],
+   "humanPushes": 0,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 8137,
+   "title": "Rusuban mimawari 30min",
+   "dispatch": false,
+   "isDispatchSelf": false,
+   "mb": 345,
+   "idleMin": 12.2,
+   "kind": "idle_done",
+   "model": "claude-sonnet-5",
+   "turns": 15,
+   "lastActivityAt": "2026-10-06T06:20:33.968Z"
+  }
+ ],
+ "line": "負荷 260% ｜ セッション1本（作業中0・止まり0） ｜ 上限4本・あと3本OK ｜ 空き60.0GB",
+ "modelCounts": {
+  "claude-sonnet-5": 1
+ },
  "autonomy": {
-  "alive": 0,
+  "alive": 1,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
@@ -58,19 +88,19 @@
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 2244,
-  "room": 4,
-  "alive": 0,
+  "waiting": 2221,
+  "room": 3,
+  "alive": 1,
   "safeMax": 4,
-  "stalledMin": 2.509658928712209,
+  "stalledMin": 4.36801027059555,
   "stalled": false,
   "note": "発車は正常です"
  },
  "awaitingCheck": {
-  "count": 326,
+  "count": 329,
   "limit": 10,
   "over": true,
-  "note": "⚠️ 確認待ちが326件（10件超）たまっています。鬼監督で仕分けてください"
+  "note": "⚠️ 確認待ちが329件（10件超）たまっています。鬼監督で仕分けてください"
  },
  "stale": {
   "measuredAt": "2026-10-06T15:08:24+09:00",
@@ -23222,18 +23252,18 @@
   "available": true
  },
  "watchdog": {
-  "lastRun": "2026-10-06 15:12",
+  "lastRun": "2026-10-06 15:33",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "目標1本を満たしている（生存4本）",
+  "ignite": "目標1本を満たしている（生存1本）",
   "shed": null,
   "keep": {
    "target": 1,
-   "alive": 4,
+   "alive": 1,
    "below": 0,
-   "line": "現在4本／上限4本／目標1本／あと4本いける"
+   "line": "現在1本／上限4本／目標1本／あと3本いける"
   },
   "stalledSkipped": []
  },
@@ -23255,7 +23285,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-10-06 15:12",
+  "updatedAt": "2026-10-06 15:32",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -23264,7 +23294,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-10-06 17:59",
   "daysLeft": 0.1,
-  "hoursLeft": 2.8,
+  "hoursLeft": 2.4,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -23279,10 +23309,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 18500028,
-  "allWeightedTokensSinceReset": 1514069755,
+  "allWeightedTokensSinceReset": 1516414592,
   "last6h": {
-   "fable": 911501,
-   "all": 62036385
+   "fable": 0,
+   "all": 57636779
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
