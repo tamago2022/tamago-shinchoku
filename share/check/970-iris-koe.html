@@ -2,11 +2,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>970 irisの声を鳴らす台（xAI Speech to Speech）</title>
-<style>html,body{margin:0;background:#12100d}</style></head><body>
+<style>html,body{margin:0;background:var(--t-bg)}</style></head><body>
 <style>
   :root{
-    --bg:#12100d; --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
-    --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227;
+    --bg:var(--t-bg); --paper:var(--t-panel); --ink:var(--t-fg2); --sub:var(--t-mute);
+    --aka:var(--t-ng); --midori:var(--t-ok); --ao:var(--t-info); --kin:var(--t-warn);
   }
   *{box-sizing:border-box}
   body{background:var(--bg)}
@@ -14,65 +14,65 @@
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
   @media(max-width:430px){.wrap{padding:14px 7px 56px}}
   .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-    color:#e8dcc0;letter-spacing:.14em;font-size:.78rem;text-align:center;margin:0 0 6px}
-  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;color:#f0e6d0;
+    color:var(--t-fg);letter-spacing:.14em;font-size:.78rem;text-align:center;margin:0 0 6px}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;color:var(--t-fg);
     font-size:1.32rem;line-height:1.5;letter-spacing:.04em;text-align:center;margin:0 0 4px}
-  .lead{color:#9d947f;font-size:.8rem;text-align:center;line-height:1.8;margin:0 0 18px}
-  .panel{background:var(--paper);border-radius:14px;padding:16px 13px;margin-top:14px;border:1px solid #e2dccd}
-  .panel.dark{background:#1b1813;border-color:#2f2a23;color:#ded3bd}
+  .lead{color:var(--t-mute);font-size:.8rem;text-align:center;line-height:1.8;margin:0 0 18px}
+  .panel{background:var(--paper);border-radius:14px;padding:16px 13px;margin-top:14px;border:1px solid var(--t-line)}
+  .panel.dark{background:var(--t-bg);border-color:var(--t-line);color:var(--t-fg)}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
      font-size:1.02rem;letter-spacing:.06em;margin:0 0 4px;color:var(--ink)}
   h2 .n{color:var(--kin);font-weight:700;font-size:.82rem;letter-spacing:.1em;margin-right:8px;
     font-family:-apple-system,sans-serif}
-  .panel.dark h2{color:#e8dcc0}
+  .panel.dark h2{color:var(--t-fg)}
   .sub{font-size:.76rem;color:var(--sub);line-height:1.7;margin:0 0 12px}
-  .panel.dark .sub{color:#8d8578}
-  a{color:var(--ao);text-decoration:none;border-bottom:1px solid #c3d2dd}
+  .panel.dark .sub{color:var(--t-mute)}
+  a{color:var(--ao);text-decoration:none;border-bottom:1px solid var(--t-line)}
   a:hover{border-bottom-color:var(--ao)}
-  .panel.dark a{color:#8fb8d4;border-bottom-color:#3a4a55}
+  .panel.dark a{color:var(--t-info);border-bottom-color:var(--t-line)}
   table{border-collapse:collapse;width:100%;font-size:.78rem;line-height:1.55}
-  th,td{border-bottom:1px solid #e2dccd;padding:7px 6px;text-align:left;vertical-align:top}
-  th{background:#eae3d4;color:#6b6356;font-weight:700;font-size:.72rem;letter-spacing:.04em;white-space:nowrap}
-  td.yen{white-space:nowrap;font-variant-numeric:tabular-nums;color:#5c5346;font-weight:700}
+  th,td{border-bottom:1px solid var(--t-line);padding:7px 6px;text-align:left;vertical-align:top}
+  th{background:var(--t-panel);color:var(--t-mute);font-weight:700;font-size:.72rem;letter-spacing:.04em;white-space:nowrap}
+  td.yen{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--t-mute);font-weight:700}
   .ok{color:var(--midori);font-weight:700}
   .ng{color:var(--aka);font-weight:700}
 
   /* ── 止まっている理由の札 ── */
-  .fuda{background:#2a1a17;border:1px solid #5a3128;border-radius:12px;padding:14px 13px;margin-top:14px;color:#f0d9d0}
-  .fuda .ttl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.02rem;color:#ff9b88;margin:0 0 8px}
+  .fuda{background:var(--t-panel);border:1px solid var(--t-ng);border-radius:12px;padding:14px 13px;margin-top:14px;color:var(--t-fg)}
+  .fuda .ttl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.02rem;color:var(--t-ng);margin:0 0 8px}
   .fuda ol{margin:0;padding-left:1.2em;font-size:.8rem;line-height:1.85}
-  .fuda b{color:#ffd9cc}
-  .fuda .small{font-size:.72rem;color:#c49a8d;line-height:1.7;margin:10px 0 0}
+  .fuda b{color:var(--t-warn)}
+  .fuda .small{font-size:.72rem;color:var(--t-warn);line-height:1.7;margin:10px 0 0}
 
   /* ── 実機 ── */
-  .dai{background:#1b1813;border:1px solid #2f2a23;border-radius:14px;padding:16px 13px;margin-top:14px;color:#ded3bd}
-  .dai h2{color:#e8dcc0}
+  .dai{background:var(--t-bg);border:1px solid var(--t-line);border-radius:14px;padding:16px 13px;margin-top:14px;color:var(--t-fg)}
+  .dai h2{color:var(--t-fg)}
   .ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 0}
-  button{font-family:inherit;font-size:.82rem;padding:9px 16px;border-radius:9px;border:1px solid #4a4238;
-    background:#2a241d;color:#e8dcc0;cursor:pointer;letter-spacing:.04em}
-  button:hover:not(:disabled){background:#352d24}
+  button{font-family:inherit;font-size:.82rem;padding:9px 16px;border-radius:9px;border:1px solid var(--t-line);
+    background:var(--t-panel);color:var(--t-fg);cursor:pointer;letter-spacing:.04em}
+  button:hover:not(:disabled){background:var(--t-panel)}
   button:disabled{opacity:.38;cursor:not-allowed}
-  button.go{background:#3a7a52;border-color:#4a9468;color:#f0f6f2}
-  button.stop{background:#5a2a24;border-color:#7a3a30;color:#ffd9cc}
+  button.go{background:var(--t-ok-bg);border-color:var(--t-ok);color:var(--t-fg)}
+  button.stop{background:var(--t-ng-bg);border-color:var(--t-ng);color:var(--t-warn)}
   input[type=text]{font-family:inherit;font-size:.76rem;padding:8px 10px;border-radius:8px;
-    border:1px solid #3a342c;background:#12100d;color:#ded3bd;width:100%;max-width:100%}
-  label.fl{display:block;font-size:.7rem;color:#8d8578;letter-spacing:.04em;margin:10px 0 4px}
+    border:1px solid var(--t-line);background:var(--t-bg);color:var(--t-fg);width:100%;max-width:100%}
+  label.fl{display:block;font-size:.7rem;color:var(--t-mute);letter-spacing:.04em;margin:10px 0 4px}
   .state{margin:12px 0 0;font-size:.8rem;line-height:1.7;padding:9px 11px;border-radius:9px;
-    background:#241f19;border:1px solid #2f2a23;color:#b5aa93}
-  .state b{color:#f0e6d0}
+    background:var(--t-panel);border:1px solid var(--t-line);color:var(--t-mute)}
+  .state b{color:var(--t-fg)}
   #log{margin:10px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.66rem;
-    line-height:1.6;color:#8d8578;background:#12100d;border:1px solid #2f2a23;border-radius:9px;
+    line-height:1.6;color:var(--t-mute);background:var(--t-bg);border:1px solid var(--t-line);border-radius:9px;
     padding:9px 10px;height:150px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
-  #log .e{color:#e08a7a}
-  #log .g{color:#7ac49a}
+  #log .e{color:var(--t-ng)}
+  #log .g{color:var(--t-ok)}
 
-  pre{background:#12100d;border:1px solid #2f2a23;border-radius:9px;padding:11px 12px;overflow-x:auto;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;line-height:1.65;color:#c3b9a4;margin:8px 0 0}
-  pre .c{color:#6f675b}
+  pre{background:var(--t-bg);border:1px solid var(--t-line);border-radius:9px;padding:11px 12px;overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;line-height:1.65;color:var(--t-fg);margin:8px 0 0}
+  pre .c{color:var(--t-mute)}
   .hint{font-size:.72rem;color:var(--sub);line-height:1.75;margin:9px 0 0}
-  .panel.dark .hint{color:#8d8578}
-  .foot{color:#6f675b;font-size:.7rem;text-align:center;line-height:1.85;margin:26px 0 0}
-  .src{font-size:.68rem;color:#a39a8a;line-height:1.7;margin:8px 0 0}
+  .panel.dark .hint{color:var(--t-mute)}
+  .foot{color:var(--t-mute);font-size:.7rem;text-align:center;line-height:1.85;margin:26px 0 0}
+  .src{font-size:.68rem;color:var(--t-mute);line-height:1.7;margin:8px 0 0}
 </style>
 
 <div class="wrap">
@@ -104,7 +104,7 @@
     <p class="sub">出典：<a href="https://docs.x.ai/developers/pricing" target="_blank" rel="noopener">docs.x.ai／API Pricing</a>（ページの最終更新 2026-09-14）</p>
     <table>
       <tr><th>使う形</th><th>単価</th><th>これは何の値段か</th></tr>
-      <tr><td>Speech to Speech<br><span style="font-size:.7rem;color:#8d8578">grok-voice-think-fast-2.0</span></td>
+      <tr><td>Speech to Speech<br><span style="font-size:.7rem;color:var(--t-mute)">grok-voice-think-fast-2.0</span></td>
           <td class="yen">$0.08 / 分<br>（$4.80 / 時）</td><td>双方向の会話。<b>今作っている形はこれ。</b></td></tr>
       <tr><td>同・テキスト入力</td><td class="yen">$0.004 / 回</td><td>声ではなく文字で投げたとき</td></tr>
       <tr><td>Text to Speech（読み上げだけ）</td><td class="yen">$15.00 / 100万文字</td><td>喋らせるだけ。会話はしない</td></tr>
@@ -485,4 +485,6 @@ app.listen(8081);</pre>
   });
 })();
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

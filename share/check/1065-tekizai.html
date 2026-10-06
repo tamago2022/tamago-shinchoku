@@ -2,24 +2,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>適材適所｜誰に何を当てるか</title>
 <style>
-*{box-sizing:border-box}body{margin:0;padding:12px;background:#111;color:#eee;font:14px/1.6 -apple-system,"Hiragino Sans",sans-serif}
-h1{font-size:17px;margin:0 0 4px}.sub{color:#999;font-size:12px;margin:0 0 10px}
-h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2c2c2c;padding-bottom:4px}
-.card{background:#1a1a1a;border-radius:10px;padding:10px;margin:0 0 8px}
+*{box-sizing:border-box}body{margin:0;padding:12px;background:var(--t-bg);color:var(--t-fg);font:14px/1.6 -apple-system,"Hiragino Sans",sans-serif}
+h1{font-size:17px;margin:0 0 4px}.sub{color:var(--t-mute);font-size:12px;margin:0 0 10px}
+h2.sec{font-size:13px;color:var(--t-mute);margin:18px 0 8px;border-bottom:1px solid var(--t-line);padding-bottom:4px}
+.card{background:var(--t-bg);border-radius:10px;padding:10px;margin:0 0 8px}
 .card h3{font-size:15px;margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.ok{color:#5fd68a}.mid{color:#e8c352}.ng{color:#f2777a}
-.k{color:#8a8a8a;font-size:11px;margin:4px 0 0}.v{font-size:12px;word-break:break-all;margin:0 0 4px}
-.num{display:flex;gap:8px;margin:4px 0 6px}.num div{flex:1;background:#222;border-radius:6px;padding:4px;text-align:center}.num b{display:block;font-size:17px}
-.why{font-size:12px;color:#bbb;border-top:1px solid #2c2c2c;padding-top:5px;margin-top:6px}
-.warui{font-size:12px;color:#f2777a;margin:2px 0 0}
-.w{background:#171717;border-left:3px solid #3a3a3a;padding:8px 10px;margin:0 0 6px;border-radius:0 8px 8px 0}
+.ok{color:var(--t-ok)}.mid{color:var(--t-warn)}.ng{color:var(--t-ng)}
+.k{color:var(--t-mute);font-size:11px;margin:4px 0 0}.v{font-size:12px;word-break:break-all;margin:0 0 4px}
+.num{display:flex;gap:8px;margin:4px 0 6px}.num div{flex:1;background:var(--t-panel);border-radius:6px;padding:4px;text-align:center}.num b{display:block;font-size:17px}
+.why{font-size:12px;color:var(--t-fg);border-top:1px solid var(--t-line);padding-top:5px;margin-top:6px}
+.warui{font-size:12px;color:var(--t-ng);margin:2px 0 0}
+.w{background:var(--t-bg);border-left:3px solid var(--t-line);padding:8px 10px;margin:0 0 6px;border-radius:0 8px 8px 0}
 .w b{font-size:13px}
 </style></head><body>
 <h1>適材適所</h1>
 <p class="sub">切る前に、得意な形の仕事を当てるための紙。毎日ここが自分で書き換わる。最後に書き換えた時刻 2026-10-07 00:02:28</p>
 <p class="v">判定の物差し：子セッション1本の実測中央値 <b>475.5円</b>（202本ぶん：status/public/cost_by_task.json:10）</p>
 <p class="v">交代の決まり：投げて 3時間 帰ってこなければ、次の選手へ渡す（tools/tekizai.py:118）</p>
-<p class="v k">前の紙（一度きりで止まっていたもの）：<a href="1027-tekizai-tekisho.html" style="color:#7fb6ff">#1027 誰に何を任せるか</a>。ここはその続きで、毎日ひとりでに書き換わる側です。</p>
+<p class="v k">前の紙（一度きりで止まっていたもの）：<a href="1027-tekizai-tekisho.html" style="color:var(--t-info)">#1027 誰に何を任せるか</a>。ここはその続きで、毎日ひとりでに書き換わる側です。</p>
 <h2 class="sec">★仕事が来たら、ここで決まる（割り振り）</h2>
 <div class="w"><b>件数とキーが決まっているJSONをそろえる</b> → <span class="ok">子セッション（Claude）</span>
 <p class="k">そう決めた実測</p><p class="v">（旧Jules枠）149件で実測：91.3%（合格 136/149）（status/1028/jules_kekka.json:6）・0円</p>
@@ -193,4 +193,6 @@ h2.sec{font-size:13px;color:#8a8a8a;margin:18px 0 8px;border-bottom:1px solid #2
 </div>
 <p class="v k">この紙は tools/tekizai.py が書いている。手で書き換えない。お金は tools/soto_hatarakite.py（1050番）の結果をそのまま写していて、ここでは計算し直していない。</p>
 <p class="v k">仕事を割り振るとき： $ python3 tools/tekizai.py --shigoto "&lt;仕事の一文&gt;"</p>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

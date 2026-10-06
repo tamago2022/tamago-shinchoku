@@ -33,8 +33,8 @@
 <style>
 /* 余白・寸法に % を使わない（横長のとき上が詰まる事故の原因）。すべて px / rem。 */
 :root{
-  --ink:#1c1a17; --sub:#6d675f; --line:#ddd7cd; --paper:#f7f4ee; --card:#fffdf9;
-  --red:#a33b2a;
+  --ink:var(--t-fg2); --sub:var(--t-mute); --line:var(--t-line); --paper:var(--t-panel); --card:var(--t-panel);
+  --red:var(--t-ng);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -54,7 +54,7 @@ button{
   border:1px solid var(--line); border-radius:12px; background:var(--card);
   color:var(--ink); cursor:pointer; margin-left:auto;
 }
-button:active{background:#efe9df}
+button:active{background:var(--t-panel)}
 .pills{display:flex; gap:6px; align-items:center; font-size:13px; margin-bottom:8px; flex-wrap:wrap}
 .pills a{color:var(--sub); text-decoration:none; border:1px solid var(--line);
   border-radius:999px; padding:5px 11px; background:var(--card); white-space:nowrap}
@@ -69,21 +69,21 @@ button:active{background:#efe9df}
 #loginKigen{display:none; color:var(--sub); font-size:12px; line-height:1.6; margin:0 0 10px}
 /* ───── 1373番：使いすぎアラート。「今使いすぎです、もうすぐ固まります」＋名指しの終了提案 ───── */
 #alert1373{display:none; font-size:15px; line-height:1.7; margin:0 0 12px; padding:10px 12px; border-radius:10px}
-#alert1373.red{background:#f6e4df; color:var(--red); border:1px solid #e2b6a8}
-#alert1373.yellow{background:#faf1d9; color:#7a5b12; border:1px solid #e8d190}
+#alert1373.red{background:var(--t-panel); color:var(--red); border:1px solid var(--t-warn)}
+#alert1373.yellow{background:var(--t-panel); color:var(--t-warn); border:1px solid var(--t-warn)}
 #alert1373 .midashi{font-weight:600}
 #alert1373 .sug{display:block; font-size:13px; margin-top:4px; opacity:.9}
 
 /* ───── 走っているもの ───── */
-.run{border-top:1px solid #eee7dc; padding:13px 0 12px}
+.run{border-top:1px solid var(--t-line); padding:13px 0 12px}
 .run:first-child{border-top:0; padding-top:2px}
 .rt{font-size:19px; font-weight:600; line-height:1.4}
 /* 題名を押すと「元の言葉」が開く（2026-10-01） */
 details.gen > summary{list-style:none; cursor:pointer}
 details.gen > summary::-webkit-details-marker{display:none}
 .genbun{font-size:13px; font-weight:400; color:var(--sub); line-height:1.6; margin-top:5px;
-  padding:7px 9px; background:#f3eee6; border-radius:8px}
-.tag{display:inline-block; font-size:12px; font-weight:600; color:var(--red); border:1px solid #e2b6a8;
+  padding:7px 9px; background:var(--t-panel); border-radius:8px}
+.tag{display:inline-block; font-size:12px; font-weight:600; color:var(--red); border:1px solid var(--t-warn);
   border-radius:6px; padding:0 6px; margin-right:6px; vertical-align:2px}
 .q li{display:flex; gap:4px} .qt{flex:1; min-width:0}
 .rn{color:var(--sub); font-variant-numeric:tabular-nums; font-weight:400; margin-right:7px}
@@ -92,10 +92,10 @@ details.gen > summary::-webkit-details-marker{display:none}
 .rlim{font-size:15px; color:var(--sub); font-variant-numeric:tabular-nums}
 .badge{font-size:15px; border:1px solid var(--line); border-radius:8px; padding:3px 9px;
   color:var(--sub); font-weight:600}
-.bar{position:relative; height:6px; border-radius:3px; background:#efe9df; margin-top:9px; overflow:hidden}
+.bar{position:relative; height:6px; border-radius:3px; background:var(--t-panel); margin-top:9px; overflow:hidden}
 .bar i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:3px;
-  background:var(--ink); transform:scaleX(0); transform-origin:left center}
-.over .rel{color:var(--red)} .over .bar i{background:var(--red)}
+  background:var(--t-panel2); transform:scaleX(0); transform-origin:left center;color:var(--t-fg)}
+.over .rel{color:var(--red)} .over .bar i{background:var(--red);color:var(--t-on-accent)}
 .karamawashi .rt{color:var(--sub); font-weight:400}
 .note{font-size:15px; color:var(--sub); margin-top:6px}
 .none{font-size:19px; font-weight:600; padding:6px 0 2px}
@@ -109,12 +109,12 @@ details.gen > summary::-webkit-details-marker{display:none}
 .waku3 .wv.torenai{font-size:19px; color:var(--sub)}
 /* 目盛りは2つ。灰の細い線＝「今日この時間なら本来ここ」。藍の帯＝「実際に使ったのはここ」。
    文字を読まなくても、帯が線を越えているかどうかで分かる形にする。 */
-.gauge{position:relative; height:16px; border-radius:8px; background:#e8e1d5; margin:14px 0 0}
+.gauge{position:relative; height:16px; border-radius:8px; background:var(--t-panel); margin:14px 0 0}
 .gauge i{position:absolute; left:0; top:0; right:0; bottom:0; border-radius:8px;
-  background:#2b3d5c; transform:scaleX(0); transform-origin:left center}
+  background:var(--t-info-bg); transform:scaleX(0); transform-origin:left center}
 /* 目安の線は、帯に飲まれても見えるように紙色のふちを付ける */
 .gauge b{position:absolute; top:-7px; bottom:-7px; left:0; width:3px; border-radius:2px;
-  background:#6d675f; box-shadow:0 0 0 1.5px var(--card); transform:translateX(0)}
+  background:var(--t-line); box-shadow:0 0 0 1.5px var(--card); transform:translateX(0)}
 .mezasu{position:relative; height:15px; margin:3px 0 8px; font-size:11px; color:var(--sub)}
 .mezasu span{position:absolute; top:0; transform:translateX(-50%); white-space:nowrap}
 .nums{font-size:15px; line-height:1.7; color:var(--sub); font-variant-numeric:tabular-nums}
@@ -122,12 +122,12 @@ details.gen > summary::-webkit-details-marker{display:none}
 
 /* ───── 次に発車 ───── */
 ul{list-style:none; margin:0; padding:0}
-.q li{padding:9px 0; border-top:1px solid #eee7dc; font-size:17px; line-height:1.45}
+.q li{padding:9px 0; border-top:1px solid var(--t-line); font-size:17px; line-height:1.45}
 .q li:first-child{border-top:0}
 .ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
 
 /* ───── 空き容量の赤帯（閾値割れのときだけ出す） ───── */
-#diskAka:not(:empty){background:#b3261e; color:#fff; border-radius:10px;
+#diskAka:not(:empty){background:var(--t-ng-bg); color:var(--t-fg); border-radius:10px;
   padding:12px 14px; margin:0 0 10px; font-size:17px; line-height:1.5; font-weight:700}
 
 /* ───── 残り容量の1行（色を付けない・小さく1行） ───── */
@@ -143,7 +143,7 @@ details.fold > summary::-webkit-details-marker{display:none}
 details.fold > summary::after{content:"＋"; color:var(--sub); font-size:17px}
 details.fold[open] > summary::after{content:"−"}
 .fold .body{padding:0 14px 14px; font-size:16px; line-height:1.65}
-a{color:#2a5b8f}
+a{color:var(--t-info)}
 footer{margin-top:4px; font-size:15px; color:var(--sub); line-height:2}
 footer a{display:block; padding:5px 0}
 </style>
@@ -631,7 +631,7 @@ function renderHold(h){
   $("holdSummary").textContent = "後回し・止めた仕事（" + h.total + "件）";
   var rows = (h.items || []).map(function(x){
     var why = x.why ? '<span class="note">' + esc(x.why) + '</span>' : "";
-    return '<li style="padding:9px 0;border-top:1px solid #eee7dc">'
+    return '<li style="padding:9px 0;border-top:1px solid var(--t-line)">'
       + midashiHtml(x) + (why ? '<br>' + why : '') + '</li>';
   });
   if(h.total > rows.length) rows.push('<li class="note" style="padding:9px 0">残り ' + (h.total - rows.length) + ' 件はここでは省略</li>');
@@ -756,5 +756,7 @@ window.addEventListener("load", function(){
   placeLine();
 });
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
 </body>
 </html>

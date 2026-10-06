@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#916 カードの形 全部＋レイアウト案 見本ページ</title>
 <style>
-  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 60px);background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:1360px;margin-left:auto;margin-right:auto;}
@@ -16,45 +16,45 @@
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.1rem;letter-spacing:0.06em;margin:40px 0 12px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:8px;}
   h3{font-size:0.95rem;margin:22px 0 8px;color:var(--sub);}
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.02rem;}
-  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 16px;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 16px;}
 
   /* 形状カタログ */
   .shape-grid{display:flex;gap:20px;flex-wrap:wrap;margin:0 0 10px;}
-  .shape-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;width:260px;}
+  .shape-box{background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:14px;width:260px;}
   .shape-box .label{font-weight:700;font-size:0.95rem;margin-bottom:2px;}
   .shape-box .used{font-size:0.72rem;color:var(--sub);margin-top:8px;line-height:1.5;}
   .shape-box .dims{font-size:0.72rem;color:var(--aka);margin-top:4px;}
 
   /* A：主役 */
-  .card-a{width:100%;border-radius:14px;overflow:hidden;background:#111;}
+  .card-a{width:100%;border-radius:14px;overflow:hidden;background:var(--t-bg);}
   .card-a img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
-  .card-a .cap{background:#fff;padding:10px 12px;}
+  .card-a .cap{background:var(--t-panel);padding:10px 12px;}
   .card-a .cap .t{font-weight:700;font-size:0.95rem;}
   .card-a .cap .s{font-size:0.8rem;color:var(--sub);}
 
   /* B：棚 */
-  .card-b{width:180px;background:#fff;border-radius:14px;padding:10px;flex-shrink:0;}
+  .card-b{width:180px;background:var(--t-panel);border-radius:14px;padding:10px;flex-shrink:0;}
   .card-b img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;display:block;}
   .card-b .t{font-size:0.82rem;font-weight:600;margin-top:8px;line-height:1.4;}
   .card-b .s{font-size:0.72rem;color:var(--sub);}
   .row-b{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;}
 
   /* C：関連 */
-  .card-c{width:220px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0;}
+  .card-c{width:220px;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0;}
   .card-c img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
   .card-c .t{padding:8px 10px;font-size:0.78rem;line-height:1.4;}
   .row-c{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;}
 
   /* D：物語（新規候補） */
-  .card-d{width:100%;background:#1c1c1c;border-radius:16px;overflow:hidden;color:#fff;position:relative;}
+  .card-d{width:100%;background:var(--t-bg);border-radius:16px;overflow:hidden;color:var(--t-fg);position:relative;}
   .card-d img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;opacity:0.55;}
-  .card-d .overlay{position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,0.85));}
+  .card-d .overlay{position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(transparent,var(--t-bg));}
   .card-d .story{font-size:0.85rem;line-height:1.6;margin-bottom:6px;}
   .card-d .t{font-weight:700;font-size:1.05rem;}
   .card-d .s{font-size:0.78rem;opacity:0.8;}
 
   /* E：帯（新規候補） */
-  .card-e{width:100%;height:76px;background:#fff;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:12px;padding:0 14px;}
+  .card-e{width:100%;height:76px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:12px;padding:0 14px;}
   .card-e img{width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0;}
   .card-e .t{font-size:0.85rem;font-weight:700;}
   .card-e .s{font-size:0.72rem;color:var(--sub);}
@@ -62,7 +62,7 @@
 
   /* プレビュー枠 */
   .preview-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px;}
-  .preview{background:#efe9db;border:1px solid var(--line);border-radius:14px;padding:14px;overflow-x:auto;}
+  .preview{background:var(--t-panel);border:1px solid var(--line);border-radius:14px;padding:14px;overflow-x:auto;}
   .preview .frame-label{font-size:0.72rem;color:var(--sub);margin-bottom:8px;font-weight:700;}
   .preview.p390{width:390px;}
   .preview.p390 .inner{width:358px;}
@@ -71,18 +71,18 @@
   .inner > * + *{margin-top:14px;}
   .pattern-title{font-size:1rem;font-weight:700;margin:36px 0 10px;padding:6px 0 6px 12px;border-left:4px solid var(--aka);}
 
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;margin:0 0 20px;}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;margin:0 0 20px;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.74rem;}
   tr:last-child td{border-bottom:none;}
-  pre{background:#1c1c1c;color:#8ef0ae;font-size:0.72rem;padding:12px;border-radius:8px;overflow-x:auto;line-height:1.6;}
+  pre{background:var(--t-bg);color:var(--t-ok);font-size:0.72rem;padding:12px;border-radius:8px;overflow-x:auto;line-height:1.6;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #916 カードの形 全部＋レイアウト案</div>
@@ -348,9 +348,11 @@
 <footer>
 このページは #916 のセッションが手作業で作成した確認資料（tools/sekisho.pyで実測チェック済み）。本物のカード実装（A/B/C）は<code>src/lib/designRules.ts</code>のDESIGN_RULES.card.variantsが正本。D/Eはまだコードには無い提案段階の形。
 </footer>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

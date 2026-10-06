@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>止まれない関所（Stopフック）</title>
 <style>
-:root{--ink:#16130f;--sub:#6b6259;--line:#e5ded4;--bg:#faf7f2;--red:#c0392b;--amber:#b7791f;--gr:#1e7a3c}
+:root{--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--bg:var(--t-panel);--red:var(--t-ng);--amber:var(--t-warn);--gr:var(--t-ok)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
  font:15px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
@@ -11,25 +11,25 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:.02em}
 h2{font-size:15px;margin:28px 0 8px}
 .sub{color:var(--sub);font-size:12px;margin:0 0 18px}
 .big{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 10px}
-.big>div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 10px;text-align:center}
+.big>div{background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:16px 10px;text-align:center}
 .big b{display:block;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .big span{font-size:12px;color:var(--sub)}
 .big .ng b{color:var(--red)}
 .big .okk b{color:var(--gr)}
-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);
  border-radius:10px;overflow:hidden;font-size:13px}
 th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{background:#f3ede4;font-size:11px;color:var(--sub);font-weight:600;white-space:nowrap}
+th{background:var(--t-panel);font-size:11px;color:var(--sub);font-weight:600;white-space:nowrap}
 td.d{white-space:nowrap;color:var(--sub);font-size:11.5px}
 td.g{color:var(--sub);font-size:11.5px}
-code{background:#f3ede4;border-radius:4px;padding:1px 4px;font-size:12px}
-a{color:#1c5fa8}
+code{background:var(--t-panel);border-radius:4px;padding:1px 4px;font-size:12px}
+a{color:var(--t-info)}
 .s{font-size:11px;padding:2px 7px;border-radius:99px;white-space:nowrap;display:inline-block}
-.s.ok{background:#e3f3e6;color:var(--gr)}
-.s.run{background:#e4eefb;color:#1c5fa8}
-.s.stop{background:#fbe3e0;color:#a6301f}
-.s.yet{background:#efeae3;color:#6b6259}
-pre{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;font-size:11.5px;line-height:1.6}
+.s.ok{background:var(--t-panel);color:var(--gr)}
+.s.run{background:var(--t-panel);color:var(--t-info)}
+.s.stop{background:var(--t-panel);color:var(--t-ng)}
+.s.yet{background:var(--t-panel);color:var(--t-mute)}
+pre{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:10px;overflow:auto;font-size:11.5px;line-height:1.6}
 .note{margin:18px 0 0;font-size:11.5px;color:var(--sub);line-height:1.9}
 @media(max-width:640px){.big b{font-size:34px}}
 </style>
@@ -83,3 +83,5 @@ pre{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px
 {"at":"2026-09-26T08:30:21.516+09:00","id":"1154","event":"kanryou","hook":"手","proof":{"url":"https://tamago2022.github.io/tamago-shinchoku/1154-tomaranai.html","status":200,"bytes":10441,"diff":78,"via":"Chromeで本番URLを開いて実測（200・中身あり）"}}</pre>
 <p class="note">この台帳は追記だけ。状態ファイルを別に持たず、頭から再生して今の姿を作っている（Temporalのイベント履歴と同じ形）。だから落ちても、このファイルさえ残っていれば続きから走れる。</p>
 </div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">

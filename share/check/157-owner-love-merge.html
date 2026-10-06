@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>確認：157番「飼い主大好き」棚の重複統合</title>
 <style>
-  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;max-width:720px;margin:0 auto;padding:20px;line-height:1.7;background:#faf5ec;color:#222}
-  h1{font-size:1.2rem;border-bottom:3px solid #e8a33d;padding-bottom:8px}
-  h2{font-size:1rem;margin-top:1.8em;color:#8a5a1e}
-  .num{font-size:1.6rem;font-weight:bold;color:#1a7a3d}
-  code{background:#eee;padding:2px 6px;border-radius:4px;font-size:0.85em;word-break:break-all}
-  a{color:#1a5aa8}
-  .box{background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px 18px;margin:10px 0}
-  .warn{background:#fff8e1;border:1px solid #e8c468}
-  img{max-width:100%;border:1px solid #ccc;border-radius:8px;margin-top:8px}
+  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;max-width:720px;margin:0 auto;padding:20px;line-height:1.7;background:var(--t-panel);color:var(--t-fg2)}
+  h1{font-size:1.2rem;border-bottom:3px solid var(--t-warn);padding-bottom:8px}
+  h2{font-size:1rem;margin-top:1.8em;color:var(--t-warn)}
+  .num{font-size:1.6rem;font-weight:bold;color:var(--t-ok)}
+  code{background:var(--t-panel);padding:2px 6px;border-radius:4px;font-size:0.85em;word-break:break-all}
+  a{color:var(--t-info)}
+  .box{background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:14px 18px;margin:10px 0}
+  .warn{background:var(--t-panel);border:1px solid var(--t-warn)}
+  img{max-width:100%;border:1px solid var(--t-line);border-radius:8px;margin-top:8px}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <h1>確認ページ：157番「飼い主大好き」棚の重複統合</h1>
@@ -57,9 +57,9 @@ Supabaseの棚テーブル（<code>admin_shelves</code>）に、<b>「飼い主�
 <h2>④ 前と後</h2>
 <div class="box">
 <p><b>前（統合前・管理データそのもの）：</b>「飼い主大好き」の行が2つ出ている。</p>
-<pre style="white-space:pre-wrap;background:#f4f0e6;padding:10px;border-radius:6px;font-size:0.8em">__BEFORE_JSON__</pre>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:6px;font-size:0.8em">__BEFORE_JSON__</pre>
 <p><b>後（統合後・管理データそのもの）：</b>「飼い主大好き」の行は1つだけになっている。</p>
-<pre style="white-space:pre-wrap;background:#f4f0e6;padding:10px;border-radius:6px;font-size:0.8em">__AFTER_JSON__</pre>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:6px;font-size:0.8em">__AFTER_JSON__</pre>
 </div>
 
 <h2>結論</h2>
@@ -68,9 +68,11 @@ Supabaseの棚テーブル（<code>admin_shelves</code>）に、<b>「飼い主�
 裏側の管理データで2行→1行になったこと、浮いていた動画1本が消えずに正しい棚へ移ったことが上の「④前と後」で確認できる。
 </div>
 
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>
