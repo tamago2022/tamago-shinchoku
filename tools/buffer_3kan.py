@@ -216,6 +216,12 @@ def load_state():
             if r.get("status") == "READY":
                 ready[r["id"]] = r
     copies = {r["id"]: r for r in jsonl(site_show(COPY_FILE)) if r.get("copy")}
+    # 2026-10-05 A案：投稿文はClaude側で生成してよい（チャッピーのcopyがある枠はそちらを優先）。
+    gen = os.path.join(OUT, "copies.jsonl")
+    if os.path.exists(gen):
+        for r in jsonl(io.open(gen, encoding="utf-8").read()):
+            if r.get("copy") and r["id"] not in copies:
+                copies[r["id"]] = r
     sched = {r["id"]: r for r in jsonl(site_show(SCHEDULE_FILE))}
     return ready, copies, sched
 
@@ -265,8 +271,9 @@ def summary(rows, sched):
     last = ds[-1].strftime("10/%d %H:%M").replace("10/0", "10/") if ds else "なし"
     if ds:
         last = "%d/%d %02d:%02d" % (ds[-1].month, ds[-1].day, ds[-1].hour, ds[-1].minute)
-    waiting = sum(1 for x in rows if not x["past"] and not (x["copy"] and x["final_ok"] and x.get("qa") == "QA_OK"))
-    go = [x for x in rows if x["copy"] and x["final_ok"] and x.get("qa") == "QA_OK" and not x["past"]]
+    # A案（2026-10-05 #642）：ChatGPTのFINAL_OKは必須ではない。READY＋Jev QA_OK＋投稿文があれば入れる。FINAL_NGだけは拒否権。
+    waiting = sum(1 for x in rows if not x["past"] and not (x["copy"] and x.get("qa") == "QA_OK" and not x.get("final_ng")))
+    go = [x for x in rows if x["copy"] and x.get("qa") == "QA_OK" and not x.get("final_ng") and not x["past"]]
     line = "予約済み%s件／最終予約 %s／READY待ち%d件／HOLD%d件" % (booked if booked >= 0 else "?(読めない)", last, waiting, hold_count(sched))
     return line, go, why
 
