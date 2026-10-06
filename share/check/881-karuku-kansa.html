@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#881 ごきげん補給所 重さ監査（第1段・コード変更なし・本番main実測版） 確認ページ</title>
 <style>
-  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
@@ -15,20 +15,20 @@
   .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
-  .warn{border-left:3px solid var(--aka);padding:10px 14px;margin:0 0 20px;font-size:0.95rem;background:var(--t-panel);border-radius:0 10px 10px 0;}
+  .warn{border-left:3px solid var(--aka);padding:10px 14px;margin:0 0 20px;font-size:0.95rem;background:#fff;border-radius:0 10px 10px 0;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
-  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
   .num b{display:block;font-size:1.6rem;line-height:1.2;}
   .num span{color:var(--sub);font-size:0.8rem;}
-  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
   ul.links{list-style:none;margin:0;padding:0;}
-  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:0.85em;word-break:break-all;}
-  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;word-break:break-all;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
@@ -37,8 +37,8 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #881 ごきげん補給所 重さ監査（第1段・コード変更なし・本番main実測版）</div>
@@ -55,7 +55,7 @@
 <tr><td>曲詳細ページ<br><code>/room/card/&lt;曲slug&gt;</code></td><td>coverGuide名簿(gzip 2.65MB)を毎回丸ごと読む</td><td class="yes">誤り。<code>coverGuideLazy</code>経由の遅延読み込みに移行済み。本番から直接ダウンロードして測ったところ、名簿に関するファイルは<b>合計2.4KB（gzip）</b>しかない。2.65MBのままではない</td></tr>
 <tr><td>棚ページ<br><code>/shelf/&lt;世界&gt;/&lt;棚&gt;</code></td><td>同上</td><td class="yes">誤り。同じく遅延読み込み済み。名簿関連ファイルは<b>0.4KB（gzip）</b>のみ</td></tr>
 </table>
-<p style="font-size:0.85rem;color:var(--t-mute);">見分け方：本番HTMLの<code>&lt;script&gt;</code>タグに並ぶファイル名が、前回の資料に書いた名前（<code>coverGuide-Br22yDSr.js</code>等）とそもそも一致していなかった。これは「別のビルドの数字を、本番の証拠として貼っていた」ことが原因。今回は本番へ実際にアクセスして得た名前・サイズだけを載せている。</p>
+<p style="font-size:0.85rem;color:#7a7568;">見分け方：本番HTMLの<code>&lt;script&gt;</code>タグに並ぶファイル名が、前回の資料に書いた名前（<code>coverGuide-Br22yDSr.js</code>等）とそもそも一致していなかった。これは「別のビルドの数字を、本番の証拠として貼っていた」ことが原因。今回は本番へ実際にアクセスして得た名前・サイズだけを載せている。</p>
 
 <h2>② 本番には、これを二度と起こさせない機械の見張り番が既に3つ動いている</h2>
 <table><tr><th>見張り番</th><th>いつ入ったか</th><th>今回実行した結果</th></tr>
@@ -63,23 +63,23 @@
 <tr><td><code>scripts/patrol/check-bundle-weight.mjs</code><br>「名簿を静的に読み込むページ」を検知</td><td>2026-08-26新設・本番CI稼働中</td><td class="yes">曲詳細・棚・watch の3種類のページを名指しで「名簿を静的に読んだら落とす」ルールが入っている</td></tr>
 <tr><td><code>scripts/check-page-weight.mjs</code>（<code>npm run check:weight</code>）<br>ページ種別ごとのJS容量の上限（gzip）</td><td>案件893番・2026-09-02〜09-17・本番CI稼働中</td><td class="yes">曲ページの上限は<b>わずか5,512バイト</b>（gzip）。棚一覧は5,150バイト。超えたら自動でビルドが落ちる設定が既に入っている</td></tr>
 </table>
-<p style="font-size:0.85rem;color:var(--t-mute);">つまり「重さが後から気づかれずに戻ってくる」事故への対策は、今回の監査を待たずに<b>既に本番へ実装済み</b>だった。今回の監査で新たに追加が必要な見張り番は無い。</p>
+<p style="font-size:0.85rem;color:#7a7568;">つまり「重さが後から気づかれずに戻ってくる」事故への対策は、今回の監査を待たずに<b>既に本番へ実装済み</b>だった。今回の監査で新たに追加が必要な見張り番は無い。</p>
 
 <h2>③ 今回、本番(main)を直接調べて見つかった「まだ残っている」重さ　S/A/B/Cランキング</h2>
 <p><b>S（致命的）：0件。</b>前回S級とした2件は上記①のとおり誤りで、本番では既に解消済み。</p>
 
-<h3 style='color:var(--t-warn);'>A（大きい）</h3>
+<h3 style='color:#b5651d;'>A（大きい）</h3>
 <table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重いか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr>
 <tr><td>A-1</td><td>曲詳細ページで実際にエラーが起きている（React hydrationエラー）</td><td>本番<code>/room/card/ado-kawaikute-gomen</code>を実ブラウザ(headless Chrome)で自動クリック検査。コンソールに<code>Minified React error #418</code>（サーバーが作ったHTMLとブラウザが作り直した結果が食い違う＝hydration mismatch）を検出。同じ検査を本番トップ・棚ページでは実行し0件</td><td>hydration失敗はReactがサーバー出力を捨てて丸ごと再計算し直す動作を招く。低メモリのiPhone Safariでは追加負荷になり、店主が報告する「動画再生後フリーズ」「画面遷移の引っ掛かり」との関係は未確定だが疑いの一つ</td><td>該当ページのSSR出力とブラウザ初期描画のdiffを取り、日時表示など環境依存の値がサーバー側とブラウザ側で食い違っていないか調査する</td><td>未検証（原因未特定のため見積り不可）</td><td>調査のみなら副作用なし</td></tr>
 </table>
 
-<h3 style='color:var(--t-warn);'>B（中程度）</h3>
+<h3 style='color:#8a6d1f;'>B（中程度）</h3>
 <table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重いか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr>
 <tr><td>B-1</td><td>音楽の扉ページのDOM要素数そのものが多い</td><td>src/styles.cssのコメントに残る実測記録（2026-08-06）：1ページにDOM要素25,855個・img要素1,711個・リンク1,780本。<code>content-visibility:auto</code>導入でスクロール中のJS実行は439ms→80ms(-82%)に改善済みだが、DOM要素自体は開いた瞬間に全部生成される</td><td>低メモリのiPhone Safariでは、DOM要素数の多さ自体がメモリ確保・GCの負担になりうる。店主が報告する「スマホ操作時のクラッシュ／固まり」との直接の因果は未確定（実機検証が必要）</td><td>棚単位のvirtualization、または「最初は上位N棚だけ描画」する段階的レンダリング</td><td>未検証。スクロール位置復元・Ctrl+F検索性への影響を見ながら慎重に進める必要あり</td><td>実装難度は中〜高。今回の監査範囲では最も慎重な検証が要る項目</td></tr>
 <tr><td>B-2</td><td>棚ページのカード一覧が件数無制限</td><td>棚1つに入る曲カードの表示件数に上限が見当たらない（サムネは<code>loading="lazy"</code>済みで画像の即時ダウンロードは発生しない）</td><td>大きい棚を開くとDOM行数がそのまま増える（B-1と同系統）</td><td>1ページの表示件数に上限を設け、以降はページング/もっと見るボタンにする</td><td>未検証</td><td>「全曲一覧で見たい」という利用シーンがあれば体験が変わるため要検討</td></tr>
 </table>
 
-<h3 style='color:var(--t-ok);'>C（軽微）</h3>
+<h3 style='color:#3a7a52;'>C（軽微）</h3>
 <table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ軽微か</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr>
 <tr><td>C-1</td><td>「一押し」バッジ画像は前回報告(2.5MB)ほど重くない</td><td>本番のバッジ画像は<b>実測330,248バイト(322KB)</b>。表示は32〜40px角の小バッジ。前回「2.5MB」としたのは古い作業コピーの中身で、本番はすでに圧縮済みだった</td><td>322KBは致命的ではないが、32〜40px角の表示に対してはまだ余地がある</td><td>実表示サイズに合わせてさらにリサイズ・WebP化できないか確認</td><td>数十〜100KB程度の追加削減余地の見込み（未確定）</td><td>リスク小</td></tr>
 <tr><td>C-2</td><td>静的アセットの明示的キャッシュ戦略(_headers/Service Worker等)がリポジトリ内に見当たらない</td><td>Viteのcontent-hashファイル名（内容が同じなら同じURLに留まる設計）に任せている状態</td><td>実害は未実測。多くのホスティングは既定で長期キャッシュを返す</td><td>本番のレスポンスヘッダーを確認し、弱ければ明示指定する</td><td>未計測</td><td>調査のみなら副作用なし</td></tr>
@@ -113,7 +113,7 @@
 </div>
 
 <h2>実測ログ（生データ・そのまま転記）</h2>
-<pre style="background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;line-height:1.6;">
+<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;line-height:1.6;">
 実測: [本番HTMLを直接取得し &lt;script&gt;/&lt;link&gt; タグのアセット名を抽出・各ファイルをダウンロードして実測]
 曲詳細ページ /room/card/ado-kawaikute-gomen
   cover-guide-CkypdLve.js  raw 2,186B / gzip 1,056B
@@ -158,7 +158,5 @@ DOM要素25,855個・img要素1,711個・リンク1,780本
 <div class="note">A-1で見つけたエラーページ（<code>joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen</code>）は、開くと実際にエラーが出る状態のため、ここではリンクにせずテキストのみ記載する。</div>
 
 <footer>このページは「①実装 ②main合流 ③公開 ④本番確認 ⑤報告」のうち、今回は監査のみ（コード変更なし）のため②③は対象外。本ページ自体はGitHub Pagesとして公開・確認可能。</footer>
-
-<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>
