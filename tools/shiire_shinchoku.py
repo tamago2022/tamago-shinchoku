@@ -189,6 +189,161 @@ def joy_zaiko():
     return None
 
 
+def _n(v):
+    if v is None:
+        return "—"
+    try:
+        return "{:,}".format(int(v))
+    except Exception:
+        return str(v)
+
+
+HTML_PATH = os.path.join(REPO, "share", "34547-shiire-shinchoku.html")
+
+HTML_TMPL = """<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>仕入れ進捗</title>
+<!--
+  34547番（2026-08-05にたまごさんがスマホから言った依頼・2026-10-07対応）
+  「どこまで仕入れが完了しているか、これから何件残っているかが分かるように
+   進捗を管理してください。」
+
+  ★数字を1つに盛って「仕入れ進捗◯%」のような統合指標は作らない
+  （店主の方針「正しいより楽しい。ただし嘘は禁止」）。
+  仕入れは複数の系統に分かれているので、系統ごとに「今ある数・残りの数」を
+  そのまま並べる。
+
+  ★このHTML自体を tools/shiire_shinchoku.py が毎日書き直す（静的生成）。
+  以前はJSでJSONをfetchして表示する形にしていたが、機械検品
+  （tools/oni_modoshi.py）は実ブラウザでJSを実行しないため、「読み込み中…」
+  のままの状態しか見えず「中身が空」として差し戻された（34547番・1回目）。
+  数字を生成時にそのままHTMLへ焼き込む形へ直した。
+-->
+<style>
+:root{{ --ink:#1c1a17; --sub:#6d675f; --line:#ddd7cd; --paper:#f7f4ee; --card:#fffdf9; --green:#3a6b3a; }}
+*{{box-sizing:border-box}}
+html{{-webkit-text-size-adjust:100%}}
+body{{margin:0; padding:14px 14px 56px; background:var(--paper); color:var(--ink);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}}
+.wrap{{max-width:560px; margin:0 auto}}
+h1{{font-size:20px; margin:0 0 4px; font-weight:600}}
+.lead{{font-size:14px; color:var(--sub); margin:0 0 14px}}
+#stamp{{font-size:13px; color:var(--sub)}}
+.card{{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px}}
+.card > h2{{font-size:15px; margin:0 0 10px; color:var(--sub); font-weight:600; letter-spacing:.02em}}
+.g2{{display:grid; grid-template-columns:1fr 1fr; gap:8px}}
+.g3{{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}}
+.wl{{font-size:13px; color:var(--sub); font-weight:600}}
+.wv{{font-size:24px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.2}}
+.wv.small{{font-size:18px}}
+.note{{font-size:12.5px; color:var(--sub); margin-top:8px; line-height:1.6}}
+.bar{{height:10px; border-radius:6px; background:#eee7dc; overflow:hidden; margin-top:6px}}
+.bar > i{{display:block; height:100%; background:var(--green)}}
+ul{{list-style:none; margin:0; padding:0}}
+li{{padding:7px 0; border-top:1px solid #eee7dc; font-size:14.5px; display:flex; justify-content:space-between; gap:8px}}
+li:first-child{{border-top:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧺 仕入れ進捗</h1>
+  <div class="lead">どこまで進んでいて、残りどれくらいあるか。系統ごとに数字をそのまま出す（1つに盛った%は作らない）。アーティスト・曲を探す作業（仕入れ）が、今どこまで進んでいるかをここで見られるようにした。</div>
+  <div id="stamp">最終更新 {updated_disp}</div>
+
+  <div class="card">
+    <h2>① ごきげん補給所の在庫（在庫の今）</h2>
+    <div class="g3">
+      <div><div class="wl">アーティスト</div><div class="wv">{z_artists}</div></div>
+      <div><div class="wl">曲</div><div class="wv">{z_songs}</div></div>
+      <div><div class="wl">YouTube充足</div><div class="wv small">{z_rate}</div></div>
+    </div>
+    <div class="note">{z_note}</div>
+  </div>
+
+  <div class="card">
+    <h2>② フェス名簿からの仕入れ（1044/1049番・毎日自動で回っている）</h2>
+    <div class="g2">
+      <div><div class="wl">候補まで進んだ</div><div class="wv">{f_kouho}</div></div>
+      <div><div class="wl">証拠まで確定</div><div class="wv">{f_shoko}</div></div>
+    </div>
+    <div class="bar"><i style="width:{f_pct}%"></i></div>
+    <div class="note">名簿のうち素材すら無いもの {f_machi}組（名簿全体 {f_todo}組）。素材はあるが候補に積めていない積み残し {f_nokori}組。最後に回ったのは {f_last}。</div>
+  </div>
+
+  <div class="card">
+    <h2>③ 日次の入荷見回り（756番・前日分を毎朝1回）</h2>
+    <ul>
+      <li><span>見回った件数（{d_date}）</span><span>{d_total}件</span></li>
+      <li><span>直した件数</span><span>{d_fixed}件</span></li>
+      <li><span>そのままでよかった件数</span><span>{d_ok}件</span></li>
+      <li><span>判断がつかなかった件数</span><span>{d_unsure}件</span></li>
+    </ul>
+    <div class="note">更新 {d_updated}</div>
+  </div>
+
+  <div class="card">
+    <h2>④ 工場の作業キューにある「仕入れ」の依頼</h2>
+    <ul>
+      <li><span>発車待ち</span><span>{q_waiting}件</span></li>
+      <li><span>保留</span><span>{q_hold}件</span></li>
+      <li><span>走行中</span><span>{q_running}件</span></li>
+      <li><span>検品待ち</span><span>{q_check}件</span></li>
+    </ul>
+    <div class="note">これは「仕入れて」という依頼そのものの処理待ち件数（曲の件数ではない）。</div>
+  </div>
+
+  <div class="card">
+    <h2>数字の裏側（生データ）</h2>
+    <div class="note">このページは <a href="../status/public/shiire_shinchoku.json">status/public/shiire_shinchoku.json</a> を毎日読み直して書き直している。生の数字をそのまま見たい時はそちらを開く。</div>
+  </div>
+</div>
+</body>
+</html>
+"""
+
+
+def _render_html(out):
+    z = out.get("joyZaiko") or {}
+    f = out.get("fesMeibo") or {}
+    d = out.get("dailyIngest") or {}
+    q = (out.get("koujouQueue") or {}).get("byStatus") or {}
+
+    f_kouho = f.get("kouho")
+    f_kakutei = f.get("shokoHonninKakutei")
+    f_pct = min(100, round((f_kakutei / f_kouho) * 100)) if f_kouho and f_kakutei else 0
+
+    try:
+        updated_disp = out["updatedAt"][5:16].replace("T", " ")
+    except Exception:
+        updated_disp = out.get("updatedAt") or "—"
+
+    z_note = (
+        "origin/main の %s 時点のコミット済みデータから数えた値（DBの生の値ではないスナップショット）。"
+        % z["snapshotCommitDate"]
+        if z.get("snapshotCommitDate")
+        else "在庫データが読めなかった（joy-relief-stationのクローンが見つからない）。"
+    )
+
+    html = HTML_TMPL.format(
+        updated_disp=updated_disp,
+        z_artists=_n(z.get("artists")), z_songs=_n(z.get("songs")),
+        z_rate=("—" if z.get("youtubeRate") is None else "%s%%" % z["youtubeRate"]),
+        z_note=z_note,
+        f_kouho=_n(f_kouho), f_shoko="%s / %s" % (_n(f_kakutei), _n(f.get("shokoKensu"))),
+        f_pct=f_pct, f_machi=_n(f.get("sozaiMachi")), f_todo=_n(f.get("todoTotal")),
+        f_nokori=_n(f.get("sozaiNokori")), f_last=(f.get("lastRunAt") or "—"),
+        d_date=(d.get("date") or "—"), d_total=_n(d.get("total")), d_fixed=_n(d.get("fixed")),
+        d_ok=_n(d.get("ok")), d_unsure=_n(d.get("unsure")), d_updated=(d.get("updatedAt") or "—"),
+        q_waiting=_n(q.get("waiting")), q_hold=_n(q.get("hold")),
+        q_running=_n(q.get("running")), q_check=_n(q.get("awaiting_check")),
+    )
+    with io.open(HTML_PATH, "w", encoding="utf-8") as fh:
+        fh.write(html)
+
+
 def main():
     out = {
         "updatedAt": JST_NOW,
@@ -201,6 +356,7 @@ def main():
     with io.open(OUT, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=1)
         f.write("\n")
+    _render_html(out)
     if "--print" in sys.argv:
         print(json.dumps(out, ensure_ascii=False, indent=1))
     else:
