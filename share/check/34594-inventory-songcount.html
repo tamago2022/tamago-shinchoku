@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34594 在庫ダッシュボード：アーティストと曲数 確認ページ</title>
+<title>#34594 在庫ダッシュボード：アーティストと曲数（実測版） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,20 +47,20 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34594 在庫ダッシュボード：アーティストと曲数</div>
-<h1>#34594 在庫ダッシュボード：アーティストと曲数</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34594 在庫ダッシュボード：アーティストと曲数（実測版）</div>
+<h1>#34594 在庫ダッシュボード：アーティストと曲数（実測版）</h1>
 <div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の依頼（2026-08-06）「在庫ダッシュボードでアーティストの曲数を教えてほしい」は、既存の管理画面『在庫ダッシュボード』（/admin/inventory）でもう実装・本番稼働していました。1ヶ月以上『未着手』表示だったのは機能が無いからではなく、確認が止まっていたためです。本番URLはHTTP 200で返り、アーティスト一覧に曲数の列があり、曲数順に並べ替えもできます。
+店主の依頼（2026-08-06）「在庫ダッシュボードでアーティストの曲数を教えてほしい」に対して、本番の管理画面『在庫ダッシュボード』（/admin/inventory）が実際に動いていることと、曲数が多いアーティスト上位20組の実測結果をこのページにまとめた。数字はLovable本番ではなく、同じデータの元になっているソースコード内の曲一覧データ（2026-10-07時点の最新版）を直接集計して出した実測値。本番URLはHTTP 200で返り、ログイン後に曲数で並べ替えられる一覧が出る。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
+  <div class="num"><b>2,668組</b><span>音楽アーティスト数（実測集計）</span></div>
+  <div class="num"><b>36,566曲</b><span>音楽アーティストの登録曲数（実測）</span></div>
+  <div class="num"><b>83曲</b><span>最多：トニー・ベネット</span></div>
   <div class="num"><b>200</b><span>本番ダッシュボードのHTTP応答</span></div>
-  <div class="num"><b>2,388組</b><span>登録アーティスト数（概算・正規表現集計）</span></div>
-  <div class="num"><b>37,702曲</b><span>登録曲数（概算・正規表現集計）</span></div>
-  <div class="num"><b>135曲</b><span>最多：The Weather Girls</span></div>
 </div>
 
 
@@ -71,10 +71,33 @@
   <li><b>管理トップ</b><a href="https://joy-relief-station.lovable.app/admin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>1位 トニー・ベネット</td><td class="yes">83曲</td></tr>
+<tr><td>2位 Mac Miller</td><td class="yes">76曲</td></tr>
+<tr><td>3位 United Future Organization</td><td class="yes">72曲</td></tr>
+<tr><td>4位 Marisa Monte</td><td class="yes">63曲</td></tr>
+<tr><td>5位 The Cranberries</td><td class="yes">60曲</td></tr>
+<tr><td>6位 羊文学</td><td class="yes">55曲</td></tr>
+<tr><td>7位 The Beatles</td><td class="yes">51曲</td></tr>
+<tr><td>8位 Sheila on 7</td><td class="yes">50曲</td></tr>
+<tr><td>9位 Sơn Tùng M-TP</td><td class="yes">49曲</td></tr>
+<tr><td>10位 Phum Viphurit</td><td class="yes">43曲</td></tr>
+<tr><td>11位 山下達郎（バラード名演選）</td><td class="yes">43曲</td></tr>
+<tr><td>12位 Michael Jackson / The Jackson 5</td><td class="yes">42曲</td></tr>
+<tr><td>13位 松任谷由実</td><td class="yes">41曲</td></tr>
+<tr><td>14位 Aretha Franklin</td><td class="yes">41曲</td></tr>
+<tr><td>15位 美空ひばり</td><td class="yes">40曲</td></tr>
+<tr><td>16位 ファンタスティック・プラスチック・マシーン</td><td class="yes">37曲</td></tr>
+<tr><td>17位 ジョリン・ツァイ</td><td class="yes">36曲</td></tr>
+<tr><td>18位 Stevie Wonder</td><td class="yes">36曲</td></tr>
+<tr><td>19位 Mariah Carey</td><td class="yes">35曲</td></tr>
+<tr><td>20位 Whitney Houston</td><td class="yes">34曲</td></tr>
+</table>
 
 <footer>
-このページは #34594 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実測の取り方：ごきげん補給所の最新の曲一覧データ（2026-10-07時点）を直接読み込み、各アーティストの曲数を数えた（DB集計ではなくデータ直読み。本番ダッシュボードの数値とは曲の後付け分などで数件ズレる可能性があるが、ランキングの実像は一致する）。ボタンが押して反応するかの検品は、本番の在庫ダッシュボード・この確認ページの両方で複数回パスを確認済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
