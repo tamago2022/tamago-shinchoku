@@ -214,7 +214,7 @@ def p_human(msg):
 
 # name, 呼び名, 種類, 自動更新, 期限, 本人が必要なこと, probe
 REG = [
-    ("buffer", "Buffer", "APIキー", "不要(無期限扱い)", "公式記載なし", None, p_buffer),
+    ("buffer", "Buffer", "APIキー", "不要(無期限扱い)", "公式に期限記載なし(2026-10-07 developers.buffer.com確認)・死ねば毎朝のこの生死で即検知", None, p_buffer),
     ("openai", "OpenAI", "APIキー", "不要(無期限)", "消すまで", None, p_openai),
     ("xai", "xAI(Grok)", "APIキー", "不要(無期限)", "消すまで", None, p_xai),
     ("youtube", "YouTube Data API", "APIキー", "不要(無期限)", "消すまで", None, p_youtube),
