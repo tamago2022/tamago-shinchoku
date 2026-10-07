@@ -1,0 +1,35 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>円卓会議議事録 - 進捗表</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.8;color:var(--t-fg2)}pre{white-space:pre-wrap;word-break:break-word;background:var(--t-panel);border:1px solid var(--t-line);border-radius:8px;padding:16px}a{color:var(--t-ok)}</style></head><body><p>対象URL: <a href="https://tamago2022.github.io/tamago-shinchoku/">https://tamago2022.github.io/tamago-shinchoku/</a></p><pre># 円卓会議議事録
+
+## 出典
+- URL: https://tamago2022.github.io/tamago-shinchoku/
+- 取得日時: 2026-10-07 20:40 JST
+- ページタイトル: 進捗表
+
+## 論点（本セッションで実際に確認できた事実のみ）
+- この進捗表には「外部AIの台帳：投げて返ってきていないもの」「お金（1枚・毎日更新）」という項目が既にある。
+- 本セッション（34588号）で実測した事実：外部AI検品チェーン（Grok→OpenAI→Gemini）が**3社とも同時に不通**だった。
+  - Grok：鍵（XAI_API_KEY）がそもそも見つからない。
+  - OpenAI：`HTTP 429「You have no credits remaining」`＝残高ゼロ。
+  - Gemini：`HTTP 429「You exceeded your current quota」`＝上限超過。候補の旧モデル（gemini-2.5-flash）も`HTTP 404`で廃止済み。
+- GitHub Pagesのデプロイキューは直近1週間で2回「ゾンビ実行」により塞がれ、グループ名を日付で進める対処が繰り返されている（`pages-2026-10-06`）。
+- 「裏取りできず」：この3社同時停止が今日だけの一時的なものか、数日続いているものかは、本セッションの実測1回だけでは判定できない（過去ログの連続記録を見る必要がある）。
+
+## 各立場の発言
+
+### 楽観派
+3社の鍵・残高・契約が「同時に」切れたのは、裏を返せば**外部検品の仕組み自体はちゃんと3社構成で動く設計になっている**証拠でもある。1社復旧すれば即座に検品が回り始める。OpenAIは課金ページURLまで親切にエラーに含めてくれている＝直す手順は明確（支払い登録）。GeminiはGoogle AI Studioの無料枠再発行で復旧できる見込みが高い。直すコストは「お金を少し払う／キーを作り直す」だけで、技術的な作り直しは不要。
+
+### 懐疑派
+「1社でも動けば検品は回る」という設計そのものが、**3社同時に止まることを想定していなかった**ことの裏返し。実際に起きた。日次上限（¥100/日）を守るための仕組みは機能しているが、その手前の「そもそも口座に金が入っているか」「鍵が正しく登録されているか」を見張る仕組みが無かった。進捗表に「外部AIの台帳」の項目はあるが、**残高ゼロ・鍵欠如という&quot;手前の崩れ&quot;を自動で検知して知らせる仕組みがあるかは、このページの一覧だけでは確認できない**。
+
+### 現場目線
+実際に手を動かす側として一番困るのは、「検品が通らない」ときに原因が切り分けづらいこと。今回は幸い全社エラーメッセージが明確（429＋残高ゼロ、429＋上限超過、鍵なし）だったので数分で原因確定できたが、もしエラーメッセージが曖昧な社があれば「検品が詰まっている」を店主に正しく伝えるまでに時間がかかっていたはず。また、外部AI検品が使えない間は、新しく作った成果物の客観的な合格判定ができない状態が続く＝**この間に作られたものは、たまごさんが自分で見るまで「仮合格」止まり**になる。
+
+## まとめ役（鬼監督）の結論
+3社同時不通は**偶然の重複**（それぞれ原因が別：鍵なし／残高ゼロ／上限超過）であり、設計の欠陥ではなく運用の手入れ漏れ。弱点は「手前の崩れ（残高・鍵）を自動検知する仕組みが無い」こと。これは新しい仕組みを作るより、既存の`gaibu_kenpin.py`のコスト台帳に「呼べなかった理由」も記録させ、進捗表の既存項目「外部AIの台帳」で見える化する方が低コストで直る（オリジナル禁止の原則どおり、既存の台帳に1行足すだけで足りる）。
+
+## 次の一手
+OpenAIへの課金登録（支払いはたまごさん本人のみ可能な操作）とGemini無料枠の再発行を、店主への1行の判断待ちとして`.claude/PENDING_DECISIONS.md`相当の場所へ記録する。技術側（AI）は、3社とも試した上での「鍵なし／残高ゼロ／上限超過」という具体的な診断結果を提示済みであり、支払い操作だけが残っている。
+</pre>
+<!--tamago-dark 2--><link rel="stylesheet" href="../theme/tamago-dark.css">
+</body></html>
