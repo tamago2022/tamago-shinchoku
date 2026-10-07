@@ -371,6 +371,55 @@ _ONI_MODOSHI_PROMPT_MARKER = "【差し戻し】"
 #   をここにも適用する。
 _COWORK_TASK_NOTIFY_MARKER = 'Use read_transcript with session_id "'
 
+# ★34580号実例（2026-10-07）：「Obsidian円卓会議」機能がClaude Desktopへ投げる
+#   キュー投入プロンプト（good-vibes-roundtableが素材1本ごとに自動生成する固定
+#   テンプレート）が、role=userのメッセージとして丸ごと会話ログに記録される。
+#   このテンプレートには「顧問名簿」（Andrej Karpathy・Pieter Levels等の説明文）が
+#   埋め込まれており、説明文の中の「第一原理から作って理解する立場。」
+#   「小さく出して市場に殺させ、生き残ったものだけ育てる立場。」のような一文が
+#   bunkatsu()の依頼動詞判定（「作って」「育てて」等）にマッチし、
+#   「たまごさんが言った依頼」として誤登録されていた（これはたまごさんの発言では
+#   なく、円卓会議の顧問プロフィール説明文そのもの）。
+#   実測：この1つのバグ原因から判定日赤のゴースト案件が3件同時に自動発車されていた
+#   （34578号「偽引用禁止ルールはそのまま維持する」・34580号「第一原理から作って
+#   理解する立場。」・34581号「小さく出して市場に殺させ、生き残ったものだけ育てる
+#   立場。」）。実在しない依頼を「1ヶ月経っても未着手」として赤判定し続け、誰にも
+#   解決しようのない仕事を繰り返し再発車するループになっていた。
+#   円卓会議のキュー投入プロンプトは必ず「あなたは「Obsidian円卓会議」の書記です。」
+#   という固定文言で始まる（good-vibes-roundtable側のテンプレート冒頭・たまごさんが
+#   この書式で打つことはない）ため、1816号・1853号・1916号・1917号・2012号と同じ
+#   考え方（出どころの決まり文句で丸ごと弾く）を適用する。
+_ENTAKU_KAIGI_PROMPT_MARKER = "あなたは「Obsidian円卓会議」の書記です。"
+
+# ★34580号・同時調査で発見した同系列の別テンプレート：good-vibes-roundtable
+#   （円卓会議の旧実装・GOOD-VIBES-Roundtableリポジトリ）側のキュー投入プロンプトは
+#   「あなたはGOOD VIBES円卓の最終筆者です。」で始まる別の固定文言を使う。この中の
+#   「日本語で、正確で、読み物として面白く、読み終わると社会・人間・歴史の見え方が
+#   一段上がる円卓を作ってください。」が依頼動詞「作って」にマッチし、たまごさんの
+#   発言として誤登録され、既に2424号として判定日赤のゴースト案件が自動発車されていた
+#   （34578号・34580号・34581号と同じ根本原因の別経路）。
+_GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER = "あなたはGOOD VIBES円卓の最終筆者です。"
+
+# ★34580号・同時調査で発見した別経路：Claude Codeのコンテキスト圧縮
+#   （AutoCompact）が生成する自動要約メッセージは、必ず「This session is being
+#   continued from a previous conversation that ran out of context. The summary
+#   below covers the earlier portion of the conversation.」という固定文言で
+#   始まり、role=userとして会話ログに記録される。この要約は「Primary Request
+#   and Intent」等の見出しでたまごさんの依頼を**言い換えて**まとめたもので、
+#   たまごさん本人の言葉ではない（本物の依頼は別のタイムスタンプのメッセージに
+#   そのまま記録されているため、要約側を拾わなくても記録は失われない）。
+#   この要約の中に「円卓会議は既存の4項目フォーマット（タイトル候補/導入/本編/
+#   付録）に従い…」のような説明文が含まれ、依頼動詞にマッチして
+#   「4項目フォーマット（①タイトル候補5個②導入③円卓本編…）」
+#   「既存円卓フォーマットの把握：…を正確に踏襲した。」の2件が実在しない依頼として
+#   誤登録されていた（1ヶ月判定日2026-09-19を過ぎており、次の判定便で34578号・
+#   34580号・34581号と同じ構造のゴースト案件が自動発車される直前だった）。
+#   1816号以来の考え方（出どころの決まり文句で丸ごと弾く）をここにも適用する。
+_AUTOCOMPACT_SUMMARY_MARKER = (
+    "This session is being continued from a previous conversation that ran "
+    "out of context."
+)
+
 # ★1846号実例（2026-09-30）：上5つのマーカー（_SKILL_LOAD_MARKER / _VERIFY_PROMPT_MARKER /
 #   _COPY_NAOSHI_PROMPT_MARKER / _HANTEI_HIDUKE_MARKER / _ONI_MODOSHI_PROMPT_MARKER）は
 #   「メッセージの先頭が固定文言で始まるか」（.lstrip().startswith(...)）で判定していた。
@@ -396,6 +445,9 @@ _MACHINE_MARKERS_ANYWHERE = (
     _HANTEI_HIDUKE_MARKER,
     _ONI_MODOSHI_PROMPT_MARKER,
     _COWORK_TASK_NOTIFY_MARKER,
+    _ENTAKU_KAIGI_PROMPT_MARKER,
+    _GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER,
+    _AUTOCOMPACT_SUMMARY_MARKER,
 )
 
 
@@ -711,6 +763,37 @@ def main():
                         "with session_id \"local_6b16877d-a621-42a0-ae8a-2d5bf4169fd7\" "
                         "to see the outcome, then report to the user via send_message."}]}}):
             ng.append("Cowork定期タスクの完了/失敗通知（contentがlist）を拾ってしまう（2012号の再発）")
+        # ★34580号実例：「Obsidian円卓会議」のキュー投入プロンプト（顧問名簿テンプレート）
+        #   を、たまごさんの発言として拾わない。顧問説明文の「第一原理から作って
+        #   理解する立場。」が依頼動詞「作って」に、「小さく出して市場に殺させ、
+        #   生き残ったものだけ育てる立場。」が「育てて」相当にマッチして、
+        #   実在しない依頼として誤登録されていた。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "あなたは「Obsidian円卓会議」の書記です。\n"
+                      "たまごさん（Kohei Munakata・映像作家 / 思想家 / Eden Loop の設計者）のために、\n"
+                      "1本の素材を題材にした円卓会議の議事録を、日本語のMarkdownで作成してください。\n\n"
+                      "- Andrej Karpathy — 元Tesla AI責任者/OpenAI。第一原理から作って理解する立場。\n"
+                      "- Pieter Levels — 個人開発者。小さく出して市場に殺させ、生き残ったものだけ育てる立場。"}}):
+            ng.append("Obsidian円卓会議のキュー投入プロンプト（顧問名簿テンプレート）を拾ってしまう（34580号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "あなたは「Obsidian円卓会議」の書記です。\n"
+                        "1本の素材を題材にした円卓会議の議事録を、日本語のMarkdownで作成してください。\n"
+                        "- Andrej Karpathy — 第一原理から作って理解する立場。"}]}}):
+            ng.append("Obsidian円卓会議のキュー投入プロンプト（contentがlist）を拾ってしまう（34580号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "あなたはGOOD VIBES円卓の最終筆者です。日本語で、正確で、読み物として面白く、"
+                      "読み終わると社会・人間・歴史の見え方が一段上がる円卓を作ってください。"}}):
+            ng.append("GOOD VIBES円卓のキュー投入プロンプトを拾ってしまう（34580号の再発・2424号の原因）")
+        # ★34580号・同時発見：AutoCompactの自動要約（「This session is being
+        #   continued from a previous conversation that ran out of context.」で
+        #   始まる）を、たまごさんの発言として拾わない。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "This session is being continued from a previous conversation "
+                      "that ran out of context. The summary below covers the earlier "
+                      "portion of the conversation.\n\nSummary:\n1. Primary Request and Intent:\n"
+                      "   円卓会議は既存の4項目フォーマットに従い作ってください。"}}):
+            ng.append("AutoCompactの自動要約を発言として拾ってしまう（34580号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
