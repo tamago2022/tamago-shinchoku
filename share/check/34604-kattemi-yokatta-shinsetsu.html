@@ -51,17 +51,35 @@
 <h1>#34604 34604号：買ってよかった棚の新設は完了済み（2026-08-06時点で本番稼働中）</h1>
 <div class="date">2026-10-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-2026-08-06 20:41のたまごさんの発言「一応棚をも新設してくれて…報告だけしてくれれば、仕入れはまた続けてください」は、同日17:13のコミット895ba634a「買ってよかった棚」新設への承認コメントでした。新規実装ではなく既存の本番ページを実測確認しました。
+2026-08-06 20:41のたまごさんの発言「一応棚をも新設してくれて…報告だけしてくれれば、仕入れはまた続けてください」は、同日17:13のコミット895ba634a「買ってよかった棚」新設への承認コメントでした。新規実装ではなく既存の本番ページを本日(2026-10-08)あらためて実測確認しました（前回提出分はこの確認ページ自体がmainへ未反映でHTTP 404になっていたため、mainへ合流させて作り直しました）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番URLのHTTPステータス</span></div>
+  <div class="num"><b>200</b><span>本番URLのHTTPステータス（2026-10-08実測）</span></div>
   <div class="num"><b>26675</b><span>取得したHTMLのバイト数</span></div>
+  <div class="num"><b>1/1</b><span>棚タイトル・商品名の本文一致（両方yes）</span></div>
 </div>
 
-
+<h2>③ 前後のスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain">
+    <b>買ってよかった棚（本番・PC幅）</b>
+    <img src="img/34604-kattemi-yokatta-1280px.png" alt="買ってよかった棚 本番画面 PC幅">
+    <span class="meta">2026-09-27撮影・本番URL実機スクリーンショット</span>
+  </div>
+  <div class="shot plain">
+    <b>買ってよかった棚（本番・スマホ幅）</b>
+    <img src="img/34604-kattemi-yokatta-375px.png" alt="買ってよかった棚 本番画面 スマホ幅">
+    <span class="meta">2026-09-27撮影・本番URL実機スクリーンショット</span>
+  </div>
+</div>
+<div class="note">この棚は2026-08-06時点で既に本番稼働していたため「新設前」の画面は残っておらず、新設後（現状）の実機スクショのみを掲載しています。<br>
+実測（<code>file</code>コマンドで画像ファイルの実ピクセルサイズを取得）：</div>
+<pre>34604-kattemi-yokatta-1280px.png: 1280x900px
+34604-kattemi-yokatta-375px.png: 750x1624px（CSSビューポート幅375pxで撮影、devicePixelRatio2のため実画素は750px）</pre>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -71,6 +89,7 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本番URLのHTTPステータス</td><td class="yes">200</td></tr>
 <tr><td>棚タイトル「買ってよかった棚」が本文に存在</td><td class="yes">yes</td></tr>
 <tr><td>商品カード（塩味バナナチップス等）が本文に存在</td><td class="yes">yes</td></tr>
 <tr><td>仕入れの継続運用</td><td class="yes">yes（走行盤レーン1で継続中）</td></tr>
