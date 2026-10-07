@@ -24668,13 +24668,13 @@
   "available": true
  },
  "metrics": {
-  "stalls": 187,
-  "autoResumes": 112,
+  "stalls": 188,
+  "autoResumes": 113,
   "handoffs": 23,
   "hardCuts": 2,
   "ignitions": 22,
   "gated": 1,
-  "autoResumesThisRun": 2,
+  "autoResumesThisRun": 1,
   "handoffsThisRun": 0,
   "ignitionsThisRun": 0,
   "humanPushes": 6,
@@ -24684,23 +24684,15 @@
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
  "watchdog": {
-  "lastRun": "2026-10-07 15:08",
+  "lastRun": "2026-10-07 15:48",
   "resumed": [
-   {
-    "pid": 16151,
-    "cli": "c70075fa-b6ef-475e-b924-ac72cf880334",
-    "title": "Gensparkに記事と覆面調査",
-    "why": "話し終えて待機（未完了）",
-    "try": 1,
-    "resumePid": 48114
-   },
    {
     "pid": 34872,
     "cli": "b481546f-5c08-4f85-87bd-b56df519ecce",
     "title": "案内所の声と表示を直す",
     "why": "質問して停止",
-    "try": 1,
-    "resumePid": 48115
+    "try": 2,
+    "resumePid": 67659
    }
   ],
   "handedOff": [],
@@ -24714,18 +24706,25 @@
    "below": 0,
    "line": "現在2本／上限4本／目標1本／あと2本いける"
   },
-  "stalledSkipped": []
+  "stalledSkipped": [
+   {
+    "pid": 59543,
+    "title": "（不明）",
+    "kind": "stuck_tool",
+    "why": "会話ログ/管理JSONと突合できない"
+   }
+  ]
  },
  "deployAlerts": [
   {
-   "t": "2026-10-07 15:08",
+   "t": "2026-10-07 15:48",
    "cli": "94d76754-2983-459c-a081-2c4ab6691f35",
    "title": "Buffer APIで予約投稿の口",
    "urls": []
   }
  ],
  "quota": {
-  "updatedAt": "2026-10-07 15:07",
+  "updatedAt": "2026-10-07 15:47",
   "estimated": true,
   "stalePrevWeekSample": true,
   "fablePct": null,
@@ -24734,7 +24733,7 @@
   "allPctAgeMin": null,
   "resetAt": "2026-10-13 17:59",
   "daysLeft": 6.1,
-  "hoursLeft": 146.9,
+  "hoursLeft": 146.2,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -24749,10 +24748,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 4627749,
-  "allWeightedTokensSinceReset": 315256682,
+  "allWeightedTokensSinceReset": 323409954,
   "last6h": {
    "fable": 0,
-   "all": 103553155
+   "all": 92768832
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
