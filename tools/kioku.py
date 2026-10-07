@@ -371,6 +371,26 @@ _ONI_MODOSHI_PROMPT_MARKER = "【差し戻し】"
 #   をここにも適用する。
 _COWORK_TASK_NOTIFY_MARKER = 'Use read_transcript with session_id "'
 
+# ★34580号実例（2026-10-07）：「Obsidian円卓会議」機能がClaude Desktopへ投げる
+#   キュー投入プロンプト（good-vibes-roundtableが素材1本ごとに自動生成する固定
+#   テンプレート）が、role=userのメッセージとして丸ごと会話ログに記録される。
+#   このテンプレートには「顧問名簿」（Andrej Karpathy・Pieter Levels等の説明文）が
+#   埋め込まれており、説明文の中の「第一原理から作って理解する立場。」
+#   「小さく出して市場に殺させ、生き残ったものだけ育てる立場。」のような一文が
+#   bunkatsu()の依頼動詞判定（「作って」「育てて」等）にマッチし、
+#   「たまごさんが言った依頼」として誤登録されていた（これはたまごさんの発言では
+#   なく、円卓会議の顧問プロフィール説明文そのもの）。
+#   実測：この1つのバグ原因から判定日赤のゴースト案件が3件同時に自動発車されていた
+#   （34578号「偽引用禁止ルールはそのまま維持する」・34580号「第一原理から作って
+#   理解する立場。」・34581号「小さく出して市場に殺させ、生き残ったものだけ育てる
+#   立場。」）。実在しない依頼を「1ヶ月経っても未着手」として赤判定し続け、誰にも
+#   解決しようのない仕事を繰り返し再発車するループになっていた。
+#   円卓会議のキュー投入プロンプトは必ず「あなたは「Obsidian円卓会議」の書記です。」
+#   という固定文言で始まる（good-vibes-roundtable側のテンプレート冒頭・たまごさんが
+#   この書式で打つことはない）ため、1816号・1853号・1916号・1917号・2012号と同じ
+#   考え方（出どころの決まり文句で丸ごと弾く）を適用する。
+_ENTAKU_KAIGI_PROMPT_MARKER = "あなたは「Obsidian円卓会議」の書記です。"
+
 # ★1846号実例（2026-09-30）：上5つのマーカー（_SKILL_LOAD_MARKER / _VERIFY_PROMPT_MARKER /
 #   _COPY_NAOSHI_PROMPT_MARKER / _HANTEI_HIDUKE_MARKER / _ONI_MODOSHI_PROMPT_MARKER）は
 #   「メッセージの先頭が固定文言で始まるか」（.lstrip().startswith(...)）で判定していた。
@@ -396,6 +416,7 @@ _MACHINE_MARKERS_ANYWHERE = (
     _HANTEI_HIDUKE_MARKER,
     _ONI_MODOSHI_PROMPT_MARKER,
     _COWORK_TASK_NOTIFY_MARKER,
+    _ENTAKU_KAIGI_PROMPT_MARKER,
 )
 
 
