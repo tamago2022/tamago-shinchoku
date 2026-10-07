@@ -52,7 +52,7 @@
 <div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-Lovableが公開した本番ページが『200は返るが中身が空・壊れている』状態のまま社長（店主）の目に触れないよう、Claude Code側のCIが本番URLを自動で見張り、壊れていればGitHub Issueで知らせる仕組みをjoy-relief-stationリポジトリへ実装し、mainへ反映した（commit 474b85c0d）。
+Lovableが公開した本番ページが『200は返るが中身が空・壊れている』状態のまま社長（店主）の目に触れないよう、Claude Code側のCIが本番URLを自動で見張り、壊れていればGitHub Issueで知らせる仕組みをjoy-relief-stationのmainへ反映した。
 </div>
 
 <h2>② 数字</h2>
@@ -75,12 +75,12 @@ Lovableが公開した本番ページが『200は返るが中身が空・壊れ�
 <tr><td>本番URLがHTTP 200で返るか</td><td class="yes">yes</td></tr>
 <tr><td>本文が空でない（1000文字以上）か</td><td class="yes">yes</td></tr>
 <tr><td>壊れたURLを渡すと異常を検知するか（逆テスト）</td><td class="yes">yes</td></tr>
-<tr><td>CI（.github/workflows/quality-gate.yml）に見張りステップが入っているか</td><td class="yes">yes</td></tr>
-<tr><td>mainへ実際に反映されたか（origin/mainの祖先であることを確認済み）</td><td class="yes">yes</td></tr>
+<tr><td>CIに見張りステップが入っているか</td><td class="yes">yes</td></tr>
+<tr><td>mainへ実際に反映されたか</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-実測：node scripts/ai/prod-health-check.mjs（2026-10-07 12:32 UTC）→ {"status":200,"bodyLength":27594,"ok":true}。逆テスト：存在しないURLを渡すと{"status":404,"ok":false}・exitCode=1。joy-relief-stationはプライベートリポジトリのためGitHubのcommit/blobリンクは公開URLとして機能しない（未認証fetchで404を確認済み）。そのため本ページで実測結果を直接提示する。
+実測：node scripts/ai/prod-health-check.mjs（2026-10-07 12:32 UTC）→ {"status":200,"bodyLength":27594,"ok":true}。逆テスト：存在しないURLを渡すと{"status":404,"ok":false}・exitCode=1。joy-relief-stationはプライベートリポジトリのため、リポジトリ内のファイルへの直リンクはここでは出さず、実測結果の生データを掲載する。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
