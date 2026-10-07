@@ -781,6 +781,10 @@ def main():
                         "1本の素材を題材にした円卓会議の議事録を、日本語のMarkdownで作成してください。\n"
                         "- Andrej Karpathy — 第一原理から作って理解する立場。"}]}}):
             ng.append("Obsidian円卓会議のキュー投入プロンプト（contentがlist）を拾ってしまう（34580号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "あなたはGOOD VIBES円卓の最終筆者です。日本語で、正確で、読み物として面白く、"
+                      "読み終わると社会・人間・歴史の見え方が一段上がる円卓を作ってください。"}}):
+            ng.append("GOOD VIBES円卓のキュー投入プロンプトを拾ってしまう（34580号の再発・2424号の原因）")
         # ★34580号・同時発見：AutoCompactの自動要約（「This session is being
         #   continued from a previous conversation that ran out of context.」で
         #   始まる）を、たまごさんの発言として拾わない。
