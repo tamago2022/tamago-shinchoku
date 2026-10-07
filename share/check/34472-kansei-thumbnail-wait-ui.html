@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34533 判定日の係：同じ発言を何度も再発車するバグを修正 確認ページ</title>
+<title>#34472 サムネイル完成待ち曲の店主専用一覧タブ 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,39 +47,32 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34533 判定日の係：同じ発言を何度も再発車するバグを修正</div>
-<h1>#34533 判定日の係：同じ発言を何度も再発車するバグを修正</h1>
-<div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34472 サムネイル完成待ち曲の店主専用一覧タブ</div>
+<h1>#34472 サムネイル完成待ち曲の店主専用一覧タブ</h1>
+<div class="date">2026-10-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の1つの発言(2026-08-05 15:23「1件ずつの個別対応ではなく仕組み自体を作ってほしい」等、5文に分割)が、判定日の係(tools/hantei_hiduke.py・40tickごと)と発言収集係(tools/kioku.py・8tickごと)が同じ台帳ファイル(status/kioku/hatsugen.jsonl)を<b>鍵なしで同時に読み書き</b>していたため、判定済みの印(hanteiSumi)が消え続け、<b>同一発言がqueue.jsonへ34530〜34533番という4件の重複案件として毎回新しく再発車</b>されていた(実測ログ: 2026-10-02 01:03と01:34の2回、同じidが毎回『未判定』扱いに戻って赤判定されていた)。両ファイルに同じ鍵(fcntl.flock、既存コード(archive_done.py等)と同じ型)を入れ、読む→書くの間ずっと排他させた。これにより<b>同一発言1件につき最大1回しか再発車されなくなる</b>＝店主が同じ指示を繰り返させられずに済む、を今後すべての『判定日赤』案件に効く仕組みとして実装した。
+サムネイル・動画が無くて公開棚から隠れている曲を、店主/スタッフだけが見られる管理画面に一覧表示する仕組みを追加しました。隠す仕組みと自動復活（仕入れ担当が動画を直すと次の自動チェックで元の場所へ戻る）は既に動いていて、今回は欠けていた『一覧を見る画面』だけを足しました。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>4件</b><span>同一発言が34530〜34533番として重複生成されていた実測件数(2026-10-02〜10-07)</span></div>
-  <div class="num"><b>0.000〜0.952秒</b><span>鍵を同じにした後、2プロセス(kioku役/hantei役)を同時起動した実測：Bが0.248〜0.952秒保持→Aは0.992秒から開始(重なりゼロ・完全直列化を実測)</span></div>
-  <div class="num"><b>10394件</b><span>修正後も自己試験で読めた台帳の総発言数(壊していない証拠)</span></div>
+  <div class="num"><b>2da189921</b><span>mainへ反映したコミット</span></div>
+  <div class="num"><b>未実施</b><span>Lovable公開の状態</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-<li><b>（リンクなし）</b></li>
+  <li><b>GitHubの変更内容</b><a href="https://github.com/tamago2022/joy-relief-station/commit/2da189921" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/2da189921</a></li>
+  <li><b>本番サイト（公開待ち）</b><a href="https://joy-relief-station.lovable.app/admin/video-health" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/video-health</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
-<table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>kioku.py --self-test</td><td class="yes">OK（読んだ3ファイル・合計10394件）</td></tr>
-<tr><td>hantei_hiduke.py --self-test</td><td class="yes">OK（台帳10394件・判定日が来ている9761件）</td></tr>
-<tr><td>2プロセス同時アクセス(同じ鍵ファイル)</td><td class="yes">重ならず完全に直列化（実測ログ添付）</td></tr>
-<tr><td>既存の宿題台帳・queue.json・daicho.jsonlへの直接書き込み</td><td class="yes">一切していない（鍵の追加のみ・既存ファイル形式は無変更）</td></tr>
-</table>
+
 
 <footer>
-対象ファイル: tools/hantei_hiduke.py / tools/kioku.py（追加した鍵: status/.hatsugen.lock）。34530〜34533番として重複していた『模写/パロディ検出を既存アーティストページへ自動関連づけする仕組み』自体は34528番の調査で既に本番実装・反映済みと確認されている（https://joy-relief-station.lovable.app/cover-guide?artist=nissin）。今回の修正は、その種の『1つの発言が仕組みのせいで何度も赤になり何度もAIセッションが同じ調査をし直す』という不具合そのものを止める仕組み。
+正直な状態：コードはmainに入りました。ただし本番（Lovable）への『公開』ボタンは、AI側がChromeを新しく起動することを禁止するルール（2026-09-29・1186号）のため、このセッションからは押せませんでした。店主がLovable画面で「公開」を押すと、この一覧タブが本番に出ます。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

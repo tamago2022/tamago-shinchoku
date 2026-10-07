@@ -35,7 +35,6 @@
 from __future__ import annotations
 
 import datetime
-import fcntl
 import glob
 import hashlib
 import io
@@ -43,8 +42,6 @@ import json
 import os
 import re
 import sys
-import time
-from contextlib import contextmanager
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -53,37 +50,6 @@ DIR = os.path.join(ST, "kioku")
 HATSUGEN = os.path.join(DIR, "hatsugen.jsonl")
 SEEN = os.path.join(DIR, ".seen.json")
 LOG = os.path.join(DIR, "kioku.log")
-
-# 34533番で実測した事故（詳しい経緯は tools/hantei_hiduke.py の
-# HATSUGEN_LOCK定義コメント参照）：この係（8tickごと）と判定日の係
-# tools/hantei_hiduke.py（40tickごと）が、鍵なしでHATSUGEN（hatsugen.jsonl）
-# を読む→書くしていたため、判定済みの印（hanteiSumi）がlost updateで消え、
-# ★同一の店主発言が何度も「未判定」に戻って再発車され続けていた
-# （queue.jsonに34530〜34533番という同じ発言の重複案件が積まれた直接の原因）。
-# ★hantei_hiduke.py側と同じロックファイルを使い、読む→書くの間ずっと鍵をかける。
-HATSUGEN_LOCK = os.path.join(ST, ".hatsugen.lock")
-
-
-@contextmanager
-def hatsugen_lock(timeout=10.0):
-    f = io.open(HATSUGEN_LOCK, "a+")
-    t0 = time.time()
-    while True:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            break
-        except Exception:
-            if time.time() - t0 > timeout:
-                break
-            time.sleep(0.05)
-    try:
-        yield
-    finally:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        except Exception:
-            pass
-        f.close()
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
@@ -495,97 +461,93 @@ def hiroi(dry=False, rebuild=False, zenbu=False):
     ★落ちても続きから：ファイルごとに「どこまで読んだか」を .seen.json に残す。
       ファイルが小さくなっていたら（差し替え）先頭から読み直す。
     """
-    # ★読む→書くの間、ずっと鍵をかける（tools/hantei_hiduke.pyと同じ鍵・同じ
-    # ファイル）。無いとlost updateで判定済みの印が消える。詳しい事故の実測は
-    # HATSUGEN_LOCK定義のコメント参照（34533番）。
-    with hatsugen_lock():
-        rows = {} if rebuild else load_hatsugen()
-        seen = {} if rebuild else (load_json(SEEN, {}) or {})
-        # --zenbu＝過去ログを全部さらう掃除便。上限を外す。落ちても .seen.json に
-        # 読んだ位置が残るので、次に呼べば続きから再開する（最初からやり直さない）。
-        budget = (1 << 62) if zenbu else MAX_BYTES_PER_RUN
-        added, bumped, files = 0, 0, 0
+    rows = {} if rebuild else load_hatsugen()
+    seen = {} if rebuild else (load_json(SEEN, {}) or {})
+    # --zenbu＝過去ログを全部さらう掃除便。上限を外す。落ちても .seen.json に
+    # 読んだ位置が残るので、次に呼べば続きから再開する（最初からやり直さない）。
+    budget = (1 << 62) if zenbu else MAX_BYTES_PER_RUN
+    added, bumped, files = 0, 0, 0
 
-        for p in log_files(None if zenbu else MAX_FILES_PER_RUN):
-            if budget <= 0:
-                break
+    for p in log_files(None if zenbu else MAX_FILES_PER_RUN):
+        if budget <= 0:
+            break
+        try:
+            size = os.path.getsize(p)
+        except Exception:
+            continue
+        off = int((seen.get(p) or {}).get("off") or 0)
+        if off > size:
+            off = 0                      # 差し替えられた＝最初から
+        if off >= size:
+            continue
+        files += 1
+        read = 0
+        try:
+            with io.open(p, "rb") as f:
+                f.seek(off)
+                chunk = f.read(min(budget, size - off))
+                read = len(chunk)
+                # 途中で切れた最後の1行は次回に回す（半端なJSONを読ませない）
+                nl = chunk.rfind(b"\n")
+                if nl < 0:
+                    continue
+                body = chunk[:nl].decode("utf-8", "replace")
+                off += nl + 1
+        except Exception:
+            continue
+        budget -= read
+        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(p), JST)
+        for line in body.splitlines():
+            line = line.strip()
+            if not line or not line.startswith("{"):
+                continue
             try:
-                size = os.path.getsize(p)
+                rec = json.loads(line)
             except Exception:
                 continue
-            off = int((seen.get(p) or {}).get("off") or 0)
-            if off > size:
-                off = 0                      # 差し替えられた＝最初から
-            if off >= size:
+            txt = user_text(rec)
+            if not txt:
                 continue
-            files += 1
-            read = 0
-            try:
-                with io.open(p, "rb") as f:
-                    f.seek(off)
-                    chunk = f.read(min(budget, size - off))
-                    read = len(chunk)
-                    # 途中で切れた最後の1行は次回に回す（半端なJSONを読ませない）
-                    nl = chunk.rfind(b"\n")
-                    if nl < 0:
+            # ★言われた日時は「分まで」持つ。過去ログから抜いた分も、その発言の
+            #   タイムスタンプをそのまま入れる（拾った日時ではない）。日付だけだと
+            #   「いつ言ったか」が曖昧になり、判定日が作れない＝うやむやが復活する。
+            dt = iso_to_jst(rec.get("timestamp")) or mtime
+            said = dt.strftime("%Y-%m-%d %H:%M")
+            hi = dt.strftime("%Y-%m-%d")
+            for s in bunkatsu(txt):
+                i = make_id(s)
+                r = rows.get(i)
+                if r:
+                    # ★同じ日の同じ一言は1回と数える（貼り直し・再送を水増ししない）
+                    if hi in (r.get("days") or []):
                         continue
-                    body = chunk[:nl].decode("utf-8", "replace")
-                    off += nl + 1
-            except Exception:
-                continue
-            budget -= read
-            mtime = datetime.datetime.fromtimestamp(os.path.getmtime(p), JST)
-            for line in body.splitlines():
-                line = line.strip()
-                if not line or not line.startswith("{"):
-                    continue
-                try:
-                    rec = json.loads(line)
-                except Exception:
-                    continue
-                txt = user_text(rec)
-                if not txt:
-                    continue
-                # ★言われた日時は「分まで」持つ。過去ログから抜いた分も、その発言の
-                #   タイムスタンプをそのまま入れる（拾った日時ではない）。日付だけだと
-                #   「いつ言ったか」が曖昧になり、判定日が作れない＝うやむやが復活する。
-                dt = iso_to_jst(rec.get("timestamp")) or mtime
-                said = dt.strftime("%Y-%m-%d %H:%M")
-                hi = dt.strftime("%Y-%m-%d")
-                for s in bunkatsu(txt):
-                    i = make_id(s)
-                    r = rows.get(i)
-                    if r:
-                        # ★同じ日の同じ一言は1回と数える（貼り直し・再送を水増ししない）
-                        if hi in (r.get("days") or []):
-                            continue
-                        r["count"] = int(r.get("count") or 1) + 1
-                        r["lastSaid"] = said
-                        r["days"] = sorted(set((r.get("days") or []) + [hi]))[-12:]
-                        r["seenAt"] = stamp()
-                        bumped += 1
-                    else:
-                        rows[i] = {
-                            "id": i, "title": s, "count": 1,
-                            "firstSaid": said, "lastSaid": said, "days": [hi],
-                            "firstSaidJa": ja_nichiji(dt),
-                            # ★判定日。ここで決めて台帳に焼く。あとから動かせない。
-                            "hantei1w": (dt + datetime.timedelta(days=7)).strftime("%Y-%m-%d"),
-                            "hantei1m": (dt + datetime.timedelta(days=30)).strftime("%Y-%m-%d"),
-                            "sonogo": None, "hanteiSumi": [],
-                            "seenAt": stamp(), "from": os.path.basename(p),
-                        }
-                        added += 1
-            seen[p] = {"off": off, "at": stamp()}
+                    r["count"] = int(r.get("count") or 1) + 1
+                    r["lastSaid"] = said
+                    r["days"] = sorted(set((r.get("days") or []) + [hi]))[-12:]
+                    r["seenAt"] = stamp()
+                    bumped += 1
+                else:
+                    rows[i] = {
+                        "id": i, "title": s, "count": 1,
+                        "firstSaid": said, "lastSaid": said, "days": [hi],
+                        "firstSaidJa": ja_nichiji(dt),
+                        # ★判定日。ここで決めて台帳に焼く。あとから動かせない。
+                        "hantei1w": (dt + datetime.timedelta(days=7)).strftime("%Y-%m-%d"),
+                        "hantei1m": (dt + datetime.timedelta(days=30)).strftime("%Y-%m-%d"),
+                        "sonogo": None, "hanteiSumi": [],
+                        "seenAt": stamp(), "from": os.path.basename(p),
+                    }
+                    added += 1
+        seen[p] = {"off": off, "at": stamp()}
 
-        if not dry:
-            save_hatsugen(rows)
-            os.makedirs(DIR, exist_ok=True)
-            write_text(SEEN, json.dumps(seen, ensure_ascii=False, indent=1))
-            with io.open(LOG, "a", encoding="utf-8") as f:
-                f.write(json.dumps({"at": stamp(), "files": files, "added": added,
-                                    "bumped": bumped, "total": len(rows)},
-                                   ensure_ascii=False) + "\n")
+    if not dry:
+        save_hatsugen(rows)
+        os.makedirs(DIR, exist_ok=True)
+        write_text(SEEN, json.dumps(seen, ensure_ascii=False, indent=1))
+        with io.open(LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"at": stamp(), "files": files, "added": added,
+                                "bumped": bumped, "total": len(rows)},
+                               ensure_ascii=False) + "\n")
     return rows, {"files": files, "added": added, "bumped": bumped, "total": len(rows)}
 
 

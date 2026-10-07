@@ -35,53 +35,6 @@ if (!URL_ARG) {
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const LOAD_TIMEOUT_MS = 20000;
-
-// 34516番デバッグ用プローブ（VC_HYDRO_PROBE=1の時だけ注入）。
-// hydration中にどのDOMがいつ書き換わったかをMutationObserverで記録する。
-const HYDRO_PROBE_SCRIPT = `
-window.__hydroLog = [];
-window.__hydroStart = Date.now();
-function describePath(node) {
-  const parts = [];
-  let n = node;
-  let depth = 0;
-  while (n && n.nodeType === 1 && depth < 6) {
-    let seg = n.tagName.toLowerCase();
-    if (n.id) seg += "#" + n.id;
-    else if (n.className && typeof n.className === "string") seg += "." + n.className.split(" ").slice(0,2).join(".");
-    parts.unshift(seg);
-    n = n.parentElement;
-    depth++;
-  }
-  return parts.join(">");
-}
-const mo = new MutationObserver((muts) => {
-  for (const m of muts) {
-    if (window.__hydroLog.length > 400) continue;
-    const t = Date.now() - window.__hydroStart;
-    if (m.type === "characterData") {
-      window.__hydroLog.push({ t, type: "text", old: m.oldValue, newv: m.target.textContent, path: describePath(m.target.parentElement) });
-    } else if (m.type === "childList") {
-      for (const n of m.addedNodes) {
-        window.__hydroLog.push({ t, type: "add", path: describePath(m.target), html: (n.outerHTML || n.textContent || "").slice(0, 160) });
-      }
-      for (const n of m.removedNodes) {
-        window.__hydroLog.push({ t, type: "remove", path: describePath(m.target), html: (n.outerHTML || n.textContent || "").slice(0, 160) });
-      }
-    } else if (m.type === "attributes") {
-      window.__hydroLog.push({ t, type: "attr", path: describePath(m.target), attr: m.attributeName, old: m.oldValue, newv: m.target.getAttribute(m.attributeName) });
-    }
-  }
-});
-(function startObserve() {
-  if (document.documentElement) {
-    mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true, characterDataOldValue: true, attributeOldValue: true });
-  } else {
-    setTimeout(startObserve, 0);
-  }
-})();
-window.__hydroObserver = mo;
-`;
 const SETTLE_MS = 4000;
 // 案件#793実測：この進捗表(index.html)は初回描画後、status/*.json群（queue.json等）を
 // 複数の非同期fetchで順次読み込んで再描画するため、SETTLE_MSが短いと「まだ一部しか
@@ -287,13 +240,6 @@ async function main() {
     await ready;
     await send("Page.enable");
     await send("Runtime.enable");
-    // 34516番デバッグ用（店主報告のhydration不一致を特定するための一時プローブ）：
-    // VC_HYDRO_PROBE=1の時だけ、ページ読み込み前にMutationObserverを仕込み、
-    // hydration中にどのDOMがいつ書き換わったかをwindow.__hydroLogへ記録する。
-    // 既定では何もしない（通常の検品動作は変えない）。
-    if (process.env.VC_HYDRO_PROBE) {
-      await send("Page.addScriptToEvaluateOnNewDocument", { source: HYDRO_PROBE_SCRIPT });
-    }
     await send("Emulation.setDeviceMetricsOverride", {
       width: 375,
       height: 900,
@@ -304,17 +250,6 @@ async function main() {
     await send("Page.navigate", { url: URL_ARG });
     await waitComplete(send);
     await sleep(SETTLE_MS);
-    if (process.env.VC_HYDRO_PROBE) {
-      const hydroRes = await send("Runtime.evaluate", {
-        expression: "JSON.stringify(window.__hydroLog || [])",
-        returnByValue: true,
-      });
-      try {
-        result.hydroLog = JSON.parse(hydroRes.result.value || "[]");
-      } catch {
-        result.hydroLog = [];
-      }
-    }
 
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
     if (OUT_JSON) {
