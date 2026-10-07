@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-08 01:26",
+ "updatedAt": "2026-10-08 01:58",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -346,9 +346,9 @@
    "rank": 28,
    "task": "リロードで先頭に戻る",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "rusuban-child-T028-20261008",
    "count": "6",
-   "updatedAt": "2026-09-29 03:30",
+   "updatedAt": "2026-10-08 01:51",
    "note": "過去3セッション(r074/r075/wd_6b7501e6)は実質調査なしで引き継ぎのみだったため、原因調査から着手。src/routes/__root.tsx内shouldRememberLocation()がpathname===/(トップページ)を無条件でスクロール記憶の対象から除外しており、リロード時の復元処理(ScrollToTopOnNav)が常に空振りして最上部への強制スクロールに落ちていたのが原因と特定。除外を削除する1行修正で対応。PWA再起動時の部屋復元ロジックは別ガード(isStandalone+nav.type===navigate)がありreloadでは発火しないため副作用なしと確認。tsc --noEmit -pで新規型エラー0件(既存エラーと無関係)。branch agent/task-028-reload-scroll-top-home(commit eaea74c77)へpush済み、tamago-task-queue.ymlのCI検品→PR→自動マージ待ち [実装:wd_6b7501e6]",
    "stale": false
   },
