@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-07 12:27",
+ "updatedAt": "2026-10-07 13:08",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -372,8 +372,8 @@
    "state": "検証待ち",
    "owner": null,
    "count": "5",
-   "updatedAt": "2026-09-29 03:45",
-   "note": "過去3セッション(r075×3回)は実質調査なしで引き継ぎのみだったため調査から着手。①保存できない件：favorites.ts+HeartButton.tsxは既に完成済みだったが曲ページ内にしか導線が無くMiniPlayerには無かった(発見性の問題)。MiniPlayerのNOW PLAYING欄へHeartButton追加、branch agent/task-030-miniplayer-favorite(commit 60f7df203)へpush済み・CI検品待ち。②裏での再生が止まる件：バグではなくplayer.tsに明記済みの意図的設計と判明。YouTube埋め込みは規約上バックグラウンド再生禁止でbackgroundAllowed=false固定、iOS Safari側もiframe内video要素を止めるため技術的に完全解決不可。direct-audio化/外部アプリハンドオフ/期待値調整の3案を整理しPENDING_DECISIONS.mdへ記録(2026-09-29)、店主判断待ち。tsc型エラー0件確認 [実装:wd_6b7501e6]",
+   "updatedAt": "2026-10-07 12:51",
+   "note": "見回り検証(2026-10-07・読み取りのみ)：①MiniPlayerの♡導線はcommit 60f7df203にあり実装は確認。ただしorigin/mainに未合流（branch agent/task-030-miniplayer-favorite止まり・CI検品待ち）。②背景再生はplayer.ts backgroundAllowed=false固定の既存設計と一致。3案の選択はPENDING_DECISIONS.md(2026-09-29)のまま店主判断待ち。完了にはmain合流と本番375px確認が必要 [実装:rusuban-T030-20261007]",
    "stale": false
   },
   {
