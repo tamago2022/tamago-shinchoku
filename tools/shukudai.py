@@ -791,12 +791,23 @@ def main():
     health = load_json(os.path.join(STATUS, "health.json"), {}) or {}
 
     if not a.dry:
+        # 34581号（2026-10-07）：「open」を全件（13,377件・5.2MB）入れていたため、
+        # tools/pages_publish.sh の1MB上限関所に毎回引っかかり、このファイルは
+        # gh-pages（本番）へ一度も載らず404のまま放置されていた。
+        # たまごさんが見るのは share/check/1138-shukudai.html の1枚だけで、
+        # そちらはHTML側で件数・内訳を描画済み＝JSON側の全件配列は本来不要。
+        # 直近分だけに絞って軽量化し、実際に本番へ載る状態へ戻す（件数自体は
+        # openTotal に残し、情報は失わない）。
+        OPEN_PUBLISH_LIMIT = 300
+        open_rows_all = [r for r in rows.values() if r.get("state") in OPEN_STATES]
+        open_rows_sorted = sorted(open_rows_all, key=lambda r: (r.get("saidAt") or ""), reverse=True)
         pub = {"updatedAt": now().strftime("%Y-%m-%d %H:%M"), "tally": t,
                "count": countrow, "history": hist,
+               "openTotal": len(open_rows_all), "openLimit": OPEN_PUBLISH_LIMIT,
                "open": [{"id": r["id"], "title": r["title"], "state": r["state"],
                          "doneWhen": r["doneWhen"], "saidAt": r.get("saidAt"),
                          "source": r.get("sourceFile") or r.get("source")}
-                        for r in rows.values() if r.get("state") in OPEN_STATES]}
+                        for r in open_rows_sorted[:OPEN_PUBLISH_LIMIT]]}
         write_text(PUBLIC, json.dumps(pub, ensure_ascii=False, indent=1))
         write_text(HTML, build_html(rows, t, countrow, hist, pace, quota, health))
         try:
