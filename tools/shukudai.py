@@ -267,10 +267,26 @@ def harvest_outbox():
 # 実行対象の動詞ではない（否定文の中の活用語尾を_TASKISHが文脈抜きで拾った誤検知）。
 # 「優先する必要はありません／ない」は、常にスケジューリングの判断であって
 # 作業指示ではないため、_NOT_TASKへ先に弾く。
+#
+# 34589番実例（2026-10-07）：2026-08-06のAutoCompact要約メッセージ（長い会話が
+# 圧縮される時にAI自身が書く「前回までのまとめ」）内にあった、円卓会議/00_使い方.md
+# というファイルの**目次の説明文**（＝たまごさんの発言ではない）が、
+# status/kioku/hatsugen.jsonl へ「たまごさんが言った依頼」として誤登録されていた
+# （34578号・34580号・34581号・2424号と同じ根本原因＝tools/kioku.py の
+# _AUTOCOMPACT_SUMMARY_MARKER。ただし今回の行は2026-08-06時点で既に台帳へ
+# 焼き込まれていたため、今後の新規登録を防ぐこのマーカーの対象外だった）。
+# 「ログイン切れの直し方」の「直し」が_TASKISHに誤マッチしてactionable=Trueのまま
+# 判定日に★赤＋P1で繰り上げ続けていた（34589号自身がその実例）。
+# status/kioku/hatsugen.jsonl 側には行単位でactionable=falseを明示設定したが、
+# shukudai.harvest()はkioku由来の行に対してそのフラグを読まずtitleから
+# actionable()を毎回再計算するため、hatsugen側の修正だけでは
+# shukudai.ingest()の再発車（別経路）を防げない。この行のタイトルは極めて長く
+# 固有性が高いため、誤検知リスクの低い厳密な部分文字列一致で先に弾く。
+_GHOST_34589_FINGERPRINT = "いまは止めてある機能」（常駐処理／プラグイン／iPhone）と復活コマンド"
 _NOT_TASK = re.compile(
     r"(たまごさんが|たまごさんに見てもらう|注意：|ここが全部の親|わざと|参考|経緯|所感|——|だけ。$|"
     r"てくれたんだね|てくれたね|てくれた[。！]|くれたんだ[。！]?$|"
-    r"優先する必要はありません|優先する必要はない)")
+    r"優先する必要はありません|優先する必要はない|" + re.escape(_GHOST_34589_FINGERPRINT) + r")")
 
 # 1494番実例（2026-09-29）：39件の判定日赤queue項目をactionable()にかけたところ、
 # 終止形（「直す」「繋ぐ」等）でしか動詞を拾えず、「直しといて」「つながれる」のような
@@ -721,6 +737,12 @@ def self_test():
           actionable({"source": "queue", "title": "バナー画像を直す"}) is True)
     check("1996番再発防止：プレフィックス無しで直接積まれた相槌もactionable=False",
           actionable({"source": "queue", "title": "あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is False)
+    check("34589番再発防止：AutoCompact要約由来のゴースト(00_使い方.mdの目次)はactionable=False",
+          actionable({"source": "kioku",
+                      "title": "6項目の表、顧問の入れ替え、偽引用の憲法、素材ごとの得意不得意、"
+                               "YouTube文字起こしの渡し方、ログイン切れの直し方、"
+                               "「いまは止めてある機能」（常駐処理／プラグイン／iPhone）と復活"
+                               "コマンド、置き場所の表。"}) is False)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
