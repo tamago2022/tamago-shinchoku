@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-07 23:33",
+ "updatedAt": "2026-10-07 23:58",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -274,9 +274,9 @@
    "rank": 19,
    "task": "シェアしても画像が出ない",
    "state": "検証待ち",
-   "owner": null,
+   "owner": "rusuban-T019-20261008",
    "count": "10",
-   "updatedAt": "2026-09-03 11:23",
+   "updatedAt": "2026-10-07 23:52",
    "note": "「ページ種別ごとの確認」を実施：本番SSR HTMLのog:imageを7種のページで直接確認(curl)。①cover-guide曲ページ→/api/public/share-image/<動画id>(動的YouTubeサムネ)②room/card→同様に動的③/feature/monkey-magic→専用og.jpg④/world/music→動的share-image⑤/star-land(→/room/card/star-landへ307)→動的share-image⑥/・/shelves・/history・/favorites→固定の「四つの扉」既定画像。全てのcontent系ページで曲・アーティスト固有の画像が正しく出ており「卵マスコットで固定」の再現は無し。og:image先URL2種(share-image API・四つの扉PNG)とも200・正しいcontent-type・適切なcache-controlで実配信を確認。残存する説明候補：LINE/Xは一度取得したOGPプレビューをURL単位で長期キャッシュするため、本日T011で解消された本番デプロイ詰まり期間中に古い/欠けた画像が一度キャッシュされていた場合、コード側を直しても各プラットフォームのキャッシュが自然失効するかキャッシュ再取得ツール(Xのcard validator等)を使うまで古い絵が残り続ける可能性がある＝コード側の追加修正では直せない領域。次の目：実際にLINE/Xで数URLを新規共有(未共有のURL)して正しい絵が出るか確認すれば完了にできる。 [実装:wd_1d49aba9]",
    "stale": false
   },
