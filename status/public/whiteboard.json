@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-08 02:58",
+ "updatedAt": "2026-10-08 03:34",
  "source": "ai-brain/live/whiteboard.md",
  "states": [
   "未着手",
@@ -369,11 +369,11 @@
    "priority": 3,
    "rank": 30,
    "task": "保存と裏での再生",
-   "state": "検証待ち",
-   "owner": "rusuban-T030-20261008",
+   "state": "判断待ち",
+   "owner": null,
    "count": "5",
-   "updatedAt": "2026-10-08 02:52",
-   "note": "見回り検証(2026-10-07・読み取りのみ)：①MiniPlayerの♡導線はcommit 60f7df203にあり実装は確認。ただしorigin/mainに未合流（branch agent/task-030-miniplayer-favorite止まり・CI検品待ち）。②背景再生はplayer.ts backgroundAllowed=false固定の既存設計と一致。3案の選択はPENDING_DECISIONS.md(2026-09-29)のまま店主判断待ち。完了にはmain合流と本番375px確認が必要 [実装:rusuban-T030-20261007]",
+   "updatedAt": "2026-10-08 03:05",
+   "note": "CI検品を精査。origin/main HEAD(9bb78b9fa)で比較した結果：①commit 60f7df203はCIの独立検品が『failure』だが原因はコードではなくGitHub Actions側『recent account payments have failed or your spending limit needs to be increased』という課金ブロック（再実行でも同じ結果・再現確認済み＝お金の判断が必要なため店主判断待ち）。②スクラッチパッドに独立clone(t030-verify)を作り、CIのqaジョブと同じ手順(型チェック/ビルド/テスト)を手でローカル再現：型チェックはmain基準31件・ブランチも31件で新規エラー0件＝合格相当。ただしブランチは8日前に作られて以降mainが進み、src/components/MiniPlayer.tsxで自動mergeがコンフリクト(main側の新規i18n lc()ラップ・interruptionResume importの追加と競合)。ローカルでmain優先で解消し型チェック通過を確認済みだが、この解消コミットはpermission denyでpushできず(harnessのgit push許可待ち)。③bun run buildのprebuildはmain自体も現在失敗中(scripts/security/check-admin-auth-secrets.mjsがai-brain/live/whiteboard.md内の無関係なT014メモ『合言葉を1文字...単純化』を資格情報記述とみなして誤検知。T030とは無関係・main側の既存問題)。④bun testの唯一の失敗(scripts/roles/video-copy-first.test.mjs)もmain基準で同じく失敗＝T030由来の新規リグレッションではない。結論：T030自体のコードに新規の型/テスト退行は無い。main合流を完了するには(a)たまごさんがGitHub Billing&plansの支払い/spending limitを復旧、(b)git push許可のあるセッションでMiniPlayer.tsxのmerge解消コミットをagent/task-030-miniplayer-favoriteへpush、の2点が必要。③の3案選択は.claude/PENDING_DECISIONS.md(2026-09-29 wd_6b7501e6/T030)のまま未決定で変化なし。",
    "stale": false
   },
   {
