@@ -86,6 +86,7 @@ def main():
     rows = [json.loads(l) for l in open(a.jsonl, encoding="utf-8") if l.strip()]
     orgs, chans = (load_channels(tok) if (a.go or True) else (None, None))
     rc = 0
+    mons = {}
     for i, r in enumerate(rows, 1):
         ch = find_channel(chans, r.get("channel"))
         if not ch:
@@ -101,8 +102,10 @@ def main():
         else:
             due_iso, _ = by.due_utc_iso(r["scheduled_at"])
             import buffer_sekisho
-            mon = buffer_sekisho.Mon(lambda q, v=None: by.gql(tok, q, v))
-            mon.load(ch["_org"], ch["id"])
+            if ch["id"] not in mons:
+                mons[ch["id"]] = buffer_sekisho.Mon(lambda q, v=None: by.gql(tok, q, v))
+                mons[ch["id"]].load(ch["_org"], ch["id"])   # 1チャンネル1回だけ読む（叩く数を節約）
+            mon = mons[ch["id"]]
             ok, why = mon.tsukaeru(r["text"], due_iso)
             if not ok:
                 print("   二重投稿の関所で止めた: %s" % why); rc = 1; continue
@@ -112,7 +115,9 @@ def main():
         if cp.get("message") or res.get("errors"):
             print("   失敗: %s" % (cp.get("message") or str(res.get("errors"))[:200])); rc = 1; continue
         p = cp.get("post") or {}
-        print("   登録 id=%s status=%s" % (p.get("id"), p.get("status")))
+        print("   登録 id=%s status=%s due=%s" % (p.get("id"), p.get("status"), p.get("dueAt")))
+        if not a.draft:
+            mon.kiroku(r["text"], due_iso, p.get("id"), "api_post")
         time.sleep(1)
         if a.draft:
             q = by.gql(tok, Q_DRAFTS, {"orgId": ch["_org"], "channelIds": [ch["id"]]})
