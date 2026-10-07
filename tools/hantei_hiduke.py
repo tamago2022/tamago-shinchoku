@@ -30,11 +30,14 @@
 from __future__ import annotations
 
 import datetime
+import fcntl
 import io
 import json
 import os
 import re
 import sys
+import time
+from contextlib import contextmanager
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -46,6 +49,41 @@ HATSUGEN = os.path.join(ST, "kioku", "hatsugen.jsonl")
 DAICHO = os.path.join(ST, "shukudai", "daicho.jsonl")
 KENPIN = os.path.join(ST, "oni_modoshi", "kenpin.jsonl")
 LOG = os.path.join(ST, "kioku", "hantei.jsonl")
+
+# 34533番で実測した事故：tools/kioku.py（8tickごと）と tools/hantei_hiduke.py
+# （40tickごと）が、どちらも鍵なしで HATSUGEN を読む→書くしていた。
+# kioku.pyがこのファイルを読んだ直後にhantei_hiduke.pyが判定して
+# hanteiSumi（判定済みの印）を書き込んでも、kioku.pyが古い内容のまま
+# 書き戻すと★その判定が消える（lost update）。消えると次の判定日チェックで
+# 「まだ判定していない」扱いに戻り、★同じ案件を何度も★赤＋再発車してしまう
+# （実例：id f81962a0e496「1件ずつの個別対応ではなく仕組み自体を作ってほしい」が
+# 2026-10-02 01:03 と 01:34 の2回、どちらもhanteiSumiが空の状態から判定され、
+# 2回とも再発車されていた＝queue.jsonに34530〜34533番という同一発言の重複案件が
+# 積まれた直接の原因）。
+# ★kioku.py側にも同じロック（同じファイルパス）を入れてある。
+HATSUGEN_LOCK = os.path.join(ST, ".hatsugen.lock")
+
+
+@contextmanager
+def hatsugen_lock(timeout=10.0):
+    f = io.open(HATSUGEN_LOCK, "a+")
+    t0 = time.time()
+    while True:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except Exception:
+            if time.time() - t0 > timeout:
+                break
+            time.sleep(0.05)
+    try:
+        yield
+    finally:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        except Exception:
+            pass
+        f.close()
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 _YOUBI = "月火水木金土日"
@@ -282,38 +320,43 @@ def kuriageru(r, naze):
 
 
 def hashiru(dry=False):
-    rows = {r["id"]: r for r in jsonl(HATSUGEN) if r.get("id")}
-    ima = ima_no_jotai()
-    mita, aka, tojita = 0, 0, 0
-    for r in rows.values():
-        h = hantei_1ken(r, ima)
-        if not h:
-            continue
-        mita += 1
-        r["state"] = h["state"]
-        r["sonogo"] = h["sonogo"]
-        r["hanteiAt"] = stamp()
-        r["hanteiSumi"] = sorted(set((r.get("hanteiSumi") or []) + [h["which"]]))
-        if h["aka"]:
-            aka += 1
-            r["aka"] = True
-            r["p"] = 1                      # ★自動でP1に繰り上げ
+    # ★読む→書くの間、ずっと鍵をかける（kioku.pyと同じ鍵・同じファイル）。
+    # これが無いと、kioku.pyの古い読み込みがこの関数の新しい書き込みを
+    # 後から上書きして消す（lost update）。詳しい事故の実測はHATSUGEN_LOCK定義の
+    # コメント参照。
+    with hatsugen_lock():
+        rows = {r["id"]: r for r in jsonl(HATSUGEN) if r.get("id")}
+        ima = ima_no_jotai()
+        mita, aka, tojita = 0, 0, 0
+        for r in rows.values():
+            h = hantei_1ken(r, ima)
+            if not h:
+                continue
+            mita += 1
+            r["state"] = h["state"]
+            r["sonogo"] = h["sonogo"]
+            r["hanteiAt"] = stamp()
+            r["hanteiSumi"] = sorted(set((r.get("hanteiSumi") or []) + [h["which"]]))
+            if h["aka"]:
+                aka += 1
+                r["aka"] = True
+                r["p"] = 1                      # ★自動でP1に繰り上げ
+                if not dry:
+                    r["saihassha"] = kuriageru(r, h["sonogo"])
+            else:
+                r["aka"] = False
+                if h["state"] == "完了":
+                    tojita += 1
             if not dry:
-                r["saihassha"] = kuriageru(r, h["sonogo"])
-        else:
-            r["aka"] = False
-            if h["state"] == "完了":
-                tojita += 1
-        if not dry:
-            append(LOG, {"at": stamp(), "id": r["id"], "title": (r.get("title") or "")[:80],
-                         "which": h["which"], "aka": h["aka"], "state": h["state"],
-                         "sonogo": h["sonogo"]})
-    if not dry and rows:
-        body = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n"
-                       for r in sorted(rows.values(),
-                                       key=lambda x: (-int(x.get("count") or 1),
-                                                      str(x.get("firstSaid") or ""))))
-        write_text(HATSUGEN, body)
+                append(LOG, {"at": stamp(), "id": r["id"], "title": (r.get("title") or "")[:80],
+                             "which": h["which"], "aka": h["aka"], "state": h["state"],
+                             "sonogo": h["sonogo"]})
+        if not dry and rows:
+            body = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n"
+                           for r in sorted(rows.values(),
+                                           key=lambda x: (-int(x.get("count") or 1),
+                                                          str(x.get("firstSaid") or ""))))
+            write_text(HATSUGEN, body)
     return {"mita": mita, "aka": aka, "tojita": tojita, "zen": len(rows)}
 
 
