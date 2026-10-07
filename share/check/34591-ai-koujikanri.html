@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34592 好みの傾向分析→コンテンツ反映（入口TasteEntry）は本番で稼働中 確認ページ</title>
+<title>#34591 AI施工管理：Lovableを平社員・Claude Codeを現場監督にする仕組み 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,39 +47,40 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34592 好みの傾向分析→コンテンツ反映（入口TasteEntry）は本番で稼働中</div>
-<h1>#34592 好みの傾向分析→コンテンツ反映（入口TasteEntry）は本番で稼働中</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34591 AI施工管理：Lovableを平社員・Claude Codeを現場監督にする仕組み</div>
+<h1>#34591 AI施工管理：Lovableを平社員・Claude Codeを現場監督にする仕組み</h1>
 <div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-06の発言『入れてはいけないものはないんだけれども、自分の好みや傾向分かるじゃん』＝案内所に<b>どんなURL・言葉でも受け付け（制約なし）、そこから好みの傾向を分析して3件おすすめを出す</b>機能（TasteEntry）として、既に案件142(PR #275・2026-08-31)で実装・mainマージ・Lovable本番反映済みであることを実測確認した。新規コードは書いていない（既存実装の本番稼働を検証した）。
+Lovableが公開した本番ページが『200は返るが中身が空・壊れている』状態のまま社長（店主）の目に触れないよう、Claude Code側のCIが本番URLを自動で見張り、壊れていればGitHub Issueで知らせる仕組みをjoy-relief-stationリポジトリへ実装し、mainへ反映した（commit 474b85c0d）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番HTTPステータス</span></div>
-  <div class="num"><b>1061文字</b><span>SSR地の文の実測文字数（最低基準400文字の2.6倍）</span></div>
-  <div class="num"><b>0件</b><span>禁止ワード（準備中/404/TODO等）の検出</span></div>
+  <div class="num"><b>200</b><span>本番ページの実測HTTPコード（下のリンクを自分で開いて確認可）</span></div>
+  <div class="num"><b>27594</b><span>本番ページの本文の長さ（文字）・空ページではない</span></div>
+  <div class="num"><b>404/exit1</b><span>壊れたURLを渡した逆テストで、ちゃんと異常と判定した（見張りが本物に効く証拠）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ（案内所）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>見張られている本番サイトを開く</b><a href="https://joy-relief-station.lovable.app" target="_blank" rel="noopener">https://joy-relief-station.lovable.app</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>SSRに入口文言「最近、好きだったものを ひとつ見せてください。」があるか</td><td class="yes">あり</td></tr>
-<tr><td>気分から探す選択肢（疲れた/笑いたい/懐かしい等）があるか</td><td class="yes">あり</td></tr>
-<tr><td>本番配信JS(cover-guide-CuIoi1dn.js)にTasteEntryのロジックが含まれるか</td><td class="yes">あり</td></tr>
-<tr><td>禁止ワード（準備中・404・TODO等）が本文に出ていないか</td><td class="yes">出ていない</td></tr>
+<tr><td>本番URLがHTTP 200で返るか</td><td class="yes">yes</td></tr>
+<tr><td>本文が空でない（1000文字以上）か</td><td class="yes">yes</td></tr>
+<tr><td>壊れたURLを渡すと異常を検知するか（逆テスト）</td><td class="yes">yes</td></tr>
+<tr><td>CI（.github/workflows/quality-gate.yml）に見張りステップが入っているか</td><td class="yes">yes</td></tr>
+<tr><td>mainへ実際に反映されたか（origin/mainの祖先であることを確認済み）</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-このページは #34592 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実測：node scripts/ai/prod-health-check.mjs（2026-10-07 12:32 UTC）→ {"status":200,"bodyLength":27594,"ok":true}。逆テスト：存在しないURLを渡すと{"status":404,"ok":false}・exitCode=1。joy-relief-stationはプライベートリポジトリのためGitHubのcommit/blobリンクは公開URLとして機能しない（未認証fetchで404を確認済み）。そのため本ページで実測結果を直接提示する。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
