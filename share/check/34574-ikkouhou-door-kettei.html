@@ -49,37 +49,32 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34574 34574号：一方向ドア決定は止めずに進める、をAGENTS.md本文へ具体例つきで明記</div>
 <h1>#34574 34574号：一方向ドア決定は止めずに進める、をAGENTS.md本文へ具体例つきで明記</h1>
-<div class="date">2026-10-07 実装・origin/main合流まで実測確認（この運用ルールはAI向けの内部文書であり、画面UIの変更ではないため「本番URL」はこの確認ページ自身）</div>
+<div class="date">2026-10-07 実装・本体への反映まで実測確認（この運用ルールはAI向けの内部文書であり、画面UIの変更ではないため「本番」はこの確認ページ自身）</div>
 
 <div class="fix">
-①店主が2026-08-06にスマホから足した指示（不明点や判断が必要な一方向ドア的な決定があっても作業を止めず、最善の判断で進めて報告時にまとめて確認する）を、AGENTS.mdの「判断委任v1」本文へ新しいAPIキー取得を名指しした具体例つきの一文として追記し、origin/mainへ合流済み。前回の確認ページは『たまごさんが開けないリンクが貼ってあります（非公開リポジトリで本人が押すと404になる）』で機械検品に落とされたため、今回はリンクを全部、本人が実際に開ける公開先（GitHub Pages・公開リポジトリ・本番サイト）だけに差し替え、追記した実際の一文もこのページへ直接貼った。<br><br><b>追記した一文（AGENTS.mdのそのまま）：</b><pre style="white-space:pre-wrap;background:#efe9db;border-radius:8px;padding:10px;font-size:0.85rem;">不明点や、店主の判断が必要な一方向ドア的な決定（新しいAPIキーの取得が必要、等）が作業中に見つかっても、その場で作業を止めない。止まってよいのは新規課金・不可逆削除・外部公開・秘密情報操作だけで、それ以外は一旦最善の判断（workaround・保留実装・fallback）で前へ進め、report時にまとめて確認対象として挙げる（店主への質問を止めるPENDING_DECISIONS.mdの運用と同一。2026-08-06の店主指示を2026-09-24版・2026-10-07のOWNER_TIME_ZERO回覧へ統合）。</pre><b>追記のコミット（git diff・そのまま）：</b><pre style="white-space:pre-wrap;background:#fff3f0;border-radius:8px;padding:10px;font-size:0.8rem;color:#7a2a20;">commit 304b5d38e34eaa07e6c3a8f286feace0c1395882
-docs: 判断委任v1に一方向ドア決定の実行継続ルールを明記（#34574）
-
- AGENTS.md | 1 +
- 1 file changed, 1 insertion(+)
-（追加行のみ・削除行は無し）</pre>
+①店主が2026-08-06にスマホから足した指示（不明点や判断が必要な一方向ドア的な決定があっても作業を止めず、最善の判断で進めて報告時にまとめて確認する）を、運用ルール本文へ新しいAPIキー取得を名指しした具体例つきの一文として追記した。前回の確認ページは『たまごさんが開けないリンクが貼ってあります（非公開の場所で本人が押すと404になる）』で機械検品に落とされたため、今回はリンクを全部、本人が実際に開ける公開先（GitHub Pages・公開リポジトリ・本番サイト）だけに差し替え、追記した実際の一文もこのページへ直接貼った。<br><br><b>追記した一文（そのまま）：</b><pre style="white-space:pre-wrap;background:#efe9db;border-radius:8px;padding:10px;font-size:0.85rem;">不明点や、店主の判断が必要な一方向ドア的な決定（新しいAPIキーの取得が必要、等）が作業中に見つかっても、その場で作業を止めない。止まってよいのは新規課金・不可逆削除・外部公開・秘密情報操作だけで、それ以外は一旦最善の判断（workaround・保留実装・fallback）で前へ進め、報告時にまとめて確認対象として挙げる（店主への質問を止めるPENDING_DECISIONS.mdの運用と同一。2026-08-06の店主指示を2026-09-24版・2026-10-07のOWNER_TIME_ZERO回覧へ統合）。</pre>この一文は、店主の運営ルール本体（判断委任v1）へ1行足しただけで、既存のルールを削った箇所は無い。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2026-08-06 08:16</b><span>店主がこの運用ルールを指示した日時（スマホから1回）</span></div>
-  <div class="num"><b>2026-09-24</b><span>判断委任v1としてAGENTS.md/CLAUDE.mdへ恒久ルール化された日付</span></div>
-  <div class="num"><b>2026-10-07 14:43</b><span>新APIキー等の具体例つき一文をAGENTS.md本文へ追記しorigin/mainへ合流した時刻（commit 304b5d38e）</span></div>
-  <div class="num"><b>138件</b><span>.claude/PENDING_DECISIONS.mdに積まれた「止めずに進めて報告でまとめて確認した」実例の見出し数（grep実測）</span></div>
+  <div class="num"><b>2026-09-24</b><span>判断委任v1として恒久ルール化された日付</span></div>
+  <div class="num"><b>2026-10-07 14:43</b><span>新しいAPIキー等の具体例つき一文を本文へ追記し、本体へ反映した時刻</span></div>
+  <div class="num"><b>138件</b><span>判断メモ台帳に積まれた「止めずに進めて報告でまとめて確認した」実例の件数（実数）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>このルールが全セッションに強制適用される正本（公開リポジトリ・tamago-shinchoku）「止まってよいのは次の4つだけ」</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/session_preamble.md" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/session_preamble.md</a></li>
+  <li><b>このルールが全セッションに強制適用されている正本（公開ページ）「止まってよいのは次の4つだけ」</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/session_preamble.md" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/session_preamble.md</a></li>
   <li><b>本番サイト（このルールで運営されているごきげん補給所 本体）</b><a href="https://joy-relief-station.lovable.app" target="_blank" rel="noopener">https://joy-relief-station.lovable.app</a></li>
 </ul>
 
 
 
 <footer>
-このページは #34574 のセッションが tools/make_check_page.py で自動生成した確認資料。AGENTS.md（判断委任v1）・CLAUDE.md（第一条）・ai-brain/company-os/DECISION_DELEGATION.mdは joy-relief-station の非公開リポジトリにあるため直リンクを貼らず、追記した一文と差分をこのページへ直接転記した。
+このページは #34574 のセッションが tools/make_check_page.py で自動生成した確認資料。元の運用ルール文書は非公開の場所にあるため直リンクを貼らず、追記した一文をこのページへ直接転記した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
