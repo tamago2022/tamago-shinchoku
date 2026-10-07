@@ -1,24 +1,24 @@
 {
- "measuredAt": "2026-10-07T20:46:59+0900",
- "diskFreeGB": 20.0,
+ "measuredAt": "2026-10-07T21:10:39+0900",
+ "diskFreeGB": 19.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 101,
+ "load": 99,
  "memPressure": "green",
- "memAvailGB": 8.1,
- "sessions": 0,
+ "memAvailGB": 7.5,
+ "sessions": 1,
  "safeMax": 4,
- "moreOK": 4,
- "target": 1,
- "cap": 1,
+ "moreOK": 3,
+ "target": 2,
+ "cap": 2,
  "calibratedSafeN": 4,
  "below": 1,
  "shedCandidates": [],
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 22.33GB",
-   "gb": 22.33,
+   "effect": "メモリ 22.61GB",
+   "gb": 22.61,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
@@ -49,13 +49,21 @@
    "how": "アップロード待ちが残っていると消せない"
   },
   {
+   "label": "終わって待機中のセッション 2本を畳む",
+   "effect": "メモリ 0.72GB・負荷↓",
+   "gb": 0.72,
+   "kind": "mem",
+   "safe": true,
+   "how": "Rusuban mimawa、Rusuban mimawa"
+  },
+  {
    "label": "Chromeを閉じる",
-   "effect": "メモリ 0.57GB",
-   "gb": 0.57,
+   "effect": "メモリ 0.69GB",
+   "gb": 0.69,
    "kind": "mem",
    "safe": true,
    "app": "Google Chrome",
-   "how": "8プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "9プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "node_modules を消す（1箇所）",
@@ -64,14 +72,6 @@
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
-  },
-  {
-   "label": "終わって待機中のセッション 1本を畳む",
-   "effect": "メモリ 0.35GB・負荷↓",
-   "gb": 0.35,
-   "kind": "mem",
-   "safe": true,
-   "how": "Rusuban mimawa"
   },
   {
    "label": "LINEを閉じる",
@@ -106,19 +106,19 @@
   ]
  },
  "同時上限": {
-  "本数": 1,
+  "本数": 2,
   "根拠": [
-   "首は「スワップ・ロード」（メモリ35本／スワップ1本／ロード1本）",
-   "自動減便：5分ロード比1.78（1.5超）＝詰まっている。1本まで落とす",
-   "試し増便は見送り：スワップ使用94%／5分ロード比1.78＝静かでない"
+   "首は「スワップ」（メモリ34本／スワップ2本／ロード3本）",
+   "減便せず：スワップは低い（残り1.25GB（4.0GB未満）／使用93%（70%超））が、空きメモリ14.29GB・5分ロード比1.35＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
+   "試し増便は見送り：スワップ使用93%／5分ロード比1.35＝静かでない"
   ],
   "天井": {
-   "メモリ": 35,
-   "スワップ": 1,
-   "ロード": 1
+   "メモリ": 34,
+   "スワップ": 2,
+   "ロード": 3
   },
-  "測った時刻": "2026-10-07T20:47:00+0900",
-  "自動減便": "5分ロード比1.78（1.5超）＝詰まっている。1本まで落とす",
+  "測った時刻": "2026-10-07T21:10:39+0900",
+  "自動減便": null,
   "試し増便": null
  }
 }
