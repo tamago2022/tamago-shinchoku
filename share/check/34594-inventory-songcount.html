@@ -52,12 +52,12 @@
 <div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の依頼（2026-08-06）「在庫ダッシュボードでアーティストの曲数を教えてほしい」に対して、本番の管理画面『在庫ダッシュボード』（/admin/inventory）が実際に動いていることと、曲数が多いアーティスト上位20組の実測結果をこのページにまとめた。数字はLovable本番ではなく、同じデータの元になっているソースコード（<code>src/lib/coverGuide.ts</code>・2026-10-07時点のmain）を直接集計して出した実測値。本番URLはHTTP 200で返り、ログイン後に曲数で並べ替えられる一覧が出る。
+店主の依頼（2026-08-06）「在庫ダッシュボードでアーティストの曲数を教えてほしい」に対して、本番の管理画面『在庫ダッシュボード』（/admin/inventory）が実際に動いていることと、曲数が多いアーティスト上位20組の実測結果をこのページにまとめた。数字はLovable本番ではなく、同じデータの元になっているソースコード内の曲一覧データ（2026-10-07時点の最新版）を直接集計して出した実測値。本番URLはHTTP 200で返り、ログイン後に曲数で並べ替えられる一覧が出る。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2,668組</b><span>音楽アーティスト数（実測・coverGuide.ts集計）</span></div>
+  <div class="num"><b>2,668組</b><span>音楽アーティスト数（実測集計）</span></div>
   <div class="num"><b>36,566曲</b><span>音楽アーティストの登録曲数（実測）</span></div>
   <div class="num"><b>83曲</b><span>最多：トニー・ベネット</span></div>
   <div class="num"><b>200</b><span>本番ダッシュボードのHTTP応答</span></div>
@@ -97,7 +97,7 @@
 </table>
 
 <footer>
-実測の取り方：origin/main（2026-10-07時点）の src/lib/coverGuide.ts から artists 配列をそのまま読み込み、各アーティストの songs 配列の件数を数えた（DB集計ではなくソースコード直読み。本番ダッシュボードの数値とは曲の後付け分などで数件ズレる可能性があるが、ランキングの実像は一致する）。押す検品（node tools/verify_click.mjs）は本番 /admin/inventory ・この確認ページの両方で複数回PASSを確認済み。
+実測の取り方：ごきげん補給所の最新の曲一覧データ（2026-10-07時点）を直接読み込み、各アーティストの曲数を数えた（DB集計ではなくデータ直読み。本番ダッシュボードの数値とは曲の後付け分などで数件ズレる可能性があるが、ランキングの実像は一致する）。ボタンが押して反応するかの検品は、本番の在庫ダッシュボード・この確認ページの両方で複数回パスを確認済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
