@@ -732,6 +732,24 @@ def main():
                         "with session_id \"local_6b16877d-a621-42a0-ae8a-2d5bf4169fd7\" "
                         "to see the outcome, then report to the user via send_message."}]}}):
             ng.append("Cowork定期タスクの完了/失敗通知（contentがlist）を拾ってしまう（2012号の再発）")
+        # ★34580号実例：「Obsidian円卓会議」のキュー投入プロンプト（顧問名簿テンプレート）
+        #   を、たまごさんの発言として拾わない。顧問説明文の「第一原理から作って
+        #   理解する立場。」が依頼動詞「作って」に、「小さく出して市場に殺させ、
+        #   生き残ったものだけ育てる立場。」が「育てて」相当にマッチして、
+        #   実在しない依頼として誤登録されていた。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "あなたは「Obsidian円卓会議」の書記です。\n"
+                      "たまごさん（Kohei Munakata・映像作家 / 思想家 / Eden Loop の設計者）のために、\n"
+                      "1本の素材を題材にした円卓会議の議事録を、日本語のMarkdownで作成してください。\n\n"
+                      "- Andrej Karpathy — 元Tesla AI責任者/OpenAI。第一原理から作って理解する立場。\n"
+                      "- Pieter Levels — 個人開発者。小さく出して市場に殺させ、生き残ったものだけ育てる立場。"}}):
+            ng.append("Obsidian円卓会議のキュー投入プロンプト（顧問名簿テンプレート）を拾ってしまう（34580号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "あなたは「Obsidian円卓会議」の書記です。\n"
+                        "1本の素材を題材にした円卓会議の議事録を、日本語のMarkdownで作成してください。\n"
+                        "- Andrej Karpathy — 第一原理から作って理解する立場。"}]}}):
+            ng.append("Obsidian円卓会議のキュー投入プロンプト（contentがlist）を拾ってしまう（34580号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
