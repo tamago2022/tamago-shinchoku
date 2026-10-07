@@ -1,24 +1,24 @@
 {
- "measuredAt": "2026-10-08T01:13:20+0900",
- "diskFreeGB": 15.0,
+ "measuredAt": "2026-10-08T01:26:43+0900",
+ "diskFreeGB": 14.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 217,
+ "load": 118,
  "memPressure": "green",
- "memAvailGB": 8.2,
- "sessions": 0,
+ "memAvailGB": 7.2,
+ "sessions": 1,
  "safeMax": 4,
- "moreOK": 4,
- "target": 2,
- "cap": 2,
+ "moreOK": 3,
+ "target": 1,
+ "cap": 1,
  "calibratedSafeN": 4,
- "below": 2,
+ "below": 0,
  "shedCandidates": [],
  "items": [
   {
    "label": "Braveを閉じる",
-   "effect": "メモリ 21.11GB",
-   "gb": 21.11,
+   "effect": "メモリ 21.24GB",
+   "gb": 21.24,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
@@ -41,15 +41,6 @@
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
   },
   {
-   "label": "Chromeを閉じる",
-   "effect": "メモリ 1.93GB",
-   "gb": 1.93,
-   "kind": "mem",
-   "safe": true,
-   "app": "Google Chrome",
-   "how": "17プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
-  },
-  {
    "label": "Googleドライブのローカルキャッシュ",
    "effect": "空き 1.36GB",
    "gb": 1.36,
@@ -58,20 +49,21 @@
    "how": "アップロード待ちが残っていると消せない"
   },
   {
+   "label": "Chromeを閉じる",
+   "effect": "メモリ 0.57GB",
+   "gb": 0.57,
+   "kind": "mem",
+   "safe": true,
+   "app": "Google Chrome",
+   "how": "8プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
    "label": "node_modules を消す（1箇所）",
    "effect": "空き 0.46GB",
    "gb": 0.46,
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
-  },
-  {
-   "label": "終わって待機中のセッション 1本を畳む",
-   "effect": "メモリ 0.36GB・負荷↓",
-   "gb": 0.36,
-   "kind": "mem",
-   "safe": true,
-   "how": "Rusuban mimawa"
   },
   {
    "label": "LINEを閉じる",
@@ -108,17 +100,17 @@
  "同時上限": {
   "本数": 1,
   "根拠": [
-   "首は「スワップ」（メモリ33本／スワップ1本／ロード2本）",
-   "自動減便：5分ロード比1.50（1.5超）＝詰まっている。1本まで落とす",
-   "試し増便は見送り：スワップ使用95%／5分ロード比1.5＝静かでない"
+   "首は「スワップ」（メモリ34本／スワップ0本／ロード2本）",
+   "減便せず：スワップは低い（残り0.71GB（4.0GB未満）／使用96%（70%超））が、空きメモリ14.42GB・5分ロード比1.5＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
+   "試し増便は見送り：スワップ使用96%／5分ロード比1.5＝静かでない"
   ],
   "天井": {
-   "メモリ": 33,
-   "スワップ": 1,
+   "メモリ": 34,
+   "スワップ": 0,
    "ロード": 2
   },
-  "測った時刻": "2026-10-08T01:13:20+0900",
-  "自動減便": "5分ロード比1.50（1.5超）＝詰まっている。1本まで落とす",
+  "測った時刻": "2026-10-08T01:26:44+0900",
+  "自動減便": null,
   "試し増便": null
  }
 }
