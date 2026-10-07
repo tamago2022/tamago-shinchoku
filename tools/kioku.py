@@ -391,6 +391,15 @@ _COWORK_TASK_NOTIFY_MARKER = 'Use read_transcript with session_id "'
 #   考え方（出どころの決まり文句で丸ごと弾く）を適用する。
 _ENTAKU_KAIGI_PROMPT_MARKER = "あなたは「Obsidian円卓会議」の書記です。"
 
+# ★34580号・同時調査で発見した同系列の別テンプレート：good-vibes-roundtable
+#   （円卓会議の旧実装・GOOD-VIBES-Roundtableリポジトリ）側のキュー投入プロンプトは
+#   「あなたはGOOD VIBES円卓の最終筆者です。」で始まる別の固定文言を使う。この中の
+#   「日本語で、正確で、読み物として面白く、読み終わると社会・人間・歴史の見え方が
+#   一段上がる円卓を作ってください。」が依頼動詞「作って」にマッチし、たまごさんの
+#   発言として誤登録され、既に2424号として判定日赤のゴースト案件が自動発車されていた
+#   （34578号・34580号・34581号と同じ根本原因の別経路）。
+_GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER = "あなたはGOOD VIBES円卓の最終筆者です。"
+
 # ★34580号・同時調査で発見した別経路：Claude Codeのコンテキスト圧縮
 #   （AutoCompact）が生成する自動要約メッセージは、必ず「This session is being
 #   continued from a previous conversation that ran out of context. The summary
@@ -437,6 +446,7 @@ _MACHINE_MARKERS_ANYWHERE = (
     _ONI_MODOSHI_PROMPT_MARKER,
     _COWORK_TASK_NOTIFY_MARKER,
     _ENTAKU_KAIGI_PROMPT_MARKER,
+    _GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER,
     _AUTOCOMPACT_SUMMARY_MARKER,
 )
 
