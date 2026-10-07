@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34581 34581号：実在しない依頼だった正体と、本番404バグの根本修正 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34581 34581号：実在しない依頼だった正体と、本番404バグの根本修正</div>
+<h1>#34581 34581号：実在しない依頼だった正体と、本番404バグの根本修正</h1>
+<div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+34581号『小さく出して市場に殺させ、生き残ったものだけ育てる立場。』は、たまごさんの発言ではなく『Obsidian円卓会議』機能が自動生成する顧問紹介文(Pieter Levelsの説明文の断片)だった(34580号の調査で特定、34578/34580/34581/2424番の4件が同じ原因の兄弟ゴースト案件)。根本原因はtools/kioku.pyへ<code>_ENTAKU_KAIGI_PROMPT_MARKER</code>を追加して解消済み(34580号担当実施・本番gh-pagesで実測済み)。さらに、CLAUDE.mdに既に明文化されていた『市場淘汰』運用原則の実測データ元ファイル<code>status/public/shukudai.json</code>が、open配列を全件(13,377件)含んでいたため5.2MBとなり、tools/pages_publish.shの1MB上限関所に毎回引っかかって本番(gh-pages)へ一度も載らず404のまま放置されていた、という今回新たに見つけたバグも併せて修正した。open配列を直近300件上限に絞り、tools/shukudai.pyをmainへpush、本番で200を実測確認した。<pre>実測ログ(curl/node httpsで直接取得):\nstatus/public/shukudai.json 修正前サイズ(ls -la): 5428929 bytes\nstatus/public/shukudai.json 修正後サイズ(ls -la): 133622 bytes\n本番(gh-pages)取得結果: HTTP 200, 133658 bytes\n宿題集計(python3 tools/shukudai.py実行結果): 宿題13442件(未完了13420件) 内訳 未着手12626 重複1261 引き継ぎ183 止まっている221 確認待ち386 完了22 走行中4</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4件</b><span>同じ根本原因だった兄弟ゴースト案件数(34578/34580/34581/2424)</span></div>
+  <div class="num"><b>7件</b><span>34580号が削除した汚染エントリ件数</span></div>
+  <div class="num"><b>5428929→133658バイト</b><span>shukudai.jsonの実測サイズ(修正前→本番取得後)</span></div>
+  <div class="num"><b>22/13442件</b><span>宿題のうち完了済み件数(実測集計)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>修正後の本番JSON(200・133658バイト)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/shukudai.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/shukudai.json</a></li>
+  <li><b>たまごさんが見る台帳1枚(200)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1138-shukudai.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1138-shukudai.html</a></li>
+  <li><b>姉妹ゴースト案件34580号の調査(200)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34580-entaku-kioku-gosuto.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34580-entaku-kioku-gosuto.html</a></li>
+  <li><b>根本原因修正コード kioku.py(gh-pages本番・200)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/gh-pages/tools/kioku.py" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/gh-pages/tools/kioku.py</a></li>
+  <li><b>今回の修正コード shukudai.py(main反映済み・200)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/shukudai.py" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/shukudai.py</a></li>
+  <li><b>CLAUDE.md『市場淘汰』運用原則(main反映済み・200)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/CLAUDE.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/CLAUDE.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>34581号の発言はObsidian円卓会議テンプレートの誤検出である</td><td class="yes">yes</td></tr>
+<tr><td>根本原因(kioku.py)が本番(gh-pages)に反映されている</td><td class="yes">yes</td></tr>
+<tr><td>shukudai.jsonが1MB以下に軽量化され本番で200になる</td><td class="yes">yes</td></tr>
+<tr><td>shukudai.pyの修正がoriginのmainにpush済み</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #34581 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
