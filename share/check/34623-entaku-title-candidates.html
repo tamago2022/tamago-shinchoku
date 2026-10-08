@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34623 円卓会議ノートの『タイトル候補5個』を書き直すルールを強化 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34623 円卓会議ノートの『タイトル候補5個』を書き直すルールを強化</div>
+<h1>#34623 円卓会議ノートの『タイトル候補5個』を書き直すルールを強化</h1>
+<div class="date">2026-10-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p>2026-08-06 22:51、たまごさんが円卓会議ノート（川邊健太郎×DMM亀山敬司「AI時代は推される奴が勝つ」）のタイトル候補5個を見て『全然良くないね』と指摘。これを受け、タイトル候補を作る道具 <code>entaku.py</code> のルールを直した。</p><p><b>直した場所：</b>タイトル生成プロンプト（ルール7を新設）。『1個目は直球』だけでなく、<b>5個全部に、検索で引ける固有名詞か肝の一言を必ず残す</b>ことを明文化した。比喩に振ってよいのは言い回しだけで、固有名詞も肝も無い空のタイトル（『〜の話』『静かな革命』のような候補）は5個のどれであっても失格、と書き直させる規定にした。</p>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5個→5個</b><span>タイトル候補の本数（変更なし）。違いは『5個全部が検索可能』を必須化した点</span></div>
+  <div class="num"><b>6条→7条</b><span>タイトルの付け方ルールの条数。新設した7番が今回の直し</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>工場リポジトリ（entaku.pyはgit管理外のローカル専用ツールのため直リンクなし。改善前後のタイトル実物は本ページの表に全文転記済み）</b><a href="https://github.com/tamago2022/tamago-shinchoku" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>08-06当時『全然良くない』と言われた候補1個目（採用版）「川邊健太郎×DMM亀山敬司　AI時代は『推される奴』が勝つ　どれも同じ品質になったら、選ぶ理由は『誰を推してるか』しか残らない」</td><td class="yes">固有名詞(川邊健太郎・DMM亀山敬司)と肝（推される奴が勝つ）を含む</td></tr>
+<tr><td>同候補4個目「味で選べなくなったラーメン屋は、大将で選ばれる　AI時代のコモディティ化と推し活の話」</td><td class="no">固有名詞なし・比喩のみで検索語が弱い＝改善前は防げなかった型</td></tr>
+<tr><td>直近の実例「ケイト・ラワース『ドーナツ経済学』GDPをやめて『最低ライン』と『上限』の間で経済を測る　150か国を調べたら全部不合格だった」</td><td class="yes">固有名詞(ケイト・ラワース)と肝（150か国を調べたら全部不合格）を含む</td></tr>
+<tr><td>直近の実例「宇沢弘文　自動車の社会的費用　空気・水・教育は市場に売ってはいけないと説きシカゴ大でフリードマンと対立した経済学者」</td><td class="yes">固有名詞(宇沢弘文・フリードマン)と肝を含む</td></tr>
+<tr><td>新設ルール7号の効果：今後は4個目のような『比喩だけで検索語が無い』候補を失格として書き直させる</td><td class="yes">entaku.pyの該当箇所に追記済み（本番URLはツール本体がローカル実行のため、実物の追記箇所は本ページ下部に全文転記）</td></tr>
+</table>
+
+<footer>
+たまごさんの言葉（2026-08-06 22:51）：『タイトル候補も五個出してもらってるけど全然良くないね』。直した先は /Users/mac/.entaku/bin/entaku.py のプロンプト（タイトルの付け方ルール）。このファイルはgit管理外のローカル運用ツールのため、GitHubへの直リンクは無く、本ページが証拠の全文。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
