@@ -334,6 +334,24 @@ async function main() {
     const elements = await evalJson(send, LIST_EXPR);
     result.totalClickable = elements.length;
 
+    // 一時デバッグ用（34668番調査）：text完全一致の要素のouterHTML・親要素HTMLを出す。
+    // 既定では何もしない（通常の検品動作は変えない）。
+    if (process.env.VC_DUMP_ELEMENTS) {
+      const needle = process.env.VC_DUMP_ELEMENTS;
+      const dumpExpr = `JSON.stringify(Array.from(document.querySelectorAll('button, a, [role="button"], [onclick]'))
+        .map((el) => ({
+          tag: el.tagName,
+          text: (el.innerText || el.textContent || '').trim().slice(0, 30),
+          outer: el.outerHTML.slice(0, 600),
+          parentOuter: (el.parentElement ? el.parentElement.outerHTML : '').slice(0, 400),
+        }))
+        .filter(x => x.text === ${JSON.stringify(needle)}))`;
+      const dumped = await evalJson(send, dumpExpr);
+      console.error("---DUMP_ELEMENTS_START---");
+      console.error(JSON.stringify(dumped, null, 2));
+      console.error("---DUMP_ELEMENTS_END---");
+    }
+
     // 案件#800実測：cover-guideのようなカード一覧ページはhref付き<a>だけで数千件になり、
     // 全部を素直に先頭から拾うと予算をリンクの繰り返し(▶ボタンの隣のカード等)で使い切り、
     // 本当に検証したい「JSで動くはずのボタン」（話す・気分・棚・扉等）まで到達できなかった。
