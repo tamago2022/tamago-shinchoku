@@ -2761,6 +2761,13 @@ def main():
             pass          # 鍵が取れなかっただけ。次回また拾う
         except Exception as e:
             log("harvestパス（発車のあと）に失敗: %s" % e)
+        # 2026-10-08 許可ゼロ設定：まだ「入」になっていなければ1回だけ入れる（入なら何もしない）
+        try:
+            kz = os.path.join(os.path.dirname(HERE), "status", "kyoka_zero.json")
+            if json.load(io.open(kz, encoding="utf-8")).get("state") != "入":
+                subprocess.run([sys.executable, os.path.join(HERE, "kyoka_zero.py")], timeout=300)
+        except Exception as e:
+            log("許可ゼロ設定に失敗: %s" % e)
         return rc
     finally:
         try:
