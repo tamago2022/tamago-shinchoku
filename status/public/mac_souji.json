@@ -2,7 +2,7 @@
  "runs": 3,
  "totalFreedBytes": 37171466863,
  "runsWithZeroFreed": 0,
- "calls": 2728,
+ "calls": 2729,
  "schemaVersion": 2,
  "lastRunAt": "2026-10-05T11:33:10+0900",
  "lastRunSeconds": 165.9,
@@ -1334,37 +1334,37 @@
   }
  },
  "route": "心臓(heartbeat.sh)＋5分便(machine_status_push.sh)に相乗り。許可ダイアログの要る定期タスクは使っていない",
- "lastCallAt": "2026-10-08T10:16:24+0900",
- "reliefCalls": 2721,
+ "lastCallAt": "2026-10-08T11:33:25+0900",
+ "reliefCalls": 2722,
  "relief": {
-  "lastRunAt": "2026-10-08T10:16:23+0900",
+  "lastRunAt": "2026-10-08T11:32:41+0900",
   "gateSeconds": 540,
   "dryRun": false,
   "lastFreedBytes": 0,
   "lastFreedHuman": "0.0B",
-  "runs": 1533,
-  "calls": 2721,
-  "lastTargets": 0,
-  "totalTargets": 128,
-  "gapMinutes": 53,
+  "runs": 1534,
+  "calls": 2722,
+  "lastTargets": 1,
+  "totalTargets": 129,
+  "gapMinutes": 76,
   "heartbeatAgeSec": 0,
   "routeDead": false,
   "totalFreedBytes": 3186565766,
   "totalFreedHuman": "3.0GB",
-  "runsWithZeroFreed": 1464,
-  "color": "green",
-  "reason": "今回は掃く落ち葉が無かった（候補0件）。走行1533回・累計3.0GB",
+  "runsWithZeroFreed": 1465,
+  "color": "red",
+  "reason": "今回、掃く候補が1件あったのに0バイトしか取れなかった（走行1534回・累計3.0GB）",
   "memoryBefore": {
-   "freeMB": 244.5,
-   "swapUsedGB": 30.01,
-   "swapFreeGB": 1.99,
-   "compressedMB": 2533.9
+   "freeMB": 1821.7,
+   "swapUsedGB": 37.46,
+   "swapFreeGB": 1.54,
+   "compressedMB": 1004.9
   },
   "memoryAfter": {
-   "freeMB": 1002.6,
-   "swapUsedGB": 31.64,
-   "swapFreeGB": 1.36,
-   "compressedMB": 1027.4
+   "freeMB": 523.3,
+   "swapUsedGB": 35.12,
+   "swapFreeGB": 0.88,
+   "compressedMB": 4066.5
   },
   "items": [
    {
@@ -1376,7 +1376,12 @@
    {
     "name": "own_leftovers",
     "freedBytes": 0,
-    "detail": [],
+    "detail": [
+     {
+      "pattern": "top -l",
+      "error": "TimeoutExpired(['pgrep', '-f', 'top -l'], 10)"
+     }
+    ],
     "error": null
    },
    {
@@ -1425,8 +1430,8 @@
   ],
   "route": "心臓(heartbeat.sh)が10分ごと・5分便が5分ごとに mac_souji.py を呼ぶ。許可ダイアログの要る定期タスクは使っていない"
  },
- "reliefRuns": 1533,
+ "reliefRuns": 1534,
  "reliefTotalFreedBytes": 3186565766,
- "reliefRunsWithZeroFreed": 1464,
- "reliefTotalTargets": 128
+ "reliefRunsWithZeroFreed": 1465,
+ "reliefTotalTargets": 129
 }
