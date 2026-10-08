@@ -6,9 +6,10 @@
 送信: Macの `claude --cloud` は推論専用ログインで403のため、デスクトップ版Claude Codeの RemoteTrigger を使う。
       （トークンは道具の内部でだけ使われ、シェルには出ない）
 回収: RemoteTrigger(list_runs, trigger_id) でセッションURL、get_run_log で最終発言(=PRのURL)を読む。
-重要(2026-10-08の教訓): job_config.ccr.session_context に allowed_tools を入れない。
-  入れると「&&や|を含むコマンド」が承認待ちになり、誰も押せないので無言で止まる(ABANDONED)。
-  公式: routineは承認なしで自走する設計(docs: routines)。
+重要(2026-10-08の教訓): クラウドは対象リポの .claude/settings.json をそのまま読む。
+  joy-relief-station の settings は allow に載っていないコマンド(npm install・node・npx tsx・&や()を含む複合)を
+  「承認待ち」にするため、無人のクラウドでは誰も押せず無言で止まる(10/1の①②がABANDONED、10/8の③もrequires_action)。
+  直すには、そのリポの .claude/settings.json の allow にクラウドで要るコマンドを足してmainへ入れる(要・店主判断)。
 """
 import json, sys, datetime, uuid
 args=[a for a in sys.argv[1:] if not a.startswith('--')]
