@@ -170,6 +170,32 @@ def _find_session_log(from_name):
     return path
 
 
+_SESSION_ROWS_CACHE = {}
+
+
+def _load_session_rows(path):
+    """会話ログ(jsonl)を1ファイル1回だけ読む。同じfromを持つhatsugen行が複数
+    あっても、ファイルの再読み込み・再パースを繰り返さない（34639番の実測で
+    タイムアウトした原因の1つ）。"""
+    if path in _SESSION_ROWS_CACHE:
+        return _SESSION_ROWS_CACHE[path]
+    rows = []
+    try:
+        with io.open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except Exception:
+                    pass
+    except Exception:
+        rows = []
+    _SESSION_ROWS_CACHE[path] = rows
+    return rows
+
+
 def _message_text(row):
     msg = row.get("message")
     if not isinstance(msg, dict):
@@ -186,31 +212,35 @@ def _message_text(row):
     return text, role
 
 
+def _jst_to_utc_iso(s):
+    """r["firstSaid"]等 "2026-08-07 00:08"(JST) をログのtimestamp(UTC ISO)と
+    比較できる形に変換する。パースできなければ None（＝絞り込まず全文を見る）。"""
+    dt = parse_hi(s)
+    if dt is None:
+        return None
+    return dt.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+
+
 def _session_log_shows_completion(r, log_rows=None):
-    """同一セッションログ内に、この発言より後でassistantの完了報告があり、
-    その後のuser発言に明確な否定が続いていなければ True。
-    log_rows を渡せばテスト用にファイルを経由せず判定できる。"""
+    """同一セッションログ内で、この発言（firstSaid）より後にassistantの完了報告が
+    あり、その後のuser発言に明確な否定が続いていなければ True。
+    log_rows を渡せばテスト用にファイルを経由せず判定できる。
+    firstSaid以降に絞るのは、ファイル内のどこか別件の完了報告を拾って
+    無関係な発言まで「完結済み」と誤判定しないため。"""
     rows = log_rows
     if rows is None:
         path = _find_session_log(r.get("from"))
         if not path:
             return False
-        rows = []
-        try:
-            with io.open(path, encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        rows.append(json.loads(line))
-                    except Exception:
-                        pass
-        except Exception:
-            return False
+        rows = _load_session_rows(path)
+    since = _jst_to_utc_iso(r.get("firstSaid")) if log_rows is None else None
     completed = False
     denied_after = False
     for row in rows:
+        if since:
+            ts = row.get("timestamp") or ""
+            if ts and ts < since:
+                continue
         text, role = _message_text(row)
         if not text:
             continue
