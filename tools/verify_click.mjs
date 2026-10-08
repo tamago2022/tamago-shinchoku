@@ -216,6 +216,7 @@ const LIST_EXPR = `JSON.stringify((() => {
       href: el.getAttribute('href') || null,
       target: el.getAttribute('target') || null,
       disabled: !!(el.disabled || el.getAttribute('aria-disabled') === 'true'),
+      ariaCurrent: el.getAttribute('aria-current') || null,
       visible: hasBox && !hiddenByClosedDetails,
     };
   })
