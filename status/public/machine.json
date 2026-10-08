@@ -1,16 +1,16 @@
 {
- "raw": "負荷 145% ｜ CPU 42% / メモリ圧迫 13% / スワップ 1.25GB / ディスク空き 108GB ｜ 稼働 4本 ｜ あと0本OK",
- "load": 145,
- "cpu": 42,
- "mem": 13,
- "swapGB": 1282.0,
+ "raw": "負荷 85% ｜ CPU 22% / メモリ圧迫 12% / スワップ 1.73GB / ディスク空き 108GB ｜ 稼働 0本 ｜ あと4本OK",
+ "load": 85,
+ "cpu": 22,
+ "mem": 12,
+ "swapGB": 1773.75,
  "diskFreeGB": 108.0,
- "sessions": 6,
- "note": "上限4本・あと0本OK（5分平均ロード16.6（コア8×0.8超）、実測の同時上限1本（首は「ロード」（メモリ34本／スワップ1本／ロード0本）・自動減便：5分ロード比2.54（1.5超）＝詰まっている。1本）、予兆（5分ロード比2.1）→1本減らす、実測上限1本）",
- "measuredAt": "2026-10-08T14:20:14+09:00",
- "working": 4,
+ "sessions": 5,
+ "note": "上限4本・あと0本OK（CPU22%・メモリ空き10.3GBで余裕あり→ロードの天井を緩めた、実測の同時上限1本（首は「ロード」（メモリ39本／スワップ2本／ロード0本）・自動減便：5分ロード比1.99（1.5超）＝詰まっている。1本）、予兆（5分ロード比1.8）→1本減らす、実測上限1本）",
+ "measuredAt": "2026-10-08T14:40:48+09:00",
+ "working": 1,
  "stalled": 0,
- "waiting": 1,
+ "waiting": 3,
  "safeMax": 4,
  "moreOK": 0,
  "hardMax": 8,
@@ -18,26 +18,37 @@
  "target": 1,
  "calibratedSafeN": 4,
  "calibrationBasis": "実測（4本まで合格）",
- "userActive": true,
+ "userActive": false,
  "predict": [
-  "5分ロード比2.1"
+  "5分ロード比1.8"
  ],
- "shedCandidates": [],
+ "shedCandidates": [
+  {
+   "pid": 33375,
+   "title": "クラウドセッションを使い切る",
+   "idleMin": 17.6
+  },
+  {
+   "pid": 33172,
+   "title": "ブックマークと履歴",
+   "idleMin": 12.8
+  }
+ ],
  "below": 0,
- "blockReason": "5分平均ロード16.6（コア8×0.8超）、実測の同時上限1本（首は「ロード」（メモリ34本／スワップ1本／ロード0本）・自動減便：5分ロード比2.54（1.5超）＝詰まっている。1本）、予兆（5分ロード比2.1）→1本減らす、実測上限1本",
- "load1": 11.6,
- "load5": 16.63,
- "load15": 16.26,
+ "blockReason": "CPU22%・メモリ空き10.3GBで余裕あり→ロードの天井を緩めた、実測の同時上限1本（首は「ロード」（メモリ39本／スワップ2本／ロード0本）・自動減便：5分ロード比1.99（1.5超）＝詰まっている。1本）、予兆（5分ロード比1.8）→1本減らす、実測上限1本",
+ "load1": 6.86,
+ "load5": 14.01,
+ "load15": 17.14,
  "cores": 8,
- "loadRatio": 1.45,
+ "loadRatio": 0.86,
  "memPressure": "green",
- "memAvailGB": 7.8,
+ "memAvailGB": 10.3,
  "swapIncreasing": false,
- "ioMBs": 13.29,
+ "ioMBs": 6.25,
  "network": {
-  "pingMedianMs": 149.8,
-  "pingMaxMs": 485.4,
-  "pingSamples": 19
+  "pingMedianMs": 24.0,
+  "pingMaxMs": 32.5,
+  "pingSamples": 20
  },
  "stalledList": [],
  "sessionList": [
@@ -45,7 +56,7 @@
    "cli": "cdeb8631-6a50-49c8-a4a0-2c65d07e13d9",
    "localId": null,
    "startedAt": "2026-10-08T14:06:02+0900",
-   "elapsedMin": 12,
+   "elapsedMin": 32,
    "lastReportAt": "2026-10-08T05:07:09.500Z",
    "lastReport": " \"72332\": \"キャロル・キング関連ノートをパス付き列挙\",   \"72333\": \"作成したファイルの保存場所を報告\",   \"72334\": \"確認スキップで最後まで完成させる\" } ```",
    "status": "止まっている",
@@ -61,49 +72,22 @@
    "title": "（不明）",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 412,
-   "idleMin": 12.8,
+   "mb": 445,
+   "idleMin": 33.6,
    "kind": "idle_done",
    "model": "claude-haiku-4-5-20251001",
    "turns": 2,
    "lastActivityAt": "2026-10-08T05:07:09.500Z"
   },
   {
-   "cli": "2170084a-97b9-4cb1-8f45-cff37849e664",
-   "localId": "local_bb24c60b-7065-4f57-aecd-c2cf0993a2cb",
-   "startedAt": "2026-10-08T04:04:46+0900",
-   "elapsedMin": 11,
-   "lastReportAt": "2026-10-08T05:10:35.786Z",
-   "lastReport": "了する…の棚 →` など、棚名が日本語のまま混ざる文）。  隠れたカード（英19・中48）の中身は、まだ特定できていません。次の一手は、隠れたカードと残り文言を、各ページから集めて辞書に足すことです。",
-   "status": "作業中",
-   "color": "green",
-   "urls": [],
-   "unreportedDeploy": true,
-   "deployUrls": [],
-   "humanPushes": 36,
-   "dispatchPushes": 0,
-   "watchdogResumes": 1,
-   "done": false,
-   "pid": 33397,
-   "title": "英語切り替えを全部に効かせる",
-   "dispatch": true,
-   "isDispatchSelf": false,
-   "mb": 372,
-   "idleMin": 9.5,
-   "kind": "working",
-   "model": "claude-sonnet-5-5",
-   "turns": 395,
-   "lastActivityAt": "2026-10-08T05:10:35.786Z"
-  },
-  {
    "cli": "916b9b4a-c084-48f1-b1f1-cbb7b1a75f00",
    "localId": "local_f440b986-617e-4eb4-88ac-8a6aa183f1d6",
    "startedAt": "2026-10-08T12:44:10+0900",
-   "elapsedMin": 11,
-   "lastReportAt": "2026-10-08T05:08:29.854Z",
-   "lastReport": "ネクタ)は有効なままです。そのため、依頼文に「本番DBへの書き込み禁止」と書いてあります。  私は設定の自己変更として止められています。mainに入れるのは、たまごさんの一言をもらってからになります。",
-   "status": "作業中",
-   "color": "green",
+   "elapsedMin": 32,
+   "lastReportAt": "2026-10-08T05:23:07.177Z",
+   "lastReport": "` と `python3 *` は入れていません。 - **2〜4本目:** バグゼロの額を見てから順に起動します。依頼文には、各案の最後に数字を守る関所（公開前の検査）を入れる条件を入れてあります。",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": true,
    "deployUrls": [
@@ -121,53 +105,29 @@
    "title": "クラウドセッションを使い切る",
    "dispatch": true,
    "isDispatchSelf": false,
-   "mb": 371,
-   "idleMin": 0.8,
-   "kind": "working",
+   "mb": 373,
+   "idleMin": 17.6,
+   "kind": "idle_done",
    "model": "claude-sonnet-5-5",
-   "turns": 84,
-   "lastActivityAt": "2026-10-08T05:19:26.146Z"
-  },
-  {
-   "cli": "70718907-f6fb-448c-bee4-340383e8608c",
-   "localId": "local_ac907140-3490-4512-a761-e90bcdc1a4ff",
-   "startedAt": "2026-10-08T14:18:30+0900",
-   "elapsedMin": 1,
-   "lastReportAt": null,
-   "lastReport": "",
-   "status": "作業中",
-   "color": "green",
-   "urls": [],
-   "unreportedDeploy": false,
-   "deployUrls": [],
-   "humanPushes": 0,
-   "dispatchPushes": 0,
-   "watchdogResumes": 0,
-   "done": false,
-   "pid": 37226,
-   "title": "Rusuban mimawari 30min",
-   "dispatch": false,
-   "isDispatchSelf": false,
-   "mb": 304,
-   "idleMin": 0.4,
-   "kind": "working",
-   "model": "claude-sonnet-5",
-   "turns": 15,
-   "lastActivityAt": "2026-10-08T05:19:38.951Z"
+   "turns": 88,
+   "lastActivityAt": "2026-10-08T05:23:07.177Z"
   },
   {
    "cli": "33052eaa-4e15-4040-9b66-f7af0883841e",
    "localId": "local_192b34ad-2689-41a2-bb83-408421112d40",
    "startedAt": "2026-10-08T14:08:02+0900",
-   "elapsedMin": 12,
-   "lastReportAt": "2026-10-08T05:19:52.037Z",
-   "lastReport": "公開の完了通知を待っています。",
-   "status": "作業中",
-   "color": "green",
+   "elapsedMin": 32,
+   "lastReportAt": "2026-10-08T05:27:52.887Z",
+   "lastReport": " - 作業用フォルダを一度デスクトップに作ってしまい、すぐ消して /Users/mac/tamago/ に作り直しました。デスクトップには残っていません。  「現在地」のファイルにも1行追記しました。",
+   "status": "反映済み・報告なし",
+   "color": "red",
    "urls": [],
    "unreportedDeploy": true,
-   "deployUrls": [],
-   "humanPushes": 0,
+   "deployUrls": [
+    "https://joy-relief-station.lovable.app/bookmarks",
+    "https://joy-relief-station.lovable.app/history"
+   ],
+   "humanPushes": 1,
    "dispatchPushes": 0,
    "watchdogResumes": 0,
    "done": false,
@@ -175,18 +135,45 @@
    "title": "ブックマークと履歴",
    "dispatch": true,
    "isDispatchSelf": false,
-   "mb": 390,
-   "idleMin": 0.1,
+   "mb": 420,
+   "idleMin": 12.8,
+   "kind": "idle_done",
+   "model": "claude-sonnet-5-5",
+   "turns": 85,
+   "lastActivityAt": "2026-10-08T05:27:52.887Z"
+  },
+  {
+   "cli": "2170084a-97b9-4cb1-8f45-cff37849e664",
+   "localId": "local_bb24c60b-7065-4f57-aecd-c2cf0993a2cb",
+   "startedAt": "2026-10-08T04:04:46+0900",
+   "elapsedMin": 32,
+   "lastReportAt": "2026-10-08T05:40:28.246Z",
+   "lastReport": "名前表の完成待ちです（エージェントが Spotify で表記を確認中）。完成したら、特集の本文を英語・中国語へ書き直す6本ずつに回します。",
+   "status": "作業中",
+   "color": "green",
+   "urls": [],
+   "unreportedDeploy": true,
+   "deployUrls": [],
+   "humanPushes": 38,
+   "dispatchPushes": 0,
+   "watchdogResumes": 0,
+   "done": false,
+   "pid": 33397,
+   "title": "英語切り替えを全部に効かせる",
+   "dispatch": true,
+   "isDispatchSelf": false,
+   "mb": 398,
+   "idleMin": 0.3,
    "kind": "working",
    "model": "claude-sonnet-5-5",
-   "turns": 60,
-   "lastActivityAt": "2026-10-08T05:19:52.037Z"
+   "turns": 425,
+   "lastActivityAt": "2026-10-08T05:40:28.246Z"
   },
   {
    "cli": null,
    "localId": null,
    "startedAt": "2026-10-08T14:09:24+0900",
-   "elapsedMin": 10,
+   "elapsedMin": 31,
    "lastReportAt": null,
    "lastReport": "",
    "status": "不明",
@@ -202,7 +189,7 @@
    "title": "（不明）",
    "dispatch": false,
    "isDispatchSelf": false,
-   "mb": 417,
+   "mb": 463,
    "idleMin": null,
    "kind": "unknown",
    "model": null,
@@ -210,15 +197,14 @@
    "lastActivityAt": null
   }
  ],
- "line": "負荷 145% ｜ セッション6本（作業中4・止まり0） ｜ 上限4本・2本超過（畳め） ｜ 空き108.0GB",
+ "line": "負荷 85% ｜ セッション5本（作業中1・止まり0） ｜ 上限4本・1本超過（畳め） ｜ 空き108.0GB",
  "modelCounts": {
   "claude-haiku-4-5-20251001": 1,
   "claude-sonnet-5-5": 3,
-  "claude-sonnet-5": 1,
   "不明": 1
  },
  "autonomy": {
-  "alive": 6,
+  "alive": 5,
   "done": 0,
   "doneWithoutHumanPush": 0,
   "ratio": null,
@@ -232,11 +218,11 @@
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 2457,
+  "waiting": 2412,
   "room": 0,
-  "alive": 6,
+  "alive": 5,
   "safeMax": 4,
-  "stalledMin": 3.173058334986369,
+  "stalledMin": 23.741326570510864,
   "stalled": false,
   "note": "発車は正常です"
  },
@@ -26132,7 +26118,7 @@
   "available": true
  },
  "metrics": {
-  "stalls": 193,
+  "stalls": 194,
   "autoResumes": 117,
   "handoffs": 23,
   "hardCuts": 2,
@@ -26141,25 +26127,29 @@
   "autoResumesThisRun": 0,
   "handoffsThisRun": 0,
   "ignitionsThisRun": 0,
-  "humanPushes": 39,
+  "humanPushes": 42,
   "doneAlive": 0,
   "doneWithoutHumanPush": 0,
   "autonomyRatio": null,
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
  "watchdog": {
-  "lastRun": "2026-10-08 14:21",
+  "lastRun": "2026-10-08 14:41",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
   "unrecoverable": [],
-  "ignite": "空きなし（上限4本・目標1本・生存6本）",
-  "shed": null,
+  "ignite": "空きなし（上限4本・目標1本・生存5本）",
+  "shed": {
+   "pid": 33375,
+   "title": "クラウドセッションを使い切る",
+   "idleMin": 17.6
+  },
   "keep": {
    "target": 1,
-   "alive": 6,
+   "alive": 5,
    "below": 0,
-   "line": "現在6本／上限4本／目標1本／あと0本いける"
+   "line": "現在5本／上限4本／目標1本／あと0本いける"
   },
   "stalledSkipped": [
    {
@@ -26167,12 +26157,40 @@
     "title": "（不明）",
     "kind": "idle_done",
     "why": "会話ログ/管理JSONと突合できない"
+   },
+   {
+    "pid": 33375,
+    "title": "クラウドセッションを使い切る",
+    "kind": "idle_done",
+    "why": "同時上限4本"
    }
   ]
  },
- "deployAlerts": [],
+ "deployAlerts": [
+  {
+   "t": "2026-10-08 14:41",
+   "cli": "916b9b4a-c084-48f1-b1f1-cbb7b1a75f00",
+   "title": "クラウドセッションを使い切る",
+   "urls": [
+    "https://claude.ai/code/session_0198XmifcGuM334BngtY6rUu",
+    "https://claude.ai/code/session_013HPqhnaY7NMqTpdUA3jd6Z",
+    "https://claude.ai/code/session_01Q8i3Zwmd5V1tMPoh7rZExt",
+    "https://code.claude.com/docs/en/settings",
+    "https://code.claude.com/docs/en/routines"
+   ]
+  },
+  {
+   "t": "2026-10-08 14:41",
+   "cli": "33052eaa-4e15-4040-9b66-f7af0883841e",
+   "title": "ブックマークと履歴",
+   "urls": [
+    "https://joy-relief-station.lovable.app/bookmarks",
+    "https://joy-relief-station.lovable.app/history"
+   ]
+  }
+ ],
  "quota": {
-  "updatedAt": "2026-10-08 14:20",
+  "updatedAt": "2026-10-08 14:40",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -26180,8 +26198,8 @@
   "allPctAsOf": null,
   "allPctAgeMin": null,
   "resetAt": "2026-10-13 17:59",
-  "daysLeft": 5.2,
-  "hoursLeft": 123.6,
+  "daysLeft": 5.1,
+  "hoursLeft": 123.3,
   "fableLevel": "ok",
   "allLevel": "ok",
   "warnPct": 75,
@@ -26196,10 +26214,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 4627749,
-  "allWeightedTokensSinceReset": 568596049,
+  "allWeightedTokensSinceReset": 573902482,
   "last6h": {
    "fable": 0,
-   "all": 52295355
+   "all": 56241911
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
@@ -26214,7 +26232,7 @@
   "weekdayTargetBase": 45,
   "weekdayTargetTable": "水30/木45/金55/土70/日80/月90/火100(17:59まで)",
   "overPct": null,
-  "daysElapsedSinceReset": 1.8,
+  "daysElapsedSinceReset": 1.9,
   "ceilingDaysAtRecentPace": null,
   "fableCurve": {
    "target": 45.0,
@@ -26225,7 +26243,7 @@
    "note": "state=over→Fableゼロで絞る／under→Fable投入・本数増加の余地あり／on_track→曲線どおり"
   },
   "allCurve": {
-   "target": 25.7,
+   "target": 27.1,
    "overPct": null,
    "state": "unknown",
    "band": 10,
@@ -26251,7 +26269,7 @@
    "note": "5時間枠は使い切らないと消える。余る見込みが大きいときは本数を安全上限まで増やす（factory_status.pyが判定）"
   },
   "benchmark": null,
-  "line": "Fable週枠 ?%（今日の目標45.0%・?） ／ 全モデル ?%（推定時点・曲線目標25.7%・?） ／ リセットまで 5.2日 ／ 5時間枠 1.0%・残0.0h",
+  "line": "Fable週枠 ?%（今日の目標45.0%・?） ／ 全モデル ?%（推定時点・曲線目標27.1%・?） ／ リセットまで 5.1日 ／ 5時間枠 1.0%・残0.0h",
   "switches": [
    {
     "t": "2026-10-01 09:20",
