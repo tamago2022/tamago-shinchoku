@@ -1,20 +1,29 @@
 {
- "measuredAt": "2026-10-09T03:28:07+0900",
- "diskFreeGB": 92.0,
+ "measuredAt": "2026-10-09T03:47:10+0900",
+ "diskFreeGB": 91.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 85,
+ "load": 91,
  "memPressure": "green",
- "memAvailGB": 8.7,
- "sessions": 1,
+ "memAvailGB": 8.5,
+ "sessions": 4,
  "safeMax": 4,
- "moreOK": 3,
+ "moreOK": 4,
  "target": 1,
  "cap": 1,
- "calibratedSafeN": 1,
- "below": 0,
+ "calibratedSafeN": 2,
+ "below": 1,
  "shedCandidates": [],
  "items": [
+  {
+   "label": "Braveを閉じる",
+   "effect": "メモリ 6.74GB",
+   "gb": 6.74,
+   "kind": "mem",
+   "safe": true,
+   "app": "Brave Browser",
+   "how": "29プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
   {
    "label": "ゴミ箱を空にする",
    "effect": "空き 6.74GB",
@@ -22,15 +31,6 @@
    "kind": "disk",
    "safe": false,
    "how": "捨てたつもりのもの。中身を一度見てから"
-  },
-  {
-   "label": "Braveを閉じる",
-   "effect": "メモリ 6.73GB",
-   "gb": 6.73,
-   "kind": "mem",
-   "safe": true,
-   "app": "Brave Browser",
-   "how": "29プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "~/Library/Caches を空にする",
@@ -42,8 +42,8 @@
   },
   {
    "label": "Notionを閉じる",
-   "effect": "メモリ 1.5GB",
-   "gb": 1.5,
+   "effect": "メモリ 1.49GB",
+   "gb": 1.49,
    "kind": "mem",
    "safe": true,
    "app": "Notion",
@@ -77,16 +77,16 @@
   },
   {
    "label": "node_modules を消す（1箇所）",
-   "effect": "空き 0.48GB",
-   "gb": 0.48,
+   "effect": "空き 0.49GB",
+   "gb": 0.49,
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
   },
   {
    "label": "LINEを閉じる",
-   "effect": "メモリ 0.35GB",
-   "gb": 0.35,
+   "effect": "メモリ 0.36GB",
+   "gb": 0.36,
    "kind": "mem",
    "safe": true,
    "app": "LINE",
@@ -101,17 +101,17 @@
    "how": "npx の一時置き場。作り直される"
   }
  ],
- "_duAt": 1791482738.522701,
+ "_duAt": 1791485073.341223,
  "_du": {
   "caches": 3.76,
   "npx": 0.31,
   "trash": 6.74,
   "driveCache": 1.35,
-  "nodeModules": 0.48,
+  "nodeModules": 0.49,
   "nodeModulesList": [
    [
     "~/Desktop/joy-relief-station/node_modules",
-    0.48
+    0.49
    ]
   ]
  },
@@ -125,39 +125,20 @@
   "undo": "cp '/Users/mac/.tamago/backup/settings.json.20261008-235432' ~/.claude/settings.json"
  },
  "同時上限": {
-  "本数": 2,
+  "本数": 1,
   "根拠": [
-   "負荷判定の天井2本（メモリ圧=緑・ロード比0.85（0.70以上）→ 上限2本）",
-   "首は「スワップ」（メモリ36本／スワップ2本／ロード5本）",
-   "減便せず：スワップは低い（残り1.10GB（4.0GB未満）／使用82%（70%超））が、空きメモリ14.87GB・5分ロード比0.95＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
-   "試し増便は見送り：スワップ使用82%／5分ロード比0.95＝静かでない"
+   "負荷判定の天井2本（メモリ圧=緑・ロード比0.71（0.70以上）→ 上限2本）",
+   "首は「スワップ」（メモリ35本／スワップ1本／ロード6本）",
+   "減便せず：スワップは低い（残り1.04GB（4.0GB未満）／使用83%（70%超））が、空きメモリ14.74GB・5分ロード比0.82＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
+   "試し増便は見送り：スワップ使用83%／5分ロード比0.82＝静かでない"
   ],
   "天井": {
-   "メモリ": 36,
-   "スワップ": 2,
-   "ロード": 5
+   "メモリ": 35,
+   "スワップ": 1,
+   "ロード": 6
   },
-  "測った時刻": "2026-10-09T03:28:07+0900",
+  "測った時刻": "2026-10-09T03:47:10+0900",
   "自動減便": null,
   "試し増便": null
- },
- "発車本数判定": {
-  "時刻": "2026-10-09T03:28:29+0900",
-  "採用した上限": 2,
-  "新規発車": "可",
-  "モード": "自動",
-  "理由": "メモリ圧=緑・ロード比0.96（0.70以上）→ 上限2本",
-  "メモリ圧": "green",
-  "ロード比1分": 0.959,
-  "測定値": {
-   "load1": 7.67,
-   "load5": 7.79,
-   "load15": 7.72,
-   "ncpu": 8,
-   "pressureLevel": 1,
-   "memFreePct": 89
-  },
-  "走行本数": 4,
-  "呼んだ所": "auto_launcher"
  }
 }
