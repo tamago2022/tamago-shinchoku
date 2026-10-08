@@ -213,4 +213,11 @@ if __name__ == "__main__":
         check_line_shinsa.main()
     except Exception:
         pass
+    # 2026-10-09（34655番）：Gmail相棒メール窓口も同じ相乗りで今日から効かせる
+    # （heartbeat.shに足した行は心臓を入れ直すまで読まれないため）。
+    try:
+        import aibou_mail
+        aibou_mail.main()
+    except Exception:
+        pass
     sys.exit(rc)
