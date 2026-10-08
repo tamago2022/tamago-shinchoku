@@ -171,6 +171,19 @@ def _find_session_log(from_name):
 
 
 _SESSION_ROWS_CACHE = {}
+# 1007種のfromファイルを毎回全部読むと重すぎてタイムアウトした実測あり
+# （34639番の修正中に発覚）。1回の hashiru() 実行あたり、この新規チェックに
+# 使ってよい時間の上限を決め、超えたら残りは素通りさせる（＝従来通りの判定に
+# 戻るだけで、誤って見逃す側には倒さない。1462番の原則を守る）。
+_SESSION_CHECK_BUDGET_SEC = 8.0
+_SESSION_CHECK_STATE = {"start": None}
+
+
+def _session_check_budget_ok():
+    if _SESSION_CHECK_STATE["start"] is None:
+        _SESSION_CHECK_STATE["start"] = time.time()
+        return True
+    return (time.time() - _SESSION_CHECK_STATE["start"]) < _SESSION_CHECK_BUDGET_SEC
 
 
 def _load_session_rows(path):
@@ -229,6 +242,8 @@ def _session_log_shows_completion(r, log_rows=None):
     無関係な発言まで「完結済み」と誤判定しないため。"""
     rows = log_rows
     if rows is None:
+        if not _session_check_budget_ok():
+            return False
         path = _find_session_log(r.get("from"))
         if not path:
             return False
