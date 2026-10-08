@@ -374,9 +374,18 @@ async function main() {
         return false;
       }
     };
-    const buttonLike = elements.filter((e) => !(e.tag === "A" && e.href));
-    const selfLinks = elements.filter((e) => e.tag === "A" && e.href && isSelfLink(e.href));
-    const linksWithHref = elements.filter((e) => e.tag === "A" && e.href && !isSelfLink(e.href));
+    // 案件#34668実測：1353番の自己参照リンク対応は<a href>限定だった。onClick内でnavigateする
+    // <button>（href属性が無いためisSelfLinkで判定できない）で同じ現象が再現した
+    // （joy-relief-stationのBottomTabNav「案内所」タブ。既にそのページにいる状態で押すと
+    // URL・DOMのどれも変化しない＝正しい無変化だが「押しても無反応」と誤検知していた）。
+    // aria-current="page"はナビゲーション項目が「現在地」を示すWAI-ARIA標準の表現なので、
+    // タグ種別を問わずこれを自己参照の判定材料として使う（サイト側にも意味的に正しい属性）。
+    const isCurrentPageMarked = (e) => e.ariaCurrent === "page";
+    const buttonLike = elements.filter((e) => !(e.tag === "A" && e.href) && !isCurrentPageMarked(e));
+    const selfLinks = elements.filter(
+      (e) => (e.tag === "A" && e.href && isSelfLink(e.href)) || isCurrentPageMarked(e),
+    );
+    const linksWithHref = elements.filter((e) => e.tag === "A" && e.href && !isSelfLink(e.href) && !isCurrentPageMarked(e));
     result.selfLinkCount = selfLinks.length;
     const LINK_SAMPLE = 5;
     const linkSample = linksWithHref.slice(0, LINK_SAMPLE);
