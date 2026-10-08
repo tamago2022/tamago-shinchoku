@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-10-07T09:10:20+09:00",
+ "checkedAt": "2026-10-08T09:13:34+09:00",
  "overallColor": "red",
- "redCount": 4,
+ "redCount": 6,
  "items": [
   {
    "key": "ctx_1m",
@@ -24,7 +24,7 @@
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "red",
    "count": 25,
-   "detail": "最終記録から約0.0時間経過（2026-10-07T09:07:46+09:00）／直近24時間の完了44件中、鬼監督の記録が付いているのは19件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
+   "detail": "最終記録から約1.1時間経過（2026-10-08T08:05:16+09:00）／直近24時間の完了48件中、鬼監督の記録が付いているのは23件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
   },
   {
    "key": "done_missing_url",
@@ -38,29 +38,29 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "走行5本／上限5本（枠が埋まっているだけ・正常）"
+   "detail": "最終発車から0.2時間・発車待ち3045件・空き1枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回62226番 → 今回68151番（減少なし）"
+   "detail": "前回68151番 → 今回71899番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
    "count": 55,
-   "detail": "status/public/dispatch_outbox.jsonl(16.0MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)、share/zunda/7a63394c.mp3(11.0MB)"
+   "detail": "status/public/dispatch_outbox.jsonl(17.2MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)、share/zunda/7a63394c.mp3(11.0MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
-   "color": "green",
-   "count": 0,
-   "sample": 11,
-   "detail": "直近11件の確認ページはすべて200だった"
+   "color": "red",
+   "count": 1,
+   "sample": 13,
+   "detail": "直近13件の確認ページのうち1件が200以外だった：#34554=404"
   },
   {
    "key": "orphan_sessions",
@@ -72,16 +72,16 @@
   {
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
-   "color": "green",
-   "count": 69,
-   "detail": "69件（しきい値100件以内）"
+   "color": "red",
+   "count": 118,
+   "detail": "118件（しきい値100件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。worktree_reaper.pyが動いているか確認し、片づけを進めること）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 37998,
-   "detail": "未報告の完了が37998件たまっている（最古は約315.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 38082,
+   "detail": "未報告の完了が38082件たまっている（最古は約339.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
@@ -96,6 +96,18 @@
   {
    "key": "big_files",
    "skipped": "既にこの点検が積んだ925番が未解決のため積み直さない"
+  },
+  {
+   "key": "check_page_404",
+   "status": "done",
+   "message": "71900番として発車待ちに追加しました（P2）",
+   "n": 71900
+  },
+  {
+   "key": "worktree_count",
+   "status": "done",
+   "message": "71901番として発車待ちに追加しました（P2）",
+   "n": 71901
   },
   {
    "key": "unreported_completions",
