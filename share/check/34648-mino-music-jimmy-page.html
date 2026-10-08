@@ -52,13 +52,13 @@
 <div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主依頼「あのねミノミュージックのやつ直してくれたか」の対象は、ジミー・ペイジのアーティストページにあった動画『のギターは下手！？【みのミュージック切り抜き】』（存命本人の演奏を『下手』と断定する第三者切り抜き・曲ではない）だった。2026-09-02のコミット6493b2f63で<code>src/lib/warehousedSongs.ts</code>へ登録済みで、<code>coverGuide.ts</code>のapplyWarehouse()が起動時に除外する。origin/mainに反映済みで、2026-10-09に本番ページをWebFetchで再実測し、非表示が効いていることを確認した。
+店主依頼「あのねミノミュージックのやつ直してくれたか」の対象は、ジミー・ペイジのアーティストページにあった動画『のギターは下手！？【みのミュージック切り抜き】』（存命本人の演奏を『下手』と断定する第三者切り抜き・曲ではない）だった。この動画はすでに非表示リストへ登録済みで、本番ページで実際に表示されないことを本日あらためて確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>0件</b><span>本番ページ内「のギターは下手」の表示件数（実測）</span></div>
-  <div class="num"><b>2026-09-02</b><span>非表示対応のコミット日</span></div>
+  <div class="num"><b>2026-09-02</b><span>非表示対応を行った日</span></div>
   <div class="num"><b>8件</b><span>本番ページに表示される曲一覧の件数（ゴシップ動画を除いた正常な曲のみ）</span></div>
 </div>
 
@@ -67,7 +67,6 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番ページ（ジミー・ペイジ）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E3%82%B7-%E3%83%9F-%E3%83%98-%E3%82%A4%E3%82%B7" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=%E3%82%B7-%E3%83%9F-%E3%83%98-%E3%82%A4%E3%82%B7</a></li>
-  <li><b>対応コミット(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/6493b2f63" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/6493b2f63</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -79,7 +78,7 @@
 </table>
 
 <footer>
-実測記録：本番ページをWebFetchで取得→本文に「のギターは下手」「みのミュージック切り抜き」の文字列が含まれないことを確認、「ジミー・ペイジ」の表記および他8件の正常な曲（The Rain Song／関西弁吹替／TOP5ギターフレーズ解説など）は表示されていることを確認。対応コミット6493b2f63（2026-09-02）はorigin/mainに含まれる（git merge-base --is-ancestorで確認済み）。
+実測記録：本番ページの本文を取得して確認。「のギターは下手」「みのミュージック切り抜き」の文字列は含まれておらず、『ジミー・ペイジ』の表記および他8件の正常な曲（The Rain Song／関西弁吹替／TOP5ギターフレーズ解説など）は表示されていることを確認した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
