@@ -1,13 +1,13 @@
 {
- "raw": "負荷 73% ｜ CPU 27% / メモリ圧迫 11% / スワップ 5.15GB / ディスク空き 92GB ｜ 稼働 2本 ｜ あと2本OK",
- "load": 73,
- "cpu": 27,
+ "raw": "負荷 118% ｜ CPU 40% / メモリ圧迫 11% / スワップ 5.12GB / ディスク空き 93GB ｜ 稼働 3本 ｜ あと1本OK",
+ "load": 118,
+ "cpu": 40,
  "mem": 11,
- "swapGB": 5272.25,
- "diskFreeGB": 92.0,
+ "swapGB": 5240.25,
+ "diskFreeGB": 93.0,
  "sessions": 0,
- "note": "上限4本・あと4本OK（CPU27%・メモリ空き9.1GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限1本）",
- "measuredAt": "2026-10-09T02:44:13+09:00",
+ "note": "上限4本・あと4本OK（5分平均ロード8.8（コア8×0.8超）、実測上限1本）",
+ "measuredAt": "2026-10-09T02:47:30+09:00",
  "working": 0,
  "stalled": 0,
  "waiting": 0,
@@ -22,19 +22,19 @@
  "predict": [],
  "shedCandidates": [],
  "below": 1,
- "blockReason": "CPU27%・メモリ空き9.1GBで余裕あり→ロードの天井を緩めた、上限8本（固定）、実測上限1本",
- "load1": 5.89,
- "load5": 8.58,
+ "blockReason": "5分平均ロード8.8（コア8×0.8超）、実測上限1本",
+ "load1": 9.97,
+ "load5": 8.77,
  "load15": 8.74,
  "cores": 8,
- "loadRatio": 0.74,
+ "loadRatio": 1.25,
  "memPressure": "green",
- "memAvailGB": 9.1,
+ "memAvailGB": 7.5,
  "swapIncreasing": false,
- "ioMBs": 1.02,
+ "ioMBs": 7.99,
  "network": {
-  "pingMedianMs": 29.5,
-  "pingMaxMs": 46.3,
+  "pingMedianMs": 26.6,
+  "pingMaxMs": 38.6,
   "pingSamples": 20
  },
  "stalledList": [],
@@ -43,7 +43,7 @@
    "cli": "169d740e-75e4-4fbd-bfcf-f5e717eabdb2",
    "localId": "local_730ff550-f71a-48f9-a47b-2f7cc33b5437",
    "startedAt": "2026-10-09T02:18:19+0900",
-   "elapsedMin": 25,
+   "elapsedMin": 29,
    "lastReportAt": "2026-10-08T17:41:15.835Z",
    "lastReport": "ークモード)実装完了、commit済み(push無し)、🟡自己申告・未検証。問題：`.claude/TASK_BOARD.md` #106が古い記載のまま(記録のみ、対応は次回以降)。判断待ち：なし。",
    "status": "完了",
@@ -60,14 +60,14 @@
    "dispatch": false,
    "isDispatchSelf": false,
    "mb": 456,
-   "idleMin": 2.8,
+   "idleMin": 6.1,
    "kind": "working",
    "model": "claude-sonnet-5",
    "turns": 59,
    "lastActivityAt": "2026-10-08T17:41:15.835Z"
   }
  ],
- "line": "負荷 73% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き92.0GB",
+ "line": "負荷 118% ｜ セッション0本（作業中0・止まり0） ｜ 上限4本・あと4本OK ｜ 空き93.0GB",
  "modelCounts": {
   "claude-sonnet-5": 1
  },
@@ -86,11 +86,11 @@
   "note": "心臓は動いています"
  },
  "launchStall": {
-  "waiting": 2412,
+  "waiting": 2422,
   "room": 4,
   "alive": 0,
   "safeMax": 4,
-  "stalledMin": 0.06185086965560913,
+  "stalledMin": 3.339768067995707,
   "stalled": false,
   "note": "発車は正常です"
  },
@@ -26218,7 +26218,7 @@
   "note": "累計は watchdog-state.json（見張り番が動き出した 2026-09-02 夜から）。*ThisRunは直近サイクルのみ。自走完了率＝終了報告済みのうち人に押されず完了した割合"
  },
  "watchdog": {
-  "lastRun": "2026-10-09 02:44",
+  "lastRun": "2026-10-09 02:48",
   "resumed": [],
   "handedOff": [],
   "ignited": [],
@@ -26235,7 +26235,7 @@
  },
  "deployAlerts": [],
  "quota": {
-  "updatedAt": "2026-10-09 02:44",
+  "updatedAt": "2026-10-09 02:47",
   "estimated": true,
   "stalePrevWeekSample": false,
   "fablePct": null,
@@ -26259,10 +26259,10 @@
   "policy": "Fable＝マガジン記事執筆のみ。他は全部Sonnet。週枠は「余らせる」のではなく火曜17:59直前に99%で走り切るのが正解＝曲線(水30/木45/金55/土70/日80/月90/火100(17:59まで))から10pt以上の上振れでFableゼロ(新規停止・走行中もSonnetへ交代)、下振れならFable投入・本数増加の余地あり。全モデル週枠も同じ考え方だが曲線は別計算（経過日数÷7日の直線）で混ぜない。5時間枠は別物でこちらは常に使い切る。本数は減らさない・増やす方向のみ。9/13まで週間制限50%引き上げ中は曲線目標も1.5倍で判定",
   "costNote": "2026-09-02公式検証：入力$10/出力$50は据え置き、安くなったのはキャッシュ読み込みのみ($1→$0.25)。1回投げるだけの短いタスクはむしろ約20%割高。短いタスクをFableで大量に投げるのが最悪の使い方（09-02に26本中21本をFableで立てて63%到達した原因）。方針：普段はOpus/Sonnet、一晩任せる重い仕事だけFable、大量処理はSonnet。effortは普段high・詰まったら自動再開時のみxhigh・maxの常用はしない",
   "fableWeightedTokensSinceReset": 4627749,
-  "allWeightedTokensSinceReset": 734340946,
+  "allWeightedTokensSinceReset": 734984712,
   "last6h": {
    "fable": 0,
-   "all": 73160309
+   "all": 70467774
   },
   "projection": {},
   "method": "推定不可（実測ファイルも読めずアンカー未設定。python3 tools/quota_anchor.py <Fable%> <全モデル%> で設定）",
