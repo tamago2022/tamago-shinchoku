@@ -316,6 +316,16 @@ async function main() {
       }
     }
 
+    if (process.env.VC_DUMP_TEXT) {
+      const textRes = await send("Runtime.evaluate", {
+        expression: "document.body.innerText",
+        returnByValue: true,
+      });
+      console.error("---DUMP_TEXT_START---");
+      console.error(textRes.result?.value || "");
+      console.error("---DUMP_TEXT_END---");
+    }
+
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
     if (OUT_JSON) {
       writeFileSync(OUT_JSON.replace(/\.json$/, "") + ".before.png", Buffer.from(beforeShot.data, "base64"));
