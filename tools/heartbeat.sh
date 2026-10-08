@@ -258,6 +258,12 @@ while :; do
   #   新着・2週間未着・認証情報なしは status/dispatch_outbox.jsonl へ全文そのまま1回だけ通知する。
   # 起動の間引き（2026-09-18）：中でCHECK_INTERVAL_HOURSに間引いている
   tick_every 40 && ( python3 "$REPO/tools/renraku.py" check >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-09（34655番）：Gmail相棒メール窓口。スマホのGmailから自分宛てに件名「AI: 用件」で
+  #   送ると、発車待ち(status/queue.json)へ自動で積む（command_ingest.queue_add()を流用）。
+  #   既存の見張りと同じ間引きパターン。鍵(~/.tamago/gmail_app_password)が無い間は何もしない。
+  #   ★この行は心臓の本体を入れ直すまで効かない。今日から効かせる分は check_line_reply.py の
+  #     末尾に相乗りで直接呼んでいる（check_line_shinsa.pyと同じ手口）。
+  tick_every 40 && ( python3 "$REPO/tools/aibou_mail.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-11（756番）：毎朝の入荷見回り（707番）を手作業から自動へ。前日にjoy-relief-stationへ
   #   新規登録された動画を見回るタスクを、1日1回だけ発車待ちへ積む（check_anthropic_reply.pyと
   #   同じ間引きパターン。新しいlaunchd便は増やさない）。
