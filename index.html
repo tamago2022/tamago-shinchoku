@@ -127,6 +127,7 @@ ul{list-style:none; margin:0; padding:0}
 .ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
 
 /* ───── 空き容量の赤帯（閾値割れのときだけ出す） ───── */
+#falAka div{background:#b3261e; color:#fff; border-radius:10px; padding:12px 14px; margin:0 0 10px; font-size:16px; line-height:1.5; font-weight:700}
 #diskAka:not(:empty){background:#b3261e; color:#fff; border-radius:10px;
   padding:12px 14px; margin:0 0 10px; font-size:17px; line-height:1.5; font-weight:700}
 
@@ -165,6 +166,10 @@ footer a{display:block; padding:5px 0}
 <!-- 1200番（2026-09-30）：空きが閾値を切ったら、たまごさんが気づく前に赤帯。
      出どころは下の #diskLine と同じ status/public/machine.json の diskFreeGB。 -->
 <div id="diskAka"></div>
+<!-- 2026-10-08 fal見張り：1日$3超・1回$2超の注文があったら赤帯。出どころ status/public/fal_kanshi.json（tools/fal_kanshi.py が毎時） -->
+<div id="falAka"></div>
+<!-- 2026-10-08 お金：今月いくら（1行だけ）。出どころ status/public/okane_ichimai.json -->
+<a id="okaneLine" href="share/check/1051-okane.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">お金　読み込み中…</a>
 
 <!-- ここだけは赤で出す。切れていると何も動かないので。 -->
 <div id="loginNg"></div>
@@ -224,7 +229,7 @@ footer a{display:block; padding:5px 0}
       <a href="share/daicho.html">受付台帳：言われて治っていないもの</a>
       <a href="share/check/1052-kakunin-machi.html">たまごさんの確認待ち</a>
       <a href="share/check/1138-shukudai.html">宿題台帳：言われたのに返っていないもの</a>
-      <a href="share/check/1051-okane.html">お金（1枚・毎日更新）</a>
+      <a href="share/check/1051-okane.html">★お金：今月いくら・サービスごと・証拠つき（毎時更新・fal見張り込み）</a>
       <a href="969-kagi-daicho.html">鍵・つながりの台帳</a>
       <a href="977-ai-renkei.html">他のAIとつながっているか一覧</a>
       <a href="1136-gaibu-ai-daicho.html">外部AIの台帳：投げて返ってきていないもの</a>
@@ -373,6 +378,23 @@ var DISK_AKA_GB = 50;
         "GBを切りました）。自動の片付けが走っています。";
     }
   }).catch(function(){ el.textContent = "残り容量　取れていません"; });
+})();
+
+/* 2026-10-08 fal見張りの赤帯＋お金の1行。取れなければ赤帯は出さず、1行に「取れていません」と書く */
+(function(){
+  var aka = $("falAka"), ln = $("okaneLine");
+  if(aka) getJson("status/public/fal_kanshi.json").then(function(f){
+    (f && f.aka || []).forEach(function(t){
+      var dv = document.createElement("div");
+      dv.textContent = "fal 使いすぎ：" + t + "（お金の紙で詳細）";
+      dv.onclick = function(){ location.href = "share/check/1051-okane.html"; };
+      aka.appendChild(dv);
+    });
+  }).catch(function(){});
+  if(ln) getJson("status/public/okane_ichimai.json").then(function(d){
+    if(!d || typeof d.gokei !== "number"){ ln.textContent = "お金　取れていません"; return; }
+    ln.textContent = "お金　今月 " + d.gokei.toLocaleString() + "円（カードから引かれた実額）・解約候補 " + (d.kouhoN||0) + "件 ›";
+  }).catch(function(){ ln.textContent = "お金　取れていません"; });
 })();
 
 /* 同時本数の判定（2026-10-08）。出どころ：status/public/fuka_hassha.json（発車の直前に auto_launcher が書く） */
