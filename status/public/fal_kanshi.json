@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-08 19:58:50",
+ "generatedAt": "2026-10-08 20:19:56",
  "kijun": {
   "ichinichi_usd": 3.0,
   "ikkai_usd": 2.0
@@ -70,15 +70,31 @@
  ],
  "aka": [],
  "torenai": [
-  "残高：APIで取れていない（鍵なし）。管理者キー(ADMIN scope)が要る。鍵台帳に FAL_ADMIN_KEY が置かれれば次の回から自動で載る",
-  "日ごと×モデル別：APIで取れていない（鍵なし）。管理者キー(ADMIN scope)が要る。鍵台帳に FAL_ADMIN_KEY が置かれれば次の回から自動で載る",
-  "時間ごと（1回$2超の見張り）：APIで取れていない（鍵なし）。管理者キー(ADMIN scope)が要る。鍵台帳に FAL_ADMIN_KEY が置かれれば次の回から自動で載る"
+  "残高：APIで取れていない（FAL_KEY→403）。管理者キー(ADMIN scope)が要る。鍵台帳に FAL_ADMIN_KEY が置かれれば次の回から自動で載る",
+  "日ごと×モデル別：APIで取れていない（FAL_KEY→403）。管理者キー(ADMIN scope)が要る。鍵台帳に FAL_ADMIN_KEY が置かれれば次の回から自動で載る",
+  "時間ごと（1回$2超の見張り）：APIで取れていない（FAL_KEY→403）。管理者キー(ADMIN scope)が要る。鍵台帳に FAL_ADMIN_KEY が置かれれば次の回から自動で載る"
  ],
  "tamesita": [
   {
-   "what": "鍵",
-   "code": null,
-   "why": "鍵台帳(tools/kagi.py)に FAL_ADMIN_KEY も FAL_KEY も無い"
+   "what": "zandaka",
+   "kagi": "FAL_KEY",
+   "code": 403,
+   "url": "https://api.fal.ai/v1/account/billing",
+   "why": "{\"error\":{\"type\":\"authorization_error\",\"message\":\"This API key is not permitted to perform this action.\"}}\n"
+  },
+  {
+   "what": "nichibetsu",
+   "kagi": "FAL_KEY",
+   "code": 403,
+   "url": "https://api.fal.ai/v1/models/usage",
+   "why": "{\"error\":{\"type\":\"authorization_error\",\"message\":\"This API key is not permitted to perform this action.\"}}\n"
+  },
+  {
+   "what": "jikanbetsu",
+   "kagi": "FAL_KEY",
+   "code": 403,
+   "url": "https://api.fal.ai/v1/models/usage",
+   "why": "{\"error\":{\"type\":\"authorization_error\",\"message\":\"This API key is not permitted to perform this action.\"}}\n"
   }
  ]
 }
