@@ -773,6 +773,11 @@ def self_test():
                                "YouTube文字起こしの渡し方、ログイン切れの直し方、"
                                "「いまは止めてある機能」（常駐処理／プラグイン／iPhone）と復活"
                                "コマンド、置き場所の表。"}) is False)
+    for s in _GHOST_34628_MONOLOGUE:
+        check("34628番再発防止：独白の断片はactionable=False（%s…）" % s[:16],
+              actionable({"source": "kioku", "title": s}) is False)
+        check("34628番再発防止：判定日赤プレフィックス付きでもactionable=False（%s…）" % s[:16],
+              actionable({"source": "queue", "title": "判定日赤｜" + s}) is False)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
