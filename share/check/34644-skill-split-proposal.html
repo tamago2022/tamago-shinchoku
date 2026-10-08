@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34644 34644号｜スキル分割案・ファイル構成案 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34644 34644号｜スキル分割案・ファイル構成案</div>
+<h1>#34644 34644号｜スキル分割案・ファイル構成案</h1>
+<div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+
+<p><b>依頼（2026-08-07）：</b>「まず分割案（どのスキルに何を入れるか、ファイル構成案）を提示してください」への回答。
+2ヶ月放置されていたが、調査の結果、<b>この分割は既に本番コードへ実装・反映済み</b>（案件#701で対応済み）であることを確認した。
+新規実装ではなく、既存の分割案を1枚にまとめて提示する。</p>
+
+<h3>ファイル構成案（実際の配置）</h3>
+<pre>.claude/
+├── skills/                      ← 「やり方・手順・AI社員の人格」（24スキル）
+│   ├── README.md                ← 本ページの元ネタ。全スキルの一覧・役割分担表
+│   └── &lt;スキル名&gt;/
+│       ├── SKILL.md             ← 本体（全スキル共通の構成）
+│       └── (補助ファイル: gungi.md 等、必要な時だけ)
+├── playbooks/                    ← 「担当の今の現在地・次にやること」（11担当）
+│   ├── roles.json               ← 恒久情報の正本（名前のゆれ・読むもの・検品・完成条件）
+│   └── &lt;担当名&gt;.md             ← その担当の直近の方針・進み具合
+└── manuals/                      ← 「恒久ルール」（番号01〜06）
+    └── 0X-*.md
+
+ai-brain/                         ← 「事実・決定・現在地」（Skillsとは別軸・重複させない）
+    ├── current-state.md
+    ├── decision-log.md
+    └── live/*.md</pre>
+
+<h3>どのスキルに何を入れるか（24スキル・機能別）</h3>
+<table>
+<tr><th>スキル名</th><th>何を入れるか</th><th>備考</th></tr>
+<tr><td><code>art-director</code></td><td>記事素材（公式MV/実写/生成画像）の役割分担・配置判断</td><td>事実素材デスク・詩的ビジュアルデスク・誌面デスクの3デスク制</td></tr>
+<tr><td><code>content-and-copy</code></td><td>ブログ・Webコピー・既存コンテンツの執筆・書き直し</td><td></td></tr>
+<tr><td><code>design-tantou</code></td><td>PR・新規ページ・棚・カードの見た目を本番前に憲法基準で採点</td><td>AI社員人格「デザイン担当」</td></tr>
+<tr><td><code>food-product-register</code></td><td>食べ物の商品1件を棚へ登録しきる手順</td><td>公式裏取り〜店主検品まで</td></tr>
+<tr><td><code>frontend-design</code></td><td>新規UI構築・既存UI作り直しの審美的方向性</td><td></td></tr>
+<tr><td><code>gokigen-magazine-editor</code></td><td>音楽・文化特集を商業誌水準の物語・誌面へ編集</td><td>素材羅列の再構成〜公開前検品まで</td></tr>
+<tr><td><code>gokigen-music-feature</code></td><td>音楽特集を場所・記憶・人物・時代・映像の切り口で編集</td><td>企画・選曲・体験談寄り</td></tr>
+<tr><td><code>ikehaya-marketing</code></td><td>商品・集客・SNS・販売・価格・MVP・KPIの日々の実務</td><td>AI社員「イケハヤAI」</td></tr>
+<tr><td><code>loop-engineering</code></td><td>長期プロジェクト・複数セッション分業・引き継ぎ・再開</td><td>汎用の現在地メモ型</td></tr>
+<tr><td><code>marketing-tantou</code></td><td>入口のコピー・リスト取り・ファネル・価格</td><td>判断基準はpro-marketing-directorと同一</td></tr>
+<tr><td><code>pairing-lab-page</code></td><td>ペアリング研究室の1ページ（食べ物・飲み物の組合せ）作成</td><td>量産の歯止め（癒し・楽しませ・発見）</td></tr>
+<tr><td><code>pro-marketing-director</code></td><td>ポジショニング・価格・ファネル・SEO/GEO・公開前品質ゲート</td><td>通称「軍配」</td></tr>
+<tr><td><code>sns-tantou</code></td><td>毎日のX投稿候補の下書き・学習ログ</td><td>検品は別人格sns-reviewer</td></tr>
+<tr><td><code>tamago-advisory-council</code></td><td>大きな判断で迷った時・公開前の第三者視点</td><td>登録済み顧問団から0〜5人選出</td></tr>
+<tr><td><code>tamago-benchmark-watch</code></td><td>深津貴之・Pieter Levels・梶谷健人らの最新手法を継続リサーチ</td><td></td></tr>
+<tr><td><code>tamago-engineering-research</code></td><td>エンジニアリング世界の最新手法・他所のAI活用を調べる</td><td>常設ロール</td></tr>
+<tr><td><code>tamago-expert-router</code></td><td>撮影・脚本・料理・UX等専門分野の具体的成果物</td><td>世界プロフェッショナル・ギルドへ振り分け</td></tr>
+<tr><td><code>tamago-founder-team</code></td><td>商品企画・戦略判断・大きな方針転換</td><td>単純実装には使わない</td></tr>
+<tr><td><code>tamago-plurality-roundtable</code></td><td>軍議・円卓・多角的視点での検討</td><td>専門家・異論・当事者・未来世代の円卓分析</td></tr>
+<tr><td><code>tamago-release-check</code></td><td>検品／main／Lovable／店主確認の到達状況確認</td><td>明示コマンド専用</td></tr>
+<tr><td><code>tamago-role-playbook</code></td><td>仕入れ／つなげる／パーソナライズ等11担当の作業</td><td>npm run roleの入口</td></tr>
+<tr><td><code>tamago-shared-context</code></td><td>ごきげん補給所関連の相談・実装・再開・進捗確認</td><td>古い会話記憶を捨てmainから文脈復元</td></tr>
+<tr><td><code>tamago-trust-loop</code></td><td>事業・コンテンツを信頼循環の私設市場として設計・監査</td><td>恐怖・羞恥・過度な煽りを禁止</td></tr>
+<tr><td><code>tamago-work</code></td><td>記憶確認〜実装〜独立検品〜GitHub〜Lovable確認の一気通貫</td><td>明示コマンド専用</td></tr>
+</table>
+
+<h3>分割の判断基準（README.mdに明記済み）</h3>
+<ul>
+<li><b>Memory（ai-brain/）＝事実・決定・現在地</b>の変わりゆくもの。</li>
+<li><b>Skills（.claude/skills/）＝やり方・手順・AI社員の人格</b>という繰り返し使う型。</li>
+<li><b>憲法（CLAUDE.md/AGENTS.md/.claude/rules/）＝常時自動注入される最上位層</b>。Skillsの発火判定に賭けない絶対ルールはここに書く。</li>
+<li>同じ内容を2箇所に書かない。重複する3件（マーケティング系・デザイン系・音楽特集系）は統合せず「重複関係の注記」として記録に残す方針（README.md該当節）。</li>
+</ul>
+
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>24</b><span>既存スキル数（.claude/skills/）</span></div>
+  <div class="num"><b>11</b><span>既存プレイブック数（.claude/playbooks/担当別）</span></div>
+  <div class="num"><b>案件#701</b><span>この分割をmainへ反映した対応番号</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>スキル一覧README（本番）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/README.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/README.md</a></li>
+  <li><b>担当別roles.json（本番）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/playbooks/roles.json" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/playbooks/roles.json</a></li>
+  <li><b>スキル一覧ディレクトリ</b><a href="https://github.com/tamago2022/joy-relief-station/tree/main/.claude/skills" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/tree/main/.claude/skills</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>分割案（どのスキルに何を入れるか）が存在するか</td><td class="yes">存在する（README.md一覧表・24件）</td></tr>
+<tr><td>ファイル構成案が存在するか</td><td class="yes">存在する（skills/&lt;name&gt;/SKILL.md・playbooks/&lt;name&gt;.md・manuals/0X-*.md の3層）</td></tr>
+<tr><td>本番に反映済みか</td><td class="yes">反映済み（現在の本番コードにこの分割が含まれていることを確認）</td></tr>
+</table>
+
+<footer>
+この確認ページは案件#34644（2026-08-07依頼）への回答として、既存実装(案件#701)を1枚に要約したもの。新規コード変更は無い。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
