@@ -467,7 +467,10 @@ while :; do
   tick_every 240 && ( python3 "$REPO/tools/subsc_shirase.py" >> "$REPO/status/subsc_shirase.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
-  tick_every 240 && ( python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1 & ) >/dev/null 2>&1
+  #   2026-10-08 作り直し：今月いくら（カードから実際に引かれた円）＋サービスごと＋証拠。1時間に1回書き直す。
+  #   fal見張り（たまごさん「fal は最優先で監視対象に」）を先に走らせ、お金の紙はその結果を写す。
+  #   fal見張りは API を3本読むだけ（課金なし）。1日$3超・1回$2超を status/public/fal_kanshi.json の aka に積む→進捗表の赤帯。
+  tick_every 240 && ( { python3 "$REPO/tools/fal_kanshi.py" >> "$REPO/status/fal_kanshi.log" 2>&1; python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1; } & ) >/dev/null 2>&1
   # 2026-09-24（1052番）たまごさんの確認待ちの紙。たまごさん「俺の確認待ちもいっぱいあるのかもしれない。
   #   なんか今出してよ。優先順位つけるから」「多くても10行」
   #   ★たまごさんにしか押せないもの（鍵・本人確認・金銭・取り消せない公開）だけを載せる。
