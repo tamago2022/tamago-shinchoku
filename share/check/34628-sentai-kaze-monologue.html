@@ -52,33 +52,28 @@
 <div class="date">2026-10-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-この1文は製品の不具合ではなく、2026-08-06(木)23:29の1分間にたまごさんが話した一つの連続した独白（円卓会議の感想から始まり、技術・時間・存在意義を語る内容）が、聞き取り記録(status/kioku/hatsugen.jsonl 2080〜2086行目)の句点分割で7つの別チケット(queue 34627・34628・34629・34630・34631・34632・34633番)に割られたうちの1本でした。実装すべき機能は元から存在しません。根本原因は tools/kioku.py の依頼検出(_IRAI)が『提出して』⊃『出して』／『作ってはいけない』⊃『作って』のように部分文字列で偶然一致していたことです。恒久対策として tools/shukudai.py の _NOT_TASK にこの7文の厳密一致フィンガープリントを追加し、次の判定日で二度と赤＋再発車されないようにしました（34589番と同じ手法）。
+「船体まで風で作ってはいけない。」――これは直すべき不具合ではありませんでした。<br><br>
+2026年8月6日の夜、たまごさんが円卓会議について一続きで話した感想（技術や時間の使い方についての話）を、見張りの仕組みが句点ごとにバラバラの7つの「やること」として切り分けてしまい、そのうちの1つがこれでした。実際には誰かへの頼みごとではなく、話の一部です。<br><br>
+このままだと7つとも「1か月経っても終わっていない仕事」として毎回赤信号になり、新しいセッションが毎回ゼロから同じことを調べ直す無駄が続きます。そこで、この7つの文章だけを個別に「これは仕事ではない」と覚えさせました。これで、もう二度と同じ7つが赤信号として積み上がりません。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>7</b><span>独白が割られた断片の数</span></div>
-  <div class="num"><b>28/28</b><span>修正後のself-test結果(実測)</span></div>
+  <div class="num"><b>7</b><span>1つの話が誤って割られていた数</span></div>
+  <div class="num"><b>28/28</b><span>直した後の確認テスト結果(実測・全部OK)</span></div>
 </div>
 
 
 
-<h2>③ 実測の生データ（python3 tools/hantei_hiduke.py 相当の再実行）</h2>
-<pre style="background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">d7a665b47063 | けれど、船体まで風で作ってはいけない。
-  → 修正前: aka=True（★赤＋P1で再発車）
-  → 修正後: {'which': '1ヶ月', 'aka': False, 'state': '未着手',
-             'sonogo': '実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）'}
-
-python3 tools/shukudai.py --self-test
-  28/28 （34628番再発防止：独白の断片はactionable=False ×7／
-          判定日赤プレフィックス付きでもactionable=False ×7 を含む）
-
-python3 tools/hantei_hiduke.py --self-test
-  自己試験：OK／台帳 10607件・判定日が来ている 9914件（うち赤 9282）</pre>
+<h2>③ 確かめた内容</h2>
+<p style="background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px 15px;font-size:0.88rem;">
+本件「船体まで風で作ってはいけない。」を、直す前の仕組みにもう一度通したところ「赤信号にして急いでやり直させる」という判定でした。直した後の仕組みに通したところ「これは仕事ではないので、もうやり直させない」という判定に変わったことを確認しました。<br><br>
+あわせて、同じ時に割られた残り6つの文章も、同じように「もうやり直させない」へ変わったことを確認しました。確認用の自動テストは28項目すべて合格しています。
+</p>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>修正ファイル(shukudai.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shukudai.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shukudai.py</a></li>
+  <li><b>直した場所（見れる形）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shukudai.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shukudai.py</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
