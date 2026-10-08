@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34624 円卓会議：タイトル候補を借りて出力済みノートを直し、議事録一覧をDataviewで自動化 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34624 円卓会議：タイトル候補を借りて出力済みノートを直し、議事録一覧をDataviewで自動化</div>
+<h1>#34624 円卓会議：タイトル候補を借りて出力済みノートを直し、議事録一覧をDataviewで自動化</h1>
+<div class="date">2026-10-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんの2026-08-06の発言（「タイトル候補の中の一個借りでつけていいよ」「今どこ出力したやつ全部直して」「円卓会議議事録ってポチれば全部わかって出るようにしたい、DBとかで」）に対応。①タイトルが仮のまま残っていた既存の議事録2件を、本文に既にあった<code>タイトル候補</code>の1個目を借りて正式タイトルへ直した（新規AI生成はしていない＝「借りでつけていい」の指示どおり）。②手打ちで3件しか載らず止まっていた「円卓会議議事録一覧」ノートを、Vault全体をfrontmatterの<code>type: 円卓会議</code>で検索するDataviewクエリ（このVaultで既に使われている書式）に作り替え、ポチれば今ある議事録が全部自動で出るようにした。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>18件中12件</b><span>今あるVaultの円卓会議ノート総数と、新しい一覧に自動表示される件数（テスト1件・旧フォーマット保管5件は除外）</span></div>
+  <div class="num"><b>3件→12件</b><span>議事録一覧ノートに表示される件数（手打ちで止まっていた3件から、自動で12件へ）</span></div>
+  <div class="num"><b>2件</b><span>タイトルを「借り」で正式採用に直したノート数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>Vaultの正本ノート（円卓会議議事録一覧・ローカルファイルのためパスのみ記載。中身は本ページに全文転記）</b><a href="file:///Users/mac/Library/Mobile%20Documents/iCloud~md~obsidian/Documents/tamago_brain/円卓会議議事録一覧.md" target="_blank" rel="noopener">file:///Users/mac/Library/Mobile%20Documents/iCloud~md~obsidian/Documents/tamago_brain/円卓会議議事録一覧.md</a></li>
+  <li><b>工場リポジトリ（entaku.py本体は~/.entaku/配下のローカル専用ツールのためgit管理外。直した対象はすべてObsidian Vault側のノート）</b><a href="https://github.com/tamago2022/tamago-shinchoku" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku</a></li>
+  <li><b>関連（34623号：タイトル生成ルール7の新設）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34623-entaku-title-candidates.html" target="_blank" rel="noopener">34623-entaku-title-candidates.html</a></li>
+  <li><b>関連（34619号：完成/_旧フォーマット（保管）配下5件の新タイトル化。本ページはそれとは別の、円卓会議/直下に残っていた2件と議事録一覧ノートを対象にした）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34619-entaku-title-candidates-fixed.html" target="_blank" rel="noopener">34619-entaku-title-candidates-fixed.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>タイトルが仮のままだった「9878円のそうめんスライダー〜」(旧名:円卓会議_猛暑・物価高にどう対抗)</td><td class="yes">候補1個目を借りてファイル名・見出しを採用</td></tr>
+<tr><td>タイトルが仮のままだった「31文字の空欄〜」(旧名:円卓会議_【ホルムズ海峡】...)</td><td class="yes">候補1個目を借りてファイル名・見出しを採用</td></tr>
+<tr><td>議事録一覧ノートが3件のまま更新されず止まっていた問題</td><td class="yes">Dataviewクエリで全文自動化（type:円卓会議を検索、失敗/旧フォーマットは除外）</td></tr>
+<tr><td>リネームに伴うリンク切れ(MOC_猛暑と気候.md／読み上げ一覧.md)</td><td class="yes">リンク先を新タイトルへ更新、Vault内の旧タイトル参照は0件まで確認</td></tr>
+<tr><td>新しい一覧表示の対象ノート(12件)に、開催日・status(未読/既読)が揃っているか</td><td class="yes">12件全てに揃っていることを実ファイルで確認済み</td></tr>
+</table>
+
+<h2>⑥ 変更前後の実ファイル全文（Obsidian Vaultのローカルノートのため、スクショの代わりにここへ本文を転記）</h2>
+<div class="shots">
+<div class="shot before"><b>直前：円卓会議議事録一覧.md（手打ち3件のまま、リンク切れ寸前）</b><pre style="white-space:pre-wrap;word-break:break-word;background:var(--t-panel);border:1px solid var(--t-line);border-radius:8px;padding:10px;font-size:0.78rem;">---
+type: 円卓会議ハブ
+tags: [円卓会議]
+---
+
+# 円卓会議議事録一覧
+
+## 議事録
+- 2026-08-10 [[円卓会議_猛暑・物価高にどう対抗]] — 猛暑・物価高にどう対抗？ 出費がかさむ真夏の家計簿…教えて！みんなの節約術、おうちで「おでかけ気分」を味わえる楽しみ方【
+- 2026-08-10 [[円卓会議_【ホルムズ海峡】イランに対しペルシャ湾に入る船の管理権与える見通し]] — 【ホルムズ海峡】イランに対しペルシャ湾に入る船の管理権与える見通し　開放に向けイラン･オマーン協議　航路設定で基本合意　
+- 2026-09-02 [[宇沢弘文　自動車の社会的費用　空気・水・教育は市場に売ってはいけないと説きシカゴ大でフリードマンと対立した経済学者]] — 宇沢弘文の生涯と「社会的共通資本」。イリイチ・ケイト・ラワース・タレブ・中村哲・宮崎駿
+</pre></div>
+<div class="shot after"><b>直後：円卓会議議事録一覧.md（Dataviewで全自動・12件表示）</b><pre style="white-space:pre-wrap;word-break:break-word;background:var(--t-panel);border:1px solid var(--t-line);border-radius:8px;padding:10px;font-size:0.78rem;">---
+type: 円卓会議ハブ
+tags: [円卓会議]
+---
+
+# 円卓会議議事録一覧
+
+ここをポチれば、今ある円卓会議議事録が全部わかる（Dataviewで自動更新。新しく議事録ができても、ここへの追記は不要）。
+
+## 議事録（自動一覧）
+
+```dataview
+TABLE WITHOUT ID
+  file.link AS &quot;議事録&quot;,
+  開催日 AS &quot;開催日&quot;,
+  status AS &quot;状態&quot;
+WHERE type = &quot;円卓会議&quot;
+  AND !contains(file.folder, &quot;失敗&quot;)
+  AND !contains(file.folder, &quot;旧フォーマット&quot;)
+SORT 開催日 DESC, file.mtime DESC
+```
+
+---
+
+### この一覧の仕組み（直した内容・34624号）
+
+- 今までは手打ちで3件しか載っておらず、実際にできていた議事録（`完成/`・`AI出力/`配下などバラバラな場所）の方が多く、更新も止まっていた。
+- 上の表は**手で追記する一覧ではなく、Vault全体をfrontmatterの`type: 円卓会議`で検索するDataviewクエリ**（既にこのVaultの他ノートでも使っている方式）。議事録がどこのフォルダに保存されても、自動でここに出る。
+- `失敗/`（テスト用）・`_旧フォーマット（保管）/`（タイトル未整備の古い保管分）は、ノイズになるため表から除外した（ファイルは削除していない。残したまま非表示にしているだけ）。
+- タイトルが仮のまま残っていた2件（猛暑・物価高／ホルムズ海峡）は、議事録本文に既にあった「タイトル候補」の1個目を借りてファイル名・見出しに採用し直した（たまごさんの「一個借りでつけていいよ」の指示どおり。新しくAIを呼んで作り直してはいない）。
+</pre></div>
+</div>
+<div class="note"><b>借りたタイトル候補（直した2ノートのファイル名・見出しに採用した実物）</b><br>①旧名「円卓会議_猛暑・物価高にどう対抗」→新名「9878円のそうめんスライダーは、何の値段だったのか」（本文「## 1. タイトル候補」の1個目をそのまま採用）<br>②旧名「円卓会議_【ホルムズ海峡】イランに対しペルシャ湾に入る船の管理権与える見通し」→新名「31文字の空欄 ―― 「船舶の管理権を与える見通し」と日テレが言わなかったこと」（同じく1個目をそのまま採用）</div>
+<div class="note"><b>Dataviewクエリの実測結果（Pythonで同じ条件を再現し、本番のVault全ファイルに対して実行）</b><pre style="white-space:pre-wrap;word-break:break-word;background:var(--t-panel);border:1px solid var(--t-line);border-radius:8px;padding:10px;font-size:0.78rem;">type: 円卓会議 を持つノート = 18件
+  うち 失敗/ フォルダ(テスト用) = 1件 → 除外
+  うち _旧フォーマット（保管）/ フォルダ = 5件（川邊健太郎ノートの重複コピー含む）→ 除外
+  表示対象 = 12件（完成/・AI出力/配下・円卓会議/直下 すべてを横断して検出。従来の手打ち一覧は3件のみだった）</pre></div>
+
+<footer>
+たまごさんの言葉（2026-08-06 22:51）：「タイトル候補の中の一個借りでつけていいよって感じ。ということで今どこ出力したやつ全部直して、円卓会議議事録ってぽちれば全部わかって出るようにしたいんでね、DBとかで。」対象は /Users/mac/.entaku/bin/entaku.py が書き出すObsidian Vaultのノート群。entaku.py自体はgit管理外のローカル専用ツールのため、直した実体はVault側のノート（円卓会議議事録一覧.md、および旧名ノート2件）。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
