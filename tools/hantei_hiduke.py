@@ -125,6 +125,90 @@ def kihon_title(t):
     return _SAIHASSHA_PREFIX.sub("", t or "")
 
 
+# ────────────────────────────── 34639番：セッション内完結の検出（恒久対策） ──
+# DAICHOに一度も登録されない発言（hatsugen.jsonl直の行）が、その場で完結していても
+# 機械に伝わらない問題（1996番の再発）への対応。元の会話ログ（r["from"]）を直接開き、
+# 完了報告の有無と、その後の明確な否定の有無を見る。
+_COMPLETION_KEYWORDS = ("完了しました", "できました", "直しました", "完了済み",
+                        "やりました", "終わりました", "対応しました")
+_DENIAL_KEYWORDS = ("まだ", "できてない", "直ってない", "ダメ", "だめ", "違う", "できない", "直ってなく")
+_SESSION_LOG_CACHE = {}
+
+
+def _find_session_log(from_name):
+    """r["from"]（例: "e23675ff-....jsonl"）の実体を ~/.claude/projects/*/ から探す。
+    毎回ディスクを掘らないよう、名前→パスの結果だけ軽くキャッシュする。"""
+    if not from_name:
+        return None
+    if from_name in _SESSION_LOG_CACHE:
+        return _SESSION_LOG_CACHE[from_name]
+    path = None
+    try:
+        base = os.path.expanduser("~/.claude/projects")
+        for d in os.listdir(base):
+            cand = os.path.join(base, d, from_name)
+            if os.path.exists(cand):
+                path = cand
+                break
+    except Exception:
+        path = None
+    _SESSION_LOG_CACHE[from_name] = path
+    return path
+
+
+def _message_text(row):
+    msg = row.get("message")
+    if not isinstance(msg, dict):
+        return "", None
+    role = msg.get("role")
+    content = msg.get("content")
+    text = ""
+    if isinstance(content, str):
+        text = content
+    elif isinstance(content, list):
+        for c in content:
+            if isinstance(c, dict) and c.get("type") == "text":
+                text += c.get("text", "")
+    return text, role
+
+
+def _session_log_shows_completion(r, log_rows=None):
+    """同一セッションログ内に、この発言より後でassistantの完了報告があり、
+    その後のuser発言に明確な否定が続いていなければ True。
+    log_rows を渡せばテスト用にファイルを経由せず判定できる。"""
+    rows = log_rows
+    if rows is None:
+        path = _find_session_log(r.get("from"))
+        if not path:
+            return False
+        rows = []
+        try:
+            with io.open(path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        rows.append(json.loads(line))
+                    except Exception:
+                        pass
+        except Exception:
+            return False
+    completed = False
+    denied_after = False
+    for row in rows:
+        text, role = _message_text(row)
+        if not text:
+            continue
+        if role == "assistant" and any(k in text for k in _COMPLETION_KEYWORDS):
+            completed = True
+            denied_after = False
+            continue
+        if completed and role == "user" and any(k in text for k in _DENIAL_KEYWORDS):
+            denied_after = True
+    return completed and not denied_after
+
+
 def jsonl(p):
     out = []
     try:
@@ -236,7 +320,9 @@ def ima_no_jotai():
 
 def hantei_1ken(r, ima):
     """1件を判定する。返すのは（赤か、実際どうなったか、いまの状態）。"""
-    cur = ima.get(norm(r.get("title"))[:24]) or {"state": "未着手", "evidence": None, "actionable": None}
+    key = norm(r.get("title"))[:24]
+    in_daicho = key in ima
+    cur = ima.get(key) or {"state": "未着手", "evidence": None, "actionable": None}
     st = cur["state"]
     t = today()
     w = r.get("hantei1w") or ""
@@ -282,6 +368,23 @@ def hantei_1ken(r, ima):
                     "sonogo": "実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）"}
     except Exception:
         pass
+
+    # 34639番実例（2026-10-08）：円卓会議ノート5本の「書き直し」依頼は、DAICHO
+    # （宿題台帳）に一度も登録されないまま、依頼した当日のうちに同一セッション内で
+    # 実行・完了し、たまごさんも受領していた。それでも機械は完了を検知できず、
+    # 2ヶ月後に「1ヶ月経っても未着手」と誤って★赤＋再発車した
+    # （1996番と同じ根本原因の再発＝2回目）。
+    # ★ DAICHO未登録の行だけに限定し、同一セッション内（元の発言と同じ from
+    # ファイル）でassistantの完了報告があり、その後に明確な否定（まだ／ダメ等）
+    # が続いていない場合だけ「セッション内で完結済み」とみなす。
+    # 1462番の原則（「誤って赤を隠す方が、赤が多すぎることより悪い」）を壊さない
+    # よう、完了報告と否定の有無を両方厳しく見てから外す（見逃し優先ではなく
+    # 「その場で完結したことが確認できる場合」だけの限定的な例外）。
+    if not in_daicho and st == "未着手" and _session_log_shows_completion(r):
+        return {"which": which, "aka": False, "state": "完了（セッション内確認）",
+                "sonogo": ("DAICHO未登録だが、同一セッション内でassistantの完了報告と"
+                           "それに続く明確な否定の不在を確認できたため、赤判定・再発車の"
+                           "対象外とした（34639番の恒久対策）")}
 
     if st == "完了":
         return {"which": which, "aka": False, "state": st,
@@ -389,6 +492,32 @@ def main():
             ng.append("「判定日赤｜」プレフィックスを剥がせない（34536番の再発）")
         if kihon_title("差し戻し｜テスト") != "テスト":
             ng.append("「差し戻し｜」プレフィックスを剥がせない（34536番の再発）")
+        # 34639番の再発防止：DAICHO未登録でもセッション内で完結していれば赤にしない
+        rows_done = [
+            {"message": {"role": "user", "content": "それを書き直してみてください。"}},
+            {"message": {"role": "assistant", "content": "5本とも書き直し完了しました。"}},
+            {"message": {"role": "user", "content": "ありがとう、ありがとうね。"}},
+        ]
+        if not _session_log_shows_completion({"from": "dummy"}, log_rows=rows_done):
+            ng.append("セッション内完結の検出ができていない（34639番の再発防止）")
+        rows_denied = [
+            {"message": {"role": "assistant", "content": "直しました。"}},
+            {"message": {"role": "user", "content": "まだ直ってないよ。"}},
+        ]
+        if _session_log_shows_completion({"from": "dummy"}, log_rows=rows_denied):
+            ng.append("否定発言の後もセッション内完結と誤判定している（34639番の再発防止）")
+        rows_none = [
+            {"message": {"role": "user", "content": "それを書き直してみてください。"}},
+        ]
+        if _session_log_shows_completion({"from": "dummy"}, log_rows=rows_none):
+            ng.append("完了報告が無いのにセッション内完結と誤判定している（34639番の再発防止）")
+        # hantei_1ken経由の統合テスト：ログが見つからない時は従来通り赤のまま（見逃し優先にしない）
+        r5 = {"id": "z", "title": "セッション内完結テスト用タイトルです", "count": 1, "from": "dummy-not-found.jsonl",
+              "firstSaid": "2020-01-01 00:00", "hantei1w": "2020-01-08",
+              "hantei1m": "2020-01-31", "hanteiSumi": []}
+        h5 = hantei_1ken(r5, {})
+        if not h5 or not h5["aka"]:
+            ng.append("セッションログが見つからない時に誤って救済している（34639番の再発防止）")
         # 34536番の再発防止：再発車タイトル（プレフィックス付き）で検品合格した記録が
         # プレフィックス無しの元の発言キーに「完了」として反映されるか（実ファイルは汚さない）
         import tempfile

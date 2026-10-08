@@ -209,6 +209,8 @@ footer a{display:block; padding:5px 0}
 
 <!-- 残り容量の1行（1172番。小さく1行・色は付けない） -->
 <div id="diskLine">残り容量　読み込み中…</div>
+<!-- 2026-10-08 負荷を見て同時本数2〜4本（tools/fuka_hassha.py）。発車直前の判定を1行で -->
+<div id="hasshaLine" style="font-size:14px;color:var(--sub);font-variant-numeric:tabular-nums">同時本数　読み込み中…</div>
 
 <details class="fold">
   <summary><span>ほかの画面へ</span></summary>
@@ -371,6 +373,20 @@ var DISK_AKA_GB = 50;
         "GBを切りました）。自動の片付けが走っています。";
     }
   }).catch(function(){ el.textContent = "残り容量　取れていません"; });
+})();
+
+/* 同時本数の判定（2026-10-08）。出どころ：status/public/fuka_hassha.json（発車の直前に auto_launcher が書く） */
+(function(){
+  var el = $("hasshaLine"); if(!el) return;
+  getJson("status/public/fuka_hassha.json").then(function(d){
+    if(!d || typeof d["採用した上限"] !== "number"){ el.textContent = "同時本数　取れていません"; return; }
+    var iro = {green:"緑", yellow:"黄", red:"赤"}[d["メモリ圧"]] || "不明";
+    var t = String(d["時刻"]||"").replace(/^\d{4}-(\d\d)-(\d\d)T(\d\d:\d\d).*/, "$1/$2 $3");
+    el.textContent = "同時本数　上限" + d["採用した上限"] + "本" +
+      (d["新規発車"] === "止める" ? "（新規発車を止めています）" : "") +
+      "／メモリ圧 " + iro + "・ロード比 " + (d["ロード比1分"] == null ? "?" : d["ロード比1分"]) +
+      (d["モード"] === "固定2本" ? "／固定2本モード" : "") + "（" + t + "）";
+  }).catch(function(){ el.textContent = "同時本数　取れていません"; });
 })();
 
 /* 今日止まっていた分数（心臓・中継所・計測のどれかが止まっていた合計・機械が数える）。取れなければ出さない */
