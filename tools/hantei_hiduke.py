@@ -133,20 +133,34 @@ _COMPLETION_KEYWORDS = ("完了しました", "できました", "直しまし�
                         "やりました", "終わりました", "対応しました")
 _DENIAL_KEYWORDS = ("まだ", "できてない", "直ってない", "ダメ", "だめ", "違う", "できない", "直ってなく")
 _SESSION_LOG_CACHE = {}
+_PROJECTS_DIRS_CACHE = None
+
+
+def _projects_dirs():
+    """~/.claude/projects 直下のディレクトリ一覧（1000件超）を1回だけ列挙してキャッシュする。
+    判定日が来た件数ぶん毎回 os.listdir を回すと重くなる（34639番の実測でタイムアウトした）。"""
+    global _PROJECTS_DIRS_CACHE
+    if _PROJECTS_DIRS_CACHE is not None:
+        return _PROJECTS_DIRS_CACHE
+    base = os.path.expanduser("~/.claude/projects")
+    try:
+        _PROJECTS_DIRS_CACHE = [os.path.join(base, d) for d in os.listdir(base)]
+    except Exception:
+        _PROJECTS_DIRS_CACHE = []
+    return _PROJECTS_DIRS_CACHE
 
 
 def _find_session_log(from_name):
     """r["from"]（例: "e23675ff-....jsonl"）の実体を ~/.claude/projects/*/ から探す。
-    毎回ディスクを掘らないよう、名前→パスの結果だけ軽くキャッシュする。"""
+    毎回ディスクを掘らないよう、ディレクトリ一覧自体と名前→パスの結果を両方キャッシュする。"""
     if not from_name:
         return None
     if from_name in _SESSION_LOG_CACHE:
         return _SESSION_LOG_CACHE[from_name]
     path = None
     try:
-        base = os.path.expanduser("~/.claude/projects")
-        for d in os.listdir(base):
-            cand = os.path.join(base, d, from_name)
+        for d in _projects_dirs():
+            cand = os.path.join(d, from_name)
             if os.path.exists(cand):
                 path = cand
                 break
