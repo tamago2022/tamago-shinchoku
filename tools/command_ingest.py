@@ -2154,14 +2154,6 @@ def _process_other(action, cmd):
     # 1036番【投げ込み箱】棚に置く前の仮置き場。★Lovableの棚には一切触らない。
     #   nagekomi        : URL1本＋一言を status/nagekomi.jsonl へ。題名等は機械が調べて埋める
     #   nagekomi_shiji  : 後からまとめて喋った振り分け／コピーの方向を1行置く
-    if action == "nagekomi_check":
-        # ★2026-10-07：箱にURLを入れた瞬間に「同じURLがあります：◯◯棚」を赤字で出すための読み取り専用の確認。
-        #   台帳にも棚にも1文字も書かない。
-        try:
-            import importlib as _il
-            return "done", _il.import_module("2210_tanaire").check_message(target or cmd.get("url") or "")
-        except Exception as e:
-            return "done", "確認不能｜%s" % str(e)[:60]
     if action in ("nagekomi", "nagekomi_shiji"):
         try:
             import nagekomi as _nk

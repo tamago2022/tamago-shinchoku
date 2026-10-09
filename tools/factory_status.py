@@ -990,15 +990,6 @@ def table(d):
 
 def main():
     d = build()
-    # 2026-10-06 T031：metrics（gated/humanPushes/autonomyRatio）は session_watchdog.py が後から machine.json に足す。
-    # ここで丸ごと上書きすると、次の見張り番が走るまで metrics が消えて PWA から欠ける。前回の値を引き継ぐ。
-    if "--write" in sys.argv and "metrics" not in d:
-        try:
-            old = json.load(open(OUT, encoding="utf-8"))
-            if isinstance(old.get("metrics"), dict):
-                d["metrics"] = old["metrics"]
-        except Exception:
-            pass
     if "--table" in sys.argv:
         table(d)
         return 0

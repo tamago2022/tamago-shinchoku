@@ -163,12 +163,6 @@ def main():
         "items": items,
         "_duAt": last_du, "_du": disk,
     }
-    # 2026-10-08 許可ゼロ設定の入/未（tools/kyoka_zero.py が書く status/kyoka_zero.json の写し）
-    try:
-        kz = json.load(open(os.path.join(REPO, "status", "kyoka_zero.json"), encoding="utf-8"))
-        out["kyokaZero"] = {"label": "許可ゼロ設定", "state": kz.get("state"), "at": kz.get("at"), "culprits": kz.get("culprits"), "undo": kz.get("undo")}
-    except Exception:
-        out["kyokaZero"] = {"label": "許可ゼロ設定", "state": "未", "at": None}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     tmp = OUT + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:

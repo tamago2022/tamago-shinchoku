@@ -107,7 +107,7 @@ def _summarize(rc, out):
     return {
         "verdict": "ok" if rc == 0 else ("ng" if rc == 1 else "inconclusive"),
         "violations": int(m.group(1)) if m else None,
-        "result": m.group(0) if m else (out.strip().splitlines() or [""])[-1],
+        "result": m.group(0) if m else out.strip().splitlines()[-1:] or "",
         "detail": viol[:40],
     }
 
@@ -153,20 +153,6 @@ def _naoshite_dasu(base, wd, pages, menv, label, first):
     second = _summarize(rc, out)
     extra["afterFix"] = second.get("result")
     nf, ns = first.get("violations"), second.get("violations")
-    # ★2026-10-07 退行ガード：直したあとにサムネが減った／画像なしカードが増えたら、その直しは捨てる
-    #   （10/05：自動修正が付けた thumb-frame で枠が高さ0に潰れ、関連カードの画像が全部消えた事故の再発防止）
-    def _n(txt, pat):
-        m = re.search(pat, txt or "")
-        return int(m.group(1)) if m else None
-    t1, t2 = _n(first.get("result", ""), r"測ったサムネ(\d+)"), _n(second.get("result", ""), r"測ったサムネ(\d+)")
-    noimg1 = _n(first.get("result", ""), r"card-no-image:(\d+)") or 0
-    noimg2 = _n(second.get("result", ""), r"card-no-image:(\d+)") or 0
-    if (t1 and t2 and t2 < t1 * 0.97) or noimg2 > noimg1:
-        _git("checkout", "--", "src", cwd=wd, check=False)
-        _ticket(label, first, second.get("detail", []), "直すと画像が減った（サムネ%s→%s・画像なし%s→%s）ので直しを捨てた" % (t1, t2, noimg1, noimg2))
-        extra["ticket"] = True
-        extra["fixDiscarded"] = "thumbs/no-image regression"
-        return 1, "", extra
     if rc == 0 or (isinstance(nf, int) and isinstance(ns, int) and ns < nf):
         ok = False
         try:

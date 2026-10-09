@@ -59,7 +59,7 @@ JST = datetime.timezone(datetime.timedelta(hours=9))
 #   60へ上げていた。
 #   ★2026-09-28（1178番）その組み直しは中止（ChatGPTが先に10本入れたので走らせない）。
 #   23叩きを見込む用が無くなったので 20 へ戻す。天井が低い方が枠を殺しにくい。
-NORI = int(os.environ.get("BUFFER_KURA_NORI") or 20)   # 大量投入の時だけ環境変数で上げる（Buffer実枠は250/日）
+NORI = 20
 
 
 def _yomu(p, kara):
