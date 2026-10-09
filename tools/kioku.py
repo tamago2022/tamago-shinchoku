@@ -441,6 +441,21 @@ _AUTOCOMPACT_SUMMARY_MARKER = (
 #   丸ごと弾く）をここにも適用する。
 _IKEHAYA_KYOKASHO_PASTE_MARKER = "brain-market.com/u/ikehaya"
 
+# ★34822号実例（2026-08-07の会話・2026-10-09発見）：Claude Codeアプリ（リモート
+#   コントロール機能）が、セッションがオフラインになった時に自分で表示する固定の
+#   通知バナー文言「再接続するか、/remote-control を実行して新しいセッションを
+#   開始してください。」が、会話ログのrole=userとして記録され、「再接続する」の
+#   「する」が_IRAI（依頼動詞）に部分一致して「たまごさんが言った依頼」として
+#   誤登録されていた。実際の会話（080d6200-...jsonl、2026-08-06）を追うと、これは
+#   たまごさん自身がスマホ画面のスクリーンショットに写っていた通知を見せて
+#   相談していた文脈の一部で、アプリ自身が出す決まり文句であり、たまごさんが
+#   新機能として依頼した文ではない（宛先となるコード・画面が存在しないため、
+#   判定日が来ると「本番URLが200で返ること」を要求する空の実装タスクへ
+#   自動繰り上げされ続けるゴーストタスクの温床になっていた＝34822号自身が実例）。
+#   1816号以来の考え方（出どころの決まり文句で丸ごと弾く）をここにも適用する。
+_REMOTE_CONTROL_OFFLINE_NOTIFY_MARKER = (
+    "再接続するか、/remote-control を実行して新しいセッションを開始してください")
+
 # ★1846号実例（2026-09-30）：上5つのマーカー（_SKILL_LOAD_MARKER / _VERIFY_PROMPT_MARKER /
 #   _COPY_NAOSHI_PROMPT_MARKER / _HANTEI_HIDUKE_MARKER / _ONI_MODOSHI_PROMPT_MARKER）は
 #   「メッセージの先頭が固定文言で始まるか」（.lstrip().startswith(...)）で判定していた。
@@ -470,6 +485,7 @@ _MACHINE_MARKERS_ANYWHERE = (
     _GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER,
     _AUTOCOMPACT_SUMMARY_MARKER,
     _IKEHAYA_KYOKASHO_PASTE_MARKER,
+    _REMOTE_CONTROL_OFFLINE_NOTIFY_MARKER,
 )
 
 
@@ -831,6 +847,12 @@ def main():
                         "https://brain-market.com/u/ikehaya/a/b2kzM5UjMgoTZsNWa0JXY\n"
                         "* 動かない・真っ白 : 画面の状態をそのまま伝えて「直して」。"}]}}):
             ng.append("イケハヤ教材ペースト本文（contentがlist）を発言として拾ってしまう（34757号の再発）")
+        # ★34822号実例：Claude Codeアプリ自身のリモートコントロール・オフライン
+        #   通知バナーの決まり文句を、たまごさんの依頼として拾わない。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "再接続するか、/remote-control を実行して新しいセッションを"
+                      "開始してください。"}}):
+            ng.append("リモートコントロール・オフライン通知を発言として拾ってしまう（34822号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
