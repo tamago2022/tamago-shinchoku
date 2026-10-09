@@ -24,6 +24,34 @@ def load_dasu():
     return m
 
 
+def drop_protected(m, token, api, repo, base_commit, body):
+    """リポジトリの保護一覧（check-kansei-protected.mjs の PROTECTED_KEYS）に載る曲の行を、隠す表から外す。"""
+    import base64, re
+    try:
+        tree = m._req("GET", "%s/repos/%s/git/trees/%s?recursive=1"
+                      % (api, repo, base_commit["tree"]["sha"]), token)
+        ent = [t for t in tree.get("tree", []) if t["path"] == "scripts/patrol/check-kansei-protected.mjs"]
+        if not ent:
+            return body, []
+        blob = m._req("GET", "%s/repos/%s/git/blobs/%s" % (api, repo, ent[0]["sha"]), token)
+        src = base64.b64decode(blob["content"]).decode("utf-8", "ignore")
+        mm = re.search(r"PROTECTED_KEYS\s*=\s*Object\.freeze\(\[(.*?)\]\)", src, re.S)
+        keys = re.findall(r'"([^"]+/[^"]+)"', mm.group(1)) if mm else []
+    except Exception:
+        return body, []
+    if not keys:
+        return body, []
+    dropped = []
+    out = []
+    for line in body.split("\n"):
+        hit = next((k for k in keys if '"%s":' % k in line), None)
+        if hit:
+            dropped.append(hit)
+            continue
+        out.append(line)
+    return "\n".join(out), dropped
+
+
 def run_job(payload=None):
     payload = payload or {}
     m = load_dasu()
@@ -37,6 +65,16 @@ def run_job(payload=None):
     base = head["object"]["sha"]
     log.append("いまの main = %s" % base[:8])
     base_commit = m._req("GET", "%s/repos/%s/git/commits/%s" % (api, repo, base), token)
+
+    # ★保護曲は、この便が絶対に隠さない（2026-10-07・たまごさん「本番がまる半日更新されていない」の真因）。
+    #   リポジトリ側の公開前関所 scripts/patrol/check-kansei-protected.mjs は、oEmbedだけでは再生不能と
+    #   言い切れない7曲を「隠す表」に入れることを禁じていて、入っているとLovableのビルドが止まる。
+    #   一方この便は、実測（oEmbed）の結果をそのまま表にして押すため、解除しても数時間後に同じ7曲を
+    #   押し直し、本番が再び止まっていた（10-06 15:38に解除→16:05に再発→以降の公開が全部ビルド失敗）。
+    #   → 押す前に、リポジトリの保護一覧（正本）を読み、該当する行を表から外す。
+    body, dropped = drop_protected(m, token, api, repo, base_commit, body)
+    if dropped:
+        log.append("保護曲 %d件を隠す表から外しました: %s" % (len(dropped), ", ".join(dropped)))
 
     # いま main に入っているものと同じなら押さない
     try:
