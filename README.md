@@ -854,10 +854,3 @@ Chromeのタブを増やさない／Lovableのエージェントを使わない 
   中身はトグル（`<details>`）に畳む。件数0の日はカードごと出さない。
 - **取得元が落ちても他を止めない**：1つずつ try/except で囲み、失敗は `sourceErrors` に残すだけ。
   JSで描くページ（support.claude.com＝Intercom）は0件になることがある＝取れた分だけ出す。
-
-## 同時本数は負荷を見て2〜4本（2026-10-08）
-- 正本：`tools/fuka_hassha.py`。`tools/auto_launcher.py` が**発車の直前に毎回**呼ぶ。`tools/dojisu_jougen.py`（claude起動口の関所 `1158_kanmon.py` が読む上限）も同じ判定を天井に使う。
-- 決め方：メモリ圧 緑＆1分ロード÷コア数<0.60→4本／<0.70→3本／それ以外2本。黄→新規発車を止める。赤→1本。測れない→2本。
-- 下げても走っている子は殺さない（新規発車を止めるだけ）。使う命令は sysctl・vm_stat・memory_pressure -Q だけ（osascript等は使わない）。
-- 見える所：`status/health.json` の「発車本数判定」、進捗表の「同時本数」行（`status/public/fuka_hassha.json`）、履歴 `status/fuka_hassha.jsonl`、`status/auto_launch.log` の「負荷判定:」行。
-- **1語で戻す：「固定2本」**＝ `python3 tools/fuka_hassha.py --kotei2`（`status/dojisu_kotei2.flag` を置く）。自動に戻すのは `--jidou`。

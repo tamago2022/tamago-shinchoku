@@ -87,15 +87,7 @@ def kiku_codex(system, user, timeout=150, model=None):
         out = (p.stdout or "") + "\n" + (p.stderr or "")
         if p.returncode == 0 or "unexpected argument" not in out:
             break
-    # ★2026-10-09 修正：stderr には codex が「お題をそのまま」エコーするので、
-    #   お題の中の見本JSON（kiku.py の {"answer": "本文"}）を最後のJSONとして拾い、
-    #   本物の答えが「本文」に化けていた（弾き語り特集の検品で2回連続で実測）。
-    #   答えは stdout に出るので、stdout を先に見る。無いときだけ全体から拾う。
-    d = _hiroi_json(p.stdout or "")
-    if d is None or d.get("answer") == "本文":
-        d2 = _hiroi_json(out)
-        if d2 is not None and d2.get("answer") != "本文":
-            d = d2
+    d = _hiroi_json(out)
     if d is None:
         return None, "codex", "JSONが返ってこない（rc=%s）%s" % (p.returncode, out[-300:])
     return d, "codex(gpt-5.6-terra)", ""

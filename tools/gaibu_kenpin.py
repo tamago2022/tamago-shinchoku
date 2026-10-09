@@ -81,15 +81,7 @@ OPENAI_MODEL_CANDIDATES = ["gpt-4o-mini", "gpt-5-mini"]
 
 # 【920番・2026-09-17追加】Gemini公式 https://ai.google.dev/gemini-api/docs/pricing を確認して選定。
 #   無料枠がありカード登録不要（Google AI Studioで発行）。$0.30/$2.50 per 1M（画像入力込み）。
-# 【34493号・2026-10-06追記】gemini-2.5-flashがGoogle側で廃止され、全呼び出しがHTTP 404
-#   「This model models/gemini-2.5-flash is no longer available to new users.
-#    Please update your code to use models/gemini-3.8-flash」になっていた（実測確認済み）。
-#   これが原因で2026-09-28以降、外部検品ゲート3社のうちGemini側も常にSKIPし続けていた
-#   （OpenAI＝残高ゼロ、Grok＝鍵欠如、と合わせて3社全滅状態がここ数日続いていた）。
-#   gemini-3.8-flashは同じgenerateContentエンドポイント・同じリクエスト形式で200が返ることを
-#   実測確認済み（v1beta/models?key=...のモデル一覧にも実在）。旧名は廃止済みなのでフォールバック
-#   に残しても意味は無いが、将来また名称が変わった時の調査コストを下げるため候補順に残す。
-GEMINI_MODEL_CANDIDATES = ["gemini-3.8-flash", "gemini-2.5-flash"]
+GEMINI_MODEL_CANDIDATES = ["gemini-2.5-flash"]
 
 # 2026-09-18（943番）：回数上限30回/日が、金額側にまだ7割の余裕がある段階（28.96円／100円）で
 #   検品ゲートを丸ごと止めていた（850号の失敗 F-20260918011032「本日のコスト上限(30回/日)到達で処理不能」）。

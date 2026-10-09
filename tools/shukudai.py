@@ -268,22 +268,6 @@ def harvest_outbox():
 # 「優先する必要はありません／ない」は、常にスケジューリングの判断であって
 # 作業指示ではないため、_NOT_TASKへ先に弾く。
 #
-# 34589番実例（2026-10-07）：2026-08-06のAutoCompact要約メッセージ（長い会話が
-# 圧縮される時にAI自身が書く「前回までのまとめ」）内にあった、円卓会議/00_使い方.md
-# というファイルの**目次の説明文**（＝たまごさんの発言ではない）が、
-# status/kioku/hatsugen.jsonl へ「たまごさんが言った依頼」として誤登録されていた
-# （34578号・34580号・34581号・2424号と同じ根本原因＝tools/kioku.py の
-# _AUTOCOMPACT_SUMMARY_MARKER。ただし今回の行は2026-08-06時点で既に台帳へ
-# 焼き込まれていたため、今後の新規登録を防ぐこのマーカーの対象外だった）。
-# 「ログイン切れの直し方」の「直し」が_TASKISHに誤マッチしてactionable=Trueのまま
-# 判定日に★赤＋P1で繰り上げ続けていた（34589号自身がその実例）。
-# status/kioku/hatsugen.jsonl 側には行単位でactionable=falseを明示設定したが、
-# shukudai.harvest()はkioku由来の行に対してそのフラグを読まずtitleから
-# actionable()を毎回再計算するため、hatsugen側の修正だけでは
-# shukudai.ingest()の再発車（別経路）を防げない。この行のタイトルは極めて長く
-# 固有性が高いため、誤検知リスクの低い厳密な部分文字列一致で先に弾く。
-_GHOST_34589_FINGERPRINT = "いまは止めてある機能」（常駐処理／プラグイン／iPhone）と復活コマンド"
-
 # 34628番実例（2026-10-08）：2026-08-06(木) 23:29の1分間に、たまごさんが一つの
 # 連続した語り（円卓会議の感想から始まる、技術・時間・存在意義についての
 # ひとまとまりの独白）をしたものが、tools/kioku.py の bunkatsu() で句点ごとに
@@ -300,9 +284,9 @@ _GHOST_34589_FINGERPRINT = "いまは止めてある機能」（常駐処理／�
 #   「推してください」⊃「してください」（しかも直後で「人ではありません」と
 #   否定している引用）。
 # _IRAI は依頼の活用形を部分文字列で広く拾う設計（誤検知は許容する非対称コスト
-# の方針）のため、ここを直すのではなく、34589番と同じ「厳密な部分文字列一致」で
-# 既知の7文だけを個別に弾く（新しい独白が来ても汎用正規表現では拾わない＝
-# 誤って本物の依頼を消すリスクを広げない）。
+# の方針）のため、ここを直すのではなく、厳密な部分文字列一致で既知の7文だけを
+# 個別に弾く（新しい独白が来ても汎用正規表現では拾わない＝誤って本物の依頼を
+# 消すリスクを広げない）。
 _GHOST_34628_MONOLOGUE = (
     "それから、円卓なのに六人が順番に小論文を提出していて、互いの発言がぶつかっていない。",
     "けれど、船体まで風で作ってはいけない。",
@@ -323,68 +307,18 @@ _GHOST_34628_MONOLOGUE = (
 # hatsugen.jsonl（id=fbfbdc190732）へ登録された。この注記文は「情報源をどこに
 # するか」を指示しているだけで、実行対象の作業ではない。
 # さらに_TASKISHが「思い出して」の中の部分文字列「出し」（思い＋出し＋て）に
-# 偶然一致し、34589/34628と同じ「活用語尾の部分文字列誤検知」でactionable=True
-# のまま判定日赤へ自動繰り上げされ、「本番URLが200で返ること」を要求する
+# 偶然一致し、34628と同じ「活用語尾の部分文字列誤検知」でactionable=Trueの
+# まま判定日赤へ自動繰り上げされ、「本番URLが200で返ること」を要求する
 # 空の実装タスクになった。本体の依頼（分割案の提示）は別の発言
-# （id=7cb2288e9605, 7cb2288e9605）に残っているため、この注記文1本だけを
-# 既知の指紋として先に弾く。
+# （id=7cb2288e9605）に残っており、34644番で既に対応済みのため、この注記文
+# 1本だけを既知の指紋として先に弾く。
 _GHOST_34645_FINGERPRINT = "ディスパッチの会話履歴から思い出して"
 
 _NOT_TASK = re.compile(
     r"(たまごさんが|たまごさんに見てもらう|注意：|ここが全部の親|わざと|参考|経緯|所感|——|だけ。$|"
     r"てくれたんだね|てくれたね|てくれた[。！]|くれたんだ[。！]?$|"
-    r"優先する必要はありません|優先する必要はない|" + re.escape(_GHOST_34589_FINGERPRINT) + r"|"
-    + re.escape(_GHOST_34645_FINGERPRINT) + r"|"
+    r"優先する必要はありません|優先する必要はない|" + re.escape(_GHOST_34645_FINGERPRINT) + r"|"
     + "|".join(re.escape(s) for s in _GHOST_34628_MONOLOGUE) + r")")
-
-# 34672番実例（2026-10-09）：「1-7. フォルダをひとつ作っておく」という、イケハヤ氏の
-# 購入済み記事（brain-market.com「Claude Codeの教科書」）の目次・章見出し文字列が、
-# たまごさんが2026-08-06〜07にそのページ全文を参考資料としてチャットへ貼った
-# ("queue-operation enqueue" / 00 inbox の同名ノートへ保存)ことで、
-# tools/kioku.py の句点分割により無数の別々の「発言」として
-# status/kioku/hatsugen.jsonl へ割れて登録された。これは店主自身の発言でも
-# コードへの指示でもなく、購入した他人の記事の引用文そのもの。
-# 同一の根本原因が34654・34661・34662・34665・34666・34668・34669・34672番と
-# ★8回★再発し、都度「引用文で実装対象なし」の確認ページだけを個別に書いて
-# 終わらせていた（恒久対策になっていなかった）。_GHOST_34589/34628/34645と同じ
-# 「既知の指紋を1行ずつ足す」方式は、この1本の記事からまだ出てくる無数の文に対して
-# スケールしない。そこで一段上の恒久対策として、
-# ★該当の参考資料ファイル(00 inbox、たまごさんの指示で書き換え禁止＝読むだけ)の
-# 本文に一字一句完全一致で含まれる行は、出どころを問わず非タスクとして弾く
-# （_is_quoted_reference_text）。短い相槌や断片的な一致での誤検知を避けるため、
-# 一定の長さ（8文字）以上の一致だけを対象にする＝非対称なコストの原則
-# （actionable=False誤判定の方が重い）を守りつつ、同じ記事からの再発を型で止める。
-_QUOTED_REFERENCE_FILES = (
-    "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/"
-    "tamago_brain/00 inbox/イケハヤ　claude codeの教科書　キティちゃん　秘書.md",
-)
-_QUOTED_REFERENCE_MIN_LEN = 8
-_quoted_reference_cache = {}
-
-
-def _quoted_reference_text():
-    """参考資料ファイルの本文をキャッシュして返す。読めなければ空文字列（fail-safe）。"""
-    key = "text"
-    if key not in _quoted_reference_cache:
-        chunks = []
-        for path in _QUOTED_REFERENCE_FILES:
-            try:
-                with io.open(path, encoding="utf-8") as f:
-                    chunks.append(f.read())
-            except OSError:
-                continue
-        _quoted_reference_cache[key] = "\n".join(chunks)
-    return _quoted_reference_cache[key]
-
-
-def _is_quoted_reference_text(t):
-    t = (t or "").strip()
-    if len(t) < _QUOTED_REFERENCE_MIN_LEN:
-        return False
-    ref = _quoted_reference_text()
-    if not ref:
-        return False
-    return t in ref
 
 # 1494番実例（2026-09-29）：39件の判定日赤queue項目をactionable()にかけたところ、
 # 終止形（「直す」「繋ぐ」等）でしか動詞を拾えず、「直しといて」「つながれる」のような
@@ -431,13 +365,13 @@ def actionable(r):
     if r.get("source") == "queue":
         if t.startswith(_HANTEI_AKA_PREFIX):
             bare = t[len(_HANTEI_AKA_PREFIX):]
-            if _NOT_TASK.search(bare) or _is_quoted_reference_text(bare):
+            if _NOT_TASK.search(bare):
                 return False
             return bool(_TASKISH.search(bare))
-        if _NOT_TASK.search(t) or _is_quoted_reference_text(t):
+        if _NOT_TASK.search(t):
             return False
         return True
-    if _NOT_TASK.search(t) or _is_quoted_reference_text(t):
+    if _NOT_TASK.search(t):
         return False
     return bool(_TASKISH.search(t))
 
@@ -835,12 +769,6 @@ def self_test():
           actionable({"source": "queue", "title": "バナー画像を直す"}) is True)
     check("1996番再発防止：プレフィックス無しで直接積まれた相槌もactionable=False",
           actionable({"source": "queue", "title": "あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is False)
-    check("34589番再発防止：AutoCompact要約由来のゴースト(00_使い方.mdの目次)はactionable=False",
-          actionable({"source": "kioku",
-                      "title": "6項目の表、顧問の入れ替え、偽引用の憲法、素材ごとの得意不得意、"
-                               "YouTube文字起こしの渡し方、ログイン切れの直し方、"
-                               "「いまは止めてある機能」（常駐処理／プラグイン／iPhone）と復活"
-                               "コマンド、置き場所の表。"}) is False)
     for s in _GHOST_34628_MONOLOGUE:
         check("34628番再発防止：独白の断片はactionable=False（%s…）" % s[:16],
               actionable({"source": "kioku", "title": s}) is False)
