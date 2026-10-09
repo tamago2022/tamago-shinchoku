@@ -337,6 +337,55 @@ _NOT_TASK = re.compile(
     + re.escape(_GHOST_34645_FINGERPRINT) + r"|"
     + "|".join(re.escape(s) for s in _GHOST_34628_MONOLOGUE) + r")")
 
+# 34672番実例（2026-10-09）：「1-7. フォルダをひとつ作っておく」という、イケハヤ氏の
+# 購入済み記事（brain-market.com「Claude Codeの教科書」）の目次・章見出し文字列が、
+# たまごさんが2026-08-06〜07にそのページ全文を参考資料としてチャットへ貼った
+# ("queue-operation enqueue" / 00 inbox の同名ノートへ保存)ことで、
+# tools/kioku.py の句点分割により無数の別々の「発言」として
+# status/kioku/hatsugen.jsonl へ割れて登録された。これは店主自身の発言でも
+# コードへの指示でもなく、購入した他人の記事の引用文そのもの。
+# 同一の根本原因が34654・34661・34662・34665・34666・34668・34669・34672番と
+# ★8回★再発し、都度「引用文で実装対象なし」の確認ページだけを個別に書いて
+# 終わらせていた（恒久対策になっていなかった）。_GHOST_34589/34628/34645と同じ
+# 「既知の指紋を1行ずつ足す」方式は、この1本の記事からまだ出てくる無数の文に対して
+# スケールしない。そこで一段上の恒久対策として、
+# ★該当の参考資料ファイル(00 inbox、たまごさんの指示で書き換え禁止＝読むだけ)の
+# 本文に一字一句完全一致で含まれる行は、出どころを問わず非タスクとして弾く
+# （_is_quoted_reference_text）。短い相槌や断片的な一致での誤検知を避けるため、
+# 一定の長さ（8文字）以上の一致だけを対象にする＝非対称なコストの原則
+# （actionable=False誤判定の方が重い）を守りつつ、同じ記事からの再発を型で止める。
+_QUOTED_REFERENCE_FILES = (
+    "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/"
+    "tamago_brain/00 inbox/イケハヤ　claude codeの教科書　キティちゃん　秘書.md",
+)
+_QUOTED_REFERENCE_MIN_LEN = 8
+_quoted_reference_cache = {}
+
+
+def _quoted_reference_text():
+    """参考資料ファイルの本文をキャッシュして返す。読めなければ空文字列（fail-safe）。"""
+    key = "text"
+    if key not in _quoted_reference_cache:
+        chunks = []
+        for path in _QUOTED_REFERENCE_FILES:
+            try:
+                with io.open(path, encoding="utf-8") as f:
+                    chunks.append(f.read())
+            except OSError:
+                continue
+        _quoted_reference_cache[key] = "\n".join(chunks)
+    return _quoted_reference_cache[key]
+
+
+def _is_quoted_reference_text(t):
+    t = (t or "").strip()
+    if len(t) < _QUOTED_REFERENCE_MIN_LEN:
+        return False
+    ref = _quoted_reference_text()
+    if not ref:
+        return False
+    return t in ref
+
 # 1494番実例（2026-09-29）：39件の判定日赤queue項目をactionable()にかけたところ、
 # 終止形（「直す」「繋ぐ」等）でしか動詞を拾えず、「直しといて」「つながれる」のような
 # 活用形（て形・受身形等）を含む**実在する作業指示**が誤ってactionable=Falseに落ち、
@@ -382,13 +431,13 @@ def actionable(r):
     if r.get("source") == "queue":
         if t.startswith(_HANTEI_AKA_PREFIX):
             bare = t[len(_HANTEI_AKA_PREFIX):]
-            if _NOT_TASK.search(bare):
+            if _NOT_TASK.search(bare) or _is_quoted_reference_text(bare):
                 return False
             return bool(_TASKISH.search(bare))
-        if _NOT_TASK.search(t):
+        if _NOT_TASK.search(t) or _is_quoted_reference_text(t):
             return False
         return True
-    if _NOT_TASK.search(t):
+    if _NOT_TASK.search(t) or _is_quoted_reference_text(t):
         return False
     return bool(_TASKISH.search(t))
 
