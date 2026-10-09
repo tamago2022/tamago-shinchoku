@@ -320,6 +320,9 @@ def main(dry=False):
         p = os.path.join(full, "scripts", "i18n", "allow_originals.json")
         os.makedirs(os.path.dirname(p), exist_ok=True)
         io.open(p, "w", encoding="utf-8").write(json.dumps(sorted(a for a in allow if a not in names), ensure_ascii=False, indent=0))
+        # 画面の検品（1190_i18n_parity_live.py）も同じ「残ってよい元の表記」を使う
+        io.open(os.path.join(OUTD, "allow_originals.json"), "w", encoding="utf-8").write(
+            json.dumps(sorted(a for a in allow if a not in names), ensure_ascii=False, indent=0))
         import importlib
         df = importlib.import_module("_952_data_fetch")
         r = df._op_apipush({"dir": "status/1191_nihongo_nokori/full", "base_sha": sha,

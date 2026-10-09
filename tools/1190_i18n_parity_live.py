@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import sys
+ALLOW_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "status", "1191_nihongo_nokori", "allow_originals.json")
 
 from playwright.sync_api import sync_playwright
 
@@ -51,11 +52,43 @@ COUNT_JS = r"""() => {
     hidden: q('[data-i18n-hidden]').length,
     lang: document.documentElement.lang,
     nokori: (() => {
-      // 2026-10-10 追加：画面に残った日本語の文（人名・曲名の原題は除く）。
-      // 名前の一覧はサイト側が window.__i18nNames で出す（元の表記の配列）。
-      const KANA = /[\u3040-\u30ff]/, JA = /[\u3040-\u30ff\u3400-\u9fff]/;
-      const names = (window.__i18nNames || []).slice().sort((a, b) => b.length - a.length);
-      const strip = (t) => { let x = t; for (const n of names) if (n && x.includes(n)) x = x.split(n).join(' '); return x; };
+      // 2026-10-10 追加：画面に残った日本語（人名・曲名の「元の表記」は除く）。
+      // 残ってよいもの＝①名前表（window.__i18nNames）②作品名など翻訳時に原文で確認した元の表記（window.__i18nAllow）
+      //                ③「元の表記 読み」の形（かなのすぐ後に空白と大文字の読み・ハングル・漢字、または括弧つきの読み）
+      // 判定は joy-relief-station/scripts/patrol/check-i18n-kana.mjs と同じ。中黒・長音は数えない（中国語でも使う）。
+      const KANA = /[ぁ-ゟァ-ヺヽ-ヿ]/, JA = /[ぁ-ゟァ-ヺヽ-ヿ㐀-鿿]/;
+      const RUN = /[ぁ-ゟァ-ヿ㐀-鿿々〆]+/g;
+      const READ = /[A-Za-zÀ-ɏ가-힣一-鿿]/;
+      const READ_START = /[A-ZÀ-Þ가-힣一-鿿¡¿0-9]/;
+      const CLOSE = new Set([..."」』”》’\"）)]】"]);
+      const allow = [...(window.__i18nNames || []), ...(window.__i18nAllow || [])];
+      const idx = new Map();
+      for (const a of allow) for (const r of (a.match(RUN) || [])) { if (!idx.has(r)) idx.set(r, []); idx.get(r).push(a); }
+      const pairOk = (t, r) => {
+        if (r.length > 30) return false;
+        let i = 0;
+        for (;;) {
+          const j = t.indexOf(r, i); if (j < 0) return false;
+          let k = j + r.length; while (k < t.length && CLOSE.has(t[k])) k++;
+          if (k < t.length && ' （('.includes(t[k])) {
+            let saw = t[k] !== ' ', k2 = k + 1;
+            while (k2 < t.length && ' （(“"'.includes(t[k2])) { if ('（('.includes(t[k2])) saw = true; k2++; }
+            if (k2 < t.length && (saw ? READ : READ_START).test(t[k2])) return true;
+          }
+          const b = j - 1;
+          if (b >= 1 && t[b] === ' ' && READ.test(t[b - 1])) { let w = b - 1; while (w > 0 && READ.test(t[w - 1])) w--; if (READ_START.test(t[w])) return true; }
+          i = j + 1;
+        }
+      };
+      const kanaLeft = (t) => {
+        for (const r of (t.match(RUN) || [])) {
+          if (!KANA.test(r)) continue;
+          if ((idx.get(r) || []).some((a) => t.includes(a))) continue;
+          if (pairOk(t, r)) continue;
+          return r;
+        }
+        return null;
+      };
       const out = [];
       const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       let n;
@@ -65,13 +98,17 @@ COUNT_JS = r"""() => {
         if (!vis(p)) continue;
         const raw = (n.nodeValue || '').trim();
         if (!raw || !JA.test(raw)) continue;
-        const t = strip(raw);
-        out.push({ t: raw.slice(0, 120), kana: KANA.test(t), ja: JA.test(t) });
+        const left = kanaLeft(raw);
+        out.push({ t: raw.slice(0, 120), kana: !!left, ja: JA.test(raw), left: left || '' });
       }
       return out;
     })(),
   };
 }"""
+try:
+    ALLOW_JS = json.dumps(json.load(open(ALLOW_FILE, encoding="utf-8")), ensure_ascii=False)
+except Exception:
+    ALLOW_JS = "[]"
 KEYS = ["cards", "songLinks", "links", "images", "videos", "chapters"]
 
 
@@ -98,6 +135,7 @@ def settle(pg, lg, wait):
 def measure(browser, base, path, lg, wait):
     ctx = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
     ctx.add_init_script("try{localStorage.setItem('gokigen-lang','%s')}catch(e){}" % lg)
+    ctx.add_init_script("window.__i18nAllow=%s;" % ALLOW_JS)
     pg = ctx.new_page()
     try:
         pg.goto(base + path, wait_until="load", timeout=90000)
