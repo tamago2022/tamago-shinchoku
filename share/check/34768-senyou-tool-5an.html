@@ -62,7 +62,15 @@ function build(){
 function copyOut(){
   var el = document.getElementById('out');
   el.select();
-  if (navigator.clipboard) { navigator.clipboard.writeText(el.value); }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(el.value).catch(function(){
+        try { document.execCommand('copy'); } catch(e){}
+      });
+    } else {
+      document.execCommand('copy');
+    }
+  } catch(e){}
   var b = document.getElementById('copybtn');
   b.textContent = 'コピーした！';
   setTimeout(function(){ b.textContent = 'この依頼文をコピー'; }, 1500);
