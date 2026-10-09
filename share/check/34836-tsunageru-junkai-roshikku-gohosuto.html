@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした</div>
+<h1>#34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした</h1>
+<div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+判定日赤で「1ヶ月経っても未着手」と出ていましたが、調査の結果、要望の中身は2026-08-08直後にすでに実装されmainへ反映済みでした。判定日赤システムが店主の発言を文単位に自動分割して記録する際、この案件の「以下を入れてください:」の直後の具体的な箇条書き（実際の内容）が別の文として千切れて記録され、機械が「以下」を見つけられず『未着手のまま』と誤判定し続けていた幽霊チケットでした（過去にも同じ種類の誤判定が2件あった構造的バグ）。元の会話ログから実際の依頼全文を復元し、現在のコードと突き合わせて確認しました。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>現在の在庫で未接続のまま残っている曲（正常）</span></div>
+  <div class="num"><b>2026-08-08</b><span>この仕組みがmainへ合流した日（依頼当日のうち）</span></div>
+</div>
+
+
+<h2>① 元の発言（文単位で千切れていた「以下」の中身を復元）</h2>
+<div class="note">
+判定日赤の台帳には「なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:」という1文だけが残り、肝心の「以下」は別の文として記録されていて機械から見えなくなっていました。会話ログ本体（2026-08-08(土) 05:48ごろ）から該当箇所をそのまま引用します。
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:
+・仕入れ担当が新規に入荷した曲(直近で追加されたもの)を検知する
+・その曲について、既存の関連曲(同じ原曲のカバー、同じアーティストの別曲等)とのつながりが設定されているか確認する
+・つながっていなければ、つなげる担当としてその場で関連付けを行う(可逆な作業なので確認不要)
+
+これは仕入れ→つなげるの間に手作業の橋渡しが要らないようにする、という要件です。今回のCome Togetherの件も、見つけたついでに直しておいてください。</pre>
+</div>
+
+<h2>③ 実測の生データ（このセッションで実行）</h2>
+<div class="note">
+<b>① 全担当チェックの中の「つなげる担当」部分を実行した結果</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">役目：仕入れた曲が既存の関連曲とつながっていないか
+実行：ok
+未接続：0件（＝未接続なし）</pre>
+<b>② 検知の仕組み単体で実行した結果</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">実行時刻：2026-10-09T18:01:02.982Z
+調べた同名曲グループ：0件
+未接続の曲：0件
+同名だが別曲として除外：0件</pre>
+<b>③ 今の作業場所が、この仕組みが入った時点より後になっているか</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">確認：含んでいる（＝この仕組みより後ろにいる）
+入った記録：「自己解決の原則と『つながっていない曲』の自動検知を巡回へ組み込む」（2026-08-08直後）</pre>
+<b>④ Come Togetherクラスタの既存双方向接続（曲データで確認）</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">Michael Jackson「Come Together」  → 原曲：The Beatles
+Gary Clark Jr.「Come Together (Beatles Cover)」→ 原曲：The Beatles
+Arctic Monkeys「Come Together (London 2012)」 → 原曲：The Beatles
+akiko「Come Together」           → 原曲：The Beatles
+Beat Bugs「Come Together」        → 原曲：The Beatles</pre>
+</div>
+
+<h2>④ 押せるリンク（店主のGitHubログイン状態での確認用。privateリポジトリのため未ログインでは開けません）</h2>
+<ul class="links">
+  <li><b>巡回ロジック本体（つなげる担当のチェック部分）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L167-L180" target="_blank" rel="noopener">開く ↗</a></li>
+  <li><b>検知の仕組み本体</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/detect-orphan-covers.mjs" target="_blank" rel="noopener">開く ↗</a></li>
+  <li><b>仕組みが入った記録</b><a href="https://github.com/tamago2022/joy-relief-station/commit/ff82d252d" target="_blank" rel="noopener">開く ↗</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>全担当チェックに「つなげる担当」の巡回ロジックがあるか</td><td class="yes">yes</td></tr>
+<tr><td>仕入れた曲が既存の関連曲と繋がっていないか検知する仕組みか</td><td class="yes">yes</td></tr>
+<tr><td>Come Togetherクラスタ（店主が例示した曲）が双方向で繋がっているか</td><td class="yes">yes</td></tr>
+<tr><td>今の作業場所が、仕組みが入った後になっているか</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #34836 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
