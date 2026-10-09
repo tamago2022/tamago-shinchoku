@@ -50,6 +50,26 @@ COUNT_JS = r"""() => {
     chapters: v('section, h1, h2, h3'),
     hidden: q('[data-i18n-hidden]').length,
     lang: document.documentElement.lang,
+    nokori: (() => {
+      // 2026-10-10 追加：画面に残った日本語の文（人名・曲名の原題は除く）。
+      // 名前の一覧はサイト側が window.__i18nNames で出す（元の表記の配列）。
+      const KANA = /[\u3040-\u30ff]/, JA = /[\u3040-\u30ff\u3400-\u9fff]/;
+      const names = (window.__i18nNames || []).slice().sort((a, b) => b.length - a.length);
+      const strip = (t) => { let x = t; for (const n of names) if (n && x.includes(n)) x = x.split(n).join(' '); return x; };
+      const out = [];
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      let n;
+      while ((n = w.nextNode())) {
+        const p = n.parentElement;
+        if (!p || ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(p.tagName) || p.closest('[data-no-translate]')) continue;
+        if (!vis(p)) continue;
+        const raw = (n.nodeValue || '').trim();
+        if (!raw || !JA.test(raw)) continue;
+        const t = strip(raw);
+        out.push({ t: raw.slice(0, 120), kana: KANA.test(t), ja: JA.test(t) });
+      }
+      return out;
+    })(),
   };
 }"""
 KEYS = ["cards", "songLinks", "links", "images", "videos", "chapters"]
@@ -172,6 +192,15 @@ def main():
                         samples.append(take(lg))
                     d, r = best()
                 row[lg] = r
+                if "error" not in r and lg != "ja":
+                    kana = [x["t"] for x in r.get("nokori", []) if x["kana"]]
+                    kanji = [x["t"] for x in r.get("nokori", []) if x["ja"] and not x["kana"]]
+                    r["nokoriKana"] = len(kana)
+                    r["nokoriKanji"] = len(kanji)
+                    # 2026-10-10 たまごさんのルール：日本語以外の表示で、ひらがな・カタカナが
+                    # （人名・曲名の原題以外に）出ていたら公開を止める。
+                    if kana:
+                        d = list(d) + ["かなが残っている %d件（例: %s）" % (len(kana), " / ".join(kana[:3]))]
                 if d:
                     res["red"].append("%s [%s] %s" % (path, lg, " / ".join(d)))
             res["pages"][path] = row
@@ -183,7 +212,7 @@ def main():
             if "error" in r:
                 print("  %-8s 読めない %s" % (lg, r["error"]))
             else:
-                print("  %-8s " % lg + "  ".join("%s=%s" % (k, r[k]) for k in KEYS + ["hidden"]))
+                print("  %-8s " % lg + "  ".join("%s=%s" % (k, r.get(k)) for k in KEYS + ["hidden", "nokoriKana", "nokoriKanji"]))
     print("判定:", "✓ 全言語で中身の量が同じ" if res["ok"] else "✗ 違いあり")
     for x in res["red"]:
         print("  ✗", x)

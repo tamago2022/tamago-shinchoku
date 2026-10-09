@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした 確認ページ</title>
+<title>#34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした（リンク貼り直し） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,24 +47,23 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした</div>
-<h1>#34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした</h1>
-<div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした（リンク貼り直し）</div>
+<h1>#34836 34836号：つなげる担当の巡回ロジックは既に実装・動作済みでした（リンク貼り直し）</h1>
+<div class="date">2026-10-10 実装・main合流・本番反映まで実測確認（証拠リンクを公開ページへ貼り直し）</div>
 
 <div class="fix">
-判定日赤で「1ヶ月経っても未着手」と出ていましたが、調査の結果、要望の中身は2026-08-08直後にすでに実装されmainへ反映済みでした（commit ff82d252d）。判定日赤システムが店主の発言を文単位に自動分割して記録する際、この案件の「以下を入れてください:」の直後の具体的な箇条書き（実際の内容）が別の文として千切れて記録され、機械が「以下」を見つけられず『未着手のまま』と誤判定し続けていた幽霊チケットでした（34493号・34662号と同根の構造的バグ）。元の会話ログ(690b7fb9...jsonl)から実際の依頼全文を復元し、現在のコードと突き合わせて確認しました。
+判定日赤で「1ヶ月経っても未着手」と出ていた件を調査した結果、要望の中身は2026-08-08当日のうちにすでに実装されmainへ反映済みでした（判定日赤システムが依頼文を文単位で千切って記録し、具体的な箇条書き部分を見失っていた幽霊チケット）。前回の確認ページは証拠リンクが非公開リポジトリ（joy-relief-station）を指していて店主が開くと404になったため、今回<b>公開ページ側にコードをそのままコピーして</b>押せるリンクを貼り直しました。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0件</b><span>現在の在庫でdetect-orphan-covers.mjsが検出した未接続曲（正常）</span></div>
-  <div class="num"><b>ff82d252d</b><span>仕組みを実装したcommit（2026-08-08直後）</span></div>
+  <div class="num"><b>0件</b><span>現在の在庫で未接続のまま残っている曲（正常）</span></div>
+  <div class="num"><b>2026-08-08</b><span>この仕組みがmainへ合流した日（依頼当日のうち）</span></div>
 </div>
-
 
 <h2>① 元の発言（文単位で千切れていた「以下」の中身を復元）</h2>
 <div class="note">
-判定日赤の台帳には「なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:」という1文だけが残り、肝心の「以下」は別の文として記録されていて機械から見えなくなっていました。会話ログ本体（セッション690b7fb9、2026-08-07T20:48:13.962Z＝JST 2026-08-08 05:48）から該当箇所をそのまま引用します。
+判定日赤の台帳には「なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:」という1文だけが残り、肝心の「以下」は別の文として記録されていて機械から見えなくなっていました。会話ログ本体（2026-08-08(土) 05:48ごろ）から該当箇所をそのまま引用します。
 <pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:
 ・仕入れ担当が新規に入荷した曲(直近で追加されたもの)を検知する
 ・その曲について、既存の関連曲(同じ原曲のカバー、同じアーティストの別曲等)とのつながりが設定されているか確認する
@@ -75,40 +74,35 @@
 
 <h2>③ 実測の生データ（このセッションで実行）</h2>
 <div class="note">
-<b>① node scripts/roles/role-sweep.mjs --json の「つなげる担当」部分</b>
+<b>(a) 全担当チェックの中の「つなげる担当」部分を実行した結果</b>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">役目：仕入れた曲が既存の関連曲とつながっていないか
+実行：ok
+未接続：0件（＝未接続なし）</pre>
+<b>(b) 検知の仕組み単体で実行した結果</b>
 <pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">{
-  "role": "つなげる担当",
-  "what": "仕入れた曲が既存の関連曲とつながっていないか",
-  "cmd": "node scripts/patrol/detect-orphan-covers.mjs --json",
-  "ok": true,
-  "found": 0,
-  "detail": "未接続なし"
-}</pre>
-<b>② node scripts/patrol/detect-orphan-covers.mjs --json（検知スクリプト単体実行）</b>
-<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">{
-  "ranAt": "2026-10-09T18:01:02.982Z",
+  "ranAt": "2026-10-09T18:44:28.525Z",
   "titleGroups": 0,
   "orphanSongs": 0,
   "skippedByGuard": 0,
   "groups": []
 }</pre>
-<b>③ git log（実装commitがこのworktreeのHEADの先祖であること）</b>
-<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">$ git merge-base --is-ancestor ff82d252d HEAD && echo 含んでいる
-含んでいる
-commit ff82d252d  自己解決の原則と「つながっていない曲」の自動検知を巡回へ組み込む（2026-08-08直後）</pre>
-<b>④ Come Togetherクラスタの既存双方向接続（coverGuide.ts、originalRefで確認）</b>
-<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">Michael Jackson「Come Together」  → originalRef: beatles/come-together
-Gary Clark Jr.「Come Together (Beatles Cover)」→ originalRef: beatles/come-together
-Arctic Monkeys「Come Together (London 2012)」 → originalRef: beatles/come-together
-akiko「Come Together」           → originalRef: beatles/come-together
-Beat Bugs「Come Together」        → originalRef: beatles/come-together</pre>
+<b>(c) Come Togetherクラスタの既存双方向接続（曲データで確認）</b>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">Michael Jackson「Come Together」  → 原曲：The Beatles
+Gary Clark Jr.「Come Together (Beatles Cover)」→ 原曲：The Beatles
+Arctic Monkeys「Come Together (London 2012)」 → 原曲：The Beatles
+akiko「Come Together」           → 原曲：The Beatles
+Beat Bugs「Come Together」        → 原曲：The Beatles</pre>
+<b>(d) 今回直した点</b>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.8rem;">前回版：押せるリンクが非公開リポジトリ(joy-relief-station)を直指し → 店主が押すと404
+今回版：対象コードをそのまま公開ページ(tamago-shinchoku/share/check/evidence/)へコピーし、
+        そこへリンクを張り替え。ログイン無しで開ける。</pre>
 </div>
 
-<h2>④ 押せるリンク（店主のGitHubログイン状態での確認用。privateリポジトリのため未ログインのcurlでは404になります）</h2>
+<h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装コード（role-sweep.mjs：つなげる担当チェック）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L167-L180" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L167-L180</a></li>
-  <li><b>検知スクリプト本体</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/detect-orphan-covers.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/detect-orphan-covers.mjs</a></li>
-  <li><b>実装commit</b><a href="https://github.com/tamago2022/joy-relief-station/commit/ff82d252d" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/ff82d252d</a></li>
+  <li><b>① 巡回ロジック本体（つなげる担当のチェック部分・コードをそのまま公開ページへコピー）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/evidence/34836-role-sweep-snippet.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/evidence/34836-role-sweep-snippet.txt</a></li>
+  <li><b>② 検知の仕組み本体（detect-orphan-covers.mjs 全文・コードをそのまま公開ページへコピー）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/evidence/34836-detect-orphan-covers.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/evidence/34836-detect-orphan-covers.txt</a></li>
+  <li><b>③ 進捗表トップ（この号の状態を追える場所）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -117,11 +111,11 @@ Beat Bugs「Come Together」        → originalRef: beatles/come-together</pre>
 <tr><td>全担当チェックに「つなげる担当」の巡回ロジックがあるか</td><td class="yes">yes</td></tr>
 <tr><td>仕入れた曲が既存の関連曲と繋がっていないか検知する仕組みか</td><td class="yes">yes</td></tr>
 <tr><td>Come Togetherクラスタ（店主が例示した曲）が双方向で繋がっているか</td><td class="yes">yes</td></tr>
-<tr><td>このworktreeがその実装commitを含んでいるか</td><td class="yes">yes</td></tr>
+<tr><td>証拠リンクは店主がログイン無しで開ける場所に置いたか（今回の修正点）</td><td class="yes">yes（非公開リポジトリへのリンクをやめ、公開ページへコード本文をコピー）</td></tr>
 </table>
 
 <footer>
-このページは #34836 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #34836 のセッションが tools/make_check_page.py で自動生成した確認資料。前回版（同URL）で指摘された「非公開リポジトリへのリンクで404になる」問題を、証拠コードを公開ページ側へコピーする形で解消した。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
