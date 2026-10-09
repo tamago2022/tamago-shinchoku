@@ -99,7 +99,9 @@ COUNT_JS = r"""() => {
         const raw = (n.nodeValue || '').trim();
         if (!raw || !JA.test(raw)) continue;
         const left = kanaLeft(raw);
-        out.push({ t: raw.slice(0, 120), kana: !!left, ja: JA.test(raw), left: left || '' });
+        // 読みの二重（「布袋寅泰 Tomoyasu Hotei Tomoyasu Hotei」）も数える（2026-10-10 実測で起きた）
+        const dup = /(?:^|[\s(（“「『])([A-Z][\w'’.-]+(?: [A-Z][\w'’.-]+){1,3}) \1(?![\w])/.test(raw) || /([가-힣]{2,}(?: [가-힣]{2,}){1,2}) \1/.test(raw);
+        out.push({ t: raw.slice(0, 120), kana: !!left, ja: JA.test(raw), left: left || '', dup });
       }
       return out;
     })(),
@@ -239,6 +241,10 @@ def main():
                     # （人名・曲名の原題以外に）出ていたら公開を止める。
                     if kana:
                         d = list(d) + ["かなが残っている %d件（例: %s）" % (len(kana), " / ".join(kana[:3]))]
+                    dup = [x["t"] for x in r.get("nokori", []) if x.get("dup")]
+                    r["nijuu"] = len(dup)
+                    if dup:
+                        d = list(d) + ["名前の読みが二重 %d件（例: %s）" % (len(dup), " / ".join(dup[:2]))]
                 if d:
                     res["red"].append("%s [%s] %s" % (path, lg, " / ".join(d)))
             res["pages"][path] = row
