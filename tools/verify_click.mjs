@@ -409,6 +409,7 @@ async function main() {
       const el = testList[listIdx];
       const idx = el.i; // querySelectorAllでの元の位置（クリック時はこれで再取得する）
       let before, after, clickError = null;
+      let repurposed = false; // 案件#34821：クリック時点で別の意味のUIに切り替わっていた（下記参照）
       try {
         before = await evalJson(send, SNAPSHOT_EXPR);
       } catch {
@@ -418,26 +419,40 @@ async function main() {
         // querySelectorAllの通し番号ではなく、要素本体への直接参照（window.${VC_ELS_VAR}）で
         // 再取得する（直前のクリックでDOM順序が変わっても、同じ物理要素を確実に狙い撃つ。
         // DOM属性へのマーキングはReactのhydrationと衝突するため使わない＝案件#34450）。
+        // 案件#34821実測：君の名は。予告編ページで「ページの操作を開く」(曲なし時だけ出る
+        // MiniPlayerボタン)が無反応と誤検知された。実機で調べたところ、リスト収集後・この
+        // クリックまでの間に別の要素(動画の▶ボタン)のクリックで曲の再生が始まり、同じ物理
+        // <button>のまま中身が「プレーヤーを開く」ボタンへ置き換わっていた（Reactが同一要素を
+        // 再利用）。クリック直前の表示テキストを収集時(el.text)と突き合わせ、別物になっていたら
+        // 「無反応」ではなく「ページの正しい状態遷移に巻き込まれた」として区別する。
         const clickExpr = `(() => {
           const target = window.${VC_ELS_VAR} && window.${VC_ELS_VAR}[${idx}];
-          if (!target || !target.isConnected) return false;
+          if (!target || !target.isConnected) return JSON.stringify({ ok: false });
+          const curText = (target.innerText || target.textContent || target.getAttribute('aria-label') || '').trim().slice(0, 30);
           target.scrollIntoView({ block: 'center' });
           target.click();
-          return true;
+          return JSON.stringify({ ok: true, curText });
         })()`;
         lastWindowOpenAt = 0; // このクリックで新たに発火したPage.windowOpenだけを見る
         let r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
+        let parsed = null;
+        try { parsed = r.result?.value ? JSON.parse(r.result.value) : null; } catch { parsed = null; }
         // 案件#793実測：このサイトのキュー一覧・できたもの一覧は数十秒おきの自動再描画
         // （renderQueue()等）でDOM全体が作り直され、無関係なタイミングでマーカー属性が
         // 消えることがある。1回目に見失っただけで即「消えた」と断じると、下の
         // skippedDisappeared行きが増えて本来の無反応検出まで薄まるため、300ms待って
         // 同じマーカーをもう一度だけ探し直してから、それでも駄目なら既存の
         // disappearedBeforeClick判定（下）に委ねる。
-        if (!r.result?.value) {
+        if (!parsed?.ok) {
           await sleep(300);
           r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
+          try { parsed = r.result?.value ? JSON.parse(r.result.value) : null; } catch { parsed = null; }
         }
-        if (!r.result?.value) clickError = "要素が見つかりませんでした（クリック前にDOMから消えた＝マーカーが外れた）";
+        if (!parsed?.ok) {
+          clickError = "要素が見つかりませんでした（クリック前にDOMから消えた＝マーカーが外れた）";
+        } else if (parsed.curText !== el.text) {
+          repurposed = true;
+        }
       } catch (e) {
         clickError = String(e.message || e).slice(0, 150);
       }
@@ -528,7 +543,11 @@ async function main() {
       // 実際に壊れているボタンは要素ごと消えたりしない（押しても何も起きないだけ）ので、
       // このケースはnoResponseに数えず、再検証が必要な別枠として記録しFAIL判定に使わない。
       const disappearedBeforeClick = clickError != null && clickError.includes("クリック前にDOMから消えた");
-      if (!changed && disappearedBeforeClick) {
+      if (repurposed) {
+        // 案件#34821：無反応ではなく「クリック時点で既に別の意味のUIへ切り替わっていた」。
+        // 押した結果ではなく、押す前の時点でページの状態が変わっていた＝実装バグではない。
+        result.skippedRepurposed.push({ index: idx, tag: el.tag, text: el.text, href: el.href });
+      } else if (!changed && disappearedBeforeClick) {
         result.skippedDisappeared.push({ index: idx, tag: el.tag, text: el.text, href: el.href });
       } else if (!changed) {
         result.noResponse.push({
@@ -614,6 +633,7 @@ async function main() {
     truncated: result.truncated,
     noResponseCount: result.noResponse.length,
     skippedDisappearedCount: result.skippedDisappeared.length,
+    skippedRepurposedCount: result.skippedRepurposed.length,
     consoleErrorCount: result.consoleErrors.length,
   }));
   if (result.noResponse.length) {
@@ -626,6 +646,12 @@ async function main() {
     console.log("--- クリック前にDOMから消えていた要素（無反応扱いにしない・自動更新/他クリックの巻き込まれの可能性） ---");
     for (const sd of result.skippedDisappeared) {
       console.log(`  [${sd.index}] <${sd.tag}> 「${sd.text}」 ${sd.href ? "href=" + sd.href : ""}`);
+    }
+  }
+  if (result.skippedRepurposed.length) {
+    console.log("--- クリック時点で別の意味のUIへ切り替わっていた要素（無反応扱いにしない・案件#34821） ---");
+    for (const sr of result.skippedRepurposed) {
+      console.log(`  [${sr.index}] <${sr.tag}> 「${sr.text}」 ${sr.href ? "href=" + sr.href : ""}`);
     }
   }
   if (result.consoleErrors.length) {
