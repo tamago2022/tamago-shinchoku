@@ -188,6 +188,7 @@ def _op_tool(payload):
 
 
 MIRU_ALLOW = ("https://joy-relief-station.lovable.app",
+              "https://id-preview--8ebdb648-3686-4457-b42c-d01c493793b1.lovable.app",
               "https://tamago2022.github.io",
               # ★1140番（2026-09-24・お金の便）公式の料金ページだけ足す。GETのみ・課金0。
               #   サンドボックスから stripe.com / open.er-api.com へ web_fetch が
@@ -521,6 +522,51 @@ def _op_apipush(payload):
 
 OPS["archive"] = _op_archive
 OPS["apipush"] = _op_apipush
+
+
+def _op_parity(payload):
+    """★多言語の検品（2026-10-09）：tools/1190_i18n_parity_live.py を**切り離して**走らせる。
+    数分かかるので代行係を塞がない。結果は status/1190_tagengo/parity_<tag>.json と .log。
+    行き先は lovable.app の中だけ（白名簿）。GETだけ・課金0。"""
+    base = payload.get("base") or ""
+    if not (base.startswith("https://joy-relief-station.lovable.app")
+            or (base.startswith("https://id-preview--") and base.rstrip("/").endswith(".lovable.app"))):
+        return {"ok": False, "error": "白名簿の外です: %s" % base, "totalYen": 0.0}
+    sh = _shinchoku()
+    tag = "".join(c for c in (payload.get("tag") or "run") if c.isalnum() or c in "-_")[:40]
+    outd = os.path.join(sh, "status", "1190_tagengo")
+    os.makedirs(outd, exist_ok=True)
+    out = os.path.join(outd, "parity_%s.json" % tag)
+    logp = os.path.join(outd, "parity_%s.log" % tag)
+    import sys as _sys
+    cmd = [_sys.executable, os.path.join(sh, "tools", "1190_i18n_parity_live.py"), base, "--out", out]
+    if payload.get("paths"):
+        cmd += ["--paths", payload["paths"]]
+    if payload.get("langs"):
+        cmd += ["--langs", payload["langs"]]
+    if payload.get("noNav"):
+        cmd += ["--no-nav"]
+    for p in (out, logp):
+        try:
+            os.remove(p)
+        except Exception:
+            pass
+    lf = open(logp, "w")
+    subprocess.Popen(cmd, cwd=sh, stdout=lf, stderr=subprocess.STDOUT, start_new_session=True)
+    return {"ok": True, "started": True, "out": out, "log": logp, "totalYen": 0.0}
+
+
+OPS["parity"] = _op_parity
+
+
+def _op_parityps(payload):
+    """多言語の検品が今も走っているか（ps を見るだけ）。"""
+    r = subprocess.run(["/bin/ps", "-axo", "pid,etime,command"], capture_output=True, text=True, timeout=20)
+    rows = [l for l in (r.stdout or "").splitlines() if "1190_i18n_parity" in l or "chrom" in l.lower() and "playwright" in l.lower()]
+    return {"ok": True, "rows": [x[:220] for x in rows[:30]], "totalYen": 0.0}
+
+
+OPS["parityps"] = _op_parityps
 
 def run_job(payload=None):
     payload=payload or {}
