@@ -425,6 +425,103 @@ OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool,
        "jitsugaku": _op_jitsugaku}
 
 
+
+# ===========================================================================
+# ★多言語の不具合（2026-10-09）で足した口：
+#   op=archive … origin/main を丸ごと tar.gz で status/ 配下（gitの外）へ持ち帰る。読むだけ。
+#   op=apipush … status/<dir>/full/ に置いた「完成ファイル」を、作業ツリーに触らず
+#                GitHub API で main に1コミットで入れる（1132_dasu と同じやり方）。
+#                base_sha を渡すと、そのファイルが base から動いていたら止める（巻き戻し防止）。
+# ===========================================================================
+def _op_archive(payload):
+    sh = _shinchoku()
+    out = os.path.join(sh, payload.get("out") or "status/1190_tagengo/src.tar.gz")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    log = []
+    rc, o, e = _git(["fetch", "origin", "main"], t=300)
+    log.append("fetch rc=%d" % rc)
+    rc, sha, e = _git(["rev-parse", "origin/main"])
+    paths = list(payload.get("paths") or [])
+    r = subprocess.run(["git", "archive", "--format=tar.gz", "-o", out, "origin/main"] + paths,
+                       cwd=CLONE, capture_output=True, text=True, timeout=600)
+    log.append("archive rc=%d %s" % (r.returncode, (r.stderr or "")[-300:]))
+    return {"ok": r.returncode == 0, "sha": (sha or "").strip(), "out": out,
+            "bytes": os.path.getsize(out) if os.path.exists(out) else 0,
+            "log": log, "totalYen": 0.0}
+
+
+def _op_apipush(payload):
+    import base64, urllib.request, urllib.error
+    sys_path = os.path.dirname(os.path.abspath(__file__))
+    import sys as _s
+    if sys_path not in _s.path:
+        _s.path.insert(0, sys_path)
+    import github_watch
+    token = github_watch.gh_token()
+    if not token:
+        return {"ok": False, "error": "GitHubの鍵が取れない", "totalYen": 0.0}
+    API = "https://api.github.com"; REPO_ = "tamago2022/joy-relief-station"
+
+    def req(method, url, body=None):
+        data = json.dumps(body).encode("utf-8") if body is not None else None
+        r = urllib.request.Request(url, data=data, method=method)
+        r.add_header("Authorization", "Bearer %s" % token)
+        r.add_header("Accept", "application/vnd.github+json")
+        r.add_header("User-Agent", "tamago-1190")
+        if data:
+            r.add_header("Content-Type", "application/json")
+        with urllib.request.urlopen(r, timeout=180) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
+    sh = _shinchoku()
+    full = os.path.join(sh, payload.get("dir") or "status/1190_tagengo/full")
+    files = {}
+    for root, _d, fs in os.walk(full):
+        for f in fs:
+            fp = os.path.join(root, f)
+            files[os.path.relpath(fp, full)] = io.open(fp, "rb").read()
+    if not files:
+        return {"ok": False, "error": "送るファイルが無い", "totalYen": 0.0}
+    log = []
+    try:
+        head = req("GET", "%s/repos/%s/git/ref/heads/main" % (API, REPO_))["object"]["sha"]
+        log.append("main=%s" % head[:8])
+        base = payload.get("base_sha")
+        tree_now = req("GET", "%s/repos/%s/git/trees/%s?recursive=1" % (API, REPO_, head))
+        now = {e["path"]: e["sha"] for e in tree_now.get("tree", []) if e.get("type") == "blob"}
+        if base and base != head:
+            tree_b = req("GET", "%s/repos/%s/git/trees/%s?recursive=1" % (API, REPO_, base))
+            was = {e["path"]: e["sha"] for e in tree_b.get("tree", []) if e.get("type") == "blob"}
+            moved = [p for p in files if was.get(p) != now.get(p)]
+            if moved:
+                return {"ok": False, "error": "base以降に動いたファイルがある（上書きしない）",
+                        "moved": moved[:50], "log": log, "totalYen": 0.0}
+        tree = []
+        for p, body in sorted(files.items()):
+            b = req("POST", "%s/repos/%s/git/blobs" % (API, REPO_),
+                    {"content": base64.b64encode(body).decode("ascii"), "encoding": "base64"})
+            if b["sha"] == now.get(p):
+                continue
+            tree.append({"path": p, "mode": "100644", "type": "blob", "sha": b["sha"]})
+        if not tree:
+            return {"ok": True, "alreadyIn": True, "log": log, "totalYen": 0.0}
+        bc = req("GET", "%s/repos/%s/git/commits/%s" % (API, REPO_, head))
+        nt = req("POST", "%s/repos/%s/git/trees" % (API, REPO_),
+                 {"base_tree": bc["tree"]["sha"], "tree": tree})
+        cm = req("POST", "%s/repos/%s/git/commits" % (API, REPO_),
+                 {"message": payload.get("message") or "update", "tree": nt["sha"], "parents": [head]})
+        req("PATCH", "%s/repos/%s/git/refs/heads/main" % (API, REPO_), {"sha": cm["sha"], "force": False})
+        log.append("入った %s（%d本）" % (cm["sha"][:8], len(tree)))
+        return {"ok": True, "commit": cm["sha"], "files": [t["path"] for t in tree],
+                "log": log, "totalYen": 0.0}
+    except urllib.error.HTTPError as e:
+        return {"ok": False, "error": "HTTP %s %s" % (e.code, e.read().decode("utf-8", "ignore")[:400]),
+                "log": log, "totalYen": 0.0}
+
+
+OPS["archive"] = _op_archive
+OPS["apipush"] = _op_apipush
+
 def run_job(payload=None):
     payload=payload or {}
     op = payload.get("op")
