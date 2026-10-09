@@ -52,7 +52,7 @@
 <div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-判定日赤で『余韻の道（お母さんのお弁当イメージへ再定義）』が1ヶ月未着手と出ていましたが、調査の結果、2026-09-27に店主本人(gitアカウント tamago)が『この寄り道（プチ旅行／余韻の道）企画を全部削除』とコミットし、既に本番ブランチと本番Lovableへ反映済みであることが判明しました。<code>src/lib/trails.ts</code>・<code>src/lib/petitTrips.ts</code>・<code>/trails</code>ルートは現在存在しません。『寄り道』の情緒自体は別コンポーネント<code>RelatedTrailSection</code>へ統合済みで現役です。08-05の古い要望を今から実装し直すと、店主が09-27に下した最新の削除判断を上書きしてしまうため、実装は行いませんでした。
+判定日赤で『余韻の道（お母さんのお弁当イメージへ再定義）』が1ヶ月未着手と出ていましたが、調査の結果、2026-09-27に店主本人(gitアカウント tamago)が『この寄り道（プチ旅行／余韻の道）企画を全部削除』とコミットし、既にorigin/mainと本番Lovableへ反映済みであることが判明しました。<code>src/lib/trails.ts</code>・<code>src/lib/petitTrips.ts</code>・<code>/trails</code>ルートは現在存在しません。『寄り道』の情緒自体は別コンポーネント<code>RelatedTrailSection</code>へ統合済みで現役です。08-05の古い要望を今から実装し直すと、店主が09-27に下した最新の削除判断を上書きしてしまうため、実装は行いませんでした。
 </div>
 
 <h2>② 数字</h2>
@@ -72,8 +72,8 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>削除コミット 3ad0604f8（2026-09-27・著者tamago）が本番ブランチの先祖か</td><td class="yes">はい</td></tr>
-<tr><td>現在の本番ブランチにsrc/lib/trails.tsが存在するか</td><td class="yes">いいえ（削除済み）</td></tr>
+<tr><td>削除コミット 3ad0604f8（2026-09-27・著者tamago）がorigin/mainの先祖か</td><td class="yes">はい</td></tr>
+<tr><td>現在のorigin/mainにsrc/lib/trails.tsが存在するか</td><td class="yes">いいえ（削除済み）</td></tr>
 <tr><td>本番 /trails のHTTPステータス</td><td class="yes">404（削除後の正しい状態）</td></tr>
 <tr><td>本番トップページに「プチ旅行」「行ってらっしゃい」等の文言が残っているか</td><td class="yes">いいえ（現在は一般名詞の季節タグラインのみ）</td></tr>
 </table>
