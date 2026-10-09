@@ -1,0 +1,77 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>34768号：たまごさん専用ツール、作るなら何がいい？5案</title>
+<style>
+body{font-family:-apple-system,"Hiragino Sans",sans-serif;max-width:46em;margin:2em auto;padding:0 1.2em;line-height:1.8;color:var(--t-fg2)}
+h1{font-size:1.3em;line-height:1.5}
+h2{font-size:1.05em;margin-top:2em;border-left:6px solid var(--t-warn);padding-left:.5em}
+.card{background:var(--t-panel);border:1px solid var(--t-warn);border-radius:10px;padding:1em 1.2em;margin:.6em 0}
+.why{color:var(--t-warn);font-size:.95em}
+textarea{width:100%;box-sizing:border-box;font-size:1em;padding:.6em;border-radius:8px;border:1px solid var(--t-line);font-family:inherit}
+button{font-size:1em;padding:.6em 1.2em;border-radius:8px;border:none;background:var(--t-warn-bg);color:var(--t-fg2);cursor:pointer;margin-top:.5em}
+button:active{background:var(--t-warn-bg)}
+.note{color:var(--t-mute);font-size:.85em;margin-top:2.5em;border-top:1px solid var(--t-line);padding-top:1em}
+</style>
+<body>
+
+<h1>🥚 「何を作ればいいか思いつかない」への答え：たまごさん専用ツール5案</h1>
+<p>「ぼくの仕事と生活の話を聞いて、専用ツールを作るなら何がいいか5案出して」——これに、今の工場・暮らしの様子をもとにいま答えます。</p>
+
+<h2>① 判断待ち・ワンタップ版</h2>
+<div class="card">
+今、判断待ちの項目はいくつものメモに散らばっている。それを1画面に集めて、スマホから「OK／NG／後で」をタップするだけで該当セッションへ返せるようにする。
+<div class="why">嬉しい理由：「あれどうなった？」と探さなくて済む。</div>
+</div>
+
+<h2>② 朝1枚・工場の顔</h2>
+<div class="card">
+毎朝、工場が1日にやったこと（仕入れ本数・直した件数・失敗件数）を1枚の画像にして自動で届ける。
+<div class="why">嬉しい理由：長い報告書を読まずに、見るだけで状況がわかる。</div>
+</div>
+
+<h2>③ ひとこと投げ込み窓口</h2>
+<div class="card">
+思いついたことを声か文字で1行投げると、AIが「企画／調査／実装」に自動で振り分けて、担当のAIへそのまま渡す。今は記録だけで振り分けは手動。
+<div class="why">嬉しい理由：思いついた瞬間に投げるだけでよくなる。</div>
+</div>
+
+<h2>④ 同じ事故、二度目はゼロ秒</h2>
+<div class="card">
+詰まった瞬間に一言検索すると、過去の失敗記録から似た事故をすぐ出す小さな検索窓。
+<div class="why">嬉しい理由：同じ注意を何度も言わなくて済む。</div>
+</div>
+
+<h2>⑤ 錬金術メモ</h2>
+<div class="card">
+怒り・痛みを感じた瞬間にその場で一言だけ残せる超軽量メモ。あとでAIがまとめて作品・エッセイの種に変換する。
+<div class="why">嬉しい理由：感情を逃さず、そのまま作品の資産に変わる（錬金術プロジェクトに直結）。</div>
+</div>
+
+<h2>📮 続けて聞きたい時は、ここに話す→秘書への依頼文を自動で作る</h2>
+<p>いまの仕事・生活で気になっていることを下に書いて、ボタンを押すと、秘書（キティちゃん）にそのまま貼れる依頼文ができます。</p>
+<textarea id="story" rows="4" placeholder="例：仕入れが思ったより時間がかかっている、など"></textarea>
+<button onclick="build()">この話から依頼文を作る</button>
+<textarea id="out" rows="6" readonly style="margin-top:1em;background:var(--t-panel)"></textarea>
+<button id="copybtn" onclick="copyOut()">この依頼文をコピー</button>
+
+<script>
+function build(){
+  var t = document.getElementById('story').value.trim();
+  var base = t ? t : '（ここに仕事・生活の話を書いてから押してね）';
+  var out = '秘書（キティちゃん）へ\n\n以下はぼくの今の仕事と生活の話です。\n---\n' + base + '\n---\nこの話を踏まえて、ぼく専用のツールを作るなら何がいいか、5案考えてください。\n条件：すぐ使えるシンプルなもの／お金をかけずに作れるもの／軽くて楽しいもの。';
+  document.getElementById('out').value = out;
+}
+function copyOut(){
+  var el = document.getElementById('out');
+  el.select();
+  if (navigator.clipboard) { navigator.clipboard.writeText(el.value); }
+  var b = document.getElementById('copybtn');
+  b.textContent = 'コピーした！';
+  setTimeout(function(){ b.textContent = 'この依頼文をコピー'; }, 1500);
+}
+</script>
+
+<div class="note">
+34768号メモ：この依頼文は「イケハヤ　claude codeの教科書」教材内のサンプル会話文がそのまま判定日赤リストに記録されていたもの（実体機能は未実装・1ヶ月放置）。上の5案は実際に工場の現状・判断待ち・失敗記録・核心プロジェクトの文脈から考えたもの。下のフォームは今後も同じ問いを秘書に投げ続けられるようにする常設の入口。
+</div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../theme/tamago-dark.css">
+</body>
