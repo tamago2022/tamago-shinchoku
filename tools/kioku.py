@@ -847,6 +847,12 @@ def main():
                         "https://brain-market.com/u/ikehaya/a/b2kzM5UjMgoTZsNWa0JXY\n"
                         "* 動かない・真っ白 : 画面の状態をそのまま伝えて「直して」。"}]}}):
             ng.append("イケハヤ教材ペースト本文（contentがlist）を発言として拾ってしまう（34757号の再発）")
+        # ★34822号実例：Claude Codeアプリ自身のリモートコントロール・オフライン
+        #   通知バナーの決まり文句を、たまごさんの依頼として拾わない。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "再接続するか、/remote-control を実行して新しいセッションを"
+                      "開始してください。"}}):
+            ng.append("リモートコントロール・オフライン通知を発言として拾ってしまう（34822号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
