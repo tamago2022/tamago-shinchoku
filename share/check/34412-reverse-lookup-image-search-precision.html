@@ -52,14 +52,14 @@
 <div class="date">2026-10-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-bot投稿のスクショ1枚から元動画を探す機能(scripts/reverse-lookup/、2026-08-02実装・origin/main合流済み)の精度検証。キャプションに曲名や固有名詞が無い投稿で、<b>従来のキャプション文字列だけの検索</b>と<b>画像を切り出してのGoogleレンズ検索</b>を比べた。今回はその検証が今も有効かを再確認し、UI除去パイプラインを新しいサンプル画像で実際に動かした。
+bot投稿のスクショ1枚から元動画を探す機能(scripts/reverse-lookup/、2026-08-02実装・本番ブランチ合流済み)の精度検証。キャプションに曲名や固有名詞が無い投稿で、<b>従来のキャプション文字列だけの検索</b>と<b>画像を切り出してのGoogleレンズ検索</b>を比べた。今回はその検証が今も有効かを再確認し、UI除去パイプラインを新しいサンプル画像で実際に動かした。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>0件→1位</b><span>ケースB:文面に手がかりゼロの投稿。キャプション検索は0件、画像検索は1位で正解到達</span></div>
   <div class="num"><b>2/2</b><span>当時の正解動画2本が2026-10-04現在も実在・再生可能(oEmbed実測)</span></div>
-  <div class="num"><b>2026-08-02</b><span>機能の実装・初回検証コミット日(origin/main d035685)</span></div>
+  <div class="num"><b>2026-08-02</b><span>機能の実装・初回検証コミット日(本番ブランチ d035685)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -70,21 +70,21 @@ bot投稿のスクショ1枚から元動画を探す機能(scripts/reverse-looku
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>ケースA正解動画(Rick Astley・本日oEmbed 200確認)</b><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener">https://www.youtube.com/watch?v=dQw4w9WgXcQ</a></li>
-  <li><b>ケースB正解動画(オレンジ猫・本日oEmbed 200確認)</b><a href="https://www.youtube.com/watch?v=kAjQN9f5Kck" target="_blank" rel="noopener">https://www.youtube.com/watch?v=kAjQN9f5Kck</a></li>
+  <li><b>ケースA正解動画(Rick Astley・本日oEmbed 200確認)</b><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener">動画を開く</a></li>
+  <li><b>ケースB正解動画(オレンジ猫・本日oEmbed 200確認)</b><a href="https://www.youtube.com/watch?v=kAjQN9f5Kck" target="_blank" rel="noopener">動画を開く</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>ケースA:曲名なしキャプション「見て損はない、伝説の一本」</td><td class="yes">キャプション検索は的外れになりがち→画像検索は1位で正解(dQw4w9WgXcQ)</td></tr>
-<tr><td>ケースB:固有名詞なしキャプション「これは笑う、オレンジ猫の日常」</td><td class="yes">キャプション検索は0件→画像検索は1位で正解(kAjQN9f5Kck)</td></tr>
+<tr><td>ケースA:曲名なしキャプション「見て損はない、伝説の一本」</td><td class="yes">キャプション検索は的外れになりがち→画像検索は1位で正解(上記ケースAのリンク参照)</td></tr>
+<tr><td>ケースB:固有名詞なしキャプション「これは笑う、オレンジ猫の日常」</td><td class="yes">キャプション検索は0件→画像検索は1位で正解(上記ケースBのリンク参照)</td></tr>
 <tr><td>2026-10-04時点、正解2本の生存確認(oEmbed実測)</td><td class="yes">2本とも HTTP 200・再生可能タイトル取得</td></tr>
 <tr><td>UI除去パイプラインの動作確認(本日新規生成のサンプルで実行)</td><td class="yes">ヘッダー・本文・下部バーを除去し動画のコマだけ抽出成功</td></tr>
 </table>
 
 <footer>
-対象はWebページではなく内部CLIツール(scripts/reverse-lookup/、2026-08-02 origin/main合流 commit d03568509)。検証データは当時の実測記録(docs/operations/reverse-lookup.md)を引き継ぎ、本日(2026-10-04)あらためて①正解動画2本の生存をoEmbedで実測②UI除去パイプラインを新規サンプル画像で実行、の2点を追加確認した。リポジトリは非公開のためGitHubリンクは掲載せず、公開確認できるYouTube動画と本ページの実測値のみを証拠として置く。
+対象はWebページではなく内部CLIツール(scripts/reverse-lookup/、2026-08-02 本番ブランチ合流 変更記録d03568509)。検証データは当時の実測記録(docs/operations/reverse-lookup.md)を引き継ぎ、本日(2026-10-04)あらためて①正解動画2本の生存をoEmbedで実測②UI除去パイプラインを新規サンプル画像で実行、の2点を追加確認した。リポジトリは非公開のためGitHubリンクは掲載せず、公開確認できるYouTube動画と本ページの実測値のみを証拠として置く。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
