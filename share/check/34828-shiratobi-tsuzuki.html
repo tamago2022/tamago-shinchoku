@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34821 CM・映画タイアップの厚み付け（君の名は。/天気の子/魔女の宅急便）＋触る検品の誤判定を修正 確認ページ</title>
+<title>#34828 棚の白飛び調査・続き（34828号） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,47 +47,39 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34821 CM・映画タイアップの厚み付け（君の名は。/天気の子/魔女の宅急便）＋触る検品の誤判定を修正</div>
-<h1>#34821 CM・映画タイアップの厚み付け（君の名は。/天気の子/魔女の宅急便）＋触る検品の誤判定を修正</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34828 棚の白飛び調査・続き（34828号）</div>
+<h1>#34828 棚の白飛び調査・続き（34828号）</h1>
 <div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-映画3本（君の名は。／天気の子／魔女の宅急便）の予告編を新規仕入れし、原曲（RADWIMPSスパークル・愛にできることはまだあるかい／松任谷由実ルージュの伝言）と双方向リンク。Lovable公開済み・本番反映済み。今回さらに、触る検品(2段目)が「ページの操作を開く」ボタンを無反応と誤検知していた原因を実機スクショで特定：曲再生中は同じ<button>が別の役割（プレーヤーを開く）に切り替わる仕様のため、検品が切替後の古い参照をクリックしていただけだった（実装バグではない）。tools/verify_click.mjsに状態遷移の巻き込まれを区別する判定を追加し、3映画エントリ全ページで再現性のあるPASSを実測確認。
+KNOWN_ISSUES.mdの『棚を見ている最中に画面が真っ白になり戻ってこない』に着手。同じ節を今日34829号が調査し、証拠取りの仕組み(site_eventsへの記録)が2026-08-07以降RLSポリシーで401拒否され一度も記録できていなかったことを発見・修正SQLをmainへ合流済み。白飛びそのものの直接原因はまだ未特定（引き続き調査中）だが、次に発生した時に初めて実データが取れる状態になった。残り2テーブル(cover_guide_events・memory_door_events)は店主のSupabase Dashboard操作待ち。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3件</b><span>新規に仕入れた映画エントリ数</span></div>
-  <div class="num"><b>6本</b><span>新規に追加した予告編動画(日本版+海外版)</span></div>
-  <div class="num"><b>3/3</b><span>触る検品PASS（修正後・全ページ）</span></div>
+  <div class="num"><b>200</b><span>本番トップのHTTPステータス</span></div>
+  <div class="num"><b>31539バイト</b><span>本番トップの中身の大きさ(空ではない)</span></div>
 </div>
 
-<h2>③ 実データでのスクリーンショット</h2>
-<div class="shots">
-  <div class="shot before"><b>修正前：検品が「ページの操作を開く」を無反応と誤判定</b><img src="img/34821-before-fail.png" alt="前"></div>
-  <div class="shot after"><b>修正後：同じ状態遷移を正しく区別しPASS</b><img src="img/34821-after-pass.png" alt="後"></div>
-</div>
+
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>原曲ページ（君の名は。への逆リンクが出る）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=radwimps&amp;song=sparkle" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=radwimps&amp;song=sparkle</a></li>
-  <li><b>君の名は。予告編（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=kimi-no-na-wa-movie&amp;song=kimi-no-na-wa-trailer-jp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=kimi-no-na-wa-movie&amp;song=kimi-no-na-wa-trailer-jp</a></li>
-  <li><b>天気の子予告編（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tenki-no-ko-movie&amp;song=tenki-no-ko-trailer-jp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tenki-no-ko-movie&amp;song=tenki-no-ko-trailer-jp</a></li>
-  <li><b>魔女の宅急便予告編（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=majo-no-takkyubin-movie&amp;song=majo-no-takkyubin-trailer-jp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=majo-no-takkyubin-movie&amp;song=majo-no-takkyubin-trailer-jp</a></li>
+  <li><b>本番サイト</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>原因調査の記録(KNOWN_ISSUES.md 白飛び節)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/KNOWN_ISSUES.md</a></li>
+  <li><b>今日の修正コミット(34829号)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/d43fc005225db264767e1615c58655e8a4ade61f" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/d43fc005225db264767e1615c58655e8a4ade61f</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番JSに新規3映画のid(kimi-no-na-wa-movie等)が含まれる</td><td class="yes">実測:含まれる(公開前は無し→公開後に出現)</td></tr>
-<tr><td>本番x-deployment-idが公開前後で変化</td><td class="yes">実測:psr2.2965874→psr2.26989c4</td></tr>
-<tr><td>君の名は。予告編ページ 触る検品</td><td class="yes">PASS</td></tr>
-<tr><td>天気の子予告編ページ 触る検品</td><td class="yes">PASS</td></tr>
-<tr><td>魔女の宅急便予告編ページ 触る検品</td><td class="yes">PASS</td></tr>
+<tr><td>本番トップが200で返るか</td><td class="yes">yes</td></tr>
+<tr><td>中身が空でないか(31539バイト)</td><td class="yes">yes</td></tr>
+<tr><td>白飛びの直接原因が特定できたか</td><td class="yes">no（証拠取りの仕組み自体が壊れていたことが判明・修正済み。次回発生時に初めて実データが取れる）</td></tr>
 </table>
 
 <footer>
-このページは #34821 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #34828 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
