@@ -204,6 +204,10 @@ def main():
                 if d:
                     res["red"].append("%s [%s] %s" % (path, lg, " / ".join(d)))
             res["pages"][path] = row
+            # 2026-10-10：ログイン画面などで中身が読めていないのに「同じ」と出ていた（プレビューURL）。中身が無ければ赤。
+            j0 = row.get("ja", {})
+            if "error" not in j0 and j0.get("links", 0) < 10:
+                res["red"].append("%s 日本語のページに中身が無い（links=%s）。読めていない" % (path, j0.get("links")))
         b.close()
     res["ok"] = not res["red"]
     for path, row in res["pages"].items():
