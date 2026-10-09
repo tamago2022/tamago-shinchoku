@@ -204,6 +204,15 @@ def p_lovable():
     return ALIVE, "refresh鍵あり・自動巻き直し中（最後の成功 %s）" % st.get("lastOkAt", "不明")
 
 
+def p_drive():
+    """Googleドライブ（Macのデスクトップアプリ経由）。TikTok素材20枚が実際に読めるか。"""
+    import subprocess
+    r = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "drive_get.py"), "--check"],
+                       capture_output=True, text=True, timeout=120)
+    n = r.stdout.strip()
+    return (ALIVE, n + "（Driveアプリ経由・ログイン不要）") if r.returncode == 0 else (DEAD, "Driveが読めない（Driveアプリ未起動の可能性）: " + n)
+
+
 def p_none(msg):
     return lambda: (MISSING, msg)
 
@@ -214,7 +223,8 @@ def p_human(msg):
 
 # name, 呼び名, 種類, 自動更新, 期限, 本人が必要なこと, probe
 REG = [
-    ("buffer", "Buffer", "APIキー", "不要(無期限扱い)", "公式記載なし", None, p_buffer),
+    ("buffer", "Buffer", "APIキー", "不要(無期限扱い)", "公式に期限記載なし(2026-10-07 developers.buffer.com確認)・死ねば毎朝のこの生死で即検知", None, p_buffer),
+    ("drive", "Googleドライブ", "Macのアプリ連携", "不要(アプリが保持)", "ログイン不要・アプリ起動中は無期限", None, p_drive),
     ("openai", "OpenAI", "APIキー", "不要(無期限)", "消すまで", None, p_openai),
     ("xai", "xAI(Grok)", "APIキー", "不要(無期限)", "消すまで", None, p_xai),
     ("youtube", "YouTube Data API", "APIキー", "不要(無期限)", "消すまで", None, p_youtube),

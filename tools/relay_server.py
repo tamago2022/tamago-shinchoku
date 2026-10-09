@@ -36,7 +36,8 @@ ALLOWED = {
     "queue_ok", "queue_undo_ok", "queue_later", "queue_redo", "queue_prio", "queue_add", "queue_pause", "queue_delete", "queue_order", "queue_dedupe",
     "queue_cancel", "queue_undo_cancel",  # 2026-09-09（677番）：進捗表の「取り消し」ボタンがここに無くて弾かれていた
     "queue_urgent",  # 793番（2026-09-14）：🔥すぐ見たいトグル
-    "nagekomi", "nagekomi_shiji",  # 1036番：投げ込み箱（URL1本＋一言／後からまとめて喋る振り分け）
+    "nagekomi", "nagekomi_shiji", "nagekomi_check",  # 2026-10-07：入れた瞬間の「同じURLがあります」確認（台帳に書かない）
+     # 1036番：投げ込み箱（URL1本＋一言／後からまとめて喋る振り分け）
     "x_kiwa",  # 34481番：キーワード→自分の過去X投稿アーカイブ検索→Obsidianへノート作成（0円）
     "soutuu",  # 1042番：見張りが自分で1本通して「本当に届くか」を確かめるための空荷。台帳を汚さない
     "kagi_install",  # 1041番：Supabaseの鍵の受け口。★値は cmd["kagi"]。target に入れない（下のlogがtargetを書く）

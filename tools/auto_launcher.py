@@ -2279,6 +2279,24 @@ def _main_impl():
           log("🚨 緊急横入り+1本：優先度1が%d分待機中の%s番を通すため上限%d本まで拡張"
               % (queued_minutes_ago(_urgent_hit) or 0, _urgent_hit.get("n"), safe_max))
 
+      # ---- 2026-10-08 負荷を見て2〜4本（tools/fuka_hassha.py）----
+      # たまごさん「最優先はMacが固まらないこと」。発車の直前にメモリ圧と1分ロードを測り、
+      #   緑＆ロード比<0.6→4本／<0.7→3本／それ以外2本、黄→新規発車を止める、赤→1本。
+      #   ここは上限を「下げる」方向にしか効かない（緊急横入りも含めて天井をかぶせる）。
+      #   走っている子は殺さない。固定2本に戻すフラグ＝status/dojisu_kotei2.flag。
+      if not only_tests:
+          try:
+              import fuka_hassha as _fuka
+              _fk = _fuka.hantei(alive=alive, source="auto_launcher")
+          except Exception as _e:
+              _fk = {"cap": 2, "stopNew": False, "reason": "fuka_hassha読込失敗（%s）→既定2本" % _e}
+          if _fk.get("stopNew"):
+              log("見送り[負荷判定]: %s（走行%d本はそのまま）" % (_fk.get("reason"), alive))
+              return 0
+          if safe_max > _fk.get("cap", 2):
+              safe_max = _fk.get("cap", 2)
+          log("負荷判定: %s → 採用上限%d本（走行%d本）" % (_fk.get("reason"), safe_max, alive))
+
       if alive >= safe_max:
           log("見送り: 走行%d本／上限%d本（空きなし）" % (alive, safe_max))
           return 0
@@ -2794,6 +2812,13 @@ def main():
             pass          # 鍵が取れなかっただけ。次回また拾う
         except Exception as e:
             log("harvestパス（発車のあと）に失敗: %s" % e)
+        # 2026-10-08 許可ゼロ設定：まだ「入」になっていなければ1回だけ入れる（入なら何もしない）
+        try:
+            kz = os.path.join(os.path.dirname(HERE), "status", "kyoka_zero.json")
+            if json.load(io.open(kz, encoding="utf-8")).get("state") != "入":
+                subprocess.run([sys.executable, os.path.join(HERE, "kyoka_zero.py")], timeout=300)
+        except Exception as e:
+            log("許可ゼロ設定に失敗: %s" % e)
         return rc
     finally:
         try:

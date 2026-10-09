@@ -134,7 +134,7 @@ trap 'rm -rf "${LOCK}" 2>/dev/null || true' EXIT
     SHOT="${WORK}/shots"
     mkdir -p "${SHOT}"
     CH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    [ -x "${CH}" ] || CH="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+    [ -x "${CH}" ] || CH="$(ls -d "$HOME"/Library/Caches/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-mac*/chrome-headless-shell 2>/dev/null | head -1)"  # Playwright同梱Chromium（Brave不使用・2026-10-08）
     [ -x "${CH}" ] || { echo "NG: headless に使えるブラウザが見つかりません"; exit 1; }
     URL="$(cat "${WORK}/shot_url.txt" 2>/dev/null || echo 'https://joy-relief-station.lovable.app/')"
     echo "url: ${URL}"
