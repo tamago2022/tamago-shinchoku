@@ -264,6 +264,7 @@ async function main() {
     selfLinkCount: 0,
     noResponse: [],
     skippedDisappeared: [],
+    skippedRepurposed: [],
     consoleErrors: [],
     truncated: false,
     error: null,
