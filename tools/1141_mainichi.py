@@ -30,7 +30,10 @@ def main():
     out={}
     for name,cmd in (("mon",[sys.executable,os.path.join(HERE,"1141_kanryo_mon.py"),"--apply"]),
                      ("zaiko",[sys.executable,os.path.join(HERE,"1141_zaiko_awase.py")]),
-                     ("page",[sys.executable,os.path.join(HERE,"1141_page.py")])):
+                     ("page",[sys.executable,os.path.join(HERE,"1141_page.py")]),
+                     # 34683号：憲法に書いた約束に機械の裏付け(tools/配下の実ファイル)が
+                     # 本当にあるかを毎日点検する。新しいlaunchd便は作らず既存の1日1回枠に相乗り。
+                     ("settei",[sys.executable,os.path.join(HERE,"settei_kouka_kakunin.py")])):
         r=subprocess.run(cmd,cwd=ROOT,capture_output=True,text=True,timeout=900)
         out[name]={"rc":r.returncode,"out":(r.stdout or "").strip()[:600],"err":(r.stderr or "").strip()[-300:]}
     rec={"at":datetime.datetime.now(JST).strftime("%Y-%m-%d %H:%M"),"r":out}
