@@ -52,7 +52,7 @@
 <div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-08にプレイブックへ残った判断待ち3点(デザイン方向性/季節イベント範囲/送り先SNS)を調べたところ、2026-08-10に店主本人がモックアップ承認済みで全部解決していたのに、プレイブックの記述だけが未更新で『判断待ち』のまま1ヶ月以上残っていたことが分かりました。プレイブックを記憶ファイルと一致させ、新しい真正の判断待ちは見つからなかったため追加していません。
+2026-08-08にプレイブックへ残った判断待ち3点(デザイン方向性/季節イベント範囲/送り先SNS)を調べたところ、2026-08-10に店主本人がモックアップ承認で全部解決済みだったのに、プレイブックの記述だけ未更新で1ヶ月以上『判断待ち』のまま残っていました。プレイブックを記憶ファイルと一致させ本番へ反映済み、新しい判断待ちは見つかりませんでした。前回の確認ページは非公開リポジトリへのリンクを貼ってしまい開けなかったため、今回は本文に全文を直接載せています。
 </div>
 
 <h2>② 数字</h2>
@@ -64,9 +64,12 @@
 
 
 <h2>④ 押せるリンク</h2>
+<div class="note">
+今回の変更は <code>.claude/playbooks/つなげる担当.md</code> と記憶ファイルという、たまごさんが開けない非公開リポジトリ(joy-relief-station)の中にしかない運用ドキュメントの更新です（画面に出る機能ではないため、押して見れる「本番URL」はありません）。前回はそこへの直リンクを貼って404になってしまったので、今回はそのファイルの中身をそのまま下の⑥に全文で載せています。
+</div>
 <ul class="links">
-  <li><b>つなげる担当プレイブック(修正後)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/243d879ba/.claude/playbooks/%E3%81%A4%E3%81%AA%E3%81%92%E3%82%8B%E6%8B%85%E5%BD%93.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/243d879ba/.claude/playbooks/%E3%81%A4%E3%81%AA%E3%81%92%E3%82%8B%E6%8B%85%E5%BD%93.md</a></li>
-  <li><b>記憶ファイル(追記後)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/243d879ba/.claude/agent-memory/tamago-orchestrator/project_seasonal_greeting_feature.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/243d879ba/.claude/agent-memory/tamago-orchestrator/project_seasonal_greeting_feature.md</a></li>
+  <li><b>ごきげん補給所 本番サイト（参考・サイト自体は正常稼働中）</b><a href="https://joy-relief-station.lovable.app" target="_blank" rel="noopener">https://joy-relief-station.lovable.app</a></li>
+  <li><b>この確認ページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34841-seasonal-greeting-pending-decisions.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34841-seasonal-greeting-pending-decisions.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -76,6 +79,32 @@
 <tr><td>季節イベントの範囲</td><td class="yes">フェーズ1=新年・暑中見舞い・誕生日に店主が決定済み</td></tr>
 <tr><td>送り先SNS</td><td class="yes">LINE以外にX・Instagram等も対応すると店主が決定済み</td></tr>
 </table>
+
+<h2>⑥ 直した文面そのもの（非公開リポのため、ここに全文を載せます）</h2>
+<div class="note">
+<b>どこを直したか：</b> ごきげん補給所のコードリポジトリ(joy-relief-station)内、<code>.claude/playbooks/つなげる担当.md</code>（担当の現在地メモ）。本番に反映済み。
+</div>
+<pre style="background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;word-break:break-word;">### 判断待ち（店主）→ 2026-08-10に店主本人が解決済み（2026-10-10・34841番棚卸しで確認）
+
+1. デザインの方向性。 →解決済み。「イラスト＋一言＋曲/動画カードを1枚に合成したポストカード」案に店主がモックアップでOK済み。和風絵葉書か今風ミニマルかの二択ではなく、合成ポストカード形式そのものが承認された実物デザイン。
+2. 対応する季節イベントの範囲。 →解決済み。店主の追加要望で「新年・暑中見舞い・誕生日など複数の行事に対応」「選んだ行事にちなむカードを複数レコメンド」に決定。最初の型（フェーズ1）は新年・暑中見舞い・誕生日の3種、以後フェーズ2で敬老の日・クリスマス・母の日等を追加。
+3. 送り先はLINEだけでよいか。 →解決済み。店主要望でLINE以外のSNS（X・Instagram等）にも対応。既存ShareButton.tsxがLINE/X/Facebook/コピー対応済みのため新規実装不要と判明。
+
+残っている細かい決定点（真正human gateに当たらないため0条で自分で決定・2026-10-10）：
+- 相手カテゴリは母・父・親友・恋人・子どもの5種から開始（既存たたき台どおり採用）。
+- ギフト提案は今回スコープ外（店主が別途市場リサーチ予定）。UIには余白だけ残す。
+- birthYearロジックはmemoryDoor.functions.tsの既存計算式を関数共有（UIは分離、裏側ロジックは複製しない）。
+
+詳細・設計根拠は .claude/agent-memory/tamago-orchestrator/project_seasonal_greeting_feature.md 参照（2026-08-10追記以降が正本）。
+
+### 進捗
+
+- 判断待ちは解消済み。実装はまだ未着手。 店主指示（2026-08-10）で「既存タスクの後でよい、急がない」と優先度を下げられて以降、着手した記録が無い。次にこの担当が動く時は、上の決定内容（フェーズ1＝新年・暑中見舞い・誕生日＋承認済みポストカード形式＋相手5カテゴリ）のまま設計からで良い（判断待ちで止まる理由は無い）。</pre>
+
+<div class="note" style="margin-top:14px;">
+<b>記憶ファイルへの追記（同じ内容の裏取りメモ）：</b>
+</div>
+<pre style="background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;word-break:break-word;">2026-10-10追記（34841番・判定日赤の棚卸しで確認）： 2026-08-08に「つなげる担当」プレイブックへ残されていた判断待ち3点（デザイン方向性／季節イベントの範囲／送り先SNS）は、この2026-08-10の店主モックアップ承認＋追加要望で既に全部解決済みだったが、プレイブック側（.claude/playbooks/つなげる担当.md）の記述が更新されておらず「判断待ち」のまま残っていた（メモリとプレイブックの非同期）。プレイブックを本メモと一致する内容へ修正済み。新たな真正human gate（北極星変更等）は無いため.claude/PENDING_DECISIONS.mdへの追加判断は不要と判定。実装自体は依然未着手（店主が「急がない」と優先度を下げたまま2ヶ月放置）——次に着手する時は判断待ちゼロの状態から設計に入れる。</pre>
 
 <footer>
 このページは #34841 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
