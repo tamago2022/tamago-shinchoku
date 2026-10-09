@@ -420,6 +420,27 @@ _AUTOCOMPACT_SUMMARY_MARKER = (
     "out of context."
 )
 
+# ★34757号実例（2026-08-07の会話・2026-10-09発見）：たまごさんが tamago_brain
+#   ワークスペースのセッションに、購入済みの有料教材（イケハヤ氏「Claude Codeの
+#   教科書 - AI秘書から始める爆速仕事術」・brain-market.com）の目次と本文を
+#   そのままペーストした（指示は添えられておらず、Claudeも「何をしてほしいか
+#   指示が見当たりません」と聞き返している＝たまごさん自身の依頼ではなく
+#   参考資料として貼られたことが会話上で確認できる）。この教材は「つまずき
+#   どころ」「この章の一勝」等のFAQ見出しを多数含み、本文の例文
+#   （「〜を秘書に見せて『直して』。」「『いまどこでつまずいているか説明する
+#   ので、直し方を教えて』と秘書自身に相談してください。」等）が_IRAI（直して/
+#   教えて等）に軒並みマッチし、1メッセージから**44件**の実在しない依頼が
+#   台帳へ量産された（34654〜34805号・77394/77859/78720/78865/78866/79032/
+#   79033号。例：34757号「どこかで詰まった…」・34774号「動かない・真っ白…」
+#   ・34668号「スクショを撮って秘書に見せて…」）。どの宛先も存在しない
+#   （直す対象のコード・画面が無い）ため、判定日が来ると全件が★赤＋P1繰り上げ
+#   で自動再発車され続けるゴーストタスクの温床になっていた。
+#   このペーストは必ず購入ページのURL「brain-market.com/u/ikehaya」を含む
+#   （目次の先頭・何度も再掲されるリンクとして現れる、たまごさんが自分の言葉で
+#   打つことはない固定文字列）ため、1816号以来の考え方（出どころの決まり文句で
+#   丸ごと弾く）をここにも適用する。
+_IKEHAYA_KYOKASHO_PASTE_MARKER = "brain-market.com/u/ikehaya"
+
 # ★1846号実例（2026-09-30）：上5つのマーカー（_SKILL_LOAD_MARKER / _VERIFY_PROMPT_MARKER /
 #   _COPY_NAOSHI_PROMPT_MARKER / _HANTEI_HIDUKE_MARKER / _ONI_MODOSHI_PROMPT_MARKER）は
 #   「メッセージの先頭が固定文言で始まるか」（.lstrip().startswith(...)）で判定していた。
@@ -448,6 +469,7 @@ _MACHINE_MARKERS_ANYWHERE = (
     _ENTAKU_KAIGI_PROMPT_MARKER,
     _GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER,
     _AUTOCOMPACT_SUMMARY_MARKER,
+    _IKEHAYA_KYOKASHO_PASTE_MARKER,
 )
 
 
@@ -794,6 +816,21 @@ def main():
                       "portion of the conversation.\n\nSummary:\n1. Primary Request and Intent:\n"
                       "   円卓会議は既存の4項目フォーマットに従い作ってください。"}}):
             ng.append("AutoCompactの自動要約を発言として拾ってしまう（34580号の再発）")
+        # ★34757号実例：イケハヤ氏の有料教材（Claude Codeの教科書）ペースト本文の
+        #   FAQ見出し（「〜を秘書に見せて『直して』。」等）を、たまごさんの発言として
+        #   拾わない。ペースト本文には必ず購入ページURL「brain-market.com/u/ikehaya」
+        #   が含まれる。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "#イケハヤ\n#AI秘書\nhttps://brain-market.com/u/ikehaya/a/b2kzM5UjMgoTZsNWa0JXY\n"
+                      "eggypop\n\n11-9. つまずきどころ\n"
+                      "* どこかで詰まった : 詰まった状況をそのまま秘書に見せて「直して」。"
+                      "自分の作った仕組みは自分で直せます。"}}):
+            ng.append("イケハヤ教材ペースト本文のFAQ見出しを発言として拾ってしまう（34757号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "https://brain-market.com/u/ikehaya/a/b2kzM5UjMgoTZsNWa0JXY\n"
+                        "* 動かない・真っ白 : 画面の状態をそのまま伝えて「直して」。"}]}}):
+            ng.append("イケハヤ教材ペースト本文（contentがlist）を発言として拾ってしまう（34757号の再発）")
         if make_id("★直してほしい。") != make_id("直してほしい"):
             ng.append("id が装飾で変わる")
         rows, s = hiroi(dry=True)
