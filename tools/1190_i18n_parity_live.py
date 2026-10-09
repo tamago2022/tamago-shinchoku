@@ -146,10 +146,24 @@ def main():
                 # おすすめ（ランダム・読み込みの順）で日本語どうしでも1枚前後ゆれる。
                 # そこで、日本語と同じ数になった回が1度でもあれば「同じ」とみなす（最大3回ずつ取る）。
                 # 以前の不具合（隠す処理）は毎回・大きく減るので、この取り方でも必ず赤になる（2026-10-09 実測）。
+                # 判定：数ごとに「日本語で出た数の幅」と「その言語で出た数の幅」が重なれば同じ。
+                #   おすすめはランダムなので、日本語どうしでも1〜2枚ゆれる（2026-10-10 実測：日本語だけで 8〜10）。
+                #   以前の不具合（隠す処理）は毎回・大きく減る（英語 34→24、中国語 34→6）ので、幅を見ても必ず赤になる。
                 def best():
-                    pairs = [(compare(j, x), x) for j in ja_samples for x in samples]
-                    pairs.sort(key=lambda p: len(p[0]))
-                    return pairs[0]
+                    ok_j = [j for j in ja_samples if "error" not in j]
+                    ok_x = [x for x in samples if "error" not in x]
+                    if not ok_j or not ok_x:
+                        return compare((ok_j or ja_samples)[0], (ok_x or samples)[0]), (ok_x or samples)[0]
+                    d = []
+                    for k in KEYS:
+                        jl, jh = min(j[k] for j in ok_j), max(j[k] for j in ok_j)
+                        xl, xh = min(x[k] for x in ok_x), max(x[k] for x in ok_x)
+                        if xh < jl or xl > jh:
+                            d.append("%s 日本語%d〜%d→%d〜%d" % (k, jl, jh, xl, xh))
+                    hid = max(x.get("hidden", 0) for x in ok_x)
+                    if hid:
+                        d.append("隠したカード %d" % hid)
+                    return d, ok_x[-1]
                 d, r = best()
                 while d and (len(samples) < 3 or len(ja_samples) < 3):
                     if len(ja_samples) < 3:
