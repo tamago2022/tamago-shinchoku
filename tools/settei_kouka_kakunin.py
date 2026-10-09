@@ -62,19 +62,25 @@ def now():
     return datetime.datetime.now(JST)
 
 
+PLACEHOLDER_NAMES = {"xxx", "foo", "bar", "example", "sample"}
+
+
+def is_placeholder(path: str) -> bool:
+    base = os.path.basename(path)
+    stem = base.rsplit(".", 1)[0]
+    return stem.lower() in PLACEHOLDER_NAMES
+
+
 def resolve(repo_root: str, path: str, nearby_text: str = "") -> str:
-    """表記ゆれ（他リポジトリ名を先頭に持つ相対パス／近傍の注記）を解決して絶対パスを返す。"""
+    """表記ゆれ（他リポジトリ名を先頭に持つ相対パス）を解決して絶対パスを返す。
+    ★近傍の文章だけでクロスリポジトリ判定すると「他リポジトリの名前が
+      文中に出てくるだけ」で誤検知する（34683号点検スクリプト自身の実測で発覚）。
+      だからパス自体に接頭辞が付いている場合だけクロスリポジトリとして解決する。
+    """
     first = path.split("/", 1)[0]
     if first in CROSS_REPO_PREFIX:
-        # パス自体に「tamago-shinchoku/tools/...」のように接頭辞が付いている場合
-        # （自分自身への冗長な接頭辞含め）は、必ずその接頭辞のルートを使う。
         rest = path.split("/", 1)[1] if "/" in path else ""
         return os.path.join(CROSS_REPO_PREFIX[first], rest)
-    # パスには接頭辞が無いが、近くの文章に「tamago-shinchoku側」のような注記がある場合、
-    # そのリポジトリを指すクロスリポジトリ参照として解決する。
-    for name, root in CROSS_REPO_PREFIX.items():
-        if name in nearby_text and os.path.basename(repo_root.rstrip("/")) != name:
-            return os.path.join(root, path)
     return os.path.join(repo_root, path)
 
 
@@ -89,13 +95,10 @@ def scan_file(repo_root: str, rel_path: str):
     seen = set()
     for m in PATTERN.finditer(text):
         path = m.group(0)
-        if "/" not in path or path in seen:
+        if "/" not in path or path in seen or is_placeholder(path):
             continue
         seen.add(path)
-        start = max(0, m.start() - 80)
-        end = min(len(text), m.end() + 80)
-        nearby = text[start:end]
-        target_full = resolve(repo_root, path, nearby)
+        target_full = resolve(repo_root, path)
         exists = os.path.exists(target_full)
         results.append({"path": path, "exists": exists})
     return results
