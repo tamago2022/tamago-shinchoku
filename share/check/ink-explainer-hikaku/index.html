@@ -1,0 +1,72 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ink Explainer を超えられるか｜分析と試作（Opus 5.5）</title>
+<style>
+:root{--red:rgb(214,17,32);--paper:rgb(247,244,238);--ink:rgb(28,27,25)}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 -apple-system,"Hiragino Sans",sans-serif}
+main{max-width:760px;margin:auto;padding:20px 16px 60px}
+h1{font-size:24px;line-height:1.35;margin:.2em 0} h2{font-size:19px;border-top:3px solid var(--ink);padding-top:10px;margin-top:36px}
+.red{color:var(--red)} .box{background:#fff;border:2px solid var(--ink);padding:12px 14px;margin:12px 0}
+.big{font-size:20px;font-weight:700} video,iframe{width:100%;aspect-ratio:16/9;background:#000;border:0;display:block}
+table{border-collapse:collapse;width:100%;font-size:14px} td,th{border-bottom:1px solid #ccc;padding:5px 4px;text-align:left;vertical-align:top} .n{text-align:right;white-space:nowrap}
+small,.s{font-size:13px;color:#555} ol li,ul li{margin:.3em 0} a{color:var(--red)}
+</style></head><body><main>
+<p class=s>2026-10-10 ／ たまごさんの依頼「@Inkexplainer96 以上の質が出せるか」</p>
+<h1>棒人間解説チャンネル Ink Explainer を<span class=red>超えられるか</span>：分析と試作1本</h1>
+<div class=box><p class=big>結論：<span class=red>今の作り方（Python作画・3色）では、まだ超えられない。</span>採点は本家 39点／試作 30点（50点満点）。</p>
+<p>差は「絵の色と量」と「テンポ」。題材と台本の組み立ては同じ型を再現できた。超えるには下の条件5つが要る。</p>
+<p><b>この1本の費用：</b>Opus 5.5 の使用量＝<b>週の枠の約0.04%・5時間枠の約0.13%（推定）</b>／外部API＝<b>約4円</b>（Gemini 音声1回）。画像の有料APIは0円。</p></div>
+
+<h2>1. 試作（Opus 5.5 が作った77秒）</h2>
+<video controls playsinline preload="metadata" poster="poster.jpg" src="proto_web.mp4"></video>
+<p class=s>題名「Why Ancient Humans Needed Night Owls」／英語・77秒・31カット・212語。絵は全部 Python（PIL）で手描き風に作画、文字は絵に焼き込まず別の層で重ねた。色は How It Holds の3色（赤・紙・インク）。ナレーションは Gemini TTS（声 Charon）。公開用に 960×540・0.91MB に圧縮。フル画質（1920×1080・52MB）は Google ドライブ「InkExplainer比較」フォルダ。</p>
+<p><img src="thumb.jpg" alt="試作のサムネイル" style="width:100%;max-width:480px;border:2px solid var(--ink)"></p>
+<p class=s>事実の出典：Samson ほか 2017（Proc. R. Soc. B・ハッザ族の睡眠計測、220時間で全員が同時に寝ていたのは18分）／Yetish ほか 2015（Current Biology・3つの狩猟採集社会の睡眠5.7〜7.1時間）。</p>
+
+<h2>2. 本家の同じ長さ（再生数1位の冒頭0:00〜1:17）</h2>
+<iframe src="https://www.youtube-nocookie.com/embed/49_Ph2q6uIM?start=0&end=77&playsinline=1" allowfullscreen title="What Did Ancient Humans Actually Do All Day?"></iframe>
+<p class=s>「What Did Ancient Humans Actually Do All Day?」1,200万回（2026-08-21公開）</p>
+
+<h2>3. 採点（10点満点・辛口）</h2>
+<table><tr><th>項目</th><th class=n>本家</th><th class=n>試作</th><th>理由</th></tr>
+<tr><td>掴み</td><td class=n>9</td><td class=n>7</td><td>本家は「今朝、機械があなたに叫んだ」→5万年前→「あなたの脳はもう反論している」までが28秒で完璧。試作も同じ型（深夜2時のスマホ→巻き戻し→反論の先回り）だが、最初の絵（ベッドの人物）が小さくて弱い。</td></tr>
+<tr><td>分かりやすさ</td><td class=n>8</td><td class=n>7</td><td>試作は「18分」という1つの数字に集約できていて筋は明快。ただ、手首の計測器の絵が丸太に見える、右の吹き出しが空のまま、など絵が言葉を助けていない所がある。</td></tr>
+<tr><td>絵</td><td class=n>7</td><td class=n>5</td><td>本家は色つきの背景・毛皮・小物で1枚ごとに「場所」がある（作画はAI画像生成とみられる・未確認）。試作は灰色の夜が続き、人物が小さい。最後の問いかけの直前に約1秒、真っ白な画面がある（明確な不具合）。</td></tr>
+<tr><td>音</td><td class=n>6</td><td class=n>5</td><td>試作の声は落ち着いて聞きやすいが話速170語/分（本家210〜225語/分）で遅い。環境音は合成ノイズで薄く、音楽なし。※両方とも耳での確認は未確認、数値と作り方からの採点。</td></tr>
+<tr><td>テンポ</td><td class=n>9</td><td class=n>6</td><td>本家は90秒で絵が46回変わる（約2秒に1枚）。試作は77秒で31カット（約2.5秒に1枚）＋話が遅い。</td></tr>
+<tr><td><b>合計</b></td><td class=n><b>39</b></td><td class=n><b>30</b></td><td></td></tr></table>
+
+<h2>4. チャンネルの数字（全17本・2026-10-10 取得）</h2>
+<p>登録者12.2万人。RSSで日付が分かる最古は2026-05-07（それより古い2本は日付未確認）＝始まって約5か月。<b>全再生1,946万回のうち62%が1本（1,200万回）</b>。中央値は約30万回。つまり「毎回めちゃくちゃ伸びる」のではなく、<b>1本の大当たりがチャンネルを持ち上げている</b>。</p>
+<table><tr><th>#</th><th>題名</th><th class=n>再生</th><th class=n>長さ</th><th>公開</th></tr><tr><td>1</td><td><a href='https://www.youtube.com/watch?v=49_Ph2q6uIM'>What Did Ancient Humans Actually Do All Day?</a></td><td class=n>1,200万</td><td class=n>11:13</td><td>2026-08-21</td></tr><tr><td>2</td><td><a href='https://www.youtube.com/watch?v=SD7XyG2wd1k'>What Did Ancient Humans Do When It Rained All Week?</a></td><td class=n>160万</td><td class=n>11:37</td><td>2026-07-03</td></tr><tr><td>3</td><td><a href='https://www.youtube.com/watch?v=OCr6NteWSQ8'>Why Are We the Only Human Species Left? What happened to others...</a></td><td class=n>140万</td><td class=n>8:06</td><td>2026-06-14</td></tr><tr><td>4</td><td><a href='https://www.youtube.com/watch?v=9AFO6MHy8y4'>When Did Ancient Humans Start Drinking Alcohol?</a></td><td class=n>90万</td><td class=n>6:04</td><td>2026-05-16</td></tr><tr><td>5</td><td><a href='https://www.youtube.com/watch?v=dp3jYZXKOos'>The Disturbing Ways Ancient Humans Survived Winter</a></td><td class=n>90万</td><td class=n>11:31</td><td>2026-07-16</td></tr><tr><td>6</td><td><a href='https://www.youtube.com/watch?v=QP1maS6hYn4'>How Did Ancient Humans Travel the World?</a></td><td class=n>83万</td><td class=n>9:23</td><td>2026-06-23</td></tr><tr><td>7</td><td><a href='https://www.youtube.com/watch?v=UuES_JDWBIo'>The Real Reason Humans Started Wearing Clothes</a></td><td class=n>37万</td><td class=n>6:44</td><td>2026-05以前</td></tr><tr><td>8</td><td><a href='https://www.youtube.com/watch?v=vQ6M4MIOI0U'>When Did Ancient Humans Start Smoking Weed?</a></td><td class=n>35万</td><td class=n>8:24</td><td>2026-06-05</td></tr><tr><td>9</td><td><a href='https://www.youtube.com/watch?v=LIwUH_R6oJY'>Do Animals Know When Another Animal is a Baby?</a></td><td class=n>30万</td><td class=n>8:08</td><td>2026-05-26</td></tr><tr><td>10</td><td><a href='https://www.youtube.com/watch?v=1xuponqgLoM'>What Did Ancient Humans Do For Pleasure?</a></td><td class=n>24万</td><td class=n>14:48</td><td>2026-09-04</td></tr><tr><td>11</td><td><a href='https://www.youtube.com/watch?v=xmQk_oLVau0'>Why Ancient Humans Were The Most TERRIFYING Animal Alive</a></td><td class=n>23万</td><td class=n>9:07</td><td>2026-08-07</td></tr><tr><td>12</td><td><a href='https://www.youtube.com/watch?v=rpoVSR-9qNI'>Why Life Speeds Up As You Get Older?</a></td><td class=n>16万</td><td class=n>9:03</td><td>2026-05-11</td></tr><tr><td>13</td><td><a href='https://www.youtube.com/watch?v=19Fi4_5ptrc'>How Did Ancient Humans Survive the Deadliest Predators on Earth?</a></td><td class=n>7万</td><td class=n>10:27</td><td>2026-09-27</td></tr><tr><td>14</td><td><a href='https://www.youtube.com/watch?v=0WtFuiHn2-g'>How Did Human Accidentally Invented Guns?</a></td><td class=n>5万</td><td class=n>12:48</td><td>2026-07-25</td></tr><tr><td>15</td><td><a href='https://www.youtube.com/watch?v=6TzPQ0046lw'>What did Early Humans do when they got Sick</a></td><td class=n>4万</td><td class=n>8:03</td><td>2026-05-07</td></tr><tr><td>16</td><td><a href='https://www.youtube.com/watch?v=j5PV676RN_U'>What Did Ancient Humans Actually Do all Night?</a></td><td class=n>4万</td><td class=n>14:43</td><td>2026-10-04</td></tr><tr><td>17</td><td><a href='https://www.youtube.com/watch?v=ulWFk_L2Ips'>what is The IKEA Effect.</a></td><td class=n>2万</td><td class=n>4:09</td><td>2026-05以前</td></tr></table>
+<p class=s>取得：Mac の yt-dlp（一覧のみ・ダウンロードなし）と公式RSS。字幕は上位3本を取得（4・5位は YouTube の回数制限 429 で取れず＝未確認）。</p>
+
+<h2>5. なぜ伸びているか（分解）</h2>
+<ol>
+<li><b>題材：</b>上位6本のうち5本が「古代人は◯◯のとき何をしていた？」。専門知識ゼロで誰でも気になる疑問に、<b>今の自分の生活（仕事・時間・雨の日・お酒）との比較</b>をくっつけている。1位の「一日中何してた？」は「仕事に時間を取られている自分」に刺さる。</li>
+<li><b>冒頭の掴み：</b>必ず「あなた」で始まる。1位＝「今朝、機械があなたに叫んだ」、2位＝「2日食べていないあなたを想像して」。0:12で「5万年巻き戻す」、0:28で「あなたの脳はもう反論している」と視聴者の反論を先に言う、0:45〜1:00で疑問を3つ重ね、1:40で「どっちがどっち？」とクイズを出す。</li>
+<li><b>テンポ：</b>冒頭90秒で絵が46回変わる＝約2秒に1枚。話速は 191〜225語/分（速い）。1文に1枚、文の名詞をそのまま絵にする（目覚まし→机の男→「REWIND 50,000 YEARS」の文字カード→焚き火→骨→洗濯機→YOU｜HIM）。</li>
+<li><b>絵：</b>丸い頭の棒人間＋色つきの平塗り背景。顔は目と眉だけで感情が分かる。うまい絵ではないが、<b>「1文に1枚、意味が一瞬で分かる」</b>ことに徹している。サムネは大きな顔1つ＋黄色の大文字2〜3語（NO JOBS／RAINED ALL WEEK）。</li>
+<li><b>ナレーションと長さ：</b>短い文だけ、つなぎ言葉なし。6〜15分、1位は11分で8章立て。概要欄に論文名とDOIを並べ「全部出典つき」をうたう＝信用。</li>
+</ol>
+
+<h2>6. これ以上の質を出すための条件5つ</h2>
+<ol>
+<li><b>題材は「誰でも持つ素朴な疑問 × あなたの今の生活」で選ぶ。</b>論文で裏が取れて、数字1つで「えっ」となるもの（今回の「18分」）。</li>
+<li><b>最初の30秒の型を守る：</b>あなたの不満 → 5万年前 → 反論の先回り → 疑問を重ねる。ここは試作でも再現できた。</li>
+<li><b>2秒に1枚・話速200語/分以上。</b>試作は2.5秒・170語で負けた。カット数を40以上に、音声は速めに作る。</li>
+<li><b>絵に色と「場所」を足す。</b>3色の線画だけでは本家の色つき背景に勝てない。背景だけ色の平塗りを足す、人物を画面の1/3以上の大きさにする、空白の画面を作らない（自動検品で真っ白なフレームを落とす）。</li>
+<li><b>音を作り込み、出典で信用を取る。</b>低い音楽＋効果音を手で設計し、概要欄に論文名を並べる。本家の勝ち筋（出典つき）はそのまま真似し、その上で字幕（本家は焼き込み字幕なし）とカメラの動きで上回る。</li>
+</ol>
+
+<h2>7. 使ったクレジットとお金（記録）</h2>
+<table>
+<tr><td>作った子</td><td>Opus 5.5（claude-opus-5-5）を claude CLI で1本起動（Mac の工場の起動口 2.1.278 は Opus 5.5 非対応だったため、手元にあった 2.1.296 本体を指定して起動。工場側の設定は変えていない）</td></tr>
+<tr><td>走った時間</td><td>04:51〜06:02（約71分）。うち作画の書き出しが約50分（Mac が他の仕事で混んでいた）</td></tr>
+<tr><td>トークン</td><td>出力 69,628／キャッシュ読み 2,377,280／キャッシュ書き 109,524／入力 66（33往復）。API換算 $2.74（約434円・定額プランなので実際の請求は0円）。※最初の起動は話の速さを直すため6分で止め直した（出力843トークン、ほぼ無視できる）</td></tr>
+<tr><td>週の枠</td><td><b>約0.04%</b>（推定）。工場の実測で「週1% ≒ 重みつき2,000万トークン」（10/7〜10/9 の6回の実測で 1,965万〜2,180万）。この子は重みつき約78万</td></tr>
+<tr><td>5時間枠</td><td><b>約0.13%</b>（推定・幅0.11〜0.16%）。同じく「5時間枠1% ≒ 485万〜678万」から計算</td></tr>
+<tr><td>/usage の％</td><td>未確認。Claude アプリの使用率記録が 10/9 05:39（週39%）で止まっていて、前後の実測が取れなかった。pace.json は前後とも 39%（同じ古い値）</td></tr>
+<tr><td>外部API</td><td>Gemini TTS（gemini-3.8-flash-tts）1回＝<b>約4.1円</b>（入力413・音声出力2,569トークン。単価は flash TTS の公開単価を仮置き、正式単価は未確認）。お金台帳 status/okane/kakin.json の api_shuho に記録。画像生成0円</td></tr>
+</table>
+<p class=s>作り方の記録：台本・字幕・作画コードは工場の status/ink/proto/（公開しない場所）。</p>
+</main></body></html>
