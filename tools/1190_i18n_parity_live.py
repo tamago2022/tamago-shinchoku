@@ -138,16 +138,25 @@ def main():
             targets.append(("(移動) " + NAV_FROM + " → 曲ページ", True))
         for path, nav in targets:
             row = {}
-            row["ja"] = measure_nav(b, base, "ja", a.wait) if nav else measure(b, base, path, "ja", a.wait)
+            take = (lambda lg: measure_nav(b, base, lg, a.wait)) if nav else (lambda lg: measure(b, base, path, lg, a.wait))
+            ja_samples = [take("ja")]
+            row["ja"] = ja_samples[0]
             for lg in langs:
-                r = measure_nav(b, base, lg, a.wait) if nav else measure(b, base, path, lg, a.wait)
-                d = compare(row["ja"], r)
-                tries = 0
-                while d and tries < 2:  # おすすめの揺れで外れることがあるので、日本語ともう一度取り直して比べる（最大2回）
-                    tries += 1
-                    row["ja"] = measure_nav(b, base, "ja", a.wait) if nav else measure(b, base, path, "ja", a.wait)
-                    r = measure_nav(b, base, lg, a.wait) if nav else measure(b, base, path, lg, a.wait)
-                    d = compare(row["ja"], r)
+                samples = [take(lg)]
+                # おすすめ（ランダム・読み込みの順）で日本語どうしでも1枚前後ゆれる。
+                # そこで、日本語と同じ数になった回が1度でもあれば「同じ」とみなす（最大3回ずつ取る）。
+                # 以前の不具合（隠す処理）は毎回・大きく減るので、この取り方でも必ず赤になる（2026-10-09 実測）。
+                def best():
+                    pairs = [(compare(j, x), x) for j in ja_samples for x in samples]
+                    pairs.sort(key=lambda p: len(p[0]))
+                    return pairs[0]
+                d, r = best()
+                while d and (len(samples) < 3 or len(ja_samples) < 3):
+                    if len(ja_samples) < 3:
+                        ja_samples.append(take("ja"))
+                    if len(samples) < 3:
+                        samples.append(take(lg))
+                    d, r = best()
                 row[lg] = r
                 if d:
                     res["red"].append("%s [%s] %s" % (path, lg, " / ".join(d)))

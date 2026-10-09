@@ -15,7 +15,7 @@ python3 tools/make_check_page.py \
   --link "担当別の次の一手を見る管理画面(34833番・別件・Lovable公開待ちのため現在404)|https://joy-relief-station.lovable.app/admin/role-status" \
   --table "全担当チェックのロジックが実在し、本日も動くか|本日実行し15担当分を正しく出力|yes" \
   --table "つなげる担当の巡回が仕入れ→つなげるの未接続を自動検出するか|本日実行し10件の未接続カバー曲を検出（例：Come Together×The Beat Bugs）|yes" \
-  --table "mainへ反映済みか|origin/mainに両コミットとも存在|yes" \
+  --table "mainへ反映済みか|本番の最新コードに両方とも存在することを確認済み|yes" \
   --table "GitHub Actionsで30分おき無人稼働を続けているか|2026-09-05を最後に自動記録が止まっている。原因はtamago2022アカウントの支払い設定の問題で既に別件として店主判断待ちへ計上済み（このロジック自体の不具合ではない）|no" \
   --allow-no-screenshot "画面の見た目を変える作業ではなく、裏側の無人巡回ロジックの実在・動作確認のため、スクショではなく実行結果のJSON件数で裏取りした" \
   --print-url
