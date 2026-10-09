@@ -52,25 +52,34 @@
 <div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主要望(2026-08-07)「パソコンをつけっぱなしで外出中・オフライン時でも先に指示を出したい」に対応する機能は、Remote Control「卵商店街」として既に実装済みです。しかし起動には claude auth login（フルスコープの対話ログイン・本人のパスワード/二段階認証）が必要で、現在は推論専用(inference-only)トークンのため起動時にエラーになります。AIエージェントのサンドボックスからは claude CLI へのPATHも launchctl の直接操作権限も届かず、本人のMac実機でしか先に進められません。コード・仕組みは全部用意済みで、残っているのは本人の1回の操作だけです。
+前回の確認ページに、たまごさんが開けない非公開リポジトリ（joy-relief-station）へのリンクが残っていたため、全て削除し、実際に開ける公開リンクへ差し替えました。原因そのものは変わらず：Remote Control「卵商店街」は実装済みで起動も試みていますが、現在のログイン方式（推論専用トークン）では動かせない仕組みになっています。実際のログは下の通りです。<pre style="white-space:pre-wrap;background:#1c1c1c;color:#8ef0ae;padding:12px;border-radius:8px;font-size:0.8rem;overflow-x:auto;">Error: Remote Control requires a full-scope login token. Long-lived tokens (from `claude setup-token` or CLAUDE_CODE_OAUTH_TOKEN) are limited to inference-only for security reasons. Run `claude auth login` to use Remote Control.</pre>解決には、たまごさんのMac実機で <code>claude auth login</code>（パスワード・二段階認証を含む本人ログイン）を1回実行する必要があります。AIエージェントのサンドボックスからはこの認証を代行する手段がありません（パスワード入力は本人しかできない操作のため、鍵の憲法どおり本人へお願いする側に回します）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>停止中</b><span>remote-control-status.shで実測した現在の稼働状態</span></div>
-  <div class="num"><b>1回</b><span>店主が実機で行えば済む操作（claude auth login）の回数</span></div>
+  <div class="num"><b>停止中</b><span>Remote Controlプロセスの現在の稼働状態（実測：remote-control-status.sh）</span></div>
+  <div class="num"><b>未登録</b><span>LaunchAgent自動常駐の登録状態（実測）</span></div>
+  <div class="num"><b>1コマンド</b><span>復旧に必要な本人操作の数（claude auth login）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainの記録コミット（調査結果・戻し方）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/a285d62b19e83420b78d2435ca71e9d74751f541" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/a285d62b19e83420b78d2435ca71e9d74751f541</a></li>
-  <li><b>Remote Control正本ドキュメント</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/claude-remote-control.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/claude-remote-control.md</a></li>
-  <li><b>実行権限修正コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/1cdb3d84a" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/1cdb3d84a</a></li>
+  <li><b>Remote Control公式ドキュメント(docs.claude.com)</b><a href="https://docs.claude.com/en/docs/claude-code/remote-control" target="_blank" rel="noopener">https://docs.claude.com/en/docs/claude-code/remote-control</a></li>
+  <li><b>この工場の進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>この確認ページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34819-remote-control-login-wait.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34819-remote-control-login-wait.html</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Remote Controlプロセス</td><td class="no">停止中（PIDファイルのみ残存）</td></tr>
+<tr><td>LaunchAgent自動常駐</td><td class="no">未登録</td></tr>
+<tr><td>起動時エラーの原因</td><td class="no">推論専用トークンのため full-scope login が必要</td></tr>
+<tr><td>コードの実装状況</td><td class="yes">install/start/statusスクリプトは実装済み・main反映済み</td></tr>
+<tr><td>復旧できる人</td><td class="yes">たまごさん本人のMac実機でclaude auth loginを1回実行</td></tr>
+</table>
 
 <footer>
 このページは #34819 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
