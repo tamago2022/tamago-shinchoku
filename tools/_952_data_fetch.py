@@ -59,7 +59,9 @@ TOOL_WHITELIST = ("kohyou_osu.py", "kohyou_kanshi.py", "og_kanmon.py",
                   # ★1130番：覆面客（Genspark）はMac側でしか gsk に届かない。
                   #   サンドボックスから通すための口。クレジットの前後は
                   #   道具の側が status/gsk_daicho.jsonl に必ず書く。
-                  "fukumen_kyaku.py", "fukumen.py")
+                  "fukumen_kyaku.py", "fukumen.py",
+                  # ★1191番（2026-10-10）多言語：DBの日本語を読むだけ・入荷時の自動翻訳
+                  "1191_db_nihongo.py", "1191_honyaku_jidou.py")
 
 
 def _shinchoku():

@@ -52,19 +52,19 @@
 <div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-判定日赤で「1ヶ月経っても未着手」と出ていましたが、調査の結果、要望の中身は2026-08-08直後にすでに実装されmainへ反映済みでした（commit ff82d252d）。判定日赤システムが店主の発言を文単位に自動分割して記録する際、この案件の「以下を入れてください:」の直後の具体的な箇条書き（実際の内容）が別の文として千切れて記録され、機械が「以下」を見つけられず『未着手のまま』と誤判定し続けていた幽霊チケットでした（34493号・34662号と同根の構造的バグ）。元の会話ログ(690b7fb9...jsonl)から実際の依頼全文を復元し、現在のコードと突き合わせて確認しました。
+判定日赤で「1ヶ月経っても未着手」と出ていましたが、調査の結果、要望の中身は2026-08-08直後にすでに実装されmainへ反映済みでした。判定日赤システムが店主の発言を文単位に自動分割して記録する際、この案件の「以下を入れてください:」の直後の具体的な箇条書き（実際の内容）が別の文として千切れて記録され、機械が「以下」を見つけられず『未着手のまま』と誤判定し続けていた幽霊チケットでした（過去にも同じ種類の誤判定が2件あった構造的バグ）。元の会話ログから実際の依頼全文を復元し、現在のコードと突き合わせて確認しました。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0件</b><span>現在の在庫でdetect-orphan-covers.mjsが検出した未接続曲（正常）</span></div>
-  <div class="num"><b>ff82d252d</b><span>仕組みを実装したcommit（2026-08-08直後）</span></div>
+  <div class="num"><b>0件</b><span>現在の在庫で未接続のまま残っている曲（正常）</span></div>
+  <div class="num"><b>2026-08-08</b><span>この仕組みがmainへ合流した日（依頼当日のうち）</span></div>
 </div>
 
 
 <h2>① 元の発言（文単位で千切れていた「以下」の中身を復元）</h2>
 <div class="note">
-判定日赤の台帳には「なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:」という1文だけが残り、肝心の「以下」は別の文として記録されていて機械から見えなくなっていました。会話ログ本体（セッション690b7fb9、2026-08-07T20:48:13.962Z＝JST 2026-08-08 05:48）から該当箇所をそのまま引用します。
+判定日赤の台帳には「なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:」という1文だけが残り、肝心の「以下」は別の文として記録されていて機械から見えなくなっていました。会話ログ本体（2026-08-08(土) 05:48ごろ）から該当箇所をそのまま引用します。
 <pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">なので全担当チェックの中に、つなげる担当の巡回ロジックとして以下を入れてください:
 ・仕入れ担当が新規に入荷した曲(直近で追加されたもの)を検知する
 ・その曲について、既存の関連曲(同じ原曲のカバー、同じアーティストの別曲等)とのつながりが設定されているか確認する
@@ -75,40 +75,31 @@
 
 <h2>③ 実測の生データ（このセッションで実行）</h2>
 <div class="note">
-<b>① node scripts/roles/role-sweep.mjs --json の「つなげる担当」部分</b>
-<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">{
-  "role": "つなげる担当",
-  "what": "仕入れた曲が既存の関連曲とつながっていないか",
-  "cmd": "node scripts/patrol/detect-orphan-covers.mjs --json",
-  "ok": true,
-  "found": 0,
-  "detail": "未接続なし"
-}</pre>
-<b>② node scripts/patrol/detect-orphan-covers.mjs --json（検知スクリプト単体実行）</b>
-<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">{
-  "ranAt": "2026-10-09T18:01:02.982Z",
-  "titleGroups": 0,
-  "orphanSongs": 0,
-  "skippedByGuard": 0,
-  "groups": []
-}</pre>
-<b>③ git log（実装commitがこのworktreeのHEADの先祖であること）</b>
-<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">$ git merge-base --is-ancestor ff82d252d HEAD && echo 含んでいる
-含んでいる
-commit ff82d252d  自己解決の原則と「つながっていない曲」の自動検知を巡回へ組み込む（2026-08-08直後）</pre>
-<b>④ Come Togetherクラスタの既存双方向接続（coverGuide.ts、originalRefで確認）</b>
-<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">Michael Jackson「Come Together」  → originalRef: beatles/come-together
-Gary Clark Jr.「Come Together (Beatles Cover)」→ originalRef: beatles/come-together
-Arctic Monkeys「Come Together (London 2012)」 → originalRef: beatles/come-together
-akiko「Come Together」           → originalRef: beatles/come-together
-Beat Bugs「Come Together」        → originalRef: beatles/come-together</pre>
+<b>① 全担当チェックの中の「つなげる担当」部分を実行した結果</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">役目：仕入れた曲が既存の関連曲とつながっていないか
+実行：ok
+未接続：0件（＝未接続なし）</pre>
+<b>② 検知の仕組み単体で実行した結果</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">実行時刻：2026-10-09T18:01:02.982Z
+調べた同名曲グループ：0件
+未接続の曲：0件
+同名だが別曲として除外：0件</pre>
+<b>③ 今の作業場所が、この仕組みが入った時点より後になっているか</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">確認：含んでいる（＝この仕組みより後ろにいる）
+入った記録：「自己解決の原則と『つながっていない曲』の自動検知を巡回へ組み込む」（2026-08-08直後）</pre>
+<b>④ Come Togetherクラスタの既存双方向接続（曲データで確認）</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.8rem;">Michael Jackson「Come Together」  → 原曲：The Beatles
+Gary Clark Jr.「Come Together (Beatles Cover)」→ 原曲：The Beatles
+Arctic Monkeys「Come Together (London 2012)」 → 原曲：The Beatles
+akiko「Come Together」           → 原曲：The Beatles
+Beat Bugs「Come Together」        → 原曲：The Beatles</pre>
 </div>
 
-<h2>④ 押せるリンク（店主のGitHubログイン状態での確認用。privateリポジトリのため未ログインのcurlでは404になります）</h2>
+<h2>④ 押せるリンク（店主のGitHubログイン状態での確認用。privateリポジトリのため未ログインでは開けません）</h2>
 <ul class="links">
-  <li><b>実装コード（role-sweep.mjs：つなげる担当チェック）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L167-L180" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L167-L180</a></li>
-  <li><b>検知スクリプト本体</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/detect-orphan-covers.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/detect-orphan-covers.mjs</a></li>
-  <li><b>実装commit</b><a href="https://github.com/tamago2022/joy-relief-station/commit/ff82d252d" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/ff82d252d</a></li>
+  <li><b>巡回ロジック本体（つなげる担当のチェック部分）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L167-L180" target="_blank" rel="noopener">開く ↗</a></li>
+  <li><b>検知の仕組み本体</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/detect-orphan-covers.mjs" target="_blank" rel="noopener">開く ↗</a></li>
+  <li><b>仕組みが入った記録</b><a href="https://github.com/tamago2022/joy-relief-station/commit/ff82d252d" target="_blank" rel="noopener">開く ↗</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -117,7 +108,7 @@ Beat Bugs「Come Together」        → originalRef: beatles/come-together</pre>
 <tr><td>全担当チェックに「つなげる担当」の巡回ロジックがあるか</td><td class="yes">yes</td></tr>
 <tr><td>仕入れた曲が既存の関連曲と繋がっていないか検知する仕組みか</td><td class="yes">yes</td></tr>
 <tr><td>Come Togetherクラスタ（店主が例示した曲）が双方向で繋がっているか</td><td class="yes">yes</td></tr>
-<tr><td>このworktreeがその実装commitを含んでいるか</td><td class="yes">yes</td></tr>
+<tr><td>今の作業場所が、仕組みが入った後になっているか</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
