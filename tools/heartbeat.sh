@@ -295,6 +295,9 @@ while :; do
   #   15秒ごとに呼んでも実際に本体が走るのは30分に1回だけ（daily_ingest_scheduler.pyと同じ間引き）。
   # 起動の間引き（2026-09-18）：中で1500秒(25分)に間引いている
   tick_every 8 && ( python3 "$REPO/tools/genzaichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 1191番（2026-10-10）入荷した日本語の文を、4言語へ自動で訳して辞書に入れる（Claude Haiku・1時間に1回）。
+  #   訳が無いものだけ。かなが残った訳は捨てる。結果 status/1191_nihongo_nokori/jidou.json
+  tick_every 15 && ( python3 "$REPO/tools/1191_honyaku_jidou.py" >> "$REPO/status/1191_nihongo_nokori/jidou.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
   #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。
