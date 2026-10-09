@@ -586,6 +586,15 @@ while :; do
   #    launchd への登録は冪等。既に入っていれば何もしないので、毎周呼んで構わない。
   #    ★たまごさんに手で流させない。登録そのものを機械にやらせる。
   tick_every 40 && ( bash "$REPO/tools/tomaranai_install.sh" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-09 起こし役。たまごさん「止まっていました、という報告をされても何もできない。
+  #   Gensparkの作業も、何かあったらノックして起こせる仕組みに」
+  #   ★Dispatchの子セッションが落ちた／道具を呼んだまま20分止まった → 工場の列(P1)へ「続きから」で積み直す。
+  #     同じ案件が同じ道具で2回止まったら、その道具を使わない別の経路を指示に書く。3回目は積まない。
+  #   ★Gensparkの依頼が回収されていない → gsk task info で叩いて回収。2回失敗/90分で1回だけ出し直す。
+  #   読むだけ＋列に積むだけ。AIを呼ばない＝0円。5分おき（15秒×20）。結果は status/okoshi.json。
+  tick_every 20 && ( python3 "$REPO/tools/okoshi.py" >> "$REPO/status/okoshi/run.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-09 許可ポップアップの関所：アプリのログから許可要求を道具ごとに数える（読むだけ・1時間おき・0円）。
+  tick_every 240 && ( python3 "$REPO/tools/kyoka_kanmon.py" >> "$REPO/status/okoshi/kyoka.log" 2>&1 & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then

@@ -15,7 +15,12 @@
 ■ 使い方（サンドボックスからでもMacからでも同じ）
   python3 tools/genspark_tanomu.py --type deep_research --name "弾き語り 調査" --q-file q.txt --out status/xxx.md
   python3 tools/genspark_tanomu.py --type super_agent   --name "検品" --q "…" --out status/yyy.md
-  --wait 秒（既定1500）。終わらなければ project_id を出して終わる（後から --project で回収できる）。
+  --wait 秒（既定420）。終わらなければ project_id を出して終わる（後から --project で回収できる）。
+  ★2026-10-09：既定を1500→420秒に下げた。Cowork の bash は1回600秒で切られるので、
+    1500秒待つと呼んだ側ごと落ちていた（＝「Gensparkが落ちる」の正体の1つ）。
+    待ち切れなくても困らない：出した瞬間に status/gsk/irai.jsonl に問いと --out を残すので、
+    工場の起こし役（tools/okoshi.py・心臓から5分おき）が答えを --out へ回収する。
+    回収に2回失敗／90分終わらない時は、起こし役が同じ問いを1回だけ出し直す。
   python3 tools/genspark_tanomu.py --project <project_id> --out status/yyy.md   # 回収だけ
 """
 import argparse
@@ -57,7 +62,7 @@ def main():
     ap.add_argument("--q-file")
     ap.add_argument("--instructions", default="日本語で。出典URLを必ず付ける。推測は推測と明記。")
     ap.add_argument("--out")
-    ap.add_argument("--wait", type=int, default=1500)
+    ap.add_argument("--wait", type=int, default=420)
     ap.add_argument("--project")
     a = ap.parse_args()
 
@@ -72,6 +77,16 @@ def main():
             sys.exit("出せなかった：%s" % ((r or {}).get("error") or "工場が拾わない（時間切れ）"))
         pid = r.get("projectId")
         print("GENSPARK 受付: project=%s" % pid, flush=True)
+        # 起こし役（tools/okoshi.py）が後から回収・出し直しできるように、問いと置き場所を残す
+        try:
+            led = os.path.join(REPO, "status", "gsk", "irai.jsonl")
+            os.makedirs(os.path.dirname(led), exist_ok=True)
+            out_rel = os.path.relpath(os.path.abspath(a.out), REPO) if a.out else None
+            io.open(led, "a", encoding="utf-8").write(json.dumps(
+                {"pid": pid, "type": a.type, "name": a.name, "q": q[:20000], "out": out_rel,
+                 "at": time.strftime("%Y-%m-%d %H:%M:%S")}, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
 
     end = time.time() + a.wait
     while True:
@@ -79,7 +94,8 @@ def main():
         if t:
             break
         if time.time() > end:
-            print("GENSPARK 未完: project=%s（%s）後で --project で回収" % (pid, why))
+            print("GENSPARK 未完: project=%s（%s）。起こし役が5分おきに見に行き、終わり次第 %s へ回収します"
+                  % (pid, why, a.out or ("status/gsk/kaishuu/%s.md" % pid)))
             sys.exit(2)
         time.sleep(60)
     if a.out:

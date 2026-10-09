@@ -169,6 +169,12 @@ def main():
         out["kyokaZero"] = {"label": "許可ゼロ設定", "state": kz.get("state"), "at": kz.get("at"), "culprits": kz.get("culprits"), "undo": kz.get("undo")}
     except Exception:
         out["kyokaZero"] = {"label": "許可ゼロ設定", "state": "未", "at": None}
+    # 2026-10-09 起こし役の回数（tools/okoshi.py が書く status/okoshi.json の写し）
+    try:
+        ok_ = json.load(open(os.path.join(REPO, "status", "okoshi.json"), encoding="utf-8"))
+        out["okoshi"] = {"label": "自動で起こした回数", "at": ok_.get("at"), "count": ok_.get("count")}
+    except Exception:
+        out["okoshi"] = {"label": "自動で起こした回数", "at": None, "count": {"total": 0, "today": 0}}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     tmp = OUT + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
