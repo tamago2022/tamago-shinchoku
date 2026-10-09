@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34821 CM・映画タイアップの厚み付け＋触る検品のフォールスFAIL修正 確認ページ</title>
+<title>#34821 CM・映画タイアップの厚み付け（君の名は。/天気の子/魔女の宅急便）＋触る検品の誤判定を修正 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,17 +47,18 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34821 CM・映画タイアップの厚み付け＋触る検品のフォールスFAIL修正</div>
-<h1>#34821 CM・映画タイアップの厚み付け＋触る検品のフォールスFAIL修正</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34821 CM・映画タイアップの厚み付け（君の名は。/天気の子/魔女の宅急便）＋触る検品の誤判定を修正</div>
+<h1>#34821 CM・映画タイアップの厚み付け（君の名は。/天気の子/魔女の宅急便）＋触る検品の誤判定を修正</h1>
 <div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-君の名は。／天気の子／魔女の宅急便の3映画エントリ（日本版＋海外版予告編、原曲と双方向リンク）は本番反映済み。今回、触る検品(2段目)が「ページの操作を開く」ボタンを無反応と誤検知していた原因を実機スクショで特定：曲再生中は同じ<button>が別の役割（プレーヤーを開く）に切り替わる仕様で、検品が切替後の古い参照をクリックしていただけだった。tools/verify_click.mjsに状態遷移の巻き込まれを区別する判定を追加し、3映画エントリ全ページで再現性のあるPASSを実測確認。
+映画3本（君の名は。／天気の子／魔女の宅急便）の予告編を新規仕入れし、原曲（RADWIMPSスパークル・愛にできることはまだあるかい／松任谷由実ルージュの伝言）と双方向リンク。Lovable公開済み・本番反映済み。今回さらに、触る検品(2段目)が「ページの操作を開く」ボタンを無反応と誤検知していた原因を実機スクショで特定：曲再生中は同じ<button>が別の役割（プレーヤーを開く）に切り替わる仕様のため、検品が切替後の古い参照をクリックしていただけだった（実装バグではない）。tools/verify_click.mjsに状態遷移の巻き込まれを区別する判定を追加し、3映画エントリ全ページで再現性のあるPASSを実測確認。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3</b><span>新規仕入れ映画エントリ数</span></div>
+  <div class="num"><b>3件</b><span>新規に仕入れた映画エントリ数</span></div>
+  <div class="num"><b>6本</b><span>新規に追加した予告編動画(日本版+海外版)</span></div>
   <div class="num"><b>3/3</b><span>触る検品PASS（修正後・全ページ）</span></div>
 </div>
 
@@ -69,6 +70,7 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
+  <li><b>原曲ページ（君の名は。への逆リンクが出る）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=radwimps&amp;song=sparkle" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=radwimps&amp;song=sparkle</a></li>
   <li><b>君の名は。予告編（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=kimi-no-na-wa-movie&amp;song=kimi-no-na-wa-trailer-jp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=kimi-no-na-wa-movie&amp;song=kimi-no-na-wa-trailer-jp</a></li>
   <li><b>天気の子予告編（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tenki-no-ko-movie&amp;song=tenki-no-ko-trailer-jp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tenki-no-ko-movie&amp;song=tenki-no-ko-trailer-jp</a></li>
   <li><b>魔女の宅急便予告編（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=majo-no-takkyubin-movie&amp;song=majo-no-takkyubin-trailer-jp" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=majo-no-takkyubin-movie&amp;song=majo-no-takkyubin-trailer-jp</a></li>
@@ -77,9 +79,11 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>君の名は。予告編ページ</td><td class="yes">触る検品PASS</td></tr>
-<tr><td>天気の子予告編ページ</td><td class="yes">触る検品PASS</td></tr>
-<tr><td>魔女の宅急便予告編ページ</td><td class="yes">触る検品PASS</td></tr>
+<tr><td>本番JSに新規3映画のid(kimi-no-na-wa-movie等)が含まれる</td><td class="yes">実測:含まれる(公開前は無し→公開後に出現)</td></tr>
+<tr><td>本番x-deployment-idが公開前後で変化</td><td class="yes">実測:psr2.2965874→psr2.26989c4</td></tr>
+<tr><td>君の名は。予告編ページ 触る検品</td><td class="yes">PASS</td></tr>
+<tr><td>天気の子予告編ページ 触る検品</td><td class="yes">PASS</td></tr>
+<tr><td>魔女の宅急便予告編ページ 触る検品</td><td class="yes">PASS</td></tr>
 </table>
 
 <footer>
