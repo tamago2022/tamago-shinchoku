@@ -1878,6 +1878,32 @@ def _prompt_topic_matches(text, keywords):
     return any((k or "").lower() in t for k in (keywords or []))
 
 
+# 34809番（2026-10-09）：「次これやってこれやってっていうなるべく短い文章を投げるように
+# したのね、トークンの節約のため」への対応。単純で短い依頼は、session_preamble.md＋
+# always-*全文（合計約5.5万バイト・毎回全タスクに固定で乗っていた）の代わりに
+# always-00-compact-digest.md 1枚だけを貼る。安全装置はプロンプトの文章量と無関係に
+# settings.jsonのフック（PreToolUse/Stop）側で機械的に効いているため、文章を削っても
+# 強制力は落ちない（タブ・ブラウザの強制は tools/stop_kanmon/*.mjs が担う）。
+COMPACT_WHAT_BYTES = 500  # これ以下＝単純な「次これやって」型とみなす
+
+
+def _is_compact_eligible(item, idx):
+    """圧縮プロンプトを使ってよい依頼か判定する。
+    専門ルールが要る話題（ブラウザ/動画/コピー/fal等）や、鬼監督差し戻し（文脈引き継ぎが要る）、
+    依頼文が長い（=単純な一言指示ではない）場合は対象外＝従来のフル版を使う。"""
+    title = str(item.get("title") or "")
+    what = str(item.get("what") or "")
+    if len(what.encode("utf-8")) > COMPACT_WHAT_BYTES:
+        return False
+    if title.startswith("差し戻し（鬼監督）") or "【差し戻し（鬼監督＝Codex）】" in what:
+        return False
+    match_text = "%s %s" % (title, what)
+    for topic in idx.get("topics") or []:
+        if _prompt_topic_matches(match_text, topic.get("keywords")):
+            return False
+    return True
+
+
 def build_prompt(item):
     """着火用の指示文。
 
@@ -1898,7 +1924,26 @@ def build_prompt(item):
     n = item.get("n")
     title = item.get("title") or ""
     what = item.get("what") or ""
-    header = """【自動発車】発車待ちの{n}番です。
+    idx = load(PROMPT_INDEX, {"always": [], "topics": []})
+    compact = _is_compact_eligible(item, idx)
+
+    if compact:
+        # 34809番：単純な「次これやって」型は、フル版の完了手順の説明を省き
+        # 用件＋完了条件だけの短いヘッダーにする（詳細はdigest側の7項目でカバー）。
+        # 先頭行は必ずフル版と同じ「【自動発車】発車待ちの{n}番です。」にする
+        # （tools/kioku.py の _AUTO_LAUNCH_MARKER がこの文言を目印に、自動発車の
+        #  固定テンプレートを「たまごさんの発言」の誤カウント対象から除外している。
+        #  ここを変えると1853号と同じ誤爬取事故を再発させるため不可侵）。
+        header = """【自動発車】発車待ちの{n}番です。
+
+**{title}**
+
+{what}
+
+完了条件：本番に反映され、本番URLが届いていること（main合流だけでは未完了）。
+""".format(n=n, title=title, what=what)
+    else:
+        header = """【自動発車】発車待ちの{n}番です。
 
 # やること
 **{title}**
@@ -1919,10 +1964,16 @@ def build_prompt(item):
 > 「**pushを完了と言ってしまう。これはダメだね。画面が変わって初めて完了。画面が変わって、なおかつ報告。Dispatchに報告。URLとともに。**セッションの中で完了したとか言って、それはもう完了してない。**報告しないのはダメ。**」
 """.format(n=n, title=title, what=what)
 
-    idx = load(PROMPT_INDEX, {"always": [], "topics": []})
     # 939番：共通の枷はヘッダーより前＝指示文のいちばん先頭に置く。
     # 後ろに置くと、長い依頼文(what)で埋まった時に読み飛ばされる実測があったため。
     parts = []
+    if compact:
+        digest = _load_rule_file("always-00-compact-digest")
+        if digest:
+            parts.append(digest)
+            parts.append(header)
+            return "\n\n".join(parts)
+        # digestが読めない時は安全側＝フル版へフォールバック（発車は止めない）
     preamble = _load_session_preamble()
     if preamble:
         parts.append(preamble)
