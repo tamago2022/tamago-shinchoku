@@ -52,7 +52,7 @@
 <div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の言葉『口調がすぐ戻ってしまう。CLAUDE.mdに書いてあるか確認してください』を調査。『たまごさんと呼ぶ・日本語・平易な言葉』の口調ルールは <code>~/.claude/hooks/tamago_context.py</code> のSessionStartフック文字列にしか存在せず、joy-relief-station の CLAUDE.md／AGENTS.md／.claude/rules/*.md には1行も書かれていなかった（grep実測0件）。フックが効かない経路（サブエージェント・外部AI等）では口調が戻る構造的原因だったため、CLAUDE.md本文に『第九条』として明記し、mainへpushした（commit 1e1f5dea9。joy-relief-stationは非公開リポのため外部リンクは開けず、git show origin/main:CLAUDE.mdで反映を実測確認済み）。
+店主の言葉『口調がすぐ戻ってしまう。CLAUDE.mdに書いてあるか確認してください』を調査。『たまごさんと呼ぶ・日本語・平易な言葉』の口調ルールは秘書フックの一時的な文字列にしか存在せず、joy-relief-station の CLAUDE.md／AGENTS.md／.claude/rules/*.md には1行も書かれていなかった（grep実測0件）。フックが効かない経路（サブエージェント・外部AI等）では口調が戻る構造的原因だったため、CLAUDE.md本文に『第九条』として明記し、mainへ反映した。joy-relief-stationは非公開リポのため外部リンクは開けず、反映はリポジトリ内で実測確認済み。
 </div>
 
 <h2>② 数字</h2>
@@ -72,7 +72,7 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>CLAUDE.md本文に口調ルールあり</td><td class="yes">yes</td></tr>
-<tr><td>mainへpush済み（git show origin/mainで実測確認）</td><td class="yes">yes</td></tr>
+<tr><td>mainへ反映済み（実測確認）</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
