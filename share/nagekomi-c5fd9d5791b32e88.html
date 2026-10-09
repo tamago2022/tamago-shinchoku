@@ -92,7 +92,6 @@
   .chips .none{font-size:12.5px;color:var(--sub)}
 
   .msg{margin-top:12px;font-size:13.5px;min-height:20px}
-  #dup{margin-top:8px;font-size:14px;font-weight:700;color:var(--t-ng);line-height:1.5}
   .ok{color:var(--t-ok)} .ng{color:var(--t-ng)}
   .queue{margin-top:10px;font-size:12.5px;color:var(--sub)}
   .queue b{color:var(--accent)}
@@ -156,7 +155,6 @@
            spellcheck="false" placeholder="https://…" enterkeyhint="done">
     <button class="pb" id="pb" type="button">貼る</button>
   </div>
-  <div id="dup" role="alert" hidden></div>
 </div>
 
 <div class="field">
@@ -487,8 +485,6 @@ el("send").addEventListener("click", function(){
         d0.innerHTML = "<b>入りました</b> → "
           + (kk[2] ? '<a class="go g2" href="'+esc(kk[2])+'" target="_blank" rel="noopener">'
                      + esc(kk[1]||"棚")+' の棚を開く</a>' : esc(kk[1]||""));
-      }else if(hai && kk[1] === "ダブり"){
-        say(kk[2] || "もうダブってます", false);
       }else if(hai){
         say("入りませんでした：" + (kk[1]||"失敗") + (kk[2] ? "（"+kk[2]+"）" : ""), false);
       }else if(u){
@@ -502,29 +498,6 @@ el("send").addEventListener("click", function(){
     }
   });
 });
-
-/* ★2026-10-07【同じURLは2個作らない】URLを入れた瞬間に、もう棚にあるか中継所へ聞いて赤字で出す（棚には何も書かない） */
-var DUPSEQ = 0, DUPT = null;
-function dupShow(t){ var d = el("dup"); if(!t){ d.hidden = true; d.textContent = ""; } else { d.hidden = false; d.textContent = t; } }
-function dupCheck(){
-  var u = el("u").value.trim(), n = ++DUPSEQ;
-  if(!/^https?:\/\//.test(u) || !honmono()){ dupShow(""); return; }
-  (RELAY ? Promise.resolve(RELAY) : relay()).then(function(r){
-    if(!r) return null;
-    return toFetch(r+"/cmd", {method:"POST", mode:"cors", headers:HEAD,
-      body:JSON.stringify({commands:[{id:"nc"+Date.now().toString(36), action:"nagekomi_check", target:u, label:"確認", requestedAt:new Date().toISOString()}]})}, 15000)
-      .then(function(x){ return x.ok ? x.json() : null; });
-  }).then(function(j){
-    if(n !== DUPSEQ) return;
-    var m = j && j.results && j.results[0] ? String(j.results[0].message||"") : "";
-    var p = m.split("｜");
-    if(p[0] === "ダブり") dupShow("同じURLがあります：" + (p[1] || ""));
-    else dupShow("");
-  }).catch(function(){ if(n === DUPSEQ) dupShow(""); });
-}
-el("u").addEventListener("input", function(){ dupShow(""); clearTimeout(DUPT); DUPT = setTimeout(dupCheck, 500); });
-el("u").addEventListener("change", dupCheck);
-el("pb").addEventListener("click", function(){ setTimeout(dupCheck, 400); });
 
 /* ★貯まっている分は、画面を開いている間 30秒おき／戻ってきたとき／開いた直後に自動で送る */
 function autoFlush(){

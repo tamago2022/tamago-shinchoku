@@ -35,7 +35,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 STATE_JSON = os.path.join(REPO, "status", "reaper-state.json")
 VAULT = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain"
-LOG_MD = os.path.join(os.path.expanduser("~/Documents/AI作業/obsidian_退避"), "見張り番ログ.md")  # 2026-10-08 Vault外へ
+LOG_MD = os.path.join(VAULT, "AI出力", "_ルール", "見張り番ログ.md")
 
 ORPHAN_MIN = 20
 CPU_MIN = 3.0

@@ -30,14 +30,11 @@
 from __future__ import annotations
 
 import datetime
-import fcntl
 import io
 import json
 import os
 import re
 import sys
-import time
-from contextlib import contextmanager
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -49,41 +46,6 @@ HATSUGEN = os.path.join(ST, "kioku", "hatsugen.jsonl")
 DAICHO = os.path.join(ST, "shukudai", "daicho.jsonl")
 KENPIN = os.path.join(ST, "oni_modoshi", "kenpin.jsonl")
 LOG = os.path.join(ST, "kioku", "hantei.jsonl")
-
-# 34533番で実測した事故：tools/kioku.py（8tickごと）と tools/hantei_hiduke.py
-# （40tickごと）が、どちらも鍵なしで HATSUGEN を読む→書くしていた。
-# kioku.pyがこのファイルを読んだ直後にhantei_hiduke.pyが判定して
-# hanteiSumi（判定済みの印）を書き込んでも、kioku.pyが古い内容のまま
-# 書き戻すと★その判定が消える（lost update）。消えると次の判定日チェックで
-# 「まだ判定していない」扱いに戻り、★同じ案件を何度も★赤＋再発車してしまう
-# （実例：id f81962a0e496「1件ずつの個別対応ではなく仕組み自体を作ってほしい」が
-# 2026-10-02 01:03 と 01:34 の2回、どちらもhanteiSumiが空の状態から判定され、
-# 2回とも再発車されていた＝queue.jsonに34530〜34533番という同一発言の重複案件が
-# 積まれた直接の原因）。
-# ★kioku.py側にも同じロック（同じファイルパス）を入れてある。
-HATSUGEN_LOCK = os.path.join(ST, ".hatsugen.lock")
-
-
-@contextmanager
-def hatsugen_lock(timeout=10.0):
-    f = io.open(HATSUGEN_LOCK, "a+")
-    t0 = time.time()
-    while True:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            break
-        except Exception:
-            if time.time() - t0 > timeout:
-                break
-            time.sleep(0.05)
-    try:
-        yield
-    finally:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        except Exception:
-            pass
-        f.close()
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 _YOUBI = "月火水木金土日"
@@ -123,159 +85,6 @@ _SAIHASSHA_PREFIX = re.compile(r"^(判定日赤｜|差し戻し｜|【差し戻�
 def kihon_title(t):
     """再発車のときに付くラベルのプレフィックスを剥がし、元の発言のキーに揃える。"""
     return _SAIHASSHA_PREFIX.sub("", t or "")
-
-
-# ────────────────────────────── 34639番：セッション内完結の検出（恒久対策） ──
-# DAICHOに一度も登録されない発言（hatsugen.jsonl直の行）が、その場で完結していても
-# 機械に伝わらない問題（1996番の再発）への対応。元の会話ログ（r["from"]）を直接開き、
-# 完了報告の有無と、その後の明確な否定の有無を見る。
-_COMPLETION_KEYWORDS = ("完了しました", "できました", "直しました", "完了済み",
-                        "やりました", "終わりました", "対応しました",
-                        # 34816番実例（2026-10-09）：「黒を取って入れてターミナルで
-                        # ログインしましたよ」（エンタクのclaude CLI OAuthトークン
-                        # 切れの相談）が、同一セッション内（2026-08-06 17:54〜18:02）
-                        # でClaudeが代替案（ターミナル経由のclaude CLIを完全に
-                        # スキップし、チャット内で直接議事録を生成する方式）を提示・
-                        # 実行し「完成した。ターミナルもOAuthも一切通さず...終わって
-                        # いる。」まで完結していたのに、キーワード不一致で
-                        # 未着手→★赤判定され続けていた（34639/1996番と同じ根本原因の
-                        # 3回目の再発）。「完成した」「終わっている」の言い回しを追加。
-                        "完成した", "終わっている", "できている")
-_DENIAL_KEYWORDS = ("まだ", "できてない", "直ってない", "ダメ", "だめ", "違う", "できない", "直ってなく")
-_SESSION_LOG_CACHE = {}
-_PROJECTS_DIRS_CACHE = None
-
-
-def _projects_dirs():
-    """~/.claude/projects 直下のディレクトリ一覧（1000件超）を1回だけ列挙してキャッシュする。
-    判定日が来た件数ぶん毎回 os.listdir を回すと重くなる（34639番の実測でタイムアウトした）。"""
-    global _PROJECTS_DIRS_CACHE
-    if _PROJECTS_DIRS_CACHE is not None:
-        return _PROJECTS_DIRS_CACHE
-    base = os.path.expanduser("~/.claude/projects")
-    try:
-        _PROJECTS_DIRS_CACHE = [os.path.join(base, d) for d in os.listdir(base)]
-    except Exception:
-        _PROJECTS_DIRS_CACHE = []
-    return _PROJECTS_DIRS_CACHE
-
-
-def _find_session_log(from_name):
-    """r["from"]（例: "e23675ff-....jsonl"）の実体を ~/.claude/projects/*/ から探す。
-    毎回ディスクを掘らないよう、ディレクトリ一覧自体と名前→パスの結果を両方キャッシュする。"""
-    if not from_name:
-        return None
-    if from_name in _SESSION_LOG_CACHE:
-        return _SESSION_LOG_CACHE[from_name]
-    path = None
-    try:
-        for d in _projects_dirs():
-            cand = os.path.join(d, from_name)
-            if os.path.exists(cand):
-                path = cand
-                break
-    except Exception:
-        path = None
-    _SESSION_LOG_CACHE[from_name] = path
-    return path
-
-
-_SESSION_ROWS_CACHE = {}
-# 1007種のfromファイルを毎回全部読むと重すぎてタイムアウトした実測あり
-# （34639番の修正中に発覚）。1回の hashiru() 実行あたり、この新規チェックに
-# 使ってよい時間の上限を決め、超えたら残りは素通りさせる（＝従来通りの判定に
-# 戻るだけで、誤って見逃す側には倒さない。1462番の原則を守る）。
-_SESSION_CHECK_BUDGET_SEC = 8.0
-_SESSION_CHECK_STATE = {"start": None}
-
-
-def _session_check_budget_ok():
-    if _SESSION_CHECK_STATE["start"] is None:
-        _SESSION_CHECK_STATE["start"] = time.time()
-        return True
-    return (time.time() - _SESSION_CHECK_STATE["start"]) < _SESSION_CHECK_BUDGET_SEC
-
-
-def _load_session_rows(path):
-    """会話ログ(jsonl)を1ファイル1回だけ読む。同じfromを持つhatsugen行が複数
-    あっても、ファイルの再読み込み・再パースを繰り返さない（34639番の実測で
-    タイムアウトした原因の1つ）。"""
-    if path in _SESSION_ROWS_CACHE:
-        return _SESSION_ROWS_CACHE[path]
-    rows = []
-    try:
-        with io.open(path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    rows.append(json.loads(line))
-                except Exception:
-                    pass
-    except Exception:
-        rows = []
-    _SESSION_ROWS_CACHE[path] = rows
-    return rows
-
-
-def _message_text(row):
-    msg = row.get("message")
-    if not isinstance(msg, dict):
-        return "", None
-    role = msg.get("role")
-    content = msg.get("content")
-    text = ""
-    if isinstance(content, str):
-        text = content
-    elif isinstance(content, list):
-        for c in content:
-            if isinstance(c, dict) and c.get("type") == "text":
-                text += c.get("text", "")
-    return text, role
-
-
-def _jst_to_utc_iso(s):
-    """r["firstSaid"]等 "2026-08-07 00:08"(JST) をログのtimestamp(UTC ISO)と
-    比較できる形に変換する。パースできなければ None（＝絞り込まず全文を見る）。"""
-    dt = parse_hi(s)
-    if dt is None:
-        return None
-    return dt.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
-
-
-def _session_log_shows_completion(r, log_rows=None):
-    """同一セッションログ内で、この発言（firstSaid）より後にassistantの完了報告が
-    あり、その後のuser発言に明確な否定が続いていなければ True。
-    log_rows を渡せばテスト用にファイルを経由せず判定できる。
-    firstSaid以降に絞るのは、ファイル内のどこか別件の完了報告を拾って
-    無関係な発言まで「完結済み」と誤判定しないため。"""
-    rows = log_rows
-    if rows is None:
-        if not _session_check_budget_ok():
-            return False
-        path = _find_session_log(r.get("from"))
-        if not path:
-            return False
-        rows = _load_session_rows(path)
-    since = _jst_to_utc_iso(r.get("firstSaid")) if log_rows is None else None
-    completed = False
-    denied_after = False
-    for row in rows:
-        if since:
-            ts = row.get("timestamp") or ""
-            if ts and ts < since:
-                continue
-        text, role = _message_text(row)
-        if not text:
-            continue
-        if role == "assistant" and any(k in text for k in _COMPLETION_KEYWORDS):
-            completed = True
-            denied_after = False
-            continue
-        if completed and role == "user" and any(k in text for k in _DENIAL_KEYWORDS):
-            denied_after = True
-    return completed and not denied_after
 
 
 def jsonl(p):
@@ -389,9 +198,7 @@ def ima_no_jotai():
 
 def hantei_1ken(r, ima):
     """1件を判定する。返すのは（赤か、実際どうなったか、いまの状態）。"""
-    key = norm(r.get("title"))[:24]
-    in_daicho = key in ima
-    cur = ima.get(key) or {"state": "未着手", "evidence": None, "actionable": None}
+    cur = ima.get(norm(r.get("title"))[:24]) or {"state": "未着手", "evidence": None, "actionable": None}
     st = cur["state"]
     t = today()
     w = r.get("hantei1w") or ""
@@ -438,23 +245,6 @@ def hantei_1ken(r, ima):
     except Exception:
         pass
 
-    # 34639番実例（2026-10-08）：円卓会議ノート5本の「書き直し」依頼は、DAICHO
-    # （宿題台帳）に一度も登録されないまま、依頼した当日のうちに同一セッション内で
-    # 実行・完了し、たまごさんも受領していた。それでも機械は完了を検知できず、
-    # 2ヶ月後に「1ヶ月経っても未着手」と誤って★赤＋再発車した
-    # （1996番と同じ根本原因の再発＝2回目）。
-    # ★ DAICHO未登録の行だけに限定し、同一セッション内（元の発言と同じ from
-    # ファイル）でassistantの完了報告があり、その後に明確な否定（まだ／ダメ等）
-    # が続いていない場合だけ「セッション内で完結済み」とみなす。
-    # 1462番の原則（「誤って赤を隠す方が、赤が多すぎることより悪い」）を壊さない
-    # よう、完了報告と否定の有無を両方厳しく見てから外す（見逃し優先ではなく
-    # 「その場で完結したことが確認できる場合」だけの限定的な例外）。
-    if not in_daicho and st == "未着手" and _session_log_shows_completion(r):
-        return {"which": which, "aka": False, "state": "完了（セッション内確認）",
-                "sonogo": ("DAICHO未登録だが、同一セッション内でassistantの完了報告と"
-                           "それに続く明確な否定の不在を確認できたため、赤判定・再発車の"
-                           "対象外とした（34639番の恒久対策）")}
-
     if st == "完了":
         return {"which": which, "aka": False, "state": st,
                 "sonogo": "返した（%s／%s）" % (cur.get("evidence") or "証拠URLなし", t)}
@@ -492,43 +282,38 @@ def kuriageru(r, naze):
 
 
 def hashiru(dry=False):
-    # ★読む→書くの間、ずっと鍵をかける（kioku.pyと同じ鍵・同じファイル）。
-    # これが無いと、kioku.pyの古い読み込みがこの関数の新しい書き込みを
-    # 後から上書きして消す（lost update）。詳しい事故の実測はHATSUGEN_LOCK定義の
-    # コメント参照。
-    with hatsugen_lock():
-        rows = {r["id"]: r for r in jsonl(HATSUGEN) if r.get("id")}
-        ima = ima_no_jotai()
-        mita, aka, tojita = 0, 0, 0
-        for r in rows.values():
-            h = hantei_1ken(r, ima)
-            if not h:
-                continue
-            mita += 1
-            r["state"] = h["state"]
-            r["sonogo"] = h["sonogo"]
-            r["hanteiAt"] = stamp()
-            r["hanteiSumi"] = sorted(set((r.get("hanteiSumi") or []) + [h["which"]]))
-            if h["aka"]:
-                aka += 1
-                r["aka"] = True
-                r["p"] = 1                      # ★自動でP1に繰り上げ
-                if not dry:
-                    r["saihassha"] = kuriageru(r, h["sonogo"])
-            else:
-                r["aka"] = False
-                if h["state"] == "完了":
-                    tojita += 1
+    rows = {r["id"]: r for r in jsonl(HATSUGEN) if r.get("id")}
+    ima = ima_no_jotai()
+    mita, aka, tojita = 0, 0, 0
+    for r in rows.values():
+        h = hantei_1ken(r, ima)
+        if not h:
+            continue
+        mita += 1
+        r["state"] = h["state"]
+        r["sonogo"] = h["sonogo"]
+        r["hanteiAt"] = stamp()
+        r["hanteiSumi"] = sorted(set((r.get("hanteiSumi") or []) + [h["which"]]))
+        if h["aka"]:
+            aka += 1
+            r["aka"] = True
+            r["p"] = 1                      # ★自動でP1に繰り上げ
             if not dry:
-                append(LOG, {"at": stamp(), "id": r["id"], "title": (r.get("title") or "")[:80],
-                             "which": h["which"], "aka": h["aka"], "state": h["state"],
-                             "sonogo": h["sonogo"]})
-        if not dry and rows:
-            body = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n"
-                           for r in sorted(rows.values(),
-                                           key=lambda x: (-int(x.get("count") or 1),
-                                                          str(x.get("firstSaid") or ""))))
-            write_text(HATSUGEN, body)
+                r["saihassha"] = kuriageru(r, h["sonogo"])
+        else:
+            r["aka"] = False
+            if h["state"] == "完了":
+                tojita += 1
+        if not dry:
+            append(LOG, {"at": stamp(), "id": r["id"], "title": (r.get("title") or "")[:80],
+                         "which": h["which"], "aka": h["aka"], "state": h["state"],
+                         "sonogo": h["sonogo"]})
+    if not dry and rows:
+        body = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n"
+                       for r in sorted(rows.values(),
+                                       key=lambda x: (-int(x.get("count") or 1),
+                                                      str(x.get("firstSaid") or ""))))
+        write_text(HATSUGEN, body)
     return {"mita": mita, "aka": aka, "tojita": tojita, "zen": len(rows)}
 
 
@@ -561,32 +346,6 @@ def main():
             ng.append("「判定日赤｜」プレフィックスを剥がせない（34536番の再発）")
         if kihon_title("差し戻し｜テスト") != "テスト":
             ng.append("「差し戻し｜」プレフィックスを剥がせない（34536番の再発）")
-        # 34639番の再発防止：DAICHO未登録でもセッション内で完結していれば赤にしない
-        rows_done = [
-            {"message": {"role": "user", "content": "それを書き直してみてください。"}},
-            {"message": {"role": "assistant", "content": "5本とも書き直し完了しました。"}},
-            {"message": {"role": "user", "content": "ありがとう、ありがとうね。"}},
-        ]
-        if not _session_log_shows_completion({"from": "dummy"}, log_rows=rows_done):
-            ng.append("セッション内完結の検出ができていない（34639番の再発防止）")
-        rows_denied = [
-            {"message": {"role": "assistant", "content": "直しました。"}},
-            {"message": {"role": "user", "content": "まだ直ってないよ。"}},
-        ]
-        if _session_log_shows_completion({"from": "dummy"}, log_rows=rows_denied):
-            ng.append("否定発言の後もセッション内完結と誤判定している（34639番の再発防止）")
-        rows_none = [
-            {"message": {"role": "user", "content": "それを書き直してみてください。"}},
-        ]
-        if _session_log_shows_completion({"from": "dummy"}, log_rows=rows_none):
-            ng.append("完了報告が無いのにセッション内完結と誤判定している（34639番の再発防止）")
-        # hantei_1ken経由の統合テスト：ログが見つからない時は従来通り赤のまま（見逃し優先にしない）
-        r5 = {"id": "z", "title": "セッション内完結テスト用タイトルです", "count": 1, "from": "dummy-not-found.jsonl",
-              "firstSaid": "2020-01-01 00:00", "hantei1w": "2020-01-08",
-              "hantei1m": "2020-01-31", "hanteiSumi": []}
-        h5 = hantei_1ken(r5, {})
-        if not h5 or not h5["aka"]:
-            ng.append("セッションログが見つからない時に誤って救済している（34639番の再発防止）")
         # 34536番の再発防止：再発車タイトル（プレフィックス付き）で検品合格した記録が
         # プレフィックス無しの元の発言キーに「完了」として反映されるか（実ファイルは汚さない）
         import tempfile

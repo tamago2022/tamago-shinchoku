@@ -205,7 +205,7 @@ with sh as (
      or (%(sid)s = '' and %(stitle)s <> '' and title = %(stitle)s)
   order by (id::text = %(sid)s) desc, (extends_shelf_id = %(sid)s) desc, position nulls last
   limit 1),
-ex as (select id from admin_stock where kind = %(kind)s and (ref = %(ref)s or (%(rx)s <> '' and ref ~* %(rx)s)) order by created_at limit 1),
+ex as (select id from admin_stock where kind = %(kind)s and ref = %(ref)s limit 1),
 fix as (update admin_stock set thumbnail_url = coalesce(thumbnail_url, %(thumb)s), note = coalesce(note, %(note)s)
         where id in (select id from ex) and (thumbnail_url is null or note is null) returning id),
 ins as (insert into admin_stock (kind, ref, title, thumbnail_url, note)
@@ -231,61 +231,6 @@ from sh
 """
 
 
-RE_YT_ID = re.compile(r"(?:youtube\.com/(?:watch\?(?:[^#]*&)?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})")
-
-
-def dup_key(url):
-    """★2026-10-07 URLの正規形。(kind, ref, 一致用の正規表現)。
-    ?s=20・mobile.・twitter.com／x.com・ユーザー名の大小・末尾/・#以降 の違いは同じURLとみなす。
-    X は status の数字、YouTube は動画ID が本体。"""
-    url = str(url or "").strip()
-    m = RE_YT_ID.search(url)
-    if m:
-        v = m.group(1)
-        return "youtube", "https://www.youtube.com/watch?v=%s" % v, r"(?:[?&]v=|embed/|shorts/|youtu\.be/)%s(?![A-Za-z0-9_-])" % v
-    mx = RE_X.match(url)
-    if mx:
-        return "x", "https://x.com/%s/status/%s" % (mx.group(1), mx.group(2)), r"(?:x|twitter)\.com/[^/?#]+/status/%s(?!\d)" % mx.group(2)
-    return "link", url, ""
-
-
-SQL_DOKO = """
-select s.id::text as stock_id, s.title as card_title, sh.id::text as shelf_db, sh.title as shelf_title, sh.world, sh.extends_shelf_id
-from admin_stock s
-left join admin_shelf_picks p on p.stock_id = s.id and p.status in ('candidate','fixed')
-left join admin_shelves sh on sh.id = p.shelf_id
-where s.kind = %(kind)s and (s.ref = %(ref)s or (%(rx)s <> '' and s.ref ~* %(rx)s))
-order by s.created_at, sh.position nulls last
-"""
-
-
-def doko(db, url):
-    """この URL が既に入っているか。返り値 {dup, cards, shelves:[{id,title,world}]}。"""
-    kind, ref, rx = dup_key(url)
-    rows = db.q(SQL_DOKO % {"kind": lit(kind), "ref": lit(ref), "rx": lit(rx)}) or []
-    shelves, seen = [], set()
-    for r in rows:
-        if r.get("shelf_db") and r["shelf_db"] not in seen:
-            seen.add(r["shelf_db"])
-            shelves.append({"id": r["shelf_db"], "title": r.get("shelf_title"), "world": r.get("world"),
-                            "ext": r.get("extends_shelf_id")})
-    return {"dup": bool(rows), "cards": len({r["stock_id"] for r in rows}), "shelves": shelves,
-            "kind": kind, "ref": ref}
-
-
-def check_message(url):
-    """箱が［入れた瞬間］に赤字を出すための1行。「ダブり｜「棚A」、「棚B」」「ダブり｜在庫には…」「なし」。"""
-    try:
-        d = doko(db_kept(), url)
-    except Exception as e:  # noqa: BLE001
-        return "確認不能｜%s" % str(e)[:60]
-    if not d["dup"]:
-        return "なし"
-    if not d["shelves"]:
-        return "ダブり｜在庫には有ります（棚にはまだ結ばれていません）"
-    return "ダブり｜" + "、".join("「%s」" % x["title"] for x in d["shelves"])
-
-
 def wants_of(r):
     if isinstance(r.get("shelves"), list) and r.get("shelves"):
         return [w if isinstance(w, dict) else {"title": w} for w in r["shelves"]]
@@ -306,36 +251,6 @@ def ensure_named_shelf(db, r, want_title):
     return True
 
 
-def tana_machi(db, r, url):
-    """棚が未定の投げ込みを、在庫（admin_stock）に「🟡保留：棚待ち」で置く。棚(pick)は作らない。"""
-    m = RE_YT.search(url)
-    mx = RE_X.match(url)
-    kind = "youtube" if m else ("x" if mx else "link")
-    ref = ("https://www.youtube.com/watch?v=%s" % m.group(1)) if m else \
-          (("https://x.com/%s/status/%s" % (mx.group(1), mx.group(2))) if mx else url)
-    try:
-        thumb, note, why_m = media_hayai(url, r)
-    except Exception as e:  # noqa: BLE001
-        thumb, note, why_m = None, None, "サムネを調べる係が転んだ（%s）" % type(e).__name__
-    title = clean_title(r.get("title"))
-    if not title and mx:
-        title = "@%s のポスト" % mx.group(1)
-    title = (title or ref)[:300]
-    mark = "🟡保留：棚待ち（行き先の棚が未定。棚が決まれば入ります）"
-    full_note = ((note + "\n") if note else "") + mark
-    _k, _r, rx = dup_key(url)
-    sql = ("with ex as (select id from admin_stock where kind = %s and (ref = %s or (" + lit(rx) + " <> '' and ref ~* " + lit(rx) + ")) order by created_at limit 1), "
-           "ins as (insert into admin_stock (kind, ref, title, thumbnail_url, note) "
-           "select %s, %s, %s, %s, %s where not exists (select 1 from ex) returning id) "
-           "select (select id::text from ex union all select id::text from ins limit 1) as stock_id"
-           % (lit(kind), lit(ref), lit(kind), lit(ref), lit(title), lit(thumb), lit(full_note)))
-    rows = db.q(sql)
-    sid = rows[0].get("stock_id") if isinstance(rows, list) and rows else None
-    return {"ok": False, "why1": "棚待ち",
-            "why": "入荷は済みました（在庫に保留：棚待ちで記録）。棚が決まれば入ります" if sid else "入荷の記録に失敗",
-            "stockId": sid}
-
-
 def ireru(db, r):
     """1件を棚へ。返り値 {ok, why1, why, links:[{title,url}], rec}。"""
     rid = r.get("id")
@@ -343,29 +258,13 @@ def ireru(db, r):
     if not url.startswith("https://"):
         return {"ok": False, "why1": "URL無し", "why": "ひとことだけ届いています"}
     wants = wants_of(r)
-    # ★2026-10-07【同じURLは2個作らない】要求された棚が全部すでに持っていたら、作らず「もうダブってます」。
-    #   別の棚にだけ有るときは、カードは作らず既存のものをその棚へ結ぶ（SQL側が既存カードを使う）。
-    try:
-        dd = doko(db, url)
-    except Exception:  # noqa: BLE001
-        dd = {"dup": False, "shelves": []}
-    if dd["dup"] and dd["shelves"] and wants:
-        have_ids = {x["id"] for x in dd["shelves"]} | {x["ext"] for x in dd["shelves"] if x.get("ext")}
-        have_titles = {x["title"] for x in dd["shelves"]}
-
-        def _held(w):
-            return (str(w.get("id") or "") in have_ids) or (str(w.get("title") or "") in have_titles)
-        if all(_held(w) for w in wants):
-            names = "、".join("「%s」" % x["title"] for x in dd["shelves"])
-            return {"ok": False, "why1": "ダブり", "why": "もうダブってます：%s に入っています" % names,
-                    "links": [], "dup_shelves": [x["title"] for x in dd["shelves"]]}
     if not wants:
-        # ★2026-10-06（たまごさん指示）：棚が未定でも**入荷だけは済ませる**。入れようとした物を落とさない。
-        #   在庫に「🟡保留：棚待ち」の印つきで置く（棚には出ない）。棚が決まれば次の回／手動で結ばれる。
-        return tana_machi(db, r, url)
+        return {"ok": False, "why1": "棚未定", "why": "行き先の棚がまだ決まっていません"}
     m = RE_YT.search(url)
     mx = RE_X.match(url)
-    kind, ref, rx = dup_key(url)
+    kind = "youtube" if m else ("x" if mx else "link")
+    ref = ("https://www.youtube.com/watch?v=%s" % m.group(1)) if m else \
+          (("https://x.com/%s/status/%s" % (mx.group(1), mx.group(2))) if mx else url)
     tm = time.time()
     try:
         thumb, note, why_m = media_hayai(url, r)
@@ -384,7 +283,7 @@ def ireru(db, r):
     for w in wants:
         sid = str(w.get("id") or "").strip()
         stitle = str(w.get("title") or "").strip()
-        args = {"sid": lit(sid), "stitle": lit(stitle), "kind": lit(kind), "ref": lit(ref), "rx": lit(rx),
+        args = {"sid": lit(sid), "stitle": lit(stitle), "kind": lit(kind), "ref": lit(ref),
                 "title": lit(title), "thumb": lit(thumb), "note": lit(note or None), "cap": CAP}
         rows = db.q(SQL_IRERU % args)
         if not rows and ensure_named_shelf(db, r, stitle):
