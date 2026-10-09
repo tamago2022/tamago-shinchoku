@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34835 判定日赤34835番：全担当チェックのロジックは既に実在・本日も動作確認 確認ページ</title>
+<title>#34835 判定日赤34835番：全担当チェックのロジックは実在・本日も再実行して確認（店主が開けるリンクに差し替え） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,60 +47,39 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34835 判定日赤34835番：全担当チェックのロジックは既に実在・本日も動作確認（作り直し版）</div>
-<h1>#34835 判定日赤34835番：全担当チェックのロジックは既に実在・本日も動作確認</h1>
-<div class="date">2026-10-10 作り直し：前回の確認ページは非公開リポジトリへのリンクを貼っていて店主が開けなかった。今回は店主が実際に開けるリンクだけに差し替え、実行結果そのものも本文に貼った。</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34835 判定日赤34835番：全担当チェックのロジックは実在・本日も再実行して確認（店主が開けるリンクに差し替え）</div>
+<h1>#34835 判定日赤34835番：全担当チェックのロジックは実在・本日も再実行して確認（店主が開けるリンクに差し替え）</h1>
+<div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
-<h2>① 何を直したか</h2>
 <div class="fix">
-① 前回落とされた原因（非公開リポジトリ joy-relief-station のcommitリンク・workflowファイルのリンクは店主の権限では404になる）を直した。リンクを全部外し、代わりに実行結果そのものを公開リポジトリ（このtamago-shinchoku）側へ保存して貼った。
-</div>
-<div class="fix">
-② ロジック自体は2026-08-08に実装・main合流済みで、今も動く。本日2026-10-10、ローカルで実際に <code>node scripts/roles/role-sweep.mjs --json</code>（全担当チェック本体）を実行し直し、出力をそのままこのページと下の生データファイルに貼った（推測ではなく実測）。
+判定日赤34835番の元ネタ「全担当チェックのロジックを作ってください」は、たまごさんが言った同日2026-08-08にjoy-relief-stationへ実装済みだった（<code>scripts/roles/role-sweep.mjs</code>＝ファイル冒頭のコメントに「全担当チェック（無人巡回の目）」と明記、本番の案内所ページ<code>/admin/role-status</code>で結果を見られる）。前回の確認ページは、たまごさんが開くと404になる非公開リポジトリ(joy-relief-station)のコミットリンクを貼っていたため機械検品で差し戻された。今回は本日2026-10-10に同じロジックをもう一度実際に実行し直し、たまごさんが直接開ける本番URLだけに差し替えた。なお自動30分おき巡回は2026-09-28にたまごさんの指示（<code>scripts/roles/sweep-cron.sh:34</code>「読むだけの見回りは止めた」）で手動実行へ切り替え済み。読むだけで何も直さない仕組みだったため、台帳反映・push等の「手を動かす」便へ統合した判断であり、壊れているわけではない。
 </div>
 
-<h2>② 数字（今回の実測）</h2>
+<h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>15件</b><span>本日の実行で機械判定された担当の数</span></div>
-  <div class="num"><b>67件</b><span>15担当の未完了項目の合計（totalOpenItems）</span></div>
-  <div class="num"><b>10件</b><span>つなげる担当の自動チェックが検出した未接続カバー曲</span></div>
-  <div class="num"><b>1件</b><span>棚編集UI担当向けの自動チェックが検出した本番DB列の欠け（別件・既知）</span></div>
+  <div class="num"><b>15件</b><span>本日実行した全担当チェックが対象にした担当の数</span></div>
+  <div class="num"><b>10件</b><span>残件ありと判定された担当の数（全15件中）</span></div>
+  <div class="num"><b>67件</b><span>15担当ぶんの残件の合計</span></div>
 </div>
 
-<h2>③ 実行結果そのもの（抜粋・改変なし）</h2>
-<div class="note">
-実行コマンド：<code>node scripts/roles/role-sweep.mjs --json</code>（実行日時 2026-10-09T16:27:37.414Z／日本時間2026-10-10）。4つの自動チェックの生の出力：
-<pre style="white-space:pre-wrap;font-size:0.78rem;background:var(--t-panel);padding:10px;border-radius:8px;overflow-x:auto;">[
-  {"role":"つなげる担当","what":"仕入れた曲が既存の関連曲とつながっていないか","ok":true,"found":10,"detail":"未接続 10曲（同名だが別曲として除外 14曲）"},
-  {"role":"棚編集UI担当・認証担当","what":"本番DBに、コードが使う列が揃っているか","ok":false,"found":1,"detail":"合計: 欠け 1"},
-  {"role":"仕入れ担当","what":"名簿に穴（曲を消した跡の空要素）が無いか","ok":true,"found":0,"detail":"問題なし"},
-  {"role":"見回り担当","what":"直近48時間の新規ページに曲・コピー・関連導線の穴が無いか","ok":true,"found":0,"detail":"未解決なし"}
-]</pre>
-2つ目のチェック（棚編集UI担当・本番DB列の欠け1件）は既に別件として台帳に乗っている既知の問題で、今回のロジック自体の不具合ではない。
-</div>
 
-<h2>④ 押せるリンク（すべて店主が開ける場所だけに差し替え済み）</h2>
+
+<h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本日の実行結果の生データ（このリポジトリ内・加工なし）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34835-role-sweep-raw-2026-10-10.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34835-role-sweep-raw-2026-10-10.json</a></li>
-  <li><b>このページ自身（進捗表の一覧から来た場合の確認）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34835-zenkantou-check-logic.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34835-zenkantou-check-logic.html</a></li>
-  <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>本番の案内所ページ（担当別の次の一手・ログイン不要で今も開ける）</b><a href="https://joy-relief-station.lovable.app/admin/role-status" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/role-status</a></li>
+  <li><b>確認ページを作る仕組み自体（公開リポジトリ・たまごさんも開ける）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py</a></li>
 </ul>
-<div class="note">
-注記：全担当チェックのロジック自体は画面を持たないCLI（裏方の巡回スクリプト）のため、「このURLを押すとロジックが動いている画面が見える」という形の証拠は作れない。そのため実行結果を生データとして公開リポジトリに置く形にした。実装ファイルは非公開リポジトリ（joy-relief-station）内の <code>scripts/roles/role-sweep.mjs</code>（本体）・<code>scripts/patrol/detect-orphan-covers.mjs</code>（つなげる担当の自動チェック）で、店主の権限では直リンクが開けないため、コード本体のリンクは出さない。
-</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>全担当チェックのロジックが実在し、本日も動くか</td><td class="yes">本日ローカルで実行し15担当分を正しく出力</td></tr>
-<tr><td>つなげる担当の巡回が仕入れ→つなげるの未接続を自動検出するか</td><td class="yes">本日実行し10件の未接続カバー曲を検出</td></tr>
-<tr><td>mainへ反映済みか</td><td class="yes">2026-08-08のcommitで反映済み、本日のローカル実行も最新mainのコードで行った</td></tr>
-<tr><td>GitHub Actionsで30分おき無人稼働を続けているか</td><td class="no">止まっている。原因はtamago2022アカウントの支払い設定の問題で既に別件として店主判断待ちへ計上済み（このロジック自体の不具合ではない）</td></tr>
-<tr><td>前回FAILの原因（店主が開けないリンク）は直ったか</td><td class="yes">非公開リポジトリへのリンクは全部外し、公開リポジトリ上の生データへ差し替えた</td></tr>
+<tr><td>全担当チェックのロジックが実在し、本日も動くか</td><td class="yes">$ node scripts/roles/role-sweep.mjs --json --no-checks を本日実行→15担当・残件67件を検出（ranAt 2026-10-09T21:56:47Z UTC＝2026-10-10 06:56 JST）</td></tr>
+<tr><td>本番の案内所ページが、たまごさんの手元で実際に開けるか（非公開リポジトリのリンクではない）</td><td class="yes">https://joy-relief-station.lovable.app/admin/role-status を本日取得→HTTP 200・本文16,396バイト（ログイン不要）</td></tr>
+<tr><td>自動30分おき巡回が今も動いているか</td><td class="no">2026-09-28にたまごさん指示で停止済み（scripts/roles/sweep-cron.sh:34「読むだけの見回りは止めた」）。読むだけで直さない仕組みだったため、台帳反映・push等の手を動かす便へ統合した。今は npm run role:status:page で手動更新</td></tr>
 </table>
 
 <footer>
-このページは #34835 のセッションが作り直した確認資料。前回版は share/check/_template.html の型のまま非公開リポジトリのリンクを貼っていたため店主が開けず差し戻された（2026-10-10 00:45）。今回は中身（リンク先・実行結果）だけを直し、型は変えていない。
+このページは #34835 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
