@@ -69,4 +69,55 @@ small,.s{font-size:13px;color:#555} ol li,ul li{margin:.3em 0} a{color:var(--red
 <tr><td>外部API</td><td>Gemini TTS（gemini-3.8-flash-tts）1回＝<b>約4.1円</b>（入力413・音声出力2,569トークン。単価は flash TTS の公開単価を仮置き、正式単価は未確認）。お金台帳 status/okane/kakin.json の api_shuho に記録。画像生成0円</td></tr>
 </table>
 <p class=s>作り方の記録：台本・字幕・作画コードは工場の status/ink/proto/（公開しない場所）。</p>
+<h2>8. 生データ（実測）</h2>
+<p class=s>上の％と円は、すべて以下の実測から計算した。</p>
+<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">全17本の再生合計 19,464,000 ／ 1位 12,000,000 → 61.7%（yt-dlp --flat-playlist の view_count・2026-10-10 04:07取得）
+pace.json allPct: 前 39% (04:14記録) ／ 後 39% (06:24記録) ※どちらも 10-09 05:39 の同じ古い値
+採点合計: 本家 9+8+7+6+9 = 39 ／ 試作 7+7+5+5+6 = 30
+冒頭90秒の画面切り替え（ffmpeg scene&gt;0.3）: 46回
+話速: 49_Ph2q6uIM 2516語/671秒=225語/分, SD7XyG2wd1k 2413語/696秒=208語/分, OCr6NteWSQ8 1537語/484秒=191語/分（自動字幕から）
+試作: 212語/76.9秒, 31カット, proto_web.mp4 910,013バイト(960x540 H.264 + HE-AAC)</pre>
+<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">calibration（status/quota-state.json の15分バケツ × Claudeアプリ plan-usage-history の実測%）
+時刻              週%(sd)  リセット以降の重みつきトークン  1%あたり
+2026-10-07 06:30   9      176.8M                        19.65M
+2026-10-07 11:03  12      261.6M                        21.80M
+2026-10-08 07:31  24      512.4M                        21.35M
+2026-10-08 13:18  27      555.1M                        20.56M
+2026-10-08 18:58  32      642.7M                        20.09M
+2026-10-09 05:39  39      773.1M                        19.82M
+5時間枠: 10-08 13:18 fh=8 直近5h 38.8M(4.85M/1%) ／ 10-08 18:58 fh=12 直近5h 81.4M(6.78M/1%)
+重み: input 1.0 / cache_creation 1.25 / cache_read 0.1 / output 5.0（tools/quota_estimate.py と同じ）</pre>
+<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">子2本の重みつき合計 = 779,740
+週の枠   = 779,740 ÷ 20.3M  = 3.841%   （1%あたり19.65M〜21.80Mの幅で 3.577〜3.968%）
+5時間枠  = 779,740 ÷ 5.8M   = 13.444%   （幅 11.501〜16.077%）
+claude -p の結果JSON（本番の子 64ac2de9）: total_cost_usd = 2.744472</pre>
+<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">Opus 5.5 の子の会話ログ（~/.claude/projects の usage を集計）
+{
+ &quot;2f86d951-c10f-4b7b-9edb-9db6e21f6aac&quot;: {
+  &quot;msgs&quot;: 4,
+  &quot;tokens&quot;: {
+   &quot;input_tokens&quot;: 8,
+   &quot;cache_creation_input_tokens&quot;: 31631,
+   &quot;cache_read_input_tokens&quot;: 131394,
+   &quot;output_tokens&quot;: 843
+  },
+  &quot;weighted&quot;: 56901.15,
+  &quot;first&quot;: &quot;2026-10-09T19:39:48.361Z&quot;,
+  &quot;last&quot;: &quot;2026-10-09T19:41:19.262Z&quot;
+ },
+ &quot;64ac2de9-3b3a-43af-ba49-cbd5cff93678&quot;: {
+  &quot;msgs&quot;: 33,
+  &quot;tokens&quot;: {
+   &quot;input_tokens&quot;: 66,
+   &quot;cache_creation_input_tokens&quot;: 109524,
+   &quot;cache_read_input_tokens&quot;: 2377280,
+   &quot;output_tokens&quot;: 69628
+  },
+  &quot;weighted&quot;: 722839.0,
+  &quot;first&quot;: &quot;2026-10-09T19:51:53.557Z&quot;,
+  &quot;last&quot;: &quot;2026-10-09T21:02:29.034Z&quot;
+ }
+}</pre>
+<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">Gemini TTS の記録（status/ink/proto/cost_log.jsonl）
+{&quot;at&quot;: &quot;2026-10-10T05:00:07&quot;, &quot;model&quot;: &quot;gemini-3.8-flash-tts&quot;, &quot;input_tokens&quot;: 413, &quot;output_tokens&quot;: 2569, &quot;usd&quot;: 0.025896, &quot;yen&quot;: 4.098}</pre>
 </main></body></html>
