@@ -461,6 +461,61 @@ def actionable(r):
 
 
 KIOKU = os.path.join(STATUS, "kioku", "hatsugen.jsonl")
+KENPIN_FOR_KIOKU = os.path.join(STATUS, "oni_modoshi", "kenpin.jsonl")
+_KENPIN_DONE_CACHE = None
+
+
+def _kenpin_done_keys():
+    """status/oni_modoshi/kenpin.jsonl でok:trueになった題名の集合（norm済み・先頭24文字）。
+
+    34853号で発見した事故：harvest_kioku()が検品結果を一切見ずに
+    state="未着手"を毎回ハードコードしていた（下の元コード）。そのため、
+    実装済みの依頼（例：横相談(Peer Help)を2026-08-08 07:14に実装済み。
+    commit d8a6ef1）でも、判定日の係(tools/hantei_hiduke.py)が毎回この係から
+    「未着手」を受け取り、★赤＋再発車を繰り返した（34851号・34853号という
+    同一依頼の重複案件が積まれた直接の原因）。
+    hantei_hiduke.ima_no_jotai()がDAICHO+KENPINを突き合わせて「完了」に
+    上書きする仕組みは既にあるが、★この関数(harvest_kioku)がDAICHOを
+    毎回「未着手」で再生成するsync()に食われるため、KENPINが先に合否を
+    出していても、次のsync()でDAICHOの見た目だけ「未着手」に戻ってしまう。
+    ★ここでも同じ正解データ（KENPIN）を見て、検品を通った済みの依頼を
+    最初から「未着手」として出さないようにする（新しい判定ルールを作らず、
+    判定日の係と同じ正解データを再利用する＝1018号の教訓「同じ規則を2か所に
+    書いて片方だけ直った」を避けるため、プレフィックス剥がしはhantei_hiduke側の
+    kihon_title()を再利用する）。
+    """
+    global _KENPIN_DONE_CACHE
+    if _KENPIN_DONE_CACHE is not None:
+        return _KENPIN_DONE_CACHE
+    strip = None
+    try:
+        sys.path.insert(0, HERE)
+        import hantei_hiduke as _hantei
+        strip = _hantei.kihon_title
+    except Exception:
+        strip = None
+    keys = set()
+    try:
+        for line in io.open(KENPIN_FOR_KIOKU, encoding="utf-8"):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                k = json.loads(line)
+            except Exception:
+                continue
+            if not k.get("ok"):
+                continue
+            t = k.get("title") or ""
+            if strip:
+                t = strip(t)
+            t = norm(t)[:24]
+            if t:
+                keys.add(t)
+    except Exception:
+        pass
+    _KENPIN_DONE_CACHE = keys
+    return keys
 
 
 def harvest_kioku():
@@ -492,6 +547,10 @@ def harvest_kioku():
         if len(norm(title)) < 8:
             continue
         n = int(r.get("count") or 1)
+        # 34853号の恒久対策：検品(KENPIN)が既にok:trueを出している依頼は、
+        # ここで「未着手」を出し直さない（sync()がDAICHOを毎回上書きするため、
+        # ここで出した値がそのまま次の判定日チェックの入力になる）。
+        kioku_done = norm(title)[:24] in _kenpin_done_keys()
         out.append({
             "id": make_id("kioku", title),
             "source": "kioku",
@@ -499,12 +558,12 @@ def harvest_kioku():
             "saidAt": r.get("firstSaid"),
             "title": title[:120],
             "doneWhen": done_when(title),
-            "state": "未着手",
+            "state": "完了" if kioku_done else "未着手",
             "origin": "user",
             "priority": 1 if n >= 3 else (2 if n >= 2 else 3),
             "saidCount": n,
             "lastSaid": r.get("lastSaid"),
-            "evidence": None,
+            "evidence": "検品(KENPIN)が合格済み" if kioku_done else None,
             "note": ("★%d回言わせている" % n) if n >= 2 else None,
         })
     return out
