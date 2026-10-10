@@ -137,7 +137,8 @@ def check_text(src, path="x.mjs"):
     for eng, rx in RE_LAUNCH.items():
         if eng == "chrome_cli" and not path.endswith((".sh", ".command", ".mjs", ".js", ".py", ".cjs")):
             continue
-        if rx.search(body) and not need_of(eng).search(src):
+        if rx.search(body) and not need_of(eng).search(src) and not (
+                eng in ("webkit", "firefox") and re.search(r"muon:\s*音なし確認済み", src)):
             bad.append({"engine": eng, "why": "ブラウザ(%s)を起動しているのに無音の指定が無い" % eng})
     if RE_CONNECT.search(body) and not any(r.search(body) for r in RE_LAUNCH.values()):
         if not (OK_MARK.search(src) or need_of("webkit").search(src)):
@@ -333,6 +334,7 @@ def self_test():
         ("l2.mjs", "mark(\"say\", t); ev.push({k: \"say\", text})", True),
         ("m.py", "subprocess.run([\"say\", \"hello\"])", False),
         ("n.py", "# afplay は使わない\nprint(1)", True),
+        ("o.mjs", "// muon: 音なし確認済み（起動してすぐ閉じる・ページを開かない）\nconst b = await webkit.launch();", True),
     ]
     ng = []
     for name, src, want_ok in cases:
