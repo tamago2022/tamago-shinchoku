@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34846 34846号：全担当チェックにFAIL再試行→判断待ち記録を組み込む 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34846 34846号：全担当チェックにFAIL再試行→判断待ち記録を組み込む</div>
+<h1>#34846 34846号：全担当チェックにFAIL再試行→判断待ち記録を組み込む</h1>
+<div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<b>【34846号】「全担当チェック」システムに、FAIL再試行→判断待ち記録の考え方を正式に組み込む依頼への確認です。</b><br><br>
+元の依頼（2026-08-08 06:32）の「この考え方」とは、同じ日の連続発言（34847号）が指す
+<b>「FAILなら差し戻して再試行(最大3〜5回)、それでもダメなら『どこまで試して何が原因か』を判断待ちとして記録する」</b>
+というワーカー/判定/管理者ループです。<br><br>
+調査した結果、この考え方は<b>既に正式に「全担当チェック」システムへ組み込まれて本番(main)で稼働中</b>でした
+（Builder→Judge→Manager三層分離として実装済み。導入時期はこの依頼より前後）。
+今回はコードの新規実装ではなく、<b>実在・稼働していることを実測で確認し、確認ページとして残す</b>作業です。<br><br>
+<b>実装の中身（本番コード・現時点で差分なし）：</b><br>
+・<code>.claude/skills/tamago-role-playbook/SKILL.md</code> 189〜217行：
+Builder/Judge/Managerの分離を明文化。「差し戻しは最大3回。超えたら判断待ちへ上げ、
+どこまで試して何が原因で詰まったかと置いた前提を必ず添える」と明記。<br>
+・<code>scripts/roles/role-sweep.mjs</code> 307〜349行：
+<code>MAX_ATTEMPTS = 3</code>。FAILかつ試行&lt;上限→差し戻し、試行&gt;=上限→<code>escalate</code>（issues/assumptions/uncertaintiesを添えて記録）。<br><br>
+<b>今日(2026-10-10)、実際に全担当チェックを走らせた生の出力（抜粋）：</b>
+<pre style="white-space:pre-wrap;background:var(--t-panel);border:1px solid var(--t-line);border-radius:8px;padding:12px;font-size:0.78rem;overflow-x:auto;">## Manager（Judgeの判定を受けた次の一手）
+↩ 差し戻し（1回目 / 上限3）: 棚編集UI担当・認証担当 — 本番DBの列欠けを直したので管理画面は復旧した
+     直すところ: 終了コード 1 で失敗 → node scripts/patrol/check-db-schema.mjs
+
+担当 15 / 現在地メモ無し 5 / 残件あり 10 / 21日以上放置 10 / 残件合計 67</pre>
+実測の通り、Managerが「差し戻し（1回目 / 上限3）」を今まさに出しており、
+この考え方が死んだ仕組みではなく<b>今日も動いている</b>ことを確認しました。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3</b><span>差し戻しの上限(回)・MAX_ATTEMPTS実測値</span></div>
+  <div class="num"><b>67</b><span>今日の残件合計(全担当チェック実測)</span></div>
+  <div class="num"><b>1</b><span>今日実際に出た差し戻し件数(Manager実測)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>SKILL.md 189〜217行(Builder/Judge/Manager節)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-role-playbook/SKILL.md#L189-L217" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-role-playbook/SKILL.md#L189-L217</a></li>
+  <li><b>role-sweep.mjs 307〜349行(Manager実装)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L307-L349" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L307-L349</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>FAILなら差し戻して再試行する仕組みがあるか</td><td class="yes">role-sweep.mjsのManager層が自動判定（実測で確認）</td></tr>
+<tr><td>差し戻しに上限（最大3〜5回）があるか</td><td class="yes">MAX_ATTEMPTS=3で明文化・実測でも「上限3」と表示</td></tr>
+<tr><td>上限を超えたら人間への判断待ちとして記録されるか</td><td class="yes">escalate配列にissues/assumptions/uncertaintiesを添えて記録</td></tr>
+<tr><td>「どこまで試して何が原因か」が記録内容に含まれるか</td><td class="yes">出力に「詰まった原因」「置いた前提」の見出しで明示</td></tr>
+<tr><td>SKILL.mdに恒久ルールとして文書化されているか</td><td class="yes">189〜217行のBuilder/Judge/Manager節に明記</td></tr>
+<tr><td>今日(2026-10-10)実際に動いているか（自己申告ではなく実行確認）</td><td class="yes">全担当チェックを実行し生出力を確認</td></tr>
+</table>
+
+<footer>
+このページは #34846 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
