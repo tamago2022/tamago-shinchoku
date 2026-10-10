@@ -218,8 +218,13 @@ def good_romaji(r):
 def romaji():
     done = {x["t"] for x in jsonl(ROM)}
     todo = sorted(t for t in ja_titles() if t not in done)
+    sh = os.environ.get("ROMAJI_SHARD")  # 例 "0/3"：3本に分けて並べて走らせる
+    if sh:
+        k, n = map(int, sh.split("/"))
+        import zlib
+        todo = [t for t in todo if zlib.crc32(t.encode("utf-8")) % n == k]
     print("ローマ字：残り %d" % len(todo), flush=True)
-    B = 40
+    B = int(os.environ.get("ROMAJI_BATCH", "40"))
     batches = [todo[i:i + B] for i in range(0, len(todo), B)]
 
     def run(b):
