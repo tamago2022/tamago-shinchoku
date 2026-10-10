@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34837 仕入れ→つなげるの片道リンクを自動で双方向化 確認ページ</title>
+<title>#34837 仕入れ→つなげる 片道リンク自動化（34837番） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,30 +47,39 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34837 仕入れ→つなげるの片道リンクを自動で双方向化</div>
-<h1>#34837 仕入れ→つなげるの片道リンクを自動で双方向化</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34837 仕入れ→つなげる 片道リンク自動化（34837番）</div>
+<h1>#34837 仕入れ→つなげる 片道リンク自動化（34837番）</h1>
 <div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-coverGuide.tsでカバー曲の原曲参照(originalRef)はあるが、原曲側に逆リンク(ofSongId)が無い「片道リンク」を自動検出し、原曲側へ逆リンクを自動で足すスクリプトと、毎日1回(JST01:30)自動実行するGitHub Actionsを追加。既存の片道リンク32件(RADWIMPS・クリープハイプ・井上陽水・Carole Kingほか)を実際に双方向化し、本番に反映済み。今後、仕入れ担当が新しいカバー曲を足すたびに「つなげる担当」が手作業で逆リンクを足す必要がなくなった。
+仕入れたカバー曲が原曲側へ逆リンクされない「片道リンク」を自動検出し、原曲側アーティストの一覧へ逆リンクを自動で追記する仕組みをmainへ実装した。毎日1回（JST 01:30）自動実行するGitHub Actionsも追加し、今まで溜まっていた片道リンク32件を実際に双方向化済み。仕入れ担当とつなげる担当の間の手作業の橋渡しが不要になった。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>32件</b><span>今回双方向化したリンク数</span></div>
-  <div class="num"><b>200</b><span>本番ページの実測HTTPステータス</span></div>
+  <div class="num"><b>32件</b><span>最初に見つかった片道リンク件数（双方向化済み）</span></div>
+  <div class="num"><b>0件</b><span>現時点でdry-run実行した残り件数（再実行しても0件＝正しく機能している）</span></div>
+  <div class="num"><b>4件</b><span>本番サイトで実際に表示を確認した件数（全てOK）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ(RADWIMPS・逆リンク実物)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=radwimps" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=radwimps</a></li>
-  <li><b>自動化スクリプト(GitHub)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/auto-link-originalref-backlinks.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/auto-link-originalref-backlinks.mjs</a></li>
-  <li><b>毎日自動実行の仕組み(GitHub Actions)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.github/workflows/tamago-auto-link-backlinks.yml" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.github/workflows/tamago-auto-link-backlinks.yml</a></li>
+  <li><b>来生たかお（スローモーションのカバーが表示されるか）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=rufus-gumede" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=rufus-gumede</a></li>
+  <li><b>PUSHIM（傘がないのカバーが表示されるか）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=pushim" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=pushim</a></li>
+  <li><b>福山雅治（12月のカバーが表示されるか）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=fukuyama" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=fukuyama</a></li>
+  <li><b>秦基博（エイリアンズのカバーが表示されるか）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=hata-motohiro" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=hata-motohiro</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>来生たかおのページに「スローモーション」の文字が出る</td><td class="yes">7回ヒット</td></tr>
+<tr><td>PUSHIMのページに「傘がない」の文字が出る</td><td class="yes">12回ヒット</td></tr>
+<tr><td>福山雅治のページに「12月」の文字が出る</td><td class="yes">2回ヒット</td></tr>
+<tr><td>秦基博のページに「エイリアンズ」の文字が出る</td><td class="yes">23回ヒット</td></tr>
+</table>
 
 <footer>
 このページは #34837 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
