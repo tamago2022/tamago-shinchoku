@@ -517,6 +517,15 @@ def _is_rule_document_fragment(text):
 
 
 def queue_add(text, priority=None, label=None, origin=None):
+    """2026-10-10：読む→番号を決める→書く、の間ずっと queue_lock を持つ。
+    実測：How It Holds パイプラインと判定日(hantei_hiduke)が同じ秒に積み、両方が
+    同じ番号(86057)を取って片方の行が消えた（save_queue の差分マージは同じ番号だと後勝ち）。
+    鍵は同一プロセス内で再入可能なので、中の _load_queue/_save_queue はそのまま動く。"""
+    with queue_lock():
+        return _queue_add_unlocked(text, priority=priority, label=label, origin=origin)
+
+
+def _queue_add_unlocked(text, priority=None, label=None, origin=None):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
     発車待ちの列に、スマホから直接1行で積めるようにした。

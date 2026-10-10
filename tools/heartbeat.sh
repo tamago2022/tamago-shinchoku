@@ -406,6 +406,12 @@ while :; do
   #   拾ったら status/queue.json の発車待ちへ自分で積む。着火は auto_launcher がやる＝人は押さない。
   #   ★吐き出したものは status/github_watch_err.log に残す（黙って死ぬのを防ぐ）。
   tick_every 2 && ( python3 "$REPO/tools/github_watch.py" >> "$REPO/status/github_watch_err.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-10 How It Holds 動画制作パイプライン（たまごさん依頼）。cron は足さない＝心臓に相乗り。
+  #   ~/howitholds/pipeline.sh が tamago2022/howitholds の open な issue（作者 tamago2022 か、本人が go を付けたもの）
+  #   を拾い、発車待ちへモデル指定つきで積む。着火・本数は auto_launcher の負荷判定に従う。
+  #   ★中で45分ゲートしている（拾うのは45分に1回）。doing の issue が無ければ回収は GitHub に1本聞くだけ。
+  #   ★心臓からは約2分おき（8周）に呼ぶだけ。中に flock があるので二重には走らない。
+  [ -x "$HOME/howitholds/pipeline.sh" ] && tick_every 8 && ( run_with_timeout 300 bash "$HOME/howitholds/pipeline.sh" >> "$REPO/status/howitholds_pipeline_err.log" 2>&1 & ) >/dev/null 2>&1
 
   # 977番（2026-09-22）：外部AI台帳の回収係。
   #   見張り番（github_watch.py）はETagと基準線で「いま新しいもの」しか拾わない。
