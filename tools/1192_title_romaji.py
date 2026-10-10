@@ -394,6 +394,11 @@ def build(push=False):
 def hourly():
     """心臓から1時間に1回：新しい曲を拾う→ローマ字→（公式集めが止まっていれば再開）→辞書へ1コミット。"""
     lock = os.path.join(D, "hourly.lock")
+    last = os.path.join(D, "hourly.last")
+    # 心臓の tick は数分おきに来るので、ここで1時間に1回へ間引く（--force で今すぐ）
+    if "--force" not in sys.argv and os.path.exists(last) and time.time() - os.path.getmtime(last) < 3300:
+        return
+    io.open(last, "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))
     if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 3 * 3600:
         print("走行中（lock）"); return
     io.open(lock, "w").write(str(os.getpid()))
