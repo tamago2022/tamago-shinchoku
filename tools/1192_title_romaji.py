@@ -205,6 +205,9 @@ def ask(batch, model="claude-haiku-4-5"):
         except Exception:
             continue
         i, rr = o.get("i"), o.get("r")
+        if isinstance(rr, str):
+            # 中黒・長音・半角かぎ括弧はアルファベットの記号へ（「M・A・D」→「M·A·D」）
+            rr = rr.replace("・", "·").replace("･", "·").replace("ー", "-").replace("｢", "'").replace("｣", "'").replace("〜", "~")
         if isinstance(i, int) and 0 <= i < len(batch) and isinstance(rr, str) and good_romaji(rr):
             out[batch[i]] = rr.strip()
     return out
@@ -283,9 +286,26 @@ def table():
     rom = {}
     for x in jsonl(ROM):
         rom[x["t"]] = x["r"]
-    off = {}
+    # 同じ題名を複数の人が持つとき（カバー）は、原曲の人（曲データで originalRef の無い方）の公式表記を採る。
+    #   例：異邦人 … 久保田早紀の米国ストア表記「Ihojin」を、Ms.OOJA のカバー盤の「Ihoujin」より優先。
+    orig = {}
+    for s_ in songs():
+        if not s_.get("cv"):
+            for k in ("raw", "tidy"):
+                orig.setdefault((s_.get(k) or "").strip(), set()).add(s_["a"])
+    cand = {}
     for x in jsonl(OFF):
-        off.update(x.get("found") or {})
+        for t, v in (x.get("found") or {}).items():
+            cand.setdefault(t, []).append((x["a"], v))
+    off = {}
+    for t, cs in cand.items():
+        own = [v for a, v in cs if a in orig.get(t, ())]
+        pool = own or [v for _a, v in cs]
+        cnt = {}
+        for v in pool:
+            cnt[v["o"]] = cnt.get(v["o"], 0) + 1
+        best = sorted(pool, key=lambda v: -cnt[v["o"]])[0]
+        off[t] = best
     mbd = {x["t"]: x["found"] for x in jsonl(MBF) if x.get("found")}
     out = {}
     for t in sorted(ja_titles()):

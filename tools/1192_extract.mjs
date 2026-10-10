@@ -18,7 +18,7 @@ for (const l of src) {
   }
   if (artist && /^    \{ id: "/.test(l) && / title: "/.test(l)) {
     const raw = str(l, "title"); if (raw === undefined) continue;
-    out.push({ a: artist.id, an: artist.name, id: str(l, "id"), raw, tidy: tidySongTitle(raw, { name: artist.name, aliases: artist.aliases }) });
+    out.push({ a: artist.id, an: artist.name, id: str(l, "id"), raw, tidy: tidySongTitle(raw, { name: artist.name, aliases: artist.aliases }), cv: /\boriginalRef:/.test(l) });
   }
 }
 // 特集「心を震わせる弾き語り」の曲名（曲データの外にある分）
