@@ -59,13 +59,13 @@
 調査した結果、この考え方は<b>既に正式に「全担当チェック」システムへ組み込まれて本番(main)で稼働中</b>でした
 （Builder→Judge→Manager三層分離として実装済み。導入時期はこの依頼より前後）。
 今回はコードの新規実装ではなく、<b>実在・稼働していることを実測で確認し、確認ページとして残す</b>作業です。<br><br>
-<b>実装の中身（origin/main commit bc5b628c8 時点・差分なし）：</b><br>
+<b>実装の中身（本番コード・現時点で差分なし）：</b><br>
 ・<code>.claude/skills/tamago-role-playbook/SKILL.md</code> 189〜217行：
 Builder/Judge/Managerの分離を明文化。「差し戻しは最大3回。超えたら判断待ちへ上げ、
 どこまで試して何が原因で詰まったかと置いた前提を必ず添える」と明記。<br>
 ・<code>scripts/roles/role-sweep.mjs</code> 307〜349行：
 <code>MAX_ATTEMPTS = 3</code>。FAILかつ試行&lt;上限→差し戻し、試行&gt;=上限→<code>escalate</code>（issues/assumptions/uncertaintiesを添えて記録）。<br><br>
-<b>今日(2026-10-10)、実際に <code>node scripts/roles/role-sweep.mjs</code> を走らせた生の出力（抜粋）：</b>
+<b>今日(2026-10-10)、実際に全担当チェックを走らせた生の出力（抜粋）：</b>
 <pre style="white-space:pre-wrap;background:#f7f5ee;border:1px solid #e2dccd;border-radius:8px;padding:12px;font-size:0.78rem;overflow-x:auto;">## Manager（Judgeの判定を受けた次の一手）
 ↩ 差し戻し（1回目 / 上限3）: 棚編集UI担当・認証担当 — 本番DBの列欠けを直したので管理画面は復旧した
      直すところ: 終了コード 1 で失敗 → node scripts/patrol/check-db-schema.mjs
@@ -86,8 +86,8 @@ Builder/Judge/Managerの分離を明文化。「差し戻しは最大3回。超�
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>SKILL.md 189〜217行(Builder/Judge/Manager節)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/bc5b628c8/.claude/skills/tamago-role-playbook/SKILL.md#L189-L217" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/bc5b628c8/.claude/skills/tamago-role-playbook/SKILL.md#L189-L217</a></li>
-  <li><b>role-sweep.mjs 307〜349行(Manager実装)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/bc5b628c8/scripts/roles/role-sweep.mjs#L307-L349" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/bc5b628c8/scripts/roles/role-sweep.mjs#L307-L349</a></li>
+  <li><b>SKILL.md 189〜217行(Builder/Judge/Manager節)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-role-playbook/SKILL.md#L189-L217" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-role-playbook/SKILL.md#L189-L217</a></li>
+  <li><b>role-sweep.mjs 307〜349行(Manager実装)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L307-L349" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/role-sweep.mjs#L307-L349</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -98,7 +98,7 @@ Builder/Judge/Managerの分離を明文化。「差し戻しは最大3回。超�
 <tr><td>上限を超えたら人間への判断待ちとして記録されるか</td><td class="yes">escalate配列にissues/assumptions/uncertaintiesを添えて記録</td></tr>
 <tr><td>「どこまで試して何が原因か」が記録内容に含まれるか</td><td class="yes">出力に「詰まった原因」「置いた前提」の見出しで明示</td></tr>
 <tr><td>SKILL.mdに恒久ルールとして文書化されているか</td><td class="yes">189〜217行のBuilder/Judge/Manager節に明記</td></tr>
-<tr><td>今日(2026-10-10)実際に動いているか（自己申告ではなく実行確認）</td><td class="yes">node scripts/roles/role-sweep.mjsを実行し生出力を確認</td></tr>
+<tr><td>今日(2026-10-10)実際に動いているか（自己申告ではなく実行確認）</td><td class="yes">全担当チェックを実行し生出力を確認</td></tr>
 </table>
 
 <footer>
