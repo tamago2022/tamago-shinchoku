@@ -1,0 +1,352 @@
+{
+  "ranAt": "2026-10-10T06:00:02.219Z",
+  "date": "2026-10-10",
+  "roleCount": 15,
+  "withoutPlaybook": 5,
+  "withOpenItems": 10,
+  "stale": 10,
+  "totalOpenItems": 67,
+  "autoChecks": [],
+  "peerHelp": {
+    "open": 2,
+    "cards": [
+      {
+        "task": "petit-story-ssr-019",
+        "from": "見つけてもらう担当",
+        "need": "つなげる担当",
+        "problem": "プチ物語が検索エンジンにもAIにも見えていない（SSRのHTMLに1文字も無い）",
+        "observed": [
+          "本番の曲ページHTMLに『この曲が流れる場面』『夜の首都高』が0件",
+          "曲名とnoteはHTMLに載っている",
+          "曲ページのcanonicalとJSON-LDは正常"
+        ],
+        "tried": [
+          "本番HTMLをcurlで直接取得して4語で検索",
+          "トップと曲ページを比較（曲ページのSSR本文は1,155文字）"
+        ],
+        "hypothesis": [
+          "PetitStorySectionがハイドレート後にしか描かれていない"
+        ],
+        "urgency": "high",
+        "status": "open",
+        "takenBy": null,
+        "answer": null,
+        "createdAt": "2026-08-08"
+      },
+      {
+        "task": "badge-db-018",
+        "from": "棚編集UI担当",
+        "need": "認証・管理ログイン担当",
+        "problem": "バッジ保存が「保存先がまだ用意されていません」で必ず失敗する",
+        "observed": [
+          "エラートーストが出る",
+          "ログイン自体は通っている",
+          "本番DBに admin_song_overrides.badge_kinds が無い"
+        ],
+        "tried": [
+          "別の曲で試した",
+          "本番Supabaseへ公開キーで直接問い合わせて列の有無を確認",
+          "supabase CLI・psql・service_roleキー・管理APIの経路を探した"
+        ],
+        "hypothesis": [
+          "migrationが本番へ未適用",
+          "AIにはDDLを流す権限が無い"
+        ],
+        "urgency": "high",
+        "status": "taken",
+        "takenBy": "認証・管理ログイン担当",
+        "answer": null,
+        "createdAt": "2026-08-08"
+      }
+    ]
+  },
+  "repeats": [
+    {
+      "topic": "本番DBのSQL適用",
+      "times": 5,
+      "latest": "本SQLは2026-08-08時点でまだ未適用。check-db-schema.mjs で欠け4件を確認済み（推測ではなく実測）"
+    }
+  ],
+  "manager": {
+    "pending": [
+      {
+        "role": "棚編集UI担当・認証担当",
+        "deliverable": "本番DBの列欠けを直したので管理画面は復旧した",
+        "attempts": 0,
+        "issues": [
+          "終了コード 1 で失敗 → node scripts/patrol/check-db-schema.mjs\n      貼る内容は: node scripts/patrol/check-db-schema.mjs --sql /  / 合計: 欠け 4 / "
+        ],
+        "assumptions": [
+          "SQLはAIが流せるはず"
+        ],
+        "uncertainties": []
+      }
+    ],
+    "escalate": [],
+    "delivered": 5
+  },
+  "pick": {
+    "id": "link",
+    "name": "つなげる担当",
+    "priority": 1,
+    "playbook": ".claude/playbooks/つなげる担当.md",
+    "hasPlaybook": true,
+    "updated": "2026-08-15",
+    "ageDays": 56,
+    "openItems": 17,
+    "notStartedItems": 5,
+    "nextMove": "横相談 petit-story-ssr-019 に答える：プチ物語が検索エンジンにもAIにも見えていない（SSRのHTMLに1文字も無い）",
+    "flags": [
+      "56日放置されている",
+      "他の担当から助けを求められている（1件）"
+    ],
+    "score": 123,
+    "helpWaiting": 1
+  },
+  "roles": [
+    {
+      "id": "link",
+      "name": "つなげる担当",
+      "priority": 1,
+      "playbook": ".claude/playbooks/つなげる担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-15",
+      "ageDays": 56,
+      "openItems": 17,
+      "notStartedItems": 5,
+      "nextMove": "横相談 petit-story-ssr-019 に答える：プチ物語が検索エンジンにもAIにも見えていない（SSRのHTMLに1文字も無い）",
+      "flags": [
+        "56日放置されている",
+        "他の担当から助けを求められている（1件）"
+      ],
+      "score": 123,
+      "helpWaiting": 1
+    },
+    {
+      "id": "auth",
+      "name": "認証・管理ログイン担当",
+      "priority": 2,
+      "playbook": null,
+      "hasPlaybook": false,
+      "updated": null,
+      "ageDays": null,
+      "openItems": 0,
+      "notStartedItems": 0,
+      "nextMove": "横相談 badge-db-018 に答える：バッジ保存が「保存先がまだ用意されていません」で必ず失敗する",
+      "flags": [
+        "現在地メモが無い（＝現在地未確認。進捗ゼロという意味ではない）",
+        "他の担当から助けを求められている（1件）"
+      ],
+      "score": 98,
+      "helpWaiting": 1
+    },
+    {
+      "id": "ingest",
+      "name": "仕入れ担当",
+      "priority": 1,
+      "playbook": ".claude/playbooks/仕入れ担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-09",
+      "ageDays": 62,
+      "openItems": 15,
+      "notStartedItems": 0,
+      "nextMove": "①③②のうち②（X投稿版の自動復活）は完了・mainへ反映済み（コミット`0f64d8ad`）。動画版と同じロジック（同一ID再検証のみで自動復活）へ揃えた。",
+      "flags": [
+        "62日放置されている"
+      ],
+      "score": 73
+    },
+    {
+      "id": "checkup",
+      "name": "クイック補給・気分診断担当",
+      "priority": 3,
+      "playbook": ".claude/playbooks/クイック補給・気分診断担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-08",
+      "ageDays": 63,
+      "openItems": 7,
+      "notStartedItems": 1,
+      "nextMove": "**第1問の画面を差し替える。** データは出来ているが、**`QuickCheckup.tsx` の描画はまだ従来の世代3択のまま。**",
+      "flags": [
+        "63日放置されている"
+      ],
+      "score": 69
+    },
+    {
+      "id": "shelf",
+      "name": "棚編集UI担当",
+      "priority": 3,
+      "playbook": ".claude/playbooks/棚編集UI担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-13",
+      "ageDays": 58,
+      "openItems": 7,
+      "notStartedItems": 2,
+      "nextMove": "上記コミット（空棚2件・モンキーマジック基準・踊る阿呆グリッド・カード操作ボタン統一）の4件とも、Lovableの公開反映と店主の実画面確認が未達。`x-deployment-id`を1回だけ実測する運用（監視ループは回さない）で反映を確認すること。",
+      "flags": [
+        "58日放置されている"
+      ],
+      "score": 69
+    },
+    {
+      "id": "patrol",
+      "name": "見回り担当",
+      "priority": 2,
+      "playbook": ".claude/playbooks/見回り担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-08",
+      "ageDays": 63,
+      "openItems": 4,
+      "notStartedItems": 2,
+      "nextMove": "**復活候補7件を店主へ出す。** 動画の復活は店主承認制で、`manual-video-restores.json` に書くまで棚へ戻さない決まり。7件が宙に浮いたままなので、まず一覧を出して判断を仰ぐ。",
+      "flags": [
+        "63日放置されている"
+      ],
+      "score": 67
+    },
+    {
+      "id": "perf",
+      "name": "速さ・挙動不審の修理担当",
+      "priority": 2,
+      "playbook": ".claude/playbooks/速さ・挙動不審の修理担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-07",
+      "ageDays": 64,
+      "openItems": 4,
+      "notStartedItems": 3,
+      "nextMove": "**`site_events` の `white_screen` を見る（最優先）。** 1件でも入れば端末・URL・見せ方・紙の外かどうかが一度に分かり、切り分けが終わる。**入るまでは原因を語らない。**",
+      "flags": [
+        "64日放置されている"
+      ],
+      "score": 67
+    },
+    {
+      "id": "parody",
+      "name": "パロディー担当",
+      "priority": 3,
+      "playbook": ".claude/playbooks/パロディー担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-12",
+      "ageDays": 59,
+      "openItems": 4,
+      "notStartedItems": 0,
+      "nextMove": "RATM第1号案件のbuilder実装結果を確認（git log / PR / ローカル差分）→ 未検品なら検品へ回す。",
+      "flags": [
+        "59日放置されている"
+      ],
+      "score": 65
+    },
+    {
+      "id": "seo",
+      "name": "見つけてもらう担当",
+      "priority": 3,
+      "playbook": ".claude/playbooks/見つけてもらう担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-08",
+      "ageDays": 63,
+      "openItems": 4,
+      "notStartedItems": 1,
+      "nextMove": "**プチ物語の「隠れている後半」をHTMLに載せる。** 最優先。**描画の仕組みを変える必要は無い**（前半6本は既に載っている）。",
+      "flags": [
+        "63日放置されている"
+      ],
+      "score": 65
+    },
+    {
+      "id": "personalize",
+      "name": "パーソナライズ担当",
+      "priority": 4,
+      "playbook": ".claude/playbooks/パーソナライズ担当.md",
+      "hasPlaybook": true,
+      "updated": "2026-08-08",
+      "ageDays": 63,
+      "openItems": 3,
+      "notStartedItems": 0,
+      "nextMove": "曲ページ（`SongPage` / `cover-guide`）側のおすすめにも同じ並べ替えを入れる（今回は `NextRecommendations` だけ）。",
+      "flags": [
+        "63日放置されている"
+      ],
+      "score": 59
+    },
+    {
+      "id": "search",
+      "name": "検索担当",
+      "priority": 3,
+      "playbook": null,
+      "hasPlaybook": false,
+      "updated": null,
+      "ageDays": null,
+      "openItems": 0,
+      "notStartedItems": 0,
+      "nextMove": "実態を調べて .claude/playbooks/検索担当.md を作る（npm run role:handoff -- search --create）",
+      "flags": [
+        "現在地メモが無い（＝現在地未確認。進捗ゼロという意味ではない）"
+      ],
+      "score": 47
+    },
+    {
+      "id": "release",
+      "name": "公開・回収担当",
+      "priority": 4,
+      "playbook": null,
+      "hasPlaybook": false,
+      "updated": null,
+      "ageDays": null,
+      "openItems": 0,
+      "notStartedItems": 0,
+      "nextMove": "実態を調べて .claude/playbooks/公開・回収担当.md を作る（npm run role:handoff -- release --create）",
+      "flags": [
+        "現在地メモが無い（＝現在地未確認。進捗ゼロという意味ではない）"
+      ],
+      "score": 46
+    },
+    {
+      "id": "marketing",
+      "name": "集客・販売担当",
+      "priority": 5,
+      "playbook": null,
+      "hasPlaybook": false,
+      "updated": null,
+      "ageDays": null,
+      "openItems": 0,
+      "notStartedItems": 0,
+      "nextMove": "実態を調べて .claude/playbooks/集客・販売担当.md を作る（npm run role:handoff -- marketing --create）",
+      "flags": [
+        "現在地メモが無い（＝現在地未確認。進捗ゼロという意味ではない）"
+      ],
+      "score": 45
+    },
+    {
+      "id": "copy",
+      "name": "コピー担当",
+      "priority": 8,
+      "playbook": null,
+      "hasPlaybook": false,
+      "updated": null,
+      "ageDays": null,
+      "openItems": 0,
+      "notStartedItems": 0,
+      "nextMove": "実態を調べて .claude/playbooks/コピー担当.md を作る（npm run role:handoff -- copy --create）",
+      "flags": [
+        "現在地メモが無い（＝現在地未確認。進捗ゼロという意味ではない）"
+      ],
+      "score": 42
+    },
+    {
+      "id": "engineering-research",
+      "name": "世界トップ手法リサーチ係",
+      "priority": 3,
+      "playbook": ".claude/playbooks/世界トップ手法リサーチ係.md",
+      "hasPlaybook": true,
+      "updated": "2026-09-09",
+      "ageDays": 31,
+      "openItems": 2,
+      "notStartedItems": 0,
+      "nextMove": "初回レポートの内容を見てフォーマットの微調整が必要か確認する",
+      "flags": [
+        "31日放置されている"
+      ],
+      "score": 42
+    }
+  ]
+}
