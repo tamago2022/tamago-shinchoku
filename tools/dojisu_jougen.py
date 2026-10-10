@@ -173,7 +173,24 @@ def build():
     byN = calib.get("byN") or {}
 
     reasons = []
-    n = max(HARD_MIN, min(HARD_MAX, raw))
+    # ★2026-10-08 たまごさん「固定2本 → 負荷を見て2〜4本」。天井 HARD_MAX(2) を
+    #   tools/fuka_hassha.py の判定（メモリ圧・1分ロード比）に置き換える。
+    #   status/dojisu_kotei2.flag があれば従来どおり HARD_MAX=2 のまま（1語で戻せる）。
+    #   下の自動減便（5分ロード比・空きメモリ）はそのまま残す＝下げる方向の安全装置は減らさない。
+    hard_max = HARD_MAX
+    fk = None
+    try:
+        sys.path.insert(0, HERE)
+        import fuka_hassha
+        if not fuka_hassha.kotei2_on():
+            fk = fuka_hassha.hantei(source="dojisu_jougen", do_write=False)
+            hard_max = 1 if fk.get("stopNew") else max(HARD_MIN, min(4, int(fk.get("cap") or HARD_MAX)))
+            reasons.append("負荷判定の天井%d本（%s）" % (hard_max, fk.get("reason")))
+        else:
+            reasons.append("固定2本フラグあり＝天井%d本" % HARD_MAX)
+    except Exception as e:
+        reasons.append("負荷判定が読めず天井%d本のまま（%s）" % (HARD_MAX, e))
+    n = max(HARD_MIN, min(hard_max, raw))
     if known:
         reasons.append("首は「%s」（%s）" % ("・".join(binding),
                        "／".join("%s%s本" % (k, v) for k, v in known.items())))
@@ -203,7 +220,7 @@ def build():
     swap_used_high = sw_pct is not None and sw_pct > SHED_SWAP_USED_PCT
     # 実体（空きメモリ・ロード）が苦しくないなら床は2本。
     # 2本は実測標本1063件があり、ochita.jsonl でも落ちた率33%で運用してきた本数。
-    floor = HARD_MIN if (mem_kurushii or load_kurushii) else min(2, HARD_MAX)
+    floor = HARD_MIN if (mem_kurushii or load_kurushii) else min(2, hard_max)
     shita = max(floor, n // 2)
 
     if load_kurushii:
@@ -252,7 +269,7 @@ def build():
         reasons.append("試し増便：%d本の標本が%d件しか無い。天井に2本ぶんの余裕があるので今回だけ%d本まで許す"
                        % (calib_n + 1, (byN.get(nxt) or {}).get("samples") or 0, probe))
 
-    jougen = max(HARD_MIN, min(HARD_MAX, probe or n))
+    jougen = max(HARD_MIN, min(hard_max, probe or n))
 
     out = {
         "measuredAt": time.strftime("%Y-%m-%dT%H:%M:%S+0900"),
@@ -262,12 +279,14 @@ def build():
         "実測": m,
         "自動減便": shed,
         "試し増便": probe,
+        "負荷判定": fk,
         "calibrationSafeN": calib_n or None,
         "calibration標本数": {k: (v or {}).get("samples") for k, v in byN.items()},
         "定数": {
             "1本あたりGB": PER_SESSION_GB, "たまごさん用に空けるGB": MEM_RESERVE_GB,
             "スワップ予備GB": SWAP_RESERVE_GB, "1本あたりロード": LOAD_PER_SESSION,
-            "ロード÷コアの天井": LOAD_CEIL_RATIO, "絶対上限": HARD_MAX,
+            "ロード÷コアの天井": LOAD_CEIL_RATIO, "絶対上限": hard_max,
+            "固定2本時の絶対上限": HARD_MAX,
         },
     }
     return out

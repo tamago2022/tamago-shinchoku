@@ -35,6 +35,7 @@
 from __future__ import annotations
 
 import datetime
+import fcntl
 import glob
 import hashlib
 import io
@@ -42,6 +43,8 @@ import json
 import os
 import re
 import sys
+import time
+from contextlib import contextmanager
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -50,6 +53,37 @@ DIR = os.path.join(ST, "kioku")
 HATSUGEN = os.path.join(DIR, "hatsugen.jsonl")
 SEEN = os.path.join(DIR, ".seen.json")
 LOG = os.path.join(DIR, "kioku.log")
+
+# 34533番で実測した事故（詳しい経緯は tools/hantei_hiduke.py の
+# HATSUGEN_LOCK定義コメント参照）：この係（8tickごと）と判定日の係
+# tools/hantei_hiduke.py（40tickごと）が、鍵なしでHATSUGEN（hatsugen.jsonl）
+# を読む→書くしていたため、判定済みの印（hanteiSumi）がlost updateで消え、
+# ★同一の店主発言が何度も「未判定」に戻って再発車され続けていた
+# （queue.jsonに34530〜34533番という同じ発言の重複案件が積まれた直接の原因）。
+# ★hantei_hiduke.py側と同じロックファイルを使い、読む→書くの間ずっと鍵をかける。
+HATSUGEN_LOCK = os.path.join(ST, ".hatsugen.lock")
+
+
+@contextmanager
+def hatsugen_lock(timeout=10.0):
+    f = io.open(HATSUGEN_LOCK, "a+")
+    t0 = time.time()
+    while True:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except Exception:
+            if time.time() - t0 > timeout:
+                break
+            time.sleep(0.05)
+    try:
+        yield
+    finally:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        except Exception:
+            pass
+        f.close()
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
@@ -337,6 +371,55 @@ _ONI_MODOSHI_PROMPT_MARKER = "【差し戻し】"
 #   をここにも適用する。
 _COWORK_TASK_NOTIFY_MARKER = 'Use read_transcript with session_id "'
 
+# ★34580号実例（2026-10-07）：「Obsidian円卓会議」機能がClaude Desktopへ投げる
+#   キュー投入プロンプト（good-vibes-roundtableが素材1本ごとに自動生成する固定
+#   テンプレート）が、role=userのメッセージとして丸ごと会話ログに記録される。
+#   このテンプレートには「顧問名簿」（Andrej Karpathy・Pieter Levels等の説明文）が
+#   埋め込まれており、説明文の中の「第一原理から作って理解する立場。」
+#   「小さく出して市場に殺させ、生き残ったものだけ育てる立場。」のような一文が
+#   bunkatsu()の依頼動詞判定（「作って」「育てて」等）にマッチし、
+#   「たまごさんが言った依頼」として誤登録されていた（これはたまごさんの発言では
+#   なく、円卓会議の顧問プロフィール説明文そのもの）。
+#   実測：この1つのバグ原因から判定日赤のゴースト案件が3件同時に自動発車されていた
+#   （34578号「偽引用禁止ルールはそのまま維持する」・34580号「第一原理から作って
+#   理解する立場。」・34581号「小さく出して市場に殺させ、生き残ったものだけ育てる
+#   立場。」）。実在しない依頼を「1ヶ月経っても未着手」として赤判定し続け、誰にも
+#   解決しようのない仕事を繰り返し再発車するループになっていた。
+#   円卓会議のキュー投入プロンプトは必ず「あなたは「Obsidian円卓会議」の書記です。」
+#   という固定文言で始まる（good-vibes-roundtable側のテンプレート冒頭・たまごさんが
+#   この書式で打つことはない）ため、1816号・1853号・1916号・1917号・2012号と同じ
+#   考え方（出どころの決まり文句で丸ごと弾く）を適用する。
+_ENTAKU_KAIGI_PROMPT_MARKER = "あなたは「Obsidian円卓会議」の書記です。"
+
+# ★34580号・同時調査で発見した同系列の別テンプレート：good-vibes-roundtable
+#   （円卓会議の旧実装・GOOD-VIBES-Roundtableリポジトリ）側のキュー投入プロンプトは
+#   「あなたはGOOD VIBES円卓の最終筆者です。」で始まる別の固定文言を使う。この中の
+#   「日本語で、正確で、読み物として面白く、読み終わると社会・人間・歴史の見え方が
+#   一段上がる円卓を作ってください。」が依頼動詞「作って」にマッチし、たまごさんの
+#   発言として誤登録され、既に2424号として判定日赤のゴースト案件が自動発車されていた
+#   （34578号・34580号・34581号と同じ根本原因の別経路）。
+_GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER = "あなたはGOOD VIBES円卓の最終筆者です。"
+
+# ★34580号・同時調査で発見した別経路：Claude Codeのコンテキスト圧縮
+#   （AutoCompact）が生成する自動要約メッセージは、必ず「This session is being
+#   continued from a previous conversation that ran out of context. The summary
+#   below covers the earlier portion of the conversation.」という固定文言で
+#   始まり、role=userとして会話ログに記録される。この要約は「Primary Request
+#   and Intent」等の見出しでたまごさんの依頼を**言い換えて**まとめたもので、
+#   たまごさん本人の言葉ではない（本物の依頼は別のタイムスタンプのメッセージに
+#   そのまま記録されているため、要約側を拾わなくても記録は失われない）。
+#   この要約の中に「円卓会議は既存の4項目フォーマット（タイトル候補/導入/本編/
+#   付録）に従い…」のような説明文が含まれ、依頼動詞にマッチして
+#   「4項目フォーマット（①タイトル候補5個②導入③円卓本編…）」
+#   「既存円卓フォーマットの把握：…を正確に踏襲した。」の2件が実在しない依頼として
+#   誤登録されていた（1ヶ月判定日2026-09-19を過ぎており、次の判定便で34578号・
+#   34580号・34581号と同じ構造のゴースト案件が自動発車される直前だった）。
+#   1816号以来の考え方（出どころの決まり文句で丸ごと弾く）をここにも適用する。
+_AUTOCOMPACT_SUMMARY_MARKER = (
+    "This session is being continued from a previous conversation that ran "
+    "out of context."
+)
+
 # ★34757号実例（2026-08-07の会話・2026-10-09発見）：たまごさんが tamago_brain
 #   ワークスペースのセッションに、購入済みの有料教材（イケハヤ氏「Claude Codeの
 #   教科書 - AI秘書から始める爆速仕事術」・brain-market.com）の目次と本文を
@@ -346,7 +429,7 @@ _COWORK_TASK_NOTIFY_MARKER = 'Use read_transcript with session_id "'
 #   どころ」「この章の一勝」等のFAQ見出しを多数含み、本文の例文
 #   （「〜を秘書に見せて『直して』。」「『いまどこでつまずいているか説明する
 #   ので、直し方を教えて』と秘書自身に相談してください。」等）が_IRAI（直して/
-#   教えて等）に軒並みマッチし、1メッセージから44件もの実在しない依頼が
+#   教えて等）に軒並みマッチし、1メッセージから**44件**の実在しない依頼が
 #   台帳へ量産された（34654〜34805号・77394/77859/78720/78865/78866/79032/
 #   79033号。例：34757号「どこかで詰まった…」・34774号「動かない・真っ白…」
 #   ・34668号「スクショを撮って秘書に見せて…」）。どの宛先も存在しない
@@ -398,6 +481,9 @@ _MACHINE_MARKERS_ANYWHERE = (
     _HANTEI_HIDUKE_MARKER,
     _ONI_MODOSHI_PROMPT_MARKER,
     _COWORK_TASK_NOTIFY_MARKER,
+    _ENTAKU_KAIGI_PROMPT_MARKER,
+    _GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER,
+    _AUTOCOMPACT_SUMMARY_MARKER,
     _IKEHAYA_KYOKASHO_PASTE_MARKER,
     _REMOTE_CONTROL_OFFLINE_NOTIFY_MARKER,
 )
@@ -499,93 +585,97 @@ def hiroi(dry=False, rebuild=False, zenbu=False):
     ★落ちても続きから：ファイルごとに「どこまで読んだか」を .seen.json に残す。
       ファイルが小さくなっていたら（差し替え）先頭から読み直す。
     """
-    rows = {} if rebuild else load_hatsugen()
-    seen = {} if rebuild else (load_json(SEEN, {}) or {})
-    # --zenbu＝過去ログを全部さらう掃除便。上限を外す。落ちても .seen.json に
-    # 読んだ位置が残るので、次に呼べば続きから再開する（最初からやり直さない）。
-    budget = (1 << 62) if zenbu else MAX_BYTES_PER_RUN
-    added, bumped, files = 0, 0, 0
+    # ★読む→書くの間、ずっと鍵をかける（tools/hantei_hiduke.pyと同じ鍵・同じ
+    # ファイル）。無いとlost updateで判定済みの印が消える。詳しい事故の実測は
+    # HATSUGEN_LOCK定義のコメント参照（34533番）。
+    with hatsugen_lock():
+        rows = {} if rebuild else load_hatsugen()
+        seen = {} if rebuild else (load_json(SEEN, {}) or {})
+        # --zenbu＝過去ログを全部さらう掃除便。上限を外す。落ちても .seen.json に
+        # 読んだ位置が残るので、次に呼べば続きから再開する（最初からやり直さない）。
+        budget = (1 << 62) if zenbu else MAX_BYTES_PER_RUN
+        added, bumped, files = 0, 0, 0
 
-    for p in log_files(None if zenbu else MAX_FILES_PER_RUN):
-        if budget <= 0:
-            break
-        try:
-            size = os.path.getsize(p)
-        except Exception:
-            continue
-        off = int((seen.get(p) or {}).get("off") or 0)
-        if off > size:
-            off = 0                      # 差し替えられた＝最初から
-        if off >= size:
-            continue
-        files += 1
-        read = 0
-        try:
-            with io.open(p, "rb") as f:
-                f.seek(off)
-                chunk = f.read(min(budget, size - off))
-                read = len(chunk)
-                # 途中で切れた最後の1行は次回に回す（半端なJSONを読ませない）
-                nl = chunk.rfind(b"\n")
-                if nl < 0:
-                    continue
-                body = chunk[:nl].decode("utf-8", "replace")
-                off += nl + 1
-        except Exception:
-            continue
-        budget -= read
-        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(p), JST)
-        for line in body.splitlines():
-            line = line.strip()
-            if not line or not line.startswith("{"):
-                continue
+        for p in log_files(None if zenbu else MAX_FILES_PER_RUN):
+            if budget <= 0:
+                break
             try:
-                rec = json.loads(line)
+                size = os.path.getsize(p)
             except Exception:
                 continue
-            txt = user_text(rec)
-            if not txt:
+            off = int((seen.get(p) or {}).get("off") or 0)
+            if off > size:
+                off = 0                      # 差し替えられた＝最初から
+            if off >= size:
                 continue
-            # ★言われた日時は「分まで」持つ。過去ログから抜いた分も、その発言の
-            #   タイムスタンプをそのまま入れる（拾った日時ではない）。日付だけだと
-            #   「いつ言ったか」が曖昧になり、判定日が作れない＝うやむやが復活する。
-            dt = iso_to_jst(rec.get("timestamp")) or mtime
-            said = dt.strftime("%Y-%m-%d %H:%M")
-            hi = dt.strftime("%Y-%m-%d")
-            for s in bunkatsu(txt):
-                i = make_id(s)
-                r = rows.get(i)
-                if r:
-                    # ★同じ日の同じ一言は1回と数える（貼り直し・再送を水増ししない）
-                    if hi in (r.get("days") or []):
+            files += 1
+            read = 0
+            try:
+                with io.open(p, "rb") as f:
+                    f.seek(off)
+                    chunk = f.read(min(budget, size - off))
+                    read = len(chunk)
+                    # 途中で切れた最後の1行は次回に回す（半端なJSONを読ませない）
+                    nl = chunk.rfind(b"\n")
+                    if nl < 0:
                         continue
-                    r["count"] = int(r.get("count") or 1) + 1
-                    r["lastSaid"] = said
-                    r["days"] = sorted(set((r.get("days") or []) + [hi]))[-12:]
-                    r["seenAt"] = stamp()
-                    bumped += 1
-                else:
-                    rows[i] = {
-                        "id": i, "title": s, "count": 1,
-                        "firstSaid": said, "lastSaid": said, "days": [hi],
-                        "firstSaidJa": ja_nichiji(dt),
-                        # ★判定日。ここで決めて台帳に焼く。あとから動かせない。
-                        "hantei1w": (dt + datetime.timedelta(days=7)).strftime("%Y-%m-%d"),
-                        "hantei1m": (dt + datetime.timedelta(days=30)).strftime("%Y-%m-%d"),
-                        "sonogo": None, "hanteiSumi": [],
-                        "seenAt": stamp(), "from": os.path.basename(p),
-                    }
-                    added += 1
-        seen[p] = {"off": off, "at": stamp()}
+                    body = chunk[:nl].decode("utf-8", "replace")
+                    off += nl + 1
+            except Exception:
+                continue
+            budget -= read
+            mtime = datetime.datetime.fromtimestamp(os.path.getmtime(p), JST)
+            for line in body.splitlines():
+                line = line.strip()
+                if not line or not line.startswith("{"):
+                    continue
+                try:
+                    rec = json.loads(line)
+                except Exception:
+                    continue
+                txt = user_text(rec)
+                if not txt:
+                    continue
+                # ★言われた日時は「分まで」持つ。過去ログから抜いた分も、その発言の
+                #   タイムスタンプをそのまま入れる（拾った日時ではない）。日付だけだと
+                #   「いつ言ったか」が曖昧になり、判定日が作れない＝うやむやが復活する。
+                dt = iso_to_jst(rec.get("timestamp")) or mtime
+                said = dt.strftime("%Y-%m-%d %H:%M")
+                hi = dt.strftime("%Y-%m-%d")
+                for s in bunkatsu(txt):
+                    i = make_id(s)
+                    r = rows.get(i)
+                    if r:
+                        # ★同じ日の同じ一言は1回と数える（貼り直し・再送を水増ししない）
+                        if hi in (r.get("days") or []):
+                            continue
+                        r["count"] = int(r.get("count") or 1) + 1
+                        r["lastSaid"] = said
+                        r["days"] = sorted(set((r.get("days") or []) + [hi]))[-12:]
+                        r["seenAt"] = stamp()
+                        bumped += 1
+                    else:
+                        rows[i] = {
+                            "id": i, "title": s, "count": 1,
+                            "firstSaid": said, "lastSaid": said, "days": [hi],
+                            "firstSaidJa": ja_nichiji(dt),
+                            # ★判定日。ここで決めて台帳に焼く。あとから動かせない。
+                            "hantei1w": (dt + datetime.timedelta(days=7)).strftime("%Y-%m-%d"),
+                            "hantei1m": (dt + datetime.timedelta(days=30)).strftime("%Y-%m-%d"),
+                            "sonogo": None, "hanteiSumi": [],
+                            "seenAt": stamp(), "from": os.path.basename(p),
+                        }
+                        added += 1
+            seen[p] = {"off": off, "at": stamp()}
 
-    if not dry:
-        save_hatsugen(rows)
-        os.makedirs(DIR, exist_ok=True)
-        write_text(SEEN, json.dumps(seen, ensure_ascii=False, indent=1))
-        with io.open(LOG, "a", encoding="utf-8") as f:
-            f.write(json.dumps({"at": stamp(), "files": files, "added": added,
-                                "bumped": bumped, "total": len(rows)},
-                               ensure_ascii=False) + "\n")
+        if not dry:
+            save_hatsugen(rows)
+            os.makedirs(DIR, exist_ok=True)
+            write_text(SEEN, json.dumps(seen, ensure_ascii=False, indent=1))
+            with io.open(LOG, "a", encoding="utf-8") as f:
+                f.write(json.dumps({"at": stamp(), "files": files, "added": added,
+                                    "bumped": bumped, "total": len(rows)},
+                                   ensure_ascii=False) + "\n")
     return rows, {"files": files, "added": added, "bumped": bumped, "total": len(rows)}
 
 
@@ -711,6 +801,37 @@ def main():
                         "with session_id \"local_6b16877d-a621-42a0-ae8a-2d5bf4169fd7\" "
                         "to see the outcome, then report to the user via send_message."}]}}):
             ng.append("Cowork定期タスクの完了/失敗通知（contentがlist）を拾ってしまう（2012号の再発）")
+        # ★34580号実例：「Obsidian円卓会議」のキュー投入プロンプト（顧問名簿テンプレート）
+        #   を、たまごさんの発言として拾わない。顧問説明文の「第一原理から作って
+        #   理解する立場。」が依頼動詞「作って」に、「小さく出して市場に殺させ、
+        #   生き残ったものだけ育てる立場。」が「育てて」相当にマッチして、
+        #   実在しない依頼として誤登録されていた。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "あなたは「Obsidian円卓会議」の書記です。\n"
+                      "たまごさん（Kohei Munakata・映像作家 / 思想家 / Eden Loop の設計者）のために、\n"
+                      "1本の素材を題材にした円卓会議の議事録を、日本語のMarkdownで作成してください。\n\n"
+                      "- Andrej Karpathy — 元Tesla AI責任者/OpenAI。第一原理から作って理解する立場。\n"
+                      "- Pieter Levels — 個人開発者。小さく出して市場に殺させ、生き残ったものだけ育てる立場。"}}):
+            ng.append("Obsidian円卓会議のキュー投入プロンプト（顧問名簿テンプレート）を拾ってしまう（34580号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      [{"type": "text", "text":
+                        "あなたは「Obsidian円卓会議」の書記です。\n"
+                        "1本の素材を題材にした円卓会議の議事録を、日本語のMarkdownで作成してください。\n"
+                        "- Andrej Karpathy — 第一原理から作って理解する立場。"}]}}):
+            ng.append("Obsidian円卓会議のキュー投入プロンプト（contentがlist）を拾ってしまう（34580号の再発）")
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "あなたはGOOD VIBES円卓の最終筆者です。日本語で、正確で、読み物として面白く、"
+                      "読み終わると社会・人間・歴史の見え方が一段上がる円卓を作ってください。"}}):
+            ng.append("GOOD VIBES円卓のキュー投入プロンプトを拾ってしまう（34580号の再発・2424号の原因）")
+        # ★34580号・同時発見：AutoCompactの自動要約（「This session is being
+        #   continued from a previous conversation that ran out of context.」で
+        #   始まる）を、たまごさんの発言として拾わない。
+        if user_text({"type": "user", "message": {"role": "user", "content":
+                      "This session is being continued from a previous conversation "
+                      "that ran out of context. The summary below covers the earlier "
+                      "portion of the conversation.\n\nSummary:\n1. Primary Request and Intent:\n"
+                      "   円卓会議は既存の4項目フォーマットに従い作ってください。"}}):
+            ng.append("AutoCompactの自動要約を発言として拾ってしまう（34580号の再発）")
         # ★34757号実例：イケハヤ氏の有料教材（Claude Codeの教科書）ペースト本文の
         #   FAQ見出し（「〜を秘書に見せて『直して』。」等）を、たまごさんの発言として
         #   拾わない。ペースト本文には必ず購入ページURL「brain-market.com/u/ikehaya」

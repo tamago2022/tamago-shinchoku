@@ -71,6 +71,7 @@ SONNET = "claude-sonnet-5"
 # モデルIDは実機で起動確認済み（claude -p --model haiku →
 # canonicalModel: claude-haiku-4-5, 実モデル claude-haiku-4-5-20251001）。
 HAIKU = "claude-haiku-4-5"
+OPUS55 = "claude-opus-5-5"  # fixedModel明示時のみ（2026-10-10）
 # 判断がほぼ要らない機械的な単純作業（パトロール・重複チェック・一覧作成・棚卸し・
 # 仕分け・集計・定型フォーマット変換）だけをHaiku対象にする。実装・設計・判断・交渉等の
 # 語が混ざっていたら安全側（Sonnet）に倒す——誤判定でHaikuに落として実装や判断を求めると、
@@ -83,6 +84,13 @@ _HAIKU_NG_KEYWORDS = ("実装", "設計", "戦略", "判断", "修正", "直し"
 
 def pick_model(item):
     """34489番：単純作業だけHaikuへ落として消費を抑える。迷ったらSonnet。"""
+    # 2026-10-10 How It Holds パイプライン（~/howitholds/pipeline.sh）：積む側が
+    #   モデルを明示した時（item["fixedModel"]）はそれを使う。積む側が決める仕事だけに効く。
+    fixed = (item.get("fixedModel") or "").strip()
+    # 2026-10-10 たまごさん指示「実装はOpus 5.5で。起動口で --model 指定した子を1本立てる」
+    #   → 積む側(Dispatch)が明示した時だけOpus 5.5を許す。自動判定では絶対にOpusへ上げない。
+    if fixed in (SONNET, HAIKU, OPUS55):
+        return fixed
     text = (item.get("title") or "") + (item.get("hyoudai") or "")
     if any(k in text for k in _HAIKU_NG_KEYWORDS):
         return SONNET
@@ -2279,6 +2287,24 @@ def _main_impl():
           log("🚨 緊急横入り+1本：優先度1が%d分待機中の%s番を通すため上限%d本まで拡張"
               % (queued_minutes_ago(_urgent_hit) or 0, _urgent_hit.get("n"), safe_max))
 
+      # ---- 2026-10-08 負荷を見て2〜4本（tools/fuka_hassha.py）----
+      # たまごさん「最優先はMacが固まらないこと」。発車の直前にメモリ圧と1分ロードを測り、
+      #   緑＆ロード比<0.6→4本／<0.7→3本／それ以外2本、黄→新規発車を止める、赤→1本。
+      #   ここは上限を「下げる」方向にしか効かない（緊急横入りも含めて天井をかぶせる）。
+      #   走っている子は殺さない。固定2本に戻すフラグ＝status/dojisu_kotei2.flag。
+      if not only_tests:
+          try:
+              import fuka_hassha as _fuka
+              _fk = _fuka.hantei(alive=alive, source="auto_launcher")
+          except Exception as _e:
+              _fk = {"cap": 2, "stopNew": False, "reason": "fuka_hassha読込失敗（%s）→既定2本" % _e}
+          if _fk.get("stopNew"):
+              log("見送り[負荷判定]: %s（走行%d本はそのまま）" % (_fk.get("reason"), alive))
+              return 0
+          if safe_max > _fk.get("cap", 2):
+              safe_max = _fk.get("cap", 2)
+          log("負荷判定: %s → 採用上限%d本（走行%d本）" % (_fk.get("reason"), safe_max, alive))
+
       if alive >= safe_max:
           log("見送り: 走行%d本／上限%d本（空きなし）" % (alive, safe_max))
           return 0
@@ -2794,6 +2820,13 @@ def main():
             pass          # 鍵が取れなかっただけ。次回また拾う
         except Exception as e:
             log("harvestパス（発車のあと）に失敗: %s" % e)
+        # 2026-10-08 許可ゼロ設定：まだ「入」になっていなければ1回だけ入れる（入なら何もしない）
+        try:
+            kz = os.path.join(os.path.dirname(HERE), "status", "kyoka_zero.json")
+            if json.load(io.open(kz, encoding="utf-8")).get("state") != "入":
+                subprocess.run([sys.executable, os.path.join(HERE, "kyoka_zero.py")], timeout=300)
+        except Exception as e:
+            log("許可ゼロ設定に失敗: %s" % e)
         return rc
     finally:
         try:

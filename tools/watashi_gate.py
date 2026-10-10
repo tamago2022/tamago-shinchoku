@@ -75,6 +75,7 @@ CHROME_ARGS = [
     "--use-angle=swiftshader",
     "--enable-unsafe-swiftshader",
     "--disable-dev-shm-usage",
+    "--mute-audio",  # 2026-10-10 無音の関所（tools/muon.py）。確認で音を鳴らさない
 ]
 
 WEBGL_RE = re.compile(r"webgl|three\.|three\.min|live2d|pixi|babylon|getContext\(\s*['\"]webgl",

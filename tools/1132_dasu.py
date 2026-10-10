@@ -78,22 +78,26 @@ def _req(method, url, token, body=None):
         return json.loads(resp.read().decode("utf-8"))
 
 
-def _patched_paths():
+def _patched_paths(patch=None):
     """1132.patch が触るファイルの一覧（+++ b/... の行から拾う）。"""
     out = []
-    for line in io.open(PATCH, encoding="utf-8"):
+    patch = patch or PATCH
+    if not os.path.exists(patch):
+        return out
+    for line in io.open(patch, encoding="utf-8"):
         if line.startswith("+++ b/"):
             # diff -u は「パス<TAB>更新時刻」を書く。時刻を落としてパスだけにする。
             out.append(line[6:].split("\t")[0].rstrip("\n").strip())
     return out
 
 
-def _new_files():
+def _new_files(newdir=None):
     out = {}
-    for root, _dirs, files in os.walk(NEWDIR):
+    newdir = newdir or NEWDIR
+    for root, _dirs, files in os.walk(newdir):
         for f in files:
             full = os.path.join(root, f)
-            rel = os.path.relpath(full, NEWDIR)
+            rel = os.path.relpath(full, newdir)
             out[rel] = io.open(full, encoding="utf-8").read()
     return out
 
@@ -102,6 +106,61 @@ def run_job(payload=None):
     payload = payload or {}
     dry = bool(payload.get("dryRun"))
     log = []
+
+    # ★2026-10-10 追加（後方互換）：payload に okiba（status/ 配下の置き場の名前）が来たら、
+    #   その置き場の new/ を丸ごと（差分なし）main に1コミットで入れる。message も指定可。
+    #   例 {"okiba": "hikigatari_dasu", "message": "..."} → status/hikigatari_dasu/new/src/...
+    #   okiba が無い呼び出し（kansei の毎日便）は、今までとまったく同じ動き。
+    okiba = payload.get("okiba")
+    if okiba:
+        okiba = os.path.basename(str(okiba))
+        base = os.path.join(REPO, "status", okiba)
+        newdir = os.path.join(base, "new")
+        files = _new_files(newdir)
+        if not files:
+            return {"ok": False, "log": ["置き場が空です: %s" % newdir], "totalYen": 0.0}
+        token = _token()
+        if not token:
+            return {"ok": False, "log": ["GitHubの鍵が取れませんでした"], "totalYen": 0.0}
+        try:
+            head = _req("GET", "%s/repos/%s/git/ref/heads/%s" % (API, GH_REPO, BRANCH), token)
+            base_sha = head["object"]["sha"]
+            log.append("いまの main = %s" % base_sha[:8])
+            tree_all = _req("GET", "%s/repos/%s/git/trees/%s?recursive=1" % (API, GH_REPO, base_sha), token)
+            sha_of = {e["path"]: e["sha"] for e in tree_all.get("tree", []) if e.get("type") == "blob"}
+            for p in list(files):
+                if p in sha_of:
+                    cur = base64.b64decode(_req("GET", "%s/repos/%s/git/blobs/%s"
+                                                % (API, GH_REPO, sha_of[p]), token)["content"])
+                    if cur.decode("utf-8", "ignore") == files[p]:
+                        del files[p]
+            if not files:
+                log.append("★mainと同じでした。何もしません。")
+                return {"ok": True, "log": log, "alreadyIn": True, "totalYen": 0.0}
+            log.append("送るファイル: %d本（%s）" % (len(files), ", ".join(sorted(files))))
+            if dry:
+                return {"ok": True, "log": log, "dryRun": True, "totalYen": 0.0}
+            tree = []
+            for p, body in sorted(files.items()):
+                blob = _req("POST", "%s/repos/%s/git/blobs" % (API, GH_REPO), token,
+                            {"content": body, "encoding": "utf-8"})
+                tree.append({"path": p, "mode": "100644", "type": "blob", "sha": blob["sha"]})
+            base_commit = _req("GET", "%s/repos/%s/git/commits/%s" % (API, GH_REPO, base_sha), token)
+            new_tree = _req("POST", "%s/repos/%s/git/trees" % (API, GH_REPO), token,
+                            {"base_tree": base_commit["tree"]["sha"], "tree": tree})
+            commit = _req("POST", "%s/repos/%s/git/commits" % (API, GH_REPO), token,
+                          {"message": payload.get("message") or ("置き場 %s から" % okiba),
+                           "tree": new_tree["sha"], "parents": [base_sha]})
+            _req("PATCH", "%s/repos/%s/git/refs/heads/%s" % (API, GH_REPO, BRANCH), token,
+                 {"sha": commit["sha"], "force": False})
+            log.append("★mainに入りました: %s" % commit["sha"][:8])
+            return {"ok": True, "log": log, "commit": commit["sha"], "totalYen": 0.0}
+        except urllib.error.HTTPError as e:
+            log.append("HTTP %s: %s" % (e.code, e.read().decode("utf-8", "ignore")[:600]))
+            return {"ok": False, "log": log, "totalYen": 0.0}
+        except Exception as e:  # noqa: BLE001
+            log.append("落ちました: %r" % (e,))
+            return {"ok": False, "log": log, "totalYen": 0.0}
 
     # ★1140番【全曲検査】payload に kensa:true が来たら、押す前に
     #   ①実測（oEmbedで全動画IDを1件ずつ叩く。回線があるのは工場側だけ）

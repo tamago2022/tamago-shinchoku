@@ -116,6 +116,10 @@ def extract_text(body):
 
 
 def call_gemini(prompt, model, api_key, max_retries=3):
+    # ★2026-10-11 家計簿：案件名（TAMAGO_ANKEN）が無ければ叩かない
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import kakeibo
+    anken = kakeibo.anken_hissu(None, "gemini")
     url = f"{GEMINI_API_BASE}/{model}:generateContent?key={api_key}"
     payload = {
         "systemInstruction": {"parts": [{"text": SYSTEM_INSTRUCTION}]},
@@ -132,6 +136,13 @@ def call_gemini(prompt, model, api_key, max_retries=3):
         try:
             with urllib.request.urlopen(req, timeout=60) as resp:
                 body = json.loads(resp.read().decode("utf-8"))
+                try:
+                    um = body.get("usageMetadata") or {}
+                    kakeibo.kiroku(anken, "gemini", model,
+                                   "入力%sトークン・出力%sトークン" % (um.get("promptTokenCount", "?"), um.get("candidatesTokenCount", "?")),
+                                   yen=None, kakutei="推定", moto="tools/gemini_delegate.py（金額は単価未設定＝不明）")
+                except Exception:
+                    pass
                 return extract_text(body)
         except urllib.error.HTTPError as e:
             body_text = ""

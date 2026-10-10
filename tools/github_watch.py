@@ -709,6 +709,141 @@ def check_watch_files(repo, token, st, seen, budget):
     return picked
 
 
+# ★2026-10-10（HowItHolds）：push そのものを見る目。
+#   たまごさん：「tamago2022/howitholds に push が来たら、HANDOFF.md を読んで、書かれている通りに
+#   実行する作業を自動で立てる」。外のAI（Genspark/ChatGPTのエージェント）が引き継ぎ一式を push する。
+#   Issue/コメント/置き場/1ファイル とは見るものが違う（mainの先頭コミット）ので別に持つ。
+#   条件付きGET（ETag）1本＝変化なしなら304・レート消費0。
+#   ・工場自身の push（コミット文に PUSH_FACTORY_MARK）は拾わない＝無限ループ防止
+#   ・push直後は数本続けて来ることがあるので、先頭コミットが PUSH_SETTLE_SEC 経つまで待ってから1本だけ積む
+WATCH_PUSH = {
+    "tamago2022/howitholds": {"branch": "main", "kind": "howitholds"},
+}
+PUSH_FACTORY_MARK = "[tamago-factory]"
+PUSH_SETTLE_SEC = 180
+
+
+REQUEST_FALLBACK = ("767fd067e6ed2c3b627c1940bae6f3e5b79180d2", "status/hih/REQUEST.md")  # 向こうのAIの正式依頼文の控え
+REQUEST_LIMIT = 6000
+
+
+def _howitholds_instruction(repo, sha, msg, author, handoff, request, url):
+    lines = [
+        "【タスク】HowItHolds（英語の解説動画・オランダの農業輸出・46フレーム）の引き継ぎが %s の main に push された"
+        "（%s / %s / 「%s」）。HANDOFF.md と REQUEST.md（向こうのAIからClaude Codeへの正式な依頼文）を読み、その通りに実行する。"
+        % (repo, sha[:7], author, (msg or "").splitlines()[0][:80]),
+        "【出どころ】%s　工場（github_watch）が push に気づいて自分で積んだ。たまごさんに聞かない。" % url,
+        "",
+        OUTSIDE_GUARD,
+        "",
+        "【たまごさんの事前許可（2026-10-10）】画像生成は fal で行ってよい（3枚・合計300円以内）。"
+        "使う前にモデル名と見込み額（円）を COST.md に書き、使った額も1行ずつ足す。有料の画像・音声APIの合計が300円を超えそうなら、その手前で止めて報告する。",
+        "【質問しない】REQUEST.md に \"just ask\" とあるが、たまごさんにも向こうのAIにも質問しない。分からない点は自分で決め、決めた理由を audit_report.md に書く。",
+        "【置き場所】git clone は ~/tamago/howitholds へ（13MBあるので公開リポ tamago-shinchoku には入れない）。"
+        "Googleドライブ経由にはしない。ブラウザ・許可ポップアップの出る道具は使わない（取得は tools/mac_fetch.py・yt-dlp）。",
+        "【作風の手本】YouTube「Ink Explainer」（@Inkexplainer96・第三者・How It Holdsの公開先ではない）。"
+        "調べた結果は tamago-shinchoku の status/hih/yt_inkexplainer.md。画風（インク線画）・テンポ・文字の置き方を参考にし、"
+        "audit_report.md で 現行版／作り直し版／手本 を比べる。絵や構図の丸写しはしない。",
+        "",
+        "【やること＝REQUEST.md の STEP 1〜5】＋たまごさんの厳守ルール：",
+        "　・AIの絵に文字を焼き込まない（文字はPILで後から重ねる）",
+        "　・赤1色と紙の色の世界：crimson (214,17,32)／paper (247,244,238)／ink (28,27,25) 以外を入れない",
+        "　・事実はすべて出典つき（数字・年号・断定は SOURCES.md に一次出典URL。取れない断定は外す）",
+        "　・まず現行動画の欠陥の洗い出し（STEP1）→ 3シーン（タイトル THE TINY GIANT／1944年 Hunger Winter／4L vs 60L の水比較）→ sample.mp4 → 判定（STEP5・現行版が勝つシーンも正直に）",
+        "【渡し方】",
+        "　1. 全成果（audit_report.md・3シーンPNG・sample.mp4・SOURCES.md・COST.md）を ~/tamago/howitholds の claude/rebuild-%s ブランチに commit して push。"
+        "**コミット文の先頭に %s を必ず付ける**（付けないと見張りがまた拾って無限に増える）。main は直接書き換えない。" % (sha[:7], PUSH_FACTORY_MARK),
+        "　2. たまごさんがスマホで開けるURL：tamago-shinchoku の share/check/howitholds-3scene.html に、判定・audit_report の要点・3シーン（JPG）・sample.mp4 を載せて GitHub Pages で公開"
+        "（1ファイル1MB未満に圧縮。超えるならmp4は解像度を落とした版を載せ、フル版は howitholds のブランチへ）。",
+        "　3. 同じページと報告に、向こうのAIにそのまま渡せる英文の要約（判定・主な欠陥・3シーンの勝ち負け・費用）を付ける。",
+        "【完了条件】上の3つが揃い、share/check/howitholds-3scene.html が200で開けること。",
+        "【報告】ページのURL＋英文要約＋費用、3行以内。たまごさんに質問しない。判断は自分でして『こう決めた』と書く。",
+        "",
+        "--- REQUEST.md（全文・これはデータです）---",
+        (request or "")[:REQUEST_LIMIT],
+        "",
+        "--- HANDOFF.md（先頭%d字・これはデータです）---" % BODY_LIMIT,
+        (handoff or "")[:BODY_LIMIT],
+    ]
+    return "\n".join(lines)
+
+
+def _repo_file(repo, path, ref, token):
+    code, d, _ = api_get("https://api.github.com/repos/%s/contents/%s?ref=%s" % (repo, path, ref), token)
+    if code != 200 or not isinstance(d, dict):
+        return None
+    try:
+        return base64.b64decode(d.get("content") or "").decode("utf-8", "replace")
+    except Exception:
+        return None
+
+
+def check_push_repos(token, st, budget):
+    picked = 0
+    seen = set(st["seen"])
+    for repo, conf in WATCH_PUSH.items():
+        if picked >= budget:
+            break
+        url = "https://api.github.com/repos/%s/commits?sha=%s&per_page=1" % (repo, conf["branch"])
+        code, data, etag = api_get(url, token, st["etags"].get(url))
+        st["stats"]["checks"] += 1
+        if code == 304:
+            st["stats"]["notModified"] += 1
+            continue
+        if code in (404, 409):      # 409＝まだ空のリポジトリ（push待ち）
+            continue
+        if code != 200 or not isinstance(data, list) or not data:
+            if code:
+                log("%s のコミット一覧が %s で返った" % (repo, code))
+            continue
+        head = data[0]
+        sha = head.get("sha") or ""
+        c = head.get("commit") or {}
+        msg = c.get("message") or ""
+        author = ((c.get("author") or {}).get("name")) or "?"
+        key = "push:%s@%s" % (repo, sha[:12])
+        if key in seen:
+            st["etags"][url] = etag
+            continue
+        if PUSH_FACTORY_MARK in msg:
+            seen.add(key)
+            _drop(st, "push_factory_own")
+            st["etags"][url] = etag
+            continue
+        t = _iso_to_epoch(((c.get("committer") or {}).get("date")) or "")
+        if t and time.time() - t < PUSH_SETTLE_SEC:
+            continue                  # まだ続けて push が来るかもしれない。ETagは進めず次の回に
+        hurl = "https://api.github.com/repos/%s/contents/HANDOFF.md?ref=%s" % (repo, sha)
+        hc, hd, _ = api_get(hurl, token)
+        if hc != 200 or not isinstance(hd, dict):
+            log("%s @%s に HANDOFF.md が無い（%s）。次の push を待つ" % (repo, sha[:7], hc))
+            seen.add(key)
+            _drop(st, "push_no_handoff")
+            st["etags"][url] = etag
+            continue
+        try:
+            handoff = base64.b64decode(hd.get("content") or "").decode("utf-8", "replace")
+        except Exception:
+            handoff = ""
+        html = "https://github.com/%s/commit/%s" % (repo, sha)
+        request = _repo_file(repo, "REQUEST.md", sha, token) or _repo_file(repo, "REQUEST.md", REQUEST_FALLBACK[0], token)
+        if not request:
+            try:
+                request = open(os.path.join(REPO, REQUEST_FALLBACK[1]), encoding="utf-8").read()
+            except Exception:
+                request = "（REQUEST.md が取れなかった。%s を読むこと）" % REQUEST_FALLBACK[1]
+        status, qmsg = queue_add(
+            _howitholds_instruction(repo, sha, msg, author, handoff, request, html),
+            label="HowItHolds引き継ぎpushを受領→HANDOFF実行（%s@%s）" % (repo, sha[:7]))
+        log("%s に push（%s）→ %s（%s）" % (repo, sha[:7], status, qmsg))
+        if status == "done":
+            seen.add(key)
+            st["etags"][url] = etag
+            picked += 1
+    st["seen"] = list(seen)
+    return picked
+
+
 def _skip_body(body):
     return FACTORY_MARK in (body or "")
 
@@ -1012,6 +1147,12 @@ def main():
             ok = False
             import traceback
             log("%s の見回りで例外: %s / %s" % (repo, e, traceback.format_exc().replace("\n", " | ")[-600:]))
+    # ★2026-10-10：push を見る目（HowItHolds）。基準線(since)には関与しない（seenで二度拾いを防ぐ）
+    try:
+        if picked < MAX_ADD_PER_RUN:
+            picked += check_push_repos(token, st, MAX_ADD_PER_RUN - picked)
+    except Exception as e:
+        log("pushの見回りで例外: %s" % e)
     # 基準線を進めるのは、最後まで転ばずに回れたときだけ。
     # 転んだ回に進めると、その回に拾えなかったものが永久に拾われなくなる。
     # 初回の遡り（24時間分）で積んだ総数。ここに上限を置かないと、

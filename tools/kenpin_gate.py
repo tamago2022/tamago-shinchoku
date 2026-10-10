@@ -780,7 +780,7 @@ def run_one(ticket_path, quiet=False):
         saifu = _SAIFU_BY_PROVIDER.get(provider, "openai")
         what = "外部検品ゲート %s号 第%s回(%s・%s)" % (n, ticket.get("seq"), ticket.get("kind"), provider)
         try:
-            okv, whyv = yosan.mitsumori(saifu, YOSAN_MITSUMORI_YEN, what=what)
+            okv, whyv = yosan.mitsumori(saifu, YOSAN_MITSUMORI_YEN, what=what, anken="外部検品ゲート（鬼監督）")
         except Exception as e:
             okv, whyv = True, "予算の栓を読めず素通し(%s)" % e
         if not okv:
@@ -798,7 +798,7 @@ def run_one(ticket_path, quiet=False):
             pass
         try:
             yosan.tsukatta(saifu, (cost_row or {}).get("costYen") or YOSAN_MITSUMORI_YEN,
-                           what=what, src="tools/kenpin_gate.py")
+                           what=what, src="tools/kenpin_gate.py", anken="外部検品ゲート（鬼監督）", model=model or "", ryou="検品1回")
         except Exception:
             pass
         ok, err2 = _apply_result(ticket, v, gaps, blindspot, one_line, provider, model, cost_row)

@@ -500,6 +500,7 @@ def probe_fal():
          or read_file_secret("~/.tamago/fal_key"))
     if not k:
         return dict(status="ng", detail="鍵が置かれていません")
+    # kakeibo: 課金なし（存在しない依頼番号の状態を聞くだけ＝鍵が生きているかの確認。生成はしない）
     c, h = http_code(
         "https://queue.fal.run/fal-ai/nano-banana/requests/"
         "00000000-0000-0000-0000-000000000000/status",
