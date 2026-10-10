@@ -55,7 +55,7 @@ LOG = os.path.join(ST, "kohyou_osu.log")
 GATE = os.path.join(ST, ".kohyou_osu_gate")
 TOKEN_PATH = os.path.expanduser("~/.tamago/lovable_oauth.json")
 OUTBOX = os.path.join(ST, "dispatch_outbox.jsonl")
-QUEUE = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain/AI出力/_ルール/作業キュー.md"
+QUEUE = "/Users/mac/tamago/tamago-shinchoku/status/vault_soto/作業キュー.md"  # 2026-10-11 Vaultの外へ（tools/vault_kanmon.py・スマホのObsidianを重くしない）
 
 INTERVAL_SEC = 60        # 心臓は15秒おきに呼ぶ。実際に動くのは1分に1回
 VERIFY_LIMIT_SEC = 600   # 押してから10分変わらなければ諦めて赤のまま残す

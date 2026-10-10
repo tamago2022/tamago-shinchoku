@@ -1,5 +1,7 @@
 **音を鳴らす操作は禁止。確認はデータで行う。**（2026-10-10・WebKitのiPhone確認でYouTubeが音ありで鳴った事故。ブラウザは必ず無音で起動：Chromium＝--mute-audio／WebKit＝tools/muon.mjs の muonContext／Firefox＝media.volume_scale=0。afplay・ffplay・say は確認に使わない。点検：python3 tools/muon.py・関所 tools/stop_kanmon/muon_kanmon.mjs）
 
+**Obsidian（Vault tamago_brain）に作業ごとに書かない。**（2026-10-11・たまごさん「Obsidian が重くならないことが第一。特にスマホで読み込みが遅くなっているのは確か。毎回書き込みが入るから、どうにかして」）00_現在地.md は作業の区切りで更新しない。区切りでは `python3 tools/genzaichi_matome.py --kaku "件名" "状態・決まったこと・次の一手"`（＝Vault外の status/genzaichi_kouho.md に追記）だけ。Vault の 00_現在地.md へは夜に1日1回、変化があった時だけ機械がまとめて書く。作業キュー.md・隙間で拾う仕事.md・留守中の作業ログ.md・留守中の判断待ち.md・いま走ってるセッション.md・AI出力/仕入れ/ は Vault の外 status/vault_soto/ に移した。関所 tools/stop_kanmon/vault_kanmon.mjs（移した場所への書き込み・00_現在地.md の2回目・Vaultへの21回目/日を exit 2）。
+
 **許可・認証のポップアップを出す操作は禁止。ブラウザ・request_access は使わない。許可が要る確認は飛ばして『未確認』と書く。**（2026-10-08・許可ゼロ設定）
 
 # 子セッションの先頭に必ず貼る文（session preamble）

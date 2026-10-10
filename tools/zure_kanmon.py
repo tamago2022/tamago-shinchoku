@@ -112,7 +112,7 @@ def _summarize(rc, out):
     }
 
 
-QUEUE = "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/tamago_brain/AI出力/_ルール/作業キュー.md"
+QUEUE = "/Users/mac/tamago/tamago-shinchoku/status/vault_soto/作業キュー.md"  # 2026-10-11 Vaultの外へ（tools/vault_kanmon.py・スマホのObsidianを重くしない）
 
 
 def _ticket(label, first, left, note):

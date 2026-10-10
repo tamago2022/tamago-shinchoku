@@ -618,6 +618,11 @@ while :; do
   #   本番 /admin に「@」「＠」でheadlessログイン→落ちたら金庫(DB)を入れ直して再試行→だめなら進捗表に赤帯。
   #   1時間おきに起きるが、本番を叩くのは1日1回（--daily）。0円。結果 status/public/admin_login_mimawari.json
   tick_every 240 && ( python3 "$REPO/tools/admin_login_mimawari.py" --daily >> "$REPO/status/admin_login_mimawari.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-11 Vaultの関所。たまごさん「Obsidian が重くならないことが第一。毎回書き込みが入るから、どうにかして」
+  #   Vaultの更新時刻を数えて1日の書き込み回数を出し、工場側が上限を超えたら進捗表を赤（status/public/vault_kanmon.json）。
+  #   読むだけ（0円）。20分おき。00_現在地.md のまとめ書きは1時間おきに起きて、22時以降・変化があった時だけ1日1回。
+  tick_every 80 && ( python3 "$REPO/tools/vault_kanmon.py" > "$REPO/status/vault_kanmon/run.log" 2>&1 & ) >/dev/null 2>&1
+  tick_every 240 && ( python3 "$REPO/tools/genzaichi_matome.py" >> "$REPO/status/vault_kanmon/matome.log" 2>&1 & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
