@@ -219,7 +219,7 @@ def romaji():
     done = {x["t"] for x in jsonl(ROM)}
     todo = sorted(t for t in ja_titles() if t not in done)
     print("ローマ字：残り %d" % len(todo), flush=True)
-    B = 60
+    B = 40
     batches = [todo[i:i + B] for i in range(0, len(todo), B)]
 
     def run(b):
@@ -233,7 +233,7 @@ def romaji():
         return len(got)
 
     n = 0
-    with ThreadPoolExecutor(4) as ex:
+    with ThreadPoolExecutor(int(os.environ.get("ROMAJI_WORKERS", "8"))) as ex:
         for k in ex.map(run, batches):
             n += k
             print("…%d" % n, flush=True)
