@@ -21,7 +21,7 @@ small,.s{font-size:13px;color:var(--t-mute)} ol li,ul li{margin:.3em 0} a{color:
 <p>絵を3枚→14枚（同じ絵は最大2回）、主役の表情7種類。採点 <b>キャラ版 33点 → v2 36点</b>（本家 39点）、デザインセンス <b>28点 → 32点</b>。外部API <b>約27円</b>（絵1枚 約1.7円・前回 約6.6円）、Claude 週の枠 <b>約0.09%</b>。</p></div>
 
 <div class=box style="border-color:var(--red)"><p class=big><span class=red>追記 10/11：絵を安くする比較と8分の見積りをしました →</span> <a href="#yasuku">12章</a></p>
-<p>今の質（v2）のまま、<b>絵1枚 2.37円 → 1.58円（約3分の2）</b>にできる。8分（絵60枚・撮り直し込み）で <b>約96円</b>。8分の動画はまだ作っていない（Genspark の脚本待ち）。外部API <b>7.28円</b>、Claude 週の枠 <b>約0.04%</b>。</p></div>
+<p>今の質（v2）のまま、<b>絵1枚 2.37円 → 1.58円（約3分の2）</b>にできる。8分（絵60枚・撮り直し込み）で <b>約96円</b>。8分の動画はまだ作っていない（Genspark の脚本待ち）。外部API <b>7.28円</b>、Claude 週の枠 <b>約0.05%</b>。</p></div>
 
 <h2>1. 試作（Opus 5.5 が作った77秒）</h2>
 <video controls playsinline preload="metadata" poster="poster.jpg" src="proto_web.mp4"></video>
@@ -291,7 +291,7 @@ Opus 5.5: 入力 $4 ／ キャッシュ書き(1時間) $8 ／ キャッシュ読
 <h3>かかったお金・Claude の使用量</h3>
 <table>
 <tr><td>外部API（今回の比較）</td><td><b>7.28円</b>（切り上げ単位で計算。面積どおりなら5.86円）＝ fal 画像5回。上限10円の内。8分の絵・声は0円（作っていない）</td></tr>
-<tr><td>Claude（Opus 5.5）</td><td><b>週の枠 約0.04%</b>＝ 止まった1回目 273,346（0.014%）＋ 続きの2回目 約45万（約0.02%・ページを書く時点の実測 375,856 に残りの作業分を足した見込み）。重み付きトークン ÷ 20,000,000 ＝ 1%</td></tr>
+<tr><td>Claude（Opus 5.5）</td><td><b>週の枠 約0.05%</b>＝ 止まった1回目 273,346（0.014%）＋ 続きの2回目 677,210（0.034%・公開確認の時点の実測）。重み付きトークン ÷ 20,000,000 ＝ 1%</td></tr>
 <tr><td>/usage の％そのもの</td><td>未確認。アプリの記録が 10/10 10:11（週59%）のまま。たまごさんの話では作業前71%</td></tr>
 </table>
 
@@ -300,7 +300,7 @@ Opus 5.5: 入力 $4 ／ キャッシュ書き(1時間) $8 ／ キャッシュ読
 fal x-fal-billable-units: 768x432+参照=2 / 1328x736+参照=2 / 1536x864+参照=3 / 1328x736参照なし=1 / schnell 1536x864=2
 cost_log.jsonl 合計: 7.28円（切り上げ）/ 5.86円（面積どおり）
 usage_before.json: weekly_pct_reported_by_tamago=71%（作業前・たまごさん申告）
-usage_measure.py: d80a5c61 weighted=273346 / 3b4647fd weighted=375856（ページ作成時点）
+usage_measure.py: d80a5c61 weighted=273346 / 3b4647fd weighted=677210（公開確認時点）→ 0.034% / 合計 950556 → 0.048%
 拡大時間(秒): lanczos 1.1〜4.2 / realesrgan 18.4〜207.8
 </pre>
 <h3>未確認の一覧</h3>
