@@ -257,6 +257,15 @@ def main(dry=False):
         miss = [t for t, c in units.items()
                 if not (c == "name" and t in names)
                 and any(jahash(t) not in tr[lg] and t not in hand.get(lg, {}) for lg in LANGS)]
+        # 1192番（2026-10-10）：曲データの曲名は訳さない（意味の訳ではなく「元の表記＋海外向け表記」にする係が別にいる）。
+        #   tools/1192_title_romaji.py（毎時）が 公式→検索→ローマ字 で入れる。ここで訳すと関所 check-i18n-title-romaji が止める。
+        try:
+            cg = io.open(os.path.join(tmp, "src", "lib", "coverGuide.ts"), encoding="utf-8").read()
+            sng = {t for t, c in units.items() if c == "title" and ("title: " + json.dumps(t, ensure_ascii=False)) in cg}
+            miss = [t for t in miss if t not in sng]
+            st["kyokumei_skip"] = len(sng)
+        except Exception as e:
+            st["kyokumei_err"] = str(e)[:200]
         st["units"] = len(units)
         st["mitaku"] = len(miss)
         print("画面に出る日本語 %d 件／訳が無い %d 件" % (len(units), len(miss)))

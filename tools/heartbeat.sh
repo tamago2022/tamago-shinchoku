@@ -298,6 +298,9 @@ while :; do
   # 1191番（2026-10-10）入荷した日本語の文を、4言語へ自動で訳して辞書に入れる（Claude Haiku・1時間に1回）。
   #   訳が無いものだけ。かなが残った訳は捨てる。結果 status/1191_nihongo_nokori/jidou.json
   tick_every 15 && ( python3 "$REPO/tools/1191_honyaku_jidou.py" >> "$REPO/status/1191_nihongo_nokori/jidou.log" 2>&1 & ) >/dev/null 2>&1
+  # 1192番（2026-10-10）日本語の曲名に海外向け表記（①Apple Music米国ストアの公式→②MusicBrainz→③Haikuのローマ字）を付けて辞書へ。
+  #   新しい曲を拾う→ローマ字→公式集め（止まっていれば再開）→変わっていれば1コミット。結果 status/1192_romaji/build.json
+  tick_every 15 && ( python3 "$REPO/tools/1192_title_romaji.py" hourly >> "$REPO/status/1192_romaji/hourly.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
   #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。

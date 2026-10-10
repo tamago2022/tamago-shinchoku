@@ -87,12 +87,12 @@ def get(url, tries=4):
 
 # ---------------- ① 公式：Apple Music（JPとUSで同じ trackId） ----------------
 def official():
-    done = {x["a"] for x in jsonl(OFF)}
+    done = {x.get("k") or x["a"] for x in jsonl(OFF)}
     by = {}
     for s in songs():
         if JA.search(s.get("raw") or "") or JA.search(s.get("tidy") or ""):
             by.setdefault((s["a"], s["an"]), []).append(s)
-    todo = [k for k in by if k[0] not in done]
+    todo = [k for k in by if k[0] not in done and "%s|%s" % k not in done]
     print("公式：残り %d 人" % len(todo), flush=True)
     for (aid, an) in todo:
         term = re.sub(r"\s*[（(].*?[)）]\s*", " ", an).strip() or an
@@ -132,7 +132,7 @@ def official():
             best = sorted(cnt.items(), key=lambda x: (-len(x[1]), len(x[0])))[0]
             for t in want[n]:
                 found[t] = {"o": best[0], "ref": "https://music.apple.com/us/song/%d" % best[1][0]}
-        io.open(OFF, "a", encoding="utf-8").write(json.dumps({"a": aid, "n": len(jp.get("results", [])), "found": found}, ensure_ascii=False) + "\n")
+        io.open(OFF, "a", encoding="utf-8").write(json.dumps({"a": aid, "k": "%s|%s" % (aid, an), "n": len(jp.get("results", [])), "found": found}, ensure_ascii=False) + "\n")
         if found:
             print(an, len(found), flush=True)
     mb()
@@ -258,6 +258,14 @@ def similar(a, b):
     return a2 == b2
 
 
+def has_reading(t, v):
+    """関所 scripts/patrol/check-i18n-title-romaji.mjs の hasReading と同じ。"""
+    if not isinstance(v, str) or not v.startswith(t + " "):
+        return False
+    rest = v[len(t) + 1:]
+    return bool(LATIN.search(rest)) and not JA.search(rest)
+
+
 def display(t, rec):
     o, r = rec.get("o"), rec.get("r")
     if o and r and not similar(o, r):
@@ -312,6 +320,12 @@ def build(push=False):
         d = json.load(io.open(p, encoding="utf-8"))
         for t, rec in tab.items():
             d[hj.jahash(t)] = display(t, rec)
+        # まだ表記が無い曲名に、意味だけの訳（「Godlike, Huh」「异邦人」など）が残っていたら消す（関所が止めるため）
+        for t in ja_titles():
+            h = hj.jahash(t)
+            if t not in tab and h in d and not has_reading(t, d[h]):
+                del d[h]
+                st["keshita"] = st.get("keshita", 0) + 1
         q = os.path.join(full, "src", "i18n", "overlay", "tr.%s.json" % lg)
         os.makedirs(os.path.dirname(q), exist_ok=True)
         io.open(q, "w", encoding="utf-8").write(json.dumps(dict(sorted(d.items())), ensure_ascii=False, separators=(",", ":")))
@@ -321,6 +335,25 @@ def build(push=False):
         {"_about": "曲名の海外向け表記（1192番）。src: official=Apple Music米国ストアの公式表記 / search=MusicBrainzの作品別名 / auto=Haikuのヘボン式ローマ字。"
                    "画面には tr.<言語>.json の「元の表記 海外向け表記」で出る。",
          "titles": tab}, ensure_ascii=False, indent=0, sort_keys=True))
+    # 曲名の元の表記（かなを含むもの）は「残ってよい日本語」（かなの関所 check-i18n-kana.mjs と画面の検品 1190 が読む）
+    ap = os.path.join(tmp, "scripts", "i18n", "allow_originals.json")
+    allow = set(json.load(io.open(ap, encoding="utf-8"))) if os.path.exists(ap) else set()
+    allow |= {t for t in tab if re.search(r"[ぁ-ゟァ-ヺヽ-ヿ]", t)}
+    q = os.path.join(full, "scripts", "i18n", "allow_originals.json")
+    io.open(q, "w", encoding="utf-8").write(json.dumps(sorted(allow), ensure_ascii=False, indent=0))
+    io.open(os.path.join(SH, "status", "1191_nihongo_nokori", "allow_originals.json"), "w", encoding="utf-8").write(
+        json.dumps(sorted(allow), ensure_ascii=False, indent=0))
+    import hashlib
+    st["tabHash"] = hashlib.sha1(json.dumps(tab, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    prev = {}
+    try:
+        prev = json.load(io.open(os.path.join(D, "build.json"), encoding="utf-8"))
+    except Exception:
+        pass
+    if push and prev.get("tabHash") == st["tabHash"] and (prev.get("push") or {}).get("ok"):
+        push = False
+        st["push"] = prev.get("push")
+        st["skip"] = "前回から変わっていない"
     # 足りない分の報告
     st["missing"] = sorted(t for t in ja_titles() if t not in tab)[:50]
     st["missingN"] = len(ja_titles()) - len(tab)
@@ -333,6 +366,41 @@ def build(push=False):
     print(json.dumps(st, ensure_ascii=False)[:3000])
 
 
+def hourly():
+    """心臓から1時間に1回：新しい曲を拾う→ローマ字→（公式集めが止まっていれば再開）→辞書へ1コミット。"""
+    lock = os.path.join(D, "hourly.lock")
+    if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 3 * 3600:
+        print("走行中（lock）"); return
+    io.open(lock, "w").write(str(os.getpid()))
+    try:
+        subprocess.run(["git", "fetch", "origin", "main", "-q"], cwd=JOY, timeout=300)
+        tmp = tempfile.mkdtemp(prefix="1192h_")
+        tg = os.path.join(tmp, "a.tar")
+        subprocess.run(["git", "archive", "-o", tg, "origin/main", "src/lib/coverGuide.ts", "src/lib/songTitleTidy.ts",
+                        "src/lib/hikigatariSongs.ts"], cwd=JOY, check=True, timeout=300)
+        tarfile.open(tg).extractall(tmp)
+        node = "/usr/local/bin/node" if os.path.exists("/usr/local/bin/node") else "node"
+        r = subprocess.run([node, "--experimental-strip-types", os.path.join(HERE, "1192_extract.mjs"), tmp, SONGS + ".new"],
+                           capture_output=True, text=True, timeout=300)
+        if r.returncode == 0 and os.path.exists(SONGS + ".new"):
+            os.replace(SONGS + ".new", SONGS)
+        else:
+            print("抜き出し失敗", (r.stderr or "")[-300:])
+        ps = subprocess.run(["/bin/ps", "-axo", "command"], capture_output=True, text=True).stdout
+        if "1192_title_romaji.py official" not in ps:
+            subprocess.Popen([sys.executable, os.path.join(HERE, "1192_title_romaji.py"), "official"],
+                             stdout=open(os.path.join(D, "official.log"), "a"), stderr=subprocess.STDOUT,
+                             cwd=SH, start_new_session=True)
+        if "1192_title_romaji.py romaji" not in ps:
+            romaji()
+        build(push=True)
+    finally:
+        try:
+            os.remove(lock)
+        except Exception:
+            pass
+
+
 def self_test():
     assert display("異邦人", {"o": "Ihojin", "r": "Ihojin"}) == "異邦人 Ihojin"
     assert display("異邦人", {"o": "Ihoujin", "r": "Ihojin"}) == "異邦人 Ihoujin"
@@ -340,6 +408,7 @@ def self_test():
     assert display("雨音", {"r": "Amaoto"}) == "雨音 Amaoto"
     assert good_romaji("Kamippoina") and not good_romaji("神っぽいな") and not good_romaji("")
     assert cap("'suriru'") == "'Suriru'"
+    assert has_reading("異邦人", "異邦人 Ihojin") and not has_reading("異邦人", "異邦人 이방인") and not has_reading("神っぽいな", "Godlike, Huh")
     print("✓ self-test 合格")
 
 
@@ -353,6 +422,8 @@ if __name__ == "__main__":
         mb()
     elif a and a[0] == "romaji":
         romaji()
+    elif a and a[0] == "hourly":
+        hourly()
     elif a and a[0] == "build":
         build(push="--push" in a)
     else:

@@ -101,7 +101,9 @@ COUNT_JS = r"""() => {
         const left = kanaLeft(raw);
         // 読みの二重（「布袋寅泰 Tomoyasu Hotei Tomoyasu Hotei」）も数える（2026-10-10 実測で起きた）
         const dup = /(?:^|[\s(（“「『])([A-Z][\w'’.-]+(?: [A-Z][\w'’.-]+){1,3}) \1(?![\w])/.test(raw) || /([가-힣]{2,}(?: [가-힣]{2,}){1,2}) \1/.test(raw);
-        out.push({ t: raw.slice(0, 120), kana: !!left, ja: JA.test(raw), left: left || '', dup });
+        // 2026-10-10（1192番）曲名だけがローマ字なしで出ている（「異邦人」だけ等）。曲名の一覧は window.__songTitlesJa
+        const bare = !!(window.__songTitlesJa && window.__songTitlesJa.has(raw.replace(/^[「『“"]|[」』”"]$/g, '').trim()));
+        out.push({ t: raw.slice(0, 120), kana: !!left, ja: JA.test(raw), left: left || '', dup, bare });
       }
       return out;
     })(),
@@ -111,6 +113,20 @@ try:
     ALLOW_JS = json.dumps(json.load(open(ALLOW_FILE, encoding="utf-8")), ensure_ascii=False)
 except Exception:
     ALLOW_JS = "[]"
+# 1192番：かな・漢字の曲名の一覧（曲名がローマ字なしで出ていないかを見る）
+SONGS_FILE = os.path.join(os.path.dirname(ALLOW_FILE), "..", "1192_romaji", "songs.json")
+try:
+    import re as _re
+    _JA = _re.compile(r"[\u3040-\u30ff\u3400-\u9fff々〆]")
+    _ts = set()
+    for _s in json.load(open(SONGS_FILE, encoding="utf-8")):
+        for _k in ("raw", "tidy"):
+            _t = (_s.get(_k) or "").strip()
+            if _JA.search(_t):
+                _ts.add(_t)
+    TITLES_JS = json.dumps(sorted(_ts), ensure_ascii=False)
+except Exception:
+    TITLES_JS = "[]"
 KEYS = ["cards", "songLinks", "links", "images", "videos", "chapters"]
 
 
@@ -138,6 +154,7 @@ def measure(browser, base, path, lg, wait):
     ctx = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
     ctx.add_init_script("try{localStorage.setItem('gokigen-lang','%s')}catch(e){}" % lg)
     ctx.add_init_script("window.__i18nAllow=%s;" % ALLOW_JS)
+    ctx.add_init_script("window.__songTitlesJa=new Set(%s);" % TITLES_JS)
     pg = ctx.new_page()
     try:
         pg.goto(base + path, wait_until="load", timeout=90000)
@@ -241,6 +258,11 @@ def main():
                     # （人名・曲名の原題以外に）出ていたら公開を止める。
                     if kana:
                         d = list(d) + ["かなが残っている %d件（例: %s）" % (len(kana), " / ".join(kana[:3]))]
+                    # 1192番（2026-10-10）：日本語以外の表示で、かな・漢字の曲名にローマ字（海外向け表記）が付いていなければ止める
+                    bare = [x["t"] for x in r.get("nokori", []) if x.get("bare")]
+                    r["romajiNashi"] = len(bare)
+                    if bare:
+                        d = list(d) + ["曲名にローマ字が無い %d件（例: %s）" % (len(bare), " / ".join(bare[:3]))]
                     dup = [x["t"] for x in r.get("nokori", []) if x.get("dup")]
                     r["nijuu"] = len(dup)
                     if dup:
@@ -260,7 +282,7 @@ def main():
             if "error" in r:
                 print("  %-8s 読めない %s" % (lg, r["error"]))
             else:
-                print("  %-8s " % lg + "  ".join("%s=%s" % (k, r.get(k)) for k in KEYS + ["hidden", "nokoriKana", "nokoriKanji"]))
+                print("  %-8s " % lg + "  ".join("%s=%s" % (k, r.get(k)) for k in KEYS + ["hidden", "nokoriKana", "nokoriKanji", "romajiNashi"]))
     print("判定:", "✓ 全言語で中身の量が同じ" if res["ok"] else "✗ 違いあり")
     for x in res["red"]:
         print("  ✗", x)
