@@ -257,6 +257,65 @@ def run_job(payload):
     return out
 
 
+CDP_MARK_JS = "// muon: 接続のみ（既存のブラウザに繋ぐだけ。起動しない・動画を鳴らさない）\n"
+CDP_MARK_PY = "# muon: 接続のみ（既存のブラウザに繋ぐだけ。起動しない・動画を鳴らさない）\n"
+
+
+def naosu_text(src, path):
+    """無音の指定を機械で足す（控えめ：形が分かる所だけ）。直せなかった所は残る＝点検で赤のまま。"""
+    js = not path.endswith((".py", ".sh", ".command"))
+    s = src
+    if js:
+        s = re.sub(r"\b(chromium\s*\.\s*launch(?:PersistentContext)?\s*\()\s*\)", r'\1{ args: ["--mute-audio"] })', s)
+        s = re.sub(r"\b(chromium\s*\.\s*launch\s*\(\s*\{)(?![^}]*\bargs\s*:)", r'\1 args: ["--mute-audio"],', s)
+        s = re.sub(r"(chromium\s*\.\s*launch\s*\(\s*\{[^}]*?\bargs\s*:\s*\[)(?!\s*\"--mute-audio\")", r'\1"--mute-audio", ', s)
+        s = re.sub(r"(puppeteer\s*\.\s*launch\s*\(\s*\{)(?![^}]*\bargs\s*:)", r'\1 args: ["--mute-audio"],', s)
+        s = re.sub(r"([\"'`])--headless(=new)?\1(?![^\n]*--mute-audio)", r'\1--headless\2\1, "--mute-audio"', s)
+    elif path.endswith(".py"):
+        s = re.sub(r"\b(chromium\.launch(?:_persistent_context)?\()\)", r'\1args=["--mute-audio"])', s)
+        s = re.sub(r"\b(chromium\.launch\()(?![^)]*\bargs\s*=)(?=[^)])", r'\1args=["--mute-audio"], ', s)
+        s = re.sub(r"(chromium\.launch\([^)]*?\bargs\s*=\s*\[)(?!\s*\"--mute-audio\")", r'\1"--mute-audio", ', s)
+    else:
+        s = re.sub(r"--headless(=new)?(?![^\n]*--mute-audio)", r"--headless\1 --mute-audio", s)
+    if RE_CONNECT.search(s) and not any(r.search(strip_comments(s, path)) for r in RE_LAUNCH.values()) \
+            and not OK_MARK.search(s):
+        mark = CDP_MARK_PY if not js else CDP_MARK_JS
+        if s.startswith("#!"):
+            i = s.index("\n") + 1
+            s = s[:i] + mark + s[i:]
+        else:
+            s = mark + s
+    return s
+
+
+def naosu(roots=None):
+    """点検で赤のファイルに無音を足す。元は ~/.tamago/backup/muon/ に控える。"""
+    import shutil
+    bk = os.path.expanduser("~/.tamago/backup/muon/" + time.strftime("%Y%m%d-%H%M%S"))
+    r = kanmon(roots, write=False)
+    out = {"before": r["red"], "fixed": [], "left": []}
+    for h in r["hits"]:
+        p = h["file"] if os.path.isabs(h["file"]) else os.path.join(REPO, h["file"])
+        if h["engine"] == "sound":
+            out["left"].append(h)
+            continue
+        try:
+            src = io.open(p, encoding="utf-8").read()
+            new = naosu_text(src, p)
+            if new != src and not check_text(new, p):
+                os.makedirs(bk, exist_ok=True)
+                shutil.copy2(p, os.path.join(bk, os.path.basename(p)))
+                io.open(p, "w", encoding="utf-8").write(new)
+                out["fixed"].append(h["file"])
+            else:
+                out["left"].append(h)
+        except Exception as e:  # noqa: BLE001
+            out["left"].append(dict(h, err=type(e).__name__))
+    out["after"] = kanmon(roots)["red"]
+    out["backup"] = bk
+    return out
+
+
 def self_test():
     cases = [
         ("a.mjs", "const b = await chromium.launch({headless:true});", False),
@@ -293,6 +352,9 @@ def main():
         i = a.index("--check-stdin")
         name = a[i + 1] if len(a) > i + 1 else "x.mjs"
         print(json.dumps(check_text(sys.stdin.read(), name), ensure_ascii=False))
+        return
+    if "--naosu" in a:
+        print(json.dumps(naosu(), ensure_ascii=False, indent=1))
         return
     if "--mimawari" in a:
         print(json.dumps(mimawari(kill="--dry" not in a), ensure_ascii=False, indent=1))
