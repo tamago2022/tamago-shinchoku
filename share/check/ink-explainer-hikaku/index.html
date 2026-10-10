@@ -20,6 +20,9 @@ small,.s{font-size:13px;color:var(--t-mute)} ol li,ul li{margin:.3em 0} a{color:
 <div class=box style="border-color:var(--red)"><p class=big><span class=red>追記 10/10 21:50：キャラ版 v2「絵本トーン」を作りました →</span> <a href="#chara2">11章</a></p>
 <p>絵を3枚→14枚（同じ絵は最大2回）、主役の表情7種類。採点 <b>キャラ版 33点 → v2 36点</b>（本家 39点）、デザインセンス <b>28点 → 32点</b>。外部API <b>約27円</b>（絵1枚 約1.7円・前回 約6.6円）、Claude 週の枠 <b>約0.09%</b>。</p></div>
 
+<div class=box style="border-color:var(--red)"><p class=big><span class=red>追記 10/11：絵を安くする比較と8分の見積りをしました →</span> <a href="#yasuku">12章</a></p>
+<p>今の質（v2）のまま、<b>絵1枚 2.37円 → 1.58円（約3分の2）</b>にできる。8分（絵60枚・撮り直し込み）で <b>約96円</b>。8分の動画はまだ作っていない（Genspark の脚本待ち）。外部API <b>7.28円</b>、Claude 週の枠 <b>約0.04%</b>。</p></div>
+
 <h2>1. 試作（Opus 5.5 が作った77秒）</h2>
 <video controls playsinline preload="metadata" poster="poster.jpg" src="proto_web.mp4"></video>
 <p class=s>題名「Why Ancient Humans Needed Night Owls」／英語・77秒・31カット・212語。絵は全部 Python（PIL）で手描き風に作画、文字は絵に焼き込まず別の層で重ねた。色は How It Holds の3色（赤・紙・インク）。ナレーションは Gemini TTS（声 Charon）。公開用に 960×540・0.91MB に圧縮。フル画質（1920×1080・52MB）は Google ドライブ「InkExplainer比較」フォルダ。</p>
@@ -246,6 +249,68 @@ Opus 5.5: 入力 $4 ／ キャッシュ書き(1時間) $8 ／ キャッシュ読
 <tr><td>走った時間</td><td>19:32 起動 → 19:43 絵14枚完成（11分）→ 声・文字起こし・書き出し → 21:33 完成（約2時間。Mac の負荷が15〜30で、文字起こしと書き出しに各10〜15分かかった。指示の90分は超過）</td></tr>
 </table>
 <p class=s>作り方の記録（台本・字幕・作画コード・プロンプト・cost_log.jsonl）は工場の status/ink/char2/（公開しない場所）。</p>
+
+<h2 id=yasuku>12. 安くする比較と8分の見積り（Opus 5.5・10/11）</h2>
+<div class=box><p class=big>結論：<span class=red>参照つきのまま「出す絵を小さく（約1メガピクセル）→Macでふつうに拡大」で、v2と同じ見た目のまま 1枚 2.37円 → 1.58円。</span></p>
+<p>8分（絵60枚・撮り直し1割込み）は、Pip が出る絵をこの方法、Pip も猫も出ない絵を「参照なし（0.79円）」にして <b>約96円</b>（テストの上限100円・本番の上限250円の内）。<b>AIで拡大する方法（Real-ESRGAN）は紙のザラザラが消えて安っぽくなったので使わない。</b></p></div>
+<p><img src="long8_hikaku.jpg" alt="作り方別の比較シート" style="width:100%;border:2px solid var(--ink)"></p>
+<p class=s>同じ場面（驚く Pip）・同じ文・同じ種（seed）で作り、全部 1920×1080 にそろえた。2段目＝顔を等倍（100%）、3段目＝水彩の空と紙の目を等倍で切り出し。円は1枚あたり（左＝fal が実際に数える単位で切り上げ／右＝面積どおりの計算）。</p>
+
+<h3>比べた結果（10点満点・辛口・基準は v2「char2」）</h3>
+<table><tr><th>作り方</th><th class=n>1枚の円</th><th class=n>水彩の質感</th><th class=n>顔が崩れない</th><th class=n>キャラ一致</th><th class=n>安っぽくない</th><th>ひとこと</th></tr>
+<tr><td>v2（基準）</td><td class=n>2.37</td><td class=n>9</td><td class=n>9</td><td class=n>9</td><td class=n>9</td><td>これが「今の質」</td></tr>
+<tr><td>① 今と同じ（1536×864＋参照）</td><td class=n>2.37</td><td class=n>9</td><td class=n>9</td><td class=n>9</td><td class=n>9</td><td>v2 と同等。ただ「顔のアップ」の指示が全身の引きの絵になった</td></tr>
+<tr><td>② 半分の大きさ（768×432＋参照）→AI拡大</td><td class=n>1.58</td><td class=n>3</td><td class=n>7</td><td class=n>8</td><td class=n>4</td><td>空がのっぺり、肌がつるつる。デジタル絵に見える</td></tr>
+<tr><td>② 半分の大きさ → ふつうに拡大</td><td class=n>1.58</td><td class=n>6</td><td class=n>7</td><td class=n>8</td><td class=n>6</td><td>紙の目は残るが、全体がぼやける</td></tr>
+<tr><td>②b 約1MP（1328×736＋参照）→AI拡大</td><td class=n>1.58</td><td class=n>4</td><td class=n>8</td><td class=n>9</td><td class=n>5</td><td>形はきれいだが水彩らしさが消える</td></tr>
+<tr><td><b>★②b 約1MP＋参照 → ふつうに拡大</b></td><td class=n><b>1.58</b></td><td class=n><b>9</b></td><td class=n><b>9</b></td><td class=n><b>9</b></td><td class=n><b>8</b></td><td><b>v2 とほぼ見分けがつかない。</b>等倍で見ると少しだけ柔らかい</td></tr>
+<tr><td>③ 最安モデル schnell（文字だけ）</td><td class=n>0.95</td><td class=n>3</td><td class=n>5</td><td class=n>2</td><td class=n>3</td><td>別人（アニメ顔）・猫の柄が違う・隅にサインが出た。不合格</td></tr>
+<tr><td>③b flash 文字だけ（約1MP）→ふつうに拡大</td><td class=n>0.79</td><td class=n>8</td><td class=n>8</td><td class=n>7</td><td class=n>8</td><td>この1枚は意外に似ていた。ただ見本を見ていないので、場面が変わっても同じ顔になる保証はない（未確認）。Pip の出ない絵に使う</td></tr></table>
+<p class=s>拡大にかかった時間（Mac の負荷15〜30の中で実測）：ふつうの拡大＝1枚 1〜4秒／AI拡大＝1枚 18〜208秒。半分の大きさ（768）は、下の課金の仕組みのせいで <b>1MP と同じ値段</b>なので、小さくする意味がない。</p>
+
+<h3>fal の課金の仕組み</h3>
+<ul>
+<li><b>確認できた：</b>fal は呼び出しごとに「何単位として数えたか」を返事に付けてくる（x-fal-billable-units）。今回5回の実測：参照つき768×432＝2単位、参照つき1328×736＝2単位、参照つき1536×864＝3単位、参照なし1328×736＝1単位、schnell 1536×864＝2単位。<b>＝「見本（参照）＋出す絵」のメガピクセルを足して、整数に切り上げて数えている</b>（見本は小さくしても約1MP として数えられる）。</li>
+<li><b>確認できた：</b>単価（fal の価格表API・10/11）：flux-2 flash 編集版 $0.005／処理メガピクセル、flux-2 flash $0.005、schnell $0.003。だから参照つきは最低2単位＝$0.010＝1.58円。</li>
+<li><b>もっと安い参照つきモデルは見つからなかった：</b>Z Image Turbo の画像から画像 $0.005（同額）、Flux 2 klein の編集版は4B $0.010・9B $0.011（高い）、計算秒課金の klein 編集版は呼び出し先が存在しなかった（404・課金なし）。schnell redux $0.003 は文の指示で場面を変えられない種類なので対象外。</li>
+<li><b>未確認：</b>fal の実際の請求書の額（使用量APIはこの鍵では見られない）。表の円は「単位の切り上げ」で計算＝多めの側。</li>
+</ul>
+
+<h3>8分の見積り（絵の枚数＋撮り直し1割・見本は使い回しで0円）</h3>
+<table><tr><th>作り方</th><th class=n>50枚</th><th class=n>60枚</th><th class=n>70枚</th><th>本番1080p</th></tr>
+<tr><td>① 今と同じ（1536→ふつうに拡大）</td><td class=n>131円</td><td class=n>157円</td><td class=n>183円</td><td>同じ額（テスト上限100円を超える）</td></tr>
+<tr><td>① を最初から1920×1080で作る</td><td class=n>174円</td><td class=n>209円</td><td class=n>244円</td><td>本番上限250円ぎりぎり</td></tr>
+<tr><td>②b 約1MP＋参照（全部の絵）</td><td class=n>87円</td><td class=n>104円</td><td class=n>122円</td><td>同じ額（拡大は Mac で0円）</td></tr>
+<tr><td><b>★推奨：②b（Pip の絵）＋③b（Pip も猫も出ない絵・6枚に1枚）</b></td><td class=n><b>80円</b></td><td class=n><b>96円</b></td><td class=n><b>112円</b></td><td><b>同じ額</b>。60枚までならテスト上限100円の内</td></tr>
+<tr><td>③b 全部文字だけ（参考）</td><td class=n>44円</td><td class=n>52円</td><td class=n>61円</td><td>最安だがキャラが毎回そろう保証なし</td></tr></table>
+<p class=s>声は Gemini の読み上げ（無料枠なので実際は0円）。公式の値段で計算すると8分で約17円（v2 の60秒が2.56円だったので長さに比例させた目安）。面積どおりの計算だと、推奨方式60枚は約94円。</p>
+
+<h3>次の一手</h3>
+<p><b>Genspark の8分の脚本が届いたら、推奨方式（★）でそのまま作る。</b>指示書は作ってあるが、まだ起動していない（＝8分の動画はまだ無い）。脚本は書き換えず、読み上げが言い間違える単語の綴りだけ直す。カメラは固定・同じ絵は2回まで・外部APIは100円で自動停止。</p>
+
+<h3>かかったお金・Claude の使用量</h3>
+<table>
+<tr><td>外部API（今回の比較）</td><td><b>7.28円</b>（切り上げ単位で計算。面積どおりなら5.86円）＝ fal 画像5回。上限10円の内。8分の絵・声は0円（作っていない）</td></tr>
+<tr><td>Claude（Opus 5.5）</td><td><b>週の枠 約0.04%</b>＝ 止まった1回目 273,346（0.014%）＋ 続きの2回目 約45万（約0.02%・ページを書く時点の実測 375,856 に残りの作業分を足した見込み）。重み付きトークン ÷ 20,000,000 ＝ 1%</td></tr>
+<tr><td>/usage の％そのもの</td><td>未確認。アプリの記録が 10/10 10:11（週59%）のまま。たまごさんの話では作業前71%</td></tr>
+</table>
+
+<pre>生データ（実測・記録ファイルから）
+比較シートの切り出し: 1920x1080 から 480x270 をそのまま = 拡大率 100%
+fal x-fal-billable-units: 768x432+参照=2 / 1328x736+参照=2 / 1536x864+参照=3 / 1328x736参照なし=1 / schnell 1536x864=2
+cost_log.jsonl 合計: 7.28円（切り上げ）/ 5.86円（面積どおり）
+usage_before.json: weekly_pct_reported_by_tamago=71%（作業前・たまごさん申告）
+usage_measure.py: d80a5c61 weighted=273346 / 3b4647fd weighted=375856（ページ作成時点）
+拡大時間(秒): lanczos 1.1〜4.2 / realesrgan 18.4〜207.8
+</pre>
+<h3>未確認の一覧</h3>
+<ul>
+<li>fal の実際の請求額（表は切り上げ単位で多めに計算）</li>
+<li>③b（参照なし）で場面が変わっても Pip の顔・持ち物がそろうか（今回1枚だけ）</li>
+<li>1280×720 で出した場合の見た目（1328×736 で試した。値段は同じ2単位）</li>
+<li>声の公式値段の目安 約17円（長さ比例の概算）</li>
+</ul>
+<p class=s>記録（比較画像・プロンプト・cost_log.jsonl・見積り estimate.json・8分版の指示書 PROMPT_build.md）は工場の status/ink/long8/（公開しない場所）。</p>
 </main>
 <!--tamago-dark 2--><link rel="stylesheet" href="../../../theme/tamago-dark.css">
 </body></html>
