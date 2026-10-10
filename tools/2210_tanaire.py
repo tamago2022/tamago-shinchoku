@@ -27,6 +27,7 @@
   満杯   … 棚が50枚                        サムネ無し … 画像が取れない（棚に出せない）
   動画切れ … YouTubeが見られない            URL無し … ひとことだけ
   失敗   … 書き込みで転んだ（次の周回でもう一度）
+  説明なし … カードの説明（ひとこと）が作れない（2026-10-10：説明が空のカードは棚に入れない）
 
 使い方:
   python3 tools/2210_tanaire.py            … 「済」でないものを全部やり直す
@@ -190,6 +191,36 @@ def clean_title(t):
     return re.sub(r"\s+", " ", t).strip()
 
 
+RE_YEAR_ONLY = re.compile(r"^\s*(?:\d{4}\s*(?:年)?\s*[。.]?)?\s*$")
+
+
+def post_youyaku(raw):
+    """投稿本文（titleRaw）から、カードの説明に使う1〜2行の要約「…」を作る。
+    ★2026-10-10（たまごさん：芋の棚で satoko369 さんのカードだけ説明が空で背が低く、列がガタガタ）：
+      これまで admin_stock へ入れる時に whisper（説明）を**一度も書いていなかった**のが原因。"""
+    t = clean_title(raw)
+    t = re.sub(r"https?://\S+", "", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    if not t:
+        return ""
+    if len(t) > 58:
+        t = t[:57].rstrip("、。 ") + "…"
+    return "「%s」" % t
+
+
+def whisper_of(r, title):
+    """説明（whisper）を必ず決める。①投げ込みに書いてある説明 ②投稿本文の要約 ③見出しと別の一言。
+    空・年だけは返さない（返せないときは "" → 呼び側が「説明なし」で止める）。"""
+    for k in ("whisper", "copy", "setsumei"):
+        v = str(r.get(k) or "").strip()
+        if v and not RE_YEAR_ONLY.match(v):
+            return v[:200]
+    v = post_youyaku(r.get("titleRaw") or "")
+    if v and not RE_YEAR_ONLY.match(v.strip("「」")) and v.strip("「」…") != (title or "").strip():
+        return v
+    return ""
+
+
 def page_url(row):
     """本番の棚ページ。既存棚の受け皿なら元の棚id、店主が作った棚なら db-<uuid>（publicShelves:507）。"""
     sid = row.get("extends_shelf_id") or ("db-" + row["shelf_db"])
@@ -206,10 +237,11 @@ with sh as (
   order by (id::text = %(sid)s) desc, (extends_shelf_id = %(sid)s) desc, position nulls last
   limit 1),
 ex as (select id from admin_stock where kind = %(kind)s and (ref = %(ref)s or (%(rx)s <> '' and ref ~* %(rx)s)) order by created_at limit 1),
-fix as (update admin_stock set thumbnail_url = coalesce(thumbnail_url, %(thumb)s), note = coalesce(note, %(note)s)
-        where id in (select id from ex) and (thumbnail_url is null or note is null) returning id),
-ins as (insert into admin_stock (kind, ref, title, thumbnail_url, note)
-        select %(kind)s, %(ref)s, %(title)s, %(thumb)s, %(note)s
+fix as (update admin_stock set thumbnail_url = coalesce(thumbnail_url, %(thumb)s), note = coalesce(note, %(note)s),
+               whisper = coalesce(nullif(btrim(whisper), ''), %(whisper)s)
+        where id in (select id from ex) and (thumbnail_url is null or note is null or whisper is null or btrim(whisper) = '') returning id),
+ins as (insert into admin_stock (kind, ref, title, whisper, thumbnail_url, note)
+        select %(kind)s, %(ref)s, %(title)s, %(whisper)s, %(thumb)s, %(note)s
         where not exists (select 1 from ex) and exists (select 1 from sh) returning id),
 st as (select id from ex union all select id from ins),
 have as (select p.id from admin_shelf_picks p join sh on p.shelf_id = sh.id join st on p.stock_id = st.id),
@@ -379,13 +411,17 @@ def ireru(db, r):
     if not title and mx:
         title = "@%s のポスト" % mx.group(1)
     title = (title or ref)[:300]
+    whisper = whisper_of(r, title)
+    if not whisper:
+        # ★関所：説明が空のカードは棚に入れない（カードの高さがそろわなくなるため・2026-10-10）
+        return {"ok": False, "why1": "説明なし", "why": "説明（ひとこと）が書けない：投稿本文も説明も空"}
 
     got, why1, why = [], "", ""
     for w in wants:
         sid = str(w.get("id") or "").strip()
         stitle = str(w.get("title") or "").strip()
         args = {"sid": lit(sid), "stitle": lit(stitle), "kind": lit(kind), "ref": lit(ref), "rx": lit(rx),
-                "title": lit(title), "thumb": lit(thumb), "note": lit(note or None), "cap": CAP}
+                "title": lit(title), "whisper": lit(whisper), "thumb": lit(thumb), "note": lit(note or None), "cap": CAP}
         rows = db.q(SQL_IRERU % args)
         if not rows and ensure_named_shelf(db, r, stitle):
             args["sid"] = lit("")
