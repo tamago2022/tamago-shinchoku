@@ -280,7 +280,8 @@ def run_job(payload):
         _saifu = {"grok": "xai", "openai": "openai", "gemini": "gemini", "fal": "fal"}.get(vendor)
         if _saifu:
             _mitsu = 11.0 if kind == "image" else 3.0   # 多めに見る側。実額はあとで記録する
-            _ok, _why = yosan.mitsumori(_saifu, _mitsu, "tanomu %s（%s）" % (kind, vendor))
+            _anken = payload.get("anken") or os.environ.get("TAMAGO_ANKEN") or ("%s号 %s" % (n, kind) if n else None)
+            _ok, _why = yosan.mitsumori(_saifu, _mitsu, "tanomu %s（%s）" % (kind, vendor), anken=_anken)
             if not _ok:
                 return {"ok": False, "error": _why, "stoppedByYosan": True, "totalYen": 0.0}
     except Exception as e:
@@ -296,7 +297,8 @@ def run_job(payload):
         _saifu = {"grok": "xai", "openai": "openai", "gemini": "gemini", "fal": "fal"}.get(vendor)
         if _saifu:
             yosan.tsukatta(_saifu, float(r.get("costYen") or 0.0),
-                           "tanomu %s（%s）" % (kind, vendor), src="tanomu.run_job の costYen")
+                           "tanomu %s（%s）" % (kind, vendor), src="tanomu.run_job の costYen",
+                           anken=payload.get("anken") or os.environ.get("TAMAGO_ANKEN") or ("%s号 %s" % (n, kind) if n else None))
     except Exception:
         pass
     return {"ok": bool(r.get("ok")), "result": r, "kind": kind, "order": order,

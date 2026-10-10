@@ -399,7 +399,7 @@ def kuchi_api(vendor, bun):
         return {"who": vendor, "yes": None, "why": "", "error": "道具が読めません：%s" % e}
     if not gk.find_key(vendor):
         return {"who": vendor, "yes": None, "why": "", "error": "鍵がありません"}
-    ok, why = yosan.mitsumori(vendor, 3.0, "依頼の門1回")
+    ok, why = yosan.mitsumori(vendor, 3.0, "依頼の門1回", anken="依頼の門（Jev判定）")
     if not ok:
         return {"who": vendor, "yes": None, "why": "", "error": "予算の栓で止まりました：%s" % why}
     try:
@@ -409,7 +409,7 @@ def kuchi_api(vendor, bun):
     if not (r or {}).get("ok"):
         return {"who": vendor, "yes": None, "why": "", "error": str((r or {}).get("error"))[:180]}
     try:
-        yosan.tsukatta(vendor, float(r.get("yen") or 0.0), "依頼の門1回")
+        yosan.tsukatta(vendor, float(r.get("yen") or 0.0), "依頼の門1回", anken="依頼の門（Jev判定）")
     except Exception:
         pass
     yes, w = yomu(r.get("text") or "")

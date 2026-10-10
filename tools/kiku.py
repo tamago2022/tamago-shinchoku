@@ -130,7 +130,7 @@ def _post_json(url, body, headers, timeout=120):
         return getattr(e, "code", 0), None, "%s: %s" % (type(e).__name__, str(e)[:160])
 
 
-def ask(vendor, msgs, search=False, timeout=120, models=None):
+def ask(vendor, msgs, search=False, timeout=120, models=None, anken=None):
     """1社に聞く。戻り値は必ず同じ形。★失敗しても例外を出さず、理由を必ず入れて返す。"""
     t0 = time.time()
     k = KUCHI.get(vendor) or {}
@@ -140,7 +140,7 @@ def ask(vendor, msgs, search=False, timeout=120, models=None):
 
     # ★金が出る前に栓を通す。0円の口も通す（台帳に載らない口を作らない）。
     ok, why = yosan.mitsumori(k.get("saifu") or "openai", k.get("yen") or 0.0,
-                              what="944番 窓口で%sに1回聞く" % out["label"])
+                              what="944番 窓口で%sに1回聞く" % out["label"], anken=anken)
     if not ok:
         out["error"] = "予算の栓：" + why
         out["seconds"] = round(time.time() - t0, 1)
@@ -211,7 +211,7 @@ def ask(vendor, msgs, search=False, timeout=120, models=None):
     if out["ok"] and (k.get("yen") or 0) > 0:
         out["costYen"] = float(k["yen"])
         yosan.tsukatta(k.get("saifu"), out["costYen"], what="944番 窓口(kiku.py)",
-                       src="tools/kiku.py")
+                       src="tools/kiku.py", anken=anken, model=out.get("model") or "")
     return out
 
 
@@ -289,8 +289,10 @@ def run_job(payload):
     results = []
     for vendor in ais:
         msgs = build_messages(question, n, vendor, threads, search)
+        # ★2026-10-11 家計簿：案件名は payload["anken"] → 環境変数 TAMAGO_ANKEN → 号番号（あれば）。どれも無ければ yosan が止める
         res = ask(vendor, msgs, search=search, timeout=120,
-                         models=(payload.get("models") or {}).get(vendor))
+                         models=(payload.get("models") or {}).get(vendor),
+                         anken=payload.get("anken") or os.environ.get("TAMAGO_ANKEN") or ("%s号 外部AIに聞く" % n if n else None))
         record(n or 0, "kiku:" + question[:40], res, note="944番 窓口(kiku.py)")
         results.append(res)
 

@@ -127,6 +127,7 @@ ul{list-style:none; margin:0; padding:0}
 .ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
 
 /* ───── 空き容量の赤帯（閾値割れのときだけ出す） ───── */
+#falAka div,#loginAka div{background:#b3261e; color:#fff; border-radius:10px; padding:12px 14px; margin:0 0 10px; font-size:16px; line-height:1.5; font-weight:700}
 #diskAka:not(:empty){background:#b3261e; color:#fff; border-radius:10px;
   padding:12px 14px; margin:0 0 10px; font-size:17px; line-height:1.5; font-weight:700}
 
@@ -162,9 +163,21 @@ footer a{display:block; padding:5px 0}
   <button id="reload" type="button">読み直す</button>
 </header>
 
+<!-- 2026-10-11 新しい特集のお知らせ（一番上）。出どころ status/public/tokushu_new.json（tools/tokushu.py が20分おき）。7日で消える -->
+<div id="tokushuNew"></div>
 <!-- 1200番（2026-09-30）：空きが閾値を切ったら、たまごさんが気づく前に赤帯。
      出どころは下の #diskLine と同じ status/public/machine.json の diskFreeGB。 -->
 <div id="diskAka"></div>
+<!-- 2026-10-08 fal見張り：1日$3超・1回$2超の注文があったら赤帯。出どころ status/public/fal_kanshi.json（tools/fal_kanshi.py が毎時） -->
+<div id="falAka"></div>
+<!-- 2026-10-10 編集ログイン見回り：本番で「@」「＠」で入れなければ赤帯。出どころ status/public/admin_login_mimawari.json（tools/admin_login_mimawari.py が毎日） -->
+<div id="loginAka"></div>
+<!-- 2026-10-08 お金：今月いくら（1行だけ）。出どころ status/public/okane_ichimai.json -->
+<a id="okaneLine" href="share/check/1051-okane.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">お金　読み込み中…</a>
+<!-- 2026-10-09 起こし役：止まった子セッション・Gensparkを自動で起こした回数。出どころ status/public/okoshi.json（tools/okoshi.py が5分おき） -->
+<div id="okoshiLine" style="font-size:15px;margin:0 0 10px">自動で起こした回数　読み込み中…</div>
+<!-- 2026-10-11 案件ごとの家計簿：今月の外部API合計（円）。出どころ status/public/kakeibo.json（tools/kakeibo.py が20分おき） -->
+<a id="kakeiboLine" href="share/check/kakeibo.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">家計簿　読み込み中…</a>
 
 <!-- ここだけは赤で出す。切れていると何も動かないので。 -->
 <div id="loginNg"></div>
@@ -209,6 +222,8 @@ footer a{display:block; padding:5px 0}
 
 <!-- 残り容量の1行（1172番。小さく1行・色は付けない） -->
 <div id="diskLine">残り容量　読み込み中…</div>
+<!-- 2026-10-08 負荷を見て同時本数2〜4本（tools/fuka_hassha.py）。発車直前の判定を1行で -->
+<div id="hasshaLine" style="font-size:14px;color:var(--sub);font-variant-numeric:tabular-nums">同時本数　読み込み中…</div>
 
 <details class="fold">
   <summary><span>ほかの画面へ</span></summary>
@@ -222,10 +237,11 @@ footer a{display:block; padding:5px 0}
       <a href="share/daicho.html">受付台帳：言われて治っていないもの</a>
       <a href="share/check/1052-kakunin-machi.html">たまごさんの確認待ち</a>
       <a href="share/check/1138-shukudai.html">宿題台帳：言われたのに返っていないもの</a>
-      <a href="share/check/1051-okane.html">お金（1枚・毎日更新）</a>
+      <a href="share/check/1051-okane.html">★お金：今月いくら・サービスごと・証拠つき（毎時更新・fal見張り込み）</a>
       <a href="969-kagi-daicho.html">鍵・つながりの台帳</a>
       <a href="977-ai-renkei.html">他のAIとつながっているか一覧</a>
       <a href="1136-gaibu-ai-daicho.html">外部AIの台帳：投げて返ってきていないもの</a>
+      <a href="share/check/doko-kara-heru.html">★何を使うとどの枠から減るか（クラウド・ローカル・Dispatch・モデル別）</a>
       <a href="1136-ai-nedan.html">AIの値段表：1回いくら減るか</a>
       <a href="share/check/1141-kanryo-taikan.html">★完了の判定と、体感の実証（毎日更新）</a>
       <a href="1140-machigai.html">全曲検査：間違いは何件あったか（全26,400曲）</a>
@@ -371,6 +387,78 @@ var DISK_AKA_GB = 50;
         "GBを切りました）。自動の片付けが走っています。";
     }
   }).catch(function(){ el.textContent = "残り容量　取れていません"; });
+})();
+
+/* 2026-10-08 fal見張りの赤帯＋お金の1行。取れなければ赤帯は出さず、1行に「取れていません」と書く */
+(function(){
+  var aka = $("falAka"), ln = $("okaneLine");
+  if(aka) getJson("status/public/fal_kanshi.json").then(function(f){
+    (f && f.aka || []).forEach(function(t){
+      var dv = document.createElement("div");
+      dv.textContent = "fal 使いすぎ：" + t + "（お金の紙で詳細）";
+      dv.onclick = function(){ location.href = "share/check/1051-okane.html"; };
+      aka.appendChild(dv);
+    });
+  }).catch(function(){});
+  var okl = document.getElementById("okoshiLine");
+  if(okl) getJson("status/public/okoshi.json").then(function(d){
+    var c = (d && d.count) || {};
+    okl.textContent = "自動で起こした回数　今日 " + (c.today||0) + "回・累計 " + (c.total||0) + "回（うち別経路 " + (c.betsu||0) + "・Genspark " + (c.genspark||0) + "）";
+  }).catch(function(){ okl.textContent = "自動で起こした回数　0回"; });
+  if(ln) getJson("status/public/okane_ichimai.json").then(function(d){
+    if(!d || typeof d.gokei !== "number"){ ln.textContent = "お金　取れていません"; return; }
+    ln.textContent = "お金　今月 " + d.gokei.toLocaleString() + "円（カードから引かれた実額）・解約候補 " + (d.kouhoN||0) + "件 ›";
+  }).catch(function(){ ln.textContent = "お金　取れていません"; });
+})();
+
+/* 2026-10-11 新しい特集（一番上）＋家計簿の1行 */
+(function(){
+  var box = $("tokushuNew");
+  if(box) getJson("status/public/tokushu_new.json").then(function(d){
+    (d && d.items || []).forEach(function(t){
+      var a = document.createElement("a");
+      a.href = t.url; a.target = "_blank"; a.rel = "noopener";
+      a.style.cssText = "display:block;background:#fff4d6;border:1px solid #e8c66a;border-radius:8px;padding:8px 10px;margin:0 0 8px;color:inherit;text-decoration:none;font-size:15px";
+      a.textContent = "新しい特集：" + t.title + "／" + t.dare + "／" + t.url;
+      box.appendChild(a);
+    });
+    if(d && d.items && d.items.length){
+      var l = document.createElement("a"); l.href = "share/check/tokushu-ichiran.html";
+      l.style.cssText = "display:block;font-size:13px;margin:-4px 0 10px"; l.textContent = "特集の一覧（誰が書いたか・曲数） ›";
+      box.appendChild(l);
+    }
+  }).catch(function(){});
+  var kl = $("kakeiboLine");
+  if(kl) getJson("status/public/kakeibo.json").then(function(d){
+    var s = d && d.sum; if(!s){ kl.textContent = "家計簿　取れていません"; return; }
+    kl.textContent = "家計簿　" + Number(s.kon.slice(5)) + "月の外部API " + Math.round(s.totalKon).toLocaleString() + "円（案件 " + s.anken.length + "件） ›";
+  }).catch(function(){ kl.textContent = "家計簿　取れていません"; });
+})();
+
+/* 2026-10-10 編集ログインの赤帯。青のときは何も出さない */
+(function(){
+  var aka = $("loginAka"); if(!aka) return;
+  getJson("status/public/admin_login_mimawari.json").then(function(d){
+    (d && d.aka || []).forEach(function(t){
+      var dv = document.createElement("div");
+      dv.textContent = t + "（" + (d.at||"") + "）";
+      aka.appendChild(dv);
+    });
+  }).catch(function(){});
+})();
+
+/* 同時本数の判定（2026-10-08）。出どころ：status/public/fuka_hassha.json（発車の直前に auto_launcher が書く） */
+(function(){
+  var el = $("hasshaLine"); if(!el) return;
+  getJson("status/public/fuka_hassha.json").then(function(d){
+    if(!d || typeof d["採用した上限"] !== "number"){ el.textContent = "同時本数　取れていません"; return; }
+    var iro = {green:"緑", yellow:"黄", red:"赤"}[d["メモリ圧"]] || "不明";
+    var t = String(d["時刻"]||"").replace(/^\d{4}-(\d\d)-(\d\d)T(\d\d:\d\d).*/, "$1/$2 $3");
+    el.textContent = "同時本数　上限" + d["採用した上限"] + "本" +
+      (d["新規発車"] === "止める" ? "（新規発車を止めています）" : "") +
+      "／メモリ圧 " + iro + "・ロード比 " + (d["ロード比1分"] == null ? "?" : d["ロード比1分"]) +
+      (d["モード"] === "固定2本" ? "／固定2本モード" : "") + "（" + t + "）";
+  }).catch(function(){ el.textContent = "同時本数　取れていません"; });
 })();
 
 /* 今日止まっていた分数（心臓・中継所・計測のどれかが止まっていた合計・機械が数える）。取れなければ出さない */

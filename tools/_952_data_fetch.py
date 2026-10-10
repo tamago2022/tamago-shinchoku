@@ -59,7 +59,11 @@ TOOL_WHITELIST = ("kohyou_osu.py", "kohyou_kanshi.py", "og_kanmon.py",
                   # ★1130番：覆面客（Genspark）はMac側でしか gsk に届かない。
                   #   サンドボックスから通すための口。クレジットの前後は
                   #   道具の側が status/gsk_daicho.jsonl に必ず書く。
-                  "fukumen_kyaku.py", "fukumen.py")
+                  "fukumen_kyaku.py", "fukumen.py",
+                  # ★1191番（2026-10-10）多言語：DBの日本語を読むだけ・入荷時の自動翻訳
+                  "1191_db_nihongo.py", "1191_honyaku_jidou.py",
+                  # ★1192番（2026-10-10）曲名の海外向け表記（公式→検索→ローマ字）
+                  "1192_title_romaji.py")
 
 
 def _shinchoku():
@@ -188,6 +192,7 @@ def _op_tool(payload):
 
 
 MIRU_ALLOW = ("https://joy-relief-station.lovable.app",
+              "https://id-preview--8ebdb648-3686-4457-b42c-d01c493793b1.lovable.app",
               "https://tamago2022.github.io",
               # ★1140番（2026-09-24・お金の便）公式の料金ページだけ足す。GETのみ・課金0。
               #   サンドボックスから stripe.com / open.er-api.com へ web_fetch が
@@ -425,6 +430,148 @@ OPS = {"shirabe": _op_shirabe, "patch": _op_patch, "tool": _op_tool,
        "jitsugaku": _op_jitsugaku}
 
 
+
+# ===========================================================================
+# ★多言語の不具合（2026-10-09）で足した口：
+#   op=archive … origin/main を丸ごと tar.gz で status/ 配下（gitの外）へ持ち帰る。読むだけ。
+#   op=apipush … status/<dir>/full/ に置いた「完成ファイル」を、作業ツリーに触らず
+#                GitHub API で main に1コミットで入れる（1132_dasu と同じやり方）。
+#                base_sha を渡すと、そのファイルが base から動いていたら止める（巻き戻し防止）。
+# ===========================================================================
+def _op_archive(payload):
+    sh = _shinchoku()
+    out = os.path.join(sh, payload.get("out") or "status/1190_tagengo/src.tar.gz")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    log = []
+    rc, o, e = _git(["fetch", "origin", "main"], t=300)
+    log.append("fetch rc=%d" % rc)
+    rc, sha, e = _git(["rev-parse", "origin/main"])
+    paths = list(payload.get("paths") or [])
+    r = subprocess.run(["git", "archive", "--format=tar.gz", "-o", out, "origin/main"] + paths,
+                       cwd=CLONE, capture_output=True, text=True, timeout=600)
+    log.append("archive rc=%d %s" % (r.returncode, (r.stderr or "")[-300:]))
+    return {"ok": r.returncode == 0, "sha": (sha or "").strip(), "out": out,
+            "bytes": os.path.getsize(out) if os.path.exists(out) else 0,
+            "log": log, "totalYen": 0.0}
+
+
+def _op_apipush(payload):
+    import base64, urllib.request, urllib.error
+    sys_path = os.path.dirname(os.path.abspath(__file__))
+    import sys as _s
+    if sys_path not in _s.path:
+        _s.path.insert(0, sys_path)
+    import github_watch
+    token = github_watch.gh_token()
+    if not token:
+        return {"ok": False, "error": "GitHubの鍵が取れない", "totalYen": 0.0}
+    API = "https://api.github.com"; REPO_ = "tamago2022/joy-relief-station"
+
+    def req(method, url, body=None):
+        data = json.dumps(body).encode("utf-8") if body is not None else None
+        r = urllib.request.Request(url, data=data, method=method)
+        r.add_header("Authorization", "Bearer %s" % token)
+        r.add_header("Accept", "application/vnd.github+json")
+        r.add_header("User-Agent", "tamago-1190")
+        if data:
+            r.add_header("Content-Type", "application/json")
+        with urllib.request.urlopen(r, timeout=180) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
+    sh = _shinchoku()
+    full = os.path.join(sh, payload.get("dir") or "status/1190_tagengo/full")
+    files = {}
+    for root, _d, fs in os.walk(full):
+        for f in fs:
+            fp = os.path.join(root, f)
+            files[os.path.relpath(fp, full)] = io.open(fp, "rb").read()
+    if not files:
+        return {"ok": False, "error": "送るファイルが無い", "totalYen": 0.0}
+    log = []
+    try:
+        head = req("GET", "%s/repos/%s/git/ref/heads/main" % (API, REPO_))["object"]["sha"]
+        log.append("main=%s" % head[:8])
+        base = payload.get("base_sha")
+        tree_now = req("GET", "%s/repos/%s/git/trees/%s?recursive=1" % (API, REPO_, head))
+        now = {e["path"]: e["sha"] for e in tree_now.get("tree", []) if e.get("type") == "blob"}
+        if base and base != head:
+            tree_b = req("GET", "%s/repos/%s/git/trees/%s?recursive=1" % (API, REPO_, base))
+            was = {e["path"]: e["sha"] for e in tree_b.get("tree", []) if e.get("type") == "blob"}
+            moved = [p for p in files if was.get(p) != now.get(p)]
+            if moved:
+                return {"ok": False, "error": "base以降に動いたファイルがある（上書きしない）",
+                        "moved": moved[:50], "log": log, "totalYen": 0.0}
+        tree = []
+        for p, body in sorted(files.items()):
+            b = req("POST", "%s/repos/%s/git/blobs" % (API, REPO_),
+                    {"content": base64.b64encode(body).decode("ascii"), "encoding": "base64"})
+            if b["sha"] == now.get(p):
+                continue
+            tree.append({"path": p, "mode": "100644", "type": "blob", "sha": b["sha"]})
+        if not tree:
+            return {"ok": True, "alreadyIn": True, "log": log, "totalYen": 0.0}
+        bc = req("GET", "%s/repos/%s/git/commits/%s" % (API, REPO_, head))
+        nt = req("POST", "%s/repos/%s/git/trees" % (API, REPO_),
+                 {"base_tree": bc["tree"]["sha"], "tree": tree})
+        cm = req("POST", "%s/repos/%s/git/commits" % (API, REPO_),
+                 {"message": payload.get("message") or "update", "tree": nt["sha"], "parents": [head]})
+        req("PATCH", "%s/repos/%s/git/refs/heads/main" % (API, REPO_), {"sha": cm["sha"], "force": False})
+        log.append("入った %s（%d本）" % (cm["sha"][:8], len(tree)))
+        return {"ok": True, "commit": cm["sha"], "files": [t["path"] for t in tree],
+                "log": log, "totalYen": 0.0}
+    except urllib.error.HTTPError as e:
+        return {"ok": False, "error": "HTTP %s %s" % (e.code, e.read().decode("utf-8", "ignore")[:400]),
+                "log": log, "totalYen": 0.0}
+
+
+OPS["archive"] = _op_archive
+OPS["apipush"] = _op_apipush
+
+
+def _op_parity(payload):
+    """★多言語の検品（2026-10-09）：tools/1190_i18n_parity_live.py を**切り離して**走らせる。
+    数分かかるので代行係を塞がない。結果は status/1190_tagengo/parity_<tag>.json と .log。
+    行き先は lovable.app の中だけ（白名簿）。GETだけ・課金0。"""
+    base = payload.get("base") or ""
+    if not (base.startswith("https://joy-relief-station.lovable.app")
+            or (base.startswith("https://id-preview--") and base.rstrip("/").endswith(".lovable.app"))):
+        return {"ok": False, "error": "白名簿の外です: %s" % base, "totalYen": 0.0}
+    sh = _shinchoku()
+    tag = "".join(c for c in (payload.get("tag") or "run") if c.isalnum() or c in "-_")[:40]
+    outd = os.path.join(sh, "status", "1190_tagengo")
+    os.makedirs(outd, exist_ok=True)
+    out = os.path.join(outd, "parity_%s.json" % tag)
+    logp = os.path.join(outd, "parity_%s.log" % tag)
+    import sys as _sys
+    cmd = [_sys.executable, os.path.join(sh, "tools", "1190_i18n_parity_live.py"), base, "--out", out]
+    if payload.get("paths"):
+        cmd += ["--paths", payload["paths"]]
+    if payload.get("langs"):
+        cmd += ["--langs", payload["langs"]]
+    if payload.get("noNav"):
+        cmd += ["--no-nav"]
+    for p in (out, logp):
+        try:
+            os.remove(p)
+        except Exception:
+            pass
+    lf = open(logp, "w")
+    subprocess.Popen(cmd, cwd=sh, stdout=lf, stderr=subprocess.STDOUT, start_new_session=True)
+    return {"ok": True, "started": True, "out": out, "log": logp, "totalYen": 0.0}
+
+
+OPS["parity"] = _op_parity
+
+
+def _op_parityps(payload):
+    """多言語の検品が今も走っているか（ps を見るだけ）。"""
+    r = subprocess.run(["/bin/ps", "-axo", "pid,etime,command"], capture_output=True, text=True, timeout=20)
+    rows = [l for l in (r.stdout or "").splitlines() if "1190_i18n_parity" in l or "chrom" in l.lower() and "playwright" in l.lower()]
+    return {"ok": True, "rows": [x[:220] for x in rows[:30]], "totalYen": 0.0}
+
+
+OPS["parityps"] = _op_parityps
+
 def run_job(payload=None):
     payload=payload or {}
     op = payload.get("op")
@@ -458,3 +605,37 @@ def run_job(payload=None):
                 got.append(base);log.append("%s (%d bytes・画像)"%(path,size))
     io.open(os.path.join(OUT,"_log.txt"),"w",encoding="utf-8").write("%s\n\n%s\n"%(time.strftime("%Y-%m-%d %H:%M:%S"),"\n".join(log)))
     return {"ok":bool(got),"got":got,"log":log,"totalYen":0.0}
+
+
+def _op_gitlog(payload):
+    """★棚編集の緑表示（2026-10-11）：正本の履歴を読むだけ。書かない。
+    payload = {"op":"gitlog","S":"文字列","paths":["src"],"n":30,"show":["<sha>"],"showPaths":["src/x"]}"""
+    out = {"ok": True, "totalYen": 0.0}
+    if payload.get("fetch", True):
+        _git(["fetch", "origin", "main"], t=300)
+    n = str(int(payload.get("n", 30)))
+    for s in (payload.get("S") or []):
+        since = (["--since=" + payload["since"]] if payload.get("since") else [])
+        rc, o, e = _git(["log", "origin/main", "-n", n, "--format=%h %ad %s", "--date=iso"] + since
+                        + ["-S", s, "--"] + list(payload.get("paths") or ["src"]), t=150)
+        out.setdefault("pickaxe", {})[s] = (o or e or "")[:6000]
+    if payload.get("logPaths"):
+        extra = (["--since=" + payload["since"]] if payload.get("since") else [])
+        extra += (["--stat=200"] if payload.get("stat", True) else [])
+        extra += ["--grep=" + g for g in (payload.get("grepMsg") or [])]
+        rc, o, e = _git(["log", "origin/main", "-n", n, "--format=%h %ad %s", "--date=iso"] + extra
+                        + ["--"] + list(payload["logPaths"]), t=150)
+        out["log"] = (o or e or "")[:15000]
+    for sha in (payload.get("show") or []):
+        rc, o, e = _git(["show", "--format=%h %ad %s", "--date=iso", sha, "--"]
+                        + list(payload.get("showPaths") or []), t=300)
+        out.setdefault("show", {})[sha] = (o or e or "")[:int(payload.get("max", 60000))]
+    if payload.get("save"):
+        sh = os.path.join(_shinchoku(), payload["save"])
+        os.makedirs(os.path.dirname(sh), exist_ok=True)
+        with io.open(sh, "w", encoding="utf-8") as f:
+            json.dump(out, f, ensure_ascii=False, indent=1)
+    return out
+
+
+OPS["gitlog"] = _op_gitlog

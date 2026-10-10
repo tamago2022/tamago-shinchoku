@@ -72,7 +72,7 @@ def run_job(payload):
     mitsu = round(YEN_PER_SOURCE * max_src, 1)
     try:
         import yosan
-        ok, why = yosan.mitsumori(SAIFU, mitsu, "Xの投稿を拾う（情報源%d件まで）" % max_src)
+        ok, why = yosan.mitsumori(SAIFU, mitsu, "Xの投稿を拾う（情報源%d件まで）" % max_src, anken="Xの投稿を拾う（Grok）")
     except Exception as e:
         return {"ok": False, "error": "予算の栓を通せませんでした: %s" % str(e)[:120],
                 "totalYen": 0.0}
@@ -113,7 +113,7 @@ def run_job(payload):
     yen = round(YEN_PER_SOURCE * (used or 0), 1)
     try:
         import yosan
-        yosan.tsukatta(SAIFU, yen, "Xの投稿を拾う（情報源%s件）" % used)
+        yosan.tsukatta(SAIFU, yen, "Xの投稿を拾う（情報源%s件）" % used, anken="Xの投稿を拾う（Grok）")
     except Exception:
         pass
 

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34859 Vaultに「担当別プレイブック」の考え方を導入 確認ページ</title>
+<title>#34859 tamago_brainのVaultに「担当別プレイブック」の仕組みを導入 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,19 +47,19 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34859 Vaultに「担当別プレイブック」の考え方を導入</div>
-<h1>#34859 Vaultに「担当別プレイブック」の考え方を導入</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34859 tamago_brainのVaultに「担当別プレイブック」の仕組みを導入</div>
+<h1>#34859 tamago_brainのVaultに「担当別プレイブック」の仕組みを導入</h1>
 <div class="date">2026-10-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-joy-relief-station側の .claude/playbooks/（担当ごとの現在地メモ・恒久ルールとの分離・区切りごとに都度書く・確かめていないことを書かない）の考え方を、tamago_brain Vault側へ移植した。00_管理/プレイブック/ フォルダを新設し、README.md（仕組みの説明・joy-relief-station側との対応表）、一覧.md（正本索引）、Eden-Loop.md／カガリビト.md／錬金術.md／ごきげん補給所運用.md（窓口のみ・内容は複製しない）の6ファイルを作成した。既存の00_現在地.md（全体ダイジェストの正本）はそのまま維持し、各プレイブックへは1〜2行ポインタだけを置く設計（追記は他セッションのロック競合で今回は未完了、未解消のまま正直に報告する）。中身の具体的な方針・決定の多くは『未確認・要更新』のまま雛形段階（確かめていない事を事実のように書かないルールをそのまま継承したため）。
+<p>joy-relief-station側で稼働中の「担当別プレイブック（<code>.claude/playbooks/</code>）」＝役割・プロジェクトごとの短い現在地メモの考え方を、たまごさんのObsidian Vault（tamago_brain）側にも移植しました。</p><p>新設：<code>00_管理/プレイブック/</code>フォルダに、正本<code>README.md</code>（joy-relief-station側との対応表・運用ルール）、索引<code>一覧.md</code>、3核心プロジェクト（Eden Loop／カガリビト／錬金術）の現在地メモ、ごきげん補給所運用の窓口（内容は複製せずjoy-relief-station側を正本のまま指す）を作成しました。</p><p>調査の結果、カガリビト・錬金術には専用の集約ノート（MOC）がVault内に存在しないことを実測で確認し、それぞれのプレイブックに「次にやること」として明記しました。空の作業残骸ファイル1件は<code>.trash/</code>へ退避済みです。</p>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>6</b><span>新規作成したMarkdownファイル数</span></div>
-  <div class="num"><b>1</b><span>新設したフォルダ数（00_管理/プレイブック/）</span></div>
-  <div class="num"><b>0</b><span>00_現在地.mdへのポインタ追記（iCloud側ファイルロックで今回は未達）</span></div>
+  <div class="num"><b>7</b><span>00_管理/プレイブック/ 配下の新規ファイル数（README/一覧/Eden-Loop/カガリビト/錬金術/ごきげん補給所運用+この確認ページ由来の整理）</span></div>
+  <div class="num"><b>20</b><span>Vault内「カガリビト」grepヒット件数（実測）</span></div>
+  <div class="num"><b>84</b><span>Vault内「錬金術」grepヒット件数（実測）</span></div>
 </div>
 
 
@@ -69,20 +69,10 @@ joy-relief-station側の .claude/playbooks/（担当ごとの現在地メモ・�
 <li><b>（リンクなし）</b></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
-<table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>00_管理/プレイブック/README.md</td><td class="yes">存在・中身4517バイト</td></tr>
-<tr><td>00_管理/プレイブック/一覧.md</td><td class="yes">存在・中身1712バイト</td></tr>
-<tr><td>00_管理/プレイブック/Eden-Loop.md</td><td class="yes">存在・中身1451バイト</td></tr>
-<tr><td>00_管理/プレイブック/カガリビト.md</td><td class="yes">存在・中身1277バイト</td></tr>
-<tr><td>00_管理/プレイブック/錬金術.md</td><td class="yes">存在・中身1111バイト</td></tr>
-<tr><td>00_管理/プレイブック/ごきげん補給所運用.md</td><td class="yes">存在・中身1604バイト</td></tr>
-<tr><td>00_現在地.mdへの1行ポインタ追記</td><td class="no">iCloud側で他プロセスがファイルをロック中のため追記できず（EDEADLK、複数回リトライ済み）</td></tr>
-</table>
+
 
 <footer>
-このページは #34859 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+判定日赤34859番（2026-08-08言及・1ヶ月以上未着手だった案件）への対応。正本はVault内 00_管理/プレイブック/README.md。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

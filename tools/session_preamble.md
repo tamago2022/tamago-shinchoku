@@ -1,3 +1,7 @@
+**音を鳴らす操作は禁止。確認はデータで行う。**（2026-10-10・WebKitのiPhone確認でYouTubeが音ありで鳴った事故。ブラウザは必ず無音で起動：Chromium＝--mute-audio／WebKit＝tools/muon.mjs の muonContext／Firefox＝media.volume_scale=0。afplay・ffplay・say は確認に使わない。点検：python3 tools/muon.py・関所 tools/stop_kanmon/muon_kanmon.mjs）
+
+**許可・認証のポップアップを出す操作は禁止。ブラウザ・request_access は使わない。許可が要る確認は飛ばして『未確認』と書く。**（2026-10-08・許可ゼロ設定）
+
 # 子セッションの先頭に必ず貼る文（session preamble）
 
 **これは何か**：Dispatchが子セッションを立てるとき、指示文の**いちばん先頭**に貼る共通の枷。
@@ -205,3 +209,13 @@
          ✕「改善の余地があります」→ ○「動いていません／壊れています」
 - 枷17（要約を事実として書かない）の兄弟ルール：17は「裏取りしていないものを事実として書かない」、
   18は「分かっている悪い事実を弱い言葉に言い換えない」。
+
+### 20. 軽量化・作り直しで、使われている機能を消さない（2026-10-11・棚編集の緑の確認）
+
+- **軽量化・整理・作り直しで表示や部品を消す前に、その画面の機能一覧（文言・ボタン・確認表示）を書き出し、消す物と照合してから消す。店主が使っている物は残す。**（2026-10-11・棚編集「◯◯の棚に入りました」緑の確認が消えた件。関所＝joy-relief-station の scripts/patrol/check-admin-shelf-success.mjs）
+
+### 21. 名カバーの棚に入れてよいのは、たまごさん本人の指定だけ（2026-10-11）
+
+- **名カバーの棚（/shelf/music/covers）に入れてよいのは、たまごさん本人の指定だけ。**（編集画面から本人が入れたもの、または Dispatch が「たまごさん指定」と明記して頼んだもの）
+- カバーだから名カバー、ではない。指定の無いカバーは、原曲ページの「カバー」一覧か、名カバーとは別のカバーの棚へ入れる。入荷の自動処理・特集の作業・ほかのAI（VloyBot／Genspark 等）は名カバーに入れない。
+- 機械の裏付け（joy-relief-station）：台帳 `src/lib/meiCoverLedger.ts`（addedBy: tamago／auto）。名カバーの棚は台帳で "tamago" か `admin_shelf_picks.added_by = "tamago"`（編集画面だけが書く）のカードしか出さない。公開前の点検 `scripts/patrol/check-meicover-gate.mjs`（prebuild・auto があれば止める）。

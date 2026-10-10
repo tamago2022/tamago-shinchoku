@@ -35,6 +35,53 @@ if (!URL_ARG) {
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const LOAD_TIMEOUT_MS = 20000;
+
+// 34516番デバッグ用プローブ（VC_HYDRO_PROBE=1の時だけ注入）。
+// hydration中にどのDOMがいつ書き換わったかをMutationObserverで記録する。
+const HYDRO_PROBE_SCRIPT = `
+window.__hydroLog = [];
+window.__hydroStart = Date.now();
+function describePath(node) {
+  const parts = [];
+  let n = node;
+  let depth = 0;
+  while (n && n.nodeType === 1 && depth < 6) {
+    let seg = n.tagName.toLowerCase();
+    if (n.id) seg += "#" + n.id;
+    else if (n.className && typeof n.className === "string") seg += "." + n.className.split(" ").slice(0,2).join(".");
+    parts.unshift(seg);
+    n = n.parentElement;
+    depth++;
+  }
+  return parts.join(">");
+}
+const mo = new MutationObserver((muts) => {
+  for (const m of muts) {
+    if (window.__hydroLog.length > 400) continue;
+    const t = Date.now() - window.__hydroStart;
+    if (m.type === "characterData") {
+      window.__hydroLog.push({ t, type: "text", old: m.oldValue, newv: m.target.textContent, path: describePath(m.target.parentElement) });
+    } else if (m.type === "childList") {
+      for (const n of m.addedNodes) {
+        window.__hydroLog.push({ t, type: "add", path: describePath(m.target), html: (n.outerHTML || n.textContent || "").slice(0, 160) });
+      }
+      for (const n of m.removedNodes) {
+        window.__hydroLog.push({ t, type: "remove", path: describePath(m.target), html: (n.outerHTML || n.textContent || "").slice(0, 160) });
+      }
+    } else if (m.type === "attributes") {
+      window.__hydroLog.push({ t, type: "attr", path: describePath(m.target), attr: m.attributeName, old: m.oldValue, newv: m.target.getAttribute(m.attributeName) });
+    }
+  }
+});
+(function startObserve() {
+  if (document.documentElement) {
+    mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true, characterDataOldValue: true, attributeOldValue: true });
+  } else {
+    setTimeout(startObserve, 0);
+  }
+})();
+window.__hydroObserver = mo;
+`;
 const SETTLE_MS = 4000;
 // 案件#793実測：この進捗表(index.html)は初回描画後、status/*.json群（queue.json等）を
 // 複数の非同期fetchで順次読み込んで再描画するため、SETTLE_MSが短いと「まだ一部しか
@@ -169,6 +216,7 @@ const LIST_EXPR = `JSON.stringify((() => {
       href: el.getAttribute('href') || null,
       target: el.getAttribute('target') || null,
       disabled: !!(el.disabled || el.getAttribute('aria-disabled') === 'true'),
+      ariaCurrent: el.getAttribute('aria-current') || null,
       visible: hasBox && !hiddenByClosedDetails,
     };
   })
@@ -216,6 +264,7 @@ async function main() {
     selfLinkCount: 0,
     noResponse: [],
     skippedDisappeared: [],
+    skippedRepurposed: [],
     consoleErrors: [],
     truncated: false,
     error: null,
@@ -240,6 +289,13 @@ async function main() {
     await ready;
     await send("Page.enable");
     await send("Runtime.enable");
+    // 34516番デバッグ用（店主報告のhydration不一致を特定するための一時プローブ）：
+    // VC_HYDRO_PROBE=1の時だけ、ページ読み込み前にMutationObserverを仕込み、
+    // hydration中にどのDOMがいつ書き換わったかをwindow.__hydroLogへ記録する。
+    // 既定では何もしない（通常の検品動作は変えない）。
+    if (process.env.VC_HYDRO_PROBE) {
+      await send("Page.addScriptToEvaluateOnNewDocument", { source: HYDRO_PROBE_SCRIPT });
+    }
     await send("Emulation.setDeviceMetricsOverride", {
       width: 375,
       height: 900,
@@ -250,6 +306,27 @@ async function main() {
     await send("Page.navigate", { url: URL_ARG });
     await waitComplete(send);
     await sleep(SETTLE_MS);
+    if (process.env.VC_HYDRO_PROBE) {
+      const hydroRes = await send("Runtime.evaluate", {
+        expression: "JSON.stringify(window.__hydroLog || [])",
+        returnByValue: true,
+      });
+      try {
+        result.hydroLog = JSON.parse(hydroRes.result.value || "[]");
+      } catch {
+        result.hydroLog = [];
+      }
+    }
+
+    if (process.env.VC_DUMP_TEXT) {
+      const textRes = await send("Runtime.evaluate", {
+        expression: "document.body.innerText",
+        returnByValue: true,
+      });
+      console.error("---DUMP_TEXT_START---");
+      console.error(textRes.result?.value || "");
+      console.error("---DUMP_TEXT_END---");
+    }
 
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
     if (OUT_JSON) {
@@ -258,6 +335,24 @@ async function main() {
 
     const elements = await evalJson(send, LIST_EXPR);
     result.totalClickable = elements.length;
+
+    // 一時デバッグ用（34668番調査）：text完全一致の要素のouterHTML・親要素HTMLを出す。
+    // 既定では何もしない（通常の検品動作は変えない）。
+    if (process.env.VC_DUMP_ELEMENTS) {
+      const needle = process.env.VC_DUMP_ELEMENTS;
+      const dumpExpr = `JSON.stringify(Array.from(document.querySelectorAll('button, a, [role="button"], [onclick]'))
+        .map((el) => ({
+          tag: el.tagName,
+          text: (el.innerText || el.textContent || '').trim().slice(0, 30),
+          outer: el.outerHTML.slice(0, 600),
+          parentOuter: (el.parentElement ? el.parentElement.outerHTML : '').slice(0, 400),
+        }))
+        .filter(x => x.text === ${JSON.stringify(needle)}))`;
+      const dumped = await evalJson(send, dumpExpr);
+      console.error("---DUMP_ELEMENTS_START---");
+      console.error(JSON.stringify(dumped, null, 2));
+      console.error("---DUMP_ELEMENTS_END---");
+    }
 
     // 案件#800実測：cover-guideのようなカード一覧ページはhref付き<a>だけで数千件になり、
     // 全部を素直に先頭から拾うと予算をリンクの繰り返し(▶ボタンの隣のカード等)で使い切り、
@@ -280,9 +375,18 @@ async function main() {
         return false;
       }
     };
-    const buttonLike = elements.filter((e) => !(e.tag === "A" && e.href));
-    const selfLinks = elements.filter((e) => e.tag === "A" && e.href && isSelfLink(e.href));
-    const linksWithHref = elements.filter((e) => e.tag === "A" && e.href && !isSelfLink(e.href));
+    // 案件#34668実測：1353番の自己参照リンク対応は<a href>限定だった。onClick内でnavigateする
+    // <button>（href属性が無いためisSelfLinkで判定できない）で同じ現象が再現した
+    // （joy-relief-stationのBottomTabNav「案内所」タブ。既にそのページにいる状態で押すと
+    // URL・DOMのどれも変化しない＝正しい無変化だが「押しても無反応」と誤検知していた）。
+    // aria-current="page"はナビゲーション項目が「現在地」を示すWAI-ARIA標準の表現なので、
+    // タグ種別を問わずこれを自己参照の判定材料として使う（サイト側にも意味的に正しい属性）。
+    const isCurrentPageMarked = (e) => e.ariaCurrent === "page";
+    const buttonLike = elements.filter((e) => !(e.tag === "A" && e.href) && !isCurrentPageMarked(e));
+    const selfLinks = elements.filter(
+      (e) => (e.tag === "A" && e.href && isSelfLink(e.href)) || isCurrentPageMarked(e),
+    );
+    const linksWithHref = elements.filter((e) => e.tag === "A" && e.href && !isSelfLink(e.href) && !isCurrentPageMarked(e));
     result.selfLinkCount = selfLinks.length;
     const LINK_SAMPLE = 5;
     const linkSample = linksWithHref.slice(0, LINK_SAMPLE);
@@ -305,6 +409,7 @@ async function main() {
       const el = testList[listIdx];
       const idx = el.i; // querySelectorAllでの元の位置（クリック時はこれで再取得する）
       let before, after, clickError = null;
+      let repurposed = false; // 案件#34821：クリック時点で別の意味のUIに切り替わっていた（下記参照）
       try {
         before = await evalJson(send, SNAPSHOT_EXPR);
       } catch {
@@ -314,26 +419,40 @@ async function main() {
         // querySelectorAllの通し番号ではなく、要素本体への直接参照（window.${VC_ELS_VAR}）で
         // 再取得する（直前のクリックでDOM順序が変わっても、同じ物理要素を確実に狙い撃つ。
         // DOM属性へのマーキングはReactのhydrationと衝突するため使わない＝案件#34450）。
+        // 案件#34821実測：君の名は。予告編ページで「ページの操作を開く」(曲なし時だけ出る
+        // MiniPlayerボタン)が無反応と誤検知された。実機で調べたところ、リスト収集後・この
+        // クリックまでの間に別の要素(動画の▶ボタン)のクリックで曲の再生が始まり、同じ物理
+        // <button>のまま中身が「プレーヤーを開く」ボタンへ置き換わっていた（Reactが同一要素を
+        // 再利用）。クリック直前の表示テキストを収集時(el.text)と突き合わせ、別物になっていたら
+        // 「無反応」ではなく「ページの正しい状態遷移に巻き込まれた」として区別する。
         const clickExpr = `(() => {
           const target = window.${VC_ELS_VAR} && window.${VC_ELS_VAR}[${idx}];
-          if (!target || !target.isConnected) return false;
+          if (!target || !target.isConnected) return JSON.stringify({ ok: false });
+          const curText = (target.innerText || target.textContent || target.getAttribute('aria-label') || '').trim().slice(0, 30);
           target.scrollIntoView({ block: 'center' });
           target.click();
-          return true;
+          return JSON.stringify({ ok: true, curText });
         })()`;
         lastWindowOpenAt = 0; // このクリックで新たに発火したPage.windowOpenだけを見る
         let r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
+        let parsed = null;
+        try { parsed = r.result?.value ? JSON.parse(r.result.value) : null; } catch { parsed = null; }
         // 案件#793実測：このサイトのキュー一覧・できたもの一覧は数十秒おきの自動再描画
         // （renderQueue()等）でDOM全体が作り直され、無関係なタイミングでマーカー属性が
         // 消えることがある。1回目に見失っただけで即「消えた」と断じると、下の
         // skippedDisappeared行きが増えて本来の無反応検出まで薄まるため、300ms待って
         // 同じマーカーをもう一度だけ探し直してから、それでも駄目なら既存の
         // disappearedBeforeClick判定（下）に委ねる。
-        if (!r.result?.value) {
+        if (!parsed?.ok) {
           await sleep(300);
           r = await send("Runtime.evaluate", { expression: clickExpr, returnByValue: true });
+          try { parsed = r.result?.value ? JSON.parse(r.result.value) : null; } catch { parsed = null; }
         }
-        if (!r.result?.value) clickError = "要素が見つかりませんでした（クリック前にDOMから消えた＝マーカーが外れた）";
+        if (!parsed?.ok) {
+          clickError = "要素が見つかりませんでした（クリック前にDOMから消えた＝マーカーが外れた）";
+        } else if (parsed.curText !== el.text) {
+          repurposed = true;
+        }
       } catch (e) {
         clickError = String(e.message || e).slice(0, 150);
       }
@@ -424,7 +543,11 @@ async function main() {
       // 実際に壊れているボタンは要素ごと消えたりしない（押しても何も起きないだけ）ので、
       // このケースはnoResponseに数えず、再検証が必要な別枠として記録しFAIL判定に使わない。
       const disappearedBeforeClick = clickError != null && clickError.includes("クリック前にDOMから消えた");
-      if (!changed && disappearedBeforeClick) {
+      if (repurposed) {
+        // 案件#34821：無反応ではなく「クリック時点で既に別の意味のUIへ切り替わっていた」。
+        // 押した結果ではなく、押す前の時点でページの状態が変わっていた＝実装バグではない。
+        result.skippedRepurposed.push({ index: idx, tag: el.tag, text: el.text, href: el.href });
+      } else if (!changed && disappearedBeforeClick) {
         result.skippedDisappeared.push({ index: idx, tag: el.tag, text: el.text, href: el.href });
       } else if (!changed) {
         result.noResponse.push({
@@ -510,6 +633,7 @@ async function main() {
     truncated: result.truncated,
     noResponseCount: result.noResponse.length,
     skippedDisappearedCount: result.skippedDisappeared.length,
+    skippedRepurposedCount: result.skippedRepurposed.length,
     consoleErrorCount: result.consoleErrors.length,
   }));
   if (result.noResponse.length) {
@@ -522,6 +646,12 @@ async function main() {
     console.log("--- クリック前にDOMから消えていた要素（無反応扱いにしない・自動更新/他クリックの巻き込まれの可能性） ---");
     for (const sd of result.skippedDisappeared) {
       console.log(`  [${sd.index}] <${sd.tag}> 「${sd.text}」 ${sd.href ? "href=" + sd.href : ""}`);
+    }
+  }
+  if (result.skippedRepurposed.length) {
+    console.log("--- クリック時点で別の意味のUIへ切り替わっていた要素（無反応扱いにしない・案件#34821） ---");
+    for (const sr of result.skippedRepurposed) {
+      console.log(`  [${sr.index}] <${sr.tag}> 「${sr.text}」 ${sr.href ? "href=" + sr.href : ""}`);
     }
   }
   if (result.consoleErrors.length) {

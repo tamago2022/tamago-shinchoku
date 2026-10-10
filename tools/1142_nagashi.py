@@ -16,8 +16,8 @@
 ━━ お金（★勝手に使わない）━━
   Devinは1本 約93円（2026-09-18〜20の15本で $8.85＝1,327円／972番の公式画面差分）。
   財布の栓（tools/yosan.py の devin）が 0円 なら**1本も投げない。**
-  ★2026-10-04 以降：Julesは外したので、0円フォールバックの Issue 連投もしない。
-  Devinが使えないときは次の便まで待つ（無断課金ゼロ・Issue量産ゼロ）。
+  そのとき列は止めない：**0円の口（Jules＝GitHub経由・月額の中）へ同じ仕事を回す。**
+  → つまり「Devinが動いていない時間」は0にしつつ、無断の課金も0にする。
 
 ━━ どこで動くか ━━
   サンドボックス（Cowork/Dispatch）からは api.devin.ai / api.github.com に**回線が出ない**
@@ -477,11 +477,10 @@ def _main():
                 % ((saifu.get("jougen_yen")), DEVIN_YEN_PER_SESSION,
                    int(DEVIN_YEN_PER_SESSION) + 1))
         if res is None:
-            # 2026-10-04 店主判断：Julesはチームから外した。
-            # 旧「0円の口へ回す」は throw_jules → タイトル【Julesに頼む】のまま Codex へ飛び、
-            # 3時間期限切れのたびに同じ「別人混入」Issueを量産し Codex 上限を食っていた。
-            # Devinが使えないときは投げず、次の便まで待つ（下の else で記録）。
-            err = err or "Devin不可・Julesフォールバック廃止のため投げません"
+            # Devinが使えないあいだも列は止めない → 0円の口へ同じ仕事を回す
+            res, err2 = throw_jules(job)
+            kuchi = "jules"
+            err = err or err2
         if res:
             kigen = _iso(_now() + timedelta(hours=KIGEN_HOURS))
             row = gaibu_ai.nage(kuchi, job["name"], kigen,

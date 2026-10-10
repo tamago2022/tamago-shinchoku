@@ -28,10 +28,13 @@ concurrency:
   # 2026-10-02T14:45:01Zから"queued"のまま止まり（in_progressにもcompletedにもならない
   # ゾンビ実行）、cancel-in-progress:falseの直列キューの先頭を永久に塞いでいたこと
   # （実測：Actions API — in_progress 0件・queued 1件がこのidのみ）。
-  # 直し方：グループ名を日付で変え、新しい待ち行列を作る。古いゾンビは "pages" グループに
+  # 直し方：グループ名を日付で変え、新しい待い行列を作る。古いゾンビは "pages" グループに
   # 置いたまま無害に残し、以後のpushは新グループで走らせる（GitHub側にキャンセル権限が無い
   # ため、キャンセルではなく隔離で塞ぎを外した）。再発したら日付をまた進める。
-  group: pages-2026-10-04
+  # 2026-10-06（31756番）：再発。run id 37364835192 が2026-10-05T19:39:40Zから
+  # "queued"のまま9分以上止まった（in_progress 0件・queued 2件＝これと古い37022041921だけ）。
+  # 同じ直し方（グループ名を進める）で隔離する。
+  group: pages-2026-10-06
   cancel-in-progress: false
 jobs:
   deploy:

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34829 34829番：『不可逆操作だけ止めて、それ以外は進めてOK』が1ヶ月以上ずっと赤判定され続けていた原因を修正 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34829 34829番：『不可逆操作だけ止めて、それ以外は進めてOK』が1ヶ月以上ずっと赤判定され続けていた原因を修正</div>
+<h1>#34829 34829番：『不可逆操作だけ止めて、それ以外は進めてOK』が1ヶ月以上ずっと赤判定され続けていた原因を修正</h1>
+<div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんの運用方針の発言（『不可逆な操作(公開・削除・APIキー)だけ止めて報告、それ以外は進めてOKです』）は、CLAUDE.md第一条・0条そのものの口頭版で、実装対象を持たない権限委譲の宣言。ところが文中の『止めて』『書く』が判定ロジック(tools/shukudai.py)の動詞リストに部分一致し、実装タスクと誤認識されて1ヶ月以上ずっと赤判定・自動再発車されていた。daicho.jsonlを調べると同型の発言が20件以上重複登録されており、同じ理由で実装対象が無いまま空回りしていた。判定ロジック(_NOT_TASK)にこの文型を検出するパターンを追加し、以後この種の発言を実装タスクとして再発車しないよう修正した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>38/38</b><span>自己試験(self-test)：全項目PASS</span></div>
+  <div class="num"><b>13件</b><span>権限委譲の宣言文がactionable=Falseへ変化（本物のdaicho.jsonlで実測）</span></div>
+  <div class="num"><b>0件</b><span>誤検知：『仕組みを作って』『消す対象のリストを教えて』等の本物の作業依頼はTrueのまま変化なし</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番コード(GitHub raw・34829番の修正を含む)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/fix/queue-self-deadlock-20261004/tools/shukudai.py" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/fix/queue-self-deadlock-20261004/tools/shukudai.py</a></li>
+  <li><b>pushしたコミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/ad5c17643" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/ad5c17643</a></li>
+  <li><b>宿題台帳(本番・GitHub Pages)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1138-shukudai.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1138-shukudai.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>自己試験(shukudai.py --self-test)</td><td class="yes">38/38 PASS</td></tr>
+<tr><td>自己試験(hantei_hiduke.py --self-test)</td><td class="yes">OK</td></tr>
+<tr><td>34829番の元発言(id:6fc32d9dcce5)がactionable=Falseになったか</td><td class="yes">実測: actionable=False</td></tr>
+<tr><td>34829番のqueueエントリ(id:a4cfad1b295b)がactionable=Falseになったか</td><td class="yes">実測: actionable=False</td></tr>
+<tr><td>同型の重複発言12件（2d1949dba7b2ほか）がactionable=Falseになったか</td><td class="yes">実測: 13件中13件がFalse</td></tr>
+<tr><td>本物の作業依頼(仕組みを作って／消す対象のリストを教えて)を誤ってFalseにしていないか</td><td class="yes">実測: actionable=True（変化なし）</td></tr>
+<tr><td>push・本番反映(fix/queue-self-deadlock-20261004ブランチ)</td><td class="yes">実測: GitHub raw上で確認済み</td></tr>
+</table>
+
+<footer>
+このページは #34829 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -171,14 +171,34 @@ def tsukatta_gokei(saifu, period=None):
     return round(total, 4), n
 
 
-def mitsumori(saifu, yen, what="", record=True):
+def _kakeibo():
+    try:
+        sys.path.insert(0, HERE)
+        import kakeibo
+        return kakeibo
+    except Exception:
+        return None
+
+
+def mitsumori(saifu, yen, what="", record=True, anken=None):
     """★叩く前に通す関所。戻り値 (ok, 理由)。
 
     ok=False のときは**叩いてはいけない**。理由は必ず呼び出し元から上へ返すこと
     （黙って0件で帰ると「動いているのに何も取れていない」になる）。
+    ★2026-10-11 家計簿：fal・Gemini・xAI は案件名（anken= か環境変数 TAMAGO_ANKEN）が無いと止める。
     """
     if saifu not in SAIFU:
         return False, "知らない財布です: %s" % saifu
+    kb = _kakeibo()
+    if kb is not None and saifu in kb.HISSU:
+        try:
+            kb.anken_hissu(anken, saifu)
+        except kb.AnkenNashi as ex:
+            why = str(ex) + "\n  （この1回：%s）" % (what or "不明")
+            if record:
+                _append(DAICHO, {"at": _now().isoformat(), "kind": "止めた", "saifu": saifu,
+                                 "yen": float(yen or 0), "what": what, "ok": False, "why": why})
+            return False, why
     yen = float(yen or 0)
     s = settei()
     limit = s["limits"][saifu]
@@ -213,15 +233,26 @@ def mitsumori(saifu, yen, what="", record=True):
     return False, why
 
 
-def tsukatta(saifu, yen, what="", usd=None, src=""):
-    """★叩いた後に実額を記録する。ここを書かないと上限が効かない。"""
+def tsukatta(saifu, yen, what="", usd=None, src="", anken=None, model="", ryou=""):
+    """★叩いた後に実額を記録する。ここを書かないと上限が効かない。
+    ★2026-10-11：同じ1回を案件ごとの家計簿（status/kakeibo.jsonl）にも1行書く。"""
     if saifu not in SAIFU:
         return False
     if yen is None and usd is not None:
         yen = float(usd) * USD_YEN
+    anken = (anken or os.environ.get("TAMAGO_ANKEN") or "").strip()
+    kb_ok = False
+    kb = _kakeibo()
+    if kb is not None:
+        try:
+            kb.kiroku(anken or "不明（案件名なし・%s）" % (what or saifu), saifu, model, ryou or what,
+                      usd=usd, yen=yen, kakutei="推定", moto="tools/yosan.py（%s）" % (src or what)[:60])
+            kb_ok = True
+        except Exception:
+            kb_ok = False
     _append(DAICHO, {"at": _now().isoformat(), "kind": "使った", "saifu": saifu,
                      "yen": round(float(yen or 0), 4), "usd": usd, "what": what,
-                     "src": src, "usdYen": USD_YEN})
+                     "src": src, "usdYen": USD_YEN, "anken": anken or None, "kakeibo": kb_ok})
     return True
 
 
@@ -275,8 +306,16 @@ def self_test():
     DAICHO = os.path.join(d, "yosan.jsonl")
     OUTBOX = os.path.join(d, "outbox.jsonl")
     out = []
+    kb = _kakeibo()
+    kb_keep = kb.DAICHO if kb else None
+    env_keep = os.environ.pop("TAMAGO_ANKEN", None)
+    if kb:
+        kb.DAICHO = os.path.join(d, "kakeibo.jsonl")
     try:
         set_limit("xai", 10)
+        ok0, _ = mitsumori("xai", 1.0, "案件名なし")
+        out.append(("⓪ 案件名なしの xAI は止まる（家計簿）", ok0, False))
+        os.environ["TAMAGO_ANKEN"] = "見本試験"
         ok1, w1 = mitsumori("xai", 4.0, "テストA")
         out.append(("① 上限10円・見積り4円", ok1, True))
         tsukatta("xai", 4.0, "テストA（実額）")
@@ -297,6 +336,9 @@ def self_test():
         out.append(("⑦ 上限0円にしたら1銭も通らないか", ok7, False))
         ok8, _ = mitsumori("shiranai", 1.0, "テストE")
         out.append(("⑧ 知らない財布は通らないか", ok8, False))
+        out.append(("⑨ 使った分が家計簿にも案件名つきで載るか",
+                    bool(kb) and os.path.exists(kb.DAICHO) and "見本試験" in io.open(kb.DAICHO, encoding="utf-8").read(),
+                    True))
         ng = [r for r in out if r[1] != r[2]]
         print("予算の栓 見本試験: %d件中 %d件 想定どおり" % (len(out), len(out) - len(ng)))
         for name, got, want in out:
@@ -306,6 +348,11 @@ def self_test():
         return 1 if ng else 0
     finally:
         SETTEI, DAICHO, OUTBOX = keep
+        if kb:
+            kb.DAICHO = kb_keep
+        os.environ.pop("TAMAGO_ANKEN", None)
+        if env_keep is not None:
+            os.environ["TAMAGO_ANKEN"] = env_keep
         shutil.rmtree(d, ignore_errors=True)
 
 
