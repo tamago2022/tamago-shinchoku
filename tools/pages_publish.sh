@@ -168,7 +168,21 @@ fi
 # ★ 毎回まるごと展開し直さない。681MBを展開すると3分以上かかり、5分おきの巡回が詰まる。
 #   前回どこまで映したかを .git/lastmain に覚えておき、**その差分だけ**を映す。
 #   main の1コミットで動くのはたいてい数ファイルなので、2回目以降は一瞬で終わる。
-CUR="$(git -C "$REPO" rev-parse HEAD 2>/dev/null || echo "")"
+#
+# ★2026-10-11（34863号・3回目の再発）：以前はここで `rev-parse HEAD` を使っていた。
+#   $REPO（常駐の作業場）が『main』ブランチ以外（fix/queue-self-deadlock-20261004等）を
+#   チェックアウトしている間は、HEADがそのブランチの古いコミットになり、origin/mainへ
+#   正しくmerge済みの修正があっても本番確認ページが古い内容のまま取り残される
+#   （34671号・34812号で既発生。失敗台帳 F-20261009090406-quick / F-20261009155753-quick）。
+#   『main』を名乗る変数は、ローカルの現在地ではなく**リモートの実体**を見るべき。
+origin_fetch_pid=""
+git -C "$REPO" fetch --quiet --no-tags --depth=1 origin main >/dev/null 2>&1 &
+origin_fetch_pid=$!
+( sleep 10; kill -9 "$origin_fetch_pid" 2>/dev/null ) & origin_fetch_watch=$!
+wait "$origin_fetch_pid" 2>/dev/null
+kill "$origin_fetch_watch" 2>/dev/null
+CUR="$(git -C "$REPO" rev-parse origin/main 2>/dev/null || echo "")"
+[ -z "$CUR" ] && CUR="$(git -C "$REPO" rev-parse HEAD 2>/dev/null || echo "")"
 [ -z "$CUR" ] && { log "🛑 main の HEAD が読めませんでした"; exit 1; }
 LAST="$(cat "$PAGES/.git/lastmain" 2>/dev/null || echo "")"
 
