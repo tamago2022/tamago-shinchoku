@@ -154,7 +154,11 @@ def walk(roots):
         if os.path.isfile(root):
             yield root
             continue
+        base = root.rstrip(os.sep).count(os.sep)
+        deep = 1 if root.rstrip(os.sep).endswith(os.sep + "status") else 6   # status は一発物の箱が数千ある＝浅く見る
         for dp, dns, fns in os.walk(root):
+            if dp.count(os.sep) - base >= deep:
+                dns[:] = []
             dns[:] = [d for d in dns if d not in SKIP_DIRS and not d.startswith(".tmp")]
             for fn in fns:
                 if fn.endswith(EXTS) and fn not in SELF and not fn.endswith(".bak"):
