@@ -601,6 +601,10 @@ while :; do
   tick_every 20 && ( python3 "$REPO/tools/okoshi.py" >> "$REPO/status/okoshi/run.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-09 許可ポップアップの関所：アプリのログから許可要求を道具ごとに数える（読むだけ・1時間おき・0円）。
   tick_every 240 && ( python3 "$REPO/tools/kyoka_kanmon.py" >> "$REPO/status/okoshi/kyoka.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-10 編集ログインの毎日見回り。たまごさん「本当に終わらせてほしい」（@で入れない・6回目）。
+  #   本番 /admin に「@」「＠」でheadlessログイン→落ちたら金庫(DB)を入れ直して再試行→だめなら進捗表に赤帯。
+  #   1時間おきに起きるが、本番を叩くのは1日1回（--daily）。0円。結果 status/public/admin_login_mimawari.json
+  tick_every 240 && ( python3 "$REPO/tools/admin_login_mimawari.py" --daily >> "$REPO/status/admin_login_mimawari.log" 2>&1 & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then

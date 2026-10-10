@@ -127,7 +127,7 @@ ul{list-style:none; margin:0; padding:0}
 .ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
 
 /* ───── 空き容量の赤帯（閾値割れのときだけ出す） ───── */
-#falAka div{background:var(--t-ng-bg); color:var(--t-fg); border-radius:10px; padding:12px 14px; margin:0 0 10px; font-size:16px; line-height:1.5; font-weight:700}
+#falAka div,#loginAka div{background:var(--t-ng-bg); color:var(--t-fg); border-radius:10px; padding:12px 14px; margin:0 0 10px; font-size:16px; line-height:1.5; font-weight:700}
 #diskAka:not(:empty){background:var(--t-ng-bg); color:var(--t-fg); border-radius:10px;
   padding:12px 14px; margin:0 0 10px; font-size:17px; line-height:1.5; font-weight:700}
 
@@ -168,6 +168,8 @@ footer a{display:block; padding:5px 0}
 <div id="diskAka"></div>
 <!-- 2026-10-08 fal見張り：1日$3超・1回$2超の注文があったら赤帯。出どころ status/public/fal_kanshi.json（tools/fal_kanshi.py が毎時） -->
 <div id="falAka"></div>
+<!-- 2026-10-10 編集ログイン見回り：本番で「@」「＠」で入れなければ赤帯。出どころ status/public/admin_login_mimawari.json（tools/admin_login_mimawari.py が毎日） -->
+<div id="loginAka"></div>
 <!-- 2026-10-08 お金：今月いくら（1行だけ）。出どころ status/public/okane_ichimai.json -->
 <a id="okaneLine" href="share/check/1051-okane.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">お金　読み込み中…</a>
 <!-- 2026-10-09 起こし役：止まった子セッション・Gensparkを自動で起こした回数。出どころ status/public/okoshi.json（tools/okoshi.py が5分おき） -->
@@ -403,6 +405,18 @@ var DISK_AKA_GB = 50;
     if(!d || typeof d.gokei !== "number"){ ln.textContent = "お金　取れていません"; return; }
     ln.textContent = "お金　今月 " + d.gokei.toLocaleString() + "円（カードから引かれた実額）・解約候補 " + (d.kouhoN||0) + "件 ›";
   }).catch(function(){ ln.textContent = "お金　取れていません"; });
+})();
+
+/* 2026-10-10 編集ログインの赤帯。青のときは何も出さない */
+(function(){
+  var aka = $("loginAka"); if(!aka) return;
+  getJson("status/public/admin_login_mimawari.json").then(function(d){
+    (d && d.aka || []).forEach(function(t){
+      var dv = document.createElement("div");
+      dv.textContent = t + "（" + (d.at||"") + "）";
+      aka.appendChild(dv);
+    });
+  }).catch(function(){});
 })();
 
 /* 同時本数の判定（2026-10-08）。出どころ：status/public/fuka_hassha.json（発車の直前に auto_launcher が書く） */
