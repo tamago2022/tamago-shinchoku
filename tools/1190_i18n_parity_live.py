@@ -209,7 +209,7 @@ def main():
     exe = os.environ.get("CHROMIUM_EXE")
     res = {"base": base, "pages": {}, "red": []}
     with sync_playwright() as p:
-        b = p.chromium.launch(**({"executable_path": exe} if exe else {}))
+        b = p.chromium.launch(args=["--mute-audio"], **({"executable_path": exe} if exe else {}))
         targets = [(path, False) for path in a.paths.split(",") if path]
         if not a.no_nav:
             targets.append(("(移動) " + NAV_FROM + " → 曲ページ", True))

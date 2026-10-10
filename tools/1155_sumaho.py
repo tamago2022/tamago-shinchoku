@@ -39,7 +39,7 @@ def main():
     os.makedirs(SHOT, exist_ok=True)
     res = {"width": 375, "height": 812, "pages": [], "red": []}
     with sync_playwright() as pw:
-        b = pw.chromium.launch()
+        b = pw.chromium.launch(args=["--mute-audio"])
         ctx = b.new_context(viewport={"width": 375, "height": 812},
                             device_scale_factor=2, is_mobile=True,
                             has_touch=True,

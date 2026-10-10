@@ -43,9 +43,9 @@ function findHeadless() {
 }
 let browser;
 try {
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true, args: ["--mute-audio"] });
 } catch {
-  browser = await chromium.launch({ headless: true, executablePath: findHeadless() });
+  browser = await chromium.launch({ headless: true, args: ["--mute-audio"], executablePath: findHeadless() });
 }
 const results = [];
 for (const c of CASES) {

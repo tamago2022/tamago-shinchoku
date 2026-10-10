@@ -22,7 +22,7 @@ if (!TARGET || !OUT) { console.error("使い方: node tools/1168_shot.mjs <URL> 
 const port = 9500 + Math.floor(Math.random() * 400);
 const prof = mkdtempSync(`${tmpdir()}/t1168-`);
 const chrome = spawn(CHROME, [
-  "--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`,
+  "--headless=new", "--mute-audio", `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`,
   "--no-first-run", "--no-default-browser-check", "--allow-file-access-from-files",
   "--hide-scrollbars", "about:blank",
 ], { stdio: "ignore" });
