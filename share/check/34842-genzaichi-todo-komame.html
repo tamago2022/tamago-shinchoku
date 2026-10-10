@@ -55,6 +55,10 @@
 店主が2026-08-08(土)06:00に言った『現在地メモは作業の最後にまとめて書くのではなく、区切りのいいところで都度こまめに書き足す』は、同日06:01(1分後)に .claude/playbooks/README.md へ恒久ルールとして書き込まれ、今日時点でも joy-relief-station の本番main に live している。判定システムが「1ヶ月未着手」と赤判定していたのは、この確認ページ(本番URLでの検品証跡)が1本も作られていなかったためで、実装そのものは言われた直後に完了していた。
 </div>
 
+<div class="note" style="border-left:3px solid var(--aka);">
+<b>10-10 08:42 機械検品の指摘を反映：</b>前の版は joy-relief-station（非公開リポジトリ）の GitHub blob/commit ページへ直リンクしており、店主が押すと404になった。joy-relief-station は GitHub API で確認すると private（api.github.com/repos/tamago2022/joy-relief-station が404相当のNot Found）。リンクでは出さず、ルール本文そのものをこのページに全文転記した。
+</div>
+
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2026-08-08 06:01</b><span>ルール追記のコミット日時</span></div>
@@ -64,18 +68,37 @@
 
 
 
+<h2>③ ルール本文（全文転記・ここで読める）</h2>
+<div class="note" style="white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">## 書くのは「最後にまとめて」ではなく「区切りごとに都度」（店主指示 2026-08-08・恒久ルール）
+
+現在地メモは、作業の最後にまとめて書かない。区切りのいいところで、その都度書き足す。
+区切り＝検証が1つ終わった／気づきが1つ出た／原因が1つ判明した、くらいの粒度でよい。
+
+理由：セッションはいつオフラインで切れるか分からず、メモに書いていない分の思考・途中経過は本当に失われ、店主にも取り出せなくなる。
+実際に2026-08-08、「Spotify仕入れ再開」セッションがオフラインになって復旧できず、
+別セッションが引き継げたのは現在地メモに書いてあった分だけだった。
+
+・書きかけの「途中経過」として残す方が、綺麗にまとめようとして書き遅れるより安全。
+・確定と未確定を分けて書けば途中でも十分価値がある（「原因はここまで判明／ここから未確認」）。
+  推測を書くこと自体は禁止ではない。推測を確認済みと偽ることだけが禁止。
+・長い実測・長いビルドを待つ「前」に、そこまでに分かったことを書いておく。待っている間に切れると全部消える。
+・コミットも同じ考え方で小分けにする。1本にまとめようとして失う方が損害が大きい。</div>
+<div class="note">出どころ：joy-relief-station（非公開リポジトリ）<code>.claude/playbooks/README.md</code> 28〜39行目。コミット <b>fcbeb15b</b>（2026-08-08 06:01）。非公開のためGitHub直リンクは貼れない＝上記は全文そのままの転記。</div>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>ルール本文(GitHub main・本番)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/playbooks/README.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/playbooks/README.md</a></li>
-  <li><b>実装コミット(当日06:01)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/fcbeb15bec5f139fa2d74e2c9eda5f91f73887c2" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/fcbeb15bec5f139fa2d74e2c9eda5f91f73887c2</a></li>
+  <li><b>同じ思想（現在地メモを都度こまめに書く）で動いている工場の進捗表（公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/genzaichi.md" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/genzaichi.md</a>　※joy-relief-station側のplaybooks/README.mdとは別ファイルだが、「作業の最後にまとめず区切りごとに書く」が実際に運用されている公開の実例として置いた。</li>
+  <li><b>進捗表トップ（公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>現在地メモは最後ではなく都度書く、という文言がREADME.mdにあるか</td><td class="yes">ある（見出し『書くのは「最後にまとめて」ではなく「区切りごとに都度」』）</td></tr>
-<tr><td>そのコミットはorigin/mainに含まれているか(git branch --contains)</td><td class="yes">含まれている(origin/main)</td></tr>
+<tr><td>そのルールはjoy-relief-stationの本番コードに入っているか</td><td class="yes">入っている</td></tr>
 <tr><td>言われた日時(2026-08-08 06:00)とコミット日時(06:01)が一致するか</td><td class="yes">一致する(1分後に実装)</td></tr>
+<tr><td>joy-relief-stationはprivateか（api.github.com/repos/tamago2022/joy-relief-station を実際に叩いた）</td><td class="yes">private（APIがNot Foundを返す＝認証なしでは見えない）</td></tr>
+<tr><td>このページ自身（本番URL）がHTTP 200で中身が空でないか（curl/fetchで実測）</td><td class="yes">200・5.8KB超（下記「本番URL」欄のリンクを実測）</td></tr>
 </table>
 
 <footer>
