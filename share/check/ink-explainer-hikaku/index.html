@@ -14,7 +14,7 @@ small,.s{font-size:13px;color:var(--t-mute)} ol li,ul li{margin:.3em 0} a{color:
 <h1>棒人間解説チャンネル Ink Explainer を<span class=red>超えられるか</span>：分析と試作1本</h1>
 <div class=box><p class=big>結論：<span class=red>今の作り方（Python作画・3色）では、まだ超えられない。</span>採点は本家 39点／試作 30点（50点満点）。</p>
 <p>差は「絵の色と量」と「テンポ」。題材と台本の組み立ては同じ型を再現できた。超えるには下の条件5つが要る。</p>
-<p><b>この1本の費用：</b>Opus 5.5 の使用量＝<b>週の枠の約0.04%・5時間枠の約0.13%（推定）</b>／外部API＝<b>約4円</b>（Gemini 音声1回）。画像の有料APIは0円。</p></div>
+<p><b>この1本の費用（10/10 12:40 検証済み・9章）：</b>Opus 5.5＝<b>週の枠 約0.08%・5時間枠 約0.25%</b>（API換算481円相当・定額内なので追加請求0円）／外部API＝<b>3.69円</b>（Gemini 音声1回・公式単価で計算）。画像の有料APIは0円。</p></div>
 
 <h2>1. 試作（Opus 5.5 が作った77秒）</h2>
 <video controls playsinline preload="metadata" poster="poster.jpg" src="proto_web.mp4"></video>
@@ -63,10 +63,10 @@ small,.s{font-size:13px;color:var(--t-mute)} ol li,ul li{margin:.3em 0} a{color:
 <tr><td>作った子</td><td>Opus 5.5（claude-opus-5-5）を claude CLI で1本起動（Mac の工場の起動口 2.1.278 は Opus 5.5 非対応だったため、手元にあった 2.1.296 本体を指定して起動。工場側の設定は変えていない）</td></tr>
 <tr><td>走った時間</td><td>04:51〜06:02（約71分）。うち作画の書き出しが約50分（Mac が他の仕事で混んでいた）</td></tr>
 <tr><td>トークン</td><td>出力 69,628／キャッシュ読み 2,377,280／キャッシュ書き 109,524／入力 66（33往復）。API換算 $2.74（約434円・定額プランなので実際の請求は0円）。※最初の起動は話の速さを直すため6分で止め直した（出力843トークン、ほぼ無視できる）</td></tr>
-<tr><td>週の枠</td><td><b>約0.04%</b>（推定）。工場の実測で「週1% ≒ 重みつき2,000万トークン」（10/7〜10/9 の6回の実測で 1,965万〜2,180万）。この子は重みつき約78万</td></tr>
-<tr><td>5時間枠</td><td><b>約0.13%</b>（推定・幅0.11〜0.16%）。同じく「5時間枠1% ≒ 485万〜678万」から計算</td></tr>
+<tr><td>週の枠</td><td>（初回の推定 0.04%→9章で <b>0.08%</b> に訂正）工場の実測で「週1% ≒ 重みつき2,000万トークン」（10/7〜10/9 の6回の実測で 1,965万〜2,180万）。この子は重みつき約78万</td></tr>
+<tr><td>5時間枠</td><td>（初回の推定 0.13%→9章で <b>0.25%</b> に訂正）同じく「5時間枠1% ≒ 485万〜678万」から計算</td></tr>
 <tr><td>/usage の％</td><td>未確認。Claude アプリの使用率記録が 10/9 05:39（週39%）で止まっていて、前後の実測が取れなかった。pace.json は前後とも 39%（同じ古い値）</td></tr>
-<tr><td>外部API</td><td>Gemini TTS（gemini-3.8-flash-tts）1回＝<b>約4.1円</b>（入力413・音声出力2,569トークン。単価は flash TTS の公開単価を仮置き、正式単価は未確認）。お金台帳 status/okane/kakin.json の api_shuho に記録。画像生成0円</td></tr>
+<tr><td>外部API</td><td>Gemini TTS（gemini-3.8-flash-tts）1回＝<b>3.69円</b>（入力413・音声出力2,569トークン×公式単価・9章。初回の4.1円は仮の単価で計算していた）。お金台帳 status/okane/kakin.json の api_shuho に記録。画像生成0円</td></tr>
 </table>
 <p class=s>作り方の記録：台本・字幕・作画コードは工場の status/ink/proto/（公開しない場所）。</p>
 <h2>8. 生データ（実測）</h2>
@@ -120,6 +120,32 @@ claude -p の結果JSON（本番の子 64ac2de9）: total_cost_usd = 2.744472</p
 }</pre>
 <pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">Gemini TTS の記録（status/ink/proto/cost_log.jsonl）
 {&quot;at&quot;: &quot;2026-10-10T05:00:07&quot;, &quot;model&quot;: &quot;gemini-3.8-flash-tts&quot;, &quot;input_tokens&quot;: 413, &quot;output_tokens&quot;: 2569, &quot;usd&quot;: 0.025896, &quot;yen&quot;: 4.098}</pre>
+<h2>9. 検証（10/10 12:40・推定を実数に置き換え）</h2>
+<div class=box><p class=big>1本あたり：外部API <span class=red>3.69円</span>（公式単価×実数で計算・確定。無料枠なら0円）／Claude 週枠 <span class=red>約0.08%</span>（5時間枠 約0.25%）</p>
+<p>API料金に換算すると Opus 5.5 は約481円相当。ただし定額のMaxプランの中なので、追加の請求は0円。前の「週0.04%」はトークン量だけで数えた値で、Opus の単価がSonnetの2倍なのを入れていなかったので、多めの0.08%に直した。</p></div>
+<pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">Gemini 公式単価（ai.google.dev/gemini-api/docs/pricing・2026-10-10 12:27 取得）
+gemini-3.8-flash-tts Standard: 無料枠=無料 ／ 有料枠 入力 $0.50/1M・音声出力 $9.00/1M（2026-12-31まで。2027-01-01から $1.00 / $18.00）
+今回の実数（APIの usageMetadata）: 入力 413 ・ 音声出力 2,569（= 102.9秒 × 25トークン/秒）
+413×0.50/1M + 2569×9.00/1M = $0.023328 × 158.23円 = 3.69円（2027年以降の単価なら 7.4円）
+呼んだ外部APIの全部（Opus 5.5 の子の道具呼び出し36件を全件確認）:
+  generativelanguage.googleapis.com /v1beta/models（モデル一覧・無料） 1回
+  generativelanguage.googleapis.com …/gemini-3.8-flash-tts:generateContent 1回（cost_log.jsonl も1行）
+  それ以外の外部API・有料サービスの呼び出し 0件
+Google の実際の請求額: 未確認（請求画面はログインが要る）。カード台帳 kakin.json に Google Cloud の引き落としは過去に1件も無い
+
+Claude 公式単価（platform.claude.com/docs/en/about-claude/pricing・2026-10-10 12:35 取得）
+Opus 5.5: 入力 $4 ／ キャッシュ書き(1時間) $8 ／ キャッシュ読み $0.20 ／ 出力 $20（各1Mあたり）
+本番の子 64ac2de9: 66×4 + 109,524×8 + 2,377,280×0.2 + 69,628×20 (/1M) = $2.7445（CLIの total_cost_usd 2.744472 と一致）
+止めた子 2f86d951: 8×4 + 31,631×8 + 131,394×0.2 + 843×20 (/1M) = $0.2962
+合計 $3.0407 × 158.23 = 481円相当（定額のMaxプラン内なので、実際の追加請求は0円）
+
+使用率の実測が止まっていた原因（~/Library/Logs/Claude/main.log）
+  [plan-usage] config: poll requires tray open within 86400000ms
+  [plan-usage] background poll paused: tray not opened recently
+  → Claudeアプリは「メニューバーのClaudeを24時間以内に開いたとき」しか使用率を取りに行かない。10/10 10:10 のアプリ再起動で1回だけ取れた
+最新の実測: 2026-10-10 10:11 週 59% ／ 5時間 8%（その前 2026-10-09 05:39 週 39%）
+目盛り: 週1% = 重みつき 19.05M（10/10 10:11 の実測で再計算）≒ Sonnet換算 $38.1 ／ 5時間1% = 6.1M ≒ $12.2
+この1本: トークン量で 0.041% ／ 金額（Opus は Sonnet の2倍の単価）で 0.080% → 多めの 0.08% を採用。5時間枠は 0.25%</pre>
 </main>
 <!--tamago-dark 2--><link rel="stylesheet" href="../../../theme/tamago-dark.css">
 </body></html>
