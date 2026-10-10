@@ -61,7 +61,9 @@ TOOL_WHITELIST = ("kohyou_osu.py", "kohyou_kanshi.py", "og_kanmon.py",
                   #   道具の側が status/gsk_daicho.jsonl に必ず書く。
                   "fukumen_kyaku.py", "fukumen.py",
                   # ★1191番（2026-10-10）多言語：DBの日本語を読むだけ・入荷時の自動翻訳
-                  "1191_db_nihongo.py", "1191_honyaku_jidou.py")
+                  "1191_db_nihongo.py", "1191_honyaku_jidou.py",
+                  # ★1192番（2026-10-10）曲名の海外向け表記（公式→検索→ローマ字）
+                  "1192_title_romaji.py")
 
 
 def _shinchoku():
