@@ -83,6 +83,11 @@ _HAIKU_NG_KEYWORDS = ("実装", "設計", "戦略", "判断", "修正", "直し"
 
 def pick_model(item):
     """34489番：単純作業だけHaikuへ落として消費を抑える。迷ったらSonnet。"""
+    # 2026-10-10 How It Holds パイプライン（~/howitholds/pipeline.sh）：積む側が
+    #   モデルを明示した時（item["fixedModel"]）はそれを使う。積む側が決める仕事だけに効く。
+    fixed = (item.get("fixedModel") or "").strip()
+    if fixed in (SONNET, HAIKU):
+        return fixed
     text = (item.get("title") or "") + (item.get("hyoudai") or "")
     if any(k in text for k in _HAIKU_NG_KEYWORDS):
         return SONNET
