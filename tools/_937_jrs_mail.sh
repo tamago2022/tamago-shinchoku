@@ -142,7 +142,7 @@ trap 'rm -rf "${LOCK}" 2>/dev/null || true' EXIT
     rm -rf "${PROF}"; mkdir -p "${PROF}"
     for size in "1440,3600:pc" "375,3600:sp375"; do
       wh="${size%%:*}"; name="${size##*:}"
-      "${CH}" --headless=new --disable-gpu --hide-scrollbars --no-first-run --no-default-browser-check \
+      "${CH}" --headless=new --mute-audio --disable-gpu --hide-scrollbars --no-first-run --no-default-browser-check \
         --user-data-dir="${PROF}" --window-size="${wh}" --virtual-time-budget=15000 \
         --screenshot="${SHOT}/${name}.png" "${URL}" >/dev/null 2>&1
       if [ -f "${SHOT}/${name}.png" ]; then

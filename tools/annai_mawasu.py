@@ -95,7 +95,7 @@ def ask_live(tois, outpath, fixed=""):
         os.replace(tmp, outpath)
 
     with sync_playwright() as pw:
-        br = pw.chromium.launch(args=["--disable-dev-shm-usage"])
+        br = pw.chromium.launch(args=["--disable-dev-shm-usage", "--mute-audio"])
 
         def fresh():
             ctx = br.new_context(viewport={"width": 390, "height": 844},

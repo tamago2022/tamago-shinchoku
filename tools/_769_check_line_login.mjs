@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// muon: 接続のみ（既存のChromeに繋ぐだけ。ブラウザを起動しない・動画を鳴らさない）
 // 769番：既存のログイン済みChrome（dispatch/chrome-publishプロファイル・CDP 9223・headless）に
 // 新しいタブを1枚追加し、creator.line.me（LINE Creators Market）のログイン状態だけを確認する。
 // 確認が終わったら必ずタブを閉じる。何もクリックしない・何も入力しない・読み取りのみ。
