@@ -71,6 +71,7 @@ SONNET = "claude-sonnet-5"
 # モデルIDは実機で起動確認済み（claude -p --model haiku →
 # canonicalModel: claude-haiku-4-5, 実モデル claude-haiku-4-5-20251001）。
 HAIKU = "claude-haiku-4-5"
+OPUS55 = "claude-opus-5-5"  # fixedModel明示時のみ（2026-10-10）
 # 判断がほぼ要らない機械的な単純作業（パトロール・重複チェック・一覧作成・棚卸し・
 # 仕分け・集計・定型フォーマット変換）だけをHaiku対象にする。実装・設計・判断・交渉等の
 # 語が混ざっていたら安全側（Sonnet）に倒す——誤判定でHaikuに落として実装や判断を求めると、
@@ -86,7 +87,9 @@ def pick_model(item):
     # 2026-10-10 How It Holds パイプライン（~/howitholds/pipeline.sh）：積む側が
     #   モデルを明示した時（item["fixedModel"]）はそれを使う。積む側が決める仕事だけに効く。
     fixed = (item.get("fixedModel") or "").strip()
-    if fixed in (SONNET, HAIKU):
+    # 2026-10-10 たまごさん指示「実装はOpus 5.5で。起動口で --model 指定した子を1本立てる」
+    #   → 積む側(Dispatch)が明示した時だけOpus 5.5を許す。自動判定では絶対にOpusへ上げない。
+    if fixed in (SONNET, HAIKU, OPUS55):
         return fixed
     text = (item.get("title") or "") + (item.get("hyoudai") or "")
     if any(k in text for k in _HAIKU_NG_KEYWORDS):

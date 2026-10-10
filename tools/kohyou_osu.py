@@ -416,6 +416,20 @@ def _press(st, it):
         st["lastResult"] = "大事な機能の関所：原因コミットを外した版を待つ"
         return st
 
+    # ★カードの形の関所（2026-10-10・たまごさん「これ全般的に。バラバラなのが気持ち悪い」）：
+    #   棚のカードで説明が空・年だけのもの／見出しの形式違い／高さの固定がない部品が1つでもあれば**押さない**。
+    #   関所そのものの故障（測れなかった）は止めずに通す（記録 status/public/card_face_kanmon.json は残る）。
+    try:
+        import card_face_kanmon
+        cv, cviol, _cn = card_face_kanmon.run(sha)
+    except Exception as e:  # noqa: BLE001
+        _log("カードの形の関所が動きません（通します）：%r" % (e,))
+        cv, cviol = "inconclusive", []
+    if cv == "ng":
+        _log("★カードの形の関所：%s に違反が%d件あります。**公開しません**（詳細 status/public/card_face_kanmon.json）" % (sha, len(cviol)))
+        st["lastResult"] = "カードの形の関所で停止（%d件）" % len(cviol)
+        return st
+
     before = _honban_key(mato["url"]) or it.get("deployKey") or ""
     r, err = lv.call("deploy_project", {"project_id": mato["project_id"]})
     if r is None:
