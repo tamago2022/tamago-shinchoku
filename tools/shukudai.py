@@ -968,6 +968,40 @@ def self_test():
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
+    # 34853号再発防止：KENPINで検品合格済みの題名(kioku由来)はharvest_kioku()が
+    # 「未着手」を出し直さないこと（本物のファイルは汚さず、一時ファイルで検証する）。
+    import tempfile as _tmp_34853
+    fd, tmp_kenpin_path = _tmp_34853.mkstemp()
+    os.close(fd)
+    _orig_kenpin_path = globals()["KENPIN_FOR_KIOKU"]
+    _orig_kenpin_cache = globals()["_KENPIN_DONE_CACHE"]
+    tmp_kioku_fd, tmp_kioku_path = _tmp_34853.mkstemp()
+    os.close(tmp_kioku_fd)
+    _orig_kioku_path = globals()["KIOKU"]
+    try:
+        with io.open(tmp_kenpin_path, "w", encoding="utf-8") as f:
+            f.write(json.dumps({"ok": True,
+                                 "title": "判定日赤｜34853号セルフテスト用の確認済み依頼です"},
+                                ensure_ascii=False) + "\n")
+        with io.open(tmp_kioku_path, "w", encoding="utf-8") as f:
+            f.write(json.dumps({"title": "34853号セルフテスト用の確認済み依頼です",
+                                 "firstSaid": "2026-08-08 07:09", "count": 1},
+                                ensure_ascii=False) + "\n")
+        globals()["KENPIN_FOR_KIOKU"] = tmp_kenpin_path
+        globals()["_KENPIN_DONE_CACHE"] = None
+        globals()["KIOKU"] = tmp_kioku_path
+        rows34853 = harvest_kioku()
+        check("34853号再発防止：検品合格済みのkioku依頼はstate=完了で出る（未着手に戻らない）",
+              len(rows34853) == 1 and rows34853[0]["state"] == "完了")
+    finally:
+        globals()["KENPIN_FOR_KIOKU"] = _orig_kenpin_path
+        globals()["_KENPIN_DONE_CACHE"] = _orig_kenpin_cache
+        globals()["KIOKU"] = _orig_kioku_path
+        for p in (tmp_kenpin_path, tmp_kioku_path):
+            try:
+                os.remove(p)
+            except Exception:
+                pass
     h = harvest()
     check("掘り出しが30件以上ある（%d件）" % len(h), len(h) >= 30)
     check("全件に完了条件がある", all(r.get("doneWhen") for r in h))
