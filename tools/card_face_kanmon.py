@@ -71,7 +71,8 @@ def db_check():
 
 def code_check(sha):
     """その版のファイルだけ取り出して、リポジトリの静的点検を走らせる（作業中の手元は触らない）。"""
-    tmp = tempfile.mkdtemp(prefix="cardface_")
+    # realpath：macOS の /var → /private/var の付け替えで、node 側の「自分が本体か」判定が外れるのを防ぐ
+    tmp = os.path.realpath(tempfile.mkdtemp(prefix="cardface_"))
     try:
         paths = ["src/components", "src/routes", "src/lib/worlds.ts", "src/lib/shelfCardTitles.generated.ts",
                  "src/lib/cardFace.ts", "src/styles.css", "scripts/patrol/check-card-face.mjs",
