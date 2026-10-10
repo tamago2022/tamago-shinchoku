@@ -523,11 +523,20 @@ def hantei_1ken(r, ima):
     # 1462番の原則（「誤って赤を隠す方が、赤が多すぎることより悪い」）を壊さない
     # よう、完了報告と否定の有無を両方厳しく見てから外す（見逃し優先ではなく
     # 「その場で完結したことが確認できる場合」だけの限定的な例外）。
-    if not in_daicho and st == "未着手" and _session_log_shows_completion(r):
+    #
+    # 34870番実例（2026-10-11）：`not in_daicho` の要件があったため、DAICHOに
+    # 同一タイトルの行が別idで"未着手"のまま登録されている（＝宿題台帳側が
+    # 一度も同期更新されていない）ケースを救済できず、セッション内では当日の
+    # うちに完結していたのに★赤判定され続けていた。DAICHOの登録有無ではなく
+    # 「今の状態(st)が未着手のまま」かどうかだけを見れば十分なので、
+    # `not in_daicho` の要件を外す（in_daichoでも st=="未着手" のまま古くなって
+    # いるなら、DAICHO未登録と同じ理由で救済してよい）。
+    if st == "未着手" and _session_log_shows_completion(r):
         return {"which": which, "aka": False, "state": "完了（セッション内確認）",
-                "sonogo": ("DAICHO未登録だが、同一セッション内でassistantの完了報告と"
-                           "それに続く明確な否定の不在を確認できたため、赤判定・再発車の"
-                           "対象外とした（34639番の恒久対策）")}
+                "sonogo": ("DAICHO側が未着手のまま更新されていないが、同一セッション内で"
+                           "assistantの完了報告とそれに続く明確な否定の不在を確認できたため、"
+                           "赤判定・再発車の対象外とした（34639番の恒久対策／34870番で"
+                           "in_daicho要件を撤廃）")}
 
     if st == "完了":
         return {"which": which, "aka": False, "state": st,
@@ -661,6 +670,40 @@ def main():
         h5 = hantei_1ken(r5, {})
         if not h5 or not h5["aka"]:
             ng.append("セッションログが見つからない時に誤って救済している（34639番の再発防止）")
+        # 34870番の再発防止：DAICHOに同一タイトルが別idで"未着手"のまま登録されている
+        # （in_daicho=True）場合でも、セッション内で完結していれば救済できるか。
+        import tempfile as _tempfile_870
+        import shutil as _shutil_870
+        tmp_dir870 = _tempfile_870.mkdtemp()
+        p870 = os.path.join(tmp_dir870, "dummy870.jsonl")
+        try:
+            with io.open(p870, "w", encoding="utf-8") as f:
+                f.write(json.dumps({"timestamp": "2026-08-08T00:12:00",
+                                     "message": {"role": "user", "content": "以下を調べてください。"}},
+                                    ensure_ascii=False) + "\n")
+                f.write(json.dumps({"timestamp": "2026-08-08T00:19:20",
+                                     "message": {"role": "assistant",
+                                                 "content": "できます。しかも、もう作ってあります。"}},
+                                    ensure_ascii=False) + "\n")
+            _orig_extra870 = globals()["_EXTRA_LOG_CACHE"]
+            try:
+                globals()["_EXTRA_LOG_CACHE"] = [p870]
+                _SESSION_LOG_CACHE.pop("dummy870.jsonl", None)
+                _SESSION_ROWS_CACHE.pop(p870, None)
+                r7 = {"id": "w", "title": "34870号テスト用タイトルです", "count": 1,
+                      "from": "dummy870.jsonl", "firstSaid": "2026-08-08 00:12",
+                      "hantei1w": "2026-08-15", "hantei1m": "2026-09-07", "hanteiSumi": []}
+                # in_daichoがTrueになるよう、同じキーをimaへ"未着手"で登録しておく
+                ima7 = {norm(r7["title"])[:24]: {"state": "未着手", "evidence": None, "actionable": None}}
+                h7 = hantei_1ken(r7, ima7)
+                if not h7 or h7["aka"]:
+                    ng.append("DAICHO登録済み(in_daicho=True)でもセッション内完結を救済できない（34870番の再発防止）")
+            finally:
+                globals()["_EXTRA_LOG_CACHE"] = _orig_extra870
+                _SESSION_LOG_CACHE.pop("dummy870.jsonl", None)
+                _SESSION_ROWS_CACHE.pop(p870, None)
+        finally:
+            _shutil_870.rmtree(tmp_dir870, ignore_errors=True)
         # 34849番の再発防止：r["from"]が"audit.jsonl"のようにbasenameが衝突する
         # （Claude Desktop／local-agent-mode-sessions配下）場合、複数候補のうち
         # 1つだけに完了報告があっても検出できるか
