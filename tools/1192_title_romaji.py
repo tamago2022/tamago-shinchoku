@@ -266,6 +266,14 @@ def similar(a, b):
     return a2 == b2
 
 
+# 手書きの表で上書きしてよい「曲名」（画面の言葉と同じ字のもの＝駅・再生・猫・もう一度などは入れない）
+WHOLE_OVERRIDE = set("""襟裳岬 蛍の光 月光の夜 秋の気配 雨の街を 誰のため 故乡的云 少年時代 遠い恋人 ふるさと 花咲く旅路 真夏の果実
+リオの少女 夏の終わり 茜色の夕日 家族の風景 青い珊瑚礁 影になって 旅人のうた 若者のすべて ルイジアンナ 大きな古時計 時間よ止まれ
+カチューシャ ルージュの伝言 いとしのエリー 赤黄色の金木犀 セカンド・ラブ さよなら夏の日 恋人も濡れる街角 上を向いて歩こう
+クシコス・ポスト シングル・アゲイン テレフォン・ナンバー プラスティック・ラブ 祭りの花を買いに行く ベルベット・イースター
+やさしさに包まれたなら フライディ・チャイナタウン""".split())
+
+
 def has_reading(t, v):
     """関所 scripts/patrol/check-i18n-title-romaji.mjs の hasReading と同じ。"""
     if not isinstance(v, str) or not v.startswith(t + " "):
@@ -354,6 +362,33 @@ def build(push=False):
         q = os.path.join(full, "src", "i18n", "overlay", "tr.%s.json" % lg)
         os.makedirs(os.path.dirname(q), exist_ok=True)
         io.open(q, "w", encoding="utf-8").write(json.dumps(dict(sorted(d.items())), ensure_ascii=False, separators=(",", ":")))
+    # 手書きの表（<言語>.json＝lc()の表／extra.<言語>.json）は辞書(tr)より先に効く。そこに曲名が入っていると
+    # 「いとしのエリー → Itoshi no Ellie」のように元の表記が消える（2026-10-10 弾き語り特集で実測）。
+    # 表には「再生→Play」「猫→Cat」のような画面の言葉も同じ字で入っているので、曲名だと確かめたものだけ上書きする。
+    st["te_uwagaki"] = 0
+    for lg in LANGS:
+        for f in ("%s.json" % lg, "extra.%s.json" % lg):
+            p = os.path.join(tmp, "src", "i18n", "overlay", f)
+            if not os.path.exists(p):
+                continue
+            d = json.load(io.open(p, encoding="utf-8"))
+            ch = [0]
+
+            def walk(o):
+                for k, v in list(o.items()):
+                    if isinstance(v, dict):
+                        walk(v)
+                    elif isinstance(v, str) and k in WHOLE_OVERRIDE and k in tab and not has_reading(k, v):
+                        o[k] = display(k, tab[k])
+                        ch[0] += 1
+            walk(d)
+            if ch[0]:
+                q = os.path.join(full, "src", "i18n", "overlay", f)
+                raw = io.open(p, encoding="utf-8").read()
+                ind = 1 if raw[2:3] == " " and raw[3:4] != " " else (2 if raw[2:4] == "  " else 0)
+                os.makedirs(os.path.dirname(q), exist_ok=True)
+                io.open(q, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=ind) + ("\n" if raw.endswith("\n") else ""))
+                st["te_uwagaki"] += ch[0]
     q = os.path.join(full, "scripts", "i18n", "title_romaji.json")
     os.makedirs(os.path.dirname(q), exist_ok=True)
     io.open(q, "w", encoding="utf-8").write(json.dumps(
@@ -369,7 +404,7 @@ def build(push=False):
     io.open(os.path.join(SH, "status", "1191_nihongo_nokori", "allow_originals.json"), "w", encoding="utf-8").write(
         json.dumps(sorted(allow), ensure_ascii=False, indent=0))
     import hashlib
-    st["tabHash"] = hashlib.sha1(json.dumps(tab, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    st["tabHash"] = hashlib.sha1(json.dumps([tab, sorted(WHOLE_OVERRIDE), st.get("te_uwagaki")], ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:16]
     prev = {}
     try:
         prev = json.load(io.open(os.path.join(D, "build.json"), encoding="utf-8"))
