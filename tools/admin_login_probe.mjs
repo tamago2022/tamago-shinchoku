@@ -25,7 +25,28 @@ const CASES = [
   { name: "full", value: "＠" },
 ];
 
-const browser = await chromium.launch({ headless: true });
+// playwright-core の版と、手元にあるheadlessの版がずれていても動くよう、実在する実行ファイルを探して渡す
+import fs from "node:fs";
+function findHeadless() {
+  const roots = [path.join(os.homedir(), "Library", "Caches", "ms-playwright")];
+  for (const root of roots) {
+    let dirs = [];
+    try { dirs = fs.readdirSync(root).filter((d) => d.startsWith("chromium_headless_shell-")).sort().reverse(); } catch { continue; }
+    for (const d of dirs) {
+      for (const sub of ["chrome-mac/headless_shell", "chrome-mac-arm64/headless_shell", "chrome-headless-shell-mac-arm64/chrome-headless-shell", "chrome-headless-shell-mac-x64/chrome-headless-shell"]) {
+        const p = path.join(root, d, sub);
+        if (fs.existsSync(p)) return p;
+      }
+    }
+  }
+  return undefined;
+}
+let browser;
+try {
+  browser = await chromium.launch({ headless: true });
+} catch {
+  browser = await chromium.launch({ headless: true, executablePath: findHeadless() });
+}
 const results = [];
 for (const c of CASES) {
   const r = { name: c.name, login: false, via: null, remembered: false, error: null };

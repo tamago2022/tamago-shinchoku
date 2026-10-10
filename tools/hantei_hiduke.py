@@ -140,7 +140,13 @@ _COMPLETION_KEYWORDS = ("完了しました", "できました", "直しまし�
                         # いる。」まで完結していたのに、キーワード不一致で
                         # 未着手→★赤判定され続けていた（34639/1996番と同じ根本原因の
                         # 3回目の再発）。「完成した」「終わっている」の言い回しを追加。
-                        "完成した", "終わっている", "できている")
+                        "完成した", "終わっている", "できている",
+                        # 34849番実例（2026-10-10）：「2つとも統合しました。不可逆な
+                        # 操作はしていません。」（組織設計指示書の核心2点をたまご憲法
+                        # フォルダへ統合した完了報告）がキーワード不一致で拾えず、
+                        # ~/.claude/projects限定の検出漏れ（_find_session_logs参照）と
+                        # 合わさって4回目の再発になっていた。「統合しました」を追加。
+                        "統合しました")
 _DENIAL_KEYWORDS = ("まだ", "できてない", "直ってない", "ダメ", "だめ", "違う", "できない", "直ってなく")
 _SESSION_LOG_CACHE = {}
 _PROJECTS_DIRS_CACHE = None
@@ -160,24 +166,70 @@ def _projects_dirs():
     return _PROJECTS_DIRS_CACHE
 
 
-def _find_session_log(from_name):
-    """r["from"]（例: "e23675ff-....jsonl"）の実体を ~/.claude/projects/*/ から探す。
+# 34849番で実測した事故：r["from"]が"audit.jsonl"（Claude Desktop／
+# local-agent-mode-sessionsの会話ログ共通のbasename）の案件が、
+# ~/.claude/projects 配下しか見ない_find_session_log()では永久に見つからず、
+# セッション内完結の検出（34639番の恒久対策）がそもそも発動していなかった。
+# 実例：「全文を一字一句記憶する必要はないので、重要な部分だけ抜き出して
+# 『憲法/会社のマニュアル』として適切な場所に記録してください」は、
+# 2026-08-07〜08のうちに実際にObsidian Vaultの「たまご憲法」フォルダへ
+# 08_DECISION_RIGHTS.md〜12_EVAL_AND_LEARNING.md・FOUNDER_INTENT.mdとして
+# 完了していたが、判定日の係からは見えず「1ヶ月経っても未着手」と
+# 誤って★赤判定され続けていた。
+# ★tools/kioku.pyのLOG_GLOBSのうち、Claude Desktop側のパスだけをここでも使う
+#   （新しい探索ルールを作らず、既存の正本と同じパスを流用する）。
+_EXTRA_LOG_GLOBS = [
+    os.path.join(os.path.expanduser("~"), "Library", "Application Support", "Claude",
+                 "local-agent-mode-sessions", "*", "*", "*", "*.jsonl"),
+]
+_EXTRA_LOG_CACHE = None
+
+
+def _extra_log_files():
+    """local-agent-mode-sessions配下の全jsonlを1回だけ列挙してキャッシュする。"""
+    global _EXTRA_LOG_CACHE
+    if _EXTRA_LOG_CACHE is not None:
+        return _EXTRA_LOG_CACHE
+    import glob as _glob
+    out = []
+    for g in _EXTRA_LOG_GLOBS:
+        try:
+            out.extend(_glob.glob(g))
+        except Exception:
+            continue
+    _EXTRA_LOG_CACHE = out
+    return out
+
+
+def _find_session_logs(from_name):
+    """r["from"]（例: "e23675ff-....jsonl" または "audit.jsonl"）の実体を探す。
+    ~/.claude/projects/*/ は1プロジェクト内でbasenameが一意なので1件でよいが、
+    "audit.jsonl"のようにlocal-agent-mode-sessions配下では同名ファイルが
+    何十件も存在するため、★見つかった候補を全部リストで返す
+    （呼び出し側で全候補を試し、1つでも完結を示せばよい＝1462号の原則
+    「誤って赤を隠す方が、赤が多すぎることより悪い」を壊さないための設計）。
     毎回ディスクを掘らないよう、ディレクトリ一覧自体と名前→パスの結果を両方キャッシュする。"""
     if not from_name:
-        return None
+        return []
     if from_name in _SESSION_LOG_CACHE:
         return _SESSION_LOG_CACHE[from_name]
-    path = None
+    paths = []
     try:
         for d in _projects_dirs():
             cand = os.path.join(d, from_name)
             if os.path.exists(cand):
-                path = cand
-                break
+                paths.append(cand)
+                break   # ~/.claude/projects側は従来通り1件で足りる
     except Exception:
-        path = None
-    _SESSION_LOG_CACHE[from_name] = path
-    return path
+        pass
+    try:
+        for p in _extra_log_files():
+            if os.path.basename(p) == from_name:
+                paths.append(p)
+    except Exception:
+        pass
+    _SESSION_LOG_CACHE[from_name] = paths
+    return paths
 
 
 _SESSION_ROWS_CACHE = {}
@@ -244,21 +296,7 @@ def _jst_to_utc_iso(s):
     return dt.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
 
 
-def _session_log_shows_completion(r, log_rows=None):
-    """同一セッションログ内で、この発言（firstSaid）より後にassistantの完了報告が
-    あり、その後のuser発言に明確な否定が続いていなければ True。
-    log_rows を渡せばテスト用にファイルを経由せず判定できる。
-    firstSaid以降に絞るのは、ファイル内のどこか別件の完了報告を拾って
-    無関係な発言まで「完結済み」と誤判定しないため。"""
-    rows = log_rows
-    if rows is None:
-        if not _session_check_budget_ok():
-            return False
-        path = _find_session_log(r.get("from"))
-        if not path:
-            return False
-        rows = _load_session_rows(path)
-    since = _jst_to_utc_iso(r.get("firstSaid")) if log_rows is None else None
+def _rows_show_completion(rows, since):
     completed = False
     denied_after = False
     for row in rows:
@@ -276,6 +314,31 @@ def _session_log_shows_completion(r, log_rows=None):
         if completed and role == "user" and any(k in text for k in _DENIAL_KEYWORDS):
             denied_after = True
     return completed and not denied_after
+
+
+def _session_log_shows_completion(r, log_rows=None):
+    """同一セッションログ内で、この発言（firstSaid）より後にassistantの完了報告が
+    あり、その後のuser発言に明確な否定が続いていなければ True。
+    log_rows を渡せばテスト用にファイルを経由せず判定できる。
+    firstSaid以降に絞るのは、ファイル内のどこか別件の完了報告を拾って
+    無関係な発言まで「完結済み」と誤判定しないため。
+    ★34849番の恒久対策：r["from"]が"audit.jsonl"等、同名ファイルが複数存在する
+    経路（Claude Desktop／local-agent-mode-sessions）のときは、候補を全部試す
+    （1つでも完結を示せばTrue。見つからない候補はFalse側に数えるだけで、
+    他の候補まで判定を汚さない）。"""
+    if log_rows is not None:
+        return _rows_show_completion(log_rows, None)
+    if not _session_check_budget_ok():
+        return False
+    paths = _find_session_logs(r.get("from"))
+    if not paths:
+        return False
+    since = _jst_to_utc_iso(r.get("firstSaid"))
+    for path in paths:
+        rows = _load_session_rows(path)
+        if _rows_show_completion(rows, since):
+            return True
+    return False
 
 
 def jsonl(p):
@@ -587,6 +650,45 @@ def main():
         h5 = hantei_1ken(r5, {})
         if not h5 or not h5["aka"]:
             ng.append("セッションログが見つからない時に誤って救済している（34639番の再発防止）")
+        # 34849番の再発防止：r["from"]が"audit.jsonl"のようにbasenameが衝突する
+        # （Claude Desktop／local-agent-mode-sessions配下）場合、複数候補のうち
+        # 1つだけに完了報告があっても検出できるか
+        import tempfile as _tempfile_849
+        import shutil as _shutil_849
+        tmp_dir1 = _tempfile_849.mkdtemp()
+        tmp_dir2 = _tempfile_849.mkdtemp()
+        p1 = os.path.join(tmp_dir1, "audit.jsonl")
+        p2 = os.path.join(tmp_dir2, "audit.jsonl")
+        try:
+            with io.open(p1, "w", encoding="utf-8") as f:
+                f.write(json.dumps({"timestamp": "2026-08-07T22:00:00",
+                                     "message": {"role": "user", "content": "無関係な別件の発言です。"}},
+                                    ensure_ascii=False) + "\n")
+            with io.open(p2, "w", encoding="utf-8") as f:
+                f.write(json.dumps({"timestamp": "2026-08-07T22:04:04",
+                                     "message": {"role": "user",
+                                                 "content": "全文を一字一句記憶する必要はないので記録してください。"}},
+                                    ensure_ascii=False) + "\n")
+                f.write(json.dumps({"timestamp": "2026-08-07T22:05:00",
+                                     "message": {"role": "assistant", "content": "2つとも統合しました。"}},
+                                    ensure_ascii=False) + "\n")
+            _orig_extra = globals()["_EXTRA_LOG_CACHE"]
+            _SESSION_LOG_CACHE.pop("audit.jsonl", None)
+            _SESSION_ROWS_CACHE.pop(p1, None)
+            _SESSION_ROWS_CACHE.pop(p2, None)
+            try:
+                globals()["_EXTRA_LOG_CACHE"] = [p1, p2]
+                r6 = {"from": "audit.jsonl", "firstSaid": "2026-08-07 22:04"}
+                if not _session_log_shows_completion(r6):
+                    ng.append("basename衝突の複数候補から完了報告を検出できない（34849番の再発防止）")
+            finally:
+                globals()["_EXTRA_LOG_CACHE"] = _orig_extra
+                _SESSION_LOG_CACHE.pop("audit.jsonl", None)
+                _SESSION_ROWS_CACHE.pop(p1, None)
+                _SESSION_ROWS_CACHE.pop(p2, None)
+        finally:
+            _shutil_849.rmtree(tmp_dir1, ignore_errors=True)
+            _shutil_849.rmtree(tmp_dir2, ignore_errors=True)
         # 34536番の再発防止：再発車タイトル（プレフィックス付き）で検品合格した記録が
         # プレフィックス無しの元の発言キーに「完了」として反映されるか（実ファイルは汚さない）
         import tempfile
