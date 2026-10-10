@@ -88,7 +88,7 @@ def muon_context(ctx):
 
 # ------------------------------------------------------------------ 静的点検
 EXTS = (".py", ".mjs", ".js", ".cjs", ".ts", ".sh", ".command")
-SKIP_DIRS = {"node_modules", ".git", "browsers", "jrs", "src_main", "dist", ".venv", "venv",
+SKIP_DIRS = {"node_modules", ".git", "browsers", "backup", "pwold", "cache", "Cache", "logs", "jrs", "src_main", "dist", ".venv", "venv",
              "__pycache__", "ms-playwright", ".tmp_q34468_wt"}
 # 点検しない（止める側・説明だけの側）
 SELF = {"muon.py", "muon.mjs", "muon_kanmon.mjs", "machine_health.py", "orphan_reaper.py",
@@ -155,7 +155,9 @@ def walk(roots):
             yield root
             continue
         base = root.rstrip(os.sep).count(os.sep)
-        deep = 1 if root.rstrip(os.sep).endswith(os.sep + "status") else 6   # status は一発物の箱が数千ある＝浅く見る
+        r0 = root.rstrip(os.sep)
+        # status は一発物の箱が数千ある／~/.tamago は控え・ブラウザ本体が大きい＝浅く見る
+        deep = 1 if r0.endswith(os.sep + "status") else (2 if r0.endswith(os.sep + ".tamago") else 6)
         for dp, dns, fns in os.walk(root):
             if dp.count(os.sep) - base >= deep:
                 dns[:] = []
