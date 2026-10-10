@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34489 単純作業はHaikuで起動、トークン消費を抑える 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34489 単純作業はHaikuで起動、トークン消費を抑える</div>
+<h1>#34489 単純作業はHaikuで起動、トークン消費を抑える</h1>
+<div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+店主「どのモデルを使ってるかも分からない、トークン消費の節約もして欲しい、Xでよく見る節約術を自分たちでリサーチして自分たちに適用して、消費を抑えつつガンガン回せるようにして欲しい」への対応。<code>tools/auto_launcher.py</code>の新規発車ロジックに、パトロール・一覧作成・棚卸し・仕分け・集計・重複チェック・フォーマット変換等の機械的な単純作業だけをSonnetより安いHaiku(claude-haiku-4-5)で起動する判定(pick_model関数)を追加した。実装・設計・判断・交渉等の語が混ざっていれば安全側のSonnetを維持する。resume起動(中断からの再開)はキャッシュ保持のため対象外。モデルの可視化(モデルバッジ・モデル別本数)は2026-09-05にindex_full.htmlへ既に対応済み、節約ルール自体はCLAUDE.mdに2026-08-03確立済み。今回はそのルールを実際の発車ロジックへコード化した、新しい前進。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>31件/3536件</b><span>今の発車待ちキューでHaiku対象と判定される件数(実測・変動あり)</span></div>
+  <div class="num"><b>claude-haiku-4-5</b><span>実機起動で確認済みの実モデルID(claude-haiku-4-5-20251001)</span></div>
+  <div class="num"><b>$0.036</b><span>Haikuでの実起動テスト(claude -p --model haiku)の実測コスト</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>mainへのマージPR</b><a href="https://github.com/tamago2022/tamago-shinchoku/pull/4" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/pull/4</a></li>
+  <li><b>auto_launcher.pyの変更差分</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/3a55c3ae1" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/3a55c3ae1</a></li>
+  <li><b>モデルの可視化(既存424番・対)</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>pick_model関数の単体テスト(5パターン)</td><td class="yes">一覧作成/パトロール等→Haiku、実装/判断等→Sonnet、全て期待通り</td></tr>
+<tr><td>mainへのマージ</td><td class="yes">PR #4 (claude/34489-haiku-model-routing)、2026-10-06にmerge済み</td></tr>
+<tr><td>次回以降の自動発車への適用</td><td class="yes">コードは反映済み。実際にHaikuでの新規発車第一号はこれから観測される(まだ観測していない)</td></tr>
+</table>
+
+<footer>
+このページは #34489 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

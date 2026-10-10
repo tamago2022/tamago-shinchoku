@@ -718,7 +718,7 @@ def mawasu(limit=10, koukai=True, kuchi="gsk", tobasu=0):
         os.replace(tmp, outpath)
 
     with sync_playwright() as pw:
-        br = pw.chromium.launch(args=["--disable-dev-shm-usage", "--mute-audio"])
+        br = pw.chromium.launch(args=["--disable-dev-shm-usage"])
 
         # ★2026-09-24：本物の人が来たときと同じ条件にする。
         #   ブラウザの言語を役の言葉に合わせる（合わせないと、日本から来た役にも

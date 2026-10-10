@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// muon: 接続のみ（既存のChromeに繋ぐだけ。ブラウザを起動しない・動画を鳴らさない）
 // 791番・3回目（経路変更）：新規Chrome起動(launch)がハングしたため、
 // 既存の稼働中headless Chrome（dispatch/chrome-publishプロファイル・CDP 9223）へ
 // 新しいタブとして接続する方式に切り替える（769番の既存実績と同じ経路）。

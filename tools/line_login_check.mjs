@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// muon: 接続のみ（既存のChromeに繋ぐだけ。ブラウザを起動しない・動画を鳴らさない）
 /**
  * 769番→790番で修正：LINE Creators Market専用プロファイル(~/.tamago/chrome-line・CDP 9224)の
  * ログイン状態だけを確認する。フォーム入力や審査リクエストなど、ページの内容を

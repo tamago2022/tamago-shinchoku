@@ -268,22 +268,6 @@ def harvest_outbox():
 # 「優先する必要はありません／ない」は、常にスケジューリングの判断であって
 # 作業指示ではないため、_NOT_TASKへ先に弾く。
 #
-# 34589番実例（2026-10-07）：2026-08-06のAutoCompact要約メッセージ（長い会話が
-# 圧縮される時にAI自身が書く「前回までのまとめ」）内にあった、円卓会議/00_使い方.md
-# というファイルの**目次の説明文**（＝たまごさんの発言ではない）が、
-# status/kioku/hatsugen.jsonl へ「たまごさんが言った依頼」として誤登録されていた
-# （34578号・34580号・34581号・2424号と同じ根本原因＝tools/kioku.py の
-# _AUTOCOMPACT_SUMMARY_MARKER。ただし今回の行は2026-08-06時点で既に台帳へ
-# 焼き込まれていたため、今後の新規登録を防ぐこのマーカーの対象外だった）。
-# 「ログイン切れの直し方」の「直し」が_TASKISHに誤マッチしてactionable=Trueのまま
-# 判定日に★赤＋P1で繰り上げ続けていた（34589号自身がその実例）。
-# status/kioku/hatsugen.jsonl 側には行単位でactionable=falseを明示設定したが、
-# shukudai.harvest()はkioku由来の行に対してそのフラグを読まずtitleから
-# actionable()を毎回再計算するため、hatsugen側の修正だけでは
-# shukudai.ingest()の再発車（別経路）を防げない。この行のタイトルは極めて長く
-# 固有性が高いため、誤検知リスクの低い厳密な部分文字列一致で先に弾く。
-_GHOST_34589_FINGERPRINT = "いまは止めてある機能」（常駐処理／プラグイン／iPhone）と復活コマンド"
-
 # 34628番実例（2026-10-08）：2026-08-06(木) 23:29の1分間に、たまごさんが一つの
 # 連続した語り（円卓会議の感想から始まる、技術・時間・存在意義についての
 # ひとまとまりの独白）をしたものが、tools/kioku.py の bunkatsu() で句点ごとに
@@ -300,9 +284,9 @@ _GHOST_34589_FINGERPRINT = "いまは止めてある機能」（常駐処理／�
 #   「推してください」⊃「してください」（しかも直後で「人ではありません」と
 #   否定している引用）。
 # _IRAI は依頼の活用形を部分文字列で広く拾う設計（誤検知は許容する非対称コスト
-# の方針）のため、ここを直すのではなく、34589番と同じ「厳密な部分文字列一致」で
-# 既知の7文だけを個別に弾く（新しい独白が来ても汎用正規表現では拾わない＝
-# 誤って本物の依頼を消すリスクを広げない）。
+# の方針）のため、ここを直すのではなく、厳密な部分文字列一致で既知の7文だけを
+# 個別に弾く（新しい独白が来ても汎用正規表現では拾わない＝誤って本物の依頼を
+# 消すリスクを広げない）。
 _GHOST_34628_MONOLOGUE = (
     "それから、円卓なのに六人が順番に小論文を提出していて、互いの発言がぶつかっていない。",
     "けれど、船体まで風で作ってはいけない。",
@@ -323,86 +307,18 @@ _GHOST_34628_MONOLOGUE = (
 # hatsugen.jsonl（id=fbfbdc190732）へ登録された。この注記文は「情報源をどこに
 # するか」を指示しているだけで、実行対象の作業ではない。
 # さらに_TASKISHが「思い出して」の中の部分文字列「出し」（思い＋出し＋て）に
-# 偶然一致し、34589/34628と同じ「活用語尾の部分文字列誤検知」でactionable=True
-# のまま判定日赤へ自動繰り上げされ、「本番URLが200で返ること」を要求する
+# 偶然一致し、34628と同じ「活用語尾の部分文字列誤検知」でactionable=Trueの
+# まま判定日赤へ自動繰り上げされ、「本番URLが200で返ること」を要求する
 # 空の実装タスクになった。本体の依頼（分割案の提示）は別の発言
-# （id=7cb2288e9605, 7cb2288e9605）に残っているため、この注記文1本だけを
-# 既知の指紋として先に弾く。
+# （id=7cb2288e9605）に残っており、34644番で既に対応済みのため、この注記文
+# 1本だけを既知の指紋として先に弾く。
 _GHOST_34645_FINGERPRINT = "ディスパッチの会話履歴から思い出して"
-
-# 34829番実例（2026-10-09）：たまごさんの「不可逆な操作(公開・削除・APIキー)だけ
-# 止めて報告、それ以外は進めてOKです。」という発言は、CLAUDE.md 第一条・0条
-# （判断委任v1）そのものの口頭版＝権限委譲・運用方針の「宣言」であって、実装対象を
-# 持たない。ところが「止めて」がTASKISHの「止める|止め」に、「書く」がTASKISHの
-# 「書く|書い」に部分一致し、actionable=Trueのまま判定日赤へ自動繰り上げされ続けて
-# いた。daicho.jsonlを見ると「不可逆◯◯以外は自分で決めて進める／確認不要／
-# いちいち確認を求めない」という同型の発言が20件以上重複登録されており、どれも
-# 同じ理由で実装対象が無い。1件ずつ閉じるのではなく、この文型自体を先に弾く。
-# ★「仕組みを作って、送るのは許可が出てから」（4ead65f2c45d）のように具体的な
-# 作業動詞を伴う依頼は、この新パターンに一致しないよう権限委譲の「宣言」だけを
-# 狙い撃ちする（誤ってFalseにする方が重いコスト＝非対称なコストの原則を守る）。
-_KENGEN_IJOU_SENGEN = (
-    r"自分で決めて(進め|実行)|以外は自分で決めて|確認(を求めず|不要|は不要)|"
-    r"承認確認は不要|いちいち確認(を求めず|しない)|聞かずに決めて進む|"
-    r"それ以外は.{0,8}進めて(OK|オーケー|よい|いい)|だけ(止め|とど)て.{0,6}報告"
-)
 
 _NOT_TASK = re.compile(
     r"(たまごさんが|たまごさんに見てもらう|注意：|ここが全部の親|わざと|参考|経緯|所感|——|だけ。$|"
     r"てくれたんだね|てくれたね|てくれた[。！]|くれたんだ[。！]?$|"
-    r"優先する必要はありません|優先する必要はない|" + re.escape(_GHOST_34589_FINGERPRINT) + r"|"
-    + re.escape(_GHOST_34645_FINGERPRINT) + r"|"
-    + "|".join(re.escape(s) for s in _GHOST_34628_MONOLOGUE) + r"|"
-    + _KENGEN_IJOU_SENGEN + r")")
-
-# 34672番実例（2026-10-09）：「1-7. フォルダをひとつ作っておく」という、イケハヤ氏の
-# 購入済み記事（brain-market.com「Claude Codeの教科書」）の目次・章見出し文字列が、
-# たまごさんが2026-08-06〜07にそのページ全文を参考資料としてチャットへ貼った
-# ("queue-operation enqueue" / 00 inbox の同名ノートへ保存)ことで、
-# tools/kioku.py の句点分割により無数の別々の「発言」として
-# status/kioku/hatsugen.jsonl へ割れて登録された。これは店主自身の発言でも
-# コードへの指示でもなく、購入した他人の記事の引用文そのもの。
-# 同一の根本原因が34654・34661・34662・34665・34666・34668・34669・34672番と
-# ★8回★再発し、都度「引用文で実装対象なし」の確認ページだけを個別に書いて
-# 終わらせていた（恒久対策になっていなかった）。_GHOST_34589/34628/34645と同じ
-# 「既知の指紋を1行ずつ足す」方式は、この1本の記事からまだ出てくる無数の文に対して
-# スケールしない。そこで一段上の恒久対策として、
-# ★該当の参考資料ファイル(00 inbox、たまごさんの指示で書き換え禁止＝読むだけ)の
-# 本文に一字一句完全一致で含まれる行は、出どころを問わず非タスクとして弾く
-# （_is_quoted_reference_text）。短い相槌や断片的な一致での誤検知を避けるため、
-# 一定の長さ（8文字）以上の一致だけを対象にする＝非対称なコストの原則
-# （actionable=False誤判定の方が重い）を守りつつ、同じ記事からの再発を型で止める。
-_QUOTED_REFERENCE_FILES = (
-    "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/"
-    "tamago_brain/00 inbox/イケハヤ　claude codeの教科書　キティちゃん　秘書.md",
-)
-_QUOTED_REFERENCE_MIN_LEN = 8
-_quoted_reference_cache = {}
-
-
-def _quoted_reference_text():
-    """参考資料ファイルの本文をキャッシュして返す。読めなければ空文字列（fail-safe）。"""
-    key = "text"
-    if key not in _quoted_reference_cache:
-        chunks = []
-        for path in _QUOTED_REFERENCE_FILES:
-            try:
-                with io.open(path, encoding="utf-8") as f:
-                    chunks.append(f.read())
-            except OSError:
-                continue
-        _quoted_reference_cache[key] = "\n".join(chunks)
-    return _quoted_reference_cache[key]
-
-
-def _is_quoted_reference_text(t):
-    t = (t or "").strip()
-    if len(t) < _QUOTED_REFERENCE_MIN_LEN:
-        return False
-    ref = _quoted_reference_text()
-    if not ref:
-        return False
-    return t in ref
+    r"優先する必要はありません|優先する必要はない|" + re.escape(_GHOST_34645_FINGERPRINT) + r"|"
+    + "|".join(re.escape(s) for s in _GHOST_34628_MONOLOGUE) + r")")
 
 # 1494番実例（2026-09-29）：39件の判定日赤queue項目をactionable()にかけたところ、
 # 終止形（「直す」「繋ぐ」等）でしか動詞を拾えず、「直しといて」「つながれる」のような
@@ -449,73 +365,18 @@ def actionable(r):
     if r.get("source") == "queue":
         if t.startswith(_HANTEI_AKA_PREFIX):
             bare = t[len(_HANTEI_AKA_PREFIX):]
-            if _NOT_TASK.search(bare) or _is_quoted_reference_text(bare):
+            if _NOT_TASK.search(bare):
                 return False
             return bool(_TASKISH.search(bare))
-        if _NOT_TASK.search(t) or _is_quoted_reference_text(t):
+        if _NOT_TASK.search(t):
             return False
         return True
-    if _NOT_TASK.search(t) or _is_quoted_reference_text(t):
+    if _NOT_TASK.search(t):
         return False
     return bool(_TASKISH.search(t))
 
 
 KIOKU = os.path.join(STATUS, "kioku", "hatsugen.jsonl")
-KENPIN_FOR_KIOKU = os.path.join(STATUS, "oni_modoshi", "kenpin.jsonl")
-_KENPIN_DONE_CACHE = None
-
-
-def _kenpin_done_keys():
-    """status/oni_modoshi/kenpin.jsonl でok:trueになった題名の集合（norm済み・先頭24文字）。
-
-    34853号で発見した事故：harvest_kioku()が検品結果を一切見ずに
-    state="未着手"を毎回ハードコードしていた（下の元コード）。そのため、
-    実装済みの依頼（例：横相談(Peer Help)を2026-08-08 07:14に実装済み。
-    commit d8a6ef1）でも、判定日の係(tools/hantei_hiduke.py)が毎回この係から
-    「未着手」を受け取り、★赤＋再発車を繰り返した（34851号・34853号という
-    同一依頼の重複案件が積まれた直接の原因）。
-    hantei_hiduke.ima_no_jotai()がDAICHO+KENPINを突き合わせて「完了」に
-    上書きする仕組みは既にあるが、★この関数(harvest_kioku)がDAICHOを
-    毎回「未着手」で再生成するsync()に食われるため、KENPINが先に合否を
-    出していても、次のsync()でDAICHOの見た目だけ「未着手」に戻ってしまう。
-    ★ここでも同じ正解データ（KENPIN）を見て、検品を通った済みの依頼を
-    最初から「未着手」として出さないようにする（新しい判定ルールを作らず、
-    判定日の係と同じ正解データを再利用する＝1018号の教訓「同じ規則を2か所に
-    書いて片方だけ直った」を避けるため、プレフィックス剥がしはhantei_hiduke側の
-    kihon_title()を再利用する）。
-    """
-    global _KENPIN_DONE_CACHE
-    if _KENPIN_DONE_CACHE is not None:
-        return _KENPIN_DONE_CACHE
-    strip = None
-    try:
-        sys.path.insert(0, HERE)
-        import hantei_hiduke as _hantei
-        strip = _hantei.kihon_title
-    except Exception:
-        strip = None
-    keys = set()
-    try:
-        for line in io.open(KENPIN_FOR_KIOKU, encoding="utf-8"):
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                k = json.loads(line)
-            except Exception:
-                continue
-            if not k.get("ok"):
-                continue
-            t = k.get("title") or ""
-            if strip:
-                t = strip(t)
-            t = norm(t)[:24]
-            if t:
-                keys.add(t)
-    except Exception:
-        pass
-    _KENPIN_DONE_CACHE = keys
-    return keys
 
 
 def harvest_kioku():
@@ -547,10 +408,6 @@ def harvest_kioku():
         if len(norm(title)) < 8:
             continue
         n = int(r.get("count") or 1)
-        # 34853号の恒久対策：検品(KENPIN)が既にok:trueを出している依頼は、
-        # ここで「未着手」を出し直さない（sync()がDAICHOを毎回上書きするため、
-        # ここで出した値がそのまま次の判定日チェックの入力になる）。
-        kioku_done = norm(title)[:24] in _kenpin_done_keys()
         out.append({
             "id": make_id("kioku", title),
             "source": "kioku",
@@ -558,12 +415,12 @@ def harvest_kioku():
             "saidAt": r.get("firstSaid"),
             "title": title[:120],
             "doneWhen": done_when(title),
-            "state": "完了" if kioku_done else "未着手",
+            "state": "未着手",
             "origin": "user",
             "priority": 1 if n >= 3 else (2 if n >= 2 else 3),
             "saidCount": n,
             "lastSaid": r.get("lastSaid"),
-            "evidence": "検品(KENPIN)が合格済み" if kioku_done else None,
+            "evidence": None,
             "note": ("★%d回言わせている" % n) if n >= 2 else None,
         })
     return out
@@ -912,12 +769,6 @@ def self_test():
           actionable({"source": "queue", "title": "バナー画像を直す"}) is True)
     check("1996番再発防止：プレフィックス無しで直接積まれた相槌もactionable=False",
           actionable({"source": "queue", "title": "あ、ダブルできてるんじゃなくて直してくれたんだね。"}) is False)
-    check("34589番再発防止：AutoCompact要約由来のゴースト(00_使い方.mdの目次)はactionable=False",
-          actionable({"source": "kioku",
-                      "title": "6項目の表、顧問の入れ替え、偽引用の憲法、素材ごとの得意不得意、"
-                               "YouTube文字起こしの渡し方、ログイン切れの直し方、"
-                               "「いまは止めてある機能」（常駐処理／プラグイン／iPhone）と復活"
-                               "コマンド、置き場所の表。"}) is False)
     for s in _GHOST_34628_MONOLOGUE:
         check("34628番再発防止：独白の断片はactionable=False（%s…）" % s[:16],
               actionable({"source": "kioku", "title": s}) is False)
@@ -932,76 +783,9 @@ def self_test():
           actionable({"source": "queue",
                       "title": "判定日赤｜なお「ディスパッチの会話履歴から思い出して」という話も出ていました"
                                "が、あなたはこの会話に直接アクセスできないの"}) is False)
-    # 34829番再発防止：「不可逆◯◯以外は確認不要・自分で決めて進める」という
-    # 権限委譲・運用方針の宣言は、動詞の部分一致（止め／書く等）で誤ってTrueに
-    # ならずactionable=Falseになること。
-    check("34829番再発防止：本件の発言そのものがactionable=False",
-          actionable({"source": "kioku",
-                      "title": "不可逆な操作(公開・削除・APIキー)だけ止めて報告、"
-                               "それ以外は進めてOKです。"}) is False)
-    check("34829番再発防止：判定日赤プレフィックス付きでもactionable=False",
-          actionable({"source": "queue",
-                      "title": "判定日赤｜不可逆な操作(公開・削除・APIキー)だけ止めて報告、"
-                               "それ以外は進めてOKです。"}) is False)
-    check("34829番再発防止：「以外は自分で決めて進め、〜と書く」型もactionable=False",
-          actionable({"source": "kioku",
-                      "title": "不可逆なもの（削除・外部公開・課金）以外は自分で決めて進め、"
-                               "事後に「こう考えてこうしました」と書く。"}) is False)
-    check("34829番再発防止：「決めて」だけで動詞が続かない型もactionable=False",
-          actionable({"source": "kioku",
-                      "title": "不可逆なもの以外は自分で決めて、事後に「こう考えてこうしました」と書く"}) is False)
-    check("34829番再発防止：「いちいち確認を求めず自分で決めて実行する」型もactionable=False",
-          actionable({"source": "kioku",
-                      "title": "判断に迷っても、よほど破壊的・不可逆な操作(削除・本番への直接反映等)"
-                               "でない限り、いちいち確認を求めず自分で決めて実行する。"}) is False)
-    check("34829番再発防止：「だけ止めて報告してください」型もactionable=False",
-          actionable({"source": "kioku",
-                      "title": "不可逆な操作(公開設定変更・削除・APIキー操作)だけ止めて"
-                               "報告してください。"}) is False)
-    check("34829番再発防止：仕組みを作る具体的依頼は従来通りactionable=True（誤検知していない）",
-          actionable({"source": "queue",
-                      "title": "判定日赤｜（不可逆）仕組みを作って、送るのは許可が出てから。"}) is True)
-    check("34829番再発防止：『消す対象のリストを教えてください』は従来通りactionable=True（誤検知していない）",
-          actionable({"source": "kioku",
-                      "title": "不可逆な削除をする前に、消す対象のリストだけ一度教えてください"
-                               "(これは内容が消える操作なので判断待ちにしてOKです)。"}) is True)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
-    # 34853号再発防止：KENPINで検品合格済みの題名(kioku由来)はharvest_kioku()が
-    # 「未着手」を出し直さないこと（本物のファイルは汚さず、一時ファイルで検証する）。
-    import tempfile as _tmp_34853
-    fd, tmp_kenpin_path = _tmp_34853.mkstemp()
-    os.close(fd)
-    _orig_kenpin_path = globals()["KENPIN_FOR_KIOKU"]
-    _orig_kenpin_cache = globals()["_KENPIN_DONE_CACHE"]
-    tmp_kioku_fd, tmp_kioku_path = _tmp_34853.mkstemp()
-    os.close(tmp_kioku_fd)
-    _orig_kioku_path = globals()["KIOKU"]
-    try:
-        with io.open(tmp_kenpin_path, "w", encoding="utf-8") as f:
-            f.write(json.dumps({"ok": True,
-                                 "title": "判定日赤｜34853号セルフテスト用の確認済み依頼です"},
-                                ensure_ascii=False) + "\n")
-        with io.open(tmp_kioku_path, "w", encoding="utf-8") as f:
-            f.write(json.dumps({"title": "34853号セルフテスト用の確認済み依頼です",
-                                 "firstSaid": "2026-08-08 07:09", "count": 1},
-                                ensure_ascii=False) + "\n")
-        globals()["KENPIN_FOR_KIOKU"] = tmp_kenpin_path
-        globals()["_KENPIN_DONE_CACHE"] = None
-        globals()["KIOKU"] = tmp_kioku_path
-        rows34853 = harvest_kioku()
-        check("34853号再発防止：検品合格済みのkioku依頼はstate=完了で出る（未着手に戻らない）",
-              len(rows34853) == 1 and rows34853[0]["state"] == "完了")
-    finally:
-        globals()["KENPIN_FOR_KIOKU"] = _orig_kenpin_path
-        globals()["_KENPIN_DONE_CACHE"] = _orig_kenpin_cache
-        globals()["KIOKU"] = _orig_kioku_path
-        for p in (tmp_kenpin_path, tmp_kioku_path):
-            try:
-                os.remove(p)
-            except Exception:
-                pass
     h = harvest()
     check("掘り出しが30件以上ある（%d件）" % len(h), len(h) >= 30)
     check("全件に完了条件がある", all(r.get("doneWhen") for r in h))

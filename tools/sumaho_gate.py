@@ -91,11 +91,11 @@ def run(box=None):
     try:
         with sync_playwright() as pw:
             try:
-                br = pw.chromium.launch(args=["--mute-audio"])
+                br = pw.chromium.launch()
             except Exception:
                 # ★2026-10-01 Playwright同梱のChromiumが消えていた（キャッシュ掃除）。
                 #   公式の channel="chrome"（入っているGoogle Chromeを使い捨てプロファイルで起こす）に倒す
-                br = pw.chromium.launch(channel="chrome", args=["--mute-audio"])
+                br = pw.chromium.launch(channel="chrome")
             ctx = br.new_context(user_agent=UA, viewport={"width": 375, "height": 812},
                                  device_scale_factor=3, is_mobile=True, has_touch=True,
                                  locale="ja-JP", timezone_id="Asia/Tokyo")

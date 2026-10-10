@@ -295,12 +295,6 @@ while :; do
   #   15秒ごとに呼んでも実際に本体が走るのは30分に1回だけ（daily_ingest_scheduler.pyと同じ間引き）。
   # 起動の間引き（2026-09-18）：中で1500秒(25分)に間引いている
   tick_every 8 && ( python3 "$REPO/tools/genzaichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
-  # 1191番（2026-10-10）入荷した日本語の文を、4言語へ自動で訳して辞書に入れる（Claude Haiku・1時間に1回）。
-  #   訳が無いものだけ。かなが残った訳は捨てる。結果 status/1191_nihongo_nokori/jidou.json
-  tick_every 15 && ( python3 "$REPO/tools/1191_honyaku_jidou.py" >> "$REPO/status/1191_nihongo_nokori/jidou.log" 2>&1 & ) >/dev/null 2>&1
-  # 1192番（2026-10-10）日本語の曲名に海外向け表記（①Apple Music米国ストアの公式→②MusicBrainz→③Haikuのローマ字）を付けて辞書へ。
-  #   新しい曲を拾う→ローマ字→公式集め（止まっていれば再開）→変わっていれば1コミット。結果 status/1192_romaji/build.json
-  tick_every 15 && ( python3 "$REPO/tools/1192_title_romaji.py" hourly >> "$REPO/status/1192_romaji/hourly.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
   #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。
@@ -406,12 +400,6 @@ while :; do
   #   拾ったら status/queue.json の発車待ちへ自分で積む。着火は auto_launcher がやる＝人は押さない。
   #   ★吐き出したものは status/github_watch_err.log に残す（黙って死ぬのを防ぐ）。
   tick_every 2 && ( python3 "$REPO/tools/github_watch.py" >> "$REPO/status/github_watch_err.log" 2>&1 & ) >/dev/null 2>&1
-  # 2026-10-10 How It Holds 動画制作パイプライン（たまごさん依頼）。cron は足さない＝心臓に相乗り。
-  #   ~/howitholds/pipeline.sh が tamago2022/howitholds の open な issue（作者 tamago2022 か、本人が go を付けたもの）
-  #   を拾い、発車待ちへモデル指定つきで積む。着火・本数は auto_launcher の負荷判定に従う。
-  #   ★中で45分ゲートしている（拾うのは45分に1回）。doing の issue が無ければ回収は GitHub に1本聞くだけ。
-  #   ★心臓からは約2分おき（8周）に呼ぶだけ。中に flock があるので二重には走らない。
-  [ -x "$HOME/howitholds/pipeline.sh" ] && tick_every 8 && ( run_with_timeout 300 bash "$HOME/howitholds/pipeline.sh" >> "$REPO/status/howitholds_pipeline_err.log" 2>&1 & ) >/dev/null 2>&1
 
   # 977番（2026-09-22）：外部AI台帳の回収係。
   #   見張り番（github_watch.py）はETagと基準線で「いま新しいもの」しか拾わない。
@@ -485,10 +473,7 @@ while :; do
   tick_every 240 && ( python3 "$REPO/tools/subsc_shirase.py" >> "$REPO/status/subsc_shirase.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
-  #   2026-10-08 作り直し：今月いくら（カードから実際に引かれた円）＋サービスごと＋証拠。1時間に1回書き直す。
-  #   fal見張り（たまごさん「fal は最優先で監視対象に」）を先に走らせ、お金の紙はその結果を写す。
-  #   fal見張りは API を3本読むだけ（課金なし）。1日$3超・1回$2超を status/public/fal_kanshi.json の aka に積む→進捗表の赤帯。
-  tick_every 240 && ( { python3 "$REPO/tools/fal_kanshi.py" >> "$REPO/status/fal_kanshi.log" 2>&1; python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1; } & ) >/dev/null 2>&1
+  tick_every 240 && ( python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1052番）たまごさんの確認待ちの紙。たまごさん「俺の確認待ちもいっぱいあるのかもしれない。
   #   なんか今出してよ。優先順位つけるから」「多くても10行」
   #   ★たまごさんにしか押せないもの（鍵・本人確認・金銭・取り消せない公開）だけを載せる。
@@ -598,19 +583,6 @@ while :; do
   #    launchd への登録は冪等。既に入っていれば何もしないので、毎周呼んで構わない。
   #    ★たまごさんに手で流させない。登録そのものを機械にやらせる。
   tick_every 40 && ( bash "$REPO/tools/tomaranai_install.sh" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
-  # 2026-10-09 起こし役。たまごさん「止まっていました、という報告をされても何もできない。
-  #   Gensparkの作業も、何かあったらノックして起こせる仕組みに」
-  #   ★Dispatchの子セッションが落ちた／道具を呼んだまま20分止まった → 工場の列(P1)へ「続きから」で積み直す。
-  #     同じ案件が同じ道具で2回止まったら、その道具を使わない別の経路を指示に書く。3回目は積まない。
-  #   ★Gensparkの依頼が回収されていない → gsk task info で叩いて回収。2回失敗/90分で1回だけ出し直す。
-  #   読むだけ＋列に積むだけ。AIを呼ばない＝0円。5分おき（15秒×20）。結果は status/okoshi.json。
-  tick_every 20 && ( python3 "$REPO/tools/okoshi.py" >> "$REPO/status/okoshi/run.log" 2>&1 & ) >/dev/null 2>&1
-  # 2026-10-09 許可ポップアップの関所：アプリのログから許可要求を道具ごとに数える（読むだけ・1時間おき・0円）。
-  tick_every 240 && ( python3 "$REPO/tools/kyoka_kanmon.py" >> "$REPO/status/okoshi/kyoka.log" 2>&1 & ) >/dev/null 2>&1
-  # 2026-10-10 編集ログインの毎日見回り。たまごさん「本当に終わらせてほしい」（@で入れない・6回目）。
-  #   本番 /admin に「@」「＠」でheadlessログイン→落ちたら金庫(DB)を入れ直して再試行→だめなら進捗表に赤帯。
-  #   1時間おきに起きるが、本番を叩くのは1日1回（--daily）。0円。結果 status/public/admin_login_mimawari.json
-  tick_every 240 && ( python3 "$REPO/tools/admin_login_mimawari.py" --daily >> "$REPO/status/admin_login_mimawari.log" 2>&1 & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then

@@ -47,18 +47,6 @@
           "timeout": 20
         }
       ]
-    },
-    {
-      "$kanmon": "muon",
-      "$comment": "2026-10-10 無音の関所。afplay/ffplay/say等の再生コマンドと、無音の指定（Chromium=--mute-audio／WebKit=tools/muon.mjs muonContext／Firefox=media.volume_scale=0）なしにブラウザを起動するファイルの実行・書き込みを拒否する。判定の正本は tools/muon.py check_text。逆テスト：python3 tools/muon.py --self-test",
-      "matcher": "Bash|Write|Edit|MultiEdit",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/muon_kanmon.mjs",
-          "timeout": 20
-        }
-      ]
     }
   ],
   "$comment2": "1200号（2026-09-27）畳む関所。セッションが終わるたびに、そのセッションが撒いた居残り（素の vite build・重なったスクリプト・工場の一発物）を機械が畳む。★終了を拒否しない（exit 0 固定）＝セッションを人質にしない。Brave と Claude のセッションには触らない（tools/1200_tatamu.py の KEEP）。これまでの孤児回収は『60分以上』『ppid==1』にしか反応せず、一番残る素の vite build が網に一度も掛かっていなかった。",

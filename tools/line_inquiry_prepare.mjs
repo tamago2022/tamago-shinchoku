@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// muon: 接続のみ（既存のChromeに繋ぐだけ。ブラウザを起動しない・動画を鳴らさない）
 /**
  * LINE Creators Marketへの問い合わせフォームを、文面を入れた状態まで開く（送信はしない）。
  *

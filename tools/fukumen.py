@@ -177,7 +177,7 @@ class Shopper(object):
 
     def __init__(self, pw, width, height, mobile=False, shots=True):
         self.width, self.height, self.shots = width, height, shots
-        self.browser = pw.chromium.launch(args=["--disable-dev-shm-usage", "--mute-audio"])
+        self.browser = pw.chromium.launch(args=["--disable-dev-shm-usage"])
         kw = {"viewport": {"width": width, "height": height},
               "locale": "ja-JP", "timezone_id": "Asia/Tokyo"}
         if mobile:

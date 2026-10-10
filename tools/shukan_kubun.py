@@ -50,12 +50,6 @@ def classify_item(item):
     """item を "mitai" | "urakata" | "yobi" のいずれかに分類する。
     どちらにも当たらない場合のデフォルトは "mitai"（見たいもの判定を優先する側に倒す。
     店主指示：「直して」は1に入る）。"""
-    # 2026-10-10：積む側が区分を明示した時はそれに従う（How It Holds パイプライン）。
-    #   実測：動画1本を作る依頼（＝見たいもの）が、issue本文の「仕組みが1個、生き残っている」の
-    #   「仕組み」に当たって裏方へ分類され、裏方の枠上限で発車を止められていた（86065番）。
-    fixed = item.get("kubun")
-    if fixed in ("mitai", "urakata", "yobi"):
-        return fixed
     text = _text_of(item)
 
     if any(k in text for k in _URGENT_KEYWORDS):

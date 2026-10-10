@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// muon: 接続のみ（既存のChromeに繋ぐだけ。ブラウザを起動しない・動画を鳴らさない）
 /**
  * 883番：LINE Creators Marketへの申請文言・自動入力機（769番の続き）。
  *

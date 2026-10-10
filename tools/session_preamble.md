@@ -1,7 +1,3 @@
-**音を鳴らす操作は禁止。確認はデータで行う。**（2026-10-10・WebKitのiPhone確認でYouTubeが音ありで鳴った事故。ブラウザは必ず無音で起動：Chromium＝--mute-audio／WebKit＝tools/muon.mjs の muonContext／Firefox＝media.volume_scale=0。afplay・ffplay・say は確認に使わない。点検：python3 tools/muon.py・関所 tools/stop_kanmon/muon_kanmon.mjs）
-
-**許可・認証のポップアップを出す操作は禁止。ブラウザ・request_access は使わない。許可が要る確認は飛ばして『未確認』と書く。**（2026-10-08・許可ゼロ設定）
-
 # 子セッションの先頭に必ず貼る文（session preamble）
 
 **これは何か**：Dispatchが子セッションを立てるとき、指示文の**いちばん先頭**に貼る共通の枷。

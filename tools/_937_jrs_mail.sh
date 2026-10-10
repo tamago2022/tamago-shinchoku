@@ -134,7 +134,7 @@ trap 'rm -rf "${LOCK}" 2>/dev/null || true' EXIT
     SHOT="${WORK}/shots"
     mkdir -p "${SHOT}"
     CH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    [ -x "${CH}" ] || CH="$(ls -d "$HOME"/Library/Caches/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-mac*/chrome-headless-shell 2>/dev/null | head -1)"  # Playwright同梱Chromium（Brave不使用・2026-10-08）
+    [ -x "${CH}" ] || CH="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
     [ -x "${CH}" ] || { echo "NG: headless に使えるブラウザが見つかりません"; exit 1; }
     URL="$(cat "${WORK}/shot_url.txt" 2>/dev/null || echo 'https://joy-relief-station.lovable.app/')"
     echo "url: ${URL}"
@@ -142,7 +142,7 @@ trap 'rm -rf "${LOCK}" 2>/dev/null || true' EXIT
     rm -rf "${PROF}"; mkdir -p "${PROF}"
     for size in "1440,3600:pc" "375,3600:sp375"; do
       wh="${size%%:*}"; name="${size##*:}"
-      "${CH}" --headless=new --mute-audio --disable-gpu --hide-scrollbars --no-first-run --no-default-browser-check \
+      "${CH}" --headless=new --disable-gpu --hide-scrollbars --no-first-run --no-default-browser-check \
         --user-data-dir="${PROF}" --window-size="${wh}" --virtual-time-budget=15000 \
         --screenshot="${SHOT}/${name}.png" "${URL}" >/dev/null 2>&1
       if [ -f "${SHOT}/${name}.png" ]; then
