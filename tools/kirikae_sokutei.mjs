@@ -86,8 +86,16 @@ await page.route("**/*", async (route) => {
   return route.fulfill({ status: resp.status(), headers, body });
 });
 
+const logs = [];
+const T0 = Date.now();
+page.on("console", (m) => {
+  const t = m.text();
+  if (/stale|nav-recover|reload|読み|chunk|module|Failed|error/i.test(t)) logs.push(`${((Date.now() - T0) / 1000).toFixed(1)}s ${m.type()}: ${t.slice(0, 200)}`);
+});
+page.on("pageerror", (e) => logs.push(`${((Date.now() - T0) / 1000).toFixed(1)}s pageerror: ${String(e).slice(0, 200)}`));
 page.on("request", (r) => {
   if (r.isNavigationRequest() && r.frame() === page.mainFrame()) {
+    logs.push(`${((Date.now() - T0) / 1000).toFixed(1)}s 文書読み込み: ${r.url().replace(ORIGIN, "")}`);
     docLoads++;
     // 丸ごと読み直した＝新しい版のHTMLを取った。以後は新しい版として全部通す
     if (deployed) deployed = false;
@@ -136,6 +144,7 @@ async function waitSettled(targetHref, t0, maxMs = 30000) {
   return { ms: null, toast, kouji, last };
 }
 
+const hydrateWaits = [];
 async function clickLink(re) {
   const href = await page.evaluate((src) => {
     const re = new RegExp(src);
@@ -152,6 +161,19 @@ async function clickLink(re) {
     return a.getAttribute("href");
   }, re.source);
   if (!href) return null;
+  // 押せる状態（Reactが部品に手を付け終わった＝画面内で切り替えられる）まで待つ。待った時間も記録する。
+  const tH = Date.now();
+  await page
+    .waitForFunction(
+      () => {
+        const a = document.querySelector('[data-kirikae="1"]');
+        return !!a && Object.keys(a).some((k) => k.startsWith("__reactProps"));
+      },
+      null,
+      { timeout: 30000, polling: 100 },
+    )
+    .catch(() => {});
+  hydrateWaits.push(Date.now() - tH);
   await sleep(300);
   const t0 = Date.now();
   await page.evaluate(() => document.querySelector('[data-kirikae="1"]')?.click());
@@ -178,7 +200,20 @@ if (STALE) deployed = true; // ここで「新しい版が公開された」
 
 const history = ["/"];
 for (const [name, re] of steps) {
-  const c = await clickLink(re);
+  let c = await clickLink(re);
+  if (!c && name === "特集") {
+    // 曲ページに特集リンクが無いときは、下のタブの「ホーム」で戻ってから特集を押す（これも1回の切り替えとして測る）
+    const h = await clickLink(/^\/$/);
+    if (h) {
+      const r = await waitSettled("/", h.t0);
+      const good = r.ms != null && r.ms <= LIMIT && !r.toast && !r.kouji;
+      if (!good) ok = false;
+      result.steps.push({ name: "ホームへ", href: "/", ms: r.ms, ok: good, toast: r.toast, kouji: r.kouji, end: r.last?.href });
+      history.push("/");
+      await sleep(1500);
+      c = await clickLink(re);
+    }
+  }
   if (!c) {
     result.steps.push({ name, ok: false, why: "押せるリンクが見つからない", from: history.at(-1) });
     ok = false;
@@ -202,6 +237,8 @@ for (const [name, re] of steps) {
   result.steps.push({ name: "戻る", href: want, ms: r.ms, ok: good, toast: r.toast, kouji: r.kouji, end: r.last?.href });
 }
 result.fullReloads = docLoads - docBefore;
+result.logs = logs.slice(0, 80);
+result.hydrateWaitsMs = hydrateWaits;
 result.ok = ok;
 await browser.close();
 const line = result.steps.map((s) => `${s.name}${s.ms == null ? "×" : (s.ms / 1000).toFixed(1) + "秒"}${s.ok ? "" : "(NG)"}`).join(" / ");
