@@ -227,7 +227,7 @@ const steps = [
   ["特集", /^\/feature\/[^/?#]+/],
 ];
 
-const result = { base: BASE, stale: STALE, limitMs: LIMIT, net: "4G相当 往復100ms・下り5Mbps（共有）", at: new Date().toISOString(), steps: [] };
+const result = { base: BASE, stale: STALE, limitMs: LIMIT, net: "4G相当（Chromium回線絞り）往復100ms・下り5Mbps・上り2Mbps", at: new Date().toISOString(), steps: [] };
 let ok = true;
 
 // 最初の表示
