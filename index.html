@@ -127,7 +127,7 @@ ul{list-style:none; margin:0; padding:0}
 .ord{display:inline-block; min-width:24px; color:var(--sub); font-variant-numeric:tabular-nums}
 
 /* ───── 空き容量の赤帯（閾値割れのときだけ出す） ───── */
-#falAka div,#loginAka div,#vaultAka div{background:#b3261e; color:#fff; border-radius:10px; padding:12px 14px; margin:0 0 10px; font-size:16px; line-height:1.5; font-weight:700}
+#falAka div,#loginAka div,#vaultAka div,#kirikaeAka div{background:#b3261e; color:#fff; border-radius:10px; padding:12px 14px; margin:0 0 10px; font-size:16px; line-height:1.5; font-weight:700}
 #diskAka:not(:empty){background:#b3261e; color:#fff; border-radius:10px;
   padding:12px 14px; margin:0 0 10px; font-size:17px; line-height:1.5; font-weight:700}
 
@@ -174,6 +174,8 @@ footer a{display:block; padding:5px 0}
 <div id="loginAka"></div>
 <!-- 2026-10-11 Vaultの関所：工場側のVault書き込みが1日の上限を超えたら赤帯。出どころ status/public/vault_kanmon.json（tools/vault_kanmon.py が20分おき） -->
 <div id="vaultAka"></div>
+<!-- 2026-10-11 画面の切り替え（iPhone相当・4G相当）：決めた秒数超え・白い画面・「読み込み直します」・工事中で赤帯。出どころ status/public/kirikae.json（tools/kirikae_sokutei.mjs・公開のたび） -->
+<div id="kirikaeAka"></div>
 <!-- 2026-10-08 お金：今月いくら（1行だけ）。出どころ status/public/okane_ichimai.json -->
 <a id="okaneLine" href="share/check/1051-okane.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">お金　読み込み中…</a>
 <!-- 2026-10-09 起こし役：止まった子セッション・Gensparkを自動で起こした回数。出どころ status/public/okoshi.json（tools/okoshi.py が5分おき） -->
@@ -441,6 +443,18 @@ var DISK_AKA_GB = 50;
 (function(){
   var aka = $("vaultAka"); if(!aka) return;
   getJson("status/public/vault_kanmon.json").then(function(d){
+    (d && d.aka || []).forEach(function(t){
+      var dv = document.createElement("div");
+      dv.textContent = t + "（" + (d.at||"") + "）";
+      aka.appendChild(dv);
+    });
+  }).catch(function(){});
+})();
+
+/* 2026-10-11 画面の切り替えの赤帯。合格なら何も出さない */
+(function(){
+  var aka = $("kirikaeAka"); if(!aka) return;
+  getJson("status/public/kirikae.json").then(function(d){
     (d && d.aka || []).forEach(function(t){
       var dv = document.createElement("div");
       dv.textContent = t + "（" + (d.at||"") + "）";

@@ -288,4 +288,22 @@ const line = result.steps.map((s) => `${s.name}${s.ms == null ? "×" : (s.ms / 1
 result.summary = `${STALE ? "[古い版を開いたまま公開]" : "[通常]"} 最初${init.ms ? (init.ms / 1000).toFixed(1) + "秒" : "×"} / ${line} / 丸ごと読み直し${result.fullReloads}回`;
 console.log(JSON.stringify(result, null, 1));
 if (OUT) fs.writeFileSync(OUT, JSON.stringify(result, null, 1));
+// --public：進捗表の赤帯（status/public/kirikae.json）。通常と「古い版を開いたまま公開」の最新を合わせて出す
+if (process.argv.includes("--public")) {
+  const dir = "/Users/mac/tamago/tamago-shinchoku/status/kirikae";
+  fs.writeFileSync(`${dir}/last_${STALE ? "stale" : "normal"}.json`, JSON.stringify(result, null, 1));
+  const aka = [];
+  const lines = [];
+  for (const k of ["normal", "stale"]) {
+    try {
+      const r = JSON.parse(fs.readFileSync(`${dir}/last_${k}.json`, "utf-8"));
+      lines.push(r.summary);
+      if (!r.ok) aka.push(`画面の切り替えが不合格（${LIMIT / 1000}秒超え・白い画面・読み込み直し・工事中のどれか）：${r.summary}`);
+    } catch {}
+  }
+  fs.writeFileSync(
+    "/Users/mac/tamago/tamago-shinchoku/status/public/kirikae.json",
+    JSON.stringify({ at: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }), base: BASE, net: result.net, limitMs: LIMIT, aka, lines }, null, 1),
+  );
+}
 process.exit(ok ? 0 : 1);
