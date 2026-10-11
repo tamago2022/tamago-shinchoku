@@ -54,7 +54,7 @@ KESU = [
 ]
 # ★HowItHolds の _build は fal で作った素材を含む（作り直すとお金がかかる）ので消さない。一覧に出すだけ。
 # node_modules を探す作業場（2時間以上触られていないもの・作業場と分かる場所の中だけ）
-NM_ROOTS = [HOME + "/Documents/AI作業/.worktrees", HOME + "/tamago", HOME + "/Documents/AI作業", REPO + "/status"]
+NM_ROOTS = [HOME + "/tamago",HOME + "/Documents/AI作業", REPO + "/status"]
 WT_MARKS = ("/.worktrees/", "_wt/", "/wt-", "/status/_pr", "/.tmp_q")
 DEEP = [
     (HOME + "/Documents/AI作業/.worktrees", 1),
