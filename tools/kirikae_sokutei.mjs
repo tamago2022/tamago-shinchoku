@@ -53,6 +53,9 @@ try {
   }
 } catch {}
 fs.writeFileSync(LOCK, String(process.pid));
+process.on("exit", () => {
+  try { fs.unlinkSync(LOCK); } catch {}
+});
 
 const iphone = devices["iPhone 15"] || devices["iPhone 14"];
 const browser = await muonLaunch(chromium, { headless: true }); // headless shell＝画面に出ない・アプリの形でない
@@ -171,6 +174,19 @@ async function waitSettled(targetHref, t0, maxMs = 30000) {
 
 const hydrateWaits = [];
 async function clickLink(re) {
+  for (let i = 0; i < 4; i++) {
+    try {
+      return await clickLinkOnce(re);
+    } catch (e) {
+      // 押す前にページが入れ替わった（読み直し等）。落ち着くのを待ってもう一度
+      logs.push(`押す前にページが入れ替わった: ${String(e).slice(0, 80)}`);
+      await page.waitForLoadState("domcontentloaded").catch(() => {});
+      await sleep(1000);
+    }
+  }
+  return null;
+}
+async function clickLinkOnce(re) {
   const href = await page.evaluate((src) => {
     const re = new RegExp(src);
     const as = [...document.querySelectorAll("a[href]")].filter((a) => {
@@ -201,7 +217,7 @@ async function clickLink(re) {
   hydrateWaits.push(Date.now() - tH);
   await sleep(300);
   const t0 = Date.now();
-  await page.evaluate(() => document.querySelector('[data-kirikae="1"]')?.click());
+  await page.evaluate(() => document.querySelector('[data-kirikae="1"]')?.click()).catch(() => {});
   return { href, t0 };
 }
 
