@@ -83,6 +83,18 @@
             "timeout": 20
           }
         ]
+      },
+      {
+        "$kanmon": "dir_memo_kakunin",
+        "$comment": "34973号（2026-08-08判定日赤・1ヶ月以上未着手）作業ディレクトリ確認＋メモ上書き前確認の関所。A)MEMORY.md/ai-brain配下.md/agent-memory配下/genzaichi系/00_現在地.md/status/*_ima.mdの既存ファイルを、このセッションでRead済みでないまま丸ごとWrite上書きしようとしたらexit 2で拒否（過去にMEMORY.md上書き事故→git checkoutで復元した実例あり）。B)pages_publish.sh/git push等の公開系Bashコマンドをmainブランチでないcwdでやろうとしたらexit 2で拒否（事故実例：status/failures.jsonl F-20261009090406-quick、作業ディレクトリのHEADとorigin/mainがズレたまま公開して404が続いた）。transcript/git判定が不能な時は黙って通す（人質にしない）。逆テスト：node tools/stop_kanmon/34973_dir_memo_kakunin_kanmon.mjs --self-test",
+        "matcher": "Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/34973_dir_memo_kakunin_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
       }
     ],
     "Stop": [
