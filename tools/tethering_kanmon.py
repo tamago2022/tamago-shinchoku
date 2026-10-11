@@ -53,7 +53,7 @@ def kansoku():
     ssid = ""
     for i in ("en0", "en1"):
         o = sh(["networksetup", "-getairportnetwork", i])
-        if ":" in o and "not associated" not in o:
+        if o.startswith("Current Wi-Fi Network:"):
             ssid = o.split(":", 1)[1].strip()
             break
     gw = ""
