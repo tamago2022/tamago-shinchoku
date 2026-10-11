@@ -631,6 +631,7 @@ while :; do
   #   10GB未満なら下の救急（作り直せるキャッシュだけ消す・測る）を自動で起こす。
   tick_every 4  && ( python3 "$REPO/tools/youryou_mihari.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_kyuukyuu.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_hakaru.go" ] && ( python3 "$REPO/tools/youryou_hakaru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then

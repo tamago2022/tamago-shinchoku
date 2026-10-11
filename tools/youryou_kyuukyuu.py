@@ -88,7 +88,8 @@ def forbidden(path):
 def rm(path, kind, deleted):
     if not os.path.lexists(path) or forbidden(path):
         return
-    kb = du_kb(path) or 0
+    # 2026-10-12：消す前後に du を回すと負荷21のMacで1件数分かかったため、空きの差で測る（目安）
+    before = free_gb() or 0
     try:
         if os.path.isdir(path) and not os.path.islink(path):
             shutil.rmtree(path, ignore_errors=True)
@@ -97,10 +98,9 @@ def rm(path, kind, deleted):
     except Exception as e:
         log("消せず %s (%s)" % (path, e))
         return
-    left = du_kb(path) if os.path.exists(path) else 0
-    freed = max(0, kb - (left or 0))
-    deleted.append({"path": path, "kind": kind, "gb": gb(freed)})
-    log("消した %.2fGB %s [%s]" % (freed / 1048576, path, kind))
+    freed_gb = max(0.0, round((free_gb() or 0) - before, 2))
+    deleted.append({"path": path, "kind": kind, "gb": freed_gb})
+    log("消した %.2fGB %s [%s]" % (freed_gb, path, kind))
 
 
 def children(d):
@@ -131,10 +131,9 @@ def sugu_kesu():
         (os.path.join(HOME, "Library/pnpm/store"), "pnpm store"),
     ]:
         rm(p, kind, deleted)
-    # yt-dlp の書きかけ・分割ファイル（1時間以上前のものだけ。完成品 .mp4 は触らない）
+    # yt-dlp の書きかけ：~ 配下は youryou_hakaru.py の1回走査で消す。ここでは /tmp だけ見る（軽い）
     now = time.time()
-    roots = [os.path.join(HOME, ".tamago"), os.path.join(HOME, "howitholds"),
-             os.path.join(HOME, "tamago"), "/private/tmp", os.environ.get("TMPDIR", "/tmp")]
+    roots = ["/private/tmp", os.environ.get("TMPDIR", "/tmp")]
     for root in roots:
         for dp, dns, fns in os.walk(root):
             dns[:] = [d for d in dns if d not in (".git", "node_modules") and not forbidden(os.path.join(dp, d))]
@@ -266,14 +265,9 @@ def main():
     res["deleted"] = sugu_kesu()
     res["free_after_delete_gb"] = free_gb()
     res["deleted_total_gb"] = round(sum((d.get("gb") or 0) for d in res["deleted"]), 2)
-    res["state"] = "測っている"
-    save()
     log("消し終わり 空き %.2fGB" % (res["free_after_delete_gb"] or -1))
-    res["sonota"] = sonota()
-    save()
-    res["ookii"] = hakaru()
-    save()
-    res["saikin_files"], res["saikin_dirs"] = saikin_ookii()
+    # 2026-10-12：測る工程は tools/youryou_hakaru.py（~ を1回だけ歩く版）へ分けた。
+    #   ここで du を何重にも回すと、負荷21のMacで何時間も終わらなかった。
     res["free_end_gb"] = free_gb()
     res["finished"] = time.strftime("%F %T")
     res["state"] = "完了"
