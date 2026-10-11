@@ -265,6 +265,14 @@ def add(url, memo="", shelf=None, shelf_id=None, test=False, shelves=None):
     if why:
         row["metaMissing"] = why
     append_jsonl(LEDGER, row)
+    # ★2026-10-11 後ろの曲の判定（tools/oto_hantei.py）の待ち列に1行だけ置く。判定は裏で（心臓の便）。
+    #   ここでは何も取りに行かない＝箱の速さは変わらない。失敗しても投げ込みは止めない。
+    if row["nageta"] != "test":
+        try:
+            append_jsonl(os.path.join(os.path.dirname(LEDGER), "oto_hantei", "machi.jsonl"),
+                         {"at": row["at"], "url": url, "nagekomiId": row["id"]})
+        except Exception:
+            pass
     # ★2210番（たまごさん 2026-10-01「スマホで入れたら1秒で入るのに、全部まだ『作業中』」）：
     #   後回しの周回をやめて、**受け取ったその場で棚へ書き込む。**結果を箱の画面へそのまま返す。
     #   返す形：「入りました｜棚名｜URL」または「入らない｜理由1語｜詳しく」（箱の画面が読む）

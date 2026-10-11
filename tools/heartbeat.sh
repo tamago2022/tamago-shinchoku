@@ -626,6 +626,11 @@ while :; do
   # 2026-10-11 テザリングの関所。たまごさん「Wi-Fiが重すぎてテザリング中＝通信量が限られる」
   #   テザリング中は push／yt-dlp／大量取得／朗読ループ／Playwright／Googleドライブを止め、Wi-Fiに戻ったら自動で再開。1分おき。
   tick_every 4  && ( python3 "$REPO/tools/tethering_kanmon.py" > /dev/null 2>> "$REPO/status/tethering.log" & ) >/dev/null 2>&1
+  # 2026-10-11 空き容量の番人。たまごさん「30GBを切ったらDispatchに警告、20GBを切ったら新規発車を止める」
+  #   空き668MB（500GB中）まで落ちた事故を受けて。statvfsを1回読むだけ（0円）。1分おき。
+  #   10GB未満なら下の救急（作り直せるキャッシュだけ消す・測る）を自動で起こす。
+  tick_every 4  && ( python3 "$REPO/tools/youryou_mihari.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_kyuukyuu.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then

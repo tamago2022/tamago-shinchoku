@@ -196,6 +196,14 @@ echo "$(date '+%F %T') naoshi 呼び出し" >> "$REPO/status/gaibu_copy_naoshi.l
 #   query_database で入れるので鍵が要らない。中で30分に1回だけ動く。
 ( nohup python3 "$REPO/tools/2210_tanaire.py" --daily >>"$REPO/status/nagekomi_shelf.log" 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-10-11 後ろの曲の判定（tools/oto_hantei.py --machi）：取り込みで置かれた待ち列を30分に1回・2本ずつ ----
+# 空き2GB未満なら何もしない。本番へ貼るのは試験（status/oto_hantei/shiken.json）が誤判定0のときだけ。
+OTO_GATE="$REPO/status/oto_hantei/.machi_gate"
+if [ -s "$REPO/status/oto_hantei/machi.jsonl" ] && { [ ! -f "$OTO_GATE" ] || [ -n "$(find "$OTO_GATE" -mmin +30 2>/dev/null)" ]; }; then
+  touch "$OTO_GATE"
+  ( nohup python3 "$REPO/tools/oto_hantei.py" --machi >>"$REPO/status/oto_hantei/machi.log" 2>&1 & ) >/dev/null 2>&1
+fi
+
 # ---- 2026-09-23（1029番・Cowork側から設置）覆面調査員（架空のお客さん4人）の潜伏 ----
 # たまごさん「潜伏してひたすら触ってくれる人がいれば、どこを直せば体験が良くなるか分かるんじゃないの？」
 # 本番（joy-relief-station.lovable.app）を実際にPlaywrightで触り、たまごさんが言う3症状を数字で取る。
