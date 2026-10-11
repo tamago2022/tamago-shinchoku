@@ -82,6 +82,16 @@ await cdp.send("Network.emulateNetworkConditions", {
   uploadThroughput: (2 * 1000 * 1000) / 8,
 });
 
+// 何が重いかの内訳（2026-10-11 追加）：届いた量（圧縮後）を1件ずつ記録し、結果の omosa に重い順で出す
+const reqInfo = new Map();
+const recv = [];
+const marks = [];
+cdp.on("Network.responseReceived", (e) => reqInfo.set(e.requestId, { url: e.response.url, type: e.type }));
+cdp.on("Network.loadingFinished", (e) => {
+  const i = reqInfo.get(e.requestId);
+  if (i) recv.push({ t: Date.now(), url: i.url.replace(ORIGIN, "").slice(0, 120), type: i.type, kb: Math.round(e.encodedDataLength / 1024) });
+});
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // ---- 古い版のまま新しい版が出た状態 ----
 let deployed = false; // true の間：まだ読んでいない塊は404
@@ -217,6 +227,7 @@ async function clickLinkOnce(re) {
   hydrateWaits.push(Date.now() - tH);
   await sleep(300);
   const t0 = Date.now();
+  marks.push({ t: t0, href });
   await page.evaluate(() => document.querySelector('[data-kirikae="1"]')?.click()).catch(() => {});
   return { href, t0 };
 }
@@ -280,6 +291,20 @@ for (const [name, re] of steps) {
 result.fullReloads = docLoads - docBefore;
 result.logs = logs.slice(0, 80);
 result.hydrateWaitsMs = hydrateWaits;
+{
+  // 区間ごと（最初の表示／各切り替え）に、届いた量と重い順5件
+  const cuts = [{ t: T0, href: "最初" }, ...marks];
+  result.omosa = cuts.map((m, i) => {
+    const end = i + 1 < cuts.length ? cuts[i + 1].t : Infinity;
+    const xs = recv.filter((r) => r.t >= m.t && r.t < end);
+    return {
+      kukan: m.href,
+      kenSu: xs.length,
+      kb: xs.reduce((a, r) => a + r.kb, 0),
+      top: xs.sort((a, b) => b.kb - a.kb).slice(0, 5).map((r) => `${r.kb}KB ${r.type} ${r.url}`),
+    };
+  });
+}
 result.ok = ok;
 clearTimeout(killer);
 await browser.close();

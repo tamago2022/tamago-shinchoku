@@ -269,7 +269,7 @@ def card(it):
     extra_attr = ""
     if it.get("segs"):
         extra_attr = ' data-segs="%s"%s' % (html.escape(json.dumps(it["segs"])), ' data-more="1"' if it.get("partial") else "")
-    return ('<article class="c%s" data-id="%s"%s data-q="%s"><p class="t">%s</p><div class="m">%s%s</div><div class="p"></div></article>'
+    return ('<article class="c%s" data-id="%s"%s data-q="%s"><p class="t" data-sekisho="inyou">%s</p><div class="m">%s%s</div><div class="p"></div></article>'
             % (" new" if "Aoede" in it["voice"] else "", html.escape(it.get("id") or ""), extra_attr, html.escape(it["title"]), t, "".join(meta), btn))
 
 
