@@ -66,6 +66,8 @@ def prompt(v):
         "Rules:\n"
         "- g genre (max 2), r artist's country/region (max 1), e decade the SONG was originally released (max 1).\n"
         "- m mood (max 2), s season (max 1), c scene/situation (max 2).\n"
+        "- e: only when you KNOW the original release year of this song (if y is given, use y's decade). Do not guess from the artist's peak.\n"
+        "- Congolese rumba/soukous, highlife, afrobeat -> african; Ethio-jazz -> jazz + african; luk thung -> world-traditional; OPM -> asian-pop.\n"
         "- Only tag what you are confident about from real knowledge of this artist and song. If unsure, leave that list empty. "
         "Season and scene: tag only when the song is clearly associated (title/lyrics/well-known use), otherwise empty.\n"
         "- If the line is not a song (interview, trailer, compilation/mix, reaction, unboxing), output {\"i\":<i>,\"x\":1} plus r only if sure.\n"
@@ -149,14 +151,38 @@ def run(workers=6, bsize=50):
             print("…%d" % n, flush=True)
 
 
+MANUAL = os.path.join(D, "manual.jsonl")
+
+
+def decade(y):
+    try:
+        y = int(y)
+    except Exception:
+        return None
+    if y < 1950:
+        return "pre-50s"
+    return "%02ds" % (y // 10 * 10 % 100)
+
+
 def merged():
+    """Haiku の答え → 年の事実で年代を上書き・アーティストの活動年代と食い違う年代は捨てる → 手で確かめた行（manual.jsonl）が最後に勝つ。"""
     v = vocab()
-    keys = {s["k"] for s in jsonl(IN)}
+    ins = {s["k"]: s for s in jsonl(IN)}
     out = {}
     for x in jsonl(OUT):
         k = x.get("k")
-        if k in keys:
+        if k in ins:
             out[k] = clean(x, v)  # 後の行が勝つ（やり直し分）
+    for k, rec in out.items():
+        s = ins[k]
+        d = decade(s.get("y"))
+        if d:
+            rec["e"] = [d]
+        elif rec.get("e") and s.get("e") and rec["e"][0] not in s["e"]:
+            del rec["e"]  # 根拠の弱い年代（活動年代の外）は付けない
+    for x in jsonl(MANUAL):
+        if x.get("k") in ins:
+            out[x["k"]] = clean(x, v)
     return out
 
 
@@ -188,6 +214,7 @@ def build():
 
 
 def self_test():
+    assert decade(1986) == "80s" and decade(2003) == "00s" and decade(1948) == "pre-50s"
     v = {"genre": {"j-pop": 1}, "region": {"japan": 1}, "era": {"90s": 1}, "mood": {"setsunai": 1, "akarui": 1, "iyashi": 1},
          "season": {"winter": 1}, "scene": {"night": 1}}
     r = clean({"g": ["j-pop", "JPOP"], "r": "japan", "e": ["90s", "80s"], "m": ["setsunai", "akarui", "iyashi"], "c": ["夜"]}, v)
