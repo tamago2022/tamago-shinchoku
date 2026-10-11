@@ -1,0 +1,211 @@
+// 画面の切り替え測定（iPhone相当・WebKit・4G相当に絞る・無音・画面に出さない）
+// たまごさん指示（2026-10-11）：「こういう動きのチェックも毎回ちゃんとして。重いは悪」
+//
+//   node tools/kirikae_sokutei.mjs [--base URL] [--stale] [--limit 3000] [--out file.json]
+//
+//   通常：トップ → 棚 → 曲ページ → 特集 → 戻る を、リンクを押して（画面内の遷移で）通し、
+//         1回の切り替えが何秒かを測る。
+//   --stale：古い版を開いたまま新しい版が公開された状態を作る（開いた後は、まだ読んでいない
+//         塊を全部404にし、版の番号 x-deployment-id も別のものに変える。ページを丸ごと
+//         読み直した後は新しい版として全部通す）。その状態で同じ切り替えが壊れないかを見る。
+//   不合格（exit 1）：1回でも limit 秒を超えた／白い画面のまま／「読み込み直します」が出た／
+//         「工事中」が出た／行き先に着かなかった。
+//
+//   回線（4G相当）：往復 100ms・下り 5Mbps を、全部の通信で1本の回線として共有させる。
+//   YouTube の埋め込み・広告は止める（無音・重さの測定対象外）。
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
+import fs from "node:fs";
+import { muonLaunch } from "/Users/mac/tamago/tamago-shinchoku/tools/muon.mjs";
+
+const require = createRequire(import.meta.url);
+const { webkit, devices } = require(
+  process.env.PWCORE || path.join(os.homedir(), ".tamago", "node_modules", "playwright-core"),
+);
+
+const arg = (k, d) => {
+  const i = process.argv.indexOf(k);
+  return i > 0 ? process.argv[i + 1] : d;
+};
+const BASE = (arg("--base", "https://joy-relief-station.lovable.app")).replace(/\/$/, "");
+const STALE = process.argv.includes("--stale");
+const LIMIT = Number(arg("--limit", "3000"));
+const OUT = arg("--out", "");
+const RTT = 100;
+const BPS = (5 * 1000 * 1000) / 8; // 5Mbps
+const ORIGIN = new URL(BASE).origin;
+
+const BLOCK = /youtube\.com|youtube-nocookie|googlevideo|doubleclick|googlesyndication|google-analytics|googletagmanager/;
+
+const browser = await muonLaunch(webkit, { headless: true });
+const ctx = await browser.newContext({ ...(devices["iPhone 15"] || devices["iPhone 14"]) });
+const page = await ctx.newPage();
+
+// ---- 回線を絞る（1本の回線を共有） ----
+let linkFree = 0;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// ---- 古い版のまま新しい版が出た状態 ----
+let deployed = false; // true の間：まだ読んでいない塊は404
+const seen = new Set();
+let docLoads = 0;
+
+await page.route("**/*", async (route) => {
+  const req = route.request();
+  const url = req.url();
+  if (BLOCK.test(url)) return route.abort();
+  const u = new URL(url);
+  const same = u.origin === ORIGIN;
+  const isAsset = same && /\.(m?js|css)$/.test(u.pathname);
+  if (isAsset && deployed && !seen.has(u.pathname)) {
+    await sleep(RTT);
+    return route.fulfill({ status: 404, contentType: "text/plain", body: "Not Found" });
+  }
+  let resp;
+  try {
+    resp = await route.fetch({ timeout: 60000 });
+  } catch {
+    return route.abort();
+  }
+  let body;
+  try {
+    body = await resp.body();
+  } catch {
+    body = Buffer.alloc(0);
+  }
+  const now = Date.now();
+  const start = Math.max(now + RTT, linkFree);
+  const done = start + (body.length / BPS) * 1000;
+  linkFree = done;
+  await sleep(done - now);
+  if (isAsset) seen.add(u.pathname);
+  const headers = { ...resp.headers() };
+  if (deployed && same && headers["x-deployment-id"]) {
+    headers["x-deployment-id"] = headers["x-deployment-id"].replace(/psr2\.[^.]+/, "psr2.00000000-0000-4000-8000-00000000new1");
+  }
+  return route.fulfill({ status: resp.status(), headers, body });
+});
+
+page.on("request", (r) => {
+  if (r.isNavigationRequest() && r.frame() === page.mainFrame()) {
+    docLoads++;
+    // 丸ごと読み直した＝新しい版のHTMLを取った。以後は新しい版として全部通す
+    if (deployed) deployed = false;
+  }
+});
+
+const toastSeen = [];
+const watchToast = async () => {
+  const t = await page
+    .evaluate(() => document.body?.innerText || "")
+    .catch(() => "");
+  if (/読み込み直します/.test(t)) toastSeen.push(Date.now());
+  return t;
+};
+
+const state = () =>
+  page
+    .evaluate(() => {
+      const pending = !!document.querySelector('[style*="route-pending"]');
+      const t = (document.querySelector("main") || document.body)?.innerText || "";
+      return {
+        href: location.pathname + location.search,
+        pending,
+        textLen: t.replace(/\s+/g, "").length,
+        toast: /読み込み直します/.test(document.body?.innerText || ""),
+        kouji: /工事中/.test(document.body?.innerText || ""),
+      };
+    })
+    .catch(() => null);
+
+async function waitSettled(targetHref, t0, maxMs = 30000) {
+  let toast = false;
+  let kouji = false;
+  let last = null;
+  while (Date.now() - t0 < maxMs) {
+    const s = await state();
+    if (s) {
+      last = s;
+      if (s.toast) toast = true;
+      if (s.kouji) kouji = true;
+      const at = targetHref ? decodeURI(s.href) === decodeURI(targetHref) : true;
+      if (at && !s.pending && s.textLen > 80) return { ms: Date.now() - t0, toast, kouji, last };
+    }
+    await sleep(50);
+  }
+  return { ms: null, toast, kouji, last };
+}
+
+async function clickLink(re) {
+  const href = await page.evaluate((src) => {
+    const re = new RegExp(src);
+    const as = [...document.querySelectorAll("a[href]")].filter((a) => {
+      const h = a.getAttribute("href") || "";
+      if (!re.test(h)) return false;
+      const r = a.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
+    const a = as[0];
+    if (!a) return null;
+    a.scrollIntoView({ block: "center" });
+    a.setAttribute("data-kirikae", "1");
+    return a.getAttribute("href");
+  }, re.source);
+  if (!href) return null;
+  await sleep(300);
+  const t0 = Date.now();
+  await page.evaluate(() => document.querySelector('[data-kirikae="1"]')?.click());
+  return { href, t0 };
+}
+
+const steps = [
+  ["棚", /^\/(shelf|world)\//],
+  ["曲ページ", /^\/(cover-guide\?artist=[^&]+&song=|room\/card\/|watch\/)/],
+  ["特集", /^\/feature\/[^/?#]+/],
+];
+
+const result = { base: BASE, stale: STALE, limitMs: LIMIT, net: "4G相当 往復100ms・下り5Mbps（共有）", at: new Date().toISOString(), steps: [] };
+let ok = true;
+
+// 最初の表示
+const tInit = Date.now();
+await page.goto(BASE + "/", { waitUntil: "commit", timeout: 60000 });
+const init = await waitSettled("/", tInit, 60000);
+result.first = { ms: init.ms };
+await sleep(2500);
+const docBefore = docLoads;
+if (STALE) deployed = true; // ここで「新しい版が公開された」
+
+const history = ["/"];
+for (const [name, re] of steps) {
+  const c = await clickLink(re);
+  if (!c) {
+    result.steps.push({ name, ok: false, why: "押せるリンクが見つからない", from: history.at(-1) });
+    ok = false;
+    continue;
+  }
+  const r = await waitSettled(c.href, c.t0);
+  const good = r.ms != null && r.ms <= LIMIT && !r.toast && !r.kouji;
+  if (!good) ok = false;
+  result.steps.push({ name, href: c.href, ms: r.ms, ok: good, toast: r.toast, kouji: r.kouji, end: r.last?.href });
+  history.push(c.href);
+  await sleep(1500);
+}
+// 戻る
+{
+  const want = history.at(-2);
+  const t0 = Date.now();
+  await page.evaluate(() => history.back());
+  const r = await waitSettled(want, t0);
+  const good = r.ms != null && r.ms <= LIMIT && !r.toast && !r.kouji;
+  if (!good) ok = false;
+  result.steps.push({ name: "戻る", href: want, ms: r.ms, ok: good, toast: r.toast, kouji: r.kouji, end: r.last?.href });
+}
+result.fullReloads = docLoads - docBefore;
+result.ok = ok;
+await browser.close();
+const line = result.steps.map((s) => `${s.name}${s.ms == null ? "×" : (s.ms / 1000).toFixed(1) + "秒"}${s.ok ? "" : "(NG)"}`).join(" / ");
+result.summary = `${STALE ? "[古い版を開いたまま公開]" : "[通常]"} 最初${init.ms ? (init.ms / 1000).toFixed(1) + "秒" : "×"} / ${line} / 丸ごと読み直し${result.fullReloads}回`;
+console.log(JSON.stringify(result, null, 1));
+if (OUT) fs.writeFileSync(OUT, JSON.stringify(result, null, 1));
+process.exit(ok ? 0 : 1);
