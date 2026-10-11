@@ -104,8 +104,12 @@ def ask(batch, v, model="claude-haiku-4-5"):
                          "e": s.get("e") or []}, ensure_ascii=False) for i, s in enumerate(batch)]
     p = prompt(v) + "\nINPUT:\n" + "\n".join(lines)
     try:
-        r = subprocess.run([claude_bin(), "-p", "--model", model, "--output-format", "text"], input=p,
-                           capture_output=True, text=True, timeout=900)
+        # 軽い呼び方（2026-10-11 実測：回線が遅い日に既定の呼び方は1回8〜12分、道具・MCP・設定を外すと62秒）
+        env = dict(os.environ, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1")
+        r = subprocess.run([claude_bin(), "-p", "--model", model, "--output-format", "text", "--tools", "",
+                            "--system-prompt", "You are a precise music tagger. Output JSON lines only.",
+                            "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}', "--setting-sources", ""],
+                           input=p, capture_output=True, text=True, timeout=1800, env=env, cwd="/tmp")
     except Exception:
         return {}
     out = {}
