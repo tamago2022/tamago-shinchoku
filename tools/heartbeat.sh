@@ -633,6 +633,7 @@ while :; do
   [ -f "$REPO/status/youryou_kyuukyuu.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   #   控え箱(status/_1142_gomi)が上限なしで10.8GBに太っていた主犯。古い控えを gzip（消さない）。10分おき。
   { tick_every 40 || [ -f "$REPO/status/gomi_assyuku.go" ]; } && ( rm -f "$REPO/status/gomi_assyuku.go"; python3 "$REPO/tools/gomi_assyuku.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_hakaru2.go" ] && ( python3 "$REPO/tools/youryou_hakaru2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_hakaru.go" ] && ( python3 "$REPO/tools/youryou_hakaru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
