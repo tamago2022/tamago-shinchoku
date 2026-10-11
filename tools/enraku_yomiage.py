@@ -159,8 +159,30 @@ def upload(wait_min=240):
         time.sleep(60)
 
 
+SEG_ROOT = os.path.join(REPO, "share", "check", "enraku-yomiage", "a")
+
+
+def seg_items():
+    """朗読 v2：share/check/enraku-yomiage/a/<名>/index.json（status/roudoku_enraku/tts_loop.py が1区切りごとに書く）。
+    約3分ずつの m4a を GitHub Pages から直接、順に流す（ドライブを通さない＝押してすぐ鳴る）。"""
+    out = []
+    for p in sorted(glob.glob(os.path.join(SEG_ROOT, "*", "index.json"))):
+        r = load(p, {})
+        segs = r.get("segments") or []
+        slug = os.path.basename(os.path.dirname(p))
+        out.append({"title": r.get("title") or slug, "date": r.get("date"), "voice": r.get("voice") or "Aoede（Gemini）",
+                    "segs": ["enraku-yomiage/a/%s/%s" % (slug, s["file"]) for s in segs],
+                    "min": sum(s.get("sec", 0) for s in segs) / 60.0 if segs else None,
+                    "partial": len(segs) < (r.get("total") or 0), "done_n": len(segs), "total": r.get("total"),
+                    "extra": True, "id": "seg:" + slug if segs else None})
+    return out
+
+
 def roudoku_items():
-    """status/roudoku_*/result*.json（finalize.py が書く）。全編(result.json)があれば途中までは出さない。"""
+    """status/roudoku_*/result*.json（finalize.py が書く）。全編(result.json)があれば途中までは出さない。
+    v2（seg_items）がある朗読は、古いドライブ版を出さない。"""
+    if any(x["segs"] for x in seg_items()):
+        return []
     out = []
     for d in sorted(glob.glob(os.path.join(REPO, "status", "roudoku_*"))):
         res = [p for p in glob.glob(os.path.join(d, "result*.json"))]
@@ -200,12 +222,28 @@ button{margin-left:auto;font-size:15px;padding:9px 18px;border-radius:99px;borde
 button[disabled]{background:var(--line);color:var(--sub)}
 .p{margin-top:10px}.p iframe{width:100%;height:96px;border:0;border-radius:8px;background:#eee}
 .p a{font:12px -apple-system,sans-serif;color:var(--sub)}
+.p audio{width:100%}.s{font:12px -apple-system,sans-serif;color:var(--sub);margin:4px 0}
+.r{display:flex;gap:6px;align-items:center;font:12px -apple-system,sans-serif;color:var(--sub);margin-top:6px}
+.r .rb{margin:0;padding:6px 12px;font-size:13px;background:#fffdf8;color:var(--ink);border:1px solid var(--line)}
+.r .rb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 footer{max-width:760px;margin:auto;padding:0 18px 40px;color:var(--sub);font:11px/1.7 -apple-system,sans-serif}
 """
 
 JS = """
+var RATE=1.0,CUR=null;
+function rates(){return '<div class="r">速さ '+[0.8,1.0,1.2,1.5].map(function(x){return '<button type="button" class="rb'+(x==RATE?' on':'')+'" onclick="setRate(this,'+x+')">'+x.toFixed(1)+'</button>'}).join('')+'</div>'}
+function setRate(b,x){RATE=x;document.querySelectorAll('audio').forEach(function(a){a.playbackRate=x});
+document.querySelectorAll('.rb').forEach(function(e){e.classList.toggle('on',e.textContent==x.toFixed(1))})}
 function play(b){var c=b.closest('.c'),id=c.dataset.id,p=c.querySelector('.p');
-if(p.innerHTML){p.innerHTML='';b.textContent='▶ 聞く';return}
+if(p.innerHTML){var a0=p.querySelector('audio');if(a0)a0.pause();p.innerHTML='';b.textContent='▶ 聞く';return}
+if(c.dataset.segs){var L=JSON.parse(c.dataset.segs),i=0;
+if(CUR&&CUR!==p){var o=CUR.querySelector('audio');if(o)o.pause()}CUR=p;
+p.innerHTML='<audio controls preload="auto"></audio><div class="s"></div>'+rates();
+var a=p.querySelector('audio'),s=p.querySelector('.s'),nx=null;
+function go(k){i=k;a.src=L[i];a.playbackRate=RATE;a.play();s.textContent=(i+1)+' / '+L.length+' 区切り'+(c.dataset.more?'（続きは作成中）':'');}
+a.addEventListener('playing',function(){a.playbackRate=RATE;if(i+1<L.length){nx=new Audio();nx.preload='auto';nx.src=L[i+1]}});
+a.addEventListener('ended',function(){if(i+1<L.length)go(i+1)});
+go(0);b.textContent='閉じる';return}
 p.innerHTML='<iframe loading="lazy" allow="autoplay" src="https://drive.google.com/file/d/'+id+'/preview"></iframe>'+
 '<div><a href="https://drive.google.com/file/d/'+id+'/view" target="_blank" rel="noopener">鳴らないときはドライブで開く ↗</a></div>';
 b.textContent='閉じる'}
@@ -222,17 +260,22 @@ def card(it):
         meta.append('<span>%d分</span>' % max(1, round(it["min"])))
     meta.append('<span class="k%s">%s</span>' % (" a" if "Aoede" in it["voice"] else "", html.escape(it["voice"])))
     if it.get("partial"):
-        meta.append('<span class="k a">途中まで（続きは毎朝つくり足し中）</span>')
+        meta.append('<span class="k a">%s</span>' % ("%d/%d区切り・続きは毎朝つくり足し中" % (it["done_n"], it["total"]) if it.get("total") else "途中まで（続きは毎朝つくり足し中）"))
+    elif it.get("segs"):
+        meta.append('<span class="k">押してすぐ鳴る・速さ変更可</span>')
     if it.get("extra"):
         meta.append('<a href="enraku-roudoku-koe.html" style="color:inherit">声の聞き比べ</a>')
     btn = '<button onclick="play(this)">▶ 聞く</button>' if it.get("id") else '<button disabled>準備中</button>'
-    return ('<article class="c%s" data-id="%s" data-q="%s"><p class="t">%s</p><div class="m">%s%s</div><div class="p"></div></article>'
-            % (" new" if "Aoede" in it["voice"] else "", html.escape(it.get("id") or ""), html.escape(it["title"]), t, "".join(meta), btn))
+    extra_attr = ""
+    if it.get("segs"):
+        extra_attr = ' data-segs="%s"%s' % (html.escape(json.dumps(it["segs"])), ' data-more="1"' if it.get("partial") else "")
+    return ('<article class="c%s" data-id="%s"%s data-q="%s"><p class="t">%s</p><div class="m">%s%s</div><div class="p"></div></article>'
+            % (" new" if "Aoede" in it["voice"] else "", html.escape(it.get("id") or ""), extra_attr, html.escape(it["title"]), t, "".join(meta), btn))
 
 
 def build():
     ids = load(IDS, {})
-    items = roudoku_items()
+    items = [x for x in seg_items() if x["segs"]] + roudoku_items()
     for z in zunda_items():
         rec = ids.get(z["file"], {})
         if rec.get("missing"):
@@ -245,7 +288,8 @@ def build():
     doc = ("<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\">"
            "<meta name=robots content=noindex><title>円卓会議 読み上げ</title><style>%s</style></head><body>"
            "<header><h1>円卓会議 読み上げ</h1><p class=lead>1会議＝1枚。▶を押したカードだけ音が読み込まれます（ページ自体は音声を持たない）。"
-           "%d本（再生できる %d本）。音声はGoogleドライブ（たまごさんのアカウント）に置いています。</p></header>"
+           "%d本（再生できる %d本）。Aoede の朗読はこのページから直接・約3分ずつ順に流れ、速さを変えられます。"
+           "ずんだもんの110本は Google ドライブ（たまごさんのアカウント）から流すので、鳴るまで少しかかります。</p></header>"
            "<div class=bar><input type=search placeholder=\"題名でしぼる\" oninput=\"f(this.value)\"></div>"
            "<main>%s</main><footer>更新 %s ／ ずんだもん＝VOICEVOX（2026-09〜10）・Aoede＝Gemini TTS。"
            "朗読の続きができると自動でここに載ります。</footer><script>%s</script></body></html>"
@@ -257,6 +301,49 @@ def build():
     os.replace(tmp, PAGE)
     log("ページ", PAGE, len(doc.encode("utf-8")), "bytes", "%d/%d" % (ready, len(items)))
     return len(items), ready
+
+
+KOE_DIR = os.path.join(REPO, "share", "check", "enraku-roudoku")
+KOE_PAGE = os.path.join(REPO, "share", "check", "enraku-roudoku-koe.html")
+KOE_NOTE = {"Aoede": "本編に採用・抑揚（声の高さの揺れ）が最初の5人で一番小さい", "Despina": "2番目に平ら・少し速め",
+            "Kore": "しっかりめ", "Sulafat": "高めで温かい・上下が大きい", "Leda": "若め・抑揚が大きい・ゆっくり"}
+
+
+def build_koe():
+    """聞き比べページ（同じ一節を男女10声）。tts_loop.py が1声できるたびに koe.json を書いて呼ぶ。"""
+    k = load(os.path.join(KOE_DIR, "koe.json"), {})
+    vs = k.get("voices") or []
+    rows = []
+    for v in vs:
+        f = v.get("file")
+        note = KOE_NOTE.get(v["name"], "2026-10-11 追加")
+        au = ('<audio controls preload="none" src="enraku-roudoku/%s"></audio>' % html.escape(f)) if f else '<div class="m">準備中（無料枠の範囲で毎日少しずつ作っています）</div>'
+        rows.append('<div class="v%s"><span class="n">%s</span><span class="sx">%s</span><div class="m">%s</div>%s</div>'
+                    % (" pick" if v["name"] == "Aoede" else "", html.escape(v["name"]), html.escape(v["sex"]), html.escape(note), au))
+    ready = sum(1 for v in vs if v.get("file"))
+    doc = ("<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\">"
+           "<meta name=robots content=noindex><title>円卓会議 朗読｜声の聞き比べ（Gemini TTS）</title><style>"
+           "body{font-family:-apple-system,'Hiragino Sans',sans-serif;max-width:640px;margin:0 auto;padding:20px 16px 60px;background:#faf7f2;color:#222;line-height:1.7}"
+           "h1{font-size:20px;margin:0 0 4px}.sub{color:#666;font-size:13px;margin:0 0 14px}"
+           ".v{background:#fff;border:1px solid #e6e0d6;border-radius:12px;padding:12px 14px;margin:0 0 12px}.v.pick{border:2px solid #b5651d}"
+           ".n{font-weight:700;font-size:17px}.sx{font-size:12px;border:1px solid #ccc;border-radius:6px;padding:1px 7px;margin-left:8px;color:#555}"
+           ".m{font-size:12px;color:#666}audio{width:100%%;margin-top:6px}.r{position:sticky;top:0;background:#faf7f2;padding:8px 0;font-size:13px;z-index:2}"
+           ".r button{font-size:14px;padding:6px 12px;margin-left:4px;border-radius:99px;border:1px solid #ccc;background:#fff}.r button.on{background:#222;color:#fff}"
+           ".t{font-size:13px;background:#fff;border-left:3px solid #b5651d;padding:8px 10px;margin:0 0 14px;color:#444}"
+           "</style></head><body><h1>円卓会議 朗読｜声の聞き比べ</h1>"
+           "<p class=sub>Gemini の TTS の声（Aoede などは声の名前）。全員が下の同じ一節を読みます。%d/%d声。音量はそろえてあります。</p>"
+           "<p class=t>%s</p>"
+           "<div class=r>速さ <button onclick=\"R(this,.8)\">0.8</button><button class=on onclick=\"R(this,1)\">1.0</button><button onclick=\"R(this,1.2)\">1.2</button><button onclick=\"R(this,1.5)\">1.5</button></div>"
+           "%s<p class=m>更新 %s ・ 課金0円（Gemini 無料枠）・ <a href=\"enraku-yomiage.html\">円卓会議 読み上げへ</a></p>"
+           "<script>var X=1;function R(b,x){X=x;document.querySelectorAll('audio').forEach(function(a){a.playbackRate=x});"
+           "document.querySelectorAll('.r button').forEach(function(e){e.classList.toggle('on',e===b)})}"
+           "document.addEventListener('play',function(e){var a=e.target;a.playbackRate=X;document.querySelectorAll('audio').forEach(function(o){if(o!==a)o.pause()})},true)</script>"
+           "</body></html>" % (ready, len(vs), html.escape(k.get("text") or ""), "".join(rows), time.strftime("%Y-%m-%d %H:%M")))
+    tmp = KOE_PAGE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(doc)
+    os.replace(tmp, KOE_PAGE)
+    log("聞き比べページ", ready, "/", len(vs))
 
 
 def self_test():
@@ -276,5 +363,7 @@ if __name__ == "__main__":
     os.makedirs(ST, exist_ok=True)
     if "--upload" in a:
         build(); upload()
+    if "--koe" in a:
+        build_koe()
     if "--build" in a or not a:
         build()
