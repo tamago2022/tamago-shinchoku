@@ -635,7 +635,6 @@ while :; do
   { tick_every 40 || [ -f "$REPO/status/gomi_assyuku.go" ]; } && ( rm -f "$REPO/status/gomi_assyuku.go"; python3 "$REPO/tools/gomi_assyuku.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_kyuukyuu2.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_hakaru2.go" ] && ( python3 "$REPO/tools/youryou_hakaru2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
-  [ -f "$REPO/status/youryou_hakaru.go" ] && ( python3 "$REPO/tools/youryou_hakaru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
