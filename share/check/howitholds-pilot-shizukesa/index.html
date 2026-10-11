@@ -1,0 +1,57 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How It Holds パイロット「静けさ」88秒（2版）</title>
+<style>body{font-family:-apple-system,"Hiragino Sans",sans-serif;background:#efeae0;color:#2e2c2a;margin:0;padding:16px;line-height:1.7}
+main{max-width:980px;margin:0 auto}h1{font-size:20px;margin:.2em 0}h2{font-size:16px;margin-top:28px;border-bottom:1px solid #c8372d;padding-bottom:4px}
+.pair{display:grid;grid-template-columns:1fr;gap:18px}@media(min-width:900px){.pair{grid-template-columns:1fr 1fr}}
+figure{margin:0}video{width:100%;background:#000;border-radius:6px}figcaption{font-size:14px;margin-top:4px}
+img{width:100%;border-radius:4px}table{border-collapse:collapse;width:100%;font-size:14px}td{border-bottom:1px solid #d6d0c4;padding:5px 8px 5px 0;vertical-align:top}
+.s{font-weight:700;color:#c8372d;white-space:nowrap}small{color:#5e6e7e}</style></head><body><main>
+<h1>How It Holds パイロット「静けさ」— Black Start 88秒</h1>
+<p><small>2026-10-11 ／ 共通制作指示書（BRIEF_2026-10-11）にもとづく試作。12カット・ズーム/パンなし・和紙と水彩・赤い一本線。英語ナレーション。</small></p>
+<div class="pair">
+<figure><video id="a" controls playsinline preload="none" poster="poster.jpg"></video><figcaption><b>A 版：環境音だけ</b>（風・水・ダムの水音・足音・スイッチ・送電線のうなり）</figcaption></figure>
+<figure><video id="b" controls playsinline preload="none" poster="poster.jpg"></video><figcaption><b>B 版：控えめな音楽つき</b>（自作合成のピアノ数音とドローン）</figcaption></figure>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
+<script>["a","b"].forEach(function(k){var v=document.getElementById(k),s=k+"/index.m3u8";if(v.canPlayType("application/vnd.apple.mpegurl")){v.src=s}else if(window.Hls&&Hls.isSupported()){var h=new Hls();h.loadSource(s);h.attachMedia(v)}});</script>
+
+<h2>12カット一覧</h2>
+<img src="sheet.jpg" alt="12カットの一覧">
+
+<h2>自己採点（指示書「パイロットで検証する5点」・各10点・辛口）</h2>
+<table>
+<tr><td class="s">6</td><td><b>1. 水彩・和紙の美術品質の統一</b><br>和紙の地・霧・墨の線・6色パレットは12カットでそろった。ただし C08 の発電機室と C11 の計器は「デジタル挿絵」寄りで浮く。C01 は暗く濁る。赤い一本線はスマホの大きさだとほとんど見えない。</td></tr>
+<tr><td class="s">6</td><td><b>2. 静かな画面での視聴体験</b><br>12カット・平均7.3秒・ズーム/パン0・1コマあたりの画面変化は平均1.7（最大17.6）で「止まらず、騒がず」は達成。ただし C06・C07 が2.4〜2.8秒と短く、ここで静けさが途切れる。冒頭7秒がほぼ真っ暗で、画だけでは引き込めていない。</td></tr>
+<tr><td class="s">6</td><td><b>3. 音声だけで成立する物語</b><br>「Listen. This is a city with the power gone.」で始まり、発電所は自分では起きられない→山のダム→一本の線→脈、の流れは耳だけで追える。文字起こし一致 97.1%（A）。ただし要の一語 “gravity” が “grab it” と聞き取られた（声の発音が弱い）。数字を全部抜いたので「発見」が薄い。</td></tr>
+<tr><td class="s">6</td><td><b>4. 映像・音・ナレーションの一体感</b><br>両版とも −16.0 LUFS・ピーク −2.2 dB、2秒以上の無音0。語りの頭とカットの頭、「a single line comes alive」と赤い線が灯る瞬間をそろえた。ただし音は聴いて確かめていない（音を鳴らす操作は禁止のため・数値と文字起こしのみ）。B 版は文字起こしに台本に無い一句が入った＝音楽が声に被っている疑い（未確認）。</td></tr>
+<tr><td class="s">7</td><td><b>5. AIが継続生産できるコストと工程</b><br>外部API 36.23円（上限60円）、絵の作り直し0枚、実作業 約2時間（うち待ち約1時間）。90秒1本 ≒ 31円で量産できる。減点：工場側で2回つまずいた（Claude Code 2.1.278 が Opus 5.5 非対応／同時上限の空き待ち76分）、3時間ルールで仕上げ前に切られ、最後のページ公開は別の担当が引き取った。</td></tr>
+</table>
+
+<h2>数字</h2>
+<table>
+<tr><td>長さ</td><td>88.0秒 ／ 1920×1080 ／ 30fps</td></tr>
+<tr><td>カット</td><td>12（平均7.3秒・最短2.4秒・最長14.9秒）</td></tr>
+<tr><td>語り</td><td>英語118語（Gemini TTS・無料枠）</td></tr>
+<tr><td>音量</td><td>A：−16.0 LUFS / LRA 7.6 ／ B：−16.0 LUFS / LRA 6.2 ／ ピーク −2.2 dB</td></tr>
+<tr><td>お金</td><td>36.23円（fal：見本 flux-3 ×2［1枚は受信失敗・課金扱い］＋本番 flux-2 flash edit ×11）。家計簿「HowItHolds パイロット静けさ」13行</td></tr>
+<tr><td>元データ</td><td><a href="https://github.com/tamago2022/howitholds/tree/main/pilot_shizukesa">github.com/tamago2022/howitholds/pilot_shizukesa</a>（絵コンテ・画風ブリーフ・語り・採点）</td></tr>
+</table>
+
+<h2>実測データ（生）</h2>
+<pre style="white-space:pre-wrap;font-size:12px;background:#e4ded2;padding:8px;border-radius:4px">実測: 2026-10-11 ffmpeg（Mac上）
+A_ambient: Duration 00:01:28.04 / 1920x1080 30fps / ebur128 I: -16.0 LUFS  LRA: 7.6 LU  Peak: -2.2 dBFS / silencedetect(-45dB, 2s) = 0
+B_music:   Duration 00:01:28.04 / 1920x1080 30fps / ebur128 I: -16.0 LUFS  LRA: 6.2 LU  Peak: -2.2 dBFS / silencedetect(-45dB, 2s) = 0
+render_stats.json: {"frames": 1321, "xfade_frames": 231, "reveal_frames": 99, "mean_abs_diff_per_0.13s": 1.681, "max_abs_diff_per_0.13s": 17.63}
+stt_mixA_check.json: ref_words 136 / heard 136 / matched 132 / match_pct 97.1（一致 97.1%） / diffs wires→wire, waiting→(なし), falls→fall, gravity→grab it
+stt_mixB_check.json: ref_words 136 / heard 142 / matched 131 / match_pct 96.3（一致 96.3%） / diffs 上記＋stumbles→stumbled, 挿入 "the light is a little brighter"
+timeline.json カット長(秒): C01 7.52 / C02 3.20 / C03 5.65 / C04 11.07 / C05 10.84 / C06 2.82 / C07 2.43 / C08 5.75 / C09 8.90 / C10 7.69 / C11 7.28 / C12 14.89（計 88.04）
+kakeibo.jsonl 案件「HowItHolds パイロット静けさ」: fal flux-3 2行×5.063円 + fal flux-2 flash edit 11行×2.373円 + Gemini TTS 3行×0円 = 36.23円</pre>
+
+<h2>次に直すこと</h2>
+<ul>
+<li>赤い線を太く・長く（スマホで見える太さに）。C09 以降は線が画面を横切る構図に。</li>
+<li>C08・C11 を見本参照で描き直し、和紙の地を強める。C01 を少し明るく、最初の5秒に「何かが止まっている」小さな手がかり（消えかけの窓1つ等）。</li>
+<li>“gravity” を言い直し（区切って読む・別の声）。B 版は声の帯域だけ音楽を下げる。</li>
+<li>工場：How It Holds の子は Claude Code 2.1.296 以上で起動する（Opus 5.5 のため）。</li>
+</ul>
+</main></body></html>
