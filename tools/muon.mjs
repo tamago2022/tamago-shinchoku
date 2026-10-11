@@ -49,6 +49,17 @@ export async function muonContext(ctx) {
 export async function muonLaunch(browserType, opts = {}) {
   const name = typeof browserType.name === "function" ? browserType.name() : "";
   const o = { ...opts };
+  // 2026-10-11 17:04：Playwright 1.62 の WebKit（webkit_mac14_special-*）は macOS 14.3 で起動直後に SIGBUS で落ち、
+  // Playwright.app の形なので、たまごさんの画面に「予期しない理由で終了しました」の窓が出た。起動前に止める。
+  // iPhone 相当の確認は Chromium（headless shell＝窓の出ない裸の実行ファイル）のモバイル設定で行う（tools/kirikae_sokutei.mjs）。
+  if (name === "webkit") {
+    let exe = "";
+    try { exe = browserType.executablePath(); } catch {}
+    if (/webkit_mac14_special/.test(exe) || process.env.TAMAGO_ALLOW_WEBKIT !== "1") {
+      throw new Error("WebKit は使わない（macOS 14.3 で落ちて画面に窓が出る）。Chromium のモバイル設定で確認する");
+    }
+  }
+  if (name === "chromium") o.headless = o.headless !== false; // 画面に出さない（headless shell）
   if (name === "chromium") o.args = [...(o.args || []), ...MUON_ARGS];
   if (name === "firefox") o.firefoxUserPrefs = { ...(o.firefoxUserPrefs || {}), ...MUON_FIREFOX };
   const b = await browserType.launch(o);

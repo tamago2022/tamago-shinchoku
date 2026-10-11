@@ -1,9 +1,9 @@
-// 画面の切り替え測定（iPhone相当・WebKit・4G相当に絞る・無音・画面に出さない）
+// 画面の切り替え測定（iPhone相当・4G相当に絞る・無音・画面に出さない）
 // たまごさん指示（2026-10-11）：「こういう動きのチェックも毎回ちゃんとして。重いは悪」
 //
 //   node tools/kirikae_sokutei.mjs [--base URL] [--stale] [--limit 3000] [--out file.json]
 //
-//   通常：トップ → 棚 → 曲ページ → 特集 → 戻る を、リンクを押して（画面内の遷移で）通し、
+//   通常：トップ → 棚 → 曲ページ →（ホーム）→ 特集 → 戻る を、リンクを押して（画面内の遷移で）通し、
 //         1回の切り替えが何秒かを測る。
 //   --stale：古い版を開いたまま新しい版が公開された状態を作る（開いた後は、まだ読んでいない
 //         塊を全部404にし、版の番号 x-deployment-id も別のものに変える。ページを丸ごと
@@ -11,7 +11,15 @@
 //   不合格（exit 1）：1回でも limit 秒を超えた／白い画面のまま／「読み込み直します」が出た／
 //         「工事中」が出た／行き先に着かなかった。
 //
-//   回線（4G相当）：往復 100ms・下り 5Mbps を、全部の通信で1本の回線として共有させる。
+//   ★ブラウザ（2026-10-11 17:04 の事故から）：Playwright の WebKit（~/Library/Caches/ms-playwright/
+//     webkit_mac14_special-2251）は macOS 14.3 で起動直後に SIGBUS で落ち、Playwright.app という
+//     アプリの形なので、たまごさんの画面に「予期しない理由で終了しました」の窓が出た
+//     （~/Library/Logs/DiagnosticReports/Playwright-2026-10-11-1703xx.ips）。
+//     → WebKit はやめ、Chromium の headless shell（アプリの形ではない裸の実行ファイル＝落ちても窓が出ない・
+//       画面にも出ない）で、iPhone 15 と同じ画面幅・指タッチ・iPhoneの名乗り にして測る。
+//     → 同時に1つだけ（status/kirikae/.lock）。終わったら・止まったら必ずブラウザを閉じる（4分で強制終了）。
+//
+//   回線（4G相当）：Chromium の回線絞り（往復 100ms・下り 5Mbps・上り 2Mbps）。
 //   YouTube の埋め込み・広告は止める（無音・重さの測定対象外）。
 import { createRequire } from "node:module";
 import os from "node:os";
@@ -20,9 +28,7 @@ import fs from "node:fs";
 import { muonLaunch } from "/Users/mac/tamago/tamago-shinchoku/tools/muon.mjs";
 
 const require = createRequire(import.meta.url);
-const { webkit, devices } = require(
-  process.env.PWCORE || path.join(os.homedir(), ".tamago", "node_modules", "playwright-core"),
-);
+const { chromium, devices } = require(path.join(os.homedir(), ".tamago", "node_modules", "playwright-core"));
 
 const arg = (k, d) => {
   const i = process.argv.indexOf(k);
@@ -32,23 +38,56 @@ const BASE = (arg("--base", "https://joy-relief-station.lovable.app")).replace(/
 const STALE = process.argv.includes("--stale");
 const LIMIT = Number(arg("--limit", "3000"));
 const OUT = arg("--out", "");
-const RTT = 100;
-const BPS = (5 * 1000 * 1000) / 8; // 5Mbps
 const ORIGIN = new URL(BASE).origin;
 
 const BLOCK = /youtube\.com|youtube-nocookie|googlevideo|doubleclick|googlesyndication|google-analytics|googletagmanager/;
 
-const browser = await muonLaunch(webkit, { headless: true });
-const ctx = await browser.newContext({ ...(devices["iPhone 15"] || devices["iPhone 14"]) });
-const page = await ctx.newPage();
+// ---- 同時に1つだけ ----
+const LOCK = "/Users/mac/tamago/tamago-shinchoku/status/kirikae/.lock";
+fs.mkdirSync(path.dirname(LOCK), { recursive: true });
+try {
+  const st = fs.statSync(LOCK);
+  if (Date.now() - st.mtimeMs < 6 * 60 * 1000) {
+    console.error("別の切り替え測定が走っています（同時に立ち上げない）");
+    process.exit(3);
+  }
+} catch {}
+fs.writeFileSync(LOCK, String(process.pid));
 
-// ---- 回線を絞る（1本の回線を共有） ----
-let linkFree = 0;
+const iphone = devices["iPhone 15"] || devices["iPhone 14"];
+const browser = await muonLaunch(chromium, { headless: true }); // headless shell＝画面に出ない・アプリの形でない
+const killer = setTimeout(async () => {
+  console.error("4分を超えたので止めます");
+  try { await browser.close(); } catch {}
+  try { fs.unlinkSync(LOCK); } catch {}
+  process.exit(2);
+}, 4 * 60 * 1000);
+const ctx = await browser.newContext({
+  viewport: iphone.viewport,
+  deviceScaleFactor: iphone.deviceScaleFactor,
+  isMobile: true,
+  hasTouch: true,
+  userAgent: iphone.userAgent,
+});
+const page = await ctx.newPage();
+const cdp = await ctx.newCDPSession(page);
+await cdp.send("Network.enable");
+await cdp.send("Network.emulateNetworkConditions", {
+  offline: false,
+  latency: 100,
+  downloadThroughput: (5 * 1000 * 1000) / 8,
+  uploadThroughput: (2 * 1000 * 1000) / 8,
+});
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // ---- 古い版のまま新しい版が出た状態 ----
 let deployed = false; // true の間：まだ読んでいない塊は404
 const seen = new Set();
 let docLoads = 0;
+page.on("requestfinished", (r) => {
+  const u = new URL(r.url());
+  if (u.origin === ORIGIN && /\.(m?js|css)$/.test(u.pathname)) seen.add(u.pathname);
+});
 
 await page.route("**/*", async (route) => {
   const req = route.request();
@@ -56,34 +95,20 @@ await page.route("**/*", async (route) => {
   if (BLOCK.test(url)) return route.abort();
   const u = new URL(url);
   const same = u.origin === ORIGIN;
-  const isAsset = same && /\.(m?js|css)$/.test(u.pathname);
-  if (isAsset && deployed && !seen.has(u.pathname)) {
-    await sleep(RTT);
+  if (deployed && same && /\.(m?js|css)$/.test(u.pathname) && !seen.has(u.pathname)) {
     return route.fulfill({ status: 404, contentType: "text/plain", body: "Not Found" });
   }
-  let resp;
-  try {
-    resp = await route.fetch({ timeout: 60000 });
-  } catch {
-    return route.abort();
+  if (deployed && same && req.method() === "HEAD") {
+    try {
+      const resp = await route.fetch({ timeout: 30000 });
+      const headers = { ...resp.headers() };
+      if (headers["x-deployment-id"]) headers["x-deployment-id"] = headers["x-deployment-id"].replace(/psr2\.[^.]+/, "psr2.00000000-0000-4000-8000-00000000new1");
+      return route.fulfill({ status: resp.status(), headers, body: "" });
+    } catch {
+      return route.abort();
+    }
   }
-  let body;
-  try {
-    body = await resp.body();
-  } catch {
-    body = Buffer.alloc(0);
-  }
-  const now = Date.now();
-  const start = Math.max(now + RTT, linkFree);
-  const done = start + (body.length / BPS) * 1000;
-  linkFree = done;
-  await sleep(done - now);
-  if (isAsset) seen.add(u.pathname);
-  const headers = { ...resp.headers() };
-  if (deployed && same && headers["x-deployment-id"]) {
-    headers["x-deployment-id"] = headers["x-deployment-id"].replace(/psr2\.[^.]+/, "psr2.00000000-0000-4000-8000-00000000new1");
-  }
-  return route.fulfill({ status: resp.status(), headers, body });
+  return route.continue();
 });
 
 const logs = [];
@@ -240,7 +265,9 @@ result.fullReloads = docLoads - docBefore;
 result.logs = logs.slice(0, 80);
 result.hydrateWaitsMs = hydrateWaits;
 result.ok = ok;
+clearTimeout(killer);
 await browser.close();
+try { fs.unlinkSync(LOCK); } catch {}
 const line = result.steps.map((s) => `${s.name}${s.ms == null ? "×" : (s.ms / 1000).toFixed(1) + "秒"}${s.ok ? "" : "(NG)"}`).join(" / ");
 result.summary = `${STALE ? "[古い版を開いたまま公開]" : "[通常]"} 最初${init.ms ? (init.ms / 1000).toFixed(1) + "秒" : "×"} / ${line} / 丸ごと読み直し${result.fullReloads}回`;
 console.log(JSON.stringify(result, null, 1));
