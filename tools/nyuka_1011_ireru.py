@@ -31,8 +31,21 @@ def js(s):
     return json.dumps(s, ensure_ascii=False)
 
 
+def note_of(s):
+    """動画の出どころだけを事実として書く（出典＝その動画のURL）。年号・代表曲などの断定は書かない。"""
+    ch = s.get("channel") or ""
+    if not ch:
+        return ""
+    if ch.endswith(" - Topic"):
+        return "YouTubeの公式音源（%s）。" % ch
+    return "公式チャンネル「%s」の配信。" % ch
+
+
 def song_line(s):
-    return '    { id: %s, title: %s, note: "", youtubeId: %s, ownerAdded: true }' % (js(s["song_id"]), js(s["title"]), js(s["youtubeId"]))
+    note = note_of(s)
+    src = (', src: %s' % js("https://www.youtube.com/watch?v=" + s["youtubeId"])) if note else ""
+    return '    { id: %s, title: %s, note: %s%s, youtubeId: %s, ownerAdded: true }' % (
+        js(s["song_id"]), js(s["title"]), js(note), src, js(s["youtubeId"]))
 
 
 def match_bracket(text, i):
@@ -92,7 +105,7 @@ def apply(text, data):
         pat = re.compile(r'^\s*\{ id: %s,[^\n]*youtubeId: "%s"[^\n]*\},?\n' % (re.escape(js(mv["from_song_id"])), mv["youtubeId"]), re.M)
         if pat.search(text):
             text = pat.sub("", text, count=1)
-            text = insert_into(text, mv["to_artist_id"], [song_line({"song_id": mv["to_song_id"], "title": mv["title"], "youtubeId": mv["youtubeId"]})])
+            text = insert_into(text, mv["to_artist_id"], [song_line({"song_id": mv["to_song_id"], "title": mv["title"], "youtubeId": mv["youtubeId"], "channel": mv.get("channel")})])
             log.append("移した %s → %s/%s" % (mv["from_artist_id"], mv["to_artist_id"], mv["to_song_id"]))
     have = set(re.findall(r'youtubeId: "([A-Za-z0-9_-]{11})"', text))
     # 2) 既存アーティストへ
