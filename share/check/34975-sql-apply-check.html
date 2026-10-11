@@ -51,26 +51,72 @@
 <h1>#34975 SQL適用は、もう人の手を離れていました</h1>
 <div class="date">2026-10-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-2026-08-08に『SupabaseのSQL Editorに人間が直接貼るしかない場合のSQL』を聞かれた件。実測したら、必要だった3列（バッジの保存先・追加メディア・ゴミ箱復元）はすでに本番に適用済みでした。残るテーブル1つ（変身屋の注文保存）は、今のコードがそもそも使っていないため不要です。変身屋ページ自体は本番で正常に動いています。
+2026-08-08に聞かれた「人間がSupabaseのSQL Editorに直接貼るしかない場合のSQL」を実測しました。必要だった3列（バッジの保存先・追加メディア・ゴミ箱復元）は、8月のうちにLovable経由でもう本番に適用済みでした。残る1つ（変身屋の注文保存テーブル）は、今のコードが保存機能自体を使っていないため、今すぐ貼る必要はありません。変身屋ページ自体は本番で正常に動いています。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>本番 /room/henshin のHTTP応答コード</span></div>
   <div class="num"><b>112,863バイト</b><span>同ページの本文サイズ（空ではない）</span></div>
-  <div class="num"><b>0件</b><span>今すぐ必要なSQL適用の残り件数</span></div>
+  <div class="num"><b>3/4列</b><span>必要だった列・テーブルのうち適用済み（残り1つは今は不要と判明）</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番の変身屋ページ</b><a href="https://joy-relief-station.lovable.app/room/henshin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/henshin</a></li>
-  <li><b>判定の裏付け(apply-missing-sql.md)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/apply-missing-sql.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/apply-missing-sql.md</a></li>
+  <li><b>本番の変身屋ページ（これが動いていればOK）</b><a href="https://joy-relief-station.lovable.app/room/henshin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/henshin</a></li>
 </ul>
 
+<h2>④ 前後の違い</h2>
+<div class="note">
+見た目は変わっていません（裏側のデータ確認だけの件のため、画面のスクリーンショットはありません）。変わったのは「赤信号だったものが実は問題なしと分かった」という判定です。
+</div>
 
+<h2>もし本当に人の手でSQLを貼る必要が出た時のための本文（今は貼らなくて良いもの）</h2>
+<div class="note">
+今すぐ必要な作業は0件です。将来「変身屋の申込を保存したい」という話が出た時だけ、下のSQLをSupabaseのSQL Editorに貼ってください（店主ご本人の確認後に、の注記付きで用意してあったものです）。
+<pre style="white-space:pre-wrap;background:var(--t-panel);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:0.78rem;overflow-x:auto;">-- ごきげん変身屋：申込データの保存テーブル＋写真保存用バケット
+--
+-- ⚠️ このmigrationはまだ適用しない（supabase db push 禁止）。
+-- Kohei確認後に適用する。現時点ではフォームUIのみ実装し、送信は未接続。
+
+CREATE TABLE public.henshin_orders (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+
+  theme TEXT NOT NULL,             -- 選んだ変身テーマのid
+  note TEXT,                       -- 補足欄（どんな人・ペットか）
+  photo_path TEXT,                 -- storage.objects内のパス（henshin-photosバケット）
+  consent BOOLEAN NOT NULL DEFAULT false,
+
+  status TEXT NOT NULL DEFAULT 'pending', -- pending / delivered
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+CREATE INDEX henshin_orders_status_idx
+  ON public.henshin_orders(status, created_at DESC);
+
+-- 申込フォームからの新規insertのみ許可。読み出し・更新はservice_role（運営側）のみ。
+ALTER TABLE public.henshin_orders ENABLE ROW LEVEL SECURITY;
+GRANT INSERT ON public.henshin_orders TO anon, authenticated;
+GRANT ALL ON public.henshin_orders TO service_role;
+
+CREATE POLICY "Anyone can submit a henshin order"
+  ON public.henshin_orders FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- 写真保存用バケット（非公開：顔写真を含むため一覧公開しない）
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('henshin-photos', 'henshin-photos', false)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Anyone can upload a henshin photo"
+  ON storage.objects FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (bucket_id = 'henshin-photos');
+</pre>
+</div>
 
 <footer>
 このページは #34975 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
