@@ -62,6 +62,23 @@ def run(max_files=None):
             log("圧縮できず %s (%s)" % (os.path.basename(p), e))
             if "No space" in str(e):
                 break
+    # 2026-10-12 たまごさん「溜まるものはiMac HDDへ。本体には溜めない」→ 圧縮済みはHDDへ移す
+    moved = 0
+    try:
+        sys.path.insert(0, HERE)
+        import hdd_okiba
+        if hdd_okiba.ok():
+            d = hdd_okiba.dest("控え", "_1142_gomi")
+            for p in glob.glob(os.path.join(BOX, "*.gz")):
+                try:
+                    shutil.move(p, os.path.join(d, os.path.basename(p)))
+                    moved += 1
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    if moved:
+        log("圧縮済み %d個を iMac HDD（Mac標準置き場/控え/_1142_gomi）へ移した" % moved)
     old = 0
     cut = time.time() - GZ_DAYS * 86400
     for p in glob.glob(os.path.join(BOX, "*.gz")):

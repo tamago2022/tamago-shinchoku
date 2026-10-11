@@ -634,6 +634,10 @@ while :; do
   #   控え箱(status/_1142_gomi)が上限なしで10.8GBに太っていた主犯。古い控えを gzip（消さない）。10分おき。
   { tick_every 40 || [ -f "$REPO/status/gomi_assyuku.go" ]; } && ( rm -f "$REPO/status/gomi_assyuku.go"; python3 "$REPO/tools/gomi_assyuku.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_kyuukyuu2.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_hakobu3.go" ] && ( python3 "$REPO/tools/youryou_hakobu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  # 2026-10-12 作業場と制作の中間ファイルを本体に溜めない（push済みは消す・未保存はiMac HDDへ写して消す）。1時間おき。
+  tick_every 240 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_shirabe3.go" ] && ( python3 "$REPO/tools/youryou_shirabe3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_hakaru2.go" ] && ( python3 "$REPO/tools/youryou_hakaru2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る

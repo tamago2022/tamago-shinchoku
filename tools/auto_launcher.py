@@ -2658,6 +2658,17 @@ def launch_one(item, q, alive, safe_max):
     #   リポジトリ配下の .worktrees は他のAIツールから「プロジェクト」として拾われていた。
     #   ドット始まりの、どのツールの索引にも入らない場所へ移す。
     WT_BASE = "/Users/mac/Documents/AI作業/.worktrees"
+    # 2026-10-12 たまごさん「HDDが外れているときは、本体に溜めずに処理を止める」。
+    #   作業場の片付け（未保存分をiMac HDDへ写してから消す＝tools/worktree_taihi.py）が
+    #   HDD無しでは回らず、本体に溜まる一方になるため、HDDが無い間は新しい作業場を作らない。
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import hdd_okiba
+        if not hdd_okiba.ok():
+            log("見送り: iMac HDD がつながっていません（本体に溜めないため発車しない）")
+            return False
+    except Exception:
+        pass
     try:
         os.makedirs(WT_BASE, exist_ok=True)
     except Exception:
