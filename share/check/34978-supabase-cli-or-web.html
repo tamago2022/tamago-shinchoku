@@ -52,12 +52,12 @@
 <div class="date">2026-10-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-結論：<b>AI側はCLIで本番Supabaseに直接SQLを実行できません。人間がWeb画面（Supabase SQL Editor）で貼るか、Lovableのチャット経由で流すしかありません。</b>理由は権限ではなく認証情報：このMac環境に<code>SUPABASE_SERVICE_ROLE_KEY</code>・<code>SUPABASE_ACCESS_TOKEN</code>・DB接続パスワードのどれも置かれていません（<code>.env</code>にあるのは公開用の<code>SUPABASE_PUBLISHABLE_KEY</code>のみ、実測で変数名だけ確認済み）。Supabase CLI自体は<code>npx supabase</code>で起動できますが、ログインも接続もできないため空の道具です。
+結論：<b>AI側はSupabase CLIで本番にSQLを実行できません。人間がWeb画面（Supabase SQL Editor）に貼るか、Lovableのチャット経由で流すしかありません。</b>理由は「権限」ではなく「手元に鍵が無い」ことです。Supabase CLI自体はこのMacで動かせます（<code>npx supabase --version</code> → 2.120.0 で起動成功）。しかし本番につなぐには<code>SUPABASE_ACCESS_TOKEN</code>か、パスワード入りのDB接続文字列、または<code>SUPABASE_SERVICE_ROLE_KEY</code>のどれかが必要で、そのどれもこの作業環境には置かれていません（<code>.env</code>にあるのは誰でも読み書き制限付きで使える公開キー<code>SUPABASE_PUBLISHABLE_KEY</code>だけ。値は見ずに変数名だけ確認しました）。GitHub Actions側のSecretsにも同じ鍵は登録されていません（過去のセッションが<code>gh secret list</code>で実測済み）。つまりAIは「流す」道具（CLI）は持てても、「鍵」が無いので実行できません。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>0件</b><span>AI側で実行できたSQL適用（今回・過去とも）</span></div>
+  <div class="num"><b>0件</b><span>AI側で実行できた本番SQL適用（今回・過去とも）</span></div>
   <div class="num"><b>1件</b><span>現在も本番に未適用のテーブル（henshin_orders）</span></div>
   <div class="num"><b>2通り</b><span>唯一の実行経路（①店主がSQL Editorへ貼る②Lovableチャットに頼む）</span></div>
 </div>
@@ -66,14 +66,19 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>根拠ファイル1：docs/operations/rls-lockdown.md</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/rls-lockdown.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/rls-lockdown.md</a></li>
-  <li><b>根拠ファイル2：見回りスクリプトの実行結果（henshin_ordersが今も無い）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-db-schema.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-db-schema.mjs</a></li>
+  <li><b>本番サイト（ごきげん補給所／このRLSロックダウンの対象サイト）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Supabase CLIはこのMacで起動できるか</td><td class="yes">できる（npx supabase 2.120.0）</td></tr>
+<tr><td>本番DBに接続する鍵（ACCESS_TOKEN／DB接続文字列／SERVICE_ROLE_KEY）がこの環境にあるか</td><td class="no">無い（.envの変数名を確認。あるのは公開キーのみ）</td></tr>
+<tr><td>本番の実データで欠けを見回った結果</td><td class="yes">henshin_ordersテーブルのみ未適用、他8項目は適用済み（node scripts/patrol/check-db-schema.mjs を実行）</td></tr>
+</table>
 
 <footer>
-実測：2026-10-12、このセッションで<code>npx supabase --version</code>（起動は成功）・<code>.env</code>の変数名確認（値は見ていない）・<code>node scripts/patrol/check-db-schema.mjs --sql</code>（henshin_ordersが未適用のSQLコメントを出力）の3つを実際に実行して確認。推測では書いていません。
+実測内容（2026-10-12・このセッションで実際に実行）：①<code>npx supabase --version</code>→起動成功（2.120.0）、CLI自体は動くが本番への接続情報は別問題。②<code>.env</code>の変数名だけをマスクして確認→<code>SUPABASE_URL</code>と<code>SUPABASE_PUBLISHABLE_KEY</code>（公開キー）のみで、書き込み・DDL権限を持つ鍵は無し。③<code>node scripts/patrol/check-db-schema.mjs</code>を実行→公開キーで本番の実データへ接続し、8項目は適用済み・henshin_ordersの1テーブルだけ未適用と判明、スクリプト自身も「AIはSQLを流せません。店主がSupabaseのSQL Editorへ貼る必要があります」と出力。<br>根拠（リポジトリ内の正本 docs/operations/rls-lockdown.md より転記。このファイルはたまごさんが開けない非公開リポジトリ内にあるため、リンクではなく本文に引用します）：「適用できるのは次の2経路だけで、どちらも店主のログインが要る。1. Supabase の SQL Editor へ貼って実行する　2. Lovable 側で流す。AI側にはDB接続情報もSupabase CLIも無いため、AIはSQLを書くことはできても流すことはできない。」
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
