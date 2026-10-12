@@ -115,6 +115,13 @@ def main():
     if not os.path.exists(GO):
         return
     os.remove(GO)
+    # 2026-10-12 実測：心臓のlaunchd便が立て直される(kickstart -k)たびに、心臓から生まれた
+    #   長い処理がプロセスグループごと道連れで消えていた（この便が3回、黙って途中で消えた）。
+    #   自分のセッションを持って、道連れにされないようにする。
+    try:
+        os.setsid()
+    except Exception:
+        pass
     res = {"started": time.strftime("%F %T"), "free_gb_start": free_gb(), "hdd": hdd_okiba.ok(),
            "state": "作業中", "steps": []}
     save(res)

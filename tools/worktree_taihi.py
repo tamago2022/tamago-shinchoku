@@ -171,6 +171,10 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
+        os.setsid()  # 心臓の立て直しで道連れにされない（tar/rsync の途中で消えると写しが半端になる）
+    except Exception:
+        pass
     import fcntl
     _lf = open(os.path.join(REPO, "status", ".worktree_taihi.lock"), "w")
     try:
