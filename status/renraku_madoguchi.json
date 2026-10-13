@@ -1,0 +1,53 @@
+{
+  "_comment": "外部連絡の窓口台帳。相手→窓口の調べ物を二度とやり直さないための貯蔵庫。896番で新設。",
+  "line_creators_market": {
+    "aliases": ["LINE Creators Market", "LINEクリエイターズマーケット", "LINE", "LINEスタンプ"],
+    "type": "webform",
+    "url": "https://contact-cc.line.me/serviceId/10569",
+    "country": "domestic",
+    "cdp_port": 9224,
+    "post_open_click": "ログインせずにつづける",
+    "email_selector": "input#FnReplyMail",
+    "body_selector": "textarea[name='mdInput01SummaryTextarea']",
+    "reply_from_domains": ["line.me", "line-cc.com", "linecorp.com"],
+    "note": "お問い合わせフォーム。「ログインせずにつづける」ボタンを押すと到達（896番でCDP直叩きにより自動クリック成功を実測。button.mdMN03EtcLink01）。返信用メールアドレス欄(input#FnReplyMail)と自由記述本文欄(textarea[name=mdInput01SummaryTextarea])はDOM上に常時存在しCDPのfillで自動入力できることを896番2回目で確認済み（値はセットされるが「カテゴリ」「詳細」の見た目ドロップダウンに連動しているカスタムUIのラベル表示だけは自動で書き換わらない）。国/機種/サービス/カテゴリ/詳細の5段カスタムselectはネイティブselectへの値注入とJS製の見た目UIが分離しておりclick操作でのUI連動までは896番2回目時点で未達成、既存 tools/line_inquiry_prepare.mjs にPlaywright版のクリック手順あり（896番実測ではplaywright-core 1.62.1がChrome152系のBrowser.setDownloadBehaviorで接続失敗、CDP直叩きへの移植が必要）。CDPポート9224・プロファイル ~/.tamago/chrome-line。",
+    "investigated_at": "2026-09-17",
+    "source": "tools/line_inquiry_prepare.mjs 実測ログ・791/801番申し送り・896番CDP直叩き実測（2回目でemail_selector/body_selector追加）"
+  },
+  "line_stamp_maker": {
+    "aliases": ["LINEスタンプメーカー", "LINE Stamp Maker"],
+    "type": "webform",
+    "url": "https://contact-cc.line.me/detailId/11844",
+    "country": "domestic",
+    "cdp_port": 9224,
+    "post_open_click": "ログインせずにつづける",
+    "email_selector": "input#FnReplyMail",
+    "body_selector": "textarea[name='mdInput01SummaryTextarea']",
+    "reply_from_domains": ["line.me", "line-cc.com", "linecorp.com"],
+    "note": "line_creators_marketと同一フォーム系統（LINE問い合わせ窓口の別detailId）。selectorも同一。",
+    "investigated_at": "2026-09-17",
+    "source": "status/791_email_draft.md"
+  },
+  "lovable": {
+    "aliases": ["Lovable", "Lovable support", "ラバブル"],
+    "type": "email",
+    "email": "support@lovable.dev",
+    "country": "overseas",
+    "cdp_port": 9224,
+    "reply_from_domains": ["lovable.dev"],
+    "note": "docs.lovable.dev/support ページ本文から抽出（2026-09-17実測、node fetch, status 404だがページ本文にメールアドレス記載あり）。海外窓口のため英語+日本語併記が必須。Gmail下書きの自動保存にはGmailアプリパスワード(~/.tamago/gmail_app_password、現在未設置)が要る。ブラウザでの視覚確認には eggypop2010@gmail.com にログイン済みのChromeプロファイルが要る（chrome-line/chrome-publishともに現在Googleログイン未確認）。",
+    "investigated_at": "2026-09-17",
+    "source": "https://docs.lovable.dev/support (node fetch実測)"
+  },
+  "anthropic": {
+    "aliases": ["Anthropic", "アンソロピック", "Claude"],
+    "type": "email",
+    "email": "support@anthropic.com",
+    "country": "overseas",
+    "cdp_port": 9224,
+    "reply_from_domains": ["anthropic.com"],
+    "note": "2026-09-07に既に一度問い合わせ済み（626番）。返信見張りは tools/check_anthropic_reply.py が既存（IMAP検索 FROM anthropic.com）。海外窓口のため英語+日本語併記が必須。",
+    "investigated_at": "2026-09-07",
+    "source": "tools/check_anthropic_reply.py"
+  }
+}

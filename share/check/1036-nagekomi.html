@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>1036番 投げ込み箱／毎日の仕組みの実測</title>
 <style>
-  :root{ --ink:#1b1a17; --sub:#6f6a60; --line:#dcd6ca; --bg:#f6f3ec; --accent:#b4542a; }
+  :root{ --ink:var(--t-fg2); --sub:var(--t-mute); --line:var(--t-line); --bg:var(--t-panel); --accent:var(--t-warn); }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);padding:24px 16px 70px;line-height:1.75;
        font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:760px}
@@ -13,16 +13,16 @@
   .d{font-size:12px;color:var(--sub);margin:0 0 26px}
   h2{font-size:15px;margin:32px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
   a{color:var(--accent)}
-  .big{display:block;background:var(--accent);color:#fff;text-decoration:none;text-align:center;
+  .big{display:block;background:var(--accent);color:var(--t-on-accent);text-decoration:none;text-align:center;
        font-size:17px;font-weight:600;padding:18px 14px;border-radius:12px;letter-spacing:.05em;margin:6px 0 8px}
   .path{font-size:11.5px;color:var(--sub);word-break:break-all;margin:0 0 4px}
   table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 4px}
-  th,td{border:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top;background:#fff}
-  th{background:#efeade;font-weight:600;white-space:nowrap}
-  .o{color:#2c6e49;font-weight:700} .x{color:#a3321f;font-weight:700}
-  .red{background:#fbeeea}
+  th,td{border:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top;background:var(--t-panel)}
+  th{background:var(--t-panel);font-weight:600;white-space:nowrap}
+  .o{color:var(--t-ok);font-weight:700} .x{color:var(--t-ng);font-weight:700}
+  .red{background:var(--t-panel)}
   .note{font-size:12px;color:var(--sub);margin:4px 0 0}
-  code{font-size:11.5px;background:#efeade;padding:1px 4px;border-radius:3px}
+  code{font-size:11.5px;background:var(--t-panel);padding:1px 4px;border-radius:3px}
 </style>
 </head>
 <body>
@@ -82,5 +82,7 @@
 <tr><td><code>.gitignore</code></td><td>台帳2本を公開から外す</td></tr>
 </table>
 
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

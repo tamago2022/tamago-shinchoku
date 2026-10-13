@@ -7,8 +7,8 @@
 <title>おかねの流れ・一枚地図</title>
 <style>
   :root{
-    --paper:#ede6d6; --ink:#22304a; --shu:#c1442e;
-    --line:#c9bfa8; --mute:#6b6a63;
+    --paper:var(--t-panel); --ink:var(--t-fg2); --shu:var(--t-ng);
+    --line:var(--t-line); --mute:var(--t-mute);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -23,7 +23,7 @@
   header{margin-bottom:34px}
   .kicker{font-size:11.5px;letter-spacing:.34em;color:var(--mute);margin:0 0 14px}
   h1{font-size:30px;line-height:1.5;margin:0 0 16px;font-weight:400;letter-spacing:.04em}
-  .lead{font-size:14.5px;color:#4a5468;margin:0;max-width:44em}
+  .lead{font-size:14.5px;color:var(--t-mute);margin:0;max-width:44em}
   .rule{border:0;border-top:1px solid var(--line);margin:26px 0 0}
 
   /* 主役の画 */
@@ -54,21 +54,21 @@
   th,td{border-bottom:1px solid var(--line);padding:11px 8px;text-align:left;vertical-align:top}
   th{font-weight:600;font-size:12px;letter-spacing:.1em;color:var(--mute);white-space:nowrap}
   td.mk{width:2.2em;text-align:center;font-size:17px}
-  .ok{color:#1d5c3f}
+  .ok{color:var(--t-ok)}
   .ng{color:var(--shu)}
   td.nm{white-space:nowrap;font-size:14.5px}
-  td.rs{color:#4a5468;font-size:13.5px;line-height:1.7}
+  td.rs{color:var(--t-mute);font-size:13.5px;line-height:1.7}
 
   .who{margin:6px 0 0}
   .who .row{padding:16px 0;border-bottom:1px solid var(--line)}
   .who .row:last-child{border-bottom:none}
   .who a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--shu);
          font-size:16.5px;letter-spacing:.02em}
-  .who .d{font-size:13.5px;color:#4a5468;margin:7px 0 0;line-height:1.75}
+  .who .d{font-size:13.5px;color:var(--t-mute);margin:7px 0 0;line-height:1.75}
   .who .u{font-size:11.5px;color:var(--mute);margin:5px 0 0;word-break:break-all}
   .dead{
     margin:24px 0 0;padding:16px 18px;border-left:3px solid var(--shu);
-    background:rgba(255,255,255,.3);font-size:13.5px;line-height:1.8;color:#4a5468;
+    background:rgba(255,255,255,.3);font-size:13.5px;line-height:1.8;color:var(--t-mute);
   }
   .dead b{color:var(--ink);font-weight:600}
 
@@ -169,5 +169,7 @@
 </footer>
 
 </div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

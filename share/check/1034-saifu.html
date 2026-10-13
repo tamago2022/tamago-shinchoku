@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>1034｜財布の一覧</title>
 <style>
-:root{--bg:#0b0b0c;--fg:#f2efe9;--dim:#8d8a84;--line:#26262a;--ok:#6fd08c;--ng:#ff6b5e;--warn:#ffc65c;--card:#141417}
+:root{--bg:var(--t-bg);--fg:var(--t-fg);--dim:var(--t-mute);--line:var(--t-line);--ok:var(--t-ok);--ng:var(--t-ng);--warn:var(--t-warn);--card:var(--t-bg)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Sans",sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}
 .wrap{max-width:980px;margin:0 auto;padding:24px 14px 80px}
@@ -15,12 +15,12 @@ h2{font-size:16px;margin:36px 0 8px;padding-bottom:8px;border-bottom:1px solid v
 .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:680px}
 th,td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{color:var(--dim);font-weight:400;font-size:11.5px;white-space:nowrap;background:#121215}
+th{color:var(--dim);font-weight:400;font-size:11.5px;white-space:nowrap;background:var(--t-bg)}
 tr:last-child td{border-bottom:0}
 .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .ok{color:var(--ok)}.ng{color:var(--ng)}.warn{color:var(--warn)}
 .dim{color:var(--dim)}
-code{background:#1d1d21;border-radius:4px;padding:1px 5px;font-size:11.5px;word-break:break-all}
+code{background:var(--t-panel);border-radius:4px;padding:1px 5px;font-size:11.5px;word-break:break-all}
 .src{color:var(--dim);font-size:11px;display:block;margin-top:3px;word-break:break-all}
 .big{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 16px 12px;margin:0 0 8px}
 .big .y{font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
@@ -28,7 +28,7 @@ code{background:#1d1d21;border-radius:4px;padding:1px 5px;font-size:11.5px;word-
 .big .k{font-size:12.5px;color:var(--dim);margin:0 0 2px}
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 6px}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.big .y{font-size:25px}}
-.q{background:#141417;border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:11px 13px;margin:10px 0;font-size:13px}
+.q{background:var(--t-bg);border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:11px 13px;margin:10px 0;font-size:13px}
 ul{padding-left:19px;margin:8px 0}
 li{margin:5px 0;font-size:13px}
 footer{margin-top:46px;color:var(--dim);font-size:11.5px;border-top:1px solid var(--line);padding-top:14px}
@@ -226,7 +226,7 @@ footer{margin-top:46px;color:var(--dim);font-size:11.5px;border-top:1px solid va
 <tr><th>実演</th><th>結果（そのまま貼っています）</th></tr>
 <tr><td><b>上限10円で11円目が止まるか</b><br><code>$ python3 tools/yosan.py --self-test</code></td><td class="ok"><b>8件中8件 想定どおり</b>（10円→4円◯／9円◯／11円目✕／0円にしたら1銭も✕／知らない財布✕）<span class="src">記録：<code>status/1034_yosan_jissoku.jsonl</code></span></td></tr>
 <tr><td><b>★本物の口が本当に止まるか</b><br>OpenAIの上限を10円にして、すでに9.5円使った状態で実際に <code>gaibu_kuchi.ask()</code> を呼んだ</td><td class="ok"><b>止まりました。1文字も送っていません（costYen 0.0）。</b>返ってきた文：
-<pre style="white-space:pre-wrap;font-size:11.5px;background:#1d1d21;padding:9px;border-radius:6px;margin:6px 0">上限で止めました。OpenAI（チャッピー・検品・GPT Live）／今日 の上限 10円・
+<pre style="white-space:pre-wrap;font-size:11.5px;background:var(--t-panel);padding:9px;border-radius:6px;margin:6px 0">上限で止めました。OpenAI（チャッピー・検品・GPT Live）／今日 の上限 10円・
 すでに使った 9.50円・残り 0.50円 に対して、この1回の見積りが 3.57円 です。
 → あと 3.07円 あれば「ChatGPT(OpenAI) に 520文字 聞く（返事の上限 1500 トークン）」ができます。
 → 開けるなら: python3 tools/yosan.py --set openai 14</pre>
@@ -265,14 +265,14 @@ footer{margin-top:46px;color:var(--dim);font-size:11.5px;border-top:1px solid va
 <tr><td class="dim">（比較）xAI の声<br><code>grok-voice-think-fast-2.0</code></td><td class="n dim">—</td><td class="n dim">約13円<br><span class="src">実測</span></td><td class="n dim">約 60分</td></tr>
 </table>
 </div>
-<p class="sub">単価の出典：<a href="https://developers.openai.com/api/docs/pricing" style="color:#9ec7ff">developers.openai.com/api/docs/pricing</a>（音声 $32／$64・mini $10／$20・100万トークンあたり）。<br>
-1分＝何トークンかは、OpenAI公式が <a href="https://openai.com/index/introducing-the-realtime-api/" style="color:#9ec7ff">Realtime API の発表</a>で「音声入力 $100／100万トークン ＝ <b>1分あたり約$0.06</b>」と書いているので、<b>1分＝約600トークン</b>として割り戻した計算です（入力1分＋出力1分で数えています）。<b>この「1分あたり」はこちらの計算であって、公式が1分単位で出している額ではありません。</b><br>
+<p class="sub">単価の出典：<a href="https://developers.openai.com/api/docs/pricing" style="color:var(--t-info)">developers.openai.com/api/docs/pricing</a>（音声 $32／$64・mini $10／$20・100万トークンあたり）。<br>
+1分＝何トークンかは、OpenAI公式が <a href="https://openai.com/index/introducing-the-realtime-api/" style="color:var(--t-info)">Realtime API の発表</a>で「音声入力 $100／100万トークン ＝ <b>1分あたり約$0.06</b>」と書いているので、<b>1分＝約600トークン</b>として割り戻した計算です（入力1分＋出力1分で数えています）。<b>この「1分あたり」はこちらの計算であって、公式が1分単位で出している額ではありません。</b><br>
 xAIの13円だけは実測（428秒で$0.57・console.x.ai）。</p>
 
 <h2>⑧ Geminiは「その2,900円以外に請求が来る」のか</h2>
 <div class="q">
 <b>いまは来ません。鍵が1本も置かれていないので、1円も出ていません</b>（2026-09-23 12:28 実測）。<br>
-<b>これから使う場合</b>：Gemini API は、<b>請求先（billing）を自分で設定しない限り課金されません。</b>無料枠を超えたら<b>エラーで止まるだけ</b>で、勝手に請求は立ちません（<a href="https://ai.google.dev/gemini-api/docs/rate-limits" style="color:#9ec7ff">公式・Rate limits</a>／<a href="https://ai.google.dev/gemini-api/docs/billing" style="color:#9ec7ff">公式・Billing</a>）。<br>
+<b>これから使う場合</b>：Gemini API は、<b>請求先（billing）を自分で設定しない限り課金されません。</b>無料枠を超えたら<b>エラーで止まるだけ</b>で、勝手に請求は立ちません（<a href="https://ai.google.dev/gemini-api/docs/rate-limits" style="color:var(--t-info)">公式・Rate limits</a>／<a href="https://ai.google.dev/gemini-api/docs/billing" style="color:var(--t-info)">公式・Billing</a>）。<br>
 つまり<b>「無料枠のAI Studioの鍵」で使えば、その2,900円とは別の請求は来ません。</b>請求が来るのは、Google Cloud の請求先を紐づけて有料ティアにしたときだけです。前払いクレジットを使い切った場合も、そのアカウントの全プロジェクトで<b>即座に止まる</b>と公式に書かれています。
 </div>
 
@@ -298,5 +298,7 @@ xAIの13円だけは実測（428秒で$0.57・console.x.ai）。</p>
 </footer>
 
 </div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

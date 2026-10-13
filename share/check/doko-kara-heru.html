@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>何を使うと、どの枠から減るか（クラウド・ローカル・Dispatch・モデル別）</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);word-break:break-all;}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .card{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin:0 0 10px;}
+  .card b.t{display:block;font-size:1.02rem;margin-bottom:4px;}
+  .tag{display:inline-block;font-size:0.74rem;padding:1px 8px;border-radius:99px;margin-right:4px;border:1px solid var(--line);}
+  .ok{background:var(--t-panel);color:var(--midori);} .un{background:var(--t-panel);color:var(--aka);} .mid{background:var(--t-panel);color:var(--ao);}
+  .src{font-size:0.78rem;color:var(--sub);margin-top:6px;}
+  .note{font-size:0.88rem;color:var(--sub);}
+  ol{padding-left:1.3em;}
+</style>
+</head>
+<body>
+<p class="note"><a href="../../index.html">← 進捗表に戻る</a></p>
+<h1>何を使うと、どの枠から減るか</h1>
+<div class="date">2026-10-09 調べ。公式ページは検索経由で要旨を確認（本文の直読みは取得がタイムアウトして未確認）。使用量画面はログインが要るので未確認。</div>
+
+<div class="fix"><b>結論：クラウドセッションのメーターが減らないのは、今は「クラウド専用の$250券」から先に引かれているから。</b><br>
+券は11月5日 16:59（日本時間）まで。使い切るか期限が来たら、ローカルと同じ「プランの5時間枠・週枠」から減り始める。ローカル・Dispatch・定期処理は全部、最初からプランの枠を分け合っている。</div>
+
+<h2>① 一覧（何の枠から減るか）</h2>
+
+<div class="card"><b class="t">クラウドセッション（Claude Code on the web／--cloud）</b>
+<span class="tag mid">今：$250券から</span><span class="tag ok">券のあと：プランの枠</span><br>
+券があるあいだは券から自動で引かれ、プランのメーターは動かない（第三者記事の説明。Anthropic公式の説明ページは見つからず＝<b>未確認</b>）。券のあとは公式どおり「他のClaude・Claude Codeと同じ枠を分け合う。VM代の別料金は無し」。<br>
+1本いくらかは画面が$1刻みなので<b>不明</b>（9/27実測では2本で$2）。セッションごとの内訳を見る口は公式に<b>無い</b>。
+<div class="src">根拠：<a href="https://code.claude.com/docs/en/claude-code-on-the-web">code.claude.com/docs/en/claude-code-on-the-web</a>（枠を共有・VM別料金なし）／<a href="https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-rolls-out-up-to-250-in-free-claude-code-credits-but-only-for-cloud-sessions/">BleepingComputer</a>（券はクラウド専用・起動時に自動適用・11/4 PT失効）／工場の実測 <a href="1363-cloud-session-jissoku.html">#1363</a></div></div>
+
+<div class="card"><b class="t">ローカルのセッション（Mac上の Claude Code・Cowork）</b>
+<span class="tag ok">プランの5時間枠＋週枠</span><br>
+Claude（チャット）とClaude Codeは同じ枠。全部合算。Coworkはチャットより多く減る（公式の言い方）。
+<div class="src">根拠：<a href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan">support.claude.com/…/11145838</a>／<a href="https://support.claude.com/en/articles/13345190-getting-started-with-cowork">…/13345190</a></div></div>
+
+<div class="card"><b class="t">Dispatch の会話</b>
+<span class="tag ok">プランの枠（Coworkと同じと推定）</span><span class="tag un">細かい数え方は不明</span><br>
+Dispatchだけの数え方を書いた公式ページは見つからなかった。Coworkの一部として、同じプランの枠から減ると考えるのが自然だが<b>未確認</b>。
+<div class="src">根拠：該当ページなし（検索で確認できず）</div></div>
+
+<div class="card"><b class="t">モデル別</b>
+<span class="tag ok">Sonnet・Opus＝「全モデルの週枠」</span><span class="tag mid">Fable＝全モデル枠＋Fable専用の週枠</span><br>
+Maxプランは「全モデルの週枠」とは別に「Fable専用の週枠」がある。Fableを使うと両方が減る（全モデル枠にも数えられる）。SonnetやOpusだけの専用週枠は公式に記載なし（エラー表示には「Sonnetの上限」という文言があるので、モデル系列ごとの上限は存在しうる＝<b>不明</b>）。1回でどれだけ減るかの換算表は公式に<b>無い</b>。
+<div class="src">根拠：<a href="https://support.claude.com/en/articles/11049741-what-is-the-max-plan">…/11049741 Maxプラン</a>／<a href="https://code.claude.com/docs/en/errors">code.claude.com/docs/en/errors</a></div></div>
+
+<div class="card"><b class="t">自動の定期処理</b>
+<span class="tag ok">プランの枠</span><br>
+・Macの心臓（launchdで claude を叩く）＝ローカルと同じ扱い。<br>
+・クラウドのルーティン（routines）＝プランの枠＋Maxは1日15回までの回数制限。超えた分は追加使用量（従量）。今は$250券から引かれるかは<b>不明</b>（クラウドで動くので引かれる可能性あり）。<br>
+・Coworkの定期タスク＝Coworkと同じ枠（専用の数え方は<b>不明</b>）。
+<div class="src">根拠：<a href="https://claude.com/blog/introducing-routines-in-claude-code">claude.com/blog/introducing-routines-in-claude-code</a></div></div>
+
+<div class="card"><b class="t">追加使用量（Extra usage／使用量クレジット）</b>
+<span class="tag un">オンにしたときだけ・API定価で従量</span><br>
+枠を使い切ったあと、オンにしている場合だけAPI定価で別請求。前払い・月の上限を自分で決められる。Maxに付く「毎月のAPIクレジット」は、対話で使うClaude Code（端末・IDE・デスクトップ・Web）には<b>使えない</b>。
+<div class="src">根拠：<a href="https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans">…/12429409</a>／<a href="https://support.claude.com/en/articles/17154008-monthly-api-credits-for-max-and-team-plans">…/17154008</a></div></div>
+
+<h2>② 仕事の振り方（今日から）</h2>
+<ol>
+<li><b>11/5までは、リポの中で完結する仕事はクラウドに寄せる。</b>プランの週枠を一切減らさずに回せる。残り$248（10/8時点・たまごさんのスクショ）。</li>
+<li>ただし工場の pace.json（今朝<code>39%</code>）はクラウド分を数えていない。<b>クラウドを何本出しても週枠の%は動かないのが正常。</b>「減らない＝壊れている」ではない。</li>
+<li>過去のクラウド4本は承認待ちで止まっていた（台帳 cloud_ledger.json）。止まっていても券が少し減る可能性はあるが、額は<b>不明</b>。</li>
+</ol>
+
+<h2>③ 分からないこと（Anthropicに聞く中身・下書き済み・未送信）</h2>
+<ol>
+<li>券（$250）は本当にプランの枠より先に使われるのか。公式の説明ページはどこか。</li>
+<li>クラウド1本で、券がいくら減ったかをセッション単位で見る方法はあるか。</li>
+<li>クラウドのルーティンも券から引かれるか。</li>
+<li>Dispatchの会話は、Coworkと同じ枠から同じ重さで減るのか。</li>
+<li>モデル（Sonnet・Opus・Fable）ごとに、同じ仕事で枠がどれくらい違うかの目安はあるか。</li>
+</ol>
+<p class="note">GitHubには似た報告が既にある：<a href="https://github.com/anthropics/claude-code/issues/99597">#99597</a>（$250が見えるが枠との関係が分かりにくい）／<a href="https://github.com/anthropics/claude-code/issues/96585">#96585</a>（/usage に券が出ない）／<a href="https://github.com/anthropics/claude-code/issues/97518">#97518</a>（セッション別の内訳が無い）／<a href="https://github.com/anthropics/claude-code/issues/88781">#88781</a>（券の状態をセッションに見せてほしい）。中身は検索の要旨で確認（各issueの本文直読みは未確認）。</p>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

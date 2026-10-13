@@ -10,8 +10,8 @@
    ── 正本: docs/design/concierge-concept-02-08.md §6
    ══════════════════════════════════════════════════════════════ */
 :root{
-  --paper:#faf8f3; --paper2:#f2efe7; --line:#ded9cd;
-  --sumi:#22201c; --sub:#7d786c; --midori:#25493a; --kin:#a8843c;
+  --paper:var(--t-panel); --paper2:var(--t-panel); --line:var(--t-line);
+  --sumi:var(--t-fg2); --sub:var(--t-mute); --midori:var(--t-fg2); --kin:var(--t-warn);
   --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
 }
@@ -40,7 +40,7 @@ body{font-family:var(--sans);color:var(--sumi);-webkit-text-size-adjust:100%}
 }
 .hero::before{ /* 窓からの自然光 */
   content:"";position:absolute;right:-8%;top:-4%;width:52%;height:150%;
-  background:radial-gradient(60% 50% at 70% 20%,rgba(255,252,240,.96),rgba(255,252,240,0) 70%);
+  background:radial-gradient(60% 50% at 70% 20%,var(--t-panel),rgba(255,252,240,0) 70%);
   pointer-events:none;
 }
 .hero h1{
@@ -55,7 +55,7 @@ body{font-family:var(--sans);color:var(--sumi);-webkit-text-size-adjust:100%}
 .tamako{width:190px}
 .tamako svg{display:block;width:100%;height:auto}
 .state{font-size:.72rem;letter-spacing:.14em;color:var(--sub);margin:22px 0 0;min-height:1.3em}
-.meter{font-size:.7rem;color:#9b9689;margin:4px 0 0;font-variant-numeric:tabular-nums;min-height:1.1em}
+.meter{font-size:.7rem;color:var(--t-mute);margin:4px 0 0;font-variant-numeric:tabular-nums;min-height:1.1em}
 
 /* ── 会話をはじめる（小さなマイク導線） ─────────── */
 .invite{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:6px 0 0}
@@ -79,7 +79,7 @@ body:not(.talking) button.quiet{display:none}
 .line{font-size:.94rem;line-height:2;padding:0 0 0 16px;border-left:1px solid var(--line)}
 .line.her{font-family:var(--serif);border-left-color:var(--midori)}
 .line.me{color:var(--sub)}
-.line.sys{font-size:.76rem;color:#9a6a5c;border-left-color:#d9c0b6}
+.line.sys{font-size:.76rem;color:var(--t-ng);border-left-color:var(--t-line)}
 
 /* ── おすすめ4件 ───────────────────────────────── */
 .tray{margin:56px 0 0}
@@ -95,7 +95,7 @@ a.card{display:block;text-decoration:none;color:inherit}
 .thumb img{display:block;width:100%;height:100%;object-fit:cover;
   transition:transform .5s cubic-bezier(.2,.7,.3,1)}
 a.card:hover .thumb img{transform:scale(1.035)}
-.thumb.noimg{background:linear-gradient(140deg,#efece3,#e4e0d4)}
+.thumb.noimg{background:linear-gradient(140deg,var(--t-panel),var(--t-panel))}
 /* カテゴリのモチーフ。紙ものとして、白場にそっと置く */
 .motif{
   position:absolute;right:0;bottom:0;width:32px;height:32px;
@@ -133,24 +133,24 @@ button#more{
   padding:14px 46px;font-family:var(--serif);font-size:.92rem;letter-spacing:.24em;color:var(--sumi);
   transition:background .2s ease,color .2s ease;
 }
-button#more:hover:not(:disabled){background:var(--sumi);color:var(--paper)}
+button#more:hover:not(:disabled){background:var(--t-panel2);color:var(--paper)}
 button#more:disabled{opacity:.25;cursor:not-allowed}
 
 /* ── 店の裏（開発用）。客前には出さない ───────────── */
 .urakuchi{margin:72px 0 0;border-top:1px solid var(--line);padding-top:12px;max-width:44em}
-.urakuchi summary{cursor:pointer;color:#a29d90;font-size:.7rem;letter-spacing:.18em;list-style:none}
+.urakuchi summary{cursor:pointer;color:var(--t-mute);font-size:.7rem;letter-spacing:.18em;list-style:none}
 .urakuchi summary::-webkit-details-marker{display:none}
 .urakuchi summary::before{content:"…　"}
 .urakuchi .in{padding:14px 0 0;font-size:.78rem;color:var(--sub);line-height:2}
 .urakuchi input{
   width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:0;
-  font-family:ui-monospace,monospace;font-size:14px;background:#fff;color:var(--sumi);
+  font-family:ui-monospace,monospace;font-size:14px;background:var(--t-panel);color:var(--sumi);
 }
 .voices{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.voices label{border:1px solid var(--line);padding:5px 11px;font-size:.74rem;cursor:pointer;background:#fff}
+.voices label{border:1px solid var(--line);padding:5px 11px;font-size:.74rem;cursor:pointer;background:var(--t-panel)}
 .voices input{display:none}
 .voices input:checked + span{font-weight:700;color:var(--midori)}
-.foot{margin:26px 0 0;color:#a29d90;font-size:.7rem;letter-spacing:.08em;line-height:2}
+.foot{margin:26px 0 0;color:var(--t-mute);font-size:.7rem;letter-spacing:.08em;line-height:2}
 .foot a{color:var(--midori)}
 </style>
 </head><body>
@@ -228,17 +228,17 @@ button#more:disabled{opacity:.25;cursor:not-allowed}
   var svg=document.createElementNS(NS,"svg");
   svg.setAttribute("viewBox","0 0 150 190");
   svg.innerHTML=
-    '<ellipse cx="75" cy="178" rx="40" ry="5" fill="#e7e3d8"/>'+
-    '<path d="M75 22c29 0 50 32 50 64 0 36-22 59-50 59s-50-23-50-59c0-32 21-64 50-64z" fill="#fffdf8" stroke="#22201c" stroke-width="1.6"/>'+
-    '<path d="M27 100c11 6 26 9 48 9s37-3 48-9c-2 26-21 45-48 45s-46-19-48-45z" fill="#25493a"/>'+
-    '<path d="M27 100c11 6 26 9 48 9s37-3 48-9" fill="none" stroke="#1a3628" stroke-width="1.6"/>'+
-    '<path d="M56 108l-5 35M94 108l5 35" stroke="#1a3628" stroke-width="1.6" fill="none" stroke-linecap="round"/>'+
-    '<path d="M50 72c3.4-4.6 9.6-4.6 13 0" stroke="#22201c" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
-    '<path d="M87 72c3.4-4.6 9.6-4.6 13 0" stroke="#22201c" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
-    '<ellipse cx="50" cy="87" rx="8" ry="4.6" fill="#e8d2c6"/>'+
-    '<ellipse cx="100" cy="87" rx="8" ry="4.6" fill="#e8d2c6"/>'+
-    '<ellipse id="mouth" cx="75" cy="88" rx="6.4" ry="3.4" fill="#22201c"/>'+
-    '<path d="M62 132h26" stroke="#a8843c" stroke-width="1.4" fill="none"/>';
+    '<ellipse cx="75" cy="178" rx="40" ry="5" fill="var(--t-fg)"/>'+
+    '<path d="M75 22c29 0 50 32 50 64 0 36-22 59-50 59s-50-23-50-59c0-32 21-64 50-64z" fill="var(--t-fg)" stroke="var(--t-fg2)" stroke-width="1.6"/>'+
+    '<path d="M27 100c11 6 26 9 48 9s37-3 48-9c-2 26-21 45-48 45s-46-19-48-45z" fill="var(--t-fg2)"/>'+
+    '<path d="M27 100c11 6 26 9 48 9s37-3 48-9" fill="none" stroke="var(--t-fg2)" stroke-width="1.6"/>'+
+    '<path d="M56 108l-5 35M94 108l5 35" stroke="var(--t-fg2)" stroke-width="1.6" fill="none" stroke-linecap="round"/>'+
+    '<path d="M50 72c3.4-4.6 9.6-4.6 13 0" stroke="var(--t-fg2)" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
+    '<path d="M87 72c3.4-4.6 9.6-4.6 13 0" stroke="var(--t-fg2)" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
+    '<ellipse cx="50" cy="87" rx="8" ry="4.6" fill="var(--t-fg)"/>'+
+    '<ellipse cx="100" cy="87" rx="8" ry="4.6" fill="var(--t-fg)"/>'+
+    '<ellipse id="mouth" cx="75" cy="88" rx="6.4" ry="3.4" fill="var(--t-fg2)"/>'+
+    '<path d="M62 132h26" stroke="var(--t-warn)" stroke-width="1.4" fill="none"/>';
   document.getElementById("tamako").appendChild(svg);
 
   var mouth=svg.querySelector("#mouth"), analyser=null, lv=0, t=0;
@@ -274,4 +274,6 @@ button#more:disabled{opacity:.25;cursor:not-allowed}
   });
 })();
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

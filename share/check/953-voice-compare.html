@@ -2,35 +2,35 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>声くらべの台（案内人の声を、押して決める）</title>
-<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>html,body{margin:0;background:var(--t-bg)}</style></head><body>
 <style>
-  :root{ --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
-         --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227; }
+  :root{ --paper:var(--t-panel); --ink:var(--t-fg2); --sub:var(--t-mute);
+         --aka:var(--t-ng); --midori:var(--t-ok); --ao:var(--t-info); --kin:var(--t-warn); }
   *{box-sizing:border-box}
   .wrap{max-width:760px;margin:0 auto;padding:24px 18px 72px;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
-  .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:#e8dcc0;
+  .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:var(--t-fg);
     letter-spacing:.14em;font-size:.9rem;text-align:center;margin:0 0 4px}
-  .lead{color:#8a8070;font-size:.8rem;text-align:center;margin:0 0 18px;line-height:1.8}
+  .lead{color:var(--t-mute);font-size:.8rem;text-align:center;margin:0 0 18px;line-height:1.8}
   .lead a{color:var(--kin)}
-  .panel{background:var(--paper);border-radius:16px;padding:18px;margin-top:14px;border:1px solid #e2dccd}
+  .panel{background:var(--paper);border-radius:16px;padding:18px;margin-top:14px;border:1px solid var(--t-line)}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.02rem;
      letter-spacing:.06em;margin:0 0 4px;color:var(--ink)}
   .tag{display:inline-block;font-size:.68rem;padding:3px 9px;border-radius:999px;
-       background:#e8e1d2;color:#6d6558;margin-left:6px;vertical-align:2px;font-weight:700}
-  .tag.ok{background:#dff0e5;color:#2c6244}
-  .tag.ng{background:#f6e2e0;color:#a0392c}
+       background:var(--t-panel);color:var(--t-mute);margin-left:6px;vertical-align:2px;font-weight:700}
+  .tag.ok{background:var(--t-panel);color:var(--t-ok)}
+  .tag.ng{background:var(--t-panel);color:var(--t-ng)}
   .price{font-size:.82rem;color:var(--ink);margin:8px 0 0;font-weight:700}
   .price small{font-weight:400;color:var(--sub)}
   .note{font-size:.78rem;color:var(--sub);line-height:1.75;margin-top:8px}
   .note a{color:var(--ao)}
-  input[type=password],input[type=text]{width:100%;padding:11px 12px;border:1px solid #d8d1c0;
-    border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace;margin-top:10px}
+  input[type=password],input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--t-line);
+    border-radius:10px;font-size:15px;background:var(--t-panel);color:var(--ink);font-family:ui-monospace,monospace;margin-top:10px}
   .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-  .chip{padding:9px 14px;border-radius:999px;border:1px solid #d8d1c0;background:#fff;
+  .chip{padding:9px 14px;border-radius:999px;border:1px solid var(--t-line);background:var(--t-panel);
     font-size:.86rem;cursor:pointer;font-family:inherit;font-weight:700;color:var(--ink);flex:0 0 auto}
-  .chip:hover{border-color:#b9b0a0}
-  .chip.on{background:var(--midori);color:#fff;border-color:var(--midori)}
+  .chip:hover{border-color:var(--t-line)}
+  .chip.on{background:var(--midori);color:var(--t-on-accent);border-color:var(--midori)}
   .chip.dead{opacity:.4;text-decoration:line-through}
   .st{margin-top:12px;font-size:.82rem;min-height:1.4em;color:var(--sub);line-height:1.7;
       white-space:pre-wrap;word-break:break-word}
@@ -39,10 +39,10 @@
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
   .row button{flex:1 1 150px;padding:12px 16px;border-radius:12px;border:none;cursor:pointer;
     font-size:.95rem;font-weight:700;font-family:inherit}
-  .b-go{background:var(--midori);color:#fff}
-  .b-sub{background:#fff;color:var(--ao);border:1px solid #cfdae0}
+  .b-go{background:var(--midori);color:var(--t-on-accent)}
+  .b-sub{background:var(--t-panel);color:var(--ao);border:1px solid var(--t-line)}
   table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.8rem}
-  th,td{border-bottom:1px solid #e2dccd;padding:8px 6px;text-align:left;vertical-align:top}
+  th,td{border-bottom:1px solid var(--t-line);padding:8px 6px;text-align:left;vertical-align:top}
   th{color:var(--sub);font-weight:700;white-space:nowrap}
   td b{font-size:.86rem}
   .yen{white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -62,13 +62,13 @@
     <table>
       <tr><th>どこの</th><th>1分いくら</th><th>ブラウザで</th><th>要るもの</th></tr>
       <tr>
-        <td><b>OpenAI gpt-realtime</b><br><span style="color:#8d8578">marin / cedar ほか10種</span></td>
+        <td><b>OpenAI gpt-realtime</b><br><span style="color:var(--t-mute)">marin / cedar ほか10種</span></td>
         <td class="yen"><b>約47円</b><br><small>入 $0.06＋出 $0.24</small></td>
         <td><span class="tag ok">○ 動く</span></td>
         <td>OpenAIの鍵</td>
       </tr>
       <tr>
-        <td><b>xAI Grok Voice</b><br><span style="color:#8d8578">iris / eve / luna ほか28種</span></td>
+        <td><b>xAI Grok Voice</b><br><span style="color:var(--t-mute)">iris / eve / luna ほか28種</span></td>
         <td class="yen"><b>約12円</b><br><small>$0.08／分・込み</small></td>
         <td><span class="tag ok">○ 動く</span><br><small>WebSocket</small></td>
         <td>xAIの鍵</td>
@@ -412,4 +412,6 @@
   });
 })();
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>
