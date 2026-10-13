@@ -7,7 +7,7 @@
 <title>#1042 案内人の口を直した ― 前の口と、直した口を並べて聞く</title>
 <link rel="stylesheet" href="assets/431-seihon/seihon431.css">
 <style>
-  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);--mi:var(--t-mute);}
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--mi:#b0a894;}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 40px);
     background:var(--bg);color:var(--ink);
@@ -18,45 +18,45 @@
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:.04em;
     margin:36px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
   .date{color:var(--sub);font-size:.8rem;margin-bottom:14px;word-break:break-word;}
-  .fix{background:var(--t-panel);border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 18px;font-size:1rem;}
+  .fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 18px;font-size:1rem;}
   .fix p{margin:0 0 10px;} .fix p:last-child{margin:0;}
-  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:.88rem;margin:0 0 14px;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:.88rem;margin:0 0 14px;}
 
-  .kuchi{background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 14px;}
+  .kuchi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 14px;}
   .faces{display:flex;gap:10px;}
   .facebox{flex:1 1 0;min-width:0;text-align:center;}
   .facelabel{font-size:.78rem;line-height:1.35;color:var(--sub);margin:0 0 6px;min-height:3.2em;}
   .facelabel b{display:block;font-size:.92rem;color:var(--ink);}
   .facelabel b.after{color:var(--midori);}
-  .pen{position:relative;width:100%;aspect-ratio:444/412;background:var(--t-panel);border-radius:10px;overflow:hidden;}
+  .pen{position:relative;width:100%;aspect-ratio:444/412;background:#efe9db;border-radius:10px;overflow:hidden;}
   .pen .tmk-stage{position:absolute;inset:0;perspective:900px;}
   .pen .tmk-rig{width:100%;}
   .pen .tmk-body{display:block;width:100%;height:auto;}
   .nowkana{font-family:"Hiragino Mincho ProN",serif;font-size:1.6rem;letter-spacing:.12em;text-align:center;
     color:var(--ao);min-height:1.6em;margin:8px 0 0;}
   .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
-  button.b{appearance:none;border:1px solid var(--line);background:var(--t-panel);color:var(--ink);border-radius:999px;
+  button.b{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
     padding:10px 16px;font-size:.92rem;font-family:inherit;cursor:pointer;line-height:1.3;}
-  button.b:active{background:var(--t-panel);}
+  button.b:active{background:#efe9db;}
   button.b[disabled]{opacity:.45;cursor:default;}
   button.b.go{border-color:var(--aka);color:var(--aka);font-weight:700;}
   button.b.v{min-width:52px;font-family:"Hiragino Mincho ProN",serif;font-size:1.1rem;padding:8px 12px;}
   .tiny{font-size:.78rem;color:var(--sub);line-height:1.55;margin:8px 0 0;}
 
-  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 6px;border-radius:10px;border:1px solid var(--line);background:var(--t-panel);max-width:100%;}
+  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 6px;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%;}
   table{border-collapse:separate;border-spacing:0;font-size:.84rem;min-width:520px;}
   th,td{padding:8px 7px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;}
-  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:.7rem;line-height:1.3;}
-  th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:var(--t-panel);border-right:1px solid var(--line);
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:.7rem;line-height:1.3;}
+  th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:#fff;border-right:1px solid var(--line);
     font-size:.8rem;padding-left:10px;min-width:112px;font-weight:600;line-height:1.35;}
-  th.t{background:var(--t-panel);z-index:3;}
+  th.t{background:#efe9db;z-index:3;}
   tr:last-child td{border-bottom:none;}
   td.n{font-size:1rem;font-weight:700;white-space:nowrap;}
   .c-ok{color:var(--midori);} .c-ng{color:var(--aka);}
   ul.plain{list-style:none;margin:0 0 14px;padding:0;}
-  ul.plain li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;font-size:.88rem;line-height:1.6;}
+  ul.plain li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;font-size:.88rem;line-height:1.6;}
   ul.plain li b.h{display:block;margin-bottom:3px;font-size:.95rem;}
-  code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
   footer{color:var(--sub);font-size:.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
   @media (max-width:420px){
     body{font-size:15px;padding-left:11px;padding-right:11px;}
@@ -71,8 +71,8 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1042 ／ 前の便：<a href="./1031-avatar-abc.html">#1031 A・B・Cを比べる台</a>・<a href="./431-seihon.html">#431 いまの案内人</a></div>
@@ -312,7 +312,5 @@ $ <code>python3 tools/_1042_zure.py</code> → <code>status/1042_kuchi_jissoku.j
   });
 })();
 </script>
-
-<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>
