@@ -260,6 +260,7 @@ def run(only=None, dry=False):
         if not new_t:
             fails[r["id"]] = fails.get(r["id"], 0) + 1
             res["skips"].append({"id": r["id"], "title": r.get("title"), "why": why})
+            log("書けなかった %s：%s（%s）" % (r["id"], (r.get("title") or "")[:30], str(why)[:120]))
             continue
         ng = kanmon.judge(new_t, material, r.get("kind"))
         f = None if hand else fact_ng(new_t, material)
@@ -371,14 +372,32 @@ def main():
             except OSError:
                 pass
         io.open(GATE, "w").write(now().strftime("%F %T"))
+        # ★5分便（launchd）が終わると子も道連れで消える（実測 2026-10-14 04:54：pid 51237 が何も残さず消えた）。
+        #   自分のセッションを持って切り離す（tools/git_souji.py 等と同じ形）。
+        try:
+            if os.fork() > 0:
+                return 0
+            os.setsid()
+            if os.fork() > 0:
+                os._exit(0)
+        except OSError:
+            pass
+    import signal
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(SystemExit(143)))
     if only:
         # 1件だけ（手直し）はロックの外。同じカードの取り違えは write_back の「前の題名のままなら」で防ぐ
         res = run(only=only, dry="--dry" in a)
     else:
         try:
             if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < 40 * 60:
-                print("別の回が走っています（ロック）")
-                return 0
+                alive = True
+                try:
+                    os.kill(int(io.open(LOCK).read().strip() or 0), 0)
+                except (OSError, ValueError):
+                    alive = False      # 握ったまま死んだロックは剥がす
+                if alive:
+                    print("別の回が走っています（ロック）")
+                    return 0
             io.open(LOCK, "w").write(str(os.getpid()))
         except OSError:
             pass
