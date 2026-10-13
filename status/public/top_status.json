@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-13T21:33:29.233063+09:00",
+ "generatedAt": "2026-10-14T00:12:25.146229+09:00",
  "runningNow": [],
  "nextUp": [
   {
@@ -38,7 +38,7 @@
    "ts": "2026-10-12T07:23:44+09:00"
   }
  ],
- "stoppedReason": "発車を止めています（空き容量の番人：ディスク空き容量が5.5GB（20GB未満）。新規発車を止めました（2026-10-13 18:11:4）",
+ "stoppedReason": "発車が361分止まっています（自動の立て直しが動いています）",
  "login": {
   "ng": false,
   "midashi": null,
@@ -52,27 +52,34 @@
   "machiUrl": false
  },
  "freshness": {
-  "at": "2026-10-13T21:30:35+09:00",
-  "akaN": 1,
-  "ichigyou": "「本物の発車が終わった」が21.4時間出ていません（閾値12.0時間）",
+  "at": "2026-10-14T00:10:22+09:00",
+  "akaN": 2,
+  "ichigyou": "「本物の発車が終わった」が24.1時間出ていません（閾値12.0時間）",
   "aka": [
    {
     "rule": "DataFreshnessViolation",
     "pipe": "hassha",
     "level": "red",
-    "midashi": "「本物の発車が終わった」が21.4時間出ていません（閾値12.0時間）",
+    "midashi": "「本物の発車が終わった」が24.1時間出ていません（閾値12.0時間）",
     "naze": "kenpinUpdatedAt #1759"
+   },
+   {
+    "rule": "DataFreshnessViolation",
+    "pipe": "gaibu",
+    "level": "red",
+    "midashi": "「外のAIから返ってきた」が25.9時間出ていません（閾値24.0時間）",
+    "naze": "devin: 間違い探し：棚の中の別人混入"
    }
   ],
   "pipes": {
    "hassha": {
     "na": "本物の発車が終わった",
-    "ageH": 21.4,
+    "ageH": 24.1,
     "shikiiH": 12.0
    },
    "kouhyou": {
     "na": "進捗表へ配られた",
-    "ageH": 0.0,
+    "ageH": 0.1,
     "shikiiH": 0.5
    },
    "commit": {
@@ -82,28 +89,28 @@
    },
    "kanmon": {
     "na": "門が弾いた",
-    "ageH": 2.7,
+    "ageH": 5.4,
     "shikiiH": 24.0
    },
    "gaibu": {
     "na": "外のAIから返ってきた",
-    "ageH": 23.2,
+    "ageH": 25.9,
     "shikiiH": 24.0
    },
    "shukudai": {
     "na": "宿題が減った",
-    "ageH": 45.3,
+    "ageH": 48.0,
     "shikiiH": 48.0
    }
   }
  },
  "pace": {
-  "updatedAt": "2026-10-13 21:32",
+  "updatedAt": "2026-10-14 00:07",
   "allPct": 0.0,
   "remainWeek": 99.0,
   "usedToday": 0.0,
-  "budgetToday": 14.4,
-  "daysLeft": 6.85,
+  "budgetToday": 14.7,
+  "daysLeft": 6.74,
   "state": "ok",
   "resetAt": "2026-10-20 17:59",
   "dataOk": false,
@@ -112,15 +119,15 @@
   "source": "status/pace.json"
  },
  "omosa": {
-  "at": "2026-10-13T21:31:29+0900",
+  "at": "2026-10-14T00:11:47+0900",
   "ours": {
-   "procs": 39,
-   "rssGB": 2.49
+   "procs": 47,
+   "rssGB": 3.08
   },
   "brave": {
-   "procs": 47,
-   "rssGB": 15.88,
-   "tabs": 38,
+   "procs": 39,
+   "rssGB": 13.25,
+   "tabs": 30,
    "claudeTabs": 5,
    "claudeUrls": [
     "https://claude.ai/login?reauth=1&from=logout&returnTo=%2Foauth%2Fauthorize%3Fcod",
@@ -129,35 +136,36 @@
     "https://claude.ai/login?reauth=1&from=logout&returnTo=%2Foauth%2Fauthorize%3Fcod",
     "https://claude.ai/login?reauth=1&from=logout&returnTo=%2Foauth%2Fauthorize%3Fcod"
    ],
-   "sessionTabs": 56
+   "sessionTabs": 48
   },
-  "swapUsedGB": 11.61,
-  "swapTotalGB": 13.0,
-  "loadRatio": 0.81,
-  "tatandaKei": 2268
+  "swapUsedGB": 9.41,
+  "swapTotalGB": 10.0,
+  "loadRatio": 1.91,
+  "tatandaKei": 0
  },
  "alert1373": {
-  "at": "2026-10-13T21:31:29+0900",
+  "at": "2026-10-14T00:11:47+0900",
   "level": "red",
   "midashi": "今使いすぎです、もうすぐ固まります",
   "reasons": [
-   "スワップ 11.5/13.0GB（89%）",
+   "スワップ 9.5/10.0GB（95%）",
+   "5分ロード比 2.03",
    "ClaudeがBraveに開いたタブが5枚残っている"
   ],
   "suggestions": [
-   {
-    "app": "Google Chrome",
-    "rssGB": 1.09,
-    "message": "Google Chrome を終了してください（約1.1GB空きます）"
-   },
    {
     "app": "Spotify (old)",
     "rssGB": 0.99,
     "message": "Spotify (old) を終了してください（約1.0GB空きます）"
    },
    {
+    "app": "Google Chrome",
+    "rssGB": 0.96,
+    "message": "Google Chrome を終了してください（約1.0GB空きます）"
+   },
+   {
     "app": "Typeless 2",
-    "rssGB": 0.7,
+    "rssGB": 0.71,
     "message": "Typeless 2 を終了してください（約0.7GB空きます）"
    }
   ]
