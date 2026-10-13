@@ -637,6 +637,7 @@ while :; do
   [ -f "$REPO/status/youryou_hakobu3.go" ] && ( python3 "$REPO/tools/youryou_hakobu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   # 2026-10-12 作業場と制作の中間ファイルを本体に溜めない（push済みは消す・未保存はiMac HDDへ写して消す）。1時間おき。
   tick_every 240 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_kyuukyuu4.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu4.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_ps.go" ] && ( python3 "$REPO/tools/youryou_ps.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_nozoki.go" ] && ( python3 "$REPO/tools/youryou_nozoki.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_shirabe3.go" ] && ( python3 "$REPO/tools/youryou_shirabe3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
