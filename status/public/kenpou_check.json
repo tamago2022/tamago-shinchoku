@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-10-11T09:11:16+09:00",
+ "checkedAt": "2026-10-13T09:10:22+09:00",
  "overallColor": "red",
- "redCount": 5,
+ "redCount": 3,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,8 +23,8 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 3,
-   "detail": "最終記録から約0.2時間経過（2026-10-11T08:58:22+09:00）／直近24時間の完了21件中、鬼監督の記録が付いているのは18件"
+   "count": 0,
+   "detail": "最終記録から約23.9時間経過（2026-10-12T09:16:30+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）"
   },
   {
    "key": "done_missing_url",
@@ -38,29 +38,29 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "走行2本／上限1本（枠が埋まっているだけ・正常）"
+   "detail": "意図的な一時停止中（status/no_launch.flag）なので工場停止としては扱わない"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回84952番 → 今回86803番（減少なし）"
+   "detail": "前回88706番 → 今回93550番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
-   "count": 59,
-   "detail": "status/public/dispatch_outbox.jsonl(18.7MB)、share/done/index.html(14.6MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)"
+   "count": 60,
+   "detail": "status/public/dispatch_outbox.jsonl(20.6MB)、share/done/index.html(15.3MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
-   "color": "red",
-   "count": 2,
+   "color": "green",
+   "count": 0,
    "sample": 15,
-   "detail": "直近15件の確認ページのうち2件が200以外だった：#34805=None、#34670=503"
+   "detail": "直近15件の確認ページはすべて200だった"
   },
   {
    "key": "orphan_sessions",
@@ -72,16 +72,16 @@
   {
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
-   "color": "red",
-   "count": 138,
-   "detail": "138件（しきい値100件を超過。ChatGPT/Codexのプロジェクト一覧を汚す＝720番と同じ症状。worktree_reaper.pyが動いているか確認し、片づけを進めること）"
+   "color": "green",
+   "count": 12,
+   "detail": "12件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 42638,
-   "detail": "未報告の完了が42638件たまっている（最古は約411.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 48475,
+   "detail": "未報告の完了が48475件たまっている（最古は約459.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
@@ -92,15 +92,6 @@
   {
    "key": "big_files",
    "skipped": "既にこの点検が積んだ925番が未解決のため積み直さない"
-  },
-  {
-   "key": "check_page_404",
-   "status": "skipped",
-   "message": "78470番と同じ内容です（積みませんでした。別物なら label に『重複OK』と書いて送ってください）"
-  },
-  {
-   "key": "worktree_count",
-   "skipped": "既にこの点検が積んだ71901番が未解決のため積み直さない"
   },
   {
    "key": "unreported_completions",
