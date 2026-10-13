@@ -192,7 +192,10 @@ def main():
         minutes = r.getnframes() / 24000 / 60
     m4a_tmp = os.path.join(work, "out.m4a")
     subprocess.run(["/usr/bin/afconvert", "-f", "m4af", "-d", "aac", "-c", "1", "-b", "64000", full, m4a_tmp], check=True)
-    roots = sorted(glob.glob(os.path.expanduser("~/Library/CloudStorage/GoogleDrive-*/マイドライブ")))
+    # 2026-10-14実測：「GoogleDrive-<メール> (2026-10-13 14:58)」という同期していない古い控えが並んでいて、
+    #   sorted()[0] がそちらを選び、ドライブのIDが付かなかった。名前に空白・括弧が無い本物だけを使う。
+    roots = sorted(p for p in glob.glob(os.path.expanduser("~/Library/CloudStorage/GoogleDrive-*/マイドライブ"))
+                   if " " not in os.path.basename(os.path.dirname(p)))
     if not roots:
         return done(status="no_drive", minutes=round(minutes, 1))
     dest_dir = os.path.join(roots[0], "朗読", "ソロプレナー神回")
