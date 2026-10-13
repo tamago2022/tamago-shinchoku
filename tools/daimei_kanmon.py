@@ -41,7 +41,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 OUT_TANA = os.path.join(REPO, "status", "public", "daimei_tanaoroshi.json")
 
-MAX_LEN = 40
+# スマホ（iPhone幅）の棚カードは題名が2行・1行12文字前後で「…」に切られる（2026-10-14 実測：
+# 25文字の「さつまいもで作る、チャイ香るアイスビスケットサンド」が「…ビスケットサ…」で切れ、主題の「サンド」が消えた）。
+MAX_LEN = 24
 
 # 絵文字・記号・罫線（投稿の飾り）
 RE_KAZARI = re.compile(
@@ -157,9 +159,12 @@ def judge(title, source="", kind=""):
         why.append("投稿の飾り（絵文字・罫線）が題名に残っている")
     if RE_KIREHASHI.search(t):
         why.append("投稿の切れ端（URL・@・#・途中切れ）が題名に残っている")
-    if len(t) > MAX_LEN and kind != "youtube":
+    if len(t) > 40 and kind != "youtube":
         # YouTubeの公式題名（曲名 - アーティスト (Official Video)）は長くても「何か」は言えているので対象外
-        why.append("長すぎる（41文字以上。1行で読めない）")
+        why.append("長すぎる（41文字以上＝投稿文の貼り付け）")
+    elif len(t) > MAX_LEN and not meishi(t[:MAX_LEN - 1]):
+        # 長いだけなら落とさない。主題の名詞が「…」の向こうに消えるときだけ落とす
+        why.append("主題の名詞がスマホのカードで切れて見えない（%d文字目以降にある）" % MAX_LEN)
     if RE_KIMEZERIFU.search(t) or RE_KAKKO_ONLY.match(RE_KAZARI.sub("", t).strip()):
         why.append("投稿の比喩・決め台詞を題名にしている")
     src = strip_html(source)
@@ -225,9 +230,11 @@ def self_test():
         ("@3105_369 のポスト", "", "x"),
         ("ちょっと微妙なさつまいもを集めて", src, "x"),
         ("抱っこされた瞬間、全部あずけた", "", "x"),
+        ("何度も繰り返し見たくなるような心を動かす特別な映像", "", "x"),
     ]
     ok = [
         ("さつまいもで作る、ひんやりビスケットサンド", src, "x"),
+        ("チャイ香る、さつまいもアイスのビスケットサンド", src, "x"),
         ("白菜と肉を重ねるだけで、鍋がまるごと花になる", "", "x"),
         ("褒めたのに、柴犬に怒られた", "", "youtube"),
         ("ミキサーを出す前に、ビシソワーズができてしまった", "", "x"),

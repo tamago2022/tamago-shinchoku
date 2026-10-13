@@ -59,7 +59,7 @@ PROMPT = """あなたは「ごきげん補給所」の棚に並べるカード�
 カードはサムネと一緒に小さく並びます。見た人が「これは何の動画か」を一目で分かることが最優先です。
 
 【1行目＝題名：何の動画か】
-・主題の名詞（料理名・食材・曲名・人・場所・動物など）＋していること。12〜28文字。
+・主題の名詞（料理名・食材・曲名・人・場所・動物など）＋していること。12〜22文字（スマホのカードは23文字目から切れる）。主題の名詞は前半に置く。
 ・例：「さつまいもで作る、ひんやりビスケットサンド」「白菜と肉を重ねるだけの、花みたいな鍋」
 ・投稿文の比喩・決め台詞・キャッチ（「AでなくB」など）を題名に使わない。投稿文の言い回しをそのまま写さない。
 ・絵文字・記号・ハッシュタグ・「！」を使わない。
@@ -296,7 +296,14 @@ def run(only=None, dry=False):
                 pass
         log("直した %s：%s → %s" % (r["id"], (r.get("title") or "")[:30], new_t))
 
-    per_day[today] = done_today
+    # 書く直前に読み直して混ぜる（1件だけの手直しが並行して走っても、前後の控えを消さない）
+    cur = load(OUT, {}) or {}
+    seen = {(h.get("id"), h.get("at")) for h in hist}
+    hist = hist + [h for h in (cur.get("history") or []) if (h.get("id"), h.get("at")) not in seen]
+    hist.sort(key=lambda h: h.get("at") or "", reverse=True)
+    for k, v in (cur.get("fails") or {}).items():
+        fails[k] = max(fails.get(k, 0), v)
+    per_day[today] = max(done_today, int((cur.get("perDay") or {}).get(today) or 0))
     st.update({"generatedAt": res["ranAt"], "perDay": dict(sorted(per_day.items())[-45:]),
                "fails": fails, "history": hist[:HISTORY_KEEP],
                "fixedTotal": int(st.get("fixedTotal") or 0) + len(res["fixed"]),
@@ -364,19 +371,24 @@ def main():
             except OSError:
                 pass
         io.open(GATE, "w").write(now().strftime("%F %T"))
-    try:
-        if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < 40 * 60:
-            return 0
-        io.open(LOCK, "w").write(str(os.getpid()))
-    except OSError:
-        pass
-    try:
+    if only:
+        # 1件だけ（手直し）はロックの外。同じカードの取り違えは write_back の「前の題名のままなら」で防ぐ
         res = run(only=only, dry="--dry" in a)
-    finally:
+    else:
         try:
-            os.remove(LOCK)
+            if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < 40 * 60:
+                print("別の回が走っています（ロック）")
+                return 0
+            io.open(LOCK, "w").write(str(os.getpid()))
         except OSError:
             pass
+        try:
+            res = run(only=only, dry="--dry" in a)
+        finally:
+            try:
+                os.remove(LOCK)
+            except OSError:
+                pass
     print(json.dumps({k: res.get(k) for k in ("ranAt", "room", "remaining", "fixed", "skips", "red", "candidates")},
                      ensure_ascii=False, indent=1)[:20000])
     return 0
