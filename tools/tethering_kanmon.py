@@ -156,10 +156,11 @@ def main():
                     log("一時停止 %d %s" % (pid, cmd[:90]))
                 except Exception:
                     pass
-        if any("Google Drive.app/Contents/MacOS/Google Drive" in c for _, _, c in table):
-            sh(["pkill", "-x", "Google Drive"])
-            d["drive_quit"] = True
-            log("Google ドライブを終了（Wi-Fiで起動し直す）")
+        # 2026-10-14 Googleドライブを終了するのはやめた。
+        #   実測：10/11 17:19 テザリング中にここで終了させたため、書き込み途中だった
+        #   HowItHolds EP01 の540p動画3本が「オフライン中は使えない」で元に戻され、
+        #   「同期できなかった3個のアイテムを一時保管場所へ移動」の通知になった（drive_fs_243.txt）。
+        #   ドライブは止めず、Wi-Fi側と同じ送受信の上限（送500/受2000KB/s）だけで動かす。
     else:
         if d.get("tethering"):
             log("Wi-Fi に戻った（%s）。止めたものを再開します" % ssid)
