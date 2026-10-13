@@ -59,7 +59,11 @@ def main():
         open(STAMP, "w").close()
         for r in REPOS:
             t = time.time()
-            rc = subprocess.run(["git", "gc", "--quiet"], cwd=r, capture_output=True, timeout=3 * 3600).returncode
+            try:
+                os.remove(os.path.join(r, ".git", "gc.log"))  # 前回の警告で止まらないように
+            except Exception:
+                pass
+            rc = subprocess.run(["git", "gc", "--quiet", "--prune=1.day.ago"], cwd=r, capture_output=True, timeout=3 * 3600).returncode
             log("%s git gc rc=%s（%d秒）" % (os.path.basename(r), rc, time.time() - t))
 
 
