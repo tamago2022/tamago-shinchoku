@@ -639,6 +639,8 @@ while :; do
   # 2026-10-14 gitの書きかけパックを消す・自動gcを止めて1日1回だけ最後まで回す（打ち切られたgcが1時間2GBずつ食っていた）
   tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/obsidian_modosu3.go" ] && ( python3 "$REPO/tools/obsidian_modosu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/obsidian_modosu2.go" ] && ( python3 "$REPO/tools/obsidian_modosu2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/obsidian_modosu.go" ] && ( python3 "$REPO/tools/obsidian_modosu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_gc7.go" ] && ( python3 "$REPO/tools/youryou_gc7.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_gdrive6.go" ] && ( python3 "$REPO/tools/youryou_gdrive6.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
