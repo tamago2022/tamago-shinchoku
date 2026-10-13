@@ -196,6 +196,12 @@ echo "$(date '+%F %T') naoshi 呼び出し" >> "$REPO/status/gaibu_copy_naoshi.l
 #   query_database で入れるので鍵が要らない。中で30分に1回だけ動く。
 ( nohup python3 "$REPO/tools/2210_tanaire.py" --daily >>"$REPO/status/nagekomi_shelf.log" 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-10-14 題名の直し係（tools/daimei_naoshi.py）----
+# たまごさん：「冷やすではなく癒やす」では何の動画か分からない。1か月でばっちりに。
+# 取り込みの関所（tools/daimei_kanmon.py）で差し戻された分を先頭に、既存の外部カードを1日20件まで直す。
+# 中で30分ゲート（差し戻しがあれば status/.daimei_naoshi_force で次の便に即走る）。二重起動は中のロックで防ぐ。
+( nohup python3 "$REPO/tools/daimei_naoshi.py" --daily >>"$REPO/status/daimei_naoshi.log" 2>&1 & ) >/dev/null 2>&1
+
 # ---- 2026-10-11 後ろの曲の判定（tools/oto_hantei.py --machi）：取り込みで置かれた待ち列を30分に1回・2本ずつ ----
 # 空き2GB未満なら何もしない。本番へ貼るのは試験（status/oto_hantei/shiken.json）が誤判定0のときだけ。
 OTO_GATE="$REPO/status/oto_hantei/.machi_gate"

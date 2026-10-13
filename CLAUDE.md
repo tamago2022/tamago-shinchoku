@@ -50,5 +50,9 @@
 - **置き換え：** web_fetch → `python3 tools/mac_fetch.py URL`（Macのcurl）／Gmail下書き → `status/shitagaki/`にファイル／Lovable → git push／定期タスク → 心臓に1行／Gensparkは`tools/genspark_tanomu.py`（待ち切れなくても起こし役が回収）。
 - **機械の裏付け：** `tools/okoshi.py`（心臓から5分おき。落ちた・20分固まった子を工場の列へ「続きから」で積み直す。同じ所で2回なら別経路の指示つき。結果`status/okoshi.json`・進捗表「自動で起こした回数」）、`tools/kyoka_kanmon.py`（許可ポップアップの回数を道具ごとに毎時集計→`status/kyoka_kanmon.json`）。
 
+## 外部カードの題名は「何の動画か」（憲法・2026-10-14）
+- **1行目（題名）＝主題の名詞＋していること**（例：「さつまいもで作る、チャイ香るアイスビスケットサンド」）。気の利いた言い回しは2行目（コピー）へ。投稿文の比喩・決め台詞（「AでなくB」）・言い回しの写し・絵文字を題名にしない。きっかけ：題名が「⛱ 「冷やす」でなく「癒す」」で何の動画か分からなかった。
+- **機械の裏付け：** 関所 `tools/daimei_kanmon.py`（`--self-test`／`--tanaoroshi`）。取り込み（`tools/2210_tanaire.py`・`tools/nagekomi_shelf.py` の gates）で落ちた題名は `status/daimei/machi.jsonl` へ差し戻し、`tools/daimei_naoshi.py`（5分便・30分ゲート・1日20件）が書き直す。前後は `status/public/daimei_naoshi.json`。本番での見え方は `tools/daimei_kakunin.mjs`。
+
 ## 認証情報(ID/パスワード)の代理入力は禁止（憲法・2026-08-05・34483号で機械化）
 - **たまごさんのID・パスワード・暗証番号・秘密鍵を、AIが代わりに入力欄へ打ち込むことは禁止。** 文章の注意書きだけでは1ヶ月以上効かず判定日赤になったため、`tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs`（PreToolUse関所）で機械的に拒否する形へ変更した。ブラウザ・画面操作系の道具呼び出しにパスワード等の語が含まれると exit 2 で道具ごと拒否される。ログインが必要な画面は**たまごさん本人に入力してもらう**。詳細は`AGENTS.md`。

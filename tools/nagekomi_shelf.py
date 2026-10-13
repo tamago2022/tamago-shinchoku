@@ -299,6 +299,9 @@ PROMPT_TITLE = """あなたは「ごきげん補給所」の棚に並べるカ�
 
 【守ること】
 ・15〜30文字。短いほど強い。
+・★題名は「何の動画か」。主題の名詞（料理名・食材・曲名・人・場所・動物など）＋していること。
+　例：「さつまいもで作る、ひんやりビスケットサンド」。気の利いた言い回しは2行目のコピーに回す。
+・投稿文の比喩・決め台詞（「AでなくB」など）や、投稿文の言い回しをそのまま題名にしない。絵文字を使わない。
 ・原題をそのまま訳しただけにしない。何が起きているかが分かる日本語にする。
 ・「！」「!」を使わない。
 ・「〜しよう」「必見」「話題」など、呼びかけ・煽り・他人の反応を書かない。
@@ -340,6 +343,15 @@ def write_title(title, direction, url, diag):
     return text, (None if text else (why or "題名が書けなかった"))
 
 
+def _daimei_ng(title, r):
+    """★2026-10-14 題名の関所（tools/daimei_kanmon.py）に落ちるなら、書き手に題名を書かせる。"""
+    try:
+        import daimei_kanmon as _dk
+        return bool(_dk.judge(title, str(r.get("titleRaw") or ""), kind_of(r.get("url") or "")))
+    except Exception:  # noqa: BLE001
+        return False
+
+
 _YT_IN_TEXT = re.compile(r"(?:youtu\.be/|v=|/embed/|/shorts/)([A-Za-z0-9_-]{11})")
 
 
@@ -369,6 +381,14 @@ def gates(title, copy, material, diag, artist=""):
     why = nippou.judge(title, copy)
     if why:
         return "水道水の判定で落ちた：%s" % why
+    # ★2026-10-14【題名の関所】1行目は「何の動画か（主題の名詞＋していること）」。正本は tools/daimei_kanmon.py
+    try:
+        import daimei_kanmon as _dk
+        w = _dk.judge(title, "", "")
+        if w:
+            return "題名の関所で落ちた：%s" % "・".join(w)
+    except Exception as e:  # noqa: BLE001
+        diag.append("題名の関所が呼べなかった：%r（このぶんは門を通っていない＝赤）" % (e,))
     hits = oni_gate.judge(copy, label="nagekomi_shelf")
     if hits:
         return "鬼監督で落ちた：%s（%s）" % (hits[0]["name"], hits[0]["hit"])
@@ -618,7 +638,7 @@ def run(force=False, dry=False, only=None, bin_no="1039", teuchi=None):
                 continue
             res["diag"].append("★この1件は人（編集者）が書いた題名・ひとことを使った（関所は通した）")
         elif nippou.judge(title, "ダミー。ここでは題名だけを見ている。") in (
-                "題名が英語の原題のまま", "題名がURLのまま", "題名が空"):
+                "題名が英語の原題のまま", "題名がURLのまま", "題名が空") or _daimei_ng(title, r):
             newt, why = write_title(genmei, r.get("memo"), ref, res["diag"])
             if not newt:
                 # ★1043番：書き手が止まっているだけ。中身は届いている。捨てない。
