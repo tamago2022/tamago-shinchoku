@@ -200,6 +200,14 @@ const VC_ELS_VAR = "__vcEls";
 // （実例：「すべて」「記事」フィルターボタン・「工場に積む」ボタンが軒並み無反応FAILになった。
 //  実際にJSで直接.click()すると正しくclassList等は変化しており、実装側は壊れていなかった）。
 // 開閉トリガーであるsummary自身（またはその中の要素）は常に押せるので除外しない。
+//
+// 案件#34977実測（joy-relief-station ScrollTopButton）：スクロール量で出し分ける
+// 「ページの一番上へ」ボタンは、未スクロール時に aria-hidden="true" + tabIndex=-1 +
+// CSS pointer-events:none（opacity-0 pointer-events-none）で意図的に押せなくしている。
+// offsetWidth/getClientRects()はCSSのopacity/pointer-eventsでは変化しないため、
+// 旧来のvisible判定ではこれも「見える押せる要素」と誤認し、クリックしても座標上で
+// イベントを受け取れず「無反応」と誤検知していた（#795のcontent-visibilityと同系の見落とし）。
+// aria-hidden（自身または祖先）と、computed styleのpointer-events:noneを除外条件に追加する。
 const LIST_EXPR = `JSON.stringify((() => {
   window.${VC_ELS_VAR} = [];
   return Array.from(document.querySelectorAll('button, a, [role="button"], [onclick]'))
@@ -209,13 +217,16 @@ const LIST_EXPR = `JSON.stringify((() => {
     const closedDetails = el.closest('details:not([open])');
     const insideSummary = !!el.closest('summary');
     const hiddenByClosedDetails = !!(closedDetails && !insideSummary);
+    const ariaHidden = el.getAttribute('aria-hidden') === 'true' || !!el.closest('[aria-hidden="true"]');
+    let pointerBlocked = false;
+    try { pointerBlocked = window.getComputedStyle(el).pointerEvents === 'none'; } catch (e) {}
     return {
       i,
       tag: el.tagName,
       text: (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 30),
       href: el.getAttribute('href') || null,
       target: el.getAttribute('target') || null,
-      disabled: !!(el.disabled || el.getAttribute('aria-disabled') === 'true'),
+      disabled: !!(el.disabled || el.getAttribute('aria-disabled') === 'true' || ariaHidden || pointerBlocked),
       ariaCurrent: el.getAttribute('aria-current') || null,
       visible: hasBox && !hiddenByClosedDetails,
     };

@@ -636,7 +636,10 @@ while :; do
   [ -f "$REPO/status/youryou_kyuukyuu2.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_hakobu3.go" ] && ( python3 "$REPO/tools/youryou_hakobu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   # 2026-10-12 作業場と制作の中間ファイルを本体に溜めない（push済みは消す・未保存はiMac HDDへ写して消す）。1時間おき。
+  # 2026-10-14 gitの書きかけパックを消す・自動gcを止めて1日1回だけ最後まで回す（打ち切られたgcが1時間2GBずつ食っていた）
+  tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_kyuukyuu5.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu5.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_kyuukyuu4.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu4.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_ps.go" ] && ( python3 "$REPO/tools/youryou_ps.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_nozoki.go" ] && ( python3 "$REPO/tools/youryou_nozoki.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1

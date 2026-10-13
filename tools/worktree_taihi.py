@@ -166,6 +166,27 @@ def main():
                     res["moved"].append({"from": b, "to": d, "files": n_src, "gb": round(free_gb() - before, 2)})
             else:
                 res["skipped"].append("%s（HDDへのコピー確認NG rc=%s %d/%d）" % (b, rc, n_dst, n_src))
+    # ④ 2026-10-14 AI作業の直下に溜まる完成品の動画・音・画像（3日以上前）→ HDDへ移し、元の場所に別名
+    #   ★たまごさんが探せるよう、同じ名前の別名（シンボリックリンク）を元の場所に残す
+    if res["hdd"]:
+        aiw = os.path.join(HOME, "Documents", "AI作業")
+        media = (".mp4", ".mov", ".m4v", ".webm", ".wav", ".mp3", ".m4a", ".png", ".jpg", ".jpeg", ".zip")
+        for fn in (os.listdir(aiw) if os.path.isdir(aiw) else []):
+            p = os.path.join(aiw, fn)
+            if os.path.islink(p) or not os.path.isfile(p) or not fn.lower().endswith(media):
+                continue
+            try:
+                if now - os.path.getmtime(p) < 3 * 86400:
+                    continue
+                d = hdd_okiba.dest("AI作業", "完成品")
+                q = os.path.join(d, fn)
+                shutil.copyfile(p, q)
+                if os.path.getsize(q) == os.path.getsize(p):
+                    os.remove(p)
+                    os.symlink(q, p)
+                    res["moved"].append({"from": p, "to": q})
+            except Exception as e:
+                res["skipped"].append("%s（%s）" % (fn, str(e)[:60]))
     res["free_gb_after"] = free_gb()
     json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
