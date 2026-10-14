@@ -121,9 +121,31 @@
   <a class="dl" href="../check/assets/919-zen/chashitsu_loop_1920x1080.mp4" target="_blank" rel="noopener">原寸1920×1080のmp4を開く</a>
 </section>
 
+<hr class="sep">
+
+<section>
+  <h2>外部AI検品（Grok／OpenAI／Gemini）</h2>
+  <p class="sub">2026-10-14 12:41 実際に3社へ接続を試みた結果</p>
+  <p class="why">
+    依頼どおり、このページを出す前にGrok・OpenAI・Geminiの3社へ実際に接続した。結果は3社とも、
+    コード側の問題ではなく<b>外部の鍵・残高・上限が理由で判定そのものが返ってこなかった</b>（＝SKIP、OK/NGの判定は出ていない）。
+  </p>
+  <div class="facts">
+    <div><b>Grok</b><span>xAIの鍵(XAI_API_KEY)が未登録。登録がまだ無い</span></div>
+    <div><b>OpenAI</b><span>鍵はあるが口座残高0（HTTP429「You have no credits remaining」）</span></div>
+    <div><b>Gemini</b><span>鍵はあるが無料枠1日20回を使い切り（HTTP429「Quota exceeded」。あと約20時間19分で回復＝2026-10-15 09時頃）</span></div>
+  </div>
+  <p class="why">
+    3社とも揃うまでは「たまごさんに見せていい状態か」の外部判定は出せない。茶室の作り直し（約30円・承認待ち）とは別の、
+    もう1つの判断待ち：<b>Grokの鍵を登録する／OpenAIの口座へ課金する／Geminiは明日朝まで待つ</b>のどれを選ぶか。
+    何もしなければGeminiだけは約20時間後に自然に回復する。
+  </p>
+</section>
+
 <footer>
   919／ZEN 2本。素材：18_ZEN_chashitsu.png・22_ZEN_kuroihama.png（縦1122×1402）。<br>
-  16:9への横伸ばし＝fal seedream v4 edit、動画化＝minimax h3-max-turbo 1080p 5秒。使った金額は承認済みの72円のみ（このページの制作で追加の課金なし）。
+  16:9への横伸ばし＝fal seedream v4 edit、動画化＝minimax h3-max-turbo 1080p 5秒。使った金額は承認済みの72円のみ（このページの制作で追加の課金なし）。<br>
+  2026-10-14 12:4x 実測：このページ自体は200で返る（以前の503は解消済み）。外部AI検品3社は上の節のとおり実行済みだがSKIP（鍵・残高・上限の理由、コードの問題ではない）。
 </footer>
 
 </div>
