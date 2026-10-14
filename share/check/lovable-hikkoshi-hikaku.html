@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Lovable を解約したらどうなるか・引っ越し3案の比較 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);word-break:break-all;}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.08rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .warn{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 16px;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.92rem;margin:0 0 10px;}
+  .nums{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:140px;flex:1 1 140px;}
+  .num b{display:block;font-size:1.4rem;line-height:1.25;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .tw{overflow-x:auto;margin:0 0 14px;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:0.86rem;min-width:620px;}
+  th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top;}
+  th{background:#faf7f0;color:var(--sub);font-weight:500;white-space:nowrap;}
+  tr.osusume td{background:#eef6f0;}
+  .tag{display:inline-block;font-size:0.72rem;padding:1px 7px;border-radius:9px;background:var(--midori);color:#fff;margin-left:4px;}
+  ul{padding-left:1.2em;margin:6px 0;}
+  li{margin:3px 0;}
+  .src{font-size:0.78rem;color:var(--sub);}
+  ol.src li{margin:2px 0;}
+</style>
+</head>
+<body>
+<h1>Lovable を解約したら、ごきげん補給所はどうなるか</h1>
+<div class="date">2026-10-15 調査（読み取りだけ。Lovable の設定は一切変えていない）</div>
+
+<div class="fix"><b>結論：無料プランに下げても、joy-relief-station.lovable.app はそのまま公開され続け、URLも変わらず、GitHub に push → 公開の流れも続けられる。</b><br>
+おすすめは <b>A案（無料プランに下げるだけ）・月0円</b>。ただし下げる前に「Cloud の使用量」を1回だけ画面で確かめ、DBの控えを取っておく。</div>
+
+<h2>今の状態（実測）</h2>
+<div class="nums">
+  <div class="num"><b>Pro</b><span>今のプラン（ワークスペース1つ・持ち主＝たまごさん）</span></div>
+  <div class="num"><b>4件</b><span>Lovable のプロジェクト数</span></div>
+  <div class="num"><b>0件</b><span>たまごさん自身の Supabase アカウントにあるプロジェクト</span></div>
+  <div class="num"><b>1,160人</b><span>補給所の訪問者（9/15〜10/14・PV 8,592）</span></div>
+</div>
+<div class="tw"><table>
+<tr><th>プロジェクト</th><th>公開</th><th>最終更新</th><th>DB（Cloud）</th></tr>
+<tr><td>Happy Place Station（＝ごきげん補給所 joy-relief-station.lovable.app）</td><td>公開中</td><td>10/14</td><td><b>使っている</b></td></tr>
+<tr><td>Warm Hearth Sweets（焼き芋屋さん）</td><td>公開中</td><td>8/23</td><td>使っていない</td></tr>
+<tr><td>Cosmic Poo Bounce</td><td>公開中</td><td>6/7</td><td>使っていない</td></tr>
+<tr><td>PR 465 一時体感テスト</td><td>非公開</td><td>9/23</td><td>使っていない</td></tr>
+</table></div>
+<div class="note">
+<b>補給所の作りの事実</b>
+<ul>
+<li>中身は TanStack Start（サーバーで画面を組み立てる型）。静的ファイルだけの置き場（GitHub Pages など）では動かない。Lovable の設定では Cloudflare 向けにビルドされている。</li>
+<li>DB・Edge Functions・ストレージ・鍵（秘密の設定値）は <b>Lovable Cloud</b> にある。Supabase の箱だが、持ち主は Lovable 側。たまごさんの Supabase アカウントは空（0件）＝「自分の Supabase」ではない。</li>
+<li>音声機能などが Cloud の Edge Function を呼んでいる（工場の道具に呼び出し先の記録あり）。</li>
+</ul>
+</div>
+
+<h2>Q1. 解約・無料プランに下げたら、補給所はどうなる？</h2>
+<div class="tw"><table>
+<tr><th>項目</th><th>どうなる</th></tr>
+<tr><td>いつ切り替わる</td><td>今の支払い期間の最後まで Pro のまま。その後 Free に移る［1］</td></tr>
+<tr><td>公開</td><td><b>止まらない。</b>「ダウングレード・解約で公開は取り消されない」［1］。lovable.app での公開は全プラン無料［2］</td></tr>
+<tr><td>URL</td><td><b>そのまま。</b>joy-relief-station.lovable.app は使える。独自ドメインは今も使っていないので影響なし（独自ドメインは有料のみ）［2］</td></tr>
+<tr><td>直しを出す</td><td><b>出せる。</b>GitHub 連携は Free でも使える［3］。push → Lovable で公開、の今の流れは続く</td></tr>
+<tr><td>見た目の変化</td><td>右下の「Edit with Lovable」の印が、次に公開した時から出る（Free では消せない）［3］</td></tr>
+<tr><td>Lovable の AI に頼む</td><td>1日5クレジット（月30まで）に減る。今は使っていないので実害なし［4］</td></tr>
+<tr><td>残っている有料クレジット</td><td>凍結される（再加入すれば戻る）［4］</td></tr>
+</table></div>
+<div class="warn">食い違いあり：古い料金FAQには「期間後に公開サイトが止まる“かもしれない”」とある［5］。新しい公式ドキュメントは「公開は取り消されない」と明記［1］［6］。新しい方を採るが、下げた翌日に1回だけ開いて確かめる。</div>
+
+<h2>Q2. ほかのプロジェクトは開けなくなる？</h2>
+<div class="note">開ける。消えない。Free でもワークスペース内だけの非公開プロジェクトが持て、プロジェクト数の上限も無い［2］［7］。公開中の2件（焼き芋・Cosmic Poo）は DB を使っていないので、Cloud の枠の心配も無い。</div>
+
+<h2>Q3. DB・サーバーの処理（Cloud）はどうなる？</h2>
+<ul>
+<li><b>消えない。</b>下げるだけでは Cloud は削除されない。削除されるのは「Cloud を外す（Remove Cloud）」を押した時だけで、これは取り消し不可［1］。<b>絶対に押さない。</b></li>
+<li>Free にも Cloud の毎月の枠がある：Cloud 20クレジット／月、AI 4クレジット／月（ワークスペース全体で共有・毎月1日リセット）。「一時的な提供」と但し書きあり［4］［8］。</li>
+<li><b>枠を使い切ると：</b>サイト自体は表示され続けるが、DB を使う機能と AI 機能が止まる（クレジットを足すまで）［8］。</li>
+<li>見ているだけのサイトは、それだけではクレジットを使わない。使うのは DB・Edge Function・AI が動いた分［8］。</li>
+<li><b>まだ分からないこと：</b>補給所が今、月に何クレジットの Cloud を使っているか（コネクタからは読めなかった）。Workspace settings → Plans &amp; credit usage → Usage details（Run credits）で見られる［8］。20を大きく下回っていればA案で問題ない。</li>
+</ul>
+
+<h2>3案の比較</h2>
+<div class="tw"><table>
+<tr><th></th><th>A. 無料プランに下げるだけ</th><th>B. 公開先だけ外へ（Cloudflare 等）・DBはそのまま</th><th>C. DBも含め全部自分の Supabase へ</th></tr>
+<tr class="osusume"><td>月額</td><td><b>0円</b><span class="tag">おすすめ</span><br>（Cloud枠を超えた月だけ追加購入）</td><td>0円<br>（DBは Lovable Free の枠のまま）</td><td>0円<br>（Supabase Free＋Cloudflare Free）</td></tr>
+<tr><td>手間・日数</td><td>ボタン1つ（支払い画面なのでたまごさん本人）。5分。期間末に自動で切替</td><td>1〜2日。ビルド先の設定、環境変数、サーバー側の鍵の入れ直し［6］</td><td>3〜7日。DB書き出し→復元、Edge Functions を自分で再配置、鍵・ストレージ・定期処理・ログイン設定を全部やり直し［9］</td></tr>
+<tr><td>壊れる危険</td><td><b>小。</b>中身は何も動かさない。Cloud枠超えで DB/AI 機能が止まる可能性だけ</td><td><b>中。</b>Cloudflare Workers 無料は1回の処理のCPU 10ミリ秒まで［10］。補給所は曲データが重く、ページ組み立てで超える恐れ。Lovable の AI 窓口が外から使えるかも要検証</td><td><b>大。</b>自動の引っ越し手段は無い［9］。Supabase 無料は DB 500MB まで・1週間アクセスが無いと休止［11］</td></tr>
+<tr><td>URL</td><td><b>変わらない</b></td><td>変わる（新しい住所）</td><td>変わる</td></tr>
+<tr><td>Xに貼ったリンクを守る方法</td><td>不要</td><td>lovable.app 側を Free のまま公開し続け、新しい住所へ転送するページを置く（結局 Lovable の無料アカウントは残る）</td><td>Bと同じ</td></tr>
+<tr><td>ほかのプロジェクトへの影響</td><td>なし（全部残る・公開も続く）</td><td>なし（Lovable Free に残す）</td><td>なし（Lovable Free に残す）</td></tr>
+<tr><td>得られるもの</td><td>月約4,000円が0円</td><td>Aに加えて「Edit with Lovable」の印が消える・Lovable のビルド障害から独立</td><td>Bに加えて Lovable から完全に独立</td></tr>
+</table></div>
+
+<h2>おすすめ：A案（月0円）</h2>
+<div class="fix">補給所は独自ドメインを使っていない。lovable.app での公開と GitHub 連携は無料プランでもそのまま使える。お金を払っている理由（独自ドメイン・印を消す・AIクレジット）を、今は何も使っていない。B・Cは「印を消す」ためだけに URL が変わり、壊れる危険が増える。割に合わない。</div>
+<div class="note"><b>下げる前の3つ（たまごさん本人の操作は②の確認と③のボタンだけ）</b>
+<ol>
+<li>DB の控えを取る：プロジェクト → More → Cloud → Overview → Advanced settings の書き出し（24時間に1回・保険）［9］。</li>
+<li>Cloud の使用量を見る：Workspace settings → Plans &amp; credit usage → Usage details。月20クレジットを超えていたら、A案のまま「足りない月だけ買い足す」か、C案を検討。</li>
+<li>Workspace settings → Plans &amp; credit usage → Manage → Downgrade to free［1］。<b>「Remove Cloud」は押さない。</b></li>
+</ol>
+下げた翌日：補給所を開き、曲ページ・検索・音声が動くかを工場の巡回で確かめる。</div>
+
+<h2>出典</h2>
+<ol class="src">
+<li>Lovable Docs「Subscription plans」 <a href="https://docs.lovable.dev/introduction/subscription-plans">docs.lovable.dev/introduction/subscription-plans</a> ／「Lovable Cloud」 <a href="https://docs.lovable.dev/integrations/cloud">docs.lovable.dev/integrations/cloud</a></li>
+<li>Lovable Docs「Publish your Lovable project」 <a href="https://docs.lovable.dev/features/publish">docs.lovable.dev/features/publish</a> ／「Set up a custom domain」 <a href="https://docs.lovable.dev/features/custom-domain">docs.lovable.dev/features/custom-domain</a></li>
+<li>Lovable Docs「Project settings」 <a href="https://docs.lovable.dev/features/projects/settings">docs.lovable.dev/features/projects/settings</a> ／「Git sync」 <a href="https://docs.lovable.dev/integrations/git-sync-overview">docs.lovable.dev/integrations/git-sync-overview</a></li>
+<li>Lovable Docs「Credits and usage」 <a href="https://docs.lovable.dev/introduction/credits-and-usage">docs.lovable.dev/introduction/credits-and-usage</a></li>
+<li>Lovable FAQ「Cancel Subscription」 <a href="https://lovable.dev/faq/billing/cancel">lovable.dev/faq/billing/cancel</a></li>
+<li>Lovable Docs「Deploying and hosting outside Lovable」 <a href="https://docs.lovable.dev/tips-tricks/external-deployment-hosting">docs.lovable.dev/tips-tricks/external-deployment-hosting</a></li>
+<li>Lovable Docs「Projects in Lovable」 <a href="https://docs.lovable.dev/features/projects/overview">docs.lovable.dev/features/projects/overview</a></li>
+<li>Lovable Docs「Project usage and costs」 <a href="https://docs.lovable.dev/features/project-usage">docs.lovable.dev/features/project-usage</a> ／ 料金 <a href="https://lovable.dev/pricing">lovable.dev/pricing</a></li>
+<li>Lovable Docs「Connect to Supabase」 <a href="https://docs.lovable.dev/integrations/supabase">docs.lovable.dev/integrations/supabase</a> ／「Deployment, hosting, and ownership」 <a href="https://docs.lovable.dev/tips-tricks/deployment-hosting-ownership">docs.lovable.dev/tips-tricks/deployment-hosting-ownership</a></li>
+<li>Cloudflare Workers「Limits」 <a href="https://developers.cloudflare.com/workers/platform/limits/">developers.cloudflare.com/workers/platform/limits</a> ／「Pricing」 <a href="https://developers.cloudflare.com/workers/platform/pricing/">developers.cloudflare.com/workers/platform/pricing</a></li>
+<li>Supabase「Project Pausing」 <a href="https://supabase.com/docs/guides/platform/free-project-pausing">supabase.com/docs/guides/platform/free-project-pausing</a> ／「Database size」 <a href="https://supabase.com/docs/guides/platform/database-size">supabase.com/docs/guides/platform/database-size</a></li>
+</ol>
+<p class="src">実測の出どころ：Lovable コネクタ（list_workspaces・list_projects・get_project・get_database_status・get_project_analytics・read_file）と Supabase コネクタ（list_projects）の読み取りのみ。DB の中身の大きさは今回は読めていない。</p>
+</body>
+</html>
