@@ -50,5 +50,24 @@
 - **置き換え：** web_fetch → `python3 tools/mac_fetch.py URL`（Macのcurl）／Gmail下書き → `status/shitagaki/`にファイル／Lovable → git push／定期タスク → 心臓に1行／Gensparkは`tools/genspark_tanomu.py`（待ち切れなくても起こし役が回収）。
 - **機械の裏付け：** `tools/okoshi.py`（心臓から5分おき。落ちた・20分固まった子を工場の列へ「続きから」で積み直す。同じ所で2回なら別経路の指示つき。結果`status/okoshi.json`・進捗表「自動で起こした回数」）、`tools/kyoka_kanmon.py`（許可ポップアップの回数を道具ごとに毎時集計→`status/kyoka_kanmon.json`）。
 
+## 外部カードの題名は「何の動画か」（憲法・2026-10-14）
+- **1行目（題名）＝主題の名詞＋していること**（例：「さつまいもで作る、チャイ香るアイスビスケットサンド」）。気の利いた言い回しは2行目（コピー）へ。投稿文の比喩・決め台詞（「AでなくB」）・言い回しの写し・絵文字を題名にしない。きっかけ：題名が「⛱ 「冷やす」でなく「癒す」」で何の動画か分からなかった。
+- **機械の裏付け：** 関所 `tools/daimei_kanmon.py`（`--self-test`／`--tanaoroshi`）。取り込み（`tools/2210_tanaire.py`・`tools/nagekomi_shelf.py` の gates）で落ちた題名は `status/daimei/machi.jsonl` へ差し戻し、`tools/daimei_naoshi.py`（5分便・30分ゲート・1日20件）が書き直す。前後は `status/public/daimei_naoshi.json`。本番での見え方は `tools/daimei_kakunin.mjs`。
+
+## Claudeの生成物の納品先はGoogleドライブ「AI生成物/Claude/<案件>」（憲法・2026-10-14）
+- **納品先：マイドライブ/AI生成物/Claude/ の案件フォルダ（詩と音楽_僕は見た、未来を待つ人々を／ポッドキャスト神回_日本語音源／HowItHolds／わえちゃん／その他）。iCloud Drive・Mac本体（~/Documents・デスクトップ）には置かない。**
+- **納品は必ず `python3 tools/claude_nouhin.py put <ファイル> [--anken 案件] [--sub 小分け] [--move]` を通す。** 案件名・ドライブの場所はこのファイルの `ANKEN`／`DRIVE_DEST` が正本（ここ以外に書かない）。
+- ドライブのアプリが使えない間は iMac HDD「Mac標準置き場/Claude上げ待ち/<案件>」に積まれ、心臓が10分おきに `flush`（上げられたら「Claude上げ済み」へ移す）。`~/Documents/AI作業` 直下に置かれた完成品（動画・音・画像）も30分後に自動で上げ待ちへ移す。空き30GB未満なら止まる。状態は `status/public/claude_nouhin.json`。逆テスト：`--self-test`。
+
+## サブスクは引き落とし3日前にGoogleカレンダーで知らせる（2026-10-14）
+- 家計簿の正本 `status/okane/kakin.json` の services にサブスクを足したら、予定も作る。形：題「【サブスク】名前 金額 引き落とし」・引き落とし日9:00・3日前(4320分)にポップアップ＋メール・空き時間。
+- **機械の裏付け：** `tools/subsc_calendar.py`（心臓4時間おき）。予定の無いサブスクを見つけると outbox に1行 → Dispatch が `--machi` の中身をカレンダーのコネクタで作り `--done ID イベントID` で控える（`status/subsc_calendar/touroku.json`）。日付不明は予定を作らず `status/public/subsc_calendar.json` の fumei へ。`--self-test`。
+
+## マガジンは「曲を使った短い物語」にする（憲法・2026-10-14・たまごさん指示）
+- **羅列・紹介で終わらせない。** 冒頭につかみ → 起承転結 → 締め（「最後に、これをどうぞ」や「次回もお楽しみに」）。並べ方で意味が変わるので、順番そのものを物語にする。
+- **各曲の紹介文は、最後の一言で次の曲へつなぐ**（`<p class="bridge">`）。事実の裏取り（sekisho-jijitsu-shutten）・公式動画のoEmbed確認・歌詞を引用しない、は今までどおり。
+- 手本：`share/check/tokushu-ikareru-01.html`（怒れる人々 vol.1）／`tokushu-rei-harakami.html`／`naze-ongaku-01-takoukan.html`。
+- **機械の裏付け：** `python3 tools/magazine_monogatari_kanmon.py --all`（`<meta name="tamago-magazine" content="story">` を付けたページで、つかみ・各章のつなぎ・締めの有無を見る。`--self-test` あり）。マガジンのページには必ずこのmetaを付けて、出す前に通す。
+
 ## 認証情報(ID/パスワード)の代理入力は禁止（憲法・2026-08-05・34483号で機械化）
 - **たまごさんのID・パスワード・暗証番号・秘密鍵を、AIが代わりに入力欄へ打ち込むことは禁止。** 文章の注意書きだけでは1ヶ月以上効かず判定日赤になったため、`tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs`（PreToolUse関所）で機械的に拒否する形へ変更した。ブラウザ・画面操作系の道具呼び出しにパスワード等の語が含まれると exit 2 で道具ごと拒否される。ログインが必要な画面は**たまごさん本人に入力してもらう**。詳細は`AGENTS.md`。
