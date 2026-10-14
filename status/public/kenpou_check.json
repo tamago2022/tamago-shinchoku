@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-10-13T09:10:22+09:00",
+ "checkedAt": "2026-10-14T09:10:56+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 4,
  "items": [
   {
    "key": "ctx_1m",
@@ -22,9 +22,9 @@
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
-   "color": "green",
-   "count": 0,
-   "detail": "最終記録から約23.9時間経過（2026-10-12T09:16:30+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）"
+   "color": "red",
+   "count": 3,
+   "detail": "最終記録から約1.6時間経過（2026-10-14T07:31:10+09:00）／直近24時間の完了5件中、鬼監督の記録が付いているのは2件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
   },
   {
    "key": "done_missing_url",
@@ -38,21 +38,21 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "意図的な一時停止中（status/no_launch.flag）なので工場停止としては扱わない"
+   "detail": "最終発車から0.0時間・発車待ち4604件・空き2枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回88706番 → 今回93550番（減少なし）"
+   "detail": "前回93550番 → 今回96616番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
    "count": 60,
-   "detail": "status/public/dispatch_outbox.jsonl(20.6MB)、share/done/index.html(15.3MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)"
+   "detail": "status/public/dispatch_outbox.jsonl(22.2MB)、share/done/index.html(16.7MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)"
   },
   {
    "key": "check_page_404",
@@ -73,21 +73,25 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 12,
-   "detail": "12件（しきい値100件以内）"
+   "count": 15,
+   "detail": "15件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 48475,
-   "detail": "未報告の完了が48475件たまっている（最古は約459.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 50453,
+   "detail": "未報告の完了が50453件たまっている（最古は約483.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
    "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "oni_kantoku_alive",
+   "skipped": "既存の684番と同じ内容のためスキップ"
   },
   {
    "key": "big_files",
