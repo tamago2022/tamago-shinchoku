@@ -643,7 +643,8 @@ while :; do
   # 2026-10-14 Vaultを本体に置いたままにする（容量不足でiCloudに追い出された分を取り戻す）。1時間おき。
   tick_every 240 && ( python3 "$REPO/tools/obsidian_mamoru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
-  tick_every 240 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  #   2026-10-14 1時間→10分おきへ（子セッションが /private/tmp に push 用の作業場を1日7GB置いていく速さに合わせる）
+  tick_every 40 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/worktree_taihi.go" ] && ( rm -f "$REPO/status/worktree_taihi.go"; python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_tmp.go" ] && ( python3 "$REPO/tools/youryou_tmp.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_soto.go" ] && ( python3 "$REPO/tools/youryou_soto.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1

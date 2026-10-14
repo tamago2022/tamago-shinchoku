@@ -175,16 +175,19 @@ def main():
         if not dirty and pushed:
             if remove_worktree(p):
                 res["removed"].append({"name": name, "gb": round(free_gb() - before, 2)})
+                json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            continue
+        # 2026-10-14 まず「差分だけ」を小さく控えて消す（作業場まるごと＝約0.9GBをHDDへ写すと1個数分かかり、
+        #   その間に容量不足のMacがこの処理ごと落としていた）。コミット済みの中身は元のリポジトリに残っている。
+        #   差分＋未追跡ファイルが100MBを超えるものだけ、HDDへまるごと写す（HDDが無ければ保留）。
+        if small_hikae(p, name, root, res):
+            if remove_worktree(p):
+                res["archived"].append({"name": name, "to": "差分だけ控え（HDDがあればHDDへ移る）",
+                                        "gb": round(free_gb() - before, 2)})
+            json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             continue
         if not res["hdd"]:
-            # 2026-10-14 HDDが無い間は、未保存の「差分だけ」を小さく控えて消す（作業場まるごと＝約0.9GBは写さない）。
-            #   コミット済みの中身は元のリポジトリに残っている。差分＋未追跡ファイルが100MBを超えるものは保留。
-            if small_hikae(p, name, root, res):
-                if remove_worktree(p):
-                    res["archived"].append({"name": name, "to": "~/.tamago/sagyouba_hikae（差分だけ）",
-                                            "gb": round(free_gb() - before, 2)})
-            else:
-                res["skipped"].append(name + "（未保存が大きい・HDDが無いので保留）")
+            res["skipped"].append(name + "（未保存が大きい・HDDが無いので保留）")
             continue
         d = hdd_okiba.dest("作業場の控え", time.strftime("%Y-%m"))
         tgz = os.path.join(d, name + "_" + time.strftime("%Y%m%d-%H%M") + ".tar.gz")
