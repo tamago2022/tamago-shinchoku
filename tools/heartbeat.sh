@@ -644,6 +644,7 @@ while :; do
   tick_every 240 && ( python3 "$REPO/tools/obsidian_mamoru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_tmp.go" ] && ( python3 "$REPO/tools/youryou_tmp.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_soto.go" ] && ( python3 "$REPO/tools/youryou_soto.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_hanniti.go" ] && ( python3 "$REPO/tools/youryou_hanniti.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/obsidian_modosu3.go" ] && ( python3 "$REPO/tools/obsidian_modosu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
