@@ -13,7 +13,8 @@
   ③ 締め：「最後に」「次回」「お楽しみに」のどれかで終わる締めがある
   ④ 吹き出し：運営のアイコン（assets/owner/x-avatar.jpg）を使い、「店主」「コンシェルジュ」の肩書きを書かない
   ⑤ ヘッダー：取り上げた曲のジャケット／動画サムネイル（i.ytimg.com）を使う（風景写真の仮置きはしない）
-  ⑥ つながっている特集：ほかのマガジンへの入口カード（class="rel"）がある
+  ⑥ つながっている特集：ほかのマガジンへの入口カード（class="cw-other"＝シティポップ特集の型／旧 class="rel"）がある
+  ⑦ 見出し：章の見出し（h2.cw-chead__title）は「アーティスト名 - 曲名」
 
 使い方：
   python3 tools/magazine_monogatari_kanmon.py share/check/xxx.html [...]
@@ -27,7 +28,7 @@ import re
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MARK = re.compile(r'<meta name="tamago-magazine" content="story">')
+MARK = re.compile(r'<meta name="tamago-magazine" content="story"\s*/?>')
 CH = re.compile(r'<section[^>]*\bid="ch(\d\d)"[^>]*>(.*?)</section>', re.S)
 
 
@@ -50,10 +51,13 @@ def check(html):
         errs.append("吹き出しに運営のアイコン（assets/owner/x-avatar.jpg）が無い")
     if re.search(r"(class=\"talk__nm\"|class=\"nm\"|>店主<|タマゴコンシェルジュ<)", html):
         errs.append("吹き出しに肩書き（店主／コンシェルジュ）が書いてある")
-    hero = re.search(r'(cw-hero__bg"><img src="|class="hero-img" src=")([^"]+)', html)
+    hero = re.search(r'(cw-hero__bg"(?: aria-hidden="true")?><img src="|class="hero-img" src=")([^"]+)', html)
     if not hero or "i.ytimg.com/vi/" not in hero.group(2):
         errs.append("ヘッダーの絵が曲のジャケット／動画サムネイルではない")
-    if 'class="rel"' not in html:
+    for h2 in re.findall(r'<h2 class="cw-chead__title">(.*?)</h2>', html):
+        if " - " not in h2:
+            errs.append("見出しが「アーティスト名 - 曲名」になっていない：%s" % h2)
+    if 'class="rel"' not in html and 'class="cw-other"' not in html:
         errs.append("つながっている特集のカード（class=rel）が無い")
     return errs
 

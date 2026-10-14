@@ -129,7 +129,8 @@ def small_hikae(p, name, root, res):
 
 def main():
     res = {"at": time.strftime("%F %T"), "free_gb_before": free_gb(), "hdd": hdd_okiba.ok(),
-           "removed": [], "archived": [], "moved": [], "skipped": []}
+           "removed": [], "archived": [], "moved": [], "skipped": [], "state": "作業中"}
+    json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     if res["hdd"] and os.path.isdir(HIKAE):  # HDDが戻ったら、本体に控えた差分をHDDへ移す
         for n in os.listdir(HIKAE):
             try:
@@ -254,6 +255,7 @@ def main():
             except Exception as e:
                 res["skipped"].append("%s（%s）" % (fn, str(e)[:60]))
     res["free_gb_after"] = free_gb()
+    res["state"] = "完了"
     json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
