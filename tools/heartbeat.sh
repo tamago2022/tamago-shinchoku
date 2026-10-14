@@ -663,6 +663,10 @@ while :; do
   #   アプリが使えない間はiMac HDD「Claude上げ待ち」に積み、10分おきにドライブへ上げられるか試す（0円）。結果 status/public/claude_nouhin.json
   tick_every 40 && ( python3 "$REPO/tools/claude_nouhin.py" flush >/dev/null 2>> "$REPO/status/claude_nouhin.log" & ) >/dev/null 2>&1
 
+  # 2026-10-14 制作依頼Issue（題名【制作依頼】）の素材を工場が自分で拾う（Downloads/Desktop/ドライブ受け取り/Release・添付URL）。
+  #   たまごさんの手はダウンロード1回だけ。結果 status/public/sozai_hiroi.json・Issueへ受領コメント1回（地球観察日記 第2作 #975）
+  tick_every 20 && ( python3 "$REPO/tools/sozai_hiroi.py" >/dev/null 2>> "$REPO/status/sozai_hiroi.log" & ) >/dev/null 2>&1
+
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
