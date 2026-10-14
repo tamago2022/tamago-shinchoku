@@ -483,6 +483,9 @@ while :; do
   #   ★お金の紙(1051番)より先に呼ぶ＝紙は書き直された数字を写すだけ。新しい常駐も定期タスクも作らない。
   #   中で1日1回に間引く（status/.subsc_shirase_at）。外へ出るのは為替レート1本だけ＝0円。
   tick_every 240 && ( python3 "$REPO/tools/subsc_shirase.py" >> "$REPO/status/subsc_shirase.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-14 サブスクのカレンダー。家計簿（status/okane/kakin.json）に予定の無いサブスクが増えたら
+  #   status/dispatch_outbox.jsonl に1日1行 → Dispatch がGoogleカレンダーのコネクタで作り --done で控える。読むだけ＝0円。
+  tick_every 240 && ( python3 "$REPO/tools/subsc_calendar.py" >> "$REPO/status/subsc_calendar.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
   #   2026-10-08 作り直し：今月いくら（カードから実際に引かれた円）＋サービスごと＋証拠。1時間に1回書き直す。
@@ -641,6 +644,8 @@ while :; do
   tick_every 240 && ( python3 "$REPO/tools/obsidian_mamoru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_soto.go" ] && ( python3 "$REPO/tools/youryou_soto.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_hanniti.go" ] && ( python3 "$REPO/tools/youryou_hanniti.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/obsidian_modosu3.go" ] && ( python3 "$REPO/tools/obsidian_modosu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/obsidian_modosu2.go" ] && ( python3 "$REPO/tools/obsidian_modosu2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/obsidian_modosu.go" ] && ( python3 "$REPO/tools/obsidian_modosu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
