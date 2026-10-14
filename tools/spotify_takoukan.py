@@ -88,11 +88,13 @@ def call(tok, path, method="GET", payload=None):
     raise SystemExit("Spotifyが混んでいて通りませんでした: " + path)
 
 
-def bad(name, album):
+def bad(name, album, live_ok=False):
     t2 = (name + " / " + album).lower()
     for w in OK_WORDS:
         t2 = t2.replace(w, "")
     for w in NG:
+        if live_ok and w in ("live", "ライブ", "ライヴ"):  # 原曲そのものがライブ録音の曲（例：Mississippi Goddam）
+            continue
         if re.match(r"^[a-z0-9 \-']+$", w):  # 英語は単語として（Alive の live・Demon の demo を誤って外さない）
             if re.search(r"(?<![a-z])%s(?![a-z])" % re.escape(w), t2):
                 return True
@@ -102,7 +104,8 @@ def bad(name, album):
 
 
 def find(tok, song):
-    disp, title, alts, artists = song
+    disp, title, alts, artists = song[:4]
+    opts = song[4] if len(song) > 4 else {}
     titles = [norm(x) for x in [title] + alts]
     arts = [norm(a) for a in artists]
     queries = []
@@ -130,7 +133,7 @@ def find(tok, song):
                 if not any(t == nm or t == base or (len(t) >= 4 and nm.startswith(t)) for t in titles):
                     continue
                 alb = (it.get("album") or {}).get("name") or ""
-                if bad(it.get("name") or "", alb):
+                if bad(it.get("name") or "", alb, live_ok=opts.get("live_ok")):
                     continue
                 atype = (it.get("album") or {}).get("album_type") or ""
                 score = (it.get("popularity") or 0) + (15 if atype in ("album", "single") else 0) \

@@ -431,7 +431,16 @@ NO_FABLE_FLAG = os.path.join(REPO, "status", "no_fable.flag")
 def no_fable():
     """このファイルがある間はFableを一切使わない（マガジン例外も無効）。
     2026-09-03 たまごさん：「もうフェイブル使っちゃうと天井ついちゃうからもう使わないで」"""
-    return os.path.exists(NO_FABLE_FLAG)
+    if not os.path.exists(NO_FABLE_FLAG):
+        return False
+    # 2026-10-15 たまごさん「Fableの方が効果的な仕事をやりまくっていい」：解禁期間中はフラグを効かせない
+    try:
+        import fable_week as _fw
+        if _fw.active()[0]:
+            return False
+    except Exception:
+        pass
+    return True
 
 
 def model_for(task_text, prev_model=None, why=""):

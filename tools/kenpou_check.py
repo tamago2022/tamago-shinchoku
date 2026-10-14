@@ -143,6 +143,12 @@ def check_context_and_model(sample=25):
         if max_ctx > 200000:
             bad_ctx.append((os.path.basename(f), max_ctx))
         fable_models = [k for k in mu.keys() if "fable" in k.lower()]
+        try:  # 2026-10-15：Fable解禁期間（status/fable_week.json）中は違反に数えない
+            import fable_week as _fw
+            if _fw.active()[0]:
+                fable_models = []
+        except Exception:
+            pass
         if fable_models:
             bad_model.append((os.path.basename(f), fable_models))
         if checked >= sample:

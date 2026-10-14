@@ -645,6 +645,8 @@ while :; do
   tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   #   2026-10-14 1時間→10分おきへ（子セッションが /private/tmp に push 用の作業場を1日7GB置いていく速さに合わせる）
   tick_every 40 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  # 2026-10-15 使ったらしまう係（1日1回＋status/shimau.go で今すぐ）。測る・作り直せるものを片付ける・HDDの置き場を日数で片付ける
+  { tick_every 240 || [ -f "$REPO/status/shimau.go" ]; } && ( python3 "$REPO/tools/shimau.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/worktree_taihi.go" ] && ( rm -f "$REPO/status/worktree_taihi.go"; python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_tmp.go" ] && ( python3 "$REPO/tools/youryou_tmp.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_soto.go" ] && ( python3 "$REPO/tools/youryou_soto.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
