@@ -653,6 +653,10 @@ while :; do
   [ -f "$REPO/status/youryou_shirabe3.go" ] && ( python3 "$REPO/tools/youryou_shirabe3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_hakaru2.go" ] && ( python3 "$REPO/tools/youryou_hakaru2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
 
+  # 2026-10-14 Claudeの生成物の納品先＝Googleドライブ「AI生成物/Claude/<案件>」。たまごさん「iCloudは置き場に使わない」
+  #   アプリが使えない間はiMac HDD「Claude上げ待ち」に積み、10分おきにドライブへ上げられるか試す（0円）。結果 status/public/claude_nouhin.json
+  tick_every 40 && ( python3 "$REPO/tools/claude_nouhin.py" flush >/dev/null 2>> "$REPO/status/claude_nouhin.log" & ) >/dev/null 2>&1
+
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then
     tail -n 200 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" 2>/dev/null || true
