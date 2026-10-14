@@ -128,6 +128,15 @@ def small_hikae(p, name, root, res):
 
 
 def main():
+    # 2026-10-15 たまごさん「重いディスク走査は負荷が下がるまで再開しない」→ 固まる手前・スワップ90%超の間は走らない
+    try:
+        import fuka_hassha
+        _m = fuka_hassha.measure()
+        if fuka_hassha.kiken(_m) or (_m.get("swapPct") or 0) >= 90 or \
+                (_m.get("load1") or 0) / float(_m.get("ncpu") or 8) >= 1.5:
+            return
+    except Exception:
+        pass
     res = {"at": time.strftime("%F %T"), "free_gb_before": free_gb(), "hdd": hdd_okiba.ok(),
            "removed": [], "archived": [], "moved": [], "skipped": [], "state": "作業中"}
     json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)

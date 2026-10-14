@@ -636,6 +636,8 @@ while :; do
   # 2026-10-11 空き容量の番人。たまごさん「30GBを切ったらDispatchに警告、20GBを切ったら新規発車を止める」
   #   空き668MB（500GB中）まで落ちた事故を受けて。statvfsを1回読むだけ（0円）。1分おき。
   #   10GB未満なら下の救急（作り直せるキャッシュだけ消す・測る）を自動で起こす。
+  # 2026-10-15 固まる手前の見張り（ロード≥コア×3・スワップ≥95%・空きメモリ<5%で新規発車停止＋重い走査停止＋Dispatchへ1行）。1分おき
+  { tick_every 4 || [ -f "$REPO/status/teishi.go" ]; } && ( python3 "$REPO/tools/fuka_mihari.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   tick_every 4  && ( python3 "$REPO/tools/youryou_mihari.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_kyuukyuu.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   #   控え箱(status/_1142_gomi)が上限なしで10.8GBに太っていた主犯。古い控えを gzip（消さない）。10分おき。

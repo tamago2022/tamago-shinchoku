@@ -219,7 +219,20 @@ def hakaru(res):
     res["swap"] = subprocess.run(["sysctl", "vm.swapusage"], capture_output=True, text=True).stdout.strip()
 
 
+def omoi():
+    """2026-10-15 たまごさん「重いディスク走査は負荷が下がるまで再開しない」。重い間は走らない。"""
+    try:
+        import fuka_hassha
+        m = fuka_hassha.measure()
+        r = (m.get("load1") or 0) / float(m.get("ncpu") or 8)
+        return r >= 0.7 or (m.get("swapPct") or 0) >= 90 or fuka_hassha.kiken(m) is not None
+    except Exception:
+        return False
+
+
 def main():
+    if omoi():
+        return
     force = os.path.exists(GO)
     if force:
         os.remove(GO)
