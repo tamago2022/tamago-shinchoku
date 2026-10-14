@@ -32,7 +32,7 @@ M = dict(
     open=['何もしたくない朝から、着替えて出かける夜まで。6曲で、一日をたどってみる。',
           'どの曲にも、楽しさが生まれた現場がある。スタジオにいた一人の楽天家、ボウリング場のあるビルの一室、本物の結婚式、9回ボツをくらった作曲家。'],
     door=f'この6曲の続きは、Spotifyのプレイリスト<a href="{SPOT}" target="_blank" rel="noopener noreferrer">「多幸感ポップス」</a>で。',
-    paper=[1, 4],
+    paper=[],
     chapters=[
         dict(no='01', en='目が覚めるだけで、いい日の始まりになる', title='Bill Withers - Lovely Day', year='1977',
              main=dict(id='bEeaS6fuUoA', role='Official Audio 1977', artist='Bill Withers', song='Lovely Day', cap='BillWithersVEVO。1億回以上再生されている'),
