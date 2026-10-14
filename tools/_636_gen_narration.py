@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """636番: 日本の風景60秒動画の英語ナレーションをfal(ElevenLabs eleven-v3)で1本生成する。"""
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import os, json, time, urllib.request, urllib.error
 
 KEY_PATH = os.path.expanduser("~/.fal_key")

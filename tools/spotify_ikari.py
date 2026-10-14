@@ -39,7 +39,7 @@ MAGAZINE = [
     ("おとぼけビ〜バー", "ジジイ is waiting for my reaction", ["Dirty old fart is waiting for my reaction", "ジジイ is Waiting For My Reaction"], OTO),
     ("おとぼけビ〜バー", "anata watashi daita ato yome no meshi", ["あなたわたし抱いたあと嫁の飯", "Anata Watashi Daita Ato Yome No Meshi"], OTO),
     ("Lenny Kravitz", "Rock and Roll Is Dead", [], ["Lenny Kravitz"]),
-    ("Prince", "Rock and Roll Is Alive! (And It Lives in Minneapolis)", ["Rock and Roll Is Alive"], ["Prince"]),
+    ("Prince", "Rock and Roll Is Alive! (And It Lives in Minneapolis)", ["Rock 'N' Roll Is Alive! (And It Lives In Minneapolis)", "Rock and Roll Is Alive"], ["Prince"]),
 ]
 
 NOTE = [
@@ -55,8 +55,8 @@ NOTE = [
     ("The Linda Lindas", "Racist, Sexist Boy", [], ["The Linda Lindas"]),
     ("The Jam", "Town Called Malice", ["A Town Called Malice"], ["The Jam"]),
     ("Ado", "うっせぇわ", [], ["Ado"]),
-    ("おとぼけビ〜バー", "サラダ取り分けませんことよ", ["I won't share my salad", "Salad Toriwakemasenkotoyo"], OTO),
-    ("おとぼけビ〜バー", "アイドンビリーブマイ母性", ["I Don't Believe My Bosei", "I don't believe my maternal instinct"], OTO),
+    ("おとぼけビ〜バー", "サラダ取り分けませんことよ", ["I won't dish out salads", "I won't share my salad"], OTO),
+    ("おとぼけビ〜バー", "アイドンビリーブマイ母性", ["I am not maternal", "I Don't Believe My Bosei"], OTO),
     ("BOØWY", "MORAL", [], ["BOØWY", "BOOWY"]),
     ("BOØWY", "IMAGE DOWN", [], ["BOØWY", "BOOWY"]),
     ("THE BLUE HEARTS", "NO NO NO", [], ["THE BLUE HEARTS", "ザ・ブルーハーツ"]),
@@ -70,11 +70,11 @@ NOTE = [
     ("ミドリ", "ゆきこさん", [], ["ミドリ", "Midori"]),
     ("女王蜂", "火炎", ["Kaen"], ["女王蜂", "QUEEN BEE"]),
     ("大森靖子", "マジックミラー", ["Magic Mirror"], ["大森靖子", "Seiko Oomori"]),
-    ("筋肉少女帯", "踊るダメ人間", [], ["筋肉少女帯", "Kinniku Shojo Tai"]),
+    ("筋肉少女帯", "踊るダメ人間", [], ["筋肉少女帯", "Kinniku Shōjo Tai", "Kinniku Shojo Tai"]),
     ("打首獄門同好会", "はたらきたくない", [], ["打首獄門同好会", "Uchikubigokumon-Doukoukai"]),
     ("ずっと真夜中でいいのに。", "秒針を噛む", ["Byoushinwo Kamu"], ["ずっと真夜中でいいのに。", "ZUTOMAYO"]),
     ("Ado", "逆光", ["Gyakkou"], ["Ado"]),
-    ("椎名林檎", "罪と罰", ["Tsumi to Batsu"], ["椎名林檎", "Ringo Sheena"]),
+    ("椎名林檎", "罪と罰", ["Tsumi to Batsu"], ["椎名林檎", "Sheena Ringo", "Ringo Sheena"]),
     ("岡崎体育", "MUSIC VIDEO", [], ["岡崎体育", "Okazaki Taiiku"]),
     ("amazarashi", "命にふさわしい", [], ["amazarashi"]),
     ("THE STALIN", "ロマンチスト", [], ["THE STALIN", "ザ・スターリン"]),

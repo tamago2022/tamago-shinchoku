@@ -3,6 +3,7 @@
 """771番: ltx-2.5 fast で「もやが一方向に流れ続け、戻らない」海辺を1本だけ生成する。
 元絵は751番と同じ 16x9_widened_v2.png を再利用(作り直さない)。
 レスポンスヘッダー・本文を全部記録し、実費を示す手がかりが無いか確認する。"""
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import os, json, time, base64, urllib.request, urllib.error, datetime
 
 # ★1034番【予算の栓】fal は1本が高い（動画1本30円・画像1枚6円／status/fal_cost_ledger.json）。

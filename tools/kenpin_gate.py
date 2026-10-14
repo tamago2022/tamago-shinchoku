@@ -782,7 +782,8 @@ def run_one(ticket_path, quiet=False):
         try:
             okv, whyv = yosan.mitsumori(saifu, YOSAN_MITSUMORI_YEN, what=what, anken="外部検品ゲート（鬼監督）")
         except Exception as e:
-            okv, whyv = True, "予算の栓を読めず素通し(%s)" % e
+            # ★2026-10-15：お金の関所は読めないとき「通さない」（旧：素通し）。
+            okv, whyv = False, "予算の栓を読めないので止めた(%s)" % e
         if not okv:
             skips.append("%s: 予算の栓 %s" % (provider, whyv))
             continue

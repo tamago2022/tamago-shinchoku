@@ -189,6 +189,16 @@ def mitsumori(saifu, yen, what="", record=True, anken=None):
     """
     if saifu not in SAIFU:
         return False, "知らない財布です: %s" % saifu
+    # ★2026-10-15 財布の関所（停止札・1回上限・回数上限・日上限）。読めなければ止める（fail closed）。
+    #   止まっている間は台帳(yosan.jsonl)に1行も書かない＝56MBまで膨らんだ見積り行を増やさない。
+    try:
+        sys.path.insert(0, HERE)
+        import saifu_kanmon
+        ok_k, why_k = saifu_kanmon.toosu(saifu, yen, what)
+    except Exception as ex:
+        ok_k, why_k = False, "【財布の関所】読み込めないので止めました（%s）" % ex
+    if not ok_k:
+        return False, why_k
     kb = _kakeibo()
     if kb is not None and saifu in kb.HISSU:
         try:
@@ -240,6 +250,12 @@ def tsukatta(saifu, yen, what="", usd=None, src="", anken=None, model="", ryou="
         return False
     if yen is None and usd is not None:
         yen = float(usd) * USD_YEN
+    try:
+        sys.path.insert(0, HERE)
+        import saifu_kanmon
+        saifu_kanmon.kiroku(saifu, yen)
+    except Exception:
+        pass
     anken = (anken or os.environ.get("TAMAGO_ANKEN") or "").strip()
     kb_ok = False
     kb = _kakeibo()

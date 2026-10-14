@@ -580,6 +580,8 @@ while :; do
   #    返ってきた指摘を台帳へ戻す。★完了の鍵（status/gaibu/soto_hantei.json）は外しか開けない。
   #    中で1日1回に間引く。出すのは tools/nageru.py の口1本だけ＝新しい通信を作らない。
   tick_every 240 && ( python3 "$REPO/tools/gaibu_shinsa.py" >> "$REPO/status/gaibu/shinsa.log" 2>&1 & ) >/dev/null 2>&1
+  # ★2026-10-15 財布の関所：家計簿の「API 従量課金」欄（status/okane/api_juuryou.json）を1時間おきに作り直す。課金0。
+  tick_every 240 && ( python3 "$REPO/tools/saifu_kanmon.py" --nikki >> "$REPO/status/saifu_kanmon.log" 2>&1 & ) >/dev/null 2>&1
   # ④b 鬼監督(Codex)個別審査：1件ずつ投げた分(oni_codex.py nage)の返事を拾う。
   #    ★2171番（2026-10-06）実測で発覚：この hirou は「心臓から毎周回」と設計書
   #    （oni_codex.py 冒頭コメント）に書かれていたのに、心臓に一度も登録されていなかった。

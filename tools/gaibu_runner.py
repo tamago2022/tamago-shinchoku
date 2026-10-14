@@ -257,8 +257,19 @@ def run_once(max_jobs=3, quiet=True, only_job=None):
             _log("開始 %s kind=%s" % (jid, job.get("kind")))
             _limit = _job_limit(job)
             _armed = _arm(_limit)
+            # ★2026-10-15 財布の関所：停止札があるあいだ、お金が出うる仕事は門前払い（読めなければ止める）。
+            _yuuryou = job.get("kind") in ("kiku", "tanomu", "xgrok", "gsk")
+            _sk_on, _sk_why = False, ""
+            if _yuuryou:
+                try:
+                    import saifu_kanmon
+                    _sk_on, _sk_why = saifu_kanmon.teishi_chuu()
+                except Exception as _e:
+                    _sk_on, _sk_why = True, "財布の関所が読めない(%s)" % _e
             try:
-                if job.get("kind") == "kiku":
+                if _sk_on:
+                    out = {"ok": False, "error": "【財布の関所】%s" % _sk_why, "totalYen": 0.0}
+                elif job.get("kind") == "kiku":
                     import kiku
                     out = kiku.run_job(job["payload"])
                 elif job.get("kind") == "tanomu":

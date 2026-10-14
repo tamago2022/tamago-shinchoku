@@ -14,6 +14,7 @@
 使い方（Mac）：
   python3 tools/pod_nihongo_tts.py --text 原稿.txt --name 題名 --src 元URL --guest 出演者 --show 番組名 --out 結果.json
 """
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import argparse, base64, glob, json, os, re, shutil, subprocess, sys, time, urllib.error, urllib.request, wave
 
 HERE = os.path.dirname(os.path.abspath(__file__))

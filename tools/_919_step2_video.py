@@ -3,6 +3,7 @@
 """919番 手順2: 16:9拡張済み画像2枚から、minimax/h3-max-turbo/image-to-video で
 1080p・5秒のループ動画を作る。image_url と end_image_url に同じ画像を入れて
 逆再生に頼らないループにする（発注前検品PASS済みプロンプトをそのまま使う）。"""
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import os, sys, json, time, urllib.request, urllib.error
 
 # ★1034番【予算の栓】fal は1本が高い（動画1本30円・画像1枚6円／status/fal_cost_ledger.json）。

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """751番 手順2: 16x9_widened_v2.png を3モデルで「微かに動く」動画にする。
 3本とも同じ動きプロンプトを使う(公平な比較のため)。1モデルずつ実行して確認する。"""
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import os, sys, json, time, base64, urllib.request, urllib.error
 
 KEY_PATH = os.path.expanduser("~/.fal_key")

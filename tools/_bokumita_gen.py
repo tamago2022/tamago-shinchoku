@@ -5,6 +5,7 @@
 作家名はプロンプトに入れない。特徴だけを言葉で指定する。
 使い方: python3 tools/_bokumita_gen.py <出力dir> [名前...]   （名前を渡すとその分だけ作り直す）
 """
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import os, sys, json, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))

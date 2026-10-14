@@ -3,6 +3,7 @@
 """751番 手順1: ZENうんこ「干潟巨大モノリス」を16:9へ横伸ばし(outpaint)する。
 fal-ai/nano-banana/edit を使用。上下は絶対に切らない・人物/太陽/モノリスの位置は変えない。
 3モデル共通の元絵になるので1回だけ実行。"""
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import os, json, time, base64, urllib.request, urllib.error
 
 KEY_PATH = os.path.expanduser("~/.fal_key")

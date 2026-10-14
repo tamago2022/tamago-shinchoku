@@ -3,6 +3,7 @@
 """919番 手順1: ZEN 2枚（茶室・黒砂海岸）を16:9へ横伸ばし(outpaint)する。
 751番(_751_step1_widen.py)と同じモデル・同じ地雷回避方針を踏襲する。
 fal-ai/nano-banana/edit / $0.0398枚。"""
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import os, sys, json, time, base64, urllib.request, urllib.error
 
 # ★1034番【予算の栓】fal は1本が高い（動画1本30円・画像1枚6円／status/fal_cost_ledger.json）。
