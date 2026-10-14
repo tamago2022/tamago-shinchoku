@@ -15,6 +15,7 @@
   ⑤ ヘッダー：取り上げた曲のジャケット／動画サムネイル（i.ytimg.com）を使う（風景写真の仮置きはしない）
   ⑥ つながっている特集：ほかのマガジンへの入口カード（class="cw-other"＝シティポップ特集の型／旧 class="rel"）がある
   ⑦ 見出し：章の見出し（h2.cw-chead__title）は「アーティスト名 - 曲名」
+  ⑧ 音：埋め込みに mute=1／muted を入れない
 
 使い方：
   python3 tools/magazine_monogatari_kanmon.py share/check/xxx.html [...]
@@ -57,6 +58,8 @@ def check(html):
     for h2 in re.findall(r'<h2 class="cw-chead__title">(.*?)</h2>', html):
         if " - " not in h2:
             errs.append("見出しが「アーティスト名 - 曲名」になっていない：%s" % h2)
+    if re.search(r"[?&]mute=1|\bmuted\b(?!-)", html.split("<style")[0] + re.sub(r"<style.*?</style>", "", html, flags=re.S)):
+        errs.append("埋め込みに mute=1／muted が入っている（音はふつうに出す）")
     if 'class="rel"' not in html and 'class="cw-other"' not in html:
         errs.append("つながっている特集のカード（class=rel）が無い")
     return errs

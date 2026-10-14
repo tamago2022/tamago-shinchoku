@@ -32,7 +32,7 @@ M = dict(
     open=['大げさじゃなく、「今まで聴いてた音楽は何だったんだ」とまで思った。歌もない。サビもない。なのに、ずっと聴いていられる。むしろ、止めたくない。',
           f'レイ・ハラカミ。広島で生まれ、18歳で京都へ移り、そのまま京都で音を作り続けた人{src("All About", ALLAB)}{src("Wikipedia", W)}。デビュー作から順に、その音がどう広がっていったかをたどってみる。'],
     door='最後に、ふたりの名前をひとつにしたユニットのライブが待っている。',
-    paper=[1, 4],
+    paper=[],
     chapters=[
         dict(no='01', en='デビュー作の表題曲', title='rei harakami - unrest', year='1998',
              main=dict(id='q6-KIxNIscY', role='Debut 1998', artist='rei harakami', song='unrest', cap=TOPIC),

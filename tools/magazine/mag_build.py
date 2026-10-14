@@ -11,15 +11,17 @@ try:
     SONG_PAGES = _json.load(open(os.path.join(REPO, 'tools/magazine/song_pages.json'), encoding='utf-8'))['pages']
 except Exception:
     SONG_PAGES = {}
-BASE = 'https://tamago2022.github.io/tamago-shinchoku/share/check/'
+BASE = 'https://joy-relief-station.lovable.app/magazine/'  # 本番（ごきげん補給所 public/magazine/）
+PAGES_BASE = 'https://tamago2022.github.io/tamago-shinchoku/share/check/'
 OTHERS = {
-    'josh': (BASE + 'hikigatari-josh-turner-b.html', 'はっぴいえんど「風をあつめて」から', '弾き語り・ジョシュ・ターナー編'),
+    'josh': (BASE + 'hikigatari-josh-turner.html', 'はっぴいえんど「風をあつめて」から', '弾き語り・ジョシュ・ターナー編'),
     'takoukan': (BASE + 'naze-ongaku-01-takoukan.html', '人はなぜ音楽を聴くのか 第1回', '楽しくなりたいから ― 多幸感ポップス'),
-    'ikareru': (BASE + 'tokushu-ikareru-01.html', 'ロック企画 vol.1', '怒れる人々'),
-    'harakami': (BASE + 'tokushu-rei-harakami.html', 'rei harakami／yanokami', '君はレイ・ハラカミを知っているか'),
+    'ikareru': (BASE + 'ikareru-01.html', 'ロック企画 vol.1', '怒れる人々'),
+    'harakami': (BASE + 'rei-harakami.html', 'rei harakami／yanokami', '君はレイ・ハラカミを知っているか'),
     'hikigatari': ('https://joy-relief-station.lovable.app/feature/hikigatari', 'ピアノ、ギター、声ひとつ', '心を震わせる弾き語り'),
     'citypop': ('https://joy-relief-station.lovable.app/feature/citypop-sekai', 'City Pop × World', '世界が先に見つけた、日本の夜。'),
 }
+PROD = {'josh': 'hikigatari-josh-turner.html', 'takoukan': 'naze-ongaku-01-takoukan.html', 'ikareru': 'ikareru-01.html', 'harakami': 'rei-harakami.html'}
 PLAY = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5.5v13l11-6.5z"></path></svg>'
 # 吹き出しと「つなぎ」だけは、このシリーズの決まり（CLAUDE.md）で要る部品。元の型の色・字に合わせる
 EXTRA_CSS = '''
@@ -93,17 +95,23 @@ def build(m):
     others = ''.join(f'<li><a href="{e(OTHERS[k][0])}"><small>{e(OTHERS[k][1])}</small><b>{e(OTHERS[k][2])}</b><span aria-hidden="true">→</span></a></li>' for k in OTHERS if k != m['key'])
     srcs = ''.join(f'<li><a href="{e(u)}" target="_blank" rel="noopener noreferrer">{e(l)}</a></li>' for l, u in m['sources'])
     hero = m['hero']
-    return f'''<!DOCTYPE html><html lang="ja"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="robots" content="noindex"/><meta name="tamago-magazine" content="story"/>
-<link rel="preload" as="image" href="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg"/><link rel="stylesheet" href="assets/cw/styles.css"/><title>{e(m["title"])}｜ごきげん補給所</title><meta name="theme-color" content="#faf5ec"/><meta name="description" content="{e(m["desc"])}"/><meta property="og:type" content="article"/><meta property="og:site_name" content="ごきげん補給所"/><meta property="og:title" content="{e(m["title"])}"/><meta property="og:description" content="{e(m["desc"])}"/><meta property="og:url" content="{BASE}{m["file"]}"/><meta property="og:image" content="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg"/><meta property="og:image:width" content="1280"/><meta property="og:image:height" content="720"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="{e(m["title"])}"/><meta name="twitter:description" content="{e(m["desc"])}"/><meta name="twitter:image" content="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg"/></head><body><div class="min-h-[100svh] w-full"><main class="cw" lang="ja"><style>{CW_CSS}{EXTRA_CSS}</style>
+    return f'''<!DOCTYPE html><!-- tamago-dark 2 （GitHub Pages の暗くする機械に触らせない：シティポップ特集の型そのままの配色） --><html lang="ja"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="robots" content="noindex"/><meta name="tamago-magazine" content="story"/>
+<link rel="preload" as="image" href="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg"/><link rel="stylesheet" href="assets/cw/styles.css"/><title>{e(m["title"])}｜ごきげん補給所</title><meta name="theme-color" content="#faf5ec"/><meta name="description" content="{e(m["desc"])}"/><meta property="og:type" content="article"/><meta property="og:site_name" content="ごきげん補給所"/><meta property="og:title" content="{e(m["title"])}"/><meta property="og:description" content="{e(m["desc"])}"/><meta property="og:url" content="{BASE}{PROD[m["key"]]}"/><link rel="canonical" href="{BASE}{PROD[m["key"]]}"/><meta property="og:image" content="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg"/><meta property="og:image:width" content="1280"/><meta property="og:image:height" content="720"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="{e(m["title"])}"/><meta name="twitter:description" content="{e(m["desc"])}"/><meta name="twitter:image" content="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg"/></head><body><div class="min-h-[100svh] w-full"><main class="cw" lang="ja"><style>{CW_CSS}{EXTRA_CSS}</style>
 <header class="cw-hero"><div class="cw-hero__bg" aria-hidden="true"><img src="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg" alt="" decoding="async"/></div><nav class="cw-nav" aria-label="ページ上部"><a href="https://joy-relief-station.lovable.app/">ごきげん補給所</a><span>Magazine Story</span></nav><div class="cw-hero__body"><p class="cw-eyebrow">{e(m["eyebrow"])}</p><h1 class="cw-hero__title">{m["h1"]}</h1><p class="cw-hero__lead">{m["lead"]}</p><div class="cw-hero__rule"></div></div></header>
 <div class="cw-wrap"><section class="cw-toc" aria-label="この特集の章"><p class="cw-toc__label">IN THIS ISSUE</p><ul class="cw-toc__grid">{toc}</ul></section><section class="cw-open"><p class="cw-big">{m["big"]}</p>{"".join(f"<p>{p}</p>" for p in m["open"])}{('<p class="cw-door">' + m["door"] + '</p>') if m.get("door") else ""}</section></div>
 {chs}
-<div class="cw-wrap"><section class="cw-close">{"".join(f"<p>{p}</p>" for p in m["close"])}</section><section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label">OTHER MAGAZINES — ほかの特集</p><ul class="cw-other__grid">{others}</ul></section><section class="cw-mapwrap" aria-label="曲の一覧"><p class="cw-toc__label">THE MAP — {len(allv)} SONGS</p><ol class="cw-map">{mp}</ol></section><section class="cw-sources" aria-label="出典"><h3>SOURCES</h3><ul>{srcs}</ul><p class="cw-note">{m["note"]}</p></section></div></main></div>
+<div class="cw-wrap"><section class="cw-close">{"".join(f"<p>{p}</p>" for p in m["close"])}</section><section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label">OTHER MAGAZINES — ほかの特集</p><ul class="cw-other__grid">{others}</ul></section><section class="cw-mapwrap" aria-label="曲の一覧"><p class="cw-toc__label">THE MAP — {m.get("songs_n", len(allv))} SONGS</p><ol class="cw-map">{mp}</ol></section><section class="cw-sources" aria-label="出典"><h3>SOURCES</h3><ul>{srcs}</ul><p class="cw-note">{m["note"]}</p></section></div></main></div>
 {SCRIPT}
 </body></html>'''
 
 
 def write(m):
+    """確認ページ（share/check）と、本番に置く写し（status/magazine_prod/<PRODの名前>）の両方を書く。
+    本番の写しは joy-relief-station の public/magazine/ にそのまま置く（assets も同じ相対の場所）。"""
+    h = build(m)
     p = os.path.join(REPO, 'share/check', m['file'])
-    open(p, 'w', encoding='utf-8').write(build(m))
+    open(p, 'w', encoding='utf-8').write(h)
+    d = os.path.join(REPO, 'status/magazine_prod')
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, PROD[m['key']]), 'w', encoding='utf-8').write(h)
     return p
