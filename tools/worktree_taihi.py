@@ -101,8 +101,16 @@ def main():
         json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         return
     now = time.time()
-    for name in sorted(os.listdir(WTB)) if os.path.isdir(WTB) else []:
-        p = os.path.join(WTB, name)
+    # 2026-10-14 実測：子セッションが push 用に /private/tmp へ作業場・まるごとの複製を作っては
+    #   置きっぱなしにしていた（10/10〜10/14で48個・約43GB。今日だけで約7GB）。ここも同じ規則で片付ける。
+    places = []
+    for root in (WTB, "/private/tmp"):
+        if os.path.isdir(root):
+            places += [(root, n) for n in sorted(os.listdir(root))]
+    for root, name in places:
+        p = os.path.join(root, name)
+        if root == "/private/tmp" and name.startswith("claude-"):
+            continue
         if not os.path.isdir(p) or os.path.islink(p) or not os.path.exists(os.path.join(p, ".git")):
             continue
         if is_running(name, run):
@@ -131,7 +139,7 @@ def main():
             continue
         d = hdd_okiba.dest("作業場の控え", time.strftime("%Y-%m"))
         tgz = os.path.join(d, name + "_" + time.strftime("%Y%m%d-%H%M") + ".tar.gz")
-        rc, o, e = sh(["tar", "-czf", tgz, "--exclude", "node_modules", "-C", WTB, name], 3600)
+        rc, o, e = sh(["tar", "-czf", tgz, "--exclude", "node_modules", "-C", root, name], 3600)
         rc2, o2, e2 = sh(["tar", "-tzf", tgz], 1800) if rc == 0 else (1, "", "")
         if rc != 0 or rc2 != 0 or not o2:
             res["skipped"].append("%s（HDDへの写しに失敗：%s）" % (name, (e or e2)[:80]))
@@ -143,6 +151,16 @@ def main():
         if remove_worktree(p):
             res["archived"].append({"name": name, "to": tgz, "dirty": dirty, "pushed": pushed,
                                     "gb": round(free_gb() - before, 2)})
+    # ②' /private/tmp 直下に置き去りの一時ファイル（1日以上前の動画・画像・zip）は消す
+    for fn in os.listdir("/private/tmp"):
+        p = os.path.join("/private/tmp", fn)
+        try:
+            if os.path.isfile(p) and not os.path.islink(p) and now - os.path.getmtime(p) > 86400 \
+                    and fn.lower().endswith((".mp4", ".mov", ".png", ".jpg", ".webp", ".wav", ".mp3", ".zip", ".tar", ".gz")):
+                os.remove(p)
+                res["removed"].append({"name": p, "gb": 0})
+        except Exception:
+            pass
     # ③ 制作の中間ファイル
     if res["hdd"]:
         for b in glob.glob(os.path.join(HOME, "howitholds", "ep*", "_build")):
