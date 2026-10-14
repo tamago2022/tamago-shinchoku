@@ -486,6 +486,8 @@ while :; do
   # 2026-10-14 サブスクのカレンダー。家計簿（status/okane/kakin.json）に予定の無いサブスクが増えたら
   #   status/dispatch_outbox.jsonl に1日1行 → Dispatch がGoogleカレンダーのコネクタで作り --done で控える。読むだけ＝0円。
   tick_every 240 && ( python3 "$REPO/tools/subsc_calendar.py" >> "$REPO/status/subsc_calendar.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-15 クラウドセッションクレジット問い合わせ（Gmail thread 1a13bbf5804e4282）の返事見張り。1日1回 outbox に1行→Dispatch がGmailで確認。11/5で自動停止。0円。
+  tick_every 240 && ( python3 "$REPO/tools/cloud_credit_henji.py" >> "$REPO/status/cloud_credit_henji.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
   #   2026-10-08 作り直し：今月いくら（カードから実際に引かれた円）＋サービスごと＋証拠。1時間に1回書き直す。
