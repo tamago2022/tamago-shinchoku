@@ -15,6 +15,7 @@ PY
   gh api -X PUT "repos/$3/contents/$2" --input /tmp/pp.json --jq '.commit.sha' >/dev/null && echo "OK $3 $2" || echo "NG $3 $2"
 }
 for f in ikareru-01.html naze-ongaku-01-takoukan.html rei-harakami.html hikigatari-josh-turner.html; do put status/magazine_prod/$f public/magazine/$f $R; done
-[ "${1:-}" = "--assets" ] && { put share/check/assets/cw/styles.css public/magazine/assets/cw/styles.css $R; put share/check/assets/owner/x-avatar.jpg public/magazine/assets/owner/x-avatar.jpg $R; }
+[ "${2:-}" = "--assets" ] && { put share/check/assets/cw/styles.css public/magazine/assets/cw/styles.css $R; put share/check/assets/owner/x-avatar.jpg public/magazine/assets/owner/x-avatar.jpg $R; }
+[ "${1:-}" = "--prod-only" ] && exit 0
 T=tamago2022/tamago-shinchoku
 for f in share/check/tokushu-ikareru-01.html share/check/naze-ongaku-01-takoukan.html share/check/tokushu-rei-harakami.html share/check/hikigatari-josh-turner-b.html tools/magazine/mag_build.py tools/magazine/spec_ikareru.py tools/magazine/spec_takoukan.py tools/magazine/spec_harakami.py tools/magazine/spec_josh.py tools/magazine/put_prod.sh tools/magazine_monogatari_kanmon.py CLAUDE.md; do put $f $f $T; done
