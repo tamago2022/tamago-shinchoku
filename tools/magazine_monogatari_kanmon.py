@@ -11,6 +11,9 @@
   ① つかみ：本文の最初の章より前に、導入（cw-open / lead）がある
   ② つなぎ：最後の章以外の各章に <p class="bridge">（次の曲へつなぐ一言）がある
   ③ 締め：「最後に」「次回」「お楽しみに」のどれかで終わる締めがある
+  ④ 吹き出し：運営のアイコン（assets/owner/x-avatar.jpg）を使い、「店主」「コンシェルジュ」の肩書きを書かない
+  ⑤ ヘッダー：取り上げた曲のジャケット／動画サムネイル（i.ytimg.com）を使う（風景写真の仮置きはしない）
+  ⑥ つながっている特集：ほかのマガジンへの入口カード（class="rel"）がある
 
 使い方：
   python3 tools/magazine_monogatari_kanmon.py share/check/xxx.html [...]
@@ -43,6 +46,15 @@ def check(html):
     tail = html[html.find('id="ch%s"' % chs[-1][0]):]
     if not re.search(r"最後に|次回|お楽しみに", tail):
         errs.append("締め（最後に／次回／お楽しみに）が無い")
+    if "assets/owner/x-avatar.jpg" not in html:
+        errs.append("吹き出しに運営のアイコン（assets/owner/x-avatar.jpg）が無い")
+    if re.search(r"(class=\"talk__nm\"|class=\"nm\"|>店主<|タマゴコンシェルジュ<)", html):
+        errs.append("吹き出しに肩書き（店主／コンシェルジュ）が書いてある")
+    hero = re.search(r'(cw-hero__bg"><img src="|class="hero-img" src=")([^"]+)', html)
+    if not hero or "i.ytimg.com/vi/" not in hero.group(2):
+        errs.append("ヘッダーの絵が曲のジャケット／動画サムネイルではない")
+    if 'class="rel"' not in html:
+        errs.append("つながっている特集のカード（class=rel）が無い")
     return errs
 
 
@@ -68,14 +80,15 @@ def run(paths):
 
 
 def self_test():
-    ok_html = ('<meta name="tamago-magazine" content="story"><section class="cw-open">つかみ</section>'
+    ok_html = ('<meta name="tamago-magazine" content="story"><div class="cw-hero__bg"><img src="https://i.ytimg.com/vi/x/hq.jpg"></div>'
+               '<img src="assets/owner/x-avatar.jpg"><section class="rel"></section><section class="cw-open">つかみ</section>'
                '<section id="ch01">a<p class="bridge">次へ</p></section>'
                '<section id="ch02">b 最後に、これをどうぞ</section>')
     ng_html = ('<meta name="tamago-magazine" content="story">'
                '<section id="ch01">a</section><section id="ch02">b</section>')
     a = check(ok_html)
     b = check(ng_html)
-    good = (a == [] and len(b) == 3)
+    good = (a == [] and len(b) == 6)
     print("SELFTEST", "PASS" if good else "FAIL", a, b)
     return 0 if good else 1
 
