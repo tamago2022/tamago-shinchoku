@@ -27,7 +27,7 @@ M = dict(
     big='渋谷の喫茶店のトイレの落書きから、<br/>ブルックリンの部屋まで。',
     open=['1971年の東京で生まれた日本語の歌が、日本語のまま、海の向こうで歌われている。その道を、寄り道しながらたどってみる。'],
     door='最後は、フランスのバンドで軽く締める。',
-    paper=[1, 3],
+    paper=[],
     chapters=[
         dict(no='01', en='すべての起点', title='はっぴいえんど - 風をあつめて', year='1971',
              main=dict(id='kTPw8tJLdtw', role='Live 1985', artist='はっぴいえんど', song='風をあつめて', cap='一般の方の投稿（1985年のライブ「All Together Now」）。12年で69万回以上再生されている'),
@@ -53,7 +53,7 @@ M = dict(
         dict(no='04', en='寄り道の、さらに寄り道', title='rei harakami - owari no kisetsu', year='2005',
              main=dict(id='wC1z9sNSaXo', role='lust 2005', artist='rei harakami', song='owari no kisetsu', cap='rei harakami - Topic（公式の音源配信）'),
              body=[f'細野晴臣が1973年の『HOSONO HOUSE』に入れた「終りの季節」を、レイ・ハラカミが本人の声でカバーした{src("NiEW", NIEW)}。',
-                   f'この人の話は長くなるので、特集「<a href="{BASE}tokushu-rei-harakami.html">君はレイ・ハラカミを知っているか</a>」にまとめた。'],
+                   f'この人の話は長くなるので、特集「<a href="{BASE}rei-harakami.html">君はレイ・ハラカミを知っているか</a>」にまとめた。'],
              bridge='最後は、フランスから。日本と縁の深いバンドで締める。'),
         dict(no='05', en='最後に、これをどうぞ', title='Tahiti 80 - Heartbeat', year='1999',
              main=dict(id='K3SezDMPpVM', role='Official MV', artist='Tahiti 80', song='Heartbeat', cap='Tahiti 80 公式アーティストチャンネル'),
