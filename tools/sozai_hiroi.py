@@ -141,12 +141,29 @@ def run():
         rec = st["issues"].setdefault(num, {"title": it["title"], "files": {}})
         names, urls = wanted(it.get("body"))
         # コメントに書かれた名前・URLも拾う（後から素材を足す場合）
+        comments = []
         try:
-            for c in api(it["comments_url"] + "?per_page=100", tok) or []:
+            comments = api(it["comments_url"] + "?per_page=100", tok) or []
+            for c in comments:
                 a, b = wanted(c.get("body"))
                 names += a; urls += b
         except Exception:
             pass
+        # 文字の素材（詩・原稿）：本文の先頭が【短縮版の詩】／【原稿】のコメントを原稿として受け取る（2026-10-15・#975）
+        for c in comments:
+            body = c.get("body") or ""
+            if not GENKOU.match(body) or str(c["id"]) in rec.setdefault("genkou", {}):
+                continue
+            os.makedirs(os.path.join(HDD, "issue" + num), exist_ok=True)
+            dest = os.path.join(HDD, "issue" + num, "genkou_%s.md" % c["id"])
+            open(dest, "w", encoding="utf-8").write(body)
+            rec["genkou"][str(c["id"])] = {"to": dest, "url": c.get("html_url"), "chars": len(body),
+                                           "at": time.strftime("%F %T")}
+            kaeshi(num, "Issue #%s に原稿が届いた（%d字・%s）。工場が受け取り済み：%s" % (num, len(body), c.get("html_url"), dest))
+            try:
+                api(it["comments_url"], tok, {"body": "工場が原稿を受け取りました（sozai_hiroi.py・自動）：%s（%d字）" % (c.get("html_url"), len(body))})
+            except Exception as e:
+                rec.setdefault("errors", {})["genkou_comment"] = type(e).__name__
         rec["wanted"] = sorted(set(names)) + sorted(set(urls))
         work = os.path.join(HDD, "issue" + num)
         newly = []
@@ -186,6 +203,19 @@ def run():
     return save(st)
 
 
+GENKOU = re.compile(r"^\s*【(短縮版の詩|原稿)】")
+
+
+def kaeshi(num, text):
+    """Dispatch へ1行（status/dispatch_outbox.jsonl）。"""
+    try:
+        line = {"at": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"), "from": "sozai_hiroi", "issue": num, "text": text}
+        with open(os.path.join(REPO, "status", "dispatch_outbox.jsonl"), "a", encoding="utf-8") as f:
+            f.write(json.dumps(line, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
 def save(st):
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     tmp = OUT + ".tmp"
@@ -203,6 +233,8 @@ def self_test():
     assert urls == ["https://github.com/tamago2022/joy-relief-station/releases/download/v1/a.mp3",
                     "https://github.com/user-attachments/files/123/b.zip"], urls
     assert n("Ｍontage") != n("montage") and n("Montage de Voyage.MP3") == n("montage de voyage.mp3")
+    assert GENKOU.match("【短縮版の詩】\n僕は見た") and GENKOU.match("  【原稿】x")
+    assert not GENKOU.match("催促です。先頭を【短縮版の詩】にしてください")
     print("self-test OK", names, urls)
 
 
