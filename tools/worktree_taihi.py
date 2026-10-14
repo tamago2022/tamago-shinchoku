@@ -92,9 +92,50 @@ def remove_worktree(p):
     return not os.path.exists(p)
 
 
+HIKAE = os.path.join(HOME, ".tamago", "sagyouba_hikae")
+
+
+def small_hikae(p, name, root, res):
+    """未保存の差分（git diff --binary HEAD）と未追跡ファイル（node_modules除く）だけを本体に小さく控える。"""
+    d = os.path.join(HIKAE, "%s_%s" % (name, time.strftime("%Y%m%d-%H%M")))
+    os.makedirs(d, exist_ok=True)
+    rc, head, e = sh(["git", "log", "-1", "--format=%H %s"], 60, p)
+    rc2, br, e2 = sh(["git", "rev-parse", "--abbrev-ref", "HEAD"], 30, p)
+    with open(os.path.join(d, "head.txt"), "w", encoding="utf-8") as f:
+        f.write("元の場所: %s\nブランチ: %s\nHEAD: %s\n" % (p, br, head))
+    try:
+        with open(os.path.join(d, "diff.patch"), "wb") as f:
+            r = subprocess.run(["git", "diff", "--binary", "HEAD"], cwd=p, stdout=f, timeout=600)
+        rc3, ut, e3 = sh(["git", "ls-files", "--others", "--exclude-standard"], 300, p)
+        files = [x for x in ut.splitlines() if x and "node_modules/" not in x]
+        if files:
+            lst = os.path.join(d, "untracked.txt")
+            with open(lst, "w", encoding="utf-8") as f:
+                f.write("\n".join(files))
+            r2 = subprocess.run(["tar", "-czf", os.path.join(d, "untracked.tar.gz"), "-T", lst], cwd=p,
+                                capture_output=True, timeout=1800)
+            if r2.returncode != 0:
+                raise RuntimeError("tar失敗")
+        size = sum(os.path.getsize(os.path.join(d, x)) for x in os.listdir(d))
+        if size > 100 * 1048576:
+            shutil.rmtree(d, ignore_errors=True)
+            return False
+        return True
+    except Exception as ex:
+        shutil.rmtree(d, ignore_errors=True)
+        res["skipped"].append("%s（差分の控えに失敗：%s）" % (name, str(ex)[:60]))
+        return False
+
+
 def main():
     res = {"at": time.strftime("%F %T"), "free_gb_before": free_gb(), "hdd": hdd_okiba.ok(),
            "removed": [], "archived": [], "moved": [], "skipped": []}
+    if res["hdd"] and os.path.isdir(HIKAE):  # HDDが戻ったら、本体に控えた差分をHDDへ移す
+        for n in os.listdir(HIKAE):
+            try:
+                shutil.move(os.path.join(HIKAE, n), os.path.join(hdd_okiba.dest("作業場の控え", "差分だけ"), n))
+            except Exception:
+                pass
     run = running()
     if run is None:
         res["skipped"].append("走行中の一覧が読めないので今回は何もしない")
@@ -135,7 +176,14 @@ def main():
                 res["removed"].append({"name": name, "gb": round(free_gb() - before, 2)})
             continue
         if not res["hdd"]:
-            res["skipped"].append(name + "（未保存あり・HDDが無いので保留）")
+            # 2026-10-14 HDDが無い間は、未保存の「差分だけ」を小さく控えて消す（作業場まるごと＝約0.9GBは写さない）。
+            #   コミット済みの中身は元のリポジトリに残っている。差分＋未追跡ファイルが100MBを超えるものは保留。
+            if small_hikae(p, name, root, res):
+                if remove_worktree(p):
+                    res["archived"].append({"name": name, "to": "~/.tamago/sagyouba_hikae（差分だけ）",
+                                            "gb": round(free_gb() - before, 2)})
+            else:
+                res["skipped"].append(name + "（未保存が大きい・HDDが無いので保留）")
             continue
         d = hdd_okiba.dest("作業場の控え", time.strftime("%Y-%m"))
         tgz = os.path.join(d, name + "_" + time.strftime("%Y%m%d-%H%M") + ".tar.gz")
