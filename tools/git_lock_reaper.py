@@ -73,6 +73,49 @@ def git_is_running():
     return False
 
 
+def git(*args, timeout=120):
+    return subprocess.run(["git", "-C", REPO, *args],
+                          capture_output=True, text=True, timeout=timeout)
+
+
+def _kaiketsu_atarashii_hou(max_files=5):
+    """合流の衝突を「新しく直された側を採用」で解く（2026-10-15・手作業の合流 ef86d4c7 と同じ方針）。
+
+    衝突したファイルごとに、そのファイルを最後に直したコミットの時刻を両側で比べ、新しい側を取る。
+    古い側の中身は履歴に残る（消えない）。片側で消されたファイル・衝突が多すぎる時は解かずに False
+    （呼び出し側が --abort で元に戻す）。
+    """
+    try:
+        r = git("diff", "--name-only", "--diff-filter=U", timeout=60)
+        files = [f for f in (r.stdout or "").splitlines() if f.strip()]
+        if not files or len(files) > max_files:
+            return False
+        picked = []
+        for f in files:
+            def _t(ref):
+                o = git("log", "-1", "--format=%ct", ref, "--", f, timeout=60)
+                try:
+                    return int((o.stdout or "0").strip() or 0)
+                except ValueError:
+                    return 0
+            side = "--ours" if _t("HEAD") >= _t("MERGE_HEAD") else "--theirs"
+            if git("checkout", side, "--", f, timeout=60).returncode != 0:
+                return False
+            if git("add", "--", f, timeout=60).returncode != 0:
+                return False
+            picked.append("%s(%s)" % (f, "手元" if side == "--ours" else "向こう"))
+        c = git("-c", "user.name=git-lock-reaper", "-c", "user.email=git-lock-reaper@local",
+                "commit", "--no-edit", "-m",
+                "合流：手元と向こう(origin/main)を1本に（衝突は新しく直された側を採用：%s）"
+                % "、".join(picked), timeout=120)
+        if c.returncode != 0:
+            return False
+        log("🔧 合流の衝突を新しく直された側で解きました：%s" % "、".join(picked))
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def log(msg):
     try:
         os.makedirs(os.path.dirname(LOG), exist_ok=True)
@@ -197,6 +240,17 @@ def push_out(quiet=False):
         if not quiet:
             print("PUSH_OUT: 注意 - fetchできませんでした（%s）" % e)
 
+    # ★2026-10-15【浅い取得で履歴が「分かれた」ように見えた】.git/shallow の切れ目に
+    #   origin/main が入ると、共通の祖先が見えず「手元326件先・向こう1件先」と誤計算され、
+    #   5日近く押し出せなかった。共通の祖先が見えないときは深掘りして取り直す（足すだけ・消さない）。
+    try:
+        if git("merge-base", "HEAD", "origin/main", timeout=60).returncode != 0:
+            git("-c", "credential.helper=!gh auth git-credential",
+                "fetch", "--deepen=200", "origin", "main", timeout=600)
+            log("🔎 共通の祖先が見えなかったので origin/main を深掘りして取り直しました")
+    except Exception:  # noqa: BLE001
+        pass
+
     try:
         ahead = _count("origin/main..HEAD")
         behind = _count("HEAD..origin/main")
@@ -235,6 +289,8 @@ def push_out(quiet=False):
         except Exception as e:  # noqa: BLE001
             log("⚠️ 向こうが%d件先でしたが、合流できませんでした（%s）" % (behind, e))
             return 0
+        if mg.returncode != 0 and _kaiketsu_atarashii_hou():
+            mg = subprocess.CompletedProcess(args=[], returncode=0)
         if mg.returncode != 0:
             git("merge", "--abort", timeout=120)
             err = (mg.stderr or mg.stdout or "").strip().splitlines()
