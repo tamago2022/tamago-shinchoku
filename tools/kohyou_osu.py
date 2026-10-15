@@ -443,6 +443,18 @@ def _press(st, it):
         st["lastResult"] = "カードの形の関所で停止（%d件）" % len(cviol)
         return st
 
+    # 【101885番・2026-10-16】後退させない関所：main のローカル検査（重さ・見た目）が FAIL なら公開しない。
+    #   記録が無ければ通す（人質にしない）。測り直しはしない（数秒で返る）。詳細 tools/koutai_kanmon.py --pre-publish
+    try:
+        import subprocess as _sp
+        kr = _sp.run([sys.executable, os.path.join(HERE, "koutai_kanmon.py"), "--pre-publish"], capture_output=True, text=True, timeout=60)
+        if kr.returncode == 2:
+            _log("★後退関所：%s" % (kr.stdout or "").strip()[-300:])
+            st["lastResult"] = "後退関所で停止（重さ/見た目が基準より悪化）"
+            return st
+    except Exception as e:  # noqa: BLE001
+        _log("後退関所が動きません（通します）：%r" % (e,))
+
     before = _honban_key(mato["url"]) or it.get("deployKey") or ""
     r, err = lv.call("deploy_project", {"project_id": mato["project_id"]})
     if r is None:

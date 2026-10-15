@@ -175,6 +175,14 @@ def check_one(w, prev):
     if dep_moved:
         r["deployChangedAt"] = _now()
         r["deployChangedFrom"] = prev_dep
+        # 【101885番・2026-10-16】公開が出たら、本番の重さ・見た目を基準と比べる便を切り離して起こす（この係は待たない・判定も書かない）
+        try:
+            import subprocess as _sp
+            _lf = open(os.path.join(REPO, "status", "koutai_after_publish.log"), "a")
+            _sp.Popen([sys.executable, os.path.join(HERE, "koutai_kanmon.py"), "--after-publish", "--runs", "2"],
+                      stdout=_lf, stderr=_sp.STDOUT, start_new_session=True)
+        except Exception:
+            pass
     else:
         r["deployChangedAt"] = p.get("deployChangedAt", "")
         r["deployChangedFrom"] = p.get("deployChangedFrom", "")

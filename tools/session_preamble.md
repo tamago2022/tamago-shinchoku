@@ -229,3 +229,8 @@
 - **名カバーの棚（/shelf/music/covers）に入れてよいのは、たまごさん本人の指定だけ。**（編集画面から本人が入れたもの、または Dispatch が「たまごさん指定」と明記して頼んだもの）
 - カバーだから名カバー、ではない。指定の無いカバーは、原曲ページの「カバー」一覧か、名カバーとは別のカバーの棚へ入れる。入荷の自動処理・特集の作業・ほかのAI（VloyBot／Genspark 等）は名カバーに入れない。
 - 機械の裏付け（joy-relief-station）：台帳 `src/lib/meiCoverLedger.ts`（addedBy: tamago／auto）。名カバーの棚は台帳で "tamago" か `admin_shelf_picks.added_by = "tamago"`（編集画面だけが書く）のカードしか出さない。公開前の点検 `scripts/patrol/check-meicover-gate.mjs`（prebuild・auto があれば止める）。
+
+### 22. サイトを後退させない（重さ・見た目の関所）（2026-10-16・101885番）
+
+- **ごきげん補給所（joy-relief-station）を main へ合流させる前に、`python3 tools/koutai_kanmon.py --check --output <ビルドの .output>` を通す。`KOUTAI_KANMON_RESULT: PASS` 以外で合流しない。**（基準＝`status/public/koutai_kijun.json`。1ページ目の時間+10%超・送る量+5%超・見た目の点数低下は exit 2 で止まる。何が増えたかは出力の1行に出る）
+- 止まったら「基準を緩める」ではなく「増えたものを減らす」。良くなった時だけ基準値が自動で更新される。公開押し係（kohyou_osu）と公開後の見る係（kohyou_kanshi）にも同じ関所が入っている。
