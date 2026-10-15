@@ -266,8 +266,9 @@ if __name__ == '__main__':
 # 並び：本文（締め・余韻）→ THE MAP（ある号だけ）→ きっかけの動画（怒れる人々と同じ大きさ＝cw-note の小さい1枚）→ 出典 → ほかの特集（ページの一番下）。
 # 「つながっている特集」の欄は置かない。見出しの言い方は「OTHER MAGAZINES — ほかの特集」（シティポップ特集と同じ）に統一。
 # 部品はここ1か所。各号は unify_tail() を通すだけ（mag_build で組む号は build() が自動で通す。直接組んだ号もこれで組み直す）。
-TAIL_CSS = '.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}'
+TAIL_CSS = '.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}.cw .cw-allback{margin:28px 0 0;text-align:right}.cw .cw-allback a{color:inherit;font:500 13px/1.6 "Helvetica Neue",Arial,sans-serif;letter-spacing:.12em;text-decoration:underline;text-underline-offset:4px}'
 OTHERS_LABEL = 'OTHER MAGAZINES — ほかの特集'
+BACKNUMBER_URL = BASE + 'backnumber.html'  # バックナンバー一覧（全マガジン共通の行き先）
 OTHERS['hoshikatsu'] = (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか')
 OTHERS_ORDER = ['hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
 COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
@@ -275,6 +276,7 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_kk_role': ('Where it started', '起因的视频', 'El video que lo empezó', '계기가 된 영상'),
     'c_kk_title': ('"Why do we stop listening to new music as adults? [Ornithology × Music Psychology]" (Nanji, Hito wo Shire)', '《为什么长大后就不再听新歌【鸟类学×音乐心理学】》（汝，知人）', '«¿Por qué de adultos dejamos de escuchar música nueva? [Ornitología × Psicología musical]» (Nanji, Hito wo Shire)', '「왜 어른이 되면 새 노래를 듣지 않게 될까 【조류학×음악심리학】」(너 자신, 인간을 알라)'),
     'c_kk_note': ('"The season for learning songs never ends."', '“学歌的季节永不结束。”', '«La estación de aprender canciones nunca termina».', '\'노래를 익히는 계절은 끝나지 않는다.\''),
+    'c_allback': ('All back issues →', '全部往期 →', 'Todos los números →', '모든 백넘버 →'),
     'c_ot_label': ('OTHER MAGAZINES — more features', 'OTHER MAGAZINES — 其他专题', 'OTHER MAGAZINES — más especiales', 'OTHER MAGAZINES — 다른 특집'),
     'c_ot_hoshikatsu_s': ('Arranger / composer', '编曲家・作曲家', 'Arreglista y compositor', '편곡가・작곡가'),
     'c_ot_hoshikatsu_b': ('Do You Know Katz Hoshi?', '你知道星胜吗', '¿Conoces a Katz Hoshi?', '호시 카츠를 아십니까'),
@@ -318,7 +320,8 @@ def others_html(key):
         kb = f' data-i18n="c_ot_{k}_b"' if f'c_ot_{k}_b' in COMMON_I18N else ''
         li.append(f'<li><a href="{e(u)}"><small{ks}>{e(sm)}</small><b{kb}>{e(b)}</b><span aria-hidden="true">→</span></a></li>')
     return (f'<section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label" data-i18n="c_ot_label">{OTHERS_LABEL}</p>'
-            f'<ul class="cw-other__grid">{"".join(li)}</ul></section>')
+            f'<ul class="cw-other__grid">{"".join(li)}</ul>'
+            f'<p class="cw-allback"><a href="{BACKNUMBER_URL}" data-i18n="c_allback">すべてのバックナンバー →</a></p></section>')
 
 
 def unify_tail(h, key):
@@ -333,6 +336,7 @@ def unify_tail(h, key):
     if not m:
         raise SystemExit('出典(cw-sources)が無いページ: ' + key)
     h = h[:m.start()] + kikkake_html() + m.group(0) + others_html(key) + h[m.end():]
+    h = h.replace('.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}</style>', '</style>')
     if TAIL_CSS not in h:
         h = h.replace('</style>', TAIL_CSS + '</style>', 1)
     return h
