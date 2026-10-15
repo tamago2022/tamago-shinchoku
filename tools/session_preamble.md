@@ -233,4 +233,5 @@
 ### 22. サイトを後退させない（重さ・見た目の関所）（2026-10-16・101885番）
 
 - **ごきげん補給所（joy-relief-station）を main へ合流させる前に、`python3 tools/koutai_kanmon.py --check --output <ビルドの .output>` を通す。`KOUTAI_KANMON_RESULT: PASS` 以外で合流しない。**（基準＝`status/public/koutai_kijun.json`。1ページ目の時間+10%超・送る量+5%超・見た目の点数低下は exit 2 で止まる。何が増えたかは出力の1行に出る）
+- ローカルの SSR ビルド（`vite build`・8GB）がこの Mac で進まない時（2026-10-16 実測：ディスク待ちで9分停止）は、本番の写し（`--dist <写し>`）か、公開後の `--after-publish`（見る係が自動で測る）が最後の砦。測れなかった時は「測れていない」と書く。
 - 止まったら「基準を緩める」ではなく「増えたものを減らす」。良くなった時だけ基準値が自動で更新される。公開押し係（kohyou_osu）と公開後の見る係（kohyou_kanshi）にも同じ関所が入っている。

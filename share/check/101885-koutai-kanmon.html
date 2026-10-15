@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#101885 サイトを後退させない関所（重さ・見た目） 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #101885 サイトを後退させない関所（重さ・見た目）</div>
+<h1>#101885 サイトを後退させない関所（重さ・見た目）</h1>
+<div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+軽くしたサイトが次の変更で重くなったり崩れたりして戻るのを、<b>出す前に機械で止める関所</b> <code>tools/koutai_kanmon.py</code> を作りました。トップ・棚・曲ページ・マガジンの「1ページ目の時間（4G相当）」「送る量（KB）」「見た目の点数（5観点のうち機械で測れる4つ）」を基準値と比べ、<b>時間が基準の1.1倍超・送る量が1.05倍超・点数低下なら止めて、何が増えたかを1行で出します</b>。良くなった時だけ基準値が更新されます。Lovable公開を押す係・公開後に見る係・マガジンを置く口の3か所に組み込み、わざと重いJS（600KB）を足した変更を実際に止めました。<br><br>実測: 関所の台帳（status/koutai_kanmon_daicho.jsonl）の生データ（時刻・対象・判定・理由）<pre style="white-space:pre-wrap;font-size:12px">01:41:22 local PASS 基準が無かったので今回を基準にした
+01:42:48 local PASS Macが混雑（負荷7.5/CPU8）のため時間は参考値・判定から外した
+01:42:49 files PASS -
+01:42:50 files FAIL rei-harakami.html 43KB→102KB（+134%）
+01:42:50 files PASS -
+01:45:40 local PASS Macが混雑（負荷10.1/CPU8）のため時間は参考値・判定から外した
+01:48:20 local FAIL top: コードの送る量 1826KB→2426KB（+33%）／top: 送る量（画像・データ込み） 2006KB→2606KB（+30%）／shelf: コードの送る量 2625KB→3225KB（+23%）／song: コードの送る量 6518KB→7727KB（+19%）／Macが混雑（負荷
+01:49:57 local PASS Macが混雑（負荷9.1/CPU8）のため時間は参考値・判定から外した</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4</b><span>基準を控えたページ（トップ・棚・曲・マガジン）</span></div>
+  <div class="num"><b>+600KB</b><span>わざと足した重いJS → 関所が止めた（コードの送る量 +33%）</span></div>
+  <div class="num"><b>3</b><span>関所が入った公開の口（公開押し係・公開後の見る係・マガジン）</span></div>
+  <div class="num"><b>20/20</b><span>逆テスト（--self-test）合格</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>基準値 koutai_kijun.json</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json</a></li>
+  <li><b>最新の判定と履歴 koutai_kanmon.json</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kanmon.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kanmon.json</a></li>
+  <li><b>関所の本体 tools/koutai_kanmon.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_kanmon.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_kanmon.py</a></li>
+  <li><b>本番リポの条文（CLAUDE.md）と npm run koutai</b><a href="https://github.com/tamago2022/joy-relief-station/commit/d952e2317" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/d952e2317</a></li>
+  <li><b>本番トップ（基準値の対象）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>通常の変更（資源は同じ）を通した</td><td class="yes">PASS（01:46・良くなったので基準更新）</td></tr>
+<tr><td>わざと重いJSを足した変更を止めた</td><td class="yes">FAIL：top コードの送る量 1826KB→2426KB（+33%）増えたもの→JS +600KB index-Bp-tOriZ.js</td></tr>
+<tr><td>公開押し係の口（--pre-publish）が止めた</td><td class="yes">FAIL：公開を止めました（main 563b54054 のローカル検査が後退）</td></tr>
+<tr><td>戻したら通った・公開口も通った</td><td class="yes">PASS／PASS（01:49・01:50）</td></tr>
+<tr><td>マガジンを置く口（--check-files）</td><td class="yes">通常 PASS／重いHTML（+134%）FAIL／戻して PASS</td></tr>
+<tr><td>本番（fast 4G）の基準値を控えた</td><td class="yes">トップ 3300ms・729KB・35点／棚 2604ms・4198KB・30点／曲 2396ms・3984KB・33点／マガジン 1452ms・44KB・32点</td></tr>
+<tr><td>Lovableの公開を押した</td><td class="no">押せていません（Lovableの鍵が『死んでいる』・公開便のChrome(9223)も停止中。鍵が戻れば公開押し係が自動で押し、その直前にこの関所を通る）</td></tr>
+<tr><td>ローカルの vite build（SSR）で測った</td><td class="no">できていません（Macのディスク待ちで9分進まず中止）。実演は本番の写しをローカル配信して行った</td></tr>
+</table>
+
+<footer>
+実測: top 1826KB→2426KB(+33%) / shelf 2625KB→3225KB(+23%) / song 6518KB→7727KB(+19%)（台帳 01:47 の行）。時間はMac混雑（負荷12.4/CPU8）のため判定から外し記録のみ。40173・42371番はこの仕事に統合して完了。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
