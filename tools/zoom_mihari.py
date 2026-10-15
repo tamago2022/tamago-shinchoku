@@ -56,6 +56,35 @@ def save_state(st, path=STATE):
     os.replace(tmp, path)
 
 
+# 2026-10-15 19:50：Zoomのボタンは使わず QuickTime＋BlackHole で録る → QuickTimeの保存先も見る。
+#   ~/Movies（QuickTimeの既定）・~/Documents 直下・デスクトップ直下を浅く見る（深く歩かない）。
+#   SINCE より後に書かれた音声・動画だけ拾う（昔のファイルを勝手に起こさない）。
+EXTRA_DIRS = [os.path.expanduser(p) for p in ("~/Movies", "~/Documents")]  # デスクトップは見ない（許可ポップアップの恐れ）
+SINCE = time.mktime(time.strptime("2026-10-15T19:30", "%Y-%m-%dT%H:%M"))
+
+
+def find_extra(dirs=None, since=None):
+    out = []
+    for root in (dirs or EXTRA_DIRS):
+        if not os.path.isdir(root):
+            continue
+        try:
+            names = os.listdir(root)
+        except OSError:
+            continue
+        for f in names:
+            if f.startswith(".") or not f.lower().endswith(EXTS_FIRST + EXTS_SECOND):
+                continue
+            p = os.path.join(root, f)
+            try:
+                s = os.stat(p)
+            except OSError:
+                continue
+            if s.st_mtime >= (since or SINCE):
+                out.append((p, s.st_size, s.st_mtime))
+    return out
+
+
 def find_recordings(root):
     """録音フォルダごとに1本選ぶ（m4a優先）。戻り値：[(path, size, mtime)]"""
     out = []
@@ -178,6 +207,10 @@ def main(argv):
         st["zoomDir"] = os.path.isdir(ZOOM_DIR)
         save_state(st)
         return 0
+    try:
+        recs = recs + find_extra()
+    except Exception:
+        pass
     st["lastCheck"] = time.strftime("%F %T")
     st["zoomDir"] = os.path.isdir(ZOOM_DIR)
     todo = [r for r in recs if r[0] not in st.get("done", {}) and ready(r[0], r[1], r[2], st)]
