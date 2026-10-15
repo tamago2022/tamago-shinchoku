@@ -1,6 +1,10 @@
 # tamago-shinchoku（公開リポ：鍵・個人情報は絶対に置かない）
 グローバル憲法は ~/.claude/CLAUDE.md を参照（そちらにも下記ルールあり）。
 
+## サイトを後退させない（憲法・2026-10-16・101885番・たまごさん指名）
+- **軽くした・整えたサイトを、次の変更で元に戻さない。** 出す前に `python3 tools/koutai_kanmon.py --check --output <.output>` を通し、`KOUTAI_KANMON_RESULT: PASS` 以外は main に合流させない・公開を押さない。
+- **機械の裏付け：** 基準値 `status/public/koutai_kijun.json`（トップ／棚／曲／マガジンの 1ページ目の時間・送る量・見た目の点数）。関所 `tools/koutai_kanmon.py`（時間+10%超・送る量+5%超・点数低下で exit 2、何が増えたかを1行で出す、良くなった時だけ基準値更新、`--self-test` 付き）。公開押し係 `kohyou_osu.py --pre-publish`／公開後の見る係 `kohyou_kanshi.py --after-publish`／マガジン `put_prod.sh --check-files` に組み込み済み。詳細は `AGENTS.md`「サイトを後退させない関所」。
+
 ## 使ったらしまう・使ったら閉じる。作ったファイルは作業の最後に自分で消す（憲法・2026-10-15・最優先）
 - **たまごさん「Mac の空き容量を空けまくって。そもそも macOS にデータが溜まらない仕組みに。使ったらしまう、使ったら閉じるを徹底。やりっぱなしで後で面倒な思いをするのは俺」。**
 - 実測（2026-10-11〜15）：空きが4回0GB近くまで落ちた。犯人は毎回「作って置きっぱなし」（/private/tmp の push 用作業場48個・43GB、作業場104個・18.6GB、queue.json の控え1,047個・10.8GB、打ち切られた git gc の書きかけ）。

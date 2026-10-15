@@ -91,6 +91,15 @@ def _append(path, obj):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with io.open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(obj, ensure_ascii=False) + "\n")
+    # 台帳（status/ は非公開）の控えを、公開側 status/public/koutai_kanmon.json の rireki（直近40件）にも残す
+    if path == DAICHO:
+        try:
+            cur = _load(LATEST_PUB, {})
+            cur.setdefault("rireki", []).append(obj)
+            cur["rireki"] = cur["rireki"][-40:]
+            _write(LATEST_PUB, cur)
+        except Exception:
+            pass
 
 
 def _joy_sha():
