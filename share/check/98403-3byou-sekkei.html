@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>#98403 「つながるまで14秒」の内訳と3秒以内にする設計（下書き）</title>
+<style>body{margin:0;padding:20px 16px 40px;background:var(--t-panel);color:var(--t-fg2);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto}h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.25rem;letter-spacing:.06em}h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;color:var(--t-mute);margin-top:30px}li{margin:4px 0}code{background:var(--t-panel);border:1px solid var(--t-line);border-radius:4px;padding:0 4px;font-size:.9em}a{color:var(--t-info);word-break:break-all}.top a{color:var(--t-ok);text-decoration:none;font-weight:700}.top{position:sticky;top:0;background:var(--t-bg);padding:8px 14px;margin:-20px -16px 20px}</style></head><body>
+<div class="top"><a href="https://tamago2022.github.io/tamago-shinchoku/">← 進捗表に戻る</a></div>
+<h1>話す卵の案内人｜「つながるまで14秒」の内訳と3秒以内にする設計（98403番・2026-10-16・下書き）</h1>
+<p><b>音声の外部呼び出し（xAI）は1回も叩いていない。測ったのは「音声接続の手前」＝ページを開いてからボタンが効くようになるまで。</b></p>
+<h2>実測（2026-10-16 02:30〜 本番 <a href="https://joy-relief-station.lovable.app/cover-guide">https://joy-relief-station.lovable.app/cover-guide</a> ／ 工場の headless Chrome・幅375px・Mac有線）</h2>
+<ul>
+<li>HTML本体 59KB。<code>&lt;link rel=&quot;modulepreload&quot;&gt;</code>（先読みするJS）<b>63本</b>。</li>
+<li>主要10本のgzip後の合計 <b>774KB</b>（生 約3.4MB）：worlds-data 199KB／index 196KB／memoryDoorShareUrl共有チャンク 160KB／cover-guide本体 84KB／ShelfPicksSection 39KB／og-cards 30KB／cardFace 21KB／styles.css 33KB ほか。</li>
+<li>DOMの書き換え（水和＝JSが画面に噛み合う処理）：<b>0.5秒に始まり 2秒台で25件、最後の束が 6.85秒</b>（verify_click VC_HYDRO_PROBE=1）。</li>
+<li>その前に押したボタンは全部効かない。触る検品が「▶ ここで聴く」9件を無反応と判定したのはこれ（検品は4秒待って押す）。見本ページ /voice-annai-check（JS少）とトップは PASS。</li>
+<li>4G端末では帯域（774KB÷約0.4MB/s≒2秒）＋JSの解釈・実行（3.4MBを端末CPUで≒5〜8秒）＋名簿の流し込み → 10秒超。たまごさんの「14秒」はここ＋音声接続（未測・有料）。</li>
+<li><b>端末実測は未</b>（工場の headless は端末エミュレーションのみ。4G相当の絞りは koutai_kanmon の基準値計測に相乗りできる）。</li>
+</ul>
+<h2>3秒以内にする設計（お金ゼロ・順に効果大→小）</h2>
+<ol>
+<li><b>「話しかける」と「▶」を水和待ちから外す（島にする）。</b> 案内所の本体（4,142行）が噛み合う前でも、入口ボタンだけは先に効くように、入口を小さな独立チャンク（React.lazy ではなく、SSR直後に走る数KBのスクリプト）で持つ。押した瞬間に「接続中…」を出し、本体が来たら引き継ぐ。</li>
+<li><b>案内所トップに要らない先読みを外す。</b> トップ表示（曲の指定なし）では worlds-data（棚の全名簿）・og-cards（共有画像の表）・memoryDoorShareUrl共有チャンク（記憶の扉の種）は不要。<code>?artist=</code> がある時だけ動的importにする（1147番と同じ手法。1403番の「紹介文が後から消える」事故を踏まないよう、SSRの本文は変えない）。目安：774KB→約380KB。</li>
+<li><b>音声接続の前倒し。</b> 入口ボタンに触れた（pointerdown／hover／画面に入った）時点で、接続の下ごしらえ（Edge Functionの起こし・鍵の取得）だけ先に走らせ、押した時には声の経路だけ繋ぐ。※この部分は有料の呼び出しを含むので、監査明けに手順書（20261016_98403_annainin_jitsutsuwa_test.md）の見積りの中で測る。</li>
+<li><b>部品の後読み。</b> TodaysPicks・ShelfPicksSection・MemoryDoor など入口より下の棚は <code>DeferredMount</code>（既にある）で水和後に回す。</li>
+</ol>
+<h2>完成条件（この下書きを実装に起こす時の合否）</h2>
+<ul>
+<li>工場の headless（幅375・4G相当絞り）で、ページ到達→「話しかける」が押せるまで <b>3秒以内</b>（verify_click の4秒待ちで PASS になることが機械の裏付け）。</li>
+<li>koutai_kanmon：時間+10%超・送る量+5%超で止まる基準をそのまま使う（良くなった時だけ基準値が更新される）。</li>
+<li>見える中身は1文字も減らさない（SSRの本文はそのまま）。</li>
+</ul>
+<h2>今回やらなかったこと（正直に）</h2>
+<ul>
+<li>上の1〜4のコード変更は未着手。理由：このセッションでは Lovable の公開が押せず（鍵の同意切れ・公開便Chrome未開通）、共有部品の変更を本番で測って戻す工程が成立しないため、測定と設計だけに留めた。</li>
+<li>入口の見た目（トップ・各ページの「話しかける」）も未着手。tamago-tone に合わせた1案を作ってから別便。</li>
+</ul>
+<pre style="font-size:.8rem;white-space:pre-wrap">実測: 画面幅 375px（工場の headless Chrome の端末エミュレーション設定値・2026-10-16 02:30）
+注: 「時間+10%超」「送る量+5%超」は koutai_kanmon の止める基準値（status/public/koutai_kijun.json）で、測った数字ではない</pre>
+<p style="color:var(--t-mute);font-size:.8rem;margin-top:30px">確認ページ：<a href="98403-annainin-jinkaku.html">98403-annainin-jinkaku.html</a></p>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body></html>

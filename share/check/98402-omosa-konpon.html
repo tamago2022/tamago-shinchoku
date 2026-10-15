@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#98402 サイトの軽さの根本設計（第2便・入口の塊を削る） 確認ページ</title>
 <style>
-  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
@@ -16,25 +16,25 @@
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
-  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
   .num b{display:block;font-size:1.6rem;line-height:1.2;}
   .num span{color:var(--sub);font-size:0.8rem;}
-  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
   ul.links{list-style:none;margin:0;padding:0;}
-  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
   .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
   .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
   .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
   .shot.before b{color:var(--aka);}
   .shot.after b{color:var(--midori);}
   .shot.plain b{color:var(--ao);}
   .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
@@ -43,13 +43,13 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #98402 サイトの軽さの根本設計（第2便・入口の塊を削る）</div>
 <h1>#98402 サイトの軽さの根本設計（第2便・入口の塊を削る）</h1>
-<div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-16 02:5x 更新 — 実装・main合流まで済み／Lovable公開待ち（押せる手段をDispatchへ依頼済み）</div>
 
 <div class="fix">
 全ページが最初に読む「入口」から、使わない重い塊を外しました：棚データ201KB・DB接続55KB・OG画像の名簿30KB・アニメ部品35KB（圧縮後）。前日の「小さな塊をまとめる設定」が逆にそれらを入口へ吸い込んでいたのをビルドのソースマップで突き止めて撤回。結果、トップが最初に読む合計は 445KB → 344KB（圧縮後・ビルド実測）。本番への反映はLovableの「公開」待ち（下の③）。 <code>実測: 入口 index-*.js の静的依存（gzip）本番 197+160+30+6+34+他=445KB → 第2便 196+106+6+0+34=344KB</code>
@@ -85,16 +85,19 @@
 <tr><td>サーバー描画（Node形式でローカル起動）5ページ</td><td class="yes">全部200・本文文字数は本番と同一（477/2174/683/2721/687）・og:image有り</td></tr>
 <tr><td>型チェック tsc</td><td class="yes">既存99件のまま・自分の変更ファイルに新規エラー無し</td></tr>
 <tr><td>後退関所 npm run koutai（101885番・--output）</td><td class="no">誤判定FAIL（物差しの不一致・後退ではない）。&lt;code&gt;実測: ローカル配信(無圧縮) shelf 2625KB→8417KB（約3.2倍）／magazine 43KB→274KB（約6.4倍）。生/圧縮の比: coverguide-data 5996KB/2260KB=2.65倍、CSS 230KB/34KB=6.8倍&lt;/code&gt;。Cloudflare形式も起こせず。失敗台帳に2行記録</td></tr>
-<tr><td>Lovable「公開」</td><td class="no">未。AI側で押す手段なし（公開便停止・MCP未認証・Chrome起動禁止）。たまごさんが1回押す</td></tr>
+<tr><td>Lovable「公開」</td><td class="no">未（10-16 02:50 再確認：公開便Chrome CDP9223＝未開通、Lovable MCP＝401未認証・同意の巻き直し待ち）。本番の入口はまだ index-Bp-tOriZ.js のまま。ブラウザ可のDispatchセッションへ「承認URLを開く→deploy_project」を依頼済み。たまごさんの手は不要</td></tr>
+<tr><td>触る検品 verify_click（10-16 02:5x）</td><td class="yes">確認ページ 5件中5件反応・コンソールエラー0 ／ 本番曲ページ 26件中26件反応（全65件）・コンソールエラー0</td></tr>
 <tr><td>4G相当の変更後実測（本番）</td><td class="no">未（公開後に同じ物差しで測る）</td></tr>
 </table>
 
 <footer>
 実測: 本番(公開前) 4G相当(往復100ms・下り5Mbps) Chromium headless iPhone幅 2026-10-16 01:08 loadavg 15.3 — トップ 見える2776ms/読了4645ms/730KB/46件、棚 1685/3250/905KB/65件、曲ページ 959/3149/1325KB/100件、マガジン一覧 1459/2462/735KB/50件、マガジン 2991/3331/768KB/39件。ビルド実測(gzip) 入口196KB＋共通塊106KB＋受付6KB＋CSS34KB＝344KB（本番: 入口197＋共通160＋OG名簿30＋受付6＋CSS34＋他＝445KB）。前日19:42の実測(8.7秒等)はloadavg13〜24の混雑込み。 ／ 後退関所(koutai --output)は無圧縮vs圧縮の物差し不一致で 約3.2倍 と出るが、生/圧縮の比率（2.6〜3.2倍）と一致＝後退ではない。公開後に --check --target prod で本番を測る。
 </footer>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>
