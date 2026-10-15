@@ -501,9 +501,17 @@ if __name__ == "__main__":
     except Exception:
         _ps = ""
 
+    try:  # 2026-10-16 自動処理の台帳（tools/jidou_daicho.json）に無い係は起こさない＝発車できない
+        _daicho = set(json.load(open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "jidou_daicho.json"),
+                                     encoding="utf-8")))
+    except Exception:
+        _daicho = None   # 台帳が読めない時は止めない（心臓を止めない側に倒す）
+
     def _okosu(name, *extra):
         """同じスクリプトが既に走っていたら起こさない。投げっぱなしで心臓は待たない。"""
         try:
+            if _daicho is not None and name not in _daicho:
+                return False
             if ("/tools/" + name) in _ps:
                 return False
             p = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), name)
@@ -519,6 +527,9 @@ if __name__ == "__main__":
     # 2026-10-16 $TMPDIR の使い捨て（巡回 hps-patrol・自動操作ブラウザの profile 等）を1時間に1回消す。
     #   実測：約4万個・約90GB溜まり、空きが10GBまで落ちた。中で1時間に1回に間引く（status/.youryou_jougen_tsukaisute_at）
     _okosu("youryou_jougen.py", "--tsukaisute")
+
+    # 2026-10-16 自動処理の棚卸し（1時間に1回・中で間引く）。台帳に無いものがあれば Dispatch に1行
+    _okosu("jidou_tanaoroshi.py", "--hourly")
 
     # 2026-10-01 鬼監督（Codex）の返事を拾う係。返事待ちが0なら gh も叩かず即戻る。
     #   合格/差し戻しを status/gaibu/soto_hantei.json と status/oni_codex/hantei.jsonl に戻し、
