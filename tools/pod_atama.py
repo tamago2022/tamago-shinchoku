@@ -101,6 +101,8 @@ def main():
     ap.add_argument("--src", required=True)
     ap.add_argument("--name", default=None, help="納品するファイル名（日付は自動）")
     ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--scan", type=int, default=0, help="頭から何秒まで15秒刻みで言語を見るか")
+    ap.add_argument("--cut-at", type=float, default=None, help="切る位置（秒）を直接指定")
     a = ap.parse_args()
     os.makedirs(WORK, exist_ok=True)
     wav = os.path.join(WORK, "src.wav")
@@ -112,6 +114,12 @@ def main():
     rate = 24000
     pcm = raw[i + 8:i + 8 + n]
     pcm = pcm[: len(pcm) // 2 * 2]
+    if a.scan:
+        # 15秒ごとに言語を見る（どこから日本語になるか）
+        for t0 in range(0, a.scan, 15):
+            lang, t = stt_local(pcm[t0 * rate * 2:(t0 + 15) * rate * 2], rate)
+            log("窓 %d-%d秒 [%s] %s" % (t0, t0 + 15, lang, t[:70]))
+        return 0
     head = pcm[: rate * 2 * 90]
     sil = silences(head, rate)
     # 塊＝無音と無音のあいだ
@@ -121,8 +129,8 @@ def main():
             bounds.append((prev, s))
         prev = e
     log("頭90秒の塊:", ["%.1f-%.1f" % b for b in bounds[:15]])
-    cut = None
-    for s, e in bounds[:12]:
+    cut = a.cut_at
+    for s, e in ([] if cut is not None else bounds[:20]):
         lang, t = stt_local(pcm[int(s * rate) * 2:int(e * rate) * 2], rate)
         log("塊 %.1f-%.1f秒 [%s]: %s" % (s, e, lang, (t or "")[:120].replace("\n", " ")))
         if lang == "ja" or has_ja(t):
