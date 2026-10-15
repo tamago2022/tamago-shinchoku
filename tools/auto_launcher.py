@@ -2177,7 +2177,12 @@ def _fable_lane(q, items):
     if _m.get("pressureLevel") not in (None, 1) or (_m.get("memFreePct") is not None and _m["memFreePct"] < 15):
         log("Fableレーン見送り: メモリが苦しい（圧=%s・空き%s%%）" % (_m.get("pressureLevel"), _m.get("memFreePct")))
         return False
-    if ((load(MACHINE, {}) or {}).get("diskFreeGB") or 99) < 20:
+    try:  # その場で測る（machine.json は数分〜数十分古いことがある）
+        _st = os.statvfs("/System/Volumes/Data")
+        _free = _st.f_bavail * _st.f_frsize / 1e9
+    except Exception:
+        _free = (load(MACHINE, {}) or {}).get("diskFreeGB") or 99
+    if _free < 20:
         log("Fableレーン見送り: ディスク空き20GB未満")
         return False
     it = waiting[0]
