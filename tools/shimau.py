@@ -9,7 +9,7 @@
      ・$TMPDIR（/var/folders/…/T）：3日以上さわられていないもの（com.apple.*・claude*・TemporaryItems は除く）
        自動操作ブラウザの使い捨てプロフィール（puppeteer/playwright/chromium の一時フォルダ）は1日で
      ・Claude の古いセッション（local-agent-mode-sessions）の outputs：7日以上前のもの（今のセッションは除く）
-     ・ブラウザ（Chrome・Brave）のキャッシュだけ（Cache/Code Cache/GPUCache/シェーダー/Service Worker の CacheStorage）
+     ・ブラウザ（Chrome のみ。Brave には触らない）のキャッシュだけ（Cache/Code Cache/GPUCache/シェーダー/Service Worker の CacheStorage）
        ＝Cookie・Local Storage・IndexedDB（ログイン状態やサイトのデータ）は消さない
      ・自動操作用の Chrome（Application Support/Google/Chrome-headless）はまるごと（作り直せる）
   ③ HDD の置き場を日数で片付ける：作業場の控え 14日・控え(_1142_gomi) 30日・Claude上げ済み 30日
@@ -131,7 +131,8 @@ def claude_sessions():
 
 def browser_cache():
     n = 0
-    for base in (AS + "/Google/Chrome", AS + "/BraveSoftware/Brave-Browser"):
+    # 2026-10-16 たまごさん「Braveには触らない」→ Brave はキャッシュも対象外（Chrome だけ）
+    for base in (AS + "/Google/Chrome",):
         for prof in glob.glob(base + "/*/"):
             for c in BROWSER_CACHE:
                 p = os.path.join(prof, c)
