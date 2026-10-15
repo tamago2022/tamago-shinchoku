@@ -76,7 +76,7 @@ M = dict(
         dict(no='00', artist='Lenny Kravitz', song='Rock and Roll Is Dead', album='アルバム『Circus』', year='1995',
              catch='「ロックは死んだ」と、ロックスターが言った',
              main=dict(id='yw8_5OYKQNA', role='MV 1995', artist='Lenny Kravitz', song='Rock And Roll Is Dead', cap=''),
-             body=[f'1995年8月、アルバム『Circus』からの最初のシングル{src("Wikipedia", WLEN)}。題名だけ聞いて、みんな怒った。',
+             body=[f'1995年8月、アルバム『Circus』からの最初のシングル{src("Wikipedia", WLEN)}。題名だけ聞いて、多くの人が「何を言ってるんだ」と首をかしげた。',
                    f'本人いわく、完全な誤解だった。「みんな、歌詞の中身を聴いてくれなかった。言いたかったのは上っ面のことなんだ。イメージが、音楽や才能や芸術より優先されている。ロックスターになるのに、ヘロインを打つ必要も、決まった振る舞いをする必要もない。自分らしくあれ、ってこと」{src("Songfacts", SF)}。'],
              say='「ロックは死んだ」を、思いきりロックな音で歌う。言ってることと鳴ってることが逆で、ちょっと笑ってしまう。僕も「もう若くないから」と言いながら、夜中の二時にラーメンをすすっている。',
              bridge='その問いの18年前。ロンドンで、国そのものに怒る曲が出る。'),
