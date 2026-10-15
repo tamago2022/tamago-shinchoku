@@ -206,6 +206,9 @@ def check_number_claims(html_text, report_text=""):
     照らして食い違っていないかを見る。2026-09-16の事故（「上17px」と書いたが
     実測は9.6pxだった）を機械で再現・検出できるかで合格条件を確かめてある。"""
     combined_html = (html_text or "") + "\n" + (report_text or "")
+    # 2026-10-11：外の題名の引用（動画名「食料品1%減税…」等）は、こちらの測った主張ではない。
+    #   data-sekisho="inyou" を付けた要素の中身だけは数字の主張から外す（付けるのは題名の引用だけ）。
+    combined_html = re.sub(r'(?is)<(\w+)[^>]*data-sekisho="inyou"[^>]*>.*?</\1>', "", combined_html)
     plain = _strip_html(combined_html)
     # 896番で発見（2026-09-26）：<a href="...">に生のURLをリンク文字列としてそのまま
     # 表示するページ（renraku.pyのGmail compose_url等）では、URLエンコードされた

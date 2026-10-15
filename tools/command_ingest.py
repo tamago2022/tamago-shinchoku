@@ -516,16 +516,17 @@ def _is_rule_document_fragment(text):
     return probe in rule_text
 
 
-def queue_add(text, priority=None, label=None, origin=None):
+def queue_add(text, priority=None, label=None, origin=None, model=None, urgent=False):
     """2026-10-10：読む→番号を決める→書く、の間ずっと queue_lock を持つ。
     実測：How It Holds パイプラインと判定日(hantei_hiduke)が同じ秒に積み、両方が
     同じ番号(86057)を取って片方の行が消えた（save_queue の差分マージは同じ番号だと後勝ち）。
     鍵は同一プロセス内で再入可能なので、中の _load_queue/_save_queue はそのまま動く。"""
     with queue_lock():
-        return _queue_add_unlocked(text, priority=priority, label=label, origin=origin)
+        return _queue_add_unlocked(text, priority=priority, label=label, origin=origin,
+                                   model=model, urgent=urgent)
 
 
-def _queue_add_unlocked(text, priority=None, label=None, origin=None):
+def _queue_add_unlocked(text, priority=None, label=None, origin=None, model=None, urgent=False):
     """進捗表の「＋発車待ちに追加」→ status/queue.json の末尾（n=最大+1）へ
     waiting状態の新規項目を追加する。2026-09-04：いままでDispatch経由でしか積めなかった
     発車待ちの列に、スマホから直接1行で積めるようにした。
@@ -639,6 +640,14 @@ def _queue_add_unlocked(text, priority=None, label=None, origin=None):
         item["originalWhat"] = text
     if p is not None:
         item["priority"] = p
+    # 2026-10-15 Fable解禁：積む側がモデルを明示できるようにする（auto_launcher.pick_model が fixedModel を見る）。
+    #   Fableは status/fable_week.json の期間中だけ実際にFableで発車し、期間外は自動でSonnetへ落ちる。
+    _allowed_models = ("claude-sonnet-5", "claude-haiku-4-5", "claude-opus-5-5", "claude-fable-5-1")
+    if model in _allowed_models:
+        item["fixedModel"] = model
+        item["model"] = model
+    if urgent:
+        item["urgent"] = True
     # 793番（2026-09-14）「急がないもの」を自動で後回しへ。urgentが立っていない新規タスクだけ対象。
     if not item.get("urgent"):
         demote, kw = _auto_demote_priority(title, text)
@@ -1190,7 +1199,8 @@ def _process_queue(action, cmd):
     if action == "queue_redo":
         return queue_redo(target, cmd.get("note"))
     if action == "queue_add":
-        return queue_add(target, cmd.get("priority"), cmd.get("label"), cmd.get("origin"))
+        return queue_add(target, cmd.get("priority"), cmd.get("label"), cmd.get("origin"),
+                         model=cmd.get("model"), urgent=bool(cmd.get("urgent")))
     if action == "queue_prio":
         return queue_prio(target)
     if action == "queue_later":

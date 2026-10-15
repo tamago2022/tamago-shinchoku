@@ -22,6 +22,7 @@
   - 週枠が stop なら着火しない（クレジットの天井に着かせない）
   - 1回の実行で着火するのは1本まで
   - Fableは使わない（no_fable.flag があるかに関わらず、ここでは常にSonnet）
+    ※例外（2026-10-15）：status/fable_week.json の期間中、fixedModel="claude-fable-5-1" を明示した仕事だけFable
 """
 import io
 import json
@@ -72,6 +73,7 @@ SONNET = "claude-sonnet-5"
 # canonicalModel: claude-haiku-4-5, 実モデル claude-haiku-4-5-20251001）。
 HAIKU = "claude-haiku-4-5"
 OPUS55 = "claude-opus-5-5"  # fixedModel明示時のみ（2026-10-10）
+FABLE = "claude-fable-5-1"  # fixedModel明示＋Fable解禁期間中のみ（2026-10-15・tools/fable_week.py）
 # 判断がほぼ要らない機械的な単純作業（パトロール・重複チェック・一覧作成・棚卸し・
 # 仕分け・集計・定型フォーマット変換）だけをHaiku対象にする。実装・設計・判断・交渉等の
 # 語が混ざっていたら安全側（Sonnet）に倒す——誤判定でHaikuに落として実装や判断を求めると、
@@ -91,6 +93,18 @@ def pick_model(item):
     #   → 積む側(Dispatch)が明示した時だけOpus 5.5を許す。自動判定では絶対にOpusへ上げない。
     if fixed in (SONNET, HAIKU, OPUS55):
         return fixed
+    # 2026-10-15 たまごさん「Fableの方が効果的な仕事をやりまくっていい」→ Fable解禁期間
+    #   （status/fable_week.json）中だけ、明示指定のFableを通す。期間外・週枠stopはSonnetへ落とす。
+    if fixed == FABLE:
+        try:
+            import fable_week as _fw
+            ok, why = _fw.active()
+        except Exception as e:
+            ok, why = False, "fable_week読込失敗（%s）" % e
+        if ok:
+            return FABLE
+        log("Fable指定の%s番をSonnetへ落とした：%s" % (item.get("n"), why))
+        return SONNET
     text = (item.get("title") or "") + (item.get("hyoudai") or "")
     if any(k in text for k in _HAIKU_NG_KEYWORDS):
         return SONNET
@@ -2658,6 +2672,17 @@ def launch_one(item, q, alive, safe_max):
     #   リポジトリ配下の .worktrees は他のAIツールから「プロジェクト」として拾われていた。
     #   ドット始まりの、どのツールの索引にも入らない場所へ移す。
     WT_BASE = "/Users/mac/Documents/AI作業/.worktrees"
+    # 2026-10-12 たまごさん「HDDが外れているときは、本体に溜めずに処理を止める」。
+    #   作業場の片付け（未保存分をiMac HDDへ写してから消す＝tools/worktree_taihi.py）が
+    #   HDD無しでは回らず、本体に溜まる一方になるため、HDDが無い間は新しい作業場を作らない。
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import hdd_okiba
+        if not hdd_okiba.ok():
+            log("見送り: iMac HDD がつながっていません（本体に溜めないため発車しない）")
+            return False
+    except Exception:
+        pass
     try:
         os.makedirs(WT_BASE, exist_ok=True)
     except Exception:
@@ -2751,7 +2776,9 @@ def launch_one(item, q, alive, safe_max):
     if resume_id:
         new_id = resume_id
         logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
-        cmd = [CLAUDE, "-p", "--resume", resume_id, "--model", SONNET,
+        # 2026-10-15：Fableで走っていた仕事はFableのまま起こす（モデルを変えるとキャッシュが作り直しで高くつく）
+        _resume_model = pick_model(item) if item.get("fixedModel") == FABLE else SONNET
+        cmd = [CLAUDE, "-p", "--resume", resume_id, "--model", _resume_model,
                "--permission-mode", "auto", "--output-format", "json",
                "【再開】たまごさんが緊急の割り込みのために一度止めた仕事です。"
                "**前回の続きから**進めてください。最初からやり直さないこと。\n\n" + prompt]
@@ -2763,7 +2790,9 @@ def launch_one(item, q, alive, safe_max):
         # 作り直しになり逆に高くつく＝2026-09-08の既存知見）。
         chosen_model = pick_model(item)
         item["model"] = chosen_model
-        if chosen_model != SONNET:
+        if chosen_model == FABLE:
+            log("🦄 %d番はFable指定・解禁期間中なのでFableで起動（2026-10-15）" % item.get("n"))
+        elif chosen_model != SONNET:
             log("💡 %d番は単純作業と判定、%sで起動（節約・34489番）" % (item.get("n"), chosen_model))
         cmd = [CLAUDE, "-p", "--session-id", new_id, "--model", chosen_model,
                "--permission-mode", "auto", "--output-format", "json", prompt]
@@ -2800,6 +2829,12 @@ def _harvest_pass():
             return
         _snap = queue_store.snapshot_items(q)
         if harvest(q):
+            # 2026-10-15 たまごさん「使ったらしまう」：仕事を回収したら、その場で片付け係を起こす
+            #   （10分おきの定期便を待たない）。心臓が status/worktree_taihi.go を見て走らせる。
+            try:
+                open(os.path.join(REPO, "status", "worktree_taihi.go"), "a").close()
+            except Exception:
+                pass
             q["updatedAt"] = time.strftime("%Y-%m-%d %H:%M")
             _deleted_ns = q.pop("_pendingDeletedNs", None)
             save_queue(q, snapshot=_snap, deleted_ns=_deleted_ns)

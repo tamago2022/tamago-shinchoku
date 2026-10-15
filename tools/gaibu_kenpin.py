@@ -212,6 +212,15 @@ def _today_records(ledger):
 
 def check_cost_cap(ledger=None):
     """今日の呼び出し回数・円換算額が上限を超えていないか。超えていれば (False, 理由)。"""
+    # ★2026-10-15 財布の関所の停止札。札があれば外部AIは1回も叩かない（読めなければ止める）。
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import saifu_kanmon
+        on, why = saifu_kanmon.teishi_chuu()
+    except Exception as e:
+        on, why = True, "財布の関所が読めない(%s)" % e
+    if on:
+        return False, why
     ledger = ledger or _load_ledger()
     todays = _today_records(ledger)
     call_cap = ledger.get("dailyCallCap", DEFAULT_DAILY_CALL_CAP)

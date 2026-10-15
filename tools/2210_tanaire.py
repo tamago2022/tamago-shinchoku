@@ -221,6 +221,24 @@ def whisper_of(r, title):
     return ""
 
 
+def daimei_kanmon_toosu(stock_id, title, r, kind):
+    """★2026-10-14【題名の関所】入れたカードの題名を tools/daimei_kanmon.py に通す。
+    たまごさん：「冷やすではなく癒やす」では何の動画か分からずクリックされない。
+    1行目は「何の動画か（主題の名詞＋していること）」。投稿文の比喩・決め台詞・写しは使わない。
+    ★棚へ入れる速さ（投げた瞬間に入る）は落とさない。落ちた題名は差し戻しの列
+      （status/daimei/machi.jsonl）へ積み、次の5分便で tools/daimei_naoshi.py が書き直す。"""
+    if not stock_id:
+        return
+    try:
+        import daimei_kanmon as dk
+        import daimei_naoshi as dn
+        why = dk.judge(title, clean_title(r.get("titleRaw") or r.get("title") or ""), kind)
+        if why:
+            dn.sashimodoshi(stock_id, title, why)
+    except Exception:  # noqa: BLE001  関所が転んでも棚入れは止めない（次の毎日の直しで拾われる）
+        pass
+
+
 def page_url(row):
     """本番の棚ページ。既存棚の受け皿なら元の棚id、店主が作った棚なら db-<uuid>（publicShelves:507）。"""
     sid = row.get("extends_shelf_id") or ("db-" + row["shelf_db"])
@@ -363,6 +381,7 @@ def tana_machi(db, r, url):
            % (lit(kind), lit(ref), lit(kind), lit(ref), lit(title), lit(thumb), lit(full_note)))
     rows = db.q(sql)
     sid = rows[0].get("stock_id") if isinstance(rows, list) and rows else None
+    daimei_kanmon_toosu(sid, title, r, kind)
     return {"ok": False, "why1": "棚待ち",
             "why": "入荷は済みました（在庫に保留：棚待ちで記録）。棚が決まれば入ります" if sid else "入荷の記録に失敗",
             "stockId": sid}
@@ -439,6 +458,7 @@ def ireru(db, r):
                     "stockId": row.get("stock_id")})
     if not got:
         return {"ok": False, "why1": why1 or "失敗", "why": why}
+    daimei_kanmon_toosu(got[0].get("stockId"), title, r, kind)
     if mx and not note:
         note_ato(ref, url)
     rec = {"bin": "2210", "at": now(), "id": rid, "nagekomiId": rid, "stockId": got[0]["stockId"],

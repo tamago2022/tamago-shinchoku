@@ -93,6 +93,18 @@ def verify(before, url="https://joy-relief-station.lovable.app/", wait_sec=420):
         now = K._honban_key(url) or ""
         if now and now != before:
             _log("★出ました %s → %s" % (before or "-", now))
+            # 2026-10-11 たまごさん「こういう動きのチェックも毎回ちゃんとして。重いは悪」：
+            #   公開が出たら毎回、iPhone相当・4G相当で画面の切り替えを通して測る（画面に出さない・無音・同時に1つ）。
+            #   不合格なら進捗表に赤帯（status/public/kirikae.json）。
+            try:
+                import subprocess
+                here = os.path.dirname(os.path.abspath(__file__))
+                subprocess.Popen(["/bin/sh", "-c",
+                                  "sleep 30; node '%s/kirikae_sokutei.mjs' --public; node '%s/kirikae_sokutei.mjs' --stale --public"
+                                  % (here, here)],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+            except Exception:
+                pass
             return {"deta": True, "before": before, "after": now}
         time.sleep(20)
     _log("10分見ても x-deployment-id が変わりません（%s のまま）" % (before or "-"))

@@ -89,7 +89,31 @@ def measure():
     mp = re.search(r"free percentage:\s*(\d+)%", _run(["memory_pressure", "-Q"]))
     if mp:
         m["memFreePct"] = int(mp.group(1))
+    # 2026-10-15 スワップの使用率も見る（ロード46・スワップ19.5GBでMacが固まる手前になった）
+    sw = re.search(r"total = ([\d.]+)M\s+used = ([\d.]+)M", _run(["sysctl", "-n", "vm.swapusage"]))
+    if sw and float(sw.group(1)) > 0:
+        m["swapPct"] = round(100 * float(sw.group(2)) / float(sw.group(1)), 1)
     return m
+
+
+# 2026-10-15 たまごさん「固まる手前まで重い。負荷が高い間は工場の同時本数を1本に」
+HIGH_RATIO = 1.0     # 1分ロード÷コア数がこれ以上＝重い → 上限1本
+FREEZE_RATIO = 3.0   # これ以上＝固まる手前 → 新規発車を止める
+SWAP_HIGH = 90.0     # スワップ使用率% → 上限1本
+SWAP_FREEZE = 95.0   # → 新規発車を止める
+MEMFREE_FREEZE = 5   # memory_pressure の空き% → 新規発車を止める
+
+
+def kiken(m):
+    """固まる手前か（新規発車を止める理由の文字列 or None）。tools/fuka_mihari.py と共用。"""
+    ratio = (m["load1"] / float(m["ncpu"])) if m.get("load1") is not None and m.get("ncpu") else None
+    if ratio is not None and ratio >= FREEZE_RATIO:
+        return "ロード%.1f（コア%d×%.0f超）" % (m["load1"], m["ncpu"], FREEZE_RATIO)
+    if (m.get("swapPct") or 0) >= SWAP_FREEZE:
+        return "スワップ%.0f%%（%.0f%%超）" % (m["swapPct"], SWAP_FREEZE)
+    if m.get("memFreePct") is not None and m["memFreePct"] < MEMFREE_FREEZE:
+        return "空きメモリ%d%%（%d%%未満）" % (m["memFreePct"], MEMFREE_FREEZE)
+    return None
 
 
 def pressure_color(m):
@@ -121,6 +145,13 @@ def judge(m, kotei2=False):
         r.update(cap=CAP_DEFAULT, mode="固定2本", reason="固定2本フラグあり（status/dojisu_kotei2.flag）")
         return r
     r["mode"] = "自動"
+    k = kiken(m)
+    if k:
+        r.update(cap=CAP_RED, stopNew=True, reason="固まる手前（%s）→ 新規発車を止める" % k)
+        return r
+    if (ratio is not None and ratio >= HIGH_RATIO) or (m.get("swapPct") or 0) >= SWAP_HIGH:
+        r.update(cap=CAP_RED, reason="重い（ロード比%s・スワップ%s%%）→ 上限1本" % (ratio, m.get("swapPct")))
+        return r
     if color == "red":
         r.update(cap=CAP_RED, reason="メモリ圧=赤 → 上限1本")
     elif color == "yellow":
@@ -216,7 +247,10 @@ def _self_test():
     eq(judge({"pressureLevel": 1, "load1": 3.0, "ncpu": 8})["cap"], 4, "緑0.375→4")
     eq(judge({"pressureLevel": 1, "load1": 5.2, "ncpu": 8})["cap"], 3, "緑0.65→3")
     eq(judge({"pressureLevel": 1, "load1": 5.6, "ncpu": 8})["cap"], 2, "緑0.70→2")
-    eq(judge({"pressureLevel": 1, "load1": 400, "ncpu": 8})["cap"], 2, "緑高負荷→2")
+    eq(judge({"pressureLevel": 1, "load1": 400, "ncpu": 8})["stopNew"], True, "ロード50倍→止める")
+    eq(judge({"pressureLevel": 1, "load1": 10, "ncpu": 8})["cap"], 1, "ロード比1.25→1本")
+    eq(judge({"pressureLevel": 1, "load1": 1, "ncpu": 8, "swapPct": 92})["cap"], 1, "スワップ92%→1本")
+    eq(judge({"pressureLevel": 1, "load1": 1, "ncpu": 8, "swapPct": 96})["stopNew"], True, "スワップ96%→止める")
     eq(judge({"pressureLevel": 2, "load1": 1, "ncpu": 8})["stopNew"], True, "黄→止める")
     eq(judge({"pressureLevel": 4, "load1": 1, "ncpu": 8})["cap"], 1, "赤→1")
     eq(judge({"memFreePct": 5, "load1": 1, "ncpu": 8})["cap"], 1, "空き5%→赤")

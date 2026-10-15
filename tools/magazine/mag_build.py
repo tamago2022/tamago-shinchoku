@@ -82,6 +82,18 @@ def chapter(c, paper=False):
     return f'<section class="{cls}" id="ch{c["no"]}"><div class="cw-wrap">' + ''.join(parts) + '</div></section>'
 
 
+# 参考動画コーナー（全マガジン共通の末尾・Genspark手紙 issue#7 の決まり6・2026-10-15）
+REF = [dict(id='hmGwwZ5hjbI', role='きっかけの動画', artist='汝、ヒトを知れ', song='なぜ、大人になると新しい曲を聴かなくなるのか【鳥類学×音楽心理学】', cap='歌を覚える季節は終わらない')]
+
+
+def ref_section(m):
+    r = m.get('ref', REF)
+    if not r:
+        return ''
+    return ('<section class="cw-ref" aria-label="参考動画" style="margin-top:56px"><p class="cw-more__label">参考動画 — この記事を書くきっかけになった動画</p>'
+            '<div class="cw-more__grid">' + ''.join(video(v, 'small') for v in r) + '</div></section>')
+
+
 def build(m):
     toc = ''.join(f'<li><a href="#ch{c["no"]}"><img src="https://i.ytimg.com/vi/{c["main"]["id"]}/mqdefault.jpg" alt="" loading="lazy" decoding="async"/><b>CHAPTER {c["no"]}</b><span>{e(c["main"]["song"])}</span></a></li>' for c in m['chapters'])
     chs = ''.join(chapter(c, paper=(i in m.get('paper', []))) for i, c in enumerate(m['chapters']))
@@ -100,7 +112,7 @@ def build(m):
 <header class="cw-hero"><div class="cw-hero__bg" aria-hidden="true"><img src="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg" alt="" decoding="async"/></div><nav class="cw-nav" aria-label="ページ上部"><a href="https://joy-relief-station.lovable.app/">ごきげん補給所</a><span>Magazine Story</span></nav><div class="cw-hero__body"><p class="cw-eyebrow">{e(m["eyebrow"])}</p><h1 class="cw-hero__title">{m["h1"]}</h1><p class="cw-hero__lead">{m["lead"]}</p><div class="cw-hero__rule"></div></div></header>
 <div class="cw-wrap"><section class="cw-toc" aria-label="この特集の章"><p class="cw-toc__label">IN THIS ISSUE</p><ul class="cw-toc__grid">{toc}</ul></section><section class="cw-open"><p class="cw-big">{m["big"]}</p>{"".join(f"<p>{p}</p>" for p in m["open"])}{('<p class="cw-door">' + m["door"] + '</p>') if m.get("door") else ""}</section></div>
 {chs}
-<div class="cw-wrap"><section class="cw-close">{"".join(f"<p>{p}</p>" for p in m["close"])}</section><section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label">OTHER MAGAZINES — ほかの特集</p><ul class="cw-other__grid">{others}</ul></section><section class="cw-mapwrap" aria-label="曲の一覧"><p class="cw-toc__label">THE MAP — {m.get("songs_n", len(allv))} SONGS</p><ol class="cw-map">{mp}</ol></section><section class="cw-sources" aria-label="出典"><h3>SOURCES</h3><ul>{srcs}</ul><p class="cw-note">{m["note"]}</p></section></div></main></div>
+<div class="cw-wrap"><section class="cw-close">{"".join(f"<p>{p}</p>" for p in m["close"])}</section>{ref_section(m)}<section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label">OTHER MAGAZINES — ほかの特集</p><ul class="cw-other__grid">{others}</ul></section><section class="cw-mapwrap" aria-label="曲の一覧"><p class="cw-toc__label">THE MAP — {m.get("songs_n", len(allv))} SONGS</p><ol class="cw-map">{mp}</ol></section><section class="cw-sources" aria-label="出典"><h3>SOURCES</h3><ul>{srcs}</ul><p class="cw-note">{m["note"]}</p></section></div></main></div>
 {SCRIPT}
 </body></html>'''
 

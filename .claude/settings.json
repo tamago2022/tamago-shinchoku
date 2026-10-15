@@ -85,6 +85,42 @@
         ]
       },
       {
+        "$kanmon": "muon",
+        "$comment": "2026-10-10 無音の関所。afplay/ffplay/say等の再生コマンドと、無音の指定（Chromium=--mute-audio／WebKit=tools/muon.mjs muonContext／Firefox=media.volume_scale=0）なしにブラウザを起動するファイルの実行・書き込みを拒否する。判定の正本は tools/muon.py check_text。逆テスト：python3 tools/muon.py --self-test",
+        "matcher": "Bash|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/muon_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "$kanmon": "kakeibo",
+        "$comment": "2026-10-11 家計簿の関所。fal・Gemini・xAI を案件名（家計簿）なしで叩くコマンド・ファイルの実行と書き込みを拒否する。判定の正本は tools/kakeibo.py check_text。逆テスト：python3 tools/kakeibo.py --self-test",
+        "matcher": "Bash|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/kakeibo_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "$kanmon": "vault",
+        "$comment": "2026-10-11 Vaultの関所。たまごさん『Obsidianが重くならないことが第一。毎回書き込みが入るから、どうにかして』。Vaultの外へ移した台帳・ログ（作業キュー.md等・AI出力/仕入れ/）への書き込みを拒否、00_現在地.mdはAIの直接書き込み1日1回まで、その他のVaultへのAIの書き込みは1日20回まで。判定の正本は tools/vault_kanmon.py。逆テスト：python3 tools/vault_kanmon.py --self-test",
+        "matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/vault_kanmon.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
         "$kanmon": "dir_memo_kakunin",
         "$comment": "34973号（2026-08-08判定日赤・1ヶ月以上未着手）作業ディレクトリ確認＋メモ上書き前確認の関所。A)MEMORY.md/ai-brain配下.md/agent-memory配下/genzaichi系/00_現在地.md/status/*_ima.mdの既存ファイルを、このセッションでRead済みでないまま丸ごとWrite上書きしようとしたらexit 2で拒否（過去にMEMORY.md上書き事故→git checkoutで復元した実例あり）。B)pages_publish.sh/git push等の公開系Bashコマンドをmainブランチでないcwdでやろうとしたらexit 2で拒否（事故実例：status/failures.jsonl F-20261009090406-quick、作業ディレクトリのHEADとorigin/mainがズレたまま公開して404が続いた）。transcript/git判定が不能な時は黙って通す（人質にしない）。逆テスト：node tools/stop_kanmon/34973_dir_memo_kakunin_kanmon.mjs --self-test",
         "matcher": "Write|Bash",

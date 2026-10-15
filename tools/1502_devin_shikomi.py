@@ -22,6 +22,7 @@
 
 ■ 冪等：同じ name / title が既にあれば作らない。何回走らせても増えない。
 """
+import sys as _sk_sys, os as _sk_os; _sk_sys.path.insert(0, _sk_os.path.dirname(_sk_os.path.abspath(__file__))); import saifu_kanmon as _sk; _sk.mon(__name__)  # ★2026-10-15 財布の関所：停止札があれば何も叩かず終わる
 import io
 import json
 import os

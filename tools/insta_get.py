@@ -21,7 +21,9 @@ import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JOBS = os.path.join(REPO, "status", "mac_jobs")
-URL_RE = re.compile(r"^https://(www\.)?instagram\.com/(reel|reels|p|tv)/[A-Za-z0-9_-]+/?(\?.*)?$")
+URL_RE = re.compile(r"^https://(www\.)?instagram\.com/(reel|reels|p|tv)/[A-Za-z0-9_-]+/?(\?.*)?$"
+                    r"|^https://(www\.|mobile\.)?(x|twitter)\.com/[A-Za-z0-9_]+/status/\d+/?(\?.*)?$")
+# 2026-10-11：Xの投稿も同じ道で取る（BGM判定 tools/oto_hantei.py の入口）。保存名は <投稿ID>.mp4
 
 
 def mac_script(url):
@@ -43,6 +45,7 @@ def main():
     a = sys.argv[1:]
     if a and a[0] == "--self-test":
         ok = bool(URL_RE.match("https://www.instagram.com/reel/DeQAxSTNUBX/")) and not URL_RE.match("file:///etc/passwd")
+        ok = ok and bool(URL_RE.match("https://x.com/G10Hung/status/2106882557421744248")) and not URL_RE.match("https://x.com/a/b")
         ok = ok and "yt-dlp" in mac_script("https://www.instagram.com/reel/A/")
         print("SELFTEST", "PASS" if ok else "FAIL")
         return 0 if ok else 1

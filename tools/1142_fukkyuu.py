@@ -51,6 +51,16 @@ LOG = os.path.join(STATUS, "1142_fukkyuu.log")
 DRY = "--honban" not in sys.argv          # 既定は下見。--honban で実際に直す
 
 
+def _gomi_assyuku():
+    """控え箱の後片付け（2026-10-12）。失敗しても本体の仕事は止めない。"""
+    try:
+        sys.path.insert(0, HERE)
+        import gomi_assyuku
+        gomi_assyuku.run_locked(max_files=50)
+    except Exception:
+        pass
+
+
 def now():
     return datetime.datetime.now(JST)
 
@@ -108,6 +118,9 @@ def naosu_stuck():
         import shutil
         shutil.copy2(p, os.path.join(
             bak, "queue.json.bak-" + now().strftime("%Y%m%d-%H%M%S")))
+        # 2026-10-12 控えに上限が無く1,047個・10.8GBに太り、Macの空きが668MBまで落ちた。
+        #   新しい20個だけ生で残し、古いものは gzip（中身は失わない）。tools/gomi_assyuku.py
+        _gomi_assyuku()
     except Exception:
         pass
     for i in target:
@@ -162,6 +175,7 @@ def naosu_ghost_waiting():
         import shutil
         shutil.copy2(p, os.path.join(
             bak, "queue.json.bak-" + now().strftime("%Y%m%d-%H%M%S")))
+        _gomi_assyuku()
     except Exception:
         pass
     for i in yuurei:

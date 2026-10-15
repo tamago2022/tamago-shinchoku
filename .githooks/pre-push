@@ -17,6 +17,18 @@ if [ -z "$REPO_ROOT" ]; then
 fi
 cd "$REPO_ROOT" || exit 0
 
+# 2026-10-11 テザリングの関所：テザリング中（tools/tethering_kanmon.py が判定）はまとめての push を出さない。
+#   Wi-Fi に戻れば、各便が次の周で自動で push し直す。急ぎは TAMAGO_PUSH_TETHER_OK=1 で通す。
+if [ "${TAMAGO_PUSH_TETHER_OK:-0}" != "1" ] && grep -q '"tethering": true' status/public/tethering.json 2>/dev/null; then
+  echo "pre-push: テザリング中なので push しません（Wi-Fi に戻ったら自動で再開）" >&2
+  exit 1
+fi
+# 大きな送信は1本ずつ：同じリポの push が他に走っていたら、この push は見送る（次の周で出る）。
+if [ "$(pgrep -f 'tamago-shinchoku.* push ' 2>/dev/null | wc -l | tr -d ' ')" -gt 1 ]; then
+  echo "pre-push: 別の push が送信中なので見送ります（1本ずつ）" >&2
+  exit 1
+fi
+
 ZERO="0000000000000000000000000000000000000000"
 FAIL=0
 CHECKED=0

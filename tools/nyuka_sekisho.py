@@ -641,6 +641,13 @@ def ask_external_score(item, copy, kept_facts):
         return None, {}, "gaibu_kenpin を読めませんでした（%s）" % e
 
     ok, why = gk.check_cost_cap()
+    if ok:
+        # ★2026-10-15 財布の関所（回数・円の上限。失敗も1回と数える）
+        try:
+            import saifu_kanmon
+            ok, why = saifu_kanmon.toosu("openai", 3.0, "入荷の関所 採点")
+        except Exception as e:
+            ok, why = False, "財布の関所が読めない(%s)" % e
     if not ok:
         return None, {}, "判定役が今いない：%s（★点を甘くして通す真似はしない）" % why
 

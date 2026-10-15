@@ -483,6 +483,11 @@ while :; do
   #   ★お金の紙(1051番)より先に呼ぶ＝紙は書き直された数字を写すだけ。新しい常駐も定期タスクも作らない。
   #   中で1日1回に間引く（status/.subsc_shirase_at）。外へ出るのは為替レート1本だけ＝0円。
   tick_every 240 && ( python3 "$REPO/tools/subsc_shirase.py" >> "$REPO/status/subsc_shirase.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-14 サブスクのカレンダー。家計簿（status/okane/kakin.json）に予定の無いサブスクが増えたら
+  #   status/dispatch_outbox.jsonl に1日1行 → Dispatch がGoogleカレンダーのコネクタで作り --done で控える。読むだけ＝0円。
+  tick_every 240 && ( python3 "$REPO/tools/subsc_calendar.py" >> "$REPO/status/subsc_calendar.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-15 クラウドセッションクレジット問い合わせ（Gmail thread 1a13bbf5804e4282）の返事見張り。1日1回 outbox に1行→Dispatch がGmailで確認。11/5で自動停止。0円。
+  tick_every 240 && ( python3 "$REPO/tools/cloud_credit_henji.py" >> "$REPO/status/cloud_credit_henji.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
   #   2026-10-08 作り直し：今月いくら（カードから実際に引かれた円）＋サービスごと＋証拠。1時間に1回書き直す。
@@ -575,6 +580,8 @@ while :; do
   #    返ってきた指摘を台帳へ戻す。★完了の鍵（status/gaibu/soto_hantei.json）は外しか開けない。
   #    中で1日1回に間引く。出すのは tools/nageru.py の口1本だけ＝新しい通信を作らない。
   tick_every 240 && ( python3 "$REPO/tools/gaibu_shinsa.py" >> "$REPO/status/gaibu/shinsa.log" 2>&1 & ) >/dev/null 2>&1
+  # ★2026-10-15 財布の関所：家計簿の「API 従量課金」欄（status/okane/api_juuryou.json）を1時間おきに作り直す。課金0。
+  tick_every 240 && ( python3 "$REPO/tools/saifu_kanmon.py" --nikki >> "$REPO/status/saifu_kanmon.log" 2>&1 & ) >/dev/null 2>&1
   # ④b 鬼監督(Codex)個別審査：1件ずつ投げた分(oni_codex.py nage)の返事を拾う。
   #    ★2171番（2026-10-06）実測で発覚：この hirou は「心臓から毎周回」と設計書
   #    （oni_codex.py 冒頭コメント）に書かれていたのに、心臓に一度も登録されていなかった。
@@ -623,6 +630,52 @@ while :; do
   #   読むだけ（0円）。20分おき。00_現在地.md のまとめ書きは1時間おきに起きて、22時以降・変化があった時だけ1日1回。
   tick_every 80 && ( python3 "$REPO/tools/vault_kanmon.py" > "$REPO/status/vault_kanmon/run.log" 2>&1 & ) >/dev/null 2>&1
   tick_every 240 && ( python3 "$REPO/tools/genzaichi_matome.py" >> "$REPO/status/vault_kanmon/matome.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-11 テザリングの関所。たまごさん「Wi-Fiが重すぎてテザリング中＝通信量が限られる」
+  #   テザリング中は push／yt-dlp／大量取得／朗読ループ／Playwright／Googleドライブを止め、Wi-Fiに戻ったら自動で再開。1分おき。
+  tick_every 4  && ( python3 "$REPO/tools/tethering_kanmon.py" > /dev/null 2>> "$REPO/status/tethering.log" & ) >/dev/null 2>&1
+  # 2026-10-11 空き容量の番人。たまごさん「30GBを切ったらDispatchに警告、20GBを切ったら新規発車を止める」
+  #   空き668MB（500GB中）まで落ちた事故を受けて。statvfsを1回読むだけ（0円）。1分おき。
+  #   10GB未満なら下の救急（作り直せるキャッシュだけ消す・測る）を自動で起こす。
+  # 2026-10-15 固まる手前の見張り（ロード≥コア×3・スワップ≥95%・空きメモリ<5%で新規発車停止＋重い走査停止＋Dispatchへ1行）。1分おき
+  { tick_every 4 || [ -f "$REPO/status/teishi.go" ]; } && ( python3 "$REPO/tools/fuka_mihari.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  tick_every 4  && ( python3 "$REPO/tools/youryou_mihari.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_kyuukyuu.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  #   控え箱(status/_1142_gomi)が上限なしで10.8GBに太っていた主犯。古い控えを gzip（消さない）。10分おき。
+  { tick_every 40 || [ -f "$REPO/status/gomi_assyuku.go" ]; } && ( rm -f "$REPO/status/gomi_assyuku.go"; python3 "$REPO/tools/gomi_assyuku.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_kyuukyuu2.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_hakobu3.go" ] && ( python3 "$REPO/tools/youryou_hakobu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  # 2026-10-12 作業場と制作の中間ファイルを本体に溜めない（push済みは消す・未保存はiMac HDDへ写して消す）。1時間おき。
+  # 2026-10-14 gitの書きかけパックを消す・自動gcを止めて1日1回だけ最後まで回す（打ち切られたgcが1時間2GBずつ食っていた）
+  # 2026-10-14 Vaultを本体に置いたままにする（容量不足でiCloudに追い出された分を取り戻す）。1時間おき。
+  tick_every 240 && ( python3 "$REPO/tools/obsidian_mamoru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  #   2026-10-14 1時間→10分おきへ（子セッションが /private/tmp に push 用の作業場を1日7GB置いていく速さに合わせる）
+  tick_every 40 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  # 2026-10-15 使ったらしまう係（1日1回＋status/shimau.go で今すぐ）。測る・作り直せるものを片付ける・HDDの置き場を日数で片付ける
+  { tick_every 240 || [ -f "$REPO/status/shimau.go" ]; } && ( python3 "$REPO/tools/shimau.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/worktree_taihi.go" ] && ( rm -f "$REPO/status/worktree_taihi.go"; python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_tmp.go" ] && ( python3 "$REPO/tools/youryou_tmp.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_soto.go" ] && ( python3 "$REPO/tools/youryou_soto.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_hanniti.go" ] && ( python3 "$REPO/tools/youryou_hanniti.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/obsidian_modosu3.go" ] && ( python3 "$REPO/tools/obsidian_modosu3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/obsidian_modosu2.go" ] && ( python3 "$REPO/tools/obsidian_modosu2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/obsidian_modosu.go" ] && ( python3 "$REPO/tools/obsidian_modosu.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_gc7.go" ] && ( python3 "$REPO/tools/youryou_gc7.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_gdrive6.go" ] && ( python3 "$REPO/tools/youryou_gdrive6.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_kyuukyuu5.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu5.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_kyuukyuu4.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu4.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_ps.go" ] && ( python3 "$REPO/tools/youryou_ps.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_nozoki.go" ] && ( python3 "$REPO/tools/youryou_nozoki.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_shirabe3.go" ] && ( python3 "$REPO/tools/youryou_shirabe3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  [ -f "$REPO/status/youryou_hakaru2.go" ] && ( python3 "$REPO/tools/youryou_hakaru2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+
+  # 2026-10-14 Claudeの生成物の納品先＝Googleドライブ「AI生成物/Claude/<案件>」。たまごさん「iCloudは置き場に使わない」
+  #   アプリが使えない間はiMac HDD「Claude上げ待ち」に積み、10分おきにドライブへ上げられるか試す（0円）。結果 status/public/claude_nouhin.json
+  tick_every 40 && ( python3 "$REPO/tools/claude_nouhin.py" flush >/dev/null 2>> "$REPO/status/claude_nouhin.log" & ) >/dev/null 2>&1
+
+  # 2026-10-14 制作依頼Issue（題名【制作依頼】）の素材を工場が自分で拾う（Downloads/Desktop/ドライブ受け取り/Release・添付URL）。
+  #   たまごさんの手はダウンロード1回だけ。結果 status/public/sozai_hiroi.json・Issueへ受領コメント1回（地球観察日記 第2作 #975）
+  tick_every 20 && ( python3 "$REPO/tools/sozai_hiroi.py" >/dev/null 2>> "$REPO/status/sozai_hiroi.log" & ) >/dev/null 2>&1
 
   # ログが太らないように、たまに刈る
   if [ "$(( $(date +%s) % 3600 ))" -lt 20 ]; then

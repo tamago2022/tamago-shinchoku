@@ -282,6 +282,19 @@ def _verify(st, it):
         st["lastResult"] = "出た"
         st["lastAfterKey"] = now_key
         st["stuckStreak"] = 0  # 直ったので連続詰まり記録をリセット（次回また静かに数え直す）
+        # 2026-10-11 たまごさん「こういう動きのチェックも毎回ちゃんとして。重いは悪」：
+        #   公開が出たら毎回、iPhone相当・4G相当で画面の切り替えを測る（画面に出さない・無音・同時に1つ）。
+        #   不合格なら進捗表に赤帯（status/public/kirikae.json）。
+        if it["name"] == "ごきげん補給所":
+            try:
+                import subprocess
+                here = os.path.dirname(os.path.abspath(__file__))
+                subprocess.Popen(["/bin/sh", "-c",
+                                  "sleep 30; node '%s/kirikae_sokutei.mjs' --public; node '%s/kirikae_sokutei.mjs' --stale --public"
+                                  % (here, here)],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+            except Exception:
+                pass
         try:  # ★ズレ関所：出た本番を測る（別プロセス）。結果は status/zure_kanmon/prod.json
             import subprocess
             subprocess.Popen([sys.executable, os.path.join(HERE, "zure_kanmon.py"), "prod"],
