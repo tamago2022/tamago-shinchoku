@@ -22,4 +22,5 @@
 ## サイトを後退させない関所（101885番・2026-10-16・たまごさん指名）
 - **軽くした・90点にしたサイトが、次の変更で重くなったり見た目が崩れて戻るのを、出す前に機械で止める。** 物差し＝トップ／棚／曲ページ／マガジンの「1ページ目の時間（4G相当・工場のChromium headless shell）」「送る量（自サイトから送るJS/CSS/データ/画像のKB）」「見た目の点数（design-critique 5観点のうち機械で測れる4観点・40点満点。創造性は測れないので null）」。基準値は `status/public/koutai_kijun.json`、良くなった時だけ更新。
 - **公開の口に入っている3か所：** ①main合流前＝`python3 tools/koutai_kanmon.py --check --output <.output>`（子セッションの枷22）、②Lovable公開押し係 `tools/kohyou_osu.py`（直近のローカル検査がFAILなら押さない `--pre-publish`）、③マガジン `tools/magazine/put_prod.sh`（`--check-files`）。公開後は見る係 `tools/kohyou_kanshi.py` が本番を測り直し（`--after-publish`）、悪化なら作業キューと Dispatch へ票を1行。
+- 物差しの癖（実測 2026-10-16）：時間は Mac の混雑で何倍にもゆれるので、負荷が CPU×0.8 超の時は判定から外して記録だけ残す。送る量は「コード（自サイトのJS+CSS+HTML）+5%」で厳しく、画像・データ込みの総量は +25%（遅延読み込みでゆれる）。見た目は遅延画像の数を点数に入れない。ローカル SSR ビルドがこの Mac で進まない時は本番の写し（`--dist`）か公開後の `--after-publish` が最後の砦。
 - 線は `tools/koutai_kanmon.py` の `SEN` 1か所だけ（時間+10%・送る量+5%・点数−1）。逆テスト `python3 tools/koutai_kanmon.py --self-test`。通した/止めた記録は `status/koutai_kanmon_daicho.jsonl`、最新判定は `status/public/koutai_kanmon.json`。
