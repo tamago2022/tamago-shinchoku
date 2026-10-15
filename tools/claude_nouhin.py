@@ -206,10 +206,23 @@ def _same(a, b):
     return os.path.isfile(b) and filecmp.cmp(a, b, shallow=False)
 
 
+SMALL_MB = 50        # 2026-10-15：文字起こし等の小さな納品は空き30GB未満でも通す（本体を圧迫しない）
+SMALL_MIN_FREE_GB = 10
+
+
+def _chiisai(path):
+    """50MB未満の1ファイルで、空きが10GB以上なら「小さな納品」として通す。"""
+    try:
+        return (os.path.isfile(path) and os.path.getsize(path) < SMALL_MB * 1e6
+                and free_gb() >= SMALL_MIN_FREE_GB)
+    except Exception:
+        return False
+
+
 def put(src, anken=None, sub=None, move=False, saishin=None):
     """上げ待ちへ写す。sub（小分け）は受け付けるが使わない（フォルダは最小限）。フォルダを渡したら中のファイルを1件ずつ。"""
     src = os.path.abspath(src)
-    if free_gb() < MIN_FREE_GB:
+    if free_gb() < MIN_FREE_GB and not _chiisai(src):
         return {"ok": False, "why": "空き容量30GB未満のため止めた"}
     if not os.path.isdir(HDD_ROOT):
         return {"ok": False, "why": "iMac HDD がつながっていない（本体には溜めない）"}
@@ -389,9 +402,13 @@ def flush():
     except Exception as e:
         res["swept_err"] = repr(e)
     base = None
+    _only_small = False
     if free_gb() < MIN_FREE_GB:
         res["state"] = "空き容量30GB未満のため止めた"
-    else:
+        if free_gb() >= SMALL_MIN_FREE_GB and os.path.isdir(QUEUE) and any(
+                os.path.getsize(os.path.join(QUEUE, r)) < SMALL_MB * 1e6 for r in queued()):
+            _only_small = True   # 2026-10-15：小さな納品（文字起こし等）だけは上げる
+    if free_gb() >= MIN_FREE_GB or _only_small:
         base, why = drive_alive()
         res["drive"] = why
         if not base:
@@ -399,6 +416,8 @@ def flush():
         elif os.path.isdir(QUEUE):
             for rel in queued():
                 s = os.path.join(QUEUE, rel)
+                if _only_small and os.path.getsize(s) >= SMALL_MB * 1e6:
+                    continue
                 t = os.path.join(base, rel)
                 rc, out = _run(["mkdir", "-p", os.path.dirname(t)], 30)
                 rc, out = _run(["cp", s, t], 900) if rc == 0 else (rc, out)
