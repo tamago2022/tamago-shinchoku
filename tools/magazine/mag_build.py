@@ -31,6 +31,8 @@ EXTRA_CSS = '''
 .cw .say__ic img{width:100%;height:100%;object-fit:cover}
 .cw .say__bub{background:rgba(237,230,214,.08);border-radius:4px 16px 16px 16px;padding:12px 16px;font:500 15px/1.8 "Hiragino Sans","Yu Gothic",sans-serif}
 .cw .cw-chapter--paper .say__bub{background:rgba(29,37,54,.07)}
+.cw .cw-chead__catch{font:700 clamp(24px,6.6vw,40px)/1.4 "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.04em;margin:18px 0 0}
+.cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .cw .bridge{margin:2.2em 0 0;padding-top:1.4em;border-top:1px solid var(--line);font-size:14.5px;color:var(--mute)}
 .cw .cw-chapter--paper .bridge{color:var(--paper-mute);border-color:rgba(29,37,54,.16)}
 '''
@@ -58,7 +60,7 @@ def video(v, size='main'):
     return (f'<figure class="cw-video cw-video--{size}"><div class="cw-video__frame"><button type="button" class="cw-video__cover" '
             f'data-yt-cover="{v["id"]}" aria-label="ここで再生：{e(v["artist"])}「{e(v["song"])}」"><img src="https://i.ytimg.com/vi/{v["id"]}/{q}.jpg" alt="" loading="lazy" decoding="async"/>'
             f'<span class="cw-video__role">{e(v["role"])}</span><span class="cw-video__play" aria-hidden="true">{PLAY}</span></button></div>'
-            f'<figcaption><span class="cw-video__name"><b>{e(v["artist"])}</b><i>「{e(v["song"])}」</i></span><span class="cw-video__cap">{v["cap"]}</span>'
+            f'<figcaption><span class="cw-video__name"><b>{e(v["artist"])}</b><i>「{e(v["song"])}」</i></span>' + (f'<span class="cw-video__cap">{v["cap"]}</span>' if v.get("cap") else '')
             + (f'<a href="{e(v["page"])}" class="cw-video__page">この曲のページへ →</a>' if v.get("page") else '') + '</figcaption></figure>')
 
 
@@ -66,9 +68,23 @@ def say(t):
     return f'<div class="say"><div class="say__ic"><img src="{AVATAR}" alt="" loading="lazy"/></div><div class="say__bub">{t}</div></div>'
 
 
+def chead(c):
+    """各章の頭（全マガジン共通の型・2026-10-16 たまごさん指示）：
+    1行目 アーティスト名／曲タイトル（今の見出しの文字サイズ）→ 2行目 アルバム／年（小さく）→ 見出し＝その曲を一発で表すキャッチーな一言。
+    spec では artist / song / album / year / catch を書く。古い spec（en / title / year）も同じ並びに読み替える。"""
+    if c.get('artist'):
+        meta1 = f'{c["artist"]} ／ {c["song"]}'
+        meta2 = ' ／ '.join(x for x in [c.get('album', ''), c.get('year', '')] if x)
+    else:
+        meta1, meta2 = c['title'].replace(' - ', ' ／ ', 1), c.get('year', '')
+    catch = c.get('catch') or c.get('en', '')
+    return (f'<header class="cw-chead"><span class="cw-chead__no" aria-hidden="true">{c["no"]}</span><div>'
+            f'<p class="cw-chead__title">{e(meta1)}</p>' + (f'<p class="cw-chead__year">{e(meta2)}</p>' if meta2 else '')
+            + (f'<h2 class="cw-chead__catch">{e(catch)}</h2>' if catch else '') + '</div></header>')
+
+
 def chapter(c, paper=False):
-    parts = [f'<header class="cw-chead"><span class="cw-chead__no" aria-hidden="true">{c["no"]}</span><div><p class="cw-chead__en">{e(c["en"])}</p>'
-             f'<h2 class="cw-chead__title">{e(c["title"])}</h2><p class="cw-chead__year">{e(c["year"])}</p></div></header>',
+    parts = [chead(c),
              f'<div class="cw-main">{video(c["main"])}</div>',
              '<div class="cw-body" style="margin-top:40px">' + ''.join(f'<p>{p}</p>' for p in c['body']) + '</div>']
     if c.get('pull'):
@@ -84,14 +100,14 @@ def chapter(c, paper=False):
 
 
 # 参考動画コーナー（全マガジン共通の末尾・Genspark手紙 issue#7 の決まり6・2026-10-15）
-REF = [dict(id='hmGwwZ5hjbI', role='きっかけの動画', artist='汝、ヒトを知れ', song='なぜ、大人になると新しい曲を聴かなくなるのか【鳥類学×音楽心理学】', cap='歌を覚える季節は終わらない')]
+REF = [dict(id='hmGwwZ5hjbI', role='最後にもう1本', artist='汝、ヒトを知れ', song='なぜ、大人になると新しい曲を聴かなくなるのか【鳥類学×音楽心理学】', cap='')]
 
 
 def ref_section(m):
     r = m.get('ref', REF)
     if not r:
         return ''
-    return ('<section class="cw-ref" aria-label="参考動画" style="margin-top:56px"><p class="cw-more__label">参考動画 — この記事を書くきっかけになった動画</p>'
+    return ('<section class="cw-ref" aria-label="参考動画" style="margin-top:56px"><p class="cw-more__label">最後にもう1本 — なぜ、大人になると新しい曲を聴かなくなるのか</p>'
             '<div class="cw-more__grid">' + ''.join(video(v, 'small') for v in r) + '</div></section>')
 
 
@@ -105,7 +121,7 @@ def build(m):
     mp = ''.join(f'<li><a href="{e(v.get("page") or SONG_PAGES.get(v["id"]) or ("#ch" + c["no"]))}"><span class="cw-map__img"><img src="https://i.ytimg.com/vi/{v["id"]}/mqdefault.jpg" alt="" loading="lazy" decoding="async"/><em>{i:02d}</em></span>'
                  f'<span class="cw-map__txt" data-card-face="" data-card-music="1"><small data-card-genre="">{e(v["role"])}</small><b data-card-heading="">{e(v["artist"])}「{e(v["song"])}」</b><i data-card-desc="">{v["cap"]}</i></span></a></li>'
                  for i, (c, v) in enumerate(((c, v) for c in m['chapters'] for v in [c['main']] + c.get('more', [])), 1))
-    others = ''.join(f'<li><a href="{e(OTHERS[k][0])}"><small>{e(OTHERS[k][1])}</small><b>{e(OTHERS[k][2])}</b><span aria-hidden="true">→</span></a></li>' for k in OTHERS if k != m['key'])
+    others = ''.join(f'<li><a href="{e(OTHERS[k][0])}"><small>{e(OTHERS[k][1])}</small><b>{e(OTHERS[k][2])}</b><span aria-hidden="true">→</span></a></li>' for k in OTHERS if k != m['key'] and k not in m.get('others_skip', []))
     srcs = ''.join(f'<li><a href="{e(u)}" target="_blank" rel="noopener noreferrer">{e(l)}</a></li>' for l, u in m['sources'])
     hero = m['hero']
     return f'''<!DOCTYPE html><!-- tamago-dark 2 （GitHub Pages の暗くする機械に触らせない：シティポップ特集の型そのままの配色） --><html lang="ja"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="robots" content="noindex"/><meta name="tamago-magazine" content="story"/>
@@ -113,15 +129,32 @@ def build(m):
 <header class="cw-hero"><div class="cw-hero__bg" aria-hidden="true"><img src="https://i.ytimg.com/vi/{hero}/maxresdefault.jpg" alt="" decoding="async"/></div><nav class="cw-nav" aria-label="ページ上部"><a href="https://joy-relief-station.lovable.app/">ごきげん補給所</a><span>Magazine Story</span></nav><div class="cw-hero__body"><p class="cw-eyebrow">{e(m["eyebrow"])}</p><h1 class="cw-hero__title">{m["h1"]}</h1><p class="cw-hero__lead">{m["lead"]}</p><div class="cw-hero__rule"></div></div></header>
 <div class="cw-wrap"><section class="cw-toc" aria-label="この特集の章"><p class="cw-toc__label">IN THIS ISSUE</p><ul class="cw-toc__grid">{toc}</ul></section><section class="cw-open"><p class="cw-big">{m["big"]}</p>{"".join(f"<p>{p}</p>" for p in m["open"])}{('<p class="cw-door">' + m["door"] + '</p>') if m.get("door") else ""}</section></div>
 {chs}
-<div class="cw-wrap"><section class="cw-close">{"".join(f"<p>{p}</p>" for p in m["close"])}</section>{ref_section(m)}<section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label">OTHER MAGAZINES — ほかの特集</p><ul class="cw-other__grid">{others}</ul></section><section class="cw-mapwrap" aria-label="曲の一覧"><p class="cw-toc__label">THE MAP — {m.get("songs_n", len(allv))} SONGS</p><ol class="cw-map">{mp}</ol></section><section class="cw-sources" aria-label="出典"><h3>SOURCES</h3><ul>{srcs}</ul><p class="cw-note">{m["note"]}</p></section></div></main></div>
+<div class="cw-wrap"><section class="cw-close">{"".join(f"<p>{p}</p>" for p in m["close"])}</section>{ref_section(m)}<section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label">つながっている特集</p><ul class="cw-other__grid">{others}</ul></section>{('<section class="cw-mapwrap" aria-label="曲の一覧"><p class="cw-toc__label">THE MAP — ' + str(m.get("songs_n", len(allv))) + ' SONGS</p><ol class="cw-map">' + mp + '</ol></section>') if m.get("map", True) else ""}<section class="cw-sources" aria-label="出典"><h3>SOURCES</h3><ul>{srcs}</ul>{('<p class="cw-note">' + m["note"] + '</p>') if m.get("note") else ""}</section></div></main></div>
 {SCRIPT}
 </body></html>'''
+
+
+# 読者に出さない「制作側の都合・注記」（2026-10-16 たまごさん指示・全マガジン共通）。見つけたら書き出さずに止まる。
+SEISAKU_NG = ['oEmbed', '配信元を確か', '引用していません', '引用してません', '転載', '万再生', '回以上再生', '再生されている', '使っています', '置いています',
+              '小さく添え', 'ここに残す', 'メインに置く', 'メインの映像', '旬の姿で見たい', '証言は貴重', '一般の方の投稿', '字幕つき', '字幕付き', '字幕が付い', '字幕がつい']
+
+
+def kanmon(m, h):
+    """出す前の関所（write の中で必ず走る）。①制作側の注記が本文・キャプション・吹き出しに無い ②埋め込みが mute でない。"""
+    import re as R
+    txt = R.sub(r'<script.*?</script>|<style.*?</style>', '', h, flags=R.S)
+    bad = [w for w in SEISAKU_NG if w in txt]
+    if bad:
+        raise SystemExit('★関所で停止（制作側の注記が読者に見える）：' + '、'.join(bad))
+    if R.search(r'[?&]mute=1', h):
+        raise SystemExit('★関所で停止：YouTube が mute=1 になっている（音はふつうに出す）')
 
 
 def write(m):
     """確認ページ（share/check）と、本番に置く写し（status/magazine_prod/<PRODの名前>）の両方を書く。
     本番の写しは joy-relief-station の public/magazine/ にそのまま置く（assets も同じ相対の場所）。"""
     h = build(m)
+    kanmon(m, h)
     p = os.path.join(REPO, 'share/check', m['file'])
     open(p, 'w', encoding='utf-8').write(h)
     d = os.path.join(REPO, 'status/magazine_prod')
@@ -139,7 +172,7 @@ def write(m):
 I18N_LANGS = [('ja', '日本語', 'JP'), ('en', 'English', 'EN'), ('zh-Hans', '中文', 'ZH'), ('es', 'Español', 'ES'), ('ko', '한국어', 'KO')]
 I18N_SEL = ['h1', 'h2', 'h3', 'p', 'blockquote', 'figcaption .cw-video__cap', '.cw-video__role', '.cw-video__name b', '.cw-video__name i', 'a.cw-video__page',
             '.cw-toc__grid span', '.cw-map__txt small', '.cw-map__txt b', '.cw-map__txt i', '.cw-other__grid small', '.cw-other__grid b', '.cw-nav span',
-            '.cw-interlude figcaption', '.cw-sources li a']
+            '.cw-interlude figcaption', '.cw-sources li a', '.say__bub']
 I18N_CSS = ('.cw .cw-lang{position:relative;display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 8px;border-radius:999px;color:inherit;opacity:.8}'
             '.cw .cw-lang:hover{background:rgba(255,255,255,.1)}.cw .cw-lang b{font:600 11px/1 system-ui,sans-serif;letter-spacing:.06em}'
             '.cw .cw-lang select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}')
@@ -151,29 +184,33 @@ def i18n_switch():
     return f'<label class="cw-lang" title="言語 / Language">{I18N_GLOBE}<b data-lang-code>JP</b><select aria-label="言語 / Language">{opts}</select></label>'
 
 
-def i18n_script(tr):
+def i18n_script(tr, url=None):
+    """tr を埋め込む（url=None）か、日本語以外を選んだときだけ url の JSON を読みに行く（ページを重くしない）。"""
     import json as J
     codes = {c: s for c, _, s in I18N_LANGS}
-    return ('<script>(function(){var L=' + J.dumps(tr, ensure_ascii=False).replace('</', '<\\/') + ',C=' + J.dumps(codes) + ',SEL=' + J.dumps(I18N_SEL) + ';'
+    data = 'null' if url else J.dumps(tr, ensure_ascii=False).replace('</', '<\\/')
+    return ('<script>(function(){var L=' + data + ',U=' + J.dumps(url) + ',C=' + J.dumps(codes) + ',SEL=' + J.dumps(I18N_SEL) + ';'
             'var M=document.querySelector("main.cw");if(!M)return;var els=[],n=0;'
             'if(M.querySelector("[data-i18n]")){els=[].slice.call(M.querySelectorAll("[data-i18n]"));}else{SEL.forEach(function(q){M.querySelectorAll(q).forEach(function(el){'
             'if(el.closest("[data-i18n]"))return;if(!/[\\u3040-\\u30ff\\u4e00-\\u9fff]/.test(el.textContent))return;n++;el.setAttribute("data-i18n","k"+n);els.push(el);});});}'
             'els.forEach(function(el){el._ja=el.innerHTML;});var T0=document.title;'
-            'function ap(lg){if(!C[lg])lg="ja";var d=L[lg]||{};els.forEach(function(el){var v=d[el.getAttribute("data-i18n")];if(lg==="ja"||!v){el.innerHTML=el._ja;return;}'
+            'function ap(lg){if(!C[lg])lg="ja";if(lg!=="ja"&&!L&&U){fetch(U).then(function(r){return r.json()}).then(function(d){L=d;ap(lg)}).catch(function(){});return;}'
+            'var d=(L&&L[lg])||{};els.forEach(function(el){var v=d[el.getAttribute("data-i18n")];if(lg==="ja"||!v){el.innerHTML=el._ja;return;}'
             'var t=document.createElement("div");t.innerHTML=el._ja;var a=[].map.call(t.querySelectorAll("a.cw-src"),function(x){return x.outerHTML});'
             'el.innerHTML=v.replace(/\\[\\[(\\d+)\\]\\]/g,function(_,i){return a[i-1]||""});});'
-            'document.title=(L._title&&L._title[lg])||T0;document.documentElement.lang=lg;M.setAttribute("lang",lg);'
+            'document.title=(L&&L._title&&L._title[lg])||T0;document.documentElement.lang=lg;M.setAttribute("lang",lg);'
             'document.querySelectorAll("[data-lang-code]").forEach(function(b){b.textContent=C[lg]});document.querySelectorAll(".cw-lang select").forEach(function(s){s.value=lg});}'
             'var q=(location.search.match(/[?&]lang=([\\w-]+)/)||[])[1],s=null;try{s=localStorage.getItem("gokigen-lang")}catch(e){}'
             'ap(q||s||"ja");document.querySelectorAll(".cw-lang select").forEach(function(sel){sel.addEventListener("change",function(){try{localStorage.setItem("gokigen-lang",sel.value)}catch(e){}ap(sel.value);});});'
             '})();</script>')
 
 
-def add_i18n(h, tr):
-    """組み上がったHTMLに言語切替を入れる（build() が m['i18n'] を見て呼ぶ。直接組んだページにも使える）。"""
+def add_i18n(h, tr, url=None):
+    """組み上がったHTMLに言語切替を入れる（build() が m['i18n'] を見て呼ぶ。直接組んだページにも使える）。
+    url を渡すと訳は別ファイル（<本番名>.i18n.json）から、日本語以外を選んだときだけ読む。"""
     h = h.replace('<span>Magazine Story</span></nav>', '<span>Magazine Story</span>' + i18n_switch() + '</nav>', 1)
     h = h.replace('</style>', I18N_CSS + '</style>', 1)
-    return h.replace('</body>', i18n_script(tr) + '</body>', 1)
+    return h.replace('</body>', i18n_script(tr, url) + '</body>', 1)
 
 
 def i18n_keys(h):
@@ -195,14 +232,114 @@ def i18n_keys(h):
 _build_plain = build
 
 
-def build(m):  # noqa: F811  多言語つき
+def i18n_name(m):
+    return PROD[m['key']].replace('.html', '.i18n.json')
+
+
+def build(m):  # noqa: F811  多言語つき（訳は別ファイル。日本語の読者には1バイトも増やさない）
     h = _build_plain(m)
     if m.get('i18n'):
-        h = add_i18n(h, m['i18n'])
+        h = add_i18n(h, m['i18n'], i18n_name(m))
     return h
+
+
+_write_plain = write
+
+
+def write(m):  # noqa: F811  訳のJSONも、確認ページと本番の写しの両方に置く
+    p = _write_plain(m)
+    if m.get('i18n'):
+        import json as J
+        t = J.dumps(m['i18n'], ensure_ascii=False, separators=(',', ':'))
+        for d in (os.path.join(REPO, 'share/check'), os.path.join(REPO, 'status/magazine_prod')):
+            open(os.path.join(d, i18n_name(m)), 'w', encoding='utf-8').write(t)
+    return p
 
 
 if __name__ == '__main__':
     import sys as _s, json as _j
     if len(_s.argv) == 3 and _s.argv[1] == '--i18n-keys':
         print(_j.dumps(i18n_keys(open(_s.argv[2], encoding='utf-8').read()), ensure_ascii=False, indent=1))
+
+
+# ===== 共通部品：ページの終わり（全マガジン共通の型・2026-10-16 たまごさん確定）=====
+# 並び：本文（締め・余韻）→ THE MAP（ある号だけ）→ きっかけの動画（怒れる人々と同じ大きさ＝cw-note の小さい1枚）→ 出典 → ほかの特集（ページの一番下）。
+# 「つながっている特集」の欄は置かない。見出しの言い方は「OTHER MAGAZINES — ほかの特集」（シティポップ特集と同じ）に統一。
+# 部品はここ1か所。各号は unify_tail() を通すだけ（mag_build で組む号は build() が自動で通す。直接組んだ号もこれで組み直す）。
+TAIL_CSS = '.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}'
+OTHERS_LABEL = 'OTHER MAGAZINES — ほかの特集'
+OTHERS['hoshikatsu'] = (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか')
+OTHERS_ORDER = ['hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
+COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
+    'c_kk_label': ('▼ The video that started this article', '▼ 促成这篇文章的视频', '▼ El video que dio origen a este artículo', '▼ 이 글을 쓰게 된 계기의 영상'),
+    'c_kk_role': ('Where it started', '起因的视频', 'El video que lo empezó', '계기가 된 영상'),
+    'c_kk_title': ('"Why do we stop listening to new music as adults? [Ornithology × Music Psychology]" (Nanji, Hito wo Shire)', '《为什么长大后就不再听新歌【鸟类学×音乐心理学】》（汝，知人）', '«¿Por qué de adultos dejamos de escuchar música nueva? [Ornitología × Psicología musical]» (Nanji, Hito wo Shire)', '「왜 어른이 되면 새 노래를 듣지 않게 될까 【조류학×음악심리학】」(너 자신, 인간을 알라)'),
+    'c_kk_note': ('"The season for learning songs never ends."', '“学歌的季节永不结束。”', '«La estación de aprender canciones nunca termina».', '\'노래를 익히는 계절은 끝나지 않는다.\''),
+    'c_ot_label': ('OTHER MAGAZINES — more features', 'OTHER MAGAZINES — 其他专题', 'OTHER MAGAZINES — más especiales', 'OTHER MAGAZINES — 다른 특집'),
+    'c_ot_hoshikatsu_s': ('Arranger / composer', '编曲家・作曲家', 'Arreglista y compositor', '편곡가・작곡가'),
+    'c_ot_hoshikatsu_b': ('Do You Know Katz Hoshi?', '你知道星胜吗', '¿Conoces a Katz Hoshi?', '호시 카츠를 아십니까'),
+    'c_ot_harakami_b': ('Do You Know Rei Harakami?', '你知道Rei Harakami吗', '¿Conoces a Rei Harakami?', '레이 하라카미를 아십니까'),
+    'c_ot_ikareru_s': ('Rock feature vol.1', '摇滚企划 vol.1', 'Especial rock vol.1', '록 기획 vol.1'),
+    'c_ot_ikareru_b': ('Angry People', '愤怒的人们', 'Gente furiosa', '분노한 사람들'),
+    'c_ot_takoukan_s': ('Why do we listen to music? Part 1', '人为什么听音乐 第1回', '¿Por qué escuchamos música? Parte 1', '사람은 왜 음악을 듣는가 제1회'),
+    'c_ot_takoukan_b': ('Because we want to feel good — euphoric pop', '因为想变快乐 ― 幸福感流行乐', 'Porque queremos sentirnos bien — pop eufórico', '즐거워지고 싶어서 ― 다행감 팝스'),
+    'c_ot_josh_s': ('From Happy End\'s "Kaze wo Atsumete"', '从Happy End《风之聚集》开始', 'Desde «Kaze wo Atsumete» de Happy End', '핫피 엔드 「바람을 모아서」에서'),
+    'c_ot_josh_b': ('Singing with an instrument: Josh Turner', '自弹自唱・Josh Turner篇', 'Cantar y tocar: Josh Turner', '弾き語り・조시 터너 편'),
+    'c_ot_hikigatari_s': ('A piano, a guitar, a single voice', '一架钢琴、一把吉他、一个声音', 'Un piano, una guitarra, una sola voz', '피아노, 기타, 목소리 하나'),
+    'c_ot_hikigatari_b': ('Songs that shake the heart, voice and instrument', '震撼心灵的自弹自唱', 'Canciones que estremecen, voz e instrumento', '마음을 울리는 弾き語り'),
+    'c_ot_citypop_b': ('The world found Japan\'s night first.', '世界先发现的，日本之夜。', 'El mundo descubrió primero la noche de Japón.', '세계가 먼저 발견한, 일본의 밤.'),
+}
+_LG4 = ['en', 'zh-Hans', 'es', 'ko']
+
+
+def common_i18n():
+    out = {l: {} for l in _LG4}
+    for k, v in COMMON_I18N.items():
+        for l, t in zip(_LG4, v):
+            out[l][k] = t
+    return out
+
+
+def kikkake_html():
+    return ('<div class="cw-note cw-kikkake"><p data-i18n="c_kk_label">▼この記事を書くきっかけになった動画</p>'
+            '<figure class="cw-video cw-video--small"><div class="cw-video__frame"><button type="button" class="cw-video__cover" data-yt-cover="hmGwwZ5hjbI" aria-label="ここで再生：汝、ヒトを知れ「なぜ、大人になると新しい曲を聴かなくなるのか」">'
+            '<img src="https://i.ytimg.com/vi/hmGwwZ5hjbI/mqdefault.jpg" alt="" loading="lazy" decoding="async"/><span class="cw-video__role" data-i18n="c_kk_role">きっかけの動画</span>'
+            f'<span class="cw-video__play" aria-hidden="true">{PLAY}</span></button></div><figcaption><span class="cw-video__name"><i data-i18n="c_kk_title">「なぜ、大人になると新しい曲を聴かなくなるのか【鳥類学×音楽心理学】」（汝、ヒトを知れ）</i></span></figcaption></figure>'
+            '<p data-i18n="c_kk_note">「歌を覚える季節は終わらない」</p></div>')
+
+
+def others_html(key):
+    li = []
+    for k in OTHERS_ORDER:
+        if k == key or k not in OTHERS:
+            continue
+        u, sm, b = OTHERS[k]
+        ks = f' data-i18n="c_ot_{k}_s"' if f'c_ot_{k}_s' in COMMON_I18N else ''
+        kb = f' data-i18n="c_ot_{k}_b"' if f'c_ot_{k}_b' in COMMON_I18N else ''
+        li.append(f'<li><a href="{e(u)}"><small{ks}>{e(sm)}</small><b{kb}>{e(b)}</b><span aria-hidden="true">→</span></a></li>')
+    return (f'<section class="cw-other" aria-label="ほかの特集"><p class="cw-toc__label" data-i18n="c_ot_label">{OTHERS_LABEL}</p>'
+            f'<ul class="cw-other__grid">{"".join(li)}</ul></section>')
+
+
+def unify_tail(h, key):
+    """ページの終わりを共通部品で組み直す（何度通しても同じ結果になる）。"""
+    import re as R
+    # 1) 古い部品を外す：ほかの特集／つながっている特集、参考動画（グリッド版・cw-note版）、前回の共通部品
+    h = R.sub(r'<section[^>]*class="cw-other"[^>]*>.*?</section>', '', h, flags=R.S)
+    h = R.sub(r'<section[^>]*class="cw-ref"[^>]*>.*?</section>', '', h, flags=R.S)
+    h = R.sub(r'<div class="cw-note[^"]*">(?:(?!</div></div>|<div class="cw-note).)*?hmGwwZ5hjbI.*?</figure>.*?</div>', '', h, flags=R.S)
+    # 2) きっかけの動画を出典のすぐ上、ほかの特集を出典のすぐ下（ページの一番下）へ
+    m = R.search(r'<section[^>]*class="cw-sources"[^>]*>.*?</section>', h, flags=R.S)
+    if not m:
+        raise SystemExit('出典(cw-sources)が無いページ: ' + key)
+    h = h[:m.start()] + kikkake_html() + m.group(0) + others_html(key) + h[m.end():]
+    if TAIL_CSS not in h:
+        h = h.replace('</style>', TAIL_CSS + '</style>', 1)
+    return h
+
+
+_build_i18n = build
+
+
+def build(m):  # noqa: F811  終わりの並びを共通部品で
+    return unify_tail(_build_i18n(m), m['key'])

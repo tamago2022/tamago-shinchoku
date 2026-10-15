@@ -240,15 +240,16 @@ def omoi():
 
 def main():
     force = os.path.exists(GO)
+    try:
+        recent = time.time() - os.path.getmtime(STAMP) < 20 * 3600
+    except Exception:
+        recent = False
     if force:
         os.remove(GO)
-    else:
-        try:
-            if time.time() - os.path.getmtime(STAMP) < 20 * 3600:
-                return
-        except Exception:
-            pass
-    open(STAMP, "w").close()
+    elif recent:
+        return
+    if not recent:
+        open(STAMP, "w").close()   # 「測る」（重い du）は20時間に1回。shimau.go の臨時便は片付けだけ
     try:
         os.setsid()
     except Exception:
@@ -261,7 +262,9 @@ def main():
     step(res, "HDD の置き場（日数で）", hdd_okiba_souji)
     step(res, "場所ごとの上限（youryou_jougen）", jougen_run)
     step(res, "動画・音声の中間ファイル（chukan_shimau）", lambda: __import__("chukan_shimau").run())
-    if omoi() and not force:
+    if recent:
+        res["state"] = "片付けだけ（測るのは20時間に1回）"
+    elif omoi():
         res["state"] = "測るのは重いので次回"
     else:
         res["state"] = "測っている"
