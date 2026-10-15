@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """Claudeの生成物の納品先は、ここ1か所で決める（2026-10-14決定・2026-10-15たまごさんの置き場ルール）。
 
-  納品先（正本）：Googleドライブ「マイドライブ/AI生成物/Claude/<案件>/」＝Claude専用の置き場はここ1か所
+  納品先（正本）：Googleドライブ「マイドライブ/AI制作物/Claude/<案件>/」＝Claude専用の置き場はここ1か所
+                   場所はフォルダID（CLAUDE_FOLDER_ID）で探す＝移されても追いかける。フォルダは作らない
   案件フォルダ   ：ANKEN（下）。迷ったら「その他」。動画（棒人間・HowItHolds・パイロット・キャラ試作）は「棒人間」。
                    HowItHolds は棒人間プロジェクトの一部＝HowItHolds 名のフォルダは作らない。
   フォルダは最小限：案件フォルダの下に小分けを作らない（あれば中身を案件フォルダへ移して空にする）。
@@ -10,7 +11,7 @@
   ファイル名     ：「日付_★最新_種類_中身.拡張子」例「2026-10-15_★最新_動画_EP01男の子_音軽い版_540p.mp4」
                    種類＝動画／静止画／音声／文書（拡張子で自動）。古い版は★を外す（put --saishin で上げると、
                    同じフォルダの同じ中身名（種類の次の語）から★を外す）。
-  一覧           ：「AI生成物/Claude/00_一覧_新しい順.csv」（★最新を上にまとめ、その下を新しい順。リンク付き）
+  一覧           ：「Claude/00_一覧_新しい順.csv」（★最新を上にまとめ、その下を新しい順。リンク付き）
   知らせ         ：ドライブに上がった1件ごとに Dispatch へ1行「何を｜ドライブのURL」（status/dispatch_outbox.jsonl）
   使わない置き場 ：Mac本体（~/Documents・デスクトップ）／iCloud Drive
 
@@ -33,7 +34,8 @@ import csv, filecmp, glob, json, os, re, shutil, subprocess, sys, time
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOME = os.path.expanduser("~")
 
-DRIVE_DEST = "AI生成物/Claude"
+DRIVE_DEST = "AI制作物/Claude"        # 今の場所（2026-10-15 たまごさんが「AI制作物」の中へ移した）。目安で、正本は下のID
+CLAUDE_FOLDER_ID = "1HXFiQBrA32BIgXD6F_hpgu9ZwFmZoaXn"   # ドライブの「Claude」フォルダのID＝正本。移されてもこれで探す
 ANKEN = {
     "詩と音楽_僕は見た、未来を待つ人々を": ["僕は見た", "未来を待つ", "bokumita"],
     "ポッドキャスト神回_日本語音源": ["神回", "ソロプレナー", "podcast", "ポッドキャスト", "lex fridman"],
@@ -51,6 +53,7 @@ MIN_FREE_GB = 30
 ICHIRAN = "00_一覧_新しい順.csv"
 OUT = os.path.join(REPO, "status", "public", "claude_nouhin.json")
 ICHIRAN_JSON = os.path.join(REPO, "status", "claude_ichiran.json")
+BASHO_JSON = os.path.join(REPO, "status", "claude_basho.json")   # IDで見つけた今のパスの控え（公開しない）
 TSUUCHI_MACHI = os.path.join(REPO, "status", "claude_nouhin_tsuuchi_machi.json")
 OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
 
@@ -147,17 +150,42 @@ def _run(cmd, timeout):
         return 1, repr(e)
 
 
+def _find_by_id(root, fid, depth=4):
+    """root の下から、ドライブのIDが fid のフォルダを探す（名前が「Claude」のものを先に、次に浅い順に全部）。"""
+    cands, rest = [], []
+    for dp, ds, _ in os.walk(root):
+        ds[:] = [d for d in ds if not d.startswith(".")]
+        if dp[len(root):].count(os.sep) >= depth:
+            ds[:] = []
+        for d in ds:
+            (cands if d == "Claude" else rest).append(os.path.join(dp, d))
+    for p in cands + rest:
+        if drive_id(p) == fid:
+            return p
+    return None
+
+
 def drive_alive():
-    """ドライブに書けるか。固まることがあるので必ず別プロセス＋時間切れで見る。空の案件フォルダは作らない。"""
+    """Claudeフォルダの今の場所を、パスではなくフォルダIDで見つける（たまごさんが移しても壊れない）。
+    フォルダは作らない（見つからなければ止める）。固まることがあるので必ず別プロセス＋時間切れで見る。"""
     for r in drive_roots():
         rc, out = _run(["ls", r], 20)
         if rc != 0:
             return None, "読めない: " + out.strip()[:120]
-        base = os.path.join(r, DRIVE_DEST)
-        rc, out = _run(["mkdir", "-p", base], 30)
-        if rc != 0:
-            return None, "フォルダを作れない: " + out.strip()[:120]
-        return base, "ok"
+        kaku = _load(BASHO_JSON, {})
+        for p in [kaku.get("path"), os.path.join(r, DRIVE_DEST)]:
+            if p and os.path.isdir(p) and drive_id(p) == CLAUDE_FOLDER_ID:
+                return p, "ok"
+        p = _find_by_id(r, CLAUDE_FOLDER_ID)
+        if p:
+            try:
+                with open(BASHO_JSON, "w", encoding="utf-8") as f:
+                    json.dump({"path": p, "rel": os.path.relpath(p, r), "at": time.strftime("%F %T")}, f,
+                              ensure_ascii=False, indent=1)
+            except Exception:
+                pass
+            return p, "ok（移されていたので探し直した：%s）" % os.path.relpath(p, r)
+        return None, "ClaudeフォルダがIDで見つからない（%s）。作らずに止めた" % CLAUDE_FOLDER_ID
     return None, "ドライブのフォルダが無い（アプリ未起動）"
 
 
@@ -250,7 +278,7 @@ def hoshi_hazusu(folder, keep):
 
 
 def seiri(base):
-    """①案件フォルダより下の小分けの中身を案件フォルダへ移す ②名前をそろえる ③空フォルダを片付ける（AI生成物の中）。"""
+    """①案件フォルダより下の小分けの中身を案件フォルダへ移す ②名前をそろえる ③空フォルダを片付ける（Claudeフォルダの中だけ。外のたまごさんのフォルダには触らない）。"""
     log = []
     for a in sorted(os.listdir(base)):
         top = os.path.join(base, a)
@@ -265,9 +293,9 @@ def seiri(base):
                 q = os.path.join(top, seikei_name(f, p))
                 if p != q and _mv(p, q):
                     log.append(os.path.relpath(q, base))
-    root = os.path.dirname(base)   # AI生成物
+    root = base   # Claudeフォルダの中だけ
     for dp, ds, fs in sorted(os.walk(root, topdown=False), key=lambda x: -len(x[0])):
-        if dp == root or dp == base:
+        if dp == root:
             continue
         try:
             if not [x for x in os.listdir(dp) if x != ".DS_Store"]:
@@ -309,10 +337,10 @@ def ichiran(base=None):
         w.writerows(rows)
     rc, _ = _run(["cp", tmp, os.path.join(base, ICHIRAN)], 60)
     os.remove(tmp)
-    folders = {"AI生成物/Claude": drive_url(base)}
+    folders = {"Claude": drive_url(base)}
     for a in sorted(os.listdir(base)):
         if os.path.isdir(os.path.join(base, a)) and not a.startswith("."):
-            folders["AI生成物/Claude/" + a] = drive_url(os.path.join(base, a))
+            folders["Claude/" + a] = drive_url(os.path.join(base, a))
     res = {"ok": rc == 0, "count": len(rows), "folders": folders,
            "ichiran": drive_url(os.path.join(base, ICHIRAN)), "seiri": log}
     try:
@@ -398,7 +426,7 @@ def flush():
                 res["ichiran_err"] = repr(e)
     res["queued"] = queued() if os.path.isdir(QUEUE) else []
     res["queued_count"] = len(res["queued"])
-    res["drive_dest"] = "マイドライブ/" + DRIVE_DEST + "/<案件>"
+    res["drive_dest"] = "マイドライブ/" + (os.path.relpath(base, os.path.dirname(os.path.dirname(base))) if base else DRIVE_DEST) + "/<案件>（ID " + CLAUDE_FOLDER_ID + "）"
     res["anken"] = list(ANKEN)
     try:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
