@@ -28,7 +28,7 @@ GENRES = [
         ('1980年の夏は、まだ終わっていない。', '松田聖子「青い珊瑚礁」', S + '/feature/aoi-sangosho', None),
         ('歌は、故郷へ帰ってくる。', 'フジファブリック「若者のすべて」', S + '/feature/wakamono-no-subete', None),
         ('夏は終わる。返事は、来る。', '山下達郎「さよなら夏の日」', S + '/feature/sayonara-natsu-no-hi', S + '/feature/sayonara-natsu-no-hi-en'),
-        ('あの日にかえりたい', '荒井由実（松任谷由実）「あの日にかえりたい」', M + 'anohi-ni-kaeritai.html', None),
+        # （あの日にかえりたい：中身未点検のため 2026-10-16 本番から外した）
     ]),
     ('世界が見つけた日本の歌', ('Japanese songs the world found', '世界发现的日本歌', 'Canciones japonesas que el mundo descubrió', '세계가 발견한 일본의 노래'), [
         ('世界が先に見つけた、日本の夜。', 'シティポップ14曲', S + '/feature/citypop-sekai', None),
@@ -71,6 +71,7 @@ def build():
 <header class="cw-bnhead"><p class="cw-eyebrow" data-i18n="b_eyebrow">バックナンバー</p><h1 data-i18n="b_h1">すべてのバックナンバー</h1><p class="lead" data-i18n="b_lead">ごきげん補給所のマガジンを、ざっくりジャンル別に。</p></header>
 {"".join(secs)}<div style="height:72px"></div></div></main></div></body></html>'''
     h = MB.add_i18n(h, tr, 'backnumber.i18n.json')
+    h = MB.unify_look(h)  # 白い枠なし・Magazine Story なし（全マガジン共通）
     t = json.dumps(tr, ensure_ascii=False, separators=(',', ':'))
     for d in ('status/magazine_prod', 'share/check'):
         open(os.path.join(MB.REPO, d, 'backnumber.html'), 'w', encoding='utf-8').write(h)

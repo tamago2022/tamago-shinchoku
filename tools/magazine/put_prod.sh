@@ -15,11 +15,12 @@ PY
   gh api -X PUT "repos/$3/contents/$2" --input /tmp/pp.json --jq '.commit.sha' >/dev/null && echo "OK $3 $2" || echo "NG $3 $2"
 }
 # 【101885番・2026-10-16】後退させない関所：置く前に送る量（KB）を基準と比べる。+5%超なら置かない（基準は小さくなった時だけ更新）
-python3 tools/koutai_kanmon.py --check-files status/magazine_prod/ikareru-01.html status/magazine_prod/naze-ongaku-01-takoukan.html status/magazine_prod/rei-harakami.html status/magazine_prod/hikigatari-josh-turner.html || { echo "★後退関所で停止：マガジンを置きません"; exit 2; }
-for f in ikareru-01.html naze-ongaku-01-takoukan.html rei-harakami.html hikigatari-josh-turner.html; do put status/magazine_prod/$f public/magazine/$f $R; done
+python3 tools/koutai_kanmon.py --check-files status/magazine_prod/ikareru-01.html status/magazine_prod/naze-ongaku-01-takoukan.html status/magazine_prod/rei-harakami.html status/magazine_prod/hikigatari-josh-turner.html status/magazine_prod/kimi-wa-hoshi-katsu.html status/magazine_prod/backnumber.html || { echo "★後退関所で停止：マガジンを置きません"; exit 2; }
+python3 tools/magazine/unify_look.py --check >/dev/null || { echo "★見た目の統一の関所で停止（白い枠／Magazine Story／章頭の型）"; exit 2; }
+for f in ikareru-01.html naze-ongaku-01-takoukan.html rei-harakami.html hikigatari-josh-turner.html kimi-wa-hoshi-katsu.html backnumber.html; do put status/magazine_prod/$f public/magazine/$f $R; done
 # 訳のJSON（日本語以外を選んだときだけ読まれる）も本番へ（2026-10-16）
 for f in status/magazine_prod/*.i18n.json; do [ -f "$f" ] && put "$f" "public/magazine/$(basename "$f")" $R; done
 [ "${2:-}" = "--assets" ] && { put share/check/assets/cw/styles.css public/magazine/assets/cw/styles.css $R; put share/check/assets/owner/x-avatar.jpg public/magazine/assets/owner/x-avatar.jpg $R; }
 [ "${1:-}" = "--prod-only" ] && exit 0
 T=tamago2022/tamago-shinchoku
-for f in share/check/ikareru-01.i18n.json tools/magazine/i18n_ikareru.json share/check/tokushu-ikareru-01.html share/check/naze-ongaku-01-takoukan.html share/check/tokushu-rei-harakami.html share/check/hikigatari-josh-turner-b.html tools/magazine/mag_build.py tools/magazine/spec_ikareru.py tools/magazine/spec_takoukan.py tools/magazine/spec_harakami.py tools/magazine/spec_josh.py tools/magazine/put_prod.sh tools/magazine_monogatari_kanmon.py CLAUDE.md; do put $f $f $T; done
+for f in share/check/ikareru-01.i18n.json tools/magazine/i18n_ikareru.json share/check/tokushu-ikareru-01.html share/check/naze-ongaku-01-takoukan.html share/check/tokushu-rei-harakami.html share/check/hikigatari-josh-turner-b.html tools/magazine/mag_build.py tools/magazine/spec_ikareru.py tools/magazine/spec_takoukan.py tools/magazine/spec_harakami.py tools/magazine/spec_josh.py tools/magazine/put_prod.sh tools/magazine/unify_look.py tools/magazine/backnumber.py tools/magazine_monogatari_kanmon.py CLAUDE.md; do put $f $f $T; done
