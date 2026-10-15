@@ -1,11 +1,16 @@
 # tamago-shinchoku（公開リポ：鍵・個人情報は絶対に置かない）
 グローバル憲法は ~/.claude/CLAUDE.md を参照（そちらにも下記ルールあり）。
 
+## サイトを後退させない（憲法・2026-10-16・101885番・たまごさん指名）
+- **軽くした・整えたサイトを、次の変更で元に戻さない。** 出す前に `python3 tools/koutai_kanmon.py --check --output <.output>` を通し、`KOUTAI_KANMON_RESULT: PASS` 以外は main に合流させない・公開を押さない。
+- **機械の裏付け：** 基準値 `status/public/koutai_kijun.json`（トップ／棚／曲／マガジンの 1ページ目の時間・送る量・見た目の点数）。関所 `tools/koutai_kanmon.py`（時間+10%超・送る量+5%超・点数低下で exit 2、何が増えたかを1行で出す、良くなった時だけ基準値更新、`--self-test` 付き）。公開押し係 `kohyou_osu.py --pre-publish`／公開後の見る係 `kohyou_kanshi.py --after-publish`／マガジン `put_prod.sh --check-files` に組み込み済み。詳細は `AGENTS.md`「サイトを後退させない関所」。
+
 ## 使ったらしまう・使ったら閉じる。作ったファイルは作業の最後に自分で消す（憲法・2026-10-15・最優先）
 - **たまごさん「Mac の空き容量を空けまくって。そもそも macOS にデータが溜まらない仕組みに。使ったらしまう、使ったら閉じるを徹底。やりっぱなしで後で面倒な思いをするのは俺」。**
 - 実測（2026-10-11〜15）：空きが4回0GB近くまで落ちた。犯人は毎回「作って置きっぱなし」（/private/tmp の push 用作業場48個・43GB、作業場104個・18.6GB、queue.json の控え1,047個・10.8GB、打ち切られた git gc の書きかけ）。
 - **作業の最後に、自分が /private/tmp・$TMPDIR・作業場に作ったものを消す。完成品は `tools/claude_nouhin.py put` で納品し、Mac本体に置かない。開いたタブ・ブラウザ・サーバーは閉じる。**
-- **片付け係は負荷で止めない（2026-10-16 追記）。** 実測：worktree_taihi と shimau が「スワップ90%超（Brave のせいで一日中）なら走らない」で 10/15 04:57 から一度も走らず、1本約3GBの作業場（`~/Documents/AI作業/.worktrees`）が溜まって空きが46GB→10GBに落ちた。消すのは軽い仕事なので、**空き30GB未満なら負荷に関係なく走る**。重い du の「測る」だけを負荷で飛ばす。
+- **片付け係は負荷で止めない（2026-10-16 追記）。** 実測：worktree_taihi と shimau が「スワップ90%超（Brave のせいで一日中）なら走らない」で 10/15 04:57 から一度も走らず、1本約3GBの作業場（`~/Documents/AI作業/.worktrees`）が溜まって空きが46GB→10GBに落ちた。消すのは軽い仕事なので、**空き30GB未満なら負荷に関係なく走る**。重い du の「測る」だけを負荷で飛ばす。畳む係（`tools/1200_tatamu.py`）も片付け・容量の係は畳まない。
+- **一番の犯人は $TMPDIR の使い捨て（2026-10-16 実測）：** 巡回（`hps-patrol-*`・1時間に約380個）と自動操作ブラウザの使い捨てプロフィール（`playwright_chromiumdev_profile-*`／`playwright-artifacts-*`）などが約4万個・約90GB溜まっていた（片付け係が止まっていたため）。片付けが走って空きは10GB→110GB超へ戻った。**使い捨ては1時間で必ず消す：** `tools/youryou_jougen.py --tsukaisute`（心臓 top_status.py から1時間に1回）。一時フォルダを作る道具は、終わるときに自分で消す。
 - **場所ごとの上限と自動片付け（2026-10-16）：** `tools/youryou_jougen.py`（/private/tmp 3GB・$TMPDIR 5GB・Claude の古いセッション outputs 15GB・キャッシュ 6GB。超えたら古い順に作り直せるものだけ。Brave には触らない）、`tools/chukan_shimau.py`（動画・音声の中間物 `_frames`／`_chunks`／`_tmp`／`.part` 等を2時間後に消す。仕事の回収のたびに走る。子への指示は `tools/prompt_rules/topic-chukan-shimau.md`）。どちらも shimau.py から毎日＋**空き30GB未満なら1時間おき**（`youryou_mihari.py` が `status/shimau.go` を置く）。犯人探しは `tools/youryou_tantei.py`（どこが何GB・前回との差 → `status/public/youryou_tantei.json`）。空きの推移は `status/public/youryou_suii.json`（7日分）→ 進捗表 `health.json` の `aki`。30GB未満と「24時間で5GB減」は Dispatch へ自動通知。逆テスト：各ツール `--self-test`。
 - **機械の裏付け：** `tools/worktree_taihi.py`（10分おき＋auto_launcher の回収のたびに起動。push済みは消す・未保存は差分を控えて消す・/private/tmp の置き去りも）／`tools/shimau.py`（毎日1回：Mac本体と iMac HDD の空き・増えた上位を `status/public/shimau.json` に記録、HDD の「作業場の控え」「控え」「Claude上げ済み」は日数で自動削除、$TMPDIR・Claude の古いセッションの outputs・ブラウザのキャッシュを片付け）／`tools/youryou_mihari.py`（1分おき：30GB未満で Dispatch に警告・20GB未満で発車停止）。
 

@@ -98,12 +98,20 @@ def main():
     t0 = time.time()
     res = {"at": time.strftime("%F %T"), "free_gb_before": free_gb()}
     sizes = {}
+    part = os.path.join(DIR, "_tochuu.json")   # 途中経過（殺されても、そこまでの測定は残る）
+    tg = targets()
     with cf.ThreadPoolExecutor(4) as ex:
-        futs = {ex.submit(du_gb, p): p for p in targets()}
+        futs = {ex.submit(du_gb, p, 300): p for p in tg}
         for f in cf.as_completed(futs):
             g = f.result()
             if g is not None:
                 sizes[futs[f]] = g
+            try:
+                json.dump({"at": time.strftime("%F %T"), "done": len(sizes), "of": len(tg), "free_gb": free_gb(),
+                           "top": sorted(sizes.items(), key=lambda x: -x[1])[:30]},
+                          open(part, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            except Exception:
+                pass
     res["sizes_gb"] = dict(sorted(sizes.items(), key=lambda x: -x[1]))
     res["swap"] = subprocess.run(["sysctl", "-n", "vm.swapusage"], capture_output=True, text=True).stdout.strip()
     res["local_snapshots"] = snapshots()
@@ -147,6 +155,9 @@ def self_test():
 
 
 if __name__ == "__main__":
+    import signal
+    for _s in (signal.SIGTERM, signal.SIGHUP):
+        signal.signal(_s, signal.SIG_IGN)   # 測っている途中で畳まれない（消さない・測るだけの係）
     if "--self-test" in sys.argv:
         self_test()
     else:

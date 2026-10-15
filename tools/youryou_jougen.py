@@ -8,6 +8,10 @@ shimau.py（毎日＋空き30GB未満なら1時間おき）から呼ばれる。
   /private/tmp            上限 3GB ：12時間さわられていないものを古い順に
                                       （作業場の複製・push用の写し・動画/音/画像/zip の一時物。claude-* と launchd/ssh の物は除く）
   $TMPDIR(/var/folders/T) 上限 5GB ：12時間さわられていないものを古い順に（com.apple.*・claude* は除く）
+  $TMPDIR の使い捨て        上限 0  ：巡回・自動操作ブラウザの使い捨て（hps-*・playwright*・tamago-verify-*・gaibu-shot-*・
+                                      t1168-*・esbuild-*・puppeteer*・lighthouse*）は1時間さわられていなければ必ず消す。
+                                      ★2026-10-16 実測：これが $TMPDIR に約4万個・約90GB溜まっていた（hps-patrol が1時間に約380個）。
+                                      心臓（top_status.py）から1時間に1回 --tsukaisute で単独でも走る。
   Claudeの古いセッション   上限 15GB：今のセッション以外の outputs を古い順に（2日以上前のもの）
   ~/Library/Caches         上限 6GB ：アプリのキャッシュ（作り直せる）を大きい順に。Apple の物と Claude/Typeless 本体は除く
   ~/.npm/_cacache・~/.cache/pip・~/Library/Caches/Homebrew 等 … 上の Caches と同じ扱い
@@ -33,6 +37,9 @@ AS = HOME + "/Library/Application Support"
 PUB = os.path.join(REPO, "status", "public", "youryou_jougen.json")
 CUR_SESSION = "67542e85-a104-4946-bcde-7c7916354942"
 H = 3600
+TSUKAISUTE = ("hps-", "playwright", "tamago-verify-", "gaibu-shot-", "t1168-", "esbuild-", "puppeteer", "lighthouse",
+              "verify-click-")
+STAMP = os.path.join(REPO, "status", ".youryou_jougen_tsukaisute_at")
 
 FORBIDDEN = ("CloudStorage", "Mobile Documents", "iCloud", "Google Drive", "tamago_brain", "Vault", "Keychains",
              "/.ssh", "/.gnupg", "kagi", "kinko", "金庫", "壺", "Volumes/")
@@ -97,6 +104,20 @@ def in_use(p):
 def trim(label, items, cap_gb, min_age_h, order="old", dry=False):
     """items: パスの一覧。合計が cap_gb を超えたら、min_age_h 以上さわられていないものを order 順に消す。"""
     now = time.time()
+    if cap_gb == 0:
+        # 使い捨て：大きさは測らない（数万個あるので du は重い）。古ければ消す。空きの増え方で量る
+        res = {"what": label, "cap_gb": 0, "free_before": free_gb(), "removed_count": 0, "kept_recent": 0}
+        for p in items:
+            try:
+                if now - newest(p, 300) < min_age_h * H:
+                    res["kept_recent"] += 1
+                    continue
+            except Exception:
+                continue
+            if dry or rm(p):
+                res["removed_count"] += 1
+        res["freed_gb"] = round(free_gb() - res["free_before"], 2)
+        return res
     rows = []
     for p in items:
         try:
@@ -129,7 +150,7 @@ def kids(p, keep=()):
         return []
 
 
-def run(dry=False):
+def run(dry=False, tsukaisute_only=False):
     out = {"at": time.strftime("%F %T"), "free_gb_before": free_gb(), "places": []}
     tmp = tempfile.gettempdir()
     sessions = [o for o in glob.glob(AS + "/Claude/local-agent-mode-sessions/*/*/*/outputs") +
@@ -137,8 +158,13 @@ def run(dry=False):
     caches = [p for p in kids(HOME + "/Library/Caches") if not any(k in p for k in CACHE_KEEP)]
     caches += [p for p in (HOME + "/.npm/_cacache", HOME + "/.cache/pip", HOME + "/.cache/yt-dlp",
                            HOME + "/.cache/puppeteer", HOME + "/.cache/ms-playwright") if os.path.exists(p)]
-    plan = [("/private/tmp", kids("/private/tmp", TMP_KEEP), 3, 12, "old"),
-            ("$TMPDIR", kids(tmp, TMP_KEEP), 5, 12, "old"),
+    sute = [os.path.join(tmp, n) for n in os.listdir(tmp) if n.startswith(TSUKAISUTE)]
+    if tsukaisute_only:
+        plan = [("$TMPDIRの使い捨て", sute, 0, 1, "old")]
+    else:
+        plan = [("$TMPDIRの使い捨て", sute, 0, 1, "old"),
+            ("/private/tmp", kids("/private/tmp", TMP_KEEP), 3, 12, "old"),
+            ("$TMPDIR", [p for p in kids(tmp, TMP_KEEP) if p not in set(sute)], 5, 12, "old"),
             ("Claudeの古いセッションの outputs", sessions, 15, 48, "old"),
             ("キャッシュ（~/Library/Caches ほか）", caches, 6, 1, "big")]
     for label, items, cap, age, order in plan:
@@ -152,7 +178,7 @@ def run(dry=False):
         os.makedirs(os.path.dirname(PUB), exist_ok=True)
         json.dump(out, open(PUB + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         os.replace(PUB + ".tmp", PUB)
-    n = sum(len(p.get("removed", [])) for p in out["places"])
+    n = sum(len(p.get("removed", [])) + p.get("removed_count", 0) for p in out["places"])
     return "%d個（空き %.1f→%.1fGB）" % (n, out["free_gb_before"], out["free_gb_after"])
 
 
@@ -169,6 +195,12 @@ def self_test():
     assert not os.path.exists(old), "古いものが消えていない"
     assert os.path.exists(new), "新しいものを消した"
     assert os.path.exists(kin), "金庫を消した"
+    s1 = os.path.join(d, "hps-patrol-x"); s2 = os.path.join(d, "hps-patrol-y")
+    for p in (s1, s2):
+        os.makedirs(p); open(os.path.join(p, "f"), "w").write("x")
+    os.utime(os.path.join(s1, "f"), (t, t)); os.utime(s1, (t, t))
+    r3 = trim("sute", [s1, s2], 0, 1)
+    assert not os.path.exists(s1) and os.path.exists(s2) and r3["removed_count"] == 1, "使い捨ての判定が違う"
     r2 = trim("test", [new], 1, 0)
     assert os.path.exists(new) and not r2["removed"], "上限内なのに消した"
     shutil.rmtree(d)
@@ -178,6 +210,19 @@ def self_test():
 if __name__ == "__main__":
     if "--self-test" in sys.argv:
         self_test()
+    elif "--tsukaisute" in sys.argv:
+        # 心臓から毎周呼ばれる。1時間に1回だけ本体が走る
+        try:
+            if time.time() - os.path.getmtime(STAMP) < H:
+                sys.exit(0)
+        except Exception:
+            pass
+        open(STAMP, "w").close()
+        try:
+            os.setsid()
+        except Exception:
+            pass
+        print(run(tsukaisute_only=True))
     elif "--dry" in sys.argv:
         print(run(dry=True))
     else:
