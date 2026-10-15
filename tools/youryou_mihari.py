@@ -7,13 +7,14 @@
     20GBを切ったら工場の新規発車を止める。」
 
 心臓(heartbeat.sh)から約1分おきに呼ばれる。statvfs を1回読むだけ（0.01秒・0円）。
-  ・30GB未満 → status/dispatch_outbox.jsonl へ警告（同じ帯では2時間に1回まで）
-  ・20GB未満 → status/no_launch.flag を立てる（auto_launcher.py が既に見て発車を止める）
-  ・22GB以上に戻ったら、自分が立てた flag だけ外す（止める線と外す線を同じにするとバタつく）
-  ・10GB未満 → 救急（tools/youryou_kyuukyuu.py＝作り直せるキャッシュだけ消す）を自動で1回起こす（6時間に1回まで）
+  ★2026-10-16 引き上げ（たまごさん「30GBを切ることは二度とないように」）：
+  ・100GB未満 → Dispatch へ警告＋原因調査（tools/youryou_tantei.py）を自動で開始＋片付け（shimau.go）
+  ・50GB未満 → status/no_launch.flag を立てる（auto_launcher.py が既に見て発車を止める）
+  ・55GB以上に戻ったら、自分が立てた flag だけ外す（止める線と外す線を同じにするとバタつく）
+  ・30GB未満 → 救急（tools/youryou_kyuukyuu.py＝作り直せるキャッシュだけ消す）を自動で1回起こす（6時間に1回まで）
 目印は「空き容量の番人」。disk_guardian.py の目印「容量見張り」とは別の文字にしてある
 （同じ文字を含むと、あちらが10GBで勝手に外してしまうため）。
-  ・30GB未満 → 片付け係（tools/shimau.py＝場所ごとの上限 youryou_jougen を含む）を1時間に1回すぐ起こす（2026-10-16）
+  ・100GB未満 → 片付け係（tools/shimau.py＝場所ごとの上限 youryou_jougen を含む）を1時間に1回すぐ起こす（2026-10-16）
   ・空きの推移を10分おきに7日分 status/public/youryou_suii.json へ（進捗表 health.json の aki に写る）。
     24時間で5GB以上減っていたら Dispatch に「減り続けている」と知らせる（12時間に1回まで）
 結果：status/public/youryou_mihari.json
@@ -37,10 +38,11 @@ SUII_EVERY = 600
 HERU_EVERY = 12 * 3600
 MARK = "空き容量の番人"
 
-WARN_GB = 30
-STOP_GB = 20
-RELEASE_GB = 22
-KYUUKYUU_GB = 10
+WARN_GB = 100     # 2026-10-16 たまごさん「30GBを切ることは二度とないように」→ 100GBで原因調査を自動開始
+STOP_GB = 50      # 50GBで新規発車停止
+RELEASE_GB = 55
+KYUUKYUU_GB = 30  # 30GBで救急（作り直せるキャッシュ）
+TANTEI_EVERY = 3 * 3600
 WARN_EVERY = 2 * 3600
 KYUUKYUU_EVERY = 6 * 3600
 
@@ -95,7 +97,7 @@ def main():
     if band != "青":
         if st.get("band") != band or now - st.get("warned_at", 0) > WARN_EVERY:
             outbox("Macの空き容量が%.1fGBです" % g,
-                   ("30GBを切りました。" if band == "黄" else "20GBを切ったので新規発車を止めました。") +
+                   ("100GBを切ったので原因調査（youryou_tantei）と片付け（shimau）を自動で始めました。" if band == "黄" else "50GBを切ったので新規発車を止めました。") +
                    "原因の測定は tools/youryou_kyuukyuu.py（status/youryou_kyuukyuu.json）。")
             st["warned_at"] = now
 
@@ -103,7 +105,7 @@ def main():
     if g < STOP_GB and not os.path.exists(FLAG):
         try:
             with io.open(FLAG, "w", encoding="utf-8") as f:
-                f.write("%s：ディスク空き容量が%.1fGB（20GB未満）。新規発車を止めました（%s）。22GBに戻れば自動で外れます。\n"
+                f.write("%s：ディスク空き容量が%.1fGB（50GB未満）。新規発車を止めました（%s）。55GBに戻れば自動で外れます。\n"
                         % (MARK, g, time.strftime("%F %T")))
         except Exception:
             pass
@@ -122,7 +124,18 @@ def main():
         except Exception:
             pass
 
-    # 2026-10-16 30GB未満：片付け係をすぐ起こす（1時間に1回まで）
+    # 2026-10-16 100GB未満：原因調査（探偵）を自動で始める（3時間に1回まで・心臓から切り離して走らせる）
+    if g < WARN_GB and now - st.get("tantei_at", 0) > TANTEI_EVERY:
+        try:
+            import subprocess
+            subprocess.Popen(["python3", os.path.join(HERE, "1144_hanareru.py"),
+                              os.path.join(REPO, "status", "youryou_tantei_jidou.log"),
+                              "python3", os.path.join(HERE, "youryou_tantei.py")])
+            st["tantei_at"] = now
+        except Exception:
+            pass
+
+    # 2026-10-16 100GB未満：片付け係をすぐ起こす（1時間に1回まで）
     if g < WARN_GB and now - st.get("shimau_at", 0) > SHIMAU_EVERY:
         try:
             open(SHIMAU_GO, "w").close()

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#98402 サイトの軽さの根本設計（第2便・入口の塊を削る） 確認ページ</title>
+<title>#98402 サイトの軽さの根本設計（第2便が本番に出た・前後の実測） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,51 +47,50 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #98402 サイトの軽さの根本設計（第2便・入口の塊を削る）</div>
-<h1>#98402 サイトの軽さの根本設計（第2便・入口の塊を削る）</h1>
-<div class="date">2026-10-16 02:5x 更新 — 実装・main合流まで済み／Lovable公開待ち（押せる手段をDispatchへ依頼済み）</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #98402 サイトの軽さの根本設計（第2便が本番に出た・前後の実測）</div>
+<h1>#98402 サイトの軽さの根本設計（第2便が本番に出た・前後の実測）</h1>
+<div class="date">2026-10-16 03:5x 更新 — 第2便（入口の塊を削る）が本番に反映済み。公開後を同じ物差しで測り直した</div>
 
 <div class="fix">
-全ページが最初に読む「入口」から、使わない重い塊を外しました：棚データ201KB・DB接続55KB・OG画像の名簿30KB・アニメ部品35KB（圧縮後）。前日の「小さな塊をまとめる設定」が逆にそれらを入口へ吸い込んでいたのをビルドのソースマップで突き止めて撤回。結果、トップが最初に読む合計は 445KB → 344KB（圧縮後・ビルド実測）。本番への反映はLovableの「公開」待ち（下の③）。 <code>実測: 入口 index-*.js の静的依存（gzip）本番 197+160+30+6+34+他=445KB → 第2便 196+106+6+0+34=344KB</code>
+全ページが最初に読む「入口」から、使わない重い塊（棚データ201KB・DB接続55KB・OG名簿30KB・アニメ部品35KB）を外した第2便が、本番（Lovable公開）に出ました。<b>開いた直後に見えるまでが、トップ 2.8秒→1.1秒、マガジン 3.0秒→2.0秒。5ページ全部が3秒以内。</b>棚・特集・戻るの切り替えは0.1秒のまま。残る赤は「棚→曲ページの切り替え（10.1秒）」1つで、曲ページが先読みするJSの束（63本・774KB）を次便で島に分けます。<br><code>実測: 本番トップ 入口+先読み+CSS gzip 公開前445KB → 公開後362KB（index 198 + 共通塊107 + CSS34 + 小片23）。4G相当(往復100ms・下り5Mbps) Chromium headless 幅375 — 公開前(10-16 01:08 loadavg15.3) 見える/読了 ms: トップ2776/4645 棚1685/3250 曲959/3149 一覧1459/2462 マガジン2991/3331 ／ 公開後(10-16 03:36 loadavg7.5): トップ1085/2235 棚1493/3085 曲1316/3293 一覧1343/2243 マガジン1998/2294。切り替え(画面内遷移) 公開後: 棚138ms 曲ページ10116ms(NG) ホーム109ms 特集36ms 戻る51ms 丸ごと読み直し1回（10-14の同測定: 棚5099 曲10965 特集×）。本番の入口は index-Bp-tOriZ.js → index-BO3WOn1R.js に変わった（deploy a32948ad・03:29）</code>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>445KB → 344KB</b><span>トップが最初に読む量（入口＋静的依存＋CSS・gzip）本番→第2便ビルド</span></div>
-  <div class="num"><b>4本</b><span>入口から外した重い塊（棚データ201・DB接続55・OG名簿30・アニメ35 KB）</span></div>
-  <div class="num"><b>2.8 / 1.7 / 1.0 / 1.5 / 3.0秒</b><span>本番・見えるまで（4G相当・loadavg15）トップ/棚/曲/一覧/マガジン 10-16 01:08</span></div>
-  <div class="num"><b>0.1秒</b><span>棚・特集・戻るの切り替え（4G相当・画面内遷移）</span></div>
-  <div class="num"><b>99→99件</b><span>型チェックの既存エラー数（増えていない）</span></div>
+  <div class="num"><b>1.1 / 1.5 / 1.3 / 1.3 / 2.0秒</b><span>開いて見えるまで（公開後・4G相当）トップ/棚/曲/一覧/マガジン。公開前 2.8/1.7/1.0/1.5/3.0</span></div>
+  <div class="num"><b>445KB → 362KB</b><span>トップが最初に読む量（入口＋先読み＋CSS・gzip・本番実測）</span></div>
+  <div class="num"><b>5件中5件</b><span>「見えるまで3秒以内」を満たしたページ数</span></div>
+  <div class="num"><b>0.1 / 0.0 / 0.1秒</b><span>切り替え 棚・ホーム／特集／戻る（4G相当・画面内遷移）</span></div>
+  <div class="num"><b>10.1秒（未達・次便）</b><span>棚→曲ページの切り替え。10-14は11.0秒。曲ページの先読みJS 63本・774KBを島に分けるのが次の手</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番トップ（公開後に入口の塊が index-Bp-tOriZ.js から変わる）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番トップ（入口が index-BO3WOn1R.js に変わっている）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
   <li><b>本番・棚ページ /world/music</b><a href="https://joy-relief-station.lovable.app/world/music" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/music</a></li>
   <li><b>本番・曲ページ（測定対象）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
   <li><b>本番・マガジン</b><a href="https://joy-relief-station.lovable.app/feature/virtual-insanity" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/feature/virtual-insanity</a></li>
-  <li><b>最新の4G実測（JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/omosa_konpon.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/omosa_konpon.json</a></li>
-  <li><b>後退関所の基準値（公開JSON・101885番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json</a></li>
+  <li><b>公開後の4G実測（JSON・最新）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/omosa_konpon.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/omosa_konpon.json</a></li>
+  <li><b>後退関所の基準値（101885番）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>第1便（曲ページの名簿2.3MBを落とさない・棚一覧263KB→数百B）mainへ合流</td><td class="yes">済み c463f88b6</td></tr>
-<tr><td>第2便（入口から棚データ・DB接続・OG名簿・アニメ部品を外す）mainへ合流</td><td class="yes">済み（この確認ページのコミット参照）</td></tr>
-<tr><td>入口 index-*.js の静的依存に worlds-data / supabase / og-cards / card-tags が無い</td><td class="yes">ビルド実測で確認（4つとも False）</td></tr>
-<tr><td>サーバー描画（Node形式でローカル起動）5ページ</td><td class="yes">全部200・本文文字数は本番と同一（477/2174/683/2721/687）・og:image有り</td></tr>
-<tr><td>型チェック tsc</td><td class="yes">既存99件のまま・自分の変更ファイルに新規エラー無し</td></tr>
-<tr><td>後退関所 npm run koutai（101885番・--output）</td><td class="no">誤判定FAIL（物差しの不一致・後退ではない）。&lt;code&gt;実測: ローカル配信(無圧縮) shelf 2625KB→8417KB（約3.2倍）／magazine 43KB→274KB（約6.4倍）。生/圧縮の比: coverguide-data 5996KB/2260KB=2.65倍、CSS 230KB/34KB=6.8倍&lt;/code&gt;。Cloudflare形式も起こせず。失敗台帳に2行記録</td></tr>
-<tr><td>Lovable「公開」</td><td class="no">未（10-16 02:50 再確認：公開便Chrome CDP9223＝未開通、Lovable MCP＝401未認証・同意の巻き直し待ち）。本番の入口はまだ index-Bp-tOriZ.js のまま。ブラウザ可のDispatchセッションへ「承認URLを開く→deploy_project」を依頼済み。たまごさんの手は不要</td></tr>
-<tr><td>触る検品 verify_click（10-16 02:5x）</td><td class="yes">確認ページ 5件中5件反応・コンソールエラー0 ／ 本番曲ページ 26件中26件反応（全65件）・コンソールエラー0</td></tr>
-<tr><td>4G相当の変更後実測（本番）</td><td class="no">未（公開後に同じ物差しで測る）</td></tr>
+<tr><td>第1便（DB接続を入口から外す・小片をまとめる・足元動画を後読み）mainへ合流</td><td class="yes">済み c463f88b6</td></tr>
+<tr><td>第2便（入口から棚データ・DB接続・OG名簿・アニメ部品を外す）mainへ合流</td><td class="yes">済み 13bfdaf49 / 808b0c3bd</td></tr>
+<tr><td>Lovable公開（本番の入口が変わる）</td><td class="yes">済み 10-16 03:29 deploy a32948ad（見る係 kohyou_kanshi が「mainと本番が揃っている」）</td></tr>
+<tr><td>本番トップの先読みに worlds-data / supabase / og-cards が無い</td><td class="yes">無い（HTMLの modulepreload 10本を実測・gzip合計362KB）</td></tr>
+<tr><td>開いて見えるまで 5ページ全部3秒以内（4G相当・headless）</td><td class="yes">1.1/1.5/1.3/1.3/2.0秒</td></tr>
+<tr><td>切り替え1秒台（棚・ホーム・特集・戻る）</td><td class="yes">0.1/0.1/0.0/0.1秒</td></tr>
+<tr><td>切り替え1秒台（棚→曲ページ）</td><td class="no">10.1秒・未達。曲ページの先読み束（63本・774KB）が原因。次便（設計下書き status/shitagaki/20261016_98403_3byou_sekkei.md）</td></tr>
+<tr><td>触る検品 verify_click（確認ページ・本番）</td><td class="no">この更新のあと再実行して下に追記</td></tr>
 </table>
 
 <footer>
-実測: 本番(公開前) 4G相当(往復100ms・下り5Mbps) Chromium headless iPhone幅 2026-10-16 01:08 loadavg 15.3 — トップ 見える2776ms/読了4645ms/730KB/46件、棚 1685/3250/905KB/65件、曲ページ 959/3149/1325KB/100件、マガジン一覧 1459/2462/735KB/50件、マガジン 2991/3331/768KB/39件。ビルド実測(gzip) 入口196KB＋共通塊106KB＋受付6KB＋CSS34KB＝344KB（本番: 入口197＋共通160＋OG名簿30＋受付6＋CSS34＋他＝445KB）。前日19:42の実測(8.7秒等)はloadavg13〜24の混雑込み。 ／ 後退関所(koutai --output)は無圧縮vs圧縮の物差し不一致で 約3.2倍 と出るが、生/圧縮の比率（2.6〜3.2倍）と一致＝後退ではない。公開後に --check --target prod で本番を測る。
+技術メモ：公開は 03:29 に deploymentId が変わった（押した経路は不明＝公開便CDP未開通・MCP401のまま。見る係のログ）。前回の測定は loadavg15 の混雑込みなので、公開前後の差は入口 -83KB と「見えるまで」の短縮で見る。次便：曲ページの先読みを ?artist= の有無で分け、「▶／話しかける」を水和待ちの外に出す。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

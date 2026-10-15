@@ -13,6 +13,7 @@ shimau.py（毎日＋空き30GB未満なら1時間おき）から呼ばれる。
                                       ★2026-10-16 実測：これが $TMPDIR に約4万個・約90GB溜まっていた（hps-patrol が1時間に約380個）。
                                       心臓（top_status.py）から1時間に1回 --tsukaisute で単独でも走る。
   Claudeの古いセッション   上限 15GB：今のセッション以外の outputs を古い順に（2日以上前のもの）
+  status/*.log             1本50MB：超えたら後ろ10MBだけ残す（jsonl・json の台帳には触らない）
   ~/Library/Caches         上限 6GB ：アプリのキャッシュ（作り直せる）を大きい順に。Apple の物と Claude/Typeless 本体は除く
   ~/.npm/_cacache・~/.cache/pip・~/Library/Caches/Homebrew 等 … 上の Caches と同じ扱い
 
@@ -150,6 +151,38 @@ def kids(p, keep=()):
         return []
 
 
+LOG_CAP = 50 * 1024 * 1024
+LOG_KEEP = 10 * 1024 * 1024
+
+
+def log_cap(dry=False, root=None):
+    """工場の記録（status/ の *.log）は1本50MBまで。超えたら後ろの10MBだけ残す（2026-10-16）。
+    *.jsonl・*.json（台帳・データ）には触らない。"""
+    root = root or os.path.join(REPO, "status")
+    res = {"what": "status/*.log（1本50MBまで）", "cut": []}
+    for dp, dns, fns in os.walk(root):
+        dns[:] = [d for d in dns if not d.startswith(".")]
+        for f in fns:
+            if not f.endswith(".log"):
+                continue
+            p = os.path.join(dp, f)
+            try:
+                sz = os.path.getsize(p)
+                if sz <= LOG_CAP:
+                    continue
+                if not dry:
+                    with open(p, "rb") as fh:
+                        fh.seek(sz - LOG_KEEP)
+                        tail = fh.read()
+                    with open(p + ".cut", "wb") as fh:
+                        fh.write("...(2026-10-16 youryou_jougen: 50MB超のため前を切った)\n".encode() + tail)
+                    os.replace(p + ".cut", p)
+                res["cut"].append({"p": os.path.relpath(p, REPO), "mb": round(sz / 1e6)})
+            except Exception:
+                pass
+    return res
+
+
 def run(dry=False, tsukaisute_only=False):
     out = {"at": time.strftime("%F %T"), "free_gb_before": free_gb(), "places": []}
     tmp = tempfile.gettempdir()
@@ -172,6 +205,8 @@ def run(dry=False, tsukaisute_only=False):
             out["places"].append(trim(label, items, cap, age, order, dry))
         except Exception as e:
             out["places"].append({"what": label, "error": str(e)[:200]})
+    if not tsukaisute_only:
+        out["places"].append(log_cap(dry))
     out["free_gb_after"] = free_gb()
     out["dry"] = dry
     if not dry:
@@ -201,6 +236,11 @@ def self_test():
     os.utime(os.path.join(s1, "f"), (t, t)); os.utime(s1, (t, t))
     r3 = trim("sute", [s1, s2], 0, 1)
     assert not os.path.exists(s1) and os.path.exists(s2) and r3["removed_count"] == 1, "使い捨ての判定が違う"
+    lg = os.path.join(d, "big.log"); open(lg, "wb").write(b"a" * (LOG_CAP + 100))
+    js = os.path.join(d, "big.jsonl"); open(js, "wb").write(b"a" * (LOG_CAP + 100))
+    log_cap(root=d)
+    assert os.path.getsize(lg) < LOG_KEEP + 200 and os.path.getsize(js) > LOG_CAP, "log の上限が違う"
+    os.remove(lg); os.remove(js)
     r2 = trim("test", [new], 1, 0)
     assert os.path.exists(new) and not r2["removed"], "上限内なのに消した"
     shutil.rmtree(d)

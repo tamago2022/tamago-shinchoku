@@ -181,9 +181,17 @@ def main():
         pts = su.get("points", [])
         out["aki"] = {"label": "Macの空き容量", "at": su.get("at"), "freeGB": su.get("free_gb"),
                       "diff24hGB": su.get("diff_24h_gb"), "min7dGB": su.get("min_7d_gb"),
-                      "warnGB": 30, "points": pts[::6][-28:]}
+                      "warnGB": 100, "stopGB": 50, "points": pts[::6][-28:]}
     except Exception:
         out["aki"] = {"label": "Macの空き容量", "at": None}
+    # 2026-10-16 自動処理の棚卸し（tools/jidou_tanaoroshi.py が書く status/public/jidou_tanaoroshi.json の写し）
+    try:
+        jt = json.load(open(os.path.join(REPO, "status", "public", "jidou_tanaoroshi.json"), encoding="utf-8"))
+        out["jidou"] = {"label": "自動処理の棚卸し", "at": jt.get("at"), "total": jt.get("total"), "kinds": jt.get("kinds"),
+                        "mitouroku": jt.get("mitouroku"), "kari": jt.get("kari"), "zure": jt.get("zure"),
+                        "ichiran": "status/public/jidou_tanaoroshi.json"}
+    except Exception:
+        out["jidou"] = {"label": "自動処理の棚卸し", "at": None}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     tmp = OUT + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
