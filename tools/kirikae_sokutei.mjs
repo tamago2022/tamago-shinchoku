@@ -38,6 +38,17 @@ const BASE = (arg("--base", "https://joy-relief-station.lovable.app")).replace(/
 const STALE = process.argv.includes("--stale");
 const LIMIT = Number(arg("--limit", "3000"));
 const OUT = arg("--out", "");
+// ★98402番（2026-10-15）：--konpon ＝ 根本測定。トップ／棚／曲ページ／マガジンを「初めて開く（キャッシュ無し）」で
+//   1ページずつ別の文脈で開き、見えるまでの秒数と届いた量を数える。続けて普段どおりの切り替え測定も行い、
+//   両方を status/public/omosa_konpon.json（最新）と status/omosa_konpon_log.jsonl（履歴）に残す。
+const KONPON = process.argv.includes("--konpon");
+const KONPON_PAGES = [
+  ["トップ", "/"],
+  ["棚", "/world/music"],
+  ["曲ページ", "/cover-guide?artist=akiko&song=love-theme-from-spartacus"],
+  ["マガジン一覧", "/features"],
+  ["マガジン", "/feature/virtual-insanity"],
+];
 const ORIGIN = new URL(BASE).origin;
 
 const BLOCK = /youtube\.com|youtube-nocookie|googlevideo|doubleclick|googlesyndication|google-analytics|googletagmanager/;
@@ -65,6 +76,69 @@ const killer = setTimeout(async () => {
   try { fs.unlinkSync(LOCK); } catch {}
   process.exit(2);
 }, 4 * 60 * 1000);
+
+// ★98402番：1ページを「初めて開く」で測る（文脈を毎回新しく＝キャッシュ無し・同じ4G絞り・同じ遮断）
+async function coldLoad(label, pathname) {
+  const c = await browser.newContext({
+    viewport: iphone.viewport,
+    deviceScaleFactor: iphone.deviceScaleFactor,
+    isMobile: true,
+    hasTouch: true,
+    userAgent: iphone.userAgent,
+  });
+  const p = await c.newPage();
+  const s = await c.newCDPSession(p);
+  await s.send("Network.enable");
+  await s.send("Network.emulateNetworkConditions", {
+    offline: false,
+    latency: 100,
+    downloadThroughput: (5 * 1000 * 1000) / 8,
+    uploadThroughput: (2 * 1000 * 1000) / 8,
+  });
+  const info = new Map();
+  const got = [];
+  s.on("Network.responseReceived", (e) => info.set(e.requestId, { url: e.response.url, type: e.type }));
+  s.on("Network.loadingFinished", (e) => {
+    const i = info.get(e.requestId);
+    if (i) got.push({ url: i.url.replace(ORIGIN, "").slice(0, 120), type: i.type, kb: Math.round(e.encodedDataLength / 1024) });
+  });
+  await p.route("**/*", (r) => (BLOCK.test(r.request().url()) ? r.abort() : r.continue()));
+  const t0 = Date.now();
+  let visibleMs = null;
+  let loadMs = null;
+  try {
+    await p.goto(BASE + pathname, { waitUntil: "commit", timeout: 60000 });
+    const deadline = t0 + 45000;
+    while (Date.now() < deadline) {
+      const len = await p
+        .evaluate(() => ((document.querySelector("main") || document.body)?.innerText || "").replace(/\s+/g, "").length)
+        .catch(() => 0);
+      if (len > 80) {
+        visibleMs = Date.now() - t0;
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    await p.waitForLoadState("load", { timeout: 45000 }).catch(() => {});
+    loadMs = Date.now() - t0;
+    // 読み終わりの余韻（裏で落とす塊があればここで数える）
+    await new Promise((r) => setTimeout(r, 4000));
+  } catch (e) {
+    loadMs = null;
+  }
+  const kb = got.reduce((a, r) => a + r.kb, 0);
+  const top = [...got].sort((a, b) => b.kb - a.kb).slice(0, 6).map((r) => `${r.kb}KB ${r.type} ${r.url}`);
+  await c.close().catch(() => {});
+  return { name: label, path: pathname, visibleMs, loadMs, kenSu: got.length, kb, top };
+}
+const konponPages = [];
+if (KONPON) {
+  for (const [label, pathname] of KONPON_PAGES) {
+    const r = await coldLoad(label, pathname);
+    konponPages.push(r);
+    console.error(`[konpon] ${label} 見えるまで${r.visibleMs == null ? "×" : (r.visibleMs / 1000).toFixed(1) + "秒"} / 読み終わり${r.loadMs == null ? "×" : (r.loadMs / 1000).toFixed(1) + "秒"} / ${r.kb}KB ${r.kenSu}件`);
+  }
+}
 const ctx = await browser.newContext({
   viewport: iphone.viewport,
   deviceScaleFactor: iphone.deviceScaleFactor,
@@ -266,6 +340,14 @@ for (const [name, re] of steps) {
       c = await clickLink(re);
     }
   }
+  if (!c && name === "特集" && KONPON) {
+    // ★98402番：曲ページ・ホームに特集リンクが無い時は、マガジン一覧（/features）を開いて1本押す
+    await page.goto(BASE + "/features", { waitUntil: "commit", timeout: 60000 }).catch(() => {});
+    await waitSettled("/features", Date.now(), 45000);
+    history.push("/features");
+    await sleep(1500);
+    c = await clickLink(re);
+  }
   if (!c) {
     result.steps.push({ name, ok: false, why: "押せるリンクが見つからない", from: history.at(-1) });
     ok = false;
@@ -313,6 +395,19 @@ const line = result.steps.map((s) => `${s.name}${s.ms == null ? "×" : (s.ms / 1
 result.summary = `${STALE ? "[古い版を開いたまま公開]" : "[通常]"} 最初${init.ms ? (init.ms / 1000).toFixed(1) + "秒" : "×"} / ${line} / 丸ごと読み直し${result.fullReloads}回`;
 console.log(JSON.stringify(result, null, 1));
 if (OUT) fs.writeFileSync(OUT, JSON.stringify(result, null, 1));
+if (KONPON) {
+  const loadavg = os.loadavg().map((x) => Math.round(x * 10) / 10);
+  const konpon = {
+    at: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }),
+    base: BASE,
+    net: result.net,
+    loadavg,
+    pages: konponPages,
+    kirikae: { summary: result.summary, steps: result.steps, omosa: result.omosa, hydrateWaitsMs: result.hydrateWaitsMs },
+  };
+  fs.writeFileSync("/Users/mac/tamago/tamago-shinchoku/status/public/omosa_konpon.json", JSON.stringify(konpon, null, 1));
+  fs.appendFileSync("/Users/mac/tamago/tamago-shinchoku/status/omosa_konpon_log.jsonl", JSON.stringify(konpon) + "\n");
+}
 // --public：進捗表の赤帯（status/public/kirikae.json）。通常と「古い版を開いたまま公開」の最新を合わせて出す
 if (process.argv.includes("--public")) {
   const dir = "/Users/mac/tamago/tamago-shinchoku/status/kirikae";
