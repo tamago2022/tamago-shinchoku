@@ -446,6 +446,8 @@ def unify_look(h):
     h = R.sub(r'\.cw \.cw-video__play:empty::before\{[^}]*\}', '', h)
     h = R.sub(r'<style id="cw-look">.*?</style>', '', h, flags=R.S)
     h = h.replace('</head>', '<style id="cw-look">' + LOOK_CSS + '</style></head>', 1)
+    # ⑥ 曲の一覧（THE MAP）は出さない（怒れる人々と同じ。目次と重複する）
+    h = R.sub(r'<section[^>]*class="cw-mapwrap"[^>]*>.*?</section>', '', h, flags=R.S)
     # ⑤ 共有ボタン（上と下の2か所・全マガジン共通）＝ tools/magazine/share_bar.py
     import share_bar
     h = share_bar.add(h)
@@ -459,6 +461,7 @@ def look_check(h):
     if 'assets/cw/styles.css' in h: bad.append('共通CSSを読んでいる')
     if 'id="cw-base"' not in h: bad.append('土台のCSSが無い（白い枠が出る）')
     if R.search(r'Magazine Story', h): bad.append('Magazine Story が出ている')
+    if 'class="cw-mapwrap"' in h: bad.append('曲の一覧（THE MAP）が出ている')
     if R.search(r'class="cw-chead__catch"|<p [^>]*class="cw-chead__title"', h): bad.append('章頭の型が違う（一言は小さく上）')
     if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
     import share_bar
