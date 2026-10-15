@@ -46,7 +46,15 @@ LOCK = os.path.join(REPO, "status", ".zaiko_build.lock")
 LOG = os.path.join(REPO, "status", "zaiko_build.log")
 ENTRY = os.path.join(REPO, "tools", "zaiko", "entry.ts")
 SITE = "https://joy-relief-station.lovable.app"
-PAGES = "https://tamago2022.github.io/tamago-shinchoku/status/public"
+# ★配信は2本立て：
+#   (A) 正本＝専用の細い枝 zaiko（書き手はこのスクリプトだけ・履歴1コミット・force）→ raw.githubusercontent.com
+#       2026-10-15 実測：gh-pages は向こう側が欠けた写しになり、数百MBの上げ直しが HTTP 408 で毎回落ちて
+#       公開全体が止まっていた。在庫一覧は約6MBなので、その渋滞に巻き込まれない別の道で出す。
+#   (B) 見やすいページ＝ status/public/zaiko.html（gh-pages が通っている時は GitHub Pages でも見える）
+PAGES = "https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/zaiko"
+HTML_PAGES = "https://tamago2022.github.io/tamago-shinchoku/status/public/zaiko.html"
+BRANCH_DIR = os.path.expanduser("~/.tamago-zaiko")
+GH_URL = "https://github.com/tamago2022/tamago-shinchoku.git"
 FETCH_EVERY = 600
 MAX_SHARD = 700 * 1024
 ENV = dict(os.environ, PATH="/Users/mac/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:" + os.environ.get("PATH", ""))
@@ -236,7 +244,7 @@ def build(data, sha, sha_time):
             "3) 載っていれば在庫あり：曲ページURL をそのまま原稿に使う。",
             "4) 載っていなければ在庫なし：原稿内に『新規入荷候補』と明記する（勝手に在庫扱いしない）。",
             "入荷は Claude 側で関所（sekisho-artist-song）を通してから。",
-            "人間向けの検索ページ：%s/zaiko.html" % PAGES,
+            "人間向けの検索ページ：%s" % HTML_PAGES,
         ],
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "source": {"repo": "tamago2022/joy-relief-station", "branch": "main", "commit": sha[:9], "commit_time": sha_time},
@@ -258,6 +266,41 @@ def build(data, sha, sha_time):
         if os.path.getsize(p) >= 1024 * 1024:
             raise RuntimeError("1MB超: %s" % p)
     return total, len(artists), hidden, len(shards)
+
+
+def push_branch(sha):
+    """status/public の zaiko 一式を、専用の枝 zaiko へ履歴1コミットで force push する。成功で True。"""
+    d = BRANCH_DIR
+    if not os.path.isdir(os.path.join(d, ".git")):
+        os.makedirs(d, exist_ok=True)
+        sh(["git", "init", "-q", d])
+        sh(["git", "-C", d, "remote", "add", "origin", GH_URL])
+        sh(["git", "-C", d, "config", "user.name", "tamago-zaiko"])
+        sh(["git", "-C", d, "config", "user.email", "tamago-zaiko@users.noreply.github.com"])
+    for x in ("zaiko.json", "zaiko.html"):
+        shutil.copy(os.path.join(PUB, x), os.path.join(d, x))
+    dst = os.path.join(d, "zaiko")
+    if os.path.isdir(dst):
+        shutil.rmtree(dst)
+    shutil.copytree(SHARD_DIR, dst)
+    with open(os.path.join(d, "README.md"), "w", encoding="utf-8") as f:
+        f.write("# ごきげん補給所 曲の在庫一覧（自動生成・手で直さない）\n\n"
+                "入口：%s/zaiko.json\n\n見やすいページ：%s\n\n"
+                "作り手：tamago-shinchoku/tools/zaiko_build.py（joy-relief-station の main が変わるたびに作り直す）\n" % (PAGES, HTML_PAGES))
+    sh(["git", "-C", d, "checkout", "-q", "--orphan", "tmp-zaiko"], timeout=60)
+    sh(["git", "-C", d, "add", "-A"], timeout=60)
+    c = sh(["git", "-C", d, "commit", "-q", "-m", "在庫一覧 %s" % sha[:9]], timeout=60)
+    if c.returncode != 0 and b"nothing to commit" not in c.stdout + c.stderr:
+        log("枝の commit 失敗: %s" % (c.stdout + c.stderr).decode("utf-8", "replace")[-200:])
+        return False
+    sh(["git", "-C", d, "branch", "-q", "-M", "zaiko"], timeout=30)
+    p = sh(["git", "-C", d, "-c", "credential.helper=!gh auth git-credential", "push", "--force", "-q",
+            "origin", "zaiko:refs/heads/zaiko"], timeout=170)
+    if p.returncode != 0:
+        log("枝 zaiko への push 失敗: %s" % p.stderr.decode("utf-8", "replace")[-200:])
+        return False
+    sh(["git", "-C", d, "gc", "-q", "--prune=now"], timeout=60)
+    return True
 
 
 def main():
@@ -290,13 +333,23 @@ def main():
         eh = entry_hash()
         out_ok = os.path.exists(os.path.join(PUB, "zaiko.json"))
         if not force and out_ok and st.get("sha") == sha and st.get("entry") == eh:
+            if st.get("pushed") != sha + eh and now - st.get("push_tried", 0) > 300:
+                st["push_tried"] = now
+                if push_branch(sha):
+                    st["pushed"] = sha + eh
+                    log("枝 zaiko へ出した（再挑戦）%s" % sha[:9])
+                save_state(st)
             return 0
         t0 = time.time()
         data = dump(sha)
         total, na, hidden, nshard = build(data, sha, sha_time)
         st.update({"sha": sha, "entry": eh, "built_at": time.strftime("%F %T"), "songs": total,
-                   "artists": na, "hidden": hidden, "shards": nshard})
+                   "artists": na, "hidden": hidden, "shards": nshard, "push_tried": time.time()})
         save_state(st)
+        if push_branch(sha):
+            st["pushed"] = sha + eh
+            save_state(st)
+            log("枝 zaiko へ出した %s" % sha[:9])
         log("作り直した %s 曲=%d アーティスト=%d 隠れ=%d 棚ファイル=%d %.1f秒" % (sha[:9], total, na, hidden, nshard, time.time() - t0))
         print("zaiko: songs=%d artists=%d shards=%d commit=%s" % (total, na, nshard, sha[:9]))
         return 0
