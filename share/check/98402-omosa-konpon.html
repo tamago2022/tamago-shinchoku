@@ -49,7 +49,7 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #98402 サイトの軽さの根本設計（第2便・入口の塊を削る）</div>
 <h1>#98402 サイトの軽さの根本設計（第2便・入口の塊を削る）</h1>
-<div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-16 02:5x 更新 — 実装・main合流まで済み／Lovable公開待ち（押せる手段をDispatchへ依頼済み）</div>
 
 <div class="fix">
 全ページが最初に読む「入口」から、使わない重い塊を外しました：棚データ201KB・DB接続55KB・OG画像の名簿30KB・アニメ部品35KB（圧縮後）。前日の「小さな塊をまとめる設定」が逆にそれらを入口へ吸い込んでいたのをビルドのソースマップで突き止めて撤回。結果、トップが最初に読む合計は 445KB → 344KB（圧縮後・ビルド実測）。本番への反映はLovableの「公開」待ち（下の③）。 <code>実測: 入口 index-*.js の静的依存（gzip）本番 197+160+30+6+34+他=445KB → 第2便 196+106+6+0+34=344KB</code>
@@ -85,7 +85,8 @@
 <tr><td>サーバー描画（Node形式でローカル起動）5ページ</td><td class="yes">全部200・本文文字数は本番と同一（477/2174/683/2721/687）・og:image有り</td></tr>
 <tr><td>型チェック tsc</td><td class="yes">既存99件のまま・自分の変更ファイルに新規エラー無し</td></tr>
 <tr><td>後退関所 npm run koutai（101885番・--output）</td><td class="no">誤判定FAIL（物差しの不一致・後退ではない）。&lt;code&gt;実測: ローカル配信(無圧縮) shelf 2625KB→8417KB（約3.2倍）／magazine 43KB→274KB（約6.4倍）。生/圧縮の比: coverguide-data 5996KB/2260KB=2.65倍、CSS 230KB/34KB=6.8倍&lt;/code&gt;。Cloudflare形式も起こせず。失敗台帳に2行記録</td></tr>
-<tr><td>Lovable「公開」</td><td class="no">未。AI側で押す手段なし（公開便停止・MCP未認証・Chrome起動禁止）。たまごさんが1回押す</td></tr>
+<tr><td>Lovable「公開」</td><td class="no">未（10-16 02:50 再確認：公開便Chrome CDP9223＝未開通、Lovable MCP＝401未認証・同意の巻き直し待ち）。本番の入口はまだ index-Bp-tOriZ.js のまま。ブラウザ可のDispatchセッションへ「承認URLを開く→deploy_project」を依頼済み。たまごさんの手は不要</td></tr>
+<tr><td>触る検品 verify_click（10-16 02:5x）</td><td class="yes">確認ページ 5件中5件反応・コンソールエラー0 ／ 本番曲ページ 26件中26件反応（全65件）・コンソールエラー0</td></tr>
 <tr><td>4G相当の変更後実測（本番）</td><td class="no">未（公開後に同じ物差しで測る）</td></tr>
 </table>
 
