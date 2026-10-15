@@ -55,6 +55,8 @@ BRAVE_ONEGAI = os.path.join(ST, ".1200_brave_onegai")
 KEEP = re.compile(
     r"(Brave|Claude\.app|claude-code|/MacOS/claude |chrome-native-host|Electron Framework|"
     r"caffeinate|heartbeat|oneshot_runner|1200_tatamu|"
+    # 2026-10-16 片付け・容量の係は長くても畳まない（30分で畳まれ、探偵と片付けが途中で死んでいた）
+    r"shimau\.py|youryou_|worktree_taihi|chukan_shimau|"
     r"_server\.py|server\.py|_keeper\.py|_guard\.py|_mihari\.py|_shirabe\.py|_watch\.py|"
     r"relay|tunnel|zunda|lt --port|notion-mcp-server|mcp-server|"
     r"Xcode|Finder|Dock|WindowServer|loginwindow|kernel_task)")
