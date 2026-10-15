@@ -202,6 +202,11 @@ echo "$(date '+%F %T') naoshi 呼び出し" >> "$REPO/status/gaibu_copy_naoshi.l
 # 中で30分ゲート（差し戻しがあれば status/.daimei_naoshi_force で次の便に即走る）。二重起動は中のロックで防ぐ。
 ( nohup python3 "$REPO/tools/daimei_naoshi.py" --daily >>"$REPO/status/daimei_naoshi.log" 2>&1 & ) >/dev/null 2>&1
 
+# ---- 2026-10-15 曲の在庫一覧（tools/zaiko_build.py）----
+# Genspark がマガジン原稿で使う曲を自分で在庫確認できるよう、status/public/zaiko.{json,html} と zaiko/*.json を作る。
+# 中で10分に1回だけ git fetch し、joy-relief-station の origin/main が変わった時だけ作り直す（変わらなければ即戻る）。
+( nohup python3 "$REPO/tools/zaiko_build.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+
 # ---- 2026-10-11 後ろの曲の判定（tools/oto_hantei.py --machi）：取り込みで置かれた待ち列を30分に1回・2本ずつ ----
 # 空き2GB未満なら何もしない。本番へ貼るのは試験（status/oto_hantei/shiken.json）が誤判定0のときだけ。
 OTO_GATE="$REPO/status/oto_hantei/.machi_gate"
