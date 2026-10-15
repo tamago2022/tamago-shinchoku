@@ -91,12 +91,14 @@ def dump(sha):
     """origin/main を一時フォルダへ出して、entry.ts を走らせた結果(dict)を返す。"""
     tmp = tempfile.mkdtemp(prefix="zaiko.")
     try:
-        arc = sh(["git", "-C", JRS, "archive", sha, "src", "tsconfig.json", "package.json"], timeout=120)
+        tarball = os.path.join(tmp, "src.tar")
+        arc = sh(["git", "-C", JRS, "archive", "-o", tarball, sha, "src", "tsconfig.json", "package.json"], timeout=120)
         if arc.returncode != 0:
             raise RuntimeError("git archive 失敗: " + arc.stderr.decode("utf-8", "replace")[-300:])
-        tar = subprocess.run(["tar", "-x", "-C", tmp], input=arc.stdout, capture_output=True, timeout=120)
+        tar = sh(["tar", "-x", "-f", tarball, "-C", tmp], timeout=120)
+        os.remove(tarball)
         if tar.returncode != 0:
-            raise RuntimeError("tar 失敗")
+            raise RuntimeError("tar 失敗: " + tar.stderr.decode("utf-8", "replace")[-300:])
         os.symlink(os.path.join(JRS, "node_modules"), os.path.join(tmp, "node_modules"))
         shutil.copy(ENTRY, os.path.join(tmp, "entry.ts"))
         loaders = ["--loader:.%s=empty" % x for x in ("jpg", "jpeg", "png", "webp", "svg", "gif", "avif", "css")]
