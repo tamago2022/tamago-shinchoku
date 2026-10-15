@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35007 仕入れを速度優先に戻す（案件35007） 確認ページ</title>
+<title>#35007 仕入れ速度優先の方針を再適用 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,41 +47,37 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35007 仕入れを速度優先に戻す（案件35007）</div>
-<h1>#35007 仕入れを速度優先に戻す（案件35007）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35007 仕入れ速度優先の方針を再適用</div>
+<h1>#35007 仕入れ速度優先の方針を再適用</h1>
 <div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-08-09に指示した「1曲ずつ丁寧に検証」→「量を確保・見回りが拾う」という仕入れ速度優先の方針転換が、1ヶ月以上未着手のまま判定日赤に残っていました。<code>scripts/bulk-ingest.ts</code>（並列検索＋oEmbed実在確認＋バッチ保存の機械仕入れ）を再実行して速度優先の運用に戻し、安全網（CHANNEL_IDENTITY_REQUIRED_ALL=1）が速度を落とさず誤爆を防げることを実機で確認しました。実行結果はmainへ反映済みです（コミット43761426f）。
+店主指示2026-08-09「1曲ずつ丁寧に検証」→「量を確保・見回りが拾う」の方針転換を再適用。CHANNEL_IDENTITY_REQUIRED_ALL=1を既定にしてbulk-ingest.tsを本番実行し、新規44組・152曲を追加。main合流済み、本番に反映確認済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>152曲</b><span>新規追加した曲数</span></div>
-  <div class="num"><b>44組</b><span>対象アーティスト数</span></div>
-  <div class="num"><b>59.7秒</b><span>処理にかかった時間（実測）</span></div>
-  <div class="num"><b>0件</b><span>videoIdの新規重複（実行前後638件で変化なし）</span></div>
+  <div class="num"><b>152</b><span>新規追加曲数</span></div>
+  <div class="num"><b>44</b><span>対象アーティスト数</span></div>
+  <div class="num"><b>0</b><span>新規videoId重複</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainへの反映コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/43761426f" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/43761426f</a></li>
-  <li><b>本番トップページ（現状200で返る）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>恒久ルール追記（01-ingest-linking.md）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/43761426f" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/43761426f</a></li>
+  <li><b>本番：谷村新司ページ（新規曲Sarai 2017 Versionを確認可）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tanimura-shinji" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tanimura-shinji</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへの反映</td><td class="yes">済み</td></tr>
-<tr><td>Lovableの公開（押す）</td><td class="no">専用Chromeが起動していないため未実施</td></tr>
-<tr><td>videoId新規重複チェック</td><td class="yes">0件（実機確認）</td></tr>
+<tr><td>本番HTTP応答</td><td class="yes">200</td></tr>
+<tr><td>新規曲「Sarai (2017 Version)」が本文に含まれる</td><td class="yes">含まれる</td></tr>
 </table>
 
 <footer>
-Lovableの公開ボタンは、公開専用Chrome（CDPポート9223）が現在起動していないため、このセッションからは押せていません（店主の明示承認なしにChromeを自動起動しない安全設計のため、無断で起動していません）。main合流は完了、公開は専用Chrome起動後に自動実行される見込みです。
+このページは #35007 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
