@@ -25,7 +25,21 @@ def _token_ok():
     try:
         import json
         d = json.load(open(TOKEN, encoding="utf-8"))
-        return bool(d.get("access_token") or d.get("refresh_token"))
+        if not (d.get("access_token") or d.get("refresh_token")):
+            return False
+        # ★2026-10-15【鍵はあるのに死んでいる】refresh_token が invalid_grant で死ぬと
+        #   ファイルは残るので「鍵あり」と見なされ、受け皿が立たない＝承認URLを開いても
+        #   誰も受け取らない状態で止まっていた（10/14〜15、1144が押せなくなった件）。
+        #   keeper が「同意のやり直しが必要」と記録し、その後に新しい鍵が来ていなければ
+        #   「鍵が無い」と同じ扱いにして受け皿を立てる。
+        st_path = os.path.expanduser("~/.tamago/lovable_keeper_state.json")
+        try:
+            st = json.load(open(st_path, encoding="utf-8"))
+        except Exception:
+            st = {}
+        if st.get("needConsent") and os.path.getmtime(TOKEN) <= os.path.getmtime(st_path):
+            return False
+        return True
     except Exception:
         return False
 
