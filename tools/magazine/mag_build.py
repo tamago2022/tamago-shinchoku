@@ -31,7 +31,6 @@ EXTRA_CSS = '''
 .cw .say__ic img{width:100%;height:100%;object-fit:cover}
 .cw .say__bub{background:rgba(237,230,214,.08);border-radius:4px 16px 16px 16px;padding:12px 16px;font:500 15px/1.8 "Hiragino Sans","Yu Gothic",sans-serif}
 .cw .cw-chapter--paper .say__bub{background:rgba(29,37,54,.07)}
-.cw .cw-chead__catch{font:700 clamp(24px,6.6vw,40px)/1.4 "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.04em;margin:18px 0 0}
 .cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 auto 28px;max-width:760px}.cw .cw-interlude img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.12)}.cw .cw-interlude figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:var(--mute)}.cw .cw-interlude .cw-credit{font-size:11.5px;opacity:.8}.cw .cw-interlude figcaption a{color:inherit;text-decoration:underline}
 .cw .bridge{margin:2.2em 0 0;padding-top:1.4em;border-top:1px solid var(--line);font-size:14.5px;color:var(--mute)}
@@ -70,27 +69,27 @@ def say(t):
 
 
 def chead(c):
-    """各章の頭（全マガジン共通の型・2026-10-16 たまごさん指示）：
-    1行目 アーティスト名／曲タイトル（今の見出しの文字サイズ）→ 2行目 アルバム／年（小さく）→ 見出し＝その曲を一発で表すキャッチーな一言。
-    spec では artist / song / album / year / catch を書く。古い spec（en / title / year）も同じ並びに読み替える。"""
+    """各章の頭（全マガジン共通の型・2026-10-16 たまごさん確定＝前の版の並び）：
+    小さな一言（曲を一発で表す見出し）→ 白い大きな「アーティスト名 - 曲名」→ 小さく アルバム／年。
+    spec では artist / song / album / year / catch（古い spec は en / title / year）。"""
     if c.get('artist'):
-        meta1 = f'{c["artist"]} ／ {c["song"]}'
+        title = f'{c["artist"]} - {c["song"]}'
         meta2 = ' ／ '.join(x for x in [c.get('album', ''), c.get('year', '')] if x)
     else:
-        meta1, meta2 = c['title'].replace(' - ', ' ／ ', 1), c.get('year', '')
+        title, meta2 = c['title'], c.get('year', '')
     catch = c.get('catch') or c.get('en', '')
     return (f'<header class="cw-chead"><span class="cw-chead__no" aria-hidden="true">{c["no"]}</span><div>'
-            f'<p class="cw-chead__title">{e(meta1)}</p>' + (f'<p class="cw-chead__year">{e(meta2)}</p>' if meta2 else '')
-            + (f'<h2 class="cw-chead__catch">{e(catch)}</h2>' if catch else '') + '</div></header>')
+            + (f'<p class="cw-chead__en">{e(catch)}</p>' if catch else '')
+            + f'<h2 class="cw-chead__title">{e(title)}</h2>' + (f'<p class="cw-chead__year">{e(meta2)}</p>' if meta2 else '') + '</div></header>')
 
 
 def interlude(ph):
     """章の合間の写真（全マガジン共通・2026-10-16）。時代の空気を伝える自由ライセンス写真だけ（Wikimedia Commons 等、CC BY / BY-SA / CC0 / PD）。
     主役は曲と記事。写真はわさび・大葉。クレジット（撮影者・ライセンス・元ページ）を必ず付ける。
-    ph = dict(src, w, h, alt, cap, credit, page, lic)"""
+    ph = dict(src, w, h, alt, cap, credit, page, lic)。たまごさんの絵など、キャプション不要のものは cap を書かない（src, w, h, alt だけ）"""
     return ('<section class="cw-interlude" aria-label="写真"><div class="cw-wrap">' + ''.join(
         f'<figure><img src="{e(x["src"])}" width="{x["w"]}" height="{x["h"]}" alt="{e(x["alt"])}" loading="lazy" decoding="async"/>'
-        f'<figcaption>{x["cap"]}<br/><span class="cw-credit">写真：<a href="{e(x["page"])}" target="_blank" rel="noopener">{e(x["credit"])}</a>（{e(x["lic"])}）</span></figcaption></figure>'
+        + (f'<figcaption>{x["cap"]}<br/><span class="cw-credit">写真：<a href="{e(x["page"])}" target="_blank" rel="noopener">{e(x["credit"])}</a>（{e(x["lic"])}）</span></figcaption>' if x.get('cap') else '') + '</figure>'
         for x in ph) + '</div></section>')
 
 
@@ -405,7 +404,7 @@ def write(m):  # noqa: F811  共通部品の訳も訳ファイルへ足す
 # ①サイトの共通CSS（assets/cw/styles.css・236KB）は読まない。マガジンが使うのはその「土台」だけなので、土台だけをページに入れる
 #   （外すと body の余白8pxが出て、左右と上に白い枠が出る＝星勝で実際に起きた）
 # ②上の「Magazine Story」の文字は出さない
-# ③各章の頭は chead() の型（アーティスト／曲 → アルバム／年 → 見出し）。古い型（見出しが上）も並べ替える
+# ③各章の頭は chead() の型（小さな一言 → 白い大きな アーティスト - 曲 → 小さく年）
 # ④写真の合間・再生ボタンも同じ部品
 # 機械の裏付け：python3 tools/magazine/unify_look.py --check（全マガジンで上の4つを検査。ズレがあれば exit 2）
 BASE_CSS = ('@layer base{*,:after,:before{box-sizing:border-box;border:0 solid;margin:0;padding:0}'
@@ -417,8 +416,7 @@ BASE_CSS = ('@layer base{*,:after,:before{box-sizing:border-box;border:0 solid;m
             'body{background:#10182a;color:#221811;font-feature-settings:"palt";-webkit-font-smoothing:antialiased}'
             'h1,h2,h3{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;letter-spacing:.02em}}'
             '.min-h-\\[100svh\\]{min-height:100svh}.w-full{width:100%}')
-LOOK_CSS = ('.cw .cw-chead__catch{font:700 clamp(24px,6.6vw,40px)/1.4 "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.04em;margin:18px 0 0}'
-            '.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 auto 28px;max-width:760px}.cw .cw-interlude img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.12)}'
+LOOK_CSS = ('.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 auto 28px;max-width:760px}.cw .cw-interlude img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.12)}'
             '.cw .cw-interlude figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:var(--mute)}.cw .cw-interlude .cw-credit{font-size:11.5px;opacity:.8}'
             '.cw .cw-interlude figcaption a{color:inherit;text-decoration:underline}.cw .cw-interlude p{max-width:640px;margin:22px auto 0;font-size:15.5px;line-height:1.95}'
             '.cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}'
@@ -435,11 +433,10 @@ def unify_look(h):
     h = h.replace('</head>', '<style id="cw-base">' + BASE_CSS + '</style></head>', 1)
     # ② Magazine Story を消す
     h = R.sub(r'<span>\s*Magazine Story\s*</span>', '', h)
-    # ③ 古い型の章頭（見出し→アーティスト - 曲→年）を新しい型へ
-    # 属性の並び（class が前でも後ろでも）に対応
-    h = R.sub(r'<p ([^>]*?)class="cw-chead__en"([^>]*)>(.*?)</p>\s*<h2 ([^>]*?)class="cw-chead__title"([^>]*)>(.*?)</h2>\s*(<p [^>]*class="cw-chead__year"[^>]*>.*?</p>)?',
-              lambda m: (f'<p {m.group(4)}class="cw-chead__title"{m.group(5)}>{m.group(6).replace(" - ", " ／ ", 1)}</p>{m.group(7) or ""}'
-                         + (f'<h2 {m.group(1)}class="cw-chead__catch"{m.group(2)}>{m.group(3)}</h2>' if m.group(3).strip() else '')), h, flags=R.S)
+    # ③ 章頭は「小さな一言 → アーティスト - 曲 → 年」（前の版の型）。一時期の「大きな一言が下」の型は戻す
+    h = R.sub(r'<p ([^>]*?)class="cw-chead__title"([^>]*)>(.*?)</p>\s*(<p [^>]*class="cw-chead__year"[^>]*>.*?</p>)?\s*(?:<h2 ([^>]*?)class="cw-chead__catch"([^>]*)>(.*?)</h2>)?',
+              lambda m: ((f'<p {m.group(5) or ""}class="cw-chead__en"{m.group(6) or ""}>{m.group(7)}</p>' if m.group(7) else '')
+                         + f'<h2 {m.group(1)}class="cw-chead__title"{m.group(2)}>{m.group(3).replace(" ／ ", " - ", 1)}</h2>{m.group(4) or ""}'), h, flags=R.S)
     # サブタイトル（〜…〜）は同じ部品
     h = R.sub(r'<span style="(?:display:block;)?font-size:\.4[08]?em[^"]*">', '<span class="cw-hero__sub">', h)
     # ④ 再生ボタンの中身は空にして、CSSの三角で描く（怒れる人々の本番と同じ・軽い）
@@ -459,7 +456,7 @@ def look_check(h):
     if 'assets/cw/styles.css' in h: bad.append('共通CSSを読んでいる')
     if 'id="cw-base"' not in h: bad.append('土台のCSSが無い（白い枠が出る）')
     if R.search(r'Magazine Story', h): bad.append('Magazine Story が出ている')
-    if R.search(r'class="cw-chead__en"', h): bad.append('古い型の章頭')
+    if R.search(r'class="cw-chead__catch"|<p [^>]*class="cw-chead__title"', h): bad.append('章頭の型が違う（一言は小さく上）')
     if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
     return bad
 
