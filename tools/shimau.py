@@ -219,20 +219,25 @@ def hakaru(res):
     res["swap"] = subprocess.run(["sysctl", "vm.swapusage"], capture_output=True, text=True).stdout.strip()
 
 
+def jougen_run():
+    import youryou_jougen
+    return youryou_jougen.run()
+
+
 def omoi():
-    """2026-10-15 たまごさん「重いディスク走査は負荷が下がるまで再開しない」。重い間は走らない。"""
+    """2026-10-15 たまごさん「重いディスク走査は負荷が下がるまで再開しない」。重い間は「測る」を飛ばす。
+    2026-10-16 実測：この判定（スワップ90%超・Braveのせいで一日中）で shimau.go が18:58から5時間放置され、
+    片付けまで一度も走らなかった。→ 片付け（消す）は負荷に関係なく走る。重いのは du の「測る」だけ。"""
     try:
         import fuka_hassha
         m = fuka_hassha.measure()
         r = (m.get("load1") or 0) / float(m.get("ncpu") or 8)
-        return r >= 0.7 or (m.get("swapPct") or 0) >= 90 or fuka_hassha.kiken(m) is not None
+        return r >= 1.0 or fuka_hassha.kiken(m) is not None
     except Exception:
         return False
 
 
 def main():
-    if omoi():
-        return
     force = os.path.exists(GO)
     if force:
         os.remove(GO)
@@ -253,9 +258,14 @@ def main():
     step(res, "Claude の古いセッションの outputs", claude_sessions)
     step(res, "ブラウザのキャッシュ", browser_cache)
     step(res, "HDD の置き場（日数で）", hdd_okiba_souji)
-    res["state"] = "測っている"
-    save(res)
-    hakaru(res)
+    step(res, "場所ごとの上限（youryou_jougen）", jougen_run)
+    step(res, "動画・音声の中間ファイル（chukan_shimau）", lambda: __import__("chukan_shimau").run())
+    if omoi() and not force:
+        res["state"] = "測るのは重いので次回"
+    else:
+        res["state"] = "測っている"
+        save(res)
+        hakaru(res)
     res.update(state="完了", finished=time.strftime("%F %T"), mac_free_gb_after=free_gb())
     save(res)
 

@@ -132,8 +132,10 @@ def main():
     try:
         import fuka_hassha
         _m = fuka_hassha.measure()
-        if fuka_hassha.kiken(_m) or (_m.get("swapPct") or 0) >= 90 or \
-                (_m.get("load1") or 0) / float(_m.get("ncpu") or 8) >= 1.5:
+        # 2026-10-16 実測：スワップ90%超（Braveのせいで一日中）で 10/15 04:57 から一度も走らず、
+        #   空きが46GB→10GBへ落ちた。片付けは軽い仕事なので、空き30GB未満なら負荷に関係なく走る。
+        if free_gb() >= 30 and (fuka_hassha.kiken(_m) or
+                                (_m.get("load1") or 0) / float(_m.get("ncpu") or 8) >= 1.5):
             return
     except Exception:
         pass
@@ -267,6 +269,12 @@ def main():
             except Exception as e:
                 res["skipped"].append("%s（%s）" % (fn, str(e)[:60]))
     res["free_gb_after"] = free_gb()
+    # 2026-10-16 動画・音声の中間ファイルも、仕事の回収のたびにしまう（tools/chukan_shimau.py）
+    try:
+        import chukan_shimau
+        res["chukan"] = chukan_shimau.run()
+    except Exception as e:
+        res["chukan"] = "失敗 %s" % str(e)[:120]
     res["state"] = "完了"
     json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 

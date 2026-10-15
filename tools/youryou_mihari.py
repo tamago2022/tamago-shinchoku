@@ -13,6 +13,9 @@
   ・10GB未満 → 救急（tools/youryou_kyuukyuu.py＝作り直せるキャッシュだけ消す）を自動で1回起こす（6時間に1回まで）
 目印は「空き容量の番人」。disk_guardian.py の目印「容量見張り」とは別の文字にしてある
 （同じ文字を含むと、あちらが10GBで勝手に外してしまうため）。
+  ・30GB未満 → 片付け係（tools/shimau.py＝場所ごとの上限 youryou_jougen を含む）を1時間に1回すぐ起こす（2026-10-16）
+  ・空きの推移を10分おきに7日分 status/public/youryou_suii.json へ（進捗表 health.json の aki に写る）。
+    24時間で5GB以上減っていたら Dispatch に「減り続けている」と知らせる（12時間に1回まで）
 結果：status/public/youryou_mihari.json
 """
 import io
@@ -27,6 +30,11 @@ OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
 STATE = os.path.join(REPO, "status", "youryou_mihari_state.json")
 PUB = os.path.join(REPO, "status", "public", "youryou_mihari.json")
 KYUUKYUU_GO = os.path.join(REPO, "status", "youryou_kyuukyuu.go")
+SHIMAU_GO = os.path.join(REPO, "status", "shimau.go")
+SUII = os.path.join(REPO, "status", "public", "youryou_suii.json")
+SHIMAU_EVERY = 3600
+SUII_EVERY = 600
+HERU_EVERY = 12 * 3600
 MARK = "空き容量の番人"
 
 WARN_GB = 30
@@ -113,6 +121,30 @@ def main():
             st["kyuukyuu_at"] = now
         except Exception:
             pass
+
+    # 2026-10-16 30GB未満：片付け係をすぐ起こす（1時間に1回まで）
+    if g < WARN_GB and now - st.get("shimau_at", 0) > SHIMAU_EVERY:
+        try:
+            open(SHIMAU_GO, "w").close()
+            st["shimau_at"] = now
+        except Exception:
+            pass
+
+    # 2026-10-16 推移（10分おき・7日分）と「24時間で5GB以上減った」知らせ
+    su = load(SUII, {"points": []})
+    pts = su.get("points", [])
+    if not pts or now - pts[-1][0] >= SUII_EVERY:
+        pts.append([int(now), round(g, 2)])
+        pts = [x for x in pts if now - x[0] <= 7 * 86400]
+        day = [x for x in pts if now - x[0] <= 86400]
+        d24 = round(g - day[0][1], 2) if day else 0
+        su = {"at": time.strftime("%F %T"), "free_gb": round(g, 2), "diff_24h_gb": d24,
+              "min_7d_gb": min(x[1] for x in pts), "points": pts}
+        save(SUII, su)
+        if d24 <= -5 and now - st.get("heru_at", 0) > HERU_EVERY:
+            outbox("Macの空きが24時間で%.1fGB減りました（今%.1fGB）" % (-d24, g),
+                   "減り続けています。犯人は status/public/youryou_tantei.json（tools/youryou_tantei.py）で測れます。")
+            st["heru_at"] = now
 
     st["band"] = band
     save(STATE, st)
