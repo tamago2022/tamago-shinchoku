@@ -88,8 +88,13 @@ def main():
     os.makedirs(WORK, exist_ok=True)
     wav = os.path.join(WORK, "src.wav")
     to_wav(a.src, wav)
-    with wave.open(wav) as r:
-        rate = r.getframerate(); pcm = r.readframes(r.getnframes())
+    # afconvert の WAVE は「拡張形式(65534)」で wave モジュールが読めないので、data の塊を直接読む
+    raw = open(wav, "rb").read()
+    i = raw.find(b"data", 12)
+    n = int.from_bytes(raw[i + 4:i + 8], "little")
+    rate = 24000
+    pcm = raw[i + 8:i + 8 + n]
+    pcm = pcm[: len(pcm) // 2 * 2]
     head = pcm[: rate * 2 * 90]
     sil = silences(head, rate)
     # 塊＝無音と無音のあいだ
