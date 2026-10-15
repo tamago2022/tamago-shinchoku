@@ -98,6 +98,7 @@
 - **扱った曲は全部、ごきげん補給所の曲ページ（`/cover-guide?artist=…&song=…`）へ飛べるようにする（2026-10-14）。** 曲ページが無い曲は作ってから貼る（`sekisho-artist-song` の関所を通す／名カバーの棚には足さない）。
 - **叩きでも完成形（2026-10-14）。** たまごさんは完成前でも確認ページからシェアするので、毎回シティポップ特集と同じ完成形まで持っていく。シェア表示（OGP：og:title／og:description／og:image＝ヘッダーの曲のサムネイル／twitter:card）も必ず入れる。
 - **公開は毎回本番へ（2026-10-15）。** 各マガジンは本番URLを1つだけ持ち（`https://joy-relief-station.lovable.app/magazine/<名前>.html`＝joy-relief-station の `public/magazine/`）、直すたびに同じURLを上書きする。作り方：`python3 tools/magazine/spec_<名前>.py`（確認ページと本番用の写し `status/magazine_prod/` を同時に作る）→ `bash tools/magazine/put_prod.sh` → Lovable の `deploy_project`。一覧は Obsidian の「マガジン一覧」ノート1枚。
+- **マガジンはサイトと同じ全言語で読めるようにする（2026-10-16・たまごさん指示・全マガジン共通）：** 対応言語はサイトの `src/i18n/config.ts` の `SUPPORTED_LANGUAGES`（今は 日本語・English・中文・Español・한국어 の5つ）。spec に `i18n={言語:{キー:訳}}` を渡すと `mag_build.py` が地球マークの切替（サイトと同じ `gokigen-lang` を共有）を入れる。キー一覧は `python3 tools/magazine/mag_build.py --i18n-keys <html>`。英語などは直訳でなく、その言語の読者の心に届く文にする。
 - **音はふつうに出る状態が正しい。** 埋め込みに `mute=1` を付けない。無音で試すのは工場の試験（`tools/muon.py`）の中だけ。
 - **機械の裏付け：** `python3 tools/magazine_monogatari_kanmon.py --all`（`<meta name="tamago-magazine" content="story">` を付けたページで、つかみ・各章のつなぎ・締め・運営アイコン（肩書きなし）・ヘッダーが曲のサムネイルか・つながっている特集カードの有無を見る。`--self-test` あり）。マガジンのページには必ずこのmetaを付けて、出す前に通す。
 
