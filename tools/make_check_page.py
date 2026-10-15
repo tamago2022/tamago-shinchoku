@@ -58,6 +58,28 @@ _DEAD_STATUS_LINK_RE = re.compile(
 )
 
 
+# 34476番・101885番：本体リポ joy-relief-station は非公開。たまごさんが押すと必ず404になる
+# （commit/blob/pull/tree すべて）。確認ページに貼ってよいのは本人が開ける場所だけ。
+_PRIVATE_REPO_LINK_RE = re.compile(r"github\.com/tamago2022/joy-relief-station(?:[/?#]|$)")
+
+
+def find_private_repo_links(cfg):
+    """links だけでなく what/footer/table の本文中の href も含めて、非公開リポへのリンクを探す。"""
+    hits = []
+    for item in cfg.get("links") or []:
+        url = item.get("url") or ""
+        if _PRIVATE_REPO_LINK_RE.search(url):
+            hits.append((item.get("label"), url))
+    texts = [cfg.get("what") or "", cfg.get("footer") or ""]
+    for row in cfg.get("table") or []:
+        texts.append(str(row.get("result", "")) + str(row.get("item", "")))
+    for t in texts:
+        for url in re.findall(r"https?://[^\s\"'<>]+", t):
+            if _PRIVATE_REPO_LINK_RE.search(url):
+                hits.append(("本文", url))
+    return hits
+
+
 def find_dead_status_links(links):
     """リンク一覧の中から、404が確定しているstatus/直下へのGitHubリンクを探す。"""
     hits = []
@@ -249,6 +271,12 @@ def main():
         ),
     )
     ap.add_argument(
+        "--allow-private-repo-link",
+        dest="allow_private_repo_link",
+        help="非公開リポ joy-relief-station へのGitHubリンクを、理由付きで明示的に許可する。"
+             "指定しない限り検出した時点で書き出しを拒否する（34476番・101885番の再発防止）。",
+    )
+    ap.add_argument(
         "--allow-dead-status-link",
         help=(
             "status/直下（status/public/を除く）へのGitHub blob/rawリンクを、理由付きで"
@@ -311,6 +339,24 @@ def main():
             label, url = parse_pair(raw)
             links.append({"label": label, "url": url})
         cfg["links"] = links
+
+    private_hits = find_private_repo_links(cfg)
+    if private_hits:
+        reason = args.allow_private_repo_link
+        if not reason:
+            detail = " ／ ".join("%s: %s" % (label, url) for label, url in private_hits)
+            print(
+                "エラー: 非公開リポ joy-relief-station へのGitHubリンクを検出しました：%s\n"
+                "本体リポは非公開のため、たまごさんが押すと必ず404になり、確認ページの機械検品で差し戻されます"
+                "（34476番・101885番で同じ差し戻しが2回起きています）。"
+                "条文やコードは <pre> に転記し、判定・数字は status/public/ の公開JSONへ置いてそこへリンクしてください。"
+                "本当に例外事情がある時だけ --allow-private-repo-link \"理由\" を付けてください。"
+                "（このページは書き出されていません）" % detail,
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        print("⚠️ 非公開リポへのリンクを理由付きで許可して書き出します：%s（理由：%s）"
+              % (" ／ ".join(u for _, u in private_hits), reason))
 
     dead_hits = find_dead_status_links(cfg.get("links") or [])
     if dead_hits:
