@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 """Claudeの生成物の納品先は、ここ1か所で決める（2026-10-14・たまごさんの決定）。
 
-  納品先（正本）：Googleドライブ「マイドライブ/AI生成物/Claude/<案件>/」
-  案件フォルダ   ：ANKEN（下）。迷ったら「その他」。
+  納品先（正本）：Googleドライブ「マイドライブ/AI生成物/Claude/<案件>/」＝Claude専用の置き場はここ1か所
+  案件フォルダ   ：ANKEN（下）。迷ったら「その他」。動画（棒人間・HowItHolds 等）は「棒人間_Opus」。
+  ファイル名     ：頭に必ず日付「YYYY-MM-DD_」（put が自動で付ける）→ 名前順＝新しい順に並ぶ
+  一覧           ：「AI生成物/Claude/00_一覧_新しい順.csv」（全ファイル：日付／案件／名前／最新orボツ／ひとこと／リンク）
+                   flush のたびに作り直す（2026-10-15・たまごさん「『あれ、どこだっけ？』をなくしたい」）
   使わない置き場 ：Mac本体（~/Documents・デスクトップ）／iCloud Drive
 
 Googleドライブのアプリが使えない間（マウントが Resource deadlock avoided 等で読めない）は、
@@ -11,17 +14,18 @@ iMac HDD の「Claude上げ待ち/<案件>/」に積んでおき、心臓が10�
 上げられるようになった時点で自動でドライブへ上げる。上げ終えたものは「Claude上げ済み/」へ移す（控え）。
 
 使い方（Mac上で）：
-  python3 tools/claude_nouhin.py put <ファイルかフォルダ> [--anken HowItHolds] [--move] [--sub EP01]
+  python3 tools/claude_nouhin.py put <ファイルかフォルダ> [--anken 棒人間_Opus] [--move] [--sub EP01]
       → HDDの上げ待ちへ写して中身を突き合わせる（--move なら元を消す）。続けて flush を試す。
   python3 tools/claude_nouhin.py flush       # 上げ待ち → ドライブ（心臓から10分おき）
   python3 tools/claude_nouhin.py status      # 状態を表示
+  python3 tools/claude_nouhin.py ichiran     # 一覧（CSV）だけ作り直す
   python3 tools/claude_nouhin.py --self-test
 
 守ること：空き容量が30GBを切ったら何もしない。Googleアカウントの接続・設定には触らない。
 デスクトップには何も置かない。許可ポップアップが出る操作（osascript等）は使わない。
 結果：status/public/claude_nouhin.json
 """
-import filecmp, glob, json, os, shutil, subprocess, sys, time
+import csv, filecmp, glob, json, os, re, shutil, subprocess, sys, time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOME = os.path.expanduser("~")
@@ -30,7 +34,8 @@ DRIVE_DEST = "AI生成物/Claude"
 ANKEN = {
     "詩と音楽_僕は見た、未来を待つ人々を": ["僕は見た", "未来を待つ", "bokumita"],
     "ポッドキャスト神回_日本語音源": ["神回", "ソロプレナー", "podcast", "ポッドキャスト", "lex fridman"],
-    "HowItHolds": ["howitholds", "ep01", "ep02", "pilot", "パイロット", "nightowls", "キャラ版", "型見比べ", "ブラックスタート"],
+    "棒人間_Opus": ["棒人間", "howitholds", "ep01", "ep02", "pilot", "パイロット", "shizukesa", "静けさ",
+                   "nightowls", "キャラ版", "型見比べ", "ブラックスタート", "男の子", "顔の案", "頭身"],
     "地球観察日記_第2作": ["地球観察日記", "montage de voyage", "chikyu2", "奇妙なお祭り"],
     "わえちゃん": ["わえ", "wae"],
     "その他": [],
@@ -40,6 +45,37 @@ HDD_ROOT = "/Volumes/iMac HDD/Mac標準置き場"
 QUEUE = os.path.join(HDD_ROOT, "Claude上げ待ち")
 SUMI = os.path.join(HDD_ROOT, "Claude上げ済み")
 MIN_FREE_GB = 30
+ICHIRAN = "00_一覧_新しい順.csv"
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}_")
+# 一覧の「最新orボツ」「ひとこと」。ファイル名に含まれる語で決める（上から先に当たったもの）。
+KUBUN = [
+    ("_写し", "★最新", "同じ中身の写し（上の行と同じ動画）"),
+    ("検品シート", "ボツ", "静けさパイロットの検品シート"),
+    ("男の子版", "★最新", "EP01 本編・男の子が出る版（9分56秒）"),
+    ("顔の案", "★最新", "顔の案の比較"),
+    ("サムネ案", "★最新", "EP01 サムネイル案"),
+    ("ブラックスタート", "★最新", "EP01 ブラックスタート"),
+    ("静けさ", "ボツ", "和紙・ミニマム系の静けさパイロット"),
+    ("shizukesa", "ボツ", "和紙・ミニマム系の静けさパイロット"),
+    ("キャラ", "ボツ", "キャラの土台（2〜2.5頭身）の試作"),
+    ("nightowls", "ボツ", "キャラの土台（2〜2.5頭身）の試作"),
+]
+
+
+def hiduke_name(name, path=None):
+    """名前の頭に日付が無ければ、元ファイルの更新日を付ける（名前順＝日付順にするため）。"""
+    if DATE_RE.match(name):
+        return name
+    t = os.path.getmtime(path) if path and os.path.exists(path) else time.time()
+    return time.strftime("%Y-%m-%d_", time.localtime(t)) + name
+
+
+def kubun_of(name):
+    low = name.lower()
+    for k, kb, hk in KUBUN:
+        if k.lower() in low:
+            return kb, hk
+    return "", ""
 OUT = os.path.join(REPO, "status", "public", "claude_nouhin.json")
 
 
@@ -110,7 +146,7 @@ def put(src, anken=None, sub=None, move=False):
     anken = anken if anken in ANKEN else anken_of(src)
     d = os.path.join(QUEUE, anken, *( [sub] if sub else [] ))
     os.makedirs(d, exist_ok=True)
-    dst = os.path.join(d, os.path.basename(src.rstrip("/")))
+    dst = os.path.join(d, hiduke_name(os.path.basename(src.rstrip("/")), src))
     if os.path.isdir(src):
         # HDDはexFAT：属性の写しで Errno 22 になるので中身だけ写す
         shutil.copytree(src, dst, dirs_exist_ok=True, copy_function=shutil.copyfile)
@@ -154,6 +190,75 @@ def sweep():
     return moved
 
 
+def drive_id(p):
+    rc, out = _run(["xattr", "-p", "com.google.drivefs.item-id#S", p], 10)
+    return out.strip() if rc == 0 else ""
+
+
+def hiduke_tsukeru(base):
+    """ドライブ上の日付なしファイルに日付を付ける（名前を変えるだけ・消さない）。"""
+    done = []
+    for dp, ds, fs in os.walk(base):
+        ds[:] = [d for d in ds if not d.startswith(".")]
+        for f in fs:
+            if f.startswith(".") or f == ICHIRAN or DATE_RE.match(f):
+                continue
+            p = os.path.join(dp, f)
+            q = os.path.join(dp, hiduke_name(f, p))
+            if not os.path.exists(q) and _run(["mv", "-n", p, q], 30)[0] == 0:
+                done.append(os.path.relpath(q, base))
+    return done
+
+
+def ichiran(base=None):
+    """ドライブの AI生成物/Claude を全部なめて、新しい順の一覧CSVを置く（リンクつき）。"""
+    if base is None:
+        base, why = drive_alive()
+        if not base:
+            return {"ok": False, "why": why}
+    try:
+        hiduke_tsukeru(base)
+    except Exception:
+        pass
+    rows = []
+    for dp, ds, fs in os.walk(base):
+        ds[:] = [d for d in ds if not d.startswith(".")]
+        for f in fs:
+            if f.startswith(".") or f == ICHIRAN:
+                continue
+            p = os.path.join(dp, f)
+            rel = os.path.relpath(p, base)
+            m = DATE_RE.match(f)
+            kb, hk = kubun_of(rel)
+            i = drive_id(p)
+            rows.append({"日付": f[:10] if m else "", "案件": rel.split(os.sep)[0] if os.sep in rel else "",
+                         "名前": f, "最新orボツ": kb, "ひとこと": hk,
+                         "リンク": ("https://drive.google.com/file/d/%s/view" % i) if i else "",
+                         "場所": rel})
+    rows.sort(key=lambda r: (r["日付"], r["名前"]), reverse=True)
+    cols = ["日付", "案件", "名前", "最新orボツ", "ひとこと", "リンク", "場所"]
+    tmp = os.path.join(HDD_ROOT if os.path.isdir(HDD_ROOT) else "/tmp", "." + ICHIRAN)
+    with open(tmp, "w", encoding="utf-8-sig", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    rc, out = _run(["cp", tmp, os.path.join(base, ICHIRAN)], 60)
+    os.remove(tmp)
+    folders = {"AI生成物/Claude": drive_id(base)}
+    for a in ANKEN:
+        folders["AI生成物/Claude/" + a] = drive_id(os.path.join(base, a))
+    res = {"ok": rc == 0, "count": len(rows), "folders": {k: ("https://drive.google.com/drive/folders/" + v) if v else ""
+                                                        for k, v in folders.items()},
+           "ichiran": "https://drive.google.com/file/d/%s/view" % drive_id(os.path.join(base, ICHIRAN)), "rows": rows}
+    try:
+        with open(os.path.join(REPO, "status", "claude_ichiran.json"), "w", encoding="utf-8") as fh:
+            json.dump(dict([(k, v) for k, v in res.items() if k != "rows"] + [("at", time.strftime("%F %T"))]), fh,
+                      ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+    return res
+
+
 def flush():
     res = {"at": time.strftime("%F %T"), "uploaded": [], "errors": []}
     try:
@@ -184,6 +289,14 @@ def flush():
                     res["errors"].append({"file": rel, "err": out.strip()[:200]})
                     break
             res["state"] = "上げた"
+            # 一覧は「上げたとき」か「1時間たったとき」に作り直す
+            ij = os.path.join(REPO, "status", "claude_ichiran.json")
+            if res["uploaded"] or not os.path.exists(ij) or time.time() - os.path.getmtime(ij) > 3600:
+                try:
+                    r = ichiran(base)
+                    res["ichiran"] = {"ok": r["ok"], "count": r["count"]}
+                except Exception as e:
+                    res["ichiran_err"] = repr(e)
     res["queued"] = queued() if os.path.isdir(QUEUE) else []
     res["queued_count"] = len(res["queued"])
     res["drive_dest"] = "マイドライブ/" + DRIVE_DEST + "/<案件>"
@@ -200,8 +313,12 @@ def flush():
 def self_test():
     assert anken_of("/x/2026-10-14_僕は見た、未来を待つ人々を_音楽と朗読.mp3").startswith("詩と音楽")
     assert anken_of("ピーター・レベルズ（Lex Fridman 440）神回") == "ポッドキャスト神回_日本語音源"
-    assert anken_of("HowItHolds_EP01_ブラックスタート_540p.mp4") == "HowItHolds"
-    assert anken_of("pilot_shizukesa_A_ambient_1080p.mp4") == "HowItHolds"
+    assert anken_of("HowItHolds_EP01_ブラックスタート_540p.mp4") == "棒人間_Opus"
+    assert anken_of("pilot_shizukesa_A_ambient_1080p.mp4") == "棒人間_Opus"
+    assert hiduke_name("2026-10-11_EP01.mp4") == "2026-10-11_EP01.mp4"
+    assert DATE_RE.match(hiduke_name("x.mp4"))
+    assert kubun_of("2026-10-11_EP01_ブラックスタート_男の子版.mp4")[0] == "★最新"
+    assert kubun_of("2026-10-15_静けさパイロット_v2.mp4")[0] == "ボツ"
     assert anken_of("wae/絵_01.png") == "わえちゃん"
     assert anken_of("なにか.txt") == SONOTA
     assert all(" (" not in os.path.dirname(r) for r in drive_roots())
@@ -214,6 +331,10 @@ def main(a):
                           "queued": queued() if os.path.isdir(QUEUE) else []}, ensure_ascii=False, indent=1))
     elif a[0] == "--self-test":
         self_test()
+    elif a[0] == "ichiran":
+        r = ichiran()
+        r.pop("rows", None)
+        print(json.dumps(r, ensure_ascii=False, indent=1))
     elif a[0] == "flush":
         print(json.dumps(flush(), ensure_ascii=False, indent=1))
     elif a[0] == "put":
