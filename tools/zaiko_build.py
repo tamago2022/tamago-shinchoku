@@ -294,8 +294,19 @@ def push_branch(sha):
         log("枝の commit 失敗: %s" % (c.stdout + c.stderr).decode("utf-8", "replace")[-200:])
         return False
     sh(["git", "-C", d, "branch", "-q", "-M", "zaiko"], timeout=30)
-    p = sh(["git", "-C", d, "-c", "credential.helper=!gh auth git-credential", "push", "--force", "-q",
-            "origin", "zaiko:refs/heads/zaiko"], timeout=170)
+    # 2026-10-15 実測：この Mac では git push が数秒で signal 15 で落ちることがある（2回目以降は通る）。3回まで粘る。
+    for _ in range(3):
+        try:
+            p = sh(["git", "-C", d, "-c", "credential.helper=!gh auth git-credential", "push", "--force", "-q",
+                    "origin", "zaiko:refs/heads/zaiko"], timeout=170)
+        except subprocess.TimeoutExpired:
+            continue
+        if p.returncode == 0:
+            break
+        time.sleep(5)
+    else:
+        log("枝 zaiko への push が3回とも落ちた")
+        return False
     if p.returncode != 0:
         log("枝 zaiko への push 失敗: %s" % p.stderr.decode("utf-8", "replace")[-200:])
         return False
