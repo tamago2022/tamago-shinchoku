@@ -27,9 +27,25 @@ MARK = "負荷の番人"
 HEAVY = ("tools/shimau.py", "tools/youryou_", "tools/worktree_taihi.py", "du -skx", "du -xk", "du -sk")
 
 
+CLEANERS = ("tools/shimau.py", "tools/worktree_taihi.py")
+
+
+def _disk_free_gb():
+    try:
+        st = os.statvfs(os.path.expanduser("~"))
+        return st.f_bavail * st.f_frsize / 1e9
+    except Exception:
+        return 99.0
+
+
 def omoi_wo_tomeru():
     n = 0
+    # 2026-10-15 19時：空きが22GB未満の間は、空きを作る係（shimau・worktree_taihi）は止めない。
+    #   止めると「重い→掃除停止→ディスク減→発車停止」の悪循環になる（実測 46GB→19GB）。du の走査だけ止める。
+    low = _disk_free_gb() < 22
     for pat in HEAVY:
+        if low and pat in CLEANERS:
+            continue
         r = subprocess.run(["pkill", "-f", pat], capture_output=True)
         n += 1 if r.returncode == 0 else 0
     return n

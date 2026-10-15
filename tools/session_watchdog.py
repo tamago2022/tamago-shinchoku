@@ -443,6 +443,19 @@ def no_fable():
     return True
 
 
+def _fable_lane_session(s):
+    """2026-10-15 Fableレーンの子は、ロード比の危険域でも落とさない（落とすと5回切られて確認待ちに落ちていた）。
+    メモリが本当に苦しいときは発車側（auto_launcher._fable_lane）が新規を出さないので、ここでは走行中を守る。"""
+    t = (s.get("title") or "")
+    if not (t.startswith("Fable｜") or "fable" in str(s.get("model") or "")):
+        return False
+    try:
+        import fable_week as _fw
+        return bool(_fw.active()[0])
+    except Exception:
+        return False
+
+
 def model_for(task_text, prev_model=None, why=""):
     """(モデル, 理由)。既定Sonnet。Fableはマガジン記事執筆だけ、かつ週枠に余裕がある時だけ。判断は機械。人に聞かない"""
     q = quota()
@@ -819,10 +832,12 @@ def main():
     if danger and not shed_list:
         pool = [s for s in (machine.get("sessionList") or [])
                 if not s.get("isDispatchSelf")
+                and not _fable_lane_session(s)
                 and not is_essential(s.get("title") or "", cfg)
                 and s.get("pid")]
         pool.sort(key=lambda s: -(s.get("elapsedMin") or 0))   # 長く動いているものから
         shed_list = pool[:1]
+    shed_list = [s for s in shed_list if not _fable_lane_session(s)]
     if (unsafe or danger or machine.get("predict")) and (danger or alive_n > (machine.get("safeMax") or 0)) and shed_list:
         c = shed_list[0]
         if not dry:

@@ -109,8 +109,12 @@ def kiken(m):
     ratio = (m["load1"] / float(m["ncpu"])) if m.get("load1") is not None and m.get("ncpu") else None
     if ratio is not None and ratio >= FREEZE_RATIO:
         return "ロード%.1f（コア%d×%.0f超）" % (m["load1"], m["ncpu"], FREEZE_RATIO)
-    if (m.get("swapPct") or 0) >= SWAP_FREEZE:
-        return "スワップ%.0f%%（%.0f%%超）" % (m["swapPct"], SWAP_FREEZE)
+    # 2026-10-15 19時：スワップ%だけでは止めない。実測では Brave（タブ64枚・17GB＝たまごさんの場所）のせいで
+    #   スワップは一日中95%前後に張り付き、メモリ圧は緑・空き75〜85%のまま。この旗が掃除係（worktree_taihi/shimau）
+    #   まで止め、ディスクが46GB→19GBに落ちて工場が全停止した。メモリ圧が緑でない or 空き20%未満と重なった時だけ止める。
+    if ((m.get("swapPct") or 0) >= SWAP_FREEZE
+            and (m.get("pressureLevel") not in (None, 1) or (m.get("memFreePct") is not None and m["memFreePct"] < 20))):
+        return "スワップ%.0f%%（%.0f%%超）＋メモリ圧/空きも苦しい" % (m["swapPct"], SWAP_FREEZE)
     if m.get("memFreePct") is not None and m["memFreePct"] < MEMFREE_FREEZE:
         return "空きメモリ%d%%（%d%%未満）" % (m["memFreePct"], MEMFREE_FREEZE)
     return None

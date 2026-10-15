@@ -2132,6 +2132,60 @@ def urgent_lane_safe_max(alive, safe_max, measured_safe_max, items, now=None):
     return min(safe_max + 1, measured_safe_max), long_waiting[0]
 
 
+FABLE_LANE_MAX = 3
+
+
+def _fable_lane(q, items):
+    """Fableレーン：fableLane:true かつ fixedModel=Fable の待ち仕事を、空きがあれば出す。出したら True。"""
+    try:
+        import fable_week as _fw
+        ok, why = _fw.active()
+    except Exception as e:
+        ok, why = False, str(e)
+    if not ok:
+        return False
+    lane = [it for it in items if it.get("fableLane") and it.get("fixedModel") == FABLE]
+    if not lane:
+        return False
+
+    def _alive(pid):
+        try:
+            os.kill(int(pid), 0)
+            return True
+        except Exception:
+            return False
+    running = [it for it in lane if it.get("status") == "running" and it.get("pid") and _alive(it.get("pid"))]
+    waiting = sorted([it for it in lane if it.get("status") == "waiting"],
+                     key=lambda it: (it.get("fableLaneOrder") or 99, it.get("n") or 0))
+    if not waiting or len(running) >= FABLE_LANE_MAX:
+        return False
+    # 本当に危ないときだけ止める（ロード比とスワップ%はここでは見ない＝Brave分で常時95%前後のため）
+    _flag = os.path.join(REPO, "status", "no_launch.flag")
+    if os.path.exists(_flag):
+        try:
+            _t = io.open(_flag, encoding="utf-8").read()
+        except Exception:
+            _t = ""
+        if "負荷の番人" not in _t:   # 容量の番人（20GB）・ログイン切れ・週枠は必ず守る
+            log("Fableレーン見送り: no_launch.flag（%s）" % _t.strip()[:60])
+            return False
+    try:
+        import fuka_hassha as _fuka
+        _m = _fuka.measure()
+    except Exception:
+        _m = {}
+    if _m.get("pressureLevel") not in (None, 1) or (_m.get("memFreePct") is not None and _m["memFreePct"] < 15):
+        log("Fableレーン見送り: メモリが苦しい（圧=%s・空き%s%%）" % (_m.get("pressureLevel"), _m.get("memFreePct")))
+        return False
+    if ((load(MACHINE, {}) or {}).get("diskFreeGB") or 99) < 20:
+        log("Fableレーン見送り: ディスク空き20GB未満")
+        return False
+    it = waiting[0]
+    log("🦄 Fableレーン：%s番を発車（レーン走行%d本→%d本・上限%d本・%s）"
+        % (it.get("n"), len(running), len(running) + 1, FABLE_LANE_MAX, why))
+    return bool(launch_one(it, q, len(running), FABLE_LANE_MAX))
+
+
 def _main_impl():
   # 2026-09-13（793番停止事故）：以前はここで harvest()（確認ページのURLを1本ずつ実際に
   #   開いて検品する content_check を含む・重い/ネットワーク待ちが起こりうる）を発車判定より
@@ -2150,6 +2204,15 @@ def _main_impl():
       #   自分が「実際に変更した項目」だけを正確に見分けて重ね書きするため
       #   （渡さないと保守的に「持っている項目は全部変更した」扱いになる）。
       _snap = queue_store.snapshot_items(q)
+      # ---- 2026-10-15 Fableレーン（たまごさん「この3本を最優先で今すぐFableで発車。発車できない原因は自分で取り除く」）----
+      #   fableLane:true の仕事だけ、ロード比・スワップ%の天井（負荷の番人の旗を含む）を越えて最大 FABLE_LANE_MAX 本まで出す。
+      #   ただし本当に危ないとき（メモリ圧が緑でない／空きメモリ15%未満／ディスク20GB未満の旗／ログイン切れ・週枠の旗）は出さない。
+      try:
+          if _fable_lane(q, items):
+              save_queue(q, snapshot=_snap)
+              _snap = queue_store.snapshot_items(q)
+      except Exception as _e:
+          log("Fableレーンで例外: %s" % _e)
       # 2026-09-04 たまごさん「ガソリンが切れる。家にたどり着かないよ」（火曜まで残り14%）
       #   → status/no_launch.flag があるあいだは**1本も発車させない**。
       #     回収（終わったものを確認待ちへ）と受信箱は動かすので、判定と繰り上げの練習はできる。

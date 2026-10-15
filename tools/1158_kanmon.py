@@ -90,13 +90,27 @@ def honmono():
     return None
 
 
-def toru(n):
+def fable_lane(argv):
+    """2026-10-15 Fableレーン：Fable指定の起動は別のスロット（最大3本）で数える。
+    普段の上限（負荷で1本まで落ちる）に詰まって30分待ち→畳む係に居残り扱いで殺される、を止める。
+    鍵は長期トークン（claude_auth・CLAUDE_CODE_OAUTH_TOKEN）なので取り合いは起きない。"""
+    if "claude-fable-5-1" not in argv:
+        return False
+    try:
+        sys.path.insert(0, HERE)
+        import fable_week
+        return bool(fable_week.active()[0])
+    except Exception:
+        return False
+
+
+def toru(n, prefix="slot"):
     """空きスロットを1つ取る。取れたら fd を返す。取れなければ None。"""
     os.makedirs(LOCKDIR, exist_ok=True)
     for i in range(n):
         fd = None
         try:
-            fd = os.open(os.path.join(LOCKDIR, "slot%d.lock" % i),
+            fd = os.open(os.path.join(LOCKDIR, "%s%d.lock" % (prefix, i)),
                          os.O_RDWR | os.O_CREAT, 0o600)
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
@@ -128,9 +142,11 @@ def main():
         os.execv(claude, [claude] + argv)
 
     hajime = time.time()
-    n = jougen()
+    lane = fable_lane(argv)
+    prefix = "fable_slot" if lane else "slot"
+    n = 3 if lane else jougen()
     while True:
-        fd = toru(n)
+        fd = toru(n, prefix)
         if fd is not None:
             break
         matta = time.time() - hajime
@@ -141,7 +157,7 @@ def main():
                 "（失敗ではなく待ち。やり直し回数に数えないこと）\n" % (n, int(matta)))
             return RC_MACHI
         time.sleep(1.0 + random.random())  # 同時に群がらないよう少しずらす
-        n = jougen()  # 待っている間に上限が変わることがある
+        n = 3 if lane else jougen()  # 待っている間に上限が変わることがある
 
     matta = int(time.time() - hajime)
     if matta > 0:
