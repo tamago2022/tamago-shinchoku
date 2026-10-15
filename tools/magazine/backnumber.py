@@ -39,7 +39,9 @@ GENRES = [
     ('弾き語りとロック', ('Voice, guitar and rock', '自弹自唱与摇滚', 'Voz, guitarra y rock', '弾き語り와 록'), [
         ('心を震わせる弾き語り', 'Lately から Shape Of You まで', S + '/feature/hikigatari', None),
         ('弾き語り・ジョシュ・ターナー編', 'はっぴいえんど「風をあつめて」から', M + 'hikigatari-josh-turner.html', None),
-        ('怒れる人々', 'ロック企画 vol.1', M + 'ikareru-01.html', None),
+    ]),
+    ('シリーズ「怒れる人々」', ('Series: The Angry Ones', '系列「愤怒的人们」', 'Serie: La gente enfadada', '시리즈 「분노한 사람들」'), [
+        ('怒れる人々 vol.1 〜ロックは死んだのか〜', 'Sex Pistols から Ado、Prince まで11曲', M + 'ikareru-01.html', None),
     ]),
 ]
 I18N = {'b_eyebrow': ('Back issues', '往期', 'Números anteriores', '백넘버'),
