@@ -130,7 +130,8 @@ function scores(d, consoleErrors) {
   let kaisou = d.h1 === 1 ? 10 : d.h1 === 0 ? 5 : 7;
   if (!d.maxIsH1) kaisou -= 1;
   kaisou -= Math.min(3, Math.floor(Math.max(0, d.sizes - 8) / 2));
-  const saibu = clamp(10 - (d.overflowX ? 4 : 0) - Math.min(3, Math.floor(d.smallText / 5)) - Math.min(3, Math.floor(d.imgsNoDims / 5)));
+  // imgsNoDims は遅延読み込みの画像がどこまで来たかで毎回ゆれる（実測 2026-10-16：棚 30→39点）ので点数には入れない（材料としては残す）
+  const saibu = clamp(10 - (d.overflowX ? 4 : 0) - Math.min(3, Math.floor(d.smallText / 5)));
   const kinou = clamp(10 - Math.min(4, d.imgsBroken * 2) - Math.min(2, d.linksNoHref) - Math.min(2, Math.floor(d.tinyTargets / 5)) - Math.min(2, consoleErrors));
   return { ikkansei, kaisou: clamp(kaisou), saibu, kinou, souzousei: null, kikai_gokei: ikkansei + clamp(kaisou) + saibu + kinou };
 }

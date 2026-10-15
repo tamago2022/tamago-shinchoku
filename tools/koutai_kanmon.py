@@ -56,7 +56,9 @@ JOY = "/Users/mac/Desktop/joy-relief-station"
 
 PROD_BASE = "https://joy-relief-station.lovable.app"
 # ★線はここ1か所にしか書かない（omosa_mihari.py と同じ思想）
-SEN = {"time_pct": 10.0, "bytes_pct": 5.0, "score_drop": 1, "load_per_cpu": 0.8}
+SEN = {"time_pct": 10.0, "bytes_pct": 5.0, "all_bytes_pct": 25.0, "score_drop": 1, "load_per_cpu": 0.8}
+# ★送る量は「コード（JS+CSS+HTML・自サイト）」を +5% で厳しく見る。画像・データは遅延読み込みで毎回ゆれる
+#   （実測 2026-10-16：曲ページ 3984KB→1191KB）ので、自サイト総量は +25%（巨大画像の混入など粗い後退だけ）で見る。
 # ★時間はMacの混雑で何倍にもゆれる（2026-10-16 実測：別セッションの vite build 中に本番が +13〜156%）。
 #   1分平均の負荷が CPU数×load_per_cpu を超えている時は、時間を判定から外し「混雑のため時間は参考値」と記録する。送る量・見た目は混雑に左右されないので常に判定する。
 PAGE_PATHS = [
@@ -146,7 +148,8 @@ def summary_of(res):
             "url": p.get("url"),
             "status": p.get("status"),
             "firstPageMs": p.get("firstPageMs"),
-            "totalBytes": (p.get("ownBytes") or p.get("bytes") or {}).get("total", 0),   # ★自分のサイトから送る量（YouTube等の外部は毎回ゆれるので入れない）
+            "totalBytes": sum(((p.get("ownBytes") or p.get("bytes") or {}).get(n, 0) or 0) for n in ("JS", "CSS", "HTML")),   # ★コードの送る量（自サイトのJS+CSS+HTML）
+            "ownAllBytes": (p.get("ownBytes") or p.get("bytes") or {}).get("total", 0),   # 自サイト総量（画像・データ込み。ゆれるので線はゆるい）
             "allBytes": (p.get("bytes") or {}).get("total", 0),
             "kb": p.get("ownKb") or p.get("kb") or {},
             "score": sc.get("kikai_gokei"),
@@ -207,12 +210,21 @@ def hikaku(kijun: dict, ima: dict, sen=SEN, time_ok=True):
         if kb_ and ib:
             pct = (ib - kb_) * 100.0 / kb_
             if pct > sen["bytes_pct"]:
-                riyuu.append("%s: 送る量 %dKB→%dKB（+%.0f%%）" % (key, kb_ // 1024, ib // 1024, pct))
+                riyuu.append("%s: コードの送る量 %dKB→%dKB（+%.0f%%）" % (key, kb_ // 1024, ib // 1024, pct))
                 worse_any = True
                 warui.append(key)
                 fueta.append((key, _nani_fueta(k, i)))
             elif pct < -sen["bytes_pct"] / 2:
                 better_any = True
+        # 自サイト総量（画像・データ込み）は粗い後退だけ見る
+        ka, ia = k.get("ownAllBytes") or 0, i.get("ownAllBytes") or 0
+        if ka and ia:
+            pct = (ia - ka) * 100.0 / ka
+            if pct > sen["all_bytes_pct"]:
+                riyuu.append("%s: 送る量（画像・データ込み） %dKB→%dKB（+%.0f%%）" % (key, ka // 1024, ia // 1024, pct))
+                worse_any = True
+                warui.append(key)
+                fueta.append((key, _nani_fueta(k, i)))
         # 見た目の点数（機械4観点の合計）
         ks, is_ = k.get("score"), i.get("score")
         if ks is not None and is_ is not None:
@@ -249,6 +261,9 @@ def load_kijun():
 
 
 def save_kijun(kj, target, summ, res, riyuu):
+    # ★書く直前にディスクを読み直して、自分の target だけ差し替える（2026-10-16 実測：公開後チェック(prod)と
+    #   ローカル検査(local)が同時に走り、古い読み込みで上書きして local の基準が消えた＝lost update）
+    kj = load_kijun()
     kj.setdefault("targets", {})[target] = {
         "setAt": now(), "riyuu": riyuu, "throttle": res.get("throttle"), "width": res.get("width"),
         "joyMainSha": _joy_sha(), "pages": summ,
@@ -435,7 +450,9 @@ def do_check_files(files):
             fk[name] = {"bytes": size, "setAt": now()}
             changed = True
     if changed:
-        _write(KIJUN, kj)
+        kj2 = load_kijun()           # 同時書き込みで他の target を消さない
+        kj2["files"] = fk
+        _write(KIJUN, kj2)
     rec = {"ts": now(), "target": "files", "result": "FAIL" if bad else "PASS", "riyuu": bad, "files": [os.path.basename(f) for f in files]}
     _append(DAICHO, rec)
     if bad:
@@ -471,7 +488,7 @@ def do_pre_publish():
 def self_test():
     import copy
     import tempfile
-    base = {"top": {"status": 200, "firstPageMs": 2000, "totalBytes": 400 * 1024, "kb": {"total": 400, "JS": 300, "CSS": 40, "HTML": 30, "画像": 30},
+    base = {"top": {"status": 200, "firstPageMs": 2000, "totalBytes": 400 * 1024, "ownAllBytes": 900 * 1024, "kb": {"total": 400, "JS": 300, "CSS": 40, "HTML": 30, "画像": 30},
                     "score": 36, "scores": {"ikkansei": 10, "kaisou": 9, "saibu": 9, "kinou": 8, "souzousei": None},
                     "top": [{"name": "site/assets/index.js", "kind": "JS", "kb": 280}]}}
     fails = []
@@ -505,6 +522,10 @@ def self_test():
     case("Mac混雑中（time_ok=False）は時間+150%でも止めない（送る量・見た目は判定）", hikaku(base, t, time_ok=False)["tooru"])
     t = copy.deepcopy(base); t["top"]["firstPageMs"] = 5000; t["top"]["totalBytes"] = int(400 * 1024 * 1.06)
     case("Mac混雑中でも送る量+6%は止める", not hikaku(base, t, time_ok=False)["tooru"])
+    t = copy.deepcopy(base); t["top"]["ownAllBytes"] = int(900 * 1024 * 1.3)
+    case("画像・データ込みの総量 +30% は止める（巨大画像の混入）", not hikaku(base, t)["tooru"])
+    t = copy.deepcopy(base); t["top"]["ownAllBytes"] = int(900 * 1024 * 1.2)
+    case("画像・データ込みの総量 +20% は通す（遅延読み込みのゆれ）", hikaku(base, t)["tooru"])
     t = copy.deepcopy(base); t["top"]["status"] = 500
     case("HTTP 500 は止める", not hikaku(base, t)["tooru"])
     case("測れていないページは止める", not hikaku(base, {})["tooru"])
@@ -534,7 +555,7 @@ def self_test():
             httpd.shutdown()
     KIJUN, DAICHO = kj_bak, dc_bak
     case("測る係の構文が通る", subprocess.run(["node", "--check", SOKUTEI], capture_output=True).returncode == 0)
-    print("KOUTAI_SELF_TEST: %s（%d件中 %d件NG）" % ("PASS" if not fails else "FAIL", 18, len(fails)))
+    print("KOUTAI_SELF_TEST: %s（%d件中 %d件NG）" % ("PASS" if not fails else "FAIL", 20, len(fails)))
     return 0 if not fails else 1
 
 
