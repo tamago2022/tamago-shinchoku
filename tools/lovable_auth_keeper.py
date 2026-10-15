@@ -44,7 +44,41 @@ def _token_ok():
         return False
 
 
+def _jotai_kakidashi(listener_ok=None):
+    """★2026-10-15：承認URLと受け皿の状態は ~/.tamago にしか無く、Cowork から読めなかった。
+    公開しない status/ 直下（.gitignore の status/*）へ写す。鍵（token）の値は書かない。"""
+    try:
+        import json
+        here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        url_file = os.path.expanduser("~/.tamago/lovable_authorize_url.txt")
+        url, url_at = "", None
+        if os.path.exists(url_file):
+            url = open(url_file, encoding="utf-8").read().strip()
+            url_at = time.strftime("%F %T", time.localtime(os.path.getmtime(url_file)))
+        if listener_ok is None:
+            p = subprocess.run(["pgrep", "-f", "lovable_listener.py"],
+                               capture_output=True, text=True, timeout=10)
+            listener_ok = p.returncode == 0 and bool((p.stdout or "").strip())
+        out = {"at": time.strftime("%F %T"), "url": url, "url_at": url_at,
+               "uketori_machi": bool(listener_ok), "listener_file_aru": os.path.exists(LISTENER),
+               "kagi_ok": _token_ok()}
+        dst = os.path.join(here, "status", "lovable_shounin.json")
+        tmp = dst + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(out, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, dst)
+    except Exception:
+        pass
+
+
 def run():
+    try:
+        g2 = GATE + "_jotai"
+        if not (os.path.exists(g2) and time.time() - os.path.getmtime(g2) < 30):
+            open(g2, "w").write(str(time.time()))
+            _jotai_kakidashi()
+    except Exception:
+        pass
     # 鍵があるなら、期限の5分前に自動で更新（失敗しても鍵は消さない）。
     try:
         import lovable_token_keeper
