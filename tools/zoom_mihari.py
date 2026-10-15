@@ -39,7 +39,7 @@ WORK = "/Volumes/iMac HDD/Mac標準置き場/AI作業/zoom_mojiokoshi"
 EXTS_FIRST = (".m4a", ".aifc", ".wav", ".mp3")
 EXTS_SECOND = (".mp4", ".mov")
 STABLE_SEC = 120
-MODEL = "small"
+MODEL = "medium"   # 2026-10-15：キャッシュ済みを確認（日本語は small より聞き違いが少ない）。無ければ small に落とす
 
 
 def load_state(path=STATE):
@@ -95,7 +95,12 @@ def fmt_ts(sec):
 def transcribe(path):
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     from faster_whisper import WhisperModel
-    m = WhisperModel(MODEL, device="cpu", compute_type="int8")
+    global MODEL
+    try:
+        m = WhisperModel(MODEL, device="cpu", compute_type="int8")
+    except Exception:
+        MODEL = "small"
+        m = WhisperModel(MODEL, device="cpu", compute_type="int8")
     segs, info = m.transcribe(path, language="ja", beam_size=1, vad_filter=True)
     lines = ["[%s] %s" % (fmt_ts(s.start), s.text.strip()) for s in segs if s.text.strip()]
     return lines, getattr(info, "duration", None)
