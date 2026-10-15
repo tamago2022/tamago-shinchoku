@@ -516,6 +516,10 @@ if __name__ == "__main__":
     # 待ちが空なら即戻るだけ。投げっぱなしにして心臓は待たない（他の相乗りと同じ形）。
     _okosu("oneshot_runner.py")
 
+    # 2026-10-16 $TMPDIR の使い捨て（巡回 hps-patrol・自動操作ブラウザの profile 等）を1時間に1回消す。
+    #   実測：約4万個・約90GB溜まり、空きが10GBまで落ちた。中で1時間に1回に間引く（status/.youryou_jougen_tsukaisute_at）
+    _okosu("youryou_jougen.py", "--tsukaisute")
+
     # 2026-10-01 鬼監督（Codex）の返事を拾う係。返事待ちが0なら gh も叩かず即戻る。
     #   合格/差し戻しを status/gaibu/soto_hantei.json と status/oni_codex/hantei.jsonl に戻し、
     #   差し戻しは作業票へ自動で積む（tools/oni_codex.py の冒頭に経緯）。
