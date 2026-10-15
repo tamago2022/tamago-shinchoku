@@ -132,8 +132,10 @@ def main():
     try:
         import fuka_hassha
         _m = fuka_hassha.measure()
-        if fuka_hassha.kiken(_m) or (_m.get("swapPct") or 0) >= 90 or \
-                (_m.get("load1") or 0) / float(_m.get("ncpu") or 8) >= 1.5:
+        # 2026-10-16 実測：スワップ90%超（Braveのせいで一日中）で 10/15 04:57 から一度も走らず、
+        #   空きが46GB→10GBへ落ちた。片付けは軽い仕事なので、空き30GB未満なら負荷に関係なく走る。
+        if free_gb() >= 30 and (fuka_hassha.kiken(_m) or
+                                (_m.get("load1") or 0) / float(_m.get("ncpu") or 8) >= 1.5):
             return
     except Exception:
         pass
