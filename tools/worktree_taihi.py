@@ -269,6 +269,12 @@ def main():
             except Exception as e:
                 res["skipped"].append("%s（%s）" % (fn, str(e)[:60]))
     res["free_gb_after"] = free_gb()
+    # 2026-10-16 動画・音声の中間ファイルも、仕事の回収のたびにしまう（tools/chukan_shimau.py）
+    try:
+        import chukan_shimau
+        res["chukan"] = chukan_shimau.run()
+    except Exception as e:
+        res["chukan"] = "失敗 %s" % str(e)[:120]
     res["state"] = "完了"
     json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 

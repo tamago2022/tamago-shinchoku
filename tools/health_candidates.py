@@ -175,6 +175,15 @@ def main():
         out["okoshi"] = {"label": "自動で起こした回数", "at": ok_.get("at"), "count": ok_.get("count")}
     except Exception:
         out["okoshi"] = {"label": "自動で起こした回数", "at": None, "count": {"total": 0, "today": 0}}
+    # 2026-10-16 Macの空き容量の推移（tools/youryou_mihari.py が書く status/public/youryou_suii.json の写し）
+    try:
+        su = json.load(open(os.path.join(REPO, "status", "public", "youryou_suii.json"), encoding="utf-8"))
+        pts = su.get("points", [])
+        out["aki"] = {"label": "Macの空き容量", "at": su.get("at"), "freeGB": su.get("free_gb"),
+                      "diff24hGB": su.get("diff_24h_gb"), "min7dGB": su.get("min_7d_gb"),
+                      "warnGB": 30, "points": pts[::6][-28:]}
+    except Exception:
+        out["aki"] = {"label": "Macの空き容量", "at": None}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     tmp = OUT + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:

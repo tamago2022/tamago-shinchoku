@@ -259,6 +259,7 @@ def main():
     step(res, "ブラウザのキャッシュ", browser_cache)
     step(res, "HDD の置き場（日数で）", hdd_okiba_souji)
     step(res, "場所ごとの上限（youryou_jougen）", jougen_run)
+    step(res, "動画・音声の中間ファイル（chukan_shimau）", lambda: __import__("chukan_shimau").run())
     if omoi() and not force:
         res["state"] = "測るのは重いので次回"
     else:
