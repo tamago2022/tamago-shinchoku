@@ -59,7 +59,7 @@ def save_state(st, path=STATE):
 # 2026-10-15 19:50：Zoomのボタンは使わず QuickTime＋BlackHole で録る → QuickTimeの保存先も見る。
 #   ~/Movies（QuickTimeの既定）・~/Documents 直下・デスクトップ直下を浅く見る（深く歩かない）。
 #   SINCE より後に書かれた音声・動画だけ拾う（昔のファイルを勝手に起こさない）。
-EXTRA_DIRS = [os.path.expanduser(p) for p in ("~/Movies", "~/Documents", "~/Desktop")]
+EXTRA_DIRS = [os.path.expanduser(p) for p in ("~/Movies", "~/Documents")]  # デスクトップは見ない（許可ポップアップの恐れ）
 SINCE = time.mktime(time.strptime("2026-10-15T19:30", "%Y-%m-%dT%H:%M"))
 
 
