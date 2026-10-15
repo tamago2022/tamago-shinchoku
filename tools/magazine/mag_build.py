@@ -33,6 +33,7 @@ EXTRA_CSS = '''
 .cw .cw-chapter--paper .say__bub{background:rgba(29,37,54,.07)}
 .cw .cw-chead__catch{font:700 clamp(24px,6.6vw,40px)/1.4 "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.04em;margin:18px 0 0}
 .cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 auto 28px;max-width:760px}.cw .cw-interlude img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.12)}.cw .cw-interlude figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:var(--mute)}.cw .cw-interlude .cw-credit{font-size:11.5px;opacity:.8}.cw .cw-interlude figcaption a{color:inherit;text-decoration:underline}
 .cw .bridge{margin:2.2em 0 0;padding-top:1.4em;border-top:1px solid var(--line);font-size:14.5px;color:var(--mute)}
 .cw .cw-chapter--paper .bridge{color:var(--paper-mute);border-color:rgba(29,37,54,.16)}
 '''
@@ -83,6 +84,16 @@ def chead(c):
             + (f'<h2 class="cw-chead__catch">{e(catch)}</h2>' if catch else '') + '</div></header>')
 
 
+def interlude(ph):
+    """章の合間の写真（全マガジン共通・2026-10-16）。時代の空気を伝える自由ライセンス写真だけ（Wikimedia Commons 等、CC BY / BY-SA / CC0 / PD）。
+    主役は曲と記事。写真はわさび・大葉。クレジット（撮影者・ライセンス・元ページ）を必ず付ける。
+    ph = dict(src, w, h, alt, cap, credit, page, lic)"""
+    return ('<section class="cw-interlude" aria-label="写真"><div class="cw-wrap">' + ''.join(
+        f'<figure><img src="{e(x["src"])}" width="{x["w"]}" height="{x["h"]}" alt="{e(x["alt"])}" loading="lazy" decoding="async"/>'
+        f'<figcaption>{x["cap"]}<br/><span class="cw-credit">写真：<a href="{e(x["page"])}" target="_blank" rel="noopener">{e(x["credit"])}</a>（{e(x["lic"])}）</span></figcaption></figure>'
+        for x in ph) + '</div></section>')
+
+
 def chapter(c, paper=False):
     parts = [chead(c),
              f'<div class="cw-main">{video(c["main"])}</div>',
@@ -96,7 +107,7 @@ def chapter(c, paper=False):
     if c.get('bridge'):
         parts.append(f'<p class="bridge">{c["bridge"]}</p>')
     cls = 'cw-chapter cw-chapter--paper' if paper else 'cw-chapter'
-    return f'<section class="{cls}" id="ch{c["no"]}"><div class="cw-wrap">' + ''.join(parts) + '</div></section>'
+    return f'<section class="{cls}" id="ch{c["no"]}"><div class="cw-wrap">' + ''.join(parts) + '</div></section>' + (interlude(c['after']) if c.get('after') else '')
 
 
 # 参考動画コーナー（全マガジン共通の末尾・Genspark手紙 issue#7 の決まり6・2026-10-15）

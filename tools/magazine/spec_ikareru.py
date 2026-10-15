@@ -2,6 +2,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mag_build import write, src
 import json
+PHOTOS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'photos_ikareru.json'), encoding='utf-8'))  # 章の合間の写真（Wikimedia Commons・クレジット付き）
 I18N = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'i18n_ikareru.json'), encoding='utf-8'))  # 5言語（訳だけ直すときはこのファイル）
 
 # 2026-10-16 たまごさんの赤入れ（80点超え）を反映した版。正本は確認ページ（share/check/tokushu-ikareru-01.html）の章立て 00〜10。
@@ -196,6 +197,10 @@ M = dict(
     note='',
     i18n=I18N,
 )
+
+for _c in M['chapters']:
+    if _c['no'] in PHOTOS:
+        _c['after'] = PHOTOS[_c['no']]
 
 if __name__ == '__main__':
     print(write(M))
