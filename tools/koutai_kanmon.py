@@ -56,7 +56,9 @@ JOY = "/Users/mac/Desktop/joy-relief-station"
 
 PROD_BASE = "https://joy-relief-station.lovable.app"
 # ★線はここ1か所にしか書かない（omosa_mihari.py と同じ思想）
-SEN = {"time_pct": 10.0, "bytes_pct": 5.0, "score_drop": 1}
+SEN = {"time_pct": 10.0, "bytes_pct": 5.0, "score_drop": 1, "load_per_cpu": 0.8}
+# ★時間はMacの混雑で何倍にもゆれる（2026-10-16 実測：別セッションの vite build 中に本番が +13〜156%）。
+#   1分平均の負荷が CPU数×load_per_cpu を超えている時は、時間を判定から外し「混雑のため時間は参考値」と記録する。送る量・見た目は混雑に左右されないので常に判定する。
 PAGE_PATHS = [
     ("top", "/"),
     ("shelf", "/shelf/music/covers"),
@@ -158,7 +160,17 @@ def summary_of(res):
 # ────────────────────────────────────────────────────────────
 # ★関所そのもの：基準と比べて、通すか止めるか（ここだけが判定を書く）
 # ────────────────────────────────────────────────────────────
-def hikaku(kijun: dict, ima: dict, sen=SEN):
+def mac_konzatsu():
+    """Macが混んでいるか（1分平均負荷 / CPU数）。返り値 (konzatsu: bool, load1: float, ncpu: int)"""
+    try:
+        load1 = os.getloadavg()[0]
+        ncpu = os.cpu_count() or 1
+        return load1 > ncpu * SEN["load_per_cpu"], round(load1, 1), ncpu
+    except Exception:
+        return False, 0.0, 0
+
+
+def hikaku(kijun: dict, ima: dict, sen=SEN, time_ok=True):
     """kijun/ima は summary_of の形。戻り値 dict(tooru, riyuu[], warui[], yoku_natta(bool), nani_fueta(str))"""
     riyuu, warui, better_any, worse_any = [], [], False, False
     fueta = []
@@ -176,7 +188,9 @@ def hikaku(kijun: dict, ima: dict, sen=SEN):
             continue
         # 時間
         kt, it = k.get("firstPageMs"), i.get("firstPageMs")
-        if kt and it:
+        if not time_ok:
+            pass  # 混雑中：時間は判定しない（riyuu には呼び元が注記を足す）
+        elif kt and it:
             pct = (it - kt) * 100.0 / kt
             if pct > sen["time_pct"]:
                 riyuu.append("%s: 1ページ目 %dms→%dms（+%.0f%%）" % (key, kt, it, pct))
@@ -184,7 +198,7 @@ def hikaku(kijun: dict, ima: dict, sen=SEN):
                 warui.append(key)
             elif pct < -sen["time_pct"] / 2:
                 better_any = True
-        elif kt and not it:
+        elif kt and not it and time_ok:
             riyuu.append("%s: 1ページ目の時間が取れていない" % key)
             worse_any = True
             warui.append(key)
@@ -326,6 +340,8 @@ def do_check(target, base, runs, kijun_only=False, force=False, dist_label=None,
             return 0
         print("KOUTAI_KIJUN: 更新しません（%s）" % why)
         return 1
+    konzatsu, load1, ncpu = mac_konzatsu()
+    time_ok = not konzatsu
     t = (kj.get("targets") or {}).get(target)
     if not t:
         save_kijun(kj, target, summ, res, "基準が無かったので初回として控える")
@@ -333,7 +349,7 @@ def do_check(target, base, runs, kijun_only=False, force=False, dist_label=None,
         _append(DAICHO, rec)
         print("KOUTAI_KANMON_RESULT: PASS（基準が無かったので今回を基準として控えました）")
         return 0
-    h = hikaku(t["pages"], summ)
+    h = hikaku(t["pages"], summ, time_ok=time_ok)
     if not h["tooru"] and h["warui"]:
         # ★確かめ直し：落ちたページだけもう1回測り、良い方の回を採ってから決める（Lighthouse流・たまたまで止めない）
         try:
@@ -350,12 +366,14 @@ def do_check(target, base, runs, kijun_only=False, force=False, dist_label=None,
                     cur["totalBytes"] = max(v["totalBytes"] or 0, cur["totalBytes"] or 0)
                     if v["score"] is not None and cur["score"] is not None:
                         cur["score"] = max(v["score"], cur["score"])
-            h = hikaku(t["pages"], summ)
+            h = hikaku(t["pages"], summ, time_ok=time_ok)
             h["saikakunin"] = True
         except Exception as e:
             h["riyuu"].append("確かめ直しに失敗: %s" % str(e)[:120])
+    if not time_ok:
+        h["riyuu"].append("Macが混雑（負荷%.1f/CPU%d）のため時間は参考値・判定から外した" % (load1, ncpu))
     rec = {"ts": now(), "target": target, "base": base, "result": "PASS" if h["tooru"] else "FAIL", "riyuu": h["riyuu"],
-           "nani_fueta": h["nani_fueta"], "joyMainSha": _joy_sha(), "kijunSetAt": t.get("setAt"),
+           "nani_fueta": h["nani_fueta"], "joyMainSha": _joy_sha(), "kijunSetAt": t.get("setAt"), "load1": load1, "timeJudged": time_ok,
            "pages": {k: {"ms": v["firstPageMs"], "kb": v["kb"].get("total"), "score": v["score"]} for k, v in summ.items()}}
     _append(DAICHO, rec)
     if h["tooru"] and h["yoku_natta"]:
@@ -483,6 +501,10 @@ def self_test():
     t = copy.deepcopy(base); t["top"]["firstPageMs"] = 1700; t["top"]["totalBytes"] = 380 * 1024
     h = hikaku(base, t)
     case("良くなった時だけ『基準更新』の印が立つ", h["tooru"] and h["yoku_natta"])
+    t = copy.deepcopy(base); t["top"]["firstPageMs"] = 5000
+    case("Mac混雑中（time_ok=False）は時間+150%でも止めない（送る量・見た目は判定）", hikaku(base, t, time_ok=False)["tooru"])
+    t = copy.deepcopy(base); t["top"]["firstPageMs"] = 5000; t["top"]["totalBytes"] = int(400 * 1024 * 1.06)
+    case("Mac混雑中でも送る量+6%は止める", not hikaku(base, t, time_ok=False)["tooru"])
     t = copy.deepcopy(base); t["top"]["status"] = 500
     case("HTTP 500 は止める", not hikaku(base, t)["tooru"])
     case("測れていないページは止める", not hikaku(base, {})["tooru"])
@@ -512,7 +534,7 @@ def self_test():
             httpd.shutdown()
     KIJUN, DAICHO = kj_bak, dc_bak
     case("測る係の構文が通る", subprocess.run(["node", "--check", SOKUTEI], capture_output=True).returncode == 0)
-    print("KOUTAI_SELF_TEST: %s（%d件中 %d件NG）" % ("PASS" if not fails else "FAIL", 16, len(fails)))
+    print("KOUTAI_SELF_TEST: %s（%d件中 %d件NG）" % ("PASS" if not fails else "FAIL", 18, len(fails)))
     return 0 if not fails else 1
 
 
