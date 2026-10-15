@@ -104,16 +104,31 @@ def _matteru():
     return sorted(out, key=lambda x: -x["machi_sec"])
 
 
+PQ_LOG = os.path.expanduser("~/Library/Logs/TamagoRoleSweep/push-queue.log")
+
+
 def _bin_age():
+    """便が最後に走ってからの秒数。
+
+    ★2026-10-15【5日止まって見えたが、実は毎回走っていた】便のログ（push-queue.log）には
+      17:23まで「出荷待ちなし」が30分おきに出ていたのに、_last-run.json だけが 10/10 から
+      更新されず、「7,400分走っていない」と誤って赤が出続けていた。
+      便自身のログの更新時刻も証拠として使い、新しい方を採る（どちらか走っていれば走っている）。
+    """
+    ages = []
     try:
         t = _load(TRACE, {}).get("started_at")
-        if not t:
-            return None
-        # 例: 2026-09-27T10:19:01.133Z
-        ep = time.mktime(time.strptime(t[:19], "%Y-%m-%dT%H:%M:%S")) - time.timezone
-        return int(time.time() - ep)
+        if t:
+            # 例: 2026-09-27T10:19:01.133Z
+            ep = time.mktime(time.strptime(t[:19], "%Y-%m-%dT%H:%M:%S")) - time.timezone
+            ages.append(int(time.time() - ep))
     except Exception:
-        return None
+        pass
+    try:
+        ages.append(int(time.time() - os.path.getmtime(PQ_LOG)))
+    except Exception:
+        pass
+    return min(ages) if ages else None
 
 
 def _shindan():
@@ -144,6 +159,12 @@ def _shindan():
         pass
     plist = os.path.expanduser("~/Library/LaunchAgents/%s.plist" % SERVICE)
     out["plist_aru"] = os.path.exists(plist)
+    try:
+        out["trace"] = {"path": TRACE, "aru": os.path.exists(TRACE),
+                        "mtime": time.strftime("%F %T", time.localtime(os.path.getmtime(TRACE)))
+                        if os.path.exists(TRACE) else None}
+    except Exception:
+        pass
     return out
 
 
