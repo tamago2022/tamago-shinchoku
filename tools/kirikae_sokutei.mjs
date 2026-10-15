@@ -106,6 +106,8 @@ async function coldLoad(label, pathname) {
   const t0 = Date.now();
   let visibleMs = null;
   let loadMs = null;
+  let atVisible = null;
+  let nav = null;
   try {
     await p.goto(BASE + pathname, { waitUntil: "commit", timeout: 60000 });
     const deadline = t0 + 45000;
@@ -115,12 +117,25 @@ async function coldLoad(label, pathname) {
         .catch(() => 0);
       if (len > 80) {
         visibleMs = Date.now() - t0;
+        // ★98402番（2026-10-16）：本文が見えた瞬間までに届いていた物（件数・KB）も残す。「何を待って見えたか」が分かる。
+        atVisible = { kenSu: got.length, kb: got.reduce((a, r) => a + r.kb, 0), last: got.slice(-3).map((r) => `${r.kb}KB ${r.url.slice(0, 60)}`) };
         break;
       }
       await new Promise((r) => setTimeout(r, 50));
     }
     await p.waitForLoadState("load", { timeout: 45000 }).catch(() => {});
     loadMs = Date.now() - t0;
+    // ★98402番（2026-10-16）：ブラウザ自身の時計（Navigation Timing／Paint Timing）。
+    //   responseStart＝サーバの最初の1バイト、fcp＝最初に何か描けた時、dcl＝HTMLを読み切った時。
+    nav = await p
+      .evaluate(() => {
+        const n = performance.getEntriesByType("navigation")[0];
+        if (!n) return null;
+        const fp = performance.getEntriesByType("paint").find((e) => e.name === "first-contentful-paint");
+        const r = (x) => Math.round(x);
+        return { responseStart: r(n.responseStart), responseEnd: r(n.responseEnd), domInteractive: r(n.domInteractive), dcl: r(n.domContentLoadedEventEnd), load: r(n.loadEventEnd), fcp: fp ? r(fp.startTime) : null };
+      })
+      .catch(() => null);
     // 読み終わりの余韻（裏で落とす塊があればここで数える）
     await new Promise((r) => setTimeout(r, 4000));
   } catch (e) {
@@ -129,7 +144,7 @@ async function coldLoad(label, pathname) {
   const kb = got.reduce((a, r) => a + r.kb, 0);
   const top = [...got].sort((a, b) => b.kb - a.kb).slice(0, 6).map((r) => `${r.kb}KB ${r.type} ${r.url}`);
   await c.close().catch(() => {});
-  return { name: label, path: pathname, visibleMs, loadMs, kenSu: got.length, kb, top };
+  return { name: label, path: pathname, visibleMs, loadMs, kenSu: got.length, kb, top, atVisible, nav };
 }
 const konponPages = [];
 if (KONPON) {
@@ -336,6 +351,20 @@ for (const [name, re] of steps) {
       if (!good) ok = false;
       result.steps.push({ name: "ホームへ", href: "/", ms: r.ms, ok: good, toast: r.toast, kouji: r.kouji, end: r.last?.href });
       history.push("/");
+      await sleep(1500);
+      c = await clickLink(re);
+    }
+  }
+  if (!c && name === "曲ページ") {
+    // ★98402番（2026-10-16）：棚が多い部屋（/world/music は20棚以上）は「棚の名前だけ」表示になり、
+    //   カード（曲リンク）が画面に無い。まず棚1枚（/shelf/…）へ入ってから曲を押す（これも1回の切り替えとして測る）。
+    const sh = await clickLink(/^\/shelf\//);
+    if (sh) {
+      const r = await waitSettled(sh.href, sh.t0);
+      const good = r.ms != null && r.ms <= LIMIT && !r.toast && !r.kouji;
+      if (!good) ok = false;
+      result.steps.push({ name: "棚の中へ", href: sh.href, ms: r.ms, ok: good, toast: r.toast, kouji: r.kouji, end: r.last?.href });
+      history.push(sh.href);
       await sleep(1500);
       c = await clickLink(re);
     }

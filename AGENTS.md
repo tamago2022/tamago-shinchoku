@@ -18,3 +18,8 @@
 - **2026-08-05に言われて以降1ヶ月以上「気をつける」のまま放置され判定日赤になった。** 文章の注意書きだけでは効かなかったため、`tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs`（PreToolUse関所、`.claude/settings.json`に登録済み）で機械的に拒否する形へ変更した。ブラウザ・画面操作系の道具呼び出しにselector/label/値として`password`・パスワード・暗証番号・ID/パスワード・秘密鍵等が含まれると exit 2 で道具ごと拒否される。読み取り（ログイン済み画面を読む・操作する）は止めない。止めるのは「入力しようとする」行為だけ。
 - ログインが必要な画面に当たったら、代わりに打ち込もうとせず**たまごさん本人にログインしてもらう**。AIはログイン後の画面を読む・操作するところから再開する。
 - 逆テスト：`node tools/stop_kanmon/34483_ninshou_daiko_kinshi.mjs --self-test`（7件のケースで合格確認済み）。
+
+## サイトを後退させない関所（101885番・2026-10-16・たまごさん指名）
+- **軽くした・90点にしたサイトが、次の変更で重くなったり見た目が崩れて戻るのを、出す前に機械で止める。** 物差し＝トップ／棚／曲ページ／マガジンの「1ページ目の時間（4G相当・工場のChromium headless shell）」「送る量（自サイトから送るJS/CSS/データ/画像のKB）」「見た目の点数（design-critique 5観点のうち機械で測れる4観点・40点満点。創造性は測れないので null）」。基準値は `status/public/koutai_kijun.json`、良くなった時だけ更新。
+- **公開の口に入っている3か所：** ①main合流前＝`python3 tools/koutai_kanmon.py --check --output <.output>`（子セッションの枷22）、②Lovable公開押し係 `tools/kohyou_osu.py`（直近のローカル検査がFAILなら押さない `--pre-publish`）、③マガジン `tools/magazine/put_prod.sh`（`--check-files`）。公開後は見る係 `tools/kohyou_kanshi.py` が本番を測り直し（`--after-publish`）、悪化なら作業キューと Dispatch へ票を1行。
+- 線は `tools/koutai_kanmon.py` の `SEN` 1か所だけ（時間+10%・送る量+5%・点数−1）。逆テスト `python3 tools/koutai_kanmon.py --self-test`。通した/止めた記録は `status/koutai_kanmon_daicho.jsonl`、最新判定は `status/public/koutai_kanmon.json`。

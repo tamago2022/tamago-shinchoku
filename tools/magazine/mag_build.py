@@ -128,3 +128,81 @@ def write(m):
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, PROD[m['key']]), 'w', encoding='utf-8').write(h)
     return p
+
+
+# ===== 多言語（全マガジン共通の決まり・2026-10-16 たまごさん指示）=====
+# サイト（joy-relief-station src/i18n/config.ts の SUPPORTED_LANGUAGES）と同じ5言語で読めるようにする。
+# 仕組みもサイトと同じ：地球マーク＋今の言語（JP/EN…）を押すと端末標準のリストが開く。選択は localStorage "gokigen-lang"（サイトと共有）。
+# 訳は spec 側で m['i18n'] = {'en': {'k1': '...'}, 'zh-Hans': {...}, 'es': {...}, 'ko': {...}, '_title': {...}} を渡す。
+# キー k1..kN は I18N_SEL の順に「日本語を含む要素」へ振る（python3 tools/magazine/mag_build.py --i18n-keys <html> で一覧が出る）。
+# 本文中の出典リンク（a.cw-src）は訳文の [[1]] [[2]] … に元のリンクがそのまま入る。
+I18N_LANGS = [('ja', '日本語', 'JP'), ('en', 'English', 'EN'), ('zh-Hans', '中文', 'ZH'), ('es', 'Español', 'ES'), ('ko', '한국어', 'KO')]
+I18N_SEL = ['h1', 'h2', 'h3', 'p', 'blockquote', 'figcaption .cw-video__cap', '.cw-video__role', '.cw-video__name b', '.cw-video__name i', 'a.cw-video__page',
+            '.cw-toc__grid span', '.cw-map__txt small', '.cw-map__txt b', '.cw-map__txt i', '.cw-other__grid small', '.cw-other__grid b', '.cw-nav span',
+            '.cw-interlude figcaption', '.cw-sources li a']
+I18N_CSS = ('.cw .cw-lang{position:relative;display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 8px;border-radius:999px;color:inherit;opacity:.8}'
+            '.cw .cw-lang:hover{background:rgba(255,255,255,.1)}.cw .cw-lang b{font:600 11px/1 system-ui,sans-serif;letter-spacing:.06em}'
+            '.cw .cw-lang select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}')
+I18N_GLOBE = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
+
+
+def i18n_switch():
+    opts = ''.join(f'<option value="{c}">{n}</option>' for c, n, _ in I18N_LANGS)
+    return f'<label class="cw-lang" title="言語 / Language">{I18N_GLOBE}<b data-lang-code>JP</b><select aria-label="言語 / Language">{opts}</select></label>'
+
+
+def i18n_script(tr):
+    import json as J
+    codes = {c: s for c, _, s in I18N_LANGS}
+    return ('<script>(function(){var L=' + J.dumps(tr, ensure_ascii=False).replace('</', '<\\/') + ',C=' + J.dumps(codes) + ',SEL=' + J.dumps(I18N_SEL) + ';'
+            'var M=document.querySelector("main.cw");if(!M)return;var els=[],n=0;'
+            'if(M.querySelector("[data-i18n]")){els=[].slice.call(M.querySelectorAll("[data-i18n]"));}else{SEL.forEach(function(q){M.querySelectorAll(q).forEach(function(el){'
+            'if(el.closest("[data-i18n]"))return;if(!/[\\u3040-\\u30ff\\u4e00-\\u9fff]/.test(el.textContent))return;n++;el.setAttribute("data-i18n","k"+n);els.push(el);});});}'
+            'els.forEach(function(el){el._ja=el.innerHTML;});var T0=document.title;'
+            'function ap(lg){if(!C[lg])lg="ja";var d=L[lg]||{};els.forEach(function(el){var v=d[el.getAttribute("data-i18n")];if(lg==="ja"||!v){el.innerHTML=el._ja;return;}'
+            'var t=document.createElement("div");t.innerHTML=el._ja;var a=[].map.call(t.querySelectorAll("a.cw-src"),function(x){return x.outerHTML});'
+            'el.innerHTML=v.replace(/\\[\\[(\\d+)\\]\\]/g,function(_,i){return a[i-1]||""});});'
+            'document.title=(L._title&&L._title[lg])||T0;document.documentElement.lang=lg;M.setAttribute("lang",lg);'
+            'document.querySelectorAll("[data-lang-code]").forEach(function(b){b.textContent=C[lg]});document.querySelectorAll(".cw-lang select").forEach(function(s){s.value=lg});}'
+            'var q=(location.search.match(/[?&]lang=([\\w-]+)/)||[])[1],s=null;try{s=localStorage.getItem("gokigen-lang")}catch(e){}'
+            'ap(q||s||"ja");document.querySelectorAll(".cw-lang select").forEach(function(sel){sel.addEventListener("change",function(){try{localStorage.setItem("gokigen-lang",sel.value)}catch(e){}ap(sel.value);});});'
+            '})();</script>')
+
+
+def add_i18n(h, tr):
+    """組み上がったHTMLに言語切替を入れる（build() が m['i18n'] を見て呼ぶ。直接組んだページにも使える）。"""
+    h = h.replace('<span>Magazine Story</span></nav>', '<span>Magazine Story</span>' + i18n_switch() + '</nav>', 1)
+    h = h.replace('</style>', I18N_CSS + '</style>', 1)
+    return h.replace('</body>', i18n_script(tr) + '</body>', 1)
+
+
+def i18n_keys(h):
+    """翻訳者向け：キーと日本語の一覧（JSの振り方と同じ順）。bs4 が要る。"""
+    import re as R
+    from bs4 import BeautifulSoup
+    main = BeautifulSoup(h, 'html.parser').find('main')
+    out, seen, n = {}, set(), 0
+    for q in I18N_SEL:
+        for el in main.select(q):
+            if id(el) in seen or any(id(a) in seen for a in el.parents):
+                continue
+            if not R.search(r'[぀-ヿ一-鿿]', el.get_text()):
+                continue
+            n += 1; seen.add(id(el)); out[f'k{n}'] = el.decode_contents().strip()
+    return out
+
+
+_build_plain = build
+
+
+def build(m):  # noqa: F811  多言語つき
+    h = _build_plain(m)
+    if m.get('i18n'):
+        h = add_i18n(h, m['i18n'])
+    return h
+
+
+if __name__ == '__main__':
+    import sys as _s, json as _j
+    if len(_s.argv) == 3 and _s.argv[1] == '--i18n-keys':
+        print(_j.dumps(i18n_keys(open(_s.argv[2], encoding='utf-8').read()), ensure_ascii=False, indent=1))

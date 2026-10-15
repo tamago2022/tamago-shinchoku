@@ -14,6 +14,8 @@ print(json.dumps(b))
 PY
   gh api -X PUT "repos/$3/contents/$2" --input /tmp/pp.json --jq '.commit.sha' >/dev/null && echo "OK $3 $2" || echo "NG $3 $2"
 }
+# 【101885番・2026-10-16】後退させない関所：置く前に送る量（KB）を基準と比べる。+5%超なら置かない（基準は小さくなった時だけ更新）
+python3 tools/koutai_kanmon.py --check-files status/magazine_prod/ikareru-01.html status/magazine_prod/naze-ongaku-01-takoukan.html status/magazine_prod/rei-harakami.html status/magazine_prod/hikigatari-josh-turner.html || { echo "★後退関所で停止：マガジンを置きません"; exit 2; }
 for f in ikareru-01.html naze-ongaku-01-takoukan.html rei-harakami.html hikigatari-josh-turner.html; do put status/magazine_prod/$f public/magazine/$f $R; done
 [ "${2:-}" = "--assets" ] && { put share/check/assets/cw/styles.css public/magazine/assets/cw/styles.css $R; put share/check/assets/owner/x-avatar.jpg public/magazine/assets/owner/x-avatar.jpg $R; }
 [ "${1:-}" = "--prod-only" ] && exit 0
