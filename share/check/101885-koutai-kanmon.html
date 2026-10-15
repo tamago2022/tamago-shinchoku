@@ -49,53 +49,69 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #101885 サイトを後退させない関所（重さ・見た目）</div>
 <h1>#101885 サイトを後退させない関所（重さ・見た目）</h1>
-<div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-16 実装・本番リポmain合流・工場の公開口に組み込み済み（確認ページは本人が開ける場所だけにリンクするよう作り直し）</div>
 
 <div class="fix">
-軽くしたサイトが次の変更で重くなったり崩れたりして戻るのを、<b>出す前に機械で止める関所</b> <code>tools/koutai_kanmon.py</code> を作りました。トップ・棚・曲ページ・マガジンの「1ページ目の時間（4G相当）」「送る量（KB）」「見た目の点数（5観点のうち機械で測れる4つ）」を基準値と比べ、<b>時間が基準の1.1倍超・送る量が1.05倍超・点数低下なら止めて、何が増えたかを1行で出します</b>。良くなった時だけ基準値が更新されます。Lovable公開を押す係・公開後に見る係・マガジンを置く口の3か所に組み込み、わざと重いJS（600KB）を足した変更を実際に止めました。<br><br>実測: 関所の台帳（status/koutai_kanmon_daicho.jsonl）の生データ（時刻・対象・判定・理由）<pre style="white-space:pre-wrap;font-size:12px">01:41:22 local PASS 基準が無かったので今回を基準にした
+<b>軽くしたサイトが、次の変更で重くなったり崩れたりして戻るのを、出す前に機械で止める関所</b>を工場に作りました（<code>tools/koutai_kanmon.py</code>）。トップ・棚・曲ページ・マガジンの「1ページ目の時間」「送る量（KB）」「見た目の点数」を基準値と比べ、<b>時間が基準の1.1倍超・送る量が1.05倍超・点数が1点でも下がれば止めて、何が増えたかを1行で出します</b>。良くなった時だけ基準値が更新されます。本番リポ（joy-relief-station）には憲法第22条と <code>npm run koutai</code> を入れ、工場では Lovable公開を押す係・公開後に見る係・マガジンを置く口の3か所に組み込みました。わざと重いJS（600KB）を足した変更を実際に止め、さらに<b>いまの main に入った本物の後退（棚ページに約5.8MBのデータ束・マガジンCSS +231KB）も捕まえて公開を止めています</b>。<br><br>実測: 関所の台帳 status/koutai_kanmon_daicho.jsonl の生データ（時刻・対象・判定・理由）<pre style="white-space:pre-wrap;font-size:12px">01:32:34 prod  FAIL top: 1ページ目 3300ms→3720ms（+13%）／shelf: 1ページ目 2604ms→4144ms（+59%）／song: 1ページ目 2396ms→6136ms（+156%）
+01:38:10 local PASS 基準が無かったので今回を基準にした
+01:39:44 local PASS Macが混雑（負荷11.0/CPU8）のため時間は参考値・判定から外した
+01:41:22 local PASS 基準が無かったので今回を基準にした
 01:42:48 local PASS Macが混雑（負荷7.5/CPU8）のため時間は参考値・判定から外した
 01:42:49 files PASS -
 01:42:50 files FAIL rei-harakami.html 43KB→102KB（+134%）
 01:42:50 files PASS -
 01:45:40 local PASS Macが混雑（負荷10.1/CPU8）のため時間は参考値・判定から外した
 01:48:20 local FAIL top: コードの送る量 1826KB→2426KB（+33%）／top: 送る量（画像・データ込み） 2006KB→2606KB（+30%）／shelf: コードの送る量 2625KB→3225KB（+23%）／song: コードの送る量 6518KB→7727KB（+19%）／Macが混雑（負荷
-01:49:57 local PASS Macが混雑（負荷9.1/CPU8）のため時間は参考値・判定から外した</pre>
+01:49:57 local PASS Macが混雑（負荷9.1/CPU8）のため時間は参考値・判定から外した
+02:09:58 local FAIL shelf: コードの送る量 2625KB→8417KB（+221%）／shelf: 送る量（画像・データ込み） 2637KB→8438KB（+220%）／magazine: コードの送る量 43KB→274KB（+525%）／magazine: 送る量（画像・データ込み） 43KB→274KB（+</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>4</b><span>基準を控えたページ（トップ・棚・曲・マガジン）</span></div>
-  <div class="num"><b>+600KB</b><span>わざと足した重いJS → 関所が止めた（コードの送る量 +33%）</span></div>
-  <div class="num"><b>3</b><span>関所が入った公開の口（公開押し係・公開後の見る係・マガジン）</span></div>
   <div class="num"><b>20/20</b><span>逆テスト（--self-test）合格</span></div>
+  <div class="num"><b>3/3</b><span>関所が入った公開の口（公開押し係・見る係・マガジン）</span></div>
+  <div class="num"><b>2件</b><span>止めた変更（実演の+600KB／本物の+5.8MB）</span></div>
+  <div class="num"><b>5/5</b><span>通常の変更を通した回数（台帳のPASS行）</span></div>
 </div>
 
-
+<h2>前後の画面（関所の出力をそのまま描き出したもの）</h2>
+<div class="shots">
+  <div class="shot plain"><b>① 通常の変更は通る（逆テスト20件全部OK）</b><img src="img/101885-pass.png" alt="① 通常の変更は通る（逆テスト20件全部OK）"></div>
+  <div class="shot plain"><b>② わざと重くした変更は止まる（実演）</b><img src="img/101885-fail.png" alt="② わざと重くした変更は止まる（実演）"></div>
+  <div class="shot plain"><b>③ 本物の後退も捕まえた（現main）</b><img src="img/101885-real-fail.png" alt="③ 本物の後退も捕まえた（現main）"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>基準値 koutai_kijun.json</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json</a></li>
-  <li><b>最新の判定と履歴 koutai_kanmon.json</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kanmon.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kanmon.json</a></li>
-  <li><b>関所の本体 tools/koutai_kanmon.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_kanmon.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_kanmon.py</a></li>
-  <li><b>本番リポの条文（CLAUDE.md）と npm run koutai</b><a href="https://github.com/tamago2022/joy-relief-station/commit/d952e2317" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/d952e2317</a></li>
-  <li><b>本番トップ（基準値の対象）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>① 最新の判定と履歴（公開JSON・いま FAIL と出ているのが本物の後退）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kanmon.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kanmon.json</a></li>
+  <li><b>② 基準値 koutai_kijun.json（公開JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/koutai_kijun.json</a></li>
+  <li><b>③ 関所の本体 tools/koutai_kanmon.py（公開リポ・開けます）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_kanmon.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_kanmon.py</a></li>
+  <li><b>④ 測る係 tools/koutai_sokutei.mjs（公開リポ・開けます）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_sokutei.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/koutai_sokutei.mjs</a></li>
+  <li><b>⑤ 本番トップ（基準値の対象）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>⑥ 進捗表（関所の判定が見える場所）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>通常の変更（資源は同じ）を通した</td><td class="yes">PASS（01:46・良くなったので基準更新）</td></tr>
-<tr><td>わざと重いJSを足した変更を止めた</td><td class="yes">FAIL：top コードの送る量 1826KB→2426KB（+33%）増えたもの→JS +600KB index-Bp-tOriZ.js</td></tr>
+<tr><td>通常の変更（資源は同じ）を通した</td><td class="yes">PASS（01:49:57・良くなったので基準更新）</td></tr>
+<tr><td>わざと重いJS（600KB）を足した変更を止めた</td><td class="yes">FAIL：top コードの送る量 1826KB→2426KB／増えたもの JS +600KB index-Bp-tOriZ.js（01:48:20）</td></tr>
 <tr><td>公開押し係の口（--pre-publish）が止めた</td><td class="yes">FAIL：公開を止めました（main 563b54054 のローカル検査が後退）</td></tr>
 <tr><td>戻したら通った・公開口も通った</td><td class="yes">PASS／PASS（01:49・01:50）</td></tr>
-<tr><td>マガジンを置く口（--check-files）</td><td class="yes">通常 PASS／重いHTML（+134%）FAIL／戻して PASS</td></tr>
-<tr><td>本番（fast 4G）の基準値を控えた</td><td class="yes">トップ 3300ms・729KB・35点／棚 2604ms・4198KB・30点／曲 2396ms・3984KB・33点／マガジン 1452ms・44KB・32点</td></tr>
-<tr><td>Lovableの公開を押した</td><td class="no">押せていません（Lovableの鍵が『死んでいる』・公開便のChrome(9223)も停止中。鍵が戻れば公開押し係が自動で押し、その直前にこの関所を通る）</td></tr>
-<tr><td>ローカルの vite build（SSR）で測った</td><td class="no">できていません（Macのディスク待ちで9分進まず中止）。実演は本番の写しをローカル配信して行った</td></tr>
+<tr><td>マガジンを置く口（--check-files）</td><td class="yes">通常 PASS／重いHTML（43KB→102KB）FAIL／戻して PASS</td></tr>
+<tr><td>本番リポ main に第22条と npm run koutai が入った</td><td class="yes">入っています（main の CLAUDE.md 222〜225行目・package.json scripts.koutai。非公開リポなので中身は下の節に転記）</td></tr>
+<tr><td>本物の後退を捕まえた（現main b668c3e41・02:09:58）</td><td class="yes">FAIL：shelf 2625KB→8417KB（coverguide-data-BKBKZaX2.js +5831KB）／magazine 43KB→274KB（cw/styles.css +231KB）→ 公開を止めている。減らす作業は別案件として受付台帳へ</td></tr>
+<tr><td>Lovableの公開を押した</td><td class="no">押せていません（Lovableの鍵が『死んでいる』・公開便のChromeも停止中）。鍵が戻れば公開押し係が自動で押し、その直前にこの関所を通る</td></tr>
+<tr><td>ローカルの vite build（SSR）で測った</td><td class="no">初回はできていません（Macのディスク待ちで9分進まず中止）。実演は本番の写しをローカル配信して行った。02:09 の検査はビルド成果物 .output で測れている</td></tr>
 </table>
 
 <footer>
-実測: top 1826KB→2426KB(+33%) / shelf 2625KB→3225KB(+23%) / song 6518KB→7727KB(+19%)（台帳 01:47 の行）。時間はMac混雑（負荷12.4/CPU8）のため判定から外し記録のみ。40173・42371番はこの仕事に統合して完了。
+本番リポ joy-relief-station は非公開のため、ここに main の条文を転記します。<pre style="white-space:pre-wrap;font-size:12px">CLAUDE.md 第22条：サイトを後退させない（重さ・見た目の関所）（2026-10-16・101885番）
+- ごきげん補給所を main へ合流させる前に python3 tools/koutai_kanmon.py --check --output <ビルドの .output> を通す。KOUTAI_KANMON_RESULT: PASS 以外で合流しない。
+- 止まったら「基準を緩める」ではなく「増えたものを減らす」。良くなった時だけ基準値が自動で更新される。
+- 公開押し係（kohyou_osu）と公開後の見る係（kohyou_kanshi）にも同じ関所が入っている。
+package.json: "koutai": "python3 $HOME/tamago/tamago-shinchoku/tools/koutai_kanmon.py --check --output .output"</pre>40173・42371番はこの仕事に統合して完了。実測: 本番(fast 4G)基準値 トップ 3300ms・729KB・35点／棚 2604ms・4198KB・30点／曲 2396ms・3984KB・33点／マガジン 1452ms・44KB・32点。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
