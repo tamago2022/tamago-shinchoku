@@ -399,3 +399,73 @@ def write(m):  # noqa: F811  共通部品の訳も訳ファイルへ足す
         for d in (os.path.join(REPO, 'share/check'), os.path.join(REPO, 'status/magazine_prod')):
             open(os.path.join(d, i18n_name(m)), 'w', encoding='utf-8').write(t)
     return p
+
+
+# ===== 見た目の統一（全マガジン共通・2026-10-16 たまごさん「ちょっとずつ違うのがムカつく。統一して」）=====
+# ①サイトの共通CSS（assets/cw/styles.css・236KB）は読まない。マガジンが使うのはその「土台」だけなので、土台だけをページに入れる
+#   （外すと body の余白8pxが出て、左右と上に白い枠が出る＝星勝で実際に起きた）
+# ②上の「Magazine Story」の文字は出さない
+# ③各章の頭は chead() の型（アーティスト／曲 → アルバム／年 → 見出し）。古い型（見出しが上）も並べ替える
+# ④写真の合間・再生ボタンも同じ部品
+# 機械の裏付け：python3 tools/magazine/unify_look.py --check（全マガジンで上の4つを検査。ズレがあれば exit 2）
+BASE_CSS = ('@layer base{*,:after,:before{box-sizing:border-box;border:0 solid;margin:0;padding:0}'
+            'html{-webkit-text-size-adjust:100%;tab-size:4;line-height:1.5;-webkit-tap-highlight-color:transparent}'
+            'h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}small{font-size:80%}'
+            'ol,ul,menu{list-style:none}img,svg,video,canvas,audio,iframe,embed,object{vertical-align:middle;display:block}img,video{max-width:100%;height:auto}'
+            'button,input,select,optgroup,textarea{font:inherit;letter-spacing:inherit;color:inherit;opacity:1;background-color:#0000;border-radius:0}button{appearance:button}'
+            'html,body{font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;max-width:100%;overflow-x:clip}'
+            'body{background:#10182a;color:#221811;font-feature-settings:"palt";-webkit-font-smoothing:antialiased}'
+            'h1,h2,h3{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;letter-spacing:.02em}}'
+            '.min-h-\\[100svh\\]{min-height:100svh}.w-full{width:100%}')
+LOOK_CSS = ('.cw .cw-chead__catch{font:700 clamp(24px,6.6vw,40px)/1.4 "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.04em;margin:18px 0 0}'
+            '.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 auto 28px;max-width:760px}.cw .cw-interlude img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.12)}'
+            '.cw .cw-interlude figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:var(--mute)}.cw .cw-interlude .cw-credit{font-size:11.5px;opacity:.8}'
+            '.cw .cw-interlude figcaption a{color:inherit;text-decoration:underline}.cw .cw-interlude p{max-width:640px;margin:22px auto 0;font-size:15.5px;line-height:1.95}'
+            '.cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}'
+            '.cw .cw-hero__sub{display:block;font-size:.44em;line-height:1.7;margin-top:.6em;font-weight:500;letter-spacing:.06em}'
+            '.cw .cw-video__play:empty::before{content:"";display:block;margin-left:4px;border-style:solid;border-width:8px 0 8px 13px;border-color:transparent transparent transparent currentColor}')
+
+
+def unify_look(h):
+    """組み上がった（または直接組んだ）マガジンのHTMLを、見た目の統一ルールに合わせる。何度通しても同じ結果。"""
+    import re as R
+    # ① 共通CSSを外し、土台をページの頭に
+    h = R.sub(r'<link[^>]*assets/cw/styles\.css[^>]*>', '', h)
+    h = R.sub(r'<style id="cw-base">.*?</style>', '', h, flags=R.S)
+    h = h.replace('</head>', '<style id="cw-base">' + BASE_CSS + '</style></head>', 1)
+    # ② Magazine Story を消す
+    h = R.sub(r'<span>\s*Magazine Story\s*</span>', '', h)
+    # ③ 古い型の章頭（見出し→アーティスト - 曲→年）を新しい型へ
+    # 属性の並び（class が前でも後ろでも）に対応
+    h = R.sub(r'<p ([^>]*?)class="cw-chead__en"([^>]*)>(.*?)</p>\s*<h2 ([^>]*?)class="cw-chead__title"([^>]*)>(.*?)</h2>\s*(<p [^>]*class="cw-chead__year"[^>]*>.*?</p>)?',
+              lambda m: (f'<p {m.group(4)}class="cw-chead__title"{m.group(5)}>{m.group(6).replace(" - ", " ／ ", 1)}</p>{m.group(7) or ""}'
+                         + (f'<h2 {m.group(1)}class="cw-chead__catch"{m.group(2)}>{m.group(3)}</h2>' if m.group(3).strip() else '')), h, flags=R.S)
+    # サブタイトル（〜…〜）は同じ部品
+    h = R.sub(r'<span style="(?:display:block;)?font-size:\.4[08]?em[^"]*">', '<span class="cw-hero__sub">', h)
+    # ④ 再生ボタンの中身は空にして、CSSの三角で描く（怒れる人々の本番と同じ・軽い）
+    h = R.sub(r'(<span[^>]*class="cw-video__play"[^>]*>)(?:<svg.*?</svg>|▶|\s)*(</span>)', r'\1\2', h, flags=R.S)
+    # 部品のCSSを同じものに（写真の合間は怒れる人々の型へ）
+    h = R.sub(r'\.cw \.cw-interlude[^{]*\{[^}]*\}', '', h)
+    h = R.sub(r'\.cw \.cw-video__play:empty::before\{[^}]*\}', '', h)
+    h = R.sub(r'<style id="cw-look">.*?</style>', '', h, flags=R.S)
+    h = h.replace('</head>', '<style id="cw-look">' + LOOK_CSS + '</style></head>', 1)
+    return h
+
+
+def look_check(h):
+    """統一ルールのズレを列挙（空なら合格）。"""
+    import re as R
+    bad = []
+    if 'assets/cw/styles.css' in h: bad.append('共通CSSを読んでいる')
+    if 'id="cw-base"' not in h: bad.append('土台のCSSが無い（白い枠が出る）')
+    if R.search(r'Magazine Story', h): bad.append('Magazine Story が出ている')
+    if R.search(r'class="cw-chead__en"', h): bad.append('古い型の章頭')
+    if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
+    return bad
+
+
+_build_look = build
+
+
+def build(m):  # noqa: F811
+    return unify_look(_build_look(m))
