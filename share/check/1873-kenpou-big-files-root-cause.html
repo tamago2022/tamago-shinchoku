@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1873 止まっているものを全部出して回す：gh-pages配信が構造的に壊れていた真因を修正 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1873 止まっているものを全部出して回す：gh-pages配信が構造的に壊れていた真因を修正</div>
+<h1>#1873 止まっているものを全部出して回す：gh-pages配信が構造的に壊れていた真因を修正</h1>
+<div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+本番配信(GitHub Pages)が丸1日以上更新されていなかった真因は2つ重なっていた。①pages_publish.shの二重起動防止の錠が「見てから書く」方式でTOCTOU競合を起こし、複数の自動便が同時に同じgh-pages枝へforce pushして相手を弾き合っていた（実測：一時5〜6本が同時実行）。②錠を直した後も単独実行で失敗が続いたため深掘りすると、pushのたびに親を持たない孤立コミットを作り直しており、gitが差分を計算できず毎回500MB近い全量データを送り直していた（実測：Writing objects 6456個・494MBで通信が持たずに失敗）。錠をmkdirベースのアトミック方式へ、コミットをリモートの実コミットを親にする方式へ変更し、公開が復旧した。925番（queue.json/done_archive.jsonのgz化）の修正自体は9/30 18:41時点で既にmain反映済みだったが、この配信障害のせいで本番に出られずにいた。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>494MB→数十KB</b><span>1回のpush送信量（修正前→後）</span></div>
+  <div class="num"><b>5〜6本→1本</b><span>同時に走っていたpages_publish.sh</span></div>
+  <div class="num"><b>2件</b><span>公開成功ログ（20:09:09/20:10:54、修正後に実測）</span></div>
+  <div class="num"><b>200</b><span>本番確認ページの実測HTTPコード</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番: この確認ページ自体(200で開けている証拠)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1873-kenpou-big-files-root-cause.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1873-kenpou-big-files-root-cause.html</a></li>
+  <li><b>修正コミット1（錠をmkdirアトミック方式へ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/618baa54d" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/618baa54d</a></li>
+  <li><b>修正コミット2（錠をさらに堅牢化）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/e573b867f" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/e573b867f</a></li>
+  <li><b>修正コミット3（pushを差分方式へ・本丸）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/26bbead51" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/26bbead51</a></li>
+  <li><b>925番の元修正（queue.json/done_archive.jsonのgz化）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/157b88830" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/157b88830</a></li>
+</ul>
+
+
+
+<footer>
+1407番は本件と全く同じ内容（同じセッションID宛て）の重複エントリ。1873番の完了をもって統合済みとして扱ってよい。今回の配信障害は1週間ではなく直近（925番修正時点＝9/30 18:41以降）から起きていたと見られるが、原因は構造的なものなので今後も再発し得た。mkdir錠＋差分push化により恒久対策済み。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

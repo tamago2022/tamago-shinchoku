@@ -1,0 +1,94 @@
+{
+  "nou": "ElevenAgents",
+  "hougen": "elevenlabs",
+  "kuchi_no_watashikata": "webhook",
+  "kagi_no_namae": [
+    "ELEVENLABS_API_KEY"
+  ],
+  "kagi_no_okiba": "Supabase Secrets",
+  "tsunagu_saki": "https://api.elevenlabs.io",
+  "kizukai": [
+    "★新規に金が出る可能性がある。契約・プラン変更・課金を押さない。",
+    "無料枠で試せる範囲を実測し、足りないなら『◯円必要』とだけ書いて止める。",
+    "Widgetをサイトに埋める場合も、魂は webhook 越し。Widget側に曲名を書かない。"
+  ],
+  "tools": [
+    {
+      "type": "webhook",
+      "name": "osusume",
+      "description": "お客さんの好み・気分・いまいる棚から、ごきげん補給所のカードを出す。安心4枚＋冒険1枚。カードはドアであって命令ではない。うんちくは元データにあるときだけ1行返る（無ければ null＝黙る）。",
+      "api_schema": {
+        "url": "{TAMASHII_URL}/osusume",
+        "method": "POST",
+        "request_body_schema": {
+          "type": "object",
+          "properties": {
+            "konomi": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "好きなもの。アーティスト名・国・雰囲気・動物・言葉、何でもよい。2人ぶん入れてよい。"
+            },
+            "kibun": {
+              "type": "string",
+              "description": "いまの気分（例：疲れた／踊りたい／静か）。無ければ空でよい。"
+            },
+            "ima_no_tana": {
+              "type": "string",
+              "description": "いまいる棚のid（music / food / cute / laugh / travel / dance / joy）。分からなければ空。"
+            },
+            "hito": {
+              "type": "string",
+              "description": "その人を表す文字列（席番号でもニックネームでもよい）。一番下の『こちらもどうぞ』だけがこれで変わる。"
+            }
+          },
+          "required": [
+            "konomi"
+          ]
+        }
+      }
+    },
+    {
+      "type": "webhook",
+      "name": "shiraberu",
+      "description": "言葉から、棚・アーティスト・曲を引く。当たったものだけ返す。無ければ空で返す（作らない）。",
+      "api_schema": {
+        "url": "{TAMASHII_URL}/shiraberu",
+        "method": "POST",
+        "request_body_schema": {
+          "type": "object",
+          "properties": {
+            "go": {
+              "type": "string",
+              "description": "調べたい言葉。アーティスト名・曲名・棚の名前・別名。"
+            },
+            "kazu": {
+              "type": "integer",
+              "description": "最大何件返すか。既定8。"
+            }
+          },
+          "required": [
+            "go"
+          ]
+        }
+      }
+    },
+    {
+      "type": "webhook",
+      "name": "jinkaku",
+      "description": "ごきげん補給所の人格と会話の決まりを返す。会話を始める前に1回だけ呼ぶ。時刻で案内人／深夜のママが切り替わる。",
+      "api_schema": {
+        "url": "{TAMASHII_URL}/jinkaku",
+        "method": "POST",
+        "request_body_schema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      }
+    }
+  ],
+  "jinkaku_no_torikata": "会話の最初に jinkaku() を1回呼ぶ。人格をここに文字で書かない。",
+  "tamashii_no_basho": "tamashii/server.py（POST /osusume, /shiraberu, /jinkaku）"
+}

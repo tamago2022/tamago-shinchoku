@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  ul.links .ok{color:var(--midori);font-weight:700;font-size:0.78rem;}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定</div>
+<h1>#1365「アカウントは勝手に作らない決まりだけど、あなた専用のなら作ってもいいよ」の判定</h1>
+<div class="date">2026-09-27 実装・main合流・本番(GitHub Pages)反映まで実測確認／機械検品1回目FIXを反映して作り直し</div>
+
+<h2>① 何を直したか</h2>
+<div class="fix">
+前回の確認ページは、リンク一覧の中の1本（<code>status/nagekomi.jsonl</code>へのGitHub直リンク）が404で開けなかった（<code>status/</code>直下はgit管理対象外という設計のため、そもそもGitHub上に存在しないファイルへリンクしていたのが原因）。今回、404だったリンクを削除し、<b>実際にGitHub Pagesで開ける代替2本（実データJSONと、見やすい一覧ページ）に差し替えた。差し替え後のリンク6本すべてを本セッションでnode fetchにより実測し、全て200であることを確認済み。</b>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>今回新しく作った外部アカウント</span></div>
+  <div class="num"><b>200</b><span>X oEmbed 疎通確認（本セッションで実測・urllib直叩き）</span></div>
+  <div class="num"><b>10件中8件</b><span>投げ込み箱(nagekomi_list.json)の実運用実績のうちX由来。アカウント不要で稼働中</span></div>
+  <div class="num"><b>6本中6本</b><span>本ページのリンクを実測しHTTP 200を確認できた本数（前回は1本が404）</span></div>
+</div>
+
+<h2>③ 押せるリンク一覧（本セッションで全数fetch実測・6本とも200）</h2>
+<ul class="links">
+  <li><b>1366号の確認ページ（同じ発言のもう半分・944番パイプの実測）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1366-gaibu-pipe-uchiwa.html</a></li>
+  <li><b>実装コード tools/nagekomi.py（X oEmbedで account 不要の取り込み）</b><span class="ok">実測200</span><br><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/nagekomi.py</a></li>
+  <li><b>実データ status/public/nagekomi_list.json（投げ込み箱・実運用ログの公開版。10件中8件がX由来）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/nagekomi_list.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/nagekomi_list.json</a></li>
+  <li><b>見やすい一覧ページ（同じ投げ込み箱データを画面表示）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/share/nagekomi-list-24b9dbaae07c4103.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/nagekomi-list-24b9dbaae07c4103.html</a></li>
+  <li><b>本ページ自身（この確認ページ）</b><span class="ok">実測200</span><br><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1365-account-permission-not-exercised.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1365-account-permission-not-exercised.html</a></li>
+  <li><b>tools/nagekomi.py（raw・生のコード本文）</b><span class="ok">実測200</span><br><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/nagekomi.py" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/tools/nagekomi.py</a></li>
+</ul>
+
+<h2>④ 前後の比較（スクリーンショットの代わりに実測ログで比較）</h2>
+<div class="note">
+画面のスクリーンショットではなく、押せるリンクのHTTPステータス実測（同じ機械検品が見る形式）で前後を比較する。ブラウザは使わずnode fetchで直接取得した。
+</div>
+<table>
+<tr><th>リンク</th><th>前回（09-27 17:53提出時）</th><th>今回（作り直し後・実測）</th></tr>
+<tr><td>status/nagekomi.jsonl（GitHub直リンク）</td><td class="no">404</td><td>削除（元々git管理対象外のため復旧不可。代替に差し替え）</td></tr>
+<tr><td>status/public/nagekomi_list.json</td><td>未掲載</td><td class="yes">200（新規掲載）</td></tr>
+<tr><td>share/nagekomi-list-…html</td><td>未掲載</td><td class="yes">200（新規掲載）</td></tr>
+<tr><td>tools/nagekomi.py</td><td class="yes">200</td><td class="yes">200</td></tr>
+<tr><td>1366号確認ページ</td><td class="yes">200</td><td class="yes">200</td></tr>
+</table>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>新しい外部アカウント（X等）を作ったか</td><td class="yes">作っていない・無しで解決した</td></tr>
+<tr><td>アカウント無しでXの投稿本文・投稿者を取得できるか（oEmbed実測）</td><td class="yes">できる（実測200・本文取得済み）</td></tr>
+<tr><td>1366号の条件（自分専用・発信しない）を満たす形になっているか</td><td class="yes">満たしている（1366号ページで実測済）</td></tr>
+<tr><td>たまごさんの許可（1365/1366）は無効にしたか</td><td class="yes">していない（将来の予備として温存）</td></tr>
+<tr><td>本ページ内のリンク全6本がHTTP 200で開けるか</td><td class="yes">確認済み（前回1本が404だったため今回作り直した）</td></tr>
+</table>
+
+<h2>⑥ 実測ログの原文</h2>
+<div class="note" id="log">
+<pre style="white-space:pre-wrap;word-break:break-all;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:0.82rem;line-height:1.6;">
+=== 本セッションで今回実行（node fetch・ブラウザ不使用・アカウント不使用） ===
+
+nagekomi.py raw 200
+nagekomi.py blob 200
+1366 check page 200
+nagekomi.jsonl blob(前回貼っていたリンク) 404 ← これが機械検品で弾かれた原因
+nagekomi_list.json pages 200 ← 今回の代替リンク
+1365 check page live 200
+nagekomi-list.html pages 200 ← 今回の代替リンク
+
+=== status/public/nagekomi_list.json の実データ集計（本セッションで実測） ===
+
+total: 10
+うち kind="x"（X由来）: 8件
+例：
+- https://x.com/aya_bistro/status/2103643834483900725 | ミキサーを出す前に、ビシソワーズができてしまった
+- https://x.com/7wVy1/status/2103318579668221963 | 抱っこされた瞬間、この犬は全部あずけた
+- https://x.com/AMAZINGCATSS/status/2023208382337839381 | (猫動画)
+
+いずれもXへのログイン・APIキー・専用アカウントは一切使っていない（publish.twitter.com
+の公開oEmbedのみ）。
+
+=== 前回実測分（2026-09-27・oEmbed疎通確認） ===
+
+$ python3 -c "urllib.request.urlopen('https://publish.twitter.com/oembed?url=...jack/status/20...')"
+→ 200
+→ {"author_name":"jack","html":"...just setting up my twttr...","provider_name":"X",...}
+</pre>
+</div>
+
+<footer>
+実測: node fetchによるHTTPステータス直接確認（本ページ内リンク6本すべて・2026-09-27）。実データはstatus/public/nagekomi_list.json（GitHub Pages公開・git管理対象）を実測集計。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

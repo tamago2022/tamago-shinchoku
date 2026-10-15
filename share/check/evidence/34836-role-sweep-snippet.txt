@@ -1,0 +1,79 @@
+# scripts/roles/role-sweep.mjs より抜粋（つなげる担当の巡回ロジック部分）
+# 元ファイルは private リポジトリ（joy-relief-station）にあるため、
+# ここに公開可能な形でそのままコピーして証拠として置いています。
+# 取得日: 2026-10-10 / 元コミット: ff82d252d（2026-08-08 05:55 main合流済み）
+# -----------------------------------------------------------------
+/* ---------------------------------------------------------------- 担当ごとの自動点検 */
+
+/**
+ * 現在地メモを読むだけでは分からない「担当の持ち場の実害」を、その場で機械に見せる。
+ *
+ * **店主指摘（2026-08-08）**：仕入れ担当が入れた若いバンドのCome Togetherが、
+ * 他のCome Togetherと繋がっていなかった。それを**店主が偶然見つけて指摘する形になった**。
+ * 「これつながってないよ」と毎回言わせるのではなく、つなげる担当が自分で気づく。
+ * ＝ 仕入れ → つなげる の間に手作業の橋渡しを要らなくする。
+ */
+function runAutoChecks() {
+  const checks = [
+    {
+      role: "つなげる担当",
+      what: "仕入れた曲が既存の関連曲とつながっていないか",
+      cmd: "node scripts/patrol/detect-orphan-covers.mjs --json",
+      read: (json) => ({
+        found: json.orphanSongs ?? 0,
+        detail:
+          (json.orphanSongs ?? 0) > 0
+            ? `未接続 ${json.orphanSongs}曲（同名だが別曲として除外 ${json.skippedByGuard ?? 0}曲）`
+            : "未接続なし",
+      }),
+    },
+    {
+      role: "棚編集UI担当・認証担当",
+      what: "本番DBに、コードが使う列が揃っているか（欠けると管理画面が「工事中」になる）",
+      cmd: "node scripts/patrol/check-db-schema.mjs",
+      read: null,
+    },
+    {
+      role: "仕入れ担当",
+      what: "名簿に穴（曲を消した跡の空要素）が無いか",
+      cmd: "node scripts/patrol/check-data-holes.mjs --json",
+      read: null, // 出力が人向けなので終了コードだけ見る
+    },
+    {
+      role: "見回り担当",
+      what: "外部から入れた分（直近48時間の新規ページ）に曲・コピー・関連導線の穴が無いか（案件431番）",
+      cmd: "node scripts/patrol/check-onboarding-gaps.mjs --hours 48 --json",
+      read: (json) => ({
+        found: json.unresolved ?? 0,
+        detail:
+          (json.unresolved ?? 0) > 0
+            ? `未解決 ${json.unresolved}件（実際の仮埋めは tamago-onboarding-sweep.yml が service_role で担当。ローカルは検出のみ）`
+            : "未解決なし",
+      }),
+    },
+  ];
+
+  const out = [];
+  for (const c of checks) {
+    try {
+      const raw = execSync(c.cmd, { cwd: REPO, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+      let found = 0;
+      let detail = "問題なし";
+      if (c.read) {
+        const parsed = JSON.parse(raw);
+        ({ found, detail } = c.read(parsed));
+      }
+      out.push({ ...c, ok: true, found, detail });
+    } catch (e) {
+      // 終了コード1＝検出あり。落ちたのか検出なのかを混同しない
+      const text = String(e.stdout ?? "") + String(e.message ?? "");
+      out.push({
+        ...c,
+        ok: false,
+        found: 1,
+        detail: text.includes("合計") ? text.split("\n").filter((l) => l.includes("合計"))[0] : "実行できなかった",
+      });
+    }
+  }
+  return out;
+}

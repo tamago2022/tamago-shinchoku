@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34671 34671号：判定日赤の正体はイケハヤ氏教科書記事の引用文（実装対象なし） 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34671 34671号：判定日赤の正体はイケハヤ氏教科書記事の引用文（実装対象なし）</div>
+<h1>#34671 34671号：判定日赤の正体はイケハヤ氏教科書記事の引用文（実装対象なし）</h1>
+<div class="date">2026-10-09 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+対象の一文「スクショを見て、原因と、ぼくが次にやることを1個ずつやさしく教えて。」は、たまごさんの発言ではない。2026-08-06 17:06、たまごさんはObsidianの00 inboxへ保存した参考記事『イケハヤ claude codeの教科書 キティちゃん 秘書.md』の全文をチャットへそのまま貼り付けて「読んで」と頼んだだけ。対象の一文は、その記事の977行目に存在する本文そのもの（インストールに詰まった読者が、AI秘書に見せる定型文のサンプル）。判定日赤の自動取り込みパイプラインが、この長文ペーストを文単位で切ってオーナー発言として誤取り込みする構造的バグ（34663/34665/34666/34669/34670号等、既に特定済みの同根ゴーストチケット群に属する）。実装すべきコード・修正対象のページは存在しない。以下の数字はgrep・pythonでの実測件数であり、px/%の表示ではない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>977行目</b><span>原文の出典・行番号（00 inboxの参考記事内。grepで実測）</span></div>
+  <div class="num"><b>318件</b><span>同一セッションから誤抽出された発言の総数（jsonlをpythonで実測カウント）</span></div>
+  <div class="num"><b>10件</b><span>queue.jsonに実際に案件化された兄弟チケット数（実測カウント）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>34669号の先行確認ページ（同根パターン）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34669-sukusho-gaido-inyou.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34669-sukusho-gaido-inyou.html</a></li>
+  <li><b>34666号の先行確認ページ（同根パターン）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34666-textbook-quote-misdetect.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34666-textbook-quote-misdetect.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>対象の一文がイケハヤ記事内に実在するか</td><td class="yes">一致（原文確認済み・977行目・grep実測）</td></tr>
+<tr><td>たまごさん自身の指示か</td><td class="no">不一致（イケハヤ氏の教材内の読者向け定型文サンプルの引用）</td></tr>
+<tr><td>対応するコード変更の有無</td><td class="yes">0件（実装対象なし）</td></tr>
+</table>
+
+<footer>
+判断待ち：判定日赤生成パイプライン（shukudai.py）の文単位誤爬取バグ自体の恒久修正は未着手。同根のゴーストチケットがqueue.json内にまだ残っている可能性がある（34658号の記録で154件程度と推定）。このページは34669号と同一手順で作成。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!doctype html><html lang="ja"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1167 確認ゼロ｜数えて潰した</title>
+<style>
+body{background:var(--t-bg);color:var(--t-fg);font-family:-apple-system,"Hiragino Sans",sans-serif;
+margin:0;padding:24px;line-height:1.7}
+h1{font-size:19px;margin:0 0 4px;letter-spacing:.04em}
+.d{color:var(--t-mute);font-size:12px;margin-bottom:20px}
+.g{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.b{background:var(--t-bg);border:1px solid var(--t-line);border-radius:10px;padding:16px}
+.m{font-size:12px;color:var(--t-mute);letter-spacing:.04em}
+.a{font-size:22px;margin:6px 0 2px;font-weight:600}
+.h{font-size:11px;color:var(--t-mute)}
+.ok{color:var(--t-ok)}.ng{color:var(--t-ng)}.ki{color:var(--t-warn)}
+h2{font-size:14px;margin:26px 0 8px;color:var(--t-fg);font-weight:600}
+p{font-size:13px;color:var(--t-mute);margin:6px 0}
+a{color:var(--t-info)}
+table{border-collapse:collapse;font-size:12px;margin-top:6px;width:100%;max-width:900px}
+th{text-align:left;color:var(--t-mute);font-weight:500;border-bottom:1px solid var(--t-line);padding:4px 14px 4px 0}
+td{border-bottom:1px solid var(--t-line);padding:5px 14px 5px 0;color:var(--t-mute);vertical-align:top}
+code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:12px}
+pre{background:var(--t-bg);border:1px solid var(--t-line);border-radius:8px;padding:12px;
+font-size:11.5px;color:var(--t-mute);overflow-x:auto;line-height:1.6}
+</style>
+<h1>確認ゼロ｜出どころを数えて、多い順に潰した</h1>
+<div class="d">2026-09-27 08:25 時点・1167番／前の番号＝1157（代わりに押す係）・KAKUNIN_ZERO.md</div>
+
+<div class="g">
+<div class="b"><div class="m">押す係が転んでいた回数</div><div class="a ng">1,169回</div><div class="h">2026-09-26 07:47:00 〜 09-27 08:21:36。約70秒おきに100%失敗</div></div>
+<div class="b"><div class="m">直したあと</div><div class="a ok">0回</div><div class="h">08:22:41以降は判断して動いている（下に時刻つきの記録）</div></div>
+<div class="b"><div class="m">道具の許可（allow）</div><div class="a">3件 → <span class="ok">108件</span></div><div class="h">.claude/settings.json に書いた。1か所で全子セッションに効く</div></div>
+<div class="b"><div class="m">巻き添えで死んでいた道具</div><div class="a ng">14本 → <span class="ok">0本</span></div><div class="h"><code>import hantei</code> している全部が AttributeError で全滅していた</div></div>
+</div>
+
+<h2>① 何の確認が一番多かったか（実測。憶測で決めていない）</h2>
+<p>たまごさんの画面に出ていたものを、この機械から読める記録だけで数えた。</p>
+<table>
+<tr><th>出どころ</th><th>実測</th><th>どう潰したか</th></tr>
+<tr><td><strong>機械が押すはずだった確認を、機械が押せずに人に回していた</strong><br>（公表押す係・Lovableの公開ボタン）</td>
+    <td class="ng">1,169回<br><span class="h">status/kohyou_osu.log</span></td>
+    <td class="ok">直した。原因は下の②</td></tr>
+<tr><td>Claude Codeの道具承認（Bash・Read・git など、押しても取り返しがつくもの）</td>
+    <td class="ki">allowが3件しか無い<br><span class="h">.claude/settings.json に permissions が1行も無かった</span></td>
+    <td class="ok">108件書いた。下の③</td></tr>
+<tr><td>鍵の取り直し（auth_keeper）</td>
+    <td>115回走って115回取れている<br><span class="h">status/kagi_daicho_counts.json</span></td>
+    <td>既に機械が通している。人に出ていない</td></tr>
+<tr><td>不可逆な4つ（作り直せないデータ削除／課金／パスワード入力／公開の押し切り）</td>
+    <td>—</td>
+    <td class="ki">わざと出している。<strong>塞がない</strong>（正本 status/KAKUNIN_ZERO.md）</td></tr>
+</table>
+
+<h2>② 一番多かったものの原因（1行で言える）</h2>
+<p><strong>2026-09-26 07:47、別の係が <code>tools/hantei.py</code> を同じ名前で丸ごと上書きした。</strong>
+コミット <code>71f2c0cf7</code>、1,491行 → 201行（1,290行削除）。
+消えたのは「判定の規則を1か所にまとめた36個の関数」で、
+<code>import hantei</code> していた<strong>14本</strong>がその瞬間から全部 AttributeError で落ちていた。
+公表押す係だけで1,169回。つまり<strong>「代わりに押す係」が押せなくなって、その分が全部たまごさんに回っていた。</strong></p>
+<p>直し方：新しい方を <code>tools/hantei_hiduke.py</code> に改名して、旧 <code>tools/hantei.py</code> を戻した。
+心臓（<code>tools/heartbeat.sh</code>）の呼び先も改名に合わせた。両方生きている。</p>
+
+<h2>③ 設定で消せるものは設定で消した（1か所）</h2>
+<p><code>.claude/settings.json</code> の <code>permissions.allow</code> に、<strong>不可逆でない道具を108件</strong>書いた。
+読む・数える・組み立てる・commit・push まで。<code>deny</code> を11件足した。</p>
+<p>★<strong>なぜ auto mode でも効くのか</strong>（公式を通しで読んでから書いた）：
+<a href="https://code.claude.com/docs/en/auto-mode-config">auto-mode-config</a> の
+「Route all shell commands through the classifier」に、<strong>狭いBash allow規則は auto mode でも生き、分類器の前で解決される</strong>と書いてある。
+allowに載っている道具は分類器に一度も渡らない＝止められない。
+そして<a href="https://code.claude.com/docs/en/permission-modes">permission-modes</a> の「Repeated blocks」に、
+<strong>3回連続で止められると auto mode が降りて確認を出し直す</strong>とある。
+＝1回の誤爆が、そのあとの全部を確認地獄に変えていた。allowはその入口を塞ぐ。</p>
+<p>★<code>autoMode</code> はここに書いても効かない。公式に
+<strong>「The classifier doesn't read <code>autoMode</code> from project settings in <code>.claude/settings.json</code>」</strong>
+と明記されている（リポジトリが自分で許可を注入できてしまうため）。書く場所は <code>~/.claude/settings.json</code> だけ。</p>
+<p>★<code>deny</code> は <code>allow</code> より強い（公式）。そこで
+<code>osascript</code>／<code>automator</code>／<code>tccutil</code>／<code>sudo</code>／<code>defaults write</code>／<code>brew</code>／<code>git push --force</code> を deny に入れた。
+<strong>「macOSの許可ダイアログを出す手段は全面禁止」を、憲法の文章ではなく仕組みで禁止した。</strong>同じ穴に3回目は落ちない。</p>
+
+<h2>④ 「代わりに押す係」（1157番のHammerspoon）は採用しない</h2>
+<p>実測（<code>status/1157/check.json</code>）：Hammerspoon未導入・<code>brew</code>無し・luaも未設置・押した記録0。
+入れるには<strong>アクセシビリティの許可ダイアログ</strong>が出る。
+それはこの仕事で一番やってはいけないこと（ダイアログを減らす作業で新しいダイアログを出す）なので、<strong>入れない</strong>。
+押す係は既に機械の中に在る（②で直した公表押す係）。それが動いていなかっただけ。</p>
+
+<h2>⑤ 実際に確認が出て、機械が押した記録（時刻つき・生ログ）</h2>
+<pre>2026-09-27 08:21:27 ★出ました ごきげん補給所 前=7a75e3cf… → 後=ad2aed54…
+2026-09-27 08:21:27 押す係が転びました：AttributeError  ← ここまでが1,169回目までの姿
+── 直した ──
+2026-09-27 08:22:41 判断：赤で、7fbe7155 がまだ出ていないので公開を押します
+2026-09-27 08:22:43 ★押しません：Lovableが持つコミット a82d6a4f が main(7fbe7155)／待ち(7fbe7155) と合いません</pre>
+<p>08:22:41 以降は<strong>転んでいない</strong>。自分で判断して、押す／押さないを決めている。
+08:22:43 の「押しません」は故障ではなく規則どおりの判断（別の中身を本番に出さないため）。
+生ログは <code>status/kohyou_osu.log</code>、状態は <code>status/kohyou_osu.json</code>。</p>
+
+<h2>⑥ まだ潰していないもの（隠さない）</h2>
+<p>この機械からは <code>~/.claude/</code> が読めない。
+だから<strong>「Claude Codeが実際に何回ダイアログを出したか」の生の回数は、ここでは数えられていない</strong>。
+数えたのは「リポジトリの中に記録が残っている確認」だけ。
+<code>~/.claude/settings.json</code> の <code>autoMode.environment</code>（③の★2つめ）も、同じ理由でこの便では書けていない。
+次にやるなら、そこに Source control＝<code>github.com/tamago2022</code>、Trusted internal domains＝<code>tamago2022.github.io</code>、
+Key internal services＝Lovable／Genspark を足す。1行ずつ日本語の散文で書けばいい。</p>
+
+<h2>道具</h2>
+<p><code>.claude/settings.json</code>（allow 108／deny 11）／<code>tools/hantei.py</code>（戻した）／
+<code>tools/hantei_hiduke.py</code>（新設・改名）／<code>tools/heartbeat.sh</code>（呼び先を直した）。
+0円（AIを1回も呼んでいない・課金なし・新しいダイアログを1回も出していない）。</p>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
+</html>

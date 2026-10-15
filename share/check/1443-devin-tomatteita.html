@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1443 1443号：デビンが3日間止まっていた原因を直した 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1443 1443号：デビンが3日間止まっていた原因を直した</div>
+<h1>#1443 1443号：デビンが3日間止まっていた原因を直した</h1>
+<div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p>たまごさん（2026-09-18）「デビンずっと走らせられるだけ走らしといて…オンデマンドは絶対使わないこと」を受けて2026-09-25に作った「流し続ける係」(tools/1142_nagashi.py)が、実は<b>2026-09-25 09:38から3日間、次を1本も投げられずに止まっていた</b>。原因は2つ。①期限切れ(3時間)の判定コードはあったのに「次へ進む」処理へ繋がっておらず、返ってこない1本に永久に居座られていた。②Devin専用の財布(yosan devin)が既定の0円のままで、9/18の許可が反映されていなかった。両方を今回直した。オンデマンド購入・自動チャージには一切触っていない（既存の設計どおり、財布の残りが尽きたら0円の口(Jules)へ自動で回る仕組みのまま）。</p>
+<pre>2026-09-28 11:05:38 1本、時間切れで打ち切り：前提の実測検証：入荷の関所は本当に効いているか（jules）期限2026-09-25T12:38:41+09:00 → 次へ進みます
+2026-09-28 11:06:13 投げました：前提の実測検証：棚の動画は本当に再生できるか → https://github.com/tamago2022/joy-relief-station/issues/517（jules）
+devin_jissoku.json: kagi(APIキー有効)=True／/v1/sessions=200／hashiru(現在の走行数)=0
+yosan --show: devin 上限2232.00 使った0.00 残り2232.00（修正前は上限0.00で常に「投げません」）
+今日Devinが0本だった時間の実測: 414/471分 → 実測: 87.9%</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3日 (72時間)</b><span>詰まっていた期間（2026-09-25 09:38→2026-09-28 11:05）</span></div>
+  <div class="num"><b>414/471分</b><span>今日Devin稼働0本だった時間（実測: 87.9%）</span></div>
+  <div class="num"><b>0→1本</b><span>直した直後に自動投入された次のジョブ数（#517・実測ログ）</span></div>
+  <div class="num"><b>0円→2,232円/日</b><span>開けたDevin財布の上限（24本×93円、既存の1日上限設計をそのまま反映）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>打ち切られた古いジョブ(issue #485)</b><a href="https://github.com/tamago2022/joy-relief-station/issues/485" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/issues/485</a></li>
+  <li><b>直後に自動投入された新しいジョブ(issue #517)</b><a href="https://github.com/tamago2022/joy-relief-station/issues/517" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/issues/517</a></li>
+  <li><b>直したコード(tools/1142_nagashi.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1142_nagashi.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1142_nagashi.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>3日間ブロックしていたジョブを時間切れで打ち切れるか</td><td class="yes">打ち切った（ログ実測・11:05:38）</td></tr>
+<tr><td>打ち切り直後に次のジョブを自動投入するか</td><td class="yes">投入した（issue #517・ログ実測・11:06:13）</td></tr>
+<tr><td>Devin財布が開いているか</td><td class="yes">2,232円/日で開いた（24本×93円、既存上限を反映）</td></tr>
+<tr><td>DEVIN_API_KEYは有効か</td><td class="yes">有効（/v1/sessions→200）</td></tr>
+<tr><td>オンデマンド購入・自動チャージに触れたか</td><td class="yes">触れていない（購入系エンドポイントは呼ばない設計のまま）</td></tr>
+</table>
+
+<footer>
+このページは #1443 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

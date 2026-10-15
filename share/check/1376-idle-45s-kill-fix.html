@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1376 1376番｜クレジット切れ以外でアイドル状態を作らない 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1376 1376番｜クレジット切れ以外でアイドル状態を作らない</div>
+<h1>#1376 1376番｜クレジット切れ以外でアイドル状態を作らない</h1>
+<div class="date">2026-09-27 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+『クレジットは余っているのに1週間何も進まない』の直接原因を特定した。auto_launcher.pyがjoy-relief-station側にgit worktreeを作る処理は実測24.3秒かかるのに、heartbeat.sh側の見張りが45秒で問答無用にkillしていて、混雑時に度々着火そのものが失敗していた。見張りの上限を120秒へ緩和し、あわせて『工場自身の運用改善』依頼が今回のように誤って別プロジェクト側へ配車される既知の穴も塞いだ。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>24.34秒</b><span>git worktree add 実測(/tmp・単発実行)</span></div>
+  <div class="num"><b>35回</b><span>2026-09-27の45秒kill発生回数(修正前)</span></div>
+  <div class="num"><b>120秒</b><span>修正後のタイムアウト(45秒→)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>修正コミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/19175f972c192eb03fdd7575d3175dc15bcaad74" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/19175f972c192eb03fdd7575d3175dc15bcaad74</a></li>
+  <li><b>本体ファイル(heartbeat.sh)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>heartbeat.shのauto_launcher.py呼び出しタイムアウト</td><td class="yes">45秒→120秒</td></tr>
+<tr><td>auto_launcher.pyの誤配車防止キーワード追加(判定日/アイドル状態/oni_modoshi等)</td><td class="yes">追加済み</td></tr>
+<tr><td>心臓(pid 4087)が新コードへ自動で入れ替わったか</td><td class="yes">23:02:42ログで確認</td></tr>
+</table>
+
+<h2>⑥ 実測（status/heartbeat.log・timeコマンドの生データをそのまま貼る）</h2>
+<div class="note">
+下は実際にこのMacで得た生ログ・生出力（数字は書き写しではなく実測そのもの）。
+</div>
+<pre style="white-space:pre-wrap;background:var(--t-bg);color:var(--t-fg);padding:14px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">【① git worktree add 単体の実測（joy-relief-station本体、/tmpへ、混雑なしの単発実行）】
+$ time git worktree add /tmp/_wt_speed_test_1376 -b test/speed-check-1376
+Preparing worktree (new branch 'test/speed-check-1376')
+Updating files: 100% (3822/3822), done.
+real 24.34
+user 0.63
+sys 1.62
+（.git 414MB・登録worktree 36件の状態での実測。テスト後は git worktree remove / branch -D で削除済み）
+
+【② 修正前・2026-09-27のheartbeat.log抜粋（直近分。この日だけで計35回発生）】
+18:36:25 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+18:55:51 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+19:54:51 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+21:45:40 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+21:48:37 ⏱ auto_launcher.pyが45秒以内に終わらず強制終了しました
+
+【③ 修正反映の確認（心臓が新しいheartbeat.shへ自分で入れ替わったログ）】
+23:02:42 🔁 心臓のファイルが書き換わったので、自分で新しい方に入れ替わります
+23:02:42 心臓を起動しました（pid 4087）
+
+【④ 反映後の観察・23:02:42〜23:08:04（約5分22秒）】
+新規の「強制終了しました」ログ：0件
+★正直な申し送り：5分間の観察では十分なサンプルとは言えない（修正前も数十分〜1時間に
+1回程度のペースで、間が空くこと自体は珍しくなかった）。数時間〜1日単位の継続観察で
+1日あたりの発生回数が明確に減っているかを次に見る担当が確認すること。</pre>
+
+<footer>
+このページは #1376 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>

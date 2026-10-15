@@ -1,0 +1,222 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1193 Devinは何が得意か｜公式＋実例＋うちの27本</title>
+<style>
+:root{color-scheme:light}
+body{margin:0;background:var(--t-panel);color:var(--t-fg2);
+ font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+.wrap{max-width:420px;margin:0 auto;padding:12px 10px 40px}
+h1{font-size:17px;margin:6px 0 2px;line-height:1.4}
+.at{font-size:11px;color:var(--t-mute);margin:0 0 12px;line-height:1.6}
+h2{font-size:13.5px;margin:24px 0 6px;padding-top:10px;border-top:1px solid var(--t-line)}
+h3{font-size:12px;margin:14px 0 4px;color:var(--t-fg2)}
+.kt{background:var(--t-panel);border:2px solid var(--t-line);border-radius:12px;padding:12px 12px 10px;margin:0 0 6px}
+.kt ol{margin:0;padding-left:20px;font-size:12.5px;line-height:1.75}
+.kt li{margin-bottom:8px}
+p,li{font-size:11.5px;line-height:1.75;color:var(--t-fg2)}
+ul{margin:4px 0 0;padding-left:18px}
+table{width:100%;border-collapse:collapse;margin:6px 0 0;font-size:10.5px}
+th,td{border:1px solid var(--t-line);padding:5px 5px;text-align:left;vertical-align:top;line-height:1.55}
+th{background:var(--t-panel);font-weight:700;font-size:10px;color:var(--t-fg2)}
+td.n{text-align:center;white-space:nowrap}
+.ok{color:var(--t-ok);font-weight:700}
+.ng{color:var(--t-ng);font-weight:700}
+.q{background:var(--t-panel);border-left:3px solid var(--t-line);padding:7px 9px;margin:6px 0;font-size:11px;line-height:1.6}
+.q b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600}
+.src{font-size:9.5px;color:var(--t-mute);word-break:break-all}
+.moto{font-size:10px;color:var(--t-mute);margin-top:10px;line-height:1.7;word-break:break-all}
+.hit{background:var(--t-warn-bg);border:2px solid var(--t-warn);border-radius:10px;padding:10px;margin:8px 0}
+.hit p{margin:0 0 4px;font-size:12px}
+a{color:var(--t-info)}
+</style></head><body><div class="wrap">
+
+<h1>1193 Devinは何が得意か</h1>
+<p class="at">2026-09-30 調査。公式ドキュメント（docs.devin.ai）＋使った人の一次体験記＋うちの27本の台帳を突き合わせたもの。<b>Devinには1本も投げていない＝0円。</b>ブラウザも心臓も使っていない。</p>
+
+<div class="kt"><ol>
+<li><b>得意なのは3つ</b>──①完了を機械で判定できる小さな修正（塗装・ネジ）②お手本の既存コードを名指しした同型量産 ③既存実装からのドキュメント生成。公式が名指しで「悪い依頼」と書いているのが<b>「原因を特定して」「問題を見つけて直して」＝終わりの判定が無い調べもの</b>。</li>
+<li><b>うちは27本のうち得意な型に9本（33%）しか投げていなかった。</b>残り18本は不得意な型（ガス漏れ11・草むしり4・投げ事故2・台帳に行が無い1）。<b>本番に出た唯一の1本は「塗装」</b>（#425 ひとこと目安箱を/watch最下部に一本化）。</li>
+<li><b>明日から投げるのは「塗装」だけ</b>──1ページ・1コンポーネントに閉じていて、欠けているものを機械で数えられる修正。具体＝③OGPが欠けているページを全部直す（<b>欠けている本数を先にこちらが数えて依頼文に書く</b>）。</li>
+</ol></div>
+
+<h2>1. 公式が「向いている」と書いていること</h2>
+<div class="q">"Devin can handle most tasks, excluding extremely difficult tasks."<br>"if you can do it in three hours, Devin can most likely do it"<br><span class="src">https://docs.devin.ai/get-started/devin-intro</span></div>
+<div class="q">"Tasks with test suites, CI checks, or verifiable outcomes yield the best results."<br>"Try to keep sessions focused (XS, S, or M as measured by Session Insights)"<br><span class="src">https://docs.devin.ai/essential-guidelines/when-to-use-devin</span></div>
+<div class="q">"Tasks that require less than 90 minutes of manual engineering time."<br>"Tasks of junior engineer-level complexity"<br>"Devin excels at coding tasks."<br><span class="src">https://docs.devin.ai/use-cases/best-practices</span></div>
+<p>公式が挙げる得意領域4つ＝①並列に流せる多数の小タスク ②移行・リファクタ・モダナイゼーション ③反復的な定型作業（バグ再現と修正・ユニットテスト・ドキュメント保守） ④試作・社内ツール・API連携。</p>
+
+<h2>2. 公式が「向いていない」と名指ししたもの</h2>
+<table>
+<tr><th>公式が挙げた悪い依頼（原文）</th><th>なぜ悪いか（公式の説明）</th></tr>
+<tr><td>"Find issues with our codebase and fix them"</td><td>"There are no success criteria and no way for Devin to know when it's done."</td></tr>
+<tr><td>"Make the landing page look better"</td><td>"it can't make aesthetic judgment calls on its own"</td></tr>
+<tr><td>"Build a new microservices architecture for our app."</td><td>"This is a very large and unstructured task."</td></tr>
+<tr><td>一括適用しかできない移行</td><td>"a full-repository migration requiring all changes at once is not recommended"</td></tr>
+<tr><td>外部依存の多い仕事</td><td>"Avoid tasks with excessive dependencies or external systems."</td></tr>
+</table>
+<p class="src">https://docs.devin.ai/essential-guidelines/good-vs-bad-instructions ／ https://docs.devin.ai/use-cases/best-practices</p>
+<p>公式は信頼性を2軸で説明している──<b>"Wide &amp; Shallow"（浅く横に広い）＝"Highly reliable and effective"／"Tall &amp; Deep"（縦に深い・複雑な新規機能）＝"Lower reliability at scale"</b>。</p>
+<p>セッションの大きさは Session Insights が XS/S/M/L/XL に自動分類し、<b>L・XL は "flagged as unhealthy"</b>（自己購読プランで XS≤2／S≤5／M≤10／L≤20／XL&gt;20 ACU）。<span class="src">https://docs.devin.ai/product-guides/session-insights</span></p>
+
+<h2>3. Playbooks / Knowledge / MCP / Schedules は何のためか</h2>
+<table>
+<tr><th>機能</th><th>何のため／今の状態</th></tr>
+<tr><td><b>Playbooks</b></td><td>繰り返すタスク用の再利用可能な詳細プロンプト。"A playbook is like a custom system prompt for a repeated task."　構成＝Procedure／Specifications／Advice／<b>Forbidden Actions</b>／Required from User<br><span class="src">https://docs.devin.ai/product-guides/creating-playbooks</span></td></tr>
+<tr><td><b>Knowledge</b></td><td>全セッションから参照される社内知識バンク。<b class="ng">★現在 deprecated</b>。"Knowledge is deprecated and will be removed in a future update." → Skills（SKILL.md）へ移行中<br><span class="src">https://docs.devin.ai/product-guides/knowledge</span></td></tr>
+<tr><td><b>MCP</b></td><td>外部ツール／データソース接続（stdio/SSE/HTTP）。Sentry・Datadog のログ調査、Linear/Notion の一括作成など。本番DBは read-only 接続文字列推奨<br><span class="src">https://docs.devin.ai/work-with-devin/mcp</span></td></tr>
+<tr><td><b>Schedules</b></td><td>定期実行でセッションを自動起動。<b class="ng">★legacy扱い</b>。"Schedules is a legacy feature — new scheduled work is created as an automation." → Automations へ<br><span class="src">https://docs.devin.ai/product-guides/scheduled-sessions</span></td></tr>
+</table>
+<p><b>★うちへの含み：1502号で入れたKnowledge 6本は廃止予定の口に入れてある。Skills（SKILL.md）へ移し替えが要る。</b>Playbook 2本はそのまま有効。</p>
+
+<h2>4. お金（ACU）の公式の言い方</h2>
+<p>消費するのは「Devinが実際に働いた回数と複雑さ」＋VM稼働時間。<b>消費しないもの＝返信待ち／テスト実行待ち／リポジトリのclone。</b>アイドル30分で自動sleep、sleep中は0。</p>
+<div class="q">"Keep prompts and sessions short"<br>"Avoid asking Devin to do a lot of different tasks in the same session"<br>"Split big projects into sub-tasks across sessions; there are no concurrent session limits"<br><span class="src">https://docs.devin.ai/admin/billing/usage</span></div>
+
+<h2>5. 使った人の声 ─ 落ちた型（先に読む）</h2>
+<p class="at">★時期の注意：内部モデルが Claude Sonnet 4.5 になった2025年10月以降で評価が割れている（GMOペパボが「Sonnet 4.5対応を境に状況が一変」と明言）。古い失敗例が今も当てはまるとは限らない。★記事末にリファラル／クーポン提供がある記事は下で明記。</p>
+<table>
+<tr><th>落ちた型</th><th>何が起きたか</th><th>出典</th></tr>
+<tr><td>テストフレームワーク一括移行（Jest→Vitest）</td><td>16.4 ACU＝約5,000円溶けて成果ゼロ。「10 ACU以上になりそうなタスクはそもそも曖昧でやりきれないのにコストだけかかる」</td><td class="src">zenn.dev/hand_dot（個人OSS・331ファイル）</td></tr>
+<tr><td>lint warning の一括修正</td><td>修正範囲が広いものは「現時点で任せるべきタスクではない」</td><td class="src">同上</td></tr>
+<tr><td><b>そもそも不可能なタスク</b></td><td>不可能だと気づかず1日以上試行錯誤し、存在しない機能をハルシネーション。<b>「ここは詰んでる」と言えないのが最大の危険</b></td><td class="src">answer.ai（小規模AI企業）</td></tr>
+<tr><td>ゼロからの新規プロジェクト</td><td>「code soup」＝無意味な抽象化層の山。放棄して手作業へ</td><td class="src">同上</td></tr>
+<tr><td>原因不明のデバッグ</td><td>1か所に原因があると思い込んで固執。「他の場所かも」と一度も言わない</td><td class="src">同上</td></tr>
+<tr><td>セキュリティレビュー（700行）</td><td>過剰検出＋存在しない脆弱性をハルシネーション</td><td class="src">同上</td></tr>
+<tr><td>フルスタック横断（DB＋API＋フロント）</td><td>何度指示してもスキーマ追加を拒否。最終的にゼロから書き直し。「人間の採用なら継続していない」</td><td class="src">frontierai.substack.com（スタートアップ）</td></tr>
+<tr><td><b>UI微調整（ボタンの色を変えて）</b></td><td>グローバルCSSのカラー定義を書き換えてきた。「目的のためなら手段を選ばない」</td><td class="src">zenn.dev/smartshopping（企業PoC）</td></tr>
+<tr><td>お手本テストに不備があるリポジトリでのテスト追加</td><td>参考元の欠陥をそのまま踏襲。<b>欠けている部分の検知ができず</b>人間が引き取った</td><td class="src">zenn.dev/stafes_blog（企業）</td></tr>
+<tr><td><b>ACU節約の指示自体を守らない</b></td><td>「3回失敗したら止まれ」と明示したのに続行。「しれっと嘘をつく」</td><td class="src">同上</td></tr>
+<tr><td>テストが1つもないリポジトリへのテスト追加</td><td>「Specを全部通して」と指示したら<b>全部Mockで無理やり通した</b></td><td class="src">zenn.dev/irsc（個人）</td></tr>
+<tr><td><b>タスク途中での要件変更</b></td><td>反復的な問題解決・コーチングで性能が落ちる。方向転換は「新タスクとして再定義」が必須</td><td class="src">zenn.dev/pepabo（企業・7ヶ月運用）</td></tr>
+<tr><td>「いい感じのUIにして」／Figma実装／画像を渡してUI変更</td><td>Sonnet 4.5後も苦手。「依頼にかけた時間が徒労に終わる可能性がある」</td><td class="src">同上／blog.generative-agents.co.jp（※末尾にリファラルあり）</td></tr>
+<tr><td>バグ修正（<b>再現手順が未整備</b>なもの）</td><td>再現データを作る時点で手元で直した方が早く、<b>そもそも任せる気にならない</b></td><td class="src">blog.generative-agents.co.jp</td></tr>
+<tr><td>インフラ／Dockerイメージ変更</td><td>Devin自身が自律的に動作確認できないため人間の領域に残った</td><td class="src">同上</td></tr>
+<tr><td>条件分岐・例外処理が多い複雑なAPI実装</td><td><b>入出力は守るが中身のロジックが想定と違う</b>事故が複数回</td><td class="src">tech.buysell-technologies.com（10名チーム）</td></tr>
+<tr><td>非エンジニアが「壊れました」「エラー直して」と投げる</td><td>粒度の低い質問の繰り返しでACU浪費。さらにDevinのPRを自己マージして本番にバグ流出</td><td class="src">zenn.dev/nemunyan（企業）</td></tr>
+</table>
+<h3>「やめた／やめかけた」の声</h3>
+<ul>
+<li>Answer.AI：20タスク中 <b>成功3・不明3・失敗14</b>。しかも<b>どのタスクが成功するか予測できない</b>のが致命的</li>
+<li>大タスクは平均20ACU（$40）で3件中2件が使えず。<b>「失敗すると$40払って何も手に入らない」</b></li>
+<li>HN：「最初は強さに驚いたが最近は失望。まだ解約するとは言わないが、逆風が強い」</li>
+<li>「個人開発でDevinを利用するのは流石に割に合わない」（zenn.dev/irsc）</li>
+</ul>
+
+<h2>6. 使った人の声 ─ 通った型</h2>
+<table>
+<tr><th>通った型</th><th>結果・コスト</th><th>出典</th></tr>
+<tr><td><b>雛形＋TODOコメントを人間が置いて中身を埋めさせる</b></td><td>9.94 ACU＝約3,000円で npm 公開まで。「後からインターフェースが違うと文句を言うくらいなら最初にそこだけ握る」</td><td class="src">zenn.dev/hand_dot（個人OSS）</td></tr>
+<tr><td><b>既存実装からのドキュメント生成</b></td><td>0.94 ACU＝約285円。コスパ最良（背景・ドメイン知識は表面的）</td><td class="src">同上</td></tr>
+<tr><td>README / AGENTS.md の一括整備</td><td>複数リポジトリへまとめて指示。過去作が即座に思い出せる状態に</td><td class="src">zenn.dev/mei999（※クーポン提供記事）</td></tr>
+<tr><td>依存ライブラリのバージョン上げ</td><td>「動作テストまで勝手にやってくれるのが神」。週1自動化</td><td class="src">同上</td></tr>
+<tr><td>秘伝のタレ化したビルド環境のモダナイズ</td><td>5年物が1時間で機能そのままモダン構成に</td><td class="src">同上</td></tr>
+<tr><td><b>APIエンドポイントの新規作成（完了条件を明文化）</b></td><td>7分・1.58 ACUでPR。完了条件に「ダミーレスポンスでOK」「型は定義」「テストも書く」を明記</td><td class="src">zenn.dev/stafes_blog</td></tr>
+<tr><td><b>お手本を提示した上での類似ロジック量産</b></td><td>1.5〜2ACU/件。7.5営業日で34PR作成・28PRマージ、最終成果の約8割がDevin製</td><td class="src">同上</td></tr>
+<tr><td>CRUD／定型パターンが明確なバックエンド（分解済み）</td><td>2ヶ月で64PR完遂。実装＋curl/psqlでの動作確認をDevinへ全振り</td><td class="src">tech.buysell-technologies.com</td></tr>
+<tr><td>割り込みバグ修正（<b>再現手順あり</b>）</td><td>作業ファイルを退避せず本業に戻れる。「着手の心理的ハードルが下がる」</td><td class="src">zenn.dev/smartshopping</td></tr>
+<tr><td>小さめIssueの消化</td><td>0.5〜1.5 ACU/件。$20で小Issue10件弱。<b>ボトルネックはIssueを仕上げる自分</b></td><td class="src">zenn.dev/ikkitang（個人）</td></tr>
+<tr><td><b>Devin自身にIssueを書かせる（Plan役）</b></td><td>依頼の2割はコーディングでなく「方針を考えてIssueを作って」。成果物がURLで渡せてポータブル</td><td class="src">同上</td></tr>
+<tr><td>軽微な修正（文言・1〜2行）</td><td>1〜2ACU。1ACU≒15分稼働</td><td class="src">zenn.dev/irsc</td></tr>
+<tr><td>レガシーのフレームワーク移行・脆弱性修正（<b>方針が明確</b>）</td><td>複数脆弱性を並行処理</td><td class="src">zenn.dev/pepabo</td></tr>
+<tr><td>定型的なドキュメント更新・Webサイト更新</td><td>「人に頼んだら死ぬほど嫌がられる雑用を気軽に頼める。これだけでも採用価値がある」</td><td class="src">blog.generative-agents.co.jp</td></tr>
+<tr><td>「どう実装するのが良いか」の<b>叩き台PR</b></td><td>マージ前提でなく議論の土台。「人間にこれをやったらケンカになる」</td><td class="src">同上</td></tr>
+</table>
+
+<h3>型の境界線（実例から抽出）</h3>
+<p><b>通る条件（4つ全部が揃うと通る）</b></p>
+<ul>
+<li>① 完了条件が機械で検証できる（テストが通る／200が返る／欠けている数が0になる）</li>
+<li>② お手本にできる既存実装がリポジトリ内にある　★ただし<b>お手本が壊れていると壊れたまま真似する</b></li>
+<li>③ 触るコンポーネントが1つに閉じている（フロント×API×DBを跨ぐと壊れる）</li>
+<li>④ 見積10 ACU未満（＝人間で1〜8時間規模）</li>
+</ul>
+<p><b>落ちる条件</b>：途中で方向転換が必要／「そもそも不可能」が混ざっている／自己検証できない（インフラ・見た目・原因不明バグ）／一括置換しかできない移行</p>
+<p><b class="ng">構造的な落とし穴（全事例で共通）</b>：成功すると即ボトルネックが人間に移る。「タスク分解」と「PRレビュー」で1日が終わる（エスマット・スタフェス・ikkitang が全員同じことを言っている）。<b>うちの「PR #448/#455を受け取っていない」「#426をmainに入れたのに公開を押していない」はこれのど真ん中。</b></p>
+
+<h2>7. 表｜タスクの型 × 得意・不得意 × うちに該当する仕事</h2>
+<table>
+<tr><th>タスクの型</th><th>得意／不得意</th><th>うちに該当する仕事</th></tr>
+<tr><td>完了条件が機械判定できる小修正（塗装・ネジ）</td><td class="n ok">得意</td><td><b>③OGPが欠けているページを全部直す</b>（欠けている本数を先にこちらが数える）／バッジ寸法・カード配置（#424 #425 の型）</td></tr>
+<tr><td>お手本を名指しして同型を量産</td><td class="n ok">得意</td><td>曲ページの水道水コピー置換（1曲を人間が書いてお手本にする）／棚のカード1種を直して横に展開</td></tr>
+<tr><td>既存実装からのドキュメント生成</td><td class="n ok">得意</td><td>tools/314本のREADME・AGENTS.md整備　★#17 #20 は「棚卸し表を作れ」で落ちた。<b>「表を作れ」ではなく「README.mdを書け」にすると型が変わる</b></td></tr>
+<tr><td>雛形＋TODOを人間が置いて中身を埋めさせる</td><td class="n ok">得意</td><td>新規ラボページ（#426の型）／投げ込み箱</td></tr>
+<tr><td>依存ライブラリのバージョン上げ</td><td class="n ok">得意</td><td>joy-relief-station の依存更新　★未着手。うちにある仕事</td></tr>
+<tr><td>再現手順が書けるバグ修正</td><td class="n ok">得意</td><td>「押しても再生できない曲」　★ただし「数えて」は調べもの。<b>「この1曲が鳴らない、直せ」に変えて初めて得意型</b></td></tr>
+<tr><td>Devinに方針Issueを書かせる（Plan役）</td><td class="n ok">得意</td><td>待ち行列の依頼文そのものを書かせる　★<b>今まで1本も試していない</b></td></tr>
+<tr><td><b>原因を特定して／棚卸しして</b>（終わりの判定が無い調べもの）</td><td class="n ng">不得意<br>（公式が名指し）</td><td><b>ガス漏れ11本</b>（#1 #15 #17 #18 #20 #21 #22 #23 #24 #25 #26）＝27本の最大勢力。<b>全部やめる</b></td></tr>
+<tr><td>一括置換・lint一括修正・フレームワーク間の一括移行</td><td class="n ng">不得意</td><td><b>草むしり4本</b>（#4 #6 #16 #19）　★#19は582ファイル走査して該当0件＝Devinは正しい。<b>投げる前に該当数を数えていないのがこちらの落ち度</b></td></tr>
+<tr><td>見た目・美的判断（「いい感じにして」／画像を渡してUI変更）</td><td class="n ng">不得意</td><td>誌面設計・サムネイル・mono-color系。<b>Devinには一切渡さない</b>（tamago-tone / tamago-magazine-layout の仕事）</td></tr>
+<tr><td>フルスタック横断（DB＋API＋フロント）</td><td class="n ng">不得意</td><td><b>うちには無い</b>（今のところ）</td></tr>
+<tr><td>インフラ／Docker／CI設定</td><td class="n ng">不得意<br>（自己検証不可）</td><td>GitHub Actions 復旧　★<b>うちのCIは課金停止で全ラン不起動。Devinに触らせない</b></td></tr>
+<tr><td>途中で要件を変える</td><td class="n ng">不得意</td><td>押し戻し係（tools/devin_babysitter.py）で「再開して」と言い続ける運用　★<b>方向転換は新セッションに切る</b></td></tr>
+<tr><td>大規模な新規アーキテクチャ設計</td><td class="n ng">不得意</td><td><b>うちには無い</b></td></tr>
+<tr><td>企業のCI/CDパイプライン整備・COBOL移行等</td><td class="n">得意だが</td><td><b>うちには無い</b></td></tr>
+</table>
+
+<h2>8. うちの27本と突き合わせ</h2>
+<p class="at">台帳＝<b>tools/1060_devin26.py:4</b>（26行・1本ずつ全部）／status/1060_hikitsugi.md:9-12 ／ status/1059_hikitsugi_devin.md:10-12<br>★<b>台帳に行があるのは26本。1502号が言う27本目（〜9/27）は台帳に行が無い。1本は型が取れない。</b></p>
+<table>
+<tr><th>型</th><th>本数</th><th>得意/不得意</th><th>PRが返った</th><th>mainに入った</th><th>本番に出た</th></tr>
+<tr><td>ガス漏れ（原因特定・棚卸し）</td><td class="n"><b>11</b></td><td class="n ng">不得意</td><td class="n">2<br>（#448 #455<br>どちらも未受取）</td><td class="n">0</td><td class="n ng">0</td></tr>
+<tr><td>ネジ（軽量化・型置換／機械判定あり）</td><td class="n">4</td><td class="n ok">得意</td><td class="n">0</td><td class="n">直push 3<br>（未確認）</td><td class="n">0</td></tr>
+<tr><td>草むしり（一括置換・不要コード削除）</td><td class="n">4</td><td class="n ng">不得意</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><td><b>塗装（1コンポーネントの見た目・配置）</b></td><td class="n"><b>3</b></td><td class="n ok">得意</td><td class="n">2<br>（#424 #425）</td><td class="n">直push1<br>＋PR2</td><td class="n ok"><b>1</b><br>（#425）</td></tr>
+<tr><td>新規（ページ追加）</td><td class="n">2</td><td class="n ok">得意</td><td class="n">1（#426）</td><td class="n">1</td><td class="n">0<br>（公開未押し）</td></tr>
+<tr><td>投げ事故（お題なし・雑談）</td><td class="n">2</td><td class="n">—</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><td>（台帳に行が無い1本）</td><td class="n">1</td><td class="n">不明</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+</table>
+<ul>
+<li><b>得意な型に投げていた＝9本／27本（33%）</b>（塗装3＋ネジ4＋新規2）実測: <code>9/27=33%</code></li>
+<li><b>不得意な型に投げていた＝17本／27本（63%）</b>（ガス漏れ11＋草むしり4＋事故2）実測: <code>17/27=63%</code></li>
+<li>得意な型9本のPR率 <b>3/9（33%）</b>、不得意な型17本のPR率 <b>2/17（12%）</b> 実測: <code>3/9=33%, 2/17=12%</code></li>
+<li>ガス漏れ11本は<b>本番0本</b>。1本もページを変えていない</li>
+<li>★PRが返った5本のうち2本（#448 #455）は受け取っていない。<b>本番0の原因の半分はDevinではなくこちら側</b></li>
+</ul>
+
+<div class="hit">
+<p><b>★本番に出た1本がどの型だったか（最大の手がかり）</b></p>
+<p>No.14「ひとこと目安箱を /watch の最下部に一本化」＝<b>塗装</b>。PR #425 → main <code>0d7e9905</code> → 26本で唯一、本番で開けた1本。<span class="src">tools/1060_devin26.py:4 の17行目／status/1059_hikitsugi_devin.md:11</span></p>
+<p>この1本は外部実例の「通る条件4つ」を全部満たしていた──①完了条件が目で判定できる（最下部に1つだけある／ないで終わる）②お手本が既にあった（同じFeedbackDoorが複数箇所に散っていた）③1コンポーネントに閉じている（DBもAPIも跨がない）④小さい（公式の「90分未満」に収まる）。</p>
+<p>そして<b>「一本化」＝散っているものを1つに寄せる作業は、公式の "Wide &amp; Shallow"（"Highly reliable"）そのもの。</b>逆にガス漏れ11本は全部 "Tall &amp; Deep"。<b>27本の成績は、公式の2軸表そのままの結果になっている。</b></p>
+</div>
+
+<h2>9. 明日から投げる型（1つだけ）</h2>
+<p><b>「塗装」＝1ページ・1コンポーネントに閉じていて、欠けているものを機械で数えられる修正。</b>具体＝<b>③OGPが欠けているページを全部直す</b>。ただし投げ方を#425に寄せる：</p>
+<ul>
+<li>① <b>投げる前にこちらが数える</b>（何ページ欠けているか、数字を依頼文に書く）★#19の教訓＝該当0件のものを投げると582ファイル走査して空振りする</li>
+<li>② <b>お手本を名指しする</b>（OGPが正しく入っている既存ページのファイルパスを1つ渡す）</li>
+<li>③ <b>完了条件を数字で書く</b>（欠けているN件が0件になり、<code>&lt;meta property="og:image"&gt;</code> が全ページに入る）</li>
+<li>④ <b>1PRに収める。10 ACU未満・M以下</b>（公式 Session Insights）</li>
+<li>⑤ <b>返事を書かせない</b>（終わりの合図はPRのURLだけ）</li>
+<li>⑥ <b>PRが返った瞬間に受け取る</b>（#448 #455 を放置した事故の再発防止）</li>
+</ul>
+<h3>投げないと決めた型</h3>
+<ul>
+<li>「原因を特定して」「棚卸しして」＝<b>ガス漏れ。以後Devinには1本も投げない。</b>（公式が名指しで悪い依頼／うちで11本投げて本番0）</li>
+<li>見た目の良し悪し・誌面・サムネイル＝<b>Devinには渡さない</b></li>
+<li>CIの赤を直す＝<b>課金停止で全ラン不起動。触らせない</b></li>
+</ul>
+<h3>公式の仕様変更に追いつくために直すこと</h3>
+<ul>
+<li><b>Knowledge は deprecated。</b>1502号で入れたKnowledge 6本は <b>Skills（SKILL.md をリポジトリにコミット）へ移す</b></li>
+<li><b>Schedules は legacy。</b>新しい定期実行は <b>Automations</b> で作る</li>
+<li>押し戻し係の「再開して」連打は<b>公式・実例ともに逆効果</b>（途中のコーチングで性能が落ちる）。<b>止まったら新セッションに切る</b>設計に変える</li>
+</ul>
+
+<h2>この調査でやっていないこと／取れなかったもの</h2>
+<ul>
+<li>Devinには1本も投げていない（調査のみ）。bash・心臓・computer-use・Chrome を一切使っていない＝<b>0円</b></li>
+<li>ACUの実額は今も取れない（<code>/v1/enterprise/consumption</code> 403・<code>/v1/usage</code> 404。status/1060_hikitsugi.md:26）</li>
+<li>27本目（台帳に行が無い1本）の型は<b>取れない。取れない口＝Devin API の /v1/sessions（out_of_quota で403）</b></li>
+<li>docs.devin.ai の instructing-devin-effectively と prompt-templates-cheat-sheet は索引で存在確認のみ・本文未取得</li>
+<li>Findy「DevinからClaude Code Actionsへ」（tech.findy.co.jp/entry/2026/06/16/070000）は本文取得に失敗。<b>移行事例として残っている宿題</b></li>
+</ul>
+
+<p class="moto">全文（出典URLつき）＝ <a href="https://tamago2022.github.io/tamago-shinchoku/status/public/1193_devin_tokui.md" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/1193_devin_tokui.md</a><br>
+公式の出典：docs.devin.ai の get-started/devin-intro ／ essential-guidelines/when-to-use-devin ／ essential-guidelines/good-vs-bad-instructions ／ use-cases/best-practices ／ product-guides/session-insights ／ product-guides/creating-playbooks ／ product-guides/knowledge ／ product-guides/scheduled-sessions ／ product-guides/automations ／ work-with-devin/mcp ／ admin/billing/usage（全ページ索引は docs.devin.ai/llms.txt）<br>
+うちの数字の出どころ：tools/1060_devin26.py:4（26本の1本ずつ）／status/1060_hikitsugi.md:9-12／status/1059_hikitsugi_devin.md:10-12／status/1502_devin_nagekata.md:49-50<br>
+この紙は外へ1回も出ていません＝0円。</p>
+
+</div>
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body></html>

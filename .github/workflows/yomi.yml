@@ -1,0 +1,35 @@
+name: 読みの見張り
+
+# 979番：案内人が名前を読み違えないための見張り。
+# 辞書や作り手を触ったときだけ走る軽い便。Pages（gh-pages）には一切触らない。
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/yomi/**"
+      - "share/yomi/**"
+      - ".github/workflows/yomi.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: King Gnu がカタカナで案内人に渡るか
+        run: node tools/yomi/test_yomi.mjs
+      - name: 赤（要確認）が何件残っているか
+        run: |
+          python3 - <<'PY'
+          import json
+          s = json.load(open("share/yomi/yomi-stats.json", encoding="utf-8"))
+          print("読みが付いた: %d／%d 件" % (s["artists_dict"], s["artists_total"]))
+          print("赤（要確認）: %d 件" % s["red"])
+          PY

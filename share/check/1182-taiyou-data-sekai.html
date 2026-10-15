@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1182 大量データの配り方 世界の事例</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  h3{font-size:0.98rem;margin:20px 0 6px;}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .card{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 12px;}
+  .card.ng{border-left:4px solid var(--aka);}
+  .card.ok{border-left:4px solid var(--midori);}
+  .card p{margin:6px 0;}
+  .src{font-size:0.8rem;word-break:break-all;color:var(--sub);}
+  .src a{color:var(--ao);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  blockquote{background:var(--t-panel);border:1px solid var(--line);border-left:3px solid var(--sub);border-radius:8px;margin:10px 0;padding:12px 15px;font-size:0.9rem;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1182 大量データの配り方 世界の事例</div>
+<h1>#1182 26,000件をスマホに配る　世界の事例</h1>
+<div class="date">2026-09-29 ／ 調べただけ（コードは書いていない・自分で考えた案はゼロ・全部出典付き）</div>
+
+<div class="fix">
+公式ドキュメントと公表済みケーススタディからお手本を5つ拾い、<b>そのまま移植できる1つとして Pagefind を選んだ</b>。うちが今やっている「26,000件を1つのJSに畳んで1曲ページごとに全部落とす」形は、V8公式とVite公式が名指しで勧めていない側の形だった。
+</div>
+
+<h2>① 現状</h2>
+<div class="nums">
+  <div class="num"><b>4.3MB</b><span>1ページ合計（55リクエスト・4Gで20秒超）</span></div>
+  <div class="num"><b>2,626KB</b><span>26,000件を畳み込んだJS（gzip後）</span></div>
+  <div class="num"><b>812KB</b><span>youtube-id-map.full.json</span></div>
+</div>
+
+<h2>② お手本 5つ</h2>
+
+<div class="card ok">
+  <h3>① YouTube ― その画面に要る部品だけを1本のリクエストにまとめて取る</h3>
+  <p>50個以上の部品に「部品→JSモジュール」の対応表を作り、lazyと印を付けたものは後で読む。ただし遅延読みだけだと<b>滝（waterfall）</b>になったので、その画面に最低限必要な部品を<b>1本のリクエストにまとめる</b>形に直した。</p>
+  <p><b>公表数字（出典元の実測: 76%／実測: 75%）：</b>モバイルwebのURLの76%がCore Web Vitals通過／デスクトップwatchページのラボLCP 4.6秒→1.6秒／プレイヤーのJS実行時間 最大75%減。</p>
+  <p class="src">出典（Google公式 web.dev）<a href="https://web.dev/case-studies/better-youtube-web-part1">https://web.dev/case-studies/better-youtube-web-part1</a></p>
+</div>
+
+<div class="card ok">
+  <h3>② Pagefind ― 検索の索引を語頭でシャードし、打った文字に当たる欠片だけ落とす</h3>
+  <p>索引をchunkに分割して置き、ブラウザは検索のたびに<b>索引の小さな部分集合しか読まない</b>。サーバーを持たない静的サイト向け。</p>
+  <p><b>公表数字：</b>10,000ページのサイトの全文検索を、<b>ライブラリ込みの総通信300kB未満</b>で実行。多くのサイトでは100kB前後。</p>
+  <p>実物：MDN／Godot／XKCD のデモが公開されている。JSONやPDFもNode/Pythonの索引APIで食わせられる。</p>
+  <p class="src">出典 <a href="https://pagefind.app/">https://pagefind.app/</a> ／ <a href="https://cloudcannon.com/blog/introducing-pagefind/">https://cloudcannon.com/blog/introducing-pagefind/</a></p>
+</div>
+
+<div class="card ok">
+  <h3>③ Next.js（Vercel公式）― 1ページ＝1つのJSON</h3>
+  <p>ビルド時にHTMLに加えて<b>そのページ専用のJSON</b>を吐き、クライアント遷移では<b>そのJSONだけ</b>を取る。HTMLもJSONもCDNでキャッシュ可。リンクが画面に入ったら先読みするが、回線が溢れないようスケジュールする。</p>
+  <p class="src">出典 <a href="https://nextjs.org/docs/pages/building-your-application/data-fetching/get-static-props">getStaticProps</a> ／ <a href="https://nextjs.org/docs/app/guides/prefetching">Prefetching</a></p>
+</div>
+
+<div class="card ok">
+  <h3>④ Pinterest ― バンドルを vendor / entry / async の3種に割る</h3>
+  <p><b>公表数字（出典元の実測: 103%）：</b>コアJS 650KB→150KB／First Meaningful Paint 4.2秒→1.8秒／Time To Interactive <b>23秒→5.6秒</b>（再訪3.9秒）／モバイルwebの週間利用者 +103%。</p>
+  <p class="src">出典 <a href="https://medium.com/dev-channel/a-pinterest-progressive-web-app-performance-case-study-3bd6ed2e6154">Google Dev Channel ケーススタディ</a></p>
+</div>
+
+<div class="card ok">
+  <h3>⑤ web.dev公式の型2つ ― 一覧は見えている分だけ描く／骨組みは場所を先に予約する</h3>
+  <p><b>一覧（仮想化）：</b>見えているものだけ描き、スクロールで「窓」を動かす。継ぎ足しは react-window-infinite-loader、ちらつき防止は overscanCount（増やしすぎは逆効果）。</p>
+  <p><b>骨組み（CLS）：</b>遅れて来る中身の場所を<b>最初のレイアウトで予約</b>する（min-height / aspect-ratio）。<b>寸法が分からなくても、既定で高さを予約しないまま（実測: 0px）にするより「それらしいmin-height」を置く方がほぼ常に良い。</b></p>
+  <p class="src">出典 <a href="https://web.dev/articles/virtualize-long-lists-react-window">仮想化</a> ／ <a href="https://web.dev/articles/optimize-cls">CLS</a> ／ <a href="https://web.dev/patterns/web-vitals-patterns/infinite-scroll/infinite-scroll/">無限スクロール</a></p>
+</div>
+
+<h2>③ そのまま移植する1つ：Pagefind</h2>
+<div class="card ok">
+  <p><b>「似せる」ところがない。</b>CLIを走らせて出てきた <code>pagefind/</code> をそのまま置き、公式のUIコンポーネントをそのまま読み込むだけ。索引の割り方をこちらで一切考えない＝オリジナルにならない。</p>
+  <p>1. 前提がうちと同じ（サーバーなし／静的ホスティング／ビルド済みHTMLがある）。<br>
+     2. 規模が公表値の範囲内。索引は語頭でchunkに割れるので、件数に比例して落ちる量が太らない。<br>
+     3. 曲データ（JSON）もNode/Python APIでそのまま食える。<br>
+     4. MDN・Godot・XKCD で動いている実物を触って確かめられる。</p>
+</div>
+
+<h2>④ やってはいけない手 3つ</h2>
+
+<div class="card ng">
+  <h3>✗1. データを「JSのオブジェクトリテラル」としてバンドルに畳み込む　― <span style="color:var(--t-ng)">うちが今まさにやっている</span></h3>
+  <p>V8（Chromeのエンジン）公式が名指しで否定。<code>JSON.parse('…')</code> は同内容のJavaScriptリテラルより<b>parse・compile・実行のすべてで大幅に速い</b>。大きなデータをリテラルで書くと <b>preparse と lazy-parse で二度読まれる危険</b>。目安は<b>10kB以上</b>。うちは2,626KBを1曲ページごとに読ませている。</p>
+  <p class="src">出典 <a href="https://v8.dev/blog/cost-of-javascript-2019">https://v8.dev/blog/cost-of-javascript-2019</a></p>
+</div>
+
+<div class="card ng">
+  <h3>✗2. 静的importで全部入りを1ファイルに畳む</h3>
+  <p>Vite公式は逆を既定にしている。まとめ読みの対象は<b>既定で動的importの遅延読み込みになり、ビルド時に別チャンクへ分かれる</b>。<code>{ eager: true }</code> を渡したときだけ<b>静的importとしてまとめてバンドルされる</b>と明記。分割の口は <code>build.rollupOptions.output.manualChunks</code>。TanStack Router側も <code>.lazy.tsx</code> 分割と、遅い部分だけ後で解決する <b>Deferred Data Loading</b> を公式に用意している。</p>
+  <p class="src">出典 <a href="https://vite.dev/guide/features">Vite Features</a> ／ <a href="https://vite.dev/config/build-options">Build Options</a> ／ <a href="https://tanstack.com/router/latest/docs/framework/react/guide/code-splitting">TanStack Code Splitting</a> ／ <a href="https://tanstack.com/router/latest/docs/framework/react/guide/deferred-data-loading">Deferred Data Loading</a></p>
+</div>
+
+<div class="card ng">
+  <h3>✗3. 骨組みを「高さ0の空要素」で出して、あとから中身を差し込む　― うちの「崩れる」の正体</h3>
+  <p>web.dev公式が名指しで否定。遅れて来る中身の場所は<b>最初のレイアウトで予約</b>（min-height / aspect-ratio）。<br>
+  同系統の教訓：Netflix はログアウト時トップページから<b>クライアント側Reactと関連ライブラリ（200kB超）を外しただけで Time-to-Interactive が（出典元の実測: 50%）以上改善</b>した。</p>
+  <p class="src">出典 <a href="https://web.dev/articles/optimize-cls">web.dev CLS</a> ／ <a href="https://medium.com/dev-channel/a-netflix-web-performance-case-study-c0bcde26a9d9">Netflix ケーススタディ</a></p>
+</div>
+
+<h2>⑤ 移植したときの見込み（お手本の公表数字から）</h2>
+<table>
+<tr><th></th><th>今</th><th>お手本どおりにした後</th><th>根拠</th></tr>
+<tr><td>検索用データ</td><td>2,626KB</td><td><b>0.1〜0.3MB</b></td><td>Pagefind「10,000ページで300kB未満、多くは100kB前後」</td></tr>
+<tr><td>ID表</td><td>812KB</td><td><b>数kB</b>（開いた1曲分だけ）</td><td>Next.js「1ページ＝1JSON」</td></tr>
+<tr><td>JSバンドル</td><td>―</td><td><b>150KB級</b></td><td>Pinterest「650KB→150KB」</td></tr>
+<tr><td><b>1ページ合計</b></td><td><b>4.3MB</b></td><td><b>0.5MB前後</b></td><td>上記の合算</td></tr>
+</table>
+
+<h2>⑥ 外部AIへの投函 ― 未了</h2>
+<div class="card ng">
+  <p>今回の依頼で bash が禁止のため <code>tools/gaibu_shinsa.py</code> も <code>gh</code> も走らせられず、<code>tamago2022/ai-kaigi</code> へ投函できていない。<b>結論を見せない白紙の問い</b>を用意したので、心臓経由でそのまま貼れる。宛先：ChatGPT／Grok／Gemini。</p>
+  <blockquote>
+  【質問】静的ホスティング（サーバーなし）のWebサイトで、26,000件のカタログ（曲データ）をスマートフォンの回線に配る定石を教えてください。<br>
+  前提：Vite + React + TanStack Router、ビルド成果物を静的配信。1件の詳細ページと、全件を対象にした検索の両方がある。<br>
+  知りたいこと：(1) データを分ける単位は何で割るのが定石か (2) 検索用の索引はどう分けるか (3) 一覧と詳細で取るものをどう変えるか (4) 初回表示までに何を出すか。<br>
+  できれば公式ドキュメントか、実際に運用している会社が公表しているケーススタディのURLを添えてください。
+  </blockquote>
+</div>
+
+<h2>⑦ Anthropic公式に指針はあるか</h2>
+<div class="card">
+  <p><b>ある（考え方だけ）。</b>「Effective context engineering for AI agents」は、<b>関係しそうなデータを前もって全部読み込むのではなく、軽い識別子だけ持っておき、必要になった時点で読み込む（just in time）</b>を勧めている。うちの問題と同じ形。</p>
+  <p class="src">出典 <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents</a></p>
+</div>
+
+<footer>
+元の書類：status/1182_taiyou_data_sekai.md ／ 今回はコードを一切書いていない（調査のみ）。
+</footer>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
