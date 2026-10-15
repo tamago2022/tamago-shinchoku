@@ -421,7 +421,9 @@ LOOK_CSS = ('.cw .cw-chead__catch{font:700 clamp(24px,6.6vw,40px)/1.4 "Hiragino 
             '.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 auto 28px;max-width:760px}.cw .cw-interlude img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.12)}'
             '.cw .cw-interlude figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:var(--mute)}.cw .cw-interlude .cw-credit{font-size:11.5px;opacity:.8}'
             '.cw .cw-interlude figcaption a{color:inherit;text-decoration:underline}.cw .cw-interlude p{max-width:640px;margin:22px auto 0;font-size:15.5px;line-height:1.95}'
-            '.cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}')
+            '.cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}'
+            '.cw .cw-hero__sub{display:block;font-size:.44em;line-height:1.7;margin-top:.6em;font-weight:500;letter-spacing:.06em}'
+            '.cw .cw-video__play:empty::before{content:"";display:block;margin-left:4px;border-style:solid;border-width:8px 0 8px 13px;border-color:transparent transparent transparent currentColor}')
 
 
 def unify_look(h):
@@ -438,9 +440,10 @@ def unify_look(h):
     h = R.sub(r'<p ([^>]*?)class="cw-chead__en"([^>]*)>(.*?)</p>\s*<h2 ([^>]*?)class="cw-chead__title"([^>]*)>(.*?)</h2>\s*(<p [^>]*class="cw-chead__year"[^>]*>.*?</p>)?',
               lambda m: (f'<p {m.group(4)}class="cw-chead__title"{m.group(5)}>{m.group(6).replace(" - ", " ／ ", 1)}</p>{m.group(7) or ""}'
                          + (f'<h2 {m.group(1)}class="cw-chead__catch"{m.group(2)}>{m.group(3)}</h2>' if m.group(3).strip() else '')), h, flags=R.S)
-    # ④ 再生ボタンの中身（空なら同じ三角のSVG）
-    h = R.sub(r'(<span[^>]*class="cw-video__play"[^>]*>)\s*(</span>)', r'\1' + PLAY + r'\2', h)
-    h = R.sub(r'(<span class="cw-video__play" aria-hidden="true">)▶(</span>)', r'\1' + PLAY + r'\2', h)
+    # サブタイトル（〜…〜）は同じ部品
+    h = R.sub(r'<span style="(?:display:block;)?font-size:\.4[08]?em[^"]*">', '<span class="cw-hero__sub">', h)
+    # ④ 再生ボタンの中身は空にして、CSSの三角で描く（怒れる人々の本番と同じ・軽い）
+    h = R.sub(r'(<span[^>]*class="cw-video__play"[^>]*>)(?:<svg.*?</svg>|▶|\s)*(</span>)', r'\1\2', h, flags=R.S)
     # 部品のCSSを同じものに（写真の合間は怒れる人々の型へ）
     h = R.sub(r'\.cw \.cw-interlude[^{]*\{[^}]*\}', '', h)
     h = R.sub(r'\.cw \.cw-video__play:empty::before\{[^}]*\}', '', h)
@@ -457,7 +460,7 @@ def look_check(h):
     if 'id="cw-base"' not in h: bad.append('土台のCSSが無い（白い枠が出る）')
     if R.search(r'Magazine Story', h): bad.append('Magazine Story が出ている')
     if R.search(r'class="cw-chead__en"', h): bad.append('古い型の章頭')
-    if R.search(r'class="cw-video__play"[^>]*>\s*</span>', h): bad.append('再生ボタンが空')
+    if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
     return bad
 
 
