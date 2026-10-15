@@ -19,9 +19,10 @@ OTHERS = {
     'ikareru': (BASE + 'ikareru-01.html', 'ロック企画 vol.1', '怒れる人々'),
     'harakami': (BASE + 'rei-harakami.html', 'rei harakami／yanokami', '君はレイ・ハラカミを知っているか'),
     'hikigatari': ('https://joy-relief-station.lovable.app/feature/hikigatari', 'ピアノ、ギター、声ひとつ', '心を震わせる弾き語り'),
+    'hoshikatsu': (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか'),
     'citypop': ('https://joy-relief-station.lovable.app/feature/citypop-sekai', 'City Pop × World', '世界が先に見つけた、日本の夜。'),
 }
-PROD = {'josh': 'hikigatari-josh-turner.html', 'takoukan': 'naze-ongaku-01-takoukan.html', 'ikareru': 'ikareru-01.html', 'harakami': 'rei-harakami.html'}
+PROD = {'josh': 'hikigatari-josh-turner.html', 'takoukan': 'naze-ongaku-01-takoukan.html', 'ikareru': 'ikareru-01.html', 'harakami': 'rei-harakami.html', 'hoshikatsu': 'kimi-wa-hoshi-katsu.html'}
 PLAY = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5.5v13l11-6.5z"></path></svg>'
 # 吹き出しと「つなぎ」だけは、このシリーズの決まり（CLAUDE.md）で要る部品。元の型の色・字に合わせる
 EXTRA_CSS = '''
