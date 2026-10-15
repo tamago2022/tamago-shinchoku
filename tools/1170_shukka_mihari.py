@@ -116,6 +116,37 @@ def _bin_age():
         return None
 
 
+def _shindan():
+    """便が走らない理由の手がかり（値は短く・鍵は含まない）。"""
+    out = {}
+    try:
+        r = subprocess.run(["launchctl", "print", "gui/%d/%s" % (os.getuid(), SERVICE)],
+                           capture_output=True, text=True, timeout=20)
+        keep = ("state", "last exit", "runs", "program", "path", "pid", "job state", "spawn")
+        out["launchctl_rc"] = r.returncode
+        out["launchctl"] = [l.strip() for l in (r.stdout or r.stderr or "").splitlines()
+                            if any(k in l.lower() for k in keep)][:15]
+    except Exception as e:  # noqa: BLE001
+        out["launchctl_err"] = repr(e)[:200]
+    logs = os.path.expanduser("~/Library/Logs/TamagoRoleSweep")
+    for name in ("push-queue.log", "sweep-cron.log", "stderr.log", "stdout.log"):
+        p = os.path.join(logs, name)
+        try:
+            with io.open(p, encoding="utf-8", errors="ignore") as f:
+                lines = f.read().splitlines()[-8:]
+            out[name] = {"mtime": time.strftime("%F %T", time.localtime(os.path.getmtime(p))),
+                         "tail": [l[:200] for l in lines]}
+        except Exception:
+            pass
+    try:
+        out["logs_dir"] = sorted(os.listdir(logs))[:30]
+    except Exception:
+        pass
+    plist = os.path.expanduser("~/Library/LaunchAgents/%s.plist" % SERVICE)
+    out["plist_aru"] = os.path.exists(plist)
+    return out
+
+
 def _keru():
     try:
         uid = os.getuid()
@@ -146,11 +177,18 @@ def main():
         "bin_age_sec": age,
         "riyuu": riyuu,
     }
+    if akai:
+        # ★2026-10-15【5日止まっていたのに理由がどこにも無かった】launchd の状態と便のログの
+        #   末尾は Mac にしか無い（Cowork から読めない）。赤のときだけ、ここに写して見えるようにする。
+        ima["shindan"] = _shindan()
     _save(OUT, ima)
     _save(PUBLIC, ima)
 
     st = _load(STATE, {})
-    key = "|".join(riyuu)
+    # ★2026-10-15：理由文に「何分」が入っていて毎回 key が変わり、蹴る回数の上限(KICK_MAX)が
+    #   一度も効いていなかった。数字を抜いた形で同じ赤かどうかを見る。
+    import re as _re
+    key = _re.sub(r"\d+", "#", "|".join(riyuu))
     if not akai:
         # 青に戻ったら数え直す（次に詰まったときはまた3回蹴れる）
         if st.get("key"):
