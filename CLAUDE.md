@@ -9,10 +9,16 @@
 - **たまごさん「Mac の空き容量を空けまくって。そもそも macOS にデータが溜まらない仕組みに。使ったらしまう、使ったら閉じるを徹底。やりっぱなしで後で面倒な思いをするのは俺」。**
 - 実測（2026-10-11〜15）：空きが4回0GB近くまで落ちた。犯人は毎回「作って置きっぱなし」（/private/tmp の push 用作業場48個・43GB、作業場104個・18.6GB、queue.json の控え1,047個・10.8GB、打ち切られた git gc の書きかけ）。
 - **作業の最後に、自分が /private/tmp・$TMPDIR・作業場に作ったものを消す。完成品は `tools/claude_nouhin.py put` で納品し、Mac本体に置かない。開いたタブ・ブラウザ・サーバーは閉じる。**
-- **片付け係は負荷で止めない（2026-10-16 追記）。** 実測：worktree_taihi と shimau が「スワップ90%超（Brave のせいで一日中）なら走らない」で 10/15 04:57 から一度も走らず、1本約3GBの作業場（`~/Documents/AI作業/.worktrees`）が溜まって空きが46GB→10GBに落ちた。消すのは軽い仕事なので、**空き30GB未満なら負荷に関係なく走る**。重い du の「測る」だけを負荷で飛ばす。畳む係（`tools/1200_tatamu.py`）も片付け・容量の係は畳まない。
+- **片付け係は負荷で止めない（2026-10-16 追記）。** 実測：worktree_taihi と shimau が「スワップ90%超（Brave のせいで一日中）なら走らない」で 10/15 04:57 から一度も走らず、1本約3GBの作業場（`~/Documents/AI作業/.worktrees`）が溜まって空きが46GB→10GBに落ちた。消すのは軽い仕事なので、**空き30GB未満なら負荷に関係なく走る**（shimau は負荷に関係なく片付ける。測るのだけ20時間に1回）。重い du の「測る」だけを負荷で飛ばす。畳む係（`tools/1200_tatamu.py`）も片付け・容量の係は畳まない。
 - **一番の犯人は $TMPDIR の使い捨て（2026-10-16 実測）：** 巡回（`hps-patrol-*`・1時間に約380個）と自動操作ブラウザの使い捨てプロフィール（`playwright_chromiumdev_profile-*`／`playwright-artifacts-*`）などが約4万個・約90GB溜まっていた（片付け係が止まっていたため）。片付けが走って空きは10GB→110GB超へ戻った。**使い捨ては1時間で必ず消す：** `tools/youryou_jougen.py --tsukaisute`（心臓 top_status.py から1時間に1回）。一時フォルダを作る道具は、終わるときに自分で消す。
-- **場所ごとの上限と自動片付け（2026-10-16）：** `tools/youryou_jougen.py`（/private/tmp 3GB・$TMPDIR 5GB・Claude の古いセッション outputs 15GB・キャッシュ 6GB。超えたら古い順に作り直せるものだけ。Brave には触らない）、`tools/chukan_shimau.py`（動画・音声の中間物 `_frames`／`_chunks`／`_tmp`／`.part` 等を2時間後に消す。仕事の回収のたびに走る。子への指示は `tools/prompt_rules/topic-chukan-shimau.md`）。どちらも shimau.py から毎日＋**空き30GB未満なら1時間おき**（`youryou_mihari.py` が `status/shimau.go` を置く）。犯人探しは `tools/youryou_tantei.py`（どこが何GB・前回との差 → `status/public/youryou_tantei.json`）。空きの推移は `status/public/youryou_suii.json`（7日分）→ 進捗表 `health.json` の `aki`。30GB未満と「24時間で5GB減」は Dispatch へ自動通知。逆テスト：各ツール `--self-test`。
-- **機械の裏付け：** `tools/worktree_taihi.py`（10分おき＋auto_launcher の回収のたびに起動。push済みは消す・未保存は差分を控えて消す・/private/tmp の置き去りも）／`tools/shimau.py`（毎日1回：Mac本体と iMac HDD の空き・増えた上位を `status/public/shimau.json` に記録、HDD の「作業場の控え」「控え」「Claude上げ済み」は日数で自動削除、$TMPDIR・Claude の古いセッションの outputs・ブラウザのキャッシュを片付け）／`tools/youryou_mihari.py`（1分おき：30GB未満で Dispatch に警告・20GB未満で発車停止）。
+- **場所ごとの上限と自動片付け（2026-10-16）：** `tools/youryou_jougen.py`（/private/tmp 3GB・$TMPDIR 5GB・Claude の古いセッション outputs 15GB・キャッシュ 6GB。超えたら古い順に作り直せるものだけ。Brave には触らない）、`tools/chukan_shimau.py`（動画・音声の中間物 `_frames`／`_chunks`／`_tmp`／`.part` 等を2時間後に消す。仕事の回収のたびに走る。子への指示は `tools/prompt_rules/topic-chukan-shimau.md`）。どちらも shimau.py から毎日＋**空き100GB未満なら1時間おき**（`youryou_mihari.py` が `status/shimau.go` を置く）。犯人探しは `tools/youryou_tantei.py`（どこが何GB・前回との差 → `status/public/youryou_tantei.json`）。空きの推移は `status/public/youryou_suii.json`（7日分）→ 進捗表 `health.json` の `aki`。100GB未満と「24時間で5GB減」は Dispatch へ自動通知。逆テスト：各ツール `--self-test`。
+- **機械の裏付け：** `tools/worktree_taihi.py`（10分おき＋auto_launcher の回収のたびに起動。push済みは消す・未保存は差分を控えて消す・/private/tmp の置き去りも）／`tools/shimau.py`（毎日1回：Mac本体と iMac HDD の空き・増えた上位を `status/public/shimau.json` に記録、HDD の「作業場の控え」「控え」「Claude上げ済み」は日数で自動削除、$TMPDIR・Claude の古いセッションの outputs・ブラウザのキャッシュを片付け）／`tools/youryou_mihari.py`（1分おき：**100GB未満で原因調査（youryou_tantei）を自動で開始＋片付け＋Dispatch に警告・50GB未満で新規発車停止（55GBで解除）・30GB未満で救急**。2026-10-16 たまごさん「30GBを切ることは二度とないように」）。
+
+## 自動処理は全部、台帳に「作るもの・置き場・消す役」を持つ（憲法・2026-10-16・トップ5の仕事）
+- **たまごさん「空き容量を常に空けておくのはトップ5の仕事。30GBを切ることは二度とないように。3万4千個を今気づくのは、自分たちのやってることを把握してない証拠。全部に責任を持て」。**
+- **台帳（正本）：`tools/jidou_daicho.json`**（名前 → tsukuru 作るもの／okiba 置き場／kesu 消す役）。`"kari": true` は機械の下見で仮に付けたもので、見直したら外す。
+- **棚卸し：`tools/jidou_tanaoroshi.py`**（心臓の相乗りから1時間に1回）。心臓（heartbeat.sh・top_status.py）・launchd・cron・GitHub Actions を全部拾い、スクリプトの中身を下見して「一時フォルダ・ブラウザ・複製・動画/音・キャッシュ・HDD」を作っていそうかを出す。台帳に無い＝片付け役なし→ Dispatch に1行。下見と台帳の消す役が合わない＝`zure`。一覧は `status/public/jidou_tanaoroshi.json`、進捗表は `health.json` の `jidou`。
+- **関所（発車できない）：** 心臓・Actions を変える push は `.githooks/pre-push` が `jidou_tanaoroshi.py --check` を通し、台帳に無ければ止める。心臓の相乗り（top_status の `_okosu`）は台帳に無い係を起こさない。子への指示は `tools/prompt_rules/topic-jidou-daicho.md`。逆テスト：`--self-test`。
 
 ## リソース配分の優先順位（憲法・2026-08-05言われ→2026-10-06判定日赤を受けて2026-10-07明記）
 - **複数の依頼・空きレーンの着火先で迷ったら、①判定日赤（🔴＝機械が自動でpriority=1へ繰り上げた案件）→②`status/queue.json`のpriority番号が小さい順→③言われてから経過時間が長いもの、の順で選ぶ。** 判定日赤は「1週間／1ヶ月経っても1ミリも動いていない」を`tools/hantei_hiduke.py`が機械判定したもので、「優先度が低いから後回し」は赤になった時点で理由にならない。詳細・正本は`AGENTS.md`。
@@ -86,7 +92,12 @@
 - **ヘッダーの絵は、取り上げた曲のジャケットか動画のサムネイル（全マガジン共通・2026-10-14）。** 風景写真の仮置きはしない。
 - **最後に「つながっている特集」として、ほかのマガジンへの入口をサムネイル付きのカードで見せる**（`class="rel"`）。
 - **型はシティポップ特集（`/feature/citypop-sekai`）の実ページのHTML・CSSを複製して中身だけ差し替える（2026-10-14）。** 似せて作り直さない。画像を全面に敷き、半透明の暗い膜をかけ、その上にタイトルと文字を重ねるヘッダー。曲カード・吹き出し・余白・末尾の特集カードまで元の型どおり。独自の部品や配置を足さない。出す前にシティポップのページと並べて、スマホ幅とPC幅のスクショで見比べる。
-- **見出しは全マガジンで「アーティスト名 - 曲名」（年は付けてよい）。** 「七色の夕方へ歩き出す」のような添え書きを見出しに挟まない。ネタは本文か吹き出しへ。
+- **各章の頭の型（全マガジン共通・2026-10-16 たまごさん赤入れ・`mag_build.chead()` に組み込み済み）：** ①アーティスト名／曲タイトル（今の見出しの文字サイズ）②アルバム／年（小さく）③**見出し＝その曲を一発で表すキャッチーな一言**（満点例「その夜、テレビが事件になった」。「伝説の放送事故」「エリートに放った強烈な一発」型も可。1パターンに固定しない）。spec には `artist / song / album / year / catch` を書く（古い spec の `en / title / year` も同じ並びに読み替わる）。
+- **制作側の都合・注記は読者に出さない（2026-10-16）。** 「動画は全部oEmbedで配信元を確かめて」「歌詞は引用していません」「旬の姿で見たいのでこれを使っています」「〇年公開の転載〇万再生」「証言は貴重だから小さく添える」「メインの映像が消えても…」の類は全部書かない。キャプション・吹き出し・末尾の注記に書いてよいのは「へぇ」「クスッ」となることだけ。**機械の裏付け：** `mag_build.kanmon()`（`SEISAKU_NG` の語が読者に見える所にあると write が止まる。mute=1 も止める）。
+- **存在しないことを書かない（2026-10-16）。** 例：字幕の無い動画に「字幕がついているから意味がそのまま耳に入る」と書いた。年齢・年数・「〇年前」・「隣町」などの小さな数字や関係も、出典で確かめてから書く（怒れる人々で「40歳近く」「津軽の隣町の先輩」「22年前」「1週間で15万枚」がズレていた）。
+- **進行役（吹き出し）の語り口は燃え殻さんの文章のニュアンス（2026-10-16）。** 生活者目線、人間味、ちょっと情けない自分をさらけ出す、クスッと笑えるユーモア。ただし本人の経歴を作り話で足さない（「上京した日に〜」のような架空の思い出は書かない）。
+- **全マガジンの下に、動画「なぜ、大人になると新しい曲を聴かなくなるのか」（汝、ヒトを知れ）を今のサイズ・位置で入れる（2026-10-16）。** `mag_build.REF`／`ref_section()` が自動で入れる。「この記事を書くきっかけ」とは書かない（全部の記事で本当とは限らない）。
+- **全マガジン5言語（2026-10-16）。** 訳は spec の `i18n`（例 `tools/magazine/i18n_ikareru.json`）。訳は別ファイル `<本番名>.i18n.json` に出て、日本語以外を選んだときだけ読む＝日本語の読者には重くならない。`put_prod.sh` が `.i18n.json` も本番へ置く。
 - **文章は薄くしない。** 長文でなく、裏話・曲ができた背景・アーティストが出てきた背景・本人がインタビューで語ったことを、ぎゅっと詰める（1曲ごとに今の2〜3倍まで可。中身は Genspark の取材 `tools/genspark_tanomu.py` で厚くし、裏を取ってから書く）。雰囲気だけのポエムは削る。
 - **吹き出し（たまごのキャラ）は、毎回次のどちらかを満たす（できれば両方）。満たさないものは置かずに消す。1本で3〜4回まで、数より質。**
   1. 本文に書いていない、得する小ネタを1つ渡す（裏が取れた事実だけ。例「この曲、実は○○」「このライブの○分○秒を見て」）。
@@ -99,6 +110,7 @@
 - **叩きでも完成形（2026-10-14）。** たまごさんは完成前でも確認ページからシェアするので、毎回シティポップ特集と同じ完成形まで持っていく。シェア表示（OGP：og:title／og:description／og:image＝ヘッダーの曲のサムネイル／twitter:card）も必ず入れる。
 - **公開は毎回本番へ（2026-10-15）。** 各マガジンは本番URLを1つだけ持ち（`https://joy-relief-station.lovable.app/magazine/<名前>.html`＝joy-relief-station の `public/magazine/`）、直すたびに同じURLを上書きする。作り方：`python3 tools/magazine/spec_<名前>.py`（確認ページと本番用の写し `status/magazine_prod/` を同時に作る）→ `bash tools/magazine/put_prod.sh` → Lovable の `deploy_project`。一覧は Obsidian の「マガジン一覧」ノート1枚。
 - **マガジンはサイトと同じ全言語で読めるようにする（2026-10-16・たまごさん指示・全マガジン共通）：** 対応言語はサイトの `src/i18n/config.ts` の `SUPPORTED_LANGUAGES`（今は 日本語・English・中文・Español・한국어 の5つ）。spec に `i18n={言語:{キー:訳}}` を渡すと `mag_build.py` が地球マークの切替（サイトと同じ `gokigen-lang` を共有）を入れる。キー一覧は `python3 tools/magazine/mag_build.py --i18n-keys <html>`。英語などは直訳でなく、その言語の読者の心に届く文にする。
+- **マガジンは「1個の本番URLを上書きしていく」運用（2026-10-16・たまごさん指示・全マガジン共通）：** 読者にもたまごさんにも渡すのは本番URL（`https://joy-relief-station.lovable.app/magazine/<名前>.html` または `/feature/<名前>`）だけ。GitHubの確認ページ（share/check）では読ませない・一覧にも載せない。直すたびに同じ本番URLを直接上書き→ `deploy_project` →本番で200と中身を確かめる。「まだ読者がいないので公開して改定していく。ただし嘘は書かない」。
 - **音はふつうに出る状態が正しい。** 埋め込みに `mute=1` を付けない。無音で試すのは工場の試験（`tools/muon.py`）の中だけ。
 - **機械の裏付け：** `python3 tools/magazine_monogatari_kanmon.py --all`（`<meta name="tamago-magazine" content="story">` を付けたページで、つかみ・各章のつなぎ・締め・運営アイコン（肩書きなし）・ヘッダーが曲のサムネイルか・つながっている特集カードの有無を見る。`--self-test` あり）。マガジンのページには必ずこのmetaを付けて、出す前に通す。
 
